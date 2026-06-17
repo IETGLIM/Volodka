@@ -12,7 +12,6 @@ import {
 } from '@/engine/three/moduleGeometryRegistry';
 
 import FastNoiseLite from 'fastnoise-lite';
-import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { EnvironmentDetail } from './lod/PropDistanceGate';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { allowsHeavyGfxFeature } from '@/engine/graphics/qualityFeatureGates';
@@ -27,7 +26,6 @@ import {
 export function SleepDreamVisual() {
   const W = 50;
   const D = 50;
-  const { lod } = useEnvironmentLod();
 
   const groundGeometry = useMemo(() => {
     const geo = new THREE.PlaneGeometry(W, D, 64, 64);
@@ -119,7 +117,7 @@ export function SleepDreamVisual() {
       {/* ═══════════════════════════════════════════════ */}
       {/* ── ENVIRONMENTAL CLUTTER ──                     */}
       {/* ═══════════════════════════════════════════════ */}
-      <EnvironmentDetail currentLod={lod} minLod="standard">
+      <EnvironmentDetail minLod="standard" position={[0, 5, 2]}>
       <FloatingClock position={[5, 6, -3]} />
       <GlowingOrbs />
       <TornPhoto position={[-6, 4, 8]} />

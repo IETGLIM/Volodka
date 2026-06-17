@@ -3,11 +3,11 @@
 
 import { useMemo, useRef, useEffect, type MutableRefObject } from 'react';
 import * as THREE from 'three';
+import { getSharedStandardMaterial, mat } from '@/engine/three/moduleMaterialRegistry';
 import {
   registerModuleGeometries,
   registerModuleGeometry,
 } from '@/engine/three/moduleGeometryRegistry';
-import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { Lamp, Rug, Radiator } from './lazyInteriorModels';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { createVolodkaRoomNightSkyTexture } from '@/engine/graphics/proceduralSkyTextures';
@@ -122,6 +122,91 @@ function bookSpineGeo(w: number, h: number, d = 0.18): THREE.BoxGeometry {
 
 registerModuleGeometries([geo_pln_1, geo_pln_2, geo_pln_3, geo_box_4, geo_box_5, geo_box_6, geo_box_7, geo_cyl_8, geo_box_9, geo_box_10, geo_box_11, geo_box_12, geo_box_13, geo_sph_14, geo_box_15, geo_box_16, geo_box_17, geo_box_18, geo_pln_19, geo_cir_20, geo_box_21, geo_box_22, geo_box_23, geo_box_24, geo_box_25, geo_box_26, geo_cyl_27, geo_tor_28, geo_cyl_29, geo_box_30, geo_box_31, geo_box_32, geo_box_33, geo_box_34, geo_box_35, geo_box_36, geo_box_37, geo_box_38, geo_box_39, geo_box_40, geo_box_41, geo_pln_42, geo_box_43, geo_pln_44, geo_box_45, geo_cyl_46, geo_tor_47, geo_box_48, geo_cyl_49, geo_box_50, geo_box_51, geo_sph_52, geo_sph_53, geo_box_54, geo_pln_55, geo_box_56, geo_box_57, geo_box_58, geo_box_59, geo_box_60, geo_box_61, geo_tor_62, geo_cyl_63, geo_cyl_64, geo_box_65, geo_box_66, geo_cyl_67, geo_box_68, geo_box_69, geo_cyl_70, geo_box_71, geo_box_72, geo_cyl_73, geo_box_74, geo_pln_75, geo_pln_76, geo_pln_77, geo_pln_78, geo_box_79, geo_box_80, geo_box_81, geo_box_82, geo_box_83]);
 
+const mat_1 = getSharedStandardMaterial({ color: '#3a2820', roughness: 0.85 });
+const mat_2 = getSharedStandardMaterial({ color: '#5a4838', roughness: 0.8 });
+const mat_3 = getSharedStandardMaterial({ color: '#5a4030', roughness: 0.75 });
+const mat_4 = getSharedStandardMaterial({ color: '#aaa', metalness: 0.8, roughness: 0.2 });
+const mat_5 = getSharedStandardMaterial({ color: '#4a3525', roughness: 0.85 });
+const mat_6 = getSharedStandardMaterial({ color: '#4a3828', roughness: 0.8 });
+const mat_7 = getSharedStandardMaterial({ color: '#3a2818', roughness: 0.8 });
+const mat_8 = getSharedStandardMaterial({ color: '#3a2818', roughness: 0.85 });
+const mat_9 = getSharedStandardMaterial({ color: '#5a4530', roughness: 0.8 });
+const mat_10 = getSharedStandardMaterial({ color: '#4a3820', roughness: 0.85 });
+const mat_11 = getSharedStandardMaterial({ color: '#4a3a28', roughness: 0.7 });
+const mat_12 = getSharedStandardMaterial({ color: '#3a2a18' });
+const mat_13 = getSharedStandardMaterial({ color: '#08080b', roughness: 0.4, metalness: 0.4 });
+const mat_14 = getSharedStandardMaterial({ color: '#15151a' });
+const mat_15 = getSharedStandardMaterial({ color: '#1a1a1a', emissive: '#00ff44', emissiveIntensity: 0.02 });
+const mat_16 = getSharedStandardMaterial({ color: '#00ff44', emissive: '#00ff44', emissiveIntensity: 3.0 });
+const mat_17 = getSharedStandardMaterial({ color: '#ffaa00', emissive: '#ffaa00', emissiveIntensity: 2.0 });
+const mat_18 = getSharedStandardMaterial({ color: '#1a1a2a', roughness: 0.95 });
+const mat_19 = getSharedStandardMaterial({ color: '#2a2a2a', roughness: 0.6 });
+const mat_20 = getSharedStandardMaterial({ color: '#6b3a1a', roughness: 0.7 });
+const mat_21 = getSharedStandardMaterial({ color: '#2a1508', roughness: 0.3 });
+const mat_22 = getSharedStandardMaterial({ color: '#e8dcc8', roughness: 0.95 });
+const mat_23 = getSharedStandardMaterial({ color: '#f0e8d8', roughness: 0.95 });
+const mat_24 = getSharedStandardMaterial({ color: '#ddd4c0', roughness: 0.95 });
+const mat_25 = getSharedStandardMaterial({ color: '#2a2a30', roughness: 0.8 });
+const mat_26 = getSharedStandardMaterial({ color: '#333' });
+const mat_27 = getSharedStandardMaterial({ color: '#5a4030', roughness: 0.8 });
+const mat_28 = getSharedStandardMaterial({ color: '#4a3525' });
+const mat_29 = getSharedStandardMaterial({ color: '#2a3040', roughness: 0.9 });
+const mat_30 = getSharedStandardMaterial({ color: '#3a2a20', roughness: 0.8 });
+const mat_31 = getSharedStandardMaterial({ color: '#aaaacc', roughness: 0.95 });
+const mat_32 = getSharedStandardMaterial({ color: '#303050', roughness: 0.95 });
+const mat_33 = getSharedStandardMaterial({ color: '#0a0a30', emissive: '#4488ee', emissiveIntensity: 4.0, toneMapped: false });
+const mat_34 = getSharedStandardMaterial({ color: '#0a0a30', emissive: '#3366cc', emissiveIntensity: 3.5, toneMapped: false });
+const mat_35 = getSharedStandardMaterial({ color: '#333333', metalness: 0.5, roughness: 0.4 });
+const mat_36 = getSharedStandardMaterial({ color: '#555555', metalness: 0.6, roughness: 0.3 });
+const mat_37 = getSharedStandardMaterial({ color: '#666666', metalness: 0.3, roughness: 0.5, side: THREE.DoubleSide });
+const mat_38 = getSharedStandardMaterial({ color: '#444', metalness: 0.7, roughness: 0.2 });
+const mat_39 = getSharedStandardMaterial({ color: '#1a1a1e', metalness: 0.3, roughness: 0.7 });
+const mat_40 = getSharedStandardMaterial({ color: '#2a2a2e' });
+const mat_41 = getSharedStandardMaterial({ color: '#ff4400', emissive: '#ff4400', emissiveIntensity: 1.5 });
+const mat_42 = getSharedStandardMaterial({ color: '#151515', emissive: '#ffcc88', emissiveIntensity: 0.2 });
+const mat_43 = getSharedStandardMaterial({ color: '#1a1a2a', roughness: 0.8 });
+const mat_44 = getSharedStandardMaterial({ color: '#001133', emissive: '#0088ff', emissiveIntensity: 1.2 });
+const mat_45 = getSharedStandardMaterial({ color: '#110033', emissive: '#aa44ff', emissiveIntensity: 0.6 });
+const mat_46 = getSharedStandardMaterial({ color: '#2a1a1a', roughness: 0.8 });
+const mat_47 = getSharedStandardMaterial({ color: '#1a0000', emissive: '#ff2244', emissiveIntensity: 0.8 });
+const mat_48 = getSharedStandardMaterial({ color: '#c8c0a0', roughness: 0.9, transparent: true, opacity: 0.7 });
+const mat_49 = getSharedStandardMaterial({ color: '#1a1a1a', roughness: 0.7 });
+const mat_50 = getSharedStandardMaterial({ color: '#2a2a2a', roughness: 0.8 });
+const mat_51 = getSharedStandardMaterial({ color: '#222', roughness: 0.9 });
+const mat_52 = getSharedStandardMaterial({ color: '#3a4a5a', roughness: 0.95 });
+const mat_53 = getSharedStandardMaterial({ color: '#1a2a4a', roughness: 0.9 });
+const mat_54 = getSharedStandardMaterial({ color: '#4a4a4a', roughness: 0.95 });
+const mat_55 = getSharedStandardMaterial({ color: '#5a4535', roughness: 0.8 });
+const mat_56 = getSharedStandardMaterial({ color: '#aaa', metalness: 0.7, roughness: 0.3 });
+const mat_57 = getSharedStandardMaterial({ color: '#1a1a1a', roughness: 0.6 });
+const mat_58 = getSharedStandardMaterial({ color: '#001122', emissive: '#3355aa', emissiveIntensity: 0.5 });
+const mat_59 = getSharedStandardMaterial({ color: '#333', roughness: 0.9 });
+const mat_60 = getSharedStandardMaterial({ color: '#c0d0e0', transparent: true, opacity: 0.4, roughness: 0.2 });
+const mat_61 = getSharedStandardMaterial({ color: '#5a4050', roughness: 0.95 });
+const mat_62 = getSharedStandardMaterial({ color: '#0a0a20', emissive: '#1a1a30', emissiveIntensity: 1.5 });
+const mat_63 = getSharedStandardMaterial({ color: '#ffcc44', emissive: '#ffcc44', emissiveIntensity: 3.0 });
+const mat_64 = getSharedStandardMaterial({ color: '#aaccff', emissive: '#aaccff', emissiveIntensity: 2.0 });
+const mat_65 = getSharedStandardMaterial({ color: '#2a3a2a', roughness: 0.9 });
+const mat_66 = getSharedStandardMaterial({ color: '#1a2a1a', roughness: 0.9 });
+const mat_67 = getSharedStandardMaterial({ color: '#888', metalness: 0.7, roughness: 0.3 });
+const mat_68 = getSharedStandardMaterial({ color: '#1a2a1a', roughness: 0.8 });
+const mat_69 = getSharedStandardMaterial({ color: '#002200', emissive: '#00ff44', emissiveIntensity: 0.8 });
+const mat_led_power = getSharedStandardMaterial({
+  color: '#00ff00',
+  emissive: '#00ff00',
+  emissiveIntensity: 3.0,
+});
+const mat_zabbix_led = getSharedStandardMaterial({
+  color: '#e8413a',
+  emissive: '#e8413a',
+  emissiveIntensity: 2.5,
+  toneMapped: false,
+});
+
+function bookSpineMaterial(color: string) {
+  return mat(color, { roughness: 0.6 });
+}
+
 export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRef }: VolodkaRoomVisualProps) {
   // Canvas textures created synchronously via useMemo
   const floorTexture = useCachedCanvasTexture('volodka_room:floor', createFloorTexture);
@@ -130,7 +215,41 @@ export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
     'volodka_room:matrix-ceiling',
     createVolodkaRoomNightSkyTexture,
   );
-  const { lod } = useEnvironmentLod();
+
+  const mat_floor = useMemo(
+    () =>
+      getSharedStandardMaterial({
+        map: floorTexture,
+        color: '#5a4a3a',
+        roughness: 0.8,
+        polygonOffset: true,
+        polygonOffsetFactor: 1,
+        polygonOffsetUnits: 1,
+      }),
+    [floorTexture],
+  );
+  const mat_ceiling = useMemo(
+    () =>
+      getSharedStandardMaterial({
+        map: ceilingWashTexture,
+        color: '#101820',
+        emissive: '#183828',
+        emissiveIntensity: 0.26,
+        roughness: 0.95,
+      }),
+    [ceilingWashTexture],
+  );
+  const mat_wall = useMemo(
+    () =>
+      getSharedStandardMaterial({
+        map: wallTexture,
+        color: '#3a3548',
+        roughness: 0.9,
+        emissive: '#1a1828',
+        emissiveIntensity: 0.15,
+      }),
+    [wallTexture],
+  );
 
   // ── Animated elements refs ──
   const fanGroupRef = useRef<THREE.Group>(null);
@@ -175,6 +294,11 @@ export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
     };
   }, [floorTexture, wallTexture]);
 
+  useEffect(() => {
+    ledRef.current = mat_led_power;
+    zabbixAlertRef.current = mat_zabbix_led;
+  }, []);
+
   useVolodkaRoomAnimations({
     fanGroupRef,
     ledRef,
@@ -188,52 +312,22 @@ export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
   return (
     <group>
       {/* ── Floor ── */}
-      <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={geo_pln_1}>
-
-        <meshStandardMaterial
-          map={floorTexture}
-          color="#5a4a3a"
-          roughness={0.8}
-          polygonOffset
-          polygonOffsetFactor={1}
-          polygonOffsetUnits={1}
-        />
-      </mesh>
+      <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={geo_pln_1} material={mat_floor} />
 
       {/* ── Ceiling — matrix monitor HDR wash ── */}
-      <mesh position={[0, H, 0]} rotation-x={Math.PI / 2} geometry={geo_pln_1}>
-        <meshStandardMaterial
-          map={ceilingWashTexture}
-          color="#101820"
-          emissive="#183828"
-          emissiveIntensity={0.26}
-          roughness={0.95}
-        />
-      </mesh>
+      <mesh position={[0, H, 0]} rotation-x={Math.PI / 2} geometry={geo_pln_1} material={mat_ceiling} />
 
       {/* ── Back Wall (z = -D/2) ── */}
-      <mesh position={[0, H / 2, -D / 2]} geometry={geo_pln_2}>
-
-        <meshStandardMaterial map={wallTexture} color="#3a3548" roughness={0.9} emissive="#1a1828" emissiveIntensity={0.15} />
-      </mesh>
+      <mesh position={[0, H / 2, -D / 2]} geometry={geo_pln_2} material={mat_wall} />
 
       {/* ── Front Wall (z = +D/2) ── */}
-      <mesh position={[0, H / 2, D / 2]} rotation-y={Math.PI} geometry={geo_pln_2}>
-
-        <meshStandardMaterial map={wallTexture} color="#3a3548" roughness={0.9} emissive="#1a1828" emissiveIntensity={0.15} />
-      </mesh>
+      <mesh position={[0, H / 2, D / 2]} rotation-y={Math.PI} geometry={geo_pln_2} material={mat_wall} />
 
       {/* ── Left Wall (x = -W/2) ── */}
-      <mesh position={[-W / 2, H / 2, 0]} rotation-y={Math.PI / 2} geometry={geo_pln_3}>
-
-        <meshStandardMaterial map={wallTexture} color="#3a3548" roughness={0.9} emissive="#1a1828" emissiveIntensity={0.15} />
-      </mesh>
+      <mesh position={[-W / 2, H / 2, 0]} rotation-y={Math.PI / 2} geometry={geo_pln_3} material={mat_wall} />
 
       {/* ── Right Wall (x = +W/2) ── */}
-      <mesh position={[W / 2, H / 2, 0]} rotation-y={-Math.PI / 2} geometry={geo_pln_3}>
-
-        <meshStandardMaterial map={wallTexture} color="#3a3548" roughness={0.9} emissive="#1a1828" emissiveIntensity={0.15} />
-      </mesh>
+      <mesh position={[W / 2, H / 2, 0]} rotation-y={-Math.PI / 2} geometry={geo_pln_3} material={mat_wall} />
 
       {/* ═══════════════════════════════════════════════ */}
       {/* ── INTERACTIVE ANIMATED OBJECTS ── */}
@@ -241,107 +335,50 @@ export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
 
       {/* ── Room Door (front wall, swings open) ── */}
       {/* Door frame */}
-      <mesh position={[0, 1.1, D / 2 - 0.01]} rotation-y={Math.PI} geometry={geo_box_4}>
-
-        <meshStandardMaterial color="#3a2820" roughness={0.85} />
-      </mesh>
+      <mesh position={[0, 1.1, D / 2 - 0.01]} rotation-y={Math.PI} geometry={geo_box_4} material={mat_1} />
       {/* Door frame border */}
-      <mesh position={[-0.5, 1.1, D / 2 - 0.015]} rotation-y={Math.PI} geometry={geo_box_5}>
-
-        <meshStandardMaterial color="#5a4838" roughness={0.8} />
-      </mesh>
-      <mesh position={[0.5, 1.1, D / 2 - 0.015]} rotation-y={Math.PI} geometry={geo_box_5}>
-
-        <meshStandardMaterial color="#5a4838" roughness={0.8} />
-      </mesh>
-      <mesh position={[0, 2.2, D / 2 - 0.015]} rotation-y={Math.PI} geometry={geo_box_6}>
-
-        <meshStandardMaterial color="#5a4838" roughness={0.8} />
-      </mesh>
+      <mesh position={[-0.5, 1.1, D / 2 - 0.015]} rotation-y={Math.PI} geometry={geo_box_5} material={mat_2} />
+      <mesh position={[0.5, 1.1, D / 2 - 0.015]} rotation-y={Math.PI} geometry={geo_box_5} material={mat_2} />
+      <mesh position={[0, 2.2, D / 2 - 0.015]} rotation-y={Math.PI} geometry={geo_box_6} material={mat_2} />
       {/* Animated door panel — pivot on left edge */}
       <group position={[-0.45, 0, D / 2 - 0.03]} ref={roomDoorRef}>
-        <mesh position={[0.45, 1.1, 0]} geometry={geo_box_7}>
-
-          <meshStandardMaterial color="#5a4030" roughness={0.75} />
-        </mesh>
+        <mesh position={[0.45, 1.1, 0]} geometry={geo_box_7} material={mat_3} />
         {/* Door handle */}
-        <mesh position={[0.78, 1.05, 0.03]} rotation={[0, 0, Math.PI / 2]} geometry={geo_cyl_8}>
-
-          <meshStandardMaterial color="#aaa" metalness={0.8} roughness={0.2} />
-        </mesh>
+        <mesh position={[0.78, 1.05, 0.03]} rotation={[0, 0, Math.PI / 2]} geometry={geo_cyl_8} material={mat_4} />
         {/* Door panel detail — inset rectangle */}
-        <mesh position={[0.45, 1.4, 0.025]} geometry={geo_box_9}>
-
-          <meshStandardMaterial color="#4a3525" roughness={0.85} />
-        </mesh>
-        <mesh position={[0.45, 0.7, 0.025]} geometry={geo_box_9}>
-
-          <meshStandardMaterial color="#4a3525" roughness={0.85} />
-        </mesh>
+        <mesh position={[0.45, 1.4, 0.025]} geometry={geo_box_9} material={mat_5} />
+        <mesh position={[0.45, 0.7, 0.025]} geometry={geo_box_9} material={mat_5} />
       </group>
 
       {/* ── Wardrobe (left wall, near bed) ── */}
       <group position={[-2.2, 0, 2.5]}>
         {/* Wardrobe body */}
-        <mesh position={[0, 1.0, 0]} castShadow geometry={geo_box_10}>
-
-          <meshStandardMaterial color="#4a3828" roughness={0.8} />
-        </mesh>
+        <mesh position={[0, 1.0, 0]} castShadow geometry={geo_box_10} material={mat_6} />
         {/* Wardrobe top */}
-        <mesh position={[0, 2.01, 0]} geometry={geo_box_11}>
-
-          <meshStandardMaterial color="#3a2818" roughness={0.8} />
-        </mesh>
+        <mesh position={[0, 2.01, 0]} geometry={geo_box_11} material={mat_7} />
         {/* Wardrobe shelf */}
-        <mesh position={[0, 1.0, 0.01]} geometry={geo_box_12}>
-
-          <meshStandardMaterial color="#3a2818" roughness={0.85} />
-        </mesh>
+        <mesh position={[0, 1.0, 0.01]} geometry={geo_box_12} material={mat_8} />
         {/* Animated wardrobe left door — pivot on left edge */}
         <group position={[-0.38, 0, 0.28]} ref={roomWardrobeDoorRef}>
-          <mesh position={[0.19, 1.0, 0]} geometry={geo_box_13}>
-
-            <meshStandardMaterial color="#5a4530" roughness={0.8} />
-          </mesh>
+          <mesh position={[0.19, 1.0, 0]} geometry={geo_box_13} material={mat_9} />
           {/* Door handle */}
-          <mesh position={[0.32, 1.0, 0.02]} geometry={geo_sph_14}>
-
-            <meshStandardMaterial color="#aaa" metalness={0.8} roughness={0.2} />
-          </mesh>
+          <mesh position={[0.32, 1.0, 0.02]} geometry={geo_sph_14} material={mat_4} />
           {/* Door panel detail */}
-          <mesh position={[0.19, 1.3, 0.02]} geometry={geo_box_15}>
-
-            <meshStandardMaterial color="#4a3820" roughness={0.85} />
-          </mesh>
-          <mesh position={[0.19, 0.65, 0.02]} geometry={geo_box_15}>
-
-            <meshStandardMaterial color="#4a3820" roughness={0.85} />
-          </mesh>
+          <mesh position={[0.19, 1.3, 0.02]} geometry={geo_box_15} material={mat_10} />
+          <mesh position={[0.19, 0.65, 0.02]} geometry={geo_box_15} material={mat_10} />
         </group>
         {/* Wardrobe right door (static) */}
-        <mesh position={[0.19, 1.0, 0.295]} geometry={geo_box_13}>
-
-          <meshStandardMaterial color="#5a4530" roughness={0.8} />
-        </mesh>
-        <mesh position={[0.06, 1.0, 0.315]} geometry={geo_sph_14}>
-
-          <meshStandardMaterial color="#aaa" metalness={0.8} roughness={0.2} />
-        </mesh>
+        <mesh position={[0.19, 1.0, 0.295]} geometry={geo_box_13} material={mat_9} />
+        <mesh position={[0.06, 1.0, 0.315]} geometry={geo_sph_14} material={mat_4} />
       </group>
 
       {/* ── Desk ── */}
       <group position={[0, 0, -2.5]}>
         {/* Table top */}
-        <mesh position={[0, 0.75, 0]} castShadow receiveShadow geometry={geo_box_16}>
-
-          <meshStandardMaterial color="#4a3a28" roughness={0.7} />
-        </mesh>
+        <mesh position={[0, 0.75, 0]} castShadow receiveShadow geometry={geo_box_16} material={mat_11} />
         {/* Legs */}
         {[[-0.85, -0.35], [0.85, -0.35], [-0.85, 0.35], [0.85, 0.35]].map(([x, z], i) => (
-          <mesh key={i} position={[x, 0.375, z]} geometry={geo_box_17}>
-
-            <meshStandardMaterial color="#3a2a18" />
-          </mesh>
+          <mesh key={i} position={[x, 0.375, z]} geometry={geo_box_17} material={mat_12} />
         ))}
         {/* ── Triple monitor rig: Grafana · terminal · Zabbix ── */}
         {([
@@ -351,10 +388,7 @@ export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
         ] as const).map(({ id, tex, x, rotY }) => (
           <group key={id} position={[x, 1.12, -0.18]} rotation={[0, rotY, 0]}>
             {/* Bezel */}
-            <mesh geometry={geo_box_18} renderOrder={1}>
-
-              <meshStandardMaterial color="#08080b" roughness={0.4} metalness={0.4} />
-            </mesh>
+            <mesh geometry={geo_box_18} renderOrder={1} material={mat_13} />
             {/* Screen — nudged in front of bezel to avoid z-fighting / white seam */}
             <mesh position={[0, 0, 0.028]} geometry={geo_pln_19} renderOrder={2}>
 
@@ -362,26 +396,11 @@ export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
             </mesh>
             {/* Zabbix blinking alert LED */}
             {id === 'zabbix' && (
-              <mesh position={[0.205, 0.145, 0.03]} geometry={geo_cir_20}>
-
-                <meshStandardMaterial
-                  ref={zabbixAlertRef}
-                  color="#e8413a"
-                  emissive="#e8413a"
-                  emissiveIntensity={2.5}
-                  toneMapped={false}
-                />
-              </mesh>
+              <mesh position={[0.205, 0.145, 0.03]} geometry={geo_cir_20} material={mat_zabbix_led} />
             )}
             {/* Stand */}
-            <mesh position={[0, -0.27, -0.02]} geometry={geo_box_21}>
-
-              <meshStandardMaterial color="#15151a" />
-            </mesh>
-            <mesh position={[0, -0.35, 0]} geometry={geo_box_22}>
-
-              <meshStandardMaterial color="#15151a" />
-            </mesh>
+            <mesh position={[0, -0.27, -0.02]} geometry={geo_box_21} material={mat_14} />
+            <mesh position={[0, -0.35, 0]} geometry={geo_box_22} material={mat_14} />
           </group>
         ))}
 
@@ -390,94 +409,46 @@ export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
         <pointLight position={[-0.62, 1.1, 0.1]} color="#22d3ee" intensity={1.5} distance={5} />
         <pointLight position={[0.62, 1.1, 0.1]} color="#f59e0b" intensity={1.2} distance={5} />
         {/* Keyboard */}
-        <mesh position={[0, 0.78, 0.1]} geometry={geo_box_23}>
-
-          <meshStandardMaterial color="#1a1a1a" emissive="#00ff44" emissiveIntensity={0.02} />
-        </mesh>
+        <mesh position={[0, 0.78, 0.1]} geometry={geo_box_23} material={mat_15} />
         {/* Keyboard LED indicators */}
-        <mesh position={[0.15, 0.795, 0.02]} geometry={geo_box_24}>
-
-          <meshStandardMaterial color="#00ff44" emissive="#00ff44" emissiveIntensity={3.0} />
-        </mesh>
-        <mesh position={[0.17, 0.795, 0.02]} geometry={geo_box_24}>
-
-          <meshStandardMaterial color="#ffaa00" emissive="#ffaa00" emissiveIntensity={2.0} />
-        </mesh>
+        <mesh position={[0.15, 0.795, 0.02]} geometry={geo_box_24} material={mat_16} />
+        <mesh position={[0.17, 0.795, 0.02]} geometry={geo_box_24} material={mat_17} />
         {/* Mouse pad */}
-        <mesh position={[0.6, 0.775, 0.1]} rotation={[0, 0.1, 0]} geometry={geo_box_25}>
-
-          <meshStandardMaterial color="#1a1a2a" roughness={0.95} />
-        </mesh>
+        <mesh position={[0.6, 0.775, 0.1]} rotation={[0, 0.1, 0]} geometry={geo_box_25} material={mat_18} />
         {/* Mouse */}
-        <mesh position={[0.6, 0.79, 0.1]} rotation={[0, 0.1, 0]} geometry={geo_box_26}>
-
-          <meshStandardMaterial color="#2a2a2a" roughness={0.6} />
-        </mesh>
+        <mesh position={[0.6, 0.79, 0.1]} rotation={[0, 0.1, 0]} geometry={geo_box_26} material={mat_19} />
         {/* Coffee mug on desk */}
         <group position={[-0.55, 0.78, -2.2]}>
-          <mesh position={[0, 0.04, 0]} geometry={geo_cyl_27}>
-
-            <meshStandardMaterial color="#6b3a1a" roughness={0.7} />
-          </mesh>
+          <mesh position={[0, 0.04, 0]} geometry={geo_cyl_27} material={mat_20} />
           {/* Mug handle */}
-          <mesh position={[0.04, 0.04, 0]} rotation={[0, 0, Math.PI / 2]} geometry={geo_tor_28}>
-
-            <meshStandardMaterial color="#6b3a1a" roughness={0.7} />
-          </mesh>
+          <mesh position={[0.04, 0.04, 0]} rotation={[0, 0, Math.PI / 2]} geometry={geo_tor_28} material={mat_20} />
           {/* Coffee surface */}
-          <mesh position={[0, 0.075, 0]} geometry={geo_cyl_29}>
-
-            <meshStandardMaterial color="#2a1508" roughness={0.3} />
-          </mesh>
+          <mesh position={[0, 0.075, 0]} geometry={geo_cyl_29} material={mat_21} />
         </group>
         {/* Scattered papers/documents on desk */}
-        <mesh position={[0.3, 0.78, -2.15]} rotation={[0, 0.4, 0]} geometry={geo_box_30}>
-
-          <meshStandardMaterial color="#e8dcc8" roughness={0.95} />
-        </mesh>
-        <mesh position={[0.35, 0.785, -2.35]} rotation={[0, -0.2, 0.02]} geometry={geo_box_31}>
-
-          <meshStandardMaterial color="#f0e8d8" roughness={0.95} />
-        </mesh>
-        <mesh position={[-0.2, 0.78, -2.1]} rotation={[0, 0.7, -0.01]} geometry={geo_box_32}>
-
-          <meshStandardMaterial color="#ddd4c0" roughness={0.95} />
-        </mesh>
+        <mesh position={[0.3, 0.78, -2.15]} rotation={[0, 0.4, 0]} geometry={geo_box_30} material={mat_22} />
+        <mesh position={[0.35, 0.785, -2.35]} rotation={[0, -0.2, 0.02]} geometry={geo_box_31} material={mat_23} />
+        <mesh position={[-0.2, 0.78, -2.1]} rotation={[0, 0.7, -0.01]} geometry={geo_box_32} material={mat_24} />
       </group>
 
       {/* ── Chair ── */}
       <group position={[0, 0, -1.5]}>
         {/* Seat */}
-        <mesh position={[0, 0.45, 0]} castShadow geometry={geo_box_33}>
-
-          <meshStandardMaterial color="#2a2a30" roughness={0.8} />
-        </mesh>
+        <mesh position={[0, 0.45, 0]} castShadow geometry={geo_box_33} material={mat_25} />
         {/* Backrest */}
-        <mesh position={[0, 0.75, -0.22]} castShadow geometry={geo_box_34}>
-
-          <meshStandardMaterial color="#2a2a30" roughness={0.8} />
-        </mesh>
+        <mesh position={[0, 0.75, -0.22]} castShadow geometry={geo_box_34} material={mat_25} />
         {/* Legs */}
         {[[-0.2, -0.2], [0.2, -0.2], [-0.2, 0.2], [0.2, 0.2]].map(([x, z], i) => (
-          <mesh key={i} position={[x, 0.225, z]} geometry={geo_box_35}>
-
-            <meshStandardMaterial color="#333" />
-          </mesh>
+          <mesh key={i} position={[x, 0.225, z]} geometry={geo_box_35} material={mat_26} />
         ))}
       </group>
 
       {/* ── Bookshelf ── */}
       <group position={[-2.2, 0, 0]}>
-        <mesh position={[0, 1.0, 0]} castShadow geometry={geo_box_36}>
-
-          <meshStandardMaterial color="#5a4030" roughness={0.8} />
-        </mesh>
+        <mesh position={[0, 1.0, 0]} castShadow geometry={geo_box_36} material={mat_27} />
         {/* Shelf dividers */}
         {[0.5, 1.0, 1.5].map((y, i) => (
-          <mesh key={i} position={[0, y, 0.02]} geometry={geo_box_37}>
-
-            <meshStandardMaterial color="#4a3525" />
-          </mesh>
+          <mesh key={i} position={[0, y, 0.02]} geometry={geo_box_37} material={mat_28} />
         ))}
         {/* Books on shelves — multiple thin colored spines per shelf */}
         {/* Shelf 1 (bottom) */}
@@ -487,9 +458,7 @@ export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
           { x: 0.06, w: 0.04, c: '#602080' }, { x: 0.14, w: 0.05, c: '#804020' },
           { x: 0.22, w: 0.03, c: '#208080' },
         ].map((b, i) => (
-          <mesh key={`s1-${i}`} position={[b.x, 0.27, 0.02]} geometry={bookSpineGeo(b.w, 0.2)}>
-            <meshStandardMaterial color={b.c} roughness={0.6} />
-          </mesh>
+          <mesh key={`s1-${i}`} position={[b.x, 0.27, 0.02]} geometry={bookSpineGeo(b.w, 0.2)} material={bookSpineMaterial(b.c)} />
         ))}
         {/* Shelf 2 */}
         {[
@@ -497,9 +466,7 @@ export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
           { x: -0.04, w: 0.06, c: '#307030' }, { x: 0.08, w: 0.03, c: '#907030' },
           { x: 0.15, w: 0.05, c: '#703090' },
         ].map((b, i) => (
-          <mesh key={`s2-${i}`} position={[b.x, 0.77, 0.02]} geometry={bookSpineGeo(b.w, 0.18)}>
-            <meshStandardMaterial color={b.c} roughness={0.6} />
-          </mesh>
+          <mesh key={`s2-${i}`} position={[b.x, 0.77, 0.02]} geometry={bookSpineGeo(b.w, 0.18)} material={bookSpineMaterial(b.c)} />
         ))}
         {/* Shelf 3 */}
         {[
@@ -507,9 +474,7 @@ export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
           { x: 0.02, w: 0.03, c: '#30a040' }, { x: 0.10, w: 0.05, c: '#a08030' },
           { x: 0.18, w: 0.04, c: '#8040a0' }, { x: 0.25, w: 0.03, c: '#30a0a0' },
         ].map((b, i) => (
-          <mesh key={`s3-${i}`} position={[b.x, 1.27, 0.02]} geometry={bookSpineGeo(b.w, 0.2)}>
-            <meshStandardMaterial color={b.c} roughness={0.6} />
-          </mesh>
+          <mesh key={`s3-${i}`} position={[b.x, 1.27, 0.02]} geometry={bookSpineGeo(b.w, 0.2)} material={bookSpineMaterial(b.c)} />
         ))}
         {/* Shelf 4 (top) — a few books, leaning */}
         {[
@@ -517,78 +482,42 @@ export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
           { x: -0.05, w: 0.04, c: '#3060b0', lean: -0.08 },
           { x: 0.06, w: 0.06, c: '#40b050', lean: 0.02 },
         ].map((b, i) => (
-          <mesh key={`s4-${i}`} position={[b.x, 1.77, 0.02]} rotation={[0, 0, b.lean]} geometry={bookSpineGeo(b.w, 0.18)}>
-            <meshStandardMaterial color={b.c} roughness={0.6} />
-          </mesh>
+          <mesh key={`s4-${i}`} position={[b.x, 1.77, 0.02]} rotation={[0, 0, b.lean]} geometry={bookSpineGeo(b.w, 0.18)} material={bookSpineMaterial(b.c)} />
         ))}
       </group>
 
       {/* ── Bed ── */}
       <group position={[1.8, 0, 2.0]}>
         {/* Mattress */}
-        <mesh position={[0, 0.35, 0]} castShadow geometry={geo_box_38}>
-
-          <meshStandardMaterial color="#2a3040" roughness={0.9} />
-        </mesh>
+        <mesh position={[0, 0.35, 0]} castShadow geometry={geo_box_38} material={mat_29} />
         {/* Headboard */}
-        <mesh position={[0, 0.6, -0.95]} castShadow geometry={geo_box_39}>
-
-          <meshStandardMaterial color="#3a2a20" roughness={0.8} />
-        </mesh>
+        <mesh position={[0, 0.6, -0.95]} castShadow geometry={geo_box_39} material={mat_30} />
         {/* Pillow */}
-        <mesh position={[0, 0.55, -0.7]} geometry={geo_box_40}>
-
-          <meshStandardMaterial color="#aaaacc" roughness={0.95} />
-        </mesh>
+        <mesh position={[0, 0.55, -0.7]} geometry={geo_box_40} material={mat_31} />
         {/* Blanket */}
-        <mesh position={[0, 0.52, 0.2]} geometry={geo_box_41}>
-
-          <meshStandardMaterial color="#303050" roughness={0.95} />
-        </mesh>
+        <mesh position={[0, 0.52, 0.2]} geometry={geo_box_41} material={mat_32} />
       </group>
 
       {/* ── Window (right wall, emissive blue — nighttime city glow) ── */}
       <group position={[W / 2 - 0.01, 1.5, -2.0]}>
-        <mesh rotation-y={-Math.PI / 2} geometry={geo_pln_42}>
-
-          <meshStandardMaterial
-            color="#0a0a30"
-            emissive="#4488ee"
-            emissiveIntensity={4.0}
-            toneMapped={false}
-          />
-        </mesh>
+        <mesh rotation-y={-Math.PI / 2} geometry={geo_pln_42} material={mat_33} />
         {/* Window frame */}
-        <mesh rotation-y={-Math.PI / 2} position={[0.01, 0, 0]} geometry={geo_box_43}>
-
-          <meshStandardMaterial color="#333" />
-        </mesh>
+        <mesh rotation-y={-Math.PI / 2} position={[0.01, 0, 0]} geometry={geo_box_43} material={mat_26} />
         {/* Window blue light spill into room */}
         <pointLight position={[-0.8, 0, 0.5]} color="#4488ee" intensity={3.0} distance={5} />
       </group>
 
       {/* ── Second Window (back wall, emissive blue — nighttime city) ── */}
       <group position={[-1.0, 1.5, -D / 2 + 0.01]}>
-        <mesh geometry={geo_pln_44}>
-
-          <meshStandardMaterial
-            color="#0a0a30"
-            emissive="#3366cc"
-            emissiveIntensity={3.5}
-            toneMapped={false}
-          />
-        </mesh>
+        <mesh geometry={geo_pln_44} material={mat_34} />
         {/* Window frame */}
-        <mesh position={[0, 0, -0.01]} geometry={geo_box_45}>
-
-          <meshStandardMaterial color="#333" />
-        </mesh>
+        <mesh position={[0, 0, -0.01]} geometry={geo_box_45} material={mat_26} />
         {/* Window blue light spill */}
         <pointLight position={[0, 0, 0.8]} color="#3366cc" intensity={2.0} distance={5} />
       </group>
 
       {/* ── ENVIRONMENTAL CLUTTER / STORYTELLING (lazy chunk) ── */}
-      <VolodkaRoomClutter lod={lod} />
+      <VolodkaRoomClutter />
 
       {/* ═══════════════════════════════════════════════ */}
       {/* ── ANIMATED DESK ELEMENTS ── */}
@@ -597,64 +526,32 @@ export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
       {/* ── Small desk fan (rotating) ── */}
       <group position={[-0.7, 0.78, -2.3]}>
         {/* Fan base */}
-        <mesh position={[0, 0.04, 0]} geometry={geo_cyl_46}>
-
-          <meshStandardMaterial color="#333333" metalness={0.5} roughness={0.4} />
-        </mesh>
+        <mesh position={[0, 0.04, 0]} geometry={geo_cyl_46} material={mat_35} />
         {/* Fan cage (static outer ring) */}
-        <mesh position={[0, 0.12, 0]} rotation={[Math.PI / 2, 0, 0]} geometry={geo_tor_47}>
-
-          <meshStandardMaterial color="#555555" metalness={0.6} roughness={0.3} />
-        </mesh>
+        <mesh position={[0, 0.12, 0]} rotation={[Math.PI / 2, 0, 0]} geometry={geo_tor_47} material={mat_36} />
         {/* Rotating fan blades */}
         <group ref={fanGroupRef} position={[0, 0.12, 0.02]}>
           {[0, 1, 2, 3].map((i) => (
-            <mesh key={i} rotation={[0, 0, (i * Math.PI) / 2]} geometry={geo_box_48}>
-
-              <meshStandardMaterial color="#666666" metalness={0.3} roughness={0.5} side={THREE.DoubleSide} />
-            </mesh>
+            <mesh key={i} rotation={[0, 0, (i * Math.PI) / 2]} geometry={geo_box_48} material={mat_37} />
           ))}
           {/* Fan hub */}
-          <mesh geometry={geo_cyl_49}>
-
-            <meshStandardMaterial color="#444" metalness={0.7} roughness={0.2} />
-          </mesh>
+          <mesh geometry={geo_cyl_49} material={mat_38} />
         </group>
       </group>
 
       {/* ── PC case with blinking LED ── */}
       <group position={[0.9, 0, -2.8]}>
         {/* Case body */}
-        <mesh position={[0, 0.25, 0]} castShadow geometry={geo_box_50}>
-
-          <meshStandardMaterial color="#1a1a1e" metalness={0.3} roughness={0.7} />
-        </mesh>
+        <mesh position={[0, 0.25, 0]} castShadow geometry={geo_box_50} material={mat_39} />
         {/* Front panel line */}
-        <mesh position={[-0.1, 0.25, 0]} geometry={geo_box_51}>
-
-          <meshStandardMaterial color="#2a2a2e" />
-        </mesh>
+        <mesh position={[-0.1, 0.25, 0]} geometry={geo_box_51} material={mat_40} />
         {/* Blinking power LED */}
-        <mesh position={[-0.101, 0.42, 0.12]} geometry={geo_sph_52}>
-
-          <meshStandardMaterial
-            ref={ledRef}
-            color="#00ff00"
-            emissive="#00ff00"
-            emissiveIntensity={3.0}
-          />
-        </mesh>
+        <mesh position={[-0.101, 0.42, 0.12]} geometry={geo_sph_52} material={mat_led_power} />
         {/* HDD activity LED */}
-        <mesh position={[-0.101, 0.42, 0.08]} geometry={geo_sph_53}>
-
-          <meshStandardMaterial color="#ff4400" emissive="#ff4400" emissiveIntensity={1.5} />
-        </mesh>
+        <mesh position={[-0.101, 0.42, 0.08]} geometry={geo_sph_53} material={mat_41} />
         {/* Ventilation grill lines */}
         {[0.05, 0.1, 0.15, 0.2].map((y, i) => (
-          <mesh key={`vent-${i}`} position={[-0.101, y, -0.05]} geometry={geo_box_54}>
-
-            <meshStandardMaterial color="#2a2a2e" />
-          </mesh>
+          <mesh key={`vent-${i}`} position={[-0.101, y, -0.05]} geometry={geo_box_54} material={mat_40} />
         ))}
       </group>
 
@@ -680,10 +577,7 @@ export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
       />
 
       {/* ── Ceiling ambient glow panel (dim — noir apartment) ── */}
-      <mesh position={[0, H - 0.02, -1]} rotation-x={Math.PI / 2} geometry={geo_pln_55}>
-
-        <meshStandardMaterial color="#151515" emissive="#ffcc88" emissiveIntensity={0.2} />
-      </mesh>
+      <mesh position={[0, H - 0.02, -1]} rotation-x={Math.PI / 2} geometry={geo_pln_55} material={mat_42} />
 
       {/* ═══════════════════════════════════════════════ */}
       {/* ── ADDITIONAL ROOM DETAILS ── */}
@@ -692,192 +586,90 @@ export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
       {/* ── Posters on back wall ── */}
       <group position={[-1.0, 1.8, -D / 2 + 0.02]}>
         {/* Poster 1 — dark with neon accent */}
-        <mesh geometry={geo_box_56}>
-
-          <meshStandardMaterial color="#1a1a2a" roughness={0.8} />
-        </mesh>
+        <mesh geometry={geo_box_56} material={mat_43} />
         {/* Poster design — colored rectangles */}
-        <mesh position={[0, 0.1, 0.004]} geometry={geo_box_57}>
-
-          <meshStandardMaterial color="#001133" emissive="#0088ff" emissiveIntensity={1.2} />
-        </mesh>
-        <mesh position={[0, -0.1, 0.004]} geometry={geo_box_58}>
-
-          <meshStandardMaterial color="#110033" emissive="#aa44ff" emissiveIntensity={0.6} />
-        </mesh>
+        <mesh position={[0, 0.1, 0.004]} geometry={geo_box_57} material={mat_44} />
+        <mesh position={[0, -0.1, 0.004]} geometry={geo_box_58} material={mat_45} />
       </group>
 
       <group position={[1.5, 1.6, -D / 2 + 0.02]}>
         {/* Poster 2 — punk band poster */}
-        <mesh geometry={geo_box_59}>
-
-          <meshStandardMaterial color="#2a1a1a" roughness={0.8} />
-        </mesh>
-        <mesh position={[0, 0.08, 0.004]} geometry={geo_box_60}>
-
-          <meshStandardMaterial color="#1a0000" emissive="#ff2244" emissiveIntensity={0.8} />
-        </mesh>
+        <mesh geometry={geo_box_59} material={mat_46} />
+        <mesh position={[0, 0.08, 0.004]} geometry={geo_box_60} material={mat_47} />
         {/* Tape on corners */}
-        <mesh position={[-0.2, 0.28, 0.005]} rotation={[0, 0, 0.3]} geometry={geo_box_61}>
-
-          <meshStandardMaterial color="#c8c0a0" roughness={0.9} transparent opacity={0.7} />
-        </mesh>
-        <mesh position={[0.2, -0.28, 0.005]} rotation={[0, 0, -0.2]} geometry={geo_box_61}>
-
-          <meshStandardMaterial color="#c8c0a0" roughness={0.9} transparent opacity={0.7} />
-        </mesh>
+        <mesh position={[-0.2, 0.28, 0.005]} rotation={[0, 0, 0.3]} geometry={geo_box_61} material={mat_48} />
+        <mesh position={[0.2, -0.28, 0.005]} rotation={[0, 0, -0.2]} geometry={geo_box_61} material={mat_48} />
       </group>
 
       {/* ── Headphones on desk ── */}
       <group position={[0.5, 0.78, -2.6]}>
         {/* Headband */}
-        <mesh rotation={[0, 0, 0]} geometry={geo_tor_62}>
-
-          <meshStandardMaterial color="#1a1a1a" roughness={0.7} />
-        </mesh>
+        <mesh rotation={[0, 0, 0]} geometry={geo_tor_62} material={mat_49} />
         {/* Left ear cup */}
-        <mesh position={[-0.06, -0.02, 0]} rotation={[0, Math.PI / 2, 0]} geometry={geo_cyl_63}>
-
-          <meshStandardMaterial color="#2a2a2a" roughness={0.8} />
-        </mesh>
+        <mesh position={[-0.06, -0.02, 0]} rotation={[0, Math.PI / 2, 0]} geometry={geo_cyl_63} material={mat_50} />
         {/* Right ear cup */}
-        <mesh position={[0.06, -0.02, 0]} rotation={[0, Math.PI / 2, 0]} geometry={geo_cyl_63}>
-
-          <meshStandardMaterial color="#2a2a2a" roughness={0.8} />
-        </mesh>
+        <mesh position={[0.06, -0.02, 0]} rotation={[0, Math.PI / 2, 0]} geometry={geo_cyl_63} material={mat_50} />
         {/* Cable */}
-        <mesh position={[0, -0.04, 0.15]} rotation={[0.3, 0, 0]} geometry={geo_cyl_64}>
-
-          <meshStandardMaterial color="#222" roughness={0.9} />
-        </mesh>
+        <mesh position={[0, -0.04, 0.15]} rotation={[0.3, 0, 0]} geometry={geo_cyl_64} material={mat_51} />
       </group>
 
       {/* ── Laundry pile on floor near bed ── */}
       <group position={[1.5, 0, 3.5]}>
         {/* T-shirt shape */}
-        <mesh position={[0, 0.05, 0]} rotation={[0.2, 0.5, 0.1]} geometry={geo_box_65}>
-
-          <meshStandardMaterial color="#3a4a5a" roughness={0.95} />
-        </mesh>
+        <mesh position={[0, 0.05, 0]} rotation={[0.2, 0.5, 0.1]} geometry={geo_box_65} material={mat_52} />
         {/* Jeans */}
-        <mesh position={[0.15, 0.03, 0.1]} rotation={[0, -0.3, 0.15]} geometry={geo_box_66}>
-
-          <meshStandardMaterial color="#1a2a4a" roughness={0.9} />
-        </mesh>
+        <mesh position={[0.15, 0.03, 0.1]} rotation={[0, -0.3, 0.15]} geometry={geo_box_66} material={mat_53} />
         {/* Sock */}
-        <mesh position={[-0.1, 0.02, 0.15]} rotation={[0.5, 0.8, 0.2]} geometry={geo_cyl_67}>
-
-          <meshStandardMaterial color="#4a4a4a" roughness={0.95} />
-        </mesh>
+        <mesh position={[-0.1, 0.02, 0.15]} rotation={[0.5, 0.8, 0.2]} geometry={geo_cyl_67} material={mat_54} />
       </group>
 
       {/* ── Nightstand beside bed ── */}
       <group position={[2.2, 0, 2.0]}>
         {/* Nightstand body */}
-        <mesh position={[0, 0.25, 0]} castShadow geometry={geo_box_68}>
-
-          <meshStandardMaterial color="#4a3828" roughness={0.8} />
-        </mesh>
+        <mesh position={[0, 0.25, 0]} castShadow geometry={geo_box_68} material={mat_6} />
         {/* Drawer */}
-        <mesh position={[0, 0.3, 0.18]} geometry={geo_box_69}>
-
-          <meshStandardMaterial color="#5a4535" roughness={0.8} />
-        </mesh>
+        <mesh position={[0, 0.3, 0.18]} geometry={geo_box_69} material={mat_55} />
         {/* Drawer handle */}
-        <mesh position={[0, 0.3, 0.2]} rotation={[0, 0, Math.PI / 2]} geometry={geo_cyl_70}>
-
-          <meshStandardMaterial color="#aaa" metalness={0.7} roughness={0.3} />
-        </mesh>
+        <mesh position={[0, 0.3, 0.2]} rotation={[0, 0, Math.PI / 2]} geometry={geo_cyl_70} material={mat_56} />
         {/* Phone on nightstand */}
-        <mesh position={[0, 0.52, 0.05]} rotation={[0, 0.2, 0]} geometry={geo_box_71}>
-
-          <meshStandardMaterial color="#1a1a1a" roughness={0.6} />
-        </mesh>
+        <mesh position={[0, 0.52, 0.05]} rotation={[0, 0.2, 0]} geometry={geo_box_71} material={mat_57} />
         {/* Phone screen */}
-        <mesh position={[0, 0.525, 0.05]} rotation={[0, 0.2, 0]} geometry={geo_box_72}>
-
-          <meshStandardMaterial color="#001122" emissive="#3355aa" emissiveIntensity={0.5} />
-        </mesh>
+        <mesh position={[0, 0.525, 0.05]} rotation={[0, 0.2, 0]} geometry={geo_box_72} material={mat_58} />
         {/* Charging cable */}
-        <mesh position={[0.05, 0.51, -0.05]} rotation={[0.8, 0.2, 0]} geometry={geo_cyl_64}>
-
-          <meshStandardMaterial color="#333" roughness={0.9} />
-        </mesh>
+        <mesh position={[0.05, 0.51, -0.05]} rotation={[0.8, 0.2, 0]} geometry={geo_cyl_64} material={mat_59} />
         {/* Water glass on nightstand */}
-        <mesh position={[-0.1, 0.56, -0.05]} geometry={geo_cyl_73}>
-
-          <meshStandardMaterial color="#c0d0e0" transparent opacity={0.4} roughness={0.2} />
-        </mesh>
+        <mesh position={[-0.1, 0.56, -0.05]} geometry={geo_cyl_73} material={mat_60} />
       </group>
 
       {/* ── Slippers on floor near bed ── */}
-      <mesh position={[1.3, 0.015, 3.0]} rotation={[0, 0.3, 0]} geometry={geo_box_74}>
-
-        <meshStandardMaterial color="#5a4050" roughness={0.95} />
-      </mesh>
-      <mesh position={[1.5, 0.015, 2.9]} rotation={[0, -0.15, 0.05]} geometry={geo_box_74}>
-
-        <meshStandardMaterial color="#5a4050" roughness={0.95} />
-      </mesh>
+      <mesh position={[1.3, 0.015, 3.0]} rotation={[0, 0.3, 0]} geometry={geo_box_74} material={mat_61} />
+      <mesh position={[1.5, 0.015, 2.9]} rotation={[0, -0.15, 0.05]} geometry={geo_box_74} material={mat_61} />
 
       {/* ── Window with city view detail (right wall) ── */}
       <group position={[W / 2 - 0.01, 1.5, -2.0]}>
         {/* City building silhouettes through window */}
-        <mesh rotation-y={-Math.PI / 2} position={[-0.01, -0.15, -0.3]} geometry={geo_pln_75}>
-
-          <meshStandardMaterial color="#0a0a20" emissive="#1a1a30" emissiveIntensity={1.5} />
-        </mesh>
-        <mesh rotation-y={-Math.PI / 2} position={[-0.01, -0.1, 0.2]} geometry={geo_pln_76}>
-
-          <meshStandardMaterial color="#0a0a20" emissive="#1a1a30" emissiveIntensity={1.5} />
-        </mesh>
+        <mesh rotation-y={-Math.PI / 2} position={[-0.01, -0.15, -0.3]} geometry={geo_pln_75} material={mat_62} />
+        <mesh rotation-y={-Math.PI / 2} position={[-0.01, -0.1, 0.2]} geometry={geo_pln_76} material={mat_62} />
         {/* Tiny window lights on buildings */}
-        <mesh rotation-y={-Math.PI / 2} position={[-0.015, -0.2, -0.3]} geometry={geo_pln_77}>
-
-          <meshStandardMaterial color="#ffcc44" emissive="#ffcc44" emissiveIntensity={3.0} />
-        </mesh>
-        <mesh rotation-y={-Math.PI / 2} position={[-0.015, -0.05, 0.2]} geometry={geo_pln_77}>
-
-          <meshStandardMaterial color="#ffcc44" emissive="#ffcc44" emissiveIntensity={3.0} />
-        </mesh>
-        <mesh rotation-y={-Math.PI / 2} position={[-0.015, -0.12, 0.22]} geometry={geo_pln_78}>
-
-          <meshStandardMaterial color="#aaccff" emissive="#aaccff" emissiveIntensity={2.0} />
-        </mesh>
+        <mesh rotation-y={-Math.PI / 2} position={[-0.015, -0.2, -0.3]} geometry={geo_pln_77} material={mat_63} />
+        <mesh rotation-y={-Math.PI / 2} position={[-0.015, -0.05, 0.2]} geometry={geo_pln_77} material={mat_63} />
+        <mesh rotation-y={-Math.PI / 2} position={[-0.015, -0.12, 0.22]} geometry={geo_pln_78} material={mat_64} />
       </group>
 
       {/* ── Backpack on floor near door ── */}
       <group position={[-1.5, 0, 2.8]} rotation={[0, 0.5, 0]}>
-        <mesh position={[0, 0.2, 0]} castShadow geometry={geo_box_79}>
-
-          <meshStandardMaterial color="#2a3a2a" roughness={0.9} />
-        </mesh>
+        <mesh position={[0, 0.2, 0]} castShadow geometry={geo_box_79} material={mat_65} />
         {/* Straps */}
-        <mesh position={[-0.08, 0.25, 0.08]} geometry={geo_box_80}>
-
-          <meshStandardMaterial color="#1a2a1a" roughness={0.9} />
-        </mesh>
-        <mesh position={[0.08, 0.25, 0.08]} geometry={geo_box_80}>
-
-          <meshStandardMaterial color="#1a2a1a" roughness={0.9} />
-        </mesh>
+        <mesh position={[-0.08, 0.25, 0.08]} geometry={geo_box_80} material={mat_66} />
+        <mesh position={[0.08, 0.25, 0.08]} geometry={geo_box_80} material={mat_66} />
         {/* Zipper */}
-        <mesh position={[0, 0.35, 0.08]} geometry={geo_box_81}>
-
-          <meshStandardMaterial color="#888" metalness={0.7} roughness={0.3} />
-        </mesh>
+        <mesh position={[0, 0.35, 0.08]} geometry={geo_box_81} material={mat_67} />
       </group>
 
       {/* ── Poster on left wall ── */}
       <group position={[-W / 2 + 0.02, 1.6, -1.0]} rotation-y={Math.PI / 2}>
-        <mesh geometry={geo_box_82}>
-
-          <meshStandardMaterial color="#1a2a1a" roughness={0.8} />
-        </mesh>
-        <mesh position={[0, 0.1, 0.004]} geometry={geo_box_83}>
-
-          <meshStandardMaterial color="#002200" emissive="#00ff44" emissiveIntensity={0.8} />
-        </mesh>
+        <mesh geometry={geo_box_82} material={mat_68} />
+        <mesh position={[0, 0.1, 0.004]} geometry={geo_box_83} material={mat_69} />
       </group>
 
       {/* ═══════════════════════════════════════════════ */}

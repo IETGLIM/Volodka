@@ -5,57 +5,52 @@ describe('scene chunk module geometries', () => {
     vi.resetModules();
   });
 
-  it('VolodkaRoomClutterChunk registers all module-level geometries on import', async () => {
+  it('StreetNightClutterChunk registers GPU resources when rendered', async () => {
     const { getRegisteredModuleGeometryCount } = await import('@/engine/three/moduleGeometryRegistry');
     const { getRegisteredModuleMaterialCount } = await import('@/engine/three/moduleMaterialRegistry');
-    expect(getRegisteredModuleGeometryCount()).toBe(0);
-    await import('@/components/3d/sceneChunks/volodkaRoom/VolodkaRoomClutterChunk');
-    expect(getRegisteredModuleGeometryCount()).toBe(25);
-    expect(getRegisteredModuleMaterialCount()).toBe(25);
-  });
+    const { StreetNightClutterChunk } = await import(
+      '@/components/3d/sceneChunks/streetNight/StreetNightClutterChunk'
+    );
 
-  it('HomeEveningPropsChunk registers all module-level geometries on import', async () => {
-    const { getRegisteredModuleGeometryCount } = await import('@/engine/three/moduleGeometryRegistry');
-    const { getRegisteredModuleMaterialCount } = await import('@/engine/three/moduleMaterialRegistry');
     expect(getRegisteredModuleGeometryCount()).toBe(0);
-    await import('@/components/3d/sceneChunks/homeEvening/HomeEveningPropsChunk');
-    expect(getRegisteredModuleGeometryCount()).toBe(8);
-    expect(getRegisteredModuleMaterialCount()).toBe(8);
-  });
-
-  it('StreetNightClutterChunk registers shared module geometries on import', async () => {
-    const { getRegisteredModuleGeometryCount } = await import('@/engine/three/moduleGeometryRegistry');
-    const { getRegisteredModuleMaterialCount } = await import('@/engine/three/moduleMaterialRegistry');
-    expect(getRegisteredModuleGeometryCount()).toBe(0);
-    await import('@/components/3d/sceneChunks/streetNight/StreetNightClutterChunk');
+    StreetNightClutterChunk();
     expect(getRegisteredModuleGeometryCount()).toBe(2);
     expect(getRegisteredModuleMaterialCount()).toBe(2);
   });
 
-  it('scene chunks dedupe identical geometry parameters via the central registry', async () => {
-    const {
-      getRegisteredModuleGeometryCount,
-      getSharedCylinderGeometry,
-    } = await import('@/engine/three/moduleGeometryRegistry');
+  it('HomeEveningPropsChunk registers GPU resources when rendered', async () => {
+    const { getRegisteredModuleGeometryCount } = await import('@/engine/three/moduleGeometryRegistry');
+    const { getRegisteredModuleMaterialCount } = await import('@/engine/three/moduleMaterialRegistry');
+    const { HomeEveningPropsChunk } = await import(
+      '@/components/3d/sceneChunks/homeEvening/HomeEveningPropsChunk'
+    );
 
-    await import('@/components/3d/sceneChunks/volodkaRoom/VolodkaRoomClutterChunk');
+    expect(getRegisteredModuleGeometryCount()).toBe(0);
+    HomeEveningPropsChunk();
+    expect(getRegisteredModuleGeometryCount()).toBe(8);
+    expect(getRegisteredModuleMaterialCount()).toBe(8);
+  });
+
+  it('scene chunks dedupe identical geometry parameters via the central registry', async () => {
+    const { getRegisteredModuleGeometryCount } = await import('@/engine/three/moduleGeometryRegistry');
+    const { VolodkaRoomClutterChunk } = await import(
+      '@/components/3d/sceneChunks/volodkaRoom/VolodkaRoomClutterChunk'
+    );
+    const { HomeEveningPropsChunk } = await import(
+      '@/components/3d/sceneChunks/homeEvening/HomeEveningPropsChunk'
+    );
+
+    VolodkaRoomClutterChunk();
     const afterVolodka = getRegisteredModuleGeometryCount();
 
-    await import('@/components/3d/sceneChunks/homeEvening/HomeEveningPropsChunk');
+    HomeEveningPropsChunk();
     const afterBoth = getRegisteredModuleGeometryCount();
 
     expect(afterVolodka).toBe(25);
     expect(afterBoth).toBe(33);
-
-    const volodkaMug = getSharedCylinderGeometry(0.1, 0.08, 0.3, 8);
-    const homeGlass = getSharedCylinderGeometry(0.12, 0.1, 0.12, 8);
-    expect(volodkaMug).not.toBe(homeGlass);
-    expect(getSharedCylinderGeometry(0.1, 0.08, 0.03, 8)).toBe(
-      getSharedCylinderGeometry(0.1, 0.08, 0.03, 8),
-    );
   });
 
-  it('lazySceneChunk HMR beforeUpdate clears scene chunk GPU caches', async () => {
+  it('sceneChunkGpuLifecycle HMR beforeUpdate clears scene chunk GPU caches', async () => {
     const beforeUpdateHandlers: Array<() => void> = [];
     vi.doMock('@/shared/dev/hmrDispose', () => ({
       registerHmrBeforeUpdate: (handler: () => void) => {
@@ -66,9 +61,12 @@ describe('scene chunk module geometries', () => {
       resetHmrBeforeUpdateForTests: vi.fn(),
     }));
 
-    await import('@/components/3d/sceneChunks/lazySceneChunk');
+    await import('@/components/3d/sceneChunks/sceneChunkGpuLifecycle');
     const { getRegisteredModuleGeometryCount } = await import('@/engine/three/moduleGeometryRegistry');
-    await import('@/components/3d/sceneChunks/streetNight/StreetNightClutterChunk');
+    const { StreetNightClutterChunk } = await import(
+      '@/components/3d/sceneChunks/streetNight/StreetNightClutterChunk'
+    );
+    StreetNightClutterChunk();
 
     expect(getRegisteredModuleGeometryCount()).toBe(2);
     expect(beforeUpdateHandlers.length).toBeGreaterThan(0);

@@ -14,7 +14,6 @@ import {
 } from '@/engine/three/moduleGeometryRegistry';
 
 import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
-import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { EnvironmentDetail, SceneClutterGate } from './lod/PropDistanceGate';
 import { scratchColor } from '@/engine/three/frameScratch';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
@@ -38,7 +37,6 @@ function seededRandom(seed: number): () => number {
 /** Night forest clearing: campfire, port wine crates, guitar spot */
 export function ChkForestZorgeVisual({ livePlayerPositionRef }: ChkForestZorgeVisualProps) {
   const groundTexture = useCachedCanvasTexture('chk_forest_zorge:ground', createForestGroundTexture);
-  const { lod } = useEnvironmentLod();
   const envProfile = useMemo(() => getEnvironmentLodProfile('chk_forest_zorge'), []);
   const fireLightRef = useRef<THREE.PointLight>(null);
   const fireMeshRef = useRef<THREE.Mesh>(null);
@@ -94,8 +92,8 @@ export function ChkForestZorgeVisual({ livePlayerPositionRef }: ChkForestZorgeVi
       </mesh>
 
       {/* Forest perimeter — lightweight procedural trees (no ez-tree bundle) */}
-      <EnvironmentDetail currentLod={lod} minLod="standard">
         {treePlacements.map((t) => (
+          <EnvironmentDetail key={`tree-lod-${t.seed}`} minLod="standard" position={t.pos}>
           <SceneClutterGate
             key={t.seed}
             livePlayerPositionRef={livePlayerPositionRef}
@@ -109,8 +107,8 @@ export function ChkForestZorgeVisual({ livePlayerPositionRef }: ChkForestZorgeVi
               rotation={t.rot}
             />
           </SceneClutterGate>
+          </EnvironmentDetail>
         ))}
-      </EnvironmentDetail>
 
       {/* Dense instanced tree belt — closes the clearing into an actual forest */}
       <InstancedTreeBelt />

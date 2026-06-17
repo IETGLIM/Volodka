@@ -13,83 +13,35 @@ import { eventBus } from '@/engine/EventBus';
 import { useIsMobileVisual, useMobileVisualPerf } from '@/hooks/use-mobile';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { getParticleCount } from '@/shared/utils/mobileParticleScale';
-
-/** Rain configuration */
-interface RainConfig {
-  count: number;
-  boxSize: [number, number, number];
-  fallSpeedRange: [number, number];
-  windAngle: number;
-  windStrength: number;
-  dropLength: number;
-  color: string;
-  opacity: number;
-}
-
-type RainLevel = 'light' | 'medium' | 'heavy';
-
-const RAIN_BASE: Record<RainLevel, Omit<RainConfig, 'count'>> = {
-  light: {
-    boxSize: [30, 25, 30],
-    fallSpeedRange: [10, 14],
-    windAngle: 0.1,
-    windStrength: 1.5,
-    dropLength: 0.4,
-    color: '#a8c0d8',
-    opacity: 0.35,
-  },
-  medium: {
-    boxSize: [40, 28, 40],
-    fallSpeedRange: [12, 18],
-    windAngle: 0.15,
-    windStrength: 2.5,
-    dropLength: 0.5,
-    color: '#9ab4cc',
-    opacity: 0.45,
-  },
-  heavy: {
-    boxSize: [50, 30, 50],
-    fallSpeedRange: [14, 22],
-    windAngle: 0.2,
-    windStrength: 3.5,
-    dropLength: 0.6,
-    color: '#88a8c4',
-    opacity: 0.55,
-  },
-};
-
-/** Desktop particle counts — medium rain: 5000 */
-const DESKTOP_COUNTS: Record<RainLevel, number> = {
-  light: 3000,
-  medium: 5000,
-  heavy: 7000,
-};
-
-/** Mobile particle counts — medium rain: 2000 */
-const MOBILE_COUNTS: Record<RainLevel, number> = {
-  light: 1200,
-  medium: 2000,
-  heavy: 2800,
-};
+import {
+  buildRainConfig,
+  resolveRainLevel,
+  type RainConfig,
+} from './rainSystemUtils';
 
 const MAX_SPLASHES_BASE = 300;
 const SPLASH_LIFETIME = 0.4;
 
-function buildRainConfig(
-  level: RainLevel,
-  isMobile: boolean,
-  visualLite: boolean,
-  reducedMotion: boolean,
-): RainConfig {
-  const desktop = DESKTOP_COUNTS[level];
-  const mobile = MOBILE_COUNTS[level];
-  const base = isMobile ? mobile : desktop;
-  const count = getParticleCount(base, isMobile, visualLite, 1, reducedMotion);
+function seedRainBuffers(config: RainConfig, count: number) {
+  const [bx, by, bz] = config.boxSize;
+  const positions = new Float32Array(count * 3);
+  const velocities = new Float32Array(count * 3);
 
-  return {
-    ...RAIN_BASE[level],
-    count,
-  };
+  for (let i = 0; i < count; i++) {
+    const i3 = i * 3;
+    positions[i3] = (Math.random() - 0.5) * bx;
+    positions[i3 + 1] = Math.random() * by;
+    positions[i3 + 2] = (Math.random() - 0.5) * bz;
+
+    const fallSpeed =
+      config.fallSpeedRange[0] +
+      Math.random() * (config.fallSpeedRange[1] - config.fallSpeedRange[0]);
+    velocities[i3] = Math.sin(config.windAngle) * config.windStrength * (0.8 + Math.random() * 0.4);
+    velocities[i3 + 1] = -fallSpeed;
+    velocities[i3 + 2] = (Math.random() - 0.5) * 0.3;
+  }
+
+  return { positions, velocities };
 }
 
 const RAIN_VERT = /* glsl */ `
@@ -177,16 +129,21 @@ export function RainSystem({ intensity = 1 }: { intensity?: number }) {
   const { visualLite, effectsScale } = useMobileVisualPerf();
   const reducedMotion = useEffectiveReducedMotion();
 
-  const configLevel = useMemo(() => {
-    const effectiveIntensity = intensity * rainIntensity;
-    if (effectiveIntensity < 0.33) return 'light' as const;
-    if (effectiveIntensity < 0.66) return 'medium' as const;
-    return 'heavy' as const;
-  }, [intensity, rainIntensity]);
+  const effectiveIntensity = intensity * rainIntensity;
+
+  const configLevel = useMemo(
+    () => resolveRainLevel(effectiveIntensity),
+    [effectiveIntensity],
+  );
 
   const config = useMemo(
     () => buildRainConfig(configLevel, isMobile, visualLite, reducedMotion),
     [configLevel, isMobile, visualLite, reducedMotion],
+  );
+
+  const capacityConfig = useMemo(
+    () => buildRainConfig('heavy', isMobile, visualLite, reducedMotion),
+    [isMobile, visualLite, reducedMotion],
   );
 
   const maxSplashes = useMemo(
@@ -199,7 +156,8 @@ export function RainSystem({ intensity = 1 }: { intensity?: number }) {
   return (
     <RainParticles
       config={config}
-      intensity={intensity * rainIntensity}
+      capacityConfig={capacityConfig}
+      intensity={effectiveIntensity}
       maxSplashes={maxSplashes}
     />
   );
@@ -207,10 +165,12 @@ export function RainSystem({ intensity = 1 }: { intensity?: number }) {
 
 function RainParticles({
   config,
+  capacityConfig,
   intensity,
   maxSplashes,
 }: {
   config: RainConfig;
+  capacityConfig: RainConfig;
   intensity: number;
   maxSplashes: number;
 }) {
@@ -221,39 +181,27 @@ function RainParticles({
   const splashPoolIdx = useRef(0);
   const splashSpawnAccum = useRef(0);
   const splashDirty = useRef(false);
+  const intensityRef = useRef(intensity);
 
   const [bx, by, bz] = config.boxSize;
 
   const { rainGeometry, rainMaterial, rainUniforms } = useMemo(() => {
-    const count = config.count;
-    const positions = new Float32Array(count * 3);
-    const velocities = new Float32Array(count * 3);
-
-    for (let i = 0; i < count; i++) {
-      const i3 = i * 3;
-      positions[i3] = (Math.random() - 0.5) * bx;
-      positions[i3 + 1] = Math.random() * by;
-      positions[i3 + 2] = (Math.random() - 0.5) * bz;
-
-      const fallSpeed =
-        config.fallSpeedRange[0] +
-        Math.random() * (config.fallSpeedRange[1] - config.fallSpeedRange[0]);
-      velocities[i3] = Math.sin(config.windAngle) * config.windStrength * (0.8 + Math.random() * 0.4);
-      velocities[i3 + 1] = -fallSpeed;
-      velocities[i3 + 2] = (Math.random() - 0.5) * 0.3;
-    }
+    const maxCount = capacityConfig.count;
+    const { positions, velocities } = seedRainBuffers(capacityConfig, maxCount);
+    const [cbx, cby, cbz] = capacityConfig.boxSize;
 
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     geo.setAttribute('aVelocity', new THREE.BufferAttribute(velocities, 3));
+    geo.setDrawRange(0, 0);
 
     const uniforms = {
       uTime: { value: 0 },
-      uIntensity: { value: intensity },
-      uBoxSize: { value: new THREE.Vector3(bx, by, bz) },
-      uPointSize: { value: config.dropLength },
-      uColor: { value: new THREE.Color(config.color) },
-      uOpacity: { value: config.opacity * intensity },
+      uIntensity: { value: 1 },
+      uBoxSize: { value: new THREE.Vector3(cbx, cby, cbz) },
+      uPointSize: { value: capacityConfig.dropLength },
+      uColor: { value: new THREE.Color(capacityConfig.color) },
+      uOpacity: { value: capacityConfig.opacity },
     };
 
     const mat = new THREE.ShaderMaterial({
@@ -266,7 +214,7 @@ function RainParticles({
     });
 
     return { rainGeometry: geo, rainMaterial: mat, rainUniforms: uniforms };
-  }, [config, bx, by, bz, intensity]);
+  }, [capacityConfig]);
 
   const { splashGeometry, splashMaterial, splashUniforms, splashAttrs } = useMemo(() => {
     const positions = new Float32Array(maxSplashes * 3);
@@ -291,7 +239,7 @@ function RainParticles({
       uTime: { value: 0 },
       uSplashLifetime: { value: SPLASH_LIFETIME },
       uColor: { value: new THREE.Color('#b0c8e0') },
-      uOpacity: { value: 0.4 * intensity },
+      uOpacity: { value: 0.4 },
     };
 
     const mat = new THREE.ShaderMaterial({
@@ -309,7 +257,7 @@ function RainParticles({
       splashUniforms: uniforms,
       splashAttrs: { posAttr, birthAttr, sizeAttr },
     };
-  }, [maxSplashes, intensity]);
+  }, [maxSplashes]);
 
   useEffect(() => {
     return () => {
@@ -337,7 +285,25 @@ function RainParticles({
     rainUniforms.uBoxSize.value.set(bx, by, bz);
     rainUniforms.uPointSize.value = config.dropLength;
     rainUniforms.uColor.value.set(config.color);
-  }, [rainUniforms, bx, by, bz, config.dropLength, config.color]);
+    rainGeometry.setDrawRange(0, config.count);
+
+    if (intensityRef.current !== intensity) {
+      intensityRef.current = intensity;
+      rainUniforms.uIntensity.value = intensity;
+      rainUniforms.uOpacity.value = config.opacity * intensity;
+    }
+  }, [
+    rainUniforms,
+    rainGeometry,
+    bx,
+    by,
+    bz,
+    config.dropLength,
+    config.color,
+    config.opacity,
+    config.count,
+    intensity,
+  ]);
 
   useFrameTick('weather', ({ delta }) => {
     timeRef.current += delta;
@@ -345,12 +311,15 @@ function RainParticles({
     const clampedDelta = Math.min(delta, 0.05);
 
     rainUniforms.uTime.value = t;
-    rainUniforms.uIntensity.value = intensity;
+    if (intensityRef.current !== intensity) {
+      intensityRef.current = intensity;
+      rainUniforms.uIntensity.value = intensity;
+      splashUniforms.uOpacity.value = 0.4 * intensity;
+    }
     const breathe = config.opacity + Math.sin(t * 0.5) * 0.03;
-    rainUniforms.uOpacity.value = breathe * intensity;
+    rainUniforms.uOpacity.value = breathe * intensityRef.current;
 
     splashUniforms.uTime.value = t;
-    splashUniforms.uOpacity.value = 0.4 * intensity;
 
     const spawnRate = config.count * 0.006 * intensity;
     splashSpawnAccum.current += spawnRate * clampedDelta;

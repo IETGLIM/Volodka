@@ -1,12 +1,12 @@
 
 /* ─── Volodka RPG – Corridor procedural 3D visual ─── */
 
-import { useRef, useEffect, type MutableRefObject } from 'react';
+import { useRef, useEffect, useMemo, type MutableRefObject } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
+import { getSharedStandardMaterial } from '@/engine/three/moduleMaterialRegistry';
 import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
-import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { EnvironmentDetail } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { createVolodkaCorridorRainySkyTexture } from '@/engine/graphics/proceduralSkyTextures';
@@ -82,6 +82,60 @@ const geo_pln_60 = new THREE.PlaneGeometry(0.06, 0.04);
 
 registerModuleGeometries([geo_pln_1, geo_pln_2, geo_pln_3, geo_pln_4, geo_box_5, geo_box_6, geo_box_7, geo_box_8, geo_box_9, geo_cyl_10, geo_pln_11, geo_box_12, geo_box_13, geo_box_14, geo_cyl_15, geo_box_16, geo_box_17, geo_box_18, geo_box_19, geo_box_20, geo_pln_21, geo_pln_22, geo_sph_23, geo_sph_24, geo_pln_25, geo_pln_26, geo_cyl_27, geo_pln_28, geo_pln_29, geo_pln_30, geo_box_31, geo_box_32, geo_box_33, geo_cyl_34, geo_box_35, geo_box_36, geo_box_37, geo_cyl_38, geo_cyl_39, geo_pln_40, geo_pln_41, geo_pln_42, geo_box_43, geo_pln_44, geo_cyl_45, geo_cyl_46, geo_box_47, geo_pln_48, geo_cyl_49, geo_box_50, geo_cyl_51, geo_box_52, geo_box_53, geo_box_54, geo_sph_55, geo_pln_56, geo_box_57, geo_box_58, geo_cyl_59, geo_pln_60]);
 
+const mat_1 = getSharedStandardMaterial({ color: '#4a3828', roughness: 0.8 });
+const mat_2 = getSharedStandardMaterial({ color: '#3a2818' });
+const mat_3 = getSharedStandardMaterial({ color: '#888', metalness: 0.6, roughness: 0.3 });
+const mat_4 = getSharedStandardMaterial({ color: '#999', metalness: 0.5, roughness: 0.4 });
+const mat_5 = getSharedStandardMaterial({ color: '#333', metalness: 0.7 });
+const mat_6 = getSharedStandardMaterial({ color: '#ffe8a0', emissive: '#ffdd80', emissiveIntensity: 0.5, side: THREE.DoubleSide });
+const mat_7 = getSharedStandardMaterial({ color: '#3a2820', roughness: 0.85 });
+const mat_8 = getSharedStandardMaterial({ color: '#5a4838' });
+const mat_9 = getSharedStandardMaterial({ color: '#6a5038', roughness: 0.72, emissive: '#3a2818', emissiveIntensity: 0.12 });
+const mat_10 = getSharedStandardMaterial({ color: '#aaa', metalness: 0.8, roughness: 0.2 });
+const mat_11 = getSharedStandardMaterial({ color: '#4a3525', roughness: 0.85 });
+const mat_12 = getSharedStandardMaterial({ color: '#2a2020', roughness: 0.85 });
+const mat_13 = getSharedStandardMaterial({ color: '#3a2520', roughness: 0.8 });
+const mat_14 = getSharedStandardMaterial({ color: '#2a1515', roughness: 0.85 });
+const mat_15 = getSharedStandardMaterial({ color: '#1a1a1a', emissive: '#ff2244', emissiveIntensity: 0.35, roughness: 0.95 });
+const mat_16 = getSharedStandardMaterial({ color: '#1a1a1a', emissive: '#44aaff', emissiveIntensity: 0.25, roughness: 0.95 });
+const mat_17 = getSharedStandardMaterial({ color: '#c8c0a8', roughness: 0.95 });
+const mat_18 = getSharedStandardMaterial({ color: '#b0a890', roughness: 0.95 });
+const mat_19 = getSharedStandardMaterial({ color: '#c8c0a0', roughness: 0.95, side: THREE.DoubleSide });
+const mat_20 = getSharedStandardMaterial({ color: '#0a0a0a', roughness: 1 });
+const mat_21 = getSharedStandardMaterial({ color: '#222', roughness: 0.9 });
+const mat_22 = getSharedStandardMaterial({ color: '#2a2520', roughness: 0.6, transparent: true, opacity: 0.25, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 });
+const mat_23 = getSharedStandardMaterial({ color: '#5a4a40', roughness: 0.95 });
+const mat_24 = getSharedStandardMaterial({ color: '#3a3540', roughness: 0.9, side: THREE.DoubleSide });
+const mat_25 = getSharedStandardMaterial({ color: '#4a4a4a', metalness: 0.4, roughness: 0.5 });
+const mat_26 = getSharedStandardMaterial({ color: '#333', metalness: 0.3, roughness: 0.6 });
+const mat_27 = getSharedStandardMaterial({ color: '#8a7a50', metalness: 0.3, roughness: 0.5 });
+const mat_28 = getSharedStandardMaterial({ color: '#1a1a1a' });
+const mat_29 = getSharedStandardMaterial({ color: '#3a3a3a', metalness: 0.5, roughness: 0.5 });
+const mat_30 = getSharedStandardMaterial({ color: '#1a1a1a', roughness: 0.9 });
+const mat_31 = getSharedStandardMaterial({ color: '#2a2a2a' });
+const mat_32 = getSharedStandardMaterial({ color: '#cc2222', emissive: '#cc2222', emissiveIntensity: 0.8 });
+const mat_33 = getSharedStandardMaterial({ color: '#1a1a1a', metalness: 0.7, roughness: 0.2 });
+const mat_34 = getSharedStandardMaterial({ color: '#4a3a30', roughness: 0.9, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 });
+const mat_35 = getSharedStandardMaterial({ color: '#2a2018', roughness: 0.9, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 });
+const mat_36 = getSharedStandardMaterial({ color: '#5a4530', roughness: 0.7 });
+const mat_37 = getSharedStandardMaterial({ color: '#607080', metalness: 0.8, roughness: 0.1 });
+const mat_38 = getSharedStandardMaterial({ color: '#555', metalness: 0.6, roughness: 0.4 });
+const mat_39 = getSharedStandardMaterial({ color: '#6a3a3a', roughness: 0.9 });
+const mat_40 = getSharedStandardMaterial({ color: '#4a4030', roughness: 0.95, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 });
+const mat_41 = getSharedStandardMaterial({ color: '#5a5a5a', metalness: 0.6, roughness: 0.4 });
+const mat_42 = getSharedStandardMaterial({ color: '#4a4a4a', metalness: 0.5, roughness: 0.5 });
+const mat_43 = getSharedStandardMaterial({ color: '#8b2020', metalness: 0.5, roughness: 0.4 });
+const mat_44 = getSharedStandardMaterial({ color: '#8b2020', metalness: 0.4, roughness: 0.5 });
+const mat_45 = getSharedStandardMaterial({ color: '#e0e0e0', roughness: 0.5 });
+const mat_46 = getSharedStandardMaterial({ color: '#ccc', roughness: 0.6 });
+const mat_47 = getSharedStandardMaterial({ color: '#5a5040', roughness: 0.95 });
+const mat_48 = getSharedStandardMaterial({ color: '#4a3540', roughness: 0.85 });
+const mat_49 = getSharedStandardMaterial({ color: '#6a4550', roughness: 0.75 });
+const mat_50 = getSharedStandardMaterial({ color: '#4a4035', roughness: 0.85 });
+const mat_51 = getSharedStandardMaterial({ color: '#6a5040', roughness: 0.75 });
+const mat_52 = getSharedStandardMaterial({ color: '#3a3030', roughness: 0.85 });
+const mat_53 = getSharedStandardMaterial({ color: '#888', roughness: 0.5 });
+
 export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositionRef }: VolodkaCorridorVisualProps) {
   const floorTexture = useCachedCanvasTexture('volodka_corridor:floor', createCorridorFloorTexture);
   const wallTexture = useCachedCanvasTexture('volodka_corridor:wall', createCorridorWallTexture);
@@ -90,7 +144,54 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
     'volodka_corridor:rainy-ceiling',
     createVolodkaCorridorRainySkyTexture,
   );
-  const { lod } = useEnvironmentLod();
+
+  const mat_floor = useMemo(
+    () =>
+      getSharedStandardMaterial({
+        map: floorTexture,
+        color: '#5a4a40',
+        roughness: 0.85,
+        polygonOffset: true,
+        polygonOffsetFactor: 2,
+        polygonOffsetUnits: 2,
+      }),
+    [floorTexture],
+  );
+  const mat_carpet = useMemo(
+    () =>
+      getSharedStandardMaterial({
+        map: carpetTexture,
+        color: '#6a3a30',
+        roughness: 0.95,
+        polygonOffset: true,
+        polygonOffsetFactor: -1,
+        polygonOffsetUnits: -1,
+      }),
+    [carpetTexture],
+  );
+  const mat_ceiling = useMemo(
+    () =>
+      getSharedStandardMaterial({
+        map: ceilingWashTexture,
+        color: '#242430',
+        emissive: '#303038',
+        emissiveIntensity: 0.2,
+        roughness: 0.95,
+      }),
+    [ceilingWashTexture],
+  );
+  const mat_wall = useMemo(
+    () =>
+      getSharedStandardMaterial({
+        map: wallTexture,
+        color: '#3a3540',
+        roughness: 0.9,
+        polygonOffset: true,
+        polygonOffsetFactor: 1,
+        polygonOffsetUnits: 1,
+      }),
+    [wallTexture],
+  );
 
   const W = 6;
   const D = 16;
@@ -190,88 +291,43 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
   return (
     <group ref={rootGroupRef}>
       {/* ── Floor (linoleum) ── */}
-      <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.002} renderOrder={0} geometry={geo_pln_1}>
-
-        <meshStandardMaterial map={floorTexture} color="#5a4a40" roughness={0.85} polygonOffset polygonOffsetFactor={2} polygonOffsetUnits={2} />
-      </mesh>
+      <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.002} renderOrder={0} geometry={geo_pln_1} material={mat_floor} />
 
       {/* ── Carpet runner (decal on floor — no physics collider) ── */}
-      <mesh rotation-x={-Math.PI / 2} position-y={0.004} renderOrder={1} geometry={geo_pln_2}>
-
-        <meshStandardMaterial
-          map={carpetTexture}
-          color="#6a3a30"
-          roughness={0.95}
-          polygonOffset
-          polygonOffsetFactor={-1}
-          polygonOffsetUnits={-1}
-        />
-      </mesh>
+      <mesh rotation-x={-Math.PI / 2} position-y={0.004} renderOrder={1} geometry={geo_pln_2} material={mat_carpet} />
 
       {/* ── Ceiling — dim rainy HDR wash ── */}
-      <mesh position={[0, H, 0]} rotation-x={Math.PI / 2} geometry={geo_pln_1}>
-        <meshStandardMaterial
-          map={ceilingWashTexture}
-          color="#242430"
-          emissive="#303038"
-          emissiveIntensity={0.2}
-          roughness={0.95}
-        />
-      </mesh>
+      <mesh position={[0, H, 0]} rotation-x={Math.PI / 2} geometry={geo_pln_1} material={mat_ceiling} />
 
       {/* ── Left Wall ── */}
-      <mesh position={[-W / 2 + 0.01, H / 2, 0]} rotation-y={Math.PI / 2} geometry={geo_pln_3}>
-
-        <meshStandardMaterial map={wallTexture} color="#3a3540" roughness={0.9} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
-      </mesh>
+      <mesh position={[-W / 2 + 0.01, H / 2, 0]} rotation-y={Math.PI / 2} geometry={geo_pln_3} material={mat_wall} />
 
       {/* ── Right Wall ── */}
-      <mesh position={[W / 2 - 0.01, H / 2, 0]} rotation-y={-Math.PI / 2} geometry={geo_pln_3}>
-
-        <meshStandardMaterial map={wallTexture} color="#3a3540" roughness={0.9} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
-      </mesh>
+      <mesh position={[W / 2 - 0.01, H / 2, 0]} rotation-y={-Math.PI / 2} geometry={geo_pln_3} material={mat_wall} />
 
       {/* ── Back Wall ── */}
-      <mesh position={[0, H / 2, -D / 2 + 0.01]} geometry={geo_pln_4}>
-
-        <meshStandardMaterial map={wallTexture} color="#3a3540" roughness={0.9} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
-      </mesh>
+      <mesh position={[0, H / 2, -D / 2 + 0.01]} geometry={geo_pln_4} material={mat_wall} />
 
       {/* ── Front Wall ── */}
-      <mesh position={[0, H / 2, D / 2 - 0.01]} rotation-y={Math.PI} geometry={geo_pln_4}>
-
-        <meshStandardMaterial map={wallTexture} color="#3a3540" roughness={0.9} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
-      </mesh>
+      <mesh position={[0, H / 2, D / 2 - 0.01]} rotation-y={Math.PI} geometry={geo_pln_4} material={mat_wall} />
 
       {/* ── Decorative props (LOD: standard+) ── */}
-      <EnvironmentDetail currentLod={lod} minLod="standard">
+      <EnvironmentDetail minLod="standard" position={[-2.15, 0, 5.5]}>
       {/* ── Shoe Rack (left wall, near entrance) ── */}
       <group position={[-W / 2 + 0.35, 0, 5.5]}>
-        <mesh position={[0, 0.35, 0]} castShadow geometry={geo_box_5}>
-
-          <meshStandardMaterial color="#4a3828" roughness={0.8} />
-        </mesh>
+        <mesh position={[0, 0.35, 0]} castShadow geometry={geo_box_5} material={mat_1} />
         {/* Shelves */}
         {[0.2, 0.5].map((y, i) => (
-          <mesh key={i} position={[0, y, 0.01]} geometry={geo_box_6}>
-
-            <meshStandardMaterial color="#3a2818" />
-          </mesh>
+          <mesh key={i} position={[0, y, 0.01]} geometry={geo_box_6} material={mat_2} />
         ))}
       </group>
 
       {/* ── Radiator (right wall, middle) ── */}
       <group position={[W / 2 - 0.12, 0, -2.0]}>
-        <mesh position={[0, 0.4, 0]} castShadow geometry={geo_box_7}>
-
-          <meshStandardMaterial color="#888" metalness={0.6} roughness={0.3} />
-        </mesh>
+        <mesh position={[0, 0.4, 0]} castShadow geometry={geo_box_7} material={mat_3} />
         {/* Ribs */}
         {Array.from({ length: 6 }).map((_, i) => (
-          <mesh key={i} position={[0.03, 0.1 + i * 0.12, 0]} geometry={geo_box_8}>
-
-            <meshStandardMaterial color="#999" metalness={0.5} roughness={0.4} />
-          </mesh>
+          <mesh key={i} position={[0.03, 0.1 + i * 0.12, 0]} geometry={geo_box_8} material={mat_4} />
         ))}
       </group>
       </EnvironmentDetail>
@@ -279,15 +335,9 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
       {/* ── Ceiling Lamp ── */}
       <group position={[0, H - 0.02, -4.0]}>
         {/* Lamp fixture */}
-        <mesh geometry={geo_box_9}>
-
-          <meshStandardMaterial color="#333" metalness={0.7} />
-        </mesh>
+        <mesh geometry={geo_box_9} material={mat_5} />
         {/* Lamp shade */}
-        <mesh position={[0, -0.1, 0]} geometry={geo_cyl_10}>
-
-          <meshStandardMaterial color="#ffe8a0" emissive="#ffdd80" emissiveIntensity={0.5} side={THREE.DoubleSide} />
-        </mesh>
+        <mesh position={[0, -0.1, 0]} geometry={geo_cyl_10} material={mat_6} />
         <pointLight
           position={[0, -0.2, 0]}
           color="#ffdd90"
@@ -301,10 +351,7 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
 
       {/* ── Second ceiling lamp (flickering) ── */}
       <group position={[0, H - 0.02, 4.0]}>
-        <mesh geometry={geo_box_9}>
-
-          <meshStandardMaterial color="#333" metalness={0.7} />
-        </mesh>
+        <mesh geometry={geo_box_9} material={mat_5} />
         <pointLight
           ref={flickerLightRef}
           position={[0, -0.2, 0]}
@@ -317,118 +364,55 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
       {/* ── Door: Kitchen (right wall, z=-1) — animated ── */}
       <group position={[W / 2 - 0.02, 0, -2.0]} name="kitchen-door">
         {/* Door indent (wall cutout) */}
-        <mesh rotation-y={-Math.PI / 2} geometry={geo_pln_11}>
-
-          <meshStandardMaterial color="#3a2820" roughness={0.85} />
-        </mesh>
+        <mesh rotation-y={-Math.PI / 2} geometry={geo_pln_11} material={mat_7} />
         {/* Door frame */}
-        <mesh position={[0.01, 1.1, 0]} rotation-y={-Math.PI / 2} geometry={geo_box_12}>
-
-          <meshStandardMaterial color="#5a4838" />
-        </mesh>
+        <mesh position={[0.01, 1.1, 0]} rotation-y={-Math.PI / 2} geometry={geo_box_12} material={mat_8} />
         {/* Door frame top */}
-        <mesh position={[0.01, 2.2, 0]} rotation-y={-Math.PI / 2} geometry={geo_box_13}>
-
-          <meshStandardMaterial color="#5a4838" />
-        </mesh>
+        <mesh position={[0.01, 2.2, 0]} rotation-y={-Math.PI / 2} geometry={geo_box_13} material={mat_8} />
         {/* Animated door panel — pivot on left edge (when facing the door from corridor) */}
         <group position={[0.02, 0, 0.45]} ref={kitchenDoorRef}>
-          <mesh position={[0, 1.1, -0.45]} geometry={geo_box_14}>
-
-            <meshStandardMaterial color="#6a5038" roughness={0.72} emissive="#3a2818" emissiveIntensity={0.12} />
-          </mesh>
+          <mesh position={[0, 1.1, -0.45]} geometry={geo_box_14} material={mat_9} />
           {/* Door handle */}
-          <mesh position={[0, 1.05, -0.08]} geometry={geo_cyl_15}>
-
-            <meshStandardMaterial color="#aaa" metalness={0.8} roughness={0.2} />
-          </mesh>
+          <mesh position={[0, 1.05, -0.08]} geometry={geo_cyl_15} material={mat_10} />
           {/* Panel detail */}
-          <mesh position={[0.025, 1.4, -0.45]} geometry={geo_box_16}>
-
-            <meshStandardMaterial color="#4a3525" roughness={0.85} />
-          </mesh>
-          <mesh position={[0.025, 0.7, -0.45]} geometry={geo_box_16}>
-
-            <meshStandardMaterial color="#4a3525" roughness={0.85} />
-          </mesh>
+          <mesh position={[0.025, 1.4, -0.45]} geometry={geo_box_16} material={mat_11} />
+          <mesh position={[0.025, 0.7, -0.45]} geometry={geo_box_16} material={mat_11} />
         </group>
       </group>
 
       {/* ── Door: Street (left wall, z=-1) — animated ── */}
       <group position={[-W / 2 + 0.02, 0, -2.0]}>
         {/* Door indent */}
-        <mesh rotation-y={Math.PI / 2} geometry={geo_pln_11}>
-
-          <meshStandardMaterial color="#2a2020" roughness={0.85} />
-        </mesh>
+        <mesh rotation-y={Math.PI / 2} geometry={geo_pln_11} material={mat_12} />
         {/* Door frame */}
-        <mesh position={[-0.01, 1.1, 0]} rotation-y={Math.PI / 2} geometry={geo_box_12}>
-
-          <meshStandardMaterial color="#5a4838" />
-        </mesh>
-        <mesh position={[-0.01, 2.2, 0]} rotation-y={Math.PI / 2} geometry={geo_box_13}>
-
-          <meshStandardMaterial color="#5a4838" />
-        </mesh>
+        <mesh position={[-0.01, 1.1, 0]} rotation-y={Math.PI / 2} geometry={geo_box_12} material={mat_8} />
+        <mesh position={[-0.01, 2.2, 0]} rotation-y={Math.PI / 2} geometry={geo_box_13} material={mat_8} />
         {/* Animated door panel — pivot on right edge (when facing from corridor) */}
         <group position={[-0.02, 0, 0.45]} ref={streetDoorRef}>
-          <mesh position={[0, 1.1, -0.45]} geometry={geo_box_14}>
-
-            <meshStandardMaterial color="#3a2520" roughness={0.8} />
-          </mesh>
+          <mesh position={[0, 1.1, -0.45]} geometry={geo_box_14} material={mat_13} />
           {/* Door handle */}
-          <mesh position={[0, 1.05, -0.08]} geometry={geo_cyl_15}>
-
-            <meshStandardMaterial color="#aaa" metalness={0.8} roughness={0.2} />
-          </mesh>
+          <mesh position={[0, 1.05, -0.08]} geometry={geo_cyl_15} material={mat_10} />
           {/* Metal detail — street door is heavier */}
-          <mesh position={[-0.025, 1.4, -0.45]} geometry={geo_box_16}>
-
-            <meshStandardMaterial color="#2a1515" roughness={0.85} />
-          </mesh>
-          <mesh position={[-0.025, 0.7, -0.45]} geometry={geo_box_16}>
-
-            <meshStandardMaterial color="#2a1515" roughness={0.85} />
-          </mesh>
+          <mesh position={[-0.025, 1.4, -0.45]} geometry={geo_box_16} material={mat_14} />
+          <mesh position={[-0.025, 0.7, -0.45]} geometry={geo_box_16} material={mat_14} />
         </group>
       </group>
 
       {/* ── Door: Volodka's room (front wall) — animated ── */}
       <group position={[0, 0, D / 2 - 0.02]}>
         {/* Door indent */}
-        <mesh rotation-y={Math.PI} geometry={geo_pln_11}>
-
-          <meshStandardMaterial color="#3a2820" roughness={0.85} />
-        </mesh>
+        <mesh rotation-y={Math.PI} geometry={geo_pln_11} material={mat_7} />
         {/* Door frame */}
-        <mesh position={[0, 1.1, 0.01]} rotation-y={Math.PI} geometry={geo_box_17}>
-
-          <meshStandardMaterial color="#5a4838" />
-        </mesh>
-        <mesh position={[0, 2.2, 0.01]} rotation-y={Math.PI} geometry={geo_box_18}>
-
-          <meshStandardMaterial color="#5a4838" />
-        </mesh>
+        <mesh position={[0, 1.1, 0.01]} rotation-y={Math.PI} geometry={geo_box_17} material={mat_8} />
+        <mesh position={[0, 2.2, 0.01]} rotation-y={Math.PI} geometry={geo_box_18} material={mat_8} />
         {/* Animated door panel — pivot on left edge */}
         <group position={[-0.45, 0, 0.02]} ref={roomDoorRef}>
-          <mesh position={[0.45, 1.1, 0]} geometry={geo_box_19}>
-
-            <meshStandardMaterial color="#6a5038" roughness={0.72} emissive="#3a2818" emissiveIntensity={0.12} />
-          </mesh>
+          <mesh position={[0.45, 1.1, 0]} geometry={geo_box_19} material={mat_9} />
           {/* Door handle */}
-          <mesh position={[0.78, 1.05, 0.03]} rotation={[0, 0, Math.PI / 2]} geometry={geo_cyl_15}>
-
-            <meshStandardMaterial color="#aaa" metalness={0.8} roughness={0.2} />
-          </mesh>
+          <mesh position={[0.78, 1.05, 0.03]} rotation={[0, 0, Math.PI / 2]} geometry={geo_cyl_15} material={mat_10} />
           {/* Panel detail */}
-          <mesh position={[0.45, 1.4, 0.025]} geometry={geo_box_20}>
-
-            <meshStandardMaterial color="#4a3525" roughness={0.85} />
-          </mesh>
-          <mesh position={[0.45, 0.7, 0.025]} geometry={geo_box_20}>
-
-            <meshStandardMaterial color="#4a3525" roughness={0.85} />
-          </mesh>
+          <mesh position={[0.45, 1.4, 0.025]} geometry={geo_box_20} material={mat_11} />
+          <mesh position={[0.45, 0.7, 0.025]} geometry={geo_box_20} material={mat_11} />
         </group>
       </group>
 
@@ -437,52 +421,28 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
       {/* ═══════════════════════════════════════════════ */}
 
       {/* ── Graffiti on left wall (colored rectangles) ── */}
-      <mesh position={[-W / 2 + 0.02, 1.6, 0.5]} rotation-y={Math.PI / 2} geometry={geo_pln_21}>
-
-        <meshStandardMaterial color="#1a1a1a" emissive="#ff2244" emissiveIntensity={0.35} roughness={0.95} />
-      </mesh>
-      <mesh position={[-W / 2 + 0.02, 1.2, 0.5]} rotation-y={Math.PI / 2} geometry={geo_pln_22}>
-
-        <meshStandardMaterial color="#1a1a1a" emissive="#44aaff" emissiveIntensity={0.25} roughness={0.95} />
-      </mesh>
+      <mesh position={[-W / 2 + 0.02, 1.6, 0.5]} rotation-y={Math.PI / 2} geometry={geo_pln_21} material={mat_15} />
+      <mesh position={[-W / 2 + 0.02, 1.2, 0.5]} rotation-y={Math.PI / 2} geometry={geo_pln_22} material={mat_16} />
 
       {/* ── Trash pile in corner (near front wall) ── */}
       <group position={[W / 2 - 0.4, 0, 4.5]}>
         {/* Crumpled paper */}
-        <mesh position={[0, 0.06, 0]} rotation={[0.3, 0.5, 0.2]} geometry={geo_sph_23}>
-
-          <meshStandardMaterial color="#c8c0a8" roughness={0.95} />
-        </mesh>
-        <mesh position={[0.15, 0.04, 0.1]} rotation={[0.5, 1.2, 0.1]} geometry={geo_sph_24}>
-
-          <meshStandardMaterial color="#b0a890" roughness={0.95} />
-        </mesh>
+        <mesh position={[0, 0.06, 0]} rotation={[0.3, 0.5, 0.2]} geometry={geo_sph_23} material={mat_17} />
+        <mesh position={[0.15, 0.04, 0.1]} rotation={[0.5, 1.2, 0.1]} geometry={geo_sph_24} material={mat_18} />
         {/* Old newspaper */}
-        <mesh position={[-0.1, 0.01, -0.1]} rotation={[0, 0.8, 0]} geometry={geo_pln_25}>
-
-          <meshStandardMaterial color="#c8c0a0" roughness={0.95} side={THREE.DoubleSide} />
-        </mesh>
+        <mesh position={[-0.1, 0.01, -0.1]} rotation={[0, 0.8, 0]} geometry={geo_pln_25} material={mat_19} />
       </group>
 
       {/* ── Missing ceiling tile ── */}
-      <mesh position={[0.6, H + 0.02, 1.5]} rotation-x={Math.PI / 2} geometry={geo_pln_26}>
-
-        <meshStandardMaterial color="#0a0a0a" roughness={1} />
-      </mesh>
+      <mesh position={[0.6, H + 0.02, 1.5]} rotation-x={Math.PI / 2} geometry={geo_pln_26} material={mat_20} />
       {/* Exposed wiring from missing tile */}
-      <mesh position={[0.6, H - 0.05, 1.5]} rotation={[0.4, 0.2, 0.5]} geometry={geo_cyl_27}>
-
-        <meshStandardMaterial color="#222" roughness={0.9} />
-      </mesh>
+      <mesh position={[0.6, H - 0.05, 1.5]} rotation={[0.4, 0.2, 0.5]} geometry={geo_cyl_27} material={mat_21} />
 
       {/* ── Wet boot prints on floor ── */}
       {[
         [0, 0.003, 2.0], [0.15, 0.003, 1.5], [-0.05, 0.003, 1.0], [0.2, 0.003, 0.5],
       ].map((pos, i) => (
-        <mesh key={`boot-${i}`} rotation-x={-Math.PI / 2} position={pos as [number, number, number]} geometry={geo_pln_28}>
-
-          <meshStandardMaterial color="#2a2520" roughness={0.6} transparent opacity={0.25} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
-        </mesh>
+        <mesh key={`boot-${i}`} rotation-x={-Math.PI / 2} position={pos as [number, number, number]} geometry={geo_pln_28} material={mat_22} />
       ))}
 
       {/* ═══════════════════════════════════════════════ */}
@@ -497,172 +457,88 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
       ].map((patch, i) => (
         <group key={`peel-${i}`} position={patch.pos} rotation-y={Math.PI / 2}>
           {/* Exposed wall underneath */}
-          <mesh geometry={geo_pln_29}>
-
-            <meshStandardMaterial color="#5a4a40" roughness={0.95} />
-          </mesh>
+          <mesh geometry={geo_pln_29} material={mat_23} />
           {/* Peeling wallpaper curling away */}
-          <mesh position={[0, 0.08, 0.003]} rotation={[patch.rot, 0.1, 0.05]} geometry={geo_pln_30}>
-
-            <meshStandardMaterial color="#3a3540" roughness={0.9} side={THREE.DoubleSide} />
-          </mesh>
+          <mesh position={[0, 0.08, 0.003]} rotation={[patch.rot, 0.1, 0.05]} geometry={geo_pln_30} material={mat_24} />
         </group>
       ))}
 
       {/* ── Mailboxes near entrance ── */}
       <group position={[W / 2 - 0.15, 0, 4.5]} rotation-y={-Math.PI / 2}>
         {/* Mailbox panel */}
-        <mesh position={[0, 1.0, 0]} castShadow geometry={geo_box_31}>
-
-          <meshStandardMaterial color="#4a4a4a" metalness={0.4} roughness={0.5} />
-        </mesh>
+        <mesh position={[0, 1.0, 0]} castShadow geometry={geo_box_31} material={mat_25} />
         {/* Individual mailbox slots */}
         {[0.35, 0.1, -0.15, -0.4].map((y, i) => (
           <group key={`mbox-${i}`}>
             {/* Slot opening */}
-            <mesh position={[0, y, 0.08]} geometry={geo_box_32}>
-
-              <meshStandardMaterial color="#333" metalness={0.3} roughness={0.6} />
-            </mesh>
+            <mesh position={[0, y, 0.08]} geometry={geo_box_32} material={mat_26} />
             {/* Slot nameplate */}
-            <mesh position={[0.2, y + 0.06, 0.086]} geometry={geo_box_33}>
-
-              <meshStandardMaterial color="#8a7a50" metalness={0.3} roughness={0.5} />
-            </mesh>
+            <mesh position={[0.2, y + 0.06, 0.086]} geometry={geo_box_33} material={mat_27} />
             {/* Keyhole */}
-            <mesh position={[-0.25, y, 0.086]} geometry={geo_cyl_34}>
-
-              <meshStandardMaterial color="#1a1a1a" />
-            </mesh>
+            <mesh position={[-0.25, y, 0.086]} geometry={geo_cyl_34} material={mat_28} />
           </group>
         ))}
       </group>
 
       {/* ── Intercom panel near entrance ── */}
       <group position={[-W / 2 + 0.02, 1.5, 4.5]} rotation-y={Math.PI / 2}>
-        <mesh geometry={geo_box_35}>
-
-          <meshStandardMaterial color="#3a3a3a" metalness={0.5} roughness={0.5} />
-        </mesh>
+        <mesh geometry={geo_box_35} material={mat_29} />
         {/* Speaker grille */}
-        <mesh position={[0, 0.06, 0.016]} geometry={geo_box_36}>
-
-          <meshStandardMaterial color="#1a1a1a" roughness={0.9} />
-        </mesh>
+        <mesh position={[0, 0.06, 0.016]} geometry={geo_box_36} material={mat_30} />
         {/* Speaker grille lines */}
         {[-0.03, -0.01, 0.01, 0.03].map((y, i) => (
-          <mesh key={`ispk-${i}`} position={[0, 0.06 + y, 0.018]} geometry={geo_box_37}>
-
-            <meshStandardMaterial color="#2a2a2a" />
-          </mesh>
+          <mesh key={`ispk-${i}`} position={[0, 0.06 + y, 0.018]} geometry={geo_box_37} material={mat_31} />
         ))}
         {/* Call button */}
-        <mesh position={[0, -0.06, 0.018]} geometry={geo_cyl_38}>
-
-          <meshStandardMaterial color="#cc2222" emissive="#cc2222" emissiveIntensity={0.8} />
-        </mesh>
+        <mesh position={[0, -0.06, 0.018]} geometry={geo_cyl_38} material={mat_32} />
         {/* Camera lens */}
-        <mesh position={[0.04, -0.06, 0.018]} geometry={geo_cyl_39}>
-
-          <meshStandardMaterial color="#1a1a1a" metalness={0.7} roughness={0.2} />
-        </mesh>
+        <mesh position={[0.04, -0.06, 0.018]} geometry={geo_cyl_39} material={mat_33} />
       </group>
 
       {/* ── Cracked floor tile ── */}
-      <mesh rotation-x={-Math.PI / 2} position={[0.8, 0.004, -2.0]} geometry={geo_pln_40}>
-
-        <meshStandardMaterial color="#4a3a30" roughness={0.9} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
-      </mesh>
+      <mesh rotation-x={-Math.PI / 2} position={[0.8, 0.004, -2.0]} geometry={geo_pln_40} material={mat_34} />
       {/* Crack line */}
-      <mesh rotation-x={-Math.PI / 2} position={[0.8, 0.005, -2.0]} geometry={geo_pln_41}>
-
-        <meshStandardMaterial color="#2a2018" roughness={0.9} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
-      </mesh>
-      <mesh rotation-x={-Math.PI / 2} position={[0.75, 0.005, -2.05]} rotation={[0, 0.5, 0]} geometry={geo_pln_42}>
-
-        <meshStandardMaterial color="#2a2018" roughness={0.9} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
-      </mesh>
+      <mesh rotation-x={-Math.PI / 2} position={[0.8, 0.005, -2.0]} geometry={geo_pln_41} material={mat_35} />
+      <mesh rotation-x={-Math.PI / 2} position={[0.75, 0.005, -2.05]} rotation={[0, 0.5, 0]} geometry={geo_pln_42} material={mat_35} />
 
       {/* ── Mirror on right wall ── */}
       <group position={[W / 2 - 0.02, 1.4, -4.0]} rotation-y={-Math.PI / 2}>
         {/* Frame */}
-        <mesh geometry={geo_box_43}>
-
-          <meshStandardMaterial color="#5a4530" roughness={0.7} />
-        </mesh>
+        <mesh geometry={geo_box_43} material={mat_36} />
         {/* Mirror surface */}
-        <mesh position={[0, 0, 0.011]} geometry={geo_pln_44}>
-
-          <meshStandardMaterial color="#607080" metalness={0.8} roughness={0.1} />
-        </mesh>
+        <mesh position={[0, 0, 0.011]} geometry={geo_pln_44} material={mat_37} />
       </group>
 
       {/* ── Coat hooks on right wall ── */}
       {[-2.5, 0.0, 2.0].map((z, i) => (
         <group key={`whook-${i}`} position={[W / 2 - 0.03, 1.9, z]} rotation-y={-Math.PI / 2}>
-          <mesh geometry={geo_cyl_45}>
-
-            <meshStandardMaterial color="#555" metalness={0.6} roughness={0.4} />
-          </mesh>
-          <mesh position={[0, 0, 0.04]} rotation={[Math.PI / 2, 0, 0]} geometry={geo_cyl_46}>
-
-            <meshStandardMaterial color="#555" metalness={0.6} roughness={0.4} />
-          </mesh>
+          <mesh geometry={geo_cyl_45} material={mat_38} />
+          <mesh position={[0, 0, 0.04]} rotation={[Math.PI / 2, 0, 0]} geometry={geo_cyl_46} material={mat_38} />
         </group>
       ))}
       {/* Scarf hanging from middle hook */}
-      <mesh position={[W / 2 - 0.08, 1.5, 0.0]} rotation={[0.1, 0.2, 0.05]} geometry={geo_box_47}>
-
-        <meshStandardMaterial color="#6a3a3a" roughness={0.9} />
-      </mesh>
+      <mesh position={[W / 2 - 0.08, 1.5, 0.0]} rotation={[0.1, 0.2, 0.05]} geometry={geo_box_47} material={mat_39} />
 
       {/* ── Welcome mat at entrance ── */}
-      <mesh rotation-x={-Math.PI / 2} position={[0, 0.004, D / 2 - 0.3]} renderOrder={1} geometry={geo_pln_48}>
-
-        <meshStandardMaterial
-          color="#4a4030"
-          roughness={0.95}
-          polygonOffset
-          polygonOffsetFactor={-1}
-          polygonOffsetUnits={-1}
-        />
-      </mesh>
+      <mesh rotation-x={-Math.PI / 2} position={[0, 0.004, D / 2 - 0.3]} renderOrder={1} geometry={geo_pln_48} material={mat_40} />
 
       {/* ── Exposed pipe along ceiling (left wall side) ── */}
-      <mesh position={[-W / 2 + 0.08, H - 0.08, 0]} castShadow geometry={geo_cyl_49}>
-
-        <meshStandardMaterial color="#5a5a5a" metalness={0.6} roughness={0.4} />
-      </mesh>
+      <mesh position={[-W / 2 + 0.08, H - 0.08, 0]} castShadow geometry={geo_cyl_49} material={mat_41} />
       {/* Pipe brackets */}
       {[-4.0, -1.0, 2.0, 5.0].map((z, i) => (
-        <mesh key={`pbracket-${i}`} position={[-W / 2 + 0.08, H - 0.08, z]} geometry={geo_box_50}>
-
-          <meshStandardMaterial color="#4a4a4a" metalness={0.5} roughness={0.5} />
-        </mesh>
+        <mesh key={`pbracket-${i}`} position={[-W / 2 + 0.08, H - 0.08, z]} geometry={geo_box_50} material={mat_42} />
       ))}
       {/* Pipe valve */}
       <group position={[-W / 2 + 0.08, H - 0.08, 0.0]}>
-        <mesh rotation={[Math.PI / 2, 0, 0]} geometry={geo_cyl_51}>
-
-          <meshStandardMaterial color="#8b2020" metalness={0.5} roughness={0.4} />
-        </mesh>
-        <mesh position={[0, 0.04, 0]} rotation={[0, 0, Math.PI / 4]} geometry={geo_box_52}>
-
-          <meshStandardMaterial color="#8b2020" metalness={0.4} roughness={0.5} />
-        </mesh>
+        <mesh rotation={[Math.PI / 2, 0, 0]} geometry={geo_cyl_51} material={mat_43} />
+        <mesh position={[0, 0.04, 0]} rotation={[0, 0, Math.PI / 4]} geometry={geo_box_52} material={mat_44} />
       </group>
 
       {/* ── Light switch plate on wall ── */}
       <group position={[-W / 2 + 0.02, 1.2, D / 2 - 0.5]} rotation-y={Math.PI / 2}>
-        <mesh geometry={geo_box_53}>
-
-          <meshStandardMaterial color="#e0e0e0" roughness={0.5} />
-        </mesh>
+        <mesh geometry={geo_box_53} material={mat_45} />
         {/* Switch toggle */}
-        <mesh position={[0, 0.01, 0.006]} geometry={geo_box_54}>
-
-          <meshStandardMaterial color="#ccc" roughness={0.6} />
-        </mesh>
+        <mesh position={[0, 0.01, 0.006]} geometry={geo_box_54} material={mat_46} />
       </group>
 
       {/* ── Dust/debris in corners ── */}
@@ -670,83 +546,41 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
         [W / 2 - 0.3, 0.01, -5.5] as [number, number, number],
         [-W / 2 + 0.3, 0.01, 5.5] as [number, number, number],
       ].map((pos, i) => (
-        <mesh key={`dust-${i}`} position={pos} rotation={[0.2 * i, 0.5, 0]} geometry={geo_sph_55}>
-
-          <meshStandardMaterial color="#5a5040" roughness={0.95} />
-        </mesh>
+        <mesh key={`dust-${i}`} position={pos} rotation={[0.2 * i, 0.5, 0]} geometry={geo_sph_55} material={mat_47} />
       ))}
 
       {/* ── Door: Солныш & Лёня (right wall, z=4) — animated ── */}
       <group position={[W / 2 - 0.02, 0, 4.0]}>
-        <mesh rotation-y={-Math.PI / 2} geometry={geo_pln_11}>
-
-          <meshStandardMaterial color="#4a3540" roughness={0.85} />
-        </mesh>
-        <mesh position={[0.01, 1.1, 0]} rotation-y={-Math.PI / 2} geometry={geo_box_12}>
-
-          <meshStandardMaterial color="#5a4838" />
-        </mesh>
+        <mesh rotation-y={-Math.PI / 2} geometry={geo_pln_11} material={mat_48} />
+        <mesh position={[0.01, 1.1, 0]} rotation-y={-Math.PI / 2} geometry={geo_box_12} material={mat_8} />
         <group position={[0.02, 0, 0.45]} ref={solnyshDoorRef}>
-          <mesh position={[0, 1.1, -0.45]} geometry={geo_box_14}>
-
-            <meshStandardMaterial color="#6a4550" roughness={0.75} />
-          </mesh>
-          <mesh position={[0, 1.05, -0.08]} geometry={geo_cyl_15}>
-
-            <meshStandardMaterial color="#aaa" metalness={0.8} roughness={0.2} />
-          </mesh>
+          <mesh position={[0, 1.1, -0.45]} geometry={geo_box_14} material={mat_49} />
+          <mesh position={[0, 1.05, -0.08]} geometry={geo_cyl_15} material={mat_10} />
         </group>
       </group>
 
       {/* ── Door: Зарема & Альберт (left wall, z=4) — animated ── */}
       <group position={[-W / 2 + 0.02, 0, 4.0]}>
-        <mesh rotation-y={Math.PI / 2} geometry={geo_pln_11}>
-
-          <meshStandardMaterial color="#4a4035" roughness={0.85} />
-        </mesh>
-        <mesh position={[-0.01, 1.1, 0]} rotation-y={Math.PI / 2} geometry={geo_box_12}>
-
-          <meshStandardMaterial color="#5a4838" />
-        </mesh>
+        <mesh rotation-y={Math.PI / 2} geometry={geo_pln_11} material={mat_50} />
+        <mesh position={[-0.01, 1.1, 0]} rotation-y={Math.PI / 2} geometry={geo_box_12} material={mat_8} />
         <group position={[-0.02, 0, 0.45]} ref={zaremaDoorRef}>
-          <mesh position={[0, 1.1, -0.45]} geometry={geo_box_14}>
-
-            <meshStandardMaterial color="#6a5040" roughness={0.75} />
-          </mesh>
-          <mesh position={[0, 1.05, -0.08]} geometry={geo_cyl_15}>
-
-            <meshStandardMaterial color="#aaa" metalness={0.8} roughness={0.2} />
-          </mesh>
+          <mesh position={[0, 1.1, -0.45]} geometry={geo_box_14} material={mat_51} />
+          <mesh position={[0, 1.05, -0.08]} geometry={geo_cyl_15} material={mat_10} />
         </group>
       </group>
 
       {/* ── Additional door: Bathroom (right wall, z=2) ── */}
       <group position={[W / 2 - 0.02, 0, 2.0]}>
         {/* Door indent */}
-        <mesh rotation-y={-Math.PI / 2} geometry={geo_pln_56}>
-
-          <meshStandardMaterial color="#3a3030" roughness={0.85} />
-        </mesh>
+        <mesh rotation-y={-Math.PI / 2} geometry={geo_pln_56} material={mat_52} />
         {/* Door frame */}
-        <mesh position={[0.01, 1.0, 0]} rotation-y={-Math.PI / 2} geometry={geo_box_57}>
-
-          <meshStandardMaterial color="#5a4838" />
-        </mesh>
+        <mesh position={[0.01, 1.0, 0]} rotation-y={-Math.PI / 2} geometry={geo_box_57} material={mat_8} />
         {/* Door panel (closed) */}
-        <mesh position={[0.02, 1.0, 0]} rotation-y={-Math.PI / 2} geometry={geo_box_58}>
-
-          <meshStandardMaterial color="#6a5038" roughness={0.72} emissive="#3a2818" emissiveIntensity={0.12} />
-        </mesh>
+        <mesh position={[0.02, 1.0, 0]} rotation-y={-Math.PI / 2} geometry={geo_box_58} material={mat_9} />
         {/* Door handle */}
-        <mesh position={[0.02, 1.0, 0.28]} geometry={geo_cyl_59}>
-
-          <meshStandardMaterial color="#aaa" metalness={0.8} roughness={0.2} />
-        </mesh>
+        <mesh position={[0.02, 1.0, 0.28]} geometry={geo_cyl_59} material={mat_10} />
         {/* Room number */}
-        <mesh position={[0.02, 1.8, 0]} rotation-y={-Math.PI / 2} geometry={geo_pln_60}>
-
-          <meshStandardMaterial color="#888" roughness={0.5} />
-        </mesh>
+        <mesh position={[0.02, 1.8, 0]} rotation-y={-Math.PI / 2} geometry={geo_pln_60} material={mat_53} />
       </group>
 
       {/* ── Corridor ambient fill — warm overhead ── */}

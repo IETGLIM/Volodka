@@ -1,11 +1,11 @@
 
 /* ─── Volodka RPG – IT Guild Office procedural 3D visual ─── */
 
-import { useEffect, useMemo, type MutableRefObject } from 'react';
+import { useMemo, type MutableRefObject } from 'react';
 import * as THREE from 'three';
+import { getSharedStandardMaterial, mat } from '@/engine/three/moduleMaterialRegistry';
 import { Plant, Radiator, Clock } from './lazyInteriorModels';
 import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
-import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { EnvironmentDetail, SceneClutterGate } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { createOfficeDayOvercastSkyTexture } from '@/engine/graphics/proceduralSkyTextures';
@@ -19,6 +19,76 @@ interface OfficeDayVisualProps {
 }
 
 /** Sterile corporate IT office (14×12m) — CyberPunk2077/Bank aesthetic */
+const mat_1 = getSharedStandardMaterial({ color: '#4a4a5a', roughness: 0.4 });
+const mat_2 = getSharedStandardMaterial({ color: '#3a3a4a', roughness: 0.7 });
+const mat_3 = getSharedStandardMaterial({ color: '#001a22', emissive: '#0088aa', emissiveIntensity: 0.6 });
+const mat_4 = getSharedStandardMaterial({ color: '#4a4a5a', metalness: 0.6, roughness: 0.3 });
+const mat_5 = getSharedStandardMaterial({ color: '#d0d0d0', metalness: 0.3, roughness: 0.4 });
+const mat_6 = getSharedStandardMaterial({ color: '#a0d0e0', transparent: true, opacity: 0.5, roughness: 0.1 });
+const mat_7 = getSharedStandardMaterial({ color: '#e8e0d8', roughness: 0.5 });
+const mat_8 = getSharedStandardMaterial({ color: '#2a2a2a', roughness: 0.5 });
+const mat_9 = getSharedStandardMaterial({ color: '#8a4a4a', roughness: 0.6 });
+const mat_10 = getSharedStandardMaterial({ color: '#e8e8e8', roughness: 0.3 });
+const mat_11 = getSharedStandardMaterial({ color: '#cc2222', roughness: 0.9 });
+const mat_12 = getSharedStandardMaterial({ color: '#2222cc', roughness: 0.9 });
+const mat_13 = getSharedStandardMaterial({ color: '#22aa22', roughness: 0.9 });
+const mat_14 = getSharedStandardMaterial({ color: '#e8e4dc', roughness: 0.9 });
+const mat_15 = getSharedStandardMaterial({ color: '#f0ece4', roughness: 0.9 });
+const mat_16 = getSharedStandardMaterial({ color: '#00ff44', emissive: '#00ff44', emissiveIntensity: 2.0 });
+const mat_17 = getSharedStandardMaterial({ color: '#5a5a6a', roughness: 0.8 });
+const mat_18 = getSharedStandardMaterial({ color: '#4a4a5a', metalness: 0.3, roughness: 0.5 });
+const mat_19 = getSharedStandardMaterial({ color: '#e0e0e0', roughness: 0.6 });
+const mat_20 = getSharedStandardMaterial({ color: '#ccc', roughness: 0.5 });
+const mat_21 = getSharedStandardMaterial({ color: '#bbb', roughness: 0.5 });
+const mat_22 = getSharedStandardMaterial({ color: '#f0f0f0', roughness: 0.9 });
+const mat_23 = getSharedStandardMaterial({ color: '#00aa00', emissive: '#00aa00', emissiveIntensity: 2.0 });
+const mat_24 = getSharedStandardMaterial({ color: '#f0f0f0', roughness: 0.4 });
+const mat_25 = getSharedStandardMaterial({ color: '#4a4a5a', metalness: 0.5, roughness: 0.4 });
+const mat_26 = getSharedStandardMaterial({ color: '#1a1a1a' });
+const mat_27 = getSharedStandardMaterial({ color: '#aa2222' });
+const mat_28 = getSharedStandardMaterial({ color: '#8a6a3a', roughness: 0.9 });
+const mat_29 = getSharedStandardMaterial({ color: '#4a4a5a', roughness: 0.5 });
+const mat_30 = getSharedStandardMaterial({ color: '#3a3a4a', metalness: 0.5, roughness: 0.4 });
+const mat_31 = getSharedStandardMaterial({ color: '#2a2a2e', metalness: 0.4, roughness: 0.5 });
+const mat_32 = getSharedStandardMaterial({ color: '#003300', emissive: '#00aa44', emissiveIntensity: 1.0 });
+const mat_33 = getSharedStandardMaterial({ color: '#f0e8e0', roughness: 0.5 });
+const mat_34 = getSharedStandardMaterial({ color: '#ffffff', roughness: 0.6 });
+const mat_35 = getSharedStandardMaterial({ color: '#2a2a30', metalness: 0.4, roughness: 0.6 });
+const mat_36 = getSharedStandardMaterial({ color: '#1a1a1a', roughness: 0.7 });
+const mat_37 = getSharedStandardMaterial({ color: '#8b2020', roughness: 0.7 });
+const mat_38 = getSharedStandardMaterial({ color: '#2a2a2a', roughness: 0.8 });
+const mat_39 = getSharedStandardMaterial({ color: '#1a1a1a', roughness: 0.6 });
+const mat_40 = getSharedStandardMaterial({ color: '#001133', emissive: '#4466aa', emissiveIntensity: 0.8 });
+const mat_41 = getSharedStandardMaterial({ color: '#c0c8d0', roughness: 0.8 });
+const mat_42 = getSharedStandardMaterial({ color: '#b0b8c0', roughness: 0.7 });
+const mat_43 = getSharedStandardMaterial({ color: '#003300', emissive: '#00aa00', emissiveIntensity: 1.5 });
+const mat_44 = getSharedStandardMaterial({ color: '#001122', emissive: '#4488ff', emissiveIntensity: 1.0 });
+const mat_45 = getSharedStandardMaterial({ color: '#333', metalness: 0.6 });
+const mat_46 = getSharedStandardMaterial({ color: '#2a2a3a', roughness: 0.7 });
+const mat_47 = getSharedStandardMaterial({ color: '#2a2a30', metalness: 0.7, roughness: 0.3 });
+const mat_48 = getSharedStandardMaterial({ color: '#3a3a40', metalness: 0.5, roughness: 0.4 });
+const mat_49 = getSharedStandardMaterial({ color: '#ff2244', emissive: '#ff2244', emissiveIntensity: 2.0 });
+const mat_50 = getSharedStandardMaterial({ color: '#00ff44', emissive: '#00ff44', emissiveIntensity: 1.5 });
+const mat_51 = getSharedStandardMaterial({ color: '#6a4a30', roughness: 0.8 });
+const mat_52 = getSharedStandardMaterial({ color: '#4a5a2a', roughness: 0.9 });
+const mat_53 = getSharedStandardMaterial({ color: '#3a4a1a', roughness: 0.9 });
+const mat_glass = getSharedStandardMaterial({
+  color: '#b0c0d0',
+  transparent: true,
+  opacity: 0.25,
+  metalness: 0.1,
+  roughness: 0.05,
+  polygonOffset: true,
+  polygonOffsetFactor: 1,
+  polygonOffsetUnits: 1,
+});
+const mat_light_housing = getSharedStandardMaterial({ color: '#aab2bc', metalness: 0.3, roughness: 0.6 });
+const mat_light_tube = getSharedStandardMaterial({
+  color: '#e8f0f8',
+  emissive: '#f4faff',
+  emissiveIntensity: 1.6,
+});
+
 export function OfficeDayVisual({ livePlayerPositionRef }: OfficeDayVisualProps) {
   const floorTexture = useCachedCanvasTexture('office_day:floor', createOfficeFloorTexture);
   const wallTexture = useCachedCanvasTexture('office_day:wall', createOfficeWallTexture);
@@ -26,8 +96,35 @@ export function OfficeDayVisual({ livePlayerPositionRef }: OfficeDayVisualProps)
     'office_day:overcast-ceiling',
     createOfficeDayOvercastSkyTexture,
   );
-  const { lod } = useEnvironmentLod();
   const envProfile = useMemo(() => getEnvironmentLodProfile('office_day'), []);
+
+  const mat_floor = useMemo(
+    () =>
+      getSharedStandardMaterial({
+        map: floorTexture,
+        color: '#c8d0d8',
+        roughness: 0.6,
+        polygonOffset: true,
+        polygonOffsetFactor: 1,
+        polygonOffsetUnits: 1,
+      }),
+    [floorTexture],
+  );
+  const mat_ceiling = useMemo(
+    () =>
+      getSharedStandardMaterial({
+        map: ceilingWashTexture,
+        color: '#c8d4e0',
+        emissive: '#a0b8d0',
+        emissiveIntensity: 0.22,
+        roughness: 0.95,
+      }),
+    [ceilingWashTexture],
+  );
+  const mat_wall = useMemo(
+    () => getSharedStandardMaterial({ map: wallTexture, color: '#d0d8e0', roughness: 0.7 }),
+    [wallTexture],
+  );
 
   const W = 14;
   const D = 12;
@@ -37,77 +134,28 @@ export function OfficeDayVisual({ livePlayerPositionRef }: OfficeDayVisualProps)
   const lightPanel = useMemo(() => {
     const housingGeo = getSharedBoxGeometry(2.4, 0.06, 0.34);
     const tubeGeo = getSharedBoxGeometry(2.3, 0.03, 0.1);
-    const housingMat = new THREE.MeshStandardMaterial({ color: '#aab2bc', metalness: 0.3, roughness: 0.6 });
-    const tubeMat = new THREE.MeshStandardMaterial({ color: '#e8f0f8', emissive: '#f4faff', emissiveIntensity: 1.6 });
     const positions: [number, number][] = [];
     for (const x of [-4.5, -1.5, 1.5, 4.5]) {
       for (const z of [-3.5, 0, 3.5]) positions.push([x, z]);
     }
-    return { housingGeo, tubeGeo, housingMat, tubeMat, positions };
+    return { housingGeo, tubeGeo, positions };
   }, []);
 
-  const glassMat = useMemo(
-    () =>
-      new THREE.MeshStandardMaterial({
-        color: '#b0c0d0',
-        transparent: true,
-        opacity: 0.25,
-        metalness: 0.1,
-        roughness: 0.05,
-        depthWrite: false,
-        polygonOffset: true,
-        polygonOffsetFactor: 1,
-        polygonOffsetUnits: 1,
-      }),
-    [],
-  );
-
-  useEffect(() => {
-    return () => {
-      lightPanel.housingMat.dispose();
-      lightPanel.tubeMat.dispose();
-      glassMat.dispose();
-    };
-  }, [lightPanel, glassMat]);
+  const glassMat = mat_glass;
 
   return (
     <group>
       {/* ── Floor ── */}
-      <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={getSharedPlaneGeometry(W, D)}>
-        <meshStandardMaterial
-          map={floorTexture}
-          color="#c8d0d8"
-          roughness={0.6}
-          polygonOffset
-          polygonOffsetFactor={1}
-          polygonOffsetUnits={1}
-        />
-      </mesh>
+      <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={getSharedPlaneGeometry(W, D)} material={mat_floor} />
 
       {/* ── Ceiling — procedural overcast HDR wash ── */}
-      <mesh position={[0, H, 0]} rotation-x={Math.PI / 2} geometry={getSharedPlaneGeometry(W, D)}>
-        <meshStandardMaterial
-          map={ceilingWashTexture}
-          color="#c8d4e0"
-          emissive="#a0b8d0"
-          emissiveIntensity={0.22}
-          roughness={0.95}
-        />
-      </mesh>
+      <mesh position={[0, H, 0]} rotation-x={Math.PI / 2} geometry={getSharedPlaneGeometry(W, D)} material={mat_ceiling} />
 
       {/* ── Walls ── */}
-      <mesh position={[0, H / 2, -D / 2]} geometry={getSharedPlaneGeometry(W, H)}>
-        <meshStandardMaterial map={wallTexture} color="#d0d8e0" roughness={0.7} />
-      </mesh>
-      <mesh position={[0, H / 2, D / 2]} rotation-y={Math.PI} geometry={getSharedPlaneGeometry(W, H)}>
-        <meshStandardMaterial map={wallTexture} color="#d0d8e0" roughness={0.7} />
-      </mesh>
-      <mesh position={[-W / 2, H / 2, 0]} rotation-y={Math.PI / 2} geometry={getSharedPlaneGeometry(D, H)}>
-        <meshStandardMaterial map={wallTexture} color="#d0d8e0" roughness={0.7} />
-      </mesh>
-      <mesh position={[W / 2, H / 2, 0]} rotation-y={-Math.PI / 2} geometry={getSharedPlaneGeometry(D, H)}>
-        <meshStandardMaterial map={wallTexture} color="#d0d8e0" roughness={0.7} />
-      </mesh>
+      <mesh position={[0, H / 2, -D / 2]} geometry={getSharedPlaneGeometry(W, H)} material={mat_wall} />
+      <mesh position={[0, H / 2, D / 2]} rotation-y={Math.PI} geometry={getSharedPlaneGeometry(W, H)} material={mat_wall} />
+      <mesh position={[-W / 2, H / 2, 0]} rotation-y={Math.PI / 2} geometry={getSharedPlaneGeometry(D, H)} material={mat_wall} />
+      <mesh position={[W / 2, H / 2, 0]} rotation-y={-Math.PI / 2} geometry={getSharedPlaneGeometry(D, H)} material={mat_wall} />
 
       {/* ═══════════════════════════════════════════════ */}
       {/* ── ROWS OF DESKS WITH MONITORS ── */}
@@ -153,16 +201,12 @@ export function OfficeDayVisual({ livePlayerPositionRef }: OfficeDayVisualProps)
           <boxGeometry args={[0.05, H, 3.0]} />
         </mesh>
         {/* Conference table */}
-        <mesh position={[0, 0.4, 0]} castShadow>
-          <boxGeometry args={[2.0, 0.05, 1.0]} />
-          <meshStandardMaterial color="#4a4a5a" roughness={0.4} />
-        </mesh>
+        <mesh position={[0, 0.4, 0]} castShadow material={mat_1}>
+          <boxGeometry args={[2.0, 0.05, 1.0]} /></mesh>
         {/* Chairs around table */}
         {[-0.7, 0, 0.7].map((z, i) => (
-          <mesh key={i} position={[-0.6, 0.25, z]}>
-            <boxGeometry args={[0.4, 0.05, 0.4]} />
-            <meshStandardMaterial color="#3a3a4a" roughness={0.7} />
-          </mesh>
+          <mesh key={i} position={[-0.6, 0.25, z]} material={mat_2}>
+            <boxGeometry args={[0.4, 0.05, 0.4]} /></mesh>
         ))}
       </group>
 
@@ -170,35 +214,27 @@ export function OfficeDayVisual({ livePlayerPositionRef }: OfficeDayVisualProps)
       {/* ── CORPORATE LOGO WALL (back center) ── */}
       {/* ═══════════════════════════════════════════════ */}
       <group position={[0, 2.0, -D / 2 + 0.05]}>
-        <mesh>
-          <boxGeometry args={[2.0, 0.5, 0.05]} />
-          <meshStandardMaterial color="#001a22" emissive="#0088aa" emissiveIntensity={0.6} />
-        </mesh>
+        <mesh material={mat_3}>
+          <boxGeometry args={[2.0, 0.5, 0.05]} /></mesh>
         {/* Logo frame */}
-        <mesh position={[0, 0, 0.01]}>
-          <boxGeometry args={[2.2, 0.7, 0.02]} />
-          <meshStandardMaterial color="#4a4a5a" metalness={0.6} roughness={0.3} />
-        </mesh>
+        <mesh position={[0, 0, 0.01]} material={mat_4}>
+          <boxGeometry args={[2.2, 0.7, 0.02]} /></mesh>
       </group>
 
       {/* ═══════════════════════════════════════════════ */}
       {/* ── WATER COOLER (front-left) ── */}
       {/* ═══════════════════════════════════════════════ */}
-      <EnvironmentDetail currentLod={lod} minLod="standard">
+      <EnvironmentDetail minLod="standard" position={[-5.5, 0, 4.0]}>
         <SceneClutterGate
           livePlayerPositionRef={livePlayerPositionRef}
           position={[-5.5, 0, 4.0]}
           maxDistance={envProfile.clutterDistance}
         >
           <group position={[0, 0, 0]}>
-            <mesh position={[0, 0.6, 0]} castShadow>
-              <boxGeometry args={[0.4, 1.2, 0.4]} />
-              <meshStandardMaterial color="#d0d0d0" metalness={0.3} roughness={0.4} />
-            </mesh>
-            <mesh position={[0, 1.4, 0]}>
-              <cylinderGeometry args={[0.15, 0.18, 0.4, 8]} />
-              <meshStandardMaterial color="#a0d0e0" transparent opacity={0.5} roughness={0.1} />
-            </mesh>
+            <mesh position={[0, 0.6, 0]} castShadow material={mat_5}>
+              <boxGeometry args={[0.4, 1.2, 0.4]} /></mesh>
+            <mesh position={[0, 1.4, 0]} material={mat_6}>
+              <cylinderGeometry args={[0.15, 0.18, 0.4, 8]} /></mesh>
           </group>
         </SceneClutterGate>
       </EnvironmentDetail>
@@ -206,7 +242,7 @@ export function OfficeDayVisual({ livePlayerPositionRef }: OfficeDayVisualProps)
       {/* ═══════════════════════════════════════════════ */}
       {/* ── POTTED PLANTS (dying) ── */}
       {/* ═══════════════════════════════════════════════ */}
-      <EnvironmentDetail currentLod={lod} minLod="standard">
+      <EnvironmentDetail minLod="standard" position={[-6.5, 0, -2.0]}>
         {([
           [-6.5, 0, -2.0],
           [6.5, 0, -2.0],
@@ -230,10 +266,10 @@ export function OfficeDayVisual({ livePlayerPositionRef }: OfficeDayVisualProps)
       {lightPanel.positions.map(([x, z], i) => (
         <group key={`flpanel-${i}`} position={[x, H - 0.04, z]}>
           {/* Recessed housing frame */}
-          <mesh geometry={lightPanel.housingGeo} material={lightPanel.housingMat} />
+          <mesh geometry={lightPanel.housingGeo} material={mat_light_housing} />
           {/* Twin glowing tube strips */}
-          <mesh geometry={lightPanel.tubeGeo} material={lightPanel.tubeMat} position={[0, -0.025, -0.08]} />
-          <mesh geometry={lightPanel.tubeGeo} material={lightPanel.tubeMat} position={[0, -0.025, 0.08]} />
+          <mesh geometry={lightPanel.tubeGeo} material={mat_light_tube} position={[0, -0.025, -0.08]} />
+          <mesh geometry={lightPanel.tubeGeo} material={mat_light_tube} position={[0, -0.025, 0.08]} />
         </group>
       ))}
 
@@ -262,67 +298,45 @@ export function OfficeDayVisual({ livePlayerPositionRef }: OfficeDayVisualProps)
 
       {/* ── Post-it notes on cubicle dividers ── */}
       {[[-3.5, 1.2, -3.5], [-1.5, 1.15, -1.0], [1.5, 1.18, 1.5], [4.5, 1.22, -3.5]].map((pos, i) => (
-        <mesh key={`postit-${i}`} position={pos as [number, number, number]} rotation={[0, Math.random() * 0.3 - 0.15, 0.05]}>
-          <planeGeometry args={[0.05, 0.05]} />
-          <meshStandardMaterial color={['#ffdd44', '#ff8888', '#88ddff', '#88ff88'][i]} roughness={0.9} side={THREE.DoubleSide} />
-        </mesh>
+        <mesh key={`postit-${i}`} position={pos as [number, number, number]} rotation={[0, Math.random() * 0.3 - 0.15, 0.05]} material={mat(['#ffdd44', '#ff8888', '#88ddff', '#88ff88'][i], { roughness: 0.9, side: THREE.DoubleSide })}>
+          <planeGeometry args={[0.05, 0.05]} /></mesh>
       ))}
 
       {/* ── Coffee mug graveyard on desk ── */}
       <group position={[-4.5, 0, -3.5]}>
-        <mesh position={[0.4, 0.78, 0.2]}>
-          <cylinderGeometry args={[0.035, 0.03, 0.08, 8]} />
-          <meshStandardMaterial color="#e8e0d8" roughness={0.5} />
-        </mesh>
-        <mesh position={[0.35, 0.78, 0.25]}>
-          <cylinderGeometry args={[0.03, 0.025, 0.07, 8]} />
-          <meshStandardMaterial color="#2a2a2a" roughness={0.5} />
-        </mesh>
-        <mesh position={[0.45, 0.76, 0.15]} rotation={[0.2, 0, 0.3]}>
-          <cylinderGeometry args={[0.03, 0.025, 0.07, 8]} />
-          <meshStandardMaterial color="#8a4a4a" roughness={0.6} />
-        </mesh>
+        <mesh position={[0.4, 0.78, 0.2]} material={mat_7}>
+          <cylinderGeometry args={[0.035, 0.03, 0.08, 8]} /></mesh>
+        <mesh position={[0.35, 0.78, 0.25]} material={mat_8}>
+          <cylinderGeometry args={[0.03, 0.025, 0.07, 8]} /></mesh>
+        <mesh position={[0.45, 0.76, 0.15]} rotation={[0.2, 0, 0.3]} material={mat_9}>
+          <cylinderGeometry args={[0.03, 0.025, 0.07, 8]} /></mesh>
       </group>
 
       {/* ── Whiteboard with writing ── */}
       <group position={[-W / 2 + 0.02, 1.8, 0]} rotation-y={Math.PI / 2}>
-        <mesh>
-          <planeGeometry args={[2.0, 1.2]} />
-          <meshStandardMaterial color="#e8e8e8" roughness={0.3} />
-        </mesh>
+        <mesh material={mat_10}>
+          <planeGeometry args={[2.0, 1.2]} /></mesh>
         {/* Colored marker lines */}
-        <mesh position={[0, 0.2, 0.01]}>
-          <planeGeometry args={[1.2, 0.03]} />
-          <meshStandardMaterial color="#cc2222" roughness={0.9} />
-        </mesh>
-        <mesh position={[-0.3, -0.1, 0.01]}>
-          <planeGeometry args={[0.8, 0.03]} />
-          <meshStandardMaterial color="#2222cc" roughness={0.9} />
-        </mesh>
-        <mesh position={[0.1, -0.4, 0.01]}>
-          <planeGeometry args={[0.5, 0.03]} />
-          <meshStandardMaterial color="#22aa22" roughness={0.9} />
-        </mesh>
+        <mesh position={[0, 0.2, 0.01]} material={mat_11}>
+          <planeGeometry args={[1.2, 0.03]} /></mesh>
+        <mesh position={[-0.3, -0.1, 0.01]} material={mat_12}>
+          <planeGeometry args={[0.8, 0.03]} /></mesh>
+        <mesh position={[0.1, -0.4, 0.01]} material={mat_13}>
+          <planeGeometry args={[0.5, 0.03]} /></mesh>
       </group>
 
       {/* ── Paper stack on desk ── */}
       <group position={[1.5, 0, 1.5]}>
-        <mesh position={[0.5, 0.76, 0.25]} rotation={[0, 0.05, 0]}>
-          <boxGeometry args={[0.15, 0.015, 0.2]} />
-          <meshStandardMaterial color="#e8e4dc" roughness={0.9} />
-        </mesh>
-        <mesh position={[0.5, 0.77, 0.25]} rotation={[0, -0.02, 0.01]}>
-          <boxGeometry args={[0.14, 0.01, 0.19]} />
-          <meshStandardMaterial color="#f0ece4" roughness={0.9} />
-        </mesh>
+        <mesh position={[0.5, 0.76, 0.25]} rotation={[0, 0.05, 0]} material={mat_14}>
+          <boxGeometry args={[0.15, 0.015, 0.2]} /></mesh>
+        <mesh position={[0.5, 0.77, 0.25]} rotation={[0, -0.02, 0.01]} material={mat_15}>
+          <boxGeometry args={[0.14, 0.01, 0.19]} /></mesh>
       </group>
 
       {/* ── Server blinking lights (additional tiny emissive cubes) ── */}
       {[0.5, 0.9, 1.3, 1.7].map((y, i) => (
-        <mesh key={`srv-blink-${i}`} position={[5.9, y, -5.19]}>
-          <boxGeometry args={[0.015, 0.015, 0.01]} />
-          <meshStandardMaterial color="#00ff44" emissive="#00ff44" emissiveIntensity={2.0} />
-        </mesh>
+        <mesh key={`srv-blink-${i}`} position={[5.9, y, -5.19]} material={mat_16}>
+          <boxGeometry args={[0.015, 0.015, 0.01]} /></mesh>
       ))}
 
       {/* ═══════════════════════════════════════════════ */}
@@ -344,173 +358,117 @@ export function OfficeDayVisual({ livePlayerPositionRef }: OfficeDayVisualProps)
       ].map((div, i) => (
         <group key={`divider-${i}`} position={div.pos} rotation={[0, div.rot, 0]}>
           {/* Divider panel */}
-          <mesh position={[0, 0.75, 0]} castShadow>
-            <boxGeometry args={[1.4, 0.8, 0.03]} />
-            <meshStandardMaterial color="#5a5a6a" roughness={0.8} />
-          </mesh>
+          <mesh position={[0, 0.75, 0]} castShadow material={mat_17}>
+            <boxGeometry args={[1.4, 0.8, 0.03]} /></mesh>
           {/* Divider top rail */}
-          <mesh position={[0, 1.16, 0]}>
-            <boxGeometry args={[1.42, 0.025, 0.035]} />
-            <meshStandardMaterial color="#4a4a5a" metalness={0.3} roughness={0.5} />
-          </mesh>
+          <mesh position={[0, 1.16, 0]} material={mat_18}>
+            <boxGeometry args={[1.42, 0.025, 0.035]} /></mesh>
         </group>
       ))}
 
       {/* ── Printer/copier in corner ── */}
       <group position={[-6.0, 0, 2.0]}>
         {/* Printer body */}
-        <mesh position={[0, 0.35, 0]} castShadow>
-          <boxGeometry args={[0.5, 0.7, 0.5]} />
-          <meshStandardMaterial color="#e0e0e0" roughness={0.6} />
-        </mesh>
+        <mesh position={[0, 0.35, 0]} castShadow material={mat_19}>
+          <boxGeometry args={[0.5, 0.7, 0.5]} /></mesh>
         {/* Paper tray top */}
-        <mesh position={[0, 0.72, 0.15]}>
-          <boxGeometry args={[0.4, 0.02, 0.25]} />
-          <meshStandardMaterial color="#ccc" roughness={0.5} />
-        </mesh>
+        <mesh position={[0, 0.72, 0.15]} material={mat_20}>
+          <boxGeometry args={[0.4, 0.02, 0.25]} /></mesh>
         {/* Paper output tray */}
-        <mesh position={[0, 0.5, 0.28]}>
-          <boxGeometry args={[0.35, 0.01, 0.15]} />
-          <meshStandardMaterial color="#bbb" roughness={0.5} />
-        </mesh>
+        <mesh position={[0, 0.5, 0.28]} material={mat_21}>
+          <boxGeometry args={[0.35, 0.01, 0.15]} /></mesh>
         {/* Paper sheet in output */}
-        <mesh position={[0, 0.52, 0.28]} rotation={[0, 0.05, 0]}>
-          <boxGeometry args={[0.18, 0.003, 0.12]} />
-          <meshStandardMaterial color="#f0f0f0" roughness={0.9} />
-        </mesh>
+        <mesh position={[0, 0.52, 0.28]} rotation={[0, 0.05, 0]} material={mat_22}>
+          <boxGeometry args={[0.18, 0.003, 0.12]} /></mesh>
         {/* Status LED */}
-        <mesh position={[0.2, 0.55, 0.26]}>
-          <sphereGeometry args={[0.008, 4, 4]} />
-          <meshStandardMaterial color="#00aa00" emissive="#00aa00" emissiveIntensity={2.0} />
-        </mesh>
+        <mesh position={[0.2, 0.55, 0.26]} material={mat_23}>
+          <sphereGeometry args={[0.008, 4, 4]} /></mesh>
       </group>
 
       {/* ── Wall clock (back wall) ── */}
       <group position={[0, 2.8, -D / 2 + 0.05]}>
         {/* Clock face */}
-        <mesh>
-          <cylinderGeometry args={[0.2, 0.2, 0.03, 16]} />
-          <meshStandardMaterial color="#f0f0f0" roughness={0.4} />
-        </mesh>
+        <mesh material={mat_24}>
+          <cylinderGeometry args={[0.2, 0.2, 0.03, 16]} /></mesh>
         {/* Clock frame */}
-        <mesh position={[0, 0, 0.01]}>
-          <torusGeometry args={[0.2, 0.015, 8, 24]} />
-          <meshStandardMaterial color="#4a4a5a" metalness={0.5} roughness={0.4} />
-        </mesh>
+        <mesh position={[0, 0, 0.01]} material={mat_25}>
+          <torusGeometry args={[0.2, 0.015, 8, 24]} /></mesh>
         {/* Hour hand */}
-        <mesh position={[0, 0, 0.02]} rotation={[0, 0, -Math.PI / 3]}>
-          <boxGeometry args={[0.1, 0.012, 0.005]} />
-          <meshStandardMaterial color="#1a1a1a" />
-        </mesh>
+        <mesh position={[0, 0, 0.02]} rotation={[0, 0, -Math.PI / 3]} material={mat_26}>
+          <boxGeometry args={[0.1, 0.012, 0.005]} /></mesh>
         {/* Minute hand */}
-        <mesh position={[0, 0, 0.025]} rotation={[0, 0, -Math.PI / 6]}>
-          <boxGeometry args={[0.14, 0.008, 0.005]} />
-          <meshStandardMaterial color="#1a1a1a" />
-        </mesh>
+        <mesh position={[0, 0, 0.025]} rotation={[0, 0, -Math.PI / 6]} material={mat_26}>
+          <boxGeometry args={[0.14, 0.008, 0.005]} /></mesh>
         {/* Center dot */}
-        <mesh position={[0, 0, 0.03]}>
-          <sphereGeometry args={[0.008, 6, 6]} />
-          <meshStandardMaterial color="#aa2222" />
-        </mesh>
+        <mesh position={[0, 0, 0.03]} material={mat_27}>
+          <sphereGeometry args={[0.008, 6, 6]} /></mesh>
       </group>
 
       {/* ── Bulletin board on right wall ── */}
       <group position={[W / 2 - 0.02, 1.8, 3.0]} rotation-y={-Math.PI / 2}>
         {/* Board */}
-        <mesh>
-          <boxGeometry args={[1.2, 0.9, 0.03]} />
-          <meshStandardMaterial color="#8a6a3a" roughness={0.9} />
-        </mesh>
+        <mesh material={mat_28}>
+          <boxGeometry args={[1.2, 0.9, 0.03]} /></mesh>
         {/* Pinned papers */}
         {[-0.3, 0.0, 0.25].map((x, i) => (
-          <mesh key={`pin-paper-${i}`} position={[x, 0.1 - i * 0.12, 0.02]} rotation={[0, 0.1 - i * 0.05, 0]}>
-            <boxGeometry args={[0.2, 0.15, 0.002]} />
-            <meshStandardMaterial color={['#e8e4dc', '#f0ece4', '#ddd8cc'][i]} roughness={0.9} />
-          </mesh>
+          <mesh key={`pin-paper-${i}`} position={[x, 0.1 - i * 0.12, 0.02]} rotation={[0, 0.1 - i * 0.05, 0]} material={mat(['#e8e4dc', '#f0ece4', '#ddd8cc'][i], { roughness: 0.9 })}>
+            <boxGeometry args={[0.2, 0.15, 0.002]} /></mesh>
         ))}
         {/* Push pins */}
         {[-0.3, 0.0, 0.25].map((x, i) => (
-          <mesh key={`pin-${i}`} position={[x, 0.17 - i * 0.12, 0.03]}>
-            <sphereGeometry args={[0.008, 4, 4]} />
-            <meshStandardMaterial color={['#ff3333', '#3366ff', '#ffcc00'][i]} />
-          </mesh>
+          <mesh key={`pin-${i}`} position={[x, 0.17 - i * 0.12, 0.03]} material={mat(['#ff3333', '#3366ff', '#ffcc00'][i])}>
+            <sphereGeometry args={[0.008, 4, 4]} /></mesh>
         ))}
       </group>
 
       {/* ── Coffee station area ── */}
       <group position={[-5.5, 0, 4.5]}>
         {/* Small counter/table */}
-        <mesh position={[0, 0.4, 0]} castShadow>
-          <boxGeometry args={[0.8, 0.04, 0.5]} />
-          <meshStandardMaterial color="#4a4a5a" roughness={0.5} />
-        </mesh>
+        <mesh position={[0, 0.4, 0]} castShadow material={mat_29}>
+          <boxGeometry args={[0.8, 0.04, 0.5]} /></mesh>
         {/* Counter legs */}
         {[-0.35, 0.35].map((x, i) => (
-          <mesh key={`cleg-${i}`} position={[x, 0.2, 0]}>
-            <boxGeometry args={[0.04, 0.4, 0.04]} />
-            <meshStandardMaterial color="#3a3a4a" metalness={0.5} roughness={0.4} />
-          </mesh>
+          <mesh key={`cleg-${i}`} position={[x, 0.2, 0]} material={mat_30}>
+            <boxGeometry args={[0.04, 0.4, 0.04]} /></mesh>
         ))}
         {/* Coffee machine */}
-        <mesh position={[-0.15, 0.6, 0]} castShadow>
-          <boxGeometry args={[0.2, 0.25, 0.2]} />
-          <meshStandardMaterial color="#2a2a2e" metalness={0.4} roughness={0.5} />
-        </mesh>
+        <mesh position={[-0.15, 0.6, 0]} castShadow material={mat_31}>
+          <boxGeometry args={[0.2, 0.25, 0.2]} /></mesh>
         {/* Coffee machine display */}
-        <mesh position={[-0.15, 0.65, 0.105]}>
-          <boxGeometry args={[0.1, 0.05, 0.005]} />
-          <meshStandardMaterial color="#003300" emissive="#00aa44" emissiveIntensity={1.0} />
-        </mesh>
+        <mesh position={[-0.15, 0.65, 0.105]} material={mat_32}>
+          <boxGeometry args={[0.1, 0.05, 0.005]} /></mesh>
         {/* Mug collection on counter */}
-        <mesh position={[0.15, 0.46, 0.05]}>
-          <cylinderGeometry args={[0.03, 0.025, 0.07, 8]} />
-          <meshStandardMaterial color="#e8e0d8" roughness={0.5} />
-        </mesh>
-        <mesh position={[0.25, 0.46, -0.05]}>
-          <cylinderGeometry args={[0.028, 0.024, 0.065, 8]} />
-          <meshStandardMaterial color="#f0e8e0" roughness={0.5} />
-        </mesh>
+        <mesh position={[0.15, 0.46, 0.05]} material={mat_7}>
+          <cylinderGeometry args={[0.03, 0.025, 0.07, 8]} /></mesh>
+        <mesh position={[0.25, 0.46, -0.05]} material={mat_33}>
+          <cylinderGeometry args={[0.028, 0.024, 0.065, 8]} /></mesh>
         {/* Sugar bowl */}
-        <mesh position={[0.05, 0.44, -0.12]}>
-          <cylinderGeometry args={[0.035, 0.03, 0.05, 8]} />
-          <meshStandardMaterial color="#ffffff" roughness={0.6} />
-        </mesh>
+        <mesh position={[0.05, 0.44, -0.12]} material={mat_34}>
+          <cylinderGeometry args={[0.035, 0.03, 0.05, 8]} /></mesh>
       </group>
 
       {/* ── Umbrella stand near entrance ── */}
       <group position={[6.0, 0, 5.0]}>
-        <mesh position={[0, 0.25, 0]} castShadow>
-          <cylinderGeometry args={[0.12, 0.1, 0.5, 8]} />
-          <meshStandardMaterial color="#2a2a30" metalness={0.4} roughness={0.6} />
-        </mesh>
+        <mesh position={[0, 0.25, 0]} castShadow material={mat_35}>
+          <cylinderGeometry args={[0.12, 0.1, 0.5, 8]} /></mesh>
         {/* Umbrella handles sticking out */}
-        <mesh position={[0.03, 0.55, 0]} rotation={[0.15, 0, 0.1]}>
-          <cylinderGeometry args={[0.008, 0.008, 0.5, 4]} />
-          <meshStandardMaterial color="#1a1a1a" roughness={0.7} />
-        </mesh>
-        <mesh position={[-0.04, 0.5, 0.02]} rotation={[-0.1, 0.3, -0.08]}>
-          <cylinderGeometry args={[0.006, 0.006, 0.45, 4]} />
-          <meshStandardMaterial color="#8b2020" roughness={0.7} />
-        </mesh>
+        <mesh position={[0.03, 0.55, 0]} rotation={[0.15, 0, 0.1]} material={mat_36}>
+          <cylinderGeometry args={[0.008, 0.008, 0.5, 4]} /></mesh>
+        <mesh position={[-0.04, 0.5, 0.02]} rotation={[-0.1, 0.3, -0.08]} material={mat_37}>
+          <cylinderGeometry args={[0.006, 0.006, 0.45, 4]} /></mesh>
       </group>
 
       {/* ── Headphones on desk ── */}
       <group position={[-1.5, 0, -1.0]}>
         {/* Headband */}
-        <mesh position={[0.55, 0.85, 0.15]} rotation={[0, 0, 0]}>
-          <torusGeometry args={[0.06, 0.006, 4, 12, Math.PI]} />
-          <meshStandardMaterial color="#1a1a1a" roughness={0.7} />
-        </mesh>
+        <mesh position={[0.55, 0.85, 0.15]} rotation={[0, 0, 0]} material={mat_36}>
+          <torusGeometry args={[0.06, 0.006, 4, 12, Math.PI]} /></mesh>
         {/* Left ear cup */}
-        <mesh position={[0.49, 0.8, 0.15]} rotation={[0, Math.PI / 2, 0]}>
-          <cylinderGeometry args={[0.03, 0.03, 0.025, 8]} />
-          <meshStandardMaterial color="#2a2a2a" roughness={0.8} />
-        </mesh>
+        <mesh position={[0.49, 0.8, 0.15]} rotation={[0, Math.PI / 2, 0]} material={mat_38}>
+          <cylinderGeometry args={[0.03, 0.03, 0.025, 8]} /></mesh>
         {/* Right ear cup */}
-        <mesh position={[0.61, 0.8, 0.15]} rotation={[0, Math.PI / 2, 0]}>
-          <cylinderGeometry args={[0.03, 0.03, 0.025, 8]} />
-          <meshStandardMaterial color="#2a2a2a" roughness={0.8} />
-        </mesh>
+        <mesh position={[0.61, 0.8, 0.15]} rotation={[0, Math.PI / 2, 0]} material={mat_38}>
+          <cylinderGeometry args={[0.03, 0.03, 0.025, 8]} /></mesh>
       </group>
 
       {/* ── More sticky notes cluster on divider ── */}
@@ -521,46 +479,34 @@ export function OfficeDayVisual({ livePlayerPositionRef }: OfficeDayVisualProps)
         { pos: [3.0, 1.1, -2.2] as [number, number, number], color: '#88ddff', rot: -0.1 },
         { pos: [3.0, 0.95, -2.3] as [number, number, number], color: '#ffdd44', rot: 0.08 },
       ].map((note, i) => (
-        <mesh key={`extra-postit-${i}`} position={note.pos} rotation={[0, 0, note.rot]}>
-          <planeGeometry args={[0.06, 0.06]} />
-          <meshStandardMaterial color={note.color} roughness={0.9} side={THREE.DoubleSide} />
-        </mesh>
+        <mesh key={`extra-postit-${i}`} position={note.pos} rotation={[0, 0, note.rot]} material={mat(note.color, { roughness: 0.9, side: THREE.DoubleSide })}>
+          <planeGeometry args={[0.06, 0.06]} /></mesh>
       ))}
 
       {/* ── Phone on desk ── */}
       <group position={[1.5, 0, -3.5]}>
-        <mesh position={[-0.45, 0.76, -0.2]}>
-          <boxGeometry args={[0.06, 0.008, 0.12]} />
-          <meshStandardMaterial color="#1a1a1a" roughness={0.6} />
-        </mesh>
+        <mesh position={[-0.45, 0.76, -0.2]} material={mat_39}>
+          <boxGeometry args={[0.06, 0.008, 0.12]} /></mesh>
         {/* Phone screen */}
-        <mesh position={[-0.45, 0.765, -0.2]}>
-          <boxGeometry args={[0.05, 0.003, 0.08]} />
-          <meshStandardMaterial color="#001133" emissive="#4466aa" emissiveIntensity={0.8} />
-        </mesh>
+        <mesh position={[-0.45, 0.765, -0.2]} material={mat_40}>
+          <boxGeometry args={[0.05, 0.003, 0.08]} /></mesh>
       </group>
 
       {/* ── Ceiling vent ── */}
       <group position={[5.0, H - 0.02, 2.0]} rotation-x={Math.PI / 2}>
-        <mesh>
-          <planeGeometry args={[0.6, 0.3]} />
-          <meshStandardMaterial color="#c0c8d0" roughness={0.8} />
-        </mesh>
+        <mesh material={mat_41}>
+          <planeGeometry args={[0.6, 0.3]} /></mesh>
         {/* Vent slats */}
         {[-0.1, -0.03, 0.04, 0.11].map((y, i) => (
-          <mesh key={`vent-${i}`} position={[0, y, 0.001]}>
-            <boxGeometry args={[0.55, 0.015, 0.003]} />
-            <meshStandardMaterial color="#b0b8c0" roughness={0.7} />
-          </mesh>
+          <mesh key={`vent-${i}`} position={[0, y, 0.001]} material={mat_42}>
+            <boxGeometry args={[0.55, 0.015, 0.003]} /></mesh>
         ))}
       </group>
 
       {/* ── Emergency exit sign ── */}
       <group position={[6.5, 2.6, 5.5]} rotation-y={-Math.PI / 4}>
-        <mesh>
-          <boxGeometry args={[0.3, 0.12, 0.03]} />
-          <meshStandardMaterial color="#003300" emissive="#00aa00" emissiveIntensity={1.5} />
-        </mesh>
+        <mesh material={mat_43}>
+          <boxGeometry args={[0.3, 0.12, 0.03]} /></mesh>
         {/* Sign light spill */}
         <pointLight position={[0, -0.2, 0.3]} color="#00aa00" intensity={0.5} distance={3} />
       </group>
@@ -592,50 +538,32 @@ function OfficeDesk({ position }: { position: [number, number, number] }) {
   return (
     <group position={position}>
       {/* Desk top */}
-      <mesh position={[0, 0.72, 0]} castShadow receiveShadow>
-        <boxGeometry args={[1.4, 0.04, 0.7]} />
-        <meshStandardMaterial color="#4a4a5a" roughness={0.5} />
-      </mesh>
+      <mesh position={[0, 0.72, 0]} castShadow receiveShadow material={mat_29}>
+        <boxGeometry args={[1.4, 0.04, 0.7]} /></mesh>
       {/* Leg panel left */}
-      <mesh position={[-0.65, 0.35, 0]}>
-        <boxGeometry args={[0.04, 0.7, 0.65]} />
-        <meshStandardMaterial color="#3a3a4a" metalness={0.5} roughness={0.4} />
-      </mesh>
+      <mesh position={[-0.65, 0.35, 0]} material={mat_30}>
+        <boxGeometry args={[0.04, 0.7, 0.65]} /></mesh>
       {/* Leg panel right */}
-      <mesh position={[0.65, 0.35, 0]}>
-        <boxGeometry args={[0.04, 0.7, 0.65]} />
-        <meshStandardMaterial color="#3a3a4a" metalness={0.5} roughness={0.4} />
-      </mesh>
+      <mesh position={[0.65, 0.35, 0]} material={mat_30}>
+        <boxGeometry args={[0.04, 0.7, 0.65]} /></mesh>
       {/* Monitor */}
-      <mesh position={[0, 1.1, -0.15]}>
-        <boxGeometry args={[0.55, 0.35, 0.03]} />
-        <meshStandardMaterial color="#001122" emissive="#4488ff" emissiveIntensity={1.0} />
-      </mesh>
+      <mesh position={[0, 1.1, -0.15]} material={mat_44}>
+        <boxGeometry args={[0.55, 0.35, 0.03]} /></mesh>
       {/* Monitor stand */}
-      <mesh position={[0, 0.85, -0.15]}>
-        <boxGeometry args={[0.06, 0.12, 0.06]} />
-        <meshStandardMaterial color="#333" metalness={0.6} />
-      </mesh>
+      <mesh position={[0, 0.85, -0.15]} material={mat_45}>
+        <boxGeometry args={[0.06, 0.12, 0.06]} /></mesh>
       {/* Keyboard */}
-      <mesh position={[0, 0.75, 0.15]}>
-        <boxGeometry args={[0.35, 0.015, 0.12]} />
-        <meshStandardMaterial color="#1a1a1a" />
-      </mesh>
+      <mesh position={[0, 0.75, 0.15]} material={mat_26}>
+        <boxGeometry args={[0.35, 0.015, 0.12]} /></mesh>
       {/* Mouse */}
-      <mesh position={[0.3, 0.75, 0.15]}>
-        <boxGeometry args={[0.06, 0.015, 0.1]} />
-        <meshStandardMaterial color="#1a1a1a" />
-      </mesh>
+      <mesh position={[0.3, 0.75, 0.15]} material={mat_26}>
+        <boxGeometry args={[0.06, 0.015, 0.1]} /></mesh>
       {/* Chair */}
       <group position={[0, 0, 0.6]}>
-        <mesh position={[0, 0.42, 0]} castShadow>
-          <boxGeometry args={[0.45, 0.04, 0.45]} />
-          <meshStandardMaterial color="#2a2a3a" roughness={0.7} />
-        </mesh>
-        <mesh position={[0, 0.7, -0.2]} castShadow>
-          <boxGeometry args={[0.45, 0.45, 0.04]} />
-          <meshStandardMaterial color="#2a2a3a" roughness={0.7} />
-        </mesh>
+        <mesh position={[0, 0.42, 0]} castShadow material={mat_46}>
+          <boxGeometry args={[0.45, 0.04, 0.45]} /></mesh>
+        <mesh position={[0, 0.7, -0.2]} castShadow material={mat_46}>
+          <boxGeometry args={[0.45, 0.45, 0.04]} /></mesh>
       </group>
     </group>
   );
@@ -646,29 +574,21 @@ function ServerRack({ position }: { position: [number, number, number] }) {
   return (
     <group position={position}>
       {/* Main rack body */}
-      <mesh position={[0, 1.0, 0]} castShadow>
-        <boxGeometry args={[0.8, 2.0, 0.6]} />
-        <meshStandardMaterial color="#2a2a30" metalness={0.7} roughness={0.3} />
-      </mesh>
+      <mesh position={[0, 1.0, 0]} castShadow material={mat_47}>
+        <boxGeometry args={[0.8, 2.0, 0.6]} /></mesh>
       {/* Server units */}
       {[0.3, 0.7, 1.1, 1.5, 1.8].map((y, i) => (
-        <mesh key={i} position={[0, y, 0.31]}>
-          <boxGeometry args={[0.7, 0.12, 0.01]} />
-          <meshStandardMaterial color="#3a3a40" metalness={0.5} roughness={0.4} />
-        </mesh>
+        <mesh key={i} position={[0, y, 0.31]} material={mat_48}>
+          <boxGeometry args={[0.7, 0.12, 0.01]} /></mesh>
       ))}
       {/* LED indicators (red dots) */}
       {[0.3, 0.7, 1.1].map((y, i) => (
-        <mesh key={`led-${i}`} position={[0.3, y + 0.04, 0.32]}>
-          <boxGeometry args={[0.02, 0.02, 0.01]} />
-          <meshStandardMaterial color="#ff2244" emissive="#ff2244" emissiveIntensity={2.0} />
-        </mesh>
+        <mesh key={`led-${i}`} position={[0.3, y + 0.04, 0.32]} material={mat_49}>
+          <boxGeometry args={[0.02, 0.02, 0.01]} /></mesh>
       ))}
       {/* Green status LED */}
-      <mesh position={[-0.3, 1.84, 0.32]}>
-        <boxGeometry args={[0.02, 0.02, 0.01]} />
-        <meshStandardMaterial color="#00ff44" emissive="#00ff44" emissiveIntensity={1.5} />
-      </mesh>
+      <mesh position={[-0.3, 1.84, 0.32]} material={mat_50}>
+        <boxGeometry args={[0.02, 0.02, 0.01]} /></mesh>
     </group>
   );
 }
@@ -678,24 +598,16 @@ function DyingPlant({ position }: { position: [number, number, number] }) {
   return (
     <group position={position}>
       {/* Pot */}
-      <mesh position={[0, 0.2, 0]} castShadow>
-        <cylinderGeometry args={[0.18, 0.15, 0.4, 8]} />
-        <meshStandardMaterial color="#6a4a30" roughness={0.8} />
-      </mesh>
+      <mesh position={[0, 0.2, 0]} castShadow material={mat_51}>
+        <cylinderGeometry args={[0.18, 0.15, 0.4, 8]} /></mesh>
       {/* Dying stems */}
-      <mesh position={[0, 0.5, 0]}>
-        <cylinderGeometry args={[0.01, 0.015, 0.3, 4]} />
-        <meshStandardMaterial color="#4a5a2a" roughness={0.9} />
-      </mesh>
-      <mesh position={[0.05, 0.55, 0.03]} rotation={[0.2, 0, 0.3]}>
-        <cylinderGeometry args={[0.008, 0.01, 0.2, 4]} />
-        <meshStandardMaterial color="#3a4a1a" roughness={0.9} />
-      </mesh>
+      <mesh position={[0, 0.5, 0]} material={mat_52}>
+        <cylinderGeometry args={[0.01, 0.015, 0.3, 4]} /></mesh>
+      <mesh position={[0.05, 0.55, 0.03]} rotation={[0.2, 0, 0.3]} material={mat_53}>
+        <cylinderGeometry args={[0.008, 0.01, 0.2, 4]} /></mesh>
       {/* Few sad leaves */}
-      <mesh position={[0, 0.65, 0]}>
-        <sphereGeometry args={[0.08, 6, 6]} />
-        <meshStandardMaterial color="#3a4a1a" roughness={0.9} />
-      </mesh>
+      <mesh position={[0, 0.65, 0]} material={mat_53}>
+        <sphereGeometry args={[0.08, 6, 6]} /></mesh>
     </group>
   );
 }

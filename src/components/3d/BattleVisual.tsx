@@ -13,7 +13,6 @@ import {
 
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { eventBus } from '@/engine/EventBus';
-import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { EnvironmentDetail } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 
@@ -24,7 +23,6 @@ interface BattleVisualProps {
 /** CyberPunk2077/MatrixRain combat arena (12×12m) */
 export function BattleVisual({ livePlayerPositionRef: _livePlayerPositionRef }: BattleVisualProps) {
   const floorTexture = useCachedCanvasTexture('battle:floor', createArenaFloorTexture);
-  const { lod } = useEnvironmentLod();
 
   const W = 12;
   const D = 12;
@@ -88,7 +86,7 @@ export function BattleVisual({ livePlayerPositionRef: _livePlayerPositionRef }: 
       {/* ═══════════════════════════════════════════════ */}
       {/* ── DEBRIS ── */}
       {/* ═══════════════════════════════════════════════ */}
-      <EnvironmentDetail currentLod={lod} minLod="standard">
+      <EnvironmentDetail minLod="standard" position={[0, 0, 0]}>
       {Array.from({ length: 8 }).map((_, i) => {
         const x = Math.sin(i * 2.7) * 4;
         const z = Math.cos(i * 3.1) * 4;

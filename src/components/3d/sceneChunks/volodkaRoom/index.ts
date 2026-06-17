@@ -1,8 +1,8 @@
 import { createSceneChunk } from '../lazySceneChunk';
-import type { VolodkaRoomClutterChunkProps } from './VolodkaRoomClutterChunk';
 
-export const VolodkaRoomClutter = createSceneChunk<VolodkaRoomClutterChunkProps>(
+export const VolodkaRoomClutter = createSceneChunk<Record<string, never>>(
   'volodka-room-clutter',
+  'volodka_room',
   () =>
     import('./VolodkaRoomClutterChunk').then((mod) => ({
       default: mod.VolodkaRoomClutterChunk,

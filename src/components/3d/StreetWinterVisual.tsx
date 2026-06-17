@@ -4,7 +4,6 @@
 import { useMemo } from 'react';
 import * as THREE from 'three';
 import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
-import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { EnvironmentDetail, PropDistanceGate } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { createStreetWinterColdSkyTexture } from '@/engine/graphics/proceduralSkyTextures';
@@ -16,7 +15,6 @@ interface StreetWinterVisualProps {
 /** Gothic/Noir winter street (25×25m) */
 export function StreetWinterVisual({ livePlayerPositionRef }: StreetWinterVisualProps) {
   const groundTexture = useCachedCanvasTexture('street_winter:ground', createWinterGroundTexture);
-  const { lod } = useEnvironmentLod();
   const envProfile = useMemo(() => getEnvironmentLodProfile('street_winter'), []);
 
   const W = 25;
@@ -61,7 +59,7 @@ export function StreetWinterVisual({ livePlayerPositionRef }: StreetWinterVisual
       {/* ═══════════════════════════════════════════════ */}
       {/* ── BARE TREES ── */}
       {/* ═══════════════════════════════════════════════ */}
-      <EnvironmentDetail currentLod={lod} minLod="standard">
+      <EnvironmentDetail minLod="standard" position={[0, 0, -3]}>
       <BareTree position={[-4, 0, -5]} />
       <BareTree position={[4, 0, -3]} />
       <BareTree position={[-3, 0, 5]} />
@@ -73,7 +71,7 @@ export function StreetWinterVisual({ livePlayerPositionRef }: StreetWinterVisual
       {/* ═══════════════════════════════════════════════ */}
       {/* ── ICICLES (on building edges) ── */}
       {/* ═══════════════════════════════════════════════ */}
-      <EnvironmentDetail currentLod={lod} minLod="full">
+      <EnvironmentDetail minLod="full" position={[-5, 12, -6]}>
       {[
         [-6, 12, -8], [-5, 12, -8], [-4, 12, -8],
         [5.5, 14, -5], [6.5, 14, -5], [7.5, 14, -5],
@@ -217,7 +215,7 @@ export function StreetWinterVisual({ livePlayerPositionRef }: StreetWinterVisual
       </WinterClutterGate>
 
       {/* ── Footprints in snow (3D depressions) ── */}
-      <EnvironmentDetail currentLod={lod} minLod="full">
+      <EnvironmentDetail minLod="full" position={[0, 0, -2]}>
       {[
         [0, 0.005, -3], [0.2, 0.005, -2.5], [-0.1, 0.005, -2.0], [0.15, 0.005, -1.5],
       ].map((pos, i) => (

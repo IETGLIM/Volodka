@@ -13,7 +13,6 @@ import {
 } from '@/engine/three/moduleGeometryRegistry';
 
 import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
-import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { EnvironmentDetail, PropDistanceGate } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { createAbandonedFactoryIndustrialSkyTexture } from '@/engine/graphics/proceduralSkyTextures';
@@ -30,7 +29,6 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
     'abandoned_factory:industrial-ceiling',
     createAbandonedFactoryIndustrialSkyTexture,
   );
-  const { lod } = useEnvironmentLod();
   const envProfile = useMemo(() => getEnvironmentLodProfile('abandoned_factory'), []);
 
   const W = 20;
@@ -103,7 +101,7 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
       {/* ═══════════════════════════════════════════════ */}
       {/* ── RUSTED MACHINERY (distance + LOD gated) ── */}
       {/* ═══════════════════════════════════════════════ */}
-      <EnvironmentDetail currentLod={lod} minLod="standard">
+      <EnvironmentDetail minLod="standard" position={[-7, 0, -5]}>
         <FactoryPropGate livePlayerPositionRef={livePlayerPositionRef} position={[-7, 0, -5]} maxDistance={envProfile.decorativeDistance}>
           {/* Large press machine (left) */}
           <mesh position={[0, 1.5, 0]} castShadow geometry={getSharedBoxGeometry(2.0, 3.0, 1.5)}>
@@ -116,7 +114,9 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
             <meshStandardMaterial color="#5a5a5a" metalness={0.6} roughness={0.4} />
           </mesh>
         </FactoryPropGate>
+      </EnvironmentDetail>
 
+      <EnvironmentDetail minLod="standard" position={[6, 0, -3]}>
         <FactoryPropGate livePlayerPositionRef={livePlayerPositionRef} position={[6, 0, -3]} maxDistance={envProfile.decorativeDistance}>
           <mesh position={[0, 0.8, 0]} castShadow geometry={getSharedBoxGeometry(1.2, 1.6, 1.0)}>
             <meshStandardMaterial color="#8a4020" roughness={0.85} metalness={0.3} />
@@ -160,7 +160,7 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
       {/* ═══════════════════════════════════════════════ */}
       {/* ── CONVEYOR BELTS ── */}
       {/* ═══════════════════════════════════════════════ */}
-      <EnvironmentDetail currentLod={lod} minLod="standard">
+      <EnvironmentDetail minLod="standard" position={[0, 0, 2]}>
       <group position={[0, 0, 2]}>
         {/* Belt surface */}
         <mesh position={[0, 0.6, 0]} castShadow geometry={getSharedBoxGeometry(8, 0.05, 1.0)}>
@@ -184,7 +184,7 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
       {/* ═══════════════════════════════════════════════ */}
       {/* ── CHEMICAL VATS ── */}
       {/* ═══════════════════════════════════════════════ */}
-      <EnvironmentDetail currentLod={lod} minLod="full">
+      <EnvironmentDetail minLod="full" position={[-4, 0, 4]}>
       <FactoryPropGate livePlayerPositionRef={livePlayerPositionRef} position={[-4, 0, 4]} maxDistance={envProfile.clutterDistance}>
         <ChemicalVat position={[-1, 0, 1]} color="#22aa44" />
         <ChemicalVat position={[1, 0, 1]} color="#22aa44" />
@@ -195,7 +195,7 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
       {/* ═══════════════════════════════════════════════ */}
       {/* ── CATWALK (elevated) ── */}
       {/* ═══════════════════════════════════════════════ */}
-      <EnvironmentDetail currentLod={lod} minLod="standard">
+      <EnvironmentDetail minLod="standard" position={[0, 3.5, -7]}>
       <group position={[0, 3.5, -7]}>
         {/* Walkway */}
         <mesh castShadow geometry={getSharedBoxGeometry(12, 0.05, 1.2)}>
@@ -217,7 +217,7 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
       {/* ═══════════════════════════════════════════════ */}
       {/* ── GRAFFITI WALLS ── */}
       {/* ═══════════════════════════════════════════════ */}
-      <EnvironmentDetail currentLod={lod} minLod="full">
+      <EnvironmentDetail minLod="full" position={[-7.5, 2.5, -2.5]}>
       <group position={[-W / 2 + 0.02, 2, 0]}>
         {/* Graffiti patch 1 */}
         <mesh rotation-y={Math.PI / 2} geometry={getSharedPlaneGeometry(2, 1.5)}>
@@ -234,7 +234,7 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
       {/* ═══════════════════════════════════════════════ */}
       {/* ── COLLAPSED CEILING SECTION ── */}
       {/* ═══════════════════════════════════════════════ */}
-      <EnvironmentDetail currentLod={lod} minLod="full">
+      <EnvironmentDetail minLod="full" position={[5, 0, -5]}>
       <FactoryPropGate livePlayerPositionRef={livePlayerPositionRef} position={[5, 0, -5]} maxDistance={envProfile.decorativeDistance}>
       <group position={[0, 0, 0]}>
         {/* Debris on floor */}

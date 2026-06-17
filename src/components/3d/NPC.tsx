@@ -10,7 +10,7 @@ import {
   CONTACT_SHADOW_CACHE_KEYS,
   createContactShadowTexture,
 } from '@/engine/three/contactShadowTexture';
-import { useFrameTick } from '@/engine/frame/useFrameTick';
+import { useRegisterNpcFrame } from '@/engine/npc/npcFrameBatch';
 import * as THREE from 'three';
 import type { NPCDefinition, NPCAppearance } from '@/shared/types/game';
 
@@ -39,6 +39,14 @@ import {
   scaleNpcLodThresholds,
   type NpcLodLevel,
 } from '@/engine/lod/distanceLod';
+import {
+  npcTierHasHeadTracking,
+  npcTierHasNameLabels,
+  npcTierHasProximityBark,
+  npcTierHasQuestMarker,
+  resolveNpcActivityForTier,
+  type NpcRenderTier,
+} from '@/engine/npc/npcRenderTier';
 import {
   NpcNameSprite,
   NpcSpeechSprite,
@@ -86,6 +94,8 @@ interface NPCProps {
   activity?: string;
   /** Patrol waypoints for wandering behavior */
   patrolWaypoints?: [number, number, number][];
+  /** Visual/update fidelity tier (hero, interactive, background). */
+  renderTier?: NpcRenderTier;
 }
 
 /** Single NPC with LOD, animations, quest markers, bark, speech bubble,
@@ -99,6 +109,7 @@ export function NPC({
   isInteractionTarget = false,
   activity = 'idle',
   patrolWaypoints,
+  renderTier = 'interactive',
 }: NPCProps) {
   const groupRef = useRef<THREE.Group>(null);
   const impostorRef = useRef<THREE.Group>(null);
@@ -183,7 +194,7 @@ export function NPC({
     }
   };
 
-  useFrameTick('npc', ({ delta }) => {
+  useRegisterNpcFrame(definition.id, 'main', ({ delta }) => {
     if (!groupRef.current) return;
 
     // ── Update patrol state ──
@@ -236,28 +247,34 @@ export function NPC({
     }
 
     // ── Head tracking: make NPC look at player when nearby ──
-    if (newLod === 'full' && dist < HEAD_TRACKING_DISTANCE) {
+    if (
+      npcTierHasHeadTracking(renderTier) &&
+      newLod === 'full' &&
+      dist < HEAD_TRACKING_DISTANCE
+    ) {
       updateHeadTracking(definition.id, groupRef.current, playerPos, delta);
     }
 
     // ── Name label: fade based on distance (ref-based, throttled React state updates) ──
-    if (dist < NAME_LABEL_MAX_DISTANCE) {
-      const fadeFactor = 1.0 - (dist / NAME_LABEL_MAX_DISTANCE);
-      nameLabelOpacityRef.current = Math.min(1, fadeFactor * 1.5);
-    } else {
-      nameLabelOpacityRef.current = 0;
-    }
+    if (npcTierHasNameLabels(renderTier)) {
+      if (dist < NAME_LABEL_MAX_DISTANCE) {
+        const fadeFactor = 1.0 - (dist / NAME_LABEL_MAX_DISTANCE);
+        nameLabelOpacityRef.current = Math.min(1, fadeFactor * 1.5);
+      } else {
+        nameLabelOpacityRef.current = 0;
+      }
 
-    // Throttle React state updates to ~10fps for name labels
-    nameLabelUpdateTimerRef.current += delta;
-    if (nameLabelUpdateTimerRef.current > 0.1) {
-      nameLabelUpdateTimerRef.current = 0;
-      const newOpacity = nameLabelOpacityRef.current;
-      setNameLabelOpacity((prev) => Math.abs(prev - newOpacity) > 0.05 ? newOpacity : prev);
+      // Throttle React state updates to ~10fps for name labels
+      nameLabelUpdateTimerRef.current += delta;
+      if (nameLabelUpdateTimerRef.current > 0.1) {
+        nameLabelUpdateTimerRef.current = 0;
+        const newOpacity = nameLabelOpacityRef.current;
+        setNameLabelOpacity((prev) => Math.abs(prev - newOpacity) > 0.05 ? newOpacity : prev);
+      }
     }
 
     // Proximity bark — skip during active interaction
-    if (interactionState === InteractionState.Idle) {
+    if (npcTierHasProximityBark(renderTier) && interactionState === InteractionState.Idle) {
       barkCooldownRef.current -= delta;
       if (dist < 3.0 && !hasBarkedRef.current && barkCooldownRef.current <= 0 && barkPhase === 'hidden') {
         hasBarkedRef.current = true;
@@ -306,7 +323,11 @@ export function NPC({
   });
 
   const isPatrolDriven = shouldPatrol(activity, isInteractionTarget, !!patrolWaypoints?.length);
-  const modelActivity = isPatrolDriven ? patrolActivity : activity;
+  const modelActivity = resolveNpcActivityForTier(
+    isPatrolDriven ? patrolActivity : activity,
+    renderTier,
+    isInteractionTarget,
+  );
 
   return (
     <group ref={groupRef}>
@@ -333,7 +354,7 @@ export function NPC({
           />
         )}
 
-        {nameLabelOpacity > 0 && (
+        {nameLabelOpacity > 0 && npcTierHasNameLabels(renderTier) && (
           <NPCNameLabel
             name={definition.name}
             accentColor={appearance.accentColor}
@@ -344,7 +365,7 @@ export function NPC({
       </group>
 
       <group ref={questMarkerRef} visible={false}>
-        <QuestMarker npcId={definition.id} />
+        {npcTierHasQuestMarker(renderTier) && <QuestMarker npcId={definition.id} />}
       </group>
     </group>
   );

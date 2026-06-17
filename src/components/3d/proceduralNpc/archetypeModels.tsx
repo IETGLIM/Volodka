@@ -3,8 +3,8 @@
      Distinct silhouettes per lore NPC — low-poly Three.js primitives.
      Quality matches the ProceduralPlayerModel in PhysicsPlayer.tsx. ─── */
 
-import { useRef, useEffect, useMemo } from 'react';
-import { useFrameTick } from '@/engine/frame/useFrameTick';
+import { useRef, useEffect, useMemo, useId } from 'react';
+import { useRegisterNpcFrame } from '@/engine/npc/npcFrameBatch';
 import * as THREE from 'three';
 import type { NPCAppearance } from '@/shared/types/game';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
@@ -307,6 +307,7 @@ function useNPCAnimation(
   animState: 'idle' | 'walk' | 'talk',
   bodyLeanX = 0.06,
 ) {
+  const tickOwner = useId();
   const animTimeRef = useRef(0);
   // Use useEffect to sync animState into a ref for useFrame access
   const animStateRef = useRef(animState);
@@ -324,7 +325,7 @@ function useNPCAnimation(
     animStateRef.current = animState;
   }, [animState]);
 
-  useFrameTick('npc', ({ delta }) => {
+  useRegisterNpcFrame(tickOwner, 'procedural', ({ delta }) => {
     if (!groupRef.current) return;
     const dt = Math.min(delta, 0.05);
     animTimeRef.current += dt;

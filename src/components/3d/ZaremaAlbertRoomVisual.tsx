@@ -4,7 +4,6 @@
 import type { MutableRefObject } from 'react';
 import * as THREE from 'three';
 import { Desk, Chair, Laptop, Lamp, Radiator, Plant } from './lazyInteriorModels';
-import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { EnvironmentDetail } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { createZaremaAlbertWarmSkyTexture } from '@/engine/graphics/proceduralSkyTextures';
@@ -71,7 +70,6 @@ export function ZaremaAlbertRoomVisual({ livePlayerPositionRef: _livePlayerPosit
     'zarema_albert_room:warm-ceiling',
     createZaremaAlbertWarmSkyTexture,
   );
-  const { lod } = useEnvironmentLod();
 
   const W = 8;
   const D = 8;
@@ -439,7 +437,7 @@ export function ZaremaAlbertRoomVisual({ livePlayerPositionRef: _livePlayerPosit
       {/* ═══════════════════════════════════════════════ */}
       {/* ── INTERIOR MODELS (lazy chunk) ── */}
       {/* ═══════════════════════════════════════════════ */}
-      <EnvironmentDetail currentLod={lod} minLod="standard">
+      <EnvironmentDetail minLod="standard" position={[2.5, 0, 1.5]}>
 
       {/* ── Second desk (Zarema's desk) with laptop ── */}
       <Desk position={[2.5, 0, 1.5]} color="#7a5a38" />
