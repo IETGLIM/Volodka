@@ -596,6 +596,12 @@ export const GOLDEN_PATH_BRANCH_HINTS: Record<string, string> = {
 };
 
 /**
+ * STORY_NODE_GUIDANCE — HUD objective text for StoryGuidanceHUD (ROADMAP §2 / Sprint 4).
+ * Alias for {@link GOLDEN_PATH_BRANCH_HINTS}; spine steps also accept guidanceHint on nodes.
+ */
+export const STORY_NODE_GUIDANCE = GOLDEN_PATH_BRANCH_HINTS;
+
+/**
  * Act 1 side arc — Алина «Солныш», Лёня, три дружеских квеста.
  * Tracked in GOLDEN_PATH_QUEST_SPINE for HUD/markers; not required for act advance.
  */

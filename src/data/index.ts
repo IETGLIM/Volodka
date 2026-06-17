@@ -45,6 +45,7 @@ export { POEMS } from './poems';
 export {
   GOLDEN_PATH_STORY_SPINE,
   GOLDEN_PATH_BRANCH_HINTS,
+  STORY_NODE_GUIDANCE,
   GOLDEN_PATH_QUEST_SPINE,
   ACT1_SOLNYSH_QUEST_SPINE,
 } from './goldenPath';

@@ -4,7 +4,7 @@
 > подготовка к запуску на Vercel. Документ заменяет устаревшие `CODE_REVIEW.md` и
 > `DEEP_CODE_REVIEW.md`, которые описывают состояние проекта **до** большого рефакторинга.
 
-**Дата:** 17 июня 2026 · **Версия:** 4.2.39 · **Целевая аудитория игры:** и новички
+**Дата:** 17 июня 2026 · **Версия:** 4.2.40 · **Целевая аудитория игры:** и новички
 (родители, друзья — не геймеры), и опытные игроки (баланс «лёгкий вход + глубина»).
 
 ---
@@ -16,7 +16,7 @@
 | Типы | `npm run typecheck` | ✅ чисто |
 | Юнит-тесты | `npm run test:unit` | ✅ 1100+ тестов |
 | Линтер | `npm run lint` | ✅ 0 ошибок |
-| Контент | `npm run validate:content` | ✅ 0 ошибок |
+| Контент | `npm run validate:content` | ✅ 0 ошибок; golden-path 0 |
 | Ассеты | `npm run assets:validate` | ✅ shipped GLB на диске (вкл. env/veg bundles) |
 | Статус пайплайна | `npm run assets:status` | ✅ manifest + AI3DGen catalog vs disk |
 | Сборка | `npm run build` | ✅ + бюджеты бандла |
@@ -25,6 +25,8 @@
 **3D production:** `npm run assets:bootstrap` — CC0 interim; `assets:status` / `assets:ai3dgen-import -- --status` — прогресс; замена на AI3DGen Pro по каталогу.
 
 **Вывод:** инженерная база готова к Vercel production. Следующий визуальный апгрейд — AI3DGen Pro + Blender rig для героя; Mixamo clips override Quaternius embedded via `assets:mixamo-import`.
+
+**v4.2.40:** Sprint 4 (AAA Audit §8) — golden path 0 warnings (derived spine === manual, no fallback steps); `STORY_NODE_GUIDANCE` alias; 116/116 spine HUD hints; act7 endings verified (no poem edits).
 
 **v4.2.39:** Sprint 3 (AAA Audit §8) — wet street reflector on high preset; interior lighting pass (campfire, safehouse/backroom, guild); extension scene LOD profiles; budgets:check green.
 
@@ -62,27 +64,19 @@
 
 Проверка: `npm run validate:content` → предупреждения 78 → 75, секция `quest` пуста.
 
-### 🟡 P1 — Техдолг «золотого пути» (75 предупреждений)
+### ✅ P1 — Техдолг «золотого пути» (СДЕЛАНО Sprint 4, 17 июня 2026)
 
-**Проблема:** движок умеет выводить канонический путь истории из меток
-`choice.goldenPath: true` в узлах. Сейчас 75 узлов спайна их не имеют, поэтому
-система откатывается на захардкоженный массив `GOLDEN_PATH_STORY_SPINE`
-(`src/data/goldenPath.ts`). Это **работает**, но создаёт два источника правды:
-при доработке истории массив и фактические узлы могут разъехаться.
+**Было:** 75 узлов спайна без `choice.goldenPath: true` — движок откатывался на
+`GOLDEN_PATH_STORY_SPINE` как fallback.
 
-**План:**
-1. Для каждого узла из `GOLDEN_PATH_STORY_SPINE` найти choice, ведущий к
-   следующему узлу спайна, и пометить его `goldenPath: true`.
-2. Проверить, что `getGoldenPathDerivationReport()` (через
-   `npm run validate:content`) выдаёт `missingGoldenPathMarkers: []` и
-   `derived spine === manual spine`.
-3. После полного покрытия — рассмотреть удаление ручного массива как fallback.
+**Сделано (Sprint 4):**
+1. Метки `goldenPath: true` на всех переходах спайна (117 узлов; terminal `act7_true_end` без исходящего выбора).
+2. `getGoldenPathDerivationReport()` → `missingGoldenPathMarkers: []`, `fallbackSpineSteps: []`, derived === manual.
+3. `STORY_NODE_GUIDANCE` (`GOLDEN_PATH_BRANCH_HINTS`) — подсказка на каждом шаге спайна для `StoryGuidanceHUD`.
 
-**Критерий готовности:** `npm run validate:content` → 0 предупреждений категории
-`golden-path`.
+**Проверка:** `npm run validate:content` → 0 golden-path issues; `goldenPathGuidance.test.ts` + `storyConnectivity.test.ts`.
 
-**Риск:** низкий. Метки только добавляют данные; ошибочная метка ловится
-валидатором (`multiple choices marked goldenPath` / `points to missing node`).
+**Дальше (опционально):** рассмотреть deprecate ручного `GOLDEN_PATH_STORY_SPINE` как fallback после стабилизации.
 
 ### 🟢 P2 — Косметика и оптимизация
 
@@ -100,8 +94,7 @@
 - **Концовки:** усилить эмоциональные биты финалов (`ending_*` в `data/story/act7.ts`),
   убедиться, что каждая концовка отражает ключевые выборы игрока (карма, собранные стихи,
   судьбы NPC — Зарема, Дмитрий, Мария).
-- **Читаемость пути:** подсказки `STORY_NODE_GUIDANCE` (`goldenPath.ts`) — проверить,
-  что на каждом шаге спайна игрок понимает, куда идти (важно для не-геймеров).
+- **Читаемость пути:** подсказки `STORY_NODE_GUIDANCE` / `GOLDEN_PATH_BRANCH_HINTS` (`goldenPath.ts`) — ✅ 116/116 шагов спайна (Sprint 4).
 - **Согласованность NPC:** доработать `STORY_NODE_TO_NPC_ID` так, чтобы журнал,
   диалоги и сцена всегда называли одного и того же персонажа.
 
@@ -143,7 +136,7 @@ security-заголовки, `Permissions-Policy`.
 ## 6. Рекомендуемая последовательность
 
 1. ✅ **P0** — целостность квестов (сделано).
-2. **P1** — метки `goldenPath` (закрыть 75 предупреждений; защищает будущие правки истории).
+2. ✅ **P1** — метки `goldenPath` (Sprint 4: 0 golden-path issues).
 3. **Story polish** — концовки + читаемость пути.
 4. **Gameplay** — онбординг + «сюжетная» сложность (лёгкий вход), затем баланс боёв.
 5. **Accessibility** — субтитры, шрифт, reduced-motion.
@@ -257,10 +250,10 @@ npm run check            # всё сразу — главный гейт пер�
 
 **Цель:** единый источник правды для золотого пути; читаемость для не-геймеров.
 
-- [ ] Пометить `goldenPath: true` на 75 узлах спайна (см. §1 P1)
-- [ ] `getGoldenPathDerivationReport()` → `missingGoldenPathMarkers: []`
-- [ ] `STORY_NODE_GUIDANCE` + `StoryGuidanceHUD` — подсказка на каждом шаге
-- [ ] Концовки `act7.ts` — эмоциональные биты + отражение выборов игрока
+- [x] Пометить `goldenPath: true` на узлах спайна (см. §1 P1) — 0 fallback steps
+- [x] `getGoldenPathDerivationReport()` → `missingGoldenPathMarkers: []`
+- [x] `STORY_NODE_GUIDANCE` + `StoryGuidanceHUD` — подсказка на каждом шаге (116/116)
+- [x] Концовки `act7.ts` — эмоциональные биты + отражение выборов (тесты act7.test.ts; poem text не тронут)
 
 **Exit criteria:** `validate:content` → 0 golden-path warnings; ручной `GOLDEN_PATH_STORY_SPINE` можно deprecate.
 

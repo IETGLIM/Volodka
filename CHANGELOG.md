@@ -1,4 +1,12 @@
 # Changelog — ВОЛОДЬКА RPG
+## v4.2.40 — 17 июня 2026
+
+### Sprint 4 — Narrative UX + golden path (ROADMAP §8)
+- **Golden path 0 warnings**: `deriveStorySpine` === `GOLDEN_PATH_STORY_SPINE`, `fallbackSpineSteps: []`, `missingGoldenPathMarkers: []` (метки уже в story graph; act*.ts не редактировались в этом спринте).
+- **STORY_NODE_GUIDANCE**: публичный alias для `GOLDEN_PATH_BRANCH_HINTS`; 116/116 шагов спайна с HUD-подсказкой.
+- **Тесты**: `goldenPathGuidance.test.ts` — derivation report + guidance coverage; act7 endings verified (poem text sacred).
+- **ROADMAP**: §1 P1 и §8 Sprint 4 чек-лист закрыты.
+
 ## v4.2.39 — 17 июня 2026
 
 ### Sprint 3 — Graphics AAA (ROADMAP §8)
