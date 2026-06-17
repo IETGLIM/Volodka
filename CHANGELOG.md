@@ -1,4 +1,10 @@
 # Changelog — ВОЛОДЬКА RPG
+## v4.2.38 — 17 июня 2026
+
+### Sprint 2 — Art pipeline audit (ROADMAP §8)
+- **assets:status**: блок «Sprint 2 audit» — manifest, Quaternius, Mixamo, RPM, AI3DGen Pro gaps в одном отчёте.
+- **ROADMAP §8 Sprint 2**: чек-лист обновлён по аудиту (26/26 shipped, 20/20 Quaternius interim; Mixamo/RPM — блокеры на user downloads).
+
 ## v4.2.37 — 17 июня 2026
 
 ### AAA polish — selector stability

@@ -161,6 +161,37 @@ async function main() {
   const fps = fileState('/models/fps/fps_arms.glb');
   console.log(`  ${mark(fps.ok)} fps   /models/fps/fps_arms.glb (${fps.label})`);
 
+  const proCatalog = catalog.filter((entry) => entry.licenseTier === 'pro');
+  const proSourceOnDisk = proCatalog.filter((entry) =>
+    existsSync(path.join(ROOT, entry.sourceRelativePath)),
+  ).length;
+  const registryOk = propMissing === 0 && npcMissing === 0 && fps.ok;
+  const quaterniusOk =
+    quaterniusSource === quaterniusMod.NPC_QUATERNIUS_MAP.length
+    && quaterniusPublic === quaterniusMod.NPC_QUATERNIUS_MAP.length;
+  const mixamoOk = mixamoPending === 0;
+  const rpmSourceOk = rpmSource === rpmMod.RPM_NPC_CATALOG.length;
+
+  console.log('\n═══ Sprint 2 audit (ROADMAP §8) ═══\n');
+  console.log(`  ${mark(shippedMissing === 0)}  Manifest shipped GLBs     ${shippedOk}/${shippedOk + shippedMissing} on disk`);
+  console.log(`  ${mark(registryOk)}  Runtime prop/NPC/fps registries   ${propUrls.length + npcUrls.length + 1} URLs`);
+  console.log(
+    `  ${mark(quaterniusOk)}  Quaternius CC0 NPCs (interim)   ${quaterniusPublic}/${quaterniusMod.NPC_QUATERNIUS_MAP.length} public · embedded idle/walk/talk via npcClipResolution`,
+  );
+  console.log(
+    `  ${mark(mixamoOk)}  Mixamo clip overrides           ${mixamoImported}/${mixamoCatalog.length} shipped (Adobe login)`,
+  );
+  console.log(
+    `  ${mark(rpmSourceOk)}  RPM story NPC source GLBs       ${rpmSource}/${rpmMod.RPM_NPC_CATALOG.length} (Ready Player Me export)`,
+  );
+  console.log(
+    `  ${mark(proSourceOnDisk === proCatalog.length)}  AI3DGen Pro source meshes      ${proSourceOnDisk}/${proCatalog.length} (public CC0 interim OK)`,
+  );
+  if (!mixamoOk || !rpmSourceOk || proSourceOnDisk < proCatalog.length) {
+    console.log('\n  Blockers: Mixamo + RPM need manual auth downloads; Pro meshes are optional visual upgrade.');
+    console.log('  Interim path: Quaternius embedded clips + assets:validate green until Mixamo lands.');
+  }
+
   console.log('\n═══ Next steps ═══');
   if (shippedMissing > 0 || propMissing > 0 || npcMissing > 0) {
     console.log('  npm run assets:bootstrap   # CC0 interim placeholders');

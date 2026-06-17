@@ -4,7 +4,7 @@
 > подготовка к запуску на Vercel. Документ заменяет устаревшие `CODE_REVIEW.md` и
 > `DEEP_CODE_REVIEW.md`, которые описывают состояние проекта **до** большого рефакторинга.
 
-**Дата:** 17 июня 2026 · **Версия:** 4.2.35 · **Целевая аудитория игры:** и новички
+**Дата:** 17 июня 2026 · **Версия:** 4.2.38 · **Целевая аудитория игры:** и новички
 (родители, друзья — не геймеры), и опытные игроки (баланс «лёгкий вход + глубина»).
 
 ---
@@ -25,6 +25,12 @@
 **3D production:** `npm run assets:bootstrap` — CC0 interim; `assets:status` / `assets:ai3dgen-import -- --status` — прогресс; замена на AI3DGen Pro по каталогу.
 
 **Вывод:** инженерная база готова к Vercel production. Следующий визуальный апгрейд — AI3DGen Pro + Blender rig для героя; Mixamo clips override Quaternius embedded via `assets:mixamo-import`.
+
+**v4.2.38:** Sprint 2 (AAA Audit §8) — `assets:status` Sprint 2 audit block; manifest 26/26; Quaternius 20/20 interim; Mixamo 0/4 + RPM 0/20 blocked on user downloads.
+
+**v4.2.37:** Poem TTL selector stability — `EMPTY_ACTIVE_TTL_FLAGS` React #185 fix; auto-animate → Tailwind migration documented.
+
+**v4.2.36:** Poem TTL dialogue gates (`truth_voice_active`, `guiding_star_active`, `storm_wind_active`); PostFX poem boost; Tailwind poem list animations.
 
 **v4.2.30:** Sprint 1 (AAA Audit §8) — 27/27 scene audio profiles; unload duck/crossfade; overlay↔explore mode integrity.
 
@@ -225,12 +231,14 @@ npm run check            # всё сразу — главный гейт пер�
 
 **Цель:** pipeline ассетов для визуального апгрейда без блокировки релиза.
 
-- [ ] `npm run assets:status` — manifest vs disk, CC0 interim актуален
-- [ ] Mixamo clips override для NPC (`assets:mixamo-import`)
-- [ ] Poly/Quaternius: skinned bounds, idle/walk/talk/sit clips wired
-- [ ] AI3DGen Pro catalog — приоритетные замены по `assets:ai3dgen-import`
+- [x] `npm run assets:status` — manifest vs disk, CC0 interim актуален (v4.2.38: **26/26 shipped**, **20/20 Quaternius**, runtime registries OK; Sprint 2 audit block в `assets-status.mjs`)
+- [ ] Mixamo clips override для NPC (`assets:mixamo-import`) — **0/4**, блокер: Adobe login + ручной download (`assets-source/mixamo/README.md`)
+- [x] Poly/Quaternius: idle/walk/talk/sit clips wired — **interim CC0** через `quaterniusAnimationCatalog` + `npcClipResolution` + `useMixamoAnimationClips` (Mixamo override когда клипы на диске)
+- [ ] AI3DGen Pro catalog — приоритетные замены по `assets:ai3dgen-import` — **0/18 Pro source** на диске; public CC0 interim покрывает релиз
 
 **Exit criteria:** `assets:validate` зелёный; hero + story NPCs с корректными анимациями; status report без gaps.
+
+**Аудит v4.2.38 (17 июня 2026):** `npm run assets:status` → manifest 26/26, Quaternius 20/20, Mixamo 0/4, RPM source 0/20. Оставшиеся gaps требуют пользовательских ассетов (Mixamo/RPM/Pro meshes); interim path зелёный.
 
 #### Sprint 3 — Graphics AAA: wet / interiors / perf (2 нед)
 
