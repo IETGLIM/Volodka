@@ -3,7 +3,11 @@
 
 import { useGameSelector } from './hooks';
 import { getGamePhase } from '@/shared/gamePhase';
+import { createEmptyActiveTTLFlagMap } from '@/shared/activeTTLFlags';
 import type { GameStoreState } from '../types';
+
+/** Stable fallback — never inline `{}` in selectors (React #185 / shallow stability). */
+const EMPTY_ACTIVE_TTL_FLAGS = createEmptyActiveTTLFlagMap();
 
 function phaseFromStore(s: GameStoreState) {
   return getGamePhase({
@@ -188,7 +192,7 @@ export function selectDialogueContext(s: GameStoreState) {
     npcRelations: s.npcRelations,
     timeOfDay: s.exploration.timeOfDay,
     collectedPoems: s.collectedPoems,
-    activeTTLFlags: s.activeTTLFlags ?? {},
+    activeTTLFlags: s.activeTTLFlags ?? EMPTY_ACTIVE_TTL_FLAGS,
     ownedItemIdsKey: s.playerState.inventory
       .map((item) => item.id)
       .sort()
@@ -212,7 +216,7 @@ export function selectStoryContext(s: GameStoreState) {
     flags: s.playerState.flags,
     progression: s.playerState.progression,
     collectedPoems: s.collectedPoems,
-    activeTTLFlags: s.activeTTLFlags ?? {},
+    activeTTLFlags: s.activeTTLFlags ?? EMPTY_ACTIVE_TTL_FLAGS,
   };
 }
 

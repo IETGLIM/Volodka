@@ -549,7 +549,7 @@ Hello Worlds в основной loop. Лучший ROI: **2D generation (Leonar
 
 | Библиотека | Fit | Effort | Рекомендация | Статус v4.2.35 |
 |---|---|---|---|---|
-| **@formkit/auto-animate** | ✅ Высокий | **S** | **now** | ✅ Внедрено — списки стихов (книга + журнал) |
+| **@formkit/auto-animate** | ✅ Высокий | **S** | **now** | ✅ Заменён на `tailwindcss-animate` (v4.2.36) — списки стихов |
 | **drei Sparkles + Cloud** | ✅ Высокий | **S** | **now** (Sparkles) / **later** (Cloud) | ✅ Sparkles на factory; fog ↑ на `street_night` |
 | **drei shaderMaterial** (не CustomShaderMaterial) | ⚠️ Средний | **M** | **later** | CSS scanline glitch на `matrix_pulse` (демо) |
 | **XState (@xstate/react)** | ⚠️ Частичный | **L** | **later** (partial) | Документирован phased plan; FSM interaction first |
@@ -599,15 +599,13 @@ Zustand остаётся source of truth для save/load — нужен мос�
 **Файлы Phase 1:** `src/engine/interaction/interactionMachine.ts`, `interactionSession.ts`,
 `src/components/3d/InteractionController.tsx` (если есть), tests `interactionSession.test.ts`.
 
-#### 2. @formkit/auto-animate
-
-**Pros:** 3 KB, zero-config list insert animation; дополняет framer-motion (не заменяет cutscenes).
-
-**Cons:** не для canvas/3D; отключать при `prefers-reduced-motion`.
+#### 2. @formkit/auto-animate → tailwindcss-animate
 
 **v4.2.35:** `useAutoAnimateRef` → `PoemListView`, journal `PoemsTab` grids.
 
-**Файлы:** `src/hooks/useAutoAnimateRef.ts`, `PoemViews.tsx`, `journal/PoemsTab.tsx`.
+**v4.2.36:** пакет удалён; `useNewlyCollectedPoemIds` + `animate-in fade-in slide-in-from-bottom-2` (reduced motion — без enter).
+
+**Файлы:** `src/hooks/useNewlyCollectedPoemIds.ts`, `PoemViews.tsx`, `journal/PoemsTab.tsx`.
 
 #### 3. drei shaderMaterial / holographic shaders
 

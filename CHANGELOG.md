@@ -1,4 +1,10 @@
 # Changelog — ВОЛОДЬКА RPG
+## v4.2.37 — 17 июня 2026
+
+### AAA polish — selector stability
+- **compositeSelectors**: стабильный `EMPTY_ACTIVE_TTL_FLAGS` вместо inline `{}` — React #185 / shallow snapshot regression fix.
+- **ROADMAP §10**: auto-animate → tailwindcss-animate migration задокументирована.
+
 ## v4.2.36 — 17 июня 2026
 
 ### Poem TTL dialogue gates + PostFX boost
