@@ -9,6 +9,17 @@ import { PoemReadingCutscene } from './PoemReadingCutscene';
 
 const activateSpy = vi.fn((_poemId: string) => true);
 
+let mockPendingPoemReadingId: string | null = null;
+
+vi.mock('@/engine/GameActionDispatcher', () => ({
+  getGameSnapshot: () => ({ pendingPoemReadingId: mockPendingPoemReadingId }),
+  dispatchGameAction: (action: { type: string; poemId?: string | null }) => {
+    if (action.type === 'poem/setPendingReading') {
+      mockPendingPoemReadingId = action.poemId ?? null;
+    }
+  },
+}));
+
 vi.mock('@/engine/PoemPowerSystem', () => ({
   activatePoemPowerById: (poemId: string) => activateSpy(poemId),
   canUsePower: () => true,
@@ -44,6 +55,7 @@ vi.mock('@/data/gameDataLoader', () => ({
 
 describe('PoemReadingCutscene', () => {
   beforeEach(() => {
+    mockPendingPoemReadingId = null;
     resetPoemReadingSession();
     activateSpy.mockClear();
   });

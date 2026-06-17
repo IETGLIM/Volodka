@@ -238,7 +238,7 @@ export async function preloadNarrativeGameData(): Promise<void> {
 
         if (!narrativePackListenerRegistered) {
           onNarrativePacksChanged(() => {
-            void import('@/engine/guidedStory/guidedStoryPath').then((mod) => {
+            void import('@/engine/guidedStory/guidedStoryPathCache').then((mod) => {
               mod.invalidateGuidedStoryPathConfig();
             });
             void import('@/engine/story/storyGraphIndex').then((mod) => {
