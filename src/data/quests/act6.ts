@@ -297,4 +297,52 @@ export const QUESTS_ACT6: QuestDefinition[] = [
     questGiverNpcId: 'maxim',
   },
 
+  /* ─────────────── QUEST: Секретный архив ─────────────── */
+  {
+    id: 'act6_secret_archive',
+    title: 'Секретный архив',
+    description: 'Под заброшенной фабрикой спрятан архив, который гильдия не внесла в реестр. Без «Голоса Улиц» дверь не слышит. Нужно добраться, расшифровать записи и вынести стихи до зачистки.',
+    act: 6,
+    faction: 'network',
+    questType: 'side',
+    difficulty: 'hard',
+    hint: 'Зарема или Виктория намекнут путь, если у тебя есть стих «Голос Улиц».',
+    requiresQuests: ['underground_resistance'],
+    requiredPoem: 'poem_11',
+    objectives: [
+      {
+        id: 'reach_secret_archive',
+        description: 'Найти скрытый вход к архиву на заброшенной фабрике',
+        type: 'location_visited',
+        target: 'abandoned_factory',
+        completed: false,
+      },
+      {
+        id: 'decode_street_archive',
+        description: 'Расшифровать уличные записи архива',
+        type: 'flag_set',
+        target: 'act6_secret_archive_decoded',
+        completed: false,
+        poemPowerBypass: 'poem_11',
+        poemPowerHint: '«Голос Улиц» подскажет, какие строки — ключ',
+      },
+      {
+        id: 'extract_hidden_poems',
+        description: 'Извлечь спасённые стихи из архива',
+        type: 'flag_set',
+        target: 'act6_secret_archive_saved',
+        completed: false,
+      },
+    ],
+    rewards: [
+      { type: 'addSkill', skill: 'writing', value: 4 },
+      { type: 'addSkill', skill: 'intuition', value: 3 },
+      { type: 'addKarma', value: 12 },
+      { type: 'setFlag', flag: 'act6_secret_archive_done', flagValue: true },
+      { type: 'addXp', value: 280 },
+    ],
+    linkedStoryNodeId: 'act6_factory_investigation',
+    questGiverNpcId: 'zarema',
+  },
+
 ];

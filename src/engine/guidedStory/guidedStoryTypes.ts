@@ -12,6 +12,7 @@ export interface GuidedStorySnapshot {
   visitedNodes: readonly string[];
   currentAct: number;
   flags: Readonly<Record<string, boolean>>;
+  collectedPoems: readonly string[];
   quests: readonly GuidedStoryQuestState[];
   activeTTLFlagKeys: readonly string[];
 }

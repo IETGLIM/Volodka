@@ -36,6 +36,11 @@ import {
   INTRO_WAKE_DURATION,
   INTRO_WAKE_START_DISTANCE,
   INTRO_WAKE_END_DISTANCE,
+  POEM_READING_DURATION,
+  POEM_READING_START_DISTANCE,
+  POEM_READING_END_DISTANCE,
+  POEM_READING_START_PITCH,
+  POEM_READING_END_PITCH,
   FIRST_PERSON_ENABLED,
   FIRST_PERSON_FOV,
   FIRST_PERSON_EYE_HEIGHT,
@@ -69,7 +74,8 @@ export type CameraState =
   | { mode: 'cutscene'; controller: CutsceneController; kind: 'story' | 'npc' }
   | { mode: 'transition'; from: THREE.Vector3; to: THREE.Vector3 }
   | { mode: 'cinematic_freeze'; startedAt: number; params: ExplorationParams }
-  | { mode: 'intro_wake'; startedAt: number };
+  | { mode: 'intro_wake'; startedAt: number }
+  | { mode: 'poem_reading'; startedAt: number };
 
 export const initialCameraState = (): CameraState => ({
   mode: 'exploration',
@@ -118,6 +124,8 @@ export type CameraStateAction =
   | { type: 'recenter' }
   | { type: 'intro_wake'; time: number }
   | { type: 'intro_wake_complete' }
+  | { type: 'poem_reading_start'; time: number }
+  | { type: 'poem_reading_complete' }
   | { type: 'cutscene_start'; controller: CutsceneController; kind: 'story' }
   | { type: 'cutscene_end'; kind: 'story' }
   | { type: 'npc_cutscene_start'; controller: CutsceneController }
@@ -136,10 +144,13 @@ export function reduceCameraState(state: CameraState, action: CameraStateAction)
     case 'recenter':
     case 'cinematic_freeze_timeout':
     case 'intro_wake_complete':
+    case 'poem_reading_complete':
     case 'scene_transition_complete':
       return { mode: 'exploration', params: { sceneId: 'volodka_room' } };
     case 'intro_wake':
       return { mode: 'intro_wake', startedAt: action.time };
+    case 'poem_reading_start':
+      return { mode: 'poem_reading', startedAt: action.time };
     case 'cutscene_start':
       return { mode: 'cutscene', controller: action.controller, kind: action.kind };
     case 'cutscene_end':
@@ -353,7 +364,7 @@ export function cleanupInFlightCameraTransitions(
   }
 
   const state = runtime.cameraState.current;
-  if (state.mode === 'cinematic_freeze' || state.mode === 'intro_wake') {
+  if (state.mode === 'cinematic_freeze' || state.mode === 'intro_wake' || state.mode === 'poem_reading') {
     dispatchCameraState(runtime, { type: 'exploration', params: { sceneId: resolvedSceneId } }, resolvedSceneId);
   }
 }
@@ -481,6 +492,27 @@ export function processIntroWakeFrame(runtime: CameraRuntimeRefs, sceneId: Scene
   }
 }
 
+export function processPoemReadingFrame(runtime: CameraRuntimeRefs, sceneId: SceneId): void {
+  const state = runtime.cameraState.current;
+  if (state.mode !== 'poem_reading') return;
+
+  const { orbit } = runtime;
+  const elapsed = runtime.time.current - state.startedAt;
+  const progress = Math.min(1, elapsed / POEM_READING_DURATION);
+  const ease = 1 - Math.pow(1 - progress, 3);
+  const currentDist =
+    POEM_READING_START_DISTANCE + (POEM_READING_END_DISTANCE - POEM_READING_START_DISTANCE) * ease;
+
+  orbit.distance.current = currentDist;
+  orbit.interactionDistance.current = currentDist;
+  orbit.pitch.current =
+    POEM_READING_START_PITCH + (POEM_READING_END_PITCH - POEM_READING_START_PITCH) * ease;
+
+  if (progress >= 1) {
+    dispatchCameraState(runtime, { type: 'poem_reading_complete' }, sceneId);
+  }
+}
+
 export function syncCutsceneFlagsFromState(runtime: CameraRuntimeRefs): void {
   const state = runtime.cameraState.current;
   const { subsystems } = runtime;
@@ -588,6 +620,43 @@ export function subscribeCameraEventHub(options: CameraEventHubOptions): () => v
     runtime.orbit.pitch.current = closePitch;
     runtime.orbit.distance.current = INTRO_WAKE_START_DISTANCE;
     runtime.orbit.interactionDistance.current = INTRO_WAKE_START_DISTANCE;
+  }));
+
+  unsubs.push(eventBus.on('camera:poem_reading_start', () => {
+    cancelInFlightSceneTransition(runtime, sceneId);
+    acquireCameraOwnership('cinematicFreeze');
+    setCinematicHoldActive(true);
+    setCinematicPresentationMode('third_person');
+    dispatchCameraState(runtime, { type: 'poem_reading_start', time: runtime.time.current }, sceneId);
+
+    const playerPos = runtime.livePlayerPosition.current;
+    const playerRotation = runtime.livePlayerRotation.current;
+    const cameraYaw = playerRotation + Math.PI;
+    const closePitch = POEM_READING_START_PITCH;
+    const closePos = new THREE.Vector3(
+      playerPos.x + Math.sin(cameraYaw) * Math.cos(closePitch) * POEM_READING_START_DISTANCE,
+      playerPos.y + LOOK_HEIGHT + Math.sin(closePitch) * POEM_READING_START_DISTANCE + 0.2,
+      playerPos.z + Math.cos(cameraYaw) * Math.cos(closePitch) * POEM_READING_START_DISTANCE,
+    );
+    const closeLook = new THREE.Vector3(playerPos.x, playerPos.y + LOOK_HEIGHT + 0.05, playerPos.z);
+
+    if (subsystems.spring.current) {
+      subsystems.spring.current.position.copy(closePos);
+      subsystems.spring.current.velocity.set(0, 0, 0);
+      subsystems.spring.current.lookAt.copy(closeLook);
+    }
+    runtime.orbit.yaw.current = cameraYaw;
+    runtime.orbit.pitch.current = closePitch;
+    runtime.orbit.distance.current = POEM_READING_START_DISTANCE;
+    runtime.orbit.interactionDistance.current = POEM_READING_START_DISTANCE;
+  }));
+
+  unsubs.push(eventBus.on('camera:poem_reading_end', () => {
+    releaseCameraOwnership('cinematicFreeze');
+    setCinematicHoldActive(false);
+    setCinematicPresentationMode('first_person');
+    dispatchCameraState(runtime, { type: 'poem_reading_complete' }, sceneId);
+    eventBus.emit('camera:recenter', {});
   }));
 
   unsubs.push(eventBus.on('camera:cutscene_start', ({ waypoints }) => {

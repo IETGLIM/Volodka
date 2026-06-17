@@ -25,6 +25,7 @@ export interface AccessibilitySettingsSnapshot {
   colorBlindMode: ColorBlindMode;
   reducedMotionOverride: boolean;
   loadingFxDisabled: boolean;
+  skipPoemCutscenes: boolean;
   subtitleScale: SubtitleScale;
   textSpeed: TextSpeed;
   locomotionSpeed: LocomotionSpeed;

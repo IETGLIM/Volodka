@@ -642,6 +642,7 @@ export const QUESTS_ACT4: QuestDefinition[] = [
     difficulty: 'hard',
     hint: 'Проверь терминал в подсобке кафе — там спрятан файл из прошлого. Альберт знает больше о «живом коде».',
     requiresQuests: ['cafe_safehouse'],
+    requiredPoem: 'poem_1',
     objectives: [
       {
         id: 'find_living_code_file',
@@ -823,6 +824,7 @@ export const QUESTS_ACT4: QuestDefinition[] = [
     difficulty: 'medium',
     hint: 'Алина знает пароль от хранилища — поговори с ней в библиотеке.',
     requiresQuests: ['vault_defense'],
+    requiredPoem: 'poem_7',
     objectives: [
       {
         id: 'meet_vera_library',

@@ -4,11 +4,11 @@ import { Clock, Sparkles, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { audioEngine } from '@/engine/AudioEngine';
 import {
-  activatePoemPowerById,
   canUsePower,
   getCooldownRemaining,
   getPoemPower,
 } from '@/engine/PoemPowerSystem';
+import { requestPoemPowerActivation } from '@/engine/poemReading/poemReadingOrchestrator';
 import {
   POEM_POWER_JUST_USED_MS,
   POETRY_BOOK_LABELS,
@@ -43,9 +43,11 @@ export function PoemPowerCard({
     if (!available || activating || !power) return;
 
     setActivating(true);
-    const success = activatePoemPowerById(poemId);
-    if (success) {
-      audioEngine.playSfx('quest_complete');
+    const result = requestPoemPowerActivation(poemId);
+    if (result.status === 'activated' || result.status === 'cutscene_pending') {
+      if (result.status === 'activated') {
+        audioEngine.playSfx('quest_complete');
+      }
       setJustUsed(true);
       setTimeout(() => setJustUsed(false), POEM_POWER_JUST_USED_MS);
     }

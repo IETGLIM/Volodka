@@ -110,6 +110,10 @@ export function setLoadingFxDisabled(enabled: boolean): void {
   manager().updateSetting('loadingFxDisabled', enabled);
 }
 
+export function setSkipPoemCutscenes(enabled: boolean): void {
+  manager().updateSetting('skipPoemCutscenes', enabled);
+}
+
 export function setSubtitleScale(scale: number | SubtitleScale): void {
   manager().updateSetting('subtitleScale', createSubtitleScale(scale));
 }

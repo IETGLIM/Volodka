@@ -250,6 +250,10 @@ function validateQuests(reg: ReturnType<typeof buildSets>, out: ValidationIssue[
       }
     }
 
+    if (quest.requiredPoem && !reg.poemIds.has(quest.requiredPoem)) {
+      out.push(issue('error', 'quest', base, `requiredPoem "${quest.requiredPoem}" not in POEMS`));
+    }
+
     for (const objective of quest.objectives) {
       const op = `${base}.objective:${objective.id}`;
       if (!objective.target) continue;

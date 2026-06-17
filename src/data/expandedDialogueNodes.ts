@@ -918,6 +918,7 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
   street_poet_greeting: {
     id: 'street_poet_greeting',
     speaker: 'Уличный поэт',
+    speakerId: 'street_poet',
     text: 'Слова тяжелеют к утру, поэт. Неси их осторожно — дроны любят лёгкие фразы.',
     choices: [
       { text: 'Поблагодарить и уйти', next: null },
@@ -926,6 +927,30 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
         next: null,
         effects: [{ type: 'visitStoryNode', nodeId: 'act4_quiet_poet_reply' }],
       },
+      {
+        text: 'Ты молчал весь вечер — но я знаю, что слышишь звёзды.',
+        next: 'street_poet_guiding_star',
+        condition: { collectedPoem: 'poem_3' },
+      },
+    ],
+  },
+
+  street_poet_guiding_star: {
+    id: 'street_poet_guiding_star',
+    speaker: 'Уличный поэт',
+    speakerId: 'street_poet',
+    text: '*долго молчит, потом кивает* Звёзды не на небе — они в трещинах асфальта. Ты уже собрал «Путеводную». Значит, увидишь то, что гильдия прячет за вывесками. Иди туда, где свет ложится не туда.',
+    choices: [
+      {
+        text: 'Куда именно?',
+        next: null,
+        effects: [
+          { type: 'addSkill', skill: 'intuition', value: 2 },
+          { type: 'setFlag', flag: 'street_poet_star_hint', flagValue: true },
+          { type: 'addKarma', value: 3 },
+        ],
+      },
+      { text: 'Спасибо. Береги себя.', next: null },
     ],
   },
 

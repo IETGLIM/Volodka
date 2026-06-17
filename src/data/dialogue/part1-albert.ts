@@ -60,6 +60,32 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
         next: 'albert_vault_truth',
         condition: { requiredAct: 3, flag: 'vault_under_attack', minNpcRelation: 60 },
       },
+      {
+        text: '«Слово» режет ложь — ты тоже это чувствовал?',
+        next: 'albert_poem_word_gate',
+        condition: { collectedPoem: 'poem_1' },
+        effects: [
+          { type: 'npcChange', npcId: 'albert', npcChange: { relation: 4 } },
+        ],
+      },
+    ],
+  },
+
+  albert_poem_word_gate: {
+    id: 'albert_poem_word_gate',
+    speaker: 'Альберт',
+    speakerId: 'albert',
+    text: 'Чувствовал? Я на этом и ушёл из гильдии. Когда стих становится инструментом цензуры — это уже не поэзия, а протокол. Твоё «Слово» — не бафф. Это ключ к тем, кто ещё помнит, как говорить правду.',
+    choices: [
+      {
+        text: 'Научи меня не бояться говорить.',
+        next: null,
+        effects: [
+          { type: 'addSkill', skill: 'persuasion', value: 2 },
+          { type: 'setFlag', flag: 'albert_truth_mentor', flagValue: true },
+        ],
+      },
+      { text: 'Я ещё не готов.', next: null },
     ],
   },
 
@@ -348,6 +374,30 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
         next: 'zarema_guild_past',
         condition: { requiredAct: 2, minNpcRelation: 60 },
       },
+      {
+        text: 'Город шепчет — ты слышишь?',
+        next: 'zarema_street_voice',
+        condition: { collectedPoem: 'poem_11' },
+      },
+    ],
+  },
+
+  zarema_street_voice: {
+    id: 'zarema_street_voice',
+    speaker: 'Зарема',
+    speakerId: 'zarema',
+    text: 'Слышу. Когда ты приносишь «Голос Улиц» — мне легче дышать. Улицы помнят имена, которые гильдия стёрла. Если пойдёшь к ночному архиву на фабрике — не иди один. Я знаю, где прячутся записи.',
+    choices: [
+      {
+        text: 'Покажешь путь?',
+        next: null,
+        effects: [
+          { type: 'setFlag', flag: 'zarema_archive_hint', flagValue: true },
+          { type: 'triggerQuest', questId: 'act6_secret_archive' },
+          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 6 } },
+        ],
+      },
+      { text: 'Пока рано.', next: null },
     ],
   },
 
@@ -612,6 +662,30 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
         next: 'maria_about_creativity',
         condition: { requiredAct: 2, minNpcRelation: 55 },
       },
+      {
+        text: 'В архивах есть строки, которые не стареют.',
+        next: 'maria_archive_whisper',
+        condition: { collectedPoem: 'poem_11', requiredAct: 5 },
+      },
+    ],
+  },
+
+  maria_archive_whisper: {
+    id: 'maria_archive_whisper',
+    speaker: 'Виктория',
+    speakerId: 'maria',
+    text: '«Голос Улиц» — не метафора. Это протокол доступа к забытым слоям памяти. Гильдия прячет секретный архив под фабрикой. С этим стихом ты услышишь, где дверь — даже если её нет на карте.',
+    choices: [
+      {
+        text: 'Откроешь мне координаты?',
+        next: null,
+        effects: [
+          { type: 'setFlag', flag: 'maria_secret_archive_hint', flagValue: true },
+          { type: 'triggerQuest', questId: 'act6_secret_archive' },
+          { type: 'npcChange', npcId: 'maria', npcChange: { relation: 8 } },
+        ],
+      },
+      { text: 'Мне нужно время.', next: null },
     ],
   },
 

@@ -5,6 +5,8 @@ interface ImportMetaEnv {
   readonly VITE_SITE_URL: string;
   readonly VITE_MODELS_BASE?: string;
   readonly VITE_DEFAULT_PLAYER_MODEL?: string;
+  /** Set to `true` to wrap the app in React StrictMode (double-mount in dev). */
+  readonly VITE_ENABLE_STRICT_MODE?: string;
 }
 
 interface ImportMeta {

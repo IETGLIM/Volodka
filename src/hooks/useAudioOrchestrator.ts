@@ -4,10 +4,10 @@ import { useGameStore } from '@/store/gameStore';
 import { eventBus, EventBusPriority } from '@/engine/EventBus';
 import { withHmrCleanup } from '@/shared/dev/hmrDispose';
 import { triggerCameraShake } from '@/engine/camera/cameraShake';
-import {
-  getSceneAudioController,
+import { getSceneAudioController,
   type AmbientPlayContext,
 } from '@/engine/audio/SceneAudioController';
+import { resolvePoemWorldEffect } from '@/engine/poemWorld/poemWorldEffectResolver';
 import { getStoryProceduralAmbientOverride } from '@/engine/audio/ambientPlayContext';
 import { getGamePhase } from '@/shared/gamePhase';
 import type { SceneId } from '@/config/sceneDefinitions';
@@ -73,6 +73,12 @@ export function useAudioOrchestrator() {
     scope.on('poem:collected', ({ poemId }) => {
       if (disposedRef.current) return;
       ctrl.onPoemCollected(poemId);
+    });
+
+    scope.on('poem:show_cutscene', ({ poemId }) => {
+      if (disposedRef.current) return;
+      const profile = resolvePoemWorldEffect(poemId);
+      ctrl.onPoemWorldEvent(poemId, profile.audioCue);
     });
 
     scope.on('poem:world_event', ({ poemId, profile }) => {

@@ -43,9 +43,20 @@ describe('SettingsPanel', () => {
     expect(screen.getByText('Доступность')).toBeInTheDocument();
     expect(screen.getByText('Режим для дальтоников')).toBeInTheDocument();
     expect(screen.getByRole('switch', { name: 'Уменьшить анимации' })).toBeInTheDocument();
+    expect(screen.getByRole('switch', { name: 'Пропускать ритуал чтения стихов' })).toBeInTheDocument();
     expect(screen.getByText('Размер субтитров')).toBeInTheDocument();
     expect(screen.getByText('Скорость текста')).toBeInTheDocument();
     expect(screen.getByText('Скорость ходьбы')).toBeInTheDocument();
+  });
+
+  it('persists skip poem cutscenes toggle', async () => {
+    const user = userEvent.setup();
+    render(<SettingsPanel open onClose={vi.fn()} />);
+
+    await user.click(screen.getByRole('button', { name: /Визуал/ }));
+    await user.click(screen.getByRole('switch', { name: 'Пропускать ритуал чтения стихов' }));
+
+    expect(localStorage.getItem('volodka_skip_poem_cutscenes')).toBe('true');
   });
 
   it('persists combat difficulty from controls tab', async () => {

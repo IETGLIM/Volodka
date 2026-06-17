@@ -64,6 +64,7 @@ export const DEFAULT_ACCESSIBILITY_SETTINGS: AccessibilitySettingsSnapshot = {
   colorBlindMode: 'none',
   reducedMotionOverride: false,
   loadingFxDisabled: false,
+  skipPoemCutscenes: false,
   subtitleScale: createSubtitleScale(1),
   textSpeed: createTextSpeed(1),
   locomotionSpeed: createLocomotionSpeed(1),
@@ -81,6 +82,8 @@ export function clampInRange<K extends AccessibilitySettingKey>(
     case 'reducedMotionOverride':
       return (value === true || value === 'true') as AccessibilitySettingsSnapshot[K];
     case 'loadingFxDisabled':
+      return (value === true || value === 'true') as AccessibilitySettingsSnapshot[K];
+    case 'skipPoemCutscenes':
       return (value === true || value === 'true') as AccessibilitySettingsSnapshot[K];
     case 'subtitleScale':
       return createSubtitleScale(value, Number(fallback)) as AccessibilitySettingsSnapshot[K];

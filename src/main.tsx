@@ -8,7 +8,6 @@ import { applyGameSettings } from '@/engine/settings/SettingsFacade';
 import { initAccessibilitySettings } from '@/engine/accessibility/accessibilitySettings';
 import { initVoiceLineRegistry } from '@/engine/audio/VoiceLineRegistry';
 
-markAppStart();
 bindApplicationLayers();
 applyGameSettings();
 initAccessibilitySettings();
@@ -31,3 +30,5 @@ createRoot(root).render(
     renderAppTree()
   ),
 );
+
+markAppStart();

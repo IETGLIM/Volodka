@@ -382,6 +382,28 @@ export const CHK_DIALOGUE_NODES: Record<string, DialogueNode> = {
         text: 'Я сам найду.',
         next: null,
       },
+      {
+        text: 'Звезда на небе — или в коде?',
+        next: 'chk_stalker_guiding_star',
+        condition: { collectedPoem: 'poem_3' },
+      },
+    ],
+  },
+  chk_stalker_guiding_star: {
+    id: 'chk_stalker_guiding_star',
+    speaker: 'Сталкер',
+    speakerId: 'chk_stalker',
+    text: '*молчит, потом тихо* Тропа есть. Не на карте — в ритме шагов. Активируй «Путеводную» у костра — и увидишь, куда смотреть. Я провожу только тех, кто слышит звёзды в шуме серверов.',
+    choices: [
+      {
+        text: 'Проведи.',
+        next: null,
+        effects: [
+          { type: 'setFlag', flag: 'chk_stalker_star_path', flagValue: true },
+          { type: 'addSkill', skill: 'intuition', value: 2 },
+        ],
+      },
+      { text: 'Пока нет.', next: null },
     ],
   },
   chk_stalker_act4_route: {

@@ -28,7 +28,16 @@ export interface PoemWorldEffectProfile {
   worldTint?: string;
   narrationLine?: string;
   worldHint: PoemWorldHint;
+  /** Link poem hint flags to exploration highlight colors (see poemExplorationHighlight). */
+  highlightColor?: string;
 }
+
+/** Per-hint exploration beam colors — synced with InteractiveTriggers. */
+export const POEM_WORLD_HINT_HIGHLIGHT_COLORS: Record<Exclude<PoemWorldHint, 'none'>, string> = {
+  exit_glow: '#ffd866',
+  npc_shimmer: '#a8e6ff',
+  interaction_pulse: '#66ffcc',
+};
 
 export const POEM_WORLD_CATEGORY_DEFAULTS: Record<PoemWorldCategory, PoemWorldEffectProfile> = {
   exploration: {

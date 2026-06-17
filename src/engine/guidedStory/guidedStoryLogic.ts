@@ -255,6 +255,8 @@ export function canStartQuest(questId: string, deps: GuidedStoryDeps): boolean {
 
   if (def.requiredFlag && !snapshot.flags[def.requiredFlag]) return false;
 
+  if (def.requiredPoem && !snapshot.collectedPoems.includes(def.requiredPoem)) return false;
+
   const questAct = def.act ?? 1;
   if (questAct > snapshot.currentAct) return false;
 

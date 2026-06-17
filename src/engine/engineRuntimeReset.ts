@@ -10,6 +10,7 @@ import { invalidateStoryGraphIndex } from '@/engine/story/storyGraphIndex';
 import { resetCameraShake } from '@/engine/camera/cameraShake';
 import { resetGlobalTimeScale } from '@/engine/camera/cinematicCamera';
 import { resetCinematicPresentation } from '@/engine/camera/cinematicPresentation';
+import { resetPoemReadingSession } from '@/engine/poemReading/poemReadingOrchestrator';
 import { cancelEncounterPresentation } from '@/engine/combat/encounterPresentation';
 import { resetSceneTransitionGuard } from '@/engine/core/sceneTransitionGuard';
 import { resetInteractionEndDedupState } from '@/engine/interaction/interactionEndDedup';
@@ -20,6 +21,7 @@ export function resetEngineModuleRuntimeState(): void {
   resetCameraShake();
   resetGlobalTimeScale();
   resetCinematicPresentation();
+  resetPoemReadingSession();
   resetSceneTransitionGuard();
   resetSceneTransitionDedupe();
   resetInteractionEndDedupState();

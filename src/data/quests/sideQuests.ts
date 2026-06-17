@@ -69,6 +69,7 @@ export const QUESTS_SIDE: QuestDefinition[] = [
     questType: 'side',
     difficulty: 'medium',
     hint: 'Поговори с Катей в библиотеке.',
+    requiredPoem: 'poem_9',
     objectives: [
       {
         id: 'enter_basement',

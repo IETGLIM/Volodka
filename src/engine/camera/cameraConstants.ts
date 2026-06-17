@@ -45,6 +45,13 @@ export const INTRO_WAKE_DURATION = 3.0;
 export const INTRO_WAKE_START_DISTANCE = 1.2;
 export const INTRO_WAKE_END_DISTANCE = DEFAULT_DISTANCE;
 
+/** Poem-reading ritual — slow dolly toward Volodka (third-person hold). */
+export const POEM_READING_DURATION = 4.0;
+export const POEM_READING_START_DISTANCE = 2.4;
+export const POEM_READING_END_DISTANCE = 0.85;
+export const POEM_READING_START_PITCH = 0.22;
+export const POEM_READING_END_PITCH = 0.12;
+
 const INDOOR_SCENES: Set<SceneId> = new Set([
   'volodka_room',
   'volodka_corridor',

@@ -1,5 +1,6 @@
 import type { ActiveTTLFlagMap } from '@/shared/activeTTLFlags';
 import type { PoemWorldHint } from '@/config/poemWorldEffects';
+import { POEM_WORLD_HINT_HIGHLIGHT_COLORS } from '@/config/poemWorldEffects';
 import { resolvePoemWorldHintFlagKey } from '@/engine/poemWorld/poemWorldEffectResolver';
 
 export type PoemHighlightMode = 'none' | 'exploration' | 'dialogue' | 'interaction';
@@ -17,9 +18,9 @@ const HIGHLIGHT_BY_HINT: Record<
   Exclude<PoemWorldHint, 'none'>,
   { mode: PoemHighlightMode; color: string }
 > = {
-  exit_glow: { mode: 'exploration', color: '#ffd866' },
-  npc_shimmer: { mode: 'dialogue', color: '#a8e6ff' },
-  interaction_pulse: { mode: 'interaction', color: '#66ffcc' },
+  exit_glow: { mode: 'exploration', color: POEM_WORLD_HINT_HIGHLIGHT_COLORS.exit_glow },
+  npc_shimmer: { mode: 'dialogue', color: POEM_WORLD_HINT_HIGHLIGHT_COLORS.npc_shimmer },
+  interaction_pulse: { mode: 'interaction', color: POEM_WORLD_HINT_HIGHLIGHT_COLORS.interaction_pulse },
 };
 
 function isTTLFlagLive(

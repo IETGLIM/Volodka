@@ -651,6 +651,10 @@ export class QuestTracker {
       return false;
     }
 
+    if (definition.requiredPoem && !state.collectedPoems.includes(definition.requiredPoem)) {
+      return false;
+    }
+
     return true;
   }
 

@@ -23,6 +23,7 @@ export function toGuidedStorySnapshot(store: GameStoreSnapshot): GuidedStorySnap
     visitedNodes: store.playerState.visitedNodes,
     currentAct: store.playerState.progression.currentAct,
     flags: store.playerState.flags,
+    collectedPoems: store.collectedPoems,
     quests: store.quests.map((q) => ({
       questId: q.questId,
       status: q.status,

@@ -49,6 +49,7 @@ import {
   subscribeCameraEventHub,
   processCinematicFreezeFrame,
   processIntroWakeFrame,
+  processPoemReadingFrame,
   syncCutsceneFlagsFromState,
   disposeFollowCamera,
   cleanupInFlightCameraTransitions,
@@ -238,6 +239,7 @@ export function FollowCamera({
     _prevPlayerPos.current.copy(playerPos);
 
     processIntroWakeFrame(runtimeRef.current, sceneId);
+    processPoemReadingFrame(runtimeRef.current, sceneId);
     syncCutsceneFlagsFromState(runtimeRef.current);
 
     const isInDialogue = isInDialogueInteraction();

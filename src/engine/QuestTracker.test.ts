@@ -157,3 +157,33 @@ describe('QuestTracker state-change batching', () => {
     tracker.stop();
   });
 });
+
+describe('QuestTracker.canActivateQuest', () => {
+  const poemGatedQuest: QuestDefinition = {
+    id: 'poem_gate_quest',
+    title: 'Poem Gate',
+    description: 'Needs poem',
+    questType: 'side',
+    requiredPoem: 'poem_11',
+    objectives: [
+      { id: 'step', description: 'Step', type: 'flag_set', target: 'done', completed: false },
+    ],
+  };
+
+  beforeEach(() => {
+    mockDefinitions.length = 0;
+    mockDefinitions.push(poemGatedQuest as (typeof mockDefinitions)[number]);
+    resetQuestTrackerDefinitionCache();
+    mockSnapshot.collectedPoems = [];
+    mockSnapshot.quests = [];
+    mockSnapshot.playerState.flags = {};
+  });
+
+  it('blocks activation without required poem', () => {
+    const tracker = new QuestTracker();
+    expect(tracker.canActivateQuest('poem_gate_quest')).toBe(false);
+    mockSnapshot.collectedPoems = ['poem_11'];
+    expect(tracker.canActivateQuest('poem_gate_quest')).toBe(true);
+    tracker.stop();
+  });
+});

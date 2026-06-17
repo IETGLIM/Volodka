@@ -119,6 +119,8 @@ export class GuidedStoryManager {
 
       if (def.requiredFlag && !snapshot.flags[def.requiredFlag]) continue;
 
+      if (def.requiredPoem && !snapshot.collectedPoems.includes(def.requiredPoem)) continue;
+
       const questAct = def.act ?? 1;
       if (questAct > snapshot.currentAct) continue;
 

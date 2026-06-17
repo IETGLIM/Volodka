@@ -57,6 +57,7 @@ import { IntroWakeOverlay } from '@/components/game/IntroWakeOverlay';
 import { PoetryPowerBar } from '@/components/game/PoetryPowerBar';
 import { PoemPowerEffect } from '@/components/game/PoemPowerEffect';
 import { PoemWorldEffect } from '@/components/game/poemWorldEffect/PoemWorldEffect';
+import { PoemReadingCutscene } from '@/components/game/PoemReadingCutscene';
 import { DirectionalDamageIndicator } from '@/components/game/DirectionalDamageIndicator';
 import { DamageNumberFloat } from '@/components/game/DamageNumberFloat';
 import { LevelUpSummary } from '../LevelUpSummary';
@@ -224,6 +225,11 @@ export const GameplaySceneTransitionFx = memo(function GameplaySceneTransitionFx
   );
 });
 
+/** Poem reading ritual — line-by-line cutscene before main poem powers fire. */
+export const GameplayPoemReadingCutscene = memo(function GameplayPoemReadingCutscene() {
+  return <PoemReadingCutscene />;
+});
+
 /** Poem world-event ambient layer — tint, epigraph, letterbox (below power title FX). */
 export const GameplayPoemWorldFx = memo(function GameplayPoemWorldFx() {
   const profile = useGameplayPresentationProfile();
@@ -263,6 +269,7 @@ export const GameplaySharedEffects = memo(function GameplaySharedEffects() {
       <GameplayIntroWakeOverlay />
       <EncounterBeatOverlay />
       <GameplayCutsceneOverlay />
+      <GameplayPoemReadingCutscene />
       <GameplaySceneTransitionFx />
       <GameplayPoemWorldFx />
       <GameplayPoemPowerFx />

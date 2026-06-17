@@ -40,6 +40,8 @@ export interface QuestDefinition {
   readonly timeLimitHours?: number;
   readonly canRetry?: boolean;
   readonly requiredFlag?: string;
+  /** Quest stays locked until this poem is collected (hasPoem gate). */
+  readonly requiredPoem?: string;
   readonly questGiverNpcId?: string;
   readonly spineOrder?: number;
   readonly rewardItems?: { readonly itemId: string; readonly quantity: number }[];

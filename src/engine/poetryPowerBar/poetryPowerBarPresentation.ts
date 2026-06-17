@@ -1,10 +1,13 @@
 import type { Transition } from 'framer-motion';
 import type { PoemPower } from '@/engine/PoemPowerSystem';
 import {
-  activatePoemPowerById,
   canUsePower,
   getPoemPower,
 } from '@/engine/PoemPowerSystem';
+import {
+  requestPoemPowerActivation,
+  type PoemPowerActivationResult,
+} from '@/engine/poemReading/poemReadingOrchestrator';
 import {
   POETRY_POWER_BAR_LABELS,
   POETRY_POWER_BAR_MAX_SLOTS,
@@ -16,8 +19,8 @@ export type CollectedPowerEntry = {
 };
 
 export type AttemptPoemPowerActivationResult =
-  | { ok: true; power: PoemPower }
-  | { ok: false; reason: 'unavailable' | 'unknown' };
+  | { ok: true; power: PoemPower; pendingCutscene?: boolean }
+  | { ok: false; reason: 'unavailable' | 'unknown' | 'cutscene_busy' };
 
 export function buildCollectedWithPowers(collectedPoems: readonly string[]): CollectedPowerEntry[] {
   return collectedPoems
@@ -53,9 +56,15 @@ export function attemptPoemPowerActivation(poemId: string): AttemptPoemPowerActi
   if (!canUsePower(poemId)) {
     return { ok: false, reason: 'unavailable' };
   }
-  const success = activatePoemPowerById(poemId);
-  if (!success) {
-    return { ok: false, reason: 'unavailable' };
+  const result: PoemPowerActivationResult = requestPoemPowerActivation(poemId);
+  if (result.status === 'failed') {
+    if (result.reason === 'cutscene_busy') {
+      return { ok: false, reason: 'cutscene_busy' };
+    }
+    return { ok: false, reason: result.reason === 'unknown' ? 'unknown' : 'unavailable' };
+  }
+  if (result.status === 'cutscene_pending') {
+    return { ok: true, power, pendingCutscene: true };
   }
   return { ok: true, power };
 }

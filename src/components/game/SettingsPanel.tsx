@@ -36,6 +36,7 @@ import {
   setColorBlindMode,
   setReducedMotionOverride,
   setLoadingFxDisabled,
+  setSkipPoemCutscenes,
   setSubtitleScale,
   setTextSpeed,
   setLocomotionSpeed,
@@ -231,6 +232,16 @@ function VisualSettingsTab({
           setLoadingFxDisabled(v);
         }}
       />
+      <CyberToggle
+        label="Пропускать ритуал чтения стихов"
+        checked={a11y.skipPoemCutscenes}
+        onChange={(v) => {
+          setSkipPoemCutscenes(v);
+        }}
+      />
+      <p className="font-mono text-[10px] text-slate-500/80 leading-relaxed -mt-2">
+        Без кинематографического чтения — сила стиха применяется сразу.
+      </p>
       <CyberSlider
         label="Размер субтитров"
         value={accessibilitySliderPercent(a11y.subtitleScale)}

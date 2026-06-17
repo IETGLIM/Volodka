@@ -10,11 +10,11 @@ import {
 } from 'lucide-react';
 import { POEMS, getMainPoems, getHiddenPoems } from '@/data/poems';
 import {
-  activatePoemPowerById,
   canUsePower,
   getCooldownRemaining,
   getPoemPower,
 } from '@/engine/PoemPowerSystem';
+import { requestPoemPowerActivation } from '@/engine/poemReading/poemReadingOrchestrator';
 import { journalTelemetry } from '@/engine/journal/journalTelemetry';
 import { JOURNAL_THEME_COLORS } from '@/components/game/journal/journalConstants';
 import { audioEngine } from '@/engine/AudioEngine';
@@ -126,9 +126,11 @@ export function PoemsTab({ searchQuery }: PoemsTabProps) {
     if (!canUsePower(selectedPoemId) || activating) return;
 
     setActivating(true);
-    const success = activatePoemPowerById(selectedPoemId);
-    if (success) {
-      audioEngine.playSfx('quest_complete');
+    const result = requestPoemPowerActivation(selectedPoemId);
+    if (result.status === 'activated' || result.status === 'cutscene_pending') {
+      if (result.status === 'activated') {
+        audioEngine.playSfx('quest_complete');
+      }
       setJustUsed(true);
       setTimeout(() => setJustUsed(false), 2000);
     }

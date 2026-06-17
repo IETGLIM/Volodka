@@ -26,4 +26,6 @@ export interface CameraEvents {
   'camera:cinematic_transition': { phase: 'fadeOut' | 'hold' | 'fadeIn'; sceneId: SceneId };
   'camera:recenter': Record<string, never>;
   'camera:intro_wake': Record<string, never>;
+  'camera:poem_reading_start': Record<string, never>;
+  'camera:poem_reading_end': Record<string, never>;
 }

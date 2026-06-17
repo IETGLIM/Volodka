@@ -269,7 +269,8 @@ export function getQuestIndicatorForNpc(npcId: string): QuestIndicatorType | nul
     if (!questState || questState.status === 'inactive') {
       const deps = areDependenciesMet(def.id);
       const flagMet = !def.requiredFlag || getGameStore().playerState.flags[def.requiredFlag] === true;
-      if (deps.met && flagMet) {
+      const poemMet = !def.requiredPoem || getGameStore().collectedPoems.includes(def.requiredPoem);
+      if (deps.met && flagMet && poemMet) {
         hasAvailable = true;
       }
     } else if (questState.status === 'active') {
@@ -346,7 +347,8 @@ export function useQuestIndicatorForNpc(npcId: string): QuestIndicatorType | nul
     if (!questState || questState.status === 'inactive') {
       const deps = areDependenciesMet(def.id);
       const flagMet = !def.requiredFlag || getGameStore().playerState.flags[def.requiredFlag] === true;
-      if (deps.met && flagMet) {
+      const poemMet = !def.requiredPoem || getGameStore().collectedPoems.includes(def.requiredPoem);
+      if (deps.met && flagMet && poemMet) {
         hasAvailable = true;
       }
     } else if (questState.status === 'active') {

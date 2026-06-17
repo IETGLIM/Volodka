@@ -25,6 +25,7 @@ export const ACCESSIBILITY_LS_KEYS = {
   colorBlindMode: 'volodka_color_blind_mode',
   reducedMotionOverride: 'volodka_reduced_motion_override',
   loadingFxDisabled: 'volodka_loading_fx_disabled',
+  skipPoemCutscenes: 'volodka_skip_poem_cutscenes',
   subtitleScale: 'volodka_subtitle_scale',
   textSpeed: 'volodka_text_speed',
   locomotionSpeed: 'volodka_locomotion_speed',
@@ -93,6 +94,14 @@ export function readAccessibilitySettingsFromStorage(
         DEFAULT_ACCESSIBILITY_SETTINGS.loadingFxDisabled,
       ),
       'loadingFxDisabled',
+    ),
+    skipPoemCutscenes: clampInRange(
+      readBool(
+        storage,
+        ACCESSIBILITY_LS_KEYS.skipPoemCutscenes,
+        DEFAULT_ACCESSIBILITY_SETTINGS.skipPoemCutscenes,
+      ),
+      'skipPoemCutscenes',
     ),
     subtitleScale: clampInRange(
       readNumber(storage, ACCESSIBILITY_LS_KEYS.subtitleScale, DEFAULT_ACCESSIBILITY_SETTINGS.subtitleScale),
