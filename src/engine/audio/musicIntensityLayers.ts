@@ -6,6 +6,7 @@ export type MusicIntensityLayer = 'exploration' | 'tension' | 'combat';
 
 export interface MusicLayerContext {
   showStoryOverlay?: boolean;
+  diegeticNarrativeOpen?: boolean;
 }
 
 let currentLayer: MusicIntensityLayer = 'exploration';
@@ -41,6 +42,7 @@ export function resolveMusicIntensityLayer(
       return 'tension';
     default:
       if (context.showStoryOverlay) return 'tension';
+      if (context.diegeticNarrativeOpen) return 'tension';
       return 'exploration';
   }
 }

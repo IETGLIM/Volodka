@@ -5,6 +5,7 @@ import {
   shouldShowEntryStoryAfterCutscene,
   shouldShowStoryBeatAfterCutscene,
 } from './postCutsceneNarrative';
+import { isAct1DiegeticStoryNode } from '@/engine/narrative/narrativePresentationPolicy';
 
 describe('resolvePostCutsceneNarrativeNode', () => {
   it('promotes corridor_door to corridor_explore_mode', () => {
@@ -43,22 +44,30 @@ describe('shouldShowEntryStoryAfterCutscene', () => {
 });
 
 describe('shouldShowStoryBeatAfterCutscene', () => {
-  it('includes act transitions and mid-act title cards', () => {
+  it('returns false for Act 1 diegetic entry beats (cutscene text only)', () => {
+    expect(shouldShowStoryBeatAfterCutscene('start')).toBe(false);
+    expect(shouldShowStoryBeatAfterCutscene('corridor_door')).toBe(false);
+    expect(shouldShowStoryBeatAfterCutscene('kitchen_table')).toBe(false);
+    expect(shouldShowStoryBeatAfterCutscene('cafe_enter')).toBe(false);
+    expect(shouldShowStoryBeatAfterCutscene('go_to_cafe')).toBe(false);
+  });
+
+  it('includes act transitions and mid-act title cards for Acts 2+', () => {
     expect(shouldShowStoryBeatAfterCutscene('act2_transition')).toBe(true);
     expect(shouldShowStoryBeatAfterCutscene('act3_transition')).toBe(true);
-    expect(shouldShowStoryBeatAfterCutscene('maria_curious')).toBe(true);
-    expect(shouldShowStoryBeatAfterCutscene('fix_success')).toBe(true);
+    expect(shouldShowStoryBeatAfterCutscene('fix_success')).toBe(false);
+    expect(shouldShowStoryBeatAfterCutscene('maria_curious')).toBe(false);
   });
 
   it('includes act II explore entry beats', () => {
     expect(shouldShowStoryBeatAfterCutscene('act2_network_initiation')).toBe(true);
     expect(shouldShowStoryBeatAfterCutscene('abandoned_workshop')).toBe(true);
     expect(shouldShowStoryBeatAfterCutscene('pier_arrival')).toBe(true);
-    expect(shouldShowStoryBeatAfterCutscene('go_to_cafe')).toBe(true);
   });
 
-  it('covers every registered cutscene trigger node', () => {
+  it('covers non-Act1 cutscene trigger nodes', () => {
     for (const def of Object.values(CUTSCENES)) {
+      if (isAct1DiegeticStoryNode(def.triggerStoryNode)) continue;
       expect(shouldShowStoryBeatAfterCutscene(def.triggerStoryNode)).toBe(true);
     }
   });

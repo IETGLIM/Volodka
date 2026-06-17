@@ -30,7 +30,7 @@ import { setMusicIntensityLayer, resolveMusicIntensityLayer } from '@/engine/aud
 /** Bundles orchestrator hooks — GameOrchestrator stays a thin render coordinator. */
 export function useOrchestratorRuntime() {
   const { mode, introSeen, mainMenuOpen, devToolsArmed } = useOrchestratorShell();
-  const { showStoryOverlay, narrativeKind } = useOrchestratorNarrativeOverlay();
+  const { showStoryOverlay, narrativeKind, diegeticNarrative } = useOrchestratorNarrativeOverlay();
 
   const {
     gameDataReady,
@@ -85,9 +85,12 @@ export function useOrchestratorRuntime() {
 
   useEffect(() => {
     setMusicIntensityLayer(
-      resolveMusicIntensityLayer(mode, { showStoryOverlay }),
+      resolveMusicIntensityLayer(mode, {
+        showStoryOverlay,
+        diegeticNarrativeOpen: diegeticNarrative != null,
+      }),
     );
-  }, [mode, showStoryOverlay]);
+  }, [mode, showStoryOverlay, diegeticNarrative]);
 
   const { skipActiveCutscene } = useCutsceneController();
   const { sceneBanner } = useGameLifecycleManager(mode);

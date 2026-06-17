@@ -50,6 +50,8 @@ export function applyGameAction(_state: GameStoreState, action: GameAction): Par
     case 'story/setShowStoryOverlay': ui.setShowStoryOverlay(action.show); break;
     case 'story/openNarrativeOverlay': ui.openNarrativeOverlay(action.nodeId, action.kind ?? ui.narrativeKind ?? 'story'); break;
     case 'story/closeNarrativeOverlay': ui.closeNarrativeOverlay(); break;
+    case 'story/openDiegeticNarrative': ui.openDiegeticNarrative(action.nodeId, action.kind ?? ui.narrativeKind ?? 'story'); break;
+    case 'story/closeDiegeticNarrative': ui.closeDiegeticNarrative(); break;
     case 'story/visitNode': player.visitNode(action.nodeId); break;
     case 'story/advanceAct': player.advanceAct(); break;
     case 'inventory/addItem': player.addItem(action.item); break;

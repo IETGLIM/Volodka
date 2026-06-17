@@ -11,7 +11,17 @@ export function openNarrativeOverlay(nodeId: string, kind: NarrativeKind): void 
   dispatchGameAction({ type: 'story/openNarrativeOverlay', nodeId, kind });
 }
 
+/** Open compact diegetic HUD (Act 1) — world stays visible, movement unlocked. */
+export function openDiegeticNarrative(nodeId: string, kind: NarrativeKind): void {
+  dispatchGameAction({ type: 'story/openDiegeticNarrative', nodeId, kind });
+}
+
 /** Close narrative overlay (node id retained for save/resume). */
 export function closeNarrativeOverlay(): void {
   dispatchGameAction({ type: 'story/closeNarrativeOverlay' });
+}
+
+/** Close diegetic HUD only. */
+export function closeDiegeticNarrative(): void {
+  dispatchGameAction({ type: 'story/closeDiegeticNarrative' });
 }

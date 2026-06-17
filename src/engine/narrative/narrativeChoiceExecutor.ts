@@ -1,0 +1,147 @@
+import { audioEngine } from '@/engine/AudioEngine';
+import { enterSceneFreeExplorationHub } from '@/engine/scene/freeExplorationHub';
+import {
+  closeDiegeticNarrative,
+  closeNarrativeOverlay,
+  openDiegeticNarrative,
+  openNarrativeOverlay,
+} from '@/engine/scene/narrativeOverlay';
+import { presentNarrativeBeat } from '@/engine/narrative/presentNarrativeBeat';
+import {
+  isClosedOverlayExploreHub,
+  resolveExploreHubNavigation,
+} from '@/shared/sceneExploreHubRegistry';
+import { EXPLORE_HUB_NODE_IDS } from '@/shared/exploreHubNodes';
+import { isAct1DiegeticStoryNode } from '@/engine/narrative/narrativePresentationPolicy';
+import { getGameStore } from '@/store/gameStore';
+import { requestSceneTransitionForStoryNode } from '@/engine/scene/sceneTransition';
+import type { DialogueChoice, StoryChoice, StoryEffect } from '@/shared/types/game';
+import { applyEffects } from '@/shared/utils/applyEffects';
+import { dispatchGameAction } from '@/engine/GameActionDispatcher';
+
+import type { SceneId } from '@/shared/types/game';
+
+export interface StoryChoiceExecutorContext {
+  currentNodeId: string;
+  nodeSceneId?: SceneId;
+  onAppliedEffects?: (effects: StoryEffect[]) => void;
+}
+
+/** Execute a story node choice — shared by StoryRenderer and DiegeticDialogueHud. */
+export function executeStoryChoice(
+  choice: StoryChoice,
+  ctx: StoryChoiceExecutorContext,
+): void {
+  audioEngine.playSfx('confirm');
+  const transitionsScene =
+    choice.effects?.some((fx) => fx.type === 'transitionScene') ?? false;
+
+  if (choice.effects) {
+    if (transitionsScene) {
+      closeNarrativeOverlay();
+      closeDiegeticNarrative();
+      if (choice.next) {
+        dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId: choice.next });
+      }
+    }
+    applyEffects(choice.effects);
+    ctx.onAppliedEffects?.(choice.effects);
+  }
+
+  if (choice.next === null) {
+    closeNarrativeOverlay();
+    closeDiegeticNarrative();
+  } else if (choice.next && EXPLORE_HUB_NODE_IDS.has(choice.next)) {
+    const resolved = resolveExploreHubNavigation(
+      ctx.currentNodeId,
+      ctx.nodeSceneId,
+      choice.next,
+    );
+    if (resolved.action === 'navigate') {
+      if (isClosedOverlayExploreHub(resolved.hubId)) {
+        enterSceneFreeExplorationHub(resolved.hubId);
+      } else {
+        dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId: resolved.hubId });
+      }
+    } else {
+      closeNarrativeOverlay();
+      closeDiegeticNarrative();
+    }
+  } else if (choice.next && !transitionsScene) {
+    if (choice.next === 'start') {
+      const store = getGameStore();
+      store.resetForNewPlaythrough({ preserveAchievements: true, skipIntro: true });
+      openNarrativeOverlay('start', 'story');
+      return;
+    }
+    if (isAct1DiegeticStoryNode(choice.next)) {
+      presentNarrativeBeat(choice.next, 'story');
+    } else {
+      dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId: choice.next });
+      openNarrativeOverlay(choice.next, 'story');
+    }
+  }
+}
+
+/** Execute a dialogue node choice — shared by DialogueRenderer and DiegeticDialogueHud. */
+export function executeDialogueChoice(choice: DialogueChoice): void {
+  audioEngine.playSfx('confirm');
+
+  if (choice.effects) {
+    applyEffects(choice.effects);
+  }
+
+  if (choice.next === null) {
+    closeNarrativeOverlay();
+    closeDiegeticNarrative();
+  } else if (choice.next) {
+    if (isAct1DiegeticStoryNode(choice.next)) {
+      presentNarrativeBeat(choice.next, 'dialogue');
+    } else {
+      dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId: choice.next });
+      openNarrativeOverlay(choice.next, 'dialogue');
+    }
+  }
+}
+
+/** Apply story node mount effects (visit, scene sync, sfx). */
+export function applyStoryNodeMountEffects(node: {
+  id: string;
+  sceneId?: string;
+  effects?: StoryEffect[];
+  autoSave?: boolean;
+  accessibilityAnnounce?: string;
+  soundEffect?: string;
+  musicCue?: string;
+  speaker?: string;
+}): void {
+  const store = getGameStore();
+  store.visitNode(node.id);
+  if (node.sceneId && store.exploration.currentSceneId !== node.sceneId) {
+    requestSceneTransitionForStoryNode(node.id, node.sceneId);
+  }
+  if (node.effects?.length) {
+    applyEffects(node.effects);
+  }
+  if (node.autoSave) {
+    store.saveGame({ source: 'auto' });
+  }
+}
+
+/** Apply dialogue node mount effects. */
+export function applyDialogueNodeMountEffects(node: {
+  id: string;
+  sceneId?: string;
+  effects?: StoryEffect[];
+  speaker?: string;
+  speakerId?: string;
+}): void {
+  const store = getGameStore();
+  store.visitNode(node.id);
+  if (node.sceneId && store.exploration.currentSceneId !== node.sceneId) {
+    requestSceneTransitionForStoryNode(node.id, node.sceneId);
+  }
+  if (node.effects?.length) {
+    applyEffects(node.effects);
+  }
+}

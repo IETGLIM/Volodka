@@ -29,6 +29,11 @@ import {
 import type { NarrativeKind } from '@/shared/types/narrativeKind';
 export type { NarrativeKind } from '@/shared/types/narrativeKind';
 
+export interface DiegeticNarrativeState {
+  nodeId: string;
+  kind: NarrativeKind;
+}
+
 export interface UISliceState {
   /** Always `'exploration'` — use phase flags + getGamePhase() for UI branching. */
   mode: GameMode;
@@ -39,6 +44,8 @@ export interface UISliceState {
   lastSaveTimestamp: number | null;
   lastAutoSaveTimestamp: number | null;
   showStoryOverlay: boolean;
+  /** Compact bottom HUD for Act 1 — no world dim, movement stays unlocked. */
+  diegeticNarrative: DiegeticNarrativeState | null;
   /** Which narrative renderer to mount while overlay is open. */
   narrativeKind: NarrativeKind | null;
   /** F3 dev tools armed — gates DevPanel + RendererInfoBridge chunks. */
@@ -66,6 +73,8 @@ export interface UISliceActions {
   openNarrativeOverlay: (nodeId: string, kind: NarrativeKind) => void;
   /** Atomically close overlay; keep currentNodeId for save/combat resume. */
   closeNarrativeOverlay: () => void;
+  openDiegeticNarrative: (nodeId: string, kind: NarrativeKind) => void;
+  closeDiegeticNarrative: () => void;
   setNarrativeKind: (kind: NarrativeKind | null) => void;
   armDevTools: () => void;
   toggleMatrixRain: () => void;
@@ -100,6 +109,7 @@ export const createUISlice: StateCreator<
   lastSaveTimestamp: null,
   lastAutoSaveTimestamp: null,
   showStoryOverlay: false,
+  diegeticNarrative: null,
   narrativeKind: null,
   devToolsArmed: false,
   matrixRainEnabled: true,
@@ -142,10 +152,26 @@ export const createUISlice: StateCreator<
   setShowStoryOverlay: (show) => set({ showStoryOverlay: show }),
 
   openNarrativeOverlay: (nodeId, kind) =>
-    set({ showStoryOverlay: true, currentNodeId: nodeId, narrativeKind: kind }),
+    set({
+      showStoryOverlay: true,
+      diegeticNarrative: null,
+      currentNodeId: nodeId,
+      narrativeKind: kind,
+    }),
 
   closeNarrativeOverlay: () =>
-    set({ showStoryOverlay: false }),
+    set({ showStoryOverlay: false, diegeticNarrative: null }),
+
+  openDiegeticNarrative: (nodeId, kind) =>
+    set({
+      showStoryOverlay: false,
+      diegeticNarrative: { nodeId, kind },
+      currentNodeId: nodeId,
+      narrativeKind: kind,
+    }),
+
+  closeDiegeticNarrative: () =>
+    set({ diegeticNarrative: null }),
 
   setNarrativeKind: (kind) => set({ narrativeKind: kind }),
 

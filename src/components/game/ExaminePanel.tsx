@@ -1,8 +1,9 @@
-/* ─── Volodka RPG – Examine cinematic beat ───
- *  Object inspection as full-screen AAA title card (not HUD panel).
+/* ─── Volodka RPG – Examine beat ───
+ *  Act 1: compact bottom panel. Other acts: fullscreen cinematic frame.
  */
 
 import { useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import type { ExamineData } from '@/shared/types/game';
 import { consumeEKey } from '@/engine/input/eKeyConsumption';
 import {
@@ -10,8 +11,12 @@ import {
   CinematicNarrativeFrame,
   resolveExaminePresentation,
 } from '@/components/game/cinematic';
+import { NarrativeChoiceList } from '@/components/game/diegetic/NarrativeChoiceList';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { useNarrativeTypewriter } from '@/hooks/useNarrativeTypewriter';
+import { useGameStore } from '@/store/gameStore';
+import { isAct1DiegeticScene } from '@/engine/narrative/narrativePresentationPolicy';
+import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
 interface ExaminePanelProps {
   open: boolean;
@@ -29,6 +34,8 @@ export function ExaminePanel({
   onContinue,
 }: ExaminePanelProps) {
   const reducedMotion = useEffectiveReducedMotion();
+  const sceneId = useGameStore((s) => s.exploration.currentSceneId);
+  const compact = isAct1DiegeticScene(sceneId);
   const bodyText = data
     ? data.detailText
       ? `${data.description}\n\n${data.detailText}`
@@ -65,6 +72,45 @@ export function ExaminePanel({
 
   const icon = data.icon || '🔍';
   const presentation = resolveExaminePresentation('#66ddcc');
+
+  if (compact) {
+    return (
+      <AnimatePresence>
+        <motion.div
+          key={`examine-compact-${data.title}`}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 12 }}
+          className="fixed left-0 right-0 bottom-20 px-4 pointer-events-auto"
+          style={{ zIndex: UI_LAYERS.DIALOGUE }}
+          role="dialog"
+          aria-label={`Осмотр: ${data.title}`}
+        >
+          <div className="mx-auto max-w-xl rounded-lg border border-white/10 bg-black/60 backdrop-blur-md p-4">
+            <div className="flex items-start gap-3">
+              <span className="text-2xl" aria-hidden>{icon}</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-cyan-300 mb-1">{data.title}</p>
+                <p className="text-sm text-slate-100 font-serif whitespace-pre-line">{displayed}</p>
+              </div>
+              <button type="button" onClick={onClose} className="text-xs text-slate-400 shrink-0">Esc</button>
+            </div>
+            {done && (
+              <div className="mt-2">
+                <NarrativeChoiceList
+                  choices={[]}
+                  accentColor={presentation.accentColor}
+                  compact
+                  continueLabel={hasLinkedContent && onContinue ? 'Продолжить [E]' : 'Закрыть'}
+                  onContinue={hasLinkedContent && onContinue ? onContinue : onClose}
+                />
+              </div>
+            )}
+          </div>
+        </motion.div>
+      </AnimatePresence>
+    );
+  }
 
   return (
     <CinematicNarrativeFrame

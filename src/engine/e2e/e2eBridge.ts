@@ -8,7 +8,8 @@ import {
   getPlayerRigidBody,
   isPlayerRigidBodyValid,
 } from '@/engine/PlayerRigidBodyState';
-import { closeNarrativeOverlay, openNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
+import { closeNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
+import { presentNarrativeBeat } from '@/engine/narrative/presentNarrativeBeat';
 import { enterSceneFreeExplorationHub } from '@/engine/scene/freeExplorationHub';
 import { resolveSceneSpawn, requestSceneTransition } from '@/engine/scene/sceneTransition';
 import { completeTutorial } from '@/store/actions/tutorialActions';
@@ -151,10 +152,16 @@ async function jumpToStoryBeat(nodeId: string, sceneId: SceneId): Promise<void> 
   await new Promise<void>((resolve) => {
     requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
   });
-  openNarrativeOverlay(nodeId, 'story');
+  presentNarrativeBeat(nodeId, 'story');
   let ready = await waitForStoryOverlayReady(nodeId);
   if (!ready) {
-    openNarrativeOverlay(nodeId, 'story');
+    const store2 = getGameStore();
+    if (store2.diegeticNarrative?.nodeId === nodeId) {
+      ready = true;
+    }
+  }
+  if (!ready) {
+    presentNarrativeBeat(nodeId, 'story');
     ready = await waitForStoryOverlayReady(nodeId);
   }
   if (!ready) {

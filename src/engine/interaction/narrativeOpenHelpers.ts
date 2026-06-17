@@ -7,7 +7,8 @@ import {
 import { dispatchStateAction, getGameSnapshot } from '@/engine/StateDispatcher';
 import type { NarrativeKind } from '@/shared/types/narrativeKind';
 import { hasVisitedNode } from '@/shared/visitedNodesIndex';
-import { openNarrativeOverlay, closeNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
+import { closeNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
+import { presentNarrativeBeat } from '@/engine/narrative/presentNarrativeBeat';
 import { requestSceneTransition } from '@/engine/scene/sceneTransition';
 import { getCutsceneForNode } from '@/data/cutscenes';
 import {
@@ -67,7 +68,7 @@ export async function tryOpenDialogue(nodeId: string): Promise<boolean> {
     const resolvedId = resolveDialogueEntryNodeId(nodeId, snapshot.playerState.visitedNodes);
     await ensureDialogueNode(resolvedId);
     if (getDialogueNodes()[resolvedId]) {
-      openNarrativeOverlay(resolvedId, 'dialogue');
+      presentNarrativeBeat(resolvedId, 'dialogue');
       return true;
     }
     notifyNarrativeUnavailable('dialogue', resolvedId, 'missing');
@@ -85,7 +86,7 @@ export async function tryOpenStory(nodeId: string): Promise<boolean> {
       notifyNarrativeUnavailable('story', nodeId, 'missing');
       return false;
     }
-    openNarrativeOverlay(nodeId, 'story');
+    presentNarrativeBeat(nodeId, 'story');
     return true;
   } catch (error) {
     notifyNarrativeUnavailable('story', nodeId, 'load_failed', error);
@@ -116,7 +117,7 @@ export async function openLinkedDialogue(nodeId: string): Promise<boolean> {
     return true;
   }
 
-  openNarrativeOverlay(resolvedId, 'dialogue');
+  presentNarrativeBeat(resolvedId, 'dialogue');
   return true;
 }
 
@@ -164,7 +165,7 @@ export async function openLinkedStory(nodeId: string): Promise<boolean> {
     }
     dispatchStateAction({ type: 'story/setCurrentNodeId', nodeId });
     if (!getCutsceneForNode(nodeId)) {
-      openNarrativeOverlay(nodeId, 'story');
+      presentNarrativeBeat(nodeId, 'story');
     }
     return true;
   }
@@ -175,7 +176,7 @@ export async function openLinkedStory(nodeId: string): Promise<boolean> {
     return true;
   }
 
-  openNarrativeOverlay(nodeId, 'story');
+  presentNarrativeBeat(nodeId, 'story');
   return true;
 }
 

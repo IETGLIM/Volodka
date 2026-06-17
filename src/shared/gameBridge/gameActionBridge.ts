@@ -107,6 +107,8 @@ export type GameAction =
   | { type: 'story/setShowStoryOverlay'; show: boolean }
   | { type: 'story/openNarrativeOverlay'; nodeId: string; kind?: 'story' | 'dialogue' }
   | { type: 'story/closeNarrativeOverlay' }
+  | { type: 'story/openDiegeticNarrative'; nodeId: string; kind?: 'story' | 'dialogue' }
+  | { type: 'story/closeDiegeticNarrative' }
   | { type: 'story/visitNode'; nodeId: string }
   | { type: 'story/advanceAct' }
   | { type: 'inventory/addItem'; item: InventoryItem }

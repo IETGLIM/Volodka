@@ -29,6 +29,7 @@ async function expectAct1FreeExploration(page: import('@playwright/test').Page) 
   }
 
   await expect(hubDialog).not.toBeVisible({ timeout: 15_000 });
+  await expect(page.getByTestId('diegetic-dialogue-hud')).not.toBeVisible({ timeout: 5000 });
 
   const gameHud = page.getByTestId('game-hud');
   await expect(gameHud).toBeVisible({ timeout: 20_000 });

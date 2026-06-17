@@ -11,7 +11,8 @@ import { eventBus } from '@/engine/EventBus';
 import { audioEngine } from '@/engine/AudioEngine';
 import { getGameStore, useGameStore } from '@/store/gameStore';
 import { prefetchStoryNodes } from '@/data/gameDataLoader';
-import { openNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
+import { enterSceneFreeExplorationHub } from '@/engine/scene/freeExplorationHub';
+import { dispatchGameAction } from '@/engine/GameActionDispatcher';
 import { setCinematicPresentationMode } from '@/engine/camera/cinematicPresentation';
 import { CinematicPlayerAvatar } from './CinematicPlayerAvatar';
 import {
@@ -108,18 +109,15 @@ export function WakeUpSequence() {
       prologueStoryOpenedRef.current = true;
       clearPrologueTimer();
       prefetchStoryNodes(['start', 'explore_mode', 'room_table']);
-      void import('@/components/game/StoryRenderer');
       void import('@/components/game/FirstReadingCelebration');
 
       if (live.activeCutsceneId) {
         live.setCutscene(null, []);
         eventBus.emit('cutscene:overlay_end', {});
       }
-      if (!live.narrativeKind) {
-        live.setNarrativeKind('story');
-      }
       live.setCurrentNodeId('start');
-      openNarrativeOverlay('start', 'story');
+      dispatchGameAction({ type: 'story/visitNode', nodeId: 'start' });
+      enterSceneFreeExplorationHub('explore_mode');
     };
 
     if (!store.isCutsceneTriggered('act1_prologue')) {

@@ -8,11 +8,16 @@ const narrativeOverlayMock = vi.hoisted(() => ({
   narrativeKind: null as 'story' | 'dialogue' | null,
 }));
 
+vi.mock('@/components/game/diegetic/DiegeticDialogueHud', () => ({
+  DiegeticDialogueHud: () => null,
+}));
+
 vi.mock('@/store/selectors', () => ({
   useOrchestratorShell: () => ({ mode: narrativeOverlayMock.mode }),
   useOrchestratorNarrativeOverlay: () => ({
     showStoryOverlay: narrativeOverlayMock.showStoryOverlay,
     narrativeKind: narrativeOverlayMock.narrativeKind,
+    diegeticNarrative: null,
   }),
 }));
 

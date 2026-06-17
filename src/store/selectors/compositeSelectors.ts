@@ -125,7 +125,13 @@ export function useOrchestratorNarrativeOverlay() {
   return useGameSelector((s) => ({
     showStoryOverlay: s.showStoryOverlay,
     narrativeKind: s.narrativeKind,
+    diegeticNarrative: s.diegeticNarrative,
   }));
+}
+
+/** Diegetic HUD state (Act 1 compact narrative). */
+export function useDiegeticNarrativeState() {
+  return useGameSelector((s) => s.diegeticNarrative);
 }
 
 /** GameOrchestrator + IntroAutoSkip overlay state. */
