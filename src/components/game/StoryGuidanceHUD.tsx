@@ -318,7 +318,8 @@ export function StoryGuidanceHUD() {
               e.preventDefault();
               openQuestJournal(currentObjective?.questId);
             }
-          }}          className="relative rounded-md cursor-pointer"
+          }}
+          className="relative rounded-md cursor-pointer"
           style={{
             background: 'rgba(0, 10, 18, 0.82)',
             border: `1px solid ${urgencyColor}33`,
@@ -407,7 +408,8 @@ export function StoryGuidanceHUD() {
                     </span>
                   ) : null}
                 </div>
-              ) : null}            </div>
+              ) : null}
+            </div>
           </div>
 
           <div className="absolute top-1.5 right-1.5 flex items-center gap-0.5">
@@ -467,7 +469,8 @@ export function StoryGuidanceHUD() {
                   style={{ color: `${urgencyColor}cc` }}
                 >
                   Q — журнал заданий
-                </button>              </motion.div>
+                </button>
+              </motion.div>
             )}
           </AnimatePresence>
         </div>

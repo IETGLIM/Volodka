@@ -136,7 +136,7 @@ export function InteractionHintPopup() {
           role="status"
           aria-live="polite"
           aria-label={hint ? formatInteractionHintAria(hint.label, hint.key, hint.description, hintInputOptions) : undefined}
-          style={{ zIndex: UI_LAYERS.HUD, bottom: bottomInteractPromptPx(isTouchDevice) }}
+          style={{ zIndex: UI_LAYERS.HUD + 1, bottom: bottomInteractPromptPx(isTouchDevice) }}
         >
           <div
             className="relative overflow-hidden"

@@ -374,6 +374,7 @@ export function DiegeticDialogueHud() {
                 accentColor={accentColor}
                 compact
                 continueLabel="Закрыть"
+                continueHint={hasContinueOnly ? controlHint : undefined}
                 onContinue={hasContinueOnly ? handleClose : undefined}
               />
             </div>
