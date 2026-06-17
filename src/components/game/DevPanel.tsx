@@ -2,7 +2,7 @@
 /* ─── Volodka RPG – Developer Debug Panel (F3) ─── */
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { FocusTrap } from '@/components/a11y/FocusTrap';
 import { usePanelDialog } from '@/components/a11y/usePanelDialog';
 import { useGameStore } from '@/store/gameStore';
@@ -33,7 +33,7 @@ interface EventLogEntry {
 }
 
 /* ── All valid scene IDs ── */
-const SCENE_IDS = Object.keys(SCENE_CONFIG) as SceneId[];
+const _SCENE_IDS = Object.keys(SCENE_CONFIG) as SceneId[];
 
 /* ── Scene category groupings ── */
 const SCENE_GROUPS: Record<string, SceneId[]> = {

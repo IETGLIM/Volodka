@@ -5,32 +5,27 @@ import { eventBus } from '@/engine/EventBus';
 import type { SceneId } from '@/shared/types/game';
 import {
   WorldChunkManager,
-  DEFAULT_WORLD_CHUNK_OPTIONS,
-} from './WorldChunkManager';
+  DEFAULT_WORLD_CHUNK_OPTIONS } from './WorldChunkManager';
 import type {
   WorldCellId,
   WorldChunk,
   WorldChunkCoord,
   WorldChunkDiff,
   WorldRegionId,
-  WorldStreamState,
-} from './types';
+  WorldStreamState } from './types';
 import { chunkKey } from './types';
 import {
-  getCellForScene,
   getChunkForScene,
   getPrimarySceneForChunk,
   getRegionForScene,
   getWorldLocation,
-  isDistrictScene,
-} from './worldRegistry';
+  isDistrictScene } from './worldRegistry';
 import { getSpawnDirector } from './SpawnDirector';
 import { registerHmrDispose } from '@/shared/dev/hmrDispose';
 import {
   isWorldComputeWorkerAvailable,
   requestWorldChunkDiff,
-  resetWorldComputeWorkerState,
-} from '@/engine/workers/computeWorkerClient';
+  resetWorldComputeWorkerState } from '@/engine/workers/computeWorkerClient';
 
 export class WorldStreamManager {
   private readonly chunks: WorldChunkManager;
@@ -74,8 +69,7 @@ export class WorldStreamManager {
     const size = this.chunks.getChunkSizeMeters();
     return {
       x: sceneChunk.x * size + localPosition[0],
-      z: sceneChunk.z * size + localPosition[2],
-    };
+      z: sceneChunk.z * size + localPosition[2] };
   }
 
   getPlayerChunk(
@@ -116,8 +110,7 @@ export class WorldStreamManager {
     const diff: WorldChunkDiff = {
       toLoad: response.toLoad.map(parseKey),
       toUnload: response.toUnload.map(parseKey),
-      active: response.active.map(parseKey),
-    };
+      active: response.active.map(parseKey) };
 
     this.chunks.applyExternalDiff(diff);
     return diff;
@@ -164,8 +157,7 @@ export class WorldStreamManager {
         active: diff.active.map(chunkKey),
         playerChunk: chunkKey(playerChunk),
         regionId: this.currentRegionId,
-        cellId: this.currentCellId,
-      });
+        cellId: this.currentCellId });
     }
 
     return diff;
@@ -181,8 +173,7 @@ export class WorldStreamManager {
       ...descriptor,
       regionId,
       cellId,
-      legacySceneId,
-    };
+      legacySceneId };
   }
 
   getStreamState(
@@ -195,8 +186,7 @@ export class WorldStreamManager {
       cellId: this.currentCellId,
       playerChunk,
       activeChunkKeys: this.chunks.getLoadedKeys() as WorldStreamState['activeChunkKeys'],
-      streamingEnabled: this.streamingEnabled,
-    };
+      streamingEnabled: this.streamingEnabled };
   }
 
   getLastDiff(): WorldChunkDiff | null {
@@ -208,13 +198,11 @@ export class WorldStreamManager {
     const resolution = getSpawnDirector().resolve({
       sceneId,
       portalSpawn,
-      context: 'enter',
-    });
+      context: 'enter' });
     eventBus.emit('world:location_enter', {
       sceneId: resolution.sceneId,
       spawn: resolution.spawn,
-      kind: getWorldLocation(sceneId).kind,
-    });
+      kind: getWorldLocation(sceneId).kind });
   }
 }
 

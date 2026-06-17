@@ -3,6 +3,7 @@
  * InteriorModels stays in the shared Vite chunk (scene-shared-interior).
  */
 
+/* eslint-disable react-refresh/only-export-components -- co-located helpers and lazy exports */
 import { lazy, Suspense, type ComponentProps, type ComponentType } from 'react';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 

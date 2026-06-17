@@ -3,6 +3,7 @@
  * Applies [data-cyberpunk] scope. Palette lives in tokens.css + cyberPalette.ts.
  */
 
+/* eslint-disable react-refresh/only-export-components -- co-located helpers and lazy exports */
 import { createContext, useMemo, type ReactNode } from 'react';
 import {
   CYBERPUNK_COLORS,

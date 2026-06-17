@@ -257,6 +257,7 @@ export function EventNotificationPopup() {
     }, NOTIFICATION_DURATION_MS + 500); // extra 500ms for exit animation
 
     timers[id] = removeTimer;
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
   }, []);
 
   /* ── Listen for game:notification events ── */
@@ -322,6 +323,7 @@ export function EventNotificationPopup() {
         delete timers[key];
       }
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
   }, []);
 
   const mode = useGamePhase();

@@ -57,7 +57,7 @@ class PostFXErrorBoundary extends Component<
     return { hasError: true };
   }
 
-  componentDidCatch(error: Error, info: ErrorInfo) {
+  componentDidCatch(error: Error, _info: ErrorInfo) {
     devWarn('[PostFX] EffectComposer failed, disabling post-processing:', error.message);
   }
 
@@ -84,7 +84,7 @@ class PhysicsErrorBoundary extends Component<
     return { hasError: true };
   }
 
-  componentDidCatch(error: Error, info: ErrorInfo) {
+  componentDidCatch(error: Error, _info: ErrorInfo) {
     devWarn('[PhysicsErrorBoundary] Rapier physics failed, using SimplePlayer fallback:', error.message);
   }
 

@@ -4,6 +4,7 @@
  * Extracted from DialogueRenderer, NPCRelationshipPanel, DialogueHistoryPanel
  * to eliminate ~400 lines of duplicated SVG portrait code. */
 
+/* eslint-disable react-refresh/only-export-components -- co-located helpers and lazy exports */
 import { motion } from 'framer-motion';
 
 /* ─── Color palette per NPC ─── */

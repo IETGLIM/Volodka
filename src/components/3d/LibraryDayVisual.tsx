@@ -3,7 +3,6 @@
 
 import * as THREE from 'three';
 import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
-import { EnvironmentDetail } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { createLibraryDayWarmSkyTexture } from '@/engine/graphics/proceduralSkyTextures';
 import { LibraryDayInterior } from './sceneChunks/libraryDay';

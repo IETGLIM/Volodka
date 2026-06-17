@@ -28,32 +28,29 @@ import {
   cylinderGeo,
   capsuleGeo,
   torusGeo,
-  circleGeo,
   DEFAULT_ARM_WIDTH,
   DEFAULT_FOREARM_WIDTH,
   DEFAULT_LEG_WIDTH,
   DEFAULT_LOWER_LEG_WIDTH,
-  getProceduralNpcSharedResourceSets,
-} from '../proceduralNpcShared';
+  getProceduralNpcSharedResourceSets } from '../proceduralNpcShared';
 
 /* ─── Shared color constants ─── */
 const SKIN_LIGHT = '#c4a882';
 const SKIN_MEDIUM = '#b09070';
-const SKIN_DARK = '#8a6a50';
+const _SKIN_DARK = '#8a6a50';
 const SKIN_SHADOW_LIGHT = '#b89a72';
 const SKIN_SHADOW_MED = '#9a7a60';
 const HAIR_DARK = '#2a1e12';
-const HAIR_BROWN = '#4a3020';
-const HAIR_GRAY = '#888890';
-const HAIR_BLACK = '#0e0a08';
+const _HAIR_BROWN = '#4a3020';
+const _HAIR_GRAY = '#888890';
+const _HAIR_BLACK = '#0e0a08';
 
 /* ─── Shared body parts ─── */
 
 /** Reusable eye cluster (both eyes with pupils, iris, eyebrows) — shared geo/mat */
 function Eyes({
   browAngle = 0.1,
-  irisColor = '#4a3520',
-}: {
+  irisColor = '#4a3520' }: {
   browAngle?: number;
   irisColor?: string;
 }) {
@@ -81,8 +78,7 @@ function Eyes({
 function FaceFeatures({
   skinColor = SKIN_LIGHT,
   shadowColor = SKIN_SHADOW_LIGHT,
-  mouthCornersDown = true,
-}: {
+  mouthCornersDown = true }: {
   skinColor?: string;
   shadowColor?: string;
   mouthCornersDown?: boolean;
@@ -108,8 +104,7 @@ function Arms({
   skinColor = SKIN_LIGHT,
   armWidth = DEFAULT_ARM_WIDTH,
   forearmWidth = DEFAULT_FOREARM_WIDTH,
-  wristAccessory,
-}: {
+  wristAccessory }: {
   sleeveColor: string;
   skinColor?: string;
   armWidth?: number;
@@ -126,6 +121,7 @@ function Arms({
       { geo: sharedGeo.upperArmCapsule, position: [0, -0.14, 0], scale: armScale },
       { geo: sharedGeo.forearmCapsule, position: [0, -0.3, 0], scale: forearmScale },
     ]),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
     [armWidth, forearmWidth],
   );
   const handGeo = useMemo(
@@ -167,8 +163,7 @@ function Legs({
   legWidth = DEFAULT_LEG_WIDTH,
   lowerLegWidth = DEFAULT_LOWER_LEG_WIDTH,
   accentGlow,
-  accentColor,
-}: {
+  accentColor }: {
   pantsColor: string;
   pantsDark: string;
   shoeColor?: string;
@@ -205,6 +200,7 @@ function Legs({
       { geo: sharedGeo.upperLegCapsule, position: [0, -0.18, 0], scale: legScale },
       { geo: sharedGeo.lowerLegCapsule, position: [0, -0.4, 0], scale: lowerLegScale },
     ]),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
     [legWidth, lowerLegWidth],
   );
 
@@ -240,8 +236,7 @@ function NpcHead({
   stubbleGeo,
   stubbleColor,
   stubbleOpacity = 0.2,
-  children,
-}: {
+  children }: {
   skullGeo: THREE.BufferGeometry;
   jawGeo: THREE.BufferGeometry;
   jawPos?: [number, number, number];
@@ -344,8 +339,7 @@ function useNPCAnimation(
         leftArm: body.getObjectByName('leftArm') as THREE.Group | null,
         rightArm: body.getObjectByName('rightArm') as THREE.Group | null,
         leftLeg: body.getObjectByName('leftLeg') as THREE.Group | null,
-        rightLeg: body.getObjectByName('rightLeg') as THREE.Group | null,
-      };
+        rightLeg: body.getObjectByName('rightLeg') as THREE.Group | null };
     }
 
     const { head, torso, leftArm, rightArm, leftLeg, rightLeg } = bodyPartsRef.current;
@@ -973,7 +967,7 @@ function LyonyaModel({ appearance, animState = 'idle' }: { appearance: NPCAppear
   const groupRef = useRef<THREE.Group>(null);
   useNPCAnimation(groupRef, animState, 0.035);
 
-  const bodyColor = appearance.bodyColor;
+  const _bodyColor = appearance.bodyColor;
   const accentColor = appearance.accentColor;
   const glowColor = appearance.glowColor;
 
@@ -1035,8 +1029,7 @@ const DEFAULT_APPEARANCE: NPCAppearance = {
   headAccessory: 'none',
   height: 1.0,
   glowColor: '#ffffff',
-  silhouette: 'average',
-};
+  silhouette: 'average' };
 
 /* ═══════════════════════════════════════════════════════════════════
     8. АЛИНА «СОЛНЫШ» (vera) – best friend, blonde, blue eyes, scarf, book
@@ -1729,8 +1722,7 @@ function ProceduralNPCModelInner({
   definitionId,
   appearance,
   interactionState = InteractionState.Idle,
-  activity = 'idle',
-}: ProceduralNPCModelProps) {
+  activity = 'idle' }: ProceduralNPCModelProps) {
   const app = appearance ?? DEFAULT_APPEARANCE;
 
   // Derive animation state from interaction or schedule activity

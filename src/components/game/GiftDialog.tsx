@@ -9,7 +9,6 @@ import { useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Gift, Package } from 'lucide-react';
 import { findNpcById } from '@/data/allNpcDefinitions';
-import { getItemDefinition } from '@/data/items';
 import {
   getGiftPreferenceColor,
   getGiftPreferenceBg,

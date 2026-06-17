@@ -1,4 +1,3 @@
-import { isNarrativeMovementLocked } from '@/shared/exploreHubNodes';
 import { getInteractionState, isInteractionLocked } from '@/engine/interaction/interactionSession';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 import { forceEmitInteractionEnd } from '@/engine/interaction/interactionEndDedup';

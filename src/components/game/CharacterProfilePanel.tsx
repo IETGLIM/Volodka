@@ -15,7 +15,6 @@ import {
   Gem,
   BookOpen,
   Trophy,
-  MapPin,
   Package,
   Footprints,
   Star,
@@ -25,19 +24,17 @@ import {
   Brain,
   Flame,
   Swords,
-  Wind,
-} from 'lucide-react';
+  Wind } from 'lucide-react';
 import {
-  useCharacterProfilePanelState,
-} from '@/store/selectors';
+  useCharacterProfilePanelState } from '@/store/selectors';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { findNpcById } from '@/data/allNpcDefinitions';
 import { POEMS } from '@/data/poems';
 import { KARMA_LOW_THRESHOLD, KARMA_HIGH_THRESHOLD } from '@/data/constants';
 import { Card, CardContent } from '@/components/ui/card';
 import { getItemDefinition } from '@/data/items';
-import { PERKS_MAP, PERKS_BY_CATEGORY, PERK_CATEGORY_META } from '@/data/perks';
-import type { EquipmentSlot, NPCRelation } from '@/shared/types/game';
+import { PERKS_MAP, PERK_CATEGORY_META } from '@/data/perks';
+import type { EquipmentSlot } from '@/shared/types/game';
 
 const TOTAL_POEMS = POEMS.length;
 
@@ -100,8 +97,7 @@ function CyberStatBar({
   max = 100,
   color,
   glowColor,
-  showSegments = true,
-}: {
+  showSegments = true }: {
   value: number;
   max?: number;
   color: string;
@@ -126,8 +122,7 @@ function CyberStatBar({
         className="absolute inset-y-0 left-0 rounded-full"
         style={{
           background: color,
-          boxShadow: `0 0 8px ${glowColor}, inset 0 1px 0 rgba(255,255,255,0.15)`,
-        }}
+          boxShadow: `0 0 8px ${glowColor}, inset 0 1px 0 rgba(255,255,255,0.15)` }}
         initial={false}
         animate={{ width: `${pct}%` }}
         transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
@@ -160,8 +155,7 @@ function SkillBar({ value, max = 100, color, label }: { value: number; max?: num
           className="h-full rounded-full"
           style={{
             background: color,
-            boxShadow: `0 0 4px ${color}40`,
-          }}
+            boxShadow: `0 0 4px ${color}40` }}
           initial={false}
           animate={{ width: `${pct}%` }}
           transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
@@ -271,8 +265,7 @@ function NpcRelationBar({ npcId, value }: { npcId: string; value: number }) {
         <motion.div
           className={`h-full rounded-full ${barColor}`}
           style={{
-            boxShadow: `0 0 4px ${glowColor}40`,
-          }}
+            boxShadow: `0 0 4px ${glowColor}40` }}
           initial={false}
           animate={{ width: `${Math.min(100, Math.max(0, value))}%` }}
           transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
@@ -287,8 +280,7 @@ function NpcRelationBar({ npcId, value }: { npcId: string; value: number }) {
 const SLOT_CONFIG: Record<EquipmentSlot, { label: string; Icon: typeof HardHat }> = {
   head: { label: 'Голова', Icon: HardHat },
   body: { label: 'Тело', Icon: Shirt },
-  accessory: { label: 'Аксессуар', Icon: Gem },
-};
+  accessory: { label: 'Аксессуар', Icon: Gem } };
 
 /* ── Skill display name mapping ── */
 const SKILL_DISPLAY: Record<string, { label: string; color: string }> = {
@@ -319,8 +311,7 @@ export function CharacterProfilePanel({ open, onClose }: { open: boolean; onClos
     npcRelations,
     collectedPoems,
     quests,
-    timeOfDay,
-  } = useCharacterProfilePanelState();
+    timeOfDay } = useCharacterProfilePanelState();
   const { level, xp, xpToNextLevel, currentAct } = progression;
   const isLowEnergy = energy < 25;
   const isHighStress = stress > 70;
@@ -373,8 +364,7 @@ export function CharacterProfilePanel({ open, onClose }: { open: boolean; onClos
               style={{
                 background: 'linear-gradient(180deg, rgba(2,6,23,0.96) 0%, rgba(15,23,42,0.94) 50%, rgba(2,6,23,0.96) 100%)',
                 borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.15)',
-                boxShadow: '0 0 30px rgb(var(--cyber-cyan-rgb) / 0.06), 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgb(var(--cyber-cyan-rgb) / 0.05)',
-              }}
+                boxShadow: '0 0 30px rgb(var(--cyber-cyan-rgb) / 0.06), 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgb(var(--cyber-cyan-rgb) / 0.05)' }}
             >
               {/* ── Header ── */}
               <div className="flex items-center justify-between px-5 py-3 border-b border-slate-800/60">
@@ -416,8 +406,7 @@ export function CharacterProfilePanel({ open, onClose }: { open: boolean; onClos
                         style={{
                           borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.35)',
                           boxShadow: '0 0 16px rgb(var(--cyber-cyan-rgb) / 0.15), 0 0 32px rgb(var(--cyber-cyan-rgb) / 0.05), inset 0 0 12px rgb(var(--cyber-cyan-rgb) / 0.05)',
-                          background: 'radial-gradient(ellipse at center, rgb(var(--cyber-cyan-rgb) / 0.08) 0%, transparent 70%)',
-                        }}
+                          background: 'radial-gradient(ellipse at center, rgb(var(--cyber-cyan-rgb) / 0.08) 0%, transparent 70%)' }}
                       >
                         <PlayerPortrait />
                       </motion.div>
@@ -441,8 +430,7 @@ export function CharacterProfilePanel({ open, onClose }: { open: boolean; onClos
                               borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.3)',
                               background: 'rgb(var(--cyber-cyan-rgb) / 0.08)',
                               color: 'var(--cyber-cyan)',
-                              textShadow: '0 0 6px rgb(var(--cyber-cyan-rgb) / 0.4)',
-                            }}
+                              textShadow: '0 0 6px rgb(var(--cyber-cyan-rgb) / 0.4)' }}
                           >
                             <ChevronUp className="size-2.5" />
                             УР {level}
@@ -547,8 +535,7 @@ export function CharacterProfilePanel({ open, onClose }: { open: boolean; onClos
                     <div className="flex items-center gap-4 p-3 rounded-lg border"
                       style={{
                         background: karmaBg(karma),
-                        borderColor: `${karmaStroke(karma)}25`,
-                      }}
+                        borderColor: `${karmaStroke(karma)}25` }}
                     >
                       <KarmaAlignmentIndicator karma={karma} />
                       <div className="flex flex-col gap-1">
@@ -586,8 +573,7 @@ export function CharacterProfilePanel({ open, onClose }: { open: boolean; onClos
                           className="ml-auto flex items-center gap-1 px-2 py-0.5 rounded border text-[9px] font-mono transition-all hover:bg-cyan-950/40"
                           style={{
                             borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.2)',
-                            color: 'rgb(var(--cyber-cyan-rgb) / 0.6)',
-                          }}
+                            color: 'rgb(var(--cyber-cyan-rgb) / 0.6)' }}
                         >
                           <Sparkles className="size-2.5" />
                           Дерево [T]
@@ -609,8 +595,7 @@ export function CharacterProfilePanel({ open, onClose }: { open: boolean; onClos
                           className="mt-2 flex items-center gap-1.5 px-2 py-1 rounded border"
                           style={{
                             borderColor: 'rgba(251,191,36,0.3)',
-                            background: 'rgba(251,191,36,0.08)',
-                          }}
+                            background: 'rgba(251,191,36,0.08)' }}
                         >
                           <Sparkles className="size-3 text-amber-400" />
                           <span className="text-[10px] text-amber-300 font-mono">
@@ -632,7 +617,7 @@ export function CharacterProfilePanel({ open, onClose }: { open: boolean; onClos
                       <div className="flex gap-2">
                         {(['head', 'body', 'accessory'] as EquipmentSlot[]).map((slot) => {
                           const equipped = equippedItems[slot];
-                          const equipDef = equipped ? getItemDefinition(equipped.id) : undefined;
+                          const _equipDef = equipped ? getItemDefinition(equipped.id) : undefined;
                           const cfg = SLOT_CONFIG[slot];
                           return (
                             <div
@@ -708,8 +693,7 @@ export function CharacterProfilePanel({ open, onClose }: { open: boolean; onClos
                                   borderColor: `${catMeta?.color ?? 'var(--cyber-cyan)'}30`,
                                   background: `${catMeta?.color ?? 'var(--cyber-cyan)'}08`,
                                   color: catMeta?.color ?? 'var(--cyber-cyan)',
-                                  boxShadow: `0 0 8px ${catMeta?.color ?? 'var(--cyber-cyan)'}10`,
-                                }}
+                                  boxShadow: `0 0 8px ${catMeta?.color ?? 'var(--cyber-cyan)'}10` }}
                                 title={perkDef.description}
                               >
                                 <span>{perkDef.icon}</span>

@@ -30,6 +30,7 @@ function MatrixRain({
 }) {
   const rainColumns = useMemo(
     () => generateMatrixRainColumns(color),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
     [color, notificationId],
   );
 
@@ -92,6 +93,7 @@ function ParticleBurst({
   color: string;
   reducedMotion: boolean;
 }) {
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
   const particles = useMemo(() => generatePowerParticles(), [notificationId]);
 
   if (reducedMotion) return null;

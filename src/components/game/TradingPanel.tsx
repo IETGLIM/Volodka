@@ -115,7 +115,7 @@ export function TradingPanel({ open, onClose, initialNpcId }: TradingPanelProps)
     return rel?.value ?? 50;
   }, [npcRelations, selectedNpcId]);
 
-  const npcDef = useMemo(
+  const _npcDef = useMemo(
     () => (selectedNpcId ? findNpcById(selectedNpcId) : undefined),
     [selectedNpcId],
   );

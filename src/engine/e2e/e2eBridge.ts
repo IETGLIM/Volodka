@@ -48,6 +48,7 @@ export interface VolodkaE2EBridge {
   bootstrapAct6ChkHub: () => Promise<void>;
   bootstrapAct7LibraryHub: () => Promise<void>;
   bootstrapAct7DreamHub: () => Promise<void>;
+  bootstrapExtensionScene: (sceneId: SceneId) => Promise<void>;
   promoteClosedOverlayHub: (hubId: string, sceneId: SceneId) => Promise<void>;
   ensureStoryOverlay: (nodeId: string) => Promise<void>;
   isStoryOverlayReady: (expectedNodeId?: string) => boolean;
@@ -422,6 +423,17 @@ export function registerVolodkaE2EBridge(): void {
       store.setFlag('act7_started', true);
       store.setFlag('dream_poem_seen', false);
       await jumpToClosedOverlayHub('dream_explore_mode', 'sleep_dream');
+    },
+    async bootstrapExtensionScene(sceneId) {
+      const store = getGameStore();
+      store.setIntroActive(false);
+      store.setMainMenuOpen(false);
+      dismissFirstPlayTutorialForBootstrap();
+      closeNarrativeOverlay();
+      if (store.activeCutsceneId) {
+        store.setCutscene(null, []);
+      }
+      await waitForScene(sceneId);
     },
     async promoteClosedOverlayHub(hubId, sceneId) {
       await jumpToClosedOverlayHub(hubId, sceneId);

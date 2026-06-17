@@ -6,7 +6,7 @@
  */
 
 import { motion } from 'framer-motion'
-import { CYBERPUNK_COLORS, cyberGlowText, cyberBorderGlow } from './CyberpunkTheme'
+import { CYBERPUNK_COLORS } from './CyberpunkTheme';
 
 /* ─── Types ─── */
 

@@ -54,6 +54,7 @@ function MenuScreenPanelInner() {
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
   }, [menu.showAbout, menu.showSettings, menu.closeAbout, menu.closeSettings]);
 
   const contentMotion = fx.contentMotion && !reducedMotion;

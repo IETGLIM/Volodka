@@ -1,8 +1,7 @@
-import { useRef, useMemo, useEffect } from 'react';
+import { useRef } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import type { EnvAnimation } from '@/engine/EnvironmentalAnimations';
-import { seededRandom, hashString } from './seededRandom';
 
 export function CRTMonitorAnim({ anim }: { anim: EnvAnimation }) {
   const materialRef = useRef<THREE.MeshStandardMaterial>(null);

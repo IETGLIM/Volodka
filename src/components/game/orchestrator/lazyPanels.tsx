@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- co-located helpers and lazy exports */
 import { memo, Suspense, type ComponentType } from 'react';
 import { retryLazyDefault } from '@/shared/utils/retryLazy';
 import { PanelStackSlot, usePanelStack } from './PanelStackContext';

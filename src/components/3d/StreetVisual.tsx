@@ -397,7 +397,7 @@ function NeonSigns({ isWinter }: { isWinter: boolean }) {
   const kafeOnRef = useRef(true);
   const kafeNextToggleRef = useRef(0);
 
-  useFrameTick('misc', ({ state, delta }) => {
+  useFrameTick('misc', ({ state, delta: _delta }) => {
     const t = state.clock.elapsedTime;
 
     // Red neon flicker — occasional quick flashes

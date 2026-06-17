@@ -5,6 +5,7 @@
    Uses CSS animations where possible for performance.
 */
 
+/* eslint-disable react-refresh/only-export-components -- co-located helpers and lazy exports */
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';

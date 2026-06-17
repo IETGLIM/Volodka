@@ -26,6 +26,7 @@ export function useCachedCanvasTexture(
 
   const texture = useMemo(
     () => getCachedCanvasTexture(key, () => factoryRef.current()),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
     [key, generation],
   );
 

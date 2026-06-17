@@ -7,7 +7,6 @@
    hacking minigame openings (color-split + scanline + static burst). */
 
 import { useRef, useEffect, useState, useCallback } from 'react';
-import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
@@ -226,6 +225,7 @@ export function GlitchEffect() {
   useEffect(() => {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
+      // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
       cancelAnimationFrame(animFrameRef.current);
     };
   }, []);

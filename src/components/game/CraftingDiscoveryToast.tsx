@@ -9,7 +9,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FlaskConical, Sparkles, Crown, Gem, Star } from 'lucide-react';
+import { FlaskConical, Sparkles, Crown, Gem } from 'lucide-react';
 import { eventBus } from '@/engine/EventBus';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useNotificationSlot, NOTIFY_PRIORITY } from '@/hooks/useNotificationSlot';
@@ -272,6 +272,7 @@ export function CraftingDiscoveryToast() {
     });
 
     return unsub;
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
   }, []);
 
   /* ── Cleanup all timers on unmount ── */
@@ -282,6 +283,7 @@ export function CraftingDiscoveryToast() {
         delete timers[key];
       }
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
   }, []);
 
   /* ── Render ── */

@@ -1,5 +1,6 @@
 /* ─── Volodka RPG – GLB prop mesh at trigger zone position ─── */
 
+/* eslint-disable react-refresh/only-export-components -- co-located helpers and lazy exports */
 import { Suspense, useMemo } from 'react';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';

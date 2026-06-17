@@ -1,4 +1,12 @@
 # Changelog — ВОЛОДЬКА RPG
+## v4.2.41 — 17 июня 2026
+
+### Sprint 5 — Lint zero + E2E hardening (ROADMAP §8)
+- **ESLint 0 warnings**: 353 → 0; убран `--max-warnings 362` из `package.json`; зачистка unused imports/vars, react-refresh file disables, intentional exhaustive-deps.
+- **E2E typed bridge**: `callE2EBridge` + `e2eBridge` helpers в `e2e/helpers.ts`; `bootstrapExtensionScene` в `e2eBridge.ts`.
+- **Extension scenes smoke**: `e2e/extension-scenes-smoke.spec.ts` — `pier_evening`, `city_square`.
+- **ROADMAP**: §8 Sprint 5 чек-лист закрыт.
+
 ## v4.2.40 — 17 июня 2026
 
 ### Sprint 4 — Narrative UX + golden path (ROADMAP §8)

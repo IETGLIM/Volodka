@@ -1,5 +1,6 @@
 /* ─── Scene-wide environment LOD from player position ─── */
 
+/* eslint-disable react-refresh/only-export-components -- co-located helpers and lazy exports */
 import {
   createContext,
   useContext,

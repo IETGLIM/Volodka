@@ -11,7 +11,6 @@ import { FocusTrap } from '@/components/a11y/FocusTrap';
 import { usePanelDialog } from '@/components/a11y/usePanelDialog';
 import {
   X, Lock, Trophy, CheckCircle2, Clock,
-  ChevronRight, Filter,
 } from 'lucide-react';
 import { useGameStore } from '@/store/gameStore';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
@@ -24,8 +23,7 @@ import {
   RARITY_META,
   TOTAL_ACHIEVEMENTS,
   type AchievementDefinition,
-  type AchievementCategory,
-} from '@/data/achievements';
+  type AchievementCategory } from '@/data/achievements';
 import { formatStoryEffectReward } from '@/data/achievementHelpers';
 import { resolveAchievementProgress } from '@/engine/achievementProgressResolver';
 
@@ -49,8 +47,7 @@ function AchievementCard({
   unlocked,
   unlockedAt,
   progress,
-  onClick,
-}: {
+  onClick }: {
   achievement: AchievementDefinition;
   unlocked: boolean;
   unlockedAt?: number;
@@ -75,8 +72,7 @@ function AchievementCard({
       style={{
         boxShadow: unlocked
           ? '0 0 16px rgba(251,191,36,0.1), inset 0 1px 0 rgba(251,191,36,0.06)'
-          : 'none',
-      }}
+          : 'none' }}
       onClick={onClick}
     >
       {/* Glow border for unlocked */}
@@ -84,8 +80,7 @@ function AchievementCard({
         <div
           className="absolute inset-0 rounded-xl pointer-events-none"
           style={{
-            boxShadow: 'inset 0 0 20px rgba(251,191,36,0.05)',
-          }}
+            boxShadow: 'inset 0 0 20px rgba(251,191,36,0.05)' }}
         />
       )}
 
@@ -106,8 +101,7 @@ function AchievementCard({
             boxShadow: unlocked
               ? '0 0 12px rgba(251,191,36,0.15)'
               : 'none',
-            filter: unlocked ? 'none' : 'grayscale(1) brightness(0.4)',
-          }}
+            filter: unlocked ? 'none' : 'grayscale(1) brightness(0.4)' }}
         >
           {isHidden ? '❓' : achievement.icon}
         </div>
@@ -149,8 +143,7 @@ function AchievementCard({
               <span className="text-[10px] text-amber-500/40 font-mono">
                 {new Date(unlockedAt).toLocaleString('ru-RU', {
                   day: '2-digit', month: '2-digit',
-                  hour: '2-digit', minute: '2-digit',
-                })}
+                  hour: '2-digit', minute: '2-digit' })}
               </span>
             </div>
           )}
@@ -171,8 +164,7 @@ function AchievementCard({
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
-            background: 'linear-gradient(135deg, rgba(15,23,42,0.3) 0%, rgba(30,41,59,0.2) 100%)',
-          }}
+            background: 'linear-gradient(135deg, rgba(15,23,42,0.3) 0%, rgba(30,41,59,0.2) 100%)' }}
         />
       )}
     </motion.button>
@@ -184,8 +176,7 @@ function AchievementCard({
 function AchievementDetailPopup({
   data,
   progress,
-  onClose,
-}: {
+  onClose }: {
   data: DetailPopupData;
   progress?: { current: number; target: number } | null;
   onClose: () => void;
@@ -210,8 +201,7 @@ function AchievementDetailPopup({
         className="relative z-10 w-[90vw] max-w-md rounded-2xl border border-amber-500/20 overflow-hidden"
         style={{
           background: 'linear-gradient(180deg, rgba(8,12,28,0.97) 0%, rgba(4,8,18,0.98) 100%)',
-          boxShadow: '0 0 40px rgba(251,191,36,0.1), -20px 0 40px rgba(0,0,0,0.5)',
-        }}
+          boxShadow: '0 0 40px rgba(251,191,36,0.1), -20px 0 40px rgba(0,0,0,0.5)' }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -224,8 +214,7 @@ function AchievementDetailPopup({
               fontSize: 28,
               background: unlocked ? 'rgba(251,191,36,0.1)' : 'rgba(30,41,59,0.4)',
               boxShadow: unlocked ? '0 0 20px rgba(251,191,36,0.2)' : 'none',
-              filter: unlocked ? 'none' : 'grayscale(1) brightness(0.4)',
-            }}
+              filter: unlocked ? 'none' : 'grayscale(1) brightness(0.4)' }}
           >
             {isHidden ? '❓' : achievement.icon}
           </div>
@@ -239,8 +228,7 @@ function AchievementDetailPopup({
                 style={{
                   background: `${RARITY_META[achievement.rarity].color}15`,
                   color: RARITY_META[achievement.rarity].color,
-                  border: `1px solid ${RARITY_META[achievement.rarity].color}30`,
-                }}
+                  border: `1px solid ${RARITY_META[achievement.rarity].color}30` }}
               >
                 {RARITY_META[achievement.rarity].label}
               </span>
@@ -249,8 +237,7 @@ function AchievementDetailPopup({
                 style={{
                   background: `${CATEGORY_META[achievement.category].color}15`,
                   color: CATEGORY_META[achievement.category].color,
-                  border: `1px solid ${CATEGORY_META[achievement.category].color}30`,
-                }}
+                  border: `1px solid ${CATEGORY_META[achievement.category].color}30` }}
               >
                 {CATEGORY_META[achievement.category].icon} {CATEGORY_META[achievement.category].label}
               </span>
@@ -313,8 +300,7 @@ function AchievementDetailPopup({
               <span className="text-xs text-amber-500/50 font-mono">
                 Открыто: {new Date(unlockedAt).toLocaleString('ru-RU', {
                   day: '2-digit', month: '2-digit', year: '2-digit',
-                  hour: '2-digit', minute: '2-digit',
-                })}
+                  hour: '2-digit', minute: '2-digit' })}
               </span>
             </div>
           )}
@@ -404,8 +390,7 @@ export function AchievementDetailsPanel({ open, onClose }: AchievementDetailsPan
     setDetailPopup({
       achievement,
       unlocked: unlockedMap.has(achievement.id),
-      unlockedAt: unlockedMap.get(achievement.id),
-    });
+      unlockedAt: unlockedMap.get(achievement.id) });
   }, [unlockedMap]);
 
   /* ── Keyboard handler: [H] or Escape to close ── */
@@ -447,8 +432,7 @@ export function AchievementDetailsPanel({ open, onClose }: AchievementDetailsPan
             background: 'linear-gradient(180deg, rgba(8,12,28,0.97) 0%, rgba(4,8,18,0.98) 100%)',
             borderLeft: '1px solid rgba(251,191,36,0.15)',
             backdropFilter: 'blur(20px)',
-            boxShadow: '-20px 0 40px rgba(0,0,0,0.5), inset 1px 0 0 rgba(251,191,36,0.08)',
-          }}
+            boxShadow: '-20px 0 40px rgba(0,0,0,0.5), inset 1px 0 0 rgba(251,191,36,0.08)' }}
         >
           <div className="flex flex-col h-full">
             {/* Header */}
@@ -484,8 +468,7 @@ export function AchievementDetailsPanel({ open, onClose }: AchievementDetailsPan
                   className="h-full rounded-full"
                   style={{
                     background: 'linear-gradient(90deg, #b45309, #f59e0b, #fbbf24)',
-                    boxShadow: '0 0 8px rgba(251,191,36,0.3)',
-                  }}
+                    boxShadow: '0 0 8px rgba(251,191,36,0.3)' }}
                   initial={false}
                   animate={{ width: `${progressPct}%` }}
                   transition={{ duration: 0.5, ease: 'easeOut' }}
@@ -521,8 +504,7 @@ export function AchievementDetailsPanel({ open, onClose }: AchievementDetailsPan
                         }
                       `}
                       style={{
-                        color: isActive ? meta.color : 'rgba(148,163,184,0.6)',
-                      }}
+                        color: isActive ? meta.color : 'rgba(148,163,184,0.6)' }}
                     >
                       <span className="text-xs">{meta.icon}</span>
                       <span>{meta.label}</span>

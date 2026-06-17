@@ -19,13 +19,11 @@
 import {
   clearDeferredCombatStart,
   deferCombatStartIfTransitionBusy,
-  registerCombatStartExecutor,
-} from '@/engine/core/combatStartGate';
+  registerCombatStartExecutor } from '@/engine/core/combatStartGate';
 import {
   cancelEncounterPresentation,
   registerEncounterCommitHandler,
-  startEncounter,
-} from '@/engine/combat/encounterPresentation';
+  startEncounter } from '@/engine/combat/encounterPresentation';
 import type { EncounterSource } from '@/engine/combat/encounterTypes';
 import { eventBus } from '@/engine/EventBus';
 import { registerHmrDispose } from '@/shared/dev/hmrDispose';
@@ -33,8 +31,7 @@ import {
   dispatchGameAction,
   getGameSnapshot,
   tryActivatePoemPower,
-  tryAddInventoryItem,
-} from '@/engine/GameActionDispatcher';
+  tryAddInventoryItem } from '@/engine/GameActionDispatcher';
 import { createInventoryItem } from '@/data/items';
 
 function snap() {
@@ -49,19 +46,16 @@ import {
   getEnemyDefenseReduction, getPlayerDamageMultiplier,
   getPlayerDamageReduction, getPlayerVulnerability,
   getEnemyDamageMultiplier, getEnemyAttackBoost,
-  getPlayerAttackBoost, getPlayerDefenseBoost,
-} from './combat/buffSystem';
+  getPlayerAttackBoost, getPlayerDefenseBoost } from './combat/buffSystem';
 import { getPlayerAttack, getPlayerDefense, getPlayerMaxHp, tickPowerCooldowns, isPowerAvailable, addXp, computeCombatCredits } from './combat/formulas';
 import { getFleeChanceBonus, scaleEnemyDamageByDifficulty } from './combat/combatDifficulty';
 import { ENEMY_TEMPLATES, resolveEnemyType } from './combat/enemies';
 import {
   POEM_COMBAT_ABILITIES,
-  applyCombatSideEffects,
   consumeSideEffects,
   checkPoemPowerCombo,
-  SKILL_TREE,
-  canUnlockSkill as _canUnlockSkill,
-  unlockSkill as _unlockSkill,
+  canUnlockSkill,
+  unlockSkill,
 } from './combat/actions';
 
 // ── Re-export types so existing imports of CombatSystem don't break ──
@@ -75,8 +69,7 @@ export type {
   BuffEffect,
   EnemySpecialAttack,
   SideEffect,
-  CombatReward,
-} from './combat/types';
+  CombatReward } from './combat/types';
 
 export { applyCombatSideEffects } from './combat/actions';
 export { SKILL_TREE } from './combat/actions';
@@ -219,13 +212,11 @@ function notifyCombatDamage(entry: CombatLogEntry): void {
     damage: entry.damage,
     isPlayerHit,
     direction: isPlayerHit ? 'front' : undefined,
-    source: entry.type,
-  });
+    source: entry.type });
   eventBus.emit('combat:damage', {
     amount: entry.damage,
     source: entry.type,
-    critical: isCritical,
-  });
+    critical: isCritical });
 }
 
 function notifyNewCombatLogEntries(beforeLen: number): void {
@@ -253,8 +244,7 @@ registerCombatStartExecutor((enemyType, options) => {
     source: options?.encounterSource ?? 'story',
     enemyType,
     encounterName: options?.encounterName,
-    creepId: options?.creepId,
-  });
+    creepId: options?.creepId });
 });
 
 registerEncounterCommitHandler((ctx) => {
@@ -301,8 +291,7 @@ export function startCombat(
     source: options?.encounterSource ?? 'story',
     enemyType,
     encounterName: options?.encounterName,
-    creepId: options?.creepId,
-  });
+    creepId: options?.creepId });
   return getCombatState()?.status === 'active' ? getCombatState() : null;
 }
 
@@ -346,8 +335,7 @@ function startCombatImmediate(
     targetsStat: template.targetsStat,
     lootTable: template.lootTable,
     xpReward: Math.floor(template.xpReward * scaleFactor),
-    specialCooldown: 0,
-  };
+    specialCooldown: 0 };
 
   const playerMaxHp = getPlayerMaxHp();
 
@@ -374,16 +362,14 @@ function startCombatImmediate(
     maxCombo: 0,
     lastCritical: false,
     lastPoemPowersUsed: [null, null],
-    lastUsedPoemId: null,
-  });
+    lastUsedPoemId: null });
 
   dispatchGameAction({ type: 'story/setCombatActive', active: true });
   const encounterLabel = options?.encounterName ?? enemy.name;
   eventBus.emit('combat:start', {
     enemyType,
     encounterName: encounterLabel,
-    encounterEmoji: enemy.emoji,
-  });
+    encounterEmoji: enemy.emoji });
 
   combat.notifyListeners();
   return combat.getState()!;
@@ -435,8 +421,7 @@ export function playerAttack(): CombatState | null {
     type: isCritical ? 'critical_hit' : comboMultiplier > 1.0 ? 'combo_hit' : 'player_attack',
     damage,
     isCritical,
-    comboCount: newComboCount,
-  };
+    comboCount: newComboCount };
 
   const newMaxCombo = Math.max(cs.maxCombo, newComboCount);
 
@@ -448,8 +433,7 @@ export function playerAttack(): CombatState | null {
     log: appendLog(cs.log, logEntry),
     comboCount: newComboCount,
     maxCombo: newMaxCombo,
-    lastCritical: isCritical,
-  });
+    lastCritical: isCritical });
 
   eventBus.emit('combat:action', { action: 'attack', damage });
   eventBus.emit('camera:combat_impact', { intensity: isCritical ? 0.6 : 0.3 });
@@ -476,8 +460,7 @@ export function playerDefend(): CombatState | null {
     ...s,
     playerDefending: true,
     comboCount: 0, // Defending resets combo
-    log: appendLog(s.log, { turn: cs.turn, text: '🛡️ Защита! Входящий урон снижен на 1 ход.', type: 'player_defend' }),
-  });
+    log: appendLog(s.log, { turn: cs.turn, text: '🛡️ Защита! Входящий урон снижен на 1 ход.', type: 'player_defend' }) });
 
   eventBus.emit('combat:action', { action: 'defend' });
   return endPlayerTurn();
@@ -521,20 +504,17 @@ export function playerUsePoemPower(poemId: string): CombatState | null {
         powerCooldowns: newCooldowns,
         lastPoemPowersUsed: lastPowers,
         lastUsedPoemId,
-        comboCount: cs.comboCount + 1,
-      };
+        comboCount: cs.comboCount + 1 };
       combat.setState({
         ...nextState,
-        log: appendLog(nextState.log, ...comboLog),
-      });
+        log: appendLog(nextState.log, ...comboLog) });
     } else {
       combat.setState({
         ...consumeSideEffects(abilityResult),
         powerCooldowns: newCooldowns,
         lastPoemPowersUsed: lastPowers,
         lastUsedPoemId,
-        comboCount: cs.comboCount + 1,
-      });
+        comboCount: cs.comboCount + 1 });
     }
   } else {
     combat.setState({
@@ -542,8 +522,7 @@ export function playerUsePoemPower(poemId: string): CombatState | null {
       powerCooldowns: newCooldowns,
       lastPoemPowersUsed: lastPowers,
       lastUsedPoemId,
-      comboCount: cs.comboCount + 1,
-    });
+      comboCount: cs.comboCount + 1 });
   }
 
   eventBus.emit('combat:action', { action: 'poem_power' });
@@ -602,8 +581,7 @@ export function playerFlee(): CombatState | null {
       log: [
         ...cs.log,
         { turn: cs.turn, text: '🏃 Побег успешен! Вы вырвались из боя.', type: 'player_flee' },
-      ],
-    });
+      ] });
 
     const fledState = combat.getState()!;
     eventBus.emit('combat:fled', { enemyType: fledState.enemy.type });
@@ -628,8 +606,7 @@ export function playerFlee(): CombatState | null {
     log: [
       ...cs.log,
       { turn: cs.turn, text: `🏃 Побег не удался! (Шанс: ${Math.round(clampedChance * 100)}%, след. попытка: +15%)`, type: 'info' },
-    ],
-  });
+    ] });
 
   return endPlayerTurn();
 }
@@ -646,8 +623,7 @@ function endPlayerTurn(): CombatState {
   combat.setState({
     ...cs,
     isPlayerTurn: false,
-    powerCooldowns: tickPowerCooldowns(cs.powerCooldowns),
-  });
+    powerCooldowns: tickPowerCooldowns(cs.powerCooldowns) });
 
   const next = combat.getState()!;
   eventBus.emit('combat:turn', { turn: next.turn, isPlayerTurn: false });
@@ -708,8 +684,7 @@ function transitionToPlayerTurn(state: CombatState): void {
     // consumeSideEffects() is the primary clearing mechanism, but this
     // prevents re-application if a consumer reads the state between turns.
     _sideEffects: [],
-    log: [...afterBuffTick.log, ...expiredLog, ...drainLog],
-  };
+    log: [...afterBuffTick.log, ...expiredLog, ...drainLog] };
 
   // ── Check if player is stunned (skip_turn debuff) ──
   if (hasBuffEffect(workingState, 'player', 'skip_turn')) {
@@ -723,8 +698,7 @@ function transitionToPlayerTurn(state: CombatState): void {
       log: [
         ...workingState.log,
         { turn: workingState.turn, text: '😵 Вы оглушены и пропускаете ход!', type: 'info' },
-      ],
-    };
+      ] };
 
     // Set state and auto-skip after a brief delay for visual feedback
     combat.setState({
@@ -749,8 +723,7 @@ function transitionToPlayerTurn(state: CombatState): void {
   // Normal: enable player turn
   combat.setState({
     ...workingState,
-    isPlayerTurn: true,
-  });
+    isPlayerTurn: true });
 
   const playerTurn = combat.getState()!;
   eventBus.emit('combat:turn', { turn: playerTurn.turn, isPlayerTurn: true });
@@ -778,8 +751,7 @@ function executeEnemyTurn() {
         ...afterBuffTick.log,
         ...expiredLog,
         { turn: afterBuffTick.turn, text: `${afterBuffTick.enemy.emoji} ${afterBuffTick.enemy.name} дезориентирован и пропускает ход!`, type: 'info' },
-      ],
-    });
+      ] });
 
     // Transition to player turn (handles buff processing and skip_turn check)
     transitionToPlayerTurn(combat.getState()!);
@@ -790,8 +762,7 @@ function executeEnemyTurn() {
 
   let workingState: CombatState = {
     ...afterBuffTick,
-    log: [...afterBuffTick.log, ...expiredLog],
-  };
+    log: [...afterBuffTick.log, ...expiredLog] };
 
   const template = ENEMY_TEMPLATES[workingState.enemy.type];
   const enemySpecialCooldown = workingState.enemy.specialCooldown;
@@ -804,8 +775,7 @@ function executeEnemyTurn() {
         workingState = consumeSideEffects(specialResult);
         workingState = {
           ...workingState,
-          enemy: { ...workingState.enemy, specialCooldown: special.cooldown },
-        };
+          enemy: { ...workingState.enemy, specialCooldown: special.cooldown } };
         notifyNewCombatLogEntries(logLenBefore);
         gotoEnemyTurnEnd(workingState);
         return;
@@ -873,8 +843,7 @@ function executeEnemyTurn() {
     turn: workingState.turn,
     text: `${workingState.enemy.emoji} ${workingState.enemy.name} атакует! -${enemyDamage} HP${statEffectText}`,
     type: 'enemy_attack',
-    damage: enemyDamage,
-  };
+    damage: enemyDamage };
 
   combat.setState({
     ...workingState,
@@ -883,10 +852,8 @@ function executeEnemyTurn() {
     comboCount: 0, // Taking damage resets combo
     enemy: {
       ...workingState.enemy,
-      specialCooldown: Math.max(0, workingState.enemy.specialCooldown - 1),
-    },
-    log: [...workingState.log, enemyAttackLog],
-  });
+      specialCooldown: Math.max(0, workingState.enemy.specialCooldown - 1) },
+    log: [...workingState.log, enemyAttackLog] });
 
   eventBus.emit('camera:combat_shake', { intensity: 0.2 });
   notifyCombatDamage(enemyAttackLog);
@@ -910,9 +877,7 @@ function gotoEnemyTurnEnd(state: CombatState) {
     playerDefending: false,
     enemy: {
       ...state.enemy,
-      specialCooldown: Math.max(0, state.enemy.specialCooldown - 1),
-    },
-  });
+      specialCooldown: Math.max(0, state.enemy.specialCooldown - 1) } });
 
   // Check defeat (some specials deal damage directly)
   const afterSpecial = combat.getState()!;
@@ -972,8 +937,7 @@ function handleVictory(): CombatState {
     karma: karmaGained,
     credits: creditsGained,
     lootItems,
-    skillXp,
-  };
+    skillXp };
 
   combat.setState({
     ...cs,
@@ -985,18 +949,15 @@ function handleVictory(): CombatState {
       {
         turn: cs.turn,
         text: `🏆 Победа! +${karmaGained} кармы, +${xpGained} опыта, +${creditsGained} кредитов${lootItems.length > 0 ? `, найден предмет!` : ''}${cs.maxCombo >= 3 ? ` Макс. комбо: x${cs.maxCombo}!` : ''}`,
-        type: 'victory',
-      },
-    ],
-  });
+        type: 'victory' },
+    ] });
 
   eventBus.emit('combat:victory', {
     enemyType: enemy.type,
     xpGained,
     karmaGained,
     creditsGained,
-    lootItemId: lootItems[0],
-  });
+    lootItemId: lootItems[0] });
 
   combat.notifyListeners();
 
@@ -1040,16 +1001,13 @@ function handleDefeat(): void {
       {
         turn: cs.turn,
         text: `💀 Поражение... -${energyLost} энергии, -${karmaLost} кармы. Вы отступаете.`,
-        type: 'defeat',
-      },
-    ],
-  });
+        type: 'defeat' },
+    ] });
 
   eventBus.emit('combat:defeat', {
     enemyType: enemy.type,
     energyLost,
-    karmaLost,
-  });
+    karmaLost });
 
   combat.notifyListeners();
 
@@ -1102,7 +1060,7 @@ export function getActiveBuffs(target?: 'player' | 'enemy'): CombatBuff[] {
    ═══════════════════════════════════════════════════════════════ */
 
 /** Check if a skill tree node can be unlocked */
-export { _canUnlockSkill as canUnlockSkill };
+export { canUnlockSkill };
 
 /** Unlock a skill tree node */
-export { _unlockSkill as unlockSkill };
+export { unlockSkill };

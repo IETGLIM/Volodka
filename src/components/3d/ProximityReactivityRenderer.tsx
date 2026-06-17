@@ -130,6 +130,7 @@ function ProximityEffectRenderer({
   // Cleanup sound effects on unmount
   useEffect(() => {
     return () => {
+      // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
       activeSoundEffectsRef.current.delete(effect.id);
     };
   }, [effect.id, activeSoundEffectsRef]);

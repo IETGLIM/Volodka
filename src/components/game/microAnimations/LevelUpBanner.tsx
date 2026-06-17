@@ -73,6 +73,7 @@ function LevelUpBannerPanel({ level, visible, onHide }: LevelUpBannerProps) {
         distance,
       };
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
   }, [level, particleCount]);
 
   return (

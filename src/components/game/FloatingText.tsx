@@ -1,5 +1,6 @@
 /* ─── Volodka RPG – Floating text presentation layer ─── */
 
+/* eslint-disable react-refresh/only-export-components -- co-located helpers and lazy exports */
 import { useMemo, useSyncExternalStore } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';

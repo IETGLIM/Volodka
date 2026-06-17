@@ -8,7 +8,7 @@ import { STORY_NODES } from '@/data/storyNodes';
 import { DIALOGUE_NODES } from '@/data/dialogueNodes';
 import { QUEST_DEFINITIONS } from '@/data/quests';
 import { ALL_NPC_DEFINITIONS, detectNpcDuplicateIds } from '@/data/allNpcDefinitions';
-import { NPC_DEFINITIONS, validateNpcDefinitionModelPaths } from '@/data/npcDefinitions';
+import { validateNpcDefinitionModelPaths } from '@/data/npcDefinitions';
 import { EXPANDED_NPC_QUEST_LINKS } from '@/data/expandedNPCs';
 import { SCENE_DEFINITIONS, type SceneId } from '@/config/sceneDefinitions';
 import { POEMS } from '@/data/poems';
@@ -16,9 +16,7 @@ import { getAllItemDefinitions } from '@/data/items';
 import { getAllUnifiedPoems } from '@/data/unifiedPoemRegistry';
 import {
   ALL_UNIFIED_POEM_IDS,
-  TOTAL_MAIN_POEMS,
-  TOTAL_UNIFIED_POEMS as CANONICAL_UNIFIED_POEM_COUNT,
-} from '@/data/poemCollectionMeta';
+  TOTAL_UNIFIED_POEMS as CANONICAL_UNIFIED_POEM_COUNT } from '@/data/poemCollectionMeta';
 import { INITIAL_LORE_ENTRIES } from '@/data/loreEntries';
 import { LORE_SCENE_MAP, LORE_STORY_NODE_MAP } from '@/data/loreSceneMap';
 import { CUTSCENES } from '@/data/cutscenes';
@@ -29,22 +27,19 @@ import {
   GOLDEN_PATH_QUEST_SPINE,
   STORY_NODE_ALIASES,
   NPC_ID_ALIASES,
-  getNpcIdForStoryNode,
-} from '@/data/goldenPath';
+  getNpcIdForStoryNode } from '@/data/goldenPath';
 import { getGoldenPathDerivationReport } from '@/engine/guidedStory/buildGuidedStoryPath';
 import { QUEST_ITEM_DEFINITIONS } from '@/data/questItems';
 import { isKnownMinigameId, MINIGAME_COMPLETION_FLAGS } from '@/shared/constants/minigames';
 import { QUEST_MINIGAME_MAP } from '@/data/questMinigameMap';
 import {
   validateAmbientSoundDefs,
-  validateSceneAmbienceCoverage,
-} from '@/data/ambientSounds';
+  validateSceneAmbienceCoverage } from '@/data/ambientSounds';
 import { ENEMY_TEMPLATES } from '@/engine/combat/enemies';
 import {
   QUEST_START_ITEMS,
   QUEST_REQUIRED_ITEMS,
-  QUEST_COMPLETION_CONSUME_ITEMS,
-} from '@/data/questItems';
+  QUEST_COMPLETION_CONSUME_ITEMS } from '@/data/questItems';
 
 export type ValidationSeverity = 'error' | 'warning';
 
@@ -99,8 +94,7 @@ function buildSets() {
     loreIds,
     cutsceneIds,
     enemyTypes,
-    triggerMinigames,
-  };
+    triggerMinigames };
 }
 
 function resolveNodeRef(
@@ -356,8 +350,7 @@ function validateMinigameQuestBridge(out: ValidationIssue[]): void {
       minigameObjectives.push({
         questId: quest.id,
         objectiveId: objective.id,
-        target: objective.target,
-      });
+        target: objective.target });
     }
   }
 

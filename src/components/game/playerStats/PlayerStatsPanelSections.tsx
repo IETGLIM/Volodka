@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- co-located helpers and lazy exports */
 import { motion } from 'framer-motion';
 import { Scale } from 'lucide-react';
 import type { StatusEffectDef } from '@/data/statusEffects';
@@ -7,7 +8,6 @@ import {
 import {
   getBarFillTransition,
   getBreathingGlowAnimate,
-  getEffectRowTransition,
   getKarmaRingColor,
   getKarmaRingTransition,
   getSkillBarFillPct,

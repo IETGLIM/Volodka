@@ -285,6 +285,7 @@ export function MatrixRain({ sceneId: sceneIdProp }: MatrixRainProps) {
 
     return () => {
       unsubs.forEach((u) => u());
+      // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
       for (const timer of glitchTimersRef.current) {
         clearTimeout(timer);
       }

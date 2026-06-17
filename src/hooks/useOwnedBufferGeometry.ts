@@ -7,5 +7,6 @@ export function useOwnedBufferGeometry<T extends THREE.BufferGeometry>(
   factory: () => T,
   deps: readonly unknown[],
 ): T {
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- factory/deps forwarded from caller
   return useMemo(() => registerModuleGeometry(factory()), deps);
 }

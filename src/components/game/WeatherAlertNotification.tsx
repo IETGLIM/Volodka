@@ -371,6 +371,7 @@ export function WeatherAlertNotification() {
       prevWeatherRef.current = payload.weatherType;
     });
     return unsub;
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
   }, []);
 
   /* ── Detect weather changes from store (reactive fallback) ── */
@@ -383,7 +384,7 @@ export function WeatherAlertNotification() {
 
   /** Get temperature for weather type */
   const weatherTemperature = useMemo(() => {
-    const effect = WEATHER_EFFECTS[derivedWeather];
+    const _effect = WEATHER_EFFECTS[derivedWeather];
     // Use scene-based temperature estimation
     const isNight = timeOfDay >= 21 || timeOfDay < 6;
     switch (derivedWeather) {
@@ -401,6 +402,7 @@ export function WeatherAlertNotification() {
       addAlert(derivedWeather, weatherTemperature);
     }
     prevWeatherRef.current = derivedWeather;
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
   }, [derivedWeather, weatherTemperature]);
 
   /* ── Cleanup all timers on unmount ── */
@@ -411,6 +413,7 @@ export function WeatherAlertNotification() {
         delete timers[key];
       }
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
   }, []);
 
   /* ── Render ── */

@@ -224,6 +224,7 @@ export function WakeUpSequence() {
       if (fallbackTimerRef.current) clearTimeout(fallbackTimerRef.current);
       if (prologueTimerRef.current) clearTimeout(prologueTimerRef.current);
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
   }, [camera]);
 
   useFrameTick('misc', ({ delta }) => {

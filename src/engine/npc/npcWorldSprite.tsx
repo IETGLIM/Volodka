@@ -230,6 +230,7 @@ export function NpcSpeechSprite({
       activeDotRef.current = 0;
     }
     redrawBubble(activeDotRef.current);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
   }, [phase, text, texture]);
 
   useEffect(() => {

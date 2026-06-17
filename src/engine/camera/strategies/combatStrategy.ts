@@ -5,7 +5,7 @@ import {
   resolveCameraCollision,
 } from '../cinematicCamera';
 import { LOOK_HEIGHT, MIN_DISTANCE, WALL_MARGIN } from '../cameraConstants';
-import type { CameraModeContext, CameraModeStrategy } from '../types';
+import type { CameraModeStrategy } from '../types';
 
 /** Wide FOV combat camera with impact zoom and shake */
 export const combatStrategy: CameraModeStrategy = {

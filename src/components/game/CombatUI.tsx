@@ -7,18 +7,16 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { eventBus } from '@/engine/EventBus';
-import { Sword, Shield, Sparkles, LogOut, ChevronDown, Heart, Clock, Zap, Flame, Skull, Trophy, RotateCcw, Eye, Bug, ShieldAlert, Music2 } from 'lucide-react';
+import { Sword, Shield, Sparkles, LogOut, ChevronDown, Heart, Clock, Zap, Flame } from 'lucide-react';
 import { useGameMode } from '@/store/selectors';
 import {
-  getCombatState,
   playerAttack,
   playerDefend,
   playerUsePoemPower,
   playerFlee,
   getAvailableCombatPowers,
   getActiveBuffs,
-  subscribeToCombat,
-} from '@/engine/CombatSystem';
+  subscribeToCombat } from '@/engine/CombatSystem';
 import type { CombatState, CombatLogEntry, CombatBuff } from '@/shared/types/game';
 
 /* ── Animated Health Bar with gradient & glow ── */
@@ -103,8 +101,7 @@ function ComboCounter({ count }: { count: number }) {
     >
       <div className={`text-3xl font-black ${color} font-mono`}
         style={{
-          textShadow: `0 0 ${8 + intensity * 4}px currentColor, 0 0 ${16 + intensity * 8}px ${count >= 3 ? '#f97316' : '#06b6d4'}40`,
-        }}
+          textShadow: `0 0 ${8 + intensity * 4}px currentColor, 0 0 ${16 + intensity * 8}px ${count >= 3 ? '#f97316' : '#06b6d4'}40` }}
       >
         <Flame className="inline size-5 mr-0.5" />
         x{count}
@@ -136,8 +133,7 @@ function StatusBadge({ buff }: { buff: CombatBuff }) {
     attack_boost: '⚔️',
     hp_drain_percent: '🦠',
     silence_specials: '🔇',
-    defensive_verse: '📜',
-  };
+    defensive_verse: '📜' };
   const icon = iconMap[buff.effect.type] || (isDebuff ? '⬇️' : '⬆️');
   const borderColor = buff.target === 'player'
     ? isDebuff ? 'border-red-600/60' : 'border-cyan-600/60'
@@ -167,8 +163,7 @@ function StatusBadge({ buff }: { buff: CombatBuff }) {
 function CombatIntroSplash({
   emoji,
   name,
-  onDone,
-}: {
+  onDone }: {
   emoji: string;
   name: string;
   onDone: () => void;
@@ -218,8 +213,7 @@ function EnemyPortrait({ emoji, hp, maxHp }: { emoji: string; hp: number; maxHp:
         style={{
           background: `radial-gradient(circle, ${hurt ? '#ef4444' : '#f97316'} 0%, transparent 70%)`,
           filter: 'blur(12px)',
-          transform: 'scale(1.5)',
-        }}
+          transform: 'scale(1.5)' }}
       />
     </div>
   );
@@ -227,8 +221,7 @@ function EnemyPortrait({ emoji, hp, maxHp }: { emoji: string; hp: number; maxHp:
 
 /* ── Terminal-style Action Button ── */
 function TerminalButton({
-  onClick, disabled, accentColor, children,
-}: {
+  onClick, disabled, accentColor, children }: {
   onClick: () => void; disabled: boolean; accentColor: string; children: React.ReactNode;
 }) {
   const colorMap: Record<string, { border: string; bg: string; text: string; hoverBg: string; glow: string }> = {
@@ -236,8 +229,7 @@ function TerminalButton({
     emerald: { border: 'border-emerald-700/60', bg: 'bg-emerald-950/50', text: 'text-emerald-400', hoverBg: 'hover:bg-emerald-900/40', glow: '#10b981' },
     amber: { border: 'border-amber-700/60', bg: 'bg-amber-950/50', text: 'text-amber-400', hoverBg: 'hover:bg-amber-900/40', glow: '#f59e0b' },
     slate: { border: 'border-slate-600/60', bg: 'bg-slate-900/50', text: 'text-slate-300', hoverBg: 'hover:bg-slate-800/40', glow: '#94a3b8' },
-    rose: { border: 'border-rose-700/60', bg: 'bg-rose-950/50', text: 'text-rose-400', hoverBg: 'hover:bg-rose-900/40', glow: '#f43f5e' },
-  };
+    rose: { border: 'border-rose-700/60', bg: 'bg-rose-950/50', text: 'text-rose-400', hoverBg: 'hover:bg-rose-900/40', glow: '#f43f5e' } };
   const c = colorMap[accentColor] || colorMap.slate;
 
   return (
@@ -275,8 +267,7 @@ function CombatLogLine({ entry, className }: { entry: CombatLogEntry; className?
     critical_hit: 'text-yellow-300 font-bold',
     combo_hit: 'text-orange-300 font-semibold',
     status_effect: 'text-purple-400',
-    poem_combo: 'text-fuchsia-400 font-bold',
-  };
+    poem_combo: 'text-fuchsia-400 font-bold' };
   const prefix: Record<string, string> = {
     player_attack: '>',
     enemy_attack: '!',
@@ -290,8 +281,7 @@ function CombatLogLine({ entry, className }: { entry: CombatLogEntry; className?
     info: '-',
     victory: '>>>',
     defeat: '!!!',
-    buff_expire: '...',
-  };
+    buff_expire: '...' };
   const style = typeStyles[entry.type] || 'text-slate-400';
   const pre = prefix[entry.type] || '>';
 
@@ -417,8 +407,7 @@ export function CombatUI() {
     const unsub = eventBus.on('combat:start', ({ encounterName, encounterEmoji }) => {
       setIntroMeta({
         emoji: encounterEmoji ?? '👾',
-        name: encounterName ?? 'Противник',
-      });
+        name: encounterName ?? 'Противник' });
       setIntroVisible(true);
     });
     return unsub;
@@ -478,14 +467,17 @@ export function CombatUI() {
 
   const availablePowers = useMemo(
     () => getAvailableCombatPowers(),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
     [combatState?.powerCooldowns, combatState?.turn],
   );
   const playerBuffs = useMemo(
     () => getActiveBuffs('player'),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
     [combatState?.buffs],
   );
   const enemyBuffs = useMemo(
     () => getActiveBuffs('enemy'),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
     [combatState?.buffs],
   );
   const handleAttack = useCallback(() => {
@@ -782,8 +774,7 @@ export function CombatUI() {
         className="fixed inset-0 pointer-events-none opacity-[0.02]"
         style={{
           zIndex: UI_LAYERS.COMBAT,
-          backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,65,0.1) 2px, rgba(0,255,65,0.1) 4px)',
-        }}
+          backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,65,0.1) 2px, rgba(0,255,65,0.1) 4px)' }}
       />
     </div>
   );

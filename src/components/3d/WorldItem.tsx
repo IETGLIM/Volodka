@@ -8,7 +8,7 @@ import { eventBus } from '@/engine/EventBus';
 export function WorldItem({
   id,
   position,
-  label,
+  label: _label,
   onPickup,
 }: {
   id: string;

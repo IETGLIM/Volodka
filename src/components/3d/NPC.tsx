@@ -126,6 +126,7 @@ export function NPC({
       patrolRef.current = null;
     }
   // Only re-create if the waypoints array reference changes, not every position change
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
   }, [patrolWaypoints]);
 
   // Proximity bark
@@ -532,6 +533,7 @@ function QuestMarker({ npcId }: { npcId: string }) {
 
   const markerInfo = useMemo(
     () => getNpcQuestMarkerDisplay(npcId),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
     [quests, npcId],
   );
 

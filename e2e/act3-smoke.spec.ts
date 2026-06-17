@@ -3,6 +3,7 @@ import {
   assertExplorationMovement,
   dismissLevelUpAndQuestOverlays,
   dismissExamineDialog,
+  e2eBridge,
   ensureStoryBeat,
   prepareStoryBootstrap,
   settleAfterWake,
@@ -20,9 +21,7 @@ async function expectParkFreeExploration(page: import('@playwright/test').Page) 
   await expect(page.getByRole('dialog', { name: /Голос/i })).not.toBeVisible({ timeout: 5000 });
   const parkText = page.getByText(/Парк — день|Парк днём|аллеи|скамейки|памятник/i).first();
   if (!(await parkText.isVisible({ timeout: 5000 }).catch(() => false))) {
-    await page.evaluate(async () => {
-      await window.__volodka_e2e?.bootstrapAct3ParkHub();
-    });
+    await e2eBridge.bootstrapAct3ParkHub(page);
     await page.waitForTimeout(1000);
     await dismissLevelUpAndQuestOverlays(page);
   }
@@ -83,9 +82,7 @@ test.describe('Act III smoke', () => {
     await skipWakeCinematic(page);
     await settleAfterWake(page);
 
-    await page.evaluate(async () => {
-      await window.__volodka_e2e?.bootstrapAct3ParkHub();
-    });
+    await e2eBridge.bootstrapAct3ParkHub(page);
 
     await expectParkFreeExploration(page);
     await assertExplorationMovement(page);
@@ -100,9 +97,7 @@ test.describe('Act III smoke', () => {
     await settleAfterWake(page);
     await prepareStoryBootstrap(page);
 
-    await page.evaluate(async () => {
-      await window.__volodka_e2e?.bootstrapAct3ParkHub();
-    });
+    await e2eBridge.bootstrapAct3ParkHub(page);
 
     await expectParkFreeExploration(page);
     await interactParkInscriptionToZaremaWarning(page);

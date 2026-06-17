@@ -14,6 +14,7 @@ export function useKarmaPoemPanel(open: boolean, onClose: () => void) {
   useEffect(() => {
     if (!open) return;
     karmaPoemTelemetry.track({ action: 'open', tab: activeTab });
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
   }, [open]);
 
   const handleTabChange = useCallback((tab: KarmaPoemTab) => {

@@ -29,6 +29,7 @@ export function useGltfPropPlacement(
     const bounds = measureGltfBounds(scene);
     const fit = fitPropGltf(bounds, { manualScale, targetSizeM, fitAxis });
     setPlacement(fit);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- targetSizeM tuple elements tracked individually
   }, [scene, manualScale, fitAxis, targetSizeM?.[0], targetSizeM?.[1], targetSizeM?.[2]]);
 
   return placement;

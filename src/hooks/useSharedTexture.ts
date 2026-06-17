@@ -26,6 +26,7 @@ export function useSharedTexture(
 
   const texture = useMemo(
     () => acquireSharedTexture(key, () => factoryRef.current()),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
     [key, generation],
   );
 

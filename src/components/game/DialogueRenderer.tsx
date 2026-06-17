@@ -8,17 +8,13 @@ import { FastForward, History } from 'lucide-react';
 import {
   useDialogueContext,
   useSetCurrentNodeId,
-  useVisitNode,
-} from '@/store/selectors';
+  useVisitNode } from '@/store/selectors';
 import {
   getDialogueNodes,
-  findNpcById,
   findNpcByName,
   resolveNpcIdFromSpeaker,
-  createInventoryItem,
   isNarrativeGameDataLoaded,
-  ensureDialogueNode,
-} from '@/data/gameDataLoader';
+  ensureDialogueNode } from '@/data/gameDataLoader';
 import { audioEngine } from '@/engine/AudioEngine';
 import { consumePoemSkillCheckFlag } from '@/engine/poemPower/poemSkillCheckModifiers';
 import { eventBus } from '@/engine/EventBus';
@@ -29,19 +25,16 @@ import type {
   DialogueChoice,
   StoryEffect,
   TrainablePlayerSkill,
-  NPCRelation,
-} from '@/shared/types/game';
+  NPCRelation } from '@/shared/types/game';
 import { checkStoryCondition, buildStoryConditionContext } from '@/shared/storyConditions';
 import {
   buildDialogueLiveMessage,
-  resolveDialogueText,
-} from '@/engine/dialogue/resolveDialoguePresentation';
+  resolveDialogueText } from '@/engine/dialogue/resolveDialoguePresentation';
 import { NPC_PORTRAIT_COLORS } from './shared/NPCPortrait';
 import {
   CinematicNarrativeChoices,
   CinematicNarrativeFrame,
-  resolveCinematicNarrativePresentation,
-} from '@/components/game/cinematic';
+  resolveCinematicNarrativePresentation } from '@/components/game/cinematic';
 import { devWarn } from '@/shared/utils/devLog';
 import { getVoiceLine } from '@/engine/audio/VoiceLineRegistry';
 import { playVoiceLineForNode, stopVoiceLinePlayback } from '@/engine/audio/voiceLinePlayer';
@@ -109,7 +102,7 @@ interface HistoryLine {
 
 /* ── Component ── */
 export function DialogueRenderer() {
-  const { mode, showStoryOverlay, currentNodeId, karma, skills, flags, progression, npcRelations, timeOfDay, collectedPoems, activeTTLFlags, ownedItemIdsKey } = useDialogueContext();
+  const { mode: _mode, showStoryOverlay, currentNodeId, karma, skills, flags, progression, npcRelations, timeOfDay, collectedPoems, activeTTLFlags, ownedItemIdsKey } = useDialogueContext();
   const setCurrentNodeId = useSetCurrentNodeId();
   const visitNode = useVisitNode();
 
@@ -152,6 +145,7 @@ export function DialogueRenderer() {
   const isOpen = showStoryOverlay && !!dialogueNodes?.[currentNodeId];
   const node = useMemo(
     () => (dialogueNodes ? dialogueNodes[currentNodeId] : undefined),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
     [dialogueNodes, currentNodeId, dialoguePackVersion],
   );
   const resolvedText = useMemo(
@@ -165,8 +159,7 @@ export function DialogueRenderer() {
       npcId: npcDef?.id ?? '',
       timeOfDay,
       ownedItemIdsKey,
-      activeTTLFlags,
-    }, collectedPoems);
+      activeTTLFlags }, collectedPoems);
   }, [karma, skills, flags, progression, npcRelations, timeOfDay, node, collectedPoems, activeTTLFlags, ownedItemIdsKey]);
   const { displayed, done, skip, reducedMotion } = useNarrativeTypewriter(resolvedText, 30);
 
@@ -255,8 +248,7 @@ export function DialogueRenderer() {
       if (choice.condition?.minSkillCheck && cond.skillCheckResult) {
         setSkillCheckBanner({
           skill: cond.skillCheckResult.skill,
-          success: cond.skillCheckResult.success,
-        });
+          success: cond.skillCheckResult.success });
         if (!cond.skillCheckResult.success) return;
         setTimeout(() => setSkillCheckBanner(null), 1500);
       }
@@ -276,8 +268,7 @@ export function DialogueRenderer() {
     choiceCount: node?.choices.length ?? 0,
     onSelectChoice: trySelectChoice,
     onSkip: skip,
-    onClose: handleClose,
-  });
+    onClose: handleClose });
 
   // Auto-advance: pick first choice that passes checkStoryCondition (incl. npcId for relation gates).
   useEffect(() => {
@@ -314,8 +305,7 @@ export function DialogueRenderer() {
       npcId,
       portraitColors,
       emotion,
-      relationLevel,
-    };
+      relationLevel };
   }, [node?.speaker, resolvedText, node?.emotion, node?.id, npcRelations]);
 
   if (!isOpen || !node) return null;
@@ -445,8 +435,7 @@ export function DialogueRenderer() {
                     {impact.karma > 0 ? '+' : ''}
                     {impact.karma}☯
                   </span>
-                ) : undefined,
-            };
+                ) : undefined };
           })}
         />
       )}

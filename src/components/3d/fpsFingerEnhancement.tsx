@@ -3,6 +3,7 @@
  * Parent should use scale ~0.01 (Khronos-style arm rigs).
  */
 
+/* eslint-disable react-refresh/only-export-components -- co-located helpers and lazy exports */
 import * as THREE from 'three';
 
 const SKIN = '#c4a882';

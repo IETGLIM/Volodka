@@ -49,7 +49,7 @@ import {
 } from '@/config/scenes';
 
 import { eventBus } from '@/engine/EventBus';
-import { setPlayerRigidBody, clearPlayerRigidBody } from '@/engine/PlayerRigidBodyState';
+import { clearPlayerRigidBody } from '@/engine/PlayerRigidBodyState';
 import {
   isIntroWakeupCutscene,
   shouldShowThirdPersonAvatar,
@@ -132,6 +132,7 @@ export function PhysicsPlayer({
   const degradedLoggedRef = useRef(false);
   const degradedReasonRef = useRef<string | null>(null);
   const recreateAttemptsRef = useRef(0);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
   const directMovementTelemetry: DirectMovementTelemetryRefs = {
     controlsDegradedRef,
     degradedLoggedRef,
@@ -203,6 +204,7 @@ export function PhysicsPlayer({
       controllerFailCountRef.current = 0;
       groundProbeCacheRef.current = createGroundProbeCache(newConfig.floorY, sceneId);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
   }, [sceneId, livePlayerRotationRef, livePlayerPositionRef]);
 
   useEffect(() => {
@@ -234,6 +236,7 @@ export function PhysicsPlayer({
       groundProbeCacheRef.current = createGroundProbeCache(sceneConfig.floorY, enteredScene);
     });
     return unsub;
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
   }, [livePlayerPositionRef, livePlayerRotationRef]);
 
   const tempCameraForward = useRef(new THREE.Vector3());

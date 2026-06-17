@@ -164,11 +164,13 @@ export function FollowCamera({
     resetCameraForSceneChange(runtimeRef.current, sceneId);
     // Cancel in-flight transition if scene changes again or unmounts mid-teleport.
     return () => {
+      // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
       cleanupInFlightCameraTransitions(runtimeRef.current, sceneIdRef.current);
     };
   }, [sceneId]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
     return () => disposeFollowCamera(runtimeRef.current, sceneIdRef.current);
      
   }, []);

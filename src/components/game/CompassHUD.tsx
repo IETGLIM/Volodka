@@ -4,9 +4,8 @@
    with Cyrillic cardinal labels and cyberpunk glass-morphism styling.
 */
 
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Navigation } from 'lucide-react';
 import { useGamePhase } from '@/store/selectors';
 import { useGameStore } from '@/store/gameStore';
 import { SCENE_DEFINITIONS } from '@/config/sceneDefinitions';

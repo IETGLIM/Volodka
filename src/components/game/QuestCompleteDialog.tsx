@@ -6,12 +6,11 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useGameStore } from '@/store/gameStore'
 import { QUEST_DEFINITIONS } from '@/data/quests'
 import { findNpcById } from '@/data/allNpcDefinitions'
 import { resolveCanonicalNpcId } from '@/data/goldenPath'
 import { UI_LAYERS } from '@/shared/constants/uiLayers'
-import type { NPCDefinition, QuestDefinition, StoryEffect } from '@/shared/types/game'
+import type { NPCDefinition, StoryEffect } from '@/shared/types/game';
 import { computeQuestCreditReward, getDefaultQuestXp } from '@/shared/utils/questRewards'
 
 interface QuestCompleteDialogProps {

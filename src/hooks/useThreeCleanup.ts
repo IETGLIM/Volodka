@@ -43,8 +43,10 @@ export function useThreeCleanup(
   useLayoutEffect(() => {
     if (sceneId === undefined) return undefined;
     return disposeTree;
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
   }, [sceneId]);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
   useEffect(() => () => disposeTree(), [groupRef]);
 }
 
@@ -70,8 +72,10 @@ export function useNpcTemplateCleanup(
   useLayoutEffect(() => {
     if (sceneId === undefined) return undefined;
     return disposeTree;
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
   }, [sceneId]);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
   useEffect(() => () => disposeTree(), [groupRef]);
 }
 

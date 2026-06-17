@@ -1,5 +1,6 @@
 /* ─── Volodka RPG – Kenney / AI3DGen GLB set dressing per scene ─── */
 
+/* eslint-disable react-refresh/only-export-components -- co-located helpers and lazy exports */
 import { Suspense, useMemo } from 'react';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';

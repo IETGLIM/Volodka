@@ -1,5 +1,6 @@
 /* ─── Volodka RPG – Animated GLB NPC mesh with procedural fallback ─── */
 
+/* eslint-disable react-refresh/only-export-components -- co-located helpers and lazy exports */
 import { Component, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Html, useGLTF } from '@react-three/drei';
 import { useFrameTick } from '@/engine/frame/useFrameTick';

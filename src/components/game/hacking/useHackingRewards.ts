@@ -11,6 +11,7 @@ export function useHackingRewards(
   const rewards = useMemo(() => {
     if (gameState.phase !== 'won') return null;
     return calculateHackingRewards(gameState, clientRandom());
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
   }, [gameState.phase, gameState.dataCollected, gameState.bandwidth]);
 
   const claimRewards = useCallback(() => {

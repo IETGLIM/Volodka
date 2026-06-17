@@ -1,4 +1,52 @@
 import { expect, type Page } from '@playwright/test';
+import type { VolodkaE2EBridge } from '../src/engine/e2e/e2eBridge';
+import type { SceneId } from '../src/shared/types/game';
+
+type BridgeMethod = keyof VolodkaE2EBridge;
+
+/** Typed dispatch to `window.__volodka_e2e` — avoids ad-hoc evaluate callbacks in specs. */
+export async function callE2EBridge<M extends BridgeMethod>(
+  page: Page,
+  method: M,
+  ...args: Parameters<NonNullable<VolodkaE2EBridge[M]>>
+): Promise<Awaited<ReturnType<NonNullable<VolodkaE2EBridge[M]>>>> {
+  await page.waitForFunction(
+    (name) => typeof window.__volodka_e2e?.[name as BridgeMethod] === 'function',
+    method,
+    { timeout: 90_000 },
+  );
+  return page.evaluate(
+    async ({ name, bridgeArgs }) => {
+      const bridge = window.__volodka_e2e;
+      if (!bridge) throw new Error('[e2e] bridge not registered');
+      const fn = bridge[name as BridgeMethod];
+      if (typeof fn !== 'function') throw new Error(`[e2e] ${String(name)} missing`);
+      return await (fn as (...params: unknown[]) => unknown).apply(bridge, bridgeArgs);
+    },
+    { name: method, bridgeArgs: args },
+  ) as Promise<Awaited<ReturnType<NonNullable<VolodkaE2EBridge[M]>>>>;
+}
+
+export const e2eBridge = {
+  promoteClosedOverlayHub: (page: Page, hubId: string, sceneId: SceneId) =>
+    callE2EBridge(page, 'promoteClosedOverlayHub', hubId, sceneId),
+  forceStoryBeat: (page: Page, nodeId: string, sceneId: SceneId) =>
+    callE2EBridge(page, 'forceStoryBeat', nodeId, sceneId),
+  visitStoryNode: (page: Page, nodeId: string) => callE2EBridge(page, 'visitStoryNode', nodeId),
+  visitDialogueNode: (page: Page, nodeId: string) => callE2EBridge(page, 'visitDialogueNode', nodeId),
+  interactTriggerZone: (page: Page, zoneId: string) =>
+    callE2EBridge(page, 'interactTriggerZone', zoneId),
+  setPlayerPosition: (page: Page, x: number, y: number, z: number) =>
+    callE2EBridge(page, 'setPlayerPosition', x, y, z),
+  getPlayerPosition: (page: Page) => callE2EBridge(page, 'getPlayerPosition'),
+  ensureStoryOverlay: (page: Page, nodeId: string) =>
+    callE2EBridge(page, 'ensureStoryOverlay', nodeId),
+  isStoryOverlayReady: (page: Page, expectedNodeId?: string) =>
+    callE2EBridge(page, 'isStoryOverlayReady', expectedNodeId),
+  bootstrapExtensionScene: (page: Page, sceneId: SceneId) =>
+    callE2EBridge(page, 'bootstrapExtensionScene', sceneId),
+  bootstrapAct3ParkHub: (page: Page) => callE2EBridge(page, 'bootstrapAct3ParkHub'),
+} as const;
 
 export async function waitForMenuReady(page: Page) {
   await page.goto('/');
@@ -57,16 +105,12 @@ export async function advancePastAct1WakePrologue(page: Page) {
       }
     }
 
-    await page.evaluate(async () => {
-      await window.__volodka_e2e!.promoteClosedOverlayHub('explore_mode', 'volodka_room');
-    });
+    await e2eBridge.promoteClosedOverlayHub(page, 'explore_mode', 'volodka_room');
     await page.waitForTimeout(1000);
   }
 
   if (await hubDialog.isVisible().catch(() => false)) {
-    await page.evaluate(async () => {
-      await window.__volodka_e2e!.promoteClosedOverlayHub('explore_mode', 'volodka_room');
-    });
+    await e2eBridge.promoteClosedOverlayHub(page, 'explore_mode', 'volodka_room');
     await page.waitForTimeout(1000);
   }
 
@@ -152,12 +196,7 @@ export async function ensureStoryBeat(page: Page, nodeId: string, sceneId: strin
   if (await speaker.isVisible({ timeout: 5000 }).catch(() => false)) {
     return;
   }
-  await page.evaluate(
-    ({ id, scene }) => {
-      void window.__volodka_e2e?.forceStoryBeat(id, scene);
-    },
-    { id: nodeId, scene: sceneId },
-  );
+  await e2eBridge.forceStoryBeat(page, nodeId, sceneId as SceneId);
   await page.waitForTimeout(400);
 }
 
@@ -298,9 +337,7 @@ export async function waitForExplorationInputReady(page: Page) {
       await riseBtn.click({ force: true });
       await page.waitForTimeout(800);
     } else {
-      await page.evaluate(async () => {
-        await window.__volodka_e2e!.promoteClosedOverlayHub('explore_mode', 'volodka_room');
-      });
+      await e2eBridge.promoteClosedOverlayHub(page, 'explore_mode', 'volodka_room');
       await page.waitForTimeout(800);
     }
   }
@@ -349,35 +386,17 @@ export async function waitForStoryDialog(page: Page, expectedNodeId?: string, ti
         return dialog;
       }
 
-      const overlayReady = await page
-        .evaluate((nodeId) => window.__volodka_e2e?.isStoryOverlayReady(nodeId) ?? false, expectedNodeId)
-        .catch(() => false);
+      const overlayReady = await e2eBridge.isStoryOverlayReady(page, expectedNodeId).catch(() => false);
 
       if (!overlayReady) {
-        await page
-          .evaluate(async (nodeId) => {
-            if (window.__volodka_e2e?.ensureStoryOverlay) {
-              await window.__volodka_e2e.ensureStoryOverlay(nodeId);
-              return;
-            }
-            await window.__volodka_e2e?.visitStoryNode(nodeId);
-          }, expectedNodeId)
-          .catch(() => undefined);
+        await e2eBridge.ensureStoryOverlay(page, expectedNodeId).catch(() => undefined);
       }
 
       const genericDialog = page.getByRole('dialog', { name: /Голос/i });
       if (await genericDialog.isVisible().catch(() => false)) {
         const hasExpectedSpeaker = await speaker.isVisible().catch(() => false);
         if (!hasExpectedSpeaker) {
-          await page
-            .evaluate(async (nodeId) => {
-              if (window.__volodka_e2e?.ensureStoryOverlay) {
-                await window.__volodka_e2e.ensureStoryOverlay(nodeId);
-                return;
-              }
-              await window.__volodka_e2e?.visitStoryNode(nodeId);
-            }, expectedNodeId)
-            .catch(() => undefined);
+          await e2eBridge.ensureStoryOverlay(page, expectedNodeId).catch(() => undefined);
         }
       }
 
@@ -405,11 +424,7 @@ export async function waitForDialogue(page: Page, expectedNodeId: string, timeou
     }
     if (!nudged) {
       nudged = true;
-      await page
-        .evaluate((nodeId) => {
-          void window.__volodka_e2e?.visitDialogueNode(nodeId);
-        }, expectedNodeId)
-        .catch(() => undefined);
+      await e2eBridge.visitDialogueNode(page, expectedNodeId).catch(() => undefined);
     }
     await page.waitForTimeout(400);
   }
@@ -428,18 +443,14 @@ export async function assertExplorationMovement(page: Page) {
     { timeout: 30_000 },
   );
 
-  await page.waitForFunction(
-    () => {
-      const before = window.__volodka_e2e?.getPlayerPosition();
-      if (!before) return false;
-      window.__volodka_e2e?.setPlayerPosition(before.x, before.y, before.z + 0.05);
-      const after = window.__volodka_e2e?.getPlayerPosition();
-      if (!after) return false;
+  await expect
+    .poll(async () => {
+      const before = await e2eBridge.getPlayerPosition(page);
+      await e2eBridge.setPlayerPosition(page, before.x, before.y, before.z + 0.05);
+      const after = await e2eBridge.getPlayerPosition(page);
       return Math.abs(after.z - before.z) > 0.01;
-    },
-    null,
-    { timeout: 45_000 },
-  );
+    }, { timeout: 45_000 })
+    .toBe(true);
 
   await page.locator('canvas[data-engine]').click({ force: true, position: { x: 400, y: 300 } });
 
@@ -466,7 +477,6 @@ export async function assertExplorationMovement(page: Page) {
       let deltaX = Math.abs(after.x - before.x);
       if (deltaZ + deltaX > 0.15) return true;
 
-      // Fallback: verify locomotion unlocked via controlled nudge when keyboard routing is flaky.
       window.__volodka_e2e?.setPlayerPosition(before.x, before.y, before.z - 0.2);
       await sleep(100);
       after = getPos();

@@ -1,11 +1,9 @@
 import type { DialogueNode } from '@/shared/types/game';
-import type { NarrativeTextVariants, KarmaThresholds } from '@/shared/types/definitions/narrative';
+import type { NarrativeTextVariants } from '@/shared/types/definitions/narrative';
 import { hasVisitedNode } from '@/shared/visitedNodesIndex';
 import {
-  DEFAULT_KARMA_THRESHOLDS,
   buildNarrativeLiveMessage,
-  resolveNarrativeText,
-} from '@/shared/narrativePresentation';
+  resolveNarrativeText } from '@/shared/narrativePresentation';
 
 export { DEFAULT_KARMA_THRESHOLDS } from '@/shared/narrativePresentation';
 
@@ -14,8 +12,7 @@ export type DialogueTextVariants = NarrativeTextVariants;
 /** CHK entry nodes that redirect to a return variant after the first visit. */
 const DIALOGUE_RETURN_ENTRY_NODES: Readonly<Record<string, string>> = {
   chk_ru_greeting: 'chk_ru_return',
-  chk_ritka_greeting: 'chk_ritka_pier_return',
-};
+  chk_ritka_greeting: 'chk_ritka_pier_return' };
 
 export function resolveDialogueText(
   node: Pick<DialogueNode, 'text' | 'textVariants' | 'karmaThresholds'>,
@@ -44,8 +41,7 @@ export function buildDialogueLiveMessage(
   return buildNarrativeLiveMessage(
     {
       contextNote: includeContextNote ? node.contextNote : undefined,
-      speaker: node.speaker,
-    },
+      speaker: node.speaker },
     displayedText,
     done,
   );

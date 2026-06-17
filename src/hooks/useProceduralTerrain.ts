@@ -226,6 +226,7 @@ export function useProceduralTerrain(config: TerrainConfig) {
     };
 
     return { geometry: geo, getHeightAt: getHeightAtPoint };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
   }, [width, depth, segments, presetKey]);
 
   // Dispose previous geometry when config changes or component unmounts

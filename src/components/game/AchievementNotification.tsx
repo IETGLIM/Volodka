@@ -304,7 +304,7 @@ export function AchievementNotification() {
 
   /* ── Also subscribe to fx:achievement for backward compat ── */
   useEffect(() => {
-    const unsub = eventBus.on('fx:achievement', (payload) => {
+    const unsub = eventBus.on('fx:achievement', (_payload) => {
       // Only process if not already handled by achievement:unlocked
       // (achievement:unlocked is the primary, fx:achievement is the visual effect)
       // We don't double-queue here — the achievement:unlocked handler is sufficient

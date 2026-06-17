@@ -94,7 +94,7 @@ function QuestArrow({
   const timeRef = useRef(0);
 
   // Get target scene name for display
-  const targetName = useMemo(() => {
+  const _targetName = useMemo(() => {
     return SCENE_CONFIG[targetScene]?.name ?? label;
   }, [targetScene, label]);
 
@@ -138,7 +138,7 @@ function QuestArrow({
 
 function QuestTargetBeam({
   position,
-  playerPosRef,
+  playerPosRef: _playerPosRef,
 }: {
   position: [number, number, number];
   playerPosRef: React.MutableRefObject<THREE.Vector3>;

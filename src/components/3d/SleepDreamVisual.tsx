@@ -304,8 +304,8 @@ function DreamDustField({ width, depth }: { width: number; depth: number }) {
     const maxParticles = 300;
     const posArr: number[] = [];
     const colArr: number[] = [];
-    const halfW = width / 2;
-    const halfD = depth / 2;
+    const _halfW = width / 2;
+    const _halfD = depth / 2;
 
     // Spawn particles with density proportional to noise value
     for (let i = 0; i < maxParticles * 3 && posArr.length < maxParticles * 3; i++) {

@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- co-located helpers and lazy exports */
 
 import * as React from "react"
 import * as LabelPrimitive from "@radix-ui/react-label"

@@ -32,7 +32,7 @@ import { CYBER_CYAN } from '@/shared/constants/cyberPalette';
 const MIN_TOUCH_TARGET = 44;
 const TAP_DEBOUNCE_MS = 280;
 
-const MOVEMENT_CONTROL_KEYS: (keyof VirtualControls)[] = [
+const _MOVEMENT_CONTROL_KEYS: (keyof VirtualControls)[] = [
   'forward',
   'backward',
   'left',
@@ -243,7 +243,7 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
   // On normal phones (360-430px), use standard sizes.
   // On tablets (>430px), use larger sizes.
   const isSmallScreen = vw < 360;
-  const isTablet = vw > 430;
+  const _isTablet = vw > 430;
 
   // D-pad button sizes (touch target >= 44px but visual can be smaller with padding)
   const dpadSize = Math.max(

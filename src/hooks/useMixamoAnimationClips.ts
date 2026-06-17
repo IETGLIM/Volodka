@@ -75,6 +75,7 @@ export function useMixamoAnimationClips(
       }
       setMixamoActions({});
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- SHIPPED_MIXAMO_CLIP_IDS is module constant
   }, [mixer, root, SHIPPED_MIXAMO_CLIP_IDS.join(',')]);
 
   return useMemo(() => {

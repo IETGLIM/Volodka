@@ -7,7 +7,7 @@ import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { useGameStore } from '@/store/gameStore';
-import { useCurrentSceneId, useInteractionOverlay, useTimeOfDay, useSceneExitState, useScheduleContext } from '@/store/selectors';
+import { useInteractionOverlay, useTimeOfDay, useSceneExitState, useScheduleContext } from '@/store/selectors';
 import { useSceneEnterEffect } from '@/hooks/useSceneEnterEffect';
 import { TRIGGER_ZONES, type TriggerZone, INTERACTION_LABELS, isTriggerZoneAvailable } from '@/data/triggerZones';
 import { findNpcById, findNpcByDialogueNodeId } from '@/data/allNpcDefinitions';
@@ -197,7 +197,7 @@ interface InteractiveTriggersProps {
 /** Trigger zones and "Press E" indicators with centralized prompt management */
 export function InteractiveTriggers({
   livePlayerPositionRef,
-  livePlayerRotationRef,
+  livePlayerRotationRef: _livePlayerRotationRef,
 }: InteractiveTriggersProps) {
   const promptFadeInAnim = `promptFadeIn-${useId().replace(/:/g, '')}`;
   const { sceneId, gameMode, showStoryOverlay, currentNodeId } = useInteractionOverlay();
@@ -245,6 +245,7 @@ export function InteractiveTriggers({
       if (overlapped) set.add(i);
     }
     return set;
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
   }, [zones, sceneExits]);
 
   const npcQueryTargets = useMemo((): NpcQueryTarget[] => {

@@ -4,15 +4,12 @@ import { PHOTO_EVENTS, PHOTO_EMPTY_PAYLOAD } from '@/engine/events';
 import {
   PHOTO_FLASH_DURATION_MS,
   PHOTO_MODE_LABELS,
-  PHOTO_PREVIEW_DISPLAY_MS,
-} from '@/engine/photo/photoModeConstants';
+  PHOTO_PREVIEW_DISPLAY_MS } from '@/engine/photo/photoModeConstants';
 import {
   captureWebGlCanvasScreenshot,
   formatGameTimeOfDay,
-  formatRealClockTime,
   getCaptureFailureMessage,
-  resolveSceneDisplayName,
-} from '@/engine/photo/photoModePresentation';
+  resolveSceneDisplayName } from '@/engine/photo/photoModePresentation';
 import { setPhotoModeActive } from '@/engine/photo/photoModeState';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { useTransitionDirector } from '@/hooks/useTransitionDirector';
@@ -77,13 +74,11 @@ export function usePhotoModeController() {
       eventBus.emit('sound:play', { type: 'screenshot' });
       eventBus.emit('game:notification', {
         title: PHOTO_MODE_LABELS.captureSuccess,
-        type: 'info' as const,
-      });
+        type: 'info' as const });
     } else {
       eventBus.emit('game:notification', {
         title: getCaptureFailureMessage(),
-        type: 'info' as const,
-      });
+        type: 'info' as const });
     }
   }, [reducedMotion]);
 
@@ -154,6 +149,5 @@ export function usePhotoModeController() {
     sceneName,
     timeStr,
     exitPhotoMode,
-    captureScreenshot,
-  };
+    captureScreenshot };
 }

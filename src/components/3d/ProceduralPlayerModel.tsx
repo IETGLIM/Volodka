@@ -107,6 +107,7 @@ export const ProceduralPlayerModel = memo(function ProceduralPlayerModel({
       Object.values(sharedGeo).forEach(g => g.dispose());
       Object.values(sharedMat).forEach(m => m.dispose());
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
   }, []);
 
   /* ─── Karma-dependent materials (optimization 5) ─── */

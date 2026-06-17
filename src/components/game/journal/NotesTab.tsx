@@ -94,6 +94,7 @@ export function NotesTab({ searchQuery }: NotesTabProps) {
   const discoveredNotes = useMemo(() => {
     if (!isNarrativeGameDataLoaded()) return [];
     return buildJournalNotes(visitedNodes, timestamps, getStoryNodes());
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
   }, [visitedNodes, timestamps, notesVersion]);
 
   const filteredNotes = useMemo(

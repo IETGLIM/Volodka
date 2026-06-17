@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useOrchestratorShell, useOrchestratorNarrativeOverlay, useArmDevTools } from '@/store/selectors';
 import { useCombatOrchestrator } from '@/hooks/useCombatOrchestrator';
 import { useAudioOrchestrator } from '@/hooks/useAudioOrchestrator';
@@ -98,6 +98,7 @@ export function useOrchestratorRuntime() {
     if (!isOverlayActive) return;
     interaction.dismissForNarrativeOverlay();
     panels.closeAllPanels();
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
   }, [isOverlayActive, interaction.dismissForNarrativeOverlay, panels.closeAllPanels]);
 
   useEffect(() => {

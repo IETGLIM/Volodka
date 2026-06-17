@@ -1,4 +1,3 @@
-import * as THREE from 'three';
 import { updateCutsceneController } from '../cinematicCamera';
 import { LOOK_HEIGHT } from '../cameraConstants';
 import type { CameraModeContext, CameraModeStrategy } from '../types';

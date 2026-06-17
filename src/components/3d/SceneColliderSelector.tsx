@@ -478,6 +478,7 @@ function StreetForegroundObjects() {
     });
     poleRef.current.instanceMatrix.needsUpdate = true;
     bulbRef.current.instanceMatrix.needsUpdate = true;
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
   }, [dummy]);
 
   return (

@@ -17,7 +17,6 @@ import { preloadSceneJsChunks } from '@/components/3d/sceneChunks/sceneChunkRegi
 import { resolveNpcModelUrl } from '@/config/npcModelRegistry';
 import { getPropModelDefinition } from '@/config/propModelRegistry';
 import { getScenePropDressingIds } from '@/config/scenePropDressing';
-import { getSceneInteriorAssetIds } from '@/config/sceneInteriorAssets';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
 
 const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeof useGLTF>[3]>;

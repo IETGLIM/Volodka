@@ -7,7 +7,7 @@ import {
   findNpcById,
   getItemDefinition,
 } from '@/data/gameDataLoader';
-import { findTriggerZoneByNpcId, isTriggerZoneAvailable } from '@/data/triggerZones';
+import { isTriggerZoneAvailable } from '@/data/triggerZones';
 import {
   findNpcTriggerZoneForScene,
   resolveNpcNarrativeTarget,

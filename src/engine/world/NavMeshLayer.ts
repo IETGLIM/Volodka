@@ -9,9 +9,7 @@ import type {
   NavMeshLayerSnapshot,
   NavMeshNode,
   WorldCellId,
-  WorldChunkCoord,
-  WorldRegionId,
-} from './types';
+  WorldRegionId } from './types';
 import { chunkWorldCenter, getWorldCell, getChunkForScene } from './worldRegistry';
 import { DEFAULT_WORLD_CHUNK_OPTIONS } from './WorldChunkManager';
 import { registerHmrDispose } from '@/shared/dev/hmrDispose';
@@ -36,8 +34,7 @@ export class NavMeshLayer {
       this.nodes.set(id, {
         id,
         position: center,
-        neighbors: [],
-      });
+        neighbors: [] });
     }
 
     for (const node of this.nodes.values()) {
@@ -62,8 +59,7 @@ export class NavMeshLayer {
     return {
       regionId: this.regionId,
       cellId: this.cellId,
-      nodeCount: this.nodes.size,
-    };
+      nodeCount: this.nodes.size };
   }
 
   /** Nearest walkable point for a district scene (chunk center fallback). */

@@ -1,4 +1,5 @@
-import { Cloud, CloudFog, CloudLightning, CloudRain, Snowflake, Sun } from 'lucide-react';
+/* eslint-disable react-refresh/only-export-components -- co-located helpers and lazy exports */
+import { CloudFog, CloudLightning, CloudRain, Snowflake, Sun } from 'lucide-react';
 import { type WeatherType, WEATHER_EFFECTS } from '@/data/weatherEffects';
 
 interface WeatherIconProps {

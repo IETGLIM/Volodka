@@ -19,11 +19,8 @@ import {
   initAchievementEngine,
   notifyCombatVictory,
   notifyCombatDefeat,
-  notifyCombo,
-  notifyCriticalHit,
   notifyPoemPowerUsed,
-  type AchievementCheckState,
-} from '@/engine/AchievementEngine';
+  type AchievementCheckState } from '@/engine/AchievementEngine';
 
 /* ─── Hook ─── */
 
@@ -76,8 +73,7 @@ export function useAchievementChecker() {
         npcRelations: state.npcRelations,
         flags: state.playerState.flags,
         timeOfDay: state.exploration.timeOfDay,
-        unlockedAchievements: state.unlockedAchievements,
-      }),
+        unlockedAchievements: state.unlockedAchievements }),
       (checkState) => {
         checkAchievements(checkState);
       },

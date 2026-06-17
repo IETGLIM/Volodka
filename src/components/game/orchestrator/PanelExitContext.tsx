@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- co-located helpers and lazy exports */
 import { createContext, useContext, type ReactNode } from 'react';
 
 const PanelExitContext = createContext<(() => void) | null>(null);

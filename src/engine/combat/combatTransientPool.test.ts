@@ -1,5 +1,4 @@
 import { describe, expect, it, beforeEach } from 'vitest';
-import * as THREE from 'three';
 import {
   acquireCombatHitSpark,
   disposeCombatTransientPools,

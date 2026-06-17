@@ -5,6 +5,7 @@
  *  vertical pulsing add life without hurting performance.
  */
 
+/* eslint-disable react-refresh/only-export-components -- co-located helpers and lazy exports */
 import { useRef, useMemo, useEffect } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';

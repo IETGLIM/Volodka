@@ -53,6 +53,7 @@ export const InventoryTooltip = memo(function InventoryTooltip({
   const trackedRef = useRef(false);
   const content = useMemo(
     () => buildInventoryTooltipContent(view),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
     [view.item.id, view.item.quantity, view.displayName, view.displayDescription, view.isUnknown, view.rarity, view.filterCategory],
   );
   const coords = useInventoryTooltipPosition(anchorRef, tooltipRef, visible, position);

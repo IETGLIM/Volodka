@@ -261,10 +261,10 @@ npm run check            # всё сразу — главный гейт пер�
 
 **Цель:** убрать warnings budget и снизить хрупкость e2e.
 
-- [ ] ESLint: 362 → 0 warnings; убрать `--max-warnings 362` из `package.json`
-- [ ] `npm run lint -- --fix` + точечная зачистка unused imports
-- [ ] E2E: typed helpers поверх `e2eBridge.ts`, меньше raw `page.evaluate`
-- [ ] Добавить e2e coverage для extension scenes (smoke)
+- [x] ESLint: 362 → 0 warnings; убрать `--max-warnings 362` из `package.json`
+- [x] `npm run lint -- --fix` + точечная зачистка unused imports
+- [x] E2E: typed helpers поверх `e2eBridge.ts`, меньше raw `page.evaluate`
+- [x] Добавить e2e coverage для extension scenes (smoke)
 
 **Exit criteria:** `npm run lint` без `--max-warnings`; e2e suite стабилен на CI 3× подряд.
 

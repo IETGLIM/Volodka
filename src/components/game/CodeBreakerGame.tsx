@@ -118,7 +118,7 @@ export function CodeBreakerGame({ onClose }: CodeBreakerGameProps) {
     setSelectedSlot(Math.max(0, currentGuess.length - 1));
   }, [currentGuess, gameState]);
 
-  const handleSubmit = useCallback(() => {
+  const _handleSubmit = useCallback(() => {
     // This is auto-submitted when 4 digits are entered
   }, []);
 

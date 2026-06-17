@@ -5,7 +5,6 @@
  */
 
 import { useRef } from 'react';
-import * as THREE from 'three';
 import { RigidBody, CylinderCollider, CuboidCollider } from '@react-three/rapier';
 import { useGameStore } from '@/store/gameStore';
 import { useMobileVisualPerf } from '@/hooks/use-mobile';

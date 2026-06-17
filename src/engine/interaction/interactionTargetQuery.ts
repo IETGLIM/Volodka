@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import { INTERACTION_LABELS, type TriggerZone } from '@/data/triggerZones';
-import type { SceneId } from '@/shared/types/game';
 import { FIRST_PERSON_ENABLED, FIRST_PERSON_EYE_HEIGHT } from '@/engine/camera/cameraConstants';
 import { getInteractionQueryContext } from '@/engine/interaction/interactionQueryContext';
 import { getNPCGroup } from '@/engine/interaction/npcRegistry';
@@ -126,7 +125,7 @@ function pushZoneTarget(
   playerPos: THREE.Vector3,
   playerYaw: number,
   zone: TriggerZone,
-  checkLos: boolean,
+  _checkLos: boolean,
 ): void {
   _target.set(zone.position[0], zone.position[1], zone.position[2]);
   const range = Math.max(zone.size[0], zone.size[2]) / 2 + ZONE_RANGE_PADDING;

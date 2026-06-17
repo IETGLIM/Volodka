@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- co-located helpers and lazy exports */
 import { memo } from 'react';
 import { motion } from 'framer-motion';
 import type { GridNode } from '@/engine/minigame/hacking/hackingGameTypes';

@@ -16,12 +16,10 @@ import { buildScheduleContext } from '@/shared/scheduleContext';
 import { isSceneGateOpen } from '@/shared/sceneGates';
 import {
   clearAutoCloseTimer,
-  clearAutoCloseTimers,
   deleteAutoCloseTimer,
   getAutoCloseGeneration,
   isAutoCloseSchedulingSuspended,
-  trackAutoCloseTimer,
-} from '@/shared/explorationAutoCloseTimers';
+  trackAutoCloseTimer } from '@/shared/explorationAutoCloseTimers';
 
 export { clearAutoCloseTimers } from '@/shared/explorationAutoCloseTimers';
 
@@ -44,8 +42,7 @@ const TRAVEL_TIME: Partial<Record<SceneId, number>> = {
   factory_basement: 1.0,
   abandoned_factory: 1.0,
   battle: 0,
-  sleep_dream: 0,
-};
+  sleep_dream: 0 };
 
 /* ─── Slice types ─── */
 
@@ -99,19 +96,15 @@ export const createExplorationSlice: StateCreator<
     set((state) => ({
       exploration: {
         ...state.exploration,
-        currentSceneId: sanitizeExplorationSceneId(sceneId),
-      },
-    })),
+        currentSceneId: sanitizeExplorationSceneId(sceneId) } })),
 
   setPlayerPosition: (pos) =>
     set((state) => ({
-      exploration: { ...state.exploration, playerPosition: pos },
-    })),
+      exploration: { ...state.exploration, playerPosition: pos } })),
 
   setPlayerRotation: (rot) =>
     set((state) => ({
-      exploration: { ...state.exploration, playerRotation: rot },
-    })),
+      exploration: { ...state.exploration, playerRotation: rot } })),
 
   advanceTime: (hours) => {
     const previousHour = get().exploration.timeOfDay;
@@ -127,9 +120,7 @@ export const createExplorationSlice: StateCreator<
       exploration: {
         ...state.exploration,
         timeOfDay: newTime,
-        npcStates,
-      },
-    }));
+        npcStates } }));
 
     scheduleWorldHourChanged({ hour: newTime, previousHour, npcStates });
   },
@@ -152,9 +143,7 @@ export const createExplorationSlice: StateCreator<
     set((state) => ({
       interactiveObjectStates: {
         ...state.interactiveObjectStates,
-        [id]: newState,
-      },
-    }));
+        [id]: newState } }));
 
     if (id.includes('door') || id.includes('wardrobe')) {
       emitSoundPlay(newState ? 'door_open' : 'door_close');
@@ -171,9 +160,7 @@ export const createExplorationSlice: StateCreator<
           set((state) => ({
             interactiveObjectStates: {
               ...state.interactiveObjectStates,
-              [id]: false,
-            },
-          }));
+              [id]: false } }));
           if (id.includes('door') || id.includes('wardrobe')) {
             emitSoundPlay('door_close');
           }
@@ -187,8 +174,7 @@ export const createExplorationSlice: StateCreator<
     set((state) => {
       if (state.discoveredScenes.includes(sceneId)) return state;
       return {
-        discoveredScenes: [...state.discoveredScenes, sceneId],
-      };
+        discoveredScenes: [...state.discoveredScenes, sceneId] };
     }),
 
   fastTravelTo: (sceneId) => {
@@ -215,20 +201,15 @@ export const createExplorationSlice: StateCreator<
     set((state) => ({
       exploration: {
         ...state.exploration,
-        timeOfDay: ((state.exploration.timeOfDay + travelHours) % 24 + 24) % 24,
-      },
-    }));
+        timeOfDay: ((state.exploration.timeOfDay + travelHours) % 24 + 24) % 24 } }));
 
     requestSceneTransitionFromStore(sceneId, [...targetConfig.spawnPoint] as [number, number, number]);
   },
 
   setExplorationTimeOfDay: (hour) =>
     set((state) => ({
-      exploration: { ...state.exploration, timeOfDay: ((hour % 24) + 24) % 24 },
-    })),
+      exploration: { ...state.exploration, timeOfDay: ((hour % 24) + 24) % 24 } })),
 
   setExplorationNPCStates: (npcStates) =>
     set((state) => ({
-      exploration: { ...state.exploration, npcStates },
-    })),
-});
+      exploration: { ...state.exploration, npcStates } })) });

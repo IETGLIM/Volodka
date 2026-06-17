@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- co-located helpers and lazy exports */
 export { LootNotification } from '@/components/game/lootNotification/LootNotification';
 
 export {

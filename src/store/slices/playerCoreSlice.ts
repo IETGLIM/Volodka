@@ -69,7 +69,7 @@ export const createPlayerCoreSlice: StateCreator<
   [],
   [],
   PlayerCoreSlice
-> = (set, get) => ({
+> = (set, _get) => ({
   playerState: createDefaultPlayerState(),
   notifications: [],
   activeTTLFlags: createEmptyActiveTTLFlagMap(),

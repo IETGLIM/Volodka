@@ -71,8 +71,11 @@ export function CafeVisual({ livePlayerPositionRef }: CafeVisualProps) {
   // ── Dispose owned materials on unmount (textures are module-cached) ──
   useEffect(() => {
     return () => {
+      // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
       coffeeSteamMaterialRef.current?.dispose();
+      // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
       shimmerMaterialRef.current?.dispose();
+      // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
       shimmerLayer2MaterialRef.current?.dispose();
     };
   }, []);

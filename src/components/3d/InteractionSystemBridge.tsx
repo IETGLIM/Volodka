@@ -8,6 +8,7 @@
  *  This ensures collision resolution works even during
  *  approach/align phases — no wall clipping!
  */
+/* eslint-disable react-refresh/only-export-components -- co-located helpers and lazy exports */
 import { useRef, useEffect } from 'react';
 import { devWarn } from '@/shared/utils/devLog';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
@@ -30,7 +31,6 @@ import { preloadNpcModel } from '@/engine/scene/sceneGpuLifecycle';
 import {
   getInteractionState,
   getInteractionTargetNPCId,
-  isInteractionLocked,
   writeInteractionSession,
 } from '@/engine/interaction/interactionSession';
 

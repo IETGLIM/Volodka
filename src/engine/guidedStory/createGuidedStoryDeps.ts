@@ -1,4 +1,4 @@
-import { findNpcById, getQuestDefinitions, getStoryNodes, isNarrativeGameDataLoaded } from '@/data/gameDataLoader';
+import { findNpcById, getQuestDefinitions } from '@/data/gameDataLoader';
 import { eventBus } from '@/engine/EventBus';
 import {
   dispatchGameAction,

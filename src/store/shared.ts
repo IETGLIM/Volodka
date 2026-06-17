@@ -3,22 +3,18 @@
  * used by multiple Zustand slices. Extracted here to avoid duplication. */
 
 import type {
-  GameMode,
   PlayerState,
   PlayerProgression,
   ExplorationState,
-  TrainablePlayerSkill,
   EquipmentSlot,
-  InventoryItem,
-} from '@/shared/types/game';
+  InventoryItem } from '@/shared/types/game';
 import { createInventoryItem } from '@/data/items';
 import {
   INITIAL_PLAYER_NAME,
   INITIAL_KARMA,
   INITIAL_ENERGY,
   INITIAL_STRESS,
-  DEFAULT_SKILLS,
-} from '@/data/constants';
+  DEFAULT_SKILLS } from '@/data/constants';
 
 /* ─── Helpers ─── */
 
@@ -73,14 +69,12 @@ export function applyXpGain(prog: PlayerProgression, amount: number): XpGainResu
       xp: newXp,
       xpToNextLevel: newXpToNext,
       skillPoints: newSkillPoints,
-      perkPoints: newPerkPoints,
-    },
+      perkPoints: newPerkPoints },
     prevLevel,
     levelsGained,
     perkPointsGained,
     perkPointGained: perkPointsGained > 0,
-    leveledUp: levelsGained > 0,
-  };
+    leveledUp: levelsGained > 0 };
 }
 
 /* ─── Notification system ─── */
@@ -167,8 +161,7 @@ export function createDefaultPlayerState(): PlayerState {
     equippedItems: {
       head: null,
       body: null,
-      accessory: null,
-    } as Record<EquipmentSlot, InventoryItem | null>,
+      accessory: null } as Record<EquipmentSlot, InventoryItem | null>,
     flags: {},
     visitedNodes: [],
     visitedNodeTimestamps: {},
@@ -183,9 +176,7 @@ export function createDefaultPlayerState(): PlayerState {
       unlockedSkills: [],
       currentAct: 1,
       perkPoints: 0,
-      unlockedPerks: [],
-    },
-  };
+      unlockedPerks: [] } };
 }
 
 export function createDefaultExploration(): ExplorationState {
@@ -196,8 +187,7 @@ export function createDefaultExploration(): ExplorationState {
     timeOfDay: 8,
     npcStates: {},
     weatherEnabled: true,
-    rainIntensity: 0.7,
-  };
+    rainIntensity: 0.7 };
 }
 
 export function createDefaultTutorialFlags(): TutorialFlags {
@@ -206,8 +196,7 @@ export function createDefaultTutorialFlags(): TutorialFlags {
     tutorial_seen_interact: false,
     tutorial_seen_controls: false,
     tutorialsDisabled: false,
-    tutorialsCompleted: false,
-  };
+    tutorialsCompleted: false };
 }
 
 /* ─── Cross-slice type composition ─── */

@@ -2,8 +2,8 @@
 /* ─── Volodka RPG – Visualization Layer System ─── */
 /* Three.js layer separation for depth, parallax, and performance control */
 
+/* eslint-disable react-refresh/only-export-components -- co-located helpers and lazy exports */
 import { createContext, memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { scratchColor } from '@/engine/three/frameScratch';
@@ -19,8 +19,6 @@ export const LAYER = {
 } as const;
 
 export type LayerName = keyof typeof LAYER;
-
-const LAYER_NAMES: LayerName[] = ['DEFAULT', 'BACKGROUND', 'MIDGROUND', 'FOREGROUND', 'OVERLAY'];
 
 /** Parallax factor per layer — background shifts opposite to player movement */
 const LAYER_PARALLAX: Record<LayerName, number> = {
@@ -91,12 +89,11 @@ export const SceneLayer = memo(function SceneLayer({ layer, children }: SceneLay
 
   // Register the group with the layer system
   useEffect(() => {
-    if (!groupRef.current) return;
-    registerObject(groupRef.current, layer);
+    const group = groupRef.current;
+    if (!group) return;
+    registerObject(group, layer);
     return () => {
-      if (groupRef.current) {
-        unregisterObject(groupRef.current);
-      }
+      unregisterObject(group);
     };
   }, [layer, registerObject, unregisterObject]);
 
@@ -134,7 +131,6 @@ function BackgroundParallax({ livePlayerPositionRef, children }: BackgroundParal
   const groupRef = useRef<THREE.Group>(null);
   const offsetRef = useRef(new THREE.Vector3(0, 0, 0));
   const targetOffsetRef = useRef(new THREE.Vector3(0, 0, 0));
-  const prevPlayerPos = useRef(new THREE.Vector3(0, 0, 0));
 
   useFrameTick(
     'misc',
@@ -221,7 +217,8 @@ function DepthFogLayer({ layer, children }: DepthFogProps) {
   // Optimization: since fogFactor comes from a static constant (LAYER_FOG_FACTOR),
   // it rarely changes. Skip re-cloning if the factor hasn't changed.
   useEffect(() => {
-    if (!groupRef.current || fogFactor <= 0) return;
+    const group = groupRef.current;
+    if (!group || fogFactor <= 0) return;
 
     // Skip re-cloning if fogFactor hasn't changed since last application
     if (fogFactor === lastFogFactorRef.current) return;
@@ -229,7 +226,7 @@ function DepthFogLayer({ layer, children }: DepthFogProps) {
     const fogColor = scratchColor.set('#1a1a2e'); // default fog color
     const clonedMaterials = new Map<THREE.Material, THREE.Material>();
 
-    groupRef.current.traverse((child) => {
+    group.traverse((child) => {
       if ((child as THREE.Mesh).isMesh) {
         const mesh = child as THREE.Mesh;
         const mat = mesh.material as THREE.MeshStandardMaterial;
@@ -249,8 +246,7 @@ function DepthFogLayer({ layer, children }: DepthFogProps) {
     return () => {
       // Restore original materials
       clonedMaterials.forEach((original, cloned) => {
-        // Find meshes using the cloned material and restore original
-        groupRef.current?.traverse((child) => {
+        group.traverse((child) => {
           if ((child as THREE.Mesh).isMesh && (child as THREE.Mesh).material === cloned) {
             (child as THREE.Mesh).material = original;
           }
@@ -277,7 +273,7 @@ interface VisualizationLayersProps {
  * Provides the LayerContext and renders children with proper layer separation.
  * Add parallax for background and depth-fog for distant layers.
  */
-export function VisualizationLayers({ livePlayerPositionRef, children }: VisualizationLayersProps) {
+export function VisualizationLayers({ livePlayerPositionRef: _livePlayerPositionRef, children }: VisualizationLayersProps) {
   // Layer registry
   const registryRef = useRef<Map<string, LayerRegistryEntry>>(new Map());
   const [enabledLayers, setEnabledLayers] = useState<Record<LayerName, boolean>>({

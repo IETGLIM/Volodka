@@ -121,7 +121,7 @@ function TypewriterText({ text, speed = 25 }: { text: string; speed?: number }) 
 // ─── Main Component ───
 export function QuizGame({ onClose }: QuizGameProps) {
   const [phase, setPhase] = useState<GamePhase>('difficulty');
-  const [difficulty, setDifficulty] = useState<DifficultyLevel>(2);
+  const [_difficulty, setDifficulty] = useState<DifficultyLevel>(2);
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [score, setScore] = useState(0);
@@ -254,9 +254,9 @@ export function QuizGame({ onClose }: QuizGameProps) {
     const store = useGameStore.getState();
 
     // Calculate total XP and karma from correct answers
-    const totalXp = 0;
-    const totalKarma = 0;
-    questions.forEach((q, i) => {
+    const _totalXp = 0;
+    const _totalKarma = 0;
+    questions.forEach((_q, _i) => {
       // We only reward for correctly answered questions
       // We track this via correctCount — but need a better approach
       // Since we don't track per-question correctness, use score-based XP
@@ -302,7 +302,7 @@ export function QuizGame({ onClose }: QuizGameProps) {
     return { name: 'Новичок', color: 'rgba(148, 163, 184, 0.7)', icon: '📖' };
   };
 
-  const maxScore = QUESTIONS_PER_ROUND * 100; // approximate max
+  const _maxScore = QUESTIONS_PER_ROUND * 100; // approximate max
 
   // ═══════════════════════════════════════════════════════════════
   // RENDER

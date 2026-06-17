@@ -103,9 +103,11 @@ export function usePlayerControls(
       window.removeEventListener('mouseup', onMouseUp);
       window.removeEventListener('mousemove', onMouseMove);
       if (mouseOwnsForward) {
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
         virtualControlsRef.current.forward = 0;
       }
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
   }, []);
 
   return {

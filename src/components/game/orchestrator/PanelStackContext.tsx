@@ -1,5 +1,6 @@
 /* ─── Volodka RPG – panel stack context ─── */
 
+/* eslint-disable react-refresh/only-export-components -- co-located helpers and lazy exports */
 import { createContext, useContext, useMemo, type ReactNode } from 'react';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import {

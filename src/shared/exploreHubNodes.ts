@@ -1,7 +1,6 @@
 import type { SceneId } from '@/shared/types/game';
 import { dispatchStateAction, getGameSnapshot } from '@/shared/gameBridge/stateDispatcher';
 import { getStoryNodeSceneId } from '@/shared/story/getStoryNodeSceneId';
-import { isExploreHubNode } from '@/shared/sceneExploreHubRegistry';
 
 export {
   EXPLORE_HUB_NODE_IDS,

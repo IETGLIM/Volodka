@@ -59,6 +59,7 @@ export function useWorldStream(enabled = true): UseWorldStreamResult {
 
   const streamState = useMemo(
     () => manager.getStreamState(sceneId, localPosition),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
     [manager, sceneId, localPosition, activeChunks],
   );
 

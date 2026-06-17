@@ -10,7 +10,6 @@ import { useEffect, useCallback, useState } from 'react'
 import { eventBus } from '@/engine/EventBus'
 import { useGameStore } from '@/store/gameStore'
 import { useQuests } from '@/store/selectors'
-import type { StoryEffect } from '@/shared/types/game'
 import type { MinigameType } from '@/shared/constants/minigames'
 import { QUEST_MINIGAME_MAP, type QuestMinigameMapping } from '@/data/questMinigameMap'
 

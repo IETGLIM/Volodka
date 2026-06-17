@@ -11,10 +11,8 @@ import {
   MAX_DISTANCE,
   ZOOM_WHEEL_EXP,
   ZOOM_WHEEL_MIN_STEP,
-  FIRST_PERSON_ENABLED,
   FIRST_PERSON_FOV_MIN,
-  FIRST_PERSON_FOV_MAX,
-} from '@/engine/camera/cameraConstants';
+  FIRST_PERSON_FOV_MAX } from '@/engine/camera/cameraConstants';
 import { getInteractionState } from '@/components/3d/InteractionSystemBridge';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 import { isNarrativeMovementLocked } from '@/shared/exploreHubNodes';
@@ -81,8 +79,7 @@ export function useCameraOrbitInput(
     lastMouseRef,
     zoomSnapRef,
     firstPersonRef,
-    fovRef,
-  } = refs;
+    fovRef } = refs;
 
   useEffect(() => {
     let lmbDown = false;

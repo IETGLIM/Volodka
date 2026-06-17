@@ -1,6 +1,6 @@
 /* ─── Combat System — Enemy Templates & Special Attacks ─── */
 
-import type { EnemyType, CombatState, EnemySpecialAttack, SideEffect } from './types';
+import type { EnemyType, EnemySpecialAttack, SideEffect } from './types';
 import type { EnemyTemplate } from './types';
 import { getGameSnapshot } from '@/engine/GameActionDispatcher';
 import { createBuff, addBuff } from './buffSystem';

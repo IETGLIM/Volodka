@@ -324,7 +324,7 @@ function assertNarrativeLoaded(): void {
   }
 }
 
-function assertLoaded(): void {
+function _assertLoaded(): void {
   if (!isGameDataLoaded()) {
     throw new Error('[gameDataLoader] Game data not loaded — call preloadGameData() first');
   }

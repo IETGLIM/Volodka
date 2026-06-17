@@ -7,7 +7,6 @@
 import { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Cloud,
   CloudRain,
   CloudSnow,
   CloudFog,
@@ -15,16 +14,14 @@ import {
   Sun,
   Moon,
   Wind,
-  Thermometer,
-} from 'lucide-react';
+  Thermometer } from 'lucide-react';
 import { useWeatherIndicatorState } from '@/store/selectors';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useHudQuietStyle } from '@/hooks/useHudQuiet';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import {
   deriveSceneWeather,
-  type SceneWeatherState,
-} from '@/shared/weather/deriveSceneWeather';
+  type SceneWeatherState } from '@/shared/weather/deriveSceneWeather';
 
 type WeatherType = SceneWeatherState['type'];
 type WindLevel = SceneWeatherState['wind'];
@@ -36,8 +33,7 @@ const WEATHER_ICONS: Record<WeatherType, React.ComponentType<{ className?: strin
   rain: CloudRain,
   snow: CloudSnow,
   fog: CloudFog,
-  storm: CloudLightning,
-};
+  storm: CloudLightning };
 
 /* ── Weather accent colors for border glow ── */
 const WEATHER_ACCENT: Record<WeatherType, { border: string; glow: string; icon: string }> = {
@@ -45,22 +41,19 @@ const WEATHER_ACCENT: Record<WeatherType, { border: string; glow: string; icon: 
   rain: { border: 'rgb(var(--cyber-cyan-rgb) / 0.35)', glow: 'rgb(var(--cyber-cyan-rgb) / 0.12)', icon: 'text-cyan-400' },
   snow: { border: 'rgba(203,213,225,0.35)', glow: 'rgba(203,213,225,0.12)', icon: 'text-slate-300' },
   fog: { border: 'rgba(148,163,184,0.35)', glow: 'rgba(148,163,184,0.12)', icon: 'text-slate-400' },
-  storm: { border: 'rgba(168,85,247,0.35)', glow: 'rgba(168,85,247,0.12)', icon: 'text-purple-400' },
-};
+  storm: { border: 'rgba(168,85,247,0.35)', glow: 'rgba(168,85,247,0.12)', icon: 'text-purple-400' } };
 
 /* ── Wind display labels ── */
 const WIND_LABELS: Record<WindLevel, { text: string; icon: string }> = {
   calm: { text: 'Штиль', icon: 'text-slate-500' },
   light: { text: 'Лёгкий', icon: 'text-slate-400' },
-  strong: { text: 'Сильный', icon: 'text-amber-400' },
-};
+  strong: { text: 'Сильный', icon: 'text-amber-400' } };
 
 /* ── Air quality labels ── */
 const AIR_LABELS: Record<AirQuality, { text: string; color: string }> = {
   clean: { text: 'Чистый', color: 'text-emerald-400' },
   dusty: { text: 'Пыльный', color: 'text-amber-400' },
-  smoggy: { text: 'Смог', color: 'text-rose-400' },
-};
+  smoggy: { text: 'Смог', color: 'text-rose-400' } };
 
 /* ── Russian weather labels ── */
 const WEATHER_LABELS: Record<WeatherType, string> = {
@@ -68,8 +61,7 @@ const WEATHER_LABELS: Record<WeatherType, string> = {
   rain: 'Дождь',
   snow: 'Снег',
   fog: 'Туман',
-  storm: 'Гроза',
-};
+  storm: 'Гроза' };
 
 /* ── Temperature display with sign ── */
 function formatTemp(temp: number): string {
@@ -117,8 +109,7 @@ export function WeatherIndicator() {
           width: 140,
           background: 'linear-gradient(145deg, rgba(0,0,0,0.72) 0%, rgba(15,23,42,0.6) 50%, rgba(0,0,0,0.5) 100%)',
           borderColor: accent.border,
-          boxShadow: `0 0 12px ${accent.glow}, 0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.03)`,
-        }}
+          boxShadow: `0 0 12px ${accent.glow}, 0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.03)` }}
         initial={reducedMotion ? false : { opacity: 0, x: 20, scale: 0.95 }}
         animate={{ opacity: 1, x: 0, scale: 1 }}
         transition={reducedMotion ? { duration: 0 } : { duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
@@ -128,8 +119,7 @@ export function WeatherIndicator() {
           className="flex items-center justify-between px-2.5 pt-2 pb-1.5"
           style={{
             borderBottom: '1px solid',
-            borderBottomColor: accent.border,
-          }}
+            borderBottomColor: accent.border }}
         >
           <div className="flex items-center gap-1.5">
             <AnimatePresence mode="wait" initial={false}>
@@ -186,13 +176,11 @@ export function WeatherIndicator() {
                     className={`absolute inset-0 ${accent.icon} opacity-20`}
                     animate={{
                       scale: [1, 1.4, 1],
-                      opacity: [0.2, 0.05, 0.2],
-                    }}
+                      opacity: [0.2, 0.05, 0.2] }}
                     transition={{
                       duration: 3,
                       repeat: Infinity,
-                      ease: 'easeInOut',
-                    }}
+                      ease: 'easeInOut' }}
                     style={{ filter: 'blur(4px)' }}
                   >
                     <WeatherIcon className="size-5" />
@@ -212,8 +200,7 @@ export function WeatherIndicator() {
                   transition={microTransition}
                   className={`text-base font-mono font-bold leading-none ${tempColor(weather.temperature)}`}
                   style={{
-                    textShadow: `0 0 8px currentColor`,
-                  }}
+                    textShadow: `0 0 8px currentColor` }}
                 >
                   {formatTemp(weather.temperature)}
                 </motion.span>
@@ -229,8 +216,7 @@ export function WeatherIndicator() {
           <div
             className="h-px"
             style={{
-              background: `linear-gradient(90deg, transparent, ${accent.border}, transparent)`,
-            }}
+              background: `linear-gradient(90deg, transparent, ${accent.border}, transparent)` }}
           />
 
           {/* Wind + Air Quality row */}
@@ -266,8 +252,7 @@ export function WeatherIndicator() {
                     ? '0 0 4px rgba(52,211,153,0.4)'
                     : weather.airQuality === 'dusty'
                     ? '0 0 4px rgba(251,191,36,0.4)'
-                    : '0 0 4px rgba(244,63,94,0.4)',
-                }}
+                    : '0 0 4px rgba(244,63,94,0.4)' }}
               />
               <AnimatePresence mode="wait" initial={false}>
                 <motion.span
@@ -289,8 +274,7 @@ export function WeatherIndicator() {
         <div
           className="h-px"
           style={{
-            background: `linear-gradient(90deg, transparent, ${accent.border}, transparent)`,
-          }}
+            background: `linear-gradient(90deg, transparent, ${accent.border}, transparent)` }}
         />
 
         {/* ── Footer ── */}

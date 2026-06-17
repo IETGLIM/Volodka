@@ -5,7 +5,7 @@ import {
   AccessibilityManager,
   DEFAULT_ACCESSIBILITY_SETTINGS,
 } from './AccessibilityManager';
-import { createSubtitleScale, createTextSpeed } from './accessibilityConstraints';
+import { createTextSpeed } from './accessibilityConstraints';
 import {
   getAccessibilitySettings,
   initAccessibilitySettings,

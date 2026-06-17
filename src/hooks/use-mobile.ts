@@ -8,7 +8,7 @@
  * Previously split across use-mobile.ts and use-mobile-visual.ts,
  * consolidated to prevent bugs from divergent implementations. */
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 
 /* ─── Constants ─── */

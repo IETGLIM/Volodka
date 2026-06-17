@@ -11,7 +11,7 @@
 
 import type { SceneConfig, SceneExit } from '@/shared/types/game';
 import { SCENE_DEFINITIONS, SCENE_IDS, type SceneId } from '@/config/sceneDefinitions';
-import { generateSceneConfig, generateAllSceneConfigs } from '@/config/sceneDefinitionGenerator';
+import { generateAllSceneConfigs } from '@/config/sceneDefinitionGenerator';
 import { checkStoryCondition } from '@/shared/storyConditions';
 import type { StoryConditionContext } from '@/shared/storyConditions';
 import { DEFAULT_SKILLS } from '@/data/constants';

@@ -11,7 +11,6 @@ import {
   Moon,
   Sunrise,
   Sunset,
-  Stars,
 } from 'lucide-react';
 import { useTimeOfDay } from '@/store/selectors';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
@@ -46,8 +45,7 @@ const PHASE_CONFIG: Record<TimePhase, PhaseConfig> = {
     glow: 'rgba(245,158,11,0.12)',
     iconColor: 'text-amber-400',
     celestialFill: '#fbbf24',
-    celestialGlow: 'rgba(251,191,36,0.5)',
-  },
+    celestialGlow: 'rgba(251,191,36,0.5)' },
   day: {
     label: 'День',
     icon: Sun,
@@ -57,8 +55,7 @@ const PHASE_CONFIG: Record<TimePhase, PhaseConfig> = {
     glow: 'rgba(6,182,212,0.12)',
     iconColor: 'text-cyan-400',
     celestialFill: 'var(--cyber-cyan)',
-    celestialGlow: 'rgb(var(--cyber-cyan-rgb) / 0.5)',
-  },
+    celestialGlow: 'rgb(var(--cyber-cyan-rgb) / 0.5)' },
   evening: {
     label: 'Вечер',
     icon: Sunset,
@@ -68,8 +65,7 @@ const PHASE_CONFIG: Record<TimePhase, PhaseConfig> = {
     glow: 'rgba(234,88,12,0.12)',
     iconColor: 'text-orange-400',
     celestialFill: '#f97316',
-    celestialGlow: 'rgba(249,115,22,0.5)',
-  },
+    celestialGlow: 'rgba(249,115,22,0.5)' },
   night: {
     label: 'Ночь',
     icon: Moon,
@@ -79,9 +75,7 @@ const PHASE_CONFIG: Record<TimePhase, PhaseConfig> = {
     glow: 'rgba(139,92,246,0.12)',
     iconColor: 'text-violet-400',
     celestialFill: '#c4b5fd',
-    celestialGlow: 'rgba(196,181,253,0.4)',
-  },
-};
+    celestialGlow: 'rgba(196,181,253,0.4)' } };
 
 /* ── Phase boundaries (hours) ── */
 const PHASE_RANGES: { phase: TimePhase; start: number; end: number }[] = [
@@ -100,7 +94,7 @@ function getPhase(timeOfDay: number): TimePhase {
 }
 
 /* ── Calculate progress within current phase (0-1) ── */
-function getPhaseProgress(timeOfDay: number, phase: TimePhase): number {
+function _getPhaseProgress(timeOfDay: number, phase: TimePhase): number {
   const range = PHASE_RANGES.find((r) => r.phase === phase)!;
   const adjustedEnd = range.end > 24 ? range.end - 24 : range.end;
   const adjustedStart = range.start;
@@ -188,14 +182,12 @@ function StarParticle({ x, y, delay, size }: { x: number; y: number; delay: numb
       initial={{ opacity: 0 }}
       animate={{
         opacity: [0, 0.8, 0.2, 0.7, 0],
-        scale: [0.5, 1, 0.8, 1.1, 0.5],
-      }}
+        scale: [0.5, 1, 0.8, 1.1, 0.5] }}
       transition={{
         duration: 2 + delay * 0.5,
         delay: delay * 0.3,
         repeat: Infinity,
-        ease: 'easeInOut',
-      }}
+        ease: 'easeInOut' }}
     />
   );
 }
@@ -259,8 +251,7 @@ export function DayNightCycleIndicator() {
           width: 160,
           background: 'linear-gradient(145deg, rgba(0,0,0,0.78) 0%, rgba(15,23,42,0.65) 50%, rgba(0,0,0,0.55) 100%)',
           borderColor: config.border,
-          boxShadow: `0 0 14px ${config.glow}, 0 4px 18px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.03)`,
-        }}
+          boxShadow: `0 0 14px ${config.glow}, 0 4px 18px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.03)` }}
         initial={{ opacity: 0, y: 20, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
@@ -424,8 +415,7 @@ export function DayNightCycleIndicator() {
                   fill={config.celestialFill}
                   animate={{
                     cx: bodyX,
-                    cy: bodyY,
-                  }}
+                    cy: bodyY }}
                   transition={{ duration: 0.8, ease: 'easeInOut' }}
                 />
                 {/* Crescent effect for night moon */}
@@ -437,8 +427,7 @@ export function DayNightCycleIndicator() {
                     fill="rgba(0,0,0,0.7)"
                     animate={{
                       cx: bodyX + 2,
-                      cy: bodyY - 1,
-                    }}
+                      cy: bodyY - 1 }}
                     transition={{ duration: 0.8, ease: 'easeInOut' }}
                   />
                 )}
@@ -456,8 +445,7 @@ export function DayNightCycleIndicator() {
                       cx: bodyX,
                       cy: bodyY,
                       r: [8, 10, 8],
-                      opacity: [0.3, 0.15, 0.3],
-                    }}
+                      opacity: [0.3, 0.15, 0.3] }}
                     transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
                   />
                 )}
@@ -481,8 +469,7 @@ export function DayNightCycleIndicator() {
         <div
           className="h-px mx-3"
           style={{
-            background: `linear-gradient(90deg, transparent, ${config.border}, transparent)`,
-          }}
+            background: `linear-gradient(90deg, transparent, ${config.border}, transparent)` }}
         />
 
         {/* ── Next phase indicator ── */}
@@ -536,8 +523,7 @@ export function DayNightCycleIndicator() {
         <div
           className="h-px"
           style={{
-            background: `linear-gradient(90deg, transparent, ${config.border}, transparent)`,
-          }}
+            background: `linear-gradient(90deg, transparent, ${config.border}, transparent)` }}
         />
 
         {/* ── Footer ── */}

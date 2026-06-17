@@ -11,18 +11,13 @@ export type {
   BuffEffect,
   EnemySpecialAttack,
   SideEffect,
-  CombatReward,
-} from '@/shared/types/game';
+  CombatReward } from '@/shared/types/game';
 
 import type {
   EnemyType,
-  CombatEnemy,
   CombatState,
   CombatLogEntry,
-  CombatBuff,
-  BuffEffect,
-  EnemySpecialAttack,
-} from '@/shared/types/game';
+  EnemySpecialAttack } from '@/shared/types/game';
 
 /** Template for defining enemy stats and special attacks */
 export interface EnemyTemplate {

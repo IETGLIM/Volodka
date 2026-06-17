@@ -13,7 +13,6 @@ import { ENV_MAP_WARMUP_FRAMES } from '@/shared/constants/transitionTimings';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import type { QualityPresetId } from '@/engine/graphics/qualityPresets';
 import { isHeroScene } from '@/config/sceneVisualProfiles';
-import type { SceneId } from '@/shared/types/game';
 
 /** Per-scene fog color overrides matching style pillars:
  *  Noir, CyberPunk2077, Gothic, Dark Fantasy, Glitch, MatrixRain

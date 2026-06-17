@@ -202,7 +202,7 @@ function EmberSystem({ config }: { config: EmberConfig }) {
   const materialRef = useRef<THREE.PointsMaterial>(null);
   const timeRef = useRef(0);
 
-  const { positions, phases, sizes } = useMemo(() => {
+  const { positions, phases, sizes: _sizes } = useMemo(() => {
     const count = config.count;
     const pos = new Float32Array(count * 3);
     const pha = new Float32Array(count);

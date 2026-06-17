@@ -8,7 +8,7 @@ import { MIN_DISTANCE, WALL_MARGIN } from '../cameraConstants';
 import { getInteractionState, getInteractionTargetNPCId } from '@/components/3d/InteractionSystemBridge';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 import { getNPCGroup } from '@/engine/interaction/npcRegistry';
-import type { CameraModeContext, CameraModeStrategy } from '../types';
+import type { CameraModeStrategy } from '../types';
 
 function isInDialogueMode(): boolean {
   const state = getInteractionState();

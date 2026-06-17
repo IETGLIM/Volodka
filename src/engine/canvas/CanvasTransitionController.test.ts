@@ -94,7 +94,7 @@ describe('CanvasTransitionController', () => {
 
     eventBus.emit('canvas:invalidate-first-frame', { generation: beforeGen + 5 });
 
-    const frameGen = getCanvasFirstFrameGeneration();
+    const _frameGen = getCanvasFirstFrameGeneration();
     claimCanvasFirstFrameEmit({} as HTMLCanvasElement);
     eventBus.emit('canvas:first-frame', { generation: beforeGen + 5 });
 

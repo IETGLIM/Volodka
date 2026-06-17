@@ -143,6 +143,7 @@ export function useCutsceneController() {
 
     return () => {
       unsubOverlayEnd?.();
+      // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
       cutsceneSessionRef.current.cancel();
     };
   }, [currentNodeId]);

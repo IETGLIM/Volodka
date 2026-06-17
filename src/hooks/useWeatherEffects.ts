@@ -11,10 +11,8 @@ import { eventBus } from '@/engine/EventBus';
 import {
   type WeatherType,
   type WeatherEffect,
-  WEATHER_EFFECT_CLEAR,
   determineWeatherType,
-  getWeatherEffect,
-} from '@/data/weatherEffects';
+  getWeatherEffect } from '@/data/weatherEffects';
 
 /* ─── Ongoing effect application interval (ms) ─── */
 const EFFECT_TICK_MS = 10_000; // 10 seconds
@@ -145,6 +143,5 @@ export function useWeatherEffects(): WeatherEffectsState {
     isActive,
     durationSeconds,
     snowActive,
-    snowIntensity,
-  };
+    snowIntensity };
 }

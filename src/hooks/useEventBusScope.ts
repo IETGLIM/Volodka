@@ -14,6 +14,7 @@ export function useEventBusScope(
 ): void {
   useEffect(
     () => withHmrCleanup(bindEventBusScope(bus, register)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- register callback identity is caller-controlled
     deps,
   );
 }

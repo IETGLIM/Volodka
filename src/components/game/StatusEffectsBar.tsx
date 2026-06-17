@@ -216,7 +216,7 @@ const MAX_VISIBLE_EFFECTS = 8;
 
 export function StatusEffectsBar() {
   const {
-    karma,
+    karma: _karma,
     energy,
     stress,
     unlockedPerks,

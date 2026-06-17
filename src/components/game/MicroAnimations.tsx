@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- co-located helpers and lazy exports */
 export { StatChangeIndicator } from '@/components/game/microAnimations/StatChangeIndicator';
 export { StatChangeLayer, showStatChange } from '@/components/game/microAnimations/StatChangeLayer';
 export { ItemGainedPopupLayer, showItemGained } from '@/components/game/microAnimations/ItemGainedPopupLayer';

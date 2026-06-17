@@ -18,10 +18,8 @@ import { runGlobalSceneUnload } from './GlobalCleanupService';
 import { ensureSceneLoadedBridge, scheduleSceneLoaded } from './sceneLoadedGate';
 import {
   isSyncSceneTransitionInProgress,
-  resetSceneTransitionGuard,
   setAsyncSceneTransitionInProgress,
-  setSyncSceneTransitionInProgress,
-} from './sceneTransitionGuard';
+  setSyncSceneTransitionInProgress } from './sceneTransitionGuard';
 
 export { isSceneTransitionInProgress, resetSceneTransitionGuard } from './sceneTransitionGuard';
 
@@ -81,35 +79,30 @@ export function performSceneTransition(payload: SceneTransitionPayload): void {
     eventBus.emit('scene:transition_start', {
       fromSceneId,
       targetScene,
-      spawnAt,
-    });
+      spawnAt });
 
     if (fromSceneId !== targetScene) {
       eventBus.emit('scene:unload', {
         sceneId: fromSceneId,
-        nextSceneId: targetScene,
-      });
+        nextSceneId: targetScene });
       runGlobalSceneUnload(fromSceneId, targetScene);
     }
 
     dispatchGameAction({
       type: 'exploration/applySceneTransition',
       targetScene,
-      spawnAt,
-    });
+      spawnAt });
     syncNarrativeOnSceneEnter(targetScene);
     triggerSceneEntryStoryIfNeeded(targetScene, fromSceneId);
 
     eventBus.emit('scene:enter', {
       sceneId: targetScene,
-      fromSceneId,
-    });
+      fromSceneId });
 
     // scene:enter = store committed; scene:loaded = first composited frame (see sceneLoadedGate).
     scheduleSceneLoaded({
       sceneId: targetScene,
-      fromSceneId,
-    });
+      fromSceneId });
   } catch (error) {
     setSyncSceneTransitionInProgress(false);
     setAsyncSceneTransitionInProgress(false);

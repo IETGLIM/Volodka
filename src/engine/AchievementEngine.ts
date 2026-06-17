@@ -14,7 +14,7 @@ import {
   getGameSnapshot,
   type AchievementProgressSnapshot,
 } from '@/engine/GameActionDispatcher';
-import { ACHIEVEMENT_MAP, ACHIEVEMENTS, TOTAL_ACHIEVEMENTS } from '@/data/achievements';
+import { ACHIEVEMENT_MAP, ACHIEVEMENTS } from '@/data/achievements';
 import { hasAllMainPoems } from '@/data/poemCollectionMeta';
 import type { EnemyType } from '@/shared/types/game';
 
@@ -24,7 +24,7 @@ import type { EnemyType } from '@/shared/types/game';
 let prevMode: string | null = null;
 
 /** Previous energy value for recovery detection */
-let prevEnergy = 0;
+let _prevEnergy = 0;
 
 /** Whether we already checked the "first awakening" this session */
 let firstAwakeningChecked = false;
@@ -281,7 +281,7 @@ export function checkAchievements(state: AchievementCheckState): void {
   }
 
   prevMode = mode;
-  prevEnergy = energy;
+  _prevEnergy = energy;
 }
 
 /* ─── Event-driven updates ─── */
@@ -308,6 +308,6 @@ export function notifyPoemPowerUsed(): void {
 
 export function resetAchievementTracking(): void {
   prevMode = null;
-  prevEnergy = 0;
+  _prevEnergy = 0;
   firstAwakeningChecked = false;
 }

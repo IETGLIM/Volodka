@@ -157,6 +157,7 @@ export function StoryRenderer() {
   const storyNodes = isNarrativeGameDataLoaded() ? getStoryNodes() : null;
   const node = useMemo(
     () => (storyNodes ? storyNodes[currentNodeId] : undefined),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
     [storyNodes, currentNodeId, storyPackVersion],
   );
 
@@ -231,6 +232,7 @@ export function StoryRenderer() {
     if (questNpcId) {
       eventBus.emit('npc:talked', { npcId: questNpcId, dialogueNodeId: node.id });
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
   }, [node?.id, visitNode, clearEffectTimers, scheduleEffectTimer, conditionCtx, node?.condition]);
 
   const handleChoice = useCallback(
