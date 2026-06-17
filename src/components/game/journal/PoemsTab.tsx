@@ -23,6 +23,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useCollectedPoems } from '@/store/selectors';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { useAutoAnimateRef } from '@/hooks/useAutoAnimateRef';
 
 interface PoemsTabProps {
   searchQuery: string;
@@ -105,6 +106,8 @@ function usePoemCooldownSeconds(poemId: string | null, active: boolean): number 
 
 export function PoemsTab({ searchQuery }: PoemsTabProps) {
   const reducedMotion = useEffectiveReducedMotion();
+  const mainGridRef = useAutoAnimateRef<HTMLDivElement>();
+  const hiddenGridRef = useAutoAnimateRef<HTMLDivElement>();
   const collectedPoems = useCollectedPoems();
   const [selectedPoemId, setSelectedPoemId] = useState<string | null>(null);
   const [activating, setActivating] = useState(false);
@@ -290,7 +293,7 @@ export function PoemsTab({ searchQuery }: PoemsTabProps) {
             <h4 className="text-[11px] font-medium text-amber-500/60 uppercase tracking-widest mb-3">
               Стихи Владимира
             </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div ref={mainGridRef} className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {filteredMain.map((poem) => (
                 <PoemGridCard
                   key={poem.id}
@@ -310,7 +313,7 @@ export function PoemsTab({ searchQuery }: PoemsTabProps) {
             <h4 className="text-[11px] font-medium text-cyan-500/60 uppercase tracking-widest mb-3">
               Скрытые стихи
             </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div ref={hiddenGridRef} className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {filteredHidden.map((poem) => (
                 <PoemGridCard
                   key={poem.id}

@@ -9,6 +9,7 @@ import { PoemPowerCard } from '@/components/game/poetryBook/PoemPowerCard';
 import { PoemThemeTag } from '@/components/game/poetryBook/PoemThemeTag';
 import type { PoetryBookController } from '@/components/game/poetryBook/usePoetryBookController';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useAutoAnimateRef } from '@/hooks/useAutoAnimateRef';
 
 type PoemDetailViewProps = Pick<
   PoetryBookController,
@@ -270,6 +271,8 @@ export function PoemListView({
   contentRef,
   handleSelectPoem,
 }: PoemListViewProps) {
+  const mainListRef = useAutoAnimateRef<HTMLDivElement>();
+  const hiddenListRef = useAutoAnimateRef<HTMLDivElement>();
   const lockedPreview = POEMS.filter((poem) => !collectedPoems.includes(poem.id)).slice(0, 5);
   const lockedRemaining = totalPoems - collectedCount - lockedPreview.length;
 
@@ -289,7 +292,7 @@ export function PoemListView({
                 <Feather className="size-3" aria-hidden="true" />
                 {POETRY_BOOK_LABELS.mainPoemsSection}
               </h3>
-              <div className="flex flex-col gap-2" role="list">
+              <div ref={mainListRef} className="flex flex-col gap-2" role="list">
                 {collectedMain.map((poem) => (
                   <PoemListButton key={poem.id} poem={poem} onSelect={handleSelectPoem} />
                 ))}
@@ -303,7 +306,7 @@ export function PoemListView({
                 <Sparkles className="size-3" aria-hidden="true" />
                 {POETRY_BOOK_LABELS.hiddenPoemsSection}
               </h3>
-              <div className="flex flex-col gap-2" role="list">
+              <div ref={hiddenListRef} className="flex flex-col gap-2" role="list">
                 {collectedHidden.map((poem) => (
                   <PoemListButton key={poem.id} poem={poem} onSelect={handleSelectPoem} />
                 ))}

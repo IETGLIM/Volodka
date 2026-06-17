@@ -17,6 +17,7 @@ import { GodRays, GODRAY_PRESETS } from './GodRays';
 import { SteamParticles } from './SteamParticles';
 import { MatrixFogParticles } from './MatrixFogParticles';
 import { DustMotes, EmberParticles } from './WeatherParticles';
+import { IndustrialSparkles } from './IndustrialSparkles';
 
 function sceneHasFog(sceneId: string): boolean {
   return sceneId in FOG_PRESETS;
@@ -62,7 +63,7 @@ export function AtmosphericEffects() {
     const fogPreset = FOG_PRESETS[sceneId] ?? {};
     switch (sceneId) {
       case 'street_night':
-        return { ...fogPreset, opacity: heavyEffects ? 0.025 : 0.03, planeCount: heavyEffects ? 2 : 3 };
+        return { ...fogPreset, opacity: heavyEffects ? 0.028 : 0.035, planeCount: heavyEffects ? 3 : 4 };
       case 'abandoned_factory':
         return {
           ...fogPreset,
@@ -101,6 +102,8 @@ export function AtmosphericEffects() {
       {showDust && <DustMotes sceneId={sceneId} />}
 
       {showEmbers && <EmberParticles sceneId={sceneId} />}
+
+      {particlesEnabled && <IndustrialSparkles sceneId={sceneId} />}
     </>
   );
 }

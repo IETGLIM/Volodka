@@ -1,4 +1,13 @@
 # Changelog — ВОЛОДЬКА RPG
+## v4.2.35 — 17 июня 2026
+
+### Open-source libraries — quick wins + ROADMAP §10
+- **@formkit/auto-animate**: bounce-анимация при добавлении стиха в списки — `PoemListView` (книга стихов) и `PoemsTab` (журнал); хук `useAutoAnimateRef` с отключением при reduced motion.
+- **drei Sparkles**: `IndustrialSparkles` — пыль/искры в `abandoned_factory` и `factory_basement` (mobile/lite/reduced-motion gates).
+- **street_night fog**: усилен preset `VolumetricFog` + runtime config в `AtmosphericEffects` (noir плотнее).
+- **Poem glitch demo**: CSS scanline overlay на `matrix_pulse` в `PoemWorldEffect` (замена deferred CustomShaderMaterial).
+- **ROADMAP §10**: таблица fit/effort, phased plan XState (interaction first), честное предупреждение Ink=XL, CustomShaderMaterial ≠ drei export.
+
 ## v4.2.33 — 17 июня 2026
 
 ### Poem Synergies — ритм двух стихов
