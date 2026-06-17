@@ -176,6 +176,7 @@ export function useInteractionOverlay() {
     gameMode: phaseFromStore(s),
     showStoryOverlay: s.showStoryOverlay,
     currentNodeId: s.currentNodeId,
+    diegeticNarrativeOpen: s.diegeticNarrative != null,
   }));
 }
 

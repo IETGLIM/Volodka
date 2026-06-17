@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X } from 'lucide-react';
+import { X, BookOpen } from 'lucide-react';
 import { eventBus } from '@/engine/EventBus';
 import { getCurrentGuidance, type GuidanceInfo } from '@/engine/GuidedStoryManager';
 import { buildGuidanceDirectionHint } from '@/engine/guidedStory/guidanceLocation';
@@ -51,7 +51,7 @@ export function StoryGuidanceHUD() {
 
   const quests = useQuests();
   const profile = useGameplayPresentationProfile();
-  const { showStoryOverlay, narrativeKind } = useOrchestratorNarrativeOverlay();
+  const { showStoryOverlay, narrativeKind, diegeticNarrative } = useOrchestratorNarrativeOverlay();
   const currentSceneId = useCurrentSceneId();
   const [interactionLocked, setInteractionLocked] = useState(() => isInteractionLocked());
   const [revealReady, setRevealReady] = useState(false);
@@ -234,8 +234,12 @@ export function StoryGuidanceHUD() {
   }, []);
 
   const toggleExpand = useCallback(() => {
+    if (currentObjective?.objectiveType === 'available_quest') {
+      openQuestJournal(currentObjective.questId);
+      return;
+    }
     setExpanded((prev) => !prev);
-  }, []);
+  }, [currentObjective?.objectiveType, currentObjective?.questId, openQuestJournal]);
 
   const handleOpenJournal = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
@@ -244,9 +248,12 @@ export function StoryGuidanceHUD() {
   const shouldShow =
     isExplorationHudProfile(profile)
     && !showStoryOverlay
+    && !diegeticNarrative
     && !interactionLocked
     && revealReady
     && Boolean(displayText);
+
+  const isAvailableQuest = currentObjective?.objectiveType === 'available_quest';
 
   if (!shouldShow) return null;
 
@@ -320,7 +327,7 @@ export function StoryGuidanceHUD() {
           }}
           aria-label={`Цель акта ${actNumber}: ${displayText}`}
         >
-          <div className="flex items-start gap-2 px-3 py-2 pr-9">
+          <div className="flex items-start gap-2 px-3 py-2 pr-16">
             <span
               className="text-xs font-bold flex-shrink-0 mt-0.5"
               style={{ color: urgencyColor, textShadow: `0 0 6px ${urgencyColor}44` }}
@@ -356,6 +363,22 @@ export function StoryGuidanceHUD() {
                     → {directionHint}
                   </span>
                 ) : null}
+                {isAvailableQuest && !expanded ? (
+                  <span
+                    className="text-[9px] font-mono tracking-wide ml-auto shrink-0"
+                    style={{ color: `${urgencyColor}cc` }}
+                  >
+                    Журнал · Q
+                  </span>
+                ) : null}
+                {!isAvailableQuest && !expanded && displayText ? (
+                  <span
+                    className="text-[9px] font-mono tracking-wide ml-auto shrink-0 opacity-60"
+                    aria-hidden
+                  >
+                    ▾
+                  </span>
+                ) : null}
               </div>
               <p
                 className={`text-xs font-mono leading-snug ${expanded ? '' : 'line-clamp-1'}`}
@@ -387,14 +410,25 @@ export function StoryGuidanceHUD() {
               ) : null}            </div>
           </div>
 
-          <button
-            type="button"
-            onClick={handleDismiss}
-            className="absolute top-1.5 right-1.5 w-6 h-6 flex items-center justify-center rounded text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
-            aria-label="Скрыть подсказку цели"
-          >
-            <X className="size-3.5" />
-          </button>
+          <div className="absolute top-1.5 right-1.5 flex items-center gap-0.5">
+            <button
+              type="button"
+              onClick={handleOpenJournal}
+              className="w-6 h-6 flex items-center justify-center rounded text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+              aria-label="Открыть журнал заданий"
+              title="Журнал (Q)"
+            >
+              <BookOpen className="size-3.5" />
+            </button>
+            <button
+              type="button"
+              onClick={handleDismiss}
+              className="w-6 h-6 flex items-center justify-center rounded text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+              aria-label="Скрыть подсказку цели"
+            >
+              <X className="size-3.5" />
+            </button>
+          </div>
 
           <AnimatePresence>
             {expanded && (

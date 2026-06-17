@@ -44,7 +44,13 @@ export function useNarrativeChoiceKeyboard({
         return;
       }
 
-      if (choiceCount <= 0) return;
+      if (choiceCount <= 0) {
+        if (e.key === ' ' || e.key === 'Enter') {
+          e.preventDefault();
+          onClose?.();
+        }
+        return;
+      }
 
       const num = Number.parseInt(e.key, 10);
       if (num >= 1 && num <= choiceCount) {

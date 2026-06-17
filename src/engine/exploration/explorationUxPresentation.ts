@@ -121,6 +121,16 @@ export function formatInteractionHintBadge(
   return `[${key}]`;
 }
 
+/** Bottom diegetic dialogue — keyboard/mouse affordances (RPG dialogue UX). */
+export function formatNarrativeControlHint(options: {
+  done: boolean;
+  choiceCount: number;
+}): string {
+  if (!options.done) return 'Пробел или клик — показать полностью';
+  if (options.choiceCount > 0) return '1–9 — выбор · Esc — закрыть';
+  return 'Пробел или клик — закрыть · Esc — закрыть';
+}
+
 export function formatInteractionHintAria(
   label: string,
   key: string,

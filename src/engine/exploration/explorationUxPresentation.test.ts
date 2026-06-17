@@ -3,6 +3,7 @@ import {
   formatInteractionHintAria,
   formatInteractionHintBadge,
   formatInteractionHintKey,
+  formatNarrativeControlHint,
   formatTransitionProgressLabel,
   getInteractionHintVisual,
   getSceneTransitionAccent,
@@ -47,6 +48,12 @@ describe('explorationUxPresentation', () => {
     expect(formatInteractionHintBadge('E', {})).toBe('[E]');
     expect(formatInteractionHintBadge('E', { gamepadConnected: true })).toBe('[A]');
     expect(formatInteractionHintBadge('E', { touchDevice: true })).toBe('');
+  });
+
+  it('formatNarrativeControlHint reflects typewriter and choice state', () => {
+    expect(formatNarrativeControlHint({ done: false, choiceCount: 0 })).toContain('Пробел');
+    expect(formatNarrativeControlHint({ done: true, choiceCount: 2 })).toContain('1–9');
+    expect(formatNarrativeControlHint({ done: true, choiceCount: 0 })).toContain('закрыть');
   });
 
   it('formatInteractionHintAria mentions gamepad and touch bindings', () => {

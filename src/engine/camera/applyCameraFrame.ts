@@ -60,7 +60,10 @@ export function applyCameraFrame(
     setGlobalTimeScale(1.0);
   }
 
-  if (!isInDialogue && !isCutscene && !isCombat) {
+  const isFpExploration =
+    FIRST_PERSON_ENABLED && !isInDialogue && !isCutscene && !isCombat;
+
+  if (!isInDialogue && !isCutscene && !isCombat && !isFpExploration) {
     const exploration = ctx.exploration;
     if (exploration && exploration.breathingIntensity > 0.001) {
       applyEnhancedBreathingIdle(
@@ -71,7 +74,15 @@ export function applyCameraFrame(
     }
   }
 
-  updateSpringCamera(spring, targetPos, targetLook, targetFov, delta, targetRoll);
+  if (isFpExploration) {
+    spring.position.copy(targetPos);
+    spring.velocity.set(0, 0, 0);
+    spring.lookAt.copy(targetLook);
+    spring.roll = targetRoll;
+    spring.fov = THREE.MathUtils.lerp(spring.fov, targetFov, 1 - Math.exp(-3 * delta));
+  } else {
+    updateSpringCamera(spring, targetPos, targetLook, targetFov, delta, targetRoll);
+  }
 
   if (!canWriteCamera(getCameraOwner())) return;
 

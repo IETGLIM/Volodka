@@ -29,6 +29,8 @@ import { useNarrativeTypewriter } from '@/hooks/useNarrativeTypewriter';
 import { useNarrativeChoiceKeyboard } from '@/hooks/useNarrativeChoiceKeyboard';
 import { NarrativeChoiceList } from './NarrativeChoiceList';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { diegeticDialogueBottomPadCss } from '@/shared/constants/hudLayout';
+import { useTouchDevice } from '@/hooks/useTouchDevice';
 import { AriaLiveRegion } from '@/components/a11y/AriaLiveRegion';
 import {
   resolveDialogueText,
@@ -38,6 +40,9 @@ import {
   resolveNarrativeText,
   buildNarrativeLiveMessage,
 } from '@/shared/narrativePresentation';
+import {
+  formatNarrativeControlHint,
+} from '@/engine/exploration/explorationUxPresentation';
 import { playVoiceLineForNode, stopVoiceLinePlayback } from '@/engine/audio/voiceLinePlayer';
 import { eventBus } from '@/engine/EventBus';
 import { audioEngine } from '@/engine/AudioEngine';
@@ -50,6 +55,7 @@ import type { SceneId } from '@/shared/types/game';
 const ACCENT = '#44ddcc';
 
 export function DiegeticDialogueHud() {
+  const isTouchDevice = useTouchDevice();
   const diegetic = useDiegeticNarrativeState();
   const storyCtx = useStoryContext();
   const dialogueCtx = useDialogueContext();
@@ -147,7 +153,7 @@ export function DiegeticDialogueHud() {
         ? storyNode.speaker
         : 'Голос';
 
-  const { displayed, done, skip } = useNarrativeTypewriter(resolvedText, isOpen ? 28 : 0);
+  const { displayed, done, skip, reducedMotion } = useNarrativeTypewriter(resolvedText, isOpen ? 28 : 0);
 
   useEffect(() => {
     if (!isOpen || !nodeId) {
@@ -282,7 +288,22 @@ export function DiegeticDialogueHud() {
 
   const hasContinueOnly = done && choices.length === 0;
 
+  const handleTextAdvance = useCallback(() => {
+    if (!done) {
+      skip();
+      return;
+    }
+    if (hasContinueOnly) {
+      handleClose();
+    }
+  }, [done, skip, hasContinueOnly, handleClose]);
+
   if (!isOpen || (!storyNode && !dialogueNode)) return null;
+
+  const controlHint = formatNarrativeControlHint({
+    done,
+    choiceCount: choices.length,
+  });
 
   return (
     <AnimatePresence>
@@ -292,12 +313,15 @@ export function DiegeticDialogueHud() {
         data-testid="diegetic-dialogue-hud"
         role="dialog"
         aria-label={speaker}
-        initial={{ opacity: 0, y: 24 }}
+        initial={reducedMotion ? false : { opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 16 }}
-        transition={{ duration: 0.25 }}
-        className="fixed left-0 right-0 bottom-0 pointer-events-auto px-3 sm:px-6 pb-4 sm:pb-6"
-        style={{ zIndex: UI_LAYERS.DIALOGUE }}
+        exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 16 }}
+        transition={{ duration: reducedMotion ? 0 : 0.25 }}
+        className="fixed left-0 right-0 bottom-0 pointer-events-auto px-3 sm:px-6"
+        style={{
+          zIndex: UI_LAYERS.DIALOGUE,
+          paddingBottom: diegeticDialogueBottomPadCss(isTouchDevice),
+        }}
       >
         <div
           className="mx-auto max-w-3xl rounded-xl border border-white/10 bg-black/55 backdrop-blur-lg shadow-2xl overflow-hidden"
@@ -327,10 +351,21 @@ export function DiegeticDialogueHud() {
             </p>
           )}
 
-          <p className="px-4 pb-2 text-sm sm:text-base text-slate-100 leading-relaxed font-serif min-h-[3rem]">
+          <button
+            type="button"
+            onClick={handleTextAdvance}
+            className="w-full text-left px-4 pb-2 text-sm sm:text-base text-slate-100 leading-relaxed font-serif min-h-[3rem] hover:bg-white/5 transition-colors rounded-md"
+            aria-label={controlHint}
+          >
             {displayed}
-            {!done && <span className="animate-pulse">▌</span>}
-          </p>
+            {!done && !reducedMotion ? <span className="animate-pulse">▌</span> : null}
+          </button>
+
+          {!hasContinueOnly ? (
+            <p className="px-4 pb-2 text-[10px] font-mono text-slate-500 tracking-wide">
+              {controlHint}
+            </p>
+          ) : null}
 
           {done && (
             <div className="px-3 pb-3 flex flex-col gap-1.5 max-h-48 overflow-y-auto">

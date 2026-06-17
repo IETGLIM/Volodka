@@ -12,6 +12,7 @@ import {
   useGameplayPresentationProfile,
 } from '@/hooks/useGameplayPresentationProfile';
 import { useTouchDevice } from '@/hooks/useTouchDevice';
+import { useDiegeticNarrativeState } from '@/store/selectors';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, Package, DoorOpen, Sparkles, Hand } from 'lucide-react';
 import { eventBus } from '@/engine/EventBus';
@@ -77,6 +78,7 @@ export function InteractionHintPopup() {
   const reducedMotion = useEffectiveReducedMotion();
   const isTouchDevice = useTouchDevice();
   const gamepadConnected = useGamepadConnected();
+  const diegeticNarrative = useDiegeticNarrativeState();
   const [hint, setHint] = useState<InteractionHint | null>(null);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -109,7 +111,7 @@ export function InteractionHintPopup() {
     }
   }, [explorationHudActive]);
 
-  const shouldRender = explorationHudActive && hint !== null;
+  const shouldRender = explorationHudActive && hint !== null && diegeticNarrative == null;
 
   /* ── Get accent style for current hint type ── */
   const accent = hint ? getInteractionHintVisual(hint.type) : getInteractionHintVisual('npc');
@@ -134,7 +136,7 @@ export function InteractionHintPopup() {
           role="status"
           aria-live="polite"
           aria-label={hint ? formatInteractionHintAria(hint.label, hint.key, hint.description, hintInputOptions) : undefined}
-          style={{ zIndex: UI_LAYERS.HUD, bottom: bottomInteractPromptPx() }}
+          style={{ zIndex: UI_LAYERS.HUD, bottom: bottomInteractPromptPx(isTouchDevice) }}
         >
           <div
             className="relative overflow-hidden"

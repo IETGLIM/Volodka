@@ -2,7 +2,7 @@
 /* ─── Volodka RPG – Interactive triggers with god-ray highlight, particle burst, pulse tooltip,
      NPC staged interaction routing, and centralized prompt stacking ─── */
 
-import { useRef, useState, useEffect, useCallback, useMemo, useId } from 'react';
+import { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { Html } from '@react-three/drei';
 import * as THREE from 'three';
@@ -18,7 +18,6 @@ import { eventBus } from '@/engine/EventBus';
 import { isInteractionLocked } from '@/engine/interaction/interactionSession';
 import { isNarrativeMovementLocked } from '@/shared/exploreHubNodes';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
-import { bottomInteractPromptPx } from '@/shared/constants/hudLayout';
 import { getSceneExits } from '@/config/scenes';
 import {
   queryInteractionTargets,
@@ -58,8 +57,8 @@ export function InteractiveTriggers({
   livePlayerPositionRef,
   livePlayerRotationRef: _livePlayerRotationRef,
 }: InteractiveTriggersProps) {
-  const promptFadeInAnim = `promptFadeIn-${useId().replace(/:/g, '')}`;
-  const { sceneId, gameMode, showStoryOverlay, currentNodeId } = useInteractionOverlay();
+  const { sceneId, gameMode, showStoryOverlay, currentNodeId, diegeticNarrativeOpen } =
+    useInteractionOverlay();
   const {
     playerFlags,
     playerKarma,
@@ -135,11 +134,12 @@ export function InteractiveTriggers({
 
   const isOverlayBlocking =
     gameMode !== 'exploration' ||
+    diegeticNarrativeOpen ||
     isNarrativeMovementLocked(showStoryOverlay, currentNodeId);
 
   const allowedIdsRef = useRef<Set<string>>(new Set());
   const promptsMapRef = useRef<Map<string, PromptData>>(new Map());
-  const [visiblePrompts, setVisiblePrompts] = useState<PromptData[]>([]);
+  const [interactTargetActive, setInteractTargetActive] = useState(false);
   const frameCountRef = useRef(0);
   const lastHintIdRef = useRef<string | null>(null);
   const proximityTempVecRef = useRef(new THREE.Vector3());
@@ -171,7 +171,6 @@ export function InteractiveTriggers({
   useSceneEnterEffect(() => {
     promptsMapRef.current.clear();
     allowedIdsRef.current.clear();
-    setVisiblePrompts([]);
     resetEKeyConsumption();
     lastHintIdRef.current = null;
     eventBus.emit('interaction:end', {});
@@ -254,7 +253,6 @@ export function InteractiveTriggers({
     if (isOverlayBlocking) {
       if (promptsMapRef.current.size > 0) {
         promptsMapRef.current.clear();
-        setVisiblePrompts([]);
       }
       if (lastHintIdRef.current !== null) {
         lastHintIdRef.current = null;
@@ -290,9 +288,6 @@ export function InteractiveTriggers({
         runtime.proximityRef.current = 0;
       }
       frameCountRef.current++;
-      if (frameCountRef.current % 3 === 0) {
-        setVisiblePrompts((prev) => (prev.length === 0 ? prev : []));
-      }
       return;
     }
 
@@ -456,18 +451,8 @@ export function InteractiveTriggers({
     frameCountRef.current++;
     if (frameCountRef.current % 3 !== 0) return;
 
-    const top3: PromptData[] = topHits.map((hit) => ({
-      id: hit.id,
-      label: hit.label,
-      distance: hit.distance,
-      type: hit.kind === 'npc' ? 'npc' : 'zone',
-    }));
-
-    setVisiblePrompts((prev) => {
-      if (prev.length !== top3.length) return top3;
-      if (prev.some((p, i) => p.id !== top3[i]?.id)) return top3;
-      return prev;
-    });
+    const hasTarget = topHits.length > 0;
+    setInteractTargetActive((prev) => (prev === hasTarget ? prev : hasTarget));
   });
 
   return (
@@ -494,7 +479,7 @@ export function InteractiveTriggers({
         unregisterPrompt={unregisterPrompt}
       />
 
-      {visiblePrompts.length > 0 && !isOverlayBlocking && (
+      {interactTargetActive && !isOverlayBlocking && (
         <Html fullscreen style={{ pointerEvents: 'none' }}>
           <div
             style={{
@@ -505,80 +490,6 @@ export function InteractiveTriggers({
               zIndex: UI_LAYERS.WORLD_LABELS,
             }}
           />
-          <div
-            style={{
-              position: 'fixed',
-              bottom: `${bottomInteractPromptPx()}px`,
-              left: '50%',
-              transform: 'translateX(-50%)',
-              zIndex: UI_LAYERS.WORLD_LABELS,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: '8px',
-              pointerEvents: 'none',
-            }}
-          >
-            {visiblePrompts.map((prompt, i) => {
-              const isNPC = prompt.type === 'npc';
-              const accentColor = isNPC ? '#ffb828' : '#00ffe8';
-              const accentRgba = isNPC ? '255, 184, 40' : '0, 255, 232';
-              const isPrimary = i === 0;
-              return (
-                <div
-                  key={prompt.id}
-                  style={{
-                    background: isPrimary
-                      ? `rgba(2, 4, 15, 0.94)`
-                      : `rgba(2, 4, 15, 0.82)`,
-                    color: isPrimary ? '#fff' : 'rgba(200, 210, 230, 0.9)',
-                    padding: isPrimary ? '8px 20px' : '6px 14px',
-                    borderRadius: '4px',
-                    fontSize: isPrimary ? '15px' : '13px',
-                    fontWeight: isPrimary ? 'bold' : 'normal',
-                    whiteSpace: 'nowrap',
-                    userSelect: 'none',
-                    border: isPrimary
-                      ? `1px solid rgba(${accentRgba}, 0.8)`
-                      : `1px solid rgba(${accentRgba}, 0.35)`,
-                    boxShadow: isPrimary
-                      ? `0 0 20px rgba(${accentRgba}, 0.25), 0 0 6px rgba(${accentRgba}, 0.15), inset 0 0 8px rgba(${accentRgba}, 0.06)`
-                      : `0 0 10px rgba(${accentRgba}, 0.12), 0 0 3px rgba(${accentRgba}, 0.08)`,
-                    fontFamily: '"JetBrains Mono", "Fira Code", monospace',
-                    letterSpacing: '0.04em',
-                    opacity: 0,
-                    animation: `${promptFadeInAnim} 0.25s ease ${i * 0.08}s forwards`,
-                    backdropFilter: 'blur(6px)',
-                    WebkitBackdropFilter: 'blur(6px)',
-                    transition: 'all 0.15s ease',
-                  }}
-                >
-                  <span style={{
-                    color: accentColor,
-                    marginRight: '6px',
-                    textShadow: `0 0 8px rgba(${accentRgba}, 0.5)`,
-                    fontWeight: 'bold',
-                    fontSize: isPrimary ? '14px' : '12px',
-                  }}>
-                    [ЛКМ / E]
-                  </span>
-                  <span style={{
-                    fontFamily: '"Georgia", "Times New Roman", serif',
-                    fontSize: isPrimary ? '14px' : '12px',
-                    letterSpacing: '0.02em',
-                  }}>
-                    {prompt.label}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-          <style>{`
-            @keyframes ${promptFadeInAnim} {
-              from { opacity: 0; transform: translateY(12px) scale(0.95); }
-              to { opacity: 1; transform: translateY(0) scale(1); }
-            }
-          `}</style>
         </Html>
       )}
     </group>

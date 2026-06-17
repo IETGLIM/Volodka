@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { ChevronRight, Zap } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { buildChoiceAriaLabel } from '@/shared/utils/choiceAriaLabel';
+import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import type { StoryConditionResult } from '@/shared/storyConditions';
 
 export interface NarrativeChoiceItem {
@@ -17,6 +18,7 @@ export interface NarrativeChoiceListProps {
   choices: NarrativeChoiceItem[];
   accentColor: string;
   continueLabel?: string;
+  continueHint?: string;
   onContinue?: () => void;
   compact?: boolean;
 }
@@ -26,9 +28,11 @@ export function NarrativeChoiceList({
   choices,
   accentColor,
   continueLabel = 'Продолжить',
+  continueHint,
   onContinue,
   compact = false,
 }: NarrativeChoiceListProps) {
+  const reducedMotion = useEffectiveReducedMotion();
   const padding = compact ? 'px-3 py-2' : 'px-5 py-3';
   const textSize = compact ? 'text-sm' : 'text-base';
 
@@ -36,20 +40,27 @@ export function NarrativeChoiceList({
     return (
       <motion.button
         type="button"
-        initial={{ opacity: 0, y: 8 }}
+        initial={reducedMotion ? false : { opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        whileHover={{ scale: 1.01 }}
-        whileTap={{ scale: 0.99 }}
+        whileHover={reducedMotion ? undefined : { scale: 1.01 }}
+        whileTap={reducedMotion ? undefined : { scale: 0.99 }}
         onClick={onContinue}
-        aria-label={continueLabel}
+        aria-label={continueHint ? `${continueLabel}. ${continueHint}` : continueLabel}
         className={`group w-full text-left ${padding} rounded-lg border border-white/15 bg-black/50 backdrop-blur-md text-slate-100 hover:bg-black/65 hover:border-white/25 transition-all`}
         style={{ boxShadow: `0 0 20px ${accentColor}12` }}
       >
-        <div className="flex items-center gap-2 justify-center">
-          <ChevronRight className="size-4" style={{ color: accentColor }} />
-          <span className={textSize} style={{ fontFamily: '"Georgia", "Times New Roman", serif' }}>
-            {continueLabel}
-          </span>
+        <div className="flex flex-col items-center gap-1">
+          <div className="flex items-center gap-2 justify-center">
+            <ChevronRight className="size-4" style={{ color: accentColor }} />
+            <span className={textSize} style={{ fontFamily: '"Georgia", "Times New Roman", serif' }}>
+              {continueLabel}
+            </span>
+          </div>
+          {continueHint ? (
+            <span className="text-[10px] font-mono text-slate-500 tracking-wide">
+              {continueHint}
+            </span>
+          ) : null}
         </div>
       </motion.button>
     );
@@ -61,11 +72,11 @@ export function NarrativeChoiceList({
         <motion.button
           key={choice.key}
           type="button"
-          initial={{ opacity: 0, y: 10 }}
+          initial={reducedMotion ? false : { opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: i * 0.05, duration: 0.22 }}
-          whileHover={choice.pass ? { scale: 1.01 } : undefined}
-          whileTap={choice.pass ? { scale: 0.99 } : undefined}
+          transition={reducedMotion ? { duration: 0 } : { delay: i * 0.05, duration: 0.22 }}
+          whileHover={choice.pass && !reducedMotion ? { scale: 1.01 } : undefined}
+          whileTap={choice.pass && !reducedMotion ? { scale: 0.99 } : undefined}
           onClick={() => {
             if (choice.pass) choice.onSelect();
           }}

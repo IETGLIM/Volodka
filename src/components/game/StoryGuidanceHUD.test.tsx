@@ -8,6 +8,7 @@ const hudMocks = vi.hoisted(() => ({
   profile: 'exploration' as GameplayPresentationProfile,
   showStoryOverlay: false,
   narrativeKind: null as 'story' | 'dialogue' | null,
+  diegeticNarrative: null as { nodeId: string; kind: 'story' | 'dialogue' } | null,
   interactionLocked: false,
   guidance: {
     objectiveText: 'Исследуй комнату',
@@ -33,6 +34,7 @@ vi.mock('@/store/selectors', () => ({
   useOrchestratorNarrativeOverlay: () => ({
     showStoryOverlay: hudMocks.showStoryOverlay,
     narrativeKind: hudMocks.narrativeKind,
+    diegeticNarrative: hudMocks.diegeticNarrative,
   }),
 }));
 
@@ -62,6 +64,7 @@ describe('StoryGuidanceHUD', () => {
     hudMocks.profile = 'exploration';
     hudMocks.showStoryOverlay = false;
     hudMocks.narrativeKind = null;
+    hudMocks.diegeticNarrative = null;
     hudMocks.interactionLocked = false;
     sessionStorage.clear();
   });
@@ -114,6 +117,17 @@ describe('StoryGuidanceHUD', () => {
 
   it('stays hidden during scene transition profile', () => {
     hudMocks.profile = 'transition';
+
+    render(<StoryGuidanceHUD />);
+    act(() => {
+      vi.advanceTimersByTime(EXPLORATION_HUD_HANDOFF.GUIDANCE_REVEAL_MS + 100);
+    });
+
+    expect(screen.queryByTestId('story-guidance-hud')).not.toBeInTheDocument();
+  });
+
+  it('stays hidden during diegetic dialogue', () => {
+    hudMocks.diegeticNarrative = { nodeId: 'kitchen_table', kind: 'story' };
 
     render(<StoryGuidanceHUD />);
     act(() => {

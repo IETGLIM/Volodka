@@ -109,8 +109,14 @@ export function bottomSystemAlertPx(isMobile = false): number {
   );
 }
 
-export function bottomInteractPromptPx(): number {
-  return EXPLORATION_HUD_LAYOUT.BOTTOM_INTERACT_PROMPT;
+export function bottomInteractPromptPx(isMobile = false): number {
+  return EXPLORATION_HUD_LAYOUT.BOTTOM_INTERACT_PROMPT + mobileBottomReserve(isMobile);
+}
+
+/** Diegetic dialogue panel — lift above mobile D-pad / action column + home indicator. */
+export function diegeticDialogueBottomPadCss(isMobile = false): string {
+  const basePx = isMobile ? mobileBottomReserve(true) + 16 : 16;
+  return `calc(${basePx}px + env(safe-area-inset-bottom, 0px))`;
 }
 
 export function bottomAutoSavePx(isMobile = false): number {
