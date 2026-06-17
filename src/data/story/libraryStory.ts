@@ -58,7 +58,7 @@ export const STORY_NODES_LIBRARY: Record<string, StoryNode> = {
         effects: [
           { type: 'setFlag', flag: 'library_lost_archive_done', flagValue: true },
           { type: 'addKarma', value: 5 },
-          { type: 'npcChange', npcId: 'npc_katya', npcChange: { relation: 6 } },
+          { type: 'npcChange', npcId: 'kate', npcChange: { relation: 6 } },
         ],
       },
     ],

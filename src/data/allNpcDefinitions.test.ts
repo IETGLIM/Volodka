@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { StoryEffect } from '@/shared/types/game';
 import { STORY_NODES } from '@/data/storyNodes';
 import { DIALOGUE_NODES } from '@/data/dialogueNodes';
-import { STORY_NODE_TO_NPC_ID, NPC_ID_ALIASES } from '@/data/goldenPath';
+import { STORY_NODE_TO_NPC_ID } from '@/data/goldenPath';
 import {
   ALL_NPC_DEFINITIONS,
   ALL_NPC_IDS,
@@ -14,7 +14,7 @@ import {
   findNpcByQuestId,
   resolveNpcIdFromSpeaker,
 } from '@/data/allNpcDefinitions';
-import { resolveCanonicalNpcId } from '@/shared/npcIdAliases';
+import { resolveCanonicalNpcId, resolveNpcId, NPC_ID_ALIASES } from '@/shared/npcIdAliases';
 
 function isRegisteredNpcId(id: string): boolean {
   const canonical = resolveCanonicalNpcId(id);
@@ -67,6 +67,17 @@ describe('ALL_NPC_DEFINITIONS registry', () => {
     expect(findNpcById('zeka')?.name).toBe('Жека');
     expect(findNpcById('baba_zina')?.name).toBe('Баба Зина');
     expect(findNpcById('fisherman_trofim')?.name).toBe('Трофим');
+  });
+
+  it('resolves legacy npc_katya alias to kate', () => {
+    expect(resolveNpcId('npc_katya')).toBe('kate');
+    expect(findNpcById('npc_katya')?.id).toBe('kate');
+    expect(findNpcById('npc_katya')?.name).toBe('Катя');
+  });
+
+  it('keeps npc_* aliases in NPC_ID_ALIASES for save compatibility', () => {
+    expect(NPC_ID_ALIASES.npc_katya).toBe('kate');
+    expect(Object.keys(NPC_ID_ALIASES).length).toBeGreaterThanOrEqual(20);
   });
 
   it('findNpcByQuestId resolves expanded quest links', () => {

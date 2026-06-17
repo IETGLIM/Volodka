@@ -1,7 +1,7 @@
 /* ─── Volodka RPG – Achievement Definitions ─── */
 
 import type { StoryEffect } from '@/shared/types/game';
-import { TOTAL_MAIN_POEMS } from '@/data/poemCollectionMeta';
+import { TOTAL_MAIN_POEMS, TOTAL_UNIFIED_POEMS } from '@/data/poemCollectionMeta';
 
 /** Default unlock stinger — procedural audio via AudioEngine. */
 export const DEFAULT_ACHIEVEMENT_SOUND = 'stinger:discovery';
@@ -20,7 +20,7 @@ export interface AchievementProgressTracking {
   flagPrefix?: string;
   /** For flag/collection unlock conditions */
   unlockFlag?: string;
-  collectionKind?: 'poems' | 'scenes';
+  collectionKind?: 'poems' | 'unifiedPoems' | 'scenes';
 }
 
 export interface AchievementDefinition {
@@ -423,6 +423,18 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
     conditionDescription: 'Соберите все стихотворения',
     progressTracking: { type: 'collection', collectionKind: 'poems', target: TOTAL_MAIN_POEMS },
     rewards: [{ type: 'addXp', value: 100 }, { type: 'addKarma', value: 20 }],
+  }),
+  ach({
+    id: 'poetry_collector',
+    title: 'Полное собрание',
+    description: 'Собрать каждый стих из архива — основные, бонусные и актовые',
+    icon: '📖',
+    category: 'poetry',
+    rarity: 'legendary',
+    hidden: false,
+    conditionDescription: 'Соберите все 46 стихотворений',
+    progressTracking: { type: 'collection', collectionKind: 'unifiedPoems', target: TOTAL_UNIFIED_POEMS },
+    rewards: [{ type: 'addXp', value: 200 }, { type: 'addKarma', value: 30 }],
   }),
   ach({
     id: 'poetry_power_verse',

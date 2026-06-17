@@ -50,6 +50,7 @@ describe('Act 7 story presentation', () => {
   it('final poem nodes collect poems and relieve stress', () => {
     const creation = STORY_NODES_ACT7.act7_final_poem_creation;
     expect(creation.choices[0]?.effects).toContainEqual({ type: 'collectPoem', poemId: 'poem_29' });
+    expect(creation.choices[0]?.effects).toContainEqual({ type: 'collectPoem', poemId: 'poem_act7_01' });
     expect(creation.choices[0]?.effects).toContainEqual({ type: 'addStat', stat: 'stress', value: -10 });
     const published = STORY_NODES_ACT7.act7_poem_published;
     expect(published.choices[0]?.effects).toContainEqual({ type: 'collectPoem', poemId: 'poem_27' });

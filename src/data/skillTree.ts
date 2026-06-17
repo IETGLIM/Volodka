@@ -350,7 +350,6 @@ export const SKILL_EFFECT_MAP: Record<string, { skill: TrainablePlayerSkill; val
   tech_t3_logic: { skill: 'logic', value: 3 },
   tech_t4_coding: { skill: 'coding', value: 5 },
   tech_t4_logic: { skill: 'logic', value: 5 },
-  // tech_t5_ultimate — no direct skill bonus (passive effect)
   social_t1_empathy: { skill: 'empathy', value: 1 },
   social_t1_persuasion: { skill: 'persuasion', value: 1 },
   social_t2_empathy: { skill: 'empathy', value: 2 },
@@ -359,7 +358,6 @@ export const SKILL_EFFECT_MAP: Record<string, { skill: TrainablePlayerSkill; val
   social_t3_persuasion: { skill: 'persuasion', value: 3 },
   social_t4_empathy: { skill: 'empathy', value: 5 },
   social_t4_persuasion: { skill: 'persuasion', value: 5 },
-  // social_t5_ultimate — no direct skill bonus (passive effect)
   spirit_t1_intuition: { skill: 'intuition', value: 1 },
   spirit_t1_writing: { skill: 'writing', value: 1 },
   spirit_t2_intuition: { skill: 'intuition', value: 2 },
@@ -368,5 +366,4 @@ export const SKILL_EFFECT_MAP: Record<string, { skill: TrainablePlayerSkill; val
   spirit_t3_writing: { skill: 'writing', value: 3 },
   spirit_t4_intuition: { skill: 'intuition', value: 5 },
   spirit_t4_writing: { skill: 'writing', value: 5 },
-  // spirit_t5_ultimate — no direct skill bonus (passive effect)
 };

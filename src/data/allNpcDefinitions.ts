@@ -1,7 +1,8 @@
 /* ─── Volodka RPG – merged NPC registry ─── */
+/* Canonical ids: short keys (kate, maria, …). Legacy npc_* resolves via NPC_ID_ALIASES only. */
 
 import type { NPCDefinition } from '@/shared/types/game';
-import { resolveCanonicalNpcId } from '@/shared/npcIdAliases';
+import { resolveCanonicalNpcId, warnUnknownNpcId } from '@/shared/npcIdAliases';
 import { NPC_DEFINITIONS } from './npcDefinitions';
 import { EXPANDED_NPCS, EXPANDED_NPC_QUEST_LINKS } from './expandedNPCs';
 import { CHK_NPCS, CHK_NPC_QUEST_LINKS } from './chkTolpa/npcs';
@@ -95,7 +96,9 @@ if (import.meta.env?.DEV) {
 
 export function findNpcById(id: string): NPCDefinition | undefined {
   const canonical = resolveCanonicalNpcId(id);
-  return NPC_BY_ID.get(canonical);
+  const def = NPC_BY_ID.get(canonical);
+  warnUnknownNpcId(id, def != null);
+  return def;
 }
 
 /**

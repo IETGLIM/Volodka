@@ -1,12 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import { SCENE_DEFINITIONS, SCENE_IDS } from '@/config/sceneDefinitions';
 import { SCENE_DERIVED_FROM, resolveDerivedSceneId } from '@/config/sceneInheritance';
+import { QUATERNIUS_STORY_NPC_SLOT_IDS } from '@/config/quaterniusNpcSlots';
 import {
   SCENE_AUDIO_PROFILES,
+  CHARACTER_MOTIFS,
+  STORY_NPCS_WITHOUT_DEDICATED_MOTIFS,
+  deriveCharacterMotifFromNpcId,
+  getCharacterMotif,
   getSceneAudioProfile,
   getSceneMusicMood,
   getSceneReverbPreset,
-} from '@/config/audioManifest';
+  hasDedicatedCharacterMotif,
+} from '@/config/proceduralAudioCatalog';
 
 const EXTENSION_SCENE_IDS = [
   'chk_campfire_night',
@@ -20,7 +26,7 @@ const EXTENSION_SCENE_IDS = [
   'albert_backroom',
 ] as const;
 
-describe('audioManifest', () => {
+describe('proceduralAudioCatalog', () => {
   it('registers explicit audio profiles for all 9 extension scenes', () => {
     for (const sceneId of EXTENSION_SCENE_IDS) {
       const profile = SCENE_AUDIO_PROFILES[sceneId];
@@ -31,7 +37,7 @@ describe('audioManifest', () => {
     }
   });
 
-  it('every shipped scene has a manifest entry or documented inherit rule', () => {
+  it('every shipped scene has a catalog entry or documented inherit rule', () => {
     expect(SCENE_IDS.length).toBe(27);
 
     for (const sceneId of SCENE_IDS) {
@@ -79,5 +85,28 @@ describe('audioManifest', () => {
       expect(getSceneReverbPreset(sceneId), sceneId).toBeTruthy();
       expect(getSceneMusicMood(sceneId), sceneId).toBeTruthy();
     }
+  });
+
+  it('getCharacterMotif always returns synth params for any npc id', () => {
+    for (const npcId of QUATERNIUS_STORY_NPC_SLOT_IDS) {
+      const motif = getCharacterMotif(npcId);
+      expect(motif.intervals.length).toBeGreaterThan(0);
+      expect(motif.rootMidi).toBeGreaterThan(0);
+      expect(motif.stinger).toBeTruthy();
+    }
+  });
+
+  it('deriveCharacterMotifFromNpcId is stable for the same npc id', () => {
+    const first = deriveCharacterMotifFromNpcId('fisherman_trofim');
+    const second = deriveCharacterMotifFromNpcId('fisherman_trofim');
+    expect(second).toEqual(first);
+  });
+
+  it('lists story NPCs still on hash-derived fallback stubs', () => {
+    for (const npcId of STORY_NPCS_WITHOUT_DEDICATED_MOTIFS) {
+      expect(hasDedicatedCharacterMotif(npcId)).toBe(false);
+      expect(getCharacterMotif(npcId).npcId).toBe(npcId);
+    }
+    expect(CHARACTER_MOTIFS.chk_ru).toBeTruthy();
   });
 });

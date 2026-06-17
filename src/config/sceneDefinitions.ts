@@ -13,8 +13,7 @@
 import type { SceneDefinition } from '@/shared/types/sceneDefinition';
 import type { SceneAmbienceConfig } from '@/shared/types/ambientSound';
 import { EXTENSION_SCENE_DEFINITIONS } from './sceneExtensionDefinitions';
-
-const extensionSceneDefs = EXTENSION_SCENE_DEFINITIONS as unknown as Record<string, SceneDefinition>;
+import type { SceneId } from './sceneIds';
 
 /** Volodka's room — small indoor room with desk, bookshelf, bed */
 export const volodka_room_def: SceneDefinition = {
@@ -1197,19 +1196,16 @@ export const SCENE_DEFINITIONS = {
   chk_forest_zorge: withSceneAmbience(chk_forest_zorge_def),
   factory_basement: withSceneAmbience(factory_basement_def),
   river_pier: withSceneAmbience(river_pier_def),
-  chk_campfire_night: withSceneAmbience(extensionSceneDefs.chk_campfire_night),
-  pier_evening: withSceneAmbience(extensionSceneDefs.pier_evening),
-  factory_roof: withSceneAmbience(extensionSceneDefs.factory_roof),
-  library_basement: withSceneAmbience(extensionSceneDefs.library_basement),
-  city_square: withSceneAmbience(extensionSceneDefs.city_square),
-  underground_bunker: withSceneAmbience(extensionSceneDefs.underground_bunker),
-  guild_mainframe: withSceneAmbience(extensionSceneDefs.guild_mainframe),
-  zarema_room: withSceneAmbience(extensionSceneDefs.zarema_room),
-  albert_backroom: withSceneAmbience(extensionSceneDefs.albert_backroom),
-} as const satisfies Record<string, SceneDefinition>;
+  chk_campfire_night: withSceneAmbience(EXTENSION_SCENE_DEFINITIONS.chk_campfire_night),
+  pier_evening: withSceneAmbience(EXTENSION_SCENE_DEFINITIONS.pier_evening),
+  factory_roof: withSceneAmbience(EXTENSION_SCENE_DEFINITIONS.factory_roof),
+  library_basement: withSceneAmbience(EXTENSION_SCENE_DEFINITIONS.library_basement),
+  city_square: withSceneAmbience(EXTENSION_SCENE_DEFINITIONS.city_square),
+  underground_bunker: withSceneAmbience(EXTENSION_SCENE_DEFINITIONS.underground_bunker),
+  guild_mainframe: withSceneAmbience(EXTENSION_SCENE_DEFINITIONS.guild_mainframe),
+  zarema_room: withSceneAmbience(EXTENSION_SCENE_DEFINITIONS.zarema_room),
+  albert_backroom: withSceneAmbience(EXTENSION_SCENE_DEFINITIONS.albert_backroom),
+} as const satisfies Record<SceneId, SceneDefinition>;
 
-/** Scene identifier — derived from SCENE_DEFINITIONS keys (no manual union). */
-export type SceneId = keyof typeof SCENE_DEFINITIONS;
-
-/** Runtime list of valid scene IDs — derived from SCENE_DEFINITIONS keys. */
-export const SCENE_IDS = Object.keys(SCENE_DEFINITIONS) as SceneId[];
+export type { SceneId, ExtensionSceneId, CoreSceneId } from './sceneIds';
+export { SCENE_IDS, EXTENSION_SCENE_IDS, CORE_SCENE_IDS } from './sceneIds';

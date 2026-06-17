@@ -11,10 +11,6 @@ export interface ModelUrls {
   cc0Soldier: string;
   cc0Xbot: string;
   cc0KhronosFox: string;
-  cc0KhronosBoomBox: string;
-  cc0KhronosBoxVertexColors: string;
-  cc0KhronosAnimatedMorphCube: string;
-  cc0KhronosNormalTangentTest: string;
   [key: string]: string;
 }
 
@@ -27,10 +23,6 @@ export const MODEL_URLS: ModelUrls = {
   cc0Soldier: `${KHRONOS}/Soldier.glb`,
   cc0Xbot: `${KHRONOS}/RiggedSimple.glb`,
   cc0KhronosFox: `${KHRONOS}/Fox.glb`,
-  cc0KhronosBoomBox: `${KHRONOS}/Fox.glb`,
-  cc0KhronosBoxVertexColors: `${KHRONOS}/Fox.glb`,
-  cc0KhronosAnimatedMorphCube: `${KHRONOS}/Fox.glb`,
-  cc0KhronosNormalTangentTest: `${KHRONOS}/Fox.glb`,
 };
 
 export const DEFAULT_PLAYER_GLB_FILENAME = 'volodka_lod0.glb';

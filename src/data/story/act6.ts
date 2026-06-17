@@ -215,7 +215,10 @@ export const STORY_NODES_ACT6: Record<string, StoryNode> = {
     guidanceHint: 'Офис гильдии — Дмитрий ждёт разговора.',
     guidanceNpcId: 'npc_dmitry',
     guidanceObjectiveType: 'visit_location',
-    effects: [{ type: 'setFlag', flag: 'traitor_revealed', flagValue: true }],
+    effects: [
+      { type: 'setFlag', flag: 'traitor_revealed', flagValue: true },
+      { type: 'collectPoem', poemId: 'poem_act6_03' },
+    ],
     choices: [
       {
         text: 'Нужно найти Дмитрия. Понять его мотивы.',
@@ -567,6 +570,7 @@ export const STORY_NODES_ACT6: Record<string, StoryNode> = {
     guidanceSceneLabel: 'бункер под заводом',
     guidanceObjectiveType: 'visit_location',
     autoSave: true,
+    effects: [{ type: 'collectPoem', poemId: 'poem_act6_02' }],
     choices: [
       {
         text: 'Я готов. Открывайте.',
@@ -684,6 +688,7 @@ export const STORY_NODES_ACT6: Record<string, StoryNode> = {
     guidanceHint: 'Идеи меняются — или перепиши код Тени.',
     guidanceSceneLabel: 'крышу завода',
     guidanceObjectiveType: 'make_choice',
+    effects: [{ type: 'collectPoem', poemId: 'poem_act6_06' }],
     choices: [
       {
         text: 'Идеи не умирают. Но они меняются. Как и ты.',

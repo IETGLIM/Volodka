@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { SCENE_DEFINITIONS, SCENE_IDS } from '@/config/sceneDefinitions';
 import { SCENE_DERIVED_FROM, resolveDerivedSceneId } from '@/config/sceneInheritance';
 import { STORY_NODES, validateStoryNodes } from '@/data/story';
+import { buildStoryNodeValidationRegistry } from '@/shared/validation/storyNodeValidationRegistry';
 import { QUEST_DEFINITIONS } from '@/data/quests';
 import { SCENE_EXPLORE_HUB_DEFS } from '@/shared/sceneExploreHubRegistry';
 
@@ -48,7 +49,10 @@ describe('AAA narrative expansion', () => {
   });
 
   it('story graph has no broken choice links', () => {
-    const errors = validateStoryNodes(STORY_NODES);
+    const errors = validateStoryNodes(
+      STORY_NODES,
+      buildStoryNodeValidationRegistry(Object.keys(STORY_NODES)),
+    );
     expect(errors, errors.join('\n')).toEqual([]);
   });
 

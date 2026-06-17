@@ -21,12 +21,12 @@ export const QUESTS_SIDE: QuestDefinition[] = [
       },
     ],
     rewards: [
-      { type: 'npcChange', npcId: 'npc_trofim', npcChange: { relation: 5 } },
+      { type: 'npcChange', npcId: 'fisherman_trofim', npcChange: { relation: 5 } },
       { type: 'setFlag', flag: 'trofim_basement_hint', flagValue: true },
       { type: 'addXp', value: 40 },
     ],
     linkedStoryNodeId: 'pier_midnight_fishing_start',
-    questGiverNpcId: 'npc_trofim',
+    questGiverNpcId: 'fisherman_trofim',
   },
   {
     id: 'pier_ritka_strings',
@@ -92,7 +92,7 @@ export const QUESTS_SIDE: QuestDefinition[] = [
       { type: 'addXp', value: 80 },
     ],
     linkedStoryNodeId: 'library_lost_archive_start',
-    questGiverNpcId: 'npc_katya',
+    questGiverNpcId: 'kate',
   },
   {
     id: 'library_katya_research',
@@ -118,7 +118,7 @@ export const QUESTS_SIDE: QuestDefinition[] = [
       { type: 'addXp', value: 100 },
     ],
     linkedStoryNodeId: 'library_katya_research_start',
-    questGiverNpcId: 'npc_katya',
+    questGiverNpcId: 'kate',
   },
   {
     id: 'factory_zarya_memory',
@@ -143,7 +143,7 @@ export const QUESTS_SIDE: QuestDefinition[] = [
       { type: 'addXp', value: 120 },
     ],
     linkedStoryNodeId: 'factory_zarya_memory_start',
-    questGiverNpcId: 'npc_baba_zina',
+    questGiverNpcId: 'baba_zina',
   },
   {
     id: 'factory_baba_zina_tea',
@@ -168,7 +168,7 @@ export const QUESTS_SIDE: QuestDefinition[] = [
       { type: 'addXp', value: 30 },
     ],
     linkedStoryNodeId: 'factory_baba_zina_tea_start',
-    questGiverNpcId: 'npc_baba_zina',
+    questGiverNpcId: 'baba_zina',
   },
   {
     id: 'resistance_safehouse',
@@ -194,7 +194,7 @@ export const QUESTS_SIDE: QuestDefinition[] = [
       { type: 'addXp', value: 90 },
     ],
     linkedStoryNodeId: 'resistance_safehouse_start',
-    questGiverNpcId: 'npc_maxim',
+    questGiverNpcId: 'maxim',
   },
   {
     id: 'resistance_defector_rescue',
@@ -221,7 +221,7 @@ export const QUESTS_SIDE: QuestDefinition[] = [
       { type: 'addXp', value: 150 },
     ],
     linkedStoryNodeId: 'resistance_defector_rescue_start',
-    questGiverNpcId: 'npc_maxim',
+    questGiverNpcId: 'maxim',
   },
   {
     id: 'chk_portwine_delivery',

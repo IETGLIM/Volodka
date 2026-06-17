@@ -332,7 +332,8 @@ export const STORY_FLAG_TO_NODE_ID: Record<string, string> = {
 
 /** Canonical NPC id for a golden-path story node, or undefined if not an NPC step. */
 export function getNpcIdForStoryNode(nodeId: string): string | undefined {
-  return STORY_NODE_TO_NPC_ID[nodeId];
+  const mapped = STORY_NODE_TO_NPC_ID[nodeId];
+  return mapped ? resolveCanonicalNpcId(mapped) : undefined;
 }
 
 /** Resolve a story-node or alias id to the canonical NPC entity id. */

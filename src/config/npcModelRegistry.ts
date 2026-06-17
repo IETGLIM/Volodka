@@ -6,7 +6,7 @@ import {
   getRpmPublicUrls,
   RPM_NPC_CATALOG,
 } from '@/config/rpmNpcCatalog';
-import { RPM_SHIPPED_NPC_GLB_URLS } from '@/config/rpmNpcShipped.generated';
+import { RPM_NPC_GLB_URLS_ON_DISK } from '@/config/rpmNpcOnDisk.generated';
 
 export interface NpcModelAssetMeta {
   url: string;
@@ -33,7 +33,7 @@ const QUATERNIUS_URL = 'https://quaternius.com/packs/ultimatemodularcharacters.h
 const RPM_SOURCE = 'Ready Player Me avatar export';
 const RPM_SOURCE_URL = 'https://readyplayer.me/';
 
-const RPM_SHIPPED = new Set<string>(RPM_SHIPPED_NPC_GLB_URLS);
+const RPM_ON_DISK = new Set<string>(RPM_NPC_GLB_URLS_ON_DISK);
 
 /**
  * CC0 interim meshes on disk today (bootstrap / Quaternius import).
@@ -237,14 +237,14 @@ function buildRpmNpcModelAssets(): Partial<Record<string, NpcModelAssetMeta>> {
 
 const RPM_NPC_MODEL_ASSETS = buildRpmNpcModelAssets();
 
-function isRpmShippedForNpc(npcId: string): boolean {
+function isRpmOnDiskForNpc(npcId: string): boolean {
   const rpm = getRpmNpcByRegistryId(npcId);
-  return rpm != null && RPM_SHIPPED.has(rpm.publicUrl);
+  return rpm != null && RPM_ON_DISK.has(rpm.publicUrl);
 }
 
 function isCc0ShippedUrl(url: string, npcId?: string): boolean {
   if (!CC0_SHIPPED_NPC_GLB_URLS.has(url)) return false;
-  if (npcId && isRpmShippedForNpc(npcId)) return false;
+  if (npcId && isRpmOnDiskForNpc(npcId)) return false;
   return true;
 }
 
@@ -254,7 +254,7 @@ function resolveCc0Url(npcId: string): string | undefined {
   return url;
 }
 
-/** Distinct rigged GLBs — RPM overrides CC0 when shipped; CC0-only NPCs unchanged. */
+/** Distinct rigged GLBs — RPM overrides CC0 when on disk; CC0-only NPCs unchanged. */
 export const NPC_MODEL_ASSETS: Partial<Record<string, NpcModelAssetMeta>> = {
   ...CC0_NPC_MODEL_ASSETS,
   ...RPM_NPC_MODEL_ASSETS,
@@ -262,7 +262,7 @@ export const NPC_MODEL_ASSETS: Partial<Record<string, NpcModelAssetMeta>> = {
 
 export function resolveNpcModelUrl(npcId: string, modelPath?: string): string | undefined {
   const rpmEntry = getRpmNpcByRegistryId(npcId);
-  if (rpmEntry && RPM_SHIPPED.has(rpmEntry.publicUrl)) {
+  if (rpmEntry && RPM_ON_DISK.has(rpmEntry.publicUrl)) {
     return rpmEntry.publicUrl;
   }
 
@@ -270,7 +270,7 @@ export function resolveNpcModelUrl(npcId: string, modelPath?: string): string | 
     return resolveCc0Url(npcId);
   }
 
-  if (RPM_SHIPPED.has(modelPath)) return modelPath;
+  if (RPM_ON_DISK.has(modelPath)) return modelPath;
 
   if (isCc0ShippedUrl(modelPath, npcId)) return modelPath;
 
@@ -283,7 +283,7 @@ export function resolveNpcModelUrl(npcId: string, modelPath?: string): string | 
 }
 
 export function getNpcModelMeta(npcId: string): NpcModelAssetMeta | undefined {
-  if (isRpmShippedForNpc(npcId)) {
+  if (isRpmOnDiskForNpc(npcId)) {
     return RPM_NPC_MODEL_ASSETS[npcId];
   }
   return CC0_NPC_MODEL_ASSETS[npcId];
@@ -293,10 +293,10 @@ export function getNpcModelUrls(): string[] {
   const urls = new Set<string>();
   for (const url of CC0_SHIPPED_NPC_GLB_URLS) {
     const npcId = Object.entries(CC0_NPC_MODEL_ASSETS).find(([, meta]) => meta?.url === url)?.[0];
-    if (npcId && isRpmShippedForNpc(npcId)) continue;
+    if (npcId && isRpmOnDiskForNpc(npcId)) continue;
     urls.add(url);
   }
-  for (const url of RPM_SHIPPED) {
+  for (const url of RPM_ON_DISK) {
     if (url.startsWith(`${NPCS}/`) || url.includes('/npcs/')) {
       urls.add(url);
     }
@@ -306,10 +306,10 @@ export function getNpcModelUrls(): string[] {
 
 /** Pending RPM public URLs — validate only when file exists (see validate-gltf-assets). */
 export function getRpmPendingPublicUrls(): string[] {
-  return getRpmPublicUrls().filter((url) => !RPM_SHIPPED.has(url));
+  return getRpmPublicUrls().filter((url) => !RPM_ON_DISK.has(url));
 }
 
-export function isRpmNpcShipped(npcId: string): boolean {
-  return isRpmShippedForNpc(npcId);
+export function isRpmNpcOnDisk(npcId: string): boolean {
+  return isRpmOnDiskForNpc(npcId);
 }
 

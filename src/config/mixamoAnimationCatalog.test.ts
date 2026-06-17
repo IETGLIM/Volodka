@@ -5,7 +5,7 @@ import {
   listMixamoClipIds,
   getMixamoClipAliasesByNpcState,
 } from './mixamoAnimationCatalog';
-import { SHIPPED_MIXAMO_CLIP_IDS } from './mixamoAnimationShipped';
+import { MIXAMO_CLIP_IDS_ON_DISK } from './mixamoClipsOnDisk';
 
 describe('mixamoAnimationCatalog', () => {
   it('lists four core locomotion/social clips', () => {
@@ -27,7 +27,7 @@ describe('mixamoAnimationCatalog', () => {
     expect(byState.talk).toContain('talking');
   });
 
-  it('starts with no shipped clips until import', () => {
-    expect(SHIPPED_MIXAMO_CLIP_IDS).toEqual([]);
+  it('starts with no on-disk clips until import', () => {
+    expect(MIXAMO_CLIP_IDS_ON_DISK).toEqual([]);
   });
 });

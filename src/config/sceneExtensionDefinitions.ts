@@ -1,3 +1,6 @@
+import type { SceneDefinition } from '@/shared/types/sceneDefinition';
+import type { ExtensionSceneId } from '@/config/sceneIds';
+
 /** Additional AAA narrative locations — visuals inherited via sceneInheritance.ts */
 export const EXTENSION_SCENE_DEFINITIONS = {
   chk_campfire_night: {
@@ -365,4 +368,4 @@ export const EXTENSION_SCENE_DEFINITIONS = {
     fog: { near: 3, far: 9 },
     ambience: { daySound: 'cafe', nightSound: 'cafe', transitionDuration: 2000 },
   },
-} as const;
+} as const satisfies Record<ExtensionSceneId, SceneDefinition>;
