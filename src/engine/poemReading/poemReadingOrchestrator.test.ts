@@ -51,8 +51,20 @@ vi.mock('@/engine/PoemPowerSystem', () => ({
   getPoemPower: (poemId: string) => getPowerSpy(poemId),
 }));
 
+let mockPendingPoemReadingId: string | null = null;
+
+vi.mock('@/engine/GameActionDispatcher', () => ({
+  getGameSnapshot: () => ({ pendingPoemReadingId: mockPendingPoemReadingId }),
+  dispatchGameAction: (action: { type: string; poemId?: string | null }) => {
+    if (action.type === 'poem/setPendingReading') {
+      mockPendingPoemReadingId = action.poemId ?? null;
+    }
+  },
+}));
+
 describe('poemReadingOrchestrator', () => {
   beforeEach(() => {
+    mockPendingPoemReadingId = null;
     for (const key of Object.keys(lsStore)) delete lsStore[key];
     vi.stubGlobal('localStorage', createLocalStorageMock());
     resetDefaultAccessibilityManager();

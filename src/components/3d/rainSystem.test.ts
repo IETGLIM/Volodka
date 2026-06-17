@@ -3,7 +3,7 @@ import {
   resolveRainLevel,
   buildRainConfig,
   getMaxRainParticleCount,
-} from './RainSystem';
+} from './rainSystemUtils';
 
 describe('resolveRainLevel', () => {
   it('maps intensity to light, medium, and heavy tiers', () => {

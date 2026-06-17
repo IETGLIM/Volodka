@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import type { MutableRefObject } from 'react';
 import type { NpcQueryTarget } from '@/engine/interaction/interactionTargetQuery';
 import {

@@ -13,7 +13,7 @@
 import type { SceneDefinition } from '@/shared/types/sceneDefinition';
 import type { SceneAmbienceConfig } from '@/shared/types/ambientSound';
 import { EXTENSION_SCENE_DEFINITIONS } from './sceneExtensionDefinitions';
-import { SCENE_IDS, type SceneId } from './sceneIds';
+import type { SceneId } from './sceneIds';
 
 /** Volodka's room — small indoor room with desk, bookshelf, bed */
 export const volodka_room_def: SceneDefinition = {

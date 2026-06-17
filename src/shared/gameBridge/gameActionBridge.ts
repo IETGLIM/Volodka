@@ -70,6 +70,7 @@ export interface GameStoreSnapshot {
   triggeredCutscenes: string[];
   lastUsedPoemId: string | null;
   lastUsedPoemTimestamp: number | null;
+  pendingPoemReadingId: string | null;
 }
 
 /** Typed mutations engine may request from the store. */
@@ -97,6 +98,7 @@ export type GameAction =
   | { type: 'poem/removeTTLFlags'; keys: string[] }
   | { type: 'poem/clearAllEffects' }
   | { type: 'poem/recordLastUsed'; poemId: string; timestamp: number }
+  | { type: 'poem/setPendingReading'; poemId: string | null }
   | { type: 'story/setCombatActive'; active: boolean }
   | { type: 'story/setIntroActive'; active: boolean }
   | { type: 'story/setMainMenuOpen'; open: boolean }

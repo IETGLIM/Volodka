@@ -148,6 +148,7 @@ export function reviveGameEngine(): void {
   bindSceneTransitionGuardListeners();
   bindDeferredCombatStartListener();
   bindPoemResetListener();
+  bindPoemReadingCutsceneLifecycleListeners();
   bindPoemWorldEventBridge();
   bindAdaptiveQualityBridge();
 

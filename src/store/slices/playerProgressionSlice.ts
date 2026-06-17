@@ -10,7 +10,7 @@ import { getSkillTreeMap, getPerksMap } from '@/data/gameDataLoader';
 import {
   resolveSkillUnlockEffects,
   warnUnmatchedSkillEffectParts,
-} from '@/engine/skills/applySkillUnlockEffects';
+} from '@/shared/skills/applySkillUnlockEffects';
 import { queuePlayerXp } from '../playerXpBatch';
 
 /* ─── Slice types ─── */

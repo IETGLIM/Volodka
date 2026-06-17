@@ -40,6 +40,7 @@ export function applyGameAction(_state: GameStoreState, action: GameAction): Par
     case 'poem/upsertTTLFlags': player.upsertActiveTTLFlags(action.flags); break;
     case 'poem/removeTTLFlags': player.removeActiveTTLFlags(action.keys); break;
     case 'poem/recordLastUsed': player.recordLastUsedPoem(action.poemId, action.timestamp); break;
+    case 'poem/setPendingReading': player.setPendingPoemReadingId(action.poemId); break;
     case 'poem/clearAllEffects': { const flags = player.activeTTLFlags ?? {}; for (const f of Object.values(flags) as ActiveTTLFlag[]) player.setFlag(f.key, false); player.clearActiveTTLFlags(); emitPoemResetAllEffects(); break; }
     case 'story/setCombatActive': ui.setCombatActive(action.active); break;
     case 'story/setIntroActive': ui.setIntroActive(action.active); break;

@@ -6,7 +6,7 @@ import { POEMS } from '@/data/poems';
 import { getAllItemDefinitions } from '@/data/items';
 import { INITIAL_LORE_ENTRIES } from '@/data/loreEntries';
 import { QUEST_ITEM_DEFINITIONS } from '@/data/questItems';
-import { ENEMY_TEMPLATES } from '@/engine/combat/enemies';
+import { ENEMY_TYPE_IDS } from '@/data/enemyTypeIds';
 import { NPC_ID_ALIASES, STORY_NODE_ALIASES } from '@/data/goldenPath';
 import type { StoryNodeValidationRegistry } from '@/shared/validation/storyNodeValidation';
 
@@ -26,7 +26,7 @@ export function buildStoryNodeValidationRegistry(
       ...Object.keys(QUEST_ITEM_DEFINITIONS),
     ]),
     loreIds: new Set(INITIAL_LORE_ENTRIES.map((l) => l.id)),
-    enemyTypes: new Set(Object.keys(ENEMY_TEMPLATES)),
+    enemyTypes: new Set(ENEMY_TYPE_IDS),
     storyNodeAliases: STORY_NODE_ALIASES,
     npcIdAliases: NPC_ID_ALIASES,
   };

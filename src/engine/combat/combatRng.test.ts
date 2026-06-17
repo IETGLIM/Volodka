@@ -51,7 +51,7 @@ describe('SeededCombatRng', () => {
 describe('combat damage reproducibility', () => {
   it('same seed yields the same poem_5 damage sequence', () => {
     const base = minimalCombatState(deriveCombatRngSeed(0x1234, 0, 'system_daemon'));
-    const ability = POEM_COMBAT_ABILITIES.poem_5!;
+    const _ability = POEM_COMBAT_ABILITIES.poem_5!;
 
     const run = (start: CombatState) => {
       const first = rollPlayerDamage(start, { attack: 20, defense: 4, multiplier: 2 });

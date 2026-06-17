@@ -1,5 +1,4 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import * as THREE from 'three';
 import { eventBus } from '@/engine/EventBus';
 import {
   bindSceneChunkGpuLifecycle,

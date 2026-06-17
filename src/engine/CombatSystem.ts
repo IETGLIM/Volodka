@@ -487,7 +487,7 @@ function amplifyPoemCombatResult(prev: CombatState, next: CombatState): CombatSt
   }).poemInCodeStrengthMultiplier;
   if (mult <= 1) return next;
 
-  let result = { ...next, enemy: { ...next.enemy } };
+  const result = { ...next, enemy: { ...next.enemy } };
   const playerHeal = next.playerHp - prev.playerHp;
   if (playerHeal > 0) {
     const bonus = Math.round(playerHeal * (mult - 1));

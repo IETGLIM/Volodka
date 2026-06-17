@@ -134,7 +134,7 @@ const AGENT_SPECIALS: EnemySpecialAttack[] = [
       const enemyDmgMultiplier = getEnemyDamageMultiplier(state);
       const rolled = rollEnemyDamage(state, { attack: effectiveAttack, multiplier: enemyDmgMultiplier });
       let damage = rolled.damage * COMBAT_CONSTANTS.STEALTH_CRIT_MULTIPLIER;
-      let nextState = rolled.state;
+      const nextState = rolled.state;
 
       // Apply player defense_boost buff
       const playerDefBoost = getPlayerDefenseBoost(state);
@@ -353,7 +353,7 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
           const effectiveAttack = enemy.attack + getEnemyAttackBoost(state);
           const rolled = rollEnemyDamage(state, { attack: effectiveAttack, multiplier: 1.5 });
           let damage = rolled.damage;
-          let nextState = rolled.state;
+          const nextState = rolled.state;
           const playerDmgReduction = getPlayerDamageReduction(nextState);
           if (playerDmgReduction > 0) damage = scaleDamageByFraction(damage, playerDmgReduction, 'reduction');
           const playerVulnerability = getPlayerVulnerability(nextState);
@@ -501,7 +501,7 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
             multiplier: COMBAT_CONSTANTS.POEM_HUNTER_DAMAGE_BASE_MULTIPLIER + poemCount * COMBAT_CONSTANTS.POEM_HUNTER_DAMAGE_PER_POEM,
           });
           let damage = rolled.damage;
-          let nextState = rolled.state;
+          const nextState = rolled.state;
           const playerDmgReduction = getPlayerDamageReduction(nextState);
           if (playerDmgReduction > 0) damage = scaleDamageByFraction(damage, playerDmgReduction, 'reduction');
           const playerVulnerability = getPlayerVulnerability(nextState);

@@ -327,7 +327,7 @@ export function RPGGameCanvas({ focusable = true }: { focusable?: boolean } = {}
     if (focusable && containerRef.current) {
       containerRef.current.focus();
     }
-  }, []);
+  }, [focusable]);
 
   useEffect(() => {
     if (focusable) return;

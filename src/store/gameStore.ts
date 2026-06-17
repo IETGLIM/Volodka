@@ -85,6 +85,7 @@ function buildGameSnapshot(state: GameStoreState): GameStoreSnapshot {
     triggeredCutscenes: state.triggeredCutscenes,
     lastUsedPoemId: state.lastUsedPoemId ?? null,
     lastUsedPoemTimestamp: state.lastUsedPoemTimestamp ?? null,
+    pendingPoemReadingId: state.pendingPoemReadingId ?? null,
   };
 }
 function invalidateGameSnapshotCache(): void {

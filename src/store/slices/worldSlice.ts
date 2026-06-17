@@ -23,7 +23,7 @@ import { resolveAchievementAnnounce } from '@/data/achievementHelpers';
 import { applyEffects } from '@/shared/utils/applyEffects';
 import { clamp, type PoemPowerState } from '../shared';
 import { applyFairmathRelation } from '@/shared/fairmath';
-import { scaleNpcRelationDelta } from '@/engine/skills/passiveSkillModifiers';
+import { scaleNpcRelationDelta } from '@/shared/skills/passiveSkillModifiers';
 import { resolveCanonicalNpcId } from '@/shared/npcIdAliases';
 import type { GameStoreState } from '../types';
 import { getUIStore } from '../storeBindings';

@@ -6,7 +6,7 @@ import {
   canUsePower,
   getPoemPower,
 } from '@/engine/PoemPowerSystem';
-import { getPlayerStoreState } from '@/store/stores/playerStore';
+import { dispatchGameAction, getGameSnapshot } from '@/engine/GameActionDispatcher';
 
 export type PoemPowerActivationContext = 'exploration' | 'combat';
 
@@ -19,11 +19,11 @@ const sessionReadPoems = new Set<string>();
 let cutsceneUiActivePoemId: string | null = null;
 
 function readPendingPoemId(): string | null {
-  return getPlayerStoreState().pendingPoemReadingId;
+  return getGameSnapshot().pendingPoemReadingId;
 }
 
 function writePendingPoemId(poemId: string | null): void {
-  getPlayerStoreState().setPendingPoemReadingId(poemId);
+  dispatchGameAction({ type: 'poem/setPendingReading', poemId });
 }
 
 export function resetPoemReadingSession(): void {
