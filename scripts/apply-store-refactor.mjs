@@ -10,6 +10,6 @@ const patch = (rel, pairs) => {
   console.log('patched', rel);
 };
 
-w('reduceGameState.ts', readFileSync('scripts/reduceGameState.ts.template', 'utf8').catch?.() ?? '');
+w('applyGameAction.ts', readFileSync('scripts/applyGameAction.ts.template', 'utf8').catch?.() ?? '');
 
 NODEEOF

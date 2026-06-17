@@ -18,7 +18,7 @@ import type { GameStoreState } from './types';
 export type { GameStoreState, CrossSliceReads } from './types';
 import { getCombinedGameState, subscribeAllStores } from './combinedState';
 import { applyCombinedPatch } from './patchState';
-import { reduceGameState } from './reduceGameState';
+import { applyGameAction } from './applyGameAction';
 
 export const useGameStore = create<GameStoreState>()(subscribeWithSelector(() => getCombinedGameState()));
 const facadeSetState = useGameStore.setState.bind(useGameStore);
@@ -69,7 +69,7 @@ function subscribeGameBridge<T>(listener: ((snapshot: GameStoreSnapshot) => void
   });
 }
 registerGameActionBridge({
-  dispatch(action) { reduceGameState(getCombinedGameState(), action); },
+  dispatch(action) { applyGameAction(getCombinedGameState(), action); },
   getSnapshot() { return toGameSnapshot(getCombinedGameState()); },
   subscribe: subscribeGameBridge,
   tryAddItem(item: InventoryItem) { return getCombinedGameState().addItem(item); },
@@ -77,7 +77,7 @@ registerGameActionBridge({
 });
 `, 'utf8');
 
-writeFileSync(join(root, 'reduceGameState.ts'), `import { eventBus } from '@/engine/EventBus';
+writeFileSync(join(root, 'applyGameAction.ts'), `import { eventBus } from '@/engine/EventBus';
 import type { GameAction } from '@/engine/GameActionDispatcher';
 import type { GameStoreState } from './types';
 import type { ActiveTTLFlag } from './activeTTLFlags';
@@ -85,15 +85,17 @@ import { getPlayerStoreState } from './stores/playerStore';
 import { getExplorationStoreState } from './stores/explorationStore';
 import { getWorldStoreState } from './stores/worldStore';
 import { getUIStoreState } from './stores/uiStore';
-export function reduceGameState(_state: GameStoreState, action: GameAction): Partial<GameStoreState> {
+export function applyGameAction(_state: GameStoreState, action: GameAction): Partial<GameStoreState> {
   const player = getPlayerStoreState();
   const exploration = getExplorationStoreState();
   const world = getWorldStoreState();
   const ui = getUIStoreState();
   switch (action.type) {
     case 'quest/completeObjective': world.completeQuestObjective(action.questId, action.objectiveId); break;
-    case 'quest/complete': world.completeQuest(action.questId); break;
-    case 'quest/completeAndApplyRewards': player.completeQuestAndApplyRewards(action.questId); break;
+    case 'quest/complete':
+    case 'quest/completeAndApplyRewards':
+      player.completeQuestAndApplyRewards(action.questId);
+      break;
     case 'quest/fail': world.failQuest(action.questId); break;
     case 'quest/activate': world.activateQuest(action.questId); break;
     case 'player/addSkill': player.addSkill(action.skill, action.amount); break;
@@ -106,6 +108,7 @@ export function reduceGameState(_state: GameStoreState, action: GameAction): Par
     case 'player/setNpcRelation': world.setNpcRelation(action.npcId, action.delta); break;
     case 'poem/upsertTTLFlag': player.upsertActiveTTLFlag(action.flag); break;
     case 'poem/upsertTTLFlags': player.upsertActiveTTLFlags(action.flags); break;
+    case 'world/upsertHintFlag': player.upsertHintFlagWithTTL(action.flag); break;
     case 'poem/removeTTLFlags': player.removeActiveTTLFlags(action.keys); break;
     case 'poem/clearAllEffects': { const flags = player.activeTTLFlags ?? {}; for (const f of Object.values(flags) as ActiveTTLFlag[]) player.setFlag(f.key, false); player.clearActiveTTLFlags(); eventBus.emit('poem:reset_all_effects', {}); break; }
     case 'story/setCombatActive': ui.setCombatActive(action.active); break;

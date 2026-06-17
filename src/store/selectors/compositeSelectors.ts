@@ -92,8 +92,8 @@ export function useHUDExploration() {
   return useGameSelector((s) => ({
     currentSceneId: s.exploration.currentSceneId,
     timeOfDay: s.exploration.timeOfDay,
-    weatherEnabled: s.exploration.weatherEnabled,
-    rainIntensity: s.exploration.rainIntensity,
+    weatherEnabled: s.weatherEnabled,
+    rainIntensity: s.rainIntensity,
   }));
 }
 
@@ -232,8 +232,8 @@ export function useStatusEffectsContext() {
     energy: s.playerState.energy,
     stress: s.playerState.stress,
     unlockedPerks: s.playerState.progression.unlockedPerks,
-    weatherEnabled: s.exploration.weatherEnabled,
-    rainIntensity: s.exploration.rainIntensity,
+    weatherEnabled: s.weatherEnabled,
+    rainIntensity: s.rainIntensity,
     currentSceneId: s.exploration.currentSceneId,
     timeOfDay: s.exploration.timeOfDay,
   }));
@@ -326,8 +326,8 @@ export function usePlayerStatsPanelState() {
     perkPoints: s.playerState.progression.perkPoints,
     unlockedPerks: s.playerState.progression.unlockedPerks,
     skills: s.playerState.skills,
-    weatherEnabled: s.exploration.weatherEnabled,
-    rainIntensity: s.exploration.rainIntensity,
+    weatherEnabled: s.weatherEnabled,
+    rainIntensity: s.rainIntensity,
     currentSceneId: s.exploration.currentSceneId,
     timeOfDay: s.exploration.timeOfDay,
   }));

@@ -26,6 +26,7 @@ import {
 } from '../inventoryHelpers';
 import type { GameStoreState } from '../types';
 import { pickPlayerQuestRewardsCrossActions } from '../crossSliceReads';
+import { getWorldStore } from '../storeBindings';
 import {
   batchAddCredits,
   batchAddEnergy,
@@ -48,7 +49,7 @@ const GIFT_QUANTITY = 1;
 export interface PlayerQuestRewardsSliceActions {
   /** Gift an item to an NPC. Determines preference, adjusts affinity, removes item, emits event. */
   giftItemToNPC: (itemId: string, npcId: string) => GiftPreference | null;
-  /** Complete a quest and auto-apply its rewards (skills, karma, XP, items, flags). */
+  /** Complete a quest and auto-apply its rewards (skills, karma, XP, items, flags). Idempotent. */
   completeQuestAndApplyRewards: (questId: string) => void;
 }
 
@@ -158,6 +159,9 @@ export const createPlayerQuestRewardsSlice: StateCreator<
   completeQuestAndApplyRewards: (questId) => {
     const questDef = getQuestDefinitions().find((d) => d.id === questId);
     if (!questDef) return;
+
+    const existingQuest = getWorldStore().quests.find((q) => q.questId === questId);
+    if (existingQuest?.status === 'completed') return;
 
     const xpGained = getDefaultQuestXp(questDef.questType);
     const creditsGained = computeQuestCreditReward(questDef);

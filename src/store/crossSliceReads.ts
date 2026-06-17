@@ -3,6 +3,7 @@ import type { GameNotification } from './shared';
 import type { GameStoreState } from './types';
 import type { RewardBatchDraft, RewardBatchSideEffects } from './rewardBatchHelpers';
 import { getExplorationStore, getPlayerStore, getWorldStore } from './storeBindings';
+import { resolveCanonicalNpcId } from '@/shared/npcIdAliases';
 export interface PlayerReadsFromExploration { currentSceneId: SceneId; }
 export interface PlayerReadsFromWorld { npcRelations: NPCRelation[]; npcAffinity: Record<string, number>; quests: QuestState[]; }
 export interface WorldReadsFromExploration { timeOfDay: number; }
@@ -24,7 +25,17 @@ export function readUIFromExploration(state?: GameStoreState): UIReadsFromExplor
 export function readExplorationFromPlayer(state?: GameStoreState): ExplorationReadsFromPlayer { if (state) return { flags: state.playerState.flags }; return { flags: getPlayerStore().playerState.flags }; }
 export function readNpcRelationValue(npcId: string): number;
 export function readNpcRelationValue(state: GameStoreState, npcId: string): number;
-export function readNpcRelationValue(stateOrNpcId: GameStoreState | string, npcId?: string): number { if (typeof stateOrNpcId === 'string') return getWorldStore().npcRelations.find((r) => r.npcId === stateOrNpcId)?.value ?? 50; return stateOrNpcId.npcRelations.find((r) => r.npcId === npcId!)?.value ?? 50; }
+export function readNpcRelationValue(stateOrNpcId: GameStoreState | string, npcId?: string): number {
+  const readValue = (relations: NPCRelation[], id: string) => {
+    const canonical = resolveCanonicalNpcId(id);
+    const match = relations.find((r) => resolveCanonicalNpcId(r.npcId) === canonical);
+    return match?.value ?? 50;
+  };
+  if (typeof stateOrNpcId === 'string') {
+    return readValue(getWorldStore().npcRelations, stateOrNpcId);
+  }
+  return readValue(stateOrNpcId.npcRelations, npcId!);
+}
 export function pickPlayerCoreCrossActions(_get?: () => GameStoreState): PlayerCoreCrossActions { return { advanceTime: getExplorationStore().advanceTime }; }
 export function pickWorldCrossActions(_get?: () => GameStoreState): WorldCrossActions { return { pushNotification: getPlayerStore().pushNotification }; }
 export function pickPlayerEconomyCrossActions(_get?: () => GameStoreState): PlayerEconomyCrossActions { return { pushNotification: getPlayerStore().pushNotification }; }

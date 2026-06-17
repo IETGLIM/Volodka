@@ -72,6 +72,22 @@ export function emitQuestCompleted(questId: string, npcId?: string): void {
   emitAppEvent('quest:completed', { questId, npcId });
 }
 
+export function emitQuestFailed(payload: ApplicationEventMap['quest:failed']): void {
+  emitAppEvent('quest:failed', payload);
+}
+
+export function scheduleQuestFailed(payload: ApplicationEventMap['quest:failed']): void {
+  runAfterStoreCommit(() => emitQuestFailed(payload));
+}
+
+export function emitQuestRetried(questId: string, questTitle: string): void {
+  emitAppEvent('quest:retried', { questId, questTitle });
+}
+
+export function scheduleQuestRetried(questId: string, questTitle: string): void {
+  runAfterStoreCommit(() => emitQuestRetried(questId, questTitle));
+}
+
 export function emitQuestRewardApplied(payload: ApplicationEventMap['quest:reward_applied']): void {
   emitAppEvent('quest:reward_applied', payload);
 }

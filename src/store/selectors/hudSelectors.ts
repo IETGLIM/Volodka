@@ -9,8 +9,8 @@ export function useHUDControllerState() {
   return useGameSelector((s) => ({
     currentSceneId: s.exploration.currentSceneId,
     timeOfDay: s.exploration.timeOfDay,
-    weatherEnabled: s.exploration.weatherEnabled,
-    rainIntensity: s.exploration.rainIntensity,
+    weatherEnabled: s.weatherEnabled,
+    rainIntensity: s.rainIntensity,
     karma: s.playerState.karma,
     energy: s.playerState.energy,
     stress: s.playerState.stress,
@@ -30,7 +30,7 @@ export function useWeatherIndicatorState() {
   }));
 }
 
-/** WeatherAlertNotification — tracks exploration weather fields. */
+/** WeatherAlertNotification — top-level weather fields (persisted). */
 export { useWeatherState as useWeatherAlertState } from './explorationSelectors';
 
 /** KarmaPoemInfoPanel — karma, act, poems, notifications, powers. */
