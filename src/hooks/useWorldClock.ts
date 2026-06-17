@@ -27,12 +27,10 @@ import { useGamePhase } from '@/store/selectors';
 import { eventBus } from '@/engine/EventBus';
 import { buildNPCStatesForTime } from '@/engine/ScheduleEngine';
 import { buildScheduleContext } from '@/shared/scheduleContext';
-
-/** How often the world clock ticks in seconds (game minutes per tick) */
-const WORLD_TICK_INTERVAL_S = 60; // Every 60 real seconds = 1 game hour
-
-/** How many game hours pass per periodic tick */
-const HOURS_PER_TICK = 0.25; // 15 game minutes per tick
+import {
+  WORLD_CLOCK_HOURS_PER_TICK,
+  WORLD_CLOCK_TICK_INTERVAL_S,
+} from '@/engine/world/worldClockConstants';
 
 /**
  * World Clock hook — call once in GameOrchestrator.
@@ -53,7 +51,7 @@ export function useWorldClock() {
 
       const previousHour = store.exploration.timeOfDay;
       // Advance time by a small increment
-      const newHour = (previousHour + HOURS_PER_TICK) % 24;
+      const newHour = (previousHour + WORLD_CLOCK_HOURS_PER_TICK) % 24;
 
       // Rebuild NPC states for the new time
       const scheduleCtx = buildScheduleContext(store);
@@ -64,13 +62,13 @@ export function useWorldClock() {
       store.setExplorationNPCStates(npcStates);
 
       // Emit world events
-      eventBus.emit('world:tick', { hour: newHour, deltaHours: HOURS_PER_TICK });
+      eventBus.emit('world:tick', { hour: newHour, deltaHours: WORLD_CLOCK_HOURS_PER_TICK });
       eventBus.emit('world:hour_changed', {
         hour: newHour,
         previousHour,
         npcStates,
       });
-    }, WORLD_TICK_INTERVAL_S * 1000);
+    }, WORLD_CLOCK_TICK_INTERVAL_S * 1000);
 
     return () => clearInterval(interval);
   }, [mode]);

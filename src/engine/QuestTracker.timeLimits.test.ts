@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { QuestDefinition } from '@/shared/types/game';
+import { REAL_MS_PER_GAME_HOUR } from '@/engine/quest/questTimeLimits';
 
 const TIMED_QUEST: QuestDefinition = {
   id: 'timed_quest',
@@ -25,6 +26,7 @@ const UNTIMED_QUEST: QuestDefinition = {
 const mockDefinitions: QuestDefinition[] = [TIMED_QUEST, UNTIMED_QUEST];
 
 const mockSnapshot = {
+  mode: 'exploration' as const,
   exploration: {
     currentSceneId: 'scene_a' as const,
     timeOfDay: 10,
@@ -40,6 +42,7 @@ const mockSnapshot = {
       status: 'active' as const,
       objectives: {} as Record<string, boolean>,
       startedAtTime: 8,
+      startedAtWallMs: Date.now(),
       hoursElapsed: 0,
     },
     {
@@ -103,6 +106,7 @@ describe('QuestTracker time limits', () => {
         status: 'active',
         objectives: {},
         startedAtTime: 8,
+        startedAtWallMs: Date.now(),
         hoursElapsed: 0,
       },
       {
@@ -183,6 +187,24 @@ describe('QuestTracker time limits', () => {
 
     expect(gameLoadedHandler).not.toBeNull();
     gameLoadedHandler!();
+
+    expect(dispatchGameAction).toHaveBeenCalledWith({
+      type: 'quest/fail',
+      questId: 'timed_quest',
+      reason: 'Истекло время задания',
+    });
+
+    tracker.stop();
+  });
+
+  it('fails via wall-clock fallback when hour_changed stalls (evaluateTimedQuests(0))', () => {
+    mockSnapshot.quests[0].startedAtWallMs = Date.now() - REAL_MS_PER_GAME_HOUR * 3;
+    delete mockSnapshot.quests[0].hoursElapsed;
+    mockSnapshot.exploration.timeOfDay = 8;
+
+    const tracker = new QuestTracker();
+    tracker.start();
+    tracker['evaluateTimedQuests'](0);
 
     expect(dispatchGameAction).toHaveBeenCalledWith({
       type: 'quest/fail',

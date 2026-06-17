@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { CombatBuff, CombatState } from './types';
-import { addBuff, createBuff, getEnemyDefenseReduction } from './buffSystem';
+import { addBuff, createBuff, getBuffEvictionPriority, getEnemyDefenseReduction } from './buffSystem';
 
 import { createCombatRngState } from './combatRng';
 
@@ -66,10 +66,10 @@ describe('addBuff slot limits', () => {
     expect(next.buffs.some((b) => b.kind === 'debuff' && b.target === 'player')).toBe(true);
   });
 
-  it('evicts oldest debuff when a third debuff is added to the same target', () => {
+  it('evicts lowest-priority debuff when a third debuff is added to the same target', () => {
     const state = minimalState([
       makeBuff('debuff_a', 'debuff', 'player', 'defense_reduction'),
-      makeBuff('debuff_b', 'debuff', 'player', 'defense_reduction'),
+      makeBuff('debuff_b', 'debuff', 'player', 'damage_reduction'),
     ]);
 
     const debuff = createBuff(
@@ -85,6 +85,8 @@ describe('addBuff slot limits', () => {
 
     const playerDebuffs = next.buffs.filter((b) => b.kind === 'debuff' && b.target === 'player');
     expect(playerDebuffs).toHaveLength(2);
+    expect(getBuffEvictionPriority(makeBuff('debuff_b', 'debuff', 'player', 'damage_reduction')))
+      .toBeGreaterThan(getBuffEvictionPriority(makeBuff('debuff_a', 'debuff', 'player', 'defense_reduction')));
     expect(playerDebuffs.some((b) => b.id === 'debuff_a')).toBe(false);
     expect(playerDebuffs.some((b) => b.id === 'debuff_b')).toBe(true);
     expect(playerDebuffs.some((b) => b.source === 'enemy_special_2')).toBe(true);

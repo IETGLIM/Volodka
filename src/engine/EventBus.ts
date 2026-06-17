@@ -103,6 +103,12 @@ export class EventBusClass<TMap extends object = EventMap>
   /** Monotonic registration order for stable tie-breaking */
   private nextListenerOrder = 0;
 
+  /** Monotonic listener ids for O(1) unsubscribe */
+  private nextListenerId = 0;
+
+  /** listener id → current index in a handler list */
+  private listenerIndexById = new Map<number, number>();
+
   /** Hard caps — subscription throws when exceeded (catches listener leaks). */
   private readonly maxHandlersPerEvent: number;
   private readonly maxAnyHandlers: number;
@@ -168,18 +174,35 @@ export class EventBusClass<TMap extends object = EventMap>
     handler: T,
     priority: number,
   ): () => void {
+    const listenerId = this.nextListenerId++;
     const entry: PrioritizedListener<T> = {
       handler,
       priority,
       order: this.nextListenerOrder++,
+      id: listenerId,
     };
+    const index = list.length;
     list.push(entry);
+    this.listenerIndexById.set(listenerId, index);
     return () => {
-      const idx = list.findIndex((item) => item.handler === handler);
-      if (idx !== -1) {
-        list.splice(idx, 1);
-      }
+      this.removeListenerById(list, listenerId);
     };
+  }
+
+  private removeListenerById<T>(list: PrioritizedListener<T>[], listenerId: number): void {
+    const index = this.listenerIndexById.get(listenerId);
+    if (index === undefined || index >= list.length || list[index].id !== listenerId) {
+      return;
+    }
+
+    this.listenerIndexById.delete(listenerId);
+    const lastIndex = list.length - 1;
+    if (index !== lastIndex) {
+      const last = list[lastIndex];
+      list[index] = last;
+      this.listenerIndexById.set(last.id, index);
+    }
+    list.pop();
   }
 
   /**
@@ -304,7 +327,7 @@ export class EventBusClass<TMap extends object = EventMap>
 
     const idx = list.findIndex((entry) => entry.handler === handler);
     if (idx !== -1) {
-      list.splice(idx, 1);
+      this.removeListenerById(list, list[idx].id);
     }
     if (list.length === 0) {
       this.handlers.delete(event);
@@ -321,6 +344,7 @@ export class EventBusClass<TMap extends object = EventMap>
     clearDedupSlots(this.dedupSlots);
     this.handlers.clear();
     this.anyHandlers.length = 0;
+    this.listenerIndexById.clear();
     this.disposed = true;
   }
 

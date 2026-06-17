@@ -61,7 +61,7 @@ type StateChangeHandler = (slice: {
   currentSceneId: string;
   timeOfDay: number;
   flags: Record<string, boolean>;
-  inventoryIds: string[];
+  inventory: Array<{ id: string }>;
   collectedPoems: string[];
   quests: Array<{
     questId: string;
@@ -131,7 +131,7 @@ describe('QuestTracker state-change batching', () => {
       currentSceneId: 'scene_b',
       timeOfDay: 12,
       flags: { new_flag: true },
-      inventoryIds: ['key_item'],
+      inventory: [{ id: 'key_item' }],
       collectedPoems: [],
       quests: [
         {

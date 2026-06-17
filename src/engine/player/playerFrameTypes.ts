@@ -34,6 +34,8 @@ export interface PlayerFrameScratch {
 }
 
 export interface PlayerMovementDeps {
+  /** Bumped on scene transition — stale frames abort before movement runs. */
+  movementEpoch: number;
   sceneId: SceneId;
   config: ReturnType<typeof getSceneConfig>;
   locomotionScale: number;

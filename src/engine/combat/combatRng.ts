@@ -4,11 +4,46 @@ import type { CombatRngPlayerMeta, CombatRngState } from '@/shared/types/state/c
 import type { EnemyType } from './types';
 import type { CombatState } from './types';
 import {
-  computeDamage,
+  COMBAT_CONSTANTS,
   type ComputeDamageParams,
 } from './formulas';
 
 export type { CombatRngPityState, CombatRngState, CombatRngPlayerMeta } from '@/shared/types/state/combatRng';
+
+export const COMBAT_PITY = {
+  /** Rolls without crit before soft pity bonus begins. */
+  CRIT_SOFT_START: 6,
+  /** Added crit chance per roll after soft start (until hard guarantee). */
+  CRIT_CHANCE_PER_ROLL: 0.04,
+  /** Guaranteed crit on this many consecutive non-crit attempts. */
+  CRIT_HARD_GUARANTEE: 14,
+  /** Low damage variance rolls before minimum variance pity kicks in. */
+  VARIANCE_SOFT_START: 8,
+  /** Minimum variance factor boost per low roll. */
+  VARIANCE_FLOOR_BONUS: 0.03,
+} as const;
+
+export function computeCritChanceWithPity(
+  baseChance: number,
+  rollsSinceCrit: number,
+): number {
+  if (rollsSinceCrit >= COMBAT_PITY.CRIT_HARD_GUARANTEE) return 1;
+  const extraRolls = Math.max(0, rollsSinceCrit - COMBAT_PITY.CRIT_SOFT_START);
+  return Math.min(1, baseChance + extraRolls * COMBAT_PITY.CRIT_CHANCE_PER_ROLL);
+}
+
+export function computeVarianceFloorWithPity(
+  profile: 'player' | 'enemy',
+  rollsSinceLowVariance: number,
+): number {
+  const baseMin =
+    profile === 'player'
+      ? COMBAT_CONSTANTS.PLAYER_DAMAGE_VARIANCE_MIN
+      : COMBAT_CONSTANTS.ENEMY_DAMAGE_VARIANCE_MIN;
+  const extraRolls = Math.max(0, rollsSinceLowVariance - COMBAT_PITY.VARIANCE_SOFT_START);
+  const bonus = extraRolls * COMBAT_PITY.VARIANCE_FLOOR_BONUS;
+  return Math.min(1, baseMin + bonus);
+}
 
 export const DEFAULT_RNG_SEED = 0xdea0b33f;
 
@@ -79,8 +114,44 @@ export class SeededCombatRng {
     const step = mulberry32Step(this.mutable.state);
     this.mutable.state = step.nextState;
     this.mutable.rolls += 1;
-    this.mutable.pity.rollsSinceCrit += 1;
     return step.value;
+  }
+
+  /** Crit roll with soft/hard pity — increments rollsSinceCrit on miss. */
+  rollCritical(baseChance: number): boolean {
+    const effective = computeCritChanceWithPity(baseChance, this.mutable.pity.rollsSinceCrit);
+    const roll = this.nextFloat();
+    const isCrit = roll < effective;
+    if (isCrit) {
+      this.mutable.pity.rollsSinceCrit = 0;
+      this.mutable.pity.rollsSinceHit = 0;
+    } else {
+      this.mutable.pity.rollsSinceCrit += 1;
+      this.mutable.pity.rollsSinceHit += 1;
+    }
+    return isCrit;
+  }
+
+  /** Damage variance roll with anti-bad-luck floor pity. */
+  rollVarianceFactor(profile: 'player' | 'enemy'): number {
+    const varianceMin = computeVarianceFloorWithPity(profile, this.mutable.pity.rollsSinceHit);
+    const varianceRange =
+      profile === 'player'
+        ? COMBAT_CONSTANTS.PLAYER_DAMAGE_VARIANCE_RANGE
+        : COMBAT_CONSTANTS.ENEMY_DAMAGE_VARIANCE_RANGE;
+    const roll = this.nextFloat();
+    const factor = varianceMin + roll * varianceRange;
+    const baseMin =
+      profile === 'player'
+        ? COMBAT_CONSTANTS.PLAYER_DAMAGE_VARIANCE_MIN
+        : COMBAT_CONSTANTS.ENEMY_DAMAGE_VARIANCE_MIN;
+    const lowThreshold = baseMin + varianceRange * 0.2;
+    if (factor < lowThreshold) {
+      this.mutable.pity.rollsSinceHit += 1;
+    } else {
+      this.mutable.pity.rollsSinceHit = 0;
+    }
+    return factor;
   }
 
   nextInt(min: number, max: number): number {
@@ -97,6 +168,22 @@ export class SeededCombatRng {
   /** Adapter for formulas.computeDamage `rng` parameter. */
   asRollFn(): () => number {
     return () => this.nextFloat();
+  }
+
+  /** Core damage roll with variance pity applied. */
+  rollDamage(params: Omit<ComputeDamageParams, 'rng'>): number {
+    const {
+      attack,
+      defense = 0,
+      multiplier = 1,
+      attackBonus = 0,
+      varianceProfile = 'player',
+      variance = true,
+      minDamage = COMBAT_CONSTANTS.MIN_DAMAGE,
+    } = params;
+    const raw = attack * multiplier + attackBonus - defense;
+    const factor = variance ? this.rollVarianceFactor(varianceProfile) : 1;
+    return Math.max(minDamage, Math.floor(raw * factor));
   }
 
   getState(): CombatRngState {
@@ -149,7 +236,7 @@ export function rollPlayerDamage(
   params: DamageRollParams,
 ): { damage: number; state: CombatState } {
   const rolled = withCombatRng(state, (rng) =>
-    computeDamage({ varianceProfile: 'player', ...params, rng: rng.asRollFn() }),
+    rng.rollDamage({ varianceProfile: 'player', ...params }),
   );
   return { damage: rolled.result, state: rolled.state };
 }
@@ -159,7 +246,7 @@ export function rollEnemyDamage(
   params: DamageRollParams,
 ): { damage: number; state: CombatState } {
   const rolled = withCombatRng(state, (rng) =>
-    computeDamage({ varianceProfile: 'enemy', ...params, rng: rng.asRollFn() }),
+    rng.rollDamage({ varianceProfile: 'enemy', ...params }),
   );
   return { damage: rolled.result, state: rolled.state };
 }

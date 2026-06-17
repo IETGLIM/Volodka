@@ -21,6 +21,25 @@ const STAGE_TARGETS = [
   { from: 'interiors', to: 'public/models/interiors' },
 ];
 
+const INTERIOR_TEXTURE_REL = 'interiors/Textures/colormap.png';
+
+function stageInteriorTextures() {
+  const candidates = [
+    path.join(SOURCE, INTERIOR_TEXTURE_REL),
+    path.join(ROOT, '.tmp-kenney/extract/suburban/Models/GLB format/Textures/colormap.png'),
+  ];
+  const src = candidates.find((p) => existsSync(p));
+  if (!src) {
+    console.warn('⚠ skip interior colormap — no source texture found');
+    return 0;
+  }
+  const dest = path.join(ROOT, 'public/models', INTERIOR_TEXTURE_REL);
+  mkdirSync(path.dirname(dest), { recursive: true });
+  copyFileSync(src, dest);
+  console.log(`✓ ${path.relative(ROOT, dest)}`);
+  return 1;
+}
+
 function stageDirectory(fromRel, toRel) {
   const fromDir = path.join(SOURCE, fromRel);
   const toDir = path.join(ROOT, toRel);
@@ -60,6 +79,7 @@ function main() {
   for (const { from, to } of STAGE_TARGETS) {
     total += stageDirectory(from, to);
   }
+  total += stageInteriorTextures();
   if (total === 0) {
     console.warn('⚠ No GLB files found under assets-source/ai3dgen/{props,interiors}.');
     console.warn('  Run npm run assets:bootstrap for CC0 fallbacks, or add Kenney sources.');

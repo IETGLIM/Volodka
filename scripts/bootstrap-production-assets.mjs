@@ -270,6 +270,22 @@ function stageInteriorShells() {
   }
 }
 
+function stageInteriorTextures() {
+  const candidates = [
+    path.join(FREEKIT_INTERIORS, 'Textures/colormap.png'),
+    path.join(ROOT, '.tmp-kenney/extract/suburban/Models/GLB format/Textures/colormap.png'),
+  ];
+  const src = candidates.find((p) => existsSync(p));
+  if (!src) {
+    console.warn('  ⚠ skip interior colormap — no source texture found');
+    return;
+  }
+  const dest = path.join(PUBLIC, 'models/interiors/Textures/colormap.png');
+  mkdirSync(path.dirname(dest), { recursive: true });
+  copyFileSync(src, dest);
+  console.log(`✓ Kenney colormap → models/interiors/Textures/colormap.png`);
+}
+
 async function stageMixamoFromSource() {
   let catalog;
   try {
@@ -336,6 +352,7 @@ async function main() {
   stageRpmNpcs();
   stageProductionLayout();
   stageInteriorShells();
+  stageInteriorTextures();
   await stageMixamoFromSource();
   syncAssetShippedFlags();
   reportSize();

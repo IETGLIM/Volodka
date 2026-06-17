@@ -399,13 +399,11 @@ export function playerAttack(): CombatState | null {
 
   const multiplier = getPlayerDamageMultiplier(cs);
   const seeded = SeededCombatRng.fromState(cs.rng);
-  const roll = seeded.asRollFn();
-  let damage = computeDamage({
+  let damage = seeded.rollDamage({
     attack: pAtk,
     defense: effectiveEnemyDef,
     multiplier,
-    varianceProfile: 'enemy',
-    rng: roll,
+    varianceProfile: 'player',
   });
 
   /* ── Combo System: consecutive attacks increase damage ── */
@@ -414,10 +412,9 @@ export function playerAttack(): CombatState | null {
   damage = Math.floor(damage * comboMultiplier);
 
   /* ── Critical Hit: 10% base + (writing skill * 2%) bonus, 1.8x damage ── */
-  const isCritical = seeded.roll(computeCritChance(snap().playerState.skills.writing));
+  const isCritical = seeded.rollCritical(computeCritChance(snap().playerState.skills.writing));
   if (isCritical) {
     damage = applyCritMultiplier(damage);
-    seeded.noteCrit();
   }
 
   const newEnemyHp = Math.max(0, cs.enemy.hp - damage);

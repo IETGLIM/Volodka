@@ -7,6 +7,29 @@ import Inspect from 'vite-plugin-inspect';
 import { resolveManualChunk } from './vite/chunks';
 import { rapierInitFix } from './vite/rapierInitFix';
 
+function buildContentSecurityPolicy(isDev: boolean): string {
+  const connectSrc = isDev ? "'self' ws: wss:" : "'self'";
+  const scriptSrc = isDev
+    ? "'self' 'unsafe-inline' 'unsafe-eval'"
+    : "'self' 'wasm-unsafe-eval'";
+
+  return [
+    "default-src 'self'",
+    `script-src ${scriptSrc}`,
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "font-src 'self' data: https://fonts.gstatic.com",
+    "img-src 'self' data: blob:",
+    "media-src 'self' blob:",
+    `connect-src ${connectSrc}`,
+    "worker-src 'self' blob:",
+    "child-src 'self' blob:",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'none'",
+  ].join('; ');
+}
+
 export default defineConfig(({ mode }) => {
   // Canonical URL for OG meta in index.html (%VITE_SITE_URL% substitution)
   process.env.VITE_SITE_URL ??= 'https://volodka.vercel.app';
@@ -14,6 +37,8 @@ export default defineConfig(({ mode }) => {
 
   const analyze = mode === 'analyze';
   const inspect = mode === 'inspect';
+  const isDev = mode === 'development';
+  const contentSecurityPolicy = buildContentSecurityPolicy(isDev);
 
   return {
     plugins: [
@@ -59,6 +84,15 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 3000,
       host: true,
+      headers: {
+        'Content-Security-Policy': contentSecurityPolicy,
+      },
+    },
+
+    preview: {
+      headers: {
+        'Content-Security-Policy': buildContentSecurityPolicy(false),
+      },
     },
 
     build: {
@@ -66,6 +100,7 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         output: {
           manualChunks: resolveManualChunk,
+          experimentalMinChunkSize: 5 * 1024,
         },
       },
     },

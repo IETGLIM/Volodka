@@ -1,5 +1,7 @@
 /* ─── Normalized TTL flag map (key → flag) ─── */
 
+import { ttlNow } from '@/shared/ttlClock';
+
 export interface ActiveTTLFlag {
   key: string;
   poemId: string;
@@ -60,7 +62,7 @@ export function partitionExpiredActiveTTLFlags(
 export function isActiveTTLFlagLive(
   map: ActiveTTLFlagMap | undefined | null,
   key: string,
-  now: number = Date.now(),
+  now: number = ttlNow(),
 ): boolean {
   const flag = map?.[key];
   if (!flag) return false;

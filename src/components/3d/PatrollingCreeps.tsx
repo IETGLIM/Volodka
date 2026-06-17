@@ -24,6 +24,7 @@ import { isSceneTransitionInProgress } from '@/engine/core/SceneTransitionManage
 import { startEncounter } from '@/engine/combat/encounterPresentation';
 import { ENEMY_TEMPLATES } from '@/engine/combat/enemies';
 import { audioEngine } from '@/engine/audio/AudioEngine';
+import { isActiveTTLFlagLive } from '@/shared/activeTTLFlags';
 import { getCreepsForScene, type CreepPatrolDef } from '@/data/creepPatrols';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
@@ -84,7 +85,9 @@ export function PatrollingCreeps({ livePlayerPositionRef }: PatrollingCreepsProp
           && !showStoryOverlayRef.current
           && !activeCutsceneIdRef.current,
         poemVisionScale:
-          flag && flag.expiryTimestamp > Date.now() ? GUIDING_STAR_VISION_SCALE : 1,
+          flag && isActiveTTLFlagLive({ [flag.key]: flag }, flag.key)
+            ? GUIDING_STAR_VISION_SCALE
+            : 1,
       };
     },
     { label: 'PatrollingCreepsCtx', priority: -1 },

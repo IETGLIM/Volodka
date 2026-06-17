@@ -1,4 +1,6 @@
 import type { ActiveTTLFlagMap } from '@/shared/activeTTLFlags';
+import { isActiveTTLFlagLive } from '@/shared/activeTTLFlags';
+import { ttlNow } from '@/shared/ttlClock';
 import type { PoemWorldHint } from '@/config/poemWorldEffects';
 import { POEM_WORLD_HINT_HIGHLIGHT_COLORS } from '@/config/poemWorldEffects';
 import { resolvePoemWorldHintFlagKey } from '@/engine/poemWorld/poemWorldEffectResolver';
@@ -62,7 +64,7 @@ export function resolvePoemExplorationHighlight(
   playerFlags: Record<string, boolean> = {},
   options: { reducedMotion?: boolean; now?: number } = {},
 ): PoemHighlightState {
-  const now = options.now ?? Date.now();
+  const now = options.now ?? ttlNow();
   const reducedMotion = options.reducedMotion ?? false;
 
   if (isTTLFlagLive(activeTTLFlags, GUIDING_STAR_FLAG, now)) {

@@ -76,7 +76,7 @@ describe('world/upsertHintFlag', () => {
         poem_hint_exit_glow_active: {
           key: 'poem_hint_exit_glow_active',
           poemId: 'poem_3',
-          expiryTimestamp: Date.now() - 1,
+          expiryTimestamp: performance.now() - 1,
         },
       },
     });

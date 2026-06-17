@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { ttlNow } from '@/shared/ttlClock';
 import { buildStoryConditionContext, checkStoryCondition } from '@/shared/storyConditions';
 
 describe('buildStoryConditionContext', () => {
@@ -94,7 +95,7 @@ describe('checkStoryCondition', () => {
   });
 
   it('gates activeTTLFlag by expiry', () => {
-    const now = Date.now();
+    const now = ttlNow();
     const liveCtx = {
       ...ctx,
       activeTTLFlags: {

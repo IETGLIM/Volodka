@@ -21,6 +21,11 @@ import {
   createDefaultTutorialFlags,
 } from './shared';
 import { createEmptyActiveTTLFlagMap } from './activeTTLFlags';
+import type { ActiveTTLFlagMap } from '@/shared/activeTTLFlags';
+import {
+  ttlExpiryFromPersisted,
+  ttlExpiryToPersisted,
+} from '@/shared/ttlClock';
 import type { GameStoreState } from './types';
 import { getCombinedGameState } from './storeBindings';
 
@@ -187,12 +192,40 @@ export function createNewPlaythroughResetPatch(
   return patch;
 }
 
+/** Convert in-memory monotonic TTL expiries to epoch for localStorage. */
+function activeTTLFlagsForSave(map: ActiveTTLFlagMap): ActiveTTLFlagMap {
+  const out: ActiveTTLFlagMap = {};
+  for (const flag of Object.values(map)) {
+    out[flag.key] = {
+      ...flag,
+      expiryTimestamp: ttlExpiryToPersisted(flag.expiryTimestamp),
+    };
+  }
+  return out;
+}
+
+/** Restore monotonic TTL expiries from persisted epoch on load. */
+function activeTTLFlagsFromSave(map: ActiveTTLFlagMap): ActiveTTLFlagMap {
+  const out: ActiveTTLFlagMap = {};
+  for (const flag of Object.values(map)) {
+    out[flag.key] = {
+      ...flag,
+      expiryTimestamp: ttlExpiryFromPersisted(flag.expiryTimestamp),
+    };
+  }
+  return out;
+}
+
 /** Build the localStorage payload from live store state. */
 export function pickSavePayload(
   state: GameStoreState,
 ): Omit<SavePayload, 'saveVersion'> {
   const payload: Record<string, unknown> = {};
   for (const key of getPersistedStateKeys()) {
+    if (key === 'activeTTLFlags') {
+      payload[key] = activeTTLFlagsForSave(state.activeTTLFlags ?? createEmptyActiveTTLFlagMap());
+      continue;
+    }
     payload[key] = state[key];
   }
   // Overlay close used to clear currentNodeId; schema requires non-empty string.
@@ -259,6 +292,7 @@ export function storePatchFromSave(payload: SavePayload): Partial<GameStoreState
       currentSceneId: sanitizeExplorationSceneId(payload.exploration.currentSceneId),
       npcStates: parseNpcStatesFromSave(payload.exploration.npcStates),
     },
+    activeTTLFlags: activeTTLFlagsFromSave(payload.activeTTLFlags),
     achievementProgress: {
       ...defaults.achievementProgress,
       ...payload.achievementProgress,
@@ -270,6 +304,7 @@ export function storePatchFromSave(payload: SavePayload): Partial<GameStoreState
       key === 'playerState' ||
       key === 'exploration' ||
       key === 'achievementProgress' ||
+      key === 'activeTTLFlags' ||
       key === 'mode' ||
       key === 'mainMenuOpen' ||
       key === 'introActive' ||

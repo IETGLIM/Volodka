@@ -21,8 +21,8 @@ import {
 } from './ambientConfigs';
 import {
   getSharedAudioContext,
-  createReverbImpulse,
-  createAmbientReverbImpulse,
+  getReverbImpulse,
+  getAmbientReverbImpulse,
   safeResume,
   whenAudioReady,
   releaseBufferSource,
@@ -58,6 +58,9 @@ class AudioEngine {
   private masterGain: GainNode | null = null;
   private volume = 0.7;
   private disposed = false;
+  /** Bumped on dispose — stale setTimeout callbacks no-op after StrictMode unmount. */
+  private engineGeneration = 0;
+  private readonly pendingEngineTimers = new Set<ReturnType<typeof setTimeout>>();
 
   // Ambient state
   private ambientNodes: Array<{
@@ -131,6 +134,32 @@ class AudioEngine {
   /** One voice per sourceId — prevents footstep stacking on fast cadence or lag spikes. */
   private footstepVoiceBySourceId = new Map<string, FootstepVoice>();
 
+  /** Schedule a timer that self-cancels when dispose() bumps engineGeneration. */
+  private scheduleEngineTimer(fn: () => void, delayMs: number): ReturnType<typeof setTimeout> {
+    const generation = this.engineGeneration;
+    const timerId = setTimeout(() => {
+      this.pendingEngineTimers.delete(timerId);
+      if (this.disposed || generation !== this.engineGeneration) return;
+      fn();
+    }, delayMs);
+    this.pendingEngineTimers.add(timerId);
+    return timerId;
+  }
+
+  private cancelPendingEngineTimers(): void {
+    this.engineGeneration += 1;
+    for (const timerId of this.pendingEngineTimers) {
+      clearTimeout(timerId);
+    }
+    this.pendingEngineTimers.clear();
+  }
+
+  private clearTrackedTimer(timer: ReturnType<typeof setTimeout> | null): void {
+    if (timer === null) return;
+    clearTimeout(timer);
+    this.pendingEngineTimers.delete(timer);
+  }
+
   constructor() {
     // DEFER AudioContext creation — browsers require a user gesture before
     // AudioContext can start. Creating it here (module load time) causes:
@@ -191,7 +220,7 @@ class AudioEngine {
     }
     this.sfxConvolver = tryCreateConvolver(
       this.ctx,
-      createAmbientReverbImpulse(this.ctx, reverbConfig.decay * 0.65),
+      getAmbientReverbImpulse(this.ctx, reverbConfig.decay * 0.65),
     );
     if (this.sfxConvolver) {
       this.sfxConvolver.connect(this.sfxWetGain);
@@ -284,9 +313,10 @@ class AudioEngine {
   }
 
   private clearFootstepVoices(): void {
-    for (const sourceId of this.footstepVoiceBySourceId.keys()) {
+    for (const sourceId of [...this.footstepVoiceBySourceId.keys()]) {
       this.stopFootstepVoice(sourceId);
     }
+    this.footstepVoiceBySourceId.clear();
   }
 
   /**
@@ -371,6 +401,7 @@ class AudioEngine {
     }
 
     noiseSource.onended = () => {
+      if (this.disposed) return;
       releaseBufferSource(noiseSource);
       this.disconnectOneShot(filter, envGain);
       if (sourceId) {
@@ -424,7 +455,7 @@ class AudioEngine {
 
     this.ambientConvolver = tryCreateConvolver(
       ctx,
-      createAmbientReverbImpulse(ctx, reverbConfig.decay),
+      getAmbientReverbImpulse(ctx, reverbConfig.decay),
     );
 
     this.ambientReverbGain = ctx.createGain();
@@ -853,7 +884,7 @@ class AudioEngine {
         gainToDisconnect.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
 
         this.pendingAmbientCleanup = releaseCapturedAmbient;
-        this.pendingAmbientCleanupTimer = setTimeout(() => {
+        this.pendingAmbientCleanupTimer = this.scheduleEngineTimer(() => {
           this.pendingAmbientCleanupTimer = null;
           this.pendingAmbientCleanup = null;
           releaseCapturedAmbient();
@@ -903,7 +934,7 @@ class AudioEngine {
     const now = ctx.currentTime;
 
     // ── Create convolver (reverb) — skipped when unsupported (dry path only) ──
-    this.musicConvolver = tryCreateConvolver(ctx, createReverbImpulse(ctx, config.reverbDecay));
+    this.musicConvolver = tryCreateConvolver(ctx, getReverbImpulse(ctx, config.reverbDecay));
 
     this.musicConvolverGain = ctx.createGain();
     this.musicDryGain = ctx.createGain();
@@ -1033,7 +1064,8 @@ class AudioEngine {
     }
 
     // Schedule next chord
-    this.musicChordTimer = setTimeout(() => {
+    this.musicChordTimer = this.scheduleEngineTimer(() => {
+      if (this.disposed || !this.ctx || !this.musicFilter) return;
       // Clean up finished oscillators
       this.musicNodes = this.musicNodes.filter((n) => {
         try {
@@ -1048,16 +1080,14 @@ class AudioEngine {
       if (!this.disposed && this.currentMusicScene !== null) {
         this.playMusicChord(config, nextIndex, ctx.currentTime);
       }
-    }, chord.duration * 1000) as unknown as ReturnType<typeof setTimeout>;
+    }, chord.duration * 1000);
   }
 
   /** Stop all ambient music */
   stopAmbientMusic(): void {
     // Clear chord timer
-    if (this.musicChordTimer) {
-      clearTimeout(this.musicChordTimer as unknown as number);
-      this.musicChordTimer = null;
-    }
+    this.clearTrackedTimer(this.musicChordTimer);
+    this.musicChordTimer = null;
     this.flushPendingMusicCleanup();
 
     const ctx = this.ctx;
@@ -1115,7 +1145,7 @@ class AudioEngine {
         gainToDisconnect.gain.linearRampToValueAtTime(0, now + 1);
 
         this.pendingMusicCleanup = releaseCapturedMusic;
-        this.pendingMusicCleanupTimer = setTimeout(() => {
+        this.pendingMusicCleanupTimer = this.scheduleEngineTimer(() => {
           this.pendingMusicCleanupTimer = null;
           this.pendingMusicCleanup = null;
           releaseCapturedMusic();
@@ -1377,7 +1407,7 @@ class AudioEngine {
     });
 
     // Clean up delay after 3 seconds
-    setTimeout(() => {
+    this.scheduleEngineTimer(() => {
       this.disconnectOneShot(reverbGain, delay, feedback);
     }, 3000);
   }
@@ -1743,7 +1773,8 @@ class AudioEngine {
         const stopNow = ctx.currentTime;
         gainNode.gain.setValueAtTime(gainNode.gain.value, stopNow);
         gainNode.gain.linearRampToValueAtTime(0, stopNow + 0.5);
-        setTimeout(() => {
+        this.scheduleEngineTimer(() => {
+          if (this.disposed) return;
           try { osc.stop(); } catch { /* already stopped */ }
           try { lfo?.stop(); } catch { /* already stopped */ }
           spatial.disconnect();
@@ -2078,6 +2109,7 @@ class AudioEngine {
   dispose(): void {
     if (this.disposed) return;
     this.disposed = true;
+    this.cancelPendingEngineTimers();
     this.clearFootstepVoices();
     this.flushPendingAmbientCleanup();
     this.flushPendingMusicCleanup();
@@ -2112,8 +2144,9 @@ class AudioEngine {
     this.ctx = null;
   }
 
-  /** Re-arm after orchestrator remount (React StrictMode). */
+  /** Re-arm after orchestrator remount (React StrictMode). Idempotent — generation stays bumped until new timers schedule. */
   revive(): void {
+    if (!this.disposed) return;
     this.disposed = false;
   }
 }

@@ -17,7 +17,7 @@
 
 ## 🎮 Особенности
 
-- **15 режиссированных 3D-локаций** — от комнаты Володьки до ночного леса, завода и края крыши
+- **27 режиссированных 3D-локаций** (18 core + 9 extension) — от комнаты Володьки до ночного леса, завода и края крыши
 - **7 актов сюжета** с 6+ концовками; все концовки ведут в эпилог и акты 6–7
 - **55 квестов** — основная линия, побочные, скрытые, ежедневные и линия «ЧК · ТОЛПА»
 - **Патрулирующие враги и стелс** — видимые конусы зрения, погоня, побег; контакт = пошаговый бой (11 типов врагов, комбо, баффы/дебаффы)
@@ -26,8 +26,8 @@
 - **12+ NPC** с диалоговыми деревьями, расписаниями и отношениями
 - **Крафт, торговля, дерево навыков и перков**
 - **Процедурная музыка** (Web Audio, три слоя на сцену) и динамическая погода
-- **AAA пост-обработка** — Bloom, ACES-тонмаппинг, цветокоррекция, стресс-реактивная виньетка
-- **Работает на любом устройстве** — пресеты качества low→ultra с авто-детектом, graceful degradation (физика, postFX, сейвы)
+- **AAA пост-обработка** — Bloom, ACES-тонмаппинг, цветокоррекция, стресс-реактивная виньетка; `ExplorationPostFX` с tier-aware деградацией
+- **Работает на любом устройстве** — пресеты качества low→ultra с авто-детектом (GPU probe, Battery API, DPR), graceful degradation (физика KCC, postFX, сейвы)
 
 ## 🛠️ Технологии
 
@@ -50,10 +50,24 @@
 
 ```bash
 npm install
-npm run dev      # Dev-сервер на localhost:3000
-npm run check    # Полный гейт: lint + typecheck + контент + сборка + бюджеты
-npm run build    # Production-сборка в dist/
+npm run dev          # Dev-сервер на localhost:3000
+npm run typecheck    # tsc --noEmit
+npm run test:unit    # Vitest (unit + component)
+npm run check        # Полный гейт: lint + typecheck + контент + сборка + бюджеты
+npm run build        # Production-сборка в dist/
 ```
+
+### Пресеты качества
+
+| Пресет | DPR | PostFX | Тени | Сжатие GLB | NPC/среда |
+|--------|-----|--------|------|------------|-----------|
+| **low** | 0.75–1 | выкл | выкл | Draco | procedural |
+| **medium** | 1–1.25 | вкл | вкл | Draco | hybrid |
+| **high** | 1–1.75 | вкл | вкл | Draco | hybrid |
+| **ultra** | 1.25–2 | вкл | вкл | meshopt | GLB |
+| **auto** | эвристика | — | — | — | viewport + GPU probe + battery cap |
+
+`auto` сохраняет разрешённый tier в сессии (`autoQualitySession`). При давлении на GPU срабатывает `applyGfxPressureToPreset` и runtime degrade через `adaptiveQualityBridge`.
 
 ### 3D-ассеты (AI3DGen)
 
@@ -73,8 +87,9 @@ npm run assets:validate
 
 ## ✅ Качество
 
-- typecheck / ESLint: 0 ошибок · unit + component tests: **475** · e2e smoke (Playwright, 38)
+- typecheck / ESLint: 0 ошибок · unit + component tests: **1300+** · e2e smoke (Playwright, 38)
 - `npm run test:unit` — Vitest (unit + component) · `npm run test:e2e` — production build + Playwright
+- `npm run validate:content` — квесты, история, стихи, golden path
 - Валидатор контента: квесты, история, стихи, golden path — 0 ошибок
 - Бюджеты бандла в CI: boot target 450 КБ gzip (hard max 650), game-start target 1.2 МБ (hard max 1.8)
 - `npm run assets:bootstrap` — CC0 GLB для первого production-деплоя · `npm run assets:validate` — гейт в build

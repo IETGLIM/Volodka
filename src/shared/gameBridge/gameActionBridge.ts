@@ -83,6 +83,7 @@ export type GameAction =
   | { type: 'game/newGamePlus' }
   | { type: 'quest/activate'; questId: string }
   | { type: 'quest/setHoursElapsed'; questId: string; hoursElapsed: number }
+  | { type: 'quest/syncWallClockAnchors' }
   | { type: 'player/addSkill'; skill: TrainablePlayerSkill; amount: number }
   | { type: 'player/addEnergy'; amount: number }
   | { type: 'player/addStress'; amount: number }

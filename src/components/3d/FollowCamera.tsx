@@ -235,7 +235,7 @@ export function FollowCamera({
       livePlayerRotationRef.current = yawRef.current;
     }
 
-    if (processCinematicFreezeFrame(runtimeRef.current, sceneId)) return;
+    if (processCinematicFreezeFrame(runtimeRef.current, sceneId, currentNodeId)) return;
 
     _playerVelocity.current.copy(playerPos).sub(_prevPlayerPos.current);
     _prevPlayerPos.current.copy(playerPos);

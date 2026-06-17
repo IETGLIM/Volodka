@@ -21,6 +21,35 @@ function buffStackKey(buff: CombatBuff): string {
   return `${buff.target}:${buff.source}:${buff.effect.type}`;
 }
 
+/** Higher value = harder to evict when buff slots are full. */
+export function getBuffEvictionPriority(buff: CombatBuff): number {
+  const effectPriority: Record<BuffEffect['type'], number> = {
+    skip_turn: 90,
+    silence_specials: 85,
+    defensive_verse: 80,
+    damage_reduction: 75,
+    defense_boost: 70,
+    damage_multiplier: 65,
+    attack_boost: 60,
+    defense_reduction: 55,
+    stat_drain: 50,
+    hp_drain_percent: 45,
+  };
+  const base = effectPriority[buff.effect.type] ?? 40;
+  const kindBonus = buff.kind === 'debuff' && buff.target === 'player' ? 5 : 0;
+  return base + kindBonus;
+}
+
+function pickBuffToEvict(candidates: CombatBuff[]): CombatBuff {
+  return candidates.reduce((lowest, current) => {
+    const currentPriority = getBuffEvictionPriority(current);
+    const lowestPriority = getBuffEvictionPriority(lowest);
+    if (currentPriority < lowestPriority) return current;
+    if (currentPriority > lowestPriority) return lowest;
+    return current;
+  });
+}
+
 /** Add a buff to combat state with stack limit and mutual exclusion rules.
  *  Re-applying the same buff (e.g. spam Defend) refreshes duration instead of stacking.
  *  Max 2 active buffs and 2 active debuffs per target (counted separately).
@@ -56,9 +85,8 @@ export function addBuff(state: CombatState, buff: CombatBuff): CombatState {
     (b) => b.target === buff.target && b.kind === buff.kind,
   );
   if (existingForTarget.length >= 2) {
-    // Remove the oldest buff for this target to make room
-    const oldestId = existingForTarget[0].id;
-    filtered = filtered.filter((b) => b.id !== oldestId);
+    const toEvict = pickBuffToEvict(existingForTarget);
+    filtered = filtered.filter((b) => b.id !== toEvict.id);
   }
 
   return { ...state, buffs: [...filtered, buffToAdd], _nextBuffId: state._nextBuffId + 1 };

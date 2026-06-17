@@ -58,6 +58,7 @@ import { HUDMenuItem } from '@/components/game/hud/parts/HUDMenuItem';
 import { WeatherIcon, getWeatherDescription } from '@/components/game/hud/parts/WeatherIcon';
 import { TimeIcon } from '@/components/game/hud/parts/TimeIcon';
 import { AmbientParticles } from '@/components/game/hud/parts/AmbientParticles';
+import { PhysicsDegradedDevBadge } from '@/components/game/hud/parts/PhysicsDegradedDevBadge';
 
 export type { HUDProps } from '@/components/game/hud/hudTypes';
 
@@ -663,6 +664,8 @@ export function ExplorationHUD(props: HUDProps) {
       <div className="absolute left-1/2 -translate-x-1/2 pointer-events-auto lg:hidden" style={{ bottom: bottomStatusEffectsPx() }}>
         <StatusEffectsBar />
       </div>
+
+      <PhysicsDegradedDevBadge />
     </div>
   );
 }

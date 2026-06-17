@@ -24,6 +24,25 @@ describe('cameraStateMachine', () => {
     expect(state.mode).toBe('cinematic_freeze');
     state = reduceCameraState(state, { type: 'cinematic_fade_in' });
     expect(state.mode).toBe('exploration');
+    if (state.mode === 'exploration') {
+      expect(state.params.sceneId).toBe('home_evening');
+    }
+  });
+
+  it('uses fallback sceneId when leaving transition mode', () => {
+    const from = new THREE.Vector3(0, 1, 0);
+    const to = new THREE.Vector3(1, 2, 3);
+    let state = reduceCameraState(initialCameraState(), {
+      type: 'scene_transition_start',
+      from,
+      to,
+    });
+    expect(state.mode).toBe('transition');
+    state = reduceCameraState(state, { type: 'scene_transition_complete' }, 'street_night');
+    expect(state.mode).toBe('exploration');
+    if (state.mode === 'exploration') {
+      expect(state.params.sceneId).toBe('street_night');
+    }
   });
 
   it('tracks cutscene and transition modes', () => {

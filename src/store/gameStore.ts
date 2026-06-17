@@ -12,6 +12,7 @@ import { registerGameActionBridge, type GameSnapshotSubscribeOptions, type GameS
 import type { GameStoreState } from './types';
 export type { GameStoreState, CrossSliceReads } from './types';
 import { getCombinedGameState, subscribeAllStores, invalidateCombinedGameStateCache, scheduleAfterSliceStoresSettle } from './combinedState';
+import { getCachedGameSnapshot } from './gameSnapshotCache';
 import { applyCombinedPatch } from './patchState';
 import { applyGameAction } from './applyGameAction';
 
@@ -31,7 +32,6 @@ function flushFacadeState(): void {
 
 function syncMarkFacadeDirty(): void {
   invalidateCombinedGameStateCache();
-  invalidateGameSnapshotCache();
   facadeDirty = true;
 }
 
@@ -70,9 +70,6 @@ if (import.meta.env?.DEV) {
 }
 export function getGameStore(): GameStoreState { return useGameStore.getState(); }
 
-let cachedGameSnapshot: GameStoreSnapshot | null = null;
-let cachedGameSnapshotState: GameStoreState | null = null;
-
 function buildGameSnapshot(state: GameStoreState): GameStoreSnapshot {
   return {
     mode: getGamePhase({ mainMenuOpen: state.mainMenuOpen, introActive: state.introActive, combatActive: state.combatActive, activeCutsceneId: state.activeCutsceneId }),
@@ -88,19 +85,8 @@ function buildGameSnapshot(state: GameStoreState): GameStoreSnapshot {
     pendingPoemReadingId: state.pendingPoemReadingId ?? null,
   };
 }
-function invalidateGameSnapshotCache(): void {
-  cachedGameSnapshot = null;
-  cachedGameSnapshotState = null;
-}
-
 function toGameSnapshot(state: GameStoreState): GameStoreSnapshot {
-  if (cachedGameSnapshot && cachedGameSnapshotState === state) {
-    return cachedGameSnapshot;
-  }
-  const snapshot = buildGameSnapshot(state);
-  cachedGameSnapshotState = state;
-  cachedGameSnapshot = snapshot;
-  return snapshot;
+  return getCachedGameSnapshot(state, buildGameSnapshot);
 }
 function subscribeGameBridge(listener: (snapshot: GameStoreSnapshot) => void): () => void;
 function subscribeGameBridge<T>(listener: (selected: T) => void, options: GameSnapshotSubscribeOptions<T>): () => void;

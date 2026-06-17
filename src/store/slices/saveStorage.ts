@@ -17,6 +17,7 @@ import {
   SAVE_KEY,
   type PersistedStorage,
 } from '@/shared/persistence/persistedStorageOps';
+import { migrateSaveData } from './saveMigrations';
 
 export {
   SAVE_KEY,
@@ -111,14 +112,31 @@ export function resolveSaveFromStorage(): ResolvedSave {
   const raw = localStorage.getItem(SAVE_KEY);
   if (raw === null) return { status: 'empty' };
 
-  const primary = validateSaveData(raw);
+  let parsed: unknown;
+  try {
+    parsed = migrateSaveData(JSON.parse(raw));
+  } catch {
+    parsed = null;
+  }
+
+  const primary = validateSaveData(
+    parsed !== null ? JSON.stringify(parsed) : raw,
+  );
   if (primary.success) {
     return { status: 'ok', data: primary.data };
   }
 
   const backupRaw = localStorage.getItem(SAVE_BACKUP_KEY);
   if (backupRaw !== null) {
-    const backup = validateSaveData(backupRaw);
+    let backupParsed: unknown;
+    try {
+      backupParsed = migrateSaveData(JSON.parse(backupRaw));
+    } catch {
+      backupParsed = null;
+    }
+    const backup = validateSaveData(
+      backupParsed !== null ? JSON.stringify(backupParsed) : backupRaw,
+    );
     if (backup.success) {
       return {
         status: 'recovered-from-backup',

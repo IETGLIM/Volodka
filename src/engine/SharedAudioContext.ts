@@ -14,6 +14,7 @@
 
 import { registerHmrDispose } from '@/shared/dev/hmrDispose';
 import { probeAudioCapabilities, resetAudioCapabilitiesCache } from '@/engine/audio/audioCapabilities';
+import { clearReverbImpulseCache } from '@/engine/audio/AudioEngineCore';
 
 let sharedCtx: AudioContext | null = null;
 let _userInteracted = false;
@@ -151,6 +152,7 @@ export function disposeSharedAudioContext(): void {
     sharedCtx = null;
   }
   resetAudioCapabilitiesCache();
+  clearReverbImpulseCache();
   _pendingQueue = [];
   _userInteracted = false;
   registerGestureResumeHandlers();

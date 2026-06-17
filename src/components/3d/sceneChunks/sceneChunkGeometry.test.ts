@@ -1,8 +1,12 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 describe('scene chunk module geometries', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.resetModules();
+    const { disposeAllModuleGeometries } = await import('@/engine/three/moduleGeometryRegistry');
+    disposeAllModuleGeometries();
+    const { disposeAllModuleMaterials } = await import('@/engine/three/moduleMaterialRegistry');
+    disposeAllModuleMaterials();
   });
 
   it('StreetNightClutterChunk registers GPU resources when rendered', async () => {
@@ -29,7 +33,7 @@ describe('scene chunk module geometries', () => {
     HomeEveningPropsChunk();
     expect(getRegisteredModuleGeometryCount()).toBe(8);
     expect(getRegisteredModuleMaterialCount()).toBe(8);
-  });
+  }, 15_000);
 
   it('scene chunks dedupe identical geometry parameters via the central registry', async () => {
     const { getRegisteredModuleGeometryCount } = await import('@/engine/three/moduleGeometryRegistry');

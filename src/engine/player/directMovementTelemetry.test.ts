@@ -66,7 +66,12 @@ describe('directMovementTelemetry', () => {
 
     expect(refs.controlsDegradedRef.current).toBe(true);
     expect(devWarn).toHaveBeenCalledTimes(1);
-    expect(eventBusEmit).toHaveBeenCalledTimes(1);
+    expect(eventBusEmit).toHaveBeenCalledTimes(2);
+    expect(eventBusEmit).toHaveBeenCalledWith('player:physics_degraded', {
+      degraded: true,
+      sceneId: 'home_evening',
+      reason: 'kcc_unavailable',
+    });
     expect(eventBusEmit).toHaveBeenCalledWith('ui:exploration_message', {
       text: expect.stringContaining('Controls degraded'),
     });
@@ -83,5 +88,9 @@ describe('directMovementTelemetry', () => {
     expect(refs.degradedLoggedRef.current).toBe(false);
     expect(refs.degradedReasonRef.current).toBeNull();
     expect(refs.recreateAttemptsRef.current).toBe(0);
+    expect(eventBusEmit).toHaveBeenCalledWith('player:physics_degraded', {
+      degraded: false,
+      sceneId: 'home_evening',
+    });
   });
 });

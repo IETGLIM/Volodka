@@ -150,12 +150,14 @@ function FirstPersonHandsInner({ moveBlendRef }: FirstPersonHandsProps) {
     if (mixer && !proceduralOnly) mixer.update(delta);
   });
 
+  const rigScale = proceduralOnly ? FPS_PROCEDURAL_RIG_SCALE : 1;
+
   return (
     <group ref={rigRef}>
       <group ref={armsMountRef}>
-        <group scale={FPS_PROCEDURAL_RIG_SCALE}>
+        <group scale={rigScale}>
           <primitive object={scene} />
-          <FpsFingerEnhancement />
+          {proceduralOnly ? <FpsFingerEnhancement /> : null}
         </group>
       </group>
     </group>

@@ -26,6 +26,7 @@ export function applyGameAction(_state: GameStoreState, action: GameAction): Par
       break;
     case 'quest/activate': world.activateQuest(action.questId); break;
     case 'quest/setHoursElapsed': world.setQuestHoursElapsed(action.questId, action.hoursElapsed); break;
+    case 'quest/syncWallClockAnchors': world.syncActiveQuestWallClocks(); break;
     case 'player/addSkill': player.addSkill(action.skill, action.amount); break;
     case 'player/addEnergy': player.addEnergy(action.amount); break;
     case 'player/addStress': player.addStress(action.amount); break;

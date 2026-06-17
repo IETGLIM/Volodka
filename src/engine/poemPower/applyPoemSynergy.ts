@@ -9,6 +9,7 @@ import type { TrainablePlayerSkill } from '@/shared/types/game';
 import { isTrainablePlayerSkill, warnInvalidValue } from '@/shared/validation/typeGuards';
 import { selectHeartBondTarget, HEART_BOND_BONUS_MIN_VALUE } from '@/engine/npcRelationship/selectHeartBondTarget';
 import { scalePoemPowerDurationMs, scalePoemPowerSkillDelta } from '@/engine/skills/passiveSkillModifiers';
+import { ttlExpiryFromDurationMs } from '@/shared/ttlClock';
 
 function snap() {
   return getGameSnapshot();
@@ -36,7 +37,6 @@ function setNpcRelation(npcId: string, delta: number) {
 function upsertSynergyTTLFlags(synergy: PoemSynergyDefinition): void {
   if (synergy.flagsToSet.length === 0) return;
   const snapshot = snap();
-  const now = Date.now();
   for (const flag of synergy.flagsToSet) {
     setFlag(flag.key, true);
   }
@@ -45,13 +45,13 @@ function upsertSynergyTTLFlags(synergy: PoemSynergyDefinition): void {
     flags: synergy.flagsToSet.map((flag) => ({
       key: flag.key,
       poemId: flag.reverseId ?? synergy.synergyId,
-      expiryTimestamp:
-        now
-        + scalePoemPowerDurationMs(
+      expiryTimestamp: ttlExpiryFromDurationMs(
+        scalePoemPowerDurationMs(
           flag.durationMs,
           snapshot.playerState.progression.unlockedSkills,
           snapshot.playerState.flags,
         ),
+      ),
     })),
   });
 }

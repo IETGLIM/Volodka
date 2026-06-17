@@ -1,5 +1,6 @@
 import type { ActiveTTLFlagMap } from '@/shared/activeTTLFlags';
 import { isActiveTTLFlagLive } from '@/shared/activeTTLFlags';
+import { ttlNow } from '@/shared/ttlClock';
 import {
   POEM_WORLD_CATEGORIES,
   POEM_WORLD_FALLBACK_CATEGORY,
@@ -26,7 +27,7 @@ const REDUCED_MOTION_SCALE = 0.35;
 export function resolvePoemTTLPostFxBoost(
   activeTTLFlags: ActiveTTLFlagMap | undefined,
   reducedMotion: boolean,
-  now: number = Date.now(),
+  now: number = ttlNow(),
 ): PoemPostFxBoost {
   const totals = { bloomIntensity: 0, vignetteDarkness: 0 };
 

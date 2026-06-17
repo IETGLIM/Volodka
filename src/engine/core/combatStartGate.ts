@@ -14,6 +14,9 @@ export interface DeferredCombatStartOptions {
   creepId?: string;
 }
 
+/** Max wait for scene:loaded before flushing deferred combat / clearing async guard. */
+export const COMBAT_START_GATE_TIMEOUT_MS = 15_000;
+
 interface PendingCombatStart {
   enemyType: EnemyType;
   options?: DeferredCombatStartOptions;
@@ -27,6 +30,34 @@ type CombatStartExecutor = (
 
 let pending: PendingCombatStart | null = null;
 let executor: CombatStartExecutor | null = null;
+let pendingTimeoutId: ReturnType<typeof setTimeout> | null = null;
+let timeoutHandler: (() => void) | null = null;
+
+export function registerCombatStartGateTimeoutHandler(handler: () => void): void {
+  timeoutHandler = handler;
+}
+
+function clearPendingCombatTimeout(): void {
+  if (pendingTimeoutId !== null) {
+    clearTimeout(pendingTimeoutId);
+    pendingTimeoutId = null;
+  }
+}
+
+export function armDeferredCombatStartTimeout(
+  onTimeout: () => void,
+  timeoutMs: number = COMBAT_START_GATE_TIMEOUT_MS,
+): void {
+  clearPendingCombatTimeout();
+  pendingTimeoutId = setTimeout(() => {
+    pendingTimeoutId = null;
+    onTimeout();
+  }, timeoutMs);
+}
+
+export function clearDeferredCombatStartTimeout(): void {
+  clearPendingCombatTimeout();
+}
 
 export function registerCombatStartExecutor(fn: CombatStartExecutor): void {
   executor = fn;
@@ -45,6 +76,10 @@ export function deferCombatStartIfTransitionBusy(
     sceneId: getGameSnapshot().exploration.currentSceneId,
   };
 
+  if (timeoutHandler) {
+    armDeferredCombatStartTimeout(timeoutHandler, COMBAT_START_GATE_TIMEOUT_MS);
+  }
+
   if (import.meta.env.DEV) {
     console.warn(
       '[CombatStartGate] Deferred combat until scene transition completes',
@@ -56,6 +91,7 @@ export function deferCombatStartIfTransitionBusy(
 
 /** Run deferred combat after scene:loaded (first composited frame). */
 export function flushDeferredCombatStart(): void {
+  clearPendingCombatTimeout();
   const req = pending;
   pending = null;
   if (!req || !executor) return;
@@ -77,10 +113,12 @@ export function flushDeferredCombatStart(): void {
 }
 
 export function clearDeferredCombatStart(): void {
+  clearPendingCombatTimeout();
   pending = null;
 }
 
 /** Test harness */
 export function resetCombatStartGate(): void {
+  clearPendingCombatTimeout();
   pending = null;
 }

@@ -28,6 +28,7 @@ import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { resolvePoemTTLPostFxBoost } from '@/engine/poemWorld/poemPostFxBoost';
 import { useMobileVisualPerf, useIsMobileVisual } from '@/hooks/use-mobile';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
+import { isPostProcessingEnabled } from '@/engine/graphics/qualityPresets';
 import { useVisualSettings } from '@/hooks/useVisualSettings';
 import { SCENE_VISIBILITY } from '@/shared/constants/sceneVisibility';
 import { resolveSceneRenderingPipeline } from '@/engine/graphics/resolveSceneRenderingPipeline';
@@ -218,13 +219,15 @@ export function ExplorationPostFX() {
   const rendererReady = useRendererReady();
   const gameMode = useGameMode();
   const { postfxEnabled } = useVisualSettings();
+  const { preset } = useGraphicsQuality();
+  const postfxActive = isPostProcessingEnabled(preset, postfxEnabled);
 
   // Synchronous double-check: even if useRendererReady says true,
   // verify the context is actually valid RIGHT NOW before mounting
   // EffectComposer. This catches the race condition where gl changes
   // but ready hasn't been reset yet.
   const gl = useThree((state) => state.gl);
-  if (gameMode === 'menu' || !postfxEnabled) return null;
+  if (gameMode === 'menu' || !postfxActive) return null;
   if (!rendererReady) return null;
   try {
     const ctx = gl.getContext();

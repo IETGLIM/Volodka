@@ -10,4 +10,6 @@ export interface QuestState {
   readonly startedAtTime?: number;
   /** Accumulated in-game hours since activation (persists across midnight). */
   readonly hoursElapsed?: number;
+  /** Wall-clock ms when quest was activated — fallback when hour ticks stall. */
+  readonly startedAtWallMs?: number;
 }

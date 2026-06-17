@@ -17,4 +17,10 @@ describe('resolveNarrativeText', () => {
     expect(resolveNarrativeText(node, 50)).toBe('neutral');
     expect(resolveNarrativeText(node, 10)).toBe('cold');
   });
+
+  it('strips HTML-like tags from narrative text', () => {
+    expect(
+      resolveNarrativeText({ text: 'Привет <b>мир</b>' }, 50),
+    ).toBe('Привет мир');
+  });
 });

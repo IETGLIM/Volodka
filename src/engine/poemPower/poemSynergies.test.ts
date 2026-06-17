@@ -169,7 +169,7 @@ describe('poem synergies', () => {
         synergy_storm_breakthrough_intuition: {
           key: 'synergy_storm_breakthrough_intuition',
           poemId: 'storm_breakthrough',
-          expiryTimestamp: Date.now() - 1,
+          expiryTimestamp: performance.now() - 1,
         },
       },
     });

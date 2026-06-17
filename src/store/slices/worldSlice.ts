@@ -87,6 +87,8 @@ export interface WorldSliceActions {
   completeQuest: (questId: string) => void;
   failQuest: (questId: string, reason?: string) => void;
   setQuestHoursElapsed: (questId: string, hoursElapsed: number) => void;
+  /** Reset wall-clock anchors after load (avoids stale real-time elapsed). */
+  syncActiveQuestWallClocks: () => void;
   collectPoem: (poemId: string) => void;
   setNpcRelation: (npcId: string, delta: number) => void;
   activatePoemPower: (poemId: string) => boolean;
@@ -193,7 +195,14 @@ export const createWorldSlice: StateCreator<
 
     const quests = state.quests.filter((q) => q.questId !== questId);
     const { timeOfDay } = readWorldFromExploration();
-    quests.push({ questId, status: 'active', objectives, startedAtTime: timeOfDay, hoursElapsed: 0 });
+    quests.push({
+      questId,
+      status: 'active',
+      objectives,
+      startedAtTime: timeOfDay,
+      startedAtWallMs: Date.now(),
+      hoursElapsed: 0,
+    });
 
     set({ quests });
     scheduleQuestAccepted(questId, definition.title);
@@ -216,7 +225,7 @@ export const createWorldSlice: StateCreator<
     const { timeOfDay } = readWorldFromExploration();
     const quests = state.quests.map((q) =>
       q.questId === questId
-        ? { questId, status: 'active' as const, objectives, startedAtTime: timeOfDay }
+        ? { questId, status: 'active' as const, objectives, startedAtTime: timeOfDay, startedAtWallMs: Date.now() }
         : q,
     );
 
@@ -306,6 +315,15 @@ export const createWorldSlice: StateCreator<
         if (q.status !== 'active') return q;
         return { ...q, hoursElapsed };
       }),
+    }));
+  },
+
+  syncActiveQuestWallClocks: () => {
+    const now = Date.now();
+    set((state) => ({
+      quests: state.quests.map((q) =>
+        q.status === 'active' ? { ...q, startedAtWallMs: now } : q,
+      ),
     }));
   },
 

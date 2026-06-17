@@ -6,7 +6,14 @@
  * - Narrative engine + narrative data share one chunk (avoids circular splits).
  * - Other data → acyclic domain buckets (npc / world / mechanics).
  * - node_modules → vendor + three only.
+ * - Chunks smaller than {@link SMALL_CHUNK_BYTE_THRESHOLD} merge via Rollup
+ *   `experimentalMinChunkSize` in vite.config.ts.
  */
+
+export const SMALL_CHUNK_BYTE_THRESHOLD = 5 * 1024;
+
+/** Rollup `experimentalMinChunkSize` — merges emitted chunks smaller than 5 KB. */
+export const ROLLUP_MIN_CHUNK_SIZE = SMALL_CHUNK_BYTE_THRESHOLD;
 
 const toPosix = (id: string) => id.replace(/\\/g, '/');
 
@@ -182,6 +189,16 @@ function resolveDataChunk(posix: string): string | undefined {
 
   const satelliteStoryChunk = resolveSatelliteStoryChunk(posix);
   if (satelliteStoryChunk) return satelliteStoryChunk;
+
+  if (posix.includes('/src/data/story/texts/')) {
+    const actMatch = posix.match(/\/src\/data\/story\/texts\/act(\d+)\.json/);
+    if (actMatch) return `data-story-act${actMatch[1]}`;
+  }
+
+  if (posix.includes('/src/data/story/structures/')) {
+    const actMatch = posix.match(/\/src\/data\/story\/structures\/act(\d+)\.structure/);
+    if (actMatch) return `data-story-act${actMatch[1]}`;
+  }
 
   if (posix.includes('/src/data/story/act')) {
     const actMatch = posix.match(/\/src\/data\/story\/act(\d+)/);

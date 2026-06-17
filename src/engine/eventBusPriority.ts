@@ -27,6 +27,8 @@ export interface PrioritizedListener<T = unknown> {
   priority: number;
   /** Monotonic registration sequence — tie-breaker within the same priority tier */
   order: number;
+  /** Stable id for O(1) unsubscribe */
+  id: number;
 }
 
 export function compareListeners<T>(

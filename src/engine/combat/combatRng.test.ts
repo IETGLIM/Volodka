@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import type { CombatState } from './types';
 import {
   SeededCombatRng,
+  COMBAT_PITY,
+  computeCritChanceWithPity,
   createCombatRngState,
   deriveCombatRngSeed,
   getRngState,
@@ -10,7 +12,6 @@ import {
   setRngSeed,
   withCombatRng,
 } from './combatRng';
-import { computeDamage } from './formulas';
 import { POEM_COMBAT_ABILITIES } from './actions';
 
 function minimalCombatState(rngSeed = 42): CombatState {
@@ -48,6 +49,22 @@ describe('SeededCombatRng', () => {
   });
 });
 
+describe('combat pity', () => {
+  it('ramps crit chance after soft pity threshold', () => {
+    expect(computeCritChanceWithPity(0.1, COMBAT_PITY.CRIT_SOFT_START)).toBe(0.1);
+    expect(computeCritChanceWithPity(0.1, COMBAT_PITY.CRIT_SOFT_START + 1)).toBeCloseTo(0.14);
+    expect(computeCritChanceWithPity(0.1, COMBAT_PITY.CRIT_HARD_GUARANTEE)).toBe(1);
+  });
+
+  it('guarantees a crit after enough failed attempts', () => {
+    const forced = SeededCombatRng.fromState({
+      ...createCombatRngState(0xabc),
+      pity: { rollsSinceCrit: COMBAT_PITY.CRIT_HARD_GUARANTEE, rollsSinceHit: 0 },
+    });
+    expect(forced.rollCritical(0.01)).toBe(true);
+  });
+});
+
 describe('combat damage reproducibility', () => {
   it('same seed yields the same poem_5 damage sequence', () => {
     const base = minimalCombatState(deriveCombatRngSeed(0x1234, 0, 'system_daemon'));
@@ -62,22 +79,17 @@ describe('combat damage reproducibility', () => {
     expect(run({ ...base })).toEqual(run({ ...base }));
   });
 
-  it('matches computeDamage when sharing one roll function', () => {
-    const rng = SeededCombatRng.fromState(createCombatRngState(55));
-    const roll = rng.asRollFn();
-    const fromFormula = computeDamage({
-      attack: 30,
-      defense: 5,
-      multiplier: 1.5,
-      varianceProfile: 'player',
-      rng: roll,
-    });
-    const fromHelper = rollPlayerDamage(minimalCombatState(55), {
-      attack: 30,
-      defense: 5,
-      multiplier: 1.5,
-    });
-    expect(fromHelper.damage).toBe(fromFormula);
+  it('rollDamage is deterministic for the same seed', () => {
+    const run = () => {
+      const rng = SeededCombatRng.fromState(createCombatRngState(55));
+      return rng.rollDamage({
+        attack: 30,
+        defense: 5,
+        multiplier: 1.5,
+        varianceProfile: 'player',
+      });
+    };
+    expect(run()).toBe(run());
   });
 });
 

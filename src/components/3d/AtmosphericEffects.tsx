@@ -4,6 +4,7 @@ import { useGameMode } from '@/store/selectors';
 import { useIsMobileVisual, useMobileVisualPerf } from '@/hooks/use-mobile';
 import { useVisualSettings } from '@/hooks/useVisualSettings';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
+import { isPostProcessingEnabled } from '@/engine/graphics/qualityPresets';
 import { allowsHeavyGfxFeature } from '@/engine/graphics/qualityFeatureGates';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import {
@@ -41,11 +42,12 @@ export function AtmosphericEffects() {
   const coarsePointer = useIsMobileVisual();
   const { particlesEnabled, postfxEnabled } = useVisualSettings();
   const { preset, selectedPreset } = useGraphicsQuality();
+  const postfxActive = isPostProcessingEnabled(preset, postfxEnabled);
   const reducedMotion = useEffectiveReducedMotion();
   const fxTier = tierFromPresetId(preset.id);
   const heroScene = isHeroScene(sceneId as SceneId);
   const heavyEffects = (visualLite || effectsScale < 0.85) && !heroScene;
-  const effectsEnabled = gameMode !== 'menu' && postfxEnabled;
+  const effectsEnabled = gameMode !== 'menu' && postfxActive;
 
   const wantsFog = sceneHasFog(sceneId);
   const wantsGodRays = sceneHasGodRays(sceneId);

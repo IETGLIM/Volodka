@@ -9,6 +9,7 @@ import {
 } from '@/engine/player/directMovementTelemetry';
 import {
   nextKccHealthyFrameCount,
+  shouldAttemptKccRecreate,
   shouldEnterKccDegraded,
   shouldRestoreKccFromHealthyFrames,
 } from '@/engine/player/kccRecoveryState';
@@ -71,6 +72,10 @@ function tryRecoverKcc(deps: PlayerMovementDeps, reason: string): boolean {
   const collider = deps.capsuleColliderRef.current;
   let controller = deps.controllerRef.current;
   if (collider && controller) return true;
+
+  if (!shouldAttemptKccRecreate(deps.directMovementTelemetry.recreateAttemptsRef.current)) {
+    return false;
+  }
 
   logKccRecreateAttempt(deps.directMovementTelemetry, reason, {
     sceneId: deps.sceneId,

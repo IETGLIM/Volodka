@@ -1,8 +1,31 @@
 /** Visual quality tiers — drives DPR, LOD, compression variant, and procedural/GLB mix. */
 
 import { getSessionAutoResolvedTier } from './autoQualitySession';
+import {
+  computePhysicalPixelCount,
+  isWeakMobileGpuRenderer,
+  probeWebGlGpu,
+  type WebGlGpuProbe,
+} from './gpuQualityProbe';
 
 export type QualityPresetId = 'auto' | 'low' | 'medium' | 'high' | 'ultra';
+
+type ConcreteQualityPresetId = Exclude<QualityPresetId, 'auto'>;
+
+interface NavigatorBatteryManager {
+  charging: boolean;
+  level: number;
+  addEventListener(type: 'levelchange' | 'chargingchange', listener: () => void): void;
+}
+
+/** Runtime pressure from GPU memory / perf monitors — degrades post-FX gracefully. */
+export type GfxPressureLevel = 'none' | 'memory' | 'critical';
+
+function hasCoarsePointer(): boolean {
+  if (typeof window === 'undefined') return false;
+  if (typeof window.matchMedia !== 'function') return false;
+  return window.matchMedia('(pointer: coarse)').matches;
+}
 
 export type AssetRenderMode = 'procedural' | 'hybrid' | 'glb';
 export type CompressionPreference = 'none' | 'draco' | 'meshopt';
@@ -44,7 +67,7 @@ export const QUALITY_PRESETS: Record<Exclude<QualityPresetId, 'auto'>, QualityPr
     dpr: [0.75, 1],
     shadows: false,
     antialias: false,
-    postProcessing: true,
+    postProcessing: false,
     effectsScale: 0.25,
     lodBias: 0.6,
     textureScale: 0.25,
@@ -53,7 +76,7 @@ export const QUALITY_PRESETS: Record<Exclude<QualityPresetId, 'auto'>, QualityPr
     useImpostors: true,
     impostorDistance: 18,
     bakedLighting: true,
-    compression: 'meshopt',
+    compression: 'draco',
     npcRenderMode: 'procedural',
     environmentRenderMode: 'procedural',
     visualLite: true,
@@ -132,15 +155,201 @@ export const QUALITY_PRESET_ORDER: Exclude<QualityPresetId, 'auto'>[] = [
 
 export const GRAPHICS_SETTINGS_KEY = 'volodka_quality_preset';
 
-/** Resolve `auto` from viewport + DPR heuristics. */
+/** High-DPR phones (e.g. iPhone @3x) — cap auto tier to avoid WebGL OOM. */
+const HIGH_DPR_MOBILE_THRESHOLD = 2.75;
+
+/** Physical pixel budget thresholds (CSS viewport × DPR²). */
+const PIXEL_BUDGET_ULTRA_MAX = 12_000_000;
+const PIXEL_BUDGET_HIGH_MAX = 8_000_000;
+const PIXEL_BUDGET_MEDIUM_MAX = 20_000_000;
+
+function readDeviceMemoryGb(): number | undefined {
+  if (typeof navigator === 'undefined') return undefined;
+  return (navigator as Navigator & { deviceMemory?: number }).deviceMemory;
+}
+
+function readViewportHeight(fallbackWidth: number): number {
+  if (typeof window !== 'undefined' && window.innerHeight > 0) {
+    return window.innerHeight;
+  }
+  return Math.round(fallbackWidth * 9 / 16);
+}
+
+/** Downgrade auto tier on framebuffer pixel budget. */
+export function capQualityTierForPixelBudget(
+  tier: Exclude<QualityPresetId, 'auto'>,
+  physicalPixelCount: number,
+): Exclude<QualityPresetId, 'auto'> {
+  let capped = tier;
+
+  if (physicalPixelCount > PIXEL_BUDGET_MEDIUM_MAX) {
+    if (capped === 'ultra') capped = 'high';
+    if (capped === 'high') capped = 'medium';
+  } else if (physicalPixelCount > PIXEL_BUDGET_ULTRA_MAX && capped === 'ultra') {
+    capped = 'high';
+  } else if (physicalPixelCount > PIXEL_BUDGET_HIGH_MAX && capped === 'high') {
+    capped = 'medium';
+  }
+
+  return capped;
+}
+
+/** Downgrade auto tier on memory-constrained / high-DPR mobile GPUs. */
+export function capQualityTierForGpuMemory(
+  tier: Exclude<QualityPresetId, 'auto'>,
+  devicePixelRatio: number,
+  deviceMemoryGb: number | undefined = readDeviceMemoryGb(),
+  gpuProbe: WebGlGpuProbe = probeWebGlGpu(),
+): Exclude<QualityPresetId, 'auto'> {
+  let capped = tier;
+
+  if (gpuProbe.isSoftwareRenderer) return 'low';
+
+  if (devicePixelRatio >= HIGH_DPR_MOBILE_THRESHOLD) {
+    if (capped === 'ultra') capped = 'high';
+    if (devicePixelRatio >= 3 && capped === 'high') capped = 'medium';
+  }
+
+  if (deviceMemoryGb !== undefined) {
+    if (deviceMemoryGb <= 2) return 'low';
+    if (deviceMemoryGb <= 4) {
+      if (capped === 'ultra') capped = 'high';
+      if (capped === 'high' && devicePixelRatio >= 2) capped = 'medium';
+    }
+  }
+
+  if (gpuProbe.maxTextureSize !== undefined) {
+    if (gpuProbe.maxTextureSize < 4096) capped = 'low';
+    else if (gpuProbe.maxTextureSize < 8192 && capped === 'ultra') capped = 'high';
+  }
+
+  if (isWeakMobileGpuRenderer(gpuProbe.renderer)) {
+    if (capped === 'ultra') capped = 'high';
+    if (capped === 'high' && devicePixelRatio >= 2) capped = 'medium';
+  }
+
+  if (hasCoarsePointer() && capped === 'ultra') {
+    capped = 'high';
+  }
+
+  return capped;
+}
+
+let cachedBatteryCap: ConcreteQualityPresetId | null = null;
+let batteryListenerAttached = false;
+
+function computeBatteryQualityCap(battery: NavigatorBatteryManager): ConcreteQualityPresetId | null {
+  if (battery.charging) return null;
+  if (battery.level <= 0.15) return 'low';
+  if (battery.level <= 0.3) return 'medium';
+  return null;
+}
+
+function clampTierToCap(
+  tier: ConcreteQualityPresetId,
+  cap: ConcreteQualityPresetId | null,
+): ConcreteQualityPresetId {
+  if (!cap) return tier;
+  const tierIdx = QUALITY_PRESET_ORDER.indexOf(tier);
+  const capIdx = QUALITY_PRESET_ORDER.indexOf(cap);
+  return QUALITY_PRESET_ORDER[Math.min(tierIdx, capIdx)];
+}
+
+/** Cached battery cap for sync auto-quality (null when charging or API unavailable). */
+export function getBatteryQualityCap(): ConcreteQualityPresetId | null {
+  return cachedBatteryCap;
+}
+
+/** Attach Battery API listeners once — graceful no-op when unsupported. */
+export function initBatteryQualityCapListener(): void {
+  if (batteryListenerAttached || typeof navigator === 'undefined') return;
+  batteryListenerAttached = true;
+
+  const nav = navigator as Navigator & { getBattery?: () => Promise<NavigatorBatteryManager> };
+  if (!nav.getBattery) return;
+
+  void nav.getBattery()
+    .then((battery) => {
+      const sync = (): void => {
+        cachedBatteryCap = computeBatteryQualityCap(battery);
+      };
+      sync();
+      battery.addEventListener('levelchange', sync);
+      battery.addEventListener('chargingchange', sync);
+    })
+    .catch(() => {
+      cachedBatteryCap = null;
+    });
+}
+
+/** Test harness — reset battery cap state between cases. */
+export function resetBatteryQualityCapForTests(): void {
+  cachedBatteryCap = null;
+  batteryListenerAttached = false;
+}
+
+/** Test harness — inject battery cap without Battery API. */
+export function setBatteryQualityCapForTests(cap: ConcreteQualityPresetId | null): void {
+  cachedBatteryCap = cap;
+  batteryListenerAttached = true;
+}
+
+/** Resolve `auto` from viewport + DPR + pixel budget + GPU memory + battery heuristics. */
 export function detectAutoQualityPreset(
   viewportWidth: number,
   devicePixelRatio: number,
+  viewportHeight: number = readViewportHeight(viewportWidth),
 ): Exclude<QualityPresetId, 'auto'> {
-  if (viewportWidth < 768 || devicePixelRatio < 1.25) return 'low';
-  if (viewportWidth < 1024 || devicePixelRatio < 1.5) return 'medium';
-  if (viewportWidth < 1440) return 'high';
-  return 'ultra';
+  initBatteryQualityCapListener();
+
+  let tier: Exclude<QualityPresetId, 'auto'>;
+  if (viewportWidth < 768 || devicePixelRatio < 1.25) tier = 'low';
+  else if (viewportWidth < 1024 || devicePixelRatio < 1.5) tier = 'medium';
+  else if (viewportWidth < 1440) tier = 'high';
+  else tier = 'ultra';
+
+  const physicalPixels = computePhysicalPixelCount(
+    viewportWidth,
+    viewportHeight,
+    devicePixelRatio,
+  );
+  tier = capQualityTierForPixelBudget(tier, physicalPixels);
+  tier = capQualityTierForGpuMemory(tier, devicePixelRatio);
+  return clampTierToCap(tier, getBatteryQualityCap());
+}
+
+/** Whether post-processing may run for this preset + user toggle. */
+export function isPostProcessingEnabled(
+  preset: QualityPreset,
+  postfxUserEnabled: boolean,
+): boolean {
+  return preset.postProcessing && postfxUserEnabled;
+}
+
+/** Gracefully reduce post-processing under memory/perf pressure instead of failing. */
+export function applyGfxPressureToPreset(
+  preset: QualityPreset,
+  pressure: GfxPressureLevel,
+): QualityPreset {
+  switch (pressure) {
+    case 'none':
+      return preset;
+    case 'memory':
+      return preset.postProcessing
+        ? { ...preset, effectsScale: preset.effectsScale * 0.75 }
+        : preset;
+    case 'critical':
+      return {
+        ...preset,
+        postProcessing: false,
+        effectsScale: preset.effectsScale * 0.5,
+        antialias: preset.id === 'low' ? false : preset.antialias,
+      };
+    default: {
+      const _exhaustive: never = pressure;
+      return _exhaustive;
+    }
+  }
 }
 
 export function resolveQualityPreset(
@@ -148,12 +357,13 @@ export function resolveQualityPreset(
   viewportWidth: number,
   devicePixelRatio: number,
   autoRuntimeTier: Exclude<QualityPresetId, 'auto'> | null = getSessionAutoResolvedTier(),
+  gfxPressure: GfxPressureLevel = 'none',
 ): QualityPreset {
   const id =
     selected === 'auto'
       ? autoRuntimeTier ?? detectAutoQualityPreset(viewportWidth, devicePixelRatio)
       : selected;
-  return QUALITY_PRESETS[id];
+  return applyGfxPressureToPreset(QUALITY_PRESETS[id], gfxPressure);
 }
 
 /** Whether shipped GLB dressing / props should render for this render-mode tier. */

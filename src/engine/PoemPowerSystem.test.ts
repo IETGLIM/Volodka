@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { ttlNow } from '@/shared/ttlClock';
 import {
   activatePoemPowerById,
   clearAllPowerTimers,
@@ -58,7 +59,7 @@ describe('PoemPowerSystem TTL flags', () => {
         word_power_active: {
           key: 'word_power_active',
           poemId: 'poem_6',
-          expiryTimestamp: Date.now() - 1,
+          expiryTimestamp: ttlNow() - 1,
         },
       },
     });
@@ -88,7 +89,7 @@ describe('PoemPowerSystem TTL flags', () => {
         jester_word_active: {
           key: 'jester_word_active',
           poemId: 'poem_9',
-          expiryTimestamp: Date.now() - 1,
+          expiryTimestamp: ttlNow() - 1,
         },
       },
     });
@@ -100,5 +101,29 @@ describe('PoemPowerSystem TTL flags', () => {
     expect(afterExpiry.skills.persuasion).toBe(BASE_SKILLS.persuasion);
     expect(useGameStore.getState().activeTTLFlags.jester_word_active).toBeUndefined();
     expect(useGameStore.getState().playerState.flags.jester_word_active).toBe(false);
+  });
+
+  it('does not drive skills below zero when reverse exceeds current value', () => {
+    useGameStore.setState({
+      collectedPoems: ['poem_6'],
+      playerState: {
+        ...useGameStore.getState().playerState,
+        skills: { ...BASE_SKILLS, writing: 1, persuasion: 0 },
+        flags: { word_power_active: true },
+      },
+      activeTTLFlags: {
+        word_power_active: {
+          key: 'word_power_active',
+          poemId: 'poem_6',
+          expiryTimestamp: ttlNow() - 1,
+        },
+      },
+    });
+
+    processExpiredTTLFlags();
+
+    const skills = useGameStore.getState().playerState.skills;
+    expect(skills.writing).toBe(0);
+    expect(skills.persuasion).toBe(0);
   });
 });

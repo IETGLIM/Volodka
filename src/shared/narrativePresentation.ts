@@ -1,4 +1,5 @@
 import type { KarmaThresholds, NarrativeTextVariants } from '@/shared/types/definitions/narrative';
+import { sanitizePlainText } from '@/shared/utils/sanitizePlainText';
 
 export const DEFAULT_KARMA_THRESHOLDS: KarmaThresholds = { high: 65, low: 30 };
 
@@ -11,13 +12,17 @@ export function resolveNarrativeText(
   karma: number,
 ): string {
   const variants = node.textVariants;
-  if (!variants) return node.text;
+  if (!variants) return sanitizePlainText(node.text);
 
   const thresholds = node.karmaThresholds ?? DEFAULT_KARMA_THRESHOLDS;
-  if (karma >= thresholds.high && variants.highKarma) return variants.highKarma;
-  if (karma <= thresholds.low && variants.lowKarma) return variants.lowKarma;
-  if (variants.neutralKarma) return variants.neutralKarma;
-  return node.text;
+  if (karma >= thresholds.high && variants.highKarma) {
+    return sanitizePlainText(variants.highKarma);
+  }
+  if (karma <= thresholds.low && variants.lowKarma) {
+    return sanitizePlainText(variants.lowKarma);
+  }
+  if (variants.neutralKarma) return sanitizePlainText(variants.neutralKarma);
+  return sanitizePlainText(node.text);
 }
 
 export function buildNarrativeLiveMessage(

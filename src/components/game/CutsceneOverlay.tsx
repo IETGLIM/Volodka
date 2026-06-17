@@ -21,6 +21,7 @@ import { setCinematicPresentationMode } from '@/engine/camera/cinematicPresentat
 import type { CutsceneDef } from '@/data/cutscenes';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { AriaLiveRegion } from '@/components/a11y/AriaLiveRegion';
+import { sanitizePlainText } from '@/shared/utils/sanitizePlainText';
 
 function finishCutscenePresentation(): void {
   setCinematicPresentationMode('first_person');
@@ -307,8 +308,8 @@ export function CutsceneOverlay() {
         ? Math.min(payload.durationMs, 2_500)
         : payload.durationMs;
 
-      setText(payload.text);
-      setSubtitle(payload.subtitle ?? '');
+      setText(sanitizePlainText(payload.text));
+      setSubtitle(payload.subtitle ? sanitizePlainText(payload.subtitle) : '');
       setAccentColor(payload.accentColor);
       setCutsceneType(payload.type ?? 'act_transition');
       setLetterboxStyle(reducedMotion ? 'thin' : (payload.letterboxStyle ?? 'full'));
@@ -318,7 +319,9 @@ export function CutsceneOverlay() {
       setShowSkip(true);
       skippedRef.current = false;
       setAriaAnnouncement(
-        payload.subtitle ? `${payload.text}. ${payload.subtitle}` : payload.text,
+        payload.subtitle
+          ? `${sanitizePlainText(payload.text)}. ${sanitizePlainText(payload.subtitle)}`
+          : sanitizePlainText(payload.text),
       );
 
       // Show skip button after a 1-second delay to prevent accidental skips

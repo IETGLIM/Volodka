@@ -17,7 +17,21 @@ const DATA_ROOT = join(process.cwd(), 'src/data');
 /** Collect every flag set via setFlag across story, quests, CHK, exploration. */
 function collectSetFlags(): Set<string> {
   const flags = new Set<string>();
-  const flagRe = /setFlag['"]\s*,\s*flag:\s*['"]([^'"]+)['"]/g;
+  const patterns = [
+    /setFlag['"]\s*,\s*flag:\s*['"]([^'"]+)['"]/g,
+    /type:\s*['"]setFlag['"]\s*,\s*flag:\s*['"]([^'"]+)['"]/g,
+    /"type":\s*"setFlag"[^}]*"flag":\s*"([^"]+)"/g,
+  ];
+
+  function scanText(text: string): void {
+    for (const flagRe of patterns) {
+      flagRe.lastIndex = 0;
+      let m: RegExpExecArray | null;
+      while ((m = flagRe.exec(text)) !== null) {
+        flags.add(m[1]);
+      }
+    }
+  }
 
   function scanDir(dir: string): void {
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
@@ -26,12 +40,8 @@ function collectSetFlags(): Set<string> {
         scanDir(full);
         continue;
       }
-      if (!/\.(ts|tsx)$/.test(entry.name)) continue;
-      const text = readFileSync(full, 'utf8');
-      let m: RegExpExecArray | null;
-      while ((m = flagRe.exec(text)) !== null) {
-        flags.add(m[1]);
-      }
+      if (!/\.(ts|tsx|json)$/.test(entry.name)) continue;
+      scanText(readFileSync(full, 'utf8'));
     }
   }
 

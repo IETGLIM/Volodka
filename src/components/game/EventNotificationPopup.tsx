@@ -13,6 +13,7 @@ import { eventBus, EventBusPriority } from '@/engine/EventBus';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useNotificationSlot, NOTIFY_PRIORITY } from '@/hooks/useNotificationSlot';
 import { explorationEventToastTopPx } from '@/shared/constants/hudLayout';
+import { sanitizePlainText } from '@/shared/utils/sanitizePlainText';
 import { useGamePhase } from '@/store/selectors';
 
 /* ─── Types ─── */
@@ -264,8 +265,8 @@ export function EventNotificationPopup() {
   useEffect(() => {
     const unsub = eventBus.on('game:notification', (payload) => {
       addNotification({
-        title: payload.title,
-        subtitle: payload.subtitle,
+        title: sanitizePlainText(payload.title),
+        subtitle: payload.subtitle ? sanitizePlainText(payload.subtitle) : undefined,
         type: payload.type,
       });
     });
@@ -276,7 +277,7 @@ export function EventNotificationPopup() {
   useEffect(() => {
     const unsub = eventBus.on('ui:exploration_message', (payload) => {
       addNotification({
-        title: payload.text,
+        title: sanitizePlainText(payload.text),
         type: 'info',
       });
     }, EventBusPriority.UI);

@@ -5,6 +5,7 @@ import {
   logKccRecreateAttempt,
   restoreKccMovementMode,
 } from '@/engine/player/directMovementTelemetry';
+import { shouldAttemptKccRecreate } from '@/engine/player/kccRecoveryState';
 import type { PlayerMovementDeps } from '@/engine/player/playerFrameTypes';
 
 /** Animations, footsteps, position sync, ground enforce, DEV timing. */
@@ -97,16 +98,18 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
     if (posDelta < 0.001) {
       deps.noMovementFramesRef.current++;
       if (deps.noMovementFramesRef.current >= KCC_STUCK_FRAMES_BEFORE_RECREATE) {
-        logKccRecreateAttempt(deps.directMovementTelemetry, 'input_no_displacement', {
-          sceneId: deps.sceneId,
-          stuckFrames: deps.noMovementFramesRef.current,
-        });
-        const recreated = deps.recreateCharacterController();
-        if (recreated && deps.capsuleColliderRef.current) {
-          deps.frameScratchRef.current.controller = recreated;
-          deps.noMovementFramesRef.current = 0;
-          if (deps.controlsDegradedRef.current) {
-            restoreKccMovementMode(deps.directMovementTelemetry, { sceneId: deps.sceneId });
+        if (shouldAttemptKccRecreate(deps.directMovementTelemetry.recreateAttemptsRef.current)) {
+          logKccRecreateAttempt(deps.directMovementTelemetry, 'input_no_displacement', {
+            sceneId: deps.sceneId,
+            stuckFrames: deps.noMovementFramesRef.current,
+          });
+          const recreated = deps.recreateCharacterController();
+          if (recreated && deps.capsuleColliderRef.current) {
+            deps.frameScratchRef.current.controller = recreated;
+            deps.noMovementFramesRef.current = 0;
+            if (deps.controlsDegradedRef.current) {
+              restoreKccMovementMode(deps.directMovementTelemetry, { sceneId: deps.sceneId });
+            }
           }
         }
       }

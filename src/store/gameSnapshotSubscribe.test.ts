@@ -4,7 +4,7 @@ import { getGameSnapshot, subscribeGameSnapshot } from '@/shared/gameBridge/stat
 import { useGameStore } from '@/store/gameStore';
 
 describe('gameSnapshot subscribe', () => {
-  it('memoizes snapshot per unchanged store state reference', () => {
+  it('memoizes snapshot when snapshot inputs are structurally unchanged', () => {
     const first = getGameSnapshot();
     const second = getGameSnapshot();
     expect(second).toBe(first);

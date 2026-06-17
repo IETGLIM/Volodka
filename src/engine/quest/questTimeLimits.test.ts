@@ -1,32 +1,42 @@
-import { describe, expect, it } from 'vitest';
+/* ─── Quest time-limit helpers (wall-clock fallback) ─── */
+
+import { describe, expect, it, vi, beforeEach } from 'vitest';
 import {
-  computeHourDelta,
-  estimateElapsedFromStart,
-  isQuestTimedOut,
-  remainingQuestHours,
+  estimateElapsedFromWallClock,
+  resolveQuestElapsedHours,
+  REAL_MS_PER_GAME_HOUR,
 } from '@/engine/quest/questTimeLimits';
 
-describe('questTimeLimits', () => {
-  it('computeHourDelta handles same-day advance', () => {
-    expect(computeHourDelta(10, 13)).toBe(3);
+describe('questTimeLimits wall-clock fallback', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-06-17T12:00:00Z'));
   });
 
-  it('computeHourDelta handles midnight wrap', () => {
-    expect(computeHourDelta(22, 2)).toBe(4);
+  it('estimates elapsed game hours from wall-clock ms', () => {
+    const start = Date.now();
+    vi.advanceTimersByTime(REAL_MS_PER_GAME_HOUR * 2);
+    expect(estimateElapsedFromWallClock(start)).toBeCloseTo(2, 5);
   });
 
-  it('estimateElapsedFromStart matches computeHourDelta', () => {
-    expect(estimateElapsedFromStart(8, 11)).toBe(3);
-    expect(estimateElapsedFromStart(20, 4)).toBe(8);
+  it('prefers wall-clock when it exceeds world-clock estimate', () => {
+    const startedAtWallMs = Date.now();
+    vi.advanceTimersByTime(REAL_MS_PER_GAME_HOUR * 3);
+    const elapsed = resolveQuestElapsedHours({
+      startedAtTime: 8,
+      startedAtWallMs,
+      currentHour: 9,
+    });
+    expect(elapsed).toBeCloseTo(3, 5);
   });
 
-  it('isQuestTimedOut fails at limit boundary', () => {
-    expect(isQuestTimedOut(2, 2)).toBe(true);
-    expect(isQuestTimedOut(1.99, 2)).toBe(false);
-  });
-
-  it('remainingQuestHours never goes negative', () => {
-    expect(remainingQuestHours(1, 4)).toBe(3);
-    expect(remainingQuestHours(5, 4)).toBe(0);
+  it('uses persisted hoursElapsed when wall-clock has not stalled', () => {
+    expect(
+      resolveQuestElapsedHours({
+        hoursElapsed: 1.5,
+        startedAtWallMs: Date.now() - REAL_MS_PER_GAME_HOUR * 0.5,
+        currentHour: 20,
+      }),
+    ).toBe(1.5);
   });
 });

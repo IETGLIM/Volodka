@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { resolveManualChunk, validateChunkConfig } from '../../vite/chunks';
+import { resolveManualChunk, ROLLUP_MIN_CHUNK_SIZE, validateChunkConfig } from '../../vite/chunks';
 
 describe('resolveManualChunk', () => {
   it('routes extended act files to act-specific chunks', () => {
@@ -22,6 +22,12 @@ describe('resolveManualChunk', () => {
 
   it('routes chk narrative to pack-chk-narrative', () => {
     expect(resolveManualChunk('G:/1O1O1/src/data/chkTolpa/storyNodes.ts')).toBe('pack-chk-narrative');
+  });
+});
+
+describe('chunk size policy', () => {
+  it('exports 5KB threshold for Rollup min chunk merge', () => {
+    expect(ROLLUP_MIN_CHUNK_SIZE).toBe(5 * 1024);
   });
 });
 

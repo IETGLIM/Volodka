@@ -1,6 +1,6 @@
 # Архитектура — ВОЛОДЬКА RPG
 
-> Карта систем проекта для инженеров. Актуально для v4.2.2.
+> Карта систем проекта для инженеров. Актуально для v4.2.42.
 
 ## Слои
 
@@ -36,7 +36,7 @@
 Типизированный pub/sub. Правило: **только на границах слоёв** (3D→DOM, engine→UI).
 - Дедупликация: FNV-хэш (event + примитивные поля), 64 слота, окно `DEDUP_WINDOW_MS`;
   боевые/сценовые события в `DEDUP_EXEMPT` всегда проходят.
-- Приоритеты: Engine → Orchestrator → UI → FX → Debug (FIFO внутри уровня).
+- Приоритеты: Engine → Orchestrator → UI → FX → Debug (FIFO внутри уровня); O(1) unsubscribe по listener id.
 - Снапшоты слушателей на время dispatch; `createScope()` для пакетной отписки
   в оркестраторах; `dispose()` обрывает in-flight dispatch через generation.
 
@@ -104,10 +104,11 @@ patrol→chase→engaged→cooldown, конус зрения проецируе�
 
 ### Поэтическая магия (`PoemPowerSystem.ts`)
 Стихи Владимира Лебедева (**тексты неприкосновенны**, `src/data/poems.ts`):
-- в бою — `POEM_COMBAT_ABILITIES` (кулдауны, баффы/дебаффы);
-- в исследовании — TTL-флаги в store (`activeTTLFlags`), напр.
-  `guiding_star_active` (poem_3) сжимает конусы зрения крипов до 45%.
+- в бою — `POEM_COMBAT_ABILITIES` (кулдауны, баффы/дебаффы); pity в `combatRng.ts` / `buffSystem.ts`;
+- в исследовании — TTL-флаги в store (`activeTTLFlags`), монотонные часы `ttlClock.ts` (performance.now).
+  Напр. `guiding_star_active` (poem_3) сжимает конусы зрения крипов до 45%.
 Новые мировые эффекты стихов = чтение одного TTL-флага в кадровом цикле.
+`processExpiredTTLFlags()` — из game loop (`useGameLifecycleManager`).
 
 ### Сюжет и golden path
 - Узлы: `src/data/story/act1–7.ts`, грузятся лениво narrative-паками
@@ -175,7 +176,8 @@ patrol→chase→engaged→cooldown, конус зрения проецируе�
   (procedural-NPC на low), visualLite.
 
 ### Сейвы (`store/slices/saveStorage.ts`)
-Zod-схема (SAVE_VERSION=1), two-phase write + rollback, backup-ключ.
+Zod-схема (SAVE_VERSION с миграциями в `saveMigrations.ts`), two-phase write + rollback, backup-ключ.
+`gameSnapshotCache.ts` — дедуп подписок store для hot paths.
 `resolveSaveFromStorage` → `empty | ok | recovered-from-backup | corrupt`;
 битый основной сейв → автозагрузка backup + уведомление; ключи не затираются.
 `pickSavePayload` валидирует snapshot через `SavePayloadSchema` перед записью.
@@ -195,6 +197,138 @@ Zod-схема (SAVE_VERSION=1), two-phase write + rollback, backup-ключ.
 - `common/*` — условия и эффекты сюжета (`conditions`, `effects`).
 - `brands.ts` — брендированные id там, где нужна типобезопасность.
 - `game.ts` — только re-export; **EventMap не реэкспортируется** (цикл с engine).
+
+### UI-оркестратор: стек, панели и приоритеты (v4.2)
+
+`GamePage` → `GameOrchestrator` (client gate) → `OrchestratorContent`:
+
+```
+OrchestratorCanvasLayer      — R3F / RPGGameCanvas (z: UI_LAYERS.CANVAS)
+OrchestratorGameplayLayer    — HUD, toasts, dialogue, combat chrome
+OrchestratorPanelLayer       — stack-driven panels (inventory, quests, …)
+OrchestratorPauseMenu        — меню паузы (z: UI_LAYERS.MENU)
+OrchestratorQuestOverlays    — quest complete / board overlays
+```
+
+**Panel stack** (`panelStackReducer` + `usePanelCoordinator`):
+- Единый список `PANEL_IDS` в `orchestrator/types.ts` — новые панели только там.
+- `toggle` / `ensureOpen` / `pop` / `remove` / `clear`; z-index = `UI_LAYERS.PANEL` или `MENU` + `idx * 2`.
+- Приоритеты обработчиков EventBus разнесены по файлам (`eventBusPriority.ts`):
+  Engine (0) → Orchestrator (100) → UI (200) → FX (300) → Debug (1000).
+- **Известный разрыв:** логика «combat vs panels» и Escape-роутинг частично в `usePanelCoordinator`, частично в `useOrchestratorRuntime` — при добавлении панелей сверять оба места.
+
+**UI_LAYERS** (`src/shared/constants/uiLayers.ts`) — единственный источник z-index для DOM UI:
+
+| Слой | z | Назначение |
+|------|---|------------|
+| CANVAS | 0 | R3F canvas |
+| HUD | 10 | health, minimap, quick-use |
+| DIALOGUE | 30 | story / NPC overlay |
+| TOASTS | 35 | loot, lore, system alerts |
+| MINIGAME | 40 | terminal, codebreaker |
+| MENU | 45 | pause, fast-travel backdrop |
+| COMBAT | 50 | пошаговый бой |
+| PANEL | 55 | inventory, journal, quests |
+| LOADING | 100 | boot / scene load |
+| DEV_PANEL | 200 | F3 debug |
+
+**Известные UI-дыры (P0):** конфликт Escape между pause и панелями; inventory иногда перекрывается examine-toast — сверять `PanelStackSlot` z-index.
+
+### Камера: FSM (`cameraStateMachine.ts`)
+
+Режимы `CameraState`:
+
+| mode | Когда |
+|------|-------|
+| `exploration` | свободный обход, FP/TP по сцене |
+| `dialogue` | shot на спикера |
+| `cutscene` | story / NPC cinematic |
+| `transition` | doorway / scene hold |
+| `cinematic_freeze` | beat после cutscene (timeout `CINEMATIC_FREEZE_TIMEOUT`) |
+| `intro_wake` | первый запуск |
+| `poem_reading` | ритуал чтения стиха |
+
+`fallbackSceneId` в `FollowCamera` предотвращает NaN при гонке unload/enter.
+Combat camera — отдельный `CombatCameraState` внутри cinematic stack.
+
+### QuestTracker: типы целей
+
+Подписка на store через reference-equality selector (`selectQuestTrackerSlice`).
+События: `scene:enter`, `npc:talked`, `quest:complete_objective`, `minigame:completed`, poem bypass.
+
+| type | Условие выполнения |
+|------|-------------------|
+| `location_visited` | `currentSceneId === target` |
+| `flag_set` | `playerState.flags[target]` |
+| `item_collected` | предмет в инвентаре |
+| `poem_collected` | стих в `collectedPoems` |
+| `minigame_completed` | флаг из `MINIGAME_COMPLETION_FLAGS` |
+| `npc_talked` | NPC id в истории диалогов |
+| `custom` | ручной `quest:complete_objective` |
+
+**Timed quests:** wall-clock `startedAtWallMs` + `questTimeLimits.ts` (`REAL_MS_PER_GAME_HOUR`); таймаут через `isQuestTimedOut`.
+
+### NPC: что есть и что WIP
+
+| Компонент | Статус |
+|-----------|--------|
+| `npcDefinitions` + расписания + диалоги | ✅ production |
+| `npcRegistry` (THREE.Group + behavior state map) | ✅ runtime |
+| `npcStateMachine.ts` (idle/walk/talk/combat FSM) | ✅ unit-tested |
+| `useNpcAnimationController` + `transitionNpcBehaviorState` | ⚠️ ~30% — FSM не полностью проведён в 3D-рендер |
+| `NPC_ID_ALIASES` / registry baseline | ⚠️ устаревшие id в части тестов |
+
+Патрули: `PatrollingCreeps` FSM patrol→chase→engaged; поэтические TTL сужают конус (`guiding_star_active`).
+
+### Аудио (`engine/audio/`)
+
+- `AudioEngine` + `AudioEngineCore` — capability probe, graceful suspend.
+- `SfxEngine` — процедурные SFX; footstep map cleanup on dispose.
+- `SceneAudioController` + `AmbientEngine` — три слоя музыки на сцену.
+- **Reverb cache** — impulse responses кэшируются; таймеры отменяются в `dispose()`.
+- `SharedAudioContext` — singleton revive после StrictMode.
+
+### Качество и PostFX
+
+Цепочка: `useGraphicsQuality` → `qualityPresets` → `resolveSceneRenderingPipeline` → `ExplorationPostFX`.
+
+- **GPU probe** (`gpuQualityProbe.ts`): renderer string, `maxTextureSize`, weak-mobile heuristic.
+- **Battery cap** (`initBatteryQualityCapListener`): ≤15% → low, ≤30% → medium.
+- **Session tier** (`autoQualitySession.ts`): resolved auto tier в `sessionStorage`.
+- **Gfx pressure** (`applyGfxPressureToPreset`): memory/critical снимает N8AO/LUT/bloom intensity.
+- **Runtime degrade** (`adaptiveQualityBridge`): sustained FPS fail → −1 tier.
+
+`ExplorationPostFX` заменил legacy `PostFXComposer` в exploration canvas.
+**Gap:** hero-сцены (`street_night`, `rooftop_edge`) могут всё ещё монтировать полный PostFX на low — сверять `resolveSceneRenderingPipeline`.
+
+Пресеты: low = postFX off + Draco + procedural NPC; ultra = meshopt + full GLB.
+
+### Нарратив: packs и тексты
+
+```
+src/data/story/
+  act1.ts … act7.ts          — runtime nodes (lazy packs)
+  structures/actN.structure.ts — декларативный spine (JSON-like)
+  texts/actN.json            — вынесенные тексты (миграция в процессе)
+src/data/narrative/
+  narrativePackRegistry.ts   — bootstrap act1, load-on-demand
+  applyStoryTexts.ts         — overlay текстов из JSON на structure nodes
+```
+
+~7700 строк TS-нарратива; JSON-тексты подключены для act1–7, полная миграция не завершена.
+XSS: `sanitizePlainText` на основном пути рендера (`narrativePresentation.ts`).
+
+### Физика / KCC degraded mode
+
+- Rapier KCC в `PhysicsPlayer`; `movementEpoch` инвалидирует stale callbacks после recreate.
+- **Degraded:** WASM fail или лимит recreate → `SimplePlayer` + event `player:physics_degraded`.
+- Метрики: `kccDegradedMetrics.ts`, recovery `kccRecoveryState.ts`.
+- `combatStartGate`: откладывает `startCombat` до `scene:loaded` (timeout 15s).
+
+### Сцены: 27 локаций
+
+`CORE_SCENE_IDS` (18) + `EXTENSION_SCENE_IDS` (9) = `SCENE_IDS` в `sceneIds.ts`.
+Единый источник геометрии — `sceneDefinitions.ts` → `sceneDefinitionGenerator.ts`.
 
 ### UI-оркестратор: производительность и утечки (v4.1)
 - **Lazy tiers**: `CombatUI` и мини-игры грузятся через `retryLazyDefault`
@@ -231,6 +365,21 @@ Zod-схема (SAVE_VERSION=1), two-phase write + rollback, backup-ключ.
 ### Числовая устойчивость
 - `cameraShake.ts` — `Number.isFinite` на intensity/decay/dt (NaN не залипает).
 - `seededRand.ts` — non-finite seed → 0 (SSR/partículas без NaN в CSS).
+
+## Известные разрывы и roadmap
+
+| Область | Статус |
+|---------|--------|
+| NPC behavioral FSM → 3D | ~30%, task #15 |
+| JSON narrative migration | тексты act1–7 есть, полный cutover нет |
+| Pause Escape vs panels | конфликт hotkeys |
+| Inventory z-index vs examine | P0 UI |
+| PostFX on low hero scenes | частично |
+| GameOrchestrator priorities | разнесены по файлам |
+| npcRegistry baseline | устаревшие id в тестах |
+| act7 mirror flags | только в structure JSON — сканер обновлён |
+
+Спринт-гейты и CI-команды — `ROADMAP.md`, skill `.cursor/skills/volodka-roadmap-automations/`.
 
 ## Сборка и бюджеты
 

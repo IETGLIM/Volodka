@@ -51,7 +51,9 @@ import {
   resetCinematicPresentation,
   setCinematicHoldActive,
   setCinematicPresentationMode,
+  isCinematicHoldActive,
 } from './cinematicPresentation';
+import { isInDialogueInteraction } from './applyCameraFrame';
 import {
   acquireCameraOwnership,
   releaseCameraOwnership,
@@ -81,6 +83,13 @@ export const initialCameraState = (): CameraState => ({
   mode: 'exploration',
   params: { sceneId: 'volodka_room' },
 });
+
+/** Preserve scene context when leaving exploration-adjacent camera modes. */
+function resumeExplorationParams(state: CameraState, fallbackSceneId: SceneId): ExplorationParams {
+  if (state.mode === 'exploration') return { ...state.params };
+  if (state.mode === 'cinematic_freeze') return { ...state.params };
+  return { sceneId: fallbackSceneId };
+}
 
 export interface CameraOrbitRefs {
   yaw: MutableRefObject<number>;
@@ -135,7 +144,11 @@ export type CameraStateAction =
   | { type: 'cinematic_freeze_timeout' }
   | { type: 'exploration'; params: ExplorationParams };
 
-export function reduceCameraState(state: CameraState, action: CameraStateAction): CameraState {
+export function reduceCameraState(
+  state: CameraState,
+  action: CameraStateAction,
+  fallbackSceneId: SceneId = 'volodka_room',
+): CameraState {
   switch (action.type) {
     case 'cinematic_fade_out':
     case 'cinematic_hold':
@@ -146,7 +159,7 @@ export function reduceCameraState(state: CameraState, action: CameraStateAction)
     case 'intro_wake_complete':
     case 'poem_reading_complete':
     case 'scene_transition_complete':
-      return { mode: 'exploration', params: { sceneId: 'volodka_room' } };
+      return { mode: 'exploration', params: resumeExplorationParams(state, fallbackSceneId) };
     case 'intro_wake':
       return { mode: 'intro_wake', startedAt: action.time };
     case 'poem_reading_start':
@@ -155,13 +168,13 @@ export function reduceCameraState(state: CameraState, action: CameraStateAction)
       return { mode: 'cutscene', controller: action.controller, kind: action.kind };
     case 'cutscene_end':
       return state.mode === 'cutscene' && state.kind === action.kind
-        ? { mode: 'exploration', params: { sceneId: 'volodka_room' } }
+        ? { mode: 'exploration', params: resumeExplorationParams(state, fallbackSceneId) }
         : state;
     case 'npc_cutscene_start':
       return { mode: 'cutscene', controller: action.controller, kind: 'npc' };
     case 'npc_cutscene_end':
       return state.mode === 'cutscene' && state.kind === 'npc'
-        ? { mode: 'exploration', params: { sceneId: 'volodka_room' } }
+        ? { mode: 'exploration', params: resumeExplorationParams(state, fallbackSceneId) }
         : state;
     case 'scene_transition_start':
       return { mode: 'transition', from: action.from, to: action.to };
@@ -179,7 +192,7 @@ export function dispatchCameraState(
   action: CameraStateAction,
   sceneId: SceneId,
 ): void {
-  const reduced = reduceCameraState(runtime.cameraState.current, action);
+  const reduced = reduceCameraState(runtime.cameraState.current, action, sceneId);
   if (reduced.mode === 'exploration') {
     runtime.cameraState.current = { mode: 'exploration', params: { ...reduced.params, sceneId } };
     return;
@@ -457,15 +470,44 @@ export function startSceneFlythrough(runtime: CameraRuntimeRefs, sceneId: SceneI
   }, sceneId);
 }
 
-export function processCinematicFreezeFrame(runtime: CameraRuntimeRefs, sceneId: SceneId): boolean {
+let lastCinematicFreezeNodeId: string | null = null;
+
+export function processCinematicFreezeFrame(
+  runtime: CameraRuntimeRefs,
+  sceneId: SceneId,
+  currentNodeId?: string | null,
+): boolean {
   const state = runtime.cameraState.current;
   if (state.mode !== 'cinematic_freeze') return false;
 
-  if (runtime.time.current - state.startedAt > CINEMATIC_FREEZE_TIMEOUT) {
+  const narrativePause = isInDialogueInteraction() || isCinematicHoldActive();
+  if (currentNodeId != null && currentNodeId !== lastCinematicFreezeNodeId) {
+    lastCinematicFreezeNodeId = currentNodeId;
+    if (narrativePause) {
+      runtime.cameraState.current = { ...state, startedAt: runtime.time.current };
+    }
+  }
+
+  if (narrativePause) {
+    const freezeState = runtime.cameraState.current;
+    if (freezeState.mode === 'cinematic_freeze') {
+      runtime.cameraState.current = { ...freezeState, startedAt: runtime.time.current };
+    }
+    return true;
+  }
+
+  const freezeStartedAt =
+    runtime.cameraState.current.mode === 'cinematic_freeze'
+      ? runtime.cameraState.current.startedAt
+      : state.startedAt;
+
+  if (runtime.time.current - freezeStartedAt > CINEMATIC_FREEZE_TIMEOUT) {
     dispatchCameraState(runtime, { type: 'cinematic_freeze_timeout' }, sceneId);
     releaseCameraOwnership('cinematicFreeze');
     resetCinematicPresentation();
-    eventBus.emit('camera:recenter', {});
+    if (!isInDialogueInteraction()) {
+      eventBus.emit('camera:recenter', {});
+    }
     return false;
   }
   return true;

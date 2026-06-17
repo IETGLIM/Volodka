@@ -7,16 +7,20 @@ import {
   resolvePoemWorldHintFlagKey,
   resolvePoemSynergyWorldEffect,
 } from '@/engine/poemWorld/poemWorldEffectResolver';
+import { ttlExpiryFromDurationMs } from '@/shared/ttlClock';
 import { registerHmrDispose } from '@/shared/dev/hmrDispose';
 
 let unsubWorldBridge: (() => void) | null = null;
 let unsubSynergyBridge: (() => void) | null = null;
 
 function upsertWorldHintFlag(poemId: string, hintKey: string, durationMs: number): void {
-  const now = Date.now();
   dispatchGameAction({
     type: 'world/upsertHintFlag',
-    flag: { key: hintKey, poemId, expiryTimestamp: now + durationMs },
+    flag: {
+      key: hintKey,
+      poemId,
+      expiryTimestamp: ttlExpiryFromDurationMs(durationMs),
+    },
   });
 }
 

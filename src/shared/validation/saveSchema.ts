@@ -148,6 +148,7 @@ const QuestStateSchema = z.object({
   objectives: z.record(z.string(), z.boolean()),
   startedAtTime: z.number().optional(),
   hoursElapsed: z.number().min(0).optional(),
+  startedAtWallMs: z.number().min(0).optional(),
 });
 
 const NPCRelationSchema = z.object({

@@ -22,6 +22,7 @@ import {
 } from '@/engine/GameActionDispatcher';
 import { partitionExpiredActiveTTLFlags } from '@/shared/activeTTLFlags';
 export type { ActiveTTLFlag } from '@/shared/activeTTLFlags';
+import { ttlExpiryFromDurationMs, ttlNow } from '@/shared/ttlClock';
 import { getSynergyReverseOnExpiry } from '@/config/poemSynergies';
 import {
   recordPoemRhythm,
@@ -33,9 +34,23 @@ import {
   scalePoemPowerDurationMs,
   scalePoemPowerSkillDelta,
 } from '@/engine/skills/passiveSkillModifiers';
+import { clamp } from '@/store/shared';
+
+const PLAYER_ENERGY_MAX = 100;
 
 function snap() {
   return getGameSnapshot();
+}
+
+/** Clamp deltas so reverse-on-expiry cannot drive skills/energy below zero. */
+function clampSkillDelta(skill: TrainablePlayerSkill, amount: number): number {
+  const current = snap().playerState.skills[skill];
+  return clamp(current + amount, 0, Number.MAX_SAFE_INTEGER) - current;
+}
+
+function clampEnergyDelta(amount: number): number {
+  const current = snap().playerState.energy;
+  return clamp(current + amount, 0, PLAYER_ENERGY_MAX) - current;
 }
 
 function addSkill(skill: TrainablePlayerSkill, amount: number) {
@@ -46,11 +61,15 @@ function addSkill(skill: TrainablePlayerSkill, amount: number) {
     snapshot.playerState.flags,
     snapshot.playerState.skills.coding,
   );
-  dispatchGameAction({ type: 'player/addSkill', skill, amount: scaled });
+  const clamped = clampSkillDelta(skill, scaled);
+  if (clamped === 0) return;
+  dispatchGameAction({ type: 'player/addSkill', skill, amount: clamped });
 }
 
 function addEnergy(amount: number) {
-  dispatchGameAction({ type: 'player/addEnergy', amount });
+  const clamped = clampEnergyDelta(amount);
+  if (clamped === 0) return;
+  dispatchGameAction({ type: 'player/addEnergy', amount: clamped });
 }
 
 function addStress(amount: number) {
@@ -72,18 +91,18 @@ function setNpcRelation(npcId: string, delta: number) {
 function upsertTTLFlags(entries: Array<{ key: string; durationMs: number; poemId: string }>): void {
   if (entries.length === 0) return;
   const snapshot = snap();
-  const now = Date.now();
   dispatchGameAction({
     type: 'poem/upsertTTLFlags',
     flags: entries.map(({ key, durationMs, poemId }) => ({
       key,
       poemId,
       expiryTimestamp:
-        now
-        + scalePoemPowerDurationMs(
+        ttlExpiryFromDurationMs(
+          scalePoemPowerDurationMs(
           durationMs,
           snapshot.playerState.progression.unlockedSkills,
           snapshot.playerState.flags,
+          ),
         ),
     })),
   });
@@ -161,7 +180,7 @@ export function getTTLCheckInterval(): number {
 /* ─── Helper: process expired TTL flags (call from game loop or on load) ─── */
 export function processExpiredTTLFlags(): void {
   const flags = snap().activeTTLFlags ?? {};
-  const now = Date.now();
+  const now = ttlNow();
   const { expired } = partitionExpiredActiveTTLFlags(flags, now);
 
   if (expired.length === 0) return;
@@ -605,7 +624,7 @@ export function activatePoemPowerById(poemId: string): boolean {
   activeEffects.push({
     poemId,
     powerName: power.name,
-    startedAt: Date.now(),
+    startedAt: ttlNow(),
     durationMs: longestFlagDuration,
   });
 
@@ -619,7 +638,7 @@ export function activatePoemPowerById(poemId: string): boolean {
 
 /** Get currently active effects. */
 export function getActiveEffects(): ActiveEffect[] {
-  const now = Date.now();
+  const now = ttlNow();
   // Clean up expired effects
   for (let i = activeEffects.length - 1; i >= 0; i--) {
     if (now - activeEffects[i].startedAt > activeEffects[i].durationMs) {

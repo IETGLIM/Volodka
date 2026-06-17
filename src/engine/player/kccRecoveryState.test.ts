@@ -2,11 +2,18 @@ import { describe, expect, it } from 'vitest';
 import {
   KCC_SUCCESS_FRAMES_BEFORE_RESTORE,
   nextKccHealthyFrameCount,
+  shouldAttemptKccRecreate,
   shouldEnterKccDegraded,
   shouldRestoreKccFromHealthyFrames,
 } from './kccRecoveryState';
+import { MAX_KCC_RECREATE_ATTEMPTS_PER_INCIDENT } from './playerConstants';
 
 describe('kccRecoveryState', () => {
+  it('shouldAttemptKccRecreate respects per-incident cap', () => {
+    expect(shouldAttemptKccRecreate(MAX_KCC_RECREATE_ATTEMPTS_PER_INCIDENT - 1)).toBe(true);
+    expect(shouldAttemptKccRecreate(MAX_KCC_RECREATE_ATTEMPTS_PER_INCIDENT)).toBe(false);
+  });
+
   it('shouldEnterKccDegraded at fail threshold', () => {
     expect(shouldEnterKccDegraded(59, 60)).toBe(false);
     expect(shouldEnterKccDegraded(60, 60)).toBe(true);

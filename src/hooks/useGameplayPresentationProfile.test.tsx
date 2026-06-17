@@ -33,6 +33,7 @@ vi.mock('@/engine/GameActionDispatcher', () => ({
 
 vi.mock('@/engine/core/combatStartGate', () => ({
   deferCombatStartIfTransitionBusy: vi.fn(() => false),
+  registerCombatStartGateTimeoutHandler: vi.fn(),
 }));
 
 function resetUiPhase(): void {

@@ -13,8 +13,9 @@ import { registerHmrDispose } from '@/shared/dev/hmrDispose';
 import { isKnownMinigameId, MINIGAME_COMPLETION_FLAGS } from '@/shared/constants/minigames';
 import {
   computeHourDelta,
-  estimateElapsedFromStart,
+  resolveQuestElapsedHours,
   isQuestTimedOut,
+  REAL_MS_PER_GAME_HOUR,
 } from '@/engine/quest/questTimeLimits';
 import { questCanRetry } from '@/shared/quest/questRetry';
 
@@ -23,15 +24,9 @@ interface QuestTrackerRelevantSlice {
   currentSceneId: SceneId;
   timeOfDay: number;
   flags: Record<string, boolean>;
-  inventoryIds: string[];
-  collectedPoems: string[];
-  quests: Array<{
-    questId: string;
-    status: string;
-    startedAtTime?: number;
-    hoursElapsed?: number;
-    objectives: Record<string, boolean>;
-  }>;
+  inventory: readonly { id: string }[];
+  collectedPoems: readonly string[];
+  quests: GameStoreSnapshot['quests'];
 }
 
 function selectQuestTrackerSlice(snapshot: GameStoreSnapshot): QuestTrackerRelevantSlice {
@@ -39,15 +34,9 @@ function selectQuestTrackerSlice(snapshot: GameStoreSnapshot): QuestTrackerRelev
     currentSceneId: snapshot.exploration.currentSceneId,
     timeOfDay: snapshot.exploration.timeOfDay,
     flags: snapshot.playerState.flags,
-    inventoryIds: snapshot.playerState.inventory.map((i) => i.id).sort(),
-    collectedPoems: [...snapshot.collectedPoems].sort(),
-    quests: snapshot.quests.map((q) => ({
-      questId: q.questId,
-      status: q.status,
-      startedAtTime: q.startedAtTime,
-      hoursElapsed: q.hoursElapsed,
-      objectives: q.objectives,
-    })),
+    inventory: snapshot.playerState.inventory,
+    collectedPoems: snapshot.collectedPoems,
+    quests: snapshot.quests,
   };
 }
 
@@ -61,7 +50,31 @@ function flagsEqual(a: Record<string, boolean>, b: Record<string, boolean>): boo
   return true;
 }
 
-function stringArraysEqual(a: string[], b: string[]): boolean {
+function objectivesEqual(a: Record<string, boolean>, b: Record<string, boolean>): boolean {
+  const aKeys = Object.keys(a);
+  if (aKeys.length !== Object.keys(b).length) return false;
+  for (const key of aKeys) {
+    if (a[key] !== b[key]) return false;
+  }
+  return true;
+}
+
+function inventoryIdsEqual(
+  a: readonly { id: string }[],
+  b: readonly { id: string }[],
+): boolean {
+  if (a === b) return true;
+  if (a.length !== b.length) return false;
+  const ids = new Set(a.map((item) => item.id));
+  if (ids.size !== a.length) return false;
+  for (const item of b) {
+    if (!ids.has(item.id)) return false;
+  }
+  return true;
+}
+
+function stringArraysEqual(a: readonly string[], b: readonly string[]): boolean {
+  if (a === b) return true;
   if (a.length !== b.length) return false;
   for (let i = 0; i < a.length; i++) {
     if (a[i] !== b[i]) return false;
@@ -69,7 +82,45 @@ function stringArraysEqual(a: string[], b: string[]): boolean {
   return true;
 }
 
-type QuestTrackerQuestRef = QuestTrackerRelevantSlice['quests'][number];
+function questsSliceEqual(
+  a: GameStoreSnapshot['quests'],
+  b: GameStoreSnapshot['quests'],
+): boolean {
+  if (a === b) return true;
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    const aq = a[i];
+    const bq = b[i];
+    if (aq === bq) continue;
+    if (
+      aq.questId !== bq.questId
+      || aq.status !== bq.status
+      || aq.startedAtTime !== bq.startedAtTime
+      || aq.startedAtWallMs !== bq.startedAtWallMs
+      || aq.hoursElapsed !== bq.hoursElapsed
+    ) {
+      return false;
+    }
+    if (aq.objectives !== bq.objectives && !objectivesEqual(aq.objectives, bq.objectives)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function questTrackerSliceEqual(a: QuestTrackerRelevantSlice, b: QuestTrackerRelevantSlice): boolean {
+  if (a.currentSceneId !== b.currentSceneId) return false;
+  if (a.timeOfDay !== b.timeOfDay) return false;
+  if (a.inventory !== b.inventory && !inventoryIdsEqual(a.inventory, b.inventory)) return false;
+  if (a.collectedPoems !== b.collectedPoems && !stringArraysEqual(a.collectedPoems, b.collectedPoems)) {
+    return false;
+  }
+  if (a.flags !== b.flags && !flagsEqual(a.flags, b.flags)) return false;
+  if (!questsSliceEqual(a.quests, b.quests)) return false;
+  return true;
+}
+
+type QuestTrackerQuestRef = GameStoreSnapshot['quests'][number];
 
 interface QuestTrackerContext {
   activeQuests: readonly QuestTrackerQuestRef[];
@@ -97,61 +148,19 @@ export function resetQuestTrackerDefinitionCache(): void {
 function toQuestTrackerQuestRef(
   quest: GameStoreSnapshot['quests'][number],
 ): QuestTrackerQuestRef {
-  return {
-    questId: quest.questId,
-    status: quest.status,
-    startedAtTime: quest.startedAtTime,
-    hoursElapsed: quest.hoursElapsed,
-    objectives: quest.objectives,
-  };
+  return quest;
 }
 
-function questTrackerSliceEqual(a: QuestTrackerRelevantSlice, b: QuestTrackerRelevantSlice): boolean {
-  if (a.currentSceneId !== b.currentSceneId) return false;
-  if (a.timeOfDay !== b.timeOfDay) return false;
-  if (!flagsEqual(a.flags, b.flags)) return false;
-  if (!stringArraysEqual(a.inventoryIds, b.inventoryIds)) return false;
-  if (!stringArraysEqual(a.collectedPoems, b.collectedPoems)) return false;
-  if (a.quests.length !== b.quests.length) return false;
-  for (let i = 0; i < a.quests.length; i++) {
-    const aq = a.quests[i];
-    const bq = b.quests[i];
-    if (
-      aq.questId !== bq.questId
-      || aq.status !== bq.status
-      || aq.startedAtTime !== bq.startedAtTime
-      || aq.hoursElapsed !== bq.hoursElapsed
-    ) {
-      return false;
-    }
-    if (!flagsEqual(aq.objectives, bq.objectives)) return false;
-  }
-  return true;
+function inventoryToIdSet(inventory: readonly { id: string }[]): Set<string> {
+  return new Set(inventory.map((item) => item.id));
 }
 
-/**
- * QuestTracker subscribes to game state changes and EventBus events,
- * automatically completing quest objectives when their conditions are met.
- *
- * AAA+ features:
- * - Quest type categorization: main, side, hidden, daily
- * - Failed quest state (not just active/complete)
- * - Quest dependency tracking (quest B requires quest A complete)
- * - Quest time limits (optional: quest fails after X in-game hours)
- * - Poem-power quest interactions (some objectives can be bypassed with poem powers)
- *
- * Objective types:
- * - location_visited: player enters a specific scene
- * - npc_talked: player talks to a specific NPC
- * - item_collected: player has a specific item in inventory
- * - poem_collected: player has collected a specific poem
- * - flag_set: a specific flag is set in player state
- * - custom: manually triggered via event
- */
 export class QuestTracker {
   private unsubscribeStore: (() => void) | null = null;
   private unsubscribeEvents: (() => void)[] = [];
   private unsubscribeHourChanged: (() => void) | null = null;
+  private wallClockTimer: ReturnType<typeof setInterval> | null = null;
+  private onVisibilityChange: (() => void) | null = null;
   private previousSceneId: SceneId | null = null;
   private previousFlags: Record<string, boolean> = {};
   private previousInventoryIds: Set<string> = new Set();
@@ -208,6 +217,8 @@ export class QuestTracker {
         this.previousInventoryIds = new Set(s.playerState.inventory.map((i) => i.id));
         this.previousPoems = new Set(s.collectedPoems);
 
+        dispatchGameAction({ type: 'quest/syncWallClockAnchors' });
+
         // Retroactive check after load: active quests may have objectives
         // that were already met before the save (e.g. due to a previously
         // missed state change). Re-check all active quests.
@@ -252,6 +263,19 @@ export class QuestTracker {
       if (delta <= 0) return;
       this.evaluateTimedQuests(delta);
     });
+
+    this.wallClockTimer = setInterval(() => {
+      this.evaluateTimedQuests(0);
+    }, REAL_MS_PER_GAME_HOUR / 4);
+
+    if (typeof document !== 'undefined') {
+      this.onVisibilityChange = () => {
+        if (document.visibilityState === 'visible') {
+          this.evaluateTimedQuests(0);
+        }
+      };
+      document.addEventListener('visibilitychange', this.onVisibilityChange);
+    }
 
     if (import.meta.env.DEV) {
       void import('@/shared/validation/contentPipelineValidator').then(({ logValidationReport, validateContentPipeline }) => {
@@ -300,7 +324,14 @@ export class QuestTracker {
             alreadyMet = !!completionFlag && !!state.playerState.flags[completionFlag];
             break;
           }
-          // npc_talked, custom — can't be retroactively checked
+          case 'npc_talked':
+          case 'custom':
+            break;
+          default: {
+            const _exhaustive: never = objective.type;
+            void _exhaustive;
+            break;
+          }
         }
 
         if (alreadyMet) {
@@ -318,6 +349,14 @@ export class QuestTracker {
     }
     this.unsubscribeHourChanged?.();
     this.unsubscribeHourChanged = null;
+    if (this.wallClockTimer !== null) {
+      clearInterval(this.wallClockTimer);
+      this.wallClockTimer = null;
+    }
+    if (this.onVisibilityChange !== null && typeof document !== 'undefined') {
+      document.removeEventListener('visibilitychange', this.onVisibilityChange);
+      this.onVisibilityChange = null;
+    }
     for (const unsub of this.unsubscribeEvents) {
       unsub();
     }
@@ -344,7 +383,7 @@ export class QuestTracker {
   private onStateChanged(slice: QuestTrackerRelevantSlice): void {
     const currentSceneId = slice.currentSceneId;
     const currentFlags = slice.flags;
-    const currentInventoryIds = new Set(slice.inventoryIds);
+    const currentInventoryIds = inventoryToIdSet(slice.inventory);
     const currentPoems = new Set(slice.collectedPoems);
     const ctx = this.createContext(slice.quests.filter((q) => q.status === 'active'));
 
@@ -522,12 +561,15 @@ export class QuestTracker {
   private resolveQuestHoursElapsed(
     quest: QuestTrackerQuestRef,
     currentHour: number,
+    wallClockFallbackEnabled: boolean,
   ): number {
-    if (quest.hoursElapsed !== undefined) return quest.hoursElapsed;
-    if (quest.startedAtTime !== undefined) {
-      return estimateElapsedFromStart(quest.startedAtTime, currentHour);
-    }
-    return 0;
+    return resolveQuestElapsedHours({
+      hoursElapsed: quest.hoursElapsed,
+      startedAtTime: quest.startedAtTime,
+      startedAtWallMs: quest.startedAtWallMs,
+      currentHour,
+      wallClockFallbackEnabled,
+    });
   }
 
   /**
@@ -539,13 +581,14 @@ export class QuestTracker {
 
     const snapshot = getGameSnapshot();
     const currentHour = snapshot.exploration.timeOfDay;
+    const wallClockFallbackEnabled = snapshot.mode === 'exploration';
     const ctx = this.createContextFromSnapshot();
 
     for (const quest of ctx.activeQuests) {
       const definition = ctx.definitionById.get(quest.questId);
       if (!definition?.timeLimitHours) continue;
 
-      const elapsed = this.resolveQuestHoursElapsed(quest, currentHour);
+      const elapsed = this.resolveQuestHoursElapsed(quest, currentHour, wallClockFallbackEnabled);
       const newElapsed = deltaHours === 0 ? elapsed : elapsed + deltaHours;
 
       if (isQuestTimedOut(newElapsed, definition.timeLimitHours)) {

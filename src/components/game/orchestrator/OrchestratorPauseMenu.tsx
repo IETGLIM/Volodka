@@ -1,4 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion';
+import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useGameStore } from '@/store/gameStore';
 import { FocusTrap } from '@/components/a11y/FocusTrap';
 import type { usePanelDialog } from '@/components/a11y/usePanelDialog';
@@ -26,7 +27,7 @@ export function OrchestratorPauseMenu({ pauseDialog, panels, onClose }: Props) {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             className="fixed inset-0 flex items-center justify-center"
-            style={{ position: 'relative' }}
+            style={{ zIndex: UI_LAYERS.MENU }}
           >
             <div
               className="absolute inset-0 bg-black/70 backdrop-blur-sm"

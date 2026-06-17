@@ -24,5 +24,7 @@ export const TERMINAL_VELOCITY = GRAVITY * 2;
 export const WARMUP_DURATION_S = 0.2;
 export const KCC_FAIL_FRAMES_BEFORE_DEGRADE = 60;
 export const KCC_STUCK_FRAMES_BEFORE_RECREATE = 15;
+/** Cap KCC controller recreates per incident to avoid WASM churn loops. */
+export const MAX_KCC_RECREATE_ATTEMPTS_PER_INCIDENT = 5;
 /** Max horizontal direct-translation step when KCC is unavailable (prevents wall teleport). */
 export const MAX_DIRECT_DISPLACEMENT = 0.3;

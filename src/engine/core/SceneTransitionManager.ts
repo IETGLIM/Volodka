@@ -13,7 +13,11 @@ import { dispatchGameAction, getGameSnapshot } from '@/engine/GameActionDispatch
 import type { SceneId } from '@/shared/types/game';
 import { syncNarrativeOnSceneEnter } from '@/shared/exploreHubNodes';
 import { triggerSceneEntryStoryIfNeeded } from '@/engine/interaction/narrativeOpenHelpers';
-import { flushDeferredCombatStart } from './combatStartGate';
+import {
+  flushDeferredCombatStart,
+  registerCombatStartGateTimeoutHandler,
+  COMBAT_START_GATE_TIMEOUT_MS,
+} from './combatStartGate';
 import { runGlobalSceneUnload } from './GlobalCleanupService';
 import { ensureSceneLoadedBridge, scheduleSceneLoaded } from './sceneLoadedGate';
 import {
@@ -46,8 +50,22 @@ export function bindDeferredCombatStartListener(): void {
   });
 }
 
+function bindCombatStartGateTimeout(): void {
+  registerCombatStartGateTimeoutHandler(() => {
+    if (import.meta.env.DEV) {
+      console.warn(
+        '[SceneTransitionManager] combatStartGate timeout — forcing deferred combat flush',
+        COMBAT_START_GATE_TIMEOUT_MS,
+      );
+    }
+    setAsyncSceneTransitionInProgress(false);
+    flushDeferredCombatStart();
+  });
+}
+
 ensureSceneLoadedBridge();
 bindSceneTransitionGuardListeners();
+bindCombatStartGateTimeout();
 bindDeferredCombatStartListener();
 
 export interface SceneTransitionPayload {
