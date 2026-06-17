@@ -2,10 +2,13 @@ import { describe, expect, it } from 'vitest';
 import type { CombatBuff, CombatState } from './types';
 import { addBuff, createBuff, getEnemyDefenseReduction } from './buffSystem';
 
+import { createCombatRngState } from './combatRng';
+
 function minimalState(buffs: CombatBuff[] = [], nextBuffId = 1): CombatState {
   return {
     buffs,
     _nextBuffId: nextBuffId,
+    rng: createCombatRngState(42),
   } as CombatState;
 }
 

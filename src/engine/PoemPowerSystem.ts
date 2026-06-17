@@ -29,13 +29,24 @@ import {
 } from '@/engine/poemPower/applyPoemSynergy';
 import type { TrainablePlayerSkill } from '@/shared/types/game';
 import { isTrainablePlayerSkill, warnInvalidValue } from '@/shared/validation/typeGuards';
+import {
+  scalePoemPowerDurationMs,
+  scalePoemPowerSkillDelta,
+} from '@/engine/skills/passiveSkillModifiers';
 
 function snap() {
   return getGameSnapshot();
 }
 
 function addSkill(skill: TrainablePlayerSkill, amount: number) {
-  dispatchGameAction({ type: 'player/addSkill', skill, amount });
+  const snapshot = snap();
+  const scaled = scalePoemPowerSkillDelta(
+    amount,
+    snapshot.playerState.progression.unlockedSkills,
+    snapshot.playerState.flags,
+    snapshot.playerState.skills.coding,
+  );
+  dispatchGameAction({ type: 'player/addSkill', skill, amount: scaled });
 }
 
 function addEnergy(amount: number) {
@@ -60,13 +71,20 @@ function setNpcRelation(npcId: string, delta: number) {
 
 function upsertTTLFlags(entries: Array<{ key: string; durationMs: number; poemId: string }>): void {
   if (entries.length === 0) return;
+  const snapshot = snap();
   const now = Date.now();
   dispatchGameAction({
     type: 'poem/upsertTTLFlags',
     flags: entries.map(({ key, durationMs, poemId }) => ({
       key,
       poemId,
-      expiryTimestamp: now + durationMs,
+      expiryTimestamp:
+        now
+        + scalePoemPowerDurationMs(
+          durationMs,
+          snapshot.playerState.progression.unlockedSkills,
+          snapshot.playerState.flags,
+        ),
     })),
   });
 }
@@ -574,7 +592,15 @@ export function activatePoemPowerById(poemId: string): boolean {
   // Track active effect (UI-only, non-serializable)
   // Use the power's longest flag duration, or 30s default
   const longestFlagDuration = power.flagsToSet?.length
-    ? Math.max(...power.flagsToSet.map(f => f.durationMs))
+    ? Math.max(
+        ...power.flagsToSet.map((f) =>
+          scalePoemPowerDurationMs(
+            f.durationMs,
+            snap().playerState.progression.unlockedSkills,
+            snap().playerState.flags,
+          ),
+        ),
+      )
     : 30000;
   activeEffects.push({
     poemId,

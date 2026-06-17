@@ -1,5 +1,7 @@
 /** Visual quality tiers — drives DPR, LOD, compression variant, and procedural/GLB mix. */
 
+import { getSessionAutoResolvedTier } from './autoQualitySession';
+
 export type QualityPresetId = 'auto' | 'low' | 'medium' | 'high' | 'ultra';
 
 export type AssetRenderMode = 'procedural' | 'hybrid' | 'glb';
@@ -145,10 +147,11 @@ export function resolveQualityPreset(
   selected: QualityPresetId,
   viewportWidth: number,
   devicePixelRatio: number,
+  autoRuntimeTier: Exclude<QualityPresetId, 'auto'> | null = getSessionAutoResolvedTier(),
 ): QualityPreset {
   const id =
     selected === 'auto'
-      ? detectAutoQualityPreset(viewportWidth, devicePixelRatio)
+      ? autoRuntimeTier ?? detectAutoQualityPreset(viewportWidth, devicePixelRatio)
       : selected;
   return QUALITY_PRESETS[id];
 }

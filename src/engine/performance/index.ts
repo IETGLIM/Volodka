@@ -29,6 +29,11 @@ export {
 } from './GpuResourceBudgetTracker';
 
 export {
+  bindGpuResourceBaselineBridge,
+  unbindGpuResourceBaselineBridge,
+} from './gpuResourceBaselineBridge';
+
+export {
   PERFORMANCE_BUDGETS,
   getDrawCallBudget,
   getDrawCallWarnThreshold,

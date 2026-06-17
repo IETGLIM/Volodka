@@ -6,6 +6,7 @@ import {
   canUsePower,
   getPoemPower,
 } from '@/engine/PoemPowerSystem';
+import { dispatchGameAction, getGameSnapshot } from '@/engine/GameActionDispatcher';
 
 export type PoemPowerActivationContext = 'exploration' | 'combat';
 
@@ -15,15 +16,39 @@ export type PoemPowerActivationResult =
   | { status: 'failed'; reason: 'unavailable' | 'unknown' | 'cutscene_busy' };
 
 const sessionReadPoems = new Set<string>();
-let pendingPoemId: string | null = null;
+let cutsceneUiActivePoemId: string | null = null;
+
+function readPendingPoemId(): string | null {
+  return getGameSnapshot().pendingPoemReadingId;
+}
+
+function writePendingPoemId(poemId: string | null): void {
+  dispatchGameAction({ type: 'poem/setPendingReading', poemId });
+}
 
 export function resetPoemReadingSession(): void {
   sessionReadPoems.clear();
-  pendingPoemId = null;
+  writePendingPoemId(null);
+  cutsceneUiActivePoemId = null;
+}
+
+/** PoemReadingCutscene reports whether the ritual UI is mounted for a poem. */
+export function setPoemReadingCutsceneUiActive(poemId: string | null): void {
+  cutsceneUiActivePoemId = poemId;
+}
+
+export function isPoemReadingCutsceneUiActive(): boolean {
+  return cutsceneUiActivePoemId !== null;
+}
+
+/** Abort an in-flight ritual when panels dismiss or scene/combat interrupts. */
+export function abortPoemReadingIfPending(): void {
+  if (!readPendingPoemId()) return;
+  cancelPoemReadingCutscene();
 }
 
 export function getPendingPoemReadingId(): string | null {
-  return pendingPoemId;
+  return readPendingPoemId();
 }
 
 export function hasReadPoemThisSession(poemId: string): boolean {
@@ -67,18 +92,23 @@ export function requestPoemPowerActivation(
     return activateDirect(poemId);
   }
 
+  const pendingPoemId = readPendingPoemId();
   if (pendingPoemId) {
-    return { status: 'failed', reason: 'cutscene_busy' };
+    if (isPoemReadingCutsceneUiActive()) {
+      return { status: 'failed', reason: 'cutscene_busy' };
+    }
+    cancelPoemReadingCutscene();
   }
 
-  pendingPoemId = poemId;
+  writePendingPoemId(poemId);
   eventBus.emit('poem:show_cutscene', { poemId });
   return { status: 'cutscene_pending' };
 }
 
 /** Called when PoemReadingCutscene finishes — applies power, synergy, and world event. */
 export function completePoemReadingCutscene(poemId: string): boolean {
-  pendingPoemId = null;
+  writePendingPoemId(null);
+  cutsceneUiActivePoemId = null;
   sessionReadPoems.add(poemId);
   eventBus.emit('poem:cutscene_end', {});
   eventBus.emit('camera:poem_reading_end', {});
@@ -87,7 +117,28 @@ export function completePoemReadingCutscene(poemId: string): boolean {
 
 /** Abort an in-flight reading ritual without activating the power. */
 export function cancelPoemReadingCutscene(): void {
-  pendingPoemId = null;
+  writePendingPoemId(null);
+  cutsceneUiActivePoemId = null;
   eventBus.emit('poem:cutscene_end', {});
   eventBus.emit('camera:poem_reading_end', {});
 }
+
+let unsubPoemReadingLifecycle: (() => void) | null = null;
+
+/** Re-bind after EventBus dispose (StrictMode / HMR). */
+export function bindPoemReadingCutsceneLifecycleListeners(): void {
+  unsubPoemReadingLifecycle?.();
+  const unsubs = [
+    eventBus.on('scene:transition_start', () => {
+      abortPoemReadingIfPending();
+    }),
+    eventBus.on('combat:start', () => {
+      abortPoemReadingIfPending();
+    }),
+  ];
+  unsubPoemReadingLifecycle = () => {
+    for (const unsub of unsubs) unsub();
+  };
+}
+
+bindPoemReadingCutsceneLifecycleListeners();

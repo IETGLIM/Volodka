@@ -7,16 +7,16 @@ import {
   resolvePoemWorldHintFlagKey,
   resolvePoemSynergyWorldEffect,
 } from '@/engine/poemWorld/poemWorldEffectResolver';
+import { registerHmrDispose } from '@/shared/dev/hmrDispose';
 
 let unsubWorldBridge: (() => void) | null = null;
 let unsubSynergyBridge: (() => void) | null = null;
 
 function upsertWorldHintFlag(poemId: string, hintKey: string, durationMs: number): void {
   const now = Date.now();
-  dispatchGameAction({ type: 'player/setFlag', key: hintKey, value: true });
   dispatchGameAction({
-    type: 'poem/upsertTTLFlags',
-    flags: [{ key: hintKey, poemId, expiryTimestamp: now + durationMs }],
+    type: 'world/upsertHintFlag',
+    flag: { key: hintKey, poemId, expiryTimestamp: now + durationMs },
   });
 }
 
@@ -81,4 +81,4 @@ export function unbindPoemWorldEventBridge(): void {
   unsubSynergyBridge = null;
 }
 
-bindPoemWorldEventBridge();
+registerHmrDispose(unbindPoemWorldEventBridge);

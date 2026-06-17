@@ -11,6 +11,11 @@ import {
   getPlayerDamageReduction,
   getPlayerVulnerability,
 } from './buffSystem';
+import {
+  COMBAT_CONSTANTS,
+  scaleDamageByFraction,
+} from './formulas';
+import { getPlayerRngSeed, pickIndexFromSeed, rollEnemyDamage } from './combatRng';
 
 /* ═══════════════════════════════════════════════════════════════
    Enemy Special Attacks (extracted for clarity)
@@ -50,9 +55,7 @@ const DAEMON_SPECIALS: EnemySpecialAttack[] = [
     chance: 0.25,
     cooldown: 4,
     execute: (state, enemy) => {
-      // Use a vulnerability effect: positive value on defense_reduction means player takes MORE damage
-      // damage_reduction with negative semantics -> we model as defense_reduction on player (reduces their defense)
-      // But getPlayerDamageReduction clamps to >=0, so we use attack_boost on enemy instead for the same effect
+      // Player-targeted defense_reduction → getPlayerVulnerability (+30% incoming damage for 2 turns).
       const buff = createBuff(state, 'Цифровая Тюрьма', 'daemon_digital_prison', 'debuff', 'player', 2, { type: 'defense_reduction', value: 0.3 });
       const s = addBuff(state, buff);
       return {
@@ -129,8 +132,9 @@ const AGENT_SPECIALS: EnemySpecialAttack[] = [
       // Use buff-aware attack (includes getEnemyAttackBoost)
       const effectiveAttack = enemy.attack + getEnemyAttackBoost(state);
       const enemyDmgMultiplier = getEnemyDamageMultiplier(state);
-      let damage = Math.max(1, Math.floor(effectiveAttack * enemyDmgMultiplier * (0.85 + Math.random() * 0.3)));
-      damage = damage * 2; // critical from stealth
+      const rolled = rollEnemyDamage(state, { attack: effectiveAttack, multiplier: enemyDmgMultiplier });
+      let damage = rolled.damage * COMBAT_CONSTANTS.STEALTH_CRIT_MULTIPLIER;
+      const nextState = rolled.state;
 
       // Apply player defense_boost buff
       const playerDefBoost = getPlayerDefenseBoost(state);
@@ -141,21 +145,21 @@ const AGENT_SPECIALS: EnemySpecialAttack[] = [
       // Apply buff-based damage reduction
       const playerDmgReduction = getPlayerDamageReduction(state);
       if (playerDmgReduction > 0) {
-        damage = Math.max(1, Math.floor(damage * (1 - playerDmgReduction)));
+        damage = scaleDamageByFraction(damage, playerDmgReduction, 'reduction');
       }
 
       // Apply player vulnerability from defense_reduction debuffs
       const playerVulnerability = getPlayerVulnerability(state);
       if (playerVulnerability > 0) {
-        damage = Math.max(1, Math.floor(damage * (1 + playerVulnerability)));
+        damage = scaleDamageByFraction(damage, playerVulnerability, 'vulnerability');
       }
 
-      const newPlayerHp = Math.max(0, state.playerHp - damage);
+      const newPlayerHp = Math.max(0, nextState.playerHp - damage);
       return {
-        ...state,
+        ...nextState,
         playerHp: newPlayerHp,
         log: [
-          ...state.log,
+          ...nextState.log,
           {
             turn: state.turn,
             text: `${enemy.emoji} Удар из Тени! Критический удар: -${damage} HP!`,
@@ -304,9 +308,9 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
           const playerDefBoost = getPlayerDefenseBoost(state);
           if (playerDefBoost > 0) damage = Math.max(1, damage - playerDefBoost);
           const playerDmgReduction = getPlayerDamageReduction(state);
-          if (playerDmgReduction > 0) damage = Math.max(1, Math.floor(damage * (1 - playerDmgReduction)));
+          if (playerDmgReduction > 0) damage = scaleDamageByFraction(damage, playerDmgReduction, 'reduction');
           const playerVulnerability = getPlayerVulnerability(state);
-          if (playerVulnerability > 0) damage = Math.max(1, Math.floor(damage * (1 + playerVulnerability)));
+          if (playerVulnerability > 0) damage = scaleDamageByFraction(damage, playerVulnerability, 'vulnerability');
           const newPlayerHp = Math.max(1, state.playerHp - damage);
           return { ...state, playerHp: newPlayerHp, log: [...state.log, { turn: state.turn, text: `${enemy.emoji} Аудит Совести! Ваши добрые дела обращаются против вас: -${damage} HP!`, type: 'enemy_special' as const, damage }] };
         },
@@ -347,13 +351,15 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
         cooldown: 3,
         execute: (state, enemy) => {
           const effectiveAttack = enemy.attack + getEnemyAttackBoost(state);
-          let damage = Math.max(1, Math.floor(effectiveAttack * 1.5 * (0.85 + Math.random() * 0.3)));
-          const playerDmgReduction = getPlayerDamageReduction(state);
-          if (playerDmgReduction > 0) damage = Math.max(1, Math.floor(damage * (1 - playerDmgReduction)));
-          const playerVulnerability = getPlayerVulnerability(state);
-          if (playerVulnerability > 0) damage = Math.max(1, Math.floor(damage * (1 + playerVulnerability)));
-          const buff = createBuff(state, 'Оглушение', 'enforcer_shield_bash', 'debuff', 'player', 1, { type: 'skip_turn' });
-          const s = addBuff(state, buff);
+          const rolled = rollEnemyDamage(state, { attack: effectiveAttack, multiplier: 1.5 });
+          let damage = rolled.damage;
+          const nextState = rolled.state;
+          const playerDmgReduction = getPlayerDamageReduction(nextState);
+          if (playerDmgReduction > 0) damage = scaleDamageByFraction(damage, playerDmgReduction, 'reduction');
+          const playerVulnerability = getPlayerVulnerability(nextState);
+          if (playerVulnerability > 0) damage = scaleDamageByFraction(damage, playerVulnerability, 'vulnerability');
+          const buff = createBuff(nextState, 'Оглушение', 'enforcer_shield_bash', 'debuff', 'player', 1, { type: 'skip_turn' });
+          const s = addBuff(nextState, buff);
           const newPlayerHp = Math.max(0, s.playerHp - damage);
           return { ...s, playerHp: newPlayerHp, log: [...s.log, { turn: state.turn, text: `${enemy.emoji} Удар Щитом! -${damage} HP, оглушение!`, type: 'enemy_special' as const, damage }] };
         },
@@ -394,13 +400,15 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
         cooldown: 3,
         execute: (state, enemy) => {
           const effectiveAttack = enemy.attack + getEnemyAttackBoost(state);
-          let damage = Math.max(1, Math.floor(effectiveAttack * 1.2 * (0.85 + Math.random() * 0.3)));
-          const playerDmgReduction = getPlayerDamageReduction(state);
-          if (playerDmgReduction > 0) damage = Math.max(1, Math.floor(damage * (1 - playerDmgReduction)));
-          const newPlayerHp = Math.max(0, state.playerHp - damage);
+          const rolled = rollEnemyDamage(state, { attack: effectiveAttack, multiplier: 1.2 });
+          let damage = rolled.damage;
+          const nextState = rolled.state;
+          const playerDmgReduction = getPlayerDamageReduction(nextState);
+          if (playerDmgReduction > 0) damage = scaleDamageByFraction(damage, playerDmgReduction, 'reduction');
+          const newPlayerHp = Math.max(0, nextState.playerHp - damage);
           const healAmount = Math.floor(damage * 0.5);
           const newEnemyHp = Math.min(enemy.maxHp, enemy.hp + healAmount);
-          return { ...state, playerHp: newPlayerHp, enemy: { ...enemy, hp: newEnemyHp }, log: [...state.log, { turn: state.turn, text: `${enemy.emoji} Похищение Души! -${damage} HP, враг исцеляется на ${healAmount}!`, type: 'enemy_special' as const, damage }] };
+          return { ...nextState, playerHp: newPlayerHp, enemy: { ...enemy, hp: newEnemyHp }, log: [...nextState.log, { turn: state.turn, text: `${enemy.emoji} Похищение Души! -${damage} HP, враг исцеляется на ${healAmount}!`, type: 'enemy_special' as const, damage }] };
         },
       },
       {
@@ -488,13 +496,18 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
         execute: (state, enemy) => {
           const poemCount = getGameSnapshot().collectedPoems.length;
           const effectiveAttack = enemy.attack + getEnemyAttackBoost(state);
-          let damage = Math.max(1, Math.floor(effectiveAttack * (1.5 + poemCount * 0.1) * (0.85 + Math.random() * 0.3)));
-          const playerDmgReduction = getPlayerDamageReduction(state);
-          if (playerDmgReduction > 0) damage = Math.max(1, Math.floor(damage * (1 - playerDmgReduction)));
-          const playerVulnerability = getPlayerVulnerability(state);
-          if (playerVulnerability > 0) damage = Math.max(1, Math.floor(damage * (1 + playerVulnerability)));
-          const newPlayerHp = Math.max(0, state.playerHp - damage);
-          return { ...state, playerHp: newPlayerHp, log: [...state.log, { turn: state.turn, text: `${enemy.emoji} Казнь Стихотворца! -${damage} HP! (бонус от ${poemCount} стихов)`, type: 'enemy_special' as const, damage }] };
+          const rolled = rollEnemyDamage(state, {
+            attack: effectiveAttack,
+            multiplier: COMBAT_CONSTANTS.POEM_HUNTER_DAMAGE_BASE_MULTIPLIER + poemCount * COMBAT_CONSTANTS.POEM_HUNTER_DAMAGE_PER_POEM,
+          });
+          let damage = rolled.damage;
+          const nextState = rolled.state;
+          const playerDmgReduction = getPlayerDamageReduction(nextState);
+          if (playerDmgReduction > 0) damage = scaleDamageByFraction(damage, playerDmgReduction, 'reduction');
+          const playerVulnerability = getPlayerVulnerability(nextState);
+          if (playerVulnerability > 0) damage = scaleDamageByFraction(damage, playerVulnerability, 'vulnerability');
+          const newPlayerHp = Math.max(0, nextState.playerHp - damage);
+          return { ...nextState, playerHp: newPlayerHp, log: [...nextState.log, { turn: state.turn, text: `${enemy.emoji} Казнь Стихотворца! -${damage} HP! (бонус от ${poemCount} стихов)`, type: 'enemy_special' as const, damage }] };
         },
       },
     ],
@@ -567,5 +580,6 @@ export function resolveEnemyType(requestedType: EnemyType): EnemyType {
   const fallbacks: EnemyType[] = ['system_daemon', 'corporate_golem'];
   if (playerLevel >= 2) fallbacks.push('censor_drone');
   if (playerLevel >= 3) fallbacks.push('shadow_agent', 'guild_enforcer');
-  return fallbacks[Math.floor(Math.random() * fallbacks.length)];
+  const fallbackSeed = getPlayerRngSeed(snapshot.playerState) ^ requestedType.length;
+  return fallbacks[pickIndexFromSeed(fallbackSeed, fallbacks.length)];
 }

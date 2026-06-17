@@ -3,6 +3,7 @@
 import type { QuestDefinition, StoryNode } from '@/shared/types/game';
 import type { GuidedStoryObjectiveType } from '@/engine/guidedStory/guidedStoryTypes';
 import { isStoryGraphEdge } from '@/engine/story/storyGraphTraversal';
+import { resolveCanonicalNpcId } from '@/shared/npcIdAliases';
 
 export interface DeriveGoldenPathOptions {
   /** Spine start node (default: `start`). */
@@ -169,7 +170,9 @@ export function deriveGuidanceMaps(
   };
 
   for (const [nodeId, node] of Object.entries(nodes)) {
-    if (node.guidanceNpcId) npcByNodeId[nodeId] = node.guidanceNpcId;
+    if (node.guidanceNpcId) {
+      npcByNodeId[nodeId] = resolveCanonicalNpcId(node.guidanceNpcId);
+    }
     if (node.guidanceSceneLabel) sceneLabelByNodeId[nodeId] = node.guidanceSceneLabel;
     if (node.guidanceObjectiveType) objectiveTypeByNodeId[nodeId] = node.guidanceObjectiveType;
   }

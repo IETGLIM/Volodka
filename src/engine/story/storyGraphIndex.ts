@@ -1,8 +1,8 @@
 /* ─── Story graph + quest linkage indices (lazy build, incremental pack sync) ─── */
 
 import { buildStorySpineIndex } from '@/engine/story/deriveGoldenPath';
+import { invalidateGuidedStoryPathConfig } from '@/engine/guidedStory/guidedStoryPathCache';
 import {
-  invalidateGuidedStoryPathConfig,
   getResolvedQuestSpine,
   getResolvedStorySpine,
 } from '@/engine/guidedStory/guidedStoryPath';

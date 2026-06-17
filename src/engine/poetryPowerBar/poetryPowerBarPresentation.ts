@@ -32,7 +32,7 @@ export function buildCollectedWithPowers(collectedPoems: readonly string[]): Col
 }
 
 export function getDisplayPowers(entries: CollectedPowerEntry[]): CollectedPowerEntry[] {
-  return entries.slice(0, POETRY_POWER_BAR_MAX_SLOTS);
+  return entries;
 }
 
 export function getEmptySlotCount(displayCount: number): number {

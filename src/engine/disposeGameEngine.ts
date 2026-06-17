@@ -44,9 +44,26 @@ import {
 } from '@/engine/core/GlobalCleanupService';
 import { getGameSnapshot } from '@/engine/GameActionDispatcher';
 import { bindPoemResetListener } from '@/engine/PoemPowerSystem';
-import { bindPoemWorldEventBridge } from '@/engine/poemWorld/poemWorldEventBridge';
+import { bindPoemReadingCutsceneLifecycleListeners } from '@/engine/poemReading/poemReadingOrchestrator';
+import {
+  bindAdaptiveQualityBridge,
+  unbindAdaptiveQualityBridge,
+} from '@/engine/graphics/adaptiveQualityBridge';
+import { clearSessionAutoResolvedTier } from '@/engine/graphics/autoQualitySession';
+import {
+  bindPoemWorldEventBridge,
+  unbindPoemWorldEventBridge,
+} from '@/engine/poemWorld/poemWorldEventBridge';
 import { bindDeferredCombatStartListener, bindSceneTransitionGuardListeners } from '@/engine/core/SceneTransitionManager';
 import { bindSceneLoadedBridge } from '@/engine/core/sceneLoadedGate';
+import {
+  bindGpuResourceBaselineBridge,
+  unbindGpuResourceBaselineBridge,
+} from '@/engine/performance/gpuResourceBaselineBridge';
+import {
+  bindSceneChunkGpuLifecycle,
+  unbindSceneChunkGpuLifecycle,
+} from '@/components/3d/sceneChunks/sceneChunkGpuLifecycle';
 import {
   disposeTransitionDirector,
   reviveTransitionDirector,
@@ -102,6 +119,11 @@ export function disposeGameEngine(): void {
     runGlobalUnmountCleanup(getSceneIdForCleanup());
     resetGlobalCleanupRegistry();
 
+    unbindAdaptiveQualityBridge();
+    clearSessionAutoResolvedTier();
+    unbindPoemWorldEventBridge();
+    unbindGpuResourceBaselineBridge();
+    unbindSceneChunkGpuLifecycle();
     disposeTransitionDirector();
     disposeEventBus();
   } catch (err) {
@@ -121,10 +143,14 @@ export function reviveGameEngine(): void {
   reviveFrameVisibility();
   reviveEventBus();
   bindSceneLoadedBridge();
+  bindGpuResourceBaselineBridge();
+  bindSceneChunkGpuLifecycle();
   bindSceneTransitionGuardListeners();
   bindDeferredCombatStartListener();
   bindPoemResetListener();
+  bindPoemReadingCutsceneLifecycleListeners();
   bindPoemWorldEventBridge();
+  bindAdaptiveQualityBridge();
 
   reviveQuestTracker();
   reviveGuidedStoryManager();

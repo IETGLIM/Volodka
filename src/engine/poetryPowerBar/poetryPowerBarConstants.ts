@@ -1,3 +1,4 @@
+/** Number keys 1–5 and empty placeholder slots when fewer powers are collected. */
 export const POETRY_POWER_BAR_MAX_SLOTS = 5;
 
 export const POETRY_POWER_BAR_LABELS = {

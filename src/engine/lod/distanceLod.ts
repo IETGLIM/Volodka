@@ -72,6 +72,21 @@ export interface EnvironmentLodProfile {
   decorativeDistance: number;
 }
 
+/** Per-tier enter/exit distances for environment LOD hysteresis (world units). */
+export interface EnvironmentLodThresholds {
+  /** Distance above which full detail downgrades to standard */
+  clutterOut: number;
+  /** Distance below which standard upgrades back to full */
+  clutterIn: number;
+  /** Distance above which standard downgrades to minimal */
+  decorativeOut: number;
+  /** Distance below which minimal upgrades back to standard */
+  decorativeIn: number;
+}
+
+/** Upgrade band ratio — matches NPC cullIn/cullOut spacing (~15%). */
+export const ENV_LOD_HYSTERESIS_IN_RATIO = 0.85;
+
 const DEFAULT_ENV_PROFILE: EnvironmentLodProfile = {
   clutterDistance: 999,
   decorativeDistance: 999,
@@ -114,18 +129,58 @@ export function getEnvironmentLodProfile(sceneId: string): EnvironmentLodProfile
   };
 }
 
+export function environmentLodThresholdsFromProfile(
+  profile: EnvironmentLodProfile,
+  lodBias: number,
+): EnvironmentLodThresholds {
+  const scale = Math.max(lodBias, 0.25);
+  const clutterOut = profile.clutterDistance * scale;
+  const decorativeOut = profile.decorativeDistance * scale;
+  return {
+    clutterOut,
+    clutterIn: clutterOut * ENV_LOD_HYSTERESIS_IN_RATIO,
+    decorativeOut,
+    decorativeIn: decorativeOut * ENV_LOD_HYSTERESIS_IN_RATIO,
+  };
+}
+
+/** One-shot tier pick (no hysteresis) — used by tests and legacy callers. */
 export function environmentLodFromDistance(
   distance: number,
   profile: EnvironmentLodProfile,
   lodBias: number,
 ): EnvironmentLodLevel {
-  const scale = Math.max(lodBias, 0.25);
-  const clutter = profile.clutterDistance * scale;
-  const decorative = profile.decorativeDistance * scale;
-
-  if (distance <= clutter) return 'full';
-  if (distance <= decorative) return 'standard';
+  const { clutterOut, decorativeOut } = environmentLodThresholdsFromProfile(profile, lodBias);
+  if (distance <= clutterOut) return 'full';
+  if (distance <= decorativeOut) return 'standard';
   return 'minimal';
+}
+
+/** Resolve environment LOD with hysteresis to avoid flicker at tier boundaries. */
+export function resolveEnvironmentLod(
+  distance: number,
+  current: EnvironmentLodLevel,
+  thresholds: EnvironmentLodThresholds,
+): EnvironmentLodLevel {
+  switch (current) {
+    case 'minimal':
+      if (distance < thresholds.decorativeIn) {
+        return distance < thresholds.clutterIn ? 'full' : 'standard';
+      }
+      return 'minimal';
+    case 'standard':
+      if (distance >= thresholds.decorativeOut) return 'minimal';
+      if (distance < thresholds.clutterIn) return 'full';
+      return 'standard';
+    case 'full':
+      if (distance >= thresholds.decorativeOut) return 'minimal';
+      if (distance >= thresholds.clutterOut) return 'standard';
+      return 'full';
+    default: {
+      const _exhaustive: never = current;
+      return _exhaustive;
+    }
+  }
 }
 
 export function environmentDetailVisible(

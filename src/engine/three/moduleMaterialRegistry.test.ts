@@ -4,6 +4,7 @@ import {
   disposeAllModuleMaterials,
   getRegisteredModuleMaterialCount,
   getSharedStandardMaterial,
+  mat,
   registerModuleMaterial,
 } from './moduleMaterialRegistry';
 
@@ -15,6 +16,33 @@ describe('moduleMaterialRegistry', () => {
 
     expect(a).toBe(b);
     expect(a).not.toBe(c);
+  });
+
+  it('getSharedStandardMaterial dedupes emissive params', () => {
+    const a = getSharedStandardMaterial({
+      color: '#00ff44',
+      emissive: '#00ff44',
+      emissiveIntensity: 3.0,
+    });
+    const b = getSharedStandardMaterial({
+      color: '#00ff44',
+      emissive: '#00ff44',
+      emissiveIntensity: 3.0,
+    });
+    const c = getSharedStandardMaterial({
+      color: '#00ff44',
+      emissive: '#00ff44',
+      emissiveIntensity: 2.0,
+    });
+
+    expect(a).toBe(b);
+    expect(a).not.toBe(c);
+  });
+
+  it('mat() shorthand delegates to getSharedStandardMaterial', () => {
+    const a = mat('#445566', { roughness: 0.7 });
+    const b = getSharedStandardMaterial({ color: '#445566', roughness: 0.7 });
+    expect(a).toBe(b);
   });
 
   it('disposeAllModuleMaterials disposes registered and cached materials', () => {

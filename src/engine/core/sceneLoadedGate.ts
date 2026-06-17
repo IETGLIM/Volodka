@@ -10,18 +10,60 @@ import {
   hasRegisteredCanvas,
   invalidateCanvasFirstFrame,
 } from '@/engine/canvas/canvasFirstFrameSession';
+import { SCENE_LOADED_FIRST_FRAME_WATCHDOG_MS } from '@/shared/constants/transitionTimings';
 import type { SceneId } from '@/shared/types/game';
+import { devWarn } from '@/shared/utils/devLog';
 
 export type SceneLoadedPayload = { sceneId: SceneId; fromSceneId: SceneId };
 
 let pending: SceneLoadedPayload | null = null;
 let pendingGeneration = 0;
-let unsubCanvasFirstFrame: (() => void) | null = null;
+let bridgeUnsubs: Array<() => void> | null = null;
+let watchdogTimer: ReturnType<typeof setTimeout> | null = null;
+
+function clearWatchdog(): void {
+  if (watchdogTimer) {
+    clearTimeout(watchdogTimer);
+    watchdogTimer = null;
+  }
+}
+
+function cancelPendingLoaded(): void {
+  pending = null;
+  clearWatchdog();
+}
+
+function abortPendingLoaded(reason: string, errorCode: string): void {
+  if (!pending) return;
+  const payload = pending;
+  pending = null;
+  clearWatchdog();
+  devWarn('[sceneLoadedGate] Scene load watchdog:', reason, payload);
+  eventBus.emit('scene:transition_failed', {
+    reason,
+    targetScene: payload.sceneId,
+    fromScene: payload.fromSceneId,
+    errorCode,
+  });
+}
+
+function armWatchdog(generation: number): void {
+  clearWatchdog();
+  watchdogTimer = setTimeout(() => {
+    watchdogTimer = null;
+    if (generation !== pendingGeneration || !pending) return;
+    abortPendingLoaded(
+      'canvas:first-frame watchdog timeout',
+      'first_frame_timeout',
+    );
+  }, SCENE_LOADED_FIRST_FRAME_WATCHDOG_MS);
+}
 
 function flushPendingLoaded(generation: number): void {
   if (generation !== pendingGeneration || !pending) return;
   const payload = pending;
   pending = null;
+  clearWatchdog();
   eventBus.emit('scene:loaded', payload);
 }
 
@@ -38,14 +80,29 @@ export function scheduleSceneLoaded(payload: SceneLoadedPayload): void {
   }
 
   invalidateCanvasFirstFrame();
+  armWatchdog(generation);
+}
+
+function clearBridgeListeners(): void {
+  if (!bridgeUnsubs) return;
+  for (const unsub of bridgeUnsubs) unsub();
+  bridgeUnsubs = null;
 }
 
 /** (Re)bind canvas:first-frame → scene:loaded bridge after EventBus dispose/revive. */
 export function bindSceneLoadedBridge(): void {
-  unsubCanvasFirstFrame?.();
-  unsubCanvasFirstFrame = eventBus.on('canvas:first-frame', () => {
-    flushPendingLoaded(pendingGeneration);
-  });
+  clearBridgeListeners();
+  bridgeUnsubs = [
+    eventBus.on('canvas:first-frame', () => {
+      flushPendingLoaded(pendingGeneration);
+    }),
+    eventBus.on('canvas:context-lost', () => {
+      abortPendingLoaded('WebGL context lost', 'webgl_context_lost');
+    }),
+    eventBus.on('scene:transition_failed', () => {
+      cancelPendingLoaded();
+    }),
+  ];
 }
 
 export function ensureSceneLoadedBridge(): void {
@@ -54,8 +111,7 @@ export function ensureSceneLoadedBridge(): void {
 
 /** Test harness — reset pending latch between cases. */
 export function resetSceneLoadedGate(): void {
-  pending = null;
+  cancelPendingLoaded();
   pendingGeneration = 0;
-  unsubCanvasFirstFrame?.();
-  unsubCanvasFirstFrame = null;
+  clearBridgeListeners();
 }

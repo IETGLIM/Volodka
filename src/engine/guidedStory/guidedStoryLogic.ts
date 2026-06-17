@@ -1,4 +1,5 @@
 import { isExploreHubNode } from '@/shared/exploreHubNodes';
+import { resolveCanonicalNpcId } from '@/shared/npcIdAliases';
 import type {
   GuidedStoryDeps,
   GuidedStoryPathConfig,
@@ -264,9 +265,9 @@ export function canStartQuest(questId: string, deps: GuidedStoryDeps): boolean {
 }
 
 export function findNpcForQuest(questDef: QuestDefinition): string | undefined {
-  if (questDef.questGiverNpcId) return questDef.questGiverNpcId;
+  if (questDef.questGiverNpcId) return resolveCanonicalNpcId(questDef.questGiverNpcId);
   const npcObj = questDef.objectives.find((o) => o.type === 'npc_talked');
-  return npcObj?.target;
+  return npcObj?.target ? resolveCanonicalNpcId(npcObj.target) : undefined;
 }
 
 /** Story nodes where network_initiation should be active even if triggerQuest was skipped. */

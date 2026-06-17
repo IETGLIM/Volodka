@@ -1,8 +1,40 @@
 import * as THREE from 'three';
 import { seededRand } from '@/shared/utils/seededRand';
 
+const skyCache = new Map<string, THREE.CanvasTexture>();
+
+/**
+ * All 14 procedural sky dome textures are static (seeded canvas draws, no per-frame updates).
+ * Geometry helpers (`createDreamGalaxyStarGeometry`, `createRooftopHorizonStarGeometry`) are not cached.
+ */
+function getOrCreateSkyTexture(
+  key: string,
+  build: () => THREE.CanvasTexture,
+): THREE.CanvasTexture {
+  const cached = skyCache.get(key);
+  if (cached) return cached;
+  const tex = build();
+  skyCache.set(key, tex);
+  tex.addEventListener('dispose', () => {
+    if (skyCache.get(key) === tex) skyCache.delete(key);
+  });
+  return tex;
+}
+
+/** Test helper and quality/HMR cleanup — dispose cached sky textures. */
+export function clearSkyTextureCache(): void {
+  for (const tex of skyCache.values()) {
+    tex.dispose();
+  }
+  skyCache.clear();
+}
+
 /** Procedural vertical gradient + nebula wisps for the sleep_dream galaxy dome. */
 export function createDreamGalaxySkyTexture(): THREE.CanvasTexture {
+  return getOrCreateSkyTexture('dream_galaxy', buildDreamGalaxySkyTexture);
+}
+
+function buildDreamGalaxySkyTexture(): THREE.CanvasTexture {
   const w = 64;
   const h = 256;
   const canvas = document.createElement('canvas');
@@ -50,6 +82,10 @@ export function createDreamGalaxySkyTexture(): THREE.CanvasTexture {
 
 /** Noir sunset dome with galaxy wisps at zenith — rooftop_edge horizon drama. */
 export function createRooftopSunsetGalaxySkyTexture(): THREE.CanvasTexture {
+  return getOrCreateSkyTexture('rooftop_sunset_galaxy', buildRooftopSunsetGalaxySkyTexture);
+}
+
+function buildRooftopSunsetGalaxySkyTexture(): THREE.CanvasTexture {
   const w = 64;
   const h = 256;
   const canvas = document.createElement('canvas');
@@ -109,6 +145,10 @@ export function createRooftopHorizonStarGeometry(starCount = 90): THREE.BufferGe
 
 /** Overcast gothic haze dome for park_day — soft grey-green zenith to warm horizon. */
 export function createParkHazySkyTexture(): THREE.CanvasTexture {
+  return getOrCreateSkyTexture('park_hazy', buildParkHazySkyTexture);
+}
+
+function buildParkHazySkyTexture(): THREE.CanvasTexture {
   const w = 64;
   const h = 256;
   const canvas = document.createElement('canvas');
@@ -144,6 +184,10 @@ export function createParkHazySkyTexture(): THREE.CanvasTexture {
 
 /** Rainy synthwave night sky — street_night horizon haze + neon zenith band. */
 export function createStreetNightSynthwaveSkyTexture(): THREE.CanvasTexture {
+  return getOrCreateSkyTexture('street_night_synthwave', buildStreetNightSynthwaveSkyTexture);
+}
+
+function buildStreetNightSynthwaveSkyTexture(): THREE.CanvasTexture {
   const w = 64;
   const h = 256;
   const canvas = document.createElement('canvas');
@@ -187,6 +231,10 @@ export function createStreetNightSynthwaveSkyTexture(): THREE.CanvasTexture {
 
 /** Blue-neon ceiling wash for cafe_evening — hazy interior HDR ambience. */
 export function createCafeEveningNeonSkyTexture(): THREE.CanvasTexture {
+  return getOrCreateSkyTexture('cafe_evening_neon', buildCafeEveningNeonSkyTexture);
+}
+
+function buildCafeEveningNeonSkyTexture(): THREE.CanvasTexture {
   const w = 64;
   const h = 256;
   const canvas = document.createElement('canvas');
@@ -223,6 +271,10 @@ export function createCafeEveningNeonSkyTexture(): THREE.CanvasTexture {
 
 /** Sterile overcast wash for office_day ceiling — cold fluorescent haze. */
 export function createOfficeDayOvercastSkyTexture(): THREE.CanvasTexture {
+  return getOrCreateSkyTexture('office_day_overcast', buildOfficeDayOvercastSkyTexture);
+}
+
+function buildOfficeDayOvercastSkyTexture(): THREE.CanvasTexture {
   const w = 64;
   const h = 256;
   const canvas = document.createElement('canvas');
@@ -258,6 +310,10 @@ export function createOfficeDayOvercastSkyTexture(): THREE.CanvasTexture {
 
 /** Dusty amber-green dome for library_day — gothic reading light through high windows. */
 export function createLibraryDayWarmSkyTexture(): THREE.CanvasTexture {
+  return getOrCreateSkyTexture('library_day_warm', buildLibraryDayWarmSkyTexture);
+}
+
+function buildLibraryDayWarmSkyTexture(): THREE.CanvasTexture {
   const w = 64;
   const h = 256;
   const canvas = document.createElement('canvas');
@@ -294,6 +350,10 @@ export function createLibraryDayWarmSkyTexture(): THREE.CanvasTexture {
 
 /** Warm amber ceiling wash for home_evening — cozy kitchen/living mood with city-blue spill. */
 export function createHomeEveningWarmSkyTexture(): THREE.CanvasTexture {
+  return getOrCreateSkyTexture('home_evening_warm', buildHomeEveningWarmSkyTexture);
+}
+
+function buildHomeEveningWarmSkyTexture(): THREE.CanvasTexture {
   const w = 64;
   const h = 256;
   const canvas = document.createElement('canvas');
@@ -336,6 +396,10 @@ export function createHomeEveningWarmSkyTexture(): THREE.CanvasTexture {
 
 /** Matrix monitor glow ceiling wash for volodka_room — noir apartment HDR. */
 export function createVolodkaRoomNightSkyTexture(): THREE.CanvasTexture {
+  return getOrCreateSkyTexture('volodka_room_night', buildVolodkaRoomNightSkyTexture);
+}
+
+function buildVolodkaRoomNightSkyTexture(): THREE.CanvasTexture {
   const w = 64;
   const h = 256;
   const canvas = document.createElement('canvas');
@@ -381,6 +445,10 @@ export function createVolodkaRoomNightSkyTexture(): THREE.CanvasTexture {
 
 /** Dim rainy corridor ceiling wash for volodka_corridor — communal noir. */
 export function createVolodkaCorridorRainySkyTexture(): THREE.CanvasTexture {
+  return getOrCreateSkyTexture('volodka_corridor_rainy', buildVolodkaCorridorRainySkyTexture);
+}
+
+function buildVolodkaCorridorRainySkyTexture(): THREE.CanvasTexture {
   const w = 64;
   const h = 256;
   const canvas = document.createElement('canvas');
@@ -417,6 +485,10 @@ export function createVolodkaCorridorRainySkyTexture(): THREE.CanvasTexture {
 
 /** Rust industrial ceiling wash for abandoned_factory — gothic decay. */
 export function createAbandonedFactoryIndustrialSkyTexture(): THREE.CanvasTexture {
+  return getOrCreateSkyTexture('abandoned_factory_industrial', buildAbandonedFactoryIndustrialSkyTexture);
+}
+
+function buildAbandonedFactoryIndustrialSkyTexture(): THREE.CanvasTexture {
   const w = 64;
   const h = 256;
   const canvas = document.createElement('canvas');
@@ -453,6 +525,10 @@ export function createAbandonedFactoryIndustrialSkyTexture(): THREE.CanvasTextur
 
 /** «Заря-М» core glow ceiling wash for factory_basement — machine confession mood. */
 export function createFactoryBasementCoreGlowTexture(): THREE.CanvasTexture {
+  return getOrCreateSkyTexture('factory_basement_core_glow', buildFactoryBasementCoreGlowTexture);
+}
+
+function buildFactoryBasementCoreGlowTexture(): THREE.CanvasTexture {
   const w = 64;
   const h = 256;
   const canvas = document.createElement('canvas');
@@ -489,6 +565,10 @@ export function createFactoryBasementCoreGlowTexture(): THREE.CanvasTexture {
 
 /** Cozy domestic ceiling wash for zarema_albert_room — warm tea-and-pie mood. */
 export function createZaremaAlbertWarmSkyTexture(): THREE.CanvasTexture {
+  return getOrCreateSkyTexture('zarema_albert_warm', buildZaremaAlbertWarmSkyTexture);
+}
+
+function buildZaremaAlbertWarmSkyTexture(): THREE.CanvasTexture {
   const w = 64;
   const h = 256;
   const canvas = document.createElement('canvas');
@@ -525,6 +605,10 @@ export function createZaremaAlbertWarmSkyTexture(): THREE.CanvasTexture {
 
 /** Cold overcast winter sky dome for street_winter — desolate departure road. */
 export function createStreetWinterColdSkyTexture(): THREE.CanvasTexture {
+  return getOrCreateSkyTexture('street_winter_cold', buildStreetWinterColdSkyTexture);
+}
+
+function buildStreetWinterColdSkyTexture(): THREE.CanvasTexture {
   const w = 64;
   const h = 256;
   const canvas = document.createElement('canvas');

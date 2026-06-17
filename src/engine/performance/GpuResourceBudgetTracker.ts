@@ -125,14 +125,16 @@ function evaluateDrift(
   const sampleIntervalMs = gpuBudget.sampleIntervalMs;
   const shouldSample = now - lastSampleMs >= sampleIntervalMs;
 
-  if (shouldSample) {
+  if (shouldSample && !baselineSettled) {
     lastSampleMs = now;
     if (baselineBytes == null || estimatedTotalBytes < baselineBytes) {
       baselineBytes = estimatedTotalBytes;
       consecutiveDriftViolations = 0;
-    } else if (!baselineSettled) {
+    } else {
       baselineBytes = Math.min(baselineBytes, estimatedTotalBytes);
     }
+  } else if (shouldSample) {
+    lastSampleMs = now;
   }
 
   const driftBytes = baselineBytes != null ? Math.max(0, estimatedTotalBytes - baselineBytes) : 0;
@@ -213,12 +215,14 @@ export function notifyGpuResourceSceneChange(nextSceneId: SceneId | null): void 
   lastSnapshot = buildSnapshot(performance.now());
 }
 
-/** Mark baseline as settled after scene load stabilizes (first-scene-playable hook). */
+/** Freeze baseline at the current post-load snapshot (idempotent). */
 export function settleGpuResourceBaseline(): void {
-  baselineSettled = true;
   if (lastSnapshot.estimatedTotalBytes > 0) {
     baselineBytes = lastSnapshot.estimatedTotalBytes;
   }
+  baselineSettled = true;
+  consecutiveDriftViolations = 0;
+  lastSnapshot = buildSnapshot(performance.now());
 }
 
 export function getGpuResourceBudgetSnapshot(): GpuResourceBudgetSnapshot {

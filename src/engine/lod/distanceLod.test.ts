@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_NPC_LOD,
+  ENV_LOD_HYSTERESIS_IN_RATIO,
   environmentDetailVisible,
   environmentLodFromDistance,
+  environmentLodThresholdsFromProfile,
   getEnvironmentLodProfile,
+  resolveEnvironmentLod,
   resolveNpcLod,
   scaleNpcLodThresholds,
 } from './distanceLod';
@@ -83,5 +86,36 @@ describe('environmentDetailVisible', () => {
     expect(environmentDetailVisible('full', 'minimal')).toBe(false);
     expect(environmentDetailVisible('standard', 'standard')).toBe(true);
     expect(environmentDetailVisible('standard', 'full')).toBe(true);
+  });
+});
+
+describe('resolveEnvironmentLod', () => {
+  const profile = { clutterDistance: 10, decorativeDistance: 20 };
+  const thresholds = environmentLodThresholdsFromProfile(profile, 1);
+
+  it('prop far from spawn but near player stays high LOD', () => {
+    const spawnFarPlayerNear = 5;
+    expect(resolveEnvironmentLod(spawnFarPlayerNear, 'full', thresholds)).toBe('full');
+    expect(environmentLodFromDistance(spawnFarPlayerNear, profile, 1)).toBe('full');
+  });
+
+  it('prop near spawn but far from player downgrades', () => {
+    const playerFarFromProp = 25;
+    expect(resolveEnvironmentLod(playerFarFromProp, 'full', thresholds)).toBe('minimal');
+    expect(environmentLodFromDistance(playerFarFromProp, profile, 1)).toBe('minimal');
+  });
+
+  it('applies hysteresis when distance oscillates at clutter boundary', () => {
+    const atClutterOut = thresholds.clutterOut;
+    const betweenBands = (thresholds.clutterOut + thresholds.clutterIn) / 2;
+
+    expect(resolveEnvironmentLod(atClutterOut, 'full', thresholds)).toBe('standard');
+    expect(resolveEnvironmentLod(betweenBands, 'standard', thresholds)).toBe('standard');
+    expect(resolveEnvironmentLod(thresholds.clutterIn - 0.01, 'standard', thresholds)).toBe('full');
+  });
+
+  it('uses 0.85 enter ratio for hysteresis bands', () => {
+    expect(thresholds.clutterIn).toBeCloseTo(thresholds.clutterOut * ENV_LOD_HYSTERESIS_IN_RATIO);
+    expect(thresholds.decorativeIn).toBeCloseTo(thresholds.decorativeOut * ENV_LOD_HYSTERESIS_IN_RATIO);
   });
 });

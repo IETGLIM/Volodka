@@ -47,8 +47,10 @@ import {
   getPlayerDamageReduction, getPlayerVulnerability,
   getEnemyDamageMultiplier, getEnemyAttackBoost,
   getPlayerAttackBoost, getPlayerDefenseBoost } from './combat/buffSystem';
-import { getPlayerAttack, getPlayerDefense, getPlayerMaxHp, tickPowerCooldowns, isPowerAvailable, addXp, computeCombatCredits } from './combat/formulas';
+import { getPlayerAttack, getPlayerDefense, getPlayerMaxHp, tickPowerCooldowns, isPowerAvailable, addXp, computeCombatCredits, computeDamage, computeCritChance, applyCritMultiplier, getComboDamageMultiplier, computeDefendedDamage, scaleDamageByFraction, COMBAT_CONSTANTS } from './combat/formulas';
+import { initCombatRngForEncounter, SeededCombatRng, type CombatRngState } from './combat/combatRng';
 import { getFleeChanceBonus, scaleEnemyDamageByDifficulty } from './combat/combatDifficulty';
+import { getPassiveSkillModifiers } from '@/engine/skills/passiveSkillModifiers';
 import { ENEMY_TEMPLATES, resolveEnemyType } from './combat/enemies';
 import {
   POEM_COMBAT_ABILITIES,
@@ -338,6 +340,9 @@ function startCombatImmediate(
     specialCooldown: 0 };
 
   const playerMaxHp = getPlayerMaxHp();
+  const playerState = state.playerState;
+  const combatRng = initCombatRngForEncounter(playerState, resolvedType);
+  dispatchGameAction({ type: 'player/bumpCombatEncounterSeq' });
 
   combat.setState({
     enemy,
@@ -362,7 +367,8 @@ function startCombatImmediate(
     maxCombo: 0,
     lastCritical: false,
     lastPoemPowersUsed: [null, null],
-    lastUsedPoemId: null });
+    lastUsedPoemId: null,
+    rng: combatRng });
 
   dispatchGameAction({ type: 'story/setCombatActive', active: true });
   const encounterLabel = options?.encounterName ?? enemy.name;
@@ -392,21 +398,26 @@ export function playerAttack(): CombatState | null {
   const effectiveEnemyDef = enemyDef + enemyDefBoost;
 
   const multiplier = getPlayerDamageMultiplier(cs);
-  let damage = Math.max(1, Math.floor((pAtk * multiplier - effectiveEnemyDef) * (0.85 + Math.random() * 0.3)));
+  const seeded = SeededCombatRng.fromState(cs.rng);
+  const roll = seeded.asRollFn();
+  let damage = computeDamage({
+    attack: pAtk,
+    defense: effectiveEnemyDef,
+    multiplier,
+    varianceProfile: 'enemy',
+    rng: roll,
+  });
 
   /* ── Combo System: consecutive attacks increase damage ── */
   const newComboCount = cs.comboCount + 1;
-  let comboMultiplier = 1.0;
-  if (newComboCount >= 3) comboMultiplier = 2.0;
-  else if (newComboCount >= 2) comboMultiplier = 1.5;
-  else if (newComboCount >= 1) comboMultiplier = 1.2;
+  const comboMultiplier = getComboDamageMultiplier(newComboCount);
   damage = Math.floor(damage * comboMultiplier);
 
   /* ── Critical Hit: 10% base + (writing skill * 2%) bonus, 1.8x damage ── */
-  const critChance = 0.10 + snap().playerState.skills.writing * 0.02;
-  const isCritical = Math.random() < Math.min(0.5, critChance);
+  const isCritical = seeded.roll(computeCritChance(snap().playerState.skills.writing));
   if (isCritical) {
-    damage = Math.floor(damage * 1.8);
+    damage = applyCritMultiplier(damage);
+    seeded.noteCrit();
   }
 
   const newEnemyHp = Math.max(0, cs.enemy.hp - damage);
@@ -433,7 +444,8 @@ export function playerAttack(): CombatState | null {
     log: appendLog(cs.log, logEntry),
     comboCount: newComboCount,
     maxCombo: newMaxCombo,
-    lastCritical: isCritical });
+    lastCritical: isCritical,
+    rng: seeded.getState() });
 
   eventBus.emit('combat:action', { action: 'attack', damage });
   eventBus.emit('camera:combat_impact', { intensity: isCritical ? 0.6 : 0.3 });
@@ -466,6 +478,29 @@ export function playerDefend(): CombatState | null {
   return endPlayerTurn();
 }
 
+function amplifyPoemCombatResult(prev: CombatState, next: CombatState): CombatState {
+  const { playerState } = snap();
+  const mult = getPassiveSkillModifiers({
+    unlockedSkills: playerState.progression.unlockedSkills,
+    flags: playerState.flags,
+    codingSkill: playerState.skills.coding,
+  }).poemInCodeStrengthMultiplier;
+  if (mult <= 1) return next;
+
+  const result = { ...next, enemy: { ...next.enemy } };
+  const playerHeal = next.playerHp - prev.playerHp;
+  if (playerHeal > 0) {
+    const bonus = Math.round(playerHeal * (mult - 1));
+    result.playerHp = Math.min(next.playerMaxHp, next.playerHp + bonus);
+  }
+  const enemyDamage = prev.enemy.hp - next.enemy.hp;
+  if (enemyDamage > 0) {
+    const bonus = Math.round(enemyDamage * (mult - 1));
+    result.enemy.hp = Math.max(0, result.enemy.hp - bonus);
+  }
+  return result;
+}
+
 export function playerUsePoemPower(poemId: string): CombatState | null {
   const cs = combat.getState();
   if (!cs || !cs.isPlayerTurn || cs.status !== 'active') return null;
@@ -491,7 +526,7 @@ export function playerUsePoemPower(poemId: string): CombatState | null {
 
   // Apply ability
   const logLenBefore = cs.log.length;
-  const abilityResult = ability.execute(cs);
+  const abilityResult = amplifyPoemCombatResult(cs, ability.execute(cs));
 
   // Check for poem power combos
   let comboLog: CombatLogEntry[] = [];
@@ -567,7 +602,9 @@ export function playerFlee(): CombatState | null {
 
   // Clamp to [0.15, 0.95]
   const clampedChance = Math.max(0.15, Math.min(0.95, fleeChance));
-  const fled = Math.random() < clampedChance;
+  const fleeRng = SeededCombatRng.fromState(cs.rng);
+  const fled = fleeRng.roll(clampedChance);
+  const rngAfterFlee = fleeRng.getState();
 
   if (fled) {
     // Pop synchronously — delayed exit callbacks may be cancelled by a new session
@@ -578,6 +615,7 @@ export function playerFlee(): CombatState | null {
       ...cs,
       status: 'fled',
       powerCooldowns: {},
+      rng: rngAfterFlee,
       log: [
         ...cs.log,
         { turn: cs.turn, text: '🏃 Побег успешен! Вы вырвались из боя.', type: 'player_flee' },
@@ -603,6 +641,7 @@ export function playerFlee(): CombatState | null {
   combat.setState({
     ...cs,
     fleeAttempts: cs.fleeAttempts + 1,
+    rng: rngAfterFlee,
     log: [
       ...cs.log,
       { turn: cs.turn, text: `🏃 Побег не удался! (Шанс: ${Math.round(clampedChance * 100)}%, след. попытка: +15%)`, type: 'info' },
@@ -768,8 +807,10 @@ function executeEnemyTurn() {
   const enemySpecialCooldown = workingState.enemy.specialCooldown;
 
   if (enemySpecialCooldown <= 0 && template.specialAttacks.length > 0) {
+    const specialRng = SeededCombatRng.fromState(workingState.rng);
     for (const special of template.specialAttacks) {
-      if (Math.random() < special.chance) {
+      if (specialRng.roll(special.chance)) {
+        workingState = { ...workingState, rng: specialRng.getState() };
         const logLenBefore = workingState.log.length;
         const specialResult = special.execute(workingState, workingState.enemy);
         workingState = consumeSideEffects(specialResult);
@@ -781,18 +822,26 @@ function executeEnemyTurn() {
         return;
       }
     }
+    workingState = { ...workingState, rng: specialRng.getState() };
   }
 
   const enemyAtkBoost = getEnemyAttackBoost(workingState);
   const effectiveEnemyAttack = workingState.enemy.attack + enemyAtkBoost;
   const enemyDmgMultiplier = getEnemyDamageMultiplier(workingState);
 
-  let enemyDamage = Math.max(1, Math.floor(effectiveEnemyAttack * enemyDmgMultiplier * (0.85 + Math.random() * 0.3)));
+  const attackRng = SeededCombatRng.fromState(workingState.rng);
+  const roll = attackRng.asRollFn();
+  let enemyDamage = computeDamage({
+    attack: effectiveEnemyAttack,
+    multiplier: enemyDmgMultiplier,
+    varianceProfile: 'enemy',
+    rng: roll,
+  });
   enemyDamage = scaleEnemyDamageByDifficulty(enemyDamage);
 
   if (workingState.playerDefending) {
     const playerDef = getPlayerDefense();
-    enemyDamage = Math.max(1, Math.floor(enemyDamage * 0.5 - playerDef * 0.3));
+    enemyDamage = computeDefendedDamage(enemyDamage, playerDef);
   }
 
   const playerDefBoost = getPlayerDefenseBoost(workingState);
@@ -802,19 +851,23 @@ function executeEnemyTurn() {
 
   const playerDmgReduction = getPlayerDamageReduction(workingState);
   if (playerDmgReduction > 0) {
-    enemyDamage = Math.max(1, Math.floor(enemyDamage * (1 - playerDmgReduction)));
+    enemyDamage = scaleDamageByFraction(enemyDamage, playerDmgReduction, 'reduction');
   }
 
   const playerVulnerability = getPlayerVulnerability(workingState);
   if (playerVulnerability > 0) {
-    enemyDamage = Math.max(1, Math.floor(enemyDamage * (1 + playerVulnerability)));
+    enemyDamage = scaleDamageByFraction(enemyDamage, playerVulnerability, 'vulnerability');
   }
 
   const spiritualLevel = snap().playerState.progression.unlockedSkills.filter(
     (id) => id.startsWith('spirit_'),
   ).length;
   if (spiritualLevel > 0) {
-    enemyDamage = Math.max(1, Math.floor(enemyDamage * (1 - spiritualLevel * 0.05)));
+    enemyDamage = scaleDamageByFraction(
+      enemyDamage,
+      spiritualLevel * COMBAT_CONSTANTS.SPIRITUAL_DAMAGE_REDUCTION_PER_LEVEL,
+      'reduction',
+    );
   }
 
   const newPlayerHp = Math.max(0, workingState.playerHp - enemyDamage);
@@ -823,17 +876,17 @@ function executeEnemyTurn() {
   const targetedStat = workingState.enemy.targetsStat;
   let statEffectText = '';
   if (targetedStat === 'logic') {
-    if (Math.random() < 0.3) {
+    if (attackRng.roll(0.3)) {
       dispatchGameAction({ type: 'player/addSkill', skill: 'logic', amount: -1 });
       statEffectText = ' Логика -1!';
     }
   } else if (targetedStat === 'energy') {
-    if (Math.random() < 0.4) {
+    if (attackRng.roll(0.4)) {
       dispatchGameAction({ type: 'player/addEnergy', amount: -5 });
       statEffectText = ' Энергия -5!';
     }
   } else if (targetedStat === 'karma') {
-    if (Math.random() < 0.3) {
+    if (attackRng.roll(0.3)) {
       dispatchGameAction({ type: 'player/addKarma', amount: -3 });
       statEffectText = ' Карма -3!';
     }
@@ -853,7 +906,8 @@ function executeEnemyTurn() {
     enemy: {
       ...workingState.enemy,
       specialCooldown: Math.max(0, workingState.enemy.specialCooldown - 1) },
-    log: [...workingState.log, enemyAttackLog] });
+    log: [...workingState.log, enemyAttackLog],
+    rng: attackRng.getState() });
 
   eventBus.emit('camera:combat_shake', { intensity: 0.2 });
   notifyCombatDamage(enemyAttackLog);
@@ -903,9 +957,10 @@ function handleVictory(): CombatState {
   combat.clearPendingTimers();
 
   const enemy = cs.enemy;
+  const victoryRng = SeededCombatRng.fromState(cs.rng);
 
   const comboBonus = Math.min(cs.maxCombo * 2, 10);
-  const karmaGained = 3 + Math.floor(Math.random() * 5) + comboBonus;
+  const karmaGained = 3 + victoryRng.nextInt(0, 4) + comboBonus;
   dispatchGameAction({ type: 'player/addKarma', amount: karmaGained });
 
   // XP reward
@@ -918,8 +973,8 @@ function handleVictory(): CombatState {
   // Loot roll (higher combo = better loot chance)
   const lootChance = 0.6 + cs.maxCombo * 0.05;
   const lootItems: string[] = [];
-  if (enemy.lootTable.length > 0 && Math.random() < Math.min(0.9, lootChance)) {
-    const lootItemId = enemy.lootTable[Math.floor(Math.random() * enemy.lootTable.length)];
+  if (enemy.lootTable.length > 0 && victoryRng.roll(Math.min(0.9, lootChance))) {
+    const lootItemId = enemy.lootTable[victoryRng.nextInt(0, enemy.lootTable.length - 1)];
     const item = createInventoryItem(lootItemId);
     if (tryAddInventoryItem(item)) {
       lootItems.push(lootItemId);
@@ -944,6 +999,7 @@ function handleVictory(): CombatState {
     status: 'victory',
     powerCooldowns: {},
     rewards,
+    rng: victoryRng.getState(),
     log: [
       ...cs.log,
       {
@@ -986,9 +1042,10 @@ function handleDefeat(): void {
   combat.clearPendingTimers();
 
   const enemy = cs.enemy;
+  const defeatRng = SeededCombatRng.fromState(cs.rng);
 
-  const energyLost = 15 + Math.floor(Math.random() * 10);
-  const karmaLost = 5 + Math.floor(Math.random() * 5);
+  const energyLost = 15 + defeatRng.nextInt(0, 9);
+  const karmaLost = 5 + defeatRng.nextInt(0, 4);
   dispatchGameAction({ type: 'player/addEnergy', amount: -energyLost });
   dispatchGameAction({ type: 'player/addKarma', amount: -karmaLost });
 
@@ -996,6 +1053,7 @@ function handleDefeat(): void {
     ...cs,
     status: 'defeat',
     powerCooldowns: {},
+    rng: defeatRng.getState(),
     log: [
       ...cs.log,
       {
@@ -1064,3 +1122,21 @@ export { canUnlockSkill };
 
 /** Unlock a skill tree node */
 export { unlockSkill };
+
+/* ═══════════════════════════════════════════════════════════════
+   §14 — COMBAT RNG (deterministic rolls / dev & test hooks)
+   ═══════════════════════════════════════════════════════════════ */
+
+export {
+  getRngState,
+  setRngSeed,
+  createCombatRngState,
+  type CombatRngState,
+} from './combat/combatRng';
+
+/** Replace active combat RNG state (tests / dev reproducibility). */
+export function setCombatRngStateForTests(rng: CombatRngState): void {
+  const cs = combat.getState();
+  if (!cs) return;
+  combat.setState({ ...cs, rng });
+}

@@ -1,6 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, afterEach, vi } from 'vitest';
 import * as THREE from 'three';
 import {
+  clearSkyTextureCache,
   createCafeEveningNeonSkyTexture,
   createDreamGalaxySkyTexture,
   createDreamGalaxyStarGeometry,
@@ -20,6 +21,32 @@ import {
 } from './proceduralSkyTextures';
 
 describe('proceduralSkyTextures', () => {
+  afterEach(() => {
+    clearSkyTextureCache();
+  });
+
+  it('caches sky textures per variant', () => {
+    const a = createDreamGalaxySkyTexture();
+    const b = createDreamGalaxySkyTexture();
+    expect(a).toBe(b);
+  });
+
+  it('keeps separate cache entries per sky type', () => {
+    const dream = createDreamGalaxySkyTexture();
+    const park = createParkHazySkyTexture();
+    expect(dream).not.toBe(park);
+  });
+
+  it('clearSkyTextureCache disposes cached textures', () => {
+    const tex = createStreetNightSynthwaveSkyTexture();
+    const disposeSpy = vi.spyOn(tex, 'dispose');
+    clearSkyTextureCache();
+    expect(disposeSpy).toHaveBeenCalledTimes(1);
+    const rebuilt = createStreetNightSynthwaveSkyTexture();
+    expect(rebuilt).not.toBe(tex);
+    rebuilt.dispose();
+  });
+
   it('creates dream galaxy sky canvas texture with clamp wrapping', () => {
     const tex = createDreamGalaxySkyTexture();
     expect(tex.image).toBeInstanceOf(HTMLCanvasElement);
