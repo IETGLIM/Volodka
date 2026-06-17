@@ -9,6 +9,7 @@ import {
 import { useGameStore } from '@/store/gameStore';
 import { readGamePhase } from '@/shared/gamePhase';
 import { eventBus } from '@/engine/EventBus';
+import { abortPoemReadingIfPending } from '@/engine/poemReading/poemReadingOrchestrator';
 import { withHmrCleanup } from '@/shared/dev/hmrDispose';
 import { getActQuote } from '@/engine/GuidedStoryManager';
 import { getQuoteByTrigger } from '@/data/matrixQuotes';
@@ -338,6 +339,7 @@ export function usePanelCoordinator({
   }, [dispatchStackAction]);
 
   const closeAllPanels = useCallback(() => {
+    abortPoemReadingIfPending();
     dispatchStackAction({ type: 'clear' });
   }, [dispatchStackAction]);
 

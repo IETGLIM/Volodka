@@ -25,8 +25,7 @@ interface SaveSlotManagerProps {
   onClose: () => void;
 }
 
-/** Validated save payload plus optional slot-manager UI metadata */
-type SaveSlotPreview = SavePayload & { playTimeSeconds?: number };
+type SaveSlotPreview = SavePayload;
 
 // ─── LocalStorage helpers ───
 
@@ -95,17 +94,6 @@ function getTimeOfDayLabel(time: number): string {
   if (time >= 12 && time < 18) return 'День';
   if (time >= 18 && time < 22) return 'Вечер';
   return 'Ночь';
-}
-
-/** Estimate play time from current store state (rough heuristic) */
-function estimatePlayTimeSeconds(): number {
-  // Use a combination of progression level and visited nodes as a proxy.
-  // For a more accurate timer, a dedicated play-time tracker should be used.
-  const state = useGameStore.getState();
-  const visitedCount = state.playerState.visitedNodes.length;
-  const level = state.playerState.progression.level;
-  // Rough estimate: ~2 min per visited node + 10 min base per level
-  return Math.max(0, visitedCount * 120 + (level - 1) * 600);
 }
 
 // ─── Slot Card Component ───
@@ -515,7 +503,6 @@ function SaveSlotManagerContent({ onClose }: { onClose: () => void }) {
         const payload = {
           ...validation.data,
           savedAt: Date.now(),
-          playTimeSeconds: estimatePlayTimeSeconds(),
         };
 
         localStorage.setItem(getSaveSlotKey(slot), JSON.stringify(payload));

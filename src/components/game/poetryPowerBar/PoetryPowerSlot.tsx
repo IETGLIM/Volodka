@@ -59,7 +59,7 @@ export function PoetryPowerSlot({ poemId, slotIndex, reducedMotion }: PoetryPowe
             disabled={!available || activating}
             aria-label={POETRY_POWER_BAR_LABELS.slotActivateAria(power.name, slotIndex + 1, shortcutKey)}
             aria-disabled={!available || activating}
-            className={`relative size-12 sm:size-14 rounded-lg border-2 flex flex-col items-center justify-center transition-all duration-200 cursor-pointer select-none ${slotStateClass}`}
+            className={`relative size-12 sm:size-14 shrink-0 rounded-lg border-2 flex flex-col items-center justify-center transition-all duration-200 cursor-pointer select-none ${slotStateClass}`}
             whileTap={reducedMotion || !available ? undefined : { scale: 0.9 }}
           >
             <Zap

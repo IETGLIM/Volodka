@@ -1,5 +1,6 @@
 /* eslint-disable react-refresh/only-export-components -- co-located helpers and lazy exports */
 import { memo, Suspense, type ComponentType } from 'react';
+import { FocusTrap } from '@/components/a11y/FocusTrap';
 import { retryLazyDefault } from '@/shared/utils/retryLazy';
 import { PanelStackSlot, usePanelStack } from './PanelStackContext';
 import { PanelExitProvider } from './PanelExitContext';
@@ -38,7 +39,10 @@ export const LazyPanelSlot = memo(function LazyPanelSlot({
 
   if (panelId == null) return panel;
 
-  return <PanelStackSlot panelId={panelId}>{panel}</PanelStackSlot>;
+  const stackedPanel =
+    resolvedOpen ? <FocusTrap active>{panel}</FocusTrap> : panel;
+
+  return <PanelStackSlot panelId={panelId}>{stackedPanel}</PanelStackSlot>;
 });
 
 export const RPGGameCanvas = retryLazyDefault(

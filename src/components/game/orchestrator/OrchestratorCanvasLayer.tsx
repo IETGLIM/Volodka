@@ -1,5 +1,6 @@
 import { Suspense, useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useGamePanelStackOpen } from '@/components/a11y/usePanelFocusTrapActive';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { MOTION_EASE } from '@/shared/constants/transitionTimings';
 import { PipelineLoadingOverlay } from '../PipelineLoadingOverlay';
@@ -34,6 +35,7 @@ export function OrchestratorCanvasLayer({
   matrixQuote,
   onDismissMatrixQuote,
 }: Props) {
+  const panelStackOpen = useGamePanelStackOpen();
   const [menuLoadingDismissed, setMenuLoadingDismissed] = useState(false);
   const { stage } = useLoadingPipelineMeta();
   const bootOverlayComplete = stage === 'playable' || stage === 'complete';
@@ -110,6 +112,8 @@ export function OrchestratorCanvasLayer({
 
       {canvasMounted && (
         <div
+          inert={panelStackOpen ? true : undefined}
+          data-game-canvas-shell=""
           style={{
             position: 'fixed',
             inset: 0,
@@ -122,7 +126,7 @@ export function OrchestratorCanvasLayer({
           }}
         >
           <Suspense fallback={<div className="fixed inset-0 bg-black" style={{ zIndex: UI_LAYERS.LOADING }} />}>
-            <RPGGameCanvas />
+            <RPGGameCanvas focusable={!panelStackOpen} />
           </Suspense>
         </div>
       )}

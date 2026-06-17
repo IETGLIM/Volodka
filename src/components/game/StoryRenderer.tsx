@@ -13,7 +13,7 @@ import { getStoryNodes, isNarrativeGameDataLoaded, ensureStoryNode, prefetchStor
 import { audioEngine } from '@/engine/AudioEngine';
 import { requestSceneTransitionForStoryNode } from '@/engine/scene/sceneTransition';
 import { getGameStore } from '@/store/gameStore';
-import { closeNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
+import { closeNarrativeOverlay, openNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
 import { enterSceneFreeExplorationHub } from '@/engine/scene/freeExplorationHub';
 import {
   EXPLORE_HUB_NODE_IDS,
@@ -271,6 +271,11 @@ export function StoryRenderer() {
           closeNarrativeOverlay();
         }
       } else if (choice.next && !transitionsScene) {
+        if (choice.next === 'start') {
+          const store = getGameStore();
+          store.resetForNewPlaythrough({ preserveAchievements: true, skipIntro: true });
+          openNarrativeOverlay('start', 'story');
+        }
         setCurrentNodeId(choice.next);
       }
     },

@@ -20,6 +20,7 @@ import { useGamePhase } from '@/store/selectors'
 import { useQuests } from '@/store/selectors'
 import type { QuestState } from '@/shared/types/game'
 import { formatQuestCompletionRewards } from '@/shared/utils/questRewards'
+import { dispatchGameAction } from '@/shared/gameBridge/gameActionBridge'
 
 /* ─── Notification types ─── */
 
@@ -429,7 +430,13 @@ function QuestNotifCard({ notif, onDismiss, onQuestCompleteClick, reducedMotion 
             </span>
           )}
           {notif.canRetry && (
-            <RetryButton reducedMotion={reducedMotion} onClick={() => onDismiss(notif.id)} />
+            <RetryButton
+              reducedMotion={reducedMotion}
+              onClick={() => {
+                dispatchGameAction({ type: 'quest/retry', questId: notif.questId })
+                onDismiss(notif.id)
+              }}
+            />
           )}
         </div>
       )}
@@ -537,16 +544,7 @@ export function QuestNotificationSystem() {
         })
       }
 
-      // Quest failed
-      if (prev && prev.status === 'active' && quest.status === 'failed') {
-        addNotification({
-          type: 'failed',
-          questId: quest.questId,
-          questTitle: def.title,
-          reason: 'Время истекло',
-          canRetry: def.canRetry,
-        })
-      }
+      // Quest failed toast — covered by quest:failed event from store emit
     }
 
     prevQuestsRef.current = quests
@@ -593,18 +591,14 @@ export function QuestNotificationSystem() {
 
     // quest:completed toast — covered by store watcher (active → completed)
 
-    // Quest failed event
     unsubs.push(
-      eventBus.on('quest:failed', ({ questId, reason }) => {
-        const def = QUEST_DEFINITIONS.find((d) => d.id === questId)
-        if (!def) return
-
+      eventBus.on('quest:failed', ({ questId, questTitle, reason, canRetry }) => {
         addNotification({
           type: 'failed',
           questId,
-          questTitle: def.title,
+          questTitle,
           reason,
-          canRetry: def.canRetry,
+          canRetry,
         })
       }),
     )

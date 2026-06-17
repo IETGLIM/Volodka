@@ -19,7 +19,8 @@ import {
   areDependenciesMet,
 } from '@/store/selectors/questSelectors';
 import { GOLDEN_PATH_QUEST_SPINE, ACT1_SOLNYSH_QUEST_SPINE } from '@/data/goldenPath';
-import { getGameStore } from '@/store/gameStore';
+import { dispatchGameAction } from '@/shared/gameBridge/gameActionBridge';
+import { questCanRetry } from '@/shared/quest/questRetry';
 import { useQuests } from '@/store/selectors';
 import { eventBus } from '@/engine/EventBus';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';import { Badge } from '@/components/ui/badge';
@@ -28,6 +29,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { PanelWrapper } from '@/components/game/PanelWrapper';
 import type { QuestType, QuestState, QuestDifficulty } from '@/shared/types/game';
+import { remainingQuestHours } from '@/engine/quest/questTimeLimits';
 
 interface QuestsPanelProps {
   open: boolean;
@@ -285,7 +287,13 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                                       <Sparkles className="size-3.5 text-purple-400" />
                                     )}
                                     {def.timeLimitHours && (
-                                      <Clock className="size-3.5 text-amber-400" />
+                                      <span
+                                        className="text-[10px] text-amber-400/80 flex items-center gap-0.5"
+                                        title="Оставшееся время"
+                                      >
+                                        <Clock className="size-3.5 text-amber-400" />
+                                        {Math.ceil(remainingQuestHours(qs.hoursElapsed ?? 0, def.timeLimitHours))}ч
+                                      </span>
                                     )}
                                     <Badge variant="outline" className="text-[10px] border-cyan-700/40 text-cyan-400">
                                       {progress}%
@@ -420,7 +428,7 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                     {failedQuests.map((qs) => {
                       const def = QUEST_DEFINITIONS.find((d) => d.id === qs.questId);
                       if (!def) return null;
-                      const canRetry = def.canRetry ?? false;
+                      const canRetry = questCanRetry(def);
                       return (
                         <div
                           key={qs.questId}
@@ -437,7 +445,7 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                                 size="sm"
                                 className="text-[10px] text-red-400 hover:text-red-300 h-6 px-2"
                                 onClick={() => {
-                                  getGameStore().activateQuest(qs.questId);
+                                  dispatchGameAction({ type: 'quest/retry', questId: qs.questId });
                                 }}
                               >
                                 <RotateCcw className="size-3 mr-1" />
@@ -445,6 +453,9 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                               </Button>
                             )}
                           </div>
+                          {canRetry && (
+                            <p className="text-[10px] text-red-400/60 mt-1">Можно повторить задание</p>
+                          )}
                           <p className="text-[10px] text-red-400/50 mt-1">{def.description}</p>
                         </div>
                       );

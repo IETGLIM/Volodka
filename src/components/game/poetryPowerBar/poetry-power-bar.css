@@ -1,3 +1,23 @@
+.poetry-power-slots-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(251, 191, 36, 0.25) rgba(0, 0, 0, 0.4);
+  -webkit-overflow-scrolling: touch;
+}
+
+.poetry-power-slots-scroll::-webkit-scrollbar {
+  height: 4px;
+}
+
+.poetry-power-slots-scroll::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 2px;
+}
+
+.poetry-power-slots-scroll::-webkit-scrollbar-thumb {
+  background: rgba(251, 191, 36, 0.35);
+  border-radius: 2px;
+}
+
 .poetry-power-empty-slot {
   background: repeating-linear-gradient(
     45deg,

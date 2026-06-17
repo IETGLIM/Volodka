@@ -21,6 +21,7 @@ import {
 import {
   completePoemReadingCutscene,
   cancelPoemReadingCutscene,
+  setPoemReadingCutsceneUiActive,
 } from '@/engine/poemReading/poemReadingOrchestrator';
 
 const MIN_SKIP_MS = 1200;
@@ -209,8 +210,25 @@ const PoemReadingContent = memo(function PoemReadingContent({
 
 export function PoemReadingCutscene() {
   const [activePoemId, setActivePoemId] = useState<string | null>(null);
+  const activePoemIdRef = useRef<string | null>(null);
+  activePoemIdRef.current = activePoemId;
 
   useCinematicNarrativePresentation(activePoemId != null);
+
+  useEffect(() => {
+    setPoemReadingCutsceneUiActive(activePoemId);
+    return () => {
+      setPoemReadingCutsceneUiActive(null);
+    };
+  }, [activePoemId]);
+
+  useEffect(() => {
+    return () => {
+      if (activePoemIdRef.current) {
+        cancelPoemReadingCutscene();
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const unsubShow = eventBus.on('poem:show_cutscene', ({ poemId }) => {
