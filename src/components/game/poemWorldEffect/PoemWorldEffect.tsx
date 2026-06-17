@@ -58,19 +58,6 @@ function PoemWorldEffectInner() {
               mixBlendMode: 'screen',
             }}
           />
-          {profile?.visualPreset === 'matrix_pulse' && !reducedMotion ? (
-            <motion.div
-              className="absolute inset-0"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: [0.25, 0.55, 0.25] }}
-              transition={{ duration: 0.12, repeat: 6, ease: 'linear' }}
-              style={{
-                background:
-                  'repeating-linear-gradient(0deg, transparent 0px, transparent 2px, rgba(0,255,200,0.04) 2px, rgba(0,255,200,0.04) 4px)',
-                mixBlendMode: 'overlay',
-              }}
-            />
-          ) : null}
           {profile?.visualPreset === 'god_rays_gold' && !reducedMotion ? (
             <motion.div
               className="absolute inset-0"

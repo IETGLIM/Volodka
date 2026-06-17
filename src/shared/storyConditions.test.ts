@@ -92,4 +92,30 @@ describe('checkStoryCondition', () => {
     expect(checkStoryCondition({ missingFlag: 'done' }, ctx).pass).toBe(true);
     expect(checkStoryCondition({ missingFlag: 'done' }, flagged).pass).toBe(false);
   });
+
+  it('gates activeTTLFlag by expiry', () => {
+    const now = Date.now();
+    const liveCtx = {
+      ...ctx,
+      activeTTLFlags: {
+        truth_voice_active: {
+          key: 'truth_voice_active',
+          poemId: 'poem_1',
+          expiryTimestamp: now + 30_000,
+        },
+      },
+    };
+    const expiredCtx = {
+      ...ctx,
+      activeTTLFlags: {
+        truth_voice_active: {
+          key: 'truth_voice_active',
+          poemId: 'poem_1',
+          expiryTimestamp: now - 1,
+        },
+      },
+    };
+    expect(checkStoryCondition({ activeTTLFlag: 'truth_voice_active' }, liveCtx).pass).toBe(true);
+    expect(checkStoryCondition({ activeTTLFlag: 'truth_voice_active' }, expiredCtx).pass).toBe(false);
+  });
 });

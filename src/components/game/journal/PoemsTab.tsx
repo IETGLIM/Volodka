@@ -23,7 +23,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useCollectedPoems } from '@/store/selectors';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
-import { useAutoAnimateRef } from '@/hooks/useAutoAnimateRef';
+import { useNewlyCollectedPoemIds } from '@/hooks/useNewlyCollectedPoemIds';
 
 interface PoemsTabProps {
   searchQuery: string;
@@ -34,15 +34,22 @@ const PoemGridCard = memo(function PoemGridCard({
   title,
   isCollected,
   isHidden,
+  isNewlyCollected,
+  reducedMotion,
   onSelect,
 }: {
   poemId: string;
   title: string;
   isCollected: boolean;
   isHidden: boolean;
+  isNewlyCollected?: boolean;
+  reducedMotion?: boolean;
   onSelect: (id: string) => void;
 }) {
   const poemPower = isCollected ? getPoemPower(poemId) : undefined;
+  const enterClass = isNewlyCollected && !reducedMotion
+    ? 'animate-in fade-in slide-in-from-bottom-2 duration-300'
+    : '';
 
   return (
     <button
@@ -50,7 +57,7 @@ const PoemGridCard = memo(function PoemGridCard({
       onClick={() => isCollected && onSelect(poemId)}
       disabled={!isCollected}
       aria-label={isCollected ? title : 'Стих ещё не найден'}
-      className={`text-left p-3 rounded-xl border transition-all duration-200 min-h-[44px] ${
+      className={`text-left p-3 rounded-xl border transition-all duration-200 min-h-[44px] ${enterClass} ${
         isCollected
           ? 'border-cyan-900/20 bg-slate-900/20 hover:bg-amber-950/15 hover:border-amber-800/25 cursor-pointer'
           : 'border-slate-800/15 bg-slate-900/10 opacity-40 cursor-not-allowed'
@@ -106,9 +113,8 @@ function usePoemCooldownSeconds(poemId: string | null, active: boolean): number 
 
 export function PoemsTab({ searchQuery }: PoemsTabProps) {
   const reducedMotion = useEffectiveReducedMotion();
-  const mainGridRef = useAutoAnimateRef<HTMLDivElement>();
-  const hiddenGridRef = useAutoAnimateRef<HTMLDivElement>();
   const collectedPoems = useCollectedPoems();
+  const newlyCollected = useNewlyCollectedPoemIds(collectedPoems);
   const [selectedPoemId, setSelectedPoemId] = useState<string | null>(null);
   const [activating, setActivating] = useState(false);
   const [justUsed, setJustUsed] = useState(false);
@@ -293,7 +299,7 @@ export function PoemsTab({ searchQuery }: PoemsTabProps) {
             <h4 className="text-[11px] font-medium text-amber-500/60 uppercase tracking-widest mb-3">
               Стихи Владимира
             </h4>
-            <div ref={mainGridRef} className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {filteredMain.map((poem) => (
                 <PoemGridCard
                   key={poem.id}
@@ -301,6 +307,8 @@ export function PoemsTab({ searchQuery }: PoemsTabProps) {
                   title={poem.title}
                   isCollected={collectedPoems.includes(poem.id)}
                   isHidden={false}
+                  isNewlyCollected={newlyCollected.has(poem.id)}
+                  reducedMotion={reducedMotion}
                   onSelect={handleSelectPoem}
                 />
               ))}
@@ -313,7 +321,7 @@ export function PoemsTab({ searchQuery }: PoemsTabProps) {
             <h4 className="text-[11px] font-medium text-cyan-500/60 uppercase tracking-widest mb-3">
               Скрытые стихи
             </h4>
-            <div ref={hiddenGridRef} className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {filteredHidden.map((poem) => (
                 <PoemGridCard
                   key={poem.id}
@@ -321,6 +329,8 @@ export function PoemsTab({ searchQuery }: PoemsTabProps) {
                   title={poem.title}
                   isCollected={collectedPoems.includes(poem.id)}
                   isHidden
+                  isNewlyCollected={newlyCollected.has(poem.id)}
+                  reducedMotion={reducedMotion}
                   onSelect={handleSelectPoem}
                 />
               ))}

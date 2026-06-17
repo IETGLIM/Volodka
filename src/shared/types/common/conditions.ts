@@ -34,6 +34,10 @@ export interface ChoiceCondition {
   readonly hasItem?: string;
   /** Minimum number of collected poems required */
   readonly minCollectedPoems?: number;
+  /** Show only while this poem-power TTL flag is live (checks activeTTLFlags expiry) */
+  readonly activeTTLFlag?: string;
+  /** Hide while this poem-power TTL flag is live */
+  readonly missingActiveTTLFlag?: string;
 }
 
 /** Alias for ChoiceCondition — used in exit filtering and story gates. */

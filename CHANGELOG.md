@@ -1,4 +1,13 @@
 # Changelog — ВОЛОДЬКА RPG
+## v4.2.36 — 17 июня 2026
+
+### Poem TTL dialogue gates + PostFX boost
+- **Условия `activeTTLFlag`**: `ChoiceCondition` + `checkStoryCondition` проверяют live TTL из `activeTTLFlags` (expiry-aware); контекст в DialogueRenderer / StoryRenderer.
+- **Dialogue nodes**: `dialogue_truth_revealed` (Альберт + `truth_voice_active`), `dialogue_guiding_star_live` (уличный поэт + `guiding_star_active`), `dialogue_storm_wind_live` (коллега + `storm_wind_active`).
+- **ExplorationPostFX**: `resolvePoemTTLPostFxBoost` — динамический bloom/vignette по категории poem world effect; reduced motion — ~35% усиления.
+- **PoemWorldEffect**: убран CSS scanline overlay на `matrix_pulse` (PostFX-only путь).
+- **Списки стихов**: `@formkit/auto-animate` удалён; `tailwindcss-animate` (`animate-in fade-in slide-in-from-bottom-2`) через `useNewlyCollectedPoemIds`.
+
 ## v4.2.35 — 17 июня 2026
 
 ### Open-source libraries — quick wins + ROADMAP §10

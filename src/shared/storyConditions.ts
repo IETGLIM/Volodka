@@ -8,6 +8,7 @@ import type {
   StoryChoice,
   TrainablePlayerSkill,
 } from '@/shared/types/game';
+import { isActiveTTLFlagLive, type ActiveTTLFlagMap } from '@/shared/activeTTLFlags';
 import { resolveSkillCheckWithPoemFlags } from '@/shared/poemPower/poemSkillCheckRules';
 
 export type StoryCondition = StoryChoice['condition'] | DialogueChoice['condition'];
@@ -17,6 +18,7 @@ export interface StoryConditionContext {
   skills: PlayerSkills;
   flags: Record<string, boolean>;
   collectedPoems: readonly string[];
+  activeTTLFlags?: ActiveTTLFlagMap;
   currentAct: number;
   npcRelations?: NPCRelation[];
   npcId?: string;
@@ -32,6 +34,7 @@ export interface StoryConditionExtras {
   /** Override act; defaults to playerState.progression.currentAct */
   currentAct?: number;
   ownedItemIdsKey?: string;
+  activeTTLFlags?: ActiveTTLFlagMap;
 }
 
 /** Build condition context from player state — shared by StoryRenderer & DialogueRenderer. */
@@ -45,6 +48,7 @@ export function buildStoryConditionContext(
     skills: playerState.skills,
     flags: playerState.flags,
     collectedPoems,
+    activeTTLFlags: extras.activeTTLFlags,
     currentAct: extras.currentAct ?? playerState.progression.currentAct,
     npcRelations: extras.npcRelations,
     npcId: extras.npcId,
@@ -98,6 +102,15 @@ export function checkStoryCondition(
   if (condition.flag && !ctx.flags[condition.flag]) return { pass: false };
 
   if (condition.missingFlag && ctx.flags[condition.missingFlag]) return { pass: false };
+
+  if (condition.activeTTLFlag
+    && !isActiveTTLFlagLive(ctx.activeTTLFlags, condition.activeTTLFlag)) {
+    return { pass: false };
+  }
+  if (condition.missingActiveTTLFlag
+    && isActiveTTLFlagLive(ctx.activeTTLFlags, condition.missingActiveTTLFlag)) {
+    return { pass: false };
+  }
 
   if (condition.collectedPoem && !ctx.collectedPoems.includes(condition.collectedPoem)) {
     return { pass: false };

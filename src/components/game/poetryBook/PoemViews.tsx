@@ -9,7 +9,8 @@ import { PoemPowerCard } from '@/components/game/poetryBook/PoemPowerCard';
 import { PoemThemeTag } from '@/components/game/poetryBook/PoemThemeTag';
 import type { PoetryBookController } from '@/components/game/poetryBook/usePoetryBookController';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useAutoAnimateRef } from '@/hooks/useAutoAnimateRef';
+import { useNewlyCollectedPoemIds } from '@/hooks/useNewlyCollectedPoemIds';
+import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 
 type PoemDetailViewProps = Pick<
   PoetryBookController,
@@ -201,9 +202,22 @@ type PoemListViewProps = Pick<
   | 'handleSelectPoem'
 >;
 
-function PoemListButton({ poem, onSelect }: { poem: Poem; onSelect: (id: string) => void }) {
+function PoemListButton({
+  poem,
+  onSelect,
+  isNewlyCollected,
+  reducedMotion,
+}: {
+  poem: Poem;
+  onSelect: (id: string) => void;
+  isNewlyCollected?: boolean;
+  reducedMotion?: boolean;
+}) {
   const power = getPoemPower(poem.id);
   const isHidden = poem.bonus;
+  const enterClass = isNewlyCollected && !reducedMotion
+    ? 'animate-in fade-in slide-in-from-bottom-2 duration-300'
+    : '';
 
   return (
     <button
@@ -211,7 +225,7 @@ function PoemListButton({ poem, onSelect }: { poem: Poem; onSelect: (id: string)
       role="listitem"
       onClick={() => onSelect(poem.id)}
       aria-label={POETRY_BOOK_LABELS.selectPoemAria(poem.title)}
-      className={`group text-left px-4 py-3 rounded-lg border transition-all duration-200 ${
+      className={`group text-left px-4 py-3 rounded-lg border transition-all duration-200 ${enterClass} ${
         isHidden
           ? 'border-cyan-900/15 bg-cyan-950/5 hover:bg-cyan-950/15 hover:border-cyan-800/25'
           : 'border-amber-900/15 bg-amber-950/5 hover:bg-amber-950/15 hover:border-amber-800/25'
@@ -271,8 +285,8 @@ export function PoemListView({
   contentRef,
   handleSelectPoem,
 }: PoemListViewProps) {
-  const mainListRef = useAutoAnimateRef<HTMLDivElement>();
-  const hiddenListRef = useAutoAnimateRef<HTMLDivElement>();
+  const reducedMotion = useEffectiveReducedMotion();
+  const newlyCollected = useNewlyCollectedPoemIds(collectedPoems);
   const lockedPreview = POEMS.filter((poem) => !collectedPoems.includes(poem.id)).slice(0, 5);
   const lockedRemaining = totalPoems - collectedCount - lockedPreview.length;
 
@@ -292,9 +306,15 @@ export function PoemListView({
                 <Feather className="size-3" aria-hidden="true" />
                 {POETRY_BOOK_LABELS.mainPoemsSection}
               </h3>
-              <div ref={mainListRef} className="flex flex-col gap-2" role="list">
+              <div className="flex flex-col gap-2" role="list">
                 {collectedMain.map((poem) => (
-                  <PoemListButton key={poem.id} poem={poem} onSelect={handleSelectPoem} />
+                  <PoemListButton
+                    key={poem.id}
+                    poem={poem}
+                    onSelect={handleSelectPoem}
+                    isNewlyCollected={newlyCollected.has(poem.id)}
+                    reducedMotion={reducedMotion}
+                  />
                 ))}
               </div>
             </div>
@@ -306,9 +326,15 @@ export function PoemListView({
                 <Sparkles className="size-3" aria-hidden="true" />
                 {POETRY_BOOK_LABELS.hiddenPoemsSection}
               </h3>
-              <div ref={hiddenListRef} className="flex flex-col gap-2" role="list">
+              <div className="flex flex-col gap-2" role="list">
                 {collectedHidden.map((poem) => (
-                  <PoemListButton key={poem.id} poem={poem} onSelect={handleSelectPoem} />
+                  <PoemListButton
+                    key={poem.id}
+                    poem={poem}
+                    onSelect={handleSelectPoem}
+                    isNewlyCollected={newlyCollected.has(poem.id)}
+                    reducedMotion={reducedMotion}
+                  />
                 ))}
               </div>
             </div>

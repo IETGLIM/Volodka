@@ -68,6 +68,30 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
           { type: 'npcChange', npcId: 'albert', npcChange: { relation: 4 } },
         ],
       },
+      {
+        text: '«Правда Глас» ещё звучит — что ты слышишь?',
+        next: 'dialogue_truth_revealed',
+        condition: { activeTTLFlag: 'truth_voice_active', collectedPoem: 'poem_1' },
+      },
+    ],
+  },
+
+  dialogue_truth_revealed: {
+    id: 'dialogue_truth_revealed',
+    speaker: 'Альберт',
+    speakerId: 'albert',
+    text: '*замирает, глядя сквозь тебя* Слышу? Я слышу, как гильдия стирает имена из протоколов. Твоё «Слово» — не магия. Это напоминание, что правда не подчиняется дедлайнам. Пока оно живо — говори. Потом снова станет тихо.',
+    choices: [
+      {
+        text: 'Я не дам им заткнуть правду.',
+        next: null,
+        effects: [
+          { type: 'addSkill', skill: 'persuasion', value: 2 },
+          { type: 'addKarma', value: 3 },
+          { type: 'setFlag', flag: 'albert_truth_whisper', flagValue: true },
+        ],
+      },
+      { text: 'Мне нужно время переварить.', next: null },
     ],
   },
 

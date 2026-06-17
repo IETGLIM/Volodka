@@ -23,6 +23,9 @@ import {
 import { BlendFunction, KernelSize, ToneMappingMode } from 'postprocessing';
 import type { EffectComposer as EffectComposerImpl } from 'postprocessing';
 import { usePostFxSceneState, usePlayerStress, useGameMode } from '@/store/selectors';
+import { useGameStore } from '@/store/gameStore';
+import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { resolvePoemTTLPostFxBoost } from '@/engine/poemWorld/poemPostFxBoost';
 import { useMobileVisualPerf, useIsMobileVisual } from '@/hooks/use-mobile';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { useVisualSettings } from '@/hooks/useVisualSettings';
@@ -348,12 +351,15 @@ function PostFXPipeline() {
 
   const stress = usePlayerStress();
   const stressFactor = stress / 100;
+  const activeTTLFlags = useGameStore((s) => s.activeTTLFlags ?? {});
+  const reducedMotion = useEffectiveReducedMotion();
+  const poemBoost = resolvePoemTTLPostFxBoost(activeTTLFlags, reducedMotion);
 
   const effectiveBloomIntensity =
-    (bloomParams.intensity + stressFactor * 0.1) * rendering.bloomIntensityScale;
+    (bloomParams.intensity + stressFactor * 0.1 + poemBoost.bloomIntensity) * rendering.bloomIntensityScale;
 
   const stressVignetteDarkness = Math.min(
-    effectiveVignetteDarkness + stressFactor * 0.12,
+    effectiveVignetteDarkness + stressFactor * 0.12 + poemBoost.vignetteDarkness,
     0.75,
   );
   const stressVignetteOffset = Math.max(
@@ -372,7 +378,7 @@ function PostFXPipeline() {
     return (
       <ManagedEffectComposer remountKey={pipelineKey} sceneId={sceneId} multisampling={0}>
         <Bloom
-          intensity={0.45 * rendering.bloomIntensityScale}
+          intensity={(0.45 + poemBoost.bloomIntensity) * rendering.bloomIntensityScale}
           luminanceThreshold={0.75}
           luminanceSmoothing={0.9}
           mipmapBlur
@@ -380,7 +386,7 @@ function PostFXPipeline() {
         />
         <Vignette
           offset={0.38}
-          darkness={0.28 * SCENE_VISIBILITY.vignetteDarknessScale}
+          darkness={Math.min(0.28 * SCENE_VISIBILITY.vignetteDarknessScale + poemBoost.vignetteDarkness, 0.75)}
           blendFunction={BlendFunction.NORMAL}
         />
         <BrightnessContrast

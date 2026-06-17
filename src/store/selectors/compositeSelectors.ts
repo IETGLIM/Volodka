@@ -188,6 +188,7 @@ export function selectDialogueContext(s: GameStoreState) {
     npcRelations: s.npcRelations,
     timeOfDay: s.exploration.timeOfDay,
     collectedPoems: s.collectedPoems,
+    activeTTLFlags: s.activeTTLFlags ?? {},
     ownedItemIdsKey: s.playerState.inventory
       .map((item) => item.id)
       .sort()
@@ -211,6 +212,7 @@ export function selectStoryContext(s: GameStoreState) {
     flags: s.playerState.flags,
     progression: s.playerState.progression,
     collectedPoems: s.collectedPoems,
+    activeTTLFlags: s.activeTTLFlags ?? {},
   };
 }
 

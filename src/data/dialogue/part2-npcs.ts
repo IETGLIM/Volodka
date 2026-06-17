@@ -55,6 +55,29 @@ export const DIALOGUE_PART2: Record<string, DialogueNode> = {
         next: 'colleague_moral_conflict',
         condition: { requiredAct: 3, flag: 'zarema_arrested' },
       },
+      {
+        text: 'Штормовой ветер ещё во мне — помоги разобрать логи быстрее.',
+        next: 'dialogue_storm_wind_live',
+        condition: { activeTTLFlag: 'storm_wind_active', collectedPoem: 'poem_5' },
+      },
+    ],
+  },
+
+  dialogue_storm_wind_live: {
+    id: 'dialogue_storm_wind_live',
+    speaker: 'Коллега',
+    text: '*шепчет, глядя на монитор* Ладно... Пока у тебя этот напор — смотри сюда. Вот цепочка commit-ов: они не случайны. Кто-то вшил ямб в diff. Если ветер ещё дует — успеешь вытащить ключ до того, как Александр заметит.',
+    choices: [
+      {
+        text: 'Покажи цепочку.',
+        next: null,
+        effects: [
+          { type: 'addSkill', skill: 'logic', value: 2 },
+          { type: 'addSkill', skill: 'coding', value: 1 },
+          { type: 'setFlag', flag: 'colleague_storm_hint', flagValue: true },
+        ],
+      },
+      { text: 'Слишком рискованно.', next: null },
     ],
   },
 

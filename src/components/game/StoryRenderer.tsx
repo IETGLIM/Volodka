@@ -104,7 +104,7 @@ function StatChangeChip({ effect }: { effect: StoryEffect }) {
 
 /* ── Component ── */
 export function StoryRenderer() {
-  const { showStoryOverlay, currentNodeId, karma, skills, flags, progression, collectedPoems } = useStoryContext();
+  const { showStoryOverlay, currentNodeId, karma, skills, flags, progression, collectedPoems, activeTTLFlags } = useStoryContext();
   const setCurrentNodeId = useSetCurrentNodeId();
   const visitNode = useVisitNode();
   const nodeEffectGenRef = useRef(0);
@@ -126,8 +126,8 @@ export function StoryRenderer() {
   }, []);
 
   const conditionCtx = useMemo(
-    () => buildStoryConditionContext({ karma, skills, flags, progression }, {}, collectedPoems),
-    [karma, skills, flags, progression, collectedPoems],
+    () => buildStoryConditionContext({ karma, skills, flags, progression }, { activeTTLFlags }, collectedPoems),
+    [karma, skills, flags, progression, collectedPoems, activeTTLFlags],
   );
 
   const [storyPackVersion, setStoryPackVersion] = useState(0);

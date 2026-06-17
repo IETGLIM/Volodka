@@ -932,6 +932,29 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
         next: 'street_poet_guiding_star',
         condition: { collectedPoem: 'poem_3' },
       },
+      {
+        text: 'Звезда ещё горит — куда она указывает?',
+        next: 'dialogue_guiding_star_live',
+        condition: { activeTTLFlag: 'guiding_star_active', collectedPoem: 'poem_3' },
+      },
+    ],
+  },
+
+  dialogue_guiding_star_live: {
+    id: 'dialogue_guiding_star_live',
+    speaker: 'Уличный поэт',
+    speakerId: 'street_poet',
+    text: '*не глядя на небо* Туда, где свет ложится криво. У выхода из переулка — там, где гильдия не рисует рекламу. Иди, пока звезда не погасла. Она не ждёт смелых — только тех, кто уже слушает.',
+    choices: [
+      {
+        text: 'Иду.',
+        next: null,
+        effects: [
+          { type: 'addSkill', skill: 'intuition', value: 2 },
+          { type: 'setFlag', flag: 'street_poet_live_star_hint', flagValue: true },
+        ],
+      },
+      { text: 'Ещё рано.', next: null },
     ],
   },
 

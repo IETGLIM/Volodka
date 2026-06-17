@@ -109,7 +109,7 @@ interface HistoryLine {
 
 /* ── Component ── */
 export function DialogueRenderer() {
-  const { mode, showStoryOverlay, currentNodeId, karma, skills, flags, progression, npcRelations, timeOfDay, collectedPoems, ownedItemIdsKey } = useDialogueContext();
+  const { mode, showStoryOverlay, currentNodeId, karma, skills, flags, progression, npcRelations, timeOfDay, collectedPoems, activeTTLFlags, ownedItemIdsKey } = useDialogueContext();
   const setCurrentNodeId = useSetCurrentNodeId();
   const visitNode = useVisitNode();
 
@@ -165,8 +165,9 @@ export function DialogueRenderer() {
       npcId: npcDef?.id ?? '',
       timeOfDay,
       ownedItemIdsKey,
+      activeTTLFlags,
     }, collectedPoems);
-  }, [karma, skills, flags, progression, npcRelations, timeOfDay, node, collectedPoems, ownedItemIdsKey]);
+  }, [karma, skills, flags, progression, npcRelations, timeOfDay, node, collectedPoems, activeTTLFlags, ownedItemIdsKey]);
   const { displayed, done, skip, reducedMotion } = useNarrativeTypewriter(resolvedText, 30);
 
   // Apply node-level effects on mount

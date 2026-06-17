@@ -55,3 +55,14 @@ export function partitionExpiredActiveTTLFlags(
 
   return { expired, active };
 }
+
+/** True when the keyed TTL flag exists and has not expired. */
+export function isActiveTTLFlagLive(
+  map: ActiveTTLFlagMap | undefined | null,
+  key: string,
+  now: number = Date.now(),
+): boolean {
+  const flag = map?.[key];
+  if (!flag) return false;
+  return now < flag.expiryTimestamp;
+}
