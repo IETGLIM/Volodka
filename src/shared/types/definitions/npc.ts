@@ -7,6 +7,9 @@ export type { NPCBarkBand, NPCBarkTexts } from '@/shared/npcBark';
 export type NPCHeadAccessory = 'none' | 'glasses' | 'hat' | 'scarf' | 'earring';
 export type NPCSilhouette = 'slim' | 'average' | 'heavy';
 
+/** Visual/update fidelity — background skips head tracking and heavy per-frame work. */
+export type NpcRenderTier = 'hero' | 'interactive' | 'background';
+
 export interface NPCAppearance {
   readonly bodyColor: string;
   readonly accentColor: string;
@@ -61,4 +64,6 @@ export interface NPCDefinition {
   /** Interaction splash preset id from interactionSplashes.ts */
   readonly npcSplashProfile?: string;
   readonly appearance?: NPCAppearance;
+  /** Override render fidelity; scene defaults apply when omitted. */
+  readonly renderTier?: NpcRenderTier;
 }

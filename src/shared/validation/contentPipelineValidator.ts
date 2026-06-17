@@ -4,6 +4,11 @@
  */
 
 import type { StoryEffect } from '@/shared/types/game';
+import {
+  validateSingleStoryNode,
+  validateStoryEffects,
+  type StoryNodeValidationRegistry,
+} from '@/shared/validation/storyNodeValidation';
 import { STORY_NODES } from '@/data/storyNodes';
 import { DIALOGUE_NODES } from '@/data/dialogueNodes';
 import { QUEST_DEFINITIONS } from '@/data/quests';
@@ -16,6 +21,7 @@ import { getAllItemDefinitions } from '@/data/items';
 import { getAllUnifiedPoems } from '@/data/unifiedPoemRegistry';
 import {
   ALL_UNIFIED_POEM_IDS,
+  POST_LAUNCH_POEM_IDS,
   TOTAL_UNIFIED_POEMS as CANONICAL_UNIFIED_POEM_COUNT } from '@/data/poemCollectionMeta';
 import { INITIAL_LORE_ENTRIES } from '@/data/loreEntries';
 import { LORE_SCENE_MAP, LORE_STORY_NODE_MAP } from '@/data/loreSceneMap';
@@ -111,90 +117,42 @@ function isKnownNpcId(npcId: string, reg: ReturnType<typeof buildSets>): boolean
   return reg.npcIds.has(npcId) || npcId in NPC_ID_ALIASES;
 }
 
+function toStoryNodeRegistry(reg: ReturnType<typeof buildSets>): StoryNodeValidationRegistry {
+  return {
+    storyNodeIds: reg.storyNodeIds,
+    dialogueNodeIds: reg.dialogueNodeIds,
+    questIds: reg.questIds,
+    poemIds: reg.poemIds,
+    itemIds: reg.itemIds,
+    npcIds: reg.npcIds,
+    sceneIds: reg.sceneIds,
+    loreIds: reg.loreIds,
+    enemyTypes: reg.enemyTypes,
+    storyNodeAliases: STORY_NODE_ALIASES,
+    npcIdAliases: NPC_ID_ALIASES,
+  };
+}
+
 function walkEffects(
   effects: StoryEffect[] | undefined,
   path: string,
   reg: ReturnType<typeof buildSets>,
   out: ValidationIssue[],
 ): void {
-  if (!effects) return;
-  for (let i = 0; i < effects.length; i++) {
-    const e = effects[i];
-    const ep = `${path}.effects[${i}]`;
-    switch (e.type) {
-      case 'collectPoem':
-        if (e.poemId && !reg.poemIds.has(e.poemId)) {
-          out.push(issue('error', 'effect', ep, `unknown poemId "${e.poemId}"`));
-        }
-        break;
-      case 'triggerQuest':
-        if (e.questId && !reg.questIds.has(e.questId)) {
-          out.push(issue('error', 'effect', ep, `unknown questId "${e.questId}"`));
-        }
-        break;
-      case 'addItem':
-      case 'removeItem':
-        if (e.itemId && !reg.itemIds.has(e.itemId)) {
-          out.push(issue('error', 'effect', ep, `unknown itemId "${e.itemId}"`));
-        }
-        break;
-      case 'npcChange':
-        if (e.npcId && !isKnownNpcId(e.npcId, reg)) {
-          out.push(issue('error', 'effect', ep, `unknown npcId "${e.npcId}"`));
-        }
-        break;
-      case 'discoverLore':
-        if (e.loreId) {
-          for (const lid of e.loreId.split(',').map((s) => s.trim()).filter(Boolean)) {
-            if (!reg.loreIds.has(lid)) {
-              out.push(issue('error', 'effect', ep, `unknown loreId "${lid}"`));
-            }
-          }
-        }
-        break;
-      case 'combat':
-        if (e.enemyType && !reg.enemyTypes.has(e.enemyType)) {
-          out.push(issue('error', 'effect', ep, `unknown enemyType "${e.enemyType}"`));
-        }
-        break;
-      case 'transitionScene':
-        if (e.sceneId && !reg.sceneIds.has(e.sceneId)) {
-          out.push(issue('error', 'effect', ep, `unknown sceneId "${e.sceneId}"`));
-        }
-        break;
-      case 'visitStoryNode':
-        if (
-          e.nodeId &&
-          !reg.storyNodeIds.has(e.nodeId) &&
-          !reg.dialogueNodeIds.has(e.nodeId)
-        ) {
-          out.push(issue('error', 'effect', ep, `unknown nodeId "${e.nodeId}"`));
-        }
-        break;
-      default:
-        break;
-    }
+  const effectErrors: { path: string; message: string }[] = [];
+  validateStoryEffects(effects, path, toStoryNodeRegistry(reg), effectErrors);
+  for (const err of effectErrors) {
+    out.push(issue('error', 'effect', err.path, err.message));
   }
 }
 
 function validateStoryGraph(reg: ReturnType<typeof buildSets>, out: ValidationIssue[]): void {
+  const storyReg = toStoryNodeRegistry(reg);
   for (const [key, node] of Object.entries(STORY_NODES)) {
-    const base = `story:${key}`;
-    if (node.id !== key) {
-      out.push(issue('error', 'story', base, `record key "${key}" !== node.id "${node.id}"`));
+    for (const err of validateSingleStoryNode(key, node, storyReg)) {
+      const category = err.path.includes('.effects[') ? 'effect' : 'story';
+      out.push(issue('error', category, err.path, err.message));
     }
-    if (node.sceneId && !reg.sceneIds.has(node.sceneId)) {
-      out.push(issue('error', 'story', base, `unknown sceneId "${node.sceneId}"`));
-    }
-    for (let i = 0; i < (node.choices?.length ?? 0); i++) {
-      const choice = node.choices![i];
-      const cp = `${base}.choices[${i}]`;
-      if (!resolveNodeRef(choice.next, reg.storyNodeIds, reg.dialogueNodeIds)) {
-        out.push(issue('error', 'story', cp, `next "${choice.next}" not in STORY_NODES or DIALOGUE_NODES`));
-      }
-      walkEffects(choice.effects, cp, reg, out);
-    }
-    walkEffects(node.effects, base, reg, out);
   }
 }
 
@@ -523,6 +481,75 @@ function validateScenes(reg: ReturnType<typeof buildSets>, out: ValidationIssue[
   }
 }
 
+function collectWiredPoemIds(): Set<string> {
+  const wired = new Set<string>();
+
+  const addFromEffects = (effects: readonly StoryEffect[] | undefined) => {
+    if (!effects) return;
+    for (const effect of effects) {
+      if (effect.type === 'collectPoem' && effect.poemId) {
+        wired.add(effect.poemId);
+      }
+    }
+  };
+
+  for (const node of Object.values(STORY_NODES)) {
+    addFromEffects(node.effects);
+    for (const choice of node.choices ?? []) {
+      addFromEffects(choice.effects);
+    }
+  }
+
+  for (const node of Object.values(DIALOGUE_NODES)) {
+    addFromEffects(node.effects);
+    for (const choice of node.choices ?? []) {
+      addFromEffects(choice.effects);
+    }
+  }
+
+  for (const quest of QUEST_DEFINITIONS) {
+    for (const objective of quest.objectives) {
+      if (objective.type === 'poem_collected' && objective.target) {
+        wired.add(objective.target);
+      }
+    }
+  }
+
+  for (const zone of TRIGGER_ZONES) {
+    addFromEffects(zone.effects);
+  }
+
+  return wired;
+}
+
+function validatePoemCollectWiring(reg: ReturnType<typeof buildSets>, out: ValidationIssue[]): void {
+  const wired = collectWiredPoemIds();
+  const postLaunch = new Set<string>(POST_LAUNCH_POEM_IDS);
+
+  for (const poemId of reg.poemIds) {
+    if (wired.has(poemId)) continue;
+    if (postLaunch.has(poemId)) {
+      out.push(
+        issue(
+          'warning',
+          'poem',
+          `poem:${poemId}`,
+          'documented post-launch — no collectPoem / poem_collected wiring yet',
+        ),
+      );
+      continue;
+    }
+    out.push(
+      issue(
+        'warning',
+        'poem',
+        `poem:${poemId}`,
+        'no collectPoem effect or poem_collected quest objective',
+      ),
+    );
+  }
+}
+
 function validatePoems(reg: ReturnType<typeof buildSets>, out: ValidationIssue[]): void {
   const registryCount = getAllUnifiedPoems().length;
   if (registryCount !== CANONICAL_UNIFIED_POEM_COUNT) {
@@ -580,6 +607,8 @@ function validatePoems(reg: ReturnType<typeof buildSets>, out: ValidationIssue[]
       out.push(issue('warning', 'poem', `unified:${poemId}`, 'in UNIFIED_POEM_REGISTRY but not in POEMS'));
     }
   }
+
+  validatePoemCollectWiring(reg, out);
 }
 
 function validateStoryNodeAliases(reg: ReturnType<typeof buildSets>, out: ValidationIssue[]): void {

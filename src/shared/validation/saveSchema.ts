@@ -93,6 +93,8 @@ const PlayerStateSchema = z.object({
   moralChoices: z.array(z.string()),
   interactions: z.array(z.string()),
   progression: PlayerProgressionSchema,
+  rngSeed: z.number().int().min(0).optional(),
+  combatEncounterSeq: z.number().int().min(0).optional().default(0),
 });
 
 /** Derived from SCENE_DEFINITIONS — stays in sync with scene registry. */
@@ -145,6 +147,7 @@ const QuestStateSchema = z.object({
   status: QuestStatusSchema,
   objectives: z.record(z.string(), z.boolean()),
   startedAtTime: z.number().optional(),
+  hoursElapsed: z.number().min(0).optional(),
 });
 
 const NPCRelationSchema = z.object({

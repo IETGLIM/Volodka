@@ -6,7 +6,7 @@
  * ARCHITECTURE: SceneDefinition is the internal model; SceneConfig is generated
  * on-the-fly via sceneDefinitionGenerator.ts — no duplicate data maintenance. */
 
-import type { SceneId } from '@/config/sceneDefinitions';
+import type { SceneId } from '@/config/sceneIds';
 import type { SceneAmbienceConfig } from '@/shared/types/ambientSound';
 import type { LocationCategory } from '@/shared/types/locationCategory';
 

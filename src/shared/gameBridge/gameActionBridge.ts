@@ -56,6 +56,8 @@ export interface GameStoreSnapshot {
       skillPoints: number;
       unlockedSkills: string[];
     };
+    rngSeed?: number;
+    combatEncounterSeq?: number;
   };
   collectedPoems: string[];
   quests: QuestState[];
@@ -68,6 +70,7 @@ export interface GameStoreSnapshot {
   triggeredCutscenes: string[];
   lastUsedPoemId: string | null;
   lastUsedPoemTimestamp: number | null;
+  pendingPoemReadingId: string | null;
 }
 
 /** Typed mutations engine may request from the store. */
@@ -75,8 +78,11 @@ export type GameAction =
   | { type: 'quest/completeObjective'; questId: string; objectiveId: string }
   | { type: 'quest/complete'; questId: string }
   | { type: 'quest/completeAndApplyRewards'; questId: string }
-  | { type: 'quest/fail'; questId: string }
+  | { type: 'quest/fail'; questId: string; reason?: string }
+  | { type: 'quest/retry'; questId: string }
+  | { type: 'game/newGamePlus' }
   | { type: 'quest/activate'; questId: string }
+  | { type: 'quest/setHoursElapsed'; questId: string; hoursElapsed: number }
   | { type: 'player/addSkill'; skill: TrainablePlayerSkill; amount: number }
   | { type: 'player/addEnergy'; amount: number }
   | { type: 'player/addStress'; amount: number }
@@ -84,12 +90,15 @@ export type GameAction =
   | { type: 'player/addXp'; amount: number }
   | { type: 'player/addCredits'; amount: number }
   | { type: 'player/setFlag'; key: string; value: boolean }
+  | { type: 'player/setRngSeed'; seed: number }
+  | { type: 'player/bumpCombatEncounterSeq' }
   | { type: 'player/setNpcRelation'; npcId: string; delta: number }
   | { type: 'poem/upsertTTLFlag'; flag: ActiveTTLFlagSnapshot }
   | { type: 'poem/upsertTTLFlags'; flags: ActiveTTLFlagSnapshot[] }
   | { type: 'poem/removeTTLFlags'; keys: string[] }
   | { type: 'poem/clearAllEffects' }
   | { type: 'poem/recordLastUsed'; poemId: string; timestamp: number }
+  | { type: 'poem/setPendingReading'; poemId: string | null }
   | { type: 'story/setCombatActive'; active: boolean }
   | { type: 'story/setIntroActive'; active: boolean }
   | { type: 'story/setMainMenuOpen'; open: boolean }
@@ -102,6 +111,7 @@ export type GameAction =
   | { type: 'inventory/addItem'; item: InventoryItem }
   | { type: 'inventory/removeItem'; itemId: string; quantity?: number }
   | { type: 'world/collectPoem'; poemId: string }
+  | { type: 'world/upsertHintFlag'; flag: ActiveTTLFlagSnapshot }
   | { type: 'lore/discover'; entryId: string }
   | { type: 'achievement/unlock'; achievementId: string }
   | { type: 'achievement/trackSceneVisit'; sceneId: string }

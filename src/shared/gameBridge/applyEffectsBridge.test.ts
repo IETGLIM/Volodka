@@ -58,6 +58,7 @@ describe('applyEffects via bridges', () => {
         triggeredCutscenes: [],
         lastUsedPoemId: null,
         lastUsedPoemTimestamp: null,
+        pendingPoemReadingId: null,
       }),
       subscribe: () => () => undefined,
       tryAddItem: () => true,

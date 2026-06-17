@@ -24,6 +24,7 @@ export * from './definitions/weather';
 export * from './state/relations';
 export * from './state/quest';
 export * from './state/combat';
+export * from './state/combatRng';
 export * from './state/daily';
 export * from './state/player';
 export * from './state/exploration';
