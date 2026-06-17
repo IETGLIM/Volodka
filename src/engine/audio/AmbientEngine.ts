@@ -610,6 +610,30 @@ export class AmbientSoundPlayer {
     this.doStopAll();
   }
 
+  /** Crossfade out active layers without starting a replacement (scene unload). */
+  fadeOutAll(crossfadeMs = 600): void {
+    if (this.disposed) return;
+    this.initContext();
+    const ctx = this.ctx;
+    if (!ctx) return;
+
+    const crossfadeSec = crossfadeMs / 1000;
+    ++this.transitionGeneration;
+    this.purgeStaleFadingAmbients();
+
+    const outgoing = this.currentAmbient;
+    this.currentAmbient = null;
+    this.currentType = null;
+
+    if (outgoing) {
+      this.fadeOutAmbient(outgoing, crossfadeSec);
+    }
+
+    for (const fading of [...this.fadingAmbients]) {
+      this.fadeOutAmbient(fading, crossfadeSec);
+    }
+  }
+
   private doStopAll(): void {
     ++this.transitionGeneration;
     this.clearAllScheduledTimers();

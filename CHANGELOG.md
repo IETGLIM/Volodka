@@ -1,4 +1,14 @@
 # Changelog — ВОЛОДЬКА RPG
+## v4.2.30 — 17 июня 2026
+
+### Sprint 1 — Audio + mode integrity (AAA Audit §8)
+- **Audio manifest**: explicit `SCENE_AUDIO_PROFILES` for 9 extension scenes (campfire, pier evening, factory roof, library basement, city square, bunker, guild mainframe, Zarema room, Albert backroom) — mood/reverb aligned with parent scenes.
+- **Inheritance fallback**: `getSceneAudioProfile()` resolves via `SCENE_DERIVED_FROM` when no direct entry.
+- **Scene unload**: `SceneAudioController.onSceneUnload()` — reset overlay duck, fade music (0.6s) + ambient crossfade (600ms) before next scene; no bleed.
+- **Orchestrator dispose**: `useAudioOrchestrator` sets disposed guard + controller session teardown on unmount.
+- **Tests**: audio manifest coverage (27/27 scenes); unload ducking + dialogue ↔ exploration transitions.
+- **Verified**: `npm run check` + unit green.
+
 ## v4.2.29 — 17 июня 2026
 
 ### Sprint 0 — Production smoke + P0 (AAA Audit §8)

@@ -121,8 +121,13 @@ export class SceneAudioController {
   /** Duck scene layers before crossfade on scene:unload (EventBus-driven transitions). */
   onSceneUnload(): void {
     if (!this.guard()) return;
+    sfxEngine.enableDialogueMuffle(false);
     ambientEngine.setDialogueDucked(false);
     ambientEngine.setCombatMuted(false);
+    musicEngine.setPresentationDucked(false);
+    musicEngine.stopMusic(0.6);
+    ambientEngine.fadeOutAll(600);
+    this.lastResolvedAmbient = null;
   }
 
   onCombatStart(): void {

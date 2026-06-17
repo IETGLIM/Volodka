@@ -4,7 +4,7 @@
 > подготовка к запуску на Vercel. Документ заменяет устаревшие `CODE_REVIEW.md` и
 > `DEEP_CODE_REVIEW.md`, которые описывают состояние проекта **до** большого рефакторинга.
 
-**Дата:** 17 июня 2026 · **Версия:** 4.2.29 · **Целевая аудитория игры:** и новички
+**Дата:** 17 июня 2026 · **Версия:** 4.2.30 · **Целевая аудитория игры:** и новички
 (родители, друзья — не геймеры), и опытные игроки (баланс «лёгкий вход + глубина»).
 
 ---
@@ -25,6 +25,8 @@
 **3D production:** `npm run assets:bootstrap` — CC0 interim; `assets:status` / `assets:ai3dgen-import -- --status` — прогресс; замена на AI3DGen Pro по каталогу.
 
 **Вывод:** инженерная база готова к Vercel production. Следующий визуальный апгрейд — AI3DGen Pro + Blender rig для героя; Mixamo clips override Quaternius embedded via `assets:mixamo-import`.
+
+**v4.2.30:** Sprint 1 (AAA Audit §8) — 27/27 scene audio profiles; unload duck/crossfade; overlay↔explore mode integrity.
 
 **v4.2.29:** Sprint 0 (AAA Audit §8) — check + unit + smoke e2e green; P0 wake prologue reopen fix; assets 26/26 shipped.
 
@@ -162,7 +164,7 @@ npm run check            # всё сразу — главный гейт пер�
 > **Контекст:** браузерная narrative RPG (Three.js + React), не офлайн AAA-cinematic.
 > Цель аудита — довести production-качество до уровня «уверенный релиз v4.3.0», а не
 > конкурировать с Unreal offline-тайтлами. Оценки — честная инженерная самооценка по
-> состоянию v4.2.28 (17 июня 2026).
+> состоянию v4.2.30 (17 июня 2026).
 
 **Ключевые файлы:** `src/data/goldenPath.ts`, `src/config/audioManifest.ts`,
 `src/config/sceneDefinitions.ts`, `src/engine/audio/SceneAudioController.ts`,
@@ -177,7 +179,7 @@ npm run check            # всё сразу — главный гейт пер�
 | Rendering | 7 | WebGL/Three.js стабилен; AAA wet/interiors — backlog |
 | Assets | 7 | Quaternius + Mixamo pipeline; AI3DGen Pro — в плане |
 | Narrative | 8 | 7 актов, стихи неприкосновенны; golden path — 75 gaps |
-| Audio | 7 | `SceneAudioController` + manifest; 9 extension scenes без профиля |
+| Audio | 8 | `SceneAudioController` + manifest; 27/27 scenes with profiles |
 | Physics | 8 | Rapier в бюджете; feet-on-ground smoke зелёный |
 | Testing | 8 | 1100+ unit; e2e smoke через `__volodka_e2e` bridge |
 | CI / deploy | 8 | `npm run check`, Vercel-ready, bundle budgets |
@@ -189,7 +191,7 @@ npm run check            # всё сразу — главный гейт пер�
 | Риск | Масштаб | Где смотреть |
 |---|---|---|
 | Golden-path warnings | 75 узлов без `choice.goldenPath: true` | `src/data/goldenPath.ts`, `npm run validate:content` |
-| Extension scenes без профилей | 9 сцен без audio/visual profiles | `src/config/sceneDefinitions.ts` (EXTENSION_SCENE_DEFINITIONS) |
+| Extension scenes без профилей | ~~9 сцен~~ ✅ Sprint 1 | `src/config/audioManifest.ts`, `sceneInheritance.ts` |
 | ESLint warnings budget | `--max-warnings 362` в `package.json` | `eslint.config.js`, `npm run lint` |
 | E2E зависимость от bridge | Smoke-тесты вызывают `window.__volodka_e2e` | `src/engine/e2e/e2eBridge.ts`, `e2e/*.spec.ts` |
 | Dist footprint | ~222 MB (GLB + bundles) | `npm run build`, `scripts/check-bundle-budgets.mjs` |
@@ -207,14 +209,14 @@ npm run check            # всё сразу — главный гейт пер�
 
 **Exit criteria:** `check` зелёный; smoke без 404; P0 закрыт; baseline зафиксирован в ROADMAP §0.
 
-#### Sprint 1 — Audio + mode integrity (2 нед)
+#### Sprint 1 — Audio + mode integrity (2 нед) ✅ v4.2.30
 
 **Цель:** полное audio-покрытие сцен и целостность explore/story modes.
 
-- [ ] Аудит `src/config/audioManifest.ts` — 27 core scenes + extension entries
-- [ ] Добавить audio profiles для 9 extension scenes (`sceneInheritance.ts`)
-- [ ] Проверить `SceneAudioController` transitions (ambient → combat → dialogue)
-- [ ] Mode integrity: explore ↔ story hub без audio glitches (`useAudioOrchestrator.ts`)
+- [x] Аудит `src/config/audioManifest.ts` — 27 core scenes + extension entries
+- [x] Добавить audio profiles для 9 extension scenes (`sceneInheritance.ts`)
+- [x] Проверить `SceneAudioController` transitions (ambient → combat → dialogue)
+- [x] Mode integrity: explore ↔ story hub без audio glitches (`useAudioOrchestrator.ts`)
 
 **Exit criteria:** все shipped-сцены имеют manifest entry; 0 missing audio profile warnings; smoke audio OK.
 

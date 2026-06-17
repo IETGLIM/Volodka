@@ -4,6 +4,7 @@
  */
 
 import type { SceneId } from '@/config/sceneDefinitions';
+import { resolveDerivedSceneId } from '@/config/sceneInheritance';
 
 /** Music mood category for procedural layering hints */
 export type MusicMood =
@@ -70,6 +71,16 @@ export const SCENE_AUDIO_PROFILES: Partial<Record<SceneId, SceneAudioProfile>> =
   battle: { sceneId: 'battle', reverbPreset: 'corridor', musicMood: 'combat' },
   sleep_dream: { sceneId: 'sleep_dream', reverbPreset: 'dream', musicMood: 'dream' },
   chk_forest_zorge: { sceneId: 'chk_forest_zorge', reverbPreset: 'large_space', musicMood: 'nature', enterStinger: 'mystery' },
+  // Extension scenes — mood/reverb aligned with SCENE_DERIVED_FROM parent + scene ambience
+  chk_campfire_night: { sceneId: 'chk_campfire_night', reverbPreset: 'large_space', musicMood: 'nature', enterStinger: 'mystery' },
+  pier_evening: { sceneId: 'pier_evening', reverbPreset: 'large_space', musicMood: 'noir_street', enterStinger: 'mystery' },
+  factory_roof: { sceneId: 'factory_roof', reverbPreset: 'large_space', musicMood: 'tension', enterStinger: 'tension' },
+  library_basement: { sceneId: 'library_basement', reverbPreset: 'corridor', musicMood: 'cozy_indoor' },
+  city_square: { sceneId: 'city_square', reverbPreset: 'large_space', musicMood: 'noir_street', enterStinger: 'mystery' },
+  underground_bunker: { sceneId: 'underground_bunker', reverbPreset: 'large_space', musicMood: 'tension', enterStinger: 'tension' },
+  guild_mainframe: { sceneId: 'guild_mainframe', reverbPreset: 'corridor', musicMood: 'tension' },
+  zarema_room: { sceneId: 'zarema_room', reverbPreset: 'small_room', musicMood: 'cozy_indoor' },
+  albert_backroom: { sceneId: 'albert_backroom', reverbPreset: 'corridor', musicMood: 'cozy_indoor', enterStinger: 'discovery' },
 };
 
 /** Character leitmotifs — triggered on dialogue enter / quest beats */
@@ -134,8 +145,19 @@ export const EMOTIONAL_TRANSITIONS: EmotionalTransition[] = [
   { from: 'cozy_indoor', to: 'dream', crossfadeSec: 5, stinger: 'emotional' },
 ];
 
+/** Direct manifest entry, or inherited profile from {@link resolveDerivedSceneId}. */
 export function getSceneAudioProfile(sceneId: string): SceneAudioProfile | undefined {
-  return SCENE_AUDIO_PROFILES[sceneId as SceneId];
+  const id = sceneId as SceneId;
+  const direct = SCENE_AUDIO_PROFILES[id];
+  if (direct) return direct;
+
+  const parentId = resolveDerivedSceneId(id);
+  if (parentId === id) return undefined;
+
+  const parent = SCENE_AUDIO_PROFILES[parentId];
+  if (!parent) return undefined;
+
+  return { ...parent, sceneId: id };
 }
 
 export function getSceneReverbPreset(sceneId: string): string | undefined {

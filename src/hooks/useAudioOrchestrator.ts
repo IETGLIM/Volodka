@@ -62,6 +62,7 @@ export function useAudioOrchestrator() {
 
     return () => {
       disposedRef.current = true;
+      ctrl.dispose();
     };
   }, []);
 
@@ -137,6 +138,7 @@ export function useAudioOrchestrator() {
     document.addEventListener('visibilitychange', onVisibility);
 
     return withHmrCleanup(() => {
+      disposedRef.current = true;
       scope.dispose();
       document.removeEventListener('visibilitychange', onVisibility);
     });
@@ -226,6 +228,9 @@ export function useAudioOrchestrator() {
       },
       { equalityFn: shallow },
     );
-    return withHmrCleanup(unsub);
+    return withHmrCleanup(() => {
+      disposedRef.current = true;
+      unsub();
+    });
   }, []);
 }
