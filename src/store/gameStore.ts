@@ -85,6 +85,8 @@ function buildGameSnapshot(state: GameStoreState): GameStoreSnapshot {
     collectedPoems: state.collectedPoems, quests: state.quests, activeTTLFlags: state.activeTTLFlags ?? {}, poemPowers: state.poemPowers, npcRelations: state.npcRelations,     unlockedAchievements: state.unlockedAchievements, achievementProgress: state.achievementProgress,
     activeCutsceneId: state.activeCutsceneId,
     triggeredCutscenes: state.triggeredCutscenes,
+    lastUsedPoemId: state.lastUsedPoemId ?? null,
+    lastUsedPoemTimestamp: state.lastUsedPoemTimestamp ?? null,
   };
 }
 function invalidateGameSnapshotCache(): void {

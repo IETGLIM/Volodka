@@ -93,6 +93,8 @@ export function createDefaultSessionState(): Partial<GameStoreState> {
     lastSaveTimestamp: null,
     lastAutoSaveTimestamp: null,
     notifications: [],
+    lastUsedPoemId: null,
+    lastUsedPoemTimestamp: null,
     activeCutsceneId: null,
     cutsceneWaypoints: [],
     matrixRainEnabled: true,

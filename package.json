@@ -1,6 +1,6 @@
 {
   "name": "volodka-rpg",
-  "version": "4.2.31",
+  "version": "4.2.33",
   "private": true,
   "type": "module",
   "scripts": {

@@ -8,7 +8,7 @@ import type {
   StoryChoice,
   TrainablePlayerSkill,
 } from '@/shared/types/game';
-import { performSkillCheck } from '@/shared/validation/skillCheck';
+import { resolveSkillCheckWithPoemFlags } from '@/shared/poemPower/poemSkillCheckRules';
 
 export type StoryCondition = StoryChoice['condition'] | DialogueChoice['condition'];
 
@@ -57,7 +57,16 @@ export interface StoryConditionResult {
   pass: boolean;
   /** Story overlay: minSkill gate display */
   skillCheck?: { skill: TrainablePlayerSkill; needed: number; current: number };
-  skillCheckResult?: { skill: TrainablePlayerSkill; difficulty: number; success: boolean };
+  skillCheckResult?: {
+    skill: TrainablePlayerSkill;
+    difficulty: number;
+    success: boolean;
+    critical?: boolean;
+    autoPass?: boolean;
+    consumedFlag?: string;
+  };
+  /** Poem flag consumed by a passing skill check — apply via store after choice selection. */
+  consumedFlag?: string;
   skillCheckNeeded?: { skill: TrainablePlayerSkill; needed: number; current: number };
   relationNeeded?: { needed: number; current: number };
   actNeeded?: { needed: number; current: number };
@@ -134,8 +143,12 @@ export function checkStoryCondition(
 
   if (condition.minSkillCheck) {
     const { skill, difficulty } = condition.minSkillCheck;
-    const success = performSkillCheck(skill, difficulty, ctx.skills);
-    return { pass: success, skillCheckResult: { skill, difficulty, success } };
+    const resolved = resolveSkillCheckWithPoemFlags(skill, difficulty, ctx.skills, ctx.flags);
+    return {
+      pass: resolved.success,
+      skillCheckResult: { skill, difficulty, ...resolved },
+      consumedFlag: resolved.consumedFlag,
+    };
   }
 
   return { pass: true };

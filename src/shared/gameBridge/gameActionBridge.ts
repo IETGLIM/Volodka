@@ -66,6 +66,8 @@ export interface GameStoreSnapshot {
   achievementProgress: AchievementProgressSnapshot;
   activeCutsceneId: string | null;
   triggeredCutscenes: string[];
+  lastUsedPoemId: string | null;
+  lastUsedPoemTimestamp: number | null;
 }
 
 /** Typed mutations engine may request from the store. */
@@ -87,6 +89,7 @@ export type GameAction =
   | { type: 'poem/upsertTTLFlags'; flags: ActiveTTLFlagSnapshot[] }
   | { type: 'poem/removeTTLFlags'; keys: string[] }
   | { type: 'poem/clearAllEffects' }
+  | { type: 'poem/recordLastUsed'; poemId: string; timestamp: number }
   | { type: 'story/setCombatActive'; active: boolean }
   | { type: 'story/setIntroActive'; active: boolean }
   | { type: 'story/setMainMenuOpen'; open: boolean }

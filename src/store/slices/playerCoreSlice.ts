@@ -31,6 +31,9 @@ export interface PlayerCoreSliceState {
   notifications: GameNotification[];
   /** TTL-based active flags keyed by flag key (survives save/load) */
   activeTTLFlags: ActiveTTLFlagMap;
+  /** Last successfully activated poem — for rhythm synergy combos (session). */
+  lastUsedPoemId: string | null;
+  lastUsedPoemTimestamp: number | null;
 }
 
 export interface PlayerCoreSliceActions {
@@ -48,6 +51,7 @@ export interface PlayerCoreSliceActions {
   upsertActiveTTLFlags: (flags: ActiveTTLFlag[]) => void;
   removeActiveTTLFlags: (keys: string[]) => void;
   clearActiveTTLFlags: () => void;
+  recordLastUsedPoem: (poemId: string, timestamp: number) => void;
   /** Advance to the next act. No-op if already at {@link MAX_STORY_ACT}. */
   advanceAct: () => void;
   /** Batched player + notification updates (single set pass) for cross-slice reward flows. */
@@ -69,6 +73,8 @@ export const createPlayerCoreSlice: StateCreator<
   playerState: createDefaultPlayerState(),
   notifications: [],
   activeTTLFlags: createEmptyActiveTTLFlagMap(),
+  lastUsedPoemId: null,
+  lastUsedPoemTimestamp: null,
 
   visitNode: (id) =>
     set((state) => {
@@ -209,6 +215,9 @@ export const createPlayerCoreSlice: StateCreator<
     }),
 
   clearActiveTTLFlags: () => set({ activeTTLFlags: createEmptyActiveTTLFlagMap() }),
+
+  recordLastUsedPoem: (poemId, timestamp) =>
+    set({ lastUsedPoemId: poemId, lastUsedPoemTimestamp: timestamp }),
 
   advanceAct: () =>
     set((state) => {

@@ -22,6 +22,11 @@ import {
 } from '@/engine/GameActionDispatcher';
 import { partitionExpiredActiveTTLFlags } from '@/shared/activeTTLFlags';
 export type { ActiveTTLFlag } from '@/shared/activeTTLFlags';
+import { getSynergyReverseOnExpiry } from '@/config/poemSynergies';
+import {
+  recordPoemRhythm,
+  tryApplyPoemSynergy,
+} from '@/engine/poemPower/applyPoemSynergy';
 import type { TrainablePlayerSkill } from '@/shared/types/game';
 import { isTrainablePlayerSkill, warnInvalidValue } from '@/shared/validation/typeGuards';
 
@@ -147,8 +152,9 @@ export function processExpiredTTLFlags(): void {
     setFlag(f.key, false);
 
     const power = POEM_POWERS[f.poemId];
-    if (power?.reverseOnExpiry) {
-      for (const rev of power.reverseOnExpiry) {
+    const reverseOnExpiry = power?.reverseOnExpiry ?? getSynergyReverseOnExpiry(f.poemId);
+    if (reverseOnExpiry) {
+      for (const rev of reverseOnExpiry) {
         switch (rev.type) {
           case 'skill':
             if (rev.key) {
@@ -543,8 +549,13 @@ export function activatePoemPowerById(poemId: string): boolean {
   const success = tryActivatePoemPower(poemId);
   if (!success) return false;
 
+  const activatedAt = Date.now();
+
   // Execute the power effect only after store confirms activation
   power.effect();
+
+  // Rhythm synergy — second poem within 5s of the first triggers combo bonus
+  tryApplyPoemSynergy(poemId, activatedAt);
 
   // Set TTL-based flags in one store update when a poem sets multiple flags
   if (power.flagsToSet) {
@@ -574,6 +585,8 @@ export function activatePoemPowerById(poemId: string): boolean {
 
   // Emit event for visual/audio feedback
   eventBus.emit('poem:power_used', { poemId, powerName: power.name });
+
+  recordPoemRhythm(poemId, activatedAt);
 
   return true;
 }

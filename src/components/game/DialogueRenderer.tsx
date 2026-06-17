@@ -20,6 +20,7 @@ import {
   ensureDialogueNode,
 } from '@/data/gameDataLoader';
 import { audioEngine } from '@/engine/AudioEngine';
+import { consumePoemSkillCheckFlag } from '@/engine/poemPower/poemSkillCheckModifiers';
 import { eventBus } from '@/engine/EventBus';
 import { closeNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
 import { requestSceneTransitionForStoryNode } from '@/engine/scene/sceneTransition';
@@ -257,6 +258,10 @@ export function DialogueRenderer() {
         });
         if (!cond.skillCheckResult.success) return;
         setTimeout(() => setSkillCheckBanner(null), 1500);
+      }
+
+      if (cond.consumedFlag) {
+        consumePoemSkillCheckFlag(cond.consumedFlag, { critical: cond.skillCheckResult?.critical });
       }
 
       handleChoice(choice);

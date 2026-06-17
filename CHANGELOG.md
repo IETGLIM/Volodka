@@ -1,4 +1,23 @@
 # Changelog — ВОЛОДЬКА RPG
+## v4.2.33 — 17 июня 2026
+
+### Poem Synergies — ритм двух стихов
+- **Rhythm combo**: второй стих в течение 5 с после первого активирует синергию (пары двунаправленные).
+- **Конфиг** `poemSynergies.ts`: Штормовой Прорыв (poem_5+poem_8), Глас Слова (poem_1+poem_6), Городская Звезда (poem_3+poem_11), Связь Сердец (poem_4+poem_17), Шторм Мысли (poem_5+poem_14).
+- **Store**: `lastUsedPoemId` / `lastUsedPoemTimestamp` в player slice; `poem/recordLastUsed` после успешной активации.
+- **Проверки навыков**: TTL-флаги poem/synergy auto-pass и critical persuasion через `poemSkillCheckRules` + consume в DialogueRenderer.
+- **UI**: toast «Синергия: …»; world VFX через `poem:synergy_triggered` → `poem:world_event`.
+- **Тесты**: окно 5 с, bidirectional pairs, expired window, flag application и TTL reverse.
+
+## v4.2.33 — 17 июня 2026
+
+### Poem Reading Ritual — кинематографическое чтение перед силой стиха
+- **PoemReadingCutscene**: затемнение + letterbox, строки стиха по одной (framer-motion), камера медленно подъезжает к лицу Володьки (`camera:poem_reading_start/end`), stinger из `poemWorldEffects` при старте чтения.
+- **Оркестратор**: `requestPoemPowerActivation` — для `MAIN_POEM_IDS` сначала ритуал, затем `activatePoemPowerById` → синергия → world event; бонусные/скрытые стихи и бой — без полного ритуала.
+- **Доступность**: настройка «Пропускать ритуал чтения стихов» (`skipPoemCutscenes`, localStorage); повторное чтение того же стиха за сессию — мгновенная активация.
+- **Пропуск**: Space/клик после минимального времени; reduced motion — все строки сразу, короче.
+- **Тесты**: skip setting, MAIN_POEM_IDS gate, orchestrator flow mock.
+
 ## v4.2.31 — 17 июня 2026
 
 ### Poem World Events — стих как событие мира
@@ -8,6 +27,12 @@
 - **Аудио**: `SceneAudioController.onPoemWorldEvent` — stinger по `audioCue` из профиля.
 - **Мир**: TTL-флаги `poem_hint_*_active` (exit_glow, npc_shimmer, interaction_pulse) на время эффекта.
 - **Тесты**: resolver, bridge emission, reduced-motion skip для storm_break.
+
+### Poem-gated content + exploration highlights
+- **Dialogue**: ветки по `collectedPoem` — уличный поэт (poem_3), Альберт (poem_1), Зарема/Виктория (poem_11), Сталкер ЧК (poem_3).
+- **Quests**: поле `requiredPoem` — `act6_secret_archive` (poem_11), `archive_of_forgotten` (poem_7), `library_lost_archive` (poem_9), `secrets_of_old_code` (poem_1).
+- **Exploration**: `guiding_star_active` и `poem_hint_*` подсвечивают trigger zones (золотой god-ray; статичное свечение при reduced motion).
+- **Тесты**: `poemExplorationHighlight`, `QuestTracker.canActivateQuest` (poem gate).
 
 ## v4.2.30 — 17 июня 2026
 
