@@ -10,6 +10,11 @@ import { getNpcModelUrls } from '../src/config/npcModelRegistry';
 import { getPropModelUrls } from '../src/config/propModelRegistry';
 import { MODEL_URLS } from '../src/config/modelUrls';
 
+/** External textures referenced by interior GLBs (relative to GLB path). Required on Vercel. */
+const VERCEL_INTERIOR_TEXTURES = [
+  'models/interiors/Textures/colormap.png',
+] as const;
+
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const distDir = path.join(ROOT, 'dist');
 const PUBLIC = path.join(ROOT, 'public');
@@ -45,6 +50,8 @@ function loadRequiredPublicPaths(): string[] {
   for (const url of getPropModelUrls()) paths.add(url.replace(/^\//, ''));
   for (const url of Object.values(MODEL_URLS)) paths.add(url.replace(/^\//, ''));
 
+  for (const rel of VERCEL_INTERIOR_TEXTURES) paths.add(rel);
+
   return [...paths];
 }
 
@@ -65,8 +72,8 @@ for (const rel of requiredPublicPaths) {
   const inPublic = path.join(PUBLIC, rel);
   if (!existsSync(inDist) && !existsSync(inPublic)) {
     issues.push(`missing asset: ${rel} (not in dist/ or public/)`);
-  } else if (!existsSync(inDist) && existsSync(inPublic)) {
-    warnings.push(`present in public/ but not copied to dist/: ${rel}`);
+  } else if (!existsSync(inDist)) {
+    issues.push(`missing in dist/ (Vercel serves dist/): ${rel}`);
   }
 }
 

@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "dev:inspect": "vite --mode inspect",
-    "build": "npm run validate && npm run assets:validate && tsc -b && vite build && npm run budgets",
+    "build": "npm run assets:prepare && npm run validate && npm run assets:validate && tsc -b && vite build && npm run budgets && npm run verify:deploy",
     "build:analyze": "npm run validate && tsc -b && vite build --mode analyze && npm run budgets",
     "validate": "npx tsx --tsconfig tsconfig.json scripts/validate-content.ts",
     "validate:content": "npx tsx --tsconfig tsconfig.json scripts/validate-content.ts",
