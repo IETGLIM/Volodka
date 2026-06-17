@@ -1,20 +1,49 @@
-/** Khronos / Soldier interim rigs in legacy 100+ unit exports. */
+import * as THREE from 'three';
+import { armMeshHasFingerDetail } from '@/components/3d/fpsFingerEnhancement';
+import { measureGltfBounds } from '@/engine/assets/gltfScale';
+
+/** Legacy Khronos exports before root 0.01 normalization (~100+ unit extent). */
 export const FULL_BODY_INTERIM_MIN_HEIGHT_UNITS = 8;
-/** Arms-only FPS GLBs are well under humanoid height (metres). Soldier interim ≈1.8 m. */
-export const FPS_ARMS_ONLY_MAX_HEIGHT_M = 1.0;
-/** Scale for Khronos-style FPS arm rigs (procedural finger coords). */
+/** Meter-normalized full-body interim (Soldier.glb ≈ 1.8 m max axis). */
+export const FPS_METER_FULL_BODY_MIN_EXTENT_M = 1.4;
+/** Scale for procedural finger coords authored in legacy Khronos space. */
 export const FPS_PROCEDURAL_RIG_SCALE = 0.012;
 
-/** Interim full-body rigs → hide mesh, procedural finger caps at FPS_PROCEDURAL_RIG_SCALE. */
-export function resolveFpsArmsProceduralOnly(
-  boundsHeightY: number,
-  hasFingerDetail: boolean,
-): boolean {
-  if (boundsHeightY > FULL_BODY_INTERIM_MIN_HEIGHT_UNITS) return true;
-  if (boundsHeightY > FPS_ARMS_ONLY_MAX_HEIGHT_M) return true;
-  return !hasFingerDetail;
+export interface FpsArmsPresentation {
+  proceduralOnly: boolean;
+  glbScale: number;
+  fingerScale: number;
 }
 
-export function resolveFpsArmsRigScale(proceduralOnly: boolean): number {
-  return proceduralOnly ? FPS_PROCEDURAL_RIG_SCALE : 1;
+export function rigHasTorsoBones(scene: THREE.Object3D): boolean {
+  let found = false;
+  scene.traverse((obj) => {
+    const n = obj.name.toLowerCase();
+    if (n.includes('hips') || n.includes('spine')) found = true;
+  });
+  return found;
+}
+
+/**
+ * Classify shipped fps_arms.glb (Khronos Soldier interim) vs real meter-scale arm rigs.
+ * Legacy rigs need 0.012 on the GLB; meter rigs already include Character scale 0.01.
+ */
+export function resolveFpsArmsPresentation(scene: THREE.Object3D): FpsArmsPresentation {
+  scene.updateWorldMatrix(true, true);
+  const bounds = measureGltfBounds(scene);
+  const maxExtent = Math.max(bounds.size.x, bounds.size.y, bounds.size.z);
+  const legacyCentimeter = maxExtent > FULL_BODY_INTERIM_MIN_HEIGHT_UNITS;
+  const fingerDetail = armMeshHasFingerDetail(scene);
+  const fullBodyMeterInterim =
+    !legacyCentimeter &&
+    maxExtent >= FPS_METER_FULL_BODY_MIN_EXTENT_M &&
+    rigHasTorsoBones(scene);
+  const proceduralOnly = legacyCentimeter || !fingerDetail || fullBodyMeterInterim;
+  const glbScale = legacyCentimeter ? FPS_PROCEDURAL_RIG_SCALE : 1;
+
+  return {
+    proceduralOnly,
+    glbScale,
+    fingerScale: FPS_PROCEDURAL_RIG_SCALE,
+  };
 }

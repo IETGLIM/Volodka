@@ -17,7 +17,7 @@ import {
   PLAYER_WALK_CLIP_NAMES,
 } from '@/engine/player/playerClipResolution';
 import { FPS_ARMS_URL } from '@/config/fpsArmsUrl';
-import { resolveFpsArmsPresentation } from './fpsArmsPresentation';
+import { resolveFpsArmsPresentation } from '@/engine/player/fpsArmsPresentation';
 
 const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeof useGLTF>[3]>;
 
