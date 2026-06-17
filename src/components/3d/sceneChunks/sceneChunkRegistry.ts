@@ -1,5 +1,6 @@
 import type { SceneId } from '@/shared/types/game';
 import { resolveDerivedSceneId } from '@/config/sceneInheritance';
+import { importWithSceneGpuRegistration } from '@/engine/three/importWithSceneGpuRegistration';
 
 type ChunkPreloader = () => Promise<unknown>;
 
@@ -26,10 +27,11 @@ const SCENE_JS_CHUNK_PRELOAD: Partial<Record<SceneId, readonly ChunkPreloader[]>
 };
 
 export function preloadSceneJsChunks(sceneId: SceneId): void {
-  const loaders = SCENE_JS_CHUNK_PRELOAD[resolveDerivedSceneId(sceneId)];
+  const derived = resolveDerivedSceneId(sceneId);
+  const loaders = SCENE_JS_CHUNK_PRELOAD[derived];
   if (!loaders) return;
   for (const load of loaders) {
-    void load();
+    void importWithSceneGpuRegistration(derived, load);
   }
 }
 

@@ -2,7 +2,7 @@
 
 import { useRef, useEffect, useCallback } from 'react';
 import * as THREE from 'three';
-import { eventBus } from '@/engine/EventBus';
+import { onNpcAnimation } from '@/engine/npc/npcEventRouter';
 import type { NPCAnimationState } from '@/engine/interaction/interactionMachine';
 import {
   resolveNpcClipAction,
@@ -50,14 +50,7 @@ export function useNPCAnimation(
     [actions, findAction],
   );
 
-  useEffect(() => {
-    const unsub = eventBus.on('npc:animation', ({ npcId: targetNpcId, state }) => {
-      if (targetNpcId !== npcId) return;
-      crossfadeTo(state);
-    });
-
-    return unsub;
-  }, [npcId, crossfadeTo]);
+  useEffect(() => onNpcAnimation(npcId, crossfadeTo), [npcId, crossfadeTo]);
 
   useEffect(() => {
     crossfadeTo('idle');

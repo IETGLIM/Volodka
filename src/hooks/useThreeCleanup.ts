@@ -22,8 +22,8 @@ export interface UseThreeCleanupOptions extends DisposeThreeOptions {
  * texture maps, shader uniforms, skeleton bone textures, and light shadow maps.
  *
  * Pass `options.skip` for module-level shared geometry/material caches
- * (procedural NPC/player singletons). For `cloneNpcTemplate()` instances use
- * `useNpcTemplateCleanup()` instead.
+ * (procedural NPC/player singletons). Registry-managed scene/session caches are
+ * always skipped here — scene:unload and canvas unmount own their disposal.
  *
  * Do **not** pass WebGLRenderer here — the renderer is canvas-scoped; use
  * `useCanvasRendererCleanup()` only when the entire Canvas unmounts.

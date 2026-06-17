@@ -176,7 +176,9 @@ export function createDefaultPlayerState(): PlayerState {
       unlockedSkills: [],
       currentAct: 1,
       perkPoints: 0,
-      unlockedPerks: [] } };
+      unlockedPerks: [] },
+    rngSeed: (Date.now() ^ Math.imul(0x9e3779b9, 1)) >>> 0,
+    combatEncounterSeq: 0 };
 }
 
 export function createDefaultExploration(): ExplorationState {
@@ -186,8 +188,7 @@ export function createDefaultExploration(): ExplorationState {
     playerRotation: 0,
     timeOfDay: 8,
     npcStates: {},
-    weatherEnabled: true,
-    rainIntensity: 0.7 };
+  };
 }
 
 export function createDefaultTutorialFlags(): TutorialFlags {

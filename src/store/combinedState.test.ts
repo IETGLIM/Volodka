@@ -8,6 +8,7 @@ import {
 import { usePlayerStore } from './stores/playerStore';
 import { useUIStore } from './stores/uiStore';
 import { useGameStore } from './gameStore';
+import type { GameStoreState } from './types';
 
 describe('subscribeAllStores', () => {
   it('batches multiple slice updates into one microtask notification', async () => {
@@ -70,6 +71,20 @@ describe('scheduleAfterSliceStoresSettle', () => {
 });
 
 describe('gameStore facade flush', () => {
+  it('applies partial returned from functional setState updater', () => {
+    const menuOpen = useUIStore.getState().mainMenuOpen;
+    useGameStore.setState((state) => ({ mainMenuOpen: !state.mainMenuOpen }));
+    expect(useGameStore.getState().mainMenuOpen).toBe(!menuOpen);
+    useGameStore.setState({ mainMenuOpen: menuOpen });
+  });
+
+  it('ignores void return from functional setState updater', () => {
+    const menuOpen = useUIStore.getState().mainMenuOpen;
+    const voidUpdater = (_state: GameStoreState): void => {};
+    useGameStore.setState(voidUpdater as (state: GameStoreState) => Partial<GameStoreState>);
+    expect(useGameStore.getState().mainMenuOpen).toBe(menuOpen);
+  });
+
   it('coalesces facade updates from separate macrotasks into one animation frame', async () => {
     resetSliceMutationSchedulerForTests();
 

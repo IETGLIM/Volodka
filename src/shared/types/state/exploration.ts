@@ -8,6 +8,4 @@ export interface ExplorationState {
   playerRotation: number;
   timeOfDay: number;
   npcStates: Record<string, { position: [number, number, number]; sceneId: SceneId }>;
-  weatherEnabled: boolean;
-  rainIntensity: number;
 }

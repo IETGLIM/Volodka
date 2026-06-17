@@ -1,7 +1,7 @@
 /**
  * Quaternius Ultimate Modular Men/Women — embedded GLB clip aliases.
  * Each rig ships ~24 clips (Idle, Walk, Run, Wave, Interact, …).
- * Mixamo retarget: same humanoid bone naming — see humanoidRetargetProfile.ts.
+ * Mixamo retarget: same humanoid bone naming — see assets-source/mixamo/README.md.
  */
 
 import type { NPCAnimationState } from '@/engine/interaction/interactionMachine';

@@ -1,5 +1,6 @@
 import type { ReactNode, RefObject } from 'react';
 import { FocusScope } from '@radix-ui/react-focus-scope';
+import { usePanelFocusTrapActive } from '@/components/a11y/usePanelFocusTrapActive';
 
 interface FocusTrapProps {
   active?: boolean;
@@ -10,7 +11,8 @@ interface FocusTrapProps {
 
 /** Radix focus scope — traps Tab inside modal overlays when active. */
 export function FocusTrap({ active = true, children, initialFocusRef }: FocusTrapProps) {
-  if (!active) return <>{children}</>;
+  const trapActive = usePanelFocusTrapActive(active);
+  if (!trapActive) return <>{children}</>;
   return (
     <FocusScope
       trapped

@@ -1,12 +1,19 @@
 /**
  * Tracks module-level BufferGeometry singletons used by procedural scene visuals.
- * Disposed on canvas unmount and HMR — not on scene:unload (geometries are reused).
+ * Scene-scoped resources (claimed during scene module import) dispose on scene:unload.
+ * Session-scoped resources (InteriorModels, NPC caches) dispose on canvas unmount / HMR.
  */
 
 import * as THREE from 'three';
 import { registerGlobalCleanup, registerModuleGlobalCleanupBinder } from '@/engine/core/GlobalCleanupService';
 import { registerHmrBeforeUpdate, registerHmrDispose } from '@/shared/dev/hmrDispose';
 import { trackModuleGeometry, untrackModuleGeometry } from '@/engine/performance/GpuResourceBudgetTracker';
+import {
+  claimGeometryForActiveScene,
+  claimGeometryForScene,
+  resetSceneGpuOwnershipForTests,
+} from '@/engine/three/sceneGpuOwnership';
+import type { SceneId } from '@/shared/types/game';
 
 const moduleGeometries = new Set<THREE.BufferGeometry>();
 const sharedGeometryCache = new Map<string, THREE.BufferGeometry>();
@@ -22,7 +29,11 @@ function getSharedGeometry<T extends THREE.BufferGeometry>(
 ): T {
   const key = cacheKey(kind, args);
   const cached = sharedGeometryCache.get(key);
-  if (cached) return cached as T;
+  if (cached && moduleGeometries.has(cached)) {
+    claimGeometryForActiveScene(cached);
+    return cached as T;
+  }
+  if (cached) sharedGeometryCache.delete(key);
 
   const geometry = registerModuleGeometry(factory());
   sharedGeometryCache.set(key, geometry);
@@ -33,14 +44,29 @@ function getSharedGeometry<T extends THREE.BufferGeometry>(
 export function registerModuleGeometry<T extends THREE.BufferGeometry>(geometry: T): T {
   moduleGeometries.add(geometry);
   trackModuleGeometry(geometry);
+  claimGeometryForActiveScene(geometry);
   return geometry;
 }
 
+/** True when geometry is tracked by the module registry (skip mesh-tree dispose). */
+export function isRegistryManagedGeometry(geometry: THREE.BufferGeometry): boolean {
+  return moduleGeometries.has(geometry);
+}
+
 /** Register many module-level geometries at once (per-module HMR dispose in dev). */
-export function registerModuleGeometries(geometries: Iterable<THREE.BufferGeometry>): void {
+export function registerModuleGeometries(
+  geometries: Iterable<THREE.BufferGeometry>,
+  sceneId?: SceneId,
+): void {
   const owned = [...geometries];
   for (const geometry of owned) {
     moduleGeometries.add(geometry);
+    trackModuleGeometry(geometry);
+    if (sceneId) {
+      claimGeometryForScene(sceneId, geometry);
+    } else {
+      claimGeometryForActiveScene(geometry);
+    }
   }
   if (import.meta.hot) {
     import.meta.hot.dispose(() => {
@@ -59,7 +85,7 @@ function evictSharedGeometryFromCache(geometry: THREE.BufferGeometry): void {
   }
 }
 
-function disposeRegisteredModuleGeometry(geometry: THREE.BufferGeometry): void {
+export function disposeRegisteredModuleGeometry(geometry: THREE.BufferGeometry): void {
   if (!moduleGeometries.has(geometry)) return;
   untrackModuleGeometry(geometry);
   geometry.dispose();
@@ -137,6 +163,7 @@ export function disposeAllModuleGeometries(): void {
   }
   moduleGeometries.clear();
   sharedGeometryCache.clear();
+  resetSceneGpuOwnershipForTests();
 }
 
 /** Test / diagnostics — count of module-level geometries tracked for disposal. */

@@ -29,13 +29,13 @@ async function loadModules() {
   const manifestMod = await import(pathToFileURL(path.join(ROOT, 'src/config/assetManifest.ts')).href);
   const catalogMod = await import(pathToFileURL(path.join(ROOT, 'src/config/ai3dgenAssetCatalog.ts')).href);
   const mixamoMod = await import(pathToFileURL(path.join(ROOT, 'src/config/mixamoAnimationCatalog.ts')).href);
-  const mixamoShippedMod = await import(pathToFileURL(path.join(ROOT, 'src/config/mixamoAnimationShipped.ts')).href);
+  const mixamoOnDiskMod = await import(pathToFileURL(path.join(ROOT, 'src/config/mixamoClipsOnDisk.ts')).href);
   const rpmMod = await import(pathToFileURL(path.join(ROOT, 'src/config/rpmNpcCatalog.ts')).href);
-  const rpmShippedMod = await import(pathToFileURL(path.join(ROOT, 'src/config/rpmNpcShipped.generated.ts')).href);
+  const rpmOnDiskMod = await import(pathToFileURL(path.join(ROOT, 'src/config/rpmNpcOnDisk.generated.ts')).href);
   const quaterniusMod = await import(pathToFileURL(path.join(ROOT, 'scripts/quaternius-import.mjs')).href);
   const propMod = await import(pathToFileURL(path.join(ROOT, 'src/config/propModelRegistry.ts')).href);
   const npcMod = await import(pathToFileURL(path.join(ROOT, 'src/config/npcModelRegistry.ts')).href);
-  return { manifestMod, catalogMod, mixamoMod, mixamoShippedMod, rpmMod, rpmShippedMod, quaterniusMod, propMod, npcMod };
+  return { manifestMod, catalogMod, mixamoMod, mixamoOnDiskMod, rpmMod, rpmOnDiskMod, quaterniusMod, propMod, npcMod };
 }
 
 function mark(ok) {
@@ -43,11 +43,11 @@ function mark(ok) {
 }
 
 async function main() {
-  const { manifestMod, catalogMod, mixamoMod, mixamoShippedMod, rpmMod, rpmShippedMod, quaterniusMod, propMod, npcMod } = await loadModules();
+  const { manifestMod, catalogMod, mixamoMod, mixamoOnDiskMod, rpmMod, rpmOnDiskMod, quaterniusMod, propMod, npcMod } = await loadModules();
   const manifest = manifestMod.ASSET_MANIFEST;
   const catalog = catalogMod.AI3DGEN_ASSET_CATALOG;
   const mixamoCatalog = mixamoMod.MIXAMO_ANIMATION_CATALOG;
-  const shippedMixamo = new Set(mixamoShippedMod.SHIPPED_MIXAMO_CLIP_IDS);
+  const onDiskMixamo = new Set(mixamoOnDiskMod.MIXAMO_CLIP_IDS_ON_DISK);
 
   console.log('═══ Asset manifest ═══\n');
   let shippedOk = 0;
@@ -91,14 +91,14 @@ async function main() {
     const sourcePath = path.join(ROOT, entry.sourceRelativePath);
     const publicState = fileState(entry.publicUrl);
     const hasSource = existsSync(sourcePath);
-    const shipped = shippedMixamo.has(entry.id);
-    if (publicState.ok && shipped) mixamoImported += 1;
+    const onDisk = onDiskMixamo.has(entry.id);
+    if (publicState.ok && onDisk) mixamoImported += 1;
     else mixamoPending += 1;
     console.log(
-      `  ${mark(publicState.ok)} public  ${mark(hasSource)} source  ${shipped ? 'SHIP' : 'hold'}  ${entry.id.padEnd(10)} ${entry.title}`,
+      `  ${mark(publicState.ok)} public  ${mark(hasSource)} source  ${onDisk ? 'DISK' : 'hold'}  ${entry.id.padEnd(10)} ${entry.title}`,
     );
   }
-  console.log(`\n  Shipped Mixamo clips: ${mixamoImported}/${mixamoCatalog.length} (${mixamoPending} pending)`);
+  console.log(`\n  On-disk Mixamo clips: ${mixamoImported}/${mixamoCatalog.length} (${mixamoPending} pending)`);
   console.log('  Import: npm run assets:mixamo-import -- --clip <id> --file <path>');
   console.log('  Guide:  assets-source/mixamo/README.md');
 
@@ -116,7 +116,7 @@ async function main() {
     );
   }
   console.log(
-    `\n  Source on disk: ${rpmSource}/${rpmMod.RPM_NPC_CATALOG.length} · public: ${rpmPublic} · shipped registry: ${rpmShippedMod.RPM_SHIPPED_NPC_GLB_URLS.length}`,
+    `\n  Source on disk: ${rpmSource}/${rpmMod.RPM_NPC_CATALOG.length} · public: ${rpmPublic} · on-disk registry: ${rpmOnDiskMod.RPM_NPC_GLB_URLS_ON_DISK.length}`,
   );
   console.log('  Import: npm run assets:rpm-import -- --id <id> --file <path>');
   console.log('  List:   npm run assets:rpm-import -- --list');

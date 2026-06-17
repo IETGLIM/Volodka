@@ -3,7 +3,7 @@
 /* eslint-disable react-refresh/only-export-components -- co-located helpers and lazy exports */
 import { Component, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Html, useGLTF } from '@react-three/drei';
-import { useFrameTick } from '@/engine/frame/useFrameTick';
+import { useRegisterNpcFrame } from '@/engine/npc/npcFrameBatch';
 import * as THREE from 'three';
 import type { NPCDefinition } from '@/shared/types/game';
 import { getNpcModelMeta, resolveNpcModelUrl } from '@/config/npcModelRegistry';
@@ -85,9 +85,9 @@ function GltfNPCModelInner({
     setFit({ scale, rotX, y: footY });
   }, [scene, modelScale, targetHeightFactor]);
 
-  useFrameTick('npc', ({ delta }) => {
+  useRegisterNpcFrame(definition.id, 'mixer', ({ delta }) => {
     if (mixer) mixer.update(delta);
-  }, { label: 'GltfNPCMixer' });
+  });
 
   const isTalking =
     interactionState === InteractionState.Dialogue ||

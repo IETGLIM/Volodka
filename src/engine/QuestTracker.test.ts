@@ -49,7 +49,12 @@ const mockSnapshot = {
       status: 'active' as const,
       objectives: {} as Record<string, boolean>,
     },
-  ],
+  ] as Array<{
+    questId: string;
+    status: 'active' | 'failed' | 'inactive' | 'completed';
+    objectives: Record<string, boolean>;
+    startedAtTime?: number;
+  }>,
 };
 
 type StateChangeHandler = (slice: {
@@ -184,6 +189,35 @@ describe('QuestTracker.canActivateQuest', () => {
     expect(tracker.canActivateQuest('poem_gate_quest')).toBe(false);
     mockSnapshot.collectedPoems = ['poem_11'];
     expect(tracker.canActivateQuest('poem_gate_quest')).toBe(true);
+    tracker.stop();
+  });
+
+  it('allows retry eligibility for failed quests unless canRetry is false', () => {
+    const retryable: QuestDefinition = {
+      id: 'retryable_quest',
+      title: 'Retryable',
+      description: 'Retryable',
+      questType: 'side',
+      objectives: [
+        { id: 'step', description: 'Step', type: 'flag_set', target: 'done', completed: false },
+      ],
+    };
+    const permanent: QuestDefinition = {
+      ...retryable,
+      id: 'permanent_fail',
+      canRetry: false,
+    };
+
+    mockDefinitions.length = 0;
+    mockDefinitions.push(retryable, permanent);
+    resetQuestTrackerDefinitionCache();
+
+    mockSnapshot.quests = [{ questId: 'retryable_quest', status: 'failed', objectives: {} }];
+    const tracker = new QuestTracker();
+    expect(tracker.canActivateQuest('retryable_quest')).toBe(true);
+
+    mockSnapshot.quests = [{ questId: 'permanent_fail', status: 'failed', objectives: {} }];
+    expect(tracker.canActivateQuest('permanent_fail')).toBe(false);
     tracker.stop();
   });
 });

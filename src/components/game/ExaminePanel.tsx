@@ -4,6 +4,7 @@
 
 import { useEffect } from 'react';
 import type { ExamineData } from '@/shared/types/game';
+import { consumeEKey } from '@/engine/input/eKeyConsumption';
 import {
   CinematicNarrativeChoices,
   CinematicNarrativeFrame,
@@ -41,10 +42,7 @@ export function ExaminePanel({
       if (e.code !== 'KeyE' || !done) return;
       e.preventDefault();
       e.stopPropagation();
-      window.__volodka_ekey_consumed = true;
-      setTimeout(() => {
-        window.__volodka_ekey_consumed = false;
-      }, 300);
+      consumeEKey(300);
       onContinue();
     };
     window.addEventListener('keydown', handleKey, true);

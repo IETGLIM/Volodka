@@ -11,6 +11,12 @@ import {
 import { eventBus } from '@/engine/EventBus';
 import { registerHmrDispose } from '@/shared/dev/hmrDispose';
 import { isKnownMinigameId, MINIGAME_COMPLETION_FLAGS } from '@/shared/constants/minigames';
+import {
+  computeHourDelta,
+  estimateElapsedFromStart,
+  isQuestTimedOut,
+} from '@/engine/quest/questTimeLimits';
+import { questCanRetry } from '@/shared/quest/questRetry';
 
 /** Slice of store state that QuestTracker reacts to (scene, flags, inventory, poems, quests, time). */
 interface QuestTrackerRelevantSlice {
@@ -23,6 +29,7 @@ interface QuestTrackerRelevantSlice {
     questId: string;
     status: string;
     startedAtTime?: number;
+    hoursElapsed?: number;
     objectives: Record<string, boolean>;
   }>;
 }
@@ -38,6 +45,7 @@ function selectQuestTrackerSlice(snapshot: GameStoreSnapshot): QuestTrackerRelev
       questId: q.questId,
       status: q.status,
       startedAtTime: q.startedAtTime,
+      hoursElapsed: q.hoursElapsed,
       objectives: q.objectives,
     })),
   };
@@ -93,6 +101,7 @@ function toQuestTrackerQuestRef(
     questId: quest.questId,
     status: quest.status,
     startedAtTime: quest.startedAtTime,
+    hoursElapsed: quest.hoursElapsed,
     objectives: quest.objectives,
   };
 }
@@ -111,6 +120,7 @@ function questTrackerSliceEqual(a: QuestTrackerRelevantSlice, b: QuestTrackerRel
       aq.questId !== bq.questId
       || aq.status !== bq.status
       || aq.startedAtTime !== bq.startedAtTime
+      || aq.hoursElapsed !== bq.hoursElapsed
     ) {
       return false;
     }
@@ -141,6 +151,7 @@ function questTrackerSliceEqual(a: QuestTrackerRelevantSlice, b: QuestTrackerRel
 export class QuestTracker {
   private unsubscribeStore: (() => void) | null = null;
   private unsubscribeEvents: (() => void)[] = [];
+  private unsubscribeHourChanged: (() => void) | null = null;
   private previousSceneId: SceneId | null = null;
   private previousFlags: Record<string, boolean> = {};
   private previousInventoryIds: Set<string> = new Set();
@@ -201,6 +212,7 @@ export class QuestTracker {
         // that were already met before the save (e.g. due to a previously
         // missed state change). Re-check all active quests.
         this.retroactiveCheck();
+        this.evaluateTimedQuests(0);
       }),
     );
 
@@ -230,8 +242,16 @@ export class QuestTracker {
     this.unsubscribeEvents.push(
       eventBus.on('quest:accepted', () => {
         this.retroactiveCheck();
+        this.evaluateTimedQuests(0);
       }),
     );
+
+    this.unsubscribeHourChanged?.();
+    this.unsubscribeHourChanged = eventBus.on('world:hour_changed', (payload) => {
+      const delta = computeHourDelta(payload.previousHour, payload.hour);
+      if (delta <= 0) return;
+      this.evaluateTimedQuests(delta);
+    });
 
     if (import.meta.env.DEV) {
       void import('@/shared/validation/contentPipelineValidator').then(({ logValidationReport, validateContentPipeline }) => {
@@ -296,6 +316,8 @@ export class QuestTracker {
       this.unsubscribeStore();
       this.unsubscribeStore = null;
     }
+    this.unsubscribeHourChanged?.();
+    this.unsubscribeHourChanged = null;
     for (const unsub of this.unsubscribeEvents) {
       unsub();
     }
@@ -343,9 +365,6 @@ export class QuestTracker {
     // ── poem_collected ──
     this.checkNewPoems(currentPoems, ctx);
     this.previousPoems = currentPoems;
-
-    // ── Check time limits on active quests ──
-    this.checkTimeLimits(ctx, slice.timeOfDay);
   }
 
   /** Scene changed — check location_visited objectives */
@@ -499,29 +518,54 @@ export class QuestTracker {
     }
   }
 
-  /** Check time limits for active quests with timeLimitHours */
-  private checkTimeLimits(ctx: QuestTrackerContext, currentTime: number): void {
-    for (const quest of ctx.activeQuests) {
-      if (quest.startedAtTime === undefined) continue;
+  /** Resolve elapsed in-game hours for a timed quest (persisted or estimated). */
+  private resolveQuestHoursElapsed(
+    quest: QuestTrackerQuestRef,
+    currentHour: number,
+  ): number {
+    if (quest.hoursElapsed !== undefined) return quest.hoursElapsed;
+    if (quest.startedAtTime !== undefined) {
+      return estimateElapsedFromStart(quest.startedAtTime, currentHour);
+    }
+    return 0;
+  }
 
+  /**
+   * Single entry point for quest time limits — driven by world:hour_changed
+   * and save/load backfill (deltaHours = 0).
+   */
+  private evaluateTimedQuests(deltaHours: number): void {
+    if (deltaHours < 0) return;
+
+    const snapshot = getGameSnapshot();
+    const currentHour = snapshot.exploration.timeOfDay;
+    const ctx = this.createContextFromSnapshot();
+
+    for (const quest of ctx.activeQuests) {
       const definition = ctx.definitionById.get(quest.questId);
       if (!definition?.timeLimitHours) continue;
 
-      // Calculate elapsed hours (handles midnight wraparound)
-      const elapsed = this.calculateElapsedHours(quest.startedAtTime, currentTime);
-      if (elapsed > definition.timeLimitHours) {
+      const elapsed = this.resolveQuestHoursElapsed(quest, currentHour);
+      const newElapsed = deltaHours === 0 ? elapsed : elapsed + deltaHours;
+
+      if (isQuestTimedOut(newElapsed, definition.timeLimitHours)) {
+        if (import.meta.env.DEV) {
+          console.info(
+            `[QuestTracker] Quest "${quest.questId}" expired after ${newElapsed.toFixed(2)}h (limit ${definition.timeLimitHours}h)`,
+          );
+        }
         this.failQuest(quest.questId, 'Истекло время задания');
+        continue;
+      }
+
+      if (quest.hoursElapsed !== newElapsed) {
+        dispatchGameAction({
+          type: 'quest/setHoursElapsed',
+          questId: quest.questId,
+          hoursElapsed: newElapsed,
+        });
       }
     }
-  }
-
-  /** Calculate elapsed hours between two 0-24 hour values, accounting for midnight */
-  private calculateElapsedHours(startHour: number, currentHour: number): number {
-    if (currentHour >= startHour) {
-      return currentHour - startHour;
-    }
-    // Wrapped around midnight
-    return (24 - startHour) + currentHour;
   }
 
   /** Called when a poem power is used — check for quest bypasses */
@@ -604,7 +648,7 @@ export class QuestTracker {
     );
 
     if (allComplete) {
-      dispatchGameAction({ type: 'quest/completeAndApplyRewards', questId });
+      dispatchGameAction({ type: 'quest/complete', questId });
     }
   }
 
@@ -617,9 +661,7 @@ export class QuestTracker {
     const definition = getQuestDefinitionByIdMap().get(questId);
     if (!definition) return;
 
-    dispatchGameAction({ type: 'quest/fail', questId });
-
-    eventBus.emit('quest:failed', { questId, reason });
+    dispatchGameAction({ type: 'quest/fail', questId, reason });
   }
 
   /** Check if a quest can be activated (dependencies, required flags, etc.) */
@@ -634,7 +676,7 @@ export class QuestTracker {
     if (existing && existing.status !== 'inactive' && existing.status !== 'failed') return false;
 
     // If quest was failed and can't retry, block reactivation
-    if (existing?.status === 'failed' && !definition.canRetry) return false;
+    if (existing?.status === 'failed') return questCanRetry(definition);
 
     // Check dependency quests — all required quests must be completed
     if (definition.requiresQuests && definition.requiresQuests.length > 0) {

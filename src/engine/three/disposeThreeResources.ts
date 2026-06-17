@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import { isRegistryManagedGeometry } from '@/engine/three/moduleGeometryRegistry';
+import { isRegistryManagedMaterial } from '@/engine/three/moduleMaterialRegistry';
 
 /** Texture-bearing keys on MeshStandardMaterial and kin (Three r152+). */
 const MATERIAL_TEXTURE_KEYS = [
@@ -66,11 +68,11 @@ function createContext(options?: DisposeThreeOptions): DisposeContext {
 }
 
 function shouldSkipGeometry(ctx: DisposeContext, geometry: THREE.BufferGeometry): boolean {
-  return ctx.skip.geometries?.has(geometry) ?? false;
+  return (ctx.skip.geometries?.has(geometry) ?? false) || isRegistryManagedGeometry(geometry);
 }
 
 function shouldSkipMaterial(ctx: DisposeContext, material: THREE.Material): boolean {
-  return ctx.skip.materials?.has(material) ?? false;
+  return (ctx.skip.materials?.has(material) ?? false) || isRegistryManagedMaterial(material);
 }
 
 function shouldSkipTexture(ctx: DisposeContext, texture: THREE.Texture): boolean {

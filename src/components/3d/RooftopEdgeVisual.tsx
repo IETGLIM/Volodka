@@ -12,7 +12,6 @@ import {
   getSharedPlaneGeometry,
 } from '@/engine/three/moduleGeometryRegistry';
 
-import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { EnvironmentDetail } from './lod/PropDistanceGate';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { allowsHeavyGfxFeature } from '@/engine/graphics/qualityFeatureGates';
@@ -43,7 +42,6 @@ const SKYLINE_BUILDINGS = [
 /** Noir/CyberPunk2077 rooftop (10×8m) */
 export function RooftopEdgeVisual({ livePlayerPositionRef: _livePlayerPositionRef }: RooftopEdgeVisualProps) {
   const floorTexture = useCachedCanvasTexture('rooftop_edge:floor', createRooftopFloorTexture);
-  const { lod } = useEnvironmentLod();
 
   const W = 10;
   const D = 8;
@@ -90,7 +88,7 @@ export function RooftopEdgeVisual({ livePlayerPositionRef: _livePlayerPositionRe
       </mesh>
 
       {/* ── Rain puddles on the tar surface ── */}
-      <EnvironmentDetail currentLod={lod} minLod="full">
+      <EnvironmentDetail minLod="full" position={[-2.2, 0.02, 0.8]}>
         <mesh rotation-x={-Math.PI / 2} position={[-2.2, 0.02, 0.8]} geometry={getSharedCircleGeometry(0.55, 12)}>
           <meshStandardMaterial color="#101622" metalness={0.85} roughness={0.08} transparent opacity={0.55} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
         </mesh>
@@ -252,7 +250,7 @@ export function RooftopEdgeVisual({ livePlayerPositionRef: _livePlayerPositionRe
       {/* ═══════════════════════════════════════════════ */}
       {/* ── ENVIRONMENTAL CLUTTER / STORYTELLING ── */}
       {/* ═══════════════════════════════════════════════ */}
-      <EnvironmentDetail currentLod={lod} minLod="standard">
+      <EnvironmentDetail minLod="standard" position={[0, 0, 2]}>
 
       {/* ── Pigeons on parapet ledge — moved to FOREGROUND layer ── */}
 

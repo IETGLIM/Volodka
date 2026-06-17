@@ -7,11 +7,14 @@ import {
 } from '@/engine/accessibility/accessibilitySettings';
 import { MAIN_POEM_IDS } from '@/data/poemCollectionMeta';
 import {
+  abortPoemReadingIfPending,
   completePoemReadingCutscene,
   getPendingPoemReadingId,
   hasReadPoemThisSession,
+  isPoemReadingCutsceneUiActive,
   requestPoemPowerActivation,
   resetPoemReadingSession,
+  setPoemReadingCutsceneUiActive,
   shouldSkipPoemReadingCutscene,
 } from '@/engine/poemReading/poemReadingOrchestrator';
 
@@ -136,5 +139,64 @@ describe('poemReadingOrchestrator', () => {
     expect(activateSpy).toHaveBeenCalledWith('poem_1');
 
     unsub();
+  });
+
+  it('recovers stale pending when cutscene UI is gone and retry succeeds', () => {
+    const first = requestPoemPowerActivation('poem_1');
+    expect(first.status).toBe('cutscene_pending');
+    expect(getPendingPoemReadingId()).toBe('poem_1');
+
+    setPoemReadingCutsceneUiActive('poem_1');
+    setPoemReadingCutsceneUiActive(null);
+
+    activateSpy.mockClear();
+    const retry = requestPoemPowerActivation('poem_1');
+    expect(retry.status).toBe('cutscene_pending');
+    expect(getPendingPoemReadingId()).toBe('poem_1');
+    expect(activateSpy).not.toHaveBeenCalled();
+    expect(isPoemReadingCutsceneUiActive()).toBe(false);
+  });
+
+  it('returns cutscene_busy while cutscene UI is active', () => {
+    requestPoemPowerActivation('poem_1');
+    setPoemReadingCutsceneUiActive('poem_1');
+
+    const retry = requestPoemPowerActivation('poem_2');
+    expect(retry.status).toBe('failed');
+    if (retry.status === 'failed') {
+      expect(retry.reason).toBe('cutscene_busy');
+    }
+    expect(activateSpy).not.toHaveBeenCalled();
+  });
+
+  it('abortPoemReadingIfPending clears pending without activating power (closeAllPanels path)', () => {
+    requestPoemPowerActivation('poem_1');
+    setPoemReadingCutsceneUiActive('poem_1');
+
+    activateSpy.mockClear();
+    abortPoemReadingIfPending();
+
+    expect(getPendingPoemReadingId()).toBeNull();
+    expect(isPoemReadingCutsceneUiActive()).toBe(false);
+    expect(activateSpy).not.toHaveBeenCalled();
+    expect(hasReadPoemThisSession('poem_1')).toBe(false);
+  });
+
+  it('scene transition clears pending poem reading state', () => {
+    requestPoemPowerActivation('poem_1');
+    setPoemReadingCutsceneUiActive('poem_1');
+    expect(getPendingPoemReadingId()).toBe('poem_1');
+
+    eventBus.emit('scene:transition_start', {
+      fromSceneId: 'cafe_evening',
+      targetScene: 'volodka_room',
+      spawnAt: [0, 0, 0],
+    });
+
+    expect(getPendingPoemReadingId()).toBeNull();
+    activateSpy.mockClear();
+    const retry = requestPoemPowerActivation('poem_1');
+    expect(retry.status).toBe('cutscene_pending');
+    expect(activateSpy).not.toHaveBeenCalled();
   });
 });

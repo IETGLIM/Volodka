@@ -48,11 +48,11 @@ export function useDiscoveredScenes() {
   return useGameSelector((s) => s.discoveredScenes);
 }
 
-/** Weather-related exploration fields as one shallow-stable object. */
+/** Weather fields — top-level store (persisted); scene/clock from exploration. */
 export function useWeatherState() {
   return useGameSelector((s) => ({
-    weatherEnabled: s.exploration.weatherEnabled,
-    rainIntensity: s.exploration.rainIntensity,
+    weatherEnabled: s.weatherEnabled,
+    rainIntensity: s.rainIntensity,
     currentSceneId: s.exploration.currentSceneId,
     timeOfDay: s.exploration.timeOfDay,
   }));

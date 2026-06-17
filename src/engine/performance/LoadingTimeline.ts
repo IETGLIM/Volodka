@@ -2,6 +2,8 @@
  * Navigation → first-scene-playable timeline (Performance API marks/measures).
  */
 
+import { settleGpuResourceBaseline } from '@/engine/performance/GpuResourceBudgetTracker';
+
 export const LOADING_MARKS = {
   appStart: 'volodka:app-start',
   orchestratorMount: 'volodka:orchestrator-mount',
@@ -85,6 +87,8 @@ function tryCompleteFirstScenePlayable(): void {
       `[perf] First scene playable: ${snap.firstScenePlayableMs?.toFixed(0) ?? '?'} ms`,
     );
   }
+
+  settleGpuResourceBaseline();
 }
 
 function msSinceNav(markName: string): number | null {

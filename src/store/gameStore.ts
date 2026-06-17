@@ -13,7 +13,7 @@ import type { GameStoreState } from './types';
 export type { GameStoreState, CrossSliceReads } from './types';
 import { getCombinedGameState, subscribeAllStores, invalidateCombinedGameStateCache, scheduleAfterSliceStoresSettle } from './combinedState';
 import { applyCombinedPatch } from './patchState';
-import { reduceGameState } from './reduceGameState';
+import { applyGameAction } from './applyGameAction';
 
 export const useGameStore = create<GameStoreState>()(subscribeWithSelector(() => getCombinedGameState()));
 const facadeSetState = useGameStore.setState.bind(useGameStore);
@@ -58,12 +58,10 @@ useGameStore.getState = () => {
   return baseGetState();
 };
 useGameStore.setState = ((partial, _replace) => {
-  if (typeof partial === 'function') {
-    partial(getCombinedGameState());
-    flushFacadeState();
-    return;
+  const patch = typeof partial === 'function' ? partial(getCombinedGameState()) : partial;
+  if (patch !== undefined) {
+    applyCombinedPatch(patch);
   }
-  applyCombinedPatch(partial as Partial<GameStoreState>);
   flushFacadeState();
 }) as typeof useGameStore.setState;
 if (import.meta.env?.DEV) {
@@ -123,7 +121,7 @@ function subscribeGameBridge<T>(listener: ((snapshot: GameStoreSnapshot) => void
 registerGameActionBridge({
   dispatch(action) {
     useGameStore.setState((state) => {
-      reduceGameState(state, action);
+      applyGameAction(state, action);
       return {};
     });
   },

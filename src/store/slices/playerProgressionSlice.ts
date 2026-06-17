@@ -6,7 +6,11 @@ import type { PerkEffect } from '@/data/perks';
 import { applySkillDelta } from '../skillHelpers';
 import { pushNotification } from '../shared';
 import type { GameStoreState } from '../types';
-import { getSkillTreeMap, getSkillEffectMap, getPerksMap } from '@/data/gameDataLoader';
+import { getSkillTreeMap, getPerksMap } from '@/data/gameDataLoader';
+import {
+  resolveSkillUnlockEffects,
+  warnUnmatchedSkillEffectParts,
+} from '@/engine/skills/applySkillUnlockEffects';
 import { queuePlayerXp } from '../playerXpBatch';
 
 /* ─── Slice types ─── */
@@ -51,10 +55,20 @@ export const createPlayerProgressionSlice: StateCreator<
         if (!prereqsMet) return state;
       }
 
-      const effect = getSkillEffectMap()[skillId];
+      const unlockEffects = resolveSkillUnlockEffects(skillId, nodeDef?.effect);
+      warnUnmatchedSkillEffectParts(skillId, unlockEffects.unmatchedEffectParts);
+
       const newSkills = { ...state.playerState.skills };
-      if (effect) {
-        newSkills[effect.skill] = Math.max(0, newSkills[effect.skill] + effect.value);
+      for (const delta of unlockEffects.statDeltas) {
+        newSkills[delta.skill] = Math.max(0, newSkills[delta.skill] + delta.amount);
+      }
+
+      const newFlags = { ...state.playerState.flags };
+      for (const flagKey of unlockEffects.passiveFlags) {
+        newFlags[flagKey] = true;
+      }
+      for (const legacy of unlockEffects.legacyPercentFlags) {
+        newFlags[legacy.key] = true;
       }
 
       const nodeName = nodeDef?.name ?? skillId;
@@ -63,6 +77,7 @@ export const createPlayerProgressionSlice: StateCreator<
         playerState: {
           ...state.playerState,
           skills: newSkills,
+          flags: newFlags,
           progression: {
             ...prog,
             skillPoints: prog.skillPoints - 1,

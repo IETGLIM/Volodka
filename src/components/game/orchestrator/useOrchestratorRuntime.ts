@@ -22,7 +22,9 @@ import { useGameIntegrityGuard } from '@/hooks/useGameIntegrityGuard';
 import { registerVolodkaE2EBridge } from '@/engine/e2e/e2eBridge';
 import { useOrchestratorLoading } from './useOrchestratorLoading';
 import { useOrchestratorInput } from './useOrchestratorInput';
-import { useAdaptiveQuality } from '@/hooks/useAdaptiveQuality';
+import {
+  setAdaptiveQualityBridgeEnabled,
+} from '@/engine/graphics/adaptiveQualityBridge';
 import { setMusicIntensityLayer, resolveMusicIntensityLayer } from '@/engine/audio/musicIntensityLayers';
 
 /** Bundles orchestrator hooks — GameOrchestrator stays a thin render coordinator. */
@@ -77,7 +79,9 @@ export function useOrchestratorRuntime() {
   useWorldClock();
   useWorldStream(!mainMenuOpen && mode !== 'intro');
 
-  useAdaptiveQuality(!mainMenuOpen && mode !== 'menu');
+  useEffect(() => {
+    setAdaptiveQualityBridgeEnabled(!mainMenuOpen && mode !== 'menu');
+  }, [mainMenuOpen, mode]);
 
   useEffect(() => {
     setMusicIntensityLayer(

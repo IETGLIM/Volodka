@@ -10,8 +10,10 @@ import {
   notifyGpuResourceSceneChange,
   publishGpuRendererSnapshot,
   resetGpuResourceBudgetTracker,
+  settleGpuResourceBaseline,
   trackModuleGeometry,
 } from '@/engine/performance/GpuResourceBudgetTracker';
+import { PERFORMANCE_BUDGETS } from '@/config/performanceBudgets';
 
 describe('gpuMemoryEstimate', () => {
   it('estimateBufferGeometryBytes sums attribute and index buffers', () => {
@@ -98,5 +100,86 @@ describe('GpuResourceBudgetTracker', () => {
 
     notifyGpuResourceSceneChange('home_evening');
     expect(getGpuResourceBudgetSnapshot().baselineBytes).toBeNull();
+  });
+
+  it('ratchets baseline down on transient dips while calibrating (unsettled)', () => {
+    notifyGpuResourceSceneChange('volodka_room');
+
+    publishGpuRendererSnapshot({
+      geometryCount: 20,
+      textureCount: 10,
+      triangleCount: 50000,
+    });
+    vi.advanceTimersByTime(PERFORMANCE_BUDGETS.gpuMemoryEstimateMb.sampleIntervalMs);
+    publishGpuRendererSnapshot({
+      geometryCount: 20,
+      textureCount: 10,
+      triangleCount: 50000,
+    });
+    const highBaseline = getGpuResourceBudgetSnapshot().baselineBytes;
+    expect(highBaseline).toBeGreaterThan(0);
+
+    vi.advanceTimersByTime(PERFORMANCE_BUDGETS.gpuMemoryEstimateMb.sampleIntervalMs);
+    publishGpuRendererSnapshot({
+      geometryCount: 5,
+      textureCount: 2,
+      triangleCount: 500,
+    });
+
+    const dipped = getGpuResourceBudgetSnapshot();
+    expect(dipped.baselineBytes).toBeLessThan(highBaseline!);
+    expect(dipped.driftBytes).toBe(0);
+  });
+
+  it('keeps settled baseline when a later sample dips transiently', () => {
+    notifyGpuResourceSceneChange('volodka_room');
+
+    publishGpuRendererSnapshot({
+      geometryCount: 20,
+      textureCount: 10,
+      triangleCount: 50000,
+    });
+    vi.advanceTimersByTime(PERFORMANCE_BUDGETS.gpuMemoryEstimateMb.sampleIntervalMs);
+    publishGpuRendererSnapshot({
+      geometryCount: 20,
+      textureCount: 10,
+      triangleCount: 50000,
+    });
+    settleGpuResourceBaseline();
+    const settledBaseline = getGpuResourceBudgetSnapshot().baselineBytes;
+    expect(settledBaseline).toBeGreaterThan(0);
+
+    vi.advanceTimersByTime(PERFORMANCE_BUDGETS.gpuMemoryEstimateMb.sampleIntervalMs);
+    publishGpuRendererSnapshot({
+      geometryCount: 5,
+      textureCount: 2,
+      triangleCount: 500,
+    });
+
+    const afterDip = getGpuResourceBudgetSnapshot();
+    expect(afterDip.baselineBytes).toBe(settledBaseline);
+    expect(afterDip.driftBytes).toBe(0);
+  });
+
+  it('detects drift growth above settled baseline', () => {
+    notifyGpuResourceSceneChange('volodka_room');
+
+    publishGpuRendererSnapshot({
+      geometryCount: 10,
+      textureCount: 4,
+      triangleCount: 500,
+    });
+    settleGpuResourceBaseline();
+
+    vi.advanceTimersByTime(PERFORMANCE_BUDGETS.gpuMemoryEstimateMb.sampleIntervalMs);
+    publishGpuRendererSnapshot({
+      geometryCount: 40,
+      textureCount: 30,
+      triangleCount: 50000,
+    });
+
+    const drift = getGpuResourceBudgetSnapshot();
+    expect(drift.driftBytes).toBeGreaterThan(0);
+    expect(drift.driftSeverity).not.toBe('ok');
   });
 });

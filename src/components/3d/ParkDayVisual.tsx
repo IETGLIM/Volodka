@@ -13,7 +13,6 @@ import {
 } from '@/engine/three/moduleGeometryRegistry';
 
 import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
-import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { EnvironmentDetail, SceneClutterGate } from './lod/PropDistanceGate';
 import { scratchColor } from '@/engine/three/frameScratch';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
@@ -35,7 +34,6 @@ const DISTANT_TREES: Array<[number, number, number]> = [
 /** Gothic/Dark Fantasy memorial park (30×30m) */
 export function ParkDayVisual({ livePlayerPositionRef }: ParkDayVisualProps) {
   const groundTexture = useCachedCanvasTexture('park_day:ground', createParkGroundTexture);
-  const { lod } = useEnvironmentLod();
   const envProfile = useMemo(() => getEnvironmentLodProfile('park_day'), []);
 
   const W = 30;
@@ -70,8 +68,8 @@ export function ParkDayVisual({ livePlayerPositionRef }: ParkDayVisualProps) {
       {/* ═══════════════════════════════════════════════ */}
       {/* ── ANCIENT TREES (distant — distance gated) ── */}
       {/* ═══════════════════════════════════════════════ */}
-      <EnvironmentDetail currentLod={lod} minLod="standard">
-        {DISTANT_TREES.map(([x, y, z]) => (
+      {DISTANT_TREES.map(([x, y, z]) => (
+          <EnvironmentDetail key={`tree-lod-${x}-${z}`} minLod="standard" position={[x, y, z]}>
           <SceneClutterGate
             key={`tree-${x}-${z}`}
             livePlayerPositionRef={livePlayerPositionRef}
@@ -80,8 +78,8 @@ export function ParkDayVisual({ livePlayerPositionRef }: ParkDayVisualProps) {
           >
             <AncientTree position={[0, 0, 0]} />
           </SceneClutterGate>
+          </EnvironmentDetail>
         ))}
-      </EnvironmentDetail>
       {/* Near trees moved to FOREGROUND layer */}
 
       {/* Misty tree belt beyond the fence — closes the horizon (3 draw calls) */}
@@ -97,7 +95,7 @@ export function ParkDayVisual({ livePlayerPositionRef }: ParkDayVisualProps) {
       {/* ── STONE BENCHES (distant — MIDGROUND layer) ── */}
       {/* ═══════════════════════════════════════════════ */}
       {/* Near benches moved to FOREGROUND layer */}
-      <EnvironmentDetail currentLod={lod} minLod="standard">
+      <EnvironmentDetail minLod="standard" position={[3, 0, -3]}>
         <SceneClutterGate
           livePlayerPositionRef={livePlayerPositionRef}
           position={[3, 0, -3]}

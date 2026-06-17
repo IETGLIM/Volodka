@@ -1,4 +1,9 @@
 import type { StoryNode } from '@/shared/types/game';
+import {
+  formatStoryNodeValidationErrors,
+  validateStoryNodeGraph,
+  type StoryNodeValidationRegistry,
+} from '@/shared/validation/storyNodeValidation';
 import { CHK_STORY_NODES } from '../chkTolpa/storyNodes';
 import { CHK_STORY_NODES_EXTENDED } from '../chkTolpa/storyNodesExtended';
 import { STORY_NODES_SOLNYSH } from './solnyshStory';
@@ -64,7 +69,14 @@ export function buildStoryNodes(): Record<string, StoryNode> {
   return registry;
 }
 
-export function validateStoryNodes(nodes: Record<string, StoryNode>): string[] {
+export function validateStoryNodes(
+  nodes: Record<string, StoryNode>,
+  registry?: StoryNodeValidationRegistry,
+): string[] {
+  if (registry) {
+    return formatStoryNodeValidationErrors(validateStoryNodeGraph(nodes, registry));
+  }
+
   const errors: string[] = [];
   for (const [id, node] of Object.entries(nodes)) {
     for (const choice of node.choices) {

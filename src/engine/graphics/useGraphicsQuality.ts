@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
+import { clearSessionAutoResolvedTier, getSessionAutoResolvedTier } from '@/engine/graphics/autoQualitySession';
 import {
   dispatchQualityGpuCleanup,
   dispatchQualityPresetChanged,
   QUALITY_PRESET_CHANGED,
   readQualityPresetId,
   writeQualityPresetId,
+  type QualityPresetChangedDetail,
 } from '@/engine/graphics/graphicsSettingsStorage';
 import {
   resolveQualityPreset,
@@ -23,6 +25,9 @@ export interface GraphicsQualityState {
 /** Unified graphics quality — replaces ad-hoc visualLite heuristics. */
 export function useGraphicsQuality(): GraphicsQualityState {
   const [selectedPreset, setSelectedPreset] = useState<QualityPresetId>(readQualityPresetId);
+  const [autoRuntimeTier, setAutoRuntimeTier] = useState<
+    Exclude<QualityPresetId, 'auto'> | null
+  >(getSessionAutoResolvedTier);
   const [viewport, setViewport] = useState({ width: 1920, dpr: 1 });
 
   useEffect(() => {
@@ -39,16 +44,26 @@ export function useGraphicsQuality(): GraphicsQualityState {
 
   useEffect(() => {
     const onChanged = (e: Event) => {
-      const detail = (e as CustomEvent<{ id: QualityPresetId }>).detail;
+      const detail = (e as CustomEvent<QualityPresetChangedDetail>).detail;
       if (detail?.id) setSelectedPreset(detail.id);
+      if (detail?.id === 'auto' && detail.autoRuntimeTier) {
+        setAutoRuntimeTier(detail.autoRuntimeTier);
+      }
     };
     window.addEventListener(QUALITY_PRESET_CHANGED, onChanged);
     return () => window.removeEventListener(QUALITY_PRESET_CHANGED, onChanged);
   }, []);
 
-  const preset = resolveQualityPreset(selectedPreset, viewport.width, viewport.dpr);
+  const preset = resolveQualityPreset(
+    selectedPreset,
+    viewport.width,
+    viewport.dpr,
+    selectedPreset === 'auto' ? autoRuntimeTier : null,
+  );
 
   const setPreset = (id: QualityPresetId) => {
+    clearSessionAutoResolvedTier();
+    setAutoRuntimeTier(null);
     writeQualityPresetId(id);
     dispatchQualityGpuCleanup(id);
     setSelectedPreset(id);

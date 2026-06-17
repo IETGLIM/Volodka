@@ -99,6 +99,15 @@
   opacity: 0.25;
 }
 
+/* ─── Panel focus: exploration HUD stays out of tab order while a stack panel is open ─── */
+.panel-focus-active [data-exploration-ui] {
+  pointer-events: none;
+}
+
+.panel-focus-active [data-game-canvas-shell] {
+  pointer-events: none;
+}
+
 /* ─── Portrait frame with decorative border ─── */
 .portrait-frame {
   position: relative;

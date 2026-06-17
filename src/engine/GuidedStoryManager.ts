@@ -7,6 +7,7 @@ import { subscribeGameSnapshot, getGameSnapshot, type GameStoreSnapshot } from '
 import { getQuotesByAct } from '@/data/matrixQuotes';
 import { shouldSuppressQuestAcceptEmit } from '@/engine/quest/questAcceptDeferral';
 import { registerHmrDispose } from '@/shared/dev/hmrDispose';
+import { resolveCanonicalNpcId } from '@/shared/npcIdAliases';
 import { getStoryGraphIndex, invalidateStoryGraphIndex } from '@/engine/story/storyGraphIndex';
 import {
   createDefaultGuidedStoryDeps,
@@ -348,9 +349,11 @@ export class GuidedStoryManager {
     });
 
     this.unsubNpcTalked = eventBus.on('npc:talked', ({ npcId }) => {
+      const canonicalNpcId = resolveCanonicalNpcId(npcId);
       for (let i = this.currentStepIndex; i < path.storySpine.length; i++) {
         const nodeId = path.storySpine[i];
-        if (path.getNpcIdForStoryNode(nodeId) === npcId) {
+        const mappedNpcId = path.getNpcIdForStoryNode(nodeId);
+        if (mappedNpcId && resolveCanonicalNpcId(mappedNpcId) === canonicalNpcId) {
           this.advanceStorySpine(nodeId);
           break;
         }

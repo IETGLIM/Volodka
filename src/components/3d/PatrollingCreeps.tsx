@@ -13,7 +13,12 @@ import * as THREE from 'three';
 import { Html } from '@react-three/drei';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useGameStore } from '@/store/gameStore';
-import { readGamePhase } from '@/shared/gamePhase';
+import {
+  useActiveCutsceneId,
+  useGamePhase,
+  useShowStoryOverlay,
+} from '@/store/selectors';
+import type { GamePhase } from '@/shared/gamePhase';
 import { eventBus } from '@/engine/EventBus';
 import { isSceneTransitionInProgress } from '@/engine/core/SceneTransitionManager';
 import { startEncounter } from '@/engine/combat/encounterPresentation';
@@ -34,10 +39,10 @@ const HOVER_HEIGHT = 0.9;
 const GUIDING_STAR_FLAG = 'guiding_star_active';
 const GUIDING_STAR_VISION_SCALE = 0.45;
 
-function getPoemVisionScale(): number {
-  const flag = useGameStore.getState().activeTTLFlags[GUIDING_STAR_FLAG];
-  if (!flag) return 1;
-  return flag.expiryTimestamp > Date.now() ? GUIDING_STAR_VISION_SCALE : 1;
+interface CreepFrameContext {
+  exploring: boolean;
+  phase: GamePhase;
+  poemVisionScale: number;
 }
 
 interface PatrollingCreepsProps {
@@ -47,6 +52,44 @@ interface PatrollingCreepsProps {
 export function PatrollingCreeps({ livePlayerPositionRef }: PatrollingCreepsProps) {
   const sceneId = useGameStore((s) => s.exploration.currentSceneId);
   const creeps = useMemo(() => getCreepsForScene(sceneId), [sceneId]);
+  const phase = useGamePhase();
+  const showStoryOverlay = useShowStoryOverlay();
+  const activeCutsceneId = useActiveCutsceneId();
+  const guidingStarFlag = useGameStore((s) => s.activeTTLFlags[GUIDING_STAR_FLAG]);
+
+  const phaseRef = useRef(phase);
+  const showStoryOverlayRef = useRef(showStoryOverlay);
+  const activeCutsceneIdRef = useRef(activeCutsceneId);
+  const guidingStarFlagRef = useRef(guidingStarFlag);
+  phaseRef.current = phase;
+  showStoryOverlayRef.current = showStoryOverlay;
+  activeCutsceneIdRef.current = activeCutsceneId;
+  guidingStarFlagRef.current = guidingStarFlag;
+
+  const frameCtxRef = useRef<CreepFrameContext>({
+    exploring: false,
+    phase: 'exploration',
+    poemVisionScale: 1,
+  });
+
+  useFrameTick(
+    'npc',
+    () => {
+      const currentPhase = phaseRef.current;
+      const flag = guidingStarFlagRef.current;
+      frameCtxRef.current = {
+        phase: currentPhase,
+        exploring:
+          currentPhase === 'exploration'
+          && !showStoryOverlayRef.current
+          && !activeCutsceneIdRef.current,
+        poemVisionScale:
+          flag && flag.expiryTimestamp > Date.now() ? GUIDING_STAR_VISION_SCALE : 1,
+      };
+    },
+    { label: 'PatrollingCreepsCtx', priority: -1 },
+  );
+
   // Creeps defeated this visit — removed until the scene remounts
   const [defeated, setDefeated] = useState<ReadonlySet<string>>(() => new Set());
   const engagedCreepIdRef = useRef<string | null>(null);
@@ -88,6 +131,7 @@ export function PatrollingCreeps({ livePlayerPositionRef }: PatrollingCreepsProp
             def={def}
             livePlayerPositionRef={livePlayerPositionRef}
             engagedCreepIdRef={engagedCreepIdRef}
+            frameCtxRef={frameCtxRef}
           />
         ),
       )}
@@ -106,10 +150,12 @@ function Creep({
   def,
   livePlayerPositionRef,
   engagedCreepIdRef,
+  frameCtxRef,
 }: {
   def: CreepPatrolDef;
   livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
   engagedCreepIdRef: React.MutableRefObject<string | null>;
+  frameCtxRef: React.MutableRefObject<CreepFrameContext>;
 }) {
   const groupRef = useRef<THREE.Group>(null);
   const coreRef = useRef<THREE.Mesh>(null);
@@ -182,11 +228,7 @@ function Creep({
     const pos = positionRef.current;
     const state = stateRef.current;
 
-    const storeState = useGameStore.getState();
-    const phase = readGamePhase(storeState);
-    // Story overlay / cutscene — suppress patrol aggro so office daemon cannot block VN beats.
-    const exploring =
-      phase === 'exploration' && !storeState.showStoryOverlay && !storeState.activeCutsceneId;
+    const { exploring, phase, poemVisionScale } = frameCtxRef.current;
     const inCombat = phase === 'combat' && engagedCreepIdRef.current === def.id;
     const inArena = inCombat || engaging;
 
@@ -246,13 +288,12 @@ function Creep({
 
         // Vision check: distance + cone around heading.
         // «Путеводная Звезда» dims the creep's senses while its TTL flag runs.
-        const visionScale = getPoemVisionScale();
-        if (playerDist < def.visionRange * visionScale) {
+        if (playerDist < def.visionRange * poemVisionScale) {
           const angleToPlayer = Math.atan2(dx, dz);
           let diff = angleToPlayer - headingRef.current;
           while (diff > Math.PI) diff -= Math.PI * 2;
           while (diff < -Math.PI) diff += Math.PI * 2;
-          if (Math.abs(diff) < def.visionHalfAngle * visionScale) {
+          if (Math.abs(diff) < def.visionHalfAngle * poemVisionScale) {
             stateRef.current = 'chase';
             audioEngine.playSfx('error');
             eventBus.emit('ui:exploration_message', { text: `⚠ ${def.name} заметил тебя!` });
@@ -340,8 +381,7 @@ function Creep({
     }
     if (coneGroupRef.current) {
       // Visibly shrink the cone while «Путеводная Звезда» is active
-      const s = getPoemVisionScale();
-      coneGroupRef.current.scale.set(s, 1, s);
+      coneGroupRef.current.scale.set(poemVisionScale, 1, poemVisionScale);
     }
     if (shardsRef.current) {
       shardsRef.current.rotation.y = t * (inArena ? 7 : chasing ? 4 : 1.2);

@@ -90,7 +90,7 @@ export const STORY_NODES_ACT7: Record<string, StoryNode> = {
     contextNote: 'Алина предлагает публичный архив. Катя знает подвал библиотеки.',
     speaker: 'Алина',
     sceneId: 'cafe_evening',
-    guidanceNpcId: 'npc_katya',
+    guidanceNpcId: 'kate',
     guidanceHint: 'Идите в библиотеку — создайте открытый архив.',
     guidanceSceneLabel: 'библиотеку',
     guidanceObjectiveType: 'visit_location',
@@ -116,7 +116,7 @@ export const STORY_NODES_ACT7: Record<string, StoryNode> = {
     autoSave: true,
     speaker: 'Катя',
     sceneId: 'library_day',
-    guidanceNpcId: 'npc_katya',
+    guidanceNpcId: 'kate',
     guidanceHint: 'Открой архив для всего города.',
     guidanceSceneLabel: 'библиотеку',
     guidanceObjectiveType: 'complete_quest',
@@ -250,6 +250,7 @@ export const STORY_NODES_ACT7: Record<string, StoryNode> = {
         effects: [
           { type: 'setFlag', flag: 'journey_reflected', flagValue: true },
           { type: 'collectPoem', poemId: 'poem_29' },
+          { type: 'collectPoem', poemId: 'poem_act7_01' },
           { type: 'addStat', stat: 'stress', value: -10 },
         ],
       },
@@ -342,6 +343,7 @@ export const STORY_NODES_ACT7: Record<string, StoryNode> = {
     guidanceHint: 'Прочитай сообщения — затем навести Зарему.',
     guidanceSceneLabel: 'комнату',
     guidanceObjectiveType: 'visit_location',
+    effects: [{ type: 'collectPoem', poemId: 'poem_act6_08' }],
     choices: [
       {
         text: 'Прочитать сообщения.',

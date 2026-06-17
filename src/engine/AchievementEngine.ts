@@ -15,7 +15,7 @@ import {
   type AchievementProgressSnapshot,
 } from '@/engine/GameActionDispatcher';
 import { ACHIEVEMENT_MAP, ACHIEVEMENTS } from '@/data/achievements';
-import { hasAllMainPoems } from '@/data/poemCollectionMeta';
+import { hasAllMainPoems, hasAllUnifiedPoems } from '@/data/poemCollectionMeta';
 import type { EnemyType } from '@/shared/types/game';
 
 /* ─── Session-only tracking (not persisted — ephemeral per page load) ─── */
@@ -252,6 +252,10 @@ export function checkAchievements(state: AchievementCheckState): void {
 
   if (hasAllMainPoems(poems)) {
     tryUnlock('poetry_word_keeper');
+  }
+
+  if (hasAllUnifiedPoems(poems)) {
+    tryUnlock('poetry_collector');
   }
 
   if (progress.poemPowerUsedInCombat) {

@@ -1,10 +1,12 @@
 /**
- * Directorial audio manifest — scene themes, character leitmotifs, poem motifs,
- * emotional transitions. Consumed by SceneAudioController and MusicEngine.
+ * Procedural audio catalog — scene moods, character leitmotifs, poem motifs,
+ * and emotional transitions as synth parameters (intervals, rootMidi, stingers).
+ * No bundled audio file paths; playback is procedural via MusicEngine / SfxEngine.
  */
 
 import type { SceneId } from '@/config/sceneDefinitions';
 import { resolveDerivedSceneId } from '@/config/sceneInheritance';
+import { resolveCanonicalNpcId } from '@/shared/npcIdAliases';
 
 /** Music mood category for procedural layering hints */
 export type MusicMood =
@@ -83,35 +85,63 @@ export const SCENE_AUDIO_PROFILES: Partial<Record<SceneId, SceneAudioProfile>> =
   albert_backroom: { sceneId: 'albert_backroom', reverbPreset: 'corridor', musicMood: 'cozy_indoor', enterStinger: 'discovery' },
 };
 
-/** Character leitmotifs — triggered on dialogue enter / quest beats */
+const MOTIF_STUB = (
+  npcId: string,
+  intervals: number[],
+  rootMidi: number,
+  stinger: CharacterMotif['stinger'],
+  dialogueRootMidi?: number,
+): CharacterMotif => ({
+  npcId,
+  intervals,
+  rootMidi,
+  stinger,
+  ...(dialogueRootMidi !== undefined ? { dialogueRootMidi } : {}),
+});
+
+/**
+ * Hand-authored procedural leitmotifs. Golden-path NPCs are prioritized;
+ * ambient / side characters fall back to {@link deriveCharacterMotifFromNpcId}.
+ */
 export const CHARACTER_MOTIFS: Record<string, CharacterMotif> = {
-  volodka: {
-    npcId: 'volodka',
-    intervals: [0, 4, 7, 11],
-    rootMidi: 48,
-    stinger: 'discovery',
-    dialogueRootMidi: 48,
-  },
-  zarema: {
-    npcId: 'zarema',
-    intervals: [0, 3, 7, 10],
-    rootMidi: 55,
-    stinger: 'emotional',
-    dialogueRootMidi: 53,
-  },
-  albert: {
-    npcId: 'albert',
-    intervals: [0, 5, 7],
-    rootMidi: 50,
-    stinger: 'mystery',
-  },
-  chk_tolpa_elder: {
-    npcId: 'chk_tolpa_elder',
-    intervals: [0, 2, 7, 9],
-    rootMidi: 45,
-    stinger: 'mystery',
-  },
+  volodka: MOTIF_STUB('volodka', [0, 4, 7, 11], 48, 'discovery', 48),
+  zarema: MOTIF_STUB('zarema', [0, 3, 7, 10], 55, 'emotional', 53),
+  albert: MOTIF_STUB('albert', [0, 5, 7], 50, 'mystery'),
+  // Legacy id — canonical CHK elder is chk_ru
+  chk_tolpa_elder: MOTIF_STUB('chk_tolpa_elder', [0, 2, 7, 9], 45, 'mystery'),
+  chk_ru: MOTIF_STUB('chk_ru', [0, 2, 7, 9], 45, 'mystery'),
+  solnysh: MOTIF_STUB('solnysh', [0, 4, 7], 58, 'emotional', 56),
+  lyonya: MOTIF_STUB('lyonya', [0, 4, 7, 10], 52, 'discovery'),
+  maria: MOTIF_STUB('maria', [0, 3, 6, 9], 52, 'mystery', 50),
+  cafe_barista: MOTIF_STUB('cafe_barista', [0, 5, 7, 10], 47, 'discovery'),
+  office_alexander: MOTIF_STUB('office_alexander', [0, 2, 5, 7], 44, 'tension'),
+  office_colleague: MOTIF_STUB('office_colleague', [0, 4, 7], 51, 'mystery'),
+  office_dmitry: MOTIF_STUB('office_dmitry', [0, 1, 6, 8], 43, 'tension'),
+  chk_based: MOTIF_STUB('chk_based', [0, 5, 7], 46, 'discovery'),
+  chk_elis: MOTIF_STUB('chk_elis', [0, 3, 7, 12], 54, 'emotional'),
+  chk_stalker: MOTIF_STUB('chk_stalker', [0, 2, 7], 42, 'tension'),
+  anya: MOTIF_STUB('anya', [0, 4, 7, 11], 56, 'discovery'),
+  maxim: MOTIF_STUB('maxim', [0, 5, 7, 10], 49, 'tension'),
+  zeka: MOTIF_STUB('zeka', [0, 3, 7], 41, 'mystery'),
+  sergey: MOTIF_STUB('sergey', [0, 4, 7], 50, 'discovery'),
+  kate: MOTIF_STUB('kate', [0, 2, 5, 9], 57, 'emotional'),
 };
+
+/**
+ * Story NPC registry ids without a dedicated entry in {@link CHARACTER_MOTIFS}.
+ * These receive a deterministic hash-derived procedural stub via getCharacterMotif.
+ */
+export const STORY_NPCS_WITHOUT_DEDICATED_MOTIFS = [
+  'chk_smert',
+  'chk_ritka',
+  'fisherman_trofim',
+  'baba_zina',
+  'guild_defector',
+  'marat_echo',
+  'street_poet',
+] as const satisfies readonly string[];
+
+export type StoryNpcWithoutDedicatedMotif = (typeof STORY_NPCS_WITHOUT_DEDICATED_MOTIFS)[number];
 
 /** Poem collection motifs */
 export const POEM_MOTIFS: Record<string, PoemMotif> = {
@@ -145,7 +175,47 @@ export const EMOTIONAL_TRANSITIONS: EmotionalTransition[] = [
   { from: 'cozy_indoor', to: 'dream', crossfadeSec: 5, stinger: 'emotional' },
 ];
 
-/** Direct manifest entry, or inherited profile from {@link resolveDerivedSceneId}. */
+const NEUTRAL_CHARACTER_MOTIF: CharacterMotif = {
+  npcId: '_neutral',
+  intervals: [0, 4, 7],
+  rootMidi: 50,
+  stinger: 'discovery',
+};
+
+const DERIVED_INTERVAL_SETS: readonly (readonly number[])[] = [
+  [0, 4, 7],
+  [0, 3, 7],
+  [0, 5, 7],
+  [0, 2, 7, 9],
+];
+
+const DERIVED_STINGERS: readonly CharacterMotif['stinger'][] = [
+  'discovery',
+  'emotional',
+  'mystery',
+  'tension',
+];
+
+function hashNpcId(npcId: string): number {
+  let hash = 0;
+  for (let i = 0; i < npcId.length; i++) {
+    hash = (hash * 31 + npcId.charCodeAt(i)) >>> 0;
+  }
+  return hash;
+}
+
+/** Deterministic procedural stub when no hand-authored motif exists. */
+export function deriveCharacterMotifFromNpcId(npcId: string): CharacterMotif {
+  const hash = hashNpcId(npcId);
+  return {
+    npcId,
+    intervals: [...DERIVED_INTERVAL_SETS[hash % DERIVED_INTERVAL_SETS.length]],
+    rootMidi: NEUTRAL_CHARACTER_MOTIF.rootMidi + (hash % 18),
+    stinger: DERIVED_STINGERS[hash % DERIVED_STINGERS.length],
+  };
+}
+
+/** Direct catalog entry, or inherited profile from {@link resolveDerivedSceneId}. */
 export function getSceneAudioProfile(sceneId: string): SceneAudioProfile | undefined {
   const id = sceneId as SceneId;
   const direct = SCENE_AUDIO_PROFILES[id];
@@ -168,8 +238,15 @@ export function getSceneMusicMood(sceneId: string): MusicMood | undefined {
   return getSceneAudioProfile(sceneId)?.musicMood;
 }
 
-export function getCharacterMotif(npcId: string): CharacterMotif | undefined {
-  return CHARACTER_MOTIFS[npcId];
+/** Dedicated motif when authored; otherwise a stable hash-derived procedural stub. */
+export function getCharacterMotif(npcId: string): CharacterMotif {
+  const canonicalId = resolveCanonicalNpcId(npcId);
+  return CHARACTER_MOTIFS[canonicalId] ?? CHARACTER_MOTIFS[npcId] ?? deriveCharacterMotifFromNpcId(canonicalId);
+}
+
+export function hasDedicatedCharacterMotif(npcId: string): boolean {
+  const canonicalId = resolveCanonicalNpcId(npcId);
+  return canonicalId in CHARACTER_MOTIFS || npcId in CHARACTER_MOTIFS;
 }
 
 export function getPoemMotif(poemId: string): PoemMotif {

@@ -14,6 +14,12 @@ export interface ApplicationEventMap {
   };
   'quest:accepted': { questId: string; questTitle: string };
   'quest:completed': { questId: string; npcId?: string };
+  'quest:failed': {
+    questId: string;
+    questTitle: string;
+    reason?: string;
+    canRetry?: boolean;
+  };
   'quest:reward_applied': {
     questId: string;
     questTitle: string;
@@ -21,6 +27,7 @@ export interface ApplicationEventMap {
     rewards: string[];
   };
   'quest:objective_updated': { questId: string; objectiveId: string };
+  'quest:retried': { questId: string; questTitle: string };
   'poem:collected': { poemId: string };
   'poem:reset_all_effects': Record<string, never>;
   'achievement:unlocked': {

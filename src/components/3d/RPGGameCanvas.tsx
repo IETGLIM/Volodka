@@ -280,7 +280,7 @@ function SimpleSceneFallback({
 }
 
 /** Main 3D canvas for the RPG exploration mode */
-export function RPGGameCanvas() {
+export function RPGGameCanvas({ focusable = true }: { focusable?: boolean } = {}) {
   const containerRef = useRef<HTMLDivElement>(null);
   const livePlayerPositionRef = useRef(new THREE.Vector3(0, 0.01, -1.0));
   const livePlayerRotationRef = useRef(Math.PI);
@@ -324,10 +324,18 @@ export function RPGGameCanvas() {
   // Auto-focus canvas on mount for keyboard events
   useEffect(() => {
     markCanvasMounted();
-    if (containerRef.current) {
+    if (focusable && containerRef.current) {
       containerRef.current.focus();
     }
   }, []);
+
+  useEffect(() => {
+    if (focusable) return;
+    const container = containerRef.current;
+    if (container?.contains(document.activeElement)) {
+      container.blur();
+    }
+  }, [focusable]);
 
   // Props passed directly to fallback components — these are already stable refs
   // so no intermediate useRef wrapper is needed (avoids "Cannot access refs during render").
@@ -339,7 +347,8 @@ export function RPGGameCanvas() {
   return (
     <div
       ref={containerRef}
-      tabIndex={0}
+      tabIndex={focusable ? 0 : -1}
+      data-game-canvas=""
       role="application"
       aria-label="Игровой мир Володьки — исследование от первого лица"
       style={{

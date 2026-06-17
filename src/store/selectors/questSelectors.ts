@@ -161,7 +161,7 @@ function isNpcRelevantToQuest(questId: string, npcId: string): boolean {
   const def = getQuestDefinitions().find((d) => d.id === questId);
   if (!def) return false;
   const canonical = resolveCanonicalNpcId(npcId);
-  if (def.questGiverNpcId === canonical) return true;
+  if (def.questGiverNpcId && resolveCanonicalNpcId(def.questGiverNpcId) === canonical) return true;
   if (def.objectives.some((o) => o.type === 'npc_talked' && o.target === canonical)) return true;
   return def.objectives.some((o) => getObjectiveNpcHint(questId, o.id) === canonical);
 }

@@ -9,7 +9,8 @@ import * as THREE from 'three';
 import { useGameStore } from '@/store/gameStore';
 import { useInteractionOverlay, useTimeOfDay, useSceneExitState, useScheduleContext } from '@/store/selectors';
 import { useSceneEnterEffect } from '@/hooks/useSceneEnterEffect';
-import { TRIGGER_ZONES, type TriggerZone, INTERACTION_LABELS, isTriggerZoneAvailable } from '@/data/triggerZones';
+import { useEKeyInteraction } from '@/hooks/useEKeyInteraction';
+import { TRIGGER_ZONES, INTERACTION_LABELS, isTriggerZoneAvailable } from '@/data/triggerZones';
 import { findNpcById, findNpcByDialogueNodeId } from '@/data/allNpcDefinitions';
 import { getNPCsForScene, getCurrentScheduleEntry } from '@/engine/ScheduleEngine';
 import { formatNpcActivityHint } from '@/engine/npc/npcActivityPresentation';
@@ -27,167 +28,25 @@ import {
 } from '@/engine/interaction/interactionTargetQuery';
 import { requestSceneTransition } from '@/engine/scene/sceneTransition';
 import { sharedCameraYawRef } from '@/engine/PlayerRotationState';
-import { ProximityGodRay } from './ProximityGodRay';
+import { resetEKeyConsumption } from '@/engine/input/eKeyConsumption';
 import { isEffectiveReducedMotion } from '@/engine/accessibility/accessibilitySettings';
 import {
   resolvePoemExplorationHighlight,
   shouldHighlightZoneForPoemMode,
 } from '@/engine/poemWorld/poemExplorationHighlight';
-
-/** Maximum number of visible [E] prompts at once */
-const MAX_VISIBLE_PROMPTS = 2;
-
-/** Scene exit proximity — matches SceneExitIndicator */
-const EXIT_PROXIMITY_RANGE = 2.5;
-
-const LMB_CLICK_DRAG_THRESHOLD_PX = 12;
-
-function isCanvasAreaTarget(target: EventTarget | null): boolean {
-  const el = target as HTMLElement;
-  if (!(el instanceof Element)) return false;
-  if (el.tagName === 'CANVAS') return true;
-  return !el.closest(
-    '[data-exploration-ui], [data-panel], dialog, [role="dialog"], button, a, input, textarea',
-  );
-}
-
-/** Runtime refs for a trigger zone — updated by the central interaction tick */
-interface ZoneProximityRuntime {
-  proximityRef: React.MutableRefObject<number>;
-  pulsePhaseRef: React.MutableRefObject<number>;
-  showIndicatorRef: React.MutableRefObject<boolean>;
-  poemHighlightRef: React.MutableRefObject<boolean>;
-  poemHighlightColorRef: React.MutableRefObject<string>;
-  poemStaticHighlightRef: React.MutableRefObject<boolean>;
-  zoneColorRef: React.MutableRefObject<string>;
-  zoneGlowActiveRef: React.MutableRefObject<boolean>;
-  lastPromptDistanceRef: React.MutableRefObject<number | null>;
-  triggeredRef: React.MutableRefObject<boolean>;
-  triggerCooldown: React.MutableRefObject<number>;
-  particlesRef: React.MutableRefObject<ParticleData[]>;
-  particleInstanceRef: React.MutableRefObject<THREE.InstancedMesh | null>;
-  outlineFlashRef: React.MutableRefObject<boolean>;
-}
-
-/** Runtime refs for an NPC proximity highlight */
-interface NpcProximityRuntime {
-  proximityRef: React.MutableRefObject<number>;
-  pulsePhaseRef: React.MutableRefObject<number>;
-  showIndicatorRef: React.MutableRefObject<boolean>;
-  lastPromptDistanceRef: React.MutableRefObject<number | null>;
-}
-
-function createZoneProximityRuntime(): ZoneProximityRuntime {
-  return {
-    proximityRef: { current: 0 },
-    pulsePhaseRef: { current: 0 },
-    showIndicatorRef: { current: false },
-    poemHighlightRef: { current: false },
-    poemHighlightColorRef: { current: '#ffd866' },
-    poemStaticHighlightRef: { current: false },
-    zoneColorRef: { current: '#88eeff' },
-    zoneGlowActiveRef: { current: false },
-    lastPromptDistanceRef: { current: null },
-    triggeredRef: { current: false },
-    triggerCooldown: { current: 0 },
-    particlesRef: { current: [] },
-    particleInstanceRef: { current: null },
-    outlineFlashRef: { current: false },
-  };
-}
-
-function createNpcProximityRuntime(): NpcProximityRuntime {
-  return {
-    proximityRef: { current: 0 },
-    pulsePhaseRef: { current: 0 },
-    showIndicatorRef: { current: false },
-    lastPromptDistanceRef: { current: null },
-  };
-}
-
-function reconcileProximityPrompt(
-  id: string,
-  label: string,
-  type: 'zone' | 'npc',
-  dist: number,
-  shouldShow: boolean,
-  isNear: boolean,
-  runtime: { showIndicatorRef: React.MutableRefObject<boolean>; lastPromptDistanceRef: React.MutableRefObject<number | null> },
-  registerPrompt: (data: PromptData) => void,
-  unregisterPrompt: (id: string) => void,
-): void {
-  const distanceChangedSignificantly =
-    runtime.lastPromptDistanceRef.current === null ||
-    Math.abs(dist - runtime.lastPromptDistanceRef.current) > 0.2;
-
-  if (shouldShow !== runtime.showIndicatorRef.current) {
-    runtime.showIndicatorRef.current = shouldShow;
-    if (isNear) {
-      registerPrompt({ id, label, distance: dist, type });
-      runtime.lastPromptDistanceRef.current = dist;
-    } else {
-      unregisterPrompt(id);
-      runtime.lastPromptDistanceRef.current = null;
-    }
-  } else if (shouldShow && distanceChangedSignificantly) {
-    registerPrompt({ id, label, distance: dist, type });
-    runtime.lastPromptDistanceRef.current = dist;
-  }
-}
-
-function updateZoneParticles(runtime: ZoneProximityRuntime, delta: number): void {
-  const particles = runtime.particlesRef.current;
-  const mesh = runtime.particleInstanceRef.current;
-  if (particles.length === 0 || !mesh) return;
-
-  let writeIdx = 0;
-  for (let i = 0; i < particles.length; i++) {
-    const p = particles[i];
-    p.life += delta;
-    if (p.life > 0.8) continue;
-
-    p.position[0] += p.velocity[0] * delta;
-    p.position[1] += p.velocity[1] * delta;
-    p.position[2] += p.velocity[2] * delta;
-    p.velocity[0] *= 0.95;
-    p.velocity[1] = p.velocity[1] * 0.95 - delta * 2;
-    p.velocity[2] *= 0.95;
-
-    const opacity = Math.max(0, 1 - p.life / 0.8);
-    const scale = 0.06 * opacity;
-
-    tempMatrix.makeScale(scale, scale, scale);
-    tempMatrix.setPosition(p.position[0], p.position[1], p.position[2]);
-    mesh.setMatrixAt(writeIdx, tempMatrix);
-
-    tempColor.setRGB(0.27 * opacity, 1.0 * opacity, 1.0 * opacity);
-    mesh.setColorAt(writeIdx, tempColor);
-
-    if (writeIdx !== i) particles[writeIdx] = p;
-    writeIdx++;
-  }
-  particles.length = writeIdx;
-
-  for (let i = writeIdx; i < MAX_PARTICLES; i++) {
-    tempMatrix.makeScale(0, 0, 0);
-    mesh.setMatrixAt(i, tempMatrix);
-  }
-  mesh.instanceMatrix.needsUpdate = true;
-  if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
-}
-
-
-/** Prompt data for centralized overlay */
-interface PromptData {
-  id: string;
-  label: string;
-  distance: number;
-  type: 'zone' | 'npc';
-}
-
-function getTopPrompts(hits: InteractionTargetHit[]): InteractionTargetHit[] {
-  return hits.slice(0, MAX_VISIBLE_PROMPTS);
-}
+import {
+  createNpcProximityRuntime,
+  createZoneProximityRuntime,
+  EXIT_PROXIMITY_RANGE,
+  getTopPrompts,
+  reconcileProximityPrompt,
+  updateZoneParticles,
+  type NpcProximityRuntime,
+  type PromptData,
+  type ZoneProximityRuntime,
+} from '@/engine/interaction/interactiveTriggerProximity';
+import { NPCProximityTriggers } from './interactiveTriggers/NpcProximityMarkers';
+import { TriggerZoneComponent } from './interactiveTriggers/TriggerZoneComponent';
 
 interface InteractiveTriggersProps {
   livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
@@ -274,20 +133,15 @@ export function InteractiveTriggers({
   const isOverlayBlockingRef = useRef(false);
   const executeInteractionHitRef = useRef<(hit: InteractionTargetHit) => boolean>(() => false);
 
-  // Hide prompts when not exploring or when narrative overlay locks movement (non-hub nodes)
   const isOverlayBlocking =
     gameMode !== 'exploration' ||
     isNarrativeMovementLocked(showStoryOverlay, currentNodeId);
 
-  // Shared ref: which prompt IDs are allowed to show (closest MAX_VISIBLE_PROMPTS)
   const allowedIdsRef = useRef<Set<string>>(new Set());
-  // Track all currently near prompt entries for centralized rendering
   const promptsMapRef = useRef<Map<string, PromptData>>(new Map());
-  // React state for rendering the overlay (updated less frequently than frame)
   const [visiblePrompts, setVisiblePrompts] = useState<PromptData[]>([]);
   const frameCountRef = useRef(0);
   const lastHintIdRef = useRef<string | null>(null);
-  const eKeyTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const proximityTempVecRef = useRef(new THREE.Vector3());
   const zoneRuntimeRef = useRef(new Map<string, ZoneProximityRuntime>());
   const npcRuntimeRef = useRef(new Map<string, NpcProximityRuntime>());
@@ -318,9 +172,7 @@ export function InteractiveTriggers({
     promptsMapRef.current.clear();
     allowedIdsRef.current.clear();
     setVisiblePrompts([]);
-    if (eKeyTimerRef.current) clearTimeout(eKeyTimerRef.current);
-    eKeyTimerRef.current = undefined;
-    window.__volodka_ekey_consumed = false;
+    resetEKeyConsumption();
     lastHintIdRef.current = null;
     eventBus.emit('interaction:end', {});
   });
@@ -380,120 +232,15 @@ export function InteractiveTriggers({
     executeInteractionHitRef.current = executeInteractionHit;
   });
 
-  const firePrimaryInteraction = useCallback((): boolean => {
-    if (isOverlayBlockingRef.current) return false;
-    if (isInteractionLocked()) return false;
-    if (window.__volodka_ekey_consumed) return false;
-
-    const playerPos = livePlayerPositionRef.current;
-    const lookYaw = sharedCameraYawRef.current;
-    const sceneExits = sceneExitsRef.current;
-    const zones = zonesRef.current;
-    const sceneId = sceneIdRef.current;
-    const npcQueryTargets = npcQueryTargetsRef.current;
-
-    const exitTargets: ExitQueryTarget[] = [];
-    for (let idx = 0; idx < sceneExits.length; idx++) {
-      const exit = sceneExits[idx];
-      const hasOverlap = zones.some(
-        (z) =>
-          z.sceneId === sceneId &&
-          Math.abs(z.position[0] - exit.position[0]) < 1.5 &&
-          Math.abs(z.position[2] - exit.position[2]) < 1.5,
-      );
-      if (hasOverlap) continue;
-      exitTargets.push({
-        id: `exit_${exit.targetScene}_${idx}`,
-        position: exit.position,
-        label: exit.label,
-        maxRange: EXIT_PROXIMITY_RANGE,
-      });
-    }
-
-    const hits = queryInteractionTargets({
-      playerPos,
-      playerYaw: lookYaw,
-      zones,
-      npcs: npcQueryTargets,
-      exits: exitTargets,
-      checkLineOfSight: true,
-    });
-
-    const primary = hits[0];
-    if (!primary) return false;
-
-    const handled = executeInteractionHitRef.current(primary);
-    if (!handled) return false;
-
-    if (eKeyTimerRef.current) clearTimeout(eKeyTimerRef.current);
-    window.__volodka_ekey_consumed = true;
-    eKeyTimerRef.current = setTimeout(() => {
-      window.__volodka_ekey_consumed = false;
-      eKeyTimerRef.current = undefined;
-    }, 200);
-
-    return true;
-  }, [livePlayerPositionRef]);
-
-  useEffect(() => {
-    return () => {
-      if (eKeyTimerRef.current) clearTimeout(eKeyTimerRef.current);
-    };
-  }, []);
-
-  // Central E-key router — one code path instead of per-trigger duplicates.
-  useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.code !== 'KeyE' || e.repeat) return;
-      if (!firePrimaryInteraction()) return;
-      e.preventDefault();
-      e.stopImmediatePropagation();
-    };
-
-    const onInteractPress = () => {
-      firePrimaryInteraction();
-    };
-
-    window.addEventListener('keydown', onKeyDown, true);
-    const unsub = eventBus.on('interact:press', onInteractPress);
-    return () => {
-      window.removeEventListener('keydown', onKeyDown, true);
-      unsub();
-    };
-  }, [firePrimaryInteraction]);
-
-  // Left-click on canvas — same interaction router as E (short click, not drag).
-  useEffect(() => {
-    let downX = 0;
-    let downY = 0;
-    let pointerDown = false;
-
-    const onMouseDown = (e: MouseEvent) => {
-      if (e.button !== 0) return;
-      if (!isCanvasAreaTarget(e.target)) return;
-      pointerDown = true;
-      downX = e.clientX;
-      downY = e.clientY;
-    };
-
-    const onMouseUp = (e: MouseEvent) => {
-      if (e.button !== 0 || !pointerDown) return;
-      pointerDown = false;
-      const dx = e.clientX - downX;
-      const dy = e.clientY - downY;
-      if (dx * dx + dy * dy > LMB_CLICK_DRAG_THRESHOLD_PX * LMB_CLICK_DRAG_THRESHOLD_PX) return;
-      if (firePrimaryInteraction()) {
-        e.preventDefault();
-      }
-    };
-
-    window.addEventListener('mousedown', onMouseDown);
-    window.addEventListener('mouseup', onMouseUp);
-    return () => {
-      window.removeEventListener('mousedown', onMouseDown);
-      window.removeEventListener('mouseup', onMouseUp);
-    };
-  }, [firePrimaryInteraction]);
+  useEKeyInteraction({
+    livePlayerPositionRef,
+    isOverlayBlockingRef,
+    sceneExitsRef,
+    zonesRef,
+    sceneIdRef,
+    npcQueryTargetsRef,
+    executeInteractionHitRef,
+  });
 
   const registerPrompt = useCallback((data: PromptData) => {
     promptsMapRef.current.set(data.id, data);
@@ -503,9 +250,7 @@ export function InteractiveTriggers({
     promptsMapRef.current.delete(id);
   }, []);
 
-  // Compute allowed IDs, proximity highlights, and visible prompts in one pass
   useFrameTick('interaction', ({ delta }) => {
-    // Don't show any prompts when overlays (dialogue/story/panels) are active
     if (isOverlayBlocking) {
       if (promptsMapRef.current.size > 0) {
         promptsMapRef.current.clear();
@@ -619,7 +364,6 @@ export function InteractiveTriggers({
       }
     }
 
-    // Zone proximity — god rays, prompts, enter toasts, particles
     const activeTTLFlags = useGameStore.getState().activeTTLFlags ?? {};
     const poemHighlight = resolvePoemExplorationHighlight(
       activeTTLFlags,
@@ -683,7 +427,6 @@ export function InteractiveTriggers({
       updateZoneParticles(runtime, delta);
     }
 
-    // NPC proximity — god rays and prompts
     for (const npc of npcQueryTargetsRef.current) {
       const runtime = npcRuntimeRef.current.get(npc.npcId);
       if (!runtime) continue;
@@ -745,18 +488,14 @@ export function InteractiveTriggers({
         );
       })}
 
-      {/* NPC proximity triggers — separate from static trigger zones */}
       <NPCProximityTriggers
         npcQueryTargets={npcQueryTargets}
         npcRuntimeRef={npcRuntimeRef}
         unregisterPrompt={unregisterPrompt}
       />
 
-      {/* Centralized prompt overlay — limited to closest, cinematic style */}
-      {/* Screen-edge indicator for off-screen interactables */}
       {visiblePrompts.length > 0 && !isOverlayBlocking && (
         <Html fullscreen style={{ pointerEvents: 'none' }}>
-          {/* Subtle screen-edge glow to indicate nearby interactables */}
           <div
             style={{
               position: 'fixed',
@@ -766,7 +505,6 @@ export function InteractiveTriggers({
               zIndex: UI_LAYERS.WORLD_LABELS,
             }}
           />
-          {/* Prompt container — bottom center, cinematic style */}
           <div
             style={{
               position: 'fixed',
@@ -785,7 +523,7 @@ export function InteractiveTriggers({
               const isNPC = prompt.type === 'npc';
               const accentColor = isNPC ? '#ffb828' : '#00ffe8';
               const accentRgba = isNPC ? '255, 184, 40' : '0, 255, 232';
-              const isPrimary = i === 0; // Closest prompt is primary
+              const isPrimary = i === 0;
               return (
                 <div
                   key={prompt.id}
@@ -835,7 +573,6 @@ export function InteractiveTriggers({
               );
             })}
           </div>
-          {/* Inline keyframes for prompt fade-in */}
           <style>{`
             @keyframes ${promptFadeInAnim} {
               from { opacity: 0; transform: translateY(12px) scale(0.95); }
@@ -844,211 +581,6 @@ export function InteractiveTriggers({
           `}</style>
         </Html>
       )}
-    </group>
-  );
-}
-
-/**
- * NPC proximity god-ray markers — proximity tick runs in InteractiveTriggers parent.
- */
-function NPCProximityTriggers({
-  npcQueryTargets,
-  npcRuntimeRef,
-  unregisterPrompt,
-}: {
-  npcQueryTargets: NpcQueryTarget[];
-  npcRuntimeRef: React.MutableRefObject<Map<string, NpcProximityRuntime>>;
-  unregisterPrompt: (id: string) => void;
-}) {
-  return (
-    <group>
-      {npcQueryTargets.map((npc) => {
-        let runtime = npcRuntimeRef.current.get(npc.npcId);
-        if (!runtime) {
-          runtime = createNpcProximityRuntime();
-          npcRuntimeRef.current.set(npc.npcId, runtime);
-        }
-        return (
-          <NPCProximityMarker
-            key={npc.npcId}
-            npcId={npc.npcId}
-            position={npc.position}
-            runtime={runtime}
-            unregisterPrompt={unregisterPrompt}
-          />
-        );
-      })}
-    </group>
-  );
-}
-
-/** Visual marker for a single NPC proximity highlight */
-function NPCProximityMarker({
-  npcId,
-  position,
-  runtime,
-  unregisterPrompt,
-}: {
-  npcId: string;
-  position: [number, number, number];
-  runtime: NpcProximityRuntime;
-  unregisterPrompt: (id: string) => void;
-}) {
-  const promptId = `npc_${npcId}`;
-
-  useEffect(() => {
-    return () => {
-      unregisterPrompt(promptId);
-    };
-  }, [promptId, unregisterPrompt]);
-
-  return (
-    <group position={position}>
-      <ProximityGodRay
-        activeRef={runtime.showIndicatorRef}
-        color="#ffb828"
-        beamHeight={2.6}
-        baseY={0.2}
-        proximityRef={runtime.proximityRef}
-        pulsePhaseRef={runtime.pulsePhaseRef}
-      />
-    </group>
-  );
-}
-
-/** Internal particle data stored in ref — not React state to avoid per-frame re-renders (P0-2.3) */
-interface ParticleData {
-  position: [number, number, number];
-  velocity: [number, number, number];
-  life: number;
-}
-
-/** Maximum number of sparkle particles per trigger zone (InstancedMesh pool size) */
-const MAX_PARTICLES = 8;
-
-// Pre-computed identity matrix for InstancedMesh reset (shared by zone particle tick)
-const tempMatrix = new THREE.Matrix4();
-const tempColor = new THREE.Color();
-
-/** Single trigger zone — proximity tick runs in InteractiveTriggers parent */
-function TriggerZoneComponent({
-  zone,
-  runtime,
-  unregisterPrompt,
-}: {
-  zone: TriggerZone;
-  runtime: ZoneProximityRuntime;
-  unregisterPrompt: (id: string) => void;
-}) {
-  const outlineFlashTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const particleGeo = useMemo(() => new THREE.SphereGeometry(0.06, 4, 4), []);
-  const particleMat = useMemo(() => new THREE.MeshBasicMaterial({
-    color: '#44ffff',
-    transparent: true,
-    opacity: 0.95,
-    depthWrite: false,
-  }), []);
-
-  useEffect(() => {
-    runtime.particleInstanceRef.current = null;
-  }, [runtime]);
-
-  useEffect(() => {
-    const geo = particleGeo;
-    const mat = particleMat;
-    return () => {
-      runtime.particlesRef.current = [];
-      const mesh = runtime.particleInstanceRef.current;
-      if (mesh) {
-        for (let i = 0; i < MAX_PARTICLES; i++) {
-          tempMatrix.makeScale(0, 0, 0);
-          mesh.setMatrixAt(i, tempMatrix);
-        }
-        mesh.instanceMatrix.needsUpdate = true;
-      }
-      geo.dispose();
-      mat.dispose();
-    };
-  }, [particleGeo, particleMat, runtime]);
-
-  const spawnParticles = useCallback(() => {
-    const newParticles: ParticleData[] = [];
-    for (let i = 0; i < MAX_PARTICLES; i++) {
-      const angle = (Math.PI * 2 * i) / MAX_PARTICLES;
-      newParticles.push({
-        position: [0, zone.size[1] / 2, 0],
-        velocity: [
-          Math.cos(angle) * (1.5 + Math.random()),
-          2 + Math.random() * 2,
-          Math.sin(angle) * (1.5 + Math.random()),
-        ],
-        life: 0,
-      });
-    }
-    runtime.particlesRef.current = [...runtime.particlesRef.current, ...newParticles].slice(-MAX_PARTICLES);
-
-    const mesh = runtime.particleInstanceRef.current;
-    if (mesh) {
-      for (let i = 0; i < MAX_PARTICLES; i++) {
-        tempMatrix.makeScale(0, 0, 0);
-        mesh.setMatrixAt(i, tempMatrix);
-      }
-      mesh.instanceMatrix.needsUpdate = true;
-    }
-  }, [runtime, zone.size]);
-
-  useEffect(() => {
-    const onObjectInteract = (payload: { triggerZoneId?: string }) => {
-      if (payload.triggerZoneId !== zone.id) return;
-      spawnParticles();
-      runtime.outlineFlashRef.current = true;
-      if (outlineFlashTimer.current) clearTimeout(outlineFlashTimer.current);
-      outlineFlashTimer.current = setTimeout(() => {
-        runtime.outlineFlashRef.current = false;
-      }, 200);
-    };
-
-    const onHighlight = (payload: { triggerZoneId?: string }) => {
-      if (payload.triggerZoneId !== zone.id) return;
-      spawnParticles();
-    };
-
-    const unsubInteract = eventBus.on('object:interact', onObjectInteract);
-    const unsubHighlight = eventBus.on('object:highlight', onHighlight);
-    return () => {
-      unsubInteract();
-      unsubHighlight();
-      if (outlineFlashTimer.current) clearTimeout(outlineFlashTimer.current);
-    };
-  }, [zone.id, spawnParticles, runtime]);
-
-  useEffect(() => {
-    return () => {
-      unregisterPrompt(zone.id);
-    };
-  }, [zone.id, unregisterPrompt]);
-
-  return (
-    <group position={zone.position}>
-      <ProximityGodRay
-        activeRef={runtime.zoneGlowActiveRef}
-        color="#88eeff"
-        colorRef={runtime.zoneColorRef}
-        beamHeight={Math.max(zone.size[1] + 1.6, 2.2)}
-        baseY={Math.max(zone.size[1] * 0.2, 0.35)}
-        proximityRef={runtime.proximityRef}
-        flashRef={runtime.outlineFlashRef}
-        pulsePhaseRef={runtime.pulsePhaseRef}
-        staticHighlightRef={runtime.poemStaticHighlightRef}
-      />
-
-      <instancedMesh
-        ref={(node) => {
-          runtime.particleInstanceRef.current = node;
-        }}
-        args={[particleGeo, particleMat, MAX_PARTICLES]}
-        frustumCulled={false}
-      />
     </group>
   );
 }

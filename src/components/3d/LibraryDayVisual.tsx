@@ -2,7 +2,6 @@
 /* ─── Volodka RPG – Library procedural 3D visual ─── */
 
 import * as THREE from 'three';
-import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { createLibraryDayWarmSkyTexture } from '@/engine/graphics/proceduralSkyTextures';
 import { LibraryDayInterior } from './sceneChunks/libraryDay';
@@ -15,7 +14,6 @@ export function LibraryDayVisual() {
     'library_day:warm-ceiling',
     createLibraryDayWarmSkyTexture,
   );
-  const { lod } = useEnvironmentLod();
 
   const W = 16;
   const D = 14;
@@ -615,7 +613,7 @@ export function LibraryDayVisual() {
       <pointLight position={[-5.0, 1.2, 3.0]} color="#ffaa44" intensity={0.6} distance={4} />
 
       {/* ── INTERIOR MODELS (lazy chunk) ── */}
-      <LibraryDayInterior lod={lod} width={W} depth={D} />
+      <LibraryDayInterior width={W} depth={D} />
     </group>
   );
 }

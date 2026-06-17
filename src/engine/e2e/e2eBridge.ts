@@ -14,6 +14,7 @@ import { resolveSceneSpawn, requestSceneTransition } from '@/engine/scene/sceneT
 import { completeTutorial } from '@/store/actions/tutorialActions';
 import { getGameStore } from '@/store/gameStore';
 import type { SceneId } from '@/shared/types/game';
+import { getCombatState, getRngState } from '@/engine/CombatSystem';
 
 export interface VolodkaE2EPosition {
   x: number;
@@ -52,6 +53,10 @@ export interface VolodkaE2EBridge {
   promoteClosedOverlayHub: (hubId: string, sceneId: SceneId) => Promise<void>;
   ensureStoryOverlay: (nodeId: string) => Promise<void>;
   isStoryOverlayReady: (expectedNodeId?: string) => boolean;
+  /** Set master combat RNG seed (save-persisted). */
+  setPlayerRngSeed: (seed: number) => void;
+  /** Read active combat RNG state for replay/debug. */
+  getCombatRngState: () => ReturnType<typeof getRngState> | null;
 }
 
 declare global {
@@ -451,6 +456,13 @@ export function registerVolodkaE2EBridge(): void {
       if (!store.showStoryOverlay) return false;
       if (expectedNodeId && store.currentNodeId !== expectedNodeId) return false;
       return Boolean(getStoryNodes()[store.currentNodeId]);
+    },
+    setPlayerRngSeed(seed) {
+      dispatchGameAction({ type: 'player/setRngSeed', seed });
+    },
+    getCombatRngState() {
+      const cs = getCombatState();
+      return cs ? getRngState(cs) : null;
     },
   };
 }

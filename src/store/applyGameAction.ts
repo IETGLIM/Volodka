@@ -7,17 +7,25 @@ import { getExplorationStoreState } from './stores/explorationStore';
 import { getWorldStoreState } from './stores/worldStore';
 import { getUIStoreState } from './stores/uiStore';
 import { getCutsceneStoreState } from './stores/cutsceneStore';
-export function reduceGameState(_state: GameStoreState, action: GameAction): Partial<GameStoreState> {
+import { getSaveStoreState } from './stores/saveStore';
+export function applyGameAction(_state: GameStoreState, action: GameAction): Partial<GameStoreState> {
   const player = getPlayerStoreState();
   const exploration = getExplorationStoreState();
   const world = getWorldStoreState();
   const ui = getUIStoreState();
   switch (action.type) {
     case 'quest/completeObjective': world.completeQuestObjective(action.questId, action.objectiveId); break;
-    case 'quest/complete': world.completeQuest(action.questId); break;
-    case 'quest/completeAndApplyRewards': player.completeQuestAndApplyRewards(action.questId); break;
-    case 'quest/fail': world.failQuest(action.questId); break;
+    case 'quest/complete':
+    case 'quest/completeAndApplyRewards':
+      player.completeQuestAndApplyRewards(action.questId);
+      break;
+    case 'quest/fail': world.failQuest(action.questId, action.reason); break;
+    case 'quest/retry': world.retryQuest(action.questId); break;
+    case 'game/newGamePlus':
+      getSaveStoreState().resetForNewPlaythrough({ preserveAchievements: true });
+      break;
     case 'quest/activate': world.activateQuest(action.questId); break;
+    case 'quest/setHoursElapsed': world.setQuestHoursElapsed(action.questId, action.hoursElapsed); break;
     case 'player/addSkill': player.addSkill(action.skill, action.amount); break;
     case 'player/addEnergy': player.addEnergy(action.amount); break;
     case 'player/addStress': player.addStress(action.amount); break;
@@ -25,6 +33,8 @@ export function reduceGameState(_state: GameStoreState, action: GameAction): Par
     case 'player/addXp': player.addXp(action.amount); break;
     case 'player/addCredits': player.addCredits(action.amount); break;
     case 'player/setFlag': player.setFlag(action.key, action.value); break;
+    case 'player/setRngSeed': player.setRngSeed(action.seed); break;
+    case 'player/bumpCombatEncounterSeq': player.bumpCombatEncounterSeq(); break;
     case 'player/setNpcRelation': world.setNpcRelation(action.npcId, action.delta); break;
     case 'poem/upsertTTLFlag': player.upsertActiveTTLFlag(action.flag); break;
     case 'poem/upsertTTLFlags': player.upsertActiveTTLFlags(action.flags); break;
@@ -43,6 +53,7 @@ export function reduceGameState(_state: GameStoreState, action: GameAction): Par
     case 'inventory/addItem': player.addItem(action.item); break;
     case 'inventory/removeItem': player.removeItem(action.itemId, action.quantity ?? 1); break;
     case 'world/collectPoem': world.collectPoem(action.poemId); break;
+    case 'world/upsertHintFlag': player.upsertHintFlagWithTTL(action.flag); break;
     case 'lore/discover': ui.discoverLoreEntry(action.entryId); break;
     case 'achievement/unlock': world.unlockAchievement(action.achievementId); break;
     case 'achievement/trackSceneVisit': world.trackSceneVisit(action.sceneId); break;

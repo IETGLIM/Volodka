@@ -8,8 +8,10 @@ import { useCurrentSceneId, useTimeOfDay, useScheduleContext } from '@/store/sel
 import { getNPCsForScene, getCurrentScheduleEntry } from '@/engine/ScheduleEngine';
 import { findNpcById } from '@/data/allNpcDefinitions';
 import { NPC } from './NPC';
+import { NpcFrameBatchRunner } from './NpcFrameBatchRunner';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 import { separateNpcPositions } from '@/engine/npc/separateNpcPositions';
+import { resolveNpcRenderTier } from '@/engine/npc/npcRenderTier';
 
 interface NPCSystemProps {
   livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
@@ -92,6 +94,7 @@ export function NPCSystem({
           rotation: def.defaultRotation,
           activity,
           patrolWaypoints,
+          renderTier: resolveNpcRenderTier(def, sceneId),
         };
       })
       .filter(Boolean) as Array<{
@@ -100,6 +103,7 @@ export function NPCSystem({
       rotation: number | undefined;
       activity: string;
       patrolWaypoints?: [number, number, number][];
+      renderTier: ReturnType<typeof resolveNpcRenderTier>;
     }>;
 
     let placed = npcs;
@@ -115,7 +119,8 @@ export function NPCSystem({
 
   return (
     <group>
-      {visibleNPCs.map(({ definition, position, rotation, activity, patrolWaypoints }) => (
+      <NpcFrameBatchRunner />
+      {visibleNPCs.map(({ definition, position, rotation, activity, patrolWaypoints, renderTier }) => (
         <NPC
           key={definition.id}
           definition={definition}
@@ -126,6 +131,7 @@ export function NPCSystem({
           isInteractionTarget={definition.id === interactionTargetNPCId}
           activity={activity}
           patrolWaypoints={patrolWaypoints}
+          renderTier={renderTier}
         />
       ))}
     </group>

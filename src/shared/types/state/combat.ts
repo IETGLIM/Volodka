@@ -7,6 +7,7 @@ import type {
   CombatLogEntry,
   CombatReward,
 } from '../definitions/combat';
+import type { CombatRngState } from './combatRng';
 
 export interface CombatState {
   enemy: CombatEnemy;
@@ -49,6 +50,9 @@ export interface CombatState {
   lastPoemPowersUsed: [string | null, string | null];
   /** Last poem power used (excluding poem_16 echo) — for poem_16 Эхо Памяти */
   lastUsedPoemId: string | null;
+
+  /** Seeded combat RNG state — advances on each roll for deterministic combat. */
+  rng: CombatRngState;
 }
 
 export interface EnemySpecialAttack {

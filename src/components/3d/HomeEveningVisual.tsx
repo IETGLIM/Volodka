@@ -1,14 +1,14 @@
 
 /* ─── Volodka RPG – Home Evening room procedural 3D visual ─── */
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useMemo } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
+import { getSharedStandardMaterial, mat } from '@/engine/three/moduleMaterialRegistry';
 import { registerModuleGeometries } from '@/engine/three/moduleGeometryRegistry';
 import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
 import { Radiator, Plant, Picture } from './lazyInteriorModels';
-import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { EnvironmentDetail } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { createHomeEveningWarmSkyTexture } from '@/engine/graphics/proceduralSkyTextures';
@@ -104,6 +104,64 @@ const PHOTO_PLANE_GEOS = [geo_pln_photo_0, geo_pln_photo_1, geo_pln_photo_2] as 
 
 registerModuleGeometries([geo_pln_1, geo_pln_2, geo_box_3, geo_box_4, geo_box_5, geo_box_6, geo_box_7, geo_box_8, geo_box_9, geo_pln_10, geo_pln_11, geo_box_12, geo_cyl_13, geo_box_14, geo_box_15, geo_box_16, geo_box_17, geo_box_18, geo_box_19, geo_box_20, geo_box_21, geo_box_22, geo_box_23, geo_box_24, geo_box_25, geo_box_26, geo_box_27, geo_box_28, geo_cyl_29, geo_box_30, geo_pln_31, geo_box_32, geo_box_33, geo_box_34, geo_box_35, geo_box_36, geo_tor_37, geo_box_38, geo_cyl_39, geo_cyl_40, geo_sph_41, geo_cyl_42, geo_tor_43, geo_box_44, geo_cyl_45, geo_box_46, geo_cyl_47, geo_pln_48, geo_box_49, geo_box_50, geo_cyl_51, geo_cyl_52, geo_cyl_53, geo_sph_54, geo_box_55, geo_cyl_56, geo_cyl_57, geo_pln_58, geo_cyl_59, geo_pln_60, geo_pln_61, geo_cyl_62, geo_cyl_63, geo_cyl_64, geo_box_65, geo_box_66, geo_pln_67, geo_box_68, geo_pln_69, geo_box_70, geo_box_71, geo_cyl_72, geo_box_book_h0, geo_box_book_h1, geo_box_book_h2, geo_box_photo_0, geo_box_photo_1, geo_box_photo_2, geo_pln_photo_0, geo_pln_photo_1, geo_pln_photo_2, ...BOOK_GEOS, ...PHOTO_FRAME_GEOS, ...PHOTO_PLANE_GEOS]);
 
+const mat_1 = getSharedStandardMaterial({ color: '#606060', roughness: 0.4 });
+const mat_2 = getSharedStandardMaterial({ color: '#888', metalness: 0.3, roughness: 0.2 });
+const mat_3 = getSharedStandardMaterial({ color: '#c8c8c8', metalness: 0.4, roughness: 0.3 });
+const mat_4 = getSharedStandardMaterial({ color: '#bbb', metalness: 0.3, roughness: 0.4 });
+const mat_5 = getSharedStandardMaterial({ color: '#d0d0d0', metalness: 0.4, roughness: 0.3 });
+const mat_6 = getSharedStandardMaterial({ color: '#888', metalness: 0.8 });
+const mat_7 = getSharedStandardMaterial({ color: '#aaa', metalness: 0.3 });
+const mat_8 = getSharedStandardMaterial({ color: '#c8b8a0', roughness: 0.5 });
+const mat_9 = getSharedStandardMaterial({ color: '#b8a890', roughness: 0.5 });
+const mat_10 = getSharedStandardMaterial({ color: '#707070', metalness: 0.5, roughness: 0.2 });
+const mat_11 = getSharedStandardMaterial({ color: '#bbb', metalness: 0.8, roughness: 0.2 });
+const mat_12 = getSharedStandardMaterial({ color: '#4a3020', roughness: 0.9 });
+const mat_13 = getSharedStandardMaterial({ color: '#3a2518', roughness: 0.9 });
+const mat_14 = getSharedStandardMaterial({ color: '#5a4030', roughness: 0.6 });
+const mat_15 = getSharedStandardMaterial({ color: '#3a2818' });
+const mat_16 = getSharedStandardMaterial({ color: '#0a0a0a', emissive: '#111133', emissiveIntensity: 0.5 });
+const mat_17 = getSharedStandardMaterial({ color: '#2a2020', roughness: 0.8 });
+const mat_18 = getSharedStandardMaterial({ color: '#352a40', roughness: 0.9 });
+const mat_19 = getSharedStandardMaterial({ color: '#4a3525', roughness: 0.8 });
+const mat_20 = getSharedStandardMaterial({ color: '#bbb8cc', roughness: 0.95 });
+const mat_21 = getSharedStandardMaterial({ color: '#3a3550', roughness: 0.95 });
+const mat_22 = getSharedStandardMaterial({ color: '#3a2818', roughness: 0.85 });
+const mat_23 = getSharedStandardMaterial({ color: '#3a2818', roughness: 0.8 });
+const mat_24 = getSharedStandardMaterial({ color: '#5a4530', roughness: 0.8 });
+const mat_25 = getSharedStandardMaterial({ color: '#aaa', metalness: 0.8, roughness: 0.2 });
+const mat_26 = getSharedStandardMaterial({ color: '#4a3820', roughness: 0.85 });
+const mat_27 = getSharedStandardMaterial({ color: '#0a0a20', emissive: '#1a2a5a', emissiveIntensity: 1.2 });
+const mat_28 = getSharedStandardMaterial({ color: '#555' });
+const mat_29 = getSharedStandardMaterial({ color: '#444' });
+const mat_30 = getSharedStandardMaterial({ color: '#3a3a3a', metalness: 0.4, roughness: 0.5 });
+const mat_31 = getSharedStandardMaterial({ color: '#2a2a2a', metalness: 0.6, roughness: 0.3 });
+const mat_32 = getSharedStandardMaterial({ color: '#1a1a1a', metalness: 0.7, roughness: 0.3 });
+const mat_33 = getSharedStandardMaterial({ color: '#333', metalness: 0.3, roughness: 0.4 });
+const mat_34 = getSharedStandardMaterial({ color: '#666', metalness: 0.7, roughness: 0.3 });
+const mat_35 = getSharedStandardMaterial({ color: '#c0c0c0', metalness: 0.7, roughness: 0.2 });
+const mat_36 = getSharedStandardMaterial({ color: '#b0b0b0', metalness: 0.6, roughness: 0.3 });
+const mat_37 = getSharedStandardMaterial({ color: '#aaa', metalness: 0.7, roughness: 0.2 });
+const mat_38 = getSharedStandardMaterial({ color: '#555', metalness: 0.5, roughness: 0.4 });
+const mat_39 = getSharedStandardMaterial({ color: '#5a4a38', roughness: 0.75 });
+const mat_40 = getSharedStandardMaterial({ color: '#888', metalness: 0.7, roughness: 0.3 });
+const mat_41 = getSharedStandardMaterial({ color: '#5a4030', roughness: 0.7 });
+const mat_42 = getSharedStandardMaterial({ color: '#5a4030', roughness: 0.8 });
+const mat_43 = getSharedStandardMaterial({ color: '#4a3520', roughness: 0.7 });
+const mat_44 = getSharedStandardMaterial({ color: '#8a7a50', metalness: 0.5, roughness: 0.4 });
+const mat_45 = getSharedStandardMaterial({ color: '#e8d8b0', roughness: 0.8, side: THREE.DoubleSide });
+const mat_46 = getSharedStandardMaterial({ color: '#ffddaa', emissive: '#ffcc80', emissiveIntensity: 2.0 });
+const mat_47 = getSharedStandardMaterial({ color: '#1a1a1a', roughness: 0.7 });
+const mat_48 = getSharedStandardMaterial({ color: '#e8e0d8', roughness: 0.5 });
+const mat_49 = getSharedStandardMaterial({ color: '#5a4a40', roughness: 0.9, side: THREE.DoubleSide });
+const mat_50 = getSharedStandardMaterial({ color: '#6a5a40', metalness: 0.4, roughness: 0.5 });
+const mat_51 = getSharedStandardMaterial({ color: '#555', metalness: 0.6, roughness: 0.4 });
+const mat_52 = getSharedStandardMaterial({ color: '#2a3040', roughness: 0.85 });
+const mat_53 = getSharedStandardMaterial({ color: '#5a4530', roughness: 0.7 });
+const mat_54 = getSharedStandardMaterial({ color: '#6080a0', metalness: 0.8, roughness: 0.1 });
+const mat_55 = getSharedStandardMaterial({ color: '#3a3a3a', metalness: 0.5, roughness: 0.5 });
+const mat_56 = getSharedStandardMaterial({ color: '#1a1a1a', roughness: 0.9 });
+const mat_57 = getSharedStandardMaterial({ color: '#aa2222', emissive: '#aa2222', emissiveIntensity: 0.5 });
+
 export function HomeEveningVisual() {
   const floorTexture = useCachedCanvasTexture('home_evening:floor', createHomeFloorTexture);
   const wallTexture = useCachedCanvasTexture('home_evening:wall', createHomeWallTexture);
@@ -111,7 +169,34 @@ export function HomeEveningVisual() {
     'home_evening:warm-ceiling',
     createHomeEveningWarmSkyTexture,
   );
-  const { lod } = useEnvironmentLod();
+
+  const mat_floor = useMemo(
+    () =>
+      getSharedStandardMaterial({
+        map: floorTexture,
+        color: '#6a5840',
+        roughness: 0.85,
+        polygonOffset: true,
+        polygonOffsetFactor: 1,
+        polygonOffsetUnits: 1,
+      }),
+    [floorTexture],
+  );
+  const mat_ceiling = useMemo(
+    () =>
+      getSharedStandardMaterial({
+        map: ceilingWashTexture,
+        color: '#382818',
+        emissive: '#503820',
+        emissiveIntensity: 0.32,
+        roughness: 0.95,
+      }),
+    [ceilingWashTexture],
+  );
+  const mat_wall = useMemo(
+    () => getSharedStandardMaterial({ map: wallTexture, color: '#4a3a30', roughness: 0.9 }),
+    [wallTexture],
+  );
 
   const W = 14;
   const D = 14;
@@ -180,39 +265,16 @@ export function HomeEveningVisual() {
   return (
     <group>
       {/* ── Floor ── */}
-      <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={geo_pln_1}>
-
-        <meshStandardMaterial map={floorTexture} color="#6a5840" roughness={0.85} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
-      </mesh>
+      <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={geo_pln_1} material={mat_floor} />
 
       {/* ── Ceiling — warm amber HDR wash with city-blue spill ── */}
-      <mesh position={[0, H, 0]} rotation-x={Math.PI / 2} geometry={geo_pln_1}>
-        <meshStandardMaterial
-          map={ceilingWashTexture}
-          color="#382818"
-          emissive="#503820"
-          emissiveIntensity={0.32}
-          roughness={0.95}
-        />
-      </mesh>
+      <mesh position={[0, H, 0]} rotation-x={Math.PI / 2} geometry={geo_pln_1} material={mat_ceiling} />
 
       {/* ── Walls ── */}
-      <mesh position={[0, H / 2, -D / 2]} geometry={geo_pln_2}>
-
-        <meshStandardMaterial map={wallTexture} color="#4a3a30" roughness={0.9} />
-      </mesh>
-      <mesh position={[0, H / 2, D / 2]} rotation-y={Math.PI} geometry={geo_pln_2}>
-
-        <meshStandardMaterial map={wallTexture} color="#4a3a30" roughness={0.9} />
-      </mesh>
-      <mesh position={[-W / 2, H / 2, 0]} rotation-y={Math.PI / 2} geometry={geo_pln_2}>
-
-        <meshStandardMaterial map={wallTexture} color="#4a3a30" roughness={0.9} />
-      </mesh>
-      <mesh position={[W / 2, H / 2, 0]} rotation-y={-Math.PI / 2} geometry={geo_pln_2}>
-
-        <meshStandardMaterial map={wallTexture} color="#4a3a30" roughness={0.9} />
-      </mesh>
+      <mesh position={[0, H / 2, -D / 2]} geometry={geo_pln_2} material={mat_wall} />
+      <mesh position={[0, H / 2, D / 2]} rotation-y={Math.PI} geometry={geo_pln_2} material={mat_wall} />
+      <mesh position={[-W / 2, H / 2, 0]} rotation-y={Math.PI / 2} geometry={geo_pln_2} material={mat_wall} />
+      <mesh position={[W / 2, H / 2, 0]} rotation-y={-Math.PI / 2} geometry={geo_pln_2} material={mat_wall} />
 
       {/* ═══════════════════════════════════════════════ */}
       {/* ── KITCHEN AREA (front-right) ── */}
@@ -220,68 +282,35 @@ export function HomeEveningVisual() {
 
       {/* Kitchen Counter (long, along back wall) */}
       <group position={[4.0, 0, -5.5]}>
-        <mesh position={[0, 0.45, 0]} castShadow receiveShadow geometry={geo_box_3}>
-
-          <meshStandardMaterial color="#606060" roughness={0.4} />
-        </mesh>
+        <mesh position={[0, 0.45, 0]} castShadow receiveShadow geometry={geo_box_3} material={mat_1} />
         {/* Counter top */}
-        <mesh position={[0, 0.91, 0]} geometry={geo_box_4}>
-
-          <meshStandardMaterial color="#888" metalness={0.3} roughness={0.2} />
-        </mesh>
+        <mesh position={[0, 0.91, 0]} geometry={geo_box_4} material={mat_2} />
       </group>
 
       {/* Fridge — with animated door */}
       <group position={[6.5, 0, -5.0]}>
         {/* Fridge body (back part) */}
-        <mesh position={[0, 0.9, -0.1]} castShadow geometry={geo_box_5}>
-
-          <meshStandardMaterial color="#c8c8c8" metalness={0.4} roughness={0.3} />
-        </mesh>
+        <mesh position={[0, 0.9, -0.1]} castShadow geometry={geo_box_5} material={mat_3} />
         {/* Fridge top */}
-        <mesh position={[0, 1.81, 0]} geometry={geo_box_6}>
-
-          <meshStandardMaterial color="#bbb" metalness={0.3} roughness={0.4} />
-        </mesh>
+        <mesh position={[0, 1.81, 0]} geometry={geo_box_6} material={mat_4} />
         {/* Animated fridge door — pivot on left edge */}
         <group position={[-0.34, 0, 0.2]} ref={fridgeDoorRef}>
-          <mesh position={[0.34, 0.9, 0]} geometry={geo_box_7}>
-
-            <meshStandardMaterial color="#d0d0d0" metalness={0.4} roughness={0.3} />
-          </mesh>
+          <mesh position={[0.34, 0.9, 0]} geometry={geo_box_7} material={mat_5} />
           {/* Handle */}
-          <mesh position={[0.6, 0.9, 0.03]} geometry={geo_box_8}>
-
-            <meshStandardMaterial color="#888" metalness={0.8} />
-          </mesh>
+          <mesh position={[0.6, 0.9, 0.03]} geometry={geo_box_8} material={mat_6} />
           {/* Fridge door line (freezer separator) */}
-          <mesh position={[0.34, 1.3, 0.025]} geometry={geo_box_9}>
-
-            <meshStandardMaterial color="#aaa" metalness={0.3} />
-          </mesh>
+          <mesh position={[0.34, 1.3, 0.025]} geometry={geo_box_9} material={mat_7} />
         </group>
         {/* Family photos on fridge (static, on body) */}
-        <mesh position={[0, 1.2, -0.36]} geometry={geo_pln_10}>
-
-          <meshStandardMaterial color="#c8b8a0" roughness={0.5} />
-        </mesh>
-        <mesh position={[0, 1.5, -0.36]} geometry={geo_pln_11}>
-
-          <meshStandardMaterial color="#b8a890" roughness={0.5} />
-        </mesh>
+        <mesh position={[0, 1.2, -0.36]} geometry={geo_pln_10} material={mat_8} />
+        <mesh position={[0, 1.5, -0.36]} geometry={geo_pln_11} material={mat_9} />
       </group>
 
       {/* Sink */}
       <group position={[4.0, 0.9, -5.5]}>
-        <mesh position={[0, 0.05, 0]} geometry={geo_box_12}>
-
-          <meshStandardMaterial color="#707070" metalness={0.5} roughness={0.2} />
-        </mesh>
+        <mesh position={[0, 0.05, 0]} geometry={geo_box_12} material={mat_10} />
         {/* Faucet */}
-        <mesh position={[0, 0.25, -0.2]} geometry={geo_cyl_13}>
-
-          <meshStandardMaterial color="#bbb" metalness={0.8} roughness={0.2} />
-        </mesh>
+        <mesh position={[0, 0.25, -0.2]} geometry={geo_cyl_13} material={mat_11} />
       </group>
 
       {/* ═══════════════════════════════════════════════ */}
@@ -291,52 +320,28 @@ export function HomeEveningVisual() {
       {/* Sofa */}
       <group position={[-2.0, 0, -1.0]}>
         {/* Seat */}
-        <mesh position={[0, 0.35, 0]} castShadow geometry={geo_box_14}>
-
-          <meshStandardMaterial color="#4a3020" roughness={0.9} />
-        </mesh>
+        <mesh position={[0, 0.35, 0]} castShadow geometry={geo_box_14} material={mat_12} />
         {/* Back */}
-        <mesh position={[0, 0.6, -0.4]} castShadow geometry={geo_box_15}>
-
-          <meshStandardMaterial color="#4a3020" roughness={0.9} />
-        </mesh>
+        <mesh position={[0, 0.6, -0.4]} castShadow geometry={geo_box_15} material={mat_12} />
         {/* Armrests */}
-        <mesh position={[-1.05, 0.5, 0]} castShadow geometry={geo_box_16}>
-
-          <meshStandardMaterial color="#3a2518" roughness={0.9} />
-        </mesh>
-        <mesh position={[1.05, 0.5, 0]} castShadow geometry={geo_box_16}>
-
-          <meshStandardMaterial color="#3a2518" roughness={0.9} />
-        </mesh>
+        <mesh position={[-1.05, 0.5, 0]} castShadow geometry={geo_box_16} material={mat_13} />
+        <mesh position={[1.05, 0.5, 0]} castShadow geometry={geo_box_16} material={mat_13} />
       </group>
 
       {/* Coffee Table */}
       <group position={[-2.0, 0, 0.5]}>
-        <mesh position={[0, 0.35, 0]} castShadow geometry={geo_box_17}>
-
-          <meshStandardMaterial color="#5a4030" roughness={0.6} />
-        </mesh>
+        <mesh position={[0, 0.35, 0]} castShadow geometry={geo_box_17} material={mat_14} />
         {[[-0.45, -0.25], [0.45, -0.25], [-0.45, 0.25], [0.45, 0.25]].map(([x, z], i) => (
-          <mesh key={i} position={[x, 0.175, z]} geometry={geo_box_18}>
-
-            <meshStandardMaterial color="#3a2818" />
-          </mesh>
+          <mesh key={i} position={[x, 0.175, z]} geometry={geo_box_18} material={mat_15} />
         ))}
       </group>
 
       {/* TV on Stand */}
       <group position={[-2.0, 0, -3.5]}>
         {/* TV */}
-        <mesh position={[0, 1.0, 0]} castShadow geometry={geo_box_19}>
-
-          <meshStandardMaterial color="#0a0a0a" emissive="#111133" emissiveIntensity={0.5} />
-        </mesh>
+        <mesh position={[0, 1.0, 0]} castShadow geometry={geo_box_19} material={mat_16} />
         {/* Stand */}
-        <mesh position={[0, 0.3, 0]} geometry={geo_box_20}>
-
-          <meshStandardMaterial color="#2a2020" roughness={0.8} />
-        </mesh>
+        <mesh position={[0, 0.3, 0]} geometry={geo_box_20} material={mat_17} />
       </group>
 
       {/* ═══════════════════════════════════════════════ */}
@@ -345,82 +350,37 @@ export function HomeEveningVisual() {
 
       {/* Bed */}
       <group position={[-5.0, 0, 3.0]}>
-        <mesh position={[0, 0.35, 0]} castShadow geometry={geo_box_21}>
-
-          <meshStandardMaterial color="#352a40" roughness={0.9} />
-        </mesh>
-        <mesh position={[0, 0.6, -0.9]} castShadow geometry={geo_box_22}>
-
-          <meshStandardMaterial color="#4a3525" roughness={0.8} />
-        </mesh>
-        <mesh position={[0, 0.55, -0.6]} geometry={geo_box_23}>
-
-          <meshStandardMaterial color="#bbb8cc" roughness={0.95} />
-        </mesh>
-        <mesh position={[0, 0.52, 0.2]} geometry={geo_box_24}>
-
-          <meshStandardMaterial color="#3a3550" roughness={0.95} />
-        </mesh>
+        <mesh position={[0, 0.35, 0]} castShadow geometry={geo_box_21} material={mat_18} />
+        <mesh position={[0, 0.6, -0.9]} castShadow geometry={geo_box_22} material={mat_19} />
+        <mesh position={[0, 0.55, -0.6]} geometry={geo_box_23} material={mat_20} />
+        <mesh position={[0, 0.52, 0.2]} geometry={geo_box_24} material={mat_21} />
       </group>
 
       {/* Wardrobe — with animated doors */}
       <group position={[-6.5, 0, 0]}>
         {/* Wardrobe body (interior) */}
-        <mesh position={[0, 1.0, 0]} castShadow geometry={geo_box_25}>
-
-          <meshStandardMaterial color="#3a2818" roughness={0.85} />
-        </mesh>
+        <mesh position={[0, 1.0, 0]} castShadow geometry={geo_box_25} material={mat_22} />
         {/* Wardrobe top */}
-        <mesh position={[0, 2.01, 0]} geometry={geo_box_26}>
-
-          <meshStandardMaterial color="#3a2818" roughness={0.8} />
-        </mesh>
+        <mesh position={[0, 2.01, 0]} geometry={geo_box_26} material={mat_23} />
         {/* Shelf inside */}
-        <mesh position={[0, 1.0, 0.01]} geometry={geo_box_27}>
-
-          <meshStandardMaterial color="#3a2818" roughness={0.85} />
-        </mesh>
+        <mesh position={[0, 1.0, 0.01]} geometry={geo_box_27} material={mat_22} />
         {/* Animated left wardrobe door — pivot on left edge */}
         <group position={[-0.48, 0, 0.29]} ref={wardrobeLeftDoorRef}>
-          <mesh position={[0.24, 1.0, 0]} geometry={geo_box_28}>
-
-            <meshStandardMaterial color="#5a4530" roughness={0.8} />
-          </mesh>
+          <mesh position={[0.24, 1.0, 0]} geometry={geo_box_28} material={mat_24} />
           {/* Handle */}
-          <mesh position={[0.42, 1.0, 0.02]} rotation={[0, 0, Math.PI / 2]} geometry={geo_cyl_29}>
-
-            <meshStandardMaterial color="#aaa" metalness={0.8} roughness={0.2} />
-          </mesh>
+          <mesh position={[0.42, 1.0, 0.02]} rotation={[0, 0, Math.PI / 2]} geometry={geo_cyl_29} material={mat_25} />
           {/* Panel detail */}
-          <mesh position={[0.24, 1.3, 0.02]} geometry={geo_box_30}>
-
-            <meshStandardMaterial color="#4a3820" roughness={0.85} />
-          </mesh>
-          <mesh position={[0.24, 0.65, 0.02]} geometry={geo_box_30}>
-
-            <meshStandardMaterial color="#4a3820" roughness={0.85} />
-          </mesh>
+          <mesh position={[0.24, 1.3, 0.02]} geometry={geo_box_30} material={mat_26} />
+          <mesh position={[0.24, 0.65, 0.02]} geometry={geo_box_30} material={mat_26} />
         </group>
         {/* Animated right wardrobe door — pivot on right edge */}
         <group position={[0.48, 0, 0.29]} ref={wardrobeRightDoorRef}>
-          <mesh position={[-0.24, 1.0, 0]} geometry={geo_box_28}>
-
-            <meshStandardMaterial color="#5a4530" roughness={0.8} />
-          </mesh>
+          <mesh position={[-0.24, 1.0, 0]} geometry={geo_box_28} material={mat_24} />
           {/* Handle */}
-          <mesh position={[-0.42, 1.0, 0.02]} rotation={[0, 0, Math.PI / 2]} geometry={geo_cyl_29}>
-
-            <meshStandardMaterial color="#aaa" metalness={0.8} roughness={0.2} />
-          </mesh>
+          <mesh position={[-0.42, 1.0, 0.02]} rotation={[0, 0, Math.PI / 2]} geometry={geo_cyl_29} material={mat_25} />
           {/* Panel detail */}
-          <mesh position={[-0.24, 1.3, 0.02]} geometry={geo_box_30}>
-
-            <meshStandardMaterial color="#4a3820" roughness={0.85} />
-          </mesh>
-          <mesh position={[-0.24, 0.65, 0.02]} geometry={geo_box_30}>
-
-            <meshStandardMaterial color="#4a3820" roughness={0.85} />
-          </mesh>
+          <mesh position={[-0.24, 1.3, 0.02]} geometry={geo_box_30} material={mat_26} />
+          <mesh position={[-0.24, 0.65, 0.02]} geometry={geo_box_30} material={mat_26} />
         </group>
       </group>
 
@@ -428,28 +388,12 @@ export function HomeEveningVisual() {
       {/* ── WINDOW (right wall, emissive night city glow) ── */}
       {/* ═══════════════════════════════════════════════ */}
       <group position={[W / 2 - 0.01, 1.5, -2.5]}>
-        <mesh rotation-y={-Math.PI / 2} geometry={geo_pln_31}>
-
-          <meshStandardMaterial
-            color="#0a0a20"
-            emissive="#1a2a5a"
-            emissiveIntensity={1.2}
-          />
-        </mesh>
+        <mesh rotation-y={-Math.PI / 2} geometry={geo_pln_31} material={mat_27} />
         {/* Window frame */}
-        <mesh rotation-y={-Math.PI / 2} position={[0.01, 0, 0]} geometry={geo_box_32}>
-
-          <meshStandardMaterial color="#555" />
-        </mesh>
+        <mesh rotation-y={-Math.PI / 2} position={[0.01, 0, 0]} geometry={geo_box_32} material={mat_28} />
         {/* Cross bars */}
-        <mesh rotation-y={-Math.PI / 2} position={[0.02, 0, 0]} geometry={geo_box_33}>
-
-          <meshStandardMaterial color="#444" />
-        </mesh>
-        <mesh rotation-y={-Math.PI / 2} position={[0.025, 0, 0]} geometry={geo_box_34}>
-
-          <meshStandardMaterial color="#444" />
-        </mesh>
+        <mesh rotation-y={-Math.PI / 2} position={[0.02, 0, 0]} geometry={geo_box_33} material={mat_29} />
+        <mesh rotation-y={-Math.PI / 2} position={[0.025, 0, 0]} geometry={geo_box_34} material={mat_29} />
         {/* Window light spill */}
         <pointLight position={[-0.5, 0, 0.5]} color="#1a2a5a" intensity={1.2} distance={5} />
       </group>
@@ -474,7 +418,7 @@ export function HomeEveningVisual() {
       <pointLight position={[6.5, 1.5, -2.5]} color="#1a2a5a" intensity={1.5} distance={7} />
 
       {/* ── ENVIRONMENTAL CLUTTER / STORYTELLING (lazy chunk) ── */}
-      <HomeEveningProps lod={lod} />
+      <HomeEveningProps />
 
       {/* ═══════════════════════════════════════════════ */}
       {/* ── ADDITIONAL KITCHEN DETAILS ── */}
@@ -483,89 +427,47 @@ export function HomeEveningVisual() {
       {/* ── Stove top with burners ── */}
       <group position={[3.2, 0, -5.5]}>
         {/* Stove body */}
-        <mesh position={[0, 0.45, 0]} castShadow geometry={geo_box_35}>
-
-          <meshStandardMaterial color="#3a3a3a" metalness={0.4} roughness={0.5} />
-        </mesh>
+        <mesh position={[0, 0.45, 0]} castShadow geometry={geo_box_35} material={mat_30} />
         {/* Stove top surface */}
-        <mesh position={[0, 0.91, 0]} geometry={geo_box_36}>
-
-          <meshStandardMaterial color="#2a2a2a" metalness={0.6} roughness={0.3} />
-        </mesh>
+        <mesh position={[0, 0.91, 0]} geometry={geo_box_36} material={mat_31} />
         {/* Burner rings */}
         {[[-0.15, -0.15], [0.15, -0.15], [-0.15, 0.15], [0.15, 0.15]].map(([x, z], i) => (
-          <mesh key={`burner-${i}`} position={[x, 0.93, z]} rotation-x={-Math.PI / 2} geometry={geo_tor_37}>
-
-            <meshStandardMaterial color="#1a1a1a" metalness={0.7} roughness={0.3} />
-          </mesh>
+          <mesh key={`burner-${i}`} position={[x, 0.93, z]} rotation-x={-Math.PI / 2} geometry={geo_tor_37} material={mat_32} />
         ))}
         {/* Oven door */}
-        <mesh position={[0, 0.3, 0.33]} geometry={geo_box_38}>
-
-          <meshStandardMaterial color="#333" metalness={0.3} roughness={0.4} />
-        </mesh>
+        <mesh position={[0, 0.3, 0.33]} geometry={geo_box_38} material={mat_33} />
         {/* Oven door handle */}
-        <mesh position={[0, 0.48, 0.35]} rotation={[0, 0, Math.PI / 2]} geometry={geo_cyl_39}>
-
-          <meshStandardMaterial color="#666" metalness={0.7} roughness={0.3} />
-        </mesh>
+        <mesh position={[0, 0.48, 0.35]} rotation={[0, 0, Math.PI / 2]} geometry={geo_cyl_39} material={mat_34} />
       </group>
 
       {/* ── Kettle on stove ── */}
       <group position={[3.35, 0.93, -5.65]}>
-        <mesh position={[0, 0.08, 0]} geometry={geo_cyl_40}>
-
-          <meshStandardMaterial color="#c0c0c0" metalness={0.7} roughness={0.2} />
-        </mesh>
+        <mesh position={[0, 0.08, 0]} geometry={geo_cyl_40} material={mat_35} />
         {/* Kettle lid */}
-        <mesh position={[0, 0.16, 0]} geometry={geo_sph_41}>
-
-          <meshStandardMaterial color="#b0b0b0" metalness={0.6} roughness={0.3} />
-        </mesh>
+        <mesh position={[0, 0.16, 0]} geometry={geo_sph_41} material={mat_36} />
         {/* Kettle spout */}
-        <mesh position={[0.06, 0.08, 0]} rotation={[0, 0, -0.4]} geometry={geo_cyl_42}>
-
-          <meshStandardMaterial color="#aaa" metalness={0.7} roughness={0.2} />
-        </mesh>
+        <mesh position={[0.06, 0.08, 0]} rotation={[0, 0, -0.4]} geometry={geo_cyl_42} material={mat_37} />
         {/* Kettle handle */}
-        <mesh position={[-0.06, 0.12, 0]} rotation={[0, 0, Math.PI / 2]} geometry={geo_tor_43}>
-
-          <meshStandardMaterial color="#555" metalness={0.5} roughness={0.4} />
-        </mesh>
+        <mesh position={[-0.06, 0.12, 0]} rotation={[0, 0, Math.PI / 2]} geometry={geo_tor_43} material={mat_38} />
       </group>
 
       {/* ── Wall-mounted cabinets above counter ── */}
       <group position={[4.5, 0, -6.2]}>
         {[0, 1.3].map((x, i) => (
-          <mesh key={`cabinet-${i}`} position={[x, 2.2, 0]} castShadow geometry={geo_box_44}>
-
-            <meshStandardMaterial color="#5a4a38" roughness={0.75} />
-          </mesh>
+          <mesh key={`cabinet-${i}`} position={[x, 2.2, 0]} castShadow geometry={geo_box_44} material={mat_39} />
         ))}
         {/* Cabinet door handles */}
         {[0, 1.3].map((x, i) => (
-          <mesh key={`cab-handle-${i}`} position={[x + 0.5, 2.2, 0.18]} rotation={[0, 0, Math.PI / 2]} geometry={geo_cyl_45}>
-
-            <meshStandardMaterial color="#888" metalness={0.7} roughness={0.3} />
-          </mesh>
+          <mesh key={`cab-handle-${i}`} position={[x + 0.5, 2.2, 0.18]} rotation={[0, 0, Math.PI / 2]} geometry={geo_cyl_45} material={mat_40} />
         ))}
       </group>
 
       {/* ── Spice rack on wall ── */}
       <group position={[3.0, 0, -6.4]}>
-        <mesh position={[0, 1.9, 0]} geometry={geo_box_46}>
-
-          <meshStandardMaterial color="#5a4030" roughness={0.7} />
-        </mesh>
+        <mesh position={[0, 1.9, 0]} geometry={geo_box_46} material={mat_41} />
         {/* Small spice jars */}
         {[-0.2, -0.07, 0.06, 0.19].map((x, i) => (
-          <mesh key={`spice-${i}`} position={[x, 1.96, 0]} geometry={geo_cyl_47}>
-
-            <meshStandardMaterial
-              color={['#884422', '#228844', '#884488', '#448888'][i]}
-              roughness={0.5}
-            />
-          </mesh>
+          <mesh key={`spice-${i}`} position={[x, 1.96, 0]} geometry={geo_cyl_47} material={mat(['#884422', '#228844', '#884488', '#448888'][i], { roughness: 0.5 })} />
         ))}
       </group>
 
@@ -581,26 +483,15 @@ export function HomeEveningVisual() {
 
       {/* ── Bookshelf on left wall ── */}
       <group position={[-6.0, 0, -1.0]} rotation={[0, Math.PI / 2, 0]}>
-        <mesh position={[0, 1.0, 0]} castShadow geometry={geo_box_49}>
-
-          <meshStandardMaterial color="#5a4030" roughness={0.8} />
-        </mesh>
+        <mesh position={[0, 1.0, 0]} castShadow geometry={geo_box_49} material={mat_42} />
         {/* Shelves */}
         {[0.5, 1.0, 1.5].map((y, i) => (
-          <mesh key={`bkshelf-${i}`} position={[0, y, 0.01]} geometry={geo_box_50}>
-
-            <meshStandardMaterial color="#4a3520" roughness={0.7} />
-          </mesh>
+          <mesh key={`bkshelf-${i}`} position={[0, y, 0.01]} geometry={geo_box_50} material={mat_43} />
         ))}
         {/* Books on shelves */}
         {[0.25, 0.75, 1.25, 1.75].map((y, si) => (
           Array.from({ length: 3 + si % 2 }).map((_, j) => (
-            <mesh key={`bk-${si}-${j}`} position={[-0.3 + j * 0.2, y, 0.02]} geometry={BOOK_GEOS[j % 3]}>
-              <meshStandardMaterial
-                color={['#8b2020', '#204080', '#205030', '#806020', '#604020'][j % 5]}
-                roughness={0.6}
-              />
-            </mesh>
+            <mesh key={`bk-${si}-${j}`} position={[-0.3 + j * 0.2, y, 0.02]} geometry={BOOK_GEOS[j % 3]} material={mat(['#8b2020', '#204080', '#205030', '#806020', '#604020'][j % 5], { roughness: 0.6 })} />
           ))
         ))}
       </group>
@@ -608,82 +499,45 @@ export function HomeEveningVisual() {
       {/* ── Table lamp on coffee table (warm glow) ── */}
       <group position={[-2.3, 0.37, 0.5]}>
         {/* Lamp base */}
-        <mesh position={[0, 0.02, 0]} geometry={geo_cyl_51}>
-
-          <meshStandardMaterial color="#8a7a50" metalness={0.5} roughness={0.4} />
-        </mesh>
+        <mesh position={[0, 0.02, 0]} geometry={geo_cyl_51} material={mat_44} />
         {/* Lamp stem */}
-        <mesh position={[0, 0.15, 0]} geometry={geo_cyl_52}>
-
-          <meshStandardMaterial color="#8a7a50" metalness={0.5} roughness={0.4} />
-        </mesh>
+        <mesh position={[0, 0.15, 0]} geometry={geo_cyl_52} material={mat_44} />
         {/* Lamp shade */}
-        <mesh position={[0, 0.3, 0]} geometry={geo_cyl_53}>
-
-          <meshStandardMaterial color="#e8d8b0" roughness={0.8} side={THREE.DoubleSide} />
-        </mesh>
+        <mesh position={[0, 0.3, 0]} geometry={geo_cyl_53} material={mat_45} />
         {/* Lamp glow bulb */}
-        <mesh position={[0, 0.28, 0]} geometry={geo_sph_54}>
-
-          <meshStandardMaterial color="#ffddaa" emissive="#ffcc80" emissiveIntensity={2.0} />
-        </mesh>
+        <mesh position={[0, 0.28, 0]} geometry={geo_sph_54} material={mat_46} />
         {/* Warm light from lamp */}
         <pointLight position={[0, 0.35, 0]} color="#ffcc80" intensity={3.0} distance={5} castShadow shadow-mapSize-width={256} />
       </group>
 
       {/* ── Remote control on coffee table ── */}
-      <mesh position={[-1.7, 0.375, 0.6]} rotation={[0, 0.3, 0]} geometry={geo_box_55}>
-
-        <meshStandardMaterial color="#1a1a1a" roughness={0.7} />
-      </mesh>
+      <mesh position={[-1.7, 0.375, 0.6]} rotation={[0, 0.3, 0]} geometry={geo_box_55} material={mat_47} />
 
       {/* ── Tea cup on coffee table ── */}
       <group position={[-2.0, 0.37, 0.3]}>
-        <mesh position={[0, 0.04, 0]} geometry={geo_cyl_56}>
-
-          <meshStandardMaterial color="#e8e0d8" roughness={0.5} />
-        </mesh>
+        <mesh position={[0, 0.04, 0]} geometry={geo_cyl_56} material={mat_48} />
         {/* Saucer */}
-        <mesh position={[0, 0.005, 0]} rotation-x={-Math.PI / 2} geometry={geo_cyl_57}>
-
-          <meshStandardMaterial color="#e8e0d8" roughness={0.5} />
-        </mesh>
+        <mesh position={[0, 0.005, 0]} rotation-x={-Math.PI / 2} geometry={geo_cyl_57} material={mat_48} />
       </group>
 
       {/* ── Photos on living room wall ── */}
       {[[-3.5, 1.8, -3.2], [-2.5, 2.0, -3.2], [-1.5, 1.7, -3.2]].map((pos, i) => (
         <group key={`photo-${i}`} position={pos as [number, number, number]}>
           {/* Frame */}
-          <mesh geometry={PHOTO_FRAME_GEOS[i]}>
-            <meshStandardMaterial color="#4a3520" roughness={0.7} />
-          </mesh>
+          <mesh geometry={PHOTO_FRAME_GEOS[i]} material={mat_43} />
           {/* Photo area */}
-          <mesh position={[0, 0, 0.011]} geometry={PHOTO_PLANE_GEOS[i]}>
-            <meshStandardMaterial
-              color={['#8a7a60', '#7a8a70', '#6a7080'][i]}
-              roughness={0.9}
-            />
-          </mesh>
+          <mesh position={[0, 0, 0.011]} geometry={PHOTO_PLANE_GEOS[i]} material={mat(['#8a7a60', '#7a8a70', '#6a7080'][i], { roughness: 0.9 })} />
         </group>
       ))}
 
       {/* ── Curtains on window ── */}
       <group position={[W / 2 - 0.02, 1.5, -2.5]}>
         {/* Left curtain */}
-        <mesh rotation-y={-Math.PI / 2} position={[0.03, 0, -0.8]} geometry={geo_pln_58}>
-
-          <meshStandardMaterial color="#5a4a40" roughness={0.9} side={THREE.DoubleSide} />
-        </mesh>
+        <mesh rotation-y={-Math.PI / 2} position={[0.03, 0, -0.8]} geometry={geo_pln_58} material={mat_49} />
         {/* Right curtain */}
-        <mesh rotation-y={-Math.PI / 2} position={[0.03, 0, 0.8]} geometry={geo_pln_58}>
-
-          <meshStandardMaterial color="#5a4a40" roughness={0.9} side={THREE.DoubleSide} />
-        </mesh>
+        <mesh rotation-y={-Math.PI / 2} position={[0.03, 0, 0.8]} geometry={geo_pln_58} material={mat_49} />
         {/* Curtain rod */}
-        <mesh rotation={[0, 0, Math.PI / 2]} position={[0.02, 0.85, 0]} geometry={geo_cyl_59}>
-
-          <meshStandardMaterial color="#6a5a40" metalness={0.4} roughness={0.5} />
-        </mesh>
+        <mesh rotation={[0, 0, Math.PI / 2]} position={[0.02, 0.85, 0]} geometry={geo_cyl_59} material={mat_50} />
       </group>
 
       {/* ── Large rug under coffee table ── */}
@@ -704,49 +558,28 @@ export function HomeEveningVisual() {
       {/* ── Coat rack near entrance ── */}
       <group position={[5.5, 0, 5.0]}>
         {/* Pole */}
-        <mesh position={[0, 0.9, 0]} geometry={geo_cyl_62}>
-
-          <meshStandardMaterial color="#4a3520" roughness={0.7} />
-        </mesh>
+        <mesh position={[0, 0.9, 0]} geometry={geo_cyl_62} material={mat_43} />
         {/* Base */}
-        <mesh position={[0, 0.03, 0]} geometry={geo_cyl_63}>
-
-          <meshStandardMaterial color="#3a2818" roughness={0.8} />
-        </mesh>
+        <mesh position={[0, 0.03, 0]} geometry={geo_cyl_63} material={mat_23} />
         {/* Hooks */}
         {[0, 1, 2, 3].map((i) => (
-          <mesh key={`hook-${i}`} position={[0, 1.5, 0]} rotation={[0, (i * Math.PI) / 2, -0.5]} geometry={geo_cyl_64}>
-
-            <meshStandardMaterial color="#555" metalness={0.6} roughness={0.4} />
-          </mesh>
+          <mesh key={`hook-${i}`} position={[0, 1.5, 0]} rotation={[0, (i * Math.PI) / 2, -0.5]} geometry={geo_cyl_64} material={mat_51} />
         ))}
         {/* Coat hanging on rack */}
-        <mesh position={[0.08, 1.2, 0]} rotation={[0.05, 0, 0.03]} geometry={geo_box_65}>
-
-          <meshStandardMaterial color="#2a3040" roughness={0.85} />
-        </mesh>
+        <mesh position={[0.08, 1.2, 0]} rotation={[0.05, 0, 0.03]} geometry={geo_box_65} material={mat_52} />
       </group>
 
       {/* ── Mirror on wall near entrance ── */}
       <group position={[5.0, 1.5, 6.8]} rotation-y={Math.PI}>
         {/* Mirror frame */}
-        <mesh geometry={geo_box_66}>
-
-          <meshStandardMaterial color="#5a4530" roughness={0.7} />
-        </mesh>
+        <mesh geometry={geo_box_66} material={mat_53} />
         {/* Mirror surface */}
-        <mesh position={[0, 0, 0.016]} geometry={geo_pln_67}>
-
-          <meshStandardMaterial color="#6080a0" metalness={0.8} roughness={0.1} />
-        </mesh>
+        <mesh position={[0, 0, 0.016]} geometry={geo_pln_67} material={mat_54} />
       </group>
 
       {/* ── Shoes near entrance ── */}
       {[[5.0, 0, 6.2], [5.2, 0, 6.0], [4.8, 0, 6.3]].map((pos, i) => (
-        <mesh key={`shoe-${i}`} position={pos as [number, number, number]} rotation={[0, 0.3 + i * 0.5, 0]} geometry={geo_box_68}>
-
-          <meshStandardMaterial color={['#2a1a1a', '#3a3a2a', '#1a1a2a'][i]} roughness={0.9} />
-        </mesh>
+        <mesh key={`shoe-${i}`} position={pos as [number, number, number]} rotation={[0, 0.3 + i * 0.5, 0]} geometry={geo_box_68} material={mat(['#2a1a1a', '#3a3a2a', '#1a1a2a'][i], { roughness: 0.9 })} />
       ))}
 
       {/* ── Welcome mat at entrance ── */}
@@ -757,20 +590,11 @@ export function HomeEveningVisual() {
 
       {/* ── Doorbell / intercom panel ── */}
       <group position={[-6.8, 1.4, 5.5]} rotation-y={Math.PI / 2}>
-        <mesh geometry={geo_box_70}>
-
-          <meshStandardMaterial color="#3a3a3a" metalness={0.5} roughness={0.5} />
-        </mesh>
+        <mesh geometry={geo_box_70} material={mat_55} />
         {/* Speaker grille */}
-        <mesh position={[0, -0.04, 0.016]} geometry={geo_box_71}>
-
-          <meshStandardMaterial color="#1a1a1a" roughness={0.9} />
-        </mesh>
+        <mesh position={[0, -0.04, 0.016]} geometry={geo_box_71} material={mat_56} />
         {/* Button */}
-        <mesh position={[0, 0.04, 0.018]} geometry={geo_cyl_72}>
-
-          <meshStandardMaterial color="#aa2222" emissive="#aa2222" emissiveIntensity={0.5} />
-        </mesh>
+        <mesh position={[0, 0.04, 0.018]} geometry={geo_cyl_72} material={mat_57} />
       </group>
 
       {/* ═══════════════════════════════════════════════ */}
@@ -778,7 +602,7 @@ export function HomeEveningVisual() {
       {/* ═══════════════════════════════════════════════ */}
 
       {/* ── Decorative props (LOD: standard+) ── */}
-      <EnvironmentDetail currentLod={lod} minLod="standard">
+      <EnvironmentDetail minLod="standard" position={[-3, 0.3, 1.0]}>
       {/* ── Radiator on left wall near bedroom ── */}
       <Radiator position={[-W / 2 + 0.06, 0.3, 1.0]} rotation={[0, Math.PI / 2, 0]} color="#b0b0b0" />
 

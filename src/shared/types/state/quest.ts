@@ -8,4 +8,6 @@ export interface QuestState {
   readonly objectives: Record<string, boolean>;
   /** In-game hour when quest was activated (for time limit tracking) */
   readonly startedAtTime?: number;
+  /** Accumulated in-game hours since activation (persists across midnight). */
+  readonly hoursElapsed?: number;
 }

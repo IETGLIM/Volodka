@@ -10,6 +10,7 @@ import { FPS_ARMS_URL } from '@/config/fpsArmsUrl';
 import { getNpcModelUrls } from '@/config/npcModelRegistry';
 import { getPropModelUrls } from '@/config/propModelRegistry';
 import { QUALITY_GPU_CLEANUP } from '@/engine/graphics/graphicsSettingsStorage';
+import { clearSkyTextureCache } from '@/engine/graphics/proceduralSkyTextures';
 import { evictCanvasTextureCache } from '@/engine/three/cachedCanvasTexture';
 import { evictNpcTemplateCache } from '@/engine/three/npcTemplateCache';
 import { evictTextureReuseMap } from '@/engine/three/textureReuseMap';
@@ -39,6 +40,7 @@ export function evictQualityDependentGpuCache(): void {
     THREE.Cache.remove(url);
   }
   evictCanvasTextureCache();
+  clearSkyTextureCache();
   evictTextureReuseMap();
   evictNpcTemplateCache();
 }

@@ -5,7 +5,6 @@ import { useMemo, useRef, useEffect, type MutableRefObject } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
-import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { EnvironmentDetail, SceneClutterGate } from './lod/PropDistanceGate';
 import { FloorLamp, PastryCase, Window, Plant } from './lazyInteriorModels';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
@@ -28,7 +27,6 @@ export function CafeVisual({ livePlayerPositionRef }: CafeVisualProps) {
     'cafe_evening:neon-ceiling',
     createCafeEveningNeonSkyTexture,
   );
-  const { lod } = useEnvironmentLod();
   const envProfile = useMemo(() => getEnvironmentLodProfile('cafe_evening'), []);
 
   // ── Animated element refs ──
@@ -319,7 +317,7 @@ export function CafeVisual({ livePlayerPositionRef }: CafeVisualProps) {
       </group>
 
       {/* ── Neon sign on left wall (in addition to the one behind bar) ── */}
-      <EnvironmentDetail currentLod={lod} minLod="standard">
+      <EnvironmentDetail minLod="standard" position={[-4.85, 2.3, -1.0]}>
         <SceneClutterGate
           livePlayerPositionRef={livePlayerPositionRef}
           position={[-4.85, 2.3, -1.0]}

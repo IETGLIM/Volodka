@@ -8,8 +8,14 @@ import {
   tryActivatePoemPower,
 } from '@/engine/GameActionDispatcher';
 import { isTrainablePlayerSkill, warnInvalidValue } from '@/shared/validation/typeGuards';
+import {
+  resolveSkillUnlockEffects,
+  warnUnmatchedSkillEffectParts,
+} from '@/engine/skills/applySkillUnlockEffects';
 import { createBuff, addBuff } from './buffSystem';
 import { getEnemyDefenseReduction } from './buffSystem';
+import { COMBAT_CONSTANTS } from './formulas';
+import { rollPlayerDamage } from './combatRng';
 
 function snap() {
   return getGameSnapshot();
@@ -103,11 +109,11 @@ export const POEM_COMBAT_ABILITIES: Record<string, PoemCombatAbility> = {
     execute: (state) => {
       const playerAttack = getSnapshotAttack();
       const enemyDef = Math.max(0, state.enemy.defense * (1 - getEnemyDefenseReduction(state)));
-      const damage = Math.max(1, Math.floor((playerAttack * 2 - enemyDef) * (0.9 + Math.random() * 0.2)));
-      const newEnemyHp = Math.max(0, state.enemy.hp - damage);
+      const { damage, state: afterRng } = rollPlayerDamage(state, { attack: playerAttack, defense: enemyDef, multiplier: 2 });
+      const newEnemyHp = Math.max(0, afterRng.enemy.hp - damage);
       return {
-        ...state,
-        enemy: { ...state.enemy, hp: newEnemyHp },
+        ...afterRng,
+        enemy: { ...afterRng.enemy, hp: newEnemyHp },
         log: [
           ...state.log,
           { turn: state.turn, text: `✦ Штормовой Ветер! ${damage} урона!`, type: 'player_attack' as const, damage },
@@ -158,11 +164,11 @@ export const POEM_COMBAT_ABILITIES: Record<string, PoemCombatAbility> = {
     cooldown: 4,
     execute: (state) => {
       const playerAttack = getSnapshotAttack();
-      const damage = Math.max(1, Math.floor(playerAttack * 1.5 * (0.9 + Math.random() * 0.2)));
-      const newEnemyHp = Math.max(0, state.enemy.hp - damage);
+      const { damage, state: afterRng } = rollPlayerDamage(state, { attack: playerAttack, multiplier: 1.5 });
+      const newEnemyHp = Math.max(0, afterRng.enemy.hp - damage);
       return {
-        ...state,
-        enemy: { ...state.enemy, hp: newEnemyHp },
+        ...afterRng,
+        enemy: { ...afterRng.enemy, hp: newEnemyHp },
         log: [
           ...state.log,
           { turn: state.turn, text: `✦ Прорыв! ${damage} чистого урона!`, type: 'player_attack' as const, damage },
@@ -178,13 +184,15 @@ export const POEM_COMBAT_ABILITIES: Record<string, PoemCombatAbility> = {
     execute: (state) => {
       const playerAttack = getSnapshotAttack();
       const enemyDef = Math.max(0, state.enemy.defense * (1 - getEnemyDefenseReduction(state)));
-      const dmg1 = Math.max(1, Math.floor((playerAttack - enemyDef) * (0.9 + Math.random() * 0.2)));
-      const dmg2 = Math.max(1, Math.floor((playerAttack - enemyDef) * (0.9 + Math.random() * 0.2)));
+      const roll1 = rollPlayerDamage(state, { attack: playerAttack, defense: enemyDef });
+      const roll2 = rollPlayerDamage(roll1.state, { attack: playerAttack, defense: enemyDef });
+      const dmg1 = roll1.damage;
+      const dmg2 = roll2.damage;
       const totalDmg = dmg1 + dmg2;
-      const newEnemyHp = Math.max(0, state.enemy.hp - totalDmg);
+      const newEnemyHp = Math.max(0, roll2.state.enemy.hp - totalDmg);
       return {
-        ...state,
-        enemy: { ...state.enemy, hp: newEnemyHp },
+        ...roll2.state,
+        enemy: { ...roll2.state.enemy, hp: newEnemyHp },
         log: [
           ...state.log,
           { turn: state.turn, text: `✦ Мост Между Мирами! Двойной удар: ${dmg1} + ${dmg2} = ${totalDmg} урона!`, type: 'player_attack' as const, damage: totalDmg },
@@ -238,11 +246,11 @@ export const POEM_COMBAT_ABILITIES: Record<string, PoemCombatAbility> = {
       const karmaBonus = Math.floor(snap().playerState.karma / 10);
       const playerAttack = getSnapshotAttack();
       const enemyDef = Math.max(0, state.enemy.defense * (1 - getEnemyDefenseReduction(state)));
-      const damage = Math.max(1, Math.floor((playerAttack + karmaBonus * 2 - enemyDef) * (0.9 + Math.random() * 0.2)));
-      const newEnemyHp = Math.max(0, state.enemy.hp - damage);
+      const { damage, state: afterRng } = rollPlayerDamage(state, { attack: playerAttack, defense: enemyDef, attackBonus: karmaBonus * 2 });
+      const newEnemyHp = Math.max(0, afterRng.enemy.hp - damage);
       return {
-        ...state,
-        enemy: { ...state.enemy, hp: newEnemyHp },
+        ...afterRng,
+        enemy: { ...afterRng.enemy, hp: newEnemyHp },
         log: [
           ...state.log,
           { turn: state.turn, text: `✦ Звездный Путь! ${damage} урона (карма-бонус: +${karmaBonus * 2})!`, type: 'player_attack' as const, damage },
@@ -258,11 +266,11 @@ export const POEM_COMBAT_ABILITIES: Record<string, PoemCombatAbility> = {
     execute: (state) => {
       const playerAttack = getSnapshotAttack();
       const enemyDef = Math.max(0, state.enemy.defense * (1 - getEnemyDefenseReduction(state)));
-      const damage = Math.max(1, Math.floor((playerAttack * 1.8 - enemyDef) * (0.9 + Math.random() * 0.2)));
-      const newEnemyHp = Math.max(0, state.enemy.hp - damage);
+      const { damage, state: afterRng } = rollPlayerDamage(state, { attack: playerAttack, defense: enemyDef, multiplier: 1.8 });
+      const newEnemyHp = Math.max(0, afterRng.enemy.hp - damage);
       return {
-        ...state,
-        enemy: { ...state.enemy, hp: newEnemyHp },
+        ...afterRng,
+        enemy: { ...afterRng.enemy, hp: newEnemyHp },
         _sideEffects: [{ type: 'addKarma', value: 8 } as SideEffect],
         log: [
           ...state.log,
@@ -366,14 +374,14 @@ export const POEM_COMBAT_ABILITIES: Record<string, PoemCombatAbility> = {
     execute: (state) => {
       const playerAttack = getSnapshotAttack();
       const karmaBonus = Math.floor(snap().playerState.karma * 0.5);
-      const damage = Math.max(1, Math.floor((playerAttack + karmaBonus) * 1.5 * (0.9 + Math.random() * 0.2)));
-      const newEnemyHp = Math.max(0, state.enemy.hp - damage);
+      const { damage, state: afterRng } = rollPlayerDamage(state, { attack: playerAttack, multiplier: 1.5, attackBonus: karmaBonus * 1.5 });
+      const newEnemyHp = Math.max(0, afterRng.enemy.hp - damage);
       // Side effect: player sacrifices 50% of current HP
       const hpCost = Math.floor(state.playerHp * 0.5);
       const newPlayerHp = Math.max(1, state.playerHp - hpCost);
       return {
-        ...state,
-        enemy: { ...state.enemy, hp: newEnemyHp },
+        ...afterRng,
+        enemy: { ...afterRng.enemy, hp: newEnemyHp },
         playerHp: newPlayerHp,
         _sideEffects: [{ type: 'addEnergy', value: -30 } as SideEffect],
         log: [
@@ -432,11 +440,11 @@ export const POEM_COMBAT_ABILITIES: Record<string, PoemCombatAbility> = {
     cooldown: 5,
     execute: (state) => {
       const playerAttack = getSnapshotAttack() + 10;
-      const damage = Math.max(1, Math.floor(playerAttack * 2.0 * (0.9 + Math.random() * 0.2)));
-      const newEnemyHp = Math.max(0, state.enemy.hp - damage);
+      const { damage, state: afterRng } = rollPlayerDamage(state, { attack: playerAttack, multiplier: 2 });
+      const newEnemyHp = Math.max(0, afterRng.enemy.hp - damage);
       return {
-        ...state,
-        enemy: { ...state.enemy, hp: newEnemyHp },
+        ...afterRng,
+        enemy: { ...afterRng.enemy, hp: newEnemyHp },
         _sideEffects: [
           { type: 'addSkill', skill: 'coding', value: 5 } as SideEffect,
           { type: 'addSkill', skill: 'logic', value: 5 } as SideEffect,
@@ -480,11 +488,11 @@ export const POEM_COMBAT_ABILITIES: Record<string, PoemCombatAbility> = {
     execute: (state) => {
       const playerAttack = getSnapshotAttack();
       const enemyDef = Math.max(0, state.enemy.defense * (1 - getEnemyDefenseReduction(state)));
-      const damage = Math.max(1, Math.floor((playerAttack * 1.8 - enemyDef) * (0.9 + Math.random() * 0.2)));
-      const newEnemyHp = Math.max(0, state.enemy.hp - damage);
+      const { damage, state: afterRng } = rollPlayerDamage(state, { attack: playerAttack, defense: enemyDef, multiplier: 1.8 });
+      const newEnemyHp = Math.max(0, afterRng.enemy.hp - damage);
       return {
-        ...state,
-        enemy: { ...state.enemy, hp: newEnemyHp },
+        ...afterRng,
+        enemy: { ...afterRng.enemy, hp: newEnemyHp },
         _sideEffects: [{ type: 'addSkill', skill: 'intuition', value: 4 } as SideEffect],
         log: [
           ...state.log,
@@ -565,10 +573,10 @@ export function checkPoemPowerCombo(
       description: 'Правда Глас + Штормовой Ветер = обнажение + сокрушительный удар',
       execute: (s) => {
         const playerAttack = getSnapshotAttack();
-        const enemyDef = Math.max(0, s.enemy.defense * (1 - getEnemyDefenseReduction(s)) * 0.5);
-        const damage = Math.max(1, Math.floor((playerAttack * 2.5 - enemyDef) * (0.9 + Math.random() * 0.2)));
-        const newEnemyHp = Math.max(0, s.enemy.hp - damage);
-        return { ...s, enemy: { ...s.enemy, hp: newEnemyHp }, log: [...s.log, { turn: s.turn, text: `✦✦ Истина и Шторм! ${damage} колоссального урона!`, type: 'poem_combo' as const, damage, isCritical: true }] };
+        const enemyDef = Math.max(0, s.enemy.defense * (1 - getEnemyDefenseReduction(s)) * COMBAT_CONSTANTS.COMBO_ISTINA_DEFENSE_FACTOR);
+        const { damage, state: afterRng } = rollPlayerDamage(s, { attack: playerAttack, defense: enemyDef, multiplier: 2.5 });
+        const newEnemyHp = Math.max(0, afterRng.enemy.hp - damage);
+        return { ...afterRng, enemy: { ...afterRng.enemy, hp: newEnemyHp }, log: [...afterRng.log, { turn: s.turn, text: `✦✦ Истина и Шторм! ${damage} колоссального урона!`, type: 'poem_combo' as const, damage, isCritical: true }] };
       },
     },
     'poem_3+poem_10': {
@@ -588,9 +596,9 @@ export function checkPoemPowerCombo(
       execute: (s) => {
         const playerAttack = getSnapshotAttack();
         const karmaBonus = Math.floor(snap().playerState.karma * 0.3);
-        const damage = Math.max(1, Math.floor((playerAttack * 2.5 + karmaBonus) * (0.9 + Math.random() * 0.2)));
-        const newEnemyHp = Math.max(0, s.enemy.hp - damage);
-        return { ...s, enemy: { ...s.enemy, hp: newEnemyHp }, _sideEffects: [{ type: 'addKarma', value: 12 } as SideEffect], log: [...s.log, { turn: s.turn, text: `✦✦ Последний Шторм! ${damage} урона, +12 кармы!`, type: 'poem_combo' as const, damage, isCritical: true }] };
+        const { damage, state: afterRng } = rollPlayerDamage(s, { attack: playerAttack, multiplier: 2.5, attackBonus: karmaBonus });
+        const newEnemyHp = Math.max(0, afterRng.enemy.hp - damage);
+        return { ...afterRng, enemy: { ...afterRng.enemy, hp: newEnemyHp }, _sideEffects: [{ type: 'addKarma', value: 12 } as SideEffect], log: [...afterRng.log, { turn: s.turn, text: `✦✦ Последний Шторм! ${damage} урона, +12 кармы!`, type: 'poem_combo' as const, damage, isCritical: true }] };
       },
     },
     'poem_2+poem_4': {
@@ -680,7 +688,7 @@ export function unlockSkill(skillId: string): boolean {
   const node = SKILL_TREE.find((n) => n.id === skillId);
   if (!node) return false;
 
-  applySkillEffect(node.effect);
+  applySkillEffect(node.effect, skillId);
 
   dispatchGameAction({ type: 'skill/unlockTreeNode', skillId });
 
@@ -692,24 +700,26 @@ export function unlockSkill(skillId: string): boolean {
   return true;
 }
 
-/** Parse and apply skill effect string */
-export function applySkillEffect(effect: string): void {
-  const skills = snap().playerState.skills;
-  const parts = effect.split(', ');
-  for (const part of parts) {
-    const match = part.match(/^(\w+)\s*\+(\d+)(%)?$/);
-    if (match) {
-      const stat = match[1];
-      const value = parseInt(match[2]);
-      const isPercent = !!match[3];
+/** Parse and apply skill effect string. Prefer passing skillId for structured unlock effects. */
+export function applySkillEffect(effect: string, skillId?: string): void {
+  const resolved = resolveSkillUnlockEffects(skillId ?? '', effect);
+  if (skillId) {
+    warnUnmatchedSkillEffectParts(skillId, resolved.unmatchedEffectParts);
+  }
 
-      if (!isPercent && stat in skills) {
-        dispatchGameAction({
-          type: 'player/addSkill',
-          skill: stat as import('@/shared/types/game').TrainablePlayerSkill,
-          amount: value,
-        });
-      }
-    }
+  for (const delta of resolved.statDeltas) {
+    dispatchGameAction({
+      type: 'player/addSkill',
+      skill: delta.skill,
+      amount: delta.amount,
+    });
+  }
+
+  for (const flagKey of resolved.passiveFlags) {
+    dispatchGameAction({ type: 'player/setFlag', key: flagKey, value: true });
+  }
+
+  for (const legacy of resolved.legacyPercentFlags) {
+    dispatchGameAction({ type: 'player/setFlag', key: legacy.key, value: true });
   }
 }

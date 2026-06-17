@@ -49,6 +49,18 @@ export const SPECIAL_BONUS_POEM_IDS = [
   'poem_act7_ending',
 ] as const;
 
+/**
+ * Poems registered in content but intentionally without collectPoem / quest wiring yet.
+ * Content validator warns on other unwired registry poems.
+ */
+export const POST_LAUNCH_POEM_IDS = [
+  'poem_act6_01',
+  'poem_act6_04',
+  'poem_act6_05',
+  'poem_act6_07',
+  'poem_act7_ending',
+] as const satisfies readonly string[];
+
 export const HIDDEN_POEM_IDS = [
   ...NUMBERED_BONUS_POEM_IDS,
   ...SPECIAL_BONUS_POEM_IDS,
@@ -78,6 +90,10 @@ export function countCollectedMainPoems(collected: readonly string[]): number {
 
 export function countCollectedHiddenPoems(collected: readonly string[]): number {
   return HIDDEN_POEM_IDS.filter((id) => collected.includes(id)).length;
+}
+
+export function countCollectedUnifiedPoems(collected: readonly string[]): number {
+  return ALL_UNIFIED_POEM_IDS.filter((id) => collected.includes(id)).length;
 }
 
 /** Все 21 сюжетных стиха Владимира собраны — для ending_poet и all_poems_collected. */

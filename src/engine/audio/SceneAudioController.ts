@@ -15,7 +15,7 @@ import {
   getPoemMotif,
   findEmotionalTransition,
   type MusicMood,
-} from '../../config/audioManifest';
+} from '../../config/proceduralAudioCatalog';
 import {
   resolveAmbienceForScene,
   getAmbienceAccessibilityText,
@@ -168,7 +168,7 @@ export class SceneAudioController {
   onCharacterFocus(npcId: string): void {
     if (!this.guard()) return;
     const motif = getCharacterMotif(npcId);
-    if (motif) sfxEngine.playStinger(motif.stinger);
+    sfxEngine.playStinger(motif.stinger);
   }
 
   onTimeOfDayBoundary(sceneId: SceneId, timeOfDay: number): void {

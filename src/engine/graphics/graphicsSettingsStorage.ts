@@ -27,6 +27,19 @@ export function dispatchQualityGpuCleanup(id: QualityPresetId): void {
   window.dispatchEvent(new CustomEvent(QUALITY_GPU_CLEANUP, { detail: { id } }));
 }
 
-export function dispatchQualityPresetChanged(id: QualityPresetId): void {
-  window.dispatchEvent(new CustomEvent(QUALITY_PRESET_CHANGED, { detail: { id } }));
+export interface QualityPresetChangedDetail {
+  id: QualityPresetId;
+  /** Session runtime tier when `id` is `auto` (adaptive degrade). */
+  autoRuntimeTier?: Exclude<QualityPresetId, 'auto'>;
+}
+
+export function dispatchQualityPresetChanged(
+  id: QualityPresetId,
+  extra?: Pick<QualityPresetChangedDetail, 'autoRuntimeTier'>,
+): void {
+  window.dispatchEvent(
+    new CustomEvent<QualityPresetChangedDetail>(QUALITY_PRESET_CHANGED, {
+      detail: { id, ...extra },
+    }),
+  );
 }

@@ -10,6 +10,8 @@ const mockSnapshot = {
   playerState: {
     energy: 100,
     karma: 50,
+    rngSeed: 0x1234,
+    combatEncounterSeq: 0,
     skills: {
       coding: 50,
       logic: 50,
@@ -50,8 +52,10 @@ import {
   playerAttack,
   playerDefend,
   playerFlee,
+  setCombatRngStateForTests,
   startCombat,
 } from '@/engine/CombatSystem';
+import { createCombatRngState } from '@/engine/combat/combatRng';
 
 describe('CombatSystem session timers', () => {
   beforeEach(() => {
@@ -70,9 +74,19 @@ describe('CombatSystem session timers', () => {
     const combatEnd = vi.fn();
     eventBus.on('combat:end', combatEnd);
 
-    const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0);
+    dispatchGameAction.mockImplementation((action: { type: string; seed?: number }) => {
+      if (action.type === 'player/setRngSeed' && action.seed != null) {
+        mockSnapshot.playerState.rngSeed = action.seed;
+      }
+      if (action.type === 'player/bumpCombatEncounterSeq') {
+        mockSnapshot.playerState.combatEncounterSeq += 1;
+      }
+    });
+
+    dispatchGameAction({ type: 'player/setRngSeed', seed: 0x1234 });
 
     startCombat('system_daemon', { skipPresentation: true });
+    setCombatRngStateForTests(createCombatRngState(0));
     playerAttack();
     expect(getCombatState()?.status).toBe('victory');
 
@@ -83,8 +97,6 @@ describe('CombatSystem session timers', () => {
 
     expect(getCombatState()?.status).toBe('active');
     expect(combatEnd).not.toHaveBeenCalled();
-
-    randomSpy.mockRestore();
   });
 });
 
@@ -119,9 +131,9 @@ describe('CombatSystem core flows', () => {
   it('playerFlee can succeed and emit combat:fled', () => {
     const fled = vi.fn();
     eventBus.on('combat:fled', fled);
-    vi.spyOn(Math, 'random').mockReturnValue(0);
 
     startCombat('system_daemon', { skipPresentation: true });
+    setCombatRngStateForTests(createCombatRngState(1));
     const result = playerFlee();
 
     expect(result?.status).toBe('fled');

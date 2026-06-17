@@ -4,7 +4,6 @@
 import type { MutableRefObject } from 'react';
 import * as THREE from 'three';
 import { Desk, Chair, Lamp, Plant } from './lazyInteriorModels';
-import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { EnvironmentDetail } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { registerModuleGeometries } from '@/engine/three/moduleGeometryRegistry';
@@ -41,7 +40,6 @@ export function SolnyshRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
   const floorTexture = useCachedCanvasTexture('solnysh_room:floor', createWoodFloorTexture);
   const carpetTexture = useCachedCanvasTexture('solnysh_room:carpet', createCarpetTexture);
   const wallTexture = useCachedCanvasTexture('solnysh_room:wall', createWallTexture);
-  const { lod } = useEnvironmentLod();
 
   const W = 8;
   const D = 8;
@@ -80,7 +78,7 @@ export function SolnyshRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
         </mesh>
       ))}
 
-      <EnvironmentDetail currentLod={lod} minLod="standard">
+      <EnvironmentDetail minLod="standard" position={[2.2, 0, -2.0]}>
         {/* Easel + canvas — Солныш designer */}
         <group position={[2.2, 0, -2.0]}>
           <mesh position={[0, 0.55, 0]} castShadow geometry={geo_box_4}>

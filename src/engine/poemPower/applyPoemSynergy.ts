@@ -7,13 +7,22 @@ import {
 } from '@/config/poemSynergies';
 import type { TrainablePlayerSkill } from '@/shared/types/game';
 import { isTrainablePlayerSkill, warnInvalidValue } from '@/shared/validation/typeGuards';
+import { selectHeartBondTarget, HEART_BOND_BONUS_MIN_VALUE } from '@/engine/npcRelationship/selectHeartBondTarget';
+import { scalePoemPowerDurationMs, scalePoemPowerSkillDelta } from '@/engine/skills/passiveSkillModifiers';
 
 function snap() {
   return getGameSnapshot();
 }
 
 function addSkill(skill: TrainablePlayerSkill, amount: number) {
-  dispatchGameAction({ type: 'player/addSkill', skill, amount });
+  const snapshot = snap();
+  const scaled = scalePoemPowerSkillDelta(
+    amount,
+    snapshot.playerState.progression.unlockedSkills,
+    snapshot.playerState.flags,
+    snapshot.playerState.skills.coding,
+  );
+  dispatchGameAction({ type: 'player/addSkill', skill, amount: scaled });
 }
 
 function setFlag(key: string, value: boolean) {
@@ -26,6 +35,7 @@ function setNpcRelation(npcId: string, delta: number) {
 
 function upsertSynergyTTLFlags(synergy: PoemSynergyDefinition): void {
   if (synergy.flagsToSet.length === 0) return;
+  const snapshot = snap();
   const now = Date.now();
   for (const flag of synergy.flagsToSet) {
     setFlag(flag.key, true);
@@ -35,15 +45,21 @@ function upsertSynergyTTLFlags(synergy: PoemSynergyDefinition): void {
     flags: synergy.flagsToSet.map((flag) => ({
       key: flag.key,
       poemId: flag.reverseId ?? synergy.synergyId,
-      expiryTimestamp: now + flag.durationMs,
+      expiryTimestamp:
+        now
+        + scalePoemPowerDurationMs(
+          flag.durationMs,
+          snapshot.playerState.progression.unlockedSkills,
+          snapshot.playerState.flags,
+        ),
     })),
   });
 }
 
 function applyHeartBondBonus(): void {
-  const relations = snap().npcRelations;
-  if (relations.length === 0) return;
-  const best = relations.reduce((a, b) => (a.value > b.value ? a : b));
+  const snapshot = snap();
+  const best = selectHeartBondTarget(snapshot.npcRelations, snapshot.playerState.flags);
+  if (!best || best.value < HEART_BOND_BONUS_MIN_VALUE) return;
   setNpcRelation(best.npcId, 20);
 }
 

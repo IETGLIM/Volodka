@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { eventBus } from '@/engine/EventBus';
 import {
   performSceneTransition,
@@ -6,7 +6,13 @@ import {
   isSceneTransitionInProgress,
 } from './SceneTransitionManager';
 import { registerGlobalCleanup, resetGlobalCleanupRegistry } from './GlobalCleanupService';
-import { resetSceneLoadedGate } from './sceneLoadedGate';
+import { resetSceneLoadedGate, ensureSceneLoadedBridge } from './sceneLoadedGate';
+import {
+  registerCanvasForFirstFrame,
+  resetCanvasFirstFrameSessionForTests,
+  unregisterCanvasForFirstFrame,
+} from '@/engine/canvas/canvasFirstFrameSession';
+import { SCENE_LOADED_FIRST_FRAME_WATCHDOG_MS } from '@/shared/constants/transitionTimings';
 
 const dispatchGameAction = vi.fn();
 
@@ -41,9 +47,17 @@ vi.mock('@/engine/GameActionDispatcher', () => ({
 
 describe('SceneTransitionManager', () => {
   beforeEach(() => {
+    vi.useFakeTimers();
     dispatchGameAction.mockClear();
     resetSceneTransitionGuard();
     resetSceneLoadedGate();
+    resetCanvasFirstFrameSessionForTests();
+    ensureSceneLoadedBridge();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    resetCanvasFirstFrameSessionForTests();
   });
 
   it('emits unload → enter → loaded in order', async () => {
@@ -131,5 +145,21 @@ describe('SceneTransitionManager', () => {
     });
     unsubUnload();
     resetGlobalCleanupRegistry();
+  });
+
+  it('clears async guard when first-frame watchdog times out', () => {
+    const canvas = {} as HTMLCanvasElement;
+    registerCanvasForFirstFrame(canvas);
+
+    performSceneTransition({
+      targetScene: 'cafe_evening',
+      spawnAt: [1, 0, 2],
+    });
+
+    expect(isSceneTransitionInProgress()).toBe(true);
+    vi.advanceTimersByTime(SCENE_LOADED_FIRST_FRAME_WATCHDOG_MS);
+    expect(isSceneTransitionInProgress()).toBe(false);
+
+    unregisterCanvasForFirstFrame(canvas);
   });
 });

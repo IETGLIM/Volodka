@@ -18,7 +18,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const SHIPPED_MODULE = path.join(ROOT, 'src/config/mixamoAnimationShipped.ts');
+const ON_DISK_MODULE = path.join(ROOT, 'src/config/mixamoClipsOnDisk.ts');
 
 function parseArgs(argv) {
   const args = { list: false, status: false, clip: null, file: null, help: false };
@@ -47,9 +47,9 @@ async function loadCatalog() {
   return import(pathToFileURL(modulePath).href);
 }
 
-function readShippedIds() {
-  const text = readFileSync(SHIPPED_MODULE, 'utf8');
-  const match = text.match(/SHIPPED_MIXAMO_CLIP_IDS[^=]*=\s*\[([^\]]*)\]/);
+function readOnDiskIds() {
+  const text = readFileSync(ON_DISK_MODULE, 'utf8');
+  const match = text.match(/MIXAMO_CLIP_IDS_ON_DISK[^=]*=\s*\[([^\]]*)\]/);
   if (!match) return [];
   return match[1]
     .split(',')
@@ -57,21 +57,22 @@ function readShippedIds() {
     .filter(Boolean);
 }
 
-function writeShippedIds(ids) {
+function writeOnDiskIds(ids) {
   const unique = [...new Set(ids)].sort();
   const body = `/**
- * Mixamo clips present on disk — updated by \`npm run assets:mixamo-import\`.
+ * Mixamo clip ids confirmed on disk — updated by \`npm run assets:mixamo-import\`.
  * @generated — do not edit manually.
+ * Empty until clips are imported from Adobe Mixamo (Sprint 2 pipeline).
  */
 
 import type { MixamoClipId } from './mixamoAnimationCatalog';
 
 /** Clip ids staged under public/models/animations/ */
-export const SHIPPED_MIXAMO_CLIP_IDS: readonly MixamoClipId[] = [
+export const MIXAMO_CLIP_IDS_ON_DISK: readonly MixamoClipId[] = [
 ${unique.map((id) => `  '${id}',`).join('\n')}
 ];
 `;
-  writeFileSync(SHIPPED_MODULE, body, 'utf8');
+  writeFileSync(ON_DISK_MODULE, body, 'utf8');
 }
 
 function printHelp() {
@@ -117,18 +118,18 @@ async function main() {
   }
 
   if (args.status) {
-    const shipped = new Set(readShippedIds());
+    const onDisk = new Set(readOnDiskIds());
     console.log('Mixamo import status:\n');
     for (const entry of catalog.MIXAMO_ANIMATION_CATALOG) {
       const sourcePath = path.join(ROOT, entry.sourceRelativePath);
       const publicPath = path.join(ROOT, 'public', entry.publicUrl.replace(/^\//, ''));
       const hasSource = existsSync(sourcePath);
       const hasPublic = existsSync(publicPath);
-      const shippedFlag = shipped.has(entry.id);
+      const onDiskFlag = onDisk.has(entry.id);
       const srcKb = hasSource ? ` ${(statSync(sourcePath).size / 1024).toFixed(0)} KB` : '';
       const pubKb = hasPublic ? ` ${(statSync(publicPath).size / 1024).toFixed(0)} KB` : '';
       console.log(
-        `${hasPublic ? '✓' : '·'} public  ${hasSource ? '✓' : '·'} source  ${shippedFlag ? '✓' : '·'} shipped  ${entry.id}`,
+        `${hasPublic ? '✓' : '·'} public  ${hasSource ? '✓' : '·'} source  ${onDiskFlag ? '✓' : '·'} on-disk  ${entry.id}`,
       );
       if (hasSource || hasPublic) {
         console.log(`    source: ${path.relative(ROOT, sourcePath)}${srcKb}`);
@@ -184,11 +185,11 @@ async function main() {
   copyFileSync(glbPath, publicFile);
   console.log(`✓ Staged for runtime → ${path.relative(ROOT, publicFile)}`);
 
-  const shipped = readShippedIds();
-  if (!shipped.includes(spec.id)) {
-    shipped.push(spec.id);
-    writeShippedIds(shipped);
-    console.log(`✓ Updated SHIPPED_MIXAMO_CLIP_IDS → ${spec.id}`);
+  const onDisk = readOnDiskIds();
+  if (!onDisk.includes(spec.id)) {
+    onDisk.push(spec.id);
+    writeOnDiskIds(onDisk);
+    console.log(`✓ Updated MIXAMO_CLIP_IDS_ON_DISK → ${spec.id}`);
   }
 
   console.log('\n── Next steps ──');

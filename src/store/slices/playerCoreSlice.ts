@@ -34,6 +34,8 @@ export interface PlayerCoreSliceState {
   /** Last successfully activated poem — for rhythm synergy combos (session). */
   lastUsedPoemId: string | null;
   lastUsedPoemTimestamp: number | null;
+  /** Poem awaiting PoemReadingCutscene completion (session). */
+  pendingPoemReadingId: string | null;
 }
 
 export interface PlayerCoreSliceActions {
@@ -49,11 +51,18 @@ export interface PlayerCoreSliceActions {
   autoRegenBetweenScenes: () => void;
   upsertActiveTTLFlag: (flag: ActiveTTLFlag) => void;
   upsertActiveTTLFlags: (flags: ActiveTTLFlag[]) => void;
+  /** Set a world-hint flag and its TTL entry in one state update. */
+  upsertHintFlagWithTTL: (flag: ActiveTTLFlag) => void;
   removeActiveTTLFlags: (keys: string[]) => void;
   clearActiveTTLFlags: () => void;
   recordLastUsedPoem: (poemId: string, timestamp: number) => void;
+  setPendingPoemReadingId: (poemId: string | null) => void;
   /** Advance to the next act. No-op if already at {@link MAX_STORY_ACT}. */
   advanceAct: () => void;
+  /** Increment combat encounter counter for RNG derivation. */
+  bumpCombatEncounterSeq: () => void;
+  /** Override master RNG seed (dev / test reproducibility). */
+  setRngSeed: (seed: number) => void;
   /** Batched player + notification updates (single set pass) for cross-slice reward flows. */
   applyPlayerRewardBatch: (
     apply: (draft: RewardBatchDraft, sideEffects: RewardBatchSideEffects) => void,
@@ -75,6 +84,7 @@ export const createPlayerCoreSlice: StateCreator<
   activeTTLFlags: createEmptyActiveTTLFlagMap(),
   lastUsedPoemId: null,
   lastUsedPoemTimestamp: null,
+  pendingPoemReadingId: null,
 
   visitNode: (id) =>
     set((state) => {
@@ -204,6 +214,15 @@ export const createPlayerCoreSlice: StateCreator<
       return { activeTTLFlags };
     }),
 
+  upsertHintFlagWithTTL: (flag) =>
+    set((state) => ({
+      playerState: {
+        ...state.playerState,
+        flags: { ...state.playerState.flags, [flag.key]: true },
+      },
+      activeTTLFlags: { ...state.activeTTLFlags, [flag.key]: flag },
+    })),
+
   removeActiveTTLFlags: (keys) =>
     set((state) => {
       if (keys.length === 0) return state;
@@ -218,6 +237,8 @@ export const createPlayerCoreSlice: StateCreator<
 
   recordLastUsedPoem: (poemId, timestamp) =>
     set({ lastUsedPoemId: poemId, lastUsedPoemTimestamp: timestamp }),
+
+  setPendingPoemReadingId: (poemId) => set({ pendingPoemReadingId: poemId }),
 
   advanceAct: () =>
     set((state) => {
@@ -234,6 +255,22 @@ export const createPlayerCoreSlice: StateCreator<
         notifications: pushNotification(state.notifications, 'quest', `Акт ${currentAct + 1} начинается!`),
       };
     }),
+
+  bumpCombatEncounterSeq: () =>
+    set((state) => ({
+      playerState: {
+        ...state.playerState,
+        combatEncounterSeq: state.playerState.combatEncounterSeq + 1,
+      },
+    })),
+
+  setRngSeed: (seed) =>
+    set((state) => ({
+      playerState: {
+        ...state.playerState,
+        rngSeed: seed >>> 0,
+      },
+    })),
 
   applyPlayerRewardBatch: (apply) => {
     const sideEffects = createRewardBatchSideEffects();

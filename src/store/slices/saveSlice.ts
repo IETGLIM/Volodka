@@ -11,12 +11,14 @@ import { dispatchGameAction } from '@/shared/gameBridge/gameActionBridge';
 import { SAVE_VERSION } from '@/shared/validation/saveSchema';
 import type { GameStoreState } from '../types';
 import {
-  createDefaultResetState,
+  captureNewPlaythroughCarry,
+  createNewPlaythroughResetPatch,
   pickSavePayload,
   storePatchFromSave,
+  type NewPlaythroughResetOptions,
 } from '../persistedState';
 import { applyCombinedPatch } from '../patchState';
-import { getCombinedGameState } from '../storeBindings';
+import { getCombinedGameState, invalidateCombinedGameStateCache } from '../storeBindings';
 import { resetGuidedStoryFromStore, resetEngineRuntimeFromStore } from '../storeEngineHost';
 import { resetPlayerXpBatch } from '../playerXpBatch';
 import { clearAutoCloseTimers } from '@/shared/explorationAutoCloseTimers';
@@ -28,20 +30,35 @@ export interface SaveSliceState {
 
 export interface SaveSliceActions {
   resetGame: () => void;
+  resetForNewPlaythrough: (options?: NewPlaythroughResetOptions) => void;
   saveGame: (options?: { source?: 'auto' | 'manual' }) => void;
   loadGame: () => void;
 }
 
 export type SaveSlice = SaveSliceState & SaveSliceActions;
 
+function executeNewPlaythroughReset(options: NewPlaythroughResetOptions = {}): void {
+  const preserveAchievements = options.preserveAchievements !== false;
+  const carry = preserveAchievements
+    ? captureNewPlaythroughCarry(getCombinedGameState(), { preserveAchievements })
+    : null;
+
+  resetPlayerXpBatch();
+  dispatchGameAction({ type: 'poem/clearAllEffects' });
+  clearAutoCloseTimers();
+  applyCombinedPatch(createNewPlaythroughResetPatch(carry, options));
+  invalidateCombinedGameStateCache();
+  resetGuidedStoryFromStore();
+  resetEngineRuntimeFromStore();
+}
+
 export const createSaveSlice: StateCreator<GameStoreState, [], [], SaveSlice> = () => ({
   resetGame: () => {
-    resetPlayerXpBatch();
-    dispatchGameAction({ type: 'poem/clearAllEffects' });
-    clearAutoCloseTimers();
-    applyCombinedPatch(createDefaultResetState());
-    resetGuidedStoryFromStore();
-    resetEngineRuntimeFromStore();
+    executeNewPlaythroughReset();
+  },
+
+  resetForNewPlaythrough: (options) => {
+    executeNewPlaythroughReset(options);
   },
 
   saveGame: (options) => {

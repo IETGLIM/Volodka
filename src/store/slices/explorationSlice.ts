@@ -195,13 +195,22 @@ export const createExplorationSlice: StateCreator<
     const targetConfig = SCENE_CONFIG[sceneId];
     if (!targetConfig) return;
 
-    // Calculate travel time
     const travelHours = TRAVEL_TIME[sceneId] ?? 0.5;
+    const previousHour = state.exploration.timeOfDay;
+    const newTime = ((previousHour + travelHours) % 24 + 24) % 24;
 
-    set((state) => ({
+    const scheduleCtx = buildScheduleContext(getCombinedGameState());
+    const npcStates = buildNPCStatesForTime(newTime, scheduleCtx);
+
+    set((prev) => ({
       exploration: {
-        ...state.exploration,
-        timeOfDay: ((state.exploration.timeOfDay + travelHours) % 24 + 24) % 24 } }));
+        ...prev.exploration,
+        timeOfDay: newTime,
+        npcStates,
+      },
+    }));
+
+    scheduleWorldHourChanged({ hour: newTime, previousHour, npcStates });
 
     requestSceneTransitionFromStore(sceneId, [...targetConfig.spawnPoint] as [number, number, number]);
   },

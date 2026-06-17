@@ -48,7 +48,10 @@ describe('poemWorldEventBridge', () => {
       }),
     );
     expect(dispatchGameAction).toHaveBeenCalledWith(
-      expect.objectContaining({ type: 'player/setFlag', key: 'poem_hint_exit_glow_active' }),
+      expect.objectContaining({
+        type: 'world/upsertHintFlag',
+        flag: expect.objectContaining({ key: 'poem_hint_exit_glow_active', poemId: 'poem_3' }),
+      }),
     );
 
     unsub();
@@ -75,5 +78,31 @@ describe('poemWorldEventBridge', () => {
 
     unsub();
     unbindPoemWorldEventBridge();
+  });
+
+  it('bindPoemWorldEventBridge is idempotent', () => {
+    bindPoemWorldEventBridge();
+    bindPoemWorldEventBridge();
+    const handler = vi.fn();
+    const unsub = eventBus.on('poem:world_event', handler);
+
+    eventBus.emit('poem:power_used', { poemId: 'poem_1', powerName: 'Правда Глас' });
+
+    expect(handler).toHaveBeenCalledTimes(1);
+
+    unsub();
+  });
+
+  it('unbindPoemWorldEventBridge removes relay listeners', () => {
+    bindPoemWorldEventBridge();
+    const handler = vi.fn();
+    const unsub = eventBus.on('poem:world_event', handler);
+
+    unbindPoemWorldEventBridge();
+    eventBus.emit('poem:power_used', { poemId: 'poem_1', powerName: 'Правда Глас' });
+
+    expect(handler).not.toHaveBeenCalled();
+
+    unsub();
   });
 });

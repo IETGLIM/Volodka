@@ -1,8 +1,8 @@
 import { createSceneChunk } from '../lazySceneChunk';
-import type { HomeEveningPropsChunkProps } from './HomeEveningPropsChunk';
 
-export const HomeEveningProps = createSceneChunk<HomeEveningPropsChunkProps>(
+export const HomeEveningProps = createSceneChunk<Record<string, never>>(
   'home-evening-props',
+  'home_evening',
   () =>
     import('./HomeEveningPropsChunk').then((mod) => ({
       default: mod.HomeEveningPropsChunk,

@@ -35,4 +35,8 @@ export interface PlayerState {
   moralChoices: string[];
   interactions: string[];
   progression: PlayerProgression;
+  /** Master seed for deterministic combat RNG (assigned on new game). */
+  rngSeed: number;
+  /** Monotonic counter mixed into each combat's RNG derivation. */
+  combatEncounterSeq: number;
 }

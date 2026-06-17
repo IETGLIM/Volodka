@@ -9,6 +9,7 @@ import {
 import { findNpcById } from '@/data/gameDataLoader';
 import { isEffectiveReducedMotion } from '@/engine/accessibility/accessibilitySettings';
 import { readQualityPresetId } from '@/engine/graphics/graphicsSettingsStorage';
+import { getSessionAutoResolvedTier } from '@/engine/graphics/autoQualitySession';
 import { resolveQualityPreset } from '@/engine/graphics/qualityPresets';
 import type { CameraWaypointData } from '@/shared/types/camera';
 import type { InteractionType } from '@/shared/types/game';
@@ -39,6 +40,7 @@ export function isLowGraphicsQuality(): boolean {
     selected,
     window.innerWidth,
     window.devicePixelRatio ?? 1,
+    getSessionAutoResolvedTier(),
   );
   return resolved.id === 'low';
 }

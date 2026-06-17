@@ -44,7 +44,7 @@
 
 ```
 Store ──emitAppEvent──► AppEventBus ──bind──► EventBus ──► Engine / UI
-Engine ──dispatchStateAction──► StateDispatcher ──register──► Store (reduceGameState)
+Engine ──dispatchStateAction──► StateDispatcher ──register──► Store (applyGameAction)
 Store ──storeEngineHost──► Engine (scene transition, guided story, runtime reset)
 Engine ──storeLifecycleHost──► Store (XP batch reset on dispose)
 Shared ──sceneTransitionBridge──► Engine (applyEffects, без импорта engine)

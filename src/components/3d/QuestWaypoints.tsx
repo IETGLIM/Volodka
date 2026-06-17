@@ -92,6 +92,7 @@ function QuestArrow({
 }) {
   const meshRef = useRef<THREE.Mesh>(null);
   const timeRef = useRef(0);
+  const dirRef = useRef(new THREE.Vector3());
 
   // Get target scene name for display
   const _targetName = useMemo(() => {
@@ -104,13 +105,13 @@ function QuestArrow({
       // Bob up and down
       meshRef.current.position.y = position[1] + 1.5 + Math.sin(timeRef.current * 2) * 0.15;
       // Rotate to face player horizontally
-      const dir = new THREE.Vector3(
+      dirRef.current.set(
         playerPosRef.current.x - position[0],
         0,
         playerPosRef.current.z - position[2],
       );
-      if (dir.length() > 0.1) {
-        meshRef.current.rotation.y = Math.atan2(dir.x, dir.z);
+      if (dirRef.current.length() > 0.1) {
+        meshRef.current.rotation.y = Math.atan2(dirRef.current.x, dirRef.current.z);
       }
     }
   });

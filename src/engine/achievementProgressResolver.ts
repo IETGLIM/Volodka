@@ -1,5 +1,5 @@
 import type { AchievementDefinition } from '@/data/achievements';
-import { countCollectedMainPoems } from '@/data/poemCollectionMeta';
+import { countCollectedMainPoems, countCollectedUnifiedPoems } from '@/data/poemCollectionMeta';
 import type { AchievementProgressSnapshot } from '@/engine/GameActionDispatcher';
 
 export interface AchievementProgressView {
@@ -63,6 +63,13 @@ export function resolveAchievementProgress(
     case 'collection': {
       if (tracking.collectionKind === 'poems') {
         const current = countCollectedMainPoems(state.collectedPoems);
+        return {
+          current: Math.min(current, tracking.target),
+          target: tracking.target,
+        };
+      }
+      if (tracking.collectionKind === 'unifiedPoems') {
+        const current = countCollectedUnifiedPoems(state.collectedPoems);
         return {
           current: Math.min(current, tracking.target),
           target: tracking.target,

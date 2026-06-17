@@ -41,6 +41,14 @@ export function getPersistedStateKeys(): PersistedStoreKey[] {
   );
 }
 
+/** Progress-based play-time estimate for save-slot metadata (not game state). */
+export function estimatePlayTimeSeconds(state: GameStoreState): number {
+  const visitedCount = state.playerState.visitedNodes.length;
+  const level = state.playerState.progression.level;
+  // Rough estimate: ~2 min per visited node + 10 min base per level
+  return Math.max(0, visitedCount * 120 + (level - 1) * 600);
+}
+
 /** Defaults for fields that survive save/load. */
 export function createDefaultPersistedState(): Pick<GameStoreState, PersistedStoreKey> {
   return {
@@ -95,6 +103,7 @@ export function createDefaultSessionState(): Partial<GameStoreState> {
     notifications: [],
     lastUsedPoemId: null,
     lastUsedPoemTimestamp: null,
+    pendingPoemReadingId: null,
     activeCutsceneId: null,
     cutsceneWaypoints: [],
     matrixRainEnabled: true,
@@ -112,6 +121,72 @@ export function createDefaultResetState(): Partial<GameStoreState> {
   };
 }
 
+/** Meta flags that survive a new playthrough (achievements, completion markers). */
+export const META_PLAYTHROUGH_FLAGS = ['game_completed'] as const;
+
+export type MetaPlaythroughFlag = (typeof META_PLAYTHROUGH_FLAGS)[number];
+
+export interface NewPlaythroughCarry {
+  unlockedAchievements: GameStoreState['unlockedAchievements'];
+  achievementProgress: GameStoreState['achievementProgress'];
+  metaFlags: Partial<Record<MetaPlaythroughFlag, boolean>>;
+}
+
+export interface NewPlaythroughResetOptions {
+  /** Keep unlocked achievements and meta completion flags (default true). */
+  preserveAchievements?: boolean;
+  /** Skip matrix intro — used when restarting from in-game story endings. */
+  skipIntro?: boolean;
+}
+
+/** Snapshot meta-progress to carry into the next playthrough. */
+export function captureNewPlaythroughCarry(
+  state: GameStoreState,
+  options: Pick<NewPlaythroughResetOptions, 'preserveAchievements'> = {},
+): NewPlaythroughCarry | null {
+  if (options.preserveAchievements === false) return null;
+
+  const metaFlags: Partial<Record<MetaPlaythroughFlag, boolean>> = {};
+  for (const flag of META_PLAYTHROUGH_FLAGS) {
+    if (state.playerState.flags[flag]) {
+      metaFlags[flag] = true;
+    }
+  }
+
+  return {
+    unlockedAchievements: state.unlockedAchievements,
+    achievementProgress: state.achievementProgress,
+    metaFlags,
+  };
+}
+
+/** Build reset patch, optionally merging carried meta-progress. */
+export function createNewPlaythroughResetPatch(
+  carry: NewPlaythroughCarry | null,
+  options: Pick<NewPlaythroughResetOptions, 'skipIntro'> = {},
+): Partial<GameStoreState> {
+  const patch = createDefaultResetState();
+
+  if (carry) {
+    patch.unlockedAchievements = carry.unlockedAchievements;
+    patch.achievementProgress = carry.achievementProgress;
+    if (Object.keys(carry.metaFlags).length > 0) {
+      patch.playerState = {
+        ...patch.playerState!,
+        flags: { ...patch.playerState!.flags, ...carry.metaFlags },
+      };
+    }
+  }
+
+  if (options.skipIntro) {
+    patch.introActive = false;
+    patch.introSeen = true;
+    patch.mainMenuOpen = false;
+  }
+
+  return patch;
+}
+
 /** Build the localStorage payload from live store state. */
 export function pickSavePayload(
   state: GameStoreState,
@@ -124,6 +199,7 @@ export function pickSavePayload(
   const nodeId = state.currentNodeId?.trim();
   payload.currentNodeId = nodeId || 'start';
   payload.savedAt = Date.now();
+  payload.playTimeSeconds = estimatePlayTimeSeconds(state);
 
   const result = PickSavePayloadSchema.safeParse(payload);
   if (!result.success) {
@@ -173,6 +249,9 @@ export function storePatchFromSave(payload: SavePayload): Partial<GameStoreState
           : null,
       },
       visitedNodeTimestamps: payload.playerState.visitedNodeTimestamps ?? {},
+      rngSeed: payload.playerState.rngSeed ?? defaults.playerState.rngSeed,
+      combatEncounterSeq:
+        payload.playerState.combatEncounterSeq ?? defaults.playerState.combatEncounterSeq,
     },
     exploration: {
       ...defaults.exploration,
@@ -225,5 +304,10 @@ export function storePatchFromSave(payload: SavePayload): Partial<GameStoreState
     patch.narrativeKind = null;
   }
 
-  return patch;
+  // Session fields are not persisted — reset before applying save so stale UI/runtime
+  // state from the previous play session cannot leak (patch wins on overlap, e.g. lastSaveTimestamp).
+  return {
+    ...createDefaultSessionState(),
+    ...patch,
+  };
 }

@@ -69,7 +69,7 @@ export const QUESTS_ACT3: QuestDefinition[] = [
     difficulty: 'hard',
     hint: 'Без фаервола Хранилище обречено — установи защиту немедленно.',
     timeLimitHours: 4,
-    canRetry: false,
+    canRetry: true,
     objectives: [
       {
         id: 'receive_vault_alert',

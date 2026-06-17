@@ -215,6 +215,7 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
     guidanceNpcId: 'npc_maria',
     guidanceHint: 'Вернись к двери, когда будешь готов — или подумай в кафе.',
     guidanceObjectiveType: 'make_choice',
+    effects: [{ type: 'collectPoem', poemId: 'poem_28' }],
     choices: [
       {
         text: 'Вернуться к двери — я готов',

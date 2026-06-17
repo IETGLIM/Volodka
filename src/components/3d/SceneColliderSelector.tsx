@@ -17,8 +17,9 @@
  *  4. Foreground decorative meshes → never collided (parallax layer only)
  */
 
-import { Suspense, useRef, useMemo, useEffect } from 'react';
+import { Suspense, useRef, useMemo, useEffect, type ComponentType } from 'react';
 import { retryLazy } from '@/shared/utils/retryLazy';
+import { importWithSceneGpuRegistration } from '@/engine/three/importWithSceneGpuRegistration';
 import { CuboidCollider } from '@react-three/rapier';
 import { useGameStore } from '@/store/gameStore';
 import { getSceneConfig } from '@/config/scenes';
@@ -40,26 +41,40 @@ import { useThreeCleanup } from '@/hooks/useThreeCleanup';
 
 /* ── Lazy-loaded scene visuals ──
  * Each scene visual is loaded on demand when the player enters that scene.
- * Using React.lazy because these components render inside the R3F Canvas tree. */
+ * GPU registrations during import are tagged for scene:unload disposal. */
 
-const VolodkaRoomVisual = retryLazy(() => import('./VolodkaRoomVisual'), 'VolodkaRoomVisual');
-const VolodkaCorridorVisual = retryLazy(() => import('./VolodkaCorridorVisual'), 'VolodkaCorridorVisual');
-const HomeEveningVisual = retryLazy(() => import('./HomeEveningVisual'), 'HomeEveningVisual');
-const StreetVisual = retryLazy(() => import('./StreetVisual'), 'StreetVisual');
-const CafeVisual = retryLazy(() => import('./CafeVisual'), 'CafeVisual');
-const OfficeDayVisual = retryLazy(() => import('./OfficeDayVisual'), 'OfficeDayVisual');
-const ParkDayVisual = retryLazy(() => import('./ParkDayVisual'), 'ParkDayVisual');
-const LibraryDayVisual = retryLazy(() => import('./LibraryDayVisual'), 'LibraryDayVisual');
-const BattleVisual = retryLazy(() => import('./BattleVisual'), 'BattleVisual');
-const SleepDreamVisual = retryLazy(() => import('./SleepDreamVisual'), 'SleepDreamVisual');
-const RooftopEdgeVisual = retryLazy(() => import('./RooftopEdgeVisual'), 'RooftopEdgeVisual');
-const AbandonedFactoryVisual = retryLazy(() => import('./AbandonedFactoryVisual'), 'AbandonedFactoryVisual');
-const ZaremaAlbertRoomVisual = retryLazy(() => import('./ZaremaAlbertRoomVisual'), 'ZaremaAlbertRoomVisual');
-const SolnyshRoomVisual = retryLazy(() => import('./SolnyshRoomVisual'), 'SolnyshRoomVisual');
-const StreetWinterVisual = retryLazy(() => import('./StreetWinterVisual'), 'StreetWinterVisual');
-const ChkForestZorgeVisual = retryLazy(() => import('./ChkForestZorgeVisual'), 'ChkForestZorgeVisual');
-const FactoryBasementVisual = retryLazy(() => import('./FactoryBasementVisual'), 'FactoryBasementVisual');
-const RiverPierVisual = retryLazy(() => import('./RiverPierVisual'), 'RiverPierVisual');
+function lazySceneVisual(
+  sceneId: SceneId,
+  importFn: () => Promise<Record<string, ComponentType<any>>>,
+  exportName: string,
+) {
+  return retryLazy(
+    () =>
+      importWithSceneGpuRegistration(sceneId, importFn) as Promise<
+        Record<string, ComponentType<any>>
+      >,
+    exportName,
+  );
+}
+
+const VolodkaRoomVisual = lazySceneVisual('volodka_room', () => import('./VolodkaRoomVisual'), 'VolodkaRoomVisual');
+const VolodkaCorridorVisual = lazySceneVisual('volodka_corridor', () => import('./VolodkaCorridorVisual'), 'VolodkaCorridorVisual');
+const HomeEveningVisual = lazySceneVisual('home_evening', () => import('./HomeEveningVisual'), 'HomeEveningVisual');
+const StreetVisual = lazySceneVisual('street_night', () => import('./StreetVisual'), 'StreetVisual');
+const CafeVisual = lazySceneVisual('cafe_evening', () => import('./CafeVisual'), 'CafeVisual');
+const OfficeDayVisual = lazySceneVisual('office_day', () => import('./OfficeDayVisual'), 'OfficeDayVisual');
+const ParkDayVisual = lazySceneVisual('park_day', () => import('./ParkDayVisual'), 'ParkDayVisual');
+const LibraryDayVisual = lazySceneVisual('library_day', () => import('./LibraryDayVisual'), 'LibraryDayVisual');
+const BattleVisual = lazySceneVisual('battle', () => import('./BattleVisual'), 'BattleVisual');
+const SleepDreamVisual = lazySceneVisual('sleep_dream', () => import('./SleepDreamVisual'), 'SleepDreamVisual');
+const RooftopEdgeVisual = lazySceneVisual('rooftop_edge', () => import('./RooftopEdgeVisual'), 'RooftopEdgeVisual');
+const AbandonedFactoryVisual = lazySceneVisual('abandoned_factory', () => import('./AbandonedFactoryVisual'), 'AbandonedFactoryVisual');
+const ZaremaAlbertRoomVisual = lazySceneVisual('zarema_albert_room', () => import('./ZaremaAlbertRoomVisual'), 'ZaremaAlbertRoomVisual');
+const SolnyshRoomVisual = lazySceneVisual('solnysh_room', () => import('./SolnyshRoomVisual'), 'SolnyshRoomVisual');
+const StreetWinterVisual = lazySceneVisual('street_winter', () => import('./StreetWinterVisual'), 'StreetWinterVisual');
+const ChkForestZorgeVisual = lazySceneVisual('chk_forest_zorge', () => import('./ChkForestZorgeVisual'), 'ChkForestZorgeVisual');
+const FactoryBasementVisual = lazySceneVisual('factory_basement', () => import('./FactoryBasementVisual'), 'FactoryBasementVisual');
+const RiverPierVisual = lazySceneVisual('river_pier', () => import('./RiverPierVisual'), 'RiverPierVisual');
 
 interface SceneColliderSelectorProps {
   livePlayerPositionRef: MutableRefObject<THREE.Vector3>;

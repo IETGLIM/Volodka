@@ -24,7 +24,6 @@ import {
 
 import type { SceneId } from '@/shared/types/game';
 import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
-import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { EnvironmentDetail, PropDistanceGate } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { createStreetNightSynthwaveSkyTexture } from '@/engine/graphics/proceduralSkyTextures';
@@ -115,7 +114,6 @@ function StreetGround({
 export function StreetVisual({ sceneId = 'street_night', livePlayerPositionRef }: StreetVisualProps) {
   const isWinter = sceneId === 'street_winter';
   const rainIntensity = useGameStore((s) => s.rainIntensity);
-  const { lod } = useEnvironmentLod();
   const envProfile = useMemo(() => getEnvironmentLodProfile(sceneId), [sceneId]);
 
   return (
@@ -135,7 +133,7 @@ export function StreetVisual({ sceneId = 'street_night', livePlayerPositionRef }
       </mesh>
 
       {/* ── Panel Building Silhouettes + neon (hidden at minimal environment LOD) ── */}
-      <EnvironmentDetail currentLod={lod} minLod="standard">
+      <EnvironmentDetail minLod="standard" position={[0, 0, -10]}>
         <PanelBuildings />
         <NeonSigns isWinter={isWinter} />
       </EnvironmentDetail>
@@ -195,7 +193,7 @@ export function StreetVisual({ sceneId = 'street_night', livePlayerPositionRef }
       </StreetClutterGate>
 
       {/* ── Puddle reflections - polygonOffset prevents Z-fighting */}
-      <EnvironmentDetail currentLod={lod} minLod="full">
+      <EnvironmentDetail minLod="full" position={[1.5, 0.02, 2]}>
         <mesh rotation-x={-Math.PI / 2} position={[1.5, 0.02, 2]} geometry={getSharedCircleGeometry(0.6, 12)}>
           <meshStandardMaterial color="#0e0e1e" metalness={0.8} roughness={0.1} transparent opacity={0.5} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
         </mesh>
