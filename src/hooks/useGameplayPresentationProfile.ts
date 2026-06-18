@@ -7,6 +7,10 @@ import {
   isEncounterPresentationActive,
   subscribeEncounterPresentation,
 } from '@/engine/combat/encounterPresentation';
+import {
+  isCinematicInterstitialActive,
+  subscribeCinematicInterstitial,
+} from '@/engine/presentation/cinematicInterstitialPresentation';
 
 export type GameplayPresentationProfile =
   | 'exploration'
@@ -40,6 +44,7 @@ function subscribe(onStoreChange: () => void): () => void {
   const unsubs = [
     useGameStore.subscribe(onStoreChange),
     subscribeEncounterPresentation(onStoreChange),
+    subscribeCinematicInterstitial(onStoreChange),
   ];
   listeners.add(onStoreChange);
   if (listeners.size === 1) attachSceneBusListeners();
@@ -53,12 +58,15 @@ function subscribe(onStoreChange: () => void): () => void {
 function getSnapshot(): GameplayPresentationProfile {
   if (isSceneTransitionInProgress()) return 'transition';
   if (isEncounterPresentationActive()) return 'encounter';
+  if (isCinematicInterstitialActive()) return 'narrative';
 
   const state = useGameStore.getState();
   const phase = getGamePhase(state);
 
   if (phase === 'combat') return 'combat';
-  if (phase === 'cutscene' || state.showStoryOverlay) return 'narrative';
+  if (phase === 'cutscene' || state.showStoryOverlay || state.diegeticNarrative != null) {
+    return 'narrative';
+  }
   return 'exploration';
 }
 

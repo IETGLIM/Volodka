@@ -76,7 +76,7 @@ function DamageNumber({ damage, type, isCritical }: { damage: number; type: stri
       exit={{ opacity: 0 }}
       transition={{ duration: isCritical ? 1.8 : 1.2, ease: [0.2, 0, 0.3, 1] }}
       className={`absolute ${size} font-bold ${color} pointer-events-none select-none ${isCritical ? 'glitch-skew' : ''}`}
-      style={{ zIndex: 60, textShadow: `0 0 ${isCritical ? 16 : 8}px currentColor, 0 2px 4px rgba(0,0,0,0.8)` }}
+      style={{ zIndex: UI_LAYERS.COMBAT, textShadow: `0 0 ${isCritical ? 16 : 8}px currentColor, 0 2px 4px rgba(0,0,0,0.8)` }}
     >
       {isHeal ? '+' : '-'}{damage}
       {isCritical && <span className="text-lg ml-1">💥</span>}

@@ -149,11 +149,18 @@ export const GameplayExplorationNotifications = memo(function GameplayExploratio
 
 /** EventBus-driven toasts — must stay mounted during gameplay to receive payloads. */
 export const GameplayEventNotifications = memo(function GameplayEventNotifications() {
+  const profile = useGameplayPresentationProfile();
+  const suppressNarrativeToasts = profile === 'narrative';
+
   return (
     <>
       <EventNotificationPopup />
-      <LoreDiscoveryToast />
-      <AchievementNotification />
+      {!suppressNarrativeToasts && (
+        <>
+          <LoreDiscoveryToast />
+          <AchievementNotification />
+        </>
+      )}
     </>
   );
 });

@@ -20,6 +20,7 @@ import { useStablePanelClosers } from './useStablePanelClosers';
 import { useStableHudPanelOpeners } from './useStableHudPanelOpeners';
 import { useGameIntegrityGuard } from '@/hooks/useGameIntegrityGuard';
 import { registerVolodkaE2EBridge } from '@/engine/e2e/e2eBridge';
+import { useCinematicInterstitialActive } from '@/hooks/useCinematicInterstitialActive';
 import { useOrchestratorLoading } from './useOrchestratorLoading';
 import { useOrchestratorInput } from './useOrchestratorInput';
 import {
@@ -67,7 +68,15 @@ export function useOrchestratorRuntime() {
   const isStoryActive = showStoryOverlay && narrativeKind === 'story';
   const isDialogueActive = showStoryOverlay && narrativeKind === 'dialogue';
   const isResolvingNarrativeKind = showStoryOverlay && narrativeKind == null;
-  const isOverlayActive = isDialogueActive || isStoryActive || isResolvingNarrativeKind;
+  const cinematicInterstitialActive = useCinematicInterstitialActive();
+  const isDiegeticActive = diegeticNarrative != null;
+  const isOverlayActive =
+    isDialogueActive
+    || isStoryActive
+    || isResolvingNarrativeKind
+    || isDiegeticActive
+    || mode === 'cutscene'
+    || cinematicInterstitialActive;
 
   const { startCombatFromStory } = useCombatOrchestrator();
   useAudioOrchestrator();

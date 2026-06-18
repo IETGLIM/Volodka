@@ -7,6 +7,7 @@ import {
   getPoemPower,
 } from '@/engine/PoemPowerSystem';
 import { dispatchGameAction, getGameSnapshot } from '@/engine/GameActionDispatcher';
+import { notifyPoemReadingInterstitialChanged } from '@/engine/presentation/cinematicInterstitialPresentation';
 
 export type PoemPowerActivationContext = 'exploration' | 'combat';
 
@@ -34,7 +35,9 @@ export function resetPoemReadingSession(): void {
 
 /** PoemReadingCutscene reports whether the ritual UI is mounted for a poem. */
 export function setPoemReadingCutsceneUiActive(poemId: string | null): void {
+  if (cutsceneUiActivePoemId === poemId) return;
   cutsceneUiActivePoemId = poemId;
+  notifyPoemReadingInterstitialChanged();
 }
 
 export function isPoemReadingCutsceneUiActive(): boolean {

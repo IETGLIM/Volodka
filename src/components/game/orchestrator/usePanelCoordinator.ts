@@ -22,6 +22,10 @@ import {
 } from '@/engine/quest/questAcceptDeferral';
 import { emitFirstReadingCompletionFeedback } from '@/engine/quest/questCompletionFeedback';
 import { usesCinematicQuestCelebration } from '@/engine/quest/questPresentation';
+import {
+  setFirstReadingCelebrationInterstitialActive,
+  setMatrixQuoteInterstitialActive,
+} from '@/engine/presentation/cinematicInterstitialPresentation';
 import type {
   MatrixQuoteState,
   PanelType,
@@ -105,11 +109,19 @@ export function usePanelCoordinator({
   }, [matrixQuote]);
 
   useEffect(() => {
+    setMatrixQuoteInterstitialActive(matrixQuote !== null);
+  }, [matrixQuote]);
+
+  useEffect(() => {
     questCompleteActiveRef.current = questComplete !== null;
   }, [questComplete]);
 
   useEffect(() => {
     firstReadingCelebrationActiveRef.current = firstReadingCelebration;
+  }, [firstReadingCelebration]);
+
+  useEffect(() => {
+    setFirstReadingCelebrationInterstitialActive(firstReadingCelebration);
   }, [firstReadingCelebration]);
 
   const isCompletionFlowBusy = useCallback((): boolean => {
@@ -353,6 +365,15 @@ export function usePanelCoordinator({
     },
     [dispatchStackAction],
   );
+
+  useEffect(() => {
+    return useGameStore.subscribe((state, prevState) => {
+      if (!prevState.combatActive && state.combatActive) {
+        abortPoemReadingIfPending();
+        dispatchStackAction({ type: 'clear' });
+      }
+    });
+  }, [dispatchStackAction]);
 
   useEffect(() => {
     if (panelStack.length > prevPanelStackLengthRef.current) {

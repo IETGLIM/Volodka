@@ -11,6 +11,21 @@ export type PanelStackAction =
   | { type: 'remove'; panel: NonNullPanelType }
   | { type: 'clear' };
 
+/** Gameplay HUD panels — only one open at a time (replace, not stack). */
+export const GAMEPLAY_EXCLUSIVE_PANELS = new Set<NonNullPanelType>([
+  'quests',
+  'inventory',
+  'poetry',
+]);
+
+function openExclusivePanel(
+  stack: NonNullPanelType[],
+  panel: NonNullPanelType,
+): NonNullPanelType[] {
+  const filtered = stack.filter((entry) => !GAMEPLAY_EXCLUSIVE_PANELS.has(entry));
+  return [...filtered, panel];
+}
+
 export function panelStackReducer(
   stack: NonNullPanelType[],
   action: PanelStackAction,
@@ -30,10 +45,16 @@ export function panelStackReducer(
       if (idx !== -1) {
         return [...stack.slice(0, idx), ...stack.slice(idx + 1)];
       }
+      if (GAMEPLAY_EXCLUSIVE_PANELS.has(action.panel)) {
+        return openExclusivePanel(stack, action.panel);
+      }
       return [...stack, action.panel];
     }
     case 'ensureOpen':
       if (stack.includes(action.panel)) return stack;
+      if (GAMEPLAY_EXCLUSIVE_PANELS.has(action.panel)) {
+        return openExclusivePanel(stack, action.panel);
+      }
       return [...stack, action.panel];
     default: {
       const _exhaustive: never = action;

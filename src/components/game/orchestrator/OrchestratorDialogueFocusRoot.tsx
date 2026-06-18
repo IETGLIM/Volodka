@@ -1,13 +1,19 @@
 import type { ReactNode } from 'react';
 import { useGamePanelStackOpen } from '@/components/a11y/usePanelFocusTrapActive';
-import { useOrchestratorNarrativeOverlay } from '@/store/selectors';
+import { useOrchestratorNarrativeOverlay, useOrchestratorShell } from '@/store/selectors';
+import { useCinematicInterstitialActive } from '@/hooks/useCinematicInterstitialActive';
 
 /** Applies dialogue-focus CSS only when narrative overlay state changes. */
 export function OrchestratorDialogueFocusRoot({ children }: { children: ReactNode }) {
-  const { showStoryOverlay, narrativeKind } = useOrchestratorNarrativeOverlay();
+  const { mode } = useOrchestratorShell();
+  const { showStoryOverlay, narrativeKind, diegeticNarrative } = useOrchestratorNarrativeOverlay();
   const panelStackOpen = useGamePanelStackOpen();
+  const cinematicInterstitialActive = useCinematicInterstitialActive();
   const dialogueFocusActive =
-    showStoryOverlay && (narrativeKind === 'dialogue' || narrativeKind === 'story');
+    diegeticNarrative != null
+    || (showStoryOverlay && (narrativeKind === 'dialogue' || narrativeKind === 'story'))
+    || mode === 'cutscene'
+    || cinematicInterstitialActive;
 
   return (
     <div

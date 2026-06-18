@@ -11,6 +11,11 @@ import {
   startEncounter,
 } from '@/engine/combat/encounterPresentation';
 import {
+  setFirstReadingCelebrationInterstitialActive,
+  setMatrixQuoteInterstitialActive,
+} from '@/engine/presentation/cinematicInterstitialPresentation';
+import { setPoemReadingCutsceneUiActive } from '@/engine/poemReading/poemReadingOrchestrator';
+import {
   isExplorationHudProfile,
   isMotionFxProfile,
   shouldMountSceneTransitionFx,
@@ -42,6 +47,10 @@ function resetUiPhase(): void {
   ui.setIntroActive(false);
   ui.setCombatActive(false);
   ui.setShowStoryOverlay(false);
+  ui.closeDiegeticNarrative();
+  setMatrixQuoteInterstitialActive(false);
+  setFirstReadingCelebrationInterstitialActive(false);
+  setPoemReadingCutsceneUiActive(null);
 }
 
 describe('useGameplayPresentationProfile', () => {
@@ -86,6 +95,24 @@ describe('useGameplayPresentationProfile', () => {
 
   it('returns narrative when story overlay is open', () => {
     useUIStore.getState().setShowStoryOverlay(true);
+    const { result } = renderHook(() => useGameplayPresentationProfile());
+    expect(result.current).toBe('narrative');
+  });
+
+  it('returns narrative when diegetic narrative is active', () => {
+    useUIStore.getState().openDiegeticNarrative('kitchen_table', 'story');
+    const { result } = renderHook(() => useGameplayPresentationProfile());
+    expect(result.current).toBe('narrative');
+  });
+
+  it('returns narrative during matrix quote interstitial', () => {
+    setMatrixQuoteInterstitialActive(true);
+    const { result } = renderHook(() => useGameplayPresentationProfile());
+    expect(result.current).toBe('narrative');
+  });
+
+  it('returns narrative during poem reading cutscene', () => {
+    setPoemReadingCutsceneUiActive('poem_1');
     const { result } = renderHook(() => useGameplayPresentationProfile());
     expect(result.current).toBe('narrative');
   });

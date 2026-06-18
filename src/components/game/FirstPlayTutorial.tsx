@@ -489,7 +489,7 @@ export function FirstPlayTutorial() {
       {shouldShow && (
         <motion.div
           className="fixed inset-0 flex items-center justify-center pointer-events-auto"
-          style={{ zIndex: UI_LAYERS.MENU + 1 }}
+          style={{ zIndex: UI_LAYERS.CINEMATIC_TRANSITION }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}

@@ -7,9 +7,10 @@ import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 /** Cinematic dim over the 3D world while story/dialogue beats play (letterbox-friendly). */
 export const NarrativeWorldDim = memo(function NarrativeWorldDim() {
   const { mode } = useOrchestratorShell();
-  const { showStoryOverlay } = useOrchestratorNarrativeOverlay();
+  const { showStoryOverlay, diegeticNarrative } = useOrchestratorNarrativeOverlay();
   const reducedMotion = useEffectiveReducedMotion();
-  const visible = mode === 'exploration' && showStoryOverlay;
+  const isDiegeticOnly = diegeticNarrative != null && !showStoryOverlay;
+  const visible = mode === 'exploration' && (showStoryOverlay || isDiegeticOnly);
 
   return (
     <AnimatePresence>
@@ -27,8 +28,9 @@ export const NarrativeWorldDim = memo(function NarrativeWorldDim() {
           <div
             className="absolute inset-0"
             style={{
-              background:
-                'radial-gradient(ellipse at center, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.72) 88%)',
+              background: isDiegeticOnly
+                ? 'radial-gradient(ellipse at center, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.45) 88%)'
+                : 'radial-gradient(ellipse at center, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.72) 88%)',
             }}
           />
         </motion.div>

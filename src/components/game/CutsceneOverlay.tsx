@@ -388,7 +388,7 @@ export function CutsceneOverlay() {
           exit={reducedMotion ? undefined : { opacity: 0 }}
           transition={{ duration: motionDuration(1.0), ease: 'easeInOut' }}
           className="fixed inset-0 flex items-center justify-center pointer-events-none"
-          style={{ zIndex: UI_LAYERS.DIALOGUE }}
+          style={{ zIndex: UI_LAYERS.CINEMATIC_TRANSITION }}
         >
           {/* Dark vignette background for text readability */}
           <div
