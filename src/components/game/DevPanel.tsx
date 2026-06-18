@@ -21,6 +21,7 @@ import { SCENE_CONFIG } from '@/config/scenes';
 import { requestSceneTransition } from '@/engine/scene/sceneTransition';
 import type { SceneId } from '@/shared/types/game';
 import { POEMS } from '@/data/poems';
+import { formatEventPayloadPreview } from '@/shared/utils/formatEventPayloadPreview';
 
 /* ── Types ── */
 
@@ -168,7 +169,7 @@ export function DevPanel({ startOpen = false }: { startOpen?: boolean }) {
         border: '1px solid rgb(var(--cyber-cyan-rgb) / 0.2)',
         borderRadius: 10,
         color: '#e0e0e0',
-        fontFamily: '"JetBrains Mono", "Fira Code", monospace',
+        fontFamily: '"Geist Mono", "JetBrains Mono", monospace',
         fontSize: 12,
         overflow: 'hidden',
         backdropFilter: 'blur(12px)',
@@ -691,7 +692,7 @@ function EventsTab({
               <span style={{ color: 'var(--cyber-cyan)' }}>{e.event}</span>
               {e.payload !== undefined && e.payload !== null && typeof e.payload === 'object' && Object.keys(e.payload as object).length > 0 && (
                 <span style={{ color: '#555', marginLeft: 4 }}>
-                  {truncatePayload(e.payload)}
+                  {formatEventPayloadPreview(e.payload)}
                 </span>
               )}
             </div>
@@ -952,11 +953,3 @@ function formatNumber(n: number): string {
   return `${(n / 1000000).toFixed(1)}M`;
 }
 
-function truncatePayload(payload: unknown): string {
-  try {
-    const str = JSON.stringify(payload);
-    return str.length > 50 ? str.slice(0, 50) + '…' : str;
-  } catch {
-    return '{…}';
-  }
-}

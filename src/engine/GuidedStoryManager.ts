@@ -58,6 +58,7 @@ export class GuidedStoryManager {
   private unsubGameLoaded: (() => void) | null = null;
   private spineAdvanceTimer: ReturnType<typeof setTimeout> | null = null;
   private pendingSpineNodeId: string | null = null;
+  private lastGuidanceSignature: string | null = null;
 
   constructor(private readonly deps: GuidedStoryDeps = createDefaultGuidedStoryDeps()) {}
 
@@ -253,6 +254,18 @@ export class GuidedStoryManager {
     this.emitGuidanceUpdate();
   }
 
+  private guidanceSignature(guidance: GuidanceInfo): string {
+    return [
+      guidance.objectiveText,
+      guidance.objectiveType,
+      guidance.targetId,
+      guidance.urgency,
+      String(guidance.actNumber),
+      guidance.chapterTitle,
+      guidance.targetSceneId ?? '',
+    ].join('|');
+  }
+
   private emitGuidanceUpdate() {
     const guidance = this.getCurrentGuidance();
     if (!guidance) return;
@@ -260,6 +273,9 @@ export class GuidedStoryManager {
       guidance,
       this.deps.path.getNpcIdForStoryNode,
     );
+    const signature = this.guidanceSignature(enriched);
+    if (signature === this.lastGuidanceSignature) return;
+    this.lastGuidanceSignature = signature;
     this.deps.events.emitGuidanceUpdate(enriched);
   }
 
@@ -304,6 +320,7 @@ export class GuidedStoryManager {
     this.currentStepIndex = 0;
     this.currentQuestSpineIndex = 0;
     this.lastAdvancedToAct = 0;
+    this.lastGuidanceSignature = null;
     this.clearSpineAdvanceDebounce();
 
     if (!this.initialized) return;
@@ -414,6 +431,7 @@ export class GuidedStoryManager {
     this.currentStepIndex = 0;
     this.currentQuestSpineIndex = 0;
     this.lastAdvancedToAct = 0;
+    this.lastGuidanceSignature = null;
     this.clearSpineAdvanceDebounce();
   }
 

@@ -292,4 +292,18 @@ describe('GuidedStoryManager', () => {
     expect(deps.events.emitGuidanceUpdate).toHaveBeenCalledTimes(1);
     expect(deps.actions.advanceAct).not.toHaveBeenCalled();
   });
+
+  it('skips duplicate guidance emissions when payload is unchanged', () => {
+    const deps = createTestDeps({ visitedNodes: ['start'] });
+    const manager = new GuidedStoryManager(deps);
+    manager.syncSpineForTest();
+
+    const emitGuidanceUpdate = (
+      manager as unknown as { emitGuidanceUpdate(): void }
+    ).emitGuidanceUpdate.bind(manager);
+    emitGuidanceUpdate();
+    emitGuidanceUpdate();
+
+    expect(deps.events.emitGuidanceUpdate).toHaveBeenCalledTimes(1);
+  });
 });
