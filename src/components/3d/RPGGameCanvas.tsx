@@ -1,7 +1,7 @@
 
 /* ─── Volodka RPG – Main 3D Canvas ─── */
 
-import { Suspense, lazy, useRef, useEffect, useState, Component, Fragment, type ReactNode, type ErrorInfo } from 'react';
+import { Suspense, lazy, useRef, useEffect, useState, memo, Component, Fragment, type ComponentProps, type ReactNode, type ErrorInfo } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
 import { usePostFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
@@ -245,6 +245,42 @@ class Canvas3DErrorBoundary extends Component<
   }
 }
 
+/** Stable camera config — inline objects on `<Canvas>` recreate the default camera each render. */
+const EXPLORATION_CAMERA = {
+  fov: 55,
+  near: 0.1,
+  far: 200,
+  position: [0, 2.35, 2.5] as [number, number, number],
+};
+
+type CanvasGlProp = NonNullable<ComponentProps<typeof Canvas>['gl']>;
+
+/** Cached renderer factories keyed by antialias — R3F recreates WebGLRenderer when `gl` identity changes. */
+const webGlRendererFactoryCache = new Map<boolean, CanvasGlProp>();
+
+function getWebGlRendererFactory(antialias: boolean): CanvasGlProp {
+  let factory = webGlRendererFactoryCache.get(antialias);
+  if (!factory) {
+    const created = ({ canvas }: { canvas: HTMLCanvasElement }) => {
+      const renderer = new THREE.WebGLRenderer({
+        canvas,
+        antialias,
+        stencil: true,
+        alpha: false,
+        powerPreference: 'high-performance',
+      });
+      renderer.toneMapping = THREE.NoToneMapping;
+      renderer.toneMappingExposure = 1.0;
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      renderer.setClearColor(0x000000, 1);
+      return renderer;
+    };
+    factory = created as CanvasGlProp;
+    webGlRendererFactoryCache.set(antialias, factory);
+  }
+  return factory;
+}
+
 /** Fallback while Rapier WASM loads or after physics init failure. */
 function SimpleSceneFallback({
   livePlayerPositionRef,
@@ -292,7 +328,6 @@ export function RPGGameCanvas({ focusable = true }: { focusable?: boolean } = {}
   // Uses useShallow to select just the mode string (primitive) so this
   // only re-renders when mode actually changes, not on every store update.
   const gameMode = useGameMode();
-  const devToolsArmed = useGameStore((s) => s.devToolsArmed);
   const physicsPaused = gameMode === 'menu' || gameMode === 'intro';
   const [tabVisible, setTabVisible] = useState(
     () => typeof document === 'undefined' || !document.hidden,
@@ -364,98 +399,16 @@ export function RPGGameCanvas({ focusable = true }: { focusable?: boolean } = {}
       }}
     >
       <Canvas3DErrorBoundary>
-        <Canvas
-          flat
+        <RPGGameCanvasShell
           frameloop={canvasFrameloop}
           dpr={dpr}
-          camera={{ fov: 55, near: 0.1, far: 200, position: [0, 2.35, 2.5] }}
           shadows={preset.shadows}
-          // Use factory function to create the WebGLRenderer with explicit settings.
-          // R3F v9: the `gl` prop callback receives a defaultProps object
-          // { canvas: HTMLCanvasElement, powerPreference, antialias, alpha },
-          // NOT just the canvas element. We must destructure `canvas` from it.
-          // Failing to do so passes the whole object to THREE.WebGLRenderer as
-          // the `canvas` parameter, causing "U.addEventListener is not a function"
-          // because a plain object doesn't have DOM event methods.
-          //
-          // FIX (Code Review #4): Removed unnecessary `async` — WebGLRenderer
-          // construction is synchronous; async adds nothing and may confuse readers.
-          gl={({ canvas }) => {
-            const renderer = new THREE.WebGLRenderer({
-              canvas,
-              antialias: preset.antialias,
-              stencil: true,
-              alpha: false,
-              powerPreference: 'high-performance',
-            });
-            // SAFETY: Ensure NoToneMapping — prevents double tone mapping with
-            // EffectComposer's ToneMapping pass (white screen).
-            renderer.toneMapping = THREE.NoToneMapping;
-            renderer.toneMappingExposure = 1.0;
-            renderer.outputColorSpace = THREE.SRGBColorSpace;
-            renderer.setClearColor(0x000000, 1);
-            return renderer;
-          }}
-          style={{ background: '#000' }}
-        >
-        <GltfPipelineInit />
-        <CanvasFrameloopController idle={physicsPaused || !tabVisible} />
-        <VisualizationLayers livePlayerPositionRef={livePlayerPositionRef}>
-          <Suspense
-            fallback={
-              <SimpleSceneFallback
-                livePlayerPositionRef={livePlayerPositionRef}
-                livePlayerRotationRef={livePlayerRotationRef}
-                virtualControlsRef={virtualControlsRef}
-              />
-            }
-          >
-          <PhysicsErrorBoundary
-            fallback={
-              <SimpleSceneFallback
-                livePlayerPositionRef={livePlayerPositionRef}
-                livePlayerRotationRef={livePlayerRotationRef}
-                virtualControlsRef={virtualControlsRef}
-              />
-            }
-          >
-          <LazyPhysicsSceneInner
-            livePlayerPositionRef={livePlayerPositionRef}
-            livePlayerRotationRef={livePlayerRotationRef}
-            virtualControlsRef={virtualControlsRef}
-            physicsPaused={physicsPaused}
-          />
-          </PhysicsErrorBoundary>
-          </Suspense>
-        </VisualizationLayers>
-
-        <FrameBudgetRunner />
-        <PostFrameBudgetRunner />
-
-        {/* Rain / Snow weather system */}
-        <WeatherController />
-
-        {/* Volumetric fog, god rays, and atmospheric effects */}
-        {!physicsPaused && <AtmosphericEffects />}
-
-        {/* Post-processing — wrapped in inner error boundary so 3D scene
-            still works even if EffectComposer fails to initialize */}
-        {!physicsPaused && (
-        <PostFXErrorBoundary>
-          <ExplorationPostFX />
-        </PostFXErrorBoundary>
-        )}
-
-        {devToolsArmed && (
-          <Suspense fallback={null}>
-            <LazyFrameProfilerBridge />
-          </Suspense>
-        )}
-
-        {/* Post-render canvas guards (tone mapping, first-frame signal). */}
-        <CanvasGuardSystem />
-
-        </Canvas>
+          antialias={preset.antialias}
+          idle={physicsPaused || !tabVisible}
+          livePlayerPositionRef={livePlayerPositionRef}
+          livePlayerRotationRef={livePlayerRotationRef}
+          virtualControlsRef={virtualControlsRef}
+        />
       </Canvas3DErrorBoundary>
 
       {/* ── Visual overlays (CSS-based, outside Canvas for performance) ── */}
@@ -465,6 +418,118 @@ export function RPGGameCanvas({ focusable = true }: { focusable?: boolean } = {}
 
       {/* Mobile virtual controls are handled by ExplorationMobileHud in GameOrchestrator */}
     </div>
+  );
+}
+
+type RPGGameCanvasShellProps = {
+  frameloop: 'always' | 'demand';
+  dpr: [number, number];
+  shadows: boolean;
+  antialias: boolean;
+  idle: boolean;
+  livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
+  livePlayerRotationRef: React.MutableRefObject<number>;
+  virtualControlsRef: React.MutableRefObject<VirtualControls>;
+};
+
+/**
+ * Memoized R3F shell — Canvas props (especially `gl`) must stay referentially stable
+ * across unrelated store updates or R3F allocates a new WebGLRenderer each render.
+ */
+const RPGGameCanvasShell = memo(function RPGGameCanvasShell({
+  frameloop,
+  dpr,
+  shadows,
+  antialias,
+  idle,
+  livePlayerPositionRef,
+  livePlayerRotationRef,
+  virtualControlsRef,
+}: RPGGameCanvasShellProps) {
+  return (
+    <Canvas
+      flat
+      frameloop={frameloop}
+      dpr={dpr}
+      camera={EXPLORATION_CAMERA}
+      shadows={shadows}
+      gl={getWebGlRendererFactory(antialias)}
+      style={{ background: '#000' }}
+    >
+      <RPGGameCanvasScene
+        idle={idle}
+        livePlayerPositionRef={livePlayerPositionRef}
+        livePlayerRotationRef={livePlayerRotationRef}
+        virtualControlsRef={virtualControlsRef}
+      />
+    </Canvas>
+  );
+});
+
+function RPGGameCanvasScene({
+  idle,
+  livePlayerPositionRef,
+  livePlayerRotationRef,
+  virtualControlsRef,
+}: Omit<RPGGameCanvasShellProps, 'frameloop' | 'dpr' | 'shadows' | 'antialias'>) {
+  const gameMode = useGameMode();
+  const devToolsArmed = useGameStore((s) => s.devToolsArmed);
+  const physicsPaused = gameMode === 'menu' || gameMode === 'intro';
+
+  return (
+    <>
+      <GltfPipelineInit />
+      <CanvasFrameloopController idle={idle} />
+      <VisualizationLayers livePlayerPositionRef={livePlayerPositionRef}>
+        <Suspense
+          fallback={
+            <SimpleSceneFallback
+              livePlayerPositionRef={livePlayerPositionRef}
+              livePlayerRotationRef={livePlayerRotationRef}
+              virtualControlsRef={virtualControlsRef}
+            />
+          }
+        >
+          <PhysicsErrorBoundary
+            fallback={
+              <SimpleSceneFallback
+                livePlayerPositionRef={livePlayerPositionRef}
+                livePlayerRotationRef={livePlayerRotationRef}
+                virtualControlsRef={virtualControlsRef}
+              />
+            }
+          >
+            <LazyPhysicsSceneInner
+              livePlayerPositionRef={livePlayerPositionRef}
+              livePlayerRotationRef={livePlayerRotationRef}
+              virtualControlsRef={virtualControlsRef}
+              physicsPaused={physicsPaused}
+            />
+          </PhysicsErrorBoundary>
+        </Suspense>
+      </VisualizationLayers>
+
+      <FrameBudgetRunner />
+      <PostFrameBudgetRunner />
+
+      <WeatherController />
+
+      {!physicsPaused && <AtmosphericEffects />}
+
+      {!physicsPaused && (
+        <PostFXErrorBoundary>
+          <ExplorationPostFX />
+        </PostFXErrorBoundary>
+      )}
+
+      {devToolsArmed && (
+        <Suspense fallback={null}>
+          <LazyFrameProfilerBridge />
+        </Suspense>
+      )}
+
+      <CanvasGuardSystem />
+    </>
   );
 }
 
