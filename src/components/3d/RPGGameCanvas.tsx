@@ -36,6 +36,8 @@ import {
   registerCanvasForFirstFrame,
   unregisterCanvasForFirstFrame,
 } from '@/engine/canvas/canvasFirstFrameSession';
+import { forceDisposeOrphanedWebGLResources } from '@/engine/canvas/canvasRendererRegistry';
+import { adoptCanvasWebGlRenderer } from '@/engine/canvas/webGlRendererSingleton';
 import { markCanvasMounted, markFirstFrame } from '@/engine/performance/LoadingTimeline';
 
 const LazyPhysicsSceneInner = lazy(() => import('./PhysicsSceneInner'));
@@ -155,6 +157,7 @@ class Canvas3DErrorBoundary extends Component<
 
   componentDidCatch(error: Error, info: ErrorInfo) {
     console.error('[RPGGameCanvas] 3D rendering error:', error, info);
+    forceDisposeOrphanedWebGLResources('canvas3d-error-boundary');
 
     // Invalidate any in-flight retry and cancel its timer before scheduling anew.
     this.retryGeneration += 1;
@@ -273,7 +276,7 @@ function getWebGlRendererFactory(antialias: boolean): CanvasGlProp {
       renderer.toneMappingExposure = 1.0;
       renderer.outputColorSpace = THREE.SRGBColorSpace;
       renderer.setClearColor(0x000000, 1);
-      return renderer;
+      return adoptCanvasWebGlRenderer(renderer);
     };
     factory = created as CanvasGlProp;
     webGlRendererFactoryCache.set(antialias, factory);

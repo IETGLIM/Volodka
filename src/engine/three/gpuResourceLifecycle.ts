@@ -5,6 +5,7 @@
 
 import * as THREE from 'three';
 import { resetGltfPipeline } from '@/engine/assets/gltfPipeline';
+import { resetGltfPreloadQueue } from '@/engine/assets/gltfPreloadScheduler';
 import {
   forceDisposeOrphanedWebGLResources,
   resetCanvasRendererRegistry,
@@ -68,6 +69,7 @@ export function disposeAllEngineGpuResources(reason: GpuDisposeReason = 'engine'
   evictQualityDependentGpuCache();
   THREE.Cache.clear();
   resetGltfPipeline();
+  resetGltfPreloadQueue();
 
   if (reason === 'hmr') {
     resetCanvasRendererRegistry();

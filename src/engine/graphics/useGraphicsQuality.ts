@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { clearSessionAutoResolvedTier, getSessionAutoResolvedTier } from '@/engine/graphics/autoQualitySession';
 import {
   dispatchQualityGpuCleanup,
@@ -54,11 +54,14 @@ export function useGraphicsQuality(): GraphicsQualityState {
     return () => window.removeEventListener(QUALITY_PRESET_CHANGED, onChanged);
   }, []);
 
-  const preset = resolveQualityPreset(
-    selectedPreset,
-    viewport.width,
-    viewport.dpr,
-    selectedPreset === 'auto' ? autoRuntimeTier : null,
+  const preset = useMemo(
+    () => resolveQualityPreset(
+      selectedPreset,
+      viewport.width,
+      viewport.dpr,
+      selectedPreset === 'auto' ? autoRuntimeTier : null,
+    ),
+    [selectedPreset, viewport.width, viewport.dpr, autoRuntimeTier],
   );
 
   const setPreset = (id: QualityPresetId) => {

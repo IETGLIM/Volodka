@@ -5,6 +5,10 @@ import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import { getAssetDefinition, isAssetEffectiveShipped, resolveVariantUrl } from '@/config/assetManifest';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
+import {
+  GltfPreloadPriority,
+  scheduleGltfPreload,
+} from '@/engine/assets/gltfPreloadScheduler';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { useSkinnedGltfClone } from '@/hooks/useSkinnedGltfClone';
 import { LodSwitcher } from './LodSwitcher';
@@ -147,14 +151,29 @@ export function GltfAsset({ fallback = null, assetId, ...props }: GltfAssetProps
   );
 }
 
-export function preloadGltfAsset(assetId: string): void {
+export function preloadGltfAsset(
+  assetId: string,
+  priority: GltfPreloadPriority = GltfPreloadPriority.Critical,
+): void {
   if (!isAssetEffectiveShipped(assetId)) return;
   const asset = getAssetDefinition(assetId);
   if (!asset) return;
-  for (const lod of asset.lods) useGLTF.preload(lod.url, true, true, extendLoader);
+  for (const lod of asset.lods) {
+    scheduleGltfPreload(
+      lod.url,
+      () => useGLTF.preload(lod.url, true, true, extendLoader),
+      priority,
+    );
+  }
   if (asset.variants) {
     for (const url of Object.values(asset.variants)) {
-      if (url) useGLTF.preload(url, true, true, extendLoader);
+      if (url) {
+        scheduleGltfPreload(
+          url,
+          () => useGLTF.preload(url, true, true, extendLoader),
+          priority,
+        );
+      }
     }
   }
 }

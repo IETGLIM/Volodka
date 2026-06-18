@@ -7,6 +7,7 @@ import {
   type DisposeThreeOptions,
 } from '@/engine/three/disposeThreeResources';
 import { disposeNpcInstance } from '@/engine/three/npcTemplateCache';
+import { releaseCanvasWebGlRenderer } from '@/engine/canvas/webGlRendererSingleton';
 
 export interface UseThreeCleanupOptions extends DisposeThreeOptions {
   /**
@@ -90,5 +91,6 @@ export function useCanvasRendererCleanup(): void {
   useEffect(() => () => {
     disposeRendererShadowMaps(gl, scene);
     gl.dispose();
+    releaseCanvasWebGlRenderer(gl);
   }, [gl, scene]);
 }

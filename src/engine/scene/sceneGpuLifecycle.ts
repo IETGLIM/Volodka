@@ -18,6 +18,11 @@ import { resolveNpcModelUrl } from '@/config/npcModelRegistry';
 import { getPropModelDefinition } from '@/config/propModelRegistry';
 import { getScenePropDressingIds } from '@/config/scenePropDressing';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
+import {
+  GltfPreloadPriority,
+  resetGltfPreloadQueue,
+  scheduleGltfPreload,
+} from '@/engine/assets/gltfPreloadScheduler';
 
 const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeof useGLTF>[3]>;
 
@@ -101,26 +106,42 @@ function preloadScenePropModels(sceneId: SceneId): void {
 function preloadSceneNpcModels(sceneId: SceneId): void {
   for (const npcId of getSceneNpcIds(sceneId)) {
     const url = resolveNpcModelUrl(npcId);
-    if (url) useGLTF.preload(url, true, true, extendLoader);
+    if (!url) continue;
+    scheduleGltfPreload(
+      url,
+      () => useGLTF.preload(url, true, true, extendLoader),
+      GltfPreloadPriority.Low,
+    );
   }
 }
 
 export function preloadSceneGpuAssets(sceneId: SceneId): void {
+  resetGltfPreloadQueue();
+
   for (const assetId of getSceneGltfAssetIds(sceneId)) {
-    preloadGltfAsset(assetId);
+    preloadGltfAsset(assetId, GltfPreloadPriority.Critical);
   }
-  preloadTriggerZoneProps(sceneId);
+  preloadTriggerZoneProps(sceneId, GltfPreloadPriority.High);
   preloadScenePropModels(sceneId);
   preloadSceneNpcModels(sceneId);
   if (isAssetEffectiveShipped('fps_arms')) {
-    useGLTF.preload(FPS_ARMS_URL, true, true, extendLoader);
+    scheduleGltfPreload(
+      FPS_ARMS_URL,
+      () => useGLTF.preload(FPS_ARMS_URL, true, true, extendLoader),
+      GltfPreloadPriority.Deferred,
+    );
   }
 }
 
 /** Warm a single NPC GLB before approach / dialogue (interaction:start). */
 export function preloadNpcModel(npcId: string): void {
   const url = resolveNpcModelUrl(npcId);
-  if (url) useGLTF.preload(url, true, true, extendLoader);
+  if (!url) return;
+  scheduleGltfPreload(
+    url,
+    () => useGLTF.preload(url, true, true, extendLoader),
+    GltfPreloadPriority.Critical,
+  );
 }
 
 /** Remove loader + THREE.Cache entries for assets only used by `fromSceneId`. */

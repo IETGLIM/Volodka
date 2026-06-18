@@ -9,6 +9,10 @@ import { useCurrentSceneId } from '@/store/selectors';
 import { TRIGGER_ZONES, type TriggerZone, isTriggerZoneAvailable } from '@/data/triggerZones';
 import { getPropModelDefinition } from '@/config/propModelRegistry';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
+import {
+  GltfPreloadPriority,
+  scheduleGltfPreload,
+} from '@/engine/assets/gltfPreloadScheduler';
 import { useGltfPropPlacement } from '@/hooks/useGltfPropPlacement';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
@@ -103,10 +107,18 @@ export function TriggerZoneProps() {
 }
 
 /** Warm prop GLBs for a scene (call from GPU lifecycle). */
-export function preloadTriggerZoneProps(sceneId: string): void {
+export function preloadTriggerZoneProps(
+  sceneId: string,
+  priority: GltfPreloadPriority = GltfPreloadPriority.High,
+): void {
   for (const zone of TRIGGER_ZONES) {
     if (zone.sceneId !== sceneId || !zone.propModelId) continue;
     const def = getPropModelDefinition(zone.propModelId);
-    if (def) useGLTF.preload(def.url, true, true, extendLoader);
+    if (!def) continue;
+    scheduleGltfPreload(
+      def.url,
+      () => useGLTF.preload(def.url, true, true, extendLoader),
+      priority,
+    );
   }
 }

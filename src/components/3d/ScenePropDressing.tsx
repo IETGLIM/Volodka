@@ -9,6 +9,10 @@ import { getPropModelDefinition } from '@/config/propModelRegistry';
 import type { SceneId } from '@/shared/types/game';
 import { getScenePropDressing, type ScenePropPlacement } from '@/config/scenePropDressing';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
+import {
+  GltfPreloadPriority,
+  scheduleGltfPreload,
+} from '@/engine/assets/gltfPreloadScheduler';
 import { useGltfPropPlacement } from '@/hooks/useGltfPropPlacement';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
@@ -91,9 +95,17 @@ export function ScenePropDressing() {
 }
 
 /** Warm dressing GLBs for a scene (call from GPU lifecycle). */
-export function preloadScenePropDressing(sceneId: SceneId): void {
+export function preloadScenePropDressing(
+  sceneId: SceneId,
+  priority: GltfPreloadPriority = GltfPreloadPriority.Normal,
+): void {
   for (const placement of getScenePropDressing(sceneId)) {
     const def = getPropModelDefinition(placement.propModelId);
-    if (def) useGLTF.preload(def.url, true, true, extendLoader);
+    if (!def) continue;
+    scheduleGltfPreload(
+      def.url,
+      () => useGLTF.preload(def.url, true, true, extendLoader),
+      priority,
+    );
   }
 }

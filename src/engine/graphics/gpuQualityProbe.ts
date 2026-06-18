@@ -19,21 +19,28 @@ export function computePhysicalPixelCount(
   return Math.round(w * h * dpr * dpr);
 }
 
+const PROBE_FALLBACK: WebGlGpuProbe = {
+  maxTextureSize: undefined,
+  renderer: undefined,
+  isSoftwareRenderer: false,
+};
+
+let cachedProbe: WebGlGpuProbe | null = null;
+
+function loseThrowawayWebGlContext(gl: WebGLRenderingContext): void {
+  const loseExt = gl.getExtension('WEBGL_lose_context');
+  loseExt?.loseContext();
+}
+
 /** Probe WebGL limits once (creates a throwaway canvas). */
 export function probeWebGlGpu(): WebGlGpuProbe {
-  const fallback: WebGlGpuProbe = {
-    maxTextureSize: undefined,
-    renderer: undefined,
-    isSoftwareRenderer: false,
-  };
-
-  if (typeof document === 'undefined') return fallback;
+  if (typeof document === 'undefined') return PROBE_FALLBACK;
 
   try {
     const canvas = document.createElement('canvas');
     const gl = canvas.getContext('webgl')
       ?? canvas.getContext('experimental-webgl');
-    if (!gl || !(gl instanceof WebGLRenderingContext)) return fallback;
+    if (!gl || !(gl instanceof WebGLRenderingContext)) return PROBE_FALLBACK;
 
     const maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE) as number;
 
@@ -45,10 +52,25 @@ export function probeWebGlGpu(): WebGlGpuProbe {
     const isSoftwareRenderer = renderer != null
       && /swiftshader|llvmpipe|software rasterizer|microsoft basic render/i.test(renderer);
 
+    loseThrowawayWebGlContext(gl);
+
     return { maxTextureSize, renderer, isSoftwareRenderer };
   } catch {
-    return fallback;
+    return PROBE_FALLBACK;
   }
+}
+
+/** Session-cached GPU probe — avoids allocating a WebGL context per React render. */
+export function getCachedWebGlGpuProbe(): WebGlGpuProbe {
+  if (!cachedProbe) {
+    cachedProbe = probeWebGlGpu();
+  }
+  return cachedProbe;
+}
+
+/** Test-only reset */
+export function resetCachedWebGlGpuProbeForTests(): void {
+  cachedProbe = null;
 }
 
 /** True when renderer string looks like a low-tier mobile GPU. */

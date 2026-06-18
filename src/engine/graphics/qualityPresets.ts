@@ -3,8 +3,8 @@
 import { getSessionAutoResolvedTier } from './autoQualitySession';
 import {
   computePhysicalPixelCount,
+  getCachedWebGlGpuProbe,
   isWeakMobileGpuRenderer,
-  probeWebGlGpu,
   type WebGlGpuProbe,
 } from './gpuQualityProbe';
 
@@ -199,7 +199,7 @@ export function capQualityTierForGpuMemory(
   tier: Exclude<QualityPresetId, 'auto'>,
   devicePixelRatio: number,
   deviceMemoryGb: number | undefined = readDeviceMemoryGb(),
-  gpuProbe: WebGlGpuProbe = probeWebGlGpu(),
+  gpuProbe: WebGlGpuProbe = getCachedWebGlGpuProbe(),
 ): Exclude<QualityPresetId, 'auto'> {
   let capped = tier;
 

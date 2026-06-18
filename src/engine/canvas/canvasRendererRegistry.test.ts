@@ -34,7 +34,8 @@ describe('forceDisposeOrphanedWebGLResources', () => {
   });
 
   it('disposes scene children and clears the scene graph', () => {
-    const gl = { shadowMap: { needsUpdate: false } } as unknown as THREE.WebGLRenderer;
+    const dispose = vi.fn();
+    const gl = { shadowMap: { needsUpdate: false }, dispose } as unknown as THREE.WebGLRenderer;
     const scene = new THREE.Scene();
     const mesh = new THREE.Mesh(
       new THREE.BoxGeometry(1, 1, 1),
@@ -47,6 +48,7 @@ describe('forceDisposeOrphanedWebGLResources', () => {
 
     expect(disposeObject3DTree).toHaveBeenCalledWith(mesh);
     expect(scene.children).toHaveLength(0);
+    expect(dispose).toHaveBeenCalled();
 
     unregisterCanvasRenderer(gl);
   });
