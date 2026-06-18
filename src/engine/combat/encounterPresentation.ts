@@ -3,6 +3,11 @@ import { audioEngine } from '@/engine/AudioEngine';
 import { getGameSnapshot } from '@/engine/GameActionDispatcher';
 import { deferCombatStartIfTransitionBusy } from '@/engine/core/combatStartGate';
 import { setCinematicHoldActive } from '@/engine/camera/cinematicPresentation';
+import {
+  pauseGltfPreloadForEncounter,
+  setGltfPreloadPaused,
+} from '@/engine/assets/gltfPreloadScheduler';
+import { warmCombatUiModule } from '@/engine/combat/warmCombatUi';
 import type { EncounterContext } from './encounterTypes';
 
 export const ENCOUNTER_PRESENTATION_MS = 820;
@@ -41,6 +46,7 @@ export function cancelEncounterPresentation(): void {
   if (presentationActive) {
     presentationActive = false;
     setCinematicHoldActive(false);
+    setGltfPreloadPaused(false);
     notifyPresentationListeners();
   }
 }
@@ -63,6 +69,8 @@ export function startEncounter(ctx: EncounterContext): boolean {
 
   presentationActive = true;
   setCinematicHoldActive(true);
+  pauseGltfPreloadForEncounter();
+  warmCombatUiModule();
   notifyPresentationListeners();
 
   eventBus.emit('encounter:presentation_start', {
@@ -82,7 +90,10 @@ export function startEncounter(ctx: EncounterContext): boolean {
     setCinematicHoldActive(false);
     notifyPresentationListeners();
     eventBus.emit('encounter:presentation_end', ctx);
-    commitHandler?.(ctx);
+    // One frame between beat teardown and combat commit — avoids rAF pile-up with UI mount.
+    requestAnimationFrame(() => {
+      commitHandler?.(ctx);
+    });
   }, ENCOUNTER_PRESENTATION_MS);
 
   return true;

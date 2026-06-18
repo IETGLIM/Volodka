@@ -30,6 +30,10 @@ import {
 describe('encounterPresentation', () => {
   beforeEach(() => {
     vi.useFakeTimers();
+    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => {
+      cb(0);
+      return 1;
+    });
     cancelEncounterPresentation();
   });
 

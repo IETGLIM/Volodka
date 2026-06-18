@@ -1,8 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   GltfPreloadPriority,
+  isGltfPreloadPaused,
   resetGltfPreloadSchedulerForTests,
   scheduleGltfPreload,
+  setGltfPreloadPaused,
 } from './gltfPreloadScheduler';
 
 describe('gltfPreloadScheduler', () => {
@@ -41,5 +43,19 @@ describe('gltfPreloadScheduler', () => {
 
     vi.runOnlyPendingTimers();
     expect(runs).toEqual(['critical']);
+  });
+
+  it('holds the queue while paused and resumes in priority order', () => {
+    const order: string[] = [];
+
+    scheduleGltfPreload('a.glb', () => order.push('a'), GltfPreloadPriority.Critical);
+    setGltfPreloadPaused(true);
+    vi.runOnlyPendingTimers();
+    expect(order).toEqual([]);
+    expect(isGltfPreloadPaused()).toBe(true);
+
+    setGltfPreloadPaused(false);
+    vi.runOnlyPendingTimers();
+    expect(order).toEqual(['a']);
   });
 });

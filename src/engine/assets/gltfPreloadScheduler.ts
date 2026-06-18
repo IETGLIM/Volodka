@@ -3,6 +3,8 @@
  * a dozen Draco/Meshopt decodes in the same frame.
  */
 
+import { eventBus } from '@/engine/EventBus';
+
 export enum GltfPreloadPriority {
   Critical = 0,
   High = 1,
@@ -19,8 +21,39 @@ type QueueEntry = {
 const queue = new Map<string, QueueEntry>();
 let generation = 0;
 let drainHandle: ReturnType<typeof setTimeout> | number | null = null;
+let preloadPaused = false;
+let combatLifecycleHooked = false;
 
 const BATCH_SIZE = 1;
+
+function hookCombatPreloadLifecycle(): void {
+  if (combatLifecycleHooked) return;
+  combatLifecycleHooked = true;
+  eventBus.on('combat:end', () => {
+    setGltfPreloadPaused(false);
+  });
+}
+
+/** Pause idle GLB preloads during encounter beat / combat UI mount (main-thread headroom). */
+export function setGltfPreloadPaused(paused: boolean): void {
+  if (preloadPaused === paused) return;
+  preloadPaused = paused;
+  if (preloadPaused) {
+    cancelDrain();
+    return;
+  }
+  if (queue.size > 0) scheduleDrain();
+}
+
+export function isGltfPreloadPaused(): boolean {
+  return preloadPaused;
+}
+
+/** Encounter presentation — defer background NPC/prop preloads until combat ends. */
+export function pauseGltfPreloadForEncounter(): void {
+  hookCombatPreloadLifecycle();
+  setGltfPreloadPaused(true);
+}
 
 function cancelDrain(): void {
   if (drainHandle === null) return;
@@ -33,7 +66,7 @@ function cancelDrain(): void {
 }
 
 function scheduleDrain(): void {
-  if (drainHandle !== null || queue.size === 0) return;
+  if (preloadPaused || drainHandle !== null || queue.size === 0) return;
 
   const gen = generation;
   const drain = () => {
@@ -50,7 +83,7 @@ function scheduleDrain(): void {
 }
 
 function drainBatch(gen: number): void {
-  if (gen !== generation || queue.size === 0) return;
+  if (preloadPaused || gen !== generation || queue.size === 0) return;
 
   const entries = [...queue.entries()].sort(
     (a, b) => a[1].priority - b[1].priority,
@@ -102,4 +135,5 @@ export function resetGltfPreloadQueue(): void {
 /** Test-only reset */
 export function resetGltfPreloadSchedulerForTests(): void {
   resetGltfPreloadQueue();
+  preloadPaused = false;
 }
