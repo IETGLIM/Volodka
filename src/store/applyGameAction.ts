@@ -45,7 +45,9 @@ export function applyGameAction(_state: GameStoreState, action: GameAction): Par
     case 'player/setFlag': player.setFlag(action.key, action.value); break;
     case 'player/setRngSeed': player.setRngSeed(action.seed); break;
     case 'player/bumpCombatEncounterSeq': player.bumpCombatEncounterSeq(); break;
-    case 'player/setNpcRelation': world.setNpcRelation(action.npcId, action.delta); break;
+    case 'player/setNpcRelation':
+      world.setNpcRelation(action.npcId, action.delta);
+      break;
     case 'poem/upsertTTLFlag': player.upsertActiveTTLFlag(action.flag); break;
     case 'poem/upsertTTLFlags': player.upsertActiveTTLFlags(action.flags); break;
     case 'poem/removeTTLFlags': player.removeActiveTTLFlags(action.keys); break;

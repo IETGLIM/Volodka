@@ -26,7 +26,7 @@ import { applyFairmathRelation } from '@/shared/fairmath';
 import { scaleNpcRelationDelta } from '@/shared/skills/passiveSkillModifiers';
 import { resolveCanonicalNpcId } from '@/shared/npcIdAliases';
 import type { GameStoreState } from '../types';
-import { getUIStore } from '../storeBindings';
+import { getPlayerStore, getUIStore } from '../storeBindings';
 import {
   pickPlayerRewardBatchActions,
   pickWorldCrossActions,
@@ -340,11 +340,12 @@ export const createWorldSlice: StateCreator<
 
   setNpcRelation: (npcId, delta) =>
     set((state) => {
+      const { progression, flags } = getPlayerStore().playerState;
       const canonicalId = resolveCanonicalNpcId(npcId);
       const scaledDelta = scaleNpcRelationDelta(
         delta,
-        state.playerState.progression.unlockedSkills,
-        state.playerState.flags,
+        progression.unlockedSkills,
+        flags,
       );
       const relations = [...state.npcRelations];
       const idx = findNpcRelationIndex(relations, canonicalId);

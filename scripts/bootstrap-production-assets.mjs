@@ -277,13 +277,18 @@ function stageInteriorTextures() {
   ];
   const src = candidates.find((p) => existsSync(p));
   if (!src) {
-    console.warn('  ⚠ skip interior colormap — no source texture found');
+    console.warn('  ⚠ skip Kenney colormap — no source texture found');
     return;
   }
-  const dest = path.join(PUBLIC, 'models/interiors/Textures/colormap.png');
-  mkdirSync(path.dirname(dest), { recursive: true });
-  copyFileSync(src, dest);
-  console.log(`✓ Kenney colormap → models/interiors/Textures/colormap.png`);
+  for (const rel of [
+    'models/interiors/Textures/colormap.png',
+    'models/props/citykit/Textures/colormap.png',
+  ]) {
+    const dest = path.join(PUBLIC, rel);
+    mkdirSync(path.dirname(dest), { recursive: true });
+    copyFileSync(src, dest);
+    console.log(`✓ Kenney colormap → ${rel}`);
+  }
 }
 
 async function stageMixamoFromSource() {

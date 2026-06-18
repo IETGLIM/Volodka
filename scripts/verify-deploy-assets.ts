@@ -10,9 +10,10 @@ import { getNpcModelUrls } from '../src/config/npcModelRegistry';
 import { getPropModelUrls } from '../src/config/propModelRegistry';
 import { MODEL_URLS } from '../src/config/modelUrls';
 
-/** External textures referenced by interior GLBs (relative to GLB path). Required on Vercel. */
-const VERCEL_INTERIOR_TEXTURES = [
+/** External textures referenced by Kenney GLBs (relative to GLB path). Required on Vercel. */
+const VERCEL_GLB_EXTERNAL_TEXTURES = [
   'models/interiors/Textures/colormap.png',
+  'models/props/citykit/Textures/colormap.png',
 ] as const;
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -50,7 +51,7 @@ function loadRequiredPublicPaths(): string[] {
   for (const url of getPropModelUrls()) paths.add(url.replace(/^\//, ''));
   for (const url of Object.values(MODEL_URLS)) paths.add(url.replace(/^\//, ''));
 
-  for (const rel of VERCEL_INTERIOR_TEXTURES) paths.add(rel);
+  for (const rel of VERCEL_GLB_EXTERNAL_TEXTURES) paths.add(rel);
 
   return [...paths];
 }

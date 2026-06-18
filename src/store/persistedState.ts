@@ -269,6 +269,10 @@ export function storePatchFromSave(payload: SavePayload): Partial<GameStoreState
       ...defaults.playerState,
       ...payload.playerState,
       flags: migratedFlags,
+      progression: {
+        ...defaults.playerState.progression,
+        ...payload.playerState.progression,
+      },
       inventory: payload.playerState.inventory.map((item) => normalizeInventoryItem(item)),
       equippedItems: {
         head: payload.playerState.equippedItems.head
