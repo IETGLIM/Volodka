@@ -14,6 +14,7 @@ import {
   FIRST_PERSON_ENABLED,
   FIRST_PERSON_EYE_HEIGHT,
 } from '../cameraConstants';
+import { shouldKeepFirstPersonExplorationCamera } from '@/engine/interaction/interactionSession';
 import type { CameraModeStrategy } from '../types';
 
 /** Default spring-based exploration camera with look-ahead and breathing bob */
@@ -29,7 +30,7 @@ export const explorationStrategy: CameraModeStrategy = {
     const { playerPos, yaw, pitch, offset, desiredPos, lookTarget, playerVelocity } = ctx;
 
     // ── First-person: camera at the eyes, look along yaw/pitch ──
-    if (FIRST_PERSON_ENABLED && !ctx.interactionLocked) {
+    if (FIRST_PERSON_ENABLED && shouldKeepFirstPersonExplorationCamera()) {
       const exploration = ctx.exploration;
       let eyeBaseY = playerPos.y;
       if (exploration) {

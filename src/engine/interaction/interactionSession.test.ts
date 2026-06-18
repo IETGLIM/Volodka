@@ -5,6 +5,7 @@ import {
   getInteractionState,
   getInteractionTargetNPCId,
   resetInteractionSession,
+  shouldKeepFirstPersonExplorationCamera,
   writeInteractionSession,
 } from '@/engine/interaction/interactionSession';
 
@@ -60,5 +61,18 @@ describe('interactionSession transitions', () => {
     });
     expect(getInteractionState()).toBe(InteractionState.Idle);
     expect(getInteractionTargetNPCId()).toBeNull();
+  });
+
+  it('keeps first-person camera during approach and splash cutscene only', () => {
+    expect(shouldKeepFirstPersonExplorationCamera()).toBe(true);
+
+    writeInteractionSession(InteractionState.Approach, 'solnysh');
+    expect(shouldKeepFirstPersonExplorationCamera()).toBe(true);
+
+    writeInteractionSession(InteractionState.Cutscene, 'solnysh');
+    expect(shouldKeepFirstPersonExplorationCamera()).toBe(true);
+
+    writeInteractionSession(InteractionState.Align, 'solnysh');
+    expect(shouldKeepFirstPersonExplorationCamera()).toBe(false);
   });
 });

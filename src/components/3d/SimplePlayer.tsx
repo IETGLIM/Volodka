@@ -19,6 +19,7 @@ import {
   getExplorationCharacterModelScale,
   getExplorationLocomotionScale,
   getExplorationMovementTuning,
+  getExplorationWalkableBounds,
   getTouchLocomotionFactor,
 } from '@/config/scenes';
 import { sampleHeldVirtualControls, type VirtualHoldTimes } from '@/engine/VirtualInputHold';
@@ -35,7 +36,13 @@ import {
 } from '@/engine/player/playerConstants';
 import { eventBus } from '@/engine/EventBus';
 import { audioEngine } from '@/engine/AudioEngine';
-import { isInteractionLocked } from '@/engine/interaction/interactionSession';
+import {
+  getInteractionState,
+  isInteractionLocked,
+} from '@/engine/interaction/interactionSession';
+import { InteractionState } from '@/engine/interaction/interactionMachine';
+import { forceEmitInteractionEnd } from '@/engine/interaction/interactionEndDedup';
+import { devWarn } from '@/shared/utils/devLog';
 import { getPlayerExternalVelocity } from '@/engine/PlayerRigidBodyState';
 import {
   resolveLockedLocomotionPresentation,
@@ -78,6 +85,9 @@ export function SimplePlayer({
   const movementTuning = getExplorationMovementTuning(sceneId);
   const modelScale = getExplorationCharacterModelScale(sceneId);
   const config = getSceneConfig(sceneId);
+  const walkableBounds = useMemo(() => getExplorationWalkableBounds(sceneId), [sceneId]);
+
+  const stuckLockTimerRef = useRef(0);
 
   // Teleport on scene change — store spawn (SceneTransitionHandler), same as PhysicsPlayer
   useEffect(() => {
@@ -135,6 +145,28 @@ export function SimplePlayer({
       currentMode === 'intro' ||
       interactionLocked;
 
+    const interactionState = getInteractionState();
+    const inExpectedLongInteractionPhase =
+      interactionState === InteractionState.Approach ||
+      interactionState === InteractionState.Cutscene;
+    const shouldWatchStuckLock =
+      interactionLocked &&
+      currentMode === 'exploration' &&
+      !narrativeLocked &&
+      !inExpectedLongInteractionPhase;
+
+    if (shouldWatchStuckLock) {
+      stuckLockTimerRef.current += dt;
+      if (stuckLockTimerRef.current > 2.0) {
+        devWarn('[SimplePlayer] Interaction lock stuck for 2s — force-unlocking');
+        forceEmitInteractionEnd();
+        eventBus.emit('player:stand_up', {});
+        stuckLockTimerRef.current = 0;
+      }
+    } else if (!isLocked) {
+      stuckLockTimerRef.current = 0;
+    }
+
     if (isLocked) {
       const external = getPlayerExternalVelocity();
       const approachViaExternal =
@@ -190,12 +222,9 @@ export function SimplePlayer({
             groupRef.current.position.y = floorY;
           }
 
-          const [sceneW, sceneD] = config.size;
-          const MARGIN = 0.3;
-          const halfW = sceneW / 2 - MARGIN;
-          const halfD = sceneD / 2 - MARGIN;
-          groupRef.current.position.x = Math.max(-halfW, Math.min(halfW, groupRef.current.position.x));
-          groupRef.current.position.z = Math.max(-halfD, Math.min(halfD, groupRef.current.position.z));
+          const bounds = walkableBounds;
+          groupRef.current.position.x = Math.max(bounds.minX, Math.min(bounds.maxX, groupRef.current.position.x));
+          groupRef.current.position.z = Math.max(bounds.minZ, Math.min(bounds.maxZ, groupRef.current.position.z));
 
           livePlayerPositionRef.current.copy(groupRef.current.position);
         }
@@ -319,12 +348,9 @@ export function SimplePlayer({
       // ─── Boundary clamping: keep player within scene bounds ───
       // SimplePlayer has no collision detection — without this, the player
       // can walk off the map into the void when physics is unavailable.
-      const [sceneW, sceneD] = config.size;
-      const MARGIN = 0.3; // 30cm margin from boundary wall
-      const halfW = sceneW / 2 - MARGIN;
-      const halfD = sceneD / 2 - MARGIN;
-      groupRef.current.position.x = Math.max(-halfW, Math.min(halfW, groupRef.current.position.x));
-      groupRef.current.position.z = Math.max(-halfD, Math.min(halfD, groupRef.current.position.z));
+      const bounds = walkableBounds;
+      groupRef.current.position.x = Math.max(bounds.minX, Math.min(bounds.maxX, groupRef.current.position.x));
+      groupRef.current.position.z = Math.max(bounds.minZ, Math.min(bounds.maxZ, groupRef.current.position.z));
 
       // Update ref for camera
       livePlayerPositionRef.current.copy(groupRef.current.position);

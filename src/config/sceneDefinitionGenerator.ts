@@ -28,6 +28,46 @@ export function resolveSceneFloorY(def: SceneDefinition): number {
   return Math.max(def.defaultSpawn[1], colliderTop, DEFAULT_FLOOR_Y);
 }
 
+export interface SceneWalkableBounds {
+  minX: number;
+  maxX: number;
+  minZ: number;
+  maxZ: number;
+}
+
+/** Inset from floor collider edges — keeps the capsule inside narrow corridors. */
+const WALKABLE_EDGE_MARGIN = 0.28;
+
+/** Axis-aligned walkable footprint from floor colliders; falls back to scene dimensions. */
+export function getSceneWalkableBounds(def: SceneDefinition): SceneWalkableBounds {
+  if (def.floors.length === 0) {
+    const halfW = def.dimensions[0] / 2 - WALKABLE_EDGE_MARGIN;
+    const halfD = def.dimensions[2] / 2 - WALKABLE_EDGE_MARGIN;
+    return { minX: -halfW, maxX: halfW, minZ: -halfD, maxZ: halfD };
+  }
+
+  let minX = Number.POSITIVE_INFINITY;
+  let maxX = Number.NEGATIVE_INFINITY;
+  let minZ = Number.POSITIVE_INFINITY;
+  let maxZ = Number.NEGATIVE_INFINITY;
+
+  for (const floor of def.floors) {
+    const [fx, , fz] = floor.position;
+    const [sx, , sz] = floor.size;
+    minX = Math.min(minX, fx - sx / 2);
+    maxX = Math.max(maxX, fx + sx / 2);
+    minZ = Math.min(minZ, fz - sz / 2);
+    maxZ = Math.max(maxZ, fz + sz / 2);
+  }
+
+  return {
+    minX: minX + WALKABLE_EDGE_MARGIN,
+    maxX: maxX - WALKABLE_EDGE_MARGIN,
+    minZ: minZ + WALKABLE_EDGE_MARGIN,
+    maxZ: maxZ - WALKABLE_EDGE_MARGIN,
+  };
+}
+
 /** Generate a SCENE_CONFIG entry from a SceneDefinition.
  *  Resolves fog defaults, derives floorMaterial from first floor collider. */
 export function generateSceneConfig(def: SceneDefinition): SceneConfig {

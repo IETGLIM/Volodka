@@ -39,7 +39,6 @@ export function useMixamoAnimationClips(
 
   useEffect(() => {
     if (!mixer || !root || bindings.length === 0) {
-      setMixamoActions({});
       return;
     }
 

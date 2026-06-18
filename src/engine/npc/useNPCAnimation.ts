@@ -29,10 +29,10 @@ export function useNPCAnimation(
     [actions, clipOverrides],
   );
 
-  const crossfadeTo = useCallback(
-    (newState: NPCAnimationState) => {
-      if (newState === currentAnimRef.current) return;
+  const applyState = useCallback(
+    (newState: NPCAnimationState, options?: { force?: boolean }) => {
       if (!actions) return;
+      if (!options?.force && newState === currentAnimRef.current) return;
 
       currentAnimRef.current = newState;
 
@@ -41,20 +41,27 @@ export function useNPCAnimation(
 
       for (const action of Object.values(actions)) {
         if (action === targetAction) {
-          action?.reset().fadeIn(crossfadeDuration).play();
+          action.reset().fadeIn(crossfadeDuration).play();
         } else {
-          action?.fadeOut(crossfadeDuration);
+          action.fadeOut(crossfadeDuration);
         }
       }
     },
     [actions, findAction],
   );
 
+  const crossfadeTo = useCallback(
+    (newState: NPCAnimationState) => {
+      applyState(newState);
+    },
+    [applyState],
+  );
+
   useEffect(() => onNpcAnimation(npcId, crossfadeTo), [npcId, crossfadeTo]);
 
   useEffect(() => {
-    crossfadeTo('idle');
-  }, [crossfadeTo]);
+    applyState('idle', { force: true });
+  }, [applyState]);
 
   useEffect(() => {
     return () => {

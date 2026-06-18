@@ -27,7 +27,6 @@ import { useVirtualControlsRef } from '@/engine/VirtualControlsState';
 import { eventBus } from '@/engine/EventBus';
 import { type VirtualControls } from '@/hooks/useGamePhysics';
 import { useGameMode } from '@/store/selectors';
-import { setFrameSimulationPaused } from '@/engine/frame/frameVisibility';
 import { useGameStore } from '@/store/gameStore';
 import {
   getCanvasFirstFrameSession,
@@ -336,10 +335,6 @@ export function RPGGameCanvas({ focusable = true }: { focusable?: boolean } = {}
     () => typeof document === 'undefined' || !document.hidden,
   );
   const canvasFrameloop = physicsPaused || !tabVisible ? 'demand' : 'always';
-
-  useEffect(() => {
-    setFrameSimulationPaused(physicsPaused);
-  }, [physicsPaused]);
 
   useEffect(() => {
     const onVisibilityChange = () => {

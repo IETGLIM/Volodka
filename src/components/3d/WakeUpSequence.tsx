@@ -22,6 +22,7 @@ import {
   choreographyPhase,
   DESK_POSITION,
   easeInOutCubic,
+  facingYBetween,
   handoffStartTime,
   lerpWakeCamera,
   STAND_POSITION,
@@ -310,12 +311,13 @@ export function WakeUpSequence() {
       } else if (phase === 'stand') {
         group.position.lerpVectors(BED_POSITION, STAND_POSITION, e);
         group.position.y = 0.01;
-        group.rotation.set(0, Math.PI * 0.85 * (1 - e) + Math.PI * e, 0);
+        const walkFacing = facingYBetween(STAND_POSITION, DESK_POSITION);
+        group.rotation.set(0, Math.PI * 0.85 * (1 - e) + walkFacing * e, 0);
         currentAnimRef.current = 'idle';
       } else if (phase === 'walk') {
         group.position.lerpVectors(STAND_POSITION, DESK_POSITION, e);
         group.position.y = 0.01;
-        group.rotation.set(0, Math.PI, 0);
+        group.rotation.set(0, facingYBetween(STAND_POSITION, DESK_POSITION), 0);
         currentAnimRef.current = 'walk';
         const step = Math.floor(localT * 5);
         if (step !== lastFootstepRef.current) {
@@ -325,7 +327,7 @@ export function WakeUpSequence() {
       } else {
         group.position.lerpVectors(DESK_POSITION, CHAIR_POSITION, e);
         group.position.y = 0.01;
-        group.rotation.set(0, Math.PI, 0);
+        group.rotation.set(0, facingYBetween(DESK_POSITION, CHAIR_POSITION), 0);
         currentAnimRef.current = 'idle';
         if (!audioCueRef.current.sit && localT > 0.55) {
           audioCueRef.current.sit = true;

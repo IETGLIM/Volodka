@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
@@ -57,7 +57,7 @@ function CesiumPlayerModelInner({ modelScale, currentAnimRef, rotationRef }: Pro
 
   const mixamoActions = useMixamoAnimationClips(mixer, scene, embeddedActions);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!mixer) {
       idleActionRef.current = null;
       walkActionRef.current = null;

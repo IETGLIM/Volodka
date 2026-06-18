@@ -3,6 +3,7 @@ import { SCENE_DEFINITIONS } from './sceneDefinitions';
 import {
   generateBoundaryWallSegments,
   generateColliders,
+  getSceneWalkableBounds,
 } from './sceneDefinitionGenerator';
 import type { ColliderDef } from '@/shared/types/sceneDefinition';
 
@@ -56,6 +57,12 @@ describe('generateBoundaryWallSegments', () => {
     expect(segmentsOnSide(segments, 'right').length).toBeGreaterThanOrEqual(2);
     expect(backstopsOnSide(segments, 'left')).toHaveLength(2);
     expect(backstopsOnSide(segments, 'right')).toHaveLength(2);
+  });
+
+  it('derives narrow walkable bounds from floor colliders (volodka_corridor)', () => {
+    const bounds = getSceneWalkableBounds(SCENE_DEFINITIONS.volodka_corridor);
+    expect(bounds.maxX - bounds.minX).toBeCloseTo(3 - 0.56, 2);
+    expect(bounds.maxZ - bounds.minZ).toBeCloseTo(8 - 0.56, 2);
   });
 
   it('covers the full span with segments + opening per side', () => {

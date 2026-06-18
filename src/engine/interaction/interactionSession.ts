@@ -42,6 +42,13 @@ export function isInteractionLocked(): boolean {
   );
 }
 
+/** FP exploration camera stays active during auto-walk / splash; dialogue shots use dialogStrategy. */
+export function shouldKeepFirstPersonExplorationCamera(): boolean {
+  if (!isInteractionLocked()) return true;
+  const s = session.state;
+  return s === InteractionState.Approach || s === InteractionState.Cutscene;
+}
+
 export interface WriteInteractionSessionOptions {
   /** Bypass transition validation (HMR/dispose hard reset only). */
   force?: boolean;

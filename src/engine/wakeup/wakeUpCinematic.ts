@@ -98,6 +98,15 @@ export function easeInOutCubic(t: number): number {
   return c < 0.5 ? 4 * c * c * c : 1 - Math.pow(-2 * c + 2, 3) / 2;
 }
 
+/** Y rotation so a humanoid with forward = -Z faces movement direction (dx, dz). */
+export function facingYFromDirection(dx: number, dz: number): number {
+  return Math.atan2(dx, -dz);
+}
+
+export function facingYBetween(from: THREE.Vector3, to: THREE.Vector3): number {
+  return facingYFromDirection(to.x - from.x, to.z - from.z);
+}
+
 export function clampToVolodkaRoom(v: THREE.Vector3): THREE.Vector3 {
   v.x = Math.max(-2.3, Math.min(2.3, v.x));
   v.z = Math.max(-3.3, Math.min(3.3, v.z));

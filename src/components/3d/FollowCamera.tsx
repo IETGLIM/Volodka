@@ -41,7 +41,10 @@ import {
   releaseCameraOwnership,
 } from '@/engine/camera/cameraOwnerState';
 import type { CameraModeContext } from '@/engine/camera/types';
-import { isInteractionLocked } from '@/engine/interaction/interactionSession';
+import {
+  isInteractionLocked,
+  shouldKeepFirstPersonExplorationCamera,
+} from '@/engine/interaction/interactionSession';
 import {
   initialCameraState,
   initializeCameraSubsystems,
@@ -230,7 +233,8 @@ export function FollowCamera({
     sharedCameraYawRef.current = yawRef.current;
 
     const useFirstPerson =
-      shouldUseFirstPersonExploration(gameMode, activeCutsceneId) && !isInteractionLocked();
+      shouldUseFirstPersonExploration(gameMode, activeCutsceneId)
+      && shouldKeepFirstPersonExplorationCamera();
     if (FIRST_PERSON_ENABLED && useFirstPerson) {
       livePlayerRotationRef.current = yawRef.current;
     }

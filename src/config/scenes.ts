@@ -11,7 +11,7 @@
 
 import type { SceneConfig, SceneExit } from '@/shared/types/game';
 import { SCENE_DEFINITIONS, SCENE_IDS, type SceneId } from '@/config/sceneDefinitions';
-import { generateAllSceneConfigs } from '@/config/sceneDefinitionGenerator';
+import { generateAllSceneConfigs, getSceneWalkableBounds, type SceneWalkableBounds } from '@/config/sceneDefinitionGenerator';
 import { checkStoryCondition } from '@/shared/storyConditions';
 import type { StoryConditionContext } from '@/shared/storyConditions';
 import { DEFAULT_SKILLS } from '@/data/constants';
@@ -60,6 +60,12 @@ export function getExplorationCharacterModelScale(sceneId: SceneId): number {
 export function getExplorationLocomotionScale(sceneId: SceneId): number {
   const config = getSceneConfig(sceneId);
   return config.explorationLocomotionScale;
+}
+
+/** Walkable floor footprint for SimplePlayer boundary clamp (floor colliders, not scene dimensions). */
+export function getExplorationWalkableBounds(sceneId: SceneId): SceneWalkableBounds {
+  const def = SCENE_DEFINITIONS[sceneId] ?? SCENE_DEFINITIONS.volodka_room;
+  return getSceneWalkableBounds(def);
 }
 
 /** Acceleration / damping multipliers for tight indoor spaces. */
