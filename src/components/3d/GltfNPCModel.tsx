@@ -10,6 +10,7 @@ import { getNpcModelMeta, resolveNpcModelUrl } from '@/config/npcModelRegistry';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
 import { useSkinnedGltfClone } from '@/hooks/useSkinnedGltfClone';
 import { useNpcAnimationController } from '@/engine/npc/useNpcAnimationController';
+import { useGamePhase } from '@/store/selectors';
 import { useMixamoAnimationClips } from '@/hooks/useMixamoAnimationClips';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 import { ProceduralNPCModel } from '@/components/3d/ProceduralNPCModels';
@@ -66,6 +67,7 @@ function GltfNPCModelInner({
   }, [mixer, gltf.animations, definition.animations]);
 
   const actions = useMixamoAnimationClips(mixer, scene, embeddedActions);
+  const gamePhase = useGamePhase();
 
   useNpcAnimationController({
     npcId: definition.id,
@@ -74,6 +76,7 @@ function GltfNPCModelInner({
     activity,
     interactionState,
     isInteractionTarget,
+    gamePhase,
   });
 
   useEffect(() => {

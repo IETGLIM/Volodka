@@ -145,7 +145,10 @@ export function DiegeticDialogueHud() {
     return '';
   }, [kind, dialogueNode, storyNode, karma]);
 
-  const choices = kind === 'dialogue' ? dialogueNode?.choices ?? [] : storyNode?.choices ?? [];
+  const choices = useMemo(() => {
+    if (kind === 'dialogue') return dialogueNode?.choices ?? [];
+    return storyNode?.choices ?? [];
+  }, [kind, dialogueNode, storyNode]);
   const speaker =
     kind === 'dialogue'
       ? dialogueNode?.speaker ?? 'Голос'

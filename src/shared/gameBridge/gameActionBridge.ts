@@ -81,6 +81,12 @@ export type GameAction =
   | { type: 'quest/fail'; questId: string; reason?: string }
   | { type: 'quest/retry'; questId: string }
   | { type: 'game/newGamePlus' }
+  | {
+      type: 'game/resetForNewPlaythrough';
+      preserveAchievements?: boolean;
+      skipIntro?: boolean;
+    }
+  | { type: 'game/save'; source?: 'auto' | 'manual' }
   | { type: 'quest/activate'; questId: string }
   | { type: 'quest/setHoursElapsed'; questId: string; hoursElapsed: number }
   | { type: 'quest/syncWallClockAnchors' }

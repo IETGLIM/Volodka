@@ -31,8 +31,6 @@ interface PhysicsPlayerProps {
   moveBlendRef?: React.MutableRefObject<number>;
 }
 
-export { getKccDegradedMetrics } from '@/engine/player/kccDegradedMetrics';
-
 export function PhysicsPlayer({
   livePlayerPositionRef,
   livePlayerRotationRef,

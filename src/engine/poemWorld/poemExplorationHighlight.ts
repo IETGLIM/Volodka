@@ -1,5 +1,4 @@
 import type { ActiveTTLFlagMap } from '@/shared/activeTTLFlags';
-import { isActiveTTLFlagLive } from '@/shared/activeTTLFlags';
 import { ttlNow } from '@/shared/ttlClock';
 import type { PoemWorldHint } from '@/config/poemWorldEffects';
 import { POEM_WORLD_HINT_HIGHLIGHT_COLORS } from '@/config/poemWorldEffects';

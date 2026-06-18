@@ -34,7 +34,7 @@ import {
   scalePoemPowerDurationMs,
   scalePoemPowerSkillDelta,
 } from '@/engine/skills/passiveSkillModifiers';
-import { clamp } from '@/store/shared';
+import { clamp } from '@/shared/utils/math';
 
 const PLAYER_ENERGY_MAX = 100;
 

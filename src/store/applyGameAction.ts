@@ -24,6 +24,15 @@ export function applyGameAction(_state: GameStoreState, action: GameAction): Par
     case 'game/newGamePlus':
       getSaveStoreState().resetForNewPlaythrough({ preserveAchievements: true });
       break;
+    case 'game/resetForNewPlaythrough':
+      getSaveStoreState().resetForNewPlaythrough({
+        preserveAchievements: action.preserveAchievements ?? false,
+        skipIntro: action.skipIntro,
+      });
+      break;
+    case 'game/save':
+      getSaveStoreState().saveGame({ source: action.source });
+      break;
     case 'quest/activate': world.activateQuest(action.questId); break;
     case 'quest/setHoursElapsed': world.setQuestHoursElapsed(action.questId, action.hoursElapsed); break;
     case 'quest/syncWallClockAnchors': world.syncActiveQuestWallClocks(); break;

@@ -3,7 +3,6 @@ import { enterSceneFreeExplorationHub } from '@/engine/scene/freeExplorationHub'
 import {
   closeDiegeticNarrative,
   closeNarrativeOverlay,
-  openDiegeticNarrative,
   openNarrativeOverlay,
 } from '@/engine/scene/narrativeOverlay';
 import { presentNarrativeBeat } from '@/engine/narrative/presentNarrativeBeat';
@@ -13,12 +12,10 @@ import {
 } from '@/shared/sceneExploreHubRegistry';
 import { EXPLORE_HUB_NODE_IDS } from '@/shared/exploreHubNodes';
 import { isAct1DiegeticStoryNode } from '@/engine/narrative/narrativePresentationPolicy';
-import { getGameStore } from '@/store/gameStore';
+import { dispatchGameAction, getGameSnapshot } from '@/engine/GameActionDispatcher';
 import { requestSceneTransitionForStoryNode } from '@/engine/scene/sceneTransition';
 import type { DialogueChoice, StoryChoice, StoryEffect } from '@/shared/types/game';
 import { applyEffects } from '@/shared/utils/applyEffects';
-import { dispatchGameAction } from '@/engine/GameActionDispatcher';
-
 import type { SceneId } from '@/shared/types/game';
 
 export interface StoryChoiceExecutorContext {
@@ -69,8 +66,11 @@ export function executeStoryChoice(
     }
   } else if (choice.next && !transitionsScene) {
     if (choice.next === 'start') {
-      const store = getGameStore();
-      store.resetForNewPlaythrough({ preserveAchievements: true, skipIntro: true });
+      dispatchGameAction({
+        type: 'game/resetForNewPlaythrough',
+        preserveAchievements: true,
+        skipIntro: true,
+      });
       openNarrativeOverlay('start', 'story');
       return;
     }
@@ -115,16 +115,16 @@ export function applyStoryNodeMountEffects(node: {
   musicCue?: string;
   speaker?: string;
 }): void {
-  const store = getGameStore();
-  store.visitNode(node.id);
-  if (node.sceneId && store.exploration.currentSceneId !== node.sceneId) {
+  dispatchGameAction({ type: 'story/visitNode', nodeId: node.id });
+  const snapshot = getGameSnapshot();
+  if (node.sceneId && snapshot.exploration.currentSceneId !== node.sceneId) {
     requestSceneTransitionForStoryNode(node.id, node.sceneId);
   }
   if (node.effects?.length) {
     applyEffects(node.effects);
   }
   if (node.autoSave) {
-    store.saveGame({ source: 'auto' });
+    dispatchGameAction({ type: 'game/save', source: 'auto' });
   }
 }
 
@@ -136,9 +136,9 @@ export function applyDialogueNodeMountEffects(node: {
   speaker?: string;
   speakerId?: string;
 }): void {
-  const store = getGameStore();
-  store.visitNode(node.id);
-  if (node.sceneId && store.exploration.currentSceneId !== node.sceneId) {
+  dispatchGameAction({ type: 'story/visitNode', nodeId: node.id });
+  const snapshot = getGameSnapshot();
+  if (node.sceneId && snapshot.exploration.currentSceneId !== node.sceneId) {
     requestSceneTransitionForStoryNode(node.id, node.sceneId);
   }
   if (node.effects?.length) {

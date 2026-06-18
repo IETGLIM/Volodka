@@ -144,10 +144,6 @@ async function waitForNarrativeBeatReady(nodeId: string): Promise<boolean> {
   return false;
 }
 
-async function waitForStoryOverlayReady(nodeId: string): Promise<boolean> {
-  return waitForNarrativeBeatReady(nodeId);
-}
-
 async function jumpToStoryBeat(nodeId: string, sceneId: SceneId): Promise<void> {
   await ensureStoryNode(nodeId);
   const store = getGameStore();

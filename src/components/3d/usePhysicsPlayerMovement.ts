@@ -92,12 +92,12 @@ export function usePhysicsPlayerMovement({
   const degradedLoggedRef = useRef(false);
   const degradedReasonRef = useRef<string | null>(null);
   const recreateAttemptsRef = useRef(0);
-  const directMovementTelemetry: DirectMovementTelemetryRefs = {
+  const directMovementTelemetry = useRef<DirectMovementTelemetryRefs>({
     controlsDegradedRef,
     degradedLoggedRef,
     degradedReasonRef,
     recreateAttemptsRef,
-  };
+  }).current;
 
   const recreateCharacterControllerFn = useRef<(() => RapierCharacterController | null) | null>(null);
   recreateCharacterControllerFn.current = () => {

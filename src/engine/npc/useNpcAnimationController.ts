@@ -10,8 +10,8 @@ import {
   npcBehaviorToAnimationState,
   resolveNpcBehaviorState,
 } from '@/engine/npc/npcStateMachine';
+import type { GamePhase } from '@/shared/gamePhase';
 import { setNpcBehaviorState } from '@/engine/interaction/npcRegistry';
-import { useGamePhase } from '@/store/selectors';
 
 export interface UseNpcAnimationControllerOptions {
   npcId: string;
@@ -21,6 +21,7 @@ export interface UseNpcAnimationControllerOptions {
   patrolActivity?: 'idle' | 'walk';
   interactionState: InteractionState;
   isInteractionTarget: boolean;
+  gamePhase: GamePhase;
 }
 
 /**
@@ -34,8 +35,8 @@ export function useNpcAnimationController({
   patrolActivity,
   interactionState,
   isInteractionTarget,
+  gamePhase,
 }: UseNpcAnimationControllerOptions) {
-  const gamePhase = useGamePhase();
   const { crossfadeTo } = useNPCAnimation(npcId, actions, clipOverrides);
 
   useEffect(() => {
