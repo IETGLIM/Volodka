@@ -29,8 +29,8 @@ import {
 import type { EnemyType, ExamineData, StoryEffect } from '@/shared/types/game';
 import { ControllerSession } from '@/engine/controller/ControllerSession';
 import {
-  emitInteractionEndIfNeeded,
   beginInteractionEndCycle,
+  emitInteractionEndIfNeeded,
 } from '@/engine/interaction/interactionEndDedup';
 import { isInteractionLocked } from '@/engine/interaction/interactionSession';
 import { devWarn } from '@/shared/utils/devLog';
@@ -202,6 +202,7 @@ export class InteractionController {
     const splash = resolveZoneInteractionSplash(zone, {
       flags: snapshot.playerState.flags,
     });
+    const openStoryDirectly = shouldOpenLinkedStoryDirectly(zone);
 
     const executeZoneInteraction = (): void => {
       if (this.session.isDisposed()) return;
@@ -219,7 +220,6 @@ export class InteractionController {
       }
 
       const hasLinkedContent = !!(zone.linkedDialogueNodeId || zone.linkedStoryNodeId || zone.linkedMinigame);
-      const openStoryDirectly = shouldOpenLinkedStoryDirectly(zone);
       const { ui } = this.deps;
 
       if (zone.examineData && !openStoryDirectly) {
@@ -229,11 +229,15 @@ export class InteractionController {
         audioEngine.playStinger('discovery');
         this.deps.setPendingTriggerZone(hasLinkedContent ? zone : null);
       } else {
+        if (openStoryDirectly) {
+          beginInteractionEndCycle();
+        }
         runInteractionTask('triggerLinkedContent', () => triggerLinkedContent(zone));
       }
     };
 
-    if (splash) {
+    // Story doors skip splash — corridor cutscene provides the cinematic beat.
+    if (splash && !openStoryDirectly) {
       playInteractionSplash(splash, executeZoneInteraction, this.session);
     } else {
       executeZoneInteraction();

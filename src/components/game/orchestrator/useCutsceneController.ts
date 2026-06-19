@@ -12,6 +12,7 @@ import { clearGameplayPhaseFlags, readGamePhase } from '@/shared/gamePhase';
 import type { SceneId } from '@/shared/types/game';
 import {
   isIntroWakeupCutscene,
+  setCinematicHoldActive,
   setCinematicPresentationMode,
 } from '@/engine/camera/cinematicPresentation';
 
@@ -34,6 +35,7 @@ export function useCutsceneController() {
     clearGameplayPhaseFlags(store);
     eventBus.emit('cutscene:overlay_end', {});
     eventBus.emit('camera:cutscene_end', {});
+    setCinematicHoldActive(false);
     setCinematicPresentationMode('third_person');
     eventBus.emit('camera:recenter', {});
 
@@ -121,6 +123,7 @@ export function useCutsceneController() {
         currentStore.markCutsceneTriggered(cutscene.id);
         currentStore.setCutscene(null, []);
         clearGameplayPhaseFlags(currentStore);
+        setCinematicHoldActive(false);
         setCinematicPresentationMode('third_person');
         eventBus.emit('camera:cutscene_end', {});
         eventBus.emit('camera:recenter', {});

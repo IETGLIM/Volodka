@@ -28,6 +28,27 @@ const ENTRY_BEAT_SOURCE_SCENES: Partial<Record<string, readonly SceneId[]>> = {
   corridor_door: ['volodka_room'],
 };
 
+/**
+ * Set when a trigger zone calls openLinkedStory for a door/arrival entry beat.
+ * triggerSceneEntryStoryIfNeeded skips hub→entry re-arm when this matches — the
+ * cutscene controller already received setCurrentNodeId from openLinkedStory.
+ */
+let pendingEntryBeatFromZoneInteraction: string | null = null;
+
+export function peekPendingEntryBeatFromZoneInteraction(): string | null {
+  return pendingEntryBeatFromZoneInteraction;
+}
+
+export function consumePendingEntryBeatFromZoneInteraction(): string | null {
+  const nodeId = pendingEntryBeatFromZoneInteraction;
+  pendingEntryBeatFromZoneInteraction = null;
+  return nodeId;
+}
+
+export function resetPendingEntryBeatFromZoneInteraction(): void {
+  pendingEntryBeatFromZoneInteraction = null;
+}
+
 function isNaturalEntryTransition(
   entryNodeId: string,
   fromSceneId: SceneId,
@@ -159,6 +180,7 @@ export async function openLinkedStory(nodeId: string): Promise<boolean> {
       return true;
     }
 
+    pendingEntryBeatFromZoneInteraction = nodeId;
     dispatchStateAction({ type: 'story/visitNode', nodeId });
     if (snapshot.exploration.currentSceneId !== storyNode.sceneId) {
       requestSceneTransition(storyNode.sceneId as SceneId);
@@ -219,6 +241,10 @@ export function triggerSceneEntryStoryIfNeeded(
       const hubId = SCENE_ENTRY_NODE_TO_HUB[entryNodeId];
       if (cutscenePending) {
         closeNarrativeOverlay();
+        const armedByZone = consumePendingEntryBeatFromZoneInteraction();
+        if (armedByZone === entryNodeId) {
+          return;
+        }
         if (hubId && hubId !== entryNodeId) {
           dispatchStateAction({ type: 'story/setCurrentNodeId', nodeId: hubId });
           queueMicrotask(() => {

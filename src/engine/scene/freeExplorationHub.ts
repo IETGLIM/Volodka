@@ -8,6 +8,7 @@ import {
   isClosedOverlayExploreHub,
 } from '@/shared/sceneExploreHubRegistry';
 import { hasVisitedNode } from '@/shared/visitedNodesIndex';
+import { setCinematicHoldActive } from '@/engine/camera/cinematicPresentation';
 import { EXPLORATION_HUD_HANDOFF } from '@/shared/constants/transitionTimings';
 
 /** One-shot diegetic location context on first hub enter; shorter line on revisit. */
@@ -47,6 +48,7 @@ export function enterSceneFreeExplorationHub(hubId: string): void {
   }
   dispatchGameAction({ type: 'story/visitNode', nodeId: hubId });
   closeNarrativeOverlay();
+  setCinematicHoldActive(false);
 
   setTimeout(() => {
     if (firstVisit) {

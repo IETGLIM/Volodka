@@ -1,5 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { triggerSceneEntryStoryIfNeeded } from './narrativeOpenHelpers';
+import {
+  openLinkedStory,
+  peekPendingEntryBeatFromZoneInteraction,
+  resetPendingEntryBeatFromZoneInteraction,
+  triggerSceneEntryStoryIfNeeded,
+} from './narrativeOpenHelpers';
 
 const dispatchStateAction = vi.fn();
 const closeNarrativeOverlay = vi.fn();
@@ -76,6 +81,7 @@ describe('triggerSceneEntryStoryIfNeeded', () => {
     dispatchStateAction.mockClear();
     closeNarrativeOverlay.mockClear();
     requestSceneTransition.mockClear();
+    resetPendingEntryBeatFromZoneInteraction();
     mockSnapshot = {
       activeCutsceneId: null,
       currentNodeId: 'explore_mode',
@@ -121,6 +127,26 @@ describe('triggerSceneEntryStoryIfNeeded', () => {
     expect(dispatchStateAction).toHaveBeenCalledWith({
       type: 'story/setCurrentNodeId',
       nodeId: 'corridor_door',
+    });
+  });
+
+  it('skips hub re-arm when openLinkedStory armed corridor_door from zone', async () => {
+    mockSnapshot.currentNodeId = 'explore_mode';
+    mockSnapshot.exploration.currentSceneId = 'volodka_room';
+
+    await openLinkedStory('corridor_door');
+
+    expect(peekPendingEntryBeatFromZoneInteraction()).toBe('corridor_door');
+    dispatchStateAction.mockClear();
+
+    mockSnapshot.currentNodeId = 'corridor_door';
+    mockSnapshot.exploration.currentSceneId = 'volodka_corridor';
+    triggerSceneEntryStoryIfNeeded('volodka_corridor', 'volodka_room');
+
+    expect(peekPendingEntryBeatFromZoneInteraction()).toBeNull();
+    expect(dispatchStateAction).not.toHaveBeenCalledWith({
+      type: 'story/setCurrentNodeId',
+      nodeId: 'corridor_explore_mode',
     });
   });
 

@@ -14,6 +14,7 @@ import { resetPoemReadingSession } from '@/engine/poemReading/poemReadingOrchest
 import { cancelEncounterPresentation } from '@/engine/combat/encounterPresentation';
 import { resetSceneTransitionGuard } from '@/engine/core/sceneTransitionGuard';
 import { resetInteractionEndDedupState } from '@/engine/interaction/interactionEndDedup';
+import { resetPendingEntryBeatFromZoneInteraction } from '@/engine/interaction/narrativeOpenHelpers';
 import { resetSceneTransitionDedupe } from '@/engine/scene/sceneTransition';
 
 /** Idempotent — safe to call from disposeGameEngine and resetGame. */
@@ -25,6 +26,7 @@ export function resetEngineModuleRuntimeState(): void {
   resetSceneTransitionGuard();
   resetSceneTransitionDedupe();
   resetInteractionEndDedupState();
+  resetPendingEntryBeatFromZoneInteraction();
   cancelEncounterPresentation();
   resetAchievementTracking();
   invalidateStoryGraphIndex();
