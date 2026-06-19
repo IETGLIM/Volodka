@@ -75,6 +75,7 @@ export function usePhysicsPlayerMovement({
   const prevSceneIdRef = useRef(sceneId);
   const currentFloorMaterialRef = useRef<string>('default');
   const stuckLockTimerRef = useRef(0);
+  const prevLocomotionLockedRef = useRef(false);
   const warmupTimerRef = useRef(0);
   const prevRbPosRef = useRef(new THREE.Vector3());
   const noMovementFramesRef = useRef(0);
@@ -182,6 +183,7 @@ export function usePhysicsPlayerMovement({
     footstepTimerRef,
     currentAnimRef,
     stuckLockTimerRef,
+    prevLocomotionLockedRef,
     warmupTimerRef,
     noMovementFramesRef,
     controllerFailCountRef,

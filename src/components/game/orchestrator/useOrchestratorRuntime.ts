@@ -27,6 +27,11 @@ import {
   setAdaptiveQualityBridgeEnabled,
 } from '@/engine/graphics/adaptiveQualityBridge';
 import { setMusicIntensityLayer, resolveMusicIntensityLayer } from '@/engine/audio/musicIntensityLayers';
+import {
+  setMinigameLocomotionGate,
+  setPanelStackLocomotionGate,
+} from '@/engine/player/playerLocomotionGate';
+import { findOpenMinigame } from '@/shared/constants/minigames';
 
 /** Bundles orchestrator hooks — GameOrchestrator stays a thin render coordinator. */
 export function useOrchestratorRuntime() {
@@ -123,6 +128,34 @@ export function useOrchestratorRuntime() {
       document.exitPointerLock();
     }
   }, [isOverlayActive]);
+
+  useEffect(() => {
+    setPanelStackLocomotionGate(panels.panelStack.length > 0);
+  }, [panels.panelStack.length]);
+
+  useEffect(() => {
+    setMinigameLocomotionGate(
+      findOpenMinigame({
+        codebreakerOpen: interaction.codebreakerOpen,
+        openstackTerminalOpen: interaction.openstackTerminalOpen,
+        bashTerminalOpen: interaction.bashTerminalOpen,
+        poetryGameOpen: interaction.poetryGameOpen,
+        hackingGameOpen: interaction.hackingGameOpen,
+        memoryGameOpen: interaction.memoryGameOpen,
+        quizGameOpen: interaction.quizGameOpen,
+        rhythmGameOpen: interaction.rhythmGameOpen,
+      }) != null,
+    );
+  }, [
+    interaction.codebreakerOpen,
+    interaction.openstackTerminalOpen,
+    interaction.bashTerminalOpen,
+    interaction.poetryGameOpen,
+    interaction.hackingGameOpen,
+    interaction.memoryGameOpen,
+    interaction.quizGameOpen,
+    interaction.rhythmGameOpen,
+  ]);
 
   const panelClosers = useStablePanelClosers(panels.closePanelByType);
   const hudSecondaryOpeners = useStableHudPanelOpeners(panels.dispatchPanel);

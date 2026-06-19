@@ -12,6 +12,10 @@ let examineOverlayOpen = false;
 let storyOverlayOpen = false;
 let preloadHeld = false;
 
+export function isExamineOverlayOpen(): boolean {
+  return examineOverlayOpen;
+}
+
 export function isUiOverlayBlockingDeferredAssets(): boolean {
   return examineOverlayOpen || storyOverlayOpen;
 }

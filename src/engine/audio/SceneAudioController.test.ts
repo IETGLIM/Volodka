@@ -3,6 +3,7 @@ import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 const {
   stopMusic,
   setPresentationDucked,
+  resumeSceneMusic,
   fadeOutAll,
   setDialogueDucked,
   setCombatMuted,
@@ -10,6 +11,7 @@ const {
 } = vi.hoisted(() => ({
   stopMusic: vi.fn(),
   setPresentationDucked: vi.fn(),
+  resumeSceneMusic: vi.fn(),
   fadeOutAll: vi.fn(),
   setDialogueDucked: vi.fn(),
   setCombatMuted: vi.fn(),
@@ -21,6 +23,7 @@ vi.mock('../MusicEngine', () => ({
     stopMusic,
     setPresentationDucked,
     playSceneMusic: vi.fn(),
+    resumeSceneMusic,
   },
 }));
 
@@ -80,6 +83,15 @@ describe('SceneAudioController', () => {
 
   afterEach(() => {
     controller.dispose();
+  });
+
+  it('onModeChange resumes same-scene music after cutscene without skipping play', () => {
+    controller.onModeChange('cutscene', 'volodka_room', 12, false, undefined, null);
+    vi.clearAllMocks();
+
+    controller.onModeChange('exploration', 'volodka_room', 12, false, undefined, null);
+
+    expect(resumeSceneMusic).toHaveBeenCalledWith('volodka_room');
   });
 
   it('onSceneUnload resets duck state and crossfades scene beds', () => {

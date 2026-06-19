@@ -55,6 +55,7 @@ export interface PlayerMovementDeps {
   footstepTimerRef: React.MutableRefObject<number>;
   currentAnimRef: React.MutableRefObject<string>;
   stuckLockTimerRef: React.MutableRefObject<number>;
+  prevLocomotionLockedRef: React.MutableRefObject<boolean>;
   warmupTimerRef: React.MutableRefObject<number>;
   noMovementFramesRef: React.MutableRefObject<number>;
   controllerFailCountRef: React.MutableRefObject<number>;

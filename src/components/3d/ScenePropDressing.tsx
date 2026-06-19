@@ -49,6 +49,7 @@ function buildPropClone(source: THREE.Object3D): THREE.Object3D {
 function ScenePropMeshInner({ placement, def }: ScenePropMeshInnerProps) {
   const gltf = useGLTF(def.url, true, true, extendLoader);
   const [clone, setClone] = useState<THREE.Object3D | null>(null);
+  const placementFallback = useMemo(() => new THREE.Object3D(), []);
 
   useEffect(() => {
     let cancelled = false;
@@ -79,7 +80,7 @@ function ScenePropMeshInner({ placement, def }: ScenePropMeshInnerProps) {
   }, [gltf.scene]);
 
   const scale = def.scale ?? 1;
-  const { scale: fitScale, footY } = useGltfPropPlacement(clone, {
+  const { scale: fitScale, footY } = useGltfPropPlacement(clone ?? placementFallback, {
     manualScale: scale,
     targetSizeM: def.targetSizeM,
     fitAxis: def.fitAxis,

@@ -14,6 +14,7 @@ import { setPendingGamepadOrbit } from '@/engine/input/gamepadCamera';
 import { fireInteractPress } from '@/engine/input/fireInteractPress';
 import { isNarrativeMovementLocked } from '@/shared/exploreHubNodes';
 import { isEncounterPresentationActive } from '@/engine/combat/encounterPresentation';
+import { isGameplayOverlayLocomotionLocked } from '@/engine/player/playerLocomotionGate';
 import type { VirtualControls } from '@/hooks/useGamePhysics';
 import type { PanelType } from '@/components/game/orchestrator/types';
 
@@ -38,6 +39,7 @@ function shouldBlockMovement(mode: string, panelStackLength: number): boolean {
   if (isNarrativeMovementLocked(showStoryOverlay, currentNodeId)) return true;
   if (getInteractionState() === InteractionState.Dialogue) return true;
   if (panelStackLength > 0) return true;
+  if (isGameplayOverlayLocomotionLocked()) return true;
   return false;
 }
 

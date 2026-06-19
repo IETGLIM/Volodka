@@ -743,6 +743,36 @@ class MusicEngine {
   }
 
   /**
+   * Ensure scene bed is audible after same-scene phase changes (e.g. cutscene → exploration).
+   * Restarts the bed when it was stopped; otherwise restores duck/volume only.
+   */
+  resumeSceneMusic(sceneId: string): void {
+    if (this.disposed) return;
+    this.initContext();
+    this.resume();
+    this.setPresentationDucked(false);
+
+    const config = SCENE_MUSIC_CONFIGS[resolveDerivedSceneId(sceneId as SceneId)];
+    if (!config) {
+      this.stopMusic();
+      this.currentScene = sceneId;
+      return;
+    }
+
+    const hasActiveBed =
+      this.currentScene === sceneId &&
+      this.currentConfig != null &&
+      this.padOscillators.length > 0;
+
+    if (hasActiveBed) {
+      this.applyVolume();
+      return;
+    }
+
+    this.playSceneMusic(sceneId);
+  }
+
+  /**
    * Stop all music with optional fade duration.
    * @param fadeDuration — seconds to fade out (default 2)
    */

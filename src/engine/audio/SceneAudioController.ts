@@ -81,7 +81,7 @@ export class SceneAudioController {
     }
 
     if (phase === 'exploration' || phase === 'cutscene') {
-      musicEngine.playSceneMusic(sceneId);
+      musicEngine.resumeSceneMusic(sceneId);
       this.playSceneAmbient(sceneId, timeOfDay);
     }
 

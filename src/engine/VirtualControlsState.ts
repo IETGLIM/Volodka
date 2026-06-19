@@ -31,6 +31,18 @@ export const sharedVirtualControlsRef: MutableRefObject<VirtualControls> = {
   current: defaultControls,
 };
 
+/** Zero touch / gamepad locomotion input (overlay lock, scene transitions). */
+export function clearSharedVirtualControls(): void {
+  const vc = sharedVirtualControlsRef.current;
+  vc.forward = 0;
+  vc.backward = 0;
+  vc.left = 0;
+  vc.right = 0;
+  vc.run = 0;
+  vc.jump = 0;
+  vc.moveMagnitude = 0;
+}
+
 /**
  * React Context for virtual controls ref.
  * Provides the shared ref through React's dependency injection system,

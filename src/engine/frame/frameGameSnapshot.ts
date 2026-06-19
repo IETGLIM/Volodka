@@ -2,6 +2,7 @@ import type { GamePhase } from '@/shared/gamePhase';
 import { isNarrativeMovementLocked } from '@/shared/exploreHubNodes';
 import { isEncounterPresentationActive } from '@/engine/combat/encounterPresentation';
 import { isCinematicHoldActive } from '@/engine/camera/cinematicPresentation';
+import { isGameplayOverlayLocomotionLocked } from '@/engine/player/playerLocomotionGate';
 import type { GameStoreSnapshot } from '@/shared/gameBridge/gameActionBridge';
 
 /** Minimal game state read once per frame for tick callbacks. */
@@ -31,7 +32,8 @@ export function createFrameGameSnapshot(store: GameStoreSnapshot): FrameGameSnap
     gamePhase === 'intro' ||
     gamePhase === 'combat' ||
     isEncounterPresentationActive() ||
-    isCinematicHoldActive();
+    isCinematicHoldActive() ||
+    isGameplayOverlayLocomotionLocked();
 
   return {
     gamePhase,

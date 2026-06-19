@@ -6,6 +6,8 @@ import { setPlayerRigidBody } from '@/engine/PlayerRigidBodyState';
 import { devWarn } from '@/shared/utils/devLog';
 import { resolveCachedGroundY } from '@/engine/physics/groundProbeCache';
 import { WARMUP_DURATION_S } from '@/engine/player/playerConstants';
+import { clearSharedVirtualControls } from '@/engine/VirtualControlsState';
+import { resetKeyboardInputState } from '@/engine/keyboardInputState';
 import type { FrameGameSnapshot } from '@/engine/frame/frameGameSnapshot';
 import type { PlayerMovementDeps } from '@/engine/player/playerFrameTypes';
 
@@ -107,6 +109,13 @@ export function preparePlayerFrame(
 
   scratch.isLocked = isLocked;
   scratch.currentMode = currentMode;
+
+  if (isLocked && !deps.prevLocomotionLockedRef.current) {
+    vel.set(0, 0, 0);
+    resetKeyboardInputState();
+    clearSharedVirtualControls();
+  }
+  deps.prevLocomotionLockedRef.current = isLocked;
 
   const interactionState = getInteractionState();
   const inExpectedLongInteractionPhase =

@@ -10,9 +10,12 @@ import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 
 import { getGameStore } from '@/store/gameStore';
+import { getGameSnapshot } from '@/engine/StateDispatcher';
 import { useCurrentSceneId, usePlayerKarma } from '@/store/selectors';
-import { readGamePhase } from '@/shared/gamePhase';
 import { isNarrativeMovementLocked } from '@/shared/exploreHubNodes';
+import { createFrameGameSnapshot } from '@/engine/frame/frameGameSnapshot';
+import { clearSharedVirtualControls } from '@/engine/VirtualControlsState';
+import { resetKeyboardInputState } from '@/engine/keyboardInputState';
 import { usePlayerControls, type VirtualControls } from '@/hooks/useGamePhysics';
 import {
   getSceneConfig,
@@ -88,6 +91,7 @@ export function SimplePlayer({
   const walkableBounds = useMemo(() => getExplorationWalkableBounds(sceneId), [sceneId]);
 
   const stuckLockTimerRef = useRef(0);
+  const prevLocomotionLockedRef = useRef(false);
 
   // Teleport on scene change — store spawn (SceneTransitionHandler), same as PhysicsPlayer
   useEffect(() => {
@@ -134,16 +138,20 @@ export function SimplePlayer({
     const floorY = config.floorY;
 
     const lockState = getGameStore();
-    const currentMode = readGamePhase(lockState);
+    const game = createFrameGameSnapshot(getGameSnapshot());
+    const currentMode = game.gamePhase;
     const showStoryOverlay = lockState.showStoryOverlay;
     const currentNodeId = lockState.currentNodeId;
-    const narrativeLocked = isNarrativeMovementLocked(showStoryOverlay, currentNodeId);
+    const narrativeLocked = isNarrativeMovementLocked(showStoryOverlay, currentNodeId ?? '');
     const interactionLocked = isInteractionLocked();
-    const isLocked =
-      narrativeLocked ||
-      currentMode === 'cutscene' ||
-      currentMode === 'intro' ||
-      interactionLocked;
+    const isLocked = game.movementLocked || interactionLocked;
+
+    if (isLocked && !prevLocomotionLockedRef.current) {
+      vel.set(0, 0, 0);
+      resetKeyboardInputState();
+      clearSharedVirtualControls();
+    }
+    prevLocomotionLockedRef.current = isLocked;
 
     const interactionState = getInteractionState();
     const inExpectedLongInteractionPhase =
