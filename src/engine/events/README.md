@@ -2,7 +2,7 @@
 
 Single singleton (`eventBus`) with a flat runtime API. Types live in domain modules under `src/engine/events/`.
 
-## Domains (96 events)
+## Domains (100 events)
 
 | Domain | Prefix | Events | Primary producers | Primary consumers |
 |--------|--------|--------|-------------------|-------------------|
@@ -18,8 +18,9 @@ Single singleton (`eventBus`) with a flat runtime API. Types live in domain modu
 | Minigame | `minigame:` | 3 | useInteractionOrchestrator, MinigameQuestBridge | QuestTracker |
 | FX | `fx:` | 9 | ScreenEffects, CombatSystem | ScreenEffects, ExplorationPostFX |
 | Poem | `poem:` | 5 | PoemPowerSystem, worldSlice | QuestTracker, CyberpunkPoemOverlay |
-| Camera | `camera:` | 10 | CombatSystem, GameOrchestrator | FollowCamera |
-| Intro | `intro:` | 2 | WakeUpSequence | FollowCamera |
+| Camera | `camera:` | 8 | CombatSystem, GameOrchestrator | FollowCamera |
+| Cinematic | `cinematic:` | 6 | CinematicTimelineRunner, playInteractionSplash | CinematicTimelineRunner, InteractionSystemBridge |
+| Intro | `intro:` | 4 | IntroWakeOverlay, useMenuScreen | CinematicTimelineRunner, IntroWakeOverlay |
 | Combat | `combat:` | 11 | CombatSystem | ScreenEffects, useCombatOrchestrator |
 | Weather | `weather:` | 3 | useWeatherEffects | RainSystem, SnowSystem, HUD |
 | Lore | `lore:` | 1 | uiSlice | EventNotificationPopup |

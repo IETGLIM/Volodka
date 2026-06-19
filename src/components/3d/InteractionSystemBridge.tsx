@@ -18,7 +18,9 @@ import { resolveNpcInteractionSplash, deriveZoneRepeatSkipFlag } from '@/engine/
 import {
   emitInteractionSplashStart,
   emitInteractionSplashEnd,
+  splashTimelineId,
 } from '@/engine/interaction/playInteractionSplash';
+import { stopCinematicTimeline } from '@/engine/cinematic/cinematicTimelineOrchestrator';
 import { findTriggerZoneByNpcId } from '@/data/triggerZones';
 import { getTriggerZones } from '@/data/gameDataLoader';
 import { eventBus } from '@/engine/EventBus';
@@ -93,6 +95,26 @@ export function InteractionSystemBridge({
   const targetNPCRotRef = useRef(0);
   const cutsceneDurationRef = useRef(DEFAULT_CUTSCENE_DURATION);
   const activeNpcSplashRef = useRef<ReturnType<typeof resolveNpcInteractionSplash>>(null);
+
+  const advanceFromSplashCutscene = (): void => {
+    if (stateRef.current !== InteractionState.Cutscene) return;
+
+    phaseTimerRef.current = 0;
+    const splash = activeNpcSplashRef.current;
+    if (splash) {
+      emitInteractionSplashEnd(splash, {
+        npcId: targetNPCIdRef.current ?? undefined,
+      });
+      activeNpcSplashRef.current = null;
+    }
+
+    publishInteraction(stateRef, targetNPCIdRef, InteractionState.Align);
+
+    eventBus.emit('interaction:state_change', {
+      state: InteractionState.Align,
+      npcId: targetNPCIdRef.current ?? undefined,
+    });
+  };
 
   // ── Global interaction timer (for safety timeout) ──
   const globalTimerRef = useRef(0);
@@ -173,10 +195,30 @@ export function InteractionSystemBridge({
     return unsub;
   }, []);
 
+  // ── Advance NPC approach when splash timeline completes (before timer fallback) ──
+  useEffect(() => {
+    const unsub = eventBus.on('cinematic:timeline_complete', ({ timelineId }) => {
+      if (!timelineId.startsWith('splash_')) return;
+      const splash = activeNpcSplashRef.current;
+      if (!splash || splashTimelineId(splash) !== timelineId) return;
+      advanceFromSplashCutscene();
+    });
+
+    return unsub;
+  }, []);
+
   // ── Cancel on scene change ──
   useEffect(() => {
     const unsub = eventBus.on('scene:enter', () => {
       if (stateRef.current === InteractionState.Idle) return;
+
+      if (stateRef.current === InteractionState.Cutscene) {
+        const splash = activeNpcSplashRef.current;
+        if (splash) {
+          stopCinematicTimeline(splashTimelineId(splash));
+          activeNpcSplashRef.current = null;
+        }
+      }
 
       // Reset NPC animation
       if (targetNPCIdRef.current) {
@@ -368,25 +410,9 @@ export function InteractionSystemBridge({
         // Stop movement during cutscene
         clearPlayerExternalVelocity();
 
-        // Wait for cutscene duration
+        // Timer fallback if timeline_complete was missed
         if (phaseTimerRef.current >= cutsceneDurationRef.current) {
-          phaseTimerRef.current = 0;
-          const splash = activeNpcSplashRef.current;
-          if (splash) {
-            emitInteractionSplashEnd(splash, {
-              npcId: targetNPCIdRef.current ?? undefined,
-            });
-            activeNpcSplashRef.current = null;
-          } else {
-            eventBus.emit('camera:npc_cutscene_end', { npcId: targetNPCIdRef.current ?? '' });
-          }
-
-          publishInteraction(stateRef, targetNPCIdRef, InteractionState.Align);
-
-          eventBus.emit('interaction:state_change', {
-            state: InteractionState.Align,
-            npcId: targetNPCIdRef.current ?? undefined,
-          });
+          advanceFromSplashCutscene();
         }
         break;
       }

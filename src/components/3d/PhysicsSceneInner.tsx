@@ -28,7 +28,7 @@ import {
   getInteractionState,
   getInteractionTargetNPCId,
 } from './InteractionSystemBridge';
-import { WakeUpSequence } from './WakeUpSequence';
+import { CinematicTimelineRunner } from './CinematicTimelineRunner';
 import { NPCSystem } from './NPCSystem';
 import { DynamicProps } from './DynamicProps';
 import { PatrollingCreeps } from './PatrollingCreeps';
@@ -95,7 +95,7 @@ function PhysicsSceneInner({
       <AmbientNPCs livePlayerPositionRef={livePlayerPositionRef} />
       <DynamicProps />
       <PatrollingCreeps livePlayerPositionRef={livePlayerPositionRef} />
-      <WakeUpSequence />
+      <CinematicTimelineRunner />
       <InteractiveTriggers
         livePlayerPositionRef={livePlayerPositionRef}
         livePlayerRotationRef={livePlayerRotationRef}

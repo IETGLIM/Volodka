@@ -1,4 +1,4 @@
-/** Intro wake-up 3D cutscene — WakeUpSequence, FollowCamera, IntroWakeOverlay. */
+/** Intro wake-up 3D cutscene — CinematicTimelineRunner, IntroWakeOverlay. */
 export interface IntroEvents {
   'intro:wakeup_sequence': Record<string, never>;
   'intro:wakeup_handoff': Record<string, never>;

@@ -751,34 +751,6 @@ export function subscribeCameraEventHub(options: CameraEventHubOptions): () => v
     dispatchCameraState(runtime, { type: 'npc_cutscene_end' }, sceneId);
   }));
 
-  unsubs.push(eventBus.on('camera:interaction_splash_start', ({
-    waypoints,
-    anchorPosition,
-    anchorIsNpc,
-    npcId,
-  }) => {
-    const anchor = anchorIsNpc
-      ? (npcId ? getNPCGroup(npcId)?.position : undefined) ?? new THREE.Vector3(...anchorPosition)
-      : new THREE.Vector3(...anchorPosition);
-    const controller = buildCutsceneController(waypoints, anchor);
-    if (controller) {
-      subsystems.npcCutscene.current = controller;
-      startCutscene(controller);
-      subsystems.npcCutsceneActive.current = true;
-      acquireCameraOwnership('cutscene');
-      dispatchCameraState(runtime, { type: 'npc_cutscene_start', controller }, sceneId);
-    }
-  }));
-
-  unsubs.push(eventBus.on('camera:interaction_splash_end', () => {
-    if (subsystems.npcCutscene.current) {
-      stopCutscene(subsystems.npcCutscene.current);
-      subsystems.npcCutsceneActive.current = false;
-    }
-    releaseCameraOwnership('cutscene');
-    dispatchCameraState(runtime, { type: 'npc_cutscene_end' }, sceneId);
-  }));
-
   unsubs.push(eventBus.on('camera:dialogue_speaker', ({ speaker }) => {
     if (subsystems.dialogue.current) setDialogueSpeaker(subsystems.dialogue.current, speaker);
     runtime.cameraState.current = { mode: 'dialogue', speaker };

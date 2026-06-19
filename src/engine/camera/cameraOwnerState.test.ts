@@ -44,6 +44,12 @@ describe('cameraOwnerState', () => {
     expect(getCameraOwner()).toBe('cutscene');
   });
 
+  it('shouldFollowCameraYield when timeline owns', () => {
+    acquireCameraOwnership('timeline');
+    expect(shouldFollowCameraYield()).toBe(true);
+    expect(canFollowCameraDriveFrame()).toBe(false);
+  });
+
   it('shouldFollowCameraYield when wakeUp owns', () => {
     acquireCameraOwnership('wakeUp');
     expect(shouldFollowCameraYield()).toBe(true);

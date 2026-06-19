@@ -11,14 +11,6 @@ export interface CameraEvents {
   'camera:cutscene_end': Record<string, never>;
   'camera:npc_cutscene_start': { npcId: string; waypoints: CameraWaypointData[] };
   'camera:npc_cutscene_end': { npcId: string };
-  'camera:interaction_splash_start': {
-    splashId: string;
-    waypoints: CameraWaypointData[];
-    anchorPosition: [number, number, number];
-    anchorIsNpc?: boolean;
-    npcId?: string;
-  };
-  'camera:interaction_splash_end': { splashId: string; npcId?: string };
   'camera:combat_impact': { intensity: number };
   'camera:combat_shake': { intensity: number };
   'camera:dialogue_speaker': { speaker: 'npc' | 'player' | 'narrator' | 'unknown' };

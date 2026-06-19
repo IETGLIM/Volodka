@@ -6,6 +6,7 @@
 export type CameraOwner =
   | 'followCamera'
   | 'wakeUp'
+  | 'timeline'
   | 'cutscene'
   | 'transition'
   | 'cinematicFreeze';
@@ -13,6 +14,7 @@ export type CameraOwner =
 const OWNER_PRIORITY: Record<CameraOwner, number> = {
   cutscene: 5,
   wakeUp: 4,
+  timeline: 4,
   cinematicFreeze: 3,
   transition: 2,
   followCamera: 1,
@@ -62,6 +64,7 @@ export function canFollowCameraDriveFrame(): boolean {
     case 'cinematicFreeze':
       return true;
     case 'wakeUp':
+    case 'timeline':
       return false;
     default: {
       const _exhaustive: never = owner;

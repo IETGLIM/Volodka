@@ -22,6 +22,7 @@ import type { PhotoEvents } from './photoEvents';
 import type { WorldEvents } from './worldEvents';
 import type { StoryEvents } from './storyEvents';
 import type { AccessibilityEvents } from './accessibilityEvents';
+import type { CinematicTimelineEvents } from './cinematicTimelineEvents';
 
 export type { MergeEventMaps, DomainEventKeys } from './merge';
 export type { AudioEvents } from './audioEvents';
@@ -48,6 +49,7 @@ export type { PhotoEvents, PhotoEventKey } from './photoEvents';
 export type { WorldEvents } from './worldEvents';
 export type { StoryEvents } from './storyEvents';
 export type { AccessibilityEvents } from './accessibilityEvents';
+export type { CinematicTimelineEvents } from './cinematicTimelineEvents';
 
 export { PHOTO_EVENTS, PHOTO_EMPTY_PAYLOAD } from './photoEvents';
 export type { EmptyEventPayload } from './emptyPayload';
@@ -78,7 +80,8 @@ export type EventMap =
   PhotoEvents &
   WorldEvents &
   StoryEvents &
-  AccessibilityEvents;
+  AccessibilityEvents &
+  CinematicTimelineEvents;
 
 /** All registered event names on the singleton bus. */
 export type EventName = keyof EventMap;
@@ -112,6 +115,7 @@ export const EVENT_DOMAINS = {
   world: 'world',
   story: 'story',
   accessibility: 'accessibility',
+  cinematic: 'cinematic',
   loot: 'loot',
   skill: 'skill',
   choice: 'choice',
