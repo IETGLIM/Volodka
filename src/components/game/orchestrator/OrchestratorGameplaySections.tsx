@@ -78,6 +78,8 @@ import { DiegeticDialogueHud } from '@/components/game/diegetic/DiegeticDialogue
 import { EncounterBeatOverlay } from '../EncounterBeatOverlay';
 import { OrchestratorStatsPanel } from './OrchestratorPanelSlots';
 import { useMobileDetection } from './useMobileDetection';
+import { useGameStore } from '@/store/gameStore';
+import { isAct1DiegeticScene } from '@/engine/narrative/narrativePresentationPolicy';
 import type { PanelCloseHandlers } from './useStablePanelClosers';
 import type { HudSecondaryPanelOpeners } from './useStableHudPanelOpeners';
 
@@ -502,7 +504,9 @@ export const GameplayExamineOverlay = memo(function GameplayExamineOverlay({
   onReset,
   onClearPendingTriggerZone,
 }: GameplayExamineProps) {
-  useCinematicNarrativePresentation(open);
+  const sceneId = useGameStore((s) => s.exploration.currentSceneId);
+  const diegeticExamine = isAct1DiegeticScene(sceneId);
+  useCinematicNarrativePresentation(open, { preserveExplorationCamera: diegeticExamine });
 
   const handleClose = useCallback(() => {
     onReset();

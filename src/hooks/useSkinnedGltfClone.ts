@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { clone as cloneSkinnedScene } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { deepCloneWithSkeletons } from '@/utils/deepCloneWithSkeletons';
@@ -15,11 +15,42 @@ export interface UseSkinnedGltfCloneOptions extends DisposeThreeOptions {
 export interface SkinnedGltfClone {
   scene: THREE.Group;
   mixer: THREE.AnimationMixer | null;
+  ready: boolean;
+}
+
+function buildSkinnedClone(
+  sourceScene: THREE.Object3D,
+  animations: THREE.AnimationClip[] | undefined,
+  options?: UseSkinnedGltfCloneOptions,
+): SkinnedGltfClone {
+  const { castShadow, receiveShadow } = options ?? {};
+  let clone: THREE.Group;
+  try {
+    clone = cloneSkinnedScene(sourceScene) as THREE.Group;
+  } catch {
+    clone = deepCloneWithSkeletons(sourceScene);
+  }
+  clone.traverse((node) => {
+    if (node instanceof THREE.Mesh || node instanceof THREE.SkinnedMesh) {
+      if (castShadow !== undefined) node.castShadow = castShadow;
+      if (receiveShadow !== undefined) node.receiveShadow = receiveShadow;
+    }
+  });
+  const animationMixer =
+    animations && animations.length > 0
+      ? new THREE.AnimationMixer(clone)
+      : null;
+  return { scene: clone, mixer: animationMixer, ready: true };
+}
+
+function createPlaceholderClone(): SkinnedGltfClone {
+  return { scene: new THREE.Group(), mixer: null, ready: false };
 }
 
 /**
  * Deep-clone a cached GLTF scene with independent skeletons, optional mixer,
  * and guaranteed GPU teardown on unmount or source change.
+ * Clone work is deferred off the critical rAF path when possible.
  */
 export function useSkinnedGltfClone(
   sourceScene: THREE.Object3D,
@@ -29,33 +60,50 @@ export function useSkinnedGltfClone(
   const optionsRef = useRef(options);
   optionsRef.current = options;
 
-  const { scene, mixer } = useMemo(() => {
-    const { castShadow, receiveShadow } = optionsRef.current ?? {};
-    let clone: THREE.Group;
-    try {
-      clone = cloneSkinnedScene(sourceScene) as THREE.Group;
-    } catch {
-      clone = deepCloneWithSkeletons(sourceScene);
-    }
-    clone.traverse((node) => {
-      if (node instanceof THREE.Mesh || node instanceof THREE.SkinnedMesh) {
-        if (castShadow !== undefined) node.castShadow = castShadow;
-        if (receiveShadow !== undefined) node.receiveShadow = receiveShadow;
-      }
-    });
-    const animationMixer =
-      animations && animations.length > 0
-        ? new THREE.AnimationMixer(clone)
-        : null;
-    return { scene: clone, mixer: animationMixer };
-  }, [sourceScene, animations]);
+  const [clone, setClone] = useState<SkinnedGltfClone>(createPlaceholderClone);
+  const cloneRef = useRef(clone);
+  cloneRef.current = clone;
 
   useEffect(() => {
-    return () => {
-      const { castShadow: _c, receiveShadow: _r, ...disposeOpts } = optionsRef.current ?? {};
-      disposeSkinnedClone(scene, mixer, disposeOpts);
-    };
-  }, [scene, mixer]);
+    let cancelled = false;
+    let idleId: number | undefined;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
-  return { scene, mixer };
+    const commitClone = () => {
+      if (cancelled) return;
+      const previous = cloneRef.current;
+      if (previous.ready) {
+        const { castShadow: _c, receiveShadow: _r, ...disposeOpts } = optionsRef.current ?? {};
+        disposeSkinnedClone(previous.scene, previous.mixer, disposeOpts);
+      }
+      const built = buildSkinnedClone(sourceScene, animations, optionsRef.current);
+      cloneRef.current = built;
+      setClone(built);
+    };
+
+    setClone(createPlaceholderClone());
+
+    if (typeof requestIdleCallback === 'function') {
+      idleId = requestIdleCallback(commitClone, { timeout: 32 });
+    } else {
+      timeoutId = setTimeout(commitClone, 0);
+    }
+
+    return () => {
+      cancelled = true;
+      if (idleId !== undefined && typeof cancelIdleCallback === 'function') {
+        cancelIdleCallback(idleId);
+      }
+      if (timeoutId !== undefined) {
+        clearTimeout(timeoutId);
+      }
+      const current = cloneRef.current;
+      if (current.ready) {
+        const { castShadow: _c, receiveShadow: _r, ...disposeOpts } = optionsRef.current ?? {};
+        disposeSkinnedClone(current.scene, current.mixer, disposeOpts);
+      }
+    };
+  }, [sourceScene, animations]);
+
+  return clone;
 }

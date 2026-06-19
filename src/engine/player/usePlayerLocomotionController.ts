@@ -96,7 +96,6 @@ export function usePlayerLocomotionController({
     prevLocomotionRef.current = false;
     prevRunWeightRef.current = 0;
     mixer.update(0);
-    root.updateMatrixWorld(true);
 
     return () => {
       for (const action of [idleActionRef.current, walkActionRef.current, runActionRef.current]) {

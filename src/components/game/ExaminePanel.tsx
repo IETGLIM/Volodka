@@ -17,6 +17,9 @@ import { useNarrativeTypewriter } from '@/hooks/useNarrativeTypewriter';
 import { useGameStore } from '@/store/gameStore';
 import { isAct1DiegeticScene } from '@/engine/narrative/narrativePresentationPolicy';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { diegeticDialogueBottomPadCss } from '@/shared/constants/hudLayout';
+import { useMobileDetection } from '@/components/game/orchestrator/useMobileDetection';
+import { useSuppressExplorationBottomHud } from '@/hooks/useExplorationBottomHud';
 
 interface ExaminePanelProps {
   open: boolean;
@@ -34,6 +37,8 @@ export function ExaminePanel({
   onContinue,
 }: ExaminePanelProps) {
   const reducedMotion = useEffectiveReducedMotion();
+  const isMobile = useMobileDetection();
+  const suppressBottomHud = useSuppressExplorationBottomHud();
   const sceneId = useGameStore((s) => s.exploration.currentSceneId);
   const compact = isAct1DiegeticScene(sceneId);
   const bodyText = data
@@ -81,8 +86,11 @@ export function ExaminePanel({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 12 }}
-          className="fixed left-0 right-0 bottom-20 px-4 pointer-events-auto"
-          style={{ zIndex: UI_LAYERS.DIALOGUE }}
+          className="fixed left-0 right-0 px-4 pointer-events-auto"
+          style={{
+            zIndex: UI_LAYERS.DIALOGUE,
+            bottom: diegeticDialogueBottomPadCss(isMobile, !suppressBottomHud),
+          }}
           role="dialog"
           aria-label={`Осмотр: ${data.title}`}
         >

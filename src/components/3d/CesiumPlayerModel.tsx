@@ -25,7 +25,7 @@ interface Fit {
 
 function CesiumPlayerModelInner({ modelScale, currentAnimRef, rotationRef }: ProceduralPlayerModelProps) {
   const gltf = useGLTF(PLAYER_MODEL_URL, true, true, extendLoader);
-  const { scene, mixer } = useSkinnedGltfClone(gltf.scene, gltf.animations, { castShadow: true });
+  const { scene, mixer, ready } = useSkinnedGltfClone(gltf.scene, gltf.animations, { castShadow: true });
   const yawRef = useRef<THREE.Group>(null);
   const [fit, setFit] = useState<Fit>({ scale: 1, rotX: 0, y: 0 });
 
@@ -42,7 +42,7 @@ function CesiumPlayerModelInner({ modelScale, currentAnimRef, rotationRef }: Pro
   const actions = mixamoActions ?? embeddedActions;
 
   usePlayerLocomotionController({
-    mixer,
+    mixer: ready ? mixer : null,
     root: scene,
     animations: gltf.animations,
     actions,
@@ -50,16 +50,20 @@ function CesiumPlayerModelInner({ modelScale, currentAnimRef, rotationRef }: Pro
   });
 
   useEffect(() => {
+    if (!ready) return;
     const bounds = measureCharacterGltfBounds(scene);
     const { scale, rotX, footY } = fitCharacterGltf(bounds, {
       scaleMultiplier: modelScale,
     });
     setFit({ scale, rotX, y: footY });
-  }, [scene, modelScale]);
+  }, [scene, modelScale, ready]);
 
   useFrameTick('player', () => {
+    if (!ready) return;
     if (yawRef.current) yawRef.current.rotation.y = rotationRef.current + FORWARD_OFFSET;
   }, { label: 'PlayerAvatarYaw', phase: 'pre_render' });
+
+  if (!ready) return null;
 
   return (
     <group ref={yawRef}>
