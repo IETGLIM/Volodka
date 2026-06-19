@@ -71,6 +71,7 @@ upload/
 /.tmp-quaternius-men/
 /.tmp-quaternius.html
 /assets-source/ai3dgen/npcs/_quaternius_raw/
+/assets-source/animations/_downloads/
 /temp_assets/
 /.zscripts/
 *.zip

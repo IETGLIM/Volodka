@@ -120,16 +120,20 @@ Campfire prop: [OpenGameArt Low Poly Camping Assets](https://opengameart.org/con
 | Idle (standing) | `animations/idle.glb` | Quaternius `Idle` (or [Mixamo](https://www.mixamo.com)) | CC0 / Mixamo ToS |
 | Walking | `animations/walking.glb` | Quaternius `Walk` | CC0 |
 | Talking | `animations/talking.glb` | Quaternius `Wave` | CC0 |
-| Sitting / rest | `animations/sitting.glb` | Quaternius `Idle_Neutral` | CC0 |
-| Sleeping | `animations/sleeping.glb` | Quaternius `Idle` | CC0 |
-| Working | `animations/working.glb` | Quaternius `Interact` | CC0 |
+| Sitting / rest | `animations/sitting.glb` | UAL `Sitting_Idle_Loop` (retargeted) | CC0 |
+| Sleeping | `animations/sleeping.glb` | UAL `Death01` prone (interim — no true sleep in UAL Standard) | CC0 |
+| Working | `animations/working.glb` | UAL `Fixing_Kneeling` (retargeted) | CC0 |
 
 Extract from Quaternius CC0 rig (no Adobe login):
 
 ```bash
-node scripts/extract-quaternius-animations.mjs
+node scripts/extract-quaternius-animations.mjs   # idle, walk, talk
+npm run assets:ual-import                        # sit, sleep, work from UAL Standard
+npm run assets:optimize-animations
 npm run assets:validate
 ```
+
+UAL source: [OpenGameArt Universal Animation Library](https://opengameart.org/content/universal-animation-library) (CC0, Russia-accessible direct zip).
 
 Mixamo import (optional override — Adobe login):
 

@@ -21,6 +21,7 @@
     "assets:rpm-import": "node scripts/rpm-npc-import.mjs",
     "assets:mixamo-import": "node scripts/mixamo-import.mjs",
     "assets:extract-animations": "node scripts/extract-quaternius-animations.mjs",
+    "assets:ual-import": "node scripts/extract-ual-animations.mjs --download",
     "assets:optimize-animations": "node scripts/optimize-animation-glbs.mjs",
     "assets:validate": "npx tsx --tsconfig tsconfig.json scripts/validate-gltf-assets.ts",
     "preview": "vite preview",

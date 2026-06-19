@@ -11,7 +11,10 @@ export const QUATERNIUS_CLIP_ALIASES: Record<NPCAnimationState, readonly string[
   idle: ['Idle', 'Idle_Neutral', 'Death', 'Idle_Sword', 'Idle_Gun'],
   walk: ['Walk', 'Run', 'Run_Forward'],
   talk: ['Wave', 'Interact', 'Idle_Gun_Pointing'],
-  sit: ['Interact', 'Idle_Neutral', 'sitting', 'Sitting', 'working', 'Working'],
+  sit: [
+    'Sitting_Idle_Loop', 'sitting', 'Sitting', 'Fixing_Kneeling', 'working', 'Working',
+    'Interact', 'Idle_Neutral',
+  ],
   listen: ['Idle_Neutral', 'Idle'],
   gesture: ['Wave', 'Interact', 'Kick_Left', 'Kick_Right'],
 };

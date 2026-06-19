@@ -78,7 +78,10 @@ export const MIXAMO_ANIMATION_CATALOG: readonly MixamoAnimationSpec[] = [
     publicUrl: `${ANIMATIONS}/sitting.glb`,
     canonicalClipName: 'sitting',
     npcState: 'sit',
-    clipAliases: ['Sitting', 'Sit', 'Sitting Idle', 'Sitting Talking', 'Interact'],
+    clipAliases: [
+      'Sitting', 'Sit', 'Sitting Idle', 'Sitting Talking', 'Interact',
+      'Sitting_Idle_Loop', 'Sitting_Talking_Loop',
+    ],
   },
   {
     id: 'sleeping',
@@ -88,7 +91,7 @@ export const MIXAMO_ANIMATION_CATALOG: readonly MixamoAnimationSpec[] = [
     publicUrl: `${ANIMATIONS}/sleeping.glb`,
     canonicalClipName: 'sleeping',
     npcState: 'idle',
-    clipAliases: ['Sleeping', 'Sleep', 'Laying', 'Laying Idle', 'sleep'],
+    clipAliases: ['Sleeping', 'Sleep', 'Laying', 'Laying Idle', 'sleep', 'Death01', 'Laying Down Idle'],
   },
   {
     id: 'working',
@@ -98,7 +101,7 @@ export const MIXAMO_ANIMATION_CATALOG: readonly MixamoAnimationSpec[] = [
     publicUrl: `${ANIMATIONS}/working.glb`,
     canonicalClipName: 'working',
     npcState: 'sit',
-    clipAliases: ['Working', 'Work', 'Typing', 'Interact', 'work'],
+    clipAliases: ['Working', 'Work', 'Typing', 'Interact', 'work', 'Fixing_Kneeling', 'PickUp_Table'],
   },
 ] as const;
 

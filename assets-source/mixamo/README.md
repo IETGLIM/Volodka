@@ -48,15 +48,22 @@ If you only have FBX (e.g. from older Mixamo UI):
 
 ## Quaternius interim clips (no Mixamo account)
 
-When Mixamo downloads are unavailable, `npm run assets:extract-animations` maps Quaternius embedded clips:
+When Mixamo downloads are unavailable, use the CC0 extract pipeline:
 
-| Catalog id | Quaternius source | Rationale |
-|------------|-------------------|-----------|
-| sitting | `Interact` | Crouch/reach — no seated mocap in CC0 pack |
-| working | `Interact` | Same interact pose for desk/work schedule |
-| sleeping | `Death` | Prone collapse — only lying-like clip in pack |
+| Catalog id | Primary source | Fallback (modular pack) |
+|------------|----------------|-------------------------|
+| idle / walking / talking | Quaternius modular `Idle`, `Walk`, `Wave` | — |
+| sitting | UAL `Sitting_Idle_Loop` (retargeted) | `Interact` crouch |
+| working | UAL `Fixing_Kneeling` (retargeted) | `Interact` |
+| sleeping | UAL `Death01` prone (interim) | `Death` collapse |
 
-True sit/sleep mocap requires Mixamo import (`assets:mixamo-import`). Extracted clips are mesh-stripped via `assets:optimize-animations` (~50 KB each vs ~1.3 MB full rig).
+```bash
+node scripts/extract-quaternius-animations.mjs
+npm run assets:ual-import
+npm run assets:optimize-animations
+```
+
+True sleep mocap (lying idle) still requires manual Mixamo or KayKit import — see `assets-source/animations/README.md`.
 
 ## Folder layout
 
