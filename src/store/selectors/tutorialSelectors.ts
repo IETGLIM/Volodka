@@ -14,7 +14,8 @@ export const ACT1_TUTORIAL_READY_NODES = [
 ] as const;
 
 export function selectAct1TutorialReady(s = getGameStore()): boolean {
-  const { visitedNodes } = s.playerState;
+  const { visitedNodes, flags } = s.playerState;
+  if (flags?.woke_up) return true;
   return ACT1_TUTORIAL_READY_NODES.some((nodeId) => hasVisitedNode(visitedNodes, nodeId));
 }
 

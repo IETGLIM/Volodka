@@ -4,6 +4,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { bottomTutorialTipPx } from '@/shared/constants/hudLayout';
 import { X, Gamepad2, Eye, Hand, Backpack, Scroll, BookOpen, Notebook, Moon, LayoutGrid, LogOut } from 'lucide-react';
 import { useGameStore } from '@/store/gameStore';
 import { useGamePhase, useTutorialFlags } from '@/store/selectors';
@@ -215,8 +216,8 @@ export function TutorialOverlay() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 10, scale: 0.98 }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
-          className="fixed bottom-24 left-3 sm:bottom-28 sm:left-4 pointer-events-auto"
-          style={{ zIndex: UI_LAYERS.HUD }}
+          className="fixed left-3 sm:left-4 pointer-events-auto"
+          style={{ zIndex: UI_LAYERS.HUD, bottom: bottomTutorialTipPx() }}
         >
           <div className="relative bg-slate-950/95 border border-cyan-900/40 rounded-lg p-3 max-w-[260px] sm:max-w-xs backdrop-blur-md shadow-xl shadow-black/40">
             {/* Subtle gradient accent */}

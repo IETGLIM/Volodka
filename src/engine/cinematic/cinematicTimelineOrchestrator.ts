@@ -20,6 +20,19 @@ export interface CinematicTimelineStartPayload {
 }
 
 let activeTimelineId: string | null = null;
+const listeners = new Set<() => void>();
+
+function notifyTimelineListeners(): void {
+  for (const listener of listeners) {
+    listener();
+  }
+}
+
+/** Subscribe to timeline active-state changes (for React useSyncExternalStore). */
+export function subscribeCinematicTimeline(onStoreChange: () => void): () => void {
+  listeners.add(onStoreChange);
+  return () => listeners.delete(onStoreChange);
+}
 
 export function getActiveCinematicTimelineId(): string | null {
   return activeTimelineId;
@@ -45,6 +58,7 @@ export function startCinematicTimeline(payload: CinematicTimelineStartPayload): 
   activeTimelineId = def.id;
   setCinematicPresentationMode('third_person');
   setCinematicHoldActive(true);
+  notifyTimelineListeners();
 
   eventBus.emit('cinematic:timeline_start', {
     def,
@@ -64,6 +78,7 @@ export function stopCinematicTimeline(timelineId?: string): void {
   activeTimelineId = null;
   setCinematicHoldActive(false);
   setCinematicPresentationMode('third_person');
+  notifyTimelineListeners();
 
   eventBus.emit('cinematic:timeline_stop', { timelineId: id });
   eventBus.emit('cutscene:overlay_end', {});
@@ -75,6 +90,7 @@ export function completeCinematicTimeline(timelineId: string, skipped = false): 
   activeTimelineId = null;
   setCinematicHoldActive(false);
   setCinematicPresentationMode('third_person');
+  notifyTimelineListeners();
 
   eventBus.emit('cinematic:timeline_complete', { timelineId, skipped });
   eventBus.emit('cutscene:overlay_end', {});
@@ -89,4 +105,5 @@ export function skipCinematicTimeline(): void {
 /** Reset module state (unit tests). */
 export function resetCinematicTimelineOrchestratorForTests(): void {
   activeTimelineId = null;
+  notifyTimelineListeners();
 }

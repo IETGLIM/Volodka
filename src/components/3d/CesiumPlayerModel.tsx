@@ -17,9 +17,44 @@ import {
   PLAYER_RUN_CLIP_NAMES,
   PLAYER_WALK_CLIP_NAMES,
 } from '@/engine/player/playerClipResolution';
-import { ProceduralPlayerModelAdaptive } from './ProceduralPlayerModel';
 import type { ProceduralPlayerModelProps } from './useProceduralPlayerAnimation';
 import { fitCharacterGltf, measureCharacterGltfBounds } from '@/engine/assets/gltfScale';
+
+function bindPlayerClipActions(
+  mixer: THREE.AnimationMixer,
+  actions: Record<string, THREE.AnimationAction> | null,
+  animations: THREE.AnimationClip[],
+): {
+  idle: THREE.AnimationAction | null;
+  walk: THREE.AnimationAction | null;
+  run: THREE.AnimationAction | null;
+} {
+  const pickAction = (names: readonly string[]): THREE.AnimationAction | null =>
+    pickPlayerClipAction(actions, names);
+
+  const idleAction =
+    pickAction(PLAYER_IDLE_CLIP_NAMES) ?? pickSafeIdleClipAction(actions);
+
+  const walkClip = findPlayerAnimationClip(
+    animations,
+    /walk/i,
+    idleAction?.getClip(),
+  );
+  const walkAction =
+    pickAction(PLAYER_WALK_CLIP_NAMES) ??
+    (walkClip ? mixer.clipAction(walkClip) : idleAction);
+
+  const runClip = findPlayerAnimationClip(
+    animations,
+    /run/i,
+    walkAction?.getClip() ?? idleAction?.getClip(),
+  );
+  const runAction = runClip
+    ? pickAction(PLAYER_RUN_CLIP_NAMES) ?? mixer.clipAction(runClip)
+    : null;
+
+  return { idle: idleAction, walk: walkAction, run: runAction };
+}
 
 const PLAYER_MODEL_URL = getPlayerVolodkaModelUrl();
 useGLTF.preload(PLAYER_MODEL_URL);
@@ -75,44 +110,31 @@ function CesiumPlayerModelInner({ modelScale, currentAnimRef, rotationRef }: Pro
     walkActionRef.current = null;
     runActionRef.current = null;
 
-    const pickAction = (names: readonly string[]): THREE.AnimationAction | null =>
-      pickPlayerClipAction(mixamoActions, names);
-
-    const idleAction =
-      pickAction(PLAYER_IDLE_CLIP_NAMES) ?? pickSafeIdleClipAction(mixamoActions);
-
-    const walkClip = findPlayerAnimationClip(
+    const actions = mixamoActions ?? embeddedActions;
+    const { idle: idleAction, walk: walkAction, run: runAction } = bindPlayerClipActions(
+      mixer,
+      actions,
       gltf.animations,
-      /walk/i,
-      idleAction?.getClip(),
-    );
-    const walkAction =
-      pickAction(PLAYER_WALK_CLIP_NAMES) ??
-      (walkClip ? mixer.clipAction(walkClip) : idleAction);
-
-    const runClip = findPlayerAnimationClip(
-      gltf.animations,
-      /run/i,
-      walkAction?.getClip() ?? idleAction?.getClip(),
     );
 
     if (idleAction) {
       idleAction.setLoop(THREE.LoopRepeat, Infinity);
+      idleAction.reset();
       idleAction.play();
       idleActionRef.current = idleAction;
     }
 
     if (walkAction && walkAction !== idleAction) {
       walkAction.setLoop(THREE.LoopRepeat, Infinity);
+      walkAction.reset();
       walkAction.play();
       walkAction.setEffectiveWeight(0);
       walkActionRef.current = walkAction;
     }
 
-    if (runClip) {
-      const runAction =
-        pickAction(PLAYER_RUN_CLIP_NAMES) ?? mixer.clipAction(runClip);
+    if (runAction) {
       runAction.setLoop(THREE.LoopRepeat, Infinity);
+      runAction.reset();
       runAction.play();
       runAction.setEffectiveWeight(0);
       runActionRef.current = runAction;
@@ -120,6 +142,8 @@ function CesiumPlayerModelInner({ modelScale, currentAnimRef, rotationRef }: Pro
 
     prevLocomotionRef.current = false;
     prevRunWeightRef.current = 0;
+    mixer.update(0);
+    scene.updateMatrixWorld(true);
 
     return () => {
       for (const action of [idleActionRef.current, walkActionRef.current, runActionRef.current]) {
@@ -132,7 +156,7 @@ function CesiumPlayerModelInner({ modelScale, currentAnimRef, rotationRef }: Pro
       walkActionRef.current = null;
       runActionRef.current = null;
     };
-  }, [mixer, gltf.animations, mixamoActions]);
+  }, [mixer, gltf.animations, mixamoActions, embeddedActions, scene]);
 
   useEffect(() => {
     const bounds = measureCharacterGltfBounds(scene);
@@ -207,7 +231,7 @@ function CesiumPlayerModelInner({ modelScale, currentAnimRef, rotationRef }: Pro
 /** Cesium avatar with a procedural fallback while the GLB streams / on error. */
 export function CesiumPlayerModel(props: ProceduralPlayerModelProps) {
   return (
-    <Suspense fallback={<ProceduralPlayerModelAdaptive {...props} />}>
+    <Suspense fallback={null}>
       <CesiumPlayerModelInner {...props} />
     </Suspense>
   );

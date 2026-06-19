@@ -14,10 +14,16 @@ export const EXPLORATION_HUD_LAYOUT = {
   RIGHT_INSET: 12,
   /** Bottom-center stack (px from viewport bottom) */
   BOTTOM_TOOLBAR: 12,
-  BOTTOM_QUICK_USE: 56,
-  BOTTOM_POETRY: 100,
-  /** Crafting discovery toasts — above quick-use bar */
-  BOTTOM_CRAFTING_TOAST: 80,
+  /** QuickAccessToolbar chrome (~48px content + padding) */
+  BOTTOM_TOOLBAR_HEIGHT: 52,
+  BOTTOM_QUICK_USE: 68,
+  /** QuickUseBar slot row (~48px) */
+  BOTTOM_QUICK_USE_HEIGHT: 48,
+  BOTTOM_POETRY: 124,
+  /** PoetryPowerBar row (~56px) */
+  BOTTOM_POETRY_HEIGHT: 56,
+  /** Crafting discovery toasts — above poetry bar */
+  BOTTOM_CRAFTING_TOAST: 188,
   /** System alerts stack above crafting toasts (crafting + quick-use tier gap). */
   SYSTEM_ALERT_ABOVE_CRAFTING_OFFSET: 56,
   /** Contextual [E] prompt — above poetry bar, centered */
@@ -99,6 +105,13 @@ export function bottomPoetryPx(): number {
   return EXPLORATION_HUD_LAYOUT.BOTTOM_POETRY;
 }
 
+export function bottomTutorialTipPx(): number {
+  return (
+    EXPLORATION_HUD_LAYOUT.BOTTOM_CRAFTING_TOAST
+    + EXPLORATION_HUD_LAYOUT.SLOT_GAP
+  );
+}
+
 export function bottomCraftingToastPx(isMobile = false): number {
   return EXPLORATION_HUD_LAYOUT.BOTTOM_CRAFTING_TOAST + mobileBottomReserve(isMobile);
 }
@@ -110,7 +123,13 @@ export function bottomSystemAlertPx(isMobile = false): number {
 }
 
 export function bottomInteractPromptPx(isMobile = false): number {
-  return EXPLORATION_HUD_LAYOUT.BOTTOM_INTERACT_PROMPT + mobileBottomReserve(isMobile);
+  return (
+    EXPLORATION_HUD_LAYOUT.BOTTOM_POETRY
+    + EXPLORATION_HUD_LAYOUT.BOTTOM_POETRY_HEIGHT
+    + EXPLORATION_HUD_LAYOUT.SLOT_GAP
+    + 48
+    + mobileBottomReserve(isMobile)
+  );
 }
 
 /** Diegetic dialogue panel — lift above mobile D-pad / action column + home indicator. */

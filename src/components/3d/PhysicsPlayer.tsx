@@ -13,6 +13,7 @@ import {
   isIntroWakeupCutscene,
   shouldShowThirdPersonAvatar,
 } from '@/engine/camera/cinematicPresentation';
+import { useCinematicTimelineActive } from '@/hooks/useCinematicTimelineActive';
 import { CinematicPlayerAvatar } from './CinematicPlayerAvatar';
 import {
   PLAYER_HEIGHT,
@@ -41,9 +42,11 @@ export function PhysicsPlayer({
 }: PhysicsPlayerProps) {
   const sceneId = useCurrentSceneId();
   const { activeCutsceneId, gameMode } = usePlayerPresentationState();
-  const hideForWakeup = isIntroWakeupCutscene(activeCutsceneId);
+  const timelineActive = useCinematicTimelineActive();
+  const hideForCinematicAvatar =
+    isIntroWakeupCutscene(activeCutsceneId) || timelineActive;
   const showThirdPersonBody =
-    shouldShowThirdPersonAvatar(gameMode, activeCutsceneId) && !hideForWakeup;
+    shouldShowThirdPersonAvatar(gameMode, activeCutsceneId) && !hideForCinematicAvatar;
 
   const { rigidBodyRef, capsuleColliderRef, currentAnimRef } = usePhysicsPlayerMovement({
     livePlayerPositionRef,

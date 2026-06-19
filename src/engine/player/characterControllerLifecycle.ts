@@ -44,9 +44,9 @@ export function createConfiguredCharacterController(
   controller.enableAutostep(AUTOSTEP_HEIGHT, AUTOSTEP_WIDTH, true);
   controller.enableSnapToGround(SNAP_DISTANCE);
   controller.setSlideEnabled(true);
-  controller.setApplyImpulsesToDynamicBodies(true);
+  controller.setApplyImpulsesToDynamicBodies(false);
   controller.setCharacterMass(75);
-  controller.setNormalNudgeFactor(0.5);
+  controller.setNormalNudgeFactor(0.12);
   return controller;
 }
 

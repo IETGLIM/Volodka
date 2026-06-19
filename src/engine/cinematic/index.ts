@@ -26,6 +26,7 @@ export {
   skipCinematicTimeline,
   startCinematicTimeline,
   stopCinematicTimeline,
+  subscribeCinematicTimeline,
 } from './cinematicTimelineOrchestrator';
 
 export { INTRO_WAKE_TIMELINE } from './introWakeTimeline';
