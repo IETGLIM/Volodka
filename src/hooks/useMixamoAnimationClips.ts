@@ -7,6 +7,7 @@ import type { MixamoClipId } from '@/config/mixamoAnimationCatalog';
 import { MIXAMO_ANIMATION_CATALOG } from '@/config/mixamoAnimationCatalog';
 import { MIXAMO_CLIP_IDS_ON_DISK } from '@/config/mixamoClipsOnDisk';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
+import { isUiOverlayBlockingDeferredAssets } from '@/engine/assets/gltfPreloadOverlayGate';
 
 export interface MixamoClipBinding {
   clipId: MixamoClipId;
@@ -21,6 +22,15 @@ function getOnDiskMixamoBindings(): MixamoClipBinding[] {
     url: spec.publicUrl,
     canonicalName: spec.canonicalClipName,
   }));
+}
+
+function scheduleIdleSlice(callback: () => void): () => void {
+  if (typeof requestIdleCallback === 'function') {
+    const idleId = requestIdleCallback(callback, { timeout: 48 });
+    return () => cancelIdleCallback(idleId);
+  }
+  const timeoutId = setTimeout(callback, 0);
+  return () => clearTimeout(timeoutId);
 }
 
 /**
@@ -43,31 +53,51 @@ export function useMixamoAnimationClips(
     }
 
     let cancelled = false;
+    const cancelSchedules: Array<() => void> = [];
     const loader = new GLTFLoader();
     extendGltfLoader(loader);
 
-    const loadAll = async () => {
-      const next: Record<string, THREE.AnimationAction> = {};
-      for (const binding of bindings) {
-        try {
-          const gltf = await loader.loadAsync(binding.url);
-          if (cancelled) return;
-          const clip = gltf.animations[0];
-          if (!clip) continue;
-          const renamed = clip.clone();
-          renamed.name = binding.canonicalName;
-          next[binding.canonicalName] = mixer.clipAction(renamed, root);
-        } catch {
-          // Clip missing on disk despite on-disk registry — skip until re-import.
-        }
+    const loadBindingAt = (index: number): void => {
+      if (cancelled || index >= bindings.length) return;
+
+      if (isUiOverlayBlockingDeferredAssets()) {
+        const cancel = scheduleIdleSlice(() => loadBindingAt(index));
+        cancelSchedules.push(cancel);
+        return;
       }
-      if (!cancelled) setMixamoActions(next);
+
+      const binding = bindings[index];
+      const cancel = scheduleIdleSlice(() => {
+        void (async () => {
+          try {
+            const gltf = await loader.loadAsync(binding.url);
+            if (cancelled) return;
+            const clip = gltf.animations[0];
+            if (!clip) {
+              loadBindingAt(index + 1);
+              return;
+            }
+            const renamed = clip.clone();
+            renamed.name = binding.canonicalName;
+            const action = mixer.clipAction(renamed, root);
+            setMixamoActions((prev) => ({
+              ...prev,
+              [binding.canonicalName]: action,
+            }));
+          } catch {
+            // Clip missing on disk despite on-disk registry — skip until re-import.
+          }
+          loadBindingAt(index + 1);
+        })();
+      });
+      cancelSchedules.push(cancel);
     };
 
-    void loadAll();
+    loadBindingAt(0);
 
     return () => {
       cancelled = true;
+      for (const cancel of cancelSchedules) cancel();
       for (const action of Object.values(mixamoActionsRef.current)) {
         action.stop();
         mixer.uncacheClip(action.getClip());

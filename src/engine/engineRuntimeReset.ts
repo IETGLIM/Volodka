@@ -12,6 +12,7 @@ import { resetGlobalTimeScale } from '@/engine/camera/cinematicCamera';
 import { resetCinematicPresentation } from '@/engine/camera/cinematicPresentation';
 import { resetPoemReadingSession } from '@/engine/poemReading/poemReadingOrchestrator';
 import { cancelEncounterPresentation } from '@/engine/combat/encounterPresentation';
+import { resetGltfPreloadOverlayGateForTests } from '@/engine/assets/gltfPreloadOverlayGate';
 import { resetSceneTransitionGuard } from '@/engine/core/sceneTransitionGuard';
 import { resetInteractionEndDedupState } from '@/engine/interaction/interactionEndDedup';
 import { resetPendingEntryBeatFromZoneInteraction } from '@/engine/interaction/narrativeOpenHelpers';
@@ -28,6 +29,7 @@ export function resetEngineModuleRuntimeState(): void {
   resetInteractionEndDedupState();
   resetPendingEntryBeatFromZoneInteraction();
   cancelEncounterPresentation();
+  resetGltfPreloadOverlayGateForTests();
   resetAchievementTracking();
   invalidateStoryGraphIndex();
   resetKeyboardInputState();

@@ -21,8 +21,21 @@ type QueueEntry = {
 const queue = new Map<string, QueueEntry>();
 let generation = 0;
 let drainHandle: ReturnType<typeof setTimeout> | number | null = null;
+let manualPauseActive = false;
+let uiOverlayPauseCount = 0;
 let preloadPaused = false;
 let combatLifecycleHooked = false;
+
+function syncPreloadPaused(): void {
+  const nextPaused = manualPauseActive || uiOverlayPauseCount > 0;
+  if (preloadPaused === nextPaused) return;
+  preloadPaused = nextPaused;
+  if (preloadPaused) {
+    cancelDrain();
+    return;
+  }
+  if (queue.size > 0) scheduleDrain();
+}
 
 const BATCH_SIZE = 1;
 
@@ -36,13 +49,20 @@ function hookCombatPreloadLifecycle(): void {
 
 /** Pause idle GLB preloads during encounter beat / combat UI mount (main-thread headroom). */
 export function setGltfPreloadPaused(paused: boolean): void {
-  if (preloadPaused === paused) return;
-  preloadPaused = paused;
-  if (preloadPaused) {
-    cancelDrain();
-    return;
-  }
-  if (queue.size > 0) scheduleDrain();
+  if (manualPauseActive === paused) return;
+  manualPauseActive = paused;
+  syncPreloadPaused();
+}
+
+/** Pause background GLB preloads while examine / story overlays are open. */
+export function pauseGltfPreloadForUiOverlay(): void {
+  uiOverlayPauseCount += 1;
+  syncPreloadPaused();
+}
+
+export function resumeGltfPreloadForUiOverlay(): void {
+  uiOverlayPauseCount = Math.max(0, uiOverlayPauseCount - 1);
+  syncPreloadPaused();
 }
 
 export function isGltfPreloadPaused(): boolean {
@@ -135,5 +155,7 @@ export function resetGltfPreloadQueue(): void {
 /** Test-only reset */
 export function resetGltfPreloadSchedulerForTests(): void {
   resetGltfPreloadQueue();
+  manualPauseActive = false;
+  uiOverlayPauseCount = 0;
   preloadPaused = false;
 }

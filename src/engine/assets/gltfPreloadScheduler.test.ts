@@ -2,7 +2,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   GltfPreloadPriority,
   isGltfPreloadPaused,
+  pauseGltfPreloadForUiOverlay,
   resetGltfPreloadSchedulerForTests,
+  resumeGltfPreloadForUiOverlay,
   scheduleGltfPreload,
   setGltfPreloadPaused,
 } from './gltfPreloadScheduler';
@@ -55,6 +57,22 @@ describe('gltfPreloadScheduler', () => {
     expect(isGltfPreloadPaused()).toBe(true);
 
     setGltfPreloadPaused(false);
+    vi.runOnlyPendingTimers();
+    expect(order).toEqual(['a']);
+  });
+
+  it('stays paused while UI overlay hold is active even after manual resume', () => {
+    const order: string[] = [];
+
+    scheduleGltfPreload('a.glb', () => order.push('a'), GltfPreloadPriority.Critical);
+    pauseGltfPreloadForUiOverlay();
+    setGltfPreloadPaused(true);
+    setGltfPreloadPaused(false);
+    vi.runOnlyPendingTimers();
+    expect(order).toEqual([]);
+    expect(isGltfPreloadPaused()).toBe(true);
+
+    resumeGltfPreloadForUiOverlay();
     vi.runOnlyPendingTimers();
     expect(order).toEqual(['a']);
   });

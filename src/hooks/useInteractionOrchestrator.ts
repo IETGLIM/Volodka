@@ -13,6 +13,10 @@ import {
 import type { TriggerZone } from '@/data/triggerZones';
 import type { EnemyType, ExamineData } from '@/shared/types/game';
 import { InteractionController } from '@/engine/interaction/InteractionController';
+import {
+  setExamineOverlayAssetGate,
+  setStoryOverlayAssetGate,
+} from '@/engine/assets/gltfPreloadOverlayGate';
 
 export type ExamineUiState = {
   open: boolean;
@@ -57,6 +61,11 @@ export function useInteractionOrchestrator(
   );
 
   const [examine, setExamine] = useState<ExamineUiState>(CLOSED_EXAMINE_STATE);
+
+  useEffect(() => {
+    setExamineOverlayAssetGate(examine.open);
+    return () => setExamineOverlayAssetGate(false);
+  }, [examine.open]);
 
   const setExamineOpen = useCallback((open: boolean) => {
     setExamine((state) => ({ ...state, open }));
@@ -137,6 +146,8 @@ export function useInteractionOrchestrator(
               mode: readGamePhase(state),
             }),
             (selected, prev) => {
+              setStoryOverlayAssetGate(selected.showStoryOverlay);
+
               const controller = controllerRef.current;
               if (!controller || controller.isDisposed()) return;
 

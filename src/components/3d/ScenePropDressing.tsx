@@ -1,7 +1,7 @@
 /* ─── Volodka RPG – Kenney / AI3DGen GLB set dressing per scene ─── */
 
 /* eslint-disable react-refresh/only-export-components -- co-located helpers and lazy exports */
-import { Suspense, useMemo } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { useCurrentSceneId } from '@/store/selectors';
@@ -35,17 +35,47 @@ interface ScenePropMeshInnerProps {
   def: NonNullable<ReturnType<typeof getPropModelDefinition>>;
 }
 
+function buildPropClone(source: THREE.Object3D): THREE.Object3D {
+  const root = source.clone(true);
+  root.traverse((node) => {
+    if (node instanceof THREE.Mesh) {
+      node.castShadow = true;
+      node.receiveShadow = true;
+    }
+  });
+  return root;
+}
+
 function ScenePropMeshInner({ placement, def }: ScenePropMeshInnerProps) {
   const gltf = useGLTF(def.url, true, true, extendLoader);
-  const clone = useMemo(() => {
-    const root = gltf.scene.clone(true);
-    root.traverse((node) => {
-      if (node instanceof THREE.Mesh) {
-        node.castShadow = true;
-        node.receiveShadow = true;
+  const [clone, setClone] = useState<THREE.Object3D | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    let idleId: number | undefined;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+    const commitClone = () => {
+      if (cancelled) return;
+      setClone(buildPropClone(gltf.scene));
+    };
+
+    setClone(null);
+    if (typeof requestIdleCallback === 'function') {
+      idleId = requestIdleCallback(commitClone, { timeout: 32 });
+    } else {
+      timeoutId = setTimeout(commitClone, 0);
+    }
+
+    return () => {
+      cancelled = true;
+      if (idleId !== undefined && typeof cancelIdleCallback === 'function') {
+        cancelIdleCallback(idleId);
       }
-    });
-    return root;
+      if (timeoutId !== undefined) {
+        clearTimeout(timeoutId);
+      }
+    };
   }, [gltf.scene]);
 
   const scale = def.scale ?? 1;
@@ -58,6 +88,8 @@ function ScenePropMeshInner({ placement, def }: ScenePropMeshInnerProps) {
   const offset = def.offset ?? [0, 0, 0];
   const placementOffset = placement.offset ?? [0, 0, 0];
   const rotationY = baseRotation[1] + (placement.rotationY ?? 0);
+
+  if (!clone) return null;
 
   return (
     <group
