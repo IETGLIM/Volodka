@@ -5,15 +5,21 @@ import { useCurrentSceneId } from '@/store/selectors';
 import { getSceneInteriorAssets } from '@/config/sceneInteriorAssets';
 import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
+import { useSceneLoadedGate } from '@/hooks/useSceneLoadedGate';
 import { GltfAsset } from './assets/GltfAsset';
 
 /** Renders shipped interior backdrop bundles for the active scene. */
 export function SceneInteriorAssets() {
   const sceneId = useCurrentSceneId();
   const { preset } = useGraphicsQuality();
+  const sceneLoaded = useSceneLoadedGate(sceneId);
   const placements = useMemo(() => getSceneInteriorAssets(sceneId), [sceneId]);
 
-  if (!allowsGlbAssetRendering(preset.environmentRenderMode) || placements.length === 0) {
+  if (
+    !sceneLoaded ||
+    !allowsGlbAssetRendering(preset.environmentRenderMode) ||
+    placements.length === 0
+  ) {
     return null;
   }
 

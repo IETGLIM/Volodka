@@ -7,7 +7,7 @@ import * as THREE from 'three';
 import { useCurrentSceneId } from '@/store/selectors';
 import { getPropModelDefinition } from '@/config/propModelRegistry';
 import type { SceneId } from '@/shared/types/game';
-import { getScenePropDressing, type ScenePropPlacement } from '@/config/scenePropDressing';
+import { getScenePropDressing, resolvePropDressingPreloadPriority, splitScenePropDressing, type ScenePropPlacement } from '@/config/scenePropDressing';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
 import {
   GltfPreloadPriority,
@@ -16,6 +16,7 @@ import {
 import { useGltfPropPlacement } from '@/hooks/useGltfPropPlacement';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
+import { useStaggeredMountCount } from '@/hooks/useStaggeredMountCount';
 
 const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeof useGLTF>[3]>;
 
@@ -77,16 +78,25 @@ function ScenePropMeshInner({ placement, def }: ScenePropMeshInnerProps) {
 export function ScenePropDressing() {
   const sceneId = useCurrentSceneId();
   const { preset } = useGraphicsQuality();
-  const placements = useMemo(() => getScenePropDressing(sceneId), [sceneId]);
+  const { critical, deferred } = useMemo(() => splitScenePropDressing(sceneId), [sceneId]);
+  const deferredVisible = useStaggeredMountCount(deferred.length);
 
-  if (!allowsGlbAssetRendering(preset.environmentRenderMode) || placements.length === 0) {
+  if (
+    !allowsGlbAssetRendering(preset.environmentRenderMode) ||
+    (critical.length === 0 && deferred.length === 0)
+  ) {
     return null;
   }
 
   return (
     <group key={`dressing:${sceneId}`}>
-      {placements.map((placement, index) => (
+      {critical.map((placement, index) => (
         <Suspense key={`${placement.propModelId}:${index}`} fallback={null}>
+          <ScenePropMesh placement={placement} />
+        </Suspense>
+      ))}
+      {deferred.slice(0, deferredVisible).map((placement, index) => (
+        <Suspense key={`deferred:${placement.propModelId}:${index}`} fallback={null}>
           <ScenePropMesh placement={placement} />
         </Suspense>
       ))}
@@ -97,7 +107,7 @@ export function ScenePropDressing() {
 /** Warm dressing GLBs for a scene (call from GPU lifecycle). */
 export function preloadScenePropDressing(
   sceneId: SceneId,
-  priority: GltfPreloadPriority = GltfPreloadPriority.Normal,
+  _priority: GltfPreloadPriority = GltfPreloadPriority.Normal,
 ): void {
   for (const placement of getScenePropDressing(sceneId)) {
     const def = getPropModelDefinition(placement.propModelId);
@@ -105,7 +115,7 @@ export function preloadScenePropDressing(
     scheduleGltfPreload(
       def.url,
       () => useGLTF.preload(def.url, true, true, extendLoader),
-      priority,
+      resolvePropDressingPreloadPriority(placement),
     );
   }
 }

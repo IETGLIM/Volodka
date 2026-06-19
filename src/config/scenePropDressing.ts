@@ -1,27 +1,37 @@
 /* ─── Volodka RPG – static GLB prop placements per scene ─── */
 
 import type { SceneId } from '@/shared/types/game';
+import { GltfPreloadPriority } from '@/engine/assets/gltfPreloadScheduler';
+
+export type PropLoadTier = 'critical' | 'deferred';
 
 export interface ScenePropPlacement {
   propModelId: string;
   position: [number, number, number];
   rotationY?: number;
   offset?: [number, number, number];
+  /** Mount/preload priority — defaults to critical when omitted. */
+  loadTier?: PropLoadTier;
+}
+
+export interface SplitScenePropDressing {
+  critical: readonly ScenePropPlacement[];
+  deferred: readonly ScenePropPlacement[];
 }
 
 /** Kenney + AI3DGen props placed in scene visuals (see propModelRegistry). */
 export const SCENE_PROP_DRESSING: Partial<Record<SceneId, readonly ScenePropPlacement[]>> = {
   volodka_room: [
-    { propModelId: 'kenney_desk', position: [0, 0, -2.5] },
-    { propModelId: 'kenney_bed', position: [1.8, 0, 2.0] },
-    { propModelId: 'kenney_wardrobe', position: [-2.2, 0, 2.5] },
-    { propModelId: 'kenney_terminal', position: [0.72, 0.78, -2.62], offset: [0, -0.28, 0] },
-    { propModelId: 'kenney_bookshelf', position: [-2.2, 0, 0] },
-    { propModelId: 'kenney_window', position: [2.4, 1.2, -2.0], rotationY: -Math.PI / 2 },
-    { propModelId: 'kenney_door_open', position: [0, 0, 3.45] },
-    { propModelId: 'ai3dgen_poetic_compiler', position: [-0.35, 0.82, -2.38], rotationY: 0.25 },
-    { propModelId: 'ai3dgen_neural_filter', position: [0.95, 0.82, -2.55], rotationY: -0.35 },
-    { propModelId: 'ai3dgen_digital_amulet', position: [-2.05, 1.55, 0.05], rotationY: Math.PI / 2 },
+    { propModelId: 'kenney_desk', position: [0, 0, -2.5], loadTier: 'critical' },
+    { propModelId: 'kenney_bed', position: [1.8, 0, 2.0], loadTier: 'critical' },
+    { propModelId: 'kenney_terminal', position: [0.72, 0.78, -2.62], offset: [0, -0.28, 0], loadTier: 'critical' },
+    { propModelId: 'kenney_door_open', position: [0, 0, 3.45], loadTier: 'critical' },
+    { propModelId: 'kenney_wardrobe', position: [-2.2, 0, 2.5], loadTier: 'deferred' },
+    { propModelId: 'kenney_bookshelf', position: [-2.2, 0, 0], loadTier: 'deferred' },
+    { propModelId: 'kenney_window', position: [2.4, 1.2, -2.0], rotationY: -Math.PI / 2, loadTier: 'deferred' },
+    { propModelId: 'ai3dgen_poetic_compiler', position: [-0.35, 0.82, -2.38], rotationY: 0.25, loadTier: 'deferred' },
+    { propModelId: 'ai3dgen_neural_filter', position: [0.95, 0.82, -2.55], rotationY: -0.35, loadTier: 'deferred' },
+    { propModelId: 'ai3dgen_digital_amulet', position: [-2.05, 1.55, 0.05], rotationY: Math.PI / 2, loadTier: 'deferred' },
   ],
   volodka_corridor: [
     { propModelId: 'kenney_door', position: [0, 0, 7.3] },
@@ -84,4 +94,27 @@ export function getScenePropDressingIds(sceneId: SceneId): string[] {
     ids.add(placement.propModelId);
   }
   return [...ids];
+}
+
+export function splitScenePropDressing(sceneId: SceneId): SplitScenePropDressing {
+  const critical: ScenePropPlacement[] = [];
+  const deferred: ScenePropPlacement[] = [];
+
+  for (const placement of getScenePropDressing(sceneId)) {
+    if (placement.loadTier === 'deferred') {
+      deferred.push(placement);
+    } else {
+      critical.push(placement);
+    }
+  }
+
+  return { critical, deferred };
+}
+
+export function resolvePropDressingPreloadPriority(
+  placement: ScenePropPlacement,
+): GltfPreloadPriority {
+  return placement.loadTier === 'deferred'
+    ? GltfPreloadPriority.Deferred
+    : GltfPreloadPriority.High;
 }

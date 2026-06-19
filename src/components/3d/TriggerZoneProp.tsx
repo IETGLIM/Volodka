@@ -16,6 +16,7 @@ import {
 import { useGltfPropPlacement } from '@/hooks/useGltfPropPlacement';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
+import { useSceneLoadedGate } from '@/hooks/useSceneLoadedGate';
 
 const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeof useGLTF>[3]>;
 
@@ -77,6 +78,7 @@ function TriggerZonePropMeshInner({ zone, def }: TriggerZonePropMeshInnerProps) 
 /** Renders shipped GLB props for trigger zones in the active scene. */
 export function TriggerZoneProps() {
   const sceneId = useCurrentSceneId();
+  const sceneLoaded = useSceneLoadedGate(sceneId);
   const { preset } = useGraphicsQuality();
   const flags = useGameStore((s) => s.playerState.flags);
   const currentAct = useGameStore((s) => s.playerState.progression.currentAct);
@@ -91,7 +93,11 @@ export function TriggerZoneProps() {
     [sceneId, flags, currentAct],
   );
 
-  if (!allowsGlbAssetRendering(preset.environmentRenderMode) || zones.length === 0) {
+  if (
+    !sceneLoaded ||
+    !allowsGlbAssetRendering(preset.environmentRenderMode) ||
+    zones.length === 0
+  ) {
     return null;
   }
 

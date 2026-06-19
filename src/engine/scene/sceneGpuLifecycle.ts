@@ -119,7 +119,10 @@ export function preloadSceneGpuAssets(sceneId: SceneId): void {
   resetGltfPreloadQueue();
 
   for (const assetId of getSceneGltfAssetIds(sceneId)) {
-    preloadGltfAsset(assetId, GltfPreloadPriority.Critical);
+    const priority = assetId.startsWith('interior_')
+      ? GltfPreloadPriority.Deferred
+      : GltfPreloadPriority.Critical;
+    preloadGltfAsset(assetId, priority);
   }
   preloadTriggerZoneProps(sceneId, GltfPreloadPriority.High);
   preloadScenePropModels(sceneId);

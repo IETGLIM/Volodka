@@ -26,9 +26,28 @@ export function useGltfPropPlacement(
   const [placement, setPlacement] = useState<GltfPropPlacement>({ scale: manualScale, footY: 0 });
 
   useEffect(() => {
-    const bounds = measureGltfBounds(scene);
-    const fit = fitPropGltf(bounds, { manualScale, targetSizeM, fitAxis });
-    setPlacement(fit);
+    let cancelled = false;
+
+    const measure = () => {
+      if (cancelled) return;
+      const bounds = measureGltfBounds(scene);
+      const fit = fitPropGltf(bounds, { manualScale, targetSizeM, fitAxis });
+      setPlacement(fit);
+    };
+
+    if (typeof requestIdleCallback !== 'undefined') {
+      const handle = requestIdleCallback(measure, { timeout: 96 });
+      return () => {
+        cancelled = true;
+        cancelIdleCallback(handle);
+      };
+    }
+
+    const handle = setTimeout(measure, 0);
+    return () => {
+      cancelled = true;
+      clearTimeout(handle);
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps -- targetSizeM tuple elements tracked individually
   }, [scene, manualScale, fitAxis, targetSizeM?.[0], targetSizeM?.[1], targetSizeM?.[2]]);
 
