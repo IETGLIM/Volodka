@@ -86,12 +86,12 @@ export const MIXAMO_ANIMATION_CATALOG: readonly MixamoAnimationSpec[] = [
   {
     id: 'sleeping',
     title: 'Sleeping / drowsy idle',
-    mixamoSearchHint: 'Sleeping — e.g. "Laying" or "Sleeping Idle"',
+    mixamoSearchHint: 'Sleeping — KayKit Lie_Idle (imported via assets:kaykit-sleep-import)',
     sourceRelativePath: `${MIXAMO_SOURCE}/sleeping.glb`,
     publicUrl: `${ANIMATIONS}/sleeping.glb`,
     canonicalClipName: 'sleeping',
     npcState: 'idle',
-    clipAliases: ['Sleeping', 'Sleep', 'Laying', 'Laying Idle', 'sleep', 'Death01', 'Laying Down Idle'],
+    clipAliases: ['Sleeping', 'Sleep', 'Laying', 'Laying Idle', 'sleep', 'Lie_Idle', 'Laying Down Idle', 'Rig_Medium|Lie_Idle'],
   },
   {
     id: 'working',

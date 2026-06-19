@@ -17,7 +17,7 @@ const GENERIC_ALIASES: Record<NPCAnimationState, readonly string[]> = {
   idle: [
     'Idle_Neutral', 'idle', 'Idle', 'IDLE', '0', 'animation_0',
     'Armature|idle', 'Cesium_Man_idles', 'idle_01', 'sleeping', 'Sleeping',
-    'Death01', 'Laying Down Idle',
+    'Lie_Idle', 'Laying Down Idle', 'Rig_Medium|Lie_Idle',
   ],
   walk: [
     'walk', 'Walk', 'WALK', 'walking', 'Walking',

@@ -55,15 +55,16 @@ When Mixamo downloads are unavailable, use the CC0 extract pipeline:
 | idle / walking / talking | Quaternius modular `Idle`, `Walk`, `Wave` | — |
 | sitting | UAL `Sitting_Idle_Loop` (retargeted) | `Interact` crouch |
 | working | UAL `Fixing_Kneeling` (retargeted) | `Interact` |
-| sleeping | UAL `Death01` prone (interim) | `Death` collapse |
+| sleeping | KayKit `Lie_Idle` (retargeted) | `Death` collapse |
 
 ```bash
 node scripts/extract-quaternius-animations.mjs
 npm run assets:ual-import
+npm run assets:kaykit-sleep-import
 npm run assets:optimize-animations
 ```
 
-True sleep mocap (lying idle) still requires manual Mixamo or KayKit import — see `assets-source/animations/README.md`.
+KayKit source: `assets-source/animations/kaykit/Med_Simulation.glb` (CC0, OpenGameArt or itch.io).
 
 ## Folder layout
 

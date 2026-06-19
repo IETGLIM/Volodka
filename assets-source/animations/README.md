@@ -26,14 +26,15 @@ Comparison of free Mixamo alternatives evaluated for Volodka RPG NPC schedule cl
 |----------|------|------------------|-------|
 | **Sitting / rest / read** | `sitting.glb` | UAL `Sitting_Idle_Loop` | Real seated idle loop |
 | **Working** | `working.glb` | UAL `Fixing_Kneeling` | Kneeling repair / desk-adjacent |
-| **Sleeping** | `sleeping.glb` | UAL `Death01` | Still prone collapse — best in UAL Standard without Mixamo |
+| **Sleeping** | `sleeping.glb` | KayKit `Lie_Idle` | Peaceful lying idle (retargeted Rig_Medium) |
 | idle / walk / talk | unchanged | Modular `Idle`, `Walk`, `Wave` | Already adequate |
 
 ## Pipeline
 
 ```bash
 node scripts/extract-quaternius-animations.mjs   # idle, walk, talk from modular NPC GLB
-npm run assets:ual-import                        # sit, sleep, work from UAL (auto-download)
+npm run assets:ual-import                        # sit, work from UAL (auto-download)
+npm run assets:kaykit-sleep-import               # sleeping from KayKit Lie_Idle
 npm run assets:optimize-animations
 npm run assets:validate
 ```
@@ -42,7 +43,7 @@ Bone remapping: `scripts/lib/ualToQuaterniusBoneMap.mjs` (DEF-* → modular Pasc
 
 ## Remaining manual steps
 
-1. **True sleep mocap** — download KayKit `Laying Down Idle` or Mixamo `Sleeping Idle` from itch.io/Mixamo when accessible; import via `assets:mixamo-import --clip sleeping --file …`.
+1. **KayKit sleep** — `npm run assets:kaykit-sleep-import` (requires `assets-source/animations/kaykit/Med_Simulation.glb` from KayKit pack).
 2. **UAL v2.0 full library** — itch.io Standard has updated rig naming (matches modular natively); OpenGameArt zip uses DEF-* bones (retarget script handles this).
 3. **Optional idle/walk upgrade** — UAL `Idle_Loop`, `Walk_Loop`, `Idle_Talking_Loop` after verifying v2.0 GLB on disk.
 

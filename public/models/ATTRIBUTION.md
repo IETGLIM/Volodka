@@ -121,19 +121,22 @@ Campfire prop: [OpenGameArt Low Poly Camping Assets](https://opengameart.org/con
 | Walking | `animations/walking.glb` | Quaternius `Walk` | CC0 |
 | Talking | `animations/talking.glb` | Quaternius `Wave` | CC0 |
 | Sitting / rest | `animations/sitting.glb` | UAL `Sitting_Idle_Loop` (retargeted) | CC0 |
-| Sleeping | `animations/sleeping.glb` | UAL `Death01` prone (interim — no true sleep in UAL Standard) | CC0 |
+| Sleeping | `animations/sleeping.glb` | KayKit `Rig_Medium\|Lie_Idle` (retargeted) | CC0 |
 | Working | `animations/working.glb` | UAL `Fixing_Kneeling` (retargeted) | CC0 |
 
 Extract from Quaternius CC0 rig (no Adobe login):
 
 ```bash
 node scripts/extract-quaternius-animations.mjs   # idle, walk, talk
-npm run assets:ual-import                        # sit, sleep, work from UAL Standard
+npm run assets:ual-import                        # sit, work from UAL Standard
+npm run assets:kaykit-sleep-import               # sleeping from KayKit Lie_Idle
 npm run assets:optimize-animations
 npm run assets:validate
 ```
 
 UAL source: [OpenGameArt Universal Animation Library](https://opengameart.org/content/universal-animation-library) (CC0, Russia-accessible direct zip).
+
+KayKit sleep source: [KayKit Character Animations](https://kaylousberg.itch.io/kaykit-character-animations) / [OpenGameArt mirror](https://opengameart.org/content/kaykit-character-animations) (CC0) — `Lie_Idle` via `assets:kaykit-sleep-import`.
 
 Mixamo import (optional override — Adobe login):
 

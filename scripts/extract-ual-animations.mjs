@@ -43,8 +43,7 @@ const DEFAULT_UAL_GLB = path.join(
 const UAL_CLIP_MAP = {
   sitting: 'Sitting_Idle_Loop',
   working: 'Fixing_Kneeling',
-  /** No dedicated sleep mocap in UAL Standard — prone death is the closest lying pose */
-  sleeping: 'Death01',
+  /** sleeping → npm run assets:kaykit-sleep-import (KayKit Lie_Idle) */
 };
 
 function parseArgs(argv) {
@@ -141,7 +140,7 @@ UAL animation import — Volodka RPG (CC0, no Adobe login)
 Overrides sit/sleep/work clips only (idle/walk/talk stay on modular Quaternius extract):
   sitting  ← Sitting_Idle_Loop
   working  ← Fixing_Kneeling
-  sleeping ← Death01 (prone; true sleep mocap still needs Mixamo/KayKit manual import)
+  sleeping ← npm run assets:kaykit-sleep-import (KayKit Lie_Idle)
 
 Source: ${UAL_ZIP_URL}
 `);
