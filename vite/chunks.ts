@@ -137,6 +137,14 @@ const QUEST_ENGINE_MODULES = new Set([
   'QuestTracker',
 ]);
 
+/** Session-scoped GPU helpers — must not live in lazy UI panel chunks (TDZ with engine-combat). */
+const BOOT_SHARED_GPU_MODULES = new Set([
+  'moduleGeometryRegistry',
+  'moduleMaterialRegistry',
+  'disposeThreeResources',
+  'objectPool',
+]);
+
 const SATELLITE_STORY_FILES: Readonly<Record<string, string>> = {
   pierStory: 'data-story-pier',
   libraryStory: 'data-story-library',
@@ -275,6 +283,24 @@ function resolveVendorChunk(posix: string): string | undefined {
   return undefined;
 }
 
+function resolveBootSharedChunk(posix: string): string | undefined {
+  if (
+    posix.includes('/src/engine/performance/') ||
+    posix.includes('/src/engine/visualSettings')
+  ) {
+    return 'boot-shared';
+  }
+
+  if (posix.includes('/src/engine/three/')) {
+    const base = fileBase(posix);
+    if (BOOT_SHARED_GPU_MODULES.has(base)) {
+      return 'boot-shared';
+    }
+  }
+
+  return undefined;
+}
+
 /** Narrative engine modules — separate from narrative data for lazy loading. */
 function resolveNarrativeChunk(posix: string): string | undefined {
   const base = fileBase(posix);
@@ -300,15 +326,8 @@ export function resolveManualChunk(id: string): string | undefined {
 
   if (!posix.includes('/src/')) return undefined;
 
-  // Tiny boot-shared modules imported by main.tsx. Without an explicit chunk
-  // Rollup colocates them into heavy chunks (LoadingTimeline ended up inside
-  // game-canvas → the menu eagerly loaded the whole three.js stack).
-  if (
-    posix.includes('/src/engine/performance/') ||
-    posix.includes('/src/engine/visualSettings')
-  ) {
-    return 'boot-shared';
-  }
+  const bootShared = resolveBootSharedChunk(posix);
+  if (bootShared) return bootShared;
 
   if (
     posix.includes('/src/components/game/DevPanel') ||
@@ -329,6 +348,11 @@ export function resolveManualChunk(id: string): string | undefined {
 
   if (MINIGAME_MODULES.has(base) && posix.includes('/src/components/game/')) {
     return `minigame-${toKebab(base.replace(/Game$/, ''))}`;
+  }
+
+  // Avoid panel-* chunk for toasts — ErrorBoundary pulls WebGL cleanup; combat imports shared geometry.
+  if (base === 'NotificationToastsPanel' && posix.includes('/src/components/game/')) {
+    return 'game-ui-notification-toasts';
   }
 
   if (base.endsWith('Panel') && posix.includes('/src/components/game/')) {

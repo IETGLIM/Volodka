@@ -20,6 +20,17 @@ describe('resolveManualChunk', () => {
     expect(resolveManualChunk('G:/1O1O1/src/data/loreEntries.ts')).toBe('data-lore');
   });
 
+  it('routes shared GPU registries to boot-shared (breaks combat ↔ toast panel cycle)', () => {
+    expect(resolveManualChunk('G:/1O1O1/src/engine/three/moduleGeometryRegistry.ts')).toBe('boot-shared');
+    expect(resolveManualChunk('G:/1O1O1/src/engine/three/disposeThreeResources.ts')).toBe('boot-shared');
+  });
+
+  it('routes notification toasts HUD to game-ui-notification-toasts', () => {
+    expect(
+      resolveManualChunk('G:/1O1O1/src/components/game/notificationToasts/NotificationToastsPanel.tsx'),
+    ).toBe('game-ui-notification-toasts');
+  });
+
   it('routes chk narrative to pack-chk-narrative', () => {
     expect(resolveManualChunk('G:/1O1O1/src/data/chkTolpa/storyNodes.ts')).toBe('pack-chk-narrative');
   });
