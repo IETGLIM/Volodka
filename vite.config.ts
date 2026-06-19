@@ -81,6 +81,10 @@ export default defineConfig(({ mode }) => {
       },
     },
 
+    optimizeDeps: {
+      entries: ['index.html'],
+    },
+
     server: {
       port: 3000,
       host: true,

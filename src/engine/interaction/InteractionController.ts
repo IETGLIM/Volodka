@@ -36,6 +36,7 @@ import { isInteractionLocked } from '@/engine/interaction/interactionSession';
 import { devWarn } from '@/shared/utils/devLog';
 import { resolveZoneInteractionSplash } from '@/engine/interaction/resolveInteractionSplash';
 import { playInteractionSplash } from '@/engine/interaction/playInteractionSplash';
+import { shouldOpenLinkedStoryDirectly } from '@/engine/interaction/interactionZonePresentation';
 
 function runInteractionTask(label: string, task: () => Promise<void>): void {
   void task().catch((err) => {
@@ -218,9 +219,10 @@ export class InteractionController {
       }
 
       const hasLinkedContent = !!(zone.linkedDialogueNodeId || zone.linkedStoryNodeId || zone.linkedMinigame);
+      const openStoryDirectly = shouldOpenLinkedStoryDirectly(zone);
       const { ui } = this.deps;
 
-      if (zone.examineData) {
+      if (zone.examineData && !openStoryDirectly) {
         ui.setExamineData(zone.examineData);
         ui.setExamineOpen(true);
         ui.setExamineHasLinkedContent(hasLinkedContent);
