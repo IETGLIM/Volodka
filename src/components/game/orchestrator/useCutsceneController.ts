@@ -15,6 +15,12 @@ import {
   setCinematicHoldActive,
   setCinematicPresentationMode,
 } from '@/engine/camera/cinematicPresentation';
+import {
+  isEntryBeatInFlight,
+  markEntryBeatCutscenePlaying,
+  markEntryBeatHubPromoted,
+} from '@/engine/interaction/entryBeatState';
+import { SCENE_ENTRY_NODE_TO_HUB } from '@/shared/sceneExploreHubRegistry';
 
 /** Watches story node changes and drives cutscene overlays + camera events. */
 export function useCutsceneController() {
@@ -67,7 +73,10 @@ export function useCutsceneController() {
     // Wake-up owns its own camera + avatar — do not replace with story title cards.
     if (isIntroWakeupCutscene(store.activeCutsceneId)) return;
 
+    const beatNodeId = currentNodeId;
     const generation = cutsceneSessionRef.current.begin();
+
+    markEntryBeatCutscenePlaying(beatNodeId);
 
     closeNarrativeOverlay();
 
@@ -131,6 +140,10 @@ export function useCutsceneController() {
       if (currentStore.currentNodeId) {
         const nodeId = currentStore.currentNodeId;
         const kind = currentStore.narrativeKind ?? 'story';
+        const hubId = SCENE_ENTRY_NODE_TO_HUB[nodeId];
+        if (hubId && hubId !== nodeId) {
+          markEntryBeatHubPromoted();
+        }
         // Defer until cutscene store + overlay teardown completes (avoids race with VN).
         queueMicrotask(() => {
           if (!cutsceneSessionRef.current.isCurrent(generation)) return;
@@ -146,7 +159,15 @@ export function useCutsceneController() {
 
     return () => {
       unsubOverlayEnd?.();
-      // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
+      const hubId = SCENE_ENTRY_NODE_TO_HUB[beatNodeId];
+      const nextNodeId = useGameStore.getState().currentNodeId;
+      // Entry beat hub promotion (corridor_door → corridor_explore_mode) must not cancel in-flight cutscene.
+      if (hubId && nextNodeId === hubId && isEntryBeatInFlight(beatNodeId)) {
+        return;
+      }
+      if (isEntryBeatInFlight(beatNodeId) && nextNodeId === beatNodeId) {
+        return;
+      }
       cutsceneSessionRef.current.cancel();
     };
   }, [currentNodeId]);

@@ -46,6 +46,8 @@ jobs:
 
       - run: npm run build
 
+      - run: npm run budgets:check
+
       - run: npm run verify:deploy
 
   e2e:
@@ -67,4 +69,4 @@ jobs:
       # preview serves dist/ — check job builds on another runner, so build here too
       - run: npm run build
 
-      - run: npm run test:e2e
+      - run: npx playwright test

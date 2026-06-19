@@ -2,9 +2,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   openLinkedStory,
   peekPendingEntryBeatFromZoneInteraction,
-  resetPendingEntryBeatFromZoneInteraction,
   triggerSceneEntryStoryIfNeeded,
 } from './narrativeOpenHelpers';
+import { resetEntryBeatState } from './entryBeatState';
 
 const dispatchStateAction = vi.fn();
 const closeNarrativeOverlay = vi.fn();
@@ -81,7 +81,7 @@ describe('triggerSceneEntryStoryIfNeeded', () => {
     dispatchStateAction.mockClear();
     closeNarrativeOverlay.mockClear();
     requestSceneTransition.mockClear();
-    resetPendingEntryBeatFromZoneInteraction();
+    resetEntryBeatState();
     mockSnapshot = {
       activeCutsceneId: null,
       currentNodeId: 'explore_mode',

@@ -467,6 +467,10 @@ export async function assertExplorationMovement(page: Page) {
     { timeout: 30_000 },
   );
 
+  const movementMode = await page.evaluate(() => window.__volodka_e2e?.getMovementMode?.());
+  expect(movementMode).not.toBe('kcc_degraded');
+  expect(movementMode).not.toBe('simple');
+
   await expect
     .poll(async () => {
       const before = await e2eBridge.getPlayerPosition(page);

@@ -1,8 +1,5 @@
 import type { GamePhase } from '@/shared/gamePhase';
-import { isNarrativeMovementLocked } from '@/shared/exploreHubNodes';
-import { isEncounterPresentationActive } from '@/engine/combat/encounterPresentation';
-import { isCinematicHoldActive } from '@/engine/camera/cinematicPresentation';
-import { isGameplayOverlayLocomotionLocked } from '@/engine/player/playerLocomotionGate';
+import { resolvePlayerMovementLocked } from '@/engine/player/playerLocomotionGate';
 import type { GameStoreSnapshot } from '@/shared/gameBridge/gameActionBridge';
 
 /** Minimal game state read once per frame for tick callbacks. */
@@ -26,14 +23,7 @@ export const DEFAULT_FRAME_GAME_SNAPSHOT: FrameGameSnapshot = {
 export function createFrameGameSnapshot(store: GameStoreSnapshot): FrameGameSnapshot {
   const gamePhase = store.mode;
   const { showStoryOverlay, currentNodeId, exploration } = store;
-  const movementLocked =
-    isNarrativeMovementLocked(showStoryOverlay, currentNodeId ?? '') ||
-    gamePhase === 'cutscene' ||
-    gamePhase === 'intro' ||
-    gamePhase === 'combat' ||
-    isEncounterPresentationActive() ||
-    isCinematicHoldActive() ||
-    isGameplayOverlayLocomotionLocked();
+  const movementLocked = resolvePlayerMovementLocked(store);
 
   return {
     gamePhase,

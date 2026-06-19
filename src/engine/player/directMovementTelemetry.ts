@@ -5,6 +5,10 @@ import {
   recordKccDegradedEntry,
   recordKccDegradedFrame,
 } from '@/engine/player/kccDegradedMetrics';
+import {
+  getPlayerMovementMode,
+  setPlayerMovementMode,
+} from '@/engine/player/playerMovementMode';
 export type DirectMovementTelemetryRefs = {
   controlsDegradedRef: React.MutableRefObject<boolean>;
   degradedLoggedRef: React.MutableRefObject<boolean>;
@@ -33,6 +37,7 @@ export function notifyControlsDegraded(
   meta: { sceneId: SceneId; failFrames?: number; stuckFrames?: number },
 ): void {
   refs.controlsDegradedRef.current = true;
+  setPlayerMovementMode('kcc_degraded');
   recordKccDegradedEntry(reason, meta.sceneId);
   if (refs.degradedLoggedRef.current && refs.degradedReasonRef.current === reason) return;
   refs.degradedLoggedRef.current = true;
@@ -73,6 +78,9 @@ export function restoreKccMovementMode(
   refs.degradedLoggedRef.current = false;
   refs.degradedReasonRef.current = null;
   refs.recreateAttemptsRef.current = 0;
+  if (getPlayerMovementMode() === 'kcc_degraded') {
+    setPlayerMovementMode('kcc');
+  }
   if (wasDegraded) {
     eventBus.emit('player:physics_degraded', {
       degraded: false,

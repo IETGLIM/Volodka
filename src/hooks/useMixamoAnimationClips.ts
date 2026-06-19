@@ -8,6 +8,10 @@ import { MIXAMO_ANIMATION_CATALOG } from '@/config/mixamoAnimationCatalog';
 import { MIXAMO_CLIP_IDS_ON_DISK } from '@/config/mixamoClipsOnDisk';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
 import { isUiOverlayBlockingDeferredAssets } from '@/engine/assets/gltfPreloadOverlayGate';
+import {
+  GltfPreloadPriority,
+  scheduleGltfPreload,
+} from '@/engine/assets/gltfPreloadScheduler';
 
 export interface MixamoClipBinding {
   clipId: MixamoClipId;
@@ -67,30 +71,34 @@ export function useMixamoAnimationClips(
       }
 
       const binding = bindings[index];
-      const cancel = scheduleIdleSlice(() => {
-        void (async () => {
-          try {
-            const gltf = await loader.loadAsync(binding.url);
-            if (cancelled) return;
-            const clip = gltf.animations[0];
-            if (!clip) {
-              loadBindingAt(index + 1);
-              return;
+      scheduleGltfPreload(
+        binding.url,
+        () => {
+          void (async () => {
+            try {
+              const gltf = await loader.loadAsync(binding.url);
+              if (cancelled) return;
+              const clip = gltf.animations[0];
+              if (!clip) {
+                loadBindingAt(index + 1);
+                return;
+              }
+              const renamed = clip.clone();
+              renamed.name = binding.canonicalName;
+              const action = mixer.clipAction(renamed, root);
+              action.enabled = true;
+              setMixamoActions((prev) => ({
+                ...prev,
+                [binding.canonicalName]: action,
+              }));
+            } catch {
+              // Clip missing on disk despite on-disk registry — skip until re-import.
             }
-            const renamed = clip.clone();
-            renamed.name = binding.canonicalName;
-            const action = mixer.clipAction(renamed, root);
-            setMixamoActions((prev) => ({
-              ...prev,
-              [binding.canonicalName]: action,
-            }));
-          } catch {
-            // Clip missing on disk despite on-disk registry — skip until re-import.
-          }
-          loadBindingAt(index + 1);
-        })();
-      });
-      cancelSchedules.push(cancel);
+            loadBindingAt(index + 1);
+          })();
+        },
+        GltfPreloadPriority.Deferred,
+      );
     };
 
     loadBindingAt(0);

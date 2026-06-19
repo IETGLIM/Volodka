@@ -17,6 +17,7 @@ import { completeTutorial } from '@/store/actions/tutorialActions';
 import { getGameStore } from '@/store/gameStore';
 import type { SceneId } from '@/shared/types/game';
 import { getCombatState, getRngState } from '@/engine/CombatSystem';
+import { getPlayerMovementMode } from '@/engine/player/playerMovementMode';
 
 export interface VolodkaE2EPosition {
   x: number;
@@ -57,6 +58,8 @@ export interface VolodkaE2EBridge {
   isStoryOverlayReady: (expectedNodeId?: string) => boolean;
   /** Force-end combat overlay for e2e stability (random encounters). */
   endCombat: () => void;
+  /** KCC health: kcc | kcc_degraded | simple (Rapier fallback). */
+  getMovementMode: () => import('@/engine/player/playerMovementMode').PlayerMovementMode;
   setPlayerRngSeed: (seed: number) => void;
   /** Read active combat RNG state for replay/debug. */
   getCombatRngState: () => ReturnType<typeof getRngState> | null;
@@ -512,6 +515,9 @@ export function registerVolodkaE2EBridge(): void {
       dispatchGameAction({ type: 'story/setCombatActive', active: false });
       dispatchGameAction({ type: 'phase/clearGameplayFlags' });
       eventBus.emit('combat:end', {});
+    },
+    getMovementMode() {
+      return getPlayerMovementMode();
     },
     setPlayerRngSeed(seed) {
       dispatchGameAction({ type: 'player/setRngSeed', seed });

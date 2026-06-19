@@ -6,6 +6,7 @@ import {
 } from '@/engine/assets/gltfPreloadOverlayGate';
 import {
   resetPlayerLocomotionGateForTests,
+  setMinigameLocomotionGate,
   setPanelStackLocomotionGate,
 } from '@/engine/player/playerLocomotionGate';
 import type { GameStoreSnapshot } from '@/shared/gameBridge/gameActionBridge';
@@ -86,6 +87,28 @@ describe('createFrameGameSnapshot movementLocked', () => {
       ...baseSnapshot(),
       mode: 'cutscene',
       activeCutsceneId: 'act1_prologue',
+    });
+    expect(snapshot.movementLocked).toBe(true);
+  });
+
+  it('locks locomotion during minigame gate', () => {
+    setMinigameLocomotionGate(true);
+    const snapshot = createFrameGameSnapshot(baseSnapshot());
+    expect(snapshot.movementLocked).toBe(true);
+  });
+
+  it('locks locomotion when story overlay is open', () => {
+    const snapshot = createFrameGameSnapshot({
+      ...baseSnapshot(),
+      showStoryOverlay: true,
+    });
+    expect(snapshot.movementLocked).toBe(true);
+  });
+
+  it('locks locomotion during combat phase', () => {
+    const snapshot = createFrameGameSnapshot({
+      ...baseSnapshot(),
+      mode: 'combat',
     });
     expect(snapshot.movementLocked).toBe(true);
   });

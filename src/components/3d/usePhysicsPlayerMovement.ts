@@ -22,6 +22,7 @@ import {
   restoreKccMovementMode,
   type DirectMovementTelemetryRefs,
 } from '@/engine/player/directMovementTelemetry';
+import { setPlayerMovementMode } from '@/engine/player/playerMovementMode';
 import {
   syncMovementSceneContext,
 } from '@/engine/player/playerMovementSceneSync';
@@ -123,6 +124,7 @@ export function usePhysicsPlayerMovement({
 
   useLayoutEffect(() => {
     mountedRef.current = true;
+    setPlayerMovementMode('kcc');
     return () => {
       mountedRef.current = false;
       clearPlayerRigidBody();

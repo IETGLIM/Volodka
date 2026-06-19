@@ -25,7 +25,7 @@ export function PhysicsDegradedDevBadge() {
     return () => window.clearInterval(id);
   }, [degraded]);
 
-  if (!import.meta.env.DEV || !degraded) return null;
+  if (!degraded) return null;
 
   return (
     <div

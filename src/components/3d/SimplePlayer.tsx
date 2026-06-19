@@ -26,6 +26,7 @@ import {
   getTouchLocomotionFactor,
 } from '@/config/scenes';
 import { sampleHeldVirtualControls, type VirtualHoldTimes } from '@/engine/VirtualInputHold';
+import { setPlayerMovementMode, getPlayerMovementMode } from '@/engine/player/playerMovementMode';
 import {
   getAccessibilityLocomotionScale,
   resolveMovementIntent,
@@ -83,6 +84,15 @@ export function SimplePlayer({
   const footstepTimerRef = useRef(0);
   const virtualHoldTimesRef = useRef<VirtualHoldTimes>({});
   const prevSceneIdRef = useRef(sceneId);
+
+  useEffect(() => {
+    setPlayerMovementMode('simple');
+    return () => {
+      if (getPlayerMovementMode() === 'simple') {
+        setPlayerMovementMode('kcc');
+      }
+    };
+  }, []);
 
   const locomotionScale = getExplorationLocomotionScale(sceneId);
   const movementTuning = getExplorationMovementTuning(sceneId);

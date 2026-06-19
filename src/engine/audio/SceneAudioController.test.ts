@@ -131,4 +131,13 @@ describe('SceneAudioController', () => {
     expect(enableDialogueMuffle).toHaveBeenCalledWith(false);
     expect(setDialogueDucked).toHaveBeenCalledWith(false, 'cinematic');
   });
+
+  it('onModeChange resumes extension scene music after cutscene', () => {
+    controller.onModeChange('cutscene', 'pier_evening', 20, false, undefined, null);
+    vi.clearAllMocks();
+
+    controller.onModeChange('exploration', 'pier_evening', 20, false, undefined, null);
+
+    expect(resumeSceneMusic).toHaveBeenCalledWith('pier_evening');
+  });
 });

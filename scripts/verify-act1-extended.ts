@@ -73,7 +73,7 @@ for (const lid of newDialogueLinks) {
 }
 
 const npcInAct1Zones = new Set(act1Zones.map((z) => z.linkedNpcId).filter(Boolean));
-const expectedAct1Npcs = ['vera', 'zarema', 'albert', 'maria', 'cafe_barista', 'office_alexander', 'office_colleague'];
+const expectedAct1Npcs = ['solnysh', 'zarema', 'albert', 'maria', 'cafe_barista', 'office_alexander', 'office_colleague'];
 for (const npcId of expectedAct1Npcs) {
   if (!npcIds.has(npcId)) errors.push(`missing npc definition ${npcId}`);
   if (!npcInAct1Zones.has(npcId)) warnings.push(`npc ${npcId} has no act1 trigger zone (schedule-only)`);
