@@ -93,6 +93,8 @@ export const NPC_QUATERNIUS_MAP = [
   { source: 'female_06.glb', npcId: 'kira', publicPaths: ['models/npcs/kira.glb'] },
   { source: 'female_07.glb', npcId: 'tamara', publicPaths: ['models/npcs/tamara.glb'] },
   { source: 'male_07.glb', npcId: 'office_colleague', publicPaths: ['models/npcs/office_colleague.glb'] },
+  { source: 'male_05.glb', npcId: 'grisha', publicPaths: ['models/npcs/grisha.glb'] },
+  { source: 'male_07.glb', npcId: 'viktor', publicPaths: ['models/npcs/viktor.glb'] },
 ];
 
 function parseArgs(argv) {

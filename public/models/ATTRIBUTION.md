@@ -43,11 +43,11 @@ Mapped NPCs (when staged): Володя, Альберт, Зарема, Дмит�
 | Коллега | `npcs/office_colleague.glb` | Khronos RiggedSimple | CC0 |
 | Мария | `npcs/maria.glb` | three.js RobotExpressive | CC0 |
 | Дмитрий | `npcs/office_dmitry.glb` | three.js Xbot | CC0 |
-| Виктор | `npcs/viktor.glb` | three.js Soldier | CC0 |
+| Виктор | `npcs/viktor.glb` | Quaternius Punk (male_07) | CC0 |
 | Кира | `npcs/kira.glb` | Khronos RiggedFigure | CC0 |
 | Борис | `npcs/boris.glb` | Khronos RiggedSimple | CC0 |
 | Тамара | `npcs/tamara.glb` | Khronos CesiumMan | CC0 |
-| Гриша | `npcs/grisha.glb` | Khronos Fox | CC0 |
+| Гриша | `npcs/grisha.glb` | Quaternius Farmer (male_05) | CC0 |
 
 - **Khronos source:** https://github.com/KhronosGroup/glTF-Sample-Models (CC0)
 - **three.js samples:** https://github.com/mrdoob/three.js/tree/dev/examples/models/gltf (CC0)

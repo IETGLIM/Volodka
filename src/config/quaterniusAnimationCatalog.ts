@@ -8,10 +8,10 @@ import type { NPCAnimationState } from '@/engine/interaction/interactionMachine'
 
 /** Preferred Quaternius clip names per NPC animation state (PascalCase in GLB). */
 export const QUATERNIUS_CLIP_ALIASES: Record<NPCAnimationState, readonly string[]> = {
-  idle: ['Idle', 'Idle_Neutral', 'Idle_Sword', 'Idle_Gun'],
+  idle: ['Idle', 'Idle_Neutral', 'Death', 'Idle_Sword', 'Idle_Gun'],
   walk: ['Walk', 'Run', 'Run_Forward'],
   talk: ['Wave', 'Interact', 'Idle_Gun_Pointing'],
-  sit: ['Idle_Neutral', 'Interact'],
+  sit: ['Interact', 'Idle_Neutral', 'sitting', 'Sitting', 'working', 'Working'],
   listen: ['Idle_Neutral', 'Idle'],
   gesture: ['Wave', 'Interact', 'Kick_Left', 'Kick_Right'],
 };

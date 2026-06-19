@@ -24,10 +24,6 @@ const NPCS = '/models/npcs';
 /** Explicit marker — no shipped GLB; renderer uses ProceduralNPCModel. */
 export const NPC_PROCEDURAL_MODEL_PLACEHOLDER = 'procedural';
 
-const KHRONOS = 'Khronos glTF Sample Models';
-const KHRONOS_URL = 'https://github.com/KhronosGroup/glTF-Sample-Models';
-const THREE_SAMPLES = 'three.js examples (CC0)';
-const THREE_SAMPLES_URL = 'https://github.com/mrdoob/three.js/tree/dev/examples/models/gltf';
 const QUATERNIUS = 'Quaternius Ultimate Modular Character Packs';
 const QUATERNIUS_URL = 'https://quaternius.com/packs/ultimatemodularcharacters.html';
 const RPM_SOURCE = 'Ready Player Me avatar export';
@@ -113,8 +109,8 @@ const CC0_NPC_MODEL_ASSETS: Partial<Record<string, NpcModelAssetMeta>> = {
   viktor: {
     url: `${NPCS}/viktor.glb`,
     license: 'CC0',
-    source: `${THREE_SAMPLES} — Soldier`,
-    sourceUrl: THREE_SAMPLES_URL,
+    source: QUATERNIUS,
+    sourceUrl: QUATERNIUS_URL,
   },
   kira: {
     url: `${NPCS}/kira.glb`,
@@ -137,8 +133,8 @@ const CC0_NPC_MODEL_ASSETS: Partial<Record<string, NpcModelAssetMeta>> = {
   grisha: {
     url: `${NPCS}/grisha.glb`,
     license: 'CC0',
-    source: `${KHRONOS} — Fox`,
-    sourceUrl: KHRONOS_URL,
+    source: QUATERNIUS,
+    sourceUrl: QUATERNIUS_URL,
   },
   maxim: {
     url: `${NPCS}/maxim.glb`,

@@ -2,6 +2,7 @@
 
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 import type { NPCAnimationState } from '@/engine/interaction/interactionMachine';
+import type { NpcAnimationClipOverrides } from '@/engine/npc/npcClipResolution';
 
 /** GLB clip state while the interaction machine owns the NPC (dialogue, align, …). */
 export function resolveInteractionNpcAnimationState(
@@ -44,6 +45,23 @@ export function resolveNpcAnimationFromActivity(activity: string): NPCAnimationS
     case 'idle':
     default:
       return 'idle';
+  }
+}
+
+/** Prefer shipped Mixamo (or Quaternius interim) clips for schedule activities. */
+export function resolveNpcActivityClipOverrides(
+  activity: string,
+): NpcAnimationClipOverrides | undefined {
+  switch (activity) {
+    case 'work':
+      return { sit: 'working' };
+    case 'read':
+    case 'rest':
+      return { sit: 'sitting' };
+    case 'sleep':
+      return { idle: 'sleeping' };
+    default:
+      return undefined;
   }
 }
 

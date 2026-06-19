@@ -46,6 +46,18 @@ If you only have FBX (e.g. from older Mixamo UI):
 2. Or use `fbx2gltf` / online converter.
 3. Import the resulting `.glb` with `assets:mixamo-import`.
 
+## Quaternius interim clips (no Mixamo account)
+
+When Mixamo downloads are unavailable, `npm run assets:extract-animations` maps Quaternius embedded clips:
+
+| Catalog id | Quaternius source | Rationale |
+|------------|-------------------|-----------|
+| sitting | `Interact` | Crouch/reach — no seated mocap in CC0 pack |
+| working | `Interact` | Same interact pose for desk/work schedule |
+| sleeping | `Death` | Prone collapse — only lying-like clip in pack |
+
+True sit/sleep mocap requires Mixamo import (`assets:mixamo-import`). Extracted clips are mesh-stripped via `assets:optimize-animations` (~50 KB each vs ~1.3 MB full rig).
+
 ## Folder layout
 
 ```

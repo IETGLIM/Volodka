@@ -204,12 +204,10 @@ function stageProductionLayout() {
   // P0/P1 NPCs — one CC0 silhouette per pair max until AI3DGen Pro drops land
   stageCopy('models/khronos/RiggedFigure.glb', ['models/npcs/albert.glb', 'models/npcs/kira.glb']);
   stageCopy('models/khronos/CesiumMan.glb', ['models/npcs/zarema.glb', 'models/npcs/tamara.glb']);
-  stageCopy('models/khronos/Soldier.glb', ['models/npcs/cafe_barista.glb', 'models/npcs/viktor.glb']);
+  stageCopy('models/khronos/Soldier.glb', ['models/npcs/cafe_barista.glb']);
   stageCopy('models/khronos/Xbot.glb', ['models/npcs/office_alexander.glb', 'models/npcs/office_dmitry.glb']);
   stageCopy('models/khronos/RiggedSimple.glb', ['models/npcs/office_colleague.glb', 'models/npcs/boris.glb']);
   stageCopy('models/khronos/RobotExpressive.glb', ['models/npcs/maria.glb']);
-  stageCopy('models/khronos/Fox.glb', ['models/npcs/grisha.glb']);
-
   // Craft / quest props — distinct CC0 meshes (no duplicate Avocado)
   stageCopy('models/khronos/Lantern.glb', ['models/props/digital_amulet.glb']);
   stageCopy('models/khronos/DamagedHelmet.glb', ['models/props/poetic_compiler.glb']);

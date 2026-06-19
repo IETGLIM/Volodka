@@ -22,10 +22,17 @@ describe('npcClipResolution', () => {
     expect(resolveNpcClipAction('walk', actions)?.getClip().name).toBe('Walk');
   });
 
-  it('maps talk and sit to Quaternius Wave and Idle_Neutral', () => {
-    const actions = mockActions(['Idle', 'Walk', 'Wave', 'Idle_Neutral']);
+  it('maps talk and sit to Quaternius Wave and Interact', () => {
+    const actions = mockActions(['Idle', 'Walk', 'Wave', 'Interact', 'Idle_Neutral']);
     expect(resolveNpcClipAction('talk', actions)?.getClip().name).toBe('Wave');
-    expect(resolveNpcClipAction('sit', actions)?.getClip().name).toBe('Idle_Neutral');
+    expect(resolveNpcClipAction('sit', actions)?.getClip().name).toBe('Interact');
+  });
+
+  it('honors activity clip overrides for shipped Mixamo canonical names', () => {
+    const actions = mockActions(['idle', 'sitting', 'working', 'sleeping']);
+    expect(resolveNpcClipAction('sit', actions, { sit: 'working' })?.getClip().name).toBe('working');
+    expect(resolveNpcClipAction('sit', actions, { sit: 'sitting' })?.getClip().name).toBe('sitting');
+    expect(resolveNpcClipAction('idle', actions, { idle: 'sleeping' })?.getClip().name).toBe('sleeping');
   });
 
   it('matches definition overrides case-insensitively', () => {

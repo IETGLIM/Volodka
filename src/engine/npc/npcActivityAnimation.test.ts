@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 import {
+  resolveNpcActivityClipOverrides,
   resolveNpcAnimationFromActivity,
   resolveInteractionNpcAnimationState,
   shouldDeferToInteractionAnimation,
@@ -15,6 +16,14 @@ describe('npcActivityAnimation', () => {
     expect(resolveNpcAnimationFromActivity('read')).toBe('sit');
     expect(resolveNpcAnimationFromActivity('rest')).toBe('sit');
     expect(resolveNpcAnimationFromActivity('sleep')).toBe('idle');
+  });
+
+  it('maps schedule activities to Mixamo clip overrides', () => {
+    expect(resolveNpcActivityClipOverrides('work')).toEqual({ sit: 'working' });
+    expect(resolveNpcActivityClipOverrides('rest')).toEqual({ sit: 'sitting' });
+    expect(resolveNpcActivityClipOverrides('read')).toEqual({ sit: 'sitting' });
+    expect(resolveNpcActivityClipOverrides('sleep')).toEqual({ idle: 'sleeping' });
+    expect(resolveNpcActivityClipOverrides('idle')).toBeUndefined();
   });
 
   it('maps interaction states to talk/listen/idle GLB clips', () => {

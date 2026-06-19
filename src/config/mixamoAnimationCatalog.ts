@@ -78,7 +78,7 @@ export const MIXAMO_ANIMATION_CATALOG: readonly MixamoAnimationSpec[] = [
     publicUrl: `${ANIMATIONS}/sitting.glb`,
     canonicalClipName: 'sitting',
     npcState: 'sit',
-    clipAliases: ['Sitting', 'Sit', 'Sitting Idle', 'Sitting Talking', 'Idle_Neutral'],
+    clipAliases: ['Sitting', 'Sit', 'Sitting Idle', 'Sitting Talking', 'Interact'],
   },
   {
     id: 'sleeping',
