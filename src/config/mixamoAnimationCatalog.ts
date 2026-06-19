@@ -11,7 +11,13 @@
 
 import type { NPCAnimationState } from '@/engine/interaction/interactionMachine';
 
-export type MixamoClipId = 'idle' | 'walking' | 'talking' | 'sitting';
+export type MixamoClipId =
+  | 'idle'
+  | 'walking'
+  | 'talking'
+  | 'sitting'
+  | 'sleeping'
+  | 'working';
 
 export interface MixamoAnimationSpec {
   id: MixamoClipId;
@@ -66,13 +72,33 @@ export const MIXAMO_ANIMATION_CATALOG: readonly MixamoAnimationSpec[] = [
   },
   {
     id: 'sitting',
-    title: 'Sitting',
+    title: 'Sitting / resting',
     mixamoSearchHint: 'Sitting — e.g. "Sitting" or "Sitting Talking"',
     sourceRelativePath: `${MIXAMO_SOURCE}/sitting.glb`,
     publicUrl: `${ANIMATIONS}/sitting.glb`,
     canonicalClipName: 'sitting',
     npcState: 'sit',
-    clipAliases: ['Sitting', 'Sit', 'Sitting Idle', 'Sitting Talking'],
+    clipAliases: ['Sitting', 'Sit', 'Sitting Idle', 'Sitting Talking', 'Idle_Neutral'],
+  },
+  {
+    id: 'sleeping',
+    title: 'Sleeping / drowsy idle',
+    mixamoSearchHint: 'Sleeping — e.g. "Laying" or "Sleeping Idle"',
+    sourceRelativePath: `${MIXAMO_SOURCE}/sleeping.glb`,
+    publicUrl: `${ANIMATIONS}/sleeping.glb`,
+    canonicalClipName: 'sleeping',
+    npcState: 'idle',
+    clipAliases: ['Sleeping', 'Sleep', 'Laying', 'Laying Idle', 'sleep'],
+  },
+  {
+    id: 'working',
+    title: 'Working / interacting',
+    mixamoSearchHint: 'Working — e.g. "Typing" or "Standing Thumbs Up"',
+    sourceRelativePath: `${MIXAMO_SOURCE}/working.glb`,
+    publicUrl: `${ANIMATIONS}/working.glb`,
+    canonicalClipName: 'working',
+    npcState: 'sit',
+    clipAliases: ['Working', 'Work', 'Typing', 'Interact', 'work'],
   },
 ] as const;
 

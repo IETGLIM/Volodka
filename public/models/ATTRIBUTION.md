@@ -113,26 +113,34 @@ Rendered via `SceneInteriorAssets` (`sceneInteriorAssets.ts`). Replace GLBs manu
 
 Campfire prop: [OpenGameArt Low Poly Camping Assets](https://opengameart.org/content/low-poly-camping-assets) (CC0) by Saraskau.
 
-## Mixamo animations (`models/animations/`)
+## Staged humanoid animations (`models/animations/`)
 
 | Clip | File | Source | License |
 |------|------|--------|---------|
-| Idle (standing) | `animations/idle.glb` | [Mixamo](https://www.mixamo.com) | Free with Adobe account — commercial OK per Mixamo ToS |
-| Walking | `animations/walking.glb` | Mixamo | same |
-| Talking | `animations/talking.glb` | Mixamo | same |
-| Sitting | `animations/sitting.glb` | Mixamo | same |
+| Idle (standing) | `animations/idle.glb` | Quaternius `Idle` (or [Mixamo](https://www.mixamo.com)) | CC0 / Mixamo ToS |
+| Walking | `animations/walking.glb` | Quaternius `Walk` | CC0 |
+| Talking | `animations/talking.glb` | Quaternius `Wave` | CC0 |
+| Sitting / rest | `animations/sitting.glb` | Quaternius `Idle_Neutral` | CC0 |
+| Sleeping | `animations/sleeping.glb` | Quaternius `Idle` | CC0 |
+| Working | `animations/working.glb` | Quaternius `Interact` | CC0 |
 
-Import (manual download — Adobe login required):
+Extract from Quaternius CC0 rig (no Adobe login):
+
+```bash
+node scripts/extract-quaternius-animations.mjs
+npm run assets:validate
+```
+
+Mixamo import (optional override — Adobe login):
 
 ```bash
 npm run assets:mixamo-import -- --list
 npm run assets:mixamo-import -- --clip idle --file <path.glb>
-npm run assets:validate
 ```
 
 Guide: `assets-source/mixamo/README.md` · Catalog: `src/config/mixamoAnimationCatalog.ts`
 
-Clips target Mixamo humanoid rigs; retarget or re-export per character when replacing interim Khronos NPC GLBs.
+Clips target Quaternius / Mixamo humanoid rigs; Khronos interim NPC GLBs were replaced via `assets:quaternius-import`.
 
 ## Khronos reference library (`models/khronos/`)
 

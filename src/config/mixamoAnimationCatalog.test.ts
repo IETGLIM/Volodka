@@ -8,9 +8,16 @@ import {
 import { MIXAMO_CLIP_IDS_ON_DISK } from './mixamoClipsOnDisk';
 
 describe('mixamoAnimationCatalog', () => {
-  it('lists four core locomotion/social clips', () => {
-    expect(listMixamoClipIds()).toEqual(['idle', 'walking', 'talking', 'sitting']);
-    expect(MIXAMO_ANIMATION_CATALOG).toHaveLength(4);
+  it('lists six core locomotion/social/activity clips', () => {
+    expect(listMixamoClipIds()).toEqual([
+      'idle',
+      'walking',
+      'talking',
+      'sitting',
+      'sleeping',
+      'working',
+    ]);
+    expect(MIXAMO_ANIMATION_CATALOG).toHaveLength(6);
   });
 
   it('resolves specs by clip id', () => {
@@ -24,10 +31,12 @@ describe('mixamoAnimationCatalog', () => {
     const byState = getMixamoClipAliasesByNpcState();
     expect(byState.walk).toContain('walking');
     expect(byState.sit).toContain('sitting');
+    expect(byState.sit).toContain('working');
     expect(byState.talk).toContain('talking');
+    expect(byState.idle).toContain('sleeping');
   });
 
-  it('starts with no on-disk clips until import', () => {
-    expect(MIXAMO_CLIP_IDS_ON_DISK).toEqual([]);
+  it('tracks on-disk clip ids after Quaternius extraction', () => {
+    expect(MIXAMO_CLIP_IDS_ON_DISK.length).toBeGreaterThan(0);
   });
 });

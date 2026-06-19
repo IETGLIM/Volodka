@@ -2,6 +2,7 @@
 /* Тайное Общество Любителей Портвейна Алкоголя (между собой — Чёрная Комната) */
 
 import { NPC_PROCEDURAL_MODEL_PLACEHOLDER } from '@/config/npcModelRegistry';
+import { DEFAULT_NPC_ANIMATION_CLIPS } from '@/config/npcAnimationDefaults';
 import type { NPCDefinition } from '@/shared/types/game';
 
 export const CHK_NPC_QUEST_LINKS: Record<string, string[]> = {
@@ -13,7 +14,7 @@ export const CHK_NPC_QUEST_LINKS: Record<string, string[]> = {
   chk_ritka: ['pier_quiet_song'],
 };
 
-const BASE_ANIM = { idle: 'idle', walk: 'walk', talk: 'talk' } as const;
+const BASE_ANIM = DEFAULT_NPC_ANIMATION_CLIPS;
 
 export const CHK_NPCS: NPCDefinition[] = [
   {

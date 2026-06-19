@@ -23,6 +23,7 @@ export interface NPCAnimationClips {
   readonly idle?: string;
   readonly walk?: string;
   readonly talk?: string;
+  readonly sit?: string;
   readonly play_guitar?: string;
   readonly pour_drink?: string;
 }

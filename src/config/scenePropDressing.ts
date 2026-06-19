@@ -41,10 +41,13 @@ export const SCENE_PROP_DRESSING: Partial<Record<SceneId, readonly ScenePropPlac
     { propModelId: 'kenney_terminal', position: [-1.2, 0.78, -1.2], offset: [0, -0.28, 0] },
     { propModelId: 'kenney_bookshelf', position: [3.5, 0, -2.0] },
     { propModelId: 'ai3dgen_server_fragment', position: [-4.0, 0.15, -4.5] },
+    { propModelId: 'kenney_city_chair', position: [-2.0, 0, -0.5], rotationY: Math.PI },
   ],
   library_day: [
     { propModelId: 'kenney_bookshelf', position: [-3.0, 0, -1.0] },
     { propModelId: 'kenney_bookshelf', position: [3.0, 0, -1.0], rotationY: Math.PI },
+    { propModelId: 'kenney_city_chair', position: [0.5, 0, 1.5], rotationY: Math.PI },
+    { propModelId: 'kenney_desk', position: [-1.0, 0, 2.0], rotationY: -Math.PI / 2 },
   ],
   cafe_evening: [
     { propModelId: 'kenney_desk', position: [-3.5, 0, -2.0], rotationY: Math.PI / 2 },
@@ -78,9 +81,11 @@ export const SCENE_PROP_DRESSING: Partial<Record<SceneId, readonly ScenePropPlac
   ],
   abandoned_factory: [
     { propModelId: 'ai3dgen_server_fragment', position: [-6.0, 0.25, -5.0], rotationY: 0.4 },
+    { propModelId: 'kenney_city_bench', position: [2.0, 0, -3.5], rotationY: Math.PI / 3 },
   ],
   factory_basement: [
     { propModelId: 'ai3dgen_server_fragment', position: [-3.6, 0.55, -1.0], rotationY: -Math.PI / 2 },
+    { propModelId: 'kenney_terminal', position: [1.5, 0.78, -2.0], offset: [0, -0.28, 0] },
   ],
 };
 

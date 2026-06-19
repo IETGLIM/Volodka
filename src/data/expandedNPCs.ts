@@ -5,6 +5,7 @@
 
 import type { NPCDefinition } from '@/shared/types/game'
 import { NPC_PROCEDURAL_MODEL_PLACEHOLDER } from '@/config/npcModelRegistry'
+import { DEFAULT_NPC_ANIMATION_CLIPS } from '@/config/npcAnimationDefaults'
 
 /* ── NPC-to-quest links (for quest assignment logic) ── */
 export const EXPANDED_NPC_QUEST_LINKS: Record<string, string[]> = {
@@ -96,7 +97,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
     name: 'Солныш (Алина)',
     modelPath: '/models/npcs/solnysh.glb',
     scale: 0.92,
-    animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
+    animations: DEFAULT_NPC_ANIMATION_CLIPS,
     defaultPosition: [0, 0, 1.5],
     patrolRadius: 1.2,
     patrolWaypoints: [
@@ -130,7 +131,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
     name: 'Лёня (Леонид)',
     modelPath: NPC_PROCEDURAL_MODEL_PLACEHOLDER,
     scale: 1.0,
-    animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
+    animations: DEFAULT_NPC_ANIMATION_CLIPS,
     defaultPosition: [-2.0, 0, -1.5],
     patrolRadius: 1.0,
     patrolWaypoints: [
@@ -163,7 +164,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
     name: 'Сергей',
     modelPath: NPC_PROCEDURAL_MODEL_PLACEHOLDER,
     scale: 1.05,
-    animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
+    animations: DEFAULT_NPC_ANIMATION_CLIPS,
     defaultPosition: [2.5, 0, -1.0],
     patrolRadius: 1.0,
     patrolWaypoints: [
@@ -196,7 +197,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
     name: 'Лена',
     modelPath: NPC_PROCEDURAL_MODEL_PLACEHOLDER,
     scale: 0.85,
-    animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
+    animations: DEFAULT_NPC_ANIMATION_CLIPS,
     defaultPosition: [0, 0, 3.5],
     patrolRadius: 2.0,
     patrolWaypoints: [
@@ -229,7 +230,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
     name: 'Олег',
     modelPath: NPC_PROCEDURAL_MODEL_PLACEHOLDER,
     scale: 1.1,
-    animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
+    animations: DEFAULT_NPC_ANIMATION_CLIPS,
     defaultPosition: [4.0, 0, 0],
     patrolRadius: 1.0,
     patrolWaypoints: [
@@ -262,7 +263,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
     name: 'Катя',
     modelPath: '/models/npcs/kate.glb',
     scale: 0.9,
-    animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
+    animations: DEFAULT_NPC_ANIMATION_CLIPS,
     defaultPosition: [-2.0, 0, -2.0],
     patrolRadius: 1.5,
     patrolWaypoints: [
@@ -295,7 +296,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
     name: 'Максим',
     modelPath: '/models/npcs/maxim.glb',
     scale: 1.1,
-    animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
+    animations: DEFAULT_NPC_ANIMATION_CLIPS,
     defaultPosition: [-2.0, 0, -1.5],
     patrolRadius: 2.0,
     patrolWaypoints: [
@@ -328,7 +329,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
     name: 'Жека',
     modelPath: '/models/npcs/zeka.glb',
     scale: 1.0,
-    animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
+    animations: DEFAULT_NPC_ANIMATION_CLIPS,
     defaultPosition: [1.0, 0, -1.0],
     patrolRadius: 1.5,
     patrolWaypoints: [
@@ -361,7 +362,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
     name: 'Аня',
     modelPath: '/models/npcs/anya.glb',
     scale: 0.9,
-    animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
+    animations: DEFAULT_NPC_ANIMATION_CLIPS,
     defaultPosition: [0.5, 0, 2.0],
     patrolRadius: 1.5,
     patrolWaypoints: [
@@ -394,7 +395,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
     name: 'Трофим',
     modelPath: '/models/npcs/trofim.glb',
     scale: 1.0,
-    animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
+    animations: DEFAULT_NPC_ANIMATION_CLIPS,
     defaultPosition: [4.0, 0, -7.2],
     defaultRotation: Math.PI,
     patrolRadius: 0.6,
@@ -422,7 +423,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
     name: 'Баба Зина',
     modelPath: '/models/npcs/baba_zina.glb',
     scale: 0.88,
-    animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
+    animations: DEFAULT_NPC_ANIMATION_CLIPS,
     defaultPosition: [-2.0, 0, -4.0],
     patrolRadius: 0.4,
     dialogueNodeId: 'baba_zina_greeting',
@@ -448,7 +449,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
     name: 'Уличный поэт',
     modelPath: NPC_PROCEDURAL_MODEL_PLACEHOLDER,
     scale: 1.0,
-    animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
+    animations: DEFAULT_NPC_ANIMATION_CLIPS,
     defaultPosition: [2.0, 0, 0],
     patrolRadius: 1.0,
     dialogueNodeId: 'street_poet_greeting',
@@ -474,7 +475,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
     name: 'Марат (эхо)',
     modelPath: NPC_PROCEDURAL_MODEL_PLACEHOLDER,
     scale: 1.0,
-    animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
+    animations: DEFAULT_NPC_ANIMATION_CLIPS,
     defaultPosition: [0, 0, -2],
     patrolRadius: 0,
     dialogueNodeId: 'marat_echo_greeting',
@@ -500,7 +501,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
     name: 'Перебежчик',
     modelPath: NPC_PROCEDURAL_MODEL_PLACEHOLDER,
     scale: 1.0,
-    animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
+    animations: DEFAULT_NPC_ANIMATION_CLIPS,
     defaultPosition: [-1.0, 0, 1.0],
     patrolRadius: 0.5,
     dialogueNodeId: 'guild_defector_greeting',

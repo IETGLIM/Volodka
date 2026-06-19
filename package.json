@@ -20,6 +20,7 @@
     "assets:freekit-stage": "node scripts/stage-freekit-assets.mjs",
     "assets:rpm-import": "node scripts/rpm-npc-import.mjs",
     "assets:mixamo-import": "node scripts/mixamo-import.mjs",
+    "assets:extract-animations": "node scripts/extract-quaternius-animations.mjs",
     "assets:validate": "npx tsx --tsconfig tsconfig.json scripts/validate-gltf-assets.ts",
     "preview": "vite preview",
     "lint": "eslint src",

@@ -95,8 +95,8 @@ const CC0_NPC_MODEL_ASSETS: Partial<Record<string, NpcModelAssetMeta>> = {
   office_colleague: {
     url: `${NPCS}/office_colleague.glb`,
     license: 'CC0',
-    source: `${KHRONOS} — RiggedSimple`,
-    sourceUrl: KHRONOS_URL,
+    source: QUATERNIUS,
+    sourceUrl: QUATERNIUS_URL,
   },
   maria: {
     url: `${NPCS}/maria.glb`,
@@ -119,20 +119,20 @@ const CC0_NPC_MODEL_ASSETS: Partial<Record<string, NpcModelAssetMeta>> = {
   kira: {
     url: `${NPCS}/kira.glb`,
     license: 'CC0',
-    source: `${KHRONOS} — RiggedFigure`,
-    sourceUrl: KHRONOS_URL,
+    source: QUATERNIUS,
+    sourceUrl: QUATERNIUS_URL,
   },
   boris: {
     url: `${NPCS}/boris.glb`,
     license: 'CC0',
-    source: `${KHRONOS} — RiggedSimple`,
-    sourceUrl: KHRONOS_URL,
+    source: QUATERNIUS,
+    sourceUrl: QUATERNIUS_URL,
   },
   tamara: {
     url: `${NPCS}/tamara.glb`,
     license: 'CC0',
-    source: `${KHRONOS} — CesiumMan`,
-    sourceUrl: KHRONOS_URL,
+    source: QUATERNIUS,
+    sourceUrl: QUATERNIUS_URL,
   },
   grisha: {
     url: `${NPCS}/grisha.glb`,

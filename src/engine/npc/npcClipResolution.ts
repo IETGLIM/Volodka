@@ -16,7 +16,7 @@ export interface NpcAnimationClipOverrides {
 const GENERIC_ALIASES: Record<NPCAnimationState, readonly string[]> = {
   idle: [
     'Idle_Neutral', 'idle', 'Idle', 'IDLE', '0', 'animation_0',
-    'Armature|idle', 'Cesium_Man_idles', 'idle_01',
+    'Armature|idle', 'Cesium_Man_idles', 'idle_01', 'sleeping', 'Sleeping',
   ],
   walk: [
     'walk', 'Walk', 'WALK', 'walking', 'Walking',
@@ -28,7 +28,7 @@ const GENERIC_ALIASES: Record<NPCAnimationState, readonly string[]> = {
   ],
   sit: [
     'sit', 'Sit', 'SIT', 'sitting', 'Sitting',
-    'Armature|sit', 'sit_01',
+    'Armature|sit', 'sit_01', 'working', 'Working',
   ],
   listen: [
     'listen', 'Listen', 'idle', 'Idle', 'IDLE',

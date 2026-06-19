@@ -12,8 +12,10 @@ import {
 /**
  * Hook that manages NPC animation state with crossfade.
  *
- * Listens to `npc:animation` events and smoothly transitions
- * between animation states.
+ * Clip actions come from embedded GLB clips plus optional overrides loaded from
+ * `public/models/animations/` via `useMixamoAnimationClips` (see mixamoAnimationCatalog).
+ *
+ * Listens to `npc:animation` events and smoothly transitions between states.
  */
 export function useNPCAnimation(
   npcId: string,
