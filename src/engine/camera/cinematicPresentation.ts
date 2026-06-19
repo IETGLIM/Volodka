@@ -1,7 +1,6 @@
 /**
  * When to show third-person avatar vs first-person exploration.
- * Cinematic beats (wake-up, story cutscenes, scene-transition hold) use third person;
- * normal exploration uses FP camera + GLB arms.
+ * Third-person orbit + full-body avatar is the default for exploration and cinematics.
  */
 
 import { useSyncExternalStore } from 'react';
@@ -9,7 +8,7 @@ import type { GamePhase } from '@/shared/gamePhase';
 
 export type CinematicPresentationMode = 'first_person' | 'third_person';
 
-let presentationMode: CinematicPresentationMode = 'first_person';
+let presentationMode: CinematicPresentationMode = 'third_person';
 let cinematicHoldActive = false;
 const listeners = new Set<() => void>();
 
@@ -42,7 +41,7 @@ export function setCinematicHoldActive(active: boolean): void {
 
 /** Call on resetGame / load — module state survives Zustand resets. */
 export function resetCinematicPresentation(): void {
-  presentationMode = 'first_person';
+  presentationMode = 'third_person';
   cinematicHoldActive = false;
   notify();
 }
@@ -52,7 +51,7 @@ export function isCinematicHoldActive(): boolean {
 }
 
 export function useCinematicPresentationMode(): CinematicPresentationMode {
-  return useSyncExternalStore(subscribe, getCinematicPresentationMode, () => 'first_person');
+  return useSyncExternalStore(subscribe, getCinematicPresentationMode, () => 'third_person');
 }
 
 export function useCinematicHoldActive(): boolean {

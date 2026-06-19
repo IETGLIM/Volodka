@@ -27,7 +27,7 @@ describe('resetEngineModuleRuntimeState', () => {
 
     expect(getCameraShakeIntensity()).toBe(0);
     expect(getGlobalTimeScale()).toBe(1);
-    expect(getCinematicPresentationMode()).toBe('first_person');
+    expect(getCinematicPresentationMode()).toBe('third_person');
     expect(isSceneTransitionInProgress()).toBe(false);
   });
 

@@ -20,7 +20,7 @@ export function useCinematicNarrativePresentation(active: boolean): void {
       const store = useGameStore.getState();
       const inCutscene = readGamePhase(store) === 'cutscene' || store.activeCutsceneId != null;
       if (!inCutscene) {
-        setCinematicPresentationMode('first_person');
+        setCinematicPresentationMode('third_person');
         eventBus.emit('camera:recenter', {});
       }
     };

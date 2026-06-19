@@ -24,7 +24,7 @@ import { AriaLiveRegion } from '@/components/a11y/AriaLiveRegion';
 import { sanitizePlainText } from '@/shared/utils/sanitizePlainText';
 
 function finishCutscenePresentation(): void {
-  setCinematicPresentationMode('first_person');
+  setCinematicPresentationMode('third_person');
   eventBus.emit('camera:recenter', {});
 }
 

@@ -7,8 +7,8 @@ export const DEFAULT_DISTANCE = 3.0;
 export const MIN_DISTANCE = 0.65;
 export const MAX_DISTANCE = 12.0;
 
-/** First-person exploration — no third-person body; camera at eye height. */
-export const FIRST_PERSON_ENABLED = true;
+/** First-person exploration — disabled; third-person orbit is the default. */
+export const FIRST_PERSON_ENABLED = false;
 export const FIRST_PERSON_EYE_HEIGHT = 1.62;
 export const FIRST_PERSON_FOV = 72;
 export const FIRST_PERSON_FOV_MIN = 55;

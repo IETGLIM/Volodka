@@ -1,5 +1,5 @@
 /* ─── Volodka RPG – Wake-Up AAA Cinematic ───
- *  Third-person intro: terminal → rise → walk to desk → FP handoff.
+ *  Third-person intro: terminal → rise → walk to desk → exploration handoff.
  *  Trigger: intro_wakeup cutscene / intro:wakeup_sequence (New Game).
  */
 
@@ -81,7 +81,7 @@ export function WakeUpSequence() {
     store.setFlag('woke_up', true);
     store.setFlag('read_poem_2', true);
     store.collectPoem('poem_2');
-    setCinematicPresentationMode('first_person');
+    setCinematicPresentationMode('third_person');
     eventBus.emit('intro:wakeup_complete', {});
     eventBus.emit('camera:recenter', {});
 
@@ -144,9 +144,7 @@ export function WakeUpSequence() {
     camera.getWorldDirection(lookDir);
     handoffFromRef.current.lookAt.copy(camera.position).add(lookDir);
     handoffFromRef.current.fov = camera.fov;
-    setCinematicPresentationMode('first_person');
-    setActive(false);
-    activeRef.current = false;
+    setCinematicPresentationMode('third_person');
     eventBus.emit('intro:wakeup_handoff', {});
   };
 
@@ -248,6 +246,13 @@ export function WakeUpSequence() {
         camera,
       );
       currentAnimRef.current = 'idle';
+      const group = playerGroupRef.current;
+      if (group) {
+        group.position.copy(CHAIR_POSITION);
+        group.position.y = 0.01;
+        group.rotation.set(0, 0, 0);
+        modelRotationRef.current = facingYBetween(DESK_POSITION, CHAIR_POSITION);
+      }
       if (ht >= 1) finishGameplay();
       return;
     }
@@ -301,23 +306,27 @@ export function WakeUpSequence() {
       if (phase === 'terminal') {
         group.position.copy(BED_POSITION);
         group.position.y = 0.42;
-        group.rotation.set(0.55, 0.35, 0);
+        group.rotation.set(0.55, 0, 0.35);
+        modelRotationRef.current = 0;
         currentAnimRef.current = 'idle';
       } else if (phase === 'bed') {
         group.position.copy(BED_POSITION);
         group.position.y = 0.42 - 0.4 * e;
-        group.rotation.set(0.4 * (1 - e), 0.45 * (1 - e), 0);
+        group.rotation.set(0.4 * (1 - e), 0, 0.45 * (1 - e));
+        modelRotationRef.current = 0;
         currentAnimRef.current = 'idle';
       } else if (phase === 'stand') {
         group.position.lerpVectors(BED_POSITION, STAND_POSITION, e);
         group.position.y = 0.01;
+        group.rotation.set(0, 0, 0);
         const walkFacing = facingYBetween(STAND_POSITION, DESK_POSITION);
-        group.rotation.set(0, Math.PI * 0.85 * (1 - e) + walkFacing * e, 0);
+        modelRotationRef.current = Math.PI * 0.85 * (1 - e) + walkFacing * e;
         currentAnimRef.current = 'idle';
       } else if (phase === 'walk') {
         group.position.lerpVectors(STAND_POSITION, DESK_POSITION, e);
         group.position.y = 0.01;
-        group.rotation.set(0, facingYBetween(STAND_POSITION, DESK_POSITION), 0);
+        group.rotation.set(0, 0, 0);
+        modelRotationRef.current = facingYBetween(STAND_POSITION, DESK_POSITION);
         currentAnimRef.current = 'walk';
         const step = Math.floor(localT * 5);
         if (step !== lastFootstepRef.current) {
@@ -327,14 +336,14 @@ export function WakeUpSequence() {
       } else {
         group.position.lerpVectors(DESK_POSITION, CHAIR_POSITION, e);
         group.position.y = 0.01;
-        group.rotation.set(0, facingYBetween(DESK_POSITION, CHAIR_POSITION), 0);
+        group.rotation.set(0, 0, 0);
+        modelRotationRef.current = facingYBetween(DESK_POSITION, CHAIR_POSITION);
         currentAnimRef.current = 'idle';
         if (!audioCueRef.current.sit && localT > 0.55) {
           audioCueRef.current.sit = true;
           audioEngine.playSfx('ui_open');
         }
       }
-      modelRotationRef.current = group.rotation.y;
     }
   });
 

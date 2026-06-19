@@ -13,7 +13,7 @@ export interface InteractionSplashEmitOptions {
 
 function finishSplashPresentation(): void {
   setCinematicHoldActive(false);
-  setCinematicPresentationMode('first_person');
+  setCinematicPresentationMode('third_person');
   eventBus.emit('camera:recenter', {});
 }
 

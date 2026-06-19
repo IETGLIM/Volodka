@@ -3,7 +3,7 @@
  */
 
 import * as THREE from 'three';
-import { FIRST_PERSON_EYE_HEIGHT, FIRST_PERSON_FOV } from '@/engine/camera/cameraConstants';
+import { LOOK_HEIGHT } from '@/engine/camera/cameraConstants';
 
 export const WAKEUP_PHASE = {
   terminal: 1.6,
@@ -30,8 +30,12 @@ export const BED_POSITION = new THREE.Vector3(0.5, 0.01, 2.4);
 export const STAND_POSITION = new THREE.Vector3(0.3, 0.01, 1.5);
 export const DESK_POSITION = new THREE.Vector3(0.0, 0.01, -1.0);
 export const CHAIR_POSITION = new THREE.Vector3(0.0, 0.0, -1.3);
-export const DESK_EYE = new THREE.Vector3(0, FIRST_PERSON_EYE_HEIGHT, -1.0);
-export const DESK_LOOK = new THREE.Vector3(0, 1.0, -2.45);
+/** Third-person handoff behind the desk — matches exploration orbit framing. */
+export const DESK_EXPLORATION_CAM = {
+  position: new THREE.Vector3(0.0, LOOK_HEIGHT + 0.25, 1.15),
+  lookAt: new THREE.Vector3(0, LOOK_HEIGHT, -1.0),
+  fov: 54,
+};
 
 const FAR_CORNER = new THREE.Vector3(-2.2, 2.6, -3.0);
 
@@ -145,7 +149,7 @@ export function lerpWakeCamera(
   return fromFov + (wp.fov - fromFov) * e;
 }
 
-/** Final blend into first-person eye at the desk (handoff phase). */
+/** Final blend into third-person exploration camera at the desk (handoff phase). */
 export function applyHandoffCamera(
   t: number,
   fromPos: THREE.Vector3,
@@ -154,11 +158,11 @@ export function applyHandoffCamera(
   camera: THREE.PerspectiveCamera,
 ): void {
   const e = easeInOutCubic(t);
-  camera.position.lerpVectors(fromPos, DESK_EYE, e);
+  camera.position.lerpVectors(fromPos, DESK_EXPLORATION_CAM.position, e);
   clampToVolodkaRoom(camera.position);
-  const look = new THREE.Vector3().lerpVectors(fromLook, DESK_LOOK, e);
+  const look = new THREE.Vector3().lerpVectors(fromLook, DESK_EXPLORATION_CAM.lookAt, e);
   camera.lookAt(look);
-  camera.fov = fromFov + (FIRST_PERSON_FOV - fromFov) * e;
+  camera.fov = fromFov + (DESK_EXPLORATION_CAM.fov - fromFov) * e;
   camera.updateProjectionMatrix();
 }
 

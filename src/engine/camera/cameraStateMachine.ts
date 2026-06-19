@@ -625,7 +625,7 @@ export function subscribeCameraEventHub(options: CameraEventHubOptions): () => v
     } else if (phase === 'fadeIn') {
       releaseCameraOwnership('cinematicFreeze');
       setCinematicHoldActive(false);
-      setCinematicPresentationMode('first_person');
+      setCinematicPresentationMode('third_person');
       dispatchCameraState(runtime, { type: 'cinematic_fade_in' }, sceneId);
       eventBus.emit('camera:recenter', {});
     }
@@ -696,7 +696,7 @@ export function subscribeCameraEventHub(options: CameraEventHubOptions): () => v
   unsubs.push(eventBus.on('camera:poem_reading_end', () => {
     releaseCameraOwnership('cinematicFreeze');
     setCinematicHoldActive(false);
-    setCinematicPresentationMode('first_person');
+    setCinematicPresentationMode('third_person');
     dispatchCameraState(runtime, { type: 'poem_reading_complete' }, sceneId);
     eventBus.emit('camera:recenter', {});
   }));

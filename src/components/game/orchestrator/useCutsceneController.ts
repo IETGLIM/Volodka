@@ -34,7 +34,7 @@ export function useCutsceneController() {
     clearGameplayPhaseFlags(store);
     eventBus.emit('cutscene:overlay_end', {});
     eventBus.emit('camera:cutscene_end', {});
-    setCinematicPresentationMode('first_person');
+    setCinematicPresentationMode('third_person');
     eventBus.emit('camera:recenter', {});
 
     if (store.currentNodeId && store.narrativeKind) {
@@ -121,7 +121,7 @@ export function useCutsceneController() {
         currentStore.markCutsceneTriggered(cutscene.id);
         currentStore.setCutscene(null, []);
         clearGameplayPhaseFlags(currentStore);
-        setCinematicPresentationMode('first_person');
+        setCinematicPresentationMode('third_person');
         eventBus.emit('camera:cutscene_end', {});
         eventBus.emit('camera:recenter', {});
       }
