@@ -33,7 +33,16 @@ jobs:
 
       - run: npm run assets:validate
 
-      - run: npm run test:unit
+      - run: mkdir -p reports
+
+      - run: npx vitest run --reporter=default --reporter=junit --outputFile.junit=reports/vitest-junit.xml
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: vitest-junit
+          path: reports/vitest-junit.xml
+          if-no-files-found: ignore
 
       - run: npm run build
 

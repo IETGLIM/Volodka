@@ -1,6 +1,16 @@
 import { defineConfig } from 'vitest/config';
 import path from 'path';
 
+const GAME_LOGIC_COVERAGE_GLOBS = [
+  'src/engine/**/*.ts',
+  'src/store/**/*.ts',
+  'src/data/**/*.ts',
+  'src/hooks/**/*.ts',
+  'src/shared/**/*.ts',
+  'src/utils/**/*.ts',
+  'src/config/**/*.ts',
+] as const;
+
 export default defineConfig({
   resolve: {
     alias: {
@@ -8,16 +18,22 @@ export default defineConfig({
     },
   },
   test: {
+    testTimeout: 15_000,
+    hookTimeout: 15_000,
+    teardownTimeout: 10_000,
+    cache: {
+      dir: 'node_modules/.vitest',
+    },
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'html'],
-      include: ['src/engine/**/*.ts', 'src/store/**/*.ts'],
-      exclude: ['**/*.test.ts', '**/*.test.tsx'],
+      reporter: ['text', 'html', 'json', 'lcov'],
+      include: [...GAME_LOGIC_COVERAGE_GLOBS],
+      exclude: ['**/*.test.ts', '**/*.test.tsx', '**/*.integration.test.ts'],
       thresholds: {
-        lines: 50,
-        functions: 50,
-        branches: 45,
-        statements: 50,
+        lines: 80,
+        functions: 80,
+        branches: 75,
+        statements: 80,
       },
     },
     projects: [
@@ -27,6 +43,17 @@ export default defineConfig({
           name: 'unit',
           environment: 'node',
           include: ['src/**/*.test.ts'],
+          exclude: ['src/**/*.integration.test.ts'],
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: 'integration',
+          environment: 'node',
+          include: ['src/**/*.integration.test.ts'],
+          testTimeout: 30_000,
+          hookTimeout: 30_000,
         },
       },
       {
