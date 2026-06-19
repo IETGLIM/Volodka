@@ -1,6 +1,7 @@
 /* ─── Volodka RPG – first-play tutorial selectors ─── */
 
 import { hasVisitedNode } from '@/store/visitedNodesIndex';
+import { readGamePhase } from '@/shared/gamePhase';
 import { getGameStore } from '../gameStore';
 import { useGamePrimitive } from './hooks';
 
@@ -11,11 +12,15 @@ export const ACT1_TUTORIAL_READY_NODES = [
   'room_bookshelf',
   'corridor_door',
   'corridor_explore_mode',
+  'start',
 ] as const;
 
 export function selectAct1TutorialReady(s = getGameStore()): boolean {
   const { visitedNodes, flags } = s.playerState;
   if (flags?.woke_up) return true;
+  if (readGamePhase(s) === 'exploration' && s.exploration?.currentSceneId === 'volodka_room') {
+    return true;
+  }
   return ACT1_TUTORIAL_READY_NODES.some((nodeId) => hasVisitedNode(visitedNodes, nodeId));
 }
 

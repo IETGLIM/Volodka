@@ -9,6 +9,7 @@ import { useGamePhase, useQuickAccessToolbarState } from '@/store/selectors';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { bottomToolbarPx } from '@/shared/constants/hudLayout';
 import { useHudQuietStyle } from '@/hooks/useHudQuiet';
+import { useExplorationBottomHudVisible } from '@/hooks/useExplorationBottomHud';
 
 /* ─── Sub-components ─── */
 
@@ -200,6 +201,7 @@ function LevelBadge({ level, xp, xpToNext }: { level: number; xp: number; xpToNe
 export function QuickAccessToolbar() {
   const mode = useGamePhase();
   const quietStyle = useHudQuietStyle();
+  const bottomHudVisible = useExplorationBottomHudVisible();
   const {
     energy,
     stress,
@@ -215,7 +217,7 @@ export function QuickAccessToolbar() {
 
   return (
     <AnimatePresence>
-      {mode === 'exploration' && (
+      {mode === 'exploration' && bottomHudVisible && (
         <motion.div
           key="quick-access-toolbar"
           data-exploration-ui

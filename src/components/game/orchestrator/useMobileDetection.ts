@@ -9,16 +9,17 @@ export function useMobileDetection(): boolean {
       if (typeof window === 'undefined') return false;
       const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
       const hasCoarsePointer = window.matchMedia('(pointer: coarse)').matches;
-      const isTouchDevice = hasTouch || hasCoarsePointer;
       const narrowPortrait = window.innerWidth < 768;
-      const tabletPortrait = window.innerWidth < 1024;
-      if (isTouchDevice && narrowPortrait) return true;
-      if (isTouchDevice && window.innerHeight < 768) return true;
-      if (tabletPortrait && !isTouchDevice) return true;
-      if (isTouchDevice && tabletPortrait) return true;
-      if (isTouchDevice && window.innerHeight < 500) return true;
-      if (isTouchDevice && Math.min(window.screen.width, window.screen.height) < 1200) return true;
-      if (hasCoarsePointer && window.innerWidth < 1400) return true;
+      const narrowLandscape = window.innerWidth < 1024 && window.innerHeight < 768;
+
+      // Primary: phone / small tablet in portrait with touch.
+      if (hasTouch && narrowPortrait) return true;
+      // Compact landscape handheld (phones).
+      if (hasTouch && narrowLandscape) return true;
+      // Coarse pointer only when the viewport is clearly handheld-sized.
+      if (hasCoarsePointer && hasTouch && Math.min(window.innerWidth, window.innerHeight) < 600) {
+        return true;
+      }
       return false;
     };
 

@@ -13,6 +13,7 @@ import { eventBus } from '@/engine/EventBus';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useHudQuietStyle } from '@/hooks/useHudQuiet';
 import { bottomQuickUsePx } from '@/shared/constants/hudLayout';
+import { useExplorationBottomHudVisible } from '@/hooks/useExplorationBottomHud';
 
 /* ─── Constants ─── */
 
@@ -53,6 +54,7 @@ function UseToast({ text, onDone }: { text: string; onDone: () => void }) {
 
 export function QuickUseBar() {
   const quietStyle = useHudQuietStyle();
+  const bottomHudVisible = useExplorationBottomHudVisible();
   const mode = useGameMode();
   const inventory = useInventory();
   const { addEnergy, addStress, addKarma, addSkill, removeItem } = useConsumableActions();
@@ -185,7 +187,7 @@ export function QuickUseBar() {
   }, [mode, handleUseItemAtSlot]);
 
   /* ── Don't render if not in exploration ── */
-  if (mode !== 'exploration') return null;
+  if (mode !== 'exploration' || !bottomHudVisible) return null;
 
   return (
     <AnimatePresence>

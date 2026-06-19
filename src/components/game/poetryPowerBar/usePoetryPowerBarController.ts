@@ -3,6 +3,7 @@ import { useCollectedPoems } from '@/store/selectors';
 import { usePoemPowersCooldownRefresh } from '@/components/game/poetryBook/usePoemCooldownSeconds';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { useHudQuietStyle } from '@/hooks/useHudQuiet';
+import { useExplorationBottomHudVisible } from '@/hooks/useExplorationBottomHud';
 import { useTransitionDirector } from '@/hooks/useTransitionDirector';
 import { audioEngine } from '@/engine/AudioEngine';
 import { eventBus } from '@/engine/EventBus';
@@ -18,6 +19,7 @@ import { POETRY_POWER_BAR_MAX_SLOTS } from '@/engine/poetryPowerBar/poetryPowerB
 export function usePoetryPowerBarController() {
   const reducedMotion = useEffectiveReducedMotion();
   const quietStyle = useHudQuietStyle();
+  const bottomHudVisible = useExplorationBottomHudVisible();
   const collectedPoems = useCollectedPoems();
   const { phase: transitionPhase } = useTransitionDirector();
 
@@ -36,7 +38,8 @@ export function usePoetryPowerBarController() {
 
   usePoemPowersCooldownRefresh(poemIds);
 
-  const visible = collectedWithPowers.length > 0 && transitionPhase !== 'loading';
+  const visible =
+    bottomHudVisible && collectedWithPowers.length > 0 && transitionPhase !== 'loading';
 
   useEffect(() => {
     const unsubscribe = eventBus.on('poem:power_used', () => {

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
+import { clone as cloneSkinnedScene } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { deepCloneWithSkeletons } from '@/utils/deepCloneWithSkeletons';
 import {
   disposeSkinnedClone,
@@ -30,7 +31,12 @@ export function useSkinnedGltfClone(
 
   const { scene, mixer } = useMemo(() => {
     const { castShadow, receiveShadow } = optionsRef.current ?? {};
-    const clone = deepCloneWithSkeletons(sourceScene);
+    let clone: THREE.Group;
+    try {
+      clone = cloneSkinnedScene(sourceScene) as THREE.Group;
+    } catch {
+      clone = deepCloneWithSkeletons(sourceScene);
+    }
     clone.traverse((node) => {
       if (node instanceof THREE.Mesh || node instanceof THREE.SkinnedMesh) {
         if (castShadow !== undefined) node.castShadow = castShadow;

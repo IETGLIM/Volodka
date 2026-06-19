@@ -28,6 +28,8 @@ export const EXPLORATION_HUD_LAYOUT = {
   SYSTEM_ALERT_ABOVE_CRAFTING_OFFSET: 56,
   /** Contextual [E] prompt — above poetry bar, centered */
   BOTTOM_INTERACT_PROMPT: 196,
+  /** Diegetic dialogue panel max text height (px) */
+  DIEGETIC_DIALOGUE_TEXT_MAX_HEIGHT: 160,
   /** Bottom-right stack (px from viewport bottom) */
   BOTTOM_AMBIENT_MIXER: 16,
   BOTTOM_STATUS_EFFECTS: 72,
@@ -105,6 +107,20 @@ export function bottomPoetryPx(): number {
   return EXPLORATION_HUD_LAYOUT.BOTTOM_POETRY;
 }
 
+/** Total height of the bottom-center HUD stack (toolbar → quick-use → poetry). */
+export function explorationBottomStackHeightPx(isMobile = false): number {
+  const mobileReserve = mobileBottomReserve(isMobile);
+  return (
+    EXPLORATION_HUD_LAYOUT.BOTTOM_TOOLBAR
+    + EXPLORATION_HUD_LAYOUT.BOTTOM_TOOLBAR_HEIGHT
+    + EXPLORATION_HUD_LAYOUT.SLOT_GAP
+    + EXPLORATION_HUD_LAYOUT.BOTTOM_QUICK_USE_HEIGHT
+    + EXPLORATION_HUD_LAYOUT.SLOT_GAP
+    + EXPLORATION_HUD_LAYOUT.BOTTOM_POETRY_HEIGHT
+    + mobileReserve
+  );
+}
+
 export function bottomTutorialTipPx(): number {
   return (
     EXPLORATION_HUD_LAYOUT.BOTTOM_CRAFTING_TOAST
@@ -133,8 +149,9 @@ export function bottomInteractPromptPx(isMobile = false): number {
 }
 
 /** Diegetic dialogue panel — lift above mobile D-pad / action column + home indicator. */
-export function diegeticDialogueBottomPadCss(isMobile = false): string {
-  const basePx = isMobile ? mobileBottomReserve(true) + 16 : 16;
+export function diegeticDialogueBottomPadCss(isMobile = false, stackVisible = true): string {
+  const stackPx = stackVisible ? explorationBottomStackHeightPx(isMobile) : 0;
+  const basePx = (isMobile ? mobileBottomReserve(true) : 0) + 16 + stackPx;
   return `calc(${basePx}px + env(safe-area-inset-bottom, 0px))`;
 }
 

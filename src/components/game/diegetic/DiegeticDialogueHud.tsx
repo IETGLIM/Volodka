@@ -29,8 +29,9 @@ import { useNarrativeTypewriter } from '@/hooks/useNarrativeTypewriter';
 import { useNarrativeChoiceKeyboard } from '@/hooks/useNarrativeChoiceKeyboard';
 import { NarrativeChoiceList } from './NarrativeChoiceList';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
-import { diegeticDialogueBottomPadCss } from '@/shared/constants/hudLayout';
+import { diegeticDialogueBottomPadCss, EXPLORATION_HUD_LAYOUT } from '@/shared/constants/hudLayout';
 import { useTouchDevice } from '@/hooks/useTouchDevice';
+import { useSuppressExplorationBottomHud } from '@/hooks/useExplorationBottomHud';
 import { AriaLiveRegion } from '@/components/a11y/AriaLiveRegion';
 import {
   resolveDialogueText,
@@ -56,6 +57,7 @@ const ACCENT = '#44ddcc';
 
 export function DiegeticDialogueHud() {
   const isTouchDevice = useTouchDevice();
+  const suppressBottomHud = useSuppressExplorationBottomHud();
   const diegetic = useDiegeticNarrativeState();
   const storyCtx = useStoryContext();
   const dialogueCtx = useDialogueContext();
@@ -323,7 +325,7 @@ export function DiegeticDialogueHud() {
         className="fixed left-0 right-0 bottom-0 pointer-events-auto px-3 sm:px-6"
         style={{
           zIndex: UI_LAYERS.DIALOGUE,
-          paddingBottom: diegeticDialogueBottomPadCss(isTouchDevice),
+          paddingBottom: diegeticDialogueBottomPadCss(isTouchDevice, !suppressBottomHud),
         }}
       >
         <div
@@ -357,7 +359,8 @@ export function DiegeticDialogueHud() {
           <button
             type="button"
             onClick={handleTextAdvance}
-            className="w-full text-left px-4 pb-2 text-sm sm:text-base text-slate-100 leading-relaxed font-serif min-h-[3rem] hover:bg-white/5 transition-colors rounded-md"
+            className="w-full text-left px-4 pb-2 text-sm sm:text-base text-slate-100 leading-relaxed font-serif hover:bg-white/5 transition-colors rounded-md overflow-y-auto"
+            style={{ maxHeight: EXPLORATION_HUD_LAYOUT.DIEGETIC_DIALOGUE_TEXT_MAX_HEIGHT }}
             aria-label={controlHint}
           >
             {displayed}
