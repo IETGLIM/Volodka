@@ -11,8 +11,7 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 const OUT_DIR =
-  process.env.DEPLOY_ARCHIVE_DIR ??
-  (process.platform === 'win32' ? 'G:/volodka-vercel-deploy' : path.join(ROOT, 'deploy-archive'));
+  (process.env.DEPLOY_ARCHIVE_DIR ?? (process.platform === 'win32' ? 'G:/volodka-vercel-deploy' : path.join(ROOT, 'deploy-archive'))).trim();
 
 const EXCLUDE_DIRS = new Set([
   'node_modules',
