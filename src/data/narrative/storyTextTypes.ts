@@ -7,6 +7,8 @@ export interface StoryNodeTextBlob {
   readonly text: string;
   readonly textVariants?: NarrativeTextVariants;
   readonly contextNote?: string;
+  readonly hubIntroText?: string;
+  readonly hubRevisitText?: string;
   readonly accessibilityAnnounce?: string;
   readonly guidanceHint?: string;
   readonly guidanceSceneLabel?: string;

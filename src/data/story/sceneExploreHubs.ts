@@ -85,7 +85,9 @@ function buildSceneExploreHubNode(def: (typeof SCENE_EXPLORE_HUB_DEFS)[number]):
 
   return {
     id: def.hubId,
-    text: def.hubText,
+    text: def.hubText ?? '',
+    hubIntroText: def.hubText,
+    hubRevisitText: def.hubTextRevisit,
     speaker: 'narrator',
     sceneId: def.sceneId,
     choices,

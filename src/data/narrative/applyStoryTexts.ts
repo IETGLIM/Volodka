@@ -22,6 +22,8 @@ function applyBlobToNode(node: StoryNodeStructure, blob: StoryNodeTextBlob): Sto
     text: blob.text,
     textVariants: blob.textVariants ?? node.textVariants,
     contextNote: blob.contextNote ?? node.contextNote,
+    hubIntroText: blob.hubIntroText ?? node.hubIntroText,
+    hubRevisitText: blob.hubRevisitText ?? node.hubRevisitText,
     accessibilityAnnounce: blob.accessibilityAnnounce ?? node.accessibilityAnnounce,
     guidanceHint: blob.guidanceHint ?? node.guidanceHint,
     guidanceSceneLabel: blob.guidanceSceneLabel ?? node.guidanceSceneLabel,

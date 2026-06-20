@@ -7,6 +7,10 @@ import {
   getExploreHubDef,
   isClosedOverlayExploreHub,
 } from '@/shared/sceneExploreHubRegistry';
+import {
+  resolveExploreHubIntroText,
+  resolveExploreHubRevisitText,
+} from '@/shared/contentTruthManifest';
 import { hasVisitedNode } from '@/shared/visitedNodesIndex';
 import { setCinematicHoldActive } from '@/engine/camera/cinematicPresentation';
 import { EXPLORATION_HUD_HANDOFF } from '@/shared/constants/transitionTimings';
@@ -16,17 +20,21 @@ function showHubLocationContext(hubId: string, revisit: boolean): void {
   const def = getExploreHubDef(hubId);
   if (!def) return;
 
-  if (revisit && def.hubTextRevisit) {
-    eventBus.emit('ui:exploration_message', { text: def.hubTextRevisit });
+  if (revisit) {
+    const revisitText = resolveExploreHubRevisitText(hubId);
+    if (revisitText) {
+      eventBus.emit('ui:exploration_message', { text: revisitText });
+    }
     return;
   }
 
-  if (revisit) return;
+  const introText = resolveExploreHubIntroText(hubId);
+  if (!introText) return;
 
   const sceneName = getSceneConfig(def.sceneId).name;
   eventBus.emit('game:notification', {
     title: sceneName,
-    subtitle: def.hubText,
+    subtitle: introText,
     type: 'scene',
   });
 }

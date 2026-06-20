@@ -1,8 +1,47 @@
 # Архитектура — ВОЛОДЬКА RPG
 
-> Карта систем проекта для инженеров. Актуально для v4.2.42.
+> Карта систем проекта для инженеров. Актуально для v4.2.42 (content-truth unification).
 
-## Слои
+## Content Truth — единая линия данных
+
+**Манифест:** `src/shared/contentTruthManifest.ts` — документирует канонический источник для каждого домена и экспортирует resolvers. Новый UI/engine-код **не читает параллельные реестры напрямую**, если есть resolver.
+
+| Домен | Источник правды | Resolver / вход |
+|-------|-----------------|-----------------|
+| Story nodes (runtime) | `narrativePackRegistry` → `gameDataLoader.getStoryNodes()` | `ensureStoryNode` |
+| Dialogue nodes | `narrativePackRegistry` → `getDialogueNodes()` | `ensureDialogueNode` |
+| CI parity | `story/index.ts` `STORY_NODES` (eager merge) | `narrativeRegistryParity.test.ts` |
+| Narrative UI open | **`presentNarrativeBeat`** | hub / diegetic / VN overlay |
+| Explore-hub topology | `sceneExploreHubRegistry.ts` | `hubId`, `sceneId`, `entryNodeIds` |
+| Explore-hub **проза** | `act*.json` / story pack (`hubIntroText`, `hubRevisitText`, `text`) | `resolveExploreHubIntroText` |
+| Auto-generated hubs | `SCENE_EXPLORE_HUB_DEFS.hubText` → `sceneExploreHubs.ts` | только хабы без act-pack node |
+| Literary poem text | `src/data/poems.ts` (**не редактировать**) | — |
+| Poem display names | `unifiedPoemRegistry.ts` | `getUnifiedPoem`, `enrichPoemMechanicsDisplay` |
+| Poem world/combat mechanics | `PoemPowerSystem.ts` / `combat/actions.ts` | effect impl; display из registry |
+| Achievements defs | `achievements.ts` | `AchievementEngine` |
+| Achievement unlock state | `worldSlice` (persisted) | — |
+| Story history (journal) | `visitedNodes` → `buildJournalNotes` | — |
+| Dialogue transcript | `uiSlice.conversationLog` | runtime only |
+| Lore codex | `loreEntries.ts` | — |
+| Golden path | `deriveGoldenPath.ts` (+ `goldenPath.ts` fallback) | `buildGuidedStoryPath` |
+| HUD panels | `orchestrator/types.ts` `PANEL_IDS` | panel stack reducer |
+
+**Правило explore-hub prose:** для `STORY_DEFINED_EXPLORE_HUB_IDS` (act1 trio, pier, factory, basement, solnysh) текст toast **не дублируется** в `sceneExploreHubRegistry` — только в story JSON / inline pack. Валидатор (`validateContentTruth` в `contentPipelineValidator`) падает, если `hubText` в registry дублирует story node.
+
+**Правило narrative open:** любой story/dialogue beat открывается через `presentNarrativeBeat(nodeId, kind)`, не через прямой `openNarrativeOverlay` из interaction path (кроме internal cleanup).
+
+```
+Данные (structures + texts/*.json, poems.ts, achievements.ts)
+        ↓
+narrativePackRegistry / contentTruthManifest resolvers
+        ↓
+Engine (presentNarrativeBeat, PoemPowerSystem, AchievementEngine, …)
+        ↓
+Store (uiSlice, playerState, worldSlice)
+        ↓
+UI (Orchestrator overlays, panel stack, journal)
+```
+
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -104,6 +143,8 @@ patrol→chase→engaged→cooldown, конус зрения проецируе�
 
 ### Поэтическая магия (`PoemPowerSystem.ts`)
 Стихи Владимира Лебедева (**тексты неприкосновенны**, `src/data/poems.ts`):
+- **Display SoT:** `unifiedPoemRegistry.ts` — имена и blurbs для world/combat;
+  `getPoemPower()` / `POEM_COMBAT_ABILITIES` берут display через `enrichPoemMechanicsDisplay`.
 - в бою — `POEM_COMBAT_ABILITIES` (кулдауны, баффы/дебаффы); pity в `combatRng.ts` / `buffSystem.ts`;
 - в исследовании — TTL-флаги в store (`activeTTLFlags`), монотонные часы `ttlClock.ts` (performance.now).
   Напр. `guiding_star_active` (poem_3) сжимает конусы зрения крипов до 45%.
@@ -123,9 +164,10 @@ patrol→chase→engaged→cooldown, конус зрения проецируе�
   Explore-hub узлы (`*_explore_mode`) держат `currentNodeId` для квестов/сейвов.
   **Closed-overlay hubs** (все walkable explore-хабы в `SCENE_EXPLORE_HUB_DEFS`):
   после cutscene/entry overlay закрывается — игрок ходит свободно, локация через
-  scene-toast (`enterSceneFreeExplorationHub`), действия через trigger zones;
+  scene-toast (`enterSceneFreeExplorationHub` + `resolveExploreHubIntroText`),
+  действия через trigger zones;
   `ui:exploration_message` → `EventNotificationPopup`. Реестр:
-  `CLOSED_OVERLAY_EXPLORE_HUB_IDS` в `sceneExploreHubRegistry.ts`.
+  `CLOSED_OVERLAY_EXPLORE_HUB_IDS` в `sceneExploreHubRegistry.ts` (topology only).
   **Trigger zones vs golden path (Acts 3–7, Phase 7 complete):** hub-продолжения
   из `GOLDEN_PATH_HUB_CONTINUE` (`sceneExploreHubs.ts`) и act-pack хабов
   проведены в 3D для всех walkable explore-хабов Acts 3–7:
@@ -303,19 +345,22 @@ Combat camera — отдельный `CombatCameraState` внутри cinematic 
 
 Пресеты: low = postFX off + Draco + procedural NPC; ultra = meshopt + full GLB.
 
-### Нарратив: packs и тексты
+### Нарратив: packs, тексты и presentation router
 
 ```
 src/data/story/
   act1.ts … act7.ts          — runtime nodes (lazy packs)
   structures/actN.structure.ts — декларативный spine (JSON-like)
-  texts/actN.json            — вынесенные тексты (миграция в процессе)
+  texts/actN.json            — prose + hubIntroText / hubRevisitText / guidanceHint
 src/data/narrative/
   narrativePackRegistry.ts   — bootstrap act1, load-on-demand
   applyStoryTexts.ts         — overlay текстов из JSON на structure nodes
+src/engine/narrative/
+  presentNarrativeBeat.ts    — единая точка открытия story/dialogue (hub | hud | VN)
+  narrativePresentationPolicy.ts — Act 1 diegetic scope
 ```
 
-~7700 строк TS-нарратива; JSON-тексты подключены для act1–7, полная миграция не завершена.
+~7700 строк TS-нарратива; JSON-тексты подключены для act1–7. Explore-hub toast и VN overlay могут иметь **разную** прозу (`text` vs `hubIntroText`) на одном node id — это намеренно.
 XSS: `sanitizePlainText` на основном пути рендера (`narrativePresentation.ts`).
 
 ### Физика / KCC degraded mode
@@ -370,14 +415,17 @@ XSS: `sanitizePlainText` на основном пути рендера (`narrati
 
 | Область | Статус |
 |---------|--------|
+| Content truth dual registry (CI eager vs runtime lazy) | parity test есть; validator ещё на eager STORY_NODES |
+| Golden path triple source | derive + manual fallback + per-node guidanceHint |
 | NPC behavioral FSM → 3D | ~30%, task #15 |
-| JSON narrative migration | тексты act1–7 есть, полный cutover нет |
+| JSON narrative migration | тексты act1–7 есть; hubIntroText — постепенно для act 2–7 |
 | Pause Escape vs panels | конфликт hotkeys |
 | Inventory z-index vs examine | P0 UI |
 | PostFX on low hero scenes | частично |
 | GameOrchestrator priorities | разнесены по файлам |
 | npcRegistry baseline | устаревшие id в тестах |
 | act7 mirror flags | только в structure JSON — сканер обновлён |
+| Cinematic registries | cutscenes / npcCutscenes / interactionSplashes — три схемы |
 
 Спринт-гейты и CI-команды — `ROADMAP.md`, skill `.cursor/skills/volodka-roadmap-automations/`.
 
@@ -421,11 +469,14 @@ npm run assets:bootstrap # CC0 production placeholders (первый депло�
 ## Правила для контрибьюторов (и агентов)
 
 1. Тексты стихов в `src/data/poems.ts` не редактируются.
-2. EventBus — только между слоями; внутри слоя — прямые вызовы/props.
-3. Engine не импортирует store — только GameActionDispatcher
+2. Display metadata стихов — только `unifiedPoemRegistry.ts`; mechanics-файлы — effect impl.
+3. Explore-hub prose для story-defined hubs — `act*.json` / story pack, не `sceneExploreHubRegistry.hubText`.
+4. Narrative open — через `presentNarrativeBeat`, не размазывать overlay dispatch.
+5. EventBus — только между слоями; внутри слоя — прямые вызовы/props.
+6. Engine не импортирует store — только GameActionDispatcher
    (`getGameSnapshot`, `dispatchGameAction`).
-4. Новый контент — данные, не код: квест = запись в `quests/actN.ts`,
+7. Новый контент — данные, не код: квест = запись в `quests/actN.ts`,
    враг на сцене = запись в `creepPatrols.ts`, предмет = `dynamicProps.ts`.
-5. Любая правка проходит `npm run check` перед коммитом.
-6. Deploy-архив исходников: `node scripts/create-deploy-archive.mjs`
-   → `deploy-archive/volodka-vercel-*.zip`.
+8. Любая правка проходит `npm run check` перед коммитом.
+9. Deploy-архив исходников: `node scripts/create-deploy-archive.mjs`
+   → `deploy-archive/volodka-vercel-*.zip` (или `DEPLOY_ARCHIVE_DIR`).

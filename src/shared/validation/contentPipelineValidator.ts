@@ -35,6 +35,11 @@ import {
   NPC_ID_ALIASES,
   getNpcIdForStoryNode } from '@/data/goldenPath';
 import { getGoldenPathDerivationReport } from '@/engine/guidedStory/buildGuidedStoryPath';
+import {
+  STORY_DEFINED_EXPLORE_HUB_IDS,
+  resolveExploreHubIntroText,
+} from '@/shared/contentTruthManifest';
+import { SCENE_EXPLORE_HUB_DEFS } from '@/shared/sceneExploreHubRegistry';
 import { QUEST_ITEM_DEFINITIONS } from '@/data/questItems';
 import { isKnownMinigameId, MINIGAME_COMPLETION_FLAGS } from '@/shared/constants/minigames';
 import { QUEST_MINIGAME_MAP } from '@/data/questMinigameMap';
@@ -773,6 +778,69 @@ function validateGoldenPath(reg: ReturnType<typeof buildSets>, out: ValidationIs
   }
 }
 
+function validateContentTruth(out: ValidationIssue[]): void {
+  for (const hubId of STORY_DEFINED_EXPLORE_HUB_IDS) {
+    const node = STORY_NODES[hubId];
+    if (!node) {
+      out.push(
+        issue(
+          'error',
+          'contentTruth',
+          `exploreHub/${hubId}`,
+          `story-defined explore hub missing from STORY_NODES`,
+        ),
+      );
+      continue;
+    }
+    if (!node.hubIntroText && !node.text) {
+      out.push(
+        issue(
+          'error',
+          'contentTruth',
+          `exploreHub/${hubId}`,
+          `story-defined explore hub must define hubIntroText or text in act JSON`,
+        ),
+      );
+    }
+    const def = SCENE_EXPLORE_HUB_DEFS.find((entry) => entry.hubId === hubId);
+    if (def?.hubText) {
+      out.push(
+        issue(
+          'error',
+          'contentTruth',
+          `sceneExploreHubRegistry/${hubId}`,
+          `hubText duplicates story node prose — move copy to act*.json hubIntroText`,
+        ),
+      );
+    }
+    const intro = resolveExploreHubIntroText(hubId, STORY_NODES);
+    if (!intro) {
+      out.push(
+        issue(
+          'error',
+          'contentTruth',
+          `exploreHub/${hubId}`,
+          `resolveExploreHubIntroText returned empty`,
+        ),
+      );
+    }
+  }
+
+  for (const def of SCENE_EXPLORE_HUB_DEFS) {
+    if (STORY_DEFINED_EXPLORE_HUB_IDS.has(def.hubId)) continue;
+    if (!def.hubText) {
+      out.push(
+        issue(
+          'error',
+          'contentTruth',
+          `sceneExploreHubRegistry/${def.hubId}`,
+          `auto-generated explore hub requires hubText in registry`,
+        ),
+      );
+    }
+  }
+}
+
 function validateAmbientContent(out: ValidationIssue[]): void {
   for (const item of validateAmbientSoundDefs()) {
     out.push(issue('error', 'ambient', item.path, item.message));
@@ -802,6 +870,7 @@ export function validateContentPipeline(): ValidationReport {
   validateCutscenes(reg, issues);
   validateQuestItems(reg, issues);
   validateGoldenPath(reg, issues);
+  validateContentTruth(issues);
   validateAmbientContent(issues);
 
   const errorCount = issues.filter((i) => i.severity === 'error').length;

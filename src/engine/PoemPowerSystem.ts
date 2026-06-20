@@ -35,6 +35,7 @@ import {
   scalePoemPowerSkillDelta,
 } from '@/engine/skills/passiveSkillModifiers';
 import { clamp } from '@/shared/utils/math';
+import { enrichPoemMechanicsDisplay } from '@/data/unifiedPoemRegistry';
 
 const PLAYER_ENERGY_MAX = 100;
 
@@ -549,7 +550,8 @@ const POEM_POWERS: Record<string, PoemPower> = {
 
 /** Get the power definition for a poem. Returns undefined if poem has no power. */
 export function getPoemPower(poemId: string): PoemPower | undefined {
-  return POEM_POWERS[poemId];
+  const raw = POEM_POWERS[poemId];
+  return raw ? enrichPoemMechanicsDisplay(raw, 'world') : undefined;
 }
 
 /** Check if a poem power can be used (not on cooldown, poem is collected). */
@@ -580,7 +582,7 @@ export function getCooldownRemaining(poemId: string): number {
 export function activatePoemPowerById(poemId: string): boolean {
   if (!canUsePower(poemId)) return false;
 
-  const power = POEM_POWERS[poemId];
+  const power = getPoemPower(poemId);
   if (!power) return false;
 
   const success = tryActivatePoemPower(poemId);
@@ -650,5 +652,5 @@ export function getActiveEffects(): ActiveEffect[] {
 
 /** Get all poem power definitions (for UI display). */
 export function getAllPoemPowers(): PoemPower[] {
-  return Object.values(POEM_POWERS);
+  return Object.values(POEM_POWERS).map((power) => enrichPoemMechanicsDisplay(power, 'world'));
 }

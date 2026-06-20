@@ -16,6 +16,7 @@ import { createBuff, addBuff } from './buffSystem';
 import { getEnemyDefenseReduction } from './buffSystem';
 import { COMBAT_CONSTANTS } from './formulas';
 import { rollPlayerDamage } from './combatRng';
+import { enrichPoemMechanicsRecord } from '@/data/unifiedPoemRegistry';
 
 function snap() {
   return getGameSnapshot();
@@ -30,7 +31,7 @@ function getSnapshotAttack(): number {
    §3 — POEM COMBAT ABILITIES (with cooldowns)
    ═══════════════════════════════════════════════════════════════ */
 
-export const POEM_COMBAT_ABILITIES: Record<string, PoemCombatAbility> = {
+const RAW_POEM_COMBAT_ABILITIES: Record<string, PoemCombatAbility> = {
   poem_1: {
     poemId: 'poem_1',
     name: 'Правда Глас',
@@ -502,6 +503,11 @@ export const POEM_COMBAT_ABILITIES: Record<string, PoemCombatAbility> = {
     },
   },
 };
+
+export const POEM_COMBAT_ABILITIES = enrichPoemMechanicsRecord(
+  RAW_POEM_COMBAT_ABILITIES,
+  'combat',
+);
 
 /* ═══════════════════════════════════════════════════════════════
    §3.5 — SIDE-EFFECT APPLICATION (P0-2.6)

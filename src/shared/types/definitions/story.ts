@@ -38,6 +38,10 @@ export interface StoryNode {
   readonly karmaThresholds?: KarmaThresholds;
   /** Atmospheric detail for screen readers (spoken before main text) */
   readonly contextNote?: string;
+  /** First-visit explore-hub location toast (closed-overlay model). */
+  readonly hubIntroText?: string;
+  /** Shorter revisit toast when re-entering an explore hub. */
+  readonly hubRevisitText?: string;
   /** Optional ambient bed path — layered when node opens */
   readonly ambientSound?: string;
   /** Override procedural ambient profile while this node is active */

@@ -4,37 +4,29 @@ import type { SceneId } from '@/shared/types/game';
 export interface SceneExploreHubDef {
   hubId: string;
   sceneId: SceneId;
-  hubText: string;
+  /** Location toast on first hub enter — omit when story node defines hubIntroText. */
+  hubText?: string;
   /** Shorter toast on revisit (ui:exploration_message). */
   hubTextRevisit?: string;
   /** Door / arrival nodes promoted to this hub on physical scene enter. */
   entryNodeIds: readonly string[];
 }
 
-/** Single source of truth for scene ↔ explore-hub mapping. */
+/** Single source of truth for scene ↔ explore-hub mapping (topology; prose via contentTruthManifest). */
 export const SCENE_EXPLORE_HUB_DEFS: readonly SceneExploreHubDef[] = [
   {
     hubId: 'explore_mode',
     sceneId: 'volodka_room',
-    hubText:
-      'Комната небольшая, но уютная в своём роде — стены увешаны распечатками кода и выцветшими фотографиями, в углу скрипит платяной шкаф. Рабочий стол — эпицентр жизни: три монитора, остывший кофе в кружке «Я ♥ БАГи», недописанное стихотворение на среднем экране. За стенами гудут серверы города на 50 герц. Дверь в коридор приоткрыта.',
-    hubTextRevisit: 'Комната та же. Кофе остыл ещё на градус.',
     entryNodeIds: ['start', 'go_home'],
   },
   {
     hubId: 'corridor_explore_mode',
     sceneId: 'volodka_corridor',
-    hubText:
-      'Коридор тянется в обе стороны — потёртый линолеум, облупившаяся краска, таблички с фамилиями на дверях. Лампочка под потолком мигает на 432 герца; в стенах, кажется, проходят не только соседи, но и данные. Почтовые ящики ржавеют. Зеркало отражает с задержкой.',
-    hubTextRevisit: 'Коридор. Лампочка мигает. Телефон молчит.',
     entryNodeIds: ['corridor_door'],
   },
   {
     hubId: 'street_bench_view',
     sceneId: 'street_night',
-    hubText:
-      'Улица залита неоновым светом — рекламные голограммы предлагают апгрейды, которых ты не просил. Дождь только что кончился; воздух пахнет озоном и мокрым бетоном. В переулке мигает «Синяя яма», вдалеке — башня IT-гильдии, как игла в сером небе.',
-    hubTextRevisit: 'Улица. Неон. Кафе в переулке.',
     entryNodeIds: ['street_bench'],
   },
   {
@@ -95,15 +87,11 @@ export const SCENE_EXPLORE_HUB_DEFS: readonly SceneExploreHubDef[] = [
   {
     hubId: 'factory_explore_mode',
     sceneId: 'abandoned_factory',
-    hubText:
-      'Заброшенный цех — ржавые станки, капающие трубы, эхо шагов под высоким потолком. Где-то здесь спрятано сердце старой гильдии.',
     entryNodeIds: ['abandoned_workshop', 'act2_network_initiation'],
   },
   {
     hubId: 'basement_explore_mode',
     sceneId: 'factory_basement',
-    hubText:
-      'Подвал завода — ряды серверных стоек, красный аварийный свет и гул «Зари-М». Воздух холодный, пахнет озоном и машинным маслом.',
     entryNodeIds: ['factory_basement', 'factory_basement_familiar'],
   },
   {
@@ -128,16 +116,11 @@ export const SCENE_EXPLORE_HUB_DEFS: readonly SceneExploreHubDef[] = [
   {
     hubId: 'pier_explore_mode',
     sceneId: 'river_pier',
-    hubText:
-      'Пирс у реки — костёр в бочке, лунная дорожка на воде, камыши и старая лодка. Вторая тусовка ЧК, теплее и ближе к воде.',
     entryNodeIds: ['pier_arrival'],
   },
   {
     hubId: 'solnysh_explore_mode',
     sceneId: 'solnysh_room',
-    hubText:
-      'Комната Солныш и Лёни — ковры с узором-стихотворением, акварели на стенах, запах льняного масла и свежего кофе с жаровни. Умка дремлет на подушке. Здесь время течёт по бабушкиным часам, а не по серверным логам.',
-    hubTextRevisit: 'Солныш. Кофе. Умка храпит.',
     entryNodeIds: ['solnysh_door'],
   },
   {

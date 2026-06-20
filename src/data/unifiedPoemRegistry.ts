@@ -529,6 +529,27 @@ export function getAllUnifiedPoems(): UnifiedPoemDescriptor[] {
   return Object.values(UNIFIED_POEM_REGISTRY);
 }
 
+/** Apply unified display metadata to poem mechanics (world/combat power defs). */
+export function enrichPoemMechanicsDisplay<
+  T extends { poemId: string; name: string; description: string },
+>(entry: T, context: 'world' | 'combat'): T {
+  const unified = UNIFIED_POEM_REGISTRY[entry.poemId];
+  if (!unified) return entry;
+  return {
+    ...entry,
+    name: context === 'world' ? unified.worldName : unified.combatName,
+    description: context === 'world' ? unified.worldDescription : unified.combatDescription,
+  };
+}
+
+export function enrichPoemMechanicsRecord<
+  T extends { poemId: string; name: string; description: string },
+>(record: Record<string, T>, context: 'world' | 'combat'): Record<string, T> {
+  return Object.fromEntries(
+    Object.entries(record).map(([id, entry]) => [id, enrichPoemMechanicsDisplay(entry, context)]),
+  ) as Record<string, T>;
+}
+
 if (import.meta.env?.DEV) {
   const registryIds = Object.keys(UNIFIED_POEM_REGISTRY);
   console.assert(
