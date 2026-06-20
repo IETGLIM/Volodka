@@ -128,6 +128,15 @@ export const POEM_WORLD_EFFECT_OVERRIDES: Partial<Record<string, Partial<PoemWor
     narrationLine: '«Каменная кожа — стих становится бронёй вокруг тела.»',
     worldHint: 'none',
   },
+  poem_7: {
+    category: 'exploration',
+    visualPreset: 'god_rays_gold',
+    audioCue: 'mystery',
+    durationMs: 4800,
+    worldTint: 'rgba(184, 240, 255, 0.14)',
+    narrationLine: '«Детский взгляд видит то, что взрослые перестали замечать.»',
+    worldHint: 'interaction_pulse',
+  },
   poem_16: {
     category: 'social',
     visualPreset: 'warm_echo',

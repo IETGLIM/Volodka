@@ -61,18 +61,6 @@ export function ExaminePanel({
     return () => window.removeEventListener('keydown', handleKey, true);
   }, [open, hasLinkedContent, onContinue, done]);
 
-  useEffect(() => {
-    if (!open) return;
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.code !== 'Escape') return;
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      onClose();
-    };
-    window.addEventListener('keydown', handleKey, true);
-    return () => window.removeEventListener('keydown', handleKey, true);
-  }, [open, onClose]);
-
   if (!open || !data) return null;
 
   const icon = data.icon || '🔍';

@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { ALL_NPC_DEFINITIONS } from '@/data/allNpcDefinitions';
-import { NPC_PROCEDURAL_MODEL_PLACEHOLDER, resolveNpcModelUrl, isRpmNpcOnDisk } from '@/config/npcModelRegistry';
-
+import {
+  NPC_PROCEDURAL_MODEL_PLACEHOLDER,
+  resolveNpcModelUrl,
+  resolveNpcVisualModelUrl,
+  isRpmNpcOnDisk,
+} from '@/config/npcModelRegistry';
+import { QUALITY_PRESETS } from '@/engine/graphics/qualityPresets';
 describe('npcDefinitions model paths', () => {
   it('resolves shipped GLB paths for story NPCs with explicit models', () => {
     const withGlb = ALL_NPC_DEFINITIONS.filter(
@@ -27,5 +32,12 @@ describe('npcDefinitions model paths', () => {
     for (const npc of procedural) {
       expect(resolveNpcModelUrl(npc.id, npc.modelPath)).toBeUndefined();
     }
+  });
+
+  it('uses procedural silhouettes for CC0 Quaternius (RPM not required)', () => {
+    const albert = ALL_NPC_DEFINITIONS.find((npc) => npc.id === 'albert');
+    expect(albert?.modelPath).toMatch(/\.glb$/);
+    expect(resolveNpcModelUrl('albert', albert?.modelPath)).toBeTruthy();
+    expect(resolveNpcVisualModelUrl('albert', albert?.modelPath, QUALITY_PRESETS.ultra.npcRenderMode)).toBeUndefined();
   });
 });

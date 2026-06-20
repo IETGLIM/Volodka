@@ -45,6 +45,17 @@ export function getNpcBehaviorState(npcId: string): NpcBehaviorState {
 }
 
 /**
+ * Authoritative FSM sync — bypasses transition validation.
+ * Used by `useNpcVisualBehavior` so registry matches resolved behavior on both mesh paths.
+ */
+export function syncNpcBehaviorState(npcId: string, next: NpcBehaviorState): boolean {
+  const current = getNpcBehaviorState(npcId);
+  if (current === next) return false;
+  npcBehaviorStateMap.set(npcId, next);
+  return true;
+}
+
+/**
  * Transition an NPC's behavioral state when the edge is valid.
  * Returns whether the state changed.
  */

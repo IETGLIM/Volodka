@@ -188,6 +188,7 @@ export class InteractionController {
         zone,
         snapshot.playerState.flags,
         snapshot.playerState.progression.currentAct,
+        snapshot.activeTTLFlags,
       )
     ) {
       devWarn(`[InteractionController] Zone "${triggerZoneId}" not available for current state`);

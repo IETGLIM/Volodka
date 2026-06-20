@@ -3,6 +3,7 @@ import type { GameAction } from '@/shared/gameBridge/gameActionBridge';
 import type { GameStoreState } from './types';
 import type { ActiveTTLFlag } from './activeTTLFlags';
 import { getPlayerStoreState } from './stores/playerStore';
+import { scaleStressWithPoemEffects } from '@/engine/poemEffects/poemTTLRuntime';
 import { getExplorationStoreState } from './stores/explorationStore';
 import { getWorldStoreState } from './stores/worldStore';
 import { getUIStoreState } from './stores/uiStore';
@@ -38,7 +39,14 @@ export function applyGameAction(_state: GameStoreState, action: GameAction): Par
     case 'quest/syncWallClockAnchors': world.syncActiveQuestWallClocks(); break;
     case 'player/addSkill': player.addSkill(action.skill, action.amount); break;
     case 'player/addEnergy': player.addEnergy(action.amount); break;
-    case 'player/addStress': player.addStress(action.amount); break;
+    case 'player/addStress': {
+      const scaled = scaleStressWithPoemEffects(
+        action.amount,
+        getPlayerStoreState().activeTTLFlags,
+      );
+      player.addStress(scaled);
+      break;
+    }
     case 'player/addKarma': player.addKarma(action.amount); break;
     case 'player/addXp': player.addXp(action.amount); break;
     case 'player/addCredits': player.addCredits(action.amount); break;

@@ -11,6 +11,7 @@ import { useNotificationSlot, NOTIFY_PRIORITY } from '@/hooks/useNotificationSlo
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { useGamePhase } from '@/store/selectors';
 import { useMobileDetection } from './orchestrator/useMobileDetection';
+import { useSuppressGameplayToasts } from '@/hooks/useSuppressGameplayToasts';
 import {
   getSystemAlertDurationMs,
   getSystemAlertTitle,
@@ -60,6 +61,7 @@ export function GameSystemToast() {
   const reducedMotion = useEffectiveReducedMotion();
   const isMobile = useMobileDetection();
   const mode = useGamePhase();
+  const suppressToasts = useSuppressGameplayToasts();
   const slotGranted = useNotificationSlot('system', NOTIFY_PRIORITY.system, alert !== null, {
     critical: true,
   });
@@ -109,6 +111,7 @@ export function GameSystemToast() {
   }, []);
 
   if (mode === 'menu' || mode === 'intro') return null;
+  if (suppressToasts) return null;
   if (!slotGranted || !alert) return null;
 
   const accent = ACCENT[alert.kind];

@@ -82,15 +82,16 @@ export function TriggerZoneProps() {
   const { preset } = useGraphicsQuality();
   const flags = useGameStore((s) => s.playerState.flags);
   const currentAct = useGameStore((s) => s.playerState.progression.currentAct);
+  const activeTTLFlags = useGameStore((s) => s.activeTTLFlags);
   const zones = useMemo(
     () =>
       TRIGGER_ZONES.filter(
         (z) =>
           z.sceneId === sceneId &&
           z.propModelId &&
-          isTriggerZoneAvailable(z, flags, currentAct),
+          isTriggerZoneAvailable(z, flags, currentAct, activeTTLFlags),
       ),
-    [sceneId, flags, currentAct],
+    [sceneId, flags, currentAct, activeTTLFlags],
   );
 
   if (

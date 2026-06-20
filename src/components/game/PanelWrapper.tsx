@@ -123,7 +123,7 @@ export function PanelWrapper({
   const isTop = panelId == null || isTopPanel(panelId);
   const notifyPanelExit = usePanelExitComplete();
 
-  /* ── Escape key handler ── */
+  /* ── Escape is handled centrally in useKeyboardShortcutManager (capture phase) ── */
   const handleClose = useCallback(() => {
     onClose();
   }, [onClose]);
@@ -134,19 +134,6 @@ export function PanelWrapper({
       handleClose();
     }
   }, [open, transitionPhase, handleClose]);
-
-  useEffect(() => {
-    if (!open || !isTop) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        e.stopPropagation();
-        handleClose();
-      }
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [open, isTop, handleClose]);
 
   const motionDuration = (seconds: number) => (reducedMotion ? 0 : seconds);
 

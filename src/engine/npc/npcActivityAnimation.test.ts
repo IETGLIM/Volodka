@@ -1,48 +1,101 @@
 import { describe, expect, it } from 'vitest';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 import {
-  resolveNpcActivityClipOverrides,
-  resolveNpcAnimationFromActivity,
+  resolveNpcVisualAnimationState,
   resolveInteractionNpcAnimationState,
-  shouldDeferToInteractionAnimation,
-} from './npcActivityAnimation';
+} from '@/engine/npc/npcActivityAnimation';
 
-describe('npcActivityAnimation', () => {
-  it('maps schedule activities to animation states', () => {
-    expect(resolveNpcAnimationFromActivity('idle')).toBe('idle');
-    expect(resolveNpcAnimationFromActivity('walk')).toBe('walk');
-    expect(resolveNpcAnimationFromActivity('talk')).toBe('talk');
-    expect(resolveNpcAnimationFromActivity('work')).toBe('sit');
-    expect(resolveNpcAnimationFromActivity('read')).toBe('sit');
-    expect(resolveNpcAnimationFromActivity('rest')).toBe('sit');
-    expect(resolveNpcAnimationFromActivity('sleep')).toBe('idle');
+describe('resolveNpcVisualAnimationState', () => {
+  it('maps interaction target Dialogue to talk', () => {
+    expect(
+      resolveNpcVisualAnimationState({
+        activity: 'idle',
+        interactionState: InteractionState.Dialogue,
+        isInteractionTarget: true,
+      }),
+    ).toBe('talk');
   });
 
-  it('maps schedule activities to Mixamo clip overrides', () => {
-    expect(resolveNpcActivityClipOverrides('work')).toEqual({ sit: 'working' });
-    expect(resolveNpcActivityClipOverrides('rest')).toEqual({ sit: 'sitting' });
-    expect(resolveNpcActivityClipOverrides('read')).toEqual({ sit: 'sitting' });
-    expect(resolveNpcActivityClipOverrides('sleep')).toEqual({ idle: 'sleeping' });
-    expect(resolveNpcActivityClipOverrides('idle')).toBeUndefined();
+  it('maps interaction target Align to listen', () => {
+    expect(
+      resolveNpcVisualAnimationState({
+        activity: 'idle',
+        interactionState: InteractionState.Align,
+        isInteractionTarget: true,
+      }),
+    ).toBe('listen');
   });
 
-  it('maps interaction states to talk/listen/idle GLB clips', () => {
+  it('maps interaction target Cutscene to listen', () => {
+    expect(
+      resolveNpcVisualAnimationState({
+        activity: 'walk',
+        interactionState: InteractionState.Cutscene,
+        isInteractionTarget: true,
+      }),
+    ).toBe('listen');
+  });
+
+  it('maps interaction target Lock to talk', () => {
+    expect(
+      resolveNpcVisualAnimationState({
+        activity: 'idle',
+        interactionState: InteractionState.Lock,
+        isInteractionTarget: true,
+      }),
+    ).toBe('talk');
+  });
+
+  it('maps patrol walk when not interaction target', () => {
+    expect(
+      resolveNpcVisualAnimationState({
+        activity: 'idle',
+        patrolActivity: 'walk',
+        interactionState: InteractionState.Idle,
+        isInteractionTarget: false,
+      }),
+    ).toBe('walk');
+  });
+
+  it('maps schedule work to sit', () => {
+    expect(
+      resolveNpcVisualAnimationState({
+        activity: 'work',
+        interactionState: InteractionState.Idle,
+        isInteractionTarget: false,
+      }),
+    ).toBe('sit');
+  });
+
+  it('maps schedule sleep to idle', () => {
+    expect(
+      resolveNpcVisualAnimationState({
+        activity: 'sleep',
+        interactionState: InteractionState.Idle,
+        isInteractionTarget: false,
+      }),
+    ).toBe('idle');
+  });
+
+  it('ignores interaction state when not the target', () => {
+    expect(
+      resolveNpcVisualAnimationState({
+        activity: 'read',
+        interactionState: InteractionState.Dialogue,
+        isInteractionTarget: false,
+      }),
+    ).toBe('sit');
+  });
+});
+
+describe('resolveInteractionNpcAnimationState', () => {
+  it('covers all InteractionState variants', () => {
     expect(resolveInteractionNpcAnimationState(InteractionState.Dialogue)).toBe('talk');
     expect(resolveInteractionNpcAnimationState(InteractionState.Lock)).toBe('talk');
     expect(resolveInteractionNpcAnimationState(InteractionState.Align)).toBe('listen');
     expect(resolveInteractionNpcAnimationState(InteractionState.Cutscene)).toBe('listen');
     expect(resolveInteractionNpcAnimationState(InteractionState.Approach)).toBe('idle');
-  });
-
-  it('defers to interaction bus during dialogue alignment', () => {
-    expect(
-      shouldDeferToInteractionAnimation(InteractionState.Dialogue, true),
-    ).toBe(true);
-    expect(
-      shouldDeferToInteractionAnimation(InteractionState.Idle, true),
-    ).toBe(false);
-    expect(
-      shouldDeferToInteractionAnimation(InteractionState.Dialogue, false),
-    ).toBe(false);
+    expect(resolveInteractionNpcAnimationState(InteractionState.Exit)).toBe('idle');
+    expect(resolveInteractionNpcAnimationState(InteractionState.Idle)).toBe('idle');
   });
 });

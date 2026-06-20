@@ -14,6 +14,7 @@ export interface PoemHighlightState {
 }
 
 const GUIDING_STAR_FLAG = 'guiding_star_active';
+const CHILD_GAZE_FLAG = 'child_gaze_active';
 
 const HIGHLIGHT_BY_HINT: Record<
   Exclude<PoemWorldHint, 'none'>,
@@ -71,6 +72,14 @@ export function resolvePoemExplorationHighlight(
       mode: 'exploration',
       pulse: !reducedMotion,
       color: '#ffd866',
+    };
+  }
+
+  if (isTTLFlagLive(activeTTLFlags, CHILD_GAZE_FLAG, now)) {
+    return {
+      mode: 'interaction',
+      pulse: !reducedMotion,
+      color: '#b8f0ff',
     };
   }
 

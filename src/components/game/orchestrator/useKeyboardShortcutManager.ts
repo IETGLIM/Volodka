@@ -3,9 +3,10 @@ import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
 import { PHOTO_EVENTS, PHOTO_EMPTY_PAYLOAD } from '@/engine/events';
 import {
-  closeOpenMinigame,
-  type MinigamePanelSetters,
-} from '@/shared/constants/minigames';
+  applyEscapeDismissAction,
+  resolveEscapeDismissAction,
+} from '@/engine/input/escapeDismissAction';
+import type { MinigamePanelSetters } from '@/shared/constants/minigames';
 import type { PanelType } from './types';
 import { blocksPanelShortcuts, type GamePhase } from '@/shared/gamePhase';
 
@@ -74,6 +75,7 @@ export function useKeyboardShortcutManager({
   const skipCutsceneRef = useRef(skipActiveCutscene);
   const closePanelRef = useRef(closePanel);
   const closeAllPanelsRef = useRef(closeAllPanels);
+  const dispatchPanelRef = useRef(dispatchPanel);
 
   useEffect(() => {
     panelStateRef.current = {
@@ -94,6 +96,7 @@ export function useKeyboardShortcutManager({
     skipCutsceneRef.current = skipActiveCutscene;
     closePanelRef.current = closePanel;
     closeAllPanelsRef.current = closeAllPanels;
+    dispatchPanelRef.current = dispatchPanel;
   });
 
   useEffect(() => {
@@ -104,19 +107,26 @@ export function useKeyboardShortcutManager({
       const ps = panelStateRef.current;
 
       if (e.code === 'Escape') {
-        if (skipCutsceneRef.current()) return;
+        if (skipCutsceneRef.current()) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          return;
+        }
 
-        if (ps.examineOpen) {
-          resetExamine();
-          clearPendingTriggerZone();
-          return;
-        }
-        if (closeOpenMinigame(ps, minigameSettersRef.current)) return;
-        if (ps.panelStackLength > 0) {
-          closePanelRef.current();
-          return;
-        }
-        if (ps.mode === 'exploration') dispatchPanel('menu');
+        const action = resolveEscapeDismissAction(ps);
+        if (action.type === 'noop') return;
+
+        e.preventDefault();
+        e.stopImmediatePropagation();
+
+        applyEscapeDismissAction(action, {
+          resetExamine,
+          clearPendingTriggerZone,
+          minigameSetters: minigameSettersRef.current,
+          minigameFlags: ps,
+          closePanel: () => closePanelRef.current(),
+          dispatchPanel: (panel) => dispatchPanelRef.current(panel),
+        });
         return;
       }
 
@@ -175,8 +185,8 @@ export function useKeyboardShortcutManager({
       }
     };
 
-    window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
+    window.addEventListener('keydown', handleKey, true);
+    return () => window.removeEventListener('keydown', handleKey, true);
   }, [
     dispatchPanel,
     closePanel,

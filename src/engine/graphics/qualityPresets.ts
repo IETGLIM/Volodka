@@ -53,6 +53,7 @@ export interface QualityPreset {
   /** Prefer lightmaps / baked probes when asset provides them */
   bakedLighting: boolean;
   compression: CompressionPreference;
+  /** NPC: procedural silhouettes until unique RPM/AI3DGen mesh on disk. */
   npcRenderMode: AssetRenderMode;
   environmentRenderMode: AssetRenderMode;
   /** Alias for legacy visualLite checks */
@@ -396,7 +397,7 @@ export function formatQualityPresetDetailRu(
     allowsGlbAssetRendering(preset.npcRenderMode)
     || allowsGlbAssetRendering(preset.environmentRenderMode);
   if (glbCapable) {
-    hints.push('3D-модели (GLB): от пресета «Среднее»');
+    hints.push('Уникальные аватары (RPM): от «Среднее»');
   }
   if (selectedPreset === 'ultra' || selectedPreset === 'high') {
     hints.push('Мокрые отражения на улице');

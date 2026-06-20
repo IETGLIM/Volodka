@@ -62,13 +62,7 @@ export const NPC_QUATERNIUS_MAP = [
   {
     source: 'male_01.glb',
     npcId: 'volodka',
-    publicPaths: [
-      'models/characters/volodka/volodka_lod0.glb',
-      'models/characters/volodka/volodka_lod1.glb',
-      'models/characters/volodka/volodka_lod2.glb',
-      'models/characters/volodka/volodka_lod0.draco.glb',
-      'models/characters/volodka/volodka_lod0.meshopt.glb',
-    ],
+    publicPaths: ['models/characters/volodka/volodka_lod0.glb'],
   },
   { source: 'male_02.glb', npcId: 'albert', publicPaths: ['models/npcs/albert.glb'] },
   { source: 'male_03.glb', npcId: 'office_dmitry', publicPaths: ['models/npcs/office_dmitry.glb'] },
@@ -215,23 +209,8 @@ function extractNormalizedGlbs() {
   console.log('\n✓ Normalized GLBs → assets-source/ai3dgen/npcs/male_*.glb, female_*.glb');
 }
 
-function importToPublic() {
-  let copied = 0;
-  for (const entry of NPC_QUATERNIUS_MAP) {
-    const src = path.join(SOURCE_NPCS, entry.source);
-    if (!existsSync(src)) {
-      console.warn(`⚠ Skip ${entry.source} — not on disk`);
-      continue;
-    }
-    for (const rel of entry.publicPaths) {
-      const dest = path.join(PUBLIC, rel);
-      mkdirSync(path.dirname(dest), { recursive: true });
-      copyFileSync(src, dest);
-      copied += 1;
-      console.log(`  ✓ ${entry.source} → public/${rel}`);
-    }
-  }
-  console.log(`\n✓ Staged ${copied} public GLB path(s) from Quaternius sources`);
+function processCatalogAssets() {
+  run('node', ['scripts/process-catalog-assets.mjs'], 'process-catalog (Draco/Meshopt/LOD)');
 }
 
 function printStatus() {
@@ -294,10 +273,10 @@ async function main() {
 
   if (args.all || args.download) await downloadPack();
   if (args.all || args.extract) extractNormalizedGlbs();
-  if (args.all || args.import) importToPublic();
+  if (args.all || args.import) processCatalogAssets();
 
   if (args.all || args.import) {
-    console.log('\nNext: npm run assets:validate && npm run check');
+    console.log('\nNext: npm run assets:sync-shipped && npm run assets:validate');
   }
 }
 

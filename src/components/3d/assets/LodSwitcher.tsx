@@ -3,8 +3,7 @@ import { useThree } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
-import type { GltfAssetDefinition } from '@/config/assetManifest';
-import { resolveLodUrl } from '@/config/assetManifest';
+import { resolveAssetUrl, type GltfAssetDefinition } from '@/config/assetManifest';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 
@@ -34,10 +33,18 @@ export function LodSwitcher({ asset, children }: LodSwitcherProps) {
   const { camera } = useThree();
   const { preset } = useGraphicsQuality();
 
-  const urls = useMemo(
-    () => asset.lods.map((lod) => lod.url).filter(Boolean),
-    [asset.lods],
-  );
+  const urls = useMemo(() => {
+    const set = new Set<string>();
+    for (const lod of asset.lods) {
+      if (lod.url) set.add(lod.url);
+    }
+    if (asset.variants) {
+      for (const variantUrl of Object.values(asset.variants)) {
+        if (variantUrl) set.add(variantUrl);
+      }
+    }
+    return [...set];
+  }, [asset.lods, asset.variants]);
 
   useEffect(() => {
     for (const url of urls) {
@@ -54,7 +61,7 @@ export function LodSwitcher({ asset, children }: LodSwitcherProps) {
         anchorRef.current.getWorldPosition(worldPosRef.current),
       );
       distanceRef.current = dist;
-      const next = resolveLodUrl(asset, dist, preset.lodBias);
+      const next = resolveAssetUrl(asset, preset.compression, dist, preset.lodBias);
       if (next) activeUrlRef.current = next;
     },
     { label: 'LodSwitcher' },

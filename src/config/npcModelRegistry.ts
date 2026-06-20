@@ -1,6 +1,9 @@
 /* ─── Volodka RPG – per-NPC animated GLB paths ─── */
-/* Priority: Ready Player Me > Quaternius CC0 > Khronos CC0 interim. */
+/* Visual policy: story NPCs render as procedural archetypes (see proceduralNpcAvatarCatalog).
+   Quaternius CC0 GLBs stay on disk for rig retargeting and CI — not in-world identity.
+   Optional unique GLB override only when explicitly on disk (AI3DGen / manual import). */
 
+import type { AssetRenderMode } from '@/engine/graphics/qualityPresets';
 import {
   getRpmNpcByRegistryId,
   getRpmPublicUrls,
@@ -307,5 +310,29 @@ export function getRpmPendingPublicUrls(): string[] {
 
 export function isRpmNpcOnDisk(npcId: string): boolean {
   return isRpmOnDiskForNpc(npcId);
+}
+
+/** Unique identity mesh on disk — only these replace procedural silhouettes in-world. */
+export function isUniqueNpcMeshOnDisk(npcId: string): boolean {
+  return isRpmOnDiskForNpc(npcId);
+}
+
+/**
+ * Whether the renderer should draw a rigged GLB for this NPC.
+ * Quaternius/Khronos CC0 placeholders never pass — procedural archetypes stay visible.
+ */
+export function shouldRenderGltfNpc(npcId: string, renderMode: AssetRenderMode): boolean {
+  if (renderMode === 'procedural') return false;
+  return isUniqueNpcMeshOnDisk(npcId);
+}
+
+/** URL for in-world NPC rendering (respects visual identity policy). */
+export function resolveNpcVisualModelUrl(
+  npcId: string,
+  modelPath: string | undefined,
+  renderMode: AssetRenderMode,
+): string | undefined {
+  if (!shouldRenderGltfNpc(npcId, renderMode)) return undefined;
+  return resolveNpcModelUrl(npcId, modelPath);
 }
 

@@ -37,6 +37,7 @@ import {
 import { countCollectedMainPoems, TOTAL_MAIN_POEMS } from '@/data/poemCollectionMeta';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { bottomStatusEffectsPx } from '@/shared/constants/hudLayout';
+import { PoemActiveEffectsHudSlot } from '@/components/game/poemActiveEffects/PoemActiveEffectsHud';
 import { eventBus } from '@/engine/EventBus';
 import { PHOTO_EMPTY_PAYLOAD, PHOTO_EVENTS } from '@/engine/events';
 import type { SecondaryAction } from '@/components/game/hud/hudTypes';
@@ -656,6 +657,9 @@ export function ExplorationHUD(props: HUDProps) {
           </div>
         </div>
       </div>
+
+      {/* ── Live poem TTL effects (desktop left stack) ── */}
+      <PoemActiveEffectsHudSlot />
 
       {/* ── Status Effects Bar (desktop: bottom-right, mobile: bottom-center) ── */}
       <div className="absolute pointer-events-auto hidden lg:block" style={{ bottom: bottomStatusEffectsPx(), right: 16 }}>

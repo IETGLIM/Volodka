@@ -191,15 +191,10 @@ async function ensureRemoteAssets() {
 }
 
 function stageProductionLayout() {
-  // Hero Volodka — RiggedFigure LOD chain (human rig; replace after AI3DGen + Blender pass)
-  const heroBase = 'models/khronos/RiggedFigure.glb';
-  stageCopy(heroBase, [
-    'models/characters/volodka/volodka_lod0.glb',
-    'models/characters/volodka/volodka_lod1.glb',
-    'models/characters/volodka/volodka_lod2.glb',
-    'models/characters/volodka/volodka_lod0.draco.glb',
-    'models/characters/volodka/volodka_lod0.meshopt.glb',
-  ]);
+  // Hero Volodka — single interim lod0; process-catalog builds real LOD/compression chain
+  if (!existsSync(path.join(QUATERNIUS_SOURCE, 'male_01.glb'))) {
+    stageCopy('models/khronos/RiggedFigure.glb', ['models/characters/volodka/volodka_lod0.glb']);
+  }
 
   // P0/P1 NPCs — one CC0 silhouette per pair max until AI3DGen Pro drops land
   stageCopy('models/khronos/RiggedFigure.glb', ['models/npcs/albert.glb', 'models/npcs/kira.glb']);
@@ -218,18 +213,7 @@ function stageProductionLayout() {
   // FPS arms — CC0 Soldier rig (replace with Drillimpact PSX arms when manually added)
   stageCopy('models/khronos/Soldier.glb', ['models/fps/fps_arms.glb']);
 
-  // Environment bundles — distinct CC0 props per variant
-  stageCopy('models/khronos/BrainStem.glb', ['models/environments/cafe/props_lod0.glb']);
-  stageCopy('models/khronos/DamagedHelmet.glb', ['models/environments/cafe/props_lod1.glb']);
-  stageCopy('models/khronos/Lantern.glb', [
-    'models/environments/cafe/props.draco.glb',
-    'models/environments/cafe/props.meshopt.glb',
-  ]);
-
-  // Pine LOD chain — distinct silhouettes (interim until AI3DGen vegetation)
-  stageCopy('models/khronos/Avocado.glb', ['models/vegetation/pine/pine_lod0.glb']);
-  stageCopy('models/khronos/Lantern.glb', ['models/vegetation/pine/pine_lod1.glb']);
-  stageCopy('models/khronos/WaterBottle.glb', ['models/vegetation/pine/pine_lod2.glb']);
+  // Environment / vegetation — process-catalog builds real LOD+compression from Khronos interim
 }
 
 /** Kenney interiors when present; otherwise distinct CC0 stubs per shell. */

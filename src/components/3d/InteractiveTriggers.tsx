@@ -67,6 +67,7 @@ export function InteractiveTriggers({
     currentAct,
     timeOfDay: exitTimeOfDay,
   } = useSceneExitState();
+  const activeTTLFlags = useGameStore((s) => s.activeTTLFlags);
   const timeOfDay = useTimeOfDay();
   const scheduleCtx = useScheduleContext();
   const zones = useMemo(
@@ -74,9 +75,9 @@ export function InteractiveTriggers({
       TRIGGER_ZONES.filter(
         (z) =>
           z.sceneId === sceneId &&
-          isTriggerZoneAvailable(z, playerFlags, currentAct),
+          isTriggerZoneAvailable(z, playerFlags, currentAct, activeTTLFlags),
       ),
-    [sceneId, playerFlags, currentAct],
+    [sceneId, playerFlags, currentAct, activeTTLFlags],
   );
 
   const sceneExits = useMemo(

@@ -15,6 +15,7 @@ import { useNotificationSlot, NOTIFY_PRIORITY } from '@/hooks/useNotificationSlo
 import { explorationEventToastTopPx } from '@/shared/constants/hudLayout';
 import { sanitizePlainText } from '@/shared/utils/sanitizePlainText';
 import { useGamePhase } from '@/store/selectors';
+import { useSuppressGameplayToasts } from '@/hooks/useSuppressGameplayToasts';
 
 /* ─── Types ─── */
 
@@ -328,7 +329,9 @@ export function EventNotificationPopup() {
   }, []);
 
   const mode = useGamePhase();
+  const suppressToasts = useSuppressGameplayToasts();
   if (mode === 'menu' || mode === 'intro') return null;
+  if (suppressToasts) return null;
   if (!slotGranted) return null;
 
   /* ── Render ── */

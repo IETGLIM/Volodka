@@ -43,6 +43,38 @@ export interface GltfAssetDefinition {
 
 const MODELS = '/models';
 
+/** Map game NPC id → ASSET_MANIFEST key (when they differ). */
+export const NPC_ID_TO_MANIFEST: Readonly<Record<string, string>> = {
+  volodka: 'player_volodka',
+  maria: 'npc_maria_ai3dgen',
+  fisherman_trofim: 'npc_trofim',
+};
+
+function npcCharacterAsset(
+  manifestId: string,
+  fileBase: string,
+  lod1Distance = 15,
+  lod2Distance = 35,
+): GltfAssetDefinition {
+  const base = `${MODELS}/npcs/${fileBase}`;
+  return {
+    id: manifestId,
+    category: 'character',
+    lods: [
+      { url: `${base}.glb`, maxDistance: 0 },
+      { url: `${base}_lod1.glb`, maxDistance: lod1Distance },
+      { url: `${base}_lod2.glb`, maxDistance: lod2Distance },
+    ],
+    variants: {
+      none: `${base}.glb`,
+      draco: `${base}.draco.glb`,
+      meshopt: `${base}.meshopt.glb`,
+    },
+    castShadow: true,
+    shipped: true,
+  };
+}
+
 /** Processed asset catalog — extend as art pipeline grows. */
 export const ASSET_MANIFEST: Record<string, GltfAssetDefinition> = {
   fps_arms: {
@@ -68,103 +100,44 @@ export const ASSET_MANIFEST: Record<string, GltfAssetDefinition> = {
     castShadow: true,
     shipped: true,
   },
-  npc_cafe_barista: {
-    id: 'npc_cafe_barista',
-    category: 'character',
-    lods: [{ url: `${MODELS}/npcs/cafe_barista.glb`, maxDistance: 0 }],
-    castShadow: true,
-    shipped: true,
-  },
-  npc_office_colleague: {
-    id: 'npc_office_colleague',
-    category: 'character',
-    lods: [{ url: `${MODELS}/npcs/office_colleague.glb`, maxDistance: 0 }],
-    castShadow: true,
-    shipped: true,
-  },
-  /** AI3DGen pipeline targets — flip shipped after import (see ai3dgenAssetCatalog.ts). */
-  npc_albert: {
-    id: 'npc_albert',
-    category: 'character',
-    lods: [{ url: `${MODELS}/npcs/albert.glb`, maxDistance: 0 }],
-    castShadow: true,
-    shipped: true,
-  },
-  npc_zarema: {
-    id: 'npc_zarema',
-    category: 'character',
-    lods: [{ url: `${MODELS}/npcs/zarema.glb`, maxDistance: 0 }],
-    castShadow: true,
-    shipped: true,
-  },
-  npc_maria_ai3dgen: {
-    id: 'npc_maria_ai3dgen',
-    category: 'character',
-    lods: [{ url: `${MODELS}/npcs/maria.glb`, maxDistance: 0 }],
-    castShadow: true,
-    shipped: true,
-  },
-  npc_office_alexander: {
-    id: 'npc_office_alexander',
-    category: 'character',
-    lods: [{ url: `${MODELS}/npcs/office_alexander.glb`, maxDistance: 0 }],
-    castShadow: true,
-    shipped: true,
-  },
-  npc_office_dmitry: {
-    id: 'npc_office_dmitry',
-    category: 'character',
-    lods: [{ url: `${MODELS}/npcs/office_dmitry.glb`, maxDistance: 0 }],
-    castShadow: true,
-    shipped: true,
-  },
-  npc_viktor: {
-    id: 'npc_viktor',
-    category: 'character',
-    lods: [{ url: `${MODELS}/npcs/viktor.glb`, maxDistance: 0 }],
-    castShadow: true,
-    shipped: true,
-  },
-  npc_kira: {
-    id: 'npc_kira',
-    category: 'character',
-    lods: [{ url: `${MODELS}/npcs/kira.glb`, maxDistance: 0 }],
-    castShadow: true,
-    shipped: true,
-  },
-  npc_boris: {
-    id: 'npc_boris',
-    category: 'character',
-    lods: [{ url: `${MODELS}/npcs/boris.glb`, maxDistance: 0 }],
-    castShadow: true,
-    shipped: true,
-  },
-  npc_tamara: {
-    id: 'npc_tamara',
-    category: 'character',
-    lods: [{ url: `${MODELS}/npcs/tamara.glb`, maxDistance: 0 }],
-    castShadow: true,
-    shipped: true,
-  },
-  npc_grisha: {
-    id: 'npc_grisha',
-    category: 'character',
-    lods: [{ url: `${MODELS}/npcs/grisha.glb`, maxDistance: 0 }],
-    castShadow: true,
-    shipped: true,
-  },
+  npc_cafe_barista: npcCharacterAsset('npc_cafe_barista', 'cafe_barista'),
+  npc_office_colleague: npcCharacterAsset('npc_office_colleague', 'office_colleague'),
+  npc_albert: npcCharacterAsset('npc_albert', 'albert'),
+  npc_zarema: npcCharacterAsset('npc_zarema', 'zarema'),
+  npc_maria_ai3dgen: npcCharacterAsset('npc_maria_ai3dgen', 'maria'),
+  npc_office_alexander: npcCharacterAsset('npc_office_alexander', 'office_alexander'),
+  npc_office_dmitry: npcCharacterAsset('npc_office_dmitry', 'office_dmitry'),
+  npc_viktor: npcCharacterAsset('npc_viktor', 'viktor'),
+  npc_kira: npcCharacterAsset('npc_kira', 'kira'),
+  npc_boris: npcCharacterAsset('npc_boris', 'boris'),
+  npc_tamara: npcCharacterAsset('npc_tamara', 'tamara'),
+  npc_grisha: npcCharacterAsset('npc_grisha', 'grisha'),
+  npc_maxim: npcCharacterAsset('npc_maxim', 'maxim'),
+  npc_zeka: npcCharacterAsset('npc_zeka', 'zeka'),
+  npc_trofim: npcCharacterAsset('npc_trofim', 'trofim'),
+  npc_kate: npcCharacterAsset('npc_kate', 'kate'),
+  npc_anya: npcCharacterAsset('npc_anya', 'anya'),
+  npc_baba_zina: npcCharacterAsset('npc_baba_zina', 'baba_zina'),
+  npc_solnysh: npcCharacterAsset('npc_solnysh', 'solnysh'),
+  npc_chk_ru: npcCharacterAsset('npc_chk_ru', 'chk_ru'),
+  npc_chk_based: npcCharacterAsset('npc_chk_based', 'chk_based'),
+  npc_chk_stalker: npcCharacterAsset('npc_chk_stalker', 'chk_stalker'),
+  npc_chk_smert: npcCharacterAsset('npc_chk_smert', 'chk_smert'),
+  npc_chk_elis: npcCharacterAsset('npc_chk_elis', 'chk_elis'),
+  npc_chk_ritka: npcCharacterAsset('npc_chk_ritka', 'chk_ritka'),
   env_cafe_props: {
     id: 'env_cafe_props',
     category: 'environment',
     lods: [
       { url: `${MODELS}/environments/cafe/props_lod0.glb`, maxDistance: 0 },
       { url: `${MODELS}/environments/cafe/props_lod1.glb`, maxDistance: 20 },
+      { url: `${MODELS}/environments/cafe/props_lod2.glb`, maxDistance: 40 },
     ],
     variants: {
+      none: `${MODELS}/environments/cafe/props_lod0.glb`,
       draco: `${MODELS}/environments/cafe/props.draco.glb`,
       meshopt: `${MODELS}/environments/cafe/props.meshopt.glb`,
     },
-    // textureAtlas / bakedLightmap — add when KTX2 cafe pack lands (assets:process)
     instancing: true,
     receiveShadow: true,
     shipped: true,
@@ -286,16 +259,56 @@ export function resolveLodUrl(
   return sorted[sorted.length - 1]?.url ?? asset.lods[0].url;
 }
 
-/** Pick compression variant matching quality preset. Falls back to nearest LOD0. */
+/** Manifest key for an in-game NPC id, if catalogued. */
+export function getNpcManifestId(npcId: string): string | undefined {
+  const mapped = NPC_ID_TO_MANIFEST[npcId];
+  if (mapped && ASSET_MANIFEST[mapped]) return mapped;
+  const direct = `npc_${npcId}`;
+  if (ASSET_MANIFEST[direct]) return direct;
+  return undefined;
+}
+
+/**
+ * Pick url with distance LOD, then compression variant on the highest-detail LOD only.
+ * Simplified LOD meshes are already smaller — compression variants apply to lod0.
+ */
+export function resolveAssetUrl(
+  asset: GltfAssetDefinition,
+  compression: CompressionPreference,
+  distance: number,
+  lodBias: number,
+): string {
+  const lodUrl = resolveLodUrl(asset, distance, lodBias);
+  const lod0Url = asset.lods[0]?.url;
+  if (lod0Url && lodUrl === lod0Url && compression !== 'none') {
+    const variant = asset.variants?.[compression];
+    if (variant) return variant;
+  }
+  return lodUrl;
+}
+
+/** @deprecated Use resolveAssetUrl — kept for call-site compatibility during migration. */
 export function resolveVariantUrl(
   asset: GltfAssetDefinition,
   compression: CompressionPreference,
   distance: number,
   lodBias: number,
 ): string {
-  const variant = asset.variants?.[compression];
-  if (variant) return variant;
-  return resolveLodUrl(asset, distance, lodBias);
+  return resolveAssetUrl(asset, compression, distance, lodBias);
+}
+
+/** Resolve processed NPC url (LOD + compression) when manifest entry is shipped. */
+export function resolveNpcAssetUrl(
+  npcId: string,
+  compression: CompressionPreference,
+  distance: number,
+  lodBias: number,
+): string | undefined {
+  const manifestId = getNpcManifestId(npcId);
+  if (!manifestId) return undefined;
+  const asset = ASSET_MANIFEST[manifestId];
+  if (!asset || !isAssetEffectiveShipped(manifestId)) return undefined;
+  return resolveAssetUrl(asset, compression, distance, lodBias);
 }
 
 /** KTX2 atlas path for current texture scale tier. */

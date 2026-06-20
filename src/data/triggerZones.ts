@@ -1,6 +1,8 @@
 /* ─── Volodka RPG – trigger zones for interactive objects ─── */
 
 import type { SceneId, StoryEffect, InteractionType, ExamineData } from '@/shared/types/game';
+import type { ActiveTTLFlagMap } from '@/shared/activeTTLFlags';
+import { isActiveTTLFlagLive } from '@/shared/activeTTLFlags';
 import { CHK_TRIGGER_ZONES } from './chkTolpa/triggerZones';
 import { NARRATIVE_EXPANSION_TRIGGER_ZONES } from './narrativeExpansionTriggerZones';
 
@@ -38,6 +40,8 @@ export interface TriggerZone {
   linkedNpcId?: string;
   /** Minimum act required for this trigger zone to be active (1 or 2) */
   requiredAct?: number;
+  /** Hide until this poem-power TTL flag is live (e.g. child_gaze_active). */
+  hiddenUntilPoemFlag?: string;
   /** Automatically trigger effects on zone enter (for combat encounters, traps, etc.) */
   autoTrigger?: boolean;
   /** Interaction splash preset id from interactionSplashes.ts — overrides type defaults */
@@ -82,10 +86,14 @@ export function isTriggerZoneAvailable(
   zone: TriggerZone,
   flags: Record<string, boolean | undefined>,
   currentAct: number,
+  activeTTLFlags?: ActiveTTLFlagMap,
 ): boolean {
   if (zone.requiredAct && currentAct < zone.requiredAct) return false;
   if (zone.requiredFlag && !flags[zone.requiredFlag]) return false;
   if (zone.hiddenWhenFlag && flags[zone.hiddenWhenFlag]) return false;
+  if (zone.hiddenUntilPoemFlag && !isActiveTTLFlagLive(activeTTLFlags, zone.hiddenUntilPoemFlag)) {
+    return false;
+  }
   return true;
 }
 
@@ -1371,7 +1379,8 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     sceneId: 'library_day',
     position: [-3.0, 1.0, -2.0],
     size: [0.8, 2.0, 2.0],
-    enterToast: 'За книжной полкой — спрятанный листок с текстом. Это стихотворение.',
+    hiddenUntilPoemFlag: 'child_gaze_active',
+    enterToast: 'За книжной полкой — спрятанный листок с текстом. Детский Взгляд открыл его.',
     isOneTime: true,
     interactionType: 'take',
     interactionLabel: 'Достать стихотворение',

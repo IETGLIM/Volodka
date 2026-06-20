@@ -33,6 +33,8 @@ export const EXPLORATION_HUD_LAYOUT = {
   /** Bottom-right stack (px from viewport bottom) */
   BOTTOM_AMBIENT_MIXER: 16,
   BOTTOM_STATUS_EFFECTS: 72,
+  /** Live poem TTL chips — above status effects on the left */
+  BOTTOM_POEM_ACTIVE_EFFECTS: 124,
   BOTTOM_MORAL_COMPASS: 128,
   BOTTOM_AUTOSAVE: 16,
   BOTTOM_QUEST_TOAST: 76,
@@ -169,6 +171,21 @@ export function bottomAmbientMixerPx(): number {
 
 export function bottomStatusEffectsPx(): number {
   return EXPLORATION_HUD_LAYOUT.BOTTOM_STATUS_EFFECTS;
+}
+
+export function bottomPoemActiveEffectsPx(): number {
+  return EXPLORATION_HUD_LAYOUT.BOTTOM_POEM_ACTIVE_EFFECTS;
+}
+
+/** Mobile: poem TTL chips sit above the poetry power bar. */
+export function bottomPoemActiveEffectsMobilePx(isMobile = false): number {
+  return (
+    EXPLORATION_HUD_LAYOUT.BOTTOM_POETRY
+    + EXPLORATION_HUD_LAYOUT.BOTTOM_POETRY_HEIGHT
+    + EXPLORATION_HUD_LAYOUT.SLOT_GAP
+    + (isMobile ? EXPLORATION_HUD_LAYOUT.MOBILE_BOTTOM_CONTROLS_RESERVE : 0)
+    + 52
+  );
 }
 
 export function bottomMoralCompassPx(): number {

@@ -3,7 +3,7 @@ import { Suspense, useMemo, useRef } from 'react';
 import { useGLTF } from '@react-three/drei';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
-import { getAssetDefinition, isAssetEffectiveShipped, resolveVariantUrl } from '@/config/assetManifest';
+import { getAssetDefinition, isAssetEffectiveShipped, resolveAssetUrl } from '@/config/assetManifest';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
 import {
   GltfPreloadPriority,
@@ -61,7 +61,7 @@ function GltfAssetInner({
   const scaleProp =
     typeof scale === 'number' ? ([scale, scale, scale] as [number, number, number]) : scale;
 
-  const defaultUrl = resolveVariantUrl(asset, preset.compression, 0, preset.lodBias);
+  const defaultUrl = resolveAssetUrl(asset, preset.compression, 0, preset.lodBias);
   const useDistanceLod = asset.lods.length > 1;
 
   return (

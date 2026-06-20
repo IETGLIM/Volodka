@@ -51,6 +51,7 @@ import { getPlayerAttack, getPlayerDefense, getPlayerMaxHp, tickPowerCooldowns, 
 import { initCombatRngForEncounter, SeededCombatRng, type CombatRngState } from './combat/combatRng';
 import { getFleeChanceBonus, scaleEnemyDamageByDifficulty } from './combat/combatDifficulty';
 import { getPassiveSkillModifiers } from '@/engine/skills/passiveSkillModifiers';
+import { applyExplorationPoemCombatBridge } from '@/engine/poemEffects/poemTTLRuntime';
 import { ENEMY_TEMPLATES, resolveEnemyType } from './combat/enemies';
 import {
   POEM_COMBAT_ABILITIES,
@@ -344,31 +345,36 @@ function startCombatImmediate(
   const combatRng = initCombatRngForEncounter(playerState, resolvedType);
   dispatchGameAction({ type: 'player/bumpCombatEncounterSeq' });
 
-  combat.setState({
-    enemy,
-    playerHp: playerMaxHp,
-    playerMaxHp,
-    turn: 1,
-    isPlayerTurn: true,
-    playerDefending: false,
-    enemyDefending: false,
-    log: [
-      { turn: 0, text: `${enemy.emoji} ${enemy.name} появляется!`, type: 'info' },
-    ],
-    status: 'active',
-    powerCooldowns: {},
-    enemyDefenseReduction: 0,
-    doubleAttack: false,
-    buffs: [],
-    fleeAttempts: 0,
-    _nextBuffId: 1,
-    /* ── Enhanced Combat ── */
-    comboCount: 0,
-    maxCombo: 0,
-    lastCritical: false,
-    lastPoemPowersUsed: [null, null],
-    lastUsedPoemId: null,
-    rng: combatRng });
+  const openingCombatState = applyExplorationPoemCombatBridge(
+    {
+      enemy,
+      playerHp: playerMaxHp,
+      playerMaxHp,
+      turn: 1,
+      isPlayerTurn: true,
+      playerDefending: false,
+      enemyDefending: false,
+      log: [
+        { turn: 0, text: `${enemy.emoji} ${enemy.name} появляется!`, type: 'info' },
+      ],
+      status: 'active',
+      powerCooldowns: {},
+      enemyDefenseReduction: 0,
+      doubleAttack: false,
+      buffs: [],
+      fleeAttempts: 0,
+      _nextBuffId: 1,
+      comboCount: 0,
+      maxCombo: 0,
+      lastCritical: false,
+      lastPoemPowersUsed: [null, null],
+      lastUsedPoemId: null,
+      rng: combatRng,
+    },
+    state.activeTTLFlags,
+  );
+
+  combat.setState(openingCombatState);
 
   dispatchGameAction({ type: 'story/setCombatActive', active: true });
   const encounterLabel = options?.encounterName ?? enemy.name;

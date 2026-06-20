@@ -4,6 +4,7 @@ import { useGameStore } from '@/store/gameStore';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { AriaLiveRegion } from '@/components/a11y/AriaLiveRegion';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { useSuppressGameplayToasts } from '@/hooks/useSuppressGameplayToasts';
 import { LazyFirstReadingCelebration, LazyQuestAcceptDialog, LazyQuestCompleteDialog } from './lazyPanels';
 import type { PanelCoordinatorResult } from './usePanelCoordinator';
 
@@ -30,6 +31,7 @@ export function OrchestratorQuestOverlays({
   setQuestChainUnlock,
 }: Props) {
   const reducedMotion = useEffectiveReducedMotion();
+  const suppressToasts = useSuppressGameplayToasts();
 
   const questChainAriaMessage = useMemo(() => {
     if (!questChainUnlock) return '';
@@ -73,7 +75,7 @@ export function OrchestratorQuestOverlays({
       )}
 
       <AnimatePresence>
-        {questChainUnlock && (
+        {questChainUnlock && !suppressToasts && (
           <motion.div
             key="quest-chain-unlock"
             data-testid="quest-chain-unlock-toast"

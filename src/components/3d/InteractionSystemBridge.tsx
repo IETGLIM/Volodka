@@ -30,6 +30,7 @@ import { useGameStore } from '@/store/gameStore';
 import { readGamePhase } from '@/shared/gamePhase';
 import { closeNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
 import { preloadNpcModel } from '@/engine/scene/sceneGpuLifecycle';
+import { getSceneConfig } from '@/config/scenes';
 import {
   getInteractionState,
   getInteractionTargetNPCId,
@@ -95,6 +96,15 @@ export function InteractionSystemBridge({
   const targetNPCRotRef = useRef(0);
   const cutsceneDurationRef = useRef(DEFAULT_CUTSCENE_DURATION);
   const activeNpcSplashRef = useRef<ReturnType<typeof resolveNpcInteractionSplash>>(null);
+  const wasNarrativeInteractionRef = useRef(false);
+
+  const emitExplorationResumeHint = (): void => {
+    const sceneId = useGameStore.getState().exploration.currentSceneId;
+    const sceneName = getSceneConfig(sceneId).name;
+    eventBus.emit('ui:exploration_message', {
+      text: `· ${sceneName} · свободное исследование`,
+    });
+  };
 
   const advanceFromSplashCutscene = (): void => {
     if (stateRef.current !== InteractionState.Cutscene) return;
@@ -118,6 +128,20 @@ export function InteractionSystemBridge({
 
   // ── Global interaction timer (for safety timeout) ──
   const globalTimerRef = useRef(0);
+
+  useEffect(() => {
+    const unsub = eventBus.on('interaction:state_change', ({ state }) => {
+      if (
+        state === InteractionState.Cutscene
+        || state === InteractionState.Dialogue
+        || state === InteractionState.Lock
+        || state === InteractionState.Align
+      ) {
+        wasNarrativeInteractionRef.current = true;
+      }
+    });
+    return unsub;
+  }, []);
 
   // ── Listen for interaction:start event ──
   useEffect(() => {
@@ -520,6 +544,11 @@ export function InteractionSystemBridge({
             state: InteractionState.Idle,
             npcId: prevNpcId ?? undefined,
           });
+
+          if (wasNarrativeInteractionRef.current) {
+            wasNarrativeInteractionRef.current = false;
+            emitExplorationResumeHint();
+          }
         }
         break;
       }

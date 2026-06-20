@@ -37,8 +37,7 @@ const DEGENERATE_DIR_EPS = 1e-8;
 const ANTI_PARALLEL_DOT = -0.9999;
 const PARALLEL_DOT = 0.9999;
 
-/**
- * Per-NPC math state — intentionally no THREE.Object3D refs so LOD/model
+/** Per-NPC math state — intentionally no THREE.Object3D refs so LOD/model
  * remounts cannot leave dangling Bone/Group pointers in a module singleton.
  */
 interface HeadTrackingState {
@@ -56,6 +55,14 @@ interface HeadTrackingState {
   localDir: THREE.Vector3;
   worldQuatInv: THREE.Quaternion;
   axis: THREE.Vector3;
+  /** Layered mode — smoothed additive offsets applied after Mixamo / limb pose. */
+  layeredYaw: number;
+  layeredPitch: number;
+}
+
+export interface LayeredHeadTrackResult {
+  yaw: number;
+  pitch: number;
 }
 
 const headTrackingStates = new Map<string, HeadTrackingState>();
@@ -74,6 +81,8 @@ function createHeadTrackingState(): HeadTrackingState {
     localDir: new THREE.Vector3(),
     worldQuatInv: new THREE.Quaternion(),
     axis: new THREE.Vector3(),
+    layeredYaw: 0,
+    layeredPitch: 0,
   };
 }
 
@@ -258,8 +267,6 @@ export function updateHeadTracking(
     headObj.getWorldQuaternion(state.worldQuatInv).invert();
     state.localDir.copy(state.direction).applyQuaternion(state.worldQuatInv);
 
-    state.localDir.copy(state.direction).applyQuaternion(state.worldQuatInv);
-
     if (!setQuaternionFromUnitVectorsSafe(
       state.targetQuat,
       HEAD_TRACK_FORWARD,
@@ -302,6 +309,100 @@ export function updateHeadTracking(
   }
 }
 
+function computeLayeredTrackAngles(
+  headObj: THREE.Bone | THREE.Group,
+  npcGroup: THREE.Group,
+  playerPosition: THREE.Vector3 | null,
+  config: HeadTrackingConfig,
+): LayeredHeadTrackResult {
+  if (!playerPosition) {
+    return { yaw: 0, pitch: 0 };
+  }
+
+  const state = _layeredScratch;
+  headObj.getWorldPosition(state.headWorldPos);
+  const dirLenSq = state.direction.subVectors(playerPosition, state.headWorldPos).lengthSq();
+  if (dirLenSq < DEGENERATE_DIR_EPS) {
+    return { yaw: 0, pitch: 0 };
+  }
+  state.direction.normalize();
+
+  state.localDir.copy(state.direction);
+  npcGroup.getWorldQuaternion(state.worldQuatInv).invert();
+  state.localDir.applyQuaternion(state.worldQuatInv);
+
+  const yaw = Math.max(-config.maxAngle, Math.min(config.maxAngle, Math.atan2(state.localDir.x, state.localDir.z)));
+  const pitch = Math.max(
+    -config.maxAngle * 0.45,
+    Math.min(config.maxAngle * 0.45, Math.asin(Math.max(-1, Math.min(1, state.localDir.y)))),
+  );
+  return { yaw, pitch };
+}
+
+const _layeredScratch = {
+  headWorldPos: new THREE.Vector3(),
+  direction: new THREE.Vector3(),
+  localDir: new THREE.Vector3(),
+  worldQuatInv: new THREE.Quaternion(),
+  animatedQuat: new THREE.Quaternion(),
+  trackQuat: new THREE.Quaternion(),
+  euler: new THREE.Euler(0, 0, 0, 'YXZ'),
+};
+
+/**
+ * Additive head tracking layered on top of the current animated pose (post-Mixamo / post-limb).
+ * Returns smoothed yaw/pitch offsets for eye tracking.
+ */
+export function applyLayeredHeadTracking(
+  npcId: string,
+  headObj: THREE.Bone | THREE.Group,
+  npcGroup: THREE.Group,
+  playerPosition: THREE.Vector3 | null,
+  delta: number,
+  config: HeadTrackingConfig = DEFAULT_HEAD_TRACKING_CONFIG,
+): LayeredHeadTrackResult {
+  const state = getOrCreateState(npcId);
+  const isProcedural = headObj instanceof THREE.Group && !(headObj instanceof THREE.Bone);
+  const target = computeLayeredTrackAngles(headObj, npcGroup, playerPosition, config);
+  const lerpFactor = Math.min(1, config.trackSpeed * delta);
+
+  state.layeredYaw += (target.yaw - state.layeredYaw) * lerpFactor;
+  state.layeredPitch += (target.pitch - state.layeredPitch) * lerpFactor;
+
+  if (isProcedural) {
+    headObj.rotation.y += state.layeredYaw * 0.85;
+    headObj.rotation.x += state.layeredPitch * 0.7;
+  } else if (headObj instanceof THREE.Bone) {
+    _layeredScratch.animatedQuat.copy(headObj.quaternion);
+    _layeredScratch.euler.setFromQuaternion(_layeredScratch.animatedQuat, 'YXZ');
+    _layeredScratch.euler.y += state.layeredYaw;
+    _layeredScratch.euler.x += state.layeredPitch;
+    headObj.quaternion.setFromEuler(_layeredScratch.euler);
+  }
+
+  return { yaw: state.layeredYaw, pitch: state.layeredPitch };
+}
+
+/** Eyes track the player with a fraction of head rotation for extra life. */
+export function applyLayeredEyeTracking(
+  leftEye: THREE.Object3D | null,
+  rightEye: THREE.Object3D | null,
+  yaw: number,
+  pitch: number,
+  delta: number,
+  eyeFactor = 0.42,
+): void {
+  const lerpFactor = Math.min(1, 4 * delta);
+  const targetYaw = yaw * eyeFactor;
+  const targetPitch = pitch * eyeFactor;
+
+  for (const eye of [leftEye, rightEye]) {
+    if (!eye) continue;
+    eye.rotation.y += (targetYaw - eye.rotation.y) * lerpFactor;
+    eye.rotation.x += (targetPitch - eye.rotation.x) * lerpFactor;
+  }
+}
+
 /**
  * Reset head tracking for an NPC (return head to original orientation).
  */
@@ -328,6 +429,8 @@ export function invalidateHeadTracking(npcId: string): void {
   if (!state) return;
   state.headObjUuid = null;
   state.hasCapturedOriginal = false;
+  state.layeredYaw = 0;
+  state.layeredPitch = 0;
 }
 
 /**

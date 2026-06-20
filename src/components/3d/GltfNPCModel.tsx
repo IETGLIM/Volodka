@@ -1,21 +1,34 @@
 /* ─── Volodka RPG – Animated GLB NPC mesh with procedural fallback ─── */
 
 /* eslint-disable react-refresh/only-export-components -- co-located helpers and lazy exports */
-import { Component, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { Component, Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Html, useGLTF } from '@react-three/drei';
+import { useThree } from '@react-three/fiber';
 import { useRegisterNpcFrame } from '@/engine/npc/npcFrameBatch';
 import * as THREE from 'three';
 import type { NPCDefinition } from '@/shared/types/game';
+import {
+  ASSET_MANIFEST,
+  getNpcManifestId,
+  isAssetEffectiveShipped,
+  resolveAssetUrl,
+  resolveNpcAssetUrl,
+} from '@/config/assetManifest';
 import { getNpcModelMeta, resolveNpcModelUrl } from '@/config/npcModelRegistry';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
 import { useSkinnedGltfClone } from '@/hooks/useSkinnedGltfClone';
 import { useNpcAnimationController } from '@/engine/npc/useNpcAnimationController';
+import { resolveNpcClipAction } from '@/engine/npc/npcClipResolution';
 import { useGamePhase } from '@/store/selectors';
 import { useMixamoAnimationClips } from '@/hooks/useMixamoAnimationClips';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 import { ProceduralNPCModel } from '@/components/3d/ProceduralNPCModels';
+import { resolveNpcComposeRigRef } from '@/config/npcComposer';
 import { devWarn } from '@/shared/utils/devLog';
 import { fitCharacterGltf, measureCharacterGltfBounds } from '@/engine/assets/gltfScale';
+import { useFrameTick } from '@/engine/frame/useFrameTick';
+import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
+import { useNpcProceduralLayers } from '@/hooks/useNpcProceduralLayers';
 
 const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeof useGLTF>[3]>;
 
@@ -33,6 +46,8 @@ interface GltfNPCModelInnerProps {
   targetHeightFactor: number;
   interactionState: InteractionState;
   isInteractionTarget: boolean;
+  visible?: boolean;
+  livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
 }
 
 function GltfNPCModelInner({
@@ -43,7 +58,13 @@ function GltfNPCModelInner({
   interactionState,
   isInteractionTarget,
   activity,
-}: GltfNPCModelInnerProps & { activity: string }) {
+  patrolActivity,
+  visible = true,
+  livePlayerPositionRef,
+}: GltfNPCModelInnerProps & {
+  activity: string;
+  patrolActivity?: 'idle' | 'walk';
+}) {
   const gltf = useGLTF(url, true, true, extendLoader);
   const fitRef = useRef<THREE.Group>(null);
   const { scene, mixer } = useSkinnedGltfClone(gltf.scene, gltf.animations, { castShadow: true });
@@ -69,15 +90,21 @@ function GltfNPCModelInner({
   const actions = useMixamoAnimationClips(mixer, scene, embeddedActions);
   const gamePhase = useGamePhase();
 
-  useNpcAnimationController({
+  const { clipOverrides: mergedClipOverrides, animState } = useNpcAnimationController({
     npcId: definition.id,
     actions,
     clipOverrides: definition.animations,
     activity,
+    patrolActivity,
     interactionState,
     isInteractionTarget,
     gamePhase,
   });
+
+  const idleClipReady = useMemo(
+    () => resolveNpcClipAction('idle', actions, mergedClipOverrides) !== null,
+    [actions, mergedClipOverrides],
+  );
 
   useEffect(() => {
     const bounds = measureCharacterGltfBounds(scene);
@@ -92,17 +119,154 @@ function GltfNPCModelInner({
     if (mixer) mixer.update(delta);
   });
 
+  useNpcProceduralLayers({
+    npcId: definition.id,
+    modelRef: fitRef,
+    animState,
+    playerPositionRef: livePlayerPositionRef,
+    enabled: visible && idleClipReady,
+  });
+
   const isTalking =
     interactionState === InteractionState.Dialogue ||
     interactionState === InteractionState.Lock ||
     isInteractionTarget;
 
   return (
-    <group ref={fitRef} rotation={[fit.rotX, 0, 0]} position={[0, fit.y, 0]}>
-      <primitive object={scene} />
+    <group
+      ref={fitRef}
+      rotation={[fit.rotX, 0, 0]}
+      position={[0, fit.y, 0]}
+      visible={visible}
+      userData={{
+        npcComposerRig: resolveNpcComposeRigRef(definition.id) ?? null,
+      }}
+    >
+      <primitive object={scene} visible={idleClipReady} />
       {isTalking && (
         <pointLight position={[0, 1.6, 0.4]} color="#ffb828" intensity={0.4} distance={3} decay={2} />
       )}
+    </group>
+  );
+}
+
+interface GltfNPCModelSceneProps {
+  definition: NPCDefinition;
+  fallbackUrl: string;
+  modelScale: number;
+  targetHeightFactor: number;
+  interactionState: InteractionState;
+  isInteractionTarget: boolean;
+  activity: string;
+  patrolActivity?: 'idle' | 'walk';
+  livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
+}
+
+/** Preloads manifest LOD/compression urls and swaps visibility by camera distance. */
+function GltfNPCModelScene({
+  definition,
+  fallbackUrl,
+  modelScale,
+  targetHeightFactor,
+  interactionState,
+  isInteractionTarget,
+  activity,
+  patrolActivity,
+  livePlayerPositionRef,
+}: GltfNPCModelSceneProps) {
+  const anchorRef = useRef<THREE.Group>(null);
+  const worldPosRef = useRef(new THREE.Vector3());
+  const activeUrlRef = useRef(fallbackUrl);
+  const branchRefs = useRef<Map<string, THREE.Group>>(new Map());
+  const { camera } = useThree();
+  const { preset } = useGraphicsQuality();
+
+  const manifestId = getNpcManifestId(definition.id);
+  const asset = manifestId ? ASSET_MANIFEST[manifestId] : undefined;
+  const useManifestLod =
+    !!asset && asset.lods.length > 1 && isAssetEffectiveShipped(manifestId!);
+
+  const urls = useMemo(() => {
+    if (!useManifestLod || !asset) return [fallbackUrl];
+    const set = new Set<string>();
+    for (const lod of asset.lods) {
+      if (lod.url) set.add(lod.url);
+    }
+    if (asset.variants) {
+      for (const variantUrl of Object.values(asset.variants)) {
+        if (variantUrl) set.add(variantUrl);
+      }
+    }
+    return [...set];
+  }, [asset, fallbackUrl, useManifestLod]);
+
+  useEffect(() => {
+    for (const url of urls) {
+      useGLTF.preload(url, true, true, extendLoader);
+    }
+    activeUrlRef.current = urls[0] ?? fallbackUrl;
+  }, [urls, fallbackUrl]);
+
+  useFrameTick(
+    'misc',
+    () => {
+      if (!useManifestLod || !asset || !anchorRef.current) return;
+      const dist = camera.position.distanceTo(
+        anchorRef.current.getWorldPosition(worldPosRef.current),
+      );
+      const next =
+        resolveNpcAssetUrl(definition.id, preset.compression, dist, preset.lodBias) ??
+        resolveAssetUrl(asset, preset.compression, dist, preset.lodBias);
+      if (next) activeUrlRef.current = next;
+      for (const [url, group] of branchRefs.current) {
+        group.visible = url === activeUrlRef.current;
+      }
+    },
+    { label: `GltfNPCModel:${definition.id}` },
+  );
+
+  if (!useManifestLod) {
+    return (
+      <GltfNPCModelInner
+        definition={definition}
+        url={fallbackUrl}
+        modelScale={modelScale}
+        targetHeightFactor={targetHeightFactor}
+        interactionState={interactionState}
+        isInteractionTarget={isInteractionTarget}
+        activity={activity}
+        patrolActivity={patrolActivity}
+        livePlayerPositionRef={livePlayerPositionRef}
+      />
+    );
+  }
+
+  return (
+    <group ref={anchorRef}>
+      {urls.map((url) => (
+        <group
+          key={url}
+          ref={(node) => {
+            if (node) branchRefs.current.set(url, node);
+            else branchRefs.current.delete(url);
+          }}
+          visible={url === activeUrlRef.current}
+        >
+          <Suspense fallback={null}>
+            <GltfNPCModelInner
+              definition={definition}
+              url={url}
+              modelScale={modelScale}
+              targetHeightFactor={targetHeightFactor}
+              interactionState={interactionState}
+              isInteractionTarget={isInteractionTarget}
+              activity={activity}
+              patrolActivity={patrolActivity}
+              livePlayerPositionRef={livePlayerPositionRef}
+            />
+          </Suspense>
+        </group>
+      ))}
     </group>
   );
 }
@@ -161,6 +325,8 @@ interface GltfNPCModelProps {
   interactionState: InteractionState;
   isInteractionTarget: boolean;
   activity: string;
+  patrolActivity?: 'idle' | 'walk';
+  livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
 }
 
 /** Loads a rigged GLB when `modelPath` or registry entry exists; otherwise procedural. */
@@ -169,6 +335,8 @@ export function GltfNPCModel({
   interactionState,
   isInteractionTarget,
   activity,
+  patrolActivity,
+  livePlayerPositionRef,
 }: GltfNPCModelProps) {
   const url = resolveNpcModelUrl(definition.id, definition.modelPath);
   const meta = getNpcModelMeta(definition.id);
@@ -181,6 +349,8 @@ export function GltfNPCModel({
       interactionState={interactionState}
       isInteractionTarget={isInteractionTarget}
       activity={activity}
+      patrolActivity={patrolActivity}
+      livePlayerPositionRef={livePlayerPositionRef}
     />
   );
 
@@ -197,14 +367,16 @@ export function GltfNPCModel({
       modelUrl={url}
       fallback={proceduralFallback}
     >
-      <GltfNPCModelInner
+      <GltfNPCModelScene
         definition={definition}
-        url={url}
+        fallbackUrl={url}
         modelScale={scale}
         targetHeightFactor={targetHeightFactor}
         interactionState={interactionState}
         isInteractionTarget={isInteractionTarget}
         activity={activity}
+        patrolActivity={patrolActivity}
+        livePlayerPositionRef={livePlayerPositionRef}
       />
     </GltfLoadErrorBoundary>
   );

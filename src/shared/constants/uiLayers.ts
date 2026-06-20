@@ -26,16 +26,16 @@ export const UI_LAYERS = {
   EXAMINE: 38,
   /** Mini-games (codebreaker, terminal, bash) */
   MINIGAME: 40,
-  /** Pause / settings menu */
-  MENU: 45,
+  /** Pause / settings menu — below panels, above examine */
+  MENU: 58,
   /** Combat UI */
   COMBAT: 50,
   /** Full-screen damage/heal flash (above combat UI) */
   DAMAGE_FLASH: 51,
-  /** Panels (inventory, quests, poetry, journal) */
-  PANEL: 55,
+  /** Panels (inventory, quests, poetry, journal) — above toasts and examine */
+  PANEL: 60,
   /** HUD tooltips — above panels, below poem overlay */
-  TOOLTIP: 58,
+  TOOLTIP: 62,
   /** Cinematic transition (fade-to-black) */
   CINEMATIC_TRANSITION: 95,
   /** Ambient world response when a poem power fires (tint, epigraph) */

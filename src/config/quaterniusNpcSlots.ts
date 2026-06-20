@@ -1,6 +1,7 @@
 /**
  * 20 Quaternius Ultimate Modular rig slots (hero + 19 story/CHK NPCs).
- * Mirrors `NPC_QUATERNIUS_MAP` in scripts/quaternius-import.mjs.
+ * On-disk GLBs are animation/rig references — runtime visuals use procedural
+ * silhouettes — see `proceduralNpcAvatarCatalog.ts` (primary; no RPM required).
  */
 
 /** Hero player rig — not schedule-spawned as an NPC. */

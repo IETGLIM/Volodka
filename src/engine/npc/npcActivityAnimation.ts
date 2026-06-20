@@ -65,6 +65,27 @@ export function resolveNpcActivityClipOverrides(
   }
 }
 
+export interface NpcVisualAnimationContext {
+  readonly activity: string;
+  readonly patrolActivity?: 'idle' | 'walk';
+  readonly interactionState: InteractionState;
+  readonly isInteractionTarget: boolean;
+}
+
+/**
+ * Unified animation state for GLB and procedural NPC render paths.
+ * Priority: interaction target → patrol walk → schedule activity.
+ */
+export function resolveNpcVisualAnimationState(
+  ctx: NpcVisualAnimationContext,
+): NPCAnimationState {
+  if (shouldDeferToInteractionAnimation(ctx.interactionState, ctx.isInteractionTarget)) {
+    return resolveInteractionNpcAnimationState(ctx.interactionState);
+  }
+  if (ctx.patrolActivity === 'walk') return 'walk';
+  return resolveNpcAnimationFromActivity(ctx.activity);
+}
+
 /**
  * Whether activity-driven crossfade should defer to interaction event bus.
  * During active dialogue alignment/lock, InteractionSystemBridge emits states.

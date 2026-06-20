@@ -2,9 +2,7 @@
 
 import { useRef, useEffect, useCallback } from 'react';
 import * as THREE from 'three';
-import { onNpcAnimation } from '@/engine/npc/npcEventRouter';
-import type { NPCAnimationState } from '@/engine/interaction/interactionMachine';
-import {
+import type { NPCAnimationState } from '@/engine/interaction/interactionMachine';import {
   resolveNpcClipAction,
   type NpcAnimationClipOverrides,
 } from '@/engine/npc/npcClipResolution';
@@ -15,11 +13,10 @@ import {
  * Clip actions come from embedded GLB clips plus optional overrides loaded from
  * `public/models/animations/` via `useMixamoAnimationClips` (see mixamoAnimationCatalog).
  *
- * Listens to `npc:animation` events and smoothly transitions between states.
+ * Bus-driven overrides are handled by `useNpcVisualBehavior`; this hook only crossfades.
  */
 export function useNPCAnimation(
-  npcId: string,
-  actions: Record<string, THREE.AnimationAction> | null | undefined,
+  _npcId: string,  actions: Record<string, THREE.AnimationAction> | null | undefined,
   clipOverrides?: NpcAnimationClipOverrides,
 ) {
   const currentAnimRef = useRef<NPCAnimationState>('idle');
@@ -59,11 +56,11 @@ export function useNPCAnimation(
     [applyState],
   );
 
-  useEffect(() => onNpcAnimation(npcId, crossfadeTo), [npcId, crossfadeTo]);
-
   useEffect(() => {
+    const idleAction = findAction('idle');
+    if (!idleAction) return;
     applyState('idle', { force: true });
-  }, [applyState]);
+  }, [applyState, findAction]);
 
   useEffect(() => {
     return () => {

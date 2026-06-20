@@ -19,14 +19,17 @@ import { useQuests, useCurrentSceneId } from '@/store/selectors';
 import { eventBus } from '@/engine/EventBus';
 import { registerNPCGroup, unregisterNPCGroup } from '@/engine/interaction/npcRegistry';
 import {
-  updateHeadTracking,
   cleanupHeadTracking,
   invalidateHeadTracking,
 } from '@/engine/npc/headTracking';
+import {
+  cleanupNpcProceduralLayers,
+  invalidateNpcProceduralLayers,
+} from '@/engine/npc/npcProceduralLayers';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 import { GltfNPCModel } from '@/components/3d/GltfNPCModel';
 import { ProceduralNPCModel } from '@/components/3d/ProceduralNPCModels';
-import { resolveNpcModelUrl } from '@/config/npcModelRegistry';
+import { resolveNpcVisualModelUrl } from '@/config/npcModelRegistry';
 import { getSceneVisualProfile } from '@/config/sceneVisualProfiles';
 import { createPatrolState, updatePatrol, shouldPatrol, type PatrolState } from '@/engine/npc/npcPatrol';
 import { getNpcQuestMarkerDisplay } from '@/store/questStore';
@@ -40,11 +43,9 @@ import {
   type NpcLodLevel,
 } from '@/engine/lod/distanceLod';
 import {
-  npcTierHasHeadTracking,
   npcTierHasNameLabels,
   npcTierHasProximityBark,
   npcTierHasQuestMarker,
-  resolveNpcActivityForTier,
   type NpcRenderTier,
 } from '@/engine/npc/npcRenderTier';
 import {
@@ -61,9 +62,6 @@ import {
 const THINKING_DURATION = 1.2; // seconds before bark text appears
 const BARK_VISIBLE_DURATION = 5.0; // seconds bark text is shown
 const BARK_FADE_DURATION = 0.5; // seconds for fade-out
-
-/* ─── Head tracking distance ─── */
-const HEAD_TRACKING_DISTANCE = 8.0;
 
 /* ─── Name label distance ─── */
 const NAME_LABEL_MAX_DISTANCE = 5.0;
@@ -169,6 +167,7 @@ export function NPC({
     return () => {
       unregisterNPCGroup(definition.id);
       cleanupHeadTracking(definition.id);
+      cleanupNpcProceduralLayers(definition.id);
     };
   }, [definition.id]);
 
@@ -239,6 +238,7 @@ export function NPC({
     if (newLod !== lodLevelRef.current) {
       lodLevelRef.current = newLod;
       invalidateHeadTracking(definition.id);
+      invalidateNpcProceduralLayers(definition.id);
     }
     applyNpcLodVisibility(newLod, isInteractionTarget);
 
@@ -246,14 +246,8 @@ export function NPC({
       return;
     }
 
-    // ── Head tracking: make NPC look at player when nearby ──
-    if (
-      npcTierHasHeadTracking(renderTier) &&
-      newLod === 'full' &&
-      dist < HEAD_TRACKING_DISTANCE
-    ) {
-      updateHeadTracking(definition.id, groupRef.current, playerPos, delta);
-    }
+    // Procedural layers (breathing, blink, sway, head/eye track, talk gesture)
+    // run in overlay phase on the model mesh via GltfNPCModel / ProceduralNPCModel.
 
     // ── Name label: fade based on distance (ref-based, throttled React state updates) ──
     if (npcTierHasNameLabels(renderTier)) {
@@ -323,11 +317,6 @@ export function NPC({
   });
 
   const isPatrolDriven = shouldPatrol(activity, isInteractionTarget, !!patrolWaypoints?.length);
-  const modelActivity = resolveNpcActivityForTier(
-    isPatrolDriven ? patrolActivity : activity,
-    renderTier,
-    isInteractionTarget,
-  );
 
   return (
     <group ref={groupRef}>
@@ -341,7 +330,9 @@ export function NPC({
             definition={definition}
             interactionState={interactionState}
             isInteractionTarget={isInteractionTarget}
-            activity={modelActivity}
+            activity={activity}
+            patrolActivity={isPatrolDriven ? patrolActivity : undefined}
+            livePlayerPositionRef={livePlayerPositionRef}
           />
         </Suspense>
         <NPCContactShadow />
@@ -468,31 +459,41 @@ function NpcEmissiveGlow({
   return <group ref={groupRef}>{children}</group>;
 }
 
-/** NPC model renderer — GLB when a shipped modelPath/registry entry exists, else procedural.
- *  Quality preset npcRenderMode='procedural' (low tier) skips GLB entirely. */
+/** NPC model renderer — procedural archetype (primary); GLB only when unique mesh on disk.
+ *  Quaternius CC0 rigs on disk are not shown — same mannequin breaks narrative identity. */
 function NPCModelWithErrorBoundary({
   definition,
   interactionState,
   isInteractionTarget,
   activity,
+  patrolActivity,
+  livePlayerPositionRef,
 }: {
   definition: NPCDefinition;
   interactionState: InteractionState;
   isInteractionTarget: boolean;
   activity: string;
+  patrolActivity?: 'idle' | 'walk';
+  livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
 }) {
   const appearance = definition.appearance ?? DEFAULT_APPEARANCE;
   const { preset } = useGraphicsQuality();
-  const allowGlbNpc = preset.npcRenderMode !== 'procedural';
+  const gltfUrl = resolveNpcVisualModelUrl(
+    definition.id,
+    definition.modelPath,
+    preset.npcRenderMode,
+  );
 
   return (
     <NpcEmissiveGlow npcId={definition.id} glowColor={appearance.glowColor}>
-      {allowGlbNpc && resolveNpcModelUrl(definition.id, definition.modelPath) ? (
+      {gltfUrl ? (
         <GltfNPCModel
           definition={definition}
           interactionState={interactionState}
           isInteractionTarget={isInteractionTarget}
           activity={activity}
+          patrolActivity={patrolActivity}
+          livePlayerPositionRef={livePlayerPositionRef}
         />
       ) : (
         <ProceduralNPCModel
@@ -501,6 +502,8 @@ function NPCModelWithErrorBoundary({
           interactionState={interactionState}
           isInteractionTarget={isInteractionTarget}
           activity={activity}
+          patrolActivity={patrolActivity}
+          livePlayerPositionRef={livePlayerPositionRef}
         />
       )}
     </NpcEmissiveGlow>

@@ -27,6 +27,10 @@ import { audioEngine } from '@/engine/audio/AudioEngine';
 import { isActiveTTLFlagLive } from '@/shared/activeTTLFlags';
 import { getCreepsForScene, type CreepPatrolDef } from '@/data/creepPatrols';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import {
+  CreepBody,
+  type CreepBodyAnimState,
+} from '@/components/3d/proceduralEnemy/enemyArchetypes';
 
 type CreepState = 'patrol' | 'chase' | 'engaged' | 'cooldown';
 
@@ -34,6 +38,8 @@ const CONTACT_DISTANCE = 1.15;
 const LOSE_AGGRO_DISTANCE = 9.5;
 const COOLDOWN_AFTER_ESCAPE_S = 8;
 const HOVER_HEIGHT = 0.9;
+const CREEP_ALERT_S = 0.55;
+const CREEP_CHASE_FOOTSTEP_S = 0.48;
 
 /** Poem power «Путеводная Звезда» (poem_3) — TTL flag that guides the player
  *  past dangers: creep vision shrinks to this fraction while active. */
@@ -161,10 +167,10 @@ function Creep({
   frameCtxRef: React.MutableRefObject<CreepFrameContext>;
 }) {
   const groupRef = useRef<THREE.Group>(null);
-  const coreRef = useRef<THREE.Mesh>(null);
+  const bodyMatRef = useRef<THREE.MeshStandardMaterial | null>(null);
+  const bodyAnimRef = useRef<CreepBodyAnimState>('idle');
   const lightRef = useRef<THREE.PointLight>(null);
   const coneMatRef = useRef<THREE.MeshBasicMaterial>(null);
-  const shardsRef = useRef<THREE.Group>(null);
   const duelRingMatRef = useRef<THREE.MeshBasicMaterial>(null);
   const shockwaveRef = useRef<THREE.Mesh>(null);
   const shockwaveMatRef = useRef<THREE.MeshBasicMaterial>(null);
@@ -184,6 +190,9 @@ function Creep({
   const headingRef = useRef(0);
   const cooldownRef = useRef(0);
   const timeRef = useRef(0);
+  const alertTimerRef = useRef(0);
+  const alertToastSentRef = useRef(false);
+  const chaseFootstepTimerRef = useRef(0);
   const positionRef = useRef(
     new THREE.Vector3(def.waypoints[0][0], HOVER_HEIGHT, def.waypoints[0][1]),
   );
@@ -274,6 +283,8 @@ function Creep({
     }
 
     // ── Movement ──
+    let bodyWalking = false;
+    let inVisionCone = false;
     if (exploring && (state === 'patrol' || state === 'chase')) {
       if (state === 'patrol') {
         const [wx, wz] = def.waypoints[waypointIndexRef.current];
@@ -283,6 +294,7 @@ function Creep({
         if (wDist < 0.3) {
           waypointIndexRef.current = (waypointIndexRef.current + 1) % def.waypoints.length;
         } else {
+          bodyWalking = true;
           const step = Math.min(def.patrolSpeed * delta, wDist);
           pos.x += (wdx / wDist) * step;
           pos.z += (wdz / wDist) * step;
@@ -296,16 +308,45 @@ function Creep({
           let diff = angleToPlayer - headingRef.current;
           while (diff > Math.PI) diff -= Math.PI * 2;
           while (diff < -Math.PI) diff += Math.PI * 2;
-          if (Math.abs(diff) < def.visionHalfAngle * poemVisionScale) {
+          inVisionCone = Math.abs(diff) < def.visionHalfAngle * poemVisionScale;
+        }
+
+        if (inVisionCone) {
+          headingRef.current = Math.atan2(dx, dz);
+          if (alertTimerRef.current <= 0) {
+            alertTimerRef.current = CREEP_ALERT_S;
+            audioEngine.playStinger('tension');
+            if (!alertToastSentRef.current) {
+              alertToastSentRef.current = true;
+              eventBus.emit('ui:exploration_message', {
+                text: `👁 ${def.name} что-то замечает…`,
+              });
+            }
+          }
+          alertTimerRef.current -= delta;
+          if (alertTimerRef.current <= 0) {
             stateRef.current = 'chase';
+            chaseFootstepTimerRef.current = 0;
             audioEngine.playSfx('error');
             eventBus.emit('ui:exploration_message', { text: `⚠ ${def.name} заметил тебя!` });
           }
+        } else {
+          alertTimerRef.current = 0;
+          alertToastSentRef.current = false;
         }
       } else {
         // CHASE
+        chaseFootstepTimerRef.current -= delta;
+        if (chaseFootstepTimerRef.current <= 0) {
+          chaseFootstepTimerRef.current = CREEP_CHASE_FOOTSTEP_S;
+          audioEngine.playFootstep('metal', { sourceId: `creep_${def.id}` });
+        }
+
         if (playerDist > LOSE_AGGRO_DISTANCE) {
           stateRef.current = 'patrol';
+          alertTimerRef.current = 0;
+          alertToastSentRef.current = false;
+          chaseFootstepTimerRef.current = 0;
         } else if (
           playerDist < CONTACT_DISTANCE &&
           !engageQueuedRef.current &&
@@ -329,6 +370,7 @@ function Creep({
             creepId: def.id,
           });
         } else {
+          bodyWalking = true;
           const step = def.chaseSpeed * delta;
           pos.x += (dx / playerDist) * step;
           pos.z += (dz / playerDist) * step;
@@ -339,8 +381,12 @@ function Creep({
 
     // ── Presentation ──
     const chasing = stateRef.current === 'chase';
+    const alerting =
+      stateRef.current === 'patrol' && alertTimerRef.current > 0 && inVisionCone;
     const dormant = !inArena && (stateRef.current === 'engaged' || stateRef.current === 'cooldown');
     const combatPulse = inArena ? 0.5 + Math.sin(t * 8) * 0.5 : 0;
+    const alertPulse = alerting ? 0.5 + Math.sin(t * 14) * 0.5 : 0;
+    bodyAnimRef.current = alerting ? 'idle' : bodyWalking || chasing ? 'walk' : 'idle';
 
     if (hitReactRef.current > 0) {
       hitReactRef.current = Math.max(0, hitReactRef.current - delta * 5);
@@ -362,22 +408,41 @@ function Creep({
       (inArena ? 1 + combatPulse * 0.12 + burst * 0.25 : 1) * (1 - hitKick * 0.22),
     );
 
-    if (coreRef.current) {
-      const mat = coreRef.current.material as THREE.MeshStandardMaterial;
-      mat.emissiveIntensity = inArena
+    if (bodyMatRef.current) {
+      bodyMatRef.current.emissiveIntensity = inArena
         ? 2.8 + combatPulse * 2.2
         : dormant
           ? 0.5
           : chasing
             ? 3.2
-            : 1.6 + Math.sin(t * 3) * 0.4;
+            : alerting
+              ? 2.2 + alertPulse * 1.4
+              : 1.6 + Math.sin(t * 3) * 0.4;
     }
     if (lightRef.current) {
-      lightRef.current.intensity = inArena ? 3.6 + combatPulse * 1.6 + burst * 2 : dormant ? 0.3 : chasing ? 2.6 : 1.2;
+      lightRef.current.intensity = inArena
+        ? 3.6 + combatPulse * 1.6 + burst * 2
+        : dormant
+          ? 0.3
+          : chasing
+            ? 2.6
+            : alerting
+              ? 1.8 + alertPulse * 0.8
+              : 1.2;
     }
     if (coneMatRef.current) {
-      coneMatRef.current.color.set(inArena || chasing ? '#ff2222' : def.color);
-      coneMatRef.current.opacity = inArena ? 0.24 : dormant ? 0 : chasing ? 0.16 : 0.07;
+      coneMatRef.current.color.set(
+        inArena || chasing ? '#ff2222' : alerting ? '#ffaa33' : def.color,
+      );
+      coneMatRef.current.opacity = inArena
+        ? 0.24
+        : dormant
+          ? 0
+          : chasing
+            ? 0.16
+            : alerting
+              ? 0.1 + alertPulse * 0.14
+              : 0.07;
     }
     if (beamMatRef.current) {
       beamMatRef.current.opacity = inArena ? 0.1 + combatPulse * 0.14 + burst * 0.2 : 0;
@@ -385,9 +450,6 @@ function Creep({
     if (coneGroupRef.current) {
       // Visibly shrink the cone while «Путеводная Звезда» is active
       coneGroupRef.current.scale.set(poemVisionScale, 1, poemVisionScale);
-    }
-    if (shardsRef.current) {
-      shardsRef.current.rotation.y = t * (inArena ? 7 : chasing ? 4 : 1.2);
     }
     if (duelRingMatRef.current && inArena) {
       duelRingMatRef.current.opacity = 0.22 + combatPulse * 0.28 + burst * 0.35;
@@ -401,32 +463,12 @@ function Creep({
 
   return (
     <group ref={groupRef} position={[def.waypoints[0][0], HOVER_HEIGHT, def.waypoints[0][1]]}>
-      {/* Core */}
-      <mesh ref={coreRef} castShadow>
-        <icosahedronGeometry args={[0.28, 0]} />
-        <meshStandardMaterial
-          color="#0a0a12"
-          emissive={def.color}
-          emissiveIntensity={1.6}
-          roughness={0.3}
-          metalness={0.4}
-        />
-      </mesh>
-
-      {/* Orbiting shards */}
-      <group ref={shardsRef}>
-        {[0, 2.09, 4.19].map((a) => (
-          <mesh key={a} position={[Math.cos(a) * 0.5, Math.sin(a * 2) * 0.1, Math.sin(a) * 0.5]}>
-            <tetrahedronGeometry args={[0.09, 0]} />
-            <meshStandardMaterial
-              color="#111118"
-              emissive={def.color}
-              emissiveIntensity={0.9}
-              roughness={0.4}
-            />
-          </mesh>
-        ))}
-      </group>
+      <CreepBody
+        enemyType={def.enemyType}
+        color={def.color}
+        animStateRef={bodyAnimRef}
+        bodyMatRef={bodyMatRef}
+      />
 
       {/* Vision cone projected on the ground (reads as stealth UI).
           Wrapped in a group so poem effects can scale it around the creep. */}

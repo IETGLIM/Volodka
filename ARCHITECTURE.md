@@ -147,7 +147,11 @@ patrol→chase→engaged→cooldown, конус зрения проецируе�
   `getPoemPower()` / `POEM_COMBAT_ABILITIES` берут display через `enrichPoemMechanicsDisplay`.
 - в бою — `POEM_COMBAT_ABILITIES` (кулдауны, баффы/дебаффы); pity в `combatRng.ts` / `buffSystem.ts`;
 - в исследовании — TTL-флаги в store (`activeTTLFlags`), монотонные часы `ttlClock.ts` (performance.now).
-  Напр. `guiding_star_active` (poem_3) сжимает конусы зрения крипов до 45%.
+  Напр. `guiding_star_active` (poem_3) сжимает конусы зрения крипов до 45%;
+  `child_gaze_active` (poem_7) раскрывает зоны с `hiddenUntilPoemFlag`;
+  `stone_skin_active` (poem_10) снижает входящий стресс на 50%.
+  **Consumers:** `config/poemEffectRegistry.ts` + `engine/poemEffects/poemTTLRuntime.ts`
+  (stress scale, combat opening bridge, HUD `PoemActiveEffectsHud`).
 Новые мировые эффекты стихов = чтение одного TTL-флага в кадровом цикле.
 `processExpiredTTLFlags()` — из game loop (`useGameLifecycleManager`).
 
@@ -317,10 +321,16 @@ Combat camera — отдельный `CombatCameraState` внутри cinematic 
 | `npcDefinitions` + расписания + диалоги | ✅ production |
 | `npcRegistry` (THREE.Group + behavior state map) | ✅ runtime |
 | `npcStateMachine.ts` (idle/walk/talk/combat FSM) | ✅ unit-tested |
-| `useNpcAnimationController` + `transitionNpcBehaviorState` | ⚠️ ~30% — FSM не полностью проведён в 3D-рендер |
+| `useNpcVisualBehavior` + `syncNpcBehaviorState` | ✅ единый мост GLB + procedural |
+| `useNpcAnimationController` (GLB crossfade) | ✅ patrolActivity, anti-T-pose gate |
+| `resolveNpcVisualAnimationState` (interaction listen/sit) | ✅ unit-tested |
+| `proceduralNpcAvatarCatalog` (20 story silhouettes, no RPM) | ✅ primary visual SoT |
+| `npcComposer` (29 slot recipes → `NpcComposerModel`, CC0 parts + palette) | ✅ replaces rig cloning |
+| `ComposerRigDriver` + `quaterniusRigRetarget` (Mixamo on ghost Quaternius rig) | ✅ procedural path |
+| `npcProceduralLayers` (breathing, blink, sway, head/eye track, talk gesture) | ✅ overlay after Mixamo/limbs |
 | `NPC_ID_ALIASES` / registry baseline | ⚠️ устаревшие id в части тестов |
 
-Патрули: `PatrollingCreeps` FSM patrol→chase→engaged; поэтические TTL сужают конус (`guiding_star_active`).
+Патрули: `PatrollingCreeps` FSM patrol→chase→engaged; процедурные силуэты (`proceduralEnemy/enemyArchetypes.tsx`); конус зрения — stealth-overlay; поэтические TTL сужают конус (`guiding_star_active`).
 
 ### Аудио (`engine/audio/`)
 
@@ -417,10 +427,12 @@ XSS: `sanitizePlainText` на основном пути рендера (`narrati
 |---------|--------|
 | Content truth dual registry (CI eager vs runtime lazy) | parity test есть; validator ещё на eager STORY_NODES |
 | Golden path triple source | derive + manual fallback + per-node guidanceHint |
-| NPC behavioral FSM → 3D | ~30%, task #15 |
+| NPC behavioral FSM → 3D | ✅ `useNpcVisualBehavior` (GLB + procedural parity) |
 | JSON narrative migration | тексты act1–7 есть; hubIntroText — постепенно для act 2–7 |
-| Pause Escape vs panels | конфликт hotkeys |
-| Inventory z-index vs examine | P0 UI |
+| Pause Escape vs panels | ✅ `escapeDismissAction` + capture-phase `useKeyboardShortcutManager` |
+| Inventory z-index vs examine | ✅ PANEL 60; toasts скрываются при открытых панелях |
+| NPC cutscene vs explore mode | ✅ toast «свободное исследование» после interaction Exit |
+| Combat Escape | ✅ noop в combat/cutscene; pause toggle только в exploration |
 | PostFX on low hero scenes | частично |
 | GameOrchestrator priorities | разнесены по файлам |
 | npcRegistry baseline | устаревшие id в тестах |

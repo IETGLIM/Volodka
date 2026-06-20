@@ -1,10 +1,7 @@
 /**
- * Ready Player Me NPC pipeline — 20 story avatars.
- * Source drops: assets-source/ai3dgen/npcs/npc_*.glb
- * Import: npm run assets:rpm-import -- --id npc_albert --file path.glb
- *
- * Supersedes Khronos/Quaternius CC0 placeholders when RPM files are present.
- * Generator: https://readyplayer.me/ (user account required — not downloaded by CI).
+ * Legacy RPM slot registry — kept for asset path compatibility and manual imports.
+ * **Primary visuals:** procedural avatars in `proceduralNpcAvatarCatalog.ts`
+ * (no Ready Player Me account or network access required).
  */
 
 const RPM_NPCS = 'assets-source/ai3dgen/npcs';

@@ -65,4 +65,21 @@ describe('resolvePoemExplorationHighlight', () => {
     expect(shouldHighlightZoneForPoemMode({ linkedNpcId: 'albert' }, state.mode)).toBe(true);
     expect(shouldHighlightZoneForPoemMode({}, state.mode)).toBe(false);
   });
+
+  it('enables interaction highlight when child_gaze_active TTL is live', () => {
+    const state = resolvePoemExplorationHighlight(
+      {
+        child_gaze_active: {
+          key: 'child_gaze_active',
+          poemId: 'poem_7',
+          expiryTimestamp: now + 20_000,
+        },
+      },
+      {},
+      { now, reducedMotion: false },
+    );
+    expect(state.mode).toBe('interaction');
+    expect(state.color).toBe('#b8f0ff');
+    expect(shouldHighlightZoneForPoemMode({}, state.mode)).toBe(true);
+  });
 });

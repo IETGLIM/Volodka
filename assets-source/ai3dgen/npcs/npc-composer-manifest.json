@@ -1,0 +1,553 @@
+[
+  {
+    "npcId": "zarema",
+    "title": "Зарема",
+    "rigRef": "female_01",
+    "fingerprint": "average_female|mature_female|scarf_wrap|dress_long|hidden_dress|earring|ladle",
+    "slots": {
+      "body": "average_female",
+      "head": "mature_female",
+      "hair": "scarf_wrap",
+      "top": "dress_long",
+      "bottom": "hidden_dress",
+      "accessory": "earring",
+      "prop": "ladle"
+    },
+    "quaterniusPreset": "Medieval",
+    "sourceGlb": "female_01.glb",
+    "sourceGlbPath": "assets-source/ai3dgen/npcs/female_01.glb",
+    "publicRigPath": "models/npcs/_rigs/female_01.glb"
+  },
+  {
+    "npcId": "albert",
+    "title": "Альберт",
+    "rigRef": "male_02",
+    "fingerprint": "heavy_male|bearded_male|gray_receding|tweed_jacket|slacks|glasses_scholarly|book",
+    "slots": {
+      "body": "heavy_male",
+      "head": "bearded_male",
+      "hair": "gray_receding",
+      "top": "tweed_jacket",
+      "bottom": "slacks",
+      "accessory": "glasses_scholarly",
+      "prop": "book"
+    },
+    "quaterniusPreset": "Suit",
+    "sourceGlb": "male_02.glb",
+    "sourceGlbPath": "assets-source/ai3dgen/npcs/male_02.glb",
+    "publicRigPath": "models/npcs/_rigs/male_02.glb"
+  },
+  {
+    "npcId": "solnysh",
+    "title": "Солныш",
+    "rigRef": "female_02",
+    "fingerprint": "slim_female|young_female|ponytail|blouse|skirt_a_line|none|phone",
+    "slots": {
+      "body": "slim_female",
+      "head": "young_female",
+      "hair": "ponytail",
+      "top": "blouse",
+      "bottom": "skirt_a_line",
+      "accessory": "none",
+      "prop": "phone"
+    },
+    "quaterniusPreset": "Casual",
+    "sourceGlb": "female_02.glb",
+    "sourceGlbPath": "assets-source/ai3dgen/npcs/female_02.glb",
+    "publicRigPath": "models/npcs/_rigs/female_02.glb"
+  },
+  {
+    "npcId": "cafe_barista",
+    "title": "Бариста",
+    "rigRef": "male_04",
+    "fingerprint": "average_male|young_male|short_crop|barista_uniform|jeans|cyber_arm|coffee_cup",
+    "slots": {
+      "body": "average_male",
+      "head": "young_male",
+      "hair": "short_crop",
+      "top": "barista_uniform",
+      "bottom": "jeans",
+      "accessory": "cyber_arm",
+      "prop": "coffee_cup"
+    },
+    "quaterniusPreset": "Worker",
+    "sourceGlb": "male_04.glb",
+    "sourceGlbPath": "assets-source/ai3dgen/npcs/male_04.glb",
+    "publicRigPath": "models/npcs/_rigs/male_04.glb"
+  },
+  {
+    "npcId": "office_alexander",
+    "title": "Александр",
+    "rigRef": "male_05",
+    "fingerprint": "average_male|mature_male|short_crop|suit|slacks|badge|none",
+    "slots": {
+      "body": "average_male",
+      "head": "mature_male",
+      "hair": "short_crop",
+      "top": "suit",
+      "bottom": "slacks",
+      "accessory": "badge",
+      "prop": "none"
+    },
+    "quaterniusPreset": "Suit",
+    "sourceGlb": "male_05.glb",
+    "sourceGlbPath": "assets-source/ai3dgen/npcs/male_05.glb",
+    "publicRigPath": "models/npcs/_rigs/male_05.glb"
+  },
+  {
+    "npcId": "office_dmitry",
+    "title": "Дмитрий",
+    "rigRef": "male_03",
+    "fingerprint": "slim_male|young_male|hood|hoodie|pants_dark|glasses_round|none",
+    "slots": {
+      "body": "slim_male",
+      "head": "young_male",
+      "hair": "hood",
+      "top": "hoodie",
+      "bottom": "pants_dark",
+      "accessory": "glasses_round",
+      "prop": "none"
+    },
+    "quaterniusPreset": "Casual_Hoodie",
+    "sourceGlb": "male_03.glb",
+    "sourceGlbPath": "assets-source/ai3dgen/npcs/male_03.glb",
+    "publicRigPath": "models/npcs/_rigs/male_03.glb"
+  },
+  {
+    "npcId": "maria",
+    "title": "Виктория",
+    "rigRef": "female_03",
+    "fingerprint": "slim_female|young_female|ponytail|jacket_casual|jeans|none|phone",
+    "slots": {
+      "body": "slim_female",
+      "head": "young_female",
+      "hair": "ponytail",
+      "top": "jacket_casual",
+      "bottom": "jeans",
+      "accessory": "none",
+      "prop": "phone"
+    },
+    "quaterniusPreset": "SciFi",
+    "sourceGlb": "female_03.glb",
+    "sourceGlbPath": "assets-source/ai3dgen/npcs/female_03.glb",
+    "publicRigPath": "models/npcs/_rigs/female_03.glb"
+  },
+  {
+    "npcId": "chk_ru",
+    "title": "Ру",
+    "rigRef": "male_06",
+    "fingerprint": "average_male|mature_male|cap|jacket_casual|jeans|none|none",
+    "slots": {
+      "body": "average_male",
+      "head": "mature_male",
+      "hair": "cap",
+      "top": "jacket_casual",
+      "bottom": "jeans",
+      "accessory": "none",
+      "prop": "none"
+    },
+    "quaterniusPreset": "Adventurer",
+    "sourceGlb": "male_06.glb",
+    "sourceGlbPath": "assets-source/ai3dgen/npcs/male_06.glb",
+    "publicRigPath": "models/npcs/_rigs/male_06.glb"
+  },
+  {
+    "npcId": "chk_based",
+    "title": "Басед",
+    "rigRef": "male_07",
+    "fingerprint": "heavy_male|mature_male|short_crop|work_coat|work_pants|none|wrench",
+    "slots": {
+      "body": "heavy_male",
+      "head": "mature_male",
+      "hair": "short_crop",
+      "top": "work_coat",
+      "bottom": "work_pants",
+      "accessory": "none",
+      "prop": "wrench"
+    },
+    "quaterniusPreset": "Worker",
+    "sourceGlb": "male_07.glb",
+    "sourceGlbPath": "assets-source/ai3dgen/npcs/male_07.glb",
+    "publicRigPath": "models/npcs/_rigs/male_07.glb"
+  },
+  {
+    "npcId": "chk_smert",
+    "title": "Смерть",
+    "rigRef": "female_04",
+    "fingerprint": "slim_female|young_female|shoulder_length|cardigan|pants_dark|glasses_round|book",
+    "slots": {
+      "body": "slim_female",
+      "head": "young_female",
+      "hair": "shoulder_length",
+      "top": "cardigan",
+      "bottom": "pants_dark",
+      "accessory": "glasses_round",
+      "prop": "book"
+    },
+    "quaterniusPreset": "Formal",
+    "sourceGlb": "female_04.glb",
+    "sourceGlbPath": "assets-source/ai3dgen/npcs/female_04.glb",
+    "publicRigPath": "models/npcs/_rigs/female_04.glb"
+  },
+  {
+    "npcId": "chk_stalker",
+    "title": "Сталкер",
+    "rigRef": "male_08",
+    "fingerprint": "slim_male|young_male|hood|windbreaker|work_pants|none|none",
+    "slots": {
+      "body": "slim_male",
+      "head": "young_male",
+      "hair": "hood",
+      "top": "windbreaker",
+      "bottom": "work_pants",
+      "accessory": "none",
+      "prop": "none"
+    },
+    "quaterniusPreset": "Swat",
+    "sourceGlb": "male_08.glb",
+    "sourceGlbPath": "assets-source/ai3dgen/npcs/male_08.glb",
+    "publicRigPath": "models/npcs/_rigs/male_08.glb"
+  },
+  {
+    "npcId": "chk_elis",
+    "title": "Элис",
+    "rigRef": "female_05",
+    "fingerprint": "slim_female|young_female|bun_dark|cardigan|skirt_a_line|glasses_round|guitar",
+    "slots": {
+      "body": "slim_female",
+      "head": "young_female",
+      "hair": "bun_dark",
+      "top": "cardigan",
+      "bottom": "skirt_a_line",
+      "accessory": "glasses_round",
+      "prop": "guitar"
+    },
+    "quaterniusPreset": "Punk",
+    "sourceGlb": "female_05.glb",
+    "sourceGlbPath": "assets-source/ai3dgen/npcs/female_05.glb",
+    "publicRigPath": "models/npcs/_rigs/female_05.glb"
+  },
+  {
+    "npcId": "chk_ritka",
+    "title": "Ритка",
+    "rigRef": "female_06",
+    "fingerprint": "slim_female|young_female|shoulder_length|hoodie|pants_dark|earring|guitar",
+    "slots": {
+      "body": "slim_female",
+      "head": "young_female",
+      "hair": "shoulder_length",
+      "top": "hoodie",
+      "bottom": "pants_dark",
+      "accessory": "earring",
+      "prop": "guitar"
+    },
+    "quaterniusPreset": "Casual",
+    "sourceGlb": "female_06.glb",
+    "sourceGlbPath": "assets-source/ai3dgen/npcs/female_06.glb",
+    "publicRigPath": "models/npcs/_rigs/female_06.glb"
+  },
+  {
+    "npcId": "maxim",
+    "title": "Максим",
+    "rigRef": "male_09",
+    "fingerprint": "heavy_male|mature_male|short_crop|windbreaker|work_pants|cyber_arm|none",
+    "slots": {
+      "body": "heavy_male",
+      "head": "mature_male",
+      "hair": "short_crop",
+      "top": "windbreaker",
+      "bottom": "work_pants",
+      "accessory": "cyber_arm",
+      "prop": "none"
+    },
+    "quaterniusPreset": "Swat",
+    "sourceGlb": "male_09.glb",
+    "sourceGlbPath": "assets-source/ai3dgen/npcs/male_09.glb",
+    "publicRigPath": "models/npcs/_rigs/male_09.glb"
+  },
+  {
+    "npcId": "anya",
+    "title": "Аня",
+    "rigRef": "female_07",
+    "fingerprint": "slim_female|young_female|short_crop|hoodie|pants_dark|glasses_round|none",
+    "slots": {
+      "body": "slim_female",
+      "head": "young_female",
+      "hair": "short_crop",
+      "top": "hoodie",
+      "bottom": "pants_dark",
+      "accessory": "glasses_round",
+      "prop": "none"
+    },
+    "quaterniusPreset": "SciFi",
+    "sourceGlb": "female_07.glb",
+    "sourceGlbPath": "assets-source/ai3dgen/npcs/female_07.glb",
+    "publicRigPath": "models/npcs/_rigs/female_07.glb"
+  },
+  {
+    "npcId": "zeka",
+    "title": "Жека",
+    "rigRef": "male_10",
+    "fingerprint": "average_male|elder_male|cap|work_coat|work_pants|none|wrench",
+    "slots": {
+      "body": "average_male",
+      "head": "elder_male",
+      "hair": "cap",
+      "top": "work_coat",
+      "bottom": "work_pants",
+      "accessory": "none",
+      "prop": "wrench"
+    },
+    "quaterniusPreset": "Farmer",
+    "sourceGlb": "male_10.glb",
+    "sourceGlbPath": "assets-source/ai3dgen/npcs/male_10.glb",
+    "publicRigPath": "models/npcs/_rigs/male_10.glb"
+  },
+  {
+    "npcId": "baba_zina",
+    "title": "Баба Зина",
+    "rigRef": "female_08",
+    "fingerprint": "elder_female_stooped|elder_female|bun_gray|apron|work_pants|none|soldering_iron",
+    "slots": {
+      "body": "elder_female_stooped",
+      "head": "elder_female",
+      "hair": "bun_gray",
+      "top": "apron",
+      "bottom": "work_pants",
+      "accessory": "none",
+      "prop": "soldering_iron"
+    },
+    "quaterniusPreset": "Witch",
+    "sourceGlb": "female_08.glb",
+    "sourceGlbPath": "assets-source/ai3dgen/npcs/female_08.glb",
+    "publicRigPath": "models/npcs/_rigs/female_08.glb"
+  },
+  {
+    "npcId": "fisherman_trofim",
+    "title": "Трофим",
+    "rigRef": "male_11",
+    "fingerprint": "elder_male|elder_male|cap|work_coat|work_pants|none|fishing_rod",
+    "slots": {
+      "body": "elder_male",
+      "head": "elder_male",
+      "hair": "cap",
+      "top": "work_coat",
+      "bottom": "work_pants",
+      "accessory": "none",
+      "prop": "fishing_rod"
+    },
+    "quaterniusPreset": "Beach",
+    "sourceGlb": "male_11.glb",
+    "sourceGlbPath": "assets-source/ai3dgen/npcs/male_11.glb",
+    "publicRigPath": "models/npcs/_rigs/male_11.glb"
+  },
+  {
+    "npcId": "kate",
+    "title": "Катя",
+    "rigRef": "female_09",
+    "fingerprint": "slim_female|young_female|bun_dark|cardigan|pants_dark|glasses_round|book",
+    "slots": {
+      "body": "slim_female",
+      "head": "young_female",
+      "hair": "bun_dark",
+      "top": "cardigan",
+      "bottom": "pants_dark",
+      "accessory": "glasses_round",
+      "prop": "book"
+    },
+    "quaterniusPreset": "Formal",
+    "sourceGlb": "female_09.glb",
+    "sourceGlbPath": "assets-source/ai3dgen/npcs/female_09.glb",
+    "publicRigPath": "models/npcs/_rigs/female_09.glb"
+  },
+  {
+    "npcId": "office_colleague",
+    "title": "Коллега",
+    "rigRef": "male_03",
+    "fingerprint": "average_male|young_male|short_crop|jacket_casual|jeans|glasses_round|none",
+    "slots": {
+      "body": "average_male",
+      "head": "young_male",
+      "hair": "short_crop",
+      "top": "jacket_casual",
+      "bottom": "jeans",
+      "accessory": "glasses_round",
+      "prop": "none"
+    },
+    "quaterniusPreset": "Casual_2",
+    "sourceGlb": "male_03.glb",
+    "sourceGlbPath": "assets-source/ai3dgen/npcs/male_03.glb",
+    "publicRigPath": "models/npcs/_rigs/male_03.glb"
+  },
+  {
+    "npcId": "viktor",
+    "title": "Виктор",
+    "rigRef": "male_05",
+    "fingerprint": "heavy_male|mature_male|bald|suit|slacks|badge|none",
+    "slots": {
+      "body": "heavy_male",
+      "head": "mature_male",
+      "hair": "bald",
+      "top": "suit",
+      "bottom": "slacks",
+      "accessory": "badge",
+      "prop": "none"
+    },
+    "quaterniusPreset": "King",
+    "sourceGlb": "male_05.glb",
+    "sourceGlbPath": "assets-source/ai3dgen/npcs/male_05.glb",
+    "publicRigPath": "models/npcs/_rigs/male_05.glb"
+  },
+  {
+    "npcId": "kira",
+    "title": "Кира",
+    "rigRef": "female_03",
+    "fingerprint": "slim_female|mature_female|shoulder_length|blouse|skirt_a_line|glasses_round|none",
+    "slots": {
+      "body": "slim_female",
+      "head": "mature_female",
+      "hair": "shoulder_length",
+      "top": "blouse",
+      "bottom": "skirt_a_line",
+      "accessory": "glasses_round",
+      "prop": "none"
+    },
+    "quaterniusPreset": "Soldier",
+    "sourceGlb": "female_03.glb",
+    "sourceGlbPath": "assets-source/ai3dgen/npcs/female_03.glb",
+    "publicRigPath": "models/npcs/_rigs/female_03.glb"
+  },
+  {
+    "npcId": "boris",
+    "title": "Борис",
+    "rigRef": "male_07",
+    "fingerprint": "heavy_male|bearded_male|gray_receding|work_coat|work_pants|none|wrench",
+    "slots": {
+      "body": "heavy_male",
+      "head": "bearded_male",
+      "hair": "gray_receding",
+      "top": "work_coat",
+      "bottom": "work_pants",
+      "accessory": "none",
+      "prop": "wrench"
+    },
+    "quaterniusPreset": "Worker",
+    "sourceGlb": "male_07.glb",
+    "sourceGlbPath": "assets-source/ai3dgen/npcs/male_07.glb",
+    "publicRigPath": "models/npcs/_rigs/male_07.glb"
+  },
+  {
+    "npcId": "tamara",
+    "title": "Тамара",
+    "rigRef": "female_04",
+    "fingerprint": "average_female|mature_female|bun_dark|cardigan|skirt_a_line|glasses_round|book",
+    "slots": {
+      "body": "average_female",
+      "head": "mature_female",
+      "hair": "bun_dark",
+      "top": "cardigan",
+      "bottom": "skirt_a_line",
+      "accessory": "glasses_round",
+      "prop": "book"
+    },
+    "quaterniusPreset": "Witch",
+    "sourceGlb": "female_04.glb",
+    "sourceGlbPath": "assets-source/ai3dgen/npcs/female_04.glb",
+    "publicRigPath": "models/npcs/_rigs/female_04.glb"
+  },
+  {
+    "npcId": "grisha",
+    "title": "Гриша",
+    "rigRef": "male_08",
+    "fingerprint": "slim_male|young_male|beanie|windbreaker|jeans|none|none",
+    "slots": {
+      "body": "slim_male",
+      "head": "young_male",
+      "hair": "beanie",
+      "top": "windbreaker",
+      "bottom": "jeans",
+      "accessory": "none",
+      "prop": "none"
+    },
+    "quaterniusPreset": "Punk",
+    "sourceGlb": "male_08.glb",
+    "sourceGlbPath": "assets-source/ai3dgen/npcs/male_08.glb",
+    "publicRigPath": "models/npcs/_rigs/male_08.glb"
+  },
+  {
+    "npcId": "lena",
+    "title": "Лена",
+    "rigRef": "female_06",
+    "fingerprint": "slim_female|young_female|hood|hoodie|pants_dark|none|none",
+    "slots": {
+      "body": "slim_female",
+      "head": "young_female",
+      "hair": "hood",
+      "top": "hoodie",
+      "bottom": "pants_dark",
+      "accessory": "none",
+      "prop": "none"
+    },
+    "quaterniusPreset": "Punk",
+    "sourceGlb": "female_06.glb",
+    "sourceGlbPath": "assets-source/ai3dgen/npcs/female_06.glb",
+    "publicRigPath": "models/npcs/_rigs/female_06.glb"
+  },
+  {
+    "npcId": "sergey",
+    "title": "Сергей",
+    "rigRef": "male_09",
+    "fingerprint": "average_male|mature_male|short_crop|work_coat|work_pants|none|wrench",
+    "slots": {
+      "body": "average_male",
+      "head": "mature_male",
+      "hair": "short_crop",
+      "top": "work_coat",
+      "bottom": "work_pants",
+      "accessory": "none",
+      "prop": "wrench"
+    },
+    "quaterniusPreset": "Worker",
+    "sourceGlb": "male_09.glb",
+    "sourceGlbPath": "assets-source/ai3dgen/npcs/male_09.glb",
+    "publicRigPath": "models/npcs/_rigs/male_09.glb"
+  },
+  {
+    "npcId": "lyonya",
+    "title": "Лёня",
+    "rigRef": "male_04",
+    "fingerprint": "slim_male|young_male|short_crop|hoodie|jeans|none|none",
+    "slots": {
+      "body": "slim_male",
+      "head": "young_male",
+      "hair": "short_crop",
+      "top": "hoodie",
+      "bottom": "jeans",
+      "accessory": "none",
+      "prop": "none"
+    },
+    "quaterniusPreset": "Casual_Hoodie",
+    "sourceGlb": "male_04.glb",
+    "sourceGlbPath": "assets-source/ai3dgen/npcs/male_04.glb",
+    "publicRigPath": "models/npcs/_rigs/male_04.glb"
+  },
+  {
+    "npcId": "oleg",
+    "title": "Олег",
+    "rigRef": "male_05",
+    "fingerprint": "heavy_male|mature_male|short_crop|suit|slacks|badge|none",
+    "slots": {
+      "body": "heavy_male",
+      "head": "mature_male",
+      "hair": "short_crop",
+      "top": "suit",
+      "bottom": "slacks",
+      "accessory": "badge",
+      "prop": "none"
+    },
+    "quaterniusPreset": "Suit",
+    "sourceGlb": "male_05.glb",
+    "sourceGlbPath": "assets-source/ai3dgen/npcs/male_05.glb",
+    "publicRigPath": "models/npcs/_rigs/male_05.glb"
+  }
+]

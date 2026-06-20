@@ -3,7 +3,7 @@
 import { useLayoutEffect, useRef } from 'react';
 import type { FrameTickCallback, FrameTickContext } from '@/engine/frame/types';
 
-export type NpcFrameCallbackKind = 'main' | 'mixer' | 'procedural' | 'sprite';
+export type NpcFrameCallbackKind = 'main' | 'mixer' | 'procedural' | 'overlay' | 'sprite';
 
 interface NpcFrameEntry {
   key: string;
@@ -21,7 +21,8 @@ function rebuildSortedEntries(): void {
     main: 0,
     mixer: 1,
     procedural: 2,
-    sprite: 3,
+    overlay: 3,
+    sprite: 4,
   };
   sortedEntries = [...entries].sort((a, b) => {
     const kindDiff = kindOrder[a.kind] - kindOrder[b.kind];

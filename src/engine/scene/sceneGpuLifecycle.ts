@@ -14,7 +14,7 @@ import { preloadGltfAsset } from '@/components/3d/assets/GltfAsset';
 import { preloadTriggerZoneProps } from '@/components/3d/TriggerZoneProp';
 import { preloadScenePropDressing } from '@/components/3d/ScenePropDressing';
 import { preloadSceneJsChunks } from '@/components/3d/sceneChunks/sceneChunkRegistry';
-import { resolveNpcModelUrl } from '@/config/npcModelRegistry';
+import { isUniqueNpcMeshOnDisk, resolveNpcModelUrl } from '@/config/npcModelRegistry';
 import { getPropModelDefinition } from '@/config/propModelRegistry';
 import { getScenePropDressingIds } from '@/config/scenePropDressing';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
@@ -105,6 +105,7 @@ function preloadScenePropModels(sceneId: SceneId): void {
 
 function preloadSceneNpcModels(sceneId: SceneId): void {
   for (const npcId of getSceneNpcIds(sceneId)) {
+    if (!isUniqueNpcMeshOnDisk(npcId)) continue;
     const url = resolveNpcModelUrl(npcId);
     if (!url) continue;
     scheduleGltfPreload(
@@ -138,6 +139,7 @@ export function preloadSceneGpuAssets(sceneId: SceneId): void {
 
 /** Warm a single NPC GLB before approach / dialogue (interaction:start). */
 export function preloadNpcModel(npcId: string): void {
+  if (!isUniqueNpcMeshOnDisk(npcId)) return;
   const url = resolveNpcModelUrl(npcId);
   if (!url) return;
   scheduleGltfPreload(
