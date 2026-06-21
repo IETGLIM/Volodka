@@ -17,6 +17,7 @@ interface DualPaneListProps<T> {
   renderDetail: (selected: T) => ReactNode;
   emptyList?: ReactNode;
   emptyDetail?: ReactNode;
+  listHeader?: ReactNode;
   listFooter?: ReactNode;
   navigationEnabled?: boolean;
 }
@@ -31,6 +32,7 @@ function DualPaneListInner<T>({
   renderDetail,
   emptyList,
   emptyDetail,
+  listHeader,
   listFooter,
   navigationEnabled = true,
 }: DualPaneListProps<T>) {
@@ -131,6 +133,7 @@ function DualPaneListInner<T>({
           className="h-full outline-none"
         >
           <ScrollArea className="h-full">
+            {listHeader}
             {listBody}
             {listFooter}
           </ScrollArea>
