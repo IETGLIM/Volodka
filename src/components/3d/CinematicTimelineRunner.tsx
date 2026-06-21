@@ -92,6 +92,10 @@ export function CinematicTimelineRunner() {
       completeCinematicTimeline('intro_wakeup');
     }
 
+    // Activate the first quest after the wake-up cinematic so the player
+    // has a clear goal: explore the room, then head to the sync.
+    dispatchGameAction({ type: 'quest/activate', questId: 'first_reading' });
+
     const clearPrologueTimer = (): void => {
       if (prologueTimerRef.current) {
         clearTimeout(prologueTimerRef.current);
@@ -260,8 +264,34 @@ export function CinematicTimelineRunner() {
       eventBus.on('cinematic:timeline_complete', onSkippedComplete),
     ];
 
+    // Start the intro wake-up timeline AFTER the first frame renders.
+    // Previously this fired immediately on mount — before the RigidBody
+    // existed, causing the character to fly above the floor. Waiting for
+    // canvas:first-frame ensures the physics world is initialized and the
+    // KCC controller has been created.
+    const startIntroWakeWhenReady = () => {
+      if (sequenceStartedRef.current) return;
+      if (getGameStore().activeCutsceneId !== 'intro_wakeup') return;
+      // Small delay after first-frame to let the KCC controller settle.
+      setTimeout(() => {
+        if (sequenceStartedRef.current) return;
+        if (getGameStore().activeCutsceneId !== 'intro_wakeup') return;
+        startCinematicTimeline({ def: INTRO_WAKE_TIMELINE, options: {} });
+      }, 200);
+    };
+
+    // If the cutscene is already active (component remounted after HMR, etc.),
+    // wait for the next first-frame.
     if (getGameStore().activeCutsceneId === 'intro_wakeup') {
-      startCinematicTimeline({ def: INTRO_WAKE_TIMELINE, options: {} });
+      unsubs.push(eventBus.on('canvas:first-frame', startIntroWakeWhenReady));
+    } else {
+      // Also listen for the cutscene being set after mount (New Game flow).
+      const unsubCutscene = eventBus.on('scene:loaded', () => {
+        if (getGameStore().activeCutsceneId === 'intro_wakeup' && !sequenceStartedRef.current) {
+          startIntroWakeWhenReady();
+        }
+      });
+      unsubs.push(unsubCutscene);
     }
 
     return () => {

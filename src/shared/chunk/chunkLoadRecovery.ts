@@ -24,9 +24,19 @@ export function recoverFromStaleChunk(err: unknown): never {
       sessionStorage.setItem(CHUNK_RELOAD_SESSION_KEY, '1');
       console.warn('[chunkLoadRecovery] Stale chunk detected, reloading…', err);
       window.location.reload();
+      // Return a never-resolving promise to stop execution while the page
+      // reloads. Without this, the calling code (retryImport) would catch
+      // the throw below and retry 3 times before the reload takes effect.
+      // The `never` return type satisfies TypeScript; we never actually reach.
+      return new Promise<never>(() => {}) as never;
     }
+    // Reload was already attempted — this is a genuine missing chunk, not a
+    // stale cache. Clear the flag so the next session can try again.
+    sessionStorage.removeItem(CHUNK_RELOAD_SESSION_KEY);
   } catch {
+    // sessionStorage might be unavailable (private browsing) — reload anyway.
     window.location.reload();
+    return new Promise<never>(() => {}) as never;
   }
 
   throw err instanceof Error ? err : new Error(String(err));

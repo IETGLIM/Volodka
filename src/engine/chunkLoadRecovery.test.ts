@@ -21,7 +21,7 @@ describe('chunkLoadRecovery', () => {
     expect(isChunkLoadError(new Error('network timeout'))).toBe(false);
   });
 
-  it('reloads once on stale chunk, then rethrows', () => {
+  it('reloads once on stale chunk, then rethrows on second call', () => {
     const reload = vi.fn();
     const storage = new Map<string, string>();
 
@@ -40,10 +40,14 @@ describe('chunkLoadRecovery', () => {
 
     const err = new Error('Failed to fetch dynamically imported module: https://example.com/assets/foo.js');
 
-    expect(() => recoverFromStaleChunk(err)).toThrow();
+    // First call: reloads the page (returns a never-resolving promise
+    // to stop execution while the browser navigates).
+    recoverFromStaleChunk(err);
     expect(reload).toHaveBeenCalledTimes(1);
     expect(storage.get(CHUNK_RELOAD_SESSION_KEY)).toBe('1');
 
+    // Second call: reload was already attempted — rethrows the error
+    // so the caller (retryLazy) doesn't retry infinitely.
     expect(() => recoverFromStaleChunk(err)).toThrow(err);
     expect(reload).toHaveBeenCalledTimes(1);
   });

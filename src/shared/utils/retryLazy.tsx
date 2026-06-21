@@ -10,7 +10,15 @@ async function retryImport<T>(
     return await importFn();
   } catch (err) {
     if (isChunkLoadError(err)) {
+      // Chunk is missing from the CDN (stale deploy). Don't retry — the chunk
+      // won't magically appear. Reload the page immediately so the browser
+      // fetches the fresh index.html with current chunk hashes.
+      // recoverFromStaleChunk either reloads (and we never return) or throws
+      // if a reload was already attempted (preventing infinite loops).
       recoverFromStaleChunk(err);
+      // If recoverFromStaleChunk threw (reload already attempted), propagate
+      // immediately — no point retrying a genuinely missing chunk.
+      throw err;
     }
     if (maxRetries <= 0) throw err;
     console.warn(

@@ -1,7 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useSyncExternalStore } from 'react';
 import { audioEngine } from '@/engine/AudioEngine';
-import { eventBus } from '@/engine/EventBus';
 import { NEW_GAME_FADE_MS } from '@/engine/menu/menuConstants';
 import { buildMenuItems, safePlayMenuSfx } from '@/engine/menu/menuPresentation';
 import { useGameStore } from '@/store/gameStore';
@@ -46,7 +45,11 @@ export function useMenuScreen({ loadGame, resetGame, musicEnabled, toggleMusic }
       store.setMainMenuOpen(false);
       store.setIntroActive(false);
       store.setCutscene('intro_wakeup', []);
-      eventBus.emit('intro:wakeup_sequence', {});
+      // Don't emit intro:wakeup_sequence here — the 3D canvas hasn't mounted
+      // yet. The CinematicTimelineRunner will detect activeCutsceneId ===
+      // 'intro_wakeup' after canvas:first-frame and start the timeline then.
+      // This fixes the "character flying above the floor" bug where the
+      // RigidBody doesn't exist yet when the timeline sets player position.
     }, NEW_GAME_FADE_MS);
   }, [isFadingOut, resetGame]);
 

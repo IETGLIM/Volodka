@@ -304,8 +304,12 @@ export function detectAutoQualityPreset(
   initBatteryQualityCapListener();
 
   let tier: Exclude<QualityPresetId, 'auto'>;
-  if (viewportWidth < 768 || devicePixelRatio < 1.25) tier = 'low';
-  else if (viewportWidth < 1024 || devicePixelRatio < 1.5) tier = 'medium';
+  // Don't penalise desktop monitors with DPR 1.0 (standard 1080p) — only
+  // use 'low' for genuinely small viewports (mobile). Desktop browsers with
+  // 1080p / 1440p monitors have plenty of power for at least 'medium'.
+  const isMobileViewport = viewportWidth < 768;
+  if (isMobileViewport) tier = 'low';
+  else if (viewportWidth < 1024) tier = 'medium';
   else if (viewportWidth < 1440) tier = 'high';
   else tier = 'ultra';
 
