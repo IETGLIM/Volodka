@@ -298,6 +298,9 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
           { type: 'npcChange', npcId: 'albert', npcChange: { relation: 10 } },
           { type: 'setFlag', flag: 'albert_shared_past', flagValue: true },
           { type: 'addSkill', skill: 'empathy', value: 2 },
+          { type: 'discoverLore', loreId: 'lore_it_guild' },
+          { type: 'discoverLore', loreId: 'lore_albert' },
+          { type: 'discoverLore', loreId: 'lore_great_crash_2029' },
         ],
       },
       {
@@ -919,6 +922,9 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
           { type: 'setFlag', flag: 'maria_true_nature_revealed', flagValue: true },
           { type: 'npcChange', npcId: 'maria', npcChange: { relation: 15 } },
           { type: 'collectPoem', poemId: 'poem_18' },
+          { type: 'discoverLore', loreId: 'lore_maria' },
+          { type: 'discoverLore', loreId: 'lore_maria_secret' },
+          { type: 'discoverLore', loreId: 'lore_great_crash_2029' },
         ],
       },
       {
@@ -1183,6 +1189,9 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
           { type: 'npcChange', npcId: 'office_dmitry', npcChange: { relation: 20 } },
           { type: 'setFlag', flag: 'dmitry_secret_shared', flagValue: true },
           { type: 'setFlag', flag: 'dmitry_relation_warm', flagValue: true },
+          { type: 'discoverLore', loreId: 'lore_dmitry' },
+          { type: 'discoverLore', loreId: 'lore_dmitry_project' },
+          { type: 'discoverLore', loreId: 'lore_it_guild' },
         ],
       },
       {

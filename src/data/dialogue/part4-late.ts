@@ -234,6 +234,9 @@ export const DIALOGUE_PART4: Record<string, DialogueNode> = {
         effects: [
           { type: 'addSkill', skill: 'intuition', value: 2 },
           { type: 'setFlag', flag: 'zarema_father_was_poet', flagValue: true },
+          { type: 'discoverLore', loreId: 'lore_zarema' },
+          { type: 'discoverLore', loreId: 'lore_factory' },
+          { type: 'discoverLore', loreId: 'lore_quantum_computer' },
         ],
       },
       {

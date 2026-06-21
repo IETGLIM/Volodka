@@ -414,6 +414,9 @@ export const DIALOGUE_PART3: Record<string, DialogueNode> = {
           { type: 'addSkill', skill: 'persuasion', value: 1 },
           { type: 'setFlag', flag: 'network_raid_warning', flagValue: true },
           { type: 'npcChange', npcId: 'office_colleague', npcChange: { relation: 10 } },
+          { type: 'discoverLore', loreId: 'lore_digital_resistance' },
+          { type: 'discoverLore', loreId: 'lore_cafe_blue_hole' },
+          { type: 'discoverLore', loreId: 'lore_network' },
         ],
       },
       {

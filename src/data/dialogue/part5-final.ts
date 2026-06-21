@@ -160,6 +160,8 @@ export const DIALOGUE_PART5: Record<string, DialogueNode> = {
           { type: 'addKarma', value: 5 },
           { type: 'addSkill', skill: 'empathy', value: 2 },
           { type: 'npcChange', npcId: 'maria', npcChange: { relation: 8 } },
+          { type: 'discoverLore', loreId: 'lore_maria_secret' },
+          { type: 'discoverLore', loreId: 'lore_ai_surveillance' },
         ],
       },
       {
@@ -366,6 +368,8 @@ export const DIALOGUE_PART5: Record<string, DialogueNode> = {
           { type: 'addKarma', value: 8 },
           { type: 'npcChange', npcId: 'maria', npcChange: { relation: 5 } },
           { type: 'setFlag', flag: 'albert_vault_truth_known', flagValue: true },
+          { type: 'discoverLore', loreId: 'lore_maria_secret' },
+          { type: 'discoverLore', loreId: 'lore_network' },
         ],
       },
       {

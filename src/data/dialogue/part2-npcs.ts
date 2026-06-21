@@ -119,6 +119,8 @@ export const DIALOGUE_PART2: Record<string, DialogueNode> = {
           { type: 'addSkill', skill: 'empathy', value: 2 },
           { type: 'setFlag', flag: 'alexander_crying_known', flagValue: true },
           { type: 'npcChange', npcId: 'office_colleague', npcChange: { relation: 5 } },
+          { type: 'discoverLore', loreId: 'lore_alexander_schemes' },
+          { type: 'discoverLore', loreId: 'lore_colleague_double_life' },
         ],
       },
       {
