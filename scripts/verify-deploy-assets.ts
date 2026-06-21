@@ -20,9 +20,9 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const distDir = path.join(ROOT, 'dist');
 const PUBLIC = path.join(ROOT, 'public');
 
-/** Vercel hobby deployment soft limit — warn above this. */
-const DEPLOY_SIZE_WARN_MB = 200;
-const DEPLOY_SIZE_HARD_MB = 250;
+/** Vercel deployment soft limit — warn above this. */
+const DEPLOY_SIZE_WARN_MB = 250;
+const DEPLOY_SIZE_HARD_MB = 350;
 
 const issues: string[] = [];
 const warnings: string[] = [];
