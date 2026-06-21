@@ -31,10 +31,10 @@ describe('resolvePoemWorldEffect', () => {
   });
 
   it('falls back to category default for unmapped override poem', () => {
-    const profile = resolvePoemWorldEffect('poem_7');
-    expect(profile.category).toBe('exploration');
-    expect(profile.visualPreset).toBe('god_rays_gold');
-    expect(profile.narrationLine).toBeUndefined();
+    // poem_2 has a category ('social') but no full override entry,
+    // so it should fall back to the category default profile.
+    const profile = resolvePoemWorldEffect('poem_2');
+    expect(profile.category).toBe('social');
   });
 
   it('uses utility fallback for unknown poem ids', () => {

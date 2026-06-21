@@ -7,13 +7,13 @@ import {
 describe('formatQualityPresetDetailRu', () => {
   it('omits GLB hint on low tier', () => {
     const detail = formatQualityPresetDetailRu('low', QUALITY_PRESETS.low);
-    expect(detail).not.toContain('GLB');
+    expect(detail).not.toContain('Уникальные аватары');
     expect(detail).toContain('Низкое');
   });
 
   it('shows GLB hint from medium upward', () => {
     const detail = formatQualityPresetDetailRu('medium', QUALITY_PRESETS.medium);
-    expect(detail).toContain('3D-модели (GLB): от пресета «Среднее»');
+    expect(detail).toContain('Уникальные аватары (RPM)');
   });
 
   it('shows wet reflections on explicit high and ultra', () => {

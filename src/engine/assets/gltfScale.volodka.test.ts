@@ -3,6 +3,7 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { deepCloneWithSkeletons } from '@/utils/deepCloneWithSkeletons';
 import { fitCharacterGltf, measureGltfBounds } from './gltfScale';
 
@@ -21,6 +22,7 @@ const VOLODKA_GLB = path.resolve(
 function loadGltfScene(file: string): Promise<{ scene: import('three').Group }> {
   const buf = readFileSync(file);
   const loader = new GLTFLoader();
+  loader.setMeshoptDecoder(MeshoptDecoder);
   return new Promise((resolve, reject) => {
     loader.parse(
       buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength),

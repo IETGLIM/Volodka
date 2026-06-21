@@ -76,7 +76,7 @@ describe('SettingsPanel', () => {
 
     await user.click(screen.getByRole('button', { name: /Визуал/ }));
 
-    expect(screen.getByText(/3D-модели \(GLB\)/)).toBeInTheDocument();
+    expect(screen.getByText(/Уникальные аватары/)).toBeInTheDocument();
   });
 
   it('calls onClose from the close button and Escape', async () => {
