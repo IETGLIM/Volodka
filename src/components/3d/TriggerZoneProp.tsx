@@ -83,15 +83,20 @@ export function TriggerZoneProps() {
   const flags = useGameStore((s) => s.playerState.flags);
   const currentAct = useGameStore((s) => s.playerState.progression.currentAct);
   const activeTTLFlags = useGameStore((s) => s.activeTTLFlags);
+  // One-time zones that have been triggered — their props should disappear
+  // (Gothic-style: pick up item → item is gone from the world).
+  const interactiveObjectStates = useGameStore((s) => s.interactiveObjectStates);
   const zones = useMemo(
     () =>
       TRIGGER_ZONES.filter(
         (z) =>
           z.sceneId === sceneId &&
           z.propModelId &&
-          isTriggerZoneAvailable(z, flags, currentAct, activeTTLFlags),
+          isTriggerZoneAvailable(z, flags, currentAct, activeTTLFlags) &&
+          // Hide prop if this one-time zone was already triggered (item picked up).
+          !(z.isOneTime && interactiveObjectStates[z.id]),
       ),
-    [sceneId, flags, currentAct, activeTTLFlags],
+    [sceneId, flags, currentAct, activeTTLFlags, interactiveObjectStates],
   );
 
   if (

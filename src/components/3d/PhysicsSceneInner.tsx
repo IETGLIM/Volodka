@@ -36,6 +36,7 @@ import { RotationSyncBridge } from './RotationSyncBridge';
 import { FirstPersonHands } from './FirstPersonHands';
 import { UmkaDog } from './UmkaDog';
 import { TriggerZoneProps } from './TriggerZoneProp';
+import { WorldItemPickupGlows } from './WorldItemPickupGlow';
 import { ScenePropDressing } from './ScenePropDressing';
 import { SceneManifestAssets } from './SceneManifestAssets';
 import { SceneInteriorAssets } from './SceneInteriorAssets';
@@ -87,6 +88,7 @@ function PhysicsSceneInner({
       />
       <FirstPersonHands moveBlendRef={moveBlendRef} />
       <TriggerZoneProps />
+      <WorldItemPickupGlows />
       <ScenePropDressing />
       <SceneManifestAssets />
       <SceneInteriorAssets />

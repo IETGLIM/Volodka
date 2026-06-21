@@ -401,6 +401,8 @@ export const TRIGGER_ZONES: TriggerZone[] = [
       { type: 'setFlag', flag: 'has_solnysh_wine', flagValue: true },
       { type: 'triggerQuest', questId: 'solnysh_roof_wine' },
     ],
+    propModelId: 'kenney_city_bottle',
+    propOffset: [0, 0.3, 0],
   },
   {
     id: 'solnysh_vera_talk',
@@ -1394,6 +1396,8 @@ export const TRIGGER_ZONES: TriggerZone[] = [
       { type: 'collectPoem', poemId: 'poem_14' },
       { type: 'setFlag', flag: 'found_library_poem', flagValue: true },
     ],
+    propModelId: 'ai3dgen_encrypted_scroll',
+    propOffset: [0, 0.2, 0],
   },
 
   /* ─────────────── HOME KITCHEN LETTER ─────────────── */
@@ -1976,6 +1980,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     enterToast: 'Ящик с бутылками. На боку маркером: «ЧК. Брать по совести.»',
     interactionType: 'take',
     interactionLabel: 'Взять бутылку «777»',
+    isOneTime: true,
     examineData: {
       title: 'Ящик с портвейном',
       description: 'Деревянный ящик, в нём — тёмные бутылки с тремя семёрками на этикетке.',
@@ -1986,6 +1991,8 @@ export const TRIGGER_ZONES: TriggerZone[] = [
       { type: 'addItem', itemId: 'port_wine_777' },
       { type: 'setFlag', flag: 'pier_portwine_taken', flagValue: true },
     ],
+    propModelId: 'kenney_city_bottle',
+    propOffset: [0, 0.3, 0],
   },
   {
     id: 'pier_guitar',
