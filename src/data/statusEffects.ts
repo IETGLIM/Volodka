@@ -1,6 +1,21 @@
 /* ─── Volodka RPG – Status Effect Definitions ─── */
 /* Defines all status effects (buffs, debuffs, weather, perk-based)
- * that can appear on the HUD's status effects bar. */
+ * that can appear on the HUD's status effects bar.
+ *
+ * IMPORTANT: This module is PRESENTATION-ONLY. The entries below describe
+ * the player's current derived state for HUD display — they are NOT active
+ * gameplay modifiers. The actual mechanical effects live in their respective
+ * systems:
+ *   - Perk bonuses (night_vision, iron_stomach, counter_strike, poetic_trance):
+ *     applied via src/shared/perks/perkModifiers.ts.
+ *   - Weather modifiers (rain/snow/fog/storm): applied via
+ *     src/data/weatherEffects.ts + src/shared/weather/deriveSceneWeather.ts.
+ *   - Vital penalties (exhausted, stressed): applied via combat formulas
+ *     (maxHp = energy × 2, stress gates for code_rage / combat_meditation)
+ *     and stress_resist perk modifiers.
+ *
+ * If you add a new status effect here, wire up its mechanical effect in the
+ * appropriate system — otherwise the description will mislead players. */
 
 /* ─── Types ─── */
 
@@ -109,7 +124,7 @@ export const STATUS_EFFECTS: Record<StatusEffectType, StatusEffectDef> = {
   exhausted: {
     id: 'exhausted',
     name: 'Истощение',
-    description: 'Энергия на нуле. Каждое движение даётся с трудом.',
+    description: 'Энергия ниже 25. Макс. здоровье (энергия × 2) снижено.',
     icon: '😩',
     category: 'debuff',
     color: '#6b7280', // gray
@@ -117,7 +132,7 @@ export const STATUS_EFFECTS: Record<StatusEffectType, StatusEffectDef> = {
   stressed: {
     id: 'stressed',
     name: 'Стресс',
-    description: 'Стресс зашкаливает. Мысли путаются, руки дрожат.',
+    description: 'Стресс выше 70. В бою открывается бонус «Ярость кода».',
     icon: '😰',
     category: 'debuff',
     color: '#f87171', // red
@@ -199,7 +214,7 @@ export const STATUS_EFFECTS: Record<StatusEffectType, StatusEffectDef> = {
   night_vision: {
     id: 'night_vision',
     name: 'Ночное зрение',
-    description: 'Ночной дозор активен. +10 макс. энергии ночью.',
+    description: 'Активна способность «Ночной дозор»: ночью макс. энергии повышен.',
     icon: '🌙',
     category: 'perk',
     color: '#34d399', // emerald
@@ -207,7 +222,7 @@ export const STATUS_EFFECTS: Record<StatusEffectType, StatusEffectDef> = {
   iron_stomach: {
     id: 'iron_stomach',
     name: 'Желудок стали',
-    description: 'Стресс от сцен снижен на 25%. Ничто больше не тревожит.',
+    description: 'Активна способность «Желудок стали»: входящий стресс снижен.',
     icon: '🛡️',
     category: 'perk',
     color: '#34d399', // emerald
@@ -215,7 +230,7 @@ export const STATUS_EFFECTS: Record<StatusEffectType, StatusEffectDef> = {
   counter_strike: {
     id: 'counter_strike',
     name: 'Контратака',
-    description: '25% шанс контрудара при защите. Мягкое поглощает жёсткое.',
+    description: 'Активна способность «Контратака»: шанс контрудара при защите.',
     icon: '↩️',
     category: 'perk',
     color: '#f87171', // red
@@ -223,7 +238,7 @@ export const STATUS_EFFECTS: Record<StatusEffectType, StatusEffectDef> = {
   poetic_trance: {
     id: 'poetic_trance',
     name: 'Поэтический транс',
-    description: '+3 интуиция при использовании стихов. Глас муз.',
+    description: 'Активна способность «Поэтический транс»: бонус интуиции при стихах.',
     icon: '🎭',
     category: 'perk',
     color: '#fbbf24', // amber

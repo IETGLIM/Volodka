@@ -32,6 +32,9 @@ import { ProceduralNPCModel } from '@/components/3d/ProceduralNPCModels';
 import { resolveNpcVisualModelUrl } from '@/config/npcModelRegistry';
 import { getSceneVisualProfile } from '@/config/sceneVisualProfiles';
 import { createPatrolState, updatePatrol, shouldPatrol, type PatrolState } from '@/engine/npc/npcPatrol';
+import { buildNpcAvoidanceObstacles, type NpcObstacleAabb } from '@/engine/npc/npcObstacleAvoidance';
+import { SCENE_DEFINITIONS } from '@/config/sceneDefinitions';
+import type { ColliderDef } from '@/shared/types/sceneDefinition';
 import { getNpcQuestMarkerDisplay } from '@/store/questStore';
 import { resolveNpcQuestBark } from '@/engine/npc/npcQuestBark';
 import { resolveNpcBarkForRelation } from '@/shared/npcBark';
@@ -122,6 +125,18 @@ export function NPC({
     [preset.lodBias, npcLodDistanceScale],
   );
 
+  // ── NPC avoidance obstacles for the current scene ──
+  // Walls + tall props as AABBs, so patrol NPCs steer around them instead of
+  // walking through walls. Recomputed only when the scene changes.
+  const avoidanceObstacles = useMemo<NpcObstacleAabb[]>(
+    () => {
+      const def = (SCENE_DEFINITIONS as Record<string, { walls?: ColliderDef[]; obstacles?: ColliderDef[] }>)[sceneId];
+      if (!def) return [];
+      return buildNpcAvoidanceObstacles(def);
+    },
+    [sceneId],
+  );
+
   // ── Patrol state ──
   const patrolRef = useRef<PatrolState | null>(null);
   const patrolActivityRef = useRef<'idle' | 'walk'>('idle');
@@ -199,7 +214,13 @@ export function NPC({
     // ── Update patrol state ──
     const isPatrolling = shouldPatrol(activity, isInteractionTarget, !!patrolWaypoints?.length);
     if (isPatrolling && patrolRef.current && patrolWaypoints) {
-      const result = updatePatrol(patrolRef.current, patrolWaypoints, delta);
+      const result = updatePatrol(
+        patrolRef.current,
+        patrolWaypoints,
+        delta,
+        undefined,
+        avoidanceObstacles,
+      );
       if (result.activity !== patrolActivityRef.current) {
         patrolActivityRef.current = result.activity;
         setPatrolActivity(result.activity);

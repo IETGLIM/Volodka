@@ -565,6 +565,11 @@ function CanvasGuardSystem() {
 
     const handleContextRestored = () => {
       devLog('[CanvasGuard] WebGL context RESTORED');
+      // Notify engine systems so module-level GPU resource caches (materials,
+      // geometries, textures) can rebuild. R3F re-renders the scene tree
+      // automatically, but module-level singletons need a nudge to drop
+      // references to now-invalid GL objects.
+      eventBus.emit('canvas:context-restored', {});
     };
 
     canvas.addEventListener('webglcontextlost', handleContextLost);

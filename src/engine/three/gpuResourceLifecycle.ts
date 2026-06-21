@@ -19,6 +19,7 @@ import { registerHmrBeforeUpdate, registerHmrDispose } from '@/shared/dev/hmrDis
 import { disposeAllModuleGeometries } from '@/engine/three/moduleGeometryRegistry';
 import { disposeAllModuleMaterials } from '@/engine/three/moduleMaterialRegistry';
 import { resetGpuResourceBudgetTracker } from '@/engine/performance/GpuResourceBudgetTracker';
+import { eventBus } from '@/engine/EventBus';
 
 export type GpuDisposeReason = 'engine' | 'hmr';
 
@@ -85,3 +86,19 @@ function disposeGpuResourcesForHmr(): void {
 
 registerHmrBeforeUpdate(disposeGpuResourcesForHmr);
 registerHmrDispose(disposeGpuResourcesForHmr);
+
+/**
+ * On WebGL context restore, force-dispose orphaned GL resources so the next
+ * render pass rebuilds textures/geometries from scratch instead of referencing
+ * now-invalid GL objects. This is a lighter touch than full engine dispose —
+ * module-level registries keep their scene ownership, but stale GL handles are
+ * dropped so R3F can re-upload them on the next frame.
+ */
+eventBus.on('canvas:context-restored', () => {
+  try {
+    forceDisposeOrphanedWebGLResources('gpu-lifecycle:context-restored');
+    THREE.Cache.clear();
+  } catch (err) {
+    console.warn('[gpuResourceLifecycle] context-restored cleanup failed:', err);
+  }
+});

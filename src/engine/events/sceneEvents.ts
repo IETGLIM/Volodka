@@ -25,4 +25,6 @@ export interface SceneEvents {
   'canvas:first-frame': { generation: number };
   'canvas:invalidate-first-frame': { generation: number };
   'canvas:context-lost': Record<string, never>;
+  /** WebGL context was restored after a loss — GPU resource caches should rebuild. */
+  'canvas:context-restored': Record<string, never>;
 }

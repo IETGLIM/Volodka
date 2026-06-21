@@ -5,6 +5,10 @@
  * walking to the next. NPCs face the direction they're walking. */
 
 import * as THREE from 'three';
+import {
+  resolveNpcObstacleAvoidance,
+  type NpcObstacleAabb,
+} from './npcObstacleAvoidance';
 
 /* ─── Constants ─── */
 const MIN_IDLE_DURATION = 2.0;  // seconds
@@ -72,12 +76,17 @@ function calculateFacingAngle(from: THREE.Vector3, to: THREE.Vector3): number {
  * Update patrol state for one frame.
  * Returns the updated state (mutated in place for performance).
  * Also returns the current activity ('idle' or 'walk') for animation control.
+ *
+ * Optional `obstacles` enables wall avoidance: when provided, the NPC casts a
+ * short forward ray and steers around any `cuboidObstacle` AABBs instead of
+ * walking through walls.
  */
 export function updatePatrol(
   state: PatrolState,
   waypoints: [number, number, number][],
   delta: number,
   walkSpeed: number = DEFAULT_WALK_SPEED,
+  obstacles?: readonly NpcObstacleAabb[],
 ): { activity: 'idle' | 'walk' } {
   if (waypoints.length === 0) {
     return { activity: 'idle' };
@@ -120,12 +129,35 @@ export function updatePatrol(
       state.idleTimer = randomIdleDuration();
       state.currentIdleDuration = state.idleTimer;
     } else {
-      // Move toward waypoint
-      const moveDistance = Math.min(walkSpeed * delta, distance);
-      state.position.addScaledVector(state.direction, moveDistance / distance);
+      // Normalize direction for obstacle avoidance (avoidance works in XZ).
+      const dirX = state.direction.x / distance;
+      const dirZ = state.direction.z / distance;
 
-      // Update facing direction while walking
-      state.targetRotationY = calculateFacingAngle(state.position, state.targetPos);
+      // Obstacle avoidance: steer around walls instead of clipping through.
+      let effectiveDirX = dirX;
+      let effectiveDirZ = dirZ;
+      let speedScale = 1;
+      if (obstacles && obstacles.length > 0) {
+        const avoidance = resolveNpcObstacleAvoidance(
+          state.position.x,
+          state.position.z,
+          dirX,
+          dirZ,
+          obstacles,
+        );
+        effectiveDirX = avoidance.dirX;
+        effectiveDirZ = avoidance.dirZ;
+        speedScale = avoidance.speedScale;
+      }
+
+      // Move toward (possibly steered) direction
+      const moveDistance = Math.min(walkSpeed * speedScale * delta, distance);
+      state.position.x += effectiveDirX * moveDistance;
+      state.position.z += effectiveDirZ * moveDistance;
+
+      // Update facing direction while walking (toward the effective direction
+      // so the NPC visually turns toward the steered path).
+      state.targetRotationY = Math.atan2(effectiveDirX, effectiveDirZ);
     }
   }
 
