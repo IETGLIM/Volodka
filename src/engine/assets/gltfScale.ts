@@ -41,10 +41,12 @@ export type PropFitAxis = 'height' | 'width' | 'depth' | 'maxHorizontal' | 'maxE
 
 export function measureGltfBounds(obj: THREE.Object3D): GltfBounds {
   obj.updateWorldMatrix(true, true);
-  const box = new THREE.Box3().setFromObject(obj);
-  const size = new THREE.Vector3();
-  if (!box.isEmpty()) box.getSize(size);
-  return { size, min: box.min.clone(), max: box.max.clone() };
+  // Use manual union instead of setFromObject — setFromObject calls
+  // computeBoundingBox on SkinnedMesh internally, which crashes when
+  // skeleton is null (common on prop GLBs exported as SkinnedMesh
+  // without a skeleton). measureCharacterGltfBounds handles this safely.
+  const box = measureCharacterGltfBounds(obj);
+  return box;
 }
 
 const _meshBoundsScratch = new THREE.Box3();
@@ -61,9 +63,18 @@ export function measureCharacterGltfBounds(obj: THREE.Object3D): GltfBounds {
 
   obj.traverse((node) => {
     if (node instanceof THREE.SkinnedMesh) {
-      node.computeBoundingBox();
-      if (!node.boundingBox) return;
-      _meshBoundsScratch.copy(node.boundingBox).applyMatrix4(node.matrixWorld);
+      // Guard against null skeleton — some GLB exports (props, furniture)
+      // can have SkinnedMesh without a bound skeleton, causing
+      // "Cannot read properties of null (reading 'bones')" in
+      // computeBoundingBox → applyBoneTransform.
+      if (!node.skeleton) {
+        // Fall back to regular mesh bounds (ignore bone transforms).
+        _meshBoundsScratch.setFromObject(node);
+      } else {
+        node.computeBoundingBox();
+        if (!node.boundingBox) return;
+        _meshBoundsScratch.copy(node.boundingBox).applyMatrix4(node.matrixWorld);
+      }
     } else if (node instanceof THREE.Mesh) {
       _meshBoundsScratch.setFromObject(node);
     } else {
