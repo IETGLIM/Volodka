@@ -18,6 +18,10 @@ import {
   REAL_MS_PER_GAME_HOUR,
 } from '@/engine/quest/questTimeLimits';
 import { questCanRetry } from '@/shared/quest/questRetry';
+import {
+  canBypassRetryLock,
+  resolveQuestDependencyStatus,
+} from '@/shared/quest/questFailureBypass';
 
 /** Slice of store state that QuestTracker reacts to (scene, flags, inventory, poems, quests, time). */
 interface QuestTrackerRelevantSlice {
@@ -718,16 +722,23 @@ export class QuestTracker {
     const existing = state.quests.find((q) => q.questId === questId);
     if (existing && existing.status !== 'inactive' && existing.status !== 'failed') return false;
 
-    // If quest was failed and can't retry, block reactivation
-    if (existing?.status === 'failed') return questCanRetry(definition);
+    // If quest was failed and can't retry, block reactivation — unless the
+    // bypass lock allows a one-time second chance (critical-path quests).
+    if (existing?.status === 'failed') {
+      if (questCanRetry(definition)) return true;
+      return canBypassRetryLock(definition, state.playerState.flags);
+    }
 
-    // Check dependency quests — all required quests must be completed
+    // Check dependency quests. A prerequisite that is `completed` satisfies
+    // the dependency normally; a `failed` prerequisite also satisfies it
+    // (bypassed) so a failed canRetry:false quest does not permanently lock
+    // downstream quests — the player can still reach the finale, with the
+    // failure recorded in flags for narrative consequences.
     if (definition.requiresQuests && definition.requiresQuests.length > 0) {
       for (const reqId of definition.requiresQuests) {
         const reqQuest = state.quests.find((q) => q.questId === reqId);
-        if (!reqQuest || reqQuest.status !== 'completed') {
-          return false;
-        }
+        const status = resolveQuestDependencyStatus(reqQuest);
+        if (status === 'unmet') return false;
       }
     }
 

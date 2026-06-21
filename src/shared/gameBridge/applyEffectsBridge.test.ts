@@ -34,7 +34,7 @@ describe('applyEffects via bridges', () => {
           karma: 0,
           stress: 0,
           visitedNodes: [],
-          progression: { level: 1, currentAct: 1, skillPoints: 0, unlockedSkills: [] },
+          progression: { level: 1, currentAct: 1, skillPoints: 0, unlockedSkills: [], unlockedPerks: [], perkPoints: 0 },
         },
         collectedPoems: [],
         quests: [],

@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import { setPhysicsStepMs, shouldTrackFrameTiming } from '@/engine/frame/FrameBudgetRegistry';
 import { sampleHeldVirtualControls } from '@/engine/VirtualInputHold';
 import { getTouchLocomotionFactor } from '@/config/scenes';
+import { getGameSnapshot } from '@/engine/GameActionDispatcher';
+import { resolveMovementSpeedMultiplier } from '@/shared/perks/perkModifiers';
 import {
   logKccRecreateAttempt,
   notifyControlsDegraded,
@@ -147,11 +149,20 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
   const isOutdoor = !deps.config.hasCeiling;
   const touchScale = keyboardDrivesMove ? 1 : getTouchLocomotionFactor();
   const a11yScale = getAccessibilityLocomotionScale();
+  // Perk movement speed multiplier (cyber_reflexes always, night_owl /
+  // shadow_walker at night, invisible detection reduction). Read from the
+  // cached game snapshot so the hot path stays O(1).
+  const perkSnap = getGameSnapshot();
+  const perkSpeedMult = resolveMovementSpeedMultiplier(
+    perkSnap.playerState.progression?.unlockedPerks ?? [],
+    { timeOfDay: perkSnap.exploration?.timeOfDay },
+  );
   const speed = (running ? RUN_SPEED : WALK_SPEED)
     * deps.locomotionScale
     * touchScale
     * a11yScale
-    * analogSpeedScale;
+    * analogSpeedScale
+    * perkSpeedMult;
   const moveAccel = keyboardDrivesMove ? KEYBOARD_ACCEL : deps.movementTuning.accel;
   const stopDamping = keyboardDrivesMove ? deps.movementTuning.damping * 0.55 : deps.movementTuning.damping;
 

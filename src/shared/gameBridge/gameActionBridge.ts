@@ -55,6 +55,8 @@ export interface GameStoreSnapshot {
       currentAct: number;
       skillPoints: number;
       unlockedSkills: string[];
+      unlockedPerks: string[];
+      perkPoints: number;
     };
     rngSeed?: number;
     combatEncounterSeq?: number;

@@ -51,6 +51,7 @@ const mockQuestDefinitions: QuestDefinition[] = [
     title: 'Свержение системы',
     description: 'Test',
     questType: 'main',
+    act: 7,
     canRetry: false,
     objectives: [
       {
@@ -93,6 +94,14 @@ const TEST_QUEST: QuestState = {
 describe('applyGameAction via dispatchGameAction', () => {
   beforeEach(() => {
     useGameStore.setState({ quests: [] });
+    // Reset player flags so quest_retried_with_penalty_* flags from previous
+    // tests do not leak into the next one.
+    useGameStore.setState({
+      playerState: {
+        ...useGameStore.getState().playerState,
+        flags: {},
+      },
+    });
     vi.mocked(scheduleQuestFailed).mockClear();
   });
 
@@ -221,6 +230,10 @@ describe('applyGameAction via dispatchGameAction', () => {
   });
 
   it('does not retry a quest with canRetry false', () => {
+    // system_takedown is main + act 7 (critical path) with canRetry:false.
+    // The bypass mechanic grants exactly ONE second chance with a penalty —
+    // so the first retry succeeds, but a second retry is blocked because the
+    // quest_retried_with_penalty flag is set.
     useGameStore.setState({
       quests: [
         {
@@ -230,6 +243,13 @@ describe('applyGameAction via dispatchGameAction', () => {
           startedAtTime: 10,
         },
       ],
+      playerState: {
+        ...useGameStore.getState().playerState,
+        flags: {
+          ...useGameStore.getState().playerState.flags,
+          quest_retried_with_penalty_system_takedown: true,
+        },
+      },
     });
 
     dispatchGameAction({ type: 'quest/retry', questId: 'system_takedown' });
@@ -237,6 +257,45 @@ describe('applyGameAction via dispatchGameAction', () => {
     const quest = useGameStore.getState().quests.find((q) => q.questId === 'system_takedown');
     expect(quest?.status).toBe('failed');
     expect(quest?.objectives.assemble_strike_team).toBe(true);
+  });
+
+  it('grants a one-time bypass retry for critical-path canRetry:false quests with penalty', () => {
+    // system_takedown is main + act 7 (critical path) with canRetry:false.
+    // First retry should succeed (bypass) and apply karma + stress penalty.
+    useGameStore.setState({
+      quests: [
+        {
+          questId: 'system_takedown',
+          status: 'failed',
+          objectives: { assemble_strike_team: true },
+          startedAtTime: 10,
+        },
+      ],
+      playerState: {
+        ...useGameStore.getState().playerState,
+        flags: { ...useGameStore.getState().playerState.flags },
+        karma: 60,
+        stress: 30,
+      },
+    });
+
+    const karmaBefore = useGameStore.getState().playerState.karma;
+    const stressBefore = useGameStore.getState().playerState.stress;
+
+    dispatchGameAction({ type: 'quest/retry', questId: 'system_takedown' });
+
+    const quest = useGameStore.getState().quests.find((q) => q.questId === 'system_takedown');
+    expect(quest?.status).toBe('active');
+    expect(quest?.objectives.assemble_strike_team).toBe(false);
+
+    // Penalty flag is set so a second bypass is blocked.
+    expect(
+      useGameStore.getState().playerState.flags.quest_retried_with_penalty_system_takedown,
+    ).toBe(true);
+
+    // Karma decreased and stress increased by the penalty amounts.
+    expect(useGameStore.getState().playerState.karma).toBe(karmaBefore - 8);
+    expect(useGameStore.getState().playerState.stress).toBe(stressBefore + 15);
   });
 
   it('golden-path prerequisite unblocked after retryable fail and recovery', () => {

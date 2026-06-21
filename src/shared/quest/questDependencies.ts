@@ -1,5 +1,6 @@
 import type { QuestState } from '@/shared/types/game';
 import type { QuestDefinition } from '@/shared/types/game';
+import { resolveQuestDependencyStatus } from './questFailureBypass';
 
 export function areQuestDependenciesMet(
   questId: string,
@@ -15,7 +16,11 @@ export function areQuestDependenciesMet(
 
   for (const reqId of definition.requiresQuests) {
     const reqQuest = quests.find((q) => q.questId === reqId);
-    if (!reqQuest || reqQuest.status !== 'completed') {
+    // A failed prerequisite is treated as "bypassed" (met) so a failed
+    // canRetry:false critical-path quest does not permanently lock downstream
+    // quests. The failure is still recorded in flags for narrative consequences.
+    const status = resolveQuestDependencyStatus(reqQuest);
+    if (status === 'unmet') {
       const reqDef = getDefinition(reqId);
       missing.push(reqDef?.title ?? reqId);
     }

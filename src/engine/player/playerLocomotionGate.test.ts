@@ -36,6 +36,8 @@ function baseStore(overrides: Partial<GameStoreSnapshot> = {}): GameStoreSnapsho
         currentAct: 1,
         skillPoints: 0,
         unlockedSkills: [],
+        unlockedPerks: [],
+        perkPoints: 0,
       },
     },
     collectedPoems: [],

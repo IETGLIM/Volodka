@@ -8,6 +8,7 @@
 
 import { sanitizeExplorationSceneId } from '@/config/scenes';
 import { isClosedOverlayExploreHub } from '@/shared/sceneExploreHubRegistry';
+import { getPoemPowerCooldownMs } from '@/data/poemPowerCooldowns';
 import {
   SavePayloadSchema,
   type SavePayload,
@@ -317,6 +318,27 @@ export function storePatchFromSave(payload: SavePayload): Partial<GameStoreState
       continue;
     }
     (patch as Record<string, unknown>)[key] = payload[key];
+  }
+
+  // Soft migration: poemPowers.cooldownMs was previously hardcoded to 60_000ms
+  // for every poem in worldSlice.activatePoemPower. Old saves therefore carry
+  // an incorrect 60s cooldown even for 200s poems (e.g. poem_21 «Белая Река»).
+  // Re-stamp the canonical cooldown for each collected poem so canUsePower()
+  // honours the designer value from the first load onward. lastUsed is kept
+  // intact so active cooldowns are not silently reset.
+  const loadedPoemPowers = (patch as Record<string, unknown>).poemPowers;
+  if (loadedPoemPowers && typeof loadedPoemPowers === 'object') {
+    const migratedPoemPowers: Record<string, { lastUsed: number; cooldownMs: number }> = {};
+    for (const [poemId, entry] of Object.entries(loadedPoemPowers as Record<string, unknown>)) {
+      if (entry && typeof entry === 'object' && 'lastUsed' in entry) {
+        const e = entry as { lastUsed?: unknown; cooldownMs?: unknown };
+        migratedPoemPowers[poemId] = {
+          lastUsed: typeof e.lastUsed === 'number' ? e.lastUsed : 0,
+          cooldownMs: getPoemPowerCooldownMs(poemId),
+        };
+      }
+    }
+    (patch as Record<string, unknown>).poemPowers = migratedPoemPowers;
   }
 
   const hasPhaseFlags =

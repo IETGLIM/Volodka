@@ -21,6 +21,7 @@ import {
 import type { GameStoreState } from '../types';
 import { pickPlayerEconomyCrossActions, readNpcRelationValue } from '../crossSliceReads';
 import { scheduleCraftingDiscovered, scheduleItemCrafted } from '../storeEffects';
+import { resolveCreditsMultiplier } from '@/shared/perks/perkModifiers';
 
 /* ─── Slice types ─── */
 
@@ -223,15 +224,21 @@ export const createPlayerEconomySlice: StateCreator<
 
     const itemName = itemDef?.name ?? itemId;
 
+    // Perk credits_mult (scavenger +20%, guild_diplomat +30%, friend_of_all +50%)
+    // boosts the credits received from sales.
+    const unlockedPerks = state.playerState?.progression?.unlockedPerks ?? [];
+    const creditsMult = resolveCreditsMultiplier(unlockedPerks);
+    const finalPrice = Math.max(1, Math.floor(price * creditsMult));
+
     set({
       playerState: {
         ...state.playerState,
-        credits: state.playerState.credits + price,
+        credits: state.playerState.credits + finalPrice,
         inventory,
       },
     });
 
-    pushNotification('skill', `Продано: ${itemName} (+${price}₴)`);
+    pushNotification('skill', `Продано: ${itemName} (+${finalPrice}₴)`);
   },
 
   canBuyItem: (npcId, itemId) => {
@@ -280,16 +287,22 @@ export const createPlayerEconomySlice: StateCreator<
 
   addCredits: (amount) => {
     const state = get();
+    // Perk credits_mult boosts positive credit gains (loot, quest rewards).
+    // Negative credit changes (spending) are not amplified.
+    const unlockedPerks = state.playerState?.progression?.unlockedPerks ?? [];
+    const effectiveAmount = amount > 0
+      ? Math.max(1, Math.floor(amount * resolveCreditsMultiplier(unlockedPerks)))
+      : amount;
     set({
       playerState: {
         ...state.playerState,
-        credits: Math.max(0, state.playerState.credits + amount),
+        credits: Math.max(0, state.playerState.credits + effectiveAmount),
       },
     });
-    if (amount !== 0) {
+    if (effectiveAmount !== 0) {
       pickPlayerEconomyCrossActions().pushNotification(
         'skill',
-        `${amount > 0 ? '+' : ''}${amount} кредитов`,
+        `${effectiveAmount > 0 ? '+' : ''}${effectiveAmount} кредитов`,
       );
     }
   },

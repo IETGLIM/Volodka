@@ -21,7 +21,13 @@ import {
 import { GOLDEN_PATH_QUEST_SPINE, ACT1_SOLNYSH_QUEST_SPINE } from '@/data/goldenPath';
 import { dispatchGameAction } from '@/shared/gameBridge/gameActionBridge';
 import { questCanRetry } from '@/shared/quest/questRetry';
+import {
+  canBypassRetryLock,
+  isCriticalPathQuest,
+  QUEST_RETRY_PENALTY,
+} from '@/shared/quest/questFailureBypass';
 import { useQuests } from '@/store/selectors';
+import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -429,6 +435,10 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                       const def = QUEST_DEFINITIONS.find((d) => d.id === qs.questId);
                       if (!def) return null;
                       const canRetry = questCanRetry(def);
+                      const playerFlags = useGameStore.getState().playerState.flags;
+                      const canBypass = canBypassRetryLock(def, playerFlags);
+                      const isCritical = isCriticalPathQuest(def);
+                      const showRetryButton = canRetry || canBypass;
                       return (
                         <div
                           key={qs.questId}
@@ -439,7 +449,7 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                               <AlertTriangle className="size-4 text-red-500/60" />
                               <span className="text-sm text-red-300/70 line-through">{def.title}</span>
                             </div>
-                            {canRetry && (
+                            {showRetryButton && (
                               <Button
                                 variant="ghost"
                                 size="sm"
@@ -449,12 +459,17 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                                 }}
                               >
                                 <RotateCcw className="size-3 mr-1" />
-                                Повторить
+                                {canRetry ? 'Повторить' : 'Второй шанс'}
                               </Button>
                             )}
                           </div>
                           {canRetry && (
                             <p className="text-[10px] text-red-400/60 mt-1">Можно повторить задание</p>
+                          )}
+                          {!canRetry && canBypass && isCritical && (
+                            <p className="text-[10px] text-amber-400/70 mt-1">
+                              Второй шанс: карма {QUEST_RETRY_PENALTY.karma}, стресс +{QUEST_RETRY_PENALTY.stress}
+                            </p>
                           )}
                           <p className="text-[10px] text-red-400/50 mt-1">{def.description}</p>
                         </div>

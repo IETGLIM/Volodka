@@ -2,6 +2,7 @@
 
 import type { CombatState } from './types';
 import { dispatchGameAction, getGameSnapshot } from '@/engine/GameActionDispatcher';
+import { resolveCombatPerkModifiers } from '@/shared/perks/perkModifiers';
 
 /* ═══════════════════════════════════════════════════════════════
    Damage formulas — centralized combat math
@@ -128,13 +129,27 @@ function snap() {
 }
 
 export function getPlayerAttack(): number {
-  const { skills } = snap().playerState;
-  return skills.coding + skills.logic;
+  const s = snap();
+  const { skills } = s.playerState;
+  const base = skills.coding + skills.logic;
+  // Perk flat attack bonus (e.g. code_rage +4 when stress > 60).
+  const perks = resolveCombatPerkModifiers(s.playerState.progression?.unlockedPerks ?? [], {
+    stress: s.playerState.stress,
+    timeOfDay: s.exploration?.timeOfDay,
+  });
+  return base + perks.flatAttackBonus;
 }
 
 export function getPlayerDefense(): number {
-  const { skills, energy } = snap().playerState;
-  return skills.empathy + Math.floor(energy / 10);
+  const s = snap();
+  const { skills, energy } = s.playerState;
+  const base = skills.empathy + Math.floor(energy / 10);
+  // Perk flat defense bonus (e.g. combat_meditation +3 when stress < 30).
+  const perks = resolveCombatPerkModifiers(s.playerState.progression?.unlockedPerks ?? [], {
+    stress: s.playerState.stress,
+    timeOfDay: s.exploration?.timeOfDay,
+  });
+  return Math.floor(base * perks.defenseMultiplier) + perks.flatDefenseBonus;
 }
 
 export function getPlayerMaxHp(): number {

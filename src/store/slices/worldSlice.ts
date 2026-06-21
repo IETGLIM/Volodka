@@ -21,6 +21,18 @@ import {
 } from '../storeEffects';
 import { resolveAchievementAnnounce } from '@/data/achievementHelpers';
 import { applyEffects } from '@/shared/utils/applyEffects';
+import { getPoemPowerCooldownMs } from '@/data/poemPowerCooldowns';
+import {
+  resolveNpcRelationGainMultiplier,
+  resolvePoemPowerCooldownReduction,
+} from '@/shared/perks/perkModifiers';
+import {
+  canBypassRetryLock,
+  isCriticalPathQuest,
+  QUEST_RETRY_PENALTY,
+  questFailedFlagKey,
+  questRetriedWithPenaltyFlagKey,
+} from '@/shared/quest/questFailureBypass';
 import { clamp, type PoemPowerState } from '../shared';
 import { applyFairmathRelation } from '@/shared/fairmath';
 import { scaleNpcRelationDelta } from '@/shared/skills/passiveSkillModifiers';
@@ -28,6 +40,7 @@ import { resolveCanonicalNpcId } from '@/shared/npcIdAliases';
 import type { GameStoreState } from '../types';
 import { getPlayerStore, getUIStore } from '../storeBindings';
 import {
+  pickPlayerQuestRewardsCrossActions,
   pickPlayerRewardBatchActions,
   pickWorldCrossActions,
   readWorldFromExploration,
@@ -215,7 +228,19 @@ export const createWorldSlice: StateCreator<
     if (!existing || existing.status !== 'failed') return;
 
     const definition = getQuestDefinitions().find((d) => d.id === questId);
-    if (!definition || !questCanRetry(definition)) return;
+    if (!definition) return;
+
+    // Normal retry path: canRetry defaults to true.
+    // Bypass path: canRetry === false but the quest is on the critical path
+    // (main, act >= 4) and has not already been retried with penalty. This
+    // prevents a failed finale quest from permanently soft-locking the
+    // campaign — the player gets exactly one second chance, with stakes.
+    // Read flags from the player store directly so this works even when the
+    // world slice's view of playerState is stale (e.g. during test setup).
+    const isNormalRetry = questCanRetry(definition);
+    const playerFlags = getPlayerStore().playerState?.flags;
+    const canBypass = canBypassRetryLock(definition, playerFlags);
+    if (!isNormalRetry && !canBypass) return;
 
     const objectives: Record<string, boolean> = {};
     for (const obj of definition.objectives) {
@@ -230,6 +255,23 @@ export const createWorldSlice: StateCreator<
     );
 
     set({ quests });
+
+    // Apply the one-time penalty for bypassing a canRetry:false lock on a
+    // critical-path quest. The penalty flag is set BEFORE applying the
+    // effects so a repeat failure does not re-trigger the penalty.
+    if (!isNormalRetry && isCriticalPathQuest(definition)) {
+      const playerActions = pickPlayerQuestRewardsCrossActions();
+      playerActions.setFlag(questRetriedWithPenaltyFlagKey(questId), true);
+      playerActions.addKarma(QUEST_RETRY_PENALTY.karma);
+      playerActions.addStress(QUEST_RETRY_PENALTY.stress);
+      pickWorldCrossActions().pushNotification(
+        'stress',
+        `Второй шанс: ${definition.title}. Карма ${QUEST_RETRY_PENALTY.karma}, стресс +${QUEST_RETRY_PENALTY.stress}.`,
+      );
+    }
+    void playerFlags; // referenced for clarity; canBypass already consumed it
+    void state; // state still used for existing quest lookup above
+
     scheduleQuestRetried(questId, definition.title);
     scheduleQuestAccepted(questId, definition.title);
     pickWorldCrossActions().pushNotification('quest', `Задание возобновлено: ${definition.title}`);
@@ -300,6 +342,11 @@ export const createWorldSlice: StateCreator<
       }),
     }));
 
+    // Record the failure as a flag so downstream quests can detect it and
+    // offer a bypassed activation (see questFailureBypass.ts). Without this,
+    // a failed canRetry:false critical-path quest permanently locks the finale.
+    pickPlayerQuestRewardsCrossActions().setFlag(questFailedFlagKey(questId), true);
+
     scheduleQuestFailed({
       questId,
       questTitle,
@@ -342,11 +389,19 @@ export const createWorldSlice: StateCreator<
     set((state) => {
       const { progression, flags } = getPlayerStore().playerState;
       const canonicalId = resolveCanonicalNpcId(npcId);
-      const scaledDelta = scaleNpcRelationDelta(
+      let scaledDelta = scaleNpcRelationDelta(
         delta,
         progression.unlockedSkills,
         flags,
       );
+      // Perk npcRelationGainMultiplier (friend_of_all +50%, guild_diplomat +15%)
+      // boosts positive relation gains only.
+      if (scaledDelta > 0) {
+        const perkMult = resolveNpcRelationGainMultiplier(progression.unlockedPerks);
+        if (perkMult !== 1) {
+          scaledDelta = Math.round(scaledDelta * perkMult);
+        }
+      }
       const relations = [...state.npcRelations];
       const idx = findNpcRelationIndex(relations, canonicalId);
 
@@ -369,7 +424,24 @@ export const createWorldSlice: StateCreator<
     if (!state.collectedPoems.includes(poemId)) return false;
 
     const existing = state.poemPowers[poemId];
-    const cooldownMs = 60000;
+    // Resolve the real per-poem cooldown from the data registry.
+    // Previously this was hardcoded to 60_000ms for every poem, which silently
+    // overrode the designer cooldowns (60s–200s) defined in PoemPowerSystem.
+    // canUsePower() in PoemPowerSystem reads powerState.cooldownMs back from
+    // the store, so the hardcoded value made every power feel like a 60s spell.
+    let cooldownMs = getPoemPowerCooldownMs(poemId);
+    // Perk poem_power cooldown reduction (whisper_of_muses -25%).
+    // Read from the player store directly so this works even when the world
+    // slice's view of playerState is stale (e.g. during test setup).
+    const playerState = getPlayerStore().playerState;
+    if (playerState?.progression?.unlockedPerks) {
+      const cooldownReduction = resolvePoemPowerCooldownReduction(
+        playerState.progression.unlockedPerks,
+      );
+      if (cooldownReduction > 0) {
+        cooldownMs = Math.max(5000, Math.round(cooldownMs * (1 - cooldownReduction)));
+      }
+    }
     const now = Date.now();
 
     if (existing) {

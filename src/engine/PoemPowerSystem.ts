@@ -34,6 +34,7 @@ import {
   scalePoemPowerDurationMs,
   scalePoemPowerSkillDelta,
 } from '@/engine/skills/passiveSkillModifiers';
+import { resolvePoemPowerDurationMultiplier } from '@/shared/perks/perkModifiers';
 import { clamp } from '@/shared/utils/math';
 import { enrichPoemMechanicsDisplay } from '@/data/unifiedPoemRegistry';
 
@@ -596,17 +597,34 @@ export function activatePoemPowerById(poemId: string): boolean {
   // Rhythm synergy — second poem within 5s of the first triggers combo bonus
   tryApplyPoemSynergy(poemId, activatedAt);
 
-  // Set TTL-based flags in one store update when a poem sets multiple flags
+  // Set TTL-based flags in one store update when a poem sets multiple flags.
+  // Apply BOTH skill-based (spiritual_t5_passive) and perk-based
+  // (voice_of_elements, warrior_poet, poetic_soul, poem_mastery) duration
+  // multipliers so TTL flags actually expire at the scaled time.
   if (power.flagsToSet) {
+    const skillState = snap();
+    const perkDurationMult = resolvePoemPowerDurationMultiplier(
+      skillState.playerState.progression?.unlockedPerks ?? [],
+    );
     for (const flag of power.flagsToSet) {
       setFlag(flag.key, true);
     }
     upsertTTLFlags(
-      power.flagsToSet.map((flag) => ({
-        key: flag.key,
-        durationMs: flag.durationMs,
-        poemId,
-      })),
+      power.flagsToSet.map((flag) => {
+        const skillScaled = scalePoemPowerDurationMs(
+          flag.durationMs,
+          skillState.playerState.progression.unlockedSkills,
+          skillState.playerState.flags,
+        );
+        const perkScaled = perkDurationMult !== 1
+          ? Math.round(skillScaled * perkDurationMult)
+          : skillScaled;
+        return {
+          key: flag.key,
+          durationMs: perkScaled,
+          poemId,
+        };
+      }),
     );
   }
 
@@ -614,13 +632,17 @@ export function activatePoemPowerById(poemId: string): boolean {
   // Use the power's longest flag duration, or 30s default
   const longestFlagDuration = power.flagsToSet?.length
     ? Math.max(
-        ...power.flagsToSet.map((f) =>
-          scalePoemPowerDurationMs(
+        ...power.flagsToSet.map((f) => {
+          const skillScaled = scalePoemPowerDurationMs(
             f.durationMs,
             snap().playerState.progression.unlockedSkills,
             snap().playerState.flags,
-          ),
-        ),
+          );
+          const perkMult = resolvePoemPowerDurationMultiplier(
+            snap().playerState.progression?.unlockedPerks ?? [],
+          );
+          return perkMult !== 1 ? Math.round(skillScaled * perkMult) : skillScaled;
+        }),
       )
     : 30000;
   activeEffects.push({

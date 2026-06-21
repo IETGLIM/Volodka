@@ -51,6 +51,7 @@ import { getPlayerAttack, getPlayerDefense, getPlayerMaxHp, tickPowerCooldowns, 
 import { initCombatRngForEncounter, SeededCombatRng, type CombatRngState } from './combat/combatRng';
 import { getFleeChanceBonus, scaleEnemyDamageByDifficulty } from './combat/combatDifficulty';
 import { getPassiveSkillModifiers } from '@/engine/skills/passiveSkillModifiers';
+import { resolveCombatPerkModifiers } from '@/shared/perks/perkModifiers';
 import { applyExplorationPoemCombatBridge } from '@/engine/poemEffects/poemTTLRuntime';
 import { ENEMY_TEMPLATES, resolveEnemyType } from './combat/enemies';
 import {
@@ -416,6 +417,18 @@ export function playerAttack(): CombatState | null {
   const newComboCount = cs.comboCount + 1;
   const comboMultiplier = getComboDamageMultiplier(newComboCount);
   damage = Math.floor(damage * comboMultiplier);
+
+  /* ── Perk outgoing damage multiplier (combat_veteran, stress_mastery,
+     night_owl, code_poet) — conditional on stress/time/combo. ── */
+  const playerSnap = snap();
+  const perkMods = resolveCombatPerkModifiers(playerSnap.playerState.progression?.unlockedPerks ?? [], {
+    stress: playerSnap.playerState.stress,
+    timeOfDay: playerSnap.exploration?.timeOfDay,
+    comboCount: newComboCount,
+  });
+  if (perkMods.outgoingDamageMultiplier !== 1) {
+    damage = Math.max(1, Math.floor(damage * perkMods.outgoingDamageMultiplier));
+  }
 
   /* ── Critical Hit: 10% base + (writing skill * 2%) bonus, 1.8x damage ── */
   const isCritical = seeded.rollCritical(computeCritChance(snap().playerState.skills.writing));
@@ -869,6 +882,21 @@ function executeEnemyTurn() {
     enemyDamage = scaleDamageByFraction(
       enemyDamage,
       spiritualLevel * COMBAT_CONSTANTS.SPIRITUAL_DAMAGE_REDUCTION_PER_LEVEL,
+      'reduction',
+    );
+  }
+
+  /* ── Perk incoming damage reduction (fortitude -20%) — stacks with
+     spiritual reduction but capped at 0.8 total in the resolver. ── */
+  const perkSnap = snap();
+  const perkMods = resolveCombatPerkModifiers(perkSnap.playerState.progression?.unlockedPerks ?? [], {
+    stress: perkSnap.playerState.stress,
+    timeOfDay: perkSnap.exploration?.timeOfDay,
+  });
+  if (perkMods.incomingDamageReduction > 0) {
+    enemyDamage = scaleDamageByFraction(
+      enemyDamage,
+      perkMods.incomingDamageReduction,
       'reduction',
     );
   }

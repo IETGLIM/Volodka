@@ -9,6 +9,12 @@ import type { GameStoreState } from '../types';
 import { pickPlayerCoreCrossActions, readPlayerFromExploration } from '../crossSliceReads';
 import { scheduleChoiceMade } from '../storeEffects';
 import {
+  resolveEnergyMaxFlatBonus,
+  resolveEnergyRegenMultiplier,
+  resolveKarmaGainMultiplier,
+  resolveStressResistFraction,
+} from '@/shared/perks/perkModifiers';
+import {
   createEmptyActiveTTLFlagMap,
   type ActiveTTLFlag,
   type ActiveTTLFlagMap,
@@ -78,7 +84,7 @@ export const createPlayerCoreSlice: StateCreator<
   [],
   [],
   PlayerCoreSlice
-> = (set, _get) => ({
+> = (set, get) => ({
   playerState: createDefaultPlayerState(),
   notifications: [],
   activeTTLFlags: createEmptyActiveTTLFlagMap(),
@@ -119,40 +125,63 @@ export const createPlayerCoreSlice: StateCreator<
     }),
 
   addKarma: (amount) => {
+    // Perk karma_gain multiplier (authority, poetic_soul, poem_mastery, guild_diplomat)
+    // amplifies positive karma only — dark path choices are not punished harder.
+    const unlockedPerks = get().playerState?.progression?.unlockedPerks ?? [];
+    const effectiveAmount = amount > 0
+      ? Math.round(amount * resolveKarmaGainMultiplier(unlockedPerks))
+      : amount;
+
     set((state) => ({
       playerState: {
         ...state.playerState,
-        karma: clamp(state.playerState.karma + amount, 0, 100),
+        karma: clamp(state.playerState.karma + effectiveAmount, 0, 100),
       },
-      notifications: pushNotification(state.notifications, 'karma', `${amount > 0 ? '+' : ''}${amount} Карма`),
+      notifications: pushNotification(state.notifications, 'karma', `${effectiveAmount > 0 ? '+' : ''}${effectiveAmount} Карма`),
     }));
 
-    if (Math.abs(amount) >= 5) {
-      scheduleChoiceMade({ karmaChange: amount });
+    if (Math.abs(effectiveAmount) >= 5) {
+      scheduleChoiceMade({ karmaChange: effectiveAmount });
     }
   },
 
-  addStress: (amount) =>
-    set((state) => ({
-      playerState: {
-        ...state.playerState,
-        stress: clamp(state.playerState.stress + amount, 0, 100),
-      },
-      notifications: amount !== 0
-        ? pushNotification(state.notifications, 'stress', `${amount > 0 ? '+' : ''}${amount} Стресс`)
-        : state.notifications,
-    })),
+  addStress: (amount) => {
+    // Perk stress_resist fraction (stress_resistance, iron_stomach, iron_will,
+    // stress_mastery) reduces incoming stress only — relief passes through.
+    const unlockedPerks = get().playerState?.progression?.unlockedPerks ?? [];
+    const effectiveAmount = amount > 0
+      ? Math.round(amount * (1 - resolveStressResistFraction(unlockedPerks)))
+      : amount;
 
-  addEnergy: (amount) =>
     set((state) => ({
       playerState: {
         ...state.playerState,
-        energy: clamp(state.playerState.energy + amount, 0, 100),
+        stress: clamp(state.playerState.stress + effectiveAmount, 0, 100),
+      },
+      notifications: effectiveAmount !== 0
+        ? pushNotification(state.notifications, 'stress', `${effectiveAmount > 0 ? '+' : ''}${effectiveAmount} Стресс`)
+        : state.notifications,
+    }));
+  },
+
+  addEnergy: (amount) => {
+    // Perk energy_max flat bonus (night_watch at night +10, factory_rat +15)
+    // raises the clamp ceiling above 100.
+    const { timeOfDay } = readPlayerFromExploration();
+    const unlockedPerks = get().playerState?.progression?.unlockedPerks ?? [];
+    const maxBonus = resolveEnergyMaxFlatBonus(unlockedPerks, { timeOfDay });
+    const ceiling = 100 + maxBonus;
+
+    set((state) => ({
+      playerState: {
+        ...state.playerState,
+        energy: clamp(state.playerState.energy + amount, 0, ceiling),
       },
       notifications: amount !== 0
         ? pushNotification(state.notifications, 'energy', `${amount > 0 ? '+' : ''}${amount} Энергия`)
         : state.notifications,
-    })),
+    }));
+  },
 
   setFlag: (key, value) =>
     set((state) => ({
@@ -173,31 +202,45 @@ export const createPlayerCoreSlice: StateCreator<
     })),
 
   restAtHome: () => {
-    const { currentSceneId } = readPlayerFromExploration();
+    const { currentSceneId, timeOfDay } = readPlayerFromExploration();
     const { advanceTime } = pickPlayerCoreCrossActions();
 
     if (currentSceneId !== 'volodka_room' && currentSceneId !== 'home_evening') return;
 
     advanceTime(8);
 
+    // Rest fills energy to the perk-adjusted ceiling (night_watch/factory_rat).
+    const unlockedPerks = get().playerState?.progression?.unlockedPerks ?? [];
+    const maxBonus = resolveEnergyMaxFlatBonus(unlockedPerks, { timeOfDay });
+    const ceiling = 100 + maxBonus;
+
     set((state) => ({
       playerState: {
         ...state.playerState,
-        energy: 100,
+        energy: ceiling,
         stress: clamp(state.playerState.stress - 30, 0, 100),
       },
-      notifications: pushNotification(state.notifications, 'energy', 'Отдых: Энергия +100, Стресс -30'),
+      notifications: pushNotification(state.notifications, 'energy', 'Отдых: Энергия восстановлена, Стресс -30'),
     }));
   },
 
-  autoRegenBetweenScenes: () =>
+  autoRegenBetweenScenes: () => {
+    const { timeOfDay } = readPlayerFromExploration();
+    const perks = get().playerState?.progression?.unlockedPerks ?? [];
+    // coffee_master / fast_metabolism each add +0.5 to regen.
+    const regenMult = resolveEnergyRegenMultiplier(perks);
+    const maxBonus = resolveEnergyMaxFlatBonus(perks, { timeOfDay });
+    const ceiling = 100 + maxBonus;
+    const regenAmount = Math.round(5 * regenMult);
+
     set((state) => ({
       playerState: {
         ...state.playerState,
-        energy: clamp(state.playerState.energy + 5, 0, 100),
+        energy: clamp(state.playerState.energy + regenAmount, 0, ceiling),
         stress: clamp(state.playerState.stress - 3, 0, 100),
       },
-    })),
+    }));
+  },
 
   upsertActiveTTLFlag: (flag) =>
     set((state) => ({
