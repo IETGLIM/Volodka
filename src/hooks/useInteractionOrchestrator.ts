@@ -30,6 +30,22 @@ const CLOSED_EXAMINE_STATE: ExamineUiState = {
   hasLinkedContent: false,
 };
 
+export type ContainerLootUiState = {
+  open: boolean;
+  zoneId: string | null;
+  contents: Array<{ itemId: string; quantity: number }>;
+  lockedKeyId: string | undefined;
+  lootedFlag: string | undefined;
+};
+
+const CLOSED_CONTAINER_STATE: ContainerLootUiState = {
+  open: false,
+  zoneId: null,
+  contents: [],
+  lockedKeyId: undefined,
+  lootedFlag: undefined,
+};
+
 /**
  * Sub-orchestrator — UI state + EventBus wiring.
  * Domain logic lives in InteractionController.
@@ -61,6 +77,7 @@ export function useInteractionOrchestrator(
   );
 
   const [examine, setExamine] = useState<ExamineUiState>(CLOSED_EXAMINE_STATE);
+  const [containerLoot, setContainerLoot] = useState<ContainerLootUiState>(CLOSED_CONTAINER_STATE);
 
   useEffect(() => {
     setExamineOverlayAssetGate(examine.open);
@@ -86,7 +103,45 @@ export function useInteractionOrchestrator(
   const dismissForNarrativeOverlay = useCallback(() => {
     setExamine(CLOSED_EXAMINE_STATE);
     setMinigameOpen(CLOSED_MINIGAME_PANEL_STATE);
+    setContainerLoot(CLOSED_CONTAINER_STATE);
   }, []);
+
+  const openContainerLoot = useCallback(
+    (zone: TriggerZone) => {
+      if (!zone.containerContents) return;
+      setExamine(CLOSED_EXAMINE_STATE);
+      setMinigameOpen(CLOSED_MINIGAME_PANEL_STATE);
+      setContainerLoot({
+        open: true,
+        zoneId: zone.id,
+        contents: [...zone.containerContents],
+        lockedKeyId: zone.lockedKeyId,
+        lootedFlag: zone.lootedFlag,
+      });
+    },
+    [],
+  );
+
+  const closeContainerLoot = useCallback(() => {
+    setContainerLoot(CLOSED_CONTAINER_STATE);
+  }, []);
+
+  const takeItemFromContainer = useCallback(
+    (itemId: string, quantity: number) => {
+      setContainerLoot((state) => {
+        if (!state.open) return state;
+        const updated = state.contents
+          .map((entry) => {
+            if (entry.itemId !== itemId) return entry;
+            const remaining = Math.max(0, entry.quantity - quantity);
+            return { ...entry, quantity: remaining };
+          })
+          .filter((entry) => entry.quantity > 0);
+        return { ...state, contents: updated };
+      });
+    },
+    [],
+  );
 
   const pendingTriggerZoneRef = useRef<TriggerZone | null>(null);
   const controllerRef = useRef<InteractionController | null>(null);
@@ -104,6 +159,7 @@ export function useInteractionOrchestrator(
       setPendingTriggerZone: (zone) => {
         pendingTriggerZoneRef.current = zone;
       },
+      openContainerLoot,
     });
     controllerRef.current = controller;
 
@@ -113,7 +169,7 @@ export function useInteractionOrchestrator(
         controllerRef.current = null;
       }
     };
-  }, [startCombatFromStory, minigameSetters, setExamineOpen, setExamineData, setExamineHasLinkedContent]);
+  }, [startCombatFromStory, minigameSetters, setExamineOpen, setExamineData, setExamineHasLinkedContent, openContainerLoot]);
 
   useEffect(() => {
     return withHmrCleanup(
@@ -211,5 +267,13 @@ export function useInteractionOrchestrator(
     dismissForNarrativeOverlay,
     handleExamineContinue,
     clearPendingTriggerZone,
+    containerLootOpen: containerLoot.open,
+    containerLootContents: containerLoot.contents,
+    containerLootZoneId: containerLoot.zoneId,
+    containerLootLockedKeyId: containerLoot.lockedKeyId,
+    containerLootLootedFlag: containerLoot.lootedFlag,
+    openContainerLoot,
+    closeContainerLoot,
+    takeItemFromContainer,
   };
 }

@@ -17,6 +17,7 @@ import {
   GameplaySharedEffects,
   GameplayStatsPanel,
 } from './OrchestratorGameplaySections';
+import { ContainerLootPanel } from '@/components/game/ContainerLootPanel';
 
 type Props = {
   gameDataReady: boolean;
@@ -104,6 +105,14 @@ export function OrchestratorGameplayLayer({
         onContinue={interaction.handleExamineContinue}
         onReset={interaction.resetExamine}
         onClearPendingTriggerZone={interaction.clearPendingTriggerZone}
+      />
+      <ContainerLootPanel
+        open={interaction.containerLootOpen}
+        contents={interaction.containerLootContents}
+        lockedKeyId={interaction.containerLootLockedKeyId}
+        lootedFlag={interaction.containerLootLootedFlag}
+        onClose={interaction.closeContainerLoot}
+        onTakeItem={interaction.takeItemFromContainer}
       />
     </>
   );

@@ -56,6 +56,8 @@ export interface InteractionControllerDeps {
   minigameSetters: MinigamePanelSetters;
   getPendingTriggerZone: () => TriggerZone | null;
   setPendingTriggerZone: (zone: TriggerZone | null) => void;
+  /** Open the container loot panel for a zone with containerContents. */
+  openContainerLoot?: (zone: TriggerZone) => void;
 }
 
 async function triggerLinkedContent(zone: TriggerZone): Promise<void> {
@@ -207,6 +209,17 @@ export class InteractionController {
 
     const executeZoneInteraction = (): void => {
       if (this.session.isDisposed()) return;
+
+      // Container loot — show the loot panel instead of firing effects.
+      // The panel handles item transfer individually; effects fire only for
+      // non-container zones.
+      if (zone.containerContents && zone.containerContents.length > 0 && this.deps.openContainerLoot) {
+        this.deps.openContainerLoot(zone);
+        if (zone.isOneTime) {
+          dispatchGameAction({ type: 'exploration/toggleInteractiveObject', objectId: triggerZoneId });
+        }
+        return;
+      }
 
       if (zone.effects && zone.effects.length > 0) {
         this.applyInteractionEffects(zone.effects);
