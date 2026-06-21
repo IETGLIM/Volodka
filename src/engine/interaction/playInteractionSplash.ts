@@ -1,4 +1,3 @@
-import { eventBus } from '@/engine/EventBus';
 import { isEffectiveReducedMotion } from '@/engine/accessibility/accessibilitySettings';
 import type { ControllerSession } from '@/engine/controller/ControllerSession';
 import {

@@ -3,7 +3,7 @@ import type { GameAction } from '@/shared/gameBridge/gameActionBridge';
 import type { GameStoreState } from './types';
 import type { ActiveTTLFlag } from './activeTTLFlags';
 import { getPlayerStoreState } from './stores/playerStore';
-import { scaleStressWithPoemEffects } from '@/engine/poemEffects/poemTTLRuntime';
+import { scaleStressWithPoemEffects } from '@/shared/poemEffects/poemStressScaling';
 import { getExplorationStoreState } from './stores/explorationStore';
 import { getWorldStoreState } from './stores/worldStore';
 import { getUIStoreState } from './stores/uiStore';

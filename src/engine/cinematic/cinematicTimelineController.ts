@@ -13,7 +13,6 @@ import type { CameraWaypointData } from '@/shared/types/camera';
 import type {
   CinematicActorKeyframe,
   CinematicActorMotion,
-  CinematicCameraMotion,
   CinematicTimelineActorFrame,
   CinematicTimelineCameraFrame,
   CinematicTimelineDef,
@@ -303,7 +302,8 @@ export function updateCinematicTimelineState(
       _handoffFrom.lookAt.copy(cameraOut.position).add(_lookTarget);
       _handoffFrom.fov = cameraOut.fov;
     }
-    const target = waypointFromData(camSpec.handoffTarget!, state.anchor);
+    const _target = waypointFromData(camSpec.handoffTarget!, state.anchor);
+    void _target; // TODO: wire handoff target into applyHandoffCamera destination
     applyHandoffCamera(
       easeInOutCubic(localT),
       _handoffFrom.position,

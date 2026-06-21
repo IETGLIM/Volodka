@@ -9,6 +9,11 @@ import {
 } from '@/shared/activeTTLFlags';
 import { ttlNow } from '@/shared/ttlClock';
 
+// Re-exported for backwards compatibility with engine consumers.
+// The canonical home is @/shared/poemEffects/poemStressScaling.ts so the
+// store layer can import it without pulling in engine code.
+export { scaleStressWithPoemEffects } from '@/shared/poemEffects/poemStressScaling';
+
 export interface LivePoemTTLDisplayEntry {
   flagKey: string;
   poemId: string;
@@ -18,25 +23,6 @@ export interface LivePoemTTLDisplayEntry {
   effectSummary: string;
   remainingMs: number;
   remainingRatio: number;
-}
-
-/** Scale positive stress gains when defensive poem TTL flags are live. */
-export function scaleStressWithPoemEffects(
-  amount: number,
-  activeTTLFlags: ActiveTTLFlagMap | undefined | null,
-): number {
-  if (amount <= 0) return amount;
-
-  let scaled = amount;
-  for (const flag of Object.values(activeTTLFlags ?? {})) {
-    const consumer = getPoemTTLConsumer(flag.key);
-    const multiplier = consumer?.stressIncomingMultiplier;
-    if (multiplier === undefined) continue;
-    if (!isActiveTTLFlagLive(activeTTLFlags, flag.key)) continue;
-    scaled *= multiplier;
-  }
-
-  return Math.max(0, Math.round(scaled));
 }
 
 function resolveDisplayName(flag: ActiveTTLFlag): string {
@@ -77,7 +63,6 @@ export function listLivePoemTTLDisplayEntries(
     if (!isPoemTTLHudVisible(flag.key)) continue;
     if (now >= flag.expiryTimestamp) continue;
     const remainingMs = flag.expiryTimestamp - now;
-    const consumer = getPoemTTLConsumer(flag.key);
     const power = getPoemPower(flag.poemId);
     const durationMs = power?.flagsToSet?.find((f) => f.key === flag.key)?.durationMs ?? remainingMs;
     const meta = resolveDisplayMeta(flag);

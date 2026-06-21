@@ -27,7 +27,6 @@ import {
   consumeEntryBeatFromZone,
   isEntryBeatInFlight,
   markEntryBeatHubPromoted,
-  resetEntryBeatState,
 } from '@/engine/interaction/entryBeatState';
 
 export {

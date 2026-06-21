@@ -157,6 +157,10 @@ export function useCutsceneController() {
     // Safety fallback if overlay_end never fires (stuck overlay).
     cutsceneSessionRef.current.schedule(finishCutsceneBeat, totalDuration + 5000);
 
+    // Capture the session ref so the cleanup uses the same instance that was
+    // scheduled, not whatever the ref points to by the time cleanup runs.
+    const session = cutsceneSessionRef.current;
+
     return () => {
       unsubOverlayEnd?.();
       const hubId = SCENE_ENTRY_NODE_TO_HUB[beatNodeId];
@@ -168,7 +172,7 @@ export function useCutsceneController() {
       if (isEntryBeatInFlight(beatNodeId) && nextNodeId === beatNodeId) {
         return;
       }
-      cutsceneSessionRef.current.cancel();
+      session.cancel();
     };
   }, [currentNodeId]);
 
