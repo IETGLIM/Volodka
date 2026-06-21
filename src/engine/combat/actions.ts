@@ -1,4 +1,4 @@
-/* ─── Combat System — Poem Combat Abilities, Combos, Side Effects, Skill Tree ─── */
+/* ─── Combat System — Poem Combat Abilities, Combos, Side Effects ─── */
 
 import type { CombatState, CombatLogEntry, SideEffect } from './types';
 import type { PoemCombatAbility } from './types';
@@ -8,10 +8,6 @@ import {
   tryActivatePoemPower,
 } from '@/engine/GameActionDispatcher';
 import { isTrainablePlayerSkill, warnInvalidValue } from '@/shared/validation/typeGuards';
-import {
-  resolveSkillUnlockEffects,
-  warnUnmatchedSkillEffectParts,
-} from '@/engine/skills/applySkillUnlockEffects';
 import { createBuff, addBuff } from './buffSystem';
 import { getEnemyDefenseReduction } from './buffSystem';
 import { COMBAT_CONSTANTS } from './formulas';
@@ -626,106 +622,4 @@ export function checkPoemPowerCombo(
     state: resultState,
     logEntry: { turn: state.turn, text: `💫 КОМБО СТИХОВ: ${combo.name}! ${combo.description}`, type: 'poem_combo' as const },
   };
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   §13 — SKILL TREE DEFINITION
-   ═══════════════════════════════════════════════════════════════ */
-
-export const SKILL_TREE: import('@/shared/types/game').SkillTreeNode[] = [
-  // ═══ ТЕХНИЧЕСКИЙ (Technical) ═══
-  { id: 'tech_1a', name: 'Базовый Код', description: 'Основы программирования', branch: 'technical', tier: 1, requires: [], effect: 'coding +2' },
-  { id: 'tech_1b', name: 'Системная Логика', description: 'Понимание архитектуры систем', branch: 'technical', tier: 1, requires: [], effect: 'logic +2' },
-  { id: 'tech_2a', name: 'Криптография', description: 'Шифрование и дешифровка', branch: 'technical', tier: 2, requires: ['tech_1a'], effect: 'coding +3, attack +2' },
-  { id: 'tech_2b', name: 'Терминальный Доступ', description: 'Расширенный доступ к терминалам', branch: 'technical', tier: 2, requires: ['tech_1b'], effect: 'logic +3, terminal access' },
-  { id: 'tech_3a', name: 'Взлом Защиты', description: 'Обход фаерволов и замков', branch: 'technical', tier: 3, requires: ['tech_2a'], effect: 'coding +4, attack +3' },
-  { id: 'tech_3b', name: 'Анализ Данных', description: 'Поиск паттернов в данных', branch: 'technical', tier: 3, requires: ['tech_2b'], effect: 'logic +4, intuition +2' },
-  { id: 'tech_4a', name: 'Цифровой Призрак', description: 'Невидимость в сетях', branch: 'technical', tier: 4, requires: ['tech_3a'], effect: 'coding +5, flee chance +20%' },
-  { id: 'tech_4b', name: 'Сетевой Контроль', description: 'Управление удалёнными системами', branch: 'technical', tier: 4, requires: ['tech_3b'], effect: 'logic +5, defense +3' },
-  { id: 'tech_5a', name: 'Архитектор Кода', description: 'Мастер программирования', branch: 'technical', tier: 5, requires: ['tech_4a', 'tech_4b'], effect: 'coding +8, poem power +25%' },
-  { id: 'tech_5b', name: 'Повелитель Систем', description: 'Полный контроль над цифровой средой', branch: 'technical', tier: 5, requires: ['tech_4a', 'tech_4b'], effect: 'logic +8, combat attack +50%' },
-
-  // ═══ СОЦИАЛЬНЫЙ (Social) ═══
-  { id: 'social_1a', name: 'Золотые Слова', description: 'Искусство убеждения', branch: 'social', tier: 1, requires: [], effect: 'persuasion +2' },
-  { id: 'social_1b', name: 'Открытое Сердце', description: 'Эмпатия к окружающим', branch: 'social', tier: 1, requires: [], effect: 'empathy +2' },
-  { id: 'social_2a', name: 'Дипломатия', description: 'Мирное разрешение конфликтов', branch: 'social', tier: 2, requires: ['social_1a'], effect: 'persuasion +3, flee +15%' },
-  { id: 'social_2b', name: 'Сердечная Связь', description: 'Глубокая связь с NPC', branch: 'social', tier: 2, requires: ['social_1b'], effect: 'empathy +3, NPC relations +20%' },
-  { id: 'social_3a', name: 'Харизма', description: 'Влияние на людей', branch: 'social', tier: 3, requires: ['social_2a'], effect: 'persuasion +4, dialogue options +1' },
-  { id: 'social_3b', name: 'Понимание Душ', description: 'Чтение намерений', branch: 'social', tier: 3, requires: ['social_2b'], effect: 'empathy +4, intuition +2' },
-  { id: 'social_4a', name: 'Лидер Сети', description: 'Авторитет в подполье', branch: 'social', tier: 4, requires: ['social_3a'], effect: 'persuasion +5, quest rewards +30%' },
-  { id: 'social_4b', name: 'Целитель Душ', description: 'Исцеление чужой боли', branch: 'social', tier: 4, requires: ['social_3b'], effect: 'empathy +5, healing +50%' },
-  { id: 'social_5a', name: 'Голос Города', description: 'Слова меняют мир', branch: 'social', tier: 5, requires: ['social_4a', 'social_4b'], effect: 'persuasion +8, all NPC friendly' },
-  { id: 'social_5b', name: 'Легенда Улиц', description: 'Твоё имя знает каждый', branch: 'social', tier: 5, requires: ['social_4a', 'social_4b'], effect: 'empathy +8, defense +50%' },
-
-  // ═══ ДУХОВНЫЙ (Spiritual) ═══
-  { id: 'spiritual_1a', name: 'Внутренний Голос', description: 'Интуитивное понимание', branch: 'spiritual', tier: 1, requires: [], effect: 'intuition +2' },
-  { id: 'spiritual_1b', name: 'Творческая Искра', description: 'Поэтическое вдохновение', branch: 'spiritual', tier: 1, requires: [], effect: 'writing +2' },
-  { id: 'spiritual_2a', name: 'Шёпот Муз', description: 'Глубокая интуиция', branch: 'spiritual', tier: 2, requires: ['spiritual_1a'], effect: 'intuition +3, karma sensitivity' },
-  { id: 'spiritual_2b', name: 'Слово И Меч', description: 'Перо сильнее меча', branch: 'spiritual', tier: 2, requires: ['spiritual_1b'], effect: 'writing +3, poem power +10%' },
-  { id: 'spiritual_3a', name: 'Кармическое Зрение', description: 'Видение последствий', branch: 'spiritual', tier: 3, requires: ['spiritual_2a'], effect: 'intuition +4, karma +5 per combat' },
-  { id: 'spiritual_3b', name: 'Поэтический Транс', description: 'Стихи как медитация', branch: 'spiritual', tier: 3, requires: ['spiritual_2b'], effect: 'writing +4, stress -20%' },
-  { id: 'spiritual_4a', name: 'Связь С Предками', description: 'Мудрость поколений', branch: 'spiritual', tier: 4, requires: ['spiritual_3a'], effect: 'intuition +5, hidden poems revealed' },
-  { id: 'spiritual_4b', name: 'Живое Слово', description: 'Стихи меняют реальность', branch: 'spiritual', tier: 4, requires: ['spiritual_3b'], effect: 'writing +5, poem cooldown -25%' },
-  { id: 'spiritual_5a', name: 'Пророк', description: 'Видение всех путей', branch: 'spiritual', tier: 5, requires: ['spiritual_4a', 'spiritual_4b'], effect: 'intuition +8, all choices visible' },
-  { id: 'spiritual_5b', name: 'Творец Стихов', description: 'Стихотворение — это реальность', branch: 'spiritual', tier: 5, requires: ['spiritual_4a', 'spiritual_4b'], effect: 'writing +8, poem powers 2x effective' },
-];
-
-/** Check if a skill tree node can be unlocked */
-export function canUnlockSkill(skillId: string): boolean {
-  const prog = snap().playerState.progression;
-  if (prog.skillPoints <= 0) return false;
-  if (prog.unlockedSkills.includes(skillId)) return false;
-
-  const node = SKILL_TREE.find((n) => n.id === skillId);
-  if (!node) return false;
-
-  // Check requirements
-  for (const req of node.requires) {
-    if (!prog.unlockedSkills.includes(req)) return false;
-  }
-
-  return true;
-}
-
-/** Unlock a skill tree node */
-export function unlockSkill(skillId: string): boolean {
-  if (!canUnlockSkill(skillId)) return false;
-
-  const node = SKILL_TREE.find((n) => n.id === skillId);
-  if (!node) return false;
-
-  applySkillEffect(node.effect, skillId);
-
-  dispatchGameAction({ type: 'skill/unlockTreeNode', skillId });
-
-  dispatchGameAction({
-    type: 'notification/push',
-    notificationType: 'skill',
-    text: `Способность разблокирована: ${node.name}`,
-  });
-  return true;
-}
-
-/** Parse and apply skill effect string. Prefer passing skillId for structured unlock effects. */
-export function applySkillEffect(effect: string, skillId?: string): void {
-  const resolved = resolveSkillUnlockEffects(skillId ?? '', effect);
-  if (skillId) {
-    warnUnmatchedSkillEffectParts(skillId, resolved.unmatchedEffectParts);
-  }
-
-  for (const delta of resolved.statDeltas) {
-    dispatchGameAction({
-      type: 'player/addSkill',
-      skill: delta.skill,
-      amount: delta.amount,
-    });
-  }
-
-  for (const flagKey of resolved.passiveFlags) {
-    dispatchGameAction({ type: 'player/setFlag', key: flagKey, value: true });
-  }
-
-  for (const legacy of resolved.legacyPercentFlags) {
-    dispatchGameAction({ type: 'player/setFlag', key: legacy.key, value: true });
-  }
 }

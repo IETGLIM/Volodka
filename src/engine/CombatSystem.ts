@@ -58,8 +58,6 @@ import {
   POEM_COMBAT_ABILITIES,
   consumeSideEffects,
   checkPoemPowerCombo,
-  canUnlockSkill,
-  unlockSkill,
 } from './combat/actions';
 
 // ── Re-export types so existing imports of CombatSystem don't break ──
@@ -76,7 +74,6 @@ export type {
   CombatReward } from './combat/types';
 
 export { applyCombatSideEffects } from './combat/actions';
-export { SKILL_TREE } from './combat/actions';
 export { calculateXpToNextLevel } from './combat/formulas';
 
 /* ═══════════════════════════════════════════════════════════════
@@ -1143,16 +1140,6 @@ export function getActiveBuffs(target?: 'player' | 'enemy'): CombatBuff[] {
   if (target) return cs.buffs.filter((b) => b.target === target);
   return cs.buffs;
 }
-
-/* ═══════════════════════════════════════════════════════════════
-   §13 — SKILL TREE (re-exported from actions module)
-   ═══════════════════════════════════════════════════════════════ */
-
-/** Check if a skill tree node can be unlocked */
-export { canUnlockSkill };
-
-/** Unlock a skill tree node */
-export { unlockSkill };
 
 /* ═══════════════════════════════════════════════════════════════
    §14 — COMBAT RNG (deterministic rolls / dev & test hooks)

@@ -7,10 +7,7 @@ import { applySkillDelta } from '../skillHelpers';
 import { pushNotification } from '../shared';
 import type { GameStoreState } from '../types';
 import { getSkillTreeMap, getPerksMap } from '@/data/gameDataLoader';
-import {
-  resolveSkillUnlockEffects,
-  warnUnmatchedSkillEffectParts,
-} from '@/shared/skills/applySkillUnlockEffects';
+import { resolveSkillUnlockEffects } from '@/shared/skills/applySkillUnlockEffects';
 import { queuePlayerXp } from '../playerXpBatch';
 
 /* ─── Slice types ─── */
@@ -55,8 +52,7 @@ export const createPlayerProgressionSlice: StateCreator<
         if (!prereqsMet) return state;
       }
 
-      const unlockEffects = resolveSkillUnlockEffects(skillId, nodeDef?.effect);
-      warnUnmatchedSkillEffectParts(skillId, unlockEffects.unmatchedEffectParts);
+      const unlockEffects = resolveSkillUnlockEffects(skillId);
 
       const newSkills = { ...state.playerState.skills };
       for (const delta of unlockEffects.statDeltas) {
@@ -66,9 +62,6 @@ export const createPlayerProgressionSlice: StateCreator<
       const newFlags = { ...state.playerState.flags };
       for (const flagKey of unlockEffects.passiveFlags) {
         newFlags[flagKey] = true;
-      }
-      for (const legacy of unlockEffects.legacyPercentFlags) {
-        newFlags[legacy.key] = true;
       }
 
       const nodeName = nodeDef?.name ?? skillId;
