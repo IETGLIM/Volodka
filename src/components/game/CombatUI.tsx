@@ -8,7 +8,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { eventBus } from '@/engine/EventBus';
 import { Sword, Shield, Sparkles, LogOut, ChevronDown, Heart, Clock, Zap, Flame } from 'lucide-react';
-import { useGameMode } from '@/store/selectors';
+import { useUIStore } from '@/store/stores/uiStore';
+import { useCutsceneStore } from '@/store/stores/cutsceneStore';
+import { getGamePhase } from '@/shared/gamePhase';
 import {
   playerAttack,
   playerDefend,
@@ -370,7 +372,14 @@ function DefeatScreen() {
 
 /* ── Main Component ── */
 export function CombatUI() {
-  const mode = useGameMode();
+  // Read combatActive directly from the UI store — the facade's
+  // scheduleFacadeFlush uses RAF which doesn't fire under 'demand' frameloop.
+  // This ensures CombatUI unmounts immediately when combat ends.
+  const combatActive = useUIStore((s) => s.combatActive);
+  const mainMenuOpen = useUIStore((s) => s.mainMenuOpen);
+  const introActive = useUIStore((s) => s.introActive);
+  const activeCutsceneId = useCutsceneStore((s) => s.activeCutsceneId);
+  const mode = getGamePhase({ mainMenuOpen, introActive, combatActive, activeCutsceneId });
   const [combatState, setCombatState] = useState<CombatState | null>(null);
   const [showPowers, setShowPowers] = useState(false);
   const [damageNumbers, setDamageNumbers] = useState<Array<{ id: number; damage: number; type: string; isCritical?: boolean }>>([]);

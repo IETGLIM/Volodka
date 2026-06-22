@@ -1054,8 +1054,11 @@ function handleVictory(): CombatState {
     } else {
       dispatchGameAction({ type: 'story/setCombatActive', active: false });
     }
-    combat.endSession();
+    // Notify listeners BEFORE endSession — endSession sets _state = null,
+    // and notifyListeners skips when state is null. CombatUI needs to
+    // receive the final state to unmount.
     combat.notifyListeners();
+    combat.endSession();
     eventBus.emit('combat:end', {});
   });
 
@@ -1106,8 +1109,9 @@ function handleDefeat(): void {
     } else {
       dispatchGameAction({ type: 'story/setCombatActive', active: false });
     }
-    combat.endSession();
+    // Notify listeners BEFORE endSession (same fix as handleVictory).
     combat.notifyListeners();
+    combat.endSession();
     eventBus.emit('combat:end', {});
   });
 }
