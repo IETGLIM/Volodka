@@ -54,7 +54,12 @@ subscribeAllStores(() => {
 });
 
 useGameStore.getState = () => {
-  if (facadeDirty) flushFacadeState();
+  // Don't trigger a flush on every getState() call — this was causing
+  // 2-3 full rebuilds per dispatch + per-frame flushes when hot paths
+  // (FirstPersonHands, InteractionSystemBridge, etc.) called getState().
+  // The microtask-based scheduleFacadeFlush already covers all mutations.
+  // Hot paths should use getGameSnapshot() (from GameActionDispatcher)
+  // which never triggers a flush.
   return baseGetState();
 };
 useGameStore.setState = ((partial, _replace) => {

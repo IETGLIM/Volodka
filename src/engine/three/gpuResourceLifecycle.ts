@@ -93,11 +93,16 @@ registerHmrDispose(disposeGpuResourcesForHmr);
  * now-invalid GL objects. This is a lighter touch than full engine dispose —
  * module-level registries keep their scene ownership, but stale GL handles are
  * dropped so R3F can re-upload them on the next frame.
+ *
+ * IMPORTANT: Do NOT call THREE.Cache.clear() here. Cache stores all loaded
+ * GLB URLs for dedup via useGLTF. Clearing it forces a full re-fetch + re-parse
+ * of every GLB in the scene — multi-second stall on Vercel. Three.js re-uploads
+ * textures/buffers automatically on context restore; only GL handles need
+ * disposal, which forceDisposeOrphanedWebGLResources handles safely.
  */
 eventBus.on('canvas:context-restored', () => {
   try {
     forceDisposeOrphanedWebGLResources('gpu-lifecycle:context-restored');
-    THREE.Cache.clear();
   } catch (err) {
     console.warn('[gpuResourceLifecycle] context-restored cleanup failed:', err);
   }

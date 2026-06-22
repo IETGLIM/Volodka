@@ -8,6 +8,7 @@ import * as THREE from 'three';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useCurrentSceneId } from '@/store/selectors';
 import { useGameStore } from '@/store/gameStore';
+import { getGameSnapshot } from "@/engine/GameActionDispatcher";
 import { getCurrentScheduleEntry } from '@/engine/ScheduleEngine';
 import { buildScheduleContext } from '@/shared/scheduleContext';
 import type { MutableRefObject } from 'react';
@@ -87,7 +88,7 @@ export function UmkaDog({ livePlayerPositionRef }: UmkaDogProps) {
     } else if (inCorridorCutscene) {
       anchor = CORRIDOR_VERA_ANCHOR;
     } else if (sceneId === 'volodka_corridor') {
-      const scheduleCtx = buildScheduleContext(useGameStore.getState());
+      const scheduleCtx = buildScheduleContext(getGameSnapshot());
       const entry = getCurrentScheduleEntry('solnysh', timeOfDay, scheduleCtx);
       if (entry?.sceneId === 'volodka_corridor') {
         anchor = entry.position;

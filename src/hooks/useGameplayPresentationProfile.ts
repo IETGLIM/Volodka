@@ -1,6 +1,8 @@
 import { useSyncExternalStore } from 'react';
 import { eventBus, type EventBusUnsubscribe } from '@/engine/EventBus';
 import { useGameStore } from '@/store/gameStore';
+import { useUIStore } from '@/store/stores/uiStore';
+import { useCutsceneStore } from '@/store/stores/cutsceneStore';
 import { getGamePhase } from '@/shared/gamePhase';
 import { isSceneTransitionInProgress } from '@/engine/core/SceneTransitionManager';
 import {
@@ -43,6 +45,7 @@ function detachSceneBusListeners(): void {
 function subscribe(onStoreChange: () => void): () => void {
   const unsubs = [
     useGameStore.subscribe(onStoreChange),
+    useUIStore.subscribe(onStoreChange),
     subscribeEncounterPresentation(onStoreChange),
     subscribeCinematicInterstitial(onStoreChange),
   ];
@@ -60,11 +63,20 @@ function getSnapshot(): GameplayPresentationProfile {
   if (isEncounterPresentationActive()) return 'encounter';
   if (isCinematicInterstitialActive()) return 'narrative';
 
-  const state = useGameStore.getState();
-  const phase = getGamePhase(state);
+  // Read directly from the UI store — the facade getState() no longer
+  // triggers a flush (removed for performance). The UI store always has
+  // the latest phase flags and is the source of truth for HUD state.
+  const ui = useUIStore.getState();
+  const cutscene = useCutsceneStore.getState();
+  const phase = getGamePhase({
+    mainMenuOpen: ui.mainMenuOpen,
+    introActive: ui.introActive,
+    combatActive: ui.combatActive,
+    activeCutsceneId: cutscene.activeCutsceneId,
+  });
 
   if (phase === 'combat') return 'combat';
-  if (phase === 'cutscene' || state.showStoryOverlay || state.diegeticNarrative != null) {
+  if (phase === 'cutscene' || ui.showStoryOverlay || ui.diegeticNarrative != null) {
     return 'narrative';
   }
   return 'exploration';

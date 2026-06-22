@@ -116,7 +116,10 @@ function GltfNPCModelInner({
   }, [scene, modelScale, targetHeightFactor]);
 
   useRegisterNpcFrame(definition.id, 'mixer', ({ delta }) => {
-    if (mixer) mixer.update(delta);
+    // Skip animation updates for invisible LOD branches — mixer.update on
+    // skinned meshes is one of the most expensive per-frame operations in
+    // three.js. With 5 LOD variants per NPC, this saves 4/5 of the work.
+    if (mixer && visible) mixer.update(delta);
   });
 
   useNpcProceduralLayers({
@@ -177,9 +180,11 @@ function GltfNPCModelScene({
   const anchorRef = useRef<THREE.Group>(null);
   const worldPosRef = useRef(new THREE.Vector3());
   const activeUrlRef = useRef(fallbackUrl);
-  const branchRefs = useRef<Map<string, THREE.Group>>(new Map());
+  const _branchRefs = useRef<Map<string, THREE.Group>>(new Map());
   const { camera } = useThree();
   const { preset } = useGraphicsQuality();
+  // State to trigger re-render when LOD distance changes the active URL.
+  const [, setActiveUrlTick] = useState(0);
 
   const manifestId = getNpcManifestId(definition.id);
   const asset = manifestId ? ASSET_MANIFEST[manifestId] : undefined;
@@ -188,14 +193,13 @@ function GltfNPCModelScene({
 
   const urls = useMemo(() => {
     if (!useManifestLod || !asset) return [fallbackUrl];
+    // Only preload the URLs we might actually use: lod0 + lod1 + lod2
+    // for the CURRENT compression variant, not all 5 variants.
+    // The frame tick below switches between LODs by distance — we only
+    // need the URLs that resolveNpcAssetUrl can return for this preset.
     const set = new Set<string>();
     for (const lod of asset.lods) {
       if (lod.url) set.add(lod.url);
-    }
-    if (asset.variants) {
-      for (const variantUrl of Object.values(asset.variants)) {
-        if (variantUrl) set.add(variantUrl);
-      }
     }
     return [...set];
   }, [asset, fallbackUrl, useManifestLod]);
@@ -217,9 +221,10 @@ function GltfNPCModelScene({
       const next =
         resolveNpcAssetUrl(definition.id, preset.compression, dist, preset.lodBias) ??
         resolveAssetUrl(asset, preset.compression, dist, preset.lodBias);
-      if (next) activeUrlRef.current = next;
-      for (const [url, group] of branchRefs.current) {
-        group.visible = url === activeUrlRef.current;
+      if (next && next !== activeUrlRef.current) {
+        activeUrlRef.current = next;
+        // Trigger re-render so the active LOD branch mounts/unmounts.
+        setActiveUrlTick((t) => t + 1);
       }
     },
     { label: `GltfNPCModel:${definition.id}` },
@@ -243,19 +248,18 @@ function GltfNPCModelScene({
 
   return (
     <group ref={anchorRef}>
-      {urls.map((url) => (
-        <group
-          key={url}
-          ref={(node) => {
-            if (node) branchRefs.current.set(url, node);
-            else branchRefs.current.delete(url);
-          }}
-          visible={url === activeUrlRef.current}
-        >
-          <Suspense fallback={null}>
+      {/* Only mount the active LOD URL — not all 3 simultaneously.
+          Previously this rendered all LOD branches via Suspense, each with
+          its own useGLTF + AnimationMixer + mixer.update per frame.
+          Now only the active one is mounted; when distance changes, the
+          frame tick updates activeUrlRef and React re-renders with key. */}
+      {(() => {
+        const activeUrl = activeUrlRef.current;
+        return (
+          <Suspense key={activeUrl} fallback={null}>
             <GltfNPCModelInner
               definition={definition}
-              url={url}
+              url={activeUrl}
               modelScale={modelScale}
               targetHeightFactor={targetHeightFactor}
               interactionState={interactionState}
@@ -265,8 +269,8 @@ function GltfNPCModelScene({
               livePlayerPositionRef={livePlayerPositionRef}
             />
           </Suspense>
-        </group>
-      ))}
+        );
+      })()}
     </group>
   );
 }

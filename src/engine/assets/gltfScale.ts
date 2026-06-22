@@ -89,7 +89,13 @@ export function measureCharacterGltfBounds(obj: THREE.Object3D): GltfBounds {
     }
   });
 
-  if (!hasUnion) return measureGltfBounds(obj);
+  if (!hasUnion) {
+    // No meshes found — return empty bounds instead of recursing.
+    // Previously this called measureGltfBounds(obj) which called
+    // measureCharacterGltfBounds → infinite recursion → stack overflow.
+    const empty = new THREE.Vector3();
+    return { size: empty, min: new THREE.Vector3(), max: new THREE.Vector3() };
+  }
 
   const size = new THREE.Vector3();
   union.getSize(size);

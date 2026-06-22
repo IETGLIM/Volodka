@@ -26,7 +26,7 @@ import { getTriggerZones } from '@/data/gameDataLoader';
 import { eventBus } from '@/engine/EventBus';
 import { getNPCGroup } from '@/engine/interaction/npcRegistry';
 import { setPlayerExternalVelocity, clearPlayerExternalVelocity } from '@/engine/PlayerRigidBodyState';
-import { useGameStore } from '@/store/gameStore';
+import { getGameSnapshot } from "@/engine/GameActionDispatcher";
 import { readGamePhase } from '@/shared/gamePhase';
 import { closeNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
 import { preloadNpcModel } from '@/engine/scene/sceneGpuLifecycle';
@@ -99,7 +99,7 @@ export function InteractionSystemBridge({
   const wasNarrativeInteractionRef = useRef(false);
 
   const emitExplorationResumeHint = (): void => {
-    const sceneId = useGameStore.getState().exploration.currentSceneId;
+    const sceneId = getGameSnapshot().exploration.currentSceneId;
     const sceneName = getSceneConfig(sceneId).name;
     eventBus.emit('ui:exploration_message', {
       text: `· ${sceneName} · свободное исследование`,
@@ -289,8 +289,8 @@ export function InteractionSystemBridge({
     let timeoutDuration: number;
     if (stateRef.current === InteractionState.Dialogue) {
       // Only timeout Dialogue in exploration mode without story overlay
-      const currentMode = readGamePhase(useGameStore.getState());
-      const showStoryOverlay = useGameStore.getState().showStoryOverlay;
+      const currentMode = readGamePhase({ mainMenuOpen: false, introActive: false, combatActive: false, activeCutsceneId: getGameSnapshot().activeCutsceneId });
+      const showStoryOverlay = getGameSnapshot().showStoryOverlay;
       shouldCheckTimeout = currentMode === 'exploration' && !showStoryOverlay;
       timeoutDuration = 4.0;
     } else if (stateRef.current === InteractionState.Exit) {
@@ -327,7 +327,7 @@ export function InteractionSystemBridge({
         npcId: prevNpcId ?? undefined,
       });
 
-      const storeState = useGameStore.getState();
+      const storeState = getGameSnapshot();
       if (storeState.showStoryOverlay) {
         closeNarrativeOverlay();
       }
@@ -369,7 +369,7 @@ export function InteractionSystemBridge({
 
         if (dist <= APPROACH_ARRIVAL_DISTANCE) {
           const npcId = targetNPCIdRef.current ?? '';
-          const store = useGameStore.getState();
+          const store = getGameSnapshot();
           const sceneId = store.exploration.currentSceneId;
           const npcZone = findTriggerZoneByNpcId(getTriggerZones(), npcId, sceneId);
           const metFlag = npcZone ? deriveZoneRepeatSkipFlag(npcZone) : undefined;
@@ -507,8 +507,8 @@ export function InteractionSystemBridge({
         // is NOT showing (dialogue closed without emitting interaction:end),
         // force the interaction to end.
         if (phaseTimerRef.current >= 0.3) {
-          const currentMode = readGamePhase(useGameStore.getState());
-          const showStoryOverlay = useGameStore.getState().showStoryOverlay;
+          const currentMode = readGamePhase({ mainMenuOpen: false, introActive: false, combatActive: false, activeCutsceneId: getGameSnapshot().activeCutsceneId });
+          const showStoryOverlay = getGameSnapshot().showStoryOverlay;
           if (currentMode !== 'cutscene' && !showStoryOverlay) {
             phaseTimerRef.current = 0;
             globalTimerRef.current = 0;

@@ -16,7 +16,9 @@ describe('capQualityTierForPixelBudget', () => {
   });
 
   it('caps high when pixel budget exceeds high threshold', () => {
-    expect(capQualityTierForPixelBudget('high', 9_000_000)).toBe('medium');
+    // PIXEL_BUDGET_HIGH_MAX is now 12M (was 8M) — 9M is under the threshold.
+    // 13M should trigger the cap.
+    expect(capQualityTierForPixelBudget('high', 13_000_000)).toBe('medium');
   });
 });
 

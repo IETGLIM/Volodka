@@ -13,6 +13,7 @@ import * as THREE from 'three';
 import { Html } from '@react-three/drei';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useGameStore } from '@/store/gameStore';
+import { getGameSnapshot } from "@/engine/GameActionDispatcher";
 import {
   useActiveCutsceneId,
   useGamePhase,
@@ -149,7 +150,7 @@ export function PatrollingCreeps({ livePlayerPositionRef }: PatrollingCreepsProp
 }
 
 function creepSpawnAllowed(def: CreepPatrolDef): boolean {
-  const state = useGameStore.getState();
+  const state = getGameSnapshot();
   if (def.requiredFlag && !state.playerState.flags[def.requiredFlag]) return false;
   if (def.requiredAct && state.playerState.progression.currentAct < def.requiredAct) return false;
   return true;

@@ -2,7 +2,7 @@ import { Suspense, useEffect, useMemo, useRef, type MutableRefObject } from 'rea
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
-import { useGameStore } from '@/store/gameStore';
+import { getGameSnapshot } from "@/engine/GameActionDispatcher";
 import { readGamePhase } from '@/shared/gamePhase';
 import { usePlayerPresentationState } from '@/store/selectors';
 import { shouldUseFirstPersonHands } from '@/engine/camera/cinematicPresentation';
@@ -113,7 +113,7 @@ function FirstPersonHandsInner({ moveBlendRef }: FirstPersonHandsProps) {
       combatLungeRef.current = Math.min(0, combatLungeRef.current + delta * 4);
     }
 
-    const phase = readGamePhase(useGameStore.getState());
+    const phase = readGamePhase({ mainMenuOpen: false, introActive: false, combatActive: false, activeCutsceneId: getGameSnapshot().activeCutsceneId });
     if (phase === 'combat') {
       combatGuardRef.current = Math.max(combatGuardRef.current, 0.85);
     } else if (combatGuardRef.current > 0) {

@@ -159,10 +159,12 @@ export const GRAPHICS_SETTINGS_KEY = 'volodka_quality_preset';
 /** High-DPR phones (e.g. iPhone @3x) — cap auto tier to avoid WebGL OOM. */
 const HIGH_DPR_MOBILE_THRESHOLD = 2.75;
 
-/** Physical pixel budget thresholds (CSS viewport × DPR²). */
-const PIXEL_BUDGET_ULTRA_MAX = 12_000_000;
-const PIXEL_BUDGET_HIGH_MAX = 8_000_000;
+/** Physical pixel budget thresholds (CSS viewport × DPR²).
+ *  Ordered: above MEDIUM_MAX → cap to medium; above HIGH_MAX → cap to high;
+ *  above ULTRA_MAX → cap ultra to high. */
 const PIXEL_BUDGET_MEDIUM_MAX = 20_000_000;
+const PIXEL_BUDGET_HIGH_MAX = 12_000_000;
+const PIXEL_BUDGET_ULTRA_MAX = 8_000_000;
 
 function readDeviceMemoryGb(): number | undefined {
   if (typeof navigator === 'undefined') return undefined;
