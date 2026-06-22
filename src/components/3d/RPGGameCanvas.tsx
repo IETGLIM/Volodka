@@ -334,7 +334,14 @@ export function RPGGameCanvas({ focusable = true }: { focusable?: boolean } = {}
   const [tabVisible, setTabVisible] = useState(
     () => typeof document === 'undefined' || !document.hidden,
   );
-  const canvasFrameloop = physicsPaused || !tabVisible ? 'demand' : 'always';
+  // Use 'demand' frameloop when:
+  // - In menu/intro (no 3D world to render)
+  // - Tab not visible (background tab — browser throttles anyway)
+  // - During dialogue/story overlay (static screen, no movement)
+  // - During cutscene letterbox (camera is scripted, no player input)
+  // This saves 60fps × 0 GPU work = massive CPU savings on laptop fans.
+  const isStaticScreen = gameMode === 'cutscene';
+  const canvasFrameloop = (physicsPaused || !tabVisible || isStaticScreen) ? 'demand' : 'always';
 
   useEffect(() => {
     const onVisibilityChange = () => {

@@ -181,6 +181,7 @@ function GltfNPCModelScene({
   const worldPosRef = useRef(new THREE.Vector3());
   const activeUrlRef = useRef(fallbackUrl);
   const _branchRefs = useRef<Map<string, THREE.Group>>(new Map());
+  const lastLodDistRef = useRef(-1);
   const { camera } = useThree();
   const { preset } = useGraphicsQuality();
   // State to trigger re-render when LOD distance changes the active URL.
@@ -218,6 +219,11 @@ function GltfNPCModelScene({
       const dist = camera.position.distanceTo(
         anchorRef.current.getWorldPosition(worldPosRef.current),
       );
+      // Throttle LOD checks — only re-evaluate when distance changes by
+      // more than 2m. Avoids re-rendering on every frame when the player
+      // is standing still or moving slowly.
+      if (Math.abs(dist - lastLodDistRef.current) < 2.0) return;
+      lastLodDistRef.current = dist;
       const next =
         resolveNpcAssetUrl(definition.id, preset.compression, dist, preset.lodBias) ??
         resolveAssetUrl(asset, preset.compression, dist, preset.lodBias);
