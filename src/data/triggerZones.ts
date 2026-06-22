@@ -217,6 +217,31 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     ],
   },
 
+  /* ── Sync terminal — appears only when morning_sync quest is active ── */
+  {
+    id: 'room_sync_terminal',
+    sceneId: 'volodka_room',
+    position: [0.5, 0.5, -2.4],
+    size: [0.5, 0.9, 0.4],
+    enterToast: 'Терминал мигает: «Входящий вызов — IT-Гильдия Синк»',
+    interactionType: 'use',
+    interactionLabel: 'Подключиться к синку',
+    requiredFlag: 'sync_done',
+    hiddenWhenFlag: 'sync_done',
+    isOneTime: true,
+    linkedStoryNodeId: 'sync_conference',
+    examineData: {
+      title: 'Синк-терминал',
+      description: 'Экран мигает зелёным. Входящий вызок от IT-гильдии.',
+      detailText: 'Ежедневная оперативка. Коллеги уже ждут. Нажми E для подключения.',
+      icon: '📞',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'sync_terminal_approached', flagValue: true },
+      { type: 'setFlag', flag: 'sync_connected', flagValue: true },
+    ],
+  },
+
   /* ─────────────── CORRIDOR ─────────────── */
   {
     id: 'corridor_kitchen_door',

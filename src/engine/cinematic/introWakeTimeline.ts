@@ -132,6 +132,23 @@ export const INTRO_WAKE_TIMELINE: CinematicTimelineDef = {
       camera: { mode: 'waypoint', to: wpToData(WAKEUP_CAMERA_WAYPOINTS[5]) },
     },
     {
+      // Phase: monitor — camera pushes in close to the screen.
+      // Poem lines appear on the monitor, and a notification pops up:
+      // "Скоро синк. Необходимо присутствие."
+      id: 'monitor',
+      duration: WAKEUP_PHASE.monitor,
+      actor: {
+        mode: 'in_place',
+        clip: 'idle',
+        keyframes: [
+          { t: 0, position: vec3(CHAIR_POSITION), facingY: sitFacing },
+          { t: 1, position: vec3(CHAIR_POSITION), facingY: sitFacing },
+        ],
+      },
+      camera: { mode: 'waypoint', to: wpToData(WAKEUP_CAMERA_WAYPOINTS[6]) },
+      audioCue: 'notify',
+    },
+    {
       id: 'handoff',
       duration: WAKEUP_PHASE.handoff,
       actor: {

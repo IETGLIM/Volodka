@@ -12,6 +12,7 @@ export const WAKEUP_PHASE = {
   walking: 2.8,
   sitting: 1.6,
   settle: 0.6,
+  monitor: 3.5,
   handoff: 1.4,
 } as const;
 
@@ -22,6 +23,7 @@ export const WAKEUP_TOTAL =
   WAKEUP_PHASE.walking +
   WAKEUP_PHASE.sitting +
   WAKEUP_PHASE.settle +
+  WAKEUP_PHASE.monitor +
   WAKEUP_PHASE.handoff;
 
 export const WAKEUP_FALLBACK_MS = (WAKEUP_TOTAL + 2) * 1000;
@@ -88,6 +90,15 @@ export const WAKEUP_CAMERA_WAYPOINTS: WakeCameraWaypoint[] = [
     fov: 54,
     duration: WAKEUP_PHASE.settle,
     controlPoint: new THREE.Vector3(0.9, 1.45, -0.8),
+  },
+  // Phase: monitor — camera pushes in close to the screen, showing poem lines
+  // and the "sync soon" notification. Tight fov for a cinematic close-up.
+  {
+    position: new THREE.Vector3(0.0, 1.15, -0.8),
+    lookAt: new THREE.Vector3(0, 1.1, -2.5),
+    fov: 28,
+    duration: WAKEUP_PHASE.monitor,
+    controlPoint: new THREE.Vector3(0.15, 1.3, -1.5),
   },
 ];
 

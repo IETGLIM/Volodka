@@ -95,6 +95,9 @@ export function CinematicTimelineRunner() {
     // Activate the first quest after the wake-up cinematic so the player
     // has a clear goal: explore the room, then head to the sync.
     dispatchGameAction({ type: 'quest/activate', questId: 'first_reading' });
+    // Activate the morning sync quest — this is the main goal after wake-up.
+    // The 5-minute timer starts ticking; player must reach the terminal.
+    dispatchGameAction({ type: 'quest/activate', questId: 'morning_sync' });
 
     const clearPrologueTimer = (): void => {
       if (prologueTimerRef.current) {

@@ -1333,5 +1333,135 @@ export const ACT1_STRUCTURE: Record<string, StoryNodeStructure> = {
         ]
       }
     ]
+  },
+
+  "sync_conference": {
+    "id": "sync_conference",
+    "sceneId": "volodka_room",
+    "speaker": "narrator",
+    "autoSave": true,
+    "choices": [
+      {
+        "text": "",
+        "next": "sync_alexander_opens",
+        "effects": [
+          { "type": "setFlag", "flag": "sync_terminal_approached", "flagValue": true },
+          { "type": "setFlag", "flag": "sync_connected", "flagValue": true }
+        ]
+      }
+    ]
+  },
+
+  "sync_alexander_opens": {
+    "id": "sync_alexander_opens",
+    "sceneId": "volodka_room",
+    "speaker": "Александр",
+    "choices": [
+      {
+        "text": "Слушаю, Александр.",
+        "next": "sync_dmitry_report",
+        "effects": [
+          { "type": "addStat", "stat": "stress", "value": 2 }
+        ]
+      },
+      {
+        "text": "Опять пожар? Что на этот раз?",
+        "next": "sync_dmitry_report",
+        "effects": [
+          { "type": "addKarma", "value": -2 },
+          { "type": "addStat", "stat": "stress", "value": 3 }
+        ]
+      }
+    ]
+  },
+
+  "sync_dmitry_report": {
+    "id": "sync_dmitry_report",
+    "sceneId": "volodka_room",
+    "speaker": "Дмитрий",
+    "choices": [
+      {
+        "text": "Дмитрий, ты уверен в этих цифрах?",
+        "next": "sync_colleague_interrupts",
+        "condition": { "minSkill": { "logic": 4 } },
+        "effects": [
+          { "type": "addSkill", "skill": "logic", "value": 1 }
+        ]
+      },
+      {
+        "text": "Понятно. Дальше.",
+        "next": "sync_colleague_interrupts",
+        "effects": [
+          { "type": "addStat", "stat": "stress", "value": 1 }
+        ]
+      }
+    ]
+  },
+
+  "sync_colleague_interrupts": {
+    "id": "sync_colleague_interrupts",
+    "sceneId": "volodka_room",
+    "speaker": "Коллега",
+    "choices": [
+      {
+        "text": "Коллега, не паникуй. Давайте по порядку.",
+        "next": "sync_alexander_closing",
+        "effects": [
+          { "type": "addKarma", "value": 3 },
+          { "type": "addSkill", "skill": "persuasion", "value": 1 }
+        ]
+      },
+      {
+        "text": "Молча слушать дальше.",
+        "next": "sync_alexander_closing",
+        "effects": [
+          { "type": "addStat", "stat": "stress", "value": 2 }
+        ]
+      }
+    ]
+  },
+
+  "sync_alexander_closing": {
+    "id": "sync_alexander_closing",
+    "sceneId": "volodka_room",
+    "speaker": "Александр",
+    "choices": [
+      {
+        "text": "Понял. Приступаю.",
+        "next": "sync_end",
+        "effects": [
+          { "type": "setFlag", "flag": "sync_completed", "flagValue": true },
+          { "type": "addXp", "value": 80 },
+          { "type": "addKarma", "value": 3 },
+          { "type": "addSkill", "skill": "persuasion", "value": 1 },
+          { "type": "setFlag", "flag": "sync_done", "flagValue": true }
+        ]
+      },
+      {
+        "text": "Александр, мне нужно больше времени.",
+        "next": "sync_end",
+        "effects": [
+          { "type": "setFlag", "flag": "sync_completed", "flagValue": true },
+          { "type": "addStat", "stat": "stress", "value": 5 },
+          { "type": "addXp", "value": 50 },
+          { "type": "setFlag", "flag": "sync_done", "flagValue": true }
+        ]
+      }
+    ]
+  },
+
+  "sync_end": {
+    "id": "sync_end",
+    "sceneId": "volodka_room",
+    "speaker": "narrator",
+    "choices": [
+      {
+        "text": "Хорошего дня, коллеги.",
+        "next": null,
+        "effects": [
+          { "type": "setFlag", "flag": "sync_ended", "flagValue": true }
+        ]
+      }
+    ]
   }
 } as Record<string, StoryNodeStructure>;

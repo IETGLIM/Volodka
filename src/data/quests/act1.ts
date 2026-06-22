@@ -519,4 +519,48 @@ export const QUESTS_ACT1: QuestDefinition[] = [
     questGiverNpcId: 'cafe_barista',
   },
 
+  /* ─────────────── QUEST: Morning Sync ─────────────── */
+  {
+    id: 'morning_sync',
+    title: 'Присутствие на синке',
+    description: 'Срочная оперативка. Подключись к конференции с рабочей станции — коллеги уже ждут.',
+    act: 1,
+    questType: 'main',
+    difficulty: 'easy',
+    hint: 'Подойди к терминалу и нажми E для подключения к синку.',
+    requiresQuests: ['first_reading'],
+    timeLimitHours: 5,
+    objectives: [
+      {
+        id: 'approach_terminal',
+        description: 'Подойти к рабочей станции',
+        type: 'flag_set',
+        target: 'sync_terminal_approached',
+        completed: false,
+      },
+      {
+        id: 'connect_sync',
+        description: 'Подключиться к оперативной конференции',
+        type: 'flag_set',
+        target: 'sync_connected',
+        completed: false,
+        poemPowerBypass: 'poem_8',
+        poemPowerHint: 'Или используй стих «Прорыв» для мгновенного подключения',
+      },
+      {
+        id: 'complete_sync',
+        description: 'Завершить синк',
+        type: 'flag_set',
+        target: 'sync_completed',
+        completed: false,
+      },
+    ],
+    rewards: [
+      { type: 'addXp', value: 80 },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'persuasion', value: 1 },
+      { type: 'setFlag', flag: 'sync_done', flagValue: true },
+    ],
+    linkedStoryNodeId: 'sync_conference',
+  },
 ];
