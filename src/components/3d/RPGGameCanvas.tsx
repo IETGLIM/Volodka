@@ -26,7 +26,9 @@ import { GltfPipelineInit } from './assets/GltfPipelineInit';
 import { useVirtualControlsRef } from '@/engine/VirtualControlsState';
 import { eventBus } from '@/engine/EventBus';
 import { type VirtualControls } from '@/hooks/useGamePhysics';
-import { useGameMode } from '@/store/selectors';
+import { useUIStore } from '@/store/stores/uiStore';
+import { useCutsceneStore } from '@/store/stores/cutsceneStore';
+import { getGamePhase } from '@/shared/gamePhase';
 import { useGameStore } from '@/store/gameStore';
 import {
   getCanvasFirstFrameSession,
@@ -327,20 +329,25 @@ export function RPGGameCanvas({ focusable = true }: { focusable?: boolean } = {}
   const { preset } = useGraphicsQuality();
 
   // P3-FIX: Pause physics when game is in menu/intro mode to save CPU.
-  // Uses useShallow to select just the mode string (primitive) so this
-  // only re-renders when mode actually changes, not on every store update.
-  const gameMode = useGameMode();
+  // Read directly from slice stores — the facade flush uses RAF which
+  // doesn't fire under 'demand' frameloop (chicken-and-egg problem).
+  const mainMenuOpen = useUIStore((s) => s.mainMenuOpen);
+  const introActive = useUIStore((s) => s.introActive);
+  const combatActive = useUIStore((s) => s.combatActive);
+  const activeCutsceneId = useCutsceneStore((s) => s.activeCutsceneId);
+  const showStoryOverlay = useUIStore((s) => s.showStoryOverlay);
+  const gameMode = getGamePhase({ mainMenuOpen, introActive, combatActive, activeCutsceneId });
   const physicsPaused = gameMode === 'menu' || gameMode === 'intro';
   const [tabVisible, setTabVisible] = useState(
     () => typeof document === 'undefined' || !document.hidden,
   );
-  // Use 'demand' frameloop when:
+  // Use 'demand' frameloop ONLY when:
   // - In menu/intro (no 3D world to render)
   // - Tab not visible (background tab — browser throttles anyway)
-  // - During dialogue/story overlay (static screen, no movement)
-  // - During cutscene letterbox (camera is scripted, no player input)
-  // This saves 60fps × 0 GPU work = massive CPU savings on laptop fans.
-  const isStaticScreen = gameMode === 'cutscene';
+  // Do NOT use 'demand' for cutscene — the wake-up cinematic needs
+  // continuous rendering for camera animation + actor movement.
+  // Story overlay (dialogue) IS safe for demand — the 3D scene is static.
+  const isStaticScreen = showStoryOverlay && !activeCutsceneId;
   const canvasFrameloop = (physicsPaused || !tabVisible || isStaticScreen) ? 'demand' : 'always';
 
   useEffect(() => {
@@ -477,7 +484,7 @@ function RPGGameCanvasScene({
   livePlayerRotationRef,
   virtualControlsRef,
 }: Omit<RPGGameCanvasShellProps, 'frameloop' | 'dpr' | 'shadows' | 'antialias'>) {
-  const gameMode = useGameMode();
+  const gameMode = getGamePhase({ mainMenuOpen: useUIStore((s) => s.mainMenuOpen), introActive: useUIStore((s) => s.introActive), combatActive: useUIStore((s) => s.combatActive), activeCutsceneId: useCutsceneStore((s) => s.activeCutsceneId) });
   const devToolsArmed = useGameStore((s) => s.devToolsArmed);
   const physicsPaused = gameMode === 'menu' || gameMode === 'intro';
 
