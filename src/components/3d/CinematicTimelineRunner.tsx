@@ -283,19 +283,24 @@ export function CinematicTimelineRunner() {
       }, 200);
     };
 
-    // If the cutscene is already active (component remounted after HMR, etc.),
-    // wait for the next first-frame.
-    if (getGameStore().activeCutsceneId === 'intro_wakeup') {
-      unsubs.push(eventBus.on('canvas:first-frame', startIntroWakeWhenReady));
-    } else {
-      // Also listen for the cutscene being set after mount (New Game flow).
-      const unsubCutscene = eventBus.on('scene:loaded', () => {
-        if (getGameStore().activeCutsceneId === 'intro_wakeup' && !sequenceStartedRef.current) {
-          startIntroWakeWhenReady();
-        }
-      });
-      unsubs.push(unsubCutscene);
-    }
+    // ALWAYS listen for both events — the useEffect deps are [camera]
+    // which doesn't change, so we can't rely on re-mount to pick up
+    // activeCutsceneId changes. Listen for canvas:first-frame (fires
+    // when the canvas renders its first frame after mount/scene change)
+    // AND scene:loaded (fires when a scene finishes loading). Also
+    // poll for the cutscene being set (New Game flow sets it after
+    // the component is already mounted).
+    unsubs.push(eventBus.on('canvas:first-frame', startIntroWakeWhenReady));
+    unsubs.push(eventBus.on('scene:loaded', startIntroWakeWhenReady));
+
+    // Also poll — the New Game flow sets activeCutsceneId via the store
+    // which may not trigger any event the component listens to.
+    const pollInterval = setInterval(() => {
+      if (!sequenceStartedRef.current && getGameStore().activeCutsceneId === 'intro_wakeup') {
+        startIntroWakeWhenReady();
+      }
+    }, 500);
+    unsubs.push(() => clearInterval(pollInterval));
 
     return () => {
       unsubs.forEach((u) => u());
