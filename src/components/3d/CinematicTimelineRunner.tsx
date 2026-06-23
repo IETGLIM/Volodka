@@ -92,6 +92,16 @@ export function CinematicTimelineRunner() {
       completeCinematicTimeline('intro_wakeup');
     }
 
+    // CRITICAL: Emit scene:loaded for the current scene. During "New Game",
+    // there is no scene transition (we stay in volodka_room), so scene:loaded
+    // never fires naturally. Without this, useSceneLoadedGate returns false
+    // forever, and ScenePropDressing, TriggerZoneProps, SceneInteriorAssets,
+    // and NPCSystemWrapper never mount — canvas stays black.
+    eventBus.emit('scene:loaded', {
+      sceneId: 'volodka_room',
+      fromSceneId: 'volodka_room',
+    });
+
     // Activate the first quest after the wake-up cinematic so the player
     // has a clear goal: explore the room, then head to the sync.
     dispatchGameAction({ type: 'quest/activate', questId: 'first_reading' });
