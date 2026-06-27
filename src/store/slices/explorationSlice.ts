@@ -120,6 +120,9 @@ export const createExplorationSlice: StateCreator<
       exploration: {
         ...state.exploration,
         timeOfDay: newTime,
+        // FIX P0 #2: advance monotonic hour counter for cross-day cooldowns
+        // (restAtHome). Hours can be fractional (0.25 per world-clock tick).
+        totalGameHours: (state.exploration.totalGameHours ?? 0) + hours,
         npcStates } }));
 
     scheduleWorldHourChanged({ hour: newTime, previousHour, npcStates });
@@ -206,6 +209,8 @@ export const createExplorationSlice: StateCreator<
       exploration: {
         ...prev.exploration,
         timeOfDay: newTime,
+        // FIX P0 #2: keep monotonic hour counter in sync with fast-travel time.
+        totalGameHours: (prev.exploration.totalGameHours ?? 0) + travelHours,
         npcStates,
       },
     }));

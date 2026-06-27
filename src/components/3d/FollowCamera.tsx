@@ -227,6 +227,11 @@ export function FollowCamera({
     if (owner !== 'followCamera' && !canWriteCamera(owner)) return;
 
     const delta = applyTimeScale(Math.min(rawDelta, 0.05));
+    // FIX P0 #4: defense-in-depth — even with sanitizeDelta in FrameBudgetRunner,
+    // a non-finite delta (NaN/Infinity) would poison every subsequent lerp,
+    // quaternion, and camera position below, producing a black screen on
+    // tab-switch / context loss. Drop the frame if delta is not usable.
+    if (!Number.isFinite(delta) || delta <= 0) return;
     timeRef.current += delta;
 
     applyPendingGamepadOrbit(yawRef, pitchRef, distanceRef, interactionDistanceRef, delta);

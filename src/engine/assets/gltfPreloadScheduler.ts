@@ -26,6 +26,35 @@ let uiOverlayPauseCount = 0;
 let preloadPaused = false;
 let combatLifecycleHooked = false;
 
+/** FIX P0 #8: Safety timer that force-resumes preload if `combat:end` never
+ *  fires (e.g., combat crashes mid-fight, edge-case flee path skips the emit).
+ *  Without this, the GLB preload queue would silently stay paused forever —
+ *  the player would leave combat and background NPC/prop preloads would
+ *  degrade to lazy on-approach loading for the rest of the session.
+ *  60s is well above any reasonable combat duration; the worst case if
+ *  combat:end does fire late is a single redundant `setGltfPreloadPaused(false)`
+ *  call, which is idempotent. */
+const COMBAT_PRELOAD_RESUME_TIMEOUT_MS = 60_000;
+let combatResumeTimer: ReturnType<typeof setTimeout> | null = null;
+
+function clearCombatResumeTimer(): void {
+  if (combatResumeTimer !== null) {
+    clearTimeout(combatResumeTimer);
+    combatResumeTimer = null;
+  }
+}
+
+function armCombatResumeTimer(): void {
+  clearCombatResumeTimer();
+  combatResumeTimer = setTimeout(() => {
+    combatResumeTimer = null;
+    if (manualPauseActive) {
+      console.warn('[gltfPreloadScheduler] combat:end safety timeout — force-resuming preload');
+      setGltfPreloadPaused(false);
+    }
+  }, COMBAT_PRELOAD_RESUME_TIMEOUT_MS);
+}
+
 function syncPreloadPaused(): void {
   const nextPaused = manualPauseActive || uiOverlayPauseCount > 0;
   if (preloadPaused === nextPaused) return;
@@ -43,6 +72,8 @@ function hookCombatPreloadLifecycle(): void {
   if (combatLifecycleHooked) return;
   combatLifecycleHooked = true;
   eventBus.on('combat:end', () => {
+    // FIX P0 #8: cancel the safety timer — combat ended normally.
+    clearCombatResumeTimer();
     setGltfPreloadPaused(false);
   });
 }
@@ -73,6 +104,9 @@ export function isGltfPreloadPaused(): boolean {
 export function pauseGltfPreloadForEncounter(): void {
   hookCombatPreloadLifecycle();
   setGltfPreloadPaused(true);
+  // FIX P0 #8: arm safety timer — if combat:end never fires, force-resume
+  // after 60s so the preload queue doesn't silently stay paused forever.
+  armCombatResumeTimer();
 }
 
 function cancelDrain(): void {
@@ -158,4 +192,6 @@ export function resetGltfPreloadSchedulerForTests(): void {
   manualPauseActive = false;
   uiOverlayPauseCount = 0;
   preloadPaused = false;
+  // FIX P0 #8: don't leak the safety timer between test cases.
+  clearCombatResumeTimer();
 }

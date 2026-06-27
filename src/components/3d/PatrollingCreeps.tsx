@@ -32,6 +32,7 @@ import {
   CreepBody,
   type CreepBodyAnimState,
 } from '@/components/3d/proceduralEnemy/enemyArchetypes';
+import { resolveCombatPerkModifiers } from '@/shared/perks/perkModifiers';
 
 type CreepState = 'patrol' | 'chase' | 'engaged' | 'cooldown';
 
@@ -353,23 +354,51 @@ function Creep({
           !engageQueuedRef.current &&
           !isSceneTransitionInProgress()
         ) {
-          engageQueuedRef.current = true;
-          stateRef.current = 'engaged';
-          engagedCreepIdRef.current = def.id;
-          setEngaging(true);
-          contactBurstRef.current = 1;
+          // FIX P0 #3: shadow_walker perk — 10% chance to avoid a random
+          // encounter (the creep loses track of the player at the last
+          // second). Previously `fleeEncounterChance` was computed in
+          // perkModifiers.ts but never consumed — the perk did nothing.
+          const perkSnap = getGameSnapshot();
+          const perkMods = resolveCombatPerkModifiers(
+            perkSnap.playerState?.progression?.unlockedPerks ?? [],
+            {
+              stress: perkSnap.playerState?.stress,
+              timeOfDay: perkSnap.exploration?.timeOfDay,
+            },
+          );
+          const evaded = perkMods.fleeEncounterChance > 0
+            && Math.random() < perkMods.fleeEncounterChance;
 
-          const faceYaw = Math.atan2(dx, dz);
-          pos.x = player.x + Math.sin(faceYaw) * 2.4;
-          pos.z = player.z + Math.cos(faceYaw) * 2.4;
-          headingRef.current = faceYaw + Math.PI;
+          if (evaded) {
+            // Creep loses track, drops back to patrol after a short cooldown.
+            engageQueuedRef.current = true; // prevent re-trigger this frame
+            stateRef.current = 'cooldown';
+            alertTimerRef.current = 0;
+            alertToastSentRef.current = false;
+            setTimeout(() => {
+              engageQueuedRef.current = false;
+              if (stateRef.current === 'cooldown') stateRef.current = 'patrol';
+            }, COOLDOWN_AFTER_ESCAPE_S * 1000);
+            eventBus.emit('fx:flash', { color: 'rgba(80,200,255,0.18)', opacity: 0.18, duration: 280 });
+          } else {
+            engageQueuedRef.current = true;
+            stateRef.current = 'engaged';
+            engagedCreepIdRef.current = def.id;
+            setEngaging(true);
+            contactBurstRef.current = 1;
 
-          startEncounter({
-            source: 'creep',
-            enemyType: def.enemyType,
-            encounterName: def.name,
-            creepId: def.id,
-          });
+            const faceYaw = Math.atan2(dx, dz);
+            pos.x = player.x + Math.sin(faceYaw) * 2.4;
+            pos.z = player.z + Math.cos(faceYaw) * 2.4;
+            headingRef.current = faceYaw + Math.PI;
+
+            startEncounter({
+              source: 'creep',
+              enemyType: def.enemyType,
+              encounterName: def.name,
+              creepId: def.id,
+            });
+          }
         } else {
           bodyWalking = true;
           const step = def.chaseSpeed * delta;
