@@ -180,11 +180,13 @@ function GltfNPCModelScene({
   const anchorRef = useRef<THREE.Group>(null);
   const worldPosRef = useRef(new THREE.Vector3());
   const activeUrlRef = useRef(fallbackUrl);
-  const _branchRefs = useRef<Map<string, THREE.Group>>(new Map());
   const lastLodDistRef = useRef(-1);
   const camera = useThree((s) => s.camera);
   const { preset } = useGraphicsQuality();
   // State to trigger re-render when LOD distance changes the active URL.
+  // Needed because activeUrlRef is a ref (not reactive) — the frame tick
+  // updates it, and this state forces React to re-render so the visibility
+  // prop on each LOD branch updates.
   const [, setActiveUrlTick] = useState(0);
 
   const manifestId = getNpcManifestId(definition.id);
@@ -254,29 +256,29 @@ function GltfNPCModelScene({
 
   return (
     <group ref={anchorRef}>
-      {/* Only mount the active LOD URL — not all 3 simultaneously.
-          Previously this rendered all LOD branches via Suspense, each with
-          its own useGLTF + AnimationMixer + mixer.update per frame.
-          Now only the active one is mounted; when distance changes, the
-          frame tick updates activeUrlRef and React re-renders with key. */}
-      {(() => {
-        const activeUrl = activeUrlRef.current;
-        return (
-          <Suspense key={activeUrl} fallback={null}>
-            <GltfNPCModelInner
-              definition={definition}
-              url={activeUrl}
-              modelScale={modelScale}
-              targetHeightFactor={targetHeightFactor}
-              interactionState={interactionState}
-              isInteractionTarget={isInteractionTarget}
-              activity={activity}
-              patrolActivity={patrolActivity}
-              livePlayerPositionRef={livePlayerPositionRef}
-            />
-          </Suspense>
-        );
-      })()}
+      {/* Mount ALL LOD URLs simultaneously, toggle visibility by active URL.
+          Previously this used key={activeUrl} which remounted the entire
+          subtree on every LOD change — causing GLTF reload, mixer recreation,
+          animation restart, and GC pressure. Now each LOD persists with its
+          own mixer; only the visible one runs mixer.update (gated by the
+          `visible` prop in GltfNPCModelInner.useRegisterNpcFrame). */}
+      <Suspense fallback={null}>
+        {urls.map((lodUrl) => (
+          <GltfNPCModelInner
+            key={lodUrl}
+            definition={definition}
+            url={lodUrl}
+            modelScale={modelScale}
+            targetHeightFactor={targetHeightFactor}
+            interactionState={interactionState}
+            isInteractionTarget={isInteractionTarget}
+            activity={activity}
+            patrolActivity={patrolActivity}
+            visible={lodUrl === activeUrlRef.current}
+            livePlayerPositionRef={livePlayerPositionRef}
+          />
+        ))}
+      </Suspense>
     </group>
   );
 }

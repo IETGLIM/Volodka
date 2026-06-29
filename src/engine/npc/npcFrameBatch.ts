@@ -6,12 +6,17 @@ import type { FrameTickCallback, FrameTickContext } from '@/engine/frame/types';
 export type NpcFrameCallbackKind = 'main' | 'mixer' | 'procedural' | 'overlay' | 'sprite';
 
 interface NpcFrameEntry {
+  /** Unique token — survives remount races. Cleanup removes by token, not by
+   *  ownerKey:kind, so a stale cleanup from a previous mount cannot remove a
+   *  freshly-registered entry with the same logical key. */
+  token: number;
   key: string;
   kind: NpcFrameCallbackKind;
   callback: FrameTickCallback;
   enabled?: () => boolean;
 }
 
+let nextToken = 1;
 const entries: NpcFrameEntry[] = [];
 let sortedEntries: NpcFrameEntry[] = [];
 let dirty = true;
@@ -38,11 +43,12 @@ export function registerNpcFrameCallback(
   callback: FrameTickCallback,
   options?: { enabled?: () => boolean },
 ): () => void {
+  const token = nextToken++;
   const key = `${ownerKey}:${kind}`;
-  entries.push({ key, kind, callback, enabled: options?.enabled });
+  entries.push({ token, key, kind, callback, enabled: options?.enabled });
   dirty = true;
   return () => {
-    const index = entries.findIndex((entry) => entry.key === key);
+    const index = entries.findIndex((entry) => entry.token === token);
     if (index >= 0) {
       entries.splice(index, 1);
       dirty = true;
