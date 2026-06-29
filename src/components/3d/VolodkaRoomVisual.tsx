@@ -404,10 +404,12 @@ export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
           </group>
         ))}
 
-        {/* Monitor glow — keeps the room lit (the screens are the primary source) */}
-        <pointLight position={[0, 1.25, 0.15]} color="#00ff88" intensity={4.5} distance={9} />
+        {/* Monitor glow — softened from acid green #00ff88 to a teal-cyan so the
+            room reads as a lived-in workspace, not a hacker den. Intensity lowered
+            from 4.5 to 2.6 so the warm ceiling lamp (sceneDefinitions) can compete. */}
+        <pointLight position={[0, 1.25, 0.15]} color="#33ddaa" intensity={2.6} distance={9} />
         <pointLight position={[-0.62, 1.1, 0.1]} color="#22d3ee" intensity={1.5} distance={5} />
-        <pointLight position={[0.62, 1.1, 0.1]} color="#f59e0b" intensity={1.2} distance={5} />
+        <pointLight position={[0.62, 1.1, 0.1]} color="#f59e0b" intensity={1.4} distance={5} />
         {/* Keyboard */}
         <mesh position={[0, 0.78, 0.1]} geometry={geo_box_23} material={mat_15} />
         {/* Keyboard LED indicators */}
@@ -555,12 +557,12 @@ export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
         ))}
       </group>
 
-      {/* ── Desk lamp — warm accent light (NOT primary — monitor is primary) ── */}
+      {/* ── Desk lamp — warm accent light, boosted to balance the monitor glow ── */}
       <pointLight
         position={[0.3, 1.5, -2.3]}
         color="#ffcc88"
-        intensity={2.5}
-        distance={8}
+        intensity={3.5}
+        distance={9}
         castShadow={false}
         shadow-mapSize-width={256}
         shadow-mapSize-height={256}
@@ -568,12 +570,12 @@ export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
         shadow-normalBias={0.04}
       />
 
-      {/* ── Subtle warm fill near bed area ── */}
+      {/* ── Subtle warm fill near bed area — brightened so bed/bookshelf are visible ── */}
       <pointLight
         position={[-1.5, 1.8, 2.5]}
-        color="#8877aa"
-        intensity={0.8}
-        distance={4}
+        color="#aa99bb"
+        intensity={1.4}
+        distance={5}
       />
 
       {/* ── Ceiling ambient glow panel (dim — noir apartment) ── */}
