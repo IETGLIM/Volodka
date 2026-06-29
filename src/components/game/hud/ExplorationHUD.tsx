@@ -111,6 +111,16 @@ export function ExplorationHUD(props: HUDProps) {
 
   const mainPoemCount = countCollectedMainPoems(collectedPoems);
 
+  // ── Onboarding gate (progressive disclosure) ─────────────────────────────
+  // During the first minutes of a new playthrough the player is overwhelmed by
+  // ~25 interactive elements at once. We define an "onboarding" window as:
+  //   level === 1 AND the player has collected ≤ 1 poem
+  // In this window we hide non-essential UI (trading, crafting, photo, stats
+  // buttons, the full karma/energy/stress panel) so the player can focus on
+  // movement, the story overlay, and the quest guidance HUD. The moment the
+  // player gains a level OR collects a second poem, the full UI fades in.
+  const isOnboarding = level <= 1 && mainPoemCount <= 1;
+
   const {
     onToggleTutorials,
     onOpenMenu,
@@ -322,16 +332,20 @@ export function ExplorationHUD(props: HUDProps) {
             <HUDButton icon={<BookOpen className="size-3.5 sm:size-4" />} label="Журнал [J]" onClick={onOpenJournal} tooltip="Журнал [J]" />
             <HUDButton icon={<Package className="size-3.5 sm:size-4" />} label="Инвентарь [I]" onClick={onOpenInventory} tooltip="Инвентарь [I]" />
 
-            {/* Hide some buttons on small screens */}
-            <div className="hidden sm:block">
+            {/* Hide some buttons on small screens; hide trading during onboarding */}
+            <div className={`${isOnboarding ? 'hidden' : 'hidden sm:block'}`}>
               <HUDButton icon={<ShoppingCart className="size-3.5 sm:size-4" />} label="Торговля [⇧T]" onClick={onOpenTrading} tooltip="Торговля [⇧T]" />
             </div>
-            <div className="hidden md:block">
+            <div className={`${isOnboarding ? 'hidden' : 'hidden md:block'}`}>
               <HUDButton icon={<Hammer className="size-3.5 sm:size-4" />} label="Крафт [G]" onClick={onOpenCrafting} tooltip="Крафт [G]" />
             </div>
             <HUDButton icon={<Save className="size-3.5 sm:size-4" />} label="Сохранить" onClick={handleSave} tooltip="Сохранить [F5]" />
-            <HUDButton icon={<Camera className="size-3.5 sm:size-4" />} label="Фото" onClick={() => eventBus.emit(PHOTO_EVENTS.toggle, PHOTO_EMPTY_PAYLOAD)} tooltip="Фото [P]" />
-            <HUDButton icon={<BarChart3 className="size-3.5 sm:size-4" />} label="Статистика" onClick={onOpenStats} tooltip="Статистика [S]" />
+            {!isOnboarding && (
+              <HUDButton icon={<Camera className="size-3.5 sm:size-4" />} label="Фото" onClick={() => eventBus.emit(PHOTO_EVENTS.toggle, PHOTO_EMPTY_PAYLOAD)} tooltip="Фото [P]" />
+            )}
+            {!isOnboarding && (
+              <HUDButton icon={<BarChart3 className="size-3.5 sm:size-4" />} label="Статистика" onClick={onOpenStats} tooltip="Статистика [S]" />
+            )}
 
             {/* Weather status indicator */}
             {currentWeather !== 'clear' && (
@@ -389,7 +403,9 @@ export function ExplorationHUD(props: HUDProps) {
                     </div>
                     <div className="px-3 py-1.5 border-t border-slate-700/30">
                       <div className="flex items-center justify-between">
-                        <span className="text-[8px] text-slate-400 font-mono">volodka://actions</span>
+                        {import.meta.env.DEV && (
+                          <span className="text-[8px] text-slate-400 font-mono">volodka://actions</span>
+                        )}
                         <div className="flex items-center gap-1">
                           <kbd className="text-[8px] text-slate-500 font-mono px-1 py-0.5 rounded border border-slate-700/30 bg-slate-800/40">Esc</kbd>
                           <span className="text-[8px] text-slate-500">закрыть</span>
@@ -437,7 +453,10 @@ export function ExplorationHUD(props: HUDProps) {
       </AnimatePresence>
 
       {/* ── Bottom-left: Stats panel (desktop) — AAA Overhaul ── */}
-      <div className="absolute left-3 sm:left-4 pointer-events-auto hidden lg:block" style={{ bottom: 96 }}>
+      {/* Hidden during onboarding to reduce cognitive overload. The LevelBadge
+          in the top bar already shows level/XP; karma/energy/stress become
+          meaningful only after the first combat or dialogue choice. */}
+      <div className={`absolute left-3 sm:left-4 pointer-events-auto ${isOnboarding ? 'hidden' : 'hidden lg:block'}`} style={{ bottom: 96 }}>
         <div
           className={`relative rounded-2xl p-4 sm:p-5 border backdrop-blur-xl min-w-[260px] overflow-hidden panel-scanlines hex-grid-bg ${isLowEnergy || isHighStress ? 'warning-pulse' : ''}`}
           style={{
@@ -595,7 +614,9 @@ export function ExplorationHUD(props: HUDProps) {
 
           <div className="h-px mt-4" style={{ background: 'linear-gradient(90deg, transparent, rgb(var(--cyber-cyan-rgb) / 0.15), transparent)' }} />
           <div className="flex items-center justify-between mt-2.5">
-            <span className="text-[10px] text-slate-500/60 font-mono">volodka://status</span>
+            {import.meta.env.DEV && (
+              <span className="text-[10px] text-slate-500/60 font-mono">volodka://status</span>
+            )}
             <div className="flex items-center gap-2">
               {currentWeather !== 'clear' && (
                 <div className="flex items-center gap-1" title={getWeatherDescription(currentWeather)}>
@@ -613,7 +634,8 @@ export function ExplorationHUD(props: HUDProps) {
       </div>
 
       {/* ── Mobile compact stats bar — ENHANCED ── */}
-      <div className="absolute top-12 left-2 right-2 pointer-events-auto lg:hidden" style={quietStyle}>
+      {/* Hidden during onboarding (same gate as desktop stats panel). */}
+      <div className={`absolute top-12 left-2 right-2 pointer-events-auto ${isOnboarding ? 'hidden' : 'lg:hidden'}`} style={quietStyle}>
         <div
           className={`flex items-center gap-2.5 px-3 py-2 rounded-xl border backdrop-blur-xl ${isLowEnergy || isHighStress ? 'warning-pulse' : ''}`}
           style={{

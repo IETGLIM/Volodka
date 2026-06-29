@@ -34,7 +34,10 @@ export const QUESTS_ACT1: QuestDefinition[] = [
     rewards: [
       { type: 'addSkill', skill: 'writing', value: 2 },
       { type: 'addKarma', value: 5 },
-      { type: 'addXp', value: 50 },
+      // NOTE: addXp removed — auto-completing this quest on wake-up caused an
+      // immediate Level 2 popup before the player had done anything. XP for
+      // poem discovery is now earned through later quests (incident_scroll_4729,
+      // maria_connection) where the player actively interacts with the world.
     ],
     linkedStoryNodeId: 'explore_mode',
     questGiverNpcId: undefined, // Self-discovered quest (no NPC giver)

@@ -731,7 +731,7 @@ export function FirstPlayTutorial() {
                   className="text-[10px] font-mono tracking-wider"
                   style={{ color: 'rgb(var(--cyber-cyan-rgb) / 0.25)' }}
                 >
-                  volodka://tutorial/step_{currentStep + 1}
+                  ШАГ {currentStep + 1} / {STEPS.length}
                 </span>
               </div>
             </div>

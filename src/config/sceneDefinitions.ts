@@ -61,15 +61,22 @@ export const volodka_room_def: SceneDefinition = {
   ],
   visualComponent: 'VolodkaRoomVisual',
   lights: [
-    { position: [1.5, 1.3, -3.0], intensity: 3.0, color: '#00ff66', distance: 8 },
-    { position: [0, 2.5, 0], intensity: 1.0, color: '#ffaa55', distance: 8 },
-    { position: [-1.5, 2.0, 2.0], intensity: 0.6, color: '#6655aa', distance: 6 },
+    // Desk monitor glow — softened from acid green #00ff66 to a warmer cyan-green
+    // so the room reads as "lived-in" rather than "hacker lair". Reduced intensity
+    // so it no longer drowns out the warm ceiling lamp.
+    { position: [1.5, 1.3, -3.0], intensity: 1.8, color: '#22dd88', distance: 8 },
+    // Warm ceiling lamp — boosted so the player can actually see the room
+    { position: [0, 2.5, 0], intensity: 2.2, color: '#ffaa55', distance: 9 },
+    // Bedside accent — slightly brighter for readability
+    { position: [-1.5, 2.0, 2.0], intensity: 0.9, color: '#6655aa', distance: 6 },
   ],
-  ambientColor: '#3a3050',
-  ambientIntensity: 0.8,
+  // Lighter ambient so furniture is visible; still cool-toned for night atmosphere
+  ambientColor: '#4a4565',
+  ambientIntensity: 1.15,
   groundColor: '#2a2a3e',
   fogEnabled: true,
-  fog: { near: 5, far: 12 },
+  // Pushed fog back so it no longer hides the desk/bed in a 5x3x7 room
+  fog: { near: 8, far: 18 },
 };
 
 /** Street at night — outdoor scene with buildings, neon, fog */
