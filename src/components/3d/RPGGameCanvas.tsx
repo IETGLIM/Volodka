@@ -335,7 +335,6 @@ export function RPGGameCanvas({ focusable = true }: { focusable?: boolean } = {}
   const introActive = useUIStore((s) => s.introActive);
   const combatActive = useUIStore((s) => s.combatActive);
   const activeCutsceneId = useCutsceneStore((s) => s.activeCutsceneId);
-  const showStoryOverlay = useUIStore((s) => s.showStoryOverlay);
   const gameMode = getGamePhase({ mainMenuOpen, introActive, combatActive, activeCutsceneId });
   const physicsPaused = gameMode === 'menu' || gameMode === 'intro';
   const [tabVisible, setTabVisible] = useState(
@@ -344,11 +343,12 @@ export function RPGGameCanvas({ focusable = true }: { focusable?: boolean } = {}
   // Use 'demand' frameloop ONLY when:
   // - In menu/intro (no 3D world to render)
   // - Tab not visible (background tab — browser throttles anyway)
-  // Do NOT use 'demand' for cutscene — the wake-up cinematic needs
-  // continuous rendering for camera animation + actor movement.
-  // Story overlay (dialogue) IS safe for demand — the 3D scene is static.
-  const isStaticScreen = showStoryOverlay && !activeCutsceneId;
-  const canvasFrameloop = (physicsPaused || !tabVisible || isStaticScreen) ? 'demand' : 'always';
+  // Do NOT use 'demand' for cutscene or story overlay — the wake-up cinematic
+  // needs continuous rendering, and the story overlay needs the 3D scene
+  // visible behind it. Using 'demand' for story overlay caused a black-screen
+  // bug: after the cutscene finishes, the frameloop switches to 'demand' but
+  // nobody calls invalidate(), so the scene never renders.
+  const canvasFrameloop = (physicsPaused || !tabVisible) ? 'demand' : 'always';
 
   useEffect(() => {
     const onVisibilityChange = () => {
@@ -545,7 +545,9 @@ function RPGGameCanvasScene({
   );
 }
 
-/** Kick the render loop on mount, when leaving idle mode, or when the tab becomes visible. */
+/** Kick the render loop on mount, when leaving idle mode, or when the tab becomes visible.
+ *  Also invalidates on a short interval during the first few seconds to ensure the
+ *  scene renders even if frameloop transitions are missed (black-screen safety net). */
 function CanvasFrameloopController({ idle }: { idle: boolean }) {
   const invalidate = useThree((state) => state.invalidate);
 
@@ -554,6 +556,15 @@ function CanvasFrameloopController({ idle }: { idle: boolean }) {
     // during intro/menu boot while the loading pipeline waits at canvas_init (82%).
     invalidate();
   }, [idle, invalidate]);
+
+  // Safety net: invalidate a few times on mount to ensure the first frame renders.
+  // This catches edge cases where the frameloop transitions from 'demand' to 'always'
+  // but the initial render is missed (e.g., during New Game → cutscene → exploration).
+  useEffect(() => {
+    const intervals = [50, 150, 400, 1000, 2000];
+    const timers = intervals.map((ms) => setTimeout(() => invalidate(), ms));
+    return () => timers.forEach(clearTimeout);
+  }, [invalidate]);
 
   return null;
 }

@@ -7,6 +7,9 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ItemIcon } from './shared/ItemIcon';
 import { useConsumableActions, useGameMode, useInventory } from '@/store/selectors';
+import { usePlayerLevel } from '@/store/selectors/playerSelectors';
+import { useCollectedPoems } from '@/store/selectors/worldSelectors';
+import { countCollectedMainPoems } from '@/data/poemCollectionMeta';
 import { getItemDefinition } from '@/data/items';
 import type { ItemDefinition } from '@/data/items';
 import { eventBus } from '@/engine/EventBus';
@@ -187,7 +190,16 @@ export function QuickUseBar() {
   }, [mode, handleUseItemAtSlot]);
 
   /* ── Don't render if not in exploration ── */
-  if (mode !== 'exploration' || !bottomHudVisible) return null;
+  /* ── Onboarding gate: hide quick-use bar until player has leveled up or
+      collected a second poem. During the first minutes the player has coffee
+      and tea but doesn't understand what they do — showing 4 slots (2 filled,
+      2 empty) adds noise. ── */
+  const level = usePlayerLevel();
+  const collectedPoems = useCollectedPoems();
+  const mainPoemCount = countCollectedMainPoems(collectedPoems);
+  const isOnboarding = level <= 1 && mainPoemCount <= 1;
+
+  if (mode !== 'exploration' || !bottomHudVisible || isOnboarding) return null;
 
   return (
     <AnimatePresence>
