@@ -85,6 +85,16 @@ export function CinematicTimelineRunner() {
     store.setCutscene(null, []);
     store.setFlag('woke_up', true);
     store.setFlag('read_poem_2', true);
+
+    // SHOW-FIX: Reset camera to a sane exploration pose after the cutscene.
+    // The cutscene leaves camera in a cinematic pose (looking at floor, rotation
+    // ~[-2.85, 0, -3.14]). Without this reset, FollowCamera takes over with a
+    // frozen spring and the canvas appears black / upside-down for ~0.5-1s while
+    // the spring catches up. Snap the camera explicitly so the first exploration
+    // frame is correct.
+    camera.position.set(0, 1.92, -3.01);
+    camera.rotation.set(-0.05, Math.PI, 0);
+    camera.updateProjectionMatrix();
     store.collectPoem('poem_2');
     setCinematicPresentationMode('third_person');
     eventBus.emit('intro:wakeup_complete', {});

@@ -292,6 +292,10 @@ export function CutsceneOverlay() {
     // 4. Emit events so camera system & other listeners clean up
     eventBus.emit('cutscene:overlay_end', {});
     eventBus.emit('camera:cutscene_end', {});
+    // SHOW-FIX: Snap camera back to exploration pose. Without this, the camera
+    // stays in the cinematic pose (looking at floor) after ESC-skip and the
+    // canvas appears black until FollowCamera's spring catches up (~1s).
+    eventBus.emit('camera:recenter', {});
     finishCutscenePresentation();
   }, [clearTimer, clearSkipDelayTimer]);
 

@@ -2,7 +2,7 @@
 /* ─── Volodka RPG – Main 3D Canvas ─── */
 
 import { Suspense, lazy, useRef, useEffect, useState, memo, Component, Fragment, type ComponentProps, type ReactNode, type ErrorInfo } from 'react';
-import { Canvas, useThree } from '@react-three/fiber';
+import { Canvas, useThree, useFrame } from '@react-three/fiber';
 import { usePostFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import { devLog, devWarn } from '@/shared/utils/devLog';
@@ -341,14 +341,12 @@ export function RPGGameCanvas({ focusable = true }: { focusable?: boolean } = {}
   const [tabVisible, setTabVisible] = useState(
     () => typeof document === 'undefined' || !document.hidden,
   );
-  // Use 'demand' frameloop ONLY when:
-  // - In menu/intro (no 3D world to render)
-  // - Tab not visible (background tab — browser throttles anyway)
-  // Do NOT use 'demand' for cutscene — the wake-up cinematic needs
-  // continuous rendering for camera animation + actor movement.
-  // Story overlay (dialogue) IS safe for demand — the 3D scene is static.
-  const isStaticScreen = showStoryOverlay && !activeCutsceneId;
-  const canvasFrameloop = (physicsPaused || !tabVisible || isStaticScreen) ? 'demand' : 'always';
+  // SHOW-FIX: Always-on rendering. The demand-frameloop optimization (commit 4c3ca8f4)
+  // caused black-screen bugs because R3F v9 + React 19 + memo() did not propagate
+  // the frameloop prop change to the R3F store reliably. Reverting to 'always'
+  // trades ~30% CPU for a guaranteed-painting canvas. Per-frame cost is dominated
+  // by physics + GLB anyway.
+  const canvasFrameloop: 'always' | 'demand' = 'always';
 
   useEffect(() => {
     const onVisibilityChange = () => {
@@ -559,17 +557,47 @@ function RPGGameCanvasScene({
  */
 export function CanvasFrameloopController({ idle }: { idle: boolean }) {
   const invalidate = useThree((state) => state.invalidate);
+  const scene = useThree((state) => state.scene);
+  const camera = useThree((state) => state.camera);
+  const gl = useThree((state) => state.gl);
   // Subscribe to the two flags that gate `isStaticScreen` in the parent so the
   // effect re-runs (and invalidates) exactly when the frameloop flips.
   const showStoryOverlay = useUIStore((s) => s.showStoryOverlay);
   const activeCutsceneId = useCutsceneStore((s) => s.activeCutsceneId);
 
   useEffect(() => {
+    // Expose for browser debugging — temporary
+    (window as unknown as { __volodka?: unknown }).__volodka = { scene, camera, gl, invalidate };
     // Demand frameloop does not paint until invalidated — required for canvas:first-frame
     // during intro/menu boot while the loading pipeline waits at canvas_init (82%),
     // and after any always→demand transition (dialogue open / cutscene end).
     invalidate();
-  }, [idle, invalidate, showStoryOverlay, activeCutsceneId]);
+  }, [idle, invalidate, showStoryOverlay, activeCutsceneId, scene, camera, gl]);
+
+  // SHOW-FIX: Safety render + camera guard. If R3F's internal render loop stalls
+  // (known issue with frameloop transitions in R3F v9 + React 19), force a render
+  // each frame. Runs at priority 1000 (after FollowCamera and other frame callbacks)
+  // so it paints the final camera state. Cheap no-op when R3F already rendered.
+  // ALSO: if we are in exploration mode (not cutscene/dialogue/menu) but camera
+  // rotation looks at the floor (cutscene leftover), snap it back to exploration
+  // pose. This is a defensive guard until FollowCamera ownership flow is fixed.
+  const showStoryOverlayNow = useUIStore((s) => s.showStoryOverlay);
+  const activeCutsceneIdNow = useCutsceneStore((s) => s.activeCutsceneId);
+  useFrame(() => {
+    // Defensive: if not in cutscene/dialogue/menu, but camera is upside-down
+    // (cutscene leftover rotation x < -1), snap to exploration pose.
+    const inCinematic = !!activeCutsceneIdNow || showStoryOverlayNow;
+    if (!inCinematic && camera.rotation.x < -1) {
+      camera.position.set(0, 1.92, -3.01);
+      camera.rotation.set(-0.05, Math.PI, 0);
+      camera.updateProjectionMatrix();
+    }
+    // SHOW-FIX: Manual render AFTER R3F's internal render (priority 1000 = last).
+    // R3F in 'always' mode renders first with auto-clear, then our callback runs
+    // and re-renders with the corrected camera. This double-render is the price
+    // for a guaranteed-visible frame given the ownership/sync bugs.
+    gl.render(scene, camera);
+  }, 1000);
 
   return null;
 }
