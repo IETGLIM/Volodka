@@ -39,4 +39,8 @@ export interface PlayerState {
   rngSeed: number;
   /** Monotonic counter mixed into each combat's RNG derivation. */
   combatEncounterSeq: number;
+  /** Last game-hour the player rested at home (worldClock hour, 0..N unbounded).
+   *  Used to enforce a 16-hour rest cooldown so rest cannot be spammed to fully
+   *  heal between every encounter. -1 = never rested. */
+  lastRestGameHour: number;
 }

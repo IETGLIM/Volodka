@@ -15,7 +15,7 @@ export type EnemyType =
   | 'nexus_guardian'
   | 'void_echo';
 
-export type CombatAction = 'attack' | 'defend' | 'poem_power' | 'flee';
+export type CombatAction = 'attack' | 'defend' | 'poem_power' | 'flee' | 'counterattack';
 
 export interface CombatEnemy {
   readonly type: EnemyType;

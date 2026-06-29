@@ -207,6 +207,26 @@ export const createPlayerCoreSlice: StateCreator<
 
     if (currentSceneId !== 'volodka_room' && currentSceneId !== 'home_evening') return;
 
+    // FIX P0 #2: rest cooldown — prevent trivialising combat by spamming rest.
+    // Resting fills energy (and thus maxHp = energy×2) to ceiling + drops
+    // stress by 30, with no cooldown this trivialised every encounter.
+    // Cooldown = 12 in-game hours (≈ half a day-night cycle). `totalGameHours`
+    // is a monotonic accumulator that survives save/load and cross-day play.
+    const REST_COOLDOWN_HOURS = 12;
+    const totalGameHours = get().exploration.totalGameHours ?? 0;
+    const lastRest = get().playerState.lastRestGameHour ?? -1;
+    if (lastRest >= 0 && totalGameHours - lastRest < REST_COOLDOWN_HOURS) {
+      const remaining = Math.ceil(REST_COOLDOWN_HOURS - (totalGameHours - lastRest));
+      set((state) => ({
+        notifications: pushNotification(
+          state.notifications,
+          'energy',
+          `Слишком рано для отдыха — подождите ещё ${remaining} ч.`,
+        ),
+      }));
+      return;
+    }
+
     advanceTime(8);
 
     // Rest fills energy to the perk-adjusted ceiling (night_watch/factory_rat).
@@ -219,6 +239,8 @@ export const createPlayerCoreSlice: StateCreator<
         ...state.playerState,
         energy: ceiling,
         stress: clamp(state.playerState.stress - 30, 0, 100),
+        // Record rest timestamp so the cooldown above can enforce it.
+        lastRestGameHour: get().exploration.totalGameHours ?? 0,
       },
       notifications: pushNotification(state.notifications, 'energy', 'Отдых: Энергия восстановлена, Стресс -30'),
     }));

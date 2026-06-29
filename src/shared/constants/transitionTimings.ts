@@ -98,8 +98,16 @@ export const LOADING_PLAYABLE_HOLD_MS = 320;
 /** Headless / slow WebGL — synthetic first-frame fallback after game mount. */
 export const BOOT_FIRST_FRAME_FALLBACK_MS = LOADING_PLAYABLE_DISMISS_MS + 6000;
 
-/** Runtime scene:enter → scene:loaded — abort if canvas:first-frame never arrives. */
-export const SCENE_LOADED_FIRST_FRAME_WATCHDOG_MS = CUTSCENE_TIMINGS.CANVAS_TIMEOUT_MS;
+/** Runtime scene:enter → scene:loaded — abort if canvas:first-frame never arrives.
+ *
+ *  FIX P0 #5: bumped from 2.8s (CANVAS_TIMEOUT_MS) to 8s. The original value
+ *  was tuned for warm loads on desktop, but on cold starts (first scene after
+ *  boot) + weak laptops / mobile WebGL, GLB decoding + WASM init routinely
+ *  takes 4-6s. The shorter watchdog fired `scene:transition_failed` mid-load,
+ *  leaving the player stuck on the transition overlay even though the scene
+ *  was about to render. 8s matches COMBAT_START_GATE_TIMEOUT_MS and is short
+ *  enough that a real WebGL failure still surfaces quickly. */
+export const SCENE_LOADED_FIRST_FRAME_WATCHDOG_MS = 8000;
 
 /** LazyPanelSlot fallback if panel does not signal exit via onExitComplete. */
 export const PANEL_UNMOUNT_GRACE_MS = PANEL_EXIT_MS + 80;

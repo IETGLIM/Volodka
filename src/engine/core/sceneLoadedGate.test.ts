@@ -64,7 +64,7 @@ describe('sceneLoadedGate', () => {
     unregisterCanvasForFirstFrame(canvas);
   });
 
-  it('aborts with scene:transition_failed when first-frame watchdog times out', () => {
+  it('soft-flushes scene:loaded when first-frame watchdog times out (FIX P0 #5)', () => {
     const canvas = {} as HTMLCanvasElement;
     registerCanvasForFirstFrame(canvas);
 
@@ -78,13 +78,15 @@ describe('sceneLoadedGate', () => {
 
     vi.advanceTimersByTime(SCENE_LOADED_FIRST_FRAME_WATCHDOG_MS);
 
-    expect(loaded).not.toHaveBeenCalled();
-    expect(failed).toHaveBeenCalledWith({
-      reason: 'canvas:first-frame watchdog timeout',
-      targetScene: 'cafe_evening',
-      fromScene: 'volodka_room',
-      errorCode: 'first_frame_timeout',
+    // FIX P0 #5: watchdog now soft-flushes scene:loaded instead of failing,
+    // so the transition overlay closes and gameplay HUDs attach even on
+    // slow devices that take longer than the watchdog to composite the
+    // first frame. Real WebGL failures still surface via Canvas3DErrorBoundary.
+    expect(loaded).toHaveBeenCalledWith({
+      sceneId: 'cafe_evening',
+      fromSceneId: 'volodka_room',
     });
+    expect(failed).not.toHaveBeenCalled();
 
     unregisterCanvasForFirstFrame(canvas);
   });

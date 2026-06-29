@@ -545,15 +545,31 @@ function RPGGameCanvasScene({
   );
 }
 
-/** Kick the render loop on mount, when leaving idle mode, or when the tab becomes visible. */
-function CanvasFrameloopController({ idle }: { idle: boolean }) {
+/**
+ * Kick the render loop on mount, when leaving idle mode, when the tab becomes
+ * visible, AND when the dialogue/cutscene state flips the frameloop.
+ *
+ * The parent computes `canvasFrameloop = (physicsPaused || !tabVisible ||
+ * isStaticScreen) ? 'demand' : 'always'` where `isStaticScreen = showStoryOverlay
+ * && !activeCutsceneId`. The `idle` prop only captures `physicsPaused || !tabVisible`,
+ * so without watching `showStoryOverlay` / `activeCutsceneId` here, the
+ * always→demand transition (e.g. cutscene ending into dialogue) never calls
+ * invalidate() and the canvas freezes on a stale frame — the root cause of the
+ * "black screen after wake-up / during cutscene handoff" bugs.
+ */
+export function CanvasFrameloopController({ idle }: { idle: boolean }) {
   const invalidate = useThree((state) => state.invalidate);
+  // Subscribe to the two flags that gate `isStaticScreen` in the parent so the
+  // effect re-runs (and invalidates) exactly when the frameloop flips.
+  const showStoryOverlay = useUIStore((s) => s.showStoryOverlay);
+  const activeCutsceneId = useCutsceneStore((s) => s.activeCutsceneId);
 
   useEffect(() => {
     // Demand frameloop does not paint until invalidated — required for canvas:first-frame
-    // during intro/menu boot while the loading pipeline waits at canvas_init (82%).
+    // during intro/menu boot while the loading pipeline waits at canvas_init (82%),
+    // and after any always→demand transition (dialogue open / cutscene end).
     invalidate();
-  }, [idle, invalidate]);
+  }, [idle, invalidate, showStoryOverlay, activeCutsceneId]);
 
   return null;
 }

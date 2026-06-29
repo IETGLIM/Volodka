@@ -95,6 +95,9 @@ const PlayerStateSchema = z.object({
   progression: PlayerProgressionSchema,
   rngSeed: z.number().int().min(0).optional(),
   combatEncounterSeq: z.number().int().min(0).optional().default(0),
+  /** Last game-hour the player rested at home. -1 = never rested. Optional
+   *  with default for save migration — old saves pre-fix #2 had no field. */
+  lastRestGameHour: z.number().int().min(-1).optional().default(-1),
 });
 
 /** Derived from SCENE_DEFINITIONS — stays in sync with scene registry. */
@@ -138,6 +141,9 @@ const ExplorationStateSchema = z.object({
   playerRotation: z.number(),
   timeOfDay: boundedNumber(0, 24),
   npcStates: z.record(z.string(), NpcPositionSchema),
+  /** FIX P0 #2: monotonic game-hour counter for rest cooldown. Optional with
+   *  default for save migration — old saves pre-fix #2 had no field. */
+  totalGameHours: z.number().min(0).optional().default(0),
 });
 
 const QuestStatusSchema = z.enum(['inactive', 'active', 'completed', 'failed']);

@@ -47,15 +47,30 @@ function abortPendingLoaded(reason: string, errorCode: string): void {
   });
 }
 
+/** FIX P0 #5: When the canvas:first-frame watchdog fires, the scene React tree
+ *  has already committed (scene:enter emitted, store updated). The only thing
+ *  missing is the GPU composite — and on slow devices that can take a few
+ *  seconds longer than our 8s budget. Rather than failing the transition and
+ *  leaving the player stuck on the overlay, we soft-flush `scene:loaded` so
+ *  the transition overlay closes and gameplay HUDs attach. If the WebGL
+ *  context is genuinely broken, Canvas3DErrorBoundary will surface a retry
+ *  button separately — we don't need to be the failure path here. */
+function softFlushPendingLoaded(reason: string): void {
+  if (!pending) return;
+  const payload = pending;
+  pending = null;
+  clearWatchdog();
+  devWarn('[sceneLoadedGate] Watchdog fired — soft-flushing scene:loaded:', reason, payload);
+  eventBus.emit('scene:loaded', payload);
+}
+
 function armWatchdog(generation: number): void {
   clearWatchdog();
   watchdogTimer = setTimeout(() => {
     watchdogTimer = null;
     if (generation !== pendingGeneration || !pending) return;
-    abortPendingLoaded(
-      'canvas:first-frame watchdog timeout',
-      'first_frame_timeout',
-    );
+    // FIX P0 #5: soft-flush instead of abort — see softFlushPendingLoaded.
+    softFlushPendingLoaded('canvas:first-frame watchdog timeout');
   }, SCENE_LOADED_FIRST_FRAME_WATCHDOG_MS);
 }
 

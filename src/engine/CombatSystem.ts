@@ -693,6 +693,14 @@ function endPlayerTurn(): CombatState {
 function transitionToPlayerTurn(state: CombatState): void {
   if (!combat.getState()) return;
 
+  // ── FIX P0 #1: Check skip_turn BEFORE tickBuffs.
+  //  Previously tickBuffs decremented duration 1→0 and removed the buff,
+  //  so hasBuffEffect('player', 'skip_turn') below returned false — stun
+  //  from daemon_system_crash / enforcer_shield_bash never triggered.
+  //  Now we detect skip_turn on the pre-tick state, strip the consumed
+  //  skip_turn buff(s), and tick the rest of the buffs afterwards.
+  const playerStunnedPre = hasBuffEffect(state, 'player', 'skip_turn');
+
   // ── Tick player buffs ──
   const { state: afterBuffTick, expiredLog } = tickBuffs(state, 'player');
 
@@ -739,8 +747,9 @@ function transitionToPlayerTurn(state: CombatState): void {
     log: [...afterBuffTick.log, ...expiredLog, ...drainLog] };
 
   // ── Check if player is stunned (skip_turn debuff) ──
-  if (hasBuffEffect(workingState, 'player', 'skip_turn')) {
-    // Remove the skip_turn buff since it's been consumed
+  // FIX P0 #1: use pre-tick detection — tickBuffs already consumed duration=1 stuns.
+  if (playerStunnedPre) {
+    // Remove the skip_turn buff(s) — they have been consumed by this stun.
     const remaining = workingState.buffs.filter(
       (b) => !(b.target === 'player' && b.effect.type === 'skip_turn'),
     );
@@ -926,6 +935,31 @@ function executeEnemyTurn() {
     type: 'enemy_attack',
     damage: enemyDamage };
 
+  // FIX P0 #3: counterattack perk — 25% chance to counter-attack after a
+  // successful Defend. Previously `counterAttackChance` was computed in
+  // perkModifiers.ts but never consumed — the perk did nothing.
+  // Counter damage = half the incoming (post-mitigation) damage, minimum 1,
+  // and does not crit (keeps it a defensive tool, not an offensive nuke).
+  const playerWasDefending = workingState.playerDefending;
+  let counterLog: CombatLogEntry | null = null;
+  let counterDamageDealt = 0;
+  if (
+    playerWasDefending
+    && newPlayerHp > 0
+    && perkMods.counterAttackChance > 0
+    && attackRng.roll(perkMods.counterAttackChance)
+  ) {
+    counterDamageDealt = Math.max(1, Math.floor(enemyDamage * 0.5));
+    counterLog = {
+      turn: workingState.turn,
+      text: `⚔️ Контратака! -${counterDamageDealt} HP врагу.`,
+      type: 'player_attack',
+      damage: counterDamageDealt,
+    };
+  }
+
+  const newEnemyHpAfterCounter = Math.max(0, workingState.enemy.hp - counterDamageDealt);
+
   combat.setState({
     ...workingState,
     playerHp: newPlayerHp,
@@ -933,12 +967,24 @@ function executeEnemyTurn() {
     comboCount: 0, // Taking damage resets combo
     enemy: {
       ...workingState.enemy,
+      hp: newEnemyHpAfterCounter,
       specialCooldown: Math.max(0, workingState.enemy.specialCooldown - 1) },
-    log: [...workingState.log, enemyAttackLog],
+    log: counterLog
+      ? [...workingState.log, enemyAttackLog, counterLog]
+      : [...workingState.log, enemyAttackLog],
     rng: attackRng.getState() });
 
   eventBus.emit('camera:combat_shake', { intensity: 0.2 });
   notifyCombatDamage(enemyAttackLog);
+  if (counterLog) {
+    notifyCombatDamage(counterLog);
+    eventBus.emit('combat:action', { action: 'counterattack', damage: counterDamageDealt });
+  }
+
+  // Counter-attack may have defeated the enemy — check victory before defeat.
+  if (newEnemyHpAfterCounter <= 0) {
+    return handleVictory();
+  }
 
   // Check defeat
   if (newPlayerHp <= 0) {

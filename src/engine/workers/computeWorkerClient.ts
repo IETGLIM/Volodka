@@ -22,6 +22,14 @@ export function getWorldComputeWorker(): Worker | null {
   return worker;
 }
 
+/** FIX P0 #7: Max wall-clock time we wait for a single worker response before
+ *  giving up. Chunk diff is a few-millisecond computation; 5s is ~1000× the
+ *  expected duration and covers slow devices under heavy main-thread pressure.
+ *  Without this timeout a hung worker (not crashed, just unresponsive) would
+ *  leave `WorldStreamManager.updateStreamAsync` pending forever — chunk
+ *  streaming would silently die with no error or recovery. */
+const WORKER_REQUEST_TIMEOUT_MS = 5_000;
+
 function postWorldComputeRequest(request: WorldComputeRequest): Promise<WorldComputeResponse> {
   const w = getWorldComputeWorker();
   if (!w) {
@@ -31,12 +39,24 @@ function postWorldComputeRequest(request: WorldComputeRequest): Promise<WorldCom
   const id = nextRequestId();
 
   return new Promise((resolve, reject) => {
+    let settled = false;
+    let timeoutHandle: ReturnType<typeof setTimeout> | null = null;
+
+    const cleanup = () => {
+      if (timeoutHandle !== null) {
+        clearTimeout(timeoutHandle);
+        timeoutHandle = null;
+      }
+      w.removeEventListener('message', onMessage);
+      w.removeEventListener('error', onError);
+    };
+
     const onMessage = (event: MessageEvent<WorldComputeResponse>) => {
       const data = event.data;
       if (data.id !== undefined && data.id !== id) return;
-
-      w.removeEventListener('message', onMessage);
-      w.removeEventListener('error', onError);
+      if (settled) return;
+      settled = true;
+      cleanup();
 
       if (data.op === 'error') {
         reject(new Error(`[computeWorker] ${data.requestOp} failed: ${data.message}`));
@@ -47,10 +67,21 @@ function postWorldComputeRequest(request: WorldComputeRequest): Promise<WorldCom
     };
 
     const onError = (event: ErrorEvent) => {
-      w.removeEventListener('message', onMessage);
-      w.removeEventListener('error', onError);
+      if (settled) return;
+      settled = true;
+      cleanup();
       reject(event.error ?? new Error(event.message));
     };
+
+    // FIX P0 #7: timeout — if the worker hangs (not crashes), reject so the
+    // caller (WorldStreamManager) can fall back to main-thread computation
+    // instead of waiting forever for a response that will never arrive.
+    timeoutHandle = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      reject(new Error(`[computeWorker] request ${request.op} timed out after ${WORKER_REQUEST_TIMEOUT_MS}ms`));
+    }, WORKER_REQUEST_TIMEOUT_MS);
 
     w.addEventListener('message', onMessage);
     w.addEventListener('error', onError);
