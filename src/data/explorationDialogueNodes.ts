@@ -9,7 +9,10 @@ export const EXPLORATION_DIALOGUE_NODES: Record<string, DialogueNode> = {
   explore_room_table: {
     id: 'explore_room_table',
     speaker: 'Голос',
-    text: 'Ты садишься за стол. Три монитора мигают — на среднем открыто незаконченное стихотворение, на левом — логи серверов, на правом — сообщение от IT-гильдии: «Инцидент #4729. Требуется диагностика. Явка обязательна.» Клавиатура ещё тёплая от вчерашней ночи.',
+    // Shortened to avoid duplicating room_table.text from act1.json word-for-word.
+    // The full "три монитора мигают..." passage lives in the story node; this
+    // exploration dialogue gives a shorter, action-oriented beat.
+    text: 'Клавиатура ещё тёплая от вчерашней ночи. На среднем экране — недописанное стихотворение. На правом — сообщение гильдии: «Инцидент #4729. Явка обязательна.»',
     sceneId: 'volodka_room',
     choices: [
       {

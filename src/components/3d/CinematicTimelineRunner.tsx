@@ -142,7 +142,11 @@ export function CinematicTimelineRunner() {
       }
       live.setCurrentNodeId('start');
       dispatchGameAction({ type: 'story/visitNode', nodeId: 'start' });
-      enterSceneFreeExplorationHub('explore_mode');
+      // Suppress the hub location toast during the wake-up prologue — the
+      // story overlay (start.text) already describes the room in detail.
+      // Showing hubIntroText simultaneously caused "три монитора" to appear
+      // twice (once in start.text, once in the hub toast).
+      enterSceneFreeExplorationHub('explore_mode', { suppressLocationToast: true });
     };
 
     if (!store.isCutsceneTriggered('act1_prologue')) {

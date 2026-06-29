@@ -114,12 +114,15 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     sceneId: 'volodka_room',
     position: [0, 0.55, -2.35],
     size: [1.85, 1.2, 0.85],
-    enterToast: 'Рабочий стол — три монитора и остывший кофе.',
+    // enterToast removed — it duplicated examineData.description and the
+    // explore_room_table dialogue text. Three layers of "три монитора"
+    // showed simultaneously. Now the player gets one clean description on
+    // examine (E key) instead of three overlapping toasts.
     linkedDialogueNodeId: 'explore_room_table',
     interactionType: 'examine',
     examineData: {
       title: 'Рабочий стол',
-      description: 'Три монитора, клавиатура со стёртыми клавишами и остывший кофе в кружке «Я ♥ БАГи».',
+      description: 'Клавиатура со стёртыми клавишами и остывший кофе в кружке «Я ♥ БАГи».',
       detailText: 'На экранах — терминальные сессии, логи ошибок и недописанное стихотворение. Кофе остыл час назад. Стандартная ночь Володьки.',
       icon: '🖥️',
     },

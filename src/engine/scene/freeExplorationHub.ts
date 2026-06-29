@@ -44,8 +44,16 @@ function showHubLocationContext(hubId: string, revisit: boolean): void {
 /**
  * Promote to a closed-overlay explore hub: spine tracking, closed overlay,
  * optional first-visit location toast. Player actions use 3D trigger zones.
+ *
+ * @param options.suppressLocationToast — skip the hub location toast. Use this
+ *   when a story overlay is already open and providing scene context, to avoid
+ *   duplicate text (e.g., wake-up prologue where start.text and hubIntroText
+ *   both describe the same room).
  */
-export function enterSceneFreeExplorationHub(hubId: string): void {
+export function enterSceneFreeExplorationHub(
+  hubId: string,
+  options: { suppressLocationToast?: boolean } = {},
+): void {
   if (!isClosedOverlayExploreHub(hubId)) return;
 
   const snapshot = getGameSnapshot();
@@ -58,13 +66,19 @@ export function enterSceneFreeExplorationHub(hubId: string): void {
   closeNarrativeOverlay();
   setCinematicHoldActive(false);
 
-  setTimeout(() => {
-    if (firstVisit) {
-      showHubLocationContext(hubId, false);
-    } else {
-      showHubLocationContext(hubId, true);
-    }
-  }, EXPLORATION_HUD_HANDOFF.HUB_LOCATION_TOAST_MS);
+  // Skip the location toast when explicitly suppressed (e.g., during the
+  // wake-up prologue where the story overlay already provides scene context).
+  // Showing both start.text AND hubIntroText caused "три монитора" to appear
+  // multiple times simultaneously.
+  if (!options.suppressLocationToast) {
+    setTimeout(() => {
+      if (firstVisit) {
+        showHubLocationContext(hubId, false);
+      } else {
+        showHubLocationContext(hubId, true);
+      }
+    }, EXPLORATION_HUD_HANDOFF.HUB_LOCATION_TOAST_MS);
+  }
 
   eventBus.emit('interaction:end', {});
   forceEmitInteractionEnd();
