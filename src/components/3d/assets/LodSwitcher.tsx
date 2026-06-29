@@ -30,7 +30,7 @@ export function LodSwitcher({ asset, children }: LodSwitcherProps) {
   const worldPosRef = useRef(new THREE.Vector3());
   const activeUrlRef = useRef(asset.lods[0]?.url ?? '');
   const distanceRef = useRef(0);
-  const { camera } = useThree();
+  const camera = useThree((s) => s.camera);
   const { preset } = useGraphicsQuality();
 
   const urls = useMemo(() => {

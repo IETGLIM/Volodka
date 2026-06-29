@@ -182,7 +182,7 @@ function GltfNPCModelScene({
   const activeUrlRef = useRef(fallbackUrl);
   const _branchRefs = useRef<Map<string, THREE.Group>>(new Map());
   const lastLodDistRef = useRef(-1);
-  const { camera } = useThree();
+  const camera = useThree((s) => s.camera);
   const { preset } = useGraphicsQuality();
   // State to trigger re-render when LOD distance changes the active URL.
   const [, setActiveUrlTick] = useState(0);
