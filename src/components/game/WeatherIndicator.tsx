@@ -279,7 +279,9 @@ export function WeatherIndicator() {
 
         {/* ── Footer ── */}
         <div className="flex items-center justify-between px-2.5 py-1">
-          <span className="text-[8px] text-slate-400 font-mono">volodka://weather</span>
+          {import.meta.env.DEV && (
+            <span className="text-[8px] text-slate-400 font-mono">volodka://weather</span>
+          )}
           <span className="text-[8px] text-slate-400 font-mono tabular-nums">
             {Math.floor(timeOfDay).toString().padStart(2, '0')}:{((timeOfDay % 1) * 60 | 0).toString().padStart(2, '0')}
           </span>

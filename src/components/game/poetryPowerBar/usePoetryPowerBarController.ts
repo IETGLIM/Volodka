@@ -38,8 +38,15 @@ export function usePoetryPowerBarController() {
 
   usePoemPowersCooldownRefresh(poemIds);
 
+  // Onboarding gate: only show the poetry power bar once the player has
+  // collected at least 2 poems with powers. The first poem (poem_2) is granted
+  // automatically during the wake-up cutscene — showing a power bar with a
+  // single "Второе Дыхание" slot before the player understands what poems are
+  // causes cognitive overload. The second poem (poem_1) is collected by
+  // actively interacting with the office terminal, which is a meaningful
+  // gameplay action that signals the player is ready for the power bar.
   const visible =
-    bottomHudVisible && collectedWithPowers.length > 0 && transitionPhase !== 'loading';
+    bottomHudVisible && collectedWithPowers.length >= 2 && transitionPhase !== 'loading';
 
   useEffect(() => {
     const unsubscribe = eventBus.on('poem:power_used', () => {
