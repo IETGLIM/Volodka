@@ -568,18 +568,27 @@ function CanvasFrameloopController({ idle }: { idle: boolean }) {
     invalidate();
   }, [isStaticScreen, invalidate]);
 
-  // Invalidate on scene transitions — when the player moves between scenes
-  // (e.g., room -> corridor), the new scene's 3D content mounts but the
-  // 'demand' frameloop may not render it until invalidated. This ensures the
-  // new scene is visible immediately after scene:loaded fires.
+  // Invalidate on scene transitions — breaks the circular dependency between
+  // scene:loaded (needs canvas:first-frame) and canvas:first-frame (needs render)
+  // and canvas:first-frame (needs invalidate). By invalidating on scene:enter
+  // (which fires BEFORE scene:loaded), we kick the render loop early so
+  // canvas:first-frame can fire, which then emits scene:loaded.
   useEffect(() => {
-    const unsub = eventBus.on('scene:loaded', () => {
-      invalidate();
-      // Double-invalidate: R3F sometimes needs a second tick after scene
-      // content mounts before the render picks it up.
-      requestAnimationFrame(() => invalidate());
-    });
-    return unsub;
+    const unsubs = [
+      eventBus.on('scene:transition_start', () => {
+        invalidate();
+        requestAnimationFrame(() => invalidate());
+      }),
+      eventBus.on('scene:enter', () => {
+        invalidate();
+        requestAnimationFrame(() => invalidate());
+      }),
+      eventBus.on('scene:loaded', () => {
+        invalidate();
+        requestAnimationFrame(() => invalidate());
+      }),
+    ];
+    return () => unsubs.forEach((u) => u());
   }, [invalidate]);
 
   // Safety net: invalidate a few times on mount to ensure the first frame renders.

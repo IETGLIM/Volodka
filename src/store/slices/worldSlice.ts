@@ -37,6 +37,7 @@ import { clamp, type PoemPowerState } from '../shared';
 import { applyFairmathRelation } from '@/shared/fairmath';
 import { scaleNpcRelationDelta } from '@/shared/skills/passiveSkillModifiers';
 import { resolveCanonicalNpcId } from '@/shared/npcIdAliases';
+import { shouldSuppressQuestAcceptEmit } from '@/shared/quest/questAcceptDeferral';
 import type { GameStoreState } from '../types';
 import { getPlayerStore, getUIStore } from '../storeBindings';
 import {
@@ -219,7 +220,14 @@ export const createWorldSlice: StateCreator<
 
     set({ quests });
     scheduleQuestAccepted(questId, definition.title);
-    pickWorldCrossActions().pushNotification('quest', `Новое задание: ${definition.title}`);
+    // Suppress the 'Новое задание' toast for quests that are granted silently
+    // during the apartment prologue (first_reading, morning_sync). These quests
+    // are activated immediately after the wake-up cutscene — showing 2 toast
+    // popups simultaneously caused UI overload in the first 10 minutes.
+    // The quests still appear in the Quest journal [Q]; only the toast is hidden.
+    if (!shouldSuppressQuestAcceptEmit(questId)) {
+      pickWorldCrossActions().pushNotification('quest', `Новое задание: ${definition.title}`);
+    }
   },
 
   retryQuest: (questId) => {
