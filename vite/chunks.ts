@@ -239,11 +239,17 @@ function resolveDataChunk(posix: string): string | undefined {
 function resolveVendorChunk(posix: string): string | undefined {
   if (!posix.includes('node_modules')) return undefined;
 
-  if (
-    posix.includes('/@dimforge/rapier') ||
-    posix.includes('/@react-three/rapier')
-  ) {
-    return 'physics';
+  // Split Rapier into two chunks:
+  // - 'physics-wasm': the @dimforge/rapier3d-compat WASM wrapper (2.2 MB JS +
+  //   1.5 MB WASM). This is the heavy part — lazy-loaded only when physics
+  //   actually initializes (exploration mode), not during menu boot.
+  // - 'physics-r3f': the @react-three/rapier React bindings (~72 KB). Small,
+  //   but kept separate so it doesn't drag the WASM wrapper into boot.
+  if (posix.includes('/@dimforge/rapier')) {
+    return 'physics-wasm';
+  }
+  if (posix.includes('/@react-three/rapier')) {
+    return 'physics-r3f';
   }
 
   if (
@@ -261,6 +267,14 @@ function resolveVendorChunk(posix: string): string | undefined {
     return 'r3f';
   }
 
+  // Split three.js into core + examples:
+  // - 'three': the core three.module.js (~575 KB). Loaded on boot.
+  // - 'three-examples': examples/jsm/ (loaders, controls, postprocessing,
+  //   shaders — 14 MB on disk, but only imported modules are bundled).
+  //   Separating avoids pulling examples code into the core chunk.
+  if (posix.includes('/node_modules/three/examples/')) {
+    return 'three-examples';
+  }
   if (posix.includes('/node_modules/three/')) {
     return 'three';
   }
