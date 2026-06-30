@@ -335,20 +335,21 @@ export function RPGGameCanvas({ focusable = true }: { focusable?: boolean } = {}
   const introActive = useUIStore((s) => s.introActive);
   const combatActive = useUIStore((s) => s.combatActive);
   const activeCutsceneId = useCutsceneStore((s) => s.activeCutsceneId);
+  const showStoryOverlay = useUIStore((s) => s.showStoryOverlay);
   const gameMode = getGamePhase({ mainMenuOpen, introActive, combatActive, activeCutsceneId });
   const physicsPaused = gameMode === 'menu' || gameMode === 'intro';
   const [tabVisible, setTabVisible] = useState(
     () => typeof document === 'undefined' || !document.hidden,
   );
-  // Use 'demand' frameloop ONLY when:
+  // Use 'demand' frameloop when:
   // - In menu/intro (no 3D world to render)
   // - Tab not visible (background tab — browser throttles anyway)
-  // Do NOT use 'demand' for cutscene or story overlay — the wake-up cinematic
-  // needs continuous rendering, and the story overlay needs the 3D scene
-  // visible behind it. Using 'demand' for story overlay caused a black-screen
-  // bug: after the cutscene finishes, the frameloop switches to 'demand' but
-  // nobody calls invalidate(), so the scene never renders.
-  const canvasFrameloop = (physicsPaused || !tabVisible) ? 'demand' : 'always';
+  // - Story overlay is open AND no cutscene (3D scene is static behind dialogue)
+  // The story-overlay 'demand' mode saves CPU, but CanvasFrameloopController
+  // must call invalidate() when showStoryOverlay changes to ensure the scene
+  // renders at least once before the loop pauses.
+  const isStaticScreen = showStoryOverlay && !activeCutsceneId;
+  const canvasFrameloop = (physicsPaused || !tabVisible || isStaticScreen) ? 'demand' : 'always';
 
   useEffect(() => {
     const onVisibilityChange = () => {
@@ -546,10 +547,17 @@ function RPGGameCanvasScene({
 }
 
 /** Kick the render loop on mount, when leaving idle mode, or when the tab becomes visible.
- *  Also invalidates on a short interval during the first few seconds to ensure the
- *  scene renders even if frameloop transitions are missed (black-screen safety net). */
+ *  Also invalidates when story overlay opens/closes to ensure the 3D scene renders
+ *  at least once before the 'demand' frameloop pauses. */
 function CanvasFrameloopController({ idle }: { idle: boolean }) {
   const invalidate = useThree((state) => state.invalidate);
+  // Subscribe to story overlay state so we can invalidate when it changes.
+  // When story overlay opens, frameloop switches to 'demand' — we must
+  // invalidate() to render the scene before the loop pauses. When it closes,
+  // frameloop switches back to 'always' — invalidate() ensures a clean frame.
+  const showStoryOverlay = useUIStore((s) => s.showStoryOverlay);
+  const activeCutsceneId = useCutsceneStore((s) => s.activeCutsceneId);
+  const isStaticScreen = showStoryOverlay && !activeCutsceneId;
 
   useEffect(() => {
     // Demand frameloop does not paint until invalidated — required for canvas:first-frame
@@ -557,11 +565,16 @@ function CanvasFrameloopController({ idle }: { idle: boolean }) {
     invalidate();
   }, [idle, invalidate]);
 
-  // Safety net: invalidate a few times on mount to ensure the first frame renders.
-  // This catches edge cases where the frameloop transitions from 'demand' to 'always'
-  // but the initial render is missed (e.g., during New Game → cutscene → exploration).
+  // Invalidate when story overlay state changes — ensures the 3D scene renders
+  // before the 'demand' loop pauses (story overlay open) or resumes (overlay close).
   useEffect(() => {
-    const intervals = [50, 150, 400, 1000, 2000];
+    invalidate();
+  }, [isStaticScreen, invalidate]);
+
+  // Safety net: invalidate a few times on mount to ensure the first frame renders.
+  // Reduced from 5 to 3 calls to minimize overhead during e2e tests.
+  useEffect(() => {
+    const intervals = [100, 500, 1500];
     const timers = intervals.map((ms) => setTimeout(() => invalidate(), ms));
     return () => timers.forEach(clearTimeout);
   }, [invalidate]);
