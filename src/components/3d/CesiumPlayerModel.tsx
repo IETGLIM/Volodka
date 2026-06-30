@@ -14,8 +14,34 @@ const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeo
 const PLAYER_MODEL_URL = getPlayerVolodkaModelUrl();
 useGLTF.preload(PLAYER_MODEL_URL, true, true, extendLoader);
 
-/** Flip to Math.PI if the avatar faces backwards while walking. */
-const FORWARD_OFFSET = 0;
+// Eagerly preload Mixamo walk + idle clips at module load so they are ready
+// BEFORE the wake-up cutscene starts. useMixamoAnimationClips loads clips
+// asynchronously via scheduleGltfPreload, which is paused while UI overlays
+// are open (isUiOverlayBlockingDeferredAssets). During the wake-up cutscene
+// the story overlay is open → clip loading is paused → the walk clip is not
+// available when the 'walking' phase starts → the avatar slides in idle pose.
+// Preloading here ensures the GLB is in the browser cache; useMixamoAnimationClips
+// then resolves from cache instantly without waiting for the scheduler.
+const ANIMATIONS_BASE = '/models/animations';
+const PLAYER_CRITICAL_ANIM_URLS = [
+  `${ANIMATIONS_BASE}/idle.glb`,
+  `${ANIMATIONS_BASE}/walking.glb`,
+];
+if (typeof window !== 'undefined') {
+  for (const url of PLAYER_CRITICAL_ANIM_URLS) {
+    // useGLTF.preload caches the GLB in drei's suspense cache
+    useGLTF.preload(url, true, true, extendLoader);
+  }
+}
+
+/**
+ * Yaw offset for the avatar model. The Volodka hero GLB faces +Z by default
+ * (front of the model points toward +Z), but facingYFromDirection assumes
+ * humanoid forward = -Z (Three.js convention). Without this offset the avatar
+ * walks backwards — facing away from its movement direction. Math.PI flips
+ * the model 180° so it faces the direction it walks toward.
+ */
+const FORWARD_OFFSET = Math.PI;
 
 interface Fit {
   scale: number;
