@@ -547,14 +547,11 @@ function RPGGameCanvasScene({
 }
 
 /** Kick the render loop on mount, when leaving idle mode, or when the tab becomes visible.
- *  Also invalidates when story overlay opens/closes to ensure the 3D scene renders
- *  at least once before the 'demand' frameloop pauses. */
+ *  Also invalidates when story overlay opens/closes and on scene transitions to
+ *  ensure the 3D scene renders at least once before the 'demand' frameloop pauses. */
 function CanvasFrameloopController({ idle }: { idle: boolean }) {
   const invalidate = useThree((state) => state.invalidate);
   // Subscribe to story overlay state so we can invalidate when it changes.
-  // When story overlay opens, frameloop switches to 'demand' — we must
-  // invalidate() to render the scene before the loop pauses. When it closes,
-  // frameloop switches back to 'always' — invalidate() ensures a clean frame.
   const showStoryOverlay = useUIStore((s) => s.showStoryOverlay);
   const activeCutsceneId = useCutsceneStore((s) => s.activeCutsceneId);
   const isStaticScreen = showStoryOverlay && !activeCutsceneId;
@@ -571,8 +568,21 @@ function CanvasFrameloopController({ idle }: { idle: boolean }) {
     invalidate();
   }, [isStaticScreen, invalidate]);
 
+  // Invalidate on scene transitions — when the player moves between scenes
+  // (e.g., room -> corridor), the new scene's 3D content mounts but the
+  // 'demand' frameloop may not render it until invalidated. This ensures the
+  // new scene is visible immediately after scene:loaded fires.
+  useEffect(() => {
+    const unsub = eventBus.on('scene:loaded', () => {
+      invalidate();
+      // Double-invalidate: R3F sometimes needs a second tick after scene
+      // content mounts before the render picks it up.
+      requestAnimationFrame(() => invalidate());
+    });
+    return unsub;
+  }, [invalidate]);
+
   // Safety net: invalidate a few times on mount to ensure the first frame renders.
-  // Reduced from 5 to 3 calls to minimize overhead during e2e tests.
   useEffect(() => {
     const intervals = [100, 500, 1500];
     const timers = intervals.map((ms) => setTimeout(() => invalidate(), ms));

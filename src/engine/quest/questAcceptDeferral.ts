@@ -8,7 +8,7 @@ const QUEST_ACCEPT_SCENE_GATES: Record<string, string> = {
 };
 
 /** Quests granted silently during the apartment prologue — no accept popup in-room. */
-const SILENT_APARTMENT_QUESTS = new Set(['first_reading']);
+const SILENT_APARTMENT_QUESTS = new Set(['first_reading', 'morning_sync']);
 
 export function shouldDeferQuestAcceptDialog(
   questId: string,
@@ -27,7 +27,7 @@ export function shouldDeferQuestAcceptDialog(
 }
 
 export function shouldSuppressQuestAcceptEmit(questId: string): boolean {
-  return questId === 'first_reading';
+  return questId === 'first_reading' || questId === 'morning_sync';
 }
 
 export function isQuestCompletionFlowBusy(input: {

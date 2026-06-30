@@ -6,14 +6,14 @@ import * as THREE from 'three';
 import { LOOK_HEIGHT } from '@/engine/camera/cameraConstants';
 
 export const WAKEUP_PHASE = {
-  terminal: 1.6,
-  rise: 2.0,
-  standing: 1.0,
-  walking: 2.8,
-  sitting: 1.6,
-  settle: 0.6,
-  monitor: 3.5,
-  handoff: 1.4,
+  terminal: 3.5,
+  rise: 3.5,
+  standing: 2.0,
+  walking: 5.0,
+  sitting: 3.0,
+  settle: 1.5,
+  monitor: 6.0,
+  handoff: 2.5,
 } as const;
 
 export const WAKEUP_TOTAL =
