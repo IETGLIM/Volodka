@@ -256,28 +256,27 @@ function GltfNPCModelScene({
 
   return (
     <group ref={anchorRef}>
-      {/* Mount ALL LOD URLs simultaneously, toggle visibility by active URL.
-          Previously this used key={activeUrl} which remounted the entire
-          subtree on every LOD change — causing GLTF reload, mixer recreation,
-          animation restart, and GC pressure. Now each LOD persists with its
-          own mixer; only the visible one runs mixer.update (gated by the
-          `visible` prop in GltfNPCModelInner.useRegisterNpcFrame). */}
+      {/* Single GltfNPCModelInner instance with URL prop swap.
+          - No key={activeUrl}: avoids full subtree remount (mixer recreation,
+            animation restart, GC pressure) on LOD change.
+          - No all-LODs-mounted: avoids loading 3 GLTFs per NPC simultaneously
+            (caused OOM → page crash in CI's resource-constrained Chromium).
+          - useGLTF caches by URL, so switching activeUrl loads from cache
+            (preloaded via useGLTF.preload in the useEffect above) without
+            network refetch. The component suspends briefly while drei
+            resolves the cached GLTF, then re-renders with the new scene. */}
       <Suspense fallback={null}>
-        {urls.map((lodUrl) => (
-          <GltfNPCModelInner
-            key={lodUrl}
-            definition={definition}
-            url={lodUrl}
-            modelScale={modelScale}
-            targetHeightFactor={targetHeightFactor}
-            interactionState={interactionState}
-            isInteractionTarget={isInteractionTarget}
-            activity={activity}
-            patrolActivity={patrolActivity}
-            visible={lodUrl === activeUrlRef.current}
-            livePlayerPositionRef={livePlayerPositionRef}
-          />
-        ))}
+        <GltfNPCModelInner
+          definition={definition}
+          url={activeUrlRef.current}
+          modelScale={modelScale}
+          targetHeightFactor={targetHeightFactor}
+          interactionState={interactionState}
+          isInteractionTarget={isInteractionTarget}
+          activity={activity}
+          patrolActivity={patrolActivity}
+          livePlayerPositionRef={livePlayerPositionRef}
+        />
       </Suspense>
     </group>
   );
