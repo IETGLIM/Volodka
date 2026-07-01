@@ -2,13 +2,10 @@ import {
   updateExplorationState,
   resolveCameraCollision,
 } from '../cinematicCamera';
-import { getExplorationCameraMotionScale } from '@/engine/player/playerLocomotionPresentation';
 import {
   LOOK_HEIGHT,
   MIN_DISTANCE,
   WALL_MARGIN,
-  BREATHING_BOB_AMPLITUDE,
-  BREATHING_BOB_SPEED,
   LOOK_AHEAD_STRENGTH,
   LOOK_AHEAD_LERP_SPEED,
   FIRST_PERSON_ENABLED,
@@ -121,11 +118,10 @@ export const explorationStrategy: CameraModeStrategy = {
       playerPos.z + ctx.lookAheadOffset.z,
     );
 
-    if (!ctx.interactionLocked) {
-      const bobScale = getExplorationCameraMotionScale(ctx.moveBlend).bobScale;
-      const breathBob = Math.sin(ctx.time * BREATHING_BOB_SPEED) * BREATHING_BOB_AMPLITUDE * bobScale;
-      targetPos.y += breathBob;
-    }
+    // Breathing bob removed here — applyEnhancedBreathingIdle in applyCameraFrame
+    // already adds a breathing oscillation (up to 2mm Y + 0.5mm X/Z after 3s
+    // idle). Having both caused double oscillation (up to 7mm peak Y) which
+    // looked like camera jitter in small rooms. Now only one breathing source.
 
     targetPos = resolveCameraCollision(
       ctx.raycaster,

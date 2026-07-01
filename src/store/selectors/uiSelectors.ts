@@ -5,6 +5,7 @@ import type { TutorialFlags } from '../shared';
 import { getGamePhase, type GamePhase } from '@/shared/gamePhase';
 import { getGameStore } from '../gameStore';
 import { useGameSelector, useGamePrimitive } from './hooks';
+import { useTutorialReady } from './tutorialSelectors';
 
 function selectPhaseSlice(s = getGameStore()) {
   return {
@@ -42,6 +43,24 @@ export function useGameMode() {
 
 export function useTutorialFlags() {
   return useGameSelector((s) => s.tutorialFlags);
+}
+
+/** True when the FirstPlayTutorial overlay is actively showing (not completed,
+ *  not disabled, tutorial-ready, no story overlay / cutscene blocking it).
+ *  Used by StoryGuidanceHUD and other HUD elements to avoid stacking on top
+ *  of the tutorial card during the first 10 minutes. */
+export function useTutorialActive(): boolean {
+  const tutorialReady = useTutorialReady();
+  const tutorialFlags = useTutorialFlags();
+  const showStoryOverlay = useGamePrimitive((s) => s.showStoryOverlay);
+  const activeCutsceneId = useGamePrimitive((s) => s.activeCutsceneId);
+  return (
+    tutorialReady
+    && !tutorialFlags.tutorialsCompleted
+    && !tutorialFlags.tutorialsDisabled
+    && !showStoryOverlay
+    && !activeCutsceneId
+  );
 }
 
 export function useCutsceneWaypoints() {

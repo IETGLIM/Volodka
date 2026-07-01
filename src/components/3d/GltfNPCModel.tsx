@@ -116,11 +116,12 @@ function GltfNPCModelInner({
   }, [scene, modelScale, targetHeightFactor]);
 
   useRegisterNpcFrame(definition.id, 'mixer', ({ delta }) => {
-    // Skip animation updates for invisible LOD branches — mixer.update on
-    // skinned meshes is one of the most expensive per-frame operations in
-    // three.js. With 5 LOD variants per NPC, this saves 4/5 of the work.
+    // Skip animation updates when the NPC is not at 'full' LOD level.
+    // mixer.update on skinned meshes is one of the most expensive per-frame
+    // operations in three.js. When the NPC is culled or at impostor LOD,
+    // there is no visible mesh to animate — skip the update entirely.
     if (mixer && visible) mixer.update(delta);
-  });
+  }, { enabled: visible });
 
   useNpcProceduralLayers({
     npcId: definition.id,
@@ -162,6 +163,9 @@ interface GltfNPCModelSceneProps {
   isInteractionTarget: boolean;
   activity: string;
   patrolActivity?: 'idle' | 'walk';
+  /** Whether the parent NPC group is at 'full' LOD (visible). When false,
+   *  mixer.update is skipped to save per-frame CPU. */
+  lodVisible: boolean;
   livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
 }
 
@@ -175,6 +179,7 @@ function GltfNPCModelScene({
   isInteractionTarget,
   activity,
   patrolActivity,
+  lodVisible,
   livePlayerPositionRef,
 }: GltfNPCModelSceneProps) {
   const anchorRef = useRef<THREE.Group>(null);
@@ -275,6 +280,7 @@ function GltfNPCModelScene({
           isInteractionTarget={isInteractionTarget}
           activity={activity}
           patrolActivity={patrolActivity}
+          visible={lodVisible}
           livePlayerPositionRef={livePlayerPositionRef}
         />
       </Suspense>
@@ -337,6 +343,9 @@ interface GltfNPCModelProps {
   isInteractionTarget: boolean;
   activity: string;
   patrolActivity?: 'idle' | 'walk';
+  /** Whether the parent NPC group is at 'full' LOD (visible). When false,
+   *  mixer.update is skipped to save per-frame CPU on culled/impostor NPCs. */
+  lodVisible?: boolean;
   livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
 }
 
@@ -347,6 +356,7 @@ export function GltfNPCModel({
   isInteractionTarget,
   activity,
   patrolActivity,
+  lodVisible = true,
   livePlayerPositionRef,
 }: GltfNPCModelProps) {
   const url = resolveNpcModelUrl(definition.id, definition.modelPath);
@@ -387,6 +397,7 @@ export function GltfNPCModel({
         isInteractionTarget={isInteractionTarget}
         activity={activity}
         patrolActivity={patrolActivity}
+        lodVisible={lodVisible}
         livePlayerPositionRef={livePlayerPositionRef}
       />
     </GltfLoadErrorBoundary>

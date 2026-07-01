@@ -10,6 +10,7 @@ import { getCurrentGuidance, type GuidanceInfo } from '@/engine/GuidedStoryManag
 import { buildGuidanceDirectionHint } from '@/engine/guidedStory/guidanceLocation';
 import { getNextTrackedObjective, areDependenciesMet, getQuestMarker } from '@/store/questStore';
 import { useQuests, useCurrentSceneId, useOrchestratorNarrativeOverlay } from '@/store/selectors';
+import { useTutorialActive } from '@/store/selectors/uiSelectors';
 import { QUEST_DEFINITIONS } from '@/data/quests';
 import { GOLDEN_PATH_QUEST_SPINE } from '@/data/goldenPath';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
@@ -53,6 +54,7 @@ export function StoryGuidanceHUD() {
   const profile = useGameplayPresentationProfile();
   const { showStoryOverlay, narrativeKind, diegeticNarrative } = useOrchestratorNarrativeOverlay();
   const currentSceneId = useCurrentSceneId();
+  const tutorialActive = useTutorialActive();
   const [interactionLocked, setInteractionLocked] = useState(() => isInteractionLocked());
   const [revealReady, setRevealReady] = useState(false);
   const revealTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -250,6 +252,7 @@ export function StoryGuidanceHUD() {
     && !showStoryOverlay
     && !diegeticNarrative
     && !interactionLocked
+    && !tutorialActive
     && revealReady
     && Boolean(displayText);
 

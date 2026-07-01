@@ -117,6 +117,10 @@ export function NPC({
   const fullDetailRef = useRef<THREE.Group>(null);
   const questMarkerRef = useRef<THREE.Group>(null);
   const lodLevelRef = useRef<NpcLodLevel>('impostor');
+  // State mirror of lodLevelRef — triggers re-render so GltfNPCModel receives
+  // the updated lodVisible prop. Updated only when LOD actually changes
+  // (throttled by distance hysteresis, not every frame).
+  const [lodLevel, setLodLevel] = useState<NpcLodLevel>('impostor');
   const { preset } = useGraphicsQuality();
   const sceneId = useCurrentSceneId();
   const npcLodDistanceScale = getSceneVisualProfile(sceneId).npcLodDistanceScale ?? 1;
@@ -258,6 +262,7 @@ export function NPC({
 
     if (newLod !== lodLevelRef.current) {
       lodLevelRef.current = newLod;
+      setLodLevel(newLod);
       invalidateHeadTracking(definition.id);
       invalidateNpcProceduralLayers(definition.id);
     }
@@ -353,6 +358,7 @@ export function NPC({
             isInteractionTarget={isInteractionTarget}
             activity={activity}
             patrolActivity={isPatrolDriven ? patrolActivity : undefined}
+            lodVisible={lodLevel === 'full'}
             livePlayerPositionRef={livePlayerPositionRef}
           />
         </Suspense>
@@ -488,6 +494,7 @@ function NPCModelWithErrorBoundary({
   isInteractionTarget,
   activity,
   patrolActivity,
+  lodVisible,
   livePlayerPositionRef,
 }: {
   definition: NPCDefinition;
@@ -495,6 +502,7 @@ function NPCModelWithErrorBoundary({
   isInteractionTarget: boolean;
   activity: string;
   patrolActivity?: 'idle' | 'walk';
+  lodVisible: boolean;
   livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
 }) {
   const appearance = definition.appearance ?? DEFAULT_APPEARANCE;
@@ -514,6 +522,7 @@ function NPCModelWithErrorBoundary({
           isInteractionTarget={isInteractionTarget}
           activity={activity}
           patrolActivity={patrolActivity}
+          lodVisible={lodVisible}
           livePlayerPositionRef={livePlayerPositionRef}
         />
       ) : (
