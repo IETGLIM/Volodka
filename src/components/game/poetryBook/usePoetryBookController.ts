@@ -8,6 +8,9 @@ import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { useGameStore } from '@/store/gameStore';
 import { usePoemTypewriter } from '@/components/game/poetryBook/usePoemTypewriter';
 
+/** Stable empty array — avoids creating a new [] on every render. */
+const EMPTY_LINES: string[] = [];
+
 export function usePoetryBookController(open: boolean, onClose: () => void) {
   const reducedMotion = useEffectiveReducedMotion();
   const collectedPoems = useGameStore((s) => s.collectedPoems);
@@ -49,8 +52,18 @@ export function usePoetryBookController(open: boolean, onClose: () => void) {
     });
   }, [selectedPoem, playerKarma, playerFlags, currentAct]);
 
+  // Memoize the lines array so its identity is stable when selectedPoem is null.
+  // Without this, `selectedPoem?.lines ?? []` creates a new [] every render,
+  // which triggers usePoemTypewriter's useEffect (deps: [lines, ...]) every
+  // frame → setDisplayedLines([]) → re-render → new [] → infinite loop
+  // (React error #185: Maximum update depth exceeded).
+  const typewriterLines = useMemo(
+    () => selectedPoem?.lines ?? EMPTY_LINES,
+    [selectedPoem],
+  );
+
   const { displayedLines, done, skipAll } = usePoemTypewriter(
-    selectedPoem?.lines ?? [],
+    typewriterLines,
     selectedPoemId !== null,
     reducedMotion,
     POEM_TYPEWRITER_CHAR_DELAY_MS,
