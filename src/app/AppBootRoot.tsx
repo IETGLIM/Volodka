@@ -2,7 +2,7 @@ import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { Toaster } from '@/components/ui/sonner';
 import { BootScreen } from '@/app/BootScreen';
 import { isBootGameDataLoaded, preloadBootGameData } from '@/data/gameDataLoader';
-import { clearChunkReloadFlag, installChunkLoadRecovery } from '@/engine/chunkLoadRecovery';
+import { clearChunkReloadFlag } from '@/shared/chunk/chunkLoadRecovery';
 import { loadingPipeline } from '@/engine/loading/LoadingPipeline';
 import { eventBus } from '@/engine/EventBus';
 import { BOOT_FIRST_FRAME_FALLBACK_MS } from '@/shared/constants/transitionTimings';
@@ -11,7 +11,9 @@ const LazyGamePage = lazy(() =>
   import('@/components/game/GamePage').then((m) => ({ default: m.GamePage })),
 );
 
-installChunkLoadRecovery();
+// Note: installChunkLoadRecovery() is now called in main.tsx BEFORE
+// createRoot().render() — this ensures the vite:preloadError handler is
+// installed before any lazy chunk preload attempt.
 
 function handleBootError(error: unknown): void {
   console.error('[boot] preloadGameData failed:', error);

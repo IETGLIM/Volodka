@@ -25,6 +25,19 @@
       /* Prevent white flash before JS hydrates */
       html { background: #000 !important; }
     </style>
+    <script>
+      // Vite preloadError handler — must run BEFORE any module script.
+      // When a deploy changes chunk hashes, the browser may try to load a
+      // stale chunk from cache → 404 → vite:preloadError. This handler
+      // reloads the page once so the browser fetches fresh chunks.
+      window.addEventListener('vite:preloadError', function (e) {
+        e.preventDefault();
+        if (!sessionStorage.getItem('volodka-chunk-reload-attempt')) {
+          sessionStorage.setItem('volodka-chunk-reload-attempt', '1');
+          window.location.reload();
+        }
+      });
+    </script>
     <!-- Google Fonts: Geist Sans + Geist Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
