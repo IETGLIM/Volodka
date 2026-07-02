@@ -640,7 +640,7 @@ export function FirstPlayTutorial() {
                 aria-atomic="true"
                 aria-labelledby="tutorial-title"
               >
-                <AnimatePresence mode="wait" custom={direction}>
+                <AnimatePresence custom={direction} initial={false}>
                   <motion.div
                     key={currentStep}
                     custom={direction}
@@ -654,6 +654,7 @@ export function FirstPlayTutorial() {
                         : {
                             x: { type: 'spring', stiffness: 300, damping: 30 },
                             opacity: { duration: stepTransitionDuration },
+                            scale: { duration: stepTransitionDuration },
                           }
                     }
                     className="w-full"
