@@ -1,0 +1,52 @@
+/* ─── Volodka RPG – NPC GLB animation: state machine + event bus ─── */
+
+import { useEffect } from 'react';
+import type * as THREE from 'three';
+import { InteractionState } from '@/engine/interaction/interactionMachine';
+import { useNPCAnimation } from '@/engine/npc/useNPCAnimation';
+import type { NpcAnimationClipOverrides } from '@/engine/npc/npcClipResolution';
+import type { GamePhase } from '@/shared/gamePhase';
+import { useNpcVisualBehavior } from '@/engine/npc/useNpcVisualBehavior';
+
+export interface UseNpcAnimationControllerOptions {
+  npcId: string;
+  actions: Record<string, THREE.AnimationAction> | null | undefined;
+  clipOverrides?: NpcAnimationClipOverrides;
+  activity: string;
+  patrolActivity?: 'idle' | 'walk';
+  interactionState: InteractionState;
+  isInteractionTarget: boolean;
+  gamePhase: GamePhase;
+}
+
+/**
+ * Crossfades NPC GLB clips from unified visual behavior + `npc:animation` events.
+ */
+export function useNpcAnimationController({
+  npcId,
+  actions,
+  clipOverrides,
+  activity,
+  patrolActivity,
+  interactionState,
+  isInteractionTarget,
+  gamePhase,
+}: UseNpcAnimationControllerOptions) {
+  const { animState, clipOverrides: mergedClipOverrides } = useNpcVisualBehavior({
+    npcId,
+    activity,
+    patrolActivity,
+    interactionState,
+    isInteractionTarget,
+    gamePhase,
+    clipOverrides,
+  });
+
+  const { crossfadeTo } = useNPCAnimation(npcId, actions, mergedClipOverrides);
+
+  useEffect(() => {
+    crossfadeTo(animState);
+  }, [animState, crossfadeTo]);
+
+  return { crossfadeTo, animState, clipOverrides: mergedClipOverrides };
+}

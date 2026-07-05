@@ -1,0 +1,44 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "noImplicitAny": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "incremental": true,
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ],
+      "@dimforge/rapier3d-compat": [
+        "./src/engine/physics/rapierCompat.ts"
+      ],
+      "@dimforge/rapier3d-compat-original": [
+        "./node_modules/@dimforge/rapier3d-compat/rapier.d.ts"
+      ]
+    },
+    "plugins": []
+  },
+  "include": [
+    "src",
+    "config",
+    "vite-env.d.ts",
+    "e2e/volodka-e2e.d.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

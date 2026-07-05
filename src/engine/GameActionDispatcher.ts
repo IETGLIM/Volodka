@@ -1,0 +1,21 @@
+/* Re-export — bridge lives in @/shared/gameBridge (breaks store↔engine import cycles). */
+export {
+  registerGameActionBridge,
+  registerGameActionBridge as registerStateDispatcher,
+  dispatchGameAction,
+  dispatchGameAction as dispatchStateAction,
+  getGameSnapshot,
+  subscribeGameSnapshot,
+  tryAddInventoryItem,
+  tryActivatePoemPower,
+  resetGameActionBridge,
+  resetGameActionBridge as resetStateDispatcherForTests,
+  type ActiveTTLFlagSnapshot,
+  type AchievementProgressSnapshot,
+  type GameStoreSnapshot,
+  type GameAction,
+  type GameAction as StateAction,
+  type GameSnapshotSubscribeOptions,
+  type GameActionBridge,
+  type GameActionBridge as StateDispatcher,
+} from '@/shared/gameBridge/gameActionBridge';

@@ -1,0 +1,42 @@
+export {
+  LOADING_MARKS,
+  markAppStart,
+  markOrchestratorMount,
+  markGameDataReady,
+  markCanvasMounted,
+  markFirstFrame,
+  getLoadingTimelineSnapshot,
+  getFirstScenePlayableMs,
+  type LoadingTimelineSnapshot,
+} from './LoadingTimeline';
+
+export {
+  evaluateRuntimeBudgets,
+  publishRuntimeBudgetCheck,
+  getRuntimeBudgetSnapshot,
+  type BudgetViolation,
+  type BudgetSeverity,
+  type RuntimeBudgetSnapshot,
+} from './RuntimeBudgetMonitor';
+
+export {
+  getGpuResourceBudgetSnapshot,
+  notifyGpuResourceSceneChange,
+  resetGpuResourceBudgetTracker,
+  settleGpuResourceBaseline,
+  type GpuResourceBudgetSnapshot,
+  type GpuDriftSeverity,
+} from './GpuResourceBudgetTracker';
+
+export {
+  bindGpuResourceBaselineBridge,
+  unbindGpuResourceBaselineBridge,
+} from './gpuResourceBaselineBridge';
+
+export {
+  PERFORMANCE_BUDGETS,
+  getDrawCallBudget,
+  getDrawCallWarnThreshold,
+  getActiveFpsBudget,
+  isWeakLaptopProfile,
+} from '@/config/performanceBudgets';

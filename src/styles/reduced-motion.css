@@ -1,0 +1,70 @@
+/* ══════════════════════════════════════════════════════════════
+   ACCESSIBILITY: Reduced motion preferences
+   ══════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .loading-screen-fade-in {
+    animation: none;
+    opacity: 1;
+  }
+
+  .loading-spinner-pulse {
+    animation: none;
+  }
+
+  .menu-btn-enhanced:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  .breathe-glow,
+  .glow-pulse,
+  .glow-pulse-emerald,
+  .glow-pulse-amber,
+  .glow-pulse-fuchsia,
+  .edge-glow,
+  .menu-title-breathe,
+  .neon-reflection,
+  .holo-flicker,
+  .holo-flicker-soft,
+  .weather-icon-bob,
+  .menu-particle-drift,
+  .menu-particle-stream,
+  .menu-fullscan-line,
+  .menu-footer-dot,
+  .menu-title-parallax {
+    animation: none;
+  }
+
+  .ambient-particle {
+    animation: none !important;
+    opacity: 0.35;
+  }
+
+  .menu-cinematic-bar {
+    transition: none;
+  }
+}
+
+html[data-reduced-motion='true'] *,
+html[data-reduced-motion='true'] *::before,
+html[data-reduced-motion='true'] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+html[data-reduced-motion='true'] .ambient-particle {
+  animation: none !important;
+  opacity: 0.35;
+}

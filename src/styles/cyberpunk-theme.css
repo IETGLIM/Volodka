@@ -1,0 +1,238 @@
+/* ═══════════════════════════════════════════════════════════════
+   Volodka RPG – Global Cyberpunk Theme Overrides
+   
+   Applies to ALL in-game UI: menus, panels, HUD, dialogs.
+   Overrides Tailwind palette via scoped @theme color vars on [data-cyberpunk]:
+   ─ Matrix-green / neon-cyan / amber-gold color scheme
+   ─ Monospace fonts
+   ─ Glowing borders & text shadows
+   ─ Dark backgrounds with subtle pattern
+   ─ Terminal-style elements
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── Root font & base ─── */
+#root, [data-cyberpunk] {
+  font-family: 'Courier New', 'Consolas', 'Monaco', 'Liberation Mono', monospace;
+}
+
+/* ─── Global dark background pattern ─── */
+[data-cyberpunk] {
+  color-scheme: dark;
+
+  /*
+   * Slate/stone → cyber palette via @theme color vars (not utility !important).
+   * bg-slate-900/50, border-slate-700/30, etc. keep working through color-mix.
+   */
+  --color-slate-950: rgb(0 6 12);
+  --color-slate-900: rgb(0 6 12);
+  --color-slate-800: rgb(0 10 20);
+  --color-slate-700: rgb(0 14 24);
+  --color-slate-600: rgb(0 14 24);
+  --color-slate-500: rgb(85 136 102);
+  --color-slate-400: rgb(136 204 170);
+  --color-slate-300: rgb(136 204 170);
+  --color-slate-200: rgb(204 255 221);
+  --color-slate-100: rgb(204 255 221);
+  --color-stone-900: rgb(0 14 24);
+  --color-stone-800: rgb(0 14 24);
+  --color-stone-700: rgb(0 14 24);
+  --color-stone-500: rgb(85 136 102);
+  --color-stone-400: rgb(85 136 102);
+  --color-amber-500: #ddaa33;
+  --color-cyan-500: var(--cyber-cyan-dim);
+
+  /* Scrollbar fallback for unclassed scroll areas — matches .game-scrollbar */
+  scrollbar-width: thin;
+  scrollbar-color: rgb(var(--cyber-cyan-rgb) / 0.25) rgba(0, 0, 0, 0.4);
+}
+
+[data-cyberpunk] ::-webkit-scrollbar {
+  width: 5px;
+}
+[data-cyberpunk] ::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 3px;
+}
+[data-cyberpunk] ::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgb(var(--cyber-cyan-rgb) / 0.35), rgb(var(--cyber-cyan-rgb) / 0.15));
+  border-radius: 3px;
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.1);
+}
+[data-cyberpunk] ::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgb(var(--cyber-cyan-rgb) / 0.55), rgb(var(--cyber-cyan-rgb) / 0.25));
+}
+
+/* ─── Button overrides ─── */
+[data-cyberpunk] button:not([data-preserve-style]),
+[data-cyberpunk] [role="button"]:not([data-preserve-style]) {
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+[data-cyberpunk] button:not([data-preserve-style]):hover {
+  text-shadow: 0 0 8px rgb(var(--cyber-matrix-rgb) / 0.5);
+}
+
+/* ─── Input / Textarea overrides ─── */
+[data-cyberpunk] input:not([data-preserve-style]),
+[data-cyberpunk] textarea:not([data-preserve-style]),
+[data-cyberpunk] select:not([data-preserve-style]) {
+  font-family: inherit;
+  background: rgba(0, 8, 4, 0.8);
+  border-color: rgb(var(--cyber-matrix-rgb) / 0.15);
+  color: #ccffdd;
+  touch-action: auto;
+}
+
+[data-cyberpunk] input:focus:not([data-preserve-style]),
+[data-cyberpunk] textarea:focus:not([data-preserve-style]),
+[data-cyberpunk] select:focus:not([data-preserve-style]) {
+  border-color: rgb(var(--cyber-matrix-rgb) / 0.4);
+  box-shadow: 0 0 10px rgb(var(--cyber-matrix-rgb) / 0.1);
+  outline: none;
+}
+
+/* ─── Panels — opt-in via data-panel only (never [class*="panel"] — breaks shadcn/resizable) ─── */
+[data-cyberpunk] [data-panel] {
+  background: rgba(0, 6, 10, 0.92);
+  border: 1px solid rgb(var(--cyber-matrix-rgb) / 0.12);
+  box-shadow:
+    0 0 20px rgb(var(--cyber-matrix-rgb) / 0.04),
+    inset 0 0 20px rgb(var(--cyber-matrix-rgb) / 0.02);
+}
+
+/* ─── Amber/gold overrides (keep amber for important stuff) ─── */
+[data-cyberpunk] .text-amber-300,
+[data-cyberpunk] .text-amber-400 {
+  text-shadow: 0 0 8px rgba(255, 180, 0, 0.3);
+}
+
+/* ─── Cyan/emerald overrides ─── */
+[data-cyberpunk] .text-cyan-300,
+[data-cyberpunk] .text-cyan-400 {
+  text-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.3);
+}
+
+[data-cyberpunk] .text-emerald-300,
+[data-cyberpunk] .text-emerald-400 {
+  text-shadow: 0 0 6px rgb(var(--cyber-matrix-rgb) / 0.25);
+}
+
+/* ─── Red/error overrides ─── */
+[data-cyberpunk] .text-red-300,
+[data-cyberpunk] .text-red-400,
+[data-cyberpunk] .text-rose-300,
+[data-cyberpunk] .text-rose-400 {
+  text-shadow: 0 0 8px rgba(255, 50, 50, 0.25);
+}
+
+/* ─── Purple/violet overrides ─── */
+[data-cyberpunk] .text-violet-300,
+[data-cyberpunk] .text-violet-400 {
+  text-shadow: 0 0 8px rgba(180, 100, 255, 0.25);
+}
+
+/* ─── Backdrop blur for overlays ─── */
+[data-cyberpunk] .backdrop-blur-sm,
+[data-cyberpunk] .backdrop-blur-md {
+  backdrop-filter: blur(calc(4px * var(--backdrop-blur-strength, 1))) brightness(calc(1 - 0.4 * (1 - var(--backdrop-blur-strength, 1))));
+  -webkit-backdrop-filter: blur(calc(4px * var(--backdrop-blur-strength, 1))) brightness(calc(1 - 0.4 * (1 - var(--backdrop-blur-strength, 1))));
+}
+
+/* ─── Glassmorphism tweaks ─── */
+[data-cyberpunk] .backdrop-blur-md {
+  background: rgba(0, 4, 8, 0.7) !important;
+}
+
+/* ─── Shadow overrides — add neon glow ─── */
+[data-cyberpunk] .shadow-2xl,
+[data-cyberpunk] [style*="box-shadow"] {
+  box-shadow:
+    0 0 30px rgb(var(--cyber-matrix-rgb) / 0.06),
+    0 4px 24px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* ─── RGB split hover effect on interactive text ─── */
+@keyframes cyberpunk-rgb-split {
+  0%, 100% { text-shadow: 0 0 4px rgb(var(--cyber-matrix-rgb) / 0.4); }
+  50% { text-shadow: -1px 0 2px rgba(0, 255, 255, 0.3), 1px 0 2px rgba(255, 0, 100, 0.3); }
+}
+
+[data-cyberpunk] a:hover,
+[data-cyberpunk] button:hover:not([data-preserve-style]),
+[data-cyberpunk] [role="menuitem"]:hover {
+  animation: cyberpunk-rgb-split 0.3s ease-in-out;
+}
+
+/* ─── CRT scanline effect on key containers ─── */
+.cp-scanlines {
+  position: relative;
+}
+.cp-scanlines::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.03) 2px,
+    rgba(0, 0, 0, 0.03) 4px
+  );
+  z-index: 999;
+}
+
+/* ─── Glitch text utility class ─── */
+.cp-glitch {
+  position: relative;
+}
+.cp-glitch::before,
+.cp-glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.1s;
+}
+.cp-glitch:hover::before {
+  opacity: 0.8;
+  color: #ff0055;
+  animation: cp-glitch-shift 0.3s infinite;
+}
+.cp-glitch:hover::after {
+  opacity: 0.8;
+  color: #00ffff;
+  animation: cp-glitch-shift 0.3s infinite 0.15s;
+}
+@keyframes cp-glitch-shift {
+  0%, 100% { transform: translate(0); }
+  33% { transform: translate(-1px, 1px); }
+  66% { transform: translate(1px, -1px); }
+}
+
+/* ─── Terminal-style dividers ─── */
+.cp-divider {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgb(var(--cyber-matrix-rgb) / 0.15) 20%,
+    rgb(var(--cyber-matrix-rgb) / 0.25) 50%,
+    rgb(var(--cyber-matrix-rgb) / 0.15) 80%,
+    transparent 100%
+  );
+}
+
+/* ─── Neon border pulse ─── */
+@keyframes cp-border-pulse {
+  0%, 100% { border-color: rgb(var(--cyber-matrix-rgb) / 0.15); }
+  50% { border-color: rgb(var(--cyber-matrix-rgb) / 0.3); }
+}
+
+.cp-border-pulse {
+  animation: cp-border-pulse 4s ease-in-out infinite;
+}

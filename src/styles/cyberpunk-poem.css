@@ -1,0 +1,387 @@
+/* ═══════════════════════════════════════════════════════════════
+   Volodka RPG – Cyberpunk Poem Cutscene Effects
+   
+   Visual style: Matrix + BladeRunner 2077 + Terminal + Noir + Glitch
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── CRT Scanline Overlay ─── */
+.cp-crt-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: var(--z-poem-crt);
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.06) 0px,
+    rgba(0, 0, 0, 0.06) 2px,
+    transparent 2px,
+    transparent 4px
+  );
+  animation: crt-flicker 0.15s infinite;
+}
+
+.cp-crt-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 60%,
+    rgba(0, 0, 0, 0.4) 100%
+  );
+}
+
+/* ─── Vignette ─── */
+.cp-vignette {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: var(--z-poem-vignette);
+  background: radial-gradient(
+    ellipse at center,
+    transparent 50%,
+    rgba(0, 0, 0, 0.7) 100%
+  );
+}
+
+/* ─── Glitch Text Effect ─── */
+@keyframes cp-glitch-1 {
+  0%, 100% { transform: translate(0); }
+  20% { transform: translate(-2px, 1px); }
+  40% { transform: translate(2px, -1px); }
+  60% { transform: translate(-1px, 2px); }
+  80% { transform: translate(1px, -2px); }
+}
+
+@keyframes cp-glitch-2 {
+  0%, 100% { transform: translate(0); }
+  25% { transform: translate(3px, -1px); }
+  50% { transform: translate(-3px, 1px); }
+  75% { transform: translate(2px, 0); }
+}
+
+@keyframes cp-glitch-clip {
+  0%, 100% { clip-path: inset(0 0 100% 0); }
+  5% { clip-path: inset(20% 0 60% 0); }
+  10% { clip-path: inset(0 0 100% 0); }
+  15% { clip-path: inset(60% 0 20% 0); }
+  20% { clip-path: inset(0 0 100% 0); }
+  25% { clip-path: inset(40% 0 40% 0); }
+  30% { clip-path: inset(0 0 100% 0); }
+}
+
+.cp-glitch-text {
+  position: relative;
+  display: inline-block;
+}
+
+.cp-glitch-text::before,
+.cp-glitch-text::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.cp-glitch-text::before {
+  color: #ff0055;
+  animation: cp-glitch-1 3s infinite linear alternate-reverse,
+             cp-glitch-clip 3s infinite linear;
+  z-index: -1;
+}
+
+.cp-glitch-text::after {
+  color: #00ffff;
+  animation: cp-glitch-2 2s infinite linear alternate-reverse,
+             cp-glitch-clip 2.3s infinite linear;
+  z-index: -2;
+}
+
+/* ─── Terminal Cursor Blink ─── */
+.cp-cursor {
+  display: inline-block;
+  width: 8px;
+  height: 1em;
+  background: #00ff41;
+  animation: cursor-blink 1s step-end infinite;
+  vertical-align: text-bottom;
+  margin-left: 2px;
+}
+
+/* ─── Fade-in for poem lines ─── */
+@keyframes cp-line-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.cp-line-reveal {
+  animation: cp-line-fade-in 0.3s ease-out forwards;
+}
+
+/* ─── Scanline sweep ─── */
+@keyframes cp-scanline-sweep {
+  0% { top: -2px; }
+  100% { top: 100%; }
+}
+
+.cp-scanline-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: rgba(0, 255, 65, 0.15);
+  pointer-events: none;
+  animation: cp-scanline-sweep 4s linear infinite;
+}
+
+/* ─── Noise grain ─── */
+@keyframes cp-noise {
+  0%, 100% { transform: translate(0, 0); }
+  10% { transform: translate(-1%, -1%); }
+  20% { transform: translate(1%, 1%); }
+  30% { transform: translate(-2%, 0); }
+  40% { transform: translate(2%, -1%); }
+  50% { transform: translate(0, 2%); }
+  60% { transform: translate(-1%, -2%); }
+  70% { transform: translate(2%, 0); }
+  80% { transform: translate(0, 1%); }
+  90% { transform: translate(-2%, -1%); }
+}
+
+.cp-noise-overlay {
+  position: fixed;
+  inset: -50%;
+  width: 200%;
+  height: 200%;
+  pointer-events: none;
+  z-index: var(--z-poem-noise);
+  background-image: var(--pattern-noise);
+  opacity: 0.02;
+  animation: cp-noise 0.2s steps(3) infinite;
+  mix-blend-mode: overlay;
+}
+
+/* ─── Cyberpunk Poem Container ─── */
+.cp-poem-container {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-poem-container);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 4, 8, 0.85);
+  backdrop-filter: blur(2px);
+}
+
+.cp-poem-inner {
+  position: relative;
+  max-width: 700px;
+  width: 90%;
+  max-height: 80vh;
+  padding: 40px 36px 32px;
+  overflow-y: auto;
+  font-family: 'Courier New', 'Consolas', 'Monaco', monospace;
+  color: #00ff41;
+  border: 1px solid rgba(0, 255, 65, 0.2);
+  box-shadow:
+    0 0 30px rgba(0, 255, 65, 0.08),
+    inset 0 0 30px rgba(0, 255, 65, 0.03);
+  background: rgba(0, 8, 4, 0.92);
+}
+
+/* ─── Terminal header bar ─── */
+.cp-terminal-header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 16px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid rgba(0, 255, 65, 0.15);
+  background: rgba(0, 8, 4, 0.92);
+  font-size: 11px;
+  color: rgba(0, 255, 65, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 3px;
+}
+
+.cp-terminal-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.cp-terminal-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.cp-terminal-dot--red { background: #ff5f56; }
+.cp-terminal-dot--yellow { background: #ffbd2e; }
+.cp-terminal-dot--green { background: #27c93f; }
+
+/* ─── Poem Title ─── */
+.cp-poem-title {
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 8px;
+  color: #ffd700;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+  letter-spacing: 2px;
+}
+
+.cp-poem-author {
+  font-size: 13px;
+  color: rgba(0, 255, 65, 0.5);
+  margin-bottom: 24px;
+  font-style: italic;
+}
+
+.cp-poem-author::before {
+  content: '> ';
+  color: #00ff41;
+}
+
+/* ─── Poem lines ─── */
+.cp-poem-line {
+  font-size: 17px;
+  line-height: 1.8;
+  margin-bottom: 4px;
+  min-height: 1.4em;
+  white-space: pre-wrap;
+  padding-left: 16px;
+  border-left: 1px solid rgba(0, 255, 65, 0.1);
+}
+
+.cp-poem-line--empty {
+  border-left: none;
+  padding-left: 0;
+  margin-bottom: 12px;
+}
+
+/* ─── Prompt bar ─── */
+.cp-poem-prompt {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  padding-top: 16px;
+  margin-top: 24px;
+  border-top: 1px solid rgba(0, 255, 65, 0.1);
+  background: rgba(0, 8, 4, 0.92);
+  text-align: center;
+  font-size: 13px;
+  color: rgba(0, 255, 65, 0.6);
+}
+
+.cp-poem-prompt kbd {
+  display: inline-block;
+  padding: 2px 8px;
+  border: 1px solid rgba(0, 255, 65, 0.3);
+  border-radius: 3px;
+  font-family: inherit;
+  font-size: 12px;
+  color: #00ff41;
+  background: rgba(0, 255, 65, 0.05);
+}
+
+/* ─── Theme-based color overrides ─── */
+.cp-theme-death {
+  color: #ff4444;
+}
+.cp-theme-death .cp-poem-title {
+  color: #ff6666;
+  text-shadow: 0 0 10px rgba(255, 100, 100, 0.4);
+}
+
+.cp-theme-love {
+  color: #ff69b4;
+}
+.cp-theme-love .cp-poem-title {
+  color: #ff99cc;
+  text-shadow: 0 0 10px rgba(255, 105, 180, 0.4);
+}
+
+.cp-theme-hope {
+  color: #44ddff;
+}
+.cp-theme-hope .cp-poem-title {
+  color: #88eeff;
+  text-shadow: 0 0 10px rgba(68, 221, 255, 0.4);
+}
+
+.cp-theme-desperation,
+.cp-theme-despair {
+  color: #ff8844;
+}
+.cp-theme-desperation .cp-poem-title,
+.cp-theme-despair .cp-poem-title {
+  color: #ffaa66;
+  text-shadow: 0 0 10px rgba(255, 136, 68, 0.4);
+}
+
+.cp-theme-tech,
+.cp-theme-code {
+  color: #00ff41;
+}
+.cp-theme-tech .cp-poem-title,
+.cp-theme-code .cp-poem-title {
+  color: #33ff66;
+  text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+}
+
+.cp-theme-noir {
+  color: #cccccc;
+}
+.cp-theme-noir .cp-poem-title {
+  color: #ffffff;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+.cp-theme-ussr,
+.cp-theme-postussr {
+  color: #e8d5b7;
+}
+.cp-theme-ussr .cp-poem-title,
+.cp-theme-postussr .cp-poem-title {
+  color: #f0e0c8;
+  text-shadow: 0 0 10px rgba(232, 213, 183, 0.3);
+}
+
+/* ─── Exit animation ─── */
+@keyframes cp-poem-exit {
+  to {
+    opacity: 0;
+    transform: scale(0.98);
+    filter: blur(4px);
+  }
+}
+
+.cp-poem-exit {
+  animation: cp-poem-exit 0.4s ease-in forwards;
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 600px) {
+  .cp-poem-inner {
+    padding: 24px 20px;
+    max-height: 90vh;
+  }
+  .cp-poem-title {
+    font-size: 22px;
+  }
+  .cp-poem-line {
+    font-size: 15px;
+    line-height: 1.6;
+    padding-left: 10px;
+  }
+}

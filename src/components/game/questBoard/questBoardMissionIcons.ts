@@ -1,0 +1,51 @@
+import {
+  BookOpen,
+  Bug,
+  Eye,
+  Feather,
+  FlaskConical,
+  Footprints,
+  Hammer,
+  Handshake,
+  Heart,
+  Lightbulb,
+  Map,
+  MessageCircle,
+  Moon,
+  Music,
+  Shield,
+  ShieldCheck,
+  Sparkles,
+  Star,
+  Swords,
+  Users,
+  Wrench,
+  type LucideIcon,
+} from 'lucide-react';
+
+export const QUEST_BOARD_MISSION_ICONS = {
+  Shield,
+  Swords,
+  ShieldCheck,
+  Bug,
+  Footprints,
+  Eye,
+  Moon,
+  Map,
+  Handshake,
+  Heart,
+  MessageCircle,
+  Users,
+  BookOpen,
+  Sparkles,
+  Feather,
+  Music,
+  Hammer,
+  FlaskConical,
+  Wrench,
+  Lightbulb,
+} as const satisfies Record<string, LucideIcon>;
+
+export function resolveQuestBoardMissionIcon(iconName: string): LucideIcon {
+  return QUEST_BOARD_MISSION_ICONS[iconName as keyof typeof QUEST_BOARD_MISSION_ICONS] ?? Star;
+}

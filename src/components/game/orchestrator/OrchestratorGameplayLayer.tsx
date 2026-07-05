@@ -1,0 +1,119 @@
+import { useMemo } from 'react';
+import { useOrchestratorShell } from '@/store/selectors';
+import type { SceneBannerPresentation } from '@/engine/world/worldAmbiencePresentation';
+import type { OrchestratorRuntime } from './useOrchestratorRuntime';
+import type { PanelCloseHandlers } from './useStablePanelClosers';
+import type { HudSecondaryPanelOpeners } from './useStableHudPanelOpeners';
+import {
+  GameplayAmbientExplorationHud,
+  GameplayCombatLayer,
+  GameplayExamineOverlay,
+  GameplayExplorationHud,
+  GameplayExplorationNotifications,
+  GameplayMinigameLayer,
+  GameplayMobileExplorationHud,
+  GameplayNarrativeOverlay,
+  GameplaySceneBanner,
+  GameplaySharedEffects,
+  GameplayStatsPanel,
+} from './OrchestratorGameplaySections';
+import { ContainerLootPanel } from '@/components/game/ContainerLootPanel';
+
+type Props = {
+  gameDataReady: boolean;
+  sceneBanner: SceneBannerPresentation | null;
+  interaction: OrchestratorRuntime['interaction'];
+  panels: Pick<
+    OrchestratorRuntime['panels'],
+    | 'handleOpenQuests'
+    | 'handleOpenInventory'
+    | 'handleOpenPoetry'
+    | 'handleOpenJournal'
+    | 'handleToggleTutorials'
+    | 'handleOpenMenu'
+  >;
+  panelClosers: PanelCloseHandlers;
+  hudSecondaryOpeners: HudSecondaryPanelOpeners;
+};
+
+function isGameplayMode(mode: string): boolean {
+  return mode === 'exploration' || mode === 'cutscene' || mode === 'combat';
+}
+
+/** Exploration / cutscene / combat HUD, narrative overlays, minigames. */
+export function OrchestratorGameplayLayer({
+  gameDataReady,
+  sceneBanner,
+  interaction,
+  panels,
+  panelClosers,
+  hudSecondaryOpeners,
+}: Props) {
+  const { mode } = useOrchestratorShell();
+
+  const panelOpeners = useMemo(
+    () => ({
+      onOpenQuests: panels.handleOpenQuests,
+      onOpenInventory: panels.handleOpenInventory,
+      onOpenPoetry: panels.handleOpenPoetry,
+      onOpenJournal: panels.handleOpenJournal,
+      onToggleTutorials: panels.handleToggleTutorials,
+      onOpenMenu: panels.handleOpenMenu,
+    }),
+    [
+      panels.handleOpenQuests,
+      panels.handleOpenInventory,
+      panels.handleOpenPoetry,
+      panels.handleOpenJournal,
+      panels.handleToggleTutorials,
+      panels.handleOpenMenu,
+    ],
+  );
+
+  if (!isGameplayMode(mode)) return null;
+
+  return (
+    <>
+      <GameplayExplorationNotifications />
+      <GameplaySharedEffects />
+      <GameplaySceneBanner sceneBanner={sceneBanner} />
+      <GameplayAmbientExplorationHud />
+      <GameplayExplorationHud
+        gameDataReady={gameDataReady}
+        panelOpeners={panelOpeners}
+        hudSecondaryOpeners={hudSecondaryOpeners}
+      />
+      <GameplayStatsPanel onClose={panelClosers} />
+      <GameplayMobileExplorationHud onOpenInventory={panels.handleOpenInventory} />
+      <GameplayNarrativeOverlay />
+      <GameplayMinigameLayer
+        codebreakerOpen={interaction.codebreakerOpen}
+        openstackTerminalOpen={interaction.openstackTerminalOpen}
+        bashTerminalOpen={interaction.bashTerminalOpen}
+        poetryGameOpen={interaction.poetryGameOpen}
+        hackingGameOpen={interaction.hackingGameOpen}
+        memoryGameOpen={interaction.memoryGameOpen}
+        quizGameOpen={interaction.quizGameOpen}
+        rhythmGameOpen={interaction.rhythmGameOpen}
+        minigameSetters={interaction.minigameSetters}
+      />
+      <GameplayCombatLayer />
+      <GameplayExamineOverlay
+        open={interaction.examineOpen}
+        data={interaction.examineData}
+        hasLinkedContent={interaction.examineHasLinkedContent}
+        onContinue={interaction.handleExamineContinue}
+        onReset={interaction.resetExamine}
+        onClearPendingTriggerZone={interaction.clearPendingTriggerZone}
+      />
+      <ContainerLootPanel
+        open={interaction.containerLootOpen}
+        contents={interaction.containerLootContents}
+        lockedKeyId={interaction.containerLootLockedKeyId}
+        lootedFlag={interaction.containerLootLootedFlag}
+        onClose={interaction.closeContainerLoot}
+        onTakeItem={interaction.takeItemFromContainer}
+      />
+    </>
+  );
+}

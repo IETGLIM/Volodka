@@ -1,0 +1,162 @@
+/* ══════════════════════════════════════════════════════════════
+   NotificationToasts — stat-change floating toasts
+   ══════════════════════════════════════════════════════════════ */
+
+.notification-toast-container {
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.notification-toast-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border-left: 3px solid var(--toast-border-color);
+  background: rgba(10, 10, 20, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: var(--toast-shadow);
+  transition: box-shadow 0.3s ease;
+  outline: none;
+}
+
+.notification-toast-card[data-hovered='true'],
+.notification-toast-card:focus-visible {
+  box-shadow: var(--toast-shadow-hover);
+}
+
+.notification-toast-card[data-toast-type='karma'] {
+  --toast-border-color: var(--toast-karma-border, #d97706);
+  --toast-text-accent: var(--toast-karma-text, #fbbf24);
+  --toast-icon-bg: var(--toast-karma-icon-bg, rgba(217, 119, 6, 0.15));
+  --toast-shadow: 0 0 16px var(--toast-karma-glow, rgba(217, 119, 6, 0.4)), 0 2px 8px rgba(0, 0, 0, 0.4);
+  --toast-shadow-hover: 0 0 24px var(--toast-karma-glow, rgba(217, 119, 6, 0.4)), 0 2px 12px rgba(0, 0, 0, 0.5);
+}
+
+.notification-toast-card[data-toast-type='energy'] {
+  --toast-border-color: var(--toast-energy-border, #16a34a);
+  --toast-text-accent: var(--toast-energy-text, #4ade80);
+  --toast-icon-bg: var(--toast-energy-icon-bg, rgba(22, 163, 74, 0.15));
+  --toast-shadow: 0 0 16px var(--toast-energy-glow, rgba(22, 163, 74, 0.4)), 0 2px 8px rgba(0, 0, 0, 0.4);
+  --toast-shadow-hover: 0 0 24px var(--toast-energy-glow, rgba(22, 163, 74, 0.4)), 0 2px 12px rgba(0, 0, 0, 0.5);
+}
+
+.notification-toast-card[data-toast-type='stress'] {
+  --toast-border-color: var(--toast-stress-border, #dc2626);
+  --toast-text-accent: var(--toast-stress-text, #f87171);
+  --toast-icon-bg: var(--toast-stress-icon-bg, rgba(220, 38, 38, 0.15));
+  --toast-shadow: 0 0 16px var(--toast-stress-glow, rgba(220, 38, 38, 0.4)), 0 2px 8px rgba(0, 0, 0, 0.4);
+  --toast-shadow-hover: 0 0 24px var(--toast-stress-glow, rgba(220, 38, 38, 0.4)), 0 2px 12px rgba(0, 0, 0, 0.5);
+}
+
+.notification-toast-card[data-toast-type='skill'] {
+  --toast-border-color: var(--toast-skill-border, #0891b2);
+  --toast-text-accent: var(--toast-skill-text, var(--cyber-cyan));
+  --toast-icon-bg: var(--toast-skill-icon-bg, rgba(8, 145, 178, 0.15));
+  --toast-shadow: 0 0 16px var(--toast-skill-glow, rgba(8, 145, 178, 0.4)), 0 2px 8px rgba(0, 0, 0, 0.4);
+  --toast-shadow-hover: 0 0 24px var(--toast-skill-glow, rgba(8, 145, 178, 0.4)), 0 2px 12px rgba(0, 0, 0, 0.5);
+}
+
+.notification-toast-card[data-toast-type='poem'] {
+  --toast-border-color: var(--toast-poem-border, #7c3aed);
+  --toast-text-accent: var(--toast-poem-text, #a78bfa);
+  --toast-icon-bg: var(--toast-poem-icon-bg, rgba(124, 58, 237, 0.15));
+  --toast-shadow: 0 0 16px var(--toast-poem-glow, rgba(124, 58, 237, 0.4)), 0 2px 8px rgba(0, 0, 0, 0.4);
+  --toast-shadow-hover: 0 0 24px var(--toast-poem-glow, rgba(124, 58, 237, 0.4)), 0 2px 12px rgba(0, 0, 0, 0.5);
+}
+
+.notification-toast-card[data-toast-type='quest'] {
+  --toast-border-color: var(--toast-quest-border, #ca8a04);
+  --toast-text-accent: var(--toast-quest-text, #facc15);
+  --toast-icon-bg: var(--toast-quest-icon-bg, rgba(202, 138, 4, 0.15));
+  --toast-shadow: 0 0 16px var(--toast-quest-glow, rgba(202, 138, 4, 0.4)), 0 2px 8px rgba(0, 0, 0, 0.4);
+  --toast-shadow-hover: 0 0 24px var(--toast-quest-glow, rgba(202, 138, 4, 0.4)), 0 2px 12px rgba(0, 0, 0, 0.5);
+}
+
+.notification-toast-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: var(--toast-icon-bg);
+  color: var(--toast-text-accent);
+  font-size: 14px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.notification-toast-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.notification-toast-message {
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.notification-toast-delta {
+  color: var(--toast-text-accent);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-top: 1px;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SESSION 14: CraftingDiscoveryToast
+   ══════════════════════════════════════════════════════════════ */
+
+/* ─── Crafting discovery toast base styles ─── */
+.crafting-discovery-toast {
+  position: relative;
+  overflow: hidden;
+  font-family: 'Geist Mono', monospace;
+  isolation: isolate;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   VISUAL POLISH: Loading screen, menu, HUD, dialogue transitions
+   ══════════════════════════════════════════════════════════════ */
+
+/* Loading screen fade-in on mount */
+@keyframes loading-screen-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.loading-screen-fade-in {
+  animation: loading-screen-fade-in 0.5s ease-out forwards;
+}
+
+/* Loading spinner subtle pulse glow */
+@keyframes loading-spinner-pulse {
+  0%, 100% { filter: drop-shadow(0 0 8px rgb(var(--cyber-cyan-rgb) / 0.3)); }
+  50% { filter: drop-shadow(0 0 18px rgb(var(--cyber-cyan-rgb) / 0.55)); }
+}
+
+@keyframes crt-sweep {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(0, 100vh, 0); }
+}
+
+.crt-sweep-line {
+  animation: crt-sweep 5s linear infinite;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .crt-sweep-line {
+    animation: none;
+  }
+}

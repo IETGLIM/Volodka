@@ -1,0 +1,40 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@import "../styles/tokens.css";
+@import "../styles/svg-patterns.css";
+@import "../styles/cyberpunk-theme.css";
+@import "../styles/base.css";
+@import "../styles/game-keyframes.css";
+@import "../styles/panel-animations.css";
+@import "../styles/panel-cyberpunk.css";
+@import "../styles/visual-polish.css";
+@import "../styles/inventory.css";
+@import "../styles/photo-mode.css";
+@import "../styles/menu-polish.css";
+@import "../styles/menu-screen.css";
+@import "../styles/skill-tree.css";
+@import "../styles/hud-combat.css";
+@import "../styles/hud-extensions.css";
+@import "../styles/menu-cinematic.css";
+@import "../styles/level-up.css";
+@import "../styles/inventory-crafting.css";
+@import "../styles/player-stats.css";
+@import "../styles/compass-dialogue.css";
+@import "../styles/combat-ui.css";
+@import "../styles/micro-animations.css";
+@import "../styles/menu-session8.css";
+@import "../styles/weather-alerts.css";
+@import "../styles/enhancements.css";
+@import "../styles/toasts-loading.css";
+@import "../styles/reduced-motion.css";
+@import "../styles/backdrop-mobile.css";
+@import "../styles/accessibility.css";
+@import "../components/interactions/MicroInteractions.css";
+
+/* ── User setting: scanlines off (SettingsPanel → engine/visualSettings) ── */
+html[data-scanlines="off"] .panel-scanlines::after,
+html[data-scanlines="off"] .scanline-overlay::after,
+html[data-scanlines="off"] .cp-scanline-bar {
+  display: none !important;
+}

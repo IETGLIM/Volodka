@@ -1,0 +1,186 @@
+/* ══════════════════════════════════════════════════════════════
+   TASK 7: AAA Cyberpunk UI Styling Enhancements
+   ══════════════════════════════════════════════════════════════ */
+
+/* ─── Holographic shimmer animation for panel headers ─── */
+@keyframes holo-shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.holo-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgb(var(--cyber-cyan-rgb) / 0.06) 25%,
+    rgb(var(--cyber-cyan-rgb) / 0.12) 50%,
+    rgb(var(--cyber-cyan-rgb) / 0.06) 75%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: holo-shimmer 4s ease-in-out infinite;
+}
+
+/* ─── Glitch text effect for important text elements ─── */
+@keyframes glitch-text {
+  0%, 100% { text-shadow: 2px 0 #ff0040, -2px 0 #0ff; }
+  25% { text-shadow: -2px 0 #ff0040, 2px 0 #0ff; }
+  50% { text-shadow: 2px 2px #ff0040, -2px -2px #0ff; }
+  75% { text-shadow: -2px -2px #ff0040, 2px 2px #0ff; }
+}
+
+.glitch-text-fx {
+  animation: glitch-text 0.3s ease-in-out;
+}
+
+/* ─── Energy bar pulse for low energy ─── */
+@keyframes energy-critical {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.energy-critical {
+  animation: energy-critical 1s ease-in-out infinite;
+}
+
+/* ─── Panel entrance animation with slide + fade ─── */
+@keyframes panel-slide-in {
+  from { opacity: 0; transform: translateY(20px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.panel-slide-in {
+  animation: panel-slide-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ─── Data stream background animation for panel backgrounds ─── */
+@keyframes data-stream {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 -100px; }
+}
+
+.data-stream-bg {
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 3px,
+      rgb(var(--cyber-cyan-rgb) / 0.015) 3px,
+      rgb(var(--cyber-cyan-rgb) / 0.015) 4px
+    );
+  background-size: 100% 100px;
+  animation: data-stream 8s linear infinite;
+}
+
+/* ─── Neon border glow utility classes ─── */
+.neon-border-cyan {
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.3);
+  box-shadow: 0 0 10px rgb(var(--cyber-cyan-rgb) / 0.1), inset 0 0 10px rgb(var(--cyber-cyan-rgb) / 0.05);
+}
+
+.neon-border-amber {
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.1), inset 0 0 10px rgba(251, 191, 36, 0.05);
+}
+
+.neon-border-rose {
+  border: 1px solid rgba(251, 113, 133, 0.3);
+  box-shadow: 0 0 10px rgba(251, 113, 133, 0.1), inset 0 0 10px rgba(251, 113, 133, 0.05);
+}
+
+/* ─── Stat change indicator animation ─── */
+@keyframes stat-flash-positive {
+  0% { color: #34d399; text-shadow: 0 0 8px rgba(52, 211, 153, 0.5); }
+  100% { color: inherit; text-shadow: none; }
+}
+
+@keyframes stat-flash-negative {
+  0% { color: #fb7185; text-shadow: 0 0 8px rgba(251, 113, 133, 0.5); }
+  100% { color: inherit; text-shadow: none; }
+}
+
+.stat-flash-positive {
+  animation: stat-flash-positive 0.8s ease-out;
+}
+
+.stat-flash-negative {
+  animation: stat-flash-negative 0.8s ease-out;
+}
+
+/* ─── Scanline overlay for panels ─── */
+.panel-scanlines::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.05) 2px,
+    rgba(0, 0, 0, 0.05) 4px
+  );
+  pointer-events: none;
+  z-index: var(--z-decor-scanline);
+}
+
+/* ─── Ambient floating particles for status panel ─── */
+@keyframes ambient-float {
+  0% { transform: translateY(0) translateX(0); opacity: 0; }
+  10% { opacity: 0.6; }
+  90% { opacity: 0.3; }
+  100% { transform: translateY(-30px) translateX(10px); opacity: 0; }
+}
+
+.ambient-particle {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: rgb(var(--cyber-cyan-rgb) / 0.4);
+  box-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.3);
+  pointer-events: none;
+  animation: ambient-float 6s ease-in-out infinite;
+}
+
+/* ─── Close button hover glow ─── */
+.close-btn-glow {
+  transition: all 0.2s ease;
+}
+
+.close-btn-glow:hover {
+  box-shadow: 0 0 12px rgb(var(--cyber-cyan-rgb) / 0.3), 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.2);
+  background: rgb(var(--cyber-cyan-rgb) / 0.08);
+}
+
+/* ─── Corner bracket decorations ─── */
+.corner-bracket {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  pointer-events: none;
+  z-index: var(--z-decor-bracket);
+}
+
+.corner-bracket-tl {
+  top: 0; left: 0;
+  border-top: 1px solid rgb(var(--cyber-cyan-rgb) / 0.25);
+  border-left: 1px solid rgb(var(--cyber-cyan-rgb) / 0.25);
+}
+
+.corner-bracket-tr {
+  top: 0; right: 0;
+  border-top: 1px solid rgb(var(--cyber-cyan-rgb) / 0.25);
+  border-right: 1px solid rgb(var(--cyber-cyan-rgb) / 0.25);
+}
+
+.corner-bracket-bl {
+  bottom: 0; left: 0;
+  border-bottom: 1px solid rgb(var(--cyber-cyan-rgb) / 0.25);
+  border-left: 1px solid rgb(var(--cyber-cyan-rgb) / 0.25);
+}
+
+.corner-bracket-br {
+  bottom: 0; right: 0;
+  border-bottom: 1px solid rgb(var(--cyber-cyan-rgb) / 0.25);
+  border-right: 1px solid rgb(var(--cyber-cyan-rgb) / 0.25);
+}

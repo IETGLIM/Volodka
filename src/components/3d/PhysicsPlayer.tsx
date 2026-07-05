@@ -1,0 +1,89 @@
+
+/* ─── Volodka RPG – Player character with Rapier KinematicCharacterController ───
+ *
+ *  Movement logic lives in usePhysicsPlayerMovement + engine/player/* modules.
+ */
+
+import type * as THREE from 'three';
+import { RigidBody, CapsuleCollider } from '@react-three/rapier';
+
+import { useCurrentSceneId, usePlayerPresentationState } from '@/store/selectors';
+import type { VirtualControls } from '@/hooks/useGamePhysics';
+import {
+  isIntroWakeupCutscene,
+  shouldShowThirdPersonAvatar,
+} from '@/engine/camera/cinematicPresentation';
+import { useCinematicTimelineActive } from '@/hooks/useCinematicTimelineActive';
+import { CinematicPlayerAvatar } from './CinematicPlayerAvatar';
+import {
+  PLAYER_HEIGHT,
+  PLAYER_RADIUS,
+} from '@/engine/player/playerConstants';
+import { getSceneConfig } from '@/config/scenes';
+import { usePhysicsPlayerMovement } from './usePhysicsPlayerMovement';
+import { PhysicsPlayerContactShadow } from './PhysicsPlayerContactShadow';
+
+interface PhysicsPlayerProps {
+  livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
+  livePlayerRotationRef: React.MutableRefObject<number>;
+  virtualControlsRef?: React.MutableRefObject<VirtualControls>;
+  physicsPaused?: boolean;
+  onInteractPress?: () => void;
+  moveBlendRef?: React.MutableRefObject<number>;
+}
+
+export function PhysicsPlayer({
+  livePlayerPositionRef,
+  livePlayerRotationRef,
+  virtualControlsRef,
+  physicsPaused = false,
+  onInteractPress,
+  moveBlendRef,
+}: PhysicsPlayerProps) {
+  const sceneId = useCurrentSceneId();
+  const { activeCutsceneId, gameMode } = usePlayerPresentationState();
+  const timelineActive = useCinematicTimelineActive();
+  const hideForCinematicAvatar =
+    isIntroWakeupCutscene(activeCutsceneId) || timelineActive;
+  const showThirdPersonBody =
+    shouldShowThirdPersonAvatar(gameMode, activeCutsceneId) && !hideForCinematicAvatar;
+
+  const { rigidBodyRef, capsuleColliderRef, currentAnimRef } = usePhysicsPlayerMovement({
+    livePlayerPositionRef,
+    livePlayerRotationRef,
+    virtualControlsRef,
+    physicsPaused,
+    onInteractPress,
+    moveBlendRef,
+  });
+
+  const spawnPoint = getSceneConfig(sceneId).spawnPoint;
+
+  return (
+    <RigidBody
+      ref={rigidBodyRef}
+      type="kinematicPosition"
+      position={[spawnPoint[0], spawnPoint[1], spawnPoint[2]]}
+      colliders={false}
+      lockRotations
+    >
+      <CapsuleCollider
+        ref={capsuleColliderRef}
+        args={[PLAYER_HEIGHT / 2 - PLAYER_RADIUS, PLAYER_RADIUS]}
+        position={[0, PLAYER_HEIGHT / 2, 0]}
+        friction={0.7}
+        restitution={0}
+      />
+
+      {showThirdPersonBody && (
+        <>
+          <CinematicPlayerAvatar
+            currentAnimRef={currentAnimRef}
+            rotationRef={livePlayerRotationRef}
+          />
+          <PhysicsPlayerContactShadow />
+        </>
+      )}
+    </RigidBody>
+  );
+}

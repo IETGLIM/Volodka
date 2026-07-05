@@ -1,0 +1,84 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+/reports/
+/test-results/
+/playwright-report/
+
+# next.js
+/.next/
+/out/
+
+# vite
+/dist/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+.env*
+
+# vercel
+.vercel
+
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+local-*
+.claude
+.z-ai-config
+*.log
+dev.log
+dev.out.log
+test
+prompt
+
+server.log
+# Skills directory
+/skills/
+# deploy archives
+deploy-archive/
+examples/
+upload/
+/release/
+
+# local working junk — not part of the game
+/.tmp-archive/
+/.tmp-external/
+/.tmp-kenney/
+/.tmp-quaternius-men/
+/.tmp-quaternius.html
+/assets-source/ai3dgen/npcs/_quaternius_raw/
+/assets-source/animations/_downloads/
+/temp_assets/
+/.zscripts/
+*.zip
+/vite-inspect/
+/.vite-inspect/
+models-tree.txt
+models-external-tree.txt
+src-tree.txt
+
+.vercel

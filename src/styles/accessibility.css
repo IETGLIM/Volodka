@@ -1,0 +1,295 @@
+/* ══════════════════════════════════════════════════════════════
+   ACCESSIBILITY: Enhanced Accessibility Features
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Enhanced Focus Indicators ── */
+:focus-visible {
+  outline: 2px solid rgb(var(--cyber-cyan-rgb));
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Focus indicators for dark backgrounds */
+@media (prefers-color-scheme: dark) {
+  :focus-visible {
+    outline-color: rgb(var(--cyber-cyan-rgb));
+    outline-width: 2px;
+  }
+}
+
+/* Enhanced focus for interactive elements */
+button:focus-visible,
+a:focus-visible,
+[role="button"]:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid rgb(var(--cyber-cyan-rgb));
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(6, 182, 212, 0.2);
+}
+
+/* ── High Contrast Mode ── */
+@media (prefers-contrast: high) {
+  :root {
+    --cyber-cyan-rgb: 0, 255, 255;
+    --high-contrast-border: #ffffff;
+  }
+
+  * {
+    border-width: 2px !important;
+  }
+
+  /* Increased border contrast for panels */
+  .hud-scanline-bar,
+  .panel-scanlines,
+  [role="dialog"],
+  [data-panel] {
+    border: 2px solid #ffffff !important;
+  }
+
+  /* Enhanced text contrast */
+  .text-slate-300,
+  .text-slate-400 {
+    color: #e0e0e0 !important;
+  }
+
+  .text-slate-500 {
+    color: #b0b0b0 !important;
+  }
+
+  /* Enhanced button contrast */
+  button,
+  [role="button"] {
+    border: 2px solid currentColor !important;
+  }
+
+  /* Health bars with clear borders */
+  .cyber-bar,
+  [class*="hp-"],
+  [class*="health-"] {
+    border: 1px solid #ffffff !important;
+  }
+}
+
+/* ── Color-Blind Friendly Mode (data-attribute based) ── */
+[data-color-blind-mode="protanopia"] {
+  /* Red-weak: Adjust red-based colors */
+  --cb-red: #6b8fce;
+  --cb-green: #4ade80;
+  --cb-amber: #fbbf24;
+}
+
+[data-color-blind-mode="deuteranopia"] {
+  /* Green-weak: Adjust green-based colors */
+  --cb-red: #f87171;
+  --cb-green: #a78bfa;
+  --cb-amber: #fbbf24;
+}
+
+[data-color-blind-mode="tritanopia"] {
+  /* Blue-weak: Adjust blue-based colors */
+  --cb-red: #f87171;
+  --cb-green: #4ade80;
+  --cb-amber: #f97316;
+}
+
+[data-reduced-motion="true"] *,
+[data-reduced-motion="true"] *::before,
+[data-reduced-motion="true"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+[data-color-blind-mode] {
+  /* Apply color-blind friendly palette */
+  .text-rose-400,
+  .text-red-400 {
+    color: var(--cb-red, #f87171) !important;
+  }
+
+  .bg-rose-400,
+  .bg-red-400 {
+    background-color: var(--cb-red, #f87171) !important;
+  }
+
+  .text-emerald-400,
+  .text-green-400 {
+    color: var(--cb-green, #4ade80) !important;
+  }
+
+  .bg-emerald-400,
+  .bg-green-400 {
+    background-color: var(--cb-green, #4ade80) !important;
+  }
+
+  .text-amber-400,
+  .text-yellow-400 {
+    color: var(--cb-amber, #fbbf24) !important;
+  }
+
+  .bg-amber-400,
+  .bg-yellow-400 {
+    background-color: var(--cb-amber, #fbbf24) !important;
+  }
+
+  /* Health bars with patterns for additional distinction */
+  .enemy-hp-bar {
+    position: relative;
+  }
+
+  .enemy-hp-bar::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.1) 2px,
+      rgba(0, 0, 0, 0.1) 4px
+    );
+  }
+
+  .player-hp-bar {
+    position: relative;
+  }
+
+  .player-hp-bar::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 2px,
+      rgba(255, 255, 255, 0.05) 2px,
+      rgba(255, 255, 255, 0.05) 4px
+    );
+  }
+}
+
+/* ── Screen Reader Only Content ── */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.sr-only-focusable:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: inherit;
+  margin: inherit;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+/* ── Skip Links for Keyboard Navigation ── */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 16px;
+  background: rgb(var(--cyber-cyan-rgb));
+  color: #000;
+  text-decoration: none;
+  border-radius: 4px;
+  font-weight: 600;
+  z-index: 9999;
+  transition: top 0.3s;
+}
+
+.skip-link:focus {
+  top: 8px;
+}
+
+/* ── Touch Target Size Enhancement ── */
+@media (pointer: coarse) {
+  button,
+  a,
+  [role="button"],
+  [role="checkbox"],
+  [role="radio"] {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+/* ── Enhanced Text Legibility ── */
+@media (max-width: 768px) {
+  body {
+    font-size: 16px; /* Minimum readable size */
+  }
+}
+
+/* Line height for better readability */
+p,
+li,
+td,
+th,
+label,
+input,
+textarea,
+button {
+  line-height: 1.5;
+}
+
+/* ── Motion Sensitivity ── */
+@media (prefers-reduced-motion: reduce) {
+  /* Preserve essential animations but make them instant */
+  .combat-shake,
+  .damage-number,
+  .combo-counter {
+    animation-duration: 0.01ms !important;
+  }
+
+  /* Instant transitions for essential UI changes */
+  [data-motion-essential] {
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ── Keyboard Navigation Hints ── */
+[data-keyboard-hint]::after {
+  content: attr(data-keyboard-hint);
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  padding: 2px 6px;
+  font-size: 10px;
+  font-family: monospace;
+  background: rgba(6, 182, 212, 0.2);
+  border: 1px solid rgba(6, 182, 212, 0.4);
+  border-radius: 3px;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+
+kbd:hover,
+button:hover [data-keyboard-hint]::after {
+  opacity: 1;
+}
+
+/* ── Status Announcements ── */
+[aria-live="polite"],
+[aria-live="assertive"] {
+  /* Ensure live regions are properly positioned for screen readers */
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}

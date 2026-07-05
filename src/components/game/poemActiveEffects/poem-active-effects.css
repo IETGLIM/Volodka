@@ -1,0 +1,19 @@
+.poem-active-effects-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(251, 191, 36, 0.25) rgba(0, 0, 0, 0.4);
+  -webkit-overflow-scrolling: touch;
+}
+
+.poem-active-effects-scroll::-webkit-scrollbar {
+  height: 4px;
+}
+
+.poem-active-effects-scroll::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 2px;
+}
+
+.poem-active-effects-scroll::-webkit-scrollbar-thumb {
+  background: rgba(251, 191, 36, 0.35);
+  border-radius: 2px;
+}

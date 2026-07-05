@@ -1,0 +1,40 @@
+/* ─── Volodka RPG – world slice selectors ─── */
+
+import type { NPCRelation, QuestState } from '@/shared/types/game';
+import { getGameStore } from '../gameStore';
+import { useGameSelector, useGamePrimitive } from './hooks';
+
+/* ─── Plain getters ─── */
+
+export const selectQuests = (s = getGameStore()): QuestState[] => s.quests;
+
+export const selectNpcRelations = (s = getGameStore()): NPCRelation[] => s.npcRelations;
+
+export const selectCollectedPoems = (s = getGameStore()) => s.collectedPoems;
+
+export const selectNpcAffinity = (s = getGameStore()) => s.npcAffinity;
+
+export const selectNpcRelationValue = (s: ReturnType<typeof getGameStore>, npcId: string) =>
+  s.npcRelations.find((r) => r.npcId === npcId)?.value ?? 50;
+
+/* ─── React hooks ─── */
+
+export function useQuests(): QuestState[] {
+  return useGameSelector((s) => s.quests);
+}
+
+export function useNpcRelations(): NPCRelation[] {
+  return useGameSelector((s) => s.npcRelations);
+}
+
+export function useCollectedPoems() {
+  return useGameSelector((s) => s.collectedPoems);
+}
+
+export function useNpcAffinity() {
+  return useGameSelector((s) => s.npcAffinity);
+}
+
+export function useNpcRelationValue(npcId: string | undefined): number {
+  return useGamePrimitive((s) => (npcId ? selectNpcRelationValue(s, npcId) : 50));
+}

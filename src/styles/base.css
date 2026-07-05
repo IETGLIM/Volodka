@@ -1,0 +1,42 @@
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  /* Safety: ensure html always has black background — prevents white flash during load */
+  html, body {
+    @apply bg-background text-foreground;
+    background-color: #000;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    overflow: hidden;
+    overscroll-behavior: none;
+    /* Critical: prevent iOS Safari bounce & zoom on mobile */
+    touch-action: none;
+    height: 100vh; /* fallback for browsers without dvh */
+    height: 100dvh;
+    min-height: 100vh;
+    min-height: 100dvh;
+    /* Prevent iOS text size adjustment on rotation */
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* Body uses touch-action:none for game canvas — re-enable native typing/scrolling in form fields */
+  input,
+  textarea,
+  select,
+  [contenteditable] {
+    touch-action: auto;
+  }
+
+  /* Cyberpunk selection colors */
+  ::selection {
+    background: rgb(var(--cyber-cyan-rgb) / 0.25);
+    color: #e0f7fa;
+  }
+  ::-moz-selection {
+    background: rgb(var(--cyber-cyan-rgb) / 0.25);
+    color: #e0f7fa;
+  }
+}

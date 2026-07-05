@@ -1,0 +1,222 @@
+/* ══════════════════════════════════════════════════════════════
+   PHASE 5: Additional AAA Cyberpunk Visual Polish
+   ══════════════════════════════════════════════════════════════ */
+
+/* Hex grid pattern overlay for HUD panels */
+@keyframes hex-drift {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 -48px; }
+}
+
+.hex-grid-bg,
+.skill-hex-bg {
+  --hex-grid-opacity: 0.02;
+  position: relative;
+}
+
+.hex-grid-bg::before,
+.skill-hex-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background-image: var(--pattern-hex-grid);
+  opacity: var(--hex-grid-opacity);
+  animation: hex-drift 20s linear infinite;
+}
+
+/* Circuit trace line animation for panel edges */
+@keyframes circuit-trace {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 200% 0%; }
+}
+
+.circuit-trace-line {
+  background: linear-gradient(90deg, transparent 0%, rgb(var(--cyber-cyan-rgb) / 0.4) 10%, transparent 20%);
+  background-size: 200% 100%;
+  animation: circuit-trace 3s linear infinite;
+}
+
+/* Breathing glow for important indicators */
+@keyframes breathe-glow {
+  0%, 100% {
+    box-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.1), 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.05);
+  }
+  50% {
+    box-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.2), 0 0 16px rgb(var(--cyber-cyan-rgb) / 0.1), 0 0 24px rgb(var(--cyber-cyan-rgb) / 0.05);
+  }
+}
+
+.breathe-glow {
+  animation: breathe-glow 4s ease-in-out infinite;
+}
+
+/* Warning pulse for critical states (low energy, high stress) */
+@keyframes warning-pulse {
+  0%, 100% {
+    border-color: rgba(251, 113, 133, 0.2);
+    box-shadow: 0 0 4px rgba(251, 113, 133, 0.1);
+  }
+  50% {
+    border-color: rgba(251, 113, 133, 0.5);
+    box-shadow: 0 0 12px rgba(251, 113, 133, 0.2), 0 0 24px rgba(251, 113, 133, 0.1);
+  }
+}
+
+.warning-pulse {
+  animation: warning-pulse 1.5s ease-in-out infinite;
+}
+
+/* Matrix code rain background for panels */
+@keyframes matrix-rain-bg {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 -200px; }
+}
+
+.matrix-rain-bg {
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent 0px,
+      transparent 2px,
+      rgb(var(--cyber-cyan-rgb) / 0.01) 2px,
+      rgb(var(--cyber-cyan-rgb) / 0.01) 3px
+    );
+  background-size: 100% 200px;
+  animation: matrix-rain-bg 10s linear infinite;
+}
+
+/* Holographic flicker — soft variant: same keyframes, slower cycle */
+.holo-flicker-soft {
+  animation: holo-flicker 5s ease-in-out infinite;
+}
+
+/* Tooltip hover glow effect */
+.tooltip-glow {
+  position: relative;
+}
+
+.tooltip-glow::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  background: radial-gradient(ellipse at center, rgb(var(--cyber-cyan-rgb) / 0.06), transparent 70%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.tooltip-glow:hover::after {
+  opacity: 1;
+}
+
+/* Cyberpunk data bar with gradient fill */
+.cyber-bar {
+  position: relative;
+  overflow: hidden;
+}
+
+.cyber-bar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.05) 50%, transparent 100%);
+  animation: shimmer 2.5s ease-in-out infinite;
+}
+
+/* Neon text glow utility classes */
+.neon-text-cyan {
+  text-shadow: 0 0 7px rgb(var(--cyber-cyan-rgb) / 0.6), 0 0 15px rgb(var(--cyber-cyan-rgb) / 0.3), 0 0 30px rgb(var(--cyber-cyan-rgb) / 0.15);
+}
+
+.neon-text-amber {
+  text-shadow: 0 0 7px rgba(251, 191, 36, 0.6), 0 0 15px rgba(251, 191, 36, 0.3), 0 0 30px rgba(251, 191, 36, 0.15);
+}
+
+.neon-text-emerald {
+  text-shadow: 0 0 7px rgba(52, 211, 153, 0.6), 0 0 15px rgba(52, 211, 153, 0.3), 0 0 30px rgba(52, 211, 153, 0.15);
+}
+
+.neon-text-rose {
+  text-shadow: 0 0 7px rgba(251, 113, 133, 0.6), 0 0 15px rgba(251, 113, 133, 0.3), 0 0 30px rgba(251, 113, 133, 0.15);
+}
+
+/* Panel edge glow animation */
+@keyframes edge-glow {
+  0%, 100% {
+    border-color: rgb(var(--cyber-cyan-rgb) / 0.15);
+  }
+  50% {
+    border-color: rgb(var(--cyber-cyan-rgb) / 0.35);
+  }
+}
+
+.edge-glow {
+  animation: edge-glow 4s ease-in-out infinite;
+}
+
+/* Digital noise texture overlay */
+.digital-noise {
+  position: relative;
+}
+
+.digital-noise::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.02;
+  pointer-events: none;
+  z-index: 1;
+  background-image: var(--pattern-noise);
+  background-size: 128px 128px;
+  mix-blend-mode: overlay;
+}
+
+/* Intersection observer fade-in for panels */
+@keyframes fade-slide-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-slide-up {
+  animation: fade-slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Tab indicator animation */
+@keyframes tab-indicator {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+.tab-indicator {
+  animation: tab-indicator 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Reward popup animation */
+@keyframes reward-pop {
+  0% { transform: scale(0.8); opacity: 0; }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.reward-pop {
+  animation: reward-pop 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Notification bell ring */
+@keyframes bell-ring {
+  0%, 100% { transform: rotate(0deg); }
+  15% { transform: rotate(12deg); }
+  30% { transform: rotate(-10deg); }
+  45% { transform: rotate(6deg); }
+  60% { transform: rotate(-4deg); }
+  75% { transform: rotate(2deg); }
+}
+
+.bell-ring {
+  animation: bell-ring 0.8s ease-in-out;
+}

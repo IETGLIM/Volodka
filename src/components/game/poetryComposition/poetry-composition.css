@@ -1,0 +1,49 @@
+.poetry-word-btn:not(:disabled):hover {
+  background: rgba(168, 85, 247, 0.15) !important;
+  border-color: rgba(168, 85, 247, 0.5) !important;
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.15);
+}
+
+.poetry-finish-btn:hover,
+.poetry-claim-btn:hover {
+  background: rgba(168, 85, 247, 0.25) !important;
+  border-color: rgba(168, 85, 247, 0.7) !important;
+  box-shadow: 0 0 25px rgba(168, 85, 247, 0.2);
+}
+
+.poetry-blank-btn {
+  min-width: 60px;
+  text-align: center;
+  padding: 1px 6px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+
+.poetry-blank-btn--filled {
+  border-bottom: 2px solid rgba(168, 85, 247, 0.5);
+  background: rgba(168, 85, 247, 0.12);
+  color: rgba(168, 85, 247, 0.9);
+}
+
+.poetry-blank-btn--selected {
+  border-bottom: 2px solid rgba(168, 85, 247, 0.8);
+  background: rgba(168, 85, 247, 0.08);
+  color: rgba(168, 85, 247, 0.9);
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.2);
+}
+
+.poetry-blank-btn--empty {
+  border-bottom: 2px solid rgba(168, 85, 247, 0.2);
+  background: rgba(168, 85, 247, 0.02);
+  color: rgba(168, 85, 247, 0.3);
+}
+
+.poetry-blank-btn--pulse {
+  animation: poetry-blank-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes poetry-blank-pulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(168, 85, 247, 0.15); }
+  50% { box-shadow: 0 0 16px rgba(168, 85, 247, 0.3); }
+}

@@ -1,0 +1,47 @@
+@keyframes quest-accept-scanline-drift {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 100px; }
+}
+
+@keyframes quest-accept-holo-shimmer {
+  0% { opacity: 0; transform: translateX(-100%) rotate(15deg); }
+  40% { opacity: 0.5; }
+  100% { opacity: 0; transform: translateX(200%) rotate(15deg); }
+}
+
+.quest-accept-scanlines {
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 255, 238, 0.015) 2px,
+    rgba(0, 255, 238, 0.015) 4px
+  );
+  animation: quest-accept-scanline-drift 8s linear infinite;
+}
+
+.quest-accept-holo-shimmer {
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(0, 255, 238, 0.12) 45%,
+    rgba(0, 255, 238, 0.04) 50%,
+    transparent 55%
+  );
+  animation: quest-accept-holo-shimmer 4s ease-in-out infinite;
+}
+
+.quest-accept-dialog--static .quest-accept-scanlines,
+.quest-accept-dialog--static .quest-accept-holo-shimmer {
+  animation: none;
+}
+
+.quest-accept-btn--accept:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(0, 255, 238, 0.28), rgba(0, 255, 238, 0.15)) !important;
+  box-shadow: 0 0 15px rgba(0, 255, 238, 0.2);
+}
+
+.quest-accept-btn--decline:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(255, 100, 68, 0.2), rgba(255, 100, 68, 0.1)) !important;
+  box-shadow: 0 0 15px rgba(255, 100, 68, 0.15);
+}

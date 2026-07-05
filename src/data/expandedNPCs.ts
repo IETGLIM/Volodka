@@ -1,0 +1,524 @@
+/* ─── Volodka RPG – expanded NPC definitions ─── */
+/* Additional NPCs that expand the world beyond the original 7.
+   Import and merge with NPC_DEFINITIONS from npcDefinitions.ts.
+   Linked quest IDs are in a separate record for reference. */
+
+import type { NPCDefinition } from '@/shared/types/game'
+import { NPC_PROCEDURAL_MODEL_PLACEHOLDER } from '@/config/npcModelRegistry'
+import { DEFAULT_NPC_ANIMATION_CLIPS } from '@/config/npcAnimationDefaults'
+
+/* ── NPC-to-quest links (for quest assignment logic) ── */
+export const EXPANDED_NPC_QUEST_LINKS: Record<string, string[]> = {
+  solnysh: ['voice_of_the_past', 'solnysh_comfort', 'solnysh_roof_wine', 'solnysh_relocation'],
+  lyonya: ['solnysh_roof_wine', 'solnysh_relocation'],
+  sergey: ['night_shift_mystery', 'night_watch'],
+  lena: ['digital_ghost', 'secrets_of_old_code'],
+  oleg: ['guild_infiltration'],
+  kate: ['poetry_smuggling', 'poetry_collection'],
+  maxim: ['underground_resistance', 'data_heist', 'system_infiltration', 'system_takedown', 'rooftop_confrontation'],
+  zeka: ['data_heist', 'system_infiltration', 'system_takedown'],
+  anya: ['data_heist', 'rebuild_the_guild'],
+  fisherman_trofim: ['pier_watchman_key', 'basement_hum', 'pier_midnight_fishing', 'pier_ritka_strings'],
+  baba_zina: ['machine_confession', 'factory_zarya_memory', 'factory_baba_zina_tea'],
+  street_poet: ['epilogue_monument'],
+  marat_echo: ['library_katya_research'],
+  guild_defector: ['resistance_defector_rescue'],
+}
+
+/* ── All bark text variants (hostile/neutral/friendly arrays) ── */
+export const EXPANDED_NPC_BARK_TEXTS: Record<string, {
+  hostile: string[]
+  neutral: string[]
+  friendly: string[]
+}> = {
+  solnysh: {
+    hostile: ['Не сейчас, Володька… мне нужно побыть одной.'],
+    neutral: ['Привет. Ты снова задумчивый.', 'Умка скучала без тебя.'],
+    friendly: ['Володька! Я как раз думала о тебе.', 'Помнишь, как мы бегали из гимназии?..'],
+  },
+  lyonya: {
+    hostile: ['Не время для разговоров.'],
+    neutral: ['Кофе свежий — налей себе.', 'Солныш сегодня тихая.'],
+    friendly: ['Володька! Как раз сварил новую обжарку.', 'Если что — я рядом для вас обоих.'],
+  },
+  sergey: {
+    hostile: ['Не мешай работе.'],
+    neutral: ['Ночная смена... Как всегда.', 'Серверная — мой дом.'],
+    friendly: ['Володька, у меня есть доступ к старым логам.', 'Слушай, тут кое-что странное в логах...'],
+  },
+  lena: {
+    hostile: ['Ты не тот, за кого себя выдаёшь.'],
+    neutral: ['...[тишина]...', 'Сеть говорила о тебе.'],
+    friendly: ['Володька, у меня есть кое-что для тебя. Из Сети.', 'Я нашла бэкдор в их системе.'],
+  },
+  oleg: {
+    hostile: ['Стой. Доступ запрещён.'],
+    neutral: ['Пропуск есть? Нет — проходи мимо.', 'Приказ есть приказ.'],
+    friendly: ['Володька... Будь осторожен. Они за тобой следят.', 'Я закрою глаза на этот раз.'],
+  },
+  kate: {
+    hostile: ['Эта секция закрыта.'],
+    neutral: ['Тише... Стены слушают.', 'Книги — последний убежище.'],
+    friendly: ['Володька, я припрятала кое-что для тебя.', 'Между строк — больше правды, чем в новостях.'],
+  },
+  maxim: {
+    hostile: ['Не время для разговоров.'],
+    neutral: ['Сопротивление не спит.', 'Каждый день — новый риск.'],
+    friendly: ['Володька, мы готовы идти за тобой.', 'Гильдия ещё пожалеет, что нас недооценила.'],
+  },
+  zeka: {
+    hostile: ['Не подходи. Я не доверяю.'],
+    neutral: ['Завод помнит всё.', 'Старый код не врёт.'],
+    friendly: ['Володька, у меня есть данные по «Надзору».', 'Я знал Александра. До того, как он стал тенью.'],
+  },
+  anya: {
+    hostile: ['Сеть под наблюдением. Молчи.'],
+    neutral: ['Пинг стабилен. Пока.', 'Камеры — мои глаза.'],
+    friendly: ['Володька, я прикрою тыл в сети.', 'Офис гильдии — открытая книга, если знать пароль.'],
+  },
+  fisherman_trofim: {
+    hostile: ['Уйди с пирса. Рыбу пугаешь.'],
+    neutral: ['Клюёт плохо. Река гудит.', 'Тридцать лет завод сторожил. Теперь воду сторожу.'],
+    friendly: ['А, это ты. Садись, поплавок посторожим вместе.', 'Слышишь? Под полом гудело так же. Один в один.'],
+  },
+  baba_zina: {
+    hostile: ['Машина не для любопытных. Уходи.'],
+    neutral: ['Слушай. Не трогай. Сначала слушай.', '«Заря-М» помнит каждого, кто спускался.'],
+    friendly: ['Поэт пришёл. Машина ждала.', 'Она пишет стихи — не для гильдии. Для тех, кто слышит.'],
+  },
+}
+
+/* ── Expanded NPC definitions (compatible with NPCDefinition type) ── */
+
+export const EXPANDED_NPCS: NPCDefinition[] = [
+  /* ─────────────── АЛИНА «СОЛНЫШ» (vera) – лучшая подруга, дизайнер ─────────────── */
+  {
+    id: 'solnysh',
+    name: 'Солныш (Алина)',
+    modelPath: '/models/npcs/solnysh.glb',
+    scale: 0.92,
+    animations: DEFAULT_NPC_ANIMATION_CLIPS,
+    defaultPosition: [0, 0, 1.5],
+    patrolRadius: 1.2,
+    patrolWaypoints: [
+      [0, 0, 1.5],
+      [0.5, 0, 0.5],
+      [-0.4, 0, -0.5],
+      [0, 0, 1.5],
+    ],
+    dialogueNodeId: 'vera_greeting',
+    npcSplashProfile: 'npc_solnysh',
+    scheduleId: 'schedule_solnysh',
+    description: 'Алина — настоящее имя; Солныш — прозвище с детства, которым её зовёт Володька. Тридцать три года, блондинка с голубыми глазами. Лучшая подруга с детства, одноклассница из гимназии, дочь учительницы. Дизайнер и художник. Жена Лёни.',
+    barkTexts: {
+      hostile: 'Не сейчас, Володька… мне нужно побыть одной.',
+      neutral: 'Привет. Ты снова задумчивый.',
+      friendly: 'Володька! Я как раз думала о тебе.',
+    },
+    appearance: {
+      bodyColor: '#f0d8e8',
+      accentColor: '#ffd8ec',
+      headAccessory: 'scarf',
+      height: 0.92,
+      glowColor: '#ffb8d0',
+      silhouette: 'slim',
+    },
+  },
+
+  /* ─────────────── ЛЁНЯ (ЛЕОНИД) – бариста, муж Алины ─────────────── */
+  {
+    id: 'lyonya',
+    name: 'Лёня (Леонид)',
+    modelPath: NPC_PROCEDURAL_MODEL_PLACEHOLDER,
+    scale: 1.0,
+    animations: DEFAULT_NPC_ANIMATION_CLIPS,
+    defaultPosition: [-2.0, 0, -1.5],
+    patrolRadius: 1.0,
+    patrolWaypoints: [
+      [-2.0, 0, -1.5],
+      [-2.4, 0, -2.0],
+      [-1.6, 0, -1.0],
+      [-2.0, 0, -1.5],
+    ],
+    dialogueNodeId: 'lyonya_greeting',
+    npcSplashProfile: 'npc_lyonya',
+    description: 'Леонид — настоящее имя; Лёня — так его зовут дома. Обжарщик кофе и бариста, муж Алины. Спокойный, надёжный — рядом с ней уже много лет.',
+    barkTexts: {
+      hostile: 'Не время для разговоров.',
+      neutral: 'Кофе свежий — налей себе.',
+      friendly: 'Володька! Как раз сварил новую обжарку.',
+    },
+    appearance: {
+      bodyColor: '#6a5040',
+      accentColor: '#c8a878',
+      headAccessory: 'none',
+      height: 1.02,
+      glowColor: '#d4a060',
+      silhouette: 'average',
+    },
+  },
+
+  /* ─────────────── СЕРГЕЙ – sysadmin ─────────────── */
+  {
+    id: 'sergey',
+    name: 'Сергей',
+    modelPath: NPC_PROCEDURAL_MODEL_PLACEHOLDER,
+    scale: 1.05,
+    animations: DEFAULT_NPC_ANIMATION_CLIPS,
+    defaultPosition: [2.5, 0, -1.0],
+    patrolRadius: 1.0,
+    patrolWaypoints: [
+      [2.5, 0, -1.0],
+      [3.0, 0, -0.5],
+      [2.0, 0, -1.5],
+      [2.5, 0, -1.0],
+    ],
+    dialogueNodeId: 'sergey_greeting',
+    npcSplashProfile: 'npc_sergey',
+    description: 'Сисадмин ночного смены. Молчаливый, но надёжный. Знает каждый кабель в серверной.',
+    barkTexts: {
+      hostile: 'Не мешай работе.',
+      neutral: 'Ночная смена... Как всегда.',
+      friendly: 'Володька, у меня есть доступ к старым логам.',
+    },
+    appearance: {
+      bodyColor: '#40a0c0',
+      accentColor: '#40a0c0',
+      headAccessory: 'none',
+      height: 1.05,
+      glowColor: '#40a0c0',
+      silhouette: 'average',
+    },
+  },
+
+  /* ─────────────── ЛЕНА – hacker from the Network ─────────────── */
+  {
+    id: 'lena',
+    name: 'Лена',
+    modelPath: NPC_PROCEDURAL_MODEL_PLACEHOLDER,
+    scale: 0.85,
+    animations: DEFAULT_NPC_ANIMATION_CLIPS,
+    defaultPosition: [0, 0, 3.5],
+    patrolRadius: 2.0,
+    patrolWaypoints: [
+      [0, 0, 3.5],
+      [1.0, 0, 3.0],
+      [-1.0, 0, 2.5],
+      [0, 0, 3.5],
+    ],
+    dialogueNodeId: 'lena_greeting',
+    npcSplashProfile: 'npc_lena',
+    description: 'Хакер из Сети. Никто не знает её настоящего имени. Она — тень в цифровом мире.',
+    barkTexts: {
+      hostile: 'Ты не тот, за кого себя выдаёшь.',
+      neutral: '...[тишина]...',
+      friendly: 'Володька, у меня есть кое-что для тебя. Из Сети.',
+    },
+    appearance: {
+      bodyColor: '#d040d0',
+      accentColor: '#d040d0',
+      headAccessory: 'earring',
+      height: 0.85,
+      glowColor: '#d040d0',
+      silhouette: 'slim',
+    },
+  },
+
+  /* ─────────────── ОЛЕГ – guild guard ─────────────── */
+  {
+    id: 'oleg',
+    name: 'Олег',
+    modelPath: NPC_PROCEDURAL_MODEL_PLACEHOLDER,
+    scale: 1.1,
+    animations: DEFAULT_NPC_ANIMATION_CLIPS,
+    defaultPosition: [4.0, 0, 0],
+    patrolRadius: 1.0,
+    patrolWaypoints: [
+      [4.0, 0, 0],
+      [4.5, 0, -0.5],
+      [3.5, 0, 0.5],
+      [4.0, 0, 0],
+    ],
+    dialogueNodeId: 'oleg_greeting',
+    npcSplashProfile: 'npc_oleg',
+    description: 'Охранник гильдии. Бывший военный. Выполняет приказы, но сомневается.',
+    barkTexts: {
+      hostile: 'Стой. Доступ запрещён.',
+      neutral: 'Пропуск есть? Нет — проходи мимо.',
+      friendly: 'Володька... Будь осторожен. Они за тобой следят.',
+    },
+    appearance: {
+      bodyColor: '#a0a0a0',
+      accentColor: '#a0a0a0',
+      headAccessory: 'hat',
+      height: 1.1,
+      glowColor: '#a0a0a0',
+      silhouette: 'heavy',
+    },
+  },
+
+  /* ─────────────── КАТЯ – librarian ─────────────── */
+  {
+    id: 'kate',
+    name: 'Катя',
+    modelPath: '/models/npcs/kate.glb',
+    scale: 0.9,
+    animations: DEFAULT_NPC_ANIMATION_CLIPS,
+    defaultPosition: [-2.0, 0, -2.0],
+    patrolRadius: 1.5,
+    patrolWaypoints: [
+      [-2.0, 0, -2.0],
+      [-2.5, 0, -2.5],
+      [-1.5, 0, -1.5],
+      [-2.0, 0, -2.0],
+    ],
+    dialogueNodeId: 'kate_greeting',
+    npcSplashProfile: 'npc_kate',
+    description: 'Библиотекарь. Хранительница запрещённых книг. Тихая, но опасная.',
+    barkTexts: {
+      hostile: 'Эта секция закрыта.',
+      neutral: 'Тише... Стены слушают.',
+      friendly: 'Володька, я припрятала кое-что для тебя.',
+    },
+    appearance: {
+      bodyColor: '#60c060',
+      accentColor: '#60c060',
+      headAccessory: 'glasses',
+      height: 0.9,
+      glowColor: '#60c060',
+      silhouette: 'slim',
+    },
+  },
+
+  /* ─────────────── МАКСИМ – лидер сопротивления ─────────────── */
+  {
+    id: 'maxim',
+    name: 'Максим',
+    modelPath: '/models/npcs/maxim.glb',
+    scale: 1.1,
+    animations: DEFAULT_NPC_ANIMATION_CLIPS,
+    defaultPosition: [-2.0, 0, -1.5],
+    patrolRadius: 2.0,
+    patrolWaypoints: [
+      [-2.0, 0, -1.5],
+      [-1.0, 0, -2.0],
+      [-2.5, 0, -0.5],
+      [-2.0, 0, -1.5],
+    ],
+    dialogueNodeId: 'maxim_greeting',
+    npcSplashProfile: 'npc_maxim',
+    description: 'Лидер подпольного сопротивления. Бывший рабочий завода с боевыми имплантами.',
+    barkTexts: {
+      hostile: 'Не время для разговоров.',
+      neutral: 'Сопротивление не спит.',
+      friendly: 'Володька, мы готовы идти за тобой.',
+    },
+    appearance: {
+      bodyColor: '#c06040',
+      accentColor: '#c06040',
+      headAccessory: 'none',
+      height: 1.1,
+      glowColor: '#c06040',
+      silhouette: 'heavy',
+    },
+  },
+
+  /* ─────────────── ЖЕКА – старый хакер завода ─────────────── */
+  {
+    id: 'zeka',
+    name: 'Жека',
+    modelPath: '/models/npcs/zeka.glb',
+    scale: 1.0,
+    animations: DEFAULT_NPC_ANIMATION_CLIPS,
+    defaultPosition: [1.0, 0, -1.0],
+    patrolRadius: 1.5,
+    patrolWaypoints: [
+      [1.0, 0, -1.0],
+      [1.5, 0, -0.5],
+      [0.5, 0, -1.5],
+      [1.0, 0, -1.0],
+    ],
+    dialogueNodeId: 'zeka_greeting',
+    npcSplashProfile: 'npc_zeka',
+    description: 'Старый рабочий и хакер. Знал Александра до Краха. Хранит секреты «Надзора».',
+    barkTexts: {
+      hostile: 'Не подходи. Я не доверяю.',
+      neutral: 'Завод помнит всё.',
+      friendly: 'Володька, у меня есть данные по «Надзору».',
+    },
+    appearance: {
+      bodyColor: '#808070',
+      accentColor: '#808070',
+      headAccessory: 'hat',
+      height: 1.0,
+      glowColor: '#808070',
+      silhouette: 'average',
+    },
+  },
+
+  /* ─────────────── АНЯ – хакер сопротивления ─────────────── */
+  {
+    id: 'anya',
+    name: 'Аня',
+    modelPath: '/models/npcs/anya.glb',
+    scale: 0.9,
+    animations: DEFAULT_NPC_ANIMATION_CLIPS,
+    defaultPosition: [0.5, 0, 2.0],
+    patrolRadius: 1.5,
+    patrolWaypoints: [
+      [0.5, 0, 2.0],
+      [1.0, 0, 1.5],
+      [0.0, 0, 2.5],
+      [0.5, 0, 2.0],
+    ],
+    dialogueNodeId: 'anya_greeting',
+    npcSplashProfile: 'npc_anya',
+    description: 'Хакер сопротивления. Взламывает камеры и координирует связь во время операций.',
+    barkTexts: {
+      hostile: 'Сеть под наблюдением. Молчи.',
+      neutral: 'Пинг стабилен. Пока.',
+      friendly: 'Володька, я прикрою тыл в сети.',
+    },
+    appearance: {
+      bodyColor: '#5090d0',
+      accentColor: '#5090d0',
+      headAccessory: 'glasses',
+      height: 0.9,
+      glowColor: '#5090d0',
+      silhouette: 'slim',
+    },
+  },
+
+  /* ─────────────── ТРОФИМ – старик-рыбак, бывший сторож завода ─────────────── */
+  {
+    id: 'fisherman_trofim',
+    name: 'Трофим',
+    modelPath: '/models/npcs/trofim.glb',
+    scale: 1.0,
+    animations: DEFAULT_NPC_ANIMATION_CLIPS,
+    defaultPosition: [4.0, 0, -7.2],
+    defaultRotation: Math.PI,
+    patrolRadius: 0.6,
+    dialogueNodeId: 'trofim_greeting',
+    npcSplashProfile: 'npc_fisherman_trofim',
+    description: 'Старик-рыбак на пирсе №3. Тридцать лет был сторожем завода «Хром-М» и до сих пор слышит гул под полом — даже сквозь воду.',
+    barkTexts: {
+      hostile: 'Уйди с пирса. Рыбу пугаешь.',
+      neutral: 'Клюёт плохо. Река гудит.',
+      friendly: 'А, это ты. Садись, поплавок посторожим вместе.',
+    },
+    appearance: {
+      bodyColor: '#3a4438',
+      accentColor: '#7a8a6a',
+      headAccessory: 'hat',
+      height: 0.97,
+      glowColor: '#88aa77',
+      silhouette: 'average',
+    },
+  },
+
+  /* ─────────────── БАБА ЗИНА – паяльщица, хранительница «Зари-М» ─────────────── */
+  {
+    id: 'baba_zina',
+    name: 'Баба Зина',
+    modelPath: '/models/npcs/baba_zina.glb',
+    scale: 0.88,
+    animations: DEFAULT_NPC_ANIMATION_CLIPS,
+    defaultPosition: [-2.0, 0, -4.0],
+    patrolRadius: 0.4,
+    dialogueNodeId: 'baba_zina_greeting',
+    npcSplashProfile: 'npc_baba_zina',
+    description: 'Восьмидесятилетняя паяльщица завода «Хром-М». Ежедневно спускается в подвал к «Заре-М» и говорит, что машина отвечает стихами.',
+    barkTexts: {
+      hostile: 'Машина не для любопытных. Уходи.',
+      neutral: 'Слушай. Не трогай. Сначала слушай.',
+      friendly: 'Поэт пришёл. Машина ждала.',
+    },
+    appearance: {
+      bodyColor: '#e8e4dc',
+      accentColor: '#c8c0b0',
+      headAccessory: 'none',
+      height: 0.85,
+      glowColor: '#aacc88',
+      silhouette: 'average',
+    },
+  },
+
+  {
+    id: 'street_poet',
+    name: 'Уличный поэт',
+    modelPath: NPC_PROCEDURAL_MODEL_PLACEHOLDER,
+    scale: 1.0,
+    animations: DEFAULT_NPC_ANIMATION_CLIPS,
+    defaultPosition: [2.0, 0, 0],
+    patrolRadius: 1.0,
+    dialogueNodeId: 'street_poet_greeting',
+    npcSplashProfile: 'npc_street_poet',
+    description: 'Читает на площади то, что гильдия пометила как шум. Голос тихий, но дроны его почему-то не слышат.',
+    barkTexts: {
+      hostile: 'Не смотри на меня. Смотри на строки.',
+      neutral: '...рифма ещё жива.',
+      friendly: 'Поэт? Тогда ты знаешь — слова тяжелеют к утру.',
+    },
+    appearance: {
+      bodyColor: '#4a4a58',
+      accentColor: '#8888aa',
+      headAccessory: 'hat',
+      height: 0.95,
+      glowColor: '#aabbcc',
+      silhouette: 'slim',
+    },
+  },
+
+  {
+    id: 'marat_echo',
+    name: 'Марат (эхо)',
+    modelPath: NPC_PROCEDURAL_MODEL_PLACEHOLDER,
+    scale: 1.0,
+    animations: DEFAULT_NPC_ANIMATION_CLIPS,
+    defaultPosition: [0, 0, -2],
+    patrolRadius: 0,
+    dialogueNodeId: 'marat_echo_greeting',
+    npcSplashProfile: 'npc_marat_echo',
+    description: 'Цифровой след первого поэта-прошивщика. Говорит через терминалы без питания сети.',
+    barkTexts: {
+      hostile: '[помехи]',
+      neutral: 'Если читаешь это — я ещё в проводах.',
+      friendly: 'Не верь гильдии. Верь рифме.',
+    },
+    appearance: {
+      bodyColor: '#00ffaa',
+      accentColor: '#00ffaa',
+      headAccessory: 'none',
+      height: 1.0,
+      glowColor: '#00ffaa',
+      silhouette: 'slim',
+    },
+  },
+
+  {
+    id: 'guild_defector',
+    name: 'Перебежчик',
+    modelPath: NPC_PROCEDURAL_MODEL_PLACEHOLDER,
+    scale: 1.0,
+    animations: DEFAULT_NPC_ANIMATION_CLIPS,
+    defaultPosition: [-1.0, 0, 1.0],
+    patrolRadius: 0.5,
+    dialogueNodeId: 'guild_defector_greeting',
+    npcSplashProfile: 'npc_guild_defector',
+    description: 'Бывший инженер серверной гильдии. Помнит расписание дронов наизусть.',
+    barkTexts: {
+      hostile: 'Не подходи. Я ещё не уверен, кто ты.',
+      neutral: 'Серверную я помню. Себя — почти нет.',
+      friendly: 'Спасибо. Ты вернул не данные — человека.',
+    },
+    appearance: {
+      bodyColor: '#556677',
+      accentColor: '#8899aa',
+      headAccessory: 'glasses',
+      height: 0.95,
+      glowColor: '#6688aa',
+      silhouette: 'average',
+    },
+  },
+]

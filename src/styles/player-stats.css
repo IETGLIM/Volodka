@@ -1,0 +1,80 @@
+/* ══════════════════════════════════════════════════════════════
+   SESSION 6: PlayerStatsPanel
+   ══════════════════════════════════════════════════════════════ */
+
+/* ─── Stats panel container base ─── */
+.stats-panel-container {
+  isolation: isolate;
+  font-family: 'Geist Mono', monospace;
+}
+
+/* ─── Stats panel bar shimmer animation ─── */
+@keyframes stats-bar-shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+
+.stats-panel-bar-fill {
+  position: relative;
+  overflow: hidden;
+}
+
+.stats-panel-bar-fill::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.12) 45%,
+    rgba(255, 255, 255, 0.2) 50%,
+    rgba(255, 255, 255, 0.12) 55%,
+    transparent 100%
+  );
+  animation: stats-bar-shimmer 2.5s ease-in-out infinite;
+}
+
+/* ─── Scan-line sweep overlay for stats panel ─── */
+@keyframes stats-scanline-sweep {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+
+.stats-panel-scanline::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgb(var(--cyber-cyan-rgb) / 0.02) 40%,
+    rgb(var(--cyber-cyan-rgb) / 0.04) 50%,
+    rgb(var(--cyber-cyan-rgb) / 0.02) 60%,
+    transparent 100%
+  );
+  pointer-events: none;
+  animation: stats-scanline-sweep 6s linear infinite;
+}
+
+/* ─── Neon border glow breathing for stats panel ─── */
+@keyframes stats-border-breathe {
+  0%, 100% {
+    border-color: rgb(var(--cyber-cyan-rgb) / 0.2);
+  }
+  50% {
+    border-color: rgb(var(--cyber-cyan-rgb) / 0.4);
+  }
+}
+
+/* ─── Stats panel close button enhanced glow ─── */
+.stats-panel-container .close-btn-glow:hover {
+  box-shadow: 0 0 16px rgb(var(--cyber-cyan-rgb) / 0.4), 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.25);
+  background: rgb(var(--cyber-cyan-rgb) / 0.12);
+  color: var(--cyber-cyan);
+}
+
+/* ─── Corner bracket enhanced for stats panel ─── */
+.stats-panel-container .corner-bracket {
+  width: 16px;
+  height: 16px;
+}

@@ -1,0 +1,146 @@
+import {
+  updateExplorationState,
+  resolveCameraCollision,
+} from '../cinematicCamera';
+import {
+  LOOK_HEIGHT,
+  MIN_DISTANCE,
+  WALL_MARGIN,
+  LOOK_AHEAD_STRENGTH,
+  LOOK_AHEAD_LERP_SPEED,
+  FIRST_PERSON_ENABLED,
+  FIRST_PERSON_EYE_HEIGHT,
+} from '../cameraConstants';
+import { shouldKeepFirstPersonExplorationCamera } from '@/engine/interaction/interactionSession';
+import type { CameraModeStrategy } from '../types';
+
+/** Default spring-based exploration camera with look-ahead and breathing bob */
+export const explorationStrategy: CameraModeStrategy = {
+  id: 'exploration',
+  priority: 10,
+
+  isActive() {
+    return true;
+  },
+
+  update(ctx) {
+    const { playerPos, yaw, pitch, offset, desiredPos, lookTarget, playerVelocity } = ctx;
+
+    // ── First-person: camera at the eyes, look along yaw/pitch ──
+    if (FIRST_PERSON_ENABLED && shouldKeepFirstPersonExplorationCamera()) {
+      const exploration = ctx.exploration;
+      let eyeBaseY = playerPos.y;
+      if (exploration) {
+        const expResult = updateExplorationState(
+          exploration,
+          playerPos,
+          yaw,
+          playerVelocity,
+          ctx.delta,
+          ctx.moveBlend,
+        );
+        eyeBaseY = expResult.targetHeight;
+      }
+
+      offset.set(
+        Math.sin(yaw) * Math.cos(pitch),
+        Math.sin(pitch),
+        Math.cos(yaw) * Math.cos(pitch),
+      );
+      const eyeY = eyeBaseY + FIRST_PERSON_EYE_HEIGHT;
+      const targetPos = desiredPos.set(playerPos.x, eyeY, playerPos.z);
+      const targetLook = lookTarget.set(
+        targetPos.x + offset.x * 3,
+        targetPos.y + offset.y * 3,
+        targetPos.z + offset.z * 3,
+      );
+      return {
+        kind: 'targets',
+        mode: 'exploration',
+        targets: {
+          targetPos,
+          targetLook,
+          targetFov: ctx.currentSceneFov,
+          targetRoll: 0,
+        },
+      };
+    }
+
+    const effectiveDistance = ctx.interactionLocked
+      ? ctx.interactionDistance
+      : ctx.distance;
+
+    offset.set(
+      Math.sin(yaw) * Math.cos(pitch),
+      Math.sin(pitch),
+      Math.cos(yaw) * Math.cos(pitch),
+    );
+    offset.multiplyScalar(effectiveDistance);
+
+    const exploration = ctx.exploration;
+    let heightOffset = 0;
+    let targetRoll = 0;
+
+    if (exploration) {
+      const expResult = updateExplorationState(
+        exploration,
+        playerPos,
+        yaw,
+        playerVelocity,
+        ctx.delta,
+        ctx.moveBlend,
+      );
+      targetRoll = expResult.targetRoll;
+      heightOffset = expResult.targetHeight - playerPos.y;
+    }
+
+    ctx.prevVelocitySmooth.lerp(
+      playerVelocity,
+      1 - Math.exp(-LOOK_AHEAD_LERP_SPEED * ctx.delta),
+    );
+    const speed = ctx.prevVelocitySmooth.length();
+    const lookAheadAmount = Math.min(speed * LOOK_AHEAD_STRENGTH, 0.3);
+    if (speed > 0.01) {
+      ctx.lookAheadOffset.copy(ctx.prevVelocitySmooth).normalize().multiplyScalar(lookAheadAmount);
+    } else {
+      ctx.lookAheadOffset.set(0, 0, 0);
+    }
+
+    let targetPos = desiredPos.set(
+      playerPos.x + offset.x,
+      playerPos.y + LOOK_HEIGHT + offset.y + heightOffset,
+      playerPos.z + offset.z,
+    );
+
+    const targetLook = lookTarget.set(
+      playerPos.x + ctx.lookAheadOffset.x,
+      playerPos.y + LOOK_HEIGHT + heightOffset + ctx.lookAheadOffset.y * 0.3,
+      playerPos.z + ctx.lookAheadOffset.z,
+    );
+
+    // Breathing bob removed here — applyEnhancedBreathingIdle in applyCameraFrame
+    // already adds a breathing oscillation (up to 2mm Y + 0.5mm X/Z after 3s
+    // idle). Having both caused double oscillation (up to 7mm peak Y) which
+    // looked like camera jitter in small rooms. Now only one breathing source.
+
+    targetPos = resolveCameraCollision(
+      ctx.raycaster,
+      ctx.sceneChildren,
+      targetLook,
+      targetPos,
+      WALL_MARGIN,
+      MIN_DISTANCE,
+    );
+
+    return {
+      kind: 'targets',
+      mode: 'exploration',
+      targets: {
+        targetPos,
+        targetLook,
+        targetFov: ctx.currentSceneFov,
+        targetRoll,
+      },
+    };
+  },
+};

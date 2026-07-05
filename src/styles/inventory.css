@@ -1,0 +1,168 @@
+/* ══════════════════════════════════════════════════════════════
+   TASK 3: Inventory AAA Visual Upgrade
+   ══════════════════════════════════════════════════════════════ */
+
+/* Inventory item cell scan-line sweep on hover */
+@keyframes inv-scan-sweep {
+  0% { top: -20%; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { top: 120%; opacity: 0; }
+}
+
+.inv-cell-scanline {
+  position: relative;
+  overflow: hidden;
+}
+
+.inv-cell-scanline::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 30%;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgb(var(--cyber-cyan-rgb) / 0.06) 40%,
+    rgb(var(--cyber-cyan-rgb) / 0.12) 50%,
+    rgb(var(--cyber-cyan-rgb) / 0.06) 60%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: var(--z-inv-cell-scanline);
+  opacity: 0;
+  top: -20%;
+}
+
+.inv-cell-scanline:hover::after {
+  animation: inv-scan-sweep 0.6s ease-in-out forwards;
+}
+
+/* Legendary item shimmer overlay */
+@keyframes inv-legendary-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.inv-legendary-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.inv-legendary-shimmer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(251, 191, 36, 0.08) 25%,
+    rgba(251, 191, 36, 0.18) 50%,
+    rgba(251, 191, 36, 0.08) 75%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: inv-legendary-shimmer 3s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 5;
+  border-radius: inherit;
+}
+
+/* Rare item subtle pulse glow (cyan) */
+@keyframes inv-rare-pulse {
+  0%, 100% {
+    box-shadow: 0 0 3px rgb(var(--cyber-cyan-rgb) / 0.15), inset 0 0 2px rgb(var(--cyber-cyan-rgb) / 0.05);
+  }
+  50% {
+    box-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.3), 0 0 16px rgb(var(--cyber-cyan-rgb) / 0.1), inset 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.08);
+  }
+}
+
+.inv-rare-pulse {
+  animation: inv-rare-pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes inv-legendary-border-pulse {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(251, 191, 36, 0.2), 0 0 24px rgba(251, 191, 36, 0.08), inset 0 0 8px rgba(251, 191, 36, 0.06);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(251, 191, 36, 0.35), 0 0 36px rgba(251, 191, 36, 0.12), inset 0 0 12px rgba(251, 191, 36, 0.1);
+  }
+}
+
+/* Capacity bar shimmer overlay */
+@keyframes inv-bar-shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+
+.inv-bar-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.inv-bar-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.15) 50%, transparent 100%);
+  animation: inv-bar-shimmer 2s ease-in-out infinite;
+}
+
+/* Equipped badge glow */
+@keyframes inv-equipped-badge-pulse {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; text-shadow: 0 0 4px rgba(52, 211, 153, 0.5); }
+}
+
+.inv-equipped-badge {
+  animation: inv-equipped-badge-pulse 2s ease-in-out infinite;
+}
+
+/* Empty equipment slot dashed border pulse */
+@keyframes inv-slot-dash {
+  0%, 100% { border-color: rgba(100, 116, 139, 0.2); }
+  50% { border-color: rgba(100, 116, 139, 0.4); }
+}
+
+.inv-slot-empty {
+  border-style: dashed !important;
+  animation: inv-slot-dash 3s ease-in-out infinite;
+}
+
+/* Detail panel rarity gradient backgrounds */
+.inv-detail-common { background: linear-gradient(135deg, rgba(15, 23, 42, 0.4) 0%, rgba(30, 41, 59, 0.3) 100%); }
+.inv-detail-uncommon { background: linear-gradient(135deg, rgba(6, 78, 59, 0.3) 0%, rgba(15, 23, 42, 0.4) 100%); }
+.inv-detail-rare { background: linear-gradient(135deg, rgba(8, 51, 68, 0.3) 0%, rgba(15, 23, 42, 0.4) 100%); }
+.inv-detail-legendary { background: linear-gradient(135deg, rgba(69, 26, 3, 0.3) 0%, rgba(15, 23, 42, 0.4) 100%); }
+
+/* ══════════════════════════════════════════════════════════════
+   TASK 6: Inventory Grid-based Visual Redesign
+   ══════════════════════════════════════════════════════════════ */
+
+/* Rarity text glow for item names */
+.inv-glow-uncommon {
+  text-shadow: 0 0 6px rgba(52, 211, 153, 0.25);
+}
+.inv-glow-rare {
+  text-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.3), 0 0 16px rgb(var(--cyber-cyan-rgb) / 0.1);
+}
+.inv-glow-legendary {
+  text-shadow: 0 0 8px rgba(251, 191, 36, 0.4), 0 0 20px rgba(251, 191, 36, 0.15), 0 0 40px rgba(251, 191, 36, 0.05);
+  animation: inv-legendary-text-pulse 3s ease-in-out infinite;
+}
+
+@keyframes inv-legendary-text-pulse {
+  0%, 100% { text-shadow: 0 0 8px rgba(251, 191, 36, 0.4), 0 0 20px rgba(251, 191, 36, 0.15); }
+  50% { text-shadow: 0 0 12px rgba(251, 191, 36, 0.6), 0 0 28px rgba(251, 191, 36, 0.25), 0 0 48px rgba(251, 191, 36, 0.08); }
+}
+
+/* Card border glow by rarity */
+.inv-border-glow-uncommon {
+  box-shadow: 0 0 4px rgba(52, 211, 153, 0.1), inset 0 0 3px rgba(52, 211, 153, 0.03);
+}
+.inv-border-glow-rare {
+  animation: inv-rare-border-pulse 2.5s ease-in-out infinite;
+}

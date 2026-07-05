@@ -1,0 +1,1367 @@
+/* ─── Volodka RPG – Item Catalog ─── */
+
+import type { InventoryItem, TrainablePlayerSkill, LinkedContent } from '@/shared/types/game';
+import { asItemId } from '@/shared/types/brands';
+
+export type ItemCategory = 'consumable' | 'quest_item' | 'key_item' | 'book' | 'equipment' | 'poem_fragment' | 'misc';
+export type ItemRarity = 'common' | 'uncommon' | 'rare' | 'legendary';
+
+export interface ItemEffect {
+  stat?: 'energy' | 'stress' | 'karma';
+  skill?: TrainablePlayerSkill;
+  value: number;
+}
+
+export interface ItemDefinition {
+  id: string;
+  name: string;
+  description: string;
+  category: ItemCategory;
+  rarity: ItemRarity;
+  icon: string; // lucide icon name
+  stackable: boolean;
+  maxStack: number;
+  effects: ItemEffect[];
+  questRelated?: boolean; // cannot be dropped if true
+  linkedContent?: LinkedContent; // for books that open poems/lore
+  equipmentSlot?: string; // slot name for equipment items
+}
+
+/* ─── Item Definitions ─── */
+
+const ITEMS: ItemDefinition[] = [
+  /* ── Consumables ── */
+  {
+    id: 'coffee',
+    name: 'Кофе',
+    description: 'Горький чёрный кофе. Освежает разум и прогоняет усталость.',
+    category: 'consumable',
+    rarity: 'common',
+    icon: 'Coffee',
+    stackable: true,
+    maxStack: 10,
+    effects: [{ stat: 'energy', value: 15 }],
+  },
+  {
+    id: 'cigarettes',
+    name: 'Пачка сигарет',
+    description: 'Дешёвые сигареты. Снимают стресс, но карма не улучшается.',
+    category: 'consumable',
+    rarity: 'common',
+    icon: 'Cigarette',
+    stackable: true,
+    maxStack: 5,
+    effects: [
+      { stat: 'stress', value: -5 },
+      { stat: 'karma', value: -2 },
+    ],
+  },
+  {
+    id: 'energy_drink',
+    name: 'Энергетик «Код»',
+    description: 'Сладкий напиток в банке с бинарным кодом. +20 энергии, +3 стресс.',
+    category: 'consumable',
+    rarity: 'common',
+    icon: 'Zap',
+    stackable: true,
+    maxStack: 5,
+    effects: [
+      { stat: 'energy', value: 20 },
+      { stat: 'stress', value: 3 },
+    ],
+  },
+  {
+    id: 'painkiller',
+    name: 'Обезболивающее',
+    description: 'Стандартные таблетки. Снимают напряжение.',
+    category: 'consumable',
+    rarity: 'common',
+    icon: 'Pill',
+    stackable: true,
+    maxStack: 5,
+    effects: [{ stat: 'stress', value: -10 }],
+  },
+  {
+    id: 'vodka',
+    name: 'Водка',
+    description: 'Дешёвая водка. Помогает забыть, но отнимает энергию.',
+    category: 'consumable',
+    rarity: 'common',
+    icon: 'Wine',
+    stackable: true,
+    maxStack: 3,
+    effects: [
+      { stat: 'stress', value: -15 },
+      { stat: 'energy', value: -10 },
+      { stat: 'karma', value: -3 },
+    ],
+  },
+  {
+    id: 'tea',
+    name: 'Чай с мятой',
+    description: 'Тёплый чай. Успокаивает и восстанавливает немного энергии.',
+    category: 'consumable',
+    rarity: 'common',
+    icon: 'Leaf',
+    stackable: true,
+    maxStack: 10,
+    effects: [
+      { stat: 'stress', value: -5 },
+      { stat: 'energy', value: 5 },
+    ],
+  },
+
+  /* ── Quest Items ── */
+  {
+    id: 'maria_data_chip',
+    name: 'Чип данных Виктории',
+    description: 'Маленький чип с зашифрованными данными. Виктория доверила его тебе.',
+    category: 'quest_item',
+    rarity: 'uncommon',
+    icon: 'Chip',
+    stackable: false,
+    maxStack: 1,
+    effects: [],
+    questRelated: true,
+  },
+  {
+    id: 'note_volodka_room',
+    name: 'Записка',
+    description: 'Мятая записка, найденная в комнате. Почерк знакомый…',
+    category: 'quest_item',
+    rarity: 'common',
+    icon: 'FileText',
+    stackable: false,
+    maxStack: 1,
+    effects: [],
+    questRelated: true,
+  },
+  {
+    id: 'anonymous_letter',
+    name: 'Письмо без обратного адреса',
+    description: 'Конверт без марки. Одна строка о деньгах, правде и стихах. Почерк почти знаком.',
+    category: 'quest_item',
+    rarity: 'uncommon',
+    icon: 'Mail',
+    stackable: false,
+    maxStack: 1,
+    effects: [],
+    questRelated: true,
+  },
+  {
+    id: 'guild_access_badge',
+    name: 'Пропуск гильдии',
+    description: 'Удостоверение старшего члена IT-гильдии. Открывает доступ к закрытым зонам.',
+    category: 'quest_item',
+    rarity: 'rare',
+    icon: 'Badge',
+    stackable: false,
+    maxStack: 1,
+    effects: [],
+    questRelated: true,
+  },
+  {
+    id: 'vault_key_fragment',
+    name: 'Фрагмент ключа Хранилища',
+    description: 'Часть цифрового ключа, открывающего Хранилище стёртых архивов.',
+    category: 'quest_item',
+    rarity: 'rare',
+    icon: 'Key',
+    stackable: false,
+    maxStack: 1,
+    effects: [],
+    questRelated: true,
+  },
+  {
+    id: 'encrypted_scroll',
+    name: 'Зашифрованный свиток',
+    description: 'Свиток кода, содержащий скрытые стихи. Требует расшифровки.',
+    category: 'quest_item',
+    rarity: 'uncommon',
+    icon: 'ScrollText',
+    stackable: false,
+    maxStack: 1,
+    effects: [],
+    questRelated: true,
+  },
+  {
+    id: 'network_comm_key',
+    name: 'Ключ Сети',
+    description: 'Зашифрованный канал связи Сопротивления. Активируется стихотворением-паролем.',
+    category: 'quest_item',
+    rarity: 'rare',
+    icon: 'Key',
+    stackable: false,
+    maxStack: 1,
+    effects: [],
+    questRelated: true,
+  },
+  {
+    id: 'marat_code_copy',
+    name: 'Копия кода Марата',
+    description: 'Скопированный с терминала «Синей ямы» файл: комментарии написаны стихами, подпись «М.Г.», дата — 2028 год.',
+    category: 'quest_item',
+    rarity: 'rare',
+    icon: 'Braces',
+    stackable: false,
+    maxStack: 1,
+    effects: [{ skill: 'coding', value: 1 }],
+    questRelated: true,
+  },
+  {
+    id: 'dmitry_data_chip',
+    name: 'Чип данных Дмитрия',
+    description: 'Чип с точками входа в «Надзор», ключами шифрования и архивом предательства. Оставлен перед изгнанием.',
+    category: 'quest_item',
+    rarity: 'rare',
+    icon: 'Chip',
+    stackable: false,
+    maxStack: 1,
+    effects: [],
+    questRelated: true,
+  },
+  {
+    id: 'bank_access_token',
+    name: 'Токен доступа к банку',
+    description: 'Временный ключ к Bash-терминалу банковской системы. Выдан после восстановления после сбоя.',
+    category: 'key_item',
+    rarity: 'uncommon',
+    icon: 'Key',
+    stackable: false,
+    maxStack: 1,
+    effects: [],
+    questRelated: true,
+  },
+  {
+    id: 'blackmail_files',
+    name: 'Компромат гильдии',
+    description: 'Украденные с главного сервера файлы: переписка, логи доступа и доказательства связи с «Надзором».',
+    category: 'quest_item',
+    rarity: 'rare',
+    icon: 'Lock',
+    stackable: false,
+    maxStack: 1,
+    effects: [],
+    questRelated: true,
+  },
+
+  /* ── Pier & Factory Basement Items ── */
+  {
+    id: 'port_wine_777',
+    name: 'Портвейн «777»',
+    description: 'Бутылка легендарного портвейна с пирса №3. Валюта ЧК, утешение сторожей и топливо тихих песен.',
+    category: 'consumable',
+    rarity: 'common',
+    icon: 'Wine',
+    stackable: true,
+    maxStack: 3,
+    effects: [
+      { stat: 'stress', value: -10 },
+      { stat: 'energy', value: -5 },
+      { stat: 'karma', value: -1 },
+    ],
+  },
+  {
+    id: 'watchman_key',
+    name: 'Ключ сторожа',
+    description: 'Тяжёлый заводской ключ на ржавой проволоке. Трофим тридцать лет носил его в кармане ватника. Открывает дверь в подвал «Хрома-М».',
+    category: 'key_item',
+    rarity: 'rare',
+    icon: 'Key',
+    stackable: false,
+    maxStack: 1,
+    effects: [],
+    questRelated: true,
+  },
+  {
+    id: 'guitar_strings',
+    name: 'Гитарные струны',
+    description: 'Комплект струн из заводского ДК. Трофим хранил их дольше, чем некоторые хранят клятвы.',
+    category: 'quest_item',
+    rarity: 'uncommon',
+    icon: 'Music',
+    stackable: false,
+    maxStack: 1,
+    effects: [],
+    questRelated: true,
+  },
+  {
+    id: 'zarya_punch_card',
+    name: 'Перфокарта «Зари-М»',
+    description: 'Пожелтевшая перфокарта из серверной стойки. Дырочки складываются в узор, подозрительно похожий на стихотворный размер.',
+    category: 'misc',
+    rarity: 'rare',
+    icon: 'FileCode',
+    stackable: false,
+    maxStack: 1,
+    effects: [],
+    linkedContent: { type: 'lore', id: 'lore_zarya_project_early' },
+  },
+
+  /* ── Key Items ── */
+  {
+    id: 'usb_flash',
+    name: 'USB-флешка',
+    description: 'Старая флешка с неизвестным содержимым. Может содержать важные данные.',
+    category: 'key_item',
+    rarity: 'uncommon',
+    icon: 'Usb',
+    stackable: false,
+    maxStack: 1,
+    effects: [],
+    questRelated: true,
+  },
+  {
+    id: 'old_phone',
+    name: 'Старый телефон',
+    description: 'Телефон без SIM-карты. На экране одно непрочитанное сообщение.',
+    category: 'key_item',
+    rarity: 'uncommon',
+    icon: 'Smartphone',
+    stackable: false,
+    maxStack: 1,
+    effects: [],
+    questRelated: true,
+  },
+  {
+    id: 'laptop',
+    name: 'Ноутбук',
+    description: 'Рабочий ноутбук с доступом к серверам гильдии. Пароль: ???',
+    category: 'key_item',
+    rarity: 'rare',
+    icon: 'Laptop',
+    stackable: false,
+    maxStack: 1,
+    effects: [],
+    questRelated: true,
+  },
+
+  /* ── Books ── */
+  {
+    id: 'book_poetry_modern',
+    name: 'Современная поэзия',
+    description: 'Сборник стихов современных авторов. Чтение развивает навык письма.',
+    category: 'book',
+    rarity: 'uncommon',
+    icon: 'BookOpen',
+    stackable: false,
+    maxStack: 1,
+    effects: [{ skill: 'writing', value: 1 }],
+    linkedContent: { type: 'poem', id: 'poem_2' },
+  },
+  {
+    id: 'book_coding_guide',
+    name: 'Руководство по коду',
+    description: 'Техническая книга о криптографии и стеганографии.',
+    category: 'book',
+    rarity: 'uncommon',
+    icon: 'BookOpen',
+    stackable: false,
+    maxStack: 1,
+    effects: [{ skill: 'coding', value: 1 }],
+    linkedContent: { type: 'lore', id: 'coding_guide' },
+  },
+  {
+    id: 'poetic_code_book',
+    name: '«Поэтический код» (1-е издание)',
+    description: 'Запрещённая книга из библиотеки Тамары. Стихи в ней ломают серверы не взломом — пониманием.',
+    category: 'book',
+    rarity: 'legendary',
+    icon: 'BookOpen',
+    stackable: false,
+    maxStack: 1,
+    effects: [{ skill: 'writing', value: 2 }],
+    questRelated: true,
+  },
+
+  /* ── Combat Loot: Enemy Drops ── */
+  {
+    id: 'daemon_core',
+    name: 'Ядро Демона',
+    description: 'Мерцающий кристалл из павшего Системного Демона. Пульсирует цифровой энергией.',
+    category: 'equipment',
+    rarity: 'uncommon',
+    icon: 'Cpu',
+    stackable: false,
+    maxStack: 1,
+    effects: [{ skill: 'coding', value: 2 }],
+    equipmentSlot: 'accessory',
+  },
+  {
+    id: 'code_fragment',
+    name: 'Фрагмент Кода',
+    description: 'Обрывок древнего кода. Возможно, часть чего-то большего.',
+    category: 'poem_fragment',
+    rarity: 'uncommon',
+    icon: 'Braces',
+    stackable: true,
+    maxStack: 5,
+    effects: [{ skill: 'logic', value: 1 }],
+  },
+  {
+    id: 'corporate_badge',
+    name: 'Корп. Значок',
+    description: 'Украденный значок корпорации. Даёт +2 к убеждению.',
+    category: 'equipment',
+    rarity: 'uncommon',
+    icon: 'Award',
+    stackable: false,
+    maxStack: 1,
+    effects: [{ skill: 'persuasion', value: 2 }],
+    equipmentSlot: 'accessory',
+  },
+  {
+    id: 'encrypted_usb',
+    name: 'Зашифрованная USB',
+    description: 'USB-накопитель с зашифрованными данными. Кто-то очень хотел его скрыть.',
+    category: 'key_item',
+    rarity: 'rare',
+    icon: 'Usb',
+    stackable: false,
+    maxStack: 1,
+    effects: [],
+    questRelated: true,
+  },
+  {
+    id: 'shadow_cloak',
+    name: 'Теневой Плащ',
+    description: 'Лёгкий плащ из умной ткани. Маскирует от камер и датчиков.',
+    category: 'equipment',
+    rarity: 'rare',
+    icon: 'Shield',
+    stackable: false,
+    maxStack: 1,
+    effects: [{ skill: 'intuition', value: 3 }],
+    equipmentSlot: 'body',
+  },
+  {
+    id: 'poem_fragment',
+    name: 'Фрагмент Стиха',
+    description: 'Обрывок стихотворения на пожелтевшей бумаге. Строки зовут к действию.',
+    category: 'poem_fragment',
+    rarity: 'rare',
+    icon: 'Feather',
+    stackable: true,
+    maxStack: 10,
+    effects: [{ skill: 'writing', value: 2 }],
+  },
+
+  /* ── Equipment ── */
+  {
+    id: 'better_hoodie',
+    name: 'Утеплённая Толстовка',
+    description: 'Тёплая толстовка с карманами для гаджетов. +3 эмпатии, +5 энергии.',
+    category: 'equipment',
+    rarity: 'uncommon',
+    icon: 'Shirt',
+    stackable: false,
+    maxStack: 1,
+    effects: [
+      { skill: 'empathy', value: 3 },
+      { stat: 'energy', value: 5 },
+    ],
+    equipmentSlot: 'body',
+  },
+  {
+    id: 'network_badge',
+    name: 'Значок Сети',
+    description: 'Символ принадлежности к подпольной Сети. Свиток и единица.',
+    category: 'equipment',
+    rarity: 'rare',
+    icon: 'Badge',
+    stackable: false,
+    maxStack: 1,
+    effects: [{ skill: 'persuasion', value: 3 }],
+    questRelated: true,
+    equipmentSlot: 'accessory',
+  },
+  {
+    id: 'archive7_key',
+    name: 'Ключ Архив-7',
+    description: 'Универсальный цифровой ключ к архивам седьмого уровня.',
+    category: 'key_item',
+    rarity: 'legendary',
+    icon: 'Key',
+    stackable: false,
+    maxStack: 1,
+    effects: [],
+    questRelated: true,
+  },
+  {
+    id: 'hacked_terminal_key',
+    name: 'Взломанный Терминал-Ключ',
+    description: 'Доступ к взломанному терминалу гильдии. Осторожно — следы могут быть обнаружены.',
+    category: 'equipment',
+    rarity: 'rare',
+    icon: 'Terminal',
+    stackable: false,
+    maxStack: 1,
+    effects: [{ skill: 'coding', value: 3 }],
+    equipmentSlot: 'accessory',
+  },
+
+  /* ── Consumables (Combat) ── */
+  {
+    id: 'combat_stim',
+    name: 'Боевой Стимулятор',
+    description: 'Военный стимулятор. +25 энергии, +8 стресса.',
+    category: 'consumable',
+    rarity: 'uncommon',
+    icon: 'Syringe',
+    stackable: true,
+    maxStack: 3,
+    effects: [
+      { stat: 'energy', value: 25 },
+      { stat: 'stress', value: 8 },
+    ],
+  },
+  {
+    id: 'herbal_tea',
+    name: 'Травяной Отвар',
+    description: 'Настой целебных трав. Снимает стресс и восстанавливает энергию.',
+    category: 'consumable',
+    rarity: 'uncommon',
+    icon: 'Flower2',
+    stackable: true,
+    maxStack: 5,
+    effects: [
+      { stat: 'stress', value: -15 },
+      { stat: 'energy', value: 10 },
+    ],
+  },
+  {
+    id: 'digital_talisman',
+    name: 'Цифровой Талисман',
+    description: 'Защитный амулет из кода. +5 кармы.',
+    category: 'consumable',
+    rarity: 'rare',
+    icon: 'ShieldCheck',
+    stackable: true,
+    maxStack: 3,
+    effects: [{ stat: 'karma', value: 5 }],
+  },
+
+  /* ── Misc ── */
+  {
+    id: 'scraps',
+    name: 'Обрывки бумаги',
+    description: 'Клочки бумаги с обрывками текста. Возможно, когда-то были чем-то целым.',
+    category: 'misc',
+    rarity: 'common',
+    icon: 'File',
+    stackable: true,
+    maxStack: 20,
+    effects: [],
+  },
+  {
+    id: 'candy',
+    name: 'Конфета',
+    description: 'Сладость, найденная в кармане. Немного поднимает настроение.',
+    category: 'misc',
+    rarity: 'common',
+    icon: 'Candy',
+    stackable: true,
+    maxStack: 10,
+    effects: [{ stat: 'stress', value: -2 }],
+  },
+  {
+    id: 'lighter',
+    name: 'Зажигалка',
+    description: 'Обычная зажигалка. Ничего особенного.',
+    category: 'misc',
+    rarity: 'common',
+    icon: 'Flame',
+    stackable: true,
+    maxStack: 1,
+    effects: [],
+  },
+
+  /* ── Crafting Ingredients ── */
+  {
+    id: 'circuit_board',
+    name: 'Печатная плата',
+    description: 'Силиконовая плата с микросхемами. Основа любого цифрового артефакта.',
+    category: 'misc',
+    rarity: 'common',
+    icon: 'Cpu',
+    stackable: true,
+    maxStack: 5,
+    effects: [],
+  },
+  {
+    id: 'old_poetry_book',
+    name: 'Старая книга стихов',
+    description: 'Потрёпанный томик. Строки между строк хранят тайны.',
+    category: 'misc',
+    rarity: 'uncommon',
+    icon: 'BookOpen',
+    stackable: false,
+    maxStack: 1,
+    effects: [],
+  },
+  {
+    id: 'server_fragment',
+    name: 'Фрагмент сервера',
+    description: 'Обломок серверного жёсткого диска. Данные ещё можно восстановить.',
+    category: 'misc',
+    rarity: 'uncommon',
+    icon: 'HardDrive',
+    stackable: true,
+    maxStack: 3,
+    effects: [],
+  },
+  {
+    id: 'data_chip',
+    name: 'Чип данных',
+    description: 'Универсальный чип хранения. Популярная валюта в подполье.',
+    category: 'misc',
+    rarity: 'common',
+    icon: 'Chip',
+    stackable: true,
+    maxStack: 5,
+    effects: [],
+  },
+  {
+    id: 'coffee_extract',
+    name: 'Кофейный экстракт',
+    description: 'Концентрированная эссенция кофе. Ускоряет нейронные связи.',
+    category: 'misc',
+    rarity: 'common',
+    icon: 'Coffee',
+    stackable: true,
+    maxStack: 5,
+    effects: [],
+  },
+  {
+    id: 'broken_headphones',
+    name: 'Сломанные наушники',
+    description: 'Наушники с оборванным проводом. Ещё можно починить.',
+    category: 'misc',
+    rarity: 'common',
+    icon: 'Headphones',
+    stackable: false,
+    maxStack: 1,
+    effects: [],
+  },
+  {
+    id: 'copper_wire',
+    name: 'Медный провод',
+    description: 'Моток медной проволоки. Пригодится для ремонта электроники.',
+    category: 'misc',
+    rarity: 'common',
+    icon: 'Cable',
+    stackable: true,
+    maxStack: 5,
+    effects: [],
+  },
+  {
+    id: 'digital_ghost_trace',
+    name: 'Цифровой след призрака',
+    description: 'Призрачный отпечаток данных забытого пользователя. Мерцает в темноте.',
+    category: 'misc',
+    rarity: 'rare',
+    icon: 'Ghost',
+    stackable: false,
+    maxStack: 1,
+    effects: [],
+  },
+  {
+    id: 'nano_patch',
+    name: 'Нано-пластырь',
+    description: 'Медицинский пластырь с наноботами. Быстро восстанавливает ткани.',
+    category: 'misc',
+    rarity: 'uncommon',
+    icon: 'Bandage',
+    stackable: true,
+    maxStack: 3,
+    effects: [],
+  },
+  {
+    id: 'firewall_code',
+    name: 'Код файрвола',
+    description: 'Фрагмент защитного кода корпоративной сети. Можно переписать.',
+    category: 'misc',
+    rarity: 'uncommon',
+    icon: 'Shield',
+    stackable: false,
+    maxStack: 1,
+    effects: [],
+  },
+  {
+    id: 'rare_alloy',
+    name: 'Редкий сплав',
+    description: 'Легированный металл из заброшенной лаборатории. Почти не окисляется.',
+    category: 'misc',
+    rarity: 'rare',
+    icon: 'Hexagon',
+    stackable: true,
+    maxStack: 3,
+    effects: [],
+  },
+  {
+    id: 'living_code_fragment',
+    name: 'Живой фрагмент кода',
+    description: 'Саморазвивающийся фрагмент ИИ-кода. Порой ведёт себя как живой.',
+    category: 'misc',
+    rarity: 'rare',
+    icon: 'Sparkles',
+    stackable: false,
+    maxStack: 1,
+    effects: [],
+  },
+  {
+    id: 'usb_drive',
+    name: 'USB-накопитель',
+    description: 'Пустой USB-накопитель. Идеальный сосуд для цифровых сущностей.',
+    category: 'misc',
+    rarity: 'common',
+    icon: 'Usb',
+    stackable: true,
+    maxStack: 3,
+    effects: [],
+  },
+
+  /* ── Crafted Items (Outputs) ── */
+  {
+    id: 'digital_amulet',
+    name: 'Цифровой Амулет',
+    description: 'Защитный амулет, сплетённый из зашифрованных строк и кремния. Отражает цифровые атаки.',
+    category: 'equipment',
+    rarity: 'rare',
+    icon: 'ShieldCheck',
+    stackable: false,
+    maxStack: 1,
+    effects: [
+      { skill: 'coding', value: 2 },
+      { stat: 'karma', value: 3 },
+    ],
+    equipmentSlot: 'accessory',
+  },
+  {
+    id: 'poetic_compiler',
+    name: 'Поэтический Компилятор',
+    description: 'Устройство, превращающее стихи в исполняемый код. Искусство становится силой.',
+    category: 'equipment',
+    rarity: 'rare',
+    icon: 'Terminal',
+    stackable: false,
+    maxStack: 1,
+    effects: [
+      { skill: 'writing', value: 3 },
+      { skill: 'coding', value: 2 },
+    ],
+    equipmentSlot: 'accessory',
+  },
+  {
+    id: 'neural_filter',
+    name: 'Нейросетевой Фильтр',
+    description: 'Имплант, фильтрующий информационный шум. Ясность мысли — ясность кода.',
+    category: 'equipment',
+    rarity: 'uncommon',
+    icon: 'Brain',
+    stackable: false,
+    maxStack: 1,
+    effects: [
+      { skill: 'logic', value: 3 },
+      { stat: 'stress', value: -5 },
+    ],
+    equipmentSlot: 'accessory',
+  },
+  {
+    id: 'turing_stethoscope',
+    name: 'Стетоскоп Тьюринга',
+    description: 'Акустический анализатор кода. Слышит пульс программ на расстоянии.',
+    category: 'equipment',
+    rarity: 'uncommon',
+    icon: 'Stethoscope',
+    stackable: false,
+    maxStack: 1,
+    effects: [
+      { skill: 'intuition', value: 2 },
+      { skill: 'logic', value: 2 },
+    ],
+    equipmentSlot: 'accessory',
+  },
+  {
+    id: 'ghost_key',
+    name: 'Призрачный Ключ',
+    description: 'Полупрозрачный ключ, открывающий замки, которых не существует. Проход сквозь стены.',
+    category: 'key_item',
+    rarity: 'legendary',
+    icon: 'Key',
+    stackable: false,
+    maxStack: 1,
+    effects: [],
+    questRelated: true,
+  },
+  {
+    id: 'cyber_balm',
+    name: 'Кибер-Бальзам',
+    description: 'Целебный гель с наночастицами. Восстанавливает тело и разум.',
+    category: 'consumable',
+    rarity: 'uncommon',
+    icon: 'Heart',
+    stackable: true,
+    maxStack: 3,
+    effects: [
+      { stat: 'energy', value: 30 },
+      { stat: 'stress', value: -10 },
+    ],
+  },
+  {
+    id: 'existential_shield',
+    name: 'Экзистенциальный Щит',
+    description: 'Барьер из чистой поэзии, защищающий от экзистенциального ужаса.',
+    category: 'equipment',
+    rarity: 'rare',
+    icon: 'Shield',
+    stackable: false,
+    maxStack: 1,
+    effects: [
+      { skill: 'empathy', value: 3 },
+      { stat: 'stress', value: -8 },
+    ],
+    equipmentSlot: 'body',
+  },
+  {
+    id: 'philosopher_stone',
+    name: 'Философский Камень',
+    description: 'Легендарный артефакт, превращающий данные в мудрость. Алхимия цифровой эры.',
+    category: 'equipment',
+    rarity: 'legendary',
+    icon: 'Gem',
+    stackable: false,
+    maxStack: 1,
+    effects: [
+      { skill: 'logic', value: 3 },
+      { skill: 'intuition', value: 3 },
+      { stat: 'karma', value: 5 },
+    ],
+    equipmentSlot: 'accessory',
+  },
+
+  /* ── Head Equipment ── */
+  {
+    id: 'neural_visor',
+    name: 'Нейровизор',
+    description: 'Ар-линза с HUD-наложением. Подсвечивает скрытые данные и пути. +4 логики, +2 интуиции.',
+    category: 'equipment',
+    rarity: 'uncommon',
+    icon: 'Glasses',
+    stackable: false,
+    maxStack: 1,
+    effects: [
+      { skill: 'logic', value: 4 },
+      { skill: 'intuition', value: 2 },
+    ],
+    equipmentSlot: 'head',
+  },
+  {
+    id: 'poet_beret',
+    name: 'Берет Поэта',
+    description: 'Потёртый берет с вышитыми строками. Вдохновение приходит само. +3 письма, +3 ритма.',
+    category: 'equipment',
+    rarity: 'uncommon',
+    icon: 'Crown',
+    stackable: false,
+    maxStack: 1,
+    effects: [
+      { skill: 'writing', value: 3 },
+      { skill: 'rhythm', value: 3 },
+    ],
+    equipmentSlot: 'head',
+  },
+  {
+    id: 'echo_headband',
+    name: 'Обруч Эха',
+    description: 'Нейрообруч, улавливающий эмоции окружающих. Эмпатия становится оружием. +5 эмпатии, +2 убеждения.',
+    category: 'equipment',
+    rarity: 'rare',
+    icon: 'Radio',
+    stackable: false,
+    maxStack: 1,
+    effects: [
+      { skill: 'empathy', value: 5 },
+      { skill: 'persuasion', value: 2 },
+    ],
+    equipmentSlot: 'head',
+  },
+  {
+    id: 'resistance_helmet',
+    name: 'Шлем Сопротивления',
+    description: 'Взломанный корпоративный шлем. Защищает от сканирования и подавления воли. +4 кодинга, -10 стресса.',
+    category: 'equipment',
+    rarity: 'rare',
+    icon: 'HardHat',
+    stackable: false,
+    maxStack: 1,
+    effects: [
+      { skill: 'coding', value: 4 },
+      { stat: 'stress', value: -10 },
+    ],
+    equipmentSlot: 'head',
+  },
+  {
+    id: 'crown_of_verses',
+    name: 'Корона Стихов',
+    description: 'Легендарный венец из сплетённых строк. Каждый стих — луч света. +3 ко всем навыкам, +5 кармы.',
+    category: 'equipment',
+    rarity: 'legendary',
+    icon: 'Sparkles',
+    stackable: false,
+    maxStack: 1,
+    effects: [
+      { skill: 'logic', value: 3 },
+      { skill: 'coding', value: 3 },
+      { skill: 'empathy', value: 3 },
+      { skill: 'persuasion', value: 3 },
+      { skill: 'intuition', value: 3 },
+      { skill: 'writing', value: 3 },
+      { skill: 'rhythm', value: 3 },
+      { stat: 'karma', value: 5 },
+    ],
+    equipmentSlot: 'head',
+  },
+
+  {
+    id: 'cipher_of_freedom',
+    name: 'Шифр Свободы',
+    description: 'Ключ абсолютной расшифровки. Открывает любые закрытые каналы связи.',
+    category: 'key_item',
+    rarity: 'rare',
+    icon: 'Unlock',
+    stackable: false,
+    maxStack: 1,
+    effects: [],
+    questRelated: true,
+  },
+  {
+    id: 'poetry_virus',
+    name: 'Стихотворный Вирус',
+    description: 'Самораспространяющийся код, несущий стихи. Меняет реальность словами.',
+    category: 'equipment',
+    rarity: 'legendary',
+    icon: 'Bug',
+    stackable: false,
+    maxStack: 1,
+    effects: [
+      { skill: 'writing', value: 4 },
+      { skill: 'persuasion', value: 3 },
+    ],
+    equipmentSlot: 'accessory',
+  },
+  /* ── NPC Shop Items (Trading-exclusive) ── */
+  {
+    id: 'barista_special_coffee',
+    name: 'Особый Кофе Бариста',
+    description: 'Секретный рецепт бариста «Синей ямы». Крепкий, с привкусом цифровой смелости. +25 энергии.',
+    category: 'consumable',
+    rarity: 'uncommon',
+    icon: 'Coffee',
+    stackable: true,
+    maxStack: 5,
+    effects: [{ stat: 'energy', value: 25 }],
+  },
+  {
+    id: 'espresso_shot',
+    name: 'Эспрессо-шот',
+    description: 'Двойной эспрессо. Быстрый заряд бодрости. +10 энергии.',
+    category: 'consumable',
+    rarity: 'common',
+    icon: 'Coffee',
+    stackable: true,
+    maxStack: 10,
+    effects: [{ stat: 'energy', value: 10 }],
+  },
+  {
+    id: 'cafe_rumor_note',
+    name: 'Записка со слухом',
+    description: 'Бариста поделился слухом из подполья. Информация — тоже валюта.',
+    category: 'misc',
+    rarity: 'uncommon',
+    icon: 'FileText',
+    stackable: true,
+    maxStack: 3,
+    effects: [],
+  },
+  {
+    id: 'zarema_herbal_tea',
+    name: 'Травяной чай Заремы',
+    description: 'Целебный отвар по рецепту Заремы. Снимает стресс и согревает душу. -20 стресс, +10 энергии.',
+    category: 'consumable',
+    rarity: 'uncommon',
+    icon: 'Flower2',
+    stackable: true,
+    maxStack: 5,
+    effects: [
+      { stat: 'stress', value: -20 },
+      { stat: 'energy', value: 10 },
+    ],
+  },
+  {
+    id: 'home_cooked_meal',
+    name: 'Домашняя еда',
+    description: 'Горячая еда от Заремы. Восстанавливает силы и снимает тревогу. +20 энергии, -15 стресс.',
+    category: 'consumable',
+    rarity: 'uncommon',
+    icon: 'Utensils',
+    stackable: true,
+    maxStack: 3,
+    effects: [
+      { stat: 'energy', value: 20 },
+      { stat: 'stress', value: -15 },
+    ],
+  },
+  {
+    id: 'healing_salve',
+    name: 'Целебная мазь',
+    description: 'Натуральная мазь из трав. Успокаивает и залечивает. -25 стресс.',
+    category: 'consumable',
+    rarity: 'uncommon',
+    icon: 'Bandage',
+    stackable: true,
+    maxStack: 3,
+    effects: [{ stat: 'stress', value: -25 }],
+  },
+  {
+    id: 'albert_philosophy_book',
+    name: 'Трактат о Смысле',
+    description: 'Философский текст Альберта. Чтение расширяет сознание. +2 интуиция.',
+    category: 'book',
+    rarity: 'rare',
+    icon: 'BookOpen',
+    stackable: false,
+    maxStack: 1,
+    effects: [{ skill: 'intuition', value: 2 }],
+    linkedContent: { type: 'lore', id: 'albert_treatise' },
+  },
+  {
+    id: 'albert_poetry_collection',
+    name: 'Сборник Стихотворных Фрагментов',
+    description: 'Тщательно подобранная коллекция. +1 письмо, +1 эмпатия.',
+    category: 'book',
+    rarity: 'uncommon',
+    icon: 'BookOpen',
+    stackable: false,
+    maxStack: 1,
+    effects: [
+      { skill: 'writing', value: 1 },
+      { skill: 'empathy', value: 1 },
+    ],
+  },
+  {
+    id: 'coding_manual',
+    name: 'Руководство по Криптокоду',
+    description: 'Продвинутое руководство по криптографии. +2 кодинг.',
+    category: 'book',
+    rarity: 'uncommon',
+    icon: 'BookOpen',
+    stackable: false,
+    maxStack: 1,
+    effects: [{ skill: 'coding', value: 2 }],
+    linkedContent: { type: 'lore', id: 'crypto_manual' },
+  },
+  {
+    id: 'colleague_software_tool',
+    name: 'Пиратский софт',
+    description: 'Нелицензионный пакет утилит. Небезопасно, но эффективно. +2 кодинг.',
+    category: 'misc',
+    rarity: 'uncommon',
+    icon: 'Terminal',
+    stackable: false,
+    maxStack: 1,
+    effects: [{ skill: 'coding', value: 2 }],
+  },
+  {
+    id: 'tech_component',
+    name: 'Тех. Компонент',
+    description: 'Запчасть для электроники. Пригодится для крафта или модернизации.',
+    category: 'misc',
+    rarity: 'common',
+    icon: 'Cpu',
+    stackable: true,
+    maxStack: 5,
+    effects: [],
+  },
+  {
+    id: 'maria_network_scanner',
+    name: 'Сетевой Сканер',
+    description: 'Устройство для обнаружения скрытых каналов связи. +3 интуиция.',
+    category: 'equipment',
+    rarity: 'rare',
+    icon: 'Wifi',
+    stackable: false,
+    maxStack: 1,
+    effects: [{ skill: 'intuition', value: 3 }],
+    equipmentSlot: 'accessory',
+  },
+  {
+    id: 'maria_decryption_key',
+    name: 'Ключ Дешифровки',
+    description: 'Универсальный ключ для расшифровки перехваченных данных. +2 логика.',
+    category: 'equipment',
+    rarity: 'rare',
+    icon: 'Unlock',
+    stackable: false,
+    maxStack: 1,
+    effects: [{ skill: 'logic', value: 2 }],
+    equipmentSlot: 'accessory',
+  },
+  {
+    id: 'encrypted_data_module',
+    name: 'Зашифрованный Модуль',
+    description: 'Модуль с зашифрованными данными Сети. Ценный ресурс для тех, кто понимает.',
+    category: 'misc',
+    rarity: 'rare',
+    icon: 'Lock',
+    stackable: true,
+    maxStack: 3,
+    effects: [],
+  },
+  {
+    id: 'wire_tap_kit',
+    name: 'Набор для Прослушки',
+    description: 'Миниатюрное оборудование для перехвата коммуникаций. +2 убеждение.',
+    category: 'equipment',
+    rarity: 'uncommon',
+    icon: 'Radio',
+    stackable: false,
+    maxStack: 1,
+    effects: [{ skill: 'persuasion', value: 2 }],
+    equipmentSlot: 'accessory',
+  },
+  /* ════════════ NEW ITEMS for Extended Crafting ════════════ */
+  {
+    id: 'stress_converter',
+    name: 'Конвертер Стресса',
+    description: 'Превращает стресс в энергию. -25 стресса, +15 энергии.',
+    category: 'consumable',
+    rarity: 'rare',
+    icon: 'Zap',
+    stackable: true,
+    maxStack: 3,
+    effects: [],
+  },
+  {
+    id: 'neural_amplifier',
+    name: 'Нейро-Усилитель',
+    description: 'Временно усиливает все навыки на +2. Побочный эффект: поэтическое вдохновение.',
+    category: 'equipment',
+    rarity: 'legendary',
+    icon: 'Brain',
+    stackable: false,
+    maxStack: 1,
+    effects: [
+      { skill: 'logic', value: 2 },
+      { skill: 'coding', value: 2 },
+      { skill: 'writing', value: 2 },
+    ],
+    equipmentSlot: 'head',
+  },
+  {
+    id: 'shadow_cloak_mod',
+    name: 'Теневой Плащ+',
+    description: 'Улучшенный плащ невидимости. Шанс избежать случайного боя +25%.',
+    category: 'equipment',
+    rarity: 'legendary',
+    icon: 'EyeOff',
+    stackable: false,
+    maxStack: 1,
+    effects: [],
+    equipmentSlot: 'body',
+  },
+  {
+    id: 'memory_crystal',
+    name: 'Кристалл Памяти',
+    description: 'Кристалл с фрагментом стихотворения. Открывает скрытые строки реальности.',
+    category: 'quest_item',
+    rarity: 'legendary',
+    icon: 'Gem',
+    stackable: false,
+    maxStack: 1,
+    effects: [
+      { skill: 'intuition', value: 3 },
+      { skill: 'writing', value: 3 },
+    ],
+  },
+  {
+    id: 'combat_stim_plus',
+    name: 'Боевой Стим+',
+    description: 'Улучшенный стимулятор. +30% урона на 3 хода, +10 стресса.',
+    category: 'consumable',
+    rarity: 'rare',
+    icon: 'Flame',
+    stackable: true,
+    maxStack: 5,
+    effects: [],
+  },
+  {
+    id: 'solnysh_wine_bottle',
+    name: 'Бутылка вина',
+    description: 'Тёмное вино, которое Лёня прятал «на особый случай». Этикетка потёртая, но пробка цела.',
+    category: 'misc',
+    rarity: 'uncommon',
+    icon: 'Wine',
+    stackable: false,
+    maxStack: 1,
+    effects: [],
+  },
+
+];
+
+/* ─── Equipment slot mapping ─── */
+export const EQUIPMENT_SLOTS: Record<string, string> = {
+  'better_hoodie': 'body',
+  'daemon_core': 'accessory',
+  'corporate_badge': 'accessory',
+  'shadow_cloak': 'body',
+  'network_badge': 'accessory',
+  'hacked_terminal_key': 'accessory',
+  'digital_amulet': 'accessory',
+  'poetic_compiler': 'accessory',
+  'neural_filter': 'accessory',
+  'turing_stethoscope': 'accessory',
+  'existential_shield': 'body',
+  'philosopher_stone': 'accessory',
+  'poetry_virus': 'accessory',
+  'maria_network_scanner': 'accessory',
+  'maria_decryption_key': 'accessory',
+  'wire_tap_kit': 'accessory',
+  'neural_visor': 'head',
+  'poet_beret': 'head',
+  'echo_headband': 'head',
+  'resistance_helmet': 'head',
+  'crown_of_verses': 'head',
+};
+
+/** Get the equipment slot for an item ID (from definition or fallback mapping) */
+export function getEquipmentSlot(itemId: string): string | undefined {
+  const def = ITEM_MAP.get(itemId);
+  return def?.equipmentSlot ?? EQUIPMENT_SLOTS[itemId];
+}
+
+/* ─── Lookup map ─── */
+
+const ITEM_MAP = new Map<string, ItemDefinition>(ITEMS.map((i) => [i.id, i]));
+
+/**
+ * Get an item definition by its ID.
+ * Returns undefined if the item is not in the catalog.
+ */
+export function getItemDefinition(itemId: string): ItemDefinition | undefined {
+  return ITEM_MAP.get(itemId);
+}
+
+/**
+ * Get all item definitions.
+ */
+export function getAllItemDefinitions(): ItemDefinition[] {
+  return [...ITEMS];
+}
+
+/**
+ * Create an InventoryItem from a catalog ID.
+ * Falls back to a minimal stub if the item is not in the catalog.
+ */
+export function createInventoryItem(
+  itemId: string,
+  quantity: number = 1,
+): InventoryItem {
+  const id = asItemId(itemId);
+  const def = ITEM_MAP.get(itemId);
+  if (def) {
+    const category = mapCategory(def.category);
+    if (def.stackable) {
+      return {
+        id,
+        name: def.name,
+        description: def.description,
+        icon: def.icon,
+        stackable: true,
+        quantity,
+        category,
+      };
+    }
+    return {
+      id,
+      name: def.name,
+      description: def.description,
+      icon: def.icon,
+      stackable: false,
+      quantity: 1,
+      category,
+    };
+  }
+
+  // Fallback for items not yet in catalog
+  return {
+    id,
+    name: itemId,
+    description: '',
+    stackable: true,
+    quantity,
+    category: 'misc',
+  };
+}
+
+/** Map ItemCategory to InventoryItem category */
+function mapCategory(cat: ItemCategory): InventoryItem['category'] {
+  switch (cat) {
+    case 'consumable':
+      return 'consumable';
+    case 'quest_item':
+      return 'quest';
+    case 'key_item':
+      return 'key';
+    case 'book':
+      return 'key';
+    case 'equipment':
+      return 'equipment';
+    case 'poem_fragment':
+      return 'key';
+    case 'misc':
+      return 'misc';
+  }
+}
+
+/** Get rarity color for UI display */
+export function getRarityColor(rarity: ItemRarity): string {
+  switch (rarity) {
+    case 'common':
+      return 'text-slate-300 border-slate-500/40';
+    case 'uncommon':
+      return 'text-emerald-400 border-emerald-500/40';
+    case 'rare':
+      return 'text-cyan-400 border-cyan-500/40';
+    case 'legendary':
+      return 'text-amber-400 border-amber-500/40';
+  }
+}
+
+/** Get rarity background for UI display */
+export function getRarityBg(rarity: ItemRarity): string {
+  switch (rarity) {
+    case 'common':
+      return 'bg-slate-700/60 border-slate-500/30';
+    case 'uncommon':
+      return 'bg-emerald-700/60 border-emerald-500/30';
+    case 'rare':
+      return 'bg-cyan-700/60 border-cyan-500/30';
+    case 'legendary':
+      return 'bg-amber-700/60 border-amber-500/30';
+  }
+}
+
+/** Get rarity label in Russian */
+export function getRarityLabel(rarity: ItemRarity): string {
+  switch (rarity) {
+    case 'common':
+      return 'Обычный';
+    case 'uncommon':
+      return 'Необычный';
+    case 'rare':
+      return 'Редкий';
+    case 'legendary':
+      return 'Легендарный';
+  }
+}

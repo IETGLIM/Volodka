@@ -1,0 +1,117 @@
+/* ══════════════════════════════════════════════════════════════
+   SESSION 7: PhotoMode
+   ══════════════════════════════════════════════════════════════ */
+
+/* Viewfinder crosshair pulse */
+@keyframes viewfinder-pulse {
+  0%, 100% {
+    opacity: 0.3;
+    box-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.2);
+  }
+  50% {
+    opacity: 0.7;
+    box-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.4);
+  }
+}
+
+.viewfinder-pulse {
+  animation: viewfinder-pulse 2s ease-in-out infinite;
+}
+
+/* White flash for screenshot capture */
+@keyframes flash-white {
+  0% { opacity: 0.9; }
+  100% { opacity: 0; }
+}
+
+/* Photo mode viewfinder base styles */
+.photo-mode-viewfinder {
+  font-family: 'Geist Mono', monospace;
+  isolation: isolate;
+  user-select: none;
+}
+
+.photo-mode--reduced-motion .viewfinder-pulse {
+  animation: none;
+  opacity: 0.5;
+}
+
+.inv-border-glow-legendary {
+  animation: inv-legendary-border-pulse 2s ease-in-out infinite;
+}
+
+@keyframes inv-rare-border-pulse {
+  0%, 100% { box-shadow: 0 0 3px rgb(var(--cyber-cyan-rgb) / 0.15), inset 0 0 2px rgb(var(--cyber-cyan-rgb) / 0.05); }
+  50% { box-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.3), 0 0 16px rgb(var(--cyber-cyan-rgb) / 0.1), inset 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.08); }
+}
+
+/* Item card base style */
+.inv-item-card {
+  position: relative;
+  overflow: visible;
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.inv-item-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 15;
+  opacity: 0;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgb(var(--cyber-cyan-rgb) / 0.04) 40%,
+    rgb(var(--cyber-cyan-rgb) / 0.08) 50%,
+    rgb(var(--cyber-cyan-rgb) / 0.04) 60%,
+    transparent 100%
+  );
+  top: -30%;
+  transition: opacity 0.2s;
+}
+
+.inv-item-card:hover::after {
+  opacity: 1;
+  animation: inv-scan-sweep 0.8s ease-in-out forwards;
+}
+
+/* Count badge glow */
+.inv-count-badge {
+  text-shadow: 0 0 4px rgba(148, 163, 184, 0.2);
+}
+
+/* Scrollable inventory grid */
+.inv-scrollable {
+  overflow-y: auto;
+  max-height: calc(90vh - 120px);
+}
+
+.inv-grid-scroll {
+  max-height: calc(90vh - 300px);
+  overflow-y: auto;
+}
+
+/* Empty state orbit animation */
+@keyframes inv-empty-orbit {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.inv-empty-orbit {
+  animation: inv-empty-orbit 20s linear infinite;
+}
+
+.inv-empty-orbit-2 {
+  animation-direction: reverse;
+  animation-duration: 30s;
+}
+
+/* Neon border for emerald (slot=body) */
+.neon-border-emerald {
+  border: 1px solid rgba(52, 211, 153, 0.3);
+  box-shadow: 0 0 10px rgba(52, 211, 153, 0.1), inset 0 0 10px rgba(52, 211, 153, 0.05);
+}

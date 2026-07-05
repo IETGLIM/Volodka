@@ -1,0 +1,78 @@
+/* ══════════════════════════════════════════════════════════════
+   SESSION 7: InteractionHintPopup
+   ══════════════════════════════════════════════════════════════ */
+
+/* ─── Key badge pulse animation — subtle glow breathing ─── */
+@keyframes hint-key-pulse {
+  0%, 100% {
+    box-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.2), inset 0 0 2px rgb(var(--cyber-cyan-rgb) / 0.05);
+  }
+  50% {
+    box-shadow: 0 0 10px rgb(var(--cyber-cyan-rgb) / 0.4), 0 0 20px rgb(var(--cyber-cyan-rgb) / 0.15), inset 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.1);
+  }
+}
+
+/* ─── Scan-line sweep for hint popup ─── */
+@keyframes hint-scan-sweep {
+  0% {
+    top: -20%;
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.6;
+  }
+  90% {
+    opacity: 0.6;
+  }
+  100% {
+    top: 120%;
+    opacity: 0;
+  }
+}
+
+/* ─── Interaction hint popup base styles ─── */
+.interaction-hint-popup {
+  font-family: 'Geist Mono', monospace;
+  isolation: isolate;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SESSION 7: DamageNumberFloat
+   ══════════════════════════════════════════════════════════════ */
+
+/* ─── Damage shake animation — horizontal jitter on damage numbers ─── */
+@keyframes damage-shake {
+  0%, 100% { transform: translateX(0); }
+  10% { transform: translateX(-4px); }
+  20% { transform: translateX(4px); }
+  30% { transform: translateX(-3px); }
+  40% { transform: translateX(3px); }
+  50% { transform: translateX(-2px); }
+  60% { transform: translateX(2px); }
+  70% { transform: translateX(-1px); }
+  80% { transform: translateX(1px); }
+  90% { transform: translateX(0); }
+}
+
+/* ─── Float-up animation — translateY + opacity fade ─── */
+@keyframes float-up {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(-20px) scale(1.05);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-80px) scale(0.9);
+  }
+}
+
+/* ─── Damage number base styles ─── */
+.damage-number-float {
+  font-family: 'Geist Mono', monospace;
+  isolation: isolate;
+  will-change: transform, opacity;
+}

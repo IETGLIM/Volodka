@@ -1,0 +1,120 @@
+/* ══════════════════════════════════════════════════════════════
+   SESSION 5: LevelUpEffect
+   ══════════════════════════════════════════════════════════════ */
+
+/* ─── Golden full-screen flash keyframe ─── */
+@keyframes levelup-flash {
+  0% {
+    opacity: 0.7;
+  }
+  30% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* ─── Particle burst keyframe (outward expansion from center) ─── */
+@keyframes levelup-particles {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--particle-x, 0px), var(--particle-y, 0px)) scale(0.3);
+    opacity: 0;
+  }
+}
+
+/* ─── Ambient glow pulse keyframe ─── */
+@keyframes levelup-glow {
+  0% {
+    opacity: 0;
+    box-shadow: inset 0 0 60px rgba(251, 191, 36, 0);
+  }
+  20% {
+    opacity: 1;
+    box-shadow: inset 0 0 120px rgba(251, 191, 36, 0.15);
+  }
+  50% {
+    opacity: 0.7;
+    box-shadow: inset 0 0 80px rgba(251, 191, 36, 0.1);
+  }
+  70% {
+    opacity: 0.5;
+    box-shadow: inset 0 0 100px rgba(251, 191, 36, 0.08);
+  }
+  100% {
+    opacity: 0;
+    box-shadow: inset 0 0 40px rgba(251, 191, 36, 0);
+  }
+}
+
+/* ─── Level-up overlay base styles ─── */
+.level-up-overlay {
+  isolation: isolate;
+  font-family: 'Geist Mono', monospace;
+}
+
+/* ─── Stat bar shimmer effect (triggered on value change) ─── */
+.stat-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.15) 45%,
+    rgba(255, 255, 255, 0.25) 50%,
+    rgba(255, 255, 255, 0.15) 55%,
+    transparent 100%
+  );
+  animation: stat-shimmer-sweep 0.6s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes stat-shimmer-sweep {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* ─── Level number scale pulse + golden glow ─── */
+@keyframes level-pulse-glow {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.15);
+    text-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.5);
+  }
+  25% {
+    transform: scale(1.25);
+    box-shadow: 0 0 16px rgba(251, 191, 36, 0.5);
+    text-shadow: 0 0 12px rgba(251, 191, 36, 0.6);
+  }
+  50% {
+    transform: scale(1.1);
+    box-shadow: 0 0 12px rgba(251, 191, 36, 0.35);
+    text-shadow: 0 0 8px rgba(251, 191, 36, 0.4);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.15);
+    text-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.5);
+  }
+}
+
+.level-pulse-anim {
+  animation: level-pulse-glow 0.8s ease-out;
+}

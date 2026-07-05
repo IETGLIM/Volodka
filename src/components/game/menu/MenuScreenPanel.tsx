@@ -1,0 +1,216 @@
+import { useEffect, useRef } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Volume2, VolumeX } from 'lucide-react';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { MenuAboutPanel } from '@/components/game/menu/MenuAboutPanel';
+import { MenuBackgroundEffects } from '@/components/game/menu/MenuBackgroundEffects';
+import { MenuGlitchTitle } from '@/components/game/menu/MenuGlitchTitle';
+import { MenuNavigationList } from '@/components/game/menu/MenuNavigationList';
+import { MenuSettingsPanel } from '@/components/game/menu/MenuSettingsPanel';
+import { MenuTypewriterSubtitle } from '@/components/game/menu/MenuTypewriterSubtitle';
+import { useMenuSavePreview } from '@/components/game/menu/useMenuSavePreview';
+import { useMenuScreen } from '@/components/game/menu/useMenuScreen';
+import {
+  APP_VERSION,
+  MENU_DEDICATION,
+  MENU_POET_CREDIT,
+  MENU_SUBTITLE,
+  MENU_TAGLINE,
+  MENU_TITLE,
+} from '@/engine/menu/menuConstants';
+import { getMenuScreenFx } from '@/engine/menu/menuFxTier';
+import { safePlayMenuSfx } from '@/engine/menu/menuPresentation';
+import { audioEngine } from '@/engine/AudioEngine';
+import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { useDeviceTier } from '@/hooks/useDeviceTier';
+import { useMenuNavigation } from '@/hooks/useMenuNavigation';
+import { useMenuScreenActions, useMenuVisualToggles } from '@/store/selectors';
+import { UI_LAYERS } from '@/shared/constants/uiLayers';
+
+function MenuScreenPanelInner() {
+  const actions = useMenuScreenActions();
+  const { matrixRainEnabled } = useMenuVisualToggles();
+  const reducedMotion = useEffectiveReducedMotion();
+  const deviceTier = useDeviceTier();
+  const fx = getMenuScreenFx(deviceTier, reducedMotion);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  const menu = useMenuScreen(actions);
+  const savePreview = useMenuSavePreview(menu.hasSave);
+
+  useMenuNavigation({
+    items: menu.menuItems,
+    selectedIndex: menu.selectedIndex,
+    setSelectedIndex: menu.setSelectedIndex,
+    onSelect: menu.handleMenuAction,
+    enabled: menu.navigationEnabled,
+  });
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      if (menu.showAbout) menu.closeAbout();
+      else if (menu.showSettings) menu.closeSettings();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
+  }, [menu.showAbout, menu.showSettings, menu.closeAbout, menu.closeSettings]);
+
+  const contentMotion = fx.contentMotion && !reducedMotion;
+
+  return (
+    <div
+      className="game-critical-motion digital-noise fixed inset-0 h-[100dvh] min-h-[100dvh] w-full bg-black overflow-hidden overscroll-none"
+      style={{ zIndex: UI_LAYERS.LOADING }}
+      data-testid="menu-screen"
+    >
+      <MenuBackgroundEffects
+        fx={fx}
+        tier={deviceTier}
+        matrixRainEnabled={matrixRainEnabled}
+        contentMotion={contentMotion}
+      />
+
+      <div className="relative z-10 flex min-h-[100dvh] w-full flex-col items-center justify-center p-4">
+        <MenuGlitchTitle text={MENU_TITLE} animate={fx.titleGlitch} parallax={fx.titleParallax} />
+        <MenuTypewriterSubtitle text={MENU_SUBTITLE} delay={1} enabled={contentMotion} />
+
+        <motion.p
+          initial={contentMotion ? { opacity: 0, y: 5 } : false}
+          animate={{ opacity: 0.7, y: 0 }}
+          transition={{ delay: 1.8, duration: 1.2 }}
+          className="mt-1 font-serif text-sm md:text-base tracking-[0.15em] text-slate-300/70"
+        >
+          {MENU_TAGLINE}
+        </motion.p>
+
+        <motion.p
+          initial={contentMotion ? { opacity: 0, y: 5 } : false}
+          animate={{ opacity: 0.6, y: 0 }}
+          transition={{ delay: 2.5, duration: 1.2 }}
+          className="mt-2 font-serif text-xs md:text-sm tracking-[0.2em] italic text-slate-400/60"
+        >
+          {MENU_POET_CREDIT}
+        </motion.p>
+
+        <motion.div
+          initial={contentMotion ? { opacity: 0, y: 8 } : false}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 3, duration: 1.8 }}
+          className="mt-4 flex flex-col items-center gap-2"
+        >
+          <div className="w-16 h-px bg-gradient-to-r from-transparent via-stone-400/30 to-transparent" />
+          <p className="font-serif text-xs sm:text-sm md:text-base tracking-[0.15em] italic dedication-glow text-stone-300/75">
+            {MENU_DEDICATION}
+          </p>
+        </motion.div>
+
+        <motion.div
+          ref={menuRef}
+          initial={contentMotion ? { opacity: 0, y: 20 } : false}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 1.8 }}
+          className="mt-8 w-full max-w-xs"
+        >
+          <div
+            className="relative border border-cyan-500/20 bg-black/60 backdrop-blur-md overflow-hidden hex-grid-bg menu-corner-brackets"
+            style={{ clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))' }}
+          >
+            <div className="menu-corner-bracket-pair" aria-hidden="true" />
+            <div className="flex items-center gap-2 border-b border-cyan-500/15 bg-black/40 px-3 py-2">
+              <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-cyan-500/30">volodka://main</span>
+            </div>
+            <MenuNavigationList
+              items={menu.menuItems}
+              selectedIndex={menu.selectedIndex}
+              setSelectedIndex={menu.setSelectedIndex}
+              onSelect={menu.handleMenuAction}
+              savePreview={savePreview}
+              contentMotion={contentMotion}
+            />
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={contentMotion ? { opacity: 0 } : false}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 3.5, duration: 1 }}
+          className="mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5"
+          aria-hidden="true"
+        >
+          <span className="text-[10px] text-slate-400/70 font-mono">↑↓ Навигация</span>
+          <span className="text-[10px] text-slate-400/70 font-mono">Enter Выбрать</span>
+        </motion.div>
+      </div>
+
+      <motion.button
+        type="button"
+        initial={contentMotion ? { opacity: 0 } : false}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 2 }}
+        onClick={() => {
+          menu.toggleMusic();
+          safePlayMenuSfx(audioEngine.playSfx.bind(audioEngine), 'click');
+        }}
+        className="absolute bottom-4 right-4 z-50 flex items-center gap-1.5 px-3 py-2 rounded-sm border border-cyan-500/30 bg-black/50 backdrop-blur-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-400/70"
+        aria-label={menu.musicEnabled ? 'Выключить музыку' : 'Включить музыку'}
+      >
+        {menu.musicEnabled ? (
+          <Volume2 className="w-4 h-4 text-cyan-400/70" />
+        ) : (
+          <VolumeX className="w-4 h-4 text-slate-500/60" />
+        )}
+        <span className="font-mono text-[9px] uppercase tracking-widest text-cyan-500/50">
+          {menu.musicEnabled ? 'ON' : 'OFF'}
+        </span>
+      </motion.button>
+
+      <motion.div
+        initial={contentMotion ? { opacity: 0 } : false}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 2.5 }}
+        className="absolute bottom-6 right-6 z-30"
+        aria-hidden="true"
+      >
+        <span className="font-mono text-[10px] text-cyan-400/50">v{APP_VERSION}</span>
+      </motion.div>
+
+      <AnimatePresence>
+        {menu.showAbout ? <MenuAboutPanel onClose={menu.closeAbout} /> : null}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {menu.showSettings ? (
+          <MenuSettingsPanel
+            musicEnabled={menu.musicEnabled}
+            onToggleMusic={menu.toggleMusic}
+            onClose={menu.closeSettings}
+          />
+        ) : null}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {menu.isFadingOut ? (
+          <motion.div
+            key="menu-fadeout"
+            className="fixed inset-0 bg-black z-[70]"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.8 }}
+            aria-hidden="true"
+          />
+        ) : null}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+export function MenuScreenPanel() {
+  return (
+    <ErrorBoundary name="menu-screen" fallback={null}>
+      <MenuScreenPanelInner />
+    </ErrorBoundary>
+  );
+}

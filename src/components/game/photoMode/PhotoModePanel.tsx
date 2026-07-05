@@ -1,0 +1,33 @@
+import { AnimatePresence } from 'framer-motion';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { PhotoModeViewfinder } from '@/components/game/photoMode/PhotoModeViewfinder';
+import { usePhotoModeController } from '@/components/game/photoMode/usePhotoModeController';
+
+function PhotoModeInner() {
+  const photo = usePhotoModeController();
+
+  return (
+    <AnimatePresence>
+      {photo.active && (
+        <PhotoModeViewfinder
+          flash={photo.flash}
+          preview={photo.preview}
+          liveAnnouncement={photo.liveAnnouncement}
+          reducedMotion={photo.reducedMotion}
+          sceneName={photo.sceneName}
+          timeStr={photo.timeStr}
+          onCapture={photo.captureScreenshot}
+          onExit={photo.exitPhotoMode}
+        />
+      )}
+    </AnimatePresence>
+  );
+}
+
+export function PhotoMode() {
+  return (
+    <ErrorBoundary name="PhotoMode" fallback={null}>
+      <PhotoModeInner />
+    </ErrorBoundary>
+  );
+}

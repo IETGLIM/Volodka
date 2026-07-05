@@ -1,0 +1,72 @@
+name: CI
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run lint
+
+      - run: npm run typecheck
+
+      - run: npm run validate
+
+      - run: npm run assets:prepare
+
+      - run: npm run assets:validate
+
+      - run: mkdir -p reports
+
+      - run: npx vitest run --reporter=default --reporter=junit --outputFile.junit=reports/vitest-junit.xml
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: vitest-junit
+          path: reports/vitest-junit.xml
+          if-no-files-found: ignore
+
+      - run: npm run build
+
+      - run: npm run budgets:check
+
+      - run: npm run verify:deploy
+
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    needs: check
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+
+      - run: npx playwright install chromium --with-deps
+
+      # preview serves dist/ — check job builds on another runner, so build here too
+      - run: npm run build
+
+      - run: npx playwright test

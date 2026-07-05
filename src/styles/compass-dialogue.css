@@ -1,0 +1,136 @@
+/* ══════════════════════════════════════════════════════════════
+   SESSION 6: CompassHUD & Dialogue
+   ══════════════════════════════════════════════════════════════ */
+
+/* ─── CompassHUD base styles ─── */
+.compass-hud {
+  font-family: 'Geist Mono', monospace;
+  isolation: isolate;
+}
+
+.compass-hud::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 4px;
+  pointer-events: none;
+  z-index: -1;
+  box-shadow:
+    0 0 20px rgb(var(--cyber-cyan-rgb) / 0.04),
+    0 0 40px rgb(var(--cyber-cyan-rgb) / 0.02);
+}
+
+/* ─── Compass direction markers ─── */
+.compass-marker {
+  transition: transform 0.05s linear;
+  will-change: transform;
+}
+
+/* ─── Compass center indicator ─── */
+.compass-center-indicator {
+  animation: compass-indicator-pulse 2s ease-in-out infinite;
+}
+
+@keyframes compass-indicator-pulse {
+  0%, 100% {
+    opacity: 0.8;
+    filter: drop-shadow(0 0 2px rgb(var(--cyber-cyan-rgb) / 0.6));
+  }
+  50% {
+    opacity: 1;
+    filter: drop-shadow(0 0 4px rgb(var(--cyber-cyan-rgb) / 0.9));
+  }
+}
+
+/* ─── Dialogue nameplate enhanced ─── */
+.dialogue-nameplate {
+  position: relative;
+  padding: 2px 0;
+}
+
+.dialogue-nameplate::before {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgb(var(--cyber-cyan-rgb) / 0.15), transparent);
+  pointer-events: none;
+}
+
+/* ─── Dialogue typewriter cursor ─── */
+.dialogue-cursor {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* ─── Dialogue choice buttons enhanced ─── */
+.dialogue-choice-btn {
+  position: relative;
+  isolation: isolate;
+}
+
+.dialogue-choice-btn::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(180deg, rgb(var(--cyber-cyan-rgb) / 0.5), rgb(var(--cyber-cyan-rgb) / 0.15));
+  z-index: 1;
+  transition: width 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dialogue-choice-btn:hover::before {
+  width: 3px;
+  box-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.3);
+}
+
+/* ─── Dialogue focus: dim exploration HUD while a dialogue is open ───
+   The class is toggled on the orchestrator root (GameOrchestrator) when
+   isDialogueActive; every HUD block already carries data-exploration-ui. */
+[data-exploration-ui] {
+  transition: opacity 0.35s ease;
+}
+
+.dialogue-focus-active [data-exploration-ui] {
+  opacity: 0.25;
+}
+
+/* ─── Panel focus: exploration HUD stays out of tab order while a stack panel is open ─── */
+.panel-focus-active [data-exploration-ui] {
+  pointer-events: none;
+}
+
+.panel-focus-active [data-game-canvas-shell] {
+  pointer-events: none;
+}
+
+/* ─── Portrait frame with decorative border ─── */
+.portrait-frame {
+  position: relative;
+  isolation: isolate;
+}
+
+@keyframes portrait-frame-pulse {
+  0%, 100% {
+    box-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.05);
+    border-color: rgb(var(--cyber-cyan-rgb) / 0.15);
+  }
+  50% {
+    box-shadow: 0 0 16px rgb(var(--cyber-cyan-rgb) / 0.12);
+    border-color: rgb(var(--cyber-cyan-rgb) / 0.25);
+  }
+}
+
+.portrait-frame::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 14px;
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.08);
+  pointer-events: none;
+  animation: portrait-frame-pulse 3s ease-in-out infinite;
+}
