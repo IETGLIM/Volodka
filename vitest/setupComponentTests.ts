@@ -35,9 +35,14 @@ vi.mock('framer-motion', () => {
   };
 });
 
-afterEach(() => {
+afterEach(async () => {
   pendingAnimationFrameCallbacks.clear();
   cleanup();
+  // [VITE-8] vitest 4 tears down environments faster than vitest 3.
+  // Lazy import chains (story/dialogue/quests) may still be resolving
+  // when the environment is destroyed → EnvironmentTeardownError.
+  // Wait for dynamic imports to settle before allowing teardown.
+  await vi.dynamicImportSettled();
 });
 
 const canvasContextStub = {
