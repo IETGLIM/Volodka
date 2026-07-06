@@ -42,8 +42,19 @@ export function configureGltfPipeline(renderer: WebGLRenderer): void {
   sharedKtx2.detectSupport(renderer);
 }
 
+import { getActiveCanvasRenderer } from '@/engine/canvas/canvasRendererRegistry';
+
 /** Pass to useGLTF(url, true, true, extendLoader) */
 export function extendGltfLoader(loader: GltfLoaderLike): void {
+  // [FIX] Ensure pipeline is configured even if extendGltfLoader is called
+  // before GltfPipelineInit's useEffect runs (race condition: ScenePropDressing
+  // may mount and call useGLTF before configureGltfPipeline has executed).
+  // configureGltfPipeline is idempotent — safe to call multiple times.
+  if (!configured && typeof window !== 'undefined') {
+    const renderer = getActiveCanvasRenderer();
+    if (renderer) configureGltfPipeline(renderer);
+  }
+
   if (sharedDraco) loader.setDRACOLoader(sharedDraco);
   if (sharedKtx2 && loader.setKTX2Loader) loader.setKTX2Loader(sharedKtx2);
   if (loader.setMeshoptDecoder) loader.setMeshoptDecoder(MeshoptDecoder);

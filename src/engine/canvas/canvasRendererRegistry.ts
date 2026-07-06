@@ -73,6 +73,12 @@ export function resetCanvasRendererRegistry(): void {
   registeredScene = null;
 }
 
+/** [FIX] Get the active registered renderer — used by gltfPipeline to configure KTX2Loader
+ *  before GltfPipelineInit's useEffect runs (race condition fix). */
+export function getActiveCanvasRenderer(): THREE.WebGLRenderer | null {
+  return registeredGl;
+}
+
 /** Test-only reset */
 export function resetCanvasRendererRegistryForTests(): void {
   resetCanvasRendererRegistry();
