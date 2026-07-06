@@ -79,7 +79,9 @@ export const QUALITY_PRESETS: Record<Exclude<QualityPresetId, 'auto'>, QualityPr
     bakedLighting: true,
     compression: 'draco',
     npcRenderMode: 'procedural',
-    environmentRenderMode: 'procedural',
+    // [FIX] GLB props must always render — procedural environment mode was hiding
+    // all desk/bed/wardrobe/bookshelf models, leaving rooms empty.
+    environmentRenderMode: 'hybrid',
     visualLite: true,
   },
   medium: {
