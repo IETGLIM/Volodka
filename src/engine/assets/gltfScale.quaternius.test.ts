@@ -18,6 +18,15 @@ function loadGltfScene(file: string): Promise<{ scene: THREE.Group }> {
   const buf = readFileSync(file);
   const loader = new GLTFLoader();
   loader.setMeshoptDecoder(MeshoptDecoder);
+  // [KTX2] GLBs now contain KTX2 textures. In Node.js test env there's no
+  // WebGL context, so mock the KTX2Loader — tests measure geometry bounds,
+  // not texture pixels. Real KTX2Loader is used in browser via gltfPipeline.
+  loader.setKTX2Loader({
+    detectSupport: () => {},
+    loadTexture: () => Promise.resolve(new THREE.Texture()),
+    setTranscoderPath: () => this,
+    setWorkerLimit: () => this,
+  } as any);
   return new Promise((resolve, reject) => {
     loader.parse(
       buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength),
