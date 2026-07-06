@@ -29,8 +29,8 @@ function loadGltfScene(file: string): Promise<{ scene: import('three').Group }> 
   loader.setKTX2Loader({
     detectSupport: () => {},
     loadTexture: () => Promise.resolve(new THREE.Texture()),
-    setTranscoderPath: () => this,
-    setWorkerLimit: () => this,
+    setTranscoderPath: function() { return this; },
+    setWorkerLimit: function() { return this; },
   } as any);
   return new Promise((resolve, reject) => {
     loader.parse(
