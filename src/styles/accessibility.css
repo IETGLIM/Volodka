@@ -284,9 +284,14 @@ button:hover [data-keyboard-hint]::after {
 }
 
 /* ── Status Announcements ── */
-[aria-live="polite"],
-[aria-live="assertive"] {
-  /* Ensure live regions are properly positioned for screen readers */
+/* Only hide live regions that are EXPLICITLY marked .sr-only.
+   Visible live regions (tutorial steps, combat log, achievement popups,
+   interaction hints, etc.) must remain visible — they use aria-live for
+   screen-reader announcements while also being shown on-screen.
+   The .sr-only class already provides the visually-hidden pattern, so this
+   rule is a belt-and-suspenders guard for sr-only live regions only. */
+.sr-only[aria-live="polite"],
+.sr-only[aria-live="assertive"] {
   position: absolute;
   left: -10000px;
   width: 1px;
