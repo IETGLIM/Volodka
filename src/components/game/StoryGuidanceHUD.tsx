@@ -71,7 +71,17 @@ export function StoryGuidanceHUD() {
 
   const currentObjective = useMemo(() => {
     const activeQuests = quests.filter((q) => q.status === 'active');
-    for (const aq of activeQuests) {
+    // Priority 1: active golden-path quests (main story progression).
+    // Without this priority, optional side quests like morning_sync (activated
+    // automatically by CinematicTimelineRunner) would steal the HUD objective
+    // from the actual golden-path quest the player should be pursuing.
+    const goldenPathActive = activeQuests.find((aq) =>
+      GOLDEN_PATH_QUEST_SPINE.includes(aq.questId),
+    );
+    const questIter = goldenPathActive
+      ? [goldenPathActive]
+      : activeQuests;
+    for (const aq of questIter) {
       const obj = getNextTrackedObjective(aq.questId);
       if (obj) {
         const questDef = QUEST_DEFINITIONS.find((d) => d.id === aq.questId);
