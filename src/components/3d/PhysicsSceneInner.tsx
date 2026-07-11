@@ -64,7 +64,7 @@ function PhysicsSceneInner({
     <Physics
       gravity={[0, -15, 0]}
       timeStep={1 / 60}
-      interpolate={false}
+      interpolate
       debug={false}
       paused={physicsPaused}
       updatePriority={FRAME_PHYSICS_R3F_PRIORITY}
