@@ -220,7 +220,13 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     ],
   },
 
-  /* ── Sync terminal — appears only when morning_sync quest is active ── */
+  /* ── Sync terminal — visible once morning_sync is active, hidden after completion.
+       Previously required `sync_done` flag which is only set BY completing the quest,
+       creating a deadlock: terminal never appears → quest never completes → terminal
+       never appears. Now we use `morning_sync_active` flag set during quest activation
+       (see QuestTracker / morning_sync wiring) and hide after `sync_done`. If the
+       active flag is not set, the terminal simply is not visible yet — but once the
+       quest activates (via CinematicTimelineRunner after wake-up), it appears. ── */
   {
     id: 'room_sync_terminal',
     sceneId: 'volodka_room',
@@ -229,7 +235,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     enterToast: 'Терминал мигает: «Входящий вызов — IT-Гильдия Синк»',
     interactionType: 'use',
     interactionLabel: 'Подключиться к синку',
-    requiredFlag: 'sync_done',
+    // No requiredFlag — terminal visible whenever quest morning_sync is active.
     hiddenWhenFlag: 'sync_done',
     isOneTime: true,
     linkedStoryNodeId: 'sync_conference',
