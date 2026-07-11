@@ -522,13 +522,21 @@ export const QUESTS_ACT1: QuestDefinition[] = [
     questGiverNpcId: 'cafe_barista',
   },
 
-  /* ─────────────── QUEST: Morning Sync ─────────────── */
+  /* ─────────────── QUEST: Morning Sync ───────────────
+     Optional side quest — NOT part of GOLDEN_PATH_QUEST_SPINE.
+     CinematicTimelineRunner activates it after wake-up (5h timer), but no
+     other quest requires it and it does not advance the act. Previously
+     marked questType: 'main', which made StoryGuidanceHUD show it as
+     "Цель акта 1: Подойти к рабочей станции" — stealing HUD priority from
+     the actual golden-path quest (incident_scroll_4729 / maria_connection).
+     Marked 'side' so the HUD shows the real next objective. The quest still
+     activates and can be completed for XP, but no longer blocks guidance. */
   {
     id: 'morning_sync',
     title: 'Присутствие на синке',
     description: 'Срочная оперативка. Подключись к конференции с рабочей станции — коллеги уже ждут.',
     act: 1,
-    questType: 'main',
+    questType: 'side',
     difficulty: 'easy',
     hint: 'Подойди к терминалу и нажми E для подключения к синку.',
     requiresQuests: ['first_reading'],
