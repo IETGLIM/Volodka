@@ -226,11 +226,13 @@ export const TRIGGER_ZONES: TriggerZone[] = [
        never appears. Now we use `morning_sync_active` flag set during quest activation
        (see QuestTracker / morning_sync wiring) and hide after `sync_done`. If the
        active flag is not set, the terminal simply is not visible yet — but once the
-       quest activates (via CinematicTimelineRunner after wake-up), it appears. ── */
+       quest activates (via CinematicTimelineRunner after wake-up), it appears.
+       Position: moved to LEFT side of desk to avoid overlap with room_terminal
+       (codebreaker minigame) which is at [0.72, 0.5, -2.62]. ── */
   {
     id: 'room_sync_terminal',
     sceneId: 'volodka_room',
-    position: [0.5, 0.5, -2.4],
+    position: [-0.6, 0.5, -2.4],
     size: [0.5, 0.9, 0.4],
     enterToast: 'Терминал мигает: «Входящий вызов — IT-Гильдия Синк»',
     interactionType: 'use',
