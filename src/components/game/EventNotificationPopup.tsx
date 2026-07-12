@@ -287,33 +287,11 @@ export function EventNotificationPopup() {
 
   /* scene:enter — handled by center scene banner in GameOrchestrator (no duplicate toast) */
 
-  /* ── Listen for combat:start → enemy name toast ── */
-  useEffect(() => {
-    const unsub = eventBus.on('combat:start', ({ encounterName, encounterEmoji }) => {
-      addNotification({
-        title: encounterEmoji && encounterName
-          ? `${encounterEmoji} ${encounterName}`
-          : encounterName
-            ? `Бой: ${encounterName}`
-            : 'Бой начинается!',
-        subtitle: '1 — атака · 2 — защита · 3 — стих · 4 — побег',
-        type: 'combat',
-      });
-    }, EventBusPriority.UI);
-    return unsub;
-  }, [addNotification]);
+  /* combat:start — handled by CombatUI intro overlay (emoji + enemy name).
+     Previously duplicated here as a toast — removed to avoid double-display. */
 
-  /* ── Listen for combat:victory → "Победа!" ── */
-  useEffect(() => {
-    const unsub = eventBus.on('combat:victory', (payload) => {
-      addNotification({
-        title: 'Победа!',
-        subtitle: `+${payload.xpGained} ОД`,
-        type: 'combat',
-      });
-    }, EventBusPriority.UI);
-    return unsub;
-  }, [addNotification]);
+  /* combat:victory — handled by DamageNumberFloat (floating "+X ОД" number)
+     and CombatUI combat log. Previously duplicated here as a toast — removed. */
 
   /* quest:completed / achievement:unlocked — QuestNotificationSystem & AchievementNotification */
 

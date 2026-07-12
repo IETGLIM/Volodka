@@ -5,7 +5,6 @@ import {
   appendToastIfNew,
   buildCombatDefeatToastMessage,
   buildPoemPowerToastMessage,
-  buildQuestRewardToastMessage,
   canAcceptNotificationToasts,
   storeNotificationToVisible,
   toastMessageToVisible,
@@ -94,9 +93,10 @@ export function useNotificationToastController() {
         },
         EventBusPriority.UI,
       ),
-      eventBus.on('quest:reward_applied', ({ questTitle, rewards }) => {
-        toastManager.addToast('quest', buildQuestRewardToastMessage(questTitle, rewards));
-      }),
+      // quest:reward_applied — removed. QuestNotificationSystem already shows
+      // a rich "★ Квест выполнен!" card with rewards via useQuests() watcher.
+      // This toastManager.addToast('quest', ...) was duplicating it with a
+      // plain text toast "Награда за X: ...". See notificationChannelRegistry.
     ];
 
     return () => unsubs.forEach((unsub) => unsub());
