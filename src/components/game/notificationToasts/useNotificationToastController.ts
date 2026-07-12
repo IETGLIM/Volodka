@@ -56,6 +56,15 @@ export function useNotificationToastController() {
         if (prevNotifIdsRef.current.has(notification.id)) continue;
         prevNotifIdsRef.current.add(notification.id);
 
+        // Suppress quest notifications here — QuestNotificationSystem renders
+        // a richer card (icon, progress bar, rewards link) for the same events
+        // (quest accepted / objective complete / quest complete). Without this
+        // filter, the player saw duplicate toasts: NotificationToasts showed
+        // "Квест: Задание выполнено: X" + "Квест: Награда за X" at top-right,
+        // while QuestNotificationSystem showed "★ Квест выполнен! X" at
+        // bottom-right — three toasts for one quest completion.
+        if (notification.type === 'quest') continue;
+
         const updated = appendToastIfNew(
           next,
           storeNotificationToVisible(notification),
