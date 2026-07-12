@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { eventBus } from '@/engine/EventBus';
 import { consumeEKey, isEKeyConsumed } from '@/engine/input/eKeyConsumption';
 import { isInteractionLocked } from '@/engine/interaction/interactionSession';
+import { getGameStore } from '@/store/gameStore';
 import {
   queryInteractionTargets,
   type ExitQueryTarget,
@@ -42,6 +43,17 @@ export function useEKeyInteraction({
     if (isOverlayBlockingRef.current) return false;
     if (isInteractionLocked()) return false;
     if (isEKeyConsumed()) return false;
+
+    // Hard gate: refuse interaction during any cutscene/cinematic.
+    // isOverlayBlockingRef should already cover this, but the ref is synced
+    // via useEffect which can lag by one frame — a fast E press or LMB click
+    // during the intro wake-up cinematic could slip through and trigger a
+    // scene transition or dialogue before the overlay gate propagates.
+    try {
+      if (getGameStore().activeCutsceneId) return false;
+    } catch {
+      /* store not ready — fall through */
+    }
 
     const playerPos = livePlayerPositionRef.current;
     const lookYaw = sharedCameraYawRef.current;

@@ -50,6 +50,23 @@ export function requestSceneTransition(
   targetScene: SceneId,
   spawnAt?: SpawnTuple,
 ): boolean {
+  // Hard gate: never allow scene transitions during cutscene/cinematic.
+  // The player's E-key / LMB / gamepad-A input is supposed to be blocked by
+  // isOverlayBlocking in InteractiveTriggers, but during the intro wake-up
+  // cinematic there is a race condition where the cutscene flag is set in
+  // the store but the ref-sync effect has not yet propagated, allowing a
+  // trigger-zone hit (e.g. room_door -> corridor_door) to slip through and
+  // transition the scene mid-cinematic. This gate is the last line of
+  // defence — even if the upstream gate misses, the transition is refused.
+  try {
+    const snapshot = getGameSnapshot();
+    if (snapshot.activeCutsceneId) {
+      return false;
+    }
+  } catch {
+    /* store not ready — allow fallthrough to existing checks */
+  }
+
   const spawn = resolveSceneSpawn(targetScene, spawnAt);
   const dedupeKey = `${targetScene}|${spawnKey(spawn)}`;
   const now = performance.now();
