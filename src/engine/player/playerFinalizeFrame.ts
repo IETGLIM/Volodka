@@ -61,8 +61,14 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
     const stepInterval = running ? FOOTSTEP_INTERVAL * 0.65 : FOOTSTEP_INTERVAL;
     if (deps.footstepTimerRef.current >= stepInterval) {
       deps.footstepTimerRef.current = 0;
-      // exploration:footstep event removed — no subscribers. Audio is triggered
-      // directly via audioEngine.playFootstep below.
+      const pos = rb.translation();
+      // Emit for future subscribers (NPC hearing, particle dust, etc.).
+      // Currently no subscribers, but the event is the canonical "player
+      // stepped here" signal — keep it for downstream systems.
+      eventBus.emit('exploration:footstep', {
+        position: [pos.x, pos.y, pos.z],
+        yaw: deps.livePlayerRotationRef.current,
+      });
       audioEngine.playFootstep(deps.currentFloorMaterialRef.current, {
         sourceId: 'player-footstep',
       });

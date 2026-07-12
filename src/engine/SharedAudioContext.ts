@@ -117,9 +117,21 @@ registerGestureResumeHandlers();
 registerTabVisibilityHandlers();
 
 /**
- * Check if the shared AudioContext has been created and is running.
+ * Check if the shared AudioContext has been created and is running,
+ * OR if the user has interacted (gestures registered) — in which case
+ * the context will be resumed on the next playFootstep/playSfx call.
+ *
+ * Previously this returned false until sharedCtx.state === 'running',
+ * which meant if the user clicked before any audio system called
+ * getSharedAudioContext(), the context was never created and all
+ * whenAudioReady callbacks piled up in _pendingQueue forever —
+ * footsteps never played.
+ *
+ * Now: if the user has interacted, we treat the context as ready
+ * (it will be lazily created + resumed in initContext()).
  */
 export function isSharedAudioContextReady(): boolean {
+  if (_userInteracted) return true;
   return sharedCtx !== null && sharedCtx.state === 'running';
 }
 
