@@ -220,11 +220,7 @@ export function SimplePlayer({
           footstepTimerRef.current += dt;
           if (footstepTimerRef.current >= FOOTSTEP_INTERVAL) {
             footstepTimerRef.current = 0;
-            const pos = livePlayerPositionRef.current;
-            eventBus.emit('exploration:footstep', {
-              position: [pos.x, pos.y, pos.z],
-              yaw: livePlayerRotationRef.current,
-            });
+            // exploration:footstep event removed — no subscribers. Audio via playFootstep.
             audioEngine.playFootstep('default');
           }
         } else {
@@ -338,11 +334,7 @@ export function SimplePlayer({
       footstepTimerRef.current += dt;
       if (footstepTimerRef.current >= FOOTSTEP_INTERVAL) {
         footstepTimerRef.current = 0;
-        const pos = livePlayerPositionRef.current;
-        eventBus.emit('exploration:footstep', {
-          position: [pos.x, pos.y, pos.z],
-          yaw: livePlayerRotationRef.current,
-        });
+        // exploration:footstep event removed — no subscribers. Audio via playFootstep.
         audioEngine.playFootstep('default');
       }
     } else {

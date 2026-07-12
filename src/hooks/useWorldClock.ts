@@ -61,8 +61,8 @@ export function useWorldClock() {
       store.setExplorationTimeOfDay(newHour);
       store.setExplorationNPCStates(npcStates);
 
-      // Emit world events
-      eventBus.emit('world:tick', { hour: newHour, deltaHours: WORLD_CLOCK_HOURS_PER_TICK });
+      // Emit world:hour_changed — used by NPC schedules, weather, quest timers.
+      // world:tick event removed — no subscribers (was cargo-cult from World Director pattern).
       eventBus.emit('world:hour_changed', {
         hour: newHour,
         previousHour,

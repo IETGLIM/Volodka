@@ -61,11 +61,8 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
     const stepInterval = running ? FOOTSTEP_INTERVAL * 0.65 : FOOTSTEP_INTERVAL;
     if (deps.footstepTimerRef.current >= stepInterval) {
       deps.footstepTimerRef.current = 0;
-      const pos = rb.translation();
-      eventBus.emit('exploration:footstep', {
-        position: [pos.x, pos.y, pos.z],
-        yaw: deps.livePlayerRotationRef.current,
-      });
+      // exploration:footstep event removed — no subscribers. Audio is triggered
+      // directly via audioEngine.playFootstep below.
       audioEngine.playFootstep(deps.currentFloorMaterialRef.current, {
         sourceId: 'player-footstep',
       });
