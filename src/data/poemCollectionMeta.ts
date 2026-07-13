@@ -50,16 +50,11 @@ export const SPECIAL_BONUS_POEM_IDS = [
 ] as const;
 
 /**
- * Poems registered in content but intentionally without collectPoem / quest wiring yet.
- * Content validator warns on other unwired registry poems.
+ * Poems that were previously without collectPoem / quest wiring.
+ * All post-launch poems have now been wired into story nodes and quest systems.
+ * Kept as an empty array for backwards compatibility with imports.
  */
-export const POST_LAUNCH_POEM_IDS = [
-  'poem_act6_01',
-  'poem_act6_04',
-  'poem_act6_05',
-  'poem_act6_07',
-  'poem_act7_ending',
-] as const satisfies readonly string[];
+export const POST_LAUNCH_POEM_IDS = [] as const satisfies readonly string[];
 
 export const HIDDEN_POEM_IDS = [
   ...NUMBERED_BONUS_POEM_IDS,

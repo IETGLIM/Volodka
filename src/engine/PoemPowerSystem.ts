@@ -505,6 +505,19 @@ const POEM_POWERS: Record<string, PoemPower> = {
     flagsToSet: [{ key: 'tolpa_campfire_blessing', durationMs: 40000 }],
     reverseOnExpiry: [{ type: 'skill', key: 'empathy', value: -3 }],
   },
+  poem_act6_01: {
+    poemId: 'poem_act6_01',
+    name: 'Город шепчет',
+    description: 'Говорит сквозь провода: +6 к интуиции, +4 к атаке на 2 хода в акте 6.',
+    cooldownMs: 150000,
+    effect: () => {
+      addSkill('intuition', 6);
+      addKarma(4);
+      eventBus.emit('ui:exploration_message', { text: '🌃 Город шепчет... Провода несут правду.' });
+    },
+    flagsToSet: [{ key: 'city_whisper_active', durationMs: 40000 }],
+    reverseOnExpiry: [{ type: 'skill', key: 'intuition', value: -6 }],
+  },
   poem_act6_04: {
     poemId: 'poem_act6_04',
     name: 'Сопротивление',
@@ -544,6 +557,20 @@ const POEM_POWERS: Record<string, PoemPower> = {
     },
     flagsToSet: [{ key: 'system_shutdown_poem_active', durationMs: 60000 }],
     reverseOnExpiry: [{ type: 'skill', key: 'writing', value: -6 }],
+  },
+  poem_act7_ending: {
+    poemId: 'poem_act7_ending',
+    name: 'Эпилог: строка 00',
+    description: 'Нулевая строка ждёт тебя. Полное восстановление HP, −30 стресса, +15 кармы. Финал истории.',
+    cooldownMs: 200000,
+    effect: () => {
+      addKarma(15);
+      addStress(-30);
+      addSkill('writing', 8);
+      eventBus.emit('ui:exploration_message', { text: '✨ Строка 00... История завершена. Новое начало.' });
+    },
+    flagsToSet: [{ key: 'epilogue_line_zero', durationMs: 60000 }],
+    reverseOnExpiry: [{ type: 'skill', key: 'writing', value: -8 }],
   },
 };
 

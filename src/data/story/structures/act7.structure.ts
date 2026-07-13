@@ -1336,6 +1336,12 @@ export const ACT7_STRUCTURE: Record<string, StoryNodeStructure> = {
     "speaker": "narrator",
     "sceneId": "volodka_room",
     "guidanceObjectiveType": "make_choice",
+    "effects": [
+      {
+        "type": "collectPoem",
+        "poemId": "poem_act7_ending"
+      }
+    ],
     "choices": [
       {
         "text": "",

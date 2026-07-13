@@ -36,9 +36,11 @@ export const POEM_POWER_COOLDOWN_MS: Readonly<Record<string, number>> = Object.f
   poem_20: 170_000,
   poem_21: 200_000,
   poem_tolpa: 150_000,
+  poem_act6_01: 150_000,
   poem_act6_04: 180_000,
   poem_act6_05: 180_000,
   poem_act6_07: 200_000,
+  poem_act7_ending: 200_000,
 });
 
 /** Fallback cooldown for poems without an explicit power definition. */

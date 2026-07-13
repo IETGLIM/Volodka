@@ -26,7 +26,14 @@ interface DustConfig {
   color: string;
 }
 
-const DUST_CONFIGS: Record<string, DustConfig> = {
+interface DustConfigEnhanced extends DustConfig {
+  /** God-ray positions for light-catch interaction (library_day beams) */
+  godRayPositions?: [number, number, number][];
+  /** How strongly dust brightens when near a god-ray */
+  godRayInfluence?: number;
+}
+
+const DUST_CONFIGS: Record<string, DustConfigEnhanced> = {
   volodka_room: {
     count: 50,
     position: [0, 1.5, -1],
@@ -36,12 +43,38 @@ const DUST_CONFIGS: Record<string, DustConfig> = {
     color: '#aaffaa',
   },
   library_day: {
-    count: 60,
+    count: 80,
     position: [2, 2, -2],
-    spread: [8, 3, 8],
-    sizeRange: [0.008, 0.018],
+    spread: [8, 3.5, 8],
+    sizeRange: [0.008, 0.022],
     speed: 0.06,
     color: '#ffddaa',
+    godRayPositions: [[5, 3, 0], [3, 3, -3]],
+    godRayInfluence: 2.5,
+  },
+  volodka_corridor: {
+    count: 40,
+    position: [0, 1.8, -1],
+    spread: [3, 2, 6],
+    sizeRange: [0.006, 0.016],
+    speed: 0.07,
+    color: '#ccbbaa',
+  },
+  park_day: {
+    count: 55,
+    position: [0, 2, 0],
+    spread: [12, 4, 12],
+    sizeRange: [0.006, 0.018],
+    speed: 0.05,
+    color: '#ddffcc',
+  },
+  home_evening: {
+    count: 35,
+    position: [0, 1.5, 0],
+    spread: [4, 2, 4],
+    sizeRange: [0.006, 0.016],
+    speed: 0.04,
+    color: '#ffddbb',
   },
 };
 
@@ -60,13 +93,14 @@ export function DustMotes({ sceneId }: { sceneId: string }) {
   }, [baseConfig, isMobile, visualLite, effectsScale, reducedMotion]);
 
   if (!config) return null;
-  return <DustSystem config={config} />;
+  return <DustSystem config={config} hasGodRays={!!baseConfig.godRayPositions} />;
 }
 
-function DustSystem({ config }: { config: DustConfig }) {
+function DustSystem({ config, hasGodRays }: { config: DustConfigEnhanced; hasGodRays?: boolean }) {
   const pointsRef = useRef<THREE.Points>(null);
   const materialRef = useRef<THREE.PointsMaterial>(null);
   const timeRef = useRef(0);
+  const brightnessRef = useRef(new Float32Array(config.count).fill(1));
 
   const { positions, phases, velocities } = useMemo(() => {
     const count = config.count;
@@ -135,9 +169,35 @@ function DustSystem({ config }: { config: DustConfig }) {
 
     posAttr.needsUpdate = true;
 
+    // God-ray interaction: dust motes brighten when near a light beam
+    if (hasGodRays && config.godRayPositions && config.godRayInfluence) {
+      const rayPositions = config.godRayPositions;
+      const influence = config.godRayInfluence;
+      const brightnessArr = brightnessRef.current;
+
+      for (let i = 0; i < count; i++) {
+        const i3 = i * 3;
+        let closestDist = Infinity;
+        for (const ray of rayPositions) {
+          const dx = posArray[i3] - ray[0];
+          const dz = posArray[i3 + 2] - ray[2];
+          // Distance in XZ plane (god rays are vertical columns)
+          const dist = Math.sqrt(dx * dx + dz * dz);
+          if (dist < closestDist) closestDist = dist;
+        }
+        // Brightness increases as particle gets closer to god ray
+        const proximityFactor = Math.max(0, 1 - closestDist / influence);
+        brightnessArr[i] = 1 + proximityFactor * 2.5;
+      }
+    }
+
     // Subtle opacity pulsing to simulate light catching particles
     if (materialRef.current) {
-      materialRef.current.opacity = 0.2 + Math.sin(t * 0.5) * 0.05;
+      const basePulse = 0.2 + Math.sin(t * 0.5) * 0.05;
+      // In god-ray scenes, overall opacity fluctuates more dynamically
+      materialRef.current.opacity = hasGodRays
+        ? basePulse + Math.sin(t * 1.2) * 0.04 + Math.sin(t * 0.7) * 0.03
+        : basePulse;
     }
   });
 

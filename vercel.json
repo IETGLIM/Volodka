@@ -1,6 +1,6 @@
 {
   "framework": "vite",
-  "buildCommand": "npx tsc -b && npx vite build",
+  "buildCommand": "node scripts/tsc7.mjs -b && npx vite build",
   "outputDirectory": "dist",
   "installCommand": "npm install",
   "rewrites": [

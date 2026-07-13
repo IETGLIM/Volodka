@@ -19,6 +19,9 @@ import { SteamParticles } from './SteamParticles';
 import { MatrixFogParticles } from './MatrixFogParticles';
 import { DustMotes, EmberParticles } from './WeatherParticles';
 import { IndustrialSparkles } from './IndustrialSparkles';
+import { NeonRainReflections } from './NeonRainReflections';
+import { ServerRoomMist } from './ServerRoomMist';
+import { FlickeringLightEffect } from './FlickeringLightEffect';
 
 function sceneHasFog(sceneId: string): boolean {
   return sceneId in FOG_PRESETS;
@@ -32,6 +35,9 @@ const STEAM_SCENES = new Set(['cafe_evening', 'home_evening']);
 const MATRIX_FOG_SCENES = new Set(['battle']);
 const DUST_SCENES = new Set(['volodka_room', 'volodka_corridor', 'library_day', 'park_day', 'home_evening']);
 const EMBER_SCENES = new Set(['abandoned_factory']);
+const NEON_REFLECTION_SCENES = new Set(['street_night']);
+const MIST_SCENES = new Set(['guild_mainframe']);
+const FLICKERING_LIGHT_SCENES = new Set(['factory_basement', 'abandoned_factory']);
 
 /** Main controller: renders appropriate atmospheric effects per scene */
 export function AtmosphericEffects() {
@@ -90,6 +96,9 @@ export function AtmosphericEffects() {
   const showMatrixFog = particlesEnabled && MATRIX_FOG_SCENES.has(sceneId);
   const showDust = particlesEnabled && DUST_SCENES.has(sceneId);
   const showEmbers = particlesEnabled && EMBER_SCENES.has(sceneId);
+  const showNeonReflections = particlesEnabled && NEON_REFLECTION_SCENES.has(sceneId) && weatherEnabled;
+  const showMist = particlesEnabled && MIST_SCENES.has(sceneId);
+  const showFlickeringLights = FLICKERING_LIGHT_SCENES.has(sceneId);
 
   return (
     <>
@@ -106,6 +115,11 @@ export function AtmosphericEffects() {
       {showEmbers && <EmberParticles sceneId={sceneId} />}
 
       {particlesEnabled && <IndustrialSparkles sceneId={sceneId} />}
+
+      {/* ── New atmospheric effects ── */}
+      {showNeonReflections && <NeonRainReflections sceneId={sceneId} />}
+      {showMist && <ServerRoomMist sceneId={sceneId} />}
+      {showFlickeringLights && <FlickeringLightEffect sceneId={sceneId} />}
     </>
   );
 }

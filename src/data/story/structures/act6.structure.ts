@@ -75,6 +75,12 @@ export const ACT6_STRUCTURE: Record<string, StoryNodeStructure> = {
     "speaker": "narrator",
     "sceneId": "abandoned_factory",
     "guidanceObjectiveType": "complete_quest",
+    "effects": [
+      {
+        "type": "collectPoem",
+        "poemId": "poem_act6_01"
+      }
+    ],
     "choices": [
       {
         "text": "",
@@ -250,6 +256,10 @@ export const ACT6_STRUCTURE: Record<string, StoryNodeStructure> = {
       {
         "type": "collectPoem",
         "poemId": "poem_act6_03"
+      },
+      {
+        "type": "collectPoem",
+        "poemId": "poem_act6_05"
       }
     ],
     "choices": [
@@ -487,6 +497,12 @@ export const ACT6_STRUCTURE: Record<string, StoryNodeStructure> = {
     "sceneId": "street_night",
     "guidanceNpcId": "npc_maxim",
     "guidanceObjectiveType": "talk_to_npc",
+    "effects": [
+      {
+        "type": "collectPoem",
+        "poemId": "poem_act6_04"
+      }
+    ],
     "choices": [
       {
         "text": "",
@@ -954,6 +970,12 @@ export const ACT6_STRUCTURE: Record<string, StoryNodeStructure> = {
     "speaker": "Тень «Надзора»",
     "sceneId": "factory_roof",
     "guidanceObjectiveType": "make_choice",
+    "effects": [
+      {
+        "type": "collectPoem",
+        "poemId": "poem_act6_07"
+      }
+    ],
     "choices": [
       {
         "text": "",

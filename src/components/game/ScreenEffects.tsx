@@ -3,15 +3,18 @@
    Screen flash, shake, vignette, chromatic aberration, slow-motion.
    All effects triggered via EventBus events.
    Uses CSS animations where possible for performance.
+   Enhanced: damage vignette with red flash, low health pulse,
+   karma shift visual flash, scene transition dissolve.
 */
 
 /* eslint-disable react-refresh/only-export-components -- co-located helpers and lazy exports */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { eventBus, EventBusPriority } from '@/engine/EventBus';
-import { useScreenEffectsVitals } from '@/store/selectors';
+import { useScreenEffectsVitals, usePlayerKarma } from '@/store/selectors';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { useGameStore } from '@/store/gameStore';
 
 /* ── Effect state types ── */
 interface FlashEffect {
@@ -25,6 +28,12 @@ interface ShakeEffect {
   id: number;
   intensity: number;
   duration: number;
+}
+
+interface DissolveEffect {
+  id: number;
+  duration: number;
+  color: string;
 }
 
 let nextEffectId = 0;
@@ -58,6 +67,21 @@ export function triggerXpGain(amount: number, source?: string) {
   eventBus.emit('fx:xp_gain', { amount, source });
 }
 
+/** Trigger a damage vignette — red flash with heavy vignette */
+export function triggerDamageVignette(intensity: number = 0.6, duration: number = 600) {
+  eventBus.emit('fx:damage_vignette', { intensity, duration });
+}
+
+/** Trigger a karma shift visual flash */
+export function triggerKarmaShiftFlash(direction: 'light' | 'dark' = 'dark', intensity: number = 0.3) {
+  eventBus.emit('fx:karma_shift', { direction, intensity });
+}
+
+/** Trigger a scene transition dissolve */
+export function triggerSceneDissolve(duration: number = 800, color: string = '#000000') {
+  eventBus.emit('fx:scene_dissolve', { duration, color });
+}
+
 /* ── Component ── */
 export function ScreenEffects() {
   const reducedMotion = useEffectiveReducedMotion();
@@ -66,6 +90,9 @@ export function ScreenEffects() {
   const [vignetteIntensity, setVignetteIntensity] = useState(0);
   const [chromaticIntensity, setChromaticIntensity] = useState(0);
   const [isSlowMo, setIsSlowMo] = useState(false);
+  const [damageVignette, setDamageVignette] = useState<{ intensity: number; duration: number } | null>(null);
+  const [karmaFlash, setKarmaFlash] = useState<{ direction: string; intensity: number } | null>(null);
+  const [dissolve, setDissolve] = useState<DissolveEffect | null>(null);
 
   // ── Flash listener ──
   useEffect(() => {
@@ -131,6 +158,49 @@ export function ScreenEffects() {
     return unsub;
   }, [reducedMotion]);
 
+  // ── Damage vignette listener ──
+  useEffect(() => {
+    const unsub = eventBus.on('fx:damage_vignette', (payload) => {
+      if (reducedMotion) {
+        // Reduced motion: just a subtle flash
+        triggerFlash('rgba(255,50,50,0.1)', 0.1, 150);
+        return;
+      }
+      setDamageVignette({ intensity: payload.intensity, duration: payload.duration });
+      setTimeout(() => setDamageVignette(null), payload.duration);
+    });
+    return unsub;
+  }, [reducedMotion]);
+
+  // ── Karma shift flash listener ──
+  useEffect(() => {
+    const unsub = eventBus.on('fx:karma_shift', (payload) => {
+      if (reducedMotion) return;
+      setKarmaFlash({ direction: payload.direction, intensity: payload.intensity });
+      setTimeout(() => setKarmaFlash(null), 500);
+    });
+    return unsub;
+  }, [reducedMotion]);
+
+  // ── Scene dissolve listener ──
+  useEffect(() => {
+    const unsub = eventBus.on('fx:scene_dissolve', (payload) => {
+      if (reducedMotion) {
+        // Reduced motion: instant cut instead of dissolve
+        triggerFlash(payload.color, 1.0, 100);
+        return;
+      }
+      const effect: DissolveEffect = {
+        id: nextEffectId++,
+        duration: payload.duration,
+        color: payload.color,
+      };
+      setDissolve(effect);
+      setTimeout(() => setDissolve(null), payload.duration);
+    });
+    return unsub;
+  }, [reducedMotion]);
+
   // ── Auto-trigger from game events ──
   useEffect(() => {
     const unsubs: (() => void)[] = [];
@@ -138,7 +208,10 @@ export function ScreenEffects() {
     unsubs.push(eventBus.on('combat:hit', (payload) => {
       if (payload.isPlayerHit) {
         triggerFlash('rgba(255,50,50,0.25)', reducedMotion ? 0.1 : 0.25, reducedMotion ? 100 : 200);
-        if (!reducedMotion) triggerShake(6, 300);
+        if (!reducedMotion) {
+          triggerShake(6, 300);
+          triggerDamageVignette(0.5, 400);
+        }
       } else {
         triggerFlash('rgba(255,200,50,0.1)', reducedMotion ? 0.06 : 0.1, reducedMotion ? 80 : 150);
       }
@@ -196,6 +269,20 @@ export function ScreenEffects() {
           0%, 100% { opacity: 0.6; }
           50% { opacity: 1; }
         }
+        @keyframes healthPulse {
+          0%, 100% { opacity: 0.3; }
+          50% { opacity: 0.7; }
+        }
+        @keyframes karmaShiftLight {
+          0% { opacity: 0; transform: scale(0.8); }
+          30% { opacity: 0.6; transform: scale(1.05); }
+          100% { opacity: 0; transform: scale(1.2); }
+        }
+        @keyframes karmaShiftDark {
+          0% { opacity: 0; }
+          30% { opacity: 0.7; }
+          100% { opacity: 0; }
+        }
       `}} />
 
       {/* Shake wrapper */}
@@ -236,8 +323,64 @@ export function ScreenEffects() {
         )}
       </AnimatePresence>
 
+      {/* ── Damage vignette — red flash with heavy vignette ── */}
+      <AnimatePresence>
+        {damageVignette && (
+          <motion.div
+            initial={{ opacity: 0.8 }}
+            animate={{ opacity: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: damageVignette.duration / 1000, ease: 'easeOut' }}
+            className="fixed inset-0 pointer-events-none"
+            style={{
+              zIndex: UI_LAYERS.DAMAGE_FLASH,
+              background: `radial-gradient(ellipse at center, rgba(255,30,30,${damageVignette.intensity * 0.3}) 20%, rgba(180,0,0,${damageVignette.intensity * 0.6}) 60%, rgba(0,0,0,${damageVignette.intensity * 0.4}) 100%)`,
+            }}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Low health/stress persistent vignette */}
       <LowHealthVignette />
+
+      {/* ── Karma shift visual flash ── */}
+      <AnimatePresence>
+        {karmaFlash && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: karmaFlash.intensity }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5, ease: 'easeOut' }}
+            className="fixed inset-0 pointer-events-none"
+            style={{
+              zIndex: UI_LAYERS.GLITCH + 3,
+              background: karmaFlash.direction === 'light'
+                ? `radial-gradient(ellipse at center, rgba(255,220,150,${karmaFlash.intensity}) 0%, transparent 70%)`
+                : `radial-gradient(ellipse at center, rgba(80,0,120,${karmaFlash.intensity}) 0%, rgba(0,0,0,${karmaFlash.intensity * 0.5}) 60%, transparent 100%)`,
+              animation: karmaFlash.direction === 'light'
+                ? 'karmaShiftLight 500ms ease-out forwards'
+                : 'karmaShiftDark 500ms ease-out forwards',
+            }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* ── Scene transition dissolve ── */}
+      <AnimatePresence>
+        {dissolve && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: dissolve.duration / 2000, ease: 'easeInOut' }}
+            className="fixed inset-0 pointer-events-none"
+            style={{
+              zIndex: UI_LAYERS.CINEMATIC_TRANSITION,
+              backgroundColor: dissolve.color,
+            }}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Chromatic aberration */}
       <AnimatePresence>
@@ -278,7 +421,7 @@ export function ScreenEffects() {
   );
 }
 
-/* ── Persistent low-health vignette ── */
+/* ── Persistent low-health vignette with pulse ── */
 function LowHealthVignette() {
   const { energy, stress } = useScreenEffectsVitals();
 
@@ -289,9 +432,20 @@ function LowHealthVignette() {
 
   if (intensity <= 0) return null;
 
-  const pulseColor = energy < 25
-    ? `rgba(255, 50, 50, ${intensity * 0.5})`
-    : `rgba(255, 150, 50, ${intensity * 0.3})`;
+  // Color shifts: red for low health, orange for high stress, purple for both
+  const isCritical = energy < 15;
+  const isBoth = energy < 25 && stress > 70;
+
+  const pulseColor = isCritical
+    ? `rgba(255, 30, 30, ${intensity * 0.7})`
+    : isBoth
+      ? `rgba(200, 50, 100, ${intensity * 0.5})`
+      : energy < 25
+        ? `rgba(255, 50, 50, ${intensity * 0.5})`
+        : `rgba(255, 150, 50, ${intensity * 0.3})`;
+
+  // Pulse rate increases with danger level
+  const pulseRate = isCritical ? '0.8s' : isDanger ? '1.5s' : '2s';
 
   return (
     <motion.div
@@ -301,8 +455,8 @@ function LowHealthVignette() {
       className="fixed inset-0 pointer-events-none"
       style={{
         zIndex: UI_LAYERS.NOIR_OVERLAY + 1,
-        background: `radial-gradient(ellipse at center, transparent 40%, ${pulseColor} 100%)`,
-        animation: 'dangerPulse 2s ease-in-out infinite',
+        background: `radial-gradient(ellipse at center, transparent 35%, ${pulseColor} 100%)`,
+        animation: `healthPulse ${pulseRate} ease-in-out infinite`,
       }}
     />
   );

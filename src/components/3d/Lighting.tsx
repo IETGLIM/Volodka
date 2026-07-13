@@ -12,6 +12,9 @@ import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { resolveSceneRenderingPipeline } from '@/engine/graphics/resolveSceneRenderingPipeline';
 import { SCENE_VISIBILITY } from '@/shared/constants/sceneVisibility';
 import type { SceneId } from '@/shared/types/game';
+import { useRef, useMemo } from 'react';
+import { useFrameTick } from '@/engine/frame/useFrameTick';
+import * as THREE from 'three';
 
 /** Shadow config constants — tuned to prevent z-fighting/shadow acne */
 const SHADOW_BIAS = -0.002;
@@ -214,6 +217,163 @@ export function ExplorationLighting() {
 
       {/* Scene-specific point lights from config */}
       <ScenePointLights />
+
+      {/* ── Enhanced scene-specific accent lights ── */}
+      <SceneAccentLights sceneId={sceneId} isMobile={isMobile} />
     </>
+  );
+}
+
+/* ─── Scene-specific accent lights ───
+ *  Dramatic, per-scene accent point lights for atmosphere:
+ *  - Neon color-cycling lights for street_night
+ *  - Warm candlelight flicker for home_evening
+ *  - Cold blue backlight for guild_mainframe
+ *  - Orange industrial light for abandoned_factory
+ *  - Personal warm lighting for volodka_room
+ */
+
+interface AccentLight {
+  position: [number, number, number];
+  color: string;
+  intensity: number;
+  distance: number;
+  /** If true, this light animates (color cycle or flicker) */
+  animated?: 'neon_cycle' | 'candle_flicker' | 'cold_pulse';
+}
+
+const SCENE_ACCENT_LIGHTS: Record<string, AccentLight[]> = {
+  street_night: [
+    { position: [-6, 3, -2], color: '#ff22aa', intensity: 2.5, distance: 10, animated: 'neon_cycle' },
+    { position: [5, 3, -3], color: '#22ffdd', intensity: 2.2, distance: 9, animated: 'neon_cycle' },
+    { position: [2, 2.5, 1], color: '#ffaa22', intensity: 1.8, distance: 8 },
+    { position: [-3, 3.5, -5], color: '#aa44ff', intensity: 1.5, distance: 12, animated: 'neon_cycle' },
+    { position: [7, 2.8, 0], color: '#4488ff', intensity: 1.8, distance: 8 },
+  ],
+  home_evening: [
+    { position: [0.5, 1.8, -0.5], color: '#ff9944', intensity: 2.0, distance: 8, animated: 'candle_flicker' },
+    { position: [-1, 1.5, 1], color: '#ffbb66', intensity: 1.2, distance: 6 },
+  ],
+  guild_mainframe: [
+    { position: [-3, 2, -2], color: '#22aadd', intensity: 2.0, distance: 10, animated: 'cold_pulse' },
+    { position: [3, 2, -4], color: '#44ddff', intensity: 1.8, distance: 9, animated: 'cold_pulse' },
+    { position: [0, 3, 0], color: '#1188cc', intensity: 1.5, distance: 12 },
+  ],
+  abandoned_factory: [
+    { position: [-2, 2.5, 2], color: '#ff8833', intensity: 2.2, distance: 12 },
+    { position: [4, 2, -3], color: '#dd6622', intensity: 1.5, distance: 10 },
+    { position: [0, 3, -4], color: '#ffaa44', intensity: 1.2, distance: 8 },
+  ],
+  volodka_room: [
+    { position: [1.2, 1.5, -2.5], color: '#88ff99', intensity: 1.2, distance: 6 },  // monitor glow
+    { position: [-0.5, 1.8, 0.5], color: '#ffcc88', intensity: 0.9, distance: 5 },    // bedside lamp
+    { position: [0, 0.5, -1], color: '#aabbcc', intensity: 0.4, distance: 4 },         // under-desk glow
+  ],
+  factory_basement: [
+    { position: [0, 2.4, -5], color: '#22ff88', intensity: 1.8, distance: 10 },        // Заря-М core glow
+    { position: [2, 2, -2], color: '#44ffaa', intensity: 1.0, distance: 7 },
+  ],
+};
+
+function SceneAccentLights({ sceneId, isMobile }: { sceneId: string; isMobile: boolean }) {
+  const lights = SCENE_ACCENT_LIGHTS[sceneId];
+  if (!lights) return null;
+
+  // On mobile, limit accent lights to prevent performance issues
+  const effectiveLights = isMobile ? lights.slice(0, 2) : lights;
+
+  return (
+    <>
+      {effectiveLights.map((light, i) => {
+        if (light.animated) {
+          return (
+            <AnimatedAccentLight
+              key={`accent-${sceneId}-${i}`}
+              config={light}
+              seed={i * 997}
+            />
+          );
+        }
+        return (
+          <pointLight
+            key={`accent-${sceneId}-${i}`}
+            position={light.position}
+            intensity={light.intensity}
+            color={light.color}
+            distance={light.distance}
+          />
+        );
+      })}
+    </>
+  );
+}
+
+/** Animated accent light with neon color cycling, candle flicker, or cold pulse */
+function AnimatedAccentLight({ config, seed }: { config: AccentLight; seed: number }) {
+  const lightRef = useRef<THREE.PointLight>(null);
+  const timeRef = useRef(0);
+  const baseColor = useMemo(() => new THREE.Color(config.color), [config.color]);
+
+  useFrameTick('postfx', ({ delta }) => {
+    if (!lightRef.current) return;
+    timeRef.current += delta;
+    const t = timeRef.current;
+
+    switch (config.animated) {
+      case 'neon_cycle': {
+        // Slowly cycle hue while maintaining saturation and lightness
+        const hueShift = (Math.sin(t * 0.15 + seed * 0.1) * 0.08);
+        const hsl = { h: 0, s: 0, l: 0 };
+        baseColor.getHSL(hsl);
+        lightRef.current.color.setHSL(
+          (hsl.h + hueShift + 1) % 1,
+          hsl.s,
+          hsl.l,
+        );
+        // Subtle intensity pulsing
+        lightRef.current.intensity = config.intensity * (0.85 + 0.15 * Math.sin(t * 0.4 + seed));
+        break;
+      }
+      case 'candle_flicker': {
+        // Warm organic flicker — multiple sine waves at different frequencies
+        const flicker =
+          0.7
+          + 0.15 * Math.sin(t * 3.7 + seed)
+          + 0.1 * Math.sin(t * 7.3 + seed * 2)
+          + 0.05 * Math.sin(t * 13.1 + seed * 3);
+        lightRef.current.intensity = config.intensity * flicker;
+        // Subtle color temperature shift (warmer when dimmer)
+        const warmth = 1 - (flicker - 0.7) * 0.3;
+        lightRef.current.color.setRGB(
+          Math.min(1, baseColor.r * warmth * 1.1),
+          Math.min(1, baseColor.g * warmth * 0.9),
+          Math.min(1, baseColor.b * warmth * 0.7),
+        );
+        break;
+      }
+      case 'cold_pulse': {
+        // Slow cold pulse — server room data flow feeling
+        const pulse = 0.8 + 0.2 * Math.sin(t * 0.3 + seed);
+        lightRef.current.intensity = config.intensity * pulse;
+        // Slight color shift between blue-green and pure blue
+        const blueShift = Math.sin(t * 0.2 + seed * 0.5) * 0.1;
+        lightRef.current.color.setRGB(
+          Math.max(0, baseColor.r - blueShift * 0.5),
+          Math.max(0, baseColor.g + blueShift * 0.3),
+          Math.min(1, baseColor.b + blueShift),
+        );
+        break;
+      }
+    }
+  });
+
+  return (
+    <pointLight
+      ref={lightRef}
+      position={config.position}
+      intensity={config.intensity}
+      color={config.color}
+      distance={config.distance}
+    />
   );
 }

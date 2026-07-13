@@ -9,4 +9,7 @@ export interface FxEvents {
   'fx:achievement': { title: string; description: string; icon?: string };
   'fx:xp_gain': { amount: number; source?: string };
   'fx:stat_change': { stat: string; delta: number; type: 'positive' | 'negative' };
+  'fx:damage_vignette': { intensity: number; duration: number };
+  'fx:karma_shift': { direction: 'light' | 'dark'; intensity: number };
+  'fx:scene_dissolve': { duration: number; color: string };
 }

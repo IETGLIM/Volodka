@@ -10,6 +10,7 @@
 
 import { useState, useEffect, useLayoutEffect, useRef, useMemo, type ComponentProps } from 'react';
 import { useThree } from '@react-three/fiber';
+import * as THREE from 'three';
 import {
   EffectComposer,
   Bloom,
@@ -19,6 +20,9 @@ import {
   ToneMapping,
   N8AO,
   LUT,
+  ChromaticAberration,
+  Scanline,
+  DepthOfField,
 } from '@react-three/postprocessing';
 import { BlendFunction, KernelSize, ToneMappingMode } from 'postprocessing';
 import type { EffectComposer as EffectComposerImpl } from 'postprocessing';
@@ -61,6 +65,14 @@ const SCENE_COLOR_GRADE: Record<string, { hue: number; saturation: number; brigh
 };
 
 const DEFAULT_COLOR_GRADE = { hue: 0, saturation: 0, brightness: 0, contrast: 0.15 };
+
+/** Scenes that get CRT scanline overlay for cyberpunk terminal aesthetic */
+const SCANLINE_SCENES = new Set(['guild_mainframe', 'office_day']);
+
+/** Scenes where chromatic aberration intensifies with player stress */
+const STRESS_CHROMATIC_SCENES = new Set([
+  'street_night', 'battle', 'factory_basement', 'abandoned_factory', 'sleep_dream',
+]);
 
 /** Scene-specific vignette darkness — noir scenes get heavier vignette */
 const SCENE_VIGNETTE: Record<string, { offset: number; darkness: number }> = {
@@ -354,6 +366,8 @@ function PostFXPipeline() {
 
   const stress = usePlayerStress();
   const stressFactor = stress / 100;
+  const wantsScanlines = SCANLINE_SCENES.has(sceneId);
+  const wantsStressChromatic = STRESS_CHROMATIC_SCENES.has(sceneId);
   const activeTTLFlags = useGameStore((s) => s.activeTTLFlags ?? {});
   const reducedMotion = useEffectiveReducedMotion();
   const poemBoost = resolvePoemTTLPostFxBoost(activeTTLFlags, reducedMotion);
@@ -369,6 +383,13 @@ function PostFXPipeline() {
     vignetteParams.offset - stressFactor * 0.15,
     0.1,
   );
+
+  // Chromatic aberration: scales with stress in qualifying scenes
+  const chromaticOffset = useMemo(
+    () => new THREE.Vector2(stressFactor * 0.003, stressFactor * 0.002),
+    [stressFactor],
+  );
+  const showChromatic = wantsStressChromatic && stressFactor > 0.3;
 
   const pipelineKey = `${sceneId}-${rendering.useLitePostFx ? 'lite' : rendering.useAmbientOcclusion ? 'ao' : 'full'}`;
   const lutKind = resolveProceduralLutKind(sceneId);
@@ -414,6 +435,26 @@ function PostFXPipeline() {
         mipmapBlur
         kernelSize={KernelSize.LARGE}
       />
+
+      {/* Chromatic aberration — stress-reactive for intense scenes */}
+      {showChromatic ? (
+        <ChromaticAberration
+          offset={chromaticOffset}
+          blendFunction={BlendFunction.NORMAL}
+        />
+      ) : (
+        <></>
+      )}
+
+      {/* CRT scanline overlay — guild_mainframe & office_day cyberpunk aesthetic */}
+      {wantsScanlines ? (
+        <Scanline
+          blendFunction={BlendFunction.OVERLAY}
+          density={1.2}
+        />
+      ) : (
+        <></>
+      )}
       {rendering.useAmbientOcclusion ? (
         <N8AO
           aoRadius={rendering.aoRadius}
