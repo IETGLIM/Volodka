@@ -39,6 +39,14 @@ const GENERIC_ALIASES: Record<NPCAnimationState, readonly string[]> = {
     'gesture', 'Gesture', 'wave', 'Wave',
     'Armature|gesture', 'Cesium_Man_gesture', 'gesture_01',
   ],
+  work: [
+    'working', 'Working', 'Fixing_Kneeling', 'Typing', 'typing',
+    'Armature|work', 'work_01',
+  ],
+  sleep: [
+    'sleeping', 'Sleeping', 'Lie_Idle', 'Laying Down Idle',
+    'Rig_Medium|Lie_Idle', 'Sitting_Idle_Loop',
+  ],
 };
 
 const MIXAMO_ALIASES = getMixamoClipAliasesByNpcState();
@@ -69,6 +77,10 @@ function overrideNameForState(
       return overrides?.idle;
     case 'gesture':
       return overrides?.talk;
+    case 'work':
+      return overrides?.sit; // work falls back to sit override
+    case 'sleep':
+      return overrides?.idle; // sleep falls back to idle override
     default: {
       const _exhaustive: never = state;
       return _exhaustive;

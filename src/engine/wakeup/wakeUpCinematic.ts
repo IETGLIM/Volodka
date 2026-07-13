@@ -160,20 +160,24 @@ export function lerpWakeCamera(
   return fromFov + (wp.fov - fromFov) * e;
 }
 
-/** Final blend into third-person exploration camera at the desk (handoff phase). */
+/** Blend from a cinematic position toward a destination camera spec (handoff phase).
+ *  If `targetCam` is provided, interpolates toward that; otherwise falls back
+ *  to the default desk exploration camera. */
 export function applyHandoffCamera(
   t: number,
   fromPos: THREE.Vector3,
   fromLook: THREE.Vector3,
   fromFov: number,
   camera: THREE.PerspectiveCamera,
+  targetCam?: { position: THREE.Vector3; lookAt: THREE.Vector3; fov: number },
 ): void {
+  const dest = targetCam ?? DESK_EXPLORATION_CAM;
   const e = easeInOutCubic(t);
-  camera.position.lerpVectors(fromPos, DESK_EXPLORATION_CAM.position, e);
+  camera.position.lerpVectors(fromPos, dest.position, e);
   clampToVolodkaRoom(camera.position);
-  const look = new THREE.Vector3().lerpVectors(fromLook, DESK_EXPLORATION_CAM.lookAt, e);
+  const look = new THREE.Vector3().lerpVectors(fromLook, dest.lookAt, e);
   camera.lookAt(look);
-  camera.fov = fromFov + (DESK_EXPLORATION_CAM.fov - fromFov) * e;
+  camera.fov = fromFov + (dest.fov - fromFov) * e;
   camera.updateProjectionMatrix();
 }
 

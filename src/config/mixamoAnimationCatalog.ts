@@ -127,6 +127,8 @@ export function getMixamoClipAliasesByNpcState(): Record<NPCAnimationState, stri
     sit: [],
     listen: [],
     gesture: [],
+    work: [],
+    sleep: [],
   };
   for (const spec of MIXAMO_ANIMATION_CATALOG) {
     map[spec.npcState].push(spec.canonicalClipName, ...spec.clipAliases);

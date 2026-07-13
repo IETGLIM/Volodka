@@ -790,14 +790,13 @@ function executeEnemyTurn() {
   const { state: afterBuffTick, expiredLog } = tickBuffs(cs, 'enemy');
 
   // ── Check if enemy is stunned (skip_turn debuff on enemy) ──
-  if (hasBuffEffect(afterBuffTick, 'enemy', 'skip_turn') || afterBuffTick.enemyDefending) {
+  if (hasBuffEffect(afterBuffTick, 'enemy', 'skip_turn')) {
     // Remove the skip_turn buff since it's been consumed
     const remaining = afterBuffTick.buffs.filter(
       (b) => !(b.target === 'enemy' && b.effect.type === 'skip_turn'),
     );
     combat.setState({
       ...afterBuffTick,
-      enemyDefending: false,
       buffs: remaining,
       log: [
         ...afterBuffTick.log,
@@ -852,7 +851,10 @@ function executeEnemyTurn() {
   });
   enemyDamage = scaleEnemyDamageByDifficulty(enemyDamage);
 
-  if (workingState.playerDefending) {
+  // Player defending is now handled by the damage_reduction buff system.
+  // The legacy playerDefending flag is kept in state for UI mirroring only.
+  const isPlayerDefending = hasBuffEffect(workingState, 'player', 'damage_reduction');
+  if (isPlayerDefending) {
     const playerDef = getPlayerDefense();
     enemyDamage = computeDefendedDamage(enemyDamage, playerDef);
   }

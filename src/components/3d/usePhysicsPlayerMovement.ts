@@ -213,8 +213,6 @@ export function usePhysicsPlayerMovement({
       prevSceneIdRef.current = sceneId;
       movementEpochRef.current += 1;
       const newConfig = getSceneConfig(sceneId);
-      const storeSpawn = getGameStore().exploration.playerPosition;
-      const spawn = storeSpawn ?? newConfig.spawnPoint;
 
       jumpCooldownRef.current = 0;
       noMovementFramesRef.current = 0;
@@ -222,10 +220,11 @@ export function usePhysicsPlayerMovement({
       currentAnimRef.current = 'idle';
       if (moveBlendRef) moveBlendRef.current = 0;
 
-      if (rigidBodyRef.current?.isValid()) {
-        rigidBodyRef.current.setTranslation({ x: spawn[0], y: spawn[1], z: spawn[2] }, true);
-        velocityRef.current.set(0, 0, 0);
-      }
+      // Position reset is handled by the scene:enter EventBus handler below,
+      // which receives the canonical spawn point. Avoiding a duplicate
+      // setTranslation here prevents a visible physics snap on scene changes.
+      // We only set the position if the EventBus hasn't fired yet (fallback).
+      const spawn = getGameStore().exploration.playerPosition ?? newConfig.spawnPoint;
       livePlayerPositionRef.current.set(spawn[0], spawn[1], spawn[2]);
       livePlayerRotationRef.current = newConfig.initialRotation ?? 0;
       isGroundedRef.current = true;

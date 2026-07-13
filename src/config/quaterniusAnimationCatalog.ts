@@ -17,6 +17,8 @@ export const QUATERNIUS_CLIP_ALIASES: Record<NPCAnimationState, readonly string[
   ],
   listen: ['Idle_Neutral', 'Idle'],
   gesture: ['Wave', 'Interact', 'Kick_Left', 'Kick_Right'],
+  work: ['Working', 'working', 'Fixing_Kneeling', 'Interact', 'Idle_Neutral'],
+  sleep: ['Sitting_Idle_Loop', 'Sitting', 'Idle_Neutral'],
 };
 
 export function getQuaterniusClipAliasesByNpcState(): Record<NPCAnimationState, string[]> {
@@ -27,5 +29,7 @@ export function getQuaterniusClipAliasesByNpcState(): Record<NPCAnimationState, 
     sit: [...QUATERNIUS_CLIP_ALIASES.sit],
     listen: [...QUATERNIUS_CLIP_ALIASES.listen],
     gesture: [...QUATERNIUS_CLIP_ALIASES.gesture],
+    work: [...QUATERNIUS_CLIP_ALIASES.work],
+    sleep: [...QUATERNIUS_CLIP_ALIASES.sleep],
   };
 }

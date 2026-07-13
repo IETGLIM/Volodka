@@ -72,7 +72,6 @@ const RAW_POEM_COMBAT_ABILITIES: Record<string, PoemCombatAbility> = {
       const s = addBuff(state, buff);
       return {
         ...s,
-        enemyDefending: true, // backward compat for old check
         log: [
           ...s.log,
           { turn: state.turn, text: '✦ Путеводная Звезда ослепляет врага!', type: 'player_power' as const },
@@ -128,7 +127,6 @@ const RAW_POEM_COMBAT_ABILITIES: Record<string, PoemCombatAbility> = {
       const s = addBuff(state, buff);
       return {
         ...s,
-        doubleAttack: true, // backward compat
         log: [
           ...s.log,
           { turn: state.turn, text: '✦ Слово Мощь! Следующая атака усилена на 2 хода!', type: 'player_power' as const },
@@ -207,7 +205,6 @@ const RAW_POEM_COMBAT_ABILITIES: Record<string, PoemCombatAbility> = {
       const s = addBuff(state, buff);
       return {
         ...s,
-        playerDefending: true, // backward compat for this turn
         log: [
           ...s.log,
           { turn: state.turn, text: '✦ Каменная Кожа! Получаемый урон снижен на 50% на 2 хода!', type: 'player_power' as const },
@@ -305,7 +302,6 @@ const RAW_POEM_COMBAT_ABILITIES: Record<string, PoemCombatAbility> = {
       const s = addBuff({ ...state, enemy: { ...state.enemy, hp: newEnemyHp } }, buff);
       return {
         ...s,
-        enemyDefending: true, // backward compat
         log: [
           ...s.log,
           { turn: state.turn, text: `✦ Тихий Шёпот! Враг в замешательстве, ${confusionDmg} урона!`, type: 'player_power' as const, damage: confusionDmg },
@@ -418,7 +414,6 @@ const RAW_POEM_COMBAT_ABILITIES: Record<string, PoemCombatAbility> = {
       s = addBuff(s, buff2);
       return {
         ...s,
-        enemyDefending: true,
         _sideEffects: [
           { type: 'addStress', value: -15 } as SideEffect,
           { type: 'addSkill', skill: 'intuition', value: 5 } as SideEffect,
@@ -465,7 +460,6 @@ const RAW_POEM_COMBAT_ABILITIES: Record<string, PoemCombatAbility> = {
       s = addBuff(s, buff2);
       return {
         ...s,
-        enemyDefending: true,
         _sideEffects: [
           { type: 'addStress', value: -12 } as SideEffect,
           { type: 'addSkill', skill: 'intuition', value: 3 } as SideEffect,

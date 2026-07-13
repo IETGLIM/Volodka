@@ -148,10 +148,14 @@ export function getEnemyDefenseReduction(state: CombatState): number {
   return Math.min(1, sumBuffEffect(state, 'enemy', 'defense_reduction'));
 }
 
-/** Get player damage multiplier from buffs */
+/** Get player damage multiplier from buffs.
+ *  NOTE: The legacy `doubleAttack` field on CombatState is no longer read here.
+ *  Poem_6 (Слово Мощь) now uses the buff system exclusively with a
+ *  `damage_multiplier` buff value of 1.5. The old backward-compat code
+ *  caused double-counting (buff 1.5× + legacy 1.5× = ~2.25× instead of 1.5×). */
 export function getPlayerDamageMultiplier(state: CombatState): number {
   const fromBuffs = sumBuffEffect(state, 'player', 'damage_multiplier');
-  return state.doubleAttack ? Math.max(fromBuffs, 1.5) : Math.max(fromBuffs, 1);
+  return Math.max(fromBuffs, 1);
 }
 
 /** Get player damage reduction from buffs (0–1). Includes defensive_verse (30% flat). */

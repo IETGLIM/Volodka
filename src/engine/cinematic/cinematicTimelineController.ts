@@ -302,14 +302,14 @@ export function updateCinematicTimelineState(
       _handoffFrom.lookAt.copy(cameraOut.position).add(_lookTarget);
       _handoffFrom.fov = cameraOut.fov;
     }
-    const _target = waypointFromData(camSpec.handoffTarget!, state.anchor);
-    void _target; // TODO: wire handoff target into applyHandoffCamera destination
+    const targetWaypoint = waypointFromData(camSpec.handoffTarget!, state.anchor);
     applyHandoffCamera(
       easeInOutCubic(localT),
       _handoffFrom.position,
       _handoffFrom.lookAt,
       _handoffFrom.fov,
       cameraOut,
+      { position: targetWaypoint.position, lookAt: targetWaypoint.lookAt, fov: targetWaypoint.fov },
     );
     cameraFrame.position.copy(cameraOut.position);
     cameraOut.getWorldDirection(_lookTarget);

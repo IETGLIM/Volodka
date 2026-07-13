@@ -22,12 +22,16 @@ const STRIKE_RESET_MS = 3000;
 /** Upgrade one tier after this long without FPS fail since last failure. */
 const CLEAN_BUDGET_MS = 30_000;
 const CLEAN_CHECK_INTERVAL_MS = 1000;
+/** After a successful upgrade, wait this long before attempting another recovery step. */
+const RECOVERY_COOLDOWN_MS = 20_000;
 
 let unsubViolations: (() => void) | null = null;
 let cleanCheckInterval: ReturnType<typeof setInterval> | null = null;
 let strikes = 0;
 let lastStrikeMs = 0;
 let lastFailMs: number | null = null;
+/** Timestamp of the last successful upgrade, used to pace multi-step recovery. */
+let lastUpgradeMs: number | null = null;
 let enabled = true;
 
 function hasFpsFail(violations: BudgetViolation[]): boolean {
@@ -47,11 +51,21 @@ function softenVisualSettingsOnDegrade(): void {
 function tryUpgradeAfterCleanBudget(now: number): void {
   if (!enabled || lastFailMs == null) return;
   if (now - lastFailMs < CLEAN_BUDGET_MS) return;
+  // Pace multi-step recovery: don't upgrade again too soon after a previous upgrade
+  if (lastUpgradeMs != null && now - lastUpgradeMs < RECOVERY_COOLDOWN_MS) return;
 
-  lastFailMs = null;
+  const result = upgradeQualityPresetOneTier();
+  if (result != null) {
+    // Successful upgrade — record time so we can pace the next recovery step.
+    // Keep lastFailMs set so we can continue recovering if quality was
+    // degraded multiple tiers and the budget stays clean.
+    lastUpgradeMs = now;
+  } else {
+    // Already at max tier — no more recovery needed.
+    lastFailMs = null;
+  }
   strikes = 0;
   lastStrikeMs = 0;
-  upgradeQualityPresetOneTier();
 }
 
 function onRuntimeBudgetViolations(violations: BudgetViolation[]): void {
@@ -88,6 +102,7 @@ export function setAdaptiveQualityBridgeEnabled(value: boolean): void {
     strikes = 0;
     lastStrikeMs = 0;
     lastFailMs = null;
+    lastUpgradeMs = null;
   }
 }
 
@@ -100,6 +115,7 @@ export function bindAdaptiveQualityBridge(): void {
   strikes = 0;
   lastStrikeMs = 0;
   lastFailMs = null;
+  lastUpgradeMs = null;
   enabled = true;
   unsubViolations = subscribeRuntimeBudgetViolations(onRuntimeBudgetViolations);
   cleanCheckInterval = setInterval(() => {
@@ -117,6 +133,7 @@ export function unbindAdaptiveQualityBridge(): void {
   strikes = 0;
   lastStrikeMs = 0;
   lastFailMs = null;
+  lastUpgradeMs = null;
 }
 
 /** Test hook — reset hysteresis without unsubscribing. */
@@ -124,6 +141,7 @@ export function resetAdaptiveQualityBridgeState(): void {
   strikes = 0;
   lastStrikeMs = 0;
   lastFailMs = null;
+  lastUpgradeMs = null;
 }
 
 registerHmrDispose(unbindAdaptiveQualityBridge);
