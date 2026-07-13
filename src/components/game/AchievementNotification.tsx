@@ -32,8 +32,8 @@ interface AchievementNotif {
   timestamp: number;
 }
 
-const DISPLAY_DURATION_MS = 3000;
-const MAX_VISIBLE = 1;
+const DISPLAY_DURATION_MS = 4000;
+const MAX_VISIBLE = 4;
 const QUEUE_PROCESS_DELAY_MS = 600; // Stagger between queued items
 
 /* ─── Keyframe CSS for shine + sound-wave (injected once) ─── */

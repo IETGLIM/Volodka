@@ -14,28 +14,19 @@
 
 import { useEffect, useSyncExternalStore } from 'react';
 
-/* Priority values aligned with notificationPriorityQueue.ts tiers:
- *   1 (highest) — Achievement
- *   2           — Quest
- *   3           — Lore
- *   4 (lowest)  — Generic (toast, event, loot, weather, crafting, system)
- * Numeric values here are scaled ×10 to keep fine-grained ordering within a tier.
- */
 export const NOTIFY_PRIORITY = {
-  achievement: 10, // Priority 1 (highest)
-  quest: 20,       // Priority 2
-  lore: 30,        // Priority 3
-  event: 40,       // Priority 4 (generic)
-  toast: 42,       // Priority 4 (generic)
-  system: 44,      // Priority 4 (generic)
-  weather: 46,     // Priority 4 (generic)
-  crafting: 48,    // Priority 4 (generic)
-  loot: 50,        // Priority 4 (generic)
+  quest: 100,
+  event: 90,
+  toast: 70,
+  achievement: 60,
+  system: 58,
+  lore: 55,
+  weather: 40,
+  crafting: 30,
+  loot: 20,
 } as const;
 
-/* Only 1 channel visible at a time — prevents notification overload.
- * See notificationPriorityQueue.ts for per-item timing within channels. */
-const MAX_VISIBLE = 1;
+const MAX_VISIBLE = 2;
 
 interface Claim {
   id: string;
