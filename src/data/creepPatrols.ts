@@ -156,6 +156,7 @@ export const CREEP_PATROLS: CreepPatrolDef[] = [
     visionRange: 4,
     visionHalfAngle: 0.55,
     requiredAct: 1,
+    requiredFlag: 'corridor_free_explore_1',
   },
   {
     id: 'creep_library_hunter',

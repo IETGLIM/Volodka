@@ -145,8 +145,7 @@
 }
 
 /* ─── Shadow overrides — add neon glow ─── */
-[data-cyberpunk] .shadow-2xl,
-[data-cyberpunk] [style*="box-shadow"] {
+[data-cyberpunk] .shadow-2xl {
   box-shadow:
     0 0 30px rgb(var(--cyber-matrix-rgb) / 0.06),
     0 4px 24px rgba(0, 0, 0, 0.6) !important;

@@ -419,18 +419,18 @@ export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
         <mesh position={[0.6, 0.775, 0.1]} rotation={[0, 0.1, 0]} geometry={geo_box_25} material={mat_18} />
         {/* Mouse */}
         <mesh position={[0.6, 0.79, 0.1]} rotation={[0, 0.1, 0]} geometry={geo_box_26} material={mat_19} />
-        {/* Coffee mug on desk */}
-        <group position={[-0.55, 0.78, -2.2]}>
+        {/* Coffee mug on desk (fixed: was at Z=-2.2 → world -4.7, behind wall) */}
+        <group position={[-0.55, 0.78, 0.25]}>
           <mesh position={[0, 0.04, 0]} geometry={geo_cyl_27} material={mat_20} />
           {/* Mug handle */}
           <mesh position={[0.04, 0.04, 0]} rotation={[0, 0, Math.PI / 2]} geometry={geo_tor_28} material={mat_20} />
           {/* Coffee surface */}
           <mesh position={[0, 0.075, 0]} geometry={geo_cyl_29} material={mat_21} />
         </group>
-        {/* Scattered papers/documents on desk */}
-        <mesh position={[0.3, 0.78, -2.15]} rotation={[0, 0.4, 0]} geometry={geo_box_30} material={mat_22} />
-        <mesh position={[0.35, 0.785, -2.35]} rotation={[0, -0.2, 0.02]} geometry={geo_box_31} material={mat_23} />
-        <mesh position={[-0.2, 0.78, -2.1]} rotation={[0, 0.7, -0.01]} geometry={geo_box_32} material={mat_24} />
+        {/* Scattered papers/documents on desk (fixed: were behind wall) */}
+        <mesh position={[0.3, 0.78, 0.2]} rotation={[0, 0.4, 0]} geometry={geo_box_30} material={mat_22} />
+        <mesh position={[0.35, 0.785, 0.15]} rotation={[0, -0.2, 0.02]} geometry={geo_box_31} material={mat_23} />
+        <mesh position={[-0.2, 0.78, 0.3]} rotation={[0, 0.7, -0.01]} geometry={geo_box_32} material={mat_24} />
       </group>
 
       {/* ── Chair ── */}
@@ -507,6 +507,13 @@ export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
         <mesh rotation-y={-Math.PI / 2} position={[0.01, 0, 0]} geometry={geo_box_43} material={mat_26} />
         {/* Window blue light spill into room */}
         <pointLight position={[-0.8, 0, 0.5]} color="#4488ee" intensity={3.0} distance={5} />
+        {/* City building silhouettes through window */}
+        <mesh rotation-y={-Math.PI / 2} position={[-0.01, -0.15, -0.3]} geometry={geo_pln_75} material={mat_62} />
+        <mesh rotation-y={-Math.PI / 2} position={[-0.01, -0.1, 0.2]} geometry={geo_pln_76} material={mat_62} />
+        {/* Tiny window lights on buildings */}
+        <mesh rotation-y={-Math.PI / 2} position={[-0.015, -0.2, -0.3]} geometry={geo_pln_77} material={mat_63} />
+        <mesh rotation-y={-Math.PI / 2} position={[-0.015, -0.05, 0.2]} geometry={geo_pln_77} material={mat_63} />
+        <mesh rotation-y={-Math.PI / 2} position={[-0.015, -0.12, 0.22]} geometry={geo_pln_78} material={mat_64} />
       </group>
 
       {/* ── Second Window (back wall, emissive blue — nighttime city) ── */}
@@ -646,17 +653,6 @@ export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
       {/* ── Slippers on floor near bed ── */}
       <mesh position={[1.3, 0.015, 3.0]} rotation={[0, 0.3, 0]} geometry={geo_box_74} material={mat_61} />
       <mesh position={[1.5, 0.015, 2.9]} rotation={[0, -0.15, 0.05]} geometry={geo_box_74} material={mat_61} />
-
-      {/* ── Window with city view detail (right wall) ── */}
-      <group position={[W / 2 - 0.01, 1.5, -2.0]}>
-        {/* City building silhouettes through window */}
-        <mesh rotation-y={-Math.PI / 2} position={[-0.01, -0.15, -0.3]} geometry={geo_pln_75} material={mat_62} />
-        <mesh rotation-y={-Math.PI / 2} position={[-0.01, -0.1, 0.2]} geometry={geo_pln_76} material={mat_62} />
-        {/* Tiny window lights on buildings */}
-        <mesh rotation-y={-Math.PI / 2} position={[-0.015, -0.2, -0.3]} geometry={geo_pln_77} material={mat_63} />
-        <mesh rotation-y={-Math.PI / 2} position={[-0.015, -0.05, 0.2]} geometry={geo_pln_77} material={mat_63} />
-        <mesh rotation-y={-Math.PI / 2} position={[-0.015, -0.12, 0.22]} geometry={geo_pln_78} material={mat_64} />
-      </group>
 
       {/* ── Backpack on floor near door ── */}
       <group position={[-1.5, 0, 2.8]} rotation={[0, 0.5, 0]}>
