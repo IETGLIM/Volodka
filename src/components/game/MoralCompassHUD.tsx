@@ -47,7 +47,7 @@ export function MoralCompassHUD() {
 
   return (
     <div
-      className="fixed pointer-events-none"
+      className="fixed pointer-events-none hidden lg:block"
       data-exploration-ui
       data-testid="moral-compass-hud"
       style={{

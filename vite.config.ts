@@ -26,7 +26,7 @@ function buildContentSecurityPolicy(isDev: boolean): string {
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
-    "frame-ancestors 'self'",
+    "frame-ancestors 'none'",
   ].join('; ');
 }
 

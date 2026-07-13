@@ -81,10 +81,6 @@ function emitStoryQuestChainUnlock(payload: {
   eventBus.emit('story:quest_chain_unlock', payload);
 }
 
-function emitStoryPlayerLost(payload: { hint: string; actNumber: number }): void {
-  eventBus.emit('story:player_lost', payload);
-}
-
 export function createDefaultGuidedStoryDeps(): GuidedStoryDeps {
   return {
     getSnapshot: readGuidedStorySnapshot,
@@ -116,7 +112,6 @@ export function createDefaultGuidedStoryDeps(): GuidedStoryDeps {
       emitGuidanceUpdate: emitStoryGuidanceUpdate,
       emitQuestAvailable: emitStoryQuestAvailable,
       emitQuestChainUnlock: emitStoryQuestChainUnlock,
-      emitPlayerLost: emitStoryPlayerLost,
     },
   };
 }

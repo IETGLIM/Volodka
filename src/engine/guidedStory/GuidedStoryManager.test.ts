@@ -59,7 +59,6 @@ function createTestDeps(overrides?: Partial<GuidedStorySnapshot>): GuidedStoryDe
       emitGuidanceUpdate: vi.fn(),
       emitQuestAvailable: vi.fn(),
       emitQuestChainUnlock: vi.fn(),
-      emitPlayerLost: vi.fn(),
     },
   };
 }

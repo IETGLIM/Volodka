@@ -49,7 +49,7 @@ import {
   getPlayerAttackBoost, getPlayerDefenseBoost } from './combat/buffSystem';
 import { getPlayerAttack, getPlayerDefense, getPlayerMaxHp, tickPowerCooldowns, isPowerAvailable, addXp, computeCombatCredits, computeDamage, computeCritChance, applyCritMultiplier, getComboDamageMultiplier, computeDefendedDamage, scaleDamageByFraction, COMBAT_CONSTANTS } from './combat/formulas';
 import { initCombatRngForEncounter, SeededCombatRng, type CombatRngState } from './combat/combatRng';
-import { getFleeChanceBonus, scaleEnemyDamageByDifficulty, computeEnemyScalingFactor } from './combat/combatDifficulty';
+import { getFleeChanceBonus, scaleEnemyDamageByDifficulty } from './combat/combatDifficulty';
 import { getPassiveSkillModifiers } from '@/engine/skills/passiveSkillModifiers';
 import { resolveCombatPerkModifiers } from '@/shared/perks/perkModifiers';
 import { applyExplorationPoemCombatBridge } from '@/engine/poemEffects/poemTTLRuntime';
@@ -322,8 +322,7 @@ function startCombatImmediate(
   }
 
   const playerLevel = state.playerState.progression.level;
-  const currentAct = state.playerState.progression.currentAct;
-  const scaleFactor = computeEnemyScalingFactor(currentAct, playerLevel);
+  const scaleFactor = 1 + (playerLevel - 1) * 0.12; // +12% per level
 
   const enemy: CombatEnemy = {
     type: template.type,
@@ -850,10 +849,7 @@ function executeEnemyTurn() {
     varianceProfile: 'enemy',
     rng: roll,
   });
-  const combatSnap = snap();
-  const combatAct = combatSnap.playerState.progression.currentAct;
-  const combatLevel = combatSnap.playerState.progression.level;
-  enemyDamage = scaleEnemyDamageByDifficulty(enemyDamage, undefined, combatAct, combatLevel);
+  enemyDamage = scaleEnemyDamageByDifficulty(enemyDamage);
 
   // Player defending is now handled by the damage_reduction buff system.
   // The legacy playerDefending flag is kept in state for UI mirroring only.

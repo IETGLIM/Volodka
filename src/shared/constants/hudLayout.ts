@@ -29,7 +29,7 @@ export const EXPLORATION_HUD_LAYOUT = {
   /** Contextual [E] prompt — above poetry bar, centered */
   BOTTOM_INTERACT_PROMPT: 196,
   /** Diegetic dialogue panel max text height (px) */
-  DIEGETIC_DIALOGUE_TEXT_MAX_HEIGHT: 240,
+  DIEGETIC_DIALOGUE_TEXT_MAX_HEIGHT: 160,
   /** Bottom-right stack (px from viewport bottom) */
   BOTTOM_AMBIENT_MIXER: 16,
   BOTTOM_STATUS_EFFECTS: 72,

@@ -21,6 +21,4 @@ export interface StoryEvents {
     npcId?: string;
     actNumber: number;
   };
-  /** Emitted when the player appears lost (no guidance update for 60+ seconds). */
-  'story:player_lost': { hint: string; actNumber: number };
 }

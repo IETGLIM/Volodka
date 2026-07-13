@@ -90,7 +90,6 @@ export interface GuidedStoryEvents {
     npcId?: string;
     actNumber: number;
   }): void;
-  emitPlayerLost(payload: { hint: string; actNumber: number }): void;
 }
 
 /** Injectable ports — defaults wire production store + EventBus. */

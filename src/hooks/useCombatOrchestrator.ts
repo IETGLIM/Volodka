@@ -8,7 +8,6 @@ import { triggerCameraShake } from '@/engine/camera/cameraShake';
 import { startCombat } from '@/engine/CombatSystem';
 import { getItemDefinition } from '@/data/items';
 import { audioEngine } from '@/engine/audio/AudioEngine';
-import { pickEnemyForCurrentState } from '@/engine/combat/enemies';
 import type { EnemyType } from '@/shared/types/game';
 
 /**
@@ -23,9 +22,6 @@ import type { EnemyType } from '@/shared/types/game';
  * and chunk loading — if mode changed during that window, combat could start
  * in an invalid state (race condition). CombatSystem and items are small enough
  * that code-splitting here provides no benefit.
- *
- * Task 4-b: Enemy selection now considers act progression and player level,
- * not just karma. Uses pickEnemyForCurrentState() for act-aware selection.
  */
 export function useCombatOrchestrator() {
   const startCombatFromStory = useCallback((enemyType: EnemyType) => {
@@ -39,8 +35,10 @@ export function useCombatOrchestrator() {
       if (sceneId === 'battle') {
         const store = useGameStore.getState();
         if (readGamePhase(store) === 'exploration') {
-          // Task 4-b: Use act+level-aware enemy selection instead of karma-only
-          const enemyType = pickEnemyForCurrentState();
+          const karma = store.playerState.karma;
+          let enemyType: EnemyType = 'system_daemon';
+          if (karma > 65) enemyType = 'shadow_agent';
+          else if (karma > 35) enemyType = 'corporate_golem';
 
           startCombat(enemyType, { encounterSource: 'arena' });
         }

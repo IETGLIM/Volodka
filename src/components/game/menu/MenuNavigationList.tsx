@@ -16,7 +16,6 @@ type MenuNavigationListProps = {
   onSelect: (id: string) => void;
   savePreview: MenuSavePreview | null;
   contentMotion: boolean;
-  fastAnimation?: boolean;
 };
 
 export const MenuNavigationList = memo(function MenuNavigationList({
@@ -26,7 +25,6 @@ export const MenuNavigationList = memo(function MenuNavigationList({
   onSelect,
   savePreview,
   contentMotion,
-  fastAnimation = false,
 }: MenuNavigationListProps) {
   return (
     <div
@@ -62,7 +60,7 @@ export const MenuNavigationList = memo(function MenuNavigationList({
             whileTap={!isDisabled && contentMotion ? { scale: 0.97 } : undefined}
             initial={contentMotion ? { opacity: 0, x: -20 } : false}
             animate={contentMotion ? { opacity: 1, x: 0 } : undefined}
-            transition={contentMotion ? { delay: fastAnimation ? 0.3 + index * 0.05 : 2.0 + index * 0.12, duration: 0.4 } : undefined}
+            transition={contentMotion ? { delay: 2.0 + index * 0.12, duration: 0.4 } : undefined}
             className={`group relative w-full px-5 py-3.5 font-mono text-base uppercase tracking-wider border rounded transition-all duration-300 overflow-hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-400/80 focus-visible:outline-offset-2 ${colors.border} ${!isDisabled ? colors.borderHover : ''} ${colors.bg} ${!isDisabled ? colors.bgHover : ''} ${colors.text} ${!isDisabled ? colors.textHover : ''} ${!isDisabled ? 'menu-btn-enhanced menu-btn-signal-line cursor-pointer' : 'opacity-30 cursor-not-allowed menu-btn-disabled'}`}
           >
             {isSelected ? (

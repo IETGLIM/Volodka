@@ -130,9 +130,6 @@ export interface TutorialFlags {
   tutorial_seen_movement: boolean;
   tutorial_seen_interact: boolean;
   tutorial_seen_controls: boolean;
-  tutorial_seen_poem_power: boolean;
-  tutorial_seen_combat: boolean;
-  tutorial_seen_quest_board: boolean;
   tutorialsDisabled: boolean;
   tutorialsCompleted: boolean;
 }
@@ -199,9 +196,6 @@ export function createDefaultTutorialFlags(): TutorialFlags {
     tutorial_seen_movement: false,
     tutorial_seen_interact: false,
     tutorial_seen_controls: false,
-    tutorial_seen_poem_power: false,
-    tutorial_seen_combat: false,
-    tutorial_seen_quest_board: false,
     tutorialsDisabled: false,
     tutorialsCompleted: false };
 }

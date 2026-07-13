@@ -32,31 +32,6 @@ export type { GuidanceInfo } from '@/engine/guidedStory/guidedStoryTypes';
 /** Coalesce visitNode / scene:enter / npc:talked / flag signals in one burst. */
 const STORY_SPINE_ADVANCE_DEBOUNCE_MS = 32;
 
-/** How long (ms) without a guidance update before we consider the player lost. */
-const PLAYER_LOST_TIMEOUT_MS = 60_000;
-
-/** Contextual hints shown when the player seems lost, keyed by act number. */
-const PLAYER_LOST_HINTS: Record<number, string[]> = {
-  1: [
-    'Попробуй осмотреть комнату внимательнее — возможно, ты что-то упустил.',
-    'Рабочий стол и книжная полка могут скрывать подсказки.',
-    'Не стой на месте — подойди к предметам и нажми [E].',
-  ],
-  2: [
-    'Попробуй поговорить с горожанами — кто-то может знать больше.',
-    'Исследуй новые районы города — там могут быть зацепки.',
-  ],
-  3: [
-    'Вернись к ранее посещённым местам — изменилось ли что-нибудь?',
-    'Поговори с товарищами — возможно, у них есть новые сведения.',
-  ],
-};
-
-function pickLostHint(actNumber: number): string {
-  const hints = PLAYER_LOST_HINTS[actNumber] ?? PLAYER_LOST_HINTS[1];
-  return hints[Math.floor(Math.random() * hints.length)];
-}
-
 function selectLastVisitedNode(snapshot: GameStoreSnapshot): string | null {
   const nodes = snapshot.playerState.visitedNodes;
   return nodes.length > 0 ? nodes[nodes.length - 1] : null;
@@ -84,9 +59,6 @@ export class GuidedStoryManager {
   private spineAdvanceTimer: ReturnType<typeof setTimeout> | null = null;
   private pendingSpineNodeId: string | null = null;
   private lastGuidanceSignature: string | null = null;
-  private lastGuidanceTimestamp: number = 0;
-  private playerLostTimer: ReturnType<typeof setInterval> | null = null;
-  private playerLostHintShown: boolean = false;
 
   constructor(private readonly deps: GuidedStoryDeps = createDefaultGuidedStoryDeps()) {}
 
@@ -304,39 +276,7 @@ export class GuidedStoryManager {
     const signature = this.guidanceSignature(enriched);
     if (signature === this.lastGuidanceSignature) return;
     this.lastGuidanceSignature = signature;
-    this.lastGuidanceTimestamp = Date.now();
-    this.playerLostHintShown = false; // reset on any real guidance change
     this.deps.events.emitGuidanceUpdate(enriched);
-  }
-
-  private startPlayerLostDetection(): void {
-    this.stopPlayerLostDetection();
-    this.playerLostTimer = setInterval(() => {
-      if (!this.initialized) return;
-      if (this.playerLostHintShown) return;
-
-      const snapshot = this.deps.getSnapshot();
-      // Only show hint in exploration mode
-      const mode = getGameSnapshot().mode;
-      if (mode !== 'exploration') return;
-
-      const elapsed = Date.now() - this.lastGuidanceTimestamp;
-      if (elapsed >= PLAYER_LOST_TIMEOUT_MS) {
-        this.playerLostHintShown = true;
-        const act = snapshot.currentAct;
-        this.deps.events.emitPlayerLost({
-          hint: pickLostHint(act),
-          actNumber: act,
-        });
-      }
-    }, PLAYER_LOST_TIMEOUT_MS / 2);
-  }
-
-  private stopPlayerLostDetection(): void {
-    if (this.playerLostTimer !== null) {
-      clearInterval(this.playerLostTimer);
-      this.playerLostTimer = null;
-    }
   }
 
   private autoStartFirstQuest() {
@@ -467,8 +407,6 @@ export class GuidedStoryManager {
       this.resetState();
     });
 
-    this.lastGuidanceTimestamp = Date.now();
-    this.startPlayerLostDetection();
     this.emitGuidanceUpdate();
   }
 
@@ -494,9 +432,6 @@ export class GuidedStoryManager {
     this.currentQuestSpineIndex = 0;
     this.lastAdvancedToAct = 0;
     this.lastGuidanceSignature = null;
-    this.lastGuidanceTimestamp = 0;
-    this.playerLostHintShown = false;
-    this.stopPlayerLostDetection();
     this.clearSpineAdvanceDebounce();
   }
 
