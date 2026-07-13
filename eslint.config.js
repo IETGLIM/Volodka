@@ -4,6 +4,12 @@ import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
 import tseslint from 'typescript-eslint';
 
+/**
+ * TS7 side-by-side: `typescript` is aliased to @typescript/typescript6 in package.json
+ * so that tools like typescript-eslint (which need the Compiler API absent in TS7)
+ * still work. The TS7 tsc is available as `tsc7` via the @typescript/native alias.
+ */
+
 export default tseslint.config(
   { ignores: ['dist/**', 'node_modules/**', 'scripts/**'] },
   {
