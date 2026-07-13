@@ -9,8 +9,6 @@ import { canWriteCamera, getCameraOwner } from './cameraOwnerState';
 import { getCameraShakeOffset } from './cameraShake';
 import { getCameraPOI } from './cameraPOI';
 import {
-  AUTO_FOLLOW_SPEED,
-  AUTO_FOLLOW_IDLE_THRESHOLD,
   AUTO_FOLLOW_MIN_YAW_DELTA,
   AUTO_FOLLOW_RETURN_SPEED,
   FIRST_PERSON_ENABLED,
@@ -101,10 +99,16 @@ export function applyCameraFrame(
     while (yawDiff > Math.PI) yawDiff -= Math.PI * 2;
     while (yawDiff < -Math.PI) yawDiff += Math.PI * 2;
 
-    if (playerSpeed > AUTO_FOLLOW_IDLE_THRESHOLD) {
+    // Auto-follow camera — smoother to prevent jitter.
+    // Previous: AUTO_FOLLOW_SPEED=3.0 with followStrength scaling caused
+    // jittery rotation when player speed oscillated around threshold.
+    // New: use a gentler speed (1.5) and remove followStrength scaling —
+    // the camera now follows at a constant, smooth rate. The higher
+    // threshold (0.5 instead of 0.3) prevents micro-rotations when the
+    // player taps movement keys rhythmically.
+    if (playerSpeed > 0.5) {
       if (Math.abs(yawDiff) > AUTO_FOLLOW_MIN_YAW_DELTA) {
-        const followStrength = Math.min(1, Math.abs(yawDiff) / Math.PI);
-        ctx.yaw += yawDiff * (1 - Math.exp(-AUTO_FOLLOW_SPEED * followStrength * delta));
+        ctx.yaw += yawDiff * (1 - Math.exp(-1.5 * delta));
       }
       frameState.playerMovingTimer = 0;
     } else if (!frameState.isDragging && !frameState.wasDragging) {

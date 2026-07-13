@@ -31,6 +31,7 @@ import {
   MAX_DIRECT_DISPLACEMENT,
 } from '@/engine/player/playerConstants';
 import { lerpAngle, enforceFloor, clampHorizontalDisplacement } from '@/engine/player/playerMath';
+import { sharedCameraYawRef } from '@/engine/PlayerRotationState';
 import { computeKccMovementSubstepped } from '@/engine/player/physicsSubstep';
 import {
   computeSlopeLocomotionScale,
@@ -183,11 +184,32 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
       vel.z = THREE.MathUtils.damp(vel.z, targetVz, moveAccel, dt);
     }
 
-    const targetYaw = Math.atan2(moveDir.x, moveDir.z);
-    const rotT = 1 - Math.exp(-ROTATION_SPEED * dt);
-    deps.livePlayerRotationRef.current = lerpAngle(
-      deps.livePlayerRotationRef.current, targetYaw, rotT,
-    );
+    // GTA/Max Payne-style rotation: character faces camera forward direction
+    // when moving forward/backward. Strafe (A/D) moves sideways WITHOUT
+    // rotating the body — the character keeps facing forward while stepping
+    // left/right. Only forward/backward movement updates the facing yaw.
+    //
+    // Previous logic: targetYaw = atan2(moveDir.x, moveDir.z) — this rotated
+    // the character to face the movement direction on every key press,
+    // causing the "spinning in circles" bug when pressing A/D alternately.
+    //
+    // New logic: facing follows the camera yaw (sharedCameraYawRef) when
+    // moving forward/backward. Strafe does not change facing. This matches
+    // third-person games where the character always faces away from camera
+    // and steps sideways relative to their facing.
+    const camYaw = sharedCameraYawRef.current;
+    const forwardIntent = fwd - bwd; // W = +1, S = -1, neither = 0
+    if (Math.abs(forwardIntent) > 0.01) {
+      // Moving forward or backward — face camera direction (character faces
+      // away from camera, toward where camera looks).
+      const targetYaw = camYaw + Math.PI;
+      const rotT = 1 - Math.exp(-ROTATION_SPEED * dt);
+      deps.livePlayerRotationRef.current = lerpAngle(
+        deps.livePlayerRotationRef.current, targetYaw, rotT,
+      );
+    }
+    // Strafe-only movement (A/D without W/S) — do not rotate. Character
+    // keeps current facing and steps sideways.
   } else {
     vel.x = THREE.MathUtils.damp(vel.x, 0, stopDamping, dt);
     vel.z = THREE.MathUtils.damp(vel.z, 0, stopDamping, dt);
