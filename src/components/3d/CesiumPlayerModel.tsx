@@ -77,11 +77,45 @@ function CesiumPlayerModelInner({ modelScale, currentAnimRef, rotationRef }: Pro
 
   useEffect(() => {
     if (!ready) return;
-    const bounds = measureCharacterGltfBounds(scene);
-    const { scale, rotX, footY } = fitCharacterGltf(bounds, {
-      scaleMultiplier: modelScale,
+
+    // Force skeleton into rest pose before measuring bounds.
+    // SkinnedMesh bounds may be incorrect if skeleton hasn't been
+    // updated since clone — this can cause the model to appear
+    // lying down or floating under the ceiling.
+    scene.traverse((child: THREE.Object3D) => {
+      if (child instanceof THREE.SkinnedMesh && child.skeleton) {
+        child.skeleton.pose();
+        child.skeleton.update();
+      }
     });
-    setFit({ scale, rotX, y: footY });
+
+    // Small delay to let the renderer process the skeleton pose
+    // before we measure bounds — prevents stale bind-pose measurements.
+    const raf = requestAnimationFrame(() => {
+      const bounds = measureCharacterGltfBounds(scene);
+      const { scale, rotX, footY } = fitCharacterGltf(bounds, {
+        scaleMultiplier: modelScale,
+      });
+
+      if (import.meta.env.DEV) {
+        console.log('[CesiumPlayerModel] fit:', {
+          scale: scale.toFixed(3),
+          rotX: rotX.toFixed(3),
+          footY: footY.toFixed(3),
+          boundsSize: bounds.size.toArray().map((v: number) => v.toFixed(3)),
+          boundsMin: bounds.min.toArray().map((v: number) => v.toFixed(3)),
+          boundsMax: bounds.max.toArray().map((v: number) => v.toFixed(3)),
+          modelScale,
+        });
+      }
+
+      // Safety: if footY is abnormally large (model origin far below feet),
+      // the avatar would appear under the ceiling. Cap to a reasonable offset.
+      const safeFootY = Math.min(footY, 0.5);
+      setFit({ scale, rotX, y: safeFootY });
+    });
+
+    return () => cancelAnimationFrame(raf);
   }, [scene, modelScale, ready]);
 
   useFrameTick('player', () => {

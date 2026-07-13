@@ -71,6 +71,11 @@ export function measureCharacterGltfBounds(obj: THREE.Object3D): GltfBounds {
         // Fall back to regular mesh bounds (ignore bone transforms).
         _meshBoundsScratch.setFromObject(node);
       } else {
+        // Ensure skeleton pose is up-to-date before computing bounds.
+        // Without this, SkinnedMesh bounds can reflect the bind pose or
+        // an intermediate pose, causing fitCharacterGltf to return wrong
+        // scale/rotX/footY — model appears lying down or under the ceiling.
+        node.skeleton.update();
         node.computeBoundingBox();
         if (!node.boundingBox) return;
         _meshBoundsScratch.copy(node.boundingBox).applyMatrix4(node.matrixWorld);

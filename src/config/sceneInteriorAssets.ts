@@ -12,9 +12,8 @@ export interface SceneInteriorPlacement {
 
 /** Kenney building shells (Poly Pizza TODO) — backdrop dressing via GltfAsset manifest. */
 export const SCENE_INTERIOR_ASSETS: Partial<Record<SceneId, readonly SceneInteriorPlacement[]>> = {
-  volodka_room: [
-    { assetId: 'interior_room_bedroom', position: [0, 0, -4], scale: 1.2, rotation: [0, Math.PI, 0] },
-  ],
+  // volodka_room: removed — VolodkaRoomVisual provides full procedural geometry;
+  // the interior_room_bedroom GLB shell was overlapping with procedural walls/floor/ceiling.
   volodka_corridor: [
     { assetId: 'interior_corridor', position: [0, 0, 4], scale: 2.0, rotation: [0, Math.PI / 2, 0] },
   ],

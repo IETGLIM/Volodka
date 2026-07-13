@@ -22,13 +22,9 @@ export interface SplitScenePropDressing {
 /** Kenney + AI3DGen props placed in scene visuals (see propModelRegistry). */
 export const SCENE_PROP_DRESSING: Partial<Record<SceneId, readonly ScenePropPlacement[]>> = {
   volodka_room: [
-    { propModelId: 'kenney_desk', position: [0, 0, -2.5], loadTier: 'critical' },
-    { propModelId: 'kenney_bed', position: [1.8, 0, 2.0], loadTier: 'critical' },
-    { propModelId: 'kenney_terminal', position: [0.72, 0.78, -2.62], offset: [0, -0.28, 0], loadTier: 'critical' },
-    { propModelId: 'kenney_door_open', position: [0, 0, 3.45], loadTier: 'critical' },
-    { propModelId: 'kenney_wardrobe', position: [-2.2, 0, 2.5], loadTier: 'deferred' },
-    { propModelId: 'kenney_bookshelf', position: [-2.2, 0, 0], loadTier: 'deferred' },
-    { propModelId: 'kenney_window', position: [2.4, 1.2, -2.0], rotationY: -Math.PI / 2, loadTier: 'deferred' },
+    // Procedural VolodkaRoomVisual already renders: walls, floor, ceiling,
+    // desk, bed, wardrobe, bookshelf, door, windows, monitors, fan, etc.
+    // Only keep unique ai3dgen props that the procedural room does NOT provide.
     { propModelId: 'ai3dgen_poetic_compiler', position: [-0.35, 0.82, -2.38], rotationY: 0.25, loadTier: 'deferred' },
     { propModelId: 'ai3dgen_neural_filter', position: [0.95, 0.82, -2.55], rotationY: -0.35, loadTier: 'deferred' },
     { propModelId: 'ai3dgen_digital_amulet', position: [-2.05, 1.55, 0.05], rotationY: Math.PI / 2, loadTier: 'deferred' },
