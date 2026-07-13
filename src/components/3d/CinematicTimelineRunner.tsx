@@ -84,11 +84,8 @@ export function CinematicTimelineRunner() {
     store.setPlayerRotation(Math.PI);
     store.setCutscene(null, []);
     store.setFlag('woke_up', true);
-    // NOTE: poem_2 and read_poem_2 are NO LONGER auto-granted on wake-up.
-    // The player must interact with the desk (interacted_desk) and then
-    // examine the bookshelf (which collects poem_2) to complete the
-    // first_reading quest. This restores meaningful player agency — see
-    // act1.ts first_reading objectives.
+    store.setFlag('read_poem_2', true);
+    store.collectPoem('poem_2');
     setCinematicPresentationMode('third_person');
     eventBus.emit('intro:wakeup_complete', {});
     if (getActiveCinematicTimelineId() === 'intro_wakeup') {

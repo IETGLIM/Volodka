@@ -9,31 +9,35 @@ export const QUESTS_ACT1: QuestDefinition[] = [
   {
     id: 'first_reading',
     title: 'Первое чтение',
-    description: 'На мониторе — недописанные строки. Книжная полка хранит знакомые сборники. Осмотри рабочий стол, затем прочти стих пробуждения «Смерть есть лишь начало».',
+    description: 'Принять послание пробуждения — стих «Смерть есть лишь начало». Каждый стих — ключ к пониманию того, что происходит в этом городе.',
     act: 1,
     faction: undefined,
     questType: 'main',
     difficulty: 'easy',
-    hint: 'Осмотри рабочий стол [E], затем загляни в книжную полку — стих ждёт тебя.',
+    hint: 'Стих уже с тобой с момента пробуждения. Осмотри комнату — дальше путь ведёт через коридор и офис гильдии.',
     objectives: [
       {
         id: 'find_title_poem',
-        description: 'Осмотреть рабочий стол — найти стих на мониторе',
-        type: 'flag_set',
-        target: 'interacted_desk',
+        description: 'Принять стих пробуждения «Смерть есть лишь начало»',
+        type: 'poem_collected',
+        target: 'poem_2',
         completed: false,
       },
       {
         id: 'read_title_poem',
-        description: 'Прочесть стих пробуждения «Смерть есть лишь начало»',
-        type: 'poem_collected',
-        target: 'poem_2',
+        description: 'Осознать прочитанные строки',
+        type: 'flag_set',
+        target: 'read_poem_2',
         completed: false,
       },
     ],
     rewards: [
       { type: 'addSkill', skill: 'writing', value: 2 },
       { type: 'addKarma', value: 5 },
+      // NOTE: addXp removed — auto-completing this quest on wake-up caused an
+      // immediate Level 2 popup before the player had done anything. XP for
+      // poem discovery is now earned through later quests (incident_scroll_4729,
+      // maria_connection) where the player actively interacts with the world.
     ],
     linkedStoryNodeId: 'explore_mode',
     questGiverNpcId: undefined, // Self-discovered quest (no NPC giver)
@@ -204,10 +208,6 @@ export const QUESTS_ACT1: QuestDefinition[] = [
     questType: 'main',
     difficulty: 'hard',
     hint: 'Стихи прячутся в неожиданных местах — изучай каждый угол каждой сцены.',
-    // Progressive reveal: only the next few uncompleted poem objectives are
-    // shown at a time. As the player collects poems, new ones appear.
-    // Handled in QuestsPanel via progressiveRevealCount.
-    progressiveRevealCount: 3,
     objectives: [
       {
         id: 'collect_poem_1',

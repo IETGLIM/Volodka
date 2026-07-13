@@ -145,13 +145,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
       detailText: 'Пушкин, Мандельштам, Бродский... и «Руководство по Kubernetes». Книги — единственное, что здесь не глючит.',
       icon: '📚',
     },
-    effects: [
-      { type: 'setFlag', flag: 'interacted_bookshelf', flagValue: true },
-      // Collecting poem_2 here (rather than on wake-up) gives the player
-      // agency: they must examine the desk first, then read the poem on
-      // the bookshelf to complete the first_reading quest.
-      { type: 'collectPoem', poemId: 'poem_2' },
-    ],
+    effects: [{ type: 'setFlag', flag: 'interacted_bookshelf', flagValue: true }],
   },
   {
     id: 'room_window',
