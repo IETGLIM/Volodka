@@ -586,3 +586,4 @@
 - Большой рефакторинг: typed EventBus с дедупликацией и приоритетами,
   GameActionDispatcher, ленивые narrative-паки по актам, бюджеты бандла в CI,
   валидатор контента, error boundaries с graceful degradation.
+# Build trigger
