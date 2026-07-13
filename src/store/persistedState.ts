@@ -260,6 +260,9 @@ export function storePatchFromSave(payload: SavePayload): Partial<GameStoreState
   const defaults = createDefaultPersistedState();
   const migratedFlags = { ...defaults.playerState.flags, ...payload.playerState.flags };
   // Pre-4262626 saves: poem_2 from wake/menu without read_poem_2 flag.
+  // Now that first_reading requires interacted_desk + poem_collected (not
+  // read_poem_2), this migration is kept for backward compatibility but no
+  // longer gates the quest objective.
   if (payload.collectedPoems.includes('poem_2') && !migratedFlags.read_poem_2) {
     migratedFlags.read_poem_2 = true;
   }

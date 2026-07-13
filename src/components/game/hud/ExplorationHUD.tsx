@@ -5,7 +5,7 @@
    better mobile responsive layout.
 */
 
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { APP_VERSION } from '@/shared/constants/appVersion';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -63,11 +63,64 @@ import { PhysicsDegradedDevBadge } from '@/components/game/hud/parts/PhysicsDegr
 
 export type { HUDProps } from '@/components/game/hud/hudTypes';
 
+/* ── Crosshair with proximity glow ── */
+function CrosshairGlow({ nearInteractive }: { nearInteractive: boolean }) {
+  return (
+    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+      <div className="relative">
+        <div
+          className="w-1 h-1 rounded-full bg-white/30 mx-auto transition-all duration-300"
+          style={{
+            boxShadow: nearInteractive
+              ? '0 0 8px rgba(0,255,238,0.6), 0 0 20px rgba(0,255,238,0.3)'
+              : '0 0 3px rgba(255,255,255,0.4)',
+            backgroundColor: nearInteractive ? 'rgba(0,255,238,0.5)' : undefined,
+          }}
+        />
+        <div
+          className="absolute -top-2 left-1/2 -translate-x-1/2 w-2.5 h-[3px] border-t border-l border-r rounded-t-sm transition-colors duration-300"
+          style={{ borderColor: nearInteractive ? 'rgba(0,255,238,0.25)' : 'rgba(255,255,255,0.08)' }}
+        />
+        <div
+          className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-2.5 h-[3px] border-b border-l border-r rounded-b-sm transition-colors duration-300"
+          style={{ borderColor: nearInteractive ? 'rgba(0,255,238,0.25)' : 'rgba(255,255,255,0.08)' }}
+        />
+        <div
+          className="absolute top-1/2 -left-2 -translate-y-1/2 w-[3px] h-2.5 border-t border-l border-b rounded-l-sm transition-colors duration-300"
+          style={{ borderColor: nearInteractive ? 'rgba(0,255,238,0.25)' : 'rgba(255,255,255,0.08)' }}
+        />
+        <div
+          className="absolute top-1/2 -right-2 -translate-y-1/2 w-[3px] h-2.5 border-t border-r border-b rounded-r-sm transition-colors duration-300"
+          style={{ borderColor: nearInteractive ? 'rgba(0,255,238,0.25)' : 'rgba(255,255,255,0.08)' }}
+        />
+        {nearInteractive && (
+          <div
+            className="absolute inset-0 -m-3 rounded-full pointer-events-none"
+            style={{
+              boxShadow: '0 0 16px 2px rgba(0,255,238,0.12)',
+              animation: 'pulse 2s cubic-bezier(0.4,0,0.6,1) infinite',
+            }}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function ExplorationHUD(props: HUDProps) {
   const state = useHUDController(props);
   const reducedMotion = useEffectiveReducedMotion();
   const quietStyle = useHudQuietStyle();
   const totalPoems = TOTAL_MAIN_POEMS;
+
+  // ── Crosshair proximity glow state ──
+  const [crosshairNearInteractive, setCrosshairNearInteractive] = useState(false);
+  useEffect(() => {
+    const unsubHint = eventBus.on('interaction:hint', () => setCrosshairNearInteractive(true));
+    const unsubEnd = eventBus.on('interaction:end', () => setCrosshairNearInteractive(false));
+    const unsubStart = eventBus.on('interaction:start', () => setCrosshairNearInteractive(false));
+    return () => { unsubHint(); unsubEnd(); unsubStart(); };
+  }, []);
   const {
     photoModeOn,
     hudMounted,
@@ -165,15 +218,7 @@ export function ExplorationHUD(props: HUDProps) {
       <AchievementPopup achievement={skillAchievement} />
 
       {/* ── Center: Crosshair ── */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
-        <div className="relative">
-          <div className="w-1 h-1 rounded-full bg-white/30 mx-auto" style={{ boxShadow: '0 0 3px rgba(255,255,255,0.4)' }} />
-          <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-2.5 h-[3px] border-t border-l border-r border-white/[0.08] rounded-t-sm" />
-          <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-2.5 h-[3px] border-b border-l border-r border-white/[0.08] rounded-b-sm" />
-          <div className="absolute top-1/2 -left-2 -translate-y-1/2 w-[3px] h-2.5 border-t border-l border-b border-white/[0.08] rounded-l-sm" />
-          <div className="absolute top-1/2 -right-2 -translate-y-1/2 w-[3px] h-2.5 border-t border-r border-b border-white/[0.08] rounded-r-sm" />
-        </div>
-      </div>
+      <CrosshairGlow nearInteractive={crosshairNearInteractive} />
 
       {/* ── Top bar (fades when HUD is quiet — crosshair stays) ── */}
       <div className="absolute top-0 left-0 right-0 pointer-events-auto" style={quietStyle}>

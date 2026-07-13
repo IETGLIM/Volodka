@@ -59,9 +59,41 @@ export function getCombatDifficultyProfile(id: CombatDifficultyId = readCombatDi
   return COMBAT_DIFFICULTY_PROFILES[id];
 }
 
-export function scaleEnemyDamageByDifficulty(damage: number, id?: CombatDifficultyId): number {
+/** Scale enemy damage by difficulty preset, current act, and player level.
+ *
+ *  Formula: damage * difficultyMult * (1 + 0.15 * (act - 1)) * (1 + 0.1 * max(0, level - 1))
+ *
+ *  At Act 1 / Level 1 the factor is 1.0 (no change).
+ *  At Act 5 / Level 10 the factor is 3.04 (1.6 × 1.9) on Normal difficulty.
+ */
+export function scaleEnemyDamageByDifficulty(
+  damage: number,
+  id?: CombatDifficultyId,
+  actNumber?: number,
+  playerLevel?: number,
+): number {
   const profile = getCombatDifficultyProfile(id);
-  return Math.max(1, Math.floor(damage * profile.enemyDamageMultiplier));
+  const difficultyFactor = profile.enemyDamageMultiplier;
+
+  // Act scaling: +15% per act beyond the first
+  const actFactor = 1 + 0.15 * Math.max(0, (actNumber ?? 1) - 1);
+
+  // Level scaling: +10% per player level beyond the first
+  const levelFactor = 1 + 0.1 * Math.max(0, (playerLevel ?? 1) - 1);
+
+  return Math.max(1, Math.floor(damage * difficultyFactor * actFactor * levelFactor));
+}
+
+/** Compute the act+level scaling multiplier used for enemy base stats.
+ *
+ *  This is the same factor applied in `scaleEnemyDamageByDifficulty` but
+ *  without the difficulty preset — used when constructing the enemy object
+ *  so that HP, attack, defense, etc. all scale together.
+ */
+export function computeEnemyScalingFactor(actNumber: number, playerLevel: number): number {
+  const actFactor = 1 + 0.15 * Math.max(0, actNumber - 1);
+  const levelFactor = 1 + 0.1 * Math.max(0, playerLevel - 1);
+  return actFactor * levelFactor;
 }
 
 export function getFleeChanceBonus(id: CombatDifficultyId = readCombatDifficulty()): number {

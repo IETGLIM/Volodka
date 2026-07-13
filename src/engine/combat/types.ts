@@ -24,6 +24,8 @@ export interface EnemyTemplate {
   type: EnemyType;
   name: string;
   emoji: string;
+  /** Short flavour description shown in encounter presentation */
+  description: string;
   baseHp: number;
   baseAttack: number;
   baseDefense: number;
@@ -32,6 +34,10 @@ export interface EnemyTemplate {
   lootTable: string[];
   xpReward: number;
   specialAttacks: EnemySpecialAttack[];
+  /** In-combat bark lines — one is chosen at random when the enemy attacks */
+  attackBarks: string[];
+  /** Lines shown when the enemy is defeated */
+  defeatBarks: string[];
 }
 
 /** Poem combat ability definition with cooldown */

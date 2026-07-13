@@ -45,4 +45,8 @@ export interface QuestDefinition {
   readonly questGiverNpcId?: string;
   readonly spineOrder?: number;
   readonly rewardItems?: { readonly itemId: string; readonly quantity: number }[];
+  /** When set, only show this many uncompleted objectives at a time for
+   *  overwhelming quests (e.g. poetry_collection with 22 objectives).
+   *  As the player completes objectives, new ones are revealed. */
+  readonly progressiveRevealCount?: number;
 }

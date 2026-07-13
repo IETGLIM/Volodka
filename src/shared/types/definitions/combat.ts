@@ -13,7 +13,10 @@ export type EnemyType =
   | 'censor_drone'
   | 'poetry_hunter'
   | 'nexus_guardian'
-  | 'void_echo';
+  | 'void_echo'
+  | 'corporate_drone'
+  | 'memory_wraith'
+  | 'firewall_guardian';
 
 export type CombatAction = 'attack' | 'defend' | 'poem_power' | 'flee';
 

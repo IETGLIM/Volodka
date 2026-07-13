@@ -13,4 +13,7 @@ export const ENEMY_TYPE_IDS: readonly EnemyType[] = [
   'poetry_hunter',
   'nexus_guardian',
   'void_echo',
+  'corporate_drone',
+  'memory_wraith',
+  'firewall_guardian',
 ] as const;
