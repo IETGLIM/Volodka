@@ -104,6 +104,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
+    "@gltf-transform/cli": "^4.4.1",
     "@playwright/test": "^1.53.2",
     "@tailwindcss/postcss": "^4",
     "@tailwindcss/vite": "^4",

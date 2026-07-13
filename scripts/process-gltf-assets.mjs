@@ -5,7 +5,7 @@
  * Input:  assets-source/ (recursive .glb)
  * Output: public/models/ (optimize, Draco, Meshopt, LODs)
  *
- * Requires: npx @gltf-transform/cli (no local install needed)
+ * Requires: @gltf-transform/cli (pinned devDependency)
  *
  * Usage:
  *   npm run assets:process
@@ -98,8 +98,20 @@ async function copyTranscoders() {
   } else {
     console.warn('three.js Basis libs not found — run npm install');
   }
-  if (await copyDir(threeDraco, DRACO_OUT)) {
-    console.log('Draco decoder -> public/draco/gltf/');
+  // Copy Draco decoder files — EXCLUDE draco_encoder.js (954KB build-time-only artifact)
+  if (existsSync(threeDraco)) {
+    mkdirSync(DRACO_OUT, { recursive: true });
+    for (const entry of readdirSync(threeDraco, { withFileTypes: true })) {
+      if (entry.name === 'draco_encoder.js') continue; // build-time only, not needed at runtime
+      const from = path.join(threeDraco, entry.name);
+      const to = path.join(DRACO_OUT, entry.name);
+      if (entry.isDirectory()) {
+        await copyDir(from, to);
+      } else {
+        await copyFileSafe(from, to);
+      }
+    }
+    console.log('Draco decoder -> public/draco/gltf/ (encoder excluded)');
   }
 }
 

@@ -1,6 +1,17 @@
 /**
  * Shared GLTF processing — optimize, Draco, Meshopt, LOD simplify.
  * Used by process-gltf-assets.mjs and process-catalog-assets.mjs.
+ *
+ * Best practices applied:
+ * - Uses locally-installed @gltf-transform/cli (pinned version) instead of `npx -y`
+ *   to prevent supply-chain breakage on major version bumps.
+ * - KTX2/Basis ETC1S texture compression applied to Draco variant via separate
+ *   `etc1s` pass, significantly reducing texture sizes for low/medium/high quality
+ *   tiers (60-75% smaller textures with minimal visual quality loss).
+ * - Meshopt variants keep original textures (meshopt decompresses geometry only;
+ *   KTX2 transcoding overhead not justified when GPU is already strong enough for ultra).
+ * - Pipeline order: copy → optimize (no texture compress) → draco → etc1s (on draco)
+ *   → meshopt (from optimized lod0) → simplify LODs.
  */
 
 import { spawnSync } from 'node:child_process';
@@ -58,9 +69,25 @@ export function resolveOutputPaths(layout, outBase) {
   }
 }
 
+/**
+ * Resolve the local @gltf-transform/cli binary path.
+ * Uses the pinned devDependency instead of `npx -y` to prevent
+ * supply-chain breakage on unpinned major version bumps.
+ */
+function resolveGltfTransformBin(root) {
+  const localBin = path.join(root, 'node_modules', '.bin', 'gltf-transform');
+  if (existsSync(localBin)) return localBin;
+  // Fallback to npx if local install is missing (CI without devDeps, etc.)
+  console.warn('⚠ Local @gltf-transform/cli not found — falling back to npx -y (unpinned).');
+  return null;
+}
+
 export function runGltfTransform(cwd, args, label, { exitOnFail = true } = {}) {
   console.log(`\n▶ ${label}`);
-  const result = spawnSync('npx', ['-y', '@gltf-transform/cli', ...args], {
+  const localBin = resolveGltfTransformBin(cwd);
+  const cmd = localBin ? localBin : 'npx';
+  const cmdArgs = localBin ? args : ['-y', '@gltf-transform/cli', ...args];
+  const result = spawnSync(cmd, cmdArgs, {
     stdio: 'inherit',
     shell: true,
     cwd,
@@ -85,6 +112,7 @@ export function runGltfTransform(cwd, args, label, { exitOnFail = true } = {}) {
  * @param {string} [options.layout]
  * @param {boolean} [options.skipLod]
  * @param {boolean} [options.skipCompression]
+ * @param {boolean} [options.skipTextureCompress] Skip KTX2/Basis texture compression for Draco variant
  * @param {boolean} [options.exitOnFail]
  */
 export function processGltfAsset({
@@ -94,6 +122,7 @@ export function processGltfAsset({
   layout = 'suffix-lod',
   skipLod = false,
   skipCompression = false,
+  skipTextureCompress = false,
   exitOnFail = true,
 }) {
   if (!existsSync(srcPath)) {
@@ -110,8 +139,12 @@ export function processGltfAsset({
   const paths = resolveOutputPaths(layout, outBase);
   const rel = (file) => path.relative(root, file);
 
+  // Step 1: Copy source → lod0 baseline (no compression, original textures preserved)
   runGltfTransform(root, ['copy', srcPath, paths.lod0], `copy → ${rel(paths.lod0)}`, { exitOnFail });
 
+  // Step 2: Optimize — dedup, weld, resample, prune unused.
+  // For the baseline (lod0), keep original textures (PNG/JPEG) since this
+  // is the high-quality path used at lod0 distance and by meshopt variant.
   const optimizedTmp = `${paths.lod0}.optimized.tmp.glb`;
   runGltfTransform(
     root,
@@ -129,7 +162,40 @@ export function processGltfAsset({
   }
 
   if (!skipCompression) {
+    // Step 3a: Draco variant — compress geometry only.
+    // KTX2 texture compression is applied separately via `etc1s` pass below.
     runGltfTransform(root, ['draco', paths.lod0, paths.draco], `draco → ${rel(paths.draco)}`, { exitOnFail });
+
+    // Step 3b: KTX2/Basis ETC1S texture compression on the Draco variant.
+    // ETC1S offers 60-75% texture size reduction with minimal visual quality loss.
+    // GPU-native transcoding avoids runtime decompression overhead on all modern GPUs.
+    // This targets low/medium/high quality tiers where bandwidth savings matter most.
+    // Note: Requires KTX-Software installed on the build machine.
+    if (!skipTextureCompress) {
+      const dracoKtx2Tmp = `${paths.draco}.ktx2.tmp.glb`;
+      const etc1sOk = runGltfTransform(
+        root,
+        ['etc1s', paths.draco, dracoKtx2Tmp, '--quality', '192', '--compression', '1', '--jobs', '4'],
+        `ktx2 etc1s → ${rel(paths.draco)}`,
+        { exitOnFail: false }, // non-fatal: KTX-Software may not be installed
+      );
+      if (etc1sOk && existsSync(dracoKtx2Tmp)) {
+        try {
+          if (existsSync(paths.draco)) unlinkSync(paths.draco);
+          renameSync(dracoKtx2Tmp, paths.draco);
+        } catch (err) {
+          console.warn(`⚠ Failed to finalize KTX2 Draco: ${err.message}`);
+          // Keep the Draco-only file as fallback
+          if (existsSync(dracoKtx2Tmp)) unlinkSync(dracoKtx2Tmp);
+        }
+      } else if (existsSync(dracoKtx2Tmp)) {
+        unlinkSync(dracoKtx2Tmp);
+      }
+    }
+
+    // Step 3c: Meshopt variant — geometry-only compression for ultra tier.
+    // Meshopt decompresses on the main thread (fast with SIMD), and ultra-tier
+    // GPUs handle full-resolution textures natively — KTX2 not justified here.
     runGltfTransform(
       root,
       ['meshopt', paths.lod0, paths.meshopt],

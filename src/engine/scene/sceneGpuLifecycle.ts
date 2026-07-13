@@ -30,7 +30,7 @@ const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeo
 const SCENE_GLTF_ASSETS: Partial<Record<SceneId, readonly string[]>> = {
   cafe_evening: ['env_cafe_props', 'interior_cafe'],
   park_day: ['veg_tree_pine'],
-  volodka_room: ['player_volodka', 'interior_room_bedroom'],
+  volodka_room: ['player_volodka'], // interior_room_bedroom excluded — VolodkaRoomVisual provides full procedural geometry; the GLB was preloaded but never rendered
   volodka_corridor: ['interior_corridor'],
   office_day: ['interior_office'],
   library_day: ['interior_library'],
