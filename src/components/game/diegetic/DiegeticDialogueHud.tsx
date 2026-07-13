@@ -50,7 +50,7 @@ import { audioEngine } from '@/engine/AudioEngine';
 import { STORY_NODE_TO_NPC_ID } from '@/data/goldenPath';
 import { recordExplorationStoryStep } from '@/shared/explorationStoryBridge';
 import { devWarn } from '@/shared/utils/devLog';
-import { NPC_PORTRAIT_COLORS } from '@/components/game/shared/NPCPortrait';
+import { NPCPortrait, NPC_PORTRAIT_COLORS } from '@/components/game/shared/NPCPortrait';
 import type { SceneId } from '@/shared/types/game';
 
 const ACCENT = '#44ddcc';
@@ -333,17 +333,22 @@ export function DiegeticDialogueHud() {
           style={{ boxShadow: `0 -4px 40px ${accentColor}15` }}
         >
           <div className="px-4 pt-3 pb-1 flex items-center justify-between gap-2">
-            <p
-              className="text-sm font-semibold tracking-wide"
-              style={{ color: accentColor }}
-              id={`diegetic-speaker-${nodeId}`}
-            >
-              {speaker}
-            </p>
+            <div className="flex items-center gap-2.5 min-w-0">
+              {npcId && (
+                <NPCPortrait npcId={npcId} size="mini" className="!w-8 !h-8 !rounded-lg" />
+              )}
+              <p
+                className="text-sm font-semibold tracking-wide truncate"
+                style={{ color: accentColor }}
+                id={`diegetic-speaker-${nodeId}`}
+              >
+                {speaker}
+              </p>
+            </div>
             <button
               type="button"
               onClick={handleClose}
-              className="text-xs text-slate-400 hover:text-slate-200 px-2 py-1"
+              className="text-xs text-slate-400 hover:text-slate-200 px-2 py-1 shrink-0"
               aria-label="Закрыть"
             >
               Esc

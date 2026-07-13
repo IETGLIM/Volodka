@@ -105,7 +105,7 @@ const AUTO_DISMISS_MS: Record<QuestNotifType, number> = {
   failed: 0,   // stays until dismissed
 }
 
-const MAX_VISIBLE = 3
+const MAX_VISIBLE = 1
 
 /* ─── Progress bar component ─── */
 

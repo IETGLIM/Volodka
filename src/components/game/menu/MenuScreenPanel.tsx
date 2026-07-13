@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Volume2, VolumeX } from 'lucide-react';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -27,6 +27,23 @@ import { useMenuNavigation } from '@/hooks/useMenuNavigation';
 import { useMenuScreenActions, useMenuVisualToggles } from '@/store/selectors';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
+/* ── Visit tracking ── */
+const MENU_VISITED_KEY = 'volodka_menu_visited';
+
+function checkHasVisitedBefore(): boolean {
+  if (typeof window === 'undefined') return false;
+  return localStorage.getItem(MENU_VISITED_KEY) === 'true';
+}
+
+function markMenuVisited(): void {
+  try { localStorage.setItem(MENU_VISITED_KEY, 'true'); } catch { /* ignore */ }
+}
+
+/** Reduce animation delays by 60% on repeat visits */
+function d(baseDelay: number, visited: boolean): number {
+  return visited ? baseDelay * 0.4 : baseDelay;
+}
+
 function MenuScreenPanelInner() {
   const actions = useMenuScreenActions();
   const { matrixRainEnabled } = useMenuVisualToggles();
@@ -34,6 +51,14 @@ function MenuScreenPanelInner() {
   const deviceTier = useDeviceTier();
   const fx = getMenuScreenFx(deviceTier, reducedMotion);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  // Track repeat visits to reduce animation delays
+  const [visited] = useState(checkHasVisitedBefore);
+
+  // Mark this visit on mount
+  useEffect(() => {
+    markMenuVisited();
+  }, []);
 
   const menu = useMenuScreen(actions);
   const savePreview = useMenuSavePreview(menu.hasSave);
@@ -74,12 +99,12 @@ function MenuScreenPanelInner() {
 
       <div className="relative z-10 flex min-h-[100dvh] w-full flex-col items-center justify-center p-4">
         <MenuGlitchTitle text={MENU_TITLE} animate={fx.titleGlitch} parallax={fx.titleParallax} />
-        <MenuTypewriterSubtitle text={MENU_SUBTITLE} delay={1} enabled={contentMotion} />
+        <MenuTypewriterSubtitle text={MENU_SUBTITLE} delay={d(1, visited)} enabled={contentMotion} />
 
         <motion.p
           initial={contentMotion ? { opacity: 0, y: 5 } : false}
           animate={{ opacity: 0.7, y: 0 }}
-          transition={{ delay: 1.8, duration: 1.2 }}
+          transition={{ delay: d(1.8, visited), duration: 1.2 }}
           className="mt-1 font-serif text-sm md:text-base tracking-[0.15em] text-slate-300/70"
         >
           {MENU_TAGLINE}
@@ -88,7 +113,7 @@ function MenuScreenPanelInner() {
         <motion.p
           initial={contentMotion ? { opacity: 0, y: 5 } : false}
           animate={{ opacity: 0.6, y: 0 }}
-          transition={{ delay: 2.5, duration: 1.2 }}
+          transition={{ delay: d(2.5, visited), duration: 1.2 }}
           className="mt-2 font-serif text-xs md:text-sm tracking-[0.2em] italic text-slate-400/60"
         >
           {MENU_POET_CREDIT}
@@ -97,7 +122,7 @@ function MenuScreenPanelInner() {
         <motion.div
           initial={contentMotion ? { opacity: 0, y: 8 } : false}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 3, duration: 1.8 }}
+          transition={{ delay: d(3, visited), duration: 1.8 }}
           className="mt-4 flex flex-col items-center gap-2"
         >
           <div className="w-16 h-px bg-gradient-to-r from-transparent via-stone-400/30 to-transparent" />
@@ -110,7 +135,7 @@ function MenuScreenPanelInner() {
           ref={menuRef}
           initial={contentMotion ? { opacity: 0, y: 20 } : false}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 1.8 }}
+          transition={{ duration: 0.6, delay: d(1.8, visited) }}
           className="mt-8 w-full max-w-xs"
         >
           <div
@@ -128,6 +153,7 @@ function MenuScreenPanelInner() {
               onSelect={menu.handleMenuAction}
               savePreview={savePreview}
               contentMotion={contentMotion}
+              fastAnimation={visited}
             />
           </div>
         </motion.div>
@@ -135,7 +161,7 @@ function MenuScreenPanelInner() {
         <motion.div
           initial={contentMotion ? { opacity: 0 } : false}
           animate={{ opacity: 1 }}
-          transition={{ delay: 3.5, duration: 1 }}
+          transition={{ delay: d(3.5, visited), duration: 1 }}
           className="mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5"
           aria-hidden="true"
         >
@@ -148,7 +174,7 @@ function MenuScreenPanelInner() {
         type="button"
         initial={contentMotion ? { opacity: 0 } : false}
         animate={{ opacity: 1 }}
-        transition={{ delay: 2 }}
+        transition={{ delay: d(2, visited) }}
         onClick={() => {
           menu.toggleMusic();
           safePlayMenuSfx(audioEngine.playSfx.bind(audioEngine), 'click');
@@ -169,7 +195,7 @@ function MenuScreenPanelInner() {
       <motion.div
         initial={contentMotion ? { opacity: 0 } : false}
         animate={{ opacity: 1 }}
-        transition={{ delay: 2.5 }}
+        transition={{ delay: d(2.5, visited) }}
         className="absolute bottom-6 right-6 z-30"
         aria-hidden="true"
       >

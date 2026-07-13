@@ -34,6 +34,7 @@ import {
 } from '@/engine/interaction/interactionEndDedup';
 import { isInteractionLocked } from '@/engine/interaction/interactionSession';
 import { devWarn } from '@/shared/utils/devLog';
+import { resolveNpcBarkForRelation } from '@/shared/npcBark';
 import { resolveZoneInteractionSplash } from '@/engine/interaction/resolveInteractionSplash';
 import { playInteractionSplash } from '@/engine/interaction/playInteractionSplash';
 import { shouldOpenLinkedStoryDirectly } from '@/engine/interaction/interactionZonePresentation';
@@ -300,6 +301,29 @@ export class InteractionController {
         if (!narrativeTarget) {
           devWarn(`[InteractionController] No narrative linked for NPC "${npcId}"`);
         }
+
+        // Resolve a bark line so the player sees visible feedback.
+        // Uses the NPC's barkTexts based on relationship level, with a
+        // generic fallback when no barkTexts are defined.
+        const FALLBACK_NO_DIALOGUE_BARKS = [
+          'Мне нечего сказать...',
+          'Уходи, я занят.',
+          'Не сейчас.',
+          'Нечего обсуждать.',
+        ];
+        let barkText: string;
+        if (npcDef.barkTexts) {
+          const npcRelations = getGameSnapshot().npcRelations;
+          const relation = npcRelations.find((r) => r.npcId === npcId);
+          const relationValue = relation?.value ?? 50;
+          barkText = resolveNpcBarkForRelation(npcDef.barkTexts, relationValue);
+        } else {
+          barkText = FALLBACK_NO_DIALOGUE_BARKS[
+            Math.floor(Math.random() * FALLBACK_NO_DIALOGUE_BARKS.length)
+          ] ?? FALLBACK_NO_DIALOGUE_BARKS[0]!;
+        }
+        eventBus.emit('npc:no_dialogue', { npcId, barkText });
+
         queueMicrotask(() => {
           if (this.session.isDisposed()) return;
           emitInteractionEndIfNeeded();

@@ -38,8 +38,8 @@ interface WeatherAlertData {
 
 /* ─── Constants ─── */
 
-const NOTIFICATION_DURATION_MS = 4000;
-const MAX_ALERTS = 3;
+const NOTIFICATION_DURATION_MS = 3000;
+const MAX_ALERTS = 1;
 
 /* ─── Weather icon mapping ─── */
 

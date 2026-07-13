@@ -1,16 +1,17 @@
 
 /* ─── Volodka RPG – Tutorial tips overlay (enhanced) ─── */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { bottomTutorialTipPx } from '@/shared/constants/hudLayout';
-import { X, Gamepad2, Eye, Hand, Backpack, Scroll, BookOpen, Notebook, Moon, LayoutGrid, LogOut } from 'lucide-react';
+import { X, Gamepad2, Eye, Hand, Backpack, Scroll, BookOpen, Notebook, Moon, LayoutGrid, LogOut, Zap, Swords, ClipboardList } from 'lucide-react';
 import { useGameStore } from '@/store/gameStore';
 import { useGamePhase, useTutorialFlags } from '@/store/selectors';
+import { eventBus } from '@/engine/EventBus';
 import { Checkbox } from '@/components/ui/checkbox';
 
-type TutorialType = 'movement' | 'interact' | 'controls';
+type TutorialType = 'movement' | 'interact' | 'controls' | 'poem_power' | 'combat' | 'quest_board';
 
 const LS_KEY = 'volodka_tutorial_disabled';
 
@@ -149,6 +150,68 @@ const TUTORIALS: Record<TutorialType, { icon: React.ReactNode; title: string; co
       </div>
     ),
   },
+  poem_power: {
+    icon: <Zap className="size-5 text-amber-400" />,
+    title: 'Стих-способности',
+    content: (
+      <div className="space-y-1.5">
+        <p className="text-xs text-slate-400">
+          Каждый стих даёт уникальную способность с перезарядкой.
+        </p>
+        <div className="flex items-center gap-2">
+          <KeyCap>1</KeyCap><KeyCap>2</KeyCap><KeyCap>3</KeyCap>
+          <span className="text-xs text-slate-400">— выбор способности</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <KeyCap>F</KeyCap>
+          <span className="text-xs text-slate-400">— активировать способность</span>
+        </div>
+        <p className="text-[11px] text-amber-400/70 mt-1">
+          ⏱ После использования способность уходит на перезарядку
+        </p>
+      </div>
+    ),
+  },
+  combat: {
+    icon: <Swords className="size-5 text-rose-400" />,
+    title: 'Бой',
+    content: (
+      <div className="space-y-1.5">
+        <p className="text-xs text-slate-400">
+          В бою используй стих-способности для преимущества!
+        </p>
+        <div className="flex items-center gap-2">
+          <KeyCap>F</KeyCap>
+          <span className="text-xs text-slate-400">— стих-способность в бою</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <KeyCap>E</KeyCap>
+          <span className="text-xs text-slate-400">— обычная атака</span>
+        </div>
+        <p className="text-[11px] text-rose-400/70 mt-1">
+          ⚔ Стих-способности наносят усиленный урон
+        </p>
+      </div>
+    ),
+  },
+  quest_board: {
+    icon: <ClipboardList className="size-5 text-emerald-400" />,
+    title: 'Доска заданий',
+    content: (
+      <div className="space-y-1.5">
+        <p className="text-xs text-slate-400">
+          На доске заданий доступны ежедневные и сюжетные миссии.
+        </p>
+        <div className="flex items-center gap-2">
+          <KeyCap>Q</KeyCap>
+          <span className="text-xs text-slate-400">— открыть журнал заданий</span>
+        </div>
+        <p className="text-[11px] text-emerald-400/70 mt-1">
+          📋 Ежедневные задания обновляются каждый игровой день
+        </p>
+      </div>
+    ),
+  },
 };
 
 export function TutorialOverlay() {
@@ -159,7 +222,42 @@ export function TutorialOverlay() {
   const [dismissed, setDismissed] = useState<Set<TutorialType>>(new Set());
   const [dontShowAgain, setDontShowAgain] = useState(isTutorialDisabled);
 
-  // Determine which tutorial to show (sequential: movement → interact → controls)
+  // Track contextual tutorial triggers from EventBus
+  const poemPowerTriggeredRef = useRef(false);
+  const combatTriggeredRef = useRef(false);
+  const questBoardTriggeredRef = useRef(false);
+
+  // Listen for poem:power_used — trigger poem power tutorial on first use
+  useEffect(() => {
+    const unsub = eventBus.on('poem:power_used', () => {
+      if (!tutorialFlags.tutorial_seen_poem_power) {
+        poemPowerTriggeredRef.current = true;
+      }
+    });
+    return unsub;
+  }, [tutorialFlags.tutorial_seen_poem_power]);
+
+  // Listen for combat:start — trigger combat tutorial on first encounter
+  useEffect(() => {
+    const unsub = eventBus.on('combat:start', () => {
+      if (!tutorialFlags.tutorial_seen_combat) {
+        combatTriggeredRef.current = true;
+      }
+    });
+    return unsub;
+  }, [tutorialFlags.tutorial_seen_combat]);
+
+  // Listen for quest board open — trigger quest board tutorial on first open
+  useEffect(() => {
+    const unsub = eventBus.on('ui:open_panel', (payload: { panel: string }) => {
+      if (payload.panel === 'quests' && !tutorialFlags.tutorial_seen_quest_board) {
+        questBoardTriggeredRef.current = true;
+      }
+    });
+    return unsub;
+  }, [tutorialFlags.tutorial_seen_quest_board]);
+
+  // Determine which tutorial to show (sequential: movement → interact → controls, then contextual)
   const activeTutorial: TutorialType | null = (() => {
     if (tutorialFlags.tutorialsDisabled || isTutorialDisabled()) return null;
     if (mode !== 'exploration') return null;
@@ -167,6 +265,7 @@ export function TutorialOverlay() {
     // Don't show contextual tips if the first-play tutorial hasn't been completed yet
     if (!tutorialFlags.tutorialsCompleted) return null;
 
+    // First-play tutorials (sequential)
     if (!tutorialFlags.tutorial_seen_movement && !dismissed.has('movement')) {
       return 'movement';
     }
@@ -176,6 +275,18 @@ export function TutorialOverlay() {
     if (!tutorialFlags.tutorial_seen_controls && !dismissed.has('controls')) {
       return 'controls';
     }
+
+    // Contextual tutorials (triggered by gameplay events)
+    if (!tutorialFlags.tutorial_seen_poem_power && poemPowerTriggeredRef.current && !dismissed.has('poem_power')) {
+      return 'poem_power';
+    }
+    if (!tutorialFlags.tutorial_seen_combat && combatTriggeredRef.current && !dismissed.has('combat')) {
+      return 'combat';
+    }
+    if (!tutorialFlags.tutorial_seen_quest_board && questBoardTriggeredRef.current && !dismissed.has('quest_board')) {
+      return 'quest_board';
+    }
+
     return null;
   })();
 

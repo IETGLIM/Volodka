@@ -99,3 +99,7 @@ export const LazyStoryGuidanceHUD = retryLazyDefault(
   () => import('../StoryGuidanceHUD').then((m) => ({ default: m.StoryGuidanceHUD })),
   'StoryGuidanceHUD',
 );
+export const LazyPlayerLostHintToast = retryLazyDefault(
+  () => import('../StoryGuidanceHUD').then((m) => ({ default: m.PlayerLostHintToast })),
+  'PlayerLostHintToast',
+);

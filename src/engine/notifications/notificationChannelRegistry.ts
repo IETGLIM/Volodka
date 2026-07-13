@@ -6,17 +6,27 @@
  * one of the channels listed below. Do NOT create new top-level notification
  * components — extend an existing channel or add a new entry here first.
  *
+ * ── Priority Queue ──
+ * notificationPriorityQueue.ts enforces a 4-tier priority system:
+ *   Priority 1 (highest): Achievement notifications
+ *   Priority 2: Quest updates
+ *   Priority 3: Lore discoveries
+ *   Priority 4 (lowest): Generic game system toasts, loot, weather, crafting
+ *
+ * Only 1 notification is visible at a time. Each displays for 3 seconds.
+ * useNotificationSlot arbiter (MAX_VISIBLE=1) enforces single-channel display.
+ *
  * ── Channels ──
  * Each channel has:
  *   - id: unique stable identifier (used by useNotificationSlot arbiter)
- *   - priority: higher wins the visible slot when >MAX_VISIBLE channels compete
+ *   - priority: higher wins the visible slot when channels compete
  *   - position: screen quadrant
  *   - component: the React component that renders this channel
  *   - sources: what feeds events into this channel
  *
  * ── Coordination ──
  * useNotificationSlot (src/hooks/useNotificationSlot.ts) is the arbiter.
- * At most MAX_VISIBLE=2 non-critical channels show simultaneously, ordered
+ * At most MAX_VISIBLE=1 non-critical channel shows simultaneously, ordered
  * by priority. Critical channels (save/load failures) bypass the cap.
  *
  * ── Event flow ──
@@ -32,6 +42,8 @@
  *   eventBus     -> weather:changed      -> WeatherAlertNotification
  *   eventBus     -> crafting:discovered  -> CraftingDiscoveryToast
  *   eventBus     -> game:system_alert    -> GameSystemToast
+ *
+ *   All events also feed -> UnifiedNotificationDisplay (via notificationPriorityQueue)
  *
  * ── Anti-patterns (DO NOT) ──
  *   X Push the same event into both store.notifications AND eventBus

@@ -29,8 +29,8 @@ interface CraftingToastData {
 
 /* ─── Constants ─── */
 
-const TOAST_DURATION_MS = 3500;
-const MAX_TOASTS = 3;
+const TOAST_DURATION_MS = 3000;
+const MAX_TOASTS = 1;
 const STAGGER_MS = 100;
 
 /* ─── Rarity visual config ─── */

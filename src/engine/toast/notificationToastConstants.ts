@@ -1,8 +1,8 @@
 import type { ToastType } from '@/engine/ToastManager';
 import type { TrainablePlayerSkill } from '@/shared/types/game';
 
-export const NOTIFICATION_TOAST_MAX_VISIBLE = 5;
-export const NOTIFICATION_TOAST_AUTO_DISMISS_MS = 4000;
+export const NOTIFICATION_TOAST_MAX_VISIBLE = 1;
+export const NOTIFICATION_TOAST_AUTO_DISMISS_MS = 3000;
 export const NOTIFICATION_TOAST_SHOWN_ID_CAP = 40;
 export const NOTIFICATION_TOAST_PREV_STORE_ID_CAP = 20;
 

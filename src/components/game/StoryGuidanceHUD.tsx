@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, BookOpen } from 'lucide-react';
+import { X, BookOpen, Compass } from 'lucide-react';
 import { eventBus } from '@/engine/EventBus';
 import { getCurrentGuidance, type GuidanceInfo } from '@/engine/GuidedStoryManager';
 import { buildGuidanceDirectionHint } from '@/engine/guidedStory/guidanceLocation';
@@ -42,6 +42,7 @@ export function StoryGuidanceHUD() {
 
   const [guidance, setGuidance] = useState<GuidanceInfo | null>(null);
   const [expanded, setExpanded] = useState(false);
+  const [lostHint, setLostHint] = useState<string | null>(null);
   const [dismissedSig, setDismissedSig] = useState<string | null>(() => {
     try {
       return sessionStorage.getItem(GUIDANCE_DISMISS_KEY);
@@ -143,8 +144,14 @@ export function StoryGuidanceHUD() {
     refresh();
 
     const unsubs = [
-      eventBus.on('story:guidance_update', (payload) => setGuidance(payload)),
+      eventBus.on('story:guidance_update', (payload) => {
+        setGuidance(payload);
+        setLostHint(null); // clear lost hint when guidance updates
+      }),
       eventBus.on('scene:loaded', refresh),
+      eventBus.on('story:player_lost', (payload) => {
+        setLostHint(payload.hint);
+      }),
     ];
     return () => {
       for (const unsub of unsubs) unsub();
@@ -486,6 +493,67 @@ export function StoryGuidanceHUD() {
               </motion.div>
             )}
           </AnimatePresence>
+        </div>
+      </motion.div>
+    </AnimatePresence>
+  );
+}
+
+/* ─── Lost player hint toast ─── */
+export function PlayerLostHintToast() {
+  const [hint, setHint] = useState<string | null>(null);
+  const reducedMotion = useEffectiveReducedMotion();
+  const motionDuration = reducedMotion ? 0 : 0.4;
+
+  useEffect(() => {
+    const unsub = eventBus.on('story:player_lost', (payload) => {
+      setHint(payload.hint);
+    });
+    return unsub;
+  }, []);
+
+  // Auto-dismiss after 8 seconds
+  useEffect(() => {
+    if (!hint) return;
+    const timer = setTimeout(() => setHint(null), 8000);
+    return () => clearTimeout(timer);
+  }, [hint]);
+
+  const dismiss = useCallback(() => setHint(null), []);
+
+  if (!hint) return null;
+
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={reducedMotion ? false : { opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={reducedMotion ? undefined : { opacity: 0, y: 20 }}
+        transition={{ duration: motionDuration, ease: 'easeOut' }}
+        className="fixed bottom-24 left-1/2 -translate-x-1/2 pointer-events-auto"
+        style={{ zIndex: UI_LAYERS.HUD + 3, maxWidth: 320 }}
+      >
+        <div
+          className="flex items-center gap-2 px-3 py-2 rounded-lg"
+          style={{
+            background: 'rgba(0, 10, 18, 0.88)',
+            border: '1px solid #ffaa4433',
+            boxShadow: '0 0 12px #ffaa4412',
+            backdropFilter: 'blur(10px)',
+          }}
+        >
+          <Compass className="size-4 text-amber-400/70 shrink-0" aria-hidden />
+          <p className="text-[11px] font-mono leading-snug text-amber-200/80 flex-1">
+            {hint}
+          </p>
+          <button
+            type="button"
+            onClick={dismiss}
+            className="w-5 h-5 flex items-center justify-center rounded text-slate-500 hover:text-white hover:bg-white/10 transition-colors shrink-0"
+            aria-label="Закрыть подсказку"
+          >
+            <X className="size-3" />
+          </button>
         </div>
       </motion.div>
     </AnimatePresence>

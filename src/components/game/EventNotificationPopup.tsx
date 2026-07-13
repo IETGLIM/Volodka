@@ -34,7 +34,7 @@ interface NotificationEntry {
 /** How long a notification stays visible before auto-dismissing */
 const NOTIFICATION_DURATION_MS = 3000;
 /** Maximum number of stacked notifications */
-const MAX_NOTIFICATIONS = 5;
+const MAX_NOTIFICATIONS = 1;
 /** Stagger delay between stacked notifications (ms) */
 const STAGGER_DELAY_MS = 120;
 

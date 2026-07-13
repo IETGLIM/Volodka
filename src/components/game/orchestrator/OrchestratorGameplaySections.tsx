@@ -26,8 +26,10 @@ import type { MinigamePanelSetters } from '@/shared/constants/minigames';
 import type { ExamineData } from '@/shared/types/game';
 import { LootNotification } from '../LootNotification';
 import { NotificationToasts } from '../NotificationToasts';
+import { UnifiedNotificationDisplay } from '../notificationToasts/UnifiedNotificationDisplay';
 import { ExaminePanel } from '../ExaminePanel';
 import { InteractionHintPopup } from '../InteractionHintPopup';
+import { NpcNoDialogueBark } from '../NpcNoDialogueBark';
 import { MoralCompassHUD } from '../MoralCompassHUD';
 import { TutorialOverlay } from '../TutorialOverlay';
 import { FirstPlayTutorial } from '../FirstPlayTutorial';
@@ -70,6 +72,7 @@ import {
   LazyMiniMap,
   LazyQuestNotificationSystem,
   LazyStoryGuidanceHUD,
+  LazyPlayerLostHintToast,
   LazyLevelUpEffect,
   LazyPhotoMode,
 } from './lazyPanels';
@@ -134,11 +137,15 @@ export const GameplayExplorationNotifications = memo(function GameplayExploratio
   return (
     <>
       <NotificationToasts />
+      <UnifiedNotificationDisplay />
       <Suspense fallback={null}>
         <LazyQuestNotificationSystem />
       </Suspense>
       <Suspense fallback={null}>
         <LazyStoryGuidanceHUD />
+      </Suspense>
+      <Suspense fallback={null}>
+        <LazyPlayerLostHintToast />
       </Suspense>
       <WeatherAlertNotification />
       <CraftingDiscoveryToast />
@@ -375,6 +382,7 @@ export const GameplayExplorationHud = memo(function GameplayExplorationHud({
       </Suspense>
       <MoralCompassHUD />
       <InteractionHintPopup />
+      <NpcNoDialogueBark />
       <WeatherIndicator />
       <AmbientAtmosphereCaption />
       <DayNightCycleIndicator />

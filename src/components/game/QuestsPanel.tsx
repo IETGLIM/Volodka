@@ -12,6 +12,7 @@ import {
   Lightbulb, Shield, Swords, Zap, Star,
 } from 'lucide-react';
 import { QUEST_DEFINITIONS } from '@/data/quests';
+import { findNpcById } from '@/data/gameDataLoader';
 import {
   useActiveQuests,
   useFailedQuests,
@@ -307,6 +308,18 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                                   </div>
                                 </div>
 
+                                {/* Quest giver / location hint (collapsed) */}
+                                {!isExpanded && def.questGiverNpcId && (() => {
+                                  const npc = findNpcById(def.questGiverNpcId);
+                                  return npc ? (
+                                    <div className="flex items-center gap-1 mt-1">
+                                      <span className="text-[10px] text-cyan-400/50">
+                                        от {npc.name}
+                                      </span>
+                                    </div>
+                                  ) : null;
+                                })()}
+
                                 {/* Progress bar */}
                                 <div className="mb-1">
                                   <Progress value={progress} className="h-1.5 bg-slate-800/80 shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)]" />
@@ -337,7 +350,17 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                                   exit={reducedMotion ? undefined : { height: 0, opacity: 0 }}
                                   transition={{ duration: reducedMotion ? 0 : 0.2 }}
                                   className="px-4 pb-3 border-t border-cyan-900/15 pt-3"
-                                >                                  <p className="text-xs text-slate-400 mb-3">{def.description}</p>
+                                >                                  <p className="text-xs text-slate-400 mb-3">
+                                    {def.description}
+                                    {def.questGiverNpcId && (() => {
+                                      const npc = findNpcById(def.questGiverNpcId);
+                                      return npc ? (
+                                        <span className="text-[10px] text-cyan-400/60 block mt-1">
+                                          Задание от: {npc.name}
+                                        </span>
+                                      ) : null;
+                                    })()}
+                                  </p>
 
                                   {/* Hint section (expanded) */}
                                   {def.hint && (
@@ -368,7 +391,22 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
 
                                   {/* Objectives */}
                                   <div className="flex flex-col gap-1.5 mb-3">
-                                    {def.objectives.map((obj) => {
+                                    {def.objectives
+                                      .filter((obj, _idx, allObjs) => {
+                                        // Progressive reveal: for quests with progressiveRevealCount,
+                                        // only show completed objectives + next N uncompleted ones.
+                                        const revealCount = def.progressiveRevealCount;
+                                        if (!revealCount) return true;
+                                        if (qs.objectives[obj.id]) return true; // always show completed
+                                        // Count how many uncompleted objectives appear before this one
+                                        let uncompletedBefore = 0;
+                                        for (const prev of allObjs) {
+                                          if (prev.id === obj.id) break;
+                                          if (!qs.objectives[prev.id]) uncompletedBefore++;
+                                        }
+                                        return uncompletedBefore < revealCount;
+                                      })
+                                      .map((obj) => {
                                       const completed = qs.objectives[obj.id] === true;
                                       return (
                                         <div
@@ -395,6 +433,28 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                                         </div>
                                       );
                                     })}
+                                    {/* Progressive reveal indicator */}
+                                    {def.progressiveRevealCount && (() => {
+                                      const totalIncomplete = def.objectives.filter((o) => !qs.objectives[o.id]).length;
+                                      const revealedIncomplete = def.objectives.filter((obj, _idx, allObjs) => {
+                                        if (qs.objectives[obj.id]) return false;
+                                        let uncompletedBefore = 0;
+                                        for (const prev of allObjs) {
+                                          if (prev.id === obj.id) break;
+                                          if (!qs.objectives[prev.id]) uncompletedBefore++;
+                                        }
+                                        return uncompletedBefore < def.progressiveRevealCount!;
+                                      }).length;
+                                      const hidden = totalIncomplete - revealedIncomplete;
+                                      if (hidden > 0) {
+                                        return (
+                                          <div className="text-[10px] text-slate-500 italic mt-1">
+                                            …и ещё {hidden} {hidden === 1 ? 'стих' : hidden < 5 ? 'стиха' : 'стихов'} впереди
+                                          </div>
+                                        );
+                                      }
+                                      return null;
+                                    })()}
                                   </div>
 
                                   {/* Rewards */}

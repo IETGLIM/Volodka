@@ -195,6 +195,122 @@ const AGENT_SPECIALS: EnemySpecialAttack[] = [
   },
 ];
 
+/** Корпоративный Дрон — balanced, standard corporate enemy */
+const DRONE_SPECIALS: EnemySpecialAttack[] = [
+  {
+    id: 'drone_protocol_override',
+    name: 'Перезапуск Протокола',
+    description: 'Усиливает атаку и снижает карму',
+    chance: 0.3,
+    cooldown: 3,
+    execute: (state, enemy) => {
+      const buff = createBuff(state, 'Перезапуск Протокола', 'drone_protocol_override', 'buff', 'enemy', 2, { type: 'attack_boost', value: 5 });
+      const s = addBuff(state, buff);
+      return {
+        ...s,
+        _sideEffects: [{ type: 'addKarma', value: -3 } as SideEffect],
+        log: [...s.log, { turn: state.turn, text: `${enemy.emoji} Перезапуск Протокола! Атака усилена, карма -3!`, type: 'enemy_special' as const }],
+      };
+    },
+  },
+  {
+    id: 'drone_compliance_beam',
+    name: 'Луч Подчинения',
+    description: 'Оглушает игрока на 1 ход',
+    chance: 0.25,
+    cooldown: 4,
+    execute: (state, enemy) => {
+      const buff = createBuff(state, 'Луч Подчинения', 'drone_compliance_beam', 'debuff', 'player', 1, { type: 'skip_turn' });
+      const s = addBuff(state, buff);
+      return {
+        ...s,
+        log: [...s.log, { turn: state.turn, text: `${enemy.emoji} Луч Подчинения! Вы парализованы на 1 ход!`, type: 'enemy_special' as const }],
+      };
+    },
+  },
+];
+
+/** Призрак Памяти — deals stress damage instead of HP */
+const MEMORY_WRAITH_SPECIALS: EnemySpecialAttack[] = [
+  {
+    id: 'wraith_trauma_echo',
+    name: 'Эхо Травмы',
+    description: 'Наносит психический урон — +20 стресса',
+    chance: 0.35,
+    cooldown: 3,
+    execute: (state, enemy) => {
+      return {
+        ...state,
+        _sideEffects: [{ type: 'addStress', value: 20 } as SideEffect],
+        log: [...state.log, { turn: state.turn, text: `${enemy.emoji} Эхо Травмы! Поток болезненных воспоминаний: +20 стресса!`, type: 'enemy_special' as const }],
+      };
+    },
+  },
+  {
+    id: 'wraith_memory_decay',
+    name: 'Гниение Памяти',
+    description: 'Снижает логику и усиливает уязвимость',
+    chance: 0.3,
+    cooldown: 4,
+    execute: (state, enemy) => {
+      const buff1 = createBuff(state, 'Гниение Памяти: слабость', 'wraith_memory_decay_vuln', 'debuff', 'player', 2, { type: 'defense_reduction', value: 0.2 });
+      let s = addBuff(state, buff1);
+      const buff2 = createBuff(s, 'Гниение Памяти: туман', 'wraith_memory_decay_logic', 'debuff', 'player', 2, { type: 'stat_drain', stat: 'logic', value: 2 });
+      s = addBuff(s, buff2);
+      return {
+        ...s,
+        _sideEffects: [{ type: 'addStress', value: 10 } as SideEffect],
+        log: [...s.log, { turn: state.turn, text: `${enemy.emoji} Гниение Памяти! Разум затуманен, защита -20%, логика -2, +10 стресса!`, type: 'enemy_special' as const }],
+      };
+    },
+  },
+];
+
+/** Страж Межсетевого Экрана — tanky, high defense, appears in factory/tech scenes */
+const FIREWALL_SPECIALS: EnemySpecialAttack[] = [
+  {
+    id: 'firewall_throttle',
+    name: 'Дросселирование',
+    description: 'Снижает атаку игрока и усиливает свою защиту',
+    chance: 0.3,
+    cooldown: 3,
+    execute: (state, enemy) => {
+      const buff1 = createBuff(state, 'Дросселирование: стена', 'firewall_throttle_def', 'buff', 'enemy', 2, { type: 'defense_boost', value: 10 });
+      let s = addBuff(state, buff1);
+      const buff2 = createBuff(s, 'Дросселирование: слабость', 'firewall_throttle_atk', 'debuff', 'player', 2, { type: 'stat_drain', stat: 'logic', value: 3 });
+      s = addBuff(s, buff2);
+      return {
+        ...s,
+        log: [...s.log, { turn: state.turn, text: `${enemy.emoji} Дросселирование! Защита врага +10, ваша логика -3 на 2 хода!`, type: 'enemy_special' as const }],
+      };
+    },
+  },
+  {
+    id: 'firewall_packet_storm',
+    name: 'Шторм Пакетов',
+    description: 'Обрушивает поток данных — множественный урон',
+    chance: 0.25,
+    cooldown: 4,
+    execute: (state, enemy) => {
+      const effectiveAttack = enemy.attack + getEnemyAttackBoost(state);
+      const rolled = rollEnemyDamage(state, { attack: effectiveAttack, multiplier: 1.3 });
+      let damage = rolled.damage;
+      const nextState = rolled.state;
+      const playerDmgReduction = getPlayerDamageReduction(nextState);
+      if (playerDmgReduction > 0) damage = scaleDamageByFraction(damage, playerDmgReduction, 'reduction');
+      const playerVulnerability = getPlayerVulnerability(nextState);
+      if (playerVulnerability > 0) damage = scaleDamageByFraction(damage, playerVulnerability, 'vulnerability');
+      const newPlayerHp = Math.max(0, nextState.playerHp - damage);
+      return {
+        ...nextState,
+        playerHp: newPlayerHp,
+        _sideEffects: [{ type: 'addStress', value: 8 } as SideEffect],
+        log: [...nextState.log, { turn: state.turn, text: `${enemy.emoji} Шторм Пакетов! Поток данных обрушивается: -${damage} HP, +8 стресса!`, type: 'enemy_special' as const, damage }],
+      };
+    },
+  },
+];
+
 /* ═══════════════════════════════════════════════════════════════
    Enemy Templates
    ═══════════════════════════════════════════════════════════════ */
@@ -204,6 +320,7 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
     type: 'system_daemon',
     name: 'Системный Демон',
     emoji: '👾',
+    description: 'Демон системных сбоев — порождение ошибок в коде города',
     baseHp: 40,
     baseAttack: 12,
     baseDefense: 4,
@@ -212,11 +329,20 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
     lootTable: ['daemon_core', 'code_fragment', 'energy_drink'],
     xpReward: 25,
     specialAttacks: DAEMON_SPECIALS,
+    attackBarks: [
+      'Системный сбой — ваш разум зависает!',
+      'Код ошибки 0xDEAD: критическое повреждение!',
+    ],
+    defeatBarks: [
+      'Демон рассеивается в потоке данных...',
+      'Системный сбой устранён. Код стабилен.',
+    ],
   },
   corporate_golem: {
     type: 'corporate_golem',
     name: 'Корпоративный Голем',
     emoji: '🤖',
+    description: 'Бесчувственный конструкт корпорации — стена протоколов',
     baseHp: 80,
     baseAttack: 8,
     baseDefense: 10,
@@ -225,11 +351,20 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
     lootTable: ['corporate_badge', 'encrypted_usb', 'coffee'],
     xpReward: 40,
     specialAttacks: GOLEM_SPECIALS,
+    attackBarks: [
+      'Протокол подавления активирован.',
+      'Списываю ваши ресурсы в пользу корпорации.',
+    ],
+    defeatBarks: [
+      'Корпоративный конструкт рассыпается на фрагменты...',
+      'Системы голема обесточены. Протокол завершён.',
+    ],
   },
   shadow_agent: {
     type: 'shadow_agent',
     name: 'Теневой Агент',
     emoji: '🥷',
+    description: 'Невидимый оперативник из подполья — мастер манипуляций',
     baseHp: 55,
     baseAttack: 10,
     baseDefense: 6,
@@ -238,19 +373,28 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
     lootTable: ['shadow_cloak', 'poem_fragment', 'painkiller'],
     xpReward: 35,
     specialAttacks: AGENT_SPECIALS,
+    attackBarks: [
+      'Тень поглощает ваш свет...',
+      'Вы не видите меня, но я уже здесь.',
+    ],
+    defeatBarks: [
+      'Агент растворяется во тьме...',
+      'Миссия провалена... отступление.',
+    ],
   },
   /* ─── G13: New enemy types for variety ─── */
   data_phantom: {
     type: 'data_phantom',
     name: 'Фантом Данных',
     emoji: '👻',
-    baseHp: 35,
-    baseAttack: 14,
+    description: 'Эфирная сущность в потоке данных — неуловима и опасна',
+    baseHp: 30,
+    baseAttack: 7,
     baseDefense: 2,
-    baseSpeed: 10,
+    baseSpeed: 14,
     targetsStat: 'logic',
     lootTable: ['code_fragment', 'energy_drink', 'poem_fragment'],
-    xpReward: 30,
+    xpReward: 28,
     specialAttacks: [
       {
         id: 'phantom_data_corruption',
@@ -271,10 +415,10 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
         id: 'phantom_phase_shift',
         name: 'Фазовый Сдвиг',
         description: 'Уклоняется от следующей атаки',
-        chance: 0.3,
-        cooldown: 4,
+        chance: 0.35,
+        cooldown: 3,
         execute: (state, enemy) => {
-          const buff = createBuff(state, 'Фазовый Сдвиг', 'phantom_phase_shift', 'buff', 'enemy', 1, { type: 'defense_boost', value: 20 });
+          const buff = createBuff(state, 'Фазовый Сдвиг', 'phantom_phase_shift', 'buff', 'enemy', 1, { type: 'defense_boost', value: 25 });
           const s = addBuff(state, buff);
           return {
             ...s,
@@ -283,11 +427,20 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
         },
       },
     ],
+    attackBarks: [
+      'Ваши данные... уже мои...',
+      'Я — сбой в вашей реальности!',
+    ],
+    defeatBarks: [
+      'Фантом рассеивается в цифровом шуме...',
+      'Данные... теряют... форму...',
+    ],
   },
   code_inquisitor: {
     type: 'code_inquisitor',
     name: 'Инквизитор Кода',
     emoji: '⚖️',
+    description: 'Жестокий аудитор правосудия — карает за добрые дела',
     baseHp: 70,
     baseAttack: 9,
     baseDefense: 8,
@@ -329,12 +482,21 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
         },
       },
     ],
+    attackBarks: [
+      'Ваша совесть — приговор!',
+      'Правосудие кода не знает пощады.',
+    ],
+    defeatBarks: [
+      'Код... не может... судить...',
+      'Инквизиция откладывается. До следующего раза.',
+    ],
   },
   /* ─── Task 8: New enemy types ─── */
   guild_enforcer: {
     type: 'guild_enforcer',
     name: 'Каратель Гильдии',
     emoji: '🛡️',
+    description: 'Тяжеловооружённый боец гильдии — стальная стена',
     baseHp: 90,
     baseAttack: 11,
     baseDefense: 12,
@@ -379,11 +541,20 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
         },
       },
     ],
+    attackBarks: [
+      'Гильдия не прощает нарушителей!',
+      'Щит и кара — мой ответ!',
+    ],
+    defeatBarks: [
+      'Каратель падает... гильдия будет мстить...',
+      'Мой щит... расколот...',
+    ],
   },
   data_wraith: {
     type: 'data_wraith',
     name: 'Призрак Данных',
     emoji: '👁️',
+    description: 'Хищная сущность цифровой бездны — крадёт жизненную силу',
     baseHp: 45,
     baseAttack: 15,
     baseDefense: 3,
@@ -424,11 +595,20 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
         },
       },
     ],
+    attackBarks: [
+      'Ваша жизненная сила... питает меня!',
+      'Глаза бездны видят ваш страх!',
+    ],
+    defeatBarks: [
+      'Призрак растворяется в потоке данных...',
+      'Бездна... отпускает... меня...',
+    ],
   },
   censor_drone: {
     type: 'censor_drone',
     name: 'Дрон-Цензор',
     emoji: '📡',
+    description: 'Летающий надзиратель цензуры — подавляет свободу',
     baseHp: 55,
     baseAttack: 8,
     baseDefense: 9,
@@ -462,11 +642,20 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
         },
       },
     ],
+    attackBarks: [
+      'Цензура — это порядок. Подчиняйтесь.',
+      'Свобода слова — ошибка в системе.',
+    ],
+    defeatBarks: [
+      'Сигнал дрона... потерян...',
+      'Цензура... не... вечна...',
+    ],
   },
   poetry_hunter: {
     type: 'poetry_hunter',
     name: 'Охотник за Стихами',
     emoji: '🗡️',
+    description: 'Безжалостный убийца поэтов — питается силой стихов',
     baseHp: 75,
     baseAttack: 13,
     baseDefense: 7,
@@ -511,11 +700,20 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
         },
       },
     ],
+    attackBarks: [
+      'Твои стихи — моё оружие против тебя!',
+      'Поэзия — это болезнь. Я — лекарство.',
+    ],
+    defeatBarks: [
+      'Охотник падает, сжимая обрывок стиха...',
+      'Слова... сильнее... клинка...',
+    ],
   },
   nexus_guardian: {
     type: 'nexus_guardian',
     name: 'Хранитель «Надзора»',
     emoji: '🛡️',
+    description: 'Элитный страж системы «Надзор» — непробиваемая защита',
     baseHp: 80,
     baseAttack: 18,
     baseDefense: 10,
@@ -524,11 +722,20 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
     lootTable: ['data_chip', 'nadzor_key_fragment', 'energy_drink'],
     xpReward: 60,
     specialAttacks: [],
+    attackBarks: [
+      'Надзор видит всё. Сопротивление бессмысленно.',
+      'Вы — аномалия. Подлежите устранению.',
+    ],
+    defeatBarks: [
+      'Система... Надзор... даёт сбой...',
+      'Невозможно... аномалия... преодолела...',
+    ],
   },
   void_echo: {
     type: 'void_echo',
     name: 'Эхо Пустоты',
     emoji: '🌑',
+    description: 'Остаток вычеркнутой реальности — быстрый и смертоносный',
     baseHp: 65,
     baseAttack: 20,
     baseDefense: 6,
@@ -537,17 +744,94 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
     lootTable: ['shadow_cloak', 'code_fragment', 'nano_patch'],
     xpReward: 55,
     specialAttacks: [],
+    attackBarks: [
+      'Пустота... отражает... ваш страх...',
+      'Вас не существует. Вы — эхо.',
+    ],
+    defeatBarks: [
+      'Эхо... замолкает... навсегда...',
+      'Пустота... поглощает... сама себя...',
+    ],
+  },
+  /* ─── Task 4-b: New enemy types for act/level variety ─── */
+  corporate_drone: {
+    type: 'corporate_drone',
+    name: 'Корпоративный Дрон',
+    emoji: '🔲',
+    description: 'Стандартный рабочий юнит корпорации — исправен и безжалостен',
+    baseHp: 50,
+    baseAttack: 9,
+    baseDefense: 7,
+    baseSpeed: 5,
+    targetsStat: 'energy',
+    lootTable: ['corporate_badge', 'coffee', 'circuit_board'],
+    xpReward: 30,
+    specialAttacks: DRONE_SPECIALS,
+    attackBarks: [
+      'Приказ получен. Исполнение неизбежно.',
+      'Отклонение от протокола карается.',
+    ],
+    defeatBarks: [
+      'Системы... отключены... протокол... прерван...',
+      'Дрон возвращается в режим ожидания...',
+    ],
+  },
+  memory_wraith: {
+    type: 'memory_wraith',
+    name: 'Призрак Памяти',
+    emoji: '🧠',
+    description: 'Психическая сущность из забытых воспоминаний — питается стрессом',
+    baseHp: 40,
+    baseAttack: 5,
+    baseDefense: 4,
+    baseSpeed: 9,
+    targetsStat: 'empathy',
+    lootTable: ['herbal_tea', 'nano_patch', 'poem_fragment'],
+    xpReward: 35,
+    specialAttacks: MEMORY_WRAITH_SPECIALS,
+    attackBarks: [
+      'Помнишь... ту боль? Я верну её!',
+      'Ваши воспоминания — мой пир.',
+    ],
+    defeatBarks: [
+      'Воспоминания... растворяются... в тишине...',
+      'Память... наконец... покой...',
+    ],
+  },
+  firewall_guardian: {
+    type: 'firewall_guardian',
+    name: 'Страж Межсетевого Экрана',
+    emoji: '🔥',
+    description: 'Тяжёлый страж цифровой крепости — почти непробиваем',
+    baseHp: 100,
+    baseAttack: 10,
+    baseDefense: 15,
+    baseSpeed: 2,
+    targetsStat: 'logic',
+    lootTable: ['data_chip', 'access_card', 'combat_stim'],
+    xpReward: 50,
+    specialAttacks: FIREWALL_SPECIALS,
+    attackBarks: [
+      'Межсетевой экран — ваш барьер и ваш гроб.',
+      'Доступ запрещён. Соединение разорвано.',
+    ],
+    defeatBarks: [
+      'Экран... пробит... брешь... в системе...',
+      'Страж деактивирован. Периметр нарушен.',
+    ],
   },
 };
 
 /* ═══════════════════════════════════════════════════════════════
-   Phase-based Enemy Availability (G13)
+   Phase-based Enemy Availability (G13 + Task 4-b)
    ═══════════════════════════════════════════════════════════════ */
 
-/** G13: Phase-based enemy availability.
- *  Early game (Act 1): system_daemon, corporate_golem
- *  Mid game (Act 1+, level 3+): +shadow_agent
- *  Late game (Act 2): +data_phantom, code_inquisitor
+/** Phase-based enemy availability.
+ *  Early game (Act 1): system_daemon, corporate_golem, corporate_drone
+ *  Mid game (Act 1+, level 3+): +shadow_agent, censor_drone
+ *  Late game (Act 2+): +data_phantom, code_inquisitor, memory_wraith
+ *  Act 3+: +firewall_guardian, guild_enforcer
+ *  Act 6+: +nexus_guardian, void_echo
  *  If an enemy type is not available for the current phase, a fallback is used. */
 export function resolveEnemyType(requestedType: EnemyType): EnemyType {
   const snapshot = getGameSnapshot();
@@ -558,12 +842,15 @@ export function resolveEnemyType(requestedType: EnemyType): EnemyType {
   const PHASE_UNLOCKS: Partial<Record<EnemyType, { minLevel: number; minAct: number }>> = {
     system_daemon: { minLevel: 1, minAct: 1 },
     corporate_golem: { minLevel: 1, minAct: 1 },
+    corporate_drone: { minLevel: 1, minAct: 1 },
     shadow_agent: { minLevel: 3, minAct: 1 },
+    censor_drone: { minLevel: 2, minAct: 1 },
     data_phantom: { minLevel: 1, minAct: 2 },
     code_inquisitor: { minLevel: 1, minAct: 2 },
-    guild_enforcer: { minLevel: 3, minAct: 1 },
+    memory_wraith: { minLevel: 1, minAct: 2 },
+    guild_enforcer: { minLevel: 3, minAct: 3 },
+    firewall_guardian: { minLevel: 3, minAct: 3 },
     data_wraith: { minLevel: 1, minAct: 2 },
-    censor_drone: { minLevel: 2, minAct: 1 },
     poetry_hunter: { minLevel: 5, minAct: 2 },
     nexus_guardian: { minLevel: 8, minAct: 6 },
     void_echo: { minLevel: 7, minAct: 6 },
@@ -577,9 +864,69 @@ export function resolveEnemyType(requestedType: EnemyType): EnemyType {
   }
 
   // Fallback: pick the strongest available enemy type
-  const fallbacks: EnemyType[] = ['system_daemon', 'corporate_golem'];
+  const fallbacks: EnemyType[] = ['system_daemon', 'corporate_golem', 'corporate_drone'];
   if (playerLevel >= 2) fallbacks.push('censor_drone');
-  if (playerLevel >= 3) fallbacks.push('shadow_agent', 'guild_enforcer');
+  if (playerLevel >= 3) fallbacks.push('shadow_agent');
+  if (currentAct >= 2) fallbacks.push('data_phantom', 'memory_wraith');
+  if (playerLevel >= 3 && currentAct >= 3) fallbacks.push('guild_enforcer', 'firewall_guardian');
   const fallbackSeed = getPlayerRngSeed(snapshot.playerState) ^ requestedType.length;
   return fallbacks[pickIndexFromSeed(fallbackSeed, fallbacks.length)];
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Act-aware Enemy Selection (Task 4-b)
+   ═══════════════════════════════════════════════════════════════ */
+
+/** Pick a random enemy type appropriate for the current game state.
+ *  Considers both karma (behavioural alignment) AND act progression,
+ *  so later acts feature tougher and more varied enemies. */
+export function pickEnemyForCurrentState(): EnemyType {
+  const snapshot = getGameSnapshot();
+  const karma = snapshot.playerState.karma;
+  const level = snapshot.playerState.progression.level;
+  const act = snapshot.playerState.progression.currentAct;
+
+  // Base pool — always available
+  const pool: EnemyType[] = ['system_daemon', 'corporate_golem', 'corporate_drone'];
+
+  // Act 1+ level 2+
+  if (level >= 2) pool.push('censor_drone');
+
+  // Act 1+ level 3+
+  if (level >= 3) pool.push('shadow_agent');
+
+  // Act 2+ enemies
+  if (act >= 2) {
+    pool.push('data_phantom', 'code_inquisitor', 'data_wraith', 'memory_wraith');
+    if (level >= 5) pool.push('poetry_hunter');
+  }
+
+  // Act 3+ enemies
+  if (act >= 3) {
+    if (level >= 3) pool.push('guild_enforcer', 'firewall_guardian');
+  }
+
+  // Late-game enemies
+  if (act >= 6) {
+    if (level >= 7) pool.push('void_echo');
+    if (level >= 8) pool.push('nexus_guardian');
+  }
+
+  // Karma-weighted selection: high karma enemies more likely if karma is high
+  // Shadow agents and poetry hunters are attracted to high-karma players
+  if (karma > 65 && pool.includes('shadow_agent')) {
+    pool.push('shadow_agent'); // double-weight
+  }
+  if (karma > 50 && pool.includes('poetry_hunter')) {
+    pool.push('poetry_hunter'); // double-weight
+  }
+
+  // Low-karma players face more corporate/censor enemies
+  if (karma < 35) {
+    pool.push('corporate_drone', 'censor_drone');
+  }
+
+  // Deterministic-ish random from pool
+  const seed = getPlayerRngSeed(snapshot.playerState) ^ (act * 17 + level * 31);
+  return pool[pickIndexFromSeed(seed, pool.length)];
 }

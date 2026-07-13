@@ -31,8 +31,8 @@ export type MenuSavePreview = {
 
 export function buildMenuItems(hasSave: boolean): MenuItemDef[] {
   return [
-    { id: 'new', label: 'Новая игра', icon: '▶', accent: 'cyan' },
     { id: 'continue', label: 'Продолжить', icon: '▸', disabled: !hasSave, accent: 'emerald' },
+    { id: 'new', label: 'Новая игра', icon: '▶', accent: 'cyan' },
     { id: 'settings', label: 'Настройки', icon: '⚙', accent: 'amber' },
     { id: 'about', label: 'Об авторе', icon: '◈', accent: 'magenta' },
   ];
