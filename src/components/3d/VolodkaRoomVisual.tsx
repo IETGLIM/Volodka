@@ -18,6 +18,9 @@ import {
   createZabbixTexture,
 } from './sceneVisuals/volodkaRoom/monitorTextures';
 import { useVolodkaRoomAnimations } from './sceneVisuals/volodkaRoom/useVolodkaRoomAnimations';
+import { FlickeringCeilingLight } from './sceneVisuals/volodkaRoom/FlickeringCeilingLight';
+import { useMonitorGlitch } from './sceneVisuals/volodkaRoom/useMonitorGlitch';
+import { useZabbixAlertPulse } from './sceneVisuals/volodkaRoom/useZabbixAlertPulse';
 
 interface VolodkaRoomVisualProps {
   livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
@@ -258,6 +261,10 @@ export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
   const terminalTexRef = useRef<THREE.CanvasTexture | null>(null);
   const zabbixAlertRef = useRef<THREE.MeshStandardMaterial>(null);
 
+  // ── Ambient effect refs ──
+  const terminalMonitorGroupRef = useRef<THREE.Group>(null);
+  const ambientPulseLightRef = useRef<THREE.PointLight>(null);
+
   // ── Interactive object animation refs ──
   const roomDoorRef = useRef<THREE.Group>(null);
   const roomWardrobeDoorRef = useRef<THREE.Group>(null);
@@ -308,6 +315,10 @@ export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
     roomDoorRef,
     roomWardrobeDoorRef,
   });
+
+  // ── Ambient room effects ──
+  useMonitorGlitch(terminalMonitorGroupRef);
+  useZabbixAlertPulse(zabbixAlertRef, ambientPulseLightRef);
 
   return (
     <group>
@@ -386,7 +397,7 @@ export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
           { id: 'terminal', tex: terminalTexture, x: 0, rotY: 0 },
           { id: 'zabbix', tex: zabbixTexture, x: 0.62, rotY: -0.24 },
         ] as const).map(({ id, tex, x, rotY }) => (
-          <group key={id} position={[x, 1.12, -0.18]} rotation={[0, rotY, 0]}>
+          <group key={id} position={[x, 1.12, -0.18]} rotation={[0, rotY, 0]} ref={id === 'terminal' ? terminalMonitorGroupRef : undefined}>
             {/* Bezel */}
             <mesh geometry={geo_box_18} renderOrder={1} material={mat_13} />
             {/* Screen — nudged in front of bezel to avoid z-fighting / white seam */}
@@ -587,6 +598,18 @@ export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
 
       {/* ── Ceiling ambient glow panel (dim — noir apartment) ── */}
       <mesh position={[0, H - 0.02, -1]} rotation-x={Math.PI / 2} geometry={geo_pln_55} material={mat_42} />
+
+      {/* ── Ambient room effects ── */}
+      <FlickeringCeilingLight />
+      {/* Ambient pulse light — tinted red by Zabbix alerts via useZabbixAlertPulse */}
+      <pointLight
+        ref={ambientPulseLightRef}
+        position={[0, 2.2, -1.5]}
+        color="#ffe8cc"
+        intensity={1.8}
+        distance={7}
+        decay={2}
+      />
 
       {/* ═══════════════════════════════════════════════ */}
       {/* ── ADDITIONAL ROOM DETAILS ── */}

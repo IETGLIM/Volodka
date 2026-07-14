@@ -27,7 +27,7 @@ export function useInventoryPanel(
 ) {
   const inventory = usePlayerInventory();
   const equippedItems = useEquippedItems();
-  const { removeItem, addEnergy, addStress, addKarma, addSkill } = useConsumableActions();
+  const { removeItem, addEnergy, addStress, addKarma, addSkill, pushNotification } = useConsumableActions();
   const equipItem = useEquipItem();
   const unequipItem = useUnequipItem();
   const addLoreEntry = useAddLoreEntry();
@@ -195,25 +195,33 @@ export function useInventoryPanel(
           }
         }
 
-        const effectText = def.effects
-          .map((effect) => {
-            if (effect.stat === 'energy') return `Энергия ${effect.value > 0 ? '+' : ''}${effect.value}`;
-            if (effect.stat === 'stress') return `Стресс ${effect.value > 0 ? '+' : ''}${effect.value}`;
-            if (effect.stat === 'karma') return `Карма ${effect.value > 0 ? '+' : ''}${effect.value}`;
-            if (effect.skill) return `${effect.skill} +${effect.value}`;
-            return '';
-          })
-          .filter(Boolean)
-          .join(', ');
+        /* Push item-specific toast notification */
+        if (def.useMessage) {
+          const toastType = def.effects[0]?.stat === 'stress' ? 'stress' as const : 'energy' as const;
+          pushNotification(toastType, def.useMessage);
+          showFeedback(def.useMessage);
+        } else {
+          const effectText = def.effects
+            .map((effect) => {
+              if (effect.stat === 'energy') return `Энергия ${effect.value > 0 ? '+' : ''}${effect.value}`;
+              if (effect.stat === 'stress') return `Стресс ${effect.value > 0 ? '+' : ''}${effect.value}`;
+              if (effect.stat === 'karma') return `Карма ${effect.value > 0 ? '+' : ''}${effect.value}`;
+              if (effect.skill) return `${effect.skill} +${effect.value}`;
+              return '';
+            })
+            .filter(Boolean)
+            .join(', ');
 
-        let feedbackMsg = isConsumed
-          ? effectText || 'Использовано'
-          : `Изучено: ${effectText || 'Прочитано'}`;
+          let feedbackMsg = isConsumed
+            ? effectText || 'Использовано'
+            : `Изучено: ${effectText || 'Прочитано'}`;
 
-        if (def.linkedContent?.type === 'poem') feedbackMsg += ' → Стихотворение открыто';
-        else if (def.linkedContent?.type === 'lore') feedbackMsg += ' → Запись в журнале';
+          if (def.linkedContent?.type === 'poem') feedbackMsg += ' → Стихотворение открыто';
+          else if (def.linkedContent?.type === 'lore') feedbackMsg += ' → Запись в журнале';
 
-        showFeedback(feedbackMsg);
+          showFeedback(feedbackMsg);
+        }
+
         inventoryTelemetry.track({ action: 'use', itemId: item.id });
 
         if (isConsumed && item.quantity <= 1) {
@@ -231,6 +239,7 @@ export function useInventoryPanel(
       removeItem,
       onOpenPoetryBook,
       addLoreEntry,
+      pushNotification,
       showFeedback,
       runPendingAction,
       focusNextAfterRemoval,

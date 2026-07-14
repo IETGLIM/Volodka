@@ -14,7 +14,7 @@ import {
 import { useTouchDevice } from '@/hooks/useTouchDevice';
 import { useDiegeticNarrativeState } from '@/store/selectors';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, Package, DoorOpen, Sparkles, Hand } from 'lucide-react';
+import { Package, DoorOpen, Hand, MessageCircle, Eye } from 'lucide-react';
 import { eventBus } from '@/engine/EventBus';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { bottomInteractPromptPx } from '@/shared/constants/hudLayout';
@@ -38,37 +38,14 @@ function HintIcon({ type, color }: { type: InteractionHintType; color: string })
   const iconSize = 16;
   switch (type) {
     case 'npc':
-      return <User size={iconSize} color={color} />;
+      return <MessageCircle size={iconSize} color={color} />;
     case 'object':
       return <Package size={iconSize} color={color} />;
     case 'exit':
       return <DoorOpen size={iconSize} color={color} />;
     case 'item':
-      return <Sparkles size={iconSize} color={color} />;
+      return <Eye size={iconSize} color={color} />;
   }
-}
-
-/* ── Corner bracket decorations ── */
-function CornerBrackets({ accentColor }: { accentColor: string }) {
-  const bracketStyle = (position: string): React.CSSProperties => ({
-    position: 'absolute',
-    width: '10px',
-    height: '10px',
-    pointerEvents: 'none',
-    ...(position === 'tl' && { top: 0, left: 0, borderTop: `1px solid ${accentColor}`, borderLeft: `1px solid ${accentColor}` }),
-    ...(position === 'tr' && { top: 0, right: 0, borderTop: `1px solid ${accentColor}`, borderRight: `1px solid ${accentColor}` }),
-    ...(position === 'bl' && { bottom: 0, left: 0, borderBottom: `1px solid ${accentColor}`, borderLeft: `1px solid ${accentColor}` }),
-    ...(position === 'br' && { bottom: 0, right: 0, borderBottom: `1px solid ${accentColor}`, borderRight: `1px solid ${accentColor}` }),
-  });
-
-  return (
-    <>
-      <div style={bracketStyle('tl')} />
-      <div style={bracketStyle('tr')} />
-      <div style={bracketStyle('bl')} />
-      <div style={bracketStyle('br')} />
-    </>
-  );
 }
 
 /* ── Main component ── */
@@ -139,77 +116,62 @@ export function InteractionHintPopup() {
           style={{ zIndex: UI_LAYERS.HUD + 1, bottom: bottomInteractPromptPx(isTouchDevice) }}
         >
           <div
-            className="relative overflow-hidden"
+            className="interaction-hint-card"
             style={{
-              background: 'rgba(0, 8, 16, 0.7)',
-              backdropFilter: 'blur(12px)',
-              WebkitBackdropFilter: 'blur(12px)',
-              border: `1px solid ${accent.border}`,
-              borderRadius: '6px',
-              boxShadow: `${accent.glow}, inset 0 0 12px rgba(0,0,0,0.3)`,
-              minWidth: '160px',
+              borderColor: accent.border,
+              animation: reducedMotion ? 'none' : 'hint-border-pulse 2.5s ease-in-out infinite',
             }}
           >
-            {/* Scan-line sweep overlay */}
-            <div
-              className="absolute inset-0 pointer-events-none z-10"
-              style={{
-                background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px)',
-              }}
-            />
+            {/* Scan-line overlay */}
+            <div className="hint-scanlines" />
 
+            {/* Scan-sweep overlay */}
             {!reducedMotion ? (
-              <div
-                className="absolute inset-0 pointer-events-none z-20 overflow-hidden"
-              >
+              <div className="hint-sweep">
                 <div
-                  className="absolute left-0 right-0 h-4"
+                  className="hint-sweep-inner"
                   style={{
-                    top: '-20%',
                     background: `linear-gradient(180deg, transparent, ${accent.bg}, transparent)`,
-                    animation: 'hint-scan-sweep 3s ease-in-out infinite',
                   }}
                 />
               </div>
             ) : null}
 
             {/* Corner bracket decorations */}
-            <CornerBrackets accentColor={`${accent.color}55`} />
+            <div className="hint-bracket hint-bracket-tl" style={{ borderColor: `${accent.color}55` }} />
+            <div className="hint-bracket hint-bracket-tr" style={{ borderColor: `${accent.color}55` }} />
+            <div className="hint-bracket hint-bracket-bl" style={{ borderColor: `${accent.color}55` }} />
+            <div className="hint-bracket hint-bracket-br" style={{ borderColor: `${accent.color}55` }} />
 
             {/* Content */}
-            <div className="relative z-30 flex items-center gap-3 px-4 py-2.5">
+            <div className="hint-content">
               {/* Type icon */}
-              <div
-                className="flex-shrink-0"
-                style={{
-                  filter: `drop-shadow(0 0 4px ${accent.color}66)`,
-                }}
-              >
+              <div className="hint-icon-wrap" style={{ filter: `drop-shadow(0 0 6px ${accent.color}66)` }}>
                 <HintIcon type={hint.type} color={accent.color} />
               </div>
 
               {/* Key binding badge — shows touch icon on mobile, [E] on desktop */}
               <div
-                className="hint-key-badge flex-shrink-0 font-mono text-base font-bold px-2 py-0.5 rounded"
+                className="hint-key-badge"
                 style={{
                   background: accent.bg,
-                  border: `1px solid ${accent.border}`,
+                  borderColor: accent.border,
                   color: accent.color,
                   boxShadow: accent.glow,
-                  animation: reducedMotion ? undefined : 'hint-key-pulse 2s ease-in-out infinite',
+                  animation: reducedMotion ? 'none' : 'hint-key-pulse 2s ease-in-out infinite',
                 }}
               >
                 {showTouchHint ? <Hand size={16} /> : `[${hintKey}]`}
               </div>
 
               {/* Text content */}
-              <div className="flex flex-col min-w-0">
+              <div className="hint-text-area">
                 {/* Action label */}
                 <span
-                  className="font-mono text-sm font-semibold tracking-wide truncate"
+                  className="hint-label"
                   style={{
                     color: accent.color,
-                    textShadow: `0 0 6px ${accent.color}44`,
+                    textShadow: `0 0 8px ${accent.color}44`,
                   }}
                 >
                   {hint.label}
@@ -218,10 +180,8 @@ export function InteractionHintPopup() {
                 {/* Optional description */}
                 {hint.description && (
                   <span
-                    className="font-mono text-[10px] tracking-wider truncate"
-                    style={{
-                      color: `${accent.color}88`,
-                    }}
+                    className="hint-description"
+                    style={{ color: `${accent.color}88` }}
                   >
                     {hint.description}
                   </span>
@@ -231,10 +191,8 @@ export function InteractionHintPopup() {
 
             {/* Bottom accent line */}
             <div
-              className="absolute bottom-0 left-2 right-2 h-px"
-              style={{
-                background: `linear-gradient(90deg, transparent, ${accent.color}44, transparent)`,
-              }}
+              className="hint-bottom-line"
+              style={{ background: `linear-gradient(90deg, transparent, ${accent.color}44, transparent)` }}
             />
           </div>
         </motion.div>

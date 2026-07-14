@@ -22,6 +22,8 @@ export interface ItemDefinition {
   stackable: boolean;
   maxStack: number;
   effects: ItemEffect[];
+  /** Custom toast message shown when the item is used. */
+  useMessage?: string;
   questRelated?: boolean; // cannot be dropped if true
   linkedContent?: LinkedContent; // for books that open poems/lore
   equipmentSlot?: string; // slot name for equipment items
@@ -41,6 +43,7 @@ const ITEMS: ItemDefinition[] = [
     stackable: true,
     maxStack: 10,
     effects: [{ stat: 'energy', value: 15 }],
+    useMessage: 'Кофе: бодрость +10 на 60с',
   },
   {
     id: 'cigarettes',
@@ -109,6 +112,7 @@ const ITEMS: ItemDefinition[] = [
       { stat: 'stress', value: -5 },
       { stat: 'energy', value: 5 },
     ],
+    useMessage: 'Чай с мятой: спокойствие +5 на 60с',
   },
 
   /* ── Quest Items ── */
@@ -568,12 +572,13 @@ const ITEMS: ItemDefinition[] = [
     id: 'lighter',
     name: 'Зажигалка',
     description: 'Обычная зажигалка. Ничего особенного.',
-    category: 'misc',
+    category: 'consumable',
     rarity: 'common',
     icon: 'Flame',
     stackable: true,
     maxStack: 1,
     effects: [],
+    useMessage: 'Зажигалка: свет в темноте',
   },
 
   /* ── Crafting Ingredients ── */

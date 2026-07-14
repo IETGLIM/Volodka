@@ -46,17 +46,7 @@ export function NPCProximityMarker({
           }}
           zIndexRange={[0, 0]}
         >
-          <div
-            style={{
-              color: '#ffb828',
-              fontSize: '14px',
-              fontFamily: 'monospace',
-              fontWeight: 700,
-              textShadow: '0 0 8px rgba(255,184,40,0.6), 0 0 16px rgba(255,184,40,0.3)',
-              lineHeight: 1,
-              animation: 'npc-dialogue-pulse 2.5s ease-in-out infinite',
-            }}
-          >
+          <div className="npc-dialogue-indicator">
             !
           </div>
         </Html>

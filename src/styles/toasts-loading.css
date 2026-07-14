@@ -12,13 +12,54 @@
   gap: 10px;
   padding: 10px 14px;
   border-radius: 10px;
-  border-left: 3px solid var(--toast-border-color);
+  border-left: 2px solid var(--toast-border-color);
   background: linear-gradient(135deg, rgba(10, 10, 20, 0.92) 0%, rgba(5, 8, 18, 0.88) 100%);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   box-shadow: var(--toast-shadow), inset 0 1px 0 rgba(255,255,255,0.03);
   transition: box-shadow 0.3s ease, transform 0.2s ease;
   outline: none;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ─── Scanline overlay on toast cards ─── */
+.notification-toast-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.04) 2px,
+    rgba(0, 0, 0, 0.04) 4px
+  );
+  pointer-events: none;
+  z-index: var(--z-decor-scanline);
+  border-radius: inherit;
+}
+
+/* ─── Glowing left-border accent via pseudo-element ─── */
+.notification-toast-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--toast-border-color);
+  box-shadow: 0 0 6px var(--toast-border-color), 0 0 12px var(--toast-border-color);
+  filter: blur(1px);
+  opacity: 0.7;
+  pointer-events: none;
+  z-index: var(--z-decor-bracket);
+  animation: toast-border-glow 2.5s ease-in-out infinite;
+}
+
+@keyframes toast-border-glow {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 0.9; }
 }
 
 .notification-toast-card[data-hovered='true'],
@@ -27,11 +68,11 @@
 }
 
 .notification-toast-card[data-toast-type='karma'] {
-  --toast-border-color: var(--toast-karma-border, #d97706);
-  --toast-text-accent: var(--toast-karma-text, #fbbf24);
-  --toast-icon-bg: var(--toast-karma-icon-bg, rgba(217, 119, 6, 0.15));
-  --toast-shadow: 0 0 16px var(--toast-karma-glow, rgba(217, 119, 6, 0.4)), 0 2px 8px rgba(0, 0, 0, 0.4);
-  --toast-shadow-hover: 0 0 24px var(--toast-karma-glow, rgba(217, 119, 6, 0.4)), 0 2px 12px rgba(0, 0, 0, 0.5);
+  --toast-border-color: var(--cyber-amber);
+  --toast-text-accent: var(--cyber-amber);
+  --toast-icon-bg: rgba(255, 171, 0, 0.15);
+  --toast-shadow: 0 0 16px rgba(var(--cyber-amber-rgb), 0.4), 0 2px 8px rgba(0, 0, 0, 0.4);
+  --toast-shadow-hover: 0 0 24px rgba(var(--cyber-amber-rgb), 0.4), 0 2px 12px rgba(0, 0, 0, 0.5);
 }
 
 .notification-toast-card[data-toast-type='energy'] {
@@ -43,11 +84,11 @@
 }
 
 .notification-toast-card[data-toast-type='stress'] {
-  --toast-border-color: var(--toast-stress-border, #dc2626);
-  --toast-text-accent: var(--toast-stress-text, #f87171);
-  --toast-icon-bg: var(--toast-stress-icon-bg, rgba(220, 38, 38, 0.15));
-  --toast-shadow: 0 0 16px var(--toast-stress-glow, rgba(220, 38, 38, 0.4)), 0 2px 8px rgba(0, 0, 0, 0.4);
-  --toast-shadow-hover: 0 0 24px var(--toast-stress-glow, rgba(220, 38, 38, 0.4)), 0 2px 12px rgba(0, 0, 0, 0.5);
+  --toast-border-color: var(--cyber-rose);
+  --toast-text-accent: var(--cyber-rose);
+  --toast-icon-bg: rgba(255, 23, 68, 0.15);
+  --toast-shadow: 0 0 16px rgba(255, 23, 68, 0.4), 0 2px 8px rgba(0, 0, 0, 0.4);
+  --toast-shadow-hover: 0 0 24px rgba(255, 23, 68, 0.4), 0 2px 12px rgba(0, 0, 0, 0.5);
 }
 
 .notification-toast-card[data-toast-type='skill'] {
@@ -59,19 +100,19 @@
 }
 
 .notification-toast-card[data-toast-type='poem'] {
-  --toast-border-color: var(--toast-poem-border, #7c3aed);
-  --toast-text-accent: var(--toast-poem-text, #a78bfa);
-  --toast-icon-bg: var(--toast-poem-icon-bg, rgba(124, 58, 237, 0.15));
-  --toast-shadow: 0 0 16px var(--toast-poem-glow, rgba(124, 58, 237, 0.4)), 0 2px 8px rgba(0, 0, 0, 0.4);
-  --toast-shadow-hover: 0 0 24px var(--toast-poem-glow, rgba(124, 58, 237, 0.4)), 0 2px 12px rgba(0, 0, 0, 0.5);
+  --toast-border-color: var(--cyber-cyan);
+  --toast-text-accent: var(--cyber-cyan);
+  --toast-icon-bg: rgba(0, 229, 255, 0.15);
+  --toast-shadow: 0 0 16px rgba(var(--cyber-cyan-rgb), 0.4), 0 2px 8px rgba(0, 0, 0, 0.4);
+  --toast-shadow-hover: 0 0 24px rgba(var(--cyber-cyan-rgb), 0.4), 0 2px 12px rgba(0, 0, 0, 0.5);
 }
 
 .notification-toast-card[data-toast-type='quest'] {
-  --toast-border-color: var(--toast-quest-border, #ca8a04);
-  --toast-text-accent: var(--toast-quest-text, #facc15);
-  --toast-icon-bg: var(--toast-quest-icon-bg, rgba(202, 138, 4, 0.15));
-  --toast-shadow: 0 0 16px var(--toast-quest-glow, rgba(202, 138, 4, 0.4)), 0 2px 8px rgba(0, 0, 0, 0.4);
-  --toast-shadow-hover: 0 0 24px var(--toast-quest-glow, rgba(202, 138, 4, 0.4)), 0 2px 12px rgba(0, 0, 0, 0.5);
+  --toast-border-color: var(--cyber-amber);
+  --toast-text-accent: var(--cyber-amber);
+  --toast-icon-bg: rgba(255, 171, 0, 0.15);
+  --toast-shadow: 0 0 16px rgba(var(--cyber-amber-rgb), 0.4), 0 2px 8px rgba(0, 0, 0, 0.4);
+  --toast-shadow-hover: 0 0 24px rgba(var(--cyber-amber-rgb), 0.4), 0 2px 12px rgba(0, 0, 0, 0.5);
 }
 
 .notification-toast-icon {
@@ -86,6 +127,8 @@
   font-size: 14px;
   font-weight: 700;
   flex-shrink: 0;
+  position: relative;
+  z-index: 1;
 }
 
 .notification-toast-body {
@@ -93,24 +136,28 @@
   flex-direction: column;
   min-width: 0;
   flex: 1;
+  position: relative;
+  z-index: 1;
 }
 
 .notification-toast-message {
-  color: rgba(255, 255, 255, 0.92);
+  color: rgba(255, 255, 255, 0.95);
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1.3;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.08);
 }
 
 .notification-toast-delta {
   color: var(--toast-text-accent);
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.2;
-  margin-top: 1px;
+  margin-top: 2px;
+  opacity: 0.8;
 }
 
 /* ══════════════════════════════════════════════════════════════

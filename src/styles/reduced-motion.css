@@ -63,7 +63,12 @@
   .narrative-choice-hover:hover,
   .panel-header-line,
   .loading-bar-glow,
-  .boot-start-btn::before {
+  .boot-start-btn::before,
+  .notification-toast-card::before,
+  .interaction-hint-card,
+  .hint-key-badge,
+  .hint-sweep-inner,
+  .npc-dialogue-indicator {
     animation: none !important;
   }
 

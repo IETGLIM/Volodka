@@ -2,13 +2,13 @@
    SESSION 7: InteractionHintPopup
    ══════════════════════════════════════════════════════════════ */
 
-/* ─── Key badge pulse animation — subtle glow breathing ─── */
+/* ─── Key badge pulse animation — stronger glow breathing ─── */
 @keyframes hint-key-pulse {
   0%, 100% {
-    box-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.2), inset 0 0 2px rgb(var(--cyber-cyan-rgb) / 0.05);
+    box-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.3), inset 0 0 2px rgb(var(--cyber-cyan-rgb) / 0.08);
   }
   50% {
-    box-shadow: 0 0 10px rgb(var(--cyber-cyan-rgb) / 0.4), 0 0 20px rgb(var(--cyber-cyan-rgb) / 0.15), inset 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.1);
+    box-shadow: 0 0 12px rgb(var(--cyber-cyan-rgb) / 0.5), 0 0 24px rgb(var(--cyber-cyan-rgb) / 0.2), inset 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.12);
   }
 }
 
@@ -30,10 +30,195 @@
   }
 }
 
+/* ─── Border glow pulse for the hint card ─── */
+@keyframes hint-border-pulse {
+  0%, 100% {
+    box-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.15), 0 0 16px rgb(var(--cyber-cyan-rgb) / 0.06), inset 0 0 12px rgba(0, 0, 0, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 14px rgb(var(--cyber-cyan-rgb) / 0.3), 0 0 28px rgb(var(--cyber-cyan-rgb) / 0.1), 0 0 48px rgb(var(--cyber-cyan-rgb) / 0.04), inset 0 0 12px rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* ─── NPC dialogue indicator pulse (used by NPCProximityMarker) ─── */
+@keyframes npc-dialogue-pulse {
+  0%, 100% {
+    opacity: 0.8;
+    transform: scale(1);
+    text-shadow: 0 0 8px rgba(255, 184, 40, 0.6), 0 0 16px rgba(255, 184, 40, 0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+    text-shadow: 0 0 12px rgba(255, 184, 40, 0.8), 0 0 24px rgba(255, 184, 40, 0.4), 0 0 40px rgba(255, 184, 40, 0.15);
+  }
+}
+
 /* ─── Interaction hint popup base styles ─── */
 .interaction-hint-popup {
   font-family: 'Geist Mono', monospace;
   isolation: isolate;
+}
+
+/* ─── Hint card — glass morphism with enhanced backdrop ─── */
+.interaction-hint-card {
+  background: rgba(0, 8, 16, 0.75);
+  backdrop-filter: blur(20px) saturate(1.3);
+  -webkit-backdrop-filter: blur(20px) saturate(1.3);
+  border-radius: 8px;
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.35);
+  box-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.15), 0 0 16px rgb(var(--cyber-cyan-rgb) / 0.06), inset 0 0 12px rgba(0, 0, 0, 0.3);
+  min-width: 180px;
+  position: relative;
+  overflow: hidden;
+  animation: hint-border-pulse 2.5s ease-in-out infinite;
+}
+
+/* ─── Hint card scanline overlay ─── */
+.interaction-hint-card .hint-scanlines {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 0, 0, 0.03) 2px, rgba(0, 0, 0, 0.03) 4px);
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* ─── Hint card scan-sweep overlay ─── */
+.interaction-hint-card .hint-sweep {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 16px;
+  top: -20%;
+  pointer-events: none;
+  z-index: 20;
+  overflow: hidden;
+}
+
+.interaction-hint-card .hint-sweep-inner {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(180deg, transparent, rgb(var(--cyber-cyan-rgb) / 0.08), transparent);
+  animation: hint-scan-sweep 3s ease-in-out infinite;
+}
+
+/* ─── Hint content row ─── */
+.hint-content {
+  position: relative;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+}
+
+/* ─── Hint icon with glow ─── */
+.hint-icon-wrap {
+  flex-shrink: 0;
+  filter: drop-shadow(0 0 6px rgb(var(--cyber-cyan-rgb) / 0.4));
+  transition: filter 0.2s ease;
+}
+
+/* ─── Key badge — monospace, bold, glowing ─── */
+.hint-key-badge {
+  flex-shrink: 0;
+  font-family: 'Geist Mono', monospace;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgb(var(--cyber-cyan-rgb) / 0.1);
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.4);
+  color: rgb(var(--cyber-cyan-rgb));
+  animation: hint-key-pulse 2s ease-in-out infinite;
+}
+
+/* ─── Hint text area ─── */
+.hint-text-area {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* ─── Hint action label — bold, glowing ─── */
+.hint-label {
+  font-family: 'Geist Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: rgb(var(--cyber-cyan-rgb));
+  text-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ─── Hint description — lighter, smaller ─── */
+.hint-description {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: rgb(var(--cyber-cyan-rgb) / 0.6);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 1px;
+}
+
+/* ─── Hint corner brackets ─── */
+.hint-bracket {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  pointer-events: none;
+}
+
+.hint-bracket-tl {
+  top: 0;
+  left: 0;
+  border-top: 1px solid rgb(var(--cyber-cyan-rgb) / 0.4);
+  border-left: 1px solid rgb(var(--cyber-cyan-rgb) / 0.4);
+}
+
+.hint-bracket-tr {
+  top: 0;
+  right: 0;
+  border-top: 1px solid rgb(var(--cyber-cyan-rgb) / 0.4);
+  border-right: 1px solid rgb(var(--cyber-cyan-rgb) / 0.4);
+}
+
+.hint-bracket-bl {
+  bottom: 0;
+  left: 0;
+  border-bottom: 1px solid rgb(var(--cyber-cyan-rgb) / 0.4);
+  border-left: 1px solid rgb(var(--cyber-cyan-rgb) / 0.4);
+}
+
+.hint-bracket-br {
+  bottom: 0;
+  right: 0;
+  border-bottom: 1px solid rgb(var(--cyber-cyan-rgb) / 0.4);
+  border-right: 1px solid rgb(var(--cyber-cyan-rgb) / 0.4);
+}
+
+/* ─── Hint bottom accent line ─── */
+.hint-bottom-line {
+  position: absolute;
+  bottom: 0;
+  left: 8px;
+  right: 8px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgb(var(--cyber-cyan-rgb) / 0.3), transparent);
+}
+
+/* ─── NPC dialogue indicator above NPC heads ─── */
+.npc-dialogue-indicator {
+  color: #ffb828;
+  font-size: 14px;
+  font-family: 'Geist Mono', monospace;
+  font-weight: 700;
+  line-height: 1;
+  animation: npc-dialogue-pulse 2.5s ease-in-out infinite;
 }
 
 /* ══════════════════════════════════════════════════════════════

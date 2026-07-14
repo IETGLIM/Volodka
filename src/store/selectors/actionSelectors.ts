@@ -63,6 +63,7 @@ export function useConsumableActions() {
     addStress: s.addStress,
     addKarma: s.addKarma,
     addSkill: s.addSkill,
+    pushNotification: s.pushNotification,
   }));
 }
 
