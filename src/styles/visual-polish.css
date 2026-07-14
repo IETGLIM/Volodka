@@ -424,3 +424,114 @@
   border-color: rgba(251, 113, 133, 0.2);
   background: rgba(251, 113, 133, 0.05);
 }
+
+/* ══════════════════════════════════════════════════════════════
+   SESSION 6: Round 6 — Additional Visual Polish Utilities
+   ══════════════════════════════════════════════════════════════ */
+
+/* ─── Scene transition flash — full-screen white/cyan flash ─── */
+@keyframes scene-transition-flash-anim {
+  0% { opacity: 0; }
+  15% { opacity: 0.7; }
+  30% { opacity: 0.9; }
+  50% { opacity: 0.6; }
+  100% { opacity: 0; }
+}
+
+.scene-transition-flash {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    rgb(var(--cyber-cyan-rgb) / 0.15),
+    rgba(255, 255, 255, 0.08)
+  );
+  animation: scene-transition-flash-anim 0.8s ease-out forwards;
+}
+
+/* ─── Loading bar shimmer — enhanced shimmer + pulsing glow ─── */
+@keyframes loading-bar-shimmer-sweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(300%); }
+}
+
+@keyframes loading-bar-glow-pulse {
+  0%, 100% { box-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.2); }
+  50% { box-shadow: 0 0 12px rgb(var(--cyber-cyan-rgb) / 0.4), 0 0 24px rgb(var(--cyber-cyan-rgb) / 0.15); }
+}
+
+.loading-bar-shimmer {
+  position: relative;
+  overflow: hidden;
+  animation: loading-bar-glow-pulse 2s ease-in-out infinite;
+}
+
+.loading-bar-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.15) 40%,
+    rgba(255, 255, 255, 0.25) 50%,
+    rgba(255, 255, 255, 0.15) 60%,
+    transparent 100%
+  );
+  animation: loading-bar-shimmer-sweep 1.8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* ─── Tooltip hover lift — tooltip that lifts and fades in on hover ─── */
+.tooltip-hover-lift {
+  position: relative;
+}
+
+.tooltip-hover-lift::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  padding: 6px 12px;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.95), rgba(10, 15, 30, 0.92));
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.2);
+  border-radius: 6px;
+  color: rgba(226, 232, 240, 0.9);
+  font-size: 11px;
+  font-family: 'Geist Mono', monospace;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  z-index: var(--z-tooltip, 999);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.1);
+}
+
+.tooltip-hover-lift:hover::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ─── Icon bounce subtle — gentle bounce for icons ─── */
+@keyframes icon-bounce-subtle-anim {
+  0%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-3px); }
+  60% { transform: translateY(-1px); }
+}
+
+.icon-bounce-subtle {
+  animation: icon-bounce-subtle-anim 2s ease-in-out infinite;
+}
+
+/* ─── Text fade-in-up — text that fades in and slides up ─── */
+@keyframes text-fade-in-up-anim {
+  0% { opacity: 0; transform: translateY(12px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.text-fade-in-up {
+  animation: text-fade-in-up-anim 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}

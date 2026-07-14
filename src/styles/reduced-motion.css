@@ -169,3 +169,219 @@ html[data-reduced-motion='true'] .ambient-particle {
 .thought-pulse {
   animation: none !important;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   Round 6: New animation overrides (atmospheric, HUD, visual)
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Atmospheric Polish (Round 6) ── */
+
+/* Data rain falling lines */
+.data-rain::before {
+  animation: none !important;
+  display: none;
+}
+
+/* Pulsing dot */
+.pulsing-dot {
+  animation: none !important;
+  opacity: 0.8;
+}
+
+/* Text scramble glitch */
+.text-scramble-glitch {
+  animation: none !important;
+  clip-path: none;
+}
+
+/* Progress bar cyber scan highlight */
+.progress-bar-cyber .progress-bar-cyber-fill::after {
+  animation: none !important;
+  display: none;
+}
+
+/* ── HUD Extensions (Round 6) ── */
+
+/* Panel slide-in animations */
+.panel-slide-in-left,
+.panel-slide-in-right {
+  animation: none !important;
+  opacity: 1;
+  transform: none;
+}
+
+/* Stat change flash */
+.stat-change-flash,
+.stat-change-flash-positive,
+.stat-change-flash-negative {
+  animation: none !important;
+  background-color: transparent;
+  box-shadow: none;
+}
+
+/* ── Visual Polish (Round 6) ── */
+
+/* Scene transition flash */
+.scene-transition-flash {
+  animation: none !important;
+  display: none;
+}
+
+/* Loading bar shimmer + glow */
+.loading-bar-shimmer {
+  animation: none !important;
+  box-shadow: none;
+}
+
+.loading-bar-shimmer::after {
+  animation: none !important;
+  display: none;
+}
+
+/* Icon bounce subtle */
+.icon-bounce-subtle {
+  animation: none !important;
+}
+
+/* Text fade-in-up */
+.text-fade-in-up {
+  animation: none !important;
+  opacity: 1;
+  transform: none;
+}
+
+/* ── Also disable in prefers-reduced-motion media query ── */
+
+@media (prefers-reduced-motion: reduce) {
+  /* Atmospheric Round 6 */
+  .data-rain::before {
+    animation: none !important;
+    display: none;
+  }
+
+  .pulsing-dot {
+    animation: none !important;
+    opacity: 0.8;
+  }
+
+  .text-scramble-glitch {
+    animation: none !important;
+    clip-path: none;
+  }
+
+  .progress-bar-cyber .progress-bar-cyber-fill::after {
+    animation: none !important;
+    display: none;
+  }
+
+  /* HUD Extensions Round 6 */
+  .panel-slide-in-left,
+  .panel-slide-in-right {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+  }
+
+  .stat-change-flash,
+  .stat-change-flash-positive,
+  .stat-change-flash-negative {
+    animation: none !important;
+    background-color: transparent;
+    box-shadow: none;
+  }
+
+  /* Visual Polish Round 6 */
+  .scene-transition-flash {
+    animation: none !important;
+    display: none;
+  }
+
+  .loading-bar-shimmer {
+    animation: none !important;
+    box-shadow: none;
+  }
+
+  .loading-bar-shimmer::after {
+    animation: none !important;
+    display: none;
+  }
+
+  .icon-bounce-subtle {
+    animation: none !important;
+  }
+
+  .text-fade-in-up {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+  }
+
+  .tooltip-hover-lift::after {
+    transition: none !important;
+  }
+}
+
+/* ── Also disable in data-reduced-motion attribute ── */
+html[data-reduced-motion='true'] .data-rain::before {
+  animation: none !important;
+  display: none;
+}
+
+html[data-reduced-motion='true'] .pulsing-dot {
+  animation: none !important;
+  opacity: 0.8;
+}
+
+html[data-reduced-motion='true'] .text-scramble-glitch {
+  animation: none !important;
+  clip-path: none;
+}
+
+html[data-reduced-motion='true'] .progress-bar-cyber .progress-bar-cyber-fill::after {
+  animation: none !important;
+  display: none;
+}
+
+html[data-reduced-motion='true'] .panel-slide-in-left,
+html[data-reduced-motion='true'] .panel-slide-in-right {
+  animation: none !important;
+  opacity: 1;
+  transform: none;
+}
+
+html[data-reduced-motion='true'] .stat-change-flash,
+html[data-reduced-motion='true'] .stat-change-flash-positive,
+html[data-reduced-motion='true'] .stat-change-flash-negative {
+  animation: none !important;
+  background-color: transparent;
+  box-shadow: none;
+}
+
+html[data-reduced-motion='true'] .scene-transition-flash {
+  animation: none !important;
+  display: none;
+}
+
+html[data-reduced-motion='true'] .loading-bar-shimmer {
+  animation: none !important;
+  box-shadow: none;
+}
+
+html[data-reduced-motion='true'] .loading-bar-shimmer::after {
+  animation: none !important;
+  display: none;
+}
+
+html[data-reduced-motion='true'] .icon-bounce-subtle {
+  animation: none !important;
+}
+
+html[data-reduced-motion='true'] .text-fade-in-up {
+  animation: none !important;
+  opacity: 1;
+  transform: none;
+}
+
+html[data-reduced-motion='true'] .tooltip-hover-lift::after {
+  transition: none !important;
+}

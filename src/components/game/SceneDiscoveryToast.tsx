@@ -152,7 +152,7 @@ export function SceneDiscoveryToast() {
 
             {/* Scene name */}
             <span
-              className="text-lg font-bold text-cyan-100 tracking-wide text-center"
+              className="text-lg font-bold text-cyan-100 tracking-wide text-center text-fade-in-up"
               style={{ textShadow: '0 0 12px rgb(var(--cyber-cyan-rgb) / 0.3)' }}
             >
               {discovery.sceneName}

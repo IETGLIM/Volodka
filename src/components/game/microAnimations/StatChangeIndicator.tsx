@@ -33,7 +33,7 @@ export const StatChangeIndicator = memo(function StatChangeIndicator({
       animate={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -40, scale: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: reducedMotion ? 0.01 : 1.5, ease: 'easeOut' }}
-      className="absolute pointer-events-none select-none font-mono font-bold text-sm whitespace-nowrap"
+      className={`absolute pointer-events-none select-none font-mono font-bold text-sm whitespace-nowrap stat-change-flash ${isPositive ? 'stat-change-flash-positive' : 'stat-change-flash-negative'}`}
       style={{
         left: x,
         top: y,

@@ -1,11 +1,13 @@
 import { createInventoryItem } from '@/data/items';
 import { emitAppEvent } from '@/shared/events/appEventBus';
+import { playSfx } from '@/engine/audio/interactionSfx';
 import {
   dispatchStateAction,
   tryAddInventoryItem,
 } from '@/shared/gameBridge/stateDispatcher';
 import { requestSceneTransitionFromBridge } from '@/shared/gameBridge/sceneTransitionBridge';
 import { resolveCanonicalNpcId } from '@/shared/npcIdAliases';
+import { eventBus } from '@/engine/EventBus';
 import type { StoryEffect, TrainablePlayerSkill, EnemyType, SceneId } from '@/shared/types/game';
 
 /**
@@ -118,6 +120,15 @@ export function applyEffects(
         if (fx.nodeId) {
           dispatchStateAction({ type: 'story/visitNode', nodeId: fx.nodeId });
           dispatchStateAction({ type: 'story/setCurrentNodeId', nodeId: fx.nodeId });
+        }
+        break;
+      case 'showThought':
+        if (fx.thought) {
+          playSfx('examine');
+          eventBus.emit('volodka:thought', {
+            text: fx.thought,
+            duration: fx.thoughtDuration,
+          });
         }
         break;
     }

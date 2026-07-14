@@ -298,6 +298,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     },
     effects: [
       { type: 'setFlag', flag: 'examined_room_bed', flagValue: true },
+      { type: 'showThought', thought: 'Последний раз спал... когда? Три часа? Или это был вчера?' },
     ],
   },
   {
@@ -314,6 +315,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     },
     effects: [
       { type: 'setFlag', flag: 'examined_room_fan', flagValue: true },
+      { type: 'showThought', thought: 'Крутится и крутится... как сервер в бесконечном цикле. Только без перспективы на перезагрузку.', thoughtDuration: 5000 },
     ],
   },
   {
@@ -331,6 +333,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     effects: [
       { type: 'setFlag', flag: 'examined_photo_frame', flagValue: true },
       { type: 'discoverLore', loreId: 'lore_volodka_family_photo' },
+      { type: 'showThought', thought: '...мама. Она бы сказала: «Володя, перестань смотреть в монитор — живи.» Легко говорить. Ей не надо было чинить Сеть.', thoughtDuration: 6000 },
     ],
   },
 

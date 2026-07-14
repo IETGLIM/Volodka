@@ -408,3 +408,120 @@
   from { opacity: 1; transform: translateY(0); }
   to { opacity: 0; transform: translateY(-4px); }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   SESSION 6: Round 6 — HUD Extension Utilities
+   ══════════════════════════════════════════════════════════════ */
+
+/* ─── Minimap scanline overlay ─── */
+.minimap-scanline {
+  position: relative;
+}
+
+.minimap-scanline::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    transparent 3px,
+    rgba(0, 229, 255, 0.03) 3px,
+    rgba(0, 229, 255, 0.03) 4px
+  );
+  pointer-events: none;
+  z-index: 1;
+  border-radius: inherit;
+}
+
+/* ─── Quest step indicator — numbered step with glow ring ─── */
+.quest-step-indicator {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: rgb(var(--cyber-cyan-rgb) / 0.9);
+  background: rgba(0, 229, 255, 0.08);
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.3);
+  box-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.15);
+}
+
+/* ─── HUD horizontal divider with center dot/orb ─── */
+.hud-horizontal-divider {
+  position: relative;
+  height: 1px;
+  width: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(148, 163, 184, 0.15) 20%,
+    rgba(148, 163, 184, 0.25) 50%,
+    rgba(148, 163, 184, 0.15) 80%,
+    transparent 100%
+  );
+}
+
+.hud-horizontal-divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgb(var(--cyber-cyan-rgb) / 0.5);
+  box-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.3);
+}
+
+/* ─── Panel slide-in from left ─── */
+@keyframes panel-slide-in-left {
+  0% { transform: translateX(-100%); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+
+.panel-slide-in-left {
+  animation: panel-slide-in-left 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ─── Panel slide-in from right ─── */
+@keyframes panel-slide-in-right {
+  0% { transform: translateX(100%); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+
+.panel-slide-in-right {
+  animation: panel-slide-in-right 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ─── Stat change flash — brief flash when a stat changes ─── */
+@keyframes stat-change-flash-green {
+  0% { background-color: rgba(52, 211, 153, 0.25); box-shadow: 0 0 8px rgba(52, 211, 153, 0.3); }
+  100% { background-color: transparent; box-shadow: none; }
+}
+
+@keyframes stat-change-flash-red {
+  0% { background-color: rgba(244, 63, 94, 0.25); box-shadow: 0 0 8px rgba(244, 63, 94, 0.3); }
+  100% { background-color: transparent; box-shadow: none; }
+}
+
+.stat-change-flash {
+  animation-duration: 0.6s;
+  animation-timing-function: ease-out;
+  animation-fill-mode: forwards;
+  border-radius: 4px;
+}
+
+.stat-change-flash-positive {
+  animation-name: stat-change-flash-green;
+}
+
+.stat-change-flash-negative {
+  animation-name: stat-change-flash-red;
+}

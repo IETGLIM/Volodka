@@ -189,3 +189,269 @@
   0%, 100% { box-shadow: 0 0 15px rgba(147, 130, 220, 0.06); }
   50% { box-shadow: 0 0 25px rgba(147, 130, 220, 0.15); }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   SESSION 6: Round 6 — Extended Atmospheric Utilities
+   ══════════════════════════════════════════════════════════════ */
+
+/* ─── Cyber grid background pattern overlay ─── */
+.cyber-grid-bg {
+  background-image:
+    linear-gradient(rgba(0, 229, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 229, 255, 0.04) 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-position: center center;
+}
+
+/* ─── Data rain — Matrix-style falling vertical lines ─── */
+@keyframes data-rain-fall {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 -600px; }
+}
+
+.data-rain {
+  position: relative;
+  overflow: hidden;
+}
+
+.data-rain::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent 0px,
+      transparent 18px,
+      rgb(var(--cyber-cyan-rgb) / 0.025) 18px,
+      rgb(var(--cyber-cyan-rgb) / 0.025) 19px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent 0px,
+      transparent 42px,
+      rgb(var(--cyber-cyan-rgb) / 0.015) 42px,
+      rgb(var(--cyber-cyan-rgb) / 0.015) 43px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent 0px,
+      transparent 71px,
+      rgb(var(--cyber-cyan-rgb) / 0.035) 71px,
+      rgb(var(--cyber-cyan-rgb) / 0.035) 72px
+    );
+  background-size: 100% 600px;
+  animation: data-rain-fall 12s linear infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── Neon divider — horizontal laser-line divider with center glow ─── */
+.neon-divider {
+  position: relative;
+  height: 1px;
+  width: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgb(var(--cyber-cyan-rgb) / 0.15) 15%,
+    rgb(var(--cyber-cyan-rgb) / 0.5) 50%,
+    rgb(var(--cyber-cyan-rgb) / 0.15) 85%,
+    transparent 100%
+  );
+  box-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.2), 0 0 16px rgb(var(--cyber-cyan-rgb) / 0.08);
+}
+
+.neon-divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(var(--cyber-cyan-rgb) / 0.15), transparent 70%);
+  pointer-events: none;
+}
+
+/* ─── HUD frame corner decorations ─── */
+.hud-frame-corner {
+  position: relative;
+}
+
+.hud-frame-corner::before,
+.hud-frame-corner::after {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  pointer-events: none;
+}
+
+.hud-frame-corner::before {
+  top: -1px;
+  left: -1px;
+  border-top: 1.5px solid rgb(var(--cyber-cyan-rgb) / 0.45);
+  border-left: 1.5px solid rgb(var(--cyber-cyan-rgb) / 0.45);
+  border-top-left-radius: 2px;
+  background: linear-gradient(135deg, rgb(var(--cyber-cyan-rgb) / 0.08), transparent 60%);
+}
+
+.hud-frame-corner::after {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 1.5px solid rgb(var(--cyber-cyan-rgb) / 0.45);
+  border-right: 1.5px solid rgb(var(--cyber-cyan-rgb) / 0.45);
+  border-bottom-right-radius: 2px;
+  background: linear-gradient(315deg, rgb(var(--cyber-cyan-rgb) / 0.08), transparent 60%);
+}
+
+/* ─── Pulsing indicator dot ─── */
+@keyframes pulsing-dot-anim {
+  0%, 100% { transform: scale(1); opacity: 0.7; }
+  50% { transform: scale(1.5); opacity: 1; }
+}
+
+.pulsing-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: pulsing-dot-anim 2s ease-in-out infinite;
+  box-shadow: 0 0 4px currentColor;
+}
+
+/* ─── Text scramble glitch effect ─── */
+@keyframes text-scramble-glitch-anim {
+  0%, 85%, 100% { clip-path: inset(0 0 0 0); transform: translate(0); }
+  87% { clip-path: inset(10% 0 60% 0); transform: translate(-1px, 0); }
+  89% { clip-path: inset(40% 0 30% 0); transform: translate(1px, 0); }
+  91% { clip-path: inset(70% 0 10% 0); transform: translate(-1px, 0); }
+  93% { clip-path: inset(20% 0 50% 0); transform: translate(1px, 0); }
+}
+
+.text-scramble-glitch {
+  position: relative;
+  animation: text-scramble-glitch-anim 5s ease-in-out infinite;
+}
+
+/* ─── Glass panel dark — glassmorphism with dark background ─── */
+.glass-panel-dark {
+  background: linear-gradient(
+    135deg,
+    rgba(2, 6, 23, 0.85) 0%,
+    rgba(8, 12, 28, 0.80) 50%,
+    rgba(4, 10, 20, 0.78) 100%
+  );
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.12);
+  border-radius: 12px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow:
+    0 0 20px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgb(var(--cyber-cyan-rgb) / 0.06);
+}
+
+/* ─── Stat label — styled label for stat displays ─── */
+.stat-label {
+  font-family: 'Geist Mono', 'SF Mono', 'Fira Code', monospace;
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(148, 163, 184, 0.7);
+}
+
+/* ─── Progress bar cyber — animated gradient fill with scanning highlight ─── */
+@keyframes progress-bar-cyber-scan {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+
+.progress-bar-cyber {
+  position: relative;
+  overflow: hidden;
+  border-radius: 9999px;
+}
+
+.progress-bar-cyber .progress-bar-cyber-fill {
+  height: 100%;
+  border-radius: 9999px;
+  background: linear-gradient(
+    90deg,
+    rgb(var(--cyber-cyan-rgb) / 0.6) 0%,
+    rgb(var(--cyber-cyan-rgb) / 0.9) 50%,
+    rgb(var(--cyber-cyan-rgb) / 0.7) 100%
+  );
+  box-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.3);
+  transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.progress-bar-cyber .progress-bar-cyber-fill::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.12) 50%,
+    transparent 100%
+  );
+  animation: progress-bar-cyber-scan 2.5s ease-in-out infinite;
+  border-radius: 9999px;
+}
+
+/* ─── Tooltip cyber — hover tooltip with arrow and glow border ─── */
+.tooltip-cyber {
+  position: relative;
+}
+
+.tooltip-cyber::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid rgb(var(--cyber-cyan-rgb) / 0.25);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: calc(var(--z-tooltip, 999) + 1);
+}
+
+.tooltip-cyber::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%) scale(0.92);
+  padding: 5px 10px;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.94), rgba(8, 14, 24, 0.92));
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.25);
+  border-radius: 6px;
+  box-shadow: 0 0 12px rgb(var(--cyber-cyan-rgb) / 0.12), 0 4px 16px rgba(0, 0, 0, 0.5);
+  color: rgba(226, 232, 240, 0.9);
+  font-size: 10px;
+  font-family: 'Geist Mono', monospace;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: var(--z-tooltip, 999);
+}
+
+.tooltip-cyber:hover::before,
+.tooltip-cyber:hover::after {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+}
+
+.tooltip-cyber:hover::before {
+  transform: translateX(-50%);
+}

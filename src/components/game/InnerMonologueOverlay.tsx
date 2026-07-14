@@ -37,6 +37,7 @@ export function InnerMonologueOverlay() {
   const [thought, setThought] = useState<ThoughtState | null>(null);
   const keyCounter = useRef(0);
   const dismissTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const initialThoughtShown = useRef(false);
 
   const clearDismissTimer = useCallback(() => {
     if (dismissTimerRef.current != null) {
@@ -75,13 +76,14 @@ export function InnerMonologueOverlay() {
     return unsub;
   }, [showThought]);
 
-  /* ── Sample thought on mount (2 s delay) ── */
+  /* ── Sample thought on first scene entry only (respects React strict-mode double-mount) ── */
   useEffect(() => {
+    if (initialThoughtShown.current) return;
+    initialThoughtShown.current = true;
     const timer = setTimeout(() => {
       showThought('Ещё один день... нужно собрать себя.', DEFAULT_DURATION_MS);
     }, 2000);
     return () => clearTimeout(timer);
-    // Only fire once on mount
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

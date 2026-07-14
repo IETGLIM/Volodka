@@ -27,10 +27,10 @@ export function QuestBoardMissionProgressBar({
       aria-valuemin={0}
       aria-valuemax={safeTarget}
       aria-label={label}
-      className="relative h-1.5 bg-slate-800/80 rounded-full overflow-hidden"
+      className="relative h-1.5 bg-slate-800/80 rounded-full overflow-hidden progress-bar-cyber"
     >
       <motion.div
-        className="absolute inset-y-0 left-0 rounded-full"
+        className="absolute inset-y-0 left-0 rounded-full progress-bar-cyber-fill"
         style={{ background: 'linear-gradient(90deg, #10b981, #34d399)' }}
         initial={false}
         animate={{ width: `${pct}%` }}

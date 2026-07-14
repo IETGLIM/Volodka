@@ -21,6 +21,7 @@ import { useVolodkaRoomAnimations } from './sceneVisuals/volodkaRoom/useVolodkaR
 import { FlickeringCeilingLight } from './sceneVisuals/volodkaRoom/FlickeringCeilingLight';
 import { useMonitorGlitch } from './sceneVisuals/volodkaRoom/useMonitorGlitch';
 import { useZabbixAlertPulse } from './sceneVisuals/volodkaRoom/useZabbixAlertPulse';
+import { DustParticles } from './DustParticles';
 
 interface VolodkaRoomVisualProps {
   livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
@@ -731,6 +732,9 @@ export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
 
       {/* ── Radiator on left wall near bed ── */}
       <Radiator position={[-W / 2 + 0.06, 0.3, 1.5]} rotation={[0, Math.PI / 2, 0]} color="#a0a0a0" />
+
+      {/* ── Atmospheric dust particles ── */}
+      <DustParticles />
     </group>
   );
 }

@@ -82,7 +82,7 @@ export function ExaminePanel({
           role="dialog"
           aria-label={`Осмотр: ${data.title}`}
         >
-          <div className="mx-auto max-w-xl rounded-lg border border-white/10 bg-black/60 backdrop-blur-md p-4">
+          <div className="mx-auto max-w-xl rounded-lg border border-white/10 bg-black/60 backdrop-blur-md p-4 glass-panel-dark">
             <div className="flex items-start gap-3">
               <span className="text-2xl" aria-hidden>{icon}</span>
               <div className="flex-1 min-w-0">

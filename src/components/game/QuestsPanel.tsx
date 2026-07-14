@@ -227,13 +227,14 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
             <ScrollArea className="flex-1 px-4 py-3">
               {/* Active quests by type */}
               {(Object.entries(QUEST_TYPE_LABELS) as [QuestType, typeof QUEST_TYPE_LABELS.main][]).map(
-                ([type, config]) => {
+                ([type, config], typeIdx) => {
                   const typeQuests = activeByType[type];
                   if (typeQuests.length === 0) return null;
 
                   const TypeIcon = config.icon;
                   return (
                     <div key={type} className="mb-5">
+                      {typeIdx > 0 && <div className="neon-divider mb-3" aria-hidden="true" />}
                       <h3 className={`text-xs font-medium uppercase tracking-wider mb-2 flex items-center gap-1.5 ${config.color}`}>
                         <TypeIcon className="size-3.5" />
                         {config.label}
@@ -485,6 +486,7 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
               {/* Failed quests */}
               {showFailed && failedQuests.length > 0 && (
                 <div className="mb-5">
+                  <div className="neon-divider mb-3" aria-hidden="true" />
                   <h3 className="text-xs font-medium text-red-500/70 uppercase tracking-wider mb-2 flex items-center gap-1.5">
                     <AlertTriangle className="size-3.5" />
                     Провалено
@@ -542,6 +544,7 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
               {/* Completed quests */}
               {showCompleted && completedQuests.length > 0 && (
                 <div className="mb-5">
+                  <div className="neon-divider mb-3" aria-hidden="true" />
                   <h3 className="text-xs font-medium text-emerald-500/70 uppercase tracking-wider mb-2 flex items-center gap-1.5">
                     <CheckCircle2 className="size-3.5" />
                     Завершено

@@ -60,6 +60,12 @@ export function validateStoryEffects(
   for (let i = 0; i < effects.length; i++) {
     const e = effects[i];
     const ep = `${path}.effects[${i}]`;
+    if (e.type === 'showThought') {
+      if (!e.thought) {
+        pushError(out, ep, 'showThought missing thought text');
+      }
+      continue;
+    }
     switch (e.type) {
       case 'collectPoem':
         if (!e.poemId) {

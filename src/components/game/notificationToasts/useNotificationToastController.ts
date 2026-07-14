@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toastManager } from '@/engine/ToastManager';
 import { eventBus, EventBusPriority } from '@/engine/EventBus';
+import { playSfx } from '@/engine/audio/interactionSfx';
 import {
   appendToastIfNew,
   buildCombatDefeatToastMessage,
@@ -33,14 +34,19 @@ export function useNotificationToastController() {
 
   useEffect(() => {
     return toastManager.subscribe((msg) => {
-      setToasts((prev) =>
-        appendToastIfNew(
+      setToasts((prev) => {
+        const next = appendToastIfNew(
           prev,
           toastMessageToVisible(msg),
           shownIdsRef.current,
           acceptNewRef.current,
-        ),
-      );
+        );
+        // Play notification ping when a new toast is actually added
+        if (next !== prev) {
+          playSfx('notification');
+        }
+        return next;
+      });
     });
   }, []);
 

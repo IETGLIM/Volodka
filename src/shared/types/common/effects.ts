@@ -18,7 +18,8 @@ export type StoryEffectType =
   | 'discoverLore'
   | 'combat'
   | 'transitionScene'
-  | 'visitStoryNode';
+  | 'visitStoryNode'
+  | 'showThought';
 
 export interface StoryEffect {
   type: StoryEffectType;
@@ -40,6 +41,10 @@ export interface StoryEffect {
   sceneId?: SceneId;
   /** Story spine node id for visitStoryNode effect */
   nodeId?: string;
+  /** Thought text for showThought effect (inner monologue) */
+  thought?: string;
+  /** Custom duration in ms for showThought effect (default 4000) */
+  thoughtDuration?: number;
 }
 
 /** Side effects emitted by execute() functions that should be applied to the

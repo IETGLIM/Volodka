@@ -16,6 +16,7 @@ import { useDiegeticNarrativeState } from '@/store/selectors';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Package, DoorOpen, Hand, MessageCircle, Eye } from 'lucide-react';
 import { eventBus } from '@/engine/EventBus';
+import { playSfx } from '@/engine/audio/interactionSfx';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { bottomInteractPromptPx } from '@/shared/constants/hudLayout';
 import {
@@ -73,6 +74,7 @@ export function InteractionHintPopup() {
     const unsubStart = eventBus.on('interaction:start', () => {
       // When interaction starts, hide the hint (player is now interacting)
       setIsVisible(false);
+      playSfx('ui_click');
     });
 
     return () => {

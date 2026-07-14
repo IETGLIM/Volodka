@@ -635,6 +635,16 @@ const ADDITIONAL_ENTRIES: LoreEntry[] = [
     relatedEntries: ['lore_factory', 'lore_factory_workers', 'lore_zarya_project_early'],
     discovered: false,
   },
+  {
+    id: 'lore_volodka_family_photo',
+    title: 'Семейное Фото',
+    category: 'history',
+    body: 'Фотография в простой деревянной рамке — единственное изображение семьи Володьки, которое он оставил на видном месте. Молодая женщина и мальчик улыбаются в объектив, за их спинами — зелёный двор и ржавая качеля. Рама чуть перекошена: вешали наспех, между дежурствами. Мать работала в городском архиве — те же пыльные коридоры, те же карточки, которые Зарема теперь охраняет. Она не была инженером, но понимала: код — это тоже язык, просто с более строгой грамматикой. Мальчик на фото — Володька, лет семь. Он уже смотрит на камеру так, будто видит за ней что-то другое. Что-то, чего камера не поймает.',
+    sceneId: 'volodka_room',
+    rarity: 'uncommon',
+    relatedEntries: ['lore_vladimir', 'lore_volodka_childhood', 'lore_volodka_engineer'],
+    discovered: false,
+  },
   /* ── Location deep lore — Phase 9 expansion ── */
   {
     id: 'lore_solnysh_studio',

@@ -80,6 +80,7 @@ import { OrchestratorMinigameOverlays } from './OrchestratorMinigameOverlays';
 import { DiegeticDialogueHud } from '@/components/game/diegetic/DiegeticDialogueHud';
 import { InnerMonologueOverlay } from '@/components/game/InnerMonologueOverlay';
 import { EncounterBeatOverlay } from '../EncounterBeatOverlay';
+import { QuickInventoryBar } from '@/components/hud/QuickInventoryBar';
 import { OrchestratorStatsPanel } from './OrchestratorPanelSlots';
 import { useMobileDetection } from './useMobileDetection';
 import { useGameStore } from '@/store/gameStore';
@@ -343,6 +344,7 @@ export const GameplayAmbientExplorationHud = memo(function GameplayAmbientExplor
     <>
       <StressIndicator />
       <QuickUseBar />
+      <QuickInventoryBar />
       <QuickAccessToolbar />
       <AutoSaveIndicator />
       <CompassHUD />
