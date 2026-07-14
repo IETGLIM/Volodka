@@ -125,7 +125,7 @@ export function InnerMonologueOverlay() {
             </p>
 
             {/* ── Thought text ── */}
-            <p className="thought-text text-typing-cursor text-sm sm:text-base font-mono leading-relaxed text-slate-300">
+            <p className="cyber-text-gradient thought-text text-typing-cursor text-sm sm:text-base font-mono leading-relaxed text-slate-300">
               {displayed}
               {!done && !reducedMotion ? (
                 <span className="animate-pulse text-purple-400/70">▌</span>

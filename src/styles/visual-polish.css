@@ -1201,3 +1201,175 @@
 .cyber-underline-animated:hover::after {
   width: 100%;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   Round 10: Additional Visual Polish Utility Classes
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── 1. Cyber Scroll Indicator — thin line on right edge showing scroll position ─── */
+.cyber-scroll-indicator {
+  position: relative;
+}
+
+.cyber-scroll-indicator::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 2px;
+  height: var(--scroll-progress, 0%);
+  background: linear-gradient(
+    180deg,
+    rgb(var(--cyber-cyan-rgb) / 0.5),
+    rgb(var(--cyber-cyan-rgb) / 0.2)
+  );
+  border-radius: 1px;
+  transition: height 0.15s ease-out;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* ─── 2. Cyber Text Gradient — gradient text using background-clip: text ─── */
+.cyber-text-gradient {
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  background-image: linear-gradient(
+    135deg,
+    rgb(var(--cyber-cyan-rgb) / 0.9) 0%,
+    rgba(168, 85, 247, 0.8) 50%,
+    rgb(var(--cyber-cyan-rgb) / 0.7) 100%
+  );
+}
+
+/* ─── 3. Cyber Border Gradient — gradient border using border-image ─── */
+.cyber-border-gradient {
+  border: 1px solid transparent;
+  border-image: linear-gradient(
+    135deg,
+    rgb(var(--cyber-cyan-rgb) / 0.4) 0%,
+    rgb(var(--cyber-cyan-rgb) / 0.1) 50%,
+    rgba(168, 85, 247, 0.3) 100%
+  ) 1;
+}
+
+/* ─── 4. Cyber Reflection — subtle reflection/mirror effect below an element ─── */
+.cyber-reflection {
+  position: relative;
+}
+
+.cyber-reflection::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  height: 40%;
+  transform: scaleY(-0.3);
+  opacity: 0.08;
+  background: inherit;
+  -webkit-mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.6), transparent 80%);
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.6), transparent 80%);
+  pointer-events: none;
+  border-radius: inherit;
+  filter: blur(1px);
+}
+
+/* ─── 5. Cyber Pixel Art — pixelated image rendering with subtle scanline overlay ─── */
+.cyber-pixel-art {
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  position: relative;
+}
+
+.cyber-pixel-art::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    transparent 2px,
+    rgba(0, 0, 0, 0.04) 2px,
+    rgba(0, 0, 0, 0.04) 4px
+  );
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* ─── 6. Cyber Blink Cursor — blinking cursor at end of text (terminal effect) ─── */
+@keyframes cyber-blink-cursor {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.cyber-blink-cursor::after {
+  content: '█';
+  color: rgb(var(--cyber-cyan-rgb) / 0.7);
+  font-weight: 300;
+  animation: cyber-blink-cursor 1s step-end infinite;
+  margin-left: 1px;
+  font-size: 0.85em;
+}
+
+/* ─── 7. Cyber Damage Flash — red flash overlay for taking damage ─── */
+@keyframes damage-flash-fade {
+  0% { opacity: 0.6; }
+  100% { opacity: 0; pointer-events: none; }
+}
+
+.cyber-damage-flash {
+  position: relative;
+  overflow: hidden;
+}
+
+.cyber-damage-flash::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(239, 68, 68, 0.25) 0%,
+    rgba(239, 68, 68, 0.1) 40%,
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: 5;
+  opacity: 0;
+}
+
+.cyber-damage-flash.active::before {
+  animation: damage-flash-fade 0.6s ease-out forwards;
+}
+
+/* ─── 8. Cyber Heal Flash — green flash overlay for healing ─── */
+@keyframes heal-flash-fade {
+  0% { opacity: 0.5; }
+  100% { opacity: 0; pointer-events: none; }
+}
+
+.cyber-heal-flash {
+  position: relative;
+  overflow: hidden;
+}
+
+.cyber-heal-flash::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(34, 197, 94, 0.2) 0%,
+    rgba(34, 197, 94, 0.08) 40%,
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: 5;
+  opacity: 0;
+}
+
+.cyber-heal-flash.active::before {
+  animation: heal-flash-fade 0.6s ease-out forwards;
+}

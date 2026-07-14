@@ -828,3 +828,323 @@
 .hud-transition-slide-up {
   animation: hud-slide-up-enter 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   Round 10: HUD Extension Utility Additions
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── 1. HUD Minimap Compass — compass ring overlay for minimap with N/S/E/W markers ─── */
+.hud-minimap-compass {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.hud-minimap-compass::before {
+  content: 'N';
+  position: absolute;
+  top: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 8px;
+  font-family: 'Courier New', monospace;
+  font-weight: 700;
+  color: rgb(var(--cyber-cyan-rgb) / 0.6);
+  letter-spacing: 0.05em;
+  z-index: 2;
+}
+
+.hud-minimap-compass::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.08);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.hud-compass-marker {
+  position: absolute;
+  font-size: 7px;
+  font-family: 'Courier New', monospace;
+  color: rgb(var(--cyber-cyan-rgb) / 0.25);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.hud-compass-marker[data-dir='S'] {
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.hud-compass-marker[data-dir='E'] {
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.hud-compass-marker[data-dir='W'] {
+  left: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* ─── 2. HUD Action Bar — bottom action bar with glass bg, centered buttons, top neon line ─── */
+@keyframes action-bar-neon-line {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+.hud-action-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.85) 100%);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.1);
+  border-radius: 8px 8px 0 0;
+  position: relative;
+}
+
+.hud-action-bar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 16px;
+  right: 16px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgb(var(--cyber-cyan-rgb) / 0.6), transparent);
+  animation: action-bar-neon-line 3s ease-in-out infinite;
+}
+
+.hud-action-bar .action-bar-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.15);
+  border-radius: 6px;
+  background: rgba(15, 23, 42, 0.4);
+  color: rgb(var(--cyber-cyan-rgb) / 0.6);
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.hud-action-bar .action-bar-btn:hover {
+  border-color: rgb(var(--cyber-cyan-rgb) / 0.4);
+  background: rgb(var(--cyber-cyan-rgb) / 0.08);
+  color: rgb(var(--cyber-cyan-rgb) / 0.9);
+  box-shadow: 0 0 10px rgb(var(--cyber-cyan-rgb) / 0.12);
+}
+
+.hud-action-bar .action-bar-btn:active {
+  transform: scale(0.95);
+}
+
+.hud-action-bar .action-bar-btn .action-bar-key {
+  position: absolute;
+  bottom: -1px;
+  right: -1px;
+  font-size: 7px;
+  font-family: 'Courier New', monospace;
+  color: rgba(148, 163, 184, 0.4);
+  background: rgba(0, 0, 0, 0.6);
+  padding: 0 3px;
+  border-radius: 2px 0 4px 0;
+}
+
+/* ─── 3. HUD Tooltip Complex — rich tooltip with title, description, footer ─── */
+.hud-tooltip-complex {
+  position: relative;
+}
+
+.hud-tooltip-complex .tooltip-complex-popup {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%) scale(0.95);
+  min-width: 180px;
+  max-width: 260px;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.95), rgba(8, 14, 24, 0.93));
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.2);
+  border-radius: 6px;
+  box-shadow: 0 0 16px rgb(var(--cyber-cyan-rgb) / 0.1), 0 8px 24px rgba(0, 0, 0, 0.5);
+  padding: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: var(--z-tooltip, 999);
+  overflow: hidden;
+}
+
+.hud-tooltip-complex:hover .tooltip-complex-popup {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+}
+
+.hud-tooltip-complex .tooltip-complex-title {
+  padding: 8px 10px 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgb(var(--cyber-cyan-rgb) / 0.9);
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid rgb(var(--cyber-cyan-rgb) / 0.08);
+}
+
+.hud-tooltip-complex .tooltip-complex-desc {
+  padding: 6px 10px;
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  color: rgba(226, 232, 240, 0.7);
+  line-height: 1.5;
+}
+
+.hud-tooltip-complex .tooltip-complex-footer {
+  padding: 4px 10px 6px;
+  font-family: 'Courier New', monospace;
+  font-size: 9px;
+  color: rgba(148, 163, 184, 0.35);
+  border-top: 1px solid rgb(var(--cyber-cyan-rgb) / 0.06);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ─── 4. HUD POI Marker — point of interest marker dot with pulsing ring ─── */
+@keyframes poi-marker-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+
+.hud-poi-marker {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #fbbf24;
+  box-shadow: 0 0 6px rgba(251, 191, 36, 0.4);
+  flex-shrink: 0;
+}
+
+.hud-poi-marker::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 1px solid rgba(251, 191, 36, 0.4);
+  animation: poi-marker-pulse 2s ease-out infinite;
+  pointer-events: none;
+}
+
+/* ─── 5. HUD POI Label — small label for POI markers, truncated mono text ─── */
+.hud-poi-label {
+  position: absolute;
+  left: calc(100% + 6px);
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: 'Courier New', monospace;
+  font-size: 8px;
+  color: rgba(251, 191, 36, 0.6);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 80px;
+  pointer-events: none;
+  letter-spacing: 0.02em;
+}
+
+/* ─── 6. HUD Radar Sweep — rotating radar sweep gradient animation ─── */
+@keyframes radar-sweep-rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.hud-radar-sweep {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.hud-radar-sweep::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 50%;
+  height: 50%;
+  transform-origin: 0 0;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    rgb(var(--cyber-cyan-rgb) / 0.15) 30deg,
+    transparent 60deg
+  );
+  animation: radar-sweep-rotate 3s linear infinite;
+}
+
+/* ─── 7. Quest Reward Preview — quest reward preview box with item icons and quantities ─── */
+.quest-reward-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px;
+  background: rgba(0, 6, 12, 0.5);
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.1);
+  border-radius: 6px;
+}
+
+.quest-reward-preview .reward-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.1);
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  color: rgba(226, 232, 240, 0.7);
+  transition: border-color 0.2s ease;
+}
+
+.quest-reward-preview .reward-item:hover {
+  border-color: rgb(var(--cyber-cyan-rgb) / 0.3);
+}
+
+.quest-reward-preview .reward-item .reward-icon {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.quest-reward-preview .reward-item .reward-qty {
+  color: rgb(var(--cyber-cyan-rgb) / 0.6);
+  font-weight: 600;
+  font-size: 9px;
+  margin-left: 2px;
+}
+
+.quest-reward-preview .reward-label {
+  width: 100%;
+  font-size: 9px;
+  font-family: 'Courier New', monospace;
+  color: rgba(148, 163, 184, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: -2px;
+}

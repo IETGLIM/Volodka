@@ -918,3 +918,129 @@ html[data-reduced-motion='true'] .hud-transition-slide-up {
   opacity: 1;
   transform: none;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   Round 10: Reduced Motion Overrides for New Animations
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── 1. Base selectors (outside media query) ── */
+
+/* Cyber Focus Ring — transition only, no animation, safe to keep */
+/* Cyber Text Clip — no animation, safe */
+/* Cyber Icon Container — transition only, safe */
+/* Cyber Separator Vertical — static gradient, safe */
+/* Cyber Empty State — no animation, safe */
+/* Cyber Chip Input — transition only, safe */
+/* Cyber Stat Row — no animation, safe */
+/* Cyber Toggle Row — transition only, safe */
+
+/* HUD Action Bar — neon line animation */
+.hud-action-bar::before {
+  animation: none !important;
+  opacity: 0.6;
+}
+
+/* HUD POI Marker — pulse animation */
+.hud-poi-marker::after {
+  animation: none !important;
+  display: none;
+}
+
+/* HUD Radar Sweep — rotation animation */
+.hud-radar-sweep::after {
+  animation: none !important;
+  display: none;
+}
+
+/* Cyber Blink Cursor — blink animation */
+.cyber-blink-cursor::after {
+  animation: none !important;
+  opacity: 1;
+}
+
+/* Cyber Damage Flash — fade animation */
+.cyber-damage-flash.active::before {
+  animation: none !important;
+  opacity: 0;
+}
+
+/* Cyber Heal Flash — fade animation */
+.cyber-heal-flash.active::before {
+  animation: none !important;
+  opacity: 0;
+}
+
+/* ── 2. @media (prefers-reduced-motion: reduce) block ── */
+@media (prefers-reduced-motion: reduce) {
+
+  /* HUD Extensions Round 10 */
+  .hud-action-bar::before {
+    animation: none !important;
+    opacity: 0.6;
+  }
+
+  .hud-poi-marker::after {
+    animation: none !important;
+    display: none;
+  }
+
+  .hud-radar-sweep::after {
+    animation: none !important;
+    display: none;
+  }
+
+  /* Visual Polish Round 10 */
+  .cyber-blink-cursor::after {
+    animation: none !important;
+    opacity: 1;
+  }
+
+  .cyber-damage-flash.active::before {
+    animation: none !important;
+    opacity: 0;
+  }
+
+  .cyber-heal-flash.active::before {
+    animation: none !important;
+    opacity: 0;
+  }
+
+  .cyber-scroll-indicator::after {
+    transition: none !important;
+  }
+}
+
+/* ── 3. html[data-reduced-motion='true'] attribute selectors ── */
+html[data-reduced-motion='true'] .hud-action-bar::before {
+  animation: none !important;
+  opacity: 0.6;
+}
+
+html[data-reduced-motion='true'] .hud-poi-marker::after {
+  animation: none !important;
+  display: none;
+}
+
+html[data-reduced-motion='true'] .hud-radar-sweep::after {
+  animation: none !important;
+  display: none;
+}
+
+html[data-reduced-motion='true'] .cyber-blink-cursor::after {
+  animation: none !important;
+  opacity: 1;
+}
+
+html[data-reduced-motion='true'] .cyber-damage-flash.active::before {
+  animation: none !important;
+  opacity: 0;
+}
+
+html[data-reduced-motion='true'] .cyber-heal-flash.active::before {
+  animation: none !important;
+  opacity: 0;
+}
+
+html[data-reduced-motion='true'] .cyber-scroll-indicator::after {
+  transition: none !important;
+}

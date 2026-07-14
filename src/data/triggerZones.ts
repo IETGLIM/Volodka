@@ -129,6 +129,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
       description: 'Клавиатура со стёртыми клавишами и остывший кофе в кружке «Я ♥ БАГи».',
       detailText: 'На экранах — терминальные сессии, логи ошибок и недописанное стихотворение. Кофе остыл час назад. Стандартная ночь Володьки.',
       icon: '🖥️',
+      relatedLoreIds: ['lore_volodka_engineer'],
     },
     effects: [{ type: 'setFlag', flag: 'interacted_desk', flagValue: true }],
     propModelId: 'ai3dgen_encrypted_scroll',
@@ -178,6 +179,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
       description: 'Экран мерцает. На нём — незаконченный процесс и обрывок текста, похожего на стихотворение.',
       detailText: 'Зелёные символы бегут по экрану. Кто-то запустил скрипт и не дождался результата. Файл называется «fragment_002.sh».',
       icon: '🖥️',
+      relatedLoreIds: ['lore_volodka_engineer'],
     },
     effects: [
       { type: 'setFlag', flag: 'terminal_poem_read', flagValue: true },
@@ -358,6 +360,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
       description: 'Фотография в простой деревянной рамке.',
       detailText: 'На фото — молодая женщина и мальчик. Они улыбаются. Рама чуть перекошена — видимо, вешали наспех. За их спинами — зелёный двор и ржавая качеля.',
       icon: '🖼️',
+      relatedLoreIds: ['lore_volodka_family_photo', 'lore_volodka_childhood'],
     },
     effects: [
       { type: 'setFlag', flag: 'examined_photo_frame', flagValue: true },
@@ -479,6 +482,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
       description: 'Красные и синие теги на облупившейся штукатурке.',
       detailText: '«ВОЛОДЬКА ЖИВЁТ ЗДЕСЬ» — написано не твоим почерком. Кто-то из соседей? Или ты сам в другой жизни?',
       icon: '🎨',
+      relatedLoreIds: ['lore_vladimir'],
     },
     effects: [
       { type: 'setFlag', flag: 'read_corridor_graffiti', flagValue: true },

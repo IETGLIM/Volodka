@@ -110,7 +110,7 @@ export function SkillCheckDisplay() {
           transition={{ duration: reducedMotion ? 0 : 0.3, ease: 'easeOut' }}
         >
           <div
-            className="relative w-full max-w-[360px] rounded-lg p-4"
+            className={`relative w-full max-w-[360px] rounded-lg p-4 ${!check.passed ? 'cyber-damage-flash active' : ''}`}
             style={{
               background: 'rgba(8, 12, 20, 0.85)',
               backdropFilter: 'blur(12px)',

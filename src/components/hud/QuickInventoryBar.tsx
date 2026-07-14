@@ -51,6 +51,7 @@ function InventorySlot({
       aria-label={consumable ? `Использовать ${name}` : `${name} — ${quantity} шт.`}
       title={name}
       className={`
+        cyber-focus-ring
         relative flex flex-col items-center justify-center gap-0.5
         w-12 h-14 rounded-md
         transition-all duration-200

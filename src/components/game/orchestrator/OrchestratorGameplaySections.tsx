@@ -82,7 +82,9 @@ import { InnerMonologueOverlay } from '@/components/game/InnerMonologueOverlay';
 import { DataTerminalOverlay } from '@/components/game/DataTerminalOverlay';
 import { LevelUpNotification } from '@/components/game/LevelUpNotification';
 import { EncounterBeatOverlay } from '../EncounterBeatOverlay';
+import { ProximityWhisperOverlay } from '@/components/game/ProximityWhisperOverlay';
 import { QuickInventoryBar } from '@/components/hud/QuickInventoryBar';
+import { ScenePoiCompass } from '@/components/hud/ScenePoiCompass';
 import { OrchestratorStatsPanel } from './OrchestratorPanelSlots';
 import { useMobileDetection } from './useMobileDetection';
 import { useGameStore } from '@/store/gameStore';
@@ -352,6 +354,8 @@ export const GameplayAmbientExplorationHud = memo(function GameplayAmbientExplor
       <QuickAccessToolbar />
       <AutoSaveIndicator />
       <CompassHUD />
+      {/* Proximity whispers */}
+      <ProximityWhisperOverlay />
     </>
   );
 });
@@ -390,6 +394,7 @@ export const GameplayExplorationHud = memo(function GameplayExplorationHud({
       <InteractionHintPopup />
       <NpcNoDialogueBark />
       <WeatherIndicator />
+      <ScenePoiCompass />
       <AmbientAtmosphereCaption />
       <SceneDiscoveryToast />
       <DayNightCycleIndicator />

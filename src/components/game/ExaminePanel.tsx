@@ -2,7 +2,7 @@
  *  Act 1: compact bottom panel. Other acts: fullscreen cinematic frame.
  */
 
-import { useEffect } from 'react';
+import { useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { ExamineData } from '@/shared/types/game';
 import { consumeEKey } from '@/engine/input/eKeyConsumption';
@@ -20,6 +20,11 @@ import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { diegeticDialogueBottomPadCss } from '@/shared/constants/hudLayout';
 import { useMobileDetection } from '@/components/game/orchestrator/useMobileDetection';
 import { useSuppressExplorationBottomHud } from '@/hooks/useExplorationBottomHud';
+import { eventBus } from '@/engine/EventBus';
+import { INITIAL_LORE_ENTRIES } from '@/data/loreEntries';
+
+/** Max lore chips shown inline; overflow shows "+N more" */
+const MAX_LORE_CHIPS = 3;
 
 interface ExaminePanelProps {
   open: boolean;
@@ -47,6 +52,30 @@ export function ExaminePanel({
       : data.description
     : '';
   const { displayed, done, skip } = useNarrativeTypewriter(bodyText, open ? 22 : 0);
+
+  /* ── Lore title lookup (ID → title) ── */
+  const loreTitleMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const entry of INITIAL_LORE_ENTRIES) {
+      map[entry.id] = entry.title;
+    }
+    return map;
+  }, []);
+
+  /* ── Resolve visible lore chips ── */
+  const loreChips = useMemo(() => {
+    if (!data?.relatedLoreIds?.length) return [];
+    return data.relatedLoreIds
+      .filter((id) => loreTitleMap[id])
+      .map((id) => ({ id, title: loreTitleMap[id] }));
+  }, [data?.relatedLoreIds, loreTitleMap]);
+
+  const overflowCount = Math.max(0, loreChips.length - MAX_LORE_CHIPS);
+  const visibleChips = loreChips.slice(0, MAX_LORE_CHIPS);
+
+  const handleLoreChipClick = useCallback((loreId: string) => {
+    eventBus.emit('ui:open_panel', { panel: 'journal', loreId });
+  }, []);
 
   useEffect(() => {
     if (!open || !hasLinkedContent || !onContinue) return;
@@ -91,6 +120,35 @@ export function ExaminePanel({
               </div>
               <button type="button" onClick={onClose} className="text-xs text-slate-400 shrink-0">Esc</button>
             </div>
+            {done && visibleChips.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                className="mt-2 flex items-center gap-1.5 flex-wrap"
+              >
+                <span className="text-[10px] font-mono text-slate-500 mr-0.5">📖 Связанные записи</span>
+                {visibleChips.map((chip) => (
+                  <motion.button
+                    key={chip.id}
+                    type="button"
+                    onClick={() => handleLoreChipClick(chip.id)}
+                    whileHover={{ scale: 1.05, borderColor: 'rgba(34,211,238,0.6)' }}
+                    whileTap={{ scale: 0.95 }}
+                    className="text-[10px] font-mono text-cyan-300/80 rounded-full px-2 py-0.5
+                               border border-cyan-500/20 bg-white/5 backdrop-blur-sm
+                               cursor-pointer select-none whitespace-nowrap truncate max-w-[180px]"
+                    title={chip.title}
+                  >
+                    {chip.title}
+                  </motion.button>
+                ))}
+                {overflowCount > 0 && (
+                  <span className="text-[10px] font-mono text-slate-500">
+                    +{overflowCount} ещё
+                  </span>
+                )}
+              </motion.div>
+            )}
             {done && (
               <div className="mt-2">
                 <NarrativeChoiceList

@@ -1222,3 +1222,271 @@
 .cyber-hex-icon .hex-icon-content {
   color: rgb(var(--cyber-cyan-rgb) / 0.8);
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   Round 10: Additional Cyberpunk Theme Utility Classes
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── 1. Cyber Focus Ring — 2px solid cyan outline for interactive elements ─── */
+.cyber-focus-ring {
+  outline: none;
+  transition: box-shadow 200ms ease;
+  box-shadow: 0 0 0 0px transparent;
+}
+
+.cyber-focus-ring:focus-visible {
+  box-shadow: 0 0 0 2px rgb(var(--cyber-cyan-rgb) / 0.7), 0 0 0 4px transparent;
+}
+
+.cyber-focus-ring:hover {
+  box-shadow: 0 0 0 1px rgb(var(--cyber-cyan-rgb) / 0.2), 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.08);
+}
+
+.cyber-focus-ring:active {
+  box-shadow: 0 0 0 2px rgb(var(--cyber-cyan-rgb) / 0.5), 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.15);
+}
+
+/* ─── 2. Cyber Text Clip — background-clip: text for gradient text effects ─── */
+.cyber-text-clip {
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* ─── 3. Cyber Icon Container — square container with centered content, subtle border, hover glow ─── */
+.cyber-icon-container {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.15);
+  border-radius: 6px;
+  background: rgba(0, 6, 12, 0.5);
+  color: rgb(var(--cyber-cyan-rgb) / 0.7);
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.cyber-icon-container:hover {
+  border-color: rgb(var(--cyber-cyan-rgb) / 0.35);
+  box-shadow: 0 0 10px rgb(var(--cyber-cyan-rgb) / 0.12);
+  color: rgb(var(--cyber-cyan-rgb) / 0.9);
+  background: rgb(var(--cyber-cyan-rgb) / 0.06);
+}
+
+.cyber-icon-container svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* ─── 4. Cyber Separator Vertical — vertical line with gradient opacity ─── */
+.cyber-separator-vertical {
+  width: 1px;
+  align-self: stretch;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgb(var(--cyber-cyan-rgb) / 0.2) 20%,
+    rgb(var(--cyber-cyan-rgb) / 0.3) 50%,
+    rgb(var(--cyber-cyan-rgb) / 0.2) 80%,
+    transparent 100%
+  );
+  flex-shrink: 0;
+}
+
+/* ─── 5. Cyber Empty State — centered empty state with faded icon, muted text, dashed border ─── */
+.cyber-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 32px 16px;
+  border: 1px dashed rgb(var(--cyber-cyan-rgb) / 0.12);
+  border-radius: 8px;
+  background: rgba(0, 6, 12, 0.3);
+  text-align: center;
+}
+
+.cyber-empty-state .empty-state-icon {
+  font-size: 32px;
+  opacity: 0.15;
+  line-height: 1;
+}
+
+.cyber-empty-state .empty-state-text {
+  font-size: 11px;
+  font-family: 'Courier New', monospace;
+  color: rgba(148, 163, 184, 0.4);
+  letter-spacing: 0.04em;
+  max-width: 200px;
+}
+
+.cyber-empty-state .empty-state-hint {
+  font-size: 9px;
+  font-family: 'Courier New', monospace;
+  color: rgba(148, 163, 184, 0.25);
+  letter-spacing: 0.02em;
+}
+
+/* ─── 6. Cyber Chip Input — inline chip/tag input field with glass bg ─── */
+.cyber-chip-input {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  min-height: 28px;
+  background: rgba(0, 8, 4, 0.6);
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.15);
+  border-radius: 6px;
+  backdrop-filter: blur(6px);
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: rgba(226, 232, 240, 0.85);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cyber-chip-input:focus-within {
+  border-color: rgb(var(--cyber-cyan-rgb) / 0.35);
+  box-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.1);
+}
+
+.cyber-chip-input input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: rgba(226, 232, 240, 0.85);
+  font-family: inherit;
+  font-size: inherit;
+  min-width: 60px;
+}
+
+.cyber-chip-input input::placeholder {
+  color: rgba(148, 163, 184, 0.25);
+  font-style: italic;
+}
+
+.cyber-chip-input .chip-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 6px;
+  background: rgb(var(--cyber-cyan-rgb) / 0.1);
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.2);
+  border-radius: 4px;
+  font-size: 10px;
+  color: rgb(var(--cyber-cyan-rgb) / 0.7);
+  white-space: nowrap;
+}
+
+/* ─── 7. Cyber Stat Row — horizontal stat row with label, value, and optional change indicator ─── */
+.cyber-stat-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+}
+
+.cyber-stat-row .stat-row-label {
+  flex: 1;
+  color: rgba(148, 163, 184, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cyber-stat-row .stat-row-value {
+  color: rgba(226, 232, 240, 0.9);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  min-width: 32px;
+  text-align: right;
+}
+
+.cyber-stat-row .stat-row-change {
+  font-size: 9px;
+  font-weight: 600;
+  min-width: 24px;
+  text-align: right;
+}
+
+.cyber-stat-row .stat-row-change.positive {
+  color: rgb(var(--cyber-green-rgb) / 0.8);
+}
+
+.cyber-stat-row .stat-row-change.negative {
+  color: rgba(251, 113, 133, 0.8);
+}
+
+/* ─── 8. Cyber Toggle Row — toggle switch row with label and subtle bottom border ─── */
+.cyber-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.06);
+  font-family: 'Courier New', monospace;
+}
+
+.cyber-toggle-row:last-child {
+  border-bottom: none;
+}
+
+.cyber-toggle-row .toggle-row-label {
+  flex: 1;
+  font-size: 11px;
+  color: rgba(226, 232, 240, 0.75);
+  letter-spacing: 0.02em;
+}
+
+.cyber-toggle-row .toggle-row-hint {
+  font-size: 9px;
+  color: rgba(148, 163, 184, 0.35);
+  margin-top: 1px;
+}
+
+.cyber-toggle-row .toggle-switch {
+  position: relative;
+  width: 32px;
+  height: 18px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.15);
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.cyber-toggle-row .toggle-switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  background: rgba(148, 163, 184, 0.4);
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.cyber-toggle-row .toggle-switch[aria-checked='true'],
+.cyber-toggle-row .toggle-switch.active {
+  background: rgb(var(--cyber-cyan-rgb) / 0.15);
+  border-color: rgb(var(--cyber-cyan-rgb) / 0.4);
+}
+
+.cyber-toggle-row .toggle-switch[aria-checked='true']::after,
+.cyber-toggle-row .toggle-switch.active::after {
+  transform: translateX(14px);
+  background: rgb(var(--cyber-cyan-rgb) / 0.8);
+  box-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.3);
+}
