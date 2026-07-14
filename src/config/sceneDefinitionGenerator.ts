@@ -261,13 +261,14 @@ export function generateBoundaryWallSegments(def: SceneDefinition): ColliderDef[
     }
 
     // Recessed backstop behind each opening (overlaps adjacent segments)
+    let backstopIdx = 0;
     for (const [openStart, openEnd] of openings) {
       segments.push(
         makeSegment(
           openStart - 0.4,
           openEnd + 0.4,
           DOORWAY_BACKSTOP_OFFSET,
-          `structural_backstop_${side.label}`,
+          `structural_backstop_${side.label}_${backstopIdx++}`,
         ),
       );
     }

@@ -235,3 +235,172 @@
 .cp-border-pulse {
   animation: cp-border-pulse 4s ease-in-out infinite;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   ATMOSPHERIC DEPTH LAYER — Global vignette, chromatic fog, CRT warp
+   ══════════════════════════════════════════════════════════════ */
+
+/* ─── Deep atmospheric vignette — apply to root game container only ─── */
+.cp-atmospheric-vignette::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10000;
+  background:
+    radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.35) 100%);
+  mix-blend-mode: multiply;
+  opacity: 0.4;
+}
+
+/* ─── Subtle chromatic aberration tint on extreme edges ─── */
+[data-cyberpunk] .cp-chromatic-edge {
+  position: relative;
+}
+[data-cyberpunk] .cp-chromatic-edge::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 2;
+  box-shadow:
+    inset 3px 0 8px -4px rgba(0, 255, 255, 0.04),
+    inset -3px 0 8px -4px rgba(255, 0, 100, 0.03);
+}
+
+/* ─── Atmospheric fog layer for panels and overlays ─── */
+@keyframes cp-fog-drift {
+  0%, 100% { opacity: 0.02; transform: translateX(0); }
+  50% { opacity: 0.05; transform: translateX(4px); }
+}
+
+.cp-atmosphere-fog::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse at 20% 80%, rgba(0, 255, 255, 0.03) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(255, 140, 0, 0.02) 0%, transparent 50%);
+  animation: cp-fog-drift 12s ease-in-out infinite;
+}
+
+/* ─── Enhanced button hover with layered glow ─── */
+[data-cyberpunk] button:not([data-preserve-style]):hover:not(:disabled) {
+  text-shadow: 0 0 8px rgb(var(--cyber-matrix-rgb) / 0.5), 0 0 20px rgb(var(--cyber-matrix-rgb) / 0.15);
+}
+
+[data-cyberpunk] button:not([data-preserve-style]):active:not(:disabled) {
+  transform: scale(0.98);
+  transition: transform 0.08s ease;
+}
+
+/* ─── Noise texture overlay for immersive surfaces ─── */
+.cp-noise-overlay {
+  position: relative;
+}
+.cp-noise-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.025;
+  background-image: var(--pattern-noise);
+  background-size: 128px 128px;
+  mix-blend-mode: overlay;
+}
+
+/* ─── CRT screen warp subtle effect on panels ─── */
+@keyframes crt-warp-flicker {
+  0%, 100% { filter: brightness(1) contrast(1); }
+  50% { filter: brightness(1.008) contrast(1.005); }
+}
+
+.cp-crt-warp {
+  animation: crt-warp-flicker 8s ease-in-out infinite;
+}
+
+/* ─── Cyberpunk data stream line for dividers ─── */
+.cp-data-divider {
+  position: relative;
+  height: 1px;
+  overflow: hidden;
+}
+
+.cp-data-divider::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgb(var(--cyber-matrix-rgb) / 0.2) 15%,
+    rgb(var(--cyber-matrix-rgb) / 0.35) 50%,
+    rgb(var(--cyber-matrix-rgb) / 0.2) 85%,
+    transparent 100%
+  );
+}
+
+.cp-data-divider::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -40%;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgb(var(--cyber-cyan-rgb) / 0.6), transparent);
+  animation: cp-data-divider-sweep 4s ease-in-out infinite;
+}
+
+@keyframes cp-data-divider-sweep {
+  0% { left: -40%; }
+  100% { left: 100%; }
+}
+
+/* ─── Ambient light leak on panel edges ─── */
+.cp-light-leak {
+  position: relative;
+  overflow: hidden;
+}
+
+.cp-light-leak::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(ellipse, rgba(0, 255, 255, 0.02) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── Subtle gradient noise on all data-panel elements ─── */
+[data-cyberpunk] [data-panel] {
+  background:
+    linear-gradient(135deg, rgba(0, 255, 255, 0.01) 0%, transparent 50%, rgba(255, 140, 0, 0.008) 100%),
+    rgba(0, 6, 10, 0.92);
+ border: 1px solid rgb(var(--cyber-matrix-rgb) / 0.12);
+  box-shadow:
+    0 0 20px rgb(var(--cyber-matrix-rgb) / 0.04),
+    inset 0 0 20px rgb(var(--cyber-matrix-rgb) / 0.02),
+    0 0 60px rgba(0, 0, 0, 0.2);
+}
+
+/* ─── Scrollbar thumb glow on hover ─── */
+[data-cyberpunk] ::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgb(var(--cyber-cyan-rgb) / 0.7), rgb(var(--cyber-cyan-rgb) / 0.35));
+  box-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.2);
+}
+
+/* ─── Selection glow improvement ─── */
+[data-cyberpunk] ::selection {
+  background: linear-gradient(135deg, rgb(var(--cyber-cyan-rgb) / 0.3), rgb(var(--cyber-matrix-rgb) / 0.15));
+  color: #e0f7fa;
+  text-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.3);
+}

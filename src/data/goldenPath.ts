@@ -465,6 +465,7 @@ export const ACT_CHAPTER_TITLES: Record<number, string> = Object.fromEntries(
 export const GOLDEN_PATH_BRANCH_HINTS: Record<string, string> = {
   // Act 1
   start: 'Проверь терминал — сообщение гильдии важнее, чем кажется.',
+  terminal_boot_poem: 'Прочитай стих — кто-то оставил его на мониторе не случайно.',
   room_terminal_wake: 'Сохрани лог гильдии — инцидент #4729 начинается здесь.',
   room_wardrobe_memory: 'Фотоальбом хранит строки, которые ждут читателя.',
   corridor_letter_open: 'Открой письмо — почерк ведёт к правде.',

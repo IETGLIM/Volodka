@@ -13,11 +13,11 @@
   padding: 10px 14px;
   border-radius: 10px;
   border-left: 3px solid var(--toast-border-color);
-  background: rgba(10, 10, 20, 0.88);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  box-shadow: var(--toast-shadow);
-  transition: box-shadow 0.3s ease;
+  background: linear-gradient(135deg, rgba(10, 10, 20, 0.92) 0%, rgba(5, 8, 18, 0.88) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: var(--toast-shadow), inset 0 1px 0 rgba(255,255,255,0.03);
+  transition: box-shadow 0.3s ease, transform 0.2s ease;
   outline: none;
 }
 
@@ -153,6 +153,63 @@
 .crt-sweep-line {
   animation: crt-sweep 5s linear infinite;
   will-change: transform;
+  filter: blur(0.5px);
+  opacity: 0.8;
+}
+
+/* ─── Enhanced loading progress bar — gradient fill with glow ─── */
+@keyframes loading-bar-glow {
+  0%, 100% { box-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.3); }
+  50% { box-shadow: 0 0 16px rgb(var(--cyber-cyan-rgb) / 0.5), 0 0 32px rgb(var(--cyber-cyan-rgb) / 0.15); }
+}
+
+.loading-bar-enhanced {
+  animation: loading-bar-glow 2s ease-in-out infinite;
+}
+
+/* ─── Loading screen boot text fade enhancement ─── */
+.loading-screen-fade-in {
+  animation: loading-screen-fade-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ─── Start button cyberpunk styling for PipelineLoadingOverlay ─── */
+.boot-start-btn {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.5);
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 10, 20, 0.6) 100%);
+  box-shadow:
+    0 0 20px rgb(var(--cyber-cyan-rgb) / 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.boot-start-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgb(var(--cyber-cyan-rgb) / 0.05), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.boot-start-btn:hover {
+  border-color: rgb(var(--cyber-cyan-rgb) / 0.8);
+  box-shadow:
+    0 0 30px rgb(var(--cyber-cyan-rgb) / 0.2),
+    0 0 60px rgb(var(--cyber-cyan-rgb) / 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  text-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.5);
+  transform: translateY(-1px);
+}
+
+.boot-start-btn:hover::before {
+  opacity: 1;
+}
+
+.boot-start-btn:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 0 15px rgb(var(--cyber-cyan-rgb) / 0.15);
 }
 
 @media (prefers-reduced-motion: reduce) {

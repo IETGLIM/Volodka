@@ -128,21 +128,66 @@
   animation: shimmer 2.5s ease-in-out infinite;
 }
 
-/* Neon text glow utility classes */
+/* Neon text glow utility classes — layered multi-depth glow */
 .neon-text-cyan {
-  text-shadow: 0 0 7px rgb(var(--cyber-cyan-rgb) / 0.6), 0 0 15px rgb(var(--cyber-cyan-rgb) / 0.3), 0 0 30px rgb(var(--cyber-cyan-rgb) / 0.15);
+  text-shadow:
+    0 0 4px rgb(var(--cyber-cyan-rgb) / 0.8),
+    0 0 11px rgb(var(--cyber-cyan-rgb) / 0.5),
+    0 0 22px rgb(var(--cyber-cyan-rgb) / 0.25),
+    0 0 44px rgb(var(--cyber-cyan-rgb) / 0.12);
 }
 
 .neon-text-amber {
-  text-shadow: 0 0 7px rgba(251, 191, 36, 0.6), 0 0 15px rgba(251, 191, 36, 0.3), 0 0 30px rgba(251, 191, 36, 0.15);
+  text-shadow:
+    0 0 4px rgba(251, 191, 36, 0.8),
+    0 0 11px rgba(251, 191, 36, 0.5),
+    0 0 22px rgba(251, 191, 36, 0.25),
+    0 0 44px rgba(251, 191, 36, 0.12);
 }
 
 .neon-text-emerald {
-  text-shadow: 0 0 7px rgba(52, 211, 153, 0.6), 0 0 15px rgba(52, 211, 153, 0.3), 0 0 30px rgba(52, 211, 153, 0.15);
+  text-shadow:
+    0 0 4px rgba(52, 211, 153, 0.8),
+    0 0 11px rgba(52, 211, 153, 0.5),
+    0 0 22px rgba(52, 211, 153, 0.25),
+    0 0 44px rgba(52, 211, 153, 0.12);
 }
 
 .neon-text-rose {
-  text-shadow: 0 0 7px rgba(251, 113, 133, 0.6), 0 0 15px rgba(251, 113, 133, 0.3), 0 0 30px rgba(251, 113, 133, 0.15);
+  text-shadow:
+    0 0 4px rgba(251, 113, 133, 0.8),
+    0 0 11px rgba(251, 113, 133, 0.5),
+    0 0 22px rgba(251, 113, 133, 0.25),
+    0 0 44px rgba(251, 113, 133, 0.12);
+}
+
+/* ─── Low-bar pulse for stat bars ─── */
+@keyframes low-bar-pulse {
+  0%, 100% { box-shadow: inset 0 0 4px rgba(255, 50, 50, 0.15); }
+  50% { box-shadow: inset 0 0 8px rgba(255, 50, 50, 0.3), 0 0 8px rgba(255, 50, 50, 0.1); }
+}
+
+.low-bar-pulse {
+  animation: low-bar-pulse 1s ease-in-out infinite;
+}
+
+@keyframes low-bar-pulse-amber {
+  0%, 100% { box-shadow: inset 0 0 4px rgba(251, 191, 36, 0.15); }
+  50% { box-shadow: inset 0 0 8px rgba(251, 191, 36, 0.3), 0 0 8px rgba(251, 191, 36, 0.1); }
+}
+
+.low-bar-pulse-amber {
+  animation: low-bar-pulse-amber 1s ease-in-out infinite;
+}
+
+/* ─── Stat shimmer for HUD bars ─── */
+@keyframes stat-shimmer {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.85; }
+}
+
+.stat-shimmer {
+  animation: stat-shimmer 2s ease-in-out infinite;
 }
 
 /* Panel edge glow animation */

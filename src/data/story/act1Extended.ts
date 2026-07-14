@@ -5,6 +5,61 @@ import type { StoryNode } from '@/shared/types/game';
  * Optional branches that deepen the first chapter without altering golden-path spine.
  */
 export const STORY_NODES_ACT1_EXTENDED: Record<string, StoryNode> = {
+  /* ── Terminal boot poem — center monitor after desk examination ──
+     Cyberpunk terminal boot sequence that reveals poem_2 ("Смерть есть
+     лишь начало") on the monitor. Completes the first_reading quest
+     when the player chooses to read the poem. */
+  terminal_boot_poem: {
+    id: 'terminal_boot_poem',
+    text: [
+      '> BOOT SEQUENCE INITIATED...',
+      '> volodka@home:~$ ./fragment_002.sh',
+      '> [OK] Kernel 6.1.0-volodka loaded',
+      '> [OK] Memory... 256 GB (87% fragmented)',
+      '> [WARN] Unauthorized process: /dev/poetry/fragment_002',
+      '> [OK] Decrypting...',
+      '',
+      '┌──────────────────────────────────────────────┐',
+      '│                                              │',
+      '│   Смерть есть лишь начало.                  │',
+      '│   Верить бы в это хотелось.                 │',
+      '│   Как же меня всё достало.                  │',
+      '│   А ведь многое делалось.                   │',
+      '│                                              │',
+      '└──────────────────────────────────────────────┘',
+      '',
+      'На среднем мониторе появляются строки — не лог, не код. Стихи. Четыре строки мерцают зелёным, будто кто-то набрал их в три часа ночи и ушёл, не нажав «сохранить». Скрипт называется «fragment_002.sh». Фрагмент. Чей-то обрывок, оставленный в системе, как тень в пустом коридоре.',
+    ].join('\n'),
+    contextNote: 'Монитор мерцает терминальным текстом. Зелёный шрифт на чёрном фоне — стих между строк кода.',
+    accessibilityAnnounce: 'Терминал: загрузка скрипта fragment_002. На экране — стихотворение.',
+    soundEffect: 'notify',
+    speaker: 'narrator',
+    sceneId: 'volodka_room',
+    guidanceHint: 'Прочитай стих — кто-то оставил его для тебя.',
+    guidanceSceneLabel: 'Средний монитор',
+    guidanceObjectiveType: 'make_choice',
+    choices: [
+      {
+        text: 'Прочесть стих до конца',
+        next: 'explore_mode',
+        effects: [
+          { type: 'collectPoem', poemId: 'poem_2' },
+          { type: 'addSkill', skill: 'writing', value: 1 },
+          { type: 'addKarma', value: 3 },
+          { type: 'setFlag', flag: 'monitor_poem_accepted', flagValue: true },
+        ],
+      },
+      {
+        text: 'Закрыть — сейчас не до стихов',
+        next: 'explore_mode',
+        effects: [
+          { type: 'addStat', stat: 'stress', value: 2 },
+          { type: 'setFlag', flag: 'monitor_poem_dismissed', flagValue: true },
+        ],
+      },
+    ],
+  },
+
   room_terminal_wake: {
     id: 'room_terminal_wake',
     text: 'Терминал не спит — зелёное приглашение root@volodka мигает, как пульс. Три окна: слева — логи, в центре — обрывок стиха, справа — красная строка от IT-гильдии. «Инцидент #4729. Требуется диагностика. Явка обязательна.» Под сообщением — метка времени: 03:47. Ты не помнишь, чтобы просыпался в три сорок семь. Но кто-то, кажется, помнит за тебя.',

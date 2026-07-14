@@ -53,6 +53,31 @@
   .menu-cinematic-bar {
     transition: none;
   }
+
+  /* ─── New polish animations to disable ─── */
+  .cp-atmospheric-vignette::after,
+  .cp-crt-warp,
+  .cp-fog-drift,
+  .cp-data-divider-sweep,
+  .title-afterglow,
+  .narrative-choice-hover:hover,
+  .panel-header-line,
+  .loading-bar-glow,
+  .boot-start-btn::before {
+    animation: none !important;
+  }
+
+  .narrative-choice-hover:hover {
+    transform: none !important;
+  }
+
+  .boot-start-btn:hover {
+    transform: none !important;
+  }
+
+  body::after {
+    display: none !important;
+  }
 }
 
 html[data-reduced-motion='true'] *,

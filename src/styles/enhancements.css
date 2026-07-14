@@ -115,6 +115,7 @@
 
 .panel-enter-left {
   animation: panel-slide-left 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  filter: blur(0px);
 }
 
 /* Slide in from right with blur */
@@ -133,6 +134,7 @@
 
 .panel-enter-right {
   animation: panel-slide-right 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  filter: blur(0px);
 }
 
 /* Slide in from bottom with blur */
@@ -190,7 +192,8 @@
   background-color: var(--cyber-cyan);
   vertical-align: text-bottom;
   animation: typewriter-blink 1s step-end infinite;
-  box-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.4);
+  box-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.5), 0 0 12px rgb(var(--cyber-cyan-rgb) / 0.2);
+  border-radius: 1px;
 }
 
 /* ─── 5. Scroll indicator pulse ─── */

@@ -42,10 +42,10 @@
   }
 }
 
-/* ─── Dialogue nameplate enhanced ─── */
+/* ─── Dialogue nameplate enhanced — cyberpunk styled character name ─── */
 .dialogue-nameplate {
   position: relative;
-  padding: 2px 0;
+  padding: 4px 0 6px;
 }
 
 .dialogue-nameplate::before {
@@ -55,20 +55,33 @@
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgb(var(--cyber-cyan-rgb) / 0.15), transparent);
+  background: linear-gradient(90deg, transparent, rgb(var(--cyber-cyan-rgb) / 0.25), transparent);
   pointer-events: none;
 }
 
-/* ─── Dialogue typewriter cursor ─── */
+.dialogue-nameplate::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgb(var(--cyber-cyan-rgb) / 0.08), transparent);
+  pointer-events: none;
+}
+
+/* ─── Dialogue typewriter cursor — glowing neon cursor ─── */
 .dialogue-cursor {
   display: inline-block;
   vertical-align: middle;
+  box-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.4);
 }
 
-/* ─── Dialogue choice buttons enhanced ─── */
+/* ─── Dialogue choice buttons enhanced — layered hover with glow ─── */
 .dialogue-choice-btn {
   position: relative;
   isolation: isolate;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .dialogue-choice-btn::before {
@@ -80,12 +93,84 @@
   width: 2px;
   background: linear-gradient(180deg, rgb(var(--cyber-cyan-rgb) / 0.5), rgb(var(--cyber-cyan-rgb) / 0.15));
   z-index: 1;
-  transition: width 0.2s ease, box-shadow 0.2s ease;
+  transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, background 0.25s ease;
 }
 
 .dialogue-choice-btn:hover::before {
   width: 3px;
-  box-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.3);
+  box-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.4), 2px 0 12px rgb(var(--cyber-cyan-rgb) / 0.15);
+  background: linear-gradient(180deg, rgb(var(--cyber-cyan-rgb) / 0.8), rgb(var(--cyber-cyan-rgb) / 0.3));
+}
+
+/* Choice button background sweep on hover */
+.dialogue-choice-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgb(var(--cyber-cyan-rgb) / 0.04), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 0;
+  border-radius: inherit;
+}
+
+.dialogue-choice-btn:hover::after {
+  opacity: 1;
+  animation: dialogue-choice-sweep 0.6s ease-out;
+}
+
+@keyframes dialogue-choice-sweep {
+  0% { background-position: -100% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Disabled choice — desaturated with scanline effect */
+.dialogue-choice-btn[disabled] {
+  filter: saturate(0.3) brightness(0.7);
+}
+
+/* ─── Cinematic narrative choice hover enhancement ─── */
+.narrative-choice-hover {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.narrative-choice-hover:hover {
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.06) 0%, rgba(0, 0, 0, 0.65) 100%) !important;
+  border-color: rgb(var(--cyber-cyan-rgb) / 0.25) !important;
+  box-shadow:
+    0 0 20px rgba(0, 255, 255, 0.06),
+    inset 0 0 30px rgba(0, 255, 255, 0.02),
+    0 4px 20px rgba(0, 0, 0, 0.3) !important;
+  transform: translateX(4px);
+}
+
+.narrative-choice-hover:active {
+  transform: translateX(2px) scale(0.99);
+}
+
+/* ─── Cinematic narrative frame — speaker name with cyberpunk nameplate ─── */
+.narrative-speaker-nameplate {
+  position: relative;
+  display: inline-block;
+}
+
+.narrative-speaker-nameplate::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 15%;
+  right: 15%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgb(var(--cyber-cyan-rgb) / 0.4), transparent);
+  box-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.15);
+}
+
+/* ─── Typewriter text glow during active typing ─── */
+.typewriter-active-glow {
+  text-shadow:
+    0 0 10px rgba(0, 255, 255, 0.08),
+    0 0 20px rgba(0, 255, 255, 0.04);
 }
 
 /* ─── Dialogue focus: dim exploration HUD while a dialogue is open ───

@@ -153,6 +153,32 @@ export const TRIGGER_ZONES: TriggerZone[] = [
       { type: 'collectPoem', poemId: 'poem_2' },
     ],
   },
+  /* ── Center monitor poem — visible after desk examined, one-time discovery ──
+       The player first examines the desk (room_desk → interacted_desk flag),
+       then this smaller trigger appears on the center monitor, offering a
+       terminal-boot story beat that reveals poem_2 and completes first_reading. */
+  {
+    id: 'room_monitor_poem',
+    sceneId: 'volodka_room',
+    position: [0.15, 0.95, -2.65],
+    size: [0.45, 0.4, 0.2],
+    enterToast: 'Средний монитор мигает — кто-то оставил запущенный скрипт.',
+    interactionType: 'use',
+    interactionLabel: 'Активировать монитор',
+    linkedStoryNodeId: 'terminal_boot_poem',
+    requiredFlag: 'interacted_desk',
+    hiddenWhenFlag: 'terminal_poem_read',
+    isOneTime: true,
+    examineData: {
+      title: 'Средний монитор',
+      description: 'Экран мерцает. На нём — незаконченный процесс и обрывок текста, похожего на стихотворение.',
+      detailText: 'Зелёные символы бегут по экрану. Кто-то запустил скрипт и не дождался результата. Файл называется «fragment_002.sh».',
+      icon: '🖥️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'terminal_poem_read', flagValue: true },
+    ],
+  },
   {
     id: 'room_window',
     sceneId: 'volodka_room',

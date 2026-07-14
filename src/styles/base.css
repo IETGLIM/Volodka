@@ -20,6 +20,10 @@
     min-height: 100dvh;
     /* Prevent iOS text size adjustment on rotation */
     -webkit-text-size-adjust: 100%;
+    /* Subtle noise texture on the entire page for cinematic depth */
+    background-image: var(--pattern-noise);
+    background-size: 256px 256px;
+    background-repeat: repeat;
   }
 
   /* Body uses touch-action:none for game canvas — re-enable native typing/scrolling in form fields */
@@ -30,13 +34,54 @@
     touch-action: auto;
   }
 
-  /* Cyberpunk selection colors */
+  /* Cyberpunk selection colors with glow */
   ::selection {
-    background: rgb(var(--cyber-cyan-rgb) / 0.25);
+    background: linear-gradient(135deg, rgb(var(--cyber-cyan-rgb) / 0.3), rgb(var(--cyber-matrix-rgb) / 0.15));
     color: #e0f7fa;
+    text-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.4);
   }
   ::-moz-selection {
-    background: rgb(var(--cyber-cyan-rgb) / 0.25);
+    background: linear-gradient(135deg, rgb(var(--cyber-cyan-rgb) / 0.3), rgb(var(--cyber-matrix-rgb) / 0.15));
     color: #e0f7fa;
+    text-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.4);
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     GLOBAL SCANLINE OVERLAY — subtle CRT effect on the entire viewport
+     ══════════════════════════════════════════════════════════════ */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9999;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.015) 2px,
+      rgba(0, 0, 0, 0.015) 4px
+    );
+    mix-blend-mode: multiply;
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     IMPROVED TYPOGRAPHY HIERARCHY — baseline rhythm for cyberpunk UI
+     ══════════════════════════════════════════════════════════════ */
+  h1, h2, h3 {
+    letter-spacing: 0.02em;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+  }
+
+  /* Subtle glow on all monospace text to reinforce terminal feel */
+  code, .font-mono, [class*='font-mono'] {
+    text-shadow: 0 0 3px rgb(var(--cyber-cyan-rgb) / 0.08);
+  }
+
+  /* Focus ring cyberpunk styling */
+  :focus-visible {
+    outline: 1px solid rgb(var(--cyber-cyan-rgb) / 0.5);
+    outline-offset: 2px;
+    box-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.15);
   }
 }

@@ -41,7 +41,9 @@ import { forceDisposeOrphanedWebGLResources } from '@/engine/canvas/canvasRender
 import { adoptCanvasWebGlRenderer } from '@/engine/canvas/webGlRendererSingleton';
 import { markCanvasMounted, markFirstFrame } from '@/engine/performance/LoadingTimeline';
 
-const LazyPhysicsSceneInner = lazy(() => import('./PhysicsSceneInner'));
+const LazyPhysicsSceneInner = lazy(() =>
+  import('./PhysicsSceneInner').then((m) => ({ default: m.PhysicsSceneInner })),
+);
 
 const LazyFrameProfilerBridge = lazy(() =>
   import('./FrameProfilerBridge').then((m) => ({ default: m.FrameProfilerBridge })),

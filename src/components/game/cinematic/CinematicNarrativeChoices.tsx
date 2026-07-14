@@ -37,7 +37,7 @@ export function CinematicNarrativeChoices({
         whileTap={{ scale: 0.99 }}
         onClick={onContinue}
         aria-label={continueLabel}
-        className="group w-full text-left px-5 py-3 rounded-lg border border-white/15 bg-black/40 backdrop-blur-md text-slate-100 hover:bg-black/55 hover:border-white/25 transition-all"
+        className="group w-full text-left px-5 py-3 rounded-lg border border-white/15 bg-black/40 backdrop-blur-md text-slate-100 hover:bg-black/55 hover:border-white/25 transition-all narrative-choice-hover"
         style={{ boxShadow: `0 0 24px ${accentColor}12` }}
       >
         <div className="flex items-center gap-2 justify-center">
@@ -67,7 +67,7 @@ export function CinematicNarrativeChoices({
           aria-disabled={!choice.pass}
           className={`group w-full text-left px-5 py-3 rounded-lg border backdrop-blur-md transition-all ${
             choice.pass
-              ? 'border-white/15 bg-black/40 text-slate-100 hover:bg-black/55 hover:border-white/25 cursor-pointer'
+              ? 'border-white/15 bg-black/40 text-slate-100 hover:bg-black/55 hover:border-white/25 cursor-pointer narrative-choice-hover'
               : 'border-white/5 bg-black/25 text-slate-500 cursor-not-allowed opacity-55'
           }`}
           style={choice.pass ? { boxShadow: `0 0 20px ${accentColor}10` } : undefined}

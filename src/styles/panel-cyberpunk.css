@@ -12,9 +12,9 @@
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgb(var(--cyber-cyan-rgb) / 0.06) 25%,
-    rgb(var(--cyber-cyan-rgb) / 0.12) 50%,
-    rgb(var(--cyber-cyan-rgb) / 0.06) 75%,
+    rgb(var(--cyber-cyan-rgb) / 0.08) 25%,
+    rgb(var(--cyber-cyan-rgb) / 0.15) 50%,
+    rgb(var(--cyber-cyan-rgb) / 0.08) 75%,
     transparent 100%
   );
   background-size: 200% 100%;
@@ -152,35 +152,67 @@
   background: rgb(var(--cyber-cyan-rgb) / 0.08);
 }
 
-/* ─── Corner bracket decorations ─── */
+/* ─── Corner bracket decorations — enhanced with double-line effect ─── */
 .corner-bracket {
   position: absolute;
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
   pointer-events: none;
   z-index: var(--z-decor-bracket);
 }
 
 .corner-bracket-tl {
   top: 0; left: 0;
-  border-top: 1px solid rgb(var(--cyber-cyan-rgb) / 0.25);
-  border-left: 1px solid rgb(var(--cyber-cyan-rgb) / 0.25);
+  border-top: 1px solid rgb(var(--cyber-cyan-rgb) / 0.3);
+  border-left: 1px solid rgb(var(--cyber-cyan-rgb) / 0.3);
+  box-shadow: -1px -1px 4px rgb(var(--cyber-cyan-rgb) / 0.06);
 }
 
 .corner-bracket-tr {
   top: 0; right: 0;
-  border-top: 1px solid rgb(var(--cyber-cyan-rgb) / 0.25);
-  border-right: 1px solid rgb(var(--cyber-cyan-rgb) / 0.25);
+  border-top: 1px solid rgb(var(--cyber-cyan-rgb) / 0.3);
+  border-right: 1px solid rgb(var(--cyber-cyan-rgb) / 0.3);
+  box-shadow: 1px -1px 4px rgb(var(--cyber-cyan-rgb) / 0.06);
 }
 
 .corner-bracket-bl {
   bottom: 0; left: 0;
-  border-bottom: 1px solid rgb(var(--cyber-cyan-rgb) / 0.25);
-  border-left: 1px solid rgb(var(--cyber-cyan-rgb) / 0.25);
+  border-bottom: 1px solid rgb(var(--cyber-cyan-rgb) / 0.3);
+  border-left: 1px solid rgb(var(--cyber-cyan-rgb) / 0.3);
+  box-shadow: -1px 1px 4px rgb(var(--cyber-cyan-rgb) / 0.06);
 }
 
 .corner-bracket-br {
   bottom: 0; right: 0;
-  border-bottom: 1px solid rgb(var(--cyber-cyan-rgb) / 0.25);
-  border-right: 1px solid rgb(var(--cyber-cyan-rgb) / 0.25);
+  border-bottom: 1px solid rgb(var(--cyber-cyan-rgb) / 0.3);
+  border-right: 1px solid rgb(var(--cyber-cyan-rgb) / 0.3);
+  box-shadow: 1px 1px 4px rgb(var(--cyber-cyan-rgb) / 0.06);
+}
+
+/* ─── Panel inner glow — subtle radial glow inside panels ─── */
+.panel-inner-glow {
+  position: relative;
+}
+
+.panel-inner-glow::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(ellipse at 50% 0%, rgb(var(--cyber-cyan-rgb) / 0.03) 0%, transparent 60%);
+}
+
+/* ─── Panel header underline — animated gradient line ─── */
+@keyframes panel-header-line {
+  0% { background-position: -100% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.panel-header-line {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgb(var(--cyber-cyan-rgb) / 0.3), transparent);
+  background-size: 200% 100%;
+  animation: panel-header-line 6s ease-in-out infinite;
 }

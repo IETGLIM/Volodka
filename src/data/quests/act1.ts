@@ -14,7 +14,7 @@ export const QUESTS_ACT1: QuestDefinition[] = [
     faction: undefined,
     questType: 'main',
     difficulty: 'easy',
-    hint: 'Осмотри рабочий стол [E], затем загляни в книжную полку — стих ждёт тебя.',
+    hint: 'Осмотри рабочий стол [E], затем активируй монитор — стих мерцает на экране.',
     objectives: [
       {
         id: 'find_title_poem',

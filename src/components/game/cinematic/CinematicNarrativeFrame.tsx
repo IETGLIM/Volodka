@@ -95,7 +95,7 @@ export function CinematicNarrativeFrame({
                   delay: typeStyles.titleDelay,
                   ease: 'easeOut',
                 }}
-                className={`${typeStyles.titleSize} ${typeStyles.titleWeight} ${typeStyles.titleTracking} text-center`}
+                className={`${typeStyles.titleSize} ${typeStyles.titleWeight} ${typeStyles.titleTracking} text-center narrative-speaker-nameplate`}
                 style={{
                   fontFamily: '"Georgia", "Times New Roman", serif',
                   color: 'rgba(255,255,255,0.96)',
@@ -115,7 +115,7 @@ export function CinematicNarrativeFrame({
                 delay: speakerLabel ? typeStyles.bodyDelay : typeStyles.titleDelay,
                 ease: 'easeOut',
               }}
-              className={`${typeStyles.bodySize} text-center max-w-3xl mt-4 sm:mt-5 leading-relaxed`}
+              className={`${typeStyles.bodySize} text-center max-w-3xl mt-4 sm:mt-5 leading-relaxed ${!done ? 'typewriter-active-glow' : ''}`}
               style={{
                 fontFamily: '"Georgia", "Times New Roman", serif',
                 color:

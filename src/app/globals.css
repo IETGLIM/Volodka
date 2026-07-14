@@ -35,6 +35,7 @@
 /* ── User setting: scanlines off (SettingsPanel → engine/visualSettings) ── */
 html[data-scanlines="off"] .panel-scanlines::after,
 html[data-scanlines="off"] .scanline-overlay::after,
-html[data-scanlines="off"] .cp-scanline-bar {
+html[data-scanlines="off"] .cp-scanline-bar,
+html[data-scanlines="off"] body::after {
   display: none !important;
 }

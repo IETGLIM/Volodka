@@ -113,10 +113,10 @@ export function SceneColliderSelector({ livePlayerPositionRef }: SceneColliderSe
       </Suspense>
 
       {/* SceneDefinition + structural Rapier colliders — remount per sceneId. */}
-      <ScenePhysicsColliders key={sceneId} sceneId={sceneId} />
+      <ScenePhysicsColliders key={`physics:${sceneId}`} sceneId={sceneId} />
 
       {/* Invisible meshes on layer 5 for camera wall-avoidance raycasts. */}
-      <CameraCollisionProxies key={sceneId} sceneId={sceneId} />
+      <CameraCollisionProxies key={`cam-proxies:${sceneId}`} sceneId={sceneId} />
     </group>
   );
 }
