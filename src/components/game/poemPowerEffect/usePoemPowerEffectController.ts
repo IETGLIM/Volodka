@@ -11,6 +11,7 @@ import {
 } from '@/engine/poemPower/poemPowerEffectPresentation';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { useTransitionDirector } from '@/hooks/useTransitionDirector';
+import { triggerFlash, triggerShake } from '@/engine/fx/screenFxTriggers';
 
 export type ActivePowerNotification = {
   id: string;
@@ -66,6 +67,16 @@ export function usePoemPowerEffectController() {
     };
 
     setNotifications((prev) => [...prev, notification]);
+
+    // Screen flash in element color
+    triggerFlash(meta.color, 0.35, 400);
+
+    // Camera shake for powerful poems (combat/defense themes)
+    if (meta.colorTheme === 'combat') {
+      triggerShake(8, 200);
+    } else if (meta.colorTheme === 'defense') {
+      triggerShake(5, 150);
+    }
 
     const timer = setTimeout(() => {
       setNotifications((prev) => prev.filter((n) => n.id !== notification.id));

@@ -35,3 +35,46 @@
 .poetry-power-slot--just-used {
   transform: scale(1.1);
 }
+
+/* Cooldown sweep animation — a radial wipe that sweeps around the slot */
+@keyframes cooldown-sweep {
+  from {
+    clip-path: polygon(50% 50%, 50% 0%, 50% 0%, 50% 0%, 50% 0%, 50% 0%);
+  }
+  12.5% {
+    clip-path: polygon(50% 50%, 50% 0%, 100% 0%, 100% 0%, 100% 0%, 100% 0%);
+  }
+  25% {
+    clip-path: polygon(50% 50%, 50% 0%, 100% 0%, 100% 100%, 100% 100%, 100% 100%);
+  }
+  37.5% {
+    clip-path: polygon(50% 50%, 50% 0%, 100% 0%, 100% 100%, 50% 100%, 50% 100%);
+  }
+  50% {
+    clip-path: polygon(50% 50%, 50% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 100%);
+  }
+  62.5% {
+    clip-path: polygon(50% 50%, 50% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 50%);
+  }
+  75% {
+    clip-path: polygon(50% 50%, 50% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 0%);
+  }
+  87.5% {
+    clip-path: polygon(50% 50%, 50% 0%, 100% 0%, 0% 0%, 0% 0%, 50% 0%);
+  }
+  to {
+    clip-path: polygon(50% 50%, 50% 0%, 50% 0%, 50% 0%, 50% 0%, 50% 0%);
+  }
+}
+
+.poetry-power-cooldown-sweep {
+  animation: cooldown-sweep var(--cooldown-duration, 60s) linear forwards;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .poetry-power-cooldown-sweep {
+    animation: none;
+    background: rgba(0, 0, 0, 0.45);
+  }
+}

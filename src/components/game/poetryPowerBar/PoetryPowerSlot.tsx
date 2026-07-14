@@ -90,7 +90,10 @@ export function PoetryPowerSlot({ poemId, slotIndex, reducedMotion }: PoetryPowe
             {onCooldown && (
               <div className="absolute inset-0 rounded-lg overflow-hidden pointer-events-none" aria-hidden="true">
                 <div
-                  className="absolute bottom-0 left-0 right-0 bg-stone-900/70 transition-all duration-1000"
+                  className="absolute inset-0 poetry-power-cooldown-sweep rounded-lg"
+                  style={{ '--cooldown-duration': `${power.cooldownMs}ms` } as React.CSSProperties}
+                />
+                <div className="absolute bottom-0 left-0 right-0 bg-stone-900/70 transition-all duration-1000"
                   style={{ height: `${cooldownProgress}%` }}
                 />
                 <div className="absolute inset-0 flex items-center justify-center">

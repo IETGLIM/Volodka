@@ -1,6 +1,7 @@
 /* ─── Volodka RPG – Poem Reading Ritual Cutscene ───
    Full-screen reading beat before main poem powers activate.
    Camera dollies toward Volodka; text reveals line-by-line.
+   Enhanced with vignette, breathing animation, and continue button.
  */
 
 import { useState, useEffect, useCallback, useRef, memo } from 'react';
@@ -23,6 +24,7 @@ import {
   cancelPoemReadingCutscene,
   setPoemReadingCutsceneUiActive,
 } from '@/engine/poemReading/poemReadingOrchestrator';
+import { audioEngine } from '@/engine/AudioEngine';
 
 const MIN_SKIP_MS = 1200;
 const MIN_SKIP_REDUCED_MS = 400;
@@ -57,12 +59,17 @@ const PoemReadingContent = memo(function PoemReadingContent({
     eventBus.emit('camera:poem_reading_start', {});
     setAriaAnnouncement(poem ? `Чтение: ${poem.title}` : 'Чтение стихотворения');
 
+    // Muffle ambient music to create intimate reading atmosphere
+    audioEngine.enableDialogueMuffle();
+
     const skipTimer = setTimeout(() => {
       setCanSkip(true);
     }, reducedMotion ? MIN_SKIP_REDUCED_MS : MIN_SKIP_MS);
 
     return () => {
       clearTimeout(skipTimer);
+      // Restore ambient music when leaving reading mode
+      audioEngine.disableDialogueMuffle();
     };
   }, [poem, reducedMotion]);
 
@@ -137,25 +144,33 @@ const PoemReadingContent = memo(function PoemReadingContent({
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: reducedMotion ? 0 : 0.55 }}
-        onClick={() => {
-          if (canSkip || reducedMotion) {
-            finishReading();
-          }
-        }}
         data-testid="poem-reading-cutscene"
       >
+        {/* Enhanced vignette — deeper, more focused on center text */}
         <div
           className="absolute inset-0 pointer-events-none"
           aria-hidden
           style={{
             zIndex: UI_LAYERS.POEM_VIGNETTE,
             background:
-              'radial-gradient(ellipse at center, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.82) 90%)',
+              'radial-gradient(ellipse at center, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.5) 40%, rgba(0,0,0,0.88) 100%)',
           }}
         />
 
         <CinematicShell presentation={presentation} backdropVariant="revelation">
-          <div className="relative z-20 flex flex-col items-center w-full max-w-3xl px-6">
+          {/* Breathing animation container — very subtle scale pulse */}
+          <motion.div
+            className="relative z-20 flex flex-col items-center w-full max-w-3xl px-6"
+            animate={reducedMotion ? undefined : {
+              scale: [1, 1.008, 1],
+            }}
+            transition={{
+              duration: 4,
+              ease: 'easeInOut',
+              repeat: Infinity,
+              repeatType: 'reverse',
+            }}
+          >
             <CinematicTitleCard
               title={poem.title}
               subtitle={poem.author}
@@ -190,18 +205,25 @@ const PoemReadingContent = memo(function PoemReadingContent({
 
             <AnimatePresence>
               {(canSkip || reducedMotion) && (
-                <motion.p
+                <motion.button
+                  type="button"
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
-                  className="mt-8 text-xs sm:text-sm tracking-[0.18em] uppercase text-center font-mono"
-                  style={{ color: `${presentation.accentColor}aa` }}
+                  onClick={finishReading}
+                  className="mt-8 px-6 py-2 rounded border font-mono text-xs sm:text-sm tracking-[0.15em] uppercase transition-colors cursor-pointer pointer-events-auto"
+                  style={{
+                    color: `${presentation.accentColor}cc`,
+                    borderColor: `${presentation.accentColor}44`,
+                    background: `${presentation.accentColor}0a`,
+                  }}
+                  aria-label="Продолжить"
                 >
-                  Пробел или щелчок — продолжить
-                </motion.p>
+                  Продолжить
+                </motion.button>
               )}
             </AnimatePresence>
-          </div>
+          </motion.div>
         </CinematicShell>
       </motion.div>
     </>
