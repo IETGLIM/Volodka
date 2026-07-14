@@ -77,6 +77,7 @@ export const volodka_room_def: SceneDefinition = {
   fogEnabled: true,
   // Pushed fog back so it no longer hides the desk/bed in a 5x3x7 room
   fog: { near: 8, far: 18 },
+  entryText: 'Монитор мерцает. Тишина и код.',
 };
 
 /** Street at night — outdoor scene with buildings, neon, fog */
@@ -193,6 +194,7 @@ export const street_night_def: SceneDefinition = {
   fogEnabled: true,
   fog: { near: 14, far: 50 },
   transitionStyle: 'flash',
+  entryText: 'Неон и снег. Город не спит.',
 };
 
 /** Cafe "Blue Hole" — indoor cafe with bar counter and tables */
@@ -250,6 +252,7 @@ export const cafe_evening_def: SceneDefinition = {
   groundColor: '#1e2030',
   fogEnabled: true,
   fog: { near: 5, far: 14 },
+  entryText: 'Кофе, синий свет и тихие разговоры.',
 };
 
 /** Corridor of the communal apartment — widened indoor hallway */
@@ -344,6 +347,7 @@ export const volodka_corridor_def: SceneDefinition = {
   groundColor: '#252530',
   fogEnabled: true,
   fog: { near: 5, far: 14 },
+  entryText: 'Пустой коридор. Эхо чужих шагов.',
 };
 
 /** Kitchen — evening — warm indoor family space */
@@ -399,6 +403,7 @@ export const home_evening_def: SceneDefinition = {
   groundColor: '#3a2a20',
   fogEnabled: true,
   fog: { near: 5, far: 11 },
+  entryText: 'Тёплый свет. Запах домашнего хлеба.',
 };
 
 /** Street — winter — cold outdoor scene with snow */
@@ -452,6 +457,7 @@ export const street_winter_def: SceneDefinition = {
   fogEnabled: true,
   fog: { near: 12, far: 42 },
   transitionStyle: 'flash',
+  entryText: 'Метель. Белая пелена скрывает небо.',
 };
 
 /** IT Guild Office — bright indoor workspace */
@@ -513,6 +519,7 @@ export const office_day_def: SceneDefinition = {
   groundColor: '#c8d0d8',
   fogEnabled: true,
   fog: { near: 8, far: 18 },
+  entryText: 'Флуоресцентные лампы. Бумажные горы.',
 };
 
 /** Park — day — open outdoor green space */
@@ -596,6 +603,7 @@ export const park_day_def: SceneDefinition = {
   fogEnabled: true,
   fog: { near: 10, far: 40 },
   transitionStyle: 'flash',
+  entryText: 'Листва шуршит. Город далеко.',
 };
 
 /** Library — day — quiet indoor study space with bookshelves */
@@ -654,6 +662,7 @@ export const library_day_def: SceneDefinition = {
   groundColor: '#8a7a50',
   fogEnabled: true,
   fog: { near: 6, far: 16 },
+  entryText: 'Пыль и мудрость. Стеллажи до потолка.',
 };
 
 /** Battle arena — combat encounter space */
@@ -706,6 +715,7 @@ export const battle_def: SceneDefinition = {
   groundColor: '#1a0a0a',
   fogEnabled: true,
   fog: { near: 5, far: 15 },
+  entryText: 'Стихии сталкиваются. Слово — оружие.',
 };
 
 /** Dream — surreal subconscious landscape */
@@ -754,6 +764,7 @@ export const sleep_dream_def: SceneDefinition = {
   fogEnabled: true,
   fog: { near: 2, far: 30 },
   transitionStyle: 'ripple',
+  entryText: 'Грани реальности тают. Ты между мирами.',
 };
 
 /** Rooftop edge — precarious outdoor perch above the city */
@@ -805,6 +816,7 @@ export const rooftop_edge_def: SceneDefinition = {
   fogEnabled: true,
   fog: { near: 15, far: 80 },
   transitionStyle: 'darken',
+  entryText: 'Ветер с высоты. Город как на ладони.',
 };
 
 /** Abandoned factory — dark industrial interior */
@@ -875,6 +887,7 @@ export const abandoned_factory_def: SceneDefinition = {
   fogEnabled: true,
   fog: { near: 4, far: 16 },
   transitionStyle: 'darken',
+  entryText: 'Ржавчина и гул. Призраки конвейера.',
 };
 
 /** Солныш & Лёня — cozy room with carpets, art and coffee */
@@ -931,6 +944,7 @@ export const solnysh_room_def: SceneDefinition = {
   groundColor: '#2e2820',
   fogEnabled: true,
   fog: { near: 5, far: 12 },
+  entryText: 'Ковры, кофе и акварели. Дом внутри дома.',
 };
 
 /** Zarema & Albert's room — cozy indoor shared room */
@@ -987,6 +1001,7 @@ export const zarema_albert_room_def: SceneDefinition = {
   groundColor: '#2e2820',
   fogEnabled: true,
   fog: { near: 5, far: 12 },
+  entryText: 'Два мира под одной крышей. Шёлк и схемы.',
 };
 
 /** ЧК · Лес · Зорге — secret TOLPA gathering in the forest (night) */
@@ -1037,6 +1052,7 @@ export const chk_forest_zorge_def: SceneDefinition = {
   fogEnabled: true,
   fog: { near: 10, far: 36 },
   transitionStyle: 'dissolve',
+  entryText: 'Тени между сосен. Тихий заговор.',
 };
 
 /** Factory basement — the reliquary of «Заря-М», dense industrial catacombs */
@@ -1096,6 +1112,7 @@ export const factory_basement_def: SceneDefinition = {
   fogEnabled: true,
   fog: { near: 4, far: 14 },
   transitionStyle: 'dissolve',
+  entryText: 'Под землёй. Шёпот машин и старых тайн.',
 };
 
 /** River pier at night — second ЧК hangout: barrel fire, port wine, guitar, water */
@@ -1153,6 +1170,7 @@ export const river_pier_def: SceneDefinition = {
   fogEnabled: true,
   fog: { near: 12, far: 42 },
   transitionStyle: 'dissolve',
+  entryText: 'Плеск воды. Костёр и гитара.',
 };
 
 /** Per-scene procedural ambient profiles — merged into SceneDefinition at export. */

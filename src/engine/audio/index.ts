@@ -30,3 +30,7 @@ export {
   resetAudioCapabilitiesCache,
   type AudioCapabilities,
 } from './audioCapabilities';
+export {
+  ensureTransitionSounds,
+  disposeTransitionSounds,
+} from './transitionSound';

@@ -1123,6 +1123,70 @@ function handleDefeat(): void {
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   §10.5 — GAMEPAD EVENT LISTENERS
+   ═══════════════════════════════════════════════════════════════ */
+
+/** Module-level poem selection index for gamepad cycling. */
+let gamepadSelectedPoemIndex = 0;
+
+function handleGamepadAttack(): void {
+  playerAttack();
+}
+
+function handleGamepadDefend(): void {
+  playerDefend();
+}
+
+function handleGamepadFlee(): void {
+  playerFlee();
+}
+
+function handleGamepadPoemCyclePrev(): void {
+  const powers = getAvailableCombatPowers();
+  if (powers.length === 0) return;
+  gamepadSelectedPoemIndex = (gamepadSelectedPoemIndex - 1 + powers.length) % powers.length;
+  eventBus.emit('combat:gamepad_poem_cycle_prev' as never, {} as never);
+}
+
+function handleGamepadPoemCycleNext(): void {
+  const powers = getAvailableCombatPowers();
+  if (powers.length === 0) return;
+  gamepadSelectedPoemIndex = (gamepadSelectedPoemIndex + 1) % powers.length;
+  eventBus.emit('combat:gamepad_poem_cycle_next' as never, {} as never);
+}
+
+function handleGamepadPoemUseSelected(): void {
+  const powers = getAvailableCombatPowers();
+  if (powers.length === 0) return;
+  const idx = Math.min(gamepadSelectedPoemIndex, powers.length - 1);
+  const selected = powers[idx];
+  if (selected && selected.cooldownRemaining <= 0) {
+    playerUsePoemPower(selected.poemId);
+  }
+}
+
+/** Get the currently gamepad-selected poem index (for UI highlighting). */
+export function getGamepadSelectedPoemIndex(): number {
+  return gamepadSelectedPoemIndex;
+}
+
+/** Reset poem selection when combat starts. */
+function resetGamepadPoemSelection(): void {
+  gamepadSelectedPoemIndex = 0;
+}
+
+// Register gamepad event listeners on the eventBus
+eventBus.on('combat:gamepad_attack', handleGamepadAttack);
+eventBus.on('combat:gamepad_defend', handleGamepadDefend);
+eventBus.on('combat:gamepad_flee', handleGamepadFlee);
+eventBus.on('combat:gamepad_poem_cycle_prev', handleGamepadPoemCyclePrev);
+eventBus.on('combat:gamepad_poem_cycle_next', handleGamepadPoemCycleNext);
+eventBus.on('combat:gamepad_poem_use_selected', handleGamepadPoemUseSelected);
+
+// Reset poem selection when combat starts
+eventBus.on('combat:start', resetGamepadPoemSelection);
+
+/* ═══════════════════════════════════════════════════════════════
    §11 — GET AVAILABLE POEM POWERS (cooldown-based)
    ═══════════════════════════════════════════════════════════════ */
 

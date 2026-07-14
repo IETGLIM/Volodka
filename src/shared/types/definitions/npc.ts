@@ -53,6 +53,8 @@ export interface NPCDefinition {
   readonly patrolRadius?: number;
   readonly patrolWaypoints?: [number, number, number][];
   readonly dialogueNodeId?: string;
+  /** Dialogue node to redirect to after the first visit (return / repeat dialogue). */
+  readonly returnDialogueNodeId?: string;
   /** Links to NPCSchedule.id — movement keyed by npcId in ScheduleEngine */
   readonly scheduleId?: string;
   readonly description?: string;

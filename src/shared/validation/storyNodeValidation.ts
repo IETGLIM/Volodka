@@ -161,6 +161,9 @@ export function validateStoryEffects(
           pushError(out, ep, `${e.type} missing value`);
         }
         break;
+      case 'openDataTerminal':
+        // Validated at runtime — terminalDifficulty, terminalTitle, terminalReward are optional
+        break;
       default: {
         const unknownType = (e as StoryEffect).type;
         pushError(out, ep, `unknown effect type "${unknownType}"`);

@@ -12,6 +12,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
   /* ─────────────── ALBERT – philosopher at the cafe ─────────────── */
   {
     id: 'albert',
+    faction: 'network',
     name: 'Альберт',
     modelPath: '/models/npcs/albert.glb',
     scale: 1.0,
@@ -20,6 +21,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
     defaultRotation: Math.PI * 0.25,
     patrolRadius: 1.5,
     dialogueNodeId: 'albert_greeting',
+    returnDialogueNodeId: 'albert_return',
     npcSplashProfile: 'albert_cafe',
     description: 'Философ-затворник, постоянный гость кафе «Синяя яма». Видит в коде и стихах одну природу.',
     barkTexts: {
@@ -40,6 +42,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
   /* ─────────────── ZAREMA – caring friend ─────────────── */
   {
     id: 'zarema',
+    faction: 'neutral',
     name: 'Зарема',
     modelPath: '/models/npcs/zarema.glb',
     scale: 0.95,
@@ -48,6 +51,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
     defaultRotation: Math.PI,
     patrolRadius: 2.0,
     dialogueNodeId: 'zarema_greeting',
+    returnDialogueNodeId: 'zarema_return',
     npcSplashProfile: 'zarema_kitchen',
     description: 'Тёплая, заботливая соседка по коммуналке. Единственный человек, который по-настоящему переживает за Володьку.',
     barkTexts: {
@@ -68,6 +72,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
   /* ─────────────── CAFE BARISTA ─────────────── */
   {
     id: 'cafe_barista',
+    faction: 'network',
     name: 'Бариста',
     modelPath: '/models/npcs/cafe_barista.glb',
     scale: 1.0,
@@ -76,6 +81,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
     defaultRotation: 0,
     patrolRadius: 0.5,
     dialogueNodeId: 'cafe_barista_dialogue',
+    returnDialogueNodeId: 'cafe_barista_return',
     npcSplashProfile: 'barista_counter',
     description: 'Бариста кафе «Синяя яма» с кибернетическим протезом руки. Знает больше, чем говорит.',
     barkTexts: {
@@ -96,6 +102,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
   /* ─────────────── ALEXANDER – IT guild leader ─────────────── */
   {
     id: 'office_alexander',
+    faction: 'guild',
     name: 'Александр',
     modelPath: '/models/npcs/office_alexander.glb',
     scale: 1.05,
@@ -110,6 +117,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
       [2.0, 0, -0.5],
     ],
     dialogueNodeId: 'office_alexander_dialogue',
+    returnDialogueNodeId: 'office_alexander_return',
     npcSplashProfile: 'npc_office_alexander',
     description: 'Лидер IT-гильдии. Спокоен, профессионален, но скрывает усталость. Обратился к Володьке из-за инцидента #4729.',
     barkTexts: {
@@ -130,6 +138,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
   /* ─────────────── COLLEAGUE – office worker ─────────────── */
   {
     id: 'office_colleague',
+    faction: 'guild',
     name: 'Коллега',
     modelPath: '/models/npcs/office_colleague.glb',
     scale: 0.95,
@@ -138,6 +147,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
     defaultRotation: Math.PI * 1.25,
     patrolRadius: 0.8,
     dialogueNodeId: 'office_colleague_dialogue',
+    returnDialogueNodeId: 'office_colleague_return',
     npcSplashProfile: 'npc_office_colleague',
     description: 'Нервный коллега в офисе гильдии. Знает о связи между кодом и стихами, но боится говорить.',
     barkTexts: {
@@ -158,6 +168,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
   /* ─────────────── MARIA – mysterious stranger ─────────────── */
   {
     id: 'maria',
+    faction: 'network',
     name: 'Виктория',
     modelPath: '/models/npcs/maria.glb',
     scale: 0.8,
@@ -172,6 +183,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
       [-2.0, 0, 0.5],
     ],
     dialogueNodeId: 'maria_dialogue',
+    returnDialogueNodeId: 'maria_return',
     npcSplashProfile: 'npc_maria',
     description: 'Таинственная незнакомка, появляющаяся в тени города. Знает о коде и стихах больше, чем кто-либо. Её прошлое — загадка, а мотивы — неясны.',
     barkTexts: {
@@ -192,6 +204,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
   /* ─────────────── DMITRY – senior developer ─────────────── */
   {
     id: 'office_dmitry',
+    faction: 'guild',
     name: 'Дмитрий',
     modelPath: '/models/npcs/office_dmitry.glb',
     scale: 1.1,
@@ -206,6 +219,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
       [-1.5, 0, 0.0],
     ],
     dialogueNodeId: 'dmitry_greeting',
+    returnDialogueNodeId: 'office_dmitry_return',
     npcSplashProfile: 'npc_office_dmitry',
     description: 'Старший разработчик IT-гильдии. Много знает о старых архивах, но предпочитает молчать. Ментор, который мог бы стать другом.',
     barkTexts: {
@@ -226,6 +240,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
   /* ─────────────── VIKTOR — old hacker, mentor figure ─────────────── */
   {
     id: 'viktor',
+    faction: 'network',
     name: 'Виктор',
     modelPath: '/models/npcs/viktor.glb',
     scale: 1.0,
@@ -240,6 +255,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
       [-5.0, 0, 0.0],
     ],
     dialogueNodeId: 'viktor_greeting',
+    returnDialogueNodeId: 'viktor_return',
     npcSplashProfile: 'npc_viktor',
     description: 'Старый хакер, переживший Великий Сбой. Знает тайны Сети, которые никому не рассказывает. Наставник, потерявший всё — кроме памяти.',
     barkTexts: {
@@ -260,6 +276,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
   /* ─────────────── KIRA — street informant, data trader ─────────────── */
   {
     id: 'kira',
+    faction: 'neutral',
     name: 'Кира',
     modelPath: '/models/npcs/kira.glb',
     scale: 1.0,
@@ -274,6 +291,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
       [4.0, 0, -5.0],
     ],
     dialogueNodeId: 'kira_greeting',
+    returnDialogueNodeId: 'kira_return',
     npcSplashProfile: 'npc_kira',
     description: 'Молодая информаторка с улиц. Торгует данными, слухами и секретами. Знает всё обо всех — за правильную цену.',
     barkTexts: {
@@ -294,6 +312,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
   /* ─────────────── BORIS — factory worker, hidden poet ─────────────── */
   {
     id: 'boris',
+    faction: 'neutral',
     name: 'Борис',
     modelPath: '/models/npcs/boris.glb',
     scale: 1.1,
@@ -302,6 +321,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
     defaultRotation: 0,
     patrolRadius: 2.0,
     dialogueNodeId: 'boris_greeting',
+    returnDialogueNodeId: 'boris_return',
     npcSplashProfile: 'npc_boris',
     description: 'Рабочий с заброшенного завода. В тайне пишет стихи, которые никому не показывает. Его руки помнят тяжесть металла, а душа — лёгкость слова.',
     barkTexts: {
@@ -322,6 +342,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
   /* ─────────────── TAMARA — librarian, keeper of forbidden texts ─────────────── */
   {
     id: 'tamara',
+    faction: 'network',
     name: 'Тамара',
     modelPath: '/models/npcs/tamara.glb',
     scale: 0.95,
@@ -336,6 +357,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
       [2.0, 0, 2.5],
     ],
     dialogueNodeId: 'tamara_greeting',
+    returnDialogueNodeId: 'tamara_return',
     npcSplashProfile: 'npc_tamara',
     description: 'Библиотекарь, хранящая запрещённые тексты в цифровом и бумажном виде. Верит, что слова сильнее любого кода. Последний оплот докиберпанковой культуры.',
     barkTexts: {
@@ -356,6 +378,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
   /* ─────────────── GRISHA — rooftop dweller, sky watcher ─────────────── */
   {
     id: 'grisha',
+    faction: 'neutral',
     name: 'Гриша',
     modelPath: '/models/npcs/grisha.glb',
     scale: 1.05,
@@ -364,6 +387,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
     defaultRotation: Math.PI * 0.25,
     patrolRadius: 3.0,
     dialogueNodeId: 'grisha_greeting',
+    returnDialogueNodeId: 'grisha_return',
     npcSplashProfile: 'npc_grisha',
     description: 'Обитатель крыш. Смотрит на город сверху и видит то, что другие не замечают. Знает каждый неоновый луч и каждую тень.',
     barkTexts: {

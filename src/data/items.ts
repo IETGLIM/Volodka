@@ -43,7 +43,7 @@ const ITEMS: ItemDefinition[] = [
     stackable: true,
     maxStack: 10,
     effects: [{ stat: 'energy', value: 15 }],
-    useMessage: 'Кофе: бодрость +10 на 60с',
+    useMessage: 'Кофе: бодрость +15 на 60с',
   },
   {
     id: 'cigarettes',

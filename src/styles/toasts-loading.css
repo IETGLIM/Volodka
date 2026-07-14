@@ -264,3 +264,56 @@
     animation: none;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   SCENE TRANSITION: Loading bar pulse + scan-line effects
+   ══════════════════════════════════════════════════════════════ */
+
+/* Pulsing gradient for loading bar — shifts cyan→amber gradient back and forth */
+@keyframes loading-bar-pulse {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Shimmer sweep across the loading bar fill */
+@keyframes loading-bar-shimmer {
+  0% {
+    background-position: 250% 0;
+  }
+  100% {
+    background-position: -250% 0;
+  }
+}
+
+/* Subtle scroll for scan-line overlay — shifts the repeating gradient down */
+@keyframes loading-scanline-scroll {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 0 100vh;
+  }
+}
+
+/* Moving scan-line bar — sweeps a bright line down the screen */
+@keyframes loading-scanline-bar {
+  0% {
+    transform: translateY(-10vh);
+  }
+  100% {
+    transform: translateY(110vh);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-bar-pulse,
+  .loading-bar-shimmer,
+  .loading-scanline-scroll,
+  .loading-scanline-bar {
+    animation: none;
+  }
+}

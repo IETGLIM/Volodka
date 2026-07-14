@@ -262,7 +262,7 @@ export const QUESTS_ACT2: QuestDefinition[] = [
       { type: 'setFlag', flag: 'poems_smuggled', flagValue: true },
       { type: 'addXp', value: 100 },
     ],
-    linkedStoryNodeId: 'street_bench',
+    linkedStoryNodeId: 'act2_safehouse_agreed',
     questGiverNpcId: 'kate',
   },
 

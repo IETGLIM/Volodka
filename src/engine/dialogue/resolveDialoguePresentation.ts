@@ -4,15 +4,24 @@ import { hasVisitedNode } from '@/shared/visitedNodesIndex';
 import {
   buildNarrativeLiveMessage,
   resolveNarrativeText } from '@/shared/narrativePresentation';
+import { ALL_NPC_DEFINITIONS } from '@/data/allNpcDefinitions';
 
 export { DEFAULT_KARMA_THRESHOLDS } from '@/shared/narrativePresentation';
 
 export type DialogueTextVariants = NarrativeTextVariants;
 
-/** CHK entry nodes that redirect to a return variant after the first visit. */
-const DIALOGUE_RETURN_ENTRY_NODES: Readonly<Record<string, string>> = {
-  chk_ru_greeting: 'chk_ru_return',
-  chk_ritka_greeting: 'chk_ritka_pier_return' };
+/** Entry nodes that redirect to a return variant after the first visit.
+ *  Built dynamically from NPC definitions that define both
+ *  `dialogueNodeId` and `returnDialogueNodeId`. */
+const DIALOGUE_RETURN_ENTRY_NODES: Readonly<Record<string, string>> = (() => {
+  const map: Record<string, string> = {};
+  for (const npc of ALL_NPC_DEFINITIONS) {
+    if (npc.dialogueNodeId && npc.returnDialogueNodeId) {
+      map[npc.dialogueNodeId] = npc.returnDialogueNodeId;
+    }
+  }
+  return map;
+})();
 
 export function resolveDialogueText(
   node: Pick<DialogueNode, 'text' | 'textVariants' | 'karmaThresholds'>,

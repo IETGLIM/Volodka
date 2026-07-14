@@ -9,7 +9,7 @@ import { getWorldStoreState } from './stores/worldStore';
 import { getUIStoreState } from './stores/uiStore';
 import { getCutsceneStoreState } from './stores/cutsceneStore';
 import { getSaveStoreState } from './stores/saveStore';
-export function applyGameAction(_state: GameStoreState, action: GameAction): Partial<GameStoreState> {
+export function applyGameAction(_state: GameStoreState, action: GameAction): void {
   const player = getPlayerStoreState();
   const exploration = getExplorationStoreState();
   const world = getWorldStoreState();
@@ -95,7 +95,6 @@ export function applyGameAction(_state: GameStoreState, action: GameAction): Par
     case 'exploration/applySceneTransition': exploration.setExplorationScene(action.targetScene); exploration.setPlayerPosition(action.spawnAt); exploration.discoverScene(action.targetScene); player.autoRegenBetweenScenes(); break;
     case 'cutscene/clear': getCutsceneStoreState().setCutscene(null, []); break;
     case 'phase/clearGameplayFlags': ui.setMainMenuOpen(false); ui.setIntroActive(false); ui.setCombatActive(false); break;
-    default: { const _exhaustive: never = action; return _exhaustive; }
+    default: { const _exhaustive: never = action; return; }
   }
-  return {};
 }

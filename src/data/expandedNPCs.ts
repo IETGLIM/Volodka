@@ -94,6 +94,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
   /* ─────────────── АЛИНА «СОЛНЫШ» (vera) – лучшая подруга, дизайнер ─────────────── */
   {
     id: 'solnysh',
+    faction: 'network',
     name: 'Солныш (Алина)',
     modelPath: '/models/npcs/solnysh.glb',
     scale: 0.92,
@@ -107,6 +108,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
       [0, 0, 1.5],
     ],
     dialogueNodeId: 'vera_greeting',
+    returnDialogueNodeId: 'solnysh_return',
     npcSplashProfile: 'npc_solnysh',
     scheduleId: 'schedule_solnysh',
     description: 'Алина — настоящее имя; Солныш — прозвище с детства, которым её зовёт Володька. Тридцать три года, блондинка с голубыми глазами. Лучшая подруга с детства, одноклассница из гимназии, дочь учительницы. Дизайнер и художник. Жена Лёни.',
@@ -128,6 +130,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
   /* ─────────────── ЛЁНЯ (ЛЕОНИД) – бариста, муж Алины ─────────────── */
   {
     id: 'lyonya',
+    faction: 'network',
     name: 'Лёня (Леонид)',
     modelPath: NPC_PROCEDURAL_MODEL_PLACEHOLDER,
     scale: 1.0,
@@ -141,6 +144,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
       [-2.0, 0, -1.5],
     ],
     dialogueNodeId: 'lyonya_greeting',
+    returnDialogueNodeId: 'lyonya_return',
     npcSplashProfile: 'npc_lyonya',
     description: 'Леонид — настоящее имя; Лёня — так его зовут дома. Обжарщик кофе и бариста, муж Алины. Спокойный, надёжный — рядом с ней уже много лет.',
     barkTexts: {
@@ -161,6 +165,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
   /* ─────────────── СЕРГЕЙ – sysadmin ─────────────── */
   {
     id: 'sergey',
+    faction: 'guild',
     name: 'Сергей',
     modelPath: NPC_PROCEDURAL_MODEL_PLACEHOLDER,
     scale: 1.05,
@@ -174,6 +179,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
       [2.5, 0, -1.0],
     ],
     dialogueNodeId: 'sergey_greeting',
+    returnDialogueNodeId: 'sergey_return',
     npcSplashProfile: 'npc_sergey',
     description: 'Сисадмин ночного смены. Молчаливый, но надёжный. Знает каждый кабель в серверной.',
     barkTexts: {
@@ -194,6 +200,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
   /* ─────────────── ЛЕНА – hacker from the Network ─────────────── */
   {
     id: 'lena',
+    faction: 'network',
     name: 'Лена',
     modelPath: NPC_PROCEDURAL_MODEL_PLACEHOLDER,
     scale: 0.85,
@@ -207,6 +214,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
       [0, 0, 3.5],
     ],
     dialogueNodeId: 'lena_greeting',
+    returnDialogueNodeId: 'lena_return',
     npcSplashProfile: 'npc_lena',
     description: 'Хакер из Сети. Никто не знает её настоящего имени. Она — тень в цифровом мире.',
     barkTexts: {
@@ -227,6 +235,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
   /* ─────────────── ОЛЕГ – guild guard ─────────────── */
   {
     id: 'oleg',
+    faction: 'guild',
     name: 'Олег',
     modelPath: NPC_PROCEDURAL_MODEL_PLACEHOLDER,
     scale: 1.1,
@@ -240,6 +249,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
       [4.0, 0, 0],
     ],
     dialogueNodeId: 'oleg_greeting',
+    returnDialogueNodeId: 'oleg_return',
     npcSplashProfile: 'npc_oleg',
     description: 'Охранник гильдии. Бывший военный. Выполняет приказы, но сомневается.',
     barkTexts: {
@@ -260,6 +270,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
   /* ─────────────── КАТЯ – librarian ─────────────── */
   {
     id: 'kate',
+    faction: 'network',
     name: 'Катя',
     modelPath: '/models/npcs/kate.glb',
     scale: 0.9,
@@ -273,6 +284,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
       [-2.0, 0, -2.0],
     ],
     dialogueNodeId: 'kate_greeting',
+    returnDialogueNodeId: 'kate_return',
     npcSplashProfile: 'npc_kate',
     description: 'Библиотекарь. Хранительница запрещённых книг. Тихая, но опасная.',
     barkTexts: {
@@ -293,6 +305,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
   /* ─────────────── МАКСИМ – лидер сопротивления ─────────────── */
   {
     id: 'maxim',
+    faction: 'resistance',
     name: 'Максим',
     modelPath: '/models/npcs/maxim.glb',
     scale: 1.1,
@@ -306,6 +319,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
       [-2.0, 0, -1.5],
     ],
     dialogueNodeId: 'maxim_greeting',
+    returnDialogueNodeId: 'maxim_return',
     npcSplashProfile: 'npc_maxim',
     description: 'Лидер подпольного сопротивления. Бывший рабочий завода с боевыми имплантами.',
     barkTexts: {
@@ -326,6 +340,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
   /* ─────────────── ЖЕКА – старый хакер завода ─────────────── */
   {
     id: 'zeka',
+    faction: 'resistance',
     name: 'Жека',
     modelPath: '/models/npcs/zeka.glb',
     scale: 1.0,
@@ -339,6 +354,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
       [1.0, 0, -1.0],
     ],
     dialogueNodeId: 'zeka_greeting',
+    returnDialogueNodeId: 'zeka_return',
     npcSplashProfile: 'npc_zeka',
     description: 'Старый рабочий и хакер. Знал Александра до Краха. Хранит секреты «Надзора».',
     barkTexts: {
@@ -359,6 +375,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
   /* ─────────────── АНЯ – хакер сопротивления ─────────────── */
   {
     id: 'anya',
+    faction: 'resistance',
     name: 'Аня',
     modelPath: '/models/npcs/anya.glb',
     scale: 0.9,
@@ -372,6 +389,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
       [0.5, 0, 2.0],
     ],
     dialogueNodeId: 'anya_greeting',
+    returnDialogueNodeId: 'anya_return',
     npcSplashProfile: 'npc_anya',
     description: 'Хакер сопротивления. Взламывает камеры и координирует связь во время операций.',
     barkTexts: {
@@ -392,6 +410,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
   /* ─────────────── ТРОФИМ – старик-рыбак, бывший сторож завода ─────────────── */
   {
     id: 'fisherman_trofim',
+    faction: 'neutral',
     name: 'Трофим',
     modelPath: '/models/npcs/trofim.glb',
     scale: 1.0,
@@ -400,6 +419,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
     defaultRotation: Math.PI,
     patrolRadius: 0.6,
     dialogueNodeId: 'trofim_greeting',
+    returnDialogueNodeId: 'fisherman_trofim_return',
     npcSplashProfile: 'npc_fisherman_trofim',
     description: 'Старик-рыбак на пирсе №3. Тридцать лет был сторожем завода «Хром-М» и до сих пор слышит гул под полом — даже сквозь воду.',
     barkTexts: {
@@ -420,6 +440,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
   /* ─────────────── БАБА ЗИНА – паяльщица, хранительница «Зари-М» ─────────────── */
   {
     id: 'baba_zina',
+    faction: 'neutral',
     name: 'Баба Зина',
     modelPath: '/models/npcs/baba_zina.glb',
     scale: 0.88,
@@ -427,6 +448,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
     defaultPosition: [-2.0, 0, -4.0],
     patrolRadius: 0.4,
     dialogueNodeId: 'baba_zina_greeting',
+    returnDialogueNodeId: 'baba_zina_return',
     npcSplashProfile: 'npc_baba_zina',
     description: 'Восьмидесятилетняя паяльщица завода «Хром-М». Ежедневно спускается в подвал к «Заре-М» и говорит, что машина отвечает стихами.',
     barkTexts: {
@@ -446,6 +468,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
 
   {
     id: 'street_poet',
+    faction: 'network',
     name: 'Уличный поэт',
     modelPath: NPC_PROCEDURAL_MODEL_PLACEHOLDER,
     scale: 1.0,
@@ -453,6 +476,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
     defaultPosition: [2.0, 0, 0],
     patrolRadius: 1.0,
     dialogueNodeId: 'street_poet_greeting',
+    returnDialogueNodeId: 'street_poet_return',
     npcSplashProfile: 'npc_street_poet',
     description: 'Читает на площади то, что гильдия пометила как шум. Голос тихий, но дроны его почему-то не слышат.',
     barkTexts: {
@@ -472,6 +496,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
 
   {
     id: 'marat_echo',
+    faction: 'network',
     name: 'Марат (эхо)',
     modelPath: NPC_PROCEDURAL_MODEL_PLACEHOLDER,
     scale: 1.0,
@@ -479,6 +504,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
     defaultPosition: [0, 0, -2],
     patrolRadius: 0,
     dialogueNodeId: 'marat_echo_greeting',
+    returnDialogueNodeId: 'marat_echo_return',
     npcSplashProfile: 'npc_marat_echo',
     description: 'Цифровой след первого поэта-прошивщика. Говорит через терминалы без питания сети.',
     barkTexts: {
@@ -498,6 +524,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
 
   {
     id: 'guild_defector',
+    faction: 'resistance',
     name: 'Перебежчик',
     modelPath: NPC_PROCEDURAL_MODEL_PLACEHOLDER,
     scale: 1.0,
@@ -505,6 +532,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
     defaultPosition: [-1.0, 0, 1.0],
     patrolRadius: 0.5,
     dialogueNodeId: 'guild_defector_greeting',
+    returnDialogueNodeId: 'guild_defector_return',
     npcSplashProfile: 'npc_guild_defector',
     description: 'Бывший инженер серверной гильдии. Помнит расписание дронов наизусть.',
     barkTexts: {

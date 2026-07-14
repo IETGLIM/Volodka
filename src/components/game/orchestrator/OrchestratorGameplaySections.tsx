@@ -48,6 +48,8 @@ import { GameSystemToast } from '../GameSystemToast';
 import { CompassHUD } from '../CompassHUD';
 import { ExplorationMobileHud } from '../ExplorationMobileHud';
 import { SceneTransitionOverlay } from '../SceneTransitionOverlay';
+import { SceneEntryTextOverlay } from '../SceneEntryTextOverlay';
+import '@/engine/audio/transitionSound';
 import { WeatherIndicator } from '../WeatherIndicator';
 import { AmbientAtmosphereCaption } from '../AmbientAtmosphereCaption';
 import { SceneDiscoveryToast } from '../SceneDiscoveryToast';
@@ -244,6 +246,7 @@ export const GameplaySceneTransitionFx = memo(function GameplaySceneTransitionFx
       <SceneTransitionProgress />
       <SceneTransitionFailureBanner />
       <SceneTransitionOverlay />
+      <SceneEntryTextOverlay />
     </>
   );
 });

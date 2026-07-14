@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useOrchestratorShell, useOrchestratorNarrativeOverlay, useArmDevTools } from '@/store/selectors';
 import { useCombatOrchestrator } from '@/hooks/useCombatOrchestrator';
+import { useCombatGamepad } from '@/hooks/useCombatGamepad';
 import { useAudioOrchestrator } from '@/hooks/useAudioOrchestrator';
 import { useInteractionOrchestrator } from '@/hooks/useInteractionOrchestrator';
 import { useLoreDiscovery } from '@/hooks/useLoreDiscovery';
@@ -84,6 +85,7 @@ export function useOrchestratorRuntime() {
     || cinematicInterstitialActive;
 
   const { startCombatFromStory } = useCombatOrchestrator();
+  useCombatGamepad();
   useAudioOrchestrator();
   const interaction = useInteractionOrchestrator(startCombatFromStory);
   useLoreDiscovery();

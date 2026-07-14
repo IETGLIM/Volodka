@@ -19,6 +19,7 @@ const BASE_ANIM = DEFAULT_NPC_ANIMATION_CLIPS;
 export const CHK_NPCS: NPCDefinition[] = [
   {
     id: 'chk_ru',
+    faction: 'tolpa',
     name: 'Ру',
     modelPath: '/models/npcs/chk_ru.glb',
     scale: 1.05,
@@ -28,6 +29,7 @@ export const CHK_NPCS: NPCDefinition[] = [
     defaultRotation: Math.PI / 4,
     patrolRadius: 0.8,
     dialogueNodeId: 'chk_ru_greeting',
+    returnDialogueNodeId: 'chk_ru_return',
     npcSplashProfile: 'npc_chk_ru',
     description: 'Lead-архitect по будням, организатор ЧК по ночам. Любит тяжёлый металл и честный разговор у костра.',
     barkTexts: {
@@ -52,6 +54,7 @@ export const CHK_NPCS: NPCDefinition[] = [
   },
   {
     id: 'chk_based',
+    faction: 'tolpa',
     name: 'Басед',
     modelPath: '/models/npcs/chk_based.glb',
     scale: 1.0,
@@ -61,6 +64,7 @@ export const CHK_NPCS: NPCDefinition[] = [
     defaultRotation: -Math.PI / 3,
     patrolRadius: 0.5,
     dialogueNodeId: 'chk_based_greeting',
+    returnDialogueNodeId: 'chk_based_return',
     npcSplashProfile: 'npc_chk_based',
     description: 'Системный администратор. Хранитель портвейна и морали ЧК.',
     barkTexts: {
@@ -85,6 +89,7 @@ export const CHK_NPCS: NPCDefinition[] = [
   },
   {
     id: 'chk_smert',
+    faction: 'tolpa',
     name: 'Смерть',
     modelPath: '/models/npcs/chk_smert.glb',
     scale: 0.95,
@@ -94,6 +99,7 @@ export const CHK_NPCS: NPCDefinition[] = [
     defaultRotation: Math.PI,
     patrolRadius: 0.4,
     dialogueNodeId: 'chk_smert_greeting',
+    returnDialogueNodeId: 'chk_smert_return',
     npcSplashProfile: 'npc_chk_smert',
     description: 'Бухгалтер-философ. Обсуждает квантовую физику так, будто это sprint review.',
     barkTexts: {
@@ -118,6 +124,7 @@ export const CHK_NPCS: NPCDefinition[] = [
   },
   {
     id: 'chk_stalker',
+    faction: 'tolpa',
     name: 'Сталкер',
     modelPath: '/models/npcs/chk_stalker.glb',
     scale: 1.0,
@@ -133,6 +140,7 @@ export const CHK_NPCS: NPCDefinition[] = [
       [-2.5, 0, -2.0],
     ],
     dialogueNodeId: 'chk_stalker_greeting',
+    returnDialogueNodeId: 'chk_stalker_return',
     npcSplashProfile: 'npc_chk_stalker',
     description: 'Специалист по безопасности. Знает каждую тропу к поляне на Зорге.',
     barkTexts: {
@@ -157,6 +165,7 @@ export const CHK_NPCS: NPCDefinition[] = [
   },
   {
     id: 'chk_elis',
+    faction: 'tolpa',
     name: 'Элис',
     modelPath: '/models/npcs/chk_elis.glb',
     scale: 0.92,
@@ -166,6 +175,7 @@ export const CHK_NPCS: NPCDefinition[] = [
     defaultRotation: 0.2,
     patrolRadius: 0.6,
     dialogueNodeId: 'chk_elis_greeting',
+    returnDialogueNodeId: 'chk_elis_return',
     npcSplashProfile: 'npc_chk_elis',
     description: 'QA-инженер и бард ЧК. Песни под гитару — после code review.',
     barkTexts: {
@@ -190,6 +200,7 @@ export const CHK_NPCS: NPCDefinition[] = [
   },
   {
     id: 'chk_guest_devops',
+    faction: 'tolpa',
     name: 'Гость (DevOps)',
     modelPath: NPC_PROCEDURAL_MODEL_PLACEHOLDER,
     scale: 1.0,
@@ -199,6 +210,7 @@ export const CHK_NPCS: NPCDefinition[] = [
     defaultRotation: -0.5,
     patrolRadius: 0.5,
     dialogueNodeId: 'chk_guest_devops_greeting',
+    returnDialogueNodeId: 'chk_guest_devops_return',
     npcSplashProfile: 'npc_chk_guest_devops',
     description: 'Периодический гость ЧК — инженер из соседнего деплоя.',
     barkTexts: {
@@ -222,6 +234,7 @@ export const CHK_NPCS: NPCDefinition[] = [
   },
   {
     id: 'chk_guest_analyst',
+    faction: 'tolpa',
     name: 'Гость (Аналитик)',
     modelPath: NPC_PROCEDURAL_MODEL_PLACEHOLDER,
     scale: 0.98,
@@ -231,6 +244,7 @@ export const CHK_NPCS: NPCDefinition[] = [
     defaultRotation: -0.5,
     patrolRadius: 0.5,
     dialogueNodeId: 'chk_guest_analyst_greeting',
+    returnDialogueNodeId: 'chk_guest_analyst_return',
     npcSplashProfile: 'npc_chk_guest_analyst',
     description: 'Периодический гость ЧК — аналитик с теориями о жизни и метриках.',
     barkTexts: {
@@ -254,6 +268,7 @@ export const CHK_NPCS: NPCDefinition[] = [
   },
   {
     id: 'chk_ritka',
+    faction: 'tolpa',
     name: 'Ритка',
     modelPath: '/models/npcs/chk_ritka.glb',
     scale: 0.9,
@@ -263,6 +278,7 @@ export const CHK_NPCS: NPCDefinition[] = [
     defaultRotation: Math.PI / 6,
     patrolRadius: 0.5,
     dialogueNodeId: 'chk_ritka_greeting',
+    returnDialogueNodeId: 'chk_ritka_pier_return',
     npcSplashProfile: 'npc_chk_ritka',
     description: 'Джуниор-тестировщица днём, бард пирса №3 ночью. Младший состав ЧК: когда лес на Зорге шумный, ТОЛПА слушает её у воды.',
     barkTexts: {

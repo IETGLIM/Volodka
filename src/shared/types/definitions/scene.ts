@@ -52,4 +52,6 @@ export interface SceneConfig {
   readonly locationCategory: LocationCategory;
   /** Procedural ambient bed for exploration (day/night profiles). */
   readonly ambience?: SceneAmbienceConfig;
+  /** Atmospheric text shown when entering this scene (movie title card). */
+  readonly entryText?: string;
 }

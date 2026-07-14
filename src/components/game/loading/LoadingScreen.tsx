@@ -147,9 +147,27 @@ export function LoadingScreen({
         />
       )}
 
+      {/* Scan-line overlay — CSS only, subtle CRT aesthetic */}
       <div
-        className="absolute inset-0 pointer-events-none z-[4] bg-[repeating-linear-gradient(0deg,transparent,transparent_2px,rgba(0,0,0,0.07)_2px,rgba(0,0,0,0.07)_4px)]"
+        className="absolute inset-0 pointer-events-none z-[4]"
+        style={{
+          background: 'repeating-linear-gradient(0deg, transparent 0px, transparent 1px, rgba(0,0,0,0.05) 1px, rgba(0,0,0,0.05) 2px)',
+          animation: 'loading-scanline-scroll 8s linear infinite',
+        }}
       />
+      {/* Moving scan-line bar — single bright line sweeping down */}
+      <div
+        className="absolute inset-0 pointer-events-none z-[4] overflow-hidden"
+        style={{ animation: 'loading-scanline-bar 4s ease-in-out infinite' }}
+      >
+        <div
+          className="absolute left-0 right-0 h-[2px]"
+          style={{
+            background: 'linear-gradient(90deg, transparent 0%, rgba(0,255,255,0.08) 30%, rgba(0,255,255,0.15) 50%, rgba(0,255,255,0.08) 70%, transparent 100%)',
+            boxShadow: '0 0 8px rgba(0,255,255,0.1), 0 0 20px rgba(0,255,255,0.05)',
+          }}
+        />
+      </div>
 
       {fx.hexDump && <HexDumpOverlay />}
 
@@ -240,18 +258,53 @@ export function LoadingScreen({
             </div>
             {clampedProgress !== undefined ? (
               <div
-                className="h-full bg-gradient-to-r from-cyan-600 via-cyan-400 to-emerald-400 shadow-[0_0_12px_rgb(var(--cyber-cyan-rgb)/0.4),0_0_4px_rgba(52,211,153,0.2)]"
+                className="h-full overflow-hidden relative"
                 style={{ width: `${clampedProgress}%` }}
-              />
+              >
+                {/* Pulsing gradient bar: cyan → amber matching game theme */}
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    background: 'linear-gradient(90deg, #0891b2, #06b6d4, #22d3ee, #f59e0b, #fbbf24)',
+                    backgroundSize: '200% 100%',
+                    animation: 'loading-bar-pulse 2s ease-in-out infinite',
+                  }}
+                />
+                {/* Shimmer overlay */}
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.15) 45%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0.15) 55%, transparent 100%)',
+                    backgroundSize: '250% 100%',
+                    animation: 'loading-bar-shimmer 1.8s ease-in-out infinite',
+                  }}
+                />
+                {/* Glow effect */}
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    boxShadow: '0 0 12px rgba(6,182,212,0.4), 0 0 4px rgba(245,158,11,0.2)',
+                  }}
+                />
+              </div>
             ) : (
               fx.contentMotion ? (
                 <motion.div
-                  className="h-full w-[40%] bg-gradient-to-r from-cyan-600 via-cyan-400 to-emerald-400 shadow-[0_0_12px_rgb(var(--cyber-cyan-rgb)/0.4),0_0_4px_rgba(52,211,153,0.2)]"
+                  className="h-full w-[40%] overflow-hidden relative"
                   animate={{ x: ['-100%', '200%'] }}
                   transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-                />
+                >
+                  <div
+                    className="absolute inset-0"
+                    style={{
+                      background: 'linear-gradient(90deg, #0891b2, #06b6d4, #22d3ee, #f59e0b, #fbbf24)',
+                      backgroundSize: '200% 100%',
+                      animation: 'loading-bar-pulse 2s ease-in-out infinite',
+                    }}
+                  />
+                </motion.div>
               ) : (
-                <div className="h-full w-2/5 bg-gradient-to-r from-cyan-600 via-cyan-400 to-emerald-400" />
+                <div className="h-full w-2/5" style={{ background: 'linear-gradient(90deg, #0891b2, #06b6d4, #f59e0b)' }} />
               )
             )}
           </div>
@@ -261,7 +314,11 @@ export function LoadingScreen({
               {message}<span className="loading-dots" />
             </p>
             {clampedProgress !== undefined && (
-              <span className="text-[11px] text-cyan-400/60 font-mono tabular-nums">
+              <span className="text-[11px] font-mono tabular-nums" style={{
+                background: 'linear-gradient(90deg, rgba(6,182,212,0.6), rgba(245,158,11,0.5))',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}>
                 {clampedProgress}%
               </span>
             )}

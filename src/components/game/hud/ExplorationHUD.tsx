@@ -60,6 +60,10 @@ import { WeatherIcon, getWeatherDescription } from '@/components/game/hud/parts/
 import { TimeIcon } from '@/components/game/hud/parts/TimeIcon';
 import { AmbientParticles } from '@/components/game/hud/parts/AmbientParticles';
 import { PhysicsDegradedDevBadge } from '@/components/game/hud/parts/PhysicsDegradedDevBadge';
+import { ContextualHint } from '@/components/game/hud/parts/ContextualHint';
+import { CompassIndicator } from '@/components/game/hud/parts/CompassIndicator';
+import { useContextualHints } from '@/hooks/useContextualHints';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
 export type { HUDProps } from '@/components/game/hud/hudTypes';
 
@@ -112,6 +116,7 @@ export function ExplorationHUD(props: HUDProps) {
   const reducedMotion = useEffectiveReducedMotion();
   const quietStyle = useHudQuietStyle();
   const totalPoems = TOTAL_MAIN_POEMS;
+  const { currentHint, dismissHint } = useContextualHints();
 
   // ── Crosshair proximity glow state ──
   const [crosshairNearInteractive, setCrosshairNearInteractive] = useState(false);
@@ -260,18 +265,35 @@ export function ExplorationHUD(props: HUDProps) {
             <LevelBadge level={level} perkCount={perkCount} xp={xp} xpToNext={xpToNext} justLeveled={justLeveled} />
 
             {/* XP progress mini-bar */}
-            <div className="hidden md:flex flex-col items-center gap-0 w-16">
-              <div className="h-1 w-full bg-slate-800/60 rounded-full overflow-hidden">
-                <motion.div
-                  className="h-full rounded-full"
-                  style={{ background: 'linear-gradient(90deg, rgba(8,145,178,0.6), rgb(var(--cyber-cyan-rgb) / 0.6))' }}
-                  initial={false}
-                  animate={{ width: `${(xp / xpToNext) * 100}%` }}
-                  transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
-                />
-              </div>
-              <span className="text-[8px] text-slate-400 font-mono tabular-nums">{xp}/{xpToNext} XP</span>
-            </div>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="hidden md:flex flex-col items-center gap-0 w-16 cursor-default">
+                  <div className="h-1 w-full bg-slate-800/60 rounded-full overflow-hidden">
+                    <motion.div
+                      className="h-full rounded-full"
+                      style={{ background: 'linear-gradient(90deg, rgba(8,145,178,0.6), rgb(var(--cyber-cyan-rgb) / 0.6))' }}
+                      initial={false}
+                      animate={{ width: `${(xp / xpToNext) * 100}%` }}
+                      transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
+                    />
+                  </div>
+                  <span className="text-[8px] text-slate-400 font-mono tabular-nums">{xp}/{xpToNext} XP</span>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent
+                side="bottom"
+                sideOffset={4}
+                className="border backdrop-blur-xl px-3 py-2 max-w-[200px] space-y-1"
+                style={{
+                  background: 'linear-gradient(145deg, rgba(2,6,23,0.95) 0%, rgba(15,23,42,0.92) 50%, rgba(0,0,0,0.9) 100%)',
+                  borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.3)',
+                  boxShadow: '0 0 16px rgb(var(--cyber-cyan-rgb) / 0.12), 0 8px 24px rgba(0,0,0,0.5)',
+                }}
+              >
+                <div className="text-xs font-semibold text-cyan-300 font-mono">⬆ XP: {xp}/{xpToNext}</div>
+                <div className="text-[10px] text-slate-400">До уровня {level + 1}: <span className="text-cyan-400">{xpToNext - xp} XP</span></div>
+              </TooltipContent>
+            </Tooltip>
 
             <div className="w-px h-5 bg-slate-700/30 mx-0.5 hidden md:block" />
 
@@ -536,127 +558,209 @@ export function ExplorationHUD(props: HUDProps) {
 
           <div className="h-px mb-4" style={{ background: 'linear-gradient(90deg, rgb(var(--cyber-cyan-rgb) / 0.3), rgb(var(--cyber-cyan-rgb) / 0.08) 40%, transparent)' }} />
 
-          {/* Karma with breathing ring — ENHANCED */}
-          <div className="flex items-center gap-3 mb-4 relative">
-            <div className="relative">
-              <KarmaRing karma={karma} />
-              <StatPulse active={karmaPulse} color="cyan" />
-            </div>
-            <div className="flex flex-col flex-1">
-              <div className="flex items-center justify-between">
-                <span className={`text-sm font-semibold ${karmaColor(karma)}`} style={{ textShadow: '0 0 6px currentColor' }}>Карма</span>
-                <div className="flex items-center gap-1.5">
-                  <AnimatedCounter value={karma} className={`text-base font-bold font-mono ${karmaColor(karma)}`}
-                    style={{ textShadow: karmaPulse ? '0 0 12px currentColor' : '0 0 4px currentColor', transition: 'text-shadow 0.3s ease' }}
-                  />
-                  {/* Karma direction indicator */}
-                  <AnimatePresence>
-                    {karmaDirection && (
-                      <motion.span
-                        initial={{ opacity: 0, scale: 0.5, x: -5 }}
-                        animate={{ opacity: 1, scale: 1, x: 0 }}
-                        exit={{ opacity: 0, scale: 0.5 }}
-                        transition={{ duration: 0.3, type: 'spring', stiffness: 400, damping: 20 }}
-                        className={`text-xs ${karmaDirection === 'up' ? 'text-emerald-400' : 'text-rose-400'}`}
-                        style={{ textShadow: karmaDirection === 'up' ? '0 0 8px rgba(52,211,153,0.6)' : '0 0 8px rgba(251,113,133,0.6)' }}
-                      >
-                        {karmaDirection === 'up' ? <TrendingUp className="size-3.5" /> : <TrendingDown className="size-3.5" />}
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
+          {/* Karma with breathing ring — ENHANCED (with tooltip) */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center gap-3 mb-4 relative cursor-default">
+                <div className="relative">
+                  <KarmaRing karma={karma} />
+                  <StatPulse active={karmaPulse} color="cyan" />
+                </div>
+                <div className="flex flex-col flex-1">
+                  <div className="flex items-center justify-between">
+                    <span className={`text-sm font-semibold ${karmaColor(karma)}`} style={{ textShadow: '0 0 6px currentColor' }}>Карма</span>
+                    <div className="flex items-center gap-1.5">
+                      <AnimatedCounter value={karma} className={`text-base font-bold font-mono ${karmaColor(karma)}`}
+                        style={{ textShadow: karmaPulse ? '0 0 12px currentColor' : '0 0 4px currentColor', transition: 'text-shadow 0.3s ease' }}
+                      />
+                      {/* Karma direction indicator */}
+                      <AnimatePresence>
+                        {karmaDirection && (
+                          <motion.span
+                            initial={{ opacity: 0, scale: 0.5, x: -5 }}
+                            animate={{ opacity: 1, scale: 1, x: 0 }}
+                            exit={{ opacity: 0, scale: 0.5 }}
+                            transition={{ duration: 0.3, type: 'spring', stiffness: 400, damping: 20 }}
+                            className={`text-xs ${karmaDirection === 'up' ? 'text-emerald-400' : 'text-rose-400'}`}
+                            style={{ textShadow: karmaDirection === 'up' ? '0 0 8px rgba(52,211,153,0.6)' : '0 0 8px rgba(251,113,133,0.6)' }}
+                          >
+                            {karmaDirection === 'up' ? <TrendingUp className="size-3.5" /> : <TrendingDown className="size-3.5" />}
+                          </motion.span>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  </div>
+                  <span className="text-[10px] text-slate-400/80 font-mono mt-0.5">
+                    {getKarmaTierLabel(karma)}
+                  </span>
+                  <div className="h-1.5 bg-slate-800/70 rounded-full mt-1.5 overflow-hidden">
+                    <motion.div
+                      className="h-full rounded-full"
+                      style={{ background: `linear-gradient(90deg, ${karmaStroke(karma)}60, ${karmaStroke(karma)})`, boxShadow: `0 0 6px ${karmaStroke(karma)}50` }}
+                      initial={false} animate={{ width: `${karma}%` }} transition={{ duration: 0.5 }}
+                    />
+                  </div>
                 </div>
               </div>
-              <span className="text-[10px] text-slate-400/80 font-mono mt-0.5">
-                {getKarmaTierLabel(karma)}
-              </span>
-              <div className="h-1.5 bg-slate-800/70 rounded-full mt-1.5 overflow-hidden">
-                <motion.div
-                  className="h-full rounded-full"
-                  style={{ background: `linear-gradient(90deg, ${karmaStroke(karma)}60, ${karmaStroke(karma)})`, boxShadow: `0 0 6px ${karmaStroke(karma)}50` }}
-                  initial={false} animate={{ width: `${karma}%` }} transition={{ duration: 0.5 }}
+            </TooltipTrigger>
+            <TooltipContent
+              side="right"
+              sideOffset={8}
+              className="border backdrop-blur-xl px-3 py-2.5 max-w-[240px] space-y-1.5"
+              style={{
+                background: 'linear-gradient(145deg, rgba(2,6,23,0.95) 0%, rgba(15,23,42,0.92) 50%, rgba(0,0,0,0.9) 100%)',
+                borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.3)',
+                boxShadow: '0 0 16px rgb(var(--cyber-cyan-rgb) / 0.12), 0 8px 24px rgba(0,0,0,0.5)',
+              }}
+            >
+              <div className="text-xs font-semibold text-cyan-300 font-mono">☯ Карма: {karma}/100</div>
+              <div className="text-[10px] text-slate-400">Уровень: <span className="text-cyan-400">{getKarmaTierLabel(karma)}</span></div>
+              <div className="h-px" style={{ background: 'rgb(var(--cyber-cyan-rgb) / 0.15)' }} />
+              <div className="text-[10px] text-slate-500 leading-relaxed">Влияет на: диалоги, отношения NPC, концовку</div>
+              <div className="text-[10px] text-slate-500 leading-relaxed">Рост: добрые поступки, стихи</div>
+              <div className="text-[10px] text-slate-500 leading-relaxed">Падение: агрессия, эгоизм</div>
+            </TooltipContent>
+          </Tooltip>
+
+          {/* XP Progress bar — prominent cyan bar (with tooltip) */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="mb-3 cursor-default">
+                <div className="flex items-center gap-2 mb-1.5 relative">
+                  <div className="w-5 h-5 rounded-md flex items-center justify-center bg-cyan-500/10" style={{ boxShadow: '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.2)' }}>
+                    <TrendingUp className="size-3 text-cyan-400" />
+                  </div>
+                  <span className="text-sm font-semibold text-cyan-300">Опыт</span>
+                  <span className="text-[11px] text-cyan-400/70 font-mono ml-auto tabular-nums" style={{ textShadow: '0 0 4px rgb(var(--cyber-cyan-rgb) / 0.3)' }}>
+                    {xp}<span className="text-cyan-500/40">/</span>{xpToNext}
+                  </span>
+                </div>
+                <CyberStatBar
+                  value={xp}
+                  max={xpToNext}
+                  color="linear-gradient(90deg, #0891b2, var(--cyber-cyan))"
+                  glowColor="rgb(var(--cyber-cyan-rgb) / 0.4)"
+                  showSegments={false}
                 />
               </div>
-            </div>
-          </div>
+            </TooltipTrigger>
+            <TooltipContent
+              side="right"
+              sideOffset={8}
+              className="border backdrop-blur-xl px-3 py-2.5 max-w-[240px] space-y-1.5"
+              style={{
+                background: 'linear-gradient(145deg, rgba(2,6,23,0.95) 0%, rgba(15,23,42,0.92) 50%, rgba(0,0,0,0.9) 100%)',
+                borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.3)',
+                boxShadow: '0 0 16px rgb(var(--cyber-cyan-rgb) / 0.12), 0 8px 24px rgba(0,0,0,0.5)',
+              }}
+            >
+              <div className="text-xs font-semibold text-cyan-300 font-mono">⬆ Опыт: {xp}/{xpToNext}</div>
+              <div className="text-[10px] text-slate-400">До след. уровня: <span className="text-cyan-400">{xpToNext - xp} XP</span></div>
+              <div className="h-px" style={{ background: 'rgb(var(--cyber-cyan-rgb) / 0.15)' }} />
+              <div className="text-[10px] text-slate-500 leading-relaxed">Источник: бои, задания, стихи</div>
+            </TooltipContent>
+          </Tooltip>
 
-          {/* XP Progress bar — prominent cyan bar */}
-          <div className="mb-3">
-            <div className="flex items-center gap-2 mb-1.5 relative">
-              <div className="w-5 h-5 rounded-md flex items-center justify-center bg-cyan-500/10" style={{ boxShadow: '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.2)' }}>
-                <TrendingUp className="size-3 text-cyan-400" />
+          {/* Energy bar — ENHANCED with bigger fonts and glow (with tooltip) */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="mb-3 cursor-default">
+                <div className="flex items-center gap-2 mb-1.5 relative">
+                  <div className={`w-5 h-5 rounded-md flex items-center justify-center ${isLowEnergy ? 'bg-rose-500/10' : 'bg-emerald-500/10'}`}
+                    style={{ boxShadow: isLowEnergy ? '0 0 8px rgba(244,63,94,0.2)' : '0 0 8px rgba(52,211,153,0.2)' }}
+                  >
+                    <Zap className={`size-3 ${isLowEnergy ? 'text-rose-400' : 'text-emerald-400'}`} />
+                  </div>
+                  <span className={`text-sm font-semibold ${isLowEnergy ? 'text-rose-300 neon-text-rose' : 'text-emerald-300'}`}>Энергия</span>
+                  <AnimatedCounter value={energy} className={`text-sm font-bold font-mono ml-auto relative ${isLowEnergy ? 'text-rose-300' : 'text-emerald-300'}`}
+                    style={{ textShadow: energyPulse ? '0 0 12px rgba(52,211,153,0.6)' : '0 0 4px rgba(52,211,153,0.3)', transition: 'text-shadow 0.3s ease' }}
+                  />
+                  <StatPulse active={energyPulse} color={isLowEnergy ? 'rose' : 'emerald'} />
+                </div>
+                <CyberStatBar
+                  value={energy}
+                  color={isLowEnergy ? 'linear-gradient(90deg, #9f1239, #f43f5e)' : 'linear-gradient(90deg, #059669, #34d399)'}
+                  glowColor={isLowEnergy ? 'rgba(244,63,94,0.4)' : 'rgba(52,211,153,0.4)'}
+                  shimmer={energyPulse}
+                />
+                {isLowEnergy && (
+                  <motion.span
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-[10px] text-rose-400/80 font-mono mt-1 block energy-critical"
+                    style={{ textShadow: '0 0 6px rgba(251,113,133,0.3)' }}
+                  >
+                    ⚠ Низкая энергия — найдите место для отдыха
+                  </motion.span>
+                )}
               </div>
-              <span className="text-sm font-semibold text-cyan-300">Опыт</span>
-              <span className="text-[11px] text-cyan-400/70 font-mono ml-auto tabular-nums" style={{ textShadow: '0 0 4px rgb(var(--cyber-cyan-rgb) / 0.3)' }}>
-                {xp}<span className="text-cyan-500/40">/</span>{xpToNext}
-              </span>
-            </div>
-            <CyberStatBar
-              value={xp}
-              max={xpToNext}
-              color="linear-gradient(90deg, #0891b2, var(--cyber-cyan))"
-              glowColor="rgb(var(--cyber-cyan-rgb) / 0.4)"
-              showSegments={false}
-            />
-          </div>
+            </TooltipTrigger>
+            <TooltipContent
+              side="right"
+              sideOffset={8}
+              className="border backdrop-blur-xl px-3 py-2.5 max-w-[240px] space-y-1.5"
+              style={{
+                background: 'linear-gradient(145deg, rgba(2,6,23,0.95) 0%, rgba(15,23,42,0.92) 50%, rgba(0,0,0,0.9) 100%)',
+                borderColor: isLowEnergy ? 'rgba(244,63,94,0.3)' : 'rgb(var(--cyber-cyan-rgb) / 0.3)',
+                boxShadow: isLowEnergy ? '0 0 16px rgba(244,63,94,0.12), 0 8px 24px rgba(0,0,0,0.5)' : '0 0 16px rgb(var(--cyber-cyan-rgb) / 0.12), 0 8px 24px rgba(0,0,0,0.5)',
+              }}
+            >
+              <div className={`text-xs font-semibold font-mono ${isLowEnergy ? 'text-rose-300' : 'text-emerald-300'}`}>⚡ Энергия: {energy}/100</div>
+              <div className="text-[10px] text-slate-400">Состояние: <span className={isLowEnergy ? 'text-rose-400' : 'text-emerald-400'}>{energy < 20 ? 'Критическое' : energy < 50 ? 'Низкое' : 'Нормальное'}</span></div>
+              <div className="h-px" style={{ background: 'rgb(var(--cyber-cyan-rgb) / 0.15)' }} />
+              <div className="text-[10px] text-slate-500 leading-relaxed">☕ Кофе — быстрое восстановление</div>
+              <div className="text-[10px] text-slate-500 leading-relaxed">🛏 Отдых — полное восстановление</div>
+              <div className="text-[10px] text-slate-500 leading-relaxed">🍫 Еда — небольшое восстановление</div>
+            </TooltipContent>
+          </Tooltip>
 
-          {/* Energy bar — ENHANCED with bigger fonts and glow */}
-          <div className="mb-3">
-            <div className="flex items-center gap-2 mb-1.5 relative">
-              <div className={`w-5 h-5 rounded-md flex items-center justify-center ${isLowEnergy ? 'bg-rose-500/10' : 'bg-emerald-500/10'}`}
-                style={{ boxShadow: isLowEnergy ? '0 0 8px rgba(244,63,94,0.2)' : '0 0 8px rgba(52,211,153,0.2)' }}
-              >
-                <Zap className={`size-3 ${isLowEnergy ? 'text-rose-400' : 'text-emerald-400'}`} />
+          {/* Stress bar — ENHANCED with bigger fonts and glow (with tooltip) */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="cursor-default">
+                <div className="flex items-center gap-2 mb-1.5 relative">
+                  <div className={`w-5 h-5 rounded-md flex items-center justify-center ${isHighStress ? 'bg-rose-500/10' : 'bg-amber-500/10'}`}
+                    style={{ boxShadow: isHighStress ? '0 0 8px rgba(244,63,94,0.2)' : '0 0 8px rgba(245,158,11,0.2)' }}
+                  >
+                    <Activity className={`size-3 ${isHighStress ? 'text-rose-400' : 'text-amber-400'}`} />
+                  </div>
+                  <span className={`text-sm font-semibold ${isHighStress ? 'text-rose-300 neon-text-rose' : 'text-amber-300'}`}>Стресс</span>
+                  <AnimatedCounter value={stress} className={`text-sm font-bold font-mono ml-auto relative ${isHighStress ? 'text-rose-300' : 'text-amber-300'}`}
+                    style={{ textShadow: stressPulse ? '0 0 12px rgba(251,113,133,0.6)' : '0 0 4px rgba(245,158,11,0.3)', transition: 'text-shadow 0.3s ease' }}
+                  />
+                  <StatPulse active={stressPulse} color={isHighStress ? 'rose' : 'amber'} />
+                </div>
+                <CyberStatBar
+                  value={stress}
+                  color={isHighStress ? 'linear-gradient(90deg, #9f1239, #f43f5e)' : 'linear-gradient(90deg, #b45309, #f59e0b)'}
+                  glowColor={isHighStress ? 'rgba(244,63,94,0.4)' : 'rgba(245,158,11,0.4)'}
+                  shimmer={stressPulse}
+                />
+                {isHighStress && (
+                  <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-[10px] text-rose-400/80 font-mono mt-1 block" style={{ textShadow: '0 0 6px rgba(251,113,133,0.3)' }}>
+                    ⚠ Высокий стресс — отдохните или найдите стихи
+                  </motion.span>
+                )}
               </div>
-              <span className={`text-sm font-semibold ${isLowEnergy ? 'text-rose-300 neon-text-rose' : 'text-emerald-300'}`}>Энергия</span>
-              <AnimatedCounter value={energy} className={`text-sm font-bold font-mono ml-auto relative ${isLowEnergy ? 'text-rose-300' : 'text-emerald-300'}`}
-                style={{ textShadow: energyPulse ? '0 0 12px rgba(52,211,153,0.6)' : '0 0 4px rgba(52,211,153,0.3)', transition: 'text-shadow 0.3s ease' }}
-              />
-              <StatPulse active={energyPulse} color={isLowEnergy ? 'rose' : 'emerald'} />
-            </div>
-            <CyberStatBar
-              value={energy}
-              color={isLowEnergy ? 'linear-gradient(90deg, #9f1239, #f43f5e)' : 'linear-gradient(90deg, #059669, #34d399)'}
-              glowColor={isLowEnergy ? 'rgba(244,63,94,0.4)' : 'rgba(52,211,153,0.4)'}
-              shimmer={energyPulse}
-            />
-            {isLowEnergy && (
-              <motion.span
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-[10px] text-rose-400/80 font-mono mt-1 block energy-critical"
-                style={{ textShadow: '0 0 6px rgba(251,113,133,0.3)' }}
-              >
-                ⚠ Низкая энергия — найдите место для отдыха
-              </motion.span>
-            )}
-          </div>
-
-          {/* Stress bar — ENHANCED with bigger fonts and glow */}
-          <div>
-            <div className="flex items-center gap-2 mb-1.5 relative">
-              <div className={`w-5 h-5 rounded-md flex items-center justify-center ${isHighStress ? 'bg-rose-500/10' : 'bg-amber-500/10'}`}
-                style={{ boxShadow: isHighStress ? '0 0 8px rgba(244,63,94,0.2)' : '0 0 8px rgba(245,158,11,0.2)' }}
-              >
-                <Activity className={`size-3 ${isHighStress ? 'text-rose-400' : 'text-amber-400'}`} />
-              </div>
-              <span className={`text-sm font-semibold ${isHighStress ? 'text-rose-300 neon-text-rose' : 'text-amber-300'}`}>Стресс</span>
-              <AnimatedCounter value={stress} className={`text-sm font-bold font-mono ml-auto relative ${isHighStress ? 'text-rose-300' : 'text-amber-300'}`}
-                style={{ textShadow: stressPulse ? '0 0 12px rgba(251,113,133,0.6)' : '0 0 4px rgba(245,158,11,0.3)', transition: 'text-shadow 0.3s ease' }}
-              />
-              <StatPulse active={stressPulse} color={isHighStress ? 'rose' : 'amber'} />
-            </div>
-            <CyberStatBar
-              value={stress}
-              color={isHighStress ? 'linear-gradient(90deg, #9f1239, #f43f5e)' : 'linear-gradient(90deg, #b45309, #f59e0b)'}
-              glowColor={isHighStress ? 'rgba(244,63,94,0.4)' : 'rgba(245,158,11,0.4)'}
-              shimmer={stressPulse}
-            />
-            {isHighStress && (
-              <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-[10px] text-rose-400/80 font-mono mt-1 block" style={{ textShadow: '0 0 6px rgba(251,113,133,0.3)' }}>
-                ⚠ Высокий стресс — отдохните или найдите стихи
-              </motion.span>
-            )}
-          </div>
+            </TooltipTrigger>
+            <TooltipContent
+              side="right"
+              sideOffset={8}
+              className="border backdrop-blur-xl px-3 py-2.5 max-w-[240px] space-y-1.5"
+              style={{
+                background: 'linear-gradient(145deg, rgba(2,6,23,0.95) 0%, rgba(15,23,42,0.92) 50%, rgba(0,0,0,0.9) 100%)',
+                borderColor: isHighStress ? 'rgba(244,63,94,0.3)' : 'rgb(var(--cyber-cyan-rgb) / 0.3)',
+                boxShadow: isHighStress ? '0 0 16px rgba(244,63,94,0.12), 0 8px 24px rgba(0,0,0,0.5)' : '0 0 16px rgb(var(--cyber-cyan-rgb) / 0.12), 0 8px 24px rgba(0,0,0,0.5)',
+              }}
+            >
+              <div className={`text-xs font-semibold font-mono ${isHighStress ? 'text-rose-300' : 'text-amber-300'}`}>💢 Стресс: {stress}/100</div>
+              <div className="text-[10px] text-slate-400">Состояние: <span className={isHighStress ? 'text-rose-400' : 'text-amber-400'}>{stress > 80 ? 'Критическое' : stress > 50 ? 'Повышенное' : 'Нормальное'}</span></div>
+              <div className="h-px" style={{ background: 'rgb(var(--cyber-cyan-rgb) / 0.15)' }} />
+              <div className="text-[10px] text-slate-500 leading-relaxed">📖 Стихи — снижение стресса</div>
+              <div className="text-[10px] text-slate-500 leading-relaxed">🛏 Отдых — снижение стресса</div>
+              <div className="text-[10px] text-slate-500 leading-relaxed">🚶 Прогулка — мягкое снижение</div>
+            </TooltipContent>
+          </Tooltip>
 
           <div className="h-px mt-4" style={{ background: 'linear-gradient(90deg, transparent, rgb(var(--cyber-cyan-rgb) / 0.15), transparent)' }} />
           <div className="flex items-center justify-between mt-2.5">
@@ -738,6 +842,14 @@ export function ExplorationHUD(props: HUDProps) {
       </div>
 
       <PhysicsDegradedDevBadge />
+
+      {/* ── Contextual hint (floating bottom center) ── */}
+      <ContextualHint hint={currentHint} onDismiss={dismissHint} />
+
+      {/* ── Compass indicator (top-right, below top bar) ── */}
+      <div className="absolute top-16 sm:top-20 right-3 sm:right-4 pointer-events-none" style={{ zIndex: UI_LAYERS.HUD + 1 }}>
+        <CompassIndicator />
+      </div>
     </div>
   );
 }

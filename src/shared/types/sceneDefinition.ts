@@ -226,4 +226,7 @@ export interface SceneDefinition {
   locationCategory?: LocationCategory;
   /** Procedural ambient sound profile for this scene (day/night). */
   ambience?: SceneAmbienceConfig;
+  /** Optional atmospheric text shown briefly when entering this scene (movie title card).
+   *  Displayed as a slow fade-in/fade-out overlay with the scene name. */
+  entryText?: string;
 }

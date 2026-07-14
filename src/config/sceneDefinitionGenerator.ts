@@ -101,6 +101,7 @@ export function generateSceneConfig(def: SceneDefinition): SceneConfig {
     lights: def.lights.map(generateLightConfig),
     ...(def.transitionStyle && { transitionStyle: def.transitionStyle }),
     ...(def.ambience && { ambience: def.ambience }),
+    ...(def.entryText && { entryText: def.entryText }),
     locationCategory: def.locationCategory ?? getSceneLocationCategory(def.id),
   };
 }
