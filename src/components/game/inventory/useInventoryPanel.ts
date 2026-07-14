@@ -19,6 +19,11 @@ import {
   usePlayerInventory,
   useUnequipItem,
 } from '@/store/selectors';
+import {
+  useInventorySortPreference,
+  useInventoryFilterPreference,
+} from '@/store/selectors/uiSelectors';
+import { getGameStore } from '@/store/gameStore';
 import type { EquipmentSlot, InventoryItem } from '@/shared/types/game';
 
 export function useInventoryPanel(
@@ -32,12 +37,20 @@ export function useInventoryPanel(
   const unequipItem = useUnequipItem();
   const addLoreEntry = useAddLoreEntry();
 
+  // Use persisted sort/filter preferences
+  const persistedSortOption = useInventorySortPreference();
+  const persistedFilterCategory = useInventoryFilterPreference();
+
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<EquipmentSlot | null>(null);
   const [focusedIndex, setFocusedIndex] = useState(0);
   const [useFeedback, setUseFeedback] = useState<string | null>(null);
-  const [categoryFilter, setCategoryFilter] = useState<InventoryFilterCategory>('all');
-  const [sortOption, setSortOption] = useState<InventorySortOption>('name');
+  const [categoryFilter, setCategoryFilterLocal] = useState<InventoryFilterCategory>(
+    (persistedFilterCategory as InventoryFilterCategory) ?? 'all',
+  );
+  const [sortOption, setSortOptionLocal] = useState<InventorySortOption>(
+    (persistedSortOption as InventorySortOption) ?? 'name',
+  );
   const [searchQuery, setSearchQuery] = useState('');
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
   const [pendingActionKey, setPendingActionKey] = useState<string | null>(null);
@@ -109,10 +122,18 @@ export function useInventoryPanel(
   }, [clearSelection]);
 
   const setCategoryFilterTracked = useCallback((value: InventoryFilterCategory) => {
-    setCategoryFilter(value);
+    setCategoryFilterLocal(value);
+    // Persist to store
+    getGameStore().setInventoryFilterCategory(value);
     clearSelection();
     inventoryTelemetry.track({ action: 'filter', filter: value });
   }, [clearSelection]);
+
+  const setSortOptionTracked = useCallback((value: InventorySortOption) => {
+    setSortOptionLocal(value);
+    // Persist to store
+    getGameStore().setInventorySortOption(value);
+  }, []);
 
   const setSearchQueryTracked = useCallback((value: string) => {
     setSearchQuery(value);
@@ -302,7 +323,7 @@ export function useInventoryPanel(
     categoryFilter,
     setCategoryFilter: setCategoryFilterTracked,
     sortOption,
-    setSortOption,
+    setSortOption: setSortOptionTracked,
     searchQuery,
     setSearchQuery: setSearchQueryTracked,
     sortDropdownOpen,

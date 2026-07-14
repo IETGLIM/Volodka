@@ -9,6 +9,7 @@ import {
   INVENTORY_RARITY_BORDER_CLASS,
   INVENTORY_RARITY_TEXT_CLASS,
 } from '@/components/game/inventory/inventoryConstants';
+import type { EquipmentSlot } from '@/shared/types/game';
 
 interface InventoryCardProps {
   view: InventoryItemView;
@@ -17,6 +18,8 @@ interface InventoryCardProps {
   isFocused: boolean;
   reducedMotion: boolean;
   onSelect: (itemId: string, index: number) => void;
+  /** Currently equipped items, for comparison tooltip. */
+  equippedItems?: Record<EquipmentSlot, { id: string } | null>;
 }
 
 export const InventoryCard = memo(function InventoryCard({
@@ -26,12 +29,18 @@ export const InventoryCard = memo(function InventoryCard({
   isFocused,
   reducedMotion,
   onSelect,
+  equippedItems,
 }: InventoryCardProps) {
   const { item, def, rarity, categoryIcon, displayName } = view;
   const hasIcon = !!def?.icon;
   const ringClass = isSelected || isFocused
     ? 'bg-slate-800/60 ring-1 ring-cyan-500/30'
     : 'bg-slate-900/40 hover:bg-slate-800/50';
+
+  // Determine the equipped item in the same slot for comparison tooltip
+  const equippedItemIdForSlot = (def?.category === 'equipment' && def.equipmentSlot && equippedItems)
+    ? equippedItems[def.equipmentSlot as EquipmentSlot]?.id ?? null
+    : null;
 
   const cardRef = useRef<HTMLButtonElement>(null);
   const [hovered, setHovered] = useState(false);
@@ -113,6 +122,7 @@ export const InventoryCard = memo(function InventoryCard({
         anchorRef={cardRef}
         tooltipId={tooltipId}
         reducedMotion={reducedMotion}
+        equippedItemIdForSlot={equippedItemIdForSlot}
       />
     </>
   );

@@ -12,6 +12,7 @@ import {
   useInventoryGridNavigation,
 } from '@/components/game/inventory/useInventoryGridNavigation';
 import type { InventoryItemView } from '@/engine/inventory/inventoryPresentation';
+import type { EquipmentSlot, InventoryItem } from '@/shared/types/game';
 
 interface InventoryGridProps {
   open: boolean;
@@ -23,6 +24,7 @@ interface InventoryGridProps {
   searchQuery: string;
   maxSlots: number;
   gridContainerRef: React.RefObject<HTMLDivElement | null>;
+  equippedItems: Record<EquipmentSlot, InventoryItem | null>;
   onSelectItem: (itemId: string, index: number) => void;
   onConfirmItem: (item: InventoryItemView) => void;
   onCloseDetail: () => void;
@@ -38,6 +40,7 @@ export function InventoryGrid({
   searchQuery,
   maxSlots,
   gridContainerRef,
+  equippedItems,
   onSelectItem,
   onConfirmItem,
   onCloseDetail,
@@ -102,6 +105,7 @@ export function InventoryGrid({
       isFocused={focusedIndex === index}
       reducedMotion={reducedMotion}
       onSelect={onSelectItem}
+      equippedItems={equippedItems}
     />
   );
 

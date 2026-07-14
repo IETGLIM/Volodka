@@ -77,6 +77,10 @@ export function Inventory({ open, onClose, onOpenPoetryBook }: InventoryProps) {
     (option) => option.value === categoryFilter,
   )?.label ?? categoryFilter;
 
+  const totalCount = inventory.length;
+  const filteredCount = filteredViews.length;
+  const isFiltered = categoryFilter !== 'all' || searchQuery.trim().length > 0;
+
   return (
     <PanelWrapper
       open={open}
@@ -135,7 +139,7 @@ export function Inventory({ open, onClose, onOpenPoetryBook }: InventoryProps) {
             </span>
           </div>
           <span className="text-xs text-slate-400 font-mono">
-            {inventory.length}/{maxSlots}
+            {totalCount}/{maxSlots}
           </span>
         </div>
       )}
@@ -143,7 +147,9 @@ export function Inventory({ open, onClose, onOpenPoetryBook }: InventoryProps) {
         <div className="flex items-center justify-between">
           <span className="text-[10px] text-slate-600 font-mono">volodka://inventory</span>
           <span className="text-[10px] text-slate-600 font-mono">
-            {categoryFilter !== 'all' ? `Фильтр: ${activeFilterLabel}` : 'Все предметы'}
+            {isFiltered
+              ? `${filteredCount} из ${totalCount} предметов`
+              : `Все предметы (${totalCount})`}
           </span>
         </div>
       )}
@@ -251,6 +257,7 @@ export function Inventory({ open, onClose, onOpenPoetryBook }: InventoryProps) {
                 searchQuery={searchQuery}
                 maxSlots={maxSlots}
                 gridContainerRef={gridContainerRef}
+                equippedItems={equippedItems}
                 onSelectItem={selectItemById}
                 onConfirmItem={handleConfirmItem}
                 onCloseDetail={clearSelection}

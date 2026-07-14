@@ -16,6 +16,7 @@ export type HUDProps = {
   onToggleTutorials?: () => void;
   onOpenMenu?: () => void;
   onOpenMiniGames?: () => void;
+  onOpenWorldMap?: () => void;
   onOpenCharacterProfile?: () => void;
   onOpenNPCRelations?: () => void;
   onOpenCodex?: () => void;

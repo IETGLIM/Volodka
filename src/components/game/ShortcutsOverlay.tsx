@@ -1,15 +1,28 @@
 
 /* ─── Volodka RPG – Keyboard Shortcuts Help Overlay ─── */
-/* Enhanced with hex-grid bg, corner brackets, scan-line sweep,
- * neon kbd glow on hover, and pulsing border animation. */
+/* Enhanced with combat/camera groups, slide-down animation,
+ * gamepad detection, and neon cyberpunk styling. */
 
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Keyboard } from 'lucide-react';
+import { X, Keyboard, Gamepad2 } from 'lucide-react';
 import { FocusTrap } from '@/components/a11y/FocusTrap';
 import { usePanelDialog } from '@/components/a11y/usePanelDialog';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
-const SHORTCUT_GROUPS = [
+/* ─── Shortcut definitions ─── */
+
+interface ShortcutEntry {
+  keys: string[];
+  desc: string;
+}
+
+interface ShortcutGroup {
+  title: string;
+  shortcuts: ShortcutEntry[];
+}
+
+const KEYBOARD_GROUPS: ShortcutGroup[] = [
   {
     title: 'Движение',
     shortcuts: [
@@ -22,17 +35,18 @@ const SHORTCUT_GROUPS = [
     title: 'Взаимодействие',
     shortcuts: [
       { keys: ['E'], desc: 'Взаимодействие с NPC / объектами' },
-      { keys: ['1', '2', '3'], desc: 'Быстрый выбор в диалогах' },
+      { keys: ['Esc'], desc: 'Меню паузы / закрыть' },
     ],
   },
   {
-    title: 'Интерфейс',
+    title: 'Панели',
     shortcuts: [
       { keys: ['I'], desc: 'Инвентарь' },
       { keys: ['J'], desc: 'Журнал' },
       { keys: ['Q'], desc: 'Задания' },
-      { keys: ['P'], desc: 'Книга стихов' },
-      { keys: ['M'], desc: 'Мини-игры' },
+      { keys: ['Shift', 'P'], desc: 'Книга стихов' },
+      { keys: ['M'], desc: 'Карта мира' },
+      { keys: ['F'], desc: 'Быстрый переход' },
       { keys: ['C'], desc: 'Профиль персонажа' },
       { keys: ['N'], desc: 'Отношения с NPC' },
       { keys: ['K'], desc: 'Кодекс' },
@@ -43,35 +57,136 @@ const SHORTCUT_GROUPS = [
       { keys: ['B'], desc: 'Доска заданий' },
       { keys: ['Shift', 'T'], desc: 'Торговля' },
       { keys: ['G'], desc: 'Крафт' },
-      { keys: ['F'], desc: 'Быстрый переход' },
       { keys: ['R'], desc: 'Отдых (в комнате)' },
-      { keys: ['Esc'], desc: 'Меню паузы' },
       { keys: ['Tab'], desc: 'Инвентарь' },
     ],
   },
   {
-    title: 'Отладка',
+    title: 'Бой',
+    shortcuts: [
+      { keys: ['1'], desc: 'Атака' },
+      { keys: ['2'], desc: 'Защита' },
+      { keys: ['3'], desc: 'Побег' },
+      { keys: ['4'], desc: 'Стихотворение' },
+    ],
+  },
+  {
+    title: 'Камера',
+    shortcuts: [
+      { keys: ['Мышь ↕'], desc: 'Вращение камеры' },
+      { keys: ['Scroll'], desc: 'Приближение / отдаление' },
+      { keys: ['Shift', 'R'], desc: 'Сброс камеры' },
+    ],
+  },
+  {
+    title: 'Прочее',
     shortcuts: [
       { keys: ['F1', '?'], desc: 'Эта справка' },
       { keys: ['F3'], desc: 'Панель разработчика' },
     ],
   },
+];
+
+const GAMEPAD_GROUPS: ShortcutGroup[] = [
   {
-    title: 'Геймпад (Xbox / стандарт)',
+    title: 'Геймпад — движение',
     shortcuts: [
       { keys: ['Левый стик'], desc: 'Движение' },
-      { keys: ['Правый стик'], desc: 'Камера' },
-      { keys: ['LT / RT'], desc: 'Приближение / отдаление камеры' },
-      { keys: ['A'], desc: 'Взаимодействие' },
-      { keys: ['B'], desc: 'Прыжок' },
       { keys: ['LB'], desc: 'Бег' },
+      { keys: ['B'], desc: 'Прыжок' },
+    ],
+  },
+  {
+    title: 'Геймпад — взаимодействие',
+    shortcuts: [
+      { keys: ['A'], desc: 'Взаимодействие' },
+      { keys: ['Menu'], desc: 'Меню паузы / закрыть' },
+    ],
+  },
+  {
+    title: 'Геймпад — камеры',
+    shortcuts: [
+      { keys: ['Правый стик'], desc: 'Камера' },
+      { keys: ['LT / RT'], desc: 'Приближение / отдаление' },
+    ],
+  },
+  {
+    title: 'Геймпад — панели',
+    shortcuts: [
       { keys: ['Y'], desc: 'Инвентарь' },
       { keys: ['X'], desc: 'Задания' },
       { keys: ['View'], desc: 'Журнал' },
-      { keys: ['Menu'], desc: 'Меню паузы / закрыть панель' },
+    ],
+  },
+  {
+    title: 'Геймпад — бой',
+    shortcuts: [
+      { keys: ['A'], desc: 'Атака' },
+      { keys: ['B'], desc: 'Защита' },
+      { keys: ['X'], desc: 'Побег' },
+      { keys: ['Y'], desc: 'Стихотворение' },
+      { keys: ['LB / RB'], desc: 'Выбор стиха' },
+      { keys: ['LT'], desc: 'Использовать стих' },
     ],
   },
 ];
+
+/* ─── Gamepad detection hook ─── */
+
+function useGamepadConnected(): boolean {
+  const [connected, setConnected] = useState(false);
+
+  useEffect(() => {
+    let rafId = 0;
+
+    const check = () => {
+      if (typeof navigator === 'undefined' || !navigator.getGamepads) {
+        setConnected(false);
+        return;
+      }
+      const pads = navigator.getGamepads();
+      let found = false;
+      for (let i = 0; i < pads.length; i++) {
+        if (pads[i]?.connected) {
+          found = true;
+          break;
+        }
+      }
+      setConnected(found);
+      rafId = requestAnimationFrame(check);
+    };
+
+    rafId = requestAnimationFrame(check);
+
+    const onConnect = () => setConnected(true);
+    const onDisconnect = () => {
+      // Re-check after a tick (another pad might still be connected)
+      setTimeout(() => {
+        if (typeof navigator !== 'undefined' && navigator.getGamepads) {
+          const pads = navigator.getGamepads();
+          let found = false;
+          for (let i = 0; i < pads.length; i++) {
+            if (pads[i]?.connected) { found = true; break; }
+          }
+          setConnected(found);
+        }
+      }, 100);
+    };
+
+    window.addEventListener('gamepadconnected', onConnect);
+    window.addEventListener('gamepaddisconnected', onDisconnect);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      window.removeEventListener('gamepadconnected', onConnect);
+      window.removeEventListener('gamepaddisconnected', onDisconnect);
+    };
+  }, []);
+
+  return connected;
+}
+
+/* ─── Component ─── */
 
 interface ShortcutsOverlayProps {
   open: boolean;
@@ -80,12 +195,18 @@ interface ShortcutsOverlayProps {
 
 export function ShortcutsOverlay({ open, onClose }: ShortcutsOverlayProps) {
   const { closeButtonRef, dialogProps, titleProps } = usePanelDialog();
+  const gamepadConnected = useGamepadConnected();
+
+  // Combine keyboard + gamepad groups
+  const allGroups = gamepadConnected
+    ? [...KEYBOARD_GROUPS, ...GAMEPAD_GROUPS]
+    : KEYBOARD_GROUPS;
 
   return (
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 flex items-center justify-center"
+          className="fixed inset-0 flex items-start justify-center pt-[5vh] sm:pt-[8vh]"
           style={{ zIndex: UI_LAYERS.MENU }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -102,14 +223,14 @@ export function ShortcutsOverlay({ open, onClose }: ShortcutsOverlayProps) {
             exit={{ opacity: 0 }}
           />
 
-          {/* Content */}
+          {/* Content — slide down from top */}
           <FocusTrap initialFocusRef={closeButtonRef}>
           <motion.div
-            className="relative z-10 w-full max-w-lg mx-4"
-            initial={{ scale: 0.92, opacity: 0, y: 20 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.92, opacity: 0, y: 20 }}
-            transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+            className="relative z-10 w-full max-w-2xl mx-4"
+            initial={{ y: -60, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -40, opacity: 0 }}
+            transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
             {...dialogProps}
           >
             <div
@@ -144,6 +265,9 @@ export function ShortcutsOverlay({ open, onClose }: ShortcutsOverlayProps) {
                   <h2 {...titleProps} className="text-lg font-semibold text-slate-100 tracking-wide">
                     Управление
                   </h2>
+                  {gamepadConnected && (
+                    <Gamepad2 className="size-4 text-emerald-400/70" />
+                  )}
                 </div>
                 <button
                   ref={closeButtonRef}
@@ -157,23 +281,26 @@ export function ShortcutsOverlay({ open, onClose }: ShortcutsOverlayProps) {
               </div>
 
               {/* Body */}
-              <div className="relative z-20 px-5 py-4 max-h-[60vh] overflow-y-auto game-scrollbar">
+              <div className="relative z-20 px-5 py-4 max-h-[70vh] overflow-y-auto game-scrollbar">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  {SHORTCUT_GROUPS.map((group) => (
+                  {allGroups.map((group) => (
                     <div key={group.title}>
-                      <h3 className="text-xs font-semibold text-cyan-400/60 uppercase tracking-[0.15em] mb-2.5">
+                      <h3 className="text-xs font-semibold text-cyan-400/60 uppercase tracking-[0.15em] mb-2.5 flex items-center gap-2">
+                        {group.title.startsWith('Геймпад') && (
+                          <Gamepad2 className="size-3 text-emerald-400/60" />
+                        )}
                         {group.title}
                       </h3>
                       <div className="flex flex-col gap-1.5">
                         {group.shortcuts.map((shortcut) => (
                           <div key={shortcut.keys.join('+')} className="flex items-center justify-between gap-3">
                             <span className="text-sm text-slate-300/80">{shortcut.desc}</span>
-                            <div className="flex items-center gap-1">
+                            <div className="flex items-center gap-1 shrink-0">
                               {shortcut.keys.map((key, i) => (
                                 <span key={i}>
                                   {i > 0 && <span className="text-slate-600 text-xs">+</span>}
                                   <kbd
-                                    className="group/kbd inline-flex items-center justify-center min-w-[28px] h-7 px-2 rounded border text-xs font-mono transition-all duration-200 hover:border-cyan-400/50 hover:text-cyan-300 hover:shadow-[0_0_8px_rgba(0,229,255,0.3),0_0_16px_rgba(0,229,255,0.1)]"
+                                    className="inline-flex items-center justify-center min-w-[28px] h-7 px-2 rounded border text-xs font-mono transition-all duration-200 hover:border-cyan-400/50 hover:text-cyan-300 hover:shadow-[0_0_8px_rgba(0,229,255,0.3),0_0_16px_rgba(0,229,255,0.1)]"
                                     style={{
                                       background: 'rgba(15, 23, 42, 0.6)',
                                       borderColor: 'rgba(100, 116, 139, 0.25)',
@@ -200,7 +327,7 @@ export function ShortcutsOverlay({ open, onClose }: ShortcutsOverlayProps) {
                   volodka://controls
                 </span>
                 <span className="text-[10px] text-slate-500/40 font-mono">
-                  Нажмите Esc или F1 чтобы закрыть
+                  Esc / F1 — закрыть
                 </span>
               </div>
             </div>

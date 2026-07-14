@@ -307,6 +307,12 @@ export const SavePayloadSchema = z.object({
     goodKarmaStreak: 0,
     badKarmaStreak: 0,
   }),
+  /** Quick-use hotbar: 4 slots with item IDs (null = empty) */
+  hotbarSlots: z.tuple([z.string().nullable(), z.string().nullable(), z.string().nullable(), z.string().nullable()]).optional().default([null, null, null, null]),
+  /** Persisted inventory sort preference */
+  inventorySortOption: z.string().optional().default('name'),
+  /** Persisted inventory filter preference */
+  inventoryFilterCategory: z.string().optional().default('all'),
   savedAt: z.number(),
   /** Optional slot-manager metadata (not applied to game state) */
   playTimeSeconds: z.number().min(0).optional(),

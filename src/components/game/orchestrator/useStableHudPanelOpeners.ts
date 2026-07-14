@@ -4,6 +4,7 @@ import type { PanelType } from './types';
 /** Stable LazyHUD panel openers — avoids inline lambdas on every gameplay-layer render. */
 export interface HudSecondaryPanelOpeners {
   onOpenMiniGames: () => void;
+  onOpenWorldMap: () => void;
   onOpenCharacterProfile: () => void;
   onOpenNPCRelations: () => void;
   onOpenCodex: () => void;
@@ -27,6 +28,7 @@ export function useStableHudPanelOpeners(
   return useMemo(
     () => ({
       onOpenMiniGames: () => dispatchRef.current('miniGameHub'),
+      onOpenWorldMap: () => dispatchRef.current('worldMap'),
       onOpenCharacterProfile: () => dispatchRef.current('characterProfile'),
       onOpenNPCRelations: () => dispatchRef.current('npcRelation'),
       onOpenCodex: () => dispatchRef.current('codex'),

@@ -1,4 +1,4 @@
-import { getRarityLabel, type ItemDefinition, type ItemRarity } from '@/data/items';
+import { getRarityLabel, getItemDefinition, type ItemDefinition, type ItemRarity } from '@/data/items';
 import type { InventoryItemView } from '@/engine/inventory/inventoryPresentation';
 import {
   INVENTORY_CATEGORY_LABELS,
@@ -17,6 +17,22 @@ const SKILL_LABELS: Record<TrainablePlayerSkill, string> = {
   rhythm: '🎵 Ритм',
 };
 
+export interface TooltipComparisonDelta {
+  stat: string;
+  label: string;
+  delta: number;
+  /** Whether a higher value is beneficial for the player. */
+  positiveIsGood: boolean;
+}
+
+export interface TooltipComparison {
+  equippedItemId: string;
+  equippedName: string;
+  equippedRarity: ItemRarity;
+  slotLabel: string;
+  deltas: TooltipComparisonDelta[];
+}
+
 export type InventoryTooltipContent = {
   itemId: string;
   displayName: string;
@@ -33,6 +49,8 @@ export type InventoryTooltipContent = {
   effectsHeader: string;
   isUnknown: boolean;
   quantity: number;
+  /** Comparison data when hovering an equipment item that has something equipped in the same slot. */
+  comparison: TooltipComparison | null;
 };
 
 function buildEffectLines(def: ItemDefinition): string[] {
@@ -68,7 +86,95 @@ function resolveEffectsHeader(def: ItemDefinition): string {
   }
 }
 
-export function buildInventoryTooltipContent(view: InventoryItemView): InventoryTooltipContent {
+function computeComparison(
+  newDef: ItemDefinition,
+  equippedItemId: string,
+): TooltipComparison | null {
+  const equippedDef = getItemDefinition(equippedItemId);
+  if (!equippedDef) return null;
+
+  const slotLabel = INVENTORY_SLOT_LABELS[equippedDef.equipmentSlot ?? ''] ?? equippedDef.equipmentSlot ?? '';
+
+  // Collect stat deltas
+  const newStats = new Map<string, number>();
+  const oldStats = new Map<string, number>();
+
+  for (const effect of newDef.effects) {
+    if (effect.stat) {
+      newStats.set(effect.stat, (newStats.get(effect.stat) ?? 0) + effect.value);
+    } else if (effect.skill) {
+      newStats.set(`skill:${effect.skill}`, (newStats.get(`skill:${effect.skill}`) ?? 0) + effect.value);
+    }
+  }
+
+  for (const effect of equippedDef.effects) {
+    if (effect.stat) {
+      oldStats.set(effect.stat, (oldStats.get(effect.stat) ?? 0) + effect.value);
+    } else if (effect.skill) {
+      oldStats.set(`skill:${effect.skill}`, (oldStats.get(`skill:${effect.skill}`) ?? 0) + effect.value);
+    }
+  }
+
+  // Build delta list: all keys from both items
+  const allKeys = new Set([...newStats.keys(), ...oldStats.keys()]);
+  const deltas: TooltipComparisonDelta[] = [];
+
+  const STAT_LABELS: Record<string, string> = {
+    energy: 'Энергия',
+    stress: 'Стресс',
+    karma: 'Карма',
+  };
+
+  const STAT_POSITIVE_IS_GOOD: Record<string, boolean> = {
+    energy: true,
+    stress: false,
+    karma: true,
+  };
+
+  const SKILL_LABELS_LOCAL: Record<string, string> = {
+    logic: 'Логика',
+    coding: 'Кодирование',
+    empathy: 'Эмпатия',
+    persuasion: 'Убеждение',
+    intuition: 'Интуиция',
+    writing: 'Письмо',
+    rhythm: 'Ритм',
+  };
+
+  for (const key of allKeys) {
+    const newVal = newStats.get(key) ?? 0;
+    const oldVal = oldStats.get(key) ?? 0;
+    const delta = newVal - oldVal;
+    if (delta === 0) continue;
+
+    let label: string;
+    let positiveIsGood: boolean;
+
+    if (key.startsWith('skill:')) {
+      const skillKey = key.slice(6);
+      label = SKILL_LABELS_LOCAL[skillKey] ?? skillKey;
+      positiveIsGood = true;
+    } else {
+      label = STAT_LABELS[key] ?? key;
+      positiveIsGood = STAT_POSITIVE_IS_GOOD[key] ?? true;
+    }
+
+    deltas.push({ stat: key, label, delta, positiveIsGood });
+  }
+
+  return {
+    equippedItemId,
+    equippedName: equippedDef.name,
+    equippedRarity: equippedDef.rarity,
+    slotLabel,
+    deltas,
+  };
+}
+
+export function buildInventoryTooltipContent(
+  view: InventoryItemView,
+  equippedItemIdForSlot?: string | null,
+): InventoryTooltipContent {
   const { item, def, isUnknown, rarity, displayName, displayDescription } = view;
 
   if (isUnknown && import.meta.env.DEV) {
@@ -80,6 +186,12 @@ export function buildInventoryTooltipContent(view: InventoryItemView): Inventory
   const isEquipment = def?.category === 'equipment';
   const isConsumable = def?.category === 'consumable';
   const isBook = def?.category === 'book' || def?.category === 'poem_fragment';
+
+  // Build comparison only for equipment items that have something equipped in the same slot
+  let comparison: TooltipComparison | null = null;
+  if (isEquipment && def?.equipmentSlot && equippedItemIdForSlot && equippedItemIdForSlot !== item.id) {
+    comparison = computeComparison(def, equippedItemIdForSlot);
+  }
 
   return {
     itemId: item.id,
@@ -99,6 +211,7 @@ export function buildInventoryTooltipContent(view: InventoryItemView): Inventory
     effectsHeader: def ? resolveEffectsHeader(def) : 'Эффекты',
     isUnknown,
     quantity: item.quantity,
+    comparison,
   };
 }
 

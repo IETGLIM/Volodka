@@ -111,16 +111,28 @@ export function filterAndSortInventoryViews(
     );
   }
 
+  const recentIndex = new Map<string, number>();
+  if (sortOption === 'recent') {
+    for (let i = 0; i < views.length; i++) {
+      recentIndex.set(views[i].item.id, i);
+    }
+  }
+
   items.sort((a, b) => {
     switch (sortOption) {
       case 'name':
         return a.displayName.localeCompare(b.displayName, 'ru');
       case 'rarity':
-        return INVENTORY_RARITY_WEIGHT[a.rarity] - INVENTORY_RARITY_WEIGHT[b.rarity];
+        return INVENTORY_RARITY_WEIGHT[b.rarity] - INVENTORY_RARITY_WEIGHT[a.rarity];
       case 'type':
         return a.filterCategory.localeCompare(b.filterCategory);
       case 'quantity':
         return b.item.quantity - a.item.quantity;
+      case 'recent': {
+        const ai = recentIndex.get(a.item.id) ?? 0;
+        const bi = recentIndex.get(b.item.id) ?? 0;
+        return bi - ai;
+      }
       default: {
         const _exhaustive: never = sortOption;
         return _exhaustive;

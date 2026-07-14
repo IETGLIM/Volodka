@@ -74,4 +74,5 @@ export const MENU_LAYER_PANELS = new Set<NonNullPanelType>([
   'saveSlot',
   'miniGameHub',
   'shortcuts',
+  'worldMap',
 ] satisfies readonly NonNullPanelType[]);

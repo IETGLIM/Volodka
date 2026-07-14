@@ -150,7 +150,7 @@ export function useKeyboardShortcutManager({
         e.preventDefault();
         dispatchPanel('poetry');
       }
-      if (e.code === 'KeyM') dispatchPanel('miniGameHub');
+      if (e.code === 'KeyM') dispatchPanel('worldMap');
       if (e.code === 'KeyN') dispatchPanel('npcRelation');
       if (e.code === 'KeyC') dispatchPanel('characterProfile');
       if (e.code === 'KeyK') dispatchPanel('codex');
@@ -180,6 +180,10 @@ export function useKeyboardShortcutManager({
         }
       }
       if (e.code === 'F1' || (e.code === 'Slash' && e.shiftKey)) {
+        e.preventDefault();
+        dispatchPanel('shortcuts');
+      }
+      if (e.code === 'Slash' && !e.shiftKey) {
         e.preventDefault();
         dispatchPanel('shortcuts');
       }

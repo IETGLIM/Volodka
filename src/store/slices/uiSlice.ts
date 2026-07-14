@@ -75,6 +75,12 @@ export interface UISliceState {
   thoughtHistory: ThoughtHistoryEntry[];
   notificationHistory: NotificationHistoryEntry[];
   introSeen: boolean;
+  /** Quick-use hotbar: 4 slots with item IDs (null = empty). */
+  hotbarSlots: [string | null, string | null, string | null, string | null];
+  /** Persisted inventory sort preference. */
+  inventorySortOption: string;
+  /** Persisted inventory filter preference. */
+  inventoryFilterCategory: string;
 }
 
 export interface UISliceActions {
@@ -106,6 +112,12 @@ export interface UISliceActions {
   addNotificationHistory: (entry: NotificationHistoryEntry) => void;
   clearNotificationHistory: () => void;
   setIntroSeen: (seen: boolean) => void;
+  /** Assign an item to a hotbar slot (pass null to clear). */
+  setHotbarSlot: (slotIndex: number, itemId: string | null) => void;
+  /** Persist inventory sort preference. */
+  setInventorySortOption: (option: string) => void;
+  /** Persist inventory filter preference. */
+  setInventoryFilterCategory: (category: string) => void;
 }
 
 export type UISlice = UISliceState & UISliceActions;
@@ -142,6 +154,9 @@ export const createUISlice: StateCreator<
   thoughtHistory: [],
   notificationHistory: [],
   introSeen: false,
+  hotbarSlots: [null, null, null, null],
+  inventorySortOption: 'name',
+  inventoryFilterCategory: 'all',
 
   /* ── Actions ── */
 
@@ -299,4 +314,16 @@ export const createUISlice: StateCreator<
   clearNotificationHistory: () => set({ notificationHistory: [] }),
 
   setIntroSeen: (seen) => set({ introSeen: seen }),
+
+  setHotbarSlot: (slotIndex, itemId) =>
+    set((state) => {
+      if (slotIndex < 0 || slotIndex > 3) return state;
+      const newSlots = [...state.hotbarSlots] as [string | null, string | null, string | null, string | null];
+      newSlots[slotIndex] = itemId;
+      return { hotbarSlots: newSlots };
+    }),
+
+  setInventorySortOption: (option) => set({ inventorySortOption: option }),
+
+  setInventoryFilterCategory: (category) => set({ inventoryFilterCategory: category }),
 });

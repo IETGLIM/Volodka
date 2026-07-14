@@ -20,6 +20,7 @@ import {
   Activity,
   Shield,
   Gamepad2,
+  Map as MapIcon,
   User,
   Users,
   BookMarked,
@@ -184,6 +185,7 @@ export function ExplorationHUD(props: HUDProps) {
     onToggleTutorials,
     onOpenMenu,
     onOpenMiniGames,
+    onOpenWorldMap,
     onOpenCharacterProfile,
     onOpenNPCRelations,
     onOpenCodex,
@@ -203,6 +205,7 @@ export function ExplorationHUD(props: HUDProps) {
     { icon: <ShoppingCart className="size-4" />, label: 'Торговля', shortcut: '⇧T', onClick: onOpenTrading },
     { icon: <Hammer className="size-4" />, label: 'Крафт', shortcut: 'G', onClick: onOpenCrafting },
     { icon: <Gamepad2 className="size-4" />, label: 'Мини-игры', shortcut: 'M', onClick: onOpenMiniGames },
+    { icon: <MapIcon className="size-4" />, label: 'Карта мира', shortcut: 'M', onClick: onOpenWorldMap },
     { icon: <User className="size-4" />, label: 'Профиль', shortcut: 'C', onClick: onOpenCharacterProfile },
     { icon: <Users className="size-4" />, label: 'Отношения', shortcut: 'N', onClick: onOpenNPCRelations },
     { icon: <BookMarked className="size-4" />, label: 'Кодекс', shortcut: 'K', onClick: onOpenCodex },
@@ -210,7 +213,7 @@ export function ExplorationHUD(props: HUDProps) {
     { icon: <Trophy className="size-4" />, label: 'Достижения', shortcut: 'H', onClick: onOpenAchievements },
     { icon: <Lightbulb className="size-4" />, label: 'Подсказки', onClick: onToggleTutorials },
     { icon: <Menu className="size-4" />, label: 'Меню', onClick: onOpenMenu },
-  ], [onOpenFastTravel, onOpenSkillTree, onOpenPerks, onOpenQuestBoard, onOpenTrading, onOpenCrafting, onOpenMiniGames, onOpenCharacterProfile, onOpenNPCRelations, onOpenCodex, onOpenDialogueHistory, onOpenAchievements, onToggleTutorials, onOpenMenu]);
+  ], [onOpenFastTravel, onOpenSkillTree, onOpenPerks, onOpenQuestBoard, onOpenTrading, onOpenCrafting, onOpenMiniGames, onOpenWorldMap, onOpenCharacterProfile, onOpenNPCRelations, onOpenCodex, onOpenDialogueHistory, onOpenAchievements, onToggleTutorials, onOpenMenu]);
 
   if (photoModeOn) return null;
 

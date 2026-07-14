@@ -1,6 +1,6 @@
 import type { ItemRarity } from '@/data/items';
 
-export type InventorySortOption = 'name' | 'rarity' | 'type' | 'quantity';
+export type InventorySortOption = 'name' | 'rarity' | 'type' | 'quantity' | 'recent';
 
 export const INVENTORY_CATEGORY_ICONS: Record<string, string> = {
   consumable: '💊',
@@ -86,6 +86,7 @@ export const INVENTORY_SORT_OPTIONS: { value: InventorySortOption; label: string
   { value: 'rarity', label: 'По редкости' },
   { value: 'type', label: 'По типу' },
   { value: 'quantity', label: 'По количеству' },
+  { value: 'recent', label: 'По времени' },
 ];
 
 export const INVENTORY_CATEGORY_FILTER_OPTIONS: { value: string; label: string; icon: string }[] = [

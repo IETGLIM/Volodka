@@ -129,3 +129,19 @@ export function useConversationLog() {
 export function useThoughtHistory() {
   return useGameSelector((s) => s.thoughtHistory);
 }
+
+export function useHotbarSlots() {
+  return useGameSelector((s) => s.hotbarSlots);
+}
+
+export function useSetHotbarSlot() {
+  return getGameStore().setHotbarSlot;
+}
+
+export function useInventorySortPreference() {
+  return useGamePrimitive((s) => s.inventorySortOption);
+}
+
+export function useInventoryFilterPreference() {
+  return useGamePrimitive((s) => s.inventoryFilterCategory);
+}

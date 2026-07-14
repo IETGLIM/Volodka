@@ -98,6 +98,9 @@ export function createDefaultPersistedState(): Pick<GameStoreState, PersistedSto
       goodKarmaStreak: 0,
       badKarmaStreak: 0,
     },
+    hotbarSlots: [null, null, null, null],
+    inventorySortOption: 'name',
+    inventoryFilterCategory: 'all',
   };
 }
 

@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import type { ItemRarity } from '@/data/items';
 import type { InventoryItemView } from '@/engine/inventory/inventoryPresentation';
 import { buildInventoryTooltipContent } from '@/engine/inventory/inventoryTooltipPresentation';
+import type { TooltipComparisonDelta } from '@/engine/inventory/inventoryTooltipPresentation';
 import { inventoryTelemetry } from '@/engine/inventory/inventoryTelemetry';
 import { useInventoryTooltipPosition } from '@/components/game/inventory/useInventoryTooltipPosition';
 
@@ -17,6 +18,8 @@ export interface InventoryTooltipProps {
   position?: 'above' | 'below' | 'right';
   linkedQuestName?: string;
   reducedMotion?: boolean;
+  /** ID of the currently-equipped item in the same slot (for comparison). */
+  equippedItemIdForSlot?: string | null;
 }
 
 const RARITY_BORDER: Record<ItemRarity, string> = {
@@ -40,6 +43,24 @@ const RARITY_TEXT: Record<ItemRarity, string> = {
   legendary: 'text-amber-300',
 };
 
+function ComparisonDelta({ delta }: { delta: TooltipComparisonDelta }) {
+  const isPositive = delta.delta > 0;
+  // "Beneficial" = positive delta AND positiveIsGood, or negative delta AND !positiveIsGood
+  const isBeneficial = isPositive === delta.positiveIsGood;
+
+  const arrow = isPositive ? '↑' : '↓';
+  const sign = isPositive ? '+' : '';
+  const colorClass = isBeneficial ? 'text-emerald-400' : 'text-rose-400';
+
+  return (
+    <p className={`font-mono text-xs ${colorClass} flex items-center gap-1 break-words`}>
+      <span className={isBeneficial ? 'text-emerald-500' : 'text-rose-500'} aria-hidden>▸</span>
+      <span aria-hidden>{arrow}</span>
+      <span>{delta.label} {sign}{delta.delta}</span>
+    </p>
+  );
+}
+
 export const InventoryTooltip = memo(function InventoryTooltip({
   view,
   visible,
@@ -48,13 +69,14 @@ export const InventoryTooltip = memo(function InventoryTooltip({
   position = 'above',
   linkedQuestName,
   reducedMotion = false,
+  equippedItemIdForSlot,
 }: InventoryTooltipProps) {
   const tooltipRef = useRef<HTMLDivElement>(null);
   const trackedRef = useRef(false);
   const content = useMemo(
-    () => buildInventoryTooltipContent(view),
+    () => buildInventoryTooltipContent(view, equippedItemIdForSlot),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
-    [view.item.id, view.item.quantity, view.displayName, view.displayDescription, view.isUnknown, view.rarity, view.filterCategory],
+    [view.item.id, view.item.quantity, view.displayName, view.displayDescription, view.isUnknown, view.rarity, view.filterCategory, equippedItemIdForSlot],
   );
   const coords = useInventoryTooltipPosition(anchorRef, tooltipRef, visible, position);
 
@@ -87,7 +109,7 @@ export const InventoryTooltip = memo(function InventoryTooltip({
           transition={{ duration: reducedMotion ? 0 : 0.12, ease: 'easeOut' }}
         >
           <div
-            className="rounded-lg border backdrop-blur-md overflow-hidden break-words"
+            className="rounded-lg border backdrop-blur-md overflow-hidden break-words relative"
             style={{
               background: 'linear-gradient(180deg, rgba(8, 12, 18, 0.96) 0%, rgba(5, 8, 14, 0.98) 100%)',
               borderColor: RARITY_BORDER[content.rarity],
@@ -168,6 +190,27 @@ export const InventoryTooltip = memo(function InventoryTooltip({
                       <span className="text-emerald-500" aria-hidden>▸</span>
                       {effect}
                     </p>
+                  ))}
+                </div>
+              </>
+            )}
+
+            {/* ── Equipment Comparison ── */}
+            {content.comparison && content.comparison.deltas.length > 0 && (
+              <>
+                <div
+                  className="h-[1px] mx-3"
+                  aria-hidden
+                  style={{
+                    background: 'linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.2), transparent)',
+                  }}
+                />
+                <div className="px-3 py-2 space-y-1">
+                  <p className="font-mono text-[10px] uppercase tracking-wider text-amber-500/60 mb-1">
+                    Сравнение с {content.comparison.equippedName}
+                  </p>
+                  {content.comparison.deltas.map((delta) => (
+                    <ComparisonDelta key={delta.stat} delta={delta} />
                   ))}
                 </div>
               </>
