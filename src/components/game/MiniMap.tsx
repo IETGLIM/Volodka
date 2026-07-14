@@ -32,8 +32,11 @@ const NPC_DOT_COLORS: Record<string, string> = {
 
 export function MiniMap() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const animFrameRef = useRef<number>(0);
   const pulsePhaseRef = useRef(0);
+  const isVisibleRef = useRef(true); // tracks visibility for rAF perf
+  const animateFnRef = useRef<FrameRequestCallback>(() => {}); // stored for IntersectionObserver restart
   const quietStyle = useHudQuietStyle();
 
   const { currentSceneId, playerPos, playerRotation, npcStates } = useMiniMapState();
@@ -107,18 +110,19 @@ export function MiniMap() {
     const toMapX = (worldX: number) => MAP_PADDING + INNER_PADDING + (worldX + sceneW / 2) * scaleX;
     const toMapY = (worldZ: number) => MAP_PADDING + INNER_PADDING + (worldZ + sceneD / 2) * scaleZ;
 
-    const animate = () => {
+    const animate: FrameRequestCallback = () => {
+      animateFnRef.current = animate;
       pulsePhaseRef.current += 0.03;
       const pulse = Math.sin(pulsePhaseRef.current) * 0.5 + 0.5; // 0..1
 
       // Clear
       ctx.clearRect(0, 0, MAP_SIZE, MAP_SIZE);
 
-      // Background — semi-transparent
+      // Background — semi-transparent dark panel
       ctx.fillStyle = 'rgba(8, 12, 28, 0.85)';
       ctx.fillRect(0, 0, MAP_SIZE, MAP_SIZE);
 
-      // Inner map area background
+      // Inner map area background — slightly lighter for depth
       ctx.fillStyle = 'rgba(15, 23, 42, 0.7)';
       ctx.fillRect(
         MAP_PADDING + INNER_PADDING,
@@ -127,7 +131,7 @@ export function MiniMap() {
         drawSize,
       );
 
-      // Border — subtle cyberpunk
+      // Border — subtle cyberpunk cyan frame
       ctx.strokeStyle = cyberCyan(0.2);
       ctx.lineWidth = 1;
       ctx.strokeRect(
@@ -137,7 +141,7 @@ export function MiniMap() {
         drawSize + 2,
       );
 
-      // Grid lines (subtle)
+      // Grid lines — subtle cyan reference grid
       ctx.strokeStyle = cyberCyan(0.04);
       ctx.lineWidth = 0.5;
       for (let i = 1; i < 4; i++) {
@@ -187,13 +191,24 @@ export function MiniMap() {
         ctx.restore();
       }
 
-      // ── Quest markers (!) ──
+      // ── Quest markers (diamond shape with glow) ──
       for (const marker of questMarkersRef.current) {
         const mx = toMapX(marker.position[0]);
         const my = toMapY(marker.position[2]);
-        ctx.fillStyle = 'rgba(251, 191, 36, 0.9)';
-        ctx.font = 'bold 10px monospace';
-        ctx.fillText('!', mx - 3, my + 3);
+        const dSize = 4; // half-width of 8px diamond
+        ctx.save();
+        ctx.shadowColor = '#fbbf24'; // amber glow
+        ctx.shadowBlur = 8;
+        ctx.fillStyle = '#fbbf24';
+        ctx.beginPath();
+        ctx.moveTo(mx, my - dSize);       // top vertex
+        ctx.lineTo(mx + dSize, my);       // right vertex
+        ctx.lineTo(mx, my + dSize);       // bottom vertex
+        ctx.lineTo(mx - dSize, my);       // left vertex
+        ctx.closePath();
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.restore();
       }
 
       // ── NPC dots (colored per NPC) ──
@@ -292,7 +307,10 @@ export function MiniMap() {
       ctx.lineTo(MAP_PADDING + INNER_PADDING + drawSize + 2, centerY);
       ctx.stroke();
 
-      animFrameRef.current = requestAnimationFrame(animate);
+      // Only continue rAF loop when minimap is visible
+      if (isVisibleRef.current) {
+        animFrameRef.current = requestAnimationFrame(animate);
+      }
     };
 
     animFrameRef.current = requestAnimationFrame(animate);
@@ -302,10 +320,30 @@ export function MiniMap() {
     };
   }, [sceneConfig]);
 
+  // IntersectionObserver: skip rAF when minimap is off-screen
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        const wasVisible = isVisibleRef.current;
+        isVisibleRef.current = entry.isIntersecting;
+        // Resume animation loop when becoming visible again
+        if (!wasVisible && entry.isIntersecting && sceneConfig) {
+          animFrameRef.current = requestAnimationFrame(animateFnRef.current);
+        }
+      },
+      { threshold: 0 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [sceneConfig]);
+
   if (!sceneConfig) return null;
 
   return (
     <div
+      ref={containerRef}
       className="fixed pointer-events-none hidden lg:block"
       data-exploration-ui
       style={{
@@ -314,6 +352,7 @@ export function MiniMap() {
         zIndex: UI_LAYERS.HUD,
         backdropFilter: 'blur(8px)',
         borderRadius: '8px',
+        // CSS var: --cyber-cyan-rgb used for consistent cyan glow
         boxShadow: '0 0 20px rgba(0,0,0,0.4), inset 0 0 0 1px rgb(var(--cyber-cyan-rgb) / 0.1)',
         ...quietStyle,
       }}
@@ -333,6 +372,7 @@ export function MiniMap() {
       <div
         className="flex items-center justify-center gap-1 mt-1 py-0.5 px-2 rounded"
         style={{
+          // CSS vars: --cyber-cyan-rgb for hint bar tint
           background: 'rgb(var(--cyber-cyan-rgb) / 0.06)',
           border: '1px solid rgb(var(--cyber-cyan-rgb) / 0.12)',
         }}

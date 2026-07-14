@@ -7,14 +7,21 @@
    karma shift visual flash, scene transition dissolve.
 */
 
-/* eslint-disable react-refresh/only-export-components -- co-located helpers and lazy exports */
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { eventBus, EventBusPriority } from '@/engine/EventBus';
 import { useScreenEffectsVitals, usePlayerKarma } from '@/store/selectors';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { useGameStore } from '@/store/gameStore';
+import {
+  triggerFlash,
+  triggerShake,
+  triggerVignette,
+  triggerChromaticAberration,
+  triggerDamageVignette,
+  triggerSceneDissolve,
+} from '@/engine/fx/screenFxTriggers';
 
 /* ── Effect state types ── */
 interface FlashEffect {
@@ -37,50 +44,6 @@ interface DissolveEffect {
 }
 
 let nextEffectId = 0;
-
-/* ── Public API (triggered via import) ── */
-export function triggerFlash(color: string = 'white', opacity: number = 0.3, duration: number = 300) {
-  eventBus.emit('fx:flash', { color, opacity, duration });
-}
-
-export function triggerShake(intensity: number = 8, duration: number = 400) {
-  eventBus.emit('fx:shake', { intensity, duration });
-}
-
-export function triggerVignette(intensity: number = 0.7, duration: number = 2000) {
-  eventBus.emit('fx:vignette', { intensity, duration });
-}
-
-export function triggerChromaticAberration(intensity: number = 3, duration: number = 500) {
-  eventBus.emit('fx:chromatic', { intensity, duration });
-}
-
-export function triggerSlowMotion(duration: number = 800) {
-  eventBus.emit('fx:slowmo', { duration });
-}
-
-export function triggerAchievement(title: string, description: string, icon?: string) {
-  eventBus.emit('fx:achievement', { title, description, icon });
-}
-
-export function triggerXpGain(amount: number, source?: string) {
-  eventBus.emit('fx:xp_gain', { amount, source });
-}
-
-/** Trigger a damage vignette — red flash with heavy vignette */
-export function triggerDamageVignette(intensity: number = 0.6, duration: number = 600) {
-  eventBus.emit('fx:damage_vignette', { intensity, duration });
-}
-
-/** Trigger a karma shift visual flash */
-export function triggerKarmaShiftFlash(direction: 'light' | 'dark' = 'dark', intensity: number = 0.3) {
-  eventBus.emit('fx:karma_shift', { direction, intensity });
-}
-
-/** Trigger a scene transition dissolve */
-export function triggerSceneDissolve(duration: number = 800, color: string = '#000000') {
-  eventBus.emit('fx:scene_dissolve', { duration, color });
-}
 
 /* ── Component ── */
 export function ScreenEffects() {

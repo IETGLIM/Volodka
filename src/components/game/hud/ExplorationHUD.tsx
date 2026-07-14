@@ -195,6 +195,7 @@ export function ExplorationHUD(props: HUDProps) {
     { icon: <Sparkles className="size-4" />, label: 'Черты', shortcut: 'V', onClick: onOpenPerks },
     { icon: <ScrollText className="size-4" />, label: 'Доска заданий', shortcut: 'B', onClick: onOpenQuestBoard },
     { icon: <ShoppingCart className="size-4" />, label: 'Торговля', shortcut: '⇧T', onClick: onOpenTrading },
+    { icon: <Hammer className="size-4" />, label: 'Крафт', shortcut: 'G', onClick: onOpenCrafting },
     { icon: <Gamepad2 className="size-4" />, label: 'Мини-игры', shortcut: 'M', onClick: onOpenMiniGames },
     { icon: <User className="size-4" />, label: 'Профиль', shortcut: 'C', onClick: onOpenCharacterProfile },
     { icon: <Users className="size-4" />, label: 'Отношения', shortcut: 'N', onClick: onOpenNPCRelations },
@@ -203,7 +204,7 @@ export function ExplorationHUD(props: HUDProps) {
     { icon: <Trophy className="size-4" />, label: 'Достижения', shortcut: 'H', onClick: onOpenAchievements },
     { icon: <Lightbulb className="size-4" />, label: 'Подсказки', onClick: onToggleTutorials },
     { icon: <Menu className="size-4" />, label: 'Меню', onClick: onOpenMenu },
-  ], [onOpenFastTravel, onOpenSkillTree, onOpenPerks, onOpenQuestBoard, onOpenTrading, onOpenMiniGames, onOpenCharacterProfile, onOpenNPCRelations, onOpenCodex, onOpenDialogueHistory, onOpenAchievements, onToggleTutorials, onOpenMenu]);
+  ], [onOpenFastTravel, onOpenSkillTree, onOpenPerks, onOpenQuestBoard, onOpenTrading, onOpenCrafting, onOpenMiniGames, onOpenCharacterProfile, onOpenNPCRelations, onOpenCodex, onOpenDialogueHistory, onOpenAchievements, onToggleTutorials, onOpenMenu]);
 
   if (photoModeOn) return null;
 

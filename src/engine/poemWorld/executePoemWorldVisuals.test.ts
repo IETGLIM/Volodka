@@ -2,7 +2,7 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import type { PoemWorldEffectProfile } from '@/config/poemWorldEffects';
 import { resolvePoemWorldEffect } from '@/engine/poemWorld/poemWorldEffectResolver';
 
-vi.mock('@/components/game/ScreenEffects', () => ({
+vi.mock('@/engine/fx/screenFxTriggers', () => ({
   triggerFlash: vi.fn(),
   triggerShake: vi.fn(),
   triggerVignette: vi.fn(),
@@ -14,7 +14,7 @@ import {
   triggerFlash,
   triggerShake,
   triggerVignette,
-} from '@/components/game/ScreenEffects';
+} from '@/engine/fx/screenFxTriggers';
 import { executePoemWorldVisuals } from '@/engine/poemWorld/executePoemWorldVisuals';
 
 describe('executePoemWorldVisuals', () => {

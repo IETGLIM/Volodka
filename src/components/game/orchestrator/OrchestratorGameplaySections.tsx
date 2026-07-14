@@ -50,6 +50,7 @@ import { ExplorationMobileHud } from '../ExplorationMobileHud';
 import { SceneTransitionOverlay } from '../SceneTransitionOverlay';
 import { WeatherIndicator } from '../WeatherIndicator';
 import { AmbientAtmosphereCaption } from '../AmbientAtmosphereCaption';
+import { SceneDiscoveryToast } from '../SceneDiscoveryToast';
 import { DayNightCycleIndicator } from '../DayNightCycleIndicator';
 import { FloatingTextLayer } from '../FloatingText';
 import { ScreenEffects } from '../ScreenEffects';
@@ -383,6 +384,7 @@ export const GameplayExplorationHud = memo(function GameplayExplorationHud({
       <NpcNoDialogueBark />
       <WeatherIndicator />
       <AmbientAtmosphereCaption />
+      <SceneDiscoveryToast />
       <DayNightCycleIndicator />
       <TutorialOverlay />
       <FirstPlayTutorial />

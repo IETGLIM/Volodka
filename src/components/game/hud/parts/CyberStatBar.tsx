@@ -4,6 +4,8 @@ interface CyberStatBarProps {
   value: number;
   max?: number;
   color: string;
+  /** Optional explicit gradient string. If provided, overrides the auto-generated gradient from `color`. */
+  gradient?: string;
   glowColor: string;
   showSegments?: boolean;
   shimmer?: boolean;
@@ -13,6 +15,7 @@ export function CyberStatBar({
   value,
   max = 100,
   color,
+  gradient: explicitGradient,
   glowColor,
   showSegments = true,
   shimmer = false,
@@ -20,14 +23,22 @@ export function CyberStatBar({
   const pct = Math.min(100, Math.max(0, (value / max) * 100));
   const isLow = value / max < 0.3;
   const isCritical = value / max < 0.15;
+
+  /* Detect if `color` is already a gradient (starts with 'linear' or 'radial') */
+  const isGradientColor = /^linear|^radial|^conic/.test(color.trim());
+
   const lowClass = isLow
-    ? color.includes('#ef4444') || color.includes('red')
+    ? color.includes('#ef4444') || color.includes('red') || color.includes('#f87171')
       ? 'low-bar-pulse'
       : 'low-bar-pulse-amber'
     : '';
 
-  /* Gradient: from darker version of the color at left to full brightness at right */
-  const gradientFill = `linear-gradient(90deg, ${color}cc 0%, ${color} 40%, ${color}ee 100%)`;
+  /* Use explicit gradient if provided, or auto-generate from hex color */
+  const gradientFill = explicitGradient
+    ? explicitGradient
+    : isGradientColor
+      ? color
+      : `linear-gradient(90deg, ${color}cc 0%, ${color} 40%, ${color}ee 100%)`;
 
   return (
     <div

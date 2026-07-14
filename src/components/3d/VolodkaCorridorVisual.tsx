@@ -206,6 +206,7 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
   const roomDoorRef = useRef<THREE.Group>(null);
   const solnyshDoorRef = useRef<THREE.Group>(null);
   const zaremaDoorRef = useRef<THREE.Group>(null);
+  const bathroomDoorRef = useRef<THREE.Group>(null);
 
   // ── Listen for object:interact events to toggle interactive objects ──
   useEffect(() => {
@@ -215,7 +216,8 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
         payload.objectId === 'corridor_street_door' ||
         payload.objectId === 'corridor_room_door' ||
         payload.objectId === 'corridor_solnysh_door' ||
-        payload.objectId === 'corridor_zarema_door'
+        payload.objectId === 'corridor_zarema_door' ||
+        payload.objectId === 'corridor_bathroom_door'
       ) {
         useGameStore.getState().toggleInteractiveObject(payload.objectId);
       }
@@ -282,6 +284,16 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
       const targetY = open ? Math.PI / 2 : 0;
       zaremaDoorRef.current.rotation.y = THREE.MathUtils.lerp(
         zaremaDoorRef.current.rotation.y,
+        targetY,
+        1 - Math.exp(-delta * 5),
+      );
+    }
+
+    if (bathroomDoorRef.current) {
+      const open = objStates['corridor_bathroom_door'] ?? false;
+      const targetY = open ? -Math.PI / 2 : 0;
+      bathroomDoorRef.current.rotation.y = THREE.MathUtils.lerp(
+        bathroomDoorRef.current.rotation.y,
         targetY,
         1 - Math.exp(-delta * 5),
       );
@@ -569,16 +581,17 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
         </group>
       </group>
 
-      {/* ── Additional door: Bathroom (right wall, z=2) ── */}
+      {/* ── Additional door: Bathroom (right wall, z=2) — animated ── */}
       <group position={[W / 2 - 0.02, 0, 2.0]}>
         {/* Door indent */}
         <mesh rotation-y={-Math.PI / 2} geometry={geo_pln_56} material={mat_52} />
         {/* Door frame */}
         <mesh position={[0.01, 1.0, 0]} rotation-y={-Math.PI / 2} geometry={geo_box_57} material={mat_8} />
-        {/* Door panel (closed) */}
-        <mesh position={[0.02, 1.0, 0]} rotation-y={-Math.PI / 2} geometry={geo_box_58} material={mat_9} />
-        {/* Door handle */}
-        <mesh position={[0.02, 1.0, 0.28]} geometry={geo_cyl_59} material={mat_10} />
+        {/* Door panel — pivoted for animation */}
+        <group position={[0.02, 0, 0.35]} ref={bathroomDoorRef}>
+          <mesh position={[0, 1.0, -0.35]} geometry={geo_box_58} material={mat_9} />
+          <mesh position={[0, 1.0, 0.28 - 0.35]} geometry={geo_cyl_59} material={mat_10} />
+        </group>
         {/* Room number */}
         <mesh position={[0.02, 1.8, 0]} rotation-y={-Math.PI / 2} geometry={geo_pln_60} material={mat_53} />
       </group>

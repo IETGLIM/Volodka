@@ -4,7 +4,7 @@ import {
   triggerFlash,
   triggerShake,
   triggerVignette,
-} from '@/components/game/ScreenEffects';
+} from '@/engine/fx/screenFxTriggers';
 
 export type PoemWorldVisualContext = {
   reducedMotion: boolean;

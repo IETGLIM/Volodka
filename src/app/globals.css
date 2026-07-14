@@ -31,6 +31,7 @@
 @import "../styles/backdrop-mobile.css";
 @import "../styles/accessibility.css";
 @import "../components/interactions/MicroInteractions.css";
+@import "../styles/atmospheric-polish.css";
 
 /* ── User setting: scanlines off (SettingsPanel → engine/visualSettings) ── */
 html[data-scanlines="off"] .panel-scanlines::after,

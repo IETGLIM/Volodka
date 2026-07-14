@@ -339,16 +339,102 @@ function StreetClutterGate({
 
 /** 5 panel building silhouettes using InstancedMesh */
 /** Modular facade buildings with emissive window grid (replaces flat instanced boxes). */
+
+/** Generate a procedural window grid texture — rows/cols of lit/unlit cells */
+function createWindowGridTexture(
+  cols: number,
+  rows: number,
+  seed: number,
+  litColor: string = '#88ccff',
+  darkColor: string = '#0a0f1a',
+): THREE.CanvasTexture {
+  const cellW = 32;
+  const cellH = 40;
+  const padX = 4;
+  const padY = 6;
+  const w = cols * (cellW + padX) + padX;
+  const h = rows * (cellH + padY) + padY;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d')!;
+
+  // Dark wall background
+  ctx.fillStyle = darkColor;
+  ctx.fillRect(0, 0, w, h);
+
+  // Seeded pseudo-random
+  let s = seed;
+  const rand = () => { s = (s * 16807 + 0) % 2147483647; return s / 2147483647; };
+
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      const x = padX + col * (cellW + padX);
+      const y = padY + row * (cellH + padY);
+
+      const isLit = rand() > 0.35;
+      if (isLit) {
+        // Window glow
+        const warmth = rand();
+        if (warmth > 0.6) {
+          ctx.fillStyle = '#ffdd88'; // warm yellow
+        } else if (warmth > 0.3) {
+          ctx.fillStyle = litColor; // cool blue
+        } else {
+          ctx.fillStyle = '#aabbcc'; // dim white
+        }
+        // Subtle brightness variation
+        const alpha = 0.6 + rand() * 0.4;
+        ctx.globalAlpha = alpha;
+        ctx.fillRect(x, y, cellW, cellH);
+
+        // Cross divider (window frame)
+        ctx.globalAlpha = 0.15;
+        ctx.fillStyle = darkColor;
+        ctx.fillRect(x + cellW / 2 - 0.5, y, 1, cellH);
+        ctx.fillRect(x, y + cellH / 2 - 0.5, cellW, 1);
+        ctx.globalAlpha = 1;
+      } else {
+        // Dark window — subtle reflection
+        ctx.fillStyle = '#0e1525';
+        ctx.fillRect(x, y, cellW, cellH);
+        // Faint cross
+        ctx.globalAlpha = 0.08;
+        ctx.fillStyle = '#334466';
+        ctx.fillRect(x + cellW / 2 - 0.5, y, 1, cellH);
+        ctx.fillRect(x, y + cellH / 2 - 0.5, cellW, 1);
+        ctx.globalAlpha = 1;
+      }
+    }
+  }
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.minFilter = THREE.LinearFilter;
+  tex.magFilter = THREE.LinearFilter;
+  return tex;
+}
+
 function PanelBuildings() {
   const buildings = useMemo(
     () => [
-      { pos: [-12, 0, -15] as [number, number, number], w: 8, h: 18, d: 6 },
-      { pos: [12, 0, -20] as [number, number, number], w: 10, h: 22, d: 6 },
-      { pos: [-15, 0, 5] as [number, number, number], w: 7, h: 15, d: 5 },
-      { pos: [14, 0, 8] as [number, number, number], w: 9, h: 20, d: 6 },
-      { pos: [0, 0, -25] as [number, number, number], w: 12, h: 25, d: 8 },
+      { pos: [-12, 0, -15] as [number, number, number], w: 8, h: 18, d: 6, seed: 42 },
+      { pos: [12, 0, -20] as [number, number, number], w: 10, h: 22, d: 6, seed: 137 },
+      { pos: [-15, 0, 5] as [number, number, number], w: 7, h: 15, d: 5, seed: 256 },
+      { pos: [14, 0, 8] as [number, number, number], w: 9, h: 20, d: 6, seed: 389 },
+      { pos: [0, 0, -25] as [number, number, number], w: 12, h: 25, d: 8, seed: 512 },
     ],
     [],
+  );
+
+  // Create window grid textures per building
+  const windowTextures = useMemo(() =>
+    buildings.map((b) => {
+      const cols = Math.max(2, Math.floor(b.w * 0.7));
+      const rows = Math.max(3, Math.floor(b.h * 0.5));
+      return createWindowGridTexture(cols, rows, b.seed);
+    }),
+    [buildings],
   );
 
   return (
@@ -358,13 +444,16 @@ function PanelBuildings() {
           <mesh position={[0, b.h / 2, 0]} castShadow receiveShadow geometry={getSharedBoxGeometry(b.w, b.h, b.d)}>
             <meshStandardMaterial color="#2a2a3e" roughness={0.92} metalness={0.08} />
           </mesh>
-          {/* Emissive window strip */}
-          <mesh position={[0, b.h * 0.55, b.d / 2 + 0.02]} geometry={getSharedPlaneGeometry(b.w * 0.75, b.h * 0.35)}>
+          {/* Window grid facade — procedural canvas texture */}
+          <mesh position={[0, b.h * 0.55, b.d / 2 + 0.02]} geometry={getSharedPlaneGeometry(b.w * 0.85, b.h * 0.75)}>
             <meshStandardMaterial
-              color="#1a2030"
-              emissive="#88ccff"
-              emissiveIntensity={0.35 + (i % 3) * 0.15}
-              roughness={0.4}
+              map={windowTextures[i]}
+              emissive="#446688"
+              emissiveIntensity={0.2}
+              emissiveMap={windowTextures[i]}
+              roughness={0.6}
+              transparent
+              opacity={0.95}
             />
           </mesh>
           {/* Ground floor shop front */}
