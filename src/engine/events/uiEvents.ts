@@ -16,4 +16,6 @@ export interface UiEvents {
     detail?: string;
     rarity?: 'common' | 'uncommon' | 'rare' | 'legendary';
   };
+  /** Volodka's inner monologue / thought bubble overlay. */
+  'volodka:thought': { text: string; duration?: number };
 }

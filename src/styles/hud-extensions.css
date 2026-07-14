@@ -249,3 +249,162 @@
 .mixer-channel-row:hover {
   background: rgb(var(--cyber-cyan-rgb) / 0.04);
 }
+
+/* ── Enhanced Quest Tracker Strip ── */
+.quest-tracker-strip {
+  position: relative;
+  overflow: hidden;
+}
+
+.quest-tracker-strip::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0, 229, 255, 0.3) 20%, rgba(0, 229, 255, 0.5) 50%, rgba(0, 229, 255, 0.3) 80%, transparent);
+  animation: questScanLine 4s ease-in-out infinite;
+}
+
+@keyframes questScanLine {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+.quest-objective-text {
+  position: relative;
+}
+
+.quest-objective-text::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(0, 229, 255, 0.4), transparent);
+  transform: scaleX(0);
+  transform-origin: left;
+  animation: objectiveUnderline 3s ease-in-out infinite;
+}
+
+@keyframes objectiveUnderline {
+  0% { transform: scaleX(0); }
+  50% { transform: scaleX(1); }
+  100% { transform: scaleX(0); }
+}
+
+/* ── HUD Top Bar Edge Glow ── */
+.hud-scanline-bar {
+  position: relative;
+}
+
+.hud-scanline-bar::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 5%;
+  right: 5%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0, 229, 255, 0.15), rgba(0, 229, 255, 0.25), rgba(0, 229, 255, 0.15), transparent);
+}
+
+/* ── Mini Map Enhancement ── */
+.minimap-container {
+  position: relative;
+}
+
+.minimap-container::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(0, 229, 255, 0.1), transparent 50%, rgba(147, 130, 220, 0.08));
+  z-index: -1;
+  border: 1px solid rgba(0, 229, 255, 0.12);
+}
+
+/* ── Interaction Hint Glow Ring ── */
+.interaction-hint-glow {
+  position: relative;
+}
+
+.interaction-hint-glow::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  border: 1px solid rgba(0, 229, 255, 0.2);
+  animation: hintRingPulse 2s ease-in-out infinite;
+}
+
+@keyframes hintRingPulse {
+  0%, 100% { 
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 0.8;
+    transform: scale(1.02);
+  }
+}
+
+/* ── Cyber Badge Shimmer ── */
+.cyber-badge-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.cyber-badge-shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+  animation: badgeShimmer 3s ease-in-out infinite;
+}
+
+@keyframes badgeShimmer {
+  0% { left: -50%; }
+  100% { left: 150%; }
+}
+
+/* ── Status Effect Icon Float ── */
+.status-effect-icon {
+  animation: statusFloat 3s ease-in-out infinite;
+}
+
+.status-effect-icon:nth-child(2n) {
+  animation-delay: -1s;
+}
+
+.status-effect-icon:nth-child(3n) {
+  animation-delay: -2s;
+}
+
+@keyframes statusFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+
+/* ── HUD Transition Fade ── */
+.hud-fade-enter {
+  animation: hudFadeIn 0.4s ease-out forwards;
+}
+
+.hud-fade-exit {
+  animation: hudFadeOut 0.3s ease-in forwards;
+}
+
+@keyframes hudFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes hudFadeOut {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-4px); }
+}

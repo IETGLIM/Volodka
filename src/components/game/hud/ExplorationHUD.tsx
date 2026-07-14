@@ -239,7 +239,7 @@ export function ExplorationHUD(props: HUDProps) {
             <TimeIcon hour={timeOfDay} />
             <div className="flex flex-col min-w-0">
               <div className="flex items-center gap-1 sm:gap-1.5">
-                <span className="text-slate-100 text-sm sm:text-base font-semibold tracking-wide truncate neon-text-cyan">{sceneName}</span>
+                <span className="text-slate-100 text-sm sm:text-base font-semibold tracking-wide truncate neon-text-cyan location-name-glow">{sceneName}</span>
                 <span className="text-[9px] text-slate-500 font-mono hidden sm:inline">●</span>
                 <span className="text-[10px] text-slate-300/80 font-mono hidden sm:inline">{timeLabel(timeOfDay)}</span>
               </div>
@@ -424,7 +424,7 @@ export function ExplorationHUD(props: HUDProps) {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -8, scale: 0.95 }}
                     transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
-                    className="absolute right-0 top-full mt-1.5 w-52 rounded-lg border backdrop-blur-xl overflow-hidden"
+                    className="absolute right-0 top-full mt-1.5 w-52 rounded-lg border backdrop-blur-xl overflow-hidden panel-corner-accent panel-data-stream"
                     style={{
                       background: 'linear-gradient(145deg, rgba(0,0,0,0.92) 0%, rgba(15,23,42,0.88) 50%, rgba(0,0,0,0.85) 100%)',
                       borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.2)',
@@ -504,7 +504,7 @@ export function ExplorationHUD(props: HUDProps) {
           meaningful only after the first combat or dialogue choice. */}
       <div className={`absolute left-3 sm:left-4 pointer-events-auto ${isOnboarding ? 'hidden' : 'hidden lg:block'}`} style={{ bottom: 96 }}>
         <div
-          className={`relative rounded-2xl p-4 sm:p-5 border backdrop-blur-xl min-w-[260px] overflow-hidden panel-scanlines hex-grid-bg ${isLowEnergy || isHighStress ? 'warning-pulse' : ''}`}
+          className={`relative rounded-2xl p-4 sm:p-5 border backdrop-blur-xl min-w-[260px] overflow-hidden panel-scanlines hex-grid-bg neon-border-breathe ${isLowEnergy || isHighStress ? 'warning-pulse' : ''}`}
           style={{
             background: 'linear-gradient(145deg, rgba(2,6,23,0.95) 0%, rgba(8,12,28,0.92) 40%, rgba(4,8,18,0.88) 100%)',
             borderColor: isLowEnergy || isHighStress ? 'rgba(251, 113, 133, 0.5)' : 'rgb(var(--cyber-cyan-rgb) / 0.2)',
@@ -683,7 +683,7 @@ export function ExplorationHUD(props: HUDProps) {
       {/* Hidden during onboarding (same gate as desktop stats panel). */}
       <div className={`absolute top-12 left-2 right-2 pointer-events-auto ${isOnboarding ? 'hidden' : 'lg:hidden'}`} style={quietStyle}>
         <div
-          className={`flex items-center gap-2.5 px-3 py-2 rounded-xl border backdrop-blur-xl ${isLowEnergy || isHighStress ? 'warning-pulse' : ''}`}
+          className={`flex items-center gap-2.5 px-3 py-2 rounded-xl border backdrop-blur-xl panel-scanlines-subtle ${isLowEnergy || isHighStress ? 'warning-pulse' : ''}`}
           style={{
             background: 'linear-gradient(180deg, rgba(2,6,23,0.92) 0%, rgba(8,12,28,0.88) 100%)',
             borderColor: isLowEnergy || isHighStress ? 'rgba(251,113,133,0.3)' : 'rgb(var(--cyber-cyan-rgb) / 0.15)',

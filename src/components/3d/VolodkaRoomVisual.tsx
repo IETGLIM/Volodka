@@ -112,6 +112,11 @@ const geo_box_80 = new THREE.BoxGeometry(0.03, 0.3, 0.01);
 const geo_box_81 = new THREE.BoxGeometry(0.15, 0.005, 0.005);
 const geo_box_82 = new THREE.BoxGeometry(0.6, 0.8, 0.005);
 const geo_box_83 = new THREE.BoxGeometry(0.4, 0.2, 0.002);
+const geo_posterFrame = new THREE.BoxGeometry(0.64, 0.84, 0.02);
+const geo_posterBack = new THREE.BoxGeometry(0.6, 0.8, 0.005);
+const geo_posterLogo = new THREE.BoxGeometry(0.18, 0.1, 0.002);
+const geo_photoFrame = new THREE.BoxGeometry(0.34, 0.44, 0.02);
+const geo_photoBack = new THREE.BoxGeometry(0.3, 0.4, 0.005);
 const bookSpineGeoCache = new Map<string, THREE.BoxGeometry>();
 function bookSpineGeo(w: number, h: number, d = 0.18): THREE.BoxGeometry {
   const key = `${w}_${h}_${d}`;
@@ -123,7 +128,7 @@ function bookSpineGeo(w: number, h: number, d = 0.18): THREE.BoxGeometry {
   return geo;
 }
 
-registerModuleGeometries([geo_pln_1, geo_pln_2, geo_pln_3, geo_box_4, geo_box_5, geo_box_6, geo_box_7, geo_cyl_8, geo_box_9, geo_box_10, geo_box_11, geo_box_12, geo_box_13, geo_sph_14, geo_box_15, geo_box_16, geo_box_17, geo_box_18, geo_pln_19, geo_cir_20, geo_box_21, geo_box_22, geo_box_23, geo_box_24, geo_box_25, geo_box_26, geo_cyl_27, geo_tor_28, geo_cyl_29, geo_box_30, geo_box_31, geo_box_32, geo_box_33, geo_box_34, geo_box_35, geo_box_36, geo_box_37, geo_box_38, geo_box_39, geo_box_40, geo_box_41, geo_pln_42, geo_box_43, geo_pln_44, geo_box_45, geo_cyl_46, geo_tor_47, geo_box_48, geo_cyl_49, geo_box_50, geo_box_51, geo_sph_52, geo_sph_53, geo_box_54, geo_pln_55, geo_box_56, geo_box_57, geo_box_58, geo_box_59, geo_box_60, geo_box_61, geo_tor_62, geo_cyl_63, geo_cyl_64, geo_box_65, geo_box_66, geo_cyl_67, geo_box_68, geo_box_69, geo_cyl_70, geo_box_71, geo_box_72, geo_cyl_73, geo_box_74, geo_pln_75, geo_pln_76, geo_pln_77, geo_pln_78, geo_box_79, geo_box_80, geo_box_81, geo_box_82, geo_box_83]);
+registerModuleGeometries([geo_pln_1, geo_pln_2, geo_pln_3, geo_box_4, geo_box_5, geo_box_6, geo_box_7, geo_cyl_8, geo_box_9, geo_box_10, geo_box_11, geo_box_12, geo_box_13, geo_sph_14, geo_box_15, geo_box_16, geo_box_17, geo_box_18, geo_pln_19, geo_cir_20, geo_box_21, geo_box_22, geo_box_23, geo_box_24, geo_box_25, geo_box_26, geo_cyl_27, geo_tor_28, geo_cyl_29, geo_box_30, geo_box_31, geo_box_32, geo_box_33, geo_box_34, geo_box_35, geo_box_36, geo_box_37, geo_box_38, geo_box_39, geo_box_40, geo_box_41, geo_pln_42, geo_box_43, geo_pln_44, geo_box_45, geo_cyl_46, geo_tor_47, geo_box_48, geo_cyl_49, geo_box_50, geo_box_51, geo_sph_52, geo_sph_53, geo_box_54, geo_pln_55, geo_box_56, geo_box_57, geo_box_58, geo_box_59, geo_box_60, geo_box_61, geo_tor_62, geo_cyl_63, geo_cyl_64, geo_box_65, geo_box_66, geo_cyl_67, geo_box_68, geo_box_69, geo_cyl_70, geo_box_71, geo_box_72, geo_cyl_73, geo_box_74, geo_pln_75, geo_pln_76, geo_pln_77, geo_pln_78, geo_box_79, geo_box_80, geo_box_81, geo_box_82, geo_box_83, geo_posterFrame, geo_posterBack, geo_posterLogo, geo_photoFrame, geo_photoBack]);
 
 const mat_1 = getSharedStandardMaterial({ color: '#3a2820', roughness: 0.85 });
 const mat_2 = getSharedStandardMaterial({ color: '#5a4838', roughness: 0.8 });
@@ -205,6 +210,9 @@ const mat_zabbix_led = getSharedStandardMaterial({
   emissiveIntensity: 2.5,
   toneMapped: false,
 });
+const mat_posterTeal = getSharedStandardMaterial({ color: '#0a3a3a', roughness: 0.7 });
+const mat_posterLogo = getSharedStandardMaterial({ color: '#00ccaa', emissive: '#00ccaa', emissiveIntensity: 1.5, toneMapped: false });
+const mat_photoWarm = getSharedStandardMaterial({ color: '#d4b870', roughness: 0.8 });
 
 function bookSpineMaterial(color: string) {
   return mat(color, { roughness: 0.6 });
@@ -497,6 +505,24 @@ export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
         ].map((b, i) => (
           <mesh key={`s4-${i}`} position={[b.x, 1.77, 0.02]} rotation={[0, 0, b.lean]} geometry={bookSpineGeo(b.w, 0.18)} material={bookSpineMaterial(b.c)} />
         ))}
+      </group>
+
+      {/* ── Wall Poster — concert/tech conference poster (between desk and window) ── */}
+      <group position={[1.8, 1.6, -3.45]}>
+        {/* Thin dark frame */}
+        <mesh geometry={geo_posterFrame} material={mat_49} />
+        {/* Poster surface — dark teal/emerald */}
+        <mesh position={[0, 0, 0.013]} geometry={geo_posterBack} material={mat_posterTeal} />
+        {/* Glowing logo rectangle (suggests a tech/concert poster) */}
+        <mesh position={[0, 0.12, 0.018]} geometry={geo_posterLogo} material={mat_posterLogo} />
+      </group>
+
+      {/* ── Photo Frame on side wall (near bed, facing into room) ── */}
+      <group position={[2.35, 1.5, 1.5]} rotation-y={-Math.PI / 2}>
+        {/* Wooden frame (brown) */}
+        <mesh geometry={geo_photoFrame} material={mat_1} />
+        {/* Warm photo print */}
+        <mesh position={[0, 0, 0.013]} geometry={geo_photoBack} material={mat_photoWarm} />
       </group>
 
       {/* ── Bed ── */}

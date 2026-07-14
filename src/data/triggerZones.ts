@@ -284,6 +284,55 @@ export const TRIGGER_ZONES: TriggerZone[] = [
       { type: 'setFlag', flag: 'sync_connected', flagValue: true },
     ],
   },
+  {
+    id: 'room_bed',
+    sceneId: 'volodka_room',
+    position: [-1.8, 0.4, 1.2],
+    size: [1.6, 1.0, 2.2],
+    interactionType: 'examine',
+    examineData: {
+      title: 'Кровать',
+      description: 'Неубранная постель. Подушка помята с одной стороны.',
+      detailText: 'Одеяло сползло на пол. На тумбочке — стопка эстетических журналов и пустая кружка. Кровать — единственное место, где можно забыть.',
+      icon: '🛏️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_room_bed', flagValue: true },
+    ],
+  },
+  {
+    id: 'room_fan',
+    sceneId: 'volodka_room',
+    position: [0, 2.8, 0],
+    size: [1.5, 1.0, 1.5],
+    interactionType: 'examine',
+    examineData: {
+      title: 'Потолочный вентилятор',
+      description: 'Старый вентилятор крутится медленно, едва разгоняя спёртый воздух.',
+      detailText: 'Лопасти скрипят в такт. Иногда замирает, потом снова начинает крутиться. Как жизнь — крутится-крутится, а толку мало.',
+      icon: '🌀',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_room_fan', flagValue: true },
+    ],
+  },
+  {
+    id: 'room_photo_frame',
+    sceneId: 'volodka_room',
+    position: [1.8, 1.5, 1.5],
+    size: [0.5, 0.7, 0.3],
+    interactionType: 'examine',
+    examineData: {
+      title: 'Фото в рамке',
+      description: 'Фотография в простой деревянной рамке.',
+      detailText: 'На фото — молодая женщина и мальчик. Они улыбаются. Рама чуть перекошена — видимо, вешали наспех. За их спинами — зелёный двор и ржавая качеля.',
+      icon: '🖼️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_photo_frame', flagValue: true },
+      { type: 'discoverLore', loreId: 'lore_volodka_family_photo' },
+    ],
+  },
 
   /* ─────────────── CORRIDOR ─────────────── */
   {

@@ -17,6 +17,7 @@ import {
   Thermometer } from 'lucide-react';
 import { useWeatherIndicatorState } from '@/store/selectors';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { explorationWeatherTopPx, EXPLORATION_HUD_LAYOUT } from '@/shared/constants/hudLayout';
 import { useHudQuietStyle } from '@/hooks/useHudQuiet';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import {
@@ -101,7 +102,7 @@ export function WeatherIndicator() {
     <div
       className="fixed pointer-events-none hidden lg:block"
       data-testid="weather-indicator"
-      style={{ top: 390, right: 12, zIndex: UI_LAYERS.HUD + 1, ...quietStyle }}
+      style={{ top: explorationWeatherTopPx(), right: EXPLORATION_HUD_LAYOUT.RIGHT_INSET, zIndex: UI_LAYERS.HUD + 1, ...quietStyle }}
     >
       <motion.div
         className="pointer-events-auto rounded-lg border backdrop-blur-md overflow-hidden"

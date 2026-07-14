@@ -78,6 +78,7 @@ import {
 } from './lazyPanels';
 import { OrchestratorMinigameOverlays } from './OrchestratorMinigameOverlays';
 import { DiegeticDialogueHud } from '@/components/game/diegetic/DiegeticDialogueHud';
+import { InnerMonologueOverlay } from '@/components/game/InnerMonologueOverlay';
 import { EncounterBeatOverlay } from '../EncounterBeatOverlay';
 import { OrchestratorStatsPanel } from './OrchestratorPanelSlots';
 import { useMobileDetection } from './useMobileDetection';
@@ -478,6 +479,7 @@ export const GameplayNarrativeOverlay = memo(function GameplayNarrativeOverlay()
         </ErrorBoundary>
       )}
       <DiegeticDialogueHud />
+      <InnerMonologueOverlay />
     </>
   );
 });

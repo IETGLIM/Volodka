@@ -41,6 +41,8 @@ export const EXPLORATION_HUD_LAYOUT = {
   RIGHT_INSET_COMPACT: 16,
   /** Reserve above ExplorationMobileHud column (portrait controls). */
   MOBILE_BOTTOM_CONTROLS_RESERVE: 108,
+  /** Approximate height of the DayNightCycleIndicator widget */
+  DAY_NIGHT_HEIGHT: 145,
 } as const;
 
 function mobileBottomReserve(isMobile: boolean): number {
@@ -199,4 +201,9 @@ export function bottomRightInsetPx(): number {
 /** Day/night widget — under minimap on narrow layouts */
 export function explorationDayNightTopPx(): number {
   return explorationMinimapTopPx() + EXPLORATION_HUD_LAYOUT.MINIMAP_HEIGHT + 4;
+}
+
+/** Weather widget — below day/night cycle on the right */
+export function explorationWeatherTopPx(): number {
+  return explorationDayNightTopPx() + EXPLORATION_HUD_LAYOUT.DAY_NIGHT_HEIGHT + EXPLORATION_HUD_LAYOUT.SLOT_GAP;
 }

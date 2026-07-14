@@ -98,3 +98,74 @@ html[data-reduced-motion='true'] .ambient-particle {
   animation: none !important;
   opacity: 0.35;
 }
+
+/* ── Round 5: Additional animation overrides ── */
+
+/* Quest tracker animations */
+.quest-tracker-strip::before,
+.quest-objective-text::after,
+.hud-scanline-bar::after {
+  animation: none !important;
+  opacity: 0.5;
+}
+
+/* Interaction hint ring */
+.interaction-hint-glow::before {
+  animation: none !important;
+  opacity: 0.3;
+}
+
+/* Badge shimmer */
+.cyber-badge-shimmer::after {
+  animation: none !important;
+  display: none;
+}
+
+/* Status effect float */
+.status-effect-icon {
+  animation: none !important;
+}
+
+/* Panel data stream */
+.panel-data-stream::before {
+  animation: none !important;
+  display: none;
+}
+
+/* Crosshair pulse */
+.crosshair-dot-pulse {
+  animation: none !important;
+}
+
+/* Compass glow */
+.compass-marker-glow {
+  animation: none !important;
+  opacity: 0.8;
+}
+
+/* Karma ring pulse */
+.karma-ring-pulse {
+  animation: none !important;
+}
+
+/* Hologram flicker */
+.holo-flicker {
+  animation: none !important;
+}
+
+/* Glitch text */
+.glitch-text-subtle:hover {
+  animation: none !important;
+}
+
+/* Neon border breathe */
+.neon-border-breathe {
+  animation: none !important;
+  border-color: rgba(0, 229, 255, 0.3);
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.06);
+}
+
+/* Thought pulse (from inner monologue) */
+.thought-pulse {
+  animation: none !important;
+}

@@ -116,7 +116,7 @@ export function InteractionHintPopup() {
           style={{ zIndex: UI_LAYERS.HUD + 1, bottom: bottomInteractPromptPx(isTouchDevice) }}
         >
           <div
-            className="interaction-hint-card"
+            className="interaction-hint-card interaction-hint-glow"
             style={{
               borderColor: accent.border,
               animation: reducedMotion ? 'none' : 'hint-border-pulse 2.5s ease-in-out infinite',

@@ -339,7 +339,7 @@ export function StoryGuidanceHUD() {
               openQuestJournal(currentObjective?.questId);
             }
           }}
-          className="relative rounded-md cursor-pointer"
+          className="relative rounded-md cursor-pointer quest-tracker-strip"
           style={{
             background: 'rgba(0, 10, 18, 0.82)',
             border: `1px solid ${urgencyColor}33`,
@@ -402,7 +402,7 @@ export function StoryGuidanceHUD() {
                 ) : null}
               </div>
               <p
-                className={`text-xs font-mono leading-snug ${expanded ? '' : 'line-clamp-1'}`}
+                className={`text-xs font-mono leading-snug quest-objective-text ${expanded ? '' : 'line-clamp-1'}`}
                 style={{ color: '#c8e8e8' }}
               >
                 {displayText}
