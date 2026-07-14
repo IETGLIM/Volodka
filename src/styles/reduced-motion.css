@@ -669,6 +669,11 @@ html[data-reduced-motion='true'] .npc-prox-relation-dot {
   opacity: 0.8;
 }
 
+html[data-reduced-motion='true'] .npc-prox-key-badge {
+  animation: none !important;
+  opacity: 0.9;
+}
+
 /* ══════════════════════════════════════════════════════════════
    Round 9: New animation overrides (theme, visual polish, HUD)
    ══════════════════════════════════════════════════════════════ */

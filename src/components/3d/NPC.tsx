@@ -38,6 +38,7 @@ import type { ColliderDef } from '@/shared/types/sceneDefinition';
 import { getNpcQuestMarkerDisplay } from '@/store/questStore';
 import { resolveNpcQuestBark } from '@/engine/npc/npcQuestBark';
 import { resolveNpcBarkForRelation } from '@/shared/npcBark';
+import { formatNpcActivityHint } from '@/engine/npc/npcActivityPresentation';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import {
   DEFAULT_NPC_LOD,
@@ -55,6 +56,7 @@ import {
   NpcNameSprite,
   NpcSpeechSprite,
   NpcQuestMarkerSprite,
+  NpcActivityBarkSprite,
 } from '@/engine/npc/npcWorldSprite';
 
 /* ─── NPC models ───
@@ -176,6 +178,12 @@ export function NPC({
   const barkOpacityRef = useRef(1);
   const barkOpacityUpdateTimerRef = useRef(0);
 
+  // Schedule-aware activity bark state — shows activity text when in proximity
+  const [activityBarkText, setActivityBarkText] = useState<string | null>(null);
+  const [activityBarkOpacity, setActivityBarkOpacity] = useState(0);
+  const activityBarkOpacityRef = useRef(0);
+  const activityBarkUpdateTimerRef = useRef(0);
+
   const appearance = definition.appearance ?? DEFAULT_APPEARANCE;
 
   // ── Register/unregister NPC group ref for interaction system ──
@@ -293,6 +301,38 @@ export function NPC({
       }
     }
 
+    // ── Schedule-aware activity bark ──
+    // Shows activity text above NPC head when player is within proximity
+    // and not in active dialogue. Uses formatNpcActivityHint for localized labels.
+    if (interactionState === InteractionState.Idle && npcTierHasNameLabels(renderTier)) {
+      const hint = formatNpcActivityHint(activity) ?? null;
+      const inRange = dist < 4.0;
+      const shouldShow = inRange && hint !== null;
+
+      // Update text when activity changes
+      if (hint !== activityBarkText) {
+        setActivityBarkText(hint);
+      }
+
+      // Fade in/out based on proximity
+      const targetOpacity = shouldShow ? Math.min(1, (4.0 - dist) / 2.5) * 0.75 : 0;
+      activityBarkOpacityRef.current += (targetOpacity - activityBarkOpacityRef.current) * Math.min(1, delta * 4);
+
+      // Throttle React state updates
+      activityBarkUpdateTimerRef.current += delta;
+      if (activityBarkUpdateTimerRef.current > 0.1) {
+        activityBarkUpdateTimerRef.current = 0;
+        const newOp = activityBarkOpacityRef.current;
+        setActivityBarkOpacity((prev) => Math.abs(prev - newOp) > 0.04 ? newOp : prev);
+      }
+    } else {
+      // Hide during active dialogue
+      if (activityBarkOpacityRef.current > 0) {
+        activityBarkOpacityRef.current = 0;
+        setActivityBarkOpacity(0);
+      }
+    }
+
     // Proximity bark — skip during active interaction
     if (npcTierHasProximityBark(renderTier) && interactionState === InteractionState.Idle) {
       barkCooldownRef.current -= delta;
@@ -369,6 +409,15 @@ export function NPC({
             phase={barkPhase}
             text={barkText}
             opacity={barkOpacity}
+          />
+        )}
+
+        {/* Schedule-aware activity bark — shows above NPC head when near */}
+        {activityBarkText && activityBarkOpacity > 0 && npcTierHasNameLabels(renderTier) && (
+          <NpcActivityBarkSprite
+            text={activityBarkText}
+            accentColor={appearance.accentColor}
+            opacity={activityBarkOpacity}
           />
         )}
 

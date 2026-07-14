@@ -4,10 +4,12 @@ import { useRegisterNpcFrame } from '@/engine/npc/npcFrameBatch';
 import {
   acquireNpcNameLabelTexture,
   acquireNpcQuestMarkerTexture,
+  acquireNpcActivityBarkTexture,
   createNpcSpriteMaterial,
   drawNpcSpeechBubbleCanvas,
   releaseNpcNameLabelTexture,
   releaseNpcQuestMarkerTexture,
+  releaseNpcActivityBarkTexture,
 } from '@/engine/npc/npcSpritePool';
 
 const BUBBLE_CANVAS_W = 440;
@@ -200,6 +202,50 @@ export function NpcQuestMarkerSprite({
       position={[0, 1.75, 0]}
       material={material}
       scale={[MARKER_BASE_SCALE, MARKER_BASE_SCALE, 1]}
+    />
+  );
+}
+
+const ACTIVITY_BARK_SCALE_X = 0.4;
+const ACTIVITY_BARK_SCALE_Y = 0.08;
+
+/** Schedule-aware activity bark — shows above NPC head during idle activities */
+export function NpcActivityBarkSprite({
+  text,
+  accentColor,
+  opacity,
+}: {
+  text: string;
+  accentColor: string;
+  opacity: number;
+}) {
+  const materialRef = useRef<THREE.SpriteMaterial | null>(null);
+
+  const material = useMemo(() => {
+    const texture = acquireNpcActivityBarkTexture(text, accentColor);
+    const mat = createNpcSpriteMaterial(texture);
+    materialRef.current = mat;
+    return mat;
+  }, [text, accentColor]);
+
+  useEffect(() => {
+    material.opacity = opacity;
+  }, [material, opacity]);
+
+  useLayoutEffect(
+    () => () => {
+      materialRef.current?.dispose();
+      materialRef.current = null;
+      releaseNpcActivityBarkTexture(text, accentColor);
+    },
+    [text, accentColor],
+  );
+
+  return (
+    <sprite
+      position={[0, 1.95, 0]}
+      material={material}
+      scale={[ACTIVITY_BARK_SCALE_X, ACTIVITY_BARK_SCALE_Y, 1]}
     />
   );
 }

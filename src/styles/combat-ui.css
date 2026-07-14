@@ -268,6 +268,75 @@
   margin-top: -1px;
 }
 
+/* ─── NPC proximity status line — relationship label + activity ─── */
+.npc-prox-status-line {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 8px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.npc-prox-relation-label {
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-shadow: 0 0 4px currentColor;
+  opacity: 0.85;
+}
+
+.npc-prox-status-sep {
+  color: rgba(255, 255, 255, 0.25);
+  font-size: 7px;
+}
+
+.npc-prox-activity {
+  color: rgba(200, 210, 220, 0.55);
+  font-weight: 400;
+  font-style: italic;
+}
+
+/* ─── NPC proximity "E — говорить" interact hint ─── */
+.npc-prox-interact-hint {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.npc-prox-key-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid rgba(0, 255, 238, 0.4);
+  background: rgba(0, 255, 238, 0.08);
+  color: rgba(0, 255, 238, 0.85);
+  font-family: 'Geist Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+  text-shadow: 0 0 4px rgba(0, 255, 238, 0.5);
+  animation: npc-interact-key-pulse 2s ease-in-out infinite;
+}
+
+.npc-prox-hint-text {
+  font-family: 'Geist Mono', monospace;
+  font-size: 8px;
+  font-weight: 500;
+  color: rgba(0, 255, 238, 0.55);
+  letter-spacing: 0.04em;
+  text-shadow: 0 0 4px rgba(0, 255, 238, 0.2);
+}
+
+@keyframes npc-interact-key-pulse {
+  0%, 100% { opacity: 0.75; border-color: rgba(0, 255, 238, 0.35); }
+  50% { opacity: 1; border-color: rgba(0, 255, 238, 0.6); }
+}
+
 /* ══════════════════════════════════════════════════════════════
    SESSION 7: DamageNumberFloat
    ══════════════════════════════════════════════════════════════ */

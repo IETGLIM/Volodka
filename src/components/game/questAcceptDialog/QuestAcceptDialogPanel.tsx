@@ -1,4 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion';
+import { Clock, Lock } from 'lucide-react';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { QuestAcceptBracketCorners, QuestAcceptNpcPortrait } from '@/components/game/questAcceptDialog/QuestAcceptNpcPortrait';
 import { QuestAcceptObjectiveRow } from '@/components/game/questAcceptDialog/QuestAcceptObjectiveRow';
@@ -24,6 +25,7 @@ import {
   hasPoemPowerBypass,
   isRelationDotFilled,
 } from '@/engine/quest/questAcceptDialogPresentation';
+import { QUEST_DEFINITIONS } from '@/data/quests';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
 function QuestAcceptDialogInner(props: QuestAcceptDialogProps) {
@@ -35,7 +37,7 @@ function QuestAcceptDialogInner(props: QuestAcceptDialogProps) {
   const overlayMotion = getOverlayMotion(reducedMotion);
   const panelMotion = getDialogMotion(reducedMotion);
   const questTypeBadgeColor = getQuestTypeBadgeColor(questDef.questType);
-  const difficultyDiamonds = getDifficultyDiamondCount(questDef.difficulty);
+  const difficultyStars = getDifficultyDiamondCount(questDef.difficulty);
   const giverFallback = getGiverFallbackLabel(questDef, context.npcDef !== null);
   const staticClass = reducedMotion ? ' quest-accept-dialog--static' : '';
 
@@ -178,20 +180,55 @@ function QuestAcceptDialogInner(props: QuestAcceptDialogProps) {
                           key={level}
                           className="text-xs"
                           style={{
-                            color: level <= difficultyDiamonds ? '#ffaa00' : '#333',
-                            textShadow: level <= difficultyDiamonds ? '0 0 4px rgba(255,170,0,0.5)' : 'none',
+                            color: level <= difficultyStars ? '#ffaa00' : '#444',
+                            textShadow: level <= difficultyStars ? '0 0 4px rgba(255,170,0,0.5)' : 'none',
                           }}
                         >
-                          ◆
+                          {level <= difficultyStars ? '★' : '☆'}
                         </span>
                       ))}
                     </div>
                   </div>
+
+                  {questDef.timeLimitHours && (
+                    <div className="flex items-center gap-1">
+                      <Clock className="size-3 text-amber-400/70" aria-hidden="true" />
+                      <span className="text-[10px] font-mono" style={{ color: '#ddaa66' }}>
+                        {questDef.timeLimitHours}ч
+                      </span>
+                    </div>
+                  )}
                 </div>
 
-                <p className="text-sm font-mono leading-relaxed mb-4" style={{ color: QUEST_ACCEPT_ACCENT.description }}>
-                  {questDef.description}
-                </p>
+                {/* Flavor text quote from quest giver */}
+                {context.npcDef && questDef.description && (
+                  <div
+                    className="mb-3 px-3 py-2 rounded"
+                    style={{
+                      background: 'rgba(0,255,238,0.04)',
+                      borderLeft: '2px solid rgba(0,255,238,0.3)',
+                    }}
+                  >
+                    <p
+                      className="text-[11px] font-mono italic leading-relaxed"
+                      style={{ color: '#88bbbb' }}
+                    >
+                      «{questDef.description.length > 120 ? questDef.description.slice(0, 120) + '…' : questDef.description}»
+                    </p>
+                    <span
+                      className="text-[9px] font-mono mt-1 block"
+                      style={{ color: context.npcDef.appearance?.accentColor ?? '#667777' }}
+                    >
+                      — {context.npcDef.name}
+                    </span>
+                  </div>
+                )}
+
+                {!context.npcDef && (
+                  <p className="text-sm font-mono leading-relaxed mb-4" style={{ color: QUEST_ACCEPT_ACCENT.description }}>
+                    {questDef.description}
+                  </p>
+                )}
 
                 <div className="mb-4">
                   <h3 className="text-[11px] font-mono tracking-wider mb-2" style={{ color: '#00ffee88' }}>
@@ -213,6 +250,31 @@ function QuestAcceptDialogInner(props: QuestAcceptDialogProps) {
                     })}
                   </div>
                 </div>
+
+                {/* Required quests prerequisites */}
+                {questDef.requiresQuests && questDef.requiresQuests.length > 0 && (
+                  <div className="mb-4">
+                    <h3 className="text-[11px] font-mono tracking-wider mb-2 flex items-center gap-1.5" style={{ color: '#ffaa4488' }}>
+                      <Lock className="size-3" style={{ color: '#ffaa4488' }} aria-hidden="true" />
+                      ТРЕБУЕТСЯ:
+                    </h3>
+                    <div className="space-y-1">
+                      {questDef.requiresQuests.map((reqId) => {
+                        const reqDef = QUEST_DEFINITIONS.find((d) => d.id === reqId);
+                        return (
+                          <div
+                            key={reqId}
+                            className="flex items-center gap-1.5 text-[11px] font-mono"
+                            style={{ color: '#998866' }}
+                          >
+                            <span aria-hidden="true">◈</span>
+                            {reqDef?.title ?? reqId}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
 
                 {questDef.rewards && questDef.rewards.length > 0 && (
                   <div className="mb-4">

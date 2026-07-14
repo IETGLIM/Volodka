@@ -33,6 +33,7 @@ export function NPCProximityTriggers({
             position={npc.position}
             runtime={runtime}
             unregisterPrompt={unregisterPrompt}
+            activity={npc.activity}
           />
         );
       })}

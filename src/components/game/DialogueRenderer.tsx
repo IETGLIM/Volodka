@@ -42,6 +42,7 @@ import { useNarrativeTypewriter } from '@/hooks/useNarrativeTypewriter';
 import { useNarrativeChoiceKeyboard } from '@/hooks/useNarrativeChoiceKeyboard';
 import { applyEffects } from '@/shared/utils/applyEffects';
 import { recordExplorationStoryStep } from '@/shared/explorationStoryBridge';
+import { DialogueRelationBar } from './dialogue/DialogueRelationBar';
 
 /* ── Emotion detection from text ── */
 function detectEmotion(text: string): 'calm' | 'angry' | 'sad' | 'happy' {
@@ -312,6 +313,12 @@ export function DialogueRenderer() {
 
   const { npcId, portraitColors, emotion, relationLevel } = npcData;
 
+  // Resolve numeric relation value for the dialogue relation bar
+  const currentRelationValue = useMemo(() => {
+    const rel = npcRelations.find((r) => r.npcId === npcId);
+    return rel?.value ?? 50;
+  }, [npcId, npcRelations]);
+
   const speakerTitleId = `dialogue-speaker-${currentNodeId}`;
   const typewriterLiveMessage = node
     ? buildDialogueLiveMessage(node, displayed, done, true)
@@ -375,6 +382,15 @@ export function DialogueRenderer() {
       }
       footer={
         <>
+          {/* Relationship indicator bar — shown for NPC dialogues */}
+          {npcId && (
+            <DialogueRelationBar
+              npcId={npcId}
+              relationValue={currentRelationValue}
+              reducedMotion={reducedMotion}
+              accentColor={portraitColors.primary}
+            />
+          )}
           <AnimatePresence>
             {showHistory && history.length > 0 && (
               <motion.div

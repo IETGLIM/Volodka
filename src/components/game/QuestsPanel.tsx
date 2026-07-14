@@ -5,11 +5,11 @@
 */
 
 import { useMemo, useState, useEffect, useRef, useCallback } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   CheckCircle2, Circle, Trophy, BookOpen, EyeOff,
   Clock, AlertTriangle, RotateCcw, ChevronRight, Sparkles,
-  Lightbulb, Shield, Swords, Zap, Star,
+  Lightbulb, Shield, Swords, Zap, Star, Package, MapPin, MessageCircle, Gamepad2,
 } from 'lucide-react';
 import { QUEST_DEFINITIONS } from '@/data/quests';
 import { findNpcById } from '@/data/gameDataLoader';
@@ -30,7 +30,8 @@ import {
 import { useQuests } from '@/store/selectors';
 import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
-import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';import { Badge } from '@/components/ui/badge';
+import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -68,6 +69,75 @@ function DifficultyBadge({ difficulty }: { difficulty?: QuestDifficulty }) {
   );
 }
 
+/* ── Objective type icon helper ── */
+function getObjectiveTypeIcon(type: string) {
+  switch (type) {
+    case 'npc_talked': return <MessageCircle className="size-3 text-cyan-400/70" />;
+    case 'location_visited': return <MapPin className="size-3 text-emerald-400/70" />;
+    case 'item_collected': return <Package className="size-3 text-amber-400/70" />;
+    case 'poem_collected': return <BookOpen className="size-3 text-purple-400/70" />;
+    case 'flag_set': return <Zap className="size-3 text-yellow-400/70" />;
+    case 'minigame_completed': return <Gamepad2 className="size-3 text-rose-400/70" />;
+    case 'custom': return <Star className="size-3 text-slate-400/70" />;
+    default: return <Circle className="size-3 text-slate-400/70" />;
+  }
+}
+
+/* ── Grouped objective progress for collection-type quests ── */
+function ObjectiveGroupProgress({ objectives, questState, label, icon }: {
+  objectives: { id: string; description: string }[];
+  questState: QuestState;
+  label: string;
+  icon: React.ReactNode;
+}) {
+  const completed = objectives.filter((o) => questState.objectives[o.id] === true).length;
+  const total = objectives.length;
+  const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+  return (
+    <div className="mb-2">
+      <div className="flex items-center gap-1.5 mb-1">
+        {icon}
+        <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">
+          {label}
+        </span>
+        <span className="text-[10px] font-mono tabular-nums ml-auto" style={{ color: completed === total ? '#34d399' : '#94a3b8' }}>
+          {completed}/{total}
+        </span>
+      </div>
+      <div className="h-1.5 bg-slate-800/80 rounded-full overflow-hidden">
+        <motion.div
+          className="h-full rounded-full"
+          style={{ background: completed === total ? 'linear-gradient(90deg, #059669, #34d399)' : 'linear-gradient(90deg, #0e7490, #22d3ee)' }}
+          initial={false}
+          animate={{ width: `${pct}%` }}
+          transition={{ duration: 0.4, ease: 'easeOut' }}
+        />
+      </div>
+    </div>
+  );
+}
+
+/* ── Animated checkmark for objective completion ── */
+function ObjectiveCheckmark({ justCompleted }: { justCompleted: boolean }) {
+  return (
+    <AnimatePresence>
+      {justCompleted ? (
+        <motion.span
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 1.3, opacity: 0 }}
+          transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+          className="inline-flex items-center justify-center"
+          aria-hidden="true"
+        >
+          <CheckCircle2 className="size-3.5 text-emerald-400" />
+        </motion.span>
+      ) : null}
+    </AnimatePresence>
+  );
+}
+
 function RewardBadge({ reward, index }: { reward: { type: string; skill?: string; value?: number; itemId?: string; flag?: string; flagValue?: boolean }; index: number }) {
   const getLabel = () => {
     if (reward.type === 'addSkill' && reward.skill) return `${reward.skill} +${reward.value ?? 0}`;
@@ -101,7 +171,42 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
   const [showCompleted, setShowCompleted] = useState(false);
   const [showFailed, setShowFailed] = useState(true);
   const [expandedQuests, setExpandedQuests] = useState<Set<string>>(new Set());
+  const [flashingQuestId, setFlashingQuestId] = useState<string | null>(null);
   const prevOpenRef = useRef(false);
+
+  /* ── Flash effect when an objective updates ── */
+  const prevObjectivesRef = useRef<Record<string, Record<string, boolean>>>({});
+  useEffect(() => {
+    const currentMap: Record<string, Record<string, boolean>> = {};
+    for (const qs of quests) {
+      if (qs.status === 'active') {
+        currentMap[qs.questId] = { ...qs.objectives };
+      }
+    }
+    const prevMap = prevObjectivesRef.current;
+    for (const [questId, objectives] of Object.entries(currentMap)) {
+      const prev = prevMap[questId];
+      if (prev) {
+        for (const [objId, completed] of Object.entries(objectives)) {
+          if (completed && prev[objId] !== completed) {
+            setFlashingQuestId(questId);
+            setTimeout(() => setFlashingQuestId(null), 1200);
+            break;
+          }
+        }
+      }
+    }
+    prevObjectivesRef.current = currentMap;
+  }, [quests]);
+
+  /* ── Listen for objective update events ── */
+  useEffect(() => {
+    const unsub = eventBus.on('quest:objective_updated', ({ questId }) => {
+      setFlashingQuestId(questId);
+      setTimeout(() => setFlashingQuestId(null), 1200);
+    });
+    return unsub;
+  }, []);
 
   const activeQuests = useActiveQuests();
   const failedQuests = useFailedQuests();
@@ -250,9 +355,10 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                           const deps = areDependenciesMet(qs.questId);
 
                           const isGoldenPathFocus = qs.questId === goldenPathFocusId;
+                          const isFlashing = qs.questId === flashingQuestId;
 
                           return (
-                            <div
+                            <motion.div
                               key={qs.questId}
                               data-quest-id={qs.questId}
                               className={`rounded-xl border overflow-hidden ${
@@ -264,6 +370,14 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                                 background: 'linear-gradient(135deg, rgba(15,23,42,0.6) 0%, rgba(8,12,28,0.7) 100%)',
                                 boxShadow: 'inset 0 1px 0 rgb(var(--cyber-cyan-rgb) / 0.04)',
                               }}
+                              animate={isFlashing && !reducedMotion ? {
+                                boxShadow: [
+                                  'inset 0 1px 0 rgb(var(--cyber-cyan-rgb) / 0.04)',
+                                  '0 0 20px rgba(0,255,238,0.3), inset 0 1px 0 rgb(var(--cyber-cyan-rgb) / 0.04)',
+                                  'inset 0 1px 0 rgb(var(--cyber-cyan-rgb) / 0.04)',
+                                ],
+                              } : undefined}
+                              transition={{ duration: 0.6 }}
                             >
                               {/* Quest header */}
                               <div className="px-4 py-3">
@@ -390,6 +504,38 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                                     </div>
                                   )}
 
+                                  {/* Objective group progress bars for collection-type quests */}
+                                  {(() => {
+                                    const typeGroups: Record<string, { id: string; description: string }[]> = {};
+                                    for (const obj of def.objectives) {
+                                      if (!typeGroups[obj.type]) typeGroups[obj.type] = [];
+                                      typeGroups[obj.type].push({ id: obj.id, description: obj.description });
+                                    }
+                                    const multiObjTypes = Object.entries(typeGroups).filter(([, objs]) => objs.length >= 3);
+                                    if (multiObjTypes.length === 0) return null;
+                                    return (
+                                      <div className="mb-3 space-y-2">
+                                        {multiObjTypes.map(([type, objs]) => (
+                                          <ObjectiveGroupProgress
+                                            key={type}
+                                            objectives={objs}
+                                            questState={qs}
+                                            label={
+                                              type === 'poem_collected' ? 'Стихи'
+                                                : type === 'item_collected' ? 'Предметы'
+                                                : type === 'flag_set' ? 'Условия'
+                                                : type === 'npc_talked' ? 'Собеседники'
+                                                : type === 'location_visited' ? 'Локации'
+                                                : type === 'minigame_completed' ? 'Мини-игры'
+                                                : 'Цели'
+                                            }
+                                            icon={getObjectiveTypeIcon(type)}
+                                          />
+                                        ))}
+                                      </div>
+                                    );
+                                  })()}
+
                                   {/* Objectives */}
                                   <div className="flex flex-col gap-1.5 mb-3">
                                     {def.objectives
@@ -417,7 +563,12 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                                           }`}
                                         >
                                           {completed ? (
-                                            <CheckCircle2 className="size-3.5 mt-0.5 shrink-0 text-emerald-500" />
+                                            <ObjectiveCheckmark justCompleted={completed} />
+                                          ) : obj.type === 'flag_set' ? (
+                                            <div className="flex items-center gap-1 mt-0.5 shrink-0">
+                                              <Zap className="size-3 text-yellow-500/60" />
+                                              <span className="text-[8px] font-mono text-yellow-400/50 tracking-wider whitespace-nowrap">В процессе...</span>
+                                            </div>
                                           ) : (
                                             <Circle className="size-3.5 mt-0.5 shrink-0 text-slate-500" />
                                           )}
@@ -474,7 +625,7 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                                   )}
                                 </motion.div>
                               )}
-                            </div>
+                            </motion.div>
                           );
                         })}
                       </div>

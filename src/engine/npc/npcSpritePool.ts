@@ -230,6 +230,74 @@ export function releaseNpcQuestMarkerTexture(
   releaseCachedCanvasTexture(npcQuestMarkerCacheKey(icon, color, questName));
 }
 
+/* ─── Activity bark sprite (schedule-aware label) ─── */
+const ACTIVITY_CANVAS_W = 256;
+const ACTIVITY_CANVAS_H = 48;
+
+export function drawNpcActivityBarkCanvas(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  accentColor: string,
+): void {
+  ctx.clearRect(0, 0, ACTIVITY_CANVAS_W, ACTIVITY_CANVAS_H);
+  const display = text.length > 20 ? `${text.slice(0, 19)}…` : text;
+
+  ctx.font = '500 16px monospace';
+  const metrics = ctx.measureText(display);
+  const padX = 12;
+  const boxW = Math.min(ACTIVITY_CANVAS_W - 8, metrics.width + padX * 2);
+  const boxH = 26;
+  const boxX = (ACTIVITY_CANVAS_W - boxW) / 2;
+  const boxY = (ACTIVITY_CANVAS_H - boxH) / 2;
+
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+  ctx.beginPath();
+  ctx.roundRect(boxX, boxY, boxW, boxH, 4);
+  ctx.fill();
+
+  ctx.strokeStyle = hexWithAlpha(accentColor, 0.35);
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  ctx.fillStyle = hexWithAlpha(accentColor, 0.85);
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.shadowColor = accentColor;
+  ctx.shadowBlur = 4;
+  ctx.fillText(display, ACTIVITY_CANVAS_W / 2, ACTIVITY_CANVAS_H / 2);
+  ctx.shadowBlur = 0;
+}
+
+export function npcActivityBarkCacheKey(text: string, accentColor: string): string {
+  return `npc_activity:${text}:${accentColor}`;
+}
+
+export function acquireNpcActivityBarkTexture(
+  text: string,
+  accentColor: string,
+): THREE.CanvasTexture {
+  const key = npcActivityBarkCacheKey(text, accentColor);
+  return getCachedCanvasTexture(key, () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = ACTIVITY_CANVAS_W;
+    canvas.height = ACTIVITY_CANVAS_H;
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      drawNpcActivityBarkCanvas(ctx, text, accentColor);
+    }
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    return tex;
+  });
+}
+
+export function releaseNpcActivityBarkTexture(
+  text: string,
+  accentColor: string,
+): void {
+  releaseCachedCanvasTexture(npcActivityBarkCacheKey(text, accentColor));
+}
+
 export function createNpcSpriteMaterial(map: THREE.Texture): THREE.SpriteMaterial {
   if (!sharedSpriteMaterialTemplate) {
     sharedSpriteMaterialTemplate = new THREE.SpriteMaterial({

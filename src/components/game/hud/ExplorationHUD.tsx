@@ -62,6 +62,7 @@ import { AmbientParticles } from '@/components/game/hud/parts/AmbientParticles';
 import { PhysicsDegradedDevBadge } from '@/components/game/hud/parts/PhysicsDegradedDevBadge';
 import { ContextualHint } from '@/components/game/hud/parts/ContextualHint';
 import { CompassIndicator } from '@/components/game/hud/parts/CompassIndicator';
+import { ActiveQuestMiniTracker } from '@/components/game/hud/parts/ActiveQuestMiniTracker';
 import { useContextualHints } from '@/hooks/useContextualHints';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
@@ -849,6 +850,14 @@ export function ExplorationHUD(props: HUDProps) {
       {/* ── Compass indicator (top-right, below top bar) ── */}
       <div className="absolute top-16 sm:top-20 right-3 sm:right-4 pointer-events-none" style={{ zIndex: UI_LAYERS.HUD + 1 }}>
         <CompassIndicator />
+      </div>
+
+      {/* ── Active quest mini-tracker (bottom-left, above mobile controls) ── */}
+      <div
+        className="absolute left-3 sm:left-4 pointer-events-auto"
+        style={{ bottom: bottomStatusEffectsPx() + 40, zIndex: UI_LAYERS.HUD + 1 }}
+      >
+        <ActiveQuestMiniTracker />
       </div>
     </div>
   );
