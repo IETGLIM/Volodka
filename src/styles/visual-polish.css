@@ -1373,3 +1373,124 @@
 .cyber-heal-flash.active::before {
   animation: heal-flash-fade 0.6s ease-out forwards;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   Round 11-d: Visual Polish Additions
+   ══════════════════════════════════════════════════════════════ */
+
+/* ─── 1. Cyber Shimmer Text ─── */
+@keyframes cyber-shimmer-text-sweep {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.cyber-shimmer-text {
+  background: linear-gradient(
+    90deg,
+    rgb(var(--cyber-cyan-rgb) / 0.6) 0%,
+    #fff 25%,
+    rgb(var(--cyber-cyan-rgb) / 0.6) 50%,
+    #fff 75%,
+    rgb(var(--cyber-cyan-rgb) / 0.6) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: cyber-shimmer-text-sweep 4s linear infinite;
+}
+
+/* ─── 2. Cyber Corner Decoration ─── */
+.cyber-corner-decoration {
+  position: relative;
+}
+
+.cyber-corner-decoration .corner-tl,
+.cyber-corner-decoration .corner-tr,
+.cyber-corner-decoration .corner-bl,
+.cyber-corner-decoration .corner-br {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  pointer-events: none;
+}
+
+.cyber-corner-decoration .corner-tl {
+  top: -1px;
+  left: -1px;
+  border-top: 2px solid rgb(var(--cyber-cyan-rgb) / 0.4);
+  border-left: 2px solid rgb(var(--cyber-cyan-rgb) / 0.4);
+}
+
+.cyber-corner-decoration .corner-tr {
+  top: -1px;
+  right: -1px;
+  border-top: 2px solid rgb(var(--cyber-cyan-rgb) / 0.4);
+  border-right: 2px solid rgb(var(--cyber-cyan-rgb) / 0.4);
+}
+
+.cyber-corner-decoration .corner-bl {
+  bottom: -1px;
+  left: -1px;
+  border-bottom: 2px solid rgb(var(--cyber-cyan-rgb) / 0.4);
+  border-left: 2px solid rgb(var(--cyber-cyan-rgb) / 0.4);
+}
+
+.cyber-corner-decoration .corner-br {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 2px solid rgb(var(--cyber-cyan-rgb) / 0.4);
+  border-right: 2px solid rgb(var(--cyber-cyan-rgb) / 0.4);
+}
+
+/* ─── 3. Cyber Line Decoration ─── */
+.cyber-line-decoration {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgb(var(--cyber-cyan-rgb) / 0.2), transparent);
+}
+
+.cyber-line-decoration::after {
+  content: '';
+  flex-shrink: 0;
+}
+
+.cyber-line-decoration.line-decoration-diamond::after {
+  width: 6px;
+  height: 6px;
+  background: rgb(var(--cyber-cyan-rgb) / 0.5);
+  transform: rotate(45deg);
+  box-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.2);
+}
+
+.cyber-line-decoration.line-decoration-dot::after {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgb(var(--cyber-cyan-rgb) / 0.5);
+  box-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.2);
+}
+
+/* ─── 4. Cyber Pulse Border ─── */
+@keyframes cyber-pulse-border {
+  0%, 100% { border-color: rgb(var(--cyber-cyan-rgb) / 0.1); box-shadow: none; }
+  50% { border-color: rgb(var(--cyber-cyan-rgb) / 0.4); box-shadow: 0 0 10px rgb(var(--cyber-cyan-rgb) / 0.08); }
+}
+
+.cyber-pulse-border {
+  animation: cyber-pulse-border 3s ease-in-out infinite;
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.1);
+}
+
+/* ─── 5. Cyber Fade-in Stagger ─── */
+@keyframes cyber-fade-in-stagger-anim {
+  0% { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.cyber-fade-in-stagger {
+  animation: cyber-fade-in-stagger-anim 0.4s ease-out both;
+  animation-delay: calc(var(--stagger-index, 0) * 60ms);
+}

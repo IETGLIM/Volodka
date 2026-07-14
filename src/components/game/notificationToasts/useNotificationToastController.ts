@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { toastManager } from '@/engine/ToastManager';
 import { eventBus, EventBusPriority } from '@/engine/EventBus';
 import { playSfx } from '@/engine/audio/interactionSfx';
+import { getUIStoreState } from '@/store/stores/uiStore';
 import {
   appendToastIfNew,
   buildCombatDefeatToastMessage,
@@ -34,6 +35,15 @@ export function useNotificationToastController() {
 
   useEffect(() => {
     return toastManager.subscribe((msg) => {
+      // Persist to notification history (non-reactive, outside React lifecycle)
+      getUIStoreState().addNotificationHistory({
+        id: msg.id,
+        type: msg.type,
+        message: msg.message,
+        delta: msg.delta,
+        timestamp: msg.timestamp,
+      });
+
       setToasts((prev) => {
         const next = appendToastIfNew(
           prev,

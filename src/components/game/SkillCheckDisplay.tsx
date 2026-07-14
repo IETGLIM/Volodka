@@ -134,12 +134,12 @@ export function SkillCheckDisplay() {
 
             {/* ── Bar ── */}
             <div
-              className="relative h-3 rounded-full overflow-visible"
-              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}
+              className="cyber-progress-bar relative h-3 rounded-full overflow-visible"
+              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', '--progress-color': accentColor } as React.CSSProperties}
             >
               {/* Fill bar */}
               <motion.div
-                className="absolute top-0 left-0 h-full rounded-full"
+                className="cyber-progress-fill absolute top-0 left-0 h-full rounded-full"
                 style={{
                   background: check.passed
                     ? `linear-gradient(90deg, ${passColor}80, ${passColor})`

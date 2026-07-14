@@ -1044,3 +1044,177 @@ html[data-reduced-motion='true'] .cyber-heal-flash.active::before {
 html[data-reduced-motion='true'] .cyber-scroll-indicator::after {
   transition: none !important;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   Round 11-d: Reduced Motion Overrides for New Animations
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── 1. Base selectors (outside media query) ── */
+
+/* Cyber Progress Bar — shimmer on fill */
+.cyber-progress-fill::after {
+  animation: none !important;
+  display: none;
+}
+
+/* Cyber Skeleton Line — shimmer sweep */
+.cyber-skeleton-line {
+  animation: none !important;
+  background: rgba(100, 116, 139, 0.1);
+}
+
+/* Cyber Badge Count — pop entrance */
+.cyber-badge-count {
+  animation: none !important;
+  opacity: 1;
+}
+
+/* Atmosphere Scan Line — vertical scan movement */
+.atmosphere-scan-line {
+  animation: none !important;
+  display: none;
+}
+
+/* Glow Line Bottom — border pulse */
+.glow-line-bottom {
+  animation: none !important;
+  box-shadow: 0 1px 0 0 rgb(var(--cyber-cyan-rgb) / 0.15);
+}
+
+/* HUD Interaction Prompt — border animation */
+.hud-interaction-prompt {
+  animation: none !important;
+  border-color: rgb(var(--cyber-cyan-rgb) / 0.25);
+}
+
+/* Cyber Shimmer Text — gradient sweep */
+.cyber-shimmer-text {
+  animation: none !important;
+  background: rgb(var(--cyber-cyan-rgb) / 0.8);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Cyber Pulse Border — border pulse */
+.cyber-pulse-border {
+  animation: none !important;
+  border-color: rgb(var(--cyber-cyan-rgb) / 0.2);
+  box-shadow: none;
+}
+
+/* Cyber Fade-in Stagger — staggered entrance */
+.cyber-fade-in-stagger {
+  animation: none !important;
+  opacity: 1;
+  transform: none;
+}
+
+/* ── 2. @media (prefers-reduced-motion: reduce) block ── */
+@media (prefers-reduced-motion: reduce) {
+
+  /* Cyberpunk Theme Round 11-d */
+  .cyber-progress-fill::after {
+    animation: none !important;
+    display: none;
+  }
+
+  .cyber-skeleton-line {
+    animation: none !important;
+    background: rgba(100, 116, 139, 0.1);
+  }
+
+  .cyber-badge-count {
+    animation: none !important;
+    opacity: 1;
+  }
+
+  /* Atmospheric Polish Round 11-d */
+  .atmosphere-scan-line {
+    animation: none !important;
+    display: none;
+  }
+
+  .glow-line-bottom {
+    animation: none !important;
+    box-shadow: 0 1px 0 0 rgb(var(--cyber-cyan-rgb) / 0.15);
+  }
+
+  /* HUD Extensions Round 11-d */
+  .hud-interaction-prompt {
+    animation: none !important;
+    border-color: rgb(var(--cyber-cyan-rgb) / 0.25);
+  }
+
+  /* Visual Polish Round 11-d */
+  .cyber-shimmer-text {
+    animation: none !important;
+    background: rgb(var(--cyber-cyan-rgb) / 0.8);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .cyber-pulse-border {
+    animation: none !important;
+    border-color: rgb(var(--cyber-cyan-rgb) / 0.2);
+    box-shadow: none;
+  }
+
+  .cyber-fade-in-stagger {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ── 3. html[data-reduced-motion='true'] attribute selectors ── */
+html[data-reduced-motion='true'] .cyber-progress-fill::after {
+  animation: none !important;
+  display: none;
+}
+
+html[data-reduced-motion='true'] .cyber-skeleton-line {
+  animation: none !important;
+  background: rgba(100, 116, 139, 0.1);
+}
+
+html[data-reduced-motion='true'] .cyber-badge-count {
+  animation: none !important;
+  opacity: 1;
+}
+
+html[data-reduced-motion='true'] .atmosphere-scan-line {
+  animation: none !important;
+  display: none;
+}
+
+html[data-reduced-motion='true'] .glow-line-bottom {
+  animation: none !important;
+  box-shadow: 0 1px 0 0 rgb(var(--cyber-cyan-rgb) / 0.15);
+}
+
+html[data-reduced-motion='true'] .hud-interaction-prompt {
+  animation: none !important;
+  border-color: rgb(var(--cyber-cyan-rgb) / 0.25);
+}
+
+html[data-reduced-motion='true'] .cyber-shimmer-text {
+  animation: none !important;
+  background: rgb(var(--cyber-cyan-rgb) / 0.8);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+html[data-reduced-motion='true'] .cyber-pulse-border {
+  animation: none !important;
+  border-color: rgb(var(--cyber-cyan-rgb) / 0.2);
+  box-shadow: none;
+}
+
+html[data-reduced-motion='true'] .cyber-fade-in-stagger {
+  animation: none !important;
+  opacity: 1;
+  transform: none;
+}

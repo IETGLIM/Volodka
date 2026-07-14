@@ -1148,3 +1148,149 @@
   letter-spacing: 0.08em;
   margin-bottom: -2px;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   Round 11-d: HUD Extension Utility Additions
+   ══════════════════════════════════════════════════════════════ */
+
+/* ─── 1. HUD Compass Direction ─── */
+.hud-compass-direction {
+  font-family: 'Courier New', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: rgba(148, 163, 184, 0.45);
+  text-transform: uppercase;
+  user-select: none;
+  transition: color 0.2s ease, text-shadow 0.2s ease;
+}
+
+.hud-compass-direction[aria-active='true'],
+.hud-compass-direction.is-active {
+  color: rgb(var(--cyber-cyan-rgb) / 0.9);
+  text-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.3);
+}
+
+/* ─── 2. HUD Health Bar Segmented ─── */
+.hud-health-bar-segmented {
+  display: flex;
+  gap: 3px;
+}
+
+.hud-health-segment {
+  width: 14px;
+  height: 10px;
+  border-radius: 2px;
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  background: rgba(0, 6, 12, 0.5);
+  transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hud-health-segment[data-filled='true'],
+.hud-health-segment.is-filled {
+  background: linear-gradient(180deg, rgba(52, 211, 153, 0.7), rgba(52, 211, 153, 0.4));
+  border-color: rgba(52, 211, 153, 0.4);
+  box-shadow: 0 0 4px rgba(52, 211, 153, 0.2);
+}
+
+.hud-health-segment.is-empty {
+  background: rgba(0, 6, 12, 0.5);
+  border-color: rgba(148, 163, 184, 0.08);
+}
+
+/* ─── 3. HUD Cooldown Indicator ─── */
+.hud-cooldown-indicator {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: conic-gradient(
+    rgb(var(--cyber-cyan-rgb) / 0.4) calc(var(--cooldown-pct, 0) * 3.6deg),
+    rgba(148, 163, 184, 0.08) calc(var(--cooldown-pct, 0) * 3.6deg)
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hud-cooldown-indicator::after {
+  content: '';
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(0, 6, 12, 0.9);
+}
+
+/* ─── 4. HUD Minimap Legend ─── */
+.hud-minimap-legend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  background: rgba(0, 6, 12, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.06);
+  border-radius: 4px;
+  font-size: 7px;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.06em;
+  color: rgba(148, 163, 184, 0.45);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.hud-minimap-legend .legend-dot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  margin-right: 2px;
+  vertical-align: middle;
+}
+
+/* ─── 5. HUD Interaction Prompt ─── */
+@keyframes hud-prompt-border-anim {
+  0%, 100% { border-color: rgb(var(--cyber-cyan-rgb) / 0.2); }
+  50% { border-color: rgb(var(--cyber-cyan-rgb) / 0.45); }
+}
+
+.hud-interaction-prompt {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: linear-gradient(135deg, rgba(0, 6, 12, 0.8), rgba(8, 12, 28, 0.75));
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.25);
+  border-radius: 6px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  animation: hud-prompt-border-anim 2.5s ease-in-out infinite;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: rgba(226, 232, 240, 0.8);
+}
+
+.hud-interaction-prompt .prompt-key-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 5px;
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.3);
+  border-radius: 4px;
+  background: rgb(var(--cyber-cyan-rgb) / 0.08);
+  font-size: 10px;
+  font-weight: 700;
+  color: rgb(var(--cyber-cyan-rgb));
+  box-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.1);
+}
+
+.hud-interaction-prompt .prompt-action-text {
+  flex: 1;
+}
+
+.hud-interaction-prompt .prompt-secondary {
+  font-size: 9px;
+  color: rgba(148, 163, 184, 0.4);
+  margin-left: 4px;
+}

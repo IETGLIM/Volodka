@@ -182,7 +182,7 @@ export const ProximityWhisperOverlay = memo(function ProximityWhisperOverlay() {
             transition={{ duration: fadeDuration, ease: 'easeInOut' }}
             aria-hidden
           >
-            <span style={WHISPER_TEXT_STYLE}>{whisper.text}</span>
+            <span className="text-shadow-neon-cyan" style={WHISPER_TEXT_STYLE}>{whisper.text}</span>
           </motion.div>
         ))}
       </AnimatePresence>

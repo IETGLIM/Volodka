@@ -27,6 +27,7 @@ import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
 import { EnvironmentDetail, PropDistanceGate } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { createStreetNightSynthwaveSkyTexture } from '@/engine/graphics/proceduralSkyTextures';
+import { AmbientParticles } from './AmbientParticles';
 
 interface StreetVisualProps {
   sceneId?: SceneId;
@@ -636,6 +637,9 @@ function NeonSigns({ isWinter }: { isWinter: boolean }) {
           />
         </mesh>
       </group>
+
+      {/* ── Street ambient particles (neon green cyberpunk atmosphere) ── */}
+      <AmbientParticles count={100} boundsX={[-15, 15]} boundsY={[0, 5]} boundsZ={[-15, 15]} color="#6ee7b7" opacity={0.15} sizeMax={0.03} driftSpeed={0.08} />
     </group>
   );
 }

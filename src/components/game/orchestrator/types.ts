@@ -25,6 +25,7 @@ export const PANEL_IDS = [
   'stats',
   'karmaPoem',
   'journal',
+  'notificationHistory',
 ] as const;
 
 export type NonNullPanelType = (typeof PANEL_IDS)[number];

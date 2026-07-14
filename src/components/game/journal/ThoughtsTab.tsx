@@ -74,25 +74,26 @@ export function ThoughtsTab({ searchQuery }: { searchQuery: string }) {
       role="list"
       aria-label="История мыслей"
     >
-      {visibleEntries.map((entry) => (
-        <ThoughtEntryCard key={entry.id} entry={entry} />
+      {visibleEntries.map((entry, idx) => (
+        <ThoughtEntryCard key={entry.id} entry={entry} index={idx} />
       ))}
     </div>
   );
 }
 
-function ThoughtEntryCard({ entry }: { entry: ThoughtHistoryEntry }) {
+function ThoughtEntryCard({ entry, index }: { entry: ThoughtHistoryEntry; index: number }) {
   const sceneName = getSceneName(entry.sceneId);
   const relativeTime = formatRelativeTime(entry.timestamp);
 
   return (
     <div
       role="listitem"
-      className="group relative rounded-lg p-3 transition-colors duration-200"
+      className="cyber-fade-in-stagger group relative rounded-lg p-3 transition-colors duration-200"
       style={{
         background: 'rgba(88, 28, 135, 0.06)',
         border: '1px solid rgba(168, 85, 247, 0.1)',
-      }}
+        '--stagger-index': index,
+      } as React.CSSProperties}
     >
       {/* Purple left accent bar */}
       <div

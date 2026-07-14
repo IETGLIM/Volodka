@@ -81,6 +81,7 @@ export const LazySettingsPanel = retryLazyDefault(() => import('../SettingsPanel
 export const LazyQuestAcceptDialog = retryLazyDefault(() => import('../QuestAcceptDialog').then((m) => ({ default: m.QuestAcceptDialog })), 'QuestAcceptDialog');
 export const LazyQuestCompleteDialog = retryLazyDefault(() => import('../QuestCompleteDialog').then((m) => ({ default: m.QuestCompleteDialog })), 'QuestCompleteDialog');
 export const LazyKarmaPoemInfoPanel = retryLazyDefault(() => import('../KarmaPoemInfoPanel').then((m) => ({ default: m.KarmaPoemInfoPanel })), 'KarmaPoemInfoPanel');
+export const LazyNotificationHistoryPanel = retryLazyDefault(() => import('../NotificationHistoryPanel').then((m) => ({ default: m.NotificationHistoryPanel })), 'NotificationHistoryPanel');
 export const LazyMatrixRainQuote = retryLazyDefault(() => import('../MatrixRainQuote').then((m) => ({ default: m.MatrixRainQuote })), 'MatrixRainQuote');
 export const LazyFirstReadingCelebration = retryLazyDefault(
   () => import('../FirstReadingCelebration').then((m) => ({ default: m.FirstReadingCelebration })),

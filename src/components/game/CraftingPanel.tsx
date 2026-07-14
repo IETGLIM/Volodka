@@ -1,14 +1,16 @@
 
 /* ─── Volodka RPG – Crafting Panel (Polished) ─── */
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Hammer,
   Check,
   AlertCircle,
   Package,
+  Search,
 } from 'lucide-react';
+import { toastManager } from '@/engine/ToastManager';
 import { ItemIcon } from './shared/ItemIcon';
 import { useCraftingPanelState } from '@/store/selectors';
 import {
@@ -91,6 +93,9 @@ export function CraftingPanel({ open, onClose }: CraftingPanelProps) {
   const [selectedRecipeId, setSelectedRecipeId] = useState<string | null>(null);
   const [craftingAnim, setCraftingAnim] = useState<string | null>(null);
   const [craftSuccess, setCraftSuccess] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [craftingAll, setCraftingAll] = useState(false);
+  const craftingAllRef = useRef(false);
 
   const selectedRecipe = selectedRecipeId ? getRecipeById(selectedRecipeId) : null;
 
@@ -103,11 +108,22 @@ export function CraftingPanel({ open, onClose }: CraftingPanelProps) {
     return map;
   }, [inventory]);
 
-  // Filter recipes by category
+  // Filter recipes by category and search query
   const filteredRecipes = useMemo(() => {
-    if (categoryFilter === 'all') return CRAFTING_RECIPES;
-    return CRAFTING_RECIPES.filter((r) => r.category === categoryFilter);
-  }, [categoryFilter]);
+    let recipes = CRAFTING_RECIPES;
+    if (categoryFilter !== 'all') {
+      recipes = recipes.filter((r) => r.category === categoryFilter);
+    }
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      recipes = recipes.filter(
+        (r) =>
+          r.name.toLowerCase().includes(q) ||
+          r.description.toLowerCase().includes(q),
+      );
+    }
+    return recipes;
+  }, [categoryFilter, searchQuery]);
 
   // Count available recipes per category
   const categoryCounts = useMemo(() => {
@@ -152,6 +168,35 @@ export function CraftingPanel({ open, onClose }: CraftingPanelProps) {
       setTimeout(() => setCraftSuccess(null), 2000);
     }, recipe.craftingTime);
   }, [canCraft, craftItem]);
+
+  // Count craftable consumable recipes
+  const craftableConsumables = useMemo(() => {
+    return CRAFTING_RECIPES.filter(
+      (r) => r.category === 'consumable' && canCraft(r.id),
+    );
+  }, [canCraft, inventory, skills]);
+
+  // Craft all available consumables
+  const handleCraftAllConsumables = useCallback(async () => {
+    if (craftingAllRef.current) return;
+    craftingAllRef.current = true;
+    setCraftingAll(true);
+
+    let craftedCount = 0;
+    for (const recipe of [...craftableConsumables]) {
+      if (!canCraft(recipe.id)) continue;
+      craftItem(recipe.id);
+      craftedCount++;
+      await new Promise((r) => setTimeout(r, 500));
+    }
+
+    if (craftedCount > 0) {
+      toastManager.addToast('quest', `Создано ${craftedCount} предметов`);
+    }
+
+    craftingAllRef.current = false;
+    setCraftingAll(false);
+  }, [canCraft, craftItem, craftableConsumables]);
 
   return (
     <PanelWrapper
@@ -211,14 +256,75 @@ export function CraftingPanel({ open, onClose }: CraftingPanelProps) {
           })}
         </div>
 
+        <div className="neon-divider mb-3" />
+
+        {/* Search input */}
+        <div className="mb-3 relative">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-slate-500 pointer-events-none" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Поиск рецептов..."
+            className="cyber-input-field w-full pl-8 pr-3 py-1.5 text-xs rounded-md font-mono"
+          />
+        </div>
+
+        {/* Craft All button for consumable category */}
+        <AnimatePresence>
+          {(categoryFilter === 'all' || categoryFilter === 'consumable') && craftableConsumables.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="mb-3 flex items-center justify-between"
+            >
+              <span className="text-[10px] text-slate-500 font-mono">
+                🧪 Доступно: {craftableConsumables.length}
+              </span>
+              <button
+                onClick={handleCraftAllConsumables}
+                disabled={craftingAll}
+                className="px-2.5 py-1 rounded-md text-[11px] font-mono border border-emerald-500/30 text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 hover:border-emerald-500/50 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+              >
+                {craftingAll ? (
+                  <>
+                    <motion.span
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                      className="inline-block"
+                    >
+                      ⚙
+                    </motion.span>
+                    Создание...
+                  </>
+                ) : (
+                  <>
+                    <Hammer className="size-3" />
+                    Создать всё
+                  </>
+                )}
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Divider */}
+        <div className="neon-divider mb-3" />
+
         {/* Main layout: recipe list + detail */}
         <div className="flex flex-col sm:flex-row gap-4">
           {/* Recipe list */}
           <div className="flex-1 max-h-96 overflow-y-auto custom-scrollbar">
             {filteredRecipes.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-8 text-slate-500">
-                <Hammer className="size-8 mb-2 opacity-30" />
-                <span className="text-sm">Нет рецептов в этой категории</span>
+              <div className="cyber-empty-state py-8">
+                <span className="empty-state-icon">🔨</span>
+                <span className="empty-state-text">
+                  {searchQuery.trim() ? 'Рецепты не найдены' : 'Нет рецептов в этой категории'}
+                </span>
+                {searchQuery.trim() && (
+                  <span className="empty-state-hint">Попробуйте другой запрос</span>
+                )}
               </div>
             ) : (
               <div className="flex flex-col gap-1.5">
@@ -335,6 +441,11 @@ export function CraftingPanel({ open, onClose }: CraftingPanelProps) {
                             </Badge>
                           </div>
                         </div>
+
+                        {/* Material availability text */}
+                        <span className={`text-[9px] font-mono shrink-0 ${isCraftable ? 'text-emerald-400/70' : 'text-rose-400/60'}`}>
+                          {isCraftable ? 'Можно создать' : `Не хватает: ${totalInputs - ownedInputs}`}
+                        </span>
 
                         {/* Craft button indicator */}
                         {isCrafting ? (

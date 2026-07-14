@@ -277,7 +277,7 @@ export function DataTerminalOverlay() {
 
             {/* ASCII header */}
             <pre
-              className="px-4 pt-3 pb-2 text-[8px] sm:text-[9px] leading-tight text-green-500/60 font-mono overflow-x-auto select-none"
+              className="cyber-shimmer-text px-4 pt-3 pb-2 text-[8px] sm:text-[9px] leading-tight text-green-500/60 font-mono overflow-x-auto select-none"
               aria-hidden="true"
             >
               {TERMINAL_HEADER}

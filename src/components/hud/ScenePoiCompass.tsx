@@ -347,17 +347,18 @@ const RadarInner = memo(function RadarInner({
 
       {/* Legend */}
       <div
-        className="flex items-center justify-center gap-2 mt-1"
+        className="hud-minimap-legend flex items-center justify-center gap-2 mt-1"
         style={{ pointerEvents: 'none' }}
       >
+        <span className="legend-dot" style={{ backgroundColor: '#22d3ee' }} />
         <span className="text-[7px] font-mono text-cyan-400/50 tracking-wider">
           Объекты
         </span>
-        <span className="text-[7px] font-mono text-amber-400/50">·</span>
+        <span className="legend-dot" style={{ backgroundColor: '#fbbf24' }} />
         <span className="text-[7px] font-mono text-amber-400/50 tracking-wider">
           NPC
         </span>
-        <span className="text-[7px] font-mono text-emerald-400/50">·</span>
+        <span className="legend-dot" style={{ backgroundColor: '#34d399' }} />
         <span className="text-[7px] font-mono text-emerald-400/50 tracking-wider">
           Лут
         </span>

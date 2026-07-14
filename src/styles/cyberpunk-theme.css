@@ -1490,3 +1490,227 @@
   background: rgb(var(--cyber-cyan-rgb) / 0.8);
   box-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.3);
 }
+
+/* ══════════════════════════════════════════════════════════════
+   Round 11-d: Cyberpunk Theme Utility Additions
+   ══════════════════════════════════════════════════════════════ */
+
+/* ─── 1. Cyber Progress Bar ─── */
+@keyframes cyber-progress-shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+
+.cyber-progress-bar {
+  --progress-color: rgb(var(--cyber-cyan-rgb));
+  --progress-bg: rgba(255, 255, 255, 0.06);
+  position: relative;
+  width: 100%;
+  height: 8px;
+  border-radius: 9999px;
+  background: var(--progress-bg);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.cyber-progress-fill {
+  height: 100%;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--progress-color) 60%, transparent), var(--progress-color), color-mix(in srgb, var(--progress-color) 70%, transparent));
+  box-shadow: 0 0 8px color-mix(in srgb, var(--progress-color) 30%, transparent);
+  transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.cyber-progress-fill::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+  animation: cyber-progress-shimmer 2.5s ease-in-out infinite;
+  border-radius: 9999px;
+}
+
+/* ─── 2. Cyber Stepper ─── */
+.cyber-stepper {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.cyber-stepper-step {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(148, 163, 184, 0.25);
+  background: rgba(0, 6, 12, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+  color: rgba(148, 163, 184, 0.5);
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.cyber-stepper-step.cyber-stepper-active {
+  border-color: rgb(var(--cyber-cyan-rgb) / 0.6);
+  color: rgb(var(--cyber-cyan-rgb));
+  box-shadow: 0 0 12px rgb(var(--cyber-cyan-rgb) / 0.2);
+  background: rgb(var(--cyber-cyan-rgb) / 0.08);
+}
+
+.cyber-stepper-step.cyber-stepper-completed {
+  border-color: rgb(var(--cyber-cyan-rgb) / 0.5);
+  background: rgb(var(--cyber-cyan-rgb) / 0.15);
+  color: rgb(var(--cyber-cyan-rgb));
+}
+
+.cyber-stepper-line {
+  flex: 1;
+  height: 2px;
+  min-width: 16px;
+  background: rgba(148, 163, 184, 0.15);
+  transition: background 0.3s ease;
+}
+
+.cyber-stepper-line:has(+ .cyber-stepper-completed),
+.cyber-stepper-completed ~ .cyber-stepper-line {
+  background: rgb(var(--cyber-cyan-rgb) / 0.3);
+}
+
+/* ─── 3. Cyber Alert Banner ─── */
+.cyber-alert-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 6px;
+  border-left: 3px solid rgb(var(--cyber-cyan-rgb) / 0.5);
+  background: linear-gradient(135deg, rgba(0, 6, 12, 0.85), rgba(8, 12, 28, 0.8));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  font-size: 12px;
+  font-family: 'Courier New', monospace;
+  color: rgba(226, 232, 240, 0.85);
+}
+
+.cyber-alert-banner .alert-icon-area {
+  flex-shrink: 0;
+  width: 20px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.cyber-alert-banner .alert-text {
+  flex: 1;
+  line-height: 1.4;
+}
+
+.cyber-alert-info {
+  border-left-color: rgb(var(--cyber-cyan-rgb) / 0.6);
+  box-shadow: 0 0 12px rgb(var(--cyber-cyan-rgb) / 0.06);
+}
+
+.cyber-alert-info .alert-icon-area { color: rgb(var(--cyber-cyan-rgb)); }
+
+.cyber-alert-warning {
+  border-left-color: rgba(251, 191, 36, 0.6);
+  box-shadow: 0 0 12px rgba(251, 191, 36, 0.06);
+}
+
+.cyber-alert-warning .alert-icon-area { color: #fbbf24; }
+
+.cyber-alert-error {
+  border-left-color: rgba(248, 113, 113, 0.6);
+  box-shadow: 0 0 12px rgba(248, 113, 113, 0.06);
+}
+
+.cyber-alert-error .alert-icon-area { color: #f87171; }
+
+/* ─── 4. Cyber Data Table ─── */
+.cyber-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  font-family: 'Courier New', monospace;
+}
+
+.cyber-data-table-header {
+  background: rgba(148, 163, 184, 0.04);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.cyber-data-table-header .cyber-data-table-cell {
+  color: rgba(148, 163, 184, 0.6);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+}
+
+.cyber-data-table-row {
+  border-bottom: 1px solid rgba(148, 163, 184, 0.05);
+  transition: background 0.15s ease;
+}
+
+.cyber-data-table-row:hover {
+  background: rgba(148, 163, 184, 0.04);
+}
+
+.cyber-data-table-cell {
+  padding: 8px 12px;
+  color: rgba(226, 232, 240, 0.75);
+  vertical-align: middle;
+}
+
+/* ─── 5. Cyber Skeleton Line ─── */
+@keyframes cyber-skeleton-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.cyber-skeleton-line {
+  height: 12px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, rgba(100, 116, 139, 0.08) 25%, rgba(100, 116, 139, 0.16) 50%, rgba(100, 116, 139, 0.08) 75%);
+  background-size: 200% 100%;
+  animation: cyber-skeleton-shimmer 1.8s ease-in-out infinite;
+}
+
+.cyber-skeleton-line.w-full { width: 100%; }
+.cyber-skeleton-line.w-3\/4 { width: 75%; }
+.cyber-skeleton-line.w-1\/2 { width: 50%; }
+
+/* ─── 6. Cyber Badge Count ─── */
+@keyframes badge-pop {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.2); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.cyber-badge-count {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 9999px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 10px;
+  font-family: 'Courier New', monospace;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+  box-shadow: 0 0 6px rgba(239, 68, 68, 0.4);
+  animation: badge-pop 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  pointer-events: none;
+  z-index: 10;
+}

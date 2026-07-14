@@ -11,6 +11,7 @@ import { EnvironmentDetail } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { createVolodkaCorridorRainySkyTexture } from '@/engine/graphics/proceduralSkyTextures';
 import { registerModuleGeometries } from '@/engine/three/moduleGeometryRegistry';
+import { AmbientParticles } from './AmbientParticles';
 
 interface VolodkaCorridorVisualProps {
   livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
@@ -601,6 +602,9 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
 
       {/* ── Dim ambient fill ── */}
       <pointLight position={[0, 1.5, 0]} color="#4a4050" intensity={1.2} distance={10} />
+
+      {/* ── Corridor dust particles (dingy gray) ── */}
+      <AmbientParticles count={150} boundsX={[-2, 2]} boundsY={[0, 3]} boundsZ={[-6, 6]} color="#94a3b8" opacity={0.2} sizeMax={0.04} />
     </group>
   );
 }

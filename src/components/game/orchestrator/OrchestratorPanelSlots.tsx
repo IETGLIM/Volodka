@@ -25,6 +25,7 @@ import {
   LazyDevPanel,
   LazyShortcutsOverlay,
   LazyKarmaPoemInfoPanel,
+  LazyNotificationHistoryPanel,
   LazySettingsPanel,
 } from './lazyPanels';
 
@@ -95,6 +96,7 @@ export const OrchestratorMenuLayerPanels = memo(function OrchestratorMenuLayerPa
       <LazyPanelSlot panelId="dialogueHistory" Panel={LazyDialogueHistoryPanel} onClose={onClose.dialogueHistory} />
       <LazyPanelSlot panelId="shortcuts" Panel={LazyShortcutsOverlay} onClose={onClose.shortcuts} />
       <LazyPanelSlot panelId="karmaPoem" Panel={LazyKarmaPoemInfoPanel} onClose={onClose.karmaPoem} />
+      <LazyPanelSlot panelId="notificationHistory" Panel={LazyNotificationHistoryPanel} onClose={onClose.notificationHistory} />
     </>
   );
 });

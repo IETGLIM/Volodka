@@ -36,6 +36,16 @@ export interface DiegeticNarrativeState {
   kind: NarrativeKind;
 }
 
+export interface NotificationHistoryEntry {
+  id: string;
+  type: string;
+  message: string;
+  delta?: number;
+  timestamp: number;
+}
+
+const MAX_NOTIFICATION_HISTORY = 50;
+
 export interface UISliceState {
   /** Always `'exploration'` — use phase flags + getGamePhase() for UI branching. */
   mode: GameMode;
@@ -63,6 +73,7 @@ export interface UISliceState {
   loreEntries: LoreEntry[];
   conversationLog: Record<string, ConversationLogEntry[]>;
   thoughtHistory: ThoughtHistoryEntry[];
+  notificationHistory: NotificationHistoryEntry[];
   introSeen: boolean;
 }
 
@@ -92,6 +103,8 @@ export interface UISliceActions {
   discoverLoreEntry: (entryId: string) => void;
   addConversationLog: (npcId: string, entry: ConversationLogEntry) => void;
   addThought: (text: string, sceneId: string) => void;
+  addNotificationHistory: (entry: NotificationHistoryEntry) => void;
+  clearNotificationHistory: () => void;
   setIntroSeen: (seen: boolean) => void;
 }
 
@@ -127,6 +140,7 @@ export const createUISlice: StateCreator<
   loreEntries: [],
   conversationLog: {},
   thoughtHistory: [],
+  notificationHistory: [],
   introSeen: false,
 
   /* ── Actions ── */
@@ -276,6 +290,13 @@ export const createUISlice: StateCreator<
     set((state) => ({
       thoughtHistory: pushThoughtEntry(state.thoughtHistory, text, sceneId),
     })),
+
+  addNotificationHistory: (entry) =>
+    set((state) => ({
+      notificationHistory: [...state.notificationHistory, entry].slice(-MAX_NOTIFICATION_HISTORY),
+    })),
+
+  clearNotificationHistory: () => set({ notificationHistory: [] }),
 
   setIntroSeen: (seen) => set({ introSeen: seen }),
 });

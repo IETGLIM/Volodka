@@ -21,10 +21,12 @@ async function retryImport<T>(
       throw err;
     }
     if (maxRetries <= 0) throw err;
-    console.warn(
-      `[retryLazy] Import failed for ${chunkName}, retrying… (${maxRetries} left)`,
-      err instanceof Error ? err.message : err,
-    );
+    if (import.meta.env.DEV) {
+      console.warn(
+        `[retryLazy] Import failed for ${chunkName}, retrying… (${maxRetries} left)`,
+        err instanceof Error ? err.message : err,
+      );
+    }
     await new Promise((resolve) => setTimeout(resolve, 500 * (4 - maxRetries)));
     return retryImport(importFn, chunkName, maxRetries - 1);
   }
