@@ -43,6 +43,12 @@ export const ACCESSIBILITY_DOM_HOOKS: readonly AccessibilityDomHook[] = [
     cssVar: '--subtitle-scale',
     serialize: (settings) => String(settings.subtitleScale),
   },
+  {
+    settingKey: 'highContrast',
+    type: 'dataAttribute',
+    attribute: 'data-high-contrast',
+    serialize: (settings) => (settings.highContrast ? 'true' : null),
+  },
 ] as const;
 
 function shouldApplyDomHook(

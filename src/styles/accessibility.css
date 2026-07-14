@@ -29,7 +29,102 @@ select:focus-visible {
   box-shadow: 0 0 0 4px rgba(6, 182, 212, 0.2);
 }
 
-/* ── High Contrast Mode ── */
+/* ── High Contrast Mode (data-attribute based — toggle in settings) ── */
+[data-high-contrast="true"] {
+  /* ── Text: increase contrast ── */
+  --high-contrast-text: #ffffff;
+  --high-contrast-muted: #d0d0d0;
+  --high-contrast-border: #ffffff;
+  --high-contrast-outline: #ffffff;
+
+  /* Minimum text size 14px */
+  font-size: max(14px, 1em) !important;
+
+  /* Thicker stat bars */
+  .cyber-bar,
+  [class*="hp-"],
+  [class*="health-"],
+  [class*="stat-bar"],
+  [class*="CyberStatBar"],
+  .low-bar-pulse,
+  .low-bar-pulse-amber {
+    height: 14px !important;
+    border: 2px solid var(--high-contrast-border) !important;
+  }
+
+  /* White outlines on interactive elements */
+  button,
+  [role="button"],
+  a,
+  select,
+  input,
+  textarea {
+    outline: 2px solid var(--high-contrast-outline) !important;
+    outline-offset: 1px;
+  }
+
+  button:focus-visible,
+  a:focus-visible,
+  [role="button"]:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    outline: 3px solid #00ffff !important;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 6px rgba(0, 255, 255, 0.3) !important;
+  }
+
+  /* Panel outlines */
+  [role="dialog"],
+  [data-panel] {
+    border: 2px solid var(--high-contrast-border) !important;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.5);
+  }
+
+  /* HUD stat bars thicker */
+  .hud-scanline-bar {
+    border: 2px solid var(--high-contrast-border) !important;
+  }
+
+  /* Text color overrides for low-contrast text */
+  .text-slate-300,
+  .text-slate-400 {
+    color: var(--high-contrast-muted) !important;
+  }
+
+  .text-slate-500 {
+    color: var(--high-contrast-muted) !important;
+  }
+
+  .text-slate-600 {
+    color: #b0b0b0 !important;
+  }
+
+  /* Enhanced button borders */
+  button,
+  [role="button"] {
+    border: 2px solid currentColor !important;
+  }
+
+  /* Stat bar fill: ensure visible */
+  [style*="background: linear-gradient"],
+  [style*="background:linear-gradient"] {
+    min-height: 12px !important;
+  }
+
+  /* HUD container outlines */
+  [data-exploration-ui] button {
+    border-width: 3px !important;
+  }
+
+  /* Journal and inventory items: white outline */
+  [data-quest-card],
+  [data-inventory-item] {
+    border: 2px solid var(--high-contrast-border) !important;
+  }
+}
+
+/* ── High Contrast Mode (OS-level preference) ── */
 @media (prefers-contrast: high) {
   :root {
     --cyber-cyan-rgb: 0, 255, 255;

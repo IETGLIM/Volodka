@@ -68,6 +68,7 @@ export const DEFAULT_ACCESSIBILITY_SETTINGS: AccessibilitySettingsSnapshot = {
   subtitleScale: createSubtitleScale(1),
   textSpeed: createTextSpeed(1),
   locomotionSpeed: createLocomotionSpeed(1),
+  highContrast: false,
 };
 
 /** Normalize and clamp a setting value for the given key. */
@@ -91,6 +92,8 @@ export function clampInRange<K extends AccessibilitySettingKey>(
       return createTextSpeed(value, Number(fallback)) as AccessibilitySettingsSnapshot[K];
     case 'locomotionSpeed':
       return createLocomotionSpeed(value, Number(fallback)) as AccessibilitySettingsSnapshot[K];
+    case 'highContrast':
+      return (value === true || value === 'true') as AccessibilitySettingsSnapshot[K];
     default: {
       const _exhaustive: never = key;
       return _exhaustive;

@@ -86,7 +86,7 @@ export function OrchestratorGameplayLayer({
         hudSecondaryOpeners={hudSecondaryOpeners}
       />
       <GameplayStatsPanel onClose={panelClosers} />
-      <GameplayMobileExplorationHud onOpenInventory={panels.handleOpenInventory} />
+      <GameplayMobileExplorationHud onOpenInventory={panels.handleOpenInventory} onOpenJournal={panels.handleOpenJournal} />
       <GameplayNarrativeOverlay />
       <GameplayMinigameLayer
         codebreakerOpen={interaction.codebreakerOpen}

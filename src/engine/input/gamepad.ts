@@ -16,7 +16,7 @@ export const GAMEPAD = {
   RS: 11,
 } as const;
 
-export const DEFAULT_DEADZONE = 0.15;
+export const DEFAULT_DEADZONE = 0.2;
 export const GAMEPAD_ORBIT_SENSITIVITY = 2.4;
 export const GAMEPAD_ZOOM_SPEED = 2.5;
 

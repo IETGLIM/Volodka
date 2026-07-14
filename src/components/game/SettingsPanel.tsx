@@ -40,6 +40,7 @@ import {
   setSubtitleScale,
   setTextSpeed,
   setLocomotionSpeed,
+  setHighContrast,
 } from '@/engine/accessibility/accessibilitySettings';
 import type { AccessibilitySettingsSnapshot } from '@/engine/accessibility/accessibilitySettings';
 import { useAccessibilitySettings } from '@/hooks/useAccessibilitySettings';
@@ -239,6 +240,16 @@ function VisualSettingsTab({
           setSkipPoemCutscenes(v);
         }}
       />
+      <CyberToggle
+        label="Высокий контраст"
+        checked={a11y.highContrast}
+        onChange={(v) => {
+          setHighContrast(v);
+        }}
+      />
+      <p className="font-mono text-[10px] text-slate-500/80 leading-relaxed -mt-2">
+        Увеличивает контраст текста, добавляет белые контуры к кнопкам и панелям.
+      </p>
       <p className="font-mono text-[10px] text-slate-500/80 leading-relaxed -mt-2">
         Без кинематографического чтения — сила стиха применяется сразу.
       </p>

@@ -15,7 +15,7 @@
 */
 
 import { useCallback, useState, useEffect, useRef } from 'react';
-import { Package, Hand, ArrowUp, Zap } from 'lucide-react';
+import { Package, Hand, ArrowUp, Zap, BookOpen } from 'lucide-react';
 import { useVirtualControlsRef } from '@/engine/VirtualControlsState';
 import type { VirtualControls } from '@/hooks/useGamePhysics';
 import { useGameStore } from '@/store/gameStore';
@@ -32,6 +32,28 @@ import { CYBER_CYAN } from '@/shared/constants/cyberPalette';
 const MIN_TOUCH_TARGET = 44;
 const TAP_DEBOUNCE_MS = 280;
 
+/** Swipe gesture configuration */
+const SWIPE_THRESHOLD_PX = 80;
+const SWIPE_MAX_Y_DRIFT_PX = 100;
+const SWIPE_TIMEOUT_MS = 500;
+
+/** Haptic feedback helper — uses Vibration API when available */
+function hapticTap(): void {
+  try {
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate(10);
+    }
+  } catch { /* Vibration API not available */ }
+}
+
+function hapticPress(): void {
+  try {
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate([10, 30, 10]);
+    }
+  } catch { /* Vibration API not available */ }
+}
+
 const _MOVEMENT_CONTROL_KEYS: (keyof VirtualControls)[] = [
   'forward',
   'backward',
@@ -43,9 +65,10 @@ const _MOVEMENT_CONTROL_KEYS: (keyof VirtualControls)[] = [
 interface ExplorationMobileHudProps {
   onInteractPress?: () => void;
   onOpenInventory?: () => void;
+  onOpenJournal?: () => void;
 }
 
-export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: ExplorationMobileHudProps) {
+export function ExplorationMobileHud({ onInteractPress, onOpenInventory, onOpenJournal }: ExplorationMobileHudProps) {
   const virtualControlsRef = useVirtualControlsRef();
   const mode = useGamePhase();
   const [runToggled, setRunToggled] = useState(false);
@@ -145,8 +168,40 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
     };
   }, [resetAllControls]);
 
+  // ── Swipe gesture state ──
+  const swipeStartRef = useRef<{ x: number; y: number; t: number } | null>(null);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    swipeStartRef.current = { x: touch.clientX, y: touch.clientY, t: Date.now() };
+  }, []);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    const start = swipeStartRef.current;
+    if (!start) return;
+    swipeStartRef.current = null;
+
+    const touch = e.changedTouches[0];
+    const dx = touch.clientX - start.x;
+    const dy = Math.abs(touch.clientY - start.y);
+    const elapsed = Date.now() - start.t;
+
+    if (elapsed > SWIPE_TIMEOUT_MS || dy > SWIPE_MAX_Y_DRIFT_PX) return;
+
+    if (dx > SWIPE_THRESHOLD_PX) {
+      // Swipe right → Journal
+      onOpenJournal?.();
+      hapticTap();
+    } else if (dx < -SWIPE_THRESHOLD_PX) {
+      // Swipe left → Inventory
+      onOpenInventory?.();
+      hapticTap();
+    }
+  }, [onOpenInventory, onOpenJournal]);
+
   // ── Interact: synthetic KeyE + EventBus + exit fallback ──
   const handleInteract = useCallback(() => {
+    hapticPress();
     onInteractPress?.();
     fireInteractPress('mobile_hud');
 
@@ -200,6 +255,7 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
       const now = performance.now();
       if (now - lastTapAtRef.current < TAP_DEBOUNCE_MS) return;
       lastTapAtRef.current = now;
+      hapticTap();
       action();
     },
     [],
@@ -248,17 +304,17 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
   // D-pad button sizes (touch target >= 44px but visual can be smaller with padding)
   const dpadSize = Math.max(
     MIN_TOUCH_TARGET,
-    isLandscape ? (isSmallScreen ? 40 : 44) : (isSmallScreen ? 44 : 48),
+    isLandscape ? (isSmallScreen ? 40 : 48) : (isSmallScreen ? 48 : 52),
   );
-  const dpadGap = isLandscape ? 2 : 3;
+  const dpadGap = isLandscape ? 4 : 5;
 
-  // Action button sizes
+  // Action button sizes — all at least 44px for touch targets
   const interactSize = isLandscape
-    ? (isSmallScreen ? 44 : 48)
-    : (isSmallScreen ? 48 : 56);
+    ? (isSmallScreen ? 48 : 52)
+    : (isSmallScreen ? 52 : 60);
   const smallBtnSize = Math.max(
     MIN_TOUCH_TARGET,
-    isLandscape ? (isSmallScreen ? 36 : 40) : (isSmallScreen ? 40 : 44),
+    isLandscape ? (isSmallScreen ? 44 : 48) : (isSmallScreen ? 44 : 48),
   );
 
   // Icon sizes scale with button
@@ -300,6 +356,8 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
           paddingRight: 'env(safe-area-inset-right, 0px)',
           paddingBottom: 'env(safe-area-inset-bottom, 0px)',
         }}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
       >
         {/* ── D-pad (bottom-left) ── */}
         <div
@@ -391,6 +449,22 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
 
           {/* Secondary buttons column */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {/* Journal */}
+            {onOpenJournal && (
+              <button
+                style={{
+                  ...btnStyle,
+                  width: smallBtnSize,
+                  height: smallBtnSize,
+                  border: '2px solid rgba(100,200,255,0.4)',
+                  background: 'rgba(0,30,50,0.4)',
+                }}
+                aria-label="Журнал"
+                onPointerDown={makeTapHandler(() => onOpenJournal?.())}
+              >
+                <BookOpen size={iconSmall} color="#64c8ff" />
+              </button>
+            )}
             {/* Inventory */}
             {onOpenInventory && (
               <button
@@ -451,6 +525,8 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
         // Safe area for notched phones
         paddingBottom: 'env(safe-area-inset-bottom, 0px)',
       }}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
     >
       {/* ── D-pad (bottom-left) ── */}
       <div
@@ -543,6 +619,22 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
 
         {/* Secondary actions row */}
         <div style={{ display: 'flex', gap: 6 }}>
+          {/* Journal */}
+          {onOpenJournal && (
+            <button
+              style={{
+                ...btnStyle,
+                width: smallBtnSize,
+                height: smallBtnSize,
+                border: '2px solid rgba(100,200,255,0.4)',
+                background: 'rgba(0,30,50,0.4)',
+              }}
+              aria-label="Журнал"
+              onPointerDown={makeTapHandler(() => onOpenJournal?.())}
+            >
+              <BookOpen size={iconSmall} color="#64c8ff" />
+            </button>
+          )}
           {/* Inventory */}
           {onOpenInventory && (
             <button

@@ -9,6 +9,7 @@ import { OrchestratorPanelLayer } from './OrchestratorPanelSlots';
 import { OrchestratorPauseMenu } from './OrchestratorPauseMenu';
 import { OrchestratorQuestOverlays } from './OrchestratorQuestOverlays';
 import { useOrchestratorComposition } from './useOrchestratorComposition';
+import { GameAnnouncer } from '@/components/a11y/GameAnnouncer';
 
 /** Renders orchestrator layers from memoized prop bundles. */
 export function OrchestratorContent() {
@@ -40,6 +41,9 @@ export function OrchestratorContent() {
             <ErrorBoundary name="quests">
               <OrchestratorQuestOverlays {...questProps} />
             </ErrorBoundary>
+
+            {/* Screen reader announcements for game events */}
+            <GameAnnouncer />
           </OrchestratorDialogueFocusRoot>
         </PanelStackProvider>
       </CyberpunkThemeProvider>

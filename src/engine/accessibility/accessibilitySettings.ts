@@ -126,6 +126,10 @@ export function setLocomotionSpeed(speed: number | LocomotionSpeed): void {
   manager().updateSetting('locomotionSpeed', createLocomotionSpeed(speed));
 }
 
+export function setHighContrast(enabled: boolean): void {
+  manager().updateSetting('highContrast', enabled);
+}
+
 export function resetAccessibilitySettings(): AccessibilitySettingsSnapshot {
   return manager().reset();
 }

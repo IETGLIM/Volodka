@@ -29,6 +29,7 @@ export const ACCESSIBILITY_LS_KEYS = {
   subtitleScale: 'volodka_subtitle_scale',
   textSpeed: 'volodka_text_speed',
   locomotionSpeed: 'volodka_locomotion_speed',
+  highContrast: 'volodka_high_contrast',
 } as const satisfies Record<AccessibilitySettingKey, string>;
 
 const LS_KEY_TO_SETTING = Object.fromEntries(
@@ -118,6 +119,14 @@ export function readAccessibilitySettingsFromStorage(
         DEFAULT_ACCESSIBILITY_SETTINGS.locomotionSpeed,
       ),
       'locomotionSpeed',
+    ),
+    highContrast: clampInRange(
+      readBool(
+        storage,
+        ACCESSIBILITY_LS_KEYS.highContrast,
+        DEFAULT_ACCESSIBILITY_SETTINGS.highContrast,
+      ),
+      'highContrast',
     ),
   };
 }

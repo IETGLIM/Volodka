@@ -29,6 +29,7 @@ export interface AccessibilitySettingsSnapshot {
   subtitleScale: SubtitleScale;
   textSpeed: TextSpeed;
   locomotionSpeed: LocomotionSpeed;
+  highContrast: boolean;
 }
 
 export type AccessibilitySettingKey = keyof AccessibilitySettingsSnapshot;

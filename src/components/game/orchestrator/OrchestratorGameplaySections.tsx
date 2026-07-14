@@ -423,14 +423,16 @@ export const GameplayStatsPanel = memo(function GameplayStatsPanel({
 /** Touch-first exploration controls. */
 export const GameplayMobileExplorationHud = memo(function GameplayMobileExplorationHud({
   onOpenInventory,
+  onOpenJournal,
 }: {
   onOpenInventory: () => void;
+  onOpenJournal: () => void;
 }) {
   const profile = useGameplayPresentationProfile();
   const isMobile = useMobileDetection();
   if (!isMobile || !isExplorationHudProfile(profile)) return null;
 
-  return <ExplorationMobileHud onOpenInventory={onOpenInventory} />;
+  return <ExplorationMobileHud onOpenInventory={onOpenInventory} onOpenJournal={onOpenJournal} />;
 });
 
 /** Story and dialogue overlays — store selectors avoid stale narrative flags. */
