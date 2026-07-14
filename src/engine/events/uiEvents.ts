@@ -1,5 +1,6 @@
 /** UI overlays, toasts, and generic notifications. */
 import type { SceneId } from '@/shared/types/game';
+import type { TrainablePlayerSkill } from '@/shared/types/definitions/skills';
 
 export interface UiEvents {
   'ui:exploration_message': { text: string };
@@ -18,4 +19,12 @@ export interface UiEvents {
   };
   /** Volodka's inner monologue / thought bubble overlay. */
   'volodka:thought': { text: string; duration?: number };
+  /** Skill check result — shown by SkillCheckDisplay component. */
+  'ui:skill_check': {
+    skill: TrainablePlayerSkill;
+    skillLabel: string;
+    required: number;
+    actual: number;
+    passed: boolean;
+  };
 }

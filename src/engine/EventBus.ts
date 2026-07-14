@@ -131,9 +131,12 @@ export class EventBusClass<TMap extends object = EventMap>
 
   private assertSubscribable(operation: 'on' | 'onAny'): void {
     if (!this.disposed) return;
-    throw new Error(
-      `[EventBus] Cannot ${operation}() on a disposed bus. Call reviveEventBus() (or bus.revive()) before subscribing.`,
-    );
+    // Auto-revive: in React Strict Mode the singleton bus may be disposed
+    // during the first unmount while child effects from the second mount
+    // race to subscribe before the parent's revive call.  Reviving here
+    // is safe — the bus has already been cleared by dispose().
+    this.disposed = false;
+    clearDedupSlots(this.dedupSlots);
   }
 
   /** Enable or disable debug logging of emitted events. */
@@ -348,6 +351,20 @@ export class EventBusClass<TMap extends object = EventMap>
     this.disposed = true;
   }
 
+  /**
+   * HMR-safe reset: clears all state (handlers, dedup, generation) but
+   * does NOT set the disposed flag.  Used by the singleton eventBus so
+   * that components re-mounted after a hot-module replacement can
+   * subscribe without hitting the disposed-bus guard.
+   */
+  resetForHmr(): void {
+    this.lifecycleGeneration++;
+    clearDedupSlots(this.dedupSlots);
+    this.handlers.clear();
+    this.anyHandlers.length = 0;
+    this.listenerIndexById.clear();
+  }
+
   /** Returns whether this bus instance has been disposed. */
   isDisposed(): boolean {
     return this.disposed;
@@ -389,4 +406,13 @@ export function reviveEventBus(): void {
   eventBus.revive();
 }
 
-registerHmrDispose(disposeEventBus);
+/**
+ * HMR-safe reset for the singleton eventBus: clears handlers and
+ * dedup state but does NOT mark the bus as disposed, so components
+ * re-mounted after HMR can subscribe without errors.
+ */
+function hmrSafeResetEventBus(): void {
+  eventBus.resetForHmr();
+}
+
+registerHmrDispose(hmrSafeResetEventBus);

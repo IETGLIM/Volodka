@@ -404,3 +404,240 @@
   color: #e0f7fa;
   text-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.3);
 }
+
+/* ══════════════════════════════════════════════════════════════
+   SESSION 7: Round 7 — Cyberpunk Theme Utility Classes
+   ══════════════════════════════════════════════════════════════ */
+
+/* ─── Hover glow with expanding neon box-shadow + subtle scale ─── */
+.cyber-hover-glow {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
+}
+
+.cyber-hover-glow:hover {
+  transform: scale(1.02);
+  box-shadow:
+    0 0 8px rgb(var(--cyber-cyan-rgb) / 0.15),
+    0 0 20px rgb(var(--cyber-cyan-rgb) / 0.08),
+    0 0 40px rgb(var(--cyber-cyan-rgb) / 0.04);
+}
+
+/* ─── Base button style with slant clip-path + gradient bg ─── */
+.cyber-button-base {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 18px 8px 14px;
+  font-family: 'Courier New', 'Consolas', monospace;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: rgba(204, 255, 221, 0.9);
+  background: linear-gradient(135deg, rgba(0, 20, 10, 0.8) 0%, rgba(0, 30, 20, 0.6) 100%);
+  border: 1px solid rgb(var(--cyber-matrix-rgb) / 0.25);
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 100%, 0 100%);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cyber-button-base:hover {
+  background: linear-gradient(135deg, rgba(0, 30, 15, 0.9) 0%, rgba(0, 40, 25, 0.7) 100%);
+  border-color: rgb(var(--cyber-matrix-rgb) / 0.4);
+  box-shadow: 0 0 12px rgb(var(--cyber-matrix-rgb) / 0.12);
+  text-shadow: 0 0 8px rgb(var(--cyber-matrix-rgb) / 0.5);
+}
+
+.cyber-button-base:active {
+  transform: scale(0.97);
+}
+
+/* ─── Dark input with bottom-border glow on focus ─── */
+.cyber-input-field {
+  background: rgba(0, 6, 12, 0.85);
+  border: 1px solid rgba(100, 116, 139, 0.12);
+  border-bottom: 2px solid rgb(var(--cyber-cyan-rgb) / 0.2);
+  border-radius: 4px 4px 0 0;
+  padding: 8px 12px;
+  color: #ccffdd;
+  font-family: inherit;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.cyber-input-field::placeholder {
+  color: rgba(100, 116, 139, 0.4);
+}
+
+.cyber-input-field:focus {
+  border-bottom-color: rgb(var(--cyber-cyan-rgb) / 0.7);
+  box-shadow: 0 2px 12px rgb(var(--cyber-cyan-rgb) / 0.15);
+}
+
+/* ─── Custom thin scrollbar (dark track, thin cyan thumb) ─── */
+.cyber-scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(var(--cyber-cyan-rgb) / 0.3) rgba(0, 6, 12, 0.6);
+}
+
+.cyber-scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.cyber-scrollbar-thin::-webkit-scrollbar-track {
+  background: rgba(0, 6, 12, 0.6);
+  border-radius: 2px;
+}
+
+.cyber-scrollbar-thin::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgb(var(--cyber-cyan-rgb) / 0.4), rgb(var(--cyber-cyan-rgb) / 0.2));
+  border-radius: 2px;
+}
+
+.cyber-scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgb(var(--cyber-cyan-rgb) / 0.6), rgb(var(--cyber-cyan-rgb) / 0.35));
+}
+
+/* ─── Small inline badge with dot indicator + pulsing border ─── */
+@keyframes cyber-badge-border-pulse {
+  0%, 100% { border-color: rgb(var(--cyber-cyan-rgb) / 0.25); }
+  50% { border-color: rgb(var(--cyber-cyan-rgb) / 0.55); }
+}
+
+.cyber-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.04em;
+  color: rgb(var(--cyber-cyan-rgb) / 0.85);
+  background: rgba(0, 20, 15, 0.5);
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.25);
+  border-radius: 3px;
+  animation: cyber-badge-border-pulse 3s ease-in-out infinite;
+}
+
+.cyber-badge::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgb(var(--cyber-cyan-rgb) / 0.9);
+  box-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.5);
+  flex-shrink: 0;
+}
+
+/* ─── Removable tag/chip with × button, hover red glow ─── */
+.cyber-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 6px 3px 10px;
+  font-size: 11px;
+  font-family: 'Courier New', monospace;
+  color: rgba(204, 255, 221, 0.8);
+  background: rgba(0, 20, 15, 0.4);
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.15);
+  border-radius: 3px;
+  transition: all 0.2s ease;
+}
+
+.cyber-tag:hover {
+  border-color: rgba(244, 63, 94, 0.4);
+  box-shadow: 0 0 10px rgba(244, 63, 94, 0.12);
+}
+
+.cyber-tag-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 2px;
+  font-size: 11px;
+  line-height: 1;
+  color: rgba(148, 163, 184, 0.6);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.cyber-tag-remove:hover {
+  color: #f43f5e;
+  background: rgba(244, 63, 94, 0.15);
+  box-shadow: 0 0 6px rgba(244, 63, 94, 0.2);
+}
+
+/* ─── Tooltip with CSS triangle arrow pointing up ─── */
+.cyber-tooltip-arrow {
+  position: relative;
+}
+
+.cyber-tooltip-arrow::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 5px 10px;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.95), rgba(10, 15, 30, 0.92));
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.25);
+  border-radius: 4px;
+  color: rgba(226, 232, 240, 0.9);
+  font-size: 11px;
+  font-family: 'Courier New', monospace;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 50;
+}
+
+.cyber-tooltip-arrow::after {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 3px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: rgba(10, 15, 30, 0.92);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 51;
+}
+
+.cyber-tooltip-arrow:hover::before,
+.cyber-tooltip-arrow:hover::after {
+  opacity: 1;
+}
+
+/* ─── List row with left accent border, hover bg shift ─── */
+.cyber-list-item {
+  position: relative;
+  padding: 8px 12px 8px 16px;
+  border-left: 2px solid rgb(var(--cyber-cyan-rgb) / 0.15);
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.cyber-list-item:hover {
+  background: rgb(var(--cyber-cyan-rgb) / 0.04);
+  border-left-color: rgb(var(--cyber-cyan-rgb) / 0.45);
+}
+
+/* ─── Modal overlay with blur + centering flex ─── */
+.cyber-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}

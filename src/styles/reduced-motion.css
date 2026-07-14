@@ -385,3 +385,127 @@ html[data-reduced-motion='true'] .text-fade-in-up {
 html[data-reduced-motion='true'] .tooltip-hover-lift::after {
   transition: none !important;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   Round 7: New animation overrides (theme, HUD, visual polish)
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Cyberpunk Theme (Round 7) ── */
+
+/* cyber-badge border pulse */
+.cyber-badge {
+  animation: none !important;
+}
+
+/* ── HUD Extensions (Round 7) ── */
+
+/* XP bar shimmer sweep */
+.xp-bar-animated::after {
+  animation: none !important;
+  display: none;
+}
+
+/* XP bar level flash */
+.xp-bar-animated-level-up {
+  animation: none !important;
+}
+
+/* ── Visual Polish (Round 7) ── */
+
+/* Check draw animation */
+.cyber-checkbox-box svg {
+  animation: none !important;
+  stroke-dashoffset: 0;
+}
+
+/* Dropdown slide animation */
+.cyber-dropdown-menu {
+  animation: none !important;
+  opacity: 1;
+  transform: none;
+}
+
+/* Tab indicator line slide */
+.cyber-tab-item-active::after {
+  animation: none !important;
+  transform: scaleX(1);
+}
+
+/* Accordion arrow transition (not animation, but keep consistent) */
+.cyber-accordion-trigger[aria-expanded="true"] .cyber-accordion-arrow {
+  transform: rotate(90deg);
+}
+
+/* ── Also disable in prefers-reduced-motion media query ── */
+
+@media (prefers-reduced-motion: reduce) {
+  /* Cyberpunk Theme Round 7 */
+  .cyber-badge {
+    animation: none !important;
+  }
+
+  /* HUD Extensions Round 7 */
+  .xp-bar-animated::after {
+    animation: none !important;
+    display: none;
+  }
+
+  .xp-bar-animated-level-up {
+    animation: none !important;
+  }
+
+  /* Visual Polish Round 7 */
+  .cyber-checkbox-box svg {
+    animation: none !important;
+    stroke-dashoffset: 0;
+  }
+
+  .cyber-dropdown-menu {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+  }
+
+  .cyber-tab-item-active::after {
+    animation: none !important;
+    transform: scaleX(1);
+  }
+
+  .cyber-accordion-trigger[aria-expanded="true"] .cyber-accordion-arrow {
+    transform: rotate(90deg);
+  }
+}
+
+/* ── Also disable in data-reduced-motion attribute ── */
+html[data-reduced-motion='true'] .cyber-badge {
+  animation: none !important;
+}
+
+html[data-reduced-motion='true'] .xp-bar-animated::after {
+  animation: none !important;
+  display: none;
+}
+
+html[data-reduced-motion='true'] .xp-bar-animated-level-up {
+  animation: none !important;
+}
+
+html[data-reduced-motion='true'] .cyber-checkbox-box svg {
+  animation: none !important;
+  stroke-dashoffset: 0;
+}
+
+html[data-reduced-motion='true'] .cyber-dropdown-menu {
+  animation: none !important;
+  opacity: 1;
+  transform: none;
+}
+
+html[data-reduced-motion='true'] .cyber-tab-item-active::after {
+  animation: none !important;
+  transform: scaleX(1);
+}
+
+html[data-reduced-motion='true'] .cyber-accordion-trigger[aria-expanded="true"] .cyber-accordion-arrow {
+  transform: rotate(90deg);
+}

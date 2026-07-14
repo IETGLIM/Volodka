@@ -18,6 +18,8 @@ import {
   GameplayStatsPanel,
 } from './OrchestratorGameplaySections';
 import { ContainerLootPanel } from '@/components/game/ContainerLootPanel';
+import { InteractionRippleEffect } from '@/components/game/InteractionRippleEffect';
+import { SkillCheckDisplay } from '@/components/game/SkillCheckDisplay';
 
 type Props = {
   gameDataReady: boolean;
@@ -114,6 +116,8 @@ export function OrchestratorGameplayLayer({
         onClose={interaction.closeContainerLoot}
         onTakeItem={interaction.takeItemFromContainer}
       />
+      <InteractionRippleEffect />
+      <SkillCheckDisplay />
     </>
   );
 }

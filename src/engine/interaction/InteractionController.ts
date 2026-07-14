@@ -2,6 +2,7 @@ import { audioEngine } from '@/engine/AudioEngine';
 import { eventBus } from '@/engine/EventBus';
 import { dispatchGameAction, getGameSnapshot } from '@/engine/GameActionDispatcher';
 import type { TriggerZone } from '@/data/triggerZones';
+import type { TrainablePlayerSkill } from '@/shared/types/game';
 import {
   getTriggerZones,
   findNpcById,
@@ -38,6 +39,17 @@ import { resolveNpcBarkForRelation } from '@/shared/npcBark';
 import { resolveZoneInteractionSplash } from '@/engine/interaction/resolveInteractionSplash';
 import { playInteractionSplash } from '@/engine/interaction/playInteractionSplash';
 import { shouldOpenLinkedStoryDirectly } from '@/engine/interaction/interactionZonePresentation';
+
+/** Human-readable skill names in Russian. */
+const SKILL_LABELS: Record<TrainablePlayerSkill, string> = {
+  logic: 'Логика',
+  coding: 'Кодинг',
+  empathy: 'Эмпатия',
+  persuasion: 'Убеждение',
+  intuition: 'Интуиция',
+  writing: 'Писательство',
+  rhythm: 'Ритм',
+};
 
 function runInteractionTask(label: string, task: () => Promise<void>): void {
   void task().catch((err) => {
@@ -201,6 +213,30 @@ export class InteractionController {
     if (zone.isOneTime && snapshot.exploration.interactiveObjectStates[triggerZoneId]) {
       devWarn(`[InteractionController] One-time zone already used: "${triggerZoneId}"`);
       return;
+    }
+
+    // ── Skill check gate ──
+    if (zone.requiredSkill) {
+      const threshold = zone.skillThreshold ?? 3;
+      const playerSkill = snapshot.playerState.skills[zone.requiredSkill] ?? 0;
+      const passed = playerSkill >= threshold;
+
+      eventBus.emit('ui:skill_check', {
+        skill: zone.requiredSkill,
+        skillLabel: SKILL_LABELS[zone.requiredSkill],
+        required: threshold,
+        actual: playerSkill,
+        passed,
+      });
+
+      if (!passed) {
+        dispatchGameAction({
+          type: 'notification/push',
+          notificationType: 'quest',
+          text: `Недостаточный навык: ${SKILL_LABELS[zone.requiredSkill]} ${playerSkill}/${threshold}`,
+        });
+        return;
+      }
     }
 
     const splash = resolveZoneInteractionSplash(zone, {

@@ -1,6 +1,6 @@
 /* ─── Volodka RPG – trigger zones for interactive objects ─── */
 
-import type { SceneId, StoryEffect, InteractionType, ExamineData } from '@/shared/types/game';
+import type { SceneId, StoryEffect, InteractionType, ExamineData, TrainablePlayerSkill } from '@/shared/types/game';
 import type { ActiveTTLFlagMap } from '@/shared/activeTTLFlags';
 import { isActiveTTLFlagLive } from '@/shared/activeTTLFlags';
 import { CHK_TRIGGER_ZONES } from './chkTolpa/triggerZones';
@@ -58,6 +58,10 @@ export interface TriggerZone {
   /** Flag set when the container has been fully looted (all contents taken).
    *  Used to track empty containers across save/load. */
   lootedFlag?: string;
+  /** Skill required to interact with this zone. Emits skill:check event. */
+  requiredSkill?: TrainablePlayerSkill;
+  /** Minimum skill level needed to pass the check (default 3). */
+  skillThreshold?: number;
 }
 
 /** Russian labels for each interaction type — used in [E] prompts */
@@ -352,6 +356,9 @@ export const TRIGGER_ZONES: TriggerZone[] = [
       detailText: 'Зарема, наверное, снова готовит. Тепло и свет пробиваются из щели под дверью.',
       icon: '🚪',
     },
+    effects: [
+      { type: 'showThought', thought: 'Запах плова... Зарема опять накрывает на стол. Если бы код пах так же, я бы ел его три раза в день.' },
+    ],
   },
   {
     id: 'corridor_street_door',
@@ -367,6 +374,9 @@ export const TRIGGER_ZONES: TriggerZone[] = [
       detailText: 'Оттуда тянет холодом и пахнет сыростью. За этой дверью — подъезд, улица, весь этот серый город.',
       icon: '🚪',
     },
+    effects: [
+      { type: 'showThought', thought: 'Улица. Там свобода, но свобода без Wi-Fi — это просто холодный подъезд.' },
+    ],
   },
   {
     id: 'corridor_room_door',
@@ -414,6 +424,8 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     },
     effects: [{ type: 'setFlag', flag: 'examined_corridor_intercom', flagValue: true }],
     linkedDialogueNodeId: 'explore_corridor_intercom',
+    requiredSkill: 'coding',
+    skillThreshold: 3,
   },
   {
     id: 'corridor_mirror',
@@ -443,7 +455,27 @@ export const TRIGGER_ZONES: TriggerZone[] = [
       detailText: '«ВОЛОДЬКА ЖИВЁТ ЗДЕСЬ» — написано не твоим почерком. Кто-то из соседей? Или ты сам в другой жизни?',
       icon: '🎨',
     },
-    effects: [{ type: 'setFlag', flag: 'read_corridor_graffiti', flagValue: true }],
+    effects: [
+      { type: 'setFlag', flag: 'read_corridor_graffiti', flagValue: true },
+      { type: 'showThought', thought: '«ВОЛОДЬКА ЖИВЁТ ЗДЕСЬ»... Кто-то из соседей явно слишком хорошо меня знает. А может, это я пьяный в прошлую пятницу?' },
+    ],
+  },
+  {
+    id: 'corridor_bathroom_door',
+    sceneId: 'volodka_corridor',
+    position: [2.7, 0, 2.0],
+    size: [1.2, 2.2, 0.5],
+    enterToast: 'Дверь в санузел — сквозняк и тихое капанье.',
+    interactionType: 'open',
+    examineData: {
+      title: 'Дверь в санузел',
+      description: 'Узкая дверь, краска облупилась. Изнутри доносится монотонное капанье.',
+      detailText: 'Кран капает уже третий месяц. Починить — дело десяти минут, но руки не доходят. Как и до всего остального.',
+      icon: '🚪',
+    },
+    effects: [
+      { type: 'showThought', thought: 'Кап-кап-кап... Таймер утечки памяти. Каждый кап — ещё один бит, который утёк в никуда.' },
+    ],
   },
   {
     id: 'corridor_zarema_door',

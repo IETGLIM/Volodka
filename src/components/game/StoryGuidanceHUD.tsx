@@ -287,7 +287,7 @@ export function StoryGuidanceHUD() {
         initial={reducedMotion ? false : { opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: motionDuration }}
-        className="fixed left-1/2 -translate-x-1/2 pointer-events-auto font-mono text-[10px] tracking-wider px-2.5 py-1 rounded-full border"
+        className="fixed left-1/2 -translate-x-1/2 pointer-events-auto font-mono text-[10px] tracking-wider px-2.5 py-1 rounded-full border hud-button-cyber"
         style={{
           top: topPx,
           zIndex: UI_LAYERS.HUD + 2,
@@ -436,7 +436,7 @@ export function StoryGuidanceHUD() {
             <button
               type="button"
               onClick={handleOpenJournal}
-              className="w-6 h-6 flex items-center justify-center rounded text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+              className="w-6 h-6 flex items-center justify-center rounded text-slate-400 hover:text-white hover:bg-white/10 transition-colors hud-button-cyber"
               aria-label="Открыть журнал заданий"
               title="Журнал (Q)"
             >
@@ -445,7 +445,7 @@ export function StoryGuidanceHUD() {
             <button
               type="button"
               onClick={handleDismiss}
-              className="w-6 h-6 flex items-center justify-center rounded text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+              className="w-6 h-6 flex items-center justify-center rounded text-slate-400 hover:text-white hover:bg-white/10 transition-colors hud-button-cyber"
               aria-label="Скрыть подсказку цели"
             >
               <X className="size-3.5" />

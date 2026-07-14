@@ -535,3 +535,270 @@
 .text-fade-in-up {
   animation: text-fade-in-up-anim 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   SESSION 7: Round 7 — Form Control & Navigation Utilities
+   ══════════════════════════════════════════════════════════════ */
+
+/* ─── Custom radio/toggle switch with neon active state ─── */
+.cyber-radio-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 4px 0;
+  user-select: none;
+}
+
+.cyber-radio-toggle input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.cyber-radio-toggle-track {
+  position: relative;
+  width: 36px;
+  height: 18px;
+  border-radius: 999px;
+  background: rgba(0, 8, 16, 0.7);
+  border: 1px solid rgba(100, 116, 139, 0.2);
+  transition: all 0.25s ease;
+  flex-shrink: 0;
+}
+
+.cyber-radio-toggle-track::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(148, 163, 184, 0.5);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cyber-radio-toggle input:checked + .cyber-radio-toggle-track {
+  border-color: rgb(var(--cyber-cyan-rgb) / 0.5);
+  background: rgb(var(--cyber-cyan-rgb) / 0.1);
+  box-shadow: 0 0 10px rgb(var(--cyber-cyan-rgb) / 0.15), inset 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.05);
+}
+
+.cyber-radio-toggle input:checked + .cyber-radio-toggle-track::after {
+  transform: translateX(18px);
+  background: rgb(var(--cyber-cyan-rgb) / 0.9);
+  box-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.5);
+}
+
+.cyber-radio-toggle-label {
+  font-size: 12px;
+  font-family: 'Courier New', monospace;
+  color: rgba(204, 255, 221, 0.7);
+}
+
+/* ─── Custom checkbox with check animation ─── */
+@keyframes cyber-check-draw {
+  0% { stroke-dashoffset: 12; }
+  100% { stroke-dashoffset: 0; }
+}
+
+.cyber-checkbox {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.cyber-checkbox input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.cyber-checkbox-box {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  border: 1px solid rgba(100, 116, 139, 0.25);
+  background: rgba(0, 6, 12, 0.7);
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cyber-checkbox input:checked + .cyber-checkbox-box {
+  border-color: rgb(var(--cyber-cyan-rgb) / 0.5);
+  background: rgb(var(--cyber-cyan-rgb) / 0.12);
+  box-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.15);
+}
+
+.cyber-checkbox-box svg {
+  width: 10px;
+  height: 10px;
+  stroke: rgb(var(--cyber-cyan-rgb) / 0.9);
+  stroke-width: 2.5;
+  fill: none;
+  stroke-dasharray: 12;
+  stroke-dashoffset: 12;
+  transition: stroke-dashoffset 0.2s ease;
+}
+
+.cyber-checkbox input:checked + .cyber-checkbox-box svg {
+  stroke-dashoffset: 0;
+  animation: cyber-check-draw 0.25s ease forwards;
+}
+
+/* ─── Dropdown menu with slide-down animation + glass bg ─── */
+@keyframes cyber-dropdown-slide {
+  0% { opacity: 0; transform: translateY(-6px) scaleY(0.95); }
+  100% { opacity: 1; transform: translateY(0) scaleY(1); }
+}
+
+.cyber-dropdown {
+  position: relative;
+}
+
+.cyber-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 160px;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.92), rgba(15, 23, 42, 0.88));
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.2);
+  border-radius: 8px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 12px rgb(var(--cyber-cyan-rgb) / 0.08);
+  padding: 4px;
+  z-index: 100;
+  animation: cyber-dropdown-slide 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transform-origin: top center;
+}
+
+.cyber-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: 'Courier New', monospace;
+  color: rgba(204, 255, 221, 0.8);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.cyber-dropdown-item:hover {
+  background: rgb(var(--cyber-cyan-rgb) / 0.08);
+  color: rgba(204, 255, 221, 1);
+  text-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.2);
+}
+
+/* ─── Tab bar with active indicator line animation ─── */
+@keyframes tab-line-slide {
+  0% { transform: scaleX(0); }
+  100% { transform: scaleX(1); }
+}
+
+.cyber-tab-bar {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid rgba(100, 116, 139, 0.12);
+  position: relative;
+}
+
+.cyber-tab-item {
+  position: relative;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-family: 'Courier New', monospace;
+  color: rgba(148, 163, 184, 0.6);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.cyber-tab-item:hover {
+  color: rgba(204, 255, 221, 0.8);
+}
+
+.cyber-tab-item-active {
+  color: rgb(var(--cyber-cyan-rgb) / 0.9) !important;
+  text-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.2);
+}
+
+.cyber-tab-item-active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: rgb(var(--cyber-cyan-rgb) / 0.6);
+  box-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.3);
+  animation: tab-line-slide 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transform-origin: left;
+}
+
+/* ─── Collapsible accordion with rotation arrow ─── */
+@keyframes accordion-arrow-rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(90deg); }
+}
+
+.cyber-accordion-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-family: 'Courier New', monospace;
+  color: rgba(204, 255, 221, 0.8);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(100, 116, 139, 0.1);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.cyber-accordion-trigger:hover {
+  color: rgba(204, 255, 221, 1);
+}
+
+.cyber-accordion-arrow {
+  display: inline-flex;
+  width: 14px;
+  height: 14px;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  color: rgb(var(--cyber-cyan-rgb) / 0.5);
+}
+
+.cyber-accordion-trigger[aria-expanded="true"] .cyber-accordion-arrow {
+  transform: rotate(90deg);
+  color: rgb(var(--cyber-cyan-rgb) / 0.8);
+}
+
+.cyber-accordion-content {
+  overflow: hidden;
+  transition: max-height 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+}
+
+.cyber-accordion-content[aria-hidden="true"] {
+  max-height: 0;
+  opacity: 0;
+}
+
+.cyber-accordion-content[aria-hidden="false"] {
+  max-height: 500px;
+  opacity: 1;
+}

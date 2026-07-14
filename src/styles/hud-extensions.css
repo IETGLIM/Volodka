@@ -525,3 +525,203 @@
 .stat-change-flash-negative {
   animation-name: stat-change-flash-red;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   SESSION 7: Round 7 — HUD Extension Enhancements
+   ══════════════════════════════════════════════════════════════ */
+
+/* ─── Reusable HUD button with hover glow + press effect ─── */
+.hud-button-cyber {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: rgba(0, 8, 16, 0.6);
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.15);
+  color: rgb(var(--cyber-cyan-rgb) / 0.75);
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  overflow: hidden;
+}
+
+.hud-button-cyber:hover {
+  border-color: rgb(var(--cyber-cyan-rgb) / 0.4);
+  background: rgb(var(--cyber-cyan-rgb) / 0.08);
+  box-shadow:
+    0 0 10px rgb(var(--cyber-cyan-rgb) / 0.12),
+    0 0 20px rgb(var(--cyber-cyan-rgb) / 0.06);
+  color: rgb(var(--cyber-cyan-rgb) / 0.95);
+  text-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.3);
+}
+
+.hud-button-cyber:active {
+  transform: scale(0.95);
+  background: rgb(var(--cyber-cyan-rgb) / 0.12);
+  box-shadow: inset 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.1);
+}
+
+/* ─── Active/selected HUD button with bright border + inner shadow ─── */
+.hud-button-active {
+  border-color: rgb(var(--cyber-cyan-rgb) / 0.55) !important;
+  background: rgb(var(--cyber-cyan-rgb) / 0.1) !important;
+  box-shadow:
+    0 0 12px rgb(var(--cyber-cyan-rgb) / 0.15),
+    inset 0 0 10px rgb(var(--cyber-cyan-rgb) / 0.06);
+  color: rgb(var(--cyber-cyan-rgb)) !important;
+  text-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.4);
+}
+
+/* ─── Minimap compass rose (N/S/E/W labels) ─── */
+.minimap-compass-rose {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  font-family: 'Courier New', monospace;
+  font-size: 8px;
+  font-weight: 700;
+  color: rgb(var(--cyber-cyan-rgb) / 0.5);
+}
+
+.minimap-compass-rose .compass-n {
+  position: absolute;
+  top: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgb(var(--cyber-cyan-rgb) / 0.8);
+  text-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.3);
+}
+
+.minimap-compass-rose .compass-s {
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.minimap-compass-rose .compass-e {
+  position: absolute;
+  right: 3px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.minimap-compass-rose .compass-w {
+  position: absolute;
+  left: 3px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* ─── Quest objective complete — strikethrough + green accent ─── */
+.quest-objective-complete {
+  position: relative;
+  text-decoration: line-through;
+  text-decoration-color: rgba(52, 211, 153, 0.5);
+  color: rgba(52, 211, 153, 0.6) !important;
+}
+
+.quest-objective-complete::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(52, 211, 153, 0.3), transparent 80%);
+}
+
+/* ─── XP progress bar with shimmer sweep + level-up flash ─── */
+@keyframes xp-bar-shimmer-sweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(250%); }
+}
+
+@keyframes xp-bar-level-flash {
+  0% { box-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.3); background: rgb(var(--cyber-cyan-rgb) / 0.2); }
+  50% { box-shadow: 0 0 16px rgb(var(--cyber-cyan-rgb) / 0.6), 0 0 32px rgb(var(--cyber-cyan-rgb) / 0.2); background: rgb(var(--cyber-cyan-rgb) / 0.35); }
+  100% { box-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.3); background: rgb(var(--cyber-cyan-rgb) / 0.2); }
+}
+
+.xp-bar-animated {
+  position: relative;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 999px;
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.1);
+}
+
+.xp-bar-animated::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.1) 40%,
+    rgba(255, 255, 255, 0.18) 50%,
+    rgba(255, 255, 255, 0.1) 60%,
+    transparent 100%
+  );
+  animation: xp-bar-shimmer-sweep 2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.xp-bar-animated-level-up {
+  animation: xp-bar-level-flash 0.8s ease-out;
+}
+
+/* ─── HUD notification badge — red dot for notification count ─── */
+.hud-notification-badge {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  min-width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  font-size: 8px;
+  font-weight: 700;
+  font-family: 'Courier New', monospace;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+  box-shadow: 0 0 6px rgba(239, 68, 68, 0.4), 0 0 12px rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  z-index: 5;
+}
+
+/* ─── Dialogue speaker nameplate — enhanced with underline glow + side accents ─── */
+.dialogue-speaker-nameplate {
+  position: relative;
+  display: inline-block;
+  padding: 0 20px;
+}
+
+.dialogue-speaker-nameplate::before {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 20px;
+  right: 20px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgb(var(--cyber-cyan-rgb) / 0.4), transparent);
+  box-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.2);
+}
+
+.dialogue-speaker-nameplate::after {
+  content: '◆';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 5px;
+  color: rgb(var(--cyber-cyan-rgb) / 0.5);
+  text-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.3);
+}

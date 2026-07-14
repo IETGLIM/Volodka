@@ -422,7 +422,7 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                                             <Circle className="size-3.5 mt-0.5 shrink-0 text-slate-500" />
                                           )}
                                           <div className="flex-1">
-                                            <span className={completed ? 'line-through' : ''}>{obj.description}</span>
+                                            <span className={completed ? 'quest-objective-complete' : ''}>{obj.description}</span>
                                             {/* Poem power hint */}
                                             {!completed && obj.poemPowerHint && (
                                               <div className="mt-0.5 flex items-center gap-1 text-[10px] text-purple-400/80">

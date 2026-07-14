@@ -21,7 +21,7 @@ export function HUDButton({
     <button
       type="button"
       onClick={onClick}
-      className={`group w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-md text-slate-400 hover:text-cyan-300 hover:bg-cyan-950/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/60 focus-visible:ring-offset-1 focus-visible:ring-offset-black transition-all duration-200 relative overflow-hidden hud-btn-shimmer ${active ? 'bg-cyan-950/40 text-cyan-300' : ''} ${tooltip ? 'cyber-tooltip' : ''}`}
+      className={`group w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-md text-slate-400 hover:text-cyan-300 hover:bg-cyan-950/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/60 focus-visible:ring-offset-1 focus-visible:ring-offset-black transition-all duration-200 relative overflow-hidden hud-btn-shimmer cyber-hover-glow ${active ? 'bg-cyan-950/40 text-cyan-300' : ''} ${tooltip ? 'cyber-tooltip' : ''}`}
       aria-label={ariaLabel}
       title={ariaLabel}
       data-tooltip={tooltip}

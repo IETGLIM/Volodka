@@ -95,7 +95,7 @@ export function CinematicNarrativeFrame({
                   delay: typeStyles.titleDelay,
                   ease: 'easeOut',
                 }}
-                className={`${typeStyles.titleSize} ${typeStyles.titleWeight} ${typeStyles.titleTracking} text-center narrative-speaker-nameplate`}
+                className={`${typeStyles.titleSize} ${typeStyles.titleWeight} ${typeStyles.titleTracking} text-center narrative-speaker-nameplate dialogue-speaker-nameplate`}
                 style={{
                   fontFamily: '"Georgia", "Times New Roman", serif',
                   color: 'rgba(255,255,255,0.96)',
