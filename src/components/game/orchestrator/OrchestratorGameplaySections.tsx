@@ -449,9 +449,7 @@ export const GameplayNarrativeOverlay = memo(function GameplayNarrativeOverlay()
           aria-live="polite"
           data-testid="narrative-kind-recovery"
         >
-          <span className="text-xs font-mono tracking-widest text-cyan-300/60 animate-pulse">
-            Загрузка сцены…
-          </span>
+          <span className="text-xs font-mono tracking-widest text-cyan-300/60 cyber-loading-skeleton inline-block w-40 h-4"></span>
         </div>
       )}
       {isStoryActive && (
@@ -463,9 +461,7 @@ export const GameplayNarrativeOverlay = memo(function GameplayNarrativeOverlay()
                 style={{ zIndex: UI_LAYERS.DIALOGUE }}
                 aria-hidden
               >
-                <span className="text-xs font-mono tracking-widest text-cyan-300/60 animate-pulse">
-                  Загрузка сцены…
-                </span>
+                <span className="cyber-loading-skeleton inline-block w-40 h-4"></span>
               </div>
             }
           >

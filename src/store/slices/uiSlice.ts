@@ -8,10 +8,12 @@ import { BOOT_PHASE_FLAGS } from '@/shared/gamePhase';
 import {
   clamp,
   createDefaultTutorialFlags,
+  pushThoughtEntry,
   type JournalTab,
   type LoreEntry,
   type LoreRarity,
   type ConversationLogEntry,
+  type ThoughtHistoryEntry,
   type TutorialFlags,
 } from '../shared';
 import type { GameStoreState } from '../types';
@@ -60,6 +62,7 @@ export interface UISliceState {
   journalTab: JournalTab;
   loreEntries: LoreEntry[];
   conversationLog: Record<string, ConversationLogEntry[]>;
+  thoughtHistory: ThoughtHistoryEntry[];
   introSeen: boolean;
 }
 
@@ -88,6 +91,7 @@ export interface UISliceActions {
   addLoreEntry: (entry: LoreEntry) => void;
   discoverLoreEntry: (entryId: string) => void;
   addConversationLog: (npcId: string, entry: ConversationLogEntry) => void;
+  addThought: (text: string, sceneId: string) => void;
   setIntroSeen: (seen: boolean) => void;
 }
 
@@ -122,6 +126,7 @@ export const createUISlice: StateCreator<
   journalTab: 'notes',
   loreEntries: [],
   conversationLog: {},
+  thoughtHistory: [],
   introSeen: false,
 
   /* ── Actions ── */
@@ -266,6 +271,11 @@ export const createUISlice: StateCreator<
         },
       };
     }),
+
+  addThought: (text, sceneId) =>
+    set((state) => ({
+      thoughtHistory: pushThoughtEntry(state.thoughtHistory, text, sceneId),
+    })),
 
   setIntroSeen: (seen) => set({ introSeen: seen }),
 });

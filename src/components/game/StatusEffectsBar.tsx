@@ -290,14 +290,14 @@ export function StatusEffectsBar() {
         <div className="flex items-center gap-0.5 mr-1">
           {hasBuffs && (
             <div
-              className="w-1 h-1 rounded-full"
-              style={{ background: '#34d399', boxShadow: '0 0 4px #34d39960' }}
+              className="cyber-status-dot cyber-status-dot-green"
+              style={{ boxShadow: '0 0 4px #34d39960' }}
             />
           )}
           {hasDebuffs && (
             <div
-              className="w-1 h-1 rounded-full"
-              style={{ background: '#f87171', boxShadow: '0 0 4px #f8717160' }}
+              className="cyber-status-dot cyber-status-dot-red"
+              style={{ boxShadow: '0 0 4px #f8717160' }}
             />
           )}
         </div>

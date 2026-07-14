@@ -20,9 +20,7 @@ export function HUDMenuItem({ icon, label, shortcut, onClick, badge }: Secondary
       </span>
       <span className="flex-1 text-xs font-medium">{label}</span>
       {shortcut && (
-        <kbd className="text-[9px] font-mono px-1.5 py-0.5 rounded border border-slate-700/40 bg-slate-800/50 text-slate-500">
-          {shortcut}
-        </kbd>
+        <kbd className="cyber-keyboard-hint">{shortcut}</kbd>
       )}
     </button>
   );

@@ -5,6 +5,7 @@ import {
   Feather,
   FileText,
   Swords,
+  BrainCircuit,
 } from 'lucide-react';
 
 export const JOURNAL_TABS: { id: JournalTab; label: string; icon: typeof FileText }[] = [
@@ -12,6 +13,7 @@ export const JOURNAL_TABS: { id: JournalTab; label: string; icon: typeof FileTex
   { id: 'skills', label: 'Навыки', icon: Swords },
   { id: 'poems', label: 'Стихи', icon: Feather },
   { id: 'lore', label: 'Лор', icon: BookOpen },
+  { id: 'thoughts', label: 'Мысли', icon: BrainCircuit },
 ];
 
 /** Skill bar fill uses this as 100% reference in the skills tab. */

@@ -9,6 +9,7 @@ import { requestSceneTransitionFromBridge } from '@/shared/gameBridge/sceneTrans
 import { resolveCanonicalNpcId } from '@/shared/npcIdAliases';
 import { eventBus } from '@/engine/EventBus';
 import type { StoryEffect, TrainablePlayerSkill, EnemyType, SceneId } from '@/shared/types/game';
+import { getGameStore } from '@/store/gameStore';
 
 /**
  * Apply story/dialogue effects via StateDispatcher — no direct store/engine imports.
@@ -129,6 +130,11 @@ export function applyEffects(
             text: fx.thought,
             duration: fx.thoughtDuration,
           });
+          // Record thought in persistent journal history
+          try {
+            const state = getGameStore();
+            state.addThought(fx.thought, state.exploration.currentSceneId);
+          } catch { /* store may not be ready */ }
         }
         break;
     }

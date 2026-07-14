@@ -509,3 +509,162 @@ html[data-reduced-motion='true'] .cyber-tab-item-active::after {
 html[data-reduced-motion='true'] .cyber-accordion-trigger[aria-expanded="true"] .cyber-accordion-arrow {
   transform: rotate(90deg);
 }
+
+/* ══════════════════════════════════════════════════════════════
+   Round 8: New animation overrides (theme, visual polish)
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Cyberpunk Theme (Round 8) ── */
+
+/* Dialogue choice slide-right animation */
+.cyber-dialogue-choice:hover:not(:disabled) {
+  animation: none !important;
+  padding-left: inherit;
+}
+
+/* Skeleton shimmer */
+.cyber-loading-skeleton {
+  animation: none !important;
+  background: rgba(100, 116, 139, 0.12);
+}
+
+/* Journal header glow line sweep */
+.journal-header-glow-line {
+  animation: none !important;
+  background: rgb(var(--cyber-cyan-rgb) / 0.3);
+}
+
+/* Save slot hover gradient transition */
+.cyber-save-slot::before {
+  transition: none !important;
+}
+
+.cyber-save-slot:hover {
+  animation: none !important;
+}
+
+/* ── Visual Polish (Round 8) ── */
+
+/* Collapse panel expand animation */
+.cyber-collapse-panel[data-collapsed="false"] {
+  animation: none !important;
+  opacity: 1;
+}
+
+.cyber-collapse-panel {
+  transition: none !important;
+}
+
+/* Countdown pulse */
+.cyber-countdown {
+  animation: none !important;
+  opacity: 1;
+}
+
+.cyber-countdown-urgent {
+  animation: none !important;
+  opacity: 1;
+}
+
+/* ── Also disable in prefers-reduced-motion media query ── */
+
+@media (prefers-reduced-motion: reduce) {
+  /* Cyberpunk Theme Round 8 */
+  .cyber-dialogue-choice:hover:not(:disabled) {
+    animation: none !important;
+    padding-left: inherit;
+  }
+
+  .cyber-loading-skeleton {
+    animation: none !important;
+    background: rgba(100, 116, 139, 0.12);
+  }
+
+  .journal-header-glow-line {
+    animation: none !important;
+    background: rgb(var(--cyber-cyan-rgb) / 0.3);
+  }
+
+  .cyber-save-slot::before {
+    transition: none !important;
+  }
+
+  .cyber-save-slot:hover {
+    animation: none !important;
+  }
+
+  /* Visual Polish Round 8 */
+  .cyber-collapse-panel[data-collapsed="false"] {
+    animation: none !important;
+    opacity: 1;
+  }
+
+  .cyber-collapse-panel {
+    transition: none !important;
+  }
+
+  .cyber-countdown {
+    animation: none !important;
+    opacity: 1;
+  }
+
+  .cyber-countdown-urgent {
+    animation: none !important;
+    opacity: 1;
+  }
+}
+
+/* ── Also disable in data-reduced-motion attribute ── */
+html[data-reduced-motion='true'] .cyber-dialogue-choice:hover:not(:disabled) {
+  animation: none !important;
+  padding-left: inherit;
+}
+
+html[data-reduced-motion='true'] .cyber-loading-skeleton {
+  animation: none !important;
+  background: rgba(100, 116, 139, 0.12);
+}
+
+html[data-reduced-motion='true'] .journal-header-glow-line {
+  animation: none !important;
+  background: rgb(var(--cyber-cyan-rgb) / 0.3);
+}
+
+html[data-reduced-motion='true'] .cyber-save-slot::before {
+  transition: none !important;
+}
+
+html[data-reduced-motion='true'] .cyber-save-slot:hover {
+  animation: none !important;
+}
+
+html[data-reduced-motion='true'] .cyber-collapse-panel[data-collapsed="false"] {
+  animation: none !important;
+  opacity: 1;
+}
+
+html[data-reduced-motion='true'] .cyber-collapse-panel {
+  transition: none !important;
+}
+
+html[data-reduced-motion='true'] .cyber-countdown {
+  animation: none !important;
+  opacity: 1;
+}
+
+html[data-reduced-motion='true'] .cyber-countdown-urgent {
+  animation: none !important;
+  opacity: 1;
+}
+
+/* ── Round 8: NPC proximity indicator + thought journal ── */
+
+html[data-reduced-motion='true'] .npc-dialogue-indicator {
+  animation: none !important;
+  opacity: 0.9;
+}
+
+html[data-reduced-motion='true'] .npc-prox-relation-dot {
+  animation: none !important;
+  opacity: 0.8;
+}

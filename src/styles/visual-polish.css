@@ -802,3 +802,189 @@
   max-height: 500px;
   opacity: 1;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   SESSION 8: Round 8 — Navigation, Input & Status Utilities
+   ══════════════════════════════════════════════════════════════ */
+
+/* ─── Collapsible panel with max-height animation ─── */
+@keyframes cyber-collapse-expand {
+  from { max-height: 0; opacity: 0; }
+  to { max-height: 600px; opacity: 1; }
+}
+
+.cyber-collapse-panel {
+  overflow: hidden;
+  transition: max-height 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+}
+
+.cyber-collapse-panel[data-collapsed="true"] {
+  max-height: 0 !important;
+  opacity: 0;
+}
+
+.cyber-collapse-panel[data-collapsed="false"] {
+  animation: cyber-collapse-expand 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ─── Breadcrumb navigation with chevron separators ─── */
+.cyber-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: rgba(148, 163, 184, 0.5);
+}
+
+.cyber-breadcrumb-item {
+  color: rgba(148, 163, 184, 0.5);
+  transition: color 0.15s ease;
+  cursor: pointer;
+}
+
+.cyber-breadcrumb-item:hover {
+  color: rgb(var(--cyber-cyan-rgb) / 0.8);
+  text-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.2);
+}
+
+.cyber-breadcrumb-item:last-child {
+  color: rgb(var(--cyber-cyan-rgb) / 0.7);
+  cursor: default;
+}
+
+.cyber-breadcrumb-separator {
+  color: rgba(100, 116, 139, 0.3);
+  font-size: 9px;
+  user-select: none;
+}
+
+/* ─── Circular avatar with border ring + status indicator ─── */
+.cyber-avatar {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid rgb(var(--cyber-cyan-rgb) / 0.3);
+  box-shadow: 0 0 10px rgb(var(--cyber-cyan-rgb) / 0.1);
+  background: rgba(0, 8, 16, 0.8);
+  overflow: visible;
+  flex-shrink: 0;
+}
+
+.cyber-avatar::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgb(var(--cyber-cyan-rgb) / 0.9);
+  border: 2px solid rgba(0, 6, 12, 0.95);
+  box-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.5);
+}
+
+/* ─── Keyboard shortcut badge (e.g. "Q", "I", "Esc") ─── */
+.cyber-keyboard-hint {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  font-family: 'Courier New', monospace;
+  font-size: 9px;
+  font-weight: 600;
+  color: rgba(148, 163, 184, 0.7);
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.7), rgba(8, 12, 28, 0.8));
+  border: 1px solid rgba(100, 116, 139, 0.2);
+  border-bottom-width: 2px;
+  border-bottom-color: rgba(100, 116, 139, 0.3);
+  border-radius: 4px;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  transition: all 0.15s ease;
+  line-height: 1;
+}
+
+.cyber-keyboard-hint:hover {
+  color: rgb(var(--cyber-cyan-rgb) / 0.9);
+  border-color: rgb(var(--cyber-cyan-rgb) / 0.3);
+  border-bottom-color: rgb(var(--cyber-cyan-rgb) / 0.4);
+  box-shadow:
+    0 1px 4px rgba(0, 0, 0, 0.5),
+    0 0 8px rgb(var(--cyber-cyan-rgb) / 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  text-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.3);
+}
+
+/* ─── Countdown timer with pulsing animation ─── */
+@keyframes cyber-countdown-pulse {
+  0%, 100% {
+    opacity: 1;
+    text-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.3);
+  }
+  50% {
+    opacity: 0.7;
+    text-shadow: 0 0 12px rgb(var(--cyber-cyan-rgb) / 0.6), 0 0 24px rgb(var(--cyber-cyan-rgb) / 0.2);
+  }
+}
+
+.cyber-countdown {
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  font-weight: 700;
+  color: rgb(var(--cyber-cyan-rgb) / 0.9);
+  animation: cyber-countdown-pulse 1s ease-in-out infinite;
+  letter-spacing: 0.1em;
+}
+
+.cyber-countdown-urgent {
+  color: rgba(251, 113, 133, 0.9);
+  animation-name: cyber-countdown-pulse;
+  text-shadow: 0 0 4px rgba(251, 113, 133, 0.4);
+}
+
+@keyframes cyber-countdown-urgent-pulse {
+  0%, 100% {
+    opacity: 1;
+    text-shadow: 0 0 4px rgba(251, 113, 133, 0.4);
+  }
+  50% {
+    opacity: 0.6;
+    text-shadow: 0 0 16px rgba(251, 113, 133, 0.8), 0 0 32px rgba(251, 113, 133, 0.3);
+  }
+}
+
+.cyber-countdown-urgent {
+  animation-name: cyber-countdown-urgent-pulse;
+}
+
+/* ─── Small colored status indicator (green/yellow/red) ─── */
+.cyber-status-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.cyber-status-dot-green {
+  background: #34d399;
+  box-shadow: 0 0 6px rgba(52, 211, 153, 0.5);
+}
+
+.cyber-status-dot-yellow {
+  background: #fbbf24;
+  box-shadow: 0 0 6px rgba(251, 191, 36, 0.5);
+}
+
+.cyber-status-dot-red {
+  background: #f87171;
+  box-shadow: 0 0 6px rgba(248, 113, 113, 0.5);
+}

@@ -133,7 +133,7 @@ function SaveSlotCard({
         className={`rounded-lg p-4 transition-all duration-300 ${
           isEmpty
             ? 'border-2 border-dashed border-slate-700/40 bg-slate-950/60'
-            : 'border border-solid bg-slate-950/90 backdrop-blur-md'
+            : 'border border-solid bg-slate-950/90 backdrop-blur-md cyber-list-item cyber-save-slot'
         }`}
         style={
           !isEmpty

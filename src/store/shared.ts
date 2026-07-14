@@ -100,7 +100,15 @@ export function pushNotification(
 
 /* ─── Journal system ─── */
 
-export type JournalTab = 'notes' | 'skills' | 'poems' | 'lore';
+export type JournalTab = 'notes' | 'skills' | 'poems' | 'lore' | 'thoughts';
+
+/** Single entry in Volodka's thought history (FIFO, max 50). */
+export interface ThoughtHistoryEntry {
+  id: string;
+  text: string;
+  timestamp: number;
+  sceneId: string;
+}
 
 export type { LoreCategory, LoreRarity } from '@/shared/types/lore';
 import type { LoreCategory, LoreRarity } from '@/shared/types/lore';
@@ -122,6 +130,27 @@ export interface ConversationLogEntry {
   speaker: string;
   text: string;
   timestamp: number;
+}
+
+/* ─── Thought history helpers ─── */
+
+const MAX_THOUGHT_HISTORY = 50;
+
+/** Push a thought entry, keeping at most MAX_THOUGHT_HISTORY items (FIFO). */
+export function pushThoughtEntry(
+  history: ThoughtHistoryEntry[],
+  text: string,
+  sceneId: string,
+): ThoughtHistoryEntry[] {
+  return [
+    ...history,
+    {
+      id: `thought-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      text,
+      timestamp: Date.now(),
+      sceneId,
+    },
+  ].slice(-MAX_THOUGHT_HISTORY);
 }
 
 /* ─── Tutorial flags ─── */

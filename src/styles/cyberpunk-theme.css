@@ -641,3 +641,318 @@
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
 }
+
+/* ══════════════════════════════════════════════════════════════
+   SESSION 8: Round 8 — Panel, Overlay & Data Display Utilities
+   ══════════════════════════════════════════════════════════════ */
+
+/* ─── Journal/lore entry with left accent border + subtle glow ─── */
+.cyber-journal-entry {
+  position: relative;
+  padding: 16px 16px 16px 20px;
+  border-left: 3px solid rgb(var(--cyber-cyan-rgb) / 0.25);
+  background: rgba(0, 8, 16, 0.3);
+  border-radius: 0 6px 6px 0;
+  line-height: 1.75;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+}
+
+.cyber-journal-entry:hover {
+  border-left-color: rgb(var(--cyber-cyan-rgb) / 0.6);
+  background: rgb(var(--cyber-cyan-rgb) / 0.03);
+  box-shadow: 0 0 16px rgb(var(--cyber-cyan-rgb) / 0.06), inset 0 0 24px rgb(var(--cyber-cyan-rgb) / 0.02);
+}
+
+/* ─── Save/load slot with timestamp & scene name preview ─── */
+.cyber-save-slot {
+  position: relative;
+  overflow: hidden;
+}
+
+.cyber-save-slot::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(135deg, rgb(var(--cyber-cyan-rgb) / 0.02) 0%, transparent 50%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.cyber-save-slot:hover::before {
+  opacity: 1;
+}
+
+.cyber-save-slot:hover {
+  border-image: linear-gradient(135deg, rgb(var(--cyber-cyan-rgb) / 0.5), rgba(168, 85, 247, 0.3)) 1 !important;
+  box-shadow:
+    0 0 16px rgb(var(--cyber-cyan-rgb) / 0.1),
+    0 4px 20px rgba(0, 0, 0, 0.4),
+    inset 0 0 20px rgb(var(--cyber-cyan-rgb) / 0.03);
+}
+
+/* ─── Highlighted active save slot ─── */
+.cyber-save-slot-active {
+  border-color: rgb(var(--cyber-cyan-rgb) / 0.5) !important;
+  box-shadow:
+    0 0 20px rgb(var(--cyber-cyan-rgb) / 0.12),
+    0 0 40px rgb(var(--cyber-cyan-rgb) / 0.06),
+    inset 0 0 24px rgb(var(--cyber-cyan-rgb) / 0.04);
+}
+
+/* ─── Dialogue choice with left indicator + slide-right hover ─── */
+@keyframes cyber-choice-slide-right {
+  from { padding-left: 20px; }
+  to { padding-left: 24px; }
+}
+
+.cyber-dialogue-choice {
+  position: relative;
+  border-left: 3px solid transparent;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cyber-dialogue-choice::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 0;
+  background: rgb(var(--cyber-cyan-rgb) / 0.8);
+  box-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.4);
+  transition: height 0.2s ease;
+  border-radius: 2px;
+}
+
+.cyber-dialogue-choice:hover:not(:disabled)::before {
+  height: 60%;
+}
+
+.cyber-dialogue-choice:hover:not(:disabled) {
+  border-left-color: rgb(var(--cyber-cyan-rgb) / 0.3);
+  background: rgb(var(--cyber-cyan-rgb) / 0.04) !important;
+  animation: cyber-choice-slide-right 0.2s ease forwards;
+}
+
+/* ─── Selected dialogue choice with bright border ─── */
+.cyber-dialogue-choice-selected {
+  border-left-color: rgb(var(--cyber-cyan-rgb) / 0.8) !important;
+  border-color: rgb(var(--cyber-cyan-rgb) / 0.3) !important;
+  background: rgb(var(--cyber-cyan-rgb) / 0.06) !important;
+  box-shadow: 0 0 12px rgb(var(--cyber-cyan-rgb) / 0.1), inset 0 0 16px rgb(var(--cyber-cyan-rgb) / 0.03);
+}
+
+/* ─── NPC portrait frame with corner accents ─── */
+.cyber-npc-portrait-frame {
+  position: relative;
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.2);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.cyber-npc-portrait-frame::before,
+.cyber-npc-portrait-frame::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-color: rgb(var(--cyber-cyan-rgb) / 0.5);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.cyber-npc-portrait-frame::before {
+  top: 4px;
+  left: 4px;
+  border-top: 2px solid;
+  border-left: 2px solid;
+}
+
+.cyber-npc-portrait-frame::after {
+  bottom: 4px;
+  right: 4px;
+  border-bottom: 2px solid;
+  border-right: 2px solid;
+}
+
+/* ─── Circular progress ring (CSS-only, conic-gradient) ─── */
+.cyber-progress-ring {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: conic-gradient(
+    rgb(var(--cyber-cyan-rgb) / 0.7) calc(var(--progress, 0) * 3.6deg),
+    rgba(100, 116, 139, 0.15) calc(var(--progress, 0) * 3.6deg)
+  );
+  box-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.1);
+}
+
+.cyber-progress-ring::after {
+  content: attr(data-label);
+  width: calc(100% - 6px);
+  height: calc(100% - 6px);
+  border-radius: 50%;
+  background: rgba(0, 6, 12, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: rgb(var(--cyber-cyan-rgb) / 0.9);
+}
+
+/* ─── Animated skeleton placeholder with shimmer ─── */
+@keyframes cyber-skeleton-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.cyber-loading-skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(100, 116, 139, 0.08) 0%,
+    rgba(100, 116, 139, 0.18) 25%,
+    rgba(100, 116, 139, 0.08) 50%
+  );
+  background-size: 200% 100%;
+  animation: cyber-skeleton-shimmer 1.8s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+/* ─── Horizontal chip/tag group ─── */
+.cyber-chip-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.cyber-chip-group > * {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  font-size: 10px;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.04em;
+  color: rgb(var(--cyber-cyan-rgb) / 0.7);
+  background: rgb(var(--cyber-cyan-rgb) / 0.06);
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.15);
+  border-radius: 999px;
+  transition: all 0.2s ease;
+}
+
+.cyber-chip-group > *:hover {
+  background: rgb(var(--cyber-cyan-rgb) / 0.1);
+  border-color: rgb(var(--cyber-cyan-rgb) / 0.35);
+  box-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.1);
+}
+
+/* ─── Side-by-side stat comparison (before/after) ─── */
+.cyber-stat-comparison {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+}
+
+.cyber-stat-comparison::before {
+  content: '→';
+  color: rgb(var(--cyber-cyan-rgb) / 0.5);
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+.cyber-stat-comparison .stat-before {
+  color: rgba(148, 163, 184, 0.5);
+  text-decoration: line-through;
+}
+
+.cyber-stat-comparison .stat-after {
+  color: rgb(var(--cyber-cyan-rgb) / 0.9);
+  text-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.3);
+}
+
+/* ─── Vertical timeline item with dot, line, content ─── */
+.cyber-timeline-item {
+  position: relative;
+  padding-left: 24px;
+  padding-bottom: 16px;
+}
+
+.cyber-timeline-item::before {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 8px;
+  bottom: 0;
+  width: 1px;
+  background: linear-gradient(180deg, rgb(var(--cyber-cyan-rgb) / 0.3), transparent);
+}
+
+.cyber-timeline-item::after {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 7px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgb(var(--cyber-cyan-rgb) / 0.7);
+  border: 2px solid rgba(0, 6, 12, 0.9);
+  box-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.4);
+}
+
+.cyber-timeline-item:last-child::before {
+  display: none;
+}
+
+/* ─── Subtle repeated background text/pattern watermark ─── */
+.cyber-watermark {
+  position: relative;
+  overflow: hidden;
+}
+
+.cyber-watermark::before {
+  content: attr(data-watermark);
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Courier New', monospace;
+  font-size: 72px;
+  font-weight: 900;
+  color: rgba(100, 116, 139, 0.03);
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  pointer-events: none;
+  z-index: 0;
+  transform: rotate(-15deg);
+  user-select: none;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+/* ─── Journal header animated gradient top border ─── */
+@keyframes journal-header-glow-sweep {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.journal-header-glow-line {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgb(var(--cyber-cyan-rgb) / 0.15) 15%,
+    rgb(var(--cyber-cyan-rgb) / 0.6) 50%,
+    rgb(var(--cyber-cyan-rgb) / 0.15) 85%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: journal-header-glow-sweep 4s ease-in-out infinite;
+}

@@ -453,7 +453,7 @@ export function ExplorationHUD(props: HUDProps) {
                           <span className="text-[8px] text-slate-400 font-mono">volodka://actions</span>
                         )}
                         <div className="flex items-center gap-1">
-                          <kbd className="text-[8px] text-slate-500 font-mono px-1 py-0.5 rounded border border-slate-700/30 bg-slate-800/40">Esc</kbd>
+                          <kbd className="cyber-keyboard-hint">Esc</kbd>
                           <span className="text-[8px] text-slate-500">закрыть</span>
                         </div>
                       </div>
@@ -464,7 +464,7 @@ export function ExplorationHUD(props: HUDProps) {
             </div>
 
             <div className="hidden lg:flex items-center px-1.5 py-0.5 rounded border border-slate-700/20 bg-slate-900/30">
-              <kbd className="text-[9px] text-slate-400 font-mono">F1</kbd>
+              <kbd className="cyber-keyboard-hint">F1</kbd>
               <span className="text-[9px] text-slate-400 ml-1">Справка</span>
             </div>
           </div>

@@ -203,7 +203,7 @@ export function LoreTab({ searchQuery }: LoreTabProps) {
 
         return (
           <ScrollArea className="h-full">
-            <div className="p-5 font-serif">
+            <div className="p-5 font-serif cyber-journal-entry">
               <div className="flex items-center gap-2 mb-1 flex-wrap">
                 <BookOpen className="size-4 text-cyan-400/60" aria-hidden />
                 <h3 className="text-lg font-semibold text-cyan-200 break-words">{entry.title}</h3>

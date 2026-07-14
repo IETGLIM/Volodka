@@ -125,3 +125,7 @@ export function usePoemPowers() {
 export function useConversationLog() {
   return useGameSelector((s) => s.conversationLog);
 }
+
+export function useThoughtHistory() {
+  return useGameSelector((s) => s.thoughtHistory);
+}

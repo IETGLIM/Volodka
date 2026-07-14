@@ -14,6 +14,7 @@ import { LoreTab } from '@/components/game/journal/LoreTab';
 import { NotesTab } from '@/components/game/journal/NotesTab';
 import { PoemsTab } from '@/components/game/journal/PoemsTab';
 import { SkillsTab } from '@/components/game/journal/SkillsTab';
+import { ThoughtsTab } from '@/components/game/journal/ThoughtsTab';
 import { useJournalPanel } from '@/components/game/journal/useJournalPanel';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
@@ -79,7 +80,7 @@ export function JournalPanel({
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={reducedMotion ? undefined : { scale: 0.92, opacity: 0, y: 20 }}
               transition={{ duration: motionDuration ?? 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="relative z-10 w-[95vw] max-w-4xl h-[85vh] max-h-[700px] flex overflow-hidden rounded-xl shadow-2xl shadow-black/50"
+              className="relative z-10 w-[95vw] max-w-4xl h-[85vh] max-h-[700px] flex overflow-hidden rounded-xl shadow-2xl shadow-black/50 glass-panel-dark"
               {...dialogProps}
               data-testid="journal-panel"
               style={{
@@ -152,7 +153,10 @@ export function JournalPanel({
               </div>
 
               <div className="flex-1 flex flex-col min-w-0">
-                <div className="px-5 py-3 border-b border-cyan-900/20 shrink-0">
+                {/* Animated gradient top border line */}
+              <div className="journal-header-glow-line absolute top-0 left-0 right-0 h-[2px] rounded-t-xl overflow-hidden pointer-events-none z-20" />
+
+              <div className="px-5 py-3 border-b border-cyan-900/20 shrink-0">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       {activeTab && (
@@ -210,6 +214,7 @@ export function JournalPanel({
                       {journalTab === 'skills' && <SkillsTab searchQuery={searchQuery} />}
                       {journalTab === 'poems' && <PoemsTab searchQuery={searchQuery} />}
                       {journalTab === 'lore' && <LoreTab searchQuery={searchQuery} />}
+                      {journalTab === 'thoughts' && <ThoughtsTab searchQuery={searchQuery} />}
                     </motion.div>
                   </AnimatePresence>
                 </div>
