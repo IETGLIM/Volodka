@@ -234,7 +234,7 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                   const TypeIcon = config.icon;
                   return (
                     <div key={type} className="mb-5">
-                      {typeIdx > 0 && <div className="neon-divider mb-3" aria-hidden="true" />}
+                      {typeIdx > 0 && <div className="neon-divider cyber-glow-line mb-3" aria-hidden="true" />}
                       <h3 className={`text-xs font-medium uppercase tracking-wider mb-2 flex items-center gap-1.5 ${config.color}`}>
                         <TypeIcon className="size-3.5" />
                         {config.label}

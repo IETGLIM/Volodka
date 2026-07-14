@@ -54,7 +54,7 @@ export const InventoryCard = memo(function InventoryCard({
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         className={`
-          inv-item-card inv-cell-hscanline inv-cell-scanline cyber-list-item group relative rounded-lg border p-2.5 text-left transition-all duration-200
+          inv-item-card inv-cell-hscanline inv-cell-scanline cyber-list-item cyber-3d-card group relative rounded-lg border p-2.5 text-left transition-all duration-200
           backdrop-blur-md w-full
           ${INVENTORY_RARITY_BORDER_CLASS[rarity]}
           ${ringClass}

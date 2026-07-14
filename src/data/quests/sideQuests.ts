@@ -42,7 +42,7 @@ export const QUESTS_SIDE: QuestDefinition[] = [
         id: 'get_strings',
         description: 'Достать струны в ЧК',
         type: 'flag_set',
-        target: 'chk_guitar_strings_done',
+        target: 'pier_ritka_get_strings_done',
         completed: false,
       },
       {

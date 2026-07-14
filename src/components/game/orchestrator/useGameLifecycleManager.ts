@@ -15,6 +15,7 @@ import { devWarn } from '@/shared/utils/devLog';
 import { initWorldEventDirector } from '@/engine/world';
 import { reconcileGuidedStory } from '@/engine/GuidedStoryManager';
 import { runGlobalCombatEnd } from '@/engine/core/GlobalCleanupService';
+import { SCENE_ENTRY_THOUGHTS } from '@/data/sceneEntryThoughts';
 
 /** Autosave, TTL cleanup, daily resets, scene banners, guided story lifecycle. */
 export type { SceneBannerPresentation } from '@/engine/world/worldAmbiencePresentation';
@@ -116,10 +117,24 @@ export function useGameLifecycleManager(mode: string) {
   useEffect(() => {
     const scope = eventBus.createScope();
 
-    scope.on('scene:enter', () => {
+    scope.on('scene:enter', ({ sceneId }) => {
       const store = useGameStore.getState();
       if (readGamePhase(store) === 'exploration') {
         store.saveGame({ source: 'auto' });
+      }
+
+      // Scene-specific entry thought (once per scene)
+      const thoughtText = SCENE_ENTRY_THOUGHTS[sceneId];
+      if (thoughtText) {
+        const flagKey = `visited_thought_${sceneId}`;
+        const { flags } = store.playerState;
+        if (!flags[flagKey]) {
+          store.setFlag(flagKey, true);
+          // Delay slightly so the scene banner fades first
+          setTimeout(() => {
+            eventBus.emit('volodka:thought', { text: thoughtText, duration: 5000 });
+          }, 2800);
+        }
       }
     });
 

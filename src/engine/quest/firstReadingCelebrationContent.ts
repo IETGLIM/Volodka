@@ -25,10 +25,10 @@ export function prepareFirstReadingCelebrationContent(): FirstReadingCelebration
   const questDef = QUEST_DEFINITIONS.find((d) => d.id === FIRST_READING_QUEST_ID) ?? null;
 
   if (!poem) {
-    console.warn(`[FirstReadingCelebration] Poem "${FIRST_READING_POEM_ID}" not found`);
+    if (import.meta.env.DEV) console.warn(`[FirstReadingCelebration] Poem "${FIRST_READING_POEM_ID}" not found`);
   }
   if (!questDef) {
-    console.warn(`[FirstReadingCelebration] Quest "${FIRST_READING_QUEST_ID}" not found`);
+    if (import.meta.env.DEV) console.warn(`[FirstReadingCelebration] Quest "${FIRST_READING_QUEST_ID}" not found`);
   }
 
   const poemData = poem

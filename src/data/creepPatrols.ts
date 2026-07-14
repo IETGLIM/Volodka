@@ -329,10 +329,10 @@ export const CREEP_PATROLS: CreepPatrolDef[] = [
     requiredAct: 3,
   },
   {
-    id: 'creep_park_phantom',
+    id: 'creep_park_phantom_night',
     sceneId: 'park_day',
     enemyType: 'data_phantom',
-    name: 'Фантом Данных',
+    name: 'Фантом Данных (ночной)',
     color: '#5577ff',
     waypoints: [[-2, -2], [2, -2], [2, 2]],
     patrolSpeed: 1.0,

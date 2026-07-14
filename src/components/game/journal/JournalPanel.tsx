@@ -124,8 +124,8 @@ export function JournalPanel({
                         onClick={() => handleTabChange(tab.id)}
                         className={`flex flex-col items-center justify-center gap-1 py-2.5 sm:py-3 min-h-[44px] rounded-lg transition-all duration-200 ${
                           isActive
-                            ? 'bg-cyan-950/50 border border-cyan-800/40 shadow-[0_0_12px_rgb(var(--cyber-cyan-rgb) / 0.08)]'
-                            : 'hover:bg-slate-800/30 border border-transparent'
+                            ? 'bg-cyan-950/50 border border-cyan-800/40 shadow-[0_0_12px_rgb(var(--cyber-cyan-rgb) / 0.08)] cyber-tab-indicator cyber-underline-animated'
+                            : 'hover:bg-slate-800/30 border border-transparent cyber-underline-animated'
                         }`}
                         title={tab.label}
                       >
@@ -154,7 +154,7 @@ export function JournalPanel({
 
               <div className="flex-1 flex flex-col min-w-0">
                 {/* Animated gradient top border line */}
-              <div className="journal-header-glow-line absolute top-0 left-0 right-0 h-[2px] rounded-t-xl overflow-hidden pointer-events-none z-20" />
+              <div className="journal-header-glow-line cyber-glow-line absolute top-0 left-0 right-0 h-[2px] rounded-t-xl overflow-hidden pointer-events-none z-20" />
 
               <div className="px-5 py-3 border-b border-cyan-900/20 shrink-0">
                   <div className="flex items-center justify-between mb-2">

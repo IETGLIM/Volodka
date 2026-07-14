@@ -360,7 +360,7 @@ export function ExplorationHUD(props: HUDProps) {
                           ? { scale: { duration: 1.2, repeat: Infinity, ease: 'easeInOut' }, opacity: { duration: 0.2 } }
                           : { type: 'spring', stiffness: 500, damping: 25 }
                     }
-                    className={`absolute -top-1 -right-1 min-w-4 h-4 rounded-full text-[8px] font-bold text-black flex items-center justify-center px-1 ${
+                    className={`absolute -top-1 -right-1 min-w-4 h-4 rounded-full text-[8px] font-bold text-black flex items-center justify-center px-1 cyber-badge-dot ${
                       questBadgePulse ? 'bg-amber-500' : 'bg-cyan-600/90'
                     }`}
                     style={{

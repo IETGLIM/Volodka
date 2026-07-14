@@ -225,6 +225,18 @@ const ITEMS: ItemDefinition[] = [
     questRelated: true,
   },
   {
+    id: 'cafe_key',
+    name: 'Ключ от кафе',
+    description: 'Простой металлический ключ с логотипом кафе на брелоке. Открывает запертый ящик за барной стойкой.',
+    category: 'key_item',
+    rarity: 'uncommon',
+    icon: 'Key',
+    stackable: false,
+    maxStack: 1,
+    effects: [],
+    questRelated: false,
+  },
+  {
     id: 'bank_access_token',
     name: 'Токен доступа к банку',
     description: 'Временный ключ к Bash-терминалу банковской системы. Выдан после восстановления после сбоя.',

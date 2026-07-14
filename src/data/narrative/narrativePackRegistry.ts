@@ -146,7 +146,7 @@ function mergeNodesIntoCache<T>(
 ): void {
   for (const [nodeId, node] of Object.entries(nodes)) {
     if (Object.prototype.hasOwnProperty.call(cache, nodeId)) {
-      console.warn(
+      if (import.meta.env.DEV) console.warn(
         `[narrativePackRegistry] ${kind} node "${nodeId}" from pack "${packLabel}" overwrites an earlier definition`,
       );
     }

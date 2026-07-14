@@ -956,3 +956,269 @@
   background-size: 200% 100%;
   animation: journal-header-glow-sweep 4s ease-in-out infinite;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   Round 9: Cyberpunk Theme Utility Additions
+   ══════════════════════════════════════════════════════════════ */
+
+/* ─── 1. Cyber Grid Card — animated grid background with corner accents ─── */
+@keyframes cyber-grid-scroll {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 24px; }
+}
+
+.cyber-grid-card {
+  position: relative;
+  background-color: rgba(0, 6, 12, 0.85);
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      rgb(var(--cyber-cyan-rgb) / 0.04) 0px,
+      rgb(var(--cyber-cyan-rgb) / 0.04) 1px,
+      transparent 1px,
+      transparent 24px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgb(var(--cyber-cyan-rgb) / 0.04) 0px,
+      rgb(var(--cyber-cyan-rgb) / 0.04) 1px,
+      transparent 1px,
+      transparent 24px
+    );
+  background-size: 24px 24px;
+  animation: cyber-grid-scroll 8s linear infinite;
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.12);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.cyber-grid-card::before,
+.cyber-grid-card::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  pointer-events: none;
+  z-index: 1;
+}
+.cyber-grid-card::before {
+  top: -1px;
+  left: -1px;
+  border-top: 2px solid rgb(var(--cyber-cyan-rgb) / 0.5);
+  border-left: 2px solid rgb(var(--cyber-cyan-rgb) / 0.5);
+  border-radius: 2px 0 0 0;
+}
+.cyber-grid-card::after {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 2px solid rgb(var(--cyber-cyan-rgb) / 0.5);
+  border-right: 2px solid rgb(var(--cyber-cyan-rgb) / 0.5);
+  border-radius: 0 0 2px 0;
+}
+
+/* ─── 2. Cyber Glow Line — neon glow traveling along a line ─── */
+@keyframes glow-line-travel {
+  0% { background-position: -100% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.cyber-glow-line {
+  height: 1px;
+  width: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgb(var(--cyber-cyan-rgb) / 0.15) 20%,
+    rgb(var(--cyber-cyan-rgb) / 0.7) 50%,
+    rgb(var(--cyber-cyan-rgb) / 0.15) 80%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: glow-line-travel 3s ease-in-out infinite;
+}
+
+.cyber-glow-line-vertical {
+  width: 1px;
+  height: 100%;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgb(var(--cyber-cyan-rgb) / 0.15) 20%,
+    rgb(var(--cyber-cyan-rgb) / 0.7) 50%,
+    rgb(var(--cyber-cyan-rgb) / 0.15) 80%,
+    transparent 100%
+  );
+  background-size: 100% 200%;
+  animation: glow-line-travel-vertical 3s ease-in-out infinite;
+}
+
+@keyframes glow-line-travel-vertical {
+  0% { background-position: 0 -100%; }
+  100% { background-position: 0 200%; }
+}
+
+/* ─── 3. Cyber Tab Indicator — sliding bottom bar for active tabs ─── */
+@keyframes tab-indicator-slide {
+  0% { transform: scaleX(0); opacity: 0; }
+  100% { transform: scaleX(1); opacity: 1; }
+}
+
+.cyber-tab-indicator {
+  position: relative;
+}
+
+.cyber-tab-indicator::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, rgb(var(--cyber-cyan-rgb) / 0.3), rgb(var(--cyber-cyan-rgb) / 0.8));
+  border-radius: 1px;
+  box-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.3);
+  animation: tab-indicator-slide 0.3s ease-out forwards;
+  transform-origin: left;
+}
+
+/* ─── 4. Cyber Input Group — label + icon prefix + focus glow wrapper ─── */
+.cyber-input-group {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cyber-input-group label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgb(var(--cyber-cyan-rgb) / 0.6);
+  font-family: 'Courier New', monospace;
+}
+
+.cyber-input-group .input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(0, 6, 12, 0.7);
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.12);
+  border-radius: 6px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cyber-input-group .input-wrapper:focus-within {
+  border-color: rgb(var(--cyber-cyan-rgb) / 0.45);
+  box-shadow: 0 0 12px rgb(var(--cyber-cyan-rgb) / 0.12), inset 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.04);
+}
+
+.cyber-input-group .input-icon {
+  color: rgb(var(--cyber-cyan-rgb) / 0.4);
+  flex-shrink: 0;
+}
+
+.cyber-input-group .input-wrapper:focus-within .input-icon {
+  color: rgb(var(--cyber-cyan-rgb) / 0.7);
+}
+
+.cyber-input-group input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: rgba(226, 232, 240, 0.9);
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+}
+
+.cyber-input-group input::placeholder {
+  color: rgba(148, 163, 184, 0.3);
+}
+
+/* ─── 5. Cyber Badge Dot — pulsing status notification dot ─── */
+@keyframes badge-dot-pulse {
+  0%, 100% {
+    box-shadow: 0 0 4px rgba(239, 68, 68, 0.5), 0 0 8px rgba(239, 68, 68, 0.2);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.7), 0 0 16px rgba(239, 68, 68, 0.3), 0 0 24px rgba(239, 68, 68, 0.1);
+    transform: scale(1.15);
+  }
+}
+
+.cyber-badge-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  animation: badge-dot-pulse 2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+/* ─── 6. Cyber Progress Pip — small circular step indicator with fill ─── */
+@keyframes pip-fill {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.2); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.cyber-progress-pip {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1.5px solid rgb(var(--cyber-cyan-rgb) / 0.4);
+  background: transparent;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.cyber-progress-pip-filled {
+  border-color: rgb(var(--cyber-cyan-rgb) / 0.7);
+  background: rgb(var(--cyber-cyan-rgb) / 0.3);
+  box-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.3);
+  animation: pip-fill 0.4s ease-out forwards;
+}
+
+.cyber-progress-pip-active {
+  border-color: rgb(var(--cyber-cyan-rgb) / 0.6);
+  box-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.25);
+}
+
+/* ─── 7. Cyber 3D Card — perspective hover tilt effect ─── */
+.cyber-3d-card {
+  transform: perspective(800px) rotateX(0deg) rotateY(0deg);
+  transition: transform 0.4s cubic-bezier(0.03, 0.98, 0.52, 0.99), box-shadow 0.3s ease;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.cyber-3d-card:hover {
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.3),
+    0 0 12px rgb(var(--cyber-cyan-rgb) / 0.08);
+}
+
+/* ─── 8. Cyber Hex Icon — hexagonal icon frame via clip-path ─── */
+.cyber-hex-icon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 40px;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  background: linear-gradient(180deg, rgb(var(--cyber-cyan-rgb) / 0.15), rgb(var(--cyber-cyan-rgb) / 0.05));
+  transition: background 0.2s ease;
+}
+
+.cyber-hex-icon:hover {
+  background: linear-gradient(180deg, rgb(var(--cyber-cyan-rgb) / 0.25), rgb(var(--cyber-cyan-rgb) / 0.1));
+}
+
+.cyber-hex-icon svg,
+.cyber-hex-icon .hex-icon-content {
+  color: rgb(var(--cyber-cyan-rgb) / 0.8);
+}

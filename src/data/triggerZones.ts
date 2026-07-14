@@ -256,6 +256,31 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     ],
   },
 
+  /* ── Password crack terminal — small secondary terminal near desk (right side).
+       Requires interacted_desk flag (desk examined first). Opens DataTerminalOverlay
+       instead of a full minigame — atmospheric quick-hack experience. ── */
+  {
+    id: 'room_password_crack',
+    sceneId: 'volodka_room',
+    position: [1.1, 0.5, -2.6],
+    size: [0.3, 0.8, 0.25],
+    enterToast: 'Второй терминал — мигает «PASSWD CRACK REQUIRED».',
+    interactionType: 'hack',
+    interactionLabel: 'Взломать пароль',
+    requiredFlag: 'interacted_desk',
+    isOneTime: true,
+    examineData: {
+      title: 'Терминал паролей',
+      description: 'Маленький чёрный экран у правого края стола. Выводит одну строку: ACCESS DENIED — credentials required.',
+      detailText: 'Кто-то явно пытался подключиться к серверу Гильдии. Остались обрывки логов и хэши паролей. Если приложить немного ума — может, получится.',
+      icon: '🔐',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'room_password_crack_attempted', flagValue: true },
+      { type: 'openDataTerminal', terminalDifficulty: 'easy', terminalTitle: 'CRACK PASSWORD', terminalReward: 'Данные Гильдии' },
+    ],
+  },
+
   /* ── Sync terminal — visible once morning_sync is active, hidden after completion.
        Previously required `sync_done` flag which is only set BY completing the quest,
        creating a deadlock: terminal never appears → quest never completes → terminal
@@ -2583,7 +2608,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     },
     containerContents: [
       { itemId: 'encrypted_scroll', quantity: 1 },
-      { itemId: 'book', quantity: 1 },
+      { itemId: 'old_poetry_book', quantity: 1 },
     ],
     lootedFlag: 'library_desk_looted',
     propModelId: 'kenney_desk',

@@ -668,3 +668,253 @@ html[data-reduced-motion='true'] .npc-prox-relation-dot {
   animation: none !important;
   opacity: 0.8;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   Round 9: New animation overrides (theme, visual polish, HUD)
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Cyberpunk Theme (Round 9) ── */
+
+/* Cyber grid card scroll */
+.cyber-grid-card {
+  animation: none !important;
+}
+
+/* Cyber glow line travel */
+.cyber-glow-line {
+  animation: none !important;
+  background: rgb(var(--cyber-cyan-rgb) / 0.2);
+}
+
+.cyber-glow-line-vertical {
+  animation: none !important;
+  background: rgb(var(--cyber-cyan-rgb) / 0.2);
+}
+
+/* Cyber tab indicator slide */
+.cyber-tab-indicator::after {
+  animation: none !important;
+  transform: scaleX(1);
+  opacity: 1;
+}
+
+/* Cyber badge dot pulse */
+.cyber-badge-dot {
+  animation: none !important;
+  transform: none;
+}
+
+/* Cyber progress pip fill */
+.cyber-progress-pip-filled {
+  animation: none !important;
+}
+
+/* ── Visual Polish (Round 9) ── */
+
+/* Cyber marquee scroll */
+.cyber-marquee > .marquee-track {
+  animation: none !important;
+}
+
+/* Cyber pulse ring expand */
+.cyber-pulse-ring::after {
+  animation: none !important;
+  display: none;
+}
+
+/* Cyber scan beam sweep */
+.cyber-scan-beam::after {
+  animation: none !important;
+  display: none;
+}
+
+/* Cyber morph shape */
+.cyber-morph {
+  animation: none !important;
+  border-radius: 50%;
+}
+
+/* Text typing cursor blink */
+.text-typing-cursor::after {
+  animation: none !important;
+  opacity: 1;
+}
+
+/* Cyber underline animated (transition, not animation, but keep consistent) */
+.cyber-underline-animated::after {
+  transition: none !important;
+}
+
+/* ── HUD Extensions (Round 9) ── */
+
+/* Minimap ping ripple */
+.hud-minimap-ping::after {
+  animation: none !important;
+  display: none;
+}
+
+.hud-minimap-ping::before {
+  animation: none !important;
+  display: none;
+}
+
+/* HUD transition slide up */
+.hud-transition-slide-up {
+  animation: none !important;
+  opacity: 1;
+  transform: none;
+}
+
+/* ── Also disable in prefers-reduced-motion media query ── */
+
+@media (prefers-reduced-motion: reduce) {
+  /* Cyberpunk Theme Round 9 */
+  .cyber-grid-card {
+    animation: none !important;
+  }
+
+  .cyber-glow-line {
+    animation: none !important;
+    background: rgb(var(--cyber-cyan-rgb) / 0.2);
+  }
+
+  .cyber-glow-line-vertical {
+    animation: none !important;
+    background: rgb(var(--cyber-cyan-rgb) / 0.2);
+  }
+
+  .cyber-tab-indicator::after {
+    animation: none !important;
+    transform: scaleX(1);
+    opacity: 1;
+  }
+
+  .cyber-badge-dot {
+    animation: none !important;
+    transform: none;
+  }
+
+  .cyber-progress-pip-filled {
+    animation: none !important;
+  }
+
+  /* Visual Polish Round 9 */
+  .cyber-marquee > .marquee-track {
+    animation: none !important;
+  }
+
+  .cyber-pulse-ring::after {
+    animation: none !important;
+    display: none;
+  }
+
+  .cyber-scan-beam::after {
+    animation: none !important;
+    display: none;
+  }
+
+  .cyber-morph {
+    animation: none !important;
+    border-radius: 50%;
+  }
+
+  .text-typing-cursor::after {
+    animation: none !important;
+    opacity: 1;
+  }
+
+  .cyber-underline-animated::after {
+    transition: none !important;
+  }
+
+  /* HUD Extensions Round 9 */
+  .hud-minimap-ping::after {
+    animation: none !important;
+    display: none;
+  }
+
+  .hud-minimap-ping::before {
+    animation: none !important;
+    display: none;
+  }
+
+  .hud-transition-slide-up {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ── Also disable in data-reduced-motion attribute ── */
+html[data-reduced-motion='true'] .cyber-grid-card {
+  animation: none !important;
+}
+
+html[data-reduced-motion='true'] .cyber-glow-line {
+  animation: none !important;
+  background: rgb(var(--cyber-cyan-rgb) / 0.2);
+}
+
+html[data-reduced-motion='true'] .cyber-glow-line-vertical {
+  animation: none !important;
+  background: rgb(var(--cyber-cyan-rgb) / 0.2);
+}
+
+html[data-reduced-motion='true'] .cyber-tab-indicator::after {
+  animation: none !important;
+  transform: scaleX(1);
+  opacity: 1;
+}
+
+html[data-reduced-motion='true'] .cyber-badge-dot {
+  animation: none !important;
+  transform: none;
+}
+
+html[data-reduced-motion='true'] .cyber-progress-pip-filled {
+  animation: none !important;
+}
+
+html[data-reduced-motion='true'] .cyber-marquee > .marquee-track {
+  animation: none !important;
+}
+
+html[data-reduced-motion='true'] .cyber-pulse-ring::after {
+  animation: none !important;
+  display: none;
+}
+
+html[data-reduced-motion='true'] .cyber-scan-beam::after {
+  animation: none !important;
+  display: none;
+}
+
+html[data-reduced-motion='true'] .cyber-morph {
+  animation: none !important;
+  border-radius: 50%;
+}
+
+html[data-reduced-motion='true'] .text-typing-cursor::after {
+  animation: none !important;
+  opacity: 1;
+}
+
+html[data-reduced-motion='true'] .cyber-underline-animated::after {
+  transition: none !important;
+}
+
+html[data-reduced-motion='true'] .hud-minimap-ping::after {
+  animation: none !important;
+  display: none;
+}
+
+html[data-reduced-motion='true'] .hud-minimap-ping::before {
+  animation: none !important;
+  display: none;
+}
+
+html[data-reduced-motion='true'] .hud-transition-slide-up {
+  animation: none !important;
+  opacity: 1;
+  transform: none;
+}

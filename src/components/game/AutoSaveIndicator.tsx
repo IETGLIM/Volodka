@@ -169,7 +169,7 @@ export function AutoSaveIndicator() {
         {phase !== 'idle' && (
           <motion.div
             key="autosave-notification"
-            className="pointer-events-auto relative overflow-hidden"
+            className="pointer-events-auto relative overflow-hidden hud-transition-slide-up"
             style={{
               backdropFilter: 'blur(12px)',
               WebkitBackdropFilter: 'blur(12px)',

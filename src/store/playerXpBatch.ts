@@ -9,6 +9,7 @@ import {
   formatLevelUpMessage,
   scheduleLevelUpEmit,
 } from './levelUpHelpers';
+import { triggerXpGain } from '@/engine/fx/screenFxTriggers';
 import type { GameStoreState } from './types';
 
 let pendingXpAmount = 0;
@@ -80,5 +81,8 @@ export function queuePlayerXp(
     if (levelUpToEmit) {
       scheduleLevelUpEmit(levelUpToEmit);
     }
+
+    // Emit fx:xp_gain so UI components (LevelUpNotification) can show "+X XP" toast.
+    triggerXpGain(total);
   });
 }

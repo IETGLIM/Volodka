@@ -137,6 +137,14 @@ export function applyEffects(
           } catch { /* store may not be ready */ }
         }
         break;
+      case 'openDataTerminal':
+        playSfx('examine');
+        eventBus.emit('ui:data_terminal', {
+          difficulty: fx.terminalDifficulty ?? 'easy',
+          title: fx.terminalTitle ?? 'UNKNOWN TERMINAL',
+          reward: fx.terminalReward,
+        });
+        break;
     }
   }
 }

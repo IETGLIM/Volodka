@@ -988,3 +988,216 @@
   background: #f87171;
   box-shadow: 0 0 6px rgba(248, 113, 113, 0.5);
 }
+
+/* ══════════════════════════════════════════════════════════════
+   Round 9: Visual Polish Utility Additions
+   ══════════════════════════════════════════════════════════════ */
+
+/* ─── 1. Cyber Marquee — horizontal scrolling text ─── */
+@keyframes marquee-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.cyber-marquee {
+  overflow: hidden;
+  white-space: nowrap;
+  position: relative;
+}
+
+.cyber-marquee > .marquee-track {
+  display: inline-flex;
+  animation: marquee-scroll 20s linear infinite;
+}
+
+.cyber-marquee > .marquee-track:hover {
+  animation-play-state: paused;
+}
+
+/* ─── 2. Cyber Float Label — label floats up on focus/value ─── */
+.cyber-float-label {
+  position: relative;
+}
+
+.cyber-float-label label {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 12px;
+  color: rgba(148, 163, 184, 0.5);
+  pointer-events: none;
+  transition: all 0.2s ease;
+  transform-origin: left center;
+  font-family: 'Courier New', monospace;
+}
+
+.cyber-float-label .input-field {
+  width: 100%;
+  padding: 10px 12px;
+  background: rgba(0, 6, 12, 0.7);
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.12);
+  border-radius: 6px;
+  color: rgba(226, 232, 240, 0.9);
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cyber-float-label .input-field:focus {
+  border-color: rgb(var(--cyber-cyan-rgb) / 0.45);
+  box-shadow: 0 0 10px rgb(var(--cyber-cyan-rgb) / 0.1);
+}
+
+.cyber-float-label:focus-within label,
+.cyber-float-label .input-field:not(:placeholder-shown) ~ label,
+.cyber-float-label .input-field:not(:placeholder-shown) + label {
+  top: 4px;
+  transform: translateY(0) scale(0.75);
+  color: rgb(var(--cyber-cyan-rgb) / 0.7);
+}
+
+/* ─── 3. Cyber Separator Dots — 3 centered dots with extending lines ─── */
+.cyber-separator-dots {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 8px 0;
+}
+
+.cyber-separator-dots::before,
+.cyber-separator-dots::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgb(var(--cyber-cyan-rgb) / 0.2), transparent);
+}
+
+.cyber-separator-dots-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgb(var(--cyber-cyan-rgb) / 0.35);
+  flex-shrink: 0;
+}
+
+.cyber-separator-dots-dot:nth-child(2) {
+  width: 5px;
+  height: 5px;
+  background: rgb(var(--cyber-cyan-rgb) / 0.5);
+  box-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.2);
+}
+
+/* ─── 4. Cyber Pulse Ring — expanding ring for location markers ─── */
+@keyframes pulse-ring-expand {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.8;
+    border-width: 2px;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+    border-width: 1px;
+  }
+}
+
+.cyber-pulse-ring {
+  position: relative;
+}
+
+.cyber-pulse-ring::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid rgb(var(--cyber-cyan-rgb) / 0.5);
+  animation: pulse-ring-expand 2s ease-out infinite;
+  pointer-events: none;
+}
+
+/* ─── 5. Cyber Scan Beam — vertical scan line sweeping horizontally ─── */
+@keyframes scan-beam-sweep {
+  0% { left: -2px; }
+  100% { left: calc(100% + 2px); }
+}
+
+.cyber-scan-beam {
+  position: relative;
+  overflow: hidden;
+}
+
+.cyber-scan-beam::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgb(var(--cyber-cyan-rgb) / 0.15) 20%,
+    rgb(var(--cyber-cyan-rgb) / 0.5) 50%,
+    rgb(var(--cyber-cyan-rgb) / 0.15) 80%,
+    transparent 100%
+  );
+  box-shadow: 0 0 12px rgb(var(--cyber-cyan-rgb) / 0.15);
+  animation: scan-beam-sweep 4s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* ─── 6. Cyber Morph — smooth border-radius morphing (circle → squircle) ─── */
+@keyframes cyber-morph-shape {
+  0%, 100% { border-radius: 50%; }
+  25% { border-radius: 36% 64% 63% 37% / 41% 44% 56% 59%; }
+  50% { border-radius: 50% 20% 50% 20% / 20% 50% 20% 50%; }
+  75% { border-radius: 30% 70% 40% 60% / 50% 30% 70% 50%; }
+}
+
+.cyber-morph {
+  animation: cyber-morph-shape 8s ease-in-out infinite;
+}
+
+/* ─── 7. Text Typing Cursor — blinking cursor after text ─── */
+@keyframes typing-cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.text-typing-cursor {
+  position: relative;
+  display: inline;
+}
+
+.text-typing-cursor::after {
+  content: '▌';
+  color: rgb(var(--cyber-cyan-rgb) / 0.7);
+  font-weight: 300;
+  animation: typing-cursor-blink 1s step-end infinite;
+  margin-left: 1px;
+}
+
+/* ─── 8. Cyber Underline Animated — underline draws in from left on hover ─── */
+.cyber-underline-animated {
+  position: relative;
+  display: inline-block;
+}
+
+.cyber-underline-animated::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: linear-gradient(90deg, rgb(var(--cyber-cyan-rgb) / 0.6), rgb(var(--cyber-cyan-rgb) / 0.2));
+  box-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.15);
+  transition: width 0.3s ease;
+}
+
+.cyber-underline-animated:hover::after {
+  width: 100%;
+}

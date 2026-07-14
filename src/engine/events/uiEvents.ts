@@ -27,4 +27,10 @@ export interface UiEvents {
     actual: number;
     passed: boolean;
   };
+  /** Data terminal hacking mini-game — shown by DataTerminalOverlay. */
+  'ui:data_terminal': {
+    difficulty: 'easy' | 'medium' | 'hard';
+    title: string;
+    reward?: string;
+  };
 }

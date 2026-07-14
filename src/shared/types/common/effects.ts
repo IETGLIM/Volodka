@@ -19,7 +19,8 @@ export type StoryEffectType =
   | 'combat'
   | 'transitionScene'
   | 'visitStoryNode'
-  | 'showThought';
+  | 'showThought'
+  | 'openDataTerminal';
 
 export interface StoryEffect {
   type: StoryEffectType;
@@ -45,6 +46,12 @@ export interface StoryEffect {
   thought?: string;
   /** Custom duration in ms for showThought effect (default 4000) */
   thoughtDuration?: number;
+  /** Terminal difficulty for openDataTerminal effect */
+  terminalDifficulty?: 'easy' | 'medium' | 'hard';
+  /** Terminal title for openDataTerminal effect */
+  terminalTitle?: string;
+  /** Terminal reward description for openDataTerminal effect */
+  terminalReward?: string;
 }
 
 /** Side effects emitted by execute() functions that should be applied to the

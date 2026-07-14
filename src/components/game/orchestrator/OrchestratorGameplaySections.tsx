@@ -79,6 +79,8 @@ import {
 import { OrchestratorMinigameOverlays } from './OrchestratorMinigameOverlays';
 import { DiegeticDialogueHud } from '@/components/game/diegetic/DiegeticDialogueHud';
 import { InnerMonologueOverlay } from '@/components/game/InnerMonologueOverlay';
+import { DataTerminalOverlay } from '@/components/game/DataTerminalOverlay';
+import { LevelUpNotification } from '@/components/game/LevelUpNotification';
 import { EncounterBeatOverlay } from '../EncounterBeatOverlay';
 import { QuickInventoryBar } from '@/components/hud/QuickInventoryBar';
 import { OrchestratorStatsPanel } from './OrchestratorPanelSlots';
@@ -171,6 +173,7 @@ export const GameplayEventNotifications = memo(function GameplayEventNotificatio
           <AchievementNotification />
         </>
       )}
+      <DataTerminalOverlay />
     </>
   );
 });
@@ -281,6 +284,7 @@ export const GameplaySharedEffects = memo(function GameplaySharedEffects() {
   return (
     <>
       <GameplayLevelUpEffects />
+      <LevelUpNotification />
       <GameplayEventNotifications />
       <GameplayCombatVisualFx />
       <GameplayScreenEffectsLayer />

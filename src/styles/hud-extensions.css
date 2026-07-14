@@ -725,3 +725,106 @@
   color: rgb(var(--cyber-cyan-rgb) / 0.5);
   text-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.3);
 }
+
+/* ══════════════════════════════════════════════════════════════
+   Round 9: HUD Extension Utility Additions
+   ══════════════════════════════════════════════════════════════ */
+
+/* ─── 1. HUD Minimap Ping — ripple/ping effect for minimap markers ─── */
+@keyframes minimap-ping-ripple {
+  0% {
+    transform: scale(0.5);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(2.5);
+    opacity: 0;
+  }
+}
+
+.hud-minimap-ping {
+  position: relative;
+}
+
+.hud-minimap-ping::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1.5px solid rgb(var(--cyber-cyan-rgb) / 0.6);
+  animation: minimap-ping-ripple 1.5s ease-out infinite;
+  pointer-events: none;
+}
+
+/* Second ripple delayed for layered effect */
+.hud-minimap-ping::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.3);
+  animation: minimap-ping-ripple 1.5s ease-out infinite;
+  animation-delay: 0.5s;
+  pointer-events: none;
+}
+
+/* ─── 2. HUD Compass Tick — tick marks for compass directions ─── */
+.hud-compass-tick {
+  position: absolute;
+  width: 1px;
+  background: rgb(var(--cyber-cyan-rgb) / 0.25);
+  transform-origin: bottom center;
+}
+
+.hud-compass-tick-major {
+  height: 10px;
+  background: rgb(var(--cyber-cyan-rgb) / 0.5);
+  width: 1.5px;
+}
+
+.hud-compass-tick-minor {
+  height: 5px;
+  background: rgb(var(--cyber-cyan-rgb) / 0.15);
+}
+
+/* ─── 3. Quest Reward Icon — reward display in quest cards ─── */
+.quest-reward-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.12);
+  background: rgba(0, 6, 12, 0.5);
+  font-size: 10px;
+  font-family: 'Courier New', monospace;
+  color: rgb(var(--cyber-cyan-rgb) / 0.7);
+  transition: all 0.2s ease;
+}
+
+.quest-reward-icon:hover {
+  border-color: rgb(var(--cyber-cyan-rgb) / 0.35);
+  box-shadow: 0 0 10px rgb(var(--cyber-cyan-rgb) / 0.1);
+  background: rgb(var(--cyber-cyan-rgb) / 0.06);
+}
+
+.quest-reward-icon .reward-icon-glyph {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+/* ─── 4. HUD Transition Slide Up — slide-up enter animation for panels ─── */
+@keyframes hud-slide-up-enter {
+  0% {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.hud-transition-slide-up {
+  animation: hud-slide-up-enter 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
