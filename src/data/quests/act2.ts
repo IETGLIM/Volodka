@@ -97,13 +97,12 @@ export const QUESTS_ACT2: QuestDefinition[] = [
         target: 'dmitry_defected',
         completed: false,
       },
-      {
-        id: 'betray_dmitry_alt',
-        description: 'Передать Дмитрия гильдии (альтернативная ветка)',
-        type: 'flag_set',
-        target: 'dmitry_betrayed',
-        completed: false,
-      },
+      // NOTE: The betrayal path (dmitry_betrayed) is handled through a
+      // separate story branch in act2_dmitry_office_meeting dialogue, not
+      // as a quest objective. Setting dmitry_betrayed will redirect the
+      // quest via story conditions. Previously both escort_dmitry and
+      // betray_dmitry_alt were objectives, which was broken — you can't
+      // require completing mutually exclusive objectives in the same quest.
     ],
     rewards: [
       { type: 'addSkill', skill: 'persuasion', value: 3 },
@@ -306,6 +305,7 @@ export const QUESTS_ACT2: QuestDefinition[] = [
       { type: 'addXp', value: 80 },
       { type: 'addKarma', value: 4 },
       { type: 'addSkill', skill: 'empathy', value: 1 },
+      { type: 'setFlag', flag: 'basement_key_found', flagValue: true },
     ],
     questGiverNpcId: 'fisherman_trofim',
   },

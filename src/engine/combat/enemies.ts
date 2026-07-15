@@ -311,6 +311,103 @@ const FIREWALL_SPECIALS: EnemySpecialAttack[] = [
   },
 ];
 
+/** Страж Нексуса — focusses on system control and lockdown */
+const NEXUS_GUARDIAN_SPECIALS: EnemySpecialAttack[] = [
+  {
+    id: 'nexus_system_capture',
+    name: 'Системный Захват',
+    description: 'Блокирует спецприёмы игрока на 2 хода',
+    chance: 0.35,
+    cooldown: 4,
+    execute: (state, enemy) => {
+      const buff = createBuff(state, 'Системный Захват', 'nexus_system_capture', 'debuff', 'player', 2, { type: 'silence_specials' });
+      const s = addBuff(state, buff);
+      const effectiveAttack = enemy.attack + getEnemyAttackBoost(s);
+      const rolled = rollEnemyDamage(s, { attack: effectiveAttack, multiplier: 0.8 });
+      let damage = rolled.damage;
+      const nextState = rolled.state;
+      const playerDmgReduction = getPlayerDamageReduction(nextState);
+      if (playerDmgReduction > 0) damage = scaleDamageByFraction(damage, playerDmgReduction, 'reduction');
+      const newPlayerHp = Math.max(0, nextState.playerHp - damage);
+      return {
+        ...nextState,
+        playerHp: newPlayerHp,
+        log: [...nextState.log, { turn: state.turn, text: `${enemy.emoji} Системный Захват! Спецприёмы заблокированы на 2 хода, -${damage} HP!`, type: 'enemy_special' as const, damage }],
+      };
+    },
+  },
+  {
+    id: 'nexus_process_cancel',
+    name: 'Отмена Процесса',
+    description: 'Снижает все навыки игрока и усиливает свою атаку',
+    chance: 0.25,
+    cooldown: 5,
+    execute: (state, enemy) => {
+      const buff1 = createBuff(state, 'Отмена Процесса: подавление', 'nexus_cancel_drain', 'debuff', 'player', 3, { type: 'stat_drain', stat: 'logic', value: 4 });
+      let s = addBuff(state, buff1);
+      const buff2 = createBuff(s, 'Отмена Процесса: ярость', 'nexus_cancel_atk', 'buff', 'enemy', 3, { type: 'attack_boost', value: 8 });
+      s = addBuff(s, buff2);
+      return {
+        ...s,
+        _sideEffects: [{ type: 'addStress', value: 10 } as SideEffect],
+        log: [...s.log, { turn: state.turn, text: `${enemy.emoji} Отмена Процесса! Логика -4, атака врага +8 на 3 хода, +10 стресса!`, type: 'enemy_special' as const }],
+      };
+    },
+  },
+];
+
+/** Эхо Пустоты — focusses on speed, evasion, and empathy manipulation */
+const VOID_ECHO_SPECIALS: EnemySpecialAttack[] = [
+  {
+    id: 'void_absorption',
+    name: 'Поглощение Пустоты',
+    description: 'Вытягивает карму и восстанавливает HP',
+    chance: 0.35,
+    cooldown: 3,
+    execute: (state, enemy) => {
+      const buff = createBuff(state, 'Поглощение Пустоты', 'void_absorption', 'debuff', 'player', 2, { type: 'stat_drain', stat: 'karma', value: 4 });
+      const s = addBuff(state, buff);
+      const healAmount = Math.min(15, enemy.maxHp - enemy.hp);
+      return {
+        ...s,
+        enemy: { ...s.enemy, hp: s.enemy.hp + healAmount },
+        _sideEffects: [{ type: 'addStress', value: 6 } as SideEffect],
+        log: [...s.log, { turn: state.turn, text: `${enemy.emoji} Поглощение Пустоты! Карма -4 на 2 хода, враг восстанавливает ${healAmount} HP!`, type: 'enemy_special' as const }],
+      };
+    },
+  },
+  {
+    id: 'void_resonance',
+    name: 'Резонанс',
+    description: 'Мощный удар с шансом оглушения',
+    chance: 0.3,
+    cooldown: 4,
+    execute: (state, enemy) => {
+      const effectiveAttack = enemy.attack + getEnemyAttackBoost(state);
+      const rolled = rollEnemyDamage(state, { attack: effectiveAttack, multiplier: 1.5 });
+      let damage = rolled.damage;
+      const nextState = rolled.state;
+      const playerDmgReduction = getPlayerDamageReduction(nextState);
+      if (playerDmgReduction > 0) damage = scaleDamageByFraction(damage, playerDmgReduction, 'reduction');
+      const playerVulnerability = getPlayerVulnerability(nextState);
+      if (playerVulnerability > 0) damage = scaleDamageByFraction(damage, playerVulnerability, 'vulnerability');
+      const newPlayerHp = Math.max(0, nextState.playerHp - damage);
+      // 30% chance to skip player's next turn (stun) — deterministic from turn + combo count
+      const stunRoll = (state.turn * 7 + state.comboCount * 13) % 10;
+      let s = { ...nextState, playerHp: newPlayerHp } as typeof nextState;
+      if (stunRoll < 3) {
+        const stunBuff = createBuff(s, 'Резонанс: оглушение', 'void_resonance_stun', 'debuff', 'player', 1, { type: 'skip_turn' });
+        s = addBuff(s, stunBuff);
+      }
+      const stunText = stunRoll < 3 ? ' Вы оглушены — пропускаете ход!' : '';
+      return {
+        ...s,
+        log: [...s.log, { turn: state.turn, text: `${enemy.emoji} Резонанс! Удар пустоты: -${damage} HP!${stunText}`, type: 'enemy_special' as const, damage }],
+      };
+    },
+  },
+];
+
 /* ═══════════════════════════════════════════════════════════════
    Enemy Templates
    ═══════════════════════════════════════════════════════════════ */
@@ -446,7 +543,7 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
     baseDefense: 8,
     baseSpeed: 4,
     targetsStat: 'empathy',
-    lootTable: ['corporate_badge', 'access_card', 'herbal_tea'],
+    lootTable: ['corporate_badge', 'guild_access_badge', 'herbal_tea'],
     xpReward: 45,
     specialAttacks: [
       {
@@ -667,13 +764,13 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
       {
         id: 'hunter_verse_steal',
         name: 'Кража Стиха',
-        description: 'Крадёт силу стихов — снижает навык письма на 3',
+        description: 'Крадёт силу стихов — снижает навык письма и карму',
         chance: 0.3,
         cooldown: 3,
         execute: (state, enemy) => {
-          const buff = createBuff(state, 'Кража Стиха', 'hunter_verse_steal', 'debuff', 'player', 2, { type: 'stat_drain', stat: 'logic', value: 3 });
+          const buff = createBuff(state, 'Кража Стиха', 'hunter_verse_steal', 'debuff', 'player', 2, { type: 'stat_drain', stat: 'karma', value: 3 });
           const s = addBuff(state, buff);
-          return { ...s, _sideEffects: [{ type: 'addSkill', skill: 'writing', value: -2 } as SideEffect], log: [...s.log, { turn: state.turn, text: `${enemy.emoji} Кража Стиха! Ваше писательство ослаблено!`, type: 'enemy_special' as const }] };
+          return { ...s, _sideEffects: [{ type: 'addSkill', skill: 'writing', value: -2 } as SideEffect], log: [...s.log, { turn: state.turn, text: `${enemy.emoji} Кража Стиха! Ваше писательство ослаблено, карма -3 на 2 хода!`, type: 'enemy_special' as const }] };
         },
       },
       {
@@ -721,7 +818,7 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
     targetsStat: 'logic',
     lootTable: ['data_chip', 'nadzor_key_fragment', 'energy_drink'],
     xpReward: 60,
-    specialAttacks: [],
+    specialAttacks: NEXUS_GUARDIAN_SPECIALS,
     attackBarks: [
       'Надзор видит всё. Сопротивление бессмысленно.',
       'Вы — аномалия. Подлежите устранению.',
@@ -743,7 +840,7 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
     targetsStat: 'empathy',
     lootTable: ['shadow_cloak', 'code_fragment', 'nano_patch'],
     xpReward: 55,
-    specialAttacks: [],
+    specialAttacks: VOID_ECHO_SPECIALS,
     attackBarks: [
       'Пустота... отражает... ваш страх...',
       'Вас не существует. Вы — эхо.',
@@ -808,7 +905,7 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
     baseDefense: 15,
     baseSpeed: 2,
     targetsStat: 'logic',
-    lootTable: ['data_chip', 'access_card', 'combat_stim'],
+    lootTable: ['data_chip', 'guild_access_badge', 'combat_stim'],
     xpReward: 50,
     specialAttacks: FIREWALL_SPECIALS,
     attackBarks: [
