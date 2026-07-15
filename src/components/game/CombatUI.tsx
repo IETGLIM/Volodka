@@ -1117,7 +1117,7 @@ export function CombatUI() {
           <div aria-live={isActive ? 'off' : 'polite'} aria-label="Combat log" className="max-h-28 overflow-y-auto bg-black/70 border border-slate-800/30 rounded-lg p-2 font-mono"
             style={{ scrollbarWidth: 'thin', scrollbarColor: '#334155 transparent' }}>
             {combatState.log.map((entry: CombatLogEntry, i: number) => (
-              <CombatLogLine key={`${i}-T${entry.turn}-${entry.type}`} entry={entry} className="typing-cursor" />
+              <CombatLogLine key={`log-${i}-${entry.turn}-${entry.type}-${entry.text.slice(0, 20)}`} entry={entry} className="typing-cursor" />
             ))}
             <div ref={logEndRef} />
           </div>

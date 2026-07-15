@@ -60,7 +60,7 @@ export function addBuff(state: CombatState, buff: CombatBuff): CombatState {
   const existing = state.buffs.find((b) => buffStackKey(b) === key);
   let filtered = state.buffs.filter((b) => buffStackKey(b) !== key);
   const buffToAdd: CombatBuff = existing
-    ? { ...buff, duration: Math.max(existing.duration, buff.duration) }
+    ? { ...buff, duration: buff.duration }
     : buff;
 
   // Mutual exclusion: stun_immune and skip_turn are incompatible on the same target
