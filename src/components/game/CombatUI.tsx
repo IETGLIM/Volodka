@@ -107,8 +107,8 @@ function getPoemCategoryColor(category: PoemEffectCategory): string {
 }
 
 /* ── Animated Health Bar with gradient & glow ── */
-function AnimatedHPBar({ current, max, label, isPlayer }: {
-  current: number; max: number; label: string; isPlayer: boolean;
+function AnimatedHPBar({ current, max, label, isPlayer, ariaLabel }: {
+  current: number; max: number; label: string; isPlayer: boolean; ariaLabel?: string;
 }) {
   const pct = max > 0 ? Math.max(0, (current / max) * 100) : 0;
   const color = isPlayer
@@ -125,7 +125,14 @@ function AnimatedHPBar({ current, max, label, isPlayer }: {
   return (
     <div className={`flex flex-col ${isPlayer ? 'items-start' : 'items-end'} w-full`}>
       <div className="text-[10px] text-slate-400 mb-0.5 font-mono uppercase tracking-wider">{label}</div>
-      <div className="w-full h-3.5 bg-black/80 border border-slate-700/40 rounded-sm overflow-hidden relative">
+      <div
+        role="progressbar"
+        aria-valuenow={Math.max(0, current)}
+        aria-valuemin={0}
+        aria-valuemax={max}
+        aria-label={ariaLabel || (isPlayer ? 'Здоровье игрока' : 'Здоровье противника')}
+        className="w-full h-3.5 bg-black/80 border border-slate-700/40 rounded-sm overflow-hidden relative"
+      >
         <motion.div
           className={`h-full bg-gradient-to-r ${color} ${glowColor} shadow-sm rounded-sm`}
           style={{ boxShadow: `0 0 8px ${isPlayer ? (pct > 60 ? '#10b981' : pct > 30 ? '#f59e0b' : '#ef4444') : (pct > 60 ? '#ef4444' : pct > 30 ? '#f97316' : '#eab308')}40` }}
@@ -847,6 +854,9 @@ export function CombatUI() {
   return (
     <TooltipProvider delayDuration={200}>
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Бой"
         className={`fixed inset-0 flex flex-col pointer-events-none ${screenShake ? 'combat-shake' : ''} ${isActive ? 'combat-vignette-active' : ''}`}
         style={{ zIndex: UI_LAYERS.COMBAT }}
       >
@@ -1066,7 +1076,7 @@ export function CombatUI() {
           )}
 
           {/* Combat Log — terminal output with enhanced formatting */}
-          <div aria-live="polite" aria-label="Combat log" className="max-h-28 overflow-y-auto bg-black/70 border border-slate-800/30 rounded-lg p-2 font-mono"
+          <div aria-live={isActive ? 'off' : 'polite'} aria-label="Combat log" className="max-h-28 overflow-y-auto bg-black/70 border border-slate-800/30 rounded-lg p-2 font-mono"
             style={{ scrollbarWidth: 'thin', scrollbarColor: '#334155 transparent' }}>
             {combatState.log.map((entry: CombatLogEntry, i: number) => (
               <CombatLogLine key={`${i}-T${entry.turn}-${entry.type}`} entry={entry} className="typing-cursor" />

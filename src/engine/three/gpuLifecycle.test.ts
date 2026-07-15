@@ -166,12 +166,18 @@ describe('sceneGpuLifecycle', () => {
       vi.spyOn(THREE.Cache, 'remove').mockImplementation(() => {});
     });
 
-    it('evicts prop GLBs for the scene being left', () => {
+    it('evicts GLTF assets, prop GLBs, and NPC GLBs for the scene being left', () => {
       evictSceneGpuCache('volodka_room');
 
-      expect(useGLTF.clear).toHaveBeenCalledWith('/models/props/desk.glb');
-      expect(useGLTF.clear).toHaveBeenCalledWith('/models/props/bed.glb');
-      expect(THREE.Cache.remove).toHaveBeenCalledWith('/models/props/desk.glb');
+      // player_volodka GLTF asset (multiple LOD/variant URLs)
+      expect(useGLTF.clear).toHaveBeenCalledWith('/models/characters/volodka/volodka_lod0.glb');
+      expect(THREE.Cache.remove).toHaveBeenCalledWith('/models/characters/volodka/volodka_lod0.glb');
+      // ai3dgen deferred props shipped in volodka_room
+      expect(useGLTF.clear).toHaveBeenCalledWith('/models/props/poetic_compiler.glb');
+      expect(useGLTF.clear).toHaveBeenCalledWith('/models/props/neural_filter.glb');
+      expect(useGLTF.clear).toHaveBeenCalledWith('/models/props/digital_amulet.glb');
+      // viktor is scheduled in volodka_room and has a shipped CC0 GLB
+      expect(useGLTF.clear).toHaveBeenCalledWith('/models/npcs/viktor.glb');
     });
 
     it('evicts NPC GLBs for the scene being left', () => {
@@ -190,10 +196,14 @@ describe('sceneGpuLifecycle', () => {
     });
 
     it('keeps prop GLBs shared between from and keep scenes', () => {
-      evictSceneGpuCache('volodka_room', 'office_day');
+      // office_day and library_day share kenney_desk, kenney_bookshelf, kenney_city_chair
+      evictSceneGpuCache('office_day', 'library_day');
 
+      // shared props are NOT evicted
       expect(useGLTF.clear).not.toHaveBeenCalledWith('/models/props/desk.glb');
-      expect(useGLTF.clear).toHaveBeenCalledWith('/models/props/bed.glb');
+      expect(useGLTF.clear).not.toHaveBeenCalledWith('/models/props/bookshelf.glb');
+      // office-only props ARE evicted
+      expect(useGLTF.clear).toHaveBeenCalledWith('/models/props/terminal.glb');
     });
   });
 });

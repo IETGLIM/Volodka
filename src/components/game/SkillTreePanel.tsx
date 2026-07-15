@@ -212,6 +212,7 @@ function SkillNode({
   skillPoints: number;
 }) {
   const [hovered, setHovered] = useState(false);
+  const tooltipId = `skill-tooltip-${node.id}`;
   const icon = NODE_ICONS[node.id] || '⬡';
   const isUltimate = node.tier === 5;
 
@@ -261,6 +262,9 @@ function SkillNode({
       <button
         onClick={() => canAfford && onUnlock(node.id)}
         disabled={state === 'locked' || state === 'unlocked'}
+        onFocus={() => setHovered(true)}
+        onBlur={() => setHovered(false)}
+        aria-describedby={hovered ? tooltipId : undefined}
         className={`
           ${size} relative flex items-center justify-center
           transition-all duration-300 group
@@ -344,6 +348,8 @@ function SkillNode({
       <AnimatePresence>
         {hovered && (
           <motion.div
+            id={tooltipId}
+            role="tooltip"
             initial={{ opacity: 0, y: 5, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 5, scale: 0.95 }}

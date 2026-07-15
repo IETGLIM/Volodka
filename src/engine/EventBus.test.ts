@@ -32,12 +32,22 @@ describe('EventBusClass lifecycle', () => {
     expect(handler).toHaveBeenCalledTimes(2);
   });
 
-  it('throws when subscribing on a disposed bus without revive', () => {
+  it('auto-revives when subscribing on a disposed bus', () => {
     const bus = createEventBus();
     bus.dispose();
 
-    expect(() => bus.on('sound:play', vi.fn())).toThrow(/disposed bus/i);
-    expect(() => bus.onAny(vi.fn())).toThrow(/disposed bus/i);
+    // Auto-revive: subscribing on a disposed bus clears the disposed flag
+    // instead of throwing, so React StrictMode remount races are safe.
+    const handler = vi.fn();
+    const anyHandler = vi.fn();
+    expect(() => bus.on('sound:play', handler)).not.toThrow();
+    expect(() => bus.onAny(anyHandler)).not.toThrow();
+
+    // Bus should be functional again after auto-revive
+    bus.emit('sound:play', { type: 'item_use' });
+    expect(handler).toHaveBeenCalledTimes(1);
+    expect(anyHandler).toHaveBeenCalledTimes(1);
+    expect(bus.isDisposed()).toBe(false);
   });
 
   it('revive is idempotent', () => {
