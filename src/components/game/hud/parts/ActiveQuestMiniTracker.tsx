@@ -286,6 +286,23 @@ export function ActiveQuestMiniTracker() {
                   </span>
                 </div>
 
+                {/* Progressive reveal total progress summary */}
+                {questDef.progressiveRevealCount && (() => {
+                  const totalObjs = questDef.objectives.length;
+                  const completedObjs = questDef.objectives.filter((o) => displayQuest.objectives[o.id]).length;
+                  const poemWord = completedObjs === 1 ? 'стихотворение'
+                    : completedObjs >= 2 && completedObjs <= 4 ? 'стихотворения'
+                    : 'стихотворений';
+                  return (
+                    <div className="flex items-center gap-1.5 px-1 py-0.5 rounded" style={{ background: 'rgba(0,255,238,0.06)', border: '1px solid rgba(0,255,238,0.1)' }}>
+                      <BookOpen className="size-2.5 text-cyan-400/60 shrink-0" />
+                      <span className="text-[9px] font-mono text-cyan-300/70">
+                        Собрано {poemWord}: {completedObjs} из {totalObjs}
+                      </span>
+                    </div>
+                  );
+                })()}
+
                 {/* All objectives */}
                 <div className="space-y-1 max-h-32 overflow-y-auto" style={{ scrollbarWidth: 'thin', scrollbarColor: '#00ffee22 transparent' }}>
                   {questDef.objectives.map((obj) => {

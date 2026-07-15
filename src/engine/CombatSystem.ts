@@ -706,15 +706,22 @@ function transitionToPlayerTurn(state: CombatState): void {
   for (const buff of afterBuffTick.buffs) {
     if (buff.target === 'player' && buff.effect.type === 'stat_drain') {
       const eff = buff.effect as { type: 'stat_drain'; stat: 'logic' | 'energy' | 'karma'; value: number };
+      const snap = getGameSnapshot();
       if (eff.stat === 'energy') {
-        dispatchGameAction({ type: 'player/addEnergy', amount: -eff.value });
-        drainLog.push({ turn: afterBuffTick.turn, text: `💀 ${buff.name}: Энергия -${eff.value}`, type: 'info' });
+        const current = snap.playerState.energy ?? 0;
+        const drainAmount = Math.min(eff.value, current);
+        dispatchGameAction({ type: 'player/addEnergy', amount: -drainAmount });
+        drainLog.push({ turn: afterBuffTick.turn, text: `💀 ${buff.name}: Энергия -${drainAmount}`, type: 'info' });
       } else if (eff.stat === 'karma') {
-        dispatchGameAction({ type: 'player/addKarma', amount: -eff.value });
-        drainLog.push({ turn: afterBuffTick.turn, text: `💀 ${buff.name}: Карма -${eff.value}`, type: 'info' });
+        const current = snap.playerState.karma ?? 0;
+        const drainAmount = Math.min(eff.value, current);
+        dispatchGameAction({ type: 'player/addKarma', amount: -drainAmount });
+        drainLog.push({ turn: afterBuffTick.turn, text: `💀 ${buff.name}: Карма -${drainAmount}`, type: 'info' });
       } else if (eff.stat === 'logic') {
-        dispatchGameAction({ type: 'player/addSkill', skill: 'logic', amount: -eff.value });
-        drainLog.push({ turn: afterBuffTick.turn, text: `💀 ${buff.name}: Логика -${eff.value}`, type: 'info' });
+        const currentLogic = snap.playerState.skills.logic;
+        const drainAmount = Math.min(eff.value, currentLogic);
+        dispatchGameAction({ type: 'player/addSkill', skill: 'logic', amount: -drainAmount });
+        drainLog.push({ turn: afterBuffTick.turn, text: `💀 ${buff.name}: Логика -${drainAmount}`, type: 'info' });
       }
     }
     /* ── Enhanced: Process hp_drain_percent (Цифровая лихорадка) ── */

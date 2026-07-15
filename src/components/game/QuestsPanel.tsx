@@ -560,6 +560,25 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                                     );
                                   })()}
 
+                                  {/* Progressive reveal total progress summary */}
+                                  {def.progressiveRevealCount && (() => {
+                                    const totalObjs = def.objectives.length;
+                                    const completedObjs = def.objectives.filter((o) => qs.objectives[o.id]).length;
+                                    // Choose appropriate Russian word form for "стихотворение"
+                                    const poemWord = completedObjs === 1 ? 'стихотворение'
+                                      : completedObjs >= 2 && completedObjs <= 4 ? 'стихотворения'
+                                      : 'стихотворений';
+                                    return (
+                                      <div className="flex items-center gap-2 mb-2 px-1 py-1 rounded"
+                                        style={{ background: 'rgba(0, 255, 238, 0.06)', border: '1px solid rgba(0, 255, 238, 0.12)' }}>
+                                        <BookOpen className="size-3 text-cyan-400/60 shrink-0" />
+                                        <span className="text-[10px] font-mono text-cyan-300/80">
+                                          Собрано {poemWord}: {completedObjs} из {totalObjs}
+                                        </span>
+                                      </div>
+                                    );
+                                  })()}
+
                                   {/* Objectives */}
                                   <div className="flex flex-col gap-1.5 mb-3">
                                     {def.objectives

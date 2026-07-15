@@ -579,7 +579,7 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
           if (playerDmgReduction > 0) damage = scaleDamageByFraction(damage, playerDmgReduction, 'reduction');
           const playerVulnerability = getPlayerVulnerability(state);
           if (playerVulnerability > 0) damage = scaleDamageByFraction(damage, playerVulnerability, 'vulnerability');
-          const newPlayerHp = Math.max(1, state.playerHp - damage);
+          const newPlayerHp = Math.max(0, state.playerHp - damage);
           return { ...state, playerHp: newPlayerHp, log: [...state.log, { turn: state.turn, text: `${enemy.emoji} Аудит Совести! Ваши добрые дела обращаются против вас: -${damage} HP!`, type: 'enemy_special' as const, damage }] };
         },
       },
