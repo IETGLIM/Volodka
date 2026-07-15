@@ -36,6 +36,11 @@ export const LORE_SCENE_MAP: Partial<Record<SceneId, string[]>> = {
     'lore_ai_surveillance',    // Surveillance discovered on the street
     'lore_winter_phenomena',   // Winter phenomena discovered outside
   ],
+  street_winter: [
+    'lore_winter_phenomena',   // Winter phenomena on the frozen street
+    'lore_city_ufa',           // City overview — winter perspective
+    'lore_ai_surveillance',    // Surveillance still active in winter
+  ],
   cafe_evening: [
     'lore_cafe_blue_hole',     // Cafe lore discovered by visiting
     'lore_cafe_history',       // Cafe history from spending time there

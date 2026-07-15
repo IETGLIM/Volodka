@@ -502,18 +502,23 @@ function amplifyPoemCombatResult(prev: CombatState, next: CombatState): CombatSt
     flags: playerState.flags,
     codingSkill: playerState.skills.coding,
   }).poemInCodeStrengthMultiplier;
-  if (mult <= 1) return next;
+  // Also apply damage_multiplier buff (poem_6 Слово Мощь) to poem damage
+  const dmgMult = getPlayerDamageMultiplier(next);
 
   const result = { ...next, enemy: { ...next.enemy } };
   const playerHeal = next.playerHp - prev.playerHp;
-  if (playerHeal > 0) {
+  if (playerHeal > 0 && mult > 1) {
     const bonus = Math.round(playerHeal * (mult - 1));
     result.playerHp = Math.min(next.playerMaxHp, next.playerHp + bonus);
   }
   const enemyDamage = prev.enemy.hp - next.enemy.hp;
   if (enemyDamage > 0) {
-    const bonus = Math.round(enemyDamage * (mult - 1));
-    result.enemy.hp = Math.max(0, result.enemy.hp - bonus);
+    // Apply both passive skill multiplier and damage_multiplier buff
+    const totalMult = mult * dmgMult;
+    if (totalMult > 1) {
+      const bonus = Math.round(enemyDamage * (totalMult - 1));
+      result.enemy.hp = Math.max(0, result.enemy.hp - bonus);
+    }
   }
   return result;
 }
@@ -757,12 +762,16 @@ function transitionToPlayerTurn(state: CombatState): void {
     const remaining = workingState.buffs.filter(
       (b) => !(b.target === 'player' && b.effect.type === 'skip_turn'),
     );
+    // Apply stun immunity for 1 turn so the player cannot be stun-locked
+    // (mirrors the enemy stun_immune logic in executeEnemyTurn)
+    const immuneBuff = createBuff(workingState, 'Иммунитет к оглушению', 'stun_recovery_player', 'buff', 'player', 1, { type: 'stun_immune' });
+    const withImmune = addBuff({ ...workingState, buffs: remaining }, immuneBuff);
     workingState = {
-      ...workingState,
-      buffs: remaining,
+      ...withImmune,
       log: [
-        ...workingState.log,
+        ...withImmune.log,
         { turn: workingState.turn, text: '😵 Вы оглушены и пропускаете ход!', type: 'info' },
+        { turn: workingState.turn, text: '🛡️ Вы получаете иммунитет к оглушению на 1 ход.', type: 'info' },
       ] };
 
     // Set state and auto-skip after a brief delay for visual feedback
@@ -938,6 +947,11 @@ function executeEnemyTurn() {
     if (attackRng.roll(0.3)) {
       dispatchGameAction({ type: 'player/addKarma', amount: -3 });
       statEffectText = ' Карма -3!';
+    }
+  } else if (targetedStat === 'empathy') {
+    if (attackRng.roll(0.3)) {
+      dispatchGameAction({ type: 'player/addSkill', skill: 'empathy', amount: -1 });
+      statEffectText = ' Эмпатия -1!';
     }
   }
 

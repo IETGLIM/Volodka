@@ -225,7 +225,9 @@ const RAW_POEM_COMBAT_ABILITIES: Record<string, PoemCombatAbility> = {
     execute: (state) => {
       const rawDamage = Math.min(Math.floor(state.enemy.maxHp * 0.25), Math.floor(getPlayerAttack() * 3));
       const reduction = getEnemyDefenseReduction(state);
-      const drainAmount = Math.floor(rawDamage * (1 - reduction));
+      const baseDamage = Math.floor(rawDamage * (1 - reduction));
+      const comboMult = getComboDamageMultiplier(state.comboCount + 1);
+      const drainAmount = Math.floor(baseDamage * comboMult);
       const newEnemyHp = Math.max(0, state.enemy.hp - drainAmount);
       return {
         ...state,
@@ -307,7 +309,12 @@ const RAW_POEM_COMBAT_ABILITIES: Record<string, PoemCombatAbility> = {
     description: 'Враг теряет ход и получает 20% урона от замешательства.',
     cooldown: 3,
     execute: (state) => {
-      const confusionDmg = Math.floor(state.enemy.maxHp * 0.2);
+      // Cap % damage like poem_11/17 to prevent degenerate true-damage strategy
+      const rawDamage = Math.min(Math.floor(state.enemy.maxHp * 0.2), Math.floor(getPlayerAttack() * 2.5));
+      const reduction = getEnemyDefenseReduction(state);
+      const baseDamage = Math.floor(rawDamage * (1 - reduction));
+      const comboMult = getComboDamageMultiplier(state.comboCount + 1);
+      const confusionDmg = Math.floor(baseDamage * comboMult);
       const newEnemyHp = Math.max(0, state.enemy.hp - confusionDmg);
       const buff = createBuff(state, 'Тихий Шёпот', 'poem_15', 'debuff', 'enemy', 1, { type: 'skip_turn' });
       const s = addBuff({ ...state, enemy: { ...state.enemy, hp: newEnemyHp } }, buff);
@@ -366,7 +373,9 @@ const RAW_POEM_COMBAT_ABILITIES: Record<string, PoemCombatAbility> = {
     execute: (state) => {
       const rawDamage = Math.min(Math.floor(state.enemy.maxHp * 0.3), Math.floor(getPlayerAttack() * 3.5));
       const reduction = getEnemyDefenseReduction(state);
-      const stealAmount = Math.floor(rawDamage * (1 - reduction));
+      const baseDamage = Math.floor(rawDamage * (1 - reduction));
+      const comboMult = getComboDamageMultiplier(state.comboCount + 1);
+      const stealAmount = Math.floor(baseDamage * comboMult);
       const newEnemyHp = Math.max(0, state.enemy.hp - stealAmount);
       const newPlayerHp = Math.min(state.playerMaxHp, state.playerHp + stealAmount);
       return {

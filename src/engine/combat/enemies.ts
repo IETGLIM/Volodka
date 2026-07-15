@@ -105,14 +105,17 @@ const GOLEM_SPECIALS: EnemySpecialAttack[] = [
     chance: 0.3,
     cooldown: 3,
     execute: (state, enemy) => {
+      // Clamp drain to current energy to avoid pushing energy below 0
+      const currentEnergy = getGameSnapshot().playerState.energy ?? 0;
+      const drain = Math.min(15, currentEnergy);
       return {
         ...state,
-        _sideEffects: [{ type: 'addEnergy', value: -15 } as SideEffect],
+        _sideEffects: [{ type: 'addEnergy', value: -drain } as SideEffect],
         log: [
           ...state.log,
           {
             turn: state.turn,
-            text: `${enemy.emoji} Списание Ресурсов! Вы теряете 15 энергии!`,
+            text: `${enemy.emoji} Списание Ресурсов! Вы теряете ${drain} энергии!`,
             type: 'enemy_special' as const,
           },
         ],
@@ -805,10 +808,12 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
         cooldown: 4,
         execute: (state, enemy) => {
           const poemCount = getGameSnapshot().collectedPoems.length;
+          // Cap poem scaling at 10 to prevent absurd damage with 20+ poems
+          const cappedPoemCount = Math.min(poemCount, 10);
           const effectiveAttack = enemy.attack + getEnemyAttackBoost(state);
           const rolled = rollEnemyDamage(state, {
             attack: effectiveAttack,
-            multiplier: COMBAT_CONSTANTS.POEM_HUNTER_DAMAGE_BASE_MULTIPLIER + poemCount * COMBAT_CONSTANTS.POEM_HUNTER_DAMAGE_PER_POEM,
+            multiplier: COMBAT_CONSTANTS.POEM_HUNTER_DAMAGE_BASE_MULTIPLIER + cappedPoemCount * COMBAT_CONSTANTS.POEM_HUNTER_DAMAGE_PER_POEM,
           });
           let damage = rolled.damage;
           const nextState = rolled.state;
