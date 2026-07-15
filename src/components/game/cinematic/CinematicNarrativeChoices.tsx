@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { ChevronRight, Zap } from 'lucide-react';
-import type { ReactNode } from 'react';
+import type { ReactNode, Ref } from 'react';
 import { buildChoiceAriaLabel } from '@/shared/utils/choiceAriaLabel';
 import type { StoryConditionResult } from '@/shared/storyConditions';
 
@@ -18,6 +18,7 @@ export interface CinematicNarrativeChoicesProps {
   accentColor: string;
   continueLabel?: string;
   onContinue?: () => void;
+  firstChoiceRef?: Ref<HTMLButtonElement>;
 }
 
 /** Centered cinematic choice list — Witcher / FF style, not bottom HUD panel. */
@@ -26,6 +27,7 @@ export function CinematicNarrativeChoices({
   accentColor,
   continueLabel = 'Продолжить',
   onContinue,
+  firstChoiceRef,
 }: CinematicNarrativeChoicesProps) {
   if (choices.length === 0 && onContinue) {
     return (
@@ -53,6 +55,7 @@ export function CinematicNarrativeChoices({
       {choices.map((choice, i) => (
         <motion.button
           key={choice.key}
+          ref={i === 0 ? firstChoiceRef : undefined}
           type="button"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}

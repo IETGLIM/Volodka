@@ -9,6 +9,7 @@ import { shouldSuppressQuestAcceptEmit } from '@/engine/quest/questAcceptDeferra
 import { registerHmrDispose } from '@/shared/dev/hmrDispose';
 import { resolveCanonicalNpcId } from '@/shared/npcIdAliases';
 import { getStoryGraphIndex, invalidateStoryGraphIndex } from '@/engine/story/storyGraphIndex';
+import { isNarrativeGameDataLoaded } from '@/data/gameDataLoader';
 import {
   createDefaultGuidedStoryDeps,
   getStoryNodeSceneId,
@@ -531,7 +532,12 @@ export function initGuidedStoryManager() {
 
 /** Re-arm after orchestrator remount (React StrictMode). Init runs via useGameLifecycleManager. */
 export function reviveGuidedStoryManager(): void {
-  // Instance is recreated lazily on next getGuidedStoryManager(); init() runs after narrative preload.
+  // If narrative data is already loaded, re-init immediately so game:loaded
+  // event subscription is restored. Otherwise init() will be called later
+  // by useGameLifecycleManager after narrative preload completes.
+  if (isNarrativeGameDataLoaded()) {
+    getGuidedStoryManager().init();
+  }
 }
 
 export function resetGuidedStoryManager() {

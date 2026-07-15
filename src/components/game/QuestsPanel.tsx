@@ -173,6 +173,7 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
   const [expandedQuests, setExpandedQuests] = useState<Set<string>>(new Set());
   const [flashingQuestId, setFlashingQuestId] = useState<string | null>(null);
   const prevOpenRef = useRef(false);
+  const flashTimeoutsRef = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
 
   /* ── Flash effect when an objective updates ── */
   const prevObjectivesRef = useRef<Record<string, Record<string, boolean>>>({});
@@ -190,7 +191,11 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
         for (const [objId, completed] of Object.entries(objectives)) {
           if (completed && prev[objId] !== completed) {
             setFlashingQuestId(questId);
-            setTimeout(() => setFlashingQuestId(null), 1200);
+            const id = setTimeout(() => {
+              flashTimeoutsRef.current.delete(id);
+              setFlashingQuestId(null);
+            }, 1200);
+            flashTimeoutsRef.current.add(id);
             break;
           }
         }
@@ -203,9 +208,24 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
   useEffect(() => {
     const unsub = eventBus.on('quest:objective_updated', ({ questId }) => {
       setFlashingQuestId(questId);
-      setTimeout(() => setFlashingQuestId(null), 1200);
+      const id = setTimeout(() => {
+        flashTimeoutsRef.current.delete(id);
+        setFlashingQuestId(null);
+      }, 1200);
+      flashTimeoutsRef.current.add(id);
     });
     return unsub;
+  }, []);
+
+  // Cleanup flash timeouts on unmount
+  useEffect(() => {
+    const timeouts = flashTimeoutsRef.current;
+    return () => {
+      for (const id of timeouts) {
+        clearTimeout(id);
+      }
+      timeouts.clear();
+    };
   }, []);
 
   const activeQuests = useActiveQuests();
@@ -716,6 +736,14 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                       );
                     })}
                   </div>
+                </div>
+              )}
+
+              {activeQuests.length === 0 && (
+                <div className="text-center py-12">
+                  <BookOpen className="size-8 text-cyan-500/30 mx-auto mb-3" />
+                  <p className="text-slate-400 text-sm">Нет активных квестов</p>
+                  <p className="text-slate-600 text-[10px] mt-1">Исследуйте мир, чтобы найти новые задания</p>
                 </div>
               )}
 

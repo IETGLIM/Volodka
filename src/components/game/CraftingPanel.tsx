@@ -162,10 +162,15 @@ export function CraftingPanel({ open, onClose }: CraftingPanelProps) {
 
     // After animation delay, actually craft
     setTimeout(() => {
-      craftItem(recipeId);
-      setCraftingAnim(null);
-      setCraftSuccess(recipeId);
-      setTimeout(() => setCraftSuccess(null), 2000);
+      try {
+        craftItem(recipeId);
+        setCraftSuccess(recipeId);
+        setTimeout(() => setCraftSuccess(null), 2000);
+      } catch {
+        setCraftSuccess(null);
+      } finally {
+        setCraftingAnim(null);
+      }
     }, recipe.craftingTime);
   }, [canCraft, craftItem]);
 

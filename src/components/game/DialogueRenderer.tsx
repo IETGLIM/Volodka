@@ -164,6 +164,18 @@ export function DialogueRenderer() {
   }, [karma, skills, flags, progression, npcRelations, timeOfDay, node, collectedPoems, activeTTLFlags, ownedItemIdsKey]);
   const { displayed, done, skip, reducedMotion } = useNarrativeTypewriter(resolvedText, 30);
 
+  // Auto-focus first choice button when typewriter completes and choices appear
+  const firstChoiceRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (done && node && node.choices.length > 0) {
+      // Small delay to allow motion animation to mount the button
+      const id = setTimeout(() => {
+        firstChoiceRef.current?.focus();
+      }, 100);
+      return () => clearTimeout(id);
+    }
+  }, [done, node]);
+
   // Apply node-level effects on mount
   const appliedRef = useRef<string | null>(null);
   useEffect(() => {
@@ -432,6 +444,7 @@ export function DialogueRenderer() {
       {done && (
         <CinematicNarrativeChoices
           accentColor={presentation.accentColor}
+          firstChoiceRef={firstChoiceRef}
           choices={node.choices.map((choice, i) => {
             const cond = checkStoryCondition(choice.condition, conditionCtx);
             const impact = getChoiceImpact(choice.effects, npcId);

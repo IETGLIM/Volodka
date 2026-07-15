@@ -202,13 +202,15 @@ export const createPlayerCoreSlice: StateCreator<
     })),
 
   restAtHome: () => {
-    const { currentSceneId, timeOfDay } = readPlayerFromExploration();
+    const { currentSceneId } = readPlayerFromExploration();
     const { advanceTime } = pickPlayerCoreCrossActions();
 
     if (currentSceneId !== 'volodka_room' && currentSceneId !== 'home_evening') return;
 
     advanceTime(8);
 
+    // Re-read timeOfDay AFTER advanceTime so perk ceiling (night_watch) uses the new time.
+    const { timeOfDay } = readPlayerFromExploration();
     // Rest fills energy to the perk-adjusted ceiling (night_watch/factory_rat).
     const unlockedPerks = get().playerState?.progression?.unlockedPerks ?? [];
     const maxBonus = resolveEnergyMaxFlatBonus(unlockedPerks, { timeOfDay });

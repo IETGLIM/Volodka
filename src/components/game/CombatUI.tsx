@@ -720,6 +720,15 @@ export function CombatUI() {
     }
   }, [combatState?.isPlayerTurn, combatState?.turn, combatState?.status, scheduleTimeout]);
 
+  // Safety timeout: auto-clear pendingAction after 10s if stuck (combat crash / missed event)
+  useEffect(() => {
+    if (!pendingAction) return;
+    const id = setTimeout(() => {
+      setPendingAction(false);
+    }, 10_000);
+    return () => clearTimeout(id);
+  }, [pendingAction]);
+
   const availablePowers = useMemo(
     () => getAvailableCombatPowers(),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps

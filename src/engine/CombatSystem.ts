@@ -143,8 +143,10 @@ class CombatManager {
   /** Schedule return to exploration/story — survives clearPendingTimers; cleared on endSession. */
   scheduleExit(delayMs: number, fn: () => void): void {
     if (this.exitTimer) clearTimeout(this.exitTimer);
+    const capturedGeneration = this.generation;
     this.exitTimer = setTimeout(() => {
       this.exitTimer = null;
+      if (capturedGeneration !== this.generation) return;
       fn();
     }, delayMs);
   }
@@ -230,6 +232,7 @@ function notifyNewCombatLogEntries(beforeLen: number): void {
 
 /** Tear down combat session timers and listener refs. Idempotent. */
 export function disposeCombatSystem(): void {
+  unsubscribeGamepadListeners();
   cancelEncounterPresentation();
   clearDeferredCombatStart();
   combat.dispose();
@@ -1175,16 +1178,22 @@ function resetGamepadPoemSelection(): void {
   gamepadSelectedPoemIndex = 0;
 }
 
-// Register gamepad event listeners on the eventBus
-eventBus.on('combat:gamepad_attack', handleGamepadAttack);
-eventBus.on('combat:gamepad_defend', handleGamepadDefend);
-eventBus.on('combat:gamepad_flee', handleGamepadFlee);
-eventBus.on('combat:gamepad_poem_cycle_prev', handleGamepadPoemCyclePrev);
-eventBus.on('combat:gamepad_poem_cycle_next', handleGamepadPoemCycleNext);
-eventBus.on('combat:gamepad_poem_use_selected', handleGamepadPoemUseSelected);
+// Register gamepad event listeners on the eventBus (unsubs stored for HMR cleanup)
+const gamepadUnsubs: Array<() => void> = [];
+gamepadUnsubs.push(eventBus.on('combat:gamepad_attack', handleGamepadAttack));
+gamepadUnsubs.push(eventBus.on('combat:gamepad_defend', handleGamepadDefend));
+gamepadUnsubs.push(eventBus.on('combat:gamepad_flee', handleGamepadFlee));
+gamepadUnsubs.push(eventBus.on('combat:gamepad_poem_cycle_prev', handleGamepadPoemCyclePrev));
+gamepadUnsubs.push(eventBus.on('combat:gamepad_poem_cycle_next', handleGamepadPoemCycleNext));
+gamepadUnsubs.push(eventBus.on('combat:gamepad_poem_use_selected', handleGamepadPoemUseSelected));
 
 // Reset poem selection when combat starts
-eventBus.on('combat:start', resetGamepadPoemSelection);
+gamepadUnsubs.push(eventBus.on('combat:start', resetGamepadPoemSelection));
+
+function unsubscribeGamepadListeners(): void {
+  for (const unsub of gamepadUnsubs) unsub();
+  gamepadUnsubs.length = 0;
+}
 
 /* ═══════════════════════════════════════════════════════════════
    §11 — GET AVAILABLE POEM POWERS (cooldown-based)

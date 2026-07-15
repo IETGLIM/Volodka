@@ -395,9 +395,16 @@ export const QUESTS_ACT1: QuestDefinition[] = [
       },
       {
         id: 'keep_letter',
-        description: 'Сохранить или показать письмо Зареме',
+        description: 'Сохранить письмо',
         type: 'flag_set',
         target: 'corridor_letter_kept',
+        completed: false,
+      },
+      {
+        id: 'show_letter_zarema',
+        description: 'Показать письмо Зареме',
+        type: 'npc_talked',
+        target: 'zarema',
         completed: false,
       },
     ],

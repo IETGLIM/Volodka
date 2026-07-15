@@ -114,6 +114,8 @@ export const QUESTS_ACT4: QuestDefinition[] = [
       { type: 'setFlag', flag: 'poetry_broadcast_sent', flagValue: true },
       { type: 'addXp', value: 300 },
     ],
+    // Engine consumes both linkedStoryNodeId (primary, used by selectors) and
+    // linkedStoryNodeIds (supplementary, used by storyGraphIndex & validator).
     linkedStoryNodeId: 'act4_broadcast_execute',
     linkedStoryNodeIds: ['act4_broadcast_prep', 'act4_rooftop_broadcast'],
     questGiverNpcId: undefined,
@@ -340,7 +342,7 @@ export const QUESTS_ACT4: QuestDefinition[] = [
     id: 'broken_terminal',
     title: 'Сломанный Терминал',
     description: 'Три терминала в офисе гильдии неисправны. Каждый скрывает фрагмент скрытого стихотворения. Почини их — и собери послание, которое кто-то не хотел чтобы ты прочёл.',
-    act: 1,
+    act: 4,
     faction: 'it_guild',
     questType: 'side',
     requiresQuests: ['incident_scroll_4729'],
@@ -792,7 +794,7 @@ export const QUESTS_ACT4: QuestDefinition[] = [
         target: 'mole_identified',
         completed: false,
         poemPowerBypass: 'poem_6',
-        poemPowerHint: 'Стихотворение «Путеводная Звезда» поможет увидеть скрытое',
+        poemPowerHint: 'Стихотворение «Ну а тебе, друг мой!» поможет увидеть скрытое',
       },
       {
         id: 'confront_mole',
