@@ -12,6 +12,8 @@ import { registerGameActionBridge, type GameSnapshotSubscribeOptions, type GameS
 import type { GameStoreState } from './types';
 export type { GameStoreState, CrossSliceReads } from './types';
 import { getCombinedGameState, subscribeAllStores, invalidateCombinedGameStateCache, scheduleAfterSliceStoresSettle } from './combinedState';
+import { usePlayerStore } from './stores/playerStore';
+import { useWorldStore } from './stores/worldStore';
 import { getCachedGameSnapshot } from './gameSnapshotCache';
 import { applyCombinedPatch } from './patchState';
 import { applyGameAction } from './applyGameAction';
@@ -119,6 +121,6 @@ registerGameActionBridge({
   },
   getSnapshot() { return getBridgeSnapshot(); },
   subscribe: subscribeGameBridge,
-  tryAddItem(item: InventoryItem) { return getCombinedGameState().addItem(item); },
-  tryActivatePoemPower(poemId: string) { return getCombinedGameState().activatePoemPower(poemId); },
+  tryAddItem(item: InventoryItem) { return usePlayerStore.getState().addItem(item); },
+  tryActivatePoemPower(poemId: string) { return useWorldStore.getState().activatePoemPower(poemId); },
 });

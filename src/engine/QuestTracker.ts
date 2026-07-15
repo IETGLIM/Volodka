@@ -170,6 +170,12 @@ export class QuestTracker {
   private previousInventoryIds: Set<string> = new Set();
   private previousPoems: Set<string> = new Set();
 
+  /** Re-entrant guard: prevents onStateChanged from re-executing while
+   *  already processing. If a state change arrives during processing,
+   *  the dirty flag is set so we re-process after the current batch. */
+  private isProcessingRef = false;
+  private dirtyRef = false;
+
   /** Start tracking — subscribe to store changes and events */
   start(): void {
     if (this.unsubscribeStore !== null) return;
@@ -383,8 +389,34 @@ export class QuestTracker {
     );
   }
 
-  /** Called when quest-relevant store slices change */
+  /** Called when quest-relevant store slices change.
+   *  Guarded against re-entrant execution: completeObjective dispatches
+   *  quest/completeObjective and quest/complete which modify the store,
+   *  which via queueMicrotask batching can trigger this callback again
+   *  before the current batch finishes. If that happens, we set a dirty
+   *  flag and re-process after the current batch completes. */
   private onStateChanged(slice: QuestTrackerRelevantSlice): void {
+    if (this.isProcessingRef) {
+      this.dirtyRef = true;
+      return;
+    }
+    this.isProcessingRef = true;
+    try {
+      this.processStateChange(slice);
+    } finally {
+      this.isProcessingRef = false;
+      // If a state change arrived while we were processing, re-process
+      // with the latest snapshot to catch any missed objective completions.
+      if (this.dirtyRef) {
+        this.dirtyRef = false;
+        const latestSnapshot = selectQuestTrackerSlice(getGameSnapshot());
+        this.onStateChanged(latestSnapshot);
+      }
+    }
+  }
+
+  /** Core state change processing (extracted from onStateChanged for re-entrant guard) */
+  private processStateChange(slice: QuestTrackerRelevantSlice): void {
     const currentSceneId = slice.currentSceneId;
     const currentFlags = slice.flags;
     const currentInventoryIds = inventoryToIdSet(slice.inventory);

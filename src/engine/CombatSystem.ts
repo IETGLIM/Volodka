@@ -985,9 +985,9 @@ function gotoEnemyTurnEnd(state: CombatState) {
    §9 — VICTORY / DEFEAT
    ═══════════════════════════════════════════════════════════════ */
 
-function handleVictory(): CombatState {
+function handleVictory(): CombatState | null {
   const cs = combat.getState();
-  if (!cs) return cs!;
+  if (!cs) return null;
 
   // Pop synchronously — delayed exit callbacks may be cancelled by a new session
   const returnNodeId = combat.popReturnNode();
@@ -1071,7 +1071,8 @@ function handleVictory(): CombatState {
     eventBus.emit('combat:end', {});
   });
 
-  return combat.getState()!;
+  const finalState = combat.getState();
+  return finalState;
 }
 
 function handleDefeat(): void {
