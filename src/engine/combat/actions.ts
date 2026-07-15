@@ -8,9 +8,8 @@ import {
   tryActivatePoemPower,
 } from '@/engine/GameActionDispatcher';
 import { isTrainablePlayerSkill, warnInvalidValue } from '@/shared/validation/typeGuards';
-import { createBuff, addBuff } from './buffSystem';
-import { getEnemyDefenseReduction } from './buffSystem';
-import { getComboDamageMultiplier } from './formulas';
+import { createBuff, addBuff, getEnemyDefenseReduction } from './buffSystem';
+import { getComboDamageMultiplier, getPlayerAttack } from './formulas';
 import { COMBAT_CONSTANTS } from './formulas';
 import { rollPlayerDamage } from './combatRng';
 import { enrichPoemMechanicsRecord } from '@/data/unifiedPoemRegistry';
@@ -224,7 +223,9 @@ const RAW_POEM_COMBAT_ABILITIES: Record<string, PoemCombatAbility> = {
     description: 'Отнять энергию врага. Враг теряет 25% HP, вы получаете 15 энергии.',
     cooldown: 3,
     execute: (state) => {
-      const drainAmount = Math.floor(state.enemy.maxHp * 0.25);
+      const rawDamage = Math.min(Math.floor(state.enemy.maxHp * 0.25), Math.floor(getPlayerAttack() * 3));
+      const reduction = getEnemyDefenseReduction(state);
+      const drainAmount = Math.floor(rawDamage * (1 - reduction));
       const newEnemyHp = Math.max(0, state.enemy.hp - drainAmount);
       return {
         ...state,
@@ -330,8 +331,16 @@ const RAW_POEM_COMBAT_ABILITIES: Record<string, PoemCombatAbility> = {
         const ability = POEM_COMBAT_ABILITIES[lastUsed];
         if (ability) {
           const result = ability.execute(state);
+          // Merge nested side effects: consume them from the inner result
+          // so they aren't lost when the outer consumeSideEffects runs.
+          const nestedSideEffects = result._sideEffects ?? [];
+          const outerSideEffects = state._sideEffects ?? [];
           return {
             ...result,
+            _sideEffects: [...outerSideEffects, ...nestedSideEffects],
+            // Safety: if the echoed ability would drop player HP below 1
+            // (e.g. poem_18 Финальный Аккорд costs 50% HP), clamp to 1
+            playerHp: Math.max(1, result.playerHp),
             log: [
               ...result.log.slice(0, -1), // remove last log entry from nested ability
               { turn: state.turn, text: `✦ Эхо Памяти повторяет: ${ability.name}!`, type: 'player_power' as const },
@@ -355,7 +364,9 @@ const RAW_POEM_COMBAT_ABILITIES: Record<string, PoemCombatAbility> = {
     description: 'Крадёт 30% максимального HP врага и восстанавливает ваше здоровье.',
     cooldown: 4,
     execute: (state) => {
-      const stealAmount = Math.floor(state.enemy.maxHp * 0.3);
+      const rawDamage = Math.min(Math.floor(state.enemy.maxHp * 0.3), Math.floor(getPlayerAttack() * 3.5));
+      const reduction = getEnemyDefenseReduction(state);
+      const stealAmount = Math.floor(rawDamage * (1 - reduction));
       const newEnemyHp = Math.max(0, state.enemy.hp - stealAmount);
       const newPlayerHp = Math.min(state.playerMaxHp, state.playerHp + stealAmount);
       return {

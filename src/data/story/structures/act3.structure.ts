@@ -1401,6 +1401,24 @@ export const ACT3_STRUCTURE: Record<string, StoryNodeStructure> = {
         "condition": {
           "flag": "maria_true_nature_revealed"
         }
+      },
+      {
+        "text": "",
+        "next": "act3_aftermath",
+        "condition": {
+          "flag": "vault_defense_held"
+        },
+        "effects": [
+          {
+            "type": "addKarma",
+            "value": 3
+          },
+          {
+            "type": "setFlag",
+            "flag": "aftermath_visited",
+            "flagValue": true
+          }
+        ]
       }
     ]
   },

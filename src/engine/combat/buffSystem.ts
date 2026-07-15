@@ -24,6 +24,7 @@ function buffStackKey(buff: CombatBuff): string {
 /** Higher value = harder to evict when buff slots are full. */
 export function getBuffEvictionPriority(buff: CombatBuff): number {
   const effectPriority: Record<BuffEffect['type'], number> = {
+    stun_immune: 95,
     skip_turn: 90,
     silence_specials: 85,
     defensive_verse: 80,
@@ -62,11 +63,12 @@ export function addBuff(state: CombatState, buff: CombatBuff): CombatState {
     ? { ...buff, duration: Math.max(existing.duration, buff.duration) }
     : buff;
 
-  // Mutual exclusion: defense_reduction and damage_multiplier are incompatible on the same target
+  // Mutual exclusion: stun_immune and skip_turn are incompatible on the same target
   const MUTUALLY_EXCLUSIVE: Record<BuffEffect['type'], BuffEffect['type'][]> = {
-    defense_reduction: ['damage_multiplier'],
-    damage_multiplier: ['defense_reduction'],
-    skip_turn: [],
+    defense_reduction: [],
+    damage_multiplier: [],
+    skip_turn: ['stun_immune'],
+    stun_immune: ['skip_turn'],
     stat_drain: [],
     defense_boost: [],
     damage_reduction: [],
@@ -153,10 +155,20 @@ export function getEnemyDefenseReduction(state: CombatState): number {
  *  NOTE: The legacy `doubleAttack` field on CombatState is no longer read here.
  *  Poem_6 (Слово Мощь) now uses the buff system exclusively with a
  *  `damage_multiplier` buff value of 1.5. The old backward-compat code
- *  caused double-counting (buff 1.5× + legacy 1.5× = ~2.25× instead of 1.5×). */
+ *  caused double-counting (buff 1.5× + legacy 1.5× = ~2.25× instead of 1.5×).
+ *
+ *  Returns 1.0 when no damage_multiplier buff/debuff is active (normal damage).
+ *  Buffs (value > 0) are floored at 1.0 to prevent accidental reduction.
+ *  Debuffs (value between 0 and 1, set by enemies) can reduce below 1.0
+ *  down to a minimum of 0.25 (75% damage reduction from debuffs). */
 export function getPlayerDamageMultiplier(state: CombatState): number {
   const fromBuffs = sumBuffEffect(state, 'player', 'damage_multiplier');
-  return Math.max(fromBuffs, 0.1);
+  // No multiplier active → normal damage (1.0)
+  if (fromBuffs === 0) return 1.0;
+  // Positive: buff (e.g. poem_6 = 1.5), floor at 1.0
+  if (fromBuffs > 0) return Math.max(fromBuffs, 1.0);
+  // Negative: debuff (e.g. enemy weakens player), floor at 0.25
+  return Math.max(fromBuffs, 0.25);
 }
 
 /** Get player damage reduction from buffs (0–1). Includes defensive_verse (30% flat). */

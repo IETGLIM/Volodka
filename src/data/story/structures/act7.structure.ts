@@ -1345,7 +1345,7 @@ export const ACT7_STRUCTURE: Record<string, StoryNodeStructure> = {
     "choices": [
       {
         "text": "",
-        "next": "start",
+        "next": null,
         "effects": [
           {
             "type": "addKarma",

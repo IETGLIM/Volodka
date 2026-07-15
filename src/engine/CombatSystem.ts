@@ -801,13 +801,16 @@ function executeEnemyTurn() {
     const remaining = afterBuffTick.buffs.filter(
       (b) => !(b.target === 'enemy' && b.effect.type === 'skip_turn'),
     );
+    // Apply stun immunity for 1 turn so the enemy cannot be stun-locked
+    const immuneBuff = createBuff(afterBuffTick, 'Иммунитет к оглушению', 'stun_recovery', 'buff', 'enemy', 1, { type: 'stun_immune' });
+    const withImmune = addBuff({ ...afterBuffTick, buffs: remaining }, immuneBuff);
     combat.setState({
-      ...afterBuffTick,
-      buffs: remaining,
+      ...withImmune,
       log: [
-        ...afterBuffTick.log,
+        ...withImmune.log,
         ...expiredLog,
         { turn: afterBuffTick.turn, text: `${afterBuffTick.enemy.emoji} ${afterBuffTick.enemy.name} дезориентирован и пропускает ход!`, type: 'info' },
+        { turn: afterBuffTick.turn, text: `${afterBuffTick.enemy.emoji} ${afterBuffTick.enemy.name} получает иммунитет к оглушению на 1 ход.`, type: 'info' },
       ] });
 
     // Transition to player turn (handles buff processing and skip_turn check)

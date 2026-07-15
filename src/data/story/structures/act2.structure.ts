@@ -855,6 +855,24 @@ export const ACT2_STRUCTURE: Record<string, StoryNodeStructure> = {
             "value": 1
           }
         ]
+      },
+      {
+        "text": "",
+        "next": "act2_network_members",
+        "condition": {
+          "flag": "network_oath_taken"
+        },
+        "effects": [
+          {
+            "type": "addSkill",
+            "skill": "persuasion",
+            "value": 1
+          },
+          {
+            "type": "addKarma",
+            "value": 2
+          }
+        ]
       }
     ]
   },

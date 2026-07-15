@@ -57,7 +57,8 @@ export type BuffEffect =
   | { type: 'attack_boost'; value: number }
   | { type: 'hp_drain_percent'; value: number }
   | { type: 'silence_specials' }
-  | { type: 'defensive_verse' };
+  | { type: 'defensive_verse' }
+  | { type: 'stun_immune' };
 
 export interface CombatReward {
   readonly xp: number;

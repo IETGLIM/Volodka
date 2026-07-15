@@ -153,8 +153,14 @@ export function getPlayerDefense(): number {
 }
 
 export function getPlayerMaxHp(): number {
-  const { energy } = snap().playerState;
-  return Math.max(20, energy * 2);
+  const s = snap();
+  const { energy, progression } = s.playerState;
+  const level = progression?.level ?? 1;
+  // Base HP from level prevents death spiral when energy is drained:
+  // even at 0 energy, player retains level-scaled base HP.
+  const baseFromLevel = 20 + (level - 1) * 5;
+  const fromEnergy = energy * 2;
+  return Math.max(baseFromLevel, fromEnergy);
 }
 
 /** Credits earned on combat victory — scales with enemy tier and combo. */

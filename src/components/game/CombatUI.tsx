@@ -40,6 +40,7 @@ function getBuffEffectDescription(effect: BuffEffect): string {
     case 'hp_drain_percent': return `HP -${Math.round(effect.value * 100)}%/ход`;
     case 'silence_specials': return 'Спецатаки заблокированы';
     case 'defensive_verse': return 'Защитный стих: -30% урона';
+    case 'stun_immune': return 'Иммунитет к оглушению';
     default: return '';
   }
 }
