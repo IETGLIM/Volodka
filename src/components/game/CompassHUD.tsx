@@ -132,13 +132,20 @@ export function CompassHUD() {
   const quietStyle = useHudQuietStyle();
   const [rotation, setRotation] = useState(sharedPlayerRotationRef.current);
   const rafRef = useRef<number | null>(null);
+  const lastRotationRef = useRef(sharedPlayerRotationRef.current);
+  const ROTATION_THRESHOLD = 0.0087; // ~0.5 degrees
 
-  /* ── Read rotation via rAF loop (no React state churn) ── */
+  /* ── Read rotation via rAF loop (throttled to avoid 60fps setState churn) ── */
   useEffect(() => {
     if (mode !== 'exploration') return;
 
     const tick = () => {
-      setRotation(sharedPlayerRotationRef.current);
+      const current = sharedPlayerRotationRef.current;
+      // Only trigger re-render if rotation changed beyond threshold
+      if (Math.abs(current - lastRotationRef.current) > ROTATION_THRESHOLD) {
+        lastRotationRef.current = current;
+        setRotation(current);
+      }
       rafRef.current = requestAnimationFrame(tick);
     };
     rafRef.current = requestAnimationFrame(tick);
@@ -183,7 +190,7 @@ export function CompassHUD() {
       COMPASS_DIRS.forEach((dir, i) => {
         const angleOffset = dir.angle + wrap * Math.PI * 2;
         const pxOffset = (angleOffset + centerOffset) * PX_PER_RAD;
-        const isActive = wrap === 0 && i === closestIdx;
+        const isActive = i === closestIdx;
         result.push({
           key: `${wrap}-${i}`,
           dir,

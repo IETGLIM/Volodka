@@ -114,7 +114,7 @@ export function tryApplyPoemSynergy(currentPoemId: string, now = Date.now()): Po
     synergyName: synergy.name,
     poemIds: [...synergy.poemIds] as [string, string],
     triggeredByPoemId: currentPoemId,
-    pairedWithPoemId: lastUsedPoemId!,
+    pairedWithPoemId: lastUsedPoemId ?? '',
   });
 
   return synergy;

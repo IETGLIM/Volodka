@@ -46,6 +46,14 @@ export function OrchestratorCanvasLayer({
     }
   }, [bootOverlayComplete]);
 
+  // Reset dismissed flag when returning to menu so the loading overlay
+  // can show again on subsequent visits (e.g. gameplay → menu → gameplay).
+  useEffect(() => {
+    if (mode === 'menu') {
+      setMenuLoadingDismissed(false);
+    }
+  }, [mode]);
+
   useEffect(() => {
     if (canvasMounted && !canvasReady && mode === 'menu') {
       loadingPipeline.reportStage('canvas_init');

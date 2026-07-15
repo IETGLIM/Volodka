@@ -1,6 +1,7 @@
 /* ─── Volodka RPG – NPC behavioral state machine ─── */
 
 import { InteractionState } from '@/engine/interaction/interactionMachine';
+import { devWarn } from '@/shared/utils/devLog';
 
 /** High-level NPC behavior — drives animation and registry lookups. */
 export type NpcBehaviorState = 'idle' | 'walk' | 'talk' | 'combat';
@@ -76,7 +77,9 @@ export function resolveNpcBehaviorState(ctx: NpcBehaviorContext): NpcBehaviorSta
     case 'rest':
     case 'sleep':
     case 'idle':
+      return 'idle';
     default:
+      devWarn(`[npcStateMachine] Unknown activity "${ctx.activity}", falling back to idle`);
       return 'idle';
   }
 }

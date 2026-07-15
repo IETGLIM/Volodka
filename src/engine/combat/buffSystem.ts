@@ -156,7 +156,7 @@ export function getEnemyDefenseReduction(state: CombatState): number {
  *  caused double-counting (buff 1.5× + legacy 1.5× = ~2.25× instead of 1.5×). */
 export function getPlayerDamageMultiplier(state: CombatState): number {
   const fromBuffs = sumBuffEffect(state, 'player', 'damage_multiplier');
-  return Math.max(fromBuffs, 1);
+  return Math.max(fromBuffs, 0.1);
 }
 
 /** Get player damage reduction from buffs (0–1). Includes defensive_verse (30% flat). */

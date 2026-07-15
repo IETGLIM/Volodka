@@ -15,7 +15,8 @@ import {
   COMBAT_CONSTANTS,
   scaleDamageByFraction,
 } from './formulas';
-import { getPlayerRngSeed, pickIndexFromSeed, rollEnemyDamage } from './combatRng';
+import { scaleEnemyDamageByDifficulty } from './combatDifficulty';
+import { getPlayerRngSeed, pickIndexFromSeed, rollEnemyDamage, SeededCombatRng } from './combatRng';
 
 /* ═══════════════════════════════════════════════════════════════
    Enemy Special Attacks (extracted for clarity)
@@ -135,6 +136,10 @@ const AGENT_SPECIALS: EnemySpecialAttack[] = [
       const rolled = rollEnemyDamage(state, { attack: effectiveAttack, multiplier: enemyDmgMultiplier });
       let damage = rolled.damage * COMBAT_CONSTANTS.STEALTH_CRIT_MULTIPLIER;
       const nextState = rolled.state;
+
+      // Apply difficulty/act/level scaling (was missing — Fix #1)
+      const snapshot = getGameSnapshot();
+      damage = scaleEnemyDamageByDifficulty(damage, undefined, snapshot.playerState.progression.currentAct, snapshot.playerState.progression.level);
 
       // Apply player defense_boost buff
       const playerDefBoost = getPlayerDefenseBoost(state);
@@ -296,6 +301,9 @@ const FIREWALL_SPECIALS: EnemySpecialAttack[] = [
       const rolled = rollEnemyDamage(state, { attack: effectiveAttack, multiplier: 1.3 });
       let damage = rolled.damage;
       const nextState = rolled.state;
+      // Apply difficulty/act/level scaling (was missing — Fix #1)
+      const fSnapshot = getGameSnapshot();
+      damage = scaleEnemyDamageByDifficulty(damage, undefined, fSnapshot.playerState.progression.currentAct, fSnapshot.playerState.progression.level);
       const playerDmgReduction = getPlayerDamageReduction(nextState);
       if (playerDmgReduction > 0) damage = scaleDamageByFraction(damage, playerDmgReduction, 'reduction');
       const playerVulnerability = getPlayerVulnerability(nextState);
@@ -326,6 +334,9 @@ const NEXUS_GUARDIAN_SPECIALS: EnemySpecialAttack[] = [
       const rolled = rollEnemyDamage(s, { attack: effectiveAttack, multiplier: 0.8 });
       let damage = rolled.damage;
       const nextState = rolled.state;
+      // Apply difficulty/act/level scaling (was missing — Fix #1)
+      const nSnapshot = getGameSnapshot();
+      damage = scaleEnemyDamageByDifficulty(damage, undefined, nSnapshot.playerState.progression.currentAct, nSnapshot.playerState.progression.level);
       const playerDmgReduction = getPlayerDamageReduction(nextState);
       if (playerDmgReduction > 0) damage = scaleDamageByFraction(damage, playerDmgReduction, 'reduction');
       const newPlayerHp = Math.max(0, nextState.playerHp - damage);
@@ -387,19 +398,23 @@ const VOID_ECHO_SPECIALS: EnemySpecialAttack[] = [
       const rolled = rollEnemyDamage(state, { attack: effectiveAttack, multiplier: 1.5 });
       let damage = rolled.damage;
       const nextState = rolled.state;
+      // Apply difficulty/act/level scaling (was missing — Fix #1)
+      const vSnapshot = getGameSnapshot();
+      damage = scaleEnemyDamageByDifficulty(damage, undefined, vSnapshot.playerState.progression.currentAct, vSnapshot.playerState.progression.level);
       const playerDmgReduction = getPlayerDamageReduction(nextState);
       if (playerDmgReduction > 0) damage = scaleDamageByFraction(damage, playerDmgReduction, 'reduction');
       const playerVulnerability = getPlayerVulnerability(nextState);
       if (playerVulnerability > 0) damage = scaleDamageByFraction(damage, playerVulnerability, 'vulnerability');
       const newPlayerHp = Math.max(0, nextState.playerHp - damage);
-      // 30% chance to skip player's next turn (stun) — deterministic from turn + combo count
-      const stunRoll = (state.turn * 7 + state.comboCount * 13) % 10;
-      let s = { ...nextState, playerHp: newPlayerHp } as typeof nextState;
-      if (stunRoll < 3) {
+      // 30% chance to skip player's next turn (stun) — now uses seeded RNG instead of deterministic formula (Fix #4)
+      const stunRng = SeededCombatRng.fromState(nextState.rng);
+      const stunned = stunRng.roll(0.3);
+      let s = { ...nextState, playerHp: newPlayerHp, rng: stunRng.getState() } as typeof nextState;
+      if (stunned) {
         const stunBuff = createBuff(s, 'Резонанс: оглушение', 'void_resonance_stun', 'debuff', 'player', 1, { type: 'skip_turn' });
         s = addBuff(s, stunBuff);
       }
-      const stunText = stunRoll < 3 ? ' Вы оглушены — пропускаете ход!' : '';
+      const stunText = stunned ? ' Вы оглушены — пропускаете ход!' : '';
       return {
         ...s,
         log: [...s.log, { turn: state.turn, text: `${enemy.emoji} Резонанс! Удар пустоты: -${damage} HP!${stunText}`, type: 'enemy_special' as const, damage }],
@@ -553,8 +568,11 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
         chance: 0.3,
         cooldown: 3,
         execute: (state, enemy) => {
-          const karma = getGameSnapshot().playerState.karma;
+          const iSnapshot = getGameSnapshot();
+          const karma = iSnapshot.playerState.karma;
           let damage = karma > 50 ? Math.floor(karma * 0.15) : 5;
+          // Apply difficulty/act/level scaling (was missing — Fix #1)
+          damage = scaleEnemyDamageByDifficulty(damage, undefined, iSnapshot.playerState.progression.currentAct, iSnapshot.playerState.progression.level);
           const playerDefBoost = getPlayerDefenseBoost(state);
           if (playerDefBoost > 0) damage = Math.max(1, damage - playerDefBoost);
           const playerDmgReduction = getPlayerDamageReduction(state);
@@ -613,6 +631,9 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
           const rolled = rollEnemyDamage(state, { attack: effectiveAttack, multiplier: 1.5 });
           let damage = rolled.damage;
           const nextState = rolled.state;
+          // Apply difficulty/act/level scaling (was missing — Fix #1)
+          const eSnapshot = getGameSnapshot();
+          damage = scaleEnemyDamageByDifficulty(damage, undefined, eSnapshot.playerState.progression.currentAct, eSnapshot.playerState.progression.level);
           const playerDmgReduction = getPlayerDamageReduction(nextState);
           if (playerDmgReduction > 0) damage = scaleDamageByFraction(damage, playerDmgReduction, 'reduction');
           const playerVulnerability = getPlayerVulnerability(nextState);
@@ -671,6 +692,9 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
           const rolled = rollEnemyDamage(state, { attack: effectiveAttack, multiplier: 1.2 });
           let damage = rolled.damage;
           const nextState = rolled.state;
+          // Apply difficulty/act/level scaling (was missing — Fix #1)
+          const dSnapshot = getGameSnapshot();
+          damage = scaleEnemyDamageByDifficulty(damage, undefined, dSnapshot.playerState.progression.currentAct, dSnapshot.playerState.progression.level);
           const playerDmgReduction = getPlayerDamageReduction(nextState);
           if (playerDmgReduction > 0) damage = scaleDamageByFraction(damage, playerDmgReduction, 'reduction');
           const newPlayerHp = Math.max(0, nextState.playerHp - damage);
@@ -788,6 +812,9 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
           });
           let damage = rolled.damage;
           const nextState = rolled.state;
+          // Apply difficulty/act/level scaling (was missing — Fix #1)
+          const pSnapshot = getGameSnapshot();
+          damage = scaleEnemyDamageByDifficulty(damage, undefined, pSnapshot.playerState.progression.currentAct, pSnapshot.playerState.progression.level);
           const playerDmgReduction = getPlayerDamageReduction(nextState);
           if (playerDmgReduction > 0) damage = scaleDamageByFraction(damage, playerDmgReduction, 'reduction');
           const playerVulnerability = getPlayerVulnerability(nextState);

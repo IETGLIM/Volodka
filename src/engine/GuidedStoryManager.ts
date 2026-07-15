@@ -307,6 +307,9 @@ export class GuidedStoryManager {
     this.lastGuidanceSignature = signature;
     this.lastGuidanceTimestamp = Date.now();
     this.playerLostHintShown = false; // reset on any real guidance change
+    // Re-arm lost detection so the interval can fire again if the player
+    // stalls after this guidance change.
+    this.startPlayerLostDetection();
     this.deps.events.emitGuidanceUpdate(enriched);
   }
 
@@ -329,6 +332,9 @@ export class GuidedStoryManager {
           hint: pickLostHint(act),
           actNumber: act,
         });
+        // Interval has served its purpose — stop it to avoid leaking a no-op timer.
+        // It will be re-started by emitGuidanceUpdate when guidance changes.
+        this.stopPlayerLostDetection();
       }
     }, PLAYER_LOST_TIMEOUT_MS / 2);
   }

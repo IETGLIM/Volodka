@@ -10,6 +10,7 @@ import {
 import { isTrainablePlayerSkill, warnInvalidValue } from '@/shared/validation/typeGuards';
 import { createBuff, addBuff } from './buffSystem';
 import { getEnemyDefenseReduction } from './buffSystem';
+import { getComboDamageMultiplier } from './formulas';
 import { COMBAT_CONSTANTS } from './formulas';
 import { rollPlayerDamage } from './combatRng';
 import { enrichPoemMechanicsRecord } from '@/data/unifiedPoemRegistry';
@@ -106,13 +107,15 @@ const RAW_POEM_COMBAT_ABILITIES: Record<string, PoemCombatAbility> = {
       const playerAttack = getSnapshotAttack();
       const enemyDef = Math.max(0, state.enemy.defense * (1 - getEnemyDefenseReduction(state)));
       const { damage, state: afterRng } = rollPlayerDamage(state, { attack: playerAttack, defense: enemyDef, multiplier: 2 });
-      const newEnemyHp = Math.max(0, afterRng.enemy.hp - damage);
+      const comboMult = getComboDamageMultiplier(state.comboCount + 1);
+      const finalDamage = Math.floor(damage * comboMult);
+      const newEnemyHp = Math.max(0, afterRng.enemy.hp - finalDamage);
       return {
         ...afterRng,
         enemy: { ...afterRng.enemy, hp: newEnemyHp },
         log: [
           ...state.log,
-          { turn: state.turn, text: `✦ Штормовой Ветер! ${damage} урона!`, type: 'player_attack' as const, damage },
+          { turn: state.turn, text: `✦ Штормовой Ветер! ${finalDamage} урона!`, type: 'player_attack' as const, damage: finalDamage },
         ],
       };
     },
@@ -160,13 +163,15 @@ const RAW_POEM_COMBAT_ABILITIES: Record<string, PoemCombatAbility> = {
     execute: (state) => {
       const playerAttack = getSnapshotAttack();
       const { damage, state: afterRng } = rollPlayerDamage(state, { attack: playerAttack, multiplier: 1.5 });
-      const newEnemyHp = Math.max(0, afterRng.enemy.hp - damage);
+      const comboMult = getComboDamageMultiplier(state.comboCount + 1);
+      const finalDamage = Math.floor(damage * comboMult);
+      const newEnemyHp = Math.max(0, afterRng.enemy.hp - finalDamage);
       return {
         ...afterRng,
         enemy: { ...afterRng.enemy, hp: newEnemyHp },
         log: [
           ...state.log,
-          { turn: state.turn, text: `✦ Прорыв! ${damage} чистого урона!`, type: 'player_attack' as const, damage },
+          { turn: state.turn, text: `✦ Прорыв! ${finalDamage} чистого урона!`, type: 'player_attack' as const, damage: finalDamage },
         ],
       };
     },
@@ -181,8 +186,9 @@ const RAW_POEM_COMBAT_ABILITIES: Record<string, PoemCombatAbility> = {
       const enemyDef = Math.max(0, state.enemy.defense * (1 - getEnemyDefenseReduction(state)));
       const roll1 = rollPlayerDamage(state, { attack: playerAttack, defense: enemyDef });
       const roll2 = rollPlayerDamage(roll1.state, { attack: playerAttack, defense: enemyDef });
-      const dmg1 = roll1.damage;
-      const dmg2 = roll2.damage;
+      const comboMult = getComboDamageMultiplier(state.comboCount + 1);
+      const dmg1 = Math.floor(roll1.damage * comboMult);
+      const dmg2 = Math.floor(roll2.damage * comboMult);
       const totalDmg = dmg1 + dmg2;
       const newEnemyHp = Math.max(0, roll2.state.enemy.hp - totalDmg);
       return {
@@ -241,13 +247,15 @@ const RAW_POEM_COMBAT_ABILITIES: Record<string, PoemCombatAbility> = {
       const playerAttack = getSnapshotAttack();
       const enemyDef = Math.max(0, state.enemy.defense * (1 - getEnemyDefenseReduction(state)));
       const { damage, state: afterRng } = rollPlayerDamage(state, { attack: playerAttack, defense: enemyDef, attackBonus: karmaBonus * 2 });
-      const newEnemyHp = Math.max(0, afterRng.enemy.hp - damage);
+      const comboMult = getComboDamageMultiplier(state.comboCount + 1);
+      const finalDamage = Math.floor(damage * comboMult);
+      const newEnemyHp = Math.max(0, afterRng.enemy.hp - finalDamage);
       return {
         ...afterRng,
         enemy: { ...afterRng.enemy, hp: newEnemyHp },
         log: [
           ...state.log,
-          { turn: state.turn, text: `✦ Звездный Путь! ${damage} урона (карма-бонус: +${karmaBonus * 2})!`, type: 'player_attack' as const, damage },
+          { turn: state.turn, text: `✦ Звездный Путь! ${finalDamage} урона (карма-бонус: +${karmaBonus * 2})!`, type: 'player_attack' as const, damage: finalDamage },
         ],
       };
     },
@@ -261,14 +269,16 @@ const RAW_POEM_COMBAT_ABILITIES: Record<string, PoemCombatAbility> = {
       const playerAttack = getSnapshotAttack();
       const enemyDef = Math.max(0, state.enemy.defense * (1 - getEnemyDefenseReduction(state)));
       const { damage, state: afterRng } = rollPlayerDamage(state, { attack: playerAttack, defense: enemyDef, multiplier: 1.8 });
-      const newEnemyHp = Math.max(0, afterRng.enemy.hp - damage);
+      const comboMult = getComboDamageMultiplier(state.comboCount + 1);
+      const finalDamage = Math.floor(damage * comboMult);
+      const newEnemyHp = Math.max(0, afterRng.enemy.hp - finalDamage);
       return {
         ...afterRng,
         enemy: { ...afterRng.enemy, hp: newEnemyHp },
         _sideEffects: [{ type: 'addKarma', value: 8 } as SideEffect],
         log: [
           ...state.log,
-          { turn: state.turn, text: `✦ Последнее Слово! ${damage} урона, +8 кармы!`, type: 'player_attack' as const, damage },
+          { turn: state.turn, text: `✦ Последнее Слово! ${finalDamage} урона, +8 кармы!`, type: 'player_attack' as const, damage: finalDamage },
         ],
       };
     },
@@ -368,7 +378,9 @@ const RAW_POEM_COMBAT_ABILITIES: Record<string, PoemCombatAbility> = {
       const playerAttack = getSnapshotAttack();
       const karmaBonus = Math.floor(snap().playerState.karma * 0.5);
       const { damage, state: afterRng } = rollPlayerDamage(state, { attack: playerAttack, multiplier: 1.5, attackBonus: karmaBonus * 1.5 });
-      const newEnemyHp = Math.max(0, afterRng.enemy.hp - damage);
+      const comboMult = getComboDamageMultiplier(state.comboCount + 1);
+      const finalDamage = Math.floor(damage * comboMult);
+      const newEnemyHp = Math.max(0, afterRng.enemy.hp - finalDamage);
       // Side effect: player sacrifices 50% of current HP
       const hpCost = Math.floor(state.playerHp * 0.5);
       const newPlayerHp = Math.max(1, state.playerHp - hpCost);
@@ -379,7 +391,7 @@ const RAW_POEM_COMBAT_ABILITIES: Record<string, PoemCombatAbility> = {
         _sideEffects: [{ type: 'addEnergy', value: -30 } as SideEffect],
         log: [
           ...state.log,
-          { turn: state.turn, text: `✦ Финальный Аккорд! ${damage} урона! Но цена: -${hpCost} HP, -30 энергии`, type: 'player_attack' as const, damage },
+          { turn: state.turn, text: `✦ Финальный Аккорд! ${finalDamage} урона! Но цена: -${hpCost} HP, -30 энергии`, type: 'player_attack' as const, damage: finalDamage },
         ],
       };
     },
@@ -433,7 +445,9 @@ const RAW_POEM_COMBAT_ABILITIES: Record<string, PoemCombatAbility> = {
     execute: (state) => {
       const playerAttack = getSnapshotAttack() + 10;
       const { damage, state: afterRng } = rollPlayerDamage(state, { attack: playerAttack, multiplier: 2 });
-      const newEnemyHp = Math.max(0, afterRng.enemy.hp - damage);
+      const comboMult = getComboDamageMultiplier(state.comboCount + 1);
+      const finalDamage = Math.floor(damage * comboMult);
+      const newEnemyHp = Math.max(0, afterRng.enemy.hp - finalDamage);
       return {
         ...afterRng,
         enemy: { ...afterRng.enemy, hp: newEnemyHp },
@@ -443,7 +457,7 @@ const RAW_POEM_COMBAT_ABILITIES: Record<string, PoemCombatAbility> = {
         ],
         log: [
           ...state.log,
-          { turn: state.turn, text: `✦ Белая Река, Чёрный Кабель! Системная перегрузка: ${damage} чистого урона! +5 кодинг, +5 логика!`, type: 'player_attack' as const, damage },
+          { turn: state.turn, text: `✦ Белая Река, Чёрный Кабель! Системная перегрузка: ${finalDamage} чистого урона! +5 кодинг, +5 логика!`, type: 'player_attack' as const, damage: finalDamage },
         ],
       };
     },
@@ -480,14 +494,16 @@ const RAW_POEM_COMBAT_ABILITIES: Record<string, PoemCombatAbility> = {
       const playerAttack = getSnapshotAttack();
       const enemyDef = Math.max(0, state.enemy.defense * (1 - getEnemyDefenseReduction(state)));
       const { damage, state: afterRng } = rollPlayerDamage(state, { attack: playerAttack, defense: enemyDef, multiplier: 1.8 });
-      const newEnemyHp = Math.max(0, afterRng.enemy.hp - damage);
+      const comboMult = getComboDamageMultiplier(state.comboCount + 1);
+      const finalDamage = Math.floor(damage * comboMult);
+      const newEnemyHp = Math.max(0, afterRng.enemy.hp - finalDamage);
       return {
         ...afterRng,
         enemy: { ...afterRng.enemy, hp: newEnemyHp },
         _sideEffects: [{ type: 'addSkill', skill: 'intuition', value: 4 } as SideEffect],
         log: [
           ...state.log,
-          { turn: state.turn, text: `✦ Ветер Высот! ${damage} урона! +4 интуиции!`, type: 'player_attack' as const, damage },
+          { turn: state.turn, text: `✦ Ветер Высот! ${finalDamage} урона! +4 интуиции!`, type: 'player_attack' as const, damage: finalDamage },
         ],
       };
     },
@@ -571,8 +587,10 @@ export function checkPoemPowerCombo(
         const playerAttack = getSnapshotAttack();
         const enemyDef = Math.max(0, s.enemy.defense * (1 - getEnemyDefenseReduction(s)) * COMBAT_CONSTANTS.COMBO_ISTINA_DEFENSE_FACTOR);
         const { damage, state: afterRng } = rollPlayerDamage(s, { attack: playerAttack, defense: enemyDef, multiplier: 2.5 });
-        const newEnemyHp = Math.max(0, afterRng.enemy.hp - damage);
-        return { ...afterRng, enemy: { ...afterRng.enemy, hp: newEnemyHp }, log: [...afterRng.log, { turn: s.turn, text: `✦✦ Истина и Шторм! ${damage} колоссального урона!`, type: 'poem_combo' as const, damage, isCritical: true }] };
+        const comboMult = getComboDamageMultiplier(s.comboCount + 1);
+        const finalDamage = Math.floor(damage * comboMult);
+        const newEnemyHp = Math.max(0, afterRng.enemy.hp - finalDamage);
+        return { ...afterRng, enemy: { ...afterRng.enemy, hp: newEnemyHp }, log: [...afterRng.log, { turn: s.turn, text: `✦✦ Истина и Шторм! ${finalDamage} колоссального урона!`, type: 'poem_combo' as const, damage: finalDamage, isCritical: true }] };
       },
     },
     'poem_3+poem_10': {
@@ -593,8 +611,10 @@ export function checkPoemPowerCombo(
         const playerAttack = getSnapshotAttack();
         const karmaBonus = Math.floor(snap().playerState.karma * 0.3);
         const { damage, state: afterRng } = rollPlayerDamage(s, { attack: playerAttack, multiplier: 2.5, attackBonus: karmaBonus });
-        const newEnemyHp = Math.max(0, afterRng.enemy.hp - damage);
-        return { ...afterRng, enemy: { ...afterRng.enemy, hp: newEnemyHp }, _sideEffects: [{ type: 'addKarma', value: 12 } as SideEffect], log: [...afterRng.log, { turn: s.turn, text: `✦✦ Последний Шторм! ${damage} урона, +12 кармы!`, type: 'poem_combo' as const, damage, isCritical: true }] };
+        const comboMult = getComboDamageMultiplier(s.comboCount + 1);
+        const finalDamage = Math.floor(damage * comboMult);
+        const newEnemyHp = Math.max(0, afterRng.enemy.hp - finalDamage);
+        return { ...afterRng, enemy: { ...afterRng.enemy, hp: newEnemyHp }, _sideEffects: [{ type: 'addKarma', value: 12 } as SideEffect], log: [...afterRng.log, { turn: s.turn, text: `✦✦ Последний Шторм! ${finalDamage} урона, +12 кармы!`, type: 'poem_combo' as const, damage: finalDamage, isCritical: true }] };
       },
     },
     'poem_2+poem_4': {

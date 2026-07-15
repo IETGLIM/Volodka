@@ -9,6 +9,18 @@ import { getWorldStoreState } from './stores/worldStore';
 import { getUIStoreState } from './stores/uiStore';
 import { getCutsceneStoreState } from './stores/cutsceneStore';
 import { getSaveStoreState } from './stores/saveStore';
+/**
+ * Apply a game action by routing to the appropriate independent slice store.
+ *
+ * ⚠ NON-TRANSACTIONAL: Each slice mutation triggers its own subscribers immediately.
+ * If two actions are dispatched synchronously (e.g., quest completion → reward + flag + XP),
+ * the second action reads stale combined state from the facade. Each individual slice
+ * is internally consistent, but cross-slice reads within a synchronous batch may see
+ * intermediate states.
+ *
+ * For multi-action dispatches, use `batchGameActions()` to coalesce mutations before
+ * the facade flushes.
+ */
 export function applyGameAction(_state: GameStoreState, action: GameAction): void {
   const player = getPlayerStoreState();
   const exploration = getExplorationStoreState();
@@ -97,5 +109,14 @@ export function applyGameAction(_state: GameStoreState, action: GameAction): voi
     case 'phase/clearGameplayFlags': ui.setMainMenuOpen(false); ui.setIntroActive(false); ui.setCombatActive(false); break;
     case 'journal/addThought': ui.addThought(action.text, action.sceneId); break;
     default: { const _exhaustive: never = action; return; }
+  }
+}
+
+/** Batch-apply multiple game actions before the facade flushes.
+ *  This reduces intermediate re-renders when a single event triggers
+ *  several actions (e.g. quest completion → XP + karma + flag + achievement). */
+export function batchGameActions(state: GameStoreState, actions: GameAction[]): void {
+  for (const action of actions) {
+    applyGameAction(state, action);
   }
 }

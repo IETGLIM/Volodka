@@ -736,6 +736,8 @@ function transitionToPlayerTurn(state: CombatState): void {
     enemyDefending: false,
     doubleAttack: false,
     playerDefending: false,
+    // Sync enemy defense reduction from buff system (may have changed due to buff tick/expiry)
+    enemyDefenseReduction: getEnemyDefenseReduction(afterBuffTick),
     // Safety: clear any stale side effects that survived from a previous turn.
     // consumeSideEffects() is the primary clearing mechanism, but this
     // prevents re-application if a consumer reads the state between turns.
@@ -832,7 +834,7 @@ function executeEnemyTurn() {
         workingState = consumeSideEffects(specialResult);
         workingState = {
           ...workingState,
-          enemy: { ...workingState.enemy, specialCooldown: special.cooldown } };
+          enemy: { ...workingState.enemy, specialCooldown: special.cooldown + 1 } };
         notifyNewCombatLogEntries(logLenBefore);
         gotoEnemyTurnEnd(workingState);
         return;
@@ -940,6 +942,7 @@ function executeEnemyTurn() {
     playerHp: newPlayerHp,
     playerDefending: false,
     comboCount: 0, // Taking damage resets combo
+    enemyDefenseReduction: getEnemyDefenseReduction(workingState),
     enemy: {
       ...workingState.enemy,
       specialCooldown: Math.max(0, workingState.enemy.specialCooldown - 1) },
@@ -966,6 +969,7 @@ function gotoEnemyTurnEnd(state: CombatState) {
   combat.setState({
     ...state,
     playerDefending: false,
+    enemyDefenseReduction: getEnemyDefenseReduction(state),
     enemy: {
       ...state.enemy,
       specialCooldown: Math.max(0, state.enemy.specialCooldown - 1) } });

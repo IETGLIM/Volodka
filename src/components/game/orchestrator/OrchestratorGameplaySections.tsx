@@ -312,7 +312,8 @@ export const GameplaySceneBanner = memo(function GameplaySceneBanner({
   sceneBanner: SceneBannerPresentation | null;
 }) {
   const reducedMotion = useEffectiveReducedMotion();
-  const presentation = resolveSceneLocationPresentation('#88aacc');
+  const accentColor = sceneBanner?.accentColor ?? '#88aacc';
+  const presentation = resolveSceneLocationPresentation(accentColor);
   const visible = sceneBanner != null;
   useCinematicNarrativePresentation(visible);
 

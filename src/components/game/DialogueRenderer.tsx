@@ -126,6 +126,7 @@ export function DialogueRenderer() {
   const [dialoguePackVersion, setDialoguePackVersion] = useState(0);
   const [isLoadingNode, setIsLoadingNode] = useState(false);
   const errorRef = useRef<string | null>(null);
+  const skillCheckTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
@@ -194,6 +195,7 @@ export function DialogueRenderer() {
   // Apply node-level effects on mount
   const appliedRef = useRef<string | null>(null);
   useEffect(() => {
+    const pendingTimers: ReturnType<typeof setTimeout>[] = [];
     if (node && appliedRef.current !== node.id) {
       if (node.condition && !checkStoryCondition(node.condition, conditionCtx).pass) {
         closeNarrativeOverlay();
@@ -215,9 +217,10 @@ export function DialogueRenderer() {
       if (node.text) {
         const speaker = node.speaker;
         const text = resolvedText;
-        setTimeout(() => {
+        const historyTimer = setTimeout(() => {
           setHistory((prev) => [...prev, { speaker, text, timestamp: Date.now() }]);
         }, 0);
+        pendingTimers.push(historyTimer);
       }
 
       if (node.speaker) {
@@ -231,6 +234,9 @@ export function DialogueRenderer() {
         applyEffects(node.effects);
       }
     }
+    return () => {
+      for (const t of pendingTimers) clearTimeout(t);
+    };
   }, [node, visitNode, conditionCtx, resolvedText]);
 
   useEffect(() => {
@@ -241,6 +247,11 @@ export function DialogueRenderer() {
     playVoiceLineForNode(node.id);
     return () => stopVoiceLinePlayback();
   }, [isOpen, node?.id]);
+
+  // Cleanup skill-check banner timer on unmount
+  useEffect(() => () => {
+    if (skillCheckTimerRef.current !== null) clearTimeout(skillCheckTimerRef.current);
+  }, []);
 
   const handleClose = useCallback(() => {
     audioEngine.playSfx('ui_close');
@@ -283,7 +294,8 @@ export function DialogueRenderer() {
           skill: cond.skillCheckResult.skill,
           success: cond.skillCheckResult.success });
         if (!cond.skillCheckResult.success) return;
-        setTimeout(() => setSkillCheckBanner(null), 1500);
+        if (skillCheckTimerRef.current !== null) clearTimeout(skillCheckTimerRef.current);
+        skillCheckTimerRef.current = setTimeout(() => setSkillCheckBanner(null), 1500);
       }
 
       if (cond.consumedFlag) {

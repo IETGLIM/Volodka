@@ -244,8 +244,8 @@ export function StoryRenderer() {
     if (questNpcId) {
       eventBus.emit('npc:talked', { npcId: questNpcId, dialogueNodeId: node.id });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
-  }, [node?.id, visitNode, clearEffectTimers, scheduleEffectTimer, conditionCtx, node?.condition]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- node identity is keyed by id; property deps ensure content changes are caught
+  }, [node?.id, visitNode, clearEffectTimers, scheduleEffectTimer, conditionCtx, node?.condition, node?.effects, node?.autoSave, node?.soundEffect, node?.musicCue, node?.speaker, node?.sceneId, node?.accessibilityAnnounce]);
 
   const handleChoice = useCallback(
     (choice: StoryChoice) => {
