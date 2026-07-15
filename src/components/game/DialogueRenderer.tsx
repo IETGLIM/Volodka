@@ -125,10 +125,13 @@ export function DialogueRenderer() {
   // Now: isOpen = showStoryOverlay + has dialogue node (narrative overlay on 3D world)
   const [dialoguePackVersion, setDialoguePackVersion] = useState(0);
   const [isLoadingNode, setIsLoadingNode] = useState(false);
+  const errorRef = useRef<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     if (!currentNodeId || !isNarrativeGameDataLoaded()) return;
     let cancelled = false;
+    errorRef.current = null;
 
     // If the node isn't already cached, show a loading indicator
     const alreadyCached = Boolean(getDialogueNodes()[currentNodeId]);
@@ -144,6 +147,7 @@ export function DialogueRenderer() {
       .catch((error) => {
         if (!cancelled) {
           setIsLoadingNode(false);
+          errorRef.current = error instanceof Error ? error.message : String(error);
           devWarn('[DialogueRenderer] Failed to load dialogue node:', currentNodeId, error);
         }
       });
@@ -151,10 +155,10 @@ export function DialogueRenderer() {
     return () => {
       cancelled = true;
     };
-  }, [currentNodeId]);
+  }, [currentNodeId, retryCount]);
 
   const dialogueNodes = isNarrativeGameDataLoaded() ? getDialogueNodes() : null;
-  const isOpen = showStoryOverlay && (!!dialogueNodes?.[currentNodeId] || isLoadingNode);
+  const isOpen = showStoryOverlay && (!!dialogueNodes?.[currentNodeId] || isLoadingNode || !!errorRef.current);
   const node = useMemo(
     () => (dialogueNodes ? dialogueNodes[currentNodeId] : undefined),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
@@ -241,6 +245,11 @@ export function DialogueRenderer() {
   const handleClose = useCallback(() => {
     audioEngine.playSfx('ui_close');
     closeNarrativeOverlay();
+  }, []);
+
+  const handleRetry = useCallback(() => {
+    errorRef.current = null;
+    setRetryCount((c) => c + 1);
   }, []);
 
   const handleChoice = useCallback(
@@ -346,6 +355,23 @@ export function DialogueRenderer() {
       <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm">
         <div className="flex items-center gap-3 text-amber-300/80 text-lg font-mono animate-pulse">
           <span className="tracking-widest">···</span>
+        </div>
+      </div>
+    );
+  }
+  // Error state: dialogue node fetch failed
+  if (errorRef.current && !node) {
+    return (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm">
+        <div className="flex flex-col items-center gap-4">
+          <p className="text-red-400 text-lg font-mono">Не удалось загрузить диалог</p>
+          <button
+            type="button"
+            onClick={handleRetry}
+            className="px-4 py-2 rounded border border-cyan-500/40 text-cyan-300 text-sm font-mono bg-black/40 hover:bg-cyan-950/40 hover:border-cyan-400/60 transition-colors"
+          >
+            Повторить
+          </button>
         </div>
       </div>
     );

@@ -109,6 +109,8 @@ export function StoryRenderer() {
   const visitNode = useVisitNode();
   const nodeEffectGenRef = useRef(0);
   const effectTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const errorRef = useRef<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   const [appliedEffects, setAppliedEffects] = useState<StoryEffect[]>([]);
 
@@ -136,6 +138,7 @@ export function StoryRenderer() {
   useEffect(() => {
     if (!currentNodeId || !isNarrativeGameDataLoaded()) return;
     let cancelled = false;
+    errorRef.current = null;
 
     // If the node isn't already cached, show a loading indicator
     const alreadyCached = Boolean(getStoryNodes()[currentNodeId]);
@@ -154,13 +157,14 @@ export function StoryRenderer() {
       .catch((error) => {
         if (cancelled) return;
         setIsLoadingNode(false);
+        errorRef.current = error instanceof Error ? error.message : String(error);
         devWarn('[StoryRenderer] Failed to load story node:', currentNodeId, error);
       });
 
     return () => {
       cancelled = true;
     };
-  }, [currentNodeId]);
+  }, [currentNodeId, retryCount]);
 
   const storyNodes = isNarrativeGameDataLoaded() ? getStoryNodes() : null;
   const node = useMemo(
@@ -300,6 +304,11 @@ export function StoryRenderer() {
     closeNarrativeOverlay();
   }, []);
 
+  const handleRetry = useCallback(() => {
+    errorRef.current = null;
+    setRetryCount((c) => c + 1);
+  }, []);
+
   const trySelectStoryChoice = useCallback(
     (index: number) => {
       if (!node || !done) return;
@@ -323,7 +332,7 @@ export function StoryRenderer() {
 
   // World Director: story overlay renders during exploration (and cutscene handoff)
   // Show loading indicator while the node is being fetched
-  const isOpen = showStoryOverlay && (!!node || isLoadingNode);
+  const isOpen = showStoryOverlay && (!!node || isLoadingNode || !!errorRef.current);
   if (!isOpen) return null;
 
   // Loading state: node data is being fetched (not yet cached)
@@ -332,6 +341,23 @@ export function StoryRenderer() {
       <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm">
         <div className="flex items-center gap-3 text-cyan-300/80 text-lg font-mono animate-pulse">
           <span className="tracking-widest">···</span>
+        </div>
+      </div>
+    );
+  }
+  // Error state: story node fetch failed
+  if (errorRef.current && !node) {
+    return (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm">
+        <div className="flex flex-col items-center gap-4">
+          <p className="text-red-400 text-lg font-mono">Не удалось загрузить сюжетный узел</p>
+          <button
+            type="button"
+            onClick={handleRetry}
+            className="px-4 py-2 rounded border border-cyan-500/40 text-cyan-300 text-sm font-mono bg-black/40 hover:bg-cyan-950/40 hover:border-cyan-400/60 transition-colors"
+          >
+            Повторить
+          </button>
         </div>
       </div>
     );
