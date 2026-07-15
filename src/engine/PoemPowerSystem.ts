@@ -55,6 +55,12 @@ function clampEnergyDelta(amount: number): number {
   return clamp(current + amount, 0, PLAYER_ENERGY_MAX) - current;
 }
 
+/** Clamp karma so reverse-on-expiry cannot drive it below 0. Karma is non-negative. */
+function clampKarmaDelta(amount: number): number {
+  const current = snap().playerState.karma;
+  return clamp(current + amount, 0, Number.MAX_SAFE_INTEGER) - current;
+}
+
 function addSkill(skill: TrainablePlayerSkill, amount: number) {
   const snapshot = snap();
   const scaled = scalePoemPowerSkillDelta(
@@ -79,7 +85,9 @@ function addStress(amount: number) {
 }
 
 function addKarma(amount: number) {
-  dispatchGameAction({ type: 'player/addKarma', amount });
+  const clamped = clampKarmaDelta(amount);
+  if (clamped === 0) return;
+  dispatchGameAction({ type: 'player/addKarma', amount: clamped });
 }
 
 function setFlag(key: string, value: boolean) {

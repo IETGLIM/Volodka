@@ -67,6 +67,20 @@ export const ACT5_STRUCTURE: Record<string, StoryNodeStructure> = {
             "value": 1
           }
         ]
+      },
+      {
+        "text": "",
+        "next": "old_code",
+        "condition": {
+          "flag": "cafe_barista_secret_known"
+        },
+        "effects": [
+          {
+            "type": "addSkill",
+            "skill": "coding",
+            "value": 1
+          }
+        ]
       }
     ]
   },
@@ -143,6 +157,20 @@ export const ACT5_STRUCTURE: Record<string, StoryNodeStructure> = {
             "type": "setFlag",
             "flag": "low_empathy",
             "flagValue": true
+          }
+        ]
+      },
+      {
+        "text": "",
+        "next": "secret_meeting",
+        "condition": {
+          "flag": "network_member"
+        },
+        "effects": [
+          {
+            "type": "addSkill",
+            "skill": "intuition",
+            "value": 1
           }
         ]
       }
@@ -234,6 +262,17 @@ export const ACT5_STRUCTURE: Record<string, StoryNodeStructure> = {
             "type": "setFlag",
             "flag": "shared_final_poem",
             "flagValue": true
+          }
+        ]
+      },
+      {
+        "text": "",
+        "next": "rooftop_of_the_world",
+        "effects": [
+          {
+            "type": "addSkill",
+            "skill": "intuition",
+            "value": 1
           }
         ]
       }

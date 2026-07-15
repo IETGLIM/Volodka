@@ -893,10 +893,18 @@ export function CombatUI() {
   // Sync gamepad poem selection index from engine → local state for UI highlighting
   useEffect(() => {
     if (!gamepadConnected) return;
-    const interval = setInterval(() => {
-      setGamepadSelectedIdx(getGamepadSelectedPoemIndex());
-    }, 100);
-    return () => clearInterval(interval);
+    let rafId: number;
+    let lastIdx = -1;
+    const tick = () => {
+      const idx = getGamepadSelectedPoemIndex();
+      if (idx !== lastIdx) {
+        lastIdx = idx;
+        setGamepadSelectedIdx(idx);
+      }
+      rafId = requestAnimationFrame(tick);
+    };
+    rafId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafId);
   }, [gamepadConnected]);
 
   // Handle gamepad dpad navigation: up/down cycle poem selection in powers menu

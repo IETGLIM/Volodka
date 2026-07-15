@@ -69,6 +69,7 @@ import {
   reviveTransitionDirector,
 } from '@/engine/scene/TransitionDirector';
 import { detachKeyboardListeners } from '@/engine/keyboardInputState';
+import { clearNpcRegistry } from '@/engine/interaction/npcRegistry';
 import type { SceneId } from '@/shared/types/game';
 
 let engineDisposed = false;
@@ -97,6 +98,7 @@ export function disposeGameEngine(): void {
     clearPlayerExternalVelocity();
     clearPlayerRigidBody();
     resetInteractionSession();
+    clearNpcRegistry();
     suspendAutoCloseTimers();
     resetPlayerXpBatchFromEngine();
 

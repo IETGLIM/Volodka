@@ -113,9 +113,9 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
     scheduleId: 'schedule_solnysh',
     description: 'Алина — настоящее имя; Солныш — прозвище с детства, которым её зовёт Володька. Тридцать три года, блондинка с голубыми глазами. Лучшая подруга с детства, одноклассница из гимназии, дочь учительницы. Дизайнер и художник. Жена Лёни.',
     barkTexts: {
-      hostile: 'Не сейчас, Володька… мне нужно побыть одной.',
-      neutral: 'Привет. Ты снова задумчивый.',
-      friendly: 'Володька! Я как раз думала о тебе.',
+      hostile: ['Не сейчас, Володька… мне нужно побыть одной.'],
+      neutral: ['Привет. Ты снова задумчивый.'],
+      friendly: ['Володька! Я как раз думала о тебе.'],
     },
     appearance: {
       bodyColor: '#f0d8e8',
@@ -148,9 +148,9 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
     npcSplashProfile: 'npc_lyonya',
     description: 'Леонид — настоящее имя; Лёня — так его зовут дома. Обжарщик кофе и бариста, муж Алины. Спокойный, надёжный — рядом с ней уже много лет.',
     barkTexts: {
-      hostile: 'Не время для разговоров.',
-      neutral: 'Кофе свежий — налей себе.',
-      friendly: 'Володька! Как раз сварил новую обжарку.',
+      hostile: ['Не время для разговоров.'],
+      neutral: ['Кофе свежий — налей себе.'],
+      friendly: ['Володька! Как раз сварил новую обжарку.'],
     },
     appearance: {
       bodyColor: '#6a5040',
@@ -183,9 +183,9 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
     npcSplashProfile: 'npc_sergey',
     description: 'Сисадмин ночного смены. Молчаливый, но надёжный. Знает каждый кабель в серверной.',
     barkTexts: {
-      hostile: 'Не мешай работе.',
-      neutral: 'Ночная смена... Как всегда.',
-      friendly: 'Володька, у меня есть доступ к старым логам.',
+      hostile: ['Не мешай работе.'],
+      neutral: ['Ночная смена... Как всегда.'],
+      friendly: ['Володька, у меня есть доступ к старым логам.'],
     },
     appearance: {
       bodyColor: '#40a0c0',
@@ -218,9 +218,9 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
     npcSplashProfile: 'npc_lena',
     description: 'Хакер из Сети. Никто не знает её настоящего имени. Она — тень в цифровом мире.',
     barkTexts: {
-      hostile: 'Ты не тот, за кого себя выдаёшь.',
-      neutral: '...[тишина]...',
-      friendly: 'Володька, у меня есть кое-что для тебя. Из Сети.',
+      hostile: ['Ты не тот, за кого себя выдаёшь.'],
+      neutral: ['...[тишина]...'],
+      friendly: ['Володька, у меня есть кое-что для тебя. Из Сети.'],
     },
     appearance: {
       bodyColor: '#d040d0',
@@ -253,9 +253,9 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
     npcSplashProfile: 'npc_oleg',
     description: 'Охранник гильдии. Бывший военный. Выполняет приказы, но сомневается.',
     barkTexts: {
-      hostile: 'Стой. Доступ запрещён.',
-      neutral: 'Пропуск есть? Нет — проходи мимо.',
-      friendly: 'Володька... Будь осторожен. Они за тобой следят.',
+      hostile: ['Стой. Доступ запрещён.'],
+      neutral: ['Пропуск есть? Нет — проходи мимо.'],
+      friendly: ['Володька... Будь осторожен. Они за тобой следят.'],
     },
     appearance: {
       bodyColor: '#a0a0a0',
@@ -288,9 +288,9 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
     npcSplashProfile: 'npc_kate',
     description: 'Библиотекарь. Хранительница запрещённых книг. Тихая, но опасная.',
     barkTexts: {
-      hostile: 'Эта секция закрыта.',
-      neutral: 'Тише... Стены слушают.',
-      friendly: 'Володька, я припрятала кое-что для тебя.',
+      hostile: ['Эта секция закрыта.'],
+      neutral: ['Тише... Стены слушают.'],
+      friendly: ['Володька, я припрятала кое-что для тебя.'],
     },
     appearance: {
       bodyColor: '#60c060',
@@ -323,9 +323,9 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
     npcSplashProfile: 'npc_maxim',
     description: 'Лидер подпольного сопротивления. Бывший рабочий завода с боевыми имплантами.',
     barkTexts: {
-      hostile: 'Не время для разговоров.',
-      neutral: 'Сопротивление не спит.',
-      friendly: 'Володька, мы готовы идти за тобой.',
+      hostile: ['Не время для разговоров.'],
+      neutral: ['Сопротивление не спит.'],
+      friendly: ['Володька, мы готовы идти за тобой.'],
     },
     appearance: {
       bodyColor: '#c06040',
@@ -358,9 +358,9 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
     npcSplashProfile: 'npc_zeka',
     description: 'Старый рабочий и хакер. Знал Александра до Краха. Хранит секреты «Надзора».',
     barkTexts: {
-      hostile: 'Не подходи. Я не доверяю.',
-      neutral: 'Завод помнит всё.',
-      friendly: 'Володька, у меня есть данные по «Надзору».',
+      hostile: ['Не подходи. Я не доверяю.'],
+      neutral: ['Завод помнит всё.'],
+      friendly: ['Володька, у меня есть данные по «Надзору».'],
     },
     appearance: {
       bodyColor: '#808070',
@@ -393,9 +393,9 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
     npcSplashProfile: 'npc_anya',
     description: 'Хакер сопротивления. Взламывает камеры и координирует связь во время операций.',
     barkTexts: {
-      hostile: 'Сеть под наблюдением. Молчи.',
-      neutral: 'Пинг стабилен. Пока.',
-      friendly: 'Володька, я прикрою тыл в сети.',
+      hostile: ['Сеть под наблюдением. Молчи.'],
+      neutral: ['Пинг стабилен. Пока.'],
+      friendly: ['Володька, я прикрою тыл в сети.'],
     },
     appearance: {
       bodyColor: '#5090d0',
@@ -423,9 +423,9 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
     npcSplashProfile: 'npc_fisherman_trofim',
     description: 'Старик-рыбак на пирсе №3. Тридцать лет был сторожем завода «Хром-М» и до сих пор слышит гул под полом — даже сквозь воду.',
     barkTexts: {
-      hostile: 'Уйди с пирса. Рыбу пугаешь.',
-      neutral: 'Клюёт плохо. Река гудит.',
-      friendly: 'А, это ты. Садись, поплавок посторожим вместе.',
+      hostile: ['Уйди с пирса. Рыбу пугаешь.'],
+      neutral: ['Клюёт плохо. Река гудит.'],
+      friendly: ['А, это ты. Садись, поплавок посторожим вместе.'],
     },
     appearance: {
       bodyColor: '#3a4438',
@@ -452,9 +452,9 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
     npcSplashProfile: 'npc_baba_zina',
     description: 'Восьмидесятилетняя паяльщица завода «Хром-М». Ежедневно спускается в подвал к «Заре-М» и говорит, что машина отвечает стихами.',
     barkTexts: {
-      hostile: 'Машина не для любопытных. Уходи.',
-      neutral: 'Слушай. Не трогай. Сначала слушай.',
-      friendly: 'Поэт пришёл. Машина ждала.',
+      hostile: ['Машина не для любопытных. Уходи.'],
+      neutral: ['Слушай. Не трогай. Сначала слушай.'],
+      friendly: ['Поэт пришёл. Машина ждала.'],
     },
     appearance: {
       bodyColor: '#e8e4dc',
@@ -480,9 +480,9 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
     npcSplashProfile: 'npc_street_poet',
     description: 'Читает на площади то, что гильдия пометила как шум. Голос тихий, но дроны его почему-то не слышат.',
     barkTexts: {
-      hostile: 'Не смотри на меня. Смотри на строки.',
-      neutral: '...рифма ещё жива.',
-      friendly: 'Поэт? Тогда ты знаешь — слова тяжелеют к утру.',
+      hostile: ['Не смотри на меня. Смотри на строки.'],
+      neutral: ['...рифма ещё жива.'],
+      friendly: ['Поэт? Тогда ты знаешь — слова тяжелеют к утру.'],
     },
     appearance: {
       bodyColor: '#4a4a58',
@@ -508,9 +508,9 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
     npcSplashProfile: 'npc_marat_echo',
     description: 'Цифровой след первого поэта-прошивщика. Говорит через терминалы без питания сети.',
     barkTexts: {
-      hostile: '[помехи]',
-      neutral: 'Если читаешь это — я ещё в проводах.',
-      friendly: 'Не верь гильдии. Верь рифме.',
+      hostile: ['[помехи]'],
+      neutral: ['Если читаешь это — я ещё в проводах.'],
+      friendly: ['Не верь гильдии. Верь рифме.'],
     },
     appearance: {
       bodyColor: '#00ffaa',
@@ -536,9 +536,9 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
     npcSplashProfile: 'npc_guild_defector',
     description: 'Бывший инженер серверной гильдии. Помнит расписание дронов наизусть.',
     barkTexts: {
-      hostile: 'Не подходи. Я ещё не уверен, кто ты.',
-      neutral: 'Серверную я помню. Себя — почти нет.',
-      friendly: 'Спасибо. Ты вернул не данные — человека.',
+      hostile: ['Не подходи. Я ещё не уверен, кто ты.'],
+      neutral: ['Серверную я помню. Себя — почти нет.'],
+      friendly: ['Спасибо. Ты вернул не данные — человека.'],
     },
     appearance: {
       bodyColor: '#556677',

@@ -392,10 +392,10 @@ export const CHK_QUESTS: QuestDefinition[] = [
     hint: 'Собери все стихи и вернись к Ру у костра.',
     objectives: [
       {
-        id: 'poet_honored',
+        id: 'accept_honor',
         description: 'Принять честь Поэта у костра',
         type: 'flag_set',
-        target: 'tolpa_poet_honored',
+        target: 'tolpa_legendary_fire_complete',
         completed: false,
       },
     ],

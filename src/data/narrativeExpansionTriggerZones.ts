@@ -131,4 +131,47 @@ export const NARRATIVE_EXPANSION_TRIGGER_ZONES: TriggerZone[] = [
     interactionType: 'use',
     interactionLabel: 'Идти к ночному костру',
   },
+
+  /* ─── Return exits for extension scenes (bidirectional navigation) ─── */
+
+  {
+    id: 'library_basement_return',
+    sceneId: 'library_basement',
+    position: [0, 0.5, 3.0],
+    size: [1.8, 2.0, 1.2],
+    enterToast: 'Лестница наверх — в читальный зал.',
+    effects: [{ type: 'transitionScene', sceneId: 'library_day' }],
+    interactionType: 'use',
+    interactionLabel: 'Подняться наверх',
+  },
+  {
+    id: 'factory_roof_return',
+    sceneId: 'factory_roof',
+    position: [0, 0.5, 3.0],
+    size: [1.8, 2.0, 1.2],
+    enterToast: 'Спуск обратно в цех.',
+    effects: [{ type: 'transitionScene', sceneId: 'abandoned_factory' }],
+    interactionType: 'use',
+    interactionLabel: 'Спуститься в цех',
+  },
+  {
+    id: 'city_square_return',
+    sceneId: 'city_square',
+    position: [-3.0, 0.5, 0],
+    size: [1.8, 2.0, 1.2],
+    enterToast: 'Переулок ведёт обратно на улицу.',
+    effects: [{ type: 'transitionScene', sceneId: 'street_night' }],
+    interactionType: 'use',
+    interactionLabel: 'Вернуться на улицу',
+  },
+  {
+    id: 'pier_evening_return',
+    sceneId: 'pier_evening',
+    position: [3.0, 0.5, 0],
+    size: [1.8, 2.0, 1.2],
+    enterToast: 'Тропинка ведёт обратно в парк.',
+    effects: [{ type: 'transitionScene', sceneId: 'park_day' }],
+    interactionType: 'use',
+    interactionLabel: 'Вернуться в парк',
+  },
 ];

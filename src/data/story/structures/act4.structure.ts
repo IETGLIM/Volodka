@@ -629,6 +629,11 @@ export const ACT4_STRUCTURE: Record<string, StoryNodeStructure> = {
         "type": "setFlag",
         "flag": "guild_ally_found",
         "flagValue": true
+      },
+      {
+        "type": "setFlag",
+        "flag": "guild_purity_protocol",
+        "flagValue": true
       }
     ],
     "choices": [

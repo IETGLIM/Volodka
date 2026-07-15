@@ -87,3 +87,9 @@ export function getNpcBehaviorStateSnapshot(): Readonly<Record<string, NpcBehavi
 export function resetNpcBehaviorStatesForTests(): void {
   npcBehaviorStateMap.clear();
 }
+
+/** Full registry cleanup — call from disposeGameEngine to prevent stale THREE.Group refs during HMR. */
+export function clearNpcRegistry(): void {
+  npcGroupMap.clear();
+  npcBehaviorStateMap.clear();
+}

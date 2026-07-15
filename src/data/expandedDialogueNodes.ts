@@ -998,4 +998,475 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
       { text: 'Держись', next: null, effects: [{ type: 'addKarma', value: 1 }] },
     ],
   },
+
+  /* ═══════════════════════════════════════════════════════════
+     RETURN DIALOGUE NODES
+     ═══════════════════════════════════════════════════════════ */
+
+  solnysh_return: {
+    id: 'solnysh_return',
+    speaker: 'Солныш',
+    text: 'Володька... Ты снова пришёл. Умка вильнула хвостом — это её способ сказать «рада». А мой — вот: *обнимает быстро и крепко* Рассказывай, что нового. Или просто посидим — тоже хорошо.',
+    choices: [
+      {
+        text: 'Расскажи, что ты помнишь о мире до Краха.',
+        next: 'vera_before_crash',
+        effects: [{ type: 'addSkill', skill: 'intuition', value: 1 }],
+      },
+      {
+        text: 'Как Лёня? Вы в порядке?',
+        next: null,
+        effects: [
+          { type: 'npcChange', npcId: 'solnysh', npcChange: { relation: 2 } },
+          { type: 'addStat', stat: 'stress', value: -3 },
+        ],
+      },
+      {
+        text: 'Зайти к вам — поговорим у вас.',
+        next: null,
+        condition: { flag: 'solnysh_comforted' },
+        effects: [{ type: 'transitionScene', sceneId: 'solnysh_room' }],
+      },
+      { text: 'Увидимся, Солныш.', next: null },
+    ],
+  },
+
+  lyonya_return: {
+    id: 'lyonya_return',
+    speaker: 'Лёня',
+    text: 'Володька. Кофе ещё тёплый. Солныш спокойнее, когда ты заходишь — не пропадай надолго, ладно?',
+    choices: [
+      {
+        text: 'Где вино, которое ты прятал?',
+        next: 'lyonya_wine_hint',
+      },
+      {
+        text: 'Поговорим о переезде.',
+        next: 'lyonya_relocation_hint',
+        condition: { flag: 'solnysh_roof_toast_done' },
+      },
+      {
+        text: 'Как обжарка? Варим что-нибудь новое?',
+        next: null,
+        effects: [
+          { type: 'npcChange', npcId: 'lyonya', npcChange: { relation: 2 } },
+        ],
+      },
+      { text: 'Спасибо, Лёня. До встречи.', next: null },
+    ],
+  },
+
+  sergey_return: {
+    id: 'sergey_return',
+    speaker: 'Сергей',
+    text: '...[молчание]... Ты опять. Ночная смена — как патч: те же баги, другой дифф. Чем могу на этот раз?',
+    choices: [
+      {
+        text: 'Что интересного в логах сегодня?',
+        next: 'sergey_logs',
+        effects: [{ type: 'addSkill', skill: 'logic', value: 1 }],
+      },
+      {
+        text: 'Серверы по-прежнему «живые» ночью?',
+        next: 'sergey_night_shift',
+        effects: [{ type: 'addSkill', skill: 'intuition', value: 1 }],
+      },
+      {
+        text: 'Гильдия атакует Хранилище. Что видно?',
+        next: 'sergey_act3_raid',
+        condition: { requiredAct: 3, flag: 'vault_under_attack' },
+      },
+      { text: 'Ничего. Пока, Сергей.', next: null },
+    ],
+  },
+
+  lena_return: {
+    id: 'lena_return',
+    speaker: 'Лена',
+    text: '...[появляется из тени]... Опыт повторяется. Ты вернулся — значит, Сеть была права о тебе. Или ты просто упрямый.',
+    choices: [
+      {
+        text: 'Что нового в Сети?',
+        next: 'lena_from_network',
+        effects: [{ type: 'addSkill', skill: 'intuition', value: 1 }],
+      },
+      {
+        text: 'Нужна помощь — двери, данные, бэкдоры.',
+        next: 'lena_help',
+        condition: { flag: 'lena_network_connection' },
+      },
+      {
+        text: 'Зарему арестовали. Камеры?',
+        next: 'lena_act3_detention',
+        condition: { requiredAct: 3, flag: 'zarema_arrested' },
+      },
+      { text: 'Увидимся в тени.', next: null },
+    ],
+  },
+
+  oleg_return: {
+    id: 'oleg_return',
+    speaker: 'Олег',
+    text: 'Стой. Идентификация... Володька. Опять. Проходи. Камеры слепы с 3:14 до 3:17 — ты помнишь. Используй с умом.',
+    choices: [
+      {
+        text: 'Ты всё ещё читаешь Канта между обходами?',
+        next: 'oleg_not_typical',
+        effects: [{ type: 'addKarma', value: 1 }],
+      },
+      {
+        text: 'Нужны три минуты слепой зоны — для Заремы.',
+        next: 'oleg_act3_detention',
+        condition: { requiredAct: 3, flag: 'zarema_arrested', minNpcRelation: 45 },
+      },
+      {
+        text: 'Кто-нибудь подозревает тебя?',
+        next: null,
+        condition: { flag: 'oleg_sympathy' },
+        effects: [
+          { type: 'npcChange', npcId: 'oleg', npcChange: { relation: 2 } },
+          { type: 'addSkill', skill: 'persuasion', value: 1 },
+        ],
+      },
+      { text: 'Понял. Без проблем.', next: null },
+    ],
+  },
+
+  kate_return: {
+    id: 'kate_return',
+    speaker: 'Катя',
+    text: 'Тише... Стены по-прежнему слушают. Но ты знаешь, куда идти. Запрещённый фонд на месте — пока.',
+    choices: [
+      {
+        text: 'Покажи мне запрещённые книги.',
+        next: 'kate_forbidden_books',
+        effects: [{ type: 'addSkill', skill: 'writing', value: 1 }],
+      },
+      {
+        text: 'Виктория — это Хранилище. Что у тебя есть о ней?',
+        next: 'kate_act3_maria',
+        condition: { requiredAct: 3, flag: 'maria_truth_revealed' },
+      },
+      {
+        text: 'Ты в безопасности? Рисковать книгами...',
+        next: 'kate_why_risk',
+        effects: [{ type: 'addKarma', value: 1 }],
+      },
+      { text: 'Я вернусь позже.', next: null },
+    ],
+  },
+
+  maxim_return: {
+    id: 'maxim_return',
+    speaker: 'Максим',
+    text: 'Володька. Сопротивление не спит — и ты, вижу, тоже. Что на этот раз? План, помощь или просто ярость?',
+    choices: [
+      {
+        text: 'Расскажи о планах сопротивления.',
+        next: null,
+        effects: [{ type: 'addSkill', skill: 'persuasion', value: 1 }],
+      },
+      {
+        text: 'Я готов действовать. Что нужно?',
+        next: null,
+        condition: { flag: 'resistance_joined' },
+        effects: [
+          { type: 'setFlag', flag: 'resistance_mission_ready', flagValue: true },
+          { type: 'addKarma', value: 2 },
+        ],
+      },
+      { text: 'Позже, Максим.', next: null },
+    ],
+  },
+
+  zeka_return: {
+    id: 'zeka_return',
+    speaker: 'Жека',
+    text: 'Не бойся, Володька. Снова пришёл за ключами? «Надзор» не стал проще — но и мы не стали слабее.',
+    choices: [
+      {
+        text: 'Что ты знаешь о «Надзоре»?',
+        next: null,
+        effects: [
+          { type: 'addSkill', skill: 'coding', value: 1 },
+          { type: 'npcChange', npcId: 'zeka', npcChange: { relation: 2 } },
+        ],
+      },
+      {
+        text: 'Поможешь с проникновением?',
+        next: null,
+        condition: { flag: 'zeka_trusted' },
+        effects: [
+          { type: 'addSkill', skill: 'logic', value: 1 },
+        ],
+      },
+      { text: 'Спасибо. Пока, Жека.', next: null },
+    ],
+  },
+
+  anya_return: {
+    id: 'anya_return',
+    speaker: 'Аня',
+    text: 'Володька. Пинг стабилен. Камеры — мои глаза. Если нужно пройти или вытащить данные — я на связи.',
+    choices: [
+      {
+        text: 'Нужна помощь с офисом гильдии.',
+        next: null,
+        effects: [
+          { type: 'addSkill', skill: 'coding', value: 1 },
+          { type: 'npcChange', npcId: 'anya', npcChange: { relation: 2 } },
+        ],
+      },
+      {
+        text: 'Координируй связь во время операции.',
+        next: null,
+        condition: { flag: 'resistance_joined' },
+        effects: [
+          { type: 'setFlag', flag: 'resistance_network_established', flagValue: true },
+          { type: 'addKarma', value: 2 },
+        ],
+      },
+      { text: 'Увидимся, Аня.', next: null },
+    ],
+  },
+
+  fisherman_trofim_return: {
+    id: 'fisherman_trofim_return',
+    speaker: 'Трофим',
+    text: 'Опять пришёл? *не поднимая глаз от поплавка* Река шумит — не замолкает. Как и ты, парень. Садись. Слушай воду.',
+    choices: [
+      {
+        text: 'Расскажи про завод ещё.',
+        next: 'trofim_factory_tales',
+        effects: [{ type: 'addSkill', skill: 'intuition', value: 1 }],
+      },
+      {
+        text: 'У меня есть бутылка «777».',
+        next: 'trofim_key',
+        condition: { flag: 'pier_portwine_taken' },
+      },
+      {
+        text: 'Я был внизу. Там не пусто.',
+        next: 'trofim_after_basement',
+        condition: { flag: 'basement_terminal_accessed' },
+      },
+      { text: 'Пойду я, Трофим.', next: null },
+    ],
+  },
+
+  baba_zina_return: {
+    id: 'baba_zina_return',
+    speaker: 'Баба Зина',
+    text: 'Поэт вернулся. Машина ждала. Садись. Не трогай — сначала слушай. «Заря-М» поёт тише, когда рядом тот, кто слышит.',
+    choices: [
+      {
+        text: 'Я хочу услышать машину.',
+        next: null,
+        effects: [{ type: 'visitStoryNode', nodeId: 'basement_explore_mode' }],
+      },
+      {
+        text: 'Что машина сказала в прошлый раз?',
+        next: null,
+        condition: { flag: 'basement_terminal_accessed' },
+        effects: [
+          { type: 'addSkill', skill: 'intuition', value: 1 },
+          { type: 'npcChange', npcId: 'baba_zina', npcChange: { relation: 2 } },
+        ],
+      },
+      { text: 'Потом, Баба Зина.', next: null },
+    ],
+  },
+
+  street_poet_return: {
+    id: 'street_poet_return',
+    speaker: 'Уличный поэт',
+    speakerId: 'street_poet',
+    text: '*долго молчит, потом чуть наклоняет голову* Снова. Слова тяжелеют. Но ты несёшь — и это уже кое-что.',
+    choices: [
+      {
+        text: 'Прочитать ответное четверостишие',
+        next: null,
+        effects: [{ type: 'visitStoryNode', nodeId: 'act4_quiet_poet_reply' }],
+      },
+      {
+        text: 'Звезда ещё горит — куда она указывает?',
+        next: 'street_poet_guiding_star',
+        condition: { collectedPoem: 'poem_3' },
+      },
+      { text: 'Поблагодарить и уйти.', next: null },
+    ],
+  },
+
+  marat_echo_return: {
+    id: 'marat_echo_return',
+    speaker: 'Марат (эхо)',
+    text: '[терминал мерцает] ...ты... снова... Здесь... провода... помнят... Не верь... гильдии... Верь... рифме...',
+    choices: [
+      {
+        text: 'Ответить строкой из тетради',
+        next: null,
+        effects: [{ type: 'visitStoryNode', nodeId: 'library_marat_echo' }],
+      },
+      {
+        text: 'Кто тебя оставил здесь?',
+        next: null,
+        effects: [
+          { type: 'addSkill', skill: 'intuition', value: 1 },
+          { type: 'addKarma', value: 1 },
+        ],
+      },
+    ],
+  },
+
+  guild_defector_return: {
+    id: 'guild_defector_return',
+    speaker: 'Перебежчик',
+    text: 'Снова пришёл проверить? Я... держусь. Серверную помню — каждый кабель, каждый порт. Если нужно — спрашивай. Я теперь по ту сторону стены.',
+    choices: [
+      {
+        text: 'Расскажи про серверную — все детали.',
+        next: null,
+        effects: [
+          { type: 'addSkill', skill: 'coding', value: 1 },
+          { type: 'setFlag', flag: 'defector_server_intel', flagValue: true },
+          { type: 'npcChange', npcId: 'guild_defector', npcChange: { relation: 3 } },
+        ],
+      },
+      {
+        text: 'Как ты? В безопасности?',
+        next: null,
+        effects: [
+          { type: 'addKarma', value: 2 },
+          { type: 'npcChange', npcId: 'guild_defector', npcChange: { relation: 2 } },
+        ],
+      },
+      { text: 'Держись. Увидимся.', next: null },
+    ],
+  },
+
+  boris_return: {
+    id: 'boris_return',
+    speaker: 'Борис',
+    text: 'Володька! Между третьим и четвёртым станками — тетрадь на месте. Я дописал ещё две страницы. Хочешь послушать?',
+    choices: [
+      {
+        text: 'Покажи.',
+        next: 'boris_poem',
+        effects: [{ type: 'addKarma', value: 2 }],
+      },
+      {
+        text: 'Станки всё ещё «говорят» стихами?',
+        next: 'boris_risk',
+        effects: [{ type: 'addSkill', skill: 'intuition', value: 1 }],
+      },
+      {
+        text: '«Заря-М» на заводе — ты слышал, как она «поёт»?',
+        next: 'boris_act3_factory',
+        condition: { requiredAct: 2, flag: 'wants_visit_factory' },
+      },
+      { text: 'Пиши дальше, Борис.', next: null },
+    ],
+  },
+
+  tamara_return: {
+    id: 'tamara_return',
+    speaker: 'Тамара',
+    text: 'Володька. Библиотека чувствует твоё возвращение — страницы шелестят, когда ты входишь. Что ищешь на этот раз?',
+    choices: [
+      {
+        text: 'Запрещённые тексты. Те, что не в Сети.',
+        next: 'tamara_forbidden',
+        effects: [{ type: 'addSkill', skill: 'writing', value: 1 }],
+      },
+      {
+        text: 'Нужны слова, которые остановят гильдию.',
+        next: 'tamara_act3_resistance',
+        condition: { requiredAct: 3, flag: 'vault_under_attack' },
+      },
+      {
+        text: 'Просто тишины. И книг.',
+        next: 'tamara_peace',
+        effects: [{ type: 'addStat', stat: 'stress', value: -5 }],
+      },
+    ],
+  },
+
+  grisha_return: {
+    id: 'grisha_return',
+    speaker: 'Гриша',
+    text: 'Снова на крыше? Хорошо. Видишь — фиолетовый луч всё ещё пульсирует над башней. Город не меняется. Но мы — можем.',
+    choices: [
+      {
+        text: 'Что ты видишь с крыши сегодня?',
+        next: 'grisha_vision',
+        effects: [{ type: 'addSkill', skill: 'intuition', value: 1 }],
+      },
+      {
+        text: 'Видишь атаку на Хранилище?',
+        next: 'grisha_act3_vault',
+        condition: { requiredAct: 3, flag: 'vault_under_attack' },
+      },
+      {
+        text: 'Возьми. Тут немного еды.',
+        next: null,
+        effects: [
+          { type: 'addKarma', value: 3 },
+          { type: 'npcChange', npcId: 'grisha', npcChange: { relation: 3 } },
+        ],
+      },
+      { text: 'Красиво здесь. Но холодно.', next: 'grisha_cold' },
+    ],
+  },
+
+  kira_return: {
+    id: 'kira_return',
+    speaker: 'Кира',
+    text: 'Володька-Володька. Слухи о твоём упрямстве преувеличены — ты ещё упрямее. Что на этот раз? Информация? Или просто скучно?',
+    choices: [
+      {
+        text: 'Что ты знаешь?',
+        next: 'kira_info',
+        effects: [{ type: 'addSkill', skill: 'intuition', value: 1 }],
+      },
+      {
+        text: 'Кто предал Зарему? У тебя есть имя?',
+        next: 'kira_act3_betrayal',
+        condition: { requiredAct: 3, flag: 'zarema_arrested' },
+      },
+      {
+        text: 'Стихи не продаются, Кира.',
+        next: null,
+        effects: [{ type: 'addKarma', value: 2 }],
+      },
+      { text: 'До встречи, информатор.', next: null },
+    ],
+  },
+
+  viktor_return: {
+    id: 'viktor_return',
+    speaker: 'Виктор',
+    text: 'Володька. Терминал мигает — значит, ты снова здесь. Он пережил Сбой, переживёт и тебя. Садись. Что на этот раз?',
+    choices: [
+      {
+        text: 'Расскажи о Сбое ещё раз.',
+        next: 'viktor_crash',
+        effects: [{ type: 'addSkill', skill: 'intuition', value: 1 }],
+      },
+      {
+        text: 'Научи меня читать Сеть, как книгу.',
+        next: null,
+        condition: { flag: 'viktor_archive_seen' },
+        effects: [
+          { type: 'addSkill', skill: 'coding', value: 1 },
+          { type: 'npcChange', npcId: 'viktor', npcChange: { relation: 3 } },
+        ],
+      },
+      {
+        text: 'Гильдия атакует Хранилище. Что в твоём архиве?',
+        next: 'viktor_act3_vault',
+        condition: { requiredAct: 3, flag: 'vault_under_attack' },
+      },
+      { text: 'Спасибо, Виктор. Увидимся.', next: null },
+    ],
+  },
 }

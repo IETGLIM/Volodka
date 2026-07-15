@@ -665,4 +665,169 @@ export const DIALOGUE_PART2: Record<string, DialogueNode> = {
     ],
   },
 
+  /* ═══════════════════════════════════════════════════════════
+     RETURN DIALOGUE NODES
+     ═══════════════════════════════════════════════════════════ */
+
+  office_colleague_return: {
+    id: 'office_colleague_return',
+    speaker: 'Коллега',
+    text: 'Псс... Ты снова здесь. *оглядывается* Я... я не против. Просто — тише, ладно? После прошлого раза я три дня проверял, не следят ли за мной.',
+    choices: [
+      {
+        text: 'Что нового? Какие-нибудь свежие логи?',
+        next: 'office_colleague_share',
+        effects: [{ type: 'addSkill', skill: 'intuition', value: 1 }],
+      },
+      {
+        text: 'Тебе нечего бояться. Я прикрою.',
+        next: null,
+        condition: { flag: 'colleague_trusted' },
+        effects: [
+          { type: 'npcChange', npcId: 'office_colleague', npcChange: { relation: 3 } },
+          { type: 'addStat', stat: 'stress', value: -2 },
+        ],
+      },
+      {
+        text: 'Расскажи, что ещё ты слышал.',
+        next: 'colleague_gossip',
+        condition: { flag: 'colleague_shared_poetry_code' },
+      },
+      {
+        text: 'Не буду тебя задерживать. Увидимся.',
+        next: null,
+      },
+    ],
+  },
+
+  office_alexander_return: {
+    id: 'office_alexander_return',
+    speaker: 'Александр',
+    text: 'Володька. Ты вернулся. Я... не ожидал. Впрочем, если ты здесь — значит, тебе что-то нужно. Гильдия не ждёт, но и не гонит. Пока.',
+    choices: [
+      {
+        text: 'Расскажи, что происходит в гильдии.',
+        next: 'office_alexander_politics',
+        condition: { flag: 'alexander_suspicious' },
+        effects: [{ type: 'addSkill', skill: 'logic', value: 1 }],
+      },
+      {
+        text: 'Я нашёл кое-что в инциденте #4729.',
+        next: 'office_alexander_task',
+        condition: { flag: 'started_decryption' },
+      },
+      {
+        text: 'Александр... Ты плачешь по ночам. Почему?',
+        next: null,
+        condition: { flag: 'alexander_crying_known' },
+        effects: [
+          { type: 'addSkill', skill: 'empathy', value: 1 },
+          { type: 'npcChange', npcId: 'office_alexander', npcChange: { relation: 3 } },
+        ],
+      },
+      {
+        text: 'Нам не о чем говорить.',
+        next: null,
+        effects: [{ type: 'addStat', stat: 'stress', value: 2 }],
+      },
+    ],
+  },
+
+  cafe_barista_return: {
+    id: 'cafe_barista_return',
+    speaker: 'Бариста',
+    text: 'Снова в «Синей яме»? Тебе здесь рады. Хотя... после того, что ты узнал, — может, уже не за кофе приходишь?',
+    choices: [
+      {
+        text: 'Кофе. Просто кофе.',
+        next: 'cafe_barista_dialogue',
+        effects: [{ type: 'addStat', stat: 'energy', value: 10 }],
+      },
+      {
+        text: 'Какие новости от Сети?',
+        next: 'cafe_barista_network_hint',
+        condition: { flag: 'network_contact' },
+        effects: [{ type: 'addSkill', skill: 'intuition', value: 1 }],
+      },
+      {
+        text: 'Новые салфетки со стихами?',
+        next: 'cafe_barista_secret_messages',
+        condition: { flag: 'barista_poems_received' },
+      },
+      {
+        text: 'Увидимся, бариста.',
+        next: null,
+      },
+    ],
+  },
+
+  maria_return: {
+    id: 'maria_return',
+    speaker: 'Виктория',
+    speakerId: 'maria',
+    text: 'Ты вернулся. Я... рада. Между нами — провода, данные, тишина. Но что-то тянет тебя сюда. Или кто-то.',
+    choices: [
+      {
+        text: 'Расскажи мне больше о себе. Кто ты на самом деле?',
+        next: 'maria_dialogue_identity',
+        condition: { minNpcRelation: 40 },
+        effects: [{ type: 'addSkill', skill: 'empathy', value: 1 }],
+      },
+      {
+        text: 'Что ты знаешь об Архиве-7?',
+        next: null,
+        condition: { flag: 'maria_revealed_past' },
+        effects: [
+          { type: 'setFlag', flag: 'maria_archive_asked', flagValue: true },
+          { type: 'npcChange', npcId: 'maria', npcChange: { relation: 3 } },
+        ],
+      },
+      {
+        text: 'Гильдия не спит. Ты в опасности?',
+        next: null,
+        condition: { flag: 'maria_pledge_help' },
+        effects: [
+          { type: 'addKarma', value: 2 },
+          { type: 'npcChange', npcId: 'maria', npcChange: { relation: 2 } },
+        ],
+      },
+      {
+        text: 'Мне пора.',
+        next: null,
+      },
+    ],
+  },
+
+  office_dmitry_return: {
+    id: 'office_dmitry_return',
+    speaker: 'Дмитрий',
+    speakerId: 'dmitry',
+    text: 'Володька... Ты вернулся. Я... рад. Не думал, что скажу такое о ком-то из офиса. Садись. Только не при Александре.',
+    choices: [
+      {
+        text: 'Что нового в старых логах?',
+        next: 'dmitry_guild_knowledge',
+        effects: [{ type: 'addSkill', skill: 'logic', value: 1 }],
+      },
+      {
+        text: 'Как твои тайные сервера? Целы?',
+        next: null,
+        condition: { flag: 'dmitry_secret_shared' },
+        effects: [
+          { type: 'npcChange', npcId: 'office_dmitry', npcChange: { relation: 3 } },
+          { type: 'addKarma', value: 2 },
+        ],
+      },
+      {
+        text: 'Помоги с расшифровкой инцидента.',
+        next: 'dmitry_technical_assist',
+        condition: { flag: 'started_decryption' },
+      },
+      {
+        text: 'Увидимся, Дмитрий.',
+        next: null,
+      },
+    ],
+  },
+
 };

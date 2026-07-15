@@ -1911,4 +1911,76 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
     ],
   },
 
+  /* ═══════════════════════════════════════════════════════════
+     RETURN DIALOGUE NODES
+     ═══════════════════════════════════════════════════════════ */
+
+  albert_return: {
+    id: 'albert_return',
+    speaker: 'Альберт',
+    speakerId: 'albert',
+    text: 'Снова за столом? Хорошо. Я как раз размышлял: если каждая строка кода — это предложение, то рекурсия — это рефрен. А ты? Вернулся — значит, вопрос не отпускает.',
+    choices: [
+      {
+        text: 'Расскажи ещё о связи кода и стихов.',
+        next: 'albert_greeting_poetry',
+        effects: [{ type: 'addSkill', skill: 'intuition', value: 1 }],
+      },
+      {
+        text: 'Как ты сам? Всё сидишь в кафе?',
+        next: null,
+        effects: [
+          { type: 'npcChange', npcId: 'albert', npcChange: { relation: 2 } },
+        ],
+      },
+      {
+        text: 'Научи меня — код и стихи одно?',
+        next: null,
+        condition: { flag: 'albert_relation_warm' },
+        effects: [{ type: 'visitStoryNode', nodeId: 'cafe_albert_lesson_intro' }],
+      },
+      {
+        text: 'Мне пора. До встречи, философ.',
+        next: null,
+      },
+    ],
+  },
+
+  zarema_return: {
+    id: 'zarema_return',
+    speaker: 'Зарема',
+    speakerId: 'zarema',
+    text: 'Опять пришёл... И опять бледный. Я ведь не зря волнуюсь, Володька. Садись — суп ещё тёплый. Хотя бы чуть-чуть поешь.',
+    choices: [
+      {
+        text: 'Хорошо, Зарема. Налей.',
+        next: 'zarema_greeting_warm',
+        effects: [
+          { type: 'addStat', stat: 'energy', value: 15 },
+          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 3 } },
+        ],
+      },
+      {
+        text: 'Как твои дела? Кто-нибудь обижает?',
+        next: 'zarema_daily_life',
+        condition: { flag: 'zarema_relation_warm', minNpcRelation: 55 },
+        effects: [
+          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 2 } },
+        ],
+      },
+      {
+        text: 'Спасибо, но я не голоден. Просто зашёл проведать.',
+        next: null,
+        effects: [
+          { type: 'addKarma', value: 2 },
+          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 1 } },
+        ],
+      },
+      {
+        text: 'Увидимся, Зарема.',
+        next: null,
+      },
+    ],
+  },
+
 };

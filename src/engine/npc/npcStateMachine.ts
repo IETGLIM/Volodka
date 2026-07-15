@@ -21,7 +21,7 @@ export const VALID_NPC_BEHAVIOR_TRANSITIONS: Record<
   idle: ['walk', 'talk', 'combat'],
   walk: ['idle', 'talk', 'combat'],
   talk: ['idle', 'walk', 'combat'],
-  combat: ['idle', 'walk'],
+  combat: ['idle', 'walk', 'talk'],
 };
 
 export interface NpcBehaviorContext {

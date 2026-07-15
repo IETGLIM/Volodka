@@ -811,4 +811,175 @@ export const CHK_DIALOGUE_NODES: Record<string, DialogueNode> = {
       { text: 'Встать и уйти.', next: null },
     ],
   },
+
+  /* ═══════════════════════════════════════════════════════════
+     RETURN DIALOGUE NODES (missing)
+     ═══════════════════════════════════════════════════════════ */
+
+  chk_based_return: {
+    id: 'chk_based_return',
+    speaker: 'Басед',
+    speakerId: 'chk_based',
+    text: 'Снова у ящика? Хорошо. Портвейн не закончился — значит, и мы тоже. Наливай. Рассказывай, что там в проде, или просто пей.',
+    contextNote: 'Басед держит бутылку наготове. Рядом чистый бокал — как будто ждал именно тебя.',
+    choices: [
+      {
+        text: 'За uptime!',
+        next: 'chk_based_oath',
+      },
+      {
+        text: 'Новый портвейн? Что за сорт?',
+        next: null,
+        effects: [
+          { type: 'npcChange', npcId: 'chk_based', npcChange: { relation: 2 } },
+          { type: 'addStat', stat: 'stress', value: -3 },
+        ],
+      },
+      {
+        text: 'Держи «777».',
+        next: 'chk_based_gift_wine',
+        condition: { hasItem: 'port_wine_777' },
+      },
+      { text: 'Просто посижу.', next: null },
+    ],
+  },
+
+  chk_smert_return: {
+    id: 'chk_smert_return',
+    speaker: 'Смерть',
+    speakerId: 'chk_smert',
+    text: 'А, наблюдатель вернулся. Суперпозиция разрешилась в «здесь и сейчас». Будешь чай или сразу к запутанности?',
+    contextNote: 'Смерть помешивает чай и смотрит сквозь пар — как сквозь data pipeline.',
+    choices: [
+      {
+        text: 'Объясни квантовую запутанность для PM.',
+        next: 'chk_smert_quantum',
+      },
+      {
+        text: 'Просто чай. Без физики.',
+        next: null,
+        effects: [
+          { type: 'addStat', stat: 'stress', value: -3 },
+          { type: 'npcChange', npcId: 'chk_smert', npcChange: { relation: 1 } },
+        ],
+      },
+      {
+        text: 'Баги и свобода воли — ты в это веришь?',
+        next: null,
+        condition: { flag: 'tolpa_quantum_talk' },
+        effects: [
+          { type: 'addSkill', skill: 'intuition', value: 1 },
+          { type: 'npcChange', npcId: 'chk_smert', npcChange: { relation: 3 } },
+        ],
+      },
+      { text: 'Потом, Смерть.', next: null },
+    ],
+  },
+
+  chk_stalker_return: {
+    id: 'chk_stalker_return',
+    speaker: 'Сталкер',
+    speakerId: 'chk_stalker',
+    text: 'Тропа помнит шаги. Ты — уже не гость. Но тропы меняются. Спрашивай — или иди.',
+    contextNote: 'Сталкер стоит на краю поляны, шарф закрывает лицо. Глаза сканируют лес, как систему мониторинга.',
+    choices: [
+      {
+        text: 'Покажи безопасный путь обратно в город.',
+        next: null,
+        effects: [
+          { type: 'setFlag', flag: 'chk_path_known', flagValue: true },
+          { type: 'npcChange', npcId: 'chk_stalker', npcChange: { relation: 2 } },
+        ],
+      },
+      {
+        text: 'Нужен путь к гильдии — через лес.',
+        next: 'chk_stalker_act4_route',
+        condition: { flag: 'ready_for_infiltration' },
+      },
+      {
+        text: 'Звезда на небе — или в коде?',
+        next: 'chk_stalker_guiding_star',
+        condition: { collectedPoem: 'poem_3' },
+      },
+      { text: 'Я сам найду.', next: null },
+    ],
+  },
+
+  chk_elis_return: {
+    id: 'chk_elis_return',
+    speaker: 'Элис',
+    speakerId: 'chk_elis',
+    text: 'Тест-кейсы опять зелёные — значит, можно петь. Вернулся за аккордами или за разговорами?',
+    contextNote: 'Элис перебирает струны. Третья струна дребезжит, но она не обращает внимания.',
+    choices: [
+      {
+        text: 'Поём вместе.',
+        next: 'chk_elis_song',
+      },
+      {
+        text: 'У меня есть стих «Город шепчет»...',
+        next: 'chk_elis_poem_reaction',
+        condition: { collectedPoem: 'poem_act6_01' },
+      },
+      {
+        text: 'Только слушаю.',
+        next: null,
+        effects: [
+          { type: 'npcChange', npcId: 'chk_elis', npcChange: { relation: 2 } },
+          { type: 'addStat', stat: 'stress', value: -3 },
+        ],
+      },
+    ],
+  },
+
+  chk_guest_devops_return: {
+    id: 'chk_guest_devops_return',
+    speaker: 'Гость (DevOps)',
+    speakerId: 'chk_guest_devops',
+    text: 'Опять заехал — релиз закончился, а спать не хочется. Кто-нибудь нашёл мой термос? Там точно не чай.',
+    choices: [
+      {
+        text: 'Расскажи war story.',
+        next: 'chk_guest_devops_war',
+      },
+      {
+        text: 'Как CI? Всё падает?',
+        next: null,
+        effects: [
+          { type: 'npcChange', npcId: 'chk_guest_devops', npcChange: { relation: 2 } },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+        ],
+      },
+      {
+        text: 'Просто отдыхай у костра.',
+        next: null,
+        effects: [{ type: 'addStat', stat: 'stress', value: -2 }],
+      },
+    ],
+  },
+
+  chk_guest_analyst_return: {
+    id: 'chk_guest_analyst_return',
+    speaker: 'Гость (Аналитик)',
+    speakerId: 'chk_guest_analyst',
+    text: 'Новая выборка! Вернулся — значит, гипотеза подтверждается: карма и упрямство коррелируют. Проверим?',
+    choices: [
+      {
+        text: 'Наука у костра — лучшая наука.',
+        next: 'chk_guest_analyst_karma',
+      },
+      {
+        text: 'Новые графики? Что говорят метрики?',
+        next: null,
+        effects: [
+          { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'npcChange', npcId: 'chk_guest_analyst', npcChange: { relation: 2 } },
+        ],
+      },
+      {
+        text: 'Не мешай отдыхать.',
+        next: null,
+      },
+    ],
+  },
 };
