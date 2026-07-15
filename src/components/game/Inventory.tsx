@@ -73,7 +73,7 @@ export function Inventory({ open, onClose, onOpenPoetryBook }: InventoryProps) {
     [selectItemById],
   );
 
-  const activeFilterLabel = INVENTORY_CATEGORY_FILTER_OPTIONS.find(
+  const _activeFilterLabel = INVENTORY_CATEGORY_FILTER_OPTIONS.find(
     (option) => option.value === categoryFilter,
   )?.label ?? categoryFilter;
 

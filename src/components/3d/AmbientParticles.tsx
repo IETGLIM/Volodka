@@ -71,7 +71,7 @@ export function AmbientParticles(config: AmbientParticlesConfig = {}) {
     }
 
     return { positions: pos, phases: ph, baseX: bx, baseZ: bz };
-  }, [count, bxMin, bxMax, bzMin, bzMax, xRange, yRange, zRange]);
+  }, [count, bxMin, byMin, bzMin, xRange, yRange, zRange]);
 
   useFrame(({ clock }) => {
     if (!pointsRef.current) return;

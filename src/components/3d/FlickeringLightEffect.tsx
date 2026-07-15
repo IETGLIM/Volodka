@@ -5,7 +5,7 @@
  *  random intensity flicker for a horror-industrial atmosphere.
  */
 
-import { useRef, useMemo, useEffect } from 'react';
+import { useRef } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import { useIsMobileVisual } from '@/hooks/use-mobile';

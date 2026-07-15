@@ -97,7 +97,8 @@ export function sumBuffEffect(state: CombatState, target: 'player' | 'enemy', ef
   return state.buffs
     .filter((b) => b.target === target && b.effect.type === effectType)
     .reduce((sum, b) => {
-      if ('value' in b.effect) return sum + (b.effect as { type: string; value: number }).value;
+      const eff = b.effect;
+      if ('value' in eff) return sum + eff.value;
       return sum;
     }, 0);
 }

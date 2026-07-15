@@ -11,7 +11,6 @@ import { useEffect, useRef } from 'react';
 import { useGameStore } from '@/store/gameStore';
 import { getGamePhase } from '@/shared/gamePhase';
 import {
-  GAMEPAD,
   pollGamepad,
   consumeButtonPress,
 } from '@/engine/input/gamepad';

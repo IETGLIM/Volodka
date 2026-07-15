@@ -102,9 +102,10 @@ export function ActiveQuestMiniTracker() {
   }, [activeQuests.length, cycleIndex]);
 
   /* ── Reset when quests change significantly ── */
+  const activeQuestIdKey = activeQuests.map((q) => q.questId).join(',');
   useEffect(() => {
     setCycleIndex(0);
-  }, [activeQuests.map((q) => q.questId).join(',')]);
+  }, [activeQuestIdKey]);
 
   /* ── Listen for quest selection events from other UI ── */
   useEffect(() => {

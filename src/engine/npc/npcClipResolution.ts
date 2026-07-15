@@ -47,6 +47,10 @@ const GENERIC_ALIASES: Record<NPCAnimationState, readonly string[]> = {
     'sleeping', 'Sleeping', 'Lie_Idle', 'Laying Down Idle',
     'Rig_Medium|Lie_Idle', 'Sitting_Idle_Loop',
   ],
+  combat: [
+    'fight_idle', 'Fight_Idle', 'combat', 'Combat', 'boxing',
+    'Boxing', 'Kickboxing', 'kickboxing', 'Ready',
+  ],
 };
 
 const MIXAMO_ALIASES = getMixamoClipAliasesByNpcState();
@@ -81,6 +85,8 @@ function overrideNameForState(
       return overrides?.sit; // work falls back to sit override
     case 'sleep':
       return overrides?.idle; // sleep falls back to idle override
+    case 'combat':
+      return overrides?.idle; // combat falls back to idle override until combat-specific clips are available
     default: {
       const _exhaustive: never = state;
       return _exhaustive;

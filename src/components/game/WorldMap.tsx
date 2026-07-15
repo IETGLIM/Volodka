@@ -9,14 +9,13 @@ import { useMemo, useState, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FocusTrap } from '@/components/a11y/FocusTrap';
 import { usePanelDialog } from '@/components/a11y/usePanelDialog';
-import { X, Map as MapIcon, Lock, Clock, MapPin, Navigation, AlertCircle } from 'lucide-react';
+import { X, Map as MapIcon, Lock, Clock, MapPin, Navigation } from 'lucide-react';
 import { useGameStore } from '@/store/gameStore';
 import { useFastTravelState } from '@/store/selectors';
 import { SCENE_CONFIG } from '@/config/scenes';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import type { SceneId } from '@/shared/types/game';
 import { isSceneGateOpen } from '@/shared/sceneGates';
-import { SCENE_LOCATION_CATEGORIES } from '@/config/sceneLocationCategories';
 import type { LocationCategory } from '@/shared/types/locationCategory';
 
 /* ─── Travel time cost (same as explorationSlice) ─── */
@@ -60,19 +59,6 @@ interface MapNode {
   region: MapRegion;
   category: LocationCategory;
 }
-
-const CATEGORY_TO_REGION: Partial<Record<LocationCategory, MapRegion>> = {
-  home: 'home',
-  corridor: 'home',
-  cafe: 'city',
-  office: 'city',
-  street: 'city',
-  park: 'cultural',
-  library: 'cultural',
-  factory: 'industrial',
-  rooftop: 'special',
-  unknown: 'special',
-};
 
 const REGION_COLORS: Record<MapRegion, string> = {
   home: '#22dd88',        // green
@@ -222,7 +208,7 @@ interface WorldMapProps {
 
 /* ─── Travel confirmation dialog ─── */
 function TravelConfirmDialog({
-  sceneId,
+  sceneId: _sceneId,
   sceneName,
   travelHours,
   onConfirm,

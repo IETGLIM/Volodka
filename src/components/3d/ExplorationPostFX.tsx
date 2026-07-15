@@ -22,7 +22,6 @@ import {
   LUT,
   ChromaticAberration,
   Scanline,
-  DepthOfField,
 } from '@react-three/postprocessing';
 import { BlendFunction, KernelSize, ToneMappingMode } from 'postprocessing';
 import type { EffectComposer as EffectComposerImpl } from 'postprocessing';

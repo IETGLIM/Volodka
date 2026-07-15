@@ -42,7 +42,7 @@ export function StoryGuidanceHUD() {
 
   const [guidance, setGuidance] = useState<GuidanceInfo | null>(null);
   const [expanded, setExpanded] = useState(false);
-  const [lostHint, setLostHint] = useState<string | null>(null);
+  const [_lostHint, setLostHint] = useState<string | null>(null);
   const [dismissedSig, setDismissedSig] = useState<string | null>(() => {
     try {
       return sessionStorage.getItem(GUIDANCE_DISMISS_KEY);

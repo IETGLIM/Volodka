@@ -174,7 +174,7 @@ export function CraftingPanel({ open, onClose }: CraftingPanelProps) {
     return CRAFTING_RECIPES.filter(
       (r) => r.category === 'consumable' && canCraft(r.id),
     );
-  }, [canCraft, inventory, skills]);
+  }, [canCraft]);
 
   // Craft all available consumables
   const handleCraftAllConsumables = useCallback(async () => {

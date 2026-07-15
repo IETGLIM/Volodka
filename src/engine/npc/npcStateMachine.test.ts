@@ -37,7 +37,7 @@ describe('npcStateMachine', () => {
     expect(isValidNpcBehaviorTransition('combat', 'talk')).toBe(false);
   });
 
-  it('maps combat behavior to walk animation family', () => {
-    expect(npcBehaviorToAnimationState('combat')).toBe('walk');
+  it('maps combat behavior to combat animation family', () => {
+    expect(npcBehaviorToAnimationState('combat')).toBe('combat');
   });
 });

@@ -148,7 +148,8 @@ export type GameAction =
       spawnAt: [number, number, number];
     }
   | { type: 'cutscene/clear' }
-  | { type: 'phase/clearGameplayFlags' };
+  | { type: 'phase/clearGameplayFlags' }
+  | { type: 'journal/addThought'; text: string; sceneId: string };
 
 export interface GameSnapshotSubscribeOptions<T> {
   selector: (snapshot: GameStoreSnapshot) => T;

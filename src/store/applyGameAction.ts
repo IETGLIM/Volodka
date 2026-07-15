@@ -95,6 +95,7 @@ export function applyGameAction(_state: GameStoreState, action: GameAction): voi
     case 'exploration/applySceneTransition': exploration.setExplorationScene(action.targetScene); exploration.setPlayerPosition(action.spawnAt); exploration.discoverScene(action.targetScene); player.autoRegenBetweenScenes(); break;
     case 'cutscene/clear': getCutsceneStoreState().setCutscene(null, []); break;
     case 'phase/clearGameplayFlags': ui.setMainMenuOpen(false); ui.setIntroActive(false); ui.setCombatActive(false); break;
+    case 'journal/addThought': ui.addThought(action.text, action.sceneId); break;
     default: { const _exhaustive: never = action; return; }
   }
 }

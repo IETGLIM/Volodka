@@ -309,15 +309,15 @@ export function DialogueRenderer() {
       relationLevel };
   }, [node?.speaker, resolvedText, node?.emotion, node?.id, npcRelations]);
 
+  // Resolve numeric relation value for the dialogue relation bar (must be before early return — hooks rule)
+  const currentRelationValue = useMemo(() => {
+    const rel = npcRelations.find((r) => r.npcId === npcData.npcId);
+    return rel?.value ?? 50;
+  }, [npcData.npcId, npcRelations]);
+
   if (!isOpen || !node) return null;
 
   const { npcId, portraitColors, emotion, relationLevel } = npcData;
-
-  // Resolve numeric relation value for the dialogue relation bar
-  const currentRelationValue = useMemo(() => {
-    const rel = npcRelations.find((r) => r.npcId === npcId);
-    return rel?.value ?? 50;
-  }, [npcId, npcRelations]);
 
   const speakerTitleId = `dialogue-speaker-${currentNodeId}`;
   const typewriterLiveMessage = node

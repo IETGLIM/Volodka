@@ -23,7 +23,6 @@ const BASIS_TRANSCODER_PATH = '/basis/';
 
 type GltfLoaderLike = {
   setDRACOLoader: (loader: DRACOLoader) => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- GLTFLoader.setKTX2Loader typing is covariant; `any` bridges the KTX2Loader | null ↔ unknown mismatch
   setKTX2Loader?: (loader: any) => void;
   setMeshoptDecoder?: (decoder: typeof MeshoptDecoder) => void;
   register?: (callback: (parser: unknown) => { name: string }) => unknown;

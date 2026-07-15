@@ -84,17 +84,6 @@ const panelVariants = {
 
 /* ─── Helpers ─── */
 
-function lsGetNumber(key: string, fallback: number): number {
-  try {
-    const raw = localStorage.getItem(key);
-    if (raw == null) return fallback;
-    const n = Number(raw);
-    return Number.isFinite(n) ? Math.max(0, Math.min(100, Math.round(n))) : fallback;
-  } catch {
-    return fallback;
-  }
-}
-
 function lsSetNumber(key: string, value: number): void {
   try { localStorage.setItem(key, String(value)); } catch { /* quota */ }
 }

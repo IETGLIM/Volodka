@@ -53,7 +53,7 @@ function ShimmeringAura({ color, reducedMotion }: { color: string; reducedMotion
 
 /** Floating glyph particles that drift upward near the effect */
 function FloatingGlyphs({
-  eventId,
+  eventId: _eventId,
   color,
   reducedMotion,
 }: {
@@ -61,7 +61,6 @@ function FloatingGlyphs({
   color: string;
   reducedMotion: boolean;
 }) {
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const glyphs = useMemo(() => {
     return Array.from({ length: 12 }, (_, i) => ({
       id: i,
@@ -71,7 +70,7 @@ function FloatingGlyphs({
       duration: 3 + Math.random() * 4,
       size: 12 + Math.floor(Math.random() * 10),
     }));
-  }, [eventId]);
+  }, []);
 
   if (reducedMotion) return null;
 

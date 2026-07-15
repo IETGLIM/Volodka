@@ -49,10 +49,12 @@ export function LevelUpNotification() {
       dismissTimers.current.set(id, timer);
     });
 
+    const timersAtEffectStart = dismissTimers.current;
+
     return () => {
       unsub();
-      for (const timer of dismissTimers.current.values()) clearTimeout(timer);
-      dismissTimers.current.clear();
+      for (const timer of timersAtEffectStart.values()) clearTimeout(timer);
+      timersAtEffectStart.clear();
     };
   }, [reducedMotion]);
 

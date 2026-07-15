@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-import { useGameStore } from '@/store/gameStore';
 import { sortNpcRelationsByValue } from '@/engine/npcRelationship/npcRelationshipPresentation';
 import { useGameSelector, useGamePrimitive } from '@/store/selectors/hooks';
 

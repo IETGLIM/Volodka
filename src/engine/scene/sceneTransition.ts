@@ -64,7 +64,8 @@ export function requestSceneTransition(
       return false;
     }
   } catch {
-    /* store not ready — allow fallthrough to existing checks */
+    /* store not ready — fail closed: block transition to prevent mid-cinematic scene changes */
+    return false;
   }
 
   const spawn = resolveSceneSpawn(targetScene, spawnAt);

@@ -84,14 +84,14 @@ export function resolveNpcBehaviorState(ctx: NpcBehaviorContext): NpcBehaviorSta
 /** Map behavioral state to GLB animation clip family. */
 export function npcBehaviorToAnimationState(
   behavior: NpcBehaviorState,
-): 'idle' | 'walk' | 'talk' | 'sit' | 'listen' | 'gesture' {
+): 'idle' | 'walk' | 'talk' | 'sit' | 'listen' | 'gesture' | 'combat' {
   switch (behavior) {
     case 'walk':
       return 'walk';
     case 'talk':
       return 'talk';
     case 'combat':
-      return 'walk';
+      return 'combat';
     case 'idle':
     default:
       return 'idle';

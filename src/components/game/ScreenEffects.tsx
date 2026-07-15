@@ -11,16 +11,14 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { eventBus, EventBusPriority } from '@/engine/EventBus';
-import { useScreenEffectsVitals, usePlayerKarma } from '@/store/selectors';
+import { useScreenEffectsVitals } from '@/store/selectors';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
-import { useGameStore } from '@/store/gameStore';
 import {
   triggerFlash,
   triggerShake,
   triggerVignette,
   triggerChromaticAberration,
   triggerDamageVignette,
-  triggerSceneDissolve,
 } from '@/engine/fx/screenFxTriggers';
 
 /* ── Effect state types ── */

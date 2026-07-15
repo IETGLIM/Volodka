@@ -1,4 +1,5 @@
 /* ─── Volodka RPG – Scene POI Compass (proximity radar) ─── */
+/* eslint-disable react-refresh/only-export-components */
 
 import { memo, useEffect, useRef } from 'react';
 import { TRIGGER_ZONES, isTriggerZoneAvailable } from '@/data/triggerZones';
@@ -195,7 +196,7 @@ const RadarInner = memo(function RadarInner({
     return () => cancelAnimationFrame(rafId.current);
   }, []);
 
-  const isMobile = false; // compass is desktop-only for now
+  const _isMobile = false; // compass is desktop-only for now
 
   return (
     <div

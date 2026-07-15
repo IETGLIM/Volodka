@@ -166,6 +166,16 @@ export function emitSoundPlay(type: string): void {
   emitAppEvent('sound:play', { type });
 }
 
+/* ─── FX ─── */
+
+export function emitXpGainFx(amount: number, source?: string): void {
+  emitAppEvent('fx:xp_gain', { amount, source });
+}
+
+export function scheduleXpGainFx(amount: number, source?: string): void {
+  runAfterStoreCommit(() => emitXpGainFx(amount, source));
+}
+
 /* ─── Save lifecycle ─── */
 
 export function emitGameSaved(timestamp: number, source: 'auto' | 'manual'): void {

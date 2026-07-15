@@ -18,8 +18,6 @@ import type { SceneId } from '@/config/sceneIds';
 const ENTRY_TEXT_HOLD_MS = 2500;
 /** Fade-in duration (seconds). */
 const FADE_IN_DURATION = 0.8;
-/** Fade-out duration (seconds). */
-const FADE_OUT_DURATION = 0.6;
 
 export function SceneEntryTextOverlay() {
   const reducedMotion = useEffectiveReducedMotion();
@@ -56,7 +54,6 @@ export function SceneEntryTextOverlay() {
   }, []);
 
   const motionFadeIn = reducedMotion ? { duration: 0 } : { duration: FADE_IN_DURATION, ease: 'easeOut' as const };
-  const motionFadeOut = reducedMotion ? { duration: 0 } : { duration: FADE_OUT_DURATION, ease: 'easeInOut' as const };
 
   return (
     <AnimatePresence>

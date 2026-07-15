@@ -71,6 +71,16 @@ export interface ApplicationEventMap {
   'ui:music_volume': { volume: number };
   'ui:music_enabled': { enabled: boolean; sceneId: SceneId };
   'lore:discovered': { id: string; title: string; rarity: string; category?: string };
+  /** Volodka's inner monologue / thought bubble overlay. */
+  'volodka:thought': { text: string; duration?: number };
+  /** Data terminal hacking mini-game overlay. */
+  'ui:data_terminal': {
+    difficulty: 'easy' | 'medium' | 'hard';
+    title: string;
+    reward?: string;
+  };
+  /** XP gain visual feedback — floating "+X XP" toast. */
+  'fx:xp_gain': { amount: number; source?: string };
 }
 
 export type ApplicationEventName = keyof ApplicationEventMap;

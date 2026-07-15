@@ -129,7 +129,7 @@ export class EventBusClass<TMap extends object = EventMap>
     );
   }
 
-  private assertSubscribable(operation: 'on' | 'onAny'): void {
+  private assertSubscribable(_operation: 'on' | 'onAny'): void {
     if (!this.disposed) return;
     // Auto-revive: in React Strict Mode the singleton bus may be disposed
     // during the first unmount while child effects from the second mount

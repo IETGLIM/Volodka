@@ -11,7 +11,7 @@ import { Html } from '@react-three/drei';
 import { useGameStore } from '@/store/gameStore';
 import type { NpcProximityRuntime } from '@/engine/interaction/interactiveTriggerProximity';
 import { findNpcById } from '@/data/allNpcDefinitions';
-import { getRelationLevel, getRelationLevelColors } from '@/engine/npcRelationship/npcRelationshipPresentation';
+import { getRelationLevel } from '@/engine/npcRelationship/npcRelationshipPresentation';
 import { RELATION_LEVEL_LABELS, type RelationLevel } from '@/engine/npcRelationship/npcRelationshipConstants';
 import { formatNpcActivityHint } from '@/engine/npc/npcActivityPresentation';
 import { ProximityGodRay } from '../ProximityGodRay';
@@ -19,7 +19,6 @@ import { NpcProximityRing } from './NpcProximityRing';
 
 /** Resolve relationship color for proximity indicator: green (ally), amber (neutral), red (enemy) */
 function resolveRelationColor(level: RelationLevel): string {
-  const colors = getRelationLevelColors(level);
   switch (level) {
     case 'ally': return '#4ade80';
     case 'neutral': return '#facc15';

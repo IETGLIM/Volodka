@@ -8,7 +8,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { eventBus } from '@/engine/EventBus';
-import { Sword, Shield, Sparkles, LogOut, ChevronDown, Heart, Clock, Zap, Flame, Info, Swords, HeartPulse, ShieldPlus, Skull, ArrowUp, ArrowDown } from 'lucide-react';
+import { Sword, Shield, Sparkles, LogOut, ChevronDown, Heart, Clock, Zap, Flame, Swords, HeartPulse, ShieldPlus, Skull } from 'lucide-react';
 import { useUIStore } from '@/store/stores/uiStore';
 import { useCutsceneStore } from '@/store/stores/cutsceneStore';
 import { getGamePhase } from '@/shared/gamePhase';
