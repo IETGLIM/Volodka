@@ -131,14 +131,20 @@ export function StoryRenderer() {
   );
 
   const [storyPackVersion, setStoryPackVersion] = useState(0);
+  const [isLoadingNode, setIsLoadingNode] = useState(false);
 
   useEffect(() => {
     if (!currentNodeId || !isNarrativeGameDataLoaded()) return;
     let cancelled = false;
 
+    // If the node isn't already cached, show a loading indicator
+    const alreadyCached = Boolean(getStoryNodes()[currentNodeId]);
+    if (!alreadyCached) setIsLoadingNode(true);
+
     void ensureStoryNode(currentNodeId)
       .then(() => {
         if (cancelled) return;
+        setIsLoadingNode(false);
         setStoryPackVersion((v) => v + 1);
         const loaded = getStoryNodes()[currentNodeId];
         if (loaded?.choices) {
@@ -146,6 +152,8 @@ export function StoryRenderer() {
         }
       })
       .catch((error) => {
+        if (cancelled) return;
+        setIsLoadingNode(false);
         devWarn('[StoryRenderer] Failed to load story node:', currentNodeId, error);
       });
 
@@ -314,8 +322,21 @@ export function StoryRenderer() {
   });
 
   // World Director: story overlay renders during exploration (and cutscene handoff)
-  const isOpen = showStoryOverlay && !!node;
+  // Show loading indicator while the node is being fetched
+  const isOpen = showStoryOverlay && (!!node || isLoadingNode);
   if (!isOpen) return null;
+
+  // Loading state: node data is being fetched (not yet cached)
+  if (isLoadingNode && !node) {
+    return (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm">
+        <div className="flex items-center gap-3 text-cyan-300/80 text-lg font-mono animate-pulse">
+          <span className="tracking-widest">···</span>
+        </div>
+      </div>
+    );
+  }
+  if (!node) return null;
 
   const speakerTitleId = `story-speaker-${currentNodeId}`;
   const speakerLabel =

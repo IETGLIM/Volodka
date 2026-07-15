@@ -124,17 +124,28 @@ export function DialogueRenderer() {
   // Before: isOpen = mode === 'visual-novel' (requires switching away from exploration)
   // Now: isOpen = showStoryOverlay + has dialogue node (narrative overlay on 3D world)
   const [dialoguePackVersion, setDialoguePackVersion] = useState(0);
+  const [isLoadingNode, setIsLoadingNode] = useState(false);
 
   useEffect(() => {
     if (!currentNodeId || !isNarrativeGameDataLoaded()) return;
     let cancelled = false;
 
+    // If the node isn't already cached, show a loading indicator
+    const alreadyCached = Boolean(getDialogueNodes()[currentNodeId]);
+    if (!alreadyCached) setIsLoadingNode(true);
+
     void ensureDialogueNode(currentNodeId)
       .then(() => {
-        if (!cancelled) setDialoguePackVersion((v) => v + 1);
+        if (!cancelled) {
+          setIsLoadingNode(false);
+          setDialoguePackVersion((v) => v + 1);
+        }
       })
       .catch((error) => {
-        devWarn('[DialogueRenderer] Failed to load dialogue node:', currentNodeId, error);
+        if (!cancelled) {
+          setIsLoadingNode(false);
+          devWarn('[DialogueRenderer] Failed to load dialogue node:', currentNodeId, error);
+        }
       });
 
     return () => {
@@ -143,7 +154,7 @@ export function DialogueRenderer() {
   }, [currentNodeId]);
 
   const dialogueNodes = isNarrativeGameDataLoaded() ? getDialogueNodes() : null;
-  const isOpen = showStoryOverlay && !!dialogueNodes?.[currentNodeId];
+  const isOpen = showStoryOverlay && (!!dialogueNodes?.[currentNodeId] || isLoadingNode);
   const node = useMemo(
     () => (dialogueNodes ? dialogueNodes[currentNodeId] : undefined),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
@@ -327,7 +338,19 @@ export function DialogueRenderer() {
     return rel?.value ?? 50;
   }, [npcData.npcId, npcRelations]);
 
-  if (!isOpen || !node) return null;
+  if (!isOpen) return null;
+
+  // Loading state: node data is being fetched (not yet cached)
+  if (isLoadingNode && !node) {
+    return (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm">
+        <div className="flex items-center gap-3 text-amber-300/80 text-lg font-mono animate-pulse">
+          <span className="tracking-widest">···</span>
+        </div>
+      </div>
+    );
+  }
+  if (!node) return null;
 
   const { npcId, portraitColors, emotion, relationLevel } = npcData;
 

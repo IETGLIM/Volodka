@@ -4,7 +4,7 @@
    combo counter, critical hit animations, status effects, victory/defeat screens
    Task 3-a: Improved buff/debuff display, poem power selection, combat log */
 
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { eventBus } from '@/engine/EventBus';
@@ -107,7 +107,7 @@ function getPoemCategoryColor(category: PoemEffectCategory): string {
 }
 
 /* ── Animated Health Bar with gradient & glow ── */
-function AnimatedHPBar({ current, max, label, isPlayer, ariaLabel }: {
+const AnimatedHPBar = React.memo(function AnimatedHPBar({ current, max, label, isPlayer, ariaLabel }: {
   current: number; max: number; label: string; isPlayer: boolean; ariaLabel?: string;
 }) {
   const pct = max > 0 ? Math.max(0, (current / max) * 100) : 0;
@@ -146,10 +146,10 @@ function AnimatedHPBar({ current, max, label, isPlayer, ariaLabel }: {
       </div>
     </div>
   );
-}
+});
 
 /* ── Floating Damage Number with physics ── */
-function DamageNumber({ damage, type, isCritical }: { damage: number; type: string; isCritical?: boolean }) {
+const DamageNumber = React.memo(function DamageNumber({ damage, type, isCritical }: { damage: number; type: string; isCritical?: boolean }) {
   const isHeal = type === 'player_power' && damage > 0;
   const isPoemCombo = type === 'poem_combo';
   const color = type === 'enemy_attack' || type === 'enemy_special'
@@ -176,7 +176,7 @@ function DamageNumber({ damage, type, isCritical }: { damage: number; type: stri
       {isCritical && <span className="text-lg ml-1">💥</span>}
     </motion.div>
   );
-}
+});
 
 /* ── Combo Counter ── */
 function ComboCounter({ count }: { count: number }) {
@@ -621,6 +621,73 @@ function PoemPowerCard({
   );
 }
 
+/* ── Poem Powers Submenu with smart positioning ── */
+function PoemPowersSubmenu({ showPowers, availablePowers, gamepadConnected, gamepadSelectedIdx, onSelectPower }: {
+  showPowers: boolean;
+  availablePowers: ReturnType<typeof getAvailableCombatPowers>;
+  gamepadConnected: boolean;
+  gamepadSelectedIdx: number;
+  onSelectPower: (poemId: string) => void;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [positionAbove, setPositionAbove] = useState(true);
+
+  useEffect(() => {
+    if (!showPowers || !containerRef.current) return;
+    const btn = containerRef.current;
+    const rect = btn.getBoundingClientRect();
+    // Estimate submenu height: header (~32px) + items (~56px each), capped at max-h-60 (240px)
+    const estimatedHeight = Math.min(32 + availablePowers.length * 56, 240);
+    const spaceAbove = rect.top;
+    const spaceBelow = window.innerHeight - rect.bottom;
+    // Position above if there's enough room, otherwise below
+    setPositionAbove(spaceAbove >= estimatedHeight || spaceAbove >= spaceBelow);
+  }, [showPowers, availablePowers.length]);
+
+  if (!showPowers || availablePowers.length === 0) return null;
+
+  return (
+    <AnimatePresence>
+      <motion.div
+        ref={containerRef}
+        initial={{ opacity: 0, y: positionAbove ? 10 : -10, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: positionAbove ? 10 : -10, scale: 0.95 }}
+        transition={{ duration: 0.15 }}
+        className={`absolute left-0 right-0 bg-black/95 border border-amber-700/30 rounded-lg backdrop-blur-md overflow-hidden max-h-60 overflow-y-auto ${
+          positionAbove ? 'bottom-full mb-2' : 'top-full mt-2'
+        }`}
+        style={{ zIndex: UI_LAYERS.COMBAT, scrollbarWidth: 'thin', scrollbarColor: '#78716c transparent' }}
+      >
+        {/* Submenu header with hint */}
+        <div className="sticky top-0 bg-black/90 border-b border-amber-900/30 px-3 py-1.5 flex items-center justify-between z-10">
+          <span className="text-[9px] text-amber-400/80 font-mono font-semibold uppercase tracking-wider">
+            ⚡ Стихотворения
+          </span>
+          <span className="text-[8px] text-slate-500 font-mono">
+            [1-{Math.min(9, availablePowers.length)}] выбор · [Esc] закрыть
+          </span>
+        </div>
+        {availablePowers.map((power, idx) => {
+          const onCooldown = power.cooldownRemaining > 0;
+          const isGamepadSelected = gamepadConnected && idx === gamepadSelectedIdx;
+          return (
+            <PoemPowerCard
+              key={power.poemId}
+              power={power}
+              index={idx}
+              onCooldown={onCooldown}
+              isGamepadSelected={isGamepadSelected}
+              onSelect={() => !onCooldown && onSelectPower(power.poemId)}
+              gamepadUseHint={gamepadConnected ? COMBAT_BUTTON_HINTS.poem_use_selected : undefined}
+            />
+          );
+        })}
+      </motion.div>
+    </AnimatePresence>
+  );
+}
+
 /* ── Main Component ── */
 export function CombatUI() {
   // Read combatActive directly from the UI store — the facade's
@@ -1029,43 +1096,13 @@ export function CombatUI() {
                   </TerminalButton>
 
                   {/* Enhanced Poem Powers Submenu */}
-                  <AnimatePresence>
-                    {showPowers && availablePowers.length > 0 && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                        transition={{ duration: 0.15 }}
-                        className="absolute bottom-full left-0 right-0 mb-2 bg-black/95 border border-amber-700/30 rounded-lg backdrop-blur-md overflow-hidden max-h-60 overflow-y-auto"
-                        style={{ zIndex: UI_LAYERS.COMBAT, scrollbarWidth: 'thin', scrollbarColor: '#78716c transparent' }}
-                      >
-                        {/* Submenu header with hint */}
-                        <div className="sticky top-0 bg-black/90 border-b border-amber-900/30 px-3 py-1.5 flex items-center justify-between z-10">
-                          <span className="text-[9px] text-amber-400/80 font-mono font-semibold uppercase tracking-wider">
-                            ⚡ Стихотворения
-                          </span>
-                          <span className="text-[8px] text-slate-500 font-mono">
-                            [1-{Math.min(9, availablePowers.length)}] выбор · [Esc] закрыть
-                          </span>
-                        </div>
-                        {availablePowers.map((power, idx) => {
-                          const onCooldown = power.cooldownRemaining > 0;
-                          const isGamepadSelected = gamepadConnected && idx === gamepadSelectedIdx;
-                          return (
-                            <PoemPowerCard
-                              key={power.poemId}
-                              power={power}
-                              index={idx}
-                              onCooldown={onCooldown}
-                              isGamepadSelected={isGamepadSelected}
-                              onSelect={() => !onCooldown && handlePower(power.poemId)}
-                              gamepadUseHint={gamepadConnected ? COMBAT_BUTTON_HINTS.poem_use_selected : undefined}
-                            />
-                          );
-                        })}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                  <PoemPowersSubmenu
+                    showPowers={showPowers}
+                    availablePowers={availablePowers}
+                    gamepadConnected={gamepadConnected}
+                    gamepadSelectedIdx={gamepadSelectedIdx}
+                    onSelectPower={handlePower}
+                  />
                 </div>
                 <TerminalButton onClick={handleFlee} disabled={!isPlayerTurn || pendingAction} accentColor="rose" gamepadHint={gamepadConnected ? COMBAT_BUTTON_HINTS.flee : undefined}>
                   <LogOut className="size-3.5" />

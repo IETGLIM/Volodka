@@ -69,6 +69,96 @@ import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip
 
 export type { HUDProps } from '@/components/game/hud/hudTypes';
 
+/* ── Static style constants (avoid recreating objects every render) ── */
+const STYLE_CROSSHAIR_GLOW = { boxShadow: '0 0 8px rgba(0,255,238,0.6), 0 0 20px rgba(0,255,238,0.3)', backgroundColor: 'rgba(0,255,238,0.5)' as const };
+const STYLE_CROSSHAIR_DIM = { boxShadow: '0 0 3px rgba(255,255,255,0.4)' };
+const STYLE_CROSSHAIR_BORDER_NEAR = { borderColor: 'rgba(0,255,238,0.25)' };
+const STYLE_CROSSHAIR_BORDER_DIM = { borderColor: 'rgba(255,255,255,0.08)' };
+const STYLE_CROSSHAIR_PULSE = { boxShadow: '0 0 16px 2px rgba(0,255,238,0.12)', animation: 'pulse 2s cubic-bezier(0.4,0,0.6,1) infinite' };
+
+const STYLE_TOP_BAR_BG = {
+  background: 'linear-gradient(180deg, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.7) 60%, transparent 100%)',
+  backdropFilter: 'blur(8px)',
+  WebkitBackdropFilter: 'blur(8px)',
+};
+
+const STYLE_CLOCK_BORDER = { borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.15)', background: 'rgb(var(--cyber-cyan-rgb) / 0.05)' };
+const STYLE_XP_MINI_BG = { background: 'linear-gradient(90deg, rgba(8,145,178,0.6), rgb(var(--cyber-cyan-rgb) / 0.6))' };
+
+const STYLE_TOOLTIP_BG = {
+  background: 'linear-gradient(145deg, rgba(2,6,23,0.95) 0%, rgba(15,23,42,0.92) 50%, rgba(0,0,0,0.9) 100%)',
+  borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.3)',
+  boxShadow: '0 0 16px rgb(var(--cyber-cyan-rgb) / 0.12), 0 8px 24px rgba(0,0,0,0.5)',
+};
+
+const STYLE_STATUS_EFFECTS_BADGE = { background: 'rgba(0,0,0,0.3)', borderColor: 'rgba(100,116,139,0.2)' };
+const STYLE_WEATHER_BADGE = { background: 'rgba(0,0,0,0.3)', borderColor: 'rgba(100,116,139,0.2)' };
+
+const STYLE_MORE_MENU_BG = {
+  background: 'linear-gradient(145deg, rgba(0,0,0,0.92) 0%, rgba(15,23,42,0.88) 50%, rgba(0,0,0,0.85) 100%)',
+  borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.2)',
+  boxShadow: '0 0 20px rgb(var(--cyber-cyan-rgb) / 0.08), 0 8px 32px rgba(0,0,0,0.5)',
+};
+
+const STYLE_BOTTOM_GLOW_LINE = { background: 'linear-gradient(90deg, transparent, rgb(var(--cyber-cyan-rgb) / 0.2) 30%, rgb(var(--cyber-cyan-rgb) / 0.35) 50%, rgb(var(--cyber-cyan-rgb) / 0.2) 70%, transparent)' };
+
+const STYLE_DESKTOP_STATUS_BG = {
+  background: 'linear-gradient(145deg, rgba(2,6,23,0.95) 0%, rgba(8,12,28,0.92) 40%, rgba(4,8,18,0.88) 100%)',
+};
+
+const STYLE_DESKTOP_STATUS_BORDER_CYAN = {
+  borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.2)',
+  boxShadow: '0 0 20px rgb(var(--cyber-cyan-rgb) / 0.06), 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgb(var(--cyber-cyan-rgb) / 0.08)',
+};
+const STYLE_DESKTOP_STATUS_BORDER_ROSE = {
+  borderColor: 'rgba(251, 113, 133, 0.5)',
+  boxShadow: '0 0 30px rgba(251,113,133,0.15), 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(251,113,133,0.1)',
+};
+
+const STYLE_ACCENT_GLOW_SPOTS = { background: 'radial-gradient(ellipse at 20% 20%, rgb(var(--cyber-cyan-rgb) / 0.04) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(251,191,36,0.03) 0%, transparent 50%)' };
+const STYLE_ACCENT_CORNER_GLOW = { background: 'radial-gradient(circle at 100% 0%, rgb(var(--cyber-cyan-rgb) / 0.08) 0%, transparent 70%)' };
+const STYLE_SHIELD_ICON_BG = { background: 'rgb(var(--cyber-cyan-rgb) / 0.1)', boxShadow: '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.15)' };
+const STYLE_STATUS_HEADER_TEXT_GLOW = { textShadow: '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.3)' };
+const STYLE_HR_CYAN_FADE = { background: 'linear-gradient(90deg, rgb(var(--cyber-cyan-rgb) / 0.3), rgb(var(--cyber-cyan-rgb) / 0.08) 40%, transparent)' };
+const STYLE_HR_CYAN_THIN = { background: 'rgb(var(--cyber-cyan-rgb) / 0.15)' };
+const STYLE_HR_CYAN_CENTER_FADE = { background: 'linear-gradient(90deg, transparent, rgb(var(--cyber-cyan-rgb) / 0.15), transparent)' };
+
+const STYLE_XP_ICON_GLOW = { boxShadow: '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.2)' };
+const STYLE_XP_TEXT_GLOW = { textShadow: '0 0 4px rgb(var(--cyber-cyan-rgb) / 0.3)' };
+
+const STYLE_LOW_ENERGY_ICON_GLOW = { boxShadow: '0 0 8px rgba(244,63,94,0.2)' };
+const STYLE_NORMAL_ENERGY_ICON_GLOW = { boxShadow: '0 0 8px rgba(52,211,153,0.2)' };
+const STYLE_LOW_ENERGY_WARNING_GLOW = { textShadow: '0 0 6px rgba(251,113,133,0.3)' };
+
+const STYLE_HIGH_STRESS_ICON_GLOW = { boxShadow: '0 0 8px rgba(244,63,94,0.2)' };
+const STYLE_NORMAL_STRESS_ICON_GLOW = { boxShadow: '0 0 8px rgba(245,158,11,0.2)' };
+
+const STYLE_POEM_TEXT_SHADOW = { textShadow: '0 0 8px rgba(251,191,36,0.4)' };
+const STYLE_POEM_COUNTER_SHADOW = { textShadow: '0 0 6px rgba(251,191,36,0.5)' };
+const STYLE_POEM_BG_IDLE = {
+  background: 'rgba(120,60,10,0.25)',
+  borderColor: 'rgba(251,191,36,0.35)',
+  boxShadow: '0 0 12px rgba(251,191,36,0.15), inset 0 0 6px rgba(251,191,36,0.05)',
+};
+const STYLE_POEM_BG_PULSE = {
+  background: 'rgba(120,60,10,0.45)',
+  borderColor: 'rgba(251,191,36,0.75)',
+  boxShadow: '0 0 24px rgba(251,191,36,0.45), inset 0 0 10px rgba(251,191,36,0.12)',
+};
+
+const STYLE_MOBILE_BAR_BG = {
+  background: 'linear-gradient(180deg, rgba(2,6,23,0.92) 0%, rgba(8,12,28,0.88) 100%)',
+  boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
+};
+
+const STYLE_MOBILE_ENERGY_BAR_NORMAL = { background: 'linear-gradient(90deg, #059669, #34d399)', boxShadow: '0 0 6px rgba(52,211,153,0.3)' };
+const STYLE_MOBILE_ENERGY_BAR_LOW = { background: 'linear-gradient(90deg, #9f1239, #f43f5e)', boxShadow: '0 0 6px rgba(244,63,94,0.3)' };
+const STYLE_MOBILE_STRESS_BAR_NORMAL = { background: 'linear-gradient(90deg, #b45309, #f59e0b)', boxShadow: '0 0 6px rgba(245,158,11,0.3)' };
+const STYLE_MOBILE_STRESS_BAR_HIGH = { background: 'linear-gradient(90deg, #9f1239, #f43f5e)', boxShadow: '0 0 6px rgba(244,63,94,0.3)' };
+
+const STYLE_CURRENT_COLOR_GLOW = { textShadow: '0 0 4px currentColor' };
+const STYLE_CURRENT_COLOR_SMALL_GLOW = { textShadow: '0 0 3px currentColor' };
+
 /* ── Crosshair with proximity glow ── */
 function CrosshairGlow({ nearInteractive }: { nearInteractive: boolean }) {
   return (
@@ -76,36 +166,28 @@ function CrosshairGlow({ nearInteractive }: { nearInteractive: boolean }) {
       <div className="relative">
         <div
           className="w-1 h-1 rounded-full bg-white/30 mx-auto transition-all duration-300"
-          style={{
-            boxShadow: nearInteractive
-              ? '0 0 8px rgba(0,255,238,0.6), 0 0 20px rgba(0,255,238,0.3)'
-              : '0 0 3px rgba(255,255,255,0.4)',
-            backgroundColor: nearInteractive ? 'rgba(0,255,238,0.5)' : undefined,
-          }}
+          style={nearInteractive ? STYLE_CROSSHAIR_GLOW : STYLE_CROSSHAIR_DIM}
         />
         <div
           className="absolute -top-2 left-1/2 -translate-x-1/2 w-2.5 h-[3px] border-t border-l border-r rounded-t-sm transition-colors duration-300"
-          style={{ borderColor: nearInteractive ? 'rgba(0,255,238,0.25)' : 'rgba(255,255,255,0.08)' }}
+          style={nearInteractive ? STYLE_CROSSHAIR_BORDER_NEAR : STYLE_CROSSHAIR_BORDER_DIM}
         />
         <div
           className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-2.5 h-[3px] border-b border-l border-r rounded-b-sm transition-colors duration-300"
-          style={{ borderColor: nearInteractive ? 'rgba(0,255,238,0.25)' : 'rgba(255,255,255,0.08)' }}
+          style={nearInteractive ? STYLE_CROSSHAIR_BORDER_NEAR : STYLE_CROSSHAIR_BORDER_DIM}
         />
         <div
           className="absolute top-1/2 -left-2 -translate-y-1/2 w-[3px] h-2.5 border-t border-l border-b rounded-l-sm transition-colors duration-300"
-          style={{ borderColor: nearInteractive ? 'rgba(0,255,238,0.25)' : 'rgba(255,255,255,0.08)' }}
+          style={nearInteractive ? STYLE_CROSSHAIR_BORDER_NEAR : STYLE_CROSSHAIR_BORDER_DIM}
         />
         <div
           className="absolute top-1/2 -right-2 -translate-y-1/2 w-[3px] h-2.5 border-t border-r border-b rounded-r-sm transition-colors duration-300"
-          style={{ borderColor: nearInteractive ? 'rgba(0,255,238,0.25)' : 'rgba(255,255,255,0.08)' }}
+          style={nearInteractive ? STYLE_CROSSHAIR_BORDER_NEAR : STYLE_CROSSHAIR_BORDER_DIM}
         />
         {nearInteractive && (
           <div
             className="absolute inset-0 -m-3 rounded-full pointer-events-none"
-            style={{
-              boxShadow: '0 0 16px 2px rgba(0,255,238,0.12)',
-              animation: 'pulse 2s cubic-bezier(0.4,0,0.6,1) infinite',
-            }}
+            style={STYLE_CROSSHAIR_PULSE}
           />
         )}
       </div>
@@ -234,11 +316,7 @@ export function ExplorationHUD(props: HUDProps) {
       <div className="absolute top-0 left-0 right-0 pointer-events-auto" style={quietStyle}>
         <div
           className="flex items-center justify-between px-2 py-1.5 sm:px-4 sm:py-2.5 hud-scanline-bar"
-          style={{
-            background: 'linear-gradient(180deg, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.7) 60%, transparent 100%)',
-            backdropFilter: 'blur(8px)',
-            WebkitBackdropFilter: 'blur(8px)',
-          }}
+          style={STYLE_TOP_BAR_BG}
         >
           {/* Left: Scene name + time */}
           <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
@@ -254,7 +332,7 @@ export function ExplorationHUD(props: HUDProps) {
               </div>
             </div>
             <div className="hidden sm:flex items-center gap-1 px-1.5 py-0.5 rounded border ml-0.5"
-              style={{ borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.15)', background: 'rgb(var(--cyber-cyan-rgb) / 0.05)' }}
+              style={STYLE_CLOCK_BORDER}
             >
               <Clock className="size-2.5 text-cyan-500/60" />
               <span className="text-cyan-400/80 text-[11px] font-mono tabular-nums">{formatGameClock(timeOfDay)}</span>
@@ -275,7 +353,7 @@ export function ExplorationHUD(props: HUDProps) {
                   <div className="h-1 w-full bg-slate-800/60 rounded-full overflow-hidden">
                     <motion.div
                       className="h-full rounded-full"
-                      style={{ background: 'linear-gradient(90deg, rgba(8,145,178,0.6), rgb(var(--cyber-cyan-rgb) / 0.6))' }}
+                      style={STYLE_XP_MINI_BG}
                       initial={false}
                       animate={{ width: `${(xp / xpToNext) * 100}%` }}
                       transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
@@ -288,11 +366,7 @@ export function ExplorationHUD(props: HUDProps) {
                 side="bottom"
                 sideOffset={4}
                 className="border backdrop-blur-xl px-3 py-2 max-w-[200px] space-y-1"
-                style={{
-                  background: 'linear-gradient(145deg, rgba(2,6,23,0.95) 0%, rgba(15,23,42,0.92) 50%, rgba(0,0,0,0.9) 100%)',
-                  borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.3)',
-                  boxShadow: '0 0 16px rgb(var(--cyber-cyan-rgb) / 0.12), 0 8px 24px rgba(0,0,0,0.5)',
-                }}
+                style={STYLE_TOOLTIP_BG}
               >
                 <div className="text-xs font-semibold text-cyan-300 font-mono">⬆ XP: {xp}/{xpToNext}</div>
                 <div className="text-[10px] text-slate-400">До уровня {level + 1}: <span className="text-cyan-400">{xpToNext - xp} XP</span></div>
@@ -318,13 +392,7 @@ export function ExplorationHUD(props: HUDProps) {
               className="relative flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-1 rounded-md text-xs border transition-colors hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60"
               title="Стихи [⇧P]"
               aria-label={`Стихи: ${mainPoemCount} из ${totalPoems}`}
-              style={{
-                background: poemBadgePulse ? 'rgba(120,60,10,0.45)' : 'rgba(120,60,10,0.25)',
-                borderColor: poemBadgePulse ? 'rgba(251,191,36,0.75)' : 'rgba(251,191,36,0.35)',
-                boxShadow: poemBadgePulse
-                  ? '0 0 24px rgba(251,191,36,0.45), inset 0 0 10px rgba(251,191,36,0.12)'
-                  : '0 0 12px rgba(251,191,36,0.15), inset 0 0 6px rgba(251,191,36,0.05)',
-              }}
+              style={poemBadgePulse ? STYLE_POEM_BG_PULSE : STYLE_POEM_BG_IDLE}
             >
               {poemBadgePulse ? (
                 <span
@@ -335,8 +403,8 @@ export function ExplorationHUD(props: HUDProps) {
                 </span>
               ) : null}
               <span className="text-sm">📖</span>
-              <span className="text-amber-200 font-semibold hidden sm:inline" style={{ textShadow: '0 0 8px rgba(251,191,36,0.4)' }}>Стихи:</span>
-              <AnimatedCounter value={mainPoemCount} className="text-amber-300 font-bold" style={{ textShadow: '0 0 6px rgba(251,191,36,0.5)' }} />
+              <span className="text-amber-200 font-semibold hidden sm:inline" style={STYLE_POEM_TEXT_SHADOW}>Стихи:</span>
+              <AnimatedCounter value={mainPoemCount} className="text-amber-300 font-bold" style={STYLE_POEM_COUNTER_SHADOW} />
               <span className="text-amber-500/60 hidden sm:inline">/</span>
               <span className="text-amber-400/70 hidden sm:inline">{totalPoems}</span>
             </motion.button>
@@ -348,10 +416,7 @@ export function ExplorationHUD(props: HUDProps) {
               <div
                 className="flex items-center gap-1 px-1.5 py-0.5 rounded-md border cyber-tooltip"
                 data-tooltip={`Эффекты: ${activeStatusEffectCount}`}
-                style={{
-                  background: 'rgba(0,0,0,0.3)',
-                  borderColor: 'rgba(100,116,139,0.2)',
-                }}
+                style={STYLE_STATUS_EFFECTS_BADGE}
               >
                 <Activity className="size-3 text-slate-400" />
                 <span className="text-[9px] text-slate-300/70 font-mono font-semibold">{activeStatusEffectCount}</span>
@@ -423,10 +488,7 @@ export function ExplorationHUD(props: HUDProps) {
             {currentWeather !== 'clear' && (
               <div
                 className="hidden sm:flex items-center gap-1 px-1.5 py-0.5 rounded-md border"
-                style={{
-                  background: 'rgba(0,0,0,0.3)',
-                  borderColor: 'rgba(100,116,139,0.2)',
-                }}
+                style={STYLE_WEATHER_BADGE}
                 title={getWeatherDescription(currentWeather)}
               >
                 <WeatherIcon type={currentWeather} className="size-3 weather-icon-bob" />
@@ -451,12 +513,7 @@ export function ExplorationHUD(props: HUDProps) {
                     exit={{ opacity: 0, y: -8, scale: 0.95 }}
                     transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
                     className="absolute right-0 top-full mt-1.5 w-52 rounded-lg border backdrop-blur-xl overflow-hidden panel-corner-accent panel-data-stream"
-                    style={{
-                      background: 'linear-gradient(145deg, rgba(0,0,0,0.92) 0%, rgba(15,23,42,0.88) 50%, rgba(0,0,0,0.85) 100%)',
-                      borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.2)',
-                      boxShadow: '0 0 20px rgb(var(--cyber-cyan-rgb) / 0.08), 0 8px 32px rgba(0,0,0,0.5)',
-                      zIndex: UI_LAYERS.HUD + 5,
-                    }}
+                    style={{ ...STYLE_MORE_MENU_BG, zIndex: UI_LAYERS.HUD + 5 }}
                   >
                     <div className="px-3 py-2 border-b border-slate-700/30">
                       <span className="text-[10px] text-slate-500 font-mono uppercase tracking-widest">Действия</span>
@@ -501,7 +558,7 @@ export function ExplorationHUD(props: HUDProps) {
           className="h-px mx-4"
           animate={{ opacity: [0.6, 1, 0.6] }}
           transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-          style={{ background: 'linear-gradient(90deg, transparent, rgb(var(--cyber-cyan-rgb) / 0.2) 30%, rgb(var(--cyber-cyan-rgb) / 0.35) 50%, rgb(var(--cyber-cyan-rgb) / 0.2) 70%, transparent)' }}
+          style={STYLE_BOTTOM_GLOW_LINE}
         />
       </div>
 
@@ -532,19 +589,16 @@ export function ExplorationHUD(props: HUDProps) {
         <div
           className={`relative rounded-2xl p-4 sm:p-5 border backdrop-blur-xl min-w-[260px] overflow-hidden panel-scanlines hex-grid-bg neon-border-breathe ${isLowEnergy || isHighStress ? 'warning-pulse' : ''}`}
           style={{
-            background: 'linear-gradient(145deg, rgba(2,6,23,0.95) 0%, rgba(8,12,28,0.92) 40%, rgba(4,8,18,0.88) 100%)',
-            borderColor: isLowEnergy || isHighStress ? 'rgba(251, 113, 133, 0.5)' : 'rgb(var(--cyber-cyan-rgb) / 0.2)',
-            boxShadow: isLowEnergy || isHighStress
-              ? '0 0 30px rgba(251,113,133,0.15), 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(251,113,133,0.1)'
-              : '0 0 20px rgb(var(--cyber-cyan-rgb) / 0.06), 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgb(var(--cyber-cyan-rgb) / 0.08)',
+            ...STYLE_DESKTOP_STATUS_BG,
+            ...(isLowEnergy || isHighStress ? STYLE_DESKTOP_STATUS_BORDER_ROSE : STYLE_DESKTOP_STATUS_BORDER_CYAN),
           }}
         >
           {/* Animated circuit-trace border at top */}
           <div className="absolute top-0 left-0 right-0 h-[2px] rounded-t-2xl overflow-hidden circuit-trace-line pointer-events-none" />
 
           {/* Accent glow spots */}
-          <div className="absolute inset-0 rounded-2xl pointer-events-none" style={{ background: 'radial-gradient(ellipse at 20% 20%, rgb(var(--cyber-cyan-rgb) / 0.04) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(251,191,36,0.03) 0%, transparent 50%)' }} />
-          <div className="absolute top-0 right-0 w-20 h-20 pointer-events-none" style={{ background: 'radial-gradient(circle at 100% 0%, rgb(var(--cyber-cyan-rgb) / 0.08) 0%, transparent 70%)' }} />
+          <div className="absolute inset-0 rounded-2xl pointer-events-none" style={STYLE_ACCENT_GLOW_SPOTS} />
+          <div className="absolute top-0 right-0 w-20 h-20 pointer-events-none" style={STYLE_ACCENT_CORNER_GLOW} />
 
           {/* Ambient floating particles */}
           <AmbientParticles />
@@ -552,15 +606,15 @@ export function ExplorationHUD(props: HUDProps) {
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2.5">
-              <div className="w-5 h-5 rounded-md flex items-center justify-center" style={{ background: 'rgb(var(--cyber-cyan-rgb) / 0.1)', boxShadow: '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.15)' }}>
+              <div className="w-5 h-5 rounded-md flex items-center justify-center" style={STYLE_SHIELD_ICON_BG}>
                 <Shield className="size-3 text-cyan-400" />
               </div>
-              <span className="text-[11px] text-cyan-400/70 font-mono uppercase tracking-[0.2em]" style={{ textShadow: '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.3)' }}>СТАТУС</span>
+              <span className="text-[11px] text-cyan-400/70 font-mono uppercase tracking-[0.2em]" style={STYLE_STATUS_HEADER_TEXT_GLOW}>СТАТУС</span>
             </div>
             <LevelBadge level={level} perkCount={perkCount} xp={xp} xpToNext={xpToNext} justLeveled={justLeveled} />
           </div>
 
-          <div className="h-px mb-4" style={{ background: 'linear-gradient(90deg, rgb(var(--cyber-cyan-rgb) / 0.3), rgb(var(--cyber-cyan-rgb) / 0.08) 40%, transparent)' }} />
+          <div className="h-px mb-4" style={STYLE_HR_CYAN_FADE} />
 
           {/* Karma with breathing ring — ENHANCED (with tooltip) */}
           <Tooltip>
@@ -611,15 +665,11 @@ export function ExplorationHUD(props: HUDProps) {
               side="right"
               sideOffset={8}
               className="border backdrop-blur-xl px-3 py-2.5 max-w-[240px] space-y-1.5"
-              style={{
-                background: 'linear-gradient(145deg, rgba(2,6,23,0.95) 0%, rgba(15,23,42,0.92) 50%, rgba(0,0,0,0.9) 100%)',
-                borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.3)',
-                boxShadow: '0 0 16px rgb(var(--cyber-cyan-rgb) / 0.12), 0 8px 24px rgba(0,0,0,0.5)',
-              }}
+              style={STYLE_TOOLTIP_BG}
             >
               <div className="text-xs font-semibold text-cyan-300 font-mono">☯ Карма: {karma}/100</div>
               <div className="text-[10px] text-slate-400">Уровень: <span className="text-cyan-400">{getKarmaTierLabel(karma)}</span></div>
-              <div className="h-px" style={{ background: 'rgb(var(--cyber-cyan-rgb) / 0.15)' }} />
+              <div className="h-px" style={STYLE_HR_CYAN_THIN} />
               <div className="text-[10px] text-slate-500 leading-relaxed">Влияет на: диалоги, отношения NPC, концовку</div>
               <div className="text-[10px] text-slate-500 leading-relaxed">Рост: добрые поступки, стихи</div>
               <div className="text-[10px] text-slate-500 leading-relaxed">Падение: агрессия, эгоизм</div>
@@ -631,11 +681,11 @@ export function ExplorationHUD(props: HUDProps) {
             <TooltipTrigger asChild>
               <div className="mb-3 cursor-default">
                 <div className="flex items-center gap-2 mb-1.5 relative">
-                  <div className="w-5 h-5 rounded-md flex items-center justify-center bg-cyan-500/10" style={{ boxShadow: '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.2)' }}>
+                  <div className="w-5 h-5 rounded-md flex items-center justify-center bg-cyan-500/10" style={STYLE_XP_ICON_GLOW}>
                     <TrendingUp className="size-3 text-cyan-400" />
                   </div>
                   <span className="text-sm font-semibold text-cyan-300">Опыт</span>
-                  <span className="text-[11px] text-cyan-400/70 font-mono ml-auto tabular-nums" style={{ textShadow: '0 0 4px rgb(var(--cyber-cyan-rgb) / 0.3)' }}>
+                  <span className="text-[11px] text-cyan-400/70 font-mono ml-auto tabular-nums" style={STYLE_XP_TEXT_GLOW}>
                     {xp}<span className="text-cyan-500/40">/</span>{xpToNext}
                   </span>
                 </div>
@@ -652,15 +702,11 @@ export function ExplorationHUD(props: HUDProps) {
               side="right"
               sideOffset={8}
               className="border backdrop-blur-xl px-3 py-2.5 max-w-[240px] space-y-1.5"
-              style={{
-                background: 'linear-gradient(145deg, rgba(2,6,23,0.95) 0%, rgba(15,23,42,0.92) 50%, rgba(0,0,0,0.9) 100%)',
-                borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.3)',
-                boxShadow: '0 0 16px rgb(var(--cyber-cyan-rgb) / 0.12), 0 8px 24px rgba(0,0,0,0.5)',
-              }}
+              style={STYLE_TOOLTIP_BG}
             >
               <div className="text-xs font-semibold text-cyan-300 font-mono">⬆ Опыт: {xp}/{xpToNext}</div>
               <div className="text-[10px] text-slate-400">До след. уровня: <span className="text-cyan-400">{xpToNext - xp} XP</span></div>
-              <div className="h-px" style={{ background: 'rgb(var(--cyber-cyan-rgb) / 0.15)' }} />
+              <div className="h-px" style={STYLE_HR_CYAN_THIN} />
               <div className="text-[10px] text-slate-500 leading-relaxed">Источник: бои, задания, стихи</div>
             </TooltipContent>
           </Tooltip>
@@ -671,7 +717,7 @@ export function ExplorationHUD(props: HUDProps) {
               <div className="mb-3 cursor-default">
                 <div className="flex items-center gap-2 mb-1.5 relative">
                   <div className={`w-5 h-5 rounded-md flex items-center justify-center ${isLowEnergy ? 'bg-rose-500/10' : 'bg-emerald-500/10'}`}
-                    style={{ boxShadow: isLowEnergy ? '0 0 8px rgba(244,63,94,0.2)' : '0 0 8px rgba(52,211,153,0.2)' }}
+                    style={isLowEnergy ? STYLE_LOW_ENERGY_ICON_GLOW : STYLE_NORMAL_ENERGY_ICON_GLOW}
                   >
                     <Zap className={`size-3 ${isLowEnergy ? 'text-rose-400' : 'text-emerald-400'}`} />
                   </div>
@@ -692,7 +738,7 @@ export function ExplorationHUD(props: HUDProps) {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     className="text-[10px] text-rose-400/80 font-mono mt-1 block energy-critical"
-                    style={{ textShadow: '0 0 6px rgba(251,113,133,0.3)' }}
+                    style={STYLE_LOW_ENERGY_WARNING_GLOW}
                   >
                     ⚠ Низкая энергия — найдите место для отдыха
                   </motion.span>
@@ -704,14 +750,14 @@ export function ExplorationHUD(props: HUDProps) {
               sideOffset={8}
               className="border backdrop-blur-xl px-3 py-2.5 max-w-[240px] space-y-1.5"
               style={{
-                background: 'linear-gradient(145deg, rgba(2,6,23,0.95) 0%, rgba(15,23,42,0.92) 50%, rgba(0,0,0,0.9) 100%)',
-                borderColor: isLowEnergy ? 'rgba(244,63,94,0.3)' : 'rgb(var(--cyber-cyan-rgb) / 0.3)',
-                boxShadow: isLowEnergy ? '0 0 16px rgba(244,63,94,0.12), 0 8px 24px rgba(0,0,0,0.5)' : '0 0 16px rgb(var(--cyber-cyan-rgb) / 0.12), 0 8px 24px rgba(0,0,0,0.5)',
+                ...STYLE_TOOLTIP_BG,
+                borderColor: isLowEnergy ? 'rgba(244,63,94,0.3)' : STYLE_TOOLTIP_BG.borderColor,
+                boxShadow: isLowEnergy ? '0 0 16px rgba(244,63,94,0.12), 0 8px 24px rgba(0,0,0,0.5)' : STYLE_TOOLTIP_BG.boxShadow,
               }}
             >
               <div className={`text-xs font-semibold font-mono ${isLowEnergy ? 'text-rose-300' : 'text-emerald-300'}`}>⚡ Энергия: {energy}/100</div>
               <div className="text-[10px] text-slate-400">Состояние: <span className={isLowEnergy ? 'text-rose-400' : 'text-emerald-400'}>{energy < 20 ? 'Критическое' : energy < 50 ? 'Низкое' : 'Нормальное'}</span></div>
-              <div className="h-px" style={{ background: 'rgb(var(--cyber-cyan-rgb) / 0.15)' }} />
+              <div className="h-px" style={STYLE_HR_CYAN_THIN} />
               <div className="text-[10px] text-slate-500 leading-relaxed">☕ Кофе — быстрое восстановление</div>
               <div className="text-[10px] text-slate-500 leading-relaxed">🛏 Отдых — полное восстановление</div>
               <div className="text-[10px] text-slate-500 leading-relaxed">🍫 Еда — небольшое восстановление</div>
@@ -724,7 +770,7 @@ export function ExplorationHUD(props: HUDProps) {
               <div className="cursor-default">
                 <div className="flex items-center gap-2 mb-1.5 relative">
                   <div className={`w-5 h-5 rounded-md flex items-center justify-center ${isHighStress ? 'bg-rose-500/10' : 'bg-amber-500/10'}`}
-                    style={{ boxShadow: isHighStress ? '0 0 8px rgba(244,63,94,0.2)' : '0 0 8px rgba(245,158,11,0.2)' }}
+                    style={isHighStress ? STYLE_HIGH_STRESS_ICON_GLOW : STYLE_NORMAL_STRESS_ICON_GLOW}
                   >
                     <Activity className={`size-3 ${isHighStress ? 'text-rose-400' : 'text-amber-400'}`} />
                   </div>
@@ -741,7 +787,7 @@ export function ExplorationHUD(props: HUDProps) {
                   shimmer={stressPulse}
                 />
                 {isHighStress && (
-                  <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-[10px] text-rose-400/80 font-mono mt-1 block" style={{ textShadow: '0 0 6px rgba(251,113,133,0.3)' }}>
+                  <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-[10px] text-rose-400/80 font-mono mt-1 block" style={STYLE_LOW_ENERGY_WARNING_GLOW}>
                     ⚠ Высокий стресс — отдохните или найдите стихи
                   </motion.span>
                 )}
@@ -752,21 +798,21 @@ export function ExplorationHUD(props: HUDProps) {
               sideOffset={8}
               className="border backdrop-blur-xl px-3 py-2.5 max-w-[240px] space-y-1.5"
               style={{
-                background: 'linear-gradient(145deg, rgba(2,6,23,0.95) 0%, rgba(15,23,42,0.92) 50%, rgba(0,0,0,0.9) 100%)',
-                borderColor: isHighStress ? 'rgba(244,63,94,0.3)' : 'rgb(var(--cyber-cyan-rgb) / 0.3)',
-                boxShadow: isHighStress ? '0 0 16px rgba(244,63,94,0.12), 0 8px 24px rgba(0,0,0,0.5)' : '0 0 16px rgb(var(--cyber-cyan-rgb) / 0.12), 0 8px 24px rgba(0,0,0,0.5)',
+                ...STYLE_TOOLTIP_BG,
+                borderColor: isHighStress ? 'rgba(244,63,94,0.3)' : STYLE_TOOLTIP_BG.borderColor,
+                boxShadow: isHighStress ? '0 0 16px rgba(244,63,94,0.12), 0 8px 24px rgba(0,0,0,0.5)' : STYLE_TOOLTIP_BG.boxShadow,
               }}
             >
               <div className={`text-xs font-semibold font-mono ${isHighStress ? 'text-rose-300' : 'text-amber-300'}`}>💢 Стресс: {stress}/100</div>
               <div className="text-[10px] text-slate-400">Состояние: <span className={isHighStress ? 'text-rose-400' : 'text-amber-400'}>{stress > 80 ? 'Критическое' : stress > 50 ? 'Повышенное' : 'Нормальное'}</span></div>
-              <div className="h-px" style={{ background: 'rgb(var(--cyber-cyan-rgb) / 0.15)' }} />
+              <div className="h-px" style={STYLE_HR_CYAN_THIN} />
               <div className="text-[10px] text-slate-500 leading-relaxed">📖 Стихи — снижение стресса</div>
               <div className="text-[10px] text-slate-500 leading-relaxed">🛏 Отдых — снижение стресса</div>
               <div className="text-[10px] text-slate-500 leading-relaxed">🚶 Прогулка — мягкое снижение</div>
             </TooltipContent>
           </Tooltip>
 
-          <div className="h-px mt-4" style={{ background: 'linear-gradient(90deg, transparent, rgb(var(--cyber-cyan-rgb) / 0.15), transparent)' }} />
+          <div className="h-px mt-4" style={STYLE_HR_CYAN_CENTER_FADE} />
           <div className="flex items-center justify-between mt-2.5">
             {import.meta.env.DEV && (
               <span className="text-[10px] text-slate-500/60 font-mono">volodka://status</span>
@@ -777,7 +823,7 @@ export function ExplorationHUD(props: HUDProps) {
                   <WeatherIcon type={currentWeather} className="size-3 weather-icon-bob" />
                 </div>
               )}
-              <span className="text-[10px] text-cyan-400/50 font-mono tabular-nums" style={{ textShadow: '0 0 4px rgb(var(--cyber-cyan-rgb) / 0.2)' }}>{formatGameClock(timeOfDay)}</span>
+              <span className="text-[10px] text-cyan-400/50 font-mono tabular-nums" style={STYLE_XP_TEXT_GLOW}>{formatGameClock(timeOfDay)}</span>
             </div>
           </div>
           {/* Version indicator */}
@@ -793,14 +839,13 @@ export function ExplorationHUD(props: HUDProps) {
         <div
           className={`flex items-center gap-2.5 px-3 py-2 rounded-xl border backdrop-blur-xl panel-scanlines-subtle ${isLowEnergy || isHighStress ? 'warning-pulse' : ''}`}
           style={{
-            background: 'linear-gradient(180deg, rgba(2,6,23,0.92) 0%, rgba(8,12,28,0.88) 100%)',
+            ...STYLE_MOBILE_BAR_BG,
             borderColor: isLowEnergy || isHighStress ? 'rgba(251,113,133,0.3)' : 'rgb(var(--cyber-cyan-rgb) / 0.15)',
-            boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
           }}
         >
           <div className="flex items-center gap-1.5">
             <span className="text-xs font-mono" style={{ color: karmaStroke(karma), textShadow: `0 0 6px ${karmaStroke(karma)}40` }} aria-hidden="true">☯</span>
-            <AnimatedCounter value={karma} className={`text-xs font-mono font-bold ${karmaColor(karma)}`} style={{ textShadow: '0 0 4px currentColor' }} />
+            <AnimatedCounter value={karma} className={`text-xs font-mono font-bold ${karmaColor(karma)}`} style={STYLE_CURRENT_COLOR_GLOW} />
             <span className="sr-only">{getKarmaTierLabel(karma)} карма {karma}</span>
           </div>
           <div className="w-px h-4 bg-slate-700/30" />
@@ -812,10 +857,10 @@ export function ExplorationHUD(props: HUDProps) {
                 initial={false}
                 animate={{ width: `${energy}%` }}
                 transition={{ duration: 0.5 }}
-                style={{ background: isLowEnergy ? 'linear-gradient(90deg, #9f1239, #f43f5e)' : 'linear-gradient(90deg, #059669, #34d399)', boxShadow: isLowEnergy ? '0 0 6px rgba(244,63,94,0.3)' : '0 0 6px rgba(52,211,153,0.3)' }}
+                style={isLowEnergy ? STYLE_MOBILE_ENERGY_BAR_LOW : STYLE_MOBILE_ENERGY_BAR_NORMAL}
               />
             </div>
-            <AnimatedCounter value={energy} className={`text-xs font-mono font-bold ${isLowEnergy ? 'text-rose-300' : 'text-emerald-300'}`} style={{ textShadow: '0 0 3px currentColor' }} />
+            <AnimatedCounter value={energy} className={`text-xs font-mono font-bold ${isLowEnergy ? 'text-rose-300' : 'text-emerald-300'}`} style={STYLE_CURRENT_COLOR_SMALL_GLOW} />
           </div>
           <div className="w-px h-4 bg-slate-700/30" />
           <div className="flex items-center gap-1.5 flex-1">
@@ -826,10 +871,10 @@ export function ExplorationHUD(props: HUDProps) {
                 initial={false}
                 animate={{ width: `${stress}%` }}
                 transition={{ duration: 0.5 }}
-                style={{ background: isHighStress ? 'linear-gradient(90deg, #9f1239, #f43f5e)' : 'linear-gradient(90deg, #b45309, #f59e0b)', boxShadow: isHighStress ? '0 0 6px rgba(244,63,94,0.3)' : '0 0 6px rgba(245,158,11,0.3)' }}
+                style={isHighStress ? STYLE_MOBILE_STRESS_BAR_HIGH : STYLE_MOBILE_STRESS_BAR_NORMAL}
               />
             </div>
-            <AnimatedCounter value={stress} className={`text-xs font-mono font-bold ${isHighStress ? 'text-rose-300' : 'text-amber-300'}`} style={{ textShadow: '0 0 3px currentColor' }} />
+            <AnimatedCounter value={stress} className={`text-xs font-mono font-bold ${isHighStress ? 'text-rose-300' : 'text-amber-300'}`} style={STYLE_CURRENT_COLOR_SMALL_GLOW} />
           </div>
         </div>
       </div>

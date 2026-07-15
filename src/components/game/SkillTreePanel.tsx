@@ -34,12 +34,14 @@ type NodeState = 'locked' | 'available' | 'unlocked';
 function getNodeState(
   node: SkillTreeNode,
   unlockedSkills: string[],
-  skillPoints: number,
+  _skillPoints: number,
 ): NodeState {
   if (unlockedSkills.includes(node.id)) return 'unlocked';
   const prereqsMet = node.requires.every((req) => unlockedSkills.includes(req));
-  if (prereqsMet && skillPoints > 0) return 'available';
-  if (prereqsMet && skillPoints <= 0) return 'available'; // still show as available visually, just can't afford
+  // Available nodes are shown even if the player can't afford them yet (skillPoints check
+  // was previously dead code — both branches returned 'available'). The affordability check
+  // is handled at unlock time, not at display time.
+  if (prereqsMet) return 'available';
   return 'locked';
 }
 
@@ -146,10 +148,12 @@ function ConnectionLine({
   lineState: LineState;
   justFilled: boolean;
 }) {
-  // Calculate line length for dashoffset animation
-  const dx = to.x - from.x;
-  const dy = to.y - from.y;
-  const length = Math.sqrt(dx * dx + dy * dy);
+  // Memoize line length — coordinates are static per connection, avoids recomputing sqrt every render
+  const length = useMemo(() => {
+    const dx = to.x - from.x;
+    const dy = to.y - from.y;
+    return Math.sqrt(dx * dx + dy * dy);
+  }, [from.x, from.y, to.x, to.y]);
 
   // State-dependent styles
   const strokeColor =

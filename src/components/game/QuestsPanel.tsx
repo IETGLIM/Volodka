@@ -12,7 +12,11 @@ import {
   Lightbulb, Shield, Swords, Zap, Star, Package, MapPin, MessageCircle, Gamepad2,
 } from 'lucide-react';
 import { QUEST_DEFINITIONS } from '@/data/quests';
+import type { QuestDefinition } from '@/shared/types/game';
 import { findNpcById } from '@/data/gameDataLoader';
+
+/* ── O(1) quest definition lookup (replaces O(n) .find() scans) ── */
+const QUEST_DEF_MAP = new Map<string, QuestDefinition>(QUEST_DEFINITIONS.map((d) => [d.id, d]));
 import {
   useActiveQuests,
   useFailedQuests,
@@ -260,7 +264,7 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
         activeQuests.some((q) => q.questId === id),
       );
       const mainActive = activeQuests.find((q) => {
-        const def = QUEST_DEFINITIONS.find((d) => d.id === q.questId);
+        const def = QUEST_DEF_MAP.get(q.questId);
         return def?.questType === 'main';
       });
       const toExpand = spineActive ?? mainActive?.questId ?? activeQuests[0]?.questId;
@@ -287,7 +291,7 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
       daily: [],
     };
     for (const qs of activeQuests) {
-      const def = QUEST_DEFINITIONS.find((d) => d.id === qs.questId);
+      const def = QUEST_DEF_MAP.get(qs.questId);
       if (def) {
         groups[def.questType].push(qs);
       } else {
@@ -310,7 +314,7 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
   };
 
   const hasPoemBypass = (questId: string) => {
-    const def = QUEST_DEFINITIONS.find((d) => d.id === questId);
+    const def = QUEST_DEF_MAP.get(questId);
     return def?.objectives.some((o) => o.poemPowerBypass) ?? false;
   };
 
@@ -367,7 +371,7 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                       </h3>
                       <div className="flex flex-col gap-3">
                         {typeQuests.map((qs) => {
-                          const def = QUEST_DEFINITIONS.find((d) => d.id === qs.questId);
+                          const def = QUEST_DEF_MAP.get(qs.questId);
                           if (!def) return null;
 
                           const progress = getQuestProgress(qs.questId);
@@ -665,7 +669,7 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                   </h3>
                   <div className="flex flex-col gap-2">
                     {failedQuests.map((qs) => {
-                      const def = QUEST_DEFINITIONS.find((d) => d.id === qs.questId);
+                      const def = QUEST_DEF_MAP.get(qs.questId);
                       if (!def) return null;
                       const canRetry = questCanRetry(def);
                       const playerFlags = useGameStore.getState().playerState.flags;
@@ -723,7 +727,7 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                   </h3>
                   <div className="flex flex-col gap-2">
                     {completedQuests.map((qs) => {
-                      const def = QUEST_DEFINITIONS.find((d) => d.id === qs.questId);
+                      const def = QUEST_DEF_MAP.get(qs.questId);
                       if (!def) return null;
                       return (
                         <div
