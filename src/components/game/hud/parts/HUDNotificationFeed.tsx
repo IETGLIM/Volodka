@@ -108,24 +108,24 @@ export function HUDNotificationFeed() {
           <motion.div
             key={item.id}
             layout
-            initial={reducedMotion ? { opacity: 1 } : { opacity: 0, x: 20, maxWidth: 0 }}
-            animate={{ opacity: 1, x: 0, maxWidth: 200 }}
-            exit={reducedMotion ? { opacity: 0 } : { opacity: 0, x: -10, maxWidth: 0, marginBottom: 0 }}
-            transition={{ duration: reducedMotion ? 0.1 : 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className="overflow-hidden mb-1"
+            initial={reducedMotion ? { opacity: 1 } : { opacity: 0, x: -20, scale: 0.95 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            exit={reducedMotion ? { opacity: 0 } : { opacity: 0, x: -20, scale: 0.9, filter: 'blur(4px)' }}
+            transition={{ duration: reducedMotion ? 0.1 : 0.35, ease: [0.16, 1, 0.3, 1] }}
+            className="overflow-hidden mb-1.5 notification-feed-slide"
           >
             <div
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md border backdrop-blur-sm"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border backdrop-blur-md"
               style={{
-                background: 'rgba(2, 6, 23, 0.8)',
-                borderColor: `${item.color}30`,
-                boxShadow: `0 0 8px ${item.color}15`,
+                background: 'linear-gradient(135deg, rgba(2, 6, 23, 0.9) 0%, rgba(15, 23, 42, 0.85) 100%)',
+                borderColor: `${item.color}40`,
+                boxShadow: `0 0 10px ${item.color}20, 0 2px 8px rgba(0,0,0,0.3)`,
               }}
             >
-              <span className="text-xs shrink-0" aria-hidden="true">{item.icon}</span>
+              <span className="text-xs shrink-0" aria-hidden="true" style={{ filter: 'drop-shadow(0 0 3px ' + item.color + '60)' }}>{item.icon}</span>
               <span
                 className="text-[10px] font-mono leading-tight truncate"
-                style={{ color: item.color, textShadow: `0 0 4px ${item.color}40` }}
+                style={{ color: item.color, textShadow: `0 0 6px ${item.color}50` }}
               >
                 {item.text}
               </span>

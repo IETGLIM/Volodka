@@ -44,13 +44,17 @@ export function CyberStatBar({
     <div
       className={`relative h-2.5 bg-slate-800/80 rounded-full overflow-hidden ${lowClass} ${shimmer ? 'stat-shimmer' : ''}`}
       style={{ 
-        boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.4), 0 0 8px rgba(0,0,0,0.3)',
+        boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.4), 0 0 8px rgba(0,0,0,0.3), 0 0 16px ' + glowColor + (isCritical ? '' : '15'),
       }}
     >
       {showSegments && (
         <div className="absolute inset-0 flex items-center pointer-events-none">
           {[25, 50, 75].map((mark) => (
-            <div key={mark} className="absolute top-0 bottom-0 w-px bg-slate-700/50" style={{ left: `${mark}%` }} />
+            <div
+              key={mark}
+              className="absolute top-0 bottom-0 w-px bg-slate-700/50 stat-bar-segment-glow"
+              style={{ left: `${mark}%` }}
+            />
           ))}
         </div>
       )}
@@ -86,11 +90,11 @@ export function CyberStatBar({
           }}
         />
       )}
-      {/* Top highlight line */}
+      {/* Top highlight line with enhanced glow */}
       <div
         className="absolute top-0 left-0 right-0 h-px rounded-t-full pointer-events-none"
         style={{
-          background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.12) 50%, transparent 100%)',
+          background: `linear-gradient(90deg, transparent 0%, ${glowColor}40 30%, rgba(255,255,255,0.15) 50%, ${glowColor}40 70%, transparent 100%)`,
         }}
       />
     </div>

@@ -69,7 +69,7 @@ export function CompassIndicator() {
         style={{
           background: 'radial-gradient(circle, rgba(2,6,23,0.85) 0%, rgba(15,23,42,0.75) 70%, rgba(0,0,0,0.6) 100%)',
           borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.25)',
-          boxShadow: '0 0 12px rgb(var(--cyber-cyan-rgb) / 0.1), inset 0 0 8px rgba(0,0,0,0.4)',
+          boxShadow: '0 0 12px rgb(var(--cyber-cyan-rgb) / 0.15), inset 0 0 8px rgba(0,0,0,0.4), 0 0 24px rgb(var(--cyber-cyan-rgb) / 0.05)',
         }}
         animate={{ rotate: -rotation }}
         transition={{ duration: 0.15, ease: 'linear' }}
@@ -120,12 +120,15 @@ export function CompassIndicator() {
           />
         </div>
 
-        {/* Center dot */}
+        {/* Center dot with pulse */}
         <div
-          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full"
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
           style={{
+            width: 5,
+            height: 5,
             background: 'var(--cyber-cyan)',
-            boxShadow: '0 0 4px var(--cyber-cyan)',
+            boxShadow: '0 0 6px var(--cyber-cyan), 0 0 12px rgb(var(--cyber-cyan-rgb) / 0.3)',
+            animation: 'compass-needle-swing 5s ease-in-out infinite',
           }}
         />
       </motion.div>
@@ -139,9 +142,13 @@ export function CompassIndicator() {
         ▲
       </div>
 
-      {/* Numeric degree readout */}
+      {/* Numeric degree readout with subtle glow */}
       <span
-        className="mt-0.5 text-[9px] font-mono text-cyan-400 opacity-60 tabular-nums select-none pointer-events-none"
+        className="mt-0.5 text-[9px] font-mono tabular-nums select-none pointer-events-none"
+        style={{
+          color: 'rgb(var(--cyber-cyan-rgb) / 0.7)',
+          textShadow: '0 0 4px rgb(var(--cyber-cyan-rgb) / 0.3)',
+        }}
         aria-hidden="true"
       >
         {displayDeg}°

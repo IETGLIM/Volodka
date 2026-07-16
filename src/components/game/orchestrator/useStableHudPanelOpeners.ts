@@ -17,6 +17,7 @@ export interface HudSecondaryPanelOpeners {
   onOpenPerks: () => void;
   onOpenQuestBoard: () => void;
   onOpenStats: () => void;
+  onOpenSaveSlots: () => void;
 }
 
 export function useStableHudPanelOpeners(
@@ -41,6 +42,7 @@ export function useStableHudPanelOpeners(
       onOpenPerks: () => dispatchRef.current('perks'),
       onOpenQuestBoard: () => dispatchRef.current('questBoard'),
       onOpenStats: () => dispatchRef.current('stats'),
+      onOpenSaveSlots: () => dispatchRef.current('saveSlot'),
     }),
     [],
   );

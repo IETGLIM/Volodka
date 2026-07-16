@@ -264,15 +264,15 @@ export function QuickAccessToolbar() {
           <div
             className={`relative hex-grid-bg ${isStressHigh ? 'warning-pulse' : ''}`}
             style={{
-              backdropFilter: 'blur(12px)',
-              WebkitBackdropFilter: 'blur(12px)',
+              backdropFilter: 'blur(16px)',
+              WebkitBackdropFilter: 'blur(16px)',
               background:
-                'linear-gradient(180deg, rgba(8, 12, 18, 0.85) 0%, rgba(5, 8, 14, 0.9) 100%)',
-              border: `1px solid ${isStressHigh ? 'rgba(251, 113, 133, 0.35)' : 'rgb(var(--cyber-cyan-rgb) / 0.2)'}`,
-              borderRadius: '8px',
+                'linear-gradient(180deg, rgba(8, 12, 18, 0.88) 0%, rgba(5, 8, 14, 0.92) 100%)',
+              border: `1px solid ${isStressHigh ? 'rgba(251, 113, 133, 0.4)' : 'rgb(var(--cyber-cyan-rgb) / 0.25)'}`,
+              borderRadius: '10px',
               boxShadow: isStressHigh
-                ? '0 0 16px rgba(251, 113, 133, 0.15), 0 4px 16px rgba(0, 0, 0, 0.5)'
-                : '0 0 16px rgb(var(--cyber-cyan-rgb) / 0.08), 0 4px 16px rgba(0, 0, 0, 0.5)',
+                ? '0 0 20px rgba(251, 113, 133, 0.18), 0 4px 20px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(251,113,133,0.1)'
+                : '0 0 20px rgb(var(--cyber-cyan-rgb) / 0.1), 0 4px 20px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgb(var(--cyber-cyan-rgb) / 0.08)',
               maxHeight: '48px',
               overflow: 'hidden',
             }}
@@ -286,10 +286,10 @@ export function QuickAccessToolbar() {
             {/* Top edge glow line */}
             <motion.div
               className="absolute top-0 left-2 right-2 h-px"
-              animate={{ opacity: [0.4, 0.8, 0.4] }}
-              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+              animate={{ opacity: [0.5, 1, 0.5] }}
+              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
               style={{
-                background: `linear-gradient(90deg, transparent, ${isStressHigh ? 'rgba(251,113,133,0.3)' : 'rgb(var(--cyber-cyan-rgb) / 0.25)'} 50%, transparent)`,
+                background: `linear-gradient(90deg, transparent, ${isStressHigh ? 'rgba(251,113,133,0.4)' : 'rgb(var(--cyber-cyan-rgb) / 0.35)'} 50%, transparent)`,
               }}
             />
 

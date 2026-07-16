@@ -286,6 +286,7 @@ export function ExplorationHUD(props: HUDProps) {
     onOpenFastTravel,
     onOpenPerks,
     onOpenQuestBoard,
+    onOpenSaveSlots,
   } = props;
 
   const secondaryActions: SecondaryAction[] = useMemo(() => [
@@ -302,9 +303,10 @@ export function ExplorationHUD(props: HUDProps) {
     { icon: <BookMarked className="size-4" />, label: 'Кодекс', shortcut: 'K', onClick: onOpenCodex },
     { icon: <MessageCircle className="size-4" />, label: 'История диалогов', shortcut: 'L', onClick: onOpenDialogueHistory },
     { icon: <Trophy className="size-4" />, label: 'Достижения', shortcut: 'H', onClick: onOpenAchievements },
+    { icon: <Save className="size-4" />, label: 'Сохранение', shortcut: 'F9', onClick: onOpenSaveSlots },
     { icon: <Lightbulb className="size-4" />, label: 'Подсказки', onClick: onToggleTutorials },
     { icon: <Menu className="size-4" />, label: 'Меню', onClick: onOpenMenu },
-  ], [onOpenFastTravel, onOpenSkillTree, onOpenPerks, onOpenQuestBoard, onOpenTrading, onOpenCrafting, onOpenMiniGames, onOpenWorldMap, onOpenCharacterProfile, onOpenNPCRelations, onOpenCodex, onOpenDialogueHistory, onOpenAchievements, onToggleTutorials, onOpenMenu]);
+  ], [onOpenFastTravel, onOpenSkillTree, onOpenPerks, onOpenQuestBoard, onOpenTrading, onOpenCrafting, onOpenMiniGames, onOpenWorldMap, onOpenCharacterProfile, onOpenNPCRelations, onOpenCodex, onOpenDialogueHistory, onOpenAchievements, onOpenSaveSlots, onToggleTutorials, onOpenMenu]);
 
   if (photoModeOn) return null;
 
@@ -332,9 +334,12 @@ export function ExplorationHUD(props: HUDProps) {
       {/* ── Top bar (fades when HUD is quiet — crosshair stays) ── */}
       <div className="absolute top-0 left-0 right-0 pointer-events-auto" style={quietStyle}>
         <div
-          className="flex items-center justify-between px-2 py-1.5 sm:px-4 sm:py-2.5 hud-scanline-bar"
+          className="relative flex items-center justify-between px-2 py-1.5 sm:px-4 sm:py-2.5 hud-scanline-bar"
           style={STYLE_TOP_BAR_BG}
         >
+          {/* Animated gradient border line at bottom of top bar */}
+          <div className="top-bar-gradient-border absolute bottom-0 left-0 right-0 h-px pointer-events-none" />
+
           {/* Left: Scene name + time */}
           <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
             <div className="flex items-center gap-1 shrink-0">
@@ -343,7 +348,7 @@ export function ExplorationHUD(props: HUDProps) {
             <TimeIcon hour={timeOfDay} />
             <div className="flex flex-col min-w-0">
               <div className="flex items-center gap-1 sm:gap-1.5">
-                <span className="text-slate-100 text-sm sm:text-base font-semibold tracking-wide truncate neon-text-cyan location-name-glow">{sceneName}</span>
+                <span key={sceneName} className="text-slate-100 text-sm sm:text-base font-semibold tracking-wide truncate neon-text-cyan location-name-glow scene-name-transition">{sceneName}</span>
                 <span className="text-[9px] text-slate-500 font-mono hidden sm:inline">●</span>
                 <span className="text-[10px] text-slate-300/80 font-mono hidden sm:inline" style={{ textShadow: getTimeOfDayShadow(timeOfDay), transition: 'text-shadow 1s ease' }}>{timeLabel(timeOfDay)}</span>
               </div>
@@ -370,7 +375,7 @@ export function ExplorationHUD(props: HUDProps) {
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="hidden md:flex flex-col items-center gap-0 w-16 cursor-default">
-                  <div className="h-1 w-full bg-slate-800/60 rounded-full overflow-hidden">
+                  <div className="relative h-1 w-full bg-slate-800/60 rounded-full overflow-hidden">
                     <motion.div
                       className="h-full rounded-full"
                       style={STYLE_XP_MINI_BG}
@@ -378,6 +383,7 @@ export function ExplorationHUD(props: HUDProps) {
                       animate={{ width: `${(xp / xpToNext) * 100}%` }}
                       transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
                     />
+                    <div className="xp-shimmer-overlay absolute inset-0 rounded-full pointer-events-none" />
                   </div>
                   <span className="text-[8px] text-slate-400 font-mono tabular-nums">{xp}/{xpToNext} XP</span>
                 </div>
@@ -508,7 +514,7 @@ export function ExplorationHUD(props: HUDProps) {
             {/* Weather status indicator */}
             {currentWeather !== 'clear' && (
               <div
-                className="hidden sm:flex items-center gap-1 px-1.5 py-0.5 rounded-md border"
+                className="hidden sm:flex items-center gap-1 px-1.5 py-0.5 rounded-md border weather-badge-shimmer"
                 style={STYLE_WEATHER_BADGE}
                 title={getWeatherDescription(currentWeather)}
               >
@@ -540,15 +546,20 @@ export function ExplorationHUD(props: HUDProps) {
                       <span className="text-[10px] text-slate-500 font-mono uppercase tracking-widest">Действия</span>
                     </div>
                     <div className="py-1 px-1 max-h-64 overflow-y-auto">
-                      {secondaryActions.map((action) => (
-                        <HUDMenuItem
+                      {secondaryActions.map((action, idx) => (
+                        <div
                           key={action.label}
-                          icon={action.icon}
-                          label={action.label}
-                          shortcut={action.shortcut}
-                          badge={action.label === 'Доска заданий' ? questNotificationCount : undefined}
-                          onClick={() => { setMoreMenuOpen(false); action.onClick?.(); }}
-                        />
+                          className="more-menu-item-stagger"
+                          style={{ animationDelay: `${idx * 30}ms` }}
+                        >
+                          <HUDMenuItem
+                            icon={action.icon}
+                            label={action.label}
+                            shortcut={action.shortcut}
+                            badge={action.label === 'Доска заданий' ? questNotificationCount : undefined}
+                            onClick={() => { setMoreMenuOpen(false); action.onClick?.(); }}
+                          />
+                        </div>
                       ))}
                     </div>
                     <div className="px-3 py-1.5 border-t border-slate-700/30">
@@ -593,9 +604,32 @@ export function ExplorationHUD(props: HUDProps) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.9 }}
             transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute top-16 right-3 sm:top-20 sm:right-4 flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-900/80 border border-cyan-900/30 backdrop-blur-md shadow-[0_0_15px_rgb(var(--cyber-cyan-rgb) / 0.1)]"
-            style={{ zIndex: UI_LAYERS.HUD + 1 }}
+            className="absolute top-16 right-3 sm:top-20 sm:right-4 flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-900/80 border border-cyan-900/30 backdrop-blur-md save-toast-animated overflow-hidden"
+            style={{ zIndex: UI_LAYERS.HUD + 1, boxShadow: '0 0 12px rgba(34,211,238,0.25), inset 0 0 12px rgba(34,211,238,0.05)' }}
           >
+            {/* Animated progress bar */}
+            <motion.div
+              className="absolute bottom-0 left-0 h-[2px] bg-cyan-400/70"
+              initial={{ width: '0%' }}
+              animate={{ width: '100%' }}
+              transition={{ duration: 2, ease: 'linear' }}
+            />
+            {/* Scanline overlay */}
+            <div
+              className="absolute inset-0 pointer-events-none opacity-10"
+              style={{
+                backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(34,211,238,0.15) 2px, rgba(34,211,238,0.15) 4px)',
+              }}
+            />
+            {/* Slot label */}
+            <span className="absolute top-0.5 right-1.5 text-[8px] font-mono tracking-widest text-cyan-600/50 select-none">СЛОТ АВТО</span>
+            {/* Cyan pulse glow border */}
+            <motion.div
+              className="absolute inset-0 rounded-lg pointer-events-none"
+              initial={{ boxShadow: '0 0 6px rgba(34,211,238,0.3), inset 0 0 6px rgba(34,211,238,0.05)' }}
+              animate={{ boxShadow: ['0 0 6px rgba(34,211,238,0.3), inset 0 0 6px rgba(34,211,238,0.05)', '0 0 18px rgba(34,211,238,0.5), inset 0 0 10px rgba(34,211,238,0.1)', '0 0 6px rgba(34,211,238,0.3), inset 0 0 6px rgba(34,211,238,0.05)'] }}
+              transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
+            />
             <Save className="size-3.5 text-cyan-400" />
             <span className="text-xs text-cyan-300 font-medium">💾 Сохранено</span>
           </motion.div>
@@ -949,6 +983,41 @@ export function ExplorationHUD(props: HUDProps) {
       >
         <ActiveQuestMiniTracker />
       </div>
+
+      {/* ── Edge warning overlays for low energy / high stress ── */}
+      <AnimatePresence>
+        {(isLowEnergy || isHighStress) && (
+          <>
+            <motion.div
+              key="warn-left"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.8 }}
+              className="hud-edge-warning-left"
+              aria-hidden="true"
+            />
+            <motion.div
+              key="warn-right"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.8 }}
+              className="hud-edge-warning-right"
+              aria-hidden="true"
+            />
+            <motion.div
+              key="warn-bottom"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.8 }}
+              className="hud-edge-warning-bottom"
+              aria-hidden="true"
+            />
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

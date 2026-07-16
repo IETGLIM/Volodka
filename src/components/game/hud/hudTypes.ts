@@ -29,4 +29,5 @@ export type HUDProps = {
   onOpenPerks?: () => void;
   onOpenQuestBoard?: () => void;
   onOpenStats?: () => void;
+  onOpenSaveSlots?: () => void;
 };
