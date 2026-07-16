@@ -48,7 +48,7 @@ function abortPendingLoaded(reason: string, errorCode: string): void {
   pending = null;
   clearWatchdog();
   clearHeartbeat();
-  devWarn('[sceneLoadedGate] Scene load watchdog:', reason, payload);
+  devWarn('[sceneLoadedGate] Scene load aborted:', reason, payload);
   eventBus.emit('scene:transition_failed', {
     reason,
     targetScene: payload.sceneId,
@@ -84,20 +84,30 @@ function armWatchdog(generation: number): void {
   watchdogTimer = setTimeout(() => {
     watchdogTimer = null;
     if (generation !== pendingGeneration || !pending) return;
-    abortPendingLoaded(
-      'canvas:first-frame watchdog timeout',
-      'first_frame_timeout',
+    // Guaranteed graceful flush: the scene's React tree is committed at scene:enter,
+    // so it is explorable even if the first composited WebGL frame never arrived
+    // (slow/software WebGL, background tab, cold WASM). We MUST NOT hard-fail here —
+    // a missing first frame is a visual degradation, not a load failure, and showing
+    // "Не удалось загрузить сцену" blocks the player from progressing. Real failures
+    // (WebGL context loss) are handled separately via canvas:context-lost.
+    devWarn(
+      '[sceneLoadedGate] canvas:first-frame not received within fallback window — ' +
+        'flushing scene:loaded as degraded (playable, visual may be fallback).',
+      pending,
     );
+    flushPendingLoaded(generation, true);
   }, SCENE_LOADED_FIRST_FRAME_WATCHDOG_MS);
 }
 
-function flushPendingLoaded(generation: number): void {
+function flushPendingLoaded(generation: number, degraded = false): void {
   if (generation !== pendingGeneration || !pending) return;
   const payload = pending;
   pending = null;
   clearWatchdog();
   clearHeartbeat();
-  eventBus.emit('scene:loaded', payload);
+  // Only attach the `degraded` flag when true, so the normal (fast canvas:first-frame)
+  // payload stays shape-compatible with existing listeners: `{ sceneId, fromSceneId }`.
+  eventBus.emit('scene:loaded', degraded ? { ...payload, degraded: true } : payload);
 }
 
 /** Queue scene:loaded for the next canvas:first-frame after scene:enter. */

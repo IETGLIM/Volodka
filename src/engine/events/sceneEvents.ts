@@ -12,8 +12,12 @@ export interface SceneEvents {
   /** Fired before store scene write — orchestrators tear down old scene resources. */
   'scene:unload': { sceneId: SceneId; nextSceneId: SceneId };
   'scene:enter': { sceneId: SceneId; fromSceneId: SceneId };
-  /** Fired after the first canvas frame following scene:enter; Suspense chunks may still stream. */
-  'scene:loaded': { sceneId: SceneId; fromSceneId: SceneId };
+  /** Fired after the first canvas frame following scene:enter; Suspense chunks may still stream.
+   *  `degraded` is true when the scene was flushed by the guaranteed-fallback timer instead of a
+   *  real composited WebGL frame (e.g. slow/software rendering). The scene is still playable —
+   *  the 3D visual may be a greybox/fallback — but downstream systems can use the flag to
+   *  optionally retry heavier setup once a real frame arrives. */
+  'scene:loaded': { sceneId: SceneId; fromSceneId: SceneId; degraded?: boolean };
   /** Transition aborted — load error, user cancel, or unrecoverable canvas failure. */
   'scene:transition_failed': {
     reason: string;

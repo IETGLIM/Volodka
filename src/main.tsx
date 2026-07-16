@@ -8,6 +8,7 @@ import { applyGameSettings } from '@/engine/settings/SettingsFacade';
 import { initAccessibilitySettings } from '@/engine/accessibility/accessibilitySettings';
 import { initVoiceLineRegistry } from '@/engine/audio/VoiceLineRegistry';
 import { installChunkLoadRecovery, clearChunkReloadFlag } from '@/shared/chunk/chunkLoadRecovery';
+import { installSceneLoadDebugTap } from '@/engine/core/sceneLoadDebug';
 
 // Install vite:preloadError handler BEFORE any lazy chunk can be loaded.
 // If this runs after createRoot().render(), Vite may have already attempted
@@ -20,6 +21,7 @@ bindApplicationLayers();
 applyGameSettings();
 initAccessibilitySettings();
 initVoiceLineRegistry();
+installSceneLoadDebugTap();
 
 const root = document.getElementById('root');
 if (!root) throw new Error('Root element not found');

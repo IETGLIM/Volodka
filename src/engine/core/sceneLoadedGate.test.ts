@@ -64,7 +64,7 @@ describe('sceneLoadedGate', () => {
     unregisterCanvasForFirstFrame(canvas);
   });
 
-  it('aborts with scene:transition_failed when first-frame watchdog times out', () => {
+  it('gracefully flushes scene:loaded (degraded) when first-frame fallback window elapses', () => {
     const canvas = {} as HTMLCanvasElement;
     registerCanvasForFirstFrame(canvas);
 
@@ -78,12 +78,13 @@ describe('sceneLoadedGate', () => {
 
     vi.advanceTimersByTime(SCENE_LOADED_FIRST_FRAME_WATCHDOG_MS);
 
-    expect(loaded).not.toHaveBeenCalled();
-    expect(failed).toHaveBeenCalledWith({
-      reason: 'canvas:first-frame watchdog timeout',
-      targetScene: 'cafe_evening',
-      fromScene: 'volodka_room',
-      errorCode: 'first_frame_timeout',
+    // Slow/software WebGL must never block progression: the scene is flushed as
+    // playable (degraded) instead of surfacing a scary "Не удалось загрузить сцену".
+    expect(failed).not.toHaveBeenCalled();
+    expect(loaded).toHaveBeenCalledWith({
+      sceneId: 'cafe_evening',
+      fromSceneId: 'volodka_room',
+      degraded: true,
     });
 
     unregisterCanvasForFirstFrame(canvas);

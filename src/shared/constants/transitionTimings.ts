@@ -101,8 +101,15 @@ export const LOADING_PLAYABLE_HOLD_MS = 320;
 /** Headless / slow WebGL — synthetic first-frame fallback after game mount. */
 export const BOOT_FIRST_FRAME_FALLBACK_MS = LOADING_PLAYABLE_DISMISS_MS + 6000;
 
-/** Runtime scene:enter → scene:loaded — abort if canvas:first-frame never arrives. */
-export const SCENE_LOADED_FIRST_FRAME_WATCHDOG_MS = CUTSCENE_TIMINGS.CANVAS_TIMEOUT_MS;
+/** Runtime scene:enter → scene:loaded guaranteed flush.
+ *  If `canvas:first-frame` does not arrive within this window (slow/software WebGL,
+ *  background tab, cold WASM), the scene is flushed as `scene:loaded` (degraded) so the
+ *  player is never blocked by a scary "Не удалось загрузить сцену" banner — the scene's
+ *  React tree is already committed at `scene:enter`, so it is explorable even if the first
+ *  composited frame is delayed. Real failures (WebGL context loss) still emit
+ *  `scene:transition_failed`. Kept well below the cutscene canvas timeout so the fallback
+ *  wins on resource-constrained devices before any cutscene watchdog could fire. */
+export const SCENE_LOADED_FIRST_FRAME_WATCHDOG_MS = 2500;
 
 /** LazyPanelSlot fallback if panel does not signal exit via onExitComplete. */
 export const PANEL_UNMOUNT_GRACE_MS = PANEL_EXIT_MS + 80;

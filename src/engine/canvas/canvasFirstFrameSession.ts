@@ -1,7 +1,16 @@
 import { eventBus } from '@/engine/EventBus';
 
 /** Per-canvas first-frame session — keyed by WebGL canvas element. */
-export type CanvasFirstFrameSession = { emitted: boolean; contextLost: boolean };
+export type CanvasFirstFrameSession = {
+  emitted: boolean;
+  contextLost: boolean;
+  /** The firstFrameGeneration this canvas last emitted canvas:first-frame for.
+   *  Used to unstick a latch that was never reset (e.g. when `invalidateCanvasFirstFrame`
+   *  resets the session for `registeredCanvas` but the post-frame tick runs against a
+   *  different canvas reference after a remount/race). A new generation always re-opens
+   *  the right to emit, so scene loads never stall on a stale `emitted=true`. */
+  lastClaimedGeneration: number;
+};
 
 const canvasFirstFrameSessions = new WeakMap<HTMLCanvasElement, CanvasFirstFrameSession>();
 
@@ -17,7 +26,7 @@ export function getCanvasFirstFrameGeneration(): number {
 export function getCanvasFirstFrameSession(canvas: HTMLCanvasElement): CanvasFirstFrameSession {
   let session = canvasFirstFrameSessions.get(canvas);
   if (!session) {
-    session = { emitted: false, contextLost: false };
+    session = { emitted: false, contextLost: false, lastClaimedGeneration: -1 };
     canvasFirstFrameSessions.set(canvas, session);
   }
   return session;
@@ -66,17 +75,33 @@ export function markCanvasFirstFrameSessionLost(canvas: HTMLCanvasElement): void
   const session = getCanvasFirstFrameSession(canvas);
   session.emitted = false;
   session.contextLost = true;
+  // Reset so the post-restore first frame is always treated as a fresh signal.
+  session.lastClaimedGeneration = -1;
 }
 
 /**
  * Atomically claim the right to emit canvas:first-frame for this canvas.
- * Returns the current generation, or null when the latch is already closed.
+ * Returns the current generation, or null when the latch is already closed for the
+ * current generation.
+ *
+ * A claim succeeds when EITHER:
+ *  - the latch is open (`emitted === false`), OR
+ *  - the global `firstFrameGeneration` has advanced since this canvas last emitted
+ *    (a new invalidate happened — e.g. a scene transition — which must always be
+ *    allowed to signal a fresh first-frame, even if a stale `emitted=true` survived
+ *    a canvas remount / registeredCanvas mismatch).
+ *
+ * This keeps the original latch semantics (one emit per invalidate) while making
+ * scene loads resilient to latch-desync bugs that previously caused the
+ * `canvas:first-frame watchdog timeout` → «Не удалось загрузить сцену» failure.
  */
 export function claimCanvasFirstFrameEmit(canvas: HTMLCanvasElement): number | null {
   const session = getCanvasFirstFrameSession(canvas);
-  if (session.emitted) return null;
+  const generationAdvanced = firstFrameGeneration !== session.lastClaimedGeneration;
+  if (session.emitted && !generationAdvanced) return null;
   session.emitted = true;
   session.contextLost = false;
+  session.lastClaimedGeneration = firstFrameGeneration;
   return firstFrameGeneration;
 }
 
@@ -85,6 +110,7 @@ export function markCanvasFirstFrameEmitted(canvas: HTMLCanvasElement): void {
   const session = getCanvasFirstFrameSession(canvas);
   session.emitted = true;
   session.contextLost = false;
+  session.lastClaimedGeneration = firstFrameGeneration;
 }
 
 /** Test-only reset — not for production. */
