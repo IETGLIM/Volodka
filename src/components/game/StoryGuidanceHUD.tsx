@@ -402,7 +402,7 @@ export function StoryGuidanceHUD() {
                 ) : null}
               </div>
               <p
-                className={`text-xs font-mono leading-snug quest-objective-text ${expanded ? '' : 'line-clamp-1'}`}
+                className={`text-xs font-mono leading-snug quest-objective-text ${expanded ? '' : 'line-clamp-2'}`}
                 style={{ color: '#c8e8e8' }}
               >
                 {displayText}
