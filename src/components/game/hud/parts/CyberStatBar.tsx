@@ -42,7 +42,7 @@ export function CyberStatBar({
 
   return (
     <div
-      className={`relative h-2.5 bg-slate-800/80 rounded-full overflow-hidden ${lowClass} ${shimmer ? 'stat-shimmer' : ''}`}
+      className={`relative h-2.5 bg-slate-800/80 rounded-full overflow-hidden ${lowClass} ${shimmer ? 'stat-shimmer' : ''} stat-bar-shimmer-effect`}
       style={{ 
         boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.4), 0 0 8px rgba(0,0,0,0.3), 0 0 16px ' + glowColor + (isCritical ? '' : '15'),
       }}

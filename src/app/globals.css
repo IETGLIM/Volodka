@@ -39,6 +39,7 @@
 @import "../styles/hud-round7.css";
 @import "../styles/hud-round8.css";
 @import "../styles/hud-round9.css";
+@import "../styles/hud-round10.css";
 
 /* ── User setting: scanlines off (SettingsPanel → engine/visualSettings) ── */
 html[data-scanlines="off"] .panel-scanlines::after,

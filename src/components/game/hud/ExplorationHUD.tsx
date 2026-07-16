@@ -66,6 +66,7 @@ import { CompassIndicator } from '@/components/game/hud/parts/CompassIndicator';
 import { ExplorationProgressBadge } from '@/components/game/hud/parts/ExplorationProgressBadge';
 import { ActiveQuestMiniTracker } from '@/components/game/hud/parts/ActiveQuestMiniTracker';
 import { CrosshairInteractionPrompt } from '@/components/game/hud/parts/CrosshairInteractionPrompt';
+import { DynamicCrosshair } from '@/components/game/hud/parts/DynamicCrosshair';
 import { SceneDiscoveryCelebration } from '@/components/game/hud/parts/SceneDiscoveryCelebration';
 import { SceneAmbientVignette } from '@/components/game/hud/parts/SceneAmbientVignette';
 import { InteractionCooldownRing } from '@/components/game/hud/parts/InteractionCooldownRing';
@@ -87,6 +88,9 @@ import { CompassPOIMarkers } from '@/components/game/hud/parts/CompassPOIMarkers
 import { EnvironmentMoodIndicator } from '@/components/game/hud/parts/EnvironmentMoodIndicator';
 import { TopBarDataTicker } from '@/components/game/hud/parts/TopBarDataTicker';
 import { InteractionProximityGlow } from '@/components/game/hud/parts/InteractionProximityGlow';
+import { CombatPreEngagementWarning } from '@/components/game/hud/parts/CombatPreEngagementWarning';
+import { HUDBootSequence } from '@/components/game/hud/parts/HUDBootSequence';
+import { LootProximityIndicator } from '@/components/game/hud/parts/LootProximityIndicator';
 import { useContextualHints } from '@/hooks/useContextualHints';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
@@ -333,8 +337,17 @@ export function ExplorationHUD(props: HUDProps) {
       className={`fixed inset-0 pointer-events-none transition-opacity duration-500 ease-out ${hudMounted ? 'opacity-100' : 'opacity-0'}`}
       style={{ zIndex: UI_LAYERS.HUD }}
     >
+      {/* ── Ambient noise overlay (subtle film grain) ── */}
+      <div className="ambient-noise-overlay" />
+
       {/* ── Achievement popup ── */}
       <AchievementPopup achievement={skillAchievement} />
+
+      {/* ── HUD Boot Sequence (one-time boot-up animation) ── */}
+      <HUDBootSequence />
+
+      {/* ── Combat Pre-Engagement Warning ── */}
+      <CombatPreEngagementWarning />
 
       {/* ── Scene Ambient Vignette (time/weather reactive edge tint) ── */}
       <SceneAmbientVignette />
@@ -343,12 +356,13 @@ export function ExplorationHUD(props: HUDProps) {
       <HUDChromaticEdge />
 
       {/* ── Center: Crosshair + E-key prompt + Cooldown ring + Radar pulse + Proximity glow ── */}
-      <CrosshairGlow nearInteractive={crosshairNearInteractive} />
+      <DynamicCrosshair />
       <InteractionProximityGlow />
       <InteractionDistanceRing />
       <CrosshairInteractionPrompt />
       <InteractionCooldownRing />
       <InteractionRadarPulse />
+      <LootProximityIndicator />
 
       {/* ── Scene discovery celebration toast ── */}
       <SceneDiscoveryCelebration />
@@ -682,7 +696,7 @@ export function ExplorationHUD(props: HUDProps) {
           meaningful only after the first combat or dialogue choice. */}
       <div className={`absolute left-3 sm:left-4 pointer-events-auto ${isOnboarding ? 'hidden' : 'hidden lg:block'}`} style={{ bottom: 96 }}>
         <div
-          className={`relative rounded-2xl p-4 sm:p-5 border backdrop-blur-xl min-w-[260px] overflow-hidden panel-scanlines hex-grid-bg neon-border-breathe stats-panel-breathing hud-glass-shimmer ${isLowEnergy || isHighStress ? 'warning-pulse energy-critical-screen' : ''}`}
+          className={`relative rounded-2xl p-4 sm:p-5 border backdrop-blur-xl min-w-[260px] overflow-hidden panel-scanlines hex-grid-bg neon-border-breathe stats-panel-breathing hud-glass-shimmer glass-panel-data-pattern ${isLowEnergy || isHighStress ? 'warning-pulse energy-critical-screen' : ''}`}
           style={{
             ...STYLE_DESKTOP_STATUS_BG,
             ...(isLowEnergy || isHighStress ? STYLE_DESKTOP_STATUS_BORDER_ROSE : STYLE_DESKTOP_STATUS_BORDER_CYAN),

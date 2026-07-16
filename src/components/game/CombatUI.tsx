@@ -26,6 +26,9 @@ import { useGamepadConnected } from '@/hooks/useGamepadConnected';
 import { COMBAT_BUTTON_HINTS } from '@/engine/combat/combatGamepadMap';
 import { POEM_COMBAT_ABILITIES } from '@/engine/combat/actions';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
+import { CombatDamageTimeline } from '@/components/game/hud/parts/CombatDamageTimeline';
+import { EnemyWeaknessDisplay } from '@/components/game/hud/parts/EnemyWeaknessDisplay';
+import { TurnPhaseIndicator } from '@/components/game/hud/parts/TurnPhaseIndicator';
 
 /* ── Buff effect descriptions for tooltips ── */
 function getBuffEffectDescription(effect: BuffEffect): string {
@@ -389,7 +392,7 @@ function TerminalButton({
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`relative flex-1 py-2.5 rounded border ${c.border} ${c.bg} ${c.text} ${c.hoverBg} disabled:opacity-30 disabled:cursor-not-allowed transition-all text-xs font-mono font-semibold flex items-center justify-center gap-1.5 overflow-hidden group`}
+      className={`relative flex-1 py-2.5 rounded border ${c.border} ${c.bg} ${c.text} ${c.hoverBg} disabled:opacity-30 disabled:cursor-not-allowed transition-all text-xs font-mono font-semibold flex items-center justify-center gap-1.5 overflow-hidden group combat-btn-enhanced`}
       style={!disabled ? { boxShadow: `0 0 8px ${c.glow}20, inset 0 0 8px ${c.glow}10` } : {}}
     >
       {/* Scanline overlay on hover */}
@@ -980,6 +983,10 @@ export function CombatUI() {
                 {combatState.enemyDefenseReduction > 0 && (
                   <div className="text-[9px] text-amber-400 font-mono">⚠ ЗАЩИТА: -{Math.round(combatState.enemyDefenseReduction * 100)}%</div>
                 )}
+                {/* Enemy weakness display */}
+                <div className="mt-1">
+                  <EnemyWeaknessDisplay />
+                </div>
               </div>
               {/* Combo counter on right side */}
               {combatState.comboCount > 0 && (
@@ -1060,21 +1067,24 @@ export function CombatUI() {
 
           {isActive && (
             <>
-              {/* Turn + flee indicator */}
-              <div className="text-[10px] text-center mb-1.5 text-slate-400 font-mono">
-                <span className="text-slate-500">ХОД {combatState.turn}</span>
-                <span className="mx-1.5 text-slate-600">│</span>
-                <span className={isPlayerTurn ? 'text-cyan-400 power-up' : 'text-red-400'}>
-                  {isPlayerTurn ? '▶ ВАШ ХОД' : '○ ХОД ВРАГА...'}
-                </span>
-                {isSilenced && (
-                  <span className="ml-2 text-red-400">🔇 СПОСОБНОСТИ ЗАБЛОКИРОВАНЫ</span>
-                )}
-                {combatState.fleeAttempts > 0 && (
-                  <span className="ml-2 text-amber-400/60">
-                    <Zap className="inline size-2.5" /> Побег: +{combatState.fleeAttempts * 15}%
-                  </span>
-                )}
+              {/* Enhanced Turn Phase Indicator */}
+              <div className="mb-1.5 flex flex-col items-center gap-0.5">
+                <TurnPhaseIndicator />
+                <div className="flex items-center gap-2 text-[9px] font-mono">
+                  {isSilenced && (
+                    <span className="text-red-400">🔇 СПОСОБНОСТИ ЗАБЛОКИРОВАНЫ</span>
+                  )}
+                  {combatState.fleeAttempts > 0 && (
+                    <span className="text-amber-400/60">
+                      <Zap className="inline size-2.5" /> Побег: +{combatState.fleeAttempts * 15}%
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Damage Timeline (compact, next to turn indicator) */}
+              <div className="flex justify-center mb-1.5">
+                <CombatDamageTimeline />
               </div>
 
               {/* Signal wave indicator */}
@@ -1138,6 +1148,8 @@ export function CombatUI() {
             zIndex: UI_LAYERS.COMBAT,
             backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,65,0.1) 2px, rgba(0,255,65,0.1) 4px)' }}
         />
+        {/* Animated grid overlay for enhanced cyberpunk combat feel */}
+        <div className="combat-grid-overlay" />
       </div>
     </TooltipProvider>
   );
