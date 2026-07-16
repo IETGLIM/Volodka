@@ -7,7 +7,7 @@ export function HUDMenuItem({ icon, label, shortcut, onClick, badge }: Secondary
     <button
       type="button"
       onClick={() => onClick?.()}
-      className="flex items-center gap-3 w-full px-3 py-2 text-left text-slate-300 hover:text-cyan-300 hover:bg-cyan-950/30 transition-colors duration-150 rounded-md relative"
+      className="flex items-center gap-3 w-full px-3 py-2 text-left text-slate-300 hover:text-cyan-300 hover:bg-cyan-950/30 transition-all duration-200 rounded-md relative border-l-2 border-l-transparent hover:border-l-cyan-400 hover:drop-shadow-[0_0_6px_rgba(0,255,255,0.15)]"
       aria-label={ariaLabel}
     >
       <span className="shrink-0 relative">

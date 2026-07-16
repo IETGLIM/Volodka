@@ -58,7 +58,7 @@ import { AchievementPopup } from '@/components/game/hud/parts/AchievementPopup';
 import { HUDButton } from '@/components/game/hud/parts/HUDButton';
 import { HUDMenuItem } from '@/components/game/hud/parts/HUDMenuItem';
 import { WeatherIcon, getWeatherDescription } from '@/components/game/hud/parts/WeatherIcon';
-import { TimeIcon } from '@/components/game/hud/parts/TimeIcon';
+import { TimeIcon, getTimeOfDayShadow } from '@/components/game/hud/parts/TimeIcon';
 import { AmbientParticles } from '@/components/game/hud/parts/AmbientParticles';
 import { PhysicsDegradedDevBadge } from '@/components/game/hud/parts/PhysicsDegradedDevBadge';
 import { ContextualHint } from '@/components/game/hud/parts/ContextualHint';
@@ -163,7 +163,7 @@ const STYLE_CURRENT_COLOR_SMALL_GLOW = { textShadow: '0 0 3px currentColor' };
 function CrosshairGlow({ nearInteractive }: { nearInteractive: boolean }) {
   return (
     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
-      <div className="relative">
+      <div className={`relative ${nearInteractive ? 'crosshair-pulse-active' : ''}`}>
         <div
           className="w-1 h-1 rounded-full bg-white/30 mx-auto transition-all duration-300"
           style={nearInteractive ? STYLE_CROSSHAIR_GLOW : STYLE_CROSSHAIR_DIM}
@@ -328,7 +328,7 @@ export function ExplorationHUD(props: HUDProps) {
               <div className="flex items-center gap-1 sm:gap-1.5">
                 <span className="text-slate-100 text-sm sm:text-base font-semibold tracking-wide truncate neon-text-cyan location-name-glow">{sceneName}</span>
                 <span className="text-[9px] text-slate-500 font-mono hidden sm:inline">●</span>
-                <span className="text-[10px] text-slate-300/80 font-mono hidden sm:inline">{timeLabel(timeOfDay)}</span>
+                <span className="text-[10px] text-slate-300/80 font-mono hidden sm:inline" style={{ textShadow: getTimeOfDayShadow(timeOfDay), transition: 'text-shadow 1s ease' }}>{timeLabel(timeOfDay)}</span>
               </div>
             </div>
             <div className="hidden sm:flex items-center gap-1 px-1.5 py-0.5 rounded border ml-0.5"

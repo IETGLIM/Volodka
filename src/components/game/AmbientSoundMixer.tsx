@@ -221,10 +221,10 @@ export function AmbientSoundMixer() {
             />
 
             {/* Corner brackets */}
-            <div className="corner-bracket corner-bracket-tl" />
-            <div className="corner-bracket corner-bracket-tr" />
-            <div className="corner-bracket corner-bracket-bl" />
-            <div className="corner-bracket corner-bracket-br" />
+            <div className="corner-bracket-sm corner-bracket-sm-tl" />
+            <div className="corner-bracket-sm corner-bracket-sm-tr" />
+            <div className="corner-bracket-sm corner-bracket-sm-bl" />
+            <div className="corner-bracket-sm corner-bracket-sm-br" />
 
             {/* Header */}
             <div className="relative z-20 px-3 pt-2.5 pb-1.5 border-b border-cyan-400/15">

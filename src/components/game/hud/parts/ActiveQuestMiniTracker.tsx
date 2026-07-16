@@ -27,7 +27,7 @@ const QUEST_TYPE_ICON: Record<QuestType, string> = {
 
 const QUEST_TYPE_COLOR: Record<QuestType, string> = {
   main: '#ff6644',
-  side: '#66ccff',
+  side: '#00d4e0',
   hidden: '#cc66ff',
   daily: '#aaaaaa',
 };
@@ -52,6 +52,9 @@ export function ActiveQuestMiniTracker() {
   const [pinnedQuestId, setPinnedQuestId] = useState<string | null>(null);
   const [cycleIndex, setCycleIndex] = useState(0);
   const cycleTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const prevObjectiveKeyRef = useRef<string | null>(null);
+  const [objectiveFlash, setObjectiveFlash] = useState(false);
+  const flashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const activeQuests = useMemo(
     () => quests.filter((q) => q.status === 'active'),
@@ -133,6 +136,32 @@ export function ActiveQuestMiniTracker() {
     () => (displayQuest ? getQuestProgress(displayQuest.questId) : 0),
     [displayQuest],
   );
+
+  /* ── Detect objective progress change → trigger flash ── */
+  useEffect(() => {
+    const currentKey = displayQuest
+      ? `${displayQuest.questId}:${nextObjective?.objectiveId ?? 'done'}:${progress}`
+      : null;
+
+    if (currentKey && prevObjectiveKeyRef.current !== null && currentKey !== prevObjectiveKeyRef.current) {
+      // Objective or progress changed
+      if (flashTimerRef.current) clearTimeout(flashTimerRef.current);
+      setObjectiveFlash(true);
+      flashTimerRef.current = setTimeout(() => {
+        setObjectiveFlash(false);
+        flashTimerRef.current = null;
+      }, 300);
+    }
+
+    prevObjectiveKeyRef.current = currentKey;
+
+    return () => {
+      if (flashTimerRef.current) {
+        clearTimeout(flashTimerRef.current);
+        flashTimerRef.current = null;
+      }
+    };
+  }, [displayQuest, nextObjective, progress]);
 
   const togglePin = useCallback(() => {
     if (pinnedQuestId) {
@@ -217,7 +246,10 @@ export function ActiveQuestMiniTracker() {
           </span>
 
           {/* Objective text */}
-          <p className="text-[10px] font-mono leading-snug truncate flex-1" style={{ color: '#c8e8e8' }}>
+          <p
+            className={`text-[10px] font-mono leading-snug truncate flex-1 rounded px-1 -mx-1 ${objectiveFlash ? 'objective-flash' : ''}`}
+            style={{ color: '#c8e8e8' }}
+          >
             {nextObjective ? nextObjective.description : 'Все цели выполнены'}
           </p>
 

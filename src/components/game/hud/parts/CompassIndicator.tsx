@@ -55,10 +55,12 @@ export function CompassIndicator() {
     };
   }, []);
 
+  const displayDeg = Math.round(rotation);
+
   return (
     <div
-      className="relative shrink-0 pointer-events-none select-none"
-      style={{ width: 50, height: 50 }}
+      className="relative shrink-0 pointer-events-none select-none flex flex-col items-center"
+      style={{ width: 50 }}
       aria-label="Компас"
       role="img"
     >
@@ -136,6 +138,14 @@ export function CompassIndicator() {
       >
         ▲
       </div>
+
+      {/* Numeric degree readout */}
+      <span
+        className="mt-0.5 text-[9px] font-mono text-cyan-400 opacity-60 tabular-nums select-none pointer-events-none"
+        aria-hidden="true"
+      >
+        {displayDeg}°
+      </span>
     </div>
   );
 }

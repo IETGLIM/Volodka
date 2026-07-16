@@ -325,6 +325,15 @@
   z-index: 1;
 }
 
+/* ── Cyber hover glow — subtle cyan outer glow for button hover states ── */
+.cyber-hover-glow {
+  transition: box-shadow 150ms ease;
+}
+
+.cyber-hover-glow:hover {
+  box-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.3);
+}
+
 /* ── Examine Panel Enhancement ── */
 .examine-panel-border {
   border-image: linear-gradient(

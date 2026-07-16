@@ -113,10 +113,10 @@ export function InnerMonologueOverlay() {
             aria-label="Мысли Володьки"
           >
             {/* ── Corner bracket decorations ── */}
-            <span className="corner-bracket corner-bracket-tl" />
-            <span className="corner-bracket corner-bracket-tr" />
-            <span className="corner-bracket corner-bracket-bl" />
-            <span className="corner-bracket corner-bracket-br" />
+            <span className="corner-bracket-sm corner-bracket-sm-tl" />
+            <span className="corner-bracket-sm corner-bracket-sm-tr" />
+            <span className="corner-bracket-sm corner-bracket-sm-bl" />
+            <span className="corner-bracket-sm corner-bracket-sm-br" />
 
             {/* ── Header ── */}
             <p className="text-xs font-mono tracking-wider text-purple-400/60 mb-2 flex items-center gap-1.5">

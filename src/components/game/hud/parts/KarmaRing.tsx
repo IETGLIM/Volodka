@@ -18,8 +18,6 @@ export function KarmaRing({ karma }: KarmaRingProps) {
         height="36"
         viewBox="0 0 36 36"
         className="shrink-0"
-        animate={{ scale: [1, 1.04, 1] }}
-        transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
       >
         <circle cx="18" cy="18" r={radius} fill="none" stroke="rgba(100,116,139,0.25)" strokeWidth="3" />
         <circle

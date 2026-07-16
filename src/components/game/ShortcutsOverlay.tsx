@@ -241,10 +241,10 @@ export function ShortcutsOverlay({ open, onClose }: ShortcutsOverlayProps) {
               }}
             >
               {/* Corner bracket decorations */}
-              <div className="corner-bracket corner-bracket-tl" />
-              <div className="corner-bracket corner-bracket-tr" />
-              <div className="corner-bracket corner-bracket-bl" />
-              <div className="corner-bracket corner-bracket-br" />
+              <div className="corner-bracket-sm corner-bracket-sm-tl" />
+              <div className="corner-bracket-sm corner-bracket-sm-tr" />
+              <div className="corner-bracket-sm corner-bracket-sm-bl" />
+              <div className="corner-bracket-sm corner-bracket-sm-br" />
 
               {/* Scan-line sweep animation */}
               <div className="absolute inset-0 overflow-hidden pointer-events-none z-10">

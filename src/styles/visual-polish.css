@@ -43,9 +43,11 @@
 @keyframes breathe-glow {
   0%, 100% {
     box-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.1), 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.05);
+    transform: scale(1);
   }
   50% {
     box-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.2), 0 0 16px rgb(var(--cyber-cyan-rgb) / 0.1), 0 0 24px rgb(var(--cyber-cyan-rgb) / 0.05);
+    transform: scale(1.02);
   }
 }
 

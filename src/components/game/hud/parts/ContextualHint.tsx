@@ -67,11 +67,10 @@ export function ContextualHint({ hint, onDismiss }: ContextualHintProps) {
           aria-live="polite"
         >
           <div
-            className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl border backdrop-blur-xl max-w-[90vw] sm:max-w-md"
+            className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl border backdrop-blur-xl max-w-[90vw] sm:max-w-md hint-breathe-glow"
             style={{
               background: 'linear-gradient(135deg, rgba(2,6,23,0.92) 0%, rgba(15,23,42,0.88) 50%, rgba(0,0,0,0.85) 100%)',
               borderColor: CATEGORY_ACCENT[hint.category].border,
-              boxShadow: CATEGORY_ACCENT[hint.category].glow,
             }}
           >
             <span className="text-base shrink-0" aria-hidden="true">

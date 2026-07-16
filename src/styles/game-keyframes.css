@@ -308,8 +308,65 @@
   animation: minigameHubShimmer 3s ease-in-out infinite;
 }
 
+/* ─── Crosshair proximity pulse ─── */
+@keyframes crosshair-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+}
+
+.crosshair-pulse-active {
+  animation: crosshair-pulse 3s ease-in-out infinite;
+}
+
+/* ─── ContextualHint breathing glow (CSS-only, high perf) ─── */
+@keyframes hint-breathe-glow {
+  0%, 100% {
+    box-shadow:
+      0 0 12px rgba(0, 255, 255, 0.08),
+      0 4px 20px rgba(0, 0, 0, 0.5);
+  }
+  50% {
+    box-shadow:
+      0 0 20px rgba(0, 255, 255, 0.20),
+      0 4px 24px rgba(0, 0, 0, 0.5);
+  }
+}
+
+.hint-breathe-glow {
+  animation: hint-breathe-glow 2.4s ease-in-out infinite;
+}
+
+/* ─── Quest objective count flash ─── */
+@keyframes objective-flash {
+  0% {
+    background-color: rgba(0, 255, 255, 0.25);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+.objective-flash {
+  animation: objective-flash 0.3s ease-out;
+}
+
+/* ─── HUD button shimmer — left-to-right highlight sweep ─── */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .crosshair-pulse-active {
+    animation: none;
+  }
   .minigame-hub-shimmer {
+    animation: none;
+  }
+  .hint-breathe-glow {
+    animation: none;
+  }
+  .objective-flash {
     animation: none;
   }
 }

@@ -1,5 +1,6 @@
 /* eslint-disable react-refresh/only-export-components -- co-located helpers and lazy exports */
 import { CloudFog, CloudLightning, CloudRain, Snowflake, Sun } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { type WeatherType, WEATHER_EFFECTS } from '@/data/weatherEffects';
 
 interface WeatherIconProps {
@@ -7,7 +8,7 @@ interface WeatherIconProps {
   className?: string;
 }
 
-export function WeatherIcon({ type, className = 'size-4' }: WeatherIconProps) {
+function WeatherIconInner({ type, className = 'size-4' }: WeatherIconProps) {
   const weatherEffect = WEATHER_EFFECTS[type];
   const color = weatherEffect?.color ?? '#f0c040';
 
@@ -23,6 +24,22 @@ export function WeatherIcon({ type, className = 'size-4' }: WeatherIconProps) {
     default:
       return <Sun className={className} style={{ color }} aria-hidden="true" />;
   }
+}
+
+export function WeatherIcon({ type, className }: WeatherIconProps) {
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={type}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.15 }}
+      >
+        <WeatherIconInner type={type} className={className} />
+      </motion.div>
+    </AnimatePresence>
+  );
 }
 
 export function getWeatherDescription(type: WeatherType): string {

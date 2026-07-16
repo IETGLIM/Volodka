@@ -42,7 +42,7 @@
 }
 
 /* ─── Corner bracket decoration for HUD panels ─── */
-.corner-bracket {
+.corner-bracket-sm {
   position: absolute;
   width: 8px;
   height: 8px;
@@ -50,10 +50,10 @@
   border-style: solid;
   pointer-events: none;
 }
-.corner-bracket-tl { top: -1px; left: -1px; border-width: 1px 0 0 1px; }
-.corner-bracket-tr { top: -1px; right: -1px; border-width: 1px 1px 0 0; }
-.corner-bracket-bl { bottom: -1px; left: -1px; border-width: 0 0 1px 1px; }
-.corner-bracket-br { bottom: -1px; right: -1px; border-width: 0 1px 1px 0; }
+.corner-bracket-sm-tl { top: -1px; left: -1px; border-width: 1px 0 0 1px; }
+.corner-bracket-sm-tr { top: -1px; right: -1px; border-width: 1px 1px 0 0; }
+.corner-bracket-sm-bl { bottom: -1px; left: -1px; border-width: 0 0 1px 1px; }
+.corner-bracket-sm-br { bottom: -1px; right: -1px; border-width: 0 1px 1px 0; }
 
 /* ─── Scanline overlay for any panel (lightweight) ─── */
 @keyframes scanline-drift {
