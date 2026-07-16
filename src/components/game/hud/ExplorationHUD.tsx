@@ -67,6 +67,10 @@ import { ExplorationProgressBadge } from '@/components/game/hud/parts/Exploratio
 import { ActiveQuestMiniTracker } from '@/components/game/hud/parts/ActiveQuestMiniTracker';
 import { CrosshairInteractionPrompt } from '@/components/game/hud/parts/CrosshairInteractionPrompt';
 import { SceneDiscoveryCelebration } from '@/components/game/hud/parts/SceneDiscoveryCelebration';
+import { SceneAmbientVignette } from '@/components/game/hud/parts/SceneAmbientVignette';
+import { InteractionCooldownRing } from '@/components/game/hud/parts/InteractionCooldownRing';
+import { KarmaTierBadge } from '@/components/game/hud/parts/KarmaTierBadge';
+import { HUDNotificationFeed } from '@/components/game/hud/parts/HUDNotificationFeed';
 import { useContextualHints } from '@/hooks/useContextualHints';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
@@ -314,9 +318,13 @@ export function ExplorationHUD(props: HUDProps) {
       {/* ── Achievement popup ── */}
       <AchievementPopup achievement={skillAchievement} />
 
-      {/* ── Center: Crosshair + E-key prompt ── */}
+      {/* ── Scene Ambient Vignette (time/weather reactive edge tint) ── */}
+      <SceneAmbientVignette />
+
+      {/* ── Center: Crosshair + E-key prompt + Cooldown ring ── */}
       <CrosshairGlow nearInteractive={crosshairNearInteractive} />
       <CrosshairInteractionPrompt />
+      <InteractionCooldownRing />
 
       {/* ── Scene discovery celebration toast ── */}
       <SceneDiscoveryCelebration />
@@ -349,6 +357,9 @@ export function ExplorationHUD(props: HUDProps) {
             <span className="sm:hidden text-cyan-400/70 text-[10px] font-mono tabular-nums">
               {formatGameClock(timeOfDay)}
             </span>
+
+            {/* Karma tier badge (hidden during onboarding) */}
+            {!isOnboarding && <KarmaTierBadge karma={karma} />}
           </div>
 
           {/* Right: Level + XP + Poem + Quest + Buttons + More */}
@@ -413,6 +424,7 @@ export function ExplorationHUD(props: HUDProps) {
               ) : null}
               <span className="text-sm">📖</span>
               <span className="text-amber-200 font-semibold hidden sm:inline" style={STYLE_POEM_TEXT_SHADOW}>Стихи:</span>
+              <KarmaTierBadge karma={karma} />
               <AnimatedCounter value={mainPoemCount} className="text-amber-300 font-bold" style={STYLE_POEM_COUNTER_SHADOW} />
               <span className="text-amber-500/60 hidden sm:inline">/</span>
               <span className="text-amber-400/70 hidden sm:inline">{totalPoems}</span>
@@ -917,6 +929,9 @@ export function ExplorationHUD(props: HUDProps) {
       </div>
 
       <PhysicsDegradedDevBadge />
+
+      {/* ── HUD Notification Feed (left side, below top bar) ── */}
+      <HUDNotificationFeed />
 
       {/* ── Contextual hint (floating bottom center) ── */}
       <ContextualHint hint={currentHint} onDismiss={dismissHint} />

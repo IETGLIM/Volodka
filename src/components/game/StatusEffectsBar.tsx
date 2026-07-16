@@ -271,7 +271,9 @@ export function StatusEffectsBar() {
   return (
     <div className="pointer-events-auto">
       <div
-        className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl border backdrop-blur-xl"
+        className={`relative flex items-center gap-1 px-2.5 py-1.5 rounded-xl backdrop-blur-xl ${
+          hasDebuffs ? 'status-bar-border-flow-debuff' : hasBuffs ? 'status-bar-border-flow' : ''
+        }`}
         style={{
           background: 'linear-gradient(135deg, rgba(2,6,23,0.9) 0%, rgba(8,12,28,0.85) 50%, rgba(4,8,18,0.82) 100%)',
           borderColor: hasDebuffs
@@ -279,6 +281,8 @@ export function StatusEffectsBar() {
             : hasBuffs
               ? 'rgba(52,211,153,0.3)'
               : 'rgb(var(--cyber-cyan-rgb) / 0.2)',
+          borderWidth: 1,
+          borderStyle: 'solid',
           boxShadow: hasDebuffs
             ? '0 0 16px rgba(251,113,133,0.1), 0 4px 16px rgba(0,0,0,0.4)'
             : hasBuffs
@@ -286,6 +290,17 @@ export function StatusEffectsBar() {
               : '0 0 12px rgb(var(--cyber-cyan-rgb) / 0.06), 0 4px 16px rgba(0,0,0,0.4)',
         }}
       >
+        {/* Animated border accent line (top) */}
+        <div
+          className="absolute top-0 left-2 right-2 h-px rounded-full"
+          style={{
+            background: hasDebuffs
+              ? 'linear-gradient(90deg, transparent, rgba(251,113,133,0.3), transparent)'
+              : hasBuffs
+                ? 'linear-gradient(90deg, transparent, rgba(52,211,153,0.25), transparent)'
+                : 'linear-gradient(90deg, transparent, rgb(var(--cyber-cyan-rgb) / 0.2), transparent)',
+          }}
+        />
         {/* Category separator indicator */}
         <div className="flex items-center gap-0.5 mr-1">
           {hasBuffs && (

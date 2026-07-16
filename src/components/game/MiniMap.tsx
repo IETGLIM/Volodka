@@ -270,18 +270,18 @@ export function MiniMap() {
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
 
-      // N
+      // С (North)
       ctx.fillStyle = cyberCyan(0.5);
-      ctx.fillText('N', centerX, MAP_PADDING - 2);
-      // S
+      ctx.fillText('С', centerX, MAP_PADDING - 2);
+      // Ю (South)
       ctx.fillStyle = cyberCyan(0.3);
-      ctx.fillText('S', centerX, MAP_SIZE - MAP_PADDING + 4);
-      // W
+      ctx.fillText('Ю', centerX, MAP_SIZE - MAP_PADDING + 4);
+      // З (West)
       ctx.fillStyle = cyberCyan(0.3);
-      ctx.fillText('W', MAP_PADDING - 4, centerY);
-      // E
+      ctx.fillText('З', MAP_PADDING - 4, centerY);
+      // В (East)
       ctx.fillStyle = cyberCyan(0.3);
-      ctx.fillText('E', MAP_SIZE - MAP_PADDING + 4, centerY);
+      ctx.fillText('В', MAP_SIZE - MAP_PADDING + 4, centerY);
 
       // Small tick marks for cardinal directions
       ctx.strokeStyle = cyberCyan(0.2);
@@ -344,7 +344,7 @@ export function MiniMap() {
   return (
     <div
       ref={containerRef}
-      className="fixed pointer-events-none hidden lg:block"
+      className="fixed pointer-events-none hidden lg:block relative minimap-ambient-pulse"
       data-exploration-ui
       style={{
         top: explorationMinimapTopPx(),
@@ -352,7 +352,6 @@ export function MiniMap() {
         zIndex: UI_LAYERS.HUD,
         backdropFilter: 'blur(8px)',
         borderRadius: '8px',
-        // CSS var: --cyber-cyan-rgb used for consistent cyan glow
         boxShadow: '0 0 20px rgba(0,0,0,0.4), inset 0 0 0 1px rgb(var(--cyber-cyan-rgb) / 0.1)',
         ...quietStyle,
       }}
@@ -368,6 +367,10 @@ export function MiniMap() {
           imageRendering: 'auto',
         }}
       />
+      {/* Scanline sweep overlay */}
+      <div className="absolute inset-0 rounded-md overflow-hidden pointer-events-none">
+        <div className="minimap-scanline-sweep absolute inset-0" />
+      </div>
       {/* Fast Travel hint */}
       <div
         className="flex items-center justify-center gap-1 mt-1 py-0.5 px-2 rounded"
