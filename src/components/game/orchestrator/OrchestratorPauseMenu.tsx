@@ -1,9 +1,11 @@
+import { useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useGameStore } from '@/store/gameStore';
 import { FocusTrap } from '@/components/a11y/FocusTrap';
 import type { usePanelDialog } from '@/components/a11y/usePanelDialog';
 import { PanelStackSlot, usePanelStack } from './PanelStackContext';
+import { useOrchestratorShell } from '@/store/selectors';
 import type { PanelCoordinatorResult } from './usePanelCoordinator';
 import type { PanelCloseHandlers } from './useStablePanelClosers';
 
@@ -16,10 +18,24 @@ type Props = {
 export function OrchestratorPauseMenu({ pauseDialog, panels, onClose }: Props) {
   const { isPanelOpen } = usePanelStack();
   const { dispatchPanel, closeAllPanels, closePanelByType } = panels;
+  const { mode } = useOrchestratorShell();
+
+  // Auto-close the pause menu when leaving gameplay modes (e.g. resetGame → intro → menu).
+  // This prevents the "ghost menu" bug where the AnimatePresence exit DOM persists
+  // across mode transitions and blocks interactions with the main menu.
+  useEffect(() => {
+    const isGameplay = mode === 'exploration' || mode === 'cutscene' || mode === 'combat';
+    if (isPanelOpen('menu') && !isGameplay) {
+      closeAllPanels();
+    }
+  }, [mode, isPanelOpen, closeAllPanels]);
+
+  // Only render the pause menu during gameplay modes.
+  const menuVisible = isPanelOpen('menu') && (mode === 'exploration' || mode === 'cutscene' || mode === 'combat');
 
   return (
     <AnimatePresence initial={false}>
-      {isPanelOpen('menu') && (
+      {menuVisible && (
         <PanelStackSlot panelId="menu">
           <motion.div
             initial={{ opacity: 0 }}
@@ -117,8 +133,12 @@ export function OrchestratorPauseMenu({ pauseDialog, panels, onClose }: Props) {
                   <button
                     type="button"
                     onClick={() => {
-                      useGameStore.getState().resetGame();
+                      // Clear the panel stack FIRST to avoid ghost menu, then reset.
                       closeAllPanels();
+                      // Defer resetGame to next frame so the panel close commits first.
+                      requestAnimationFrame(() => {
+                        useGameStore.getState().resetGame();
+                      });
                     }}
                     className="w-full px-4 py-2.5 rounded-lg border border-rose-800/40 bg-rose-950/30 text-rose-300 hover:bg-rose-900/30 hover:border-rose-700/50 text-sm transition-all flex items-center gap-2 font-mono"
                   >

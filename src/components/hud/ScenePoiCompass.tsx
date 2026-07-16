@@ -38,10 +38,11 @@ function markerGlow(zone: TriggerZone): string {
   return 'rgba(34,211,238,0.5)';
 }
 
-/** Short label for a zone — first 8 chars of interaction label, or truncated id */
+/** Short label for a zone — first 8 chars of interaction label, examine title, or truncated id */
 function zoneLabel(zone: TriggerZone): string {
-  if (zone.interactionLabel) {
-    const t = zone.interactionLabel.length > 8 ? zone.interactionLabel.slice(0, 8) + '…' : zone.interactionLabel;
+  const display = zone.interactionLabel ?? zone.examineData?.title;
+  if (display) {
+    const t = display.length > 8 ? display.slice(0, 8) + '…' : display;
     return t;
   }
   const id = zone.id.replace(/_/g, ' ');
@@ -181,7 +182,7 @@ const RadarInner = memo(function RadarInner({
         // Label — only in outer 40% ring
         const label = normDist >= LABEL_RING_INNER ? zoneLabel(zone) : '';
         el.setAttribute('data-label', label);
-        el.title = zone.interactionLabel ?? zone.id;
+        el.title = zone.interactionLabel ?? zone.examineData?.title ?? zone.id;
       }
 
       // Remove extra DOM nodes

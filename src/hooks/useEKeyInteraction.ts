@@ -11,6 +11,7 @@ import {
   type InteractionTargetHit,
   type NpcQueryTarget,
 } from '@/engine/interaction/interactionTargetQuery';
+import { isGameplayOverlayLocomotionLocked } from '@/engine/player/playerLocomotionGate';
 import { sharedCameraYawRef } from '@/engine/PlayerRotationState';
 import type { TriggerZone } from '@/data/triggerZones';
 import type { SceneExit } from '@/shared/types/definitions/scene';
@@ -41,6 +42,7 @@ export function useEKeyInteraction({
 }: UseEKeyInteractionOptions): { firePrimaryInteraction: () => boolean } {
   const firePrimaryInteraction = useCallback((): boolean => {
     if (isOverlayBlockingRef.current) return false;
+    if (isGameplayOverlayLocomotionLocked()) return false;
     if (isInteractionLocked()) return false;
     if (isEKeyConsumed()) return false;
 

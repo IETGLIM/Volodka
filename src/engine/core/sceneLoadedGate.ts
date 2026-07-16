@@ -47,11 +47,31 @@ function abortPendingLoaded(reason: string, errorCode: string): void {
   });
 }
 
+let watchdogRetries = 0;
+const MAX_WATCHDOG_RETRIES = 2;
+
 function armWatchdog(generation: number): void {
   clearWatchdog();
   watchdogTimer = setTimeout(() => {
     watchdogTimer = null;
     if (generation !== pendingGeneration || !pending) return;
+
+    // Retry canvas invalidation before giving up — on slow devices the
+    // first invalidate() can fire before the new scene React tree commits.
+    if (watchdogRetries < MAX_WATCHDOG_RETRIES) {
+      watchdogRetries += 1;
+      devWarn(
+        `[sceneLoadedGate] Watchdog retry ${watchdogRetries}/${MAX_WATCHDOG_RETRIES} — re-invalidating canvas`,
+      );
+      try {
+        invalidateCanvasFirstFrame();
+      } catch {
+        /* canvas module may be mid-reload */
+      }
+      armWatchdog(generation); // re-arm with same generation
+      return;
+    }
+
     abortPendingLoaded(
       'canvas:first-frame watchdog timeout',
       'first_frame_timeout',
@@ -71,6 +91,7 @@ function flushPendingLoaded(generation: number): void {
 export function scheduleSceneLoaded(payload: SceneLoadedPayload): void {
   pending = payload;
   pendingGeneration += 1;
+  watchdogRetries = 0;
   const generation = pendingGeneration;
 
   if (!hasRegisteredCanvas()) {

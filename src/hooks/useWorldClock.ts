@@ -27,6 +27,7 @@ import { useGamePhase } from '@/store/selectors';
 import { eventBus } from '@/engine/EventBus';
 import { buildNPCStatesForTime } from '@/engine/ScheduleEngine';
 import { buildScheduleContext } from '@/shared/scheduleContext';
+import { isGameplayOverlayLocomotionLocked } from '@/engine/player/playerLocomotionGate';
 import {
   WORLD_CLOCK_HOURS_PER_TICK,
   WORLD_CLOCK_TICK_INTERVAL_S,
@@ -45,6 +46,10 @@ export function useWorldClock() {
     if (mode !== 'exploration') return;
 
     const interval = setInterval(() => {
+      // Pause time while any panel is open (inventory, quests, pause menu, etc.)
+      // This mirrors the locomotion gate — if the player can't move, time shouldn't advance.
+      if (isGameplayOverlayLocomotionLocked()) return;
+
       const store = useGameStore.getState();
       // Double-check we're still in exploration
       if (readGamePhase(store) !== 'exploration') return;

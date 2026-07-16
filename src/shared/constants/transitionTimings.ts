@@ -18,8 +18,9 @@ export const SCENE_TRANSITION = {
   /** Delay before playing door close sound */
   DOOR_CLOSE_DELAY_MS: 350,
   /** Total guard time before resetting transitioning flag.
-   *  Should match: FADE_OUT + HOLD + FADE_IN + buffer */
-  GUARD_RESET_MS: 1200,
+   *  Must exceed CANVAS_TIMEOUT_MS to prevent re-entrant transitions
+   *  while the first-frame watchdog is still pending. */
+  GUARD_RESET_MS: 7000,
 } as const;
 
 /** Camera shake effect timings */
@@ -38,8 +39,10 @@ export const CUTSCENE_TIMINGS = {
   SKIP_DELAY_MS: 1000,
   /** Delay before showing text overlay (let fade-to-black start first) */
   OVERLAY_DELAY_MS: 800,
-  /** Fallback canvas first-frame timeout (slow mobile / cold WASM) */
-  CANVAS_TIMEOUT_MS: 2800,
+  /** Fallback canvas first-frame timeout (slow mobile / cold WASM).
+   *  Increased from 2800 to 6000 to reduce false-positive timeouts on
+   *  resource-constrained devices and cold WASM initialisation. */
+  CANVAS_TIMEOUT_MS: 6000,
   /** Black overlay fade after canvas is ready */
   CANVAS_FADE_OUT_MS: 680,
   /** Quick fade when canvas was already warm */

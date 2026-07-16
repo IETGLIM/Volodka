@@ -89,8 +89,9 @@ export function PanelStackSlot({
   panelId: NonNullPanelType;
   children: ReactNode;
 }) {
-  const { getStackZIndex, isTopPanel } = usePanelStack();
+  const { getStackZIndex, isTopPanel, isPanelOpen } = usePanelStack();
   const isTop = isTopPanel(panelId);
+  const isOpen = isPanelOpen(panelId);
 
   return (
     <PanelIdContext.Provider value={panelId}>
@@ -101,6 +102,8 @@ export function PanelStackSlot({
           zIndex: getStackZIndex(panelId),
           pointerEvents: isTop ? 'auto' : 'none',
         }}
+        aria-hidden={!isOpen || !isTop ? true : undefined}
+        inert={!isTop ? true : undefined}
       >
         {children}
       </div>
