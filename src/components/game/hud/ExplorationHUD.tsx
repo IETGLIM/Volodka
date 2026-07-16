@@ -71,6 +71,11 @@ import { SceneAmbientVignette } from '@/components/game/hud/parts/SceneAmbientVi
 import { InteractionCooldownRing } from '@/components/game/hud/parts/InteractionCooldownRing';
 import { KarmaTierBadge } from '@/components/game/hud/parts/KarmaTierBadge';
 import { HUDNotificationFeed } from '@/components/game/hud/parts/HUDNotificationFeed';
+import { SceneContextChip } from '@/components/game/hud/parts/SceneContextChip';
+import { SessionPlayTimer } from '@/components/game/hud/parts/SessionPlayTimer';
+import { InteractionRadarPulse } from '@/components/game/hud/parts/InteractionRadarPulse';
+import { PlayerCoordinatesDisplay } from '@/components/game/hud/parts/PlayerCoordinatesDisplay';
+import { FootstepPedometer } from '@/components/game/hud/parts/FootstepPedometer';
 import { useContextualHints } from '@/hooks/useContextualHints';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
@@ -323,10 +328,11 @@ export function ExplorationHUD(props: HUDProps) {
       {/* ── Scene Ambient Vignette (time/weather reactive edge tint) ── */}
       <SceneAmbientVignette />
 
-      {/* ── Center: Crosshair + E-key prompt + Cooldown ring ── */}
+      {/* ── Center: Crosshair + E-key prompt + Cooldown ring + Radar pulse ── */}
       <CrosshairGlow nearInteractive={crosshairNearInteractive} />
       <CrosshairInteractionPrompt />
       <InteractionCooldownRing />
+      <InteractionRadarPulse />
 
       {/* ── Scene discovery celebration toast ── */}
       <SceneDiscoveryCelebration />
@@ -365,6 +371,13 @@ export function ExplorationHUD(props: HUDProps) {
 
             {/* Karma tier badge (hidden during onboarding) */}
             {!isOnboarding && <KarmaTierBadge karma={karma} />}
+
+            {/* Scene context chip — type + NPC/exit counts */}
+            {!isOnboarding && (
+              <div className="hidden md:block">
+                <SceneContextChip />
+              </div>
+            )}
           </div>
 
           {/* Right: Level + XP + Poem + Quest + Buttons + More */}
@@ -974,6 +987,8 @@ export function ExplorationHUD(props: HUDProps) {
       <div className="absolute top-16 sm:top-20 right-3 sm:right-4 flex flex-col items-center gap-3 pointer-events-none" style={{ zIndex: UI_LAYERS.HUD + 1 }}>
         <CompassIndicator />
         <ExplorationProgressBadge />
+        <SessionPlayTimer />
+        <FootstepPedometer />
       </div>
 
       {/* ── Active quest mini-tracker (bottom-left, above mobile controls) ── */}
@@ -982,6 +997,11 @@ export function ExplorationHUD(props: HUDProps) {
         style={{ bottom: bottomStatusEffectsPx() + 40, zIndex: UI_LAYERS.HUD + 1 }}
       >
         <ActiveQuestMiniTracker />
+      </div>
+
+      {/* ── Player coordinates display (below minimap, desktop only) ── */}
+      <div className="absolute pointer-events-none hidden lg:block" style={{ top: 'auto', bottom: 216, right: 16, zIndex: UI_LAYERS.HUD }}>
+        <PlayerCoordinatesDisplay />
       </div>
 
       {/* ── Edge warning overlays for low energy / high stress ── */}

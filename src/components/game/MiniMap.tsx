@@ -93,6 +93,19 @@ export function MiniMap() {
   questMarkersRef.current = questMarkers;
   sceneExitsRef.current = sceneExits;
 
+  // ── Breadcrumb trail: last N player positions ──
+  const MAX_TRAIL = 40;
+  const TRAIL_SAMPLE_INTERVAL = 8; // record every N frames
+  const trailRef = useRef<Array<{ x: number; z: number }>>([]);
+  const trailFrameCountRef = useRef(0);
+  const prevSceneIdRef = useRef(currentSceneId);
+
+  // Reset trail on scene change
+  if (currentSceneId !== prevSceneIdRef.current) {
+    trailRef.current = [];
+    prevSceneIdRef.current = currentSceneId;
+  }
+
   // Animation loop for pulsing glow
   useEffect(() => {
     if (!sceneConfig) return;
@@ -230,6 +243,27 @@ export function MiniMap() {
         ctx.fill();
       }
 
+      // ── Player breadcrumb trail (fading dots) ──
+      trailFrameCountRef.current++;
+      if (trailFrameCountRef.current % TRAIL_SAMPLE_INTERVAL === 0) {
+        trailRef.current.push({ x: playerPosRef.current[0], z: playerPosRef.current[2] });
+        if (trailRef.current.length > MAX_TRAIL) {
+          trailRef.current.shift();
+        }
+      }
+      const trail = trailRef.current;
+      for (let i = 0; i < trail.length; i++) {
+        const t = trail[i];
+        const tx = toMapX(t.x);
+        const ty = toMapY(t.z);
+        const alpha = ((i + 1) / trail.length) * 0.35;
+        const radius = 0.8 + (i / trail.length) * 1.2;
+        ctx.fillStyle = `rgba(34, 211, 238, ${alpha})`;
+        ctx.beginPath();
+        ctx.arc(tx, ty, radius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
       // ── Player dot with direction indicator and pulsing glow ──
       const px = toMapX(playerPosRef.current[0]);
       const py = toMapY(playerPosRef.current[2]);
@@ -260,6 +294,24 @@ export function MiniMap() {
       ctx.lineTo(-3, 2);     // back-left
       ctx.lineTo(3, 2);      // back-right
       ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+
+      // ── Radar sweep effect on minimap ──
+      const sweepAngle = (pulsePhaseRef.current * 0.4) % (Math.PI * 2);
+      const sweepCx = px;
+      const sweepCy = py;
+      const sweepRadius = 30;
+      ctx.save();
+      ctx.globalAlpha = 0.08 + pulse * 0.04;
+      ctx.beginPath();
+      ctx.moveTo(sweepCx, sweepCy);
+      ctx.arc(sweepCx, sweepCy, sweepRadius, sweepAngle, sweepAngle + 0.8);
+      ctx.closePath();
+      const sweepFill = ctx.createRadialGradient(sweepCx, sweepCy, 0, sweepCx, sweepCy, sweepRadius);
+      sweepFill.addColorStop(0, 'rgba(34, 211, 238, 0.3)');
+      sweepFill.addColorStop(1, 'rgba(34, 211, 238, 0)');
+      ctx.fillStyle = sweepFill;
       ctx.fill();
       ctx.restore();
 

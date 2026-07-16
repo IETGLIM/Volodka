@@ -282,6 +282,11 @@ export function QuickAccessToolbar() {
             <div className="corner-bracket-sm corner-bracket-sm-tr" />
             <div className="corner-bracket-sm corner-bracket-sm-bl" />
             <div className="corner-bracket-sm corner-bracket-sm-br" />
+            {/* Large corner brackets for premium feel */}
+            <div className="corner-bracket-lg corner-bracket-lg-tl" />
+            <div className="corner-bracket-lg corner-bracket-lg-tr" />
+            <div className="corner-bracket-lg corner-bracket-lg-bl" />
+            <div className="corner-bracket-lg corner-bracket-lg-br" />
 
             {/* Top edge glow line */}
             <motion.div
@@ -326,6 +331,11 @@ export function QuickAccessToolbar() {
 
             {/* Content row */}
             <div className="relative z-20 flex items-center gap-3 px-4 py-2">
+              {/* Data stream accent (left edge) */}
+              <div
+                className="absolute left-0 top-1 bottom-1 w-px data-stream-accent pointer-events-none"
+                style={{ backgroundSize: '100% 8px' }}
+              />
               {/* Energy bar */}
               <StatBar
                 value={energy}

@@ -246,7 +246,7 @@ export function DayNightCycleIndicator() {
       style={{ top: explorationDayNightTopPx(), right: EXPLORATION_HUD_LAYOUT.RIGHT_INSET, zIndex: UI_LAYERS.HUD + 1, ...quietStyle }}
     >
       <motion.div
-        className="pointer-events-auto rounded-lg border backdrop-blur-md overflow-hidden"
+        className="pointer-events-auto rounded-lg border backdrop-blur-md overflow-hidden relative"
         style={{
           width: 160,
           background: 'linear-gradient(145deg, rgba(0,0,0,0.78) 0%, rgba(15,23,42,0.65) 50%, rgba(0,0,0,0.55) 100%)',
@@ -256,6 +256,11 @@ export function DayNightCycleIndicator() {
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
       >
+        {/* Corner bracket accents */}
+        <div className="corner-bracket-sm corner-bracket-sm-tl" />
+        <div className="corner-bracket-sm corner-bracket-sm-tr" />
+        <div className="corner-bracket-sm corner-bracket-sm-bl" />
+        <div className="corner-bracket-sm corner-bracket-sm-br" />
         {/* ── Header ── */}
         <div
           className="flex items-center justify-between px-2.5 pt-2 pb-1.5"
