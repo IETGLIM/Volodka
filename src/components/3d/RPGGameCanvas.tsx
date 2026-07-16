@@ -254,9 +254,9 @@ class Canvas3DErrorBoundary extends Component<
 /** Stable camera config — inline objects on `<Canvas>` recreate the default camera each render. */
 const EXPLORATION_CAMERA = {
   fov: 55,
-  near: 0.1,
+  near: 0.2,
   far: 200,
-  position: [0, 2.35, 2.5] as [number, number, number],
+  position: [0, 2.8, 2.5] as [number, number, number],
 };
 
 type CanvasGlProp = NonNullable<ComponentProps<typeof Canvas>['gl']>;

@@ -5,7 +5,7 @@ import { useGameStore } from '@/store/gameStore';
 import { readGamePhase } from '@/shared/gamePhase';
 import { eventBus } from '@/engine/EventBus';
 
-const STAND_UP_DURATION = 1.5;
+const STAND_UP_DURATION = 0.8;
 
 export type ProceduralPlayerModelProps = {
   modelScale: number;
@@ -44,6 +44,15 @@ export function useProceduralPlayerAnimation(
 
   useEffect(() => {
     const store = useGameStore.getState();
+    // If already in exploration mode on mount, skip seated pose entirely
+    if (readGamePhase(store) === 'exploration') {
+      if (isSeatedInitiallyRef.current) {
+        isSeatedInitiallyRef.current = false;
+        standUpPhaseRef.current = 1; // Skip to fully standing
+      }
+      return;
+    }
+
     if (
       readGamePhase(store) === 'exploration' &&
       isSeatedInitiallyRef.current &&

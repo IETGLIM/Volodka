@@ -4,7 +4,7 @@ import type { SceneId } from '@/shared/types/game';
 import { getSceneConfig } from '@/config/scenes';
 
 export const DEFAULT_DISTANCE = 3.0;
-export const MIN_DISTANCE = 0.65;
+export const MIN_DISTANCE = 1.2;
 export const MAX_DISTANCE = 12.0;
 
 /** First-person exploration — disabled; third-person orbit is the default. */
@@ -67,7 +67,7 @@ export function getSceneDefaultDistance(sceneId: SceneId): number {
   const config = getSceneConfig(sceneId);
   const [width, depth] = config.size;
   const area = width * depth;
-  if (area <= 16) return 2.2;
+  if (area <= 16) return 3.0;
   if (area <= 36) return 2.8;
   if (area <= 64) return 4.2;
   return 5.5;

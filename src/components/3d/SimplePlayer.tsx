@@ -236,8 +236,9 @@ export function SimplePlayer({
           groupRef.current.position.z += vel.z * dt;
           groupRef.current.rotation.y = livePlayerRotationRef.current;
 
-          if (groupRef.current.position.y < floorY) {
-            groupRef.current.position.y = floorY;
+          const approachEffectiveFloorY = Math.max(floorY, 0);
+          if (groupRef.current.position.y < approachEffectiveFloorY) {
+            groupRef.current.position.y = approachEffectiveFloorY;
           }
 
           const bounds = walkableBounds;
@@ -256,9 +257,11 @@ export function SimplePlayer({
       // ─── CRITICAL FIX: Floor enforcement even when locked ───
       // Without this, the player can drift below the floor during
       // cutscenes/dialogues (no physics in SimplePlayer mode).
+      // Use max(floorY, 0) to prevent negative Y values
       if (groupRef.current) {
-        if (groupRef.current.position.y < floorY) {
-          groupRef.current.position.y = floorY;
+        const lockedEffectiveFloorY = Math.max(floorY, 0);
+        if (groupRef.current.position.y < lockedEffectiveFloorY) {
+          groupRef.current.position.y = lockedEffectiveFloorY;
           livePlayerPositionRef.current.copy(groupRef.current.position);
         }
       }
@@ -333,7 +336,10 @@ export function SimplePlayer({
         rotT,
       );
 
-      currentAnimRef.current = running ? 'run' : 'walk';
+      const newAnim = running ? 'run' : 'walk';
+      if (currentAnimRef.current !== newAnim) {
+        currentAnimRef.current = newAnim;
+      }
 
       footstepTimerRef.current += dt;
       if (footstepTimerRef.current >= FOOTSTEP_INTERVAL) {
@@ -348,7 +354,9 @@ export function SimplePlayer({
     } else {
       vel.x = THREE.MathUtils.damp(vel.x, 0, stopDamping, dt);
       vel.z = THREE.MathUtils.damp(vel.z, 0, stopDamping, dt);
-      currentAnimRef.current = 'idle';
+      if (currentAnimRef.current !== 'idle') {
+        currentAnimRef.current = 'idle';
+      }
       footstepTimerRef.current = 0;
     }
 
@@ -359,8 +367,10 @@ export function SimplePlayer({
       groupRef.current.rotation.y = livePlayerRotationRef.current;
 
       // ─── Ground enforcement: keep player at floor level ───
-      if (groupRef.current.position.y < floorY) {
-        groupRef.current.position.y = floorY;
+      // Use max(floorY, 0) to prevent negative Y values
+      const effectiveFloorY = Math.max(floorY, 0);
+      if (groupRef.current.position.y < effectiveFloorY) {
+        groupRef.current.position.y = effectiveFloorY;
       }
 
       // ─── Boundary clamping: keep player within scene bounds ───

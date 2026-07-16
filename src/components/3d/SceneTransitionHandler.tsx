@@ -30,6 +30,9 @@ export function SceneTransitionHandler() {
   const transitioningRef = useRef(false);
   const activeTransitionRef = useRef<ActiveTransition | null>(null);
   const timersRef = useRef<Array<ReturnType<typeof setTimeout>>>([]);
+  // Cooldown to prevent duplicate transitions (e.g., cutscene playing twice)
+  const lastTransitionTimeRef = useRef(0);
+  const TRANSITION_COOLDOWN_MS = 500;
 
   useEffect(() => {
     const clearTimers = () => {
@@ -43,6 +46,12 @@ export function SceneTransitionHandler() {
       const { targetScene, spawnAt } = payload;
       const spawnKey = spawnAt.map((v) => v.toFixed(3)).join(',');
 
+      // Cooldown guard: ignore transitions requested within 500ms of the last one
+      const now = Date.now();
+      if (now - lastTransitionTimeRef.current < TRANSITION_COOLDOWN_MS) {
+        return;
+      }
+
       if (
         transitioningRef.current &&
         activeTransitionRef.current?.target === targetScene &&
@@ -50,6 +59,9 @@ export function SceneTransitionHandler() {
       ) {
         return;
       }
+
+      // Update transition timestamp
+      lastTransitionTimeRef.current = now;
 
       clearTimers();
 
