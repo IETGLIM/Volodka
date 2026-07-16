@@ -23,6 +23,7 @@ export const TOAST_TYPE_LABELS: Record<ToastType, string> = {
   skill: 'Навык',
   poem: 'Стих',
   quest: 'Квест',
+  crafting: 'Крафт',
 };
 
 export type NotificationToastStyleConfig = {
@@ -38,4 +39,5 @@ export const NOTIFICATION_TOAST_ICONS: Record<ToastType, NotificationToastStyleC
   skill: { icon: '✦', iconLabel: 'Навык' },
   poem: { icon: '✒', iconLabel: 'Стих' },
   quest: { icon: '⚑', iconLabel: 'Квест' },
+  crafting: { icon: '⚒', iconLabel: 'Крафт' },
 };

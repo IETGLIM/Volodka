@@ -114,7 +114,7 @@
   100% { background-position: 30px 52px; }
 }
 
-.hex-grid-bg {
+.hex-grid-bg-gradient {
   background-image:
     linear-gradient(30deg, rgb(var(--cyber-cyan-rgb) / 0.03) 12%, transparent 12.5%, transparent 87%, rgb(var(--cyber-cyan-rgb) / 0.03) 87.5%),
     linear-gradient(150deg, rgb(var(--cyber-cyan-rgb) / 0.03) 12%, transparent 12.5%, transparent 87%, rgb(var(--cyber-cyan-rgb) / 0.03) 87.5%),
@@ -125,15 +125,15 @@
 }
 
 /* ─── Circuit trace line animation ─── */
-@keyframes circuit-trace {
+@keyframes circuit-trace-expand {
   0% { transform: scaleX(0); transform-origin: left; }
   50% { transform: scaleX(1); transform-origin: left; }
   51% { transform: scaleX(1); transform-origin: right; }
   100% { transform: scaleX(0); transform-origin: right; }
 }
 
-.circuit-trace-line {
-  animation: circuit-trace 6s ease-in-out infinite;
+.circuit-trace-expand-line {
+  animation: circuit-trace-expand 6s ease-in-out infinite;
 }
 
 /* ─── Status indicator dot with pulse ─── */
@@ -147,18 +147,18 @@
 }
 
 /* ─── Shimmer effect for stat bars ─── */
-@keyframes stat-shimmer {
+@keyframes stat-shimmer-pulse {
   0% { opacity: 0; }
   50% { opacity: 0.6; }
   100% { opacity: 0; }
 }
 
-.stat-shimmer::after {
+.stat-shimmer-pulse::after {
   content: '';
   position: absolute;
   inset: 0;
   background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
-  animation: stat-shimmer 2.5s ease-in-out infinite;
+  animation: stat-shimmer-pulse 2.5s ease-in-out infinite;
   pointer-events: none;
 }
 
@@ -182,10 +182,10 @@
 }
 
 .thought-pulse {
-  animation: thoughtBreathe 3s ease-in-out infinite;
+  animation: thought-breathe 3s ease-in-out infinite;
 }
 
-@keyframes thoughtBreathe {
+@keyframes thought-breathe {
   0%, 100% { box-shadow: 0 0 15px rgba(147, 130, 220, 0.06); }
   50% { box-shadow: 0 0 25px rgba(147, 130, 220, 0.15); }
 }

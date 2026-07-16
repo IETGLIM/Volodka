@@ -73,19 +73,20 @@ export function AmbientParticles(config: AmbientParticlesConfig = {}) {
     return { positions: pos, phases: ph, baseX: bx, baseZ: bz };
   }, [count, bxMin, byMin, bzMin, xRange, yRange, zRange]);
 
-  useFrame(({ clock }) => {
+  useFrame(({ clock }, delta) => {
     if (!pointsRef.current) return;
 
     const geo = pointsRef.current.geometry;
     const posAttr = geo.attributes.position;
     const arr = posAttr.array as Float32Array;
     const t = clock.getElapsedTime();
+    const dt = Math.min(delta, 0.1); // cap to avoid huge jumps after tab switch
 
     for (let i = 0; i < count; i++) {
       const i3 = i * 3;
 
       // Drift upward
-      arr[i3 + 1] += cfg.driftSpeed * 0.016;
+      arr[i3 + 1] += cfg.driftSpeed * dt;
 
       // Horizontal sway (sin wave)
       arr[i3] = baseX[i] + Math.sin(t * cfg.swayFreq + phases[i]) * cfg.swayAmp;

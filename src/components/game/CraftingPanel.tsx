@@ -196,7 +196,7 @@ export function CraftingPanel({ open, onClose }: CraftingPanelProps) {
     }
 
     if (craftedCount > 0) {
-      toastManager.addToast('quest', `Создано ${craftedCount} предметов`);
+      toastManager.addToast('crafting', `Создано ${craftedCount} предметов`);
     }
 
     craftingAllRef.current = false;

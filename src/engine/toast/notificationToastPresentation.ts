@@ -26,6 +26,7 @@ const NOTIFICATION_TYPE_TO_TOAST = {
   skill: 'skill',
   poem: 'poem',
   quest: 'quest',
+  crafting: 'crafting',
 } as const satisfies Record<NotificationType, ToastType>;
 
 export function mapNotificationTypeToToast(type: NotificationType): ToastType {

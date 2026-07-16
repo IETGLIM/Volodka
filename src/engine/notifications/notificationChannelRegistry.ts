@@ -89,7 +89,7 @@ export const NOTIFICATION_CHANNELS: readonly NotificationChannelDescriptor[] = [
     priority: NOTIFY_PRIORITY.achievement,
     position: 'top-right',
     component: 'AchievementNotification',
-    sources: ['achievement:unlocked', 'fx:achievement'],
+    sources: ['achievement:unlocked'],
     description: 'Achievement unlocked popup',
   },
   {

@@ -169,7 +169,7 @@ function PlayerStatsPanelInner({ open, onClose }: PlayerStatsPanelProps) {
                     />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-0.5">
-                        <span className="text-[10px] font-mono text-slate-300/70">
+                        <span className="text-[10px] font-mono text-slate-300/70 stat-label">
                           {PLAYER_STATS_PANEL_LABELS.energy}
                         </span>
                         <span
@@ -204,7 +204,7 @@ function PlayerStatsPanelInner({ open, onClose }: PlayerStatsPanelProps) {
                     />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-0.5">
-                        <span className="text-[10px] font-mono text-slate-300/70">
+                        <span className="text-[10px] font-mono text-slate-300/70 stat-label">
                           {PLAYER_STATS_PANEL_LABELS.stress}
                         </span>
                         <span
@@ -304,7 +304,7 @@ function PlayerStatsPanelInner({ open, onClose }: PlayerStatsPanelProps) {
                           />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between">
-                              <span className="text-[9px] font-mono text-slate-300/80 truncate">
+                              <span className="text-[9px] font-mono text-slate-300/80 truncate stat-label">
                                 {skillLabel}
                               </span>
                               <span

@@ -57,8 +57,6 @@
   /* ─── New polish animations to disable ─── */
   .cp-atmospheric-vignette::after,
   .cp-crt-warp,
-  .cp-fog-drift,
-  .cp-data-divider-sweep,
   .title-afterglow,
   .narrative-choice-hover:hover,
   .panel-header-line,
@@ -82,6 +80,22 @@
 
   body::after {
     display: none !important;
+  }
+
+  /* ─── Round 12 new animations ─── */
+  .cyber-cursor-blink::after,
+  .cyber-text-reveal,
+  .cyber-border-trace::before,
+  .cyber-glitch-text::before,
+  .cyber-glitch-text::after,
+  .cyber-scan-beam::after,
+  .cyber-morph-blob,
+  .cyber-marquee-inner {
+    animation: none !important;
+  }
+
+  .cyber-text-reveal {
+    clip-path: inset(0 0 0 0) !important;
   }
 }
 

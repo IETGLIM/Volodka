@@ -211,7 +211,7 @@ const RadarInner = memo(function RadarInner({
       }}
     >
       <div
-        className="pointer-events-auto rounded-full"
+        className="pointer-events-auto rounded-full hud-frame-corner"
         style={{
           width: COMPASS_SIZE,
           height: COMPASS_SIZE,

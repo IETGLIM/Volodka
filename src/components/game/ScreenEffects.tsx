@@ -1,10 +1,9 @@
 
 /* ─── Volodka RPG – Screen Effects Manager ───
-   Screen flash, shake, vignette, chromatic aberration, slow-motion.
+   Screen flash, shake, vignette, chromatic aberration.
    All effects triggered via EventBus events.
    Uses CSS animations where possible for performance.
-   Enhanced: damage vignette with red flash, low health pulse,
-   karma shift visual flash, scene transition dissolve.
+   Enhanced: damage vignette with red flash, low health pulse.
 */
 
 import { useState, useEffect } from 'react';
@@ -35,12 +34,6 @@ interface ShakeEffect {
   duration: number;
 }
 
-interface DissolveEffect {
-  id: number;
-  duration: number;
-  color: string;
-}
-
 let nextEffectId = 0;
 
 /* ── Component ── */
@@ -50,10 +43,7 @@ export function ScreenEffects() {
   const [shake, setShake] = useState<ShakeEffect | null>(null);
   const [vignetteIntensity, setVignetteIntensity] = useState(0);
   const [chromaticIntensity, setChromaticIntensity] = useState(0);
-  const [isSlowMo, setIsSlowMo] = useState(false);
   const [damageVignette, setDamageVignette] = useState<{ intensity: number; duration: number } | null>(null);
-  const [karmaFlash, setKarmaFlash] = useState<{ direction: string; intensity: number } | null>(null);
-  const [dissolve, setDissolve] = useState<DissolveEffect | null>(null);
 
   // ── Flash listener ──
   useEffect(() => {
@@ -109,16 +99,6 @@ export function ScreenEffects() {
     return unsub;
   }, [reducedMotion]);
 
-  // ── Slow motion listener ──
-  useEffect(() => {
-    const unsub = eventBus.on('fx:slowmo', (payload) => {
-      if (reducedMotion) return;
-      setIsSlowMo(true);
-      setTimeout(() => setIsSlowMo(false), payload.duration);
-    });
-    return unsub;
-  }, [reducedMotion]);
-
   // ── Damage vignette listener ──
   useEffect(() => {
     const unsub = eventBus.on('fx:damage_vignette', (payload) => {
@@ -129,35 +109,6 @@ export function ScreenEffects() {
       }
       setDamageVignette({ intensity: payload.intensity, duration: payload.duration });
       setTimeout(() => setDamageVignette(null), payload.duration);
-    });
-    return unsub;
-  }, [reducedMotion]);
-
-  // ── Karma shift flash listener ──
-  useEffect(() => {
-    const unsub = eventBus.on('fx:karma_shift', (payload) => {
-      if (reducedMotion) return;
-      setKarmaFlash({ direction: payload.direction, intensity: payload.intensity });
-      setTimeout(() => setKarmaFlash(null), 500);
-    });
-    return unsub;
-  }, [reducedMotion]);
-
-  // ── Scene dissolve listener ──
-  useEffect(() => {
-    const unsub = eventBus.on('fx:scene_dissolve', (payload) => {
-      if (reducedMotion) {
-        // Reduced motion: instant cut instead of dissolve
-        triggerFlash(payload.color, 1.0, 100);
-        return;
-      }
-      const effect: DissolveEffect = {
-        id: nextEffectId++,
-        duration: payload.duration,
-        color: payload.color,
-      };
-      setDissolve(effect);
-      setTimeout(() => setDissolve(null), payload.duration);
     });
     return unsub;
   }, [reducedMotion]);
@@ -234,16 +185,7 @@ export function ScreenEffects() {
           0%, 100% { opacity: 0.3; }
           50% { opacity: 0.7; }
         }
-        @keyframes karmaShiftLight {
-          0% { opacity: 0; transform: scale(0.8); }
-          30% { opacity: 0.6; transform: scale(1.05); }
-          100% { opacity: 0; transform: scale(1.2); }
-        }
-        @keyframes karmaShiftDark {
-          0% { opacity: 0; }
-          30% { opacity: 0.7; }
-          100% { opacity: 0; }
-        }
+
       `}} />
 
       {/* Shake wrapper */}
@@ -304,45 +246,6 @@ export function ScreenEffects() {
       {/* Low health/stress persistent vignette */}
       <LowHealthVignette />
 
-      {/* ── Karma shift visual flash ── */}
-      <AnimatePresence>
-        {karmaFlash && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: karmaFlash.intensity }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.5, ease: 'easeOut' }}
-            className="fixed inset-0 pointer-events-none"
-            style={{
-              zIndex: UI_LAYERS.GLITCH + 3,
-              background: karmaFlash.direction === 'light'
-                ? `radial-gradient(ellipse at center, rgba(255,220,150,${karmaFlash.intensity}) 0%, transparent 70%)`
-                : `radial-gradient(ellipse at center, rgba(80,0,120,${karmaFlash.intensity}) 0%, rgba(0,0,0,${karmaFlash.intensity * 0.5}) 60%, transparent 100%)`,
-              animation: karmaFlash.direction === 'light'
-                ? 'karmaShiftLight 500ms ease-out forwards'
-                : 'karmaShiftDark 500ms ease-out forwards',
-            }}
-          />
-        )}
-      </AnimatePresence>
-
-      {/* ── Scene transition dissolve ── */}
-      <AnimatePresence>
-        {dissolve && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: dissolve.duration / 2000, ease: 'easeInOut' }}
-            className="fixed inset-0 pointer-events-none"
-            style={{
-              zIndex: UI_LAYERS.CINEMATIC_TRANSITION,
-              backgroundColor: dissolve.color,
-            }}
-          />
-        )}
-      </AnimatePresence>
-
       {/* Chromatic aberration */}
       <AnimatePresence>
         {chromaticIntensity > 0 && (
@@ -356,24 +259,6 @@ export function ScreenEffects() {
               zIndex: UI_LAYERS.GLITCH + 1,
               background: `linear-gradient(${chromaticIntensity * 2}deg, rgba(255,0,0,${chromaticIntensity * 0.04}) 0%, transparent 30%, transparent 70%, rgba(0,255,255,${chromaticIntensity * 0.04}) 100%)`,
               mixBlendMode: 'screen',
-            }}
-          />
-        )}
-      </AnimatePresence>
-
-      {/* Slow motion overlay */}
-      <AnimatePresence>
-        {isSlowMo && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 pointer-events-none"
-            style={{
-              zIndex: UI_LAYERS.GLITCH + 2,
-              background: 'radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.15) 100%)',
-              backdropFilter: 'saturate(0.7) brightness(0.95)',
             }}
           />
         )}

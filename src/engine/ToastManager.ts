@@ -8,7 +8,7 @@
 
 /* ─── Types (unchanged — re-exported for consumers) ─── */
 
-export type ToastType = 'karma' | 'energy' | 'stress' | 'skill' | 'poem' | 'quest';
+export type ToastType = 'karma' | 'energy' | 'stress' | 'skill' | 'poem' | 'quest' | 'crafting';
 
 export interface ToastMessage {
   id: string;

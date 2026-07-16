@@ -1714,3 +1714,180 @@
   pointer-events: none;
   z-index: 10;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   Round 12: Design System Utilities
+   ══════════════════════════════════════════════════════════════ */
+
+/* ─── Cyber Tab Bar ─── */
+.cyber-tab-bar {
+  display: flex;
+  gap: 2px;
+  background: rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid rgb(var(--cyber-cyan-rgb) / 0.1);
+  padding: 2px;
+}
+
+.cyber-tab-item {
+  padding: 6px 14px;
+  font-size: 11px;
+  font-family: 'Geist Mono', monospace;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgba(148, 163, 184, 0.6);
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.cyber-tab-item:hover {
+  color: rgba(226, 232, 240, 0.85);
+  background: rgba(0, 229, 255, 0.04);
+}
+
+.cyber-tab-item-active {
+  color: rgb(var(--cyber-cyan-rgb));
+  border-bottom-color: rgb(var(--cyber-cyan-rgb) / 0.7);
+  background: rgba(0, 229, 255, 0.06);
+  text-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.3);
+}
+
+/* ─── Cyber Tag / Badge ─── */
+.cyber-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  font-size: 9px;
+  font-family: 'Geist Mono', monospace;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-radius: 4px;
+  border: 1px solid;
+  white-space: nowrap;
+}
+
+.cyber-tag-cyan {
+  color: rgb(var(--cyber-cyan-rgb));
+  border-color: rgb(var(--cyber-cyan-rgb) / 0.25);
+  background: rgba(0, 229, 255, 0.06);
+}
+
+.cyber-tag-amber {
+  color: #fbbf24;
+  border-color: rgba(251, 191, 36, 0.25);
+  background: rgba(251, 191, 36, 0.06);
+}
+
+.cyber-tag-rose {
+  color: #fb7185;
+  border-color: rgba(251, 113, 133, 0.25);
+  background: rgba(251, 113, 133, 0.06);
+}
+
+.cyber-tag-emerald {
+  color: #34d399;
+  border-color: rgba(52, 211, 153, 0.25);
+  background: rgba(52, 211, 153, 0.06);
+}
+
+.cyber-tag-violet {
+  color: #a78bfa;
+  border-color: rgba(167, 139, 250, 0.25);
+  background: rgba(167, 139, 250, 0.06);
+}
+
+/* ─── Cyber Inline Code ─── */
+.cyber-inline-code {
+  font-family: 'Geist Mono', 'SF Mono', monospace;
+  font-size: 0.85em;
+  padding: 1px 5px;
+  background: rgba(0, 229, 255, 0.08);
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.15);
+  border-radius: 3px;
+  color: rgb(var(--cyber-cyan-rgb) / 0.9);
+}
+
+/* ─── Cyber Accordion ─── */
+.cyber-accordion-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px 14px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 12px;
+  color: rgba(226, 232, 240, 0.85);
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.08);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cyber-accordion-trigger:hover {
+  background: rgba(0, 229, 255, 0.04);
+  border-color: rgb(var(--cyber-cyan-rgb) / 0.2);
+}
+
+.cyber-accordion-content {
+  overflow: hidden;
+  transition: max-height 0.3s ease, opacity 0.2s ease;
+  padding: 0 14px;
+}
+
+.cyber-accordion-icon {
+  transition: transform 0.2s ease;
+  color: rgb(var(--cyber-cyan-rgb) / 0.5);
+}
+
+.cyber-accordion-open .cyber-accordion-icon {
+  transform: rotate(180deg);
+}
+
+/* ─── Cyber Breadcrumb ─── */
+.cyber-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  color: rgba(148, 163, 184, 0.5);
+  letter-spacing: 0.04em;
+}
+
+.cyber-breadcrumb-separator {
+  color: rgb(var(--cyber-cyan-rgb) / 0.3);
+}
+
+.cyber-breadcrumb-current {
+  color: rgb(var(--cyber-cyan-rgb) / 0.8);
+}
+
+/* ─── Cyber Marquee / Ticker ─── */
+@keyframes cyber-marquee-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.cyber-marquee {
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.cyber-marquee-inner {
+  display: inline-flex;
+  animation: cyber-marquee-scroll var(--marquee-duration, 20s) linear infinite;
+}
+
+.cyber-marquee-item {
+  padding: 0 24px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgb(var(--cyber-cyan-rgb) / 0.4);
+}

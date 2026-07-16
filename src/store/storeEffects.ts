@@ -108,10 +108,6 @@ export function emitAchievementUnlocked(payload: ApplicationEventMap['achievemen
   emitAppEvent('achievement:unlocked', payload);
 }
 
-export function emitAchievementFx(payload: ApplicationEventMap['fx:achievement']): void {
-  emitAppEvent('fx:achievement', payload);
-}
-
 /* ─── Player / progression ─── */
 
 export function emitChoiceMade(payload: ApplicationEventMap['choice:made']): void {

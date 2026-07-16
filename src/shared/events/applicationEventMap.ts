@@ -40,7 +40,6 @@ export interface ApplicationEventMap {
     soundEffect?: string;
     accessibilityAnnounce: string;
   };
-  'fx:achievement': { title: string; description: string; icon?: string };
   'player:levelup': {
     newLevel: number;
     prevLevel: number;

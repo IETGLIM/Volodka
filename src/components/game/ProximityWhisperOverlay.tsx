@@ -1,6 +1,6 @@
 import { memo, useEffect, useRef, useState, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useGameStore } from '@/store/gameStore';
+import { useGameStore, getGameStore } from '@/store/gameStore';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
@@ -151,14 +151,27 @@ export const ProximityWhisperOverlay = memo(function ProximityWhisperOverlay() {
   const lastWhisperKeysRef = useRef<string>('');
 
   const tick = useCallback(() => {
-    const active = getActiveWhispers(sceneId, playerPos, flags);
+    const state = getGameStore();
+    const liveSceneId = state.exploration.currentSceneId;
+
+    if (!WHISPER_POINTS[liveSceneId]) {
+      // No whisper data for this scene — skip all computation
+      if (lastWhisperKeysRef.current !== '') {
+        lastWhisperKeysRef.current = '';
+        setVisibleWhispers([]);
+      }
+      rafRef.current = requestAnimationFrame(tick);
+      return;
+    }
+
+    const active = getActiveWhispers(liveSceneId, state.exploration.playerPosition, state.playerState.flags);
     const key = active.map((w) => w.text).join('|');
     if (key !== lastWhisperKeysRef.current) {
       lastWhisperKeysRef.current = key;
       setVisibleWhispers(active);
     }
     rafRef.current = requestAnimationFrame(tick);
-  }, [sceneId, playerPos, flags]);
+  }, []);
 
   useEffect(() => {
     rafRef.current = requestAnimationFrame(tick);

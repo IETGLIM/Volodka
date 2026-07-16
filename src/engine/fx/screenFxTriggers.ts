@@ -27,16 +27,6 @@ export function triggerChromaticAberration(intensity: number = 3, duration: numb
   eventBus.emit('fx:chromatic', { intensity, duration });
 }
 
-/** Trigger slow-motion effect */
-export function triggerSlowMotion(duration: number = 800) {
-  eventBus.emit('fx:slowmo', { duration });
-}
-
-/** Trigger achievement notification (emits fx:achievement event) */
-export function triggerAchievement(title: string, description: string, icon?: string) {
-  eventBus.emit('fx:achievement', { title, description, icon });
-}
-
 /** Trigger XP gain notification (emits fx:xp_gain event) */
 export function triggerXpGain(amount: number, source?: string) {
   eventBus.emit('fx:xp_gain', { amount, source });
@@ -47,12 +37,3 @@ export function triggerDamageVignette(intensity: number = 0.6, duration: number 
   eventBus.emit('fx:damage_vignette', { intensity, duration });
 }
 
-/** Trigger a karma shift visual flash */
-export function triggerKarmaShiftFlash(direction: 'light' | 'dark' = 'dark', intensity: number = 0.3) {
-  eventBus.emit('fx:karma_shift', { direction, intensity });
-}
-
-/** Trigger a scene transition dissolve */
-export function triggerSceneDissolve(duration: number = 800, color: string = '#000000') {
-  eventBus.emit('fx:scene_dissolve', { duration, color });
-}

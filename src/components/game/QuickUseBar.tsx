@@ -393,7 +393,6 @@ export function QuickUseBar() {
             return (
               <div key={`slot-${i}`} className="relative">
                 <button
-                  className={`quick-use-slot ${isFlashing ? 'quick-use-flash' : ''} ${isDimmed ? 'opacity-40' : ''}`}
                   onClick={() => {
                     if (hasItem) handleUseItemAtSlot(i);
                   }}
@@ -407,7 +406,8 @@ export function QuickUseBar() {
                       ? `Использовать ${slot.item!.name} [${i + 1}] (ПКМ — назначить)`
                       : `Пустой слот ${i + 1} (ПКМ — назначить)`
                   }
-                  title={
+                  className={`quick-use-slot tooltip-cyber ${isFlashing ? 'quick-use-flash' : ''} ${isDimmed ? 'opacity-40' : ''}`}
+                  data-tooltip={
                     hasItem
                       ? `${slot.item!.name} [${i + 1}] — ПКМ для назначения`
                       : `Слот ${i + 1} — ПКМ для назначения`

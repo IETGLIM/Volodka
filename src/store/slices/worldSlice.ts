@@ -9,7 +9,6 @@ import type {
 } from '@/shared/types/game';
 import { getPoemById, getQuestDefinitions, getAchievementMap, getDailyMissionById, getTotalAchievements } from '@/data/gameDataLoader';
 import {
-  emitAchievementFx,
   emitAchievementUnlocked,
   emitPoemCollected,
   runAfterStoreCommit,
@@ -505,11 +504,6 @@ export const createWorldSlice: StateCreator<
         rarity: def.rarity,
         soundEffect: def.soundEffect,
         accessibilityAnnounce: resolveAchievementAnnounce(def),
-      });
-      emitAchievementFx({
-        title: def.title,
-        description: def.description,
-        icon: def.icon,
       });
     });
 

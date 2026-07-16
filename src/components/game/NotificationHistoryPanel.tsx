@@ -11,6 +11,7 @@ import { usePanelExitComplete } from '@/components/game/orchestrator/PanelExitCo
 import {
   X, Bell, Search, Trash2,
   Flame, Zap, Brain, Cpu, Feather, Scroll,
+  Hammer, Package, Swords, ArrowUpCircle, Monitor, BookOpen, Award,
 } from 'lucide-react';
 import { useUIStore } from '@/store/stores/uiStore';
 import type { NotificationHistoryEntry } from '@/store/slices/uiSlice';
@@ -24,12 +25,19 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 const MAX_DISPLAY = 30;
 
 const TYPE_COLORS: Record<string, { border: string; bg: string; text: string }> = {
-  karma:  { border: 'border-l-purple-500', bg: 'bg-purple-500/10', text: 'text-purple-400' },
-  energy: { border: 'border-l-green-500',  bg: 'bg-green-500/10',  text: 'text-green-400' },
-  stress: { border: 'border-l-red-500',    bg: 'bg-red-500/10',    text: 'text-red-400' },
-  skill:  { border: 'border-l-cyan-500',    bg: 'bg-cyan-500/10',   text: 'text-cyan-400' },
-  poem:   { border: 'border-l-amber-500',   bg: 'bg-amber-500/10',  text: 'text-amber-400' },
-  quest:  { border: 'border-l-blue-500',    bg: 'bg-blue-500/10',   text: 'text-blue-400' },
+  karma:       { border: 'border-l-purple-500',   bg: 'bg-purple-500/10',   text: 'text-purple-400' },
+  energy:      { border: 'border-l-green-500',    bg: 'bg-green-500/10',    text: 'text-green-400' },
+  stress:      { border: 'border-l-red-500',      bg: 'bg-red-500/10',      text: 'text-red-400' },
+  skill:       { border: 'border-l-cyan-500',     bg: 'bg-cyan-500/10',     text: 'text-cyan-400' },
+  poem:        { border: 'border-l-amber-500',    bg: 'bg-amber-500/10',    text: 'text-amber-400' },
+  quest:       { border: 'border-l-blue-500',     bg: 'bg-blue-500/10',     text: 'text-blue-400' },
+  crafting:    { border: 'border-l-emerald-500/50',  bg: 'bg-emerald-500/5',  text: 'text-emerald-400' },
+  loot:        { border: 'border-l-amber-500/50',   bg: 'bg-amber-500/5',   text: 'text-amber-400' },
+  combat:      { border: 'border-l-rose-500/50',    bg: 'bg-rose-500/5',     text: 'text-rose-400' },
+  levelup:     { border: 'border-l-yellow-400/50',   bg: 'bg-yellow-400/5',   text: 'text-yellow-300' },
+  system:      { border: 'border-l-slate-400/50',    bg: 'bg-slate-400/5',    text: 'text-slate-300' },
+  lore:        { border: 'border-l-violet-400/50',   bg: 'bg-violet-400/5',   text: 'text-violet-400' },
+  achievement: { border: 'border-l-amber-300/50',   bg: 'bg-amber-300/5',   text: 'text-amber-200' },
 };
 
 const DEFAULT_COLORS = { border: 'border-l-slate-500', bg: 'bg-slate-500/10', text: 'text-slate-400' };
@@ -40,13 +48,20 @@ function getTypeColors(type: string) {
 
 function getTypeIcon(type: string, className: string) {
   switch (type) {
-    case 'karma':  return <Flame className={className} />;
-    case 'energy': return <Zap className={className} />;
-    case 'stress': return <Brain className={className} />;
-    case 'skill':  return <Cpu className={className} />;
-    case 'poem':   return <Feather className={className} />;
-    case 'quest':  return <Scroll className={className} />;
-    default:       return <Bell className={className} />;
+    case 'karma':       return <Flame className={className} />;
+    case 'energy':      return <Zap className={className} />;
+    case 'stress':      return <Brain className={className} />;
+    case 'skill':       return <Cpu className={className} />;
+    case 'poem':        return <Feather className={className} />;
+    case 'quest':       return <Scroll className={className} />;
+    case 'crafting':    return <Hammer className={className} />;
+    case 'loot':        return <Package className={className} />;
+    case 'combat':      return <Swords className={className} />;
+    case 'levelup':     return <ArrowUpCircle className={className} />;
+    case 'system':      return <Monitor className={className} />;
+    case 'lore':        return <BookOpen className={className} />;
+    case 'achievement': return <Award className={className} />;
+    default:            return <Bell className={className} />;
   }
 }
 
@@ -178,7 +193,7 @@ export function NotificationHistoryPanel({ open, onClose }: NotificationHistoryP
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed top-0 right-0 bottom-0 w-full sm:w-[36rem]"
+            className="fixed top-0 right-0 bottom-0 w-full sm:w-[36rem] glass-panel-dark"
             {...dialogProps}
             style={{
               zIndex: UI_LAYERS.PANEL,
