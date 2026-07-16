@@ -631,6 +631,14 @@ function CanvasGuardSystem() {
 
     const handleContextRestored = () => {
       devLog('[CanvasGuard] WebGL context RESTORED');
+      
+      // Force disposal of any orphaned GPU resources before rebuild
+      try {
+        forceDisposeOrphanedWebGLResources('context-restored');
+      } catch (e) {
+        devWarn('[CanvasGuard] Error disposing orphaned resources:', e);
+      }
+      
       // Notify engine systems so module-level GPU resource caches (materials,
       // geometries, textures) can rebuild. R3F re-renders the scene tree
       // automatically, but module-level singletons need a nudge to drop

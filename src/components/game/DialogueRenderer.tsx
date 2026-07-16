@@ -128,6 +128,15 @@ export function DialogueRenderer() {
   const skillCheckTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [retryCount, setRetryCount] = useState(0);
 
+  // ── Reset error when dialogue node changes (prevents stale errors) ──
+  const prevNodeIdRef = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    if (currentNodeId !== prevNodeIdRef.current) {
+      prevNodeIdRef.current = currentNodeId;
+      errorRef.current = null;
+    }
+  }, [currentNodeId]);
+
   useEffect(() => {
     if (!currentNodeId || !isNarrativeGameDataLoaded()) return;
     let cancelled = false;
