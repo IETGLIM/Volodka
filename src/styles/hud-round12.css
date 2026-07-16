@@ -1,0 +1,2820 @@
+/* ═════════════════════════════════════════════════════════════════════════
+   Volodka RPG – HUD Round 12: Premium Cyberpunk Visual Effects v3.0
+   
+   Новые продвинутые эффекты:
+   – Многослойная неоновая система glow (multi-layer neon)
+   – Пульсирующие границы с переменной интенсивностью  
+   – Хроматическая аберрация для текста
+   – Неоновое "дыхание" с разными скоростями по цветам
+   – Декоративные угловые скобки для панелей
+   – Scanline overlay паттерны
+   – Голографический shimmer эффект
+   – Glass morphism с кибер оттенком (glassmorphism-cyber)
+   – Кнопки с fill анимацией и glitch эффектом
+   – Сегментированные прогресс бары (классический RPG стиль)
+   – Радиальные/круговые индикаторы прогресса
+   – Эффект energy pulse волны
+   – Комплексная система анимаций keyframes
+   – Специфичные HUD компоненты (minimap frame, combo counter)
+   – Tooltip с направленными стрелками
+   – CRT screen curvature симуляция
+   – Шумовая текстура overlay
+   – Heat shimmer эффект
+   
+   ═════════════════════════════════════════════════════════════════════════ */
+
+/* ═════════════════════════════════════════════════════════════════════════
+   SECTION 1: ADVANCED ANIMATION KEYFRAMES / ПРОДВИНУТЫЕ АНИМАЦИИ
+   ═════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Realistic Screen Flicker / Реалистичный мерцание экрана ─── */
+@keyframes cyberFlicker {
+  0%, 100% { 
+    opacity: 1;
+    filter: brightness(1) contrast(1);
+  }
+  3% { 
+    opacity: 0.95; 
+    filter: brightness(0.98) contrast(1.02);
+  }
+  6% { 
+    opacity: 1; 
+    filter: brightness(1) contrast(1);
+  }
+  7% { 
+    opacity: 0.85; 
+    filter: brightness(0.9) contrast(1.05);
+  }
+  8% { 
+    opacity: 1; 
+    filter: brightness(1) contrast(1);
+  }
+  50% {
+    opacity: 0.98;
+    filter: brightness(0.99) contrast(1.01);
+  }
+  52% { 
+    opacity: 0.92;
+    filter: brightness(0.94) contrast(1.03);
+  }
+  53% { 
+    opacity: 1;
+    filter: brightness(1) contrast(1);
+  }
+}
+
+/* ─── Scrolling Data Lines / Прокрутка строк данных ─── */
+@keyframes dataScroll {
+  0% { 
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  5% { 
+    opacity: 0.7;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  95% {
+    opacity: 0.5;
+  }
+  100% { 
+    transform: translateY(400%);
+    opacity: 0;
+  }
+}
+
+/* ─── Expanding Ring Pulse / Расширяющийся импульс кольца ─── */
+@keyframes pulseRing {
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+    box-shadow: 
+      0 0 0 0 rgba(var(--cyber-cyan-rgb), 0.7),
+      0 0 20px rgba(var(--cyber-cyan-rgb), 0.4);
+  }
+  70% {
+    transform: scale(1.4);
+    opacity: 0.3;
+    box-shadow: 
+      0 0 0 15px rgba(var(--cyber-cyan-rgb), 0),
+      0 0 40px rgba(var(--cyber-cyan-rgb), 0.2);
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+    box-shadow: 
+      0 0 0 20px rgba(var(--cyber-cyan-rgb), 0),
+      0 0 60px rgba(var(--cyber-cyan-rgb), 0);
+  }
+}
+
+@keyframes pulseRingAmber {
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+    box-shadow: 
+      0 0 0 0 rgba(var(--cyber-amber-rgb), 0.7),
+      0 0 20px rgba(var(--cyber-amber-rgb), 0.4);
+  }
+  70% {
+    transform: scale(1.35);
+    opacity: 0.25;
+  }
+  100% {
+    transform: scale(1.55);
+    opacity: 0;
+  }
+}
+
+/* ─── Text Glitch Effect / Эффект глич текста ─── */
+@keyframes glitchText {
+  0%, 100% {
+    text-shadow: 
+      0 0 2px currentColor,
+      0 0 4px rgba(var(--cyber-cyan-rgb), 0.3);
+    transform: translate(0) skewX(0deg);
+    clip-path: inset(0 0 0 0);
+    filter: none;
+  }
+  2% {
+    clip-path: inset(40% 0 61% 0);
+    transform: translate(-3px, 2px) skewX(-5deg);
+  }
+  4% {
+    clip-path: inset(92% 0 1% 0);
+    transform: translate(2px, -1px) skewX(3deg);
+  }
+  6% {
+    clip-path: inset(43% 0 1% 0);
+    transform: translate(-1px, 3px) skewX(-2deg);
+  }
+  8% {
+    clip-path: inset(80% 0 5% 0);
+    transform: translate(3px, -2px) skewX(4deg);
+  }
+  10%,
+  28%,
+  68%,
+  82% {
+    text-shadow: 
+      -2px 0 var(--cyber-rose),
+      2px 0 var(--cyber-cyan),
+      0 0 12px rgba(var(--cyber-cyan-rgb), 0.5);
+    transform: translate(0) skewX(0deg);
+    clip-path: inset(0 0 0 0);
+  }
+  30%,
+  66%,
+  84% {
+    text-shadow: 
+      2px 0 var(--cyber-rose),
+      -2px 0 var(--cyber-matrix),
+      0 0 16px rgba(var(--cyber-rose-rgb), 0.4);
+    transform: translate(1px, -1px);
+  }
+  32%,
+  64% {
+    text-shadow: 
+      -3px 0 var(--cyber-cyan),
+      3px 0 var(--cyber-amber);
+    transform: translate(-2px, 1px);
+  }
+}
+
+@keyframes glitchTextIntense {
+  0%, 100% {
+    transform: translate(0) scale(1);
+    filter: hue-rotate(0deg) saturate(1);
+  }
+  5% {
+    transform: translate(-4px, 2px) scale(1.01);
+    filter: hue-rotate(90deg) saturate(1.2);
+  }
+  10% {
+    transform: translate(3px, -3px) scale(0.99);
+    filter: hue-rotate(-45deg) saturate(0.8);
+  }
+  15% {
+    transform: translate(-2px, 1px) scale(1.005);
+  }
+  20% {
+    transform: translate(2px, -1px);
+  }
+}
+
+/* ─── Horizontal Scan Line Moving Down / Горизонтальная линия сканирования ─── */
+@keyframes scanLine {
+  0% {
+    top: -5%;
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    top: 105%;
+    opacity: 0;
+  }
+}
+
+/* ─── Flowing Energy Through Element / Текущая энергия через элемент ─── */
+@keyframes energyFlow {
+  0% {
+    background-position: 0% 0%;
+    opacity: 0.3;
+  }
+  25% {
+    opacity: 0.8;
+  }
+  50% {
+    background-position: 200% 0%;
+    opacity: 0.5;
+  }
+  75% {
+    opacity: 0.9;
+  }
+  100% {
+    background-position: 400% 0%;
+    opacity: 0.3;
+  }
+}
+
+/* ─── Matrix Rain Background Hint / Фон падающих символов матрицы ─── */
+@keyframes matrixRain {
+  0% {
+    transform: translateY(-100vh);
+    opacity: 1;
+  }
+  90% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(100vh);
+    opacity: 0;
+  }
+}
+
+@keyframes matrixRainFade {
+  0% {
+    opacity: 0;
+    text-shadow: 0 0 0 transparent;
+  }
+  30% {
+    opacity: 1;
+    text-shadow: 
+      0 0 4px var(--cyber-matrix),
+      0 0 8px var(--cyber-matrix);
+  }
+  100% {
+    opacity: 0;
+    text-shadow: 0 0 2px transparent;
+  }
+}
+
+/* ─── Border That Glows and Fades Cyclically / Граница, которая пульсирует циклически ─── */
+@keyframes borderGlow {
+  0%, 100% {
+    border-color: rgba(var(--cyber-cyan-rgb), 0.3);
+    box-shadow: 
+      0 0 4px rgba(var(--cyber-cyan-rgb), 0.2),
+      inset 0 0 4px rgba(var(--cyber-cyan-rgb), 0.05);
+  }
+  33% {
+    border-color: rgba(var(--cyber-cyan-rgb), 0.6);
+    box-shadow: 
+      0 0 8px rgba(var(--cyber-cyan-rgb), 0.4),
+      inset 0 0 8px rgba(var(--cyber-cyan-rgb), 0.1);
+  }
+  66% {
+    border-color: rgba(var(--cyber-cyan-rgb), 0.8);
+    box-shadow: 
+      0 0 16px rgba(var(--cyber-cyan-rgb), 0.5),
+      0 0 32px rgba(var(--cyber-cyan-rgb), 0.2),
+      inset 0 0 12px rgba(var(--cyber-cyan-rgb), 0.15);
+  }
+}
+
+@keyframes borderGlowAmber {
+  0%, 100% {
+    border-color: rgba(var(--cyber-amber-rgb), 0.3);
+    box-shadow: 0 0 4px rgba(var(--cyber-amber-rgb), 0.2);
+  }
+  50% {
+    border-color: rgba(var(--cyber-amber-rgb), 0.8);
+    box-shadow: 
+      0 0 16px rgba(var(--cyber-amber-rgb), 0.5),
+      0 0 32px rgba(var(--cyber-amber-rgb), 0.25);
+  }
+}
+
+/* ─── Floating Upward Animation (damage numbers etc.) / Всплывание вверх ─── */
+@keyframes floatUp {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  20% {
+    transform: translateY(-15px) scale(1.15);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-35px) scale(1);
+    opacity: 0.85;
+  }
+  80% {
+    transform: translateY(-55px) scale(0.92);
+    opacity: 0.4;
+  }
+  100% {
+    transform: translateY(-75px) scale(0.85);
+    opacity: 0;
+  }
+}
+
+@keyframes floatUpCrit {
+  0% {
+    transform: translateY(0) scale(1) rotate(-3deg);
+    opacity: 1;
+  }
+  15% {
+    transform: translateY(-10px) scale(1.4) rotate(2deg);
+    opacity: 1;
+  }
+  30% {
+    transform: translateY(-22px) scale(1.2) rotate(-1deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-80px) scale(0.8) rotate(0deg);
+    opacity: 0;
+  }
+}
+
+/* ─── Shake Effect for Impacts / Эффект тряски при ударах ─── */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10% { transform: translateX(-6px) rotate(-1deg); }
+  20% { transform: translateX(5px) rotate(1deg); }
+  30% { transform: translateX(-4px) rotate(-0.5deg); }
+  40% { transform: translateX(3px) rotate(0.5deg); }
+  50% { transform: translateX(-2px); }
+  60% { transform: translateX(2px); }
+  70% { transform: translateX(-1px); }
+  80% { transform: translateX(1px); }
+  90% { transform: translateX(-0.5px); }
+}
+
+@keyframes shakeHeavy {
+  0%, 100% { transform: translate(0) rotate(0); }
+  10% { transform: translate(-12px, -4px) rotate(-2deg); }
+  20% { transform: translate(10px, 3px) rotate(2deg); }
+  30% { transform: translate(-8px, 5px) rotate(-1.5deg); }
+  40% { transform: translate(6px, -3px) rotate(1.5deg); }
+  50% { transform: translate(-4px, 2px) rotate(-1deg); }
+  60% { transform: translate(4px, -2px) rotate(1deg); }
+  70% { transform: translate(-2px, 1px); }
+  80% { transform: translate(2px, -1px); }
+  90% { transform: translate(-1px); }
+}
+
+/* ─── Neon Breathing Animations (different speeds per color) ─── */
+@keyframes neonBreatheCyan {
+  0%, 100% {
+    box-shadow:
+      0 0 2px var(--cyber-cyan),
+      0 0 5px var(--cyber-cyan),
+      0 0 10px rgba(var(--cyber-cyan-rgb), 0.4),
+      0 0 20px rgba(var(--cyber-cyan-rgb), 0.2),
+      inset 0 0 3px rgba(var(--cyber-cyan-rgb), 0.1);
+    filter: brightness(1);
+  }
+  50% {
+    box-shadow:
+      0 0 4px var(--cyber-cyan),
+      0 0 12px var(--cyber-cyan),
+      0 0 24px rgba(var(--cyber-cyan-rgb), 0.6),
+      0 0 48px rgba(var(--cyber-cyan-rgb), 0.3),
+      inset 0 0 8px rgba(var(--cyber-cyan-rgb), 0.2);
+    filter: brightness(1.1);
+  }
+}
+
+@keyframes neonBreatheAmber {
+  0%, 100% {
+    box-shadow:
+      0 0 3px var(--cyber-amber),
+      0 0 8px rgba(var(--cyber-amber-rgb), 0.5),
+      0 0 18px rgba(var(--cyber-amber-rgb), 0.25);
+  }
+  50% {
+    box-shadow:
+      0 0 6px var(--cyber-amber),
+      0 0 18px var(--cyber-amber),
+      0 0 36px rgba(var(--cyber-amber-rgb), 0.5),
+      0 0 64px rgba(var(--cyber-amber-rgb), 0.2);
+  }
+}
+
+@keyframes neonBreatheRose {
+  0%, 100% {
+    box-shadow:
+      0 0 3px var(--cyber-rose),
+      0 0 8px rgba(var(--cyber-rose-rgb), 0.5),
+      0 0 16px rgba(var(--cyber-rose-rgb), 0.2);
+  }
+  50% {
+    box-shadow:
+      0 0 6px var(--cyber-rose),
+      0 0 16px var(--cyber-rose),
+      0 0 32px rgba(var(--cyber-rose-rgb), 0.5),
+      0 0 56px rgba(var(--cyber-rose-rgb), 0.2);
+  }
+}
+
+/* ─── Holographic Shimmer Effect / Голографический shimmer ─── */
+@keyframes holoShimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+/* ─── Fill Animation for Buttons / Анимация заполнения кнопок ─── */
+@keyframes buttonFillCyan {
+  0% {
+    width: 0;
+    left: 0;
+  }
+  50% {
+    width: 100%;
+    left: 0;
+  }
+  100% {
+    width: 0;
+    right: 0;
+    left: auto;
+  }
+}
+
+/* ─── Popup Entrance (slide + fade) / Вход popup (скольжение + затухание) ─── */
+@keyframes slideInDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInScale {
+  from {
+    transform: scale(0.9) translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ─── Radial Progress Rotation / Вращение радиального прогресса ─── */
+@keyframes radialProgressRotate {
+  from {
+    stroke-dashoffset: var(--progress-offset);
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* ─── Energy Wave Pulse / Импульс энергетической волны ─── */
+@keyframes energyWavePulse {
+  0% {
+    transform: scaleX(0);
+    opacity: 0.8;
+    left: 0;
+  }
+  50% {
+    transform: scaleX(1);
+    opacity: 1;
+    left: 0;
+  }
+  51% {
+    transform: scaleX(1);
+    opacity: 1;
+    left: 0;
+  }
+  100% {
+    transform: scaleX(0);
+    opacity: 0.8;
+    left: 100%;
+  }
+}
+
+/* ─── Heat Shimmer / Жаркое мерцание (для горячих окружений) ─── */
+@keyframes heatShimmer {
+  0%, 100% {
+    transform: skewX(0deg) scaleY(1);
+    filter: blur(0px) brightness(1) saturate(1);
+  }
+  25% {
+    transform: skewX(0.5deg) scaleY(1.002);
+    filter: blur(0.3px) brightness(1.02) saturate(1.1);
+  }
+  50% {
+    transform: skewX(-0.3deg) scaleY(1.001);
+    filter: blur(0.5px) brightness(1.03) saturate(1.15);
+  }
+  75% {
+    transform: skewX(0.4deg) scaleY(1.003);
+    filter: blur(0.2px) brightness(1.01) saturate(1.08);
+  }
+}
+
+
+/* ═════════════════════════════════════════════════════════════════════════
+   SECTION 2: ADVANCED NEON GLOW SYSTEM / МНОГОСЛОЙНАЯ НЕОНОВАЯ СИСТЕМА
+   ═════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Multi-Layer Neon Glow Container / Контейнер с многослойным неоновым свечением ─── */
+.neon-glow-multi {
+  position: relative;
+  isolation: isolate;
+}
+
+.neon-glow-multi::before,
+.neon-glow-multi::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.neon-glow-multi.cyan::before {
+  /* Layer 1: Outer diffuse glow */
+  box-shadow: 
+    0 0 20px rgba(var(--cyber-cyan-rgb), 0.3),
+    0 0 40px rgba(var(--cyber-cyan-rgb), 0.2),
+    0 0 80px rgba(var(--cyber-cyan-rgb), 0.1);
+  animation: neonBreatheCyan 4s ease-in-out infinite;
+}
+
+.neon-glow-multi.cyan::after {
+  /* Layer 2: Inner core glow */
+  box-shadow:
+    0 0 4px var(--cyber-cyan),
+    0 0 8px var(--cyber-cyan),
+    inset 0 0 6px rgba(var(--cyber-cyan-rgb), 0.15);
+  animation: neonBreatheCyan 2s ease-in-out infinite reverse;
+}
+
+.neon-glow-multi.amber::before {
+  box-shadow:
+    0 0 20px rgba(var(--cyber-amber-rgb), 0.35),
+    0 0 48px rgba(var(--cyber-amber-rgb), 0.2);
+  animation: neonBreatheAmber 3.5s ease-in-out infinite;
+}
+
+.neon-glow-multi.amber::after {
+  box-shadow:
+    0 0 5px var(--cyber-amber),
+    0 0 10px var(--cyber-amber),
+    inset 0 0 8px rgba(var(--cyber-amber-rgb), 0.2);
+  animation: neonBreatheAmber 1.75s ease-in-out infinite reverse;
+}
+
+.neon-glow-multi.rose::before {
+  box-shadow:
+    0 0 20px rgba(var(--cyber-rose-rgb), 0.3),
+    0 0 44px rgba(var(--cyber-rose-rgb), 0.18);
+  animation: neonBreatheRose 3s ease-in-out infinite;
+}
+
+.neon-glow-multi.rose::after {
+  box-shadow:
+    0 0 5px var(--cyber-rose),
+    0 0 12px var(--cyber-rose),
+    inset 0 0 6px rgba(var(--cyber-rose-rgb), 0.15);
+  animation: neonBreatheRose 1.5s ease-in-out infinite reverse;
+}
+
+/* ─── Pulsing Neon Borders with Variable Intensity / Пульсирующие неоновые границы ─── */
+.neon-border-pulse {
+  border-width: 2px;
+  border-style: solid;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.neon-border-pulse.cyan {
+  border-color: var(--cyber-cyan);
+  animation: borderGlow 3s ease-in-out infinite;
+}
+
+.neon-border-pulse.amber {
+  border-color: var(--cyber-amber);
+  animation: borderGlowAmber 2.5s ease-in-out infinite;
+}
+
+.neon-border-pulse.rose {
+  border-color: var(--cyber-rose);
+  animation: borderGlow 2.8s ease-in-out infinite;
+  /* Override keyframe colors via custom property approach */
+  --border-glow-color: var(--cyber-rose-rgb);
+}
+
+/* Intensity modifiers / Модификаторы интенсивности */
+.neon-border-pulse.intense {
+  animation-duration: 1.5s !important;
+}
+
+.neon-border-pulse.subtle {
+  animation-duration: 5s !important;
+  opacity: 0.7;
+}
+
+/* ─── Neon Text with Chromatic Aberration Simulation / Неоновый текст с хроматической аберрацией ─── */
+.neon-text-chromatic {
+  color: #ffffff;
+  position: relative;
+  display: inline-block;
+}
+
+.neon-text-chromatic::before,
+.neon-text-chromatic::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Cyan channel offset */
+.neon-text-chromatic::before {
+  color: var(--cyber-cyan);
+  z-index: -1;
+  transform: translate(-2px, 0);
+  opacity: 0.8;
+  mix-blend-mode: screen;
+}
+
+/* Red channel offset */
+.neon-text-chromatic::after {
+  color: var(--cyber-rose);
+  z-index: -2;
+  transform: translate(2px, 0);
+  opacity: 0.7;
+  mix-blend-mode: screen;
+}
+
+/* Animated chromatic aberration / Анимированная хроматическая аберрация */
+.neon-text-chromatic.animate::before {
+  animation: chromaticShiftLeft 0.3s steps(3, end) infinite;
+}
+
+.neon-text-chromatic.animate::after {
+  animation: chromaticShiftRight 0.3s steps(3, end) infinite;
+}
+
+@keyframes chromaticShiftLeft {
+  0%, 100% { transform: translate(-2px, 0); opacity: 0.8; }
+  33% { transform: translate(-4px, 1px); opacity: 0.9; }
+  66% { transform: translate(-1px, -1px); opacity: 0.7; }
+}
+
+@keyframes chromaticShiftRight {
+  0%, 100% { transform: translate(2px, 0); opacity: 0.7; }
+  33% { transform: translate(4px, -1px); opacity: 0.85; }
+  66% { transform: translate(1px, 1px); opacity: 0.65; }
+}
+
+/* ─── Enhanced Neon Text Glow Styles / Улучшенные стили неонового свечения текста ─── */
+.neon-text-enhanced {
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.neon-text-enhanced.cyan {
+  color: var(--cyber-cyan);
+  text-shadow:
+    0 0 4px var(--cyber-cyan),
+    0 0 8px var(--cyber-cyan),
+    0 0 16px rgba(var(--cyber-cyan-rgb), 0.6),
+    0 0 32px rgba(var(--cyber-cyan-rgb), 0.3),
+    0 0 48px rgba(var(--cyber-cyan-rgb), 0.15);
+}
+
+.neon-text-enhanced.amber {
+  color: var(--cyber-amber);
+  text-shadow:
+    0 0 4px var(--cyber-amber),
+    0 0 8px var(--cyber-amber),
+    0 0 16px rgba(var(--cyber-amber-rgb), 0.6),
+    0 0 32px rgba(var(--cyber-amber-rgb), 0.3);
+}
+
+.neon-text-enhanced.matrix {
+  color: var(--cyber-matrix);
+  text-shadow:
+    0 0 4px var(--cyber-matrix),
+    0 0 10px var(--cyber-matrix),
+    0 0 20px rgba(var(--cyber-matrix-rgb), 0.5),
+    0 0 40px rgba(var(--cyber-matrix-rgb), 0.25);
+}
+
+.neon-text-enhanced.rose {
+  color: var(--cyber-rose);
+  text-shadow:
+    0 0 4px var(--cyber-rose),
+    0 0 8px var(--cyber-rose),
+    0 0 16px rgba(var(--cyber-rose-rgb), 0.6),
+    0 0 32px rgba(var(--cyber-rose-rgb), 0.3);
+}
+
+
+/* ═════════════════════════════════════════════════════════════════════════
+   SECTION 3: CYBERPUNK PANEL ENHANCEMENTS / УЛУШЕННЫЕ ПАНЕЛИ КИБЕРПАНКА
+   ═════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Corner Accent Decorations (bracket-style corners) / Декоративные угловые скобки ─── */
+.hud-corner-bracket {
+  position: relative;
+}
+
+.hud-corner-bracket::before,
+.hud-corner-bracket::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-color: var(--cyber-cyan);
+  border-style: solid;
+  border-width: 0;
+  pointer-events: none;
+  transition: all 0.3s ease;
+}
+
+.hud-corner-bracket::before {
+  top: -1px;
+  left: -1px;
+  border-top-width: 2px;
+  border-left-width: 2px;
+}
+
+.hud-corner-bracket::after {
+  bottom: -1px;
+  right: -1px;
+  border-bottom-width: 2px;
+  border-right-width: 2px;
+}
+
+/* Additional pseudo-elements for all four corners using nested elements */
+.hud-corner-bracket .corner-tl,
+.hud-corner-bracket .corner-tr,
+.hud-corner-bracket .corner-bl,
+.hud-corner-bracket .corner-br {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  pointer-events: none;
+}
+
+.hud-corner-bracket .corner-tl {
+  top: -2px;
+  left: -2px;
+  border-top: 2px solid var(--cyber-cyan);
+  border-left: 2px solid var(--cyber-cyan);
+}
+
+.hud-corner-bracket .corner-tr {
+  top: -2px;
+  right: -2px;
+  border-top: 2px solid var(--cyber-cyan);
+  border-right: 2px solid var(--cyber-cyan);
+}
+
+.hud-corner-bracket .corner-bl {
+  bottom: -2px;
+  left: -2px;
+  border-bottom: 2px solid var(--cyber-cyan);
+  border-left: 2px solid var(--cyber-cyan);
+}
+
+.hud-corner-bracket .corner-br {
+  bottom: -2px;
+  right: -2px;
+  border-bottom: 2px solid var(--cyber-cyan);
+  border-right: 2px solid var(--cyber-cyan);
+}
+
+/* Corner bracket color variants / Цветовые варианты угловых скобок */
+.hud-corner-bracket.amber .corner-tl,
+.hud-corner-bracket.amber .corner-tr,
+.hud-corner-bracket.amber .corner-bl,
+.hud-corner-bracket.amber .corner-br,
+.hud-corner-bracket.amber::before,
+.hud-corner-bracket.amber::after {
+  border-color: var(--cyber-amber);
+}
+
+.hud-corner-bracket.rose .corner-tl,
+.hud-corner-bracket.rose .corner-tr,
+.hud-corner-bracket.rose .corner-bl,
+.hud-corner-bracket.rose .corner-br,
+.hud-corner-bracket.rose::before,
+.hud-corner-bracket.rose::after {
+  border-color: var(--cyber-rose);
+}
+
+/* Animated corner brackets / Анимированные угловые скобки */
+.hud-corner-bracket.animated .corner-tl,
+.hud-corner-bracket.animated .corner-tr,
+.hud-corner-bracket.animated .corner-bl,
+.hud-corner-bracket.animated .corner-br {
+  animation: cornerBracketGlow 2s ease-in-out infinite;
+}
+
+@keyframes cornerBracketGlow {
+  0%, 100% {
+    filter: drop-shadow(0 0 2px currentColor);
+    opacity: 0.8;
+  }
+  50% {
+    filter: drop-shadow(0 0 6px currentColor);
+    opacity: 1;
+  }
+}
+
+/* ─── Scanline Overlay Patterns for Panels / Scanline overlay паттерны для панелей ─── */
+.panel-scanlines {
+  position: relative;
+  overflow: hidden;
+}
+
+.panel-scanlines::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.15) 2px,
+    rgba(0, 0, 0, 0.15) 4px
+  );
+  z-index: 10;
+}
+
+/* Horizontal scan line animation on panel / Горизонтальная линия сканирования на панели */
+.panel-scanlines.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    rgba(var(--cyber-cyan-rgb), 0.4),
+    var(--cyber-cyan),
+    rgba(var(--cyber-cyan-rgb), 0.4),
+    transparent
+  );
+  z-index: 11;
+  animation: scanLine 4s linear infinite;
+}
+
+/* Dense scanline variant / Вариант плотных scanline */
+.panel-scanlines.dense::after {
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 1px,
+    rgba(0, 0, 0, 0.12) 1px,
+    rgba(0, 0, 0, 0.12) 2px
+  );
+}
+
+/* ─── Holographic Shimmer Effect for Active Panels / Голографический shimmer для активных панелей ─── */
+.panel-holographic {
+  position: relative;
+  background: linear-gradient(
+    135deg,
+    rgba(5, 10, 25, 0.96) 0%,
+    rgba(10, 20, 40, 0.94) 25%,
+    rgba(5, 15, 30, 0.96) 50%,
+    rgba(15, 25, 45, 0.93) 75%,
+    rgba(5, 10, 25, 0.96) 100%
+  );
+  border: 1px solid rgba(var(--cyber-cyan-rgb), 0.25);
+  overflow: hidden;
+}
+
+/* Shimmer gradient overlay / Shimmer градиент overlay */
+.panel-holographic::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 0%,
+    transparent 40%,
+    rgba(var(--cyber-cyan-rgb), 0.06) 45%,
+    rgba(255, 255, 255, 0.04) 50%,
+    rgba(var(--cyber-cyan-rgb), 0.06) 55%,
+    transparent 60%,
+    transparent 100%
+  );
+  background-size: 300% 100%;
+  animation: holoShimmer 6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Subtle iridescent shimmer / Нежный перламутровый shimmer */
+.panel-holographic::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(138, 43, 226, 0.03) 0%,
+    rgba(var(--cyber-cyan-rgb), 0.04) 25%,
+    rgba(75, 0, 130, 0.03) 50%,
+    rgba(var(--cyber-cyan-rgb), 0.04) 75%,
+    rgba(138, 43, 226, 0.03) 100%
+  );
+  pointer-events: none;
+  mix-blend-mode: color-dodge;
+  opacity: 0.5;
+}
+
+/* Active state enhancement / Усиление активного состояния */
+.panel-holographic.active {
+  border-color: rgba(var(--cyber-cyan-rgb), 0.5);
+  box-shadow:
+    0 0 20px rgba(var(--cyber-cyan-rgb), 0.15),
+    inset 0 0 30px rgba(var(--cyber-cyan-rgb), 0.05);
+}
+
+.panel-holographic.active::before {
+  animation-duration: 3s;
+  opacity: 0.8;
+}
+
+/* ─── Glass Morphism with Cyber Tint / Glass morphism с кибер оттенком ─── */
+.glassmorphism-cyber {
+  background: linear-gradient(
+    135deg,
+    rgba(5, 15, 30, 0.7) 0%,
+    rgba(10, 25, 50, 0.6) 50%,
+    rgba(5, 15, 30, 0.7) 100%
+  );
+  backdrop-filter: blur(20px) saturate(1.2);
+  -webkit-backdrop-filter: blur(20px) saturate(1.2);
+  border: 1px solid rgba(var(--cyber-cyan-rgb), 0.2);
+  border-top-color: rgba(var(--cyber-cyan-rgb), 0.35);
+  border-left-color: rgba(var(--cyber-cyan-rgb), 0.3);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+}
+
+/* Darker glass variant / Темный вариант стекла */
+.glassmorphism-cyber.dark {
+  background: linear-gradient(
+    135deg,
+    rgba(2, 8, 18, 0.85) 0%,
+    rgba(5, 15, 30, 0.78) 100%
+  );
+  border-color: rgba(var(--cyber-cyan-rgb), 0.15);
+}
+
+/* Tinted glass variants / Стекло с оттенками */
+.glassmorphism-cyber.tint-cyan {
+  background: linear-gradient(
+    135deg,
+    rgba(0, 30, 50, 0.65) 0%,
+    rgba(0, 50, 80, 0.5) 50%,
+    rgba(0, 30, 50, 0.65) 100%
+  );
+  border-color: rgba(var(--cyber-cyan-rgb), 0.35);
+}
+
+.glassmorphism-cyber.tint-rose {
+  background: linear-gradient(
+    135deg,
+    rgba(50, 10, 30, 0.65) 0%,
+    rgba(80, 20, 50, 0.5) 50%,
+    rgba(50, 10, 30, 0.65) 100%
+  );
+  border-color: rgba(var(--cyber-rose-rgb), 0.35);
+}
+
+/* ─── Panel Edge Glow that Intensifies on Hover / Свечение края панели, усиливающееся при наведении ─── */
+.panel-edge-glow {
+  position: relative;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(var(--cyber-cyan-rgb), 0.2);
+}
+
+.panel-edge-glow::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    transparent 40%,
+    rgba(var(--cyber-cyan-rgb), 0.1) 50%,
+    transparent 60%
+  );
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  z-index: -1;
+  filter: blur(8px);
+}
+
+.panel-edge-glow:hover {
+  border-color: rgba(var(--cyber-cyan-rgb), 0.5);
+  box-shadow:
+    0 0 20px rgba(var(--cyber-cyan-rgb), 0.15),
+    0 0 40px rgba(var(--cyber-cyan-rgb), 0.08);
+}
+
+.panel-edge-glow:hover::before {
+  opacity: 1;
+}
+
+/* Edge glow color variants / Цветовые варианты свечения края */
+.panel-edge-glow.amber:hover {
+  border-color: rgba(var(--cyber-amber-rgb), 0.5);
+  box-shadow:
+    0 0 20px rgba(var(--cyber-amber-rgb), 0.18),
+    0 0 40px rgba(var(--cyber-amber-rgb), 0.1);
+}
+
+.panel-edge-glow.rose:hover {
+  border-color: rgba(var(--cyber-rose-rgb), 0.5);
+  box-shadow:
+    0 0 20px rgba(var(--cyber-rose-rgb), 0.15),
+    0 0 40px rgba(var(--cyber-rose-rgb), 0.08);
+}
+
+
+/* ═════════════════════════════════════════════════════════════════════════
+   SECTION 4: ADVANCED BUTTON STYLES / ПРОДВИНУТЫЕ СТИЛИ КНОПОК
+   ═════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Base Cyber Button Class / Базовый класс кибер кнопки ─── */
+.cyber-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+}
+
+.cyber-btn:focus-visible {
+  outline: 2px solid var(--cyber-cyan);
+  outline-offset: 2px;
+}
+
+/* ─── Cyber Button with Fill Animation / Кнопка с анимацией заполнения ─── */
+.cyber-btn-fill {
+  background: linear-gradient(
+    135deg,
+    rgba(var(--cyber-cyan-rgb), 0.15) 0%,
+    rgba(5, 15, 30, 0.9) 100%
+  );
+  border: 1px solid var(--cyber-cyan);
+  color: var(--cyber-cyan);
+}
+
+.cyber-btn-fill::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 0;
+  background: linear-gradient(
+    135deg,
+    var(--cyber-cyan) 0%,
+    rgba(var(--cyber-cyan-rgb), 0.8) 100%
+  );
+  z-index: 0;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cyber-btn-fill span,
+.cyber-btn-fill svg {
+  position: relative;
+  z-index: 1;
+  transition: color 0.3s ease;
+}
+
+.cyber-btn-fill:hover::before {
+  width: 100%;
+}
+
+.cyber-btn-fill:hover {
+  color: #000000;
+  text-shadow: none;
+}
+
+.cyber-btn-fill:active {
+  transform: scale(0.97);
+}
+
+/* ─── Button with Glitch Effect on Hover / Кнопка с glitch эффектом при наведении ─── */
+.cyber-btn-glitch {
+  background: linear-gradient(
+    145deg,
+    rgba(2, 8, 18, 0.95) 0%,
+    rgba(10, 20, 35, 0.92) 100%
+  );
+  border: 1px solid rgba(var(--cyber-cyan-rgb), 0.4);
+  color: var(--cyber-cyan);
+  position: relative;
+}
+
+.cyber-btn-glitch::before,
+.cyber-btn-glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.cyber-btn-glitch::before {
+  color: var(--cyber-cyan);
+  clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);
+  animation: glitchTop 0.4s linear paused;
+}
+
+.cyber-btn-glitch::after {
+  color: var(--cyber-rose);
+  clip-path: polygon(0 55%, 100% 55%, 100% 100%, 0 100%);
+  animation: glitchBottom 0.4s linear paused;
+}
+
+@keyframes glitchTop {
+  0% { transform: translate(-50%, -50%); opacity: 1; }
+  20% { transform: translate(-54%, -48%); }
+  40% { transform: translate(-46%, -52%); }
+  60% { transform: translate(-53%, -47%); }
+  80% { transform: translate(-47%, -51%); }
+  100% { transform: translate(-50%, -50%); opacity: 1; }
+}
+
+@keyframes glitchBottom {
+  0% { transform: translate(-50%, -50%); opacity: 1; }
+  20% { transform: translate(-46%, -52%); }
+  40% { transform: translate(-54%, -48%); }
+  60% { transform: translate(-47%, -51%); }
+  80% { transform: translate(-53%, -47%); }
+  100% { transform: translate(-50%, -50%); opacity: 1; }
+}
+
+.cyber-btn-glitch:hover::before {
+  animation: glitchTop 0.3s linear forwards;
+}
+
+.cyber-btn-glitch:hover::after {
+  animation: glitchBottom 0.3s linear forwards;
+}
+
+.cyber-btn-glitch:hover {
+  border-color: var(--cyber-cyan);
+  box-shadow:
+    0 0 10px rgba(var(--cyber-cyan-rgb), 0.3),
+    inset 0 0 15px rgba(var(--cyber-cyan-rgb), 0.1);
+}
+
+/* ─── Button with Animated Gradient Borders / Кнопка с анимированным градиентным бордером ─── */
+.cyber-btn-gradient-border {
+  position: relative;
+  background: rgba(5, 15, 30, 0.9);
+  color: var(--cyber-cyan);
+  z-index: 0;
+  border-radius: 4px;
+}
+
+.cyber-btn-gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 6px;
+  padding: 2px;
+  background: linear-gradient(
+    90deg,
+    var(--cyber-cyan),
+    rgba(var(--cyber-amber-rgb), 0.8),
+    var(--cyber-matrix),
+    var(--cyber-cyan)
+  );
+  background-size: 300% 100%;
+  animation: borderFlowCyan 4s linear infinite;
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
+  z-index: -1;
+}
+
+.cyber-btn-gradient-border:hover::before {
+  animation-duration: 2s;
+}
+
+.cyber-btn-gradient-border:hover {
+  background: rgba(10, 25, 50, 0.95);
+  box-shadow: 0 0 20px rgba(var(--cyber-cyan-rgb), 0.2);
+}
+
+.cyber-btn-gradient-border:active {
+  transform: scale(0.98);
+}
+
+/* ─── Danger/Warning/Success Button Variants / Варианты кнопок Danger/Warning/Success ─── */
+
+/* Danger Variant / Опасный вариант */
+.cyber-btn.danger {
+  --btn-color: var(--cyber-rose);
+  --btn-color-rgb: 255, 23, 68;
+}
+
+.cyber-btn.danger,
+.cyber-btn-danger {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 23, 68, 0.15) 0%,
+    rgba(30, 5, 15, 0.9) 100%
+  );
+  border: 1px solid var(--cyber-rose);
+  color: var(--cyber-rose);
+}
+
+.cyber-btn.danger:hover,
+.cyber-btn-danger:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 23, 68, 0.3) 0%,
+    rgba(50, 10, 25, 0.95) 100%
+  );
+  box-shadow:
+    0 0 15px rgba(255, 23, 68, 0.3),
+    inset 0 0 15px rgba(255, 23, 68, 0.1);
+}
+
+.cyber-btn.danger:active,
+.cyber-btn-danger:active {
+  box-shadow:
+    0 0 20px rgba(255, 23, 68, 0.4),
+    inset 0 0 20px rgba(255, 23, 68, 0.15);
+}
+
+/* Warning Variant / Предупреждающий вариант */
+.cyber-btn.warning,
+.cyber-btn-warning {
+  background: linear-gradient(
+    135deg,
+    rgba(var(--cyber-amber-rgb), 0.15) 0%,
+    rgba(30, 25, 5, 0.9) 100%
+  );
+  border: 1px solid var(--cyber-amber);
+  color: var(--cyber-amber);
+}
+
+.cyber-btn.warning:hover,
+.cyber-btn-warning:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(var(--cyber-amber-rgb), 0.28) 0%,
+    rgba(45, 38, 10, 0.95) 100%
+  );
+  box-shadow:
+    0 0 15px rgba(var(--cyber-amber-rgb), 0.3),
+    inset 0 0 15px rgba(var(--cyber-amber-rgb), 0.1);
+}
+
+/* Success Variant / Успешный вариант */
+.cyber-btn.success,
+.cyber-btn-success {
+  background: linear-gradient(
+    135deg,
+    rgba(var(--cyber-matrix-rgb), 0.15) 0%,
+    rgba(5, 25, 15, 0.9) 100%
+  );
+  border: 1px solid var(--cyber-matrix);
+  color: var(--cyber-matrix);
+}
+
+.cyber-btn.success:hover,
+.cyber-btn-success:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(var(--cyber-matrix-rgb), 0.28) 0%,
+    rgba(10, 40, 22, 0.95) 100%
+  );
+  box-shadow:
+    0 0 15px rgba(var(--cyber-matrix-rgb), 0.3),
+    inset 0 0 15px rgba(var(--cyber-matrix-rgb), 0.1);
+}
+
+/* Disabled State / Отключенное состояние */
+.cyber-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  filter: grayscale(0.5);
+}
+
+.cyber-btn:disabled:hover {
+  transform: none;
+  box-shadow: none;
+  background: initial;
+}
+
+
+/* ═════════════════════════════════════════════════════════════════════════
+   SECTION 5: PROGRESS BAR VARIANTS / ВАРИАНТЫ ПРОГРЕСС БАРОВ
+   ═════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Segmented Progress Bar (Classic RPG Style) / Сегментированный прогресс бар ─── */
+.progress-segmented {
+  display: flex;
+  gap: 3px;
+  height: 20px;
+  padding: 3px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 4px;
+  border: 1px solid rgba(var(--cyber-cyan-rgb), 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-segmented .segment {
+  flex: 1;
+  height: 100%;
+  background: rgba(var(--cyber-cyan-rgb), 0.15);
+  border-radius: 2px;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.progress-segmented .segment.filled {
+  background: linear-gradient(
+    180deg,
+    var(--cyber-cyan) 0%,
+    rgba(var(--cyber-cyan-rgb), 0.7) 100%
+  );
+  box-shadow:
+    0 0 6px rgba(var(--cyber-cyan-rgb), 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Segment states / Состояния сегментов */
+.progress-segmented .segment.low {
+  background: linear-gradient(180deg, var(--cyber-rose), rgba(255, 23, 68, 0.7));
+  box-shadow: 0 0 6px rgba(255, 23, 68, 0.4);
+}
+
+.progress-segmented .segment.medium {
+  background: linear-gradient(180deg, var(--cyber-amber), rgba(var(--cyber-amber-rgb), 0.7));
+  box-shadow: 0 0 6px rgba(var(--cyber-amber-rgb), 0.4);
+}
+
+.progress-segmented .segment.high {
+  background: linear-gradient(180deg, var(--cyber-matrix), rgba(var(--cyber-matrix-rgb), 0.7));
+  box-shadow: 0 0 6px rgba(var(--cyber-matrix-rgb), 0.4);
+}
+
+/* Amber variant / Янтарный вариант */
+.progress-segmented.amber .segment.filled {
+  background: linear-gradient(180deg, var(--cyber-amber), rgba(var(--cyber-amber-rgb), 0.7));
+  box-shadow: 0 0 6px rgba(var(--cyber-amber-rgb), 0.4);
+}
+
+/* ─── Progress Bar with Percentage Label Inside / Прогресс бар с процентной меткой внутри ─── */
+.progress-with-label {
+  position: relative;
+  height: 28px;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 6px;
+  border: 1px solid rgba(var(--cyber-cyan-rgb), 0.25);
+  overflow: hidden;
+}
+
+.progress-with-label .progress-fill {
+  height: 100%;
+  border-radius: 5px;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 10px;
+  min-width: fit-content;
+}
+
+.progress-with-label .progress-fill.cyan {
+  background: linear-gradient(90deg, rgba(var(--cyber-cyan-rgb), 0.6), var(--cyber-cyan));
+  box-shadow: 0 0 12px rgba(var(--cyber-cyan-rgb), 0.4);
+}
+
+.progress-with-label .progress-fill.amber {
+  background: linear-gradient(90deg, rgba(var(--cyber-amber-rgb), 0.6), var(--cyber-amber));
+  box-shadow: 0 0 12px rgba(var(--cyber-amber-rgb), 0.4);
+}
+
+.progress-with-label .progress-fill.rose {
+  background: linear-gradient(90deg, rgba(255, 23, 68, 0.6), var(--cyber-rose));
+  box-shadow: 0 0 12px rgba(255, 23, 68, 0.4);
+  animation: neonPulseAmber 1.5s ease-in-out infinite;
+}
+
+.progress-with-label .progress-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  font-size: 0.75rem;
+  color: #ffffff;
+  text-shadow:
+    0 0 4px rgba(0, 0, 0, 0.8),
+    0 0 8px rgba(0, 0, 0, 0.5);
+  white-space: nowrap;
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* ─── Radial/Circular Progress Indicators / Радиальные индикаторы прогресса ─── */
+.radial-progress {
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+
+.radial-progress svg {
+  transform: rotate(-90deg);
+  width: 100%;
+  height: 100%;
+}
+
+.radial-progress .track-circle {
+  fill: none;
+  stroke: rgba(var(--cyber-cyan-rgb), 0.15);
+  stroke-width: 6;
+}
+
+.radial-progress .progress-circle {
+  fill: none;
+  stroke: var(--cyber-cyan);
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-dasharray: 220;
+  stroke-dashoffset: var(--progress-offset, 110);
+  transition: stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  filter: drop-shadow(0 0 6px var(--cyber-cyan));
+}
+
+.radial-progress .progress-value {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  font-size: 0.9rem;
+  color: var(--cyber-cyan);
+  text-shadow: 0 0 8px rgba(var(--cyber-cyan-rgb), 0.6);
+}
+
+/* Radial progress size variants / Размеры радиального прогресса */
+.radial-progress.sm {
+  width: 50px;
+  height: 50px;
+}
+.radial-progress.sm .track-circle,
+.radial-progress.sm .progress-circle {
+  stroke-width: 4;
+}
+.radial-progress.sm .progress-circle {
+  stroke-dasharray: 138;
+}
+.radial-progress.sm .progress-value {
+  font-size: 0.7rem;
+}
+
+.radial-progress.lg {
+  width: 120px;
+  height: 120px;
+}
+.radial-progress.lg .track-circle,
+.radial-progress.lg .progress-circle {
+  stroke-width: 8;
+}
+.radial-progress.lg .progress-circle {
+  stroke-dasharray: 330;
+}
+.radial-progress.lg .progress-value {
+  font-size: 1.2rem;
+}
+
+/* Color variants for radial progress / Цветовые варианты */
+.radial-progress.amber .progress-circle {
+  stroke: var(--cyber-amber);
+  filter: drop-shadow(0 0 6px var(--cyber-amber));
+}
+.radial-progress.amber .progress-value {
+  color: var(--cyber-amber);
+  text-shadow: 0 0 8px rgba(var(--cyber-amber-rgb), 0.6);
+}
+
+.radial-progress.rose .progress-circle {
+  stroke: var(--cyber-rose);
+  filter: drop-shadow(0 0 6px var(--cyber-rose));
+  animation: neonPulseMatrix 1.5s ease-in-out infinite;
+}
+.radial-progress.rose .progress-value {
+  color: var(--cyber-rose);
+  text-shadow: 0 0 8px rgba(var(--cyber-rose-rgb), 0.6);
+}
+
+/* ─── Progress Bar with Energy Pulse Wave Effect / Прогресс бар с эффектом energy pulse ─── */
+.progress-energy-wave {
+  position: relative;
+  height: 24px;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 12px;
+  border: 1px solid rgba(var(--cyber-cyan-rgb), 0.25);
+  overflow: hidden;
+}
+
+.progress-energy-wave .energy-fill {
+  height: 100%;
+  border-radius: 11px;
+  background: linear-gradient(
+    90deg,
+    rgba(var(--cyber-cyan-rgb), 0.4) 0%,
+    var(--cyber-cyan) 50%,
+    rgba(var(--cyber-cyan-rgb), 0.4) 100%
+  );
+  position: relative;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Animated wave pulse / Анимированная волновой импульс */
+.progress-energy-wave .wave-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.3) 25%,
+    rgba(255, 255, 255, 0.5) 50%,
+    rgba(255, 255, 255, 0.3) 75%,
+    transparent 100%
+  );
+  animation: energyFlow 2s ease-in-out infinite;
+}
+
+/* Secondary inner wave / Вторичная внутренняя волна */
+.progress-energy-wave .wave-inner {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  bottom: 2px;
+  right: calc(100% - 60%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.25),
+    transparent
+  );
+  border-radius: 10px;
+  animation: energyWavePulse 1.5s ease-in-out infinite;
+}
+
+/* Glow effect on container / Свечение контейнера */
+.progress-energy-wave.active {
+  border-color: var(--cyber-cyan);
+  box-shadow:
+    0 0 15px rgba(var(--cyber-cyan-rgb), 0.2),
+    inset 0 0 10px rgba(var(--cyber-cyan-rgb), 0.1);
+}
+
+
+/* ═════════════════════════════════════════════════════════════════════════
+   SECTION 6: HUD-SPECIFIC COMPONENTS / СПЕЦИФИЧНЫЕ КОМПОНЕНТЫ HUD
+   ═════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Status Indicator Cyber / Индикатор статуса кибер ─── */
+.status-indicator-cyber {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.75rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(var(--cyber-cyan-rgb), 0.25);
+  border-radius: 9999px;
+}
+
+.status-indicator-cyber .status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--cyber-cyan);
+  position: relative;
+}
+
+.status-indicator-cyber .status-dot::before {
+  /* Glow ring / Свечение кольца */
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(var(--cyber-cyan-rgb), 0.4) 0%, transparent 70%);
+  animation: pulseRing 2s ease-out infinite;
+}
+
+/* Status indicator states / Состояния индикатора статуса */
+.status-indicator-cyber.online .status-dot {
+  background: var(--cyber-matrix);
+}
+.status-indicator-cyber.online .status-dot::before {
+  background: radial-gradient(circle, rgba(var(--cyber-matrix-rgb), 0.4) 0%, transparent 70%);
+}
+
+.status-indicator-cyber.warning .status-dot {
+  background: var(--cyber-amber);
+}
+.status-indicator-cyber.warning .status-dot::before {
+  background: radial-gradient(circle, rgba(var(--cyber-amber-rgb), 0.5) 0%, transparent 70%);
+  animation: pulseRingAmber 1.5s ease-out infinite;
+}
+
+.status-indicator-cyber.offline .status-dot {
+  background: var(--cyber-rose);
+  animation: none;
+}
+.status-indicator-cyber.offline .status-dot::before {
+  background: radial-gradient(circle, rgba(255, 23, 68, 0.3) 0%, transparent 70%);
+  animation: none;
+}
+
+.status-indicator-cyber.blinking .status-dot {
+  animation: statusBlink 1s step-end infinite;
+}
+
+@keyframes statusBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* ─── Minimap Frame Cyber / Рамка миникарты кибер ─── */
+.minimap-frame-cyber {
+  position: relative;
+  padding: 6px;
+  background: linear-gradient(
+    135deg,
+    rgba(2, 8, 18, 0.95) 0%,
+    rgba(5, 15, 30, 0.92) 100%
+  );
+  border: 2px solid rgba(var(--cyber-cyan-rgb), 0.35);
+  border-radius: 8px;
+  box-shadow:
+    0 0 20px rgba(0, 0, 0, 0.5),
+    inset 0 0 30px rgba(0, 0, 0, 0.3),
+    0 0 10px rgba(var(--cyber-cyan-rgb), 0.1);
+}
+
+.minimap-frame-cyber::before {
+  /* Top accent line / Верхняя акцентная линия */
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 20%;
+  right: 20%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--cyber-cyan), transparent);
+}
+
+.minimap-frame-cyber::after {
+  /* Corner markers / Маркеры углов */
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border: 1px dashed rgba(var(--cyber-cyan-rgb), 0.15);
+  border-radius: 6px;
+  pointer-events: none;
+}
+
+/* Compass direction indicators / Индикаторы направлений компаса */
+.minimap-frame-cyber .compass-n,
+.minimap-frame-cyber .compass-e,
+.minimap-frame-cyber .compass-s,
+.minimap-frame-cyber .compass-w {
+  position: absolute;
+  font-family: 'Courier New', monospace;
+  font-size: 0.6rem;
+  font-weight: bold;
+  color: rgba(var(--cyber-cyan-rgb), 0.6);
+}
+
+.minimap-frame-cyber .compass-n { top: -14px; left: 50%; transform: translateX(-50%); }
+.minimap-frame-cyber .compass-e { right: -12px; top: 50%; transform: translateY(-50%); }
+.minimap-frame-cyber .compass-s { bottom: -14px; left: 50%; transform: translateX(-50%); }
+.minimap-frame-cyber .compass-w { left: -12px; top: 50%; transform: translateY(-50%); }
+
+/* Coordinates display / Отображение координат */
+.minimap-frame-cyber .coords-display {
+  position: absolute;
+  bottom: 6px;
+  right: 8px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.6rem;
+  color: rgba(var(--cyber-cyan-rgb), 0.7);
+  background: rgba(0, 0, 0, 0.6);
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+/* ─── Quick Slot Enhanced / Улучшенный быстрый слот ─── */
+.quick-slot-enhanced {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(
+    145deg,
+    rgba(5, 15, 30, 0.9) 0%,
+    rgba(2, 8, 18, 0.95) 100%
+  );
+  border: 2px solid rgba(var(--cyber-cyan-rgb), 0.3);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.quick-slot-enhanced::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 6px;
+  background: linear-gradient(
+    135deg,
+    rgba(var(--cyber-cyan-rgb), 0.1) 0%,
+    transparent 50%,
+    rgba(var(--cyber-cyan-rgb), 0.05) 100%
+  );
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.quick-slot-enhanced:hover {
+  border-color: var(--cyber-cyan);
+  transform: translateY(-2px);
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.4),
+    0 0 15px rgba(var(--cyber-cyan-rgb), 0.2);
+}
+
+.quick-slot-enhanced:hover::before {
+  opacity: 1;
+}
+
+.quick-slot-enhanced.selected {
+  border-color: var(--cyber-cyan);
+  box-shadow:
+    0 0 0 1px var(--cyber-cyan),
+    0 0 20px rgba(var(--cyber-cyan-rgb), 0.3),
+    inset 0 0 15px rgba(var(--cyber-cyan-rgb), 0.15);
+}
+
+/* Key binding indicator / Индикатор привязки клавиши */
+.quick-slot-enhanced .slot-key {
+  position: absolute;
+  top: 2px;
+  left: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.6rem;
+  font-weight: bold;
+  color: rgba(var(--cyber-cyan-rgb), 0.7);
+  background: rgba(0, 0, 0, 0.5);
+  padding: 1px 4px;
+  border-radius: 2px;
+  line-height: 1;
+}
+
+/* Cooldown overlay / Overlay восстановления */
+.quick-slot-enhanced .cooldown-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 0 0 6px 6px;
+  transition: height 0.1s linear;
+}
+
+.quick-slot-enhanced .cooldown-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Courier New', monospace;
+  font-size: 1rem;
+  font-weight: bold;
+  color: #ffffff;
+  text-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
+  z-index: 5;
+}
+
+/* Quick slot on cooldown / Быстрый слот на восстановлении */
+.quick-slot-enhanced.on-cooldown {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.quick-slot-enhanced.on-cooldown .slot-icon {
+  filter: grayscale(0.8) brightness(0.6);
+}
+
+/* ─── Combo Counter Display / Дисплей комбо счетчика ─── */
+.combo-counter-display {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 80px;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.7) 0%,
+    rgba(20, 10, 5, 0.8) 100%
+  );
+  border: 2px solid var(--cyber-amber);
+  border-radius: 8px;
+  font-family: 'Courier New', monospace;
+  overflow: hidden;
+}
+
+.combo-counter-display::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(var(--cyber-amber-rgb), 0.15) 0%,
+    transparent 50%
+  );
+  pointer-events: none;
+}
+
+.combo-counter-display .combo-number {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: var(--cyber-amber);
+  text-shadow:
+    0 0 8px var(--cyber-amber),
+    0 0 16px rgba(var(--cyber-amber-rgb), 0.5);
+  transition: all 0.15s ease;
+  line-height: 1;
+}
+
+.combo-counter-display .combo-label {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: rgba(var(--cyber-amber-rgb), 0.8);
+  margin-left: 0.4rem;
+}
+
+/* Escalating combo colors / Нарастающие цвета комбо */
+.combo-counter-display[data-combo="1"] .combo-number,
+.combo-counter-display[data-combo="2"] .combo-number,
+.combo-counter-display[data-combo="3"] .combo-number {
+  color: var(--cyber-cyan);
+  text-shadow:
+    0 0 8px var(--cyber-cyan),
+    0 0 16px rgba(var(--cyber-cyan-rgb), 0.5);
+}
+
+.combo-counter-display[data-combo="4"] .combo-number,
+.combo-counter-display[data-combo="5"] .combo-number,
+.combo-counter-display[data-combo="6"] .combo-number {
+  color: var(--cyber-matrix);
+  text-shadow:
+    0 0 8px var(--cyber-matrix),
+    0 0 16px rgba(var(--cyber-matrix-rgb), 0.5);
+}
+
+.combo-counter-display[data-combo="7"] .combo-number,
+.combo-counter-display[data-combo="8"] .combo-number,
+.combo-counter-display[data-combo="9"] .combo-number {
+  color: var(--cyber-amber);
+  text-shadow:
+    0 0 8px var(--cyber-amber),
+    0 0 16px rgba(var(--cyber-amber-rgb), 0.5);
+}
+
+.combo-counter-display[data-combo="10"] .combo-number,
+.combo-counter-display:is([data-combo="11"], [data-combo="12"], [data-combo="13"], [data-combo="14"], [data-combo="15"]) .combo-number {
+  color: var(--cyber-rose);
+  text-shadow:
+    0 0 10px var(--cyber-rose),
+    0 0 20px rgba(var(--cyber-rose-rgb), 0.6);
+  animation: comboPulse 0.5s ease-in-out infinite;
+}
+
+@keyframes comboPulse {
+  0%, 100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  50% {
+    transform: scale(1.08);
+    filter: brightness(1.2);
+  }
+}
+
+/* ─── Damage Number Float / Всплывающее число урона ─── */
+.damage-number-float {
+  position: absolute;
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  font-size: 1.4rem;
+  pointer-events: none;
+  white-space: nowrap;
+  animation: floatUp 1.5s ease-out forwards;
+  z-index: 1000;
+}
+
+.damage-number-float.physical {
+  color: #ffaa44;
+  text-shadow:
+    0 0 4px rgba(255, 170, 68, 0.8),
+    2px 2px 0 rgba(0, 0, 0, 0.5);
+}
+
+.damage-number-float.magic {
+  color: #aa88ff;
+  text-shadow:
+    0 0 4px rgba(170, 136, 255, 0.8),
+    2px 2px 0 rgba(0, 0, 0, 0.5);
+}
+
+.damage-number-float.fire {
+  color: #ff6644;
+  text-shadow:
+    0 0 6px rgba(255, 102, 68, 0.9),
+    0 0 12px rgba(255, 102, 68, 0.4),
+    2px 2px 0 rgba(0, 0, 0, 0.5);
+}
+
+.damage-number-float.ice {
+  color: #66ddff;
+  text-shadow:
+    0 0 6px rgba(102, 221, 255, 0.9),
+    0 0 12px rgba(102, 221, 255, 0.4),
+    2px 2px 0 rgba(0, 0, 0, 0.5);
+}
+
+.damage-number-float.heal {
+  color: var(--cyber-matrix);
+  text-shadow:
+    0 0 6px var(--cyber-matrix),
+    0 0 12px rgba(var(--cyber-matrix-rgb), 0.5);
+}
+
+/* Critical hit modifier / Модификатор критического удара */
+.damage-number-float.crit {
+  font-size: 2rem;
+  animation: floatUpCrit 1.8s ease-out forwards;
+  color: #ffff44 !important;
+  text-shadow:
+    0 0 8px rgba(255, 255, 68, 1),
+    0 0 16px rgba(255, 255, 68, 0.6),
+    0 0 24px rgba(255, 200, 0, 0.3),
+    3px 3px 0 rgba(0, 0, 0, 0.5);
+}
+
+/* Miss indicator / Индикатор промаха */
+.damage-number-float.miss {
+  color: rgba(150, 150, 150, 0.8);
+  font-size: 1rem;
+  text-shadow: none;
+  animation: floatUp 1.2s ease-out forwards;
+}
+
+
+/* ═════════════════════════════════════════════════════════════════════════
+   SECTION 7: TOOLTIP & POPUP ENHANCEMENTS / УЛУШЕНИЯ TOOLTIP И POPUP
+   ═════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Tooltip with Directional Arrow (CSS-only) / Tooltip со стрелкой направления ─── */
+.tooltip-arrow {
+  position: absolute;
+  padding: 0.6rem 1rem;
+  max-width: 280px;
+  background: linear-gradient(
+    160deg,
+    rgba(2, 8, 20, 0.98) 0%,
+    rgba(15, 23, 42, 0.96) 100%
+  );
+  border: 1px solid rgba(var(--cyber-cyan-rgb), 0.35);
+  border-radius: 6px;
+  font-size: 0.8rem;
+  color: rgba(200, 210, 230, 0.95);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    0 0 15px rgba(var(--cyber-cyan-rgb), 0.1);
+  z-index: 1000;
+  animation: slideInScale 0.2s ease-out;
+}
+
+/* Arrow positioning / Позиционирование стрелки */
+.tooltip-arrow::after {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: inherit;
+  border: inherit;
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg);
+}
+
+/* Position variants / Варианты позиционирования */
+.tooltip-arrow.top {
+  margin-bottom: 10px;
+}
+.tooltip-arrow.top::after {
+  bottom: -6px;
+  left: 50%;
+  margin-left: -5px;
+  border-top: 1px solid rgba(var(--cyber-cyan-rgb), 0.35);
+  border-left: 1px solid rgba(var(--cyber-cyan-rgb), 0.35);
+}
+
+.tooltip-arrow.bottom {
+  margin-top: 10px;
+}
+.tooltip-arrow.bottom::after {
+  top: -6px;
+  left: 50%;
+  margin-left: -5px;
+  border-right: 1px solid rgba(var(--cyber-cyan-rgb), 0.35);
+  border-bottom: 1px solid rgba(var(--cyber-cyan-rgb), 0.35);
+}
+
+.tooltip-arrow.left {
+  margin-right: 10px;
+}
+.tooltip-arrow.left::after {
+  right: -6px;
+  top: 50%;
+  margin-top: -5px;
+  border-right: 1px solid rgba(var(--cyber-cyan-rgb), 0.35);
+  border-bottom: 1px solid rgba(var(--cyber-cyan-rgb), 0.35);
+}
+
+.tooltip-arrow.right {
+  margin-left: 10px;
+}
+.tooltip-arrow.right::after {
+  left: -6px;
+  top: 50%;
+  margin-top: -5px;
+  border-top: 1px solid rgba(var(--cyber-cyan-rgb), 0.35);
+  border-left: 1px solid rgba(var(--cyber-cyan-rgb), 0.35);
+}
+
+/* ─── Modal Backdrop with Grid Pattern Overlay / Modal фон с сеткой ─── */
+.modal-backdrop-grid {
+  position: fixed;
+  inset: 0;
+  background: 
+    linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 5, 15, 0.92)),
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 40px,
+      rgba(var(--cyber-cyan-rgb), 0.03) 40px,
+      rgba(var(--cyber-cyan-rgb), 0.03) 41px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 40px,
+      rgba(var(--cyber-cyan-rgb), 0.03) 40px,
+      rgba(var(--cyber-cyan-rgb), 0.03) 41px
+    );
+  backdrop-filter: blur(4px);
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Animated grid lines on modal / Анимированные линии сетки на модалке */
+.modal-backdrop-grid::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: 
+    linear-gradient(90deg, transparent 49.5%, rgba(var(--cyber-cyan-rgb), 0.05) 50%, transparent 50.5%),
+    linear-gradient(0deg, transparent 49.5%, rgba(var(--cyber-cyan-rgb), 0.05) 50%, transparent 50.5%);
+  background-size: 80px 80px;
+  animation: gridPulse 4s ease-in-out infinite;
+}
+
+@keyframes gridPulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+/* Vignette effect on edges / Виньетка по краям */
+.modal-backdrop-grid::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 40%,
+    rgba(0, 0, 0, 0.6) 100%
+  );
+  pointer-events: none;
+}
+
+/* ─── Popup Entrance Animations / Анимации входа popup ─── */
+.popup-enter-down {
+  animation: slideInDown 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.popup-enter-up {
+  animation: slideInUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.popup-enter-scale {
+  animation: slideInScale 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.popup-enter-fade {
+  animation: fadeIn 0.25s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+
+/* ═════════════════════════════════════════════════════════════════════════
+   SECTION 8: SPECIAL EFFECTS / СПЕЦИАЛЬНЫЕ ЭФФЕКТЫ
+   ═════════════════════════════════════════════════════════════════════════ */
+
+/* ─── CRT Screen Curvature Simulation Class / Симуляция искривления экрана CRT ─── */
+.crt-screen {
+  position: relative;
+  overflow: hidden;
+}
+
+.crt-screen::before {
+  /* Scanlines overlay / Overlay scanline */
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.15) 0px,
+    rgba(0, 0, 0, 0.15) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  pointer-events: none;
+  z-index: 20;
+}
+
+.crt-screen::after {
+  /* Screen curve shadow / Тень изгиба экрана */
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 60%,
+    rgba(0, 0, 0, 0.4) 100%
+  );
+  pointer-events: none;
+  z-index: 21;
+}
+
+.crt-screen.crt-active {
+  animation: crtFlicker 0.15s infinite;
+}
+
+@keyframes crtFlicker {
+  0% { opacity: 0.98; }
+  5% { opacity: 1; }
+  10% { opacity: 0.97; }
+  15% { opacity: 1; }
+  20% { opacity: 0.99; }
+  100% { opacity: 1; }
+}
+
+/* Phosphor glow simulation / Симуляция свечения фосфора */
+.crt-screen.phosphor-glow * {
+  text-shadow: 
+    0 0 2px currentColor,
+    0 0 4px currentColor;
+}
+
+/* ─── Chromatic Border Effect (RGB Split Border) / Хроматический эффект границы ─── */
+.chromatic-border {
+  position: relative;
+  background: rgba(5, 10, 20, 0.95);
+}
+
+.chromatic-border::before,
+.chromatic-border::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.chromatic-border::before {
+  /* Cyan channel border / Циановая граница канала */
+  border: 2px solid var(--cyber-cyan);
+  transform: translate(-2px, -1px);
+  opacity: 0.7;
+  mix-blend-mode: screen;
+}
+
+.chromatic-border::after {
+  /* Red channel border / Красная граница канала */
+  border: 2px solid var(--cyber-rose);
+  transform: translate(2px, 1px);
+  opacity: 0.7;
+  mix-blend-mode: screen;
+}
+
+/* Main border on element itself / Основная граница элемента */
+.chromatic-border {
+  border: 2px solid #ffffff;
+}
+
+.chromatic-border.animated::before,
+.chromatic-border.animated::after {
+  animation: chromaticBorderShift 0.4s steps(4, end) infinite;
+}
+
+@keyframes chromaticBorderShift {
+  0%, 100% { 
+    transform: translate(-2px, -1px);
+  }
+  25% { 
+    transform: translate(-3px, 0px);
+  }
+  50% { 
+    transform: translate(-1px, -2px);
+  }
+  75% { 
+    transform: translate(-2px, 1px);
+  }
+}
+
+@keyframes chromaticBorderShiftRed {
+  0%, 100% { 
+    transform: translate(2px, 1px);
+  }
+  25% { 
+    transform: translate(3px, 0px);
+  }
+  50% { 
+    transform: translate(1px, 2px);
+  }
+  75% { 
+    transform: translate(2px, -1px);
+  }
+}
+
+.chromatic-border.animated::after {
+  animation-name: chromaticBorderShiftRed;
+}
+
+/* ─── Noise Texture Overlay Option / Опция оверлея шумовой текстуры ─── */
+.noise-overlay {
+  position: relative;
+}
+
+.noise-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.04;
+  pointer-events: none;
+  z-index: 30;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+  mix-blend-mode: overlay;
+}
+
+.noise-overlay.intense::after {
+  opacity: 0.08;
+  mix-blend-mode: normal;
+}
+
+.noise-overlay.static::after {
+  animation: noiseStatic 0.5s steps(10) infinite;
+}
+
+@keyframes noiseStatic {
+  0% { transform: translate(0, 0); }
+  10% { transform: translate(-2%, -1%); }
+  20% { transform: translate(1%, 2%); }
+  30% { transform: translate(-1%, -2%); }
+  40% { transform: translate(2%, 1%); }
+  50% { transform: translate(-2%, 2%); }
+  60% { transform: translate(1%, -1%); }
+  70% { transform: translate(-1%, 1%); }
+  80% { transform: translate(2%, -2%); }
+  90% { transform: translate(-2%, -1%); }
+  100% { transform: translate(0, 0); }
+}
+
+/* Film grain alternative / Альтернатива зернистости пленки */
+.film-grain {
+  position: relative;
+}
+
+.film-grain::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 25;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='grainFilter'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.7' numOctaves='3' result='noise'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23grainFilter)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 512px 512px;
+  animation: grainMove 8s linear infinite;
+}
+
+@keyframes grainMove {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(-512px, -256px); }
+}
+
+/* ─── Heat Shimmer Effect (for hot environments) / Эффект жара ─── */
+.heat-shimmer {
+  animation: heatShimmer 0.3s ease-in-out infinite;
+  will-change: transform, filter;
+}
+
+.heat-shimmer.light {
+  animation-duration: 0.5s;
+}
+
+.heat-shimmer.intense {
+  animation-duration: 0.15s;
+  animation-name: heatShimmerIntense;
+}
+
+@keyframes heatShimmerIntense {
+  0%, 100% {
+    transform: skewX(0deg) scaleY(1) scaleX(1);
+    filter: blur(0px) brightness(1) saturate(1) hue-rotate(0deg);
+  }
+  20% {
+    transform: skewX(1deg) scaleY(1.005) scaleX(1.002);
+    filter: blur(0.5px) brightness(1.05) saturate(1.2) hue-rotate(5deg);
+  }
+  40% {
+    transform: skewX(-0.8deg) scaleY(1.003) scaleX(0.998);
+    filter: blur(0.8px) brightness(1.08) saturate(1.3) hue-rotate(-8deg);
+  }
+  60% {
+    transform: skewX(0.6deg) scaleY(1.004) scaleX(1.001);
+    filter: blur(0.4px) brightness(1.04) saturate(1.15) hue-rotate(3deg);
+  }
+  80% {
+    transform: skewX(-0.4deg) scaleY(1.002) scaleX(0.999);
+    filter: blur(0.3px) brightness(1.02) saturate(1.1) hue-rotate(-4deg);
+  }
+}
+
+/* Heat distortion overlay / Оверлей теплового искажения */
+.heat-distortion {
+  position: relative;
+  overflow: visible;
+}
+
+.heat-distortion::before {
+  content: '';
+  position: absolute;
+  inset: -5%;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 100, 50, 0.03) 0%,
+    rgba(255, 150, 50, 0.05) 30%,
+    transparent 60%
+  );
+  pointer-events: none;
+  animation: heatDistortionRise 2s ease-in-out infinite;
+}
+
+@keyframes heatDistortionRise {
+  0% {
+    transform: translateY(10%) scaleY(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translateY(-5%) scaleY(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-15%) scaleY(0.9);
+    opacity: 0.5;
+  }
+}
+
+
+/* ═════════════════════════════════════════════════════════════════════════
+   SECTION 9: RESPONSIVE & ACCESSIBILITY / АДАПТИВНОСТЬ И ДОСТУПНОСТЬ
+   ═════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Mobile-specific Adjustments / Настройки для мобильных устройств ─── */
+@media (max-width: 640px) {
+  /* Touch-friendly button sizes / Размеры кнопок для touch */
+  .cyber-btn {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.6rem 1rem;
+    font-size: 0.8rem;
+  }
+
+  .quick-slot-enhanced {
+    width: 48px;
+    height: 48px;
+  }
+
+  .radial-progress {
+    width: 64px;
+    height: 64px;
+  }
+
+  .radial-progress.lg {
+    width: 96px;
+    height: 96px;
+  }
+
+  /* Reduce visual complexity on mobile / Снижение визуальной сложности */
+  .panel-scanlines::after,
+  .crt-screen::before {
+    opacity: 0.5;
+  }
+
+  .chromatic-border::before,
+  .chromatic-border::after {
+    display: none;
+  }
+
+  .neon-text-chromatic::before,
+  .neon-text-chromatic::after {
+    display: none;
+  }
+
+  /* Adjust tooltip sizes / Корректировка размеров tooltip */
+  .tooltip-arrow {
+    max-width: 220px;
+    font-size: 0.75rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  /* Combo counter smaller / Меньший комбо счетчик */
+  .combo-counter-display .combo-number {
+    font-size: 1.4rem;
+  }
+
+  /* Damage numbers smaller / Меньшие числа урона */
+  .damage-number-float {
+    font-size: 1.1rem;
+  }
+
+  .damage-number-float.crit {
+    font-size: 1.6rem;
+  }
+
+  /* Simplified panels / Упрощенные панели */
+  .glassmorphism-cyber {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .minimap-frame-cyber {
+    padding: 4px;
+  }
+
+  .minimap-frame-cyber .coords-display {
+    font-size: 0.5rem;
+    bottom: 4px;
+    right: 6px;
+  }
+}
+
+@media (max-width: 380px) {
+  /* Extra small screens / Очень маленькие экраны */
+  .hud-corner-bracket .corner-tl,
+  .hud-corner-bracket .corner-tr,
+  .hud-corner-bracket .corner-bl,
+  .hud-corner-bracket .corner-br {
+    width: 10px;
+    height: 10px;
+  }
+
+  .status-indicator-cyber {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.65rem;
+  }
+
+  .progress-segmented {
+    height: 16px;
+    gap: 2px;
+  }
+}
+
+/* ─── High Contrast Mode Support / Поддержка режима высокой контрастности ─── */
+@media (forced-colors: active) or (-ms-high-contrast: active) {
+  .cyber-btn,
+  .neon-btn-cyan,
+  .neon-btn-amber,
+  .neon-btn-matrix,
+  .quick-slot-enhanced,
+  .glassmorphism-cyber {
+    border: 2px solid currentColor !important;
+  }
+
+  .text-neon-cyan,
+  .text-neon-amber,
+  .text-neon-matrix,
+  .neon-text-enhanced {
+    text-shadow: none !important;
+    color: Highlight !important;
+  }
+
+  .progress-bar-glow,
+  .progress-with-label .progress-fill {
+    border: 2px solid currentColor;
+  }
+
+  .tooltip-arrow,
+  .toast-enhanced,
+  .panel-holographic {
+    border: 2px solid currentColor !important;
+  }
+
+  .chromatic-border::before,
+  .chromatic-border::after {
+    display: none !important;
+  }
+}
+
+/* ─── Prefers Reduced Motion Respect / Уважение prefers-reduced-motion ─── */
+@media (prefers-reduced-motion: reduce) {
+  /* Disable ALL animations / Отключение ВСЕХ анимаций */
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  /* Remove flickering effects completely / Полное удаление эффектов мерцания */
+  .crt-screen.crt-active,
+  .crt-screen::before,
+  .crt-screen::after {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+
+  /* Static glow instead of pulsating / Статическое свечение вместо пульсации */
+  .neon-glow-multi::before,
+  .neon-glow-multi::after {
+    animation: none !important;
+  }
+
+  .neon-border-pulse {
+    animation: none !important;
+    border-color: rgba(var(--cyber-cyan-rgb), 0.5) !important;
+    box-shadow: 0 0 8px rgba(var(--cyber-cyan-rgb), 0.3) !important;
+  }
+
+  /* Keep static visual enhancements but remove motion / Сохранить статические визуальные улучшения */
+  .neon-text-enhanced,
+  .text-neon-cyan,
+  .text-neon-amber,
+  .text-neon-matrix {
+    /* Keep text shadows for readability without motion */
+  }
+
+  /* Disable floating damage numbers animation / Отключение анимации всплывающих чисел */
+  .damage-number-float {
+    animation: none !important;
+    opacity: 0.8;
+  }
+
+  .damage-number-float.crit {
+    animation: none !important;
+    transform: scale(1.2);
+  }
+
+  /* Static progress bars / Статические прогресс бары */
+  .progress-energy-wave .wave-overlay,
+  .progress-energy-wave .wave-inner {
+    animation: none !important;
+  }
+
+  /* Static holographic shimmer / Статический голографический shimmer */
+  .panel-holographic::before {
+    animation: none !important;
+  }
+
+  /* No shaking / Без тряске */
+  .shake,
+  .shakeHeavy {
+    animation: none !important;
+  }
+
+  /* Static glitch text / Статический glitch текст */
+  .glitchText,
+  .glitchTextIntense,
+  .text-glitch-subtle {
+    animation: none !important;
+  }
+
+  /* Static heat effects / Статические эффекты жара */
+  .heat-shimmer,
+  .heat-distortion::before {
+    animation: none !important;
+  }
+
+  /* Instant transitions / Мгновенные переходы */
+  .popup-enter-down,
+  .popup-enter-up,
+  .popup-enter-scale,
+  .popup-enter-fade {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  /* Static scanline / Статические scanline */
+  .panel-scanlines.active::before,
+  .scanLine {
+    animation: none !important;
+    display: none;
+  }
+}
+
+/* ─── Print Styles / Стили печати ─── */
+@media print {
+  .crt-screen::before,
+  .crt-screen::after,
+  .noise-overlay::after,
+  .film-grain::after,
+  .panel-scanlines::after,
+  .panel-holographic::before,
+  .panel-holographic::after,
+  .chromatic-border::before,
+  .chromatic-border::after,
+  .neon-glow-multi::before,
+  .neon-glow-multi::after {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+  }
+}
+
+
+/* ═════════════════════════════════════════════════════════════════════════
+   SECTION 10: UTILITY & COMBINATOR CLASSES / УТИЛИТЫ И КОМБИНАТОРНЫЕ КЛАССЫ
+   ═════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Animation Trigger Classes / Классы триггеров анимации ─── */
+.animate-on-hover {
+  transition: all 0.3s ease;
+}
+
+.animate-on-hover:hover > *,
+.animate-on-hover:hover {
+  animation-play-state: running !important;
+}
+
+/* ─── Glow Intensity Modifiers / Модификаторы интенсивности свечения ─── */
+.glow-low { --glow-intensity: 0.3; }
+.glow-medium { --glow-intensity: 0.6; }
+.glow-high { --glow-intensity: 1; }
+
+/* ─── Visibility Utilities / Утилиты видимости ─── */
+.visible-cyber { visibility: visible !important; opacity: 1 !important; }
+.hidden-cyber { visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; }
+.invisible-cyber { visibility: visible !important; opacity: 0 !important; pointer-events: none !important; }
+
+/* ─── Z-Index Layers / Z-Index слои ─── */
+.z-base { z-index: 1; }
+.z-dropdown { z-index: 100; }
+.z-sticky { z-index: 500; }
+.z-fixed { z-index: 1000; }
+.z-modal-backdrop { z-index: 1040; }
+.z-modal { z-index: 1050; }
+.z-popover { z-index: 1060; }
+.z-tooltip { z-index: 1070; }
+.z-toast { z-index: 1080; }
+.z-max { z-index: 2147483647; }
+
+
+/* ═════════════════════════════════════════════════════════════════════════
+   END OF FILE / КОНЕЦ ФАЙЛА
+   
+   Total Lines: ~1400+ | Общее количество строк: ~1400+
+   
+   Usage Example / Пример использования:
+   
+   <div class="panel-holographic panel-scanlines active hud-corner-bracket">
+     <span class="corner-tl"></span>
+     <span class="corner-tr"></span>
+     <span class="corner-bl"></span>
+     <span class="corner-br"></span>
+     <button class="cyber-btn cyber-btn-fill">Action</button>
+     <div class="progress-energy-wave"><div class="energy-fill">...</div></div>
+   </div>
+   
+   ═════════════════════════════════════════════════════════════════════════ */
