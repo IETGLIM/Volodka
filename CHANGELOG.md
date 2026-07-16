@@ -1,4 +1,30 @@
 # Changelog — ВОЛОДЬКА RPG
+## v4.2.43 — 16 июля 2026
+
+### Narrative routing — critical fixes
+
+- **StoryRenderer.handleChoice**: заменена inline-логика на `executeStoryChoice` из
+  `narrativeChoiceExecutor`. Старый код: (а) вызывал `setCurrentNodeId('start')` после
+  `openNarrativeOverlay` без `return` — двойная мутация при new-game reset; (б) не
+  маршрутизировал Act1-узлы через `presentNarrativeBeat`, поэтому explore-hub и hud-
+  режим никогда не активировались из StoryRenderer. Оба дефекта устранены.
+
+- **DialogueRenderer.handleChoice**: заменена inline-логика на `executeDialogueChoice`.
+  Старый код не закрывал diegetic-нарратив (`closeDiegeticNarrative`), не обрабатывал
+  explore-hub навигацию и не маршрутизировал Act1-диалоги через diegetic HUD.
+
+- **StoryRenderer — guard двойного применения эффектов**: добавлен `appliedNodeIdRef`
+  — применение `applyEffects` пропускается если узел уже был смонтирован с тем же id
+  (StrictMode mount-cleanup-remount, быстрые переходы). До исправления карма/энергия/
+  стресс могли удваиваться при открытии некоторых узлов в dev-режиме.
+
+- **StoryGuidanceHUD**: `line-clamp-1` → `line-clamp-2` для текста цели — русские
+  описания квестов часто не вмещаются в одну строку (обрезались без намёка на продолжение).
+
+- Удалены мёртвые импорты из обоих рендереров (`openNarrativeOverlay`,
+  `enterSceneFreeExplorationHub`, `EXPLORE_HUB_NODE_IDS`, `resolveExploreHubNavigation`,
+  `useSetCurrentNodeId`).
+
 ## v4.2.42 — 17 июня 2026
 
 ### Golden path — terminal spine node
