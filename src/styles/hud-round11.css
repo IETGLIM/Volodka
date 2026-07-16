@@ -1,0 +1,683 @@
+/* ═══════════════════════════════════════════════════════════════
+   Volodka RPG – HUD Round 11: Enhanced Visual Polish v2.0
+   
+   Новые эффекты:
+   – Неоновые пульсации и breathing анимации
+   – Голографические border эффекты  
+   – Улучшенные scanline и glitch эффекты
+   – Киберпанк прогресс бары с glow trail
+   – Атмосферные particle overlay эффекты
+   – Улучшенная типографика с neon glow
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── Neon Pulse Keyframes ─── */
+@keyframes neonPulse {
+  0%, 100% {
+    box-shadow: 
+      0 0 4px var(--cyber-cyan),
+      0 0 8px var(--cyber-cyan),
+      0 0 16px rgba(var(--cyber-cyan-rgb), 0.4),
+      inset 0 0 4px rgba(var(--cyber-cyan-rgb), 0.1);
+  }
+  50% {
+    box-shadow: 
+      0 0 8px var(--cyber-cyan),
+      0 0 16px var(--cyber-cyan),
+      0 0 32px rgba(var(--cyber-cyan-rgb), 0.6),
+      inset 0 0 8px rgba(var(--cyber-cyan-rgb), 0.2);
+  }
+}
+
+@keyframes neonPulseAmber {
+  0%, 100% {
+    box-shadow: 
+      0 0 4px var(--cyber-amber),
+      0 0 12px rgba(var(--cyber-amber-rgb), 0.5);
+  }
+  50% {
+    box-shadow: 
+      0 0 8px var(--cyber-amber),
+      0 0 24px rgba(var(--cyber-amber-rgb), 0.7),
+      0 0 48px rgba(var(--cyber-amber-rgb), 0.3);
+  }
+}
+
+@keyframes neonPulseMatrix {
+  0%, 100% {
+    box-shadow: 
+      0 0 4px var(--cyber-matrix),
+      0 0 12px rgba(var(--cyber-matrix-rgb), 0.4);
+  }
+  50% {
+    box-shadow: 
+      0 0 10px var(--cyber-matrix),
+      0 0 24px rgba(var(--cyber-matrix-rgb), 0.6),
+      0 0 40px rgba(var(--cyber-matrix-rgb), 0.25);
+  }
+}
+
+@keyframes hologramFlicker {
+  0%, 100% { opacity: 1; }
+  92% { opacity: 1; }
+  93% { opacity: 0.8; }
+  94% { opacity: 1; }
+  96% { opacity: 0.9; }
+  97% { opacity: 1; }
+}
+
+/* ─── Border Flow Animation (для активных элементов) ─── */
+@keyframes borderFlowCyan {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+@keyframes borderFlowAmber {
+  0% { background-position: 200% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ─── Glow Trail для прогресс баров ─── */
+@keyframes glowTrailLeft {
+  0% { left: -20%; opacity: 0; }
+  50% { opacity: 1; }
+  100% { left: 120%; opacity: 0; }
+}
+
+/* ─── Data Stream Effect (поток данных) ─── */
+@keyframes dataStream {
+  0% { transform: translateY(-100%); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(100%); opacity: 0; }
+}
+
+/* ─── Cyber Grid Scan Effect ─── */
+@keyframes gridScan {
+  0% { transform: translateX(-100%) rotate(45deg); }
+  100% { transform: translateX(200%) rotate(45deg); }
+}
+
+/* ─── Energy Ring Rotate ─── */
+@keyframes energyRingRotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ─── Text Glitch (subtle) ─── */
+@keyframes textGlitchSubtle {
+  0%, 100% { 
+    text-shadow: 
+      0 0 2px currentColor,
+      0 0 4px rgba(var(--cyber-cyan-rgb), 0.3);
+    transform: translate(0);
+  }
+  95% { 
+    text-shadow: 
+      0 0 2px currentColor,
+      0 0 4px rgba(var(--cyber-cyan-rgb), 0.3);
+    transform: translate(0);
+  }
+  96% { 
+    text-shadow: 
+      2px 0 var(--cyber-rose),
+      -2px 0 var(--cyber-cyan);
+    transform: translate(-1px, 1px);
+  }
+  97% { 
+    text-shadow: 
+      -2px 0 var(--cyber-rose),
+      2px 0 var(--cyber-cyan);
+    transform: translate(1px, -1px);
+  }
+  98% {
+    text-shadow: 
+      0 0 2px currentColor,
+      0 0 4px rgba(var(--cyber-cyan-rgb), 0.3);
+    transform: translate(0);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   UTILITY CLASSES – Enhanced HUD Components
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── Neon Button Styles ─── */
+.neon-btn-cyan {
+  position: relative;
+  border: 1px solid var(--cyber-cyan);
+  background: linear-gradient(
+    135deg,
+    rgba(var(--cyber-cyan-rgb), 0.15) 0%,
+    rgba(var(--cyber-cyan-rgb), 0.05) 100%
+  );
+  color: var(--cyber-cyan);
+  animation: neonPulse 2s ease-in-out infinite;
+  transition: all 0.3s ease;
+}
+
+.neon-btn-cyan:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(var(--cyber-cyan-rgb), 0.25) 0%,
+    rgba(var(--cyber-cyan-rgb), 0.1) 100%
+  );
+  transform: scale(1.02);
+}
+
+.neon-btn-cyan:active {
+  transform: scale(0.98);
+  box-shadow: 
+    0 0 8px var(--cyber-cyan),
+    inset 0 0 12px rgba(var(--cyber-cyan-rgb), 0.3);
+}
+
+.neon-btn-amber {
+  position: relative;
+  border: 1px solid var(--cyber-amber);
+  background: linear-gradient(
+    135deg,
+    rgba(var(--cyber-amber-rgb), 0.15) 0%,
+    rgba(var(--cyber-amber-rgb), 0.05) 100%
+  );
+  color: var(--cyber-amber);
+  animation: neonPulseAmber 2.5s ease-in-out infinite;
+  transition: all 0.3s ease;
+}
+
+.neon-btn-amber:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(var(--cyber-amber-rgb), 0.25) 0%,
+    rgba(var(--cyber-amber-rgb), 0.1) 100%
+  );
+  transform: scale(1.02);
+}
+
+.neon-btn-matrix {
+  position: relative;
+  border: 1px solid var(--cyber-matrix);
+  background: linear-gradient(
+    135deg,
+    rgba(var(--cyber-matrix-rgb), 0.15) 0%,
+    rgba(var(--cyber-matrix-rgb), 0.05) 100%
+  );
+  color: var(--cyber-matrix);
+  animation: neonPulseMatrix 3s ease-in-out infinite;
+  transition: all 0.3s ease;
+}
+
+/* ─── Holographic Panel Effect ─── */
+.holo-panel {
+  position: relative;
+  background: linear-gradient(
+    135deg,
+    rgba(0, 6, 12, 0.95) 0%,
+    rgba(10, 20, 35, 0.92) 50%,
+    rgba(0, 6, 12, 0.95) 100%
+  );
+  border: 1px solid rgba(var(--cyber-cyan-rgb), 0.3);
+  overflow: hidden;
+}
+
+.holo-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--cyber-cyan) 50%,
+    transparent 100%
+  );
+  opacity: 0.6;
+}
+
+.holo-panel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(var(--cyber-cyan-rgb), 0.03) 2px,
+    rgba(var(--cyber-cyan-rgb), 0.03) 4px
+  );
+  animation: hologramFlicker 8s ease-in-out infinite;
+}
+
+/* ─── Animated Border (flowing gradient) ─── */
+.border-flow-cyan {
+  position: relative;
+  background: 
+    linear-gradient(rgba(0, 6, 12, 0.95), rgba(0, 6, 12, 0.95))
+    padding-box;
+  border: none;
+}
+
+.border-flow-cyan::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--cyber-cyan),
+    rgba(var(--cyber-amber-rgb), 0.7),
+    var(--cyber-cyan),
+    transparent
+  );
+  background-size: 200% 100%;
+  animation: borderFlowCyan 3s linear infinite;
+  mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
+}
+
+/* ─── Enhanced Progress Bar with Glow ─── */
+.progress-bar-glow {
+  position: relative;
+  height: 100%;
+  border-radius: inherit;
+  overflow: hidden;
+  background: linear-gradient(
+    90deg,
+    var(--cyber-cyan) 0%,
+    rgba(var(--cyber-cyan-rgb), 0.8) 50%,
+    var(--cyber-cyan) 100%
+  );
+  box-shadow: 
+    0 0 8px rgba(var(--cyber-cyan-rgb), 0.5),
+    inset 0 1px 0 rgba(255,255,255,0.2);
+}
+
+.progress-bar-glow::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  width: 30%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255,255,255,0.4),
+    transparent
+  );
+  animation: glowTrailLeft 2s ease-in-out infinite;
+}
+
+.progress-bar-glow.amber {
+  background: linear-gradient(
+    90deg,
+    var(--cyber-amber) 0%,
+    rgba(var(--cyber-amber-rgb), 0.8) 50%,
+    var(--cyber-amber) 100%
+  );
+  box-shadow: 
+    0 0 8px rgba(var(--cyber-amber-rgb), 0.5),
+    inset 0 1px 0 rgba(255,255,255,0.2);
+}
+
+.progress-bar-glow.matrix {
+  background: linear-gradient(
+    90deg,
+    var(--cyber-matrix) 0%,
+    rgba(var(--cyber-matrix-rgb), 0.8) 50%,
+    var(--cyber-matrix) 100%
+  );
+  box-shadow: 
+    0 0 8px rgba(var(--cyber-matrix-rgb), 0.5),
+    inset 0 1px 0 rgba(255,255,255,0.2);
+}
+
+.progress-bar-glow.danger {
+  background: linear-gradient(
+    90deg,
+    var(--cyber-rose) 0%,
+    rgba(255, 23, 68, 0.8) 50%,
+    var(--cyber-rose) 100%
+  );
+  box-shadow: 
+    0 0 12px rgba(255, 23, 68, 0.6),
+    inset 0 1px 0 rgba(255,255,255,0.2);
+  animation: neonPulseAmber 1s ease-in-out infinite;
+}
+
+/* ─── Stat Display with Icon Glow ─── */
+.stat-display-enhanced {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: linear-gradient(
+    135deg,
+    rgba(0, 10, 20, 0.8) 0%,
+    rgba(0, 14, 28, 0.7) 100%
+  );
+  border: 1px solid rgba(var(--cyber-cyan-rgb), 0.2);
+  border-radius: 0.5rem;
+  position: relative;
+}
+
+.stat-display-enhanced .stat-icon {
+  filter: drop-shadow(0 0 4px currentColor);
+}
+
+.stat-display-enhanced .stat-value {
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  color: var(--cyber-cyan);
+  text-shadow: 0 0 8px rgba(var(--cyber-cyan-rgb), 0.5);
+}
+
+/* ─── Notification Toast Enhanced ─── */
+.toast-enhanced {
+  position: relative;
+  background: linear-gradient(
+    135deg,
+    rgba(2, 6, 23, 0.97) 0%,
+    rgba(15, 23, 42, 0.94) 50%,
+    rgba(2, 6, 23, 0.97) 100%
+  );
+  border: 1px solid rgba(var(--cyber-cyan-rgb), 0.35);
+  border-left: 3px solid var(--cyber-cyan);
+  backdrop-filter: blur(16px);
+  overflow: hidden;
+}
+
+.toast-enhanced::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--cyber-cyan),
+    transparent
+  );
+}
+
+.toast-enhanced.success {
+  border-left-color: var(--cyber-matrix);
+}
+.toast-enhanced.success::before {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--cyber-matrix),
+    transparent
+  );
+}
+
+.toast-enhanced.warning {
+  border-left-color: var(--cyber-amber);
+}
+.toast-enhanced.warning::before {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--cyber-amber),
+    transparent
+  );
+}
+
+.toast-enhanced.error {
+  border-left-color: var(--cyber-rose);
+}
+.toast-enhanced.error::before {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--cyber-rose),
+    transparent
+  );
+}
+
+/* ─── Card/Item Slot Enhanced ─── */
+.item-slot-enhanced {
+  position: relative;
+  background: 
+    linear-gradient(135deg, rgba(0, 10, 20, 0.85), rgba(0, 14, 28, 0.75));
+  border: 1px solid rgba(var(--cyber-cyan-rgb), 0.25);
+  border-radius: 0.5rem;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.item-slot-enhanced:hover {
+  border-color: rgba(var(--cyber-cyan-rgb), 0.5);
+  transform: translateY(-2px);
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.4),
+    0 0 20px rgba(var(--cyber-cyan-rgb), 0.15);
+}
+
+.item-slot-enhanced.selected {
+  border-color: var(--cyber-cyan);
+  box-shadow: 
+    0 0 12px rgba(var(--cyber-cyan-rgb), 0.3),
+    inset 0 0 12px rgba(var(--cyber-cyan-rgb), 0.1);
+}
+
+.item-slot-enhanced.rare {
+  border-color: rgba(138, 43, 226, 0.4);
+}
+.item-slot-enhanced.rare:hover {
+  border-color: rgba(138, 43, 226, 0.7);
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.4),
+    0 0 20px rgba(138, 43, 226, 0.2);
+}
+
+.item-slot-enhanced.legendary {
+  border-color: rgba(var(--cyber-amber-rgb), 0.5);
+  background: 
+    linear-gradient(135deg, rgba(40, 30, 10, 0.85), rgba(30, 22, 8, 0.75));
+}
+.item-slot-enhanced.legendary:hover {
+  border-color: var(--cyber-amber);
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.4),
+    0 0 24px rgba(var(--cyber-amber-rgb), 0.3);
+}
+
+/* ─── Tooltip Enhanced ─── */
+.tooltip-enhanced {
+  position: relative;
+  background: linear-gradient(
+    145deg,
+    rgba(2, 6, 23, 0.98) 0%,
+    rgba(15, 23, 42, 0.96) 50%,
+    rgba(0, 0, 0, 0.98) 100%
+  );
+  border: 1px solid rgba(var(--cyber-cyan-rgb), 0.3);
+  box-shadow: 
+    0 0 20px rgba(var(--cyber-cyan-rgb), 0.12),
+    0 8px 32px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(20px);
+}
+
+.tooltip-enhanced::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(var(--cyber-cyan-rgb), 0.5),
+    transparent
+  );
+}
+
+/* ─── Energy Ring Decorator ─── */
+.energy-ring {
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.energy-ring::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 2px solid transparent;
+  border-top-color: var(--cyber-cyan);
+  animation: energyRingRotate 3s linear infinite;
+}
+
+.energy-ring::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border-radius: inherit;
+  border: 2px solid transparent;
+  border-bottom-color: rgba(var(--cyber-cyan-rgb), 0.5);
+  animation: energyRingRotate 4s linear infinite reverse;
+}
+
+/* ─── Text with Cyber Glow ─── */
+.text-neon-cyan {
+  color: var(--cyber-cyan);
+  text-shadow: 
+    0 0 4px var(--cyber-cyan),
+    0 0 8px rgba(var(--cyber-cyan-rgb), 0.5),
+    0 0 16px rgba(var(--cyber-cyan-rgb), 0.3);
+}
+
+.text-neon-amber {
+  color: var(--cyber-amber);
+  text-shadow: 
+    0 0 4px var(--cyber-amber),
+    0 0 8px rgba(var(--cyber-amber-rgb), 0.5),
+    0 0 16px rgba(var(--cyber-amber-rgb), 0.3);
+}
+
+.text-neon-matrix {
+  color: var(--cyber-matrix);
+  text-shadow: 
+    0 0 4px var(--cyber-matrix),
+    0 0 8px rgba(var(--cyber-matrix-rgb), 0.5),
+    0 0 16px rgba(var(--cyber-matrix-rgb), 0.3);
+}
+
+.text-glitch-subtle {
+  animation: textGlitchSubtle 5s ease-in-out infinite;
+}
+
+/* ─── Section Divider Enhanced ─── */
+.section-divider-cyber {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.section-divider-cyber::before,
+.section-divider-cyber::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(var(--cyber-cyan-rgb), 0.4),
+    transparent
+  );
+}
+
+.section-divider-cyber .divider-icon {
+  color: var(--cyber-cyan);
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
+/* ─── Interactive Element Hover Glow ─── */
+.interactive-glow {
+  transition: all 0.3s ease;
+}
+
+.interactive-glow:hover {
+  box-shadow: 
+    0 0 0 1px rgba(var(--cyber-cyan-rgb), 0.3),
+    0 0 16px rgba(var(--cyber-cyan-rgb), 0.15),
+    inset 0 0 8px rgba(var(--cyber-cyan-rgb), 0.05);
+}
+
+/* ─── Loading Skeleton Enhanced ─── */
+.skeleton-cyber {
+  background: linear-gradient(
+    90deg,
+    rgba(var(--cyber-cyan-rgb), 0.08) 0%,
+    rgba(var(--cyber-cyan-rgb), 0.15) 50%,
+    rgba(var(--cyber-cyan-rgb), 0.08) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ─── Responsive adjustments ─── */
+@media (max-width: 640px) {
+  .neon-btn-cyan,
+  .neon-btn-amber,
+  .neon-btn-matrix {
+    font-size: 0.75rem;
+    padding: 0.4rem 0.6rem;
+  }
+  
+  .holo-panel::after {
+    display: none;
+  }
+  
+  .stat-display-enhanced {
+    padding: 0.35rem 0.5rem;
+  }
+}
+
+/* ─── Reduced motion respect ─── */
+@media (prefers-reduced-motion: reduce) {
+  .neon-btn-cyan,
+  .neon-btn-amber,
+  .neon-btn-matrix,
+  .progress-bar-glow,
+  .progress-bar-glow.danger {
+    animation: none;
+  }
+  
+  .border-flow-cyan::before {
+    animation: none;
+  }
+  
+  .energy-ring::before,
+  .energy-ring::after {
+    animation: none;
+  }
+  
+  .text-glitch-subtle {
+    animation: none;
+  }
+  
+  .progress-bar-glow::after {
+    display: none;
+  }
+}
