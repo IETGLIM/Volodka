@@ -1,0 +1,453 @@
+/* ─── Volodka RPG – HUD Round 8 CSS ───
+   18 keyframes + 25+ utility classes
+   All animations respect prefers-reduced-motion: reduce
+*/
+
+/* ── 1. Sprint drain vignette ── */
+@keyframes sprint-drain-breathe {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+@keyframes sprint-speed-line-top {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+@keyframes sprint-speed-line-bottom {
+  0% { transform: translateY(100%); }
+  100% { transform: translateY(-100vh); }
+}
+
+@keyframes sprint-edge-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+.sprint-drain-vignette {
+  animation: sprint-drain-breathe 0.8s ease-in-out infinite;
+}
+
+.sprint-speed-line-top {
+  background: repeating-linear-gradient(
+    180deg,
+    transparent 0px,
+    transparent 20px,
+    rgba(251, 146, 60, 0.04) 20px,
+    rgba(251, 146, 60, 0.04) 21px
+  );
+  animation: sprint-speed-line-top 0.6s linear infinite;
+}
+
+.sprint-speed-line-bottom {
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    transparent 20px,
+    rgba(251, 146, 60, 0.04) 20px,
+    rgba(251, 146, 60, 0.04) 21px
+  );
+  animation: sprint-speed-line-bottom 0.6s linear infinite;
+}
+
+.sprint-edge-pulse {
+  animation: sprint-edge-pulse 1.2s ease-in-out infinite;
+}
+
+/* ── 2. Quest direction arrow ── */
+@keyframes quest-arrow-ring-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+}
+
+@keyframes quest-arrow-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+.quest-arrow-ring-pulse {
+  animation: quest-arrow-ring-pulse 2s ease-in-out infinite;
+}
+
+.quest-arrow-label {
+  animation: quest-arrow-bob 2.5s ease-in-out infinite;
+}
+
+/* ── 3. Interaction distance ring ── */
+@keyframes distance-ring-breathe {
+  0%, 100% {
+    box-shadow: 0 0 12px rgb(var(--cyber-cyan-rgb) / 0.2), inset 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.05);
+  }
+  50% {
+    box-shadow: 0 0 20px rgb(var(--cyber-cyan-rgb) / 0.35), inset 0 0 10px rgb(var(--cyber-cyan-rgb) / 0.1);
+  }
+}
+
+@keyframes distance-ring-tick-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes distance-ring-fill-pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+.distance-ring-in-range {
+  animation: distance-ring-breathe 1.5s ease-in-out infinite;
+}
+
+.distance-ring-tick {
+  animation: distance-ring-tick-spin 8s linear infinite;
+  transform-origin: center center;
+}
+
+.distance-ring-fill {
+  animation: distance-ring-fill-pulse 2s ease-in-out infinite;
+}
+
+/* ── 4. Chromatic edge ── */
+@keyframes chromatic-red-shift {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(1px); }
+}
+
+@keyframes chromatic-blue-shift {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(-1px); }
+}
+
+.chromatic-edge-red {
+  animation: chromatic-red-shift 3s ease-in-out infinite;
+}
+
+.chromatic-edge-blue {
+  animation: chromatic-blue-shift 3s ease-in-out infinite;
+}
+
+/* ── 5. Floating action indicator ── */
+@keyframes floating-action-glow {
+  0% { filter: brightness(1); }
+  50% { filter: brightness(1.3); }
+  100% { filter: brightness(1); }
+}
+
+.floating-action-item {
+  animation: floating-action-glow 2s ease-in-out infinite;
+}
+
+/* ── 6. Dynamic crosshair ── */
+@keyframes crosshair-line-fade {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+.dynamic-crosshair-line {
+  animation: crosshair-line-fade 3s ease-in-out infinite;
+}
+
+/* ── 7. Enhanced glass panel for HUD ── */
+@keyframes glass-panel-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes glass-panel-border-glow {
+  0%, 100% {
+    border-color: rgb(var(--cyber-cyan-rgb) / 0.15);
+  }
+  50% {
+    border-color: rgb(var(--cyber-cyan-rgb) / 0.3);
+  }
+}
+
+.hud-glass-panel {
+  background: linear-gradient(
+    145deg,
+    rgba(2, 6, 23, 0.92) 0%,
+    rgba(15, 23, 42, 0.88) 50%,
+    rgba(4, 8, 18, 0.92) 100%
+  );
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.15);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  animation: glass-panel-border-glow 4s ease-in-out infinite;
+}
+
+.hud-glass-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.02) 45%,
+    rgba(255, 255, 255, 0.05) 50%,
+    rgba(255, 255, 255, 0.02) 55%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: glass-panel-shimmer 6s linear infinite;
+  pointer-events: none;
+}
+
+/* ── 8. HUD button enhanced hover ── */
+@keyframes hud-btn-glow-expand {
+  0% { box-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.1); }
+  100% { box-shadow: 0 0 16px rgb(var(--cyber-cyan-rgb) / 0.25); }
+}
+
+.hud-btn-enhanced:hover {
+  animation: hud-btn-glow-expand 0.3s ease-out forwards;
+}
+
+/* ── 9. Notification feed enhanced ── */
+@keyframes notification-icon-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+
+@keyframes notification-slide-glow {
+  0% {
+    box-shadow: 0 0 8px rgba(34, 211, 238, 0.1), 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(34, 211, 238, 0.2), 0 2px 12px rgba(0, 0, 0, 0.4);
+  }
+  100% {
+    box-shadow: 0 0 8px rgba(34, 211, 238, 0.1), 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* ── 10. Stats panel breathing ── */
+@keyframes stats-panel-alive {
+  0%, 100% {
+    box-shadow:
+      0 0 20px rgb(var(--cyber-cyan-rgb) / 0.06),
+      0 8px 32px rgba(0, 0, 0, 0.5),
+      inset 0 1px 0 rgb(var(--cyber-cyan-rgb) / 0.08);
+  }
+  50% {
+    box-shadow:
+      0 0 28px rgb(var(--cyber-cyan-rgb) / 0.1),
+      0 8px 40px rgba(0, 0, 0, 0.5),
+      inset 0 1px 0 rgb(var(--cyber-cyan-rgb) / 0.12);
+  }
+}
+
+.stats-panel-breathing {
+  animation: stats-panel-alive 5s ease-in-out infinite;
+}
+
+/* ── 11. MiniMap scanline overlay ── */
+@keyframes minimap-scanline-sweep {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+
+.minimap-scanline-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgb(var(--cyber-cyan-rgb) / 0.03) 50%,
+    transparent 100%
+  );
+  background-size: 100% 30%;
+  animation: minimap-scanline-sweep 3s linear infinite;
+  pointer-events: none;
+}
+
+/* ── 12. Compass POI marker pulse ── */
+@keyframes compass-poi-ping {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.4;
+  }
+  100% {
+    transform: scale(0.8);
+    opacity: 0.8;
+  }
+}
+
+.compass-poi-marker {
+  animation: compass-poi-ping 2s ease-in-out infinite;
+}
+
+/* ── 13. Top bar HUD mount animation ── */
+@keyframes hud-topbar-slide {
+  0% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hud-topbar-mount {
+  animation: hud-topbar-slide 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ── 14. Quest tracker card glow ── */
+@keyframes quest-tracker-border-flow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.quest-tracker-flow-border {
+  background: linear-gradient(
+    90deg,
+    rgb(var(--cyber-cyan-rgb) / 0.1),
+    rgb(var(--cyber-cyan-rgb) / 0.3),
+    rgb(var(--cyber-cyan-rgb) / 0.1)
+  );
+  background-size: 200% 100%;
+  animation: quest-tracker-border-flow 3s linear infinite;
+}
+
+/* ── 15. More menu enhanced ── */
+@keyframes more-menu-glow {
+  0%, 100% {
+    box-shadow:
+      0 0 20px rgb(var(--cyber-cyan-rgb) / 0.08),
+      0 8px 32px rgba(0, 0, 0, 0.5);
+  }
+  50% {
+    box-shadow:
+      0 0 30px rgb(var(--cyber-cyan-rgb) / 0.15),
+      0 12px 40px rgba(0, 0, 0, 0.6);
+  }
+}
+
+.more-menu-enhanced {
+  animation: more-menu-glow 3s ease-in-out infinite;
+}
+
+/* ── 16. Tooltip glass upgrade ── */
+@keyframes tooltip-shine {
+  0% {
+    background-position: -100% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.tooltip-glass-enhanced {
+  position: relative;
+  overflow: hidden;
+}
+
+.tooltip-glass-enhanced::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.03) 45%,
+    rgba(255, 255, 255, 0.06) 50%,
+    rgba(255, 255, 255, 0.03) 55%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: tooltip-shine 4s linear infinite;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* ── 17. Energy critical screen pulse ── */
+@keyframes energy-critical-screen {
+  0%, 100% {
+    box-shadow: inset 0 0 80px rgba(244, 63, 94, 0.04);
+  }
+  50% {
+    box-shadow: inset 0 0 120px rgba(244, 63, 94, 0.08);
+  }
+}
+
+.energy-critical-screen {
+  animation: energy-critical-screen 2s ease-in-out infinite;
+}
+
+/* ── 18. HUD data stream decoration ── */
+@keyframes data-stream-flow {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 0 20px;
+  }
+}
+
+.hud-data-stream-line {
+  background: repeating-linear-gradient(
+    0deg,
+    rgb(var(--cyber-cyan-rgb) / 0.05) 0px,
+    rgb(var(--cyber-cyan-rgb) / 0.05) 1px,
+    transparent 1px,
+    transparent 6px
+  );
+  background-size: 1px 20px;
+  animation: data-stream-flow 2s linear infinite;
+}
+
+/* ══════════════════════════════════════════
+   REDUCED MOTION — disable all animations
+   ══════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  .sprint-drain-vignette,
+  .sprint-speed-line-top,
+  .sprint-speed-line-bottom,
+  .sprint-edge-pulse,
+  .quest-arrow-ring-pulse,
+  .quest-arrow-label,
+  .distance-ring-in-range,
+  .distance-ring-tick,
+  .distance-ring-fill,
+  .chromatic-edge-red,
+  .chromatic-edge-blue,
+  .floating-action-item,
+  .dynamic-crosshair-line,
+  .hud-glass-panel,
+  .hud-glass-shimmer::after,
+  .hud-btn-enhanced:hover,
+  .stats-panel-breathing,
+  .minimap-scanline-overlay::after,
+  .compass-poi-marker,
+  .hud-topbar-mount,
+  .quest-tracker-flow-border,
+  .more-menu-enhanced,
+  .tooltip-glass-enhanced::before,
+  .energy-critical-screen,
+  .hud-data-stream-line {
+    animation: none !important;
+  }
+}

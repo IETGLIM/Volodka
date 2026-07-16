@@ -218,7 +218,7 @@ export function ActiveQuestMiniTracker() {
               toggleExpand();
             }
           }}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-md cursor-pointer quest-tracker-glow"
+          className="flex items-center gap-2 px-3 py-1.5 rounded-md cursor-pointer quest-tracker-glow quest-tracker-flow-border"
           style={{
             background: 'linear-gradient(135deg, rgba(0, 8, 16, 0.82) 0%, rgba(4, 12, 24, 0.78) 100%)',
             border: `1px solid ${typeColor}33`,

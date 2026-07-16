@@ -76,6 +76,12 @@ import { SessionPlayTimer } from '@/components/game/hud/parts/SessionPlayTimer';
 import { InteractionRadarPulse } from '@/components/game/hud/parts/InteractionRadarPulse';
 import { PlayerCoordinatesDisplay } from '@/components/game/hud/parts/PlayerCoordinatesDisplay';
 import { FootstepPedometer } from '@/components/game/hud/parts/FootstepPedometer';
+import { SprintDrainOverlay } from '@/components/game/hud/parts/SprintDrainOverlay';
+import { QuestDirectionArrow } from '@/components/game/hud/parts/QuestDirectionArrow';
+import { InteractionDistanceRing } from '@/components/game/hud/parts/InteractionDistanceRing';
+import { RainScreenEffect } from '@/components/game/hud/parts/RainScreenEffect';
+import { HUDChromaticEdge } from '@/components/game/hud/parts/HUDChromaticEdge';
+import { FloatingActionIndicator } from '@/components/game/hud/parts/FloatingActionIndicator';
 import { useContextualHints } from '@/hooks/useContextualHints';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
@@ -327,9 +333,13 @@ export function ExplorationHUD(props: HUDProps) {
 
       {/* ── Scene Ambient Vignette (time/weather reactive edge tint) ── */}
       <SceneAmbientVignette />
+      <RainScreenEffect />
+      <SprintDrainOverlay />
+      <HUDChromaticEdge />
 
       {/* ── Center: Crosshair + E-key prompt + Cooldown ring + Radar pulse ── */}
       <CrosshairGlow nearInteractive={crosshairNearInteractive} />
+      <InteractionDistanceRing />
       <CrosshairInteractionPrompt />
       <InteractionCooldownRing />
       <InteractionRadarPulse />
@@ -340,7 +350,7 @@ export function ExplorationHUD(props: HUDProps) {
       {/* ── Top bar (fades when HUD is quiet — crosshair stays) ── */}
       <div className="absolute top-0 left-0 right-0 pointer-events-auto" style={quietStyle}>
         <div
-          className="relative flex items-center justify-between px-2 py-1.5 sm:px-4 sm:py-2.5 hud-scanline-bar"
+          className="relative flex items-center justify-between px-2 py-1.5 sm:px-4 sm:py-2.5 hud-scanline-bar hud-topbar-mount"
           style={STYLE_TOP_BAR_BG}
         >
           {/* Animated gradient border line at bottom of top bar */}
@@ -443,7 +453,6 @@ export function ExplorationHUD(props: HUDProps) {
               ) : null}
               <span className="text-sm">📖</span>
               <span className="text-amber-200 font-semibold hidden sm:inline" style={STYLE_POEM_TEXT_SHADOW}>Стихи:</span>
-              <KarmaTierBadge karma={karma} />
               <AnimatedCounter value={mainPoemCount} className="text-amber-300 font-bold" style={STYLE_POEM_COUNTER_SHADOW} />
               <span className="text-amber-500/60 hidden sm:inline">/</span>
               <span className="text-amber-400/70 hidden sm:inline">{totalPoems}</span>
@@ -552,7 +561,7 @@ export function ExplorationHUD(props: HUDProps) {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -8, scale: 0.95 }}
                     transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
-                    className="absolute right-0 top-full mt-1.5 w-52 rounded-lg border backdrop-blur-xl overflow-hidden panel-corner-accent panel-data-stream"
+                    className="absolute right-0 top-full mt-1.5 w-52 rounded-lg border backdrop-blur-xl overflow-hidden panel-corner-accent panel-data-stream more-menu-enhanced"
                     style={{ ...STYLE_MORE_MENU_BG, zIndex: UI_LAYERS.HUD + 5 }}
                   >
                     <div className="px-3 py-2 border-b border-slate-700/30">
@@ -655,7 +664,7 @@ export function ExplorationHUD(props: HUDProps) {
           meaningful only after the first combat or dialogue choice. */}
       <div className={`absolute left-3 sm:left-4 pointer-events-auto ${isOnboarding ? 'hidden' : 'hidden lg:block'}`} style={{ bottom: 96 }}>
         <div
-          className={`relative rounded-2xl p-4 sm:p-5 border backdrop-blur-xl min-w-[260px] overflow-hidden panel-scanlines hex-grid-bg neon-border-breathe ${isLowEnergy || isHighStress ? 'warning-pulse' : ''}`}
+          className={`relative rounded-2xl p-4 sm:p-5 border backdrop-blur-xl min-w-[260px] overflow-hidden panel-scanlines hex-grid-bg neon-border-breathe stats-panel-breathing hud-glass-shimmer ${isLowEnergy || isHighStress ? 'warning-pulse energy-critical-screen' : ''}`}
           style={{
             ...STYLE_DESKTOP_STATUS_BG,
             ...(isLowEnergy || isHighStress ? STYLE_DESKTOP_STATUS_BORDER_ROSE : STYLE_DESKTOP_STATUS_BORDER_CYAN),
@@ -982,6 +991,12 @@ export function ExplorationHUD(props: HUDProps) {
 
       {/* ── Contextual hint (floating bottom center) ── */}
       <ContextualHint hint={currentHint} onDismiss={dismissHint} />
+
+      {/* ── Quest direction arrow (edge-of-screen) ── */}
+      <QuestDirectionArrow />
+
+      {/* ── Floating action indicator (bottom center) ── */}
+      <FloatingActionIndicator />
 
       {/* ── Compass + Exploration progress (top-right, below top bar) ── */}
       <div className="absolute top-16 sm:top-20 right-3 sm:right-4 flex flex-col items-center gap-3 pointer-events-none" style={{ zIndex: UI_LAYERS.HUD + 1 }}>

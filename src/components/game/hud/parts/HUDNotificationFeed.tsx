@@ -115,7 +115,7 @@ export function HUDNotificationFeed() {
             className="overflow-hidden mb-1.5 notification-feed-slide"
           >
             <div
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border backdrop-blur-md"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border backdrop-blur-md tooltip-glass-enhanced"
               style={{
                 background: 'linear-gradient(135deg, rgba(2, 6, 23, 0.9) 0%, rgba(15, 23, 42, 0.85) 100%)',
                 borderColor: `${item.color}40`,

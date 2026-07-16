@@ -396,7 +396,7 @@ export function MiniMap() {
   return (
     <div
       ref={containerRef}
-      className="fixed pointer-events-none hidden lg:block relative minimap-ambient-pulse"
+      className="fixed pointer-events-none hidden lg:block relative minimap-ambient-pulse minimap-scanline-overlay"
       data-exploration-ui
       style={{
         top: explorationMinimapTopPx(),
