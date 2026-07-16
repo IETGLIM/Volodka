@@ -236,6 +236,8 @@ export function ExplorationHUD(props: HUDProps) {
     energyPulse,
     stressPulse,
     justLeveled,
+    xpPulse,
+    lastXpDelta,
     skillAchievement,
     isLowEnergy,
     isHighStress,
@@ -685,6 +687,22 @@ export function ExplorationHUD(props: HUDProps) {
                     <TrendingUp className="size-3 text-cyan-400" />
                   </div>
                   <span className="text-sm font-semibold text-cyan-300">Опыт</span>
+                  <AnimatePresence>
+                    {lastXpDelta > 0 && (
+                      <motion.span
+                        key={lastXpDelta}
+                        initial={{ opacity: 0.9, y: 0 }}
+                        animate={{ opacity: 0, y: -20 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 1.2, ease: 'easeOut' }}
+                        className="absolute -top-4 right-0 text-[11px] font-bold font-mono text-cyan-300 pointer-events-none whitespace-nowrap"
+                        style={{ textShadow: '0 0 6px rgba(0,229,255,0.4)' }}
+                        aria-hidden="true"
+                      >
+                        +{lastXpDelta} XP
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
                   <span className="text-[11px] text-cyan-400/70 font-mono ml-auto tabular-nums" style={STYLE_XP_TEXT_GLOW}>
                     {xp}<span className="text-cyan-500/40">/</span>{xpToNext}
                   </span>
@@ -695,6 +713,7 @@ export function ExplorationHUD(props: HUDProps) {
                   color="linear-gradient(90deg, #0891b2, var(--cyber-cyan))"
                   glowColor="rgb(var(--cyber-cyan-rgb) / 0.4)"
                   showSegments={false}
+                  shimmer={xpPulse}
                 />
               </div>
             </TooltipTrigger>

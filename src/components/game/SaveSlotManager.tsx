@@ -126,14 +126,16 @@ function SaveSlotCard({
   return (
     <motion.div
       className="relative group"
+      initial={{ opacity: 0, x: 30 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94], delay: (slotNumber - 1) * 0.08 }}
       whileHover={{ scale: 1.015 }}
-      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
     >
       <div
         className={`rounded-lg p-4 transition-all duration-300 ${
           isEmpty
             ? 'border-2 border-dashed border-slate-700/40 bg-slate-950/60'
-            : 'border border-solid bg-slate-950/90 backdrop-blur-md cyber-list-item cyber-save-slot'
+            : 'border border-solid bg-slate-950/90 backdrop-blur-md cyber-list-item cyber-save-slot cyber-hover-glow'
         }`}
         style={
           !isEmpty
@@ -158,7 +160,7 @@ function SaveSlotCard({
             >
               Слот {slotNumber}
             </span>
-            {isAutoSave && (
+            {!isEmpty && isAutoSave && (
               <span
                 className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-mono uppercase tracking-wider"
                 style={{
@@ -167,14 +169,29 @@ function SaveSlotCard({
                   border: '1px solid rgba(251, 191, 36, 0.2)',
                 }}
               >
-                <span
-                  className="w-1.5 h-1.5 rounded-full"
-                  style={{
-                    background: 'rgba(251, 191, 36, 0.9)',
-                    boxShadow: '0 0 4px rgba(251, 191, 36, 0.6)',
-                  }}
-                />
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="23 4 23 10 17 10" />
+                  <polyline points="1 20 1 14 7 14" />
+                  <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                </svg>
                 Авто
+              </span>
+            )}
+            {!isEmpty && !isAutoSave && (
+              <span
+                className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-mono uppercase tracking-wider"
+                style={{
+                  background: 'rgba(34, 211, 238, 0.1)',
+                  color: 'rgba(34, 211, 238, 0.7)',
+                  border: '1px solid rgba(34, 211, 238, 0.2)',
+                }}
+              >
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                  <polyline points="17 21 17 13 7 13 7 21" />
+                  <polyline points="7 3 7 8 15 8" />
+                </svg>
+                Ручн
               </span>
             )}
           </div>

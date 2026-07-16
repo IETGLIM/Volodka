@@ -6,6 +6,7 @@ import {
   getLootVisualConfig,
   getRarityBadgeClass,
   getRarityBadgeLabel,
+  getRarityLeftBorderAccent,
   resolveLootToastSurfaceClass,
 } from '@/engine/loot/lootNotificationPresentation';
 import type { LootNotificationItem } from '@/engine/loot/lootNotificationTypes';
@@ -45,13 +46,14 @@ export const LootToastCard = memo(function LootToastCard({
     <motion.div
       role="alert"
       aria-label={buildLootAnnouncement(notification)}
-      initial={reducedMotion ? false : { opacity: 0, x: -40, scale: 0.9 }}
+      initial={reducedMotion ? false : { opacity: 0, x: 20, scale: 0.9 }}
       animate={{ opacity: 1, x: 0, scale: 1 }}
-      exit={reducedMotion ? undefined : { opacity: 0, x: -40, scale: 0.9 }}
-      transition={{ duration: reducedMotion ? 0 : 0.25 }}
+      exit={reducedMotion ? undefined : { opacity: 0, x: 20, scale: 0.95 }}
+      transition={{ duration: reducedMotion ? 0 : 0.2 }}
       className={cn(
-        'px-4 py-2.5 rounded-lg border-2 backdrop-blur-sm shadow-lg',
+        'px-4 py-2.5 rounded-lg border-2 border-l-4 backdrop-blur-sm shadow-lg',
         visual.rarityGlow,
+        notification.rarity ? getRarityLeftBorderAccent(notification.rarity) : '',
         resolveLootToastSurfaceClass(notification),
       )}
     >

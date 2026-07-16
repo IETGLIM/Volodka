@@ -344,3 +344,101 @@
     rgba(147, 130, 220, 0.3)
   ) 1;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   Glassmorphism Polish — Animated borders & inner glow
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Animated conic-gradient border rotation for open panels ── */
+@property --conic-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes conic-border-rotate {
+  from { --conic-angle: 0deg; }
+  to { --conic-angle: 360deg; }
+}
+
+.glass-panel-dark-open {
+  position: relative;
+}
+
+.glass-panel-dark-open::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(
+    from var(--conic-angle),
+    rgba(0, 229, 255, 0.25),
+    rgba(0, 229, 255, 0.05) 25%,
+    rgba(147, 130, 220, 0.15) 50%,
+    rgba(0, 229, 255, 0.05) 75%,
+    rgba(0, 229, 255, 0.25)
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: conic-border-rotate 6s linear infinite;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.5;
+}
+
+/* ── Inner glow at top edge — faint cyan light leak ── */
+.glass-panel-inner-glow-top::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(0, 229, 255, 0.18) 30%,
+    rgba(0, 229, 255, 0.3) 50%,
+    rgba(0, 229, 255, 0.18) 70%,
+    transparent
+  );
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.12), 0 0 4px rgba(0, 229, 255, 0.08);
+  pointer-events: none;
+  z-index: 2;
+  border-radius: inherit;
+}
+
+/* ── Static top border with cyan glow ── */
+.glass-panel-glow-top {
+  border-top: 1px solid rgba(0, 229, 255, 0.15);
+  box-shadow: 0 -1px 8px rgba(0, 229, 255, 0.06), inset 0 1px 0 rgba(0, 229, 255, 0.05);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   XP Gain Bar Animation
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Floating "+X XP" text that fades up and out ── */
+@keyframes xp-float-up {
+  0% {
+    opacity: 0.9;
+    transform: translateY(0);
+  }
+  80% {
+    opacity: 0.3;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-24px);
+  }
+}
+
+.xp-float-text {
+  animation: xp-float-up 1.2s ease-out forwards;
+  pointer-events: none;
+  white-space: nowrap;
+}

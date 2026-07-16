@@ -35,6 +35,13 @@ const RARITY_BORDER: Record<LootRarity, string> = {
   legendary: 'border-amber-500/50 shadow-amber-500/30',
 };
 
+const RARITY_LEFT_BORDER_ACCENT: Record<LootRarity, string> = {
+  common: 'border-l-slate-500',
+  uncommon: 'border-l-emerald-500',
+  rare: 'border-l-cyan-400',
+  legendary: 'border-l-amber-400',
+};
+
 const RARITY_GLOW: Record<LootRarity, string> = {
   common: '',
   uncommon: 'shadow-[0_0_12px_rgba(52,211,153,0.15)]',
@@ -75,14 +82,20 @@ const TYPE_VISUAL: Record<LootNotificationType, LootVisualConfig> = {
   },
 };
 
+export function getRarityLeftBorderAccent(rarity: LootRarity): string {
+  return RARITY_LEFT_BORDER_ACCENT[rarity] ?? '';
+}
+
 export function getLootVisualConfig(notification: LootNotificationPayload): LootVisualConfig & {
   rarityBorder: string;
   rarityGlow: string;
+  rarityLeftBorder: string;
 } {
   const base = TYPE_VISUAL[notification.type];
   const rarityBorder = notification.rarity ? RARITY_BORDER[notification.rarity] : '';
   const rarityGlow = notification.rarity ? RARITY_GLOW[notification.rarity] : '';
-  return { ...base, rarityBorder, rarityGlow };
+  const rarityLeftBorder = notification.rarity ? RARITY_LEFT_BORDER_ACCENT[notification.rarity] : '';
+  return { ...base, rarityBorder, rarityGlow, rarityLeftBorder };
 }
 
 export function getRarityBadgeLabel(rarity: LootRarity): string | null {

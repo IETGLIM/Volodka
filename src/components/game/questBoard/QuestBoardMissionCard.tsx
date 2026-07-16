@@ -6,6 +6,7 @@ import { QuestBoardMissionProgressBar } from '@/components/game/questBoard/Quest
 import { resolveQuestBoardMissionIcon } from '@/components/game/questBoard/questBoardMissionIcons';
 import { useAcceptedDailyMission } from '@/components/game/questBoard/useQuestBoardSelectors';
 import { useMissionResetTimer } from '@/components/game/questBoard/useMissionResetTimer';
+import { useMissionResetProgress } from '@/components/game/questBoard/useMissionResetProgress';
 import {
   QUEST_BOARD_DIFFICULTY_DIAMOND_COUNT,
   QUEST_BOARD_LABELS,
@@ -67,6 +68,7 @@ export const QuestBoardMissionCard = memo(
 }: QuestBoardMissionCardProps) {
   const acceptedMission = useAcceptedDailyMission(mission.id);
   const resetTimeLeft = useMissionResetTimer(mission.resetSchedule);
+  const resetFraction = useMissionResetProgress(mission.resetSchedule);
   const cardMotion = getCardEnterMotion(reducedMotion);
 
   const meta = DAILY_MISSION_CATEGORY_META[mission.category];
@@ -202,6 +204,35 @@ export const QuestBoardMissionCard = memo(
               <Clock className="size-3 text-amber-400/70" />
               <span className="text-[10px] font-mono text-amber-400/70">{resetTimeLeft}</span>
             </div>
+
+            {/* ── Countdown timer bar ── */}
+            {!isClaimed && (
+              <div
+                className="w-12 h-1 rounded-full overflow-hidden shrink-0"
+                style={{ background: 'rgba(30, 41, 59, 0.6)' }}
+                aria-hidden="true"
+              >
+                <div
+                  className="h-full rounded-full"
+                  style={{
+                    width: `${resetFraction * 100}%`,
+                    background:
+                      resetFraction > 0.5
+                        ? 'rgba(52, 211, 153, 0.8)'
+                        : resetFraction > 0.25
+                          ? 'rgba(251, 191, 36, 0.8)'
+                          : 'rgba(244, 63, 94, 0.8)',
+                    transition: 'width 1s linear, background 1s ease',
+                    boxShadow:
+                      resetFraction > 0.5
+                        ? '0 0 4px rgba(52, 211, 153, 0.3)'
+                        : resetFraction > 0.25
+                          ? '0 0 4px rgba(251, 191, 36, 0.3)'
+                          : '0 0 4px rgba(244, 63, 94, 0.3)',
+                  }}
+                />
+              </div>
+            )}
 
             {isClaimed ? (
               <span className="text-[9px] font-mono text-slate-600 px-2 py-1 rounded border border-slate-800/30 bg-slate-900/30">

@@ -589,6 +589,13 @@ function CanvasFrameloopController({ idle }: { idle: boolean }) {
         invalidate();
         requestAnimationFrame(() => invalidate());
       }),
+      // CRITICAL: sceneLoadedGate retries call invalidateCanvasFirstFrame()
+      // which emits this event. Without a listener, those retries are silently
+      // lost and the watchdog always times out on slow devices.
+      eventBus.on('canvas:invalidate-first-frame', () => {
+        invalidate();
+        requestAnimationFrame(() => invalidate());
+      }),
     ];
     return () => unsubs.forEach((u) => u());
   }, [invalidate]);

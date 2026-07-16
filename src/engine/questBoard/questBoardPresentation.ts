@@ -75,6 +75,25 @@ export function formatResetTimeLeft(
   return QUEST_BOARD_LABELS.resetHoursMinutes(hours, minutes);
 }
 
+/**
+ * Returns a fraction (0–1) representing how much of the reset window is remaining.
+ * Used to drive a visual countdown bar on daily/weekly mission cards.
+ */
+export function getResetProgressFraction(
+  resetSchedule: DailyMissionResetSchedule,
+  now = new Date(),
+): number {
+  const target = getResetTargetDate(resetSchedule, now);
+  const remaining = target.getTime() - now.getTime();
+  if (remaining <= 0) return 0;
+
+  const totalMs = resetSchedule === 'daily'
+    ? 24 * 3_600_000
+    : 7 * 24 * 3_600_000;
+
+  return Math.min(1, Math.max(0, remaining / totalMs));
+}
+
 export function computeObjectiveProgressPercent(current: number, target: number): number {
   if (target <= 0) return 0;
   return Math.min(100, Math.max(0, (current / target) * 100));

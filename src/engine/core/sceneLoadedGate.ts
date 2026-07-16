@@ -20,6 +20,7 @@ let pending: SceneLoadedPayload | null = null;
 let pendingGeneration = 0;
 let bridgeUnsubs: Array<() => void> | null = null;
 let watchdogTimer: ReturnType<typeof setTimeout> | null = null;
+let heartbeatTimer: ReturnType<typeof setInterval> | null = null;
 
 function clearWatchdog(): void {
   if (watchdogTimer) {
@@ -28,9 +29,17 @@ function clearWatchdog(): void {
   }
 }
 
+function clearHeartbeat(): void {
+  if (heartbeatTimer) {
+    clearInterval(heartbeatTimer);
+    heartbeatTimer = null;
+  }
+}
+
 function cancelPendingLoaded(): void {
   pending = null;
   clearWatchdog();
+  clearHeartbeat();
 }
 
 function abortPendingLoaded(reason: string, errorCode: string): void {
@@ -38,6 +47,7 @@ function abortPendingLoaded(reason: string, errorCode: string): void {
   const payload = pending;
   pending = null;
   clearWatchdog();
+  clearHeartbeat();
   devWarn('[sceneLoadedGate] Scene load watchdog:', reason, payload);
   eventBus.emit('scene:transition_failed', {
     reason,
@@ -47,31 +57,33 @@ function abortPendingLoaded(reason: string, errorCode: string): void {
   });
 }
 
-let watchdogRetries = 0;
-const MAX_WATCHDOG_RETRIES = 2;
+/**
+ * Periodic heartbeat: re-invalidates the canvas every 1.5 seconds while a
+ * scene load is pending. This ensures the R3F render loop gets kicked even if
+ * the initial invalidate() calls fire before the new scene React tree commits.
+ * Combined with the canvas:invalidate-first-frame listener in
+ * CanvasFrameloopController, this creates a reliable "keep trying" mechanism.
+ */
+function startHeartbeat(): void {
+  clearHeartbeat();
+  heartbeatTimer = setInterval(() => {
+    if (!pending) {
+      clearHeartbeat();
+      return;
+    }
+    try {
+      invalidateCanvasFirstFrame();
+    } catch {
+      /* canvas module may be mid-reload */
+    }
+  }, 1500);
+}
 
 function armWatchdog(generation: number): void {
   clearWatchdog();
   watchdogTimer = setTimeout(() => {
     watchdogTimer = null;
     if (generation !== pendingGeneration || !pending) return;
-
-    // Retry canvas invalidation before giving up — on slow devices the
-    // first invalidate() can fire before the new scene React tree commits.
-    if (watchdogRetries < MAX_WATCHDOG_RETRIES) {
-      watchdogRetries += 1;
-      devWarn(
-        `[sceneLoadedGate] Watchdog retry ${watchdogRetries}/${MAX_WATCHDOG_RETRIES} — re-invalidating canvas`,
-      );
-      try {
-        invalidateCanvasFirstFrame();
-      } catch {
-        /* canvas module may be mid-reload */
-      }
-      armWatchdog(generation); // re-arm with same generation
-      return;
-    }
-
     abortPendingLoaded(
       'canvas:first-frame watchdog timeout',
       'first_frame_timeout',
@@ -84,6 +96,7 @@ function flushPendingLoaded(generation: number): void {
   const payload = pending;
   pending = null;
   clearWatchdog();
+  clearHeartbeat();
   eventBus.emit('scene:loaded', payload);
 }
 
@@ -91,7 +104,6 @@ function flushPendingLoaded(generation: number): void {
 export function scheduleSceneLoaded(payload: SceneLoadedPayload): void {
   pending = payload;
   pendingGeneration += 1;
-  watchdogRetries = 0;
   const generation = pendingGeneration;
 
   if (!hasRegisteredCanvas()) {
@@ -101,6 +113,7 @@ export function scheduleSceneLoaded(payload: SceneLoadedPayload): void {
   }
 
   invalidateCanvasFirstFrame();
+  startHeartbeat();
   armWatchdog(generation);
 }
 

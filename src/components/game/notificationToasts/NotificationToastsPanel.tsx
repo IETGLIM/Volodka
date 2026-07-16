@@ -24,7 +24,7 @@ function NotificationToastsPanelInner() {
       aria-live="polite"
       aria-hidden={hidden}
       data-exploration-ui
-      className="notification-toast-container fixed right-3 flex flex-col items-end gap-2 sm:right-4"
+      className="notification-toast-container fixed right-3 flex flex-col items-end gap-2 sm:right-4 backdrop-blur-[4px] rounded-lg p-0.5"
       style={{
         top: explorationStatToastTopPx(),
         zIndex: UI_LAYERS.TOASTS,

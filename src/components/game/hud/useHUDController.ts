@@ -166,6 +166,8 @@ export function useHUDController(props: HUDProps) {
   const prevLevel = useRef(level);
   const prevXp = useRef(xp);
   const [justLeveled, setJustLeveled] = useState(false);
+  const [xpPulse, setXpPulse] = useState(false);
+  const [lastXpDelta, setLastXpDelta] = useState(0);
   const [skillAchievement, setSkillAchievement] = useState<SkillAchievementNotice | null>(null);
 
   useEffect(() => {
@@ -207,9 +209,15 @@ export function useHUDController(props: HUDProps) {
     if (xp !== prevXp.current) {
       const delta = xp - prevXp.current;
       prevXp.current = xp;
-      if (delta > 0) floatXP(delta);
+      if (delta > 0) {
+        floatXP(delta);
+        setLastXpDelta(delta);
+        scheduleTimeout(() => setXpPulse(true), 0);
+        scheduleTimeout(() => setXpPulse(false), 700);
+        scheduleTimeout(() => setLastXpDelta(0), 1300);
+      }
     }
-  }, [xp]);
+  }, [xp, scheduleTimeout]);
 
   useEffect(() => {
     if (level > prevLevel.current) {
@@ -311,6 +319,8 @@ export function useHUDController(props: HUDProps) {
     energyPulse,
     stressPulse,
     justLeveled,
+    xpPulse,
+    lastXpDelta,
     skillAchievement,
     isLowEnergy: energy < 25,
     isHighStress: stress > 70,

@@ -1633,3 +1633,20 @@
 .cyber-morph-blob {
   animation: cyber-morph 8s ease-in-out infinite;
 }
+
+/* ─── Exploration progress ring breathing animation ─── */
+@keyframes exploration-ring-breathe {
+  0%, 100% {
+    filter: drop-shadow(0 0 3px rgba(0, 255, 100, 0.2));
+    transform: scale(1);
+  }
+  50% {
+    filter: drop-shadow(0 0 6px rgba(0, 255, 100, 0.4));
+    transform: scale(1.04);
+  }
+}
+
+.exploration-ring-breathe {
+  animation: exploration-ring-breathe 3.5s ease-in-out infinite;
+  transform-origin: center center;
+}

@@ -24,64 +24,49 @@ interface ShortcutGroup {
 
 const KEYBOARD_GROUPS: ShortcutGroup[] = [
   {
-    title: 'Движение',
+    title: 'НАВИГАЦИЯ',
     shortcuts: [
       { keys: ['W', 'A', 'S', 'D'], desc: 'Движение' },
       { keys: ['Shift'], desc: 'Бег' },
       { keys: ['Space'], desc: 'Прыжок' },
+      { keys: ['E'], desc: 'Взаимодействие' },
+      { keys: ['F'], desc: 'Быстрый переход' },
     ],
   },
   {
-    title: 'Взаимодействие',
-    shortcuts: [
-      { keys: ['E'], desc: 'Взаимодействие с NPC / объектами' },
-      { keys: ['Esc'], desc: 'Меню паузы / закрыть' },
-    ],
-  },
-  {
-    title: 'Панели',
+    title: 'ИНТЕРФЕЙС',
     shortcuts: [
       { keys: ['I'], desc: 'Инвентарь' },
       { keys: ['J'], desc: 'Журнал' },
       { keys: ['Q'], desc: 'Задания' },
       { keys: ['Shift', 'P'], desc: 'Книга стихов' },
       { keys: ['M'], desc: 'Карта мира' },
-      { keys: ['F'], desc: 'Быстрый переход' },
-      { keys: ['C'], desc: 'Профиль персонажа' },
-      { keys: ['N'], desc: 'Отношения с NPC' },
-      { keys: ['K'], desc: 'Кодекс' },
-      { keys: ['L'], desc: 'История диалогов' },
-      { keys: ['H'], desc: 'Достижения' },
-      { keys: ['T'], desc: 'Дерево навыков' },
-      { keys: ['V'], desc: 'Черты (перки)' },
-      { keys: ['B'], desc: 'Доска заданий' },
-      { keys: ['Shift', 'T'], desc: 'Торговля' },
-      { keys: ['G'], desc: 'Крафт' },
-      { keys: ['R'], desc: 'Отдых (в комнате)' },
+      { keys: ['Esc'], desc: 'Меню паузы / закрыть' },
       { keys: ['Tab'], desc: 'Инвентарь' },
     ],
   },
   {
-    title: 'Бой',
-    shortcuts: [
-      { keys: ['1'], desc: 'Атака' },
-      { keys: ['2'], desc: 'Защита' },
-      { keys: ['3'], desc: 'Побег' },
-      { keys: ['4'], desc: 'Стихотворение' },
-    ],
-  },
-  {
-    title: 'Камера',
-    shortcuts: [
-      { keys: ['Мышь ↕'], desc: 'Вращение камеры' },
-      { keys: ['Scroll'], desc: 'Приближение / отдаление' },
-      { keys: ['Shift', 'R'], desc: 'Сброс камеры' },
-    ],
-  },
-  {
-    title: 'Прочее',
+    title: 'СПЕЦИАЛЬНЫЕ',
     shortcuts: [
       { keys: ['F1', '?'], desc: 'Эта справка' },
+      { keys: ['F5'], desc: 'Быстрое сохранение' },
+      { keys: ['R'], desc: 'Отдых (в комнате)' },
+      { keys: ['H'], desc: 'Достижения' },
+      { keys: ['T'], desc: 'Дерево навыков' },
+      { keys: ['G'], desc: 'Крафт' },
+      { keys: ['V'], desc: 'Черты (перки)' },
+      { keys: ['B'], desc: 'Доска заданий' },
+      { keys: ['Y'], desc: 'Отношения с NPC' },
+      { keys: ['C'], desc: 'Профиль персонажа' },
+      { keys: ['N'], desc: 'Отношения (NPC)' },
+      { keys: ['K'], desc: 'Кодекс' },
+      { keys: ['L'], desc: 'История диалогов' },
+      { keys: ['Shift', 'T'], desc: 'Торговля' },
+      { keys: ['1'], desc: 'Атака (бой)' },
+      { keys: ['2'], desc: 'Защита (бой)' },
+      { keys: ['3'], desc: 'Побег (бой)' },
+      { keys: ['4'], desc: 'Стихотворение (бой)' },
+      { keys: ['Shift', 'R'], desc: 'Сброс камеры' },
       { keys: ['F3'], desc: 'Панель разработчика' },
     ],
   },
@@ -282,42 +267,53 @@ export function ShortcutsOverlay({ open, onClose }: ShortcutsOverlayProps) {
 
               {/* Body */}
               <div className="relative z-20 px-5 py-4 max-h-[70vh] overflow-y-auto game-scrollbar">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  {allGroups.map((group) => (
-                    <div key={group.title}>
-                      <h3 className="text-xs font-semibold text-cyan-400/60 uppercase tracking-[0.15em] mb-2.5 flex items-center gap-2">
-                        {group.title.startsWith('Геймпад') && (
-                          <Gamepad2 className="size-3 text-emerald-400/60" />
-                        )}
-                        {group.title}
-                      </h3>
-                      <div className="flex flex-col gap-1.5">
-                        {group.shortcuts.map((shortcut) => (
-                          <div key={shortcut.keys.join('+')} className="flex items-center justify-between gap-3">
-                            <span className="text-sm text-slate-300/80">{shortcut.desc}</span>
-                            <div className="flex items-center gap-1 shrink-0">
-                              {shortcut.keys.map((key, i) => (
-                                <span key={i}>
-                                  {i > 0 && <span className="text-slate-600 text-xs">+</span>}
-                                  <kbd
-                                    className="inline-flex items-center justify-center min-w-[28px] h-7 px-2 rounded border text-xs font-mono transition-all duration-200 hover:border-cyan-400/50 hover:text-cyan-300 hover:shadow-[0_0_8px_rgba(0,229,255,0.3),0_0_16px_rgba(0,229,255,0.1)]"
-                                    style={{
-                                      background: 'rgba(15, 23, 42, 0.6)',
-                                      borderColor: 'rgba(100, 116, 139, 0.25)',
-                                      color: 'rgba(203, 213, 225, 0.8)',
-                                      boxShadow: '0 1px 2px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.03)',
-                                    }}
-                                  >
-                                    {key}
-                                  </kbd>
-                                </span>
-                              ))}
+                <div className="flex flex-col">
+                  {allGroups.map((group, groupIdx) => {
+                    const isGamepad = group.title.startsWith('Геймпад');
+                    const isLast = groupIdx === allGroups.length - 1;
+                    return (
+                      <div
+                        key={group.title}
+                        className={!isLast ? 'pb-4 mb-4 border-b border-cyan-500/10' : ''}
+                      >
+                        <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] mb-3 flex items-center gap-2"
+                          style={{ color: isGamepad ? 'rgba(52, 211, 153, 0.6)' : 'rgba(34, 211, 238, 0.55)' }}
+                        >
+                          {isGamepad && (
+                            <Gamepad2 className="size-3" style={{ color: 'rgba(52, 211, 153, 0.5)' }} />
+                          )}
+                          {group.title}
+                        </h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5">
+                          {group.shortcuts.map((shortcut) => (
+                            <div key={shortcut.keys.join('+')} className="flex items-center justify-between gap-3">
+                              <span className="text-sm text-slate-300/80">{shortcut.desc}</span>
+                              <div className="flex items-center gap-1 shrink-0">
+                                {shortcut.keys.map((key, i) => (
+                                  <span key={i}>
+                                    {i > 0 && <span className="text-slate-600 text-xs mx-0.5">+</span>}
+                                    <kbd
+                                      className="inline-flex items-center justify-center min-w-[28px] h-7 px-2 rounded text-xs font-mono transition-all duration-200 hover:border-cyan-400/50 hover:text-cyan-300 hover:shadow-[0_0_8px_rgba(0,229,255,0.3),0_0_16px_rgba(0,229,255,0.1)]"
+                                      style={{
+                                        background: 'linear-gradient(180deg, rgba(30,41,59,0.95) 0%, rgba(15,23,42,0.95) 100%)',
+                                        borderColor: 'rgba(71, 85, 105, 0.35)',
+                                        borderBottomColor: 'rgba(51, 65, 85, 0.5)',
+                                        borderRightColor: 'rgba(51, 65, 85, 0.5)',
+                                        color: 'rgba(226, 232, 240, 0.85)',
+                                        boxShadow: '0 2px 3px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05), inset 0 -1px 0 rgba(0, 0, 0, 0.2)',
+                                      }}
+                                    >
+                                      {key}
+                                    </kbd>
+                                  </span>
+                                ))}
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
