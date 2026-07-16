@@ -274,12 +274,10 @@ export function ActiveQuestMiniTracker() {
               animate={{ height: 'auto', opacity: 1 }}
               exit={reducedMotion ? undefined : { height: 0, opacity: 0 }}
               transition={{ duration: motionDuration }}
-              className="overflow-hidden rounded-b-md"
+              className="overflow-hidden rounded-b-md cyber-border-animated panel-glass-dark-9"
               style={{
-                background: 'rgba(0, 8, 16, 0.88)',
                 border: '1px solid rgba(0,255,238,0.15)',
                 borderTop: 'none',
-                backdropFilter: 'blur(10px)',
               }}
             >
               <div className="px-3 py-2.5 space-y-2">

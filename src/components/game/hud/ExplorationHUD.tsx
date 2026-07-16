@@ -82,6 +82,11 @@ import { InteractionDistanceRing } from '@/components/game/hud/parts/Interaction
 import { RainScreenEffect } from '@/components/game/hud/parts/RainScreenEffect';
 import { HUDChromaticEdge } from '@/components/game/hud/parts/HUDChromaticEdge';
 import { FloatingActionIndicator } from '@/components/game/hud/parts/FloatingActionIndicator';
+import { NPCProximityIndicator } from '@/components/game/hud/parts/NPCProximityIndicator';
+import { CompassPOIMarkers } from '@/components/game/hud/parts/CompassPOIMarkers';
+import { EnvironmentMoodIndicator } from '@/components/game/hud/parts/EnvironmentMoodIndicator';
+import { TopBarDataTicker } from '@/components/game/hud/parts/TopBarDataTicker';
+import { InteractionProximityGlow } from '@/components/game/hud/parts/InteractionProximityGlow';
 import { useContextualHints } from '@/hooks/useContextualHints';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
@@ -337,8 +342,9 @@ export function ExplorationHUD(props: HUDProps) {
       <SprintDrainOverlay />
       <HUDChromaticEdge />
 
-      {/* ── Center: Crosshair + E-key prompt + Cooldown ring + Radar pulse ── */}
+      {/* ── Center: Crosshair + E-key prompt + Cooldown ring + Radar pulse + Proximity glow ── */}
       <CrosshairGlow nearInteractive={crosshairNearInteractive} />
+      <InteractionProximityGlow />
       <InteractionDistanceRing />
       <CrosshairInteractionPrompt />
       <InteractionCooldownRing />
@@ -388,6 +394,18 @@ export function ExplorationHUD(props: HUDProps) {
                 <SceneContextChip />
               </div>
             )}
+
+            {/* Environment mood indicator (hidden during onboarding) */}
+            {!isOnboarding && (
+              <div className="hidden lg:block">
+                <EnvironmentMoodIndicator />
+              </div>
+            )}
+          </div>
+
+          {/* Center: Data ticker (desktop) */}
+          <div className="hidden sm:flex items-center flex-1 justify-center mx-2">
+            <TopBarDataTicker />
           </div>
 
           {/* Right: Level + XP + Poem + Quest + Buttons + More */}
@@ -909,7 +927,7 @@ export function ExplorationHUD(props: HUDProps) {
           <div className="h-px mt-4" style={STYLE_HR_CYAN_CENTER_FADE} />
           <div className="flex items-center justify-between mt-2.5">
             {import.meta.env.DEV && (
-              <span className="text-[10px] text-slate-500/60 font-mono">volodka://status</span>
+              <span className="text-[10px] text-slate-500/60 font-mono text-data-stream">volodka://status</span>
             )}
             <div className="flex items-center gap-2">
               {currentWeather !== 'clear' && (
@@ -998,9 +1016,15 @@ export function ExplorationHUD(props: HUDProps) {
       {/* ── Floating action indicator (bottom center) ── */}
       <FloatingActionIndicator />
 
-      {/* ── Compass + Exploration progress (top-right, below top bar) ── */}
+      {/* ── NPC proximity indicator (above crosshair) ── */}
+      <NPCProximityIndicator />
+
+      {/* ── Compass + POI markers + Exploration progress (top-right, below top bar) ── */}
       <div className="absolute top-16 sm:top-20 right-3 sm:right-4 flex flex-col items-center gap-3 pointer-events-none" style={{ zIndex: UI_LAYERS.HUD + 1 }}>
-        <CompassIndicator />
+        <div className="relative">
+          <CompassIndicator />
+          <CompassPOIMarkers />
+        </div>
         <ExplorationProgressBadge />
         <SessionPlayTimer />
         <FootstepPedometer />

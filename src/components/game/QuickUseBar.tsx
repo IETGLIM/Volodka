@@ -369,7 +369,7 @@ export function QuickUseBar() {
         transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
       >
         {/* Bar container */}
-        <div className="quick-use-bar relative">
+        <div className="quick-use-bar relative panel-glass-dark-9 p-1.5 gap-1.5">
           {/* Neon border glow breathing */}
           <motion.div
             className="absolute inset-0 rounded-[8px] pointer-events-none"

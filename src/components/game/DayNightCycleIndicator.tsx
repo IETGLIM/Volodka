@@ -533,7 +533,7 @@ export function DayNightCycleIndicator() {
 
         {/* ── Footer ── */}
         <div className="flex items-center justify-center px-2.5 py-1">
-          <span className="text-[8px] text-slate-600 font-mono">volodka://cycle</span>
+          <span className="text-[8px] text-slate-600 font-mono text-data-stream">volodka://cycle</span>
         </div>
       </motion.div>
     </div>

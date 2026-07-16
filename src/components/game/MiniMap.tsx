@@ -204,23 +204,47 @@ export function MiniMap() {
         ctx.restore();
       }
 
-      // ── Quest markers (diamond shape with glow) ──
+      // ── Quest markers (spinning diamond shape with enhanced glow) ──
       for (const marker of questMarkersRef.current) {
         const mx = toMapX(marker.position[0]);
         const my = toMapY(marker.position[2]);
         const dSize = 4; // half-width of 8px diamond
+        const spinAngle = (pulsePhaseRef.current * 1.2) % (Math.PI * 2); // slow spin
+
         ctx.save();
-        ctx.shadowColor = '#fbbf24'; // amber glow
-        ctx.shadowBlur = 8;
+        ctx.translate(mx, my);
+        ctx.rotate(spinAngle);
+
+        // Outer glow ring
+        ctx.strokeStyle = 'rgba(251, 191, 36, 0.25)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(0, 0, dSize + 3 + pulse * 2, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Diamond with enhanced glow
+        ctx.shadowColor = '#fbbf24';
+        ctx.shadowBlur = 10 + pulse * 4;
         ctx.fillStyle = '#fbbf24';
         ctx.beginPath();
-        ctx.moveTo(mx, my - dSize);       // top vertex
-        ctx.lineTo(mx + dSize, my);       // right vertex
-        ctx.lineTo(mx, my + dSize);       // bottom vertex
-        ctx.lineTo(mx - dSize, my);       // left vertex
+        ctx.moveTo(0, -dSize);      // top vertex
+        ctx.lineTo(dSize, 0);       // right vertex
+        ctx.lineTo(0, dSize);       // bottom vertex
+        ctx.lineTo(-dSize, 0);      // left vertex
         ctx.closePath();
         ctx.fill();
+
+        // Inner bright core
         ctx.shadowBlur = 0;
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+        ctx.beginPath();
+        ctx.moveTo(0, -dSize * 0.4);
+        ctx.lineTo(dSize * 0.4, 0);
+        ctx.lineTo(0, dSize * 0.4);
+        ctx.lineTo(-dSize * 0.4, 0);
+        ctx.closePath();
+        ctx.fill();
+
         ctx.restore();
       }
 
@@ -256,12 +280,17 @@ export function MiniMap() {
         const t = trail[i];
         const tx = toMapX(t.x);
         const ty = toMapY(t.z);
-        const alpha = ((i + 1) / trail.length) * 0.35;
-        const radius = 0.8 + (i / trail.length) * 1.2;
+        const alpha = ((i + 1) / trail.length) * 0.4;
+        const radius = 0.8 + (i / trail.length) * 1.5;
+        // Enhanced trail with glow
+        ctx.save();
+        ctx.shadowColor = `rgba(34, 211, 238, ${alpha})`;
+        ctx.shadowBlur = 3 + (i / trail.length) * 3;
         ctx.fillStyle = `rgba(34, 211, 238, ${alpha})`;
         ctx.beginPath();
         ctx.arc(tx, ty, radius, 0, Math.PI * 2);
         ctx.fill();
+        ctx.restore();
       }
 
       // ── Player dot with direction indicator and pulsing glow ──
