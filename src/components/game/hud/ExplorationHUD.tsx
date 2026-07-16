@@ -63,7 +63,10 @@ import { AmbientParticles } from '@/components/game/hud/parts/AmbientParticles';
 import { PhysicsDegradedDevBadge } from '@/components/game/hud/parts/PhysicsDegradedDevBadge';
 import { ContextualHint } from '@/components/game/hud/parts/ContextualHint';
 import { CompassIndicator } from '@/components/game/hud/parts/CompassIndicator';
+import { ExplorationProgressBadge } from '@/components/game/hud/parts/ExplorationProgressBadge';
 import { ActiveQuestMiniTracker } from '@/components/game/hud/parts/ActiveQuestMiniTracker';
+import { CrosshairInteractionPrompt } from '@/components/game/hud/parts/CrosshairInteractionPrompt';
+import { SceneDiscoveryCelebration } from '@/components/game/hud/parts/SceneDiscoveryCelebration';
 import { useContextualHints } from '@/hooks/useContextualHints';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
@@ -311,8 +314,12 @@ export function ExplorationHUD(props: HUDProps) {
       {/* ── Achievement popup ── */}
       <AchievementPopup achievement={skillAchievement} />
 
-      {/* ── Center: Crosshair ── */}
+      {/* ── Center: Crosshair + E-key prompt ── */}
       <CrosshairGlow nearInteractive={crosshairNearInteractive} />
+      <CrosshairInteractionPrompt />
+
+      {/* ── Scene discovery celebration toast ── */}
+      <SceneDiscoveryCelebration />
 
       {/* ── Top bar (fades when HUD is quiet — crosshair stays) ── */}
       <div className="absolute top-0 left-0 right-0 pointer-events-auto" style={quietStyle}>
@@ -914,9 +921,10 @@ export function ExplorationHUD(props: HUDProps) {
       {/* ── Contextual hint (floating bottom center) ── */}
       <ContextualHint hint={currentHint} onDismiss={dismissHint} />
 
-      {/* ── Compass indicator (top-right, below top bar) ── */}
-      <div className="absolute top-16 sm:top-20 right-3 sm:right-4 pointer-events-none" style={{ zIndex: UI_LAYERS.HUD + 1 }}>
+      {/* ── Compass + Exploration progress (top-right, below top bar) ── */}
+      <div className="absolute top-16 sm:top-20 right-3 sm:right-4 flex flex-col items-center gap-3 pointer-events-none" style={{ zIndex: UI_LAYERS.HUD + 1 }}>
         <CompassIndicator />
+        <ExplorationProgressBadge />
       </div>
 
       {/* ── Active quest mini-tracker (bottom-left, above mobile controls) ── */}

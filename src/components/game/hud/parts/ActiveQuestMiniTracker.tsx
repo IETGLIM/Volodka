@@ -218,13 +218,14 @@ export function ActiveQuestMiniTracker() {
               toggleExpand();
             }
           }}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-md cursor-pointer"
+          className="flex items-center gap-2 px-3 py-1.5 rounded-md cursor-pointer quest-tracker-glow"
           style={{
-            background: 'rgba(0, 8, 16, 0.78)',
+            background: 'linear-gradient(135deg, rgba(0, 8, 16, 0.82) 0%, rgba(4, 12, 24, 0.78) 100%)',
             border: `1px solid ${typeColor}33`,
-            boxShadow: `0 0 8px ${typeColor}10`,
+            '--quest-glow-color': `${typeColor}15`,
+            boxShadow: `0 0 8px ${typeColor}10, 0 2px 8px rgba(0,0,0,0.4)`,
             backdropFilter: 'blur(8px)',
-          }}
+          } as React.CSSProperties}
           aria-label={
             nextObjective
               ? `${questDef.title}: ${nextObjective.description}`
@@ -248,7 +249,7 @@ export function ActiveQuestMiniTracker() {
           {/* Objective text */}
           <p
             className={`text-[10px] font-mono leading-snug truncate flex-1 rounded px-1 -mx-1 ${objectiveFlash ? 'objective-flash' : ''}`}
-            style={{ color: '#c8e8e8' }}
+            style={{ color: '#c8e8e8', textShadow: objectiveFlash ? `0 0 8px ${typeColor}44` : 'none', transition: 'text-shadow 0.3s ease' }}
           >
             {nextObjective ? nextObjective.description : 'Все цели выполнены'}
           </p>
@@ -306,8 +307,8 @@ export function ActiveQuestMiniTracker() {
                 <div className="flex items-center gap-2">
                   <div className="flex-1 h-1 bg-white/8 rounded-full overflow-hidden">
                     <motion.div
-                      className="h-full rounded-full"
-                      style={{ background: `linear-gradient(90deg, ${typeColor}88, ${typeColor})` }}
+                      className="h-full rounded-full quest-progress-shimmer"
+                      style={{ background: `linear-gradient(90deg, ${typeColor}66, ${typeColor}cc, ${typeColor})`, boxShadow: `0 0 6px ${typeColor}40` }}
                       initial={false}
                       animate={{ width: `${progress}%` }}
                       transition={{ duration: 0.4 }}

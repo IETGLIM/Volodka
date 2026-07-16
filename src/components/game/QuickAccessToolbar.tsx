@@ -4,12 +4,13 @@
  * Visible only during exploration mode. */
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { Zap, Activity, Volume2, VolumeX } from 'lucide-react';
-import { useGamePhase, useQuickAccessToolbarState } from '@/store/selectors';
+import { Zap, Activity, Volume2, VolumeX, MapPin } from 'lucide-react';
+import { useGamePhase, useQuickAccessToolbarState, useDiscoveredScenes } from '@/store/selectors';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { bottomToolbarPx } from '@/shared/constants/hudLayout';
 import { useHudQuietStyle } from '@/hooks/useHudQuiet';
 import { useExplorationBottomHudVisible } from '@/hooks/useExplorationBottomHud';
+import { CORE_SCENE_IDS } from '@/config/sceneIds';
 
 /* ─── Sub-components ─── */
 
@@ -196,6 +197,38 @@ function LevelBadge({ level, xp, xpToNext }: { level: number; xp: number; xpToNe
   );
 }
 
+/** Compact exploration progress indicator for the bottom toolbar */
+function ExplorationCompact() {
+  const discoveredScenes = useDiscoveredScenes();
+  const discoveredCount = discoveredScenes
+    ? discoveredScenes.filter((id: string) => (CORE_SCENE_IDS as unknown as readonly string[]).includes(id)).length
+    : 0;
+  const totalScenes = CORE_SCENE_IDS.length;
+  const pct = totalScenes > 0 ? Math.round((discoveredCount / totalScenes) * 100) : 0;
+
+  return (
+    <div
+      className="flex items-center gap-1.5 px-1.5 py-0.5 rounded cursor-default"
+      title={`Исследовано: ${discoveredCount}/${totalScenes} локаций (${pct}%)`}
+      style={{
+        background: 'rgba(0, 255, 100, 0.06)',
+        border: '1px solid rgba(0, 255, 100, 0.12)',
+      }}
+    >
+      <MapPin
+        className="size-3"
+        style={{ color: 'rgba(0, 255, 100, 0.6)', filter: 'drop-shadow(0 0 2px rgba(0,255,100,0.3))' }}
+      />
+      <span
+        className="text-[9px] font-mono tabular-nums"
+        style={{ color: 'rgba(0, 255, 100, 0.65)' }}
+      >
+        {discoveredCount}/{totalScenes}
+      </span>
+    </div>
+  );
+}
+
 /* ─── Main Component ─── */
 
 export function QuickAccessToolbar() {
@@ -249,6 +282,16 @@ export function QuickAccessToolbar() {
             <div className="corner-bracket-sm corner-bracket-sm-tr" />
             <div className="corner-bracket-sm corner-bracket-sm-bl" />
             <div className="corner-bracket-sm corner-bracket-sm-br" />
+
+            {/* Top edge glow line */}
+            <motion.div
+              className="absolute top-0 left-2 right-2 h-px"
+              animate={{ opacity: [0.4, 0.8, 0.4] }}
+              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+              style={{
+                background: `linear-gradient(90deg, transparent, ${isStressHigh ? 'rgba(251,113,133,0.3)' : 'rgb(var(--cyber-cyan-rgb) / 0.25)'} 50%, transparent)`,
+              }}
+            />
 
             {/* Scan-line sweep on hover */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none z-10 group">
@@ -334,6 +377,9 @@ export function QuickAccessToolbar() {
                 className="w-px h-5"
                 style={{ background: 'rgba(100, 116, 139, 0.2)' }}
               />
+
+              {/* Exploration progress (compact) */}
+              <ExplorationCompact />
 
               {/* Music toggle */}
               <button
