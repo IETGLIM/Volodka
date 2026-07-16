@@ -5,7 +5,6 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  useSetCurrentNodeId,
   useStoryContext,
   useVisitNode,
 } from '@/store/selectors';
@@ -13,13 +12,7 @@ import { getStoryNodes, isNarrativeGameDataLoaded, ensureStoryNode, prefetchStor
 import { audioEngine } from '@/engine/AudioEngine';
 import { requestSceneTransitionForStoryNode } from '@/engine/scene/sceneTransition';
 import { getGameStore } from '@/store/gameStore';
-import { closeNarrativeOverlay, openNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
-import { enterSceneFreeExplorationHub } from '@/engine/scene/freeExplorationHub';
-import {
-  EXPLORE_HUB_NODE_IDS,
-  isClosedOverlayExploreHub,
-  resolveExploreHubNavigation,
-} from '@/shared/exploreHubNodes';
+import { closeNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
 import type { StoryChoice, StoryEffect } from '@/shared/types/game';
 import { checkStoryCondition, buildStoryConditionContext } from '@/shared/storyConditions';
 import {
@@ -43,6 +36,7 @@ import { devWarn } from '@/shared/utils/devLog';
 import { eventBus } from '@/engine/EventBus';
 import { STORY_NODE_TO_NPC_ID } from '@/data/goldenPath';
 import { resolveNpcIdFromSpeaker } from '@/data/allNpcDefinitions';
+import { executeStoryChoice } from '@/engine/narrative/narrativeChoiceExecutor';
 
 /* ── Stat change highlight chip ── */
 function StatChangeChip({ effect }: { effect: StoryEffect }) {
@@ -105,9 +99,11 @@ function StatChangeChip({ effect }: { effect: StoryEffect }) {
 /* ── Component ── */
 export function StoryRenderer() {
   const { showStoryOverlay, currentNodeId, karma, skills, flags, progression, collectedPoems, activeTTLFlags } = useStoryContext();
-  const setCurrentNodeId = useSetCurrentNodeId();
   const visitNode = useVisitNode();
   const nodeEffectGenRef = useRef(0);
+  // Tracks the last node id whose mount effects were applied.
+  // Prevents double-application in React StrictMode and fast remounts.
+  const appliedNodeIdRef = useRef<string | null>(null);
   const effectTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
   const errorRef = useRef<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
@@ -195,13 +191,21 @@ export function StoryRenderer() {
 
     clearEffectTimers();
     const effectGen = ++nodeEffectGenRef.current;
+
+    // Guard: only apply one-shot effects once per node, even in React StrictMode
+    // where effects may mount-cleanup-remount without a dependency change.
+    const shouldApplyEffects = appliedNodeIdRef.current !== node.id;
+    if (shouldApplyEffects) {
+      appliedNodeIdRef.current = node.id;
+    }
+
     visitNode(node.id);
     const currentSceneId = getGameStore().exploration.currentSceneId;
     if (node.sceneId && currentSceneId !== node.sceneId) {
       requestSceneTransitionForStoryNode(node.id, node.sceneId);
     }
 
-    if (node.effects && node.effects.length > 0) {
+    if (shouldApplyEffects && node.effects && node.effects.length > 0) {
       applyEffects(node.effects);
       const effectsToShow = node.effects;
       scheduleEffectTimer(() => {
@@ -249,49 +253,19 @@ export function StoryRenderer() {
 
   const handleChoice = useCallback(
     (choice: StoryChoice) => {
-      audioEngine.playSfx('confirm');
-      const transitionsScene =
-        choice.effects?.some((fx) => fx.type === 'transitionScene') ?? false;
-
-      if (choice.effects) {
-        if (transitionsScene) {
-          closeNarrativeOverlay();
-          if (choice.next) {
-            setCurrentNodeId(choice.next);
-          }
-        }
-        applyEffects(choice.effects);
-        setAppliedEffects(choice.effects);
-        scheduleEffectTimer(() => setAppliedEffects([]), 3000);
-      }
-
-      if (choice.next === null) {
-        closeNarrativeOverlay();
-      } else if (choice.next && EXPLORE_HUB_NODE_IDS.has(choice.next)) {
-        const resolved = resolveExploreHubNavigation(
-          currentNodeId,
-          node?.sceneId,
-          choice.next,
-        );
-        if (resolved.action === 'navigate') {
-          if (isClosedOverlayExploreHub(resolved.hubId)) {
-            enterSceneFreeExplorationHub(resolved.hubId);
-          } else {
-            setCurrentNodeId(resolved.hubId);
-          }
-        } else {
-          closeNarrativeOverlay();
-        }
-      } else if (choice.next && !transitionsScene) {
-        if (choice.next === 'start') {
-          const store = getGameStore();
-          store.resetForNewPlaythrough({ preserveAchievements: true, skipIntro: true });
-          openNarrativeOverlay('start', 'story');
-        }
-        setCurrentNodeId(choice.next);
-      }
+      // Use the shared executor — single source of truth for choice routing.
+      // It handles: SFX, effects, explore-hub navigation, Act1 diegetic routing,
+      // scene transitions, and the 'start' new-game flow with correct early return.
+      executeStoryChoice(choice, {
+        currentNodeId,
+        nodeSceneId: node?.sceneId,
+        onAppliedEffects: (effects) => {
+          setAppliedEffects(effects);
+          scheduleEffectTimer(() => setAppliedEffects([]), 3000);
+        },
+      });
     },
-    [currentNodeId, node?.sceneId, setCurrentNodeId, scheduleEffectTimer],
+    [currentNodeId, node?.sceneId, scheduleEffectTimer],
   );
 
   const handleContinue = useCallback(() => {

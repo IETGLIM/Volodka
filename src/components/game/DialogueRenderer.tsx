@@ -7,7 +7,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FastForward, History } from 'lucide-react';
 import {
   useDialogueContext,
-  useSetCurrentNodeId,
   useVisitNode } from '@/store/selectors';
 import {
   getDialogueNodes,
@@ -43,6 +42,7 @@ import { useNarrativeChoiceKeyboard } from '@/hooks/useNarrativeChoiceKeyboard';
 import { applyEffects } from '@/shared/utils/applyEffects';
 import { recordExplorationStoryStep } from '@/shared/explorationStoryBridge';
 import { DialogueRelationBar } from './dialogue/DialogueRelationBar';
+import { executeDialogueChoice } from '@/engine/narrative/narrativeChoiceExecutor';
 
 /* ── Emotion detection from text ── */
 function detectEmotion(text: string): 'calm' | 'angry' | 'sad' | 'happy' {
@@ -104,7 +104,6 @@ interface HistoryLine {
 /* ── Component ── */
 export function DialogueRenderer() {
   const { mode: _mode, showStoryOverlay, currentNodeId, karma, skills, flags, progression, npcRelations, timeOfDay, collectedPoems, activeTTLFlags, ownedItemIdsKey } = useDialogueContext();
-  const setCurrentNodeId = useSetCurrentNodeId();
   const visitNode = useVisitNode();
 
   const [skillCheckBanner, setSkillCheckBanner] = useState<{
@@ -265,19 +264,11 @@ export function DialogueRenderer() {
 
   const handleChoice = useCallback(
     (choice: DialogueChoice) => {
-      audioEngine.playSfx('confirm');
-
-      if (choice.effects) {
-        applyEffects(choice.effects);
-      }
-
-      if (choice.next === null) {
-        closeNarrativeOverlay();
-      } else {
-        setCurrentNodeId(choice.next);
-      }
+      // Use the shared executor — handles explore-hub routing, Act1 diegetic
+      // presentation, scene transitions, and atomic overlay open/close.
+      executeDialogueChoice(choice);
     },
-    [setCurrentNodeId],
+    [],
   );
 
   const trySelectChoice = useCallback(
