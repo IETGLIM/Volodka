@@ -104,7 +104,20 @@ export function applyGameAction(_state: GameStoreState, action: GameAction): voi
     case 'notification/push': player.pushNotification(action.notificationType, action.text); break;
     case 'notification/dismiss': player.dismissNotification(action.id); break;
     case 'exploration/toggleInteractiveObject': exploration.toggleInteractiveObject(action.objectId); break;
-    case 'exploration/applySceneTransition': exploration.setExplorationScene(action.targetScene); exploration.setPlayerPosition(action.spawnAt); exploration.discoverScene(action.targetScene); player.autoRegenBetweenScenes(); break;
+    case 'exploration/applySceneTransition': {
+      // Player-side regen MUST run before mutating the exploration store.
+      // autoRegenBetweenScenes calls readPlayerFromExploration() which reads
+      // the *current* exploration state.  If we set the scene first, the
+      // cross-slice read would see the post-transition exploration state
+      // (e.g. a different timeOfDay / currentSceneId), producing
+      // inconsistent regen calculations.  React 19 auto-batches the
+      // subsequent exploration mutations into a single re-render.
+      player.autoRegenBetweenScenes();
+      exploration.setExplorationScene(action.targetScene);
+      exploration.setPlayerPosition(action.spawnAt);
+      exploration.discoverScene(action.targetScene);
+      break;
+    }
     case 'cutscene/clear': getCutsceneStoreState().setCutscene(null, []); break;
     case 'phase/clearGameplayFlags': ui.setMainMenuOpen(false); ui.setIntroActive(false); ui.setCombatActive(false); break;
     case 'journal/addThought': ui.addThought(action.text, action.sceneId); break;

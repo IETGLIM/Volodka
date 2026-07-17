@@ -58,6 +58,7 @@ import {
   acquireCameraOwnership,
   releaseCameraOwnership,
 } from './cameraOwnerState';
+import { isCinematicTimelineActive } from '@/engine/cinematic/cinematicTimelineOrchestrator';
 import { sharedCameraYawRef } from '@/engine/PlayerRotationState';
 import { eventBus } from '@/engine/EventBus';
 import { getNPCGroup } from '@/engine/interaction/npcRegistry';
@@ -702,6 +703,7 @@ export function subscribeCameraEventHub(options: CameraEventHubOptions): () => v
   }));
 
   unsubs.push(eventBus.on('camera:cutscene_start', ({ waypoints }) => {
+    if (isCinematicTimelineActive()) return;
     const controller = buildCutsceneController(waypoints);
     if (controller) {
       subsystems.cutscene.current = controller;
@@ -730,6 +732,7 @@ export function subscribeCameraEventHub(options: CameraEventHubOptions): () => v
   }));
 
   unsubs.push(eventBus.on('camera:npc_cutscene_start', ({ waypoints, npcId }) => {
+    if (isCinematicTimelineActive()) return;
     const npcGroup = npcId ? getNPCGroup(npcId) : undefined;
     const npcPos = npcGroup ? npcGroup.position : new THREE.Vector3(0, 0, 0);
     const controller = buildCutsceneController(waypoints, npcPos);
@@ -756,7 +759,7 @@ export function subscribeCameraEventHub(options: CameraEventHubOptions): () => v
     runtime.cameraState.current = { mode: 'dialogue', speaker };
   }));
 
-  if (activeCutsceneId && cutsceneWaypoints.length > 0 && activeCutsceneId !== 'intro_wakeup') {
+  if (activeCutsceneId && cutsceneWaypoints.length > 0 && activeCutsceneId !== 'intro_wakeup' && !isCinematicTimelineActive()) {
     const controller = buildCutsceneController(cutsceneWaypoints);
     if (controller) {
       subsystems.cutscene.current = controller;

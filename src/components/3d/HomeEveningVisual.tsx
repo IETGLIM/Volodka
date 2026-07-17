@@ -429,7 +429,7 @@ export function HomeEveningVisual() {
         {/* Stove body */}
         <mesh position={[0, 0.45, 0]} castShadow geometry={geo_box_35} material={mat_30} />
         {/* Stove top surface */}
-        <mesh position={[0, 0.91, 0]} geometry={geo_box_36} material={mat_31} />
+        <mesh position={[0, 0.92, 0]} geometry={geo_box_36} material={mat_31} />
         {/* Burner rings */}
         {[[-0.15, -0.15], [0.15, -0.15], [-0.15, 0.15], [0.15, 0.15]].map(([x, z], i) => (
           <mesh key={`burner-${i}`} position={[x, 0.93, z]} rotation-x={-Math.PI / 2} geometry={geo_tor_37} material={mat_32} />

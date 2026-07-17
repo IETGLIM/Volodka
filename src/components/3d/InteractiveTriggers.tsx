@@ -2,7 +2,7 @@
 /* ─── Volodka RPG – Interactive triggers with god-ray highlight, particle burst, pulse tooltip,
      NPC staged interaction routing, and centralized prompt stacking ─── */
 
-import { useRef, useState, useEffect, useCallback, useMemo } from 'react';
+import { useRef, useState, useEffect, useLayoutEffect, useCallback, useMemo } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { Html } from '@react-three/drei';
 import * as THREE from 'three';
@@ -228,7 +228,7 @@ export function InteractiveTriggers({
     return true;
   }, [sceneExits, sceneId, zones]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     isOverlayBlockingRef.current = isOverlayBlocking;
     sceneExitsRef.current = sceneExits;
     zonesRef.current = zones;

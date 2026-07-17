@@ -8,9 +8,11 @@
  */
 
 import { SCENE_CONFIG } from '@/config/scenes';
+import { isCinematicTimelineActive } from '@/engine/cinematic/cinematicTimelineOrchestrator';
 import { eventBus } from '@/engine/EventBus';
 import { getGameSnapshot } from '@/engine/GameActionDispatcher';
 import { resetSceneTransitionGuard } from '@/engine/core/SceneTransitionManager';
+import { devWarn } from '@/shared/utils/devLog';
 import type { SceneId } from '@/shared/types/game';
 
 type SpawnTuple = [number, number, number];
@@ -61,6 +63,15 @@ export function requestSceneTransition(
   try {
     const snapshot = getGameSnapshot();
     if (snapshot.activeCutsceneId) {
+      return false;
+    }
+    // Hard gate: block transitions while a cinematic timeline is active.
+    // activeCutsceneId covers cutscene-overlays, but cinematic timelines run
+    // independently and set their own module-level flag. Without this check a
+    // trigger-zone hit during a timeline can slip through and transition the
+    // scene mid-cinematic.
+    if (isCinematicTimelineActive()) {
+      devWarn('[sceneTransition] Rejected: cinematic timeline is active');
       return false;
     }
   } catch {

@@ -32,8 +32,9 @@ import { ControllerSession } from '@/engine/controller/ControllerSession';
 import {
   beginInteractionEndCycle,
   emitInteractionEndIfNeeded,
+  getInteractionEndCycleId,
 } from '@/engine/interaction/interactionEndDedup';
-import { isInteractionLocked } from '@/engine/interaction/interactionSession';
+import { getInteractionState, isInteractionLocked } from '@/engine/interaction/interactionSession';
 import { devWarn } from '@/shared/utils/devLog';
 import { resolveNpcBarkForRelation } from '@/shared/npcBark';
 import { resolveZoneInteractionSplash } from '@/engine/interaction/resolveInteractionSplash';
@@ -159,12 +160,15 @@ export class InteractionController {
   }
 
   onNarrativeOverlayClosedInExploration(): void {
+    const cycleIdAtClose = getInteractionEndCycleId();
+    const interactionStateAtClose = getInteractionState();
     queueMicrotask(() => {
       if (this.session.isDisposed()) return;
       emitInteractionEndIfNeeded();
-      if (isInteractionLocked()) {
+      if (isInteractionLocked() && getInteractionState() === interactionStateAtClose) {
         this.session.schedule(() => {
           if (this.session.isDisposed()) return;
+          if (getInteractionEndCycleId() !== cycleIdAtClose) return;
           emitInteractionEndIfNeeded();
         }, 100);
       }

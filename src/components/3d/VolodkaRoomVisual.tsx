@@ -178,7 +178,7 @@ const mat_44 = getSharedStandardMaterial({ color: '#001133', emissive: '#0088ff'
 const mat_45 = getSharedStandardMaterial({ color: '#110033', emissive: '#aa44ff', emissiveIntensity: 0.6 });
 const mat_46 = getSharedStandardMaterial({ color: '#2a1a1a', roughness: 0.8 });
 const mat_47 = getSharedStandardMaterial({ color: '#1a0000', emissive: '#ff2244', emissiveIntensity: 0.8 });
-const mat_48 = getSharedStandardMaterial({ color: '#c8c0a0', roughness: 0.9, transparent: true, opacity: 0.7 });
+const mat_48 = getSharedStandardMaterial({ color: '#c8c0a0', roughness: 0.9, transparent: true, opacity: 0.7, depthWrite: false });
 const mat_49 = getSharedStandardMaterial({ color: '#1a1a1a', roughness: 0.7 });
 const mat_50 = getSharedStandardMaterial({ color: '#2a2a2a', roughness: 0.8 });
 const mat_51 = getSharedStandardMaterial({ color: '#222', roughness: 0.9 });
@@ -190,7 +190,7 @@ const mat_56 = getSharedStandardMaterial({ color: '#aaa', metalness: 0.7, roughn
 const mat_57 = getSharedStandardMaterial({ color: '#1a1a1a', roughness: 0.6 });
 const mat_58 = getSharedStandardMaterial({ color: '#001122', emissive: '#3355aa', emissiveIntensity: 0.5 });
 const mat_59 = getSharedStandardMaterial({ color: '#333', roughness: 0.9 });
-const mat_60 = getSharedStandardMaterial({ color: '#c0d0e0', transparent: true, opacity: 0.4, roughness: 0.2 });
+const mat_60 = getSharedStandardMaterial({ color: '#c0d0e0', transparent: true, opacity: 0.4, roughness: 0.2, depthWrite: false });
 const mat_61 = getSharedStandardMaterial({ color: '#5a4050', roughness: 0.95 });
 const mat_62 = getSharedStandardMaterial({ color: '#0a0a20', emissive: '#1a1a30', emissiveIntensity: 1.5 });
 const mat_63 = getSharedStandardMaterial({ color: '#ffcc44', emissive: '#ffcc44', emissiveIntensity: 3.0 });
@@ -375,7 +375,7 @@ export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
         {/* Wardrobe body */}
         <mesh position={[0, 1.0, 0]} castShadow geometry={geo_box_10} material={mat_6} />
         {/* Wardrobe top */}
-        <mesh position={[0, 2.01, 0]} geometry={geo_box_11} material={mat_7} />
+        <mesh position={[0, 2.02, 0]} geometry={geo_box_11} material={mat_7} />
         {/* Wardrobe shelf */}
         <mesh position={[0, 1.0, 0.01]} geometry={geo_box_12} material={mat_8} />
         {/* Animated wardrobe left door — pivot on left edge */}
@@ -693,7 +693,7 @@ export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
         {/* Phone on nightstand */}
         <mesh position={[0, 0.52, 0.05]} rotation={[0, 0.2, 0]} geometry={geo_box_71} material={mat_57} />
         {/* Phone screen */}
-        <mesh position={[0, 0.525, 0.05]} rotation={[0, 0.2, 0]} geometry={geo_box_72} material={mat_58} />
+        <mesh position={[0, 0.528, 0.05]} rotation={[0, 0.2, 0]} geometry={geo_box_72} material={mat_58} />
         {/* Charging cable */}
         <mesh position={[0.05, 0.51, -0.05]} rotation={[0.8, 0.2, 0]} geometry={geo_cyl_64} material={mat_59} />
         {/* Water glass on nightstand */}

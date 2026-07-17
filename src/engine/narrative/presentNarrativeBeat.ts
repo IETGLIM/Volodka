@@ -1,4 +1,6 @@
 import type { NarrativeKind } from '@/shared/types/narrativeKind';
+import { devWarn } from '@/shared/utils/devLog';
+import { beginInteractionEndCycle } from '@/engine/interaction/interactionEndDedup';
 import { enterSceneFreeExplorationHub } from '@/engine/scene/freeExplorationHub';
 import {
   openDiegeticNarrative,
@@ -9,12 +11,22 @@ import {
   resolveNarrativePresentation,
 } from './narrativePresentationPolicy';
 
+/** Mutual-exclusion flag — prevents concurrent invocations from racing. */
+let narrativeInflight = false;
+
 /**
  * Single entry point for opening narrative beats.
  * Act 1 nodes route to diegetic HUD or closed-overlay hubs; Acts 2+ use legacy VN overlay.
  */
 export function presentNarrativeBeat(nodeId: string, kind: NarrativeKind): void {
+  if (narrativeInflight) {
+    devWarn('[presentNarrativeBeat] Rejected: another beat is already presenting', { nodeId, kind });
+    return;
+  }
+  narrativeInflight = true;
   try {
+    beginInteractionEndCycle();
+
     if (!isAct1DiegeticStoryNode(nodeId)) {
       openNarrativeOverlay(nodeId, kind);
       return;
@@ -40,11 +52,13 @@ export function presentNarrativeBeat(nodeId: string, kind: NarrativeKind): void 
         text: 'Ошибка загрузки контента. Попробуйте перезайти в сцену.',
       });
     });
-    import('@/shared/utils/devLog').then(({ devWarn }) => {
-      devWarn('[presentNarrativeBeat] Unhandled error presenting beat', { nodeId, kind, error });
+    import('@/shared/utils/devLog').then(({ devWarn: dw }) => {
+      dw('[presentNarrativeBeat] Unhandled error presenting beat', { nodeId, kind, error });
     });
     import('@/engine/interaction/emergencyInteractionReset')
       .then(({ forceResetAllInteractionState }) => forceResetAllInteractionState())
       .catch(() => { /* module may not exist yet */ });
+  } finally {
+    narrativeInflight = false;
   }
 }

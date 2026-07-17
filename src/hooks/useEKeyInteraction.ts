@@ -2,6 +2,7 @@ import { useCallback, useEffect } from 'react';
 import type { MutableRefObject } from 'react';
 import * as THREE from 'three';
 import { eventBus } from '@/engine/EventBus';
+import { isCinematicTimelineActive } from '@/engine/cinematic/cinematicTimelineOrchestrator';
 import { consumeEKey, isEKeyConsumed } from '@/engine/input/eKeyConsumption';
 import { isInteractionLocked } from '@/engine/interaction/interactionSession';
 import { forceResetAllInteractionState } from '@/engine/interaction/emergencyInteractionReset';
@@ -54,6 +55,10 @@ export function useEKeyInteraction({
     // scene transition or dialogue before the overlay gate propagates.
     try {
       if (getGameStore().activeCutsceneId) return false;
+      // Hard gate: block interactions during a cinematic timeline.
+      // Cinematic timelines run independently of the cutscene overlay flag,
+      // so this catches races where the ref-sync hasn't propagated yet.
+      if (isCinematicTimelineActive()) return false;
     } catch {
       /* store not ready — fall through */
     }
