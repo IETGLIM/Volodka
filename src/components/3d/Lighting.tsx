@@ -24,7 +24,7 @@ const SHADOW_NORMAL_BIAS = 0.04;
  *  to let scene-specific lights (monitor, lamp, window) drive the atmosphere.
  *  Format: { color, intensity } */
 const INDOOR_AMBIENT: Record<string, { color: string; intensity: number }> = {
-  volodka_room:       { color: '#3a3548', intensity: 0.62 },
+  volodka_room:       { color: '#2a2538', intensity: 0.55 },
   volodka_corridor:   { color: '#383448', intensity: 0.66 },
   home_evening:       { color: '#4a3828', intensity: 0.62 },
   cafe_evening:       { color: '#2a3048', intensity: 0.58 },
@@ -43,7 +43,7 @@ const DEFAULT_INDOOR_AMBIENT = { color: '#2a2a3a', intensity: 0.52 };
  *  completely black corners while preserving noir shadows.
  *  Format: { position, intensity, color, distance } or null to disable */
 const INDOOR_FILL: Record<string, { position: [number, number, number]; intensity: number; color: string; distance: number } | null> = {
-  volodka_room:       { position: [0, 2.0, 0], intensity: 1.35, color: '#887799', distance: 10 },
+  volodka_room:       { position: [0, 2.2, -0.5], intensity: 1.5, color: '#7766aa', distance: 10 },
   volodka_corridor:   { position: [0, 2.2, 0], intensity: 2.1, color: '#bbAA88', distance: 14 },
   home_evening:       { position: [0, 2.2, 0], intensity: 2.2, color: '#ddaa77', distance: 12 },
   cafe_evening:       { position: [0, 2.5, -1], intensity: 1.75, color: '#aa99cc', distance: 13 },
@@ -269,9 +269,10 @@ const SCENE_ACCENT_LIGHTS: Record<string, AccentLight[]> = {
     { position: [0, 3, -4], color: '#ffaa44', intensity: 1.2, distance: 8 },
   ],
   volodka_room: [
-    { position: [1.2, 1.5, -2.5], color: '#88ff99', intensity: 1.2, distance: 6 },  // monitor glow
-    { position: [-0.5, 1.8, 0.5], color: '#ffcc88', intensity: 0.9, distance: 5 },    // bedside lamp
-    { position: [0, 0.5, -1], color: '#aabbcc', intensity: 0.4, distance: 4 },         // under-desk glow
+    { position: [1.2, 1.4, -2.5], color: '#66ffaa', intensity: 1.4, distance: 6, animated: 'cold_pulse' },  // monitor glow (data flow)
+    { position: [-0.5, 1.8, 0.5], color: '#ffcc88', intensity: 1.0, distance: 5, animated: 'candle_flicker' }, // bedside lamp
+    { position: [0, 0.3, -2.5], color: '#ff9944', intensity: 0.35, distance: 3 },     // under-desk warm glow
+    { position: [2.3, 0.2, 1.0], color: '#334488', intensity: 0.3, distance: 4 },    // floor-level cold bounce from window wall
   ],
   factory_basement: [
     { position: [0, 2.4, -5], color: '#22ff88', intensity: 1.8, distance: 10 },        // Заря-М core glow

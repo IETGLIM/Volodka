@@ -59,8 +59,8 @@ export function resolveNpcWorldPosition(
   return [_npcLivePos.x, _npcLivePos.y, _npcLivePos.z];
 }
 
-const NPC_MAX_RANGE = 3.0;
-const ZONE_RANGE_PADDING = 1.35;
+const NPC_MAX_RANGE = 3.5;
+const ZONE_RANGE_PADDING = 1.55;
 
 /** Score a target by distance and whether the player faces it (horizontal only). */
 export function scoreInteractionTarget(

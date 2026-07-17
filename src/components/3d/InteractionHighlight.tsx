@@ -31,8 +31,8 @@ interface SlotResources {
 
 const MAX_HIGHLIGHTS = 12;
 const HIGHLIGHT_DURATION = 1.0;
-const HIGHLIGHT_MAX_OPACITY = 0.45;
-const HIGHLIGHT_GLOW_INTENSITY = 2.5;
+const HIGHLIGHT_MAX_OPACITY = 0.52;
+const HIGHLIGHT_GLOW_INTENSITY = 3.0;
 const HIGHLIGHT_COLOR = '#00ffee';
 
 function createSlot(): SlotResources {
@@ -60,8 +60,8 @@ function createSlot(): SlotResources {
   const light = new THREE.PointLight(HIGHLIGHT_COLOR, 0, 4, 2);
   light.position.set(0, 0.5, 0);
 
-  const spotLight = new THREE.SpotLight(HIGHLIGHT_COLOR, 0, 5, 0.45, 0.85, 1);
-  spotLight.position.set(0, 2.2, 0.2);
+  const spotLight = new THREE.SpotLight(HIGHLIGHT_COLOR, 0, 5, 0.52, 0.85, 1);
+  spotLight.position.set(0, 2.5, 0.2);
   const spotTarget = new THREE.Object3D();
   spotTarget.position.set(0, 0, 0);
   spotLight.target = spotTarget;

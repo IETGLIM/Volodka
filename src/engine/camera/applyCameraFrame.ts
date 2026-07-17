@@ -23,6 +23,14 @@ const _rollForward = new THREE.Vector3();
 const _rollRight = new THREE.Vector3();
 const _rollRolledUp = new THREE.Vector3();
 
+/* ── Walking head bob state ── */
+let _walkBobPhase = 0;
+const WALK_BOB_AMPLITUDE = 0.012; // 12mm vertical displacement
+const WALK_BOB_SPEED = 10;       // rad/s — matches walking pace
+const WALK_BOB_SPEED_THRESHOLD = 0.5; // minimum player speed to activate
+const WALK_BOB_SPEED_FULL = 3.0;     // speed at which bob is at full intensity
+const WALK_BOB_BLEND_SPEED = 4;       // how fast bob intensity transitions
+
 export interface PostModeFrameState {
   isInDialogue: boolean;
   isCutscene: boolean;
@@ -61,7 +69,25 @@ export function applyCameraFrame(
   const isFpExploration =
     FIRST_PERSON_ENABLED && !isInDialogue && !isCutscene && !isCombat;
 
+  // ── Walking head bob (third-person exploration only) ──
   if (!isInDialogue && !isCutscene && !isCombat && !isFpExploration) {
+    const playerSpeed = playerVelocity.length();
+
+    // Accumulate bob phase based on time (always ticks so it stays in sync)
+    _walkBobPhase += WALK_BOB_SPEED * delta;
+
+    if (playerSpeed > WALK_BOB_SPEED_THRESHOLD) {
+      // Smooth intensity ramp: 0 at threshold, 1.0 at full running speed
+      const speedNorm = Math.min(
+        (playerSpeed - WALK_BOB_SPEED_THRESHOLD) / (WALK_BOB_SPEED_FULL - WALK_BOB_SPEED_THRESHOLD),
+        1.0,
+      );
+      const bobIntensity = 1 - Math.exp(-WALK_BOB_BLEND_SPEED * speedNorm);
+      const bobOffset = Math.sin(_walkBobPhase) * WALK_BOB_AMPLITUDE * bobIntensity;
+      targetPos.y += bobOffset;
+    }
+
+    // Breathing idle (only when standing still)
     const exploration = ctx.exploration;
     if (exploration && exploration.breathingIntensity > 0.001) {
       applyEnhancedBreathingIdle(
@@ -70,6 +96,9 @@ export function applyCameraFrame(
         exploration.breathingIntensity,
       );
     }
+  } else {
+    // Reset bob phase when not in exploration to avoid jarring snap on mode switch
+    _walkBobPhase = 0;
   }
 
   if (isFpExploration) {

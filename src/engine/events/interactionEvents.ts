@@ -8,4 +8,6 @@ export interface InteractionEvents {
   'interaction:state_change': { state: number; npcId?: string };
   'interaction:end': Record<string, never>;
   'interaction:hint': { label: string; key: string; description?: string; type: 'npc' | 'object' | 'exit' | 'item' };
+  /** Auto-recovery fired when the interaction FSM is stuck in a non-Idle state for too long. */
+  'interaction:stuck_recovery': { fromState: number; targetNpcId: string | null };
 }

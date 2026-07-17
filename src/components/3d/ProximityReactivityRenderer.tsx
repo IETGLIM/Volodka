@@ -80,7 +80,7 @@ function ProximityEffectRenderer({
           lightRef.current.intensity = THREE.MathUtils.lerp(
             lightRef.current.intensity,
             targetIntensity,
-            0.1,
+            0.15,
           );
         }
         break;
@@ -103,7 +103,7 @@ function ProximityEffectRenderer({
       }
 
       case 'visual_disturb': {
-        if (factor > 0.3) {
+        if (factor > 0.2) {
           // Trigger subtle glitch effect based on proximity
           const intensity = factor * Number(effect.config.intensity || 0.5);
           eventBus.emit('fx:glitch', {
@@ -116,7 +116,7 @@ function ProximityEffectRenderer({
 
       case 'npc_attention': {
         // Make NPCs turn their heads toward the player when near
-        if (factor > 0.1) {
+        if (factor > 0.15) {
           eventBus.emit('npc:animation', {
             npcId: String(effect.config.npcId || ''),
             state: factor > 0.5 ? 'listen' : 'idle',

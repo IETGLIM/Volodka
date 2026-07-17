@@ -28,7 +28,7 @@ export function ProximityGodRay({
   activeRef,
   color = '#88eeff',
   colorRef,
-  beamHeight = 2.4,
+  beamHeight = 2.8,
   baseY = 0.35,
   proximityRef,
   flashRef,
@@ -55,11 +55,11 @@ export function ProximityGodRay({
     }
 
     if (coneMeshRef.current) coneMeshRef.current.visible = true;
-    if (!pulsePhaseRef) pulseRef.current += delta * 2.8;
+    if (!pulsePhaseRef) pulseRef.current += delta * 3.4;
     const prox = Math.max(0.25, Math.min(1, proximityRef?.current ?? 1));
     const phase = pulsePhaseRef?.current ?? pulseRef.current;
     const hoverPulse = staticHighlightRef?.current ? 0 : Math.sin(phase) * 0.14;
-    const flashBoost = flashRef?.current ? 0.42 : 0;
+    const flashBoost = flashRef?.current ? 0.55 : 0;
     const intensity = (0.4 + hoverPulse + flashBoost) * prox;
 
     if (spotRef.current) {
@@ -94,7 +94,7 @@ export function ProximityGodRay({
         <object3D attach="target" position={[0, 0, 0]} />
       </spotLight>
       <mesh ref={coneMeshRef} position={[0, beamHeight * 0.42, 0]} rotation={[Math.PI, 0, 0]}>
-        <coneGeometry args={[0.34, beamHeight * 0.9, 16, 1, true]} />
+        <coneGeometry args={[0.38, beamHeight * 0.9, 16, 1, true]} />
         <meshBasicMaterial
           ref={coneMatRef}
           color={resolvedColor}

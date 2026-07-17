@@ -21,9 +21,9 @@ import { getExplorationCameraMotionScale } from '@/engine/player/playerLocomotio
  * ════════════════════════════════════════════════════ */
 
 /* ── Spring camera ── */
-const SPRING_STIFFNESS = 16; // higher = camera catches up to the player faster
-const SPRING_DAMPING = 0.85;
-const LOOK_AT_STIFFNESS = 16;
+const SPRING_STIFFNESS = 14; // slightly relaxed for cinematic delayed follow
+const SPRING_DAMPING = 0.92;   // increased to reduce oscillation/slide
+const LOOK_AT_STIFFNESS = 14;
 export const DEFAULT_FOV = 75;
 const FOV_LERP_SPEED = 3;
 const ROLL_LERP_SPEED = 4;
@@ -34,7 +34,7 @@ const DIALOGUE_FOV = 50;
 const _DIALOGUE_TIME_SCALE = 0.92;
 
 /* ── Exploration enhancements ── */
-const TURN_TILT_MAX = 0.025;          // max roll radians when turning
+const TURN_TILT_MAX = 0.02;           // max roll radians when turning (subtle)
 const TURN_TILT_SPEED = 3;            // how fast tilt responds
 const HEIGHT_SMOOTH_SPEED = 5;        // how fast camera adjusts to height changes
 const BREATHING_IDLE_DELAY = 3.0;     // seconds before breathing starts

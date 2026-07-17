@@ -8,6 +8,7 @@ import {
   setCinematicPresentationMode,
 } from '@/engine/camera/cinematicPresentation';
 import { isEffectiveReducedMotion } from '@/engine/accessibility/accessibilitySettings';
+import { devWarn } from '@/shared/utils/devLog';
 import { getCinematicTimelineTotalDuration } from './cinematicTimelineController';
 import type {
   CinematicTimelineDef,
@@ -21,6 +22,31 @@ export interface CinematicTimelineStartPayload {
 
 let activeTimelineId: string | null = null;
 const listeners = new Set<() => void>();
+let orphanWatchdogTimer: ReturnType<typeof setTimeout> | null = null;
+
+/** Extra grace period (seconds) beyond the expected total duration before the watchdog fires. */
+const ORPHAN_WATCHDOG_GRACE_SEC = 15;
+
+function clearOrphanWatchdog(): void {
+  if (orphanWatchdogTimer !== null) {
+    clearTimeout(orphanWatchdogTimer);
+    orphanWatchdogTimer = null;
+  }
+}
+
+function scheduleOrphanWatchdog(timelineId: string, totalDurationSec: number): void {
+  clearOrphanWatchdog();
+  const timeoutMs = (totalDurationSec + ORPHAN_WATCHDOG_GRACE_SEC) * 1000;
+  orphanWatchdogTimer = setTimeout(() => {
+    orphanWatchdogTimer = null;
+    devWarn(
+      `[cinematicTimelineOrchestrator] Orphan watchdog fired for timeline "${timelineId}" ` +
+        `(expected ~${totalDurationSec.toFixed(1)}s + ${ORPHAN_WATCHDOG_GRACE_SEC}s grace). ` +
+        'Auto-stopping — the component likely unmounted without completing the timeline.',
+    );
+    stopCinematicTimeline(timelineId);
+  }, timeoutMs);
+}
 
 function notifyTimelineListeners(): void {
   for (const listener of listeners) {
@@ -60,10 +86,13 @@ export function startCinematicTimeline(payload: CinematicTimelineStartPayload): 
   setCinematicHoldActive(true);
   notifyTimelineListeners();
 
+  const totalDurationSec = getCinematicTimelineTotalDuration(def);
+  scheduleOrphanWatchdog(def.id, totalDurationSec);
+
   eventBus.emit('cinematic:timeline_start', {
     def,
     options: { ...options, skipMotion: false },
-    totalDurationSec: getCinematicTimelineTotalDuration(def),
+    totalDurationSec,
     fallbackMs: def.fallbackMs,
   });
 
@@ -74,6 +103,7 @@ export function stopCinematicTimeline(timelineId?: string): void {
   if (timelineId && activeTimelineId !== timelineId) return;
   if (!activeTimelineId) return;
 
+  clearOrphanWatchdog();
   const id = activeTimelineId;
   activeTimelineId = null;
   setCinematicHoldActive(false);
@@ -87,6 +117,7 @@ export function stopCinematicTimeline(timelineId?: string): void {
 
 export function completeCinematicTimeline(timelineId: string, skipped = false): void {
   if (activeTimelineId !== timelineId) return;
+  clearOrphanWatchdog();
   activeTimelineId = null;
   setCinematicHoldActive(false);
   setCinematicPresentationMode('third_person');
@@ -104,6 +135,7 @@ export function skipCinematicTimeline(): void {
 
 /** Reset module state (unit tests). */
 export function resetCinematicTimelineOrchestratorForTests(): void {
+  clearOrphanWatchdog();
   activeTimelineId = null;
   notifyTimelineListeners();
 }

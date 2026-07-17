@@ -61,19 +61,19 @@ export const volodka_room_def: SceneDefinition = {
   ],
   visualComponent: 'VolodkaRoomVisual',
   lights: [
-    // Desk monitor glow — softened from acid green #00ff66 to a warmer cyan-green
-    // so the room reads as "lived-in" rather than "hacker lair". Reduced intensity
-    // so it no longer drowns out the warm ceiling lamp.
-    { position: [1.5, 1.3, -3.0], intensity: 1.8, color: '#22dd88', distance: 8 },
+    // Desk monitor glow — slightly more cyan for a data-flow feel
+    { position: [1.5, 1.3, -3.0], intensity: 2.0, color: '#20ee90', distance: 8 },
     // Warm ceiling lamp — boosted so the player can actually see the room
     { position: [0, 2.5, 0], intensity: 2.2, color: '#ffaa55', distance: 9 },
     // Bedside accent — slightly brighter for readability
     { position: [-1.5, 2.0, 2.0], intensity: 0.9, color: '#6655aa', distance: 6 },
+    // Cold blue "moonlight through curtain" rim light — cold-warm contrast
+    { position: [2.3, 2.2, 1.5], intensity: 0.6, color: '#4466aa', distance: 7 },
   ],
-  // Lighter ambient so furniture is visible; still cool-toned for night atmosphere
+  // Slightly reduced ambient to let point lights dominate more
   ambientColor: '#4a4565',
-  ambientIntensity: 1.15,
-  groundColor: '#2a2a3e',
+  ambientIntensity: 1.05,
+  groundColor: '#222238',
   fogEnabled: true,
   // Pushed fog back so it no longer hides the desk/bed in a 5x3x7 room
   fog: { near: 8, far: 18 },

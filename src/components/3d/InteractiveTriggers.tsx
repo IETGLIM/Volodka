@@ -410,7 +410,7 @@ export function InteractiveTriggers({
       );
 
       if (shouldShow || (poemApplies && poemHighlight.pulse)) {
-        runtime.pulsePhaseRef.current += delta * 3;
+        runtime.pulsePhaseRef.current += delta * 3.6;
       }
 
       runtime.triggerCooldown.current = Math.max(0, runtime.triggerCooldown.current - delta);
@@ -440,7 +440,7 @@ export function InteractiveTriggers({
       const isAllowed = allowedIdsRef.current.has(promptId);
       const shouldShow = isNear && isAllowed;
       runtime.proximityRef.current = shouldShow ? Math.max(0.4, 1 - dist / (NPC_INTERACTION_RANGE + 0.5)) : 0;
-      if (shouldShow) runtime.pulsePhaseRef.current += delta * 3.2;
+      if (shouldShow) runtime.pulsePhaseRef.current += delta * 3.8;
 
       reconcileProximityPrompt(
         promptId,

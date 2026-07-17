@@ -19,6 +19,35 @@ const IDLE: InteractionSessionSnapshot = {
 /** Read-only view of interaction FSM state (safe outside R3F tree). */
 let session: InteractionSessionSnapshot = { ...IDLE };
 
+/** Watchdog timeout (ms) for stuck non-Idle FSM states. */
+const STUCK_RECOVERY_TIMEOUT_MS = 15_000;
+let stuckRecoveryTimer: ReturnType<typeof setTimeout> | null = null;
+
+function clearStuckRecoveryWatchdog(): void {
+  if (stuckRecoveryTimer !== null) {
+    clearTimeout(stuckRecoveryTimer);
+    stuckRecoveryTimer = null;
+  }
+}
+
+function scheduleStuckRecoveryWatchdog(): void {
+  clearStuckRecoveryWatchdog();
+  stuckRecoveryTimer = setTimeout(() => {
+    stuckRecoveryTimer = null;
+    const stuckState = session.state;
+    const stuckNpcId = session.targetNpcId;
+    devWarn(
+      `[interactionSession] Stuck-recovery watchdog fired after ${STUCK_RECOVERY_TIMEOUT_MS / 1000}s. ` +
+        `FSM was stuck in ${INTERACTION_STATE_LABELS[stuckState]} (npc=${stuckNpcId}). Auto-resetting to Idle.`,
+    );
+    eventBus.emit('interaction:stuck_recovery', {
+      fromState: stuckState,
+      targetNpcId: stuckNpcId,
+    });
+    resetInteractionSession();
+  }, STUCK_RECOVERY_TIMEOUT_MS);
+}
+
 export function getInteractionSession(): Readonly<InteractionSessionSnapshot> {
   return session;
 }
@@ -68,10 +97,19 @@ export function writeInteractionSession(
     return false;
   }
   session = { state, targetNpcId };
+
+  // Manage stuck-recovery watchdog: arm on non-Idle, disarm on Idle/Exit.
+  if (state === InteractionState.Idle || state === InteractionState.Exit) {
+    clearStuckRecoveryWatchdog();
+  } else {
+    scheduleStuckRecoveryWatchdog();
+  }
+
   return true;
 }
 
 export function resetInteractionSession(): void {
+  clearStuckRecoveryWatchdog();
   session = { ...IDLE };
 }
 
@@ -81,6 +119,7 @@ const unsubSceneTransitionStart = eventBus.on('scene:transition_start', () => {
 
 function disposeInteractionSessionModule(): void {
   unsubSceneTransitionStart();
+  clearStuckRecoveryWatchdog();
   resetInteractionSession();
 }
 
