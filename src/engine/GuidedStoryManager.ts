@@ -36,6 +36,17 @@ const STORY_SPINE_ADVANCE_DEBOUNCE_MS = 32;
 /** How long (ms) without a guidance update before we consider the player lost. */
 const PLAYER_LOST_TIMEOUT_MS = 25_000;
 
+/** Tiered lost-timeout by act: earlier acts get faster help. */
+const PLAYER_LOST_TIMEOUT_BY_ACT: Record<number, number> = {
+  1: 15_000, // Tutorial act — help arrives faster
+  2: 20_000,
+  3: 25_000,
+  4: 25_000,
+  5: 25_000,
+  6: 25_000,
+  7: 25_000,
+};
+
 /** Contextual hints shown when the player seems lost, keyed by act number. */
 const PLAYER_LOST_HINTS: Record<number, string[]> = {
   1: [
@@ -344,6 +355,7 @@ export class GuidedStoryManager {
 
   private startPlayerLostDetection(): void {
     this.stopPlayerLostDetection();
+    // Fixed check interval — the act-specific timeout is evaluated inside each tick.
     this.playerLostTimer = setInterval(() => {
       if (!this.initialized) return;
       if (this.playerLostHintShown) return;
@@ -353,10 +365,12 @@ export class GuidedStoryManager {
       const mode = getGameSnapshot().mode;
       if (mode !== 'exploration') return;
 
+      const act = snapshot.currentAct;
+      const lostTimeout = PLAYER_LOST_TIMEOUT_BY_ACT[act] ?? PLAYER_LOST_TIMEOUT_MS;
+
       const elapsed = Date.now() - this.lastGuidanceTimestamp;
-      if (elapsed >= PLAYER_LOST_TIMEOUT_MS) {
+      if (elapsed >= lostTimeout) {
         this.playerLostHintShown = true;
-        const act = snapshot.currentAct;
         this.deps.events.emitPlayerLost({
           hint: pickLostHint(act),
           actNumber: act,
@@ -365,7 +379,7 @@ export class GuidedStoryManager {
         // It will be re-started by emitGuidanceUpdate when guidance changes.
         this.stopPlayerLostDetection();
       }
-    }, PLAYER_LOST_TIMEOUT_MS / 2);
+    }, 3000);
   }
 
   private stopPlayerLostDetection(): void {

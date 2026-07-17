@@ -13,7 +13,7 @@ import {
   AUTO_FOLLOW_RETURN_SPEED,
   FIRST_PERSON_ENABLED,
 } from './cameraConstants';
-import type { CameraModeContext, CameraModeTarget } from './types';
+import type { CameraModeContext, CameraModeTarget, SpringOverride } from './types';
 import { getInteractionState } from '@/components/3d/InteractionSystemBridge';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 
@@ -48,6 +48,7 @@ export function applyCameraFrame(
   ctx: CameraModeContext,
   targets: CameraModeTarget,
   frameState: PostModeFrameState,
+  springOverride?: SpringOverride,
 ): void {
   const { spring, camera: cam, delta, playerPos, playerVelocity } = ctx;
   const { targetPos, targetLook, targetFov, targetRoll } = targets;
@@ -108,7 +109,11 @@ export function applyCameraFrame(
     spring.roll = targetRoll;
     spring.fov = THREE.MathUtils.lerp(spring.fov, targetFov, 1 - Math.exp(-3 * delta));
   } else {
-    updateSpringCamera(spring, targetPos, targetLook, targetFov, delta, targetRoll);
+    updateSpringCamera(
+      spring, targetPos, targetLook, targetFov, delta, targetRoll,
+      springOverride?.stiffness,
+      springOverride?.damping,
+    );
   }
 
   if (!canWriteCamera(getCameraOwner())) return;

@@ -249,7 +249,9 @@ function findPhaseAtElapsed(
   for (let i = 0; i < phases.length; i++) {
     const phase = phases[i];
     if (elapsed < acc + phase.duration) {
-      return { index: i, localT: (elapsed - acc) / phase.duration, phaseStart: acc };
+      // Clamp localT to [0, 1] to prevent floating-point micro-jumps at phase boundaries
+      const rawT = (elapsed - acc) / phase.duration;
+      return { index: i, localT: Math.max(0, Math.min(1, rawT)), phaseStart: acc };
     }
     acc += phase.duration;
   }

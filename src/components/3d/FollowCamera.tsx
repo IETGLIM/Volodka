@@ -340,7 +340,8 @@ export function FollowCamera({
     postFrame.isCombat = isCombat;
     postFrame.isDragging = isDraggingRef.current;
 
-    applyCameraFrame(ctx, modeResult.targets, postFrame);
+    const springOverride = modeResult.kind === 'targets' ? modeResult.springOverride : undefined;
+    applyCameraFrame(ctx, modeResult.targets, postFrame, springOverride);
 
     const transitionActive = transitionRef.current?.active ?? false;
     if (wasTransitionActiveRef.current && !transitionActive) {

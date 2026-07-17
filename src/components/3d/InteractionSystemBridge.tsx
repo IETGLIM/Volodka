@@ -62,7 +62,12 @@ const APPROACH_NPC_MISSING_TIMEOUT = 2.0;
 const ALIGN_DURATION = 0.5;
 const LOCK_DURATION = 0.2;
 const EXIT_DURATION = 0.3;
-const APPROACH_SPEED = 2.5;
+/** Peak approach speed — close to player walk speed (4.0) for a natural feel. */
+const APPROACH_SPEED_MAX = 3.8;
+/** Minimum speed near the NPC for smooth deceleration. */
+const APPROACH_SPEED_MIN = 1.2;
+/** Distance at which deceleration easing begins (world units from arrival point). */
+const APPROACH_EASE_DISTANCE = 3.0;
 const ALIGN_LERP_SPEED = 8;
 
 /** Global interaction timeout: force-reset to Idle after this many seconds
@@ -410,12 +415,17 @@ export function InteractionSystemBridge({
             });
           }
         } else {
-          // Set external velocity for approach movement
-          // PhysicsPlayer will feed this through KinematicCharacterController
-          // for collision-safe approach — no wall clipping!
+          // Adaptive approach speed: decelerate smoothly near the NPC
+          // using an ease-out curve so the arrival feels natural.
+          const distFromArrival = Math.max(0, dist - APPROACH_ARRIVAL_DISTANCE);
+          const easeT = Math.min(distFromArrival / APPROACH_EASE_DISTANCE, 1);
+          // Smoothstep ease-out for natural deceleration
+          const smoothT = easeT * easeT * (3 - 2 * easeT);
+          const speed = APPROACH_SPEED_MIN + (APPROACH_SPEED_MAX - APPROACH_SPEED_MIN) * smoothT;
+
           const dirX = dx / dist;
           const dirZ = dz / dist;
-          setPlayerExternalVelocity(dirX * APPROACH_SPEED, dirZ * APPROACH_SPEED);
+          setPlayerExternalVelocity(dirX * speed, dirZ * speed);
 
           livePlayerRotationRef.current = Math.atan2(dirX, dirZ);
 

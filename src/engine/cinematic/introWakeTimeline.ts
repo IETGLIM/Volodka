@@ -41,6 +41,9 @@ export const INTRO_WAKE_TIMELINE: CinematicTimelineDef = {
   id: 'intro_wakeup',
   fallbackMs: WAKEUP_FALLBACK_MS,
   phases: [
+    // ── Phase 1: Terminal reveal ──
+    // Camera starts far away (FAR_CORNER) and slowly drifts toward the terminal.
+    // easeInOutCubic keeps the camera lingering at the start for a dramatic reveal.
     {
       id: 'terminal',
       duration: WAKEUP_PHASE.terminal,
@@ -145,7 +148,7 @@ export const INTRO_WAKE_TIMELINE: CinematicTimelineDef = {
     },
     {
       id: 'settle',
-      duration: 0.01,
+      duration: WAKEUP_PHASE.settle,
       actor: {
         mode: 'in_place',
         clip: 'idle',

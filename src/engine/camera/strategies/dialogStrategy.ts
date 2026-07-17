@@ -1,7 +1,9 @@
 import {
-  getDialogueShot,
+  getBlendedDialogueShot,
   updateDialogueShotController,
   resolveCameraCollision,
+  DIALOGUE_SPRING_STIFFNESS,
+  DIALOGUE_SPRING_DAMPING,
   type DialogueSpeaker,
 } from '../cinematicCamera';
 import { MIN_DISTANCE, WALL_MARGIN } from '../cameraConstants';
@@ -44,15 +46,15 @@ export const dialogStrategy: CameraModeStrategy = {
       speaker = controller.currentSpeaker;
     }
 
-    const currentShot = updateDialogueShotController(
+    updateDialogueShotController(
       controller,
       ctx.delta,
       speaker !== 'unknown' ? speaker : undefined,
       ctx.currentNodeId,
     );
 
-    const shot = getDialogueShot(
-      currentShot,
+    const shot = getBlendedDialogueShot(
+      controller,
       ctx.playerPos,
       npcPos,
       npcGroup?.rotation.y,
@@ -77,6 +79,11 @@ export const dialogStrategy: CameraModeStrategy = {
         targetLook: shot.lookAt,
         targetFov: shot.fov,
         targetRoll: 0,
+      },
+      /** Softer spring for cinematic dialogue — prevents mechanical stiffness */
+      springOverride: {
+        stiffness: DIALOGUE_SPRING_STIFFNESS,
+        damping: DIALOGUE_SPRING_DAMPING,
       },
     };
   },

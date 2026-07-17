@@ -26,9 +26,15 @@ export interface CameraModeTarget {
   targetRoll: number;
 }
 
+/** Optional spring parameters override (e.g. softer spring for dialogue) */
+export interface SpringOverride {
+  stiffness: number;
+  damping: number;
+}
+
 /** Transition mode applies camera directly and ends the frame early */
 export type CameraModeUpdateResult =
-  | { kind: 'targets'; mode: CameraModeId; targets: CameraModeTarget }
+  | { kind: 'targets'; mode: CameraModeId; targets: CameraModeTarget; springOverride?: SpringOverride }
   | { kind: 'direct_applied'; mode: 'transition' };
 
 /** Mutable per-frame context shared across strategies */

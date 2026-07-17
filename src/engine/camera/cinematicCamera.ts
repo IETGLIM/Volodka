@@ -29,9 +29,13 @@ const FOV_LERP_SPEED = 3;
 const ROLL_LERP_SPEED = 4;
 
 /* ── Dialogue ── */
-const DIALOGUE_SHOT_INTERVAL = 3.5;
+const DIALOGUE_SHOT_INTERVAL_MIN = 3.2;
+const DIALOGUE_SHOT_INTERVAL_MAX = 4.0;
 const DIALOGUE_FOV = 50;
 const _DIALOGUE_TIME_SCALE = 0.92;
+const DIALOGUE_SHOT_TRANSITION_SPEED = 2.5; // speed of shot blend (higher = faster)
+export const DIALOGUE_SPRING_STIFFNESS = 8; // softer spring for cinematic dialogue feel
+export const DIALOGUE_SPRING_DAMPING = 0.88;
 
 /* ── Exploration enhancements ── */
 const TURN_TILT_MAX = 0.02;           // max roll radians when turning (subtle)
@@ -261,6 +265,34 @@ export function getDialogueShotForSpeaker(speaker: DialogueSpeaker): DialogueSho
 }
 
 /**
+ * Compute a blended dialogue camera shot during transitions.
+ * When transitionProgress < 1, smoothly interpolates between previous and current shots.
+ * Uses easeInOutCubic for film-like dissolves.
+ */
+export function getBlendedDialogueShot(
+  controller: DialogueShotController,
+  playerPos: THREE.Vector3,
+  npcPos: THREE.Vector3,
+  npcRotation: number = 0,
+): CameraShot {
+  const t = easeInOutCubic(controller.transitionProgress);
+
+  // When fully transitioned, just return the current shot directly
+  if (t >= 0.999) {
+    return getDialogueShot(controller.currentShot, playerPos, npcPos, npcRotation);
+  }
+
+  const prevShot = getDialogueShot(controller.previousShot, playerPos, npcPos, npcRotation);
+  const nextShot = getDialogueShot(controller.currentShot, playerPos, npcPos, npcRotation);
+
+  _dialogueShotOut.position.lerpVectors(prevShot.position, nextShot.position, t);
+  _dialogueShotOut.lookAt.lerpVectors(prevShot.lookAt, nextShot.lookAt, t);
+  _dialogueShotOut.fov = prevShot.fov + (nextShot.fov - prevShot.fov) * t;
+
+  return _dialogueShotOut;
+}
+
+/**
  * Compute a cinematic dialogue camera shot.
  * Each shot type has a different position and framing.
  */
@@ -346,7 +378,11 @@ export interface DialogueShotController {
   currentShotIndex: number;
   timer: number;
   currentShot: DialogueShotType;
+  /** Previous shot — used for blending during transitions */
+  previousShot: DialogueShotType;
   transitionProgress: number;
+  /** Randomized interval for next auto-switch (natural feel) */
+  nextSwitchInterval: number;
   /** Current speaker — affects shot selection */
   currentSpeaker: DialogueSpeaker;
   /** Last dialogue node ID — triggers shot change on node change */
@@ -355,12 +391,18 @@ export interface DialogueShotController {
   speakerOverrideActive: boolean;
 }
 
+function randomDialogueInterval(): number {
+  return DIALOGUE_SHOT_INTERVAL_MIN + Math.random() * (DIALOGUE_SHOT_INTERVAL_MAX - DIALOGUE_SHOT_INTERVAL_MIN);
+}
+
 export function createDialogueShotController(): DialogueShotController {
   return {
     currentShotIndex: 0,
     timer: 0,
     currentShot: SHOT_SEQUENCE[0],
+    previousShot: SHOT_SEQUENCE[0],
     transitionProgress: 1,
+    nextSwitchInterval: randomDialogueInterval(),
     currentSpeaker: 'unknown',
     lastDialogueNodeId: '',
     speakerOverrideActive: false,
@@ -380,9 +422,12 @@ export function updateDialogueShotController(
 ): DialogueShotType {
   controller.timer += delta;
 
-  // Transition in
+  // Transition in (smooth blend between shots)
   if (controller.transitionProgress < 1) {
-    controller.transitionProgress = Math.min(1, controller.transitionProgress + delta * 2);
+    controller.transitionProgress = Math.min(
+      1,
+      controller.transitionProgress + delta * DIALOGUE_SHOT_TRANSITION_SPEED,
+    );
   }
 
   // Update speaker if provided
@@ -393,6 +438,7 @@ export function updateDialogueShotController(
   // Check for dialogue node change — trigger shot switch
   if (dialogueNodeId && dialogueNodeId !== controller.lastDialogueNodeId) {
     controller.lastDialogueNodeId = dialogueNodeId;
+    controller.previousShot = controller.currentShot;
     // Speaker-aware shot selection on node change
     if (controller.currentSpeaker !== 'unknown') {
       controller.currentShot = getDialogueShotForSpeaker(controller.currentSpeaker);
@@ -403,11 +449,13 @@ export function updateDialogueShotController(
     }
     controller.timer = 0;
     controller.transitionProgress = 0;
+    controller.nextSwitchInterval = randomDialogueInterval();
   }
 
-  // Auto-switch shot at interval (when no speaker override)
-  if (controller.timer >= DIALOGUE_SHOT_INTERVAL) {
+  // Auto-switch shot at randomized interval
+  if (controller.timer >= controller.nextSwitchInterval) {
     controller.timer = 0;
+    controller.previousShot = controller.currentShot;
     // If speaker is known, cycle with speaker preference
     if (controller.currentSpeaker !== 'unknown' && controller.speakerOverrideActive) {
       // Alternate between speaker shot and two-shot for variety
@@ -419,6 +467,7 @@ export function updateDialogueShotController(
       controller.currentShot = SHOT_SEQUENCE[controller.currentShotIndex];
     }
     controller.transitionProgress = 0;
+    controller.nextSwitchInterval = randomDialogueInterval();
     controller.speakerOverrideActive = controller.currentSpeaker !== 'unknown';
   }
 
@@ -430,7 +479,9 @@ export function resetDialogueShotController(controller: DialogueShotController):
   controller.currentShotIndex = 0;
   controller.timer = 0;
   controller.currentShot = SHOT_SEQUENCE[0];
+  controller.previousShot = SHOT_SEQUENCE[0];
   controller.transitionProgress = 0;
+  controller.nextSwitchInterval = randomDialogueInterval();
   controller.currentSpeaker = 'unknown';
   controller.lastDialogueNodeId = '';
   controller.speakerOverrideActive = false;
@@ -440,11 +491,13 @@ export function resetDialogueShotController(controller: DialogueShotController):
 export function setDialogueSpeaker(controller: DialogueShotController, speaker: DialogueSpeaker): void {
   if (controller.currentSpeaker !== speaker) {
     controller.currentSpeaker = speaker;
-    // Immediately cut to speaker-appropriate shot
+    // Blend to speaker-appropriate shot
+    controller.previousShot = controller.currentShot;
     controller.currentShot = getDialogueShotForSpeaker(speaker);
     controller.speakerOverrideActive = true;
     controller.transitionProgress = 0;
     controller.timer = 0;
+    controller.nextSwitchInterval = randomDialogueInterval();
   }
 }
 
@@ -768,6 +821,11 @@ function easeInOutCubic(t: number): number {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
 
+/** Smooth ease-in-out quartic curve — gentler at endpoints, more "floaty" mid-flight */
+function easeInOutQuart(t: number): number {
+  return t < 0.5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2;
+}
+
 /* ════════════════════════════════════════════════════
  * COMBAT CAMERA
  * Wider FOV, impact zoom, screen shake.
@@ -943,7 +1001,8 @@ export function updateSceneTransition(
     return _transitionUpdateOut;
   }
 
-  const t = easeInOutCubic(state.progress);
+  // easeInOutQuart for smoother departure/arrival — camera lingers at start and end
+  const t = easeInOutQuart(state.progress);
 
   _transitionPos.lerpVectors(state.startPos, state.endPos, t);
   _transitionPos.y += state.flyHeight * 4 * t * (1 - t);

@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { ChevronRight, Zap } from 'lucide-react';
 import type { ReactNode, Ref } from 'react';
 import { buildChoiceAriaLabel } from '@/shared/utils/choiceAriaLabel';
+import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import type { StoryConditionResult } from '@/shared/storyConditions';
 
 export interface CinematicChoiceItem {
@@ -29,14 +30,16 @@ export function CinematicNarrativeChoices({
   onContinue,
   firstChoiceRef,
 }: CinematicNarrativeChoicesProps) {
+  const reducedMotion = useEffectiveReducedMotion();
+
   if (choices.length === 0 && onContinue) {
     return (
       <motion.button
         type="button"
-        initial={{ opacity: 0, y: 10 }}
+        initial={reducedMotion ? false : { opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        whileHover={{ scale: 1.01 }}
-        whileTap={{ scale: 0.99 }}
+        whileHover={reducedMotion ? undefined : { scale: 1.01 }}
+        whileTap={reducedMotion ? undefined : { scale: 0.99 }}
         onClick={onContinue}
         aria-label={continueLabel}
         className="group w-full text-left px-5 py-3 rounded-lg border border-white/15 bg-black/40 backdrop-blur-md text-slate-100 hover:bg-black/55 hover:border-white/25 transition-all narrative-choice-hover cyber-dialogue-choice"
@@ -57,11 +60,11 @@ export function CinematicNarrativeChoices({
           key={choice.key}
           ref={i === 0 ? firstChoiceRef : undefined}
           type="button"
-          initial={{ opacity: 0, y: 12 }}
+          initial={reducedMotion ? false : { opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: i * 0.07, duration: 0.28 }}
-          whileHover={choice.pass ? { scale: 1.01 } : undefined}
-          whileTap={choice.pass ? { scale: 0.99 } : undefined}
+          transition={reducedMotion ? { duration: 0 } : { delay: i * 0.07, duration: 0.28 }}
+          whileHover={choice.pass && !reducedMotion ? { scale: 1.01 } : undefined}
+          whileTap={choice.pass && !reducedMotion ? { scale: 0.99 } : undefined}
           onClick={() => {
             if (choice.pass) choice.onSelect();
           }}
