@@ -46,6 +46,7 @@ export const POEM_WORLD_CATEGORY_DEFAULTS: Record<PoemWorldCategory, PoemWorldEf
     audioCue: 'discovery',
     durationMs: 4500,
     worldTint: 'rgba(255, 215, 100, 0.12)',
+    narrationLine: 'Мир приоткрывает дверь. Ты видишь то, чего не замечал.',
     worldHint: 'exit_glow',
   },
   dialogue: {
@@ -54,6 +55,7 @@ export const POEM_WORLD_CATEGORY_DEFAULTS: Record<PoemWorldCategory, PoemWorldEf
     audioCue: 'emotional',
     durationMs: 4000,
     worldTint: 'rgba(200, 240, 255, 0.10)',
+    narrationLine: 'Смерть — не конец. Она просто перезагружает процесс.',
     worldHint: 'npc_shimmer',
   },
   combat: {
@@ -62,6 +64,7 @@ export const POEM_WORLD_CATEGORY_DEFAULTS: Record<PoemWorldCategory, PoemWorldEf
     audioCue: 'danger',
     durationMs: 3500,
     worldTint: 'rgba(255, 60, 60, 0.14)',
+    narrationLine: 'Код — это тоже стихия. Просто рифма измеряется в наносекундах.',
     worldHint: 'none',
   },
   defense: {
@@ -70,6 +73,7 @@ export const POEM_WORLD_CATEGORY_DEFAULTS: Record<PoemWorldCategory, PoemWorldEf
     audioCue: 'tension',
     durationMs: 4000,
     worldTint: 'rgba(80, 140, 255, 0.12)',
+    narrationLine: 'Любовь — единственный баг, который не хочется фиксить.',
     worldHint: 'none',
   },
   social: {
@@ -78,6 +82,7 @@ export const POEM_WORLD_CATEGORY_DEFAULTS: Record<PoemWorldCategory, PoemWorldEf
     audioCue: 'emotional',
     durationMs: 4000,
     worldTint: 'rgba(255, 180, 120, 0.10)',
+    narrationLine: 'Эхо чужих слов — как Wi-Fi из соседней комнаты: ловишь обрывки, но подключиться не можешь.',
     worldHint: 'npc_shimmer',
   },
   utility: {

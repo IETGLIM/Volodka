@@ -45,6 +45,8 @@ import {
   type PromptData,
   type ZoneProximityRuntime,
 } from '@/engine/interaction/interactiveTriggerProximity';
+import { getGameSnapshot } from '@/engine/GameActionDispatcher';
+import { resolveNpcBarkForRelation } from '@/shared/npcBark';
 import { NPCProximityTriggers } from './interactiveTriggers/NpcProximityMarkers';
 import { TriggerZoneComponent } from './interactiveTriggers/TriggerZoneComponent';
 
@@ -147,6 +149,8 @@ export function InteractiveTriggers({
   const proximityTempVecRef = useRef(new THREE.Vector3());
   const zoneRuntimeRef = useRef(new Map<string, ZoneProximityRuntime>());
   const npcRuntimeRef = useRef(new Map<string, NpcProximityRuntime>());
+  /** Track NPCs that already barked on proximity this scene — one bark per NPC per scene entry. */
+  const barkedNpcIdsRef = useRef(new Set<string>());
 
   useEffect(() => {
     const map = zoneRuntimeRef.current;
@@ -175,6 +179,7 @@ export function InteractiveTriggers({
     allowedIdsRef.current.clear();
     resetEKeyConsumption();
     lastHintIdRef.current = null;
+    barkedNpcIdsRef.current.clear();
     eventBus.emit('interaction:end', {});
   });
 
@@ -448,6 +453,21 @@ export function InteractiveTriggers({
         registerPrompt,
         unregisterPrompt,
       );
+
+      // ── Proximity bark: one bark per NPC on first approach per scene ──
+      if (isNear && !barkedNpcIdsRef.current.has(npc.npcId)) {
+        barkedNpcIdsRef.current.add(npc.npcId);
+        const npcDef = findNpcById(npc.npcId);
+        if (npcDef?.barkTexts) {
+          const npcRelations = getGameSnapshot().npcRelations;
+          const relation = npcRelations.find((r) => r.npcId === npc.npcId);
+          const relationValue = relation?.value ?? 50;
+          const barkText = resolveNpcBarkForRelation(npcDef.barkTexts, relationValue);
+          if (barkText) {
+            eventBus.emit('npc:no_dialogue', { npcId: npc.npcId, barkText });
+          }
+        }
+      }
     }
 
     frameCountRef.current++;

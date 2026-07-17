@@ -26,7 +26,10 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
       {
         text: 'Мне сейчас не до философии.',
         next: null,
-        effects: [{ type: 'addStat', stat: 'stress', value: 2 }],
+        effects: [
+          { type: 'addStat', stat: 'stress', value: 2 },
+          { type: 'showThought', thought: 'Альберт замолчал. Ты почувствовал знакомую тяжесть — как когда мама не отвечала на вопросы.' },
+        ],
       },
       {
         text: 'Научи меня — код и стихи одно?',
@@ -91,7 +94,11 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
           { type: 'setFlag', flag: 'albert_truth_whisper', flagValue: true },
         ],
       },
-      { text: 'Мне нужно время переварить.', next: null },
+      {
+        text: 'Мне нужно время переварить.',
+        next: null,
+        effects: [{ type: 'showThought', thought: 'Слово «позже» — самое опасное слово в IT. И в жизни.' }],
+      },
     ],
   },
 
@@ -126,12 +133,16 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
           { type: 'addKarma', value: 2 },
           { type: 'addSkill', skill: 'writing', value: 1 },
           { type: 'npcChange', npcId: 'albert', npcChange: { relation: 5 } },
+          { type: 'showThought', thought: 'Он хотел помочь. Ты это знал. Но помощь — это долг, а долгов ты не несёшь.' },
         ],
       },
       {
         text: 'Сомневаюсь, что это так просто.',
         next: null,
-        effects: [{ type: 'addSkill', skill: 'logic', value: 1 }],
+        effects: [
+          { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'showThought', thought: 'Сомнение — единственный баг, который нельзя пофиксить патчем.' },
+        ],
       },
       {
         text: 'А если код — это тоже стихотворение? Просто написанное на другом языке?',
@@ -189,6 +200,7 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
         effects: [
           { type: 'addStat', stat: 'stress', value: 3 },
           { type: 'npcChange', npcId: 'albert', npcChange: { relation: -2 } },
+          { type: 'showThought', thought: 'Грубость — защитный протокол. Срабатывает без багов.' },
         ],
       },
     ],
