@@ -26,9 +26,18 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
     keyboardDrivesMove,
     blockedByWall,
     groundY,
+    justLanded,
   } = scratch;
 
   deps.currentFloorMaterialRef.current = deps.config.floorMaterial;
+
+  // ── Landing impact footstep ──
+  if (justLanded) {
+    deps.footstepTimerRef.current = 0;
+    audioEngine.playFootstep(deps.currentFloorMaterialRef.current, {
+      sourceId: 'player-landing',
+    });
+  }
 
   const horizontalSpeed = Math.sqrt(vel.x * vel.x + vel.z * vel.z);
   const animPos = rb.translation();

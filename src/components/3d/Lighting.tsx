@@ -25,7 +25,7 @@ const SHADOW_NORMAL_BIAS = 0.04;
  *  Format: { color, intensity } */
 const INDOOR_AMBIENT: Record<string, { color: string; intensity: number }> = {
   volodka_room:       { color: '#2a2538', intensity: 0.55 },
-  volodka_corridor:   { color: '#383448', intensity: 0.66 },
+  volodka_corridor:   { color: '#2a2438', intensity: 0.52 },
   home_evening:       { color: '#4a3828', intensity: 0.62 },
   cafe_evening:       { color: '#2a3048', intensity: 0.58 },
   office_day:         { color: '#c0c8d0', intensity: 0.65 },
@@ -44,7 +44,7 @@ const DEFAULT_INDOOR_AMBIENT = { color: '#2a2a3a', intensity: 0.52 };
  *  Format: { position, intensity, color, distance } or null to disable */
 const INDOOR_FILL: Record<string, { position: [number, number, number]; intensity: number; color: string; distance: number } | null> = {
   volodka_room:       { position: [0, 2.2, -0.5], intensity: 1.5, color: '#7766aa', distance: 10 },
-  volodka_corridor:   { position: [0, 2.2, 0], intensity: 2.1, color: '#bbAA88', distance: 14 },
+  volodka_corridor:   { position: [0, 2.2, 0], intensity: 1.4, color: '#998877', distance: 12 },
   home_evening:       { position: [0, 2.2, 0], intensity: 2.2, color: '#ddaa77', distance: 12 },
   cafe_evening:       { position: [0, 2.5, -1], intensity: 1.75, color: '#aa99cc', distance: 13 },
   office_day:         { position: [0, 2.5, 0], intensity: 2.8, color: '#dde8f8', distance: 16 },
@@ -253,10 +253,35 @@ const SCENE_ACCENT_LIGHTS: Record<string, AccentLight[]> = {
     { position: [2, 2.5, 1], color: '#ffaa22', intensity: 1.8, distance: 8 },
     { position: [-3, 3.5, -5], color: '#aa44ff', intensity: 1.5, distance: 12, animated: 'neon_cycle' },
     { position: [7, 2.8, 0], color: '#4488ff', intensity: 1.8, distance: 8 },
+    { position: [-8, 3, 5], color: '#ff4488', intensity: 2.0, distance: 10, animated: 'neon_cycle' },
   ],
   home_evening: [
     { position: [0.5, 1.8, -0.5], color: '#ff9944', intensity: 2.0, distance: 8, animated: 'candle_flicker' },
     { position: [-1, 1.5, 1], color: '#ffbb66', intensity: 1.2, distance: 6 },
+  ],
+  cafe_evening: [
+    { position: [-3, 2.5, -1], color: '#3366ee', intensity: 1.8, distance: 9, animated: 'cold_pulse' },
+    { position: [2, 2.2, 2], color: '#2244aa', intensity: 1.4, distance: 8, animated: 'cold_pulse' },
+    { position: [0, 1.5, -3], color: '#ff8844', intensity: 1.0, distance: 6 },
+  ],
+  volodka_corridor: [
+    { position: [0, 2.5, 0], color: '#ccaa55', intensity: 1.6, distance: 10, animated: 'candle_flicker' },
+    { position: [0, 2.2, -6], color: '#3355aa', intensity: 1.2, distance: 8 },
+    { position: [0, 2.2, 6], color: '#223388', intensity: 0.8, distance: 7 },
+  ],
+  office_day: [
+    { position: [0, 2.6, -2], color: '#ccdde8', intensity: 1.2, distance: 14, animated: 'cold_pulse' },
+    { position: [3, 2.5, 2], color: '#bbccdd', intensity: 0.8, distance: 12 },
+    { position: [-3, 2.5, 2], color: '#aab8cc', intensity: 0.8, distance: 12 },
+  ],
+  library_day: [
+    { position: [0, 1.8, -2], color: '#ddaa55', intensity: 1.5, distance: 8 },
+    { position: [2, 2.2, 0], color: '#cc9944', intensity: 0.8, distance: 7 },
+  ],
+  park_day: [
+    { position: [2, 4, -1], color: '#ffdd88', intensity: 1.6, distance: 14 },
+    { position: [-3, 3.5, 2], color: '#ffcc77', intensity: 1.2, distance: 12 },
+    { position: [0, 2.5, -4], color: '#eebb66', intensity: 0.9, distance: 10 },
   ],
   guild_mainframe: [
     { position: [-3, 2, -2], color: '#22aadd', intensity: 2.0, distance: 10, animated: 'cold_pulse' },

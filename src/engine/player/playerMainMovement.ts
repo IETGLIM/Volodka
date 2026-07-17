@@ -29,8 +29,16 @@ import {
   TERMINAL_VELOCITY,
   KCC_FAIL_FRAMES_BEFORE_DEGRADE,
   MAX_DIRECT_DISPLACEMENT,
+  VARIABLE_JUMP_FALL_MULT,
+  LANDING_SHAKE_MIN_VELOCITY,
+  LANDING_SHAKE_INTENSITY,
+  LANDING_SHAKE_DECAY,
+  WALL_BUMP_SHAKE_INTENSITY,
+  WALL_BUMP_SHAKE_DECAY,
+  WALL_BUMP_COOLDOWN,
 } from '@/engine/player/playerConstants';
 import { lerpAngle, enforceFloor, clampHorizontalDisplacement } from '@/engine/player/playerMath';
+import { triggerCameraShake } from '@/engine/camera/cameraShake';
 import { sharedCameraYawRef } from '@/engine/PlayerRotationState';
 import { computeKccMovementSubstepped } from '@/engine/player/physicsSubstep';
 import {
@@ -171,6 +179,9 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
   scratch.running = running;
   scratch.keyboardDrivesMove = keyboardDrivesMove;
   scratch.isOutdoor = isOutdoor;
+  scratch.jumpHeld = jumping;
+  scratch.justLanded = false;
+  scratch.landingImpactVel = 0;
 
   if (isMoving) {
     moveDir.normalize();
@@ -246,7 +257,11 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
       deps.coyoteTimerRef.current = 0;
     }
   } else {
-    vel.y += GRAVITY * dt;
+    // Variable jump height: when ascending and jump released, apply
+    // stronger gravity so short hops feel snappy while full presses
+    // reach peak height.
+    const gravityMult = (vel.y > 0 && !jumping) ? VARIABLE_JUMP_FALL_MULT : 1;
+    vel.y += GRAVITY * gravityMult * dt;
     if (vel.y < TERMINAL_VELOCITY) vel.y = TERMINAL_VELOCITY;
   }
 
@@ -309,8 +324,22 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
 
   scratch.isGroundedNow = isGroundedNow;
 
+  // Save vertical velocity BEFORE zeroing so landing impact can be measured.
+  const prevVelY = vel.y;
+  scratch.prevVelY = prevVelY;
+
   const wasGrounded = scratch.wasGrounded;
   if (isGroundedNow && !airborneIntent) {
+    if (!wasGrounded && prevVelY < LANDING_SHAKE_MIN_VELOCITY) {
+      // Landing with significant downward speed — trigger ground-impact feedback.
+      const impactStrength = Math.min(1, Math.abs(prevVelY) / 12);
+      triggerCameraShake(
+        LANDING_SHAKE_INTENSITY * impactStrength,
+        LANDING_SHAKE_DECAY,
+      );
+      scratch.justLanded = true;
+      scratch.landingImpactVel = prevVelY;
+    }
     vel.y = 0;
     if (!wasGrounded) {
       deps.jumpCooldownRef.current = 0;
@@ -345,6 +374,15 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
     const slideRatio = Math.max(actualHLen / Math.max(desiredHLen, 0.001), 0.15);
     vel.x *= slideRatio;
     vel.z *= slideRatio;
+
+    // Wall bump feedback — subtle camera shake with cooldown.
+    if (deps.wallBumpCooldownRef.current <= 0) {
+      triggerCameraShake(WALL_BUMP_SHAKE_INTENSITY, WALL_BUMP_SHAKE_DECAY);
+      deps.wallBumpCooldownRef.current = WALL_BUMP_COOLDOWN;
+    }
+  }
+  if (deps.wallBumpCooldownRef.current > 0) {
+    deps.wallBumpCooldownRef.current -= dt;
   }
 
   if (isGroundedNow && !airborneIntent && isMoving) {

@@ -31,6 +31,10 @@ export interface PlayerFrameScratch {
   isGroundedNow: boolean;
   isOutdoor: boolean;
   groundY: number;
+  jumpHeld: boolean;
+  prevVelY: number;
+  justLanded: boolean;
+  landingImpactVel: number;
 }
 
 export interface PlayerMovementDeps {
@@ -63,6 +67,7 @@ export interface PlayerMovementDeps {
   controlsDegradedRef: React.MutableRefObject<boolean>;
   recreateCharacterController: () => RapierCharacterController | null;
   snapAirborneRef: React.MutableRefObject<boolean>;
+  wallBumpCooldownRef: React.MutableRefObject<number>;
   rbBoundRef: React.MutableRefObject<boolean>;
   prevRbPosRef: React.MutableRefObject<THREE.Vector3>;
   currentFloorMaterialRef: React.MutableRefObject<string>;

@@ -11,6 +11,11 @@ import {
   FIRST_PERSON_ENABLED,
   FIRST_PERSON_EYE_HEIGHT,
 } from '../cameraConstants';
+import {
+  RUN_FOV_BOOST,
+  RUN_FOV_SPEED_FULL,
+  RUN_FOV_SPEED_MIN,
+} from '@/engine/player/playerConstants';
 import { shouldKeepFirstPersonExplorationCamera } from '@/engine/interaction/interactionSession';
 import type { CameraModeStrategy } from '../types';
 
@@ -77,6 +82,16 @@ export const explorationStrategy: CameraModeStrategy = {
     );
     offset.multiplyScalar(effectiveDistance);
 
+    // ── Running FOV boost: widen FOV slightly when sprinting for speed feel ──
+    const playerSpeed = ctx.playerVelocity.length();
+    const speedMs = ctx.delta > 0.0001 ? playerSpeed / ctx.delta : 0;
+    let fovBoost = 0;
+    if (speedMs > RUN_FOV_SPEED_MIN) {
+      const t = Math.min(1, (speedMs - RUN_FOV_SPEED_MIN) / (RUN_FOV_SPEED_FULL - RUN_FOV_SPEED_MIN));
+      fovBoost = t * RUN_FOV_BOOST;
+    }
+    const baseFov = ctx.currentSceneFov;
+
     const exploration = ctx.exploration;
     let heightOffset = 0;
     let targetRoll = 0;
@@ -138,7 +153,7 @@ export const explorationStrategy: CameraModeStrategy = {
       targets: {
         targetPos,
         targetLook,
-        targetFov: ctx.currentSceneFov,
+        targetFov: baseFov + fovBoost,
         targetRoll,
       },
     };

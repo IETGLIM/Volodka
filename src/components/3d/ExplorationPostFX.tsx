@@ -45,11 +45,11 @@ import {
 /** Per-scene color grading overrides for CyberPunk2077 / Noir / Gothic feel */
 const SCENE_COLOR_GRADE: Record<string, { hue: number; saturation: number; brightness: number; contrast: number }> = {
   volodka_room:       { hue: -0.08, saturation: 0.15, brightness: 0.04, contrast: 0.28 }, // matrix monitor glow
-  volodka_corridor:   { hue: -0.04, saturation: -0.12, brightness: 0.02, contrast: 0.16 }, // dim rainy noir
-  home_evening:       { hue: 0.05,  saturation: 0.14, brightness: 0.02, contrast: 0.14 }, // warm amber mood
+  volodka_corridor:   { hue: -0.05, saturation: -0.15, brightness: 0.01, contrast: 0.22 }, // oppressive noir
+  home_evening:       { hue: 0.06,  saturation: 0.16, brightness: 0.02, contrast: 0.14 }, // warm amber mood
   street_night:       { hue: 0.08,  saturation: 0.22, brightness: 0.05, contrast: 0.35 }, // synthwave neon rain
   street_winter:      { hue: -0.02, saturation: -0.12, brightness: 0.12, contrast: 0.08  },
-  cafe_evening:       { hue: 0.06,  saturation: 0.20, brightness: 0.02, contrast: 0.22 }, // hazy blue-neon café
+  cafe_evening:       { hue: 0.06,  saturation: 0.20, brightness: 0.02, contrast: 0.16 }, // hazy blue-neon café
   office_day:         { hue: -0.02, saturation: -0.12, brightness: 0.04, contrast: 0.08 }, // sterile overcast
   park_day:           { hue: -0.02, saturation: 0.02, brightness: 0.06, contrast: 0.14 }, // gothic haze
   library_day:        { hue: 0.03,  saturation: 0.06, brightness: 0.02, contrast: 0.12 }, // dusty amber reading light
@@ -83,7 +83,7 @@ const STRESS_CHROMATIC_SCENES = new Set([
 /** Scene-specific vignette darkness — noir scenes get heavier vignette */
 const SCENE_VIGNETTE: Record<string, { offset: number; darkness: number }> = {
   volodka_room:       { offset: 0.32, darkness: 0.42 },
-  volodka_corridor:   { offset: 0.3, darkness: 0.36 },
+  volodka_corridor:   { offset: 0.28, darkness: 0.40 },
   home_evening:       { offset: 0.4,  darkness: 0.35 },
   street_night:       { offset: 0.4,  darkness: 0.3 },
   cafe_evening:       { offset: 0.34, darkness: 0.36 },

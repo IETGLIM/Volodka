@@ -24,6 +24,32 @@ export const TERMINAL_VELOCITY = GRAVITY * 2;
 export const WARMUP_DURATION_S = 0.2;
 export const KCC_FAIL_FRAMES_BEFORE_DEGRADE = 60;
 export const KCC_STUCK_FRAMES_BEFORE_RECREATE = 15;
+
+// ── Ground feel & feedback ──
+/** Minimum downward velocity (m/s) to trigger landing camera shake. */
+export const LANDING_SHAKE_MIN_VELOCITY = -4;
+/** Camera shake intensity on hard landing (world-space units). */
+export const LANDING_SHAKE_INTENSITY = 0.04;
+/** How fast landing shake decays (higher = faster). */
+export const LANDING_SHAKE_DECAY = 12;
+/** Very subtle camera shake when walking into a wall. */
+export const WALL_BUMP_SHAKE_INTENSITY = 0.012;
+/** How fast wall-bump shake decays. */
+export const WALL_BUMP_SHAKE_DECAY = 18;
+/** Maximum wall-bump shake cooldown to prevent rapid re-trigger. */
+export const WALL_BUMP_COOLDOWN = 0.3;
+
+// ── Variable jump height ──
+/** Gravity multiplier when ascending with jump button released (makes short hops feel snappy). */
+export const VARIABLE_JUMP_FALL_MULT = 2.8;
+
+// ── Running FOV boost ──
+/** Additional FOV degrees when sprinting (adds peripheral speed feel). */
+export const RUN_FOV_BOOST = 3;
+/** Player speed (m/s) at which FOV boost is at full intensity. */
+export const RUN_FOV_SPEED_FULL = 5.5;
+/** Player speed (m/s) at which FOV boost begins. */
+export const RUN_FOV_SPEED_MIN = 2.5;
 /** Cap KCC controller recreates per incident to avoid WASM churn loops. */
 export const MAX_KCC_RECREATE_ATTEMPTS_PER_INCIDENT = 5;
 /** Max horizontal direct-translation step when KCC is unavailable (prevents wall teleport). */

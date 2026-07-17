@@ -83,6 +83,7 @@ export function usePhysicsPlayerMovement({
   const virtualHoldTimesRef = useRef({});
   const rbBoundRef = useRef(false);
   const snapAirborneRef = useRef(false);
+  const wallBumpCooldownRef = useRef(0);
   const mountedRef = useRef(true);
   const movementEpochRef = useRef(0);
 
@@ -162,6 +163,10 @@ export function usePhysicsPlayerMovement({
     isGroundedNow: false,
     isOutdoor: false,
     groundY: config.floorY,
+    jumpHeld: false,
+    prevVelY: 0,
+    justLanded: false,
+    landingImpactVel: 0,
   });
 
   const movementDepsRef = useRef<PlayerMovementDeps>({
@@ -193,6 +198,7 @@ export function usePhysicsPlayerMovement({
     controlsDegradedRef,
     recreateCharacterController: () => recreateCharacterControllerFn.current?.() ?? null,
     snapAirborneRef,
+    wallBumpCooldownRef,
     rbBoundRef,
     prevRbPosRef,
     currentFloorMaterialRef,
@@ -288,6 +294,7 @@ export function usePhysicsPlayerMovement({
       livePlayerRotationRef,
       directMovementTelemetry,
       movementEpoch: movementEpochRef.current,
+      wallBumpCooldownRef,
     };
   }, [
     sceneId,
