@@ -91,6 +91,24 @@ export function installSceneLoadDebugTap(): void {
     dbg.lastSceneLoad = { sceneId: p.sceneId, fromSceneId: p.fromSceneId, degraded: p.degraded };
     if (p.degraded) dbg.degradedLoads += 1;
     record('scene:loaded', p);
+
+    // Player-facing feedback: when a scene loads in degraded mode (slow/software
+    // WebGL — the graceful fallback that replaced the old hard "Не удалось
+    // загрузить сцену" failure), show a subtle toast so the player knows the 3D
+    // visual may still be rendering. This keeps the experience transparent
+    // instead of silently showing a possibly-incomplete scene.
+    if (p.degraded && typeof window !== 'undefined') {
+      try {
+        void import('sonner').then(({ toast }) => {
+          toast.info('Сцена загружается в упрощённом режиме…', {
+            description: '3D-визуал может дозагружаться. Игра продолжается.',
+            duration: 4000,
+          });
+        });
+      } catch {
+        /* sonner not yet loaded — non-critical */
+      }
+    }
   });
   eventBus.on('scene:transition_failed', (p) => {
     const dbg = ensureDebug();

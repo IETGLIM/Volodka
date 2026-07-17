@@ -2,6 +2,7 @@ import { useEffect, useRef, type Dispatch } from 'react';
 import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
 import { PHOTO_EVENTS, PHOTO_EMPTY_PAYLOAD } from '@/engine/events';
+import { photoModeActive } from '@/engine/photo/photoModeState';
 import {
   applyEscapeDismissAction,
   resolveEscapeDismissAction,
@@ -113,6 +114,17 @@ export function useKeyboardShortcutManager({
           return;
         }
 
+        // Photo mode is NOT part of the panel stack, so the escape-dismiss chain
+        // below doesn't know about it. Without this guard, Escape falls through to
+        // `toggle_pause_menu` and the player is stuck in photo mode with a pause
+        // menu on top. Close photo mode first, before any other escape handling.
+        if (photoModeActive.current) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          eventBus.emit(PHOTO_EVENTS.inactive, PHOTO_EMPTY_PAYLOAD);
+          return;
+        }
+
         const action = resolveEscapeDismissAction(ps);
         if (action.type === 'noop') return;
 
@@ -143,12 +155,15 @@ export function useKeyboardShortcutManager({
         e.preventDefault();
         dispatchPanel('inventory');
       }
+      // Poems are the game's core theme (the README documents P = Стихи).
+      // P opens the poetry book; Shift+P toggles photo mode (secondary feature).
       if (e.code === 'KeyP' && !e.ctrlKey && !e.shiftKey) {
-        eventBus.emit(PHOTO_EVENTS.toggle, PHOTO_EMPTY_PAYLOAD);
+        e.preventDefault();
+        dispatchPanel('poetry');
       }
       if (e.code === 'KeyP' && e.shiftKey) {
         e.preventDefault();
-        dispatchPanel('poetry');
+        eventBus.emit(PHOTO_EVENTS.toggle, PHOTO_EMPTY_PAYLOAD);
       }
       if (e.code === 'KeyM') dispatchPanel('worldMap');
       if (e.code === 'KeyN') dispatchPanel('npcRelation');

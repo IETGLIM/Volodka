@@ -140,6 +140,7 @@ npm run check              # lint + typecheck + validate + build + verify:deploy
 | J | Журнал |
 | Q | Квесты |
 | P | Стихи |
+| Shift+P | Фото-режим |
 | M | Карта |
 | F3 | Панель разработчика (только dev) |
 

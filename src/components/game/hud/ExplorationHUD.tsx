@@ -5,7 +5,7 @@
    better mobile responsive layout.
 */
 
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import { APP_VERSION } from '@/shared/constants/appVersion';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -97,11 +97,6 @@ import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip
 export type { HUDProps } from '@/components/game/hud/hudTypes';
 
 /* ── Static style constants (avoid recreating objects every render) ── */
-const STYLE_CROSSHAIR_GLOW = { boxShadow: '0 0 8px rgba(0,255,238,0.6), 0 0 20px rgba(0,255,238,0.3)', backgroundColor: 'rgba(0,255,238,0.5)' as const };
-const STYLE_CROSSHAIR_DIM = { boxShadow: '0 0 3px rgba(255,255,255,0.4)' };
-const STYLE_CROSSHAIR_BORDER_NEAR = { borderColor: 'rgba(0,255,238,0.25)' };
-const STYLE_CROSSHAIR_BORDER_DIM = { borderColor: 'rgba(255,255,255,0.08)' };
-const STYLE_CROSSHAIR_PULSE = { boxShadow: '0 0 16px 2px rgba(0,255,238,0.12)', animation: 'pulse 2s cubic-bezier(0.4,0,0.6,1) infinite' };
 
 const STYLE_TOP_BAR_BG = {
   background: 'linear-gradient(180deg, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.7) 60%, transparent 100%)',
@@ -186,41 +181,7 @@ const STYLE_MOBILE_STRESS_BAR_HIGH = { background: 'linear-gradient(90deg, #9f12
 const STYLE_CURRENT_COLOR_GLOW = { textShadow: '0 0 4px currentColor' };
 const STYLE_CURRENT_COLOR_SMALL_GLOW = { textShadow: '0 0 3px currentColor' };
 
-/* ── Crosshair with proximity glow ── */
-function CrosshairGlow({ nearInteractive }: { nearInteractive: boolean }) {
-  return (
-    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
-      <div className={`relative ${nearInteractive ? 'crosshair-pulse-active' : ''}`}>
-        <div
-          className="w-1 h-1 rounded-full bg-white/30 mx-auto transition-all duration-300"
-          style={nearInteractive ? STYLE_CROSSHAIR_GLOW : STYLE_CROSSHAIR_DIM}
-        />
-        <div
-          className="absolute -top-2 left-1/2 -translate-x-1/2 w-2.5 h-[3px] border-t border-l border-r rounded-t-sm transition-colors duration-300"
-          style={nearInteractive ? STYLE_CROSSHAIR_BORDER_NEAR : STYLE_CROSSHAIR_BORDER_DIM}
-        />
-        <div
-          className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-2.5 h-[3px] border-b border-l border-r rounded-b-sm transition-colors duration-300"
-          style={nearInteractive ? STYLE_CROSSHAIR_BORDER_NEAR : STYLE_CROSSHAIR_BORDER_DIM}
-        />
-        <div
-          className="absolute top-1/2 -left-2 -translate-y-1/2 w-[3px] h-2.5 border-t border-l border-b rounded-l-sm transition-colors duration-300"
-          style={nearInteractive ? STYLE_CROSSHAIR_BORDER_NEAR : STYLE_CROSSHAIR_BORDER_DIM}
-        />
-        <div
-          className="absolute top-1/2 -right-2 -translate-y-1/2 w-[3px] h-2.5 border-t border-r border-b rounded-r-sm transition-colors duration-300"
-          style={nearInteractive ? STYLE_CROSSHAIR_BORDER_NEAR : STYLE_CROSSHAIR_BORDER_DIM}
-        />
-        {nearInteractive && (
-          <div
-            className="absolute inset-0 -m-3 rounded-full pointer-events-none"
-            style={STYLE_CROSSHAIR_PULSE}
-          />
-        )}
-      </div>
-    </div>
-  );
-}
+/* ── Dead code removed: CrosshairGlow component (replaced by DynamicCrosshair). ── */
 
 export function ExplorationHUD(props: HUDProps) {
   const state = useHUDController(props);
@@ -228,15 +189,6 @@ export function ExplorationHUD(props: HUDProps) {
   const quietStyle = useHudQuietStyle();
   const totalPoems = TOTAL_MAIN_POEMS;
   const { currentHint, dismissHint } = useContextualHints();
-
-  // ── Crosshair proximity glow state ──
-  const [crosshairNearInteractive, setCrosshairNearInteractive] = useState(false);
-  useEffect(() => {
-    const unsubHint = eventBus.on('interaction:hint', () => setCrosshairNearInteractive(true));
-    const unsubEnd = eventBus.on('interaction:end', () => setCrosshairNearInteractive(false));
-    const unsubStart = eventBus.on('interaction:start', () => setCrosshairNearInteractive(false));
-    return () => { unsubHint(); unsubEnd(); unsubStart(); };
-  }, []);
   const {
     photoModeOn,
     hudMounted,
@@ -471,7 +423,7 @@ export function ExplorationHUD(props: HUDProps) {
                   : { duration: 1.4, repeat: Infinity, ease: 'easeInOut' }
               }
               className="relative flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-1 rounded-md text-xs border transition-colors hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60"
-              title="Стихи [⇧P]"
+              title="Стихи [P]"
               aria-label={`Стихи: ${mainPoemCount} из ${totalPoems}`}
               style={poemBadgePulse ? STYLE_POEM_BG_PULSE : STYLE_POEM_BG_IDLE}
             >
@@ -559,7 +511,7 @@ export function ExplorationHUD(props: HUDProps) {
             </div>
             <HUDButton icon={<Save className="size-3.5 sm:size-4" />} label="Сохранить" onClick={handleSave} tooltip="Сохранить [F5]" />
             {!isOnboarding && (
-              <HUDButton icon={<Camera className="size-3.5 sm:size-4" />} label="Фото" onClick={() => eventBus.emit(PHOTO_EVENTS.toggle, PHOTO_EMPTY_PAYLOAD)} tooltip="Фото [P]" />
+              <HUDButton icon={<Camera className="size-3.5 sm:size-4" />} label="Фото" onClick={() => eventBus.emit(PHOTO_EVENTS.toggle, PHOTO_EMPTY_PAYLOAD)} tooltip="Фото [⇧P]" />
             )}
             {!isOnboarding && (
               <HUDButton icon={<BarChart3 className="size-3.5 sm:size-4" />} label="Статистика" onClick={onOpenStats} tooltip="Статистика [S]" />
