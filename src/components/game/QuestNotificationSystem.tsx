@@ -530,6 +530,8 @@ export function QuestNotificationSystem() {
               completedObjectives: completedCount,
               totalObjectives: totalCount,
             })
+            // Subtle green pulse on objective completion
+            eventBus.emit('fx:flash', { color: 'rgba(52,211,153,0.08)', opacity: 1, duration: 400 });
           }
         }
       }
@@ -542,6 +544,8 @@ export function QuestNotificationSystem() {
           questTitle: def.title,
           rewards: formatQuestCompletionRewards(def),
         })
+        // Celebration flash — brief gold vignette to mark the achievement
+        eventBus.emit('fx:flash', { color: 'rgba(251,191,36,0.12)', opacity: 1, duration: 600 });
       }
 
       // Quest failed toast — covered by quest:failed event from store emit

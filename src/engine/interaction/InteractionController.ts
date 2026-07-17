@@ -195,6 +195,8 @@ export class InteractionController {
         notificationType: 'quest',
         text: `Станет доступно в акте ${zone.requiredAct}`,
       });
+      eventBus.emit('fx:shake', { intensity: 2, duration: 200 });
+      eventBus.emit('fx:flash', { color: 'rgba(251,191,36,0.15)', opacity: 1, duration: 300 });
       return;
     }
 
@@ -207,11 +209,15 @@ export class InteractionController {
       )
     ) {
       devWarn(`[InteractionController] Zone "${triggerZoneId}" not available for current state`);
+      eventBus.emit('fx:shake', { intensity: 3, duration: 250 });
+      eventBus.emit('fx:flash', { color: 'rgba(244,63,94,0.2)', opacity: 1, duration: 300 });
       return;
     }
 
     if (zone.isOneTime && snapshot.exploration.interactiveObjectStates[triggerZoneId]) {
       devWarn(`[InteractionController] One-time zone already used: "${triggerZoneId}"`);
+      eventBus.emit('fx:shake', { intensity: 2, duration: 200 });
+      eventBus.emit('fx:flash', { color: 'rgba(148,163,184,0.15)', opacity: 1, duration: 250 });
       return;
     }
 
@@ -235,6 +241,8 @@ export class InteractionController {
           notificationType: 'quest',
           text: `Недостаточный навык: ${SKILL_LABELS[zone.requiredSkill]} ${playerSkill}/${threshold}`,
         });
+        eventBus.emit('fx:shake', { intensity: 4, duration: 300 });
+        eventBus.emit('fx:flash', { color: 'rgba(244,63,94,0.25)', opacity: 1, duration: 350 });
         return;
       }
     }

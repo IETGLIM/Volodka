@@ -6,7 +6,8 @@ describe('sceneVisualProfiles', () => {
     for (const sceneId of HERO_SCENE_IDS) {
       expect(isHeroScene(sceneId)).toBe(true);
       expect(getSceneVisualProfile(sceneId).forceFullPostFx).toBe(true);
-      const aoEnabled = sceneId === 'street_night';
+      // All hero scenes except park_day (outdoor) have AO enabled
+      const aoEnabled = sceneId !== 'park_day';
       expect(getSceneVisualProfile(sceneId).enhancedAmbientOcclusion).toBe(aoEnabled);
     }
   });
@@ -15,6 +16,8 @@ describe('sceneVisualProfiles', () => {
     const profile = getSceneVisualProfile('factory_basement');
     expect(profile.tier).toBe('standard');
     expect(profile.forceFullPostFx).toBe(true);
+    // Indoor standard scenes have AO enabled for visual depth
+    expect(profile.enhancedAmbientOcclusion).toBe(true);
   });
 
   it('boosts dream bloom for galaxy sky mood', () => {

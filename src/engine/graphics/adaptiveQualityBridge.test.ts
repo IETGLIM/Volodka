@@ -63,8 +63,8 @@ describe('adaptiveQualityBridge', () => {
     vi.useRealTimers();
   });
 
-  it('degrades after 10s sustained fps failures', () => {
-    for (let i = 0; i < 10; i += 1) {
+  it('degrades after 15s sustained fps failures', () => {
+    for (let i = 0; i < 15; i += 1) {
       emitRuntimeBudgetViolations(fpsFailViolation());
       vi.advanceTimersByTime(1000);
     }
@@ -88,7 +88,7 @@ describe('adaptiveQualityBridge', () => {
 
   it('calls degrade at min preset but cannot step lower', () => {
     localStorage.setItem(GRAPHICS_SETTINGS_KEY, 'low');
-    for (let i = 0; i < 10; i += 1) {
+    for (let i = 0; i < 15; i += 1) {
       emitRuntimeBudgetViolations(fpsFailViolation());
       vi.advanceTimersByTime(1000);
     }
@@ -99,7 +99,7 @@ describe('adaptiveQualityBridge', () => {
   it('bind is idempotent', () => {
     bindAdaptiveQualityBridge();
     bindAdaptiveQualityBridge();
-    for (let i = 0; i < 10; i += 1) {
+    for (let i = 0; i < 15; i += 1) {
       emitRuntimeBudgetViolations(fpsFailViolation());
       vi.advanceTimersByTime(1000);
     }

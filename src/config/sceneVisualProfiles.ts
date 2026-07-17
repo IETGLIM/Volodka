@@ -57,7 +57,7 @@ const STANDARD_PROFILE: SceneVisualProfile = {
 
 const PROFILES: Partial<Record<SceneId, SceneVisualProfile>> = {
   volodka_room: { ...HERO_PROFILE, enhancedAmbientOcclusion: true, bloomIntensityScale: 1.07 },
-  volodka_corridor: { ...HERO_PROFILE, enhancedAmbientOcclusion: false, bloomIntensityScale: 1.05 },
+  volodka_corridor: { ...HERO_PROFILE, enhancedAmbientOcclusion: true, aoIntensity: 2.8, aoRadius: 0.55, bloomIntensityScale: 1.05 },
   home_evening: { ...HERO_PROFILE, enhancedAmbientOcclusion: true, bloomIntensityScale: 1.08 },
   street_night: {
     ...HERO_PROFILE,
@@ -74,17 +74,23 @@ const PROFILES: Partial<Record<SceneId, SceneVisualProfile>> = {
     enhancedAmbientOcclusion: false,
     bloomIntensityScale: 1.14,
   },
-  abandoned_factory: { ...STANDARD_PROFILE, forceFullPostFx: true, enhancedAmbientOcclusion: false, bloomIntensityScale: 1.06 },
-  factory_basement: { ...STANDARD_PROFILE, forceFullPostFx: true, enhancedAmbientOcclusion: false, bloomIntensityScale: 1.1 },
-  zarema_albert_room: { ...STANDARD_PROFILE, forceFullPostFx: true, enhancedAmbientOcclusion: false, bloomIntensityScale: 1.05 },
+  abandoned_factory: { ...STANDARD_PROFILE, forceFullPostFx: true, enhancedAmbientOcclusion: true, aoIntensity: 2.4, aoRadius: 0.55, bloomIntensityScale: 1.06 },
+  factory_basement: { ...STANDARD_PROFILE, forceFullPostFx: true, enhancedAmbientOcclusion: true, aoIntensity: 3.0, aoRadius: 0.6, bloomIntensityScale: 1.1 },
+  zarema_albert_room: { ...STANDARD_PROFILE, forceFullPostFx: true, enhancedAmbientOcclusion: true, aoIntensity: 2.6, aoRadius: 0.5, bloomIntensityScale: 1.05 },
   street_winter: { ...STANDARD_PROFILE, forceFullPostFx: true, enhancedAmbientOcclusion: false, bloomIntensityScale: 1.04 },
-  solnysh_room: { ...STANDARD_PROFILE, forceFullPostFx: true, enhancedAmbientOcclusion: false },
+  solnysh_room: { ...STANDARD_PROFILE, forceFullPostFx: true, enhancedAmbientOcclusion: true, aoIntensity: 2.6, aoRadius: 0.5 },
   sleep_dream: {
     ...STANDARD_PROFILE,
     forceFullPostFx: true,
     enhancedAmbientOcclusion: false,
     bloomIntensityScale: 1.12,
   },
+  // Extension indoor scenes — AO adds depth to enclosed spaces
+  guild_mainframe: { ...STANDARD_PROFILE, forceFullPostFx: true, enhancedAmbientOcclusion: true, aoIntensity: 2.4, aoRadius: 0.5 },
+  albert_backroom: { ...STANDARD_PROFILE, forceFullPostFx: true, enhancedAmbientOcclusion: true, aoIntensity: 2.6, aoRadius: 0.5 },
+  zarema_room: { ...STANDARD_PROFILE, forceFullPostFx: true, enhancedAmbientOcclusion: true, aoIntensity: 2.6, aoRadius: 0.5 },
+  library_basement: { ...STANDARD_PROFILE, forceFullPostFx: true, enhancedAmbientOcclusion: true, aoIntensity: 2.8, aoRadius: 0.55 },
+  underground_bunker: { ...STANDARD_PROFILE, forceFullPostFx: true, enhancedAmbientOcclusion: true, aoIntensity: 2.6, aoRadius: 0.55 },
 };
 
 export function getSceneVisualProfile(sceneId: SceneId): SceneVisualProfile {

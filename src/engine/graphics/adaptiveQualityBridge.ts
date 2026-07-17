@@ -1,6 +1,6 @@
 /**
  * Runtime adaptive quality — subscribes to budget violations and degrades preset
- * after sustained FPS failures (10s window), then re-arms upward after 30s clean budget.
+ * after sustained FPS failures (15s window), then re-arms upward after 30s clean budget.
  * Bound at engine boot via reviveGameEngine (kept as "bridge" to match gpuResourceBaselineBridge).
  */
 
@@ -15,10 +15,10 @@ import { applyVisualSettings } from '@/engine/visualSettings';
 
 /** Max one strike per second — ignores per-frame violation spam. */
 const STRIKE_INTERVAL_MS = 1000;
-/** Strikes required before degrading (10s sustained bad FPS). */
-const STRIKES_REQUIRED = 10;
+/** Strikes required before degrading (15s sustained bad FPS — avoids degrading on transient spikes). */
+const STRIKES_REQUIRED = 15;
 /** Clear strike counter after this long without FPS fail. */
-const STRIKE_RESET_MS = 3000;
+const STRIKE_RESET_MS = 5000;
 /** Upgrade one tier after this long without FPS fail since last failure. */
 const CLEAN_BUDGET_MS = 30_000;
 const CLEAN_CHECK_INTERVAL_MS = 1000;

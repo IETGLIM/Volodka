@@ -1,9 +1,39 @@
 import { motion } from 'framer-motion';
-import { ChevronRight, Zap } from 'lucide-react';
+import { ChevronRight, Zap, Lock } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { buildChoiceAriaLabel } from '@/shared/utils/choiceAriaLabel';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import type { StoryConditionResult } from '@/shared/storyConditions';
+import type { TrainablePlayerSkill } from '@/shared/types/game';
+
+const SKILL_LABELS: Record<TrainablePlayerSkill, string> = {
+  logic: 'Логика',
+  coding: 'Кодинг',
+  empathy: 'Эмпатия',
+  persuasion: 'Убеждение',
+  intuition: 'Интуиция',
+  writing: 'Писательство',
+  rhythm: 'Ритм',
+};
+
+/** Build a short human-readable reason why a choice is locked. */
+function formatCondFailReason(cond: StoryConditionResult): string | null {
+  if (cond.skillCheckNeeded) {
+    const label = SKILL_LABELS[cond.skillCheckNeeded.skill] ?? cond.skillCheckNeeded.skill;
+    return `Требуется ${label} ${cond.skillCheckNeeded.needed} (у тебя ${cond.skillCheckNeeded.current})`;
+  }
+  if (cond.relationNeeded) {
+    return `Отношение слишком низкое: ${cond.relationNeeded.current}/${cond.relationNeeded.needed}`;
+  }
+  if (cond.actNeeded) {
+    return `Откроется в акте ${cond.actNeeded.needed}`;
+  }
+  if (cond.karmaNeeded) {
+    const label = cond.karmaNeeded.type === 'min' ? 'минимум' : 'не более';
+    return `Карма: ${label} ${cond.karmaNeeded.needed} (сейчас ${cond.karmaNeeded.current})`;
+  }
+  return null;
+}
 
 export interface NarrativeChoiceItem {
   key: string;
@@ -90,19 +120,30 @@ export function NarrativeChoiceList({
           }`}
           style={choice.pass ? { boxShadow: `0 0 16px ${accentColor}10` } : undefined}
         >
-          <div className="flex items-center gap-2">
+          <div className="flex items-start gap-2">
             <span
-              className="text-[10px] font-mono w-4 shrink-0 text-center"
+              className="text-[10px] font-mono w-4 shrink-0 text-center mt-0.5"
               style={{ color: choice.pass ? accentColor : undefined }}
             >
               {i + 1}
             </span>
-            <span className="flex-1" style={{ fontFamily: '"Georgia", "Times New Roman", serif' }}>
-              {choice.text}
-            </span>
+            <div className="flex-1 min-w-0">
+              <span className="block" style={{ fontFamily: '"Georgia", "Times New Roman", serif' }}>
+                {choice.text}
+              </span>
+              {!choice.pass && (() => {
+                const reason = formatCondFailReason(choice.cond);
+                return reason ? (
+                  <span className="flex items-center gap-1 mt-1 text-[10px] text-slate-500/80 font-mono">
+                    <Lock className="size-2.5 shrink-0" />
+                    {reason}
+                  </span>
+                ) : null;
+              })()}
+            </div>
             {choice.trailing}
             {choice.pass && (
-              <Zap className="size-3 opacity-0 group-hover:opacity-40 transition-opacity" style={{ color: accentColor }} />
+              <Zap className="size-3 opacity-0 group-hover:opacity-40 transition-opacity mt-0.5" style={{ color: accentColor }} />
             )}
           </div>
         </motion.button>

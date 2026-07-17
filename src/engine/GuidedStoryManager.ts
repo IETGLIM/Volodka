@@ -93,9 +93,35 @@ const PLAYER_LOST_HINTS: Record<number, string[]> = {
   ],
 };
 
+/** Tracks recently shown lost-hint indices per act to avoid repetition. */
+const recentlyShownHints: Map<number, Set<number>> = new Map();
+const MAX_RECENT_HINTS_PER_ACT = 3;
+
 function pickLostHint(actNumber: number): string {
   const hints = PLAYER_LOST_HINTS[actNumber] ?? PLAYER_LOST_HINTS[1];
-  return hints[Math.floor(Math.random() * hints.length)];
+  if (hints.length <= 1) return hints[0];
+
+  const recent = recentlyShownHints.get(actNumber) ?? new Set<number>();
+  // Build candidate pool excluding recently shown
+  const candidates: number[] = [];
+  for (let i = 0; i < hints.length; i++) {
+    if (!recent.has(i)) candidates.push(i);
+  }
+  // If all were shown, reset and pick any
+  const pool = candidates.length > 0 ? candidates : hints.map((_, i) => i);
+  const chosen = pool[Math.floor(Math.random() * pool.length)]!;
+
+  // Record the choice
+  recent.add(chosen);
+  if (recent.size > MAX_RECENT_HINTS_PER_ACT) {
+    // Remove oldest entries by rebuilding from array tail
+    const arr = Array.from(recent).slice(-MAX_RECENT_HINTS_PER_ACT);
+ recentlyShownHints.set(actNumber, new Set(arr));
+  } else {
+    recentlyShownHints.set(actNumber, recent);
+  }
+
+  return hints[chosen];
 }
 
 function selectLastVisitedNode(snapshot: GameStoreSnapshot): string | null {

@@ -310,27 +310,38 @@ export function DiegeticDialogueHud() {
     choiceCount: choices.length,
   });
 
+  const breathingGlow = reducedMotion ? undefined : `
+    @keyframes diegetic-border-breathe {
+      0%, 100% { border-color: rgba(255,255,255,0.10); box-shadow: 0 -4px 40px ${accentColor}10, inset 0 0 0 transparent; }
+      50% { border-color: rgba(255,255,255,0.18); box-shadow: 0 -4px 48px ${accentColor}22, inset 0 1px 0 ${accentColor}08; }
+    }
+  `;
+
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       <motion.div
-        key="diegetic-dialogue-hud"
+        key={nodeId || 'diegetic-dialogue-hud'}
         id="diegetic-dialogue-hud"
         data-testid="diegetic-dialogue-hud"
         role="dialog"
         aria-label={speaker}
         initial={reducedMotion ? false : { opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
-        exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 16 }}
-        transition={{ duration: reducedMotion ? 0 : 0.25 }}
+        exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 16, scale: 0.98 }}
+        transition={{ duration: reducedMotion ? 0 : 0.22, ease: [0.16, 1, 0.3, 1] }}
         className="fixed left-0 right-0 bottom-0 pointer-events-auto px-3 sm:px-6"
         style={{
           zIndex: UI_LAYERS.DIALOGUE,
           paddingBottom: diegeticDialogueBottomPadCss(isTouchDevice, !suppressBottomHud),
         }}
       >
+        {breathingGlow && <style>{breathingGlow}</style>}
         <div
           className="mx-auto max-w-3xl rounded-xl border border-white/10 bg-black/55 backdrop-blur-lg shadow-2xl overflow-hidden"
-          style={{ boxShadow: `0 -4px 40px ${accentColor}15` }}
+          style={{
+            boxShadow: `0 -4px 40px ${accentColor}15`,
+            animation: reducedMotion ? 'none' : 'diegetic-border-breathe 4s ease-in-out infinite',
+          }}
         >
           <div className="px-4 pt-3 pb-1 flex items-center justify-between gap-2">
             <div className="flex items-center gap-2.5 min-w-0">

@@ -16,9 +16,9 @@ export interface SceneRenderingPipeline {
 }
 
 const DEFAULT_AO_INTENSITY = 2.5;
-const DEFAULT_AO_RADIUS = 0.4;
+const DEFAULT_AO_RADIUS = 0.45;
 const HERO_AO_INTENSITY = 3.1;
-const HERO_AO_RADIUS = 0.48;
+const HERO_AO_RADIUS = 0.55;
 
 /**
  * Resolves post-FX / shadow tier for a scene + quality preset.
