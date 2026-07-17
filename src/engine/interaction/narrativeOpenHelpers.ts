@@ -21,6 +21,7 @@ import { getStoryNodeSceneId } from '@/engine/guidedStory/createGuidedStoryDeps'
 import { enterSceneFreeExplorationHub } from '@/engine/scene/freeExplorationHub';
 import { devWarn } from '@/shared/utils/devLog';
 import type { SceneId } from '@/shared/types/game';
+import { emitInteractionEndIfNeeded } from '@/engine/interaction/interactionEndDedup';
 import { resolveDialogueEntryNodeId } from '@/engine/dialogue/resolveDialoguePresentation';
 import {
   armEntryBeatFromZone,
@@ -52,8 +53,15 @@ function isNaturalEntryTransition(
   return fromSceneId !== toSceneId;
 }
 
-function userMessageForKind(kind: NarrativeKind): string {
-  return kind === 'dialogue' ? 'Диалог недоступен' : 'Сцена недоступна';
+function userMessageForKind(kind: NarrativeKind, nodeId: string, reason: 'missing' | 'load_failed'): string {
+  if (reason === 'load_failed') {
+    return kind === 'dialogue'
+      ? 'Не удалось загрузить диалог. Проверьте подключение и обновите страницу.'
+      : 'Не удалось загрузить сцену. Проверьте подключение и обновите страницу.';
+  }
+  return kind === 'dialogue'
+    ? `Диалог "${nodeId}" не найден. Попробуйте перезайти в сцену.`
+    : `Сцена "${nodeId}" не найдена. Попробуйте перезайти в сцену.`;
 }
 
 function notifyNarrativeUnavailable(
@@ -70,8 +78,20 @@ function notifyNarrativeUnavailable(
   dispatchStateAction({
     type: 'notification/push',
     notificationType: 'quest',
-    text: userMessageForKind(kind),
+    text: userMessageForKind(kind, nodeId, reason),
   });
+}
+
+/** Wraps presentNarrativeBeat in a try-catch so errors never propagate silently. */
+function safePresentNarrativeBeat(nodeId: string, kind: NarrativeKind): boolean {
+  try {
+    presentNarrativeBeat(nodeId, kind);
+    return true;
+  } catch (error) {
+    notifyNarrativeUnavailable(kind, nodeId, 'load_failed', error);
+    emitInteractionEndIfNeeded();
+    return false;
+  }
 }
 
 export async function tryOpenDialogue(nodeId: string): Promise<boolean> {
@@ -80,7 +100,7 @@ export async function tryOpenDialogue(nodeId: string): Promise<boolean> {
     const resolvedId = resolveDialogueEntryNodeId(nodeId, snapshot.playerState.visitedNodes);
     await ensureDialogueNode(resolvedId);
     if (getDialogueNodes()[resolvedId]) {
-      presentNarrativeBeat(resolvedId, 'dialogue');
+      safePresentNarrativeBeat(resolvedId, 'dialogue');
       return true;
     }
     notifyNarrativeUnavailable('dialogue', resolvedId, 'missing');
@@ -98,7 +118,7 @@ export async function tryOpenStory(nodeId: string): Promise<boolean> {
       notifyNarrativeUnavailable('story', nodeId, 'missing');
       return false;
     }
-    presentNarrativeBeat(nodeId, 'story');
+    safePresentNarrativeBeat(nodeId, 'story');
     return true;
   } catch (error) {
     notifyNarrativeUnavailable('story', nodeId, 'load_failed', error);
@@ -129,7 +149,7 @@ export async function openLinkedDialogue(nodeId: string): Promise<boolean> {
     return true;
   }
 
-  presentNarrativeBeat(resolvedId, 'dialogue');
+  safePresentNarrativeBeat(resolvedId, 'dialogue');
   return true;
 }
 
@@ -178,7 +198,7 @@ export async function openLinkedStory(nodeId: string): Promise<boolean> {
     }
     dispatchStateAction({ type: 'story/setCurrentNodeId', nodeId });
     if (!getCutsceneForNode(nodeId)) {
-      presentNarrativeBeat(nodeId, 'story');
+      safePresentNarrativeBeat(nodeId, 'story');
     }
     return true;
   }
@@ -189,7 +209,7 @@ export async function openLinkedStory(nodeId: string): Promise<boolean> {
     return true;
   }
 
-  presentNarrativeBeat(nodeId, 'story');
+  safePresentNarrativeBeat(nodeId, 'story');
   return true;
 }
 

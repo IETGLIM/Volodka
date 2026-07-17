@@ -34,11 +34,14 @@ export type { GuidanceInfo } from '@/engine/guidedStory/guidedStoryTypes';
 const STORY_SPINE_ADVANCE_DEBOUNCE_MS = 32;
 
 /** How long (ms) without a guidance update before we consider the player lost. */
-const PLAYER_LOST_TIMEOUT_MS = 60_000;
+const PLAYER_LOST_TIMEOUT_MS = 25_000;
 
 /** Contextual hints shown when the player seems lost, keyed by act number. */
 const PLAYER_LOST_HINTS: Record<number, string[]> = {
   1: [
+    'Если ничего не реагирует на нажатие [E] — нажми [Escape], чтобы сбросить взаимодействие.',
+    'Осмотри рабочий стол [E] — это первый шаг задания «Первое чтение».',
+    'Книжная полка слева от стола — там стихотворение, которое нужно найти.',
     'Попробуй осмотреть комнату внимательнее — возможно, ты что-то упустил.',
     'Рабочий стол и книжная полка могут скрывать подсказки.',
     'Не стой на месте — подойди к предметам и нажми [E].',

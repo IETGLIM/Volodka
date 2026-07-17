@@ -91,6 +91,7 @@ import { InteractionProximityGlow } from '@/components/game/hud/parts/Interactio
 import { CombatPreEngagementWarning } from '@/components/game/hud/parts/CombatPreEngagementWarning';
 import { HUDBootSequence } from '@/components/game/hud/parts/HUDBootSequence';
 import { LootProximityIndicator } from '@/components/game/hud/parts/LootProximityIndicator';
+import { EmergencyHelpButton } from '@/components/game/hud/parts/EmergencyHelpButton';
 import { useContextualHints } from '@/hooks/useContextualHints';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
@@ -963,6 +964,11 @@ export function ExplorationHUD(props: HUDProps) {
       {/* ── Status Effects Bar (desktop: bottom-right, mobile: bottom-center) ── */}
       <div className="absolute pointer-events-auto hidden lg:block" style={{ bottom: bottomStatusEffectsPx(), right: 16 }}>
         <StatusEffectsBar />
+      </div>
+
+      {/* ── Emergency help button ("Что делать?") — desktop only, above status effects ── */}
+      <div className="hidden lg:block">
+        <EmergencyHelpButton />
       </div>
       <div className="absolute left-1/2 -translate-x-1/2 pointer-events-auto lg:hidden" style={{ bottom: bottomStatusEffectsPx() }}>
         <StatusEffectsBar />

@@ -13,6 +13,7 @@ import { useQuests, useCurrentSceneId, useOrchestratorNarrativeOverlay } from '@
 import { useTutorialActive } from '@/store/selectors/uiSelectors';
 import { QUEST_DEFINITIONS } from '@/data/quests';
 import { GOLDEN_PATH_QUEST_SPINE } from '@/data/goldenPath';
+import { getGameSnapshot } from '@/engine/GameActionDispatcher';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import {
   EXPLORATION_HUD_LAYOUT,
@@ -36,6 +37,29 @@ import {
 import type { QuestType, SceneId } from '@/shared/types/game';
 const GUIDANCE_DISMISS_KEY = 'volodka_guidance_dismissed_sig';
 
+/** Contextual hint for the first_reading quest — tells the player *where* to go. */
+function getFirstReadingHint(): string | null {
+  try {
+    const snap = getGameSnapshot();
+    if (snap.playerState.progression.currentAct !== 1) return null;
+    const quest = snap.quests.find(
+      (q) => q.questId === 'first_reading' && q.status === 'active',
+    );
+    if (!quest) return null;
+    const deskDone = snap.playerState.flags['interacted_desk'] === true;
+    if (!deskDone) {
+      return 'Подойди к рабочему столу и нажми [E]';
+    }
+    const hasPoem2 = snap.collectedPoems.includes('poem_2');
+    if (!hasPoem2) {
+      return 'Найди стихотворение на книжной полке слева от стола';
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export function StoryGuidanceHUD() {
   const reducedMotion = useEffectiveReducedMotion();
   const motionDuration = reducedMotion ? 0 : 0.3;
@@ -43,6 +67,7 @@ export function StoryGuidanceHUD() {
   const [guidance, setGuidance] = useState<GuidanceInfo | null>(null);
   const [expanded, setExpanded] = useState(false);
   const [_lostHint, setLostHint] = useState<string | null>(null);
+  const [firstReadingHint, setFirstReadingHint] = useState<string | null>(getFirstReadingHint);
   const [dismissedSig, setDismissedSig] = useState<string | null>(() => {
     try {
       return sessionStorage.getItem(GUIDANCE_DISMISS_KEY);
@@ -147,10 +172,17 @@ export function StoryGuidanceHUD() {
       eventBus.on('story:guidance_update', (payload) => {
         setGuidance(payload);
         setLostHint(null); // clear lost hint when guidance updates
+        setFirstReadingHint(getFirstReadingHint());
       }),
-      eventBus.on('scene:loaded', refresh),
+      eventBus.on('scene:loaded', () => {
+        refresh();
+        setFirstReadingHint(getFirstReadingHint());
+      }),
       eventBus.on('story:player_lost', (payload) => {
         setLostHint(payload.hint);
+      }),
+      eventBus.on('quest:completed', () => {
+        setFirstReadingHint(getFirstReadingHint());
       }),
     ];
     return () => {
@@ -407,6 +439,14 @@ export function StoryGuidanceHUD() {
               >
                 {displayText}
               </p>
+              {firstReadingHint && !expanded ? (
+                <p
+                  className="text-[10px] font-mono mt-1 leading-snug"
+                  style={{ color: '#66ccff' }}
+                >
+                  → {firstReadingHint}
+                </p>
+              ) : null}
               {currentObjective && currentObjective.totalObjectives > 0 && !expanded ? (
                 <div className="mt-1.5 flex items-center gap-2">
                   <div className="flex-1 h-1 rounded-full overflow-hidden bg-white/8">
@@ -465,6 +505,11 @@ export function StoryGuidanceHUD() {
                 {directionHint ? (
                   <p className="text-[10px] font-mono mb-1" style={{ color: '#66ccff' }}>
                     → {directionHint}
+                  </p>
+                ) : null}
+                {firstReadingHint ? (
+                  <p className="text-[10px] font-mono mb-1" style={{ color: '#66ccff' }}>
+                    → {firstReadingHint}
                   </p>
                 ) : null}
                 {currentObjective?.questTitle ? (

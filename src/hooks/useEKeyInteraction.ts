@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { eventBus } from '@/engine/EventBus';
 import { consumeEKey, isEKeyConsumed } from '@/engine/input/eKeyConsumption';
 import { isInteractionLocked } from '@/engine/interaction/interactionSession';
+import { forceResetAllInteractionState } from '@/engine/interaction/emergencyInteractionReset';
 import { getGameStore } from '@/store/gameStore';
 import {
   queryInteractionTargets,
@@ -152,6 +153,29 @@ export function useEKeyInteraction({
       window.removeEventListener('mouseup', onMouseUp);
     };
   }, [firePrimaryInteraction]);
+
+  // ── Emergency escape hatch ──────────────────────────────────────
+  // Pressing Escape while the interaction FSM is stuck (and no overlay
+  // is handling the key) force-resets all interaction-related state.
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.code !== 'Escape' || e.repeat) return;
+      if (isOverlayBlockingRef.current) return;
+      if (!isInteractionLocked()) return;
+
+      try {
+        if (getGameStore().mode !== 'exploration') return;
+      } catch {
+        /* store not ready */
+        return;
+      }
+
+      forceResetAllInteractionState();
+    };
+
+    window.addEventListener('keydown', onKeyDown, true);
+    return () => window.removeEventListener('keydown', onKeyDown, true);
+  }, [isOverlayBlockingRef]);
 
   return { firePrimaryInteraction };
 }
