@@ -300,7 +300,9 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     enterToast: 'Терминал мигает: «Входящий вызов — IT-Гильдия Синк»',
     interactionType: 'use',
     interactionLabel: 'Подключиться к синку',
-    // No requiredFlag — terminal visible whenever quest morning_sync is active.
+    // Hidden until desk is examined — avoids cluttering the first-time desk area
+    // with 3+ interaction prompts (terminal, codebreaker, sync) at once.
+    requiredFlag: 'interacted_desk',
     hiddenWhenFlag: 'sync_done',
     isOneTime: true,
     linkedStoryNodeId: 'sync_conference',

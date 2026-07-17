@@ -51,8 +51,12 @@ function getFirstReadingHint(): string | null {
       return 'Подойди к рабочему столу и нажми [E]';
     }
     const hasPoem2 = snap.collectedPoems.includes('poem_2');
+    const monitorRead = snap.playerState.flags['terminal_poem_read'] === true;
+    if (!monitorRead && !hasPoem2) {
+      return 'Активируй монитор на столе [E] — стих мерцает на экране';
+    }
     if (!hasPoem2) {
-      return 'Найди стихотворение на книжной полке слева от стола';
+      return 'Стихотворение можно найти на книжной полке слева от стола';
     }
     return null;
   } catch {
