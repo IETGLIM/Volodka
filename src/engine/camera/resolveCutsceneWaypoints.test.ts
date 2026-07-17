@@ -14,8 +14,11 @@ describe('resolveCutsceneWaypoints', () => {
     const anchored = CUTSCENES.act1_prologue;
     expect(anchored.waypointSpace).toBe('spawn_offset');
     const resolved = resolveCutsceneWaypoints(anchored, 'volodka_room');
+    // volodka_room defaultSpawn = [0, 0, 2] (Y=0 — feet on floor, fixed from the
+    // old 0.01 that left the player model half-submerged). Waypoint[0] Z=-4.2 →
+    // 2 + (-4.2) = -2.2; waypoint[0] Y=1.19 → 0 + 1.19 = 1.19.
     expect(resolved[0]?.position[2]).toBeCloseTo(-2.2, 3);
-    expect(resolved[0]?.position[1]).toBeCloseTo(1.2, 3);
+    expect(resolved[0]?.position[1]).toBeCloseTo(1.19, 3);
   });
 
   it('uses anchorSceneId when playback scene differs', () => {

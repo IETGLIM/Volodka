@@ -464,6 +464,9 @@ export const GameplayNarrativeOverlay = memo(function GameplayNarrativeOverlay()
           aria-live="polite"
           data-testid="narrative-kind-recovery"
         >
+          {/* Visible skeleton placeholder + screen-reader text so assistive tech
+              announces *what* is loading (the bare skeleton announces only "busy"). */}
+          <span className="sr-only">Загрузка сцены…</span>
           <span className="text-xs font-mono tracking-widest text-cyan-300/60 cyber-loading-skeleton inline-block w-40 h-4"></span>
         </div>
       )}

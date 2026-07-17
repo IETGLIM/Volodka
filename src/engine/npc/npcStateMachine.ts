@@ -13,7 +13,11 @@ export const NPC_BEHAVIOR_STATE_LABELS: Record<NpcBehaviorState, string> = {
   combat: 'Combat',
 };
 
-/** Allowed behavioral transitions (self-transitions always permitted). */
+/** Allowed behavioral transitions (self-transitions always permitted).
+ *  `combat → talk` is intentionally blocked: an NPC must exit combat to `idle`
+ *  before entering `talk`, so the combat animation never blends straight into a
+ *  dialogue pose. `syncNpcBehaviorState` still bypasses this for authoritative
+ *  FSM resync (e.g. when the resolver force-clears combat). */
 export const VALID_NPC_BEHAVIOR_TRANSITIONS: Record<
   NpcBehaviorState,
   readonly NpcBehaviorState[]
@@ -21,7 +25,7 @@ export const VALID_NPC_BEHAVIOR_TRANSITIONS: Record<
   idle: ['walk', 'talk', 'combat'],
   walk: ['idle', 'talk', 'combat'],
   talk: ['idle', 'walk', 'combat'],
-  combat: ['idle', 'walk', 'talk'],
+  combat: ['idle', 'walk'],
 };
 
 export interface NpcBehaviorContext {
