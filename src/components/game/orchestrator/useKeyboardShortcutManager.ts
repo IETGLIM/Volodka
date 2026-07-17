@@ -202,6 +202,24 @@ export function useKeyboardShortcutManager({
         e.preventDefault();
         dispatchPanel('shortcuts');
       }
+      // Quick save — F5. The HUD button shows "Сохранить [F5]" but the key was
+      // never wired. This calls the same store action as the HUD's handleSave
+      // and shows a confirmation toast (the HUD's showSaveIndicator only fires
+      // on button click, so we give keyboard users the same feedback via toast).
+      if (e.code === 'F5') {
+        e.preventDefault();
+        try {
+          useGameStore.getState().saveGame({ source: 'manual' });
+          void import('sonner').then(({ toast }) => {
+            toast.success('Игра сохранена', {
+              description: 'Прогресс записан.',
+              duration: 2500,
+            });
+          });
+        } catch {
+          /* store not ready — ignore */
+        }
+      }
     };
 
     window.addEventListener('keydown', handleKey, true);

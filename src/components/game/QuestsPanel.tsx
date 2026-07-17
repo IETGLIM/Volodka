@@ -334,19 +334,21 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
             variant="ghost"
             size="sm"
             onClick={() => setShowFailed(!showFailed)}
-            className={`text-xs ${showFailed ? 'text-red-400' : 'text-slate-500'}`}
+            title="Показать/скрыть проваленные задания"
+            className={`text-xs transition-all ${showFailed ? 'text-red-400 border border-red-500/30 bg-red-950/20' : 'text-slate-500 border border-transparent hover:text-red-400/70'}`}
           >
             <AlertTriangle className="size-3.5 mr-1" />
-            Провал{failedQuests.length > 0 ? ` (${failedQuests.length})` : ''}
+            Провал.{failedQuests.length > 0 ? ` (${failedQuests.length})` : ''}
           </Button>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setShowCompleted(!showCompleted)}
-            className={`text-xs ${showCompleted ? 'text-emerald-400' : 'text-slate-500'}`}
+            title="Показать/скрыть завершённые задания"
+            className={`text-xs transition-all ${showCompleted ? 'text-emerald-400 border border-emerald-500/30 bg-emerald-950/20' : 'text-slate-500 border border-transparent hover:text-emerald-400/70'}`}
           >
             <CheckCircle2 className="size-3.5 mr-1" />
-            Готово{completedQuests.length > 0 ? ` (${completedQuests.length})` : ''}
+            Заверш.{completedQuests.length > 0 ? ` (${completedQuests.length})` : ''}
           </Button>
         </div>
       )}
@@ -354,6 +356,42 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
       <div className="scanline-overlay" style={{ background: 'rgba(0,0,0,0.2)' }} data-testid="quests-panel">
 
             <ScrollArea className="flex-1 px-4 py-3">
+              {/* ── Quest progress overview bar (at-a-glance summary) ── */}
+              {(() => {
+                const totalDiscovered = activeQuests.length + completedQuests.length + failedQuests.length;
+                if (totalDiscovered === 0) return null;
+                const avgProgress = activeQuests.length > 0
+                  ? Math.round(activeQuests.reduce((sum, qs) => sum + getQuestProgress(qs.questId), 0) / activeQuests.length)
+                  : 100;
+                return (
+                  <div
+                    className="mb-4 p-3 rounded-xl border border-cyan-900/20 flex items-center gap-3"
+                    style={{ background: 'linear-gradient(135deg, rgba(0,255,238,0.04) 0%, rgba(8,12,28,0.5) 100%)' }}
+                    data-testid="quest-overview-bar"
+                  >
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <BookOpen className="size-4 text-cyan-400/70" />
+                      <span className="text-[10px] font-mono uppercase tracking-wider text-cyan-300/60">Журнал</span>
+                    </div>
+                    <div className="flex-1 flex items-center gap-2">
+                      <Progress value={avgProgress} className="h-1.5 bg-slate-800/60" />
+                      <span className="text-[10px] font-mono text-cyan-300/80 shrink-0">{avgProgress}%</span>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0 text-[10px] font-mono">
+                      <span className="text-cyan-400/80" title="Активные">{activeQuests.length}</span>
+                      <span className="text-slate-600">/</span>
+                      <span className="text-emerald-400/60" title="Завершённые">{completedQuests.length}</span>
+                      {failedQuests.length > 0 && (
+                        <>
+                          <span className="text-slate-600">/</span>
+                          <span className="text-red-400/60" title="Проваленные">{failedQuests.length}</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
+
               {/* Active quests by type */}
               {(Object.entries(QUEST_TYPE_LABELS) as [QuestType, typeof QUEST_TYPE_LABELS.main][]).map(
                 ([type, config], typeIdx) => {
@@ -763,10 +801,19 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
               )}
 
               {activeQuests.length === 0 && (
-                <div className="text-center py-12">
-                  <BookOpen className="size-8 text-cyan-500/30 mx-auto mb-3" />
-                  <p className="text-slate-400 text-sm">Нет активных квестов</p>
-                  <p className="text-slate-600 text-[10px] mt-1">Исследуйте мир, чтобы найти новые задания</p>
+                <div className="text-center py-16 px-4">
+                  <div className="relative inline-block mb-4">
+                    <BookOpen className="size-10 text-cyan-500/25 mx-auto" />
+                    <Sparkles className="size-3 text-amber-400/40 absolute -top-1 -right-1" />
+                  </div>
+                  <p className="text-slate-400 text-sm font-medium">Нет активных квестов</p>
+                  <p className="text-slate-600 text-[10px] mt-1.5 leading-relaxed max-w-[220px] mx-auto">
+                    Исследуйте мир, говорите с людьми и осматривайте предметы — задания найдут вас сами.
+                  </p>
+                  <div className="mt-4 flex items-center justify-center gap-1.5 text-[9px] text-cyan-500/40 font-mono uppercase tracking-wider">
+                    <MapPin className="size-2.5" />
+                    <span>Поиск доступен</span>
+                  </div>
                 </div>
               )}
 
