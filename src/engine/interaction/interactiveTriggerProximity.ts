@@ -1,6 +1,7 @@
 import type { MutableRefObject } from 'react';
 import * as THREE from 'three';
 import type { InteractionTargetHit } from '@/engine/interaction/interactionTargetQuery';
+import { isCanvasAreaTarget } from '@/engine/input/domUtils';
 
 /** Maximum number of visible [E] prompts at once */
 export const MAX_VISIBLE_PROMPTS = 2;
@@ -15,15 +16,6 @@ export const MAX_PARTICLES = 8;
 
 const tempMatrix = new THREE.Matrix4();
 const tempColor = new THREE.Color();
-
-export function isCanvasAreaTarget(target: EventTarget | null): boolean {
-  const el = target as HTMLElement;
-  if (!(el instanceof Element)) return false;
-  if (el.tagName === 'CANVAS') return true;
-  return !el.closest(
-    '[data-exploration-ui], [data-panel], dialog, [role="dialog"], button, a, input, textarea',
-  );
-}
 
 /** Runtime refs for a trigger zone — updated by the central interaction tick */
 export interface ZoneProximityRuntime {

@@ -34,11 +34,8 @@ export function resolveSceneRenderingPipeline(
   const profile = getSceneVisualProfile(sceneId);
   const isHero = isHeroScene(sceneId);
 
-  const factoryHeavy =
-    sceneId === 'abandoned_factory' && !profile.forceFullPostFx;
-
   const useLitePostFx =
-    (visualLite && !profile.forceFullPostFx) || factoryHeavy;
+    visualLite && !profile.forceFullPostFx;
 
   const highEnoughForAo =
     preset.id === 'ultra'

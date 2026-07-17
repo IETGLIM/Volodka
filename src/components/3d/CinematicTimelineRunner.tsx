@@ -55,6 +55,7 @@ export function CinematicTimelineRunner() {
   const prologueTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prologueStoryOpenedRef = useRef(false);
   const sequenceStartedRef = useRef(false);
+  const handoffEmittedRef = useRef(false);
   const lastFootstepRef = useRef(-1);
   const audioCuePhaseRef = useRef<string | null>(null);
   const lastReportedPhaseRef = useRef<string | null>(null);
@@ -80,7 +81,7 @@ export function CinematicTimelineRunner() {
     clearFallback();
 
     const store = getGameStore();
-    store.setPlayerPosition([0, 0.01, -1.0]);
+    store.setPlayerPosition([0, 0.01, -1.3]);
     store.setPlayerRotation(Math.PI);
     store.setCutscene(null, []);
     store.setFlag('woke_up', true);
@@ -222,6 +223,7 @@ export function CinematicTimelineRunner() {
       }, def.fallbackMs);
     }
 
+    handoffEmittedRef.current = false;
     lastFootstepRef.current = -1;
     audioCuePhaseRef.current = null;
     lastReportedPhaseRef.current = null;
@@ -352,6 +354,8 @@ export function CinematicTimelineRunner() {
         letterboxStyle: overlay.letterboxStyle ?? 'thin',
         showEmbers: overlay.showEmbers ?? false,
         glitchIntensity: overlay.glitchIntensity ?? 0,
+        fadeInMs: overlay.fadeInMs ?? 300,
+        fadeOutMs: overlay.fadeOutMs ?? 500,
       });
     }
 
@@ -383,7 +387,8 @@ export function CinematicTimelineRunner() {
       }
     }
 
-    if (result.isHandoff && timelineIdRef.current === 'intro_wakeup') {
+    if (result.isHandoff && timelineIdRef.current === 'intro_wakeup' && !handoffEmittedRef.current) {
+      handoffEmittedRef.current = true;
       eventBus.emit('intro:wakeup_handoff', {});
       eventBus.emit('cinematic:intro_handoff', { timelineId: 'intro_wakeup' });
     }
@@ -400,6 +405,15 @@ export function CinematicTimelineRunner() {
 
     if (result.phaseId !== lastReportedPhaseRef.current) {
       lastReportedPhaseRef.current = result.phaseId;
+
+      const phase = state.def.phases[state.phaseIndex];
+      if (phase?.cameraShake) {
+        eventBus.emit('cutscene:camera_shake', {
+          intensity: phase.cameraShake.intensity,
+          frequency: phase.cameraShake.frequency,
+        });
+      }
+
       eventBus.emit('cinematic:timeline_phase', {
         timelineId: state.def.id,
         phaseId: result.phaseId,

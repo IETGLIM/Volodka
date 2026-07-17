@@ -59,6 +59,14 @@ function tryUpgradeAfterCleanBudget(now: number): void {
     // Successful upgrade — record time so we can pace the next recovery step.
     // Keep lastFailMs set so we can continue recovering if quality was
     // degraded multiple tiers and the budget stays clean.
+    // Also restore PostFX and particles that were disabled on degrade.
+    try {
+      localStorage.setItem('volodka_postfx', 'true');
+      localStorage.setItem('volodka_particles', 'true');
+      applyVisualSettings();
+    } catch {
+      /* ignore storage errors */
+    }
     lastUpgradeMs = now;
   } else {
     // Already at max tier — no more recovery needed.

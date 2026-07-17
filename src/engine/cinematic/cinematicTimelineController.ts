@@ -310,6 +310,7 @@ export function updateCinematicTimelineState(
       _handoffFrom.fov,
       cameraOut,
       { position: targetWaypoint.position, lookAt: targetWaypoint.lookAt, fov: targetWaypoint.fov },
+      state.def.id === 'intro_wakeup',
     );
     cameraFrame.position.copy(cameraOut.position);
     cameraOut.getWorldDirection(_lookTarget);
@@ -325,6 +326,7 @@ export function updateCinematicTimelineState(
       segT,
       cameraOut.position,
       _lookTarget,
+      state.def.id === 'intro_wakeup',
     );
     cameraFrame.position.copy(cameraOut.position);
     cameraFrame.lookAt.copy(_lookTarget);

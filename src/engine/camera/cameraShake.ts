@@ -6,6 +6,7 @@
 
 import { isEffectiveReducedMotion } from '@/engine/accessibility/accessibilitySettings';
 import { getVisualSettings } from '@/engine/visualSettings';
+import { eventBus } from '@/engine/EventBus';
 
 // Module-level shake state
 let shakeIntensity = 0;
@@ -94,3 +95,11 @@ export function resetCameraShake(): void {
 export function getCameraShakeIntensity(): number {
   return shakeIntensity;
 }
+
+// ── Global listener: cutscene-triggered camera shake ──
+// Wire the cutscene:camera_shake event so any cinematic system
+// (timeline runner, NPC cutscene launcher, etc.) can trigger shake
+// without directly importing this module.
+eventBus.on('cutscene:camera_shake', ({ intensity, frequency }) => {
+  triggerCameraShake(intensity, frequency);
+});

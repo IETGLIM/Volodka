@@ -56,18 +56,18 @@ const STANDARD_PROFILE: SceneVisualProfile = {
 };
 
 const PROFILES: Partial<Record<SceneId, SceneVisualProfile>> = {
-  volodka_room: { ...HERO_PROFILE, enhancedAmbientOcclusion: false, bloomIntensityScale: 1.07 },
+  volodka_room: { ...HERO_PROFILE, enhancedAmbientOcclusion: true, bloomIntensityScale: 1.07 },
   volodka_corridor: { ...HERO_PROFILE, enhancedAmbientOcclusion: false, bloomIntensityScale: 1.05 },
-  home_evening: { ...HERO_PROFILE, enhancedAmbientOcclusion: false, bloomIntensityScale: 1.08 },
+  home_evening: { ...HERO_PROFILE, enhancedAmbientOcclusion: true, bloomIntensityScale: 1.08 },
   street_night: {
     ...HERO_PROFILE,
     enhancedAmbientOcclusion: true,
     bloomIntensityScale: 1.18,
   },
-  cafe_evening: { ...HERO_PROFILE, enhancedAmbientOcclusion: false, bloomIntensityScale: 1.15 },
-  office_day: { ...HERO_PROFILE, enhancedAmbientOcclusion: false, bloomIntensityScale: 1.04 },
+  cafe_evening: { ...HERO_PROFILE, enhancedAmbientOcclusion: true, bloomIntensityScale: 1.15 },
+  office_day: { ...HERO_PROFILE, enhancedAmbientOcclusion: true, bloomIntensityScale: 1.04 },
   park_day: { ...HERO_PROFILE, enhancedAmbientOcclusion: false, bloomIntensityScale: 1.06 },
-  library_day: { ...HERO_PROFILE, enhancedAmbientOcclusion: false, bloomIntensityScale: 1.05 },
+  library_day: { ...HERO_PROFILE, enhancedAmbientOcclusion: true, bloomIntensityScale: 1.05 },
   rooftop_edge: {
     ...STANDARD_PROFILE,
     forceFullPostFx: true,

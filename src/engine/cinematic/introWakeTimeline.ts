@@ -145,7 +145,7 @@ export const INTRO_WAKE_TIMELINE: CinematicTimelineDef = {
     },
     {
       id: 'settle',
-      duration: WAKEUP_PHASE.settle,
+      duration: 0.01,
       actor: {
         mode: 'in_place',
         clip: 'idle',

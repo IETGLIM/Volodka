@@ -17,6 +17,7 @@ import { getInteractionState } from '@/components/3d/InteractionSystemBridge';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 import { isNarrativeMovementLocked } from '@/shared/exploreHubNodes';
 import { getVisualSettings } from '@/engine/visualSettings';
+import { isCanvasAreaTarget } from '@/engine/input/domUtils';
 
 const PITCH_MIN = -0.5;
 const PITCH_MAX = 1.3;
@@ -52,17 +53,6 @@ function shouldBlockZoom(): boolean {
   const { showStoryOverlay, currentNodeId, mode } = getGameSnapshot();
   if (mode !== 'exploration' || isNarrativeMovementLocked(showStoryOverlay, currentNodeId ?? '')) return true;
   return getInteractionState() === InteractionState.Dialogue;
-}
-
-function isCanvasAreaTarget(target: EventTarget | null): boolean {
-  const el = target as HTMLElement;
-  const isCanvasElement = el.tagName === 'CANVAS';
-  return (
-    isCanvasElement ||
-    !el.closest(
-      '[data-exploration-ui], [data-panel], dialog, [role="dialog"], button, a, input, textarea',
-    )
-  );
 }
 
 /** Wire DOM listeners that mutate orbit refs (yaw, pitch, distance). */

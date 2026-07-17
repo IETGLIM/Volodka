@@ -47,7 +47,7 @@ function waypointsToPhases(
         from: waypoints[i - 1],
         to: waypoints[i],
       },
-      overlay: i === 1 ? overlay : undefined,
+      overlay: i === waypoints.length - 1 ? overlay : undefined,
     });
   }
   return phases;

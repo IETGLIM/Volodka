@@ -9,6 +9,15 @@ export interface CutsceneEvents {
     letterboxStyle?: 'full' | 'thin' | 'none';
     showEmbers?: boolean;
     glitchIntensity?: number;
+    /** Fade-in duration in ms (default 300). */
+    fadeInMs?: number;
+    /** Fade-out duration in ms (default 500). */
+    fadeOutMs?: number;
   };
   'cutscene:overlay_end': Record<string, never>;
+  /** Trigger camera shake during cutscenes (e.g. hostile NPC encounters). */
+  'cutscene:camera_shake': {
+    intensity: number;
+    frequency?: number;
+  };
 }

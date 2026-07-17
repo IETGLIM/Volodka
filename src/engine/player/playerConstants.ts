@@ -28,3 +28,5 @@ export const KCC_STUCK_FRAMES_BEFORE_RECREATE = 15;
 export const MAX_KCC_RECREATE_ATTEMPTS_PER_INCIDENT = 5;
 /** Max horizontal direct-translation step when KCC is unavailable (prevents wall teleport). */
 export const MAX_DIRECT_DISPLACEMENT = 0.3;
+/** Distance (m) at which NPC proximity prompt becomes visible. */
+export const NPC_INTERACTION_RANGE = 3.0;

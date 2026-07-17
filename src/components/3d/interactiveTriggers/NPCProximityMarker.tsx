@@ -92,7 +92,7 @@ export function NPCProximityMarker({
           pointerEvents: 'none',
           userSelect: 'none',
         }}
-        zIndexRange={[0, 0]}
+        zIndexRange={[10, 0]}
       >
         <div className="npc-proximity-indicator-wrapper">
           {/* Name with relation color accent */}
@@ -136,8 +136,8 @@ export function NPCProximityMarker({
             </div>
           )}
 
-          {/* Dialogue "!" indicator (fallback for NPCs without dialogue) */}
-          {!hasDialogue && (
+          {/* Dialogue "!" indicator for NPCs with available dialogue */}
+          {hasDialogue && (
             <div className="npc-dialogue-indicator npc-prox-dialogue-pulse">
               !
             </div>

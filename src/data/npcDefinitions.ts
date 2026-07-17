@@ -169,7 +169,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
   {
     id: 'maria',
     faction: 'network',
-    name: 'Виктория',
+    name: 'Мария',
     modelPath: '/models/npcs/maria.glb',
     scale: 0.8,
     animations: DEFAULT_NPC_ANIMATION_CLIPS,

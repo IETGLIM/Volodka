@@ -442,7 +442,7 @@ function PostFXPipeline() {
           blendFunction={BlendFunction.NORMAL}
         />
       ) : (
-        <></>
+        null
       )}
 
       {/* CRT scanline overlay — guild_mainframe & office_day cyberpunk aesthetic */}
@@ -452,7 +452,7 @@ function PostFXPipeline() {
           density={1.2}
         />
       ) : (
-        <></>
+        null
       )}
       {rendering.useAmbientOcclusion ? (
         <N8AO
@@ -463,7 +463,7 @@ function PostFXPipeline() {
           color="black"
         />
       ) : (
-        <></>
+        null
       )}
       <Vignette
         offset={stressVignetteOffset}
@@ -483,7 +483,7 @@ function PostFXPipeline() {
       {proceduralLut ? (
         <LUT lut={proceduralLut} tetrahedralInterpolation blendFunction={BlendFunction.NORMAL} />
       ) : (
-        <></>
+        null
       )}
       <ToneMapping
         mode={ToneMappingMode.ACES_FILMIC}

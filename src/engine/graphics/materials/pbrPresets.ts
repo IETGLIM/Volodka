@@ -38,6 +38,10 @@ export function createStandardFromPreset(
   overrides?: Partial<THREE.MeshStandardMaterialParameters>,
 ): THREE.MeshStandardMaterial {
   const p = PBR_PRESETS[preset];
+  // Presets with transmission require MeshPhysicalMaterial
+  if ('transmission' in p) {
+    return createPhysicalFromPreset(preset, overrides as Partial<THREE.MeshPhysicalMaterialParameters>) as unknown as THREE.MeshStandardMaterial;
+  }
   return new THREE.MeshStandardMaterial({
     color: p.color,
     roughness: p.roughness,

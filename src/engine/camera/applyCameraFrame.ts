@@ -121,7 +121,7 @@ export function applyCameraFrame(
 
   const playerSpeedForPOI = playerVelocity.length();
   const poi = getCameraPOI(delta);
-  if (poi && !isInDialogue && !isCutscene && !frameState.isDragging && playerSpeedForPOI < 0.1) {
+  if (poi && !isInDialogue && !isCutscene && !frameState.isDragging && playerSpeedForPOI < 0.1 && frameState.playerMovingTimer > 2.0) {
     const dirToPOI = Math.atan2(poi.x - playerPos.x, poi.z - playerPos.z);
     let yawDiff = dirToPOI - ctx.yaw;
     while (yawDiff > Math.PI) yawDiff -= Math.PI * 2;

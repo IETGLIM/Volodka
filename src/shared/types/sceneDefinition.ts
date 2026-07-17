@@ -155,6 +155,8 @@ export interface FogConfig {
   near: number;
   /** Far clip distance for fog (default: 50) */
   far: number;
+  /** Optional fog color override (hex string). Falls back to SCENE_FOG_COLORS then ambientColor. */
+  fogColor?: string;
 }
 
 /** Default fog values used when fog is enabled but not explicitly configured */

@@ -77,7 +77,7 @@ export function computeKccMovementSubstepped(
     totalActual.z += actual.z;
     isGrounded = controller.computedGrounded();
     if (typeof controller.numComputedCollisions === 'function') {
-      collisionCount = controller.numComputedCollisions();
+      collisionCount = Math.max(collisionCount, controller.numComputedCollisions());
     }
   }
 

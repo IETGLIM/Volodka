@@ -138,6 +138,10 @@ export function ExplorationLighting() {
   const indoorFill = isIndoor ? (INDOOR_FILL[sceneId] ?? DEFAULT_INDOOR_FILL) : null;
   const outdoorReadability = !isIndoor ? OUTDOOR_READABILITY_AMBIENT[sceneId] : null;
 
+  // Scene-dimension-aware shadow camera frustum sizing
+  const shadowHalfW = Math.max(15, (config.dimensions?.[0] ?? 15) * 0.6);
+  const shadowHalfD = Math.max(15, (config.dimensions?.[2] ?? 15) * 0.6);
+
   return (
     <>
       {/* Main directional light with shadows */}
@@ -150,10 +154,10 @@ export function ExplorationLighting() {
         shadow-mapSize-height={preset.id === 'medium' ? 512 : shadowSize}
         shadow-camera-near={0.1}
         shadow-camera-far={50}
-        shadow-camera-left={-15}
-        shadow-camera-right={15}
-        shadow-camera-top={15}
-        shadow-camera-bottom={-15}
+        shadow-camera-left={-shadowHalfW}
+        shadow-camera-right={shadowHalfW}
+        shadow-camera-top={shadowHalfD}
+        shadow-camera-bottom={-shadowHalfD}
         shadow-bias={SHADOW_BIAS}
         shadow-normalBias={SHADOW_NORMAL_BIAS}
       />

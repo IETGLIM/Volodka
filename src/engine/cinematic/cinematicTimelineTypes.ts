@@ -51,6 +51,10 @@ export interface CinematicOverlayConfig {
   letterboxStyle?: 'full' | 'thin' | 'none';
   showEmbers?: boolean;
   glitchIntensity?: number;
+  /** Fade-in duration in ms (default 300). */
+  fadeInMs?: number;
+  /** Fade-out duration in ms (default 500). */
+  fadeOutMs?: number;
 }
 
 export interface CinematicTimelinePhase {
@@ -61,6 +65,8 @@ export interface CinematicTimelinePhase {
   overlay?: CinematicOverlayConfig;
   /** Optional sfx/stinger key — resolved by runner. */
   audioCue?: 'footstep' | 'notify' | 'ui_open' | 'mystery';
+  /** Trigger camera shake at the start of this phase. */
+  cameraShake?: { intensity: number; frequency?: number };
 }
 
 export interface CinematicTimelineAnchor {

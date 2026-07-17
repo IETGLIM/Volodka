@@ -14,6 +14,7 @@ export interface GroundProbeCacheState {
   groundY: number;
   probeX: number;
   probeZ: number;
+  probeY: number;
   sceneId: string;
   timeSinceProbe: number;
   forceRefresh: boolean;
@@ -27,6 +28,7 @@ export function createGroundProbeCache(
     groundY: fallbackFloorY,
     probeX: Number.NaN,
     probeZ: Number.NaN,
+    probeY: Number.NaN,
     sceneId,
     timeSinceProbe: Number.POSITIVE_INFINITY,
     forceRefresh: true,
@@ -42,6 +44,7 @@ export function shouldRefreshGroundProbe(
   cache: GroundProbeCacheState,
   sceneId: string,
   x: number,
+  y: number,
   z: number,
   airborne: boolean,
 ): boolean {
@@ -53,6 +56,9 @@ export function shouldRefreshGroundProbe(
   const dx = x - cache.probeX;
   const dz = z - cache.probeZ;
   if (dx * dx + dz * dz > GROUND_PROBE_HORIZ_THRESHOLD * GROUND_PROBE_HORIZ_THRESHOLD) {
+    return true;
+  }
+  if (!Number.isNaN(cache.probeY) && Math.abs(y - cache.probeY) > 0.3) {
     return true;
   }
   if (cache.timeSinceProbe >= GROUND_PROBE_REFRESH_INTERVAL_S) return true;
@@ -80,7 +86,7 @@ export function resolveCachedGroundY(
 ): number {
   cache.timeSinceProbe += params.dt;
 
-  if (shouldRefreshGroundProbe(cache, params.sceneId, params.x, params.z, params.airborne)) {
+  if (shouldRefreshGroundProbe(cache, params.sceneId, params.x, params.feetY, params.z, params.airborne)) {
     cache.groundY = probeGroundY(
       world,
       rapier,
@@ -93,6 +99,7 @@ export function resolveCachedGroundY(
     );
     cache.probeX = params.x;
     cache.probeZ = params.z;
+    cache.probeY = params.feetY;
     cache.sceneId = params.sceneId;
     cache.timeSinceProbe = 0;
     cache.forceRefresh = false;

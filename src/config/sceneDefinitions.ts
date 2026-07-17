@@ -192,7 +192,7 @@ export const street_night_def: SceneDefinition = {
   ambientIntensity: 0.78,
   groundColor: '#32324a',
   fogEnabled: true,
-  fog: { near: 14, far: 50 },
+  fog: { near: 14, far: 50, fogColor: '#0a0e1a' },
   transitionStyle: 'flash',
   entryText: 'Неон и снег. Город не спит.',
 };
@@ -885,7 +885,7 @@ export const abandoned_factory_def: SceneDefinition = {
   ambientIntensity: 0.55,
   groundColor: '#25221e',
   fogEnabled: true,
-  fog: { near: 4, far: 16 },
+  fog: { near: 4, far: 16, fogColor: '#1a1408' },
   transitionStyle: 'darken',
   entryText: 'Ржавчина и гул. Призраки конвейера.',
 };

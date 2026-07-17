@@ -177,8 +177,9 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
     const targetVx = moveDir.x * speed;
     const targetVz = moveDir.z * speed;
     if (keyboardDrivesMove) {
-      vel.x = targetVx;
-      vel.z = targetVz;
+      const k = 25; // high stiffness, nearly instant but avoids hard snap
+      vel.x = THREE.MathUtils.damp(vel.x, targetVx, k, dt);
+      vel.z = THREE.MathUtils.damp(vel.z, targetVz, k, dt);
     } else {
       vel.x = THREE.MathUtils.damp(vel.x, targetVx, moveAccel, dt);
       vel.z = THREE.MathUtils.damp(vel.z, targetVz, moveAccel, dt);

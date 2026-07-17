@@ -144,7 +144,7 @@ export function SceneEnvironment() {
 
   // Use style-pillar-matched fog colors, fall back to scene config ambient
   const fogColor = liftHexColor(
-    SCENE_FOG_COLORS[visualSceneId] ?? config.ambientColor ?? '#1a1a2e',
+    config.fog?.fogColor ?? SCENE_FOG_COLORS[visualSceneId] ?? config.ambientColor ?? '#1a1a2e',
     SCENE_VISIBILITY.fogColorLift,
   );
   const bgColor = liftHexColor(

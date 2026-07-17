@@ -54,22 +54,23 @@ describe('groundProbeCache', () => {
     cache.probeZ = 0;
     cache.timeSinceProbe = 0;
 
-    expect(shouldRefreshGroundProbe(cache, 'other_scene', 0, 0, false)).toBe(true);
-    expect(shouldRefreshGroundProbe(cache, 'home_evening', 0, 0, true)).toBe(true);
+    expect(shouldRefreshGroundProbe(cache, 'other_scene', 0, 0, 0, false)).toBe(true);
+    expect(shouldRefreshGroundProbe(cache, 'home_evening', 0, 0, 0, true)).toBe(true);
     expect(
       shouldRefreshGroundProbe(
         cache,
         'home_evening',
         GROUND_PROBE_HORIZ_THRESHOLD + 0.1,
         0,
+        0,
         false,
       ),
     ).toBe(true);
 
     cache.timeSinceProbe = GROUND_PROBE_REFRESH_INTERVAL_S;
-    expect(shouldRefreshGroundProbe(cache, 'home_evening', 0, 0, false)).toBe(true);
+    expect(shouldRefreshGroundProbe(cache, 'home_evening', 0, 0, 0, false)).toBe(true);
 
     invalidateGroundProbeCache(cache);
-    expect(shouldRefreshGroundProbe(cache, 'home_evening', 0, 0, false)).toBe(true);
+    expect(shouldRefreshGroundProbe(cache, 'home_evening', 0, 0, 0, false)).toBe(true);
   });
 });

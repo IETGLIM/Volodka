@@ -28,6 +28,7 @@ import {
 import { requestSceneTransition } from '@/engine/scene/sceneTransition';
 import { sharedCameraYawRef } from '@/engine/PlayerRotationState';
 import { resetEKeyConsumption } from '@/engine/input/eKeyConsumption';
+import { NPC_INTERACTION_RANGE } from '@/engine/player/playerConstants';
 import { isEffectiveReducedMotion } from '@/engine/accessibility/accessibilitySettings';
 import {
   resolvePoemExplorationHighlight,
@@ -429,11 +430,11 @@ export function InteractiveTriggers({
 
       tempVec.set(npc.position[0], npc.position[1], npc.position[2]);
       const dist = playerPos.distanceTo(tempVec);
-      const isNear = dist < 3.0;
+      const isNear = dist < NPC_INTERACTION_RANGE;
       const promptId = `npc_${npc.npcId}`;
       const isAllowed = allowedIdsRef.current.has(promptId);
       const shouldShow = isNear && isAllowed;
-      runtime.proximityRef.current = shouldShow ? Math.max(0.4, 1 - dist / 3.5) : 0;
+      runtime.proximityRef.current = shouldShow ? Math.max(0.4, 1 - dist / (NPC_INTERACTION_RANGE + 0.5)) : 0;
       if (shouldShow) runtime.pulsePhaseRef.current += delta * 3.2;
 
       reconcileProximityPrompt(

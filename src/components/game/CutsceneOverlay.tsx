@@ -249,6 +249,9 @@ export function CutsceneOverlay() {
   const [letterboxStyle, setLetterboxStyle] = useState<'full' | 'thin' | 'none'>('full');
   const [showEmbers, setShowEmbers] = useState(false);
   const [glitchIntensity, setGlitchIntensity] = useState(0);
+  const [fadeInMs, setFadeInMs] = useState(300);
+  const [fadeOutMs, setFadeOutMs] = useState(500);
+  const [overlayKey, setOverlayKey] = useState(0);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const skipDelayTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [showSkip, setShowSkip] = useState(false);
@@ -315,6 +318,9 @@ export function CutsceneOverlay() {
       setLetterboxStyle(reducedMotion ? 'thin' : (payload.letterboxStyle ?? 'full'));
       setShowEmbers(!reducedMotion && (payload.showEmbers ?? false));
       setGlitchIntensity(reducedMotion ? 0 : (payload.glitchIntensity ?? 0));
+      setFadeInMs(payload.fadeInMs ?? 300);
+      setFadeOutMs(payload.fadeOutMs ?? 500);
+      setOverlayKey((k) => k + 1);
       setActive(true);
       setShowSkip(true);
       skippedRef.current = false;
@@ -382,11 +388,15 @@ export function CutsceneOverlay() {
       <AnimatePresence>
       {active && (
         <motion.div
-          key="cutscene-text-overlay"
+          key={`cutscene-overlay-${overlayKey}`}
           initial={reducedMotion ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={reducedMotion ? undefined : { opacity: 0 }}
-          transition={{ duration: motionDuration(1.0), ease: 'easeInOut' }}
+          transition={{
+            duration: reducedMotion ? 0 : fadeInMs / 1000,
+            ease: 'easeInOut',
+            exit: { duration: reducedMotion ? 0 : fadeOutMs / 1000, ease: 'easeInOut' },
+          }}
           className="fixed inset-0 flex items-center justify-center pointer-events-none"
           style={{ zIndex: UI_LAYERS.CINEMATIC_TRANSITION }}
         >

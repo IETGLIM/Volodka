@@ -146,6 +146,7 @@ export function lerpWakeCamera(
   t: number,
   outPos: THREE.Vector3,
   outLook: THREE.Vector3,
+  clampRoom?: boolean,
 ): number {
   const e = easeInOutCubic(t);
   if (wp.controlPoint) {
@@ -156,7 +157,7 @@ export function lerpWakeCamera(
     outPos.lerpVectors(fromPos, wp.position, e);
     outLook.lerpVectors(fromLook, wp.lookAt, e);
   }
-  clampToVolodkaRoom(outPos);
+  if (clampRoom) clampToVolodkaRoom(outPos);
   return fromFov + (wp.fov - fromFov) * e;
 }
 
@@ -170,11 +171,12 @@ export function applyHandoffCamera(
   fromFov: number,
   camera: THREE.PerspectiveCamera,
   targetCam?: { position: THREE.Vector3; lookAt: THREE.Vector3; fov: number },
+  clampRoom?: boolean,
 ): void {
   const dest = targetCam ?? DESK_EXPLORATION_CAM;
   const e = easeInOutCubic(t);
   camera.position.lerpVectors(fromPos, dest.position, e);
-  clampToVolodkaRoom(camera.position);
+  if (clampRoom) clampToVolodkaRoom(camera.position);
   const look = new THREE.Vector3().lerpVectors(fromLook, dest.lookAt, e);
   camera.lookAt(look);
   camera.fov = fromFov + (dest.fov - fromFov) * e;

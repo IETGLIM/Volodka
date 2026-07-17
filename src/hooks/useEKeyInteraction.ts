@@ -18,9 +18,9 @@ import type { TriggerZone } from '@/data/triggerZones';
 import type { SceneExit } from '@/shared/types/definitions/scene';
 import {
   EXIT_PROXIMITY_RANGE,
-  isCanvasAreaTarget,
   LMB_CLICK_DRAG_THRESHOLD_PX,
 } from '@/engine/interaction/interactiveTriggerProximity';
+import { isCanvasAreaTarget } from '@/engine/input/domUtils';
 
 export interface UseEKeyInteractionOptions {
   livePlayerPositionRef: MutableRefObject<THREE.Vector3>;

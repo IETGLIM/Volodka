@@ -26,6 +26,8 @@ export interface NPCCutsceneDef {
   minRelation?: number;
   /** Maximum relation level to trigger (0-100, optional) */
   maxRelation?: number;
+  /** Camera shake on cutscene start (hostile NPCs). */
+  cameraShake?: { intensity: number; frequency?: number };
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -98,6 +100,7 @@ export const DEFAULT_HOSTILE_CUTSCENE: NPCCutsceneDef = {
   npcId: '__default_hostile__',
   durationSeconds: 2.0,
   textOverlay: undefined,
+  cameraShake: { intensity: 0.02, frequency: 15 },
   waypoints: [
     {
       position: [-2, 2.0, 4],
