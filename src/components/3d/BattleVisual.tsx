@@ -76,6 +76,9 @@ export function BattleVisual({ livePlayerPositionRef: _livePlayerPositionRef }: 
         <meshStandardMaterial color="#001133" emissive="#2244ff" emissiveIntensity={1.5} />
       </mesh>
 
+      {/* Center overhead fill — prevents dark corners in the arena */}
+      <pointLight position={[0, 4, 0]} color="#667788" intensity={1.5} distance={12} decay={2} />
+
       {/* ═══════════════════════════════════════════════ */}
       {/* ── HOLOGRAPHIC DISPLAYS ── */}
       {/* ═══════════════════════════════════════════════ */}
@@ -91,7 +94,7 @@ export function BattleVisual({ livePlayerPositionRef: _livePlayerPositionRef }: 
         const x = Math.sin(i * 2.7) * 4;
         const z = Math.cos(i * 3.1) * 4;
         return (
-          <mesh key={i} position={[x, 0.08, z]} rotation={[Math.random() * 0.5, Math.random() * Math.PI, 0]} castShadow geometry={getSharedBoxGeometry(0.2 + Math.random() * 0.3, 0.1, 0.15 + Math.random() * 0.2)}>
+          <mesh key={i} position={[x, 0.08, z]} rotation={[(i * 0.37) % 0.5, (i * 1.17) % Math.PI, 0]} castShadow geometry={getSharedBoxGeometry(0.2 + (i * 0.13) % 0.3, 0.1, 0.15 + (i * 0.07) % 0.2)}>
             <meshStandardMaterial color="#4a4a4a" roughness={0.9} />
           </mesh>
         );
@@ -114,7 +117,7 @@ export function BattleVisual({ livePlayerPositionRef: _livePlayerPositionRef }: 
         {/* Chain link panels */}
         {[-3.75, -1.25, 1.25, 3.75].map((x, i) => (
           <mesh key={`cl-${i}`} position={[x, 1.5, 0]} geometry={getSharedPlaneGeometry(2.5, 3)}>
-            <meshStandardMaterial color="#3a3a3a" transparent opacity={0.3} side={THREE.DoubleSide} wireframe />
+            <meshStandardMaterial color="#3a3a3a" transparent opacity={0.3} side={THREE.DoubleSide} wireframe polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
           </mesh>
         ))}
       </group>
@@ -160,7 +163,7 @@ export function BattleVisual({ livePlayerPositionRef: _livePlayerPositionRef }: 
         </mesh>
         {/* Glass shards */}
         <mesh position={[0.1, 0.2, 0.04]} rotation={[0.5, 0.3, 0]} geometry={getSharedPlaneGeometry(0.08, 0.12)}>
-          <meshStandardMaterial color="#6080a0" transparent opacity={0.4} metalness={0.2} roughness={0.1} side={THREE.DoubleSide} />
+          <meshStandardMaterial color="#6080a0" transparent opacity={0.4} metalness={0.2} roughness={0.1} side={THREE.DoubleSide} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
         </mesh>
       </group>
 
@@ -174,7 +177,7 @@ export function BattleVisual({ livePlayerPositionRef: _livePlayerPositionRef }: 
       {/* ── Scattered papers ── */}
       {[[-1, 0.02, 1], [1.5, 0.02, -2], [-2, 0.02, -1]].map((pos, i) => (
         <mesh key={`paper-${i}`} rotation={[-Math.PI / 2, 0, 0.3 + i * 0.5]} position={pos as [number, number, number]} geometry={getSharedPlaneGeometry(0.15, 0.1)}>
-          <meshStandardMaterial color="#e8e4dc" roughness={0.95} side={THREE.DoubleSide} />
+          <meshStandardMaterial color="#e8e4dc" roughness={0.95} side={THREE.DoubleSide} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
         </mesh>
       ))}
 
@@ -261,7 +264,7 @@ function WreckedCar({ position, rotation }: { position: [number, number, number]
       </mesh>
       {/* Shattered windshield */}
       <mesh position={[0.42, 0.92, 0]} rotation={[0, 0, -0.5]} geometry={getSharedPlaneGeometry(0.5, 1.0)}>
-        <meshStandardMaterial color="#6080a0" transparent opacity={0.35} metalness={0.2} roughness={0.15} side={THREE.DoubleSide} />
+        <meshStandardMaterial color="#6080a0" transparent opacity={0.35} metalness={0.2} roughness={0.15} side={THREE.DoubleSide} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
       </mesh>
       {/* Wheels (one missing — on blocks) */}
       {[
@@ -344,6 +347,9 @@ function HolographicDisplay({ position, color }: { position: [number, number, nu
           transparent
           opacity={0.6}
           side={THREE.DoubleSide}
+          polygonOffset
+          polygonOffsetFactor={1}
+          polygonOffsetUnits={1}
         />
       </mesh>
       {/* Frame */}

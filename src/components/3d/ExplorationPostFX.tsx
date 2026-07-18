@@ -1,11 +1,11 @@
-
 /* ─── Volodka RPG – AAA Post-Processing Pipeline ───
  *  Dynamic bloom per scene, stress-reactive vignette, color grading, tone mapping
+ *  Session 9: Added cinematic DOF for dialogue/cutscene moments
  *
  *  FIX: EffectComposer.addPass() accesses renderer.getContext().getContextAttributes().alpha
  *  which returns null if WebGL context isn't ready. We guard with useThree readiness check.
  *
- *  PERF: SSAO + DoF removed (~40% GPU savings). Bloom + Vignette are sufficient.
+ *  PERF: SSAO removed. DOF only active during dialogue/cutscene (~0% GPU in exploration).
  */
 
 import { useState, useEffect, useLayoutEffect, useRef, useMemo, type ComponentProps } from 'react';
@@ -23,10 +23,11 @@ import {
   ChromaticAberration,
   Scanline,
   Noise,
+  DepthOfField,
 } from '@react-three/postprocessing';
 import { BlendFunction, KernelSize, ToneMappingMode } from 'postprocessing';
 import type { EffectComposer as EffectComposerImpl } from 'postprocessing';
-import { usePostFxSceneState, usePlayerStress, useGameMode } from '@/store/selectors';
+import { usePostFxSceneState, usePlayerStress, useGamePhase } from '@/store/selectors';
 import { useGameStore } from '@/store/gameStore';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { resolvePoemTTLPostFxBoost } from '@/engine/poemWorld/poemPostFxBoost';
@@ -98,7 +99,7 @@ const SCENE_VIGNETTE: Record<string, { offset: number; darkness: number }> = {
   zarema_albert_room: { offset: 0.4,  darkness: 0.3 },
   solnysh_room:       { offset: 0.42, darkness: 0.28 },
   chk_forest_zorge:   { offset: 0.4,  darkness: 0.28 },
-  factory_basement:   { offset: 0.3, darkness: 0.38 },
+  factory_basement:   { offset: 0.3,  darkness: 0.38 },
   river_pier:         { offset: 0.4,  darkness: 0.26 },
 };
 const DEFAULT_VIGNETTE = { offset: 0.4, darkness: 0.32 };
@@ -117,7 +118,7 @@ const SCENE_BLOOM: Record<string, { intensity: number; threshold: number; smooth
   sleep_dream:        { intensity: 0.68, threshold: 0.52, smoothing: 0.44 }, // galaxy ethereal glow
   rooftop_edge:       { intensity: 0.58, threshold: 0.54, smoothing: 0.46 }, // galaxy sunset bloom
   abandoned_factory:  { intensity: 0.35, threshold: 0.7, smoothing: 0.55 },  // ember glow (lighter GPU load)
-  street_winter:      { intensity: 0.3,  threshold: 0.8,  smoothing: 0.6 },  // cold
+  street_winter:      { intensity: 0.3,  threshold: 0.8, smoothing: 0.6 },  // cold
   zarema_albert_room: { intensity: 0.35, threshold: 0.72, smoothing: 0.5 },  // warm domestic lamp glow
   solnysh_room:       { intensity: 0.38, threshold: 0.68, smoothing: 0.48 }, // warm lamp glow
   chk_forest_zorge:   { intensity: 0.45, threshold: 0.55, smoothing: 0.45 }, // campfire bloom
@@ -125,6 +126,11 @@ const SCENE_BLOOM: Record<string, { intensity: number; threshold: number; smooth
   river_pier:         { intensity: 0.5,  threshold: 0.55, smoothing: 0.45 }, // fire + string lights
 };
 const DEFAULT_BLOOM = { intensity: 0.5, threshold: 0.7, smoothing: 0.5 };
+
+/** DOF focus distance for dialogue — third-person camera ~3m from subject */
+const DOF_DIALOGUE_FOCUS = 0.0;    // focus at camera depth (near subject)
+const DOF_DIALOGUE_BOKEH = 3;      // how many meters of depth are blurred
+const DOF_CUTSCENE_BOKEH = 2.5;
 
 /** Check if the WebGL renderer context is fully initialized.
  *  postprocessing v6.39 EffectComposer.addPass() calls
@@ -225,7 +231,7 @@ function useRendererReady(): boolean {
 }
 
 /** AAA Post-Processing: dynamic bloom, stress-reactive vignette,
- *  color grading (teal/orange CyberPunk2077), tone mapping
+ *  color grading (teal/orange CyberPunk2077), tone mapping, cinematic DOF
  *
  *  Wrapped in a double-readiness gate:
  *  1. useRendererReady() — async polling that confirms context is initialized
@@ -235,7 +241,7 @@ function useRendererReady(): boolean {
  *  This prevents the `null.alpha` crash in postprocessing's EffectComposer.addPass(). */
 export function ExplorationPostFX() {
   const rendererReady = useRendererReady();
-  const gameMode = useGameMode();
+  const gamePhase = useGamePhase();
   const { postfxEnabled } = useVisualSettings();
   const { preset } = useGraphicsQuality();
   const postfxActive = isPostProcessingEnabled(preset, postfxEnabled);
@@ -245,7 +251,7 @@ export function ExplorationPostFX() {
   // EffectComposer. This catches the race condition where gl changes
   // but ready hasn't been reset yet.
   const gl = useThree((state) => state.gl);
-  if (gameMode === 'menu' || !postfxActive) return null;
+  if (gamePhase === 'menu' || !postfxActive) return null;
   if (!rendererReady) return null;
   try {
     const ctx = gl.getContext();
@@ -398,7 +404,18 @@ function PostFXPipeline() {
   );
   const showChromatic = wantsStressChromatic && stressFactor > 0.3;
 
-  const pipelineKey = `${sceneId}-${rendering.useLitePostFx ? 'lite' : rendering.useAmbientOcclusion ? 'ao' : 'full'}`;
+  // ── Session 9: Cinematic DOF for dialogue / cutscene moments ──
+  const showStoryOverlay = useGameStore((s) => s.showStoryOverlay);
+  const activeCutsceneId = useGameStore((s) => s.activeCutsceneId);
+  const isInDialogue = showStoryOverlay;
+  const isInCutscene = !!activeCutsceneId;
+  // DOF only on high/ultra quality, not on mobile, not with reduced motion
+  const wantsCinematicDOF =
+    !reducedMotion && !visualLite && !coarsePointer &&
+    (preset.id === 'high' || preset.id === 'ultra') &&
+    (isInDialogue || isInCutscene);
+
+  const pipelineKey = `${sceneId}-${rendering.useLitePostFx ? 'lite' : rendering.useAmbientOcclusion ? 'ao' : 'full'}${wantsCinematicDOF ? '-dof' : ''}`;
   const lutKind = resolveProceduralLutKind(sceneId);
   const proceduralLut = useMemo(
     () => (lutKind ? getCachedProceduralLut3DTexture(lutKind) : null),
@@ -446,6 +463,15 @@ function PostFXPipeline() {
       {showChromatic ? <ChromaticAberration offset={chromaticOffset} blendFunction={BlendFunction.NORMAL} /> : null as any}
       {wantsScanlines ? <Scanline blendFunction={BlendFunction.OVERLAY} density={1.2} /> : null as any}
       {rendering.useAmbientOcclusion ? <N8AO aoRadius={rendering.aoRadius} intensity={rendering.aoIntensity} distanceFalloff={0.5} halfRes color="black" /> : null as any}
+      {/* Session 9: Shallow DOF during dialogue/cutscene — focuses on subjects, blurs background */}
+      {wantsCinematicDOF ? (
+        <DepthOfField
+          focusDistance={DOF_DIALOGUE_FOCUS}
+          focalLength={0.05}
+          bokehScale={isInCutscene ? DOF_CUTSCENE_BOKEH : DOF_DIALOGUE_BOKEH}
+          height={480}
+        />
+      ) : null as any}
       <Vignette offset={stressVignetteOffset} darkness={stressVignetteDarkness} blendFunction={BlendFunction.NORMAL} />
       <HueSaturation hue={colorGrade.hue} saturation={effectiveSaturation} blendFunction={BlendFunction.NORMAL} />
       <BrightnessContrast brightness={effectiveBrightness} contrast={effectiveContrast} blendFunction={BlendFunction.NORMAL} />

@@ -9,6 +9,7 @@ import type {
   QuestDefinition,
   QuestObjective,
 } from '@/engine/guidedStory/guidedStoryTypes';
+import { areQuestDependenciesMet } from '@/shared/quest/questDependencies';
 import { getVisitedNodeSet } from '@/shared/visitedNodesIndex';
 
 export function getActForNode(nodeId: string, path: GuidedStoryPathConfig): number {
@@ -64,7 +65,9 @@ export function syncSpineStateFromSnapshot(
   return state;
 }
 
-/** Returns next step index, or null when spine should not advance. */
+/** Returns next step index, or null when spine should not advance.
+ *  Allows skipping ahead when a visited node appears later in the spine
+ *  (e.g. non-golden act5 branch entries that converge to the same epilogue). */
 export function resolveStorySpineAdvance(
   visitedNodeId: string,
   currentStepIndex: number,
@@ -72,10 +75,12 @@ export function resolveStorySpineAdvance(
 ): number | null {
   const nodeIndex = path.storySpine.indexOf(visitedNodeId);
   if (nodeIndex < 0) return null;
-  // Only the current spine step may complete — future nodes catch up via syncFromStore.
-  if (nodeIndex !== currentStepIndex) return null;
+  // Node already passed — don't go backwards.
+  if (nodeIndex < currentStepIndex) return null;
+  // Explore hub nodes at the current step must not self-advance.
   if (isExploreHubNode(visitedNodeId) && nodeIndex + 1 <= currentStepIndex) return null;
-  return currentStepIndex + 1;
+  // Advance to just past the visited node (skips any unvisited intermediate variants).
+  return nodeIndex + 1;
 }
 
 export function pickQuestFromSpine(
@@ -248,10 +253,12 @@ export function canStartQuest(questId: string, deps: GuidedStoryDeps): boolean {
   if (!def) return false;
 
   if (def.requiresQuests) {
-    for (const reqId of def.requiresQuests) {
-      const reqQuest = snapshot.quests.find((q) => q.questId === reqId);
-      if (!reqQuest || reqQuest.status !== 'completed') return false;
-    }
+    const depResult = areQuestDependenciesMet(
+      questId,
+      snapshot.quests as readonly import('@/shared/types/game').QuestState[],
+      (id) => deps.graph.getQuestDefinitionById(id),
+    );
+    if (!depResult.met) return false;
   }
 
   if (def.requiredFlag && !snapshot.flags[def.requiredFlag]) return false;

@@ -68,6 +68,7 @@ export interface GameStoreSnapshot {
   npcRelations: Array<{ npcId: string; value: number }>;
   unlockedAchievements: Array<{ id: string; unlockedAt: number }>;
   achievementProgress: AchievementProgressSnapshot;
+  diegeticNarrative: { nodeId: string; kind: string } | null;
   activeCutsceneId: string | null;
   triggeredCutscenes: string[];
   lastUsedPoemId: string | null;

@@ -518,6 +518,106 @@ export const CUTSCENES: Record<string, CutsceneDef> = {
     ],
   },
 
+  /* ── Act 5 → Act 6: Shadows Return ──
+     Triggered when reaching act5_ending_epilogue — the epilogue bridge.
+     Camera drifts through rain-soaked streets, unease building. */
+  act5_to_act6: {
+    id: 'act5_to_act6',
+    textOverlay: 'Тени возвращаются...',
+    subtitle: 'За примирением последует расплата',
+    triggerStoryNode: 'act5_ending_epilogue',
+    textDurationMs: 4000,
+    textAccentColor: '#6366f1', // indigo — foreboding
+    type: 'act_transition',
+    oneShot: true,
+    letterboxStyle: 'full',
+    showEmbers: false,
+    glitchIntensity: 0.15,
+    waypoints: [
+      // Start: Quiet rooftop at dusk
+      {
+        position: [0, 3, 4],
+        lookAt: [0, 1.5, 0],
+        fov: 50,
+        duration: 0,
+      },
+      // Slow drift down — the city feels uneasy
+      {
+        position: [2, 2, 2],
+        lookAt: [0, 1, -2],
+        fov: 55,
+        duration: 2.0,
+        controlPoint: [1, 2.5, 3],
+      },
+      // Street level — neon flickers, a figure in the distance
+      {
+        position: [-1, 1.5, -2],
+        lookAt: [3, 1.2, -6],
+        fov: 45,
+        duration: 2.0,
+        controlPoint: [0.5, 1.4, -4],
+      },
+      // Into the factory district — darkness ahead
+      {
+        position: [0, 1.8, -6],
+        lookAt: [0, 1, -10],
+        fov: 40,
+        duration: 2.0,
+        controlPoint: [0, 1.6, -8],
+      },
+    ],
+  },
+
+  /* ── Act 6 → Act 7: The Final Light ──
+     Triggered when reaching act6_final_confrontation — the rooftop showdown ends.
+     Camera rises from the factory rooftop into dawn light. */
+  act6_to_act7: {
+    id: 'act6_to_act7',
+    textOverlay: 'Рассвет...',
+    subtitle: 'Последний акт начинается',
+    triggerStoryNode: 'act6_final_confrontation',
+    textDurationMs: 4000,
+    textAccentColor: '#fbbf24', // gold — resolution
+    type: 'act_transition',
+    oneShot: true,
+    letterboxStyle: 'full',
+    showEmbers: true,
+    glitchIntensity: 0.1,
+    waypoints: [
+      // Start: Rooftop after the showdown
+      {
+        position: [0, 2, 3],
+        lookAt: [0, 1.5, 0],
+        fov: 50,
+        duration: 0,
+      },
+      // Rise — the city stretches below
+      {
+        position: [0, 5, 6],
+        lookAt: [0, 2, 0],
+        fov: 55,
+        duration: 2.0,
+        controlPoint: [0, 3.5, 4.5],
+      },
+      // Pan toward the horizon — first light
+      {
+        position: [3, 7, 10],
+        lookAt: [0, 4, -5],
+        fov: 60,
+        duration: 2.0,
+        controlPoint: [1.5, 6, 7.5],
+      },
+      // Settle — looking toward the guild, the future
+      {
+        position: [0, 4, 8],
+        lookAt: [0, 2, 0],
+        fov: 50,
+        duration: 1.5,
+        controlPoint: [1.5, 5.5, 9],
+      },
+    ],
+  },
+
   /* ── Poem Virus Revelation ──
      Triggered when Vladimir discovers the truth about the poem virus phenomenon.
      Camera spirals through glitched data, reality breaking apart. */

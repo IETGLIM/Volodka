@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
+import { seededRand } from '@/shared/utils/seededRand';
 import * as THREE from 'three';
 
 /**
@@ -9,7 +10,7 @@ import * as THREE from 'three';
 export function FlickeringCeilingLight() {
   const lightRef = useRef<THREE.PointLight>(null);
   const timeRef = useRef(0);
-  const nextFlickerRef = useRef(3 + Math.random() * 5); // first flicker 3–8s
+  const nextFlickerRef = useRef(3 + seededRand(42) * 5); // first flicker 3–8s (deterministic)
   const flickerPhaseRef = useRef<'idle' | 'dip' | 'recover'>('idle');
   const flickerTimerRef = useRef(0);
 
@@ -46,7 +47,7 @@ export function FlickeringCeilingLight() {
       light.intensity = dipIntensity + (baseIntensity - dipIntensity) * (1 - (1 - t) * (1 - t));
       if (t >= 1) {
         flickerPhaseRef.current = 'idle';
-        nextFlickerRef.current = timeRef.current + 3 + Math.random() * 5;
+        nextFlickerRef.current = timeRef.current + 3 + seededRand(77) * 5;
       }
     }
   });

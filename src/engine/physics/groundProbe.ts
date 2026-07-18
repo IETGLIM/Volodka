@@ -1,12 +1,17 @@
 import type { RapierCollider, RapierRigidBody } from '@react-three/rapier';
+import { MAX_SLOPE_CLIMB } from '@/engine/player/playerConstants';
 
-/** Minimum upward normal Y for a surface to count as walkable ground. */
-const MIN_GROUND_NORMAL_Y = 0.35;
+/** Minimum upward normal Y for a surface to count as walkable ground.
+ *  Aligned with KCC's MAX_SLOPE_CLIMB (π/4 = 45°): cos(45°) ≈ 0.707. */
+const MIN_GROUND_NORMAL_Y = Math.cos(MAX_SLOPE_CLIMB);
 /** Max downward ray length — enough for multi-level interiors. */
 const GROUND_PROBE_MAX_DISTANCE = 10;
 /** Ray starts this far above the query Y to avoid origin-inside-floor edge cases. */
 const GROUND_PROBE_ORIGIN_LIFT = 0.1;
 const DOWN = { x: 0, y: -1, z: 0 } as const;
+
+/** Collision group bitmask: only static environment (group 1). */
+const ENVIRONMENT_COLLISION_GROUP = 0b0000_0000_0000_0001;
 
 /** Minimal Rapier world surface for downward ground raycasts. */
 export type GroundProbeWorld = {
@@ -50,7 +55,7 @@ export function probeGroundY(
     GROUND_PROBE_MAX_DISTANCE,
     true,
     undefined,
-    undefined,
+    ENVIRONMENT_COLLISION_GROUP,
     excludeCollider ?? undefined,
     excludeRigidBody ?? undefined,
   );

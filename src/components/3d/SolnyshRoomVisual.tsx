@@ -177,8 +177,9 @@ export function SolnyshRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
         </group>
       </EnvironmentDetail>
 
-      <pointLight position={[0, 2.2, 0]} color="#ffccaa" intensity={1.8} distance={9} />
+      <pointLight position={[0, 2.2, 0]} color="#ffccaa" intensity={2.5} distance={9} />
       <pointLight position={[-2, 1.5, -2]} color="#ffaa66" intensity={0.8} distance={5} />
+      <pointLight position={[0, 2.8, 0]} color="#ffddaa" intensity={0.6} distance={8} decay={2} />
     </group>
   );
 }

@@ -135,7 +135,7 @@ export function StreetWinterVisual({ livePlayerPositionRef }: StreetWinterVisual
         [6, 0.15, -6], [-7, 0.12, 2],
       ].map((pos, i) => (
         <mesh key={i} position={pos as [number, number, number]}>
-          <sphereGeometry args={[0.8 + Math.random() * 0.4, 8, 4]} />
+          <sphereGeometry args={[0.8 + (i * 0.618) * 0.4, 8, 4]} />
           <meshStandardMaterial color="#d8e0f0" roughness={0.95} />
         </mesh>
       ))}
@@ -165,6 +165,8 @@ export function StreetWinterVisual({ livePlayerPositionRef }: StreetWinterVisual
       {/* Street lamp warm glow */}
       <pointLight position={[-2.5, 4.5, -6]} color="#ffdd80" intensity={2.5} distance={12} />
       <pointLight position={[2.5, 4.5, -2]} color="#ffdd80" intensity={2.0} distance={12} />
+      <pointLight position={[-2.5, 4.5, 4]} color="#ffdd80" intensity={2.0} distance={12} />
+      <pointLight position={[2.5, 4.5, 8]} color="#ffdd80" intensity={2.0} distance={12} />
 
       {/* ═══════════════════════════════════════════════ */}
       {/* ── ENVIRONMENTAL CLUTTER / STORYTELLING ── */}
@@ -312,7 +314,7 @@ function WinterBuilding({ position, width, height, depth }: {
               <meshStandardMaterial
                 color="#000000"
                 emissive="#ffaa44"
-                emissiveIntensity={Math.random() > 0.3 ? 0.8 : 0.1}
+                emissiveIntensity={((row * 7 + col * 13) % 10) > 3 ? 0.8 : 0.1}
               />
             </mesh>
           );

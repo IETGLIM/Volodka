@@ -234,7 +234,7 @@ export function ParkDayVisual({ livePlayerPositionRef }: ParkDayVisualProps) {
 
       {/* ── Puddle with reflection near path ── */}
       <mesh rotation-x={-Math.PI / 2} position={[-1, 0.03, 2]} geometry={getSharedCircleGeometry(0.5, 12)}>
-        <meshStandardMaterial color="#1a3a3a" metalness={0.5} roughness={0.1} transparent opacity={0.6} />
+        <meshStandardMaterial color="#1a3a3a" metalness={0.5} roughness={0.1} transparent opacity={0.6} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
       </mesh>
     </group>
   );

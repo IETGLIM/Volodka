@@ -30,7 +30,6 @@ const IDLE: TransitionDirectorSnapshot = {
 let snapshot: TransitionDirectorSnapshot = { ...IDLE };
 const listeners = new Set<Listener>();
 let completeTimer: ReturnType<typeof setTimeout> | null = null;
-let canvasFadeTimer: ReturnType<typeof setTimeout> | null = null;
 let initialized = false;
 const busUnsubs: Array<() => void> = [];
 
@@ -50,24 +49,15 @@ function clearCompleteTimer(): void {
   }
 }
 
-function clearCanvasFadeTimer(): void {
-  if (canvasFadeTimer) {
-    clearTimeout(canvasFadeTimer);
-    canvasFadeTimer = null;
-  }
-}
-
 function abortTransition(): void {
   if (snapshot.phase === 'idle') return;
   clearCompleteTimer();
-  clearCanvasFadeTimer();
   snapshot = { ...IDLE };
   emit();
 }
 
 function beginTransition(targetScene: SceneId, fromScene?: SceneId): void {
   clearCompleteTimer();
-  clearCanvasFadeTimer();
   snapshot = {
     phase: 'loading',
     progress: TRANSITION_MILESTONES.started,
@@ -189,7 +179,6 @@ export function subscribeTransitionDirector(listener: Listener): () => void {
 /** Test harness — reset director state between cases. */
 export function resetTransitionDirector(): void {
   clearCompleteTimer();
-  clearCanvasFadeTimer();
   snapshot = { ...IDLE };
   emit();
 }
@@ -197,7 +186,6 @@ export function resetTransitionDirector(): void {
 /** Tear down bus subscriptions (StrictMode / engine dispose). */
 export function disposeTransitionDirector(): void {
   clearCompleteTimer();
-  clearCanvasFadeTimer();
   for (const unsub of busUnsubs) unsub();
   busUnsubs.length = 0;
   initialized = false;

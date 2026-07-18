@@ -57,6 +57,7 @@ function baseSnapshot(overrides: Partial<GameStoreSnapshot> = {}): GameStoreSnap
       goodKarmaStreak: 0,
       badKarmaStreak: 0,
     },
+    diegeticNarrative: null,
     activeCutsceneId: null,
     triggeredCutscenes: [],
     lastUsedPoemId: null,

@@ -1,4 +1,7 @@
-/* ─── Volodka RPG – Player contact shadow mesh ─── */
+/* ─── Volodka RPG – Player contact shadow mesh ───
+ *  Session 9: Improved shadow texture (128px, tighter gradient),
+ *  slightly larger radius for better distance judgment.
+ */
 
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import {
@@ -15,11 +18,11 @@ export function PhysicsPlayerContactShadow() {
 
   return (
     <mesh rotation-x={-Math.PI / 2} position={[0, 0.005, 0]}>
-      <circleGeometry args={[0.4, 24]} />
+      <circleGeometry args={[0.45, 32]} />
       <meshBasicMaterial
         map={shadowTexture}
         transparent
-        opacity={0.7}
+        opacity={0.75}
         depthWrite={false}
       />
     </mesh>

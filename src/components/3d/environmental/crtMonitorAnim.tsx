@@ -10,7 +10,7 @@ export function CRTMonitorAnim({ anim }: { anim: EnvAnimation }) {
   const baseIntensity = anim.config.baseIntensity ?? 4.0;
   const pulseAmp = anim.config.pulseAmp ?? 0.1; // ±10%
   const pulseSpeed = anim.config.pulseSpeed ?? 60; // ~60Hz CRT refresh
-  const flickerChance = anim.config.flickerChance ?? 0.005; // occasional bright flicker per frame
+  const flickerChance = anim.config.flickerChance ?? 0.005; // per-frame chance at 60fps baseline
 
   // Pre-allocated
   const currentEmissiveRef = useRef(baseIntensity);
@@ -23,8 +23,11 @@ export function CRTMonitorAnim({ anim }: { anim: EnvAnimation }) {
     // Simulate CRT refresh — rapid high-frequency intensity oscillation
     const crtPulse = Math.sin(t * pulseSpeed * Math.PI * 2) * pulseAmp * baseIntensity;
 
-    // Occasional bright flicker
-    const flickerBoost = Math.random() < flickerChance ? baseIntensity * 0.3 : 0;
+    // M2: Frame-rate independent flicker — convert per-frame probability to
+    // per-second probability so flicker rate is identical at 60fps, 120fps,
+    // or 144fps. Formula: p(t) = 1 - (1 - p_frame)^(delta * 60).
+    const flickerProb = 1 - Math.pow(1 - flickerChance, delta * 60);
+    const flickerBoost = Math.random() < flickerProb ? baseIntensity * 0.3 : 0;
 
     const targetE = baseIntensity + crtPulse + flickerBoost;
     // Smooth toward target to avoid jarring jumps

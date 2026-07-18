@@ -29,6 +29,7 @@ import { requestSceneTransition } from '@/engine/scene/sceneTransition';
 import { sharedCameraYawRef } from '@/engine/PlayerRotationState';
 import { resetEKeyConsumption } from '@/engine/input/eKeyConsumption';
 import { NPC_INTERACTION_RANGE } from '@/engine/player/playerConstants';
+import { setCameraPOITarget } from '@/engine/camera/cameraPOI';
 import { isEffectiveReducedMotion } from '@/engine/accessibility/accessibilitySettings';
 import {
   resolvePoemExplorationHighlight,
@@ -342,6 +343,10 @@ export function InteractiveTriggers({
                 ? 'exit'
                 : 'object',
         });
+        // Session 9: Subtle camera POI nudge toward NPC/object on first hint
+        if (primaryHit.kind === 'npc' && npcTarget) {
+          setCameraPOITarget(new THREE.Vector3(...npcTarget.position));
+        }
       }
     } else if (lastHintIdRef.current !== null) {
       lastHintIdRef.current = null;

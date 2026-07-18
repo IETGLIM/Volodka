@@ -189,7 +189,7 @@ export function NPC({
   // ── Register/unregister NPC group ref for interaction system ──
   useEffect(() => {
     if (groupRef.current) {
-      registerNPCGroup(definition.id, groupRef.current);
+      registerNPCGroup(definition.id, groupRef.current, sceneId);
     }
     return () => {
       unregisterNPCGroup(definition.id);

@@ -68,6 +68,7 @@ import {
   disposeTransitionDirector,
   reviveTransitionDirector,
 } from '@/engine/scene/TransitionDirector';
+import { disposeCinematicTimelineOrchestrator } from '@/engine/cinematic/cinematicTimelineOrchestrator';
 import { detachKeyboardListeners } from '@/engine/keyboardInputState';
 import { clearNpcRegistry } from '@/engine/interaction/npcRegistry';
 import type { SceneId } from '@/shared/types/game';
@@ -127,6 +128,7 @@ export function disposeGameEngine(): void {
     unbindGpuResourceBaselineBridge();
     unbindSceneChunkGpuLifecycle();
     disposeTransitionDirector();
+    disposeCinematicTimelineOrchestrator();
     disposeEventBus();
   } catch (err) {
     console.error('[disposeGameEngine] teardown error:', err);

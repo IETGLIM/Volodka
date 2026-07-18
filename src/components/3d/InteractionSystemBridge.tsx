@@ -1,4 +1,3 @@
-
 /* ─── Volodka RPG – Interaction System Bridge ───
  *
  *  Refactored for kinematicPosition RigidBody.
@@ -133,6 +132,51 @@ export function InteractionSystemBridge({
     });
   };
 
+  /**
+   * Force-reset all interaction refs to Idle. Used by both scene:transition_start
+   * and scene:enter to keep the component's stateRef in sync with the module-level
+   * interactionSession (which resets on scene:transition_start).
+   */
+  const forceResetToIdle = (): void => {
+    if (stateRef.current === InteractionState.Idle) return;
+
+    if (stateRef.current === InteractionState.Cutscene) {
+      const splash = activeNpcSplashRef.current;
+      if (splash) {
+        stopCinematicTimeline(splashTimelineId(splash));
+        activeNpcSplashRef.current = null;
+      }
+    }
+
+    // Reset NPC animation
+    if (targetNPCIdRef.current) {
+      eventBus.emit('npc:animation', {
+        npcId: targetNPCIdRef.current,
+        state: 'idle',
+      });
+    }
+
+    const prevNpcId = targetNPCIdRef.current;
+    phaseTimerRef.current = 0;
+    globalTimerRef.current = 0;
+
+    // Use force=true because the module-level session may already be Idle
+    // (reset by scene:transition_start handler in interactionSession.ts).
+    // Without force, Idle→Idle is valid, but Approach→Idle would fail if
+    // the module-level session was already reset before this runs.
+    writeInteractionSession(InteractionState.Idle, null, { force: true });
+    stateRef.current = InteractionState.Idle;
+    targetNPCIdRef.current = null;
+
+    clearPlayerExternalVelocity();
+    wasNarrativeInteractionRef.current = false;
+
+    eventBus.emit('interaction:state_change', {
+      state: InteractionState.Idle,
+      npcId: prevNpcId ?? undefined,
+    });
+  };
+
   // ── Global interaction timer (for safety timeout) ──
   const globalTimerRef = useRef(0);
 
@@ -238,39 +282,27 @@ export function InteractionSystemBridge({
     return unsub;
   }, []);
 
-  // ── Cancel on scene change ──
+  // ── Cancel on scene transition start (syncs stateRef with module-level session) ──
+  // The module-level interactionSession resets to Idle on scene:transition_start.
+  // Without this handler, stateRef.current stays in the old state (e.g. Approach)
+  // while the module-level session is Idle. This desync causes:
+  //   1. publishInteraction to reject valid transitions (Idle → Cutscene not valid)
+  //   2. Spurious interaction:state_change events emitted for rejected transitions
+  //   3. Splash timeline leaks (started but never completed because stateRef != Cutscene)
+  // By resetting here, stateRef stays in sync with the module-level session for the
+  // entire transition window (scene:transition_start → scene:enter).
+  useEffect(() => {
+    const unsub = eventBus.on('scene:transition_start', () => {
+      forceResetToIdle();
+    });
+
+    return unsub;
+  }, []);
+
+  // ── Cancel on scene enter (defensive — also catches transitions without transition_start) ──
   useEffect(() => {
     const unsub = eventBus.on('scene:enter', () => {
-      if (stateRef.current === InteractionState.Idle) return;
-
-      if (stateRef.current === InteractionState.Cutscene) {
-        const splash = activeNpcSplashRef.current;
-        if (splash) {
-          stopCinematicTimeline(splashTimelineId(splash));
-          activeNpcSplashRef.current = null;
-        }
-      }
-
-      // Reset NPC animation
-      if (targetNPCIdRef.current) {
-        eventBus.emit('npc:animation', {
-          npcId: targetNPCIdRef.current,
-          state: 'idle',
-        });
-      }
-
-      const prevNpcId = targetNPCIdRef.current;
-      phaseTimerRef.current = 0;
-
-      publishInteraction(stateRef, targetNPCIdRef, InteractionState.Idle, null);
-
-      // Clear external velocity when cancelling
-      clearPlayerExternalVelocity();
-
-      eventBus.emit('interaction:state_change', {
-        state: InteractionState.Idle,
-        npcId: prevNpcId ?? undefined,
-      });
+      forceResetToIdle();
     });
 
     return unsub;
@@ -298,7 +330,7 @@ export function InteractionSystemBridge({
       // Only timeout Dialogue in exploration mode without story overlay
       const currentMode = readGamePhase({ mainMenuOpen: false, introActive: false, combatActive: false, activeCutsceneId: getGameSnapshot().activeCutsceneId });
       const showStoryOverlay = getGameSnapshot().showStoryOverlay;
-      shouldCheckTimeout = currentMode === 'exploration' && !showStoryOverlay;
+      shouldCheckTimeout = currentMode === 'exploration' && !showStoryOverlay && !getGameSnapshot().diegeticNarrative;
       timeoutDuration = 4.0;
     } else if (stateRef.current === InteractionState.Exit) {
       // Exit is a short cleanup phase (0.3s) — phaseTimer handles it; don't race globalTimer
@@ -535,7 +567,7 @@ export function InteractionSystemBridge({
         if (phaseTimerRef.current >= 0.3) {
           const currentMode = readGamePhase({ mainMenuOpen: false, introActive: false, combatActive: false, activeCutsceneId: getGameSnapshot().activeCutsceneId });
           const showStoryOverlay = getGameSnapshot().showStoryOverlay;
-          if (currentMode !== 'cutscene' && !showStoryOverlay) {
+          if (currentMode !== 'cutscene' && !showStoryOverlay && !getGameSnapshot().diegeticNarrative) {
             phaseTimerRef.current = 0;
             globalTimerRef.current = 0;
             publishInteraction(stateRef, targetNPCIdRef, InteractionState.Exit);

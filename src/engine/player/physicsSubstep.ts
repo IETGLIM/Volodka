@@ -65,16 +65,23 @@ export function computeKccMovementSubstepped(
     controller.computeColliderMovement(collider, subDisplacement);
     const actual = controller.computedMovement();
 
+    // M3: Validate KCC displacement — if computedMovement() returns NaN
+    // (corrupted KCC internal state, e.g. during scene teardown), skip
+    // this sub-step to prevent teleporting the player to infinity.
+    const ax = Number.isFinite(actual.x) ? actual.x : 0;
+    const ay = Number.isFinite(actual.y) ? actual.y : 0;
+    const az = Number.isFinite(actual.z) ? actual.z : 0;
+
     const pos = rb.translation();
     rb.setTranslation({
-      x: pos.x + actual.x,
-      y: pos.y + actual.y,
-      z: pos.z + actual.z,
+      x: pos.x + ax,
+      y: pos.y + ay,
+      z: pos.z + az,
     }, true);
 
-    totalActual.x += actual.x;
-    totalActual.y += actual.y;
-    totalActual.z += actual.z;
+    totalActual.x += ax;
+    totalActual.y += ay;
+    totalActual.z += az;
     isGrounded = controller.computedGrounded();
     if (typeof controller.numComputedCollisions === 'function') {
       collisionCount = Math.max(collisionCount, controller.numComputedCollisions());

@@ -85,6 +85,9 @@ function buildGameSnapshot(state: GameStoreState): GameStoreSnapshot {
     exploration: { currentSceneId: state.exploration.currentSceneId, playerPosition: state.exploration.playerPosition, timeOfDay: state.exploration.timeOfDay, interactiveObjectStates: state.interactiveObjectStates },
     playerState: { flags: state.playerState.flags, inventory: state.playerState.inventory, skills: state.playerState.skills, energy: state.playerState.energy, karma: state.playerState.karma, stress: state.playerState.stress, visitedNodes: state.playerState.visitedNodes, progression: { level: state.playerState.progression?.level ?? 1, currentAct: state.playerState.progression?.currentAct ?? 1, skillPoints: state.playerState.progression?.skillPoints ?? 0, unlockedSkills: state.playerState.progression?.unlockedSkills ?? [], unlockedPerks: state.playerState.progression?.unlockedPerks ?? [], perkPoints: state.playerState.progression?.perkPoints ?? 0 } },
     collectedPoems: state.collectedPoems, quests: state.quests, activeTTLFlags: state.activeTTLFlags ?? {}, poemPowers: state.poemPowers, npcRelations: state.npcRelations,     unlockedAchievements: state.unlockedAchievements, achievementProgress: state.achievementProgress,
+    diegeticNarrative: state.diegeticNarrative
+      ? { nodeId: state.diegeticNarrative.nodeId, kind: state.diegeticNarrative.kind }
+      : null,
     activeCutsceneId: state.activeCutsceneId,
     triggeredCutscenes: state.triggeredCutscenes,
     lastUsedPoemId: state.lastUsedPoemId ?? null,

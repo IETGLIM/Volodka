@@ -1,4 +1,3 @@
-
 /* ─── Volodka RPG – Weather & Atmospheric Particle Systems ───
  *  Scene-specific animated particle systems for atmospheric effects:
  *  - Dust motes (volodka_room, library_day)
@@ -12,9 +11,11 @@ import * as THREE from 'three';
 import { useIsMobileVisual, useMobileVisualPerf } from '@/hooks/use-mobile';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { getParticleCount } from '@/shared/utils/mobileParticleScale';
+import { getGameSnapshot } from '@/shared/gameBridge/gameActionBridge';
 
 // ═══════════════════════════════════════════════════
 //  DUST MOTES — small, slow particles caught in light
+//  Session 9: Dust motes now respond to player movement (wake/disturbance)
 // ═══════════════════════════════════════════════════
 
 interface DustConfig {
@@ -75,6 +76,22 @@ const DUST_CONFIGS: Record<string, DustConfigEnhanced> = {
     sizeRange: [0.006, 0.016],
     speed: 0.04,
     color: '#ffddbb',
+  },
+  battle: {
+    count: 30,
+    position: [0, 2, 0],
+    spread: [10, 4, 10],
+    sizeRange: [0.006, 0.018],
+    speed: 0.05,
+    color: '#ccbbaa',
+  },
+  abandoned_factory: {
+    count: 25,
+    position: [0, 1.5, -4],
+    spread: [8, 4, 8],
+    sizeRange: [0.006, 0.016],
+    speed: 0.04,
+    color: '#aa9988',
   },
 };
 
@@ -146,6 +163,14 @@ function DustSystem({ config, hasGodRays }: { config: DustConfigEnhanced; hasGod
     const posArray = posAttr.array as Float32Array;
     const count = config.count;
 
+    // Player disturbance — read player position from cached snapshot (cheap)
+    // Dust motes within 0.8m of the player get pushed away, creating a wake effect
+    const pp = getGameSnapshot().exploration.playerPosition;
+    const playerX = pp[0];
+    const playerZ = pp[2];
+    const DISTURB_RADIUS = 0.8;
+    const DISTURB_FORCE = 0.4;
+
     for (let i = 0; i < count; i++) {
       const i3 = i * 3;
       const phase = phases[i];
@@ -154,6 +179,18 @@ function DustSystem({ config, hasGodRays }: { config: DustConfigEnhanced; hasGod
       posArray[i3] += (velocities[i3] + Math.sin(t * 0.3 + phase) * 0.002) * delta;
       posArray[i3 + 1] += (velocities[i3 + 1] + Math.sin(t * 0.2 + phase * 1.5) * 0.001) * delta;
       posArray[i3 + 2] += (velocities[i3 + 2] + Math.cos(t * 0.25 + phase * 0.8) * 0.002) * delta;
+
+      // Player wake disturbance
+      const dx = posArray[i3] - playerX;
+      const dz = posArray[i3 + 2] - playerZ;
+      const distSq = dx * dx + dz * dz;
+      if (distSq < DISTURB_RADIUS * DISTURB_RADIUS && distSq > 0.0001) {
+        const dist = Math.sqrt(distSq);
+        const influence = (1 - dist / DISTURB_RADIUS) * DISTURB_FORCE * delta;
+        posArray[i3] += (dx / dist) * influence;
+        posArray[i3 + 1] += influence * 0.3; // slight upward push
+        posArray[i3 + 2] += (dz / dist) * influence;
+      }
 
       // Wrap within bounds
       for (let axis = 0; axis < 3; axis++) {
@@ -236,6 +273,13 @@ const EMBER_CONFIGS: Record<string, EmberConfig> = {
     spread: [8, 5, 8],
     riseSpeed: 0.6,
     color: '#ff6622',
+  },
+  battle: {
+    count: 25,
+    position: [0, 0.5, 0],
+    spread: [10, 4, 10],
+    riseSpeed: 0.5,
+    color: '#ff8844',
   },
 };
 
@@ -342,4 +386,3 @@ function EmberSystem({ config }: { config: EmberConfig }) {
     </points>
   );
 }
-

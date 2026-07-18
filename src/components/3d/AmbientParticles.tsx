@@ -7,6 +7,7 @@
 import { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Points, PointMaterial } from '@react-three/drei';
+import { seededRand } from '@/shared/utils/seededRand';
 import * as THREE from 'three';
 
 interface AmbientParticlesConfig {
@@ -98,9 +99,9 @@ export function AmbientParticles(config: AmbientParticlesConfig = {}) {
       // Wrap Y when above ceiling
       if (arr[i3 + 1] > byMax) {
         arr[i3 + 1] = byMin - 0.1;
-        baseX[i] = bxMin + Math.random() * xRange;
+        baseX[i] = bxMin + seededRand(i + 2000) * xRange;
         arr[i3] = baseX[i];
-        baseZ[i] = bzMin + Math.random() * zRange;
+        baseZ[i] = bzMin + seededRand(i + 3000) * zRange;
         arr[i3 + 2] = baseZ[i];
       }
     }

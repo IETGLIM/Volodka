@@ -18,11 +18,12 @@ interface ContactShadowPreset {
 
 const CONTACT_SHADOW_PRESETS: Record<ContactShadowVariant, ContactShadowPreset> = {
   player: {
-    size: 64,
+    size: 128,
     stops: [
-      [0, 0.45],
-      [0.4, 0.25],
-      [0.7, 0.08],
+      [0, 0.5],
+      [0.35, 0.3],
+      [0.6, 0.12],
+      [0.85, 0.03],
       [1, 0],
     ],
   },

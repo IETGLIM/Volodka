@@ -257,7 +257,7 @@ const SCENE_ACCENT_LIGHTS: Record<string, AccentLight[]> = {
   ],
   home_evening: [
     { position: [0.5, 1.8, -0.5], color: '#ff9944', intensity: 2.0, distance: 8, animated: 'candle_flicker' },
-    { position: [-1, 1.5, 1], color: '#ffbb66', intensity: 1.2, distance: 6 },
+    { position: [-1, 1.5, 1], color: '#ffbb66', intensity: 1.2, distance: 6, animated: 'candle_flicker' },
   ],
   cafe_evening: [
     { position: [-3, 2.5, -1], color: '#3366ee', intensity: 1.8, distance: 9, animated: 'cold_pulse' },
@@ -266,17 +266,17 @@ const SCENE_ACCENT_LIGHTS: Record<string, AccentLight[]> = {
   ],
   volodka_corridor: [
     { position: [0, 2.5, 0], color: '#ccaa55', intensity: 1.6, distance: 10, animated: 'candle_flicker' },
-    { position: [0, 2.2, -6], color: '#3355aa', intensity: 1.2, distance: 8 },
-    { position: [0, 2.2, 6], color: '#223388', intensity: 0.8, distance: 7 },
+    { position: [0, 2.2, -6], color: '#3355aa', intensity: 1.2, distance: 8, animated: 'cold_pulse' },
+    { position: [0, 2.2, 6], color: '#223388', intensity: 0.8, distance: 7, animated: 'cold_pulse' },
   ],
   office_day: [
     { position: [0, 2.6, -2], color: '#ccdde8', intensity: 1.2, distance: 14, animated: 'cold_pulse' },
-    { position: [3, 2.5, 2], color: '#bbccdd', intensity: 0.8, distance: 12 },
-    { position: [-3, 2.5, 2], color: '#aab8cc', intensity: 0.8, distance: 12 },
+    { position: [3, 2.5, 2], color: '#bbccdd', intensity: 0.8, distance: 12, animated: 'cold_pulse' },
+    { position: [-3, 2.5, 2], color: '#aab8cc', intensity: 0.8, distance: 12, animated: 'cold_pulse' },
   ],
   library_day: [
-    { position: [0, 1.8, -2], color: '#ddaa55', intensity: 1.5, distance: 8 },
-    { position: [2, 2.2, 0], color: '#cc9944', intensity: 0.8, distance: 7 },
+    { position: [0, 1.8, -2], color: '#ddaa55', intensity: 1.5, distance: 8, animated: 'candle_flicker' },
+    { position: [2, 2.2, 0], color: '#cc9944', intensity: 0.8, distance: 7, animated: 'candle_flicker' },
   ],
   park_day: [
     { position: [2, 4, -1], color: '#ffdd88', intensity: 1.6, distance: 14 },
@@ -289,9 +289,9 @@ const SCENE_ACCENT_LIGHTS: Record<string, AccentLight[]> = {
     { position: [0, 3, 0], color: '#1188cc', intensity: 1.5, distance: 12 },
   ],
   abandoned_factory: [
-    { position: [-2, 2.5, 2], color: '#ff8833', intensity: 2.2, distance: 12 },
-    { position: [4, 2, -3], color: '#dd6622', intensity: 1.5, distance: 10 },
-    { position: [0, 3, -4], color: '#ffaa44', intensity: 1.2, distance: 8 },
+    { position: [-2, 2.5, 2], color: '#ff8833', intensity: 2.2, distance: 12, animated: 'candle_flicker' },
+    { position: [4, 2, -3], color: '#dd6622', intensity: 1.5, distance: 10, animated: 'candle_flicker' },
+    { position: [0, 3, -4], color: '#ffaa44', intensity: 1.2, distance: 8, animated: 'candle_flicker' },
   ],
   volodka_room: [
     { position: [1.2, 1.4, -2.5], color: '#66ffaa', intensity: 1.4, distance: 6, animated: 'cold_pulse' },  // monitor glow (data flow)
@@ -302,6 +302,48 @@ const SCENE_ACCENT_LIGHTS: Record<string, AccentLight[]> = {
   factory_basement: [
     { position: [0, 2.4, -5], color: '#22ff88', intensity: 1.8, distance: 10 },        // Заря-М core glow
     { position: [2, 2, -2], color: '#44ffaa', intensity: 1.0, distance: 7 },
+  ],
+  rooftop_edge: [
+    { position: [-3, 3, 0], color: '#ff8844', intensity: 1.8, distance: 14 },        // sunset warm glow
+    { position: [4, 2.5, -2], color: '#ff6633', intensity: 1.4, distance: 12 },        // distant city reflection
+    { position: [0, 2, 3], color: '#ffaa66', intensity: 1.0, distance: 10 },         // ambient warmth
+  ],
+  river_pier: [
+    { position: [0, 1.5, -1], color: '#ff9944', intensity: 2.0, distance: 8, animated: 'candle_flicker' },   // campfire
+    { position: [3, 2.5, 0], color: '#ffbb55', intensity: 1.2, distance: 10 },       // string lights
+    { position: [-2, 2, 1], color: '#ffcc66', intensity: 0.8, distance: 8 },        // warm fill
+  ],
+  solnysh_room: [
+    { position: [0, 1.6, 0], color: '#ffcc88', intensity: 1.5, distance: 7, animated: 'candle_flicker' },  // table lamp
+    { position: [-1, 1.2, 1], color: '#ffbb77', intensity: 1.0, distance: 5, animated: 'candle_flicker' },  // corner lamp
+  ],
+  zarema_albert_room: [
+    { position: [0, 2, -1], color: '#ffbb77', intensity: 1.4, distance: 8 },       // warm overhead
+    { position: [1, 1.5, 1], color: '#ffaa55', intensity: 0.8, distance: 6, animated: 'candle_flicker' },  // desk lamp
+  ],
+  battle: [
+    { position: [0, 3, 0], color: '#ff6633', intensity: 2.5, distance: 16, animated: 'candle_flicker' },   // central conflict glow
+    { position: [-4, 2, -3], color: '#ff4422', intensity: 1.5, distance: 12 },      // peripheral danger
+    { position: [5, 2.5, 2], color: '#ff8844', intensity: 1.2, distance: 10 },       // secondary accent
+  ],
+  street_winter: [
+    { position: [-2, 3, -1], color: '#ccddff', intensity: 1.2, distance: 12 },      // cold moonlight
+    { position: [3, 2.5, 0], color: '#aabbdd', intensity: 0.8, distance: 10 },       // snow-reflected fill
+    { position: [0, 1.8, 2], color: '#ffddaa', intensity: 0.6, distance: 8 },        // distant window warmth
+  ],
+  chk_campfire_night: [
+    { position: [0, 1.2, 0], color: '#ff8833', intensity: 2.5, distance: 8, animated: 'candle_flicker' },  // campfire
+    { position: [0, 2.5, 0], color: '#ff6622', intensity: 1.2, distance: 14, animated: 'candle_flicker' },  // fire uplight
+    { position: [2, 1.5, 1], color: '#ffaa44', intensity: 0.6, distance: 6 },        // peripheral warmth
+  ],
+  albert_backroom: [
+    { position: [0, 2, -0.5], color: '#ddaa55', intensity: 1.4, distance: 8, animated: 'candle_flicker' }, // desk lamp
+    { position: [-1, 1.5, 1], color: '#cc9944', intensity: 0.8, distance: 6 },       // ambient fill
+  ],
+  sleep_dream: [
+    { position: [0, 2, 0], color: '#aa66ff', intensity: 1.8, distance: 14, animated: 'cold_pulse' },    // dream pulse
+    { position: [-3, 1.5, -2], color: '#8844dd', intensity: 1.2, distance: 10, animated: 'cold_pulse' },   // side dream glow
+    { position: [2, 3, 1], color: '#cc88ff', intensity: 1.0, distance: 12, animated: 'cold_pulse' },     // floating orb
   ],
 };
 

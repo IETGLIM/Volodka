@@ -23,7 +23,7 @@ export const SNAP_DISTANCE = 0.15;
 export const BLOCKED_RATIO = 0.35;
 export const COYOTE_TIME = 0.15;
 export const JUMP_COOLDOWN = 0.3;
-export const TERMINAL_VELOCITY = GRAVITY * 2;
+export const TERMINAL_VELOCITY = GRAVITY * 1.5; // -22.5 m/s — safe for substep budget
 export const WARMUP_DURATION_S = 0.2;
 export const KCC_FAIL_FRAMES_BEFORE_DEGRADE = 60;
 export const KCC_STUCK_FRAMES_BEFORE_RECREATE = 15;
@@ -34,17 +34,17 @@ export const LANDING_SHAKE_MIN_VELOCITY = -4;
 /** Camera shake intensity on hard landing (world-space units). */
 export const LANDING_SHAKE_INTENSITY = 0.04;
 /** How fast landing shake decays (higher = faster). */
-export const LANDING_SHAKE_DECAY = 12;
+export const LANDING_SHAKE_DECAY = 5;
 /** Very subtle camera shake when walking into a wall. */
 export const WALL_BUMP_SHAKE_INTENSITY = 0.012;
 /** How fast wall-bump shake decays. */
-export const WALL_BUMP_SHAKE_DECAY = 18;
+export const WALL_BUMP_SHAKE_DECAY = 8;
 /** Maximum wall-bump shake cooldown to prevent rapid re-trigger. */
 export const WALL_BUMP_COOLDOWN = 0.3;
 
 // ── Variable jump height ──
 /** Gravity multiplier when ascending with jump button released (makes short hops feel snappy). */
-export const VARIABLE_JUMP_FALL_MULT = 2.8;
+export const VARIABLE_JUMP_FALL_MULT = 2.2;
 
 // ── Running FOV boost ──
 /** Additional FOV degrees when sprinting (adds peripheral speed feel). */

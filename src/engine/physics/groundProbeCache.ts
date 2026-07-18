@@ -7,8 +7,13 @@ import {
 
 /** Horizontal distance (m) before re-probing walkable ground. */
 export const GROUND_PROBE_HORIZ_THRESHOLD = 0.45;
-/** Max age (s) of a cached ground Y sample while grounded. */
-export const GROUND_PROBE_REFRESH_INTERVAL_S = 0.2;
+/** Max age (s) of a cached ground Y sample while grounded.
+ *  Must be shorter than COYOTE_TIME (0.15s) so coyote detection is reliable. */
+export const GROUND_PROBE_REFRESH_INTERVAL_S = 0.08;
+/** M6: Vertical distance (m) of upward Y change that forces a ground reprobe.
+ *  Catches the player stepping onto a raised surface (autostep, ramp) where
+ *  horizontal distance alone may not exceed the threshold. */
+export const GROUND_PROBE_VERT_UP_THRESHOLD = 0.3;
 
 export interface GroundProbeCacheState {
   groundY: number;
@@ -58,7 +63,13 @@ export function shouldRefreshGroundProbe(
   if (dx * dx + dz * dz > GROUND_PROBE_HORIZ_THRESHOLD * GROUND_PROBE_HORIZ_THRESHOLD) {
     return true;
   }
-  if (!Number.isNaN(cache.probeY) && Math.abs(y - cache.probeY) > 0.3) {
+  // M6: Upward Y change (autostep, ramp, raised platform) forces a reprobe
+  // even if horizontal distance hasn't changed enough.
+  if (!Number.isNaN(cache.probeY) && (y - cache.probeY) > GROUND_PROBE_VERT_UP_THRESHOLD) {
+    return true;
+  }
+  // Also catch significant downward Y changes (fell through weak floor, etc.)
+  if (!Number.isNaN(cache.probeY) && (cache.probeY - y) > GROUND_PROBE_VERT_UP_THRESHOLD) {
     return true;
   }
   if (cache.timeSinceProbe >= GROUND_PROBE_REFRESH_INTERVAL_S) return true;

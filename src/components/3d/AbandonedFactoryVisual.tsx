@@ -40,9 +40,9 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
   const debrisData = useMemo(
     () =>
       Array.from({ length: 6 }, (_, i) => ({
-        position: [(i - 3) * 0.5, 0.1 + Math.random() * 0.2, (i % 3) * 0.4] as [number, number, number],
-        rotation: [Math.random() * 0.3, Math.random() * Math.PI, 0] as [number, number, number],
-        size: [0.3 + Math.random() * 0.4, 0.08, 0.2 + Math.random() * 0.3] as [number, number, number],
+        position: [(i - 3) * 0.5, 0.35 + (i * 0.11) % 0.25, (i % 3) * 0.4] as [number, number, number],
+        rotation: [(i * 0.37) % 0.3, (i * 1.17) % Math.PI, 0] as [number, number, number],
+        size: [0.3 + (i * 0.13) % 0.4, 0.08, 0.2 + (i * 0.07) % 0.3] as [number, number, number],
       })),
     [],
   );
@@ -140,10 +140,10 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
         </mesh>
         {/* Broken glass shards */}
         <mesh rotation-y={-Math.PI / 2} position={[0.02, 0.5, -0.8]} geometry={getSharedPlaneGeometry(0.3, 0.6)}>
-          <meshStandardMaterial color="#a0b0c0" transparent opacity={0.3} metalness={0.2} roughness={0.1} side={THREE.DoubleSide} />
+          <meshStandardMaterial color="#a0b0c0" transparent opacity={0.3} metalness={0.2} roughness={0.1} side={THREE.DoubleSide} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
         </mesh>
         <mesh rotation-y={-Math.PI / 2} position={[0.02, -0.3, 0.5]} geometry={getSharedPlaneGeometry(0.4, 0.5)}>
-          <meshStandardMaterial color="#a0b0c0" transparent opacity={0.2} metalness={0.2} roughness={0.1} side={THREE.DoubleSide} />
+          <meshStandardMaterial color="#a0b0c0" transparent opacity={0.2} metalness={0.2} roughness={0.1} side={THREE.DoubleSide} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
         </mesh>
       </group>
 
@@ -296,7 +296,7 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
         [2, 0.01, 4], [2.3, 0.01, 4.2], [1.8, 0.01, 4.5], [2.5, 0.01, 3.8],
       ].map((pos, i) => (
         <mesh key={`glass-${i}`} position={pos as [number, number, number]} rotation={[-Math.PI / 2, 0, 0.3 + i * 0.7]} geometry={getSharedPlaneGeometry(0.08, 0.05)}>
-          <meshStandardMaterial color="#a0b8c0" transparent opacity={0.4} metalness={0.2} roughness={0.1} side={THREE.DoubleSide} />
+          <meshStandardMaterial color="#a0b8c0" transparent opacity={0.4} metalness={0.2} roughness={0.1} side={THREE.DoubleSide} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
         </mesh>
       ))}
 

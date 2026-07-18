@@ -21,6 +21,11 @@ export const ACT4_STRUCTURE: Record<string, StoryNodeStructure> = {
             "type": "setFlag",
             "flag": "act4_started",
             "flagValue": true
+          },
+          {
+            "type": "setFlag",
+            "flag": "rooftop_unlocked",
+            "flagValue": true
           }
         ]
       },
@@ -35,6 +40,11 @@ export const ACT4_STRUCTURE: Record<string, StoryNodeStructure> = {
             "type": "setFlag",
             "flag": "act4_started",
             "flagValue": true
+          },
+          {
+            "type": "setFlag",
+            "flag": "rooftop_unlocked",
+            "flagValue": true
           }
         ]
       },
@@ -46,6 +56,11 @@ export const ACT4_STRUCTURE: Record<string, StoryNodeStructure> = {
           {
             "type": "setFlag",
             "flag": "act4_started",
+            "flagValue": true
+          },
+          {
+            "type": "setFlag",
+            "flag": "rooftop_unlocked",
             "flagValue": true
           },
           {
@@ -62,6 +77,11 @@ export const ACT4_STRUCTURE: Record<string, StoryNodeStructure> = {
           {
             "type": "setFlag",
             "flag": "act4_started",
+            "flagValue": true
+          },
+          {
+            "type": "setFlag",
+            "flag": "rooftop_unlocked",
             "flagValue": true
           },
           {

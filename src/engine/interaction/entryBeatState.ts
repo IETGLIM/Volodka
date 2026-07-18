@@ -34,8 +34,7 @@ export function armEntryBeatFromZone(nodeId: string): number {
 
 /** Cutscene controller started playback for an entry beat node. */
 export function markEntryBeatCutscenePlaying(nodeId: string): void {
-  if (activeEntryNodeId === nodeId || phase === 'pendingFromZone') {
-    activeEntryNodeId = nodeId;
+  if (activeEntryNodeId === nodeId) {
     phase = 'playingCutscene';
   }
 }

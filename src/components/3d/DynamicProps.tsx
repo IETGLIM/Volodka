@@ -19,6 +19,15 @@ const IMPACT_MATERIAL: Record<DynamicPropDef['kind'], string> = {
   barrel: 'metal',
 };
 
+/** M4: Minimum mass per prop kind to prevent extreme impulse transfer.
+ *  A 75 kg player at 7 m/s should nudge props, not launch them. */
+const PROP_MASS: Record<DynamicPropDef['kind'], number> = {
+  can: 5,
+  bottle: 5,
+  box: 8,
+  barrel: 15,
+};
+
 const IMPACT_COOLDOWN_S = 0.3;
 
 function PropBody({ def }: { def: DynamicPropDef }) {
@@ -46,7 +55,7 @@ function PropBody({ def }: { def: DynamicPropDef }) {
   switch (def.kind) {
     case 'can':
       return (
-        <RigidBody {...common} colliders={false} density={0.4}>
+        <RigidBody {...common} colliders={false} mass={PROP_MASS.can}>
           <CylinderCollider args={[0.08, 0.06]} restitution={0.35} friction={0.5} />
           <mesh castShadow>
             <cylinderGeometry args={[0.06, 0.06, 0.16, 10]} />
@@ -60,7 +69,7 @@ function PropBody({ def }: { def: DynamicPropDef }) {
       );
     case 'bottle':
       return (
-        <RigidBody {...common} colliders={false} density={0.6}>
+        <RigidBody {...common} colliders={false} mass={PROP_MASS.bottle}>
           <CylinderCollider args={[0.12, 0.045]} restitution={0.25} friction={0.45} />
           <mesh castShadow>
             <cylinderGeometry args={[0.045, 0.05, 0.2, 8]} />
@@ -74,7 +83,7 @@ function PropBody({ def }: { def: DynamicPropDef }) {
       );
     case 'box':
       return (
-        <RigidBody {...common} colliders={false} density={0.3}>
+        <RigidBody {...common} colliders={false} mass={PROP_MASS.box}>
           <CuboidCollider args={[0.18, 0.13, 0.15]} restitution={0.2} friction={0.7} />
           <mesh castShadow>
             <boxGeometry args={[0.36, 0.26, 0.3]} />
@@ -88,7 +97,7 @@ function PropBody({ def }: { def: DynamicPropDef }) {
       );
     case 'barrel':
       return (
-        <RigidBody {...common} colliders={false} density={0.8}>
+        <RigidBody {...common} colliders={false} mass={PROP_MASS.barrel}>
           <CylinderCollider args={[0.3, 0.24]} restitution={0.15} friction={0.7} />
           <mesh castShadow>
             <cylinderGeometry args={[0.24, 0.24, 0.6, 12]} />

@@ -23,6 +23,7 @@ import { SceneEnvironment } from './SceneEnvironment';
 import { EnvironmentalAnimator } from './EnvironmentalAnimator';
 import { ProximityReactivityRenderer } from './ProximityReactivityRenderer';
 import { InteractionQueryBridge } from './InteractionQueryBridge';
+import { GRAVITY } from '@/engine/player/playerConstants';
 import {
   InteractionSystemBridge,
   getInteractionState,
@@ -62,7 +63,7 @@ function PhysicsSceneInner({
 
   return (
     <Physics
-      gravity={[0, -15, 0]}
+      gravity={[0, GRAVITY, 0]}
       timeStep={1 / 60}
       interpolate
       debug={false}

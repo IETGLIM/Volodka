@@ -119,6 +119,8 @@ export function createDefaultSessionState(): Partial<GameStoreState> {
     glitchIntensity: 0,
     noirMode: false,
     journalOpen: false,
+    thoughtHistory: [],
+    notificationHistory: [],
   };
 }
 
@@ -360,10 +362,13 @@ export function storePatchFromSave(payload: SavePayload): Partial<GameStoreState
       }
     : phaseFlagsFromLegacyMode(payload.mode);
 
+  // Defense-in-depth: combat runtime state (enemies, turns, HP) is never persisted.
+  // If a legacy save somehow has combatActive=true, force it to false to avoid
+  // a stuck state where the UI thinks combat is active but no combat system runs.
   patch.mode = 'exploration';
   patch.mainMenuOpen = legacyPhase.mainMenuOpen;
   patch.introActive = legacyPhase.introActive;
-  patch.combatActive = legacyPhase.combatActive;
+  patch.combatActive = false;
 
   // Closed-overlay explore hubs never restore with VN panel open.
   if (isClosedOverlayExploreHub(payload.currentNodeId)) {

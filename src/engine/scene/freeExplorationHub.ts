@@ -2,7 +2,7 @@ import { getSceneConfig } from '@/config/scenes';
 import { dispatchGameAction, getGameSnapshot } from '@/engine/GameActionDispatcher';
 import { eventBus } from '@/engine/EventBus';
 import { forceEmitInteractionEnd } from '@/engine/interaction/interactionEndDedup';
-import { closeNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
+import { closeNarrativeOverlay, closeDiegeticNarrative } from '@/engine/scene/narrativeOverlay';
 import {
   getExploreHubDef,
   isClosedOverlayExploreHub,
@@ -43,6 +43,15 @@ function showHubLocationContext(hubId: string, revisit: boolean): void {
  *  hub is entered rapidly (preventing stale location text from the previous scene). */
 let _hubToastTimer: ReturnType<typeof setTimeout> | null = null;
 
+// Clear hub toast on any scene transition (not just hub re-entry).
+// Accepts module-level lifetime — fine for a singleton module.
+eventBus.on('scene:transition_start', () => {
+  if (_hubToastTimer !== null) {
+    clearTimeout(_hubToastTimer);
+    _hubToastTimer = null;
+  }
+});
+
 /**
  * Promote to a closed-overlay explore hub: spine tracking, closed overlay,
  * optional first-visit location toast. Player actions use 3D trigger zones.
@@ -72,6 +81,7 @@ export function enterSceneFreeExplorationHub(
   }
   dispatchGameAction({ type: 'story/visitNode', nodeId: hubId });
   closeNarrativeOverlay();
+  closeDiegeticNarrative();
   setCinematicHoldActive(false);
 
   // Skip the location toast when explicitly suppressed (e.g., during the

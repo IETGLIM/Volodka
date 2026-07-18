@@ -41,8 +41,18 @@ export function runLockedPlayerMovement(deps: PlayerMovementDeps): void {
     vel.z = 0;
   }
 
-  vel.y += GRAVITY * dt;
-  if (vel.y < TERMINAL_VELOCITY) vel.y = TERMINAL_VELOCITY;
+  // Only apply gravity when not grounded — prevents per-frame downward
+  // jitter in locked mode (cutscene/dialogue).
+  const wasGrounded = deps.isGroundedRef.current;
+  if (!wasGrounded) {
+    vel.y += GRAVITY * dt;
+    if (vel.y < TERMINAL_VELOCITY) vel.y = TERMINAL_VELOCITY;
+  } else {
+    // H2: Only zero small positive velocities from KCC normal resolution on
+    // slopes/walls. Allow larger upward velocities (e.g. intentional jump
+    // impulse still decaying) to pass through.
+    if (vel.y > 0 && vel.y < 0.5) vel.y = 0;
+  }
 
   if (enforceFloor(rb, vel, groundY)) {
     deps.isGroundedRef.current = true;

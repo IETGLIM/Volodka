@@ -2280,6 +2280,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
       icon: '🟩',
     },
     effects: [
+      { type: 'setFlag', flag: 'found_quantum_computer', flagValue: true },
       { type: 'setFlag', flag: 'zarya_monolith_examined', flagValue: true },
       { type: 'discoverLore', loreId: 'lore_zarya_project_early' },
       { type: 'addSkill', skill: 'intuition', value: 1 },

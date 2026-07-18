@@ -1,6 +1,7 @@
-
 /* ─── Volodka RPG – AAA Weather & Atmospheric Particles ───
  *  Rain, snow, dust motes, embers, fireflies — per scene
+ *
+ *  Session 9: Rain/snow now have time-varying wind drift for natural variation.
  */
 
 import { useRef, useMemo, useEffect } from 'react';
@@ -284,6 +285,19 @@ function ParticleSystem({
     const [bx, by, bz] = config.boxSize;
     const time = timeRef.current;
 
+    // Session 9: Time-varying wind for rain and snow
+    // Wind changes direction and intensity slowly, producing natural gusts
+    const windX = type === 'rain'
+      ? Math.sin(time * 0.12) * 1.2 + Math.sin(time * 0.31) * 0.6
+      : type === 'snow'
+        ? Math.sin(time * 0.08) * 0.6 + Math.cos(time * 0.19) * 0.4
+        : 0;
+    const windZ = type === 'rain'
+      ? Math.cos(time * 0.15) * 0.8
+      : type === 'snow'
+        ? Math.sin(time * 0.11) * 0.5
+        : 0;
+
     for (let i = 0; i < count; i++) {
       const i3 = i * 3;
       const phase = phases[i];
@@ -297,6 +311,9 @@ function ParticleSystem({
       switch (type) {
         case 'rain':
           // Rain streaks fall fast, reset when below ground
+          // Session 9: Apply global wind to rain angle
+          posArray[i3] += windX * dt;
+          posArray[i3 + 2] += windZ * dt;
           if (posArray[i3 + 1] < -1) {
             const gen = ++resetGen[i];
             const seed = i * 1000 + gen * 100;
@@ -307,9 +324,10 @@ function ParticleSystem({
           break;
 
         case 'snow':
-          // Snow drifts laterally with sinusoidal wind
-          posArray[i3] += Math.sin(time * 0.5 + phase) * 0.02 * dt;
-          posArray[i3 + 2] += Math.cos(time * 0.3 + phase * 1.3) * 0.015 * dt;
+          // Snow drifts laterally with sinusoidal wind + time-varying gusts
+          // Session 9: Added slow wind gust variation
+          posArray[i3] += Math.sin(time * 0.5 + phase) * 0.02 * dt + windX * dt * 0.3;
+          posArray[i3 + 2] += Math.cos(time * 0.3 + phase * 1.3) * 0.015 * dt + windZ * dt * 0.3;
           if (posArray[i3 + 1] < -1) {
             const gen = ++resetGen[i];
             const seed = i * 1000 + gen * 100;

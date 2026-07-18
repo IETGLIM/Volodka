@@ -28,6 +28,7 @@ import {
   type SceneTransitionState,
   type CameraWaypoint,
   type DialogueSpeaker,
+  DEFAULT_FOV,
 } from './cinematicCamera';
 import {
   DEFAULT_DISTANCE,
@@ -295,7 +296,7 @@ export function applyExplorationSnapToCamera(runtime: CameraRuntimeRefs, sceneId
   if (spring && cam) {
     cam.position.copy(spring.position);
     cam.lookAt(spring.lookAt);
-    cam.fov = spring.fov;
+    cam.fov = Number.isFinite(spring.fov) ? spring.fov : DEFAULT_FOV;
     cam.updateProjectionMatrix();
   }
 }

@@ -160,6 +160,12 @@ const TutorialFlagsSchema = z.object({
   tutorial_seen_movement: z.boolean(),
   tutorial_seen_interact: z.boolean(),
   tutorial_seen_controls: z.boolean(),
+  /** Added in sessions 3-4 — poem power tutorial */
+  tutorial_seen_poem_power: z.boolean().optional().default(false),
+  /** Added in session 5 — first combat tutorial */
+  tutorial_seen_combat: z.boolean().optional().default(false),
+  /** Added in session 6 — quest board tutorial */
+  tutorial_seen_quest_board: z.boolean().optional().default(false),
   tutorialsDisabled: z.boolean(),
   tutorialsCompleted: z.boolean().optional().default(false),
 });

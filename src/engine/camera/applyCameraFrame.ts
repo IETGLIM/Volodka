@@ -4,6 +4,7 @@ import {
   applyEnhancedBreathingIdle,
   resetDialogueShotController,
   setGlobalTimeScale,
+  DEFAULT_FOV,
 } from './cinematicCamera';
 import { canWriteCamera, getCameraOwner } from './cameraOwnerState';
 import { getCameraShakeOffset } from './cameraShake';
@@ -42,6 +43,11 @@ export interface PostModeFrameState {
 
 /** Minimum squared distance from camera to look target — below this, lookAt degenerates. */
 const LOOK_AT_MIN_DIST_SQ = 1e-8;
+
+/** Clamp FOV to a safe finite range, falling back to DEFAULT_FOV if NaN/Infinity. */
+function safeFov(fov: number): number {
+  return Number.isFinite(fov) ? fov : DEFAULT_FOV;
+}
 
 /** Shared post-mode logic: dialogue transitions, spring, shake, auto-follow, POI */
 export function applyCameraFrame(
@@ -166,19 +172,27 @@ export function applyCameraFrame(
   _rollForward.subVectors(spring.lookAt, cam.position);
   const hasLookDirection = _rollForward.lengthSq() > LOOK_AT_MIN_DIST_SQ;
 
-  if (hasLookDirection) {
-    cam.lookAt(spring.lookAt);
-  }
+  // Always reset up vector to default before lookAt, so zero-distance frames
+  // don't leave cam.up in a stale rolled state from a previous cutscene.
+  cam.up.set(0, 1, 0);
 
-  cam.fov = spring.fov;
+  // Three.js handles zero-length lookAt gracefully (preserves current orientation),
+  // so call unconditionally to avoid leaving the camera facing a wrong direction
+  // after scene transitions where position === lookAt (e.g. both [0,0,0]).
+  cam.lookAt(spring.lookAt);
 
+  // M1: Guard against NaN/Infinity FOV from corrupted spring state (e.g. lerp
+  // with NaN targetFov in a cutscene transition). Without this, cam.fov = NaN
+  // causes updateProjectionMatrix() to produce a degenerate projection and the
+  // entire render becomes a blank/inverted screen.
+  cam.fov = safeFov(spring.fov);
+
+  // Apply camera roll only when there's a valid look direction.
   if (hasLookDirection && Math.abs(spring.roll) > 0.0001) {
     _rollForward.normalize();
     _rollRight.crossVectors(_rollForward, _rollUp).normalize();
     _rollRolledUp.copy(_rollUp).applyAxisAngle(_rollRight, spring.roll);
     cam.up.copy(_rollRolledUp);
-  } else {
-    cam.up.set(0, 1, 0);
   }
 
   cam.updateProjectionMatrix();

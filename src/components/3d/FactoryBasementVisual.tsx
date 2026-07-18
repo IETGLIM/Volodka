@@ -132,7 +132,7 @@ export function FactoryBasementVisual(_props: FactoryBasementVisualProps) {
             <meshStandardMaterial color="#101416" roughness={0.8} />
           </mesh>
         ))}
-        <pointLight ref={coreLightRef} position={[0, 1.6, 1.4]} color="#22ff88" intensity={2.2} distance={9} decay={2} />
+        <pointLight ref={coreLightRef} position={[0, 1.6, 1.4]} color="#22ff88" intensity={2.2} distance={9} decay={2} castShadow shadow-mapSize-width={512} shadow-mapSize-height={512} shadow-bias={-0.002} />
       </group>
 
       {/* ── Overhead pipes ── */}

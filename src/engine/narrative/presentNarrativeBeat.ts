@@ -1,4 +1,6 @@
 import type { NarrativeKind } from '@/shared/types/narrativeKind';
+import { eventBus } from '@/engine/EventBus';
+import { dispatchStateAction } from '@/engine/StateDispatcher';
 import { devWarn } from '@/shared/utils/devLog';
 import { beginInteractionEndCycle } from '@/engine/interaction/interactionEndDedup';
 import { enterSceneFreeExplorationHub } from '@/engine/scene/freeExplorationHub';
@@ -57,22 +59,28 @@ export function presentNarrativeBeat(nodeId: string, kind: NarrativeKind): void 
         break;
     }
   } catch (error) {
-    import('@/engine/StateDispatcher').then(({ dispatchStateAction }) => {
-      dispatchStateAction({
-        type: 'notification/push',
-        notificationType: 'quest',
-        text: 'Ошибка загрузки контента. Попробуйте перезайти в сцену.',
-      });
+    // Use synchronous dispatch — these modules are already loaded at runtime.
+    // Dynamic imports resolve asynchronously and could fire after disposal.
+    dispatchStateAction({
+      type: 'notification/push',
+      notificationType: 'quest',
+      text: 'Ошибка загрузки контента. Попробуйте перезайти в сцену.',
     });
-    import('@/shared/utils/devLog').then(({ devWarn: dw }) => {
-      dw('[presentNarrativeBeat] Unhandled error presenting beat', { nodeId, kind, error });
-    });
+    devWarn('[presentNarrativeBeat] Unhandled error presenting beat', { nodeId, kind, error });
+    // Guaranteed fallback: emit interaction:end synchronously so the player
+    // is never permanently stuck in an interaction state, even if the dynamic
+    // import of emergencyInteractionReset fails.
+    eventBus.emit('interaction:end', {});
     import('@/engine/interaction/emergencyInteractionReset')
       .then(({ forceResetAllInteractionState }) => forceResetAllInteractionState())
-      .catch(() => { /* module may not exist yet */ });
+      .catch((importErr) => {
+        devWarn('[presentNarrativeBeat] emergencyInteractionReset import failed', importErr);
+      });
   } finally {
-    // Race #8: release guard synchronously but also bump generation so that
-    // any re-entrant call queued in the same microtask batch is detected as stale.
-    narrativeInflight = false;
+    // Race #8 / C3: defer release to next microtask so that calls queued
+    // during this invocation's try block still see the guard as active.
+    queueMicrotask(() => {
+      narrativeInflight = false;
+    });
   }
 }

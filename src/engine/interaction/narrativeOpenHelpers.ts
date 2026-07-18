@@ -32,6 +32,9 @@ import {
   resetEntryBeatState,
 } from '@/engine/interaction/entryBeatState';
 
+/** Guards against concurrent openLinkedStory calls from rapid scene transitions. */
+let entryStoryInFlight = false;
+
 export {
   consumePendingEntryBeatFromZoneInteraction,
   peekPendingEntryBeatFromZoneInteraction,
@@ -305,14 +308,21 @@ export function triggerSceneEntryStoryIfNeeded(
       // Race #3: capture generation before the async fire-and-forget to detect
       // stale writes if a second scene transition fires before this one resolves.
       const genBefore = getEntryBeatGeneration();
-      void openLinkedStory(entryNodeId).catch((error) => {
-        devWarn('[narrative] triggerSceneEntryStoryIfNeeded failed:', entryNodeId, error);
-        // If generation changed, another transition already took over — reset to avoid corruption.
-        if (getEntryBeatGeneration() !== genBefore) {
-          devWarn('[narrative] Entry beat generation changed during async open, resetting state');
-          resetEntryBeatState();
-        }
-      });
+      if (entryStoryInFlight) {
+        devWarn('[narrative] Skipping entry story — another is already in flight');
+        return;
+      }
+      entryStoryInFlight = true;
+      void openLinkedStory(entryNodeId)
+        .catch((error) => {
+          devWarn('[narrative] triggerSceneEntryStoryIfNeeded failed:', entryNodeId, error);
+          // If generation changed, another transition already took over — reset to avoid corruption.
+          if (getEntryBeatGeneration() !== genBefore) {
+            devWarn('[narrative] Entry beat generation changed during async open, resetting state');
+            resetEntryBeatState();
+          }
+        })
+        .finally(() => { entryStoryInFlight = false; });
       return;
     }
 

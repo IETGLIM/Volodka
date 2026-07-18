@@ -6,6 +6,7 @@
 
 import { useRef, useMemo, useEffect } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
+import { seededRand } from '@/shared/utils/seededRand';
 import * as THREE from 'three';
 import { useIsMobileVisual, useMobileVisualPerf } from '@/hooks/use-mobile';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
@@ -82,11 +83,11 @@ export function MatrixFogParticles() {
       posArray[i3 + 1] += velocities[i3 + 1] * delta;
       posArray[i3 + 2] += velocities[i3 + 2] * delta;
 
-      // Digital-style jerky movement — snap to grid occasionally
+      // Digital-style jerky movement — deterministic snap via sin
       const snap = Math.sin(t * 2 + phase) > 0.9;
       if (snap) {
-        posArray[i3] += (Math.random() - 0.5) * 0.3;
-        posArray[i3 + 2] += (Math.random() - 0.5) * 0.3;
+        posArray[i3] += Math.sin(t * 3.7 + phase * 2.1) * 0.15;
+        posArray[i3 + 2] += Math.cos(t * 3.3 + phase * 1.7) * 0.15;
       }
 
       // Gentle swirling

@@ -35,7 +35,7 @@ import {
   getInteractionEndCycleId,
 } from '@/engine/interaction/interactionEndDedup';
 import { consumeEKey } from '@/engine/input/eKeyConsumption';
-import { getInteractionState, isInteractionLocked } from '@/engine/interaction/interactionSession';
+import { isInteractionLocked } from '@/engine/interaction/interactionSession';
 import { devWarn } from '@/shared/utils/devLog';
 import { resolveNpcBarkForRelation } from '@/shared/npcBark';
 import { resolveZoneInteractionSplash } from '@/engine/interaction/resolveInteractionSplash';
@@ -92,6 +92,23 @@ function isExplorationMode(): boolean {
   return getGameSnapshot().mode === 'exploration';
 }
 
+/** Deterministic bark index from NPC id hash — avoids Math.random() non-determinism. */
+let fallbackBarkCounter = 0;
+const FALLBACK_NO_DIALOGUE_BARKS = [
+  'Мне нечего сказать...',
+  'Уходи, я занят.',
+  'Не сейчас.',
+  'Нечего обсуждать.',
+] as const;
+
+function pickFallbackBark(): string {
+  // Simple round-robin — deterministic per call order, not per NPC, but
+  // this path only fires for NPCs with no barkTexts defined (rare fallback).
+  const idx = fallbackBarkCounter % FALLBACK_NO_DIALOGUE_BARKS.length;
+  fallbackBarkCounter++;
+  return FALLBACK_NO_DIALOGUE_BARKS[idx]!;
+}
+
 /**
  * Domain logic for exploration interactions (trigger zones, NPC dialogue, minigames).
  * React hook useInteractionOrchestrator wires EventBus + UI state to this controller.
@@ -109,6 +126,12 @@ export class InteractionController {
       if (!zone) return;
 
       if (!isExplorationMode()) return;
+
+      // Don't fire auto-trigger effects during an active NPC interaction.
+      // The approach path could cross a trigger zone, and a transitionScene
+      // effect would desync the InteractionSystemBridge stateRef with the
+      // module-level interactionSession (which resets on scene:transition_start).
+      if (isInteractionLocked()) return;
 
       const snapshot = getGameSnapshot();
       if (zone.requiredAct && snapshot.playerState.progression.currentAct < zone.requiredAct) {
@@ -162,12 +185,11 @@ export class InteractionController {
 
   onNarrativeOverlayClosedInExploration(): void {
     const cycleIdAtClose = getInteractionEndCycleId();
-    const interactionStateAtClose = getInteractionState();
     const sessionAlive = !this.session.isDisposed();
     queueMicrotask(() => {
       if (!sessionAlive || this.session.isDisposed()) return;
       emitInteractionEndIfNeeded();
-      if (isInteractionLocked() && getInteractionState() === interactionStateAtClose) {
+      if (isInteractionLocked()) {
         // Race #13: capture session reference so disposal during the 100ms window
         // prevents the timer from ending a *new* interaction started after close.
         const sessionAtSchedule = this.session;
@@ -264,6 +286,32 @@ export class InteractionController {
     const executeZoneInteraction = (): void => {
       if (this.session.isDisposed()) return;
 
+      // Re-read snapshot after splash delay — player state may have changed
+      const freshSnapshot = getGameSnapshot();
+
+      // Re-validate act gate
+      if (zone.requiredAct && freshSnapshot.playerState.progression.currentAct < zone.requiredAct) return;
+
+      // Re-validate zone availability (flags may have changed during splash)
+      if (
+        !isTriggerZoneAvailable(
+          zone,
+          freshSnapshot.playerState.flags,
+          freshSnapshot.playerState.progression.currentAct,
+          freshSnapshot.activeTTLFlags,
+        )
+      ) return;
+
+      // Re-validate one-time
+      if (zone.isOneTime && freshSnapshot.exploration.interactiveObjectStates[triggerZoneId]) return;
+
+      // Re-validate skill check
+      if (zone.requiredSkill) {
+        const threshold = zone.skillThreshold ?? 3;
+        const playerSkill = freshSnapshot.playerState.skills[zone.requiredSkill] ?? 0;
+        if (playerSkill < threshold) return;
+      }
+
       // Container loot — show the loot panel instead of firing effects.
       // The panel handles item transfer individually; effects fire only for
       // non-container zones.
@@ -358,12 +406,6 @@ export class InteractionController {
         // Resolve a bark line so the player sees visible feedback.
         // Uses the NPC's barkTexts based on relationship level, with a
         // generic fallback when no barkTexts are defined.
-        const FALLBACK_NO_DIALOGUE_BARKS = [
-          'Мне нечего сказать...',
-          'Уходи, я занят.',
-          'Не сейчас.',
-          'Нечего обсуждать.',
-        ];
         let barkText: string;
         if (npcDef.barkTexts) {
           const npcRelations = getGameSnapshot().npcRelations;
@@ -371,9 +413,7 @@ export class InteractionController {
           const relationValue = relation?.value ?? 50;
           barkText = resolveNpcBarkForRelation(npcDef.barkTexts, relationValue);
         } else {
-          barkText = FALLBACK_NO_DIALOGUE_BARKS[
-            Math.floor(Math.random() * FALLBACK_NO_DIALOGUE_BARKS.length)
-          ] ?? FALLBACK_NO_DIALOGUE_BARKS[0]!;
+          barkText = pickFallbackBark();
         }
         eventBus.emit('npc:no_dialogue', { npcId, barkText });
 
@@ -398,7 +438,11 @@ export class InteractionController {
     this.session.schedule(() => {
       if (this.session.isDisposed()) return;
       if (!isKnownMinigameId(gameType)) return;
-      closeMinigame(gameType, this.deps.minigameSetters);
+      try {
+        closeMinigame(gameType, this.deps.minigameSetters);
+      } catch (err) {
+        devWarn(`[InteractionController] closeMinigame failed for "${gameType}":`, err);
+      }
     }, 2000);
   }
 

@@ -70,6 +70,9 @@ function buildSnapshot(state: GameStoreState): GameStoreSnapshot {
     npcRelations: state.npcRelations,
     unlockedAchievements: state.unlockedAchievements,
     achievementProgress: state.achievementProgress,
+    diegeticNarrative: state.diegeticNarrative
+      ? { nodeId: state.diegeticNarrative.nodeId, kind: state.diegeticNarrative.kind }
+      : null,
     activeCutsceneId: state.activeCutsceneId,
     triggeredCutscenes: state.triggeredCutscenes,
     lastUsedPoemId: state.lastUsedPoemId,

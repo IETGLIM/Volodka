@@ -24,8 +24,11 @@ export interface StoryChoiceExecutorContext {
   onAppliedEffects?: (effects: StoryEffect[]) => void;
 }
 
-/** Guard against rapid double-click on narrative choices. */
+/** Guard against rapid double-click on story choices. */
 let choiceExecutionInFlight = false;
+
+/** Guard against rapid double-click on dialogue choices. */
+let dialogueChoiceExecutionInFlight = false;
 
 /** Execute a story node choice — shared by StoryRenderer and DiegeticDialogueHud. */
 export function executeStoryChoice(
@@ -61,6 +64,7 @@ export function executeStoryChoice(
       // Close overlay after effects are dispatched so React sees consistent state.
       closeNarrativeOverlay();
       closeDiegeticNarrative();
+      return; // Prevent fall-through to explore-hub or next-node branch
     } else {
       applyEffects(choice.effects);
       ctx.onAppliedEffects?.(choice.effects);
@@ -107,16 +111,38 @@ export function executeStoryChoice(
 
 /** Execute a dialogue node choice — shared by DialogueRenderer and DiegeticDialogueHud. */
 export function executeDialogueChoice(choice: DialogueChoice): void {
+  if (dialogueChoiceExecutionInFlight) return;
+  dialogueChoiceExecutionInFlight = true;
+  queueMicrotask(() => { dialogueChoiceExecutionInFlight = false; });
+
   audioEngine.playSfx('confirm');
 
+  const transitionsScene =
+    choice.effects?.some((fx) => fx.type === 'transitionScene') ?? false;
+
   if (choice.effects) {
-    applyEffects(choice.effects);
+    if (transitionsScene) {
+      // Race #15 (dialogue mirror): apply effects (including requestSceneTransition)
+      // BEFORE closing the overlay, same pattern as executeStoryChoice.
+      // If the overlay closes first, the interactionSession could reset the FSM
+      // during the gap, leaving currentNodeId set but no overlay open.
+      if (choice.next) {
+        dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId: choice.next });
+      }
+      applyEffects(choice.effects);
+      // Close overlay after effects are dispatched so React sees consistent state.
+      closeNarrativeOverlay();
+      closeDiegeticNarrative();
+      return; // Prevent fall-through to next-node navigation
+    } else {
+      applyEffects(choice.effects);
+    }
   }
 
   if (choice.next === null) {
     closeNarrativeOverlay();
     closeDiegeticNarrative();
-  } else if (choice.next) {
+  } else if (choice.next && !transitionsScene) {
     if (isAct1DiegeticStoryNode(choice.next)) {
       presentNarrativeBeat(choice.next, 'dialogue');
     } else {

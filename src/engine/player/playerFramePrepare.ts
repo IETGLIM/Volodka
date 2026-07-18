@@ -8,6 +8,7 @@ import { resolveCachedGroundY } from '@/engine/physics/groundProbeCache';
 import { WARMUP_DURATION_S } from '@/engine/player/playerConstants';
 import { clearSharedVirtualControls } from '@/engine/VirtualControlsState';
 import { resetKeyboardInputState } from '@/engine/keyboardInputState';
+import { isMovementEpochStale } from '@/engine/player/playerMovementSceneSync';
 import type { FrameGameSnapshot } from '@/engine/frame/frameGameSnapshot';
 import type { PlayerMovementDeps } from '@/engine/player/playerFrameTypes';
 
@@ -16,7 +17,12 @@ export function preparePlayerFrame(
   deps: PlayerMovementDeps,
   delta: number,
   game: FrameGameSnapshot,
+  currentMovementEpoch: number,
 ): boolean {
+  // H3: Abort stale frames from the old scene (e.g. 1 frame after scene
+  // transition before the EventBus handler bumps the epoch).
+  if (isMovementEpochStale(deps, currentMovementEpoch)) return false;
+
   const scratch = deps.frameScratchRef.current;
   const rb = deps.rigidBodyRef.current;
   if (!rb) return false;

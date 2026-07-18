@@ -217,7 +217,6 @@ export function usePhysicsPlayerMovement({
   useLayoutEffect(() => {
     if (sceneId !== prevSceneIdRef.current) {
       prevSceneIdRef.current = sceneId;
-      movementEpochRef.current += 1;
       const newConfig = getSceneConfig(sceneId);
 
       jumpCooldownRef.current = 0;
@@ -318,7 +317,7 @@ export function usePhysicsPlayerMovement({
     pendingFinalizeRef.current = false;
     const deps = movementDepsRef.current;
     deps.frameScratchRef.current.tickState = state;
-    if (!preparePlayerFrame(deps, delta, game)) return;
+    if (!preparePlayerFrame(deps, delta, game, movementEpochRef.current)) return;
     if (deps.frameScratchRef.current.isLocked) {
       runLockedPlayerMovement(deps);
       pendingFinalizeRef.current = true;

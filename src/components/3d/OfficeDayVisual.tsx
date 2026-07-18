@@ -3,6 +3,7 @@
 
 import { useMemo, type MutableRefObject } from 'react';
 import * as THREE from 'three';
+import { seededRand } from '@/shared/utils/seededRand';
 import { getSharedStandardMaterial, mat } from '@/engine/three/moduleMaterialRegistry';
 import { Plant, Radiator, Clock } from './lazyInteriorModels';
 import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
@@ -297,10 +298,16 @@ export function OfficeDayVisual({ livePlayerPositionRef }: OfficeDayVisualProps)
       {/* ═══════════════════════════════════════════════ */}
 
       {/* ── Post-it notes on cubicle dividers ── */}
-      {[[-3.5, 1.2, -3.5], [-1.5, 1.15, -1.0], [1.5, 1.18, 1.5], [4.5, 1.22, -3.5]].map((pos, i) => (
-        <mesh key={`postit-${i}`} position={pos as [number, number, number]} rotation={[0, Math.random() * 0.3 - 0.15, 0.05]} material={mat(['#ffdd44', '#ff8888', '#88ddff', '#88ff88'][i], { roughness: 0.9, side: THREE.DoubleSide })}>
-          <planeGeometry args={[0.05, 0.05]} /></mesh>
-      ))}
+      {useMemo(() => {
+        const rotations = [[-3.5, 1.2, -3.5], [-1.5, 1.15, -1.0], [1.5, 1.18, 1.5], [4.5, 1.22, -3.5]].map(
+          (_, i) => [0, seededRand(i + 500) * 0.3 - 0.15, 0.05] as [number, number, number],
+        );
+        const colors = ['#ffdd44', '#ff8888', '#88ddff', '#88ff88'];
+        return [[-3.5, 1.2, -3.5], [-1.5, 1.15, -1.0], [1.5, 1.18, 1.5], [4.5, 1.22, -3.5]].map((pos, i) => (
+          <mesh key={`postit-${i}`} position={pos as [number, number, number]} rotation={rotations[i]} material={mat(colors[i], { roughness: 0.9, side: THREE.DoubleSide })}>
+            <planeGeometry args={[0.05, 0.05]} /></mesh>
+        ));
+      }, [])}
 
       {/* ── Coffee mug graveyard on desk ── */}
       <group position={[-4.5, 0, -3.5]}>

@@ -3,21 +3,30 @@
 import * as THREE from 'three';
 import type { NpcBehaviorState } from '@/engine/npc/npcStateMachine';
 import { isValidNpcBehaviorTransition } from '@/engine/npc/npcStateMachine';
+import { getGameSnapshot } from '@/engine/StateDispatcher';
 
 /**
- * Global registry mapping npcId → THREE.Group ref.
+ * Global registry mapping npcId → { group, sceneId }.
  * This allows the interaction system to look up any NPC's world-space
  * group for position/rotation reads and head-tracking manipulation.
  *
  * Registration is done by the NPC component on mount; unregistered on unmount.
+ * The sceneId guards against cross-scene contamination during transitions:
+ * if an NPC group from a previous scene hasn't unmounted yet, queries for
+ * the current scene won't pick up the stale ref.
  */
 
-const npcGroupMap = new Map<string, THREE.Group>();
+interface NpcGroupEntry {
+  group: THREE.Group;
+  sceneId: string;
+}
+
+const npcGroupMap = new Map<string, NpcGroupEntry>();
 const npcBehaviorStateMap = new Map<string, NpcBehaviorState>();
 
-/** Register an NPC's group ref */
-export function registerNPCGroup(npcId: string, group: THREE.Group): void {
-  npcGroupMap.set(npcId, group);
+/** Register an NPC's group ref with its owning scene. */
+export function registerNPCGroup(npcId: string, group: THREE.Group, sceneId: string): void {
+  npcGroupMap.set(npcId, { group, sceneId });
   if (!npcBehaviorStateMap.has(npcId)) {
     npcBehaviorStateMap.set(npcId, 'idle');
   }
@@ -29,9 +38,14 @@ export function unregisterNPCGroup(npcId: string): void {
   npcBehaviorStateMap.delete(npcId);
 }
 
-/** Get an NPC's group ref by ID */
+/** Get an NPC's group ref by ID, only if it belongs to the current scene. */
 export function getNPCGroup(npcId: string): THREE.Group | undefined {
-  return npcGroupMap.get(npcId);
+  const entry = npcGroupMap.get(npcId);
+  if (!entry) return undefined;
+  // Skip stale groups from a different scene (cross-scene contamination guard).
+  const currentSceneId = getGameSnapshot().exploration.currentSceneId;
+  if (entry.sceneId !== currentSceneId) return undefined;
+  return entry.group;
 }
 
 /** Get all registered NPC IDs */

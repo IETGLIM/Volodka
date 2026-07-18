@@ -90,8 +90,12 @@ export const GOLDEN_PATH_STORY_SPINE: string[] = [
   'act4_broadcast_aftermath',
   'act5_dawn',
   'act4_final_choice',
-  // Act 5 — Финал
+  // Act 5 — Финал (mutually exclusive entry variants — exactly one is visited)
   'act5_peaceful_path',
+  'act5_revolution_path',
+  'act5_exile_path',
+  'act5_poet_path',
+  'act5_ending_sacrifice',
   'ending_reconciliation', // → poem_18 «Вся клевета - вернется в сто крат»
   'act5_ending_epilogue', // эпилог-мост: история продолжается
   // Act 6 — Предательство и откровение
@@ -422,7 +426,7 @@ export const ACT_TRANSITIONS: ActTransition[] = [
     act: 5,
     chapterTitle: 'Финал',
     entryNodeId: 'act5_peaceful_path',
-    questSpineIds: ['final_code', 'machine_confession', 'echo_of_vladimir', 'night_before_dawn'],
+    questSpineIds: ['final_code', 'echo_of_vladimir', 'night_before_dawn'],
     nextActEntryNodeId: 'act6_bridge',
     advanceTrigger: 'either',
   },

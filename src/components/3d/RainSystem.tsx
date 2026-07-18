@@ -51,6 +51,8 @@ const RAIN_VERT = /* glsl */ `
   uniform float uIntensity;
   uniform vec3 uBoxSize;
   uniform float uPointSize;
+  uniform float uWindGustX;
+  uniform float uWindGustZ;
 
   void main() {
     float t = uTime * uIntensity;
@@ -63,10 +65,12 @@ const RAIN_VERT = /* glsl */ `
     float rawY = position.y + aVelocity.y * t;
     float y = minY + mod(rawY - minY + yRange, yRange);
 
-    float rawX = position.x + aVelocity.x * t;
+    // Wind gust adds organic horizontal drift that varies over time
+    float gustInfluence = smoothstep(0.0, 0.3, y) * (1.0 - smoothstep(maxY * 0.7, maxY, y));
+    float rawX = position.x + aVelocity.x * t + uWindGustX * gustInfluence * t;
     float x = mod(rawX + bx * 0.5, bx) - bx * 0.5;
 
-    float rawZ = position.z + aVelocity.z * t;
+    float rawZ = position.z + aVelocity.z * t + uWindGustZ * gustInfluence * t;
     float z = mod(rawZ + bz * 0.5, bz) - bz * 0.5;
 
     vec4 mvPosition = modelViewMatrix * vec4(x, y, z, 1.0);
@@ -202,6 +206,8 @@ function RainParticles({
       uPointSize: { value: capacityConfig.dropLength },
       uColor: { value: new THREE.Color(capacityConfig.color) },
       uOpacity: { value: capacityConfig.opacity },
+      uWindGustX: { value: 0 },
+      uWindGustZ: { value: 0 },
     };
 
     const mat = new THREE.ShaderMaterial({
@@ -318,6 +324,13 @@ function RainParticles({
     }
     const breathe = config.opacity + Math.sin(t * 0.5) * 0.03;
     rainUniforms.uOpacity.value = breathe * intensityRef.current;
+
+    // Dynamic wind gusts — layered sine waves at different frequencies
+    // create organic, non-repeating wind patterns
+    const gustX = Math.sin(t * 0.12) * 0.8 + Math.sin(t * 0.31) * 0.4 + Math.sin(t * 0.73) * 0.15;
+    const gustZ = Math.cos(t * 0.17) * 0.5 + Math.sin(t * 0.41) * 0.25;
+    rainUniforms.uWindGustX.value = gustX * intensityRef.current;
+    rainUniforms.uWindGustZ.value = gustZ * intensityRef.current;
 
     splashUniforms.uTime.value = t;
 

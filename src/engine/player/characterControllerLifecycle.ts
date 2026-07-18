@@ -22,13 +22,18 @@ export function disposeCharacterController(
   world: WorldWithOptionalControllerRemove,
   controller: RapierCharacterController,
 ): void {
-  if (typeof world.removeCharacterController === 'function') {
-    world.removeCharacterController(controller);
-    return;
-  }
+  try {
+    if (typeof world.removeCharacterController === 'function') {
+      world.removeCharacterController(controller);
+      return;
+    }
+  } catch { /* world may already be disposed during scene transition */ }
+
   const free = (controller as CharacterControllerWithOptionalFree).free;
   if (typeof free === 'function') {
-    free.call(controller);
+    try {
+      free.call(controller);
+    } catch { /* controller may already be freed */ }
   }
 }
 
@@ -44,7 +49,7 @@ export function createConfiguredCharacterController(
   controller.enableAutostep(AUTOSTEP_HEIGHT, AUTOSTEP_WIDTH, true);
   controller.enableSnapToGround(SNAP_DISTANCE);
   controller.setSlideEnabled(true);
-  controller.setApplyImpulsesToDynamicBodies(false);
+  controller.setApplyImpulsesToDynamicBodies(true);
   controller.setCharacterMass(75);
   controller.setNormalNudgeFactor(0.12);
   return controller;

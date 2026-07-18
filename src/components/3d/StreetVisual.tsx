@@ -229,10 +229,10 @@ export function StreetVisual({ sceneId = 'street_night', livePlayerPositionRef }
         </mesh>
         {/* Broken glass shards */}
         <mesh position={[0, 8.3, 0.01]} geometry={getSharedPlaneGeometry(0.25, 0.3)}>
-          <meshStandardMaterial color="#607080" transparent opacity={0.3} metalness={0.2} roughness={0.1} side={THREE.DoubleSide} />
+          <meshStandardMaterial color="#607080" transparent opacity={0.3} metalness={0.2} roughness={0.1} side={THREE.DoubleSide} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
         </mesh>
         <mesh position={[0.15, 7.7, 0.01]} geometry={getSharedPlaneGeometry(0.2, 0.35)}>
-          <meshStandardMaterial color="#607080" transparent opacity={0.2} metalness={0.2} roughness={0.1} side={THREE.DoubleSide} />
+          <meshStandardMaterial color="#607080" transparent opacity={0.2} metalness={0.2} roughness={0.1} side={THREE.DoubleSide} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
         </mesh>
       </StreetClutterGate>
     </group>
@@ -488,13 +488,13 @@ function NeonSigns({ isWinter }: { isWinter: boolean }) {
   useFrameTick('misc', ({ state, delta: _delta }) => {
     const t = state.clock.elapsedTime;
 
-    // Red neon flicker — occasional quick flashes
+    // Red neon flicker — time-gated deterministic on/off
     if (redSignRef.current) {
-      const flicker = Math.random() > 0.95 ? 0.3 : 1.2;
+      const flicker = Math.sin(t * 17.3 + 4.1) > 0.9 ? 0.3 : 1.2;
       (redSignRef.current.material as THREE.MeshStandardMaterial).emissiveIntensity = flicker;
     }
     if (redLightRef.current) {
-      redLightRef.current.intensity = Math.random() > 0.95 ? 0.2 : 0.8;
+      redLightRef.current.intensity = Math.sin(t * 17.3 + 4.1) > 0.9 ? 0.2 : 0.8;
     }
     // Cafe sign subtle pulse
     if (cafeSignRef.current) {
@@ -502,10 +502,11 @@ function NeonSigns({ isWinter }: { isWinter: boolean }) {
       (cafeSignRef.current.material as THREE.MeshStandardMaterial).emissiveIntensity = pulse;
     }
 
-    // "КАФЕ" neon sign flicker — random on/off like a broken tube
+    // "КАФЕ" neon sign flicker — deterministic on/off like a broken tube
     if (t >= kafeNextToggleRef.current) {
       kafeNextToggleRef.current = t + 1 / 8; // 8 toggles/sec
-      kafeOnRef.current = Math.random() < 0.94;
+      // 94% of 8 ticks = on most of the time, using sin threshold for determinism
+      kafeOnRef.current = Math.sin(t * 53.7 + 7.3) > -0.88;
     }
     if (cafeKafeRef.current) {
       (cafeKafeRef.current.material as THREE.MeshStandardMaterial).emissiveIntensity =

@@ -56,6 +56,8 @@ const COMBAT_SHAKE_DURATION = 0.4;    // seconds shake lasts
 /* ── Scene transition ── */
 const TRANSITION_FLY_DURATION = 1.2;  // seconds for fly-through
 const TRANSITION_FLY_HEIGHT = 4.0;    // camera rises during transition
+/** Session 9: Subtle lateral sway amplitude (world units) during scene transition fly-through. */
+const TRANSITION_SWAY_AMPLITUDE = 0.6;
 
 /* ── Cutscene ── */
 const MIN_SEGMENT_DURATION = 0.001;   // guard against zero-duration infinite loop
@@ -80,6 +82,9 @@ const _autoControlOut = new THREE.Vector3();
 const _autoControlIn = new THREE.Vector3();
 const _transitionPos = new THREE.Vector3();
 const _transitionLookAt = new THREE.Vector3();
+const _transitionDir = new THREE.Vector3();
+const _transitionRight = new THREE.Vector3();
+const _tempUp = new THREE.Vector3(0, 1, 0);
 const _dialogueShotOut: CameraShot = {
   position: _shotPos,
   lookAt: _shotLook,
@@ -1006,6 +1011,16 @@ export function updateSceneTransition(
 
   _transitionPos.lerpVectors(state.startPos, state.endPos, t);
   _transitionPos.y += state.flyHeight * 4 * t * (1 - t);
+
+  // Session 9: Subtle lateral sway during fly-through — drone-like drift
+  // Makes the transition feel more cinematic than a straight arc.
+  const sway = Math.sin(state.progress * Math.PI) * TRANSITION_SWAY_AMPLITUDE;
+  _transitionDir.subVectors(state.endPos, state.startPos);
+  if (_transitionDir.lengthSq() > 1e-6) {
+    _transitionDir.normalize();
+    _transitionRight.crossVectors(_transitionDir, _tempUp).normalize();
+    _transitionPos.addScaledVector(_transitionRight, sway);
+  }
 
   _transitionLookAt.lerpVectors(state.startLookAt, state.endLookAt, t);
 

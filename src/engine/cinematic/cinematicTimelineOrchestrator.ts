@@ -161,3 +161,14 @@ export function resetCinematicTimelineOrchestratorForTests(): void {
   activeTimelineId = null;
   notifyTimelineListeners();
 }
+
+/** Dispose module-level state on engine teardown. Safe to call multiple times. */
+export function disposeCinematicTimelineOrchestrator(): void {
+  clearOrphanWatchdog();
+  if (activeTimelineId !== null) {
+    activeTimelineId = null;
+    setCinematicHoldActive(false);
+    setCinematicPresentationMode('third_person');
+  }
+  notifyTimelineListeners();
+}

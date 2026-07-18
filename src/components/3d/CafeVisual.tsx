@@ -14,6 +14,7 @@ import {
   getSharedBoxGeometry,
   getSharedPlaneGeometry,
 } from '@/engine/three/moduleGeometryRegistry';
+import { seededRand } from '@/shared/utils/seededRand';
 
 interface CafeVisualProps {
   livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
@@ -42,7 +43,19 @@ export function CafeVisual({ livePlayerPositionRef }: CafeVisualProps) {
   const D = 10;
   const H = 3.2;
 
-  // ── Coffee machine steam particles ──
+  // ── Coffee machine steam particles (seeded for deterministic initial positions) ──
+  const steamResetBase = useMemo(() => {
+    const count = 30;
+    const baseX = new Float32Array(count);
+    const baseZ = new Float32Array(count);
+    const baseVel = new Float32Array(count);
+    for (let i = 0; i < count; i++) {
+      baseX[i] = seededRand(i * 12.9898 + 78.233);
+      baseZ[i] = seededRand(i * 78.233 + 43.758);
+      baseVel[i] = seededRand(i * 56.789 + 34.567);
+    }
+    return { baseX, baseZ, baseVel };
+  }, []);
   const steamData = useMemo(() => {
     const count = 30;
     const pos = new Float32Array(count * 3);
@@ -50,14 +63,14 @@ export function CafeVisual({ livePlayerPositionRef }: CafeVisualProps) {
     const vel = new Float32Array(count);
     for (let i = 0; i < count; i++) {
       const i3 = i * 3;
-      pos[i3] = -0.5 + (Math.random() - 0.5) * 0.1;
-      pos[i3 + 1] = 1.4 + Math.random() * 0.6;
-      pos[i3 + 2] = -3.9 + (Math.random() - 0.5) * 0.1;
-      pha[i] = Math.random() * Math.PI * 2;
-      vel[i] = 0.3 + Math.random() * 0.3;
+      pos[i3] = -0.5 + (steamResetBase.baseX[i] - 0.5) * 0.1;
+      pos[i3 + 1] = 1.4 + steamResetBase.baseX[i] * 0.6;
+      pos[i3 + 2] = -3.9 + (steamResetBase.baseZ[i] - 0.5) * 0.1;
+      pha[i] = steamResetBase.baseZ[i] * Math.PI * 2;
+      vel[i] = 0.3 + steamResetBase.baseVel[i] * 0.3;
     }
     return { positions: pos, phases: pha, velocities: vel };
-  }, []);
+  }, [steamResetBase]);
   const steamVelocitiesRef = useRef(steamData.velocities);
 
   const steamGeometry = useOwnedBufferGeometry(() => {
@@ -99,10 +112,10 @@ export function CafeVisual({ livePlayerPositionRef }: CafeVisualProps) {
 
         // Reset when too high
         if (posArray[i3 + 1] > 2.2) {
-          posArray[i3] = -0.5 + (Math.random() - 0.5) * 0.1;
-          posArray[i3 + 1] = 1.4 + Math.random() * 0.1;
-          posArray[i3 + 2] = -3.9 + (Math.random() - 0.5) * 0.1;
-          steamVelocitiesRef.current![i] = 0.3 + Math.random() * 0.3;
+          posArray[i3] = -0.5 + (steamResetBase.baseX[i] - 0.5) * 0.1;
+          posArray[i3 + 1] = 1.4 + steamResetBase.baseX[i] * 0.1;
+          posArray[i3 + 2] = -3.9 + (steamResetBase.baseZ[i] - 0.5) * 0.1;
+          steamVelocitiesRef.current![i] = 0.3 + steamResetBase.baseVel[i] * 0.3;
         }
       }
       posAttr.needsUpdate = true;

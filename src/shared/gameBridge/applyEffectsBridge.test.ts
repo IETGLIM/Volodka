@@ -54,6 +54,7 @@ describe('applyEffects via bridges', () => {
           goodKarmaStreak: 0,
           badKarmaStreak: 0,
         },
+        diegeticNarrative: null,
         activeCutsceneId: null,
         triggeredCutscenes: [],
         lastUsedPoemId: null,

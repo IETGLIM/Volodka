@@ -23,6 +23,7 @@ import { resetGuidedStoryFromStore, resetEngineRuntimeFromStore } from '../store
 import { resetPlayerXpBatch } from '../playerXpBatch';
 import { clearAutoCloseTimers } from '@/shared/explorationAutoCloseTimers';
 import { resolveSaveFromStorage, writeSaveToLocalStorage } from './saveStorage';
+import { isInteractionLocked } from '@/engine/interaction/interactionSession';
 
 export interface SaveSliceState {
   // lastSaveTimestamp lives in UISlice, not here — but save actions need it
@@ -62,13 +63,30 @@ export const createSaveSlice: StateCreator<GameStoreState, [], [], SaveSlice> = 
   },
 
   saveGame: (options) => {
-    // Defense-in-depth: don't save during cutscenes. The autosave system
-    // already guards by phase, but manual saves (F5) or programmatic saves
-    // could slip through. A mid-cutscene save would have activeCutsceneId=null
-    // on load (not persisted), leaving the player in a clean but confusing state.
+    // Defense-in-depth: don't save during cutscenes, combat, or NPC interaction.
+    // The autosave system already guards by phase, but manual saves (F5) or
+    // programmatic saves could slip through.
+    //
+    // Cutscene: activeCutsceneId is not persisted — a mid-cutscene save would
+    //   leave the player in a clean but confusing state on load.
+    // Combat: combat runtime state (enemies, turns, HP) is never persisted.
+    //   Saving combatActive=true without runtime state creates an unrecoverable
+    //   stuck state on load where the UI thinks combat is active but no combat
+    //   system is running.
+    // Interaction: interaction session is module-level (not persisted). A
+    //   mid-approach save leaves the player positioned at the NPC with no
+    //   active interaction — confusing but not game-breaking.
     const state = getCombinedGameState();
     if (state.activeCutsceneId) {
       console.warn('[saveGame] Skipping save during cutscene');
+      return;
+    }
+    if (state.combatActive) {
+      console.warn('[saveGame] Skipping save during combat');
+      return;
+    }
+    if (isInteractionLocked()) {
+      console.warn('[saveGame] Skipping save during NPC interaction');
       return;
     }
     const source = options?.source ?? 'manual';

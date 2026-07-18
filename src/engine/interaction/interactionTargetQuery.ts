@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { INTERACTION_LABELS, type TriggerZone } from '@/data/triggerZones';
 import { FIRST_PERSON_ENABLED, FIRST_PERSON_EYE_HEIGHT } from '@/engine/camera/cameraConstants';
-import { getInteractionQueryContext } from '@/engine/interaction/interactionQueryContext';
+import { getInteractionQueryContext, type InteractionQueryContext } from '@/engine/interaction/interactionQueryContext';
 import { getNPCGroup } from '@/engine/interaction/npcRegistry';
 export type InteractionTargetKind = 'zone' | 'npc' | 'exit';
 
@@ -48,6 +48,13 @@ const _eye = new THREE.Vector3();
 const _target = new THREE.Vector3();
 const _npcLivePos = new THREE.Vector3();
 
+/** H4: Reusable Ray object to avoid per-NPC per-frame allocation. */
+let _reusableRay: InstanceType<InteractionQueryContext['rapier']['Ray']> | null = null;
+let _reusableRayRapier: InteractionQueryContext['rapier'] | null = null;
+
+/** H4: Frame counter for LOS throttle — check every 3rd frame. */
+let _losFrameCounter = 0;
+
 /** Prefer live NPC group world position over schedule anchor when registered. */
 export function resolveNpcWorldPosition(
   npcId: string,
@@ -92,13 +99,17 @@ export function scoreInteractionTarget(
   return { distance, score: distance * facingPenalty };
 }
 
-/** Rapier raycast from player eye to target — returns false when blocked by static geometry. */
+/** H4: Rapier raycast from player eye to target — returns false when blocked by static geometry.
+ *  Uses a reusable Ray object and 3-frame throttle to reduce per-NPC allocations + raycasts. */
 export function hasInteractionLineOfSight(
   playerPos: THREE.Vector3,
   targetPos: THREE.Vector3,
 ): boolean {
   const ctx = getInteractionQueryContext();
   if (!ctx) return true;
+
+  // H4: Throttle — assume clear LOS on 2 out of 3 frames.
+  if (_losFrameCounter % 3 !== 0) return true;
 
   _eye.copy(playerPos);
   _eye.y += FIRST_PERSON_ENABLED ? FIRST_PERSON_EYE_HEIGHT : 1.4;
@@ -111,12 +122,30 @@ export function hasInteractionLineOfSight(
   const maxDist = Math.sqrt(dx * dx + dy * dy + dz * dz);
   if (maxDist < 0.05) return true;
 
-  const ray = new ctx.rapier.Ray(
-    { x: _eye.x, y: _eye.y, z: _eye.z },
-    { x: dx / maxDist, y: dy / maxDist, z: dz / maxDist },
-  );
+  const invDist = 1 / maxDist;
+  const ox = _eye.x;
+  const oy = _eye.y;
+  const oz = _eye.z;
 
-  const hit = ctx.world.castRay(ray, maxDist - 0.2, true);
+  // H4: Reuse cached Ray object instead of allocating each call.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const ray = _reusableRay as any;
+  if (ray && _reusableRayRapier === ctx.rapier) {
+    ray.origin.x = ox;
+    ray.origin.y = oy;
+    ray.origin.z = oz;
+    ray.direction.x = dx * invDist;
+    ray.direction.y = dy * invDist;
+    ray.direction.z = dz * invDist;
+  } else {
+    _reusableRay = new ctx.rapier.Ray(
+      { x: ox, y: oy, z: oz },
+      { x: dx * invDist, y: dy * invDist, z: dz * invDist },
+    );
+    _reusableRayRapier = ctx.rapier;
+  }
+
+  const hit = ctx.world.castRay(_reusableRay, maxDist - 0.2, true);
   return hit === null;
 }
 
@@ -180,6 +209,9 @@ export function queryInteractionTargets(
   } = params;
 
   const hits: InteractionTargetHit[] = [];
+
+  // H4: Advance LOS frame counter (called once per frame from interaction system).
+  _losFrameCounter++;
 
   for (const zone of zones) {
     pushZoneTarget(hits, playerPos, playerYaw, zone, checkLineOfSight);

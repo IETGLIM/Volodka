@@ -8,6 +8,7 @@
 import { useRef, useMemo, useEffect } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { scratchColor, scratchColorB } from '@/engine/three/frameScratch';
+import { seededRand } from '@/shared/utils/seededRand';
 import * as THREE from 'three';
 import type { SceneId } from '@/shared/types/game';
 import { useGameStore } from '@/store/gameStore';
@@ -130,15 +131,17 @@ interface InstanceState {
   idleTimer: number;
   /** Time until next direction change */
   directionTimer: number;
+  /** How many times the idle/direction timer has been reset (for seeded determinism) */
+  timerResetCount: number;
   /** Which spawn index this instance is associated with */
   spawnIndex: number;
 }
 
-/* ─── Helper: random point within radius of center ─── */
+/* ─── Helper: deterministic wander target within radius of center ─── */
 
-function randomWanderTarget(cx: number, cz: number, radius: number): [number, number, number] {
-  const angle = Math.random() * Math.PI * 2;
-  const dist = Math.random() * radius;
+function seededWanderTarget(cx: number, cz: number, radius: number, seed: number): [number, number, number] {
+  const angle = seededRand(seed) * Math.PI * 2;
+  const dist = seededRand(seed + 1) * radius;
   return [cx + Math.cos(angle) * dist, 0, cz + Math.sin(angle) * dist];
 }
 
@@ -204,20 +207,21 @@ export function AmbientNPCs({ livePlayerPositionRef }: AmbientNPCsProps) {
     for (let i = 0; i < count; i++) {
       const spawnIdx = i % config.spawnPositions.length;
       const spawn = config.spawnPositions[spawnIdx];
-      const [tx, ty, tz] = randomWanderTarget(spawn[0], spawn[2], config.wanderRadius);
+      const [tx, ty, tz] = seededWanderTarget(spawn[0], spawn[2], config.wanderRadius, i * 17);
 
-      // Randomly idle or walking
-      const isIdle = Math.random() < IDLE_CHANCE;
+      // Deterministically idle or walking
+      const isIdle = seededRand(i + 100) < IDLE_CHANCE;
 
       states.push({
-        px: spawn[0] + (Math.random() - 0.5) * 0.5,
+        px: spawn[0] + (seededRand(i + 200) - 0.5) * 0.5,
         py: 0.75, // Capsule center height at 0.85 scale
-        pz: spawn[2] + (Math.random() - 0.5) * 0.5,
-        rotationY: Math.random() * Math.PI * 2,
+        pz: spawn[2] + (seededRand(i + 300) - 0.5) * 0.5,
+        rotationY: seededRand(i + 400) * Math.PI * 2,
         tx, ty, tz,
         isIdle,
-        idleTimer: isIdle ? (IDLE_DURATION_MIN + Math.random() * (IDLE_DURATION_MAX - IDLE_DURATION_MIN)) : 0,
-        directionTimer: Math.random() * DIRECTION_CHANGE_INTERVAL,
+        idleTimer: isIdle ? (IDLE_DURATION_MIN + seededRand(i + 500) * (IDLE_DURATION_MAX - IDLE_DURATION_MIN)) : 0,
+        directionTimer: seededRand(i + 600) * DIRECTION_CHANGE_INTERVAL,
+        timerResetCount: 0,
         spawnIndex: spawnIdx,
       });
     }
@@ -294,18 +298,22 @@ export function AmbientNPCs({ livePlayerPositionRef }: AmbientNPCsProps) {
         if (s.idleTimer <= 0) {
           // Start walking to a new target
           s.isIdle = false;
+          s.timerResetCount++;
           const spawn = config.spawnPositions[s.spawnIndex % config.spawnPositions.length];
-          const [tx, , tz] = randomWanderTarget(spawn[0], spawn[2], config.wanderRadius);
+          const seed = i * 1000 + s.timerResetCount;
+          const [tx, , tz] = seededWanderTarget(spawn[0], spawn[2], config.wanderRadius, seed);
           s.tx = tx;
           s.tz = tz;
           // Face the target
           s.rotationY = angleXZ(s.px, s.pz, s.tx, s.tz);
         } else {
-          // Slowly change direction while idle (looking around)
+          // Smoothly change direction while idle (looking around) via time-based steering
           s.directionTimer -= dt;
           if (s.directionTimer <= 0) {
-            s.rotationY += (Math.random() - 0.5) * Math.PI * 0.5;
-            s.directionTimer = DIRECTION_CHANGE_INTERVAL + Math.random() * 2;
+            s.timerResetCount++;
+            const steerSeed = i * 1000 + s.timerResetCount;
+            s.rotationY += (seededRand(steerSeed) - 0.5) * Math.PI * 0.5;
+            s.directionTimer = DIRECTION_CHANGE_INTERVAL + seededRand(steerSeed + 1) * 2;
           }
         }
       } else {
@@ -316,12 +324,14 @@ export function AmbientNPCs({ livePlayerPositionRef }: AmbientNPCsProps) {
 
         if (dist < 0.3) {
           // Reached target — maybe idle, maybe pick new target
-          if (Math.random() < IDLE_CHANCE) {
+          s.timerResetCount++;
+          const decisionSeed = i * 1000 + s.timerResetCount;
+          if (seededRand(decisionSeed) < IDLE_CHANCE) {
             s.isIdle = true;
-            s.idleTimer = IDLE_DURATION_MIN + Math.random() * (IDLE_DURATION_MAX - IDLE_DURATION_MIN);
+            s.idleTimer = IDLE_DURATION_MIN + seededRand(decisionSeed + 1) * (IDLE_DURATION_MAX - IDLE_DURATION_MIN);
           } else {
             const spawn = config.spawnPositions[s.spawnIndex % config.spawnPositions.length];
-            const [tx, , tz] = randomWanderTarget(spawn[0], spawn[2], config.wanderRadius);
+            const [tx, , tz] = seededWanderTarget(spawn[0], spawn[2], config.wanderRadius, decisionSeed + 10);
             s.tx = tx;
             s.tz = tz;
             s.rotationY = angleXZ(s.px, s.pz, s.tx, s.tz);

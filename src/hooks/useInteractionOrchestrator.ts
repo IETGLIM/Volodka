@@ -198,6 +198,7 @@ export function useInteractionOrchestrator(
           useGameStore.subscribe(
             (state) => ({
               showStoryOverlay: state.showStoryOverlay,
+              diegeticNarrative: state.diegeticNarrative,
               currentNodeId: state.currentNodeId,
               mode: readGamePhase(state),
             }),
@@ -207,9 +208,12 @@ export function useInteractionOrchestrator(
               const controller = controllerRef.current;
               if (!controller || controller.isDisposed()) return;
 
+              const anyOverlayOpen = selected.showStoryOverlay || !!selected.diegeticNarrative;
+              const prevAnyOverlayOpen = prev.showStoryOverlay || !!prev.diegeticNarrative;
+
               const overlaySessionStarted =
-                selected.showStoryOverlay &&
-                (!prev.showStoryOverlay || prev.currentNodeId !== selected.currentNodeId);
+                anyOverlayOpen &&
+                (!prevAnyOverlayOpen || prev.currentNodeId !== selected.currentNodeId);
 
               if (overlaySessionStarted) {
                 controller.onNarrativeOverlayOpened();
@@ -217,8 +221,8 @@ export function useInteractionOrchestrator(
               }
 
               if (
-                prev.showStoryOverlay &&
-                !selected.showStoryOverlay &&
+                prevAnyOverlayOpen &&
+                !anyOverlayOpen &&
                 selected.mode === 'exploration'
               ) {
                 controller.onNarrativeOverlayClosedInExploration();

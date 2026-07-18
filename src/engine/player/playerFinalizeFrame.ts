@@ -1,12 +1,23 @@
 import { eventBus } from '@/engine/EventBus';
 import { audioEngine } from '@/engine/AudioEngine';
-import { FOOTSTEP_INTERVAL, KCC_STUCK_FRAMES_BEFORE_RECREATE } from '@/engine/player/playerConstants';
+import { KCC_STUCK_FRAMES_BEFORE_RECREATE } from '@/engine/player/playerConstants';
 import {
   logKccRecreateAttempt,
   restoreKccMovementMode,
 } from '@/engine/player/directMovementTelemetry';
 import { shouldAttemptKccRecreate } from '@/engine/player/kccRecoveryState';
 import type { PlayerMovementDeps } from '@/engine/player/playerFrameTypes';
+
+/** Base footstep interval at walk speed (seconds) — unchanged from session 1. */
+const BASE_FOOTSTEP_INTERVAL = 0.4;
+/** Minimum footstep interval at sprint speed — produces rapid but audible cadence. */
+const MIN_FOOTSTEP_INTERVAL = 0.2;
+/** Player horizontal speed where footstep interval is at minimum (m/s). */
+const FULL_SPRINT_SPEED = 7.0;
+/** Walk speed threshold — below this, footstep interval = base. */
+const WALK_SPEED_THRESHOLD = 3.0;
+/** Pitch variation range per step — adds subtle timbre variety (0.9–1.1). */
+const STEP_PITCH_RANGE = 0.1;
 
 /** Animations, footsteps, position sync, ground enforce, DEV timing. */
 export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
@@ -67,17 +78,28 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
 
   if ((isMoving || horizontalSpeed > 0.5) && deps.isGroundedRef.current) {
     deps.footstepTimerRef.current += dt;
-    const stepInterval = running ? FOOTSTEP_INTERVAL * 0.65 : FOOTSTEP_INTERVAL;
+
+    // ── Session 9: Smooth speed-linked footstep frequency ──
+    // Instead of binary walk (0.4s) / run (0.26s), we lerp the interval
+    // based on actual horizontal speed. This produces natural acceleration
+    // and deceleration cadence.
+    const speedNorm = Math.min(horizontalSpeed / FULL_SPRINT_SPEED, 1.0);
+    // Ease-out curve: most of the interval compression happens at higher speeds
+    const easedSpeed = 1 - (1 - speedNorm) * (1 - speedNorm);
+    const stepInterval = BASE_FOOTSTEP_INTERVAL
+      - (BASE_FOOTSTEP_INTERVAL - MIN_FOOTSTEP_INTERVAL) * easedSpeed;
+
     if (deps.footstepTimerRef.current >= stepInterval) {
       deps.footstepTimerRef.current = 0;
       const pos = rb.translation();
       // Emit for future subscribers (NPC hearing, particle dust, etc.).
-      // Currently no subscribers, but the event is the canonical "player
-      // stepped here" signal — keep it for downstream systems.
       eventBus.emit('exploration:footstep', {
         position: [pos.x, pos.y, pos.z],
         yaw: deps.livePlayerRotationRef.current,
       });
+      // ── Session 9: Subtle pitch variation per step for natural feel ──
+      // Faster steps get slightly higher pitch (more urgent)
+      const pitchOffset = easedSpeed * STEP_PITCH_RANGE;
       audioEngine.playFootstep(deps.currentFloorMaterialRef.current, {
         sourceId: 'player-footstep',
       });

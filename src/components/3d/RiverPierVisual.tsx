@@ -182,6 +182,13 @@ export function RiverPierVisual(_props: RiverPierVisualProps) {
 
       {/* ── Reeds along the bank edges ── */}
       <Reeds />
+
+      {/* ── Scene-level ambient lighting ── */}
+      {/* Moonlight — cold blue overhead illumination for the pier */}
+      <pointLight position={[5, 15, -22]} color="#8a9ab8" intensity={1.5} distance={35} decay={1.5} />
+
+      {/* Warm fill from barrel fire area — extends the fire's reach */}
+      <pointLight position={[0, 3, 5]} color="#ff9944" intensity={1.2} distance={10} decay={2} />
     </group>
   );
 }
