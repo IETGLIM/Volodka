@@ -114,7 +114,9 @@ export const explorationStrategy: CameraModeStrategy = {
       1 - Math.exp(-LOOK_AHEAD_LERP_SPEED * ctx.delta),
     );
     const speed = ctx.prevVelocitySmooth.length();
-    const lookAheadAmount = Math.min(speed * LOOK_AHEAD_STRENGTH, 0.3);
+    // Boost look-ahead by 15% during fast movement (>3 m/s) for smoother fast turns
+    const fastBoost = speed > 3 ? 1.15 : 1.0;
+    const lookAheadAmount = Math.min(speed * LOOK_AHEAD_STRENGTH * fastBoost, 0.3 * fastBoost);
     if (speed > 0.01) {
       ctx.lookAheadOffset.copy(ctx.prevVelocitySmooth).normalize().multiplyScalar(lookAheadAmount);
     } else {

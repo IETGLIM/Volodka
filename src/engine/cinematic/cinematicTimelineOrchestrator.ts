@@ -81,6 +81,24 @@ export function startCinematicTimeline(payload: CinematicTimelineStartPayload): 
     return true;
   }
 
+  // ── Guard: prevent timeline overwrite / camera lock (Race #6) ──
+  // If a *different* timeline is already active, explicitly stop it first.
+  // Without this, the old timeline's completeCinematicTimeline() call would
+  // fail the activeTimelineId check and silently do nothing — its camera
+  // hold and cinematic presentation mode would remain stuck forever if
+  // the new timeline is also interrupted.
+  if (activeTimelineId !== null) {
+    devWarn(
+      `[cinematicTimelineOrchestrator] Stopping active timeline "${activeTimelineId}" ` +
+        `before starting "${def.id}" — concurrent timeline start detected.`,
+    );
+    const oldId = activeTimelineId;
+    clearOrphanWatchdog();
+    activeTimelineId = null;
+    setCinematicHoldActive(false);
+    eventBus.emit('cinematic:timeline_stop', { timelineId: oldId });
+  }
+
   activeTimelineId = def.id;
   setCinematicPresentationMode('third_person');
   setCinematicHoldActive(true);

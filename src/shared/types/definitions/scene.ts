@@ -37,6 +37,9 @@ export interface SceneConfig {
   readonly floorMaterial: FloorMaterial;
   readonly fogNear?: number;
   readonly fogFar?: number;
+  readonly fogEnabled?: boolean;
+  readonly fog?: { near: number; far: number; fogColor?: string };
+  readonly dimensions?: [number, number, number];
   readonly ambientColor?: string;
   readonly ambientIntensity?: number;
   readonly groundColor?: string;

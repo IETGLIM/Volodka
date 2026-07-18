@@ -284,7 +284,7 @@ export function HomeEveningVisual() {
       <group position={[4.0, 0, -5.5]}>
         <mesh position={[0, 0.45, 0]} castShadow receiveShadow geometry={geo_box_3} material={mat_1} />
         {/* Counter top */}
-        <mesh position={[0, 0.91, 0]} geometry={geo_box_4} material={mat_2} />
+        <mesh position={[0, 0.92, 0]} geometry={geo_box_4} material={mat_2} />
       </group>
 
       {/* Fridge — with animated door */}
@@ -361,7 +361,7 @@ export function HomeEveningVisual() {
         {/* Wardrobe body (interior) */}
         <mesh position={[0, 1.0, 0]} castShadow geometry={geo_box_25} material={mat_22} />
         {/* Wardrobe top */}
-        <mesh position={[0, 2.01, 0]} geometry={geo_box_26} material={mat_23} />
+        <mesh position={[0, 2.02, 0]} geometry={geo_box_26} material={mat_23} />
         {/* Shelf inside */}
         <mesh position={[0, 1.0, 0.01]} geometry={geo_box_27} material={mat_22} />
         {/* Animated left wardrobe door — pivot on left edge */}

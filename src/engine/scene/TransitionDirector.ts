@@ -108,6 +108,8 @@ function ensureInitialized(): void {
 
   busUnsubs.push(
     eventBus.on('scene:transition_start', ({ fromSceneId, targetScene }) => {
+      // Race #12: ignore stale transition_start for a different target scene.
+      if (snapshot.targetScene && snapshot.targetScene !== targetScene) return;
       setSnapshot({
         progress: Math.max(snapshot.progress, TRANSITION_MILESTONES.unloading),
         targetScene,
@@ -127,6 +129,8 @@ function ensureInitialized(): void {
 
   busUnsubs.push(
     eventBus.on('scene:enter', ({ sceneId }) => {
+      // Race #12: ignore stale scene:enter for a different target scene.
+      if (snapshot.targetScene && snapshot.targetScene !== sceneId) return;
       setSnapshot({
         progress: Math.max(snapshot.progress, TRANSITION_MILESTONES.entered),
         targetScene: sceneId,
@@ -136,6 +140,8 @@ function ensureInitialized(): void {
 
   busUnsubs.push(
     eventBus.on('scene:loaded', ({ sceneId }) => {
+      // Race #12: ignore stale scene:loaded for a different target scene.
+      if (snapshot.targetScene && snapshot.targetScene !== sceneId) return;
       completeTransition(sceneId);
     }),
   );

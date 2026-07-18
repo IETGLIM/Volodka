@@ -384,7 +384,6 @@ export class GuidedStoryManager {
     // Fixed check interval — the act-specific timeout is evaluated inside each tick.
     this.playerLostTimer = setInterval(() => {
       if (!this.initialized) return;
-      if (this.playerLostHintShown) return;
 
       const snapshot = this.deps.getSnapshot();
       // Only show hint in exploration mode
@@ -396,14 +395,18 @@ export class GuidedStoryManager {
 
       const elapsed = Date.now() - this.lastGuidanceTimestamp;
       if (elapsed >= lostTimeout) {
+        // Re-arm: if hint was already shown, allow another after a longer cooldown
+        // (120s) so a truly stuck player eventually gets repeated help.
+        if (this.playerLostHintShown) {
+          if (elapsed < lostTimeout + 120_000) return;
+        }
         this.playerLostHintShown = true;
         this.deps.events.emitPlayerLost({
           hint: pickLostHint(act),
           actNumber: act,
         });
-        // Interval has served its purpose — stop it to avoid leaking a no-op timer.
-        // It will be re-started by emitGuidanceUpdate when guidance changes.
-        this.stopPlayerLostDetection();
+        // Don't stop the timer — let it re-check after the 120s cooldown.
+        // The timer will be stopped/restarted by emitGuidanceUpdate on guidance change.
       }
     }, 3000);
   }

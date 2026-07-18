@@ -539,7 +539,7 @@ export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
       </group>
 
       {/* ── Window (right wall, emissive blue — nighttime city glow) ── */}
-      <group position={[W / 2 - 0.01, 1.5, -2.0]}>
+      <group position={[W / 2 - 0.025, 1.5, -2.0]}>
         <mesh rotation-y={-Math.PI / 2} geometry={geo_pln_42} material={mat_33} />
         {/* Window frame */}
         <mesh rotation-y={-Math.PI / 2} position={[0.01, 0, 0]} geometry={geo_box_43} material={mat_26} />
@@ -555,7 +555,7 @@ export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
       </group>
 
       {/* ── Second Window (back wall, emissive blue — nighttime city) ── */}
-      <group position={[-1.0, 1.5, -D / 2 + 0.01]}>
+      <group position={[-1.0, 1.5, -D / 2 + 0.025]}>
         <mesh geometry={geo_pln_44} material={mat_34} />
         {/* Window frame */}
         <mesh position={[0, 0, -0.01]} geometry={geo_box_45} material={mat_26} />
@@ -693,7 +693,7 @@ export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
         {/* Phone on nightstand */}
         <mesh position={[0, 0.52, 0.05]} rotation={[0, 0.2, 0]} geometry={geo_box_71} material={mat_57} />
         {/* Phone screen */}
-        <mesh position={[0, 0.528, 0.05]} rotation={[0, 0.2, 0]} geometry={geo_box_72} material={mat_58} />
+        <mesh position={[0, 0.533, 0.05]} rotation={[0, 0.2, 0]} geometry={geo_box_72} material={mat_58} />
         {/* Charging cable */}
         <mesh position={[0.05, 0.51, -0.05]} rotation={[0.8, 0.2, 0]} geometry={geo_cyl_64} material={mat_59} />
         {/* Water glass on nightstand */}

@@ -26,8 +26,10 @@ import { resolveDialogueEntryNodeId } from '@/engine/dialogue/resolveDialoguePre
 import {
   armEntryBeatFromZone,
   consumeEntryBeatFromZone,
+  getEntryBeatGeneration,
   isEntryBeatInFlight,
   markEntryBeatHubPromoted,
+  resetEntryBeatState,
 } from '@/engine/interaction/entryBeatState';
 
 export {
@@ -155,6 +157,11 @@ export async function openLinkedDialogue(nodeId: string): Promise<boolean> {
 
 /** Zone/object linked story — includes scene transition for visited nodes. */
 export async function openLinkedStory(nodeId: string): Promise<boolean> {
+  // Capture the scene we're in *before* the async load.
+  // After the await, we re-read the snapshot to detect mid-load scene changes.
+  const snapshotBefore = getGameSnapshot();
+  const sceneBefore = snapshotBefore.exploration.currentSceneId;
+
   try {
     await ensureStoryNode(nodeId);
   } catch (error) {
@@ -168,7 +175,11 @@ export async function openLinkedStory(nodeId: string): Promise<boolean> {
     return false;
   }
 
+  // ── Race #2: Re-read snapshot after async to detect mid-load scene change. ──
+  // If the scene changed during the await, our pre-load scene references are stale.
+  // We still proceed for same-scene cases, but skip scene-transition decisions.
   const snapshot = getGameSnapshot();
+  const sceneChanged = snapshot.exploration.currentSceneId !== sceneBefore;
 
   // Door/arrival beats — first visit plays cutscene + story; revisit walks through to hub.
   const entryHubId = SCENE_ENTRY_NODE_TO_HUB[nodeId];
@@ -185,7 +196,8 @@ export async function openLinkedStory(nodeId: string): Promise<boolean> {
           dispatchStateAction({ type: 'story/setCurrentNodeId', nodeId: entryHubId });
         }
       }
-      if (snapshot.exploration.currentSceneId !== storyNode.sceneId) {
+      // Race #2: only request scene transition if scene hasn't changed during await.
+      if (!sceneChanged && snapshot.exploration.currentSceneId !== storyNode.sceneId) {
         requestSceneTransition(storyNode.sceneId as SceneId);
       }
       return true;
@@ -193,7 +205,8 @@ export async function openLinkedStory(nodeId: string): Promise<boolean> {
 
     armEntryBeatFromZone(nodeId);
     dispatchStateAction({ type: 'story/visitNode', nodeId });
-    if (snapshot.exploration.currentSceneId !== storyNode.sceneId) {
+    // Race #2: only request scene transition if scene hasn't changed during await.
+    if (!sceneChanged && snapshot.exploration.currentSceneId !== storyNode.sceneId) {
       requestSceneTransition(storyNode.sceneId as SceneId);
     }
     dispatchStateAction({ type: 'story/setCurrentNodeId', nodeId });
@@ -205,7 +218,10 @@ export async function openLinkedStory(nodeId: string): Promise<boolean> {
 
   const alreadyVisited = hasVisitedNode(snapshot.playerState.visitedNodes, nodeId);
   if (alreadyVisited && storyNode.sceneId) {
-    requestSceneTransition(storyNode.sceneId as SceneId);
+    // Race #2: only request scene transition if scene hasn't changed during await.
+    if (!sceneChanged) {
+      requestSceneTransition(storyNode.sceneId as SceneId);
+    }
     return true;
   }
 
@@ -286,8 +302,16 @@ export function triggerSceneEntryStoryIfNeeded(
     const visited = hasVisitedNode(snapshot.playerState.visitedNodes, entryNodeId);
 
     if (!visited || cutscenePending) {
+      // Race #3: capture generation before the async fire-and-forget to detect
+      // stale writes if a second scene transition fires before this one resolves.
+      const genBefore = getEntryBeatGeneration();
       void openLinkedStory(entryNodeId).catch((error) => {
         devWarn('[narrative] triggerSceneEntryStoryIfNeeded failed:', entryNodeId, error);
+        // If generation changed, another transition already took over — reset to avoid corruption.
+        if (getEntryBeatGeneration() !== genBefore) {
+          devWarn('[narrative] Entry beat generation changed during async open, resetting state');
+          resetEntryBeatState();
+        }
       });
       return;
     }

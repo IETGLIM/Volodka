@@ -35,14 +35,23 @@ export function executeStoryChoice(
 
   if (choice.effects) {
     if (transitionsScene) {
-      closeNarrativeOverlay();
-      closeDiegeticNarrative();
+      // Race #15: apply effects (including requestSceneTransition) BEFORE closing
+      // the overlay. Previously the overlay was closed first, then effects applied.
+      // If applyEffects triggered a scene transition, the interactionSession could
+      // reset the FSM during the gap, leaving currentNodeId pointing to the next
+      // node but no overlay open — a "dead" narrative state.
       if (choice.next) {
         dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId: choice.next });
       }
+      applyEffects(choice.effects);
+      ctx.onAppliedEffects?.(choice.effects);
+      // Close overlay after effects are dispatched so React sees consistent state.
+      closeNarrativeOverlay();
+      closeDiegeticNarrative();
+    } else {
+      applyEffects(choice.effects);
+      ctx.onAppliedEffects?.(choice.effects);
     }
-    applyEffects(choice.effects);
-    ctx.onAppliedEffects?.(choice.effects);
   }
 
   if (choice.next === null) {

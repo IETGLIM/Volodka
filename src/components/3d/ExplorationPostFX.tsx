@@ -108,7 +108,7 @@ const SCENE_BLOOM: Record<string, { intensity: number; threshold: number; smooth
   volodka_room:       { intensity: 0.78, threshold: 0.45, smoothing: 0.45 }, // monitor glow bloom
   volodka_corridor:   { intensity: 0.35, threshold: 0.72, smoothing: 0.55 }, // dim corridor haze
   home_evening:       { intensity: 0.48, threshold: 0.66, smoothing: 0.48 },  // warm lamp bloom
-  street_night:       { intensity: 0.78, threshold: 0.45, smoothing: 0.44 }, // wet neon reflections
+  street_night:       { intensity: 0.83, threshold: 0.45, smoothing: 0.44 }, // wet neon reflections
   cafe_evening:       { intensity: 0.75, threshold: 0.45, smoothing: 0.41 }, // blue neon bar glow
   office_day:         { intensity: 0.28, threshold: 0.82, smoothing: 0.58 }, // fluorescent spill
   park_day:           { intensity: 0.42, threshold: 0.74, smoothing: 0.52 },

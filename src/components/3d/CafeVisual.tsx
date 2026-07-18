@@ -309,7 +309,7 @@ export function CafeVisual({ livePlayerPositionRef }: CafeVisualProps) {
         </mesh>
         {/* Menu lines (text representation) */}
         {[-0.15, 0.0, 0.15, 0.25].map((y, i) => (
-          <mesh key={`menu-${i}`} position={[0, y, 0.02]}>
+          <mesh key={`menu-${i}`} position={[0, y, 0.025]}>
             <boxGeometry args={[0.7 - i * 0.1, 0.015, 0.001]} />
             <meshStandardMaterial color="#887744" emissive="#887744" emissiveIntensity={0.3} roughness={0.9} />
           </mesh>
@@ -341,7 +341,7 @@ export function CafeVisual({ livePlayerPositionRef }: CafeVisualProps) {
       </EnvironmentDetail>
 
       {/* ── Window on right wall showing blue/night light ── */}
-      <group position={[W / 2 - 0.01, 1.8, -2.0]}>
+      <group position={[W / 2 - 0.025, 1.8, -2.0]}>
         {/* Window pane */}
         <mesh rotation-y={-Math.PI / 2}>
           <planeGeometry args={[1.5, 1.2]} />

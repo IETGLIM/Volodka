@@ -76,7 +76,7 @@ export const QUESTS_ACT5: QuestDefinition[] = [
     questType: 'side',
     difficulty: 'medium',
     hint: 'Вернись на заброшенный завод ночью, когда патрули реже.',
-    requiresQuests: ['final_code', 'voices_of_factory'],
+    requiredFlag: 'found_quantum_computer',
     objectives: [
       {
         id: 'return_to_factory',

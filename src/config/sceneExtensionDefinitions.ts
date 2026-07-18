@@ -224,7 +224,7 @@ export const EXTENSION_SCENE_DEFINITIONS = {
         spawnRotation: 0,
         label: '→ Улица',
         doorwayId: 'bunker_to_street',
-        requiredFlag: 'resistance_joined',
+        requiredFlag: 'resistance_bunker_found',
       },
     ],
     floors: [{ type: 'cuboid', size: [9, 0.05, 8], position: [0, -0.05, 0], footstepMaterial: 'concrete' }],

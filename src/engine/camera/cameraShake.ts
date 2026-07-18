@@ -30,6 +30,13 @@ function normalizeShakeState(): void {
 /** Reused each frame — avoid allocating { x, y } per call. */
 const shakeOffsetOut = { x: 0, y: 0 };
 
+/* ── Landing settle: smooth damped return after shake ends ── */
+let _settleActive = false;
+let _settleX = 0;
+let _settleY = 0;
+/** Decay speed for settle phase — e^(-5 * 0.5) ≈ 0.08, so ~92% reduced in 0.5s. */
+const SETTLE_SPEED = 5;
+
 /**
  * Trigger a camera shake with the given intensity and optional decay rate.
  * Intensity is in world-space units (0.1 = 10cm of shake offset).
@@ -58,9 +65,34 @@ export function triggerCameraShake(intensity: number, decay?: number): void {
  */
 export function getCameraShakeOffset(dt: number): { x: number; y: number } {
   normalizeShakeState();
+  const safeDt = Math.max(0, finiteOr(dt, 0));
+
+  // ── Settle phase: damped spring return after shake ends ──
+  if (_settleActive) {
+    const settleDecay = Math.exp(-SETTLE_SPEED * safeDt);
+    _settleX *= settleDecay;
+    _settleY *= settleDecay;
+    shakeOffsetOut.x = _settleX;
+    shakeOffsetOut.y = _settleY;
+    if (Math.abs(_settleX) < 0.0001 && Math.abs(_settleY) < 0.0001) {
+      _settleActive = false;
+      shakeOffsetOut.x = 0;
+      shakeOffsetOut.y = 0;
+    }
+    // New shake trigger interrupts settle
+    if (shakeIntensity >= 0.001) _settleActive = false;
+    else return shakeOffsetOut;
+  }
 
   if (shakeIntensity < 0.001) {
     shakeIntensity = 0;
+    // Enter settle phase from last offset instead of snapping to zero
+    if (shakeOffsetOut.x !== 0 || shakeOffsetOut.y !== 0) {
+      _settleActive = true;
+      _settleX = shakeOffsetOut.x;
+      _settleY = shakeOffsetOut.y;
+      return shakeOffsetOut;
+    }
     shakeOffsetOut.x = 0;
     shakeOffsetOut.y = 0;
     return shakeOffsetOut;
@@ -69,7 +101,6 @@ export function getCameraShakeOffset(dt: number): { x: number; y: number } {
   shakeOffsetOut.x = (Math.random() - 0.5) * 2 * shakeIntensity;
   shakeOffsetOut.y = (Math.random() - 0.5) * 2 * shakeIntensity;
 
-  const safeDt = Math.max(0, finiteOr(dt, 0));
   const decayFactor = Math.exp(-shakeDecay * safeDt);
   shakeIntensity = Number.isFinite(decayFactor)
     ? shakeIntensity * decayFactor
@@ -87,6 +118,9 @@ export function getCameraShakeOffset(dt: number): { x: number; y: number } {
 export function resetCameraShake(): void {
   shakeIntensity = 0;
   shakeDecay = DEFAULT_SHAKE_DECAY;
+  _settleActive = false;
+  _settleX = 0;
+  _settleY = 0;
 }
 
 /**

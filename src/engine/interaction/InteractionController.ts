@@ -162,12 +162,16 @@ export class InteractionController {
   onNarrativeOverlayClosedInExploration(): void {
     const cycleIdAtClose = getInteractionEndCycleId();
     const interactionStateAtClose = getInteractionState();
+    const sessionAlive = !this.session.isDisposed();
     queueMicrotask(() => {
-      if (this.session.isDisposed()) return;
+      if (!sessionAlive || this.session.isDisposed()) return;
       emitInteractionEndIfNeeded();
       if (isInteractionLocked() && getInteractionState() === interactionStateAtClose) {
-        this.session.schedule(() => {
-          if (this.session.isDisposed()) return;
+        // Race #13: capture session reference so disposal during the 100ms window
+        // prevents the timer from ending a *new* interaction started after close.
+        const sessionAtSchedule = this.session;
+        sessionAtSchedule.schedule(() => {
+          if (sessionAtSchedule.isDisposed()) return;
           if (getInteractionEndCycleId() !== cycleIdAtClose) return;
           emitInteractionEndIfNeeded();
         }, 100);

@@ -1,6 +1,7 @@
 /* ─── Volodka RPG – Environmental Dust Particles ───
  * Ambient floating dust motes in Volodka's room.
  * Thin wrapper around the generic AmbientParticles component.
+ * Opacity pulses gently (breathing effect) to make rooms feel alive.
  */
 
 import { AmbientParticles } from './AmbientParticles';
@@ -19,6 +20,7 @@ export function DustParticles() {
       sizeMax={0.055}
       color="#ffd8a8"
       opacity={0.28}
+      opacityFn={(elapsed) => 0.22 + 0.08 * Math.sin(elapsed * 0.4)}
     />
   );
 }

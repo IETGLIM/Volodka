@@ -11,8 +11,12 @@ import {
   resolveNarrativePresentation,
 } from './narrativePresentationPolicy';
 
-/** Mutual-exclusion flag — prevents concurrent invocations from racing. */
+/** Mutual-exclusion guard — prevents concurrent invocations from racing.
+ *  Uses a generation counter so that even if narrativeInflight is released in
+ *  `finally` before subscribers flush, a stale re-entrant call can be detected.
+ */
 let narrativeInflight = false;
+let narrativeInflightGen = 0;
 
 /**
  * Single entry point for opening narrative beats.
@@ -24,6 +28,7 @@ export function presentNarrativeBeat(nodeId: string, kind: NarrativeKind): void 
     return;
   }
   narrativeInflight = true;
+  const myGen = ++narrativeInflightGen;
   try {
     beginInteractionEndCycle();
 
@@ -59,6 +64,8 @@ export function presentNarrativeBeat(nodeId: string, kind: NarrativeKind): void 
       .then(({ forceResetAllInteractionState }) => forceResetAllInteractionState())
       .catch(() => { /* module may not exist yet */ });
   } finally {
+    // Race #8: release guard synchronously but also bump generation so that
+    // any re-entrant call queued in the same microtask batch is detected as stale.
     narrativeInflight = false;
   }
 }

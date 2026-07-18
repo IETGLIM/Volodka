@@ -80,9 +80,9 @@ export const QUESTS_ACT4: QuestDefinition[] = [
     objectives: [
       {
         id: 'gather_all_poems',
-        description: 'Убедиться, что все стихи собраны',
-        type: 'flag_set',
-        target: 'all_poems_collected',
+        description: 'Подготовить стихи для вещания',
+        type: 'location_visited',
+        target: 'act4_broadcast_prep',
         completed: false,
       },
       {

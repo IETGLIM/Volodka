@@ -207,7 +207,7 @@ export function StreetWinterVisual({ livePlayerPositionRef }: StreetWinterVisual
           <cylinderGeometry args={[0.015, 0.015, 0.55, 4]} />
           <meshStandardMaterial color="#4a4a4a" metalness={0.6} roughness={0.4} />
         </mesh>
-        <mesh position={[0, 0.11, 0]}>
+        <mesh position={[0, 0.116, 0]}>
           <boxGeometry args={[0.35, 0.03, 0.5]} />
           <meshStandardMaterial color="#e0e8f0" roughness={0.95} />
         </mesh>
@@ -291,7 +291,7 @@ function WinterBuilding({ position, width, height, depth }: {
         <meshStandardMaterial color="#2a2a30" roughness={0.9} />
       </mesh>
       {/* Snow cap on roof */}
-      <mesh position={[0, height + 0.1, 0]} castShadow>
+      <mesh position={[0, height + 0.105, 0]} castShadow>
         <boxGeometry args={[width + 0.2, 0.2, depth + 0.2]} />
         <meshStandardMaterial color="#e0e8f0" roughness={0.95} />
       </mesh>

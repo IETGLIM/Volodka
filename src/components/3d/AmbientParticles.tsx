@@ -21,9 +21,11 @@ interface AmbientParticlesConfig {
   sizeMax?: number;                  // default 0.06
   color?: string;                    // default '#f59e0b' (amber)
   opacity?: number;                  // default 0.35
+  /** Optional per-frame opacity override — receives elapsed seconds. */
+  opacityFn?: (elapsed: number) => number;
 }
 
-const DEFAULTS: Required<AmbientParticlesConfig> = {
+const DEFAULTS: Omit<Required<AmbientParticlesConfig>, 'opacityFn'> & { opacityFn?: (elapsed: number) => number } = {
   count: 200,
   boundsX: [-5, 5],
   boundsY: [0, 3],
@@ -40,6 +42,8 @@ const DEFAULTS: Required<AmbientParticlesConfig> = {
 export function AmbientParticles(config: AmbientParticlesConfig = {}) {
   const cfg = { ...DEFAULTS, ...config };
   const pointsRef = useRef<THREE.Points>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const materialRef = useRef<any>(null);
 
   const count = cfg.count;
   const [bxMin, bxMax] = cfg.boundsX;
@@ -102,6 +106,11 @@ export function AmbientParticles(config: AmbientParticlesConfig = {}) {
     }
 
     posAttr.needsUpdate = true;
+
+    // Dynamic opacity via callback (e.g. breathing pulse)
+    if (cfg.opacityFn && materialRef.current) {
+      materialRef.current.opacity = cfg.opacityFn(t);
+    }
   });
 
   const avgSize = (cfg.sizeMin + cfg.sizeMax) / 2;
@@ -109,8 +118,9 @@ export function AmbientParticles(config: AmbientParticlesConfig = {}) {
   return (
     <Points ref={pointsRef} positions={positions} stride={3} frustumCulled={false}>
       <PointMaterial
+        ref={materialRef}
         transparent
-        opacity={cfg.opacity}
+        opacity={cfg.opacityFn ? cfg.opacityFn(0) : cfg.opacity}
         color={cfg.color}
         size={avgSize}
         sizeAttenuation

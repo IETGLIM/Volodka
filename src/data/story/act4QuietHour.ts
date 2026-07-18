@@ -209,6 +209,14 @@ export const STORY_NODES_ACT4_QUIET_HOUR: Record<string, StoryNode> = {
           { type: 'setFlag', flag: 'met_street_poet', flagValue: true },
         ],
       },
+      {
+        text: 'Час истёк. К плану.',
+        next: 'act4_infiltration_prep',
+        effects: [
+          { type: 'collectPoem', poemId: 'poem_14' },
+          { type: 'setFlag', flag: 'met_street_poet', flagValue: true },
+        ],
+      },
     ],
   },
 };
