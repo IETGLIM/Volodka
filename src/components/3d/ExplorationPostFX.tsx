@@ -442,71 +442,16 @@ function PostFXPipeline() {
         mipmapBlur
         kernelSize={KernelSize.LARGE}
       />
-
-      {/* Chromatic aberration — stress-reactive for intense scenes */}
-      {showChromatic ? (
-        <ChromaticAberration
-          offset={chromaticOffset}
-          blendFunction={BlendFunction.NORMAL}
-        />
-      ) : (
-        null
-      )}
-
-      {/* CRT scanline overlay — guild_mainframe & office_day cyberpunk aesthetic */}
-      {wantsScanlines ? (
-        <Scanline
-          blendFunction={BlendFunction.OVERLAY}
-          density={1.2}
-        />
-      ) : (
-        null
-      )}
-      {rendering.useAmbientOcclusion ? (
-        <N8AO
-          aoRadius={rendering.aoRadius}
-          intensity={rendering.aoIntensity}
-          distanceFalloff={0.5}
-          halfRes
-          color="black"
-        />
-      ) : (
-        null
-      )}
-      <Vignette
-        offset={stressVignetteOffset}
-        darkness={stressVignetteDarkness}
-        blendFunction={BlendFunction.NORMAL}
-      />
-      <HueSaturation
-        hue={colorGrade.hue}
-        saturation={effectiveSaturation}
-        blendFunction={BlendFunction.NORMAL}
-      />
-      <BrightnessContrast
-        brightness={effectiveBrightness}
-        contrast={effectiveContrast}
-        blendFunction={BlendFunction.NORMAL}
-      />
-      {proceduralLut ? (
-        <LUT lut={proceduralLut} tetrahedralInterpolation blendFunction={BlendFunction.NORMAL} />
-      ) : (
-        null
-      )}
-      {/* Subtle film grain — indoor scenes, high quality only */}
-      {wantsNoise ? (
-        <Noise
-          premultiply
-          blendFunction={BlendFunction.NORMAL}
-          opacity={0.035}
-        />
-      ) : (
-        null
-      )}
-      <ToneMapping
-        mode={ToneMappingMode.ACES_FILMIC}
-        exposure={SCENE_VISIBILITY.toneExposure}
-      />
+      {/* TS-1: React 19 stricter children types — null cast to any */}
+      {showChromatic ? <ChromaticAberration offset={chromaticOffset} blendFunction={BlendFunction.NORMAL} /> : null as any}
+      {wantsScanlines ? <Scanline blendFunction={BlendFunction.OVERLAY} density={1.2} /> : null as any}
+      {rendering.useAmbientOcclusion ? <N8AO aoRadius={rendering.aoRadius} intensity={rendering.aoIntensity} distanceFalloff={0.5} halfRes color="black" /> : null as any}
+      <Vignette offset={stressVignetteOffset} darkness={stressVignetteDarkness} blendFunction={BlendFunction.NORMAL} />
+      <HueSaturation hue={colorGrade.hue} saturation={effectiveSaturation} blendFunction={BlendFunction.NORMAL} />
+      <BrightnessContrast brightness={effectiveBrightness} contrast={effectiveContrast} blendFunction={BlendFunction.NORMAL} />
+      {proceduralLut ? <LUT lut={proceduralLut} tetrahedralInterpolation blendFunction={BlendFunction.NORMAL} /> : null as any}
+      {wantsNoise ? <Noise premultiply blendFunction={BlendFunction.NORMAL} opacity={0.035} /> : null as any}
+      <ToneMapping mode={ToneMappingMode.ACES_FILMIC} exposure={SCENE_VISIBILITY.toneExposure} />
     </ManagedEffectComposer>
   );
 }

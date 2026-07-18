@@ -195,7 +195,7 @@ export function RooftopEdgeVisual({ livePlayerPositionRef: _livePlayerPositionRe
         {/* Legs */}
         {[-0.4, 0.4].map((x, i) => (
           [-0.4, 0.4].map((z, j) => (
-            <mesh key={`${i}-${j}`} position={[x, 1, z]} castShadow geometry={getSharedCylinderGeometry(0.04, 0.06, 2, 6)}>
+            <mesh key={`${i}-${j}`} position={[x, 1, z]} geometry={getSharedCylinderGeometry(0.04, 0.06, 2, 6)}>
               <meshStandardMaterial color="#5a4a3a" metalness={0.5} roughness={0.5} />
             </mesh>
           ))
@@ -236,7 +236,8 @@ export function RooftopEdgeVisual({ livePlayerPositionRef: _livePlayerPositionRe
       <pointLight position={[15, 18, -28]} color="#ff44aa" intensity={3.5} distance={25} />
 
       {/* Warm sunset glow */}
-      <pointLight position={[-5, 3, 6]} color="#cc6622" intensity={3.5} distance={18} castShadow shadow-mapSize-width={256} shadow-bias={-0.003} />
+      {/* LIGHT-4: Warm sunset glow — no castShadow to avoid a second shadow map pass. */}
+      <pointLight position={[-5, 3, 6]} color="#cc6622" intensity={3.5} distance={18} />
 
       {/* Antenna red light */}
       <pointLight position={[-1.5, 6, -3.5]} color="#ff0000" intensity={1.0} distance={5} />
@@ -259,10 +260,10 @@ export function RooftopEdgeVisual({ livePlayerPositionRef: _livePlayerPositionRe
       {/* ── Clothesline with one shirt ── */}
       <group position={[-2, 0, 2]}>
         {/* Poles */}
-        <mesh position={[-1, 1.2, 0]} castShadow geometry={getSharedCylinderGeometry(0.02, 0.03, 2.4, 4)}>
+        <mesh position={[-1, 1.2, 0]} geometry={getSharedCylinderGeometry(0.02, 0.03, 2.4, 4)}>
           <meshStandardMaterial color="#5a4a3a" roughness={0.8} />
         </mesh>
-        <mesh position={[1, 1.2, 0]} castShadow geometry={getSharedCylinderGeometry(0.02, 0.03, 2.4, 4)}>
+        <mesh position={[1, 1.2, 0]} geometry={getSharedCylinderGeometry(0.02, 0.03, 2.4, 4)}>
           <meshStandardMaterial color="#5a4a3a" roughness={0.8} />
         </mesh>
         {/* Line */}
@@ -281,10 +282,10 @@ export function RooftopEdgeVisual({ livePlayerPositionRef: _livePlayerPositionRe
 
       {/* ── Broken antenna (bent metal) ── */}
       <group position={[-3.5, 1.2, -3.0]}>
-        <mesh rotation={[0, 0, 0.6]} castShadow geometry={getSharedCylinderGeometry(0.01, 0.015, 1.5, 4)}>
+        <mesh rotation={[0, 0, 0.6]} geometry={getSharedCylinderGeometry(0.01, 0.015, 1.5, 4)}>
           <meshStandardMaterial color="#6a6a6a" metalness={0.8} roughness={0.3} />
         </mesh>
-        <mesh position={[0.3, 0.8, 0]} rotation={[0, 0, 1.2]} castShadow geometry={getSharedCylinderGeometry(0.008, 0.01, 0.8, 4)}>
+        <mesh position={[0.3, 0.8, 0]} rotation={[0, 0, 1.2]} geometry={getSharedCylinderGeometry(0.008, 0.01, 0.8, 4)}>
           <meshStandardMaterial color="#5a5a5a" metalness={0.7} roughness={0.4} />
         </mesh>
       </group>
@@ -328,7 +329,8 @@ function RooftopEdgeRailings({ w, d }: { w: number; d: number }) {
   return (
     <group>
       {postPositions.map(({ key, pos }) => (
-        <mesh key={key} position={pos} castShadow geometry={getSharedBoxGeometry(0.04, postHeight, 0.04)}>
+        <mesh key={key} position={pos} geometry={getSharedBoxGeometry(0.04, postHeight, 0.04)}>
+          {/* LIGHT-4: castShadow removed from thin 4cm posts */}
           <meshStandardMaterial {...railMat} />
         </mesh>
       ))}
@@ -338,10 +340,11 @@ function RooftopEdgeRailings({ w, d }: { w: number; d: number }) {
         const centerX = (fromX + toX) / 2;
         return (
           <group key={`front-rail-${i}`}>
-            <mesh position={[centerX, railYLow, frontZ]} castShadow geometry={getSharedBoxGeometry(length, 0.025, 0.025)}>
+            {/* LIGHT-4: Thin railings (2.5cm) don't cast visible shadows. */}
+            <mesh position={[centerX, railYLow, frontZ]} geometry={getSharedBoxGeometry(length, 0.025, 0.025)}>
               <meshStandardMaterial {...railMat} />
             </mesh>
-            <mesh position={[centerX, railYHigh, frontZ]} castShadow geometry={getSharedBoxGeometry(length, 0.025, 0.025)}>
+            <mesh position={[centerX, railYHigh, frontZ]} geometry={getSharedBoxGeometry(length, 0.025, 0.025)}>
               <meshStandardMaterial {...railMat} />
             </mesh>
           </group>
@@ -352,10 +355,10 @@ function RooftopEdgeRailings({ w, d }: { w: number; d: number }) {
         const x = side === 'left' ? -w / 2 + 0.06 : w / 2 - 0.06;
         return (
           <group key={`${side}-rails`}>
-            <mesh position={[x, railYLow, 0]} castShadow geometry={getSharedBoxGeometry(0.025, 0.025, sideSpan)}>
+            <mesh position={[x, railYLow, 0]} geometry={getSharedBoxGeometry(0.025, 0.025, sideSpan)}>
               <meshStandardMaterial {...railMat} />
             </mesh>
-            <mesh position={[x, railYHigh, 0]} castShadow geometry={getSharedBoxGeometry(0.025, 0.025, sideSpan)}>
+            <mesh position={[x, railYHigh, 0]} geometry={getSharedBoxGeometry(0.025, 0.025, sideSpan)}>
               <meshStandardMaterial {...railMat} />
             </mesh>
           </group>

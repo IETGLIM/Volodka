@@ -97,6 +97,12 @@ export function resolveCachedGroundY(
       params.excludeCollider,
       params.excludeRigidBody,
     );
+    // PHYS-3: Validate cached groundY — if probeGroundY ever returns NaN
+    // (e.g., malformed Rapier hit), use the fallback to prevent position
+    // collapse or false rescue teleports.
+    if (!Number.isFinite(cache.groundY)) {
+      cache.groundY = params.fallbackFloorY;
+    }
     cache.probeX = params.x;
     cache.probeZ = params.z;
     cache.probeY = params.feetY;

@@ -31,6 +31,13 @@ export function resolvePostCutsceneNarrativeNode(nodeId: string): string {
   return hubId && hubId !== nodeId ? hubId : nodeId;
 }
 
+/** Emit a single, deduplicated interaction:end event.
+ *  INT-2: Use ONLY forceEmitInteractionEnd() to avoid double emission.
+ *  The direct eventBus.emit('interaction:end') bypassed the dedup mechanism. */
+function emitInteractionEndOnce(): void {
+  forceEmitInteractionEnd();
+}
+
 /** After cinematic beats: Act 1 → hub or diegetic HUD; legacy acts → VN overlay. */
 export function openNarrativeAfterCutscene(nodeId: string, kind: NarrativeKind): void {
   if (isAct1DiegeticStoryNode(nodeId)) {
@@ -41,8 +48,7 @@ export function openNarrativeAfterCutscene(nodeId: string, kind: NarrativeKind):
         dispatchGameAction({ type: 'story/visitNode', nodeId });
       }
       enterSceneFreeExplorationHub(resolved);
-      eventBus.emit('interaction:end', {});
-      forceEmitInteractionEnd();
+      emitInteractionEndOnce();
       return;
     }
 
@@ -50,15 +56,13 @@ export function openNarrativeAfterCutscene(nodeId: string, kind: NarrativeKind):
       dispatchGameAction({ type: 'story/visitNode', nodeId: resolved });
     }
     openDiegeticNarrative(resolved, kind);
-    eventBus.emit('interaction:end', {});
-    forceEmitInteractionEnd();
+    emitInteractionEndOnce();
     return;
   }
 
   if (shouldShowStoryBeatAfterCutscene(nodeId)) {
     openNarrativeOverlay(nodeId, kind);
-    eventBus.emit('interaction:end', {});
-    forceEmitInteractionEnd();
+    emitInteractionEndOnce();
     return;
   }
 
@@ -76,6 +80,5 @@ export function openNarrativeAfterCutscene(nodeId: string, kind: NarrativeKind):
     dispatchGameAction({ type: 'story/visitNode', nodeId: resolved });
   }
   openNarrativeOverlay(resolved, kind);
-  eventBus.emit('interaction:end', {});
-  forceEmitInteractionEnd();
+  emitInteractionEndOnce();
 }

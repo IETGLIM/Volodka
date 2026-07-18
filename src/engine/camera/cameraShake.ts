@@ -14,6 +14,11 @@ let shakeDecay = 5; // How fast shake decays (per second)
 
 const DEFAULT_SHAKE_DECAY = 5;
 
+// CAM-2: Frame-id guard — prevent double-decay if getCameraShakeOffset
+// is called multiple times per frame (e.g., from multiple useFrame hooks).
+let _lastShakeFrameId = -1;
+let _lastShakeFrameOffset = { x: 0, y: 0 };
+
 function finiteOr(value: number, fallback: number): number {
   return Number.isFinite(value) ? value : fallback;
 }
@@ -29,6 +34,13 @@ function normalizeShakeState(): void {
 
 /** Reused each frame — avoid allocating { x, y } per call. */
 const shakeOffsetOut = { x: 0, y: 0 };
+
+/** Helper: cache the current shake offset for the frame-id guard. */
+function cacheAndReturnOffset(): { x: number; y: number } {
+  _lastShakeFrameOffset.x = shakeOffsetOut.x;
+  _lastShakeFrameOffset.y = shakeOffsetOut.y;
+  return shakeOffsetOut;
+}
 
 /* ── Landing settle: smooth damped return after shake ends ── */
 let _settleActive = false;
@@ -62,8 +74,20 @@ export function triggerCameraShake(intensity: number, decay?: number): void {
  * Get the current frame's shake offset and advance the decay.
  * Call once per frame from the camera update loop.
  * Returns { x, y } offset to add to camera position.
+ *
+ * CAM-2: Includes a timestamp-based guard — if called multiple times
+ * within the same ~4ms window (one frame at 240Hz), returns the cached
+ * offset without re-decaying, preventing shake from decaying N× faster.
  */
 export function getCameraShakeOffset(dt: number): { x: number; y: number } {
+  const now = performance.now();
+
+  // If called again within 4ms of the last call (same frame), return cached.
+  if (now - _lastShakeFrameId < 4) {
+    return _lastShakeFrameOffset;
+  }
+  _lastShakeFrameId = now;
+
   normalizeShakeState();
   const safeDt = Math.max(0, finiteOr(dt, 0));
 
@@ -81,7 +105,7 @@ export function getCameraShakeOffset(dt: number): { x: number; y: number } {
     }
     // New shake trigger interrupts settle
     if (shakeIntensity >= 0.001) _settleActive = false;
-    else return shakeOffsetOut;
+    else return cacheAndReturnOffset();
   }
 
   if (shakeIntensity < 0.001) {
@@ -91,11 +115,11 @@ export function getCameraShakeOffset(dt: number): { x: number; y: number } {
       _settleActive = true;
       _settleX = shakeOffsetOut.x;
       _settleY = shakeOffsetOut.y;
-      return shakeOffsetOut;
+      return cacheAndReturnOffset();
     }
     shakeOffsetOut.x = 0;
     shakeOffsetOut.y = 0;
-    return shakeOffsetOut;
+    return cacheAndReturnOffset();
   }
 
   shakeOffsetOut.x = (Math.random() - 0.5) * 2 * shakeIntensity;
@@ -109,7 +133,7 @@ export function getCameraShakeOffset(dt: number): { x: number; y: number } {
   if (!Number.isFinite(shakeIntensity) || shakeIntensity < 0.001) {
     shakeIntensity = 0;
   }
-  return shakeOffsetOut;
+  return cacheAndReturnOffset();
 }
 
 /**
@@ -121,6 +145,9 @@ export function resetCameraShake(): void {
   _settleActive = false;
   _settleX = 0;
   _settleY = 0;
+  _lastShakeFrameId = -1;
+  _lastShakeFrameOffset.x = 0;
+  _lastShakeFrameOffset.y = 0;
 }
 
 /**

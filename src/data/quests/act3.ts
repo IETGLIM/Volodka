@@ -170,6 +170,10 @@ export const QUESTS_ACT3: QuestDefinition[] = [
     questType: 'side',
     difficulty: 'medium',
     hint: 'Мемориал в парке, расшифровка в офисе и подвал «Хрома-М» — три точки одной истории.',
+    // Q-02: Declared dependency on the optional quest that sets basement_hum_heard.
+    // Without this, the objective is permanently stuck if the player skipped the
+    // optional basement_hum quest in Act 2.
+    requiresQuests: ['basement_hum'],
     objectives: [
       {
         id: 'trace_crash',

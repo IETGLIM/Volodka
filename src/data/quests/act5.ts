@@ -201,6 +201,9 @@ export const QUESTS_ACT5: QuestDefinition[] = [
       {
         id: 'talk_dmitry_final',
         description: 'Спросить Дмитрия: он не отступит?',
+        // Q-03: NOTE — if the betrayal path is implemented later (dmitry_betrayed
+        // flag), this objective must be guarded. Currently the betrayal path is
+        // not wired in the story, so npc_talked is safe.
         type: 'npc_talked',
         target: 'office_dmitry',
         completed: false,

@@ -39,7 +39,9 @@ function showHubLocationContext(hubId: string, revisit: boolean): void {
   });
 }
 
-/** Defer hub location toast so it does not overlap scene-transition / guidance HUD handoff. */
+/** INT-4: Track the hub location toast timer so it can be cancelled when a new
+ *  hub is entered rapidly (preventing stale location text from the previous scene). */
+let _hubToastTimer: ReturnType<typeof setTimeout> | null = null;
 
 /**
  * Promote to a closed-overlay explore hub: spine tracking, closed overlay,
@@ -56,6 +58,12 @@ export function enterSceneFreeExplorationHub(
 ): void {
   if (!isClosedOverlayExploreHub(hubId)) return;
 
+  // INT-4: Cancel any pending hub toast from a previous scene transition.
+  if (_hubToastTimer !== null) {
+    clearTimeout(_hubToastTimer);
+    _hubToastTimer = null;
+  }
+
   const snapshot = getGameSnapshot();
   const firstVisit = !hasVisitedNode(snapshot.playerState.visitedNodes, hubId);
 
@@ -68,19 +76,24 @@ export function enterSceneFreeExplorationHub(
 
   // Skip the location toast when explicitly suppressed (e.g., during the
   // wake-up prologue where the story overlay already provides scene context).
-  // Showing both start.text AND hubIntroText caused "три монитора" to appear
+  // Showing both start.text AND hubIntroText caused "три мониторы" to appear
   // multiple times simultaneously.
   if (!options.suppressLocationToast) {
-    setTimeout(() => {
-      if (firstVisit) {
-        showHubLocationContext(hubId, false);
+    const capturedHubId = hubId;
+    const capturedFirstVisit = firstVisit;
+    _hubToastTimer = setTimeout(() => {
+      _hubToastTimer = null;
+      if (capturedFirstVisit) {
+        showHubLocationContext(capturedHubId, false);
       } else {
-        showHubLocationContext(hubId, true);
+        showHubLocationContext(capturedHubId, true);
       }
     }, EXPLORATION_HUD_HANDOFF.HUB_LOCATION_TOAST_MS);
   }
 
-  eventBus.emit('interaction:end', {});
+  // INT-2: Use only forceEmitInteractionEnd() to go through the dedup mechanism.
+  // Previously a direct eventBus.emit('interaction:end', {}) was also called,
+  // causing duplicate listener side-effects (camera recenter, audio stingers, etc.).
   forceEmitInteractionEnd();
 }
 

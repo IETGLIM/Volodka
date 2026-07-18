@@ -44,7 +44,11 @@ function scheduleOrphanWatchdog(timelineId: string, totalDurationSec: number): v
         `(expected ~${totalDurationSec.toFixed(1)}s + ${ORPHAN_WATCHDOG_GRACE_SEC}s grace). ` +
         'Auto-stopping — the component likely unmounted without completing the timeline.',
     );
-    stopCinematicTimeline(timelineId);
+    // Use completeCinematicTimeline (not stop) so downstream listeners
+    // waiting for 'cinematic:timeline_complete' can properly resume gameplay.
+    // Without this, the orphan watchdog would leave the game stuck forever
+    // in a cinematic hold with no 'complete' event ever emitted.
+    completeCinematicTimeline(timelineId, true);
   }, timeoutMs);
 }
 

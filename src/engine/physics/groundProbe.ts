@@ -59,7 +59,10 @@ export function probeGroundY(
 
   const hitY = originY - hit.timeOfImpact;
   // Reject hits above feet (ceilings / overhangs picked before floor).
-  if (hitY > feetY + 0.12) return fallbackFloorY;
+  // PHYS-2: Use originY instead of feetY + 0.12 to avoid rejecting valid
+  // close-to-floor hits on stairs and uneven terrain. Any hit at or above
+  // the ray origin didn't actually go downward meaningfully.
+  if (hitY > originY) return fallbackFloorY;
 
   return hitY;
 }

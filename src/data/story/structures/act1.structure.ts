@@ -818,6 +818,13 @@ export const ACT1_STRUCTURE: Record<string, StoryNodeStructure> = {
     "musicCue": "tension",
     "speaker": "narrator",
     "sceneId": "street_night",
+    "effects": [
+      {
+        "type": "setFlag",
+        "flag": "met_maria",
+        "flagValue": true
+      }
+    ],
     "choices": [
       {
         "text": "",

@@ -24,11 +24,24 @@ export interface StoryChoiceExecutorContext {
   onAppliedEffects?: (effects: StoryEffect[]) => void;
 }
 
+/** Guard against rapid double-click on narrative choices. */
+let choiceExecutionInFlight = false;
+
 /** Execute a story node choice — shared by StoryRenderer and DiegeticDialogueHud. */
 export function executeStoryChoice(
   choice: StoryChoice,
   ctx: StoryChoiceExecutorContext,
 ): void {
+  // NAR-2: Prevent rapid double-click from dispatching conflicting state.
+  // React re-renders the choice list asynchronously, so a fast double-click
+  // could fire two choices before the list updates, causing conflicting
+  // setCurrentNodeId / applyEffects / scene transitions.
+  if (choiceExecutionInFlight) return;
+  choiceExecutionInFlight = true;
+  // Release guard on next microtask (after all synchronous dispatches complete
+  // and React has processed the state updates).
+  queueMicrotask(() => { choiceExecutionInFlight = false; });
+
   audioEngine.playSfx('confirm');
   const transitionsScene =
     choice.effects?.some((fx) => fx.type === 'transitionScene') ?? false;

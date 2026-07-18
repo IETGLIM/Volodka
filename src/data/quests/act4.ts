@@ -81,8 +81,8 @@ export const QUESTS_ACT4: QuestDefinition[] = [
       {
         id: 'gather_all_poems',
         description: 'Подготовить стихи для вещания',
-        type: 'location_visited',
-        target: 'act4_broadcast_prep',
+        type: 'flag_set',
+        target: 'broadcast_prep_reached',
         completed: false,
       },
       {

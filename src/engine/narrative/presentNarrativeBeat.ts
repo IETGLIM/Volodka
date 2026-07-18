@@ -17,18 +17,25 @@ import {
  */
 let narrativeInflight = false;
 let narrativeInflightGen = 0;
+let narrativeOwnerGen = -1;
 
 /**
  * Single entry point for opening narrative beats.
  * Act 1 nodes route to diegetic HUD or closed-overlay hubs; Acts 2+ use legacy VN overlay.
  */
 export function presentNarrativeBeat(nodeId: string, kind: NarrativeKind): void {
-  if (narrativeInflight) {
+  // INT-1: Check both the boolean guard AND the generation counter.
+  // If narrativeInflight is true AND the current owner generation matches
+  // narrativeInflightGen (i.e., the same logical invocation still "owns" the lock),
+  // reject the re-entrant call. This prevents stale microtask-queued calls
+  // from executing after finally{} releases the boolean.
+  if (narrativeInflight && narrativeOwnerGen === narrativeInflightGen) {
     devWarn('[presentNarrativeBeat] Rejected: another beat is already presenting', { nodeId, kind });
     return;
   }
   narrativeInflight = true;
   const myGen = ++narrativeInflightGen;
+  narrativeOwnerGen = myGen;
   try {
     beginInteractionEndCycle();
 

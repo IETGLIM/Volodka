@@ -1038,6 +1038,11 @@ export const ACT4_STRUCTURE: Record<string, StoryNodeStructure> = {
     "guidanceObjectiveType": "make_choice",
     "effects": [
       {
+        "type": "setFlag",
+        "flag": "broadcast_prep_reached",
+        "flagValue": true
+      },
+      {
         "type": "collectPoem",
         "poemId": "poem_21"
       }

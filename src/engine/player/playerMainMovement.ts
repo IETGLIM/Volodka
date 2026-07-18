@@ -238,6 +238,19 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
     vel.z = THREE.MathUtils.damp(vel.z, 0, stopDamping, dt);
   }
 
+  // PHYS-1: Sanitize velocity to prevent NaN/Infinity from propagating
+  // to KCC displacement (would teleport player to infinity or crash Rapier).
+  if (!Number.isFinite(vel.x)) vel.x = 0;
+  if (!Number.isFinite(vel.z)) vel.z = 0;
+  if (!Number.isFinite(vel.y)) vel.y = 0;
+  // PHYS-5: Clamp horizontal speed after damping to prevent momentary spikes.
+  const hSpeedClamp = Math.sqrt(vel.x * vel.x + vel.z * vel.z);
+  if (hSpeedClamp > MAX_HORIZONTAL_SPEED) {
+    const s = MAX_HORIZONTAL_SPEED / hSpeedClamp;
+    vel.x *= s;
+    vel.z *= s;
+  }
+
   const wantsJump =
     jumping &&
     deps.jumpCooldownRef.current <= 0 &&

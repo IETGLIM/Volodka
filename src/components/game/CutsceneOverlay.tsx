@@ -391,11 +391,10 @@ export function CutsceneOverlay() {
           key={`cutscene-overlay-${overlayKey}`}
           initial={reducedMotion ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
-          exit={reducedMotion ? undefined : { opacity: 0 }}
+          exit={reducedMotion ? undefined : { opacity: 0, transition: { duration: fadeOutMs / 1000, ease: 'easeInOut' } }}
           transition={{
             duration: reducedMotion ? 0 : fadeInMs / 1000,
             ease: 'easeInOut',
-            exit: { duration: reducedMotion ? 0 : fadeOutMs / 1000, ease: 'easeInOut' },
           }}
           className="fixed inset-0 flex items-center justify-center pointer-events-none"
           style={{ zIndex: UI_LAYERS.CINEMATIC_TRANSITION }}
