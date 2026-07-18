@@ -238,3 +238,55 @@ built with Vite + React 19 + Three.js 0.172 + R3F 9.6 + Rapier Physics + Zustand
 
 ### Files Modified: 22
 ### Lines Changed: ~180 insertions, ~36 deletions
+
+---
+
+## Commit 6: `73320dbc` — Physics Gravity Fallback, Velocity Clamping, Interaction Edge Cases
+
+### Physics (2 fixes)
+
+#### H1 — Degraded Movement Missing Gravity
+- `playerMainMovement.ts`: `applyDegradedMovement()` now integrates `GRAVITY * dt`
+  and clamps to `TERMINAL_VELOCITY` when `!onFlatGround`. Previously the KCC
+  fallback path returned false before the gravity branch in `runMainPlayerMovement`,
+  causing the player to fall at constant velocity (last frame's `vel.y`) instead
+  of accelerating. Noticeable as a "floaty" feel when the character controller
+  momentarily fails (e.g. during scene load spikes).
+
+#### H2 — No Horizontal Velocity Clamp
+- `playerConstants.ts`: Added `MAX_HORIZONTAL_SPEED = 15` m/s absolute cap.
+- `playerMainMovement.ts`: Speed computation now clamped with `Math.min(..., MAX_HORIZONTAL_SPEED)`.
+  Prevents perk stacking (cyber_reflexes ×1.20 × night_owl ×1.25 × invisible ×1.15 = ×1.725,
+  yielding 12.075 m/s) from producing extreme speeds.
+- `playerLockedMovement.ts`: External velocity injection now clamped to ±MAX_HORIZONTAL_SPEED.
+  Prevents arbitrary velocity from InteractionSystemBridge bugs.
+
+### Interaction (4 fixes)
+
+- **NPC approach max distance**: `InteractionSystemBridge.tsx` — Added `APPROACH_MAX_DISTANCE = 8.0`.
+  If the NPC moves away during approach (schedule boundary), the chase cancels with
+  bark "Подожди..." instead of following for up to 5 seconds (GLOBAL_INTERACTION_TIMEOUT).
+
+- **Examine→narrative re-interaction gap**: `InteractionController.ts` — `handleExamineContinue`
+  now calls `consumeEKey(400)` before the 300ms schedule delay. This blocks the E-key
+  for the full duration of the examine panel close → narrative open transition,
+  preventing a second interaction from firing during the gap (which could cause
+  dual overlay / dual focus trap).
+
+- **Minigame over narrative**: `InteractionController.ts` — `handleMinigameOpen` now checks
+  `getGameSnapshot().showStoryOverlay` and returns early, preventing stacked modal panels
+  when a quest completion triggers minigame:open while the narrative overlay is showing.
+
+- **Cutscene overlay listener**: Verified already correct — `unsubOverlayEnd?.()` is called
+  before the early-return guards in `useCutsceneController.ts` cleanup function.
+
+### Audio
+- `SceneAudioController.ts`: `enteredScenes` Set cleared on `dispose()`, allowing scene
+  enter stingers to replay after new game / load.
+
+### Save
+- `saveSlice.ts`: `saveGame()` now checks `activeCutsceneId` and skips saving during
+  cutscenes (defense-in-depth beyond the phase guard in the autosave system).
+
+### Files Modified: 7
+### Lines Changed: ~51 insertions, ~4 deletions
