@@ -62,7 +62,15 @@ export const createSaveSlice: StateCreator<GameStoreState, [], [], SaveSlice> = 
   },
 
   saveGame: (options) => {
+    // Defense-in-depth: don't save during cutscenes. The autosave system
+    // already guards by phase, but manual saves (F5) or programmatic saves
+    // could slip through. A mid-cutscene save would have activeCutsceneId=null
+    // on load (not persisted), leaving the player in a clean but confusing state.
     const state = getCombinedGameState();
+    if (state.activeCutsceneId) {
+      console.warn('[saveGame] Skipping save during cutscene');
+      return;
+    }
     const source = options?.source ?? 'manual';
     const payload = pickSavePayload(state);
     const payloadWithVersion = { ...payload, saveVersion: SAVE_VERSION };

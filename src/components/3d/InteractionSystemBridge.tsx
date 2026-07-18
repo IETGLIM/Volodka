@@ -68,6 +68,8 @@ const APPROACH_SPEED_MAX = 3.8;
 const APPROACH_SPEED_MIN = 1.2;
 /** Distance at which deceleration easing begins (world units from arrival point). */
 const APPROACH_EASE_DISTANCE = 3.0;
+/** If the NPC moves more than this far during approach, cancel — prevents infinite chasing. */
+const APPROACH_MAX_DISTANCE = 8.0;
 const ALIGN_LERP_SPEED = 8;
 
 /** Global interaction timeout: force-reset to Idle after this many seconds
@@ -371,6 +373,20 @@ export function InteractionSystemBridge({
         const dx = npcPos.x - playerPos.x;
         const dz = npcPos.z - playerPos.z;
         const dist = Math.sqrt(dx * dx + dz * dz);
+
+        if (dist > APPROACH_MAX_DISTANCE) {
+          const prevNpcId = targetNPCIdRef.current;
+          eventBus.emit('npc:no_dialogue', { npcId: prevNpcId ?? '', barkText: 'Подожди...' });
+          phaseTimerRef.current = 0;
+          globalTimerRef.current = 0;
+          publishInteraction(stateRef, targetNPCIdRef, InteractionState.Idle, null);
+          clearPlayerExternalVelocity();
+          eventBus.emit('interaction:state_change', {
+            state: InteractionState.Idle,
+            npcId: prevNpcId ?? undefined,
+          });
+          break;
+        }
 
         if (dist <= APPROACH_ARRIVAL_DISTANCE) {
           const npcId = targetNPCIdRef.current ?? '';

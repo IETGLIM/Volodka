@@ -47,6 +47,7 @@ export class SceneAudioController {
   }
 
   dispose(): void {
+    this.enteredScenes.clear();
     this.session.dispose();
   }
 

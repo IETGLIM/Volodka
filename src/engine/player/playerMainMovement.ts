@@ -18,6 +18,7 @@ import {
 import {
   WALK_SPEED,
   RUN_SPEED,
+  MAX_HORIZONTAL_SPEED,
   KEYBOARD_ACCEL,
   JUMP_FORCE,
   GRAVITY,
@@ -57,6 +58,13 @@ function applyDegradedMovement(deps: PlayerMovementDeps, onFlatGround: boolean):
 
   const pos = rb.translation();
   const { dx, dz } = clampHorizontalDisplacement(vel.x * dt, vel.z * dt, MAX_DIRECT_DISPLACEMENT);
+
+  // H1 fix: apply gravity in degraded mode so the player falls instead of floating
+  // at constant velocity when the KCC fails while airborne.
+  if (!onFlatGround) {
+    vel.y += GRAVITY * dt;
+    if (vel.y < TERMINAL_VELOCITY) vel.y = TERMINAL_VELOCITY;
+  }
 
   const [sceneW, sceneD] = deps.config.size;
   const boundaryMargin = MAX_DIRECT_DISPLACEMENT;
@@ -166,12 +174,15 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
     perkSnap.playerState.progression?.unlockedPerks ?? [],
     { timeOfDay: perkSnap.exploration?.timeOfDay },
   );
-  const speed = (running ? RUN_SPEED : WALK_SPEED)
+  const speed = Math.min(
+    (running ? RUN_SPEED : WALK_SPEED)
     * deps.locomotionScale
     * touchScale
     * a11yScale
     * analogSpeedScale
-    * perkSpeedMult;
+    * perkSpeedMult,
+    MAX_HORIZONTAL_SPEED,
+  );
   const moveAccel = keyboardDrivesMove ? KEYBOARD_ACCEL : deps.movementTuning.accel;
   const stopDamping = keyboardDrivesMove ? deps.movementTuning.damping * 0.55 : deps.movementTuning.damping;
 

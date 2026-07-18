@@ -2,6 +2,9 @@
 
 export const WALK_SPEED = 4;
 export const RUN_SPEED = 7;
+/** Absolute cap on horizontal speed (m/s). Prevents perk stacking or
+ *  external velocity injection from producing extreme speeds. */
+export const MAX_HORIZONTAL_SPEED = 15;
 /** Keyboard gets snappier response than touch/gamepad damp tuning. */
 export const KEYBOARD_ACCEL = 50;
 export const JUMP_FORCE = 5.5;

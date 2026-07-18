@@ -34,6 +34,7 @@ import {
   emitInteractionEndIfNeeded,
   getInteractionEndCycleId,
 } from '@/engine/interaction/interactionEndDedup';
+import { consumeEKey } from '@/engine/input/eKeyConsumption';
 import { getInteractionState, isInteractionLocked } from '@/engine/interaction/interactionSession';
 import { devWarn } from '@/shared/utils/devLog';
 import { resolveNpcBarkForRelation } from '@/shared/npcBark';
@@ -387,6 +388,9 @@ export class InteractionController {
   handleMinigameOpen(gameType: string): void {
     if (this.session.isDisposed()) return;
     if (!isKnownMinigameId(gameType)) return;
+    // Don't open minigame while narrative overlay is showing — prevents stacked modals
+    const snap = getGameSnapshot();
+    if (snap.showStoryOverlay) return;
     openMinigame(gameType, this.deps.minigameSetters);
   }
 
@@ -411,6 +415,9 @@ export class InteractionController {
     this.deps.setPendingTriggerZone(null);
 
     // Let ExaminePanel exit animation finish before opening narrative overlay (avoids dual FocusTrap / React #185).
+    // Consume E-key for longer than the schedule delay to prevent re-interaction
+    // during the 300ms gap (examine closes → E-key debounce expires → new interaction fires).
+    consumeEKey(400);
     this.session.schedule(() => {
       if (this.session.isDisposed()) return;
       runInteractionTask('triggerLinkedContent', () => triggerLinkedContent(zoneSnapshot));

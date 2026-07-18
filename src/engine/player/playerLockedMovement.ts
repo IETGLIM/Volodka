@@ -4,6 +4,7 @@ import {
   ROTATION_SPEED,
   TERMINAL_VELOCITY,
   MAX_DIRECT_DISPLACEMENT,
+  MAX_HORIZONTAL_SPEED,
 } from '@/engine/player/playerConstants';
 import { lerpAngle, enforceFloor, clampHorizontalDisplacement } from '@/engine/player/playerMath';
 import { computeKccMovementSubstepped } from '@/engine/player/physicsSubstep';
@@ -24,8 +25,8 @@ export function runLockedPlayerMovement(deps: PlayerMovementDeps): void {
   const external = getPlayerExternalVelocity();
 
   if (external.active) {
-    vel.x = external.vx;
-    vel.z = external.vz;
+    vel.x = Math.max(-MAX_HORIZONTAL_SPEED, Math.min(MAX_HORIZONTAL_SPEED, external.vx));
+    vel.z = Math.max(-MAX_HORIZONTAL_SPEED, Math.min(MAX_HORIZONTAL_SPEED, external.vz));
 
     const hSpeed = Math.sqrt(vel.x * vel.x + vel.z * vel.z);
     if (hSpeed > 0.1) {
