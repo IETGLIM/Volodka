@@ -119,6 +119,10 @@ const geo_posterLogo = new THREE.BoxGeometry(0.18, 0.1, 0.002);
 const geo_photoFrame = new THREE.BoxGeometry(0.34, 0.44, 0.02);
 const geo_photoBack = new THREE.BoxGeometry(0.3, 0.4, 0.005);
 const bookSpineGeoCache = new Map<string, THREE.BoxGeometry>();
+
+// ISSUE #5: Pre-allocated color for emissive monitor screens (avoids per-render allocation)
+const MONITOR_EMISSIVE_COLOR = new THREE.Color(0xffffff);
+
 function bookSpineGeo(w: number, h: number, d = 0.18): THREE.BoxGeometry {
   const key = `${w}_${h}_${d}`;
   let geo = bookSpineGeoCache.get(key);
@@ -263,12 +267,19 @@ export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
     [wallTexture],
   );
 
+  // ── Desk monitor screen textures (Grafana · terminal · Zabbix) ──
+  const terminalTexture = useMemo(() => createTerminalScreenTexture(), []);
+  const grafanaTexture = useMemo(() => createGrafanaTexture(), []);
+  const zabbixTexture = useMemo(() => createZabbixTexture(), []);
+
   // ── Animated elements refs ──
   const fanGroupRef = useRef<THREE.Group>(null);
-  const ledRef = useRef<THREE.MeshStandardMaterial>(null);
+  // ISSUE #3: Initialize refs directly to module-level materials instead of
+  // setting them in useEffect([], []) — avoids 1-2 frames of null on mount.
+  const ledRef = useRef<THREE.MeshStandardMaterial>(mat_led_power);
   const ledTimeRef = useRef(0);
-  const terminalTexRef = useRef<THREE.CanvasTexture | null>(null);
-  const zabbixAlertRef = useRef<THREE.MeshStandardMaterial>(null);
+  const terminalTexRef = useRef<THREE.CanvasTexture | null>(terminalTexture);
+  const zabbixAlertRef = useRef<THREE.MeshStandardMaterial>(mat_zabbix_led);
 
   // ── Ambient effect refs ──
   const terminalMonitorGroupRef = useRef<THREE.Group>(null);
@@ -282,15 +293,7 @@ export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
   const D = 7; // depth (z)
   const H = 3; // height (y)
 
-  // ── Desk monitor screen textures (Grafana · terminal · Zabbix) ──
-  const terminalTexture = useMemo(() => createTerminalScreenTexture(), []);
-  const grafanaTexture = useMemo(() => createGrafanaTexture(), []);
-  const zabbixTexture = useMemo(() => createZabbixTexture(), []);
-
-  // Sync animated (terminal) texture ref outside of render
-  useEffect(() => {
-    terminalTexRef.current = terminalTexture;
-  }, [terminalTexture]);
+  // terminalTexRef now initialized directly above — no useEffect needed.
 
   useEffect(() => {
     return () => {
@@ -310,10 +313,7 @@ export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
     };
   }, [floorTexture, wallTexture]);
 
-  useEffect(() => {
-    ledRef.current = mat_led_power;
-    zabbixAlertRef.current = mat_zabbix_led;
-  }, []);
+  // ledRef and zabbixAlertRef are now initialized directly (see above).
 
   useVolodkaRoomAnimations({
     fanGroupRef,
@@ -409,10 +409,11 @@ export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
           <group key={id} position={[x, 1.12, -0.18]} rotation={[0, rotY, 0]} ref={id === 'terminal' ? terminalMonitorGroupRef : undefined}>
             {/* Bezel */}
             <mesh geometry={geo_box_18} renderOrder={1} material={mat_13} />
-            {/* Screen — nudged in front of bezel to avoid z-fighting / white seam */}
+            {/* Screen — emissive StandardMaterial with toneMapped:true for HDR
+             *  consistency. ISSUE #5: replaced meshBasicMaterial + toneMapped:false which
+             *  caused tone mapping artifacts and didn't respond to scene lighting. */}
             <mesh position={[0, 0, 0.028]} geometry={geo_pln_19} renderOrder={2}>
-
-              <meshBasicMaterial map={tex} toneMapped={false} depthWrite={false} />
+              <meshStandardMaterial map={tex} emissive={MONITOR_EMISSIVE_COLOR} emissiveMap={tex} emissiveIntensity={1.5} toneMapped depthWrite={false} />
             </mesh>
             {/* Zabbix blinking alert LED */}
             {id === 'zabbix' && (
@@ -424,12 +425,11 @@ export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
           </group>
         ))}
 
-        {/* Monitor glow — softened from acid green #00ff88 to a teal-cyan so the
-            room reads as a lived-in workspace, not a hacker den. Intensity lowered
-            from 4.5 to 2.6 so the warm ceiling lamp (sceneDefinitions) can compete. */}
-        <pointLight position={[0, 1.25, 0.15]} color="#33ddaa" intensity={2.6} distance={9} />
-        <pointLight position={[-0.62, 1.1, 0.1]} color="#22d3ee" intensity={1.5} distance={5} />
-        <pointLight position={[0.62, 1.1, 0.1]} color="#f59e0b" intensity={1.4} distance={5} />
+        {/* ISSUE #7: Reduced from 3 per-monitor lights to 1 combined desk glow.
+         * 3 separate point lights for 3 monitors was expensive and the lights
+         * were too close together to produce distinct shadows. One central glow
+         * is visually equivalent at a fraction of the GPU cost. */}
+        <pointLight position={[0, 1.25, 0.15]} color="#33ddaa" intensity={3.5} distance={12} />
         {/* Keyboard */}
         <mesh position={[0, 0.78, 0.1]} geometry={geo_box_23} material={mat_15} />
         {/* Keyboard LED indicators */}
@@ -480,7 +480,7 @@ export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
           { x: 0.06, w: 0.04, c: '#602080' }, { x: 0.14, w: 0.05, c: '#804020' },
           { x: 0.22, w: 0.03, c: '#208080' },
         ].map((b, i) => (
-          <mesh key={`s1-${i}`} position={[b.x, 0.27, 0.02]} geometry={bookSpineGeo(b.w, 0.2)} material={bookSpineMaterial(b.c)} />
+          <mesh key={`s1-${b.c}`} position={[b.x, 0.27, 0.02]} geometry={bookSpineGeo(b.w, 0.2)} material={bookSpineMaterial(b.c)} />
         ))}
         {/* Shelf 2 */}
         {[
@@ -488,7 +488,7 @@ export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
           { x: -0.04, w: 0.06, c: '#307030' }, { x: 0.08, w: 0.03, c: '#907030' },
           { x: 0.15, w: 0.05, c: '#703090' },
         ].map((b, i) => (
-          <mesh key={`s2-${i}`} position={[b.x, 0.77, 0.02]} geometry={bookSpineGeo(b.w, 0.18)} material={bookSpineMaterial(b.c)} />
+          <mesh key={`s2-${b.c}`} position={[b.x, 0.77, 0.02]} geometry={bookSpineGeo(b.w, 0.18)} material={bookSpineMaterial(b.c)} />
         ))}
         {/* Shelf 3 */}
         {[
@@ -496,7 +496,7 @@ export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
           { x: 0.02, w: 0.03, c: '#30a040' }, { x: 0.10, w: 0.05, c: '#a08030' },
           { x: 0.18, w: 0.04, c: '#8040a0' }, { x: 0.25, w: 0.03, c: '#30a0a0' },
         ].map((b, i) => (
-          <mesh key={`s3-${i}`} position={[b.x, 1.27, 0.02]} geometry={bookSpineGeo(b.w, 0.2)} material={bookSpineMaterial(b.c)} />
+          <mesh key={`s3-${b.c}`} position={[b.x, 1.27, 0.02]} geometry={bookSpineGeo(b.w, 0.2)} material={bookSpineMaterial(b.c)} />
         ))}
         {/* Shelf 4 (top) — a few books, leaning */}
         {[
@@ -559,8 +559,9 @@ export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
         <mesh geometry={geo_pln_44} material={mat_34} />
         {/* Window frame */}
         <mesh position={[0, 0, -0.01]} geometry={geo_box_45} material={mat_26} />
-        {/* Window blue light spill */}
-        <pointLight position={[0, 0, 0.8]} color="#3366cc" intensity={2.0} distance={5} />
+        {/* ISSUE #7: Removed per-window pointLight — the right wall window light +
+            desk lamp + ambient pulse provide sufficient fill. The window material's
+            emissive (mat_34, emissiveIntensity=3.5) already creates a visible glow. */}
       </group>
 
       {/* ── ENVIRONMENTAL CLUTTER / STORYTELLING (lazy chunk) ── */}

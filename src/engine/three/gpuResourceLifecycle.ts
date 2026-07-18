@@ -18,6 +18,7 @@ import {
 import { registerHmrBeforeUpdate, registerHmrDispose } from '@/shared/dev/hmrDispose';
 import { disposeAllModuleGeometries } from '@/engine/three/moduleGeometryRegistry';
 import { disposeAllModuleMaterials } from '@/engine/three/moduleMaterialRegistry';
+import { disposeProceduralLutCache } from '@/engine/graphics/proceduralLutTextures';
 import { resetGpuResourceBudgetTracker } from '@/engine/performance/GpuResourceBudgetTracker';
 import { eventBus } from '@/engine/EventBus';
 
@@ -66,6 +67,7 @@ export function disposeAllEngineGpuResources(reason: GpuDisposeReason = 'engine'
   disposeCombatTransientPools();
   disposeAllModuleMaterials();
   disposeAllModuleGeometries();
+  disposeProceduralLutCache();
   resetGpuResourceBudgetTracker();
   evictQualityDependentGpuCache();
   THREE.Cache.clear();
