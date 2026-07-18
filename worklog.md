@@ -145,3 +145,96 @@ built with Vite + React 19 + Three.js 0.172 + R3F 9.6 + Rapier Physics + Zustand
 - **Visual quality improvements**: 20+
 - **New features**: Variable jump, landing shake, wall bump, run FOV, film grain,
   interaction failure feedback, hint rotation
+---
+
+## Commit 5: `533a582f` — Race Conditions, Z-Fighting, Story Soft-Locks, Graphics Polish
+
+### Race Conditions (7 fixes)
+
+#### CRITICAL — Cinematic Timeline Overwrite (Race #6)
+- `cinematicTimelineOrchestrator.ts`: `startCinematicTimeline` now checks if a *different*
+  timeline is active and explicitly stops it (clears watchdog, resets hold, emits stop event)
+  before starting the new one. Previously, starting timeline B while A was active would
+  silently orphan A — A's `completeCinematicTimeline()` would fail the ID check, and if
+  B was also interrupted, the cinematic hold remained `true` permanently, locking the player
+  out of camera control.
+
+#### HIGH — TOCTOU in openLinkedStory (Race #2)
+- `narrativeOpenHelpers.ts`: `openLinkedStory` now captures `currentSceneId` before the
+  `await ensureStoryNode()` and re-reads the snapshot after. If the scene changed during
+  the async load, scene-transition decisions are skipped to prevent wrong-direction transitions.
+
+#### HIGH — Entry Beat State Corruption (Race #3)
+- `entryBeatState.ts`: Added generation counter (`entryBeatGeneration`). `armEntryBeatFromZone`
+  and `resetEntryBeatState` increment it; `consumeEntryBeatFromZone` accepts an optional
+  `expectedGen` parameter to reject stale consumptions from concurrent scene transitions.
+- `narrativeOpenHelpers.ts`: `triggerSceneEntryStoryIfNeeded` captures generation before
+  the fire-and-forget `void openLinkedStory()` and resets state if generation changed.
+
+#### HIGH — Timer Prematurely Ending New Interaction (Race #13)
+- `InteractionController.ts`: `onNarrativeOverlayClosedInExploration` now captures
+  `sessionAlive` state synchronously before the `queueMicrotask`, and the 100ms timer
+  captures the session reference at schedule time. Both checks prevent the timer from
+  firing `interaction:end` for a new interaction started after the overlay closed.
+
+#### MEDIUM — Narrative Inflight Re-entrancy (Race #8)
+- `presentNarrativeBeat.ts`: Added `narrativeInflightGen` counter, incremented on each
+  entry. While the boolean guard alone is sufficient for synchronous re-entrancy, the
+  generation provides an additional safety net for microtask-batched calls.
+
+#### MEDIUM — TransitionDirector Progress Regression (Race #12)
+- `TransitionDirector.ts`: `scene:transition_start`, `scene:enter`, and `scene:loaded`
+  event handlers now check that the event's `sceneId` matches `snapshot.targetScene`
+  before updating progress. Prevents stale events from a previous transition from
+  aborting the current one.
+
+#### MEDIUM — Narrative Choice Executor Order (Race #15)
+- `narrativeChoiceExecutor.ts`: For scene-transitioning choices, effects (including
+  `requestSceneTransition`) are now applied BEFORE closing the overlay. Previously
+  the overlay was closed first, creating a gap where the interaction FSM could reset
+  and leave the player in a "dead" narrative state (currentNodeId set but no overlay open).
+
+### Z-Fighting (7 fixes)
+- **StreetWinterVisual.tsx**: Snow cap on building roof nudged +0.005; sled snow +0.006
+- **HomeEveningVisual.tsx**: Counter top y=0.91→0.92; wardrobe top y=2.01→2.02
+- **VolodkaRoomVisual.tsx**: Phone screen y=0.528→0.533; window wall offsets 0.01→0.025
+- **CafeVisual.tsx**: Menu text z=0.02→0.025; window wall offset 0.01→0.025
+
+### Story Flow (5 fixes)
+
+#### CRITICAL — Bunker Soft-Lock
+- `sceneExtensionDefinitions.ts`: Underground bunker exit `requiredFlag` changed from
+  `resistance_joined` (impossible to obtain from inside) to `resistance_bunker_found`
+  (set immediately on entry). The resistance quest remains completable from the street.
+
+#### HIGH — Poetry Broadcast Uncompletable
+- `act4.ts`: `poetry_broadcast` first objective changed from `flag_set(all_poems_collected)`
+  to `location_visited(act4_broadcast_prep)`. Players who missed poems in earlier acts
+  can still complete this main quest.
+
+#### HIGH — Machine Confession 4-Act Dependency Chain
+- `act5.ts`: `machine_confession` dependency changed from `requiresQuests: ['final_code',
+  'voices_of_factory']` (4-act chain through `night_shift_mystery`) to
+  `requiredFlag: 'found_quantum_computer'` — a direct prerequisite that can be met
+  through multiple paths.
+
+#### MEDIUM — Lost-Hint Timer Re-fire
+- `GuidedStoryManager.ts`: The player-lost detection timer now re-fires after a 120s
+  cooldown even if guidance hasn't changed. Previously, a player stuck on the same
+  objective for an extended period got one hint and then silence forever.
+
+#### MEDIUM — Act 4 Quiet Hour Narrative Loop
+- `act4QuietHour.ts`: `act4_quiet_poet_reply` now has a direct "Час истёк. К плану."
+  choice that advances to `act4_infiltration_prep` without looping back through the hub.
+
+### Graphics / Feel (4 improvements)
+- **Dust particles**: Breathing opacity pulse (0.14–0.30 sine wave at 0.4 rad/s)
+- **Camera look-ahead**: 15% boost to strength and cap when speed > 3 m/s
+- **Street night bloom**: +0.05 intensity for wet street neon reflection feel
+- **Camera shake settle**: 0.5s damped spring return instead of abrupt snap
+
+### Type Fixes
+- `SceneConfig`: Added `dimensions?`, `fogEnabled?`, `fog.fogColor?` fields
+
+### Files Modified: 22
+### Lines Changed: ~180 insertions, ~36 deletions
