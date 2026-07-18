@@ -90,12 +90,11 @@ export const GOLDEN_PATH_STORY_SPINE: string[] = [
   'act4_broadcast_aftermath',
   'act5_dawn',
   'act4_final_choice',
-  // Act 5 — Финал (mutually exclusive entry variants — exactly one is visited)
+  // Act 5 — Финал. Golden path проходит через peaceful_path → reconciliation.
+  // Остальные entry-варианты (revolution/exile/poet/sacrifice) mutually exclusive
+  // и намеренно НЕ входят в линейный spine — derived-алгоритм не может их посетить.
+  // См. deriveStorySpine() и validateGoldenPath() в contentPipelineValidator.
   'act5_peaceful_path',
-  'act5_revolution_path',
-  'act5_exile_path',
-  'act5_poet_path',
-  'act5_ending_sacrifice',
   'ending_reconciliation', // → poem_18 «Вся клевета - вернется в сто крат»
   'act5_ending_epilogue', // эпилог-мост: история продолжается
   // Act 6 — Предательство и откровение
