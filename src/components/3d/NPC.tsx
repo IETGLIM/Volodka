@@ -196,7 +196,7 @@ export function NPC({
       cleanupHeadTracking(definition.id);
       cleanupNpcProceduralLayers(definition.id);
     };
-  }, [definition.id]);
+  }, [definition.id, sceneId]);
 
   const applyNpcLodVisibility = (
     lod: NpcLodLevel,
@@ -461,6 +461,10 @@ function NPCContactShadow() {
   );
 }
 
+/** Cached relation value per NPC — updated once per interaction session, not per-frame */
+const _barkRelationCache = new Map<string, { value: number; frame: number }>();
+let _barkRelationFrame = 0;
+
 /** Compute bark text based on active side quests, then NPC relation level */
 function computeBark(definition: NPCDefinition): string | null {
   const questBark = resolveNpcQuestBark(definition.id);
@@ -468,11 +472,26 @@ function computeBark(definition: NPCDefinition): string | null {
 
   if (!definition.barkTexts) return null;
 
+  // Cache relation lookups per-frame to avoid per-NPC getState() calls
+  const cached = _barkRelationCache.get(definition.id);
+  if (cached && cached.frame === _barkRelationFrame) {
+    return resolveNpcBarkForRelation(definition.barkTexts, cached.value);
+  }
+
   const npcRelations = useGameStore.getState().npcRelations;
   const relation = npcRelations.find((r) => r.npcId === definition.id);
   const value = relation?.value ?? 50;
+  _barkRelationCache.set(definition.id, { value, frame: _barkRelationFrame });
 
   return resolveNpcBarkForRelation(definition.barkTexts, value);
+}
+
+/** Call once per frame from any NPC to advance the bark cache frame counter */
+export function advanceBarkRelationFrame(): void {
+  _barkRelationFrame++;
+  if (_barkRelationCache.size > 50) {
+    _barkRelationCache.clear();
+  }
 }
 
 /** Far LOD: simple capsule impostor tinted with NPC body color — brighter emissive for dark scenes */
@@ -490,15 +509,36 @@ function CapsuleImpostorNPC({ appearance }: { appearance: NPCAppearance }) {
   );
 }
 
+/** Cached emissive color per NPC — reads store once per frame, not per-NPC */
+const _emissiveCache = new Map<string, { color: string; frame: number }>();
+let _emissiveFrame = 0;
+
 /** Emissive tint based on NPC relation level — replaces per-NPC point lights */
 function getNpcEmissiveColor(npcId: string, glowColor: string): string {
+  const cached = _emissiveCache.get(npcId);
+  if (cached && cached.frame === _emissiveFrame) {
+    return cached.color;
+  }
+
   const npcRelations = useGameStore.getState().npcRelations;
   const relation = npcRelations.find((r) => r.npcId === npcId);
   const value = relation?.value ?? 50;
 
-  if (value >= 70) return '#ffaa44';
-  if (value <= 30) return '#ff4444';
-  return glowColor;
+  let color: string;
+  if (value >= 70) color = '#ffaa44';
+  else if (value <= 30) color = '#ff4444';
+  else color = glowColor;
+
+  _emissiveCache.set(npcId, { color, frame: _emissiveFrame });
+  return color;
+}
+
+/** Call once per frame to advance the emissive cache frame counter */
+export function advanceEmissiveFrame(): void {
+  _emissiveFrame++;
+  if (_emissiveCache.size > 50) {
+    _emissiveCache.clear();
+  }
 }
 
 /** Boost emissive on child meshes for readable silhouettes without point lights */

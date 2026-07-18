@@ -26,7 +26,6 @@ import { eventBus } from '@/engine/EventBus';
 import { getNPCGroup } from '@/engine/interaction/npcRegistry';
 import { setPlayerExternalVelocity, clearPlayerExternalVelocity } from '@/engine/PlayerRigidBodyState';
 import { getGameSnapshot } from "@/engine/GameActionDispatcher";
-import { readGamePhase } from '@/shared/gamePhase';
 import { closeNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
 import { preloadNpcModel } from '@/engine/scene/sceneGpuLifecycle';
 import { getSceneConfig } from '@/config/scenes';
@@ -328,9 +327,11 @@ export function InteractionSystemBridge({
     let timeoutDuration: number;
     if (stateRef.current === InteractionState.Dialogue) {
       // Only timeout Dialogue in exploration mode without story overlay
-      const currentMode = readGamePhase({ mainMenuOpen: false, introActive: false, combatActive: false, activeCutsceneId: getGameSnapshot().activeCutsceneId });
-      const showStoryOverlay = getGameSnapshot().showStoryOverlay;
-      shouldCheckTimeout = currentMode === 'exploration' && !showStoryOverlay && !getGameSnapshot().diegeticNarrative;
+      const snap = getGameSnapshot();
+      // Use pre-computed mode from snapshot (already accounts for mainMenu/intro/combat/cutscene)
+      const currentMode = snap.mode;
+      const showStoryOverlay = snap.showStoryOverlay;
+      shouldCheckTimeout = currentMode === 'exploration' && !showStoryOverlay && !snap.diegeticNarrative;
       timeoutDuration = 4.0;
     } else if (stateRef.current === InteractionState.Exit) {
       // Exit is a short cleanup phase (0.3s) — phaseTimer handles it; don't race globalTimer
@@ -565,9 +566,11 @@ export function InteractionSystemBridge({
         // is NOT showing (dialogue closed without emitting interaction:end),
         // force the interaction to end.
         if (phaseTimerRef.current >= 0.3) {
-          const currentMode = readGamePhase({ mainMenuOpen: false, introActive: false, combatActive: false, activeCutsceneId: getGameSnapshot().activeCutsceneId });
-          const showStoryOverlay = getGameSnapshot().showStoryOverlay;
-          if (currentMode !== 'cutscene' && !showStoryOverlay && !getGameSnapshot().diegeticNarrative) {
+          const snap2 = getGameSnapshot();
+          // Use pre-computed mode from snapshot (already accounts for mainMenu/intro/combat/cutscene)
+          const currentMode = snap2.mode;
+          const showStoryOverlay = snap2.showStoryOverlay;
+          if (currentMode !== 'cutscene' && !showStoryOverlay && !snap2.diegeticNarrative) {
             phaseTimerRef.current = 0;
             globalTimerRef.current = 0;
             publishInteraction(stateRef, targetNPCIdRef, InteractionState.Exit);

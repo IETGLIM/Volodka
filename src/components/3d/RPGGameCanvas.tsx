@@ -275,6 +275,8 @@ function getWebGlRendererFactory(antialias: boolean): CanvasGlProp {
         alpha: false,
         powerPreference: 'high-performance',
       });
+      // PCFSoftShadowMap reduces shadow aliasing artifacts for a noir/cinematic aesthetic
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
       renderer.toneMapping = THREE.NoToneMapping;
       renderer.toneMappingExposure = 1.0;
       renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -302,7 +304,7 @@ function SimpleSceneFallback({
       {/* Basic floor for visibility — at y=0.01 matching CuboidCollider top */}
       <mesh rotation-x={-Math.PI / 2} position-y={0.01} receiveShadow>
         <planeGeometry args={[20, 20]} />
-        <meshStandardMaterial color="#1a1a2a" roughness={0.95} />
+        <meshStandardMaterial color="#1a1a2a" roughness={0.95} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
       </mesh>
       <SimplePlayer
         livePlayerPositionRef={livePlayerPositionRef}

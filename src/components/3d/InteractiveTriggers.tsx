@@ -371,10 +371,13 @@ export function InteractiveTriggers({
       }
     }
 
-    const activeTTLFlags = useGameStore.getState().activeTTLFlags ?? {};
+    // Read both flags and TTL from store in the same tick to avoid 1-frame desync
+    const snap = useGameStore.getState();
+    const activeTTLFlags = snap.activeTTLFlags ?? {};
+    const livePlayerFlags = snap.playerState?.flags ?? playerFlags;
     const poemHighlight = resolvePoemExplorationHighlight(
       activeTTLFlags,
-      playerFlags,
+      livePlayerFlags,
       { reducedMotion: isEffectiveReducedMotion() },
     );
 

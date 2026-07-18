@@ -9,6 +9,8 @@ import { getNPCsForScene, getCurrentScheduleEntry } from '@/engine/ScheduleEngin
 import { findNpcById } from '@/data/allNpcDefinitions';
 import { NPC } from './NPC';
 import { NpcFrameBatchRunner } from './NpcFrameBatchRunner';
+import { advanceBarkRelationFrame, advanceEmissiveFrame } from './NPC';
+import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 import { separateNpcPositions } from '@/engine/npc/separateNpcPositions';
 import { resolveNpcRenderTier } from '@/engine/npc/npcRenderTier';
@@ -120,6 +122,7 @@ export function NPCSystem({
   return (
     <group>
       <NpcFrameBatchRunner />
+      <NPCFrameCacheAdvancer />
       {visibleNPCs.map(({ definition, position, rotation, activity, patrolWaypoints, renderTier }) => (
         <NPC
           key={definition.id}
@@ -136,4 +139,17 @@ export function NPCSystem({
       ))}
     </group>
   );
+}
+
+/** Advances per-frame caches in NPC.tsx once per frame (not per-NPC) */
+function NPCFrameCacheAdvancer() {
+  useFrameTick(
+    'npc-cache',
+    () => {
+      advanceBarkRelationFrame();
+      advanceEmissiveFrame();
+    },
+    { label: 'NPCFrameCacheAdvancer' },
+  );
+  return null;
 }

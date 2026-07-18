@@ -198,7 +198,8 @@ export function OfficeDayVisual({ livePlayerPositionRef }: OfficeDayVisualProps)
         <mesh position={[0, H / 2, -1.5]} renderOrder={2} material={glassMat}>
           <boxGeometry args={[3.0, H, 0.05]} />
         </mesh>
-        <mesh position={[1.5, H / 2, 0]} renderOrder={2} material={glassMat}>
+        {/* Offset second glass wall slightly along shared edge to prevent corner z-fighting */}
+        <mesh position={[1.5, H / 2, -0.005]} renderOrder={2} material={glassMat}>
           <boxGeometry args={[0.05, H, 3.0]} />
         </mesh>
         {/* Conference table */}

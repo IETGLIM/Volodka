@@ -401,17 +401,19 @@ export class QuestTracker {
       return;
     }
     this.isProcessingRef = true;
+    let reProcessCount = 0;
+    const MAX_REPROCESS = 5; // Prevent runaway recursive chains
     try {
-      this.processStateChange(slice);
+      do {
+        this.dirtyRef = false;
+        this.processStateChange(slice);
+        reProcessCount++;
+        if (this.dirtyRef && reProcessCount < MAX_REPROCESS) {
+          slice = selectQuestTrackerSlice(getGameSnapshot());
+        }
+      } while (this.dirtyRef && reProcessCount < MAX_REPROCESS);
     } finally {
       this.isProcessingRef = false;
-      // If a state change arrived while we were processing, re-process
-      // with the latest snapshot to catch any missed objective completions.
-      if (this.dirtyRef) {
-        this.dirtyRef = false;
-        const latestSnapshot = selectQuestTrackerSlice(getGameSnapshot());
-        this.onStateChanged(latestSnapshot);
-      }
     }
   }
 

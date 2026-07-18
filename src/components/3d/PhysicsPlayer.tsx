@@ -59,8 +59,14 @@ export function PhysicsPlayer({
 
   const spawnPoint = getSceneConfig(sceneId).spawnPoint;
 
+  // Force RigidBody to remount on scene change to prevent stale position.
+  // Without this key, React may reuse the RigidBody instance when sceneId
+  // changes, leaving the player at the old scene's coordinates for 1+ frames.
+  const playerKey = `physics-player-${sceneId}`;
+
   return (
     <RigidBody
+      key={playerKey}
       ref={rigidBodyRef}
       type="kinematicPosition"
       position={[spawnPoint[0], spawnPoint[1], spawnPoint[2]]}

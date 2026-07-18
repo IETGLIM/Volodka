@@ -18,6 +18,8 @@ const LazyGamePage = lazy(() =>
 function handleBootError(error: unknown): void {
   console.error('[boot] preloadGameData failed:', error);
   loadingPipeline.reportError(error);
+  // Make error visible in the loading pipeline so the user can see and retry
+  loadingPipeline.reportStage('boot_error');
 }
 
 async function runBootSequence(forcePipelineReset = false): Promise<void> {

@@ -6,9 +6,17 @@ export type SceneTransitionRequest = (
 ) => void;
 
 let requestTransition: SceneTransitionRequest | null = null;
+/** Queue transitions that arrive before bind — flushed once bound */
+let pendingTransition: { targetScene: SceneId; spawnAt?: [number, number, number] } | null = null;
 
 export function bindSceneTransitionBridge(fn: SceneTransitionRequest): void {
   requestTransition = fn;
+  // Flush any transition that was queued before the bridge was bound
+  if (pendingTransition) {
+    const { targetScene, spawnAt } = pendingTransition;
+    pendingTransition = null;
+    fn(targetScene, spawnAt);
+  }
 }
 
 export function requestSceneTransitionFromBridge(
@@ -16,8 +24,10 @@ export function requestSceneTransitionFromBridge(
   spawnAt?: [number, number, number],
 ): void {
   if (!requestTransition) {
+    // Queue the transition instead of silently dropping — it will fire once bound
+    pendingTransition = { targetScene, spawnAt };
     if (import.meta.env?.DEV) {
-      console.warn('[SceneTransitionBridge] request before bind — dropped:', targetScene);
+      console.warn('[SceneTransitionBridge] request before bind — queued:', targetScene);
     }
     return;
   }
@@ -27,4 +37,5 @@ export function requestSceneTransitionFromBridge(
 /** Test helper */
 export function resetSceneTransitionBridgeForTests(): void {
   requestTransition = null;
+  pendingTransition = null;
 }
