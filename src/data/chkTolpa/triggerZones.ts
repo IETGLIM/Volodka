@@ -62,6 +62,7 @@ export const CHK_TRIGGER_ZONES: TriggerZone[] = [
     interactionType: 'talk',
     interactionLabel: 'Поговорить с Ру',
     requiredFlag: 'tolpa_oath_taken',
+    hiddenWhenFlag: 'tolpa_network_bond',
     linkedStoryNodeId: 'chk_network_parallel',
     linkedNpcId: 'chk_ru',
     linkedDialogueNodeId: 'chk_ru_greeting',

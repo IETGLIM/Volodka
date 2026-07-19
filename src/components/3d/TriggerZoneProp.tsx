@@ -1,7 +1,7 @@
 /* ─── Volodka RPG – GLB prop mesh at trigger zone position ─── */
 
 /* eslint-disable react-refresh/only-export-components -- co-located helpers and lazy exports */
-import { Suspense, useMemo } from 'react';
+import { Suspense, useEffect, useMemo } from 'react';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { useGameStore } from '@/store/gameStore';
@@ -17,6 +17,7 @@ import { useGltfPropPlacement } from '@/hooks/useGltfPropPlacement';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
 import { useSceneLoadedGate } from '@/hooks/useSceneLoadedGate';
+import { disposeClonedScene } from '@/engine/three/disposeThreeResources';
 
 const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeof useGLTF>[3]>;
 
@@ -48,6 +49,13 @@ function TriggerZonePropMeshInner({ zone, def }: TriggerZonePropMeshInnerProps) 
     });
     return root;
   }, [gltf.scene]);
+
+  // Dispose the cloned scene on unmount or when gltf.scene changes.
+  // R3F does not auto-dispose <primitive> objects, so the clone's
+  // geometries + materials would otherwise leak per scene visit.
+  useEffect(() => {
+    return () => disposeClonedScene(clone);
+  }, [clone]);
 
   const scale = def.scale ?? 1;
   const { scale: fitScale, footY } = useGltfPropPlacement(clone, {

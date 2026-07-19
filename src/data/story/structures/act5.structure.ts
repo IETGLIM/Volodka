@@ -2448,7 +2448,7 @@ export const ACT5_STRUCTURE: Record<string, StoryNodeStructure> = {
     "choices": [
       {
         "text": "",
-        "next": "act2_network_initiation",
+        "next": "act5_ending_epilogue",
         "effects": [
           {
             "type": "addKarma",
@@ -2475,7 +2475,7 @@ export const ACT5_STRUCTURE: Record<string, StoryNodeStructure> = {
       },
       {
         "text": "",
-        "next": "act2_network_initiation",
+        "next": "act5_ending_epilogue",
         "effects": [
           {
             "type": "addSkill",
@@ -2518,8 +2518,16 @@ export const ACT5_STRUCTURE: Record<string, StoryNodeStructure> = {
             "type": "addStat",
             "stat": "stress",
             "value": -10
+          },
+          {
+            "type": "setFlag",
+            "flag": "inner_pledge_poems",
+            "flagValue": true
           }
-        ]
+        ],
+        "condition": {
+          "missingFlag": "inner_pledge_poems"
+        }
       },
       {
         "text": "",
@@ -2543,7 +2551,10 @@ export const ACT5_STRUCTURE: Record<string, StoryNodeStructure> = {
             "type": "triggerQuest",
             "questId": "poetry_collection"
           }
-        ]
+        ],
+        "condition": {
+          "missingFlag": "inner_pledge_poems"
+        }
       }
     ]
   },

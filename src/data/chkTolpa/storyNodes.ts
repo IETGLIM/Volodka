@@ -76,6 +76,7 @@ export const CHK_STORY_NODES: Record<string, StoryNode> = {
       {
         text: 'Это важно. Спасибо.',
         next: 'explore_mode',
+        condition: { missingFlag: 'tolpa_network_bond' },
         effects: [
           { type: 'setFlag', flag: 'tolpa_network_bond', flagValue: true },
           { type: 'addKarma', value: 5 },

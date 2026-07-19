@@ -3,7 +3,7 @@
    Renders a pulsing glow ring + floating "[E] Взять" label above the item
    so players notice pickable objects in the world (Gothic-style focus). */
 
-import { useRef, useMemo } from 'react';
+import { useRef, useMemo, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useGameStore } from '@/store/gameStore';
@@ -40,6 +40,17 @@ function PickupGlow({ position, label }: PickupGlowProps) {
       }),
     [],
   );
+
+  // Dispose geometry on unmount — R3F does not auto-dispose geometries
+  // attached via the `geometry` prop. (The `material` useMemo is overridden
+  // by the JSX <meshBasicMaterial> child, so it never reaches the GPU, but
+  // we dispose it anyway for cleanliness.)
+  useEffect(() => {
+    return () => {
+      geometry.dispose();
+      material.dispose();
+    };
+  }, [geometry, material]);
 
   useFrame(({ clock }) => {
     const t = clock.elapsedTime * PULSE_SPEED;

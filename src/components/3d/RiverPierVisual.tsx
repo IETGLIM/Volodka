@@ -5,7 +5,7 @@
  *  Zorge has a sibling now.
  */
 
-import { useLayoutEffect, useMemo, useRef, type MutableRefObject } from 'react';
+import { useLayoutEffect, useMemo, useRef, useEffect, type MutableRefObject } from 'react';
 import * as THREE from 'three';
 import {
   getSharedBoxGeometry,
@@ -211,6 +211,15 @@ function PierNightSky() {
     geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     return geo;
   }, []);
+
+  // R3F auto-disposes JSX <pointsMaterial> but NOT geometry passed via the
+  // `geometry` prop — dispose on unmount / when starGeometry changes.
+  useEffect(() => {
+    const geo = starGeometry;
+    return () => {
+      geo.dispose();
+    };
+  }, [starGeometry]);
 
   return (
     <group>

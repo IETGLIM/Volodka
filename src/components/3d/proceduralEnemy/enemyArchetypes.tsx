@@ -77,6 +77,8 @@ function EtherealCreepBody({ color, bodyMatRef }: { color: string; bodyMatRef: C
     bodyMatRef.current = mat;
     return () => {
       if (bodyMatRef.current === mat) bodyMatRef.current = null;
+      // Dispose material — R3F does not auto-dispose <primitive> materials.
+      mat.dispose();
     };
   }, [bodyMatRef, mat]);
 
@@ -113,6 +115,8 @@ function GolemCreepBody({ color, bodyMatRef }: { color: string; bodyMatRef: Cree
     bodyMatRef.current = mat;
     return () => {
       if (bodyMatRef.current === mat) bodyMatRef.current = null;
+      // Dispose material — R3F does not auto-dispose <primitive> materials.
+      mat.dispose();
     };
   }, [bodyMatRef, mat]);
 
@@ -161,6 +165,8 @@ function AgentCreepBody({ color, bodyMatRef }: { color: string; bodyMatRef: Cree
     bodyMatRef.current = mat;
     return () => {
       if (bodyMatRef.current === mat) bodyMatRef.current = null;
+      // Dispose material — R3F does not auto-dispose <primitive> materials.
+      mat.dispose();
     };
   }, [bodyMatRef, mat]);
 
@@ -209,6 +215,8 @@ function CensorCreepBody({ color, bodyMatRef }: { color: string; bodyMatRef: Cre
     bodyMatRef.current = mat;
     return () => {
       if (bodyMatRef.current === mat) bodyMatRef.current = null;
+      // Dispose material — R3F does not auto-dispose <primitive> materials.
+      mat.dispose();
     };
   }, [bodyMatRef, mat]);
 

@@ -40,7 +40,6 @@ import {
 } from '@/engine/player/playerConstants';
 import { lerpAngle, enforceFloor, clampHorizontalDisplacement } from '@/engine/player/playerMath';
 import { triggerCameraShake } from '@/engine/camera/cameraShake';
-import { sharedCameraYawRef } from '@/engine/PlayerRotationState';
 import { computeKccMovementSubstepped } from '@/engine/player/physicsSubstep';
 import {
   computeSlopeLocomotionScale,
@@ -207,25 +206,29 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
       vel.z = THREE.MathUtils.damp(vel.z, targetVz, moveAccel, dt);
     }
 
-    // GTA/Max Payne-style rotation: character faces camera forward direction
-    // when moving forward/backward. Strafe (A/D) moves sideways WITHOUT
-    // rotating the body — the character keeps facing forward while stepping
-    // left/right. Only forward/backward movement updates the facing yaw.
+    // Third-person rotation: character faces the MOVEMENT DIRECTION when
+    // moving forward/backward. Strafe (A/D) moves sideways WITHOUT rotating
+    // the body — the character keeps facing forward while stepping left/right.
     //
-    // Previous logic: targetYaw = atan2(moveDir.x, moveDir.z) — this rotated
-    // the character to face the movement direction on every key press,
-    // causing the "spinning in circles" bug when pressing A/D alternately.
+    // Previous logic used camYaw + π for both W and S, so the character never
+    // turned around when reversing direction (pressing S after W). The model
+    // would moonwalk backwards — no visible rotation, just sliding.
     //
-    // New logic: facing follows the camera yaw (sharedCameraYawRef) when
-    // moving forward/backward. Strafe does not change facing. This matches
-    // third-person games where the character always faces away from camera
-    // and steps sideways relative to their facing.
-    const camYaw = sharedCameraYawRef.current;
+    // New logic: targetYaw = atan2(moveDir.x, moveDir.z) — faces the actual
+    // movement direction. W (forward) faces away from camera (camYaw + π),
+    // S (backward) faces toward camera (camYaw). The character now turns 180°
+    // when reversing direction. Strafe (A/D) still doesn't rotate the body
+    // because forwardIntent ≈ 0 when only A/D are pressed.
+    //
+    // We compute from moveDir (which already incorporates camera direction)
+    // so the yaw matches the actual on-screen movement vector. This avoids
+    // the "spinning in circles" bug because strafe doesn't change moveDir's
+    // forward/backward component enough to flip the yaw.
     const forwardIntent = fwd - bwd; // W = +1, S = -1, neither = 0
     if (Math.abs(forwardIntent) > 0.01) {
-      // Moving forward or backward — face camera direction (character faces
-      // away from camera, toward where camera looks).
-      const targetYaw = camYaw + Math.PI;
+      // Face the movement direction. moveDir is already normalized to the
+      // camera-relative horizontal movement vector.
+      const targetYaw = Math.atan2(moveDir.x, moveDir.z);
       const rotT = 1 - Math.exp(-ROTATION_SPEED * dt);
       deps.livePlayerRotationRef.current = lerpAngle(
         deps.livePlayerRotationRef.current, targetYaw, rotT,

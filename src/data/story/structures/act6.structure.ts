@@ -1027,7 +1027,10 @@ export const ACT6_STRUCTURE: Record<string, StoryNodeStructure> = {
             "type": "triggerQuest",
             "questId": "rebuild_the_guild"
           }
-        ]
+        ],
+        "condition": {
+          "missingFlag": "act6_final_choice_made"
+        }
       },
       {
         "text": "",
@@ -1066,7 +1069,10 @@ export const ACT6_STRUCTURE: Record<string, StoryNodeStructure> = {
             "type": "triggerQuest",
             "questId": "rebuild_the_guild"
           }
-        ]
+        ],
+        "condition": {
+          "missingFlag": "act6_final_choice_made"
+        }
       }
     ]
   }

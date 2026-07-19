@@ -438,6 +438,16 @@ function PanelBuildings() {
     [buildings],
   );
 
+  // Dispose CanvasTextures on unmount / when windowTextures changes.
+  // R3F auto-disposes the JSX <meshStandardMaterial> but NOT textures attached
+  // via map/emissiveMap props (Material.dispose() does not cascade to textures).
+  useEffect(() => {
+    const textures = windowTextures;
+    return () => {
+      for (const t of textures) t.dispose();
+    };
+  }, [windowTextures]);
+
   return (
     <group>
       {buildings.map((b, i) => (

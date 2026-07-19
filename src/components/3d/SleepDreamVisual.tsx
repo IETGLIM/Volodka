@@ -33,6 +33,10 @@ export function SleepDreamVisual() {
     return geo;
   }, [W, D]);
 
+  // Dispose ground geometry on unmount — R3F does not auto-dispose
+  // geometries attached via the `geometry` prop (only JSX children).
+  useEffect(() => () => groundGeometry.dispose(), [groundGeometry]);
+
   const groundTexture = useCachedCanvasTexture('sleep_dream:ground', createDreamGroundTexture);
 
   return (
@@ -164,6 +168,10 @@ function GalaxySkyDome() {
   const skyTexture = useCachedCanvasTexture('sleep_dream:galaxy-sky', createDreamGalaxySkyTexture);
   const starGeometry = useMemo(() => createDreamGalaxyStarGeometry(), []);
   const starsRef = useRef<THREE.Points>(null);
+
+  // Dispose star geometry on unmount — R3F does not auto-dispose
+  // geometries attached via the `geometry` prop.
+  useEffect(() => () => starGeometry.dispose(), [starGeometry]);
 
   useFrameTick('misc', ({ state }) => {
     if (!animateStars || !starsRef.current) return;
@@ -437,6 +445,10 @@ function FloatingPoemFragment({ position, text }: { position: [number, number, n
     tex.needsUpdate = true;
     return tex;
   }, [text]);
+
+  // Dispose CanvasTexture on unmount or text change — R3F does not
+  // auto-dispose textures attached via the `map` prop.
+  useEffect(() => () => texture.dispose(), [texture]);
 
   useFrameTick('misc', ({ state }) => {
     if (groupRef.current) {

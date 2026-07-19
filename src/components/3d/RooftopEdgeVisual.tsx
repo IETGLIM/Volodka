@@ -1,7 +1,7 @@
 
 /* ─── Volodka RPG – Rooftop Edge procedural 3D visual ─── */
 
-import { useMemo, useRef } from 'react';
+import { useMemo, useRef, useEffect } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import {
@@ -377,6 +377,10 @@ function SunsetSkyDome() {
   const skyTexture = useCachedCanvasTexture('rooftop_edge:galaxy-sky', createRooftopSunsetGalaxySkyTexture);
   const starGeometry = useMemo(() => createRooftopHorizonStarGeometry(), []);
   const starsRef = useRef<THREE.Points>(null);
+
+  // Dispose star geometry on unmount — R3F does not auto-dispose
+  // geometries attached via the `geometry` prop.
+  useEffect(() => () => starGeometry.dispose(), [starGeometry]);
 
   useFrameTick('misc', ({ state }) => {
     if (!animateStars || !starsRef.current) return;

@@ -105,6 +105,13 @@ function NeonReflectionSystem({ config }: { config: NeonReflectionConfig }) {
     return { phases, radiusJitter, angleJitter };
   }, [config.count]);
 
+  // Pre-compute pool base colors as raw RGB to avoid per-frame `new THREE.Color()`
+  // allocations (80 instances × 60fps = 4800 Color objects/sec → GC pressure).
+  const poolRgb = useMemo(
+    () => config.pools.map((p) => new THREE.Color(p.color)),
+    [config.pools],
+  );
+
   useEffect(() => {
     return () => {
       geometry.dispose();
@@ -143,7 +150,7 @@ function NeonReflectionSystem({ config }: { config: NeonReflectionConfig }) {
       meshRef.current.setMatrixAt(i, dummy.matrix);
 
       // Color: blend pool color with slight variation
-      const baseColor = new THREE.Color(pool.color);
+      const baseColor = poolRgb[poolIdx];
       const variation = 0.85 + 0.15 * Math.sin(t * 0.3 + phase);
       colorArray[i * 3] = baseColor.r * variation;
       colorArray[i * 3 + 1] = baseColor.g * variation;

@@ -35,7 +35,13 @@ export function GlitchEffect() {
   const [intensity, setIntensity] = useState(0);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const animFrameRef = useRef<number>(0);
+  // Nested decay timer (Phase 2 of hacking burst). Previously this was a
+  // local variable inside triggerHackingBurst and was only reachable from
+  // the outer timer's clearTimeout — if the component unmounted between
+  // t=200ms and t=totalDuration, the unmount cleanup cleared timerRef but
+  // NOT the decay timer, leaking the closure and firing setIntensity on
+  // an unmounted component.
+  const decayTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   /** Trigger a glitch with given parameters */
   const triggerGlitch = useCallback((params: GlitchParams) => {
@@ -66,15 +72,22 @@ export function GlitchEffect() {
     // Phase 2: decay for remaining duration
     const totalDuration = 600 + Math.random() * 400; // 0.6-1s
 
+    // Clear any previous decay timer (in case triggerHackingBurst fires
+    // again before the previous burst finished).
+    if (decayTimerRef.current) clearTimeout(decayTimerRef.current);
+
     // After initial burst, reduce intensity
-    const decayTimer = setTimeout(() => {
+    decayTimerRef.current = setTimeout(() => {
       setIntensity(0.4);
     }, 200);
 
     // Deactivate after full duration
     timerRef.current = setTimeout(() => {
       setActive(false);
-      clearTimeout(decayTimer);
+      if (decayTimerRef.current) {
+        clearTimeout(decayTimerRef.current);
+        decayTimerRef.current = null;
+      }
     }, totalDuration);
   }, []);
 
@@ -221,12 +234,13 @@ export function GlitchEffect() {
     };
   }, [active, glitchType, intensity]);
 
-  // Cleanup timer on unmount
+  // Cleanup timers on unmount. Both the outer burst timer AND the nested
+  // decay timer must be cleared — otherwise a burst that started shortly
+  // before unmount would fire setIntensity(0.4) on an unmounted component.
   useEffect(() => {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
-      // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
-      cancelAnimationFrame(animFrameRef.current);
+      if (decayTimerRef.current) clearTimeout(decayTimerRef.current);
     };
   }, []);
 

@@ -38,8 +38,39 @@ function scheduleIdleSlice(callback: () => void): () => void {
 }
 
 /**
+ * Clip ids that are CRITICAL for locomotion. These must be available
+ * immediately — before any cutscene or gameplay movement begins.
+ *
+ * The embedded player GLB ships 24 animations with NUMERIC names ('0'-'23')
+ * that don't match the semantic names ('idle', 'walking', 'Walk', etc.) the
+ * locomotion controller looks for. Until the Mixamo clips load, the
+ * locomotion controller falls back to using the first embedded clip as both
+ * idle AND walk — so crossFadeTo(walk) is a no-op (idle→idle) and the avatar
+ * never plays a walk cycle.
+ *
+ * The deferred loader (below) is gated by `isUiOverlayBlockingDeferredAssets()`
+ * which PAUSES during story overlays / examine panels. During the wake-up
+ * cutscene the story overlay is open → deferred loader is paused → the walk
+ * clip never loads → the avatar slides in idle pose during the 'walking' phase.
+ *
+ * Critical clips bypass BOTH the scheduler and the overlay gate, loading in
+ * parallel immediately when the mixer is ready. They are small (~56KB each)
+ * and already preloaded into the browser HTTP cache by `useGLTF.preload`
+ * calls at module load in CesiumPlayerModel.tsx, so `loader.loadAsync` hits
+ * the cache and resolves in ~1-2ms.
+ */
+const CRITICAL_CLIP_IDS: ReadonlySet<MixamoClipId> = new Set<MixamoClipId>([
+  'idle',
+  'walking',
+]);
+
+/**
  * Loads on-disk Mixamo animation GLBs and registers clip actions on an existing mixer.
  * Returns merged action map (embedded clips + Mixamo overrides by canonical name).
+ *
+ * Critical clips (idle, walking) load IMMEDIATELY, bypassing the overlay gate
+ * and the preload scheduler. Deferred clips (talking, sitting, sleeping, working)
+ * load sequentially through the scheduler, paused while UI overlays are open.
  */
 export function useMixamoAnimationClips(
   mixer: THREE.AnimationMixer | null,
@@ -61,16 +92,43 @@ export function useMixamoAnimationClips(
     const loader = new GLTFLoader();
     extendGltfLoader(loader);
 
-    const loadBindingAt = (index: number): void => {
-      if (cancelled || index >= bindings.length) return;
+    // ── Critical clips: load immediately in parallel (no gate, no scheduler) ──
+    // These are needed for the core idle↔walk locomotion blend tree. Without
+    // them the avatar has no walk cycle and slides in a static pose.
+    const criticalBindings = bindings.filter((b) => CRITICAL_CLIP_IDS.has(b.clipId));
+    for (const binding of criticalBindings) {
+      void (async () => {
+        try {
+          const gltf = await loader.loadAsync(binding.url);
+          if (cancelled) return;
+          const clip = gltf.animations[0];
+          if (!clip) return;
+          const renamed = clip.clone();
+          renamed.name = binding.canonicalName;
+          const action = mixer.clipAction(renamed, root);
+          action.enabled = true;
+          setMixamoActions((prev) => ({
+            ...prev,
+            [binding.canonicalName]: action,
+          }));
+        } catch {
+          // Clip missing on disk despite on-disk registry — skip.
+        }
+      })();
+    }
+
+    // ── Deferred clips: load sequentially through scheduler (gated by overlay) ──
+    const deferredBindings = bindings.filter((b) => !CRITICAL_CLIP_IDS.has(b.clipId));
+    const loadDeferredAt = (index: number): void => {
+      if (cancelled || index >= deferredBindings.length) return;
 
       if (isUiOverlayBlockingDeferredAssets()) {
-        const cancel = scheduleIdleSlice(() => loadBindingAt(index));
+        const cancel = scheduleIdleSlice(() => loadDeferredAt(index));
         cancelSchedules.push(cancel);
         return;
       }
 
-      const binding = bindings[index];
+      const binding = deferredBindings[index];
       scheduleGltfPreload(
         binding.url,
         () => {
@@ -80,7 +138,7 @@ export function useMixamoAnimationClips(
               if (cancelled) return;
               const clip = gltf.animations[0];
               if (!clip) {
-                loadBindingAt(index + 1);
+                loadDeferredAt(index + 1);
                 return;
               }
               const renamed = clip.clone();
@@ -94,14 +152,14 @@ export function useMixamoAnimationClips(
             } catch {
               // Clip missing on disk despite on-disk registry — skip until re-import.
             }
-            loadBindingAt(index + 1);
+            loadDeferredAt(index + 1);
           })();
         },
         GltfPreloadPriority.Deferred,
       );
     };
 
-    loadBindingAt(0);
+    loadDeferredAt(0);
 
     return () => {
       cancelled = true;

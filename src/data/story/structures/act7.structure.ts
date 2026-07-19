@@ -544,7 +544,8 @@ export const ACT7_STRUCTURE: Record<string, StoryNodeStructure> = {
         "text": "",
         "next": "act7_ending_poet_legacy",
         "condition": {
-          "flag": "poet_chosen"
+          "flag": "poet_chosen",
+          "missingFlag": "volodka_future_chosen"
         },
         "effects": [
           {
@@ -562,7 +563,8 @@ export const ACT7_STRUCTURE: Record<string, StoryNodeStructure> = {
         "text": "",
         "next": "act7_ending_guardian",
         "condition": {
-          "flag": "creator_chosen"
+          "flag": "creator_chosen",
+          "missingFlag": "volodka_future_chosen"
         },
         "effects": [
           {
@@ -580,7 +582,8 @@ export const ACT7_STRUCTURE: Record<string, StoryNodeStructure> = {
         "text": "",
         "next": "act7_ending_wanderer",
         "condition": {
-          "flag": "revolution_chosen"
+          "flag": "revolution_chosen",
+          "missingFlag": "volodka_future_chosen"
         },
         "effects": [
           {
@@ -598,7 +601,8 @@ export const ACT7_STRUCTURE: Record<string, StoryNodeStructure> = {
         "text": "",
         "next": "act7_ending_wanderer",
         "condition": {
-          "flag": "exile_chosen"
+          "flag": "exile_chosen",
+          "missingFlag": "volodka_future_chosen"
         },
         "effects": [
           {
@@ -616,7 +620,8 @@ export const ACT7_STRUCTURE: Record<string, StoryNodeStructure> = {
         "text": "",
         "next": "act7_ending_guardian",
         "condition": {
-          "flag": "machine_chosen"
+          "flag": "machine_chosen",
+          "missingFlag": "volodka_future_chosen"
         },
         "effects": [
           {
@@ -634,6 +639,9 @@ export const ACT7_STRUCTURE: Record<string, StoryNodeStructure> = {
         "text": "",
         "next": "act7_ending_poet_legacy",
         "goldenPath": true,
+        "condition": {
+          "missingFlag": "volodka_future_chosen"
+        },
         "effects": [
           {
             "type": "setFlag",
@@ -650,7 +658,8 @@ export const ACT7_STRUCTURE: Record<string, StoryNodeStructure> = {
         "text": "",
         "next": "act7_ending_guardian",
         "condition": {
-          "flag": "chose_guardian_path"
+          "flag": "chose_guardian_path",
+          "missingFlag": "volodka_future_chosen"
         },
         "effects": [
           {
@@ -667,6 +676,9 @@ export const ACT7_STRUCTURE: Record<string, StoryNodeStructure> = {
       {
         "text": "",
         "next": "act7_ending_guardian",
+        "condition": {
+          "missingFlag": "volodka_future_chosen"
+        },
         "effects": [
           {
             "type": "setFlag",
@@ -683,7 +695,8 @@ export const ACT7_STRUCTURE: Record<string, StoryNodeStructure> = {
         "text": "",
         "next": "act7_ending_wanderer",
         "condition": {
-          "flag": "chose_liberator_path"
+          "flag": "chose_liberator_path",
+          "missingFlag": "volodka_future_chosen"
         },
         "effects": [
           {
@@ -700,6 +713,9 @@ export const ACT7_STRUCTURE: Record<string, StoryNodeStructure> = {
       {
         "text": "",
         "next": "act7_ending_wanderer",
+        "condition": {
+          "missingFlag": "volodka_future_chosen"
+        },
         "effects": [
           {
             "type": "setFlag",

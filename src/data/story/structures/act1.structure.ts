@@ -75,7 +75,10 @@ export const ACT1_STRUCTURE: Record<string, StoryNodeStructure> = {
       },
       {
         "text": "",
-        "next": "volodka_inner"
+        "next": "volodka_inner",
+        "condition": {
+          "missingFlag": "inner_pledge_poems"
+        }
       },
       {
         "text": "",

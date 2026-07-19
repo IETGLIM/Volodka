@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef } from 'react';
+import { useLayoutEffect, useEffect, useRef } from 'react';
 import { registerFrameTick, unregisterFrameTick } from '@/engine/frame/FrameBudgetRegistry';
 import * as THREE from 'three';
 import { applyWetness } from '@/engine/graphics/materials/pbrPresets';
@@ -32,6 +32,18 @@ export function useWetSurfaceMaterial(
     lastColorRef.current = color;
     matRef.current.color.set(color);
   }
+
+  // Dispose material on unmount — R3F does not auto-dispose materials
+  // attached via <primitive object={mat} attach="material" />. Each street
+  // scene visit otherwise leaks one MeshStandardMaterial.
+  useEffect(() => {
+    return () => {
+      if (matRef.current) {
+        matRef.current.dispose();
+        matRef.current = null;
+      }
+    };
+  }, []);
 
   useLayoutEffect(() => {
     if (!wetActive) {

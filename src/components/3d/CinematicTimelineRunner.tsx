@@ -53,6 +53,7 @@ export function CinematicTimelineRunner() {
   const timelineIdRef = useRef<string | null>(null);
   const fallbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prologueTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const prologueUnsubRef = useRef<(() => void) | null>(null);
   const prologueStoryOpenedRef = useRef(false);
   const sequenceStartedRef = useRef(false);
   const handoffEmittedRef = useRef(false);
@@ -121,6 +122,19 @@ export function CinematicTimelineRunner() {
     };
 
     const openPrologueStory = (): void => {
+      // ALWAYS clean up the cutscene:overlay_end subscription and the 9s
+      // fallback timer the first time we run, regardless of which path
+      // triggered this call (early overlay_end fire OR the 9s timeout).
+      // Without this, the early-fire path leaked one EventBus subscription
+      // per New Game cycle (the unsub was only invoked from the timeout
+      // fallback). The ref is nulled after invocation so subsequent calls
+      // are no-ops.
+      if (prologueUnsubRef.current) {
+        prologueUnsubRef.current();
+        prologueUnsubRef.current = null;
+      }
+      clearPrologueTimer();
+
       if (prologueStoryOpenedRef.current) return;
 
       const live = getGameStore();
@@ -131,12 +145,10 @@ export function CinematicTimelineRunner() {
           visitedNodes: live.playerState.visitedNodes,
         })
       ) {
-        clearPrologueTimer();
         return;
       }
 
       prologueStoryOpenedRef.current = true;
-      clearPrologueTimer();
       prefetchStoryNodes(['start', 'explore_mode', 'room_table']);
       void import('@/components/game/FirstReadingCelebration');
 
@@ -155,12 +167,10 @@ export function CinematicTimelineRunner() {
 
     if (!store.isCutsceneTriggered('act1_prologue')) {
       store.setCurrentNodeId('start');
-      const unsubPrologueEnd = eventBus.on('cutscene:overlay_end', () => {
+      prologueUnsubRef.current = eventBus.on('cutscene:overlay_end', () => {
         openPrologueStory();
       });
       prologueTimerRef.current = setTimeout(() => {
-        prologueTimerRef.current = null;
-        unsubPrologueEnd();
         openPrologueStory();
       }, 9_000);
     } else {
@@ -325,6 +335,14 @@ export function CinematicTimelineRunner() {
       unsubs.forEach((u) => u());
       clearFallback();
       if (prologueTimerRef.current) clearTimeout(prologueTimerRef.current);
+      // Also tear down the prologue EventBus subscription if neither the
+      // overlay_end early-fire path nor the 9s timeout ever ran (e.g. the
+      // component unmounted mid-cutscene). Without this, the subscription
+      // would leak on unmount.
+      if (prologueUnsubRef.current) {
+        prologueUnsubRef.current();
+        prologueUnsubRef.current = null;
+      }
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps -- stable camera ref
   }, [camera]);

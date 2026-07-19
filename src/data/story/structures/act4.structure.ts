@@ -1407,13 +1407,19 @@ export const ACT4_STRUCTURE: Record<string, StoryNodeStructure> = {
             "type": "setFlag",
             "flag": "creator_chosen",
             "flagValue": true
+          },
+          {
+            "type": "setFlag",
+            "flag": "path_chosen",
+            "flagValue": true
           }
         ],
         "condition": {
           "minKarma": 60,
           "minSkill": {
             "writing": 7
-          }
+          },
+          "missingFlag": "path_chosen"
         }
       },
       {
@@ -1428,13 +1434,19 @@ export const ACT4_STRUCTURE: Record<string, StoryNodeStructure> = {
             "type": "setFlag",
             "flag": "revolution_chosen",
             "flagValue": true
+          },
+          {
+            "type": "setFlag",
+            "flag": "path_chosen",
+            "flagValue": true
           }
         ],
         "condition": {
           "minKarma": 60,
           "minSkill": {
             "persuasion": 7
-          }
+          },
+          "missingFlag": "path_chosen"
         }
       },
       {
@@ -1450,10 +1462,16 @@ export const ACT4_STRUCTURE: Record<string, StoryNodeStructure> = {
             "type": "setFlag",
             "flag": "exile_chosen",
             "flagValue": true
+          },
+          {
+            "type": "setFlag",
+            "flag": "path_chosen",
+            "flagValue": true
           }
         ],
         "condition": {
-          "maxKarma": 40
+          "maxKarma": 40,
+          "missingFlag": "path_chosen"
         }
       },
       {
@@ -1469,13 +1487,19 @@ export const ACT4_STRUCTURE: Record<string, StoryNodeStructure> = {
             "type": "setFlag",
             "flag": "machine_chosen",
             "flagValue": true
+          },
+          {
+            "type": "setFlag",
+            "flag": "path_chosen",
+            "flagValue": true
           }
         ],
         "condition": {
           "minSkill": {
             "coding": 8
           },
-          "flag": "low_empathy"
+          "flag": "low_empathy",
+          "missingFlag": "path_chosen"
         }
       },
       {
@@ -1491,10 +1515,16 @@ export const ACT4_STRUCTURE: Record<string, StoryNodeStructure> = {
             "type": "setFlag",
             "flag": "poet_chosen",
             "flagValue": true
+          },
+          {
+            "type": "setFlag",
+            "flag": "path_chosen",
+            "flagValue": true
           }
         ],
         "condition": {
-          "flag": "all_poems_collected"
+          "flag": "all_poems_collected",
+          "missingFlag": "path_chosen"
         }
       },
       {
@@ -1509,8 +1539,16 @@ export const ACT4_STRUCTURE: Record<string, StoryNodeStructure> = {
             "type": "setFlag",
             "flag": "peace_chosen",
             "flagValue": true
+          },
+          {
+            "type": "setFlag",
+            "flag": "path_chosen",
+            "flagValue": true
           }
-        ]
+        ],
+        "condition": {
+          "missingFlag": "path_chosen"
+        }
       },
       {
         "text": "",
@@ -1530,13 +1568,19 @@ export const ACT4_STRUCTURE: Record<string, StoryNodeStructure> = {
             "type": "setFlag",
             "flag": "sacrifice_chosen",
             "flagValue": true
+          },
+          {
+            "type": "setFlag",
+            "flag": "path_chosen",
+            "flagValue": true
           }
         ],
         "condition": {
           "minSkill": {
             "coding": 7,
             "writing": 7
-          }
+          },
+          "missingFlag": "path_chosen"
         }
       }
     ]

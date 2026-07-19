@@ -1,7 +1,7 @@
 /* ─── Volodka RPG – Kenney / AI3DGen GLB set dressing per scene ─── */
 
 /* eslint-disable react-refresh/only-export-components -- co-located helpers and lazy exports */
-import { Suspense, useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { useCurrentSceneId } from '@/store/selectors';
@@ -17,6 +17,7 @@ import { useGltfPropPlacement } from '@/hooks/useGltfPropPlacement';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
 import { useStaggeredMountCount } from '@/hooks/useStaggeredMountCount';
+import { disposeClonedScene } from '@/engine/three/disposeThreeResources';
 
 const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeof useGLTF>[3]>;
 
@@ -49,6 +50,7 @@ function buildPropClone(source: THREE.Object3D): THREE.Object3D {
 function ScenePropMeshInner({ placement, def }: ScenePropMeshInnerProps) {
   const gltf = useGLTF(def.url, true, true, extendLoader);
   const [clone, setClone] = useState<THREE.Object3D | null>(null);
+  const cloneRef = useRef<THREE.Object3D | null>(null);
   const placementFallback = useMemo(() => new THREE.Object3D(), []);
 
   useEffect(() => {
@@ -58,7 +60,16 @@ function ScenePropMeshInner({ placement, def }: ScenePropMeshInnerProps) {
 
     const commitClone = () => {
       if (cancelled) return;
-      setClone(buildPropClone(gltf.scene));
+      // Dispose the previous clone before setting the new one.
+      // R3F does not auto-dispose <primitive> objects, so each clone
+      // replacement otherwise leaks all geometries + materials.
+      if (cloneRef.current) {
+        disposeClonedScene(cloneRef.current);
+        cloneRef.current = null;
+      }
+      const next = buildPropClone(gltf.scene);
+      cloneRef.current = next;
+      setClone(next);
     };
 
     setClone(null);
@@ -75,6 +86,11 @@ function ScenePropMeshInner({ placement, def }: ScenePropMeshInnerProps) {
       }
       if (timeoutId !== undefined) {
         clearTimeout(timeoutId);
+      }
+      // Dispose the clone on unmount or gltf.scene change.
+      if (cloneRef.current) {
+        disposeClonedScene(cloneRef.current);
+        cloneRef.current = null;
       }
     };
   }, [gltf.scene]);

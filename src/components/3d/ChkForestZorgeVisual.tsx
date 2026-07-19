@@ -1,7 +1,7 @@
 
 /* ─── ЧК · Лес · Зорге — secret society clearing (procedural forest) ─── */
 
-import { useLayoutEffect, useMemo, useRef, type MutableRefObject } from 'react';
+import { useLayoutEffect, useMemo, useRef, useEffect, type MutableRefObject } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import {
@@ -339,6 +339,15 @@ function NightSky() {
     return geo;
   }, []);
 
+  // R3F auto-disposes JSX <pointsMaterial> but NOT geometry passed via the
+  // `geometry` prop — dispose on unmount / when starGeometry changes.
+  useEffect(() => {
+    const geo = starGeometry;
+    return () => {
+      geo.dispose();
+    };
+  }, [starGeometry]);
+
   return (
     <group>
       <points geometry={starGeometry}>
@@ -389,6 +398,15 @@ function Fireflies() {
     geo.setAttribute('position', new THREE.BufferAttribute(base.slice(), 3));
     return { geometry: geo, basePositions: base, phases: ph };
   }, []);
+
+  // R3F auto-disposes JSX <pointsMaterial> but NOT geometry passed via the
+  // `geometry` prop — dispose on unmount / when geometry changes.
+  useEffect(() => {
+    const geo = geometry;
+    return () => {
+      geo.dispose();
+    };
+  }, [geometry]);
 
   useFrameTick('misc', ({ delta }) => {
     timeRef.current += delta;
