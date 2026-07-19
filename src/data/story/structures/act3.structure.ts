@@ -1685,6 +1685,17 @@ export const ACT3_STRUCTURE: Record<string, StoryNodeStructure> = {
             }
           }
         ]
+      },
+      {
+        "text": "",
+        "next": "poem_virus_truth",
+        "effects": [
+          {
+            "type": "addSkill",
+            "skill": "logic",
+            "value": 1
+          }
+        ]
       }
     ]
   },

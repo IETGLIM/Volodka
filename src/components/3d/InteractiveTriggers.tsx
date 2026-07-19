@@ -262,9 +262,23 @@ export function InteractiveTriggers({
       if (promptsMapRef.current.size > 0) {
         promptsMapRef.current.clear();
       }
-      if (lastHintIdRef.current !== null) {
+      // Only emit interaction:end when an overlay blocks AND the interaction
+      // is NOT in a state where the overlay is expected (Dialogue/Cutscene/
+      // Lock/Align — those states own their overlay). Without this guard,
+      // opening a dialogue overlay makes this branch fire interaction:end
+      // every frame, which the InteractionSystemBridge listener catches and
+      // transitions Dialogue→Exit prematurely — the NPC snaps to 'idle'
+      // mid-conversation and a spurious "exploration resumed" hint shows.
+      // (Task 3-B #1, CRITICAL.)
+      const overlayExpectedForState = isInteractionLocked();
+      if (lastHintIdRef.current !== null && !overlayExpectedForState) {
         lastHintIdRef.current = null;
         eventBus.emit('interaction:end', {});
+      }
+      // Even when we keep the interaction alive, drop the on-screen hint
+      // while any overlay is up — it will be recomputed on the next free tick.
+      if (lastHintIdRef.current !== null) {
+        lastHintIdRef.current = null;
       }
       for (const runtime of zoneRuntimeRef.current.values()) {
         runtime.showIndicatorRef.current = false;
@@ -286,6 +300,14 @@ export function InteractiveTriggers({
       allowedIdsRef.current = new Set();
       if (promptsMapRef.current.size > 0) {
         promptsMapRef.current.clear();
+      }
+      // While locked into an interaction (Approach/Cutscene/Align/Lock/Dialogue),
+      // suppress the on-screen hint without emitting interaction:end — the
+      // interaction will end naturally via the dialogue system or InteractionSystemBridge.
+      // Previously this branch silently returned without clearing lastHintIdRef,
+      // which left a stale hint visible behind the dialogue overlay.
+      if (lastHintIdRef.current !== null) {
+        lastHintIdRef.current = null;
       }
       for (const runtime of zoneRuntimeRef.current.values()) {
         runtime.showIndicatorRef.current = false;

@@ -75,6 +75,10 @@ export const ACT1_STRUCTURE: Record<string, StoryNodeStructure> = {
       },
       {
         "text": "",
+        "next": "volodka_inner"
+      },
+      {
+        "text": "",
         "next": "explore_mode",
         "condition": {
           "missingFlag": "room_free_explore_1"

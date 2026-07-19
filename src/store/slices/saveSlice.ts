@@ -23,7 +23,7 @@ import { resetGuidedStoryFromStore, resetEngineRuntimeFromStore } from '../store
 import { resetPlayerXpBatch } from '../playerXpBatch';
 import { clearAutoCloseTimers } from '@/shared/explorationAutoCloseTimers';
 import { resolveSaveFromStorage, writeSaveToLocalStorage } from './saveStorage';
-import { isInteractionLocked } from '@/engine/interaction/interactionSession';
+import { isInteractionLockedFromStore, resetSceneLoadedGateFromStore } from '../storeEngineHost';
 
 export interface SaveSliceState {
   // lastSaveTimestamp lives in UISlice, not here — but save actions need it
@@ -85,7 +85,7 @@ export const createSaveSlice: StateCreator<GameStoreState, [], [], SaveSlice> = 
       console.warn('[saveGame] Skipping save during combat');
       return;
     }
-    if (isInteractionLocked()) {
+    if (isInteractionLockedFromStore()) {
       console.warn('[saveGame] Skipping save during NPC interaction');
       return;
     }
@@ -168,6 +168,13 @@ export const createSaveSlice: StateCreator<GameStoreState, [], [], SaveSlice> = 
 
       clearAutoCloseTimers();
       resetPlayerXpBatch();
+      // Cancel any in-flight scene:loaded payload from a transition that was
+      // running when the player loaded a save. Without this, the stale
+      // payload fires for the OLD target scene after the save's scene is
+      // already active — useSceneLoadedGate waits 3s fallback, the scene
+      // entry overlay shows the wrong scene name, and asyncTransitionInProgress
+      // stays true. (Task 3-B #3.)
+      resetSceneLoadedGateFromStore();
       applyCombinedPatch(storePatchFromSave(resolved.data));
       resetGuidedStoryFromStore();
       resetEngineRuntimeFromStore();

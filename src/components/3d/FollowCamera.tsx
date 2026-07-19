@@ -6,7 +6,7 @@ import { useThree } from '@react-three/fiber';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { isEncounterPresentationActive } from '@/engine/combat/encounterPresentation';
 import * as THREE from 'three';
-import { useCameraFollowState } from '@/store/selectors';
+import { useCameraFollowState, usePlayerPosition } from '@/store/selectors';
 import {
   applyTimeScale,
   type SpringCameraState,
@@ -74,6 +74,10 @@ export function FollowCamera({
   const threeScene = useThree((s) => s.scene);
   const gl = useThree((s) => s.gl);
   const { sceneId, gameMode, activeCutsceneId, cutsceneWaypoints, currentNodeId } = useCameraFollowState();
+  // Read the store's playerPosition (doorway spawn on scene transitions) so we
+  // can pass it into resetCameraForSceneChange without the engine layer importing
+  // the store directly. (Task 3-D M1 architecture fix.)
+  const playerPosition = usePlayerPosition();
 
   const cameraRef = useRef(camera);
   cameraRef.current = camera;
@@ -164,13 +168,13 @@ export function FollowCamera({
   }, []);
 
   useLayoutEffect(() => {
-    resetCameraForSceneChange(runtimeRef.current, sceneId);
+    resetCameraForSceneChange(runtimeRef.current, sceneId, playerPosition);
     // Cancel in-flight transition if scene changes again or unmounts mid-teleport.
     return () => {
       // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
       cleanupInFlightCameraTransitions(runtimeRef.current, sceneIdRef.current);
     };
-  }, [sceneId]);
+  }, [sceneId, playerPosition]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps

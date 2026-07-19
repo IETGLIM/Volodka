@@ -79,6 +79,7 @@ const mat_glass = getSharedStandardMaterial({
   opacity: 0.25,
   metalness: 0.1,
   roughness: 0.05,
+  depthWrite: false,
   polygonOffset: true,
   polygonOffsetFactor: 1,
   polygonOffsetUnits: 1,

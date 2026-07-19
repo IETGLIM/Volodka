@@ -8,6 +8,10 @@ export interface StoreEngineHost {
   resetGuidedStoryManager(): void;
   resetEngineModuleRuntimeState(): void;
   canStartQuest(questId: string): boolean;
+  /** Engine-side interaction lock check — true while Approach/Cutscene/Align/Lock/Dialogue. */
+  isInteractionLocked(): boolean;
+  /** Cancel any in-flight scene:loaded payload (used by loadGame to avoid stale scene events). */
+  resetSceneLoadedGate(): void;
 }
 
 let host: StoreEngineHost | null = null;
@@ -39,6 +43,14 @@ export function resetEngineRuntimeFromStore(): void {
 
 export function canStartQuestFromEngine(questId: string): boolean {
   return host?.canStartQuest(questId) ?? false;
+}
+
+export function isInteractionLockedFromStore(): boolean {
+  return host?.isInteractionLocked() ?? false;
+}
+
+export function resetSceneLoadedGateFromStore(): void {
+  host?.resetSceneLoadedGate();
 }
 
 /** Test helper — reset host between unit tests. */

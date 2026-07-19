@@ -44,7 +44,19 @@ function scheduleStuckRecoveryWatchdog(): void {
       fromState: stuckState,
       targetNpcId: stuckNpcId,
     });
+    // Reset the module-level session first, THEN emit interaction:state_change
+    // so listeners (NPCSystemWrapper, InteractionSystemBridge) re-sync their
+    // React state/refs to Idle. Without the state_change event, the module
+    // resets but React state stays stale — the target NPC remains in 'talk'
+    // animation and the bridge's stateRef desyncs. (Task 3-B #4.)
     resetInteractionSession();
+    eventBus.emit('interaction:state_change', {
+      state: InteractionState.Idle,
+      npcId: undefined,
+    });
+    // Also fire interaction:end so any proximity hint / indicator visuals
+    // are torn down consistently with a normal interaction exit.
+    eventBus.emit('interaction:end', {});
   }, STUCK_RECOVERY_TIMEOUT_MS);
 }
 

@@ -162,6 +162,17 @@ export const ACT5_STRUCTURE: Record<string, StoryNodeStructure> = {
       },
       {
         "text": "",
+        "next": "join_resistance",
+        "effects": [
+          {
+            "type": "addSkill",
+            "skill": "persuasion",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "text": "",
         "next": "secret_meeting",
         "condition": {
           "flag": "network_member"

@@ -1076,7 +1076,7 @@ export const factory_basement_def: SceneDefinition = {
       id: 'basement_to_factory',
       targetScene: 'abandoned_factory',
       position: [0, 1, 7],
-      spawnPosition: [0, 0, 6],
+      spawnPosition: [-8.5, 0, -5],
       spawnRotation: Math.PI,
       label: '→ Цех завода',
       doorwayId: 'basement_to_factory',

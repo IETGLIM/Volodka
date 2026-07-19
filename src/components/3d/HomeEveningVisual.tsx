@@ -472,9 +472,9 @@ export function HomeEveningVisual() {
       </group>
 
       {/* ── Kitchen rug on floor ── */}
-      <mesh rotation-x={-Math.PI / 2} position={[4.0, 0, -5.0]} renderOrder={1} geometry={geo_pln_48}>
+      <mesh rotation-x={-Math.PI / 2} position={[4.0, 0.003, -5.0]} geometry={geo_pln_48}>
 
-        <meshBasicMaterial color="#6a3040" depthTest={false} depthWrite={false} />
+        <meshBasicMaterial color="#6a3040" polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
       </mesh>
 
       {/* ═══════════════════════════════════════════════ */}
@@ -541,14 +541,14 @@ export function HomeEveningVisual() {
       </group>
 
       {/* ── Large rug under coffee table ── */}
-      <mesh rotation-x={-Math.PI / 2} position={[-2.0, 0, 0.0]} renderOrder={1} geometry={geo_pln_60}>
+      <mesh rotation-x={-Math.PI / 2} position={[-2.0, 0.003, 0.0]} geometry={geo_pln_60}>
 
-        <meshBasicMaterial color="#4a3040" depthTest={false} depthWrite={false} />
+        <meshBasicMaterial color="#4a3040" polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
       </mesh>
-      {/* Rug border pattern */}
-      <mesh rotation-x={-Math.PI / 2} position={[-2.0, 0, 0.0]} renderOrder={2} geometry={geo_pln_61}>
+      {/* Rug border pattern (renderOrder=2 kept so border layers above rug body at equal biased depth via LEQUAL) */}
+      <mesh rotation-x={-Math.PI / 2} position={[-2.0, 0.003, 0.0]} renderOrder={2} geometry={geo_pln_61}>
 
-        <meshBasicMaterial color="#5a3848" depthTest={false} depthWrite={false} />
+        <meshBasicMaterial color="#5a3848" polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
       </mesh>
 
       {/* ═══════════════════════════════════════════════ */}
@@ -583,9 +583,9 @@ export function HomeEveningVisual() {
       ))}
 
       {/* ── Welcome mat at entrance ── */}
-      <mesh rotation-x={-Math.PI / 2} position={[0, 0, 6.5]} renderOrder={1} geometry={geo_pln_69}>
+      <mesh rotation-x={-Math.PI / 2} position={[0, 0.003, 6.5]} geometry={geo_pln_69}>
 
-        <meshBasicMaterial color="#4a4030" depthTest={false} depthWrite={false} />
+        <meshBasicMaterial color="#4a4030" polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
       </mesh>
 
       {/* ── Doorbell / intercom panel ── */}

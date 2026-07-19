@@ -53,13 +53,14 @@ export function SolnyshRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
       </mesh>
 
       {/* Layered carpets */}
-      <mesh rotation-x={-Math.PI / 2} position={[0, 0, 0]} renderOrder={1} geometry={geo_pln_2}>
+      <mesh rotation-x={-Math.PI / 2} position={[0, 0.003, 0]} geometry={geo_pln_2}>
 
-        <meshBasicMaterial map={carpetTexture} color="#8a4050" depthTest={false} depthWrite={false} />
+        <meshBasicMaterial map={carpetTexture} color="#8a4050" polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
       </mesh>
-      <mesh rotation-x={-Math.PI / 2} position={[-2.2, 0, 1.8]} renderOrder={1} geometry={geo_pln_3}>
+      {/* Smaller carpet 2 raised to y=0.0035 so it layers above carpet 1 (y=0.003) in their overlap region without renderOrder */}
+      <mesh rotation-x={-Math.PI / 2} position={[-2.2, 0.0035, 1.8]} geometry={geo_pln_3}>
 
-        <meshBasicMaterial map={carpetTexture} color="#6a3548" depthTest={false} depthWrite={false} />
+        <meshBasicMaterial map={carpetTexture} color="#6a3548" polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
       </mesh>
 
       <mesh position={[0, H, 0]} rotation-x={Math.PI / 2} geometry={geo_pln_1}>

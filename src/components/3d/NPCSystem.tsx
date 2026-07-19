@@ -141,10 +141,12 @@ export function NPCSystem({
   );
 }
 
-/** Advances per-frame caches in NPC.tsx once per frame (not per-NPC) */
+/** Advances per-frame caches in NPC.tsx once per frame (not per-NPC).
+ *  Uses the 'npc' FrameSystemId so the cache tick is budgeted together with
+ *  other NPC frame work and appears in the per-system CPU stats. */
 function NPCFrameCacheAdvancer() {
   useFrameTick(
-    'npc-cache',
+    'npc',
     () => {
       advanceBarkRelationFrame();
       advanceEmissiveFrame();

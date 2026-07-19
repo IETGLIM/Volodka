@@ -384,10 +384,19 @@ export function cleanupInFlightCameraTransitions(
   }
 }
 
-export function resetCameraForSceneChange(runtime: CameraRuntimeRefs, sceneId: SceneId): void {
+export function resetCameraForSceneChange(
+  runtime: CameraRuntimeRefs,
+  sceneId: SceneId,
+  playerPosition?: readonly [number, number, number] | null,
+): void {
   cleanupInFlightCameraTransitions(runtime, sceneId);
   const config = getSceneConfig(sceneId);
-  const spawn = config.spawnPoint;
+  // Use the player's actual current position (set to the doorway's spawnPosition
+  // by applySceneTransition) so the camera doesn't snap to the scene's defaultSpawn
+  // for 1 frame on doorway transitions. Falls back to defaultSpawn if not yet set.
+  // playerPosition is passed in by the caller (FollowCamera component) to keep
+  // the engine layer free of store imports. (Task 3-D M1.)
+  const spawn = playerPosition ?? config.spawnPoint;
   const playerYaw = config.initialRotation ?? 0;
   const cameraYaw = FIRST_PERSON_ENABLED ? playerYaw : playerYaw + Math.PI;
   const initPitch = FIRST_PERSON_ENABLED ? 0 : 0.3;

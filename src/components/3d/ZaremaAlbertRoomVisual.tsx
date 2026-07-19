@@ -255,9 +255,9 @@ export function ZaremaAlbertRoomVisual({ livePlayerPositionRef: _livePlayerPosit
       {/* ═══════════════════════════════════════════════ */}
       {/* ── CARPET ── */}
       {/* ═══════════════════════════════════════════════ */}
-      <mesh rotation-x={-Math.PI / 2} position={[0, 0, 0.5]} renderOrder={1} geometry={geo_pln_23}>
+      <mesh rotation-x={-Math.PI / 2} position={[0, 0.003, 0.5]} geometry={geo_pln_23}>
 
-        <meshBasicMaterial color="#6a4a5a" depthTest={false} depthWrite={false} />
+        <meshBasicMaterial color="#6a4a5a" polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
       </mesh>
 
       {/* ═══════════════════════════════════════════════ */}
@@ -400,14 +400,14 @@ export function ZaremaAlbertRoomVisual({ livePlayerPositionRef: _livePlayerPosit
       </group>
 
       {/* ── Prayer mat in corner ── */}
-      <mesh rotation={[-Math.PI / 2, 0, 0.8]} position={[-3.0, 0, 3.0]} renderOrder={1} geometry={geo_pln_39}>
+      <mesh rotation={[-Math.PI / 2, 0, 0.8]} position={[-3.0, 0.003, 3.0]} geometry={geo_pln_39}>
 
-        <meshBasicMaterial color="#2a5a3a" depthTest={false} depthWrite={false} />
+        <meshBasicMaterial color="#2a5a3a" polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
       </mesh>
-      {/* Mat pattern (small rectangle on mat) */}
-      <mesh rotation={[-Math.PI / 2, 0, 0.8]} position={[-3.0, 0, 2.7]} renderOrder={2} geometry={geo_pln_40}>
+      {/* Mat pattern (small rectangle on mat). renderOrder=2 kept so pattern layers above prayer mat at equal biased depth via LEQUAL */}
+      <mesh rotation={[-Math.PI / 2, 0, 0.8]} position={[-3.0, 0.003, 2.7]} renderOrder={2} geometry={geo_pln_40}>
 
-        <meshBasicMaterial color="#3a6a4a" depthTest={false} depthWrite={false} />
+        <meshBasicMaterial color="#3a6a4a" polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
       </mesh>
 
       {/* ── Hookah/Shisha ── */}
