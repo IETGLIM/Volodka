@@ -444,7 +444,7 @@ export function CinematicTimelineRunner() {
       if (id === 'intro_wakeup') finishIntroWake();
       else if (id) finishGenericTimeline(id);
     }
-  });
+  }, { phase: 'pre_physics', label: 'CinematicTimelineRunner' });
 
   if (!active || !showAvatar) return null;
 

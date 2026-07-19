@@ -120,7 +120,12 @@ function GltfNPCModelInner({
     // mixer.update on skinned meshes is one of the most expensive per-frame
     // operations in three.js. When the NPC is culled or at impostor LOD,
     // there is no visible mesh to animate — skip the update entirely.
-    if (mixer && visible) mixer.update(delta);
+    if (mixer && visible) {
+      // Clamp delta to prevent animation jumps on frame stalls (GC pauses,
+      // tab backgrounding, etc). 0.05s = ~3 frames at 60fps.
+      const dt = Math.min(delta, 0.05);
+      mixer.update(dt);
+    }
   }, { enabled: visible });
 
   useNpcProceduralLayers({
@@ -141,6 +146,7 @@ function GltfNPCModelInner({
       ref={fitRef}
       rotation={[fit.rotX, 0, 0]}
       position={[0, fit.y, 0]}
+      scale={fit.scale}
       visible={visible}
       userData={{
         npcComposerRig: resolveNpcComposeRigRef(definition.id) ?? null,

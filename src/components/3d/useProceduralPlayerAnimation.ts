@@ -248,6 +248,93 @@ export function useProceduralPlayerAnimation(
         head.rotation.x = 0.05 + Math.sin(t * speed) * 0.03;
         head.rotation.z = Math.sin(t * speed * 0.5) * 0.01;
       }
+    } else if (animState === 'sitting') {
+      // Seated pose: torso lowered, legs bent forward at hip and knee,
+      // arms resting on lap. Subtle breathing + occasional head tilt.
+      const breathe = Math.sin(t * 1.6) * 0.012;
+      if (torso) {
+        torso.position.y = 0.62 + breathe;
+        torso.rotation.x = 0.18 + Math.sin(t * 0.9) * 0.015;
+      }
+      if (head) {
+        head.rotation.x = 0.08 + Math.sin(t * 0.7) * 0.025;
+        head.rotation.y = Math.sin(t * 0.4) * 0.04;
+      }
+      if (leftArm) {
+        leftArm.rotation.x = -0.35 + Math.sin(t * 0.6) * 0.03;
+        leftArm.rotation.z = 0.22;
+      }
+      if (rightArm) {
+        rightArm.rotation.x = -0.32 + Math.sin(t * 0.6 + 0.5) * 0.03;
+        rightArm.rotation.z = -0.22;
+      }
+      if (leftLeg) leftLeg.rotation.x = -1.15;
+      if (rightLeg) rightLeg.rotation.x = -1.15;
+    } else if (animState === 'sleeping') {
+      // Lying-down pose: torso horizontal, limbs relaxed. Used during the
+      // wake-up cutscene's 'terminal' and 'rise' phases when the player
+      // is still in bed. Slow breathing cycle.
+      const breathe = Math.sin(t * 0.8) * 0.008;
+      if (torso) {
+        torso.position.y = 0.18 + breathe;
+        torso.rotation.x = 1.45; // nearly horizontal (lying on back)
+      }
+      if (head) {
+        head.rotation.x = -0.05;
+        head.rotation.z = Math.sin(t * 0.3) * 0.02;
+      }
+      if (leftArm) {
+        leftArm.rotation.x = 0.15 + Math.sin(t * 0.5) * 0.02;
+        leftArm.rotation.z = 0.08;
+      }
+      if (rightArm) {
+        rightArm.rotation.x = 0.12 + Math.sin(t * 0.5 + 0.4) * 0.02;
+        rightArm.rotation.z = -0.08;
+      }
+      if (leftLeg) leftLeg.rotation.x = 0.05;
+      if (rightLeg) rightLeg.rotation.x = 0.05;
+    } else if (animState === 'talking') {
+      // Standing talking: idle base + conversational hand gestures.
+      const gesture = Math.sin(t * 2.4);
+      if (torso) {
+        torso.position.y = 1.05 + Math.sin(t * 1.8) * 0.01;
+        torso.rotation.x = 0.04 + Math.sin(t * 1.2) * 0.015;
+        torso.rotation.y = Math.sin(t * 0.6) * 0.03;
+      }
+      if (head) {
+        head.rotation.x = 0.02 + Math.sin(t * 1.5) * 0.02;
+        head.rotation.y = Math.sin(t * 0.5) * 0.05;
+      }
+      if (leftArm) {
+        leftArm.rotation.x = -0.25 + gesture * 0.18;
+        leftArm.rotation.z = 0.22;
+      }
+      if (rightArm) {
+        rightArm.rotation.x = -0.35 - gesture * 0.22;
+        rightArm.rotation.z = -0.18;
+      }
+      if (leftLeg) leftLeg.rotation.x = 0;
+      if (rightLeg) rightLeg.rotation.x = 0;
+    } else if (animState === 'working') {
+      // Typing/working: torso leaned forward, arms extended to keyboard.
+      const typeCycle = Math.sin(t * 8.0);
+      if (torso) {
+        torso.position.y = 1.0 + Math.sin(t * 1.8) * 0.008;
+        torso.rotation.x = 0.22;
+      }
+      if (head) {
+        head.rotation.x = 0.18 + Math.sin(t * 0.9) * 0.02;
+      }
+      if (leftArm) {
+        leftArm.rotation.x = -0.85 + typeCycle * 0.05;
+        leftArm.rotation.z = 0.32;
+      }
+      if (rightArm) {
+        rightArm.rotation.x = -0.88 - typeCycle * 0.05;
+        rightArm.rotation.z = -0.32;
+      }
+      if (leftLeg) leftLeg.rotation.x = -0.15;
+      if (rightLeg) rightLeg.rotation.x = -0.15;
     } else {
       if (torso) {
         torso.position.y = 1.05 + Math.sin(t * 2.0) * 0.012;

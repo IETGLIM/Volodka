@@ -88,6 +88,17 @@ export function useNpcVisualBehavior({
 
   useEffect(() => onNpcAnimation(npcId, setBusAnimState), [npcId]);
 
+  // Clear bus-driven anim state once the interaction ends so schedule/patrol
+  // activities (sleep, work, walk) can drive the NPC again. Without this,
+  // the last `npc:animation` event (typically `state:'idle'` emitted on
+  // interaction:end) permanently shadows `resolvedAnimState`, leaving
+  // patrolling NPCs sliding in idle pose and sleeping NPCs standing.
+  useEffect(() => {
+    if (!isInteractionTarget && interactionState === InteractionState.Idle) {
+      setBusAnimState(null);
+    }
+  }, [isInteractionTarget, interactionState]);
+
   return {
     behavior,
     animState,

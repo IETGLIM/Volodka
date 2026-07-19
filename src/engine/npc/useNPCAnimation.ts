@@ -56,11 +56,28 @@ export function useNPCAnimation(
     [applyState],
   );
 
+  // Force-idle ONLY on the very first action population — when the mixer
+  // transitions from "no actions" to "has actions". Subsequent action
+  // additions (deferred Mixamo clips loading one by one) should NOT
+  // re-trigger the force-idle, because that would reset the currently-
+  // playing action to frame 0 and cause a visible "stumble" each time
+  // a new clip loads (4 deferred clips = 4 stumbles).
+  const hasBoundInitialRef = useRef(false);
   useEffect(() => {
+    if (hasBoundInitialRef.current) return;
     const idleAction = findAction('idle');
     if (!idleAction) return;
+    hasBoundInitialRef.current = true;
     applyState('idle', { force: true });
   }, [applyState, findAction]);
+
+  // Reset the initial-bound flag if the entire actions object is replaced
+  // (e.g. mixer recreated on scene change) so the force-idle can re-fire.
+  useEffect(() => {
+    if (!actions) {
+      hasBoundInitialRef.current = false;
+    }
+  }, [actions]);
 
   useEffect(() => {
     return () => {

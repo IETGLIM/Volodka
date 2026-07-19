@@ -31,7 +31,7 @@ export const WAKEUP_FALLBACK_MS = (WAKEUP_TOTAL + 2) * 1000;
 export const BED_POSITION = new THREE.Vector3(0.5, 0.01, 2.4);
 export const STAND_POSITION = new THREE.Vector3(0.3, 0.01, 1.5);
 export const DESK_POSITION = new THREE.Vector3(0.0, 0.01, -1.0);
-export const CHAIR_POSITION = new THREE.Vector3(0.0, 0.0, -1.3);
+export const CHAIR_POSITION = new THREE.Vector3(0.0, 0.01, -1.3);
 /** Third-person handoff behind the desk — matches exploration orbit framing. */
 export const DESK_EXPLORATION_CAM = {
   position: new THREE.Vector3(0.0, LOOK_HEIGHT + 0.25, 1.15),

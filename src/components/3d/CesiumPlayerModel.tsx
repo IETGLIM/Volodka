@@ -14,18 +14,22 @@ const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeo
 const PLAYER_MODEL_URL = getPlayerVolodkaModelUrl();
 useGLTF.preload(PLAYER_MODEL_URL, true, true, extendLoader);
 
-// Eagerly preload Mixamo walk + idle clips at module load so they are ready
-// BEFORE the wake-up cutscene starts. useMixamoAnimationClips loads clips
-// asynchronously via scheduleGltfPreload, which is paused while UI overlays
-// are open (isUiOverlayBlockingDeferredAssets). During the wake-up cutscene
-// the story overlay is open → clip loading is paused → the walk clip is not
-// available when the 'walking' phase starts → the avatar slides in idle pose.
-// Preloading here ensures the GLB is in the browser cache; useMixamoAnimationClips
-// then resolves from cache instantly without waiting for the scheduler.
+// Eagerly preload ALL 6 Mixamo clips at module load so they are ready
+// BEFORE the wake-up cutscene starts. useMixamoAnimationClips now marks
+// all 6 clips as CRITICAL (bypassing the overlay gate), but the preload
+// here ensures the GLB bytes are in the browser HTTP cache so the
+// critical-clip loader resolves in ~1-2ms per clip from cache.
+// Without this, the wake-up cutscene's 'sleeping' phase (lying in bed)
+// and 'sitting' phases (at desk) would fall back to the embedded 'idle'
+// clip and the avatar would slide in a standing pose.
 const ANIMATIONS_BASE = '/models/animations';
 const PLAYER_CRITICAL_ANIM_URLS = [
   `${ANIMATIONS_BASE}/idle.glb`,
   `${ANIMATIONS_BASE}/walking.glb`,
+  `${ANIMATIONS_BASE}/talking.glb`,
+  `${ANIMATIONS_BASE}/sitting.glb`,
+  `${ANIMATIONS_BASE}/sleeping.glb`,
+  `${ANIMATIONS_BASE}/working.glb`,
 ];
 if (typeof window !== 'undefined') {
   for (const url of PLAYER_CRITICAL_ANIM_URLS) {

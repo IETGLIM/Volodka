@@ -16,11 +16,25 @@ import {
 } from '@/engine/player/playerClipResolution';
 
 const CLIP_CROSSFADE_SEC = 0.2;
+const CINEMATIC_CROSSFADE_SEC = 0.35;
 
 const LOCOMOTION_CLIP_NAMES = new Set<string>([
   ...PLAYER_IDLE_CLIP_NAMES,
   ...PLAYER_WALK_CLIP_NAMES,
   ...PLAYER_RUN_CLIP_NAMES,
+]);
+
+/**
+ * Non-locomotion clip states played during cinematics (cutscenes, dialogue).
+ * These map 1:1 to Mixamo canonical clip names registered by
+ * `useMixamoAnimationClips`. The embedded Quaternius GLB does NOT ship
+ * these states, so they require the Mixamo clips to be loaded.
+ */
+const CINEMATIC_CLIP_NAMES = new Set<string>([
+  'sitting',
+  'sleeping',
+  'talking',
+  'working',
 ]);
 
 /**
@@ -51,7 +65,11 @@ export interface UsePlayerLocomotionControllerOptions {
 }
 
 /**
- * AAA locomotion blend tree for the hero GLB — idle / walk / run with crossfade.
+ * AAA locomotion blend tree for the hero GLB — idle / walk / run with crossfade,
+ * PLUS cinematic clip support (sitting / sleeping / talking / working) for
+ * cutscenes and dialogue. The cinematic clips crossfade in/out of the
+ * locomotion blend tree based on `currentAnimRef.current`.
+ *
  * Binds once per mixer+actions identity; updates after physics sets currentAnimRef.
  */
 export function usePlayerLocomotionController({
@@ -64,15 +82,24 @@ export function usePlayerLocomotionController({
   const idleActionRef = useRef<THREE.AnimationAction | null>(null);
   const walkActionRef = useRef<THREE.AnimationAction | null>(null);
   const runActionRef = useRef<THREE.AnimationAction | null>(null);
+  const cinematicActionRef = useRef<THREE.AnimationAction | null>(null);
+  const prevCinematicClipRef = useRef<string | null>(null);
   const prevLocomotionRef = useRef(false);
   const prevRunWeightRef = useRef(0);
   const boundKeyRef = useRef<string | null>(null);
+  // Track the latest actions object so the frame tick can look up
+  // cinematic clips by name without re-registering the tick callback
+  // each time a new Mixamo clip loads.
+  const actionsRef = useRef<Record<string, THREE.AnimationAction> | null>(actions);
+  actionsRef.current = actions;
 
   useLayoutEffect(() => {
     if (!mixer || !actions || animations.length === 0) {
       idleActionRef.current = null;
       walkActionRef.current = null;
       runActionRef.current = null;
+      cinematicActionRef.current = null;
+      prevCinematicClipRef.current = null;
       boundKeyRef.current = null;
       return;
     }
@@ -157,10 +184,10 @@ export function usePlayerLocomotionController({
     ({ delta }) => {
       if (!mixer) return;
 
-      const clipState = resolveLocomotionClipState(currentAnimRef.current);
       const idleAction = idleActionRef.current;
       const walkAction = walkActionRef.current;
       const runAction = runActionRef.current;
+      const currentActions = actionsRef.current;
 
       // Always call mixer.update(delta) so the mixer advances even if
       // actions aren't bound yet (e.g., during the brief window between
@@ -171,6 +198,67 @@ export function usePlayerLocomotionController({
         return;
       }
 
+      const animName = currentAnimRef.current;
+      const isCinematic = CINEMATIC_CLIP_NAMES.has(animName);
+
+      // ── Cinematic clip handling (sitting, sleeping, talking, working) ──
+      // These states require the Mixamo clip to be loaded. If not yet
+      // available, fall through to idle/locomotion as a graceful fallback.
+      if (isCinematic) {
+        const targetAction = currentActions?.[animName] ?? null;
+
+        if (targetAction && prevCinematicClipRef.current !== animName) {
+          // Transitioning into a new cinematic clip: fade out everything
+          // else (locomotion + previous cinematic), fade in the target.
+          if (cinematicActionRef.current && cinematicActionRef.current !== targetAction) {
+            cinematicActionRef.current.fadeOut(CINEMATIC_CROSSFADE_SEC);
+          }
+          if (idleAction) idleAction.fadeOut(CINEMATIC_CROSSFADE_SEC);
+          if (walkAction) walkAction.fadeOut(CINEMATIC_CROSSFADE_SEC);
+          if (runAction) runAction.fadeOut(CINEMATIC_CROSSFADE_SEC);
+
+          targetAction.setLoop(THREE.LoopRepeat, Infinity);
+          targetAction.reset();
+          targetAction.setEffectiveWeight(0);
+          targetAction.play();
+          targetAction.fadeIn(CINEMATIC_CROSSFADE_SEC);
+
+          cinematicActionRef.current = targetAction;
+          prevCinematicClipRef.current = animName;
+          // Reset locomotion tracking so when we exit cinematic, the
+          // crossfade back to idle/walk fires correctly.
+          prevLocomotionRef.current = false;
+          prevRunWeightRef.current = 0;
+        }
+
+        mixer.update(delta);
+        return;
+      }
+
+      // ── Exiting cinematic state back to locomotion ──
+      if (prevCinematicClipRef.current !== null) {
+        if (cinematicActionRef.current) {
+          cinematicActionRef.current.fadeOut(CINEMATIC_CROSSFADE_SEC);
+          cinematicActionRef.current = null;
+        }
+        prevCinematicClipRef.current = null;
+        // Fade locomotion back in. The crossfade logic below will set
+        // the correct weights based on the current locomotion state.
+        if (idleAction) {
+          idleAction.reset();
+          idleAction.setEffectiveWeight(0);
+          idleAction.play();
+          idleAction.fadeIn(CINEMATIC_CROSSFADE_SEC);
+        }
+        if (walkAction && currentAnimRef.current === 'walk') {
+          walkAction.setEffectiveWeight(0);
+          walkAction.play();
+          walkAction.fadeIn(CINEMATIC_CROSSFADE_SEC);
+        }
+      }
+
+      // ── Locomotion blend tree (idle / walk / run) ──
+      const clipState = resolveLocomotionClipState(animName);
       const locomotionActive = clipState.locomotionActive && !!walkAction;
 
       if (locomotionActive !== prevLocomotionRef.current) {

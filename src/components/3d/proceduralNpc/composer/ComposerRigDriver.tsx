@@ -6,6 +6,7 @@ import { resolveQuaterniusRigFallbackUrl } from '@/config/quaterniusRigCatalog';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
 import type { NPCAnimationState } from '@/engine/interaction/interactionMachine';
 import { useNPCAnimation } from '@/engine/npc/useNPCAnimation';
+import type { NpcAnimationClipOverrides } from '@/engine/npc/npcClipResolution';
 import { applyQuaterniusRigToComposer, invalidateQuaterniusRigRetarget } from '@/engine/npc/quaterniusRigRetarget';
 import { useRegisterNpcFrame } from '@/engine/npc/npcFrameBatch';
 import { useMixamoAnimationClips } from '@/hooks/useMixamoAnimationClips';
@@ -18,6 +19,8 @@ export interface ComposerRigDriverProps {
   rigRef: QuaterniusRigRef;
   composerRef: React.RefObject<THREE.Group | null>;
   animState: NPCAnimationState;
+  /** Per-state clip name overrides (e.g. {idle:'sleeping'} for sleep activity). */
+  clipOverrides?: NpcAnimationClipOverrides;
   torsoBaseY: number;
   onRigActiveChange: (active: boolean) => void;
 }
@@ -31,6 +34,7 @@ export function ComposerRigDriver({
   rigRef,
   composerRef,
   animState,
+  clipOverrides,
   torsoBaseY,
   onRigActiveChange,
 }: ComposerRigDriverProps) {
@@ -64,7 +68,7 @@ export function ComposerRigDriver({
   }, [mixer, gltf.animations, scene]);
 
   const actions = useMixamoAnimationClips(mixer, scene, embeddedActions);
-  const { crossfadeTo } = useNPCAnimation(`${npcId}:rig`, actions);
+  const { crossfadeTo } = useNPCAnimation(`${npcId}:rig`, actions, clipOverrides);
 
   useEffect(() => {
     crossfadeTo(animState);
@@ -82,7 +86,12 @@ export function ComposerRigDriver({
   }, [cacheKey, onRigActiveChange]);
 
   useRegisterNpcFrame(`${npcId}:rig`, 'mixer', ({ delta }) => {
-    if (mixer) mixer.update(delta);
+    if (mixer) {
+      // Clamp delta to prevent animation jumps on frame stalls (GC pauses,
+      // tab backgrounding, etc). 0.05s = ~3 frames at 60fps.
+      const dt = Math.min(delta, 0.05);
+      mixer.update(dt);
+    }
   }, { enabled: ready });
 
   useRegisterNpcFrame(`${npcId}:rig`, 'procedural', () => {

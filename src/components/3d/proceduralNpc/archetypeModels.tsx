@@ -60,7 +60,7 @@ function ProceduralNPCModelInner({
   const gamePhase = useGamePhase();
   const recipe = resolveNpcComposeRecipeForNpc(definitionId);
 
-  const { animState } = useNpcVisualBehavior({
+  const { animState, clipOverrides } = useNpcVisualBehavior({
     npcId: definitionId,
     activity,
     patrolActivity,
@@ -76,5 +76,5 @@ function ProceduralNPCModelInner({
     playerPositionRef: livePlayerPositionRef,
   });
 
-  return <NpcComposerModel npcId={definitionId} recipe={recipe} appearance={app} animState={animState} />;
+  return <NpcComposerModel npcId={definitionId} recipe={recipe} appearance={app} animState={animState} clipOverrides={clipOverrides} />;
 }

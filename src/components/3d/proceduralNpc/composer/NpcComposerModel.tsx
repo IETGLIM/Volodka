@@ -7,18 +7,21 @@ import { resolveComposePalette } from '@/config/npcComposer';
 import { useProceduralNpcLimbAnimation } from '@/components/3d/proceduralNpc/useProceduralNpcLimbAnimation';
 import { ComposerFigure } from '@/components/3d/proceduralNpc/composer/ComposerFigure';
 import { ComposerRigDriver } from '@/components/3d/proceduralNpc/composer/ComposerRigDriver';
+import type { NpcAnimationClipOverrides } from '@/engine/npc/npcClipResolution';
 
 export interface NpcComposerModelProps {
   npcId: string;
   recipe: NpcComposeRecipe;
   appearance: NPCAppearance;
   animState: NPCAnimationState;
+  /** Per-state clip name overrides (e.g. {idle:'sleeping'} for sleep activity). */
+  clipOverrides?: NpcAnimationClipOverrides;
 }
 
 /**
  * Modular CC0-part NPC composer — slots + palette + Quaternius/Mixamo rig retarget.
  */
-export function NpcComposerModel({ npcId, recipe, appearance, animState }: NpcComposerModelProps) {
+export function NpcComposerModel({ npcId, recipe, appearance, animState, clipOverrides }: NpcComposerModelProps) {
   const groupRef = useRef<THREE.Group>(null);
   const [rigActive, setRigActive] = useState(false);
   const palette = resolveComposePalette(appearance, recipe);
@@ -48,6 +51,7 @@ export function NpcComposerModel({ npcId, recipe, appearance, animState }: NpcCo
           rigRef={recipe.rigRef}
           composerRef={groupRef}
           animState={animState}
+          clipOverrides={clipOverrides}
           torsoBaseY={torsoBaseY}
           onRigActiveChange={handleRigActiveChange}
         />

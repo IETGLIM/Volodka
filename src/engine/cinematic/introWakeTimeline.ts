@@ -49,7 +49,9 @@ export const INTRO_WAKE_TIMELINE: CinematicTimelineDef = {
       duration: WAKEUP_PHASE.terminal,
       actor: {
         mode: 'in_place',
-        clip: 'idle',
+        // Player is lying in bed — play the Mixamo 'sleeping' clip (Lie_Idle).
+        // The embedded Quaternius GLB has no lying-down animation.
+        clip: 'sleeping',
         keyframes: [
           { t: 0, position: vec3(BED_POSITION), rotation: [0.55, 0, 0.35], facingY: 0 },
           { t: 1, position: vec3(BED_POSITION), rotation: [0.55, 0, 0.35], facingY: 0 },
@@ -77,7 +79,9 @@ export const INTRO_WAKE_TIMELINE: CinematicTimelineDef = {
       duration: WAKEUP_PHASE.rise,
       actor: {
         mode: 'in_place',
-        clip: 'idle',
+        // Still in bed but rising — keep 'sleeping' clip until standing phase.
+        // The keyframe position/rotation lerps the model upward.
+        clip: 'sleeping',
         keyframes: [
           { t: 0, position: [BED_POSITION.x, 0.42, BED_POSITION.z], rotation: [0.55, 0, 0.35], facingY: 0 },
           { t: 1, position: [BED_POSITION.x, 0.01, BED_POSITION.z], rotation: [0, 0, 0], facingY: 0 },
@@ -132,7 +136,9 @@ export const INTRO_WAKE_TIMELINE: CinematicTimelineDef = {
       duration: WAKEUP_PHASE.sitting,
       actor: {
         mode: 'in_place',
-        clip: 'idle',
+        // Player sits down at the desk — play the Mixamo 'sitting' clip.
+        // The embedded Quaternius GLB has no sitting animation.
+        clip: 'sitting',
         keyframes: [
           { t: 0, position: vec3(DESK_POSITION), facingY: walkFacing },
           { t: 1, position: vec3(CHAIR_POSITION), facingY: sitFacing },
@@ -151,7 +157,7 @@ export const INTRO_WAKE_TIMELINE: CinematicTimelineDef = {
       duration: WAKEUP_PHASE.settle,
       actor: {
         mode: 'in_place',
-        clip: 'idle',
+        clip: 'sitting',
         keyframes: [
           { t: 0, position: vec3(CHAIR_POSITION), facingY: sitFacing },
           { t: 1, position: vec3(CHAIR_POSITION), facingY: sitFacing },
@@ -167,7 +173,7 @@ export const INTRO_WAKE_TIMELINE: CinematicTimelineDef = {
       duration: WAKEUP_PHASE.monitor,
       actor: {
         mode: 'in_place',
-        clip: 'idle',
+        clip: 'sitting',
         keyframes: [
           { t: 0, position: vec3(CHAIR_POSITION), facingY: sitFacing },
           { t: 1, position: vec3(CHAIR_POSITION), facingY: sitFacing },
@@ -186,7 +192,7 @@ export const INTRO_WAKE_TIMELINE: CinematicTimelineDef = {
       duration: WAKEUP_PHASE.handoff,
       actor: {
         mode: 'in_place',
-        clip: 'idle',
+        clip: 'sitting',
         keyframes: [
           { t: 0, position: vec3(CHAIR_POSITION), facingY: sitFacing },
           { t: 1, position: vec3(CHAIR_POSITION), facingY: sitFacing },

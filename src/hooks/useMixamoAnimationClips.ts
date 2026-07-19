@@ -38,30 +38,38 @@ function scheduleIdleSlice(callback: () => void): () => void {
 }
 
 /**
- * Clip ids that are CRITICAL for locomotion. These must be available
- * immediately — before any cutscene or gameplay movement begins.
+ * Clip ids that are CRITICAL — must be available immediately, before any
+ * cutscene or gameplay movement begins.
  *
- * The embedded player GLB ships 24 animations with NUMERIC names ('0'-'23')
- * that don't match the semantic names ('idle', 'walking', 'Walk', etc.) the
- * locomotion controller looks for. Until the Mixamo clips load, the
- * locomotion controller falls back to using the first embedded clip as both
- * idle AND walk — so crossFadeTo(walk) is a no-op (idle→idle) and the avatar
- * never plays a walk cycle.
+ * The embedded Quaternius player/NPC GLBs ship 24 properly-named clips
+ * (Idle, Idle_Neutral, Walk, Run, Wave, Interact, …) that already cover
+ * idle/walk/run locomotion. The Mixamo catalog adds 6 supplementary clips
+ * for states the embedded GLB does NOT provide: idle, walking, talking,
+ * sitting, sleeping, working. Of these, idle/walking are aliases for the
+ * embedded clips (loaded as canonical-name overrides), while talking/
+ * sitting/sleeping/working are the ONLY source for those states.
  *
  * The deferred loader (below) is gated by `isUiOverlayBlockingDeferredAssets()`
- * which PAUSES during story overlays / examine panels. During the wake-up
- * cutscene the story overlay is open → deferred loader is paused → the walk
- * clip never loads → the avatar slides in idle pose during the 'walking' phase.
+ * which PAUSES during story overlays / examine panels. The wake-up cutscene
+ * needs the 'sleeping' clip in phase 1 (lying in bed) and 'sitting' in
+ * phases 5-8 (at desk) — if these are deferred, the avatar falls back to
+ * the embedded 'idle' clip and slides in a standing pose while the
+ * cutscene claims the character is lying/sitting.
  *
- * Critical clips bypass BOTH the scheduler and the overlay gate, loading in
- * parallel immediately when the mixer is ready. They are small (~56KB each)
- * and already preloaded into the browser HTTP cache by `useGLTF.preload`
- * calls at module load in CesiumPlayerModel.tsx, so `loader.loadAsync` hits
- * the cache and resolves in ~1-2ms.
+ * Marking all 6 clips as CRITICAL bypasses BOTH the scheduler and the
+ * overlay gate, loading them in parallel immediately when the mixer is
+ * ready. They are small (~56KB each, ~340KB total) and already preloaded
+ * into the browser HTTP cache by `useGLTF.preload` calls at module load
+ * in CesiumPlayerModel.tsx, so `loader.loadAsync` hits the cache and
+ * resolves in ~1-2ms per clip.
  */
 const CRITICAL_CLIP_IDS: ReadonlySet<MixamoClipId> = new Set<MixamoClipId>([
   'idle',
   'walking',
+  'talking',
+  'sitting',
+  'sleeping',
+  'working',
 ]);
 
 /**
