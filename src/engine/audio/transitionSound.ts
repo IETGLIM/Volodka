@@ -194,6 +194,7 @@ function playArrivalChime(): void {
 
 let initialized = false;
 const busUnsubs: Array<() => void> = [];
+const pendingTimers: Array<ReturnType<typeof setTimeout>> = [];
 
 function initTransitionSounds(): void {
   if (initialized) return;
@@ -204,10 +205,13 @@ function initTransitionSounds(): void {
     eventBus.on('scene:transition', () => {
       whenAudioReady(() => {
         playTransitionWhoosh();
-        // Delayed glitch for texture
-        setTimeout(() => {
+        // Delayed glitch for texture — track timer so dispose can cancel it
+        const timer = setTimeout(() => {
           whenAudioReady(playTransitionGlitch);
+          const idx = pendingTimers.indexOf(timer);
+          if (idx >= 0) pendingTimers.splice(idx, 1);
         }, 80);
+        pendingTimers.push(timer);
       });
     }),
   );
@@ -224,6 +228,8 @@ function initTransitionSounds(): void {
 export function disposeTransitionSounds(): void {
   for (const unsub of busUnsubs) unsub();
   busUnsubs.length = 0;
+  for (const timer of pendingTimers) clearTimeout(timer);
+  pendingTimers.length = 0;
   initialized = false;
 }
 

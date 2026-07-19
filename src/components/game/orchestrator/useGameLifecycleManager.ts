@@ -24,6 +24,8 @@ import {
   getQuestCompletedThought,
   getLoreDiscoveredThought,
   getChoiceMadeThought,
+  getPerkUnlockedThought,
+  getSkillMilestoneThought,
 } from '@/data/reactiveThoughts';
 
 /** Build a ThoughtContext from the current game store state. */
@@ -283,6 +285,25 @@ export function useGameLifecycleManager(mode: string) {
       const text = getChoiceMadeThought(ctx, karmaChange);
       if (text) {
         setTimeout(() => emitReactiveThought(text, store.exploration.currentSceneId), 1500);
+      }
+    });
+
+    scope.on('perk:unlocked', ({ perkName, category }) => {
+      const store = useGameStore.getState();
+      const ctx = buildThoughtContext(store);
+      const text = getPerkUnlockedThought(ctx, perkName, category);
+      if (text) {
+        // Longer delay — perk thoughts deserve space after the UI notification
+        setTimeout(() => emitReactiveThought(text, store.exploration.currentSceneId, 6000), 2000);
+      }
+    });
+
+    scope.on('skill:level_up', ({ skill, level }) => {
+      const store = useGameStore.getState();
+      const ctx = buildThoughtContext(store);
+      const text = getSkillMilestoneThought(ctx, skill, level);
+      if (text) {
+        setTimeout(() => emitReactiveThought(text, store.exploration.currentSceneId, 5500), 900);
       }
     });
 

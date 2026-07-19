@@ -653,3 +653,38 @@ Stage Summary:
 - 5+ race conditions hardened (cinematic+scene, auto-trigger+interaction, save+cutscene)
 - Story-node camera shake for emotional beats (act 4)
 - All changes compile clean (0 TS errors, 0 lint errors, 280/280 tests pass)
+
+---
+Task ID: session13-reactive-thoughts
+Agent: main
+Task: Add reactive inner monologue for perk unlocks and skill milestones (Disco-Elysium-style depth)
+
+Work Log:
+- Added `perk:unlocked` event to PlayerEvents map (playerEvents.ts)
+- Refactored `acquirePerk` in playerProgressionSlice.ts:
+  - Validation now runs BEFORE set (was inside set callback)
+  - Emits `perk:unlocked` event AFTER successful state commit
+  - Event includes perkId, perkName, category for context-specific thoughts
+- Created `getPerkUnlockedThought()` in reactiveThoughts.ts:
+  - 5 category-specific thought sets (survival, social, combat, poetic, technical)
+  - 2 variants per category (10 total thoughts)
+  - Karma-reactive: low karma → cynical/dark variant, high karma → accepting variant, neutral → deterministic hash pick
+- Created `getSkillMilestoneThought()` in reactiveThoughts.ts:
+  - Fires at skill levels 5 and 10 (milestones only — avoids spam)
+  - Level 5: karma-reactive 3-variant thoughts
+  - Level 10: mastery reflection (single variant)
+  - Skill labels in Russian (писательству, технике, эмпатии, etc.)
+- Wired both new thought types into useGameLifecycleManager.ts:
+  - `perk:unlocked` subscription with 2s delay (after UI notification) and 6s display
+  - `skill:level_up` subscription with 0.9s delay and 5.5s display
+  - Both rate-limited via existing canShowReactiveThought() (12s cooldown)
+- Fixed minor race condition in transitionSound.ts:
+  - setTimeout(80ms) for delayed glitch was untracked
+  - Added pendingTimers[] array, tracked timer, clearTimeout on dispose
+
+Stage Summary:
+- 2 new reactive thought functions (perk unlock + skill milestone) = 16 new Russian monologue lines
+- 1 new event type (perk:unlocked) in PlayerEvents map
+- 1 race condition fixed (transitionSound untracked setTimeout)
+- All changes: 0 TS errors, 0 content validation issues, event map consistent (139 used, 150 defined, 0 undefined), all targeted tests pass
+- Poems and main menu untouched (per user request)

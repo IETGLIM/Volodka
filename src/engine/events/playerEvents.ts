@@ -26,4 +26,6 @@ export interface PlayerEvents {
   };
   'player:heal': { amount: number };
   'choice:made': { karmaChange: number; npcId?: string; relationChange?: number };
+  /** Fired when a perk is acquired via the perks panel. */
+  'perk:unlocked': { perkId: string; perkName: string; category: string };
 }

@@ -162,6 +162,85 @@ export function getChoiceMadeThought(
   return 'Трудный выбор. Или — плохой. Граница — тонкая. Я — на ней. Как всегда.';
 }
 
+/** Perk unlocked thoughts — fired on perk:unlocked. */
+export function getPerkUnlockedThought(
+  ctx: ThoughtContext,
+  perkName: string,
+  category: string,
+): string | null {
+  // Category-specific introspective reactions (Disco-Elysium-style)
+  const byCategory: Record<string, string[]> = {
+    survival: [
+      `«${perkName}». Тело — запомнило. Голова — ещё сомневается. Но тело — честнее. Тело — не спорит.`,
+      `«${perkName}». Я — выживу. Ещё — немного. Ещё — один день. Это — уже — навык. Это — уже — черта.`,
+    ],
+    social: [
+      `«${perkName}». Я — научился. Людям. Или — притворяться. Граница — тонкая. Но — работающая.`,
+      `«${perkName}». Слова — сложнее кода. Код — хотя бы — логичный. Люди — нет. Но — я — научился.`,
+    ],
+    combat: [
+      `«${perkName}». Руки — помнят. Тело — знает. Голова — не нужна. Это — пугает. Это — полезно.`,
+      `«${perkName}». Драка — это не про силу. Это — про — кто первый отвернётся. Я — не отвожу. Уже.`,
+    ],
+    poetic: [
+      `«${perkName}». Слова — слушаются. Или — я — научился слушать их. Это — другое. Это — моё.`,
+      `«${perkName}». Поэзия — это не дар. Это — дисциплина. Странная. Но — дисциплина. Я — дисциплинирован. Почти.`,
+    ],
+    technical: [
+      `«${perkName}». Код — родной. Город — нет. Но — код — это — мой город. Мой — единственный.`,
+      `«${perkName}». Системы — понятны. Люди — нет. Может — я — не для людей. Может — это — нормально.`,
+    ],
+  };
+
+  const variants = byCategory[category];
+  if (!variants) return null;
+
+  // Pick based on karma — different emotional coloring
+  if (ctx.karma <= 30) {
+    // Dark variant — cynical, resigned
+    return variants[1] ?? variants[0];
+  }
+  if (ctx.karma >= 65) {
+    // Hopeful variant — first entry tends to be more accepting
+    return variants[0];
+  }
+  // Neutral — deterministic pick by hashing perkName for variety
+  const hash = perkName.charCodeAt(0) + (perkName.charCodeAt(1) ?? 0);
+  return variants[hash % variants.length];
+}
+
+/** Skill milestone thoughts — fired on skill:level_up at levels 5 and 10. */
+export function getSkillMilestoneThought(
+  ctx: ThoughtContext,
+  skillName: string,
+  level: number,
+): string | null {
+  // Only fire for milestone levels to avoid spam
+  if (level !== 5 && level !== 10) return null;
+
+  const skillLabels: Record<string, string> = {
+    writing: 'писательству',
+    tech: 'технике',
+    empathy: 'эмпатии',
+    logic: 'логике',
+    persuasion: 'убеждению',
+    agility: 'ловкости',
+  };
+  const label = skillLabels[skillName] ?? skillName;
+
+  if (level === 10) {
+    return `Десятый уровень — ${label}. Мастерство. Или — почти. Граница — размыта. Но — я — на ней. Это — редкое место.`;
+  }
+  // Level 5
+  if (ctx.karma >= 65) {
+    return `Пятый уровень — ${label}. Я — расту. Город — нет. Но — я — расту. Это — неравный обмен. В мою пользу.`;
+  }
+  if (ctx.karma <= 30) {
+    return `Пятый уровень — ${label}. Лучше — чем вчера. Хуже — чем хотелось. Нормально. Продолжаем.`;
+  }
+  return `Пятый уровень — ${label}. Середина. Не — начало, не — конец. Середина — это — честно. Середина — это — я.`;
+}
+
 /* ─── Helpers ─── */
 
 /** Total number of main poems — milestone for the "all poems" thought. */

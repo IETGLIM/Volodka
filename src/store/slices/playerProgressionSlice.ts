@@ -9,6 +9,7 @@ import type { GameStoreState } from '../types';
 import { getSkillTreeMap, getPerksMap } from '@/data/gameDataLoader';
 import { resolveSkillUnlockEffects } from '@/shared/skills/applySkillUnlockEffects';
 import { queuePlayerXp } from '../playerXpBatch';
+import { eventBus } from '@/engine/EventBus';
 
 /* ─── Slice types ─── */
 
@@ -91,30 +92,32 @@ export const createPlayerProgressionSlice: StateCreator<
     return nodeDef.requires.every((req) => prog.unlockedSkills.includes(req));
   },
 
-  acquirePerk: (perkId) =>
-    set((state) => {
-      const prog = state.playerState.progression;
-      if (prog.perkPoints <= 0) return state;
-      if (prog.unlockedPerks.includes(perkId)) return state;
+  acquirePerk: (perkId) => {
+    // Validate BEFORE set so we know whether to emit the perk:unlocked event.
+    const state = get();
+    const prog = state.playerState.progression;
+    if (prog.perkPoints <= 0) return;
+    if (prog.unlockedPerks.includes(perkId)) return;
 
-      const perkDef = getPerksMap()[perkId];
-      if (!perkDef) return state;
+    const perkDef = getPerksMap()[perkId];
+    if (!perkDef) return;
+    if (prog.level < perkDef.minLevel) return;
 
-      if (prog.level < perkDef.minLevel) return state;
+    const prereqsMet = perkDef.requiredPerks.every((req) =>
+      prog.unlockedPerks.includes(req),
+    );
+    if (!prereqsMet) return;
 
-      const prereqsMet = perkDef.requiredPerks.every((req) =>
-        prog.unlockedPerks.includes(req),
+    if (perkDef.mutuallyExclusiveWith) {
+      const hasExclusive = perkDef.mutuallyExclusiveWith.some((exId) =>
+        prog.unlockedPerks.includes(exId),
       );
-      if (!prereqsMet) return state;
+      if (hasExclusive) return;
+    }
 
-      if (perkDef.mutuallyExclusiveWith) {
-        const hasExclusive = perkDef.mutuallyExclusiveWith.some((exId) =>
-          prog.unlockedPerks.includes(exId),
-        );
-        if (hasExclusive) return state;
-      }
-
-      const newSkills = { ...state.playerState.skills };
+    set((s) => {
+      const p = s.playerState.progression;
+      const newSkills = { ...s.playerState.skills };
       for (const effect of perkDef.effects) {
         if (effect.type === 'skill_bonus' && effect.skill) {
           applySkillDelta(
@@ -128,21 +131,34 @@ export const createPlayerProgressionSlice: StateCreator<
 
       return {
         playerState: {
-          ...state.playerState,
+          ...s.playerState,
           skills: newSkills,
           progression: {
-            ...prog,
-            perkPoints: prog.perkPoints - 1,
-            unlockedPerks: [...prog.unlockedPerks, perkId],
+            ...p,
+            perkPoints: p.perkPoints - 1,
+            unlockedPerks: [...p.unlockedPerks, perkId],
           },
         },
         notifications: pushNotification(
-          state.notifications,
+          s.notifications,
           'skill',
           `Черта получена: ${perkDef.name}`,
         ),
       };
-    }),
+    });
+
+    // Fire perk:unlocked AFTER state commit so reactive-thought listeners
+    // read the updated progression. Used for Volodka's inner monologue.
+    try {
+      eventBus.emit('perk:unlocked', {
+        perkId,
+        perkName: perkDef.name,
+        category: perkDef.category,
+      });
+    } catch {
+      /* eventBus may not be ready during HMR */
+    }
+  },
 
   canAcquirePerk: (perkId) => {
     const state = get();
