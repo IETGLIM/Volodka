@@ -70,6 +70,8 @@ export function createDefaultPersistedState(): Pick<GameStoreState, PersistedSto
     interactiveObjectStates: {},
     loreEntries: [],
     conversationLog: {},
+    thoughtHistory: [],
+    notificationHistory: [],
     poemPowers: {},
     activeTTLFlags: createEmptyActiveTTLFlagMap(),
     journalTab: 'notes',

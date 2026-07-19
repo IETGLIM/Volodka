@@ -193,6 +193,23 @@ const ConversationLogEntrySchema = z.object({
   timestamp: z.number(),
 });
 
+/** Volodka's inner monologue entry — persisted so the journal survives reload. */
+const ThoughtHistoryEntrySchema = z.object({
+  id: z.string(),
+  text: z.string(),
+  timestamp: z.number(),
+  sceneId: z.string(),
+});
+
+/** Notification log entry — persisted for journal history continuity. */
+const NotificationHistoryEntrySchema = z.object({
+  id: z.string(),
+  type: z.string(),
+  message: z.string(),
+  delta: z.number().optional(),
+  timestamp: z.number(),
+});
+
 const PoemPowerSchema = z.object({
   lastUsed: z.number(),
   cooldownMs: z.number().min(0),
@@ -277,6 +294,10 @@ export const SavePayloadSchema = z.object({
   interactiveObjectStates: z.record(z.string(), z.boolean()),
   loreEntries: z.array(LoreEntrySchema),
   conversationLog: z.record(z.string(), z.array(ConversationLogEntrySchema)),
+  /** Volodka's inner monologue history (journal → thoughts tab) — persisted. */
+  thoughtHistory: z.array(ThoughtHistoryEntrySchema).optional().default([]),
+  /** Notification log history — persisted for journal continuity. */
+  notificationHistory: z.array(NotificationHistoryEntrySchema).optional().default([]),
   poemPowers: z.record(z.string(), PoemPowerSchema),
   activeTTLFlags: ActiveTTLFlagsSchema,
   journalTab: JournalTabSchema,
