@@ -143,6 +143,16 @@ export function applyEffects(
           reward: fx.terminalReward,
         });
         break;
+      case 'cameraShake': {
+        // Part 2C: Story-node camera shake for emotional beats (revelations,
+        // confrontations). Intensity 0.01–0.04 is barely perceptible —
+        // the goal is subliminal unease, not action-movie impact.
+        // Routed via appEventBus → engine EventBus binding (cameraShake.ts).
+        const intensity = fx.intensity ?? 0.02;
+        const duration = fx.duration ?? 600;
+        emitAppEvent('cutscene:camera_shake', { intensity, duration });
+        break;
+      }
     }
   }
 }

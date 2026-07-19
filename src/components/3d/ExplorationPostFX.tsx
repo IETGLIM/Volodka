@@ -26,7 +26,9 @@ import {
   DepthOfField,
 } from '@react-three/postprocessing';
 import { BlendFunction, KernelSize, ToneMappingMode } from 'postprocessing';
-import type { EffectComposer as EffectComposerImpl } from 'postprocessing';
+import type { EffectComposer as EffectComposerImpl, DepthOfFieldEffect } from 'postprocessing';
+import { useFrameTick } from '@/engine/frame/useFrameTick';
+import { dialogueFocusTarget } from '@/engine/graphics/dialogueFocusTarget';
 import { usePostFxSceneState, usePlayerStress, useGamePhase } from '@/store/selectors';
 import { useGameStore } from '@/store/gameStore';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
@@ -75,11 +77,6 @@ const NOISE_SCENES = new Set([
 
 /** Scenes that get CRT scanline overlay for cyberpunk terminal aesthetic */
 const SCANLINE_SCENES = new Set(['guild_mainframe', 'office_day']);
-
-/** Scenes where chromatic aberration intensifies with player stress */
-const STRESS_CHROMATIC_SCENES = new Set([
-  'street_night', 'battle', 'factory_basement', 'abandoned_factory', 'sleep_dream',
-]);
 
 /** Scene-specific vignette darkness — noir scenes get heavier vignette */
 const SCENE_VIGNETTE: Record<string, { offset: number; darkness: number }> = {
@@ -379,7 +376,6 @@ function PostFXPipeline() {
   const stress = usePlayerStress();
   const stressFactor = stress / 100;
   const wantsScanlines = SCANLINE_SCENES.has(sceneId);
-  const wantsStressChromatic = STRESS_CHROMATIC_SCENES.has(sceneId);
   const wantsNoise = NOISE_SCENES.has(sceneId) && preset.id === 'high';
   const activeTTLFlags = useGameStore((s) => s.activeTTLFlags ?? {});
   const reducedMotion = useEffectiveReducedMotion();
@@ -397,23 +393,84 @@ function PostFXPipeline() {
     0.1,
   );
 
-  // Chromatic aberration: scales with stress in qualifying scenes
+  // ── Part 4: Stress-driven chromatic aberration ──
+  // Activates when stress ≥ 70, scales linearly to max offset 0.002 at stress=100.
+  // Disabled on mobile, medium quality, and reduced-motion.
+  const stressChromaticEligible =
+    !reducedMotion
+    && !visualLite
+    && !coarsePointer
+    && (preset.id === 'high' || preset.id === 'ultra')
+    && (selectedPreset === 'high' || selectedPreset === 'ultra');
+  const stressChromaticAmount = stressChromaticEligible
+    ? Math.max(0, (stress - 70) / 30)  // 0 at stress≤70, 1 at stress=100
+    : 0;
+  const showChromatic = stressChromaticAmount > 0;
   const chromaticOffset = useMemo(
-    () => new THREE.Vector2(stressFactor * 0.003, stressFactor * 0.002),
-    [stressFactor],
+    () => new THREE.Vector2(stressChromaticAmount * 0.002, stressChromaticAmount * 0.0015),
+    [stressChromaticAmount],
   );
-  const showChromatic = wantsStressChromatic && stressFactor > 0.3;
 
-  // ── Session 9: Cinematic DOF for dialogue / cutscene moments ──
+  // ── Part 3: Cinematic DOF for dialogue / cutscene moments ──
+  // On high/ultra: render DOF always (with animated bokehScale 0↔target).
+  // Smooth 0.4s easeInOutCubic transition when dialogue opens/closes.
   const showStoryOverlay = useGameStore((s) => s.showStoryOverlay);
   const activeCutsceneId = useGameStore((s) => s.activeCutsceneId);
   const isInDialogue = showStoryOverlay;
   const isInCutscene = !!activeCutsceneId;
-  // DOF only on high/ultra quality, not on mobile, not with reduced motion
+  // DOF only on high/ultra quality, not on mobile, not with reduced motion.
+  // Always mounted when eligible — bokehScale animated per-frame via ref.
   const wantsCinematicDOF =
     !reducedMotion && !visualLite && !coarsePointer &&
     (preset.id === 'high' || preset.id === 'ultra') &&
-    (isInDialogue || isInCutscene);
+    (selectedPreset === 'high' || selectedPreset === 'ultra');
+
+  // Refs + transition state for smooth DOF bokehScale animation.
+  const dofRef = useRef<DepthOfFieldEffect | null>(null);
+  const dofTransitionRef = useRef({
+    current: 0,
+    target: 0,
+    start: 0,
+    elapsed: 0,
+    duration: 0.4,
+  });
+
+  useFrameTick('postfx', ({ delta }) => {
+    const effect = dofRef.current;
+    if (!effect) return;
+
+    // Refresh the live NPC position from the registry (cheap).
+    dialogueFocusTarget.refresh();
+
+    // Determine target bokehScale based on dialogue / cutscene state.
+    const dialogueActive = dialogueFocusTarget.isActive() || isInDialogue;
+    const targetBokeh = isInCutscene
+      ? DOF_CUTSCENE_BOKEH
+      : dialogueActive
+        ? DOF_DIALOGUE_BOKEH
+        : 0;
+
+    const t = dofTransitionRef.current;
+    if (t.target !== targetBokeh) {
+      // Start a new transition.
+      t.start = t.current;
+      t.target = targetBokeh;
+      t.elapsed = 0;
+    }
+
+    if (t.current !== t.target) {
+      t.elapsed += delta;
+      const progress = Math.min(t.elapsed / t.duration, 1);
+      // easeInOutCubic
+      const eased = progress < 0.5
+        ? 4 * progress * progress * progress
+        : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+      t.current = t.start + (t.target - t.start) * eased;
+    }
+
+    // Apply animated bokehScale imperatively (avoids effect re-creation).
+    effect.bokehScale = t.current;
+  });
 
   const pipelineKey = `${sceneId}-${rendering.useLitePostFx ? 'lite' : rendering.useAmbientOcclusion ? 'ao' : 'full'}${wantsCinematicDOF ? '-dof' : ''}`;
   const lutKind = resolveProceduralLutKind(sceneId);
@@ -463,12 +520,15 @@ function PostFXPipeline() {
       {showChromatic ? <ChromaticAberration offset={chromaticOffset} blendFunction={BlendFunction.NORMAL} /> : null as any}
       {wantsScanlines ? <Scanline blendFunction={BlendFunction.OVERLAY} density={1.2} /> : null as any}
       {rendering.useAmbientOcclusion ? <N8AO aoRadius={rendering.aoRadius} intensity={rendering.aoIntensity} distanceFalloff={0.5} halfRes color="black" /> : null as any}
-      {/* Session 9: Shallow DOF during dialogue/cutscene — focuses on subjects, blurs background */}
+      {/* Part 3: Cinematic DOF — always mounted on high/ultra, bokehScale animated 0↔target via ref.
+          Smooth 0.4s easeInOutCubic transition when dialogue/cutscene opens/closes.
+          Focus target follows the active NPC (dialogueFocusTarget singleton). */}
       {wantsCinematicDOF ? (
         <DepthOfField
+          ref={dofRef as any}
           focusDistance={DOF_DIALOGUE_FOCUS}
           focalLength={0.05}
-          bokehScale={isInCutscene ? DOF_CUTSCENE_BOKEH : DOF_DIALOGUE_BOKEH}
+          bokehScale={0}
           height={480}
         />
       ) : null as any}

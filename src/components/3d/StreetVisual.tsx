@@ -455,7 +455,8 @@ function PanelBuildings() {
           <mesh position={[0, b.h / 2, 0]} castShadow receiveShadow geometry={getSharedBoxGeometry(b.w, b.h, b.d)}>
             <meshStandardMaterial color="#2a2a3e" roughness={0.92} metalness={0.08} />
           </mesh>
-          {/* Window grid facade — procedural canvas texture */}
+          {/* Window grid facade — procedural canvas texture.
+              polygonOffset prevents z-fighting with the building facade box behind it. */}
           <mesh position={[0, b.h * 0.55, b.d / 2 + 0.02]} geometry={getSharedPlaneGeometry(b.w * 0.85, b.h * 0.75)}>
             <meshStandardMaterial
               map={windowTextures[i]}
@@ -465,6 +466,9 @@ function PanelBuildings() {
               roughness={0.6}
               transparent
               opacity={0.95}
+              polygonOffset
+              polygonOffsetFactor={1}
+              polygonOffsetUnits={1}
             />
           </mesh>
           {/* Ground floor shop front */}
@@ -475,6 +479,9 @@ function PanelBuildings() {
               emissiveIntensity={0.5}
               transparent
               opacity={0.85}
+              polygonOffset
+              polygonOffsetFactor={1}
+              polygonOffsetUnits={1}
             />
           </mesh>
         </group>

@@ -372,6 +372,16 @@ export function storePatchFromSave(payload: SavePayload): Partial<GameStoreState
   patch.introActive = legacyPhase.introActive;
   patch.combatActive = false;
 
+  // Area C: Defense-in-depth — activeCutsceneId is an ephemeral session field
+  // (not in SavePayloadSchema), so a clean save never persists it. But if a
+  // save was captured during the brief window between cutscene:overlay_end
+  // and the cinematic timeline's complete event (or via a legacy/buggy path),
+  // activeCutsceneId could be non-null in the live store when pickSavePayload
+  // snapshotted it. Force null on load to avoid the new session booting into
+  // a phantom cutscene state with letterbox bars and locked locomotion.
+  patch.activeCutsceneId = null;
+  patch.cutsceneWaypoints = [];
+
   // Closed-overlay explore hubs never restore with VN panel open.
   if (isClosedOverlayExploreHub(payload.currentNodeId)) {
     patch.showStoryOverlay = false;

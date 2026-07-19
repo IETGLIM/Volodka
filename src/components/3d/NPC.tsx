@@ -168,6 +168,10 @@ export function NPC({
   const [barkText, setBarkText] = useState('');
   const [barkOpacity, setBarkOpacity] = useState(1);
   const barkTimerRef = useRef(0);
+  // Ref mirror of barkPhase so ambient-bark subscription can read the current
+  // phase without re-subscribing on every phase transition.
+  const barkPhaseRef = useRef<'hidden' | 'thinking' | 'speaking' | 'fading'>('hidden');
+  useEffect(() => { barkPhaseRef.current = barkPhase; }, [barkPhase]);
 
   // Name label distance tracking — ref-based with throttled React state updates
   const [nameLabelOpacity, setNameLabelOpacity] = useState(0);
@@ -197,6 +201,29 @@ export function NPC({
       cleanupNpcProceduralLayers(definition.id);
     };
   }, [definition.id, sceneId]);
+
+  // ── Ambient bark subscription ──
+  // The npcAmbientBarkSystem emits `npc:ambient_bark` when the player is
+  // within 4 m and not interacting with this NPC. We surface the text via
+  // the existing speech-bubble machinery (same path as proximity bark) so
+  // the visual treatment is consistent. Skipped when an interaction is
+  // already in progress or a bark is already showing.
+  useEffect(() => {
+    const unsub = eventBus.on('npc:ambient_bark', (payload) => {
+      if (payload.npcId !== definition.id) return;
+      // Don't interrupt an existing bark (proximity or ambient).
+      if (barkPhaseRef.current !== 'hidden') return;
+      // Don't fire during active interaction — the dialogue UI owns the
+      // player's attention.
+      if (interactionState !== InteractionState.Idle) return;
+      setBarkText(payload.text);
+      setBarkPhase('thinking');
+      setBarkOpacity(1);
+      barkOpacityRef.current = 1;
+      barkTimerRef.current = 0;
+    });
+    return unsub;
+  }, [definition.id, interactionState]);
 
   const applyNpcLodVisibility = (
     lod: NpcLodLevel,

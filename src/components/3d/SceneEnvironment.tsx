@@ -13,6 +13,7 @@ import { ENV_MAP_WARMUP_FRAMES } from '@/shared/constants/transitionTimings';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import type { QualityPresetId } from '@/engine/graphics/qualityPresets';
 import { isHeroScene } from '@/config/sceneVisualProfiles';
+import { VolumetricLightShafts } from './VolumetricLightShaft';
 
 /** Per-scene fog color overrides matching style pillars:
  *  Noir, CyberPunk2077, Gothic, Dark Fantasy, Glitch, MatrixRain
@@ -110,6 +111,25 @@ const SCENE_FOG_ANIM: Record<string, FogAnimConfig> = {
 
 const DEFAULT_FOG_ANIM: FogAnimConfig = { pulseFreq: 0.05, nearAmplitude: 0.05, farAmplitude: 0.03, colorShiftAmp: 0 };
 
+/** Outdoor scenes that use exponential squared fog (FogExp2) for cinematic
+ *  depth perception. Density is tuned per-scene — subtle enough to not
+ *  obscure gameplay but adds atmospheric distance fade.
+ *  Replaces the linear <fog> attach for these scenes only. */
+const OUTDOOR_EXP_FOG_DENSITY: Record<string, number> = {
+  park_day:         0.018,  // subtle forest mist
+  rooftop_edge:     0.020,  // city haze at sunset
+  river_pier:       0.022,  // water mist over the river
+  chk_forest_zorge: 0.020,  // forest depth
+  street_night:     0.020,  // rain haze
+  street_winter:    0.015,  // cold crisp air (less fog)
+};
+
+const DEFAULT_OUTDOOR_EXP_FOG_DENSITY = 0.018;
+
+function isOutdoorExpFogScene(sceneId: string): boolean {
+  return sceneId in OUTDOOR_EXP_FOG_DENSITY;
+}
+
 /** Optimized scene environment: fog, background, environment preset, animated fog */
 export function SceneEnvironment() {
   const sceneId = useGameStore((s) => s.exploration.currentSceneId);
@@ -137,10 +157,17 @@ export function SceneEnvironment() {
   });
 
   const fogRef = useRef<THREE.Fog>(null);
+  const fogExpRef = useRef<THREE.FogExp2>(null);
   const timeRef = useRef(0);
 
   const fogNear = config.fogNear ?? 5;
   const fogFar = config.fogFar ?? 20;
+
+  // Part 5: Outdoor scenes use FogExp2 for cinematic depth perception.
+  const useExpFog = isOutdoorExpFogScene(visualSceneId);
+  const expFogDensity = useExpFog
+    ? (OUTDOOR_EXP_FOG_DENSITY[visualSceneId] ?? DEFAULT_OUTDOOR_EXP_FOG_DENSITY)
+    : 0;
 
   // Use style-pillar-matched fog colors, fall back to scene config ambient
   const fogColor = liftHexColor(
@@ -186,28 +213,42 @@ export function SceneEnvironment() {
 
   // Animated fog: pulsing density and optional color shift
   useFrameTick('weather', ({ delta }) => {
-    if (!fogRef.current || fogAnim.pulseFreq <= 0) return;
+    if (fogAnim.pulseFreq <= 0) return;
 
     timeRef.current += delta;
     const time = timeRef.current;
-
-    // Pulsing fog near/far
     const pulse = Math.sin(time * fogAnim.pulseFreq * Math.PI * 2);
-    fogRef.current.near = effectiveFogNear + pulse * effectiveFogNear * fogAnim.nearAmplitude;
-    fogRef.current.far = effectiveFogFar + pulse * effectiveFogFar * fogAnim.farAmplitude;
 
-    // Fog color shift
-    if (fogAnim.colorShiftAmp > 0 && fogAnim.altFogColor) {
+    // Linear fog: pulse near/far
+    if (fogRef.current) {
+      fogRef.current.near = effectiveFogNear + pulse * effectiveFogNear * fogAnim.nearAmplitude;
+      fogRef.current.far = effectiveFogFar + pulse * effectiveFogFar * fogAnim.farAmplitude;
+    }
+
+    // Exp2 fog: pulse density (subtle — keeps depth perception stable)
+    if (fogExpRef.current) {
+      const densityPulse = 1 + pulse * 0.08; // ±8% density modulation
+      fogExpRef.current.density = expFogDensity * densityPulse;
+    }
+
+    // Fog color shift (both fog types share the same color)
+    const activeFog = fogRef.current ?? fogExpRef.current;
+    if (activeFog && fogAnim.colorShiftAmp > 0 && fogAnim.altFogColor) {
       const blend = (pulse * fogAnim.colorShiftAmp + fogAnim.colorShiftAmp) / 2; // 0 to colorShiftAmp
       tempColor.copy(baseFogColor).lerp(altFogColor, blend);
-      fogRef.current.color.copy(tempColor);
+      activeFog.color.copy(tempColor);
     }
   });
 
   return (
     <>
-      {/* Fog — style-pillar-matched colors, reduced density for indoor scenes, animated pulsing */}
-      <fog ref={fogRef} attach="fog" args={[fogColor, effectiveFogNear, effectiveFogFar]} />
+      {/* Fog — style-pillar-matched colors, reduced density for indoor scenes, animated pulsing.
+          Outdoor scenes use FogExp2 for cinematic depth (Part 5); indoor scenes keep linear fog. */}
+      {useExpFog ? (
+        <fogExp2 ref={fogExpRef} attach="fog" args={[fogColor, expFogDensity]} />
+      ) : (
+        <fog ref={fogRef} attach="fog" args={[fogColor, effectiveFogNear, effectiveFogFar]} />
+      )}
 
       {/* Background color — deeper than fog for atmospheric depth */}
       <color attach="background" args={[bgColor]} />
@@ -220,6 +261,10 @@ export function SceneEnvironment() {
           environmentIntensity={envIntensity}
         />
       )}
+
+      {/* Volumetric light shafts — cone-shaped god rays for window-lit scenes.
+          Quality-gated: high/ultra only, mobile caps at 2, disabled in reduced motion. */}
+      <VolumetricLightShafts sceneId={sceneId} />
     </>
   );
 }

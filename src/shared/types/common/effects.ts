@@ -20,7 +20,8 @@ export type StoryEffectType =
   | 'transitionScene'
   | 'visitStoryNode'
   | 'showThought'
-  | 'openDataTerminal';
+  | 'openDataTerminal'
+  | 'cameraShake';
 
 export interface StoryEffect {
   type: StoryEffectType;
@@ -52,6 +53,10 @@ export interface StoryEffect {
   terminalTitle?: string;
   /** Terminal reward description for openDataTerminal effect */
   terminalReward?: string;
+  /** Camera shake intensity in world units — use 0.01–0.04 for emotional beats. */
+  intensity?: number;
+  /** Camera shake target duration in ms — converted to a decay rate on emit. */
+  duration?: number;
 }
 
 /** Side effects emitted by execute() functions that should be applied to the

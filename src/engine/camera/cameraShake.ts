@@ -7,6 +7,7 @@
 import { isEffectiveReducedMotion } from '@/engine/accessibility/accessibilitySettings';
 import { getVisualSettings } from '@/engine/visualSettings';
 import { eventBus } from '@/engine/EventBus';
+import { registerHmrDispose } from '@/shared/dev/hmrDispose';
 
 // Module-level shake state
 let shakeIntensity = 0;
@@ -159,8 +160,48 @@ export function getCameraShakeIntensity(): number {
 
 // ── Global listener: cutscene-triggered camera shake ──
 // Wire the cutscene:camera_shake event so any cinematic system
-// (timeline runner, NPC cutscene launcher, etc.) can trigger shake
-// without directly importing this module.
-eventBus.on('cutscene:camera_shake', ({ intensity, frequency }) => {
-  triggerCameraShake(intensity, frequency);
+// (timeline runner, NPC cutscene launcher, story-node effects, etc.) can
+// trigger shake without directly importing this module.
+//
+// Supports two payload shapes:
+//   { intensity, frequency }  — frequency is the decay rate (per second)
+//   { intensity, duration }   — duration (ms) is converted to a decay rate
+//                               that brings intensity to ~1% by the end
+//                               (decay ≈ 4.6 / (duration / 1000)).
+// When both are provided, frequency wins (backward compat).
+const _cutsceneShakeListener = (payload: {
+  intensity: number;
+  frequency?: number;
+  duration?: number;
+}): void => {
+  const { intensity, frequency, duration } = payload;
+  if (frequency !== undefined) {
+    triggerCameraShake(intensity, frequency);
+    return;
+  }
+  if (duration !== undefined && duration > 0) {
+    // decay such that exp(-decay * duration_sec) ≈ 0.01
+    const decay = 4.6 / (duration / 1000);
+    triggerCameraShake(intensity, decay);
+    return;
+  }
+  triggerCameraShake(intensity);
+};
+
+let _unsubCutsceneShake: (() => void) | null = eventBus.on(
+  'cutscene:camera_shake',
+  _cutsceneShakeListener,
+);
+
+// Area D: register HMR dispose so the module-level listener is cleaned up
+// before the module re-loads and re-binds. Without this, HMR would leave
+// the old listener attached until eventBus.resetForHmr() runs (which clears
+// ALL listeners, including ones from other modules that may have already
+// re-bound). Explicit disposal is safer and matches interactionSession.ts.
+registerHmrDispose(() => {
+  if (_unsubCutsceneShake) {
+    _unsubCutsceneShake();
+    _unsubCutsceneShake = null;
+  }
+  resetCameraShake();
 });

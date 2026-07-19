@@ -31,11 +31,14 @@ import {
 } from './InteractionSystemBridge';
 import { CinematicTimelineRunner } from './CinematicTimelineRunner';
 import { NPCSystem } from './NPCSystem';
+import { useNpcAmbientBarkSystem } from '@/engine/npc/npcAmbientBarkSystem';
 import { DynamicProps } from './DynamicProps';
 import { PatrollingCreeps } from './PatrollingCreeps';
 import { RotationSyncBridge } from './RotationSyncBridge';
 import { FirstPersonHands } from './FirstPersonHands';
 import { UmkaDog } from './UmkaDog';
+import { FootstepDust } from './FootstepDust';
+import { DialogueFocusTracker } from './DialogueFocusTracker';
 import { TriggerZoneProps } from './TriggerZoneProp';
 import { WorldItemPickupGlows } from './WorldItemPickupGlow';
 import { ScenePropDressing } from './ScenePropDressing';
@@ -94,7 +97,10 @@ function PhysicsSceneInner({
       <SceneManifestAssets />
       <SceneInteriorAssets />
       <NPCSystemWrapper livePlayerPositionRef={livePlayerPositionRef} />
+      <NpcAmbientBarkMount livePlayerPositionRef={livePlayerPositionRef} />
       <UmkaDog livePlayerPositionRef={livePlayerPositionRef} />
+      <FootstepDust />
+      <DialogueFocusTracker />
       <AmbientNPCs livePlayerPositionRef={livePlayerPositionRef} />
       <DynamicProps />
       <PatrollingCreeps livePlayerPositionRef={livePlayerPositionRef} />
@@ -170,6 +176,20 @@ const NPCSystemWrapper = memo(function NPCSystemWrapper({
     />
   );
 });
+
+/**
+ * Mounts the ambient bark system alongside NPCSystemWrapper so the per-frame
+ * distance scan runs only while NPCs are mounted in the scene. Reads the
+ * shared livePlayerPositionRef to avoid prop-drilling.
+ */
+function NpcAmbientBarkMount({
+  livePlayerPositionRef,
+}: {
+  livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
+}) {
+  useNpcAmbientBarkSystem(livePlayerPositionRef);
+  return null;
+}
 
 export { PhysicsSceneInner };
 export default PhysicsSceneInner;

@@ -1,8 +1,8 @@
 /* ─── NPC definitions ─── */
 
-import type { NPCBarkTexts } from '@/shared/npcBark';
+import type { NPCBarkTexts, NPCAmbientBarks } from '@/shared/npcBark';
 
-export type { NPCBarkBand, NPCBarkTexts } from '@/shared/npcBark';
+export type { NPCBarkBand, NPCBarkTexts, NPCAmbientBarks } from '@/shared/npcBark';
 
 export type NPCHeadAccessory = 'none' | 'glasses' | 'hat' | 'scarf' | 'earring';
 export type NPCSilhouette = 'slim' | 'average' | 'heavy';
@@ -59,6 +59,13 @@ export interface NPCDefinition {
   readonly scheduleId?: string;
   readonly description?: string;
   readonly barkTexts?: NPCBarkTexts;
+  /**
+   * Ambient mutterings NPCs produce when the player is within 4 m but NOT
+   * interacting. Different from `barkTexts` (which fire on approach) — these
+   * are overheard idle/working/pensive lines that make a scene feel inhabited.
+   * Driven by `npcAmbientBarkSystem.ts`.
+   */
+  readonly ambientBarks?: NPCAmbientBarks;
   readonly accessibility?: NPCAccessibility;
   /** Scene POI ids for contextual hints (campfire, props, etc.) */
   readonly linkedPOIs?: readonly string[];

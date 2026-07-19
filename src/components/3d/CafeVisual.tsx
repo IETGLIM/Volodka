@@ -392,7 +392,7 @@ export function CafeVisual({ livePlayerPositionRef }: CafeVisualProps) {
       <group position={[-1.5, 1.15, -4.0]}>
         <mesh>
           <cylinderGeometry args={[0.06, 0.06, 0.12, 8]} />
-          <meshStandardMaterial color="#d0c8b0" transparent opacity={0.6} roughness={0.2} metalness={0.1} />
+          <meshStandardMaterial color="#d0c8b0" transparent opacity={0.6} roughness={0.2} metalness={0.1} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
         </mesh>
         {/* Coins visible */}
         <mesh position={[0, -0.03, 0]}>

@@ -164,6 +164,19 @@ export function validateStoryEffects(
       case 'openDataTerminal':
         // Validated at runtime — terminalDifficulty, terminalTitle, terminalReward are optional
         break;
+      case 'cameraShake':
+        // Part 2C: Story-node camera shake — intensity 0.01–0.04 is the
+        // recommended range for emotional beats; clamp to a safe max to
+        // prevent story authors from accidentally triggering violent shake.
+        if (e.intensity === undefined) {
+          pushError(out, ep, 'cameraShake missing intensity');
+        } else if (e.intensity < 0 || e.intensity > 0.5) {
+          pushError(out, ep, `cameraShake intensity ${e.intensity} out of range (expected 0–0.5)`);
+        }
+        if (e.duration !== undefined && (e.duration < 100 || e.duration > 5000)) {
+          pushError(out, ep, `cameraShake duration ${e.duration} out of range (expected 100–5000ms)`);
+        }
+        break;
       default: {
         const unknownType = (e as StoryEffect).type;
         pushError(out, ep, `unknown effect type "${unknownType}"`);

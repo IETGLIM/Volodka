@@ -80,6 +80,14 @@ export interface ApplicationEventMap {
   };
   /** XP gain visual feedback — floating "+X XP" toast. */
   'fx:xp_gain': { amount: number; source?: string };
+  /** Camera shake for emotional story beats (revelations, confrontations). */
+  'cutscene:camera_shake': {
+    intensity: number;
+    /** Decay rate (per second). If provided, takes precedence over `duration`. */
+    frequency?: number;
+    /** Target duration in ms — converted to a decay rate that brings intensity to ~1% by the end. */
+    duration?: number;
+  };
 }
 
 export type ApplicationEventName = keyof ApplicationEventMap;

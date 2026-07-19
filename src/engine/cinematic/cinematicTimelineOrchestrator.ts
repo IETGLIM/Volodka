@@ -8,6 +8,7 @@ import {
   setCinematicPresentationMode,
 } from '@/engine/camera/cinematicPresentation';
 import { isEffectiveReducedMotion } from '@/engine/accessibility/accessibilitySettings';
+import { musicEngine } from '@/engine/MusicEngine';
 import { devWarn } from '@/shared/utils/devLog';
 import { getCinematicTimelineTotalDuration } from './cinematicTimelineController';
 import type {
@@ -19,6 +20,13 @@ export interface CinematicTimelineStartPayload {
   def: CinematicTimelineDef;
   options?: CinematicTimelineRuntimeOptions;
 }
+
+/** Music duck factor applied while a cinematic timeline is active (30%). */
+const CINEMATIC_TIMELINE_DUCK_FACTOR = 0.3;
+/** Fast duck ramp on timeline start (seconds). */
+const CINEMATIC_TIMELINE_DUCK_RAMP_S = 0.5;
+/** Slower restore ramp on timeline stop/complete (seconds). */
+const CINEMATIC_TIMELINE_RESTORE_RAMP_S = 1.0;
 
 let activeTimelineId: string | null = null;
 const listeners = new Set<() => void>();
@@ -78,6 +86,10 @@ export function startCinematicTimeline(payload: CinematicTimelineStartPayload): 
 
   const skipMotion = options.skipMotion ?? isEffectiveReducedMotion();
   if (skipMotion) {
+    // Part 2D: skipped timelines never duck, but a prior timeline's duck
+    // factor may still be applied. Restore to 1.0 (fast ramp — skipped
+    // timelines are instant) so music returns to full volume.
+    musicEngine.setMusicDuckFactor(1.0, CINEMATIC_TIMELINE_DUCK_RAMP_S);
     eventBus.emit('cinematic:timeline_complete', {
       timelineId: def.id,
       skipped: true,
@@ -100,6 +112,10 @@ export function startCinematicTimeline(payload: CinematicTimelineStartPayload): 
     clearOrphanWatchdog();
     activeTimelineId = null;
     setCinematicHoldActive(false);
+    // Part 2D: the new timeline will re-duck below, but restore first so
+    // the ramp restarts cleanly from 1.0 (avoids a stuck mid-duck value
+    // if the new timeline is skipMotion and bails before re-ducking).
+    musicEngine.setMusicDuckFactor(1.0, CINEMATIC_TIMELINE_DUCK_RAMP_S);
     eventBus.emit('cinematic:timeline_stop', { timelineId: oldId });
   }
 
@@ -107,6 +123,10 @@ export function startCinematicTimeline(payload: CinematicTimelineStartPayload): 
   setCinematicPresentationMode('third_person');
   setCinematicHoldActive(true);
   notifyTimelineListeners();
+
+  // Part 2D: Duck music to 30% over 0.5s so the cinematic dialogue/stingers
+  // sit clearly on top of the ambient bed. Restored on stop/complete.
+  musicEngine.setMusicDuckFactor(CINEMATIC_TIMELINE_DUCK_FACTOR, CINEMATIC_TIMELINE_DUCK_RAMP_S);
 
   const totalDurationSec = getCinematicTimelineTotalDuration(def);
   scheduleOrphanWatchdog(def.id, totalDurationSec);
@@ -132,6 +152,9 @@ export function stopCinematicTimeline(timelineId?: string): void {
   setCinematicPresentationMode('third_person');
   notifyTimelineListeners();
 
+  // Part 2D: Restore music volume over 1.0s for a smooth handoff back to gameplay.
+  musicEngine.setMusicDuckFactor(1.0, CINEMATIC_TIMELINE_RESTORE_RAMP_S);
+
   eventBus.emit('cinematic:timeline_stop', { timelineId: id });
   eventBus.emit('cutscene:overlay_end', {});
   eventBus.emit('camera:recenter', {});
@@ -144,6 +167,9 @@ export function completeCinematicTimeline(timelineId: string, skipped = false): 
   setCinematicHoldActive(false);
   setCinematicPresentationMode('third_person');
   notifyTimelineListeners();
+
+  // Part 2D: Restore music volume over 1.0s for a smooth handoff back to gameplay.
+  musicEngine.setMusicDuckFactor(1.0, CINEMATIC_TIMELINE_RESTORE_RAMP_S);
 
   eventBus.emit('cinematic:timeline_complete', { timelineId, skipped });
   eventBus.emit('cutscene:overlay_end', {});
@@ -169,6 +195,9 @@ export function disposeCinematicTimelineOrchestrator(): void {
     activeTimelineId = null;
     setCinematicHoldActive(false);
     setCinematicPresentationMode('third_person');
+    // Part 2D: restore music duck factor so the next session doesn't boot
+    // with music stuck at 30%.
+    musicEngine.setMusicDuckFactor(1.0, CINEMATIC_TIMELINE_RESTORE_RAMP_S);
   }
   notifyTimelineListeners();
 }

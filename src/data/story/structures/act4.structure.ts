@@ -780,6 +780,13 @@ export const ACT4_STRUCTURE: Record<string, StoryNodeStructure> = {
     "speaker": "narrator",
     "sceneId": "office_day",
     "guidanceObjectiveType": "complete_quest",
+    "effects": [
+      {
+        "type": "cameraShake",
+        "intensity": 0.025,
+        "duration": 900
+      }
+    ],
     "choices": [
       {
         "text": "",

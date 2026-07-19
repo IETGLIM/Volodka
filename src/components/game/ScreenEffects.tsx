@@ -150,6 +150,21 @@ export function ScreenEffects() {
       triggerFlash('rgba(251,191,36,0.15)', reducedMotion ? 0.08 : 0.15, reducedMotion ? 100 : 400);
     }));
 
+    // Area F: Clear all active screen FX when a scene transition starts.
+    // Poem power visual effects (vignette, chromatic aberration, flash) are
+    // duration-based via setTimeout, but if the player transitions scenes
+    // mid-effect, the remaining duration would persist into the new scene
+    // (e.g., a 2.2s vignette started 500ms before a doorway transition
+    // would linger for 1.7s in the new scene). Clear all active effects
+    // synchronously on scene:transition_start so each scene starts visually clean.
+    unsubs.push(eventBus.on('scene:transition_start', () => {
+      setFlashes([]);
+      setShake(null);
+      setVignetteIntensity(0);
+      setChromaticIntensity(0);
+      setDamageVignette(null);
+    }));
+
     return () => { for (const u of unsubs) u(); };
   }, [reducedMotion]);
 

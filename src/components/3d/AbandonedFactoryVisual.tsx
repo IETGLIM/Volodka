@@ -361,7 +361,7 @@ function ChemicalVat({ position, color }: { position: [number, number, number]; 
       </mesh>
       {/* Chemical surface */}
       <mesh position={[0, 1.5, 0]} geometry={getSharedCylinderGeometry(0.45, 0.45, 0.05, 8)}>
-        <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.6} transparent opacity={0.7} />
+        <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.6} transparent opacity={0.7} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
       </mesh>
       {/* Pipes */}
       <mesh position={[0.5, 1.2, 0]} rotation={[0, 0, Math.PI / 2]} geometry={getSharedCylinderGeometry(0.04, 0.04, 0.6, 6)}>

@@ -13,6 +13,7 @@ import { dispatchGameAction, getGameSnapshot } from '@/engine/GameActionDispatch
 import type { SceneId } from '@/shared/types/game';
 import { syncNarrativeOnSceneEnter } from '@/shared/exploreHubNodes';
 import { triggerSceneEntryStoryIfNeeded } from '@/engine/interaction/narrativeOpenHelpers';
+import { stopCinematicTimeline } from '@/engine/cinematic/cinematicTimelineOrchestrator';
 import {
   flushDeferredCombatStart,
   registerCombatStartGateTimeoutHandler,
@@ -93,6 +94,16 @@ export function performSceneTransition(payload: SceneTransitionPayload): void {
   try {
     const fromSceneId = getGameSnapshot().exploration.currentSceneId;
     const { targetScene, spawnAt } = payload;
+
+    // Area A: Defense-in-depth — if a cinematic timeline is somehow still
+    // active when a scene transition fires (e.g., the upstream hard gate in
+    // requestSceneTransition missed it during a brief window between
+    // timeline start and the gate check), stop it BEFORE emitting
+    // scene:transition_start. Without this, the timeline's
+    // completeCinematicTimeline() may fire AFTER the scene has changed,
+    // leaving the new scene in a cinematic hold state with letterbox bars
+    // and locked player locomotion.
+    stopCinematicTimeline();
 
     eventBus.emit('scene:transition_start', {
       fromSceneId,

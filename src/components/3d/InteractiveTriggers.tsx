@@ -31,6 +31,7 @@ import { resetEKeyConsumption } from '@/engine/input/eKeyConsumption';
 import { NPC_INTERACTION_RANGE } from '@/engine/player/playerConstants';
 import { setCameraPOITarget } from '@/engine/camera/cameraPOI';
 import { isEffectiveReducedMotion } from '@/engine/accessibility/accessibilitySettings';
+import { isCinematicTimelineActive } from '@/engine/cinematic/cinematicTimelineOrchestrator';
 import {
   resolvePoemExplorationHighlight,
   shouldHighlightZoneForPoemMode,
@@ -445,13 +446,29 @@ export function InteractiveTriggers({
 
       runtime.triggerCooldown.current = Math.max(0, runtime.triggerCooldown.current - delta);
       if (isNear && !runtime.triggeredRef.current && runtime.triggerCooldown.current <= 0) {
-        runtime.triggeredRef.current = true;
-        runtime.triggerCooldown.current = 10;
-        if (zone.enterToast) {
-          eventBus.emit('ui:exploration_message', { text: zone.enterToast });
-        }
-        if (zone.autoTrigger && zone.effects && zone.effects.length > 0) {
-          eventBus.emit('trigger:auto_execute', { triggerZoneId: zone.id });
+        // Area B: Don't fire auto-trigger effects during an active cinematic
+        // timeline. The hard gate in requestSceneTransition blocks scene
+        // changes from transitionScene effects, but OTHER effects (addItem,
+        // addStat, addKarma) would still apply, breaking immersion.
+        // Leave triggeredRef=false so the trigger fires once the timeline
+        // completes and the player is still in range.
+        const suppressForCinematic =
+          zone.autoTrigger &&
+          zone.effects &&
+          zone.effects.length > 0 &&
+          isCinematicTimelineActive();
+
+        if (suppressForCinematic) {
+          runtime.triggerCooldown.current = 0.5; // retry soon
+        } else {
+          runtime.triggeredRef.current = true;
+          runtime.triggerCooldown.current = 10;
+          if (zone.enterToast) {
+            eventBus.emit('ui:exploration_message', { text: zone.enterToast });
+          }
+          if (zone.autoTrigger && zone.effects && zone.effects.length > 0) {
+            eventBus.emit('trigger:auto_execute', { triggerZoneId: zone.id });
+          }
         }
       }
       if (dist > range + 0.5) runtime.triggeredRef.current = false;

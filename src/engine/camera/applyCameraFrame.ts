@@ -9,6 +9,7 @@ import {
 import { canWriteCamera, getCameraOwner } from './cameraOwnerState';
 import { getCameraShakeOffset } from './cameraShake';
 import { getCameraPOI } from './cameraPOI';
+import { resetDialogueCameraDrift } from './dialogueCameraDrift';
 import {
   AUTO_FOLLOW_MIN_YAW_DELTA,
   AUTO_FOLLOW_RETURN_SPEED,
@@ -71,6 +72,11 @@ export function applyCameraFrame(
   }
   if (!isInDialogue && ctx.wasInDialogue) {
     setGlobalTimeScale(1.0);
+    // Part 2B: Reset dialogue camera drift state so the next dialogue session
+    // starts with a fresh drift phase (otherwise the circular motion resumes
+    // mid-cycle and the push-in trigger from the previous session's last
+    // node is lost).
+    resetDialogueCameraDrift();
   }
 
   const isFpExploration =

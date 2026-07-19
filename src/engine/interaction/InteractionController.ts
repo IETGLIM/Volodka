@@ -36,6 +36,7 @@ import {
 } from '@/engine/interaction/interactionEndDedup';
 import { consumeEKey } from '@/engine/input/eKeyConsumption';
 import { isInteractionLocked } from '@/engine/interaction/interactionSession';
+import { isCinematicTimelineActive } from '@/engine/cinematic/cinematicTimelineOrchestrator';
 import { devWarn } from '@/shared/utils/devLog';
 import { resolveNpcBarkForRelation } from '@/shared/npcBark';
 import { resolveZoneInteractionSplash } from '@/engine/interaction/resolveInteractionSplash';
@@ -132,6 +133,13 @@ export class InteractionController {
       // effect would desync the InteractionSystemBridge stateRef with the
       // module-level interactionSession (which resets on scene:transition_start).
       if (isInteractionLocked()) return;
+
+      // Area B defense-in-depth: also block during an active cinematic
+      // timeline. InteractiveTriggers.tsx suppresses the emit, but a
+      // programmatic emit (e.g., from a test or another module) could
+      // still slip through. The hard gate in requestSceneTransition blocks
+      // scene changes, but other effects (addItem, addStat) would apply.
+      if (isCinematicTimelineActive()) return;
 
       const snapshot = getGameSnapshot();
       if (zone.requiredAct && snapshot.playerState.progression.currentAct < zone.requiredAct) {

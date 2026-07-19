@@ -79,7 +79,7 @@ export function StreetWinterVisual({ livePlayerPositionRef }: StreetWinterVisual
       ].map((pos, i) => (
         <mesh key={i} position={pos as [number, number, number]} rotation={[0.1, 0, 0]}>
           <coneGeometry args={[0.02, 0.4, 4]} />
-          <meshStandardMaterial color="#c0d8e8" transparent opacity={0.7} metalness={0.1} roughness={0.1} />
+          <meshStandardMaterial color="#c0d8e8" transparent opacity={0.7} metalness={0.1} roughness={0.1} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
         </mesh>
       ))}
 

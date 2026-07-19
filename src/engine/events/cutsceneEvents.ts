@@ -18,6 +18,9 @@ export interface CutsceneEvents {
   /** Trigger camera shake during cutscenes (e.g. hostile NPC encounters). */
   'cutscene:camera_shake': {
     intensity: number;
+    /** Decay rate (per second). If provided, takes precedence over `duration`. */
     frequency?: number;
+    /** Target duration in ms — converted to a decay rate that brings intensity to ~1% by the end. */
+    duration?: number;
   };
 }

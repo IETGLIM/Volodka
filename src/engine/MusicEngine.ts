@@ -621,6 +621,8 @@ class MusicEngine {
   private masterGainNode: GainNode | null = null;
   private musicVolume = 0.5; // 0-1 user-facing volume
   private presentationDuckProfile: PresentationDuckProfile = 'none';
+  /** Additional duck factor from cinematic timelines (1 = no duck, 0.3 = ducked to 30%). */
+  private cinematicTimelineDuckFactor = 1;
   private intensityLayer: MusicIntensityLayer = 'exploration';
   private disposed = false;
   private sceneGeneration = 0;
@@ -692,6 +694,22 @@ class MusicEngine {
   setPresentationDucked(ducked: boolean, profile: PresentationDuckProfile = 'cinematic'): void {
     this.presentationDuckProfile = ducked ? profile : 'none';
     this.applyVolume();
+  }
+
+  /**
+   * Explicit cinematic-timeline duck factor (0–1).
+   *
+   * Multiplied on top of the presentation-duck gain. Use 1.0 to restore.
+   * The ramp duration is configurable so cinematic starts can duck fast
+   * (0.5s) and completions can restore slowly (1.0s) for a smooth handoff.
+   *
+   * Default ramp is 0.45s to match applyVolume's historical behavior.
+   */
+  setMusicDuckFactor(factor: number, rampSec = 0.45): void {
+    const clamped = Math.max(0, Math.min(1, Number.isFinite(factor) ? factor : 1));
+    if (clamped === this.cinematicTimelineDuckFactor) return;
+    this.cinematicTimelineDuckFactor = clamped;
+    this.applyVolume(Math.max(0.05, rampSec));
   }
 
   /** Adaptive tempo / chord pacing from exploration → tension → combat. */
@@ -929,7 +947,7 @@ class MusicEngine {
 
     // ── Fade in master gain over 2 seconds ──
     const effectiveGain =
-      config.masterGain * this.musicVolume * PRESENTATION_DUCK_GAIN[this.presentationDuckProfile];
+      config.masterGain * this.musicVolume * PRESENTATION_DUCK_GAIN[this.presentationDuckProfile] * this.cinematicTimelineDuckFactor;
     dest.gain.setValueAtTime(0, now);
     dest.gain.linearRampToValueAtTime(effectiveGain, now + 2);
 
@@ -1276,14 +1294,15 @@ class MusicEngine {
   }
 
   /** Apply the current volume setting to the master gain */
-  private applyVolume(): void {
+  private applyVolume(rampSec = 0.45): void {
     if (!this.masterGainNode || !this.ctx) return;
 
-    const duckMul = PRESENTATION_DUCK_GAIN[this.presentationDuckProfile];
+    const duckMul = PRESENTATION_DUCK_GAIN[this.presentationDuckProfile] * this.cinematicTimelineDuckFactor;
     const effectiveGain = (this.currentConfig?.masterGain ?? 0.04) * this.musicVolume * duckMul;
     const now = this.ctx.currentTime;
+    const safeRamp = Number.isFinite(rampSec) && rampSec > 0 ? rampSec : 0.45;
     this.masterGainNode.gain.setValueAtTime(this.masterGainNode.gain.value, now);
-    this.masterGainNode.gain.linearRampToValueAtTime(effectiveGain, now + 0.45);
+    this.masterGainNode.gain.linearRampToValueAtTime(effectiveGain, now + safeRamp);
   }
 
   /** Clean up all audio nodes */

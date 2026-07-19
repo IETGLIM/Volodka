@@ -37,6 +37,10 @@ import { runLockedPlayerMovement } from '@/engine/player/playerLockedMovement';
 import { runMainPlayerMovement } from '@/engine/player/playerMainMovement';
 import { finalizePlayerFrame } from '@/engine/player/playerFinalizeFrame';
 import { createGroundProbeCache } from '@/engine/physics/groundProbeCache';
+import {
+  sampleIdleMonologueThreshold,
+  tryEmitIdleMonologue,
+} from '@/engine/player/idleMonologueSystem';
 
 export interface UsePhysicsPlayerMovementOptions {
   livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
@@ -86,6 +90,15 @@ export function usePhysicsPlayerMovement({
   const wallBumpCooldownRef = useRef(0);
   const mountedRef = useRef(true);
   const movementEpochRef = useRef(0);
+
+  // ── Idle monologue tracking ──
+  // Accumulates milliseconds the player has been idle (no movement input,
+  // grounded, not interaction-locked). When the accumulator crosses the
+  // sampled threshold (25–35 s), the idle monologue system fires a
+  // `volodka:thought` event. Reset on any movement, scene change, or
+  // interaction lock.
+  const idleMonologueAccumulatorRef = useRef(0);
+  const idleMonologueThresholdRef = useRef(sampleIdleMonologueThreshold());
 
   const { world, rapier } = useRapier();
 
@@ -225,6 +238,11 @@ export function usePhysicsPlayerMovement({
       currentAnimRef.current = 'idle';
       if (moveBlendRef) moveBlendRef.current = 0;
 
+      // Reset idle monologue accumulator so a long load doesn't trigger an
+      // immediate thought on the new scene.
+      idleMonologueAccumulatorRef.current = 0;
+      idleMonologueThresholdRef.current = sampleIdleMonologueThreshold();
+
       // Position reset is handled by the scene:enter EventBus handler below,
       // which receives the canonical spawn point. Avoiding a duplicate
       // setTranslation here prevents a visible physics snap on scene changes.
@@ -254,6 +272,12 @@ export function usePhysicsPlayerMovement({
       velocityRef.current.set(0, 0, 0);
       isGroundedRef.current = true;
       coyoteTimerRef.current = 0;
+
+      // Reset idle monologue accumulator on scene entry — the new scene's
+      // entry thought will fire from useGameLifecycleManager and we don't
+      // want an idle thought stepping on it.
+      idleMonologueAccumulatorRef.current = 0;
+      idleMonologueThresholdRef.current = sampleIdleMonologueThreshold();
 
       const sceneConfig = getSceneConfig(enteredScene);
       livePlayerRotationRef.current = sceneConfig.initialRotation ?? 0;
@@ -332,7 +356,42 @@ export function usePhysicsPlayerMovement({
 
   useFrameTick('player', () => {
     if (!mountedRef.current || !pendingFinalizeRef.current) return;
-    finalizePlayerFrame(movementDepsRef.current);
+    const deps = movementDepsRef.current;
+    finalizePlayerFrame(deps);
+
+    // ── Idle monologue accumulation ──
+    // Run AFTER finalizePlayerFrame so scratch.isMoving / isLocked reflect
+    // the resolved state for this frame. dt is in seconds; convert to ms.
+    const scratch = deps.frameScratchRef.current;
+    const dtMs = scratch.dt * 1000;
+    const isMoving = scratch.isMoving;
+    const isLocked = scratch.isLocked;
+    const isAirborne = scratch.airborneIntent;
+
+    if (isMoving || isLocked || isAirborne) {
+      // Any active input / lock / jump resets the idle accumulator and
+      // re-samples the threshold so the next wait isn't predictable.
+      if (idleMonologueAccumulatorRef.current > 0) {
+        idleMonologueAccumulatorRef.current = 0;
+        idleMonologueThresholdRef.current = sampleIdleMonologueThreshold();
+      }
+      return;
+    }
+
+    idleMonologueAccumulatorRef.current += dtMs;
+    const threshold = idleMonologueThresholdRef.current;
+    if (idleMonologueAccumulatorRef.current < threshold) return;
+
+    // Threshold reached — attempt to emit. The idle monologue system has
+    // its own 60 s global cooldown and a phase guard (exploration only).
+    // If emission succeeds (or fails due to cooldown / missing pool), we
+    // reset the accumulator and sample a new threshold so the player gets
+    // another idle window before the next attempt.
+    const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    tryEmitIdleMonologue(deps.sceneId, now);
+
+    idleMonologueAccumulatorRef.current = 0;
+    idleMonologueThresholdRef.current = sampleIdleMonologueThreshold();
   }, { label: 'PhysicsPlayerFinalize', phase: 'post_physics', enabled: !physicsPaused });
 
   return { rigidBodyRef, capsuleColliderRef, currentAnimRef };

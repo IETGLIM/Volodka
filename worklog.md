@@ -578,3 +578,78 @@ Stage Summary:
 - Dust motes respond to player proximity — walking through a dusty room creates a visible wake
 - Cinematic depth-of-field during dialogue/cutscene moments (high/ultra only)
 - All changes compile with 0 TypeScript errors
+
+---
+Task ID: 2-a/b/c/d
+Agent: session12-improvements
+Task: Comprehensive improvements — story depth, physics polish, graphics atmosphere, race conditions & cinema
+
+Work Log:
+- Story depth (Task 2-a):
+  - Created `src/data/idleMonologues.ts` — 12 scenes × 4 bands (high stress / high karma / low karma / neutral) × 3-5 lines each ≈ 200+ idle monologue lines in Russian (Disco-Elysium-style introspective mutterings)
+  - Created `src/engine/player/idleMonologueSystem.ts` — fires idle thoughts after 25-35s of no movement input, 60s global cooldown, phase-guarded (exploration only, no cutscene/combat/dialogue)
+  - Wired idle accumulator into `usePhysicsPlayerMovement.ts` post-physics finalize tick; resets on movement / scene change / interaction lock
+  - Extended `src/shared/npcBark.ts` with `NPCAmbientBarks` interface (idle/working/pensive bands)
+  - Extended `NPCDefinition` with optional `ambientBarks` field
+  - Added ambient barks to 6 NPCs in `src/data/npcDefinitions.ts` (albert, zarema, cafe_barista, office_alexander, maria, office_colleague) — 8-12 lines each
+  - Created `src/engine/npc/npcAmbientBarkSystem.ts` — fires ambient barks when player is within 4m of an NPC for >25s, 25s per-NPC cooldown
+  - Added `npc:bark` event to `src/engine/events/npcEvents.ts`
+  - Mounted NpcAmbientBarkSystem in PhysicsSceneInner alongside NPCSystem
+  - Added 16 new `byAct` entries to `src/data/sceneEntryThoughts.ts` covering acts 4-7 for scenes that lacked them
+
+- Physics & animation polish (Task 2-b):
+  - Created `src/components/3d/FootstepDust.tsx` — 30-particle pool, subscribes to `exploration:footstep` event, spawns 3-5 dust particles per step with upward+outward velocity, fades over 0.6s, reduced-motion-aware
+  - Wired FootstepDust into PhysicsSceneInner
+  - Extended `src/engine/camera/cameraShake.ts` to accept `duration` (ms) payload, converted to decay rate (4.6 / (duration/1000)) so intensity reaches ~1% by end
+  - Added `cutscene:camera_shake` event support for `{ intensity, duration }` payload shape
+  - Wired duration-based shake through `applyCameraFrame.ts` and `ScreenEffects.tsx`
+
+- Graphics & atmosphere (Task 2-c):
+  - Created `src/components/3d/VolumetricLightShaft.tsx` — cone-shaped volumetric god rays with custom shader (additive blend, dust noise, flicker), quality-gated (high/ultra only, mobile caps at 2, reduced-motion disabled)
+  - Added `SCENE_VOLUMETRIC_LIGHTS` config map for 4 scenes (volodka_room, library_day, office_day, cafe_evening)
+  - Wired VolumetricLightShafts into SceneEnvironment
+  - Created `src/components/3d/DialogueFocusTracker.tsx` — syncs `dialogueFocusTarget` singleton with active dialogue NPC
+  - Created `src/engine/graphics/dialogueFocusTarget.ts` — module-level singleton for dialogue focus position
+  - Enhanced `ExplorationPostFX.tsx` with stress-driven chromatic aberration (0 at stress<70, max at stress=100, offset 0.002 max) and dialogue depth-of-field
+  - Created `src/engine/camera/dialogueCameraDrift.ts` — subtle camera drift during dialogue (0.1m radius, 20s period, ±0.5° FOV breathing)
+  - Added z-fighting fixes (polygonOffset) to CafeVisual, StreetVisual, StreetWinterVisual, AbandonedFactoryVisual
+  - Enhanced SceneEnvironment with distance fog improvements
+
+- Race conditions & cinema (Task 2-d):
+  - Extended `cinematicTimelineOrchestrator.ts` — `stopCinematicTimeline` now clears on scene:transition_start to prevent stale timeline state across scenes
+  - Extended `SceneTransitionManager.ts` — calls stopCinematicTimeline on transition start
+  - Extended `InteractionController.ts` — added isInteractionLocked guard to auto-trigger zone handler
+  - Extended `InteractiveTriggers.tsx` — guards auto-trigger effects during interaction-locked state
+  - Extended `MusicEngine.ts` — added `setMusicDuckFactor` for cutscene audio ducking (30% volume during cinematics, 0.5s duck / 1.0s restore)
+  - Wired music ducking from cinematicTimelineOrchestrator start/stop/complete
+  - Extended `applyCameraFrame.ts` — applies dialogue camera drift offset during Dialogue interaction state
+  - Extended `ScreenEffects.tsx` — smooth letterbox transition (0.4s easeInOutCubic slide-in)
+  - Extended `src/data/story/structures/act4.structure.ts` — added cameraShake effects at 3-4 emotional story beats
+  - Added `cameraShake` to `StoryEffectType` and `StoryEffect` interface with `intensity` and `duration` fields
+  - Added `cutscene:camera_shake` to `ApplicationEventMap` for store→engine routing (resolves shared↔engine import cycle)
+  - Routed cameraShake effect through `emitAppEvent` instead of direct engine import (fixes lint rule)
+  - Extended `store/persistedState.ts` — forces `activeCutsceneId = null` on load (defense-in-depth against stale cutscene state)
+  - Extended `storyNodeValidation.ts` — validates cameraShake effect intensity/duration ranges
+
+- Integration & wiring:
+  - Added `pickIdleMonologue` export to `src/data/idleMonologues.ts` matching the signature expected by the idle monologue system
+  - Fixed engine↔store import cycle in `idleMonologueSystem.ts` — uses `getGameSnapshot` / `dispatchStateAction` from StateDispatcher instead of direct store import
+  - Fixed shared↔engine import cycle in `applyEffects.ts` — uses `emitAppEvent` for camera shake instead of direct eventBus import
+  - Wired FootstepDust, DialogueFocusTracker, VolumetricLightShafts into PhysicsSceneInner / SceneEnvironment
+  - Verified all 280 test files pass, 0 TypeScript errors, 0 lint errors (only pre-existing warnings)
+
+Stage Summary:
+- 9 new files created: idleMonologues.ts, idleMonologueSystem.ts, FootstepDust.tsx, VolumetricLightShaft.tsx, DialogueFocusTracker.tsx, dialogueCameraDrift.ts, dialogueFocusTarget.ts, npcAmbientBarkSystem.ts, + camera shake extensions
+- 28 existing files modified across story/physics/graphics/cinema/race-conditions
+- 200+ new Russian idle monologue lines (Disco-Elysium-style introspective depth)
+- 6 NPCs with new ambient barks (idle/working/pensive bands)
+- 16 new act 4-7 scene-entry thought variants
+- Volumetric god rays for 4 window-lit scenes (quality-gated)
+- Stress-driven chromatic aberration for emotional tension
+- Dialogue camera drift + DOF for cinematic conversations
+- Footstep dust particles for movement feedback
+- Smooth letterbox transitions (0.4s slide-in)
+- Cutscene audio ducking (30% volume during cinematics)
+- 5+ race conditions hardened (cinematic+scene, auto-trigger+interaction, save+cutscene)
+- Story-node camera shake for emotional beats (act 4)
+- All changes compile clean (0 TS errors, 0 lint errors, 280/280 tests pass)
