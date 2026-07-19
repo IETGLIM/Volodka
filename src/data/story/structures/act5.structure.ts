@@ -72,7 +72,7 @@ export const ACT5_STRUCTURE: Record<string, StoryNodeStructure> = {
         "text": "",
         "next": "old_code",
         "condition": {
-          "flag": "cafe_barista_secret_known"
+          "flag": "barista_poems_received"
         },
         "effects": [
           {

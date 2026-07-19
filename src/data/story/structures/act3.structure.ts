@@ -1617,6 +1617,11 @@ export const ACT3_STRUCTURE: Record<string, StoryNodeStructure> = {
         "type": "setFlag",
         "flag": "tolpa_act3_hide_sync",
         "flagValue": true
+      },
+      {
+        "type": "setFlag",
+        "flag": "factory_unlocked",
+        "flagValue": true
       }
     ],
     "choices": [

@@ -14,6 +14,8 @@ import type { SceneId } from '@/shared/types/game';
 export const LORE_SCENE_MAP: Partial<Record<SceneId, string[]>> = {
   volodka_room: [
     'lore_volodka_engineer',   // Engineering past discovered in own room
+    'lore_volodka_night_ritual', // Night ritual in the engineer's room
+    'lore_volodka_thirty_three', // The thirty-three mystery
   ],
   volodka_corridor: [
     'lore_corridor_liminal',   // Liminal space discovered in the corridor
@@ -23,12 +25,14 @@ export const LORE_SCENE_MAP: Partial<Record<SceneId, string[]>> = {
     'lore_home_evening_routine', // Evening ritual discovered in kitchen
     'lore_zarema_albert_backstory', // Cross-destinies discovered in kitchen
     'lore_communal_radio',     // Kitchen radio — shortwave freedom
+    'lore_volodka_ufa_relationship', // Volodka's Ufa relationship echoes
   ],
   solnysh_room: [
     'lore_solnysh_studio',     // Solnysh's art studio atmosphere
   ],
   zarema_albert_room: [
     'lore_zarema_albert_home', // Neighbors' cozy shared room
+    'lore_zarema_past',        // Zarema's past surfacing in the shared room
   ],
   street_night: [
     'lore_city_ufa',           // City overview from the street
@@ -40,6 +44,9 @@ export const LORE_SCENE_MAP: Partial<Record<SceneId, string[]>> = {
     'lore_winter_phenomena',   // Winter phenomena on the frozen street
     'lore_city_ufa',           // City overview — winter perspective
     'lore_ai_surveillance',    // Surveillance still active in winter
+    'lore_weather_control',    // Weather control infrastructure glimpsed in winter sky
+    'lore_metro_rumors',       // Metro rumors heard on the winter street
+    'lore_winter_code',        // Winter code patterns in the frost
   ],
   cafe_evening: [
     'lore_cafe_blue_hole',     // Cafe lore discovered by visiting
@@ -58,6 +65,10 @@ export const LORE_SCENE_MAP: Partial<Record<SceneId, string[]>> = {
     'lore_dmitry_project',     // Dmitry's project discovered at office
     'lore_neurosys_chips',     // Chip anatomy discovered at office
     'lore_office_server_hum',  // Server room 50 Hz pulse
+    'lore_volodka_ufa_technoservis', // Volodka's Ufa Technoservis past
+    'lore_neurosis_project',   // Neurosis project files glimpsed
+    'lore_dmitry_secret',      // Dmitry's secret uncovered at the office
+    'lore_coding_guide',       // Coding guide notes on a workstation
   ],
   park_day: [
     'lore_park_memorial',      // Memorial discovered in the park
@@ -76,11 +87,13 @@ export const LORE_SCENE_MAP: Partial<Record<SceneId, string[]>> = {
   rooftop_edge: [
     'lore_rooftop',            // Rooftop transition point discovered
     'lore_rooftop_community',  // Rooftop community discovered
+    'lore_rooftop_poets',      // Rooftop poets' gatherings
   ],
   abandoned_factory: [
     'lore_factory',            // Factory discovered by visiting
     'lore_factory_workers',    // Workers' story discovered at factory
     'lore_quantum_computer',   // Quantum computer discovered at factory
+    'lore_resistance_fragment', // Resistance fragment found in the factory
   ],
   factory_basement: [
     'lore_factory_progress7',  // Secret sublevel discovered by descending

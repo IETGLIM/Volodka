@@ -617,6 +617,13 @@ export const ACT6_STRUCTURE: Record<string, StoryNodeStructure> = {
     "speaker": "narrator",
     "sceneId": "office_day",
     "guidanceObjectiveType": "complete_quest",
+    "effects": [
+      {
+        "type": "setFlag",
+        "flag": "act6_heist_planned",
+        "flagValue": true
+      }
+    ],
     "choices": [
       {
         "text": "",
@@ -902,6 +909,11 @@ export const ACT6_STRUCTURE: Record<string, StoryNodeStructure> = {
       {
         "type": "collectPoem",
         "poemId": "poem_act6_06"
+      },
+      {
+        "type": "setFlag",
+        "flag": "act6_infiltration_ready",
+        "flagValue": true
       }
     ],
     "choices": [

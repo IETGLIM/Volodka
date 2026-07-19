@@ -248,6 +248,11 @@ export const ACT2_STRUCTURE: Record<string, StoryNodeStructure> = {
         "type": "addStat",
         "stat": "stress",
         "value": -5
+      },
+      {
+        "type": "setFlag",
+        "flag": "act2_maria_search_active",
+        "flagValue": true
       }
     ],
     "choices": [
@@ -810,6 +815,18 @@ export const ACT2_STRUCTURE: Record<string, StoryNodeStructure> = {
     "speaker": "narrator",
     "sceneId": "abandoned_factory",
     "guidanceObjectiveType": "make_choice",
+    "effects": [
+      {
+        "type": "setFlag",
+        "flag": "act2_network_initiation",
+        "flagValue": true
+      },
+      {
+        "type": "setFlag",
+        "flag": "seeking_guild_vault",
+        "flagValue": true
+      }
+    ],
     "choices": [
       {
         "text": "",
@@ -1121,6 +1138,13 @@ export const ACT2_STRUCTURE: Record<string, StoryNodeStructure> = {
     "sceneId": "abandoned_factory",
     "guidanceNpcId": "npc_maria",
     "guidanceObjectiveType": "make_choice",
+    "effects": [
+      {
+        "type": "setFlag",
+        "flag": "act2_vault_revealed",
+        "flagValue": true
+      }
+    ],
     "choices": [
       {
         "text": "",
@@ -1515,6 +1539,13 @@ export const ACT2_STRUCTURE: Record<string, StoryNodeStructure> = {
     "speaker": "narrator",
     "sceneId": "street_winter",
     "guidanceObjectiveType": "make_choice",
+    "effects": [
+      {
+        "type": "setFlag",
+        "flag": "act2_safehouse_established",
+        "flagValue": true
+      }
+    ],
     "choices": [
       {
         "text": "",

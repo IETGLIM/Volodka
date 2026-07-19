@@ -845,7 +845,6 @@ export const abandoned_factory_def: SceneDefinition = {
       spawnPosition: [-8.0, 0, 0],
       spawnRotation: 0,
       label: '→ Улица',
-      requiredFlag: 'factory_unlocked',
       doorwayId: 'factory_to_street',
     },
     {
