@@ -609,6 +609,19 @@ function CanvasFrameloopController({ idle }: { idle: boolean }) {
     return () => timers.forEach(clearTimeout);
   }, [invalidate]);
 
+  // Keep-alive: while the frameloop is in 'demand' mode (story overlay open,
+  // menu, intro, or tab hidden), periodically invalidate so the 3D scene
+  // doesn't freeze permanently if a state change fails to invalidate. Without
+  // this, a stuck showStoryOverlay=true would leave physics, camera, and input
+  // frozen indefinitely. (Task 5-A #4.)
+  useEffect(() => {
+    if (!isStaticScreen && !idle) return;
+    const interval = setInterval(() => {
+      invalidate();
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [isStaticScreen, idle, invalidate]);
+
   return null;
 }
 

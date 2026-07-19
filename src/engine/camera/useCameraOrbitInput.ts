@@ -89,7 +89,12 @@ export function useCameraOrbitInput(
     const onMouseDown = (e: MouseEvent) => {
       if (shouldBlockOrbit()) return;
 
-      if (e.button === 0 && firstPersonRef?.current && isCanvasAreaTarget(e.target)) {
+      // LMB drag-to-orbit — works in BOTH first-person and third-person modes.
+      // Previously LMB only orbited in FP mode, which made third-person camera
+      // feel "broken" to users who intuitively try LMB drag. We use a drag
+      // threshold (LMB_LOOK_DRAG_THRESHOLD_PX) so a quick click still registers
+      // as an interaction click (not a camera orbit). (Task 5-A #3.)
+      if (e.button === 0 && isCanvasAreaTarget(e.target)) {
         lmbDown = true;
         lmbLookActive = false;
         lmbStart = { x: e.clientX, y: e.clientY };
@@ -123,16 +128,21 @@ export function useCameraOrbitInput(
         return;
       }
 
-      if (lmbDown && firstPersonRef?.current) {
+      if (lmbDown) {
         if (!lmbLookActive) {
           const dx0 = e.clientX - lmbStart.x;
           const dy0 = e.clientY - lmbStart.y;
+          // Drag threshold — below this, treat as a click (don't orbit).
           if (dx0 * dx0 + dy0 * dy0 < LMB_LOOK_DRAG_THRESHOLD_PX * LMB_LOOK_DRAG_THRESHOLD_PX) {
             return;
           }
-          const { pointerLockEnabled } = getVisualSettings();
-          if (pointerLockEnabled && canvasEl && document.pointerLockElement !== canvasEl) {
-            void canvasEl.requestPointerLock();
+          // In FP mode, request pointer lock for mouse-look. In TP mode,
+          // just start orbiting without pointer lock.
+          if (firstPersonRef?.current) {
+            const { pointerLockEnabled } = getVisualSettings();
+            if (pointerLockEnabled && canvasEl && document.pointerLockElement !== canvasEl) {
+              void canvasEl.requestPointerLock();
+            }
           }
           lmbLookActive = true;
           lastMouseRef.current = { x: e.clientX, y: e.clientY };

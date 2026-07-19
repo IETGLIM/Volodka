@@ -113,9 +113,21 @@ export function easeInOutCubic(t: number): number {
   return c < 0.5 ? 4 * c * c * c : 1 - Math.pow(-2 * c + 2, 3) / 2;
 }
 
-/** Y rotation so a humanoid with forward = -Z faces movement direction (dx, dz). */
+/** Y rotation so a humanoid model (GLB facing +Z, with FORWARD_OFFSET=π applied
+ *  by CesiumPlayerModel to face -Z) faces the movement direction (dx, dz).
+ *
+ *  Derivation: CesiumPlayerModel applies total rotation = facingY + π.
+ *  For a +Z-facing model, the rotation to face (dx, dz) is atan2(dx, dz).
+ *  So we need facingY + π = atan2(dx, dz), i.e. facingY = atan2(dx, dz) - π
+ *  = atan2(-dx, -dz) (by the atan2 identity atan2(y,x) - π = atan2(-y,-x)).
+ *
+ *  Note: we use `0 - dx` instead of `-dx` to avoid producing -0 (negative zero),
+ *  which would make atan2(-0, -1) return -π instead of π. (Task 5-B #5.)
+ *
+ *  Previously this returned atan2(dx, -dz), which has the sign of dx flipped —
+ *  the avatar walked backwards for X-dominant movement. */
 export function facingYFromDirection(dx: number, dz: number): number {
-  return Math.atan2(dx, -dz);
+  return Math.atan2(0 - dx, 0 - dz);
 }
 
 export function facingYBetween(from: THREE.Vector3, to: THREE.Vector3): number {

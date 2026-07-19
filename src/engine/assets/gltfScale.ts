@@ -57,7 +57,10 @@ const _meshBoundsScratch = new THREE.Box3();
  * can measure a single slice (boots ≈0.19 m) and break scale/foot pivot on medium+.
  */
 export function measureCharacterGltfBounds(obj: THREE.Object3D): GltfBounds {
-  obj.updateWorldMatrix(true, true);
+  // updateMatrixWorld(true) forces all children — including bones — to
+  // recompute matrixWorld. This is needed for accurate SkinnedMesh bounds
+  // because applyBoneTransform reads bone.matrixWorld. (Task 5-B #3.)
+  obj.updateMatrixWorld(true);
   const union = new THREE.Box3();
   let hasUnion = false;
 

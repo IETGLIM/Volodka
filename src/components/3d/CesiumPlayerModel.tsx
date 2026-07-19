@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
@@ -55,6 +55,43 @@ function CesiumPlayerModelInner({ modelScale, currentAnimRef, rotationRef }: Pro
   const yawRef = useRef<THREE.Group>(null);
   const [fit, setFit] = useState<Fit>({ scale: 1, rotX: 0, y: 0 });
 
+  // CRITICAL: Measure bounds in a useLayoutEffect BEFORE usePlayerLocomotionController.
+  // The locomotion controller's internal useLayoutEffect calls mixer.update(0) which
+  // advances the idle animation past frame 0, overriding the bind pose. React runs
+  // useLayoutEffects in call order, so placing this BEFORE the locomotion controller
+  // ensures we measure the bind-pose skeleton before the mixer touches it.
+  // Previously this was a useEffect (runs AFTER all useLayoutEffects) gated on
+  // `ready`, which meant mixer.update(0) had already corrupted the bone matrices
+  // → bounds.size.y ≈ 8.5m → scale = 0.206 (model 5x too small, invisible at 3m
+  // camera distance). (Task 5-A/5-B #1, CRITICAL.)
+  useLayoutEffect(() => {
+    const bounds = measureCharacterGltfBounds(scene);
+    const { scale, rotX, footY } = fitCharacterGltf(bounds, {
+      scaleMultiplier: modelScale,
+    });
+
+    if (import.meta.env.DEV) {
+      console.log('[CesiumPlayerModel] fit:', {
+        scale: scale.toFixed(3),
+        rotX: rotX.toFixed(3),
+        footY: footY.toFixed(3),
+        boundsSize: bounds.size.toArray().map((v: number) => v.toFixed(3)),
+        boundsMin: bounds.min.toArray().map((v: number) => v.toFixed(3)),
+        boundsMax: bounds.max.toArray().map((v: number) => v.toFixed(3)),
+        modelScale,
+        ready,
+      });
+    }
+
+    // Defense-in-depth: if the bounds measurement produced an absurd scale
+    // (e.g., model measured as >5m or <0.3m tall), fall back to a safe default.
+    const safeScale = scale > 0.3 && scale < 3.0 ? scale : 1.0;
+    // footY is the Y offset to place feet at y=0. Do NOT clamp to 0.5 — that
+    // sinks models whose origin is >0.5m above the feet (normal for Mixamo rigs).
+    const safeFootY = Number.isFinite(footY) ? footY : 0;
+    setFit({ scale: safeScale, rotX, y: safeFootY });
+  }, [scene, modelScale]);
+
   const embeddedActions = useMemo(() => {
     if (!mixer) return null;
     const record: Record<string, THREE.AnimationAction> = {};
@@ -74,49 +111,6 @@ function CesiumPlayerModelInner({ modelScale, currentAnimRef, rotationRef }: Pro
     actions,
     currentAnimRef,
   });
-
-  useEffect(() => {
-    if (!ready) return;
-
-    // Force skeleton into rest pose before measuring bounds.
-    // SkinnedMesh bounds may be incorrect if skeleton hasn't been
-    // updated since clone — this can cause the model to appear
-    // lying down or floating under the ceiling.
-    scene.traverse((child: THREE.Object3D) => {
-      if (child instanceof THREE.SkinnedMesh && child.skeleton) {
-        child.skeleton.pose();
-        child.skeleton.update();
-      }
-    });
-
-    // Small delay to let the renderer process the skeleton pose
-    // before we measure bounds — prevents stale bind-pose measurements.
-    const raf = requestAnimationFrame(() => {
-      const bounds = measureCharacterGltfBounds(scene);
-      const { scale, rotX, footY } = fitCharacterGltf(bounds, {
-        scaleMultiplier: modelScale,
-      });
-
-      if (import.meta.env.DEV) {
-        console.log('[CesiumPlayerModel] fit:', {
-          scale: scale.toFixed(3),
-          rotX: rotX.toFixed(3),
-          footY: footY.toFixed(3),
-          boundsSize: bounds.size.toArray().map((v: number) => v.toFixed(3)),
-          boundsMin: bounds.min.toArray().map((v: number) => v.toFixed(3)),
-          boundsMax: bounds.max.toArray().map((v: number) => v.toFixed(3)),
-          modelScale,
-        });
-      }
-
-      // Safety: if footY is abnormally large (model origin far below feet),
-      // the avatar would appear under the ceiling. Cap to a reasonable offset.
-      const safeFootY = Math.min(footY, 0.5);
-      setFit({ scale, rotX, y: safeFootY });
-    });
-
-    return () => cancelAnimationFrame(raf);
-  }, [scene, modelScale, ready]);
 
   useFrameTick('player', () => {
     if (!ready) return;
