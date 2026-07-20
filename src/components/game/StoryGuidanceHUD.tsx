@@ -10,7 +10,7 @@ import { getCurrentGuidance, type GuidanceInfo } from '@/engine/GuidedStoryManag
 import { buildGuidanceDirectionHint } from '@/engine/guidedStory/guidanceLocation';
 import { getNextTrackedObjective, areDependenciesMet, getQuestMarker } from '@/store/questStore';
 import { useQuests, useCurrentSceneId, useOrchestratorNarrativeOverlay } from '@/store/selectors';
-import { useTutorialActive } from '@/store/selectors/uiSelectors';
+// useTutorialActive removed — guidance is now shown during tutorial too
 import { QUEST_DEFINITIONS } from '@/data/quests';
 import { GOLDEN_PATH_QUEST_SPINE } from '@/data/goldenPath';
 import { getGameSnapshot } from '@/engine/GameActionDispatcher';
@@ -84,7 +84,6 @@ export function StoryGuidanceHUD() {
   const profile = useGameplayPresentationProfile();
   const { showStoryOverlay, narrativeKind, diegeticNarrative } = useOrchestratorNarrativeOverlay();
   const currentSceneId = useCurrentSceneId();
-  const tutorialActive = useTutorialActive();
   const [interactionLocked, setInteractionLocked] = useState(() => isInteractionLocked());
   const [revealReady, setRevealReady] = useState(false);
   const revealTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -300,12 +299,14 @@ export function StoryGuidanceHUD() {
     e.stopPropagation();
     openQuestJournal(currentObjective?.questId);
   }, [currentObjective?.questId, openQuestJournal]);
+  // Show guidance even during the tutorial — the player needs to know
+  // their first objective ("Осмотреть рабочий стол [E]") immediately.
+  // Previously tutorialActive hid this, leaving the player aimless.
   const shouldShow =
     isExplorationHudProfile(profile)
     && !showStoryOverlay
     && !diegeticNarrative
     && !interactionLocked
-    && !tutorialActive
     && revealReady
     && Boolean(displayText);
 

@@ -11,7 +11,9 @@ import { eventBus } from '@/engine/EventBus';
 import { audioEngine } from '@/engine/AudioEngine';
 import { getGameStore } from '@/store/gameStore';
 import { prefetchStoryNodes } from '@/data/gameDataLoader';
-import { enterSceneFreeExplorationHub } from '@/engine/scene/freeExplorationHub';
+import { openDiegeticNarrative } from '@/engine/scene/narrativeOverlay';
+import { setCinematicHoldActive } from '@/engine/camera/cinematicPresentation';
+import { forceEmitInteractionEnd } from '@/engine/interaction/interactionEndDedup';
 import { dispatchGameAction } from '@/engine/GameActionDispatcher';
 import { setCinematicPresentationMode } from '@/engine/camera/cinematicPresentation';
 import {
@@ -82,8 +84,10 @@ export function CinematicTimelineRunner() {
     clearFallback();
 
     const store = getGameStore();
+    // Face the desk (monitors at Z=-2.35) instead of the door (Z=+3.5).
+    // Rotation 0 = facing -Z in Three.js.
     store.setPlayerPosition([0, 0.01, -1.3]);
-    store.setPlayerRotation(Math.PI);
+    store.setPlayerRotation(0);
     store.setCutscene(null, []);
     store.setFlag('woke_up', true);
     // NOTE: poem_2 and read_poem_2 are NO LONGER auto-granted on wake-up.
@@ -158,11 +162,14 @@ export function CinematicTimelineRunner() {
       }
       live.setCurrentNodeId('start');
       dispatchGameAction({ type: 'story/visitNode', nodeId: 'start' });
-      // Suppress the hub location toast during the wake-up prologue — the
-      // story overlay (start.text) already describes the room in detail.
-      // Showing hubIntroText simultaneously caused "три монитора" to appear
-      // twice (once in start.text, once in the hub toast).
-      enterSceneFreeExplorationHub('explore_mode', { suppressLocationToast: true });
+      // Show the 'start' node as a diegetic HUD dialogue so the player
+      // actually reads the opening narration and makes their first choice.
+      // Previously this immediately entered the explore hub, silently
+      // skipping the start node text. The hub is now entered naturally
+      // when the player picks "Подняться и осмотреться" → explore_mode.
+      setCinematicHoldActive(false);
+      forceEmitInteractionEnd();
+      openDiegeticNarrative('start', 'story');
     };
 
     if (!store.isCutsceneTriggered('act1_prologue')) {

@@ -16,6 +16,13 @@ export interface DynamicPropDef {
 /** Pushable clutter per scene — kicked around by the player (KCC impulses).
  *  Keep counts low (≤6 per scene): each prop is one dynamic rigid body. */
 export const DYNAMIC_PROPS: Partial<Record<SceneId, DynamicPropDef[]>> = {
+  volodka_room: [
+    // Lived-in clutter on and around the desk — teaches the player that
+    // objects are interactive and makes the room feel inhabited.
+    { id: 'vr_can_1', kind: 'can', position: [0.6, 0, -2.1], rotation: 0.3 },
+    { id: 'vr_can_2', kind: 'can', position: [-0.4, 0, -2.3], rotation: 1.7 },
+    { id: 'vr_bottle_1', kind: 'bottle', position: [1.1, 0, -1.8], rotation: 0.8 },
+  ],
   street_night: [
     { id: 'sn_can_1', kind: 'can', position: [2.4, 0, 3.6], rotation: 0.4 },
     { id: 'sn_can_2', kind: 'can', position: [-2.1, 0, -7.4], rotation: 1.2 },

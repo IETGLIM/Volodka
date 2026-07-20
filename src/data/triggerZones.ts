@@ -211,7 +211,9 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     sceneId: 'volodka_room',
     position: [0, 0, 3.5],
     size: [1.2, 2.2, 0.5],
-    requiredFlag: 'interacted_desk',
+    // requiredFlag removed — give the player freedom to explore.
+    // The quest tracker guides them back to the desk if they leave early.
+    // This is more Disco Elysium-like: player agency over gated progression.
     enterToast: 'Дверь в коридор приоткрыта.',
     linkedStoryNodeId: 'corridor_door',
     interactionType: 'open',
