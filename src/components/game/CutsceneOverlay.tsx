@@ -256,6 +256,14 @@ export function CutsceneOverlay() {
   const skipDelayTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [showSkip, setShowSkip] = useState(false);
   const skippedRef = useRef(false);
+  /**
+   * True when the current overlay was emitted by CinematicTimelineRunner.
+   * When true, the auto-dismiss timer must NOT clear activeCutsceneId —
+   * the timeline manages its own lifecycle (finishIntroWake/finishGenericTimeline).
+   * Without this, the overlay's auto-dismiss would kill the 29-second
+   * wake-up cinematic after the first phase's ~4s duration.
+   */
+  const managedByTimelineRef = useRef(false);
 
   const clearTimer = useCallback(() => {
     if (timerRef.current !== null) {
@@ -321,6 +329,9 @@ export function CutsceneOverlay() {
       setFadeInMs(payload.fadeInMs ?? 300);
       setFadeOutMs(payload.fadeOutMs ?? 500);
       setOverlayKey((k) => k + 1);
+      // Track whether this overlay is managed by a cinematic timeline.
+      // If so, the auto-dismiss timer must NOT clear activeCutsceneId.
+      managedByTimelineRef.current = payload.managedByTimeline === true;
       setActive(true);
       setShowSkip(true);
       skippedRef.current = false;
@@ -345,14 +356,21 @@ export function CutsceneOverlay() {
         setAriaAnnouncement('');
         eventBus.emit('cutscene:overlay_end', {});
 
-        // End cutscene in the store if we're still in cutscene mode
-        const store = useGameStore.getState();
-        if (readGamePhase(store) === 'cutscene') {
-          store.setCutscene(null, []);
-          clearGameplayPhaseFlags(store);
+        // End cutscene in the store if we're still in cutscene mode —
+        // UNLESS this overlay is managed by a cinematic timeline. The
+        // timeline (CinematicTimelineRunner) emits a new overlay for each
+        // phase; the timeline itself calls finishIntroWake / finishGenericTimeline
+        // when it reaches the end. If we clear activeCutsceneId here for
+        // a managed overlay, we kill the entire cinematic after the first phase.
+        if (!managedByTimelineRef.current) {
+          const store = useGameStore.getState();
+          if (readGamePhase(store) === 'cutscene') {
+            store.setCutscene(null, []);
+            clearGameplayPhaseFlags(store);
+          }
+          eventBus.emit('camera:cutscene_end', {});
+          finishCutscenePresentation();
         }
-        eventBus.emit('camera:cutscene_end', {});
-        finishCutscenePresentation();
 
         timerRef.current = null;
       }, displayDurationMs);

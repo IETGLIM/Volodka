@@ -374,6 +374,11 @@ export function CinematicTimelineRunner() {
         glitchIntensity: overlay.glitchIntensity ?? 0,
         fadeInMs: overlay.fadeInMs ?? 300,
         fadeOutMs: overlay.fadeOutMs ?? 500,
+        // CRITICAL: mark this overlay as managed by the cinematic timeline.
+        // Without this, CutsceneOverlay's auto-dismiss timer would clear
+        // activeCutsceneId after the first phase's duration, killing the
+        // entire 29-second wake-up cinematic after ~4 seconds.
+        managedByTimeline: true,
       });
     }
 

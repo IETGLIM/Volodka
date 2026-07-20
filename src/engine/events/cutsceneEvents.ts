@@ -13,6 +13,16 @@ export interface CutsceneEvents {
     fadeInMs?: number;
     /** Fade-out duration in ms (default 500). */
     fadeOutMs?: number;
+    /**
+     * When true, the overlay is part of a longer cinematic timeline
+     * (CinematicTimelineRunner). The CutsceneOverlay must NOT auto-clear
+     * the active cutscene / game phase when this overlay's duration ends —
+     * the timeline manages its own lifecycle via finishIntroWake /
+     * finishGenericTimeline. Without this flag, the overlay's auto-dismiss
+     * timer would clear activeCutsceneId after the FIRST phase's duration,
+     * killing the entire 29-second wake-up cinematic after ~4 seconds.
+     */
+    managedByTimeline?: boolean;
   };
   'cutscene:overlay_end': Record<string, never>;
   /** Trigger camera shake during cutscenes (e.g. hostile NPC encounters). */
