@@ -568,15 +568,26 @@ export function advanceEmissiveFrame(): void {
   }
 }
 
-/** Boost emissive on child meshes for readable silhouettes without point lights */
+/**
+ * Boost emissive on child meshes for readable silhouettes without point lights.
+ *
+ * CRITICAL: Only apply to GLB NPCs (which use uniquely-cloned materials via
+ * useSkinnedGltfClone). Procedural NPCs share material instances across all
+ * instances (sharedMat.skinMedium, hairGray, metalGray, etc.) — mutating
+ * their emissive here would cross-contaminate EVERY procedural NPC in the
+ * scene with the last-mounted NPC's glow color. Procedural NPCs already
+ * receive per-NPC glow via `palette.glow` threaded through npcMat()/accentMat().
+ */
 function NpcEmissiveGlow({
   npcId,
   glowColor,
   children,
+  enabled = true,
 }: {
   npcId: string;
   glowColor: string;
   children: React.ReactNode;
+  enabled?: boolean;
 }) {
   const groupRef = useRef<THREE.Group>(null);
   const emissiveColor = useMemo(
@@ -585,6 +596,7 @@ function NpcEmissiveGlow({
   );
 
   useEffect(() => {
+    if (!enabled) return;
     const root = groupRef.current;
     if (!root) return;
     root.traverse((obj) => {
@@ -597,8 +609,9 @@ function NpcEmissiveGlow({
         mat.emissiveIntensity = Math.max(mat.emissiveIntensity, 0.45);
       }
     });
-  }, [emissiveColor]);
+  }, [emissiveColor, enabled]);
 
+  if (!enabled) return <>{children}</>;
   return <group ref={groupRef}>{children}</group>;
 }
 
@@ -630,7 +643,7 @@ function NPCModelWithErrorBoundary({
   );
 
   return (
-    <NpcEmissiveGlow npcId={definition.id} glowColor={appearance.glowColor}>
+    <NpcEmissiveGlow npcId={definition.id} glowColor={appearance.glowColor} enabled={Boolean(gltfUrl)}>
       {gltfUrl ? (
         <GltfNPCModel
           definition={definition}

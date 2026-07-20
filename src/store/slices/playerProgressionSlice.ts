@@ -9,7 +9,7 @@ import type { GameStoreState } from '../types';
 import { getSkillTreeMap, getPerksMap } from '@/data/gameDataLoader';
 import { resolveSkillUnlockEffects } from '@/shared/skills/applySkillUnlockEffects';
 import { queuePlayerXp } from '../playerXpBatch';
-import { eventBus } from '@/engine/EventBus';
+import { schedulePerkUnlocked } from '../storeEffects';
 
 /* ─── Slice types ─── */
 
@@ -149,14 +149,11 @@ export const createPlayerProgressionSlice: StateCreator<
 
     // Fire perk:unlocked AFTER state commit so reactive-thought listeners
     // read the updated progression. Used for Volodka's inner monologue.
+    // Routed through storeEffects to avoid store→engine import (lint rule).
     try {
-      eventBus.emit('perk:unlocked', {
-        perkId,
-        perkName: perkDef.name,
-        category: perkDef.category,
-      });
+      schedulePerkUnlocked(perkId, perkDef.name, perkDef.category);
     } catch {
-      /* eventBus may not be ready during HMR */
+      /* appEventBus may not be bound during HMR */
     }
   },
 

@@ -178,6 +178,25 @@ export function emitGameSaved(timestamp: number, source: 'auto' | 'manual'): voi
   emitAppEvent('game:saved', { timestamp, source });
 }
 
+/* ─── Perks ─── */
+
+/** Fire perk:unlocked — used by playerProgressionSlice to trigger Volodka's reactive monologue. */
+export function emitPerkUnlocked(
+  perkId: string,
+  perkName: string,
+  category: string,
+): void {
+  emitAppEvent('perk:unlocked', { perkId, perkName, category });
+}
+
+export function schedulePerkUnlocked(
+  perkId: string,
+  perkName: string,
+  category: string,
+): void {
+  runAfterStoreCommit(() => emitPerkUnlocked(perkId, perkName, category));
+}
+
 export function emitGameLoaded(): void {
   emitAppEvent('game:loaded', {});
 }

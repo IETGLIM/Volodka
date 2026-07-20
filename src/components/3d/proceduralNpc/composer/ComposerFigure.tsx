@@ -246,8 +246,16 @@ export function ComposerFigure({
 
   const hideLegs = recipe.slots.bottom === 'hidden_dress';
 
+  // FOOT_OFFSET_Y: shift the figure down so sneakers touch the floor.
+  // Without this, sneakers float ~32cm above the floor (leg group at y=0.9,
+  // sneaker local y=-0.55, sneaker half-height 0.0275 → sneaker bottom at
+  // y≈0.3225 in figure-local space). For dress-wearing NPCs (hideLegs),
+  // the dress hem is at y≈0.25, so we shift less to let the dress puddle
+  // slightly on the floor (realistic) without going too deep.
+  const FOOT_OFFSET_Y = hideLegs ? 0.25 : 0.3225;
+
   return (
-    <group>
+    <group position={[0, -FOOT_OFFSET_Y, 0]}>
       <group name="torso" position={[0, torsoY, 0.02]} rotation={[torsoLean, 0, 0]}>
         <mesh castShadow geometry={boxGeo(dims.w, dims.h, dims.d)} material={topMat} />
         <ComposerTop top={recipe.slots.top} palette={palette} topMat={topMat} dims={dims} />

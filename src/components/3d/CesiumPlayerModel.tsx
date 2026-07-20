@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';

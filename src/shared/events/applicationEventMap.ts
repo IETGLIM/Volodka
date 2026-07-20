@@ -88,6 +88,8 @@ export interface ApplicationEventMap {
     /** Target duration in ms — converted to a decay rate that brings intensity to ~1% by the end. */
     duration?: number;
   };
+  /** Perk unlocked — fires Volodka's reactive inner monologue. */
+  'perk:unlocked': { perkId: string; perkName: string; category: string };
 }
 
 export type ApplicationEventName = keyof ApplicationEventMap;

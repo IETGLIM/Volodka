@@ -149,6 +149,12 @@ export function resetCameraShake(): void {
   _lastShakeFrameId = -1;
   _lastShakeFrameOffset.x = 0;
   _lastShakeFrameOffset.y = 0;
+  // Also clear the reusable output buffer — without this, stale offsets from
+  // a previous shake leak into the next session and trigger a bogus "settle"
+  // phase (getCameraShakeOffset sees shakeIntensity=0 but shakeOffsetOut≠0
+  // and returns the stale offset instead of 0).
+  shakeOffsetOut.x = 0;
+  shakeOffsetOut.y = 0;
 }
 
 /**

@@ -115,4 +115,17 @@ describe('createFrameGameSnapshot movementLocked', () => {
     });
     expect(snapshot.movementLocked).toBe(true);
   });
+
+  it('exposes diegeticNarrative flag from store snapshot', () => {
+    // Default: no diegetic narrative panel open.
+    expect(createFrameGameSnapshot(baseSnapshot()).diegeticNarrative).toBe(false);
+
+    // When a diegetic panel is open, the snapshot reflects it so consumers
+    // (e.g. preparePlayerFrame stuck-lock watchdog) can suppress timeouts.
+    const withDiegetic = createFrameGameSnapshot({
+      ...baseSnapshot(),
+      diegeticNarrative: { nodeId: 'act1_albert_intro', kind: 'dialogue' },
+    });
+    expect(withDiegetic.diegeticNarrative).toBe(true);
+  });
 });

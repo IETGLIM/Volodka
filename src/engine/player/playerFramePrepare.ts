@@ -127,10 +127,15 @@ export function preparePlayerFrame(
   const inExpectedLongInteractionPhase =
     interactionState === InteractionState.Approach ||
     interactionState === InteractionState.Cutscene;
+  // MEDIUM-2 (audit-4 follow-up): suppress the 2s stuck-lock recovery when a
+  // diegetic (in-world) narrative panel is open. Diegetic panels don't set
+  // showStoryOverlay, so without this guard the watchdog would force-emit
+  // interaction:end after 2s and silently break in-world dialogues.
   const shouldWatchStuckLock =
     isInteractionLocked() &&
     currentMode === 'exploration' &&
     !showStoryOverlay &&
+    !game.diegeticNarrative &&
     !inExpectedLongInteractionPhase;
 
   if (shouldWatchStuckLock) {

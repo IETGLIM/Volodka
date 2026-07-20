@@ -24,6 +24,8 @@ const _rollUp = new THREE.Vector3(0, 1, 0);
 const _rollForward = new THREE.Vector3();
 const _rollRight = new THREE.Vector3();
 const _rollRolledUp = new THREE.Vector3();
+/** Pre-allocated temp for camera forward direction (backward-movement detection). */
+const _camFwd = new THREE.Vector3();
 
 /* ── Walking head bob state ── */
 let _walkBobPhase = 0;
@@ -145,6 +147,23 @@ export function applyCameraFrame(
     while (yawDiff > Math.PI) yawDiff -= Math.PI * 2;
     while (yawDiff < -Math.PI) yawDiff += Math.PI * 2;
 
+    // Detect backward movement: if the player's velocity is pointing toward
+    // the camera (i.e., the player is backing up toward the camera), do NOT
+    // auto-follow the body rotation. The recent rotation fix makes the player
+    // turn 180° to face the camera when S is pressed — without this guard,
+    // `targetYaw = bodyYaw + π` would flip π and the camera would spin around
+    // to be behind the player's NEW facing, which is disorienting.
+    //
+    // We compute the dot product of playerVelocity with the camera's forward
+    // direction (toward where the camera looks). If the dot is negative, the
+    // player is moving toward the camera (backward) → skip auto-follow.
+    cam.getWorldDirection(_camFwd);
+    _camFwd.y = 0;
+    if (_camFwd.lengthSq() > 1e-6) _camFwd.normalize();
+    else _camFwd.set(0, 0, -1);
+    const forwardVel = playerVelocity.dot(_camFwd);
+    const isMovingBackward = forwardVel < -0.3;
+
     // Auto-follow camera — smoother to prevent jitter.
     // Previous: AUTO_FOLLOW_SPEED=3.0 with followStrength scaling caused
     // jittery rotation when player speed oscillated around threshold.
@@ -152,10 +171,15 @@ export function applyCameraFrame(
     // the camera now follows at a constant, smooth rate. The higher
     // threshold (0.5 instead of 0.3) prevents micro-rotations when the
     // player taps movement keys rhythmically.
-    if (playerSpeed > 0.5) {
+    if (playerSpeed > 0.5 && !isMovingBackward) {
       if (Math.abs(yawDiff) > AUTO_FOLLOW_MIN_YAW_DELTA) {
         ctx.yaw += yawDiff * (1 - Math.exp(-1.5 * delta));
       }
+      frameState.playerMovingTimer = 0;
+    } else if (playerSpeed > 0.5 && isMovingBackward) {
+      // Backward movement: still counts as "moving" for the idle timer reset
+      // (so the camera doesn't auto-rotate to POI while the player is backing
+      // up), but we don't update ctx.yaw — the camera stays put.
       frameState.playerMovingTimer = 0;
     } else if (!frameState.isDragging && !frameState.wasDragging) {
       frameState.playerMovingTimer += delta;

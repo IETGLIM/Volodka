@@ -94,7 +94,21 @@ export function usePlayerLocomotionController({
   actionsRef.current = actions;
 
   useLayoutEffect(() => {
-    if (!mixer || !actions || animations.length === 0) {
+    // Read the latest actions from the ref — NOT from the `actions` prop.
+    // The `actions` object is recreated (via useMemo in useMixamoAnimationClips)
+    // every time a Mixamo clip loads. If `actions` were in the dep array,
+    // this effect would re-run 6 times during initial load (once per clip),
+    // each time stopping + re-binding idle/walk/run. The re-bind calls
+    // `idleAction.reset()` which restarts the idle animation from time 0,
+    // causing a visible hitch 6 times in ~2 seconds.
+    //
+    // By reading `actionsRef.current` and excluding `actions` from deps,
+    // the effect only re-runs when mixer/root/animations change (rare events
+    // that genuinely require re-binding). The frame tick reads
+    // `actionsRef.current` for cinematic clip lookups, so newly loaded
+    // Mixamo clips are picked up without re-binding locomotion.
+    const currentActions = actionsRef.current;
+    if (!mixer || !currentActions || animations.length === 0) {
       idleActionRef.current = null;
       walkActionRef.current = null;
       runActionRef.current = null;
@@ -106,7 +120,7 @@ export function usePlayerLocomotionController({
 
     // Only re-bind when the LOCOMOTION-relevant actions change, not when
     // non-locomotion Mixamo clips (sitting, sleeping, etc.) load.
-    const bindKey = computeLocomotionBindKey(animations, actions);
+    const bindKey = computeLocomotionBindKey(animations, currentActions);
     if (boundKeyRef.current === bindKey) return;
     boundKeyRef.current = bindKey;
 
@@ -116,7 +130,7 @@ export function usePlayerLocomotionController({
 
     const { idle: idleAction, walk: walkAction, run: runAction } = bindPlayerClipActions(
       mixer,
-      actions,
+      currentActions,
       animations,
       root,
     );
@@ -176,8 +190,8 @@ export function usePlayerLocomotionController({
       runActionRef.current = null;
       boundKeyRef.current = null;
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- currentAnimRef is a stable ref
-  }, [mixer, root, animations, actions]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- currentAnimRef is a stable ref; actions read via actionsRef to avoid re-binding on every Mixamo clip load
+  }, [mixer, root, animations]);
 
   useFrameTick(
     'player',

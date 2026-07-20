@@ -146,6 +146,36 @@ export function updateSpringCamera(
 ): void {
   const dt = Math.min(delta, 0.05);
 
+  // Defense-in-depth: if any target or current state has NaN/Infinity, the
+  // spring can never recover (NaN propagates via lerp/add and sticks). Reset
+  // the state to the (sanitized) targets so the camera snaps to a valid pose.
+  // Without this, a single NaN frame (e.g., from a malformed cutscene waypoint
+  // or a degenerate camera strategy) permanently breaks the camera.
+  if (
+    !Number.isFinite(targetPos.x) || !Number.isFinite(targetPos.y) || !Number.isFinite(targetPos.z) ||
+    !Number.isFinite(targetLookAt.x) || !Number.isFinite(targetLookAt.y) || !Number.isFinite(targetLookAt.z) ||
+    !Number.isFinite(targetFov) || !Number.isFinite(targetRoll) ||
+    !Number.isFinite(state.position.x) || !Number.isFinite(state.position.y) || !Number.isFinite(state.position.z) ||
+    !Number.isFinite(state.velocity.x) || !Number.isFinite(state.velocity.y) || !Number.isFinite(state.velocity.z) ||
+    !Number.isFinite(state.lookAt.x) || !Number.isFinite(state.lookAt.y) || !Number.isFinite(state.lookAt.z) ||
+    !Number.isFinite(state.fov) || !Number.isFinite(state.roll)
+  ) {
+    state.position.set(
+      Number.isFinite(targetPos.x) ? targetPos.x : 0,
+      Number.isFinite(targetPos.y) ? targetPos.y : 1.5,
+      Number.isFinite(targetPos.z) ? targetPos.z : 3,
+    );
+    state.velocity.set(0, 0, 0);
+    state.lookAt.set(
+      Number.isFinite(targetLookAt.x) ? targetLookAt.x : 0,
+      Number.isFinite(targetLookAt.y) ? targetLookAt.y : 1,
+      Number.isFinite(targetLookAt.z) ? targetLookAt.z : 0,
+    );
+    state.fov = Number.isFinite(targetFov) ? targetFov : DEFAULT_FOV;
+    state.roll = Number.isFinite(targetRoll) ? targetRoll : 0;
+    return;
+  }
+
   // ── Position spring (frame-rate independent exponential integration) ──
   const expStiffness = 1 - Math.exp(-stiffness * dt);
   const expDamping = 1 - Math.exp(-damping * dt);

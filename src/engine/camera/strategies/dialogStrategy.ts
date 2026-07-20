@@ -1,3 +1,4 @@
+import * as THREE from 'three';
 import {
   getBlendedDialogueShot,
   updateDialogueShotController,
@@ -10,6 +11,7 @@ import { MIN_DISTANCE, WALL_MARGIN } from '../cameraConstants';
 import { getInteractionState, getInteractionTargetNPCId } from '@/components/3d/InteractionSystemBridge';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 import { getNPCGroup } from '@/engine/interaction/npcRegistry';
+import { applyDialogueCameraDrift } from '../dialogueCameraDrift';
 import type { CameraModeStrategy } from '../types';
 
 function isInDialogueMode(): boolean {
@@ -20,6 +22,10 @@ function isInDialogueMode(): boolean {
     state === InteractionState.Align
   );
 }
+
+// Pre-allocated temps for dialogue camera drift (avoid per-frame allocation).
+const _driftedPos = new THREE.Vector3();
+const _driftedFov = { value: 75 };
 
 /** Speaker-aware cinematic dialogue shots */
 export const dialogStrategy: CameraModeStrategy = {
@@ -60,12 +66,26 @@ export const dialogStrategy: CameraModeStrategy = {
       npcGroup?.rotation.y,
     );
 
+    // Apply subtle dialogue camera drift (circular position drift + FOV
+    // breathing + push-in on new dialogue beat). Disabled on reduced motion.
+    // Drift is applied BEFORE collision resolution so the drifted position
+    // can still be pushed out of walls.
+    applyDialogueCameraDrift(
+      ctx.delta,
+      ctx.currentNodeId,
+      shot.position,
+      shot.lookAt,
+      shot.fov,
+      _driftedPos,
+      _driftedFov,
+    );
+
     const lookAtTarget = ctx.lookTarget.copy(shot.lookAt);
     const resolvedPos = resolveCameraCollision(
       ctx.raycaster,
       ctx.sceneChildren,
       lookAtTarget,
-      shot.position,
+      _driftedPos,
       WALL_MARGIN,
       MIN_DISTANCE,
       ctx.desiredPos,
@@ -77,7 +97,7 @@ export const dialogStrategy: CameraModeStrategy = {
       targets: {
         targetPos: resolvedPos,
         targetLook: shot.lookAt,
-        targetFov: shot.fov,
+        targetFov: _driftedFov.value,
         targetRoll: 0,
       },
       /** Softer spring for cinematic dialogue — prevents mechanical stiffness */

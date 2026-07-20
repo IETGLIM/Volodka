@@ -23,7 +23,12 @@ interface NPCSystemProps {
   interactionTargetNPCId?: string | null;
 }
 
-/** Max interactable NPCs in heavy scenes — prevents frame stalls */
+/** Max interactable NPCs in heavy scenes — prevents frame stalls.
+ *  Caps are applied to the CURRENT sceneId (not the schedule parent), so
+ *  derived scenes (e.g. guild_mainframe ← office_day) use their own caps.
+ *  Parent scenes that are visited directly also need caps — without one,
+ *  peak-hour NPC counts can stall the frame budget (office_day reaches 10
+ *  NPCs at hour 12 with act 3+ overrides; cafe_evening reaches 7 at hour 19). */
 const MAX_NPCS_PER_SCENE: Partial<Record<SceneId, number>> = {
   volodka_room: 1,
   volodka_corridor: 3,
@@ -43,6 +48,11 @@ const MAX_NPCS_PER_SCENE: Partial<Record<SceneId, number>> = {
   underground_bunker: 4,
   library_basement: 3,
   chk_campfire_night: 6,
+  chk_forest_zorge: 7,
+  // Direct-visit parent scenes — previously uncapped, could stall frames at peak hours.
+  cafe_evening: 6,  // peak 7 NPCs at hour 19; slices 1 background (chk_guest_analyst)
+  library_day: 4,   // peak 4 NPCs at hour 14-18; no slicing, safeguard only
+  office_day: 6,    // peak 10 NPCs at hour 12 (act 3+); slices 4 background chk_*
 };
 
 /** Shared patrol loop for schedule "walk" NPCs in the narrow communal corridor. */

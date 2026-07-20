@@ -4,6 +4,7 @@ import { useGameStore } from '@/store/gameStore';
 import { useGamePrimitive } from '@/store/selectors';
 import { eventBus } from '@/engine/EventBus';
 import { audioEngine } from '@/engine/AudioEngine';
+import { musicEngine } from '@/engine/MusicEngine';
 import { getCutsceneForNode } from '@/data/cutscenes';
 import { resolveCutsceneWaypoints } from '@/engine/camera/resolveCutsceneWaypoints';
 import { closeNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
@@ -21,10 +22,12 @@ import {
   markEntryBeatHubPromoted,
 } from '@/engine/interaction/entryBeatState';
 import { SCENE_ENTRY_NODE_TO_HUB } from '@/shared/sceneExploreHubRegistry';
+import { isSceneTransitionInProgress } from '@/engine/core/sceneTransitionGuard';
 
 /** Watches story node changes and drives cutscene overlays + camera events. */
 export function useCutsceneController() {
   const currentNodeId = useGamePrimitive((s) => s.currentNodeId);
+  const currentSceneId = useGamePrimitive((s) => s.exploration?.currentSceneId);
   const cutsceneSessionRef = useRef(new ControllerSession());
 
   const cancelCutsceneSession = useCallback(() => {
@@ -44,6 +47,12 @@ export function useCutsceneController() {
     setCinematicHoldActive(false);
     setCinematicPresentationMode('third_person');
     eventBus.emit('camera:recenter', {});
+    // Restore music volume to 100% over 1.0s — the normal finishCutsceneBeat
+    // path does this, but skipActiveCutscene bypasses that path (cancelCutsceneSession
+    // invalidates the generation, so finishCutsceneBeat's isCurrent() guard rejects
+    // the overlay_end callback). Without this, music would stay ducked at 30%
+    // until the next cutscene completes normally.
+    musicEngine.setMusicDuckFactor(1.0, 1.0);
 
     if (store.currentNodeId && store.narrativeKind) {
       openNarrativeAfterCutscene(store.currentNodeId, store.narrativeKind);
@@ -73,6 +82,15 @@ export function useCutsceneController() {
     // Wake-up owns its own camera + avatar — do not replace with story title cards.
     if (isIntroWakeupCutscene(store.activeCutsceneId)) return;
 
+    // Scene transition race guard: if a story choice has both `transitionScene`
+    // AND `next` pointing to a cutscene trigger node, executeStoryChoice sets
+    // currentNodeId synchronously THEN fires requestSceneTransition. Without
+    // this guard, the cutscene would start in the OLD scene with waypoints
+    // designed for the NEW scene, producing a broken camera. Defer until the
+    // target scene is loaded — the effect re-fires when currentSceneId
+    // changes (added as a dependency below).
+    if (isSceneTransitionInProgress()) return;
+
     const beatNodeId = currentNodeId;
     const generation = cutsceneSessionRef.current.begin();
 
@@ -97,12 +115,26 @@ export function useCutsceneController() {
       waypoints: resolvedWaypoints,
     });
 
+    // Compute the total camera animation duration from waypoint durations (in
+    // seconds → ms). The overlay's auto-dismiss timer must NOT fire before the
+    // camera finishes its waypoint sequence, otherwise the camera is cut short
+    // and never reaches its final dramatic position. Add 800ms grace so the
+    // final frame holds briefly before the overlay fades.
+    const waypointSumMs = resolvedWaypoints.reduce(
+      (sum, w) => sum + Math.max(0, w.duration) * 1000,
+      0,
+    );
+    const displayDurationMs = Math.max(
+      cutscene.textDurationMs,
+      waypointSumMs + 800,
+    );
+
     cutsceneSessionRef.current.schedule(() => {
       eventBus.emit('cutscene:overlay', {
         text: cutscene.textOverlay,
         subtitle: cutscene.subtitle,
         accentColor: cutscene.textAccentColor,
-        durationMs: cutscene.textDurationMs,
+        durationMs: displayDurationMs,
         type: cutscene.type,
         letterboxStyle: cutscene.letterboxStyle,
         showEmbers: cutscene.showEmbers,
@@ -118,7 +150,11 @@ export function useCutsceneController() {
       audioEngine.playStinger('mystery');
     }
 
-    const totalDuration = cutscene.textDurationMs + 2000;
+    // Duck music to 30% over 0.5s for cinematic focus (consistent with the
+    // unified timeline orchestrator's behaviour for intro_wakeup).
+    musicEngine.setMusicDuckFactor(0.3, 0.5);
+
+    const totalDuration = displayDurationMs + 2000;
     let finished = false;
     let unsubOverlayEnd: (() => void) | null = null;
 
@@ -136,6 +172,8 @@ export function useCutsceneController() {
         setCinematicPresentationMode('third_person');
         eventBus.emit('camera:cutscene_end', {});
         eventBus.emit('camera:recenter', {});
+        // Restore music volume to 100% over 1.0s.
+        musicEngine.setMusicDuckFactor(1.0, 1.0);
       }
       if (currentStore.currentNodeId) {
         const nodeId = currentStore.currentNodeId;
@@ -174,7 +212,7 @@ export function useCutsceneController() {
       }
       session.cancel();
     };
-  }, [currentNodeId]);
+  }, [currentNodeId, currentSceneId]);
 
   return { skipActiveCutscene };
 }
