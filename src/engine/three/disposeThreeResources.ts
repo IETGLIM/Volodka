@@ -208,6 +208,51 @@ export function disposeObject3DTree(
   });
 }
 
+/**
+ * Build a skip-set of GPU resources (geometries, materials, textures) referenced
+ * by a source scene — typically the cached `useGLTF` root. When disposing a
+ * shallow clone (one produced via `Object3D.clone(true)` or
+ * `deepCloneWithSkeletons`), the clone's meshes share geometry/material/texture
+ * references with the cached source. Disposing the clone would corrupt the
+ * cache and cause shader recompiles + GPU re-uploads on the next scene visit.
+ *
+ * Pass the returned object as `options.skip` to `disposeClonedScene` to dispose
+ * ONLY resources unique to the clone (e.g., procedurally-added materials).
+ */
+export function createSourceSkipSet(sourceScene: THREE.Object3D | null | undefined): DisposeThreeSkipSets {
+  const geometries = new Set<THREE.BufferGeometry>();
+  const materials = new Set<THREE.Material>();
+  const textures = new Set<THREE.Texture>();
+  if (!sourceScene) return { geometries, materials, textures };
+
+  sourceScene.traverse((child) => {
+    const mesh = child as THREE.Object3D & {
+      geometry?: THREE.BufferGeometry;
+      material?: THREE.Material | THREE.Material[];
+    };
+    if (mesh.geometry) geometries.add(mesh.geometry);
+    if (mesh.material) {
+      const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+      for (const mat of mats) {
+        if (!mat) continue;
+        materials.add(mat);
+        for (const key of MATERIAL_TEXTURE_KEYS) {
+          const tex = (mat as THREE.Material & Record<string, unknown>)[key];
+          if (tex instanceof THREE.Texture) textures.add(tex);
+        }
+        if (mat instanceof THREE.ShaderMaterial) {
+          for (const uniform of Object.values(mat.uniforms)) {
+            const value = (uniform as { value?: unknown } | undefined)?.value;
+            if (value instanceof THREE.Texture) textures.add(value);
+          }
+        }
+      }
+    }
+  });
+
+  return { geometries, materials, textures };
+}
+
 /** Dispose a cloned GLTF scene (never the cached loader root). */
 export function disposeClonedScene(scene: THREE.Object3D, options?: DisposeThreeOptions): void {
   disposeObject3DTree(scene, options);

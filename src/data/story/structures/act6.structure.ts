@@ -359,6 +359,9 @@ export const ACT6_STRUCTURE: Record<string, StoryNodeStructure> = {
       "high": 65,
       "low": 30
     },
+    "condition": {
+      "missingFlag": "traitor_fate_decided"
+    },
     "ambientSound": "sounds/ambient/office_night.ogg",
     "proceduralAmbientOverride": "office",
     "musicCue": "emotional",

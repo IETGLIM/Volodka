@@ -5,7 +5,7 @@
  *  Fades smoothly based on proximity factor.
  */
 
-import { useRef, useMemo } from 'react';
+import { useRef, useMemo, useEffect } from 'react';
 import * as THREE from 'three';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 
@@ -40,6 +40,15 @@ export function NpcProximityRing({
     () => new THREE.TorusGeometry(radius, RING_TUBE_RADIUS, 8, RING_SEGMENTS),
     [radius],
   );
+
+  // R3F does NOT auto-dispose geometries passed via the `geometry` prop or
+  // created imperatively in useMemo. Without this cleanup, every NPC mount
+  // (26 NPCs × every scene visit) leaks a TorusGeometry (~5KB GPU buffer).
+  useEffect(() => {
+    return () => {
+      ringGeometry.dispose();
+    };
+  }, [ringGeometry]);
 
   useFrameTick('interaction', () => {
     const mat = materialRef.current;

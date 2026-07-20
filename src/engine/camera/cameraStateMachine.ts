@@ -55,6 +55,7 @@ import {
   isCinematicHoldActive,
 } from './cinematicPresentation';
 import { isInDialogueInteraction } from './applyCameraFrame';
+import { resetDialogueCameraDrift } from './dialogueCameraDrift';
 import {
   acquireCameraOwnership,
   releaseCameraOwnership,
@@ -390,6 +391,12 @@ export function resetCameraForSceneChange(
   playerPosition?: readonly [number, number, number] | null,
 ): void {
   cleanupInFlightCameraTransitions(runtime, sceneId);
+  // Reset dialogue camera drift state — if a scene transition happens
+  // mid-dialogue (FollowCamera may remount with wasInDialogueRef=false),
+  // the drift accumulator would otherwise leak into the next dialogue
+  // session in the new scene, producing a camera that drifts from a
+  // stale anchor point.
+  resetDialogueCameraDrift();
   const config = getSceneConfig(sceneId);
   // Use the player's actual current position (set to the doorway's spawnPosition
   // by applySceneTransition) so the camera doesn't snap to the scene's defaultSpawn

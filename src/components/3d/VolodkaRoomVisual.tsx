@@ -303,15 +303,13 @@ export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
     };
   }, [terminalTexture, grafanaTexture, zabbixTexture]);
 
-  // Dispose floor and wall textures on unmount to prevent GPU memory leak
-  useEffect(() => {
-    const ft = floorTexture;
-    const wt = wallTexture;
-    return () => {
-      ft.dispose();
-      wt.dispose();
-    };
-  }, [floorTexture, wallTexture]);
+  // NOTE: floorTexture and wallTexture come from useCachedCanvasTexture,
+  // which already refcounts and auto-disposes when the last consumer
+  // unmounts. The previous manual ft.dispose()/wt.dispose() here was
+  // double-disposing — it corrupted the shared cache, causing the next
+  // scene visit to re-upload the texture (shader recompile + GPU stutter).
+  // The terminal/grafana/zabbix textures below are NOT cached (created
+  // via useMemo directly), so they DO need manual dispose.
 
   // ledRef and zabbixAlertRef are now initialized directly (see above).
 

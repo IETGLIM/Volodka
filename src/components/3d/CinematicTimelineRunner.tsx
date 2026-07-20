@@ -33,6 +33,7 @@ import {
   getActiveCinematicTimelineId,
   skipCinematicTimeline,
   startCinematicTimeline,
+  stopCinematicTimeline,
 } from '@/engine/cinematic/cinematicTimelineOrchestrator';
 import {
   createCinematicTimelineState,
@@ -195,6 +196,26 @@ export function CinematicTimelineRunner() {
     completeCinematicTimeline(timelineId);
   };
 
+  /**
+   * Clean up the runner's local state (camera ownership, avatar, refs) WITHOUT
+   * calling completeCinematicTimeline. Used by onSkippedComplete — the
+   * orchestrator's watchdog has ALREADY called completeCinematicTimeline(id,
+   * true), which is what fired this event. Calling finishGenericTimeline here
+   * would re-invoke completeCinematicTimeline (a no-op due to the
+   * activeTimelineId guard, but confusing and fragile). This helper does only
+   * the local cleanup. Without it, non-intro timelines skipped by the orphan
+   * watchdog would leak stateRef, active=true, and camera ownership —
+   * producing dual avatars and a stuck camera on the next frame-sim resume.
+   */
+  const cleanupRunnerState = (): void => {
+    releaseCameraOwnership(TIMELINE_OWNER);
+    setActive(false);
+    setShowAvatar(false);
+    stateRef.current = null;
+    timelineIdRef.current = null;
+    clearFallback();
+  };
+
   const beginTimeline = (
     def: CinematicTimelineDef,
     options: { anchor?: [number, number, number]; npcId?: string; skipMotion?: boolean },
@@ -206,6 +227,22 @@ export function CinematicTimelineRunner() {
     }
 
     if (sequenceStartedRef.current && timelineIdRef.current === def.id) return;
+
+    // Acquire camera ownership BEFORE committing any runner state. Timeline
+    // ownership is priority 4 — if a cutscene (priority 5) is active,
+    // acquisition fails. Previously we ignored the return value, leaving
+    // stateRef set and active=true with no camera control — the timeline
+    // ran blind until the fallback timer (up to 31s) fired. Bail out
+    // cleanly instead: stop the orchestrator state so the watchdog doesn't
+    // fire, and let the caller decide whether to retry.
+    const acquired = acquireCameraOwnership(TIMELINE_OWNER);
+    if (!acquired) {
+      // Stop the orchestrator-side state so the orphan watchdog doesn't
+      // fire later for a timeline that never actually started.
+      stopCinematicTimeline(def.id);
+      return;
+    }
+
     sequenceStartedRef.current = true;
     timelineIdRef.current = def.id;
 
@@ -216,7 +253,6 @@ export function CinematicTimelineRunner() {
     const hasActor = def.phases.some((p) => p.actor.mode !== 'none');
     setShowAvatar(hasActor);
     setActive(true);
-    acquireCameraOwnership(TIMELINE_OWNER);
 
     if (def.id === 'intro_wakeup') {
       const store = getGameStore();
@@ -291,7 +327,16 @@ export function CinematicTimelineRunner() {
       skipped?: boolean;
     }) => {
       if (!skipped) return;
-      if (timelineId === 'intro_wakeup') finishIntroWake();
+      if (timelineId === 'intro_wakeup') {
+        finishIntroWake();
+      } else if (timelineIdRef.current === timelineId) {
+        // Non-intro timelines skipped via the orphan watchdog (or any other
+        // path that calls completeCinematicTimeline(id, true)) must still
+        // clean up the runner's local state. Previously this branch was
+        // missing — stateRef, active, and camera ownership leaked, causing
+        // dual avatars and a stuck camera on the next timeline.
+        cleanupRunnerState();
+      }
     };
 
     const unsubs = [

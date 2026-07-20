@@ -18,6 +18,15 @@ export function getCachedCanvasTexture(
     return existing.texture;
   }
   const texture = factory();
+  // Canvas pixels are sRGB-encoded but CanvasTexture defaults to NoColorSpace,
+  // which makes Three.js treat them as linear data → textures render ~2.2×
+  // too dark. Force sRGB so the renderer's color pipeline decodes them
+  // correctly. This was a P1 bug: every procedural canvas texture (sky
+  // gradients, painted props, paper text) appeared washed-out and dark.
+  if (texture.colorSpace !== THREE.SRGBColorSpace) {
+    texture.colorSpace = THREE.SRGBColorSpace;
+  }
+  texture.needsUpdate = true;
   canvasTextureCache.set(key, { texture, refs: 1 });
   return texture;
 }

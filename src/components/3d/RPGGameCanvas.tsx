@@ -40,6 +40,7 @@ import {
 import { forceDisposeOrphanedWebGLResources } from '@/engine/canvas/canvasRendererRegistry';
 import { adoptCanvasWebGlRenderer } from '@/engine/canvas/webGlRendererSingleton';
 import { markCanvasMounted, markFirstFrame } from '@/engine/performance/LoadingTimeline';
+import { isPostfxActive } from '@/engine/graphics/postfxActiveState';
 
 const LazyPhysicsSceneInner = lazy(() =>
   import('./PhysicsSceneInner').then((m) => ({ default: m.PhysicsSceneInner })),
@@ -277,7 +278,14 @@ function getWebGlRendererFactory(antialias: boolean): CanvasGlProp {
       });
       // PCFSoftShadowMap reduces shadow aliasing artifacts for a noir/cinematic aesthetic
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-      renderer.toneMapping = THREE.NoToneMapping;
+      // Default to ACESFilmic — when ExplorationPostFX's EffectComposer is
+      // active, the post-frame guard below flips this to NoToneMapping
+      // (the composer applies ACES as a pass to avoid double tone curve).
+      // When postfx is OFF (user disabled, low preset, or menu), the guard
+      // keeps ACESFilmic so the renderer applies the curve directly.
+      // Starting from ACESFilmic avoids a 1-frame NoToneMapping flash on
+      // first render before the guard runs.
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
       renderer.toneMappingExposure = 1.0;
       renderer.outputColorSpace = THREE.SRGBColorSpace;
       renderer.setClearColor(0x000000, 1);
@@ -678,8 +686,17 @@ function CanvasGuardSystem() {
       if (!canvas) return;
 
       try {
-        if (ctx.state.gl.toneMapping !== THREE.NoToneMapping) {
-          ctx.state.gl.toneMapping = THREE.NoToneMapping;
+        // When postfx is active, the EffectComposer applies ACESFilmic as a
+        // pass — renderer must be NoToneMapping to avoid double tone curve.
+        // When postfx is OFF, the renderer must apply ACESFilmic directly,
+        // otherwise the scene renders with no tone curve → clipped highlights
+        // and crushed darks. This was a P0 bug: postfx-off users saw a
+        // harsh, flat image with blown-out skies and lose shadow detail.
+        const desiredToneMapping = isPostfxActive()
+          ? THREE.NoToneMapping
+          : THREE.ACESFilmicToneMapping;
+        if (ctx.state.gl.toneMapping !== desiredToneMapping) {
+          ctx.state.gl.toneMapping = desiredToneMapping;
         }
         if (ctx.state.gl.outputColorSpace !== THREE.SRGBColorSpace) {
           ctx.state.gl.outputColorSpace = THREE.SRGBColorSpace;

@@ -140,8 +140,20 @@ export function BattleVisual({ livePlayerPositionRef: _livePlayerPositionRef }: 
       {/* Blue neon edge glow */}
       <pointLight position={[-5.5, 0.5, 0]} color="#2244ff" intensity={3.5} distance={10} />
 
-      {/* Arena center light */}
-      <pointLight position={[0, 4, 0]} color="#ffffff" intensity={2.0} distance={16} castShadow shadow-mapSize-width={256} shadow-bias={-0.003} />
+      {/* Arena center light — shadow-mapSize-height was missing (defaults to
+          512, mismatched with width=256 producing stretched/distorted shadow
+          maps). Added normalBias to reduce shadow acne on character meshes. */}
+      <pointLight
+        position={[0, 4, 0]}
+        color="#ffffff"
+        intensity={2.0}
+        distance={16}
+        castShadow
+        shadow-mapSize-width={512}
+        shadow-mapSize-height={512}
+        shadow-bias={-0.003}
+        shadow-normalBias={0.02}
+      />
 
       {/* Opposite neon strips */}
       <pointLight position={[0, 0.5, 5.5]} color="#ff2244" intensity={2.5} distance={10} />

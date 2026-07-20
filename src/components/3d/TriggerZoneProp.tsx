@@ -17,7 +17,7 @@ import { useGltfPropPlacement } from '@/hooks/useGltfPropPlacement';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
 import { useSceneLoadedGate } from '@/hooks/useSceneLoadedGate';
-import { disposeClonedScene } from '@/engine/three/disposeThreeResources';
+import { disposeClonedScene, createSourceSkipSet } from '@/engine/three/disposeThreeResources';
 
 const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeof useGLTF>[3]>;
 
@@ -53,9 +53,12 @@ function TriggerZonePropMeshInner({ zone, def }: TriggerZonePropMeshInnerProps) 
   // Dispose the cloned scene on unmount or when gltf.scene changes.
   // R3F does not auto-dispose <primitive> objects, so the clone's
   // geometries + materials would otherwise leak per scene visit.
+  // Skip shared resources with the cached source scene to avoid
+  // corrupting the useGLTF cache (would cause shader recompiles +
+  // GPU re-uploads on every scene revisit).
   useEffect(() => {
-    return () => disposeClonedScene(clone);
-  }, [clone]);
+    return () => disposeClonedScene(clone, { skip: createSourceSkipSet(gltf.scene) });
+  }, [clone, gltf.scene]);
 
   const scale = def.scale ?? 1;
   const { scale: fitScale, footY } = useGltfPropPlacement(clone, {

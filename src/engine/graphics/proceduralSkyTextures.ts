@@ -14,6 +14,14 @@ function getOrCreateSkyTexture(
   const cached = skyCache.get(key);
   if (cached) return cached;
   const tex = build();
+  // Canvas pixels are sRGB-encoded; force sRGB color space so the renderer's
+  // color pipeline decodes sky gradients correctly. Without this, skies
+  // render ~2.2× too dark (especially noticeable on dream_galaxy and
+  // street_night_synthwave which rely on saturated color ramps).
+  if (tex.colorSpace !== THREE.SRGBColorSpace) {
+    tex.colorSpace = THREE.SRGBColorSpace;
+  }
+  tex.needsUpdate = true;
   skyCache.set(key, tex);
   tex.addEventListener('dispose', () => {
     if (skyCache.get(key) === tex) skyCache.delete(key);

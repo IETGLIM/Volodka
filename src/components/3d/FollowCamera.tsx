@@ -245,7 +245,13 @@ export function FollowCamera({
 
     if (processCinematicFreezeFrame(runtimeRef.current, sceneId, currentNodeId)) return;
 
+    // Compute player velocity in m/s (not m/frame) — downstream consumers in
+    // applyCameraFrame.ts and cinematicCamera.ts compare .length() against
+    // m/s thresholds (0.5 walking, 0.3 idle, 0.1 look-ahead). Without dividing
+    // by delta, every threshold was effectively unreachable at 60fps.
     _playerVelocity.current.copy(playerPos).sub(_prevPlayerPos.current);
+    const invDelta = delta > 1e-4 ? 1 / delta : 60;
+    _playerVelocity.current.multiplyScalar(invDelta);
     _prevPlayerPos.current.copy(playerPos);
 
     processIntroWakeFrame(runtimeRef.current, sceneId);

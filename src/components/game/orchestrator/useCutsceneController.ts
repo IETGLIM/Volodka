@@ -23,6 +23,10 @@ import {
 } from '@/engine/interaction/entryBeatState';
 import { SCENE_ENTRY_NODE_TO_HUB } from '@/shared/sceneExploreHubRegistry';
 import { isSceneTransitionInProgress } from '@/engine/core/sceneTransitionGuard';
+import {
+  isCinematicTimelineActive,
+  skipCinematicTimeline,
+} from '@/engine/cinematic/cinematicTimelineOrchestrator';
 
 /** Watches story node changes and drives cutscene overlays + camera events. */
 export function useCutsceneController() {
@@ -36,6 +40,21 @@ export function useCutsceneController() {
 
   const skipActiveCutscene = useCallback((): boolean => {
     const store = useGameStore.getState();
+
+    // If a unified cinematic timeline is driving this cutscene (e.g.
+    // `intro_wakeup`), defer to the timeline orchestrator's skip path.
+    // Otherwise we would clear the store state here, call
+    // e.stopImmediatePropagation() in the keyboard manager, and BLOCK the
+    // IntroWakeOverlay's ESC listener (which emits `intro:wakeup_skip`) —
+    // leaving the timeline running for ~29s with no overlay and no player
+    // control. The orchestrator emits `cinematic:timeline_skip` → runner's
+    // onSkip → completeCinematicTimeline(id, true) → onSkippedComplete →
+    // finishIntroWake, which performs full camera/avatar/state cleanup.
+    if (isCinematicTimelineActive()) {
+      skipCinematicTimeline();
+      return true;
+    }
+
     if (!store.activeCutsceneId) return false;
 
     cancelCutsceneSession();
@@ -81,6 +100,11 @@ export function useCutsceneController() {
 
     // Wake-up owns its own camera + avatar — do not replace with story title cards.
     if (isIntroWakeupCutscene(store.activeCutsceneId)) return;
+
+    // Guard against starting a story cutscene while a unified cinematic
+    // timeline is still active (e.g., a splash timeline still running).
+    // Without this, overlays stack and music duck factor is applied twice.
+    if (isCinematicTimelineActive()) return;
 
     // Scene transition race guard: if a story choice has both `transitionScene`
     // AND `next` pointing to a cutscene trigger node, executeStoryChoice sets

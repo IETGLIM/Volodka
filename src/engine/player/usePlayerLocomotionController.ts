@@ -269,6 +269,15 @@ export function usePlayerLocomotionController({
           walkAction.play();
           walkAction.fadeIn(CINEMATIC_CROSSFADE_SEC);
         }
+        // Symmetric fade-in for runAction — without this, if the player was
+        // running when the cinematic started, runAction stays at weight 0 for
+        // one frame after the cinematic ends, causing a brief walk→run stutter
+        // as the locomotion blend tree re-balances the weights.
+        if (runAction && currentAnimRef.current === 'run') {
+          runAction.setEffectiveWeight(0);
+          runAction.play();
+          runAction.fadeIn(CINEMATIC_CROSSFADE_SEC);
+        }
       }
 
       // ── Locomotion blend tree (idle / walk / run) ──

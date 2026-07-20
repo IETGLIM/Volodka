@@ -18,6 +18,10 @@ import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useGameStore } from '@/store/gameStore';
 import { readGamePhase, clearGameplayPhaseFlags } from '@/shared/gamePhase';
 import { setCinematicPresentationMode } from '@/engine/camera/cinematicPresentation';
+import {
+  isCinematicTimelineActive,
+  skipCinematicTimeline,
+} from '@/engine/cinematic/cinematicTimelineOrchestrator';
 import type { CutsceneDef } from '@/data/cutscenes';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { AriaLiveRegion } from '@/components/a11y/AriaLiveRegion';
@@ -282,6 +286,23 @@ export function CutsceneOverlay() {
   /** Shared skip logic: end the overlay + cutscene state in the store */
   const skipCutscene = useCallback(() => {
     if (skippedRef.current) return; // prevent double-fire
+
+    // If a unified cinematic timeline is driving this overlay (splash
+    // timelines managed by CinematicTimelineRunner), defer to the timeline
+    // orchestrator's skip path. Otherwise we would dismiss the overlay but
+    // the timeline would keep running (camera continues moving with no
+    // text), and finishCutscenePresentation() would reset cinematic mode
+    // mid-timeline. The orchestrator emits cinematic:timeline_skip →
+    // runner.onSkip → completeCinematicTimeline(id, true) which fires
+    // cutscene:overlay_end back to this overlay via the complete handler.
+    if (managedByTimelineRef.current && isCinematicTimelineActive()) {
+      skippedRef.current = true;
+      clearTimer();
+      clearSkipDelayTimer();
+      skipCinematicTimeline();
+      return;
+    }
+
     skippedRef.current = true;
 
     // 1. Cancel the auto-dismiss timer

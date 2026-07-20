@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components -- co-located helpers and lazy exports */
-import { Suspense, useMemo, useRef } from 'react';
+import { Suspense, useMemo, useRef, useState, useEffect } from 'react';
 import { useGLTF } from '@react-three/drei';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
@@ -52,7 +52,6 @@ function GltfAssetInner({
 }: Omit<GltfAssetProps, 'fallback'>) {
   const { preset } = useGraphicsQuality();
   const asset = getAssetDefinition(assetId);
-  const lodGroupRefs = useRef<Map<string, THREE.Group>>(new Map());
 
   if (!isAssetEffectiveShipped(assetId) || !asset) return null;
 
@@ -72,7 +71,6 @@ function GltfAssetInner({
             <GltfLodBranches
               urls={urls}
               activeUrlRef={activeUrlRef}
-              lodGroupRefs={lodGroupRefs}
               castShadow={castShadow}
               receiveShadow={receiveShadow}
             />
@@ -94,49 +92,51 @@ function GltfAssetInner({
 function GltfLodBranches({
   urls,
   activeUrlRef,
-  lodGroupRefs,
   castShadow,
   receiveShadow,
 }: {
   urls: readonly string[];
   activeUrlRef: React.MutableRefObject<string>;
-  lodGroupRefs: React.MutableRefObject<Map<string, THREE.Group>>;
   castShadow: boolean;
   receiveShadow: boolean;
 }) {
-  useFrameTick(
-    'misc',
-    () => {
-      const activeUrl = activeUrlRef.current;
-      for (const url of urls) {
-        const group = lodGroupRefs.current.get(url);
-        if (group) group.visible = url === activeUrl;
+  // Mount ONLY the active LOD instead of all LODs simultaneously.
+  // Previously every LOD URL was mounted as a sibling group and only
+  // `visible` was toggled — meaning all LOD geometries were uploaded to
+  // GPU VRAM at once (3-LOD asset cost 3× VRAM). Now we track the active
+  // URL in state and render only that LOD. All LODs are still preloaded
+  // by LodSwitcher (useGLTF.preload), so LOD changes are instant cache
+  // hits with no Suspense fallback. This also eliminates the visibility
+  // tick race between LodSwitcher's frame tick (writes activeUrlRef) and
+  // GltfLodBranches's frame tick (reads activeUrlRef) — there's no longer
+  // a GltfLodBranches tick.
+  const [activeUrl, setActiveUrl] = useState(activeUrlRef.current);
+
+  useEffect(() => {
+    // Sync ref → state on LOD changes. Only fires setState when the URL
+    // actually changes, so no per-frame re-renders.
+    let lastUrl = activeUrlRef.current;
+    setActiveUrl(lastUrl);
+    const checkInterval = setInterval(() => {
+      if (activeUrlRef.current !== lastUrl) {
+        lastUrl = activeUrlRef.current;
+        setActiveUrl(lastUrl);
       }
-    },
-    { label: 'GltfAssetLodVisibility' },
-  );
+    }, 50); // 20Hz polling — LOD switches are not frame-critical
+    return () => clearInterval(checkInterval);
+  }, [activeUrlRef]);
+
+  const activeUrlSafe = activeUrl && urls.includes(activeUrl) ? activeUrl : urls[0];
 
   return (
-    <>
-      {urls.map((lodUrl) => (
-        <group
-          key={lodUrl}
-          ref={(node) => {
-            if (node) lodGroupRefs.current.set(lodUrl, node);
-            else lodGroupRefs.current.delete(lodUrl);
-          }}
-          visible={lodUrl === activeUrlRef.current}
-        >
-          <Suspense fallback={null}>
-            <GltfAssetScene
-              url={lodUrl}
-              castShadow={castShadow}
-              receiveShadow={receiveShadow}
-            />
-          </Suspense>
-        </group>
-      ))}
-    </>
+    <Suspense fallback={null}>
+      <GltfAssetScene
+        key={activeUrlSafe}
+        url={activeUrlSafe}
+        castShadow={castShadow}
+        receiveShadow={receiveShadow}
+      />
+    </Suspense>
   );
 }
 

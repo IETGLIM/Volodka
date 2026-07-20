@@ -101,6 +101,11 @@ export function preparePlayerFrame(
     deps.isGroundedRef.current = true;
     deps.coyoteTimerRef.current = 0;
     deps.livePlayerPositionRef.current.set(currentPos.x, rescueGroundY, currentPos.z);
+    // Reset currentAnimRef to idle on rescue — without this, a stale
+    // 'jump'/'fall' animation persists for one frame because preparePlayerFrame
+    // returns false (finalizePlayerFrame is skipped). The warmup path above
+    // already does this; the rescue path was missing it.
+    deps.currentAnimRef.current = 'idle';
     return false;
   }
 

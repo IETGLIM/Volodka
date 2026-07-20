@@ -719,6 +719,9 @@ export const ACT3_STRUCTURE: Record<string, StoryNodeStructure> = {
     "sceneId": "office_day",
     "guidanceNpcId": "npc_zarema",
     "guidanceObjectiveType": "make_choice",
+    "condition": {
+      "missingFlag": "zarema_choice_made"
+    },
     "choices": [
       {
         "text": "",
@@ -744,6 +747,11 @@ export const ACT3_STRUCTURE: Record<string, StoryNodeStructure> = {
           {
             "type": "combat",
             "enemyType": "corporate_golem"
+          },
+          {
+            "type": "setFlag",
+            "flag": "zarema_choice_made",
+            "flagValue": true
           }
         ]
       },
@@ -768,6 +776,11 @@ export const ACT3_STRUCTURE: Record<string, StoryNodeStructure> = {
           {
             "type": "setFlag",
             "flag": "low_empathy",
+            "flagValue": true
+          },
+          {
+            "type": "setFlag",
+            "flag": "zarema_choice_made",
             "flagValue": true
           }
         ]
@@ -1284,6 +1297,9 @@ export const ACT3_STRUCTURE: Record<string, StoryNodeStructure> = {
     "id": "act3_guild_counterattack",
     "speaker": "narrator",
     "sceneId": "abandoned_factory",
+    "condition": {
+      "missingFlag": "aftermath_visited"
+    },
     "choices": [
       {
         "text": "",

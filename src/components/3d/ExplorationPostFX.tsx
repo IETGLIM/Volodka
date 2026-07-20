@@ -40,6 +40,7 @@ import { useVisualSettings } from '@/hooks/useVisualSettings';
 import { SCENE_VISIBILITY } from '@/shared/constants/sceneVisibility';
 import { resolveSceneRenderingPipeline } from '@/engine/graphics/resolveSceneRenderingPipeline';
 import { disposeEffectComposer, type PostprocessingComposerLike } from '@/engine/three/disposeThreeResources';
+import { setPostfxActive } from '@/engine/graphics/postfxActiveState';
 import {
   getCachedProceduralLut3DTexture,
   resolveProceduralLutKind,
@@ -248,15 +249,35 @@ export function ExplorationPostFX() {
   // EffectComposer. This catches the race condition where gl changes
   // but ready hasn't been reset yet.
   const gl = useThree((state) => state.gl);
-  if (gamePhase === 'menu' || !postfxActive) return null;
-  if (!rendererReady) return null;
-  try {
-    const ctx = gl.getContext();
-    const attrs = ctx?.getContextAttributes();
-    if (!ctx || !attrs || attrs.alpha === undefined) return null;
-  } catch {
-    return null;
+
+  // Determine whether the EffectComposer will actually mount this render.
+  // postfxActive alone is not sufficient — renderer readiness, menu phase,
+  // and WebGL context validity also gate the mount. The canvas guard reads
+  // `isPostfxActive()` to decide whether to enforce NoToneMapping (postfx
+  // applies ACES via the composer) or ACESFilmicToneMapping (no composer,
+  // renderer must apply the curve directly). A false positive here would
+  // leave the scene with no tone curve at all → clipped highlights.
+  let willMount = postfxActive && gamePhase !== 'menu' && rendererReady;
+  if (willMount) {
+    try {
+      const ctx = gl.getContext();
+      const attrs = ctx?.getContextAttributes();
+      if (!ctx || !attrs || attrs.alpha === undefined) willMount = false;
+    } catch {
+      willMount = false;
+    }
   }
+
+  useEffect(() => {
+    setPostfxActive(willMount);
+    return () => {
+      // Only clear if we were the one that set it. This prevents a remount
+      // race where the new mount sets true, then the old unmount clears it.
+      if (willMount) setPostfxActive(false);
+    };
+  }, [willMount]);
+
+  if (!willMount) return null;
 
   return <PostFXPipeline />;
 }

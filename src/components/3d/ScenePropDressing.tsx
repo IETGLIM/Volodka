@@ -17,7 +17,7 @@ import { useGltfPropPlacement } from '@/hooks/useGltfPropPlacement';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
 import { useStaggeredMountCount } from '@/hooks/useStaggeredMountCount';
-import { disposeClonedScene } from '@/engine/three/disposeThreeResources';
+import { disposeClonedScene, createSourceSkipSet } from '@/engine/three/disposeThreeResources';
 
 const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeof useGLTF>[3]>;
 
@@ -63,8 +63,11 @@ function ScenePropMeshInner({ placement, def }: ScenePropMeshInnerProps) {
       // Dispose the previous clone before setting the new one.
       // R3F does not auto-dispose <primitive> objects, so each clone
       // replacement otherwise leaks all geometries + materials.
+      // Pass the cached source scene as a skip-set so we DO NOT dispose
+      // shared GPU resources (geometry/material/texture references that
+      // Object3D.clone(true) keeps aliased to the useGLTF cache).
       if (cloneRef.current) {
-        disposeClonedScene(cloneRef.current);
+        disposeClonedScene(cloneRef.current, { skip: createSourceSkipSet(gltf.scene) });
         cloneRef.current = null;
       }
       const next = buildPropClone(gltf.scene);
@@ -88,8 +91,11 @@ function ScenePropMeshInner({ placement, def }: ScenePropMeshInnerProps) {
         clearTimeout(timeoutId);
       }
       // Dispose the clone on unmount or gltf.scene change.
+      // Skip shared resources with the cached source scene to avoid
+      // corrupting the useGLTF cache (would cause shader recompiles +
+      // GPU re-uploads on every scene revisit).
       if (cloneRef.current) {
-        disposeClonedScene(cloneRef.current);
+        disposeClonedScene(cloneRef.current, { skip: createSourceSkipSet(gltf.scene) });
         cloneRef.current = null;
       }
     };
