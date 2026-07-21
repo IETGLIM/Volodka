@@ -15,6 +15,7 @@ import { NotesTab } from '@/components/game/journal/NotesTab';
 import { PoemsTab } from '@/components/game/journal/PoemsTab';
 import { SkillsTab } from '@/components/game/journal/SkillsTab';
 import { ThoughtsTab } from '@/components/game/journal/ThoughtsTab';
+import { ThoughtCabinetTab } from '@/components/game/journal/ThoughtCabinetTab';
 import { useJournalPanel } from '@/components/game/journal/useJournalPanel';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
@@ -215,6 +216,7 @@ export function JournalPanel({
                       {journalTab === 'poems' && <PoemsTab searchQuery={searchQuery} />}
                       {journalTab === 'lore' && <LoreTab searchQuery={searchQuery} />}
                       {journalTab === 'thoughts' && <ThoughtsTab searchQuery={searchQuery} />}
+                      {journalTab === 'cabinet' && <ThoughtCabinetTab searchQuery={searchQuery} />}
                     </motion.div>
                   </AnimatePresence>
                 </div>

@@ -12,6 +12,7 @@ export type StoryPackId = 'act1' | 'act2' | 'act3' | 'act4' | 'act5' | 'act6' | 
 export type StorySatellitePackId =
   | 'act1Extended'
   | 'act1CafeOffice'
+  | 'act1RoomExpanded'
   | 'solnysh'
   | 'act4QuietHour'
   | 'chkExtended'
@@ -22,6 +23,7 @@ export type StorySatellitePackId =
   | 'epilogue';
 export type DialoguePackId =
   | 'part1'
+  | 'part1AlbertExpanded'
   | 'part2'
   | 'part3'
   | 'part4'
@@ -43,6 +45,7 @@ export const STORY_PACK_ORDER: readonly StoryPackId[] = [
 
 export const DIALOGUE_PACK_ORDER: readonly DialoguePackId[] = [
   'part1',
+  'part1AlbertExpanded',
   'part2',
   'part3',
   'part4',
@@ -54,7 +57,7 @@ export const DIALOGUE_PACK_ORDER: readonly DialoguePackId[] = [
 
 /** Minimal packs for a new game (Act 1 + early NPC / exploration dialogue). */
 export const BOOTSTRAP_STORY_PACKS: readonly StoryPackId[] = ['act1'];
-export const BOOTSTRAP_DIALOGUE_PACKS: readonly DialoguePackId[] = ['part1', 'exploration'];
+export const BOOTSTRAP_DIALOGUE_PACKS: readonly DialoguePackId[] = ['part1', 'part1AlbertExpanded', 'exploration'];
 
 type PackChangeListener = () => void;
 
@@ -76,6 +79,8 @@ const storySatelliteLoaders: Record<
   act1Extended: () => import('../story/act1Extended').then((m) => m.STORY_NODES_ACT1_EXTENDED),
   act1CafeOffice: () =>
     import('../story/act1ExtendedCafeOffice').then((m) => m.STORY_NODES_ACT1_CAFE_OFFICE),
+  act1RoomExpanded: () =>
+    import('../story/act1-room-expanded').then((m) => m.ACT1_ROOM_EXPANDED_NODES),
   solnysh: () => import('../story/solnyshStory').then((m) => m.STORY_NODES_SOLNYSH),
   act4QuietHour: () =>
     import('../story/act4QuietHour').then((m) => m.STORY_NODES_ACT4_QUIET_HOUR),
@@ -90,7 +95,7 @@ const storySatelliteLoaders: Record<
 
 /** Satellites loaded automatically when their parent act pack loads. */
 const ACT_STORY_SATELLITES: Partial<Record<StoryPackId, readonly StorySatellitePackId[]>> = {
-  act1: ['act1Extended', 'act1CafeOffice', 'solnysh'],
+  act1: ['act1Extended', 'act1CafeOffice', 'act1RoomExpanded', 'solnysh'],
   act4: ['act4QuietHour'],
   chk: ['chkExtended'],
 };
@@ -106,6 +111,7 @@ export const STANDALONE_STORY_SATELLITE_ORDER: readonly StorySatellitePackId[] =
 
 const dialogueLoaders: Record<DialoguePackId, () => Promise<Record<string, DialogueNode>>> = {
   part1: () => import('../dialogue/part1-albert').then((m) => m.DIALOGUE_PART1),
+  part1AlbertExpanded: () => import('../dialogue/part1-albert-expanded').then((m) => m.ALBERT_EXPANDED_DIALOGUE),
   part2: () => import('../dialogue/part2-npcs').then((m) => m.DIALOGUE_PART2),
   part3: () => import('../dialogue/part3-mid').then((m) => m.DIALOGUE_PART3),
   part4: () => import('../dialogue/part4-late').then((m) => m.DIALOGUE_PART4),

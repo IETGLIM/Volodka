@@ -77,10 +77,10 @@ export const MatrixPoemAssembly = memo(function MatrixPoemAssembly({
     if (revealed >= totalChars) return;
 
     const nextChar = charByGi[revealed] ?? '';
-    let delay = 22;
-    if ('.!?'.includes(nextChar)) delay = 150;
-    else if (',;:—–'.includes(nextChar)) delay = 95;
-    if (lineStartGis.has(revealed)) delay += 110; // breath at each new line
+    let delay = 9;
+    if ('.!?'.includes(nextChar)) delay = 60;
+    else if (',;:—–'.includes(nextChar)) delay = 38;
+    if (lineStartGis.has(revealed)) delay += 44; // breath at each new line
 
     const timer = setTimeout(() => {
       if (lineStartGis.has(revealed)) playTypewriterReturn();
@@ -93,7 +93,7 @@ export const MatrixPoemAssembly = memo(function MatrixPoemAssembly({
   // ── Scramble re-roll for the active look-ahead window ──
   useEffect(() => {
     if (reduceMotion || revealed >= totalChars) return;
-    const id = setInterval(() => setScrambleSeed((s) => s + 1), 55);
+    const id = setInterval(() => setScrambleSeed((s) => s + 1), 22);
     return () => clearInterval(id);
   }, [reduceMotion, revealed, totalChars]);
 
@@ -102,7 +102,7 @@ export const MatrixPoemAssembly = memo(function MatrixPoemAssembly({
     if (doneRef.current) return;
     if (revealed < totalChars) return;
     doneRef.current = true;
-    const timer = setTimeout(onComplete, reduceMotion ? 1800 : 2800);
+    const timer = setTimeout(onComplete, reduceMotion ? 800 : 1200);
     return () => clearTimeout(timer);
   }, [revealed, totalChars, reduceMotion, onComplete]);
 

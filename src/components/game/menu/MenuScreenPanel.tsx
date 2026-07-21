@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Volume2, VolumeX } from 'lucide-react';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -55,6 +55,9 @@ function MenuScreenPanelInner() {
   // Track repeat visits to reduce animation delays
   const [visited] = useState(checkHasVisitedBefore);
 
+  // New Game confirmation dialog
+  const [showNewGameDialog, setShowNewGameDialog] = useState(false);
+
   // Mark this visit on mount
   useEffect(() => {
     markMenuVisited();
@@ -68,11 +71,16 @@ function MenuScreenPanelInner() {
     selectedIndex: menu.selectedIndex,
     setSelectedIndex: menu.setSelectedIndex,
     onSelect: menu.handleMenuAction,
-    enabled: menu.navigationEnabled,
+    enabled: menu.navigationEnabled && !showNewGameDialog,
   });
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && showNewGameDialog) {
+        setShowNewGameDialog(false);
+        safePlayMenuSfx(audioEngine.playSfx.bind(audioEngine), 'ui_close');
+        return;
+      }
       if (event.key !== 'Escape') return;
       if (menu.showAbout) menu.closeAbout();
       else if (menu.showSettings) menu.closeSettings();
@@ -80,9 +88,37 @@ function MenuScreenPanelInner() {
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
-  }, [menu.showAbout, menu.showSettings, menu.closeAbout, menu.closeSettings]);
+  }, [menu.showAbout, menu.showSettings, menu.closeAbout, menu.closeSettings, showNewGameDialog]);
 
   const contentMotion = fx.contentMotion && !reducedMotion;
+
+  const wrappedHandleMenuAction = useCallback(
+    (id: string) => {
+      if (showNewGameDialog) return;
+      if (id === 'new') {
+        setShowNewGameDialog(true);
+        safePlayMenuSfx(audioEngine.playSfx.bind(audioEngine), 'ui_open');
+        return;
+      }
+      menu.handleMenuAction(id);
+    },
+    [showNewGameDialog, menu.handleMenuAction],
+  );
+
+  const handleDialogStartPrologue = useCallback(() => {
+    setShowNewGameDialog(false);
+    menu.handleNewGame(false);
+  }, [menu.handleNewGame]);
+
+  const handleDialogSkipPrologue = useCallback(() => {
+    setShowNewGameDialog(false);
+    menu.handleNewGame(true);
+  }, [menu.handleNewGame]);
+
+  const handleDialogClose = useCallback(() => {
+    setShowNewGameDialog(false);
+    safePlayMenuSfx(audioEngine.playSfx.bind(audioEngine), 'ui_close');
+  }, []);
 
   return (
     <div
@@ -150,7 +186,7 @@ function MenuScreenPanelInner() {
               items={menu.menuItems}
               selectedIndex={menu.selectedIndex}
               setSelectedIndex={menu.setSelectedIndex}
-              onSelect={menu.handleMenuAction}
+              onSelect={wrappedHandleMenuAction}
               savePreview={savePreview}
               contentMotion={contentMotion}
               fastAnimation={visited}
@@ -213,6 +249,88 @@ function MenuScreenPanelInner() {
             onToggleMusic={menu.toggleMusic}
             onClose={menu.closeSettings}
           />
+        ) : null}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showNewGameDialog ? (
+          <motion.div
+            key="new-game-dialog-backdrop"
+            className="fixed inset-0 z-[65] flex items-center justify-center bg-black/70 backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            onClick={handleDialogClose}
+          >
+            <motion.div
+              key="new-game-dialog"
+              className="w-full max-w-xs mx-4"
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ duration: 0.25 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div
+                className="relative border border-cyan-500/30 bg-black/80 backdrop-blur-md overflow-hidden"
+                style={{ clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))' }}
+              >
+                {/* Header */}
+                <div className="flex items-center gap-2 border-b border-cyan-500/20 bg-black/50 px-3 py-2">
+                  <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-cyan-500/40">volodka://new-game</span>
+                </div>
+
+                {/* Body */}
+                <div className="px-4 pt-4 pb-2">
+                  <p className="font-mono text-sm text-cyan-200/90 tracking-wide mb-1">
+                    Новая игра
+                  </p>
+                  <p className="font-mono text-xs text-slate-400/80 leading-relaxed">
+                    Запустить пролог с cinematic-вступлением или перейти сразу к gameplay?
+                  </p>
+                </div>
+
+                {/* Buttons */}
+                <div className="flex flex-col gap-2 px-4 pt-2 pb-4">
+                  <button
+                    type="button"
+                    onClick={handleDialogStartPrologue}
+                    className="w-full px-4 py-2.5 font-mono text-xs tracking-[0.15em] uppercase
+                               text-cyan-200/90 border border-cyan-500/30 bg-cyan-500/5
+                               hover:bg-cyan-500/15 hover:border-cyan-400/50
+                               rounded-sm transition-all duration-200
+                               active:bg-cyan-400/20 active:scale-[0.98]
+                               touch-manipulation select-none"
+                  >
+                    Начать с пролога
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleDialogSkipPrologue}
+                    className="w-full px-4 py-2.5 font-mono text-xs tracking-[0.15em] uppercase
+                               text-slate-400/80 border border-slate-500/20 bg-transparent
+                               hover:bg-slate-500/10 hover:border-slate-400/40 hover:text-slate-300/90
+                               rounded-sm transition-all duration-200
+                               active:bg-slate-400/15 active:scale-[0.98]
+                               touch-manipulation select-none"
+                  >
+                    Пропустить пролог
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleDialogClose}
+                    className="w-full px-4 py-1.5 font-mono text-[10px] tracking-wider uppercase
+                               text-slate-500/60 hover:text-slate-400/80
+                               transition-colors duration-200
+                               touch-manipulation select-none"
+                  >
+                    Отмена
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
         ) : null}
       </AnimatePresence>
 

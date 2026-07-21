@@ -150,7 +150,10 @@ export type GameAction =
     }
   | { type: 'cutscene/clear' }
   | { type: 'phase/clearGameplayFlags' }
-  | { type: 'journal/addThought'; text: string; sceneId: string };
+  | { type: 'journal/addThought'; text: string; sceneId: string }
+  | { type: 'thoughtCabinet/acquire'; thoughtId: string }
+  | { type: 'thoughtCabinet/equip'; thoughtId: string }
+  | { type: 'thoughtCabinet/unequip'; thoughtId: string };
 
 export interface GameSnapshotSubscribeOptions<T> {
   selector: (snapshot: GameStoreSnapshot) => T;

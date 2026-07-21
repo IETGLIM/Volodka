@@ -42,7 +42,14 @@ import { useNarrativeChoiceKeyboard } from '@/hooks/useNarrativeChoiceKeyboard';
 import { applyEffects } from '@/shared/utils/applyEffects';
 import { recordExplorationStoryStep } from '@/shared/explorationStoryBridge';
 import { DialogueRelationBar } from './dialogue/DialogueRelationBar';
+import { DiceRollDisplay } from './dialogue/DiceRollDisplay';
 import { executeDialogueChoice } from '@/engine/narrative/narrativeChoiceExecutor';
+import {
+  performDiceRoll,
+  DICE_SKILL_LABELS,
+  type DiceRollResult,
+} from '@/engine/skillCheck';
+import { useThoughtSkillModifiers } from '@/store/selectors/thoughtCabinetSelectors';
 
 /* ── Emotion detection from text ── */
 function detectEmotion(text: string): 'calm' | 'angry' | 'sad' | 'happy' {
@@ -105,11 +112,22 @@ interface HistoryLine {
 export function DialogueRenderer() {
   const { mode: _mode, showStoryOverlay, currentNodeId, karma, skills, flags, progression, npcRelations, timeOfDay, collectedPoems, activeTTLFlags, ownedItemIdsKey } = useDialogueContext();
   const visitNode = useVisitNode();
+  const thoughtModifiers = useThoughtSkillModifiers();
 
   const [skillCheckBanner, setSkillCheckBanner] = useState<{
     skill: TrainablePlayerSkill;
     success: boolean;
   } | null>(null);
+
+  // ── Dice-roll skill check state ──
+  const [diceRollState, setDiceRollState] = useState<{
+    result: DiceRollResult;
+    skill: TrainablePlayerSkill;
+    skillLevel: number;
+    thoughtBonus: number;
+  } | null>(null);
+  const pendingDiceChoiceRef = useRef<{ choice: DialogueChoice; index: number } | null>(null);
+  const diceRollActiveRef = useRef(false);
 
   // ── Dialogue history ──
   const [history, setHistory] = useState<HistoryLine[]>([]);
@@ -188,10 +206,18 @@ export function DialogueRenderer() {
   }, [karma, skills, flags, progression, npcRelations, timeOfDay, node, collectedPoems, activeTTLFlags, ownedItemIdsKey]);
   const { displayed, done, skip, reducedMotion } = useNarrativeTypewriter(resolvedText, 30);
 
+  // Reset dice roll state when dialogue node changes
+  useEffect(() => {
+    setDiceRollState(null);
+    pendingDiceChoiceRef.current = null;
+    diceRollActiveRef.current = false;
+    setSkillCheckBanner(null);
+  }, [currentNodeId]);
+
   // Auto-focus first choice button when typewriter completes and choices appear
   const firstChoiceRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
-    if (done && node && node.choices.length > 0) {
+    if (done && node && node.choices.length > 0 && !diceRollActiveRef.current) {
       // Small delay to allow motion animation to mount the button
       const id = setTimeout(() => {
         firstChoiceRef.current?.focus();
@@ -271,6 +297,25 @@ export function DialogueRenderer() {
     setRetryCount((c) => c + 1);
   }, []);
 
+  // Called after DiceRollDisplay animation finishes
+  const handleDiceRollComplete = useCallback(() => {
+    if (!diceRollState || !pendingDiceChoiceRef.current) return;
+    const pending = pendingDiceChoiceRef.current;
+    pendingDiceChoiceRef.current = null;
+    diceRollActiveRef.current = false;
+
+    if (diceRollState.result.success) {
+      setDiceRollState(null);
+      executeDialogueChoice(pending.choice);
+    } else {
+      // Keep the result visible briefly, then clear
+      if (skillCheckTimerRef.current !== null) clearTimeout(skillCheckTimerRef.current);
+      skillCheckTimerRef.current = setTimeout(() => {
+        setDiceRollState(null);
+      }, 1200);
+    }
+  }, [diceRollState]);
+
   const handleChoice = useCallback(
     (choice: DialogueChoice) => {
       // Use the shared executor — handles explore-hub routing, Act1 diegetic
@@ -282,20 +327,46 @@ export function DialogueRenderer() {
 
   const trySelectChoice = useCallback(
     (index: number) => {
-      if (!node || !done) return;
+      if (!node || !done || diceRollActiveRef.current) return;
       const choice = node.choices[index];
       if (!choice) return;
 
       const cond = checkStoryCondition(choice.condition, conditionCtx);
       if (!cond.pass) return;
 
+      // ── Skill check: dice roll (Disco Elysium style) ──
       if (choice.condition?.minSkillCheck && cond.skillCheckResult) {
-        setSkillCheckBanner({
-          skill: cond.skillCheckResult.skill,
-          success: cond.skillCheckResult.success });
-        if (!cond.skillCheckResult.success) return;
-        if (skillCheckTimerRef.current !== null) clearTimeout(skillCheckTimerRef.current);
-        skillCheckTimerRef.current = setTimeout(() => setSkillCheckBanner(null), 1500);
+        const { skill, difficulty } = choice.condition.minSkillCheck;
+
+        // If a poem flag auto-passes, use existing flat-check behavior
+        if (cond.skillCheckResult.autoPass) {
+          setSkillCheckBanner({ skill, success: true });
+          if (cond.consumedFlag) {
+            consumePoemSkillCheckFlag(cond.consumedFlag, { critical: cond.skillCheckResult.critical });
+          }
+          if (skillCheckTimerRef.current !== null) clearTimeout(skillCheckTimerRef.current);
+          skillCheckTimerRef.current = setTimeout(() => setSkillCheckBanner(null), 1500);
+          handleChoice(choice);
+          return;
+        }
+
+        // Perform the dice roll
+        const result = performDiceRoll({
+          skill,
+          skillLevel: skills[skill] ?? 0,
+          dc: difficulty,
+          thoughtModifiers,
+        });
+
+        diceRollActiveRef.current = true;
+        pendingDiceChoiceRef.current = { choice, index };
+        setDiceRollState({
+          result,
+          skill,
+          skillLevel: skills[skill] ?? 0,
+          thoughtBonus: thoughtModifiers[skill] ?? 0,
+        });
+        return;
       }
 
       if (cond.consumedFlag) {
@@ -304,7 +375,7 @@ export function DialogueRenderer() {
 
       handleChoice(choice);
     },
-    [node, done, conditionCtx, handleChoice],
+    [node, done, conditionCtx, handleChoice, skills, thoughtModifiers],
   );
 
   useNarrativeChoiceKeyboard({
@@ -482,7 +553,26 @@ export function DialogueRenderer() {
             )}
           </AnimatePresence>
           <AnimatePresence>
-            {skillCheckBanner && (
+            {diceRollState && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="mb-2"
+              >
+                <DiceRollDisplay
+                  result={diceRollState.result}
+                  skill={diceRollState.skill}
+                  skillLevel={diceRollState.skillLevel}
+                  thoughtBonus={diceRollState.thoughtBonus}
+                  onComplete={handleDiceRollComplete}
+                  autoDismissMs={2000}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+          <AnimatePresence>
+            {skillCheckBanner && !diceRollState && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -502,21 +592,33 @@ export function DialogueRenderer() {
         </>
       }
     >
-      {done && (
+      {done && !diceRollActiveRef.current && (
         <CinematicNarrativeChoices
           accentColor={presentation.accentColor}
           firstChoiceRef={firstChoiceRef}
           choices={node.choices.map((choice, i) => {
             const cond = checkStoryCondition(choice.condition, conditionCtx);
             const impact = getChoiceImpact(choice.effects, npcId);
+            // minSkillCheck choices are always clickable (dice determines outcome)
+            const isDiceCheck = Boolean(
+              choice.condition?.minSkillCheck &&
+              cond.skillCheckResult &&
+              !cond.skillCheckResult.autoPass,
+            );
+            const effectivePass = isDiceCheck ? true : cond.pass;
             return {
               key: `${currentNodeId}-dlg-${i}`,
               text: choice.text,
-              pass: cond.pass,
+              pass: effectivePass,
               cond,
               onSelect: () => trySelectChoice(i),
               trailing:
-                !cond.pass && cond.karmaNeeded ? (
+                isDiceCheck && cond.skillCheckResult ? (
+                  <span className="flex items-center gap-1 text-xs text-cyan-300 shrink-0">
+                    <span>🎲</span>
+                    {DICE_SKILL_LABELS[cond.skillCheckResult.skill]} {cond.skillCheckResult.difficulty}
+                  </span>
+                ) : !cond.pass && cond.karmaNeeded ? (
                   <span className="text-[10px] font-mono text-rose-300">
                     ☯ {cond.karmaNeeded.current}/{cond.karmaNeeded.needed}
                   </span>

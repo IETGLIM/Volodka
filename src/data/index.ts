@@ -131,6 +131,13 @@ export type {
   ResolvedSceneAmbience,
 } from './ambientSounds';
 
+// Thought Cabinet
+export {
+  THOUGHT_CABINET_ITEMS,
+  THOUGHT_CABINET_MAP,
+  MAX_EQUIPPED_THOUGHTS,
+} from './thoughtCabinet';
+
 // Status Effects
 export {
   STATUS_EFFECTS,

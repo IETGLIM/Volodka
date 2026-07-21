@@ -23,7 +23,7 @@ export function useMenuScreen({ loadGame, resetGame, musicEnabled, toggleMusic }
 
   const menuItems = useMemo(() => buildMenuItems(hasSave), [hasSave]);
 
-  const handleNewGame = useCallback(() => {
+  const handleNewGame = useCallback((skipPrologue = false) => {
     if (isFadingOut) return;
     setIsFadingOut(true);
     safePlayMenuSfx(audioEngine.playSfx.bind(audioEngine), 'confirm');
@@ -44,12 +44,14 @@ export function useMenuScreen({ loadGame, resetGame, musicEnabled, toggleMusic }
       store.setPlayerRotation(Math.PI);
       store.setMainMenuOpen(false);
       store.setIntroActive(false);
-      store.setCutscene('intro_wakeup', []);
-      // Don't emit intro:wakeup_sequence here — the 3D canvas hasn't mounted
-      // yet. The CinematicTimelineRunner will detect activeCutsceneId ===
-      // 'intro_wakeup' after canvas:first-frame and start the timeline then.
-      // This fixes the "character flying above the floor" bug where the
-      // RigidBody doesn't exist yet when the timeline sets player position.
+      if (!skipPrologue) {
+        store.setCutscene('intro_wakeup', []);
+        // Don't emit intro:wakeup_sequence here — the 3D canvas hasn't mounted
+        // yet. The CinematicTimelineRunner will detect activeCutsceneId ===
+        // 'intro_wakeup' after canvas:first-frame and start the timeline then.
+        // This fixes the "character flying above the floor" bug where the
+        // RigidBody doesn't exist yet when the timeline sets player position.
+      }
     }, NEW_GAME_FADE_MS);
   }, [isFadingOut, resetGame]);
 
@@ -114,6 +116,7 @@ export function useMenuScreen({ loadGame, resetGame, musicEnabled, toggleMusic }
     musicEnabled,
     toggleMusic,
     handleMenuAction,
+    handleNewGame,
     closeAbout,
     closeSettings,
     navigationEnabled,

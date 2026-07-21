@@ -121,6 +121,9 @@ export function applyGameAction(_state: GameStoreState, action: GameAction): voi
     case 'cutscene/clear': getCutsceneStoreState().setCutscene(null, []); break;
     case 'phase/clearGameplayFlags': ui.setMainMenuOpen(false); ui.setIntroActive(false); ui.setCombatActive(false); break;
     case 'journal/addThought': ui.addThought(action.text, action.sceneId); break;
+    case 'thoughtCabinet/acquire': player.acquireThought(action.thoughtId); break;
+    case 'thoughtCabinet/equip': player.equipThought(action.thoughtId); break;
+    case 'thoughtCabinet/unequip': player.unequipThought(action.thoughtId); break;
     default: { const _exhaustive: never = action; return; }
   }
 }

@@ -15,3 +15,4 @@ export * from './statsSelectors';
 export * from './actionSelectors';
 export * from './saveSelectors';
 export * from './tutorialSelectors';
+export * from './thoughtCabinetSelectors';

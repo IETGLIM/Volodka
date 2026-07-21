@@ -1952,6 +1952,14 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
         effects: [{ type: 'visitStoryNode', nodeId: 'cafe_albert_lesson_intro' }],
       },
       {
+        text: 'Поговорить серьёзно — о нас, о городе, о том, что важно.',
+        next: 'albert_deep_talk',
+        condition: { flag: 'albert_relation_warm' },
+        effects: [
+          { type: 'npcChange', npcId: 'albert', npcChange: { relation: 2 } },
+        ],
+      },
+      {
         text: 'Мне пора. До встречи, философ.',
         next: null,
       },
