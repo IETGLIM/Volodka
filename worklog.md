@@ -1,5 +1,81 @@
 # Volodka RPG — Improvement Session Worklog
 
+---
+
+## Session: 2025-07-21 — "Прорыв: Disco Elysium механики + контент"
+
+### Контекст
+Автор (Владимир Лебедев) вернулся после застоя. Предыдущие 16 сессий (коммиты session 5-16)
+были циклом "fix: session N — critical bugs" без движения вперёд по контенту. Задача — вырваться
+из цикла, добавить Disco Elysium-механики и расширить контент.
+
+### Подход
+Вместо очередного багфикс-раунда — фокус на_NEW FEATURES_ и_CONTENT EXPANSION_.
+4 параллельные фазы: онбординг → Thought Cabinet → Dice-Roll → Контент.
+
+---
+
+### Commit: `55b51cd3` — feat: Thought Cabinet, dice-roll skill checks, expanded Act 1 content, faster onboarding
+
+**Фаза 1: Ускоренный онбординг**
+- `src/engine/intro/introConfig.ts`: INTRO_MAX_DURATION_MS 90_000 → 30_000
+- `src/components/game/intro/MatrixPoemAssembly.tsx`: скорость сборки ×3 быстрее (22ms→9ms, 150ms→60ms, 95ms→38ms)
+- `src/components/game/IntroScreen.tsx`: проминентная пульсирующая кнопка skip, обратный отсчёт
+- `src/components/game/menu/MenuScreenPanel.tsx`: диалог "Новая Игра" с опцией "Пропустить пролог"
+- `src/components/game/menu/useMenuScreen.ts`: `handleNewGame(skipPrologue?: boolean)`
+
+**Фаза 2: Thought Cabinet (Disco Elysium)**
+- НОВЫЕ ФАЙЛЫ:
+  - `src/shared/types/definitions/thoughtCabinet.ts` — типы ThoughtCabinetItem, ThoughtCabinetEffect
+  - `src/data/thoughtCabinet.ts` — 18 мыслей, 3 mutually exclusive пары, MAX_EQUIPPED_THOUGHTS=3
+  - `src/store/slices/thoughtCabinetSlice.ts` — Zustand sub-slice (acquire, equip, unequip)
+  - `src/store/selectors/thoughtCabinetSelectors.ts` — 6 typed hooks
+  - `src/components/game/journal/ThoughtCabinetTab.tsx` — dual-pane UI (480 строк)
+- ИЗМЕНЁНО:
+  - `src/store/slices/playerSlice.ts` — compose ThoughtCabinetSlice
+  - `src/shared/gameBridge/gameActionBridge.ts` — 3 новых action types
+  - `src/store/applyGameAction.ts` — 3 case handlers
+  - `src/store/shared.ts` — JournalTab += 'cabinet'
+  - `src/components/game/journal/journalConstants.ts` — вкладка "Кабинет Мыслей"
+  - `src/components/game/journal/JournalPanel.tsx` — рендер ThoughtCabinetTab
+  - `src/shared/validation/saveSchema.ts` — Zod schema для 'cabinet'
+
+**Фаза 3: Dice-Roll Skill Checks**
+- НОВЫЕ ФАЙЛЫ:
+  - `src/engine/skillCheck/diceRollSkillCheck.ts` — 2d6+mod vs DC, криты, seeded RNG
+  - `src/engine/skillCheck/index.ts` — barrel export
+  - `src/components/game/dialogue/DiceRollDisplay.tsx` — 5-фазная анимация, 3D CSS кубики
+- ИЗМЕНЕНО:
+  - `src/components/game/DialogueRenderer.tsx` — интеграция dice roll в minSkillCheck
+
+**Фаза 4: Расширенный контент**
+- НОВЫЕ ФАЙЛЫ:
+  - `src/data/dialogue/part1-albert-expanded.ts` — 30 нод (1077 строк), 18 skill checks
+  - `src/data/story/act1-room-expanded.ts` — 28 нод (998 строк), 10 trigger zones
+- ИЗМЕНЕНО:
+  - `src/data/dialogue/index.ts` — merge ALBERT_EXPANDED_DIALOGUE
+  - `src/data/narrative/narrativePackRegistry.ts` — pack registration
+  - `src/data/story/buildStoryNodes.ts` — source registration
+  - `src/data/dialogue/part1-albert.ts` — choice → albert_deep_talk
+  - `src/data/narrativeExpansionTriggerZones.ts` — 10 trigger zones
+
+**Документация (commit TBD):**
+- `AI_SESSION_CONTEXT.md` — КЛЮЧЕВОЙ: контекст для AI-агентов между сессиями
+- `ARCHITECTURE.md` — +134 строки (Thought Cabinet, Dice-Roll, Content Architecture)
+- `README.md` — 3 новых bullet points, ссылка на AI_SESSION_CONTEXT
+- `CHANGELOG.md` — v4.3.0
+
+**Итоги:** 31 файл, +4399 строк, -130 строк, 0 ошибок TS, build 35s
+
+### Что дальше (Фаза 5+)
+1. Расширить Акти 2-7 аналогичным контентом (~350 нод)
+2. A* навигация для NPC
+3. Система одежды/внешности
+4. AI3DGen модели для ключевых NPC
+5. TTS озвучивание ключевых сцен
+
+---
+
 ## Session: 2025-07-17 — Comprehensive Graphics, Physics, Gameplay Overhaul
 
 ### Context

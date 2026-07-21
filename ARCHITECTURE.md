@@ -25,6 +25,8 @@
 | Lore codex | `loreEntries.ts` | — |
 | Golden path | `deriveGoldenPath.ts` (+ `goldenPath.ts` fallback) | `buildGuidedStoryPath` |
 | HUD panels | `orchestrator/types.ts` `PANEL_IDS` | panel stack reducer |
+| Thought Cabinet definitions | `thoughtCabinet.ts` | `THOUGHT_CABINET_ITEMS` / `THOUGHT_CABINET_MAP` |
+| Thought Cabinet state | `playerSlice.thoughtCabinet` | selectors |
 
 **Правило explore-hub prose:** для `STORY_DEFINED_EXPLORE_HUB_IDS` (act1 trio, pier, factory, basement, solnysh) текст toast **не дублируется** в `sceneExploreHubRegistry` — только в story JSON / inline pack. Валидатор (`validateContentTruth` в `contentPipelineValidator`) падает, если `hubText` в registry дублирует story node.
 
@@ -56,13 +58,14 @@ UI (Orchestrator overlays, panel stack, journal)
 │ Engine (без React)                                          │
 │   EventBus · StateDispatcher · CombatSystem ·               │
 │   GuidedStoryManager · QuestTracker · PoemPowerSystem ·     │
-│   MusicEngine/AudioEngine · camera strategies ·             │
-│   visualSettings/AudioSettings                              │
+│   DiceRollSkillCheck · MusicEngine/AudioEngine ·            │
+│   camera strategies · visualSettings/AudioSettings          │
 ├─────────────────────────────────────────────────────────────┤
 │ Data (декларативный контент)                                │
 │   story/act1–7 · quests · dialogue · poems · npcDefinitions │
 │   triggerZones · creepPatrols · dynamicProps ·              │
-│   sceneDefinitions · goldenPath                             │
+│   sceneDefinitions · goldenPath · thoughtCabinet ·          │
+│   narrativeExpansionTriggerZones                            │
 ├─────────────────────────────────────────────────────────────┤
 │ Store (Zustand slices) + save (Zod-схема, two-phase write,  │
 │   автовосстановление из backup)                             │
@@ -154,6 +157,137 @@ patrol→chase→engaged→cooldown, конус зрения проецируе�
   (stress scale, combat opening bridge, HUD `PoemActiveEffectsHud`).
 Новые мировые эффекты стихов = чтение одного TTL-флага в кадровом цикле.
 `processExpiredTTLFlags()` — из game loop (`useGameLifecycleManager`).
+
+### Thought Cabinet (Кабинет Мыслей)
+
+Система внутренних мыслей персонажа — пассивные модификаторы навыков, привязанные к одной из 7 trainable skills.
+
+**Файлы:**
+
+| Роль | Путь |
+|------|------|
+| Данные (определения) | `src/data/thoughtCabinet.ts` |
+| Типы | `src/shared/types/definitions/thoughtCabinet.ts` |
+| Store (sub-slice) | `src/store/slices/thoughtCabinetSlice.ts` (компонуется в `playerSlice.ts`) |
+| Selectors | `src/store/selectors/thoughtCabinetSelectors.ts` |
+| UI (вкладка журнала) | `src/components/game/journal/ThoughtCabinetTab.tsx` |
+
+**Контент:** 18 мыслей. Каждая содержит:
+
+| Поле | Описание |
+|------|----------|
+| `id` | уникальный идентификатор |
+| `name` | отображаемое название |
+| `voice` | одна из 7 trainable skills |
+| `description` | описание эффекта |
+| `flavorText` | литературный текст |
+| `acquisitionCondition` | условие получения (флаг) |
+| `mutuallyExclusive[]` | id конфликтующих мыслей |
+| `effects[]` | массив эффектов-модификаторов |
+
+**Взаимоисключающие пары (3):**
+
+| Мысль A | Мысль B |
+|---------|---------|
+| Post-Soviet Nostalgia | Cyberpunk Future |
+| Resist the System | Adapt to System |
+| Loneliness as Shield | Bonds That Save |
+
+**Ограничения:** максимум 3 экипированных мысли одновременно. При экипировке конфликтующей мысли автоматическое снятие предыдущей.
+
+**Store actions:**
+
+| Action | Описание |
+|--------|----------|
+| `thoughtCabinet/acquire` | получить мысль (проверка условия) |
+| `thoughtCabinet/equip` | экипировать (с авто-снятием конфликта) |
+| `thoughtCabinet/unequip` | снять мысль |
+
+**Selectors:**
+
+| Selector | Возвращает |
+|----------|-----------|
+| `useAcquiredThoughts()` | все полученные мысли |
+| `useEquippedThoughts()` | текущие экипированные мысли |
+| `useAvailableThoughts()` | мысли, доступные для получения |
+| `useThoughtSkillModifiers()` | `Record<TrainablePlayerSkill, number>` — суммарные модификаторы от экипированных мыслей |
+| `useThoughtCabinetFull()` | полное состояние cabinet |
+
+**Интеграция с dice-roll:** `useThoughtSkillModifiers()` используется системой проверок навыков для расчёта итогового модификатора броска кубика.
+
+**UI:** вкладка «Кабинет Мыслей» в журнале, двухпанельная раскладка — сетка карточек слева, детальная панель справа.
+
+### Dice-Roll Skill Checks
+
+Система бросков кубиков для проверок навыков в диалогах (вдохновлена PbtA / 2d6-системой).
+
+**Файлы:**
+
+| Роль | Путь |
+|------|------|
+| Движок | `src/engine/skillCheck/diceRollSkillCheck.ts` |
+| UI (анимация) | `src/components/game/dialogue/DiceRollDisplay.tsx` |
+
+**Механика:** 2d6 + модификатор vs DC (класс сложности).
+
+| Исход | Условие |
+|-------|---------|
+| Критический успех | натуральный 12 (всегда успех, независимо от DC) |
+| Критический провал | натуральный 2 (всегда провал, независимо от модификатора) |
+| Обычный успех / провал | 2d6 + modifier ≥ DC |
+
+**DC диапазон:** 10 (лёгкая) → 14+ (сложная).
+
+**API:**
+
+```typescript
+performDiceRoll(params: DiceRollParams): DiceRollResult
+// Использует SeededCombatRng, если передан seed
+
+getSuccessProbability(modifier: number, dc: number): number
+// Перечисляет все 36 исходов 2d6
+
+formatDiceRollResult(result: DiceRollResult): string
+// Форматированная строка на русском
+```
+
+**Интеграция в диалоги:** при нажатии на выбор с `minSkillCheck` в `DialogueRenderer` выполняется бросок кубика с анимацией. Модификаторы Кабинета Мыслей автоматически включаются в расчёт.
+
+**Проверки, поддерживаемые стихами (poem auto-pass):** poem-powered проверки сохраняют старое поведение flat-check — бросок кубика не выполняется.
+
+**UI-анимация (`DiceRollDisplay`):** 5-фазная анимация:
+
+1. `rolling` — кубики крутятся
+2. `reveal-dice` — показ значений на гранях
+3. `reveal-modifier` — отображение модификатора навыка
+4. `reveal-total` — итоговая сумма
+5. `result` → `dismiss` — результат и скрытие
+
+Визуал: 3D CSS-кубики, терминальный стиль breakdown, звуковые события (emit через EventBus).
+
+### Expanded Content Architecture
+
+Расширенный контент Act 1 — дополнительные диалоги, story-узлы и триггерные зоны.
+
+**Новые файлы:**
+
+| Файл | Описание |
+|------|----------|
+| `src/data/dialogue/part1-albert-expanded.ts` | 30-узловое расширенное дерево диалога с Альбертом |
+| `src/data/story/act1-room-expanded.ts` | 28 интерактивных узлов осмотра для `volodka_room` |
+| `src/data/narrativeExpansionTriggerZones.ts` | 10 новых триггерных зон |
+
+**Регистрация в narrative-системе:**
+
+| Контент | Механизм регистрации | Идентификатор |
+|---------|---------------------|---------------|
+| Albert dialogue | `narrativePackRegistry` → `DIALOGUE_PACK_ORDER` + `BOOTSTRAP_DIALOGUE_PACKS` | `part1AlbertExpanded` |
+| Room story nodes | `buildStoryNodes.ts` (source array) + `narrativePackRegistry` → `ACT_STORY_SATELLITES[act1]` | `act1RoomExpanded` |
+| Trigger zones | `narrativeExpansionTriggerZones.ts`, гейт по флагу `room_free_explore_1` | — |
+
+**Паттерн добавления контента:** новые файлы — standalone-экспорты, которые мержатся в существующие реестры. **Существующие контентные файлы не модифицируются.**
+
+**Интеграция с Кабинетом Мыслей:** диалоговые и story-узлы расширенного контента устанавливают флаги `thought_available_*`, которые разблокируют получение мыслей в Кабинете.
 
 ### Сюжет и golden path
 - Узлы: `src/data/story/act1–7.ts`, грузятся лениво narrative-паками
