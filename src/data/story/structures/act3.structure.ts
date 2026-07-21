@@ -492,6 +492,9 @@ export const ACT3_STRUCTURE: Record<string, StoryNodeStructure> = {
     "sceneId": "abandoned_factory",
     "guidanceNpcId": "npc_maria",
     "guidanceObjectiveType": "make_choice",
+    "condition": {
+      "missingFlag": "act3_betrayal_choice_made"
+    },
     "choices": [
       {
         "text": "",
@@ -516,6 +519,11 @@ export const ACT3_STRUCTURE: Record<string, StoryNodeStructure> = {
           {
             "type": "setFlag",
             "flag": "chose_zarema_over_vault",
+            "flagValue": true
+          },
+          {
+            "type": "setFlag",
+            "flag": "act3_betrayal_choice_made",
             "flagValue": true
           }
         ]
@@ -549,6 +557,11 @@ export const ACT3_STRUCTURE: Record<string, StoryNodeStructure> = {
             "flagValue": true
           },
           {
+            "type": "setFlag",
+            "flag": "act3_betrayal_choice_made",
+            "flagValue": true
+          },
+          {
             "type": "triggerQuest",
             "questId": "vault_defense"
           }
@@ -575,6 +588,11 @@ export const ACT3_STRUCTURE: Record<string, StoryNodeStructure> = {
           {
             "type": "setFlag",
             "flag": "refused_choice",
+            "flagValue": true
+          },
+          {
+            "type": "setFlag",
+            "flag": "act3_betrayal_choice_made",
             "flagValue": true
           }
         ],
@@ -1050,6 +1068,9 @@ export const ACT3_STRUCTURE: Record<string, StoryNodeStructure> = {
     "sceneId": "abandoned_factory",
     "guidanceNpcId": "npc_maria",
     "guidanceObjectiveType": "make_choice",
+    "condition": {
+      "missingFlag": "maria_truth_revealed"
+    },
     "choices": [
       {
         "text": "",

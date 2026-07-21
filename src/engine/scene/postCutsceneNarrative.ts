@@ -1,6 +1,5 @@
 import { getCutsceneForNode } from '@/data/cutscenes';
 import { dispatchGameAction } from '@/engine/GameActionDispatcher';
-import { eventBus } from '@/engine/EventBus';
 import { forceEmitInteractionEnd } from '@/engine/interaction/interactionEndDedup';
 import { openDiegeticNarrative } from '@/engine/scene/narrativeOverlay';
 import { enterSceneFreeExplorationHub } from '@/engine/scene/freeExplorationHub';

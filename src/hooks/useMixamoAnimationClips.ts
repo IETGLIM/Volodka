@@ -12,6 +12,7 @@ import {
   GltfPreloadPriority,
   scheduleGltfPreload,
 } from '@/engine/assets/gltfPreloadScheduler';
+import { filterClipTracksToExistingNodes } from '@/engine/animation/filterClipTracks';
 
 export interface MixamoClipBinding {
   clipId: MixamoClipId;
@@ -111,7 +112,13 @@ export function useMixamoAnimationClips(
           if (cancelled) return;
           const clip = gltf.animations[0];
           if (!clip) return;
-          const renamed = clip.clone();
+          // Filter out tracks targeting bones that don't exist in the
+          // destination rig (Mixamo clips reference handl/handr/handslotl/
+          // handslotr/Rig_Medium which don't exist in the Quaternius
+          // player skeleton). Silences THREE.PropertyBinding warnings and
+          // avoids wasted per-frame binding-resolution work.
+          const filtered = filterClipTracksToExistingNodes(clip, root);
+          const renamed = filtered.clone();
           renamed.name = binding.canonicalName;
           const action = mixer.clipAction(renamed, root);
           action.enabled = true;
@@ -149,7 +156,9 @@ export function useMixamoAnimationClips(
                 loadDeferredAt(index + 1);
                 return;
               }
-              const renamed = clip.clone();
+              // Filter orphan tracks (see criticalBindings comment above).
+              const filtered = filterClipTracksToExistingNodes(clip, root);
+              const renamed = filtered.clone();
               renamed.name = binding.canonicalName;
               const action = mixer.clipAction(renamed, root);
               action.enabled = true;

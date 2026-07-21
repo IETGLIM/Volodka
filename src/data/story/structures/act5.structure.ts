@@ -1996,6 +1996,9 @@ export const ACT5_STRUCTURE: Record<string, StoryNodeStructure> = {
     "speaker": "«Заря-М»",
     "sceneId": "factory_basement",
     "guidanceObjectiveType": "make_choice",
+    "condition": {
+      "missingFlag": "machine_fate_decided"
+    },
     "effects": [
       {
         "type": "setFlag",
@@ -2076,6 +2079,9 @@ export const ACT5_STRUCTURE: Record<string, StoryNodeStructure> = {
     "speaker": "«Заря-М»",
     "sceneId": "factory_basement",
     "guidanceObjectiveType": "make_choice",
+    "condition": {
+      "missingFlag": "machine_fate_decided"
+    },
     "effects": [
       {
         "type": "setFlag",
@@ -2155,6 +2161,9 @@ export const ACT5_STRUCTURE: Record<string, StoryNodeStructure> = {
     "speaker": "«Заря-М»",
     "sceneId": "factory_basement",
     "guidanceObjectiveType": "make_choice",
+    "condition": {
+      "missingFlag": "machine_fate_decided"
+    },
     "effects": [
       {
         "type": "setFlag",

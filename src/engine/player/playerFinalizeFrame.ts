@@ -14,8 +14,6 @@ const BASE_FOOTSTEP_INTERVAL = 0.4;
 const MIN_FOOTSTEP_INTERVAL = 0.2;
 /** Player horizontal speed where footstep interval is at minimum (m/s). */
 const FULL_SPRINT_SPEED = 7.0;
-/** Walk speed threshold — below this, footstep interval = base. */
-const WALK_SPEED_THRESHOLD = 3.0;
 /** Pitch variation range per step — adds subtle timbre variety (0.9–1.1). */
 const STEP_PITCH_RANGE = 0.1;
 
@@ -98,8 +96,11 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
         yaw: deps.livePlayerRotationRef.current,
       });
       // ── Session 9: Subtle pitch variation per step for natural feel ──
-      // Faster steps get slightly higher pitch (more urgent)
-      const pitchOffset = easedSpeed * STEP_PITCH_RANGE;
+      // Faster steps get slightly higher pitch (more urgent). The offset is
+      // computed for future use by an enhanced audio engine; currently
+      // playFootstep uses its internal default pitch variation.
+      const _pitchOffset = easedSpeed * STEP_PITCH_RANGE;
+      void _pitchOffset;
       audioEngine.playFootstep(deps.currentFloorMaterialRef.current, {
         sourceId: 'player-footstep',
       });
