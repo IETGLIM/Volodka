@@ -289,6 +289,202 @@ export const THOUGHT_CABINET_ITEMS: ThoughtCabinetItem[] = [
       { skill: 'empathy', modifier: -1, description: '-1 Эмпатия' },
     ],
   },
+
+  /* ═══ 19. Резонатор (взаимоисключающая пара) ═══ */
+  {
+    id: 'resonator_awakening',
+    name: 'Резонатор',
+    voice: 'intuition',
+    description: 'Ты — мост между кодом и поэзией. Стихи резонируют в тебе, усиливаясь, и ты можешь передавать этот резонанс машинам. Серверы ускоряются, когда ты рядом. Код дышит ровнее, когда ты читаешь.',
+    flavorText: '«Я — антенна между мирами. Я — резонанс, который нельзя заглушить.»',
+    acquisitionCondition: 'flag_thought_resonator',
+    acquisitionNode: 'thought_resonator_awakening',
+    mutuallyExclusive: ['silent_observer'],
+    effects: [
+      { skill: 'intuition', modifier: 3, description: '+3 Интуиция' },
+      { skill: 'writing', modifier: 2, description: '+2 Писательство' },
+      { skill: 'logic', modifier: -1, description: '-1 Логика' },
+    ],
+  },
+
+  /* ═══ 20. Молчаливый Наблюдатель (взаимоисключающая пара) ═══ */
+  {
+    id: 'silent_observer',
+    name: 'Молчаливый Наблюдатель',
+    voice: 'logic',
+    description: 'Лучший способ понять систему — наблюдать, не вмешиваясь. Тишина — твой микроскоп. Ты видишь паттерны, которые другие пропускают, потому что не отвлекаешься на эмоции.',
+    flavorText: '«Тот, кто молчит, слышит больше, чем тот, кто говорит.»',
+    acquisitionCondition: 'flag_thought_observer',
+    acquisitionNode: 'thought_silent_observer',
+    mutuallyExclusive: ['resonator_awakening'],
+    effects: [
+      { skill: 'logic', modifier: 3, description: '+3 Логика' },
+      { skill: 'coding', modifier: 2, description: '+2 Кодинг' },
+      { skill: 'persuasion', modifier: -2, description: '-2 Убеждение' },
+    ],
+  },
+
+  /* ═══ 21. Вирус Свободы (взаимоисключающая пара) ═══ */
+  {
+    id: 'virus_of_freedom',
+    name: 'Вирус Свободы',
+    voice: 'persuasion',
+    description: 'Слова заразны. Одно стихотворение может заразить целый город. Ты — нулевой пациент революции, и каждое твоё слово — инкубатор перемен. Распространяй — и не останавливайся.',
+    flavorText: '«Я — не носитель. Я — исходный код свободы.»',
+    acquisitionCondition: 'flag_thought_virus_freedom',
+    acquisitionNode: 'thought_virus_freedom',
+    mutuallyExclusive: ['quarantine_protocol'],
+    effects: [
+      { skill: 'persuasion', modifier: 3, description: '+3 Убеждение' },
+      { skill: 'writing', modifier: 1, description: '+1 Писательство' },
+      { skill: 'empathy', modifier: -1, description: '-1 Эмпатия' },
+    ],
+  },
+
+  /* ═══ 22. Протокол Карантина (взаимоисключающая пара) ═══ */
+  {
+    id: 'quarantine_protocol',
+    name: 'Протокол Карантина',
+    voice: 'logic',
+    description: 'Революция — не спринт, а марафон. Слишком быстрое распространение — и система заметит. Контролируй темп. Заражай по одному. Лучше медленная эпидемия, чем быстро подавленный бунт.',
+    flavorText: '«Каждый новый узел — месяц наблюдения. Безопасность — не паранойя.»',
+    acquisitionCondition: 'flag_thought_quarantine',
+    acquisitionNode: 'thought_quarantine_protocol',
+    mutuallyExclusive: ['virus_of_freedom'],
+    effects: [
+      { skill: 'logic', modifier: 2, description: '+2 Логика' },
+      { skill: 'coding', modifier: 2, description: '+2 Кодинг' },
+      { skill: 'persuasion', modifier: -2, description: '-2 Убеждение' },
+    ],
+  },
+
+  /* ═══ 23. Голос Мёртвых Серверов ═══ */
+  {
+    id: 'dead_servers_voice',
+    name: 'Голос Мёртвых Серверов',
+    voice: 'intuition',
+    description: 'Серверы, которые больше не работают, всё ещё говорят. В их мёртвых жёстких дисках — призраки удалённых данных. Ты слышишь их шёпот, как эхо из цифровой преисподней.',
+    flavorText: '«Они не мертвы. Они — в режиме ожидания.»',
+    acquisitionCondition: 'flag_thought_dead_servers',
+    hidden: true,
+    effects: [
+      { skill: 'intuition', modifier: 3, description: '+3 Интуиция' },
+      { skill: 'coding', modifier: 1, description: '+1 Кодинг' },
+      { skill: 'rhythm', modifier: -1, description: '-1 Ритм' },
+    ],
+  },
+
+  /* ═══ 24. Поэтическая Справедливость ═══ */
+  {
+    id: 'poetic_justice',
+    name: 'Поэтическая Справедливость',
+    voice: 'writing',
+    description: 'Каждое действие имеет стихотворную форму. Предательство — это ямб. Мужество — хорей. Искупление — сонет. Ты видишь мир как текст, который пишется в реальном времени — и можешь редактировать.',
+    flavorText: '«Жизнь — черновик. А ты — редактор.»',
+    acquisitionCondition: 'flag_thought_poetic_justice',
+    effects: [
+      { skill: 'writing', modifier: 3, description: '+3 Писательство' },
+      { skill: 'persuasion', modifier: 1, description: '+1 Убеждение' },
+      { skill: 'logic', modifier: -1, description: '-1 Логика' },
+    ],
+  },
+
+  /* ═══ 25. Серверный Аутизм ═══ */
+  {
+    id: 'server_autism',
+    name: 'Серверный Аутизм',
+    voice: 'coding',
+    description: 'Люди — шумные, хаотичные, непредсказуемые. Серверы — чистые, логичные, надёжные. Ты выбираешь сторону машин — не потому что не любишь людей, а потому что машины не предают.',
+    flavorText: '«rm -rf /горе && chmod +x /надежда»',
+    acquisitionCondition: 'flag_thought_server_autism',
+    hidden: true,
+    effects: [
+      { skill: 'coding', modifier: 3, description: '+3 Кодинг' },
+      { skill: 'logic', modifier: 1, description: '+1 Логика' },
+      { skill: 'empathy', modifier: -3, description: '-3 Эмпатия' },
+    ],
+  },
+
+  /* ═══ 26. Коллективный Разум (взаимоисключающая пара) ═══ */
+  {
+    id: 'hive_mind',
+    name: 'Коллективный Разум',
+    voice: 'empathy',
+    description: 'Один мозг — ограничение. Семнадцать мозгов — сеть. Ты чувствуешь каждый узел как расширение себя. Мы — один организм с семнадцатью сердцами. Когда один падает — остальные компенсируют.',
+    flavorText: '«Я — мы. Мы — я. Сеть — это не метафора.»',
+    acquisitionCondition: 'flag_thought_hive_mind',
+    acquisitionNode: 'thought_hive_mind',
+    mutuallyExclusive: ['lone_wolf_protocol'],
+    effects: [
+      { skill: 'empathy', modifier: 3, description: '+3 Эмпатия' },
+      { skill: 'rhythm', modifier: 1, description: '+1 Ритм' },
+      { skill: 'logic', modifier: -2, description: '-2 Логика' },
+    ],
+  },
+
+  /* ═══ 27. Протокол Одинокого Волка (взаимоисключающая пара) ═══ */
+  {
+    id: 'lone_wolf_protocol',
+    name: 'Протокол Одинокого Волка',
+    voice: 'logic',
+    description: 'Связи — уязвимости. Узлы — точки отказа. Чем меньше людей знает — тем безопаснее. Ты действуешь один, потому что один — значит, предсказуемый. Для себя.',
+    flavorText: '«Один сервер — одна точка отказа. Но и одна точка контроля.»',
+    acquisitionCondition: 'flag_thought_lone_wolf',
+    acquisitionNode: 'thought_lone_wolf',
+    mutuallyExclusive: ['hive_mind'],
+    effects: [
+      { skill: 'logic', modifier: 3, description: '+3 Логика' },
+      { skill: 'coding', modifier: 1, description: '+1 Кодинг' },
+      { skill: 'empathy', modifier: -3, description: '-3 Эмпатия' },
+    ],
+  },
+
+  /* ═══ 28. Код как Молитва ═══ */
+  {
+    id: 'code_as_prayer',
+    name: 'Код как Молитва',
+    voice: 'writing',
+    description: 'Каждая строка кода — мольба о смысле. Каждый успешный деплой — маленькое чудо. Ты программируешь не ради зарплаты — ради момента, когда баг исправляется и мир становится чуточку лучше.',
+    flavorText: '«print("Hello, World!") — первая молитва каждого программиста.»',
+    acquisitionCondition: 'flag_thought_code_prayer',
+    effects: [
+      { skill: 'coding', modifier: 2, description: '+2 Кодинг' },
+      { skill: 'writing', modifier: 2, description: '+2 Писательство' },
+      { skill: 'rhythm', modifier: 1, description: '+1 Ритм' },
+    ],
+  },
+
+  /* ═══ 29. Тень Гильдии ═══ */
+  {
+    id: 'guild_shadow',
+    name: 'Тень Гильдии',
+    voice: 'logic',
+    description: 'Гильдия видит всё. Каждый терминал, каждый экран, каждый нажатый клавиш. Ты чувствуешь их взгляд на затылке — холодный, цифровой, безжалостный. Страх — это данные, и они их собирают.',
+    flavorText: '«Паранойя — это не болезнь. Это — режим повышенной бдительности.»',
+    acquisitionCondition: 'flag_thought_guild_shadow',
+    hidden: true,
+    effects: [
+      { skill: 'intuition', modifier: 2, description: '+2 Интуиция' },
+      { skill: 'logic', modifier: 1, description: '+1 Логика' },
+      { skill: 'empathy', modifier: -1, description: '-1 Эмпатия' },
+      { skill: 'rhythm', modifier: -1, description: '-1 Ритм' },
+    ],
+  },
+
+  /* ═══ 30. Память Воды ═══ */
+  {
+    id: 'water_memory',
+    name: 'Память Воды',
+    voice: 'rhythm',
+    description: 'Вода помнит всё. Каждый камень, каждое русло, каждое касание берега. Ты как вода — текучий, адаптивный, но хранящий память о каждом пережитом моменте. Текучесть — твоя суперсила.',
+    flavorText: '«Вода не борется с камнем. Она обтекает — и точит.»',
+    acquisitionCondition: 'flag_thought_water_memory',
+    effects: [
+      { skill: 'rhythm', modifier: 3, description: '+3 Ритм' },
+      { skill: 'empathy', modifier: 1, description: '+1 Эмпатия' },
+      { skill: 'logic', modifier: -1, description: '-1 Логика' },
+    ],
+  },
 ];
 
 /* ─── Lookup map ─── */
