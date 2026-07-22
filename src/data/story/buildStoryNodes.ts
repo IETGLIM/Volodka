@@ -12,11 +12,17 @@ import { STORY_NODES_ACT1_EXTENDED } from './act1Extended';
 import { STORY_NODES_ACT1_CAFE_OFFICE } from './act1ExtendedCafeOffice';
 import { ACT1_ROOM_EXPANDED_NODES } from './act1-room-expanded';
 import { STORY_NODES_ACT2 } from './act2';
+import { ACT2_STORY_EXPANDED_NODES } from './act2-story-expanded';
+import { ACT3_STORY_EXPANDED_NODES } from './act3-story-expanded';
 import { STORY_NODES_ACT3 } from './act3';
+import { ACT4_STORY_EXPANDED_NODES } from './act4-story-expanded';
 import { STORY_NODES_ACT4 } from './act4';
 import { STORY_NODES_ACT4_QUIET_HOUR } from './act4QuietHour';
+import { ACT5_STORY_EXPANDED_NODES } from './act5-story-expanded';
 import { STORY_NODES_ACT5 } from './act5';
+import { ACT6_STORY_EXPANDED_NODES } from './act6-story-expanded';
 import { STORY_NODES_ACT6 } from './act6';
+import { ACT7_STORY_EXPANDED_NODES } from './act7-story-expanded';
 import { STORY_NODES_ACT7 } from './act7';
 import { STORY_NODES_PIER } from './pierStory';
 import { STORY_NODES_LIBRARY } from './libraryStory';
@@ -35,12 +41,18 @@ export function buildStoryNodes(): Record<string, StoryNode> {
     { name: 'solnysh', nodes: STORY_NODES_SOLNYSH },
     { name: 'sceneExploreHubs', nodes: STORY_NODES_SCENE_EXPLORE_HUBS },
     { name: 'act2', nodes: STORY_NODES_ACT2 },
+    { name: 'act2Expanded', nodes: ACT2_STORY_EXPANDED_NODES },
     { name: 'act3', nodes: STORY_NODES_ACT3 },
+    { name: 'act3Expanded', nodes: ACT3_STORY_EXPANDED_NODES },
     { name: 'act4', nodes: STORY_NODES_ACT4 },
+    { name: 'act4Expanded', nodes: ACT4_STORY_EXPANDED_NODES },
     { name: 'act4QuietHour', nodes: STORY_NODES_ACT4_QUIET_HOUR },
     { name: 'act5', nodes: STORY_NODES_ACT5 },
+    { name: 'act5Expanded', nodes: ACT5_STORY_EXPANDED_NODES },
     { name: 'act6', nodes: STORY_NODES_ACT6 },
+    { name: 'act6Expanded', nodes: ACT6_STORY_EXPANDED_NODES },
     { name: 'act7', nodes: STORY_NODES_ACT7 },
+    { name: 'act7Expanded', nodes: ACT7_STORY_EXPANDED_NODES },
     { name: 'chkTolpa', nodes: CHK_STORY_NODES },
     { name: 'chkTolpaExtended', nodes: CHK_STORY_NODES_EXTENDED },
     { name: 'pier', nodes: STORY_NODES_PIER },

@@ -170,6 +170,17 @@ Gothic (живой мир, NPC расписания), GTA (открытые пр
 
 ## 📝 История сессий
 
+### Сессия: 2026-07-23 — "UI Overlap Audit + Phase 5 preparation"
+**Коммиты:** e570e48 (18 overlays), 78f1936 (39 files)
+**Что сделано:**
+- Полный аудит всех UI-компонентов на наложение/stacking (44 проблемных файла помимо 18 уже исправленных)
+- 🔴 5 критических: z-[9999]/9998 → UI_LAYERS (QTE, RecoveryScreen, QuestArrow, Tooltip, DevBadge)
+- 🟠 16 hardcoded z-index → UI_LAYERS constants (minimap, buff tracker, cinematic bars, menus, loading, etc.)
+- 🟡 15 fullscreen overlays без z-index → добавлен style={{ zIndex: UI_LAYERS.XXX }} + AnimatePresence mode="wait"
+- 🟢 3 дополнительных: DataTerminalOverlay, InnerMonologueOverlay, CombatUI splash+flash
+- TypeScript: 0 ошибок, компиляция чистая
+**Следующий шаг:** Фаза 5 продолжение — story-ноды Актов 2-7, новые побочные квесты
+
 ### Сессия: 2026-07-22 — "Фаза 5: Расширение контента"
 **Что сделано:**
 - Созданы 4 новых файла расширенных диалогов (123 ноды)
