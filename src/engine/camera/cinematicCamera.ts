@@ -21,9 +21,9 @@ import { getExplorationCameraMotionScale } from '@/engine/player/playerLocomotio
  * ════════════════════════════════════════════════════ */
 
 /* ── Spring camera ── */
-const SPRING_STIFFNESS = 14; // slightly relaxed for cinematic delayed follow
-const SPRING_DAMPING = 0.92;   // increased to reduce oscillation/slide
-const LOOK_AT_STIFFNESS = 14;
+const SPRING_STIFFNESS = 8; // reduced from 14 — gentler pull, critically-damped with SPRING_DAMPING=6
+const SPRING_DAMPING = 6;     // increased from 0.92 — proper damping ratio (2*sqrt(8)≈5.66, 6=slightly over-damped)
+const LOOK_AT_STIFFNESS = 8; // matched to SPRING_STIFFNESS for consistent feel
 export const DEFAULT_FOV = 75;
 const FOV_LERP_SPEED = 3;
 const ROLL_LERP_SPEED = 4;
@@ -34,8 +34,8 @@ const DIALOGUE_SHOT_INTERVAL_MAX = 4.0;
 const DIALOGUE_FOV = 50;
 const _DIALOGUE_TIME_SCALE = 0.92;
 const DIALOGUE_SHOT_TRANSITION_SPEED = 2.5; // speed of shot blend (higher = faster)
-export const DIALOGUE_SPRING_STIFFNESS = 8; // softer spring for cinematic dialogue feel
-export const DIALOGUE_SPRING_DAMPING = 0.88;
+export const DIALOGUE_SPRING_STIFFNESS = 5; // reduced from 8 — softer for dialogue, critically-damped with DIALOGUE_SPRING_DAMPING=4
+export const DIALOGUE_SPRING_DAMPING = 4;   // increased from 0.88 — proper damping (2*sqrt(5)≈4.47, slightly under for subtle sway)
 
 /* ── Exploration enhancements ── */
 const TURN_TILT_MAX = 0.02;           // max roll radians when turning (subtle)
@@ -144,7 +144,7 @@ export function updateSpringCamera(
   stiffness: number = SPRING_STIFFNESS,
   damping: number = SPRING_DAMPING,
 ): void {
-  const dt = Math.min(delta, 0.05);
+  const dt = Math.min(delta, 0.1);
 
   // Defense-in-depth: if any target or current state has NaN/Infinity, the
   // spring can never recover (NaN propagates via lerp/add and sticks). Reset
@@ -578,7 +578,7 @@ export function updateExplorationState(
   delta: number,
   moveBlend = 0,
 ): { targetRoll: number; targetHeight: number } {
-  const dt = Math.min(delta, 0.05);
+  const dt = Math.min(delta, 0.1);
   const motionScale = getExplorationCameraMotionScale(moveBlend);
 
   // ── Height smoothing (for stairs/slopes) ──
@@ -751,7 +751,7 @@ export function updateCutsceneController(
 ): { position: THREE.Vector3; lookAt: THREE.Vector3; fov: number } | null {
   if (!controller.isPlaying || controller.isComplete) return null;
 
-  const dt = Math.min(delta, 0.05);
+  const dt = Math.min(delta, 0.1);
   controller.elapsed += dt;
 
   const waypoints = controller.waypoints;
@@ -920,7 +920,7 @@ export function updateCombatCamera(
   delta: number,
   _cameraPosition: THREE.Vector3,
 ): { shakeOffset: THREE.Vector3; effectiveFov: number } {
-  const dt = Math.min(delta, 0.05);
+  const dt = Math.min(delta, 0.1);
   let effectiveFov = state.targetFov;
 
   // ── Zoom recovery ──
@@ -1025,7 +1025,7 @@ export function updateSceneTransition(
 ): { position: THREE.Vector3; lookAt: THREE.Vector3 } | null {
   if (!state.active) return null;
 
-  const dt = Math.min(delta, 0.05);
+  const dt = Math.min(delta, 0.1);
   state.progress += dt / TRANSITION_FLY_DURATION;
 
   if (state.progress >= 1) {

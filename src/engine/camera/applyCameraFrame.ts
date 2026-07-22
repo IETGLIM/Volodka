@@ -164,19 +164,20 @@ export function applyCameraFrame(
     const forwardVel = playerVelocity.dot(_camFwd);
     const isMovingBackward = forwardVel < -0.3;
 
-    // Auto-follow camera — smoother to prevent jitter.
-    // Previous: AUTO_FOLLOW_SPEED=3.0 with followStrength scaling caused
-    // jittery rotation when player speed oscillated around threshold.
-    // New: use a gentler speed (1.5) and remove followStrength scaling —
-    // the camera now follows at a constant, smooth rate. The higher
-    // threshold (0.5 instead of 0.3) prevents micro-rotations when the
-    // player taps movement keys rhythmically.
-    if (playerSpeed > 0.5 && !isMovingBackward) {
-      if (Math.abs(yawDiff) > AUTO_FOLLOW_MIN_YAW_DELTA) {
-        ctx.yaw += yawDiff * (1 - Math.exp(-1.5 * delta));
+    // Auto-follow camera — continuous speed-weighted blend (no hard threshold).
+    // Previous versions used a hard threshold (playerSpeed > 0.5) which caused
+    // on/off flickering when speed oscillated around the boundary. Now we use
+    // a continuous followStrength that scales from 0 at rest to 1 at full speed,
+    // making auto-follow transitions smooth and gradual.
+    if (!isMovingBackward) {
+      const followStrength = Math.min(playerSpeed / 1.0, 1.0); // 0→1 as speed 0→1 m/s
+      if (followStrength > 0.01 && Math.abs(yawDiff) > AUTO_FOLLOW_MIN_YAW_DELTA) {
+        ctx.yaw += yawDiff * followStrength * (1 - Math.exp(-1.5 * delta));
       }
-      frameState.playerMovingTimer = 0;
-    } else if (playerSpeed > 0.5 && isMovingBackward) {
+      if (followStrength > 0.1) {
+        frameState.playerMovingTimer = 0;
+      }
+    } else if (playerSpeed > 0.3) {
       // Backward movement: still counts as "moving" for the idle timer reset
       // (so the camera doesn't auto-rotate to POI while the player is backing
       // up), but we don't update ctx.yaw — the camera stays put.

@@ -16,6 +16,10 @@ const MIN_FOOTSTEP_INTERVAL = 0.2;
 const FULL_SPRINT_SPEED = 7.0;
 /** Pitch variation range per step — adds subtle timbre variety (0.9–1.1). */
 const STEP_PITCH_RANGE = 0.1;
+/** Upper threshold for switching from idle to walk/run (m/s). */
+const ANIM_UPPER_THRESHOLD = 0.5;
+/** Lower threshold for reverting from walk/run to idle (m/s) — hysteresis band prevents flickering. */
+const ANIM_LOWER_THRESHOLD = 0.25;
 
 /** Animations, footsteps, position sync, ground enforce, DEV timing. */
 export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
@@ -26,7 +30,6 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
   const dt = scratch.dt;
   const {
     airborneIntent,
-    floorSlack,
     isGroundedNow,
     onFlatGround,
     isOutdoor,
@@ -50,28 +53,41 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
 
   const horizontalSpeed = Math.sqrt(vel.x * vel.x + vel.z * vel.z);
   const animPos = rb.translation();
-  if (
-    !airborneIntent &&
-    animPos.y <= groundY + floorSlack &&
-    Math.abs(vel.y) < 0.75
-  ) {
+  // ── Ground state: trust KCC as primary, rescue fallback for micro-hover ──
+  if (isGroundedNow) {
     deps.isGroundedRef.current = true;
+    deps.coyoteTimerRef.current = 0;
     if (Math.abs(vel.y) < 0.25) vel.y = 0;
-  }
-  if (!deps.isGroundedRef.current) {
-    const clearlyAirborne = animPos.y > groundY + 0.08 || vel.y > 0.35;
-    if (clearlyAirborne) {
-      deps.currentAnimRef.current = vel.y > 0.5 ? 'jump' : 'fall';
-    } else {
+  } else if (!airborneIntent) {
+    // KCC says not grounded, no jump intent — rescue fallback only for micro-hover
+    const microHovering = animPos.y <= groundY + 0.02 && Math.abs(vel.y) < 0.15;
+    if (microHovering) {
       deps.isGroundedRef.current = true;
       vel.y = 0;
+    } else {
+      deps.isGroundedRef.current = false;
+      if (animPos.y > groundY + 0.08 || vel.y > 0.35) {
+        deps.currentAnimRef.current = vel.y > 0.5 ? 'jump' : 'fall';
+      }
     }
-  } else if (
-    horizontalSpeed > (scratch.isLocked ? 0.12 : 0.5)
-  ) {
-    deps.currentAnimRef.current = running ? 'run' : 'walk';
   } else {
-    deps.currentAnimRef.current = 'idle';
+    // airborneIntent=true, KCC says not grounded — clearly airborne
+    deps.isGroundedRef.current = false;
+  }
+
+  // ── Animation state (hysteresis band prevents idle↔walk flickering) ──
+  if (deps.isGroundedRef.current) {
+    const lockedThreshold = scratch.isLocked ? 0.12 : ANIM_UPPER_THRESHOLD;
+    const lockedLowerThreshold = scratch.isLocked ? 0.06 : ANIM_LOWER_THRESHOLD;
+    const prevState = deps.currentAnimRef.current;
+    const wasLocomoting = prevState === 'walk' || prevState === 'run';
+
+    if (horizontalSpeed > lockedThreshold) {
+      deps.currentAnimRef.current = running ? 'run' : 'walk';
+    } else if (horizontalSpeed < lockedLowerThreshold || !wasLocomoting) {
+      deps.currentAnimRef.current = 'idle';
+    }
+    // Between thresholds while locomoting: keep current state unchanged
   }
 
   if ((isMoving || horizontalSpeed > 0.5) && deps.isGroundedRef.current) {

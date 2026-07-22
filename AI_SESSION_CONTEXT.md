@@ -155,6 +155,7 @@ Gothic (живой мир, NPC расписания), GTA (открытые пр
 ### 🔄 Следующие шаги (приоритет по убыванию)
 - [x] **Фаза 5 (продолжение): Расширение story-нод Актов 2-7** — +120 exploration nodes (20 per act)
 - [x] **Фаза 5 (продолжение): Новые квесты Актов 2-7** — 10 дополнительных побочных квестов
+- [x] **Фаза 5.5: Критический фикс дёргания модели** — animation blending, camera spring rebalance, hysteresis
 - [ ] **Фаза 6: A* навигация для NPC** — заменить waypoint patrols на nav mesh
 - [ ] **Фаза 7: Система одежды/внешности** — влияет на статы и диалоги
 - [ ] **Фаза 8: Улучшенные 3D модели** — AI3DGen для ключевых NPC и окружения
@@ -169,6 +170,34 @@ Gothic (живой мир, NPC расписания), GTA (открытые пр
 ---
 
 ## 📝 История сессий
+
+### Сессия: 2026-03-04 — "Критический фикс дёргания модели + Camera Spring Rebalance"
+**Что сделано:**
+- **Глубокий аудит причин дёргания модели** — найдены 3 критических и 3 средних root cause
+- 🔴 **Fix 1: Animation State Blending** — переписан `useProceduralPlayerAnimation.ts` (537 строк)
+  - Добавлена 5-уровневая иерархическая blend система (idle ↔ walk ↔ run ↔ combat ↔ airborne)
+  - Каждый blend weight использует frame-rate-independent exponential damping (`1 - exp(-speed * dt)`)
+  - Asymmetric blend: к движению быстрее (8), к idle медленнее (5) — естественная декцелерация
+  - Катсцен-состояния (sitting, sleeping, talking, working) остаются hard-switch
+- 🔴 **Fix 2: Animation Hysteresis** — добавлен в `playerFinalizeFrame.ts`
+  - `ANIM_UPPER_THRESHOLD = 0.5` (switch to walk), `ANIM_LOWER_THRESHOLD = 0.25` (revert to idle)
+  - Между порогами при locomotion: состояние сохраняется (no flickering)
+  - Locked thresholds: upper=0.12, lower=0.06
+- 🔴 **Fix 3: Camera Spring Rebalance** — `cinematicCamera.ts`
+  - `SPRING_STIFFNESS`: 14 → **8** (gentler pull, 12% force/frame vs 20%)
+  - `SPRING_DAMPING`: 0.92 → **6** (proper critical damping, 2×√8 ≈ 5.66)
+  - `LOOK_AT_STIFFNESS`: 14 → **8** (matched for consistency)
+  - `DIALOGUE_SPRING_STIFFNESS`: 8 → **5**, `DIALOGUE_SPRING_DAMPING`: 0.88 → **4**
+  - All `Math.min(delta, 0.05)` → `Math.min(delta, 0.1)` (5 locations)
+- 🟡 **Fix 4: Auto-Follow Continuous Blend** — `applyCameraFrame.ts`
+  - Заменён hard threshold `playerSpeed > 0.5` на continuous `followStrength = min(playerSpeed/1.0, 1.0)`
+  - Нет on/off flickering при колебании скорости вокруг порога
+- 🟡 **Fix 5: Ground Override Feedback Loop** — `playerFinalizeFrame.ts`
+  - KCC `isGroundedNow` теперь primary ground decision (trust physics)
+  - Rescue fallback только при micro-hovering (pos ≤ groundY+0.02, |vel.y| < 0.15)
+  - Eliminated feedback loop что создавал vertical micro-bobbing
+- TypeScript: 0 ошибок
+**Следующий шаг:** Фаза 6 — A* навигация для NPC
 
 ### Сессия: 2026-07-23 — "UI Overlap Audit + Phase 5 Content Expansion"
 **Коммиты:** e570e48, 78f1936, cec23f3
