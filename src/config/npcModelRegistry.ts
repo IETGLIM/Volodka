@@ -1,7 +1,11 @@
 /* ─── Volodka RPG – per-NPC animated GLB paths ─── */
-/* Visual policy: story NPCs render as procedural archetypes (see proceduralNpcAvatarCatalog).
-   Quaternius CC0 GLBs stay on disk for rig retargeting and CI — not in-world identity.
-   Optional unique GLB override only when explicitly on disk (AI3DGen / manual import). */
+/* Visual policy (v2 — GLB-first for medium/high/ultra):
+   - low preset: procedural archetypes (fast, no GLB streaming)
+   - medium/high/ultra: Quaternius CC0 GLBs are rendered as visible character meshes.
+   - RPM or AI3DGen Pro overrides CC0 when those GLBs are on disk.
+   - Procedural archetypes remain the Suspense fallback during GLB loading.
+   This replaces the old policy that blocked CC0 GLBs from in-world rendering.
+   Quaternius models look like real 3D characters vs primitive boxes/spheres. */
 
 import type { AssetRenderMode } from '@/engine/graphics/qualityPresets';
 import {
@@ -312,18 +316,28 @@ export function isRpmNpcOnDisk(npcId: string): boolean {
   return isRpmOnDiskForNpc(npcId);
 }
 
-/** Unique identity mesh on disk — only these replace procedural silhouettes in-world. */
+/** Whether ANY shipped GLB (CC0 or RPM) exists for this NPC on disk. */
+export function isNpcMeshOnDisk(npcId: string): boolean {
+  // RPM overrides CC0 when available — return true for either source.
+  if (isRpmOnDiskForNpc(npcId)) return true;
+  // CC0 Quaternius GLB exists for all 25 shipped NPCs.
+  const cc0Url = CC0_NPC_MODEL_ASSETS[npcId]?.url;
+  return cc0Url != null && isCc0ShippedUrl(cc0Url, npcId);
+}
+
+/** @deprecated — use isNpcMeshOnDisk() instead (now includes CC0). */
 export function isUniqueNpcMeshOnDisk(npcId: string): boolean {
-  return isRpmOnDiskForNpc(npcId);
+  return isNpcMeshOnDisk(npcId);
 }
 
 /**
  * Whether the renderer should draw a rigged GLB for this NPC.
- * Quaternius/Khronos CC0 placeholders never pass — procedural archetypes stay visible.
+ * v2: CC0 Quaternius GLBs are rendered at medium/high/ultra quality.
+ * Procedural archetypes only on 'procedural' mode (low preset).
  */
 export function shouldRenderGltfNpc(npcId: string, renderMode: AssetRenderMode): boolean {
   if (renderMode === 'procedural') return false;
-  return isUniqueNpcMeshOnDisk(npcId);
+  return isNpcMeshOnDisk(npcId);
 }
 
 /** URL for in-world NPC rendering (respects visual identity policy). */

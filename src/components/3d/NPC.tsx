@@ -648,15 +648,27 @@ function NPCModelWithErrorBoundary({
   return (
     <NpcEmissiveGlow npcId={definition.id} glowColor={appearance.glowColor} enabled={Boolean(gltfUrl)}>
       {gltfUrl ? (
-        <GltfNPCModel
-          definition={definition}
-          interactionState={interactionState}
-          isInteractionTarget={isInteractionTarget}
-          activity={activity}
-          patrolActivity={patrolActivity}
-          lodVisible={lodVisible}
-          livePlayerPositionRef={livePlayerPositionRef}
-        />
+        <Suspense fallback={
+          <ProceduralNPCModel
+            definitionId={definition.id}
+            appearance={appearance}
+            interactionState={interactionState}
+            isInteractionTarget={isInteractionTarget}
+            activity={activity}
+            patrolActivity={patrolActivity}
+            livePlayerPositionRef={livePlayerPositionRef}
+          />
+        }>
+          <GltfNPCModel
+            definition={definition}
+            interactionState={interactionState}
+            isInteractionTarget={isInteractionTarget}
+            activity={activity}
+            patrolActivity={patrolActivity}
+            lodVisible={lodVisible}
+            livePlayerPositionRef={livePlayerPositionRef}
+          />
+        </Suspense>
       ) : (
         <ProceduralNPCModel
           definitionId={definition.id}
