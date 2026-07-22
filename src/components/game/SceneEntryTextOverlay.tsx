@@ -4,6 +4,7 @@
  *  Shows the scene name and an atmospheric description (entryText).
  *  Fades in slowly like a movie title card, stays 2.5s, then fades out.
  *  Only appears when the scene has an entryText configured in SCENE_CONFIG.
+ *  DEFERS appearance until SceneTransitionOverlay has fully exited — no overlap.
  */
 
 import { useEffect, useRef, useState } from 'react';
@@ -12,6 +13,7 @@ import { SCENE_CONFIG } from '@/config/scenes';
 import { eventBus } from '@/engine/EventBus';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { useSceneTransitionOverlayController } from '@/hooks/useSceneTransitionOverlayController';
 import type { SceneId } from '@/config/sceneIds';
 
 /** How long the text stays visible (ms) before fading out. */
@@ -26,25 +28,42 @@ export function SceneEntryTextOverlay() {
   const [entryText, setEntryText] = useState('');
   const holdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const genRef = useRef(0);
+  const pendingRef = useRef<{ name: string; text: string; gen: number } | null>(null);
 
+  const { isActive: transitionActive } = useSceneTransitionOverlayController();
+
+  // When transition overlay finishes, show pending entry text
+  useEffect(() => {
+    if (transitionActive) return; // transition still running — wait
+    if (!pendingRef.current) return; // no pending data
+
+    const { name, text, gen } = pendingRef.current;
+    if (gen !== genRef.current) return; // stale generation
+    pendingRef.current = null;
+
+    setSceneName(name);
+    setEntryText(text);
+    setVisible(true);
+
+    if (holdTimerRef.current) clearTimeout(holdTimerRef.current);
+    holdTimerRef.current = setTimeout(() => {
+      setVisible(false);
+    }, ENTRY_TEXT_HOLD_MS);
+  }, [transitionActive]);
+
+  // Listen for scene:loaded to queue pending entry text
   useEffect(() => {
     const unsub = eventBus.on('scene:loaded', ({ sceneId }) => {
       const config = SCENE_CONFIG[sceneId as SceneId];
       if (!config?.entryText) return;
 
-      // Cancel previous hold timer
+      // Cancel previous
       if (holdTimerRef.current) clearTimeout(holdTimerRef.current);
       genRef.current += 1;
-      const gen = genRef.current;
+      setVisible(false); // hide previous entry text immediately
 
-      setSceneName(config.name);
-      setEntryText(config.entryText);
-      setVisible(true);
-
-      holdTimerRef.current = setTimeout(() => {
-        if (gen !== genRef.current) return;
-        setVisible(false);
-      }, ENTRY_TEXT_HOLD_MS);
+      // Store pending — we'll show it once transition overlay finishes (or immediately if not active)
+      pendingRef.current = { name: config.name, text: config.entryText, gen: genRef.current };
     });
 
     return () => {

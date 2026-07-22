@@ -2,6 +2,7 @@ import { memo, Suspense, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { useSceneTransitionOverlayController } from '@/hooks/useSceneTransitionOverlayController';
 import {
   isExplorationHudProfile,
   isMotionFxProfile,
@@ -305,7 +306,8 @@ export const GameplaySharedEffects = memo(function GameplaySharedEffects() {
   );
 });
 
-/** Scene title banner on location change — AAA cinematic card. */
+/** Scene title banner on location change — AAA cinematic card.
+ *  Suppressed while SceneTransitionOverlay is active to prevent overlap. */
 export const GameplaySceneBanner = memo(function GameplaySceneBanner({
   sceneBanner,
 }: {
@@ -314,7 +316,9 @@ export const GameplaySceneBanner = memo(function GameplaySceneBanner({
   const reducedMotion = useEffectiveReducedMotion();
   const accentColor = sceneBanner?.accentColor ?? '#88aacc';
   const presentation = resolveSceneLocationPresentation(accentColor);
-  const visible = sceneBanner != null;
+  /** Don't show banner while cinematic transition overlay is active — prevents title overlap. */
+  const { isActive: transitionActive } = useSceneTransitionOverlayController();
+  const visible = sceneBanner != null && !transitionActive;
   useCinematicNarrativePresentation(visible);
 
   return (
