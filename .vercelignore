@@ -1,0 +1,10 @@
+# Khronos glTF sample models — reference/debug only, not game assets.
+# These 13 CC0 models (58MB) are used by the bootstrap pipeline for
+# interim placeholders but should NOT be shipped to production users.
+models/khronos/
+
+# Source asset pipeline (dev-time only)
+assets-source/
+
+# Draco encoder (build-time only, 954KB — decoder stays for runtime)
+draco/gltf/draco_encoder.js

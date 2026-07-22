@@ -126,6 +126,44 @@ for (const spec of MIXAMO_ANIMATION_CATALOG) {
   }
 }
 
+/* ── 5. LOD size sanity check ── */
+const { statSync } = await import('node:fs');
+const lodWarnings: string[] = [];
+for (const [id, asset] of Object.entries(ASSET_MANIFEST)) {
+  if (asset.shipped !== true || asset.lods.length < 2) continue;
+  const lod0Path = publicPath(asset.lods[0].url);
+  if (!lod0Path || !existsSync(lod0Path)) continue;
+  const lod0Size = statSync(lod0Path).size;
+  for (const lod of asset.lods.slice(1)) {
+    const lodPath = publicPath(lod.url);
+    if (!lodPath || !existsSync(lodPath)) continue;
+    const lodSize = statSync(lodPath).size;
+    // LOD1/LOD2 should be smaller than LOD0 for static meshes;
+    // for skinned meshes (category='character'), texture-resize LOD may be
+    // similar size — but should still be ≤ 110% of LOD0.
+    const threshold = asset.category === 'character' ? 1.1 : 0.9;
+    if (lodSize > lod0Size * threshold) {
+      const pct = ((lodSize / lod0Size) * 100).toFixed(0);
+      lodWarnings.push(`${id} LOD (d=${lod.maxDistance}m): ${lod.url} is ${pct}% of LOD0 size — expected <${(threshold * 100).toFixed(0)}%`);
+    }
+  }
+}
+
+/* ── 6. Khronos reference models in production ── */
+const khronosDir = path.join(PUBLIC, 'models', 'khronos');
+let khronosSize = 0;
+let khronosCount = 0;
+if (existsSync(khronosDir)) {
+  const { readdirSync } = await import('node:fs');
+  for (const entry of readdirSync(khronosDir)) {
+    if (entry.endsWith('.glb')) {
+      khronosCount += 1;
+      khronosSize += statSync(path.join(khronosDir, entry)).size;
+    }
+  }
+}
+const khronosMB = (khronosSize / (1024 * 1024)).toFixed(1);
+
 /* ── Report ── */
 if (mixamoPending > 0) {
   console.log(`ℹ Mixamo catalog: ${mixamoPending} clip(s) not imported yet (see assets-source/mixamo/README.md)`);
@@ -138,6 +176,14 @@ if (rpmPending > 0) {
 }
 if (skippedManifest.length > 0) {
   console.log(`ℹ Skipped unshipped manifest assets: ${skippedManifest.join(', ')}`);
+}
+if (khronosCount > 0) {
+  console.warn(`⚠ Khronos reference models in production: ${khronosCount} files, ${khronosMB}MB — these should be excluded from deployment (use .vercelignore or build filter)`);
+}
+if (lodWarnings.length > 0) {
+  console.warn(`⚠ LOD size warnings (${lodWarnings.length}):`);
+  for (const w of lodWarnings) console.warn(`  - ${w}`);
+  console.warn('  Run npm run assets:validate-lod for detailed vertex-level analysis');
 }
 
 if (missing.length === 0 && corrupt.length === 0) {

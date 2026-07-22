@@ -10,8 +10,16 @@
  *   tiers (60-75% smaller textures with minimal visual quality loss).
  * - Meshopt variants keep original textures (meshopt decompresses geometry only;
  *   KTX2 transcoding overhead not justified when GPU is already strong enough for ultra).
- * - Pipeline order: copy → optimize (no texture compress) → draco → etc1s (on draco)
- *   → meshopt (from optimized lod0) → simplify LODs.
+ * - Pipeline order: copy → optimize → draco → etc1s → meshopt → LOD generation.
+ *
+ * LOD Strategy (v2 — asset-aware):
+ * - Static meshes (suffix-lod): weld + simplify with relaxed error thresholds.
+ *   Weld merges split vertices for cross-submesh simplification.
+ * - Skinned meshes (hero-lod, npc-flat): geometry LOD is ineffective for
+ *   multi-part skinned characters (simplify can't reduce small submeshes).
+ *   Instead, LOD1/LOD2 use Draco+texture-resize (50%/25% texture scale).
+ *   This provides bandwidth savings while keeping animation-compatible geometry.
+ *   Distant rendering uses impostor billboard (see assetManifest.impostor).
  */
 
 import { spawnSync } from 'node:child_process';
@@ -204,19 +212,71 @@ export function processGltfAsset({
     );
   }
 
+  const isSkinned = layout === 'hero-lod' || layout === 'npc-flat';
+
   if (!skipLod && paths.lod1 && paths.lod2) {
-    runGltfTransform(
-      root,
-      ['simplify', paths.lod0, paths.lod1, '--ratio', '0.5', '--error', '0.01'],
-      `lod1 → ${rel(paths.lod1)}`,
-      { exitOnFail },
-    );
-    runGltfTransform(
-      root,
-      ['simplify', paths.lod0, paths.lod2, '--ratio', '0.2', '--error', '0.02'],
-      `lod2 → ${rel(paths.lod2)}`,
-      { exitOnFail },
-    );
+    if (isSkinned) {
+      // ── Skinned mesh LOD strategy ──
+      // Geometry simplify is ineffective for multi-part skinned characters
+      // (Quaternius modular chars have ~4-5 submeshes × ~1-3K verts each;
+      //  simplify can't reduce these small submeshes without exceeding error).
+      // Instead, LOD1/LOD2 use Draco-compressed geometry + texture resize.
+      // This saves bandwidth while keeping animation-compatible geometry.
+      //
+      // LOD1: Draco + 50% texture scale (texture-compress resize)
+      // LOD2: Draco + 25% texture scale
+      console.log('\n  Skinned LOD: texture-resize strategy (geometry unchanged)');
+      runGltfTransform(
+        root,
+        ['draco', paths.lod0, paths.lod1, '--texture-compress', 'resize', '--texture-size', '512'],
+        `lod1 (skinned) → ${rel(paths.lod1)} (draco+tex50%)`,
+        { exitOnFail },
+      );
+      runGltfTransform(
+        root,
+        ['draco', paths.lod0, paths.lod2, '--texture-compress', 'resize', '--texture-size', '256'],
+        `lod2 (skinned) → ${rel(paths.lod2)} (draco+tex25%)`,
+        { exitOnFail },
+      );
+    } else {
+      // ── Static mesh LOD strategy ──
+      // Weld merges split vertices for cross-submesh simplification.
+      // Relaxed error thresholds allow meaningful geometry reduction.
+      const lod1Welded = `${paths.lod0}.lod1-welded.tmp.glb`;
+      const lod2Welded = `${paths.lod0}.lod2-welded.tmp.glb`;
+
+      runGltfTransform(
+        root,
+        ['weld', paths.lod0, lod1Welded],
+        `weld → lod1-prep`,
+        { exitOnFail },
+      );
+      runGltfTransform(
+        root,
+        ['weld', paths.lod0, lod2Welded],
+        `weld → lod2-prep`,
+        { exitOnFail },
+      );
+
+      // LOD1: 50% ratio with 0.5 error tolerance (50% mesh radius).
+      runGltfTransform(
+        root,
+        ['simplify', lod1Welded, paths.lod1, '--ratio', '0.5', '--error', '0.5', '--lock-border', 'false'],
+        `lod1 (static) → ${rel(paths.lod1)} (ratio=0.5, error=0.5, welded)`,
+        { exitOnFail },
+      );
+      // LOD2: 20% ratio with 1.0 error tolerance (100% mesh radius).
+      runGltfTransform(
+        root,
+        ['simplify', lod2Welded, paths.lod2, '--ratio', '0.2', '--error', '1.0', '--lock-border', 'false'],
+        `lod2 (static) → ${rel(paths.lod2)} (ratio=0.2, error=1.0, welded)`,
+        { exitOnFail },
+      );
+
+      // Clean up temp welded files
+      try { if (existsSync(lod1Welded)) unlinkSync(lod1Welded); } catch {}
+      try { if (existsSync(lod2Welded)) unlinkSync(lod2Welded); } catch {}
+    }
   }
 
   return true;

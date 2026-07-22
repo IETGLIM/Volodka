@@ -156,6 +156,7 @@ Gothic (живой мир, NPC расписания), GTA (открытые пр
 - [x] **Фаза 5 (продолжение): Расширение story-нод Актов 2-7** — +120 exploration nodes (20 per act)
 - [x] **Фаза 5 (продолжение): Новые квесты Актов 2-7** — 10 дополнительных побочных квестов
 - [x] **Фаза 5.5: Критический фикс дёргания модели** — animation blending, camera spring rebalance, hysteresis
+- [x] **Фаза 5.6: Asset Audit & LOD Pipeline Fix** — mesh validation, LOD effectiveness analysis, pipeline v2
 - [x] **Фаза 6: A* навигация для NPC** — nav mesh builder, A* pathfinder, path smoothing, npcPatrol integration
 - [x] **Фаза 6.5: DE-style dialogue systems** — thought interjection, white/red checks, partial success, thought-gated choices
 - [x] **Фаза 6.6: Thought→Combat bridge** — equipped thoughts affect attack/defense/crit/flee/combo/HP
@@ -172,6 +173,41 @@ Gothic (живой мир, NPC расписания), GTA (открытые пр
 ---
 
 ## 📝 История сессий
+
+### Сессия: 2026-03-06 — "Phase 5.6: Asset Audit & LOD Pipeline Fix"
+**Что сделано:**
+- **Полный аудит 200 GLB файлов (289MB) и 148 3D-компонентов**
+  - Все манифест-референсированные файлы присутствуют на диске ✅ (0 missing)
+  - Все GLB имеют корректный binary glTF magic ✅ (0 corrupt)
+  - Draco/Meshopt/Basis декодеры корректно инициализируются ✅
+  - Анимационные клипы корректны (6 animation-only GLB, 0 mesh contamination) ✅
+
+- **Критические находки LOD-пайплайна:**
+  - 🔴 **52 LOD-проблемы**: Все NPC LOD1/LOD2 = копии LOD0 (0% vertex reduction)
+  - 🔴 **Root cause**: `--error 0.01` был слишком строгий для small submesh (~1K verts)
+    - simplify couldn't remove vertices without exceeding error budget
+  - 🔴 **Khronos reference models (58MB)** shipped в production — debug assets
+  - 🔴 **AI3DGen placeholder props (50MB)** = Khronos CC0 interim (Avocado = encrypted_scroll)
+  - 🟡 **Pine LOD0/LOD1/LOD2 все ~8MB** — текстуры не resized для LOD
+  - 🟡 **Cafe props LOD1 > LOD0** — та же simplify проблема
+
+- **Фиксы:**
+  - `scripts/lib/gltfProcess.mjs` → **LOD pipeline v2 (asset-aware)**:
+    - **Skinned meshes** (hero-lod, npc-flat): Draco + texture-resize LOD strategy
+      (LOD1=draco+tex50%, LOD2=draco+tex25%) — geometry unchanged, bandwidth saved
+    - **Static meshes** (suffix-lod): weld + simplify с relaxed thresholds
+      (--error 0.5/1.0, --lock-border false)
+  - `scripts/validate-lod-effectiveness.mjs` → новый скрипт проверки LOD
+  - `scripts/validate-gltf-assets.ts` → добавлены LOD size sanity check + Khronos warning
+  - `.vercelignore` → исключение khronos/ и assets-source/ из deployment
+  - `package.json` → `assets:validate-lod` npm script
+
+- **Действующие LOD (валидные):**
+  - env_cafe_props: LOD1 47.3% vert reduction, LOD2 76.6% ✅
+  - veg_tree_pine: LOD1 51.0%, LOD2 78.3% ✅
+
+- **Требует re-processing**: `npm run assets:process-catalog` для обновления NPC/hero LOD
+  с новой texture-resize стратегией (пока LOD1/LOD2 — старые копии)
 
 ### Сессия: 2026-03-04 (продолжение) — "Phase 6: A* Nav Mesh + DE-style Dialogue Systems + Thought→Combat Bridge"
 **Коммит:** 512455b8
