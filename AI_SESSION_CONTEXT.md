@@ -153,8 +153,8 @@ Gothic (живой мир, NPC расписания), GTA (открытые пр
   - TypeScript: 0 ошибок
 
 ### 🔄 Следующие шаги (приоритет по убыванию)
-- [ ] **Фаза 5 (продолжение): Расширение story-нод Актов 2-7** — +20 нод исследования на акт
-- [ ] **Фаза 5 (продолжение): Новые квесты Актов 2-7** — дополнительные побочные квесты
+- [x] **Фаза 5 (продолжение): Расширение story-нод Актов 2-7** — +120 exploration nodes (20 per act)
+- [x] **Фаза 5 (продолжение): Новые квесты Актов 2-7** — 10 дополнительных побочных квестов
 - [ ] **Фаза 6: A* навигация для NPC** — заменить waypoint patrols на nav mesh
 - [ ] **Фаза 7: Система одежды/внешности** — влияет на статы и диалоги
 - [ ] **Фаза 8: Улучшенные 3D модели** — AI3DGen для ключевых NPC и окружения
@@ -170,16 +170,24 @@ Gothic (живой мир, NPC расписания), GTA (открытые пр
 
 ## 📝 История сессий
 
-### Сессия: 2026-07-23 — "UI Overlap Audit + Phase 5 preparation"
-**Коммиты:** e570e48 (18 overlays), 78f1936 (39 files)
+### Сессия: 2026-07-23 — "UI Overlap Audit + Phase 5 Content Expansion"
+**Коммиты:** e570e48, 78f1936, cec23f3
 **Что сделано:**
-- Полный аудит всех UI-компонентов на наложение/stacking (44 проблемных файла помимо 18 уже исправленных)
+- Полный аудит всех UI-компонентов на наложение/stacking (39 файлов исправлено)
 - 🔴 5 критических: z-[9999]/9998 → UI_LAYERS (QTE, RecoveryScreen, QuestArrow, Tooltip, DevBadge)
-- 🟠 16 hardcoded z-index → UI_LAYERS constants (minimap, buff tracker, cinematic bars, menus, loading, etc.)
-- 🟡 15 fullscreen overlays без z-index → добавлен style={{ zIndex: UI_LAYERS.XXX }} + AnimatePresence mode="wait"
-- 🟢 3 дополнительных: DataTerminalOverlay, InnerMonologueOverlay, CombatUI splash+flash
-- TypeScript: 0 ошибок, компиляция чистая
-**Следующий шаг:** Фаза 5 продолжение — story-ноды Актов 2-7, новые побочные квесты
+- 🟠 16 hardcoded z-index → UI_LAYERS constants
+- 🟡 15 fullscreen overlays без z-index + AnimatePresence mode="wait"
+- 🟢 3 дополнительных: DataTerminalOverlay, InnerMonologueOverlay, CombatUI
+- **+120 exploration story nodes (Acts 2-7)** — 6 файлов, 20 нод на акт
+  - Акт 2: jukebox, neon graffiti, pier dawn, ЧК campfire, server poems, cyber cat, etc.
+  - Акт 3: park sculpture, library stacks, Zarema camera, cyber flowers, poetry circle, etc.
+  - Акт 4: rooftop antenna, street winter, square poster, broadcast prep, neon blackout, etc.
+  - Акт 5: factory Заря-М, bunker comms, welder poems, code-poem encryption, etc.
+  - Акт 6: bunker defense, traitor reveal, factory sabotage, defector rescue, etc.
+  - Акт 7: archive opened, monument restored, cafe reopening, letters received, epilogue vision
+- **+10 new side quests (Acts 2-7)** — Охота на стихи, Неоновый архив, Кибер-цветение, Свидетельство Заремы, Антенна свободы, Самиздат, Память Зари-М, Шифр-стих, Перебежчик, Имена на камне
+- TypeScript: 0 ошибок
+**Следующий шаг:** Фаза 6 — A* навигация для NPC
 
 ### Сессия: 2026-07-22 — "Фаза 5: Расширение контента"
 **Что сделано:**
