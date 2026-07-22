@@ -156,7 +156,9 @@ Gothic (живой мир, NPC расписания), GTA (открытые пр
 - [x] **Фаза 5 (продолжение): Расширение story-нод Актов 2-7** — +120 exploration nodes (20 per act)
 - [x] **Фаза 5 (продолжение): Новые квесты Актов 2-7** — 10 дополнительных побочных квестов
 - [x] **Фаза 5.5: Критический фикс дёргания модели** — animation blending, camera spring rebalance, hysteresis
-- [ ] **Фаза 6: A* навигация для NPC** — заменить waypoint patrols на nav mesh
+- [x] **Фаза 6: A* навигация для NPC** — nav mesh builder, A* pathfinder, path smoothing, npcPatrol integration
+- [x] **Фаза 6.5: DE-style dialogue systems** — thought interjection, white/red checks, partial success, thought-gated choices
+- [x] **Фаза 6.6: Thought→Combat bridge** — equipped thoughts affect attack/defense/crit/flee/combo/HP
 - [ ] **Фаза 7: Система одежды/внешности** — влияет на статы и диалоги
 - [ ] **Фаза 8: Улучшенные 3D модели** — AI3DGen для ключевых NPC и окружения
 - [ ] **Фаза 9: Больше анимаций** — Mixamo/UAL, эмоциональные реакции NPC
@@ -170,6 +172,36 @@ Gothic (живой мир, NPC расписания), GTA (открытые пр
 ---
 
 ## 📝 История сессий
+
+### Сессия: 2026-03-04 (продолжение) — "Phase 6: A* Nav Mesh + DE-style Dialogue Systems + Thought→Combat Bridge"
+**Коммит:** 512455b8
+**Что сделано (+2144 строк, 23 файла):**
+- **Phase 6: A* Nav Mesh для NPC**
+  - `navMeshBuilder.ts` — 0.5m grid из scene collision data, 0.3m wall margin, 8-connected
+  - `navMeshPathfinder.ts` — A* с binary heap, path smoothing, direct fallback
+  - `navMeshCache.ts` — Per-scene cached nav meshes
+  - `npcPatrol.ts` extended с pathQueue + nav mesh integration
+  - NPC.tsx обновлен для передачи sceneId/floorY для path computation
+- **DE-style Dialogue Systems (P0-P3)**
+  - `thoughtInterjection.ts` — Equipped thoughts "speaking" как inner voices в dialogue
+    - Amber/gold `[ThoughtName]` prefix, timing phases (before/after NPC/on_skill_check)
+  - `whiteRedCheckSystem.ts` — White checks retryable after skill growth; red checks one-shot
+    - CheckAttemptRecord tracking, retry hints в UI ("Можно повторить, если навык вырастет")
+  - `partialSuccessSystem.ts` — 6 success degrees (critical/strong/success/marginal/failure/disastrous)
+    - Russian labels, color mapping, choice effects by degree
+  - `diceRollSkillCheck.ts` — Extended DiceRollResult с degree + partialEffects
+  - `DialogueRenderer.tsx` — Thought interjection lines, check type badges, thought-gated filtering
+  - `DiceRollDisplay.tsx` — Degree labels, retry/closed hints
+  - `dialogue.ts` — Added thoughtInterjections, partialSuccess/strongSuccess/disastrousFailure effects
+  - `conditions.ts` — Added checkType (white/red), thoughtRequired
+- **Thought→Combat Modifier Bridge (P6)**
+  - `thoughtCombatModifiers.ts` — Voice→stat mapping (logic→defense, coding→attack, etc.)
+    - Stacking caps (+1.5 max), per-thought contributions, Russian flavor descriptions
+  - `formulas.ts` — Integrated thought bonuses into attack/defense/crit/flee/combo/HP
+  - `CombatUI.tsx` — ThoughtCombatBadges с amber styling near player stats
+  - `gameActionBridge.ts` — Added equippedThoughtIds to snapshot
+- TypeScript: 0 ошибок
+**Следующий шаг:** Фаза 7 — Система одежды/внешности
 
 ### Сессия: 2026-03-04 — "Критический фикс дёргания модели + Camera Spring Rebalance"
 **Что сделано:**
