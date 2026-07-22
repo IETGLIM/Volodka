@@ -110,6 +110,7 @@ export const NPC_SPEAKER_ALIASES: Readonly<Record<string, string>> = {
   Алина: 'solnysh',
   Лёня: 'lyonya',
   Леонид: 'lyonya',
+  Виктория: 'maria',
 };
 
 export function resolveNpcIdFromSpeaker(

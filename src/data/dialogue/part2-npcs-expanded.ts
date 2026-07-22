@@ -257,21 +257,21 @@ export const DIALOGUE_PART2_EXPANDED: Record<string, DialogueNode> = {
      ВИКТОРИЯ — Проводник в Сеть, 7 new nodes
      ═══════════════════════════════════════════════════════════ */
 
-  maria_network_philosophy: {
-    id: 'maria_network_philosophy',
+  victoria_network_philosophy: {
+    id: 'victoria_network_philosophy',
     speaker: 'Виктория',
     text: 'Сеть — это не место. Это — частота. Ты не можешь «пойти» в Сеть, как идёшь в магазин. Ты должен настроиться. Как радио. Как скрипка. Когда ты начнёшь слышать стихи в белом шуме монитора — ты уже в Сети. Когда ты заметишь, что строчка в лог-файле рифмуется со следующей — ты уже в Сети. Мы не прячемся. Мы — в каждом байте, который гильдия не может стереть.',
     choices: [
       {
         text: 'Я слышу стихи в коде. Значит, я уже в Сети?',
-        next: 'maria_already_resonating',
+        next: 'victoria_already_resonating',
         effects: [
           { type: 'addSkill', skill: 'intuition', value: 1 },
         ],
       },
       {
         text: 'Звучит как религия, а не как организация.',
-        next: 'maria_not_religion',
+        next: 'victoria_not_religion',
         effects: [
           { type: 'addSkill', skill: 'logic', value: 1 },
         ],
@@ -279,14 +279,14 @@ export const DIALOGUE_PART2_EXPANDED: Record<string, DialogueNode> = {
     ],
   },
 
-  maria_already_resonating: {
-    id: 'maria_already_resonating',
+  victoria_already_resonating: {
+    id: 'victoria_already_resonating',
     speaker: 'Виктория',
     text: 'Ты — резонатор. Я почувствовала это в первый день, когда ты увидел стихи в коде. Обычный инженер увидел бы «мусорные комментарии» и удалил бы их. Ты — остановился. Ты прочитал. Ты почувствовал. Это не навык — это состояние души. Посвящение просто формализует то, что уже есть. Мы даём тебе инструменты, но огонь — он твой.',
     choices: [
       {
         text: 'Какие инструменты?',
-        next: 'maria_network_tools',
+        next: 'victoria_network_tools',
         effects: [
           { type: 'addSkill', skill: 'coding', value: 1 },
         ],
@@ -302,8 +302,8 @@ export const DIALOGUE_PART2_EXPANDED: Record<string, DialogueNode> = {
     ],
   },
 
-  maria_not_religion: {
-    id: 'maria_not_religion',
+  victoria_not_religion: {
+    id: 'victoria_not_religion',
     speaker: 'Виктория',
     text: 'Религия требует веры. Сеть требует внимания. Разница — в проверяемости. Я не прошу тебя верить — я прошу тебя открыть глаза. Посмотри на стены в переулке за кафе. Видишь граффити? Обычный человек видит хулиганство. А теперь посмотри внимательнее — первая буква каждого слова. С-Т-И-Х-И-Я. «Старая тень ищет жертву — я» или «Стихия». Это послание. И оно для тебя.',
     choices: [
@@ -327,8 +327,8 @@ export const DIALOGUE_PART2_EXPANDED: Record<string, DialogueNode> = {
     ],
   },
 
-  maria_network_tools: {
-    id: 'maria_network_tools',
+  victoria_network_tools: {
+    id: 'victoria_network_tools',
     speaker: 'Виктория',
     text: 'Первое — ключ шифрования. Мы общаемся через стихи: каждый третий слог в сообщении — часть инструкций. Гильдия видит «спам с цитатами», а мы получаем приказы. Второе — карта резонансов. Мы отмечаем места, где живой код звучит громче. Серверные, старые телефонные станции, даже светофоры на Тверской — всё это узлы. И третье — твой голос. Ты можешь усиливать стихи в коде, когда читаешь их вслух рядом с сервером.',
     choices: [
@@ -352,14 +352,14 @@ export const DIALOGUE_PART2_EXPANDED: Record<string, DialogueNode> = {
     ],
   },
 
-  maria_initiation_warning: {
-    id: 'maria_initiation_warning',
+  victoria_initiation_warning: {
+    id: 'victoria_initiation_warning',
     speaker: 'Виктория',
     text: 'Посвящение — это не церемония. Это испытание. Тебя запрут в комнате с сервером, и ты должен будешь найти стих, спрятанный в коде, за три минуты. Если не найдёшь — уйдёшь с пустыми руками. Но не беспокойся: я ещё никого не видела, кто не нашёл бы. Резонаторы всегда находят. Вопрос в том, что ты сделаешь после того, как найдёшь. Потому что стих сам выберет тебя. И то, что он тебе скажет — изменит всё.',
     choices: [
       {
         text: 'Стих выберет меня? Что это значит?',
-        next: 'maria_poem_chooses',
+        next: 'victoria_poem_chooses',
         effects: [
           { type: 'addSkill', skill: 'intuition', value: 1 },
         ],
@@ -376,8 +376,8 @@ export const DIALOGUE_PART2_EXPANDED: Record<string, DialogueNode> = {
     ],
   },
 
-  maria_poem_chooses: {
-    id: 'maria_poem_chooses',
+  victoria_poem_chooses: {
+    id: 'victoria_poem_chooses',
     speaker: 'Виктория',
     text: 'В коде тысячи стихов. Но при посвящении — резонирует только один. Тот, который нужен именно тебе. Тот, который отвечает на вопрос, который ты боишься задать. Мой стих был о дороге. Я тогда не понимала — куда иду. Стих показал. Твой стих будет о чём-то другом. И когда ты его прочитаешь — ты заплачешь. Все плачут. Это нормально. Это значит — ты живой.',
     choices: [
@@ -401,8 +401,8 @@ export const DIALOGUE_PART2_EXPANDED: Record<string, DialogueNode> = {
     ],
   },
 
-  maria_dmitry_warning: {
-    id: 'maria_dmitry_warning',
+  victoria_dmitry_warning: {
+    id: 'victoria_dmitry_warning',
     speaker: 'Виктория',
     text: 'Дмитрий — старший разработчик. Он хочет уйти из гильдии. Говорит, что не может больше писать код, который убивает стихи. Но будь осторожен, Володька. Дезертирство — это не просто уход. Это предательство с их точки зрения. Если ты поможешь ему — ты станешь целью. Если не поможешь — он сломается. У него жена. Ребёнок. Он не выдержит давления в одиночку. Но и мы не можем принять каждого, кто постучится в дверь.',
     choices: [

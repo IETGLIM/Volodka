@@ -191,7 +191,7 @@ const SOCIAL_NODES: SkillTreeNode[] = [
 
 /* ══════════════════════════════════════════════════════════════
    SPIRITUAL BRANCH (Духовная) — Color: #ffaa00 (Amber)
-   Skills: intuition, writing
+   Skills: intuition, writing, rhythm
    ══════════════════════════════════════════════════════════════ */
 const SPIRITUAL_NODES: SkillTreeNode[] = [
   // Tier 1
@@ -213,6 +213,15 @@ const SPIRITUAL_NODES: SkillTreeNode[] = [
     requires: [],
     effect: '+1 Поэзия',
   },
+  {
+    id: 'spirit_t1_rhythm',
+    name: 'Внутренний ритм',
+    description: 'Пульс серверов совпадает с пульсом сердца. Вы чувствуете ритм кода.',
+    branch: 'spiritual',
+    tier: 1,
+    requires: [],
+    effect: '+1 Ритм',
+  },
   // Tier 2
   {
     id: 'spirit_t2_intuition',
@@ -231,6 +240,15 @@ const SPIRITUAL_NODES: SkillTreeNode[] = [
     tier: 2,
     requires: ['spirit_t1_writing'],
     effect: '+2 Поэзия',
+  },
+  {
+    id: 'spirit_t2_rhythm',
+    name: 'Кодовый метроном',
+    description: 'Каждая строка кода имеет свой ритм. Вы научились слышать его.',
+    branch: 'spiritual',
+    tier: 2,
+    requires: ['spirit_t1_rhythm'],
+    effect: '+2 Ритм',
   },
   // Tier 3
   {
@@ -251,6 +269,15 @@ const SPIRITUAL_NODES: SkillTreeNode[] = [
     requires: ['spirit_t2_writing'],
     effect: '+3 Поэзия',
   },
+  {
+    id: 'spirit_t3_rhythm',
+    name: 'Синхронизация пульса',
+    description: 'Серверы и сердце — одна волна. Вы управляете ритмом реальности.',
+    branch: 'spiritual',
+    tier: 3,
+    requires: ['spirit_t2_rhythm'],
+    effect: '+3 Ритм',
+  },
   // Tier 4
   {
     id: 'spirit_t4_intuition',
@@ -270,6 +297,15 @@ const SPIRITUAL_NODES: SkillTreeNode[] = [
     requires: ['spirit_t3_writing'],
     effect: '+5 Поэзия',
   },
+  {
+    id: 'spirit_t4_rhythm',
+    name: 'Резонансный мастер',
+    description: 'Ваш ритм резонирует с кодом, стихами и самой реальностью.',
+    branch: 'spiritual',
+    tier: 4,
+    requires: ['spirit_t3_rhythm'],
+    effect: '+5 Ритм',
+  },
   // Tier 5 — Ultimate
   {
     id: 'spirit_t5_ultimate',
@@ -277,8 +313,8 @@ const SPIRITUAL_NODES: SkillTreeNode[] = [
     description: 'Стих и код сливаются в единое целое. Силы стихов длятся вдвое дольше.',
     branch: 'spiritual',
     tier: 5,
-    requires: ['spirit_t4_intuition', 'spirit_t4_writing'],
-    effect: 'Ультимативный: силы стихов длятся вдвое дольше',
+    requires: ['spirit_t4_intuition', 'spirit_t4_writing', 'spirit_t4_rhythm'],
+    effect: 'Ультимативный: силы стихов длятся вдвое дольше, проверки ритма всегда +2',
   },
 ];
 
@@ -366,4 +402,8 @@ export const SKILL_EFFECT_MAP: Record<string, { skill: TrainablePlayerSkill; val
   spirit_t3_writing: { skill: 'writing', value: 3 },
   spirit_t4_intuition: { skill: 'intuition', value: 5 },
   spirit_t4_writing: { skill: 'writing', value: 5 },
+  spirit_t1_rhythm: { skill: 'rhythm', value: 1 },
+  spirit_t2_rhythm: { skill: 'rhythm', value: 2 },
+  spirit_t3_rhythm: { skill: 'rhythm', value: 3 },
+  spirit_t4_rhythm: { skill: 'rhythm', value: 5 },
 };

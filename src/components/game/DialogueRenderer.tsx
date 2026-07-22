@@ -543,8 +543,8 @@ export function DialogueRenderer() {
                 exit={{ opacity: 0, height: 0 }}
                 className="w-full max-w-2xl max-h-36 overflow-y-auto rounded-lg border border-white/10 bg-black/45 backdrop-blur-md p-3 mb-2"
               >
-                {history.slice(-8).map((line, i) => (
-                  <div key={i} className="mb-1.5 last:mb-0 text-sm text-slate-300/85">
+                {history.slice(-8).map((line) => (
+                  <div key={`${line.speaker}-${line.text.slice(0, 20)}`} className="mb-1.5 last:mb-0 text-sm text-slate-300/85">
                     <span style={{ color: portraitColors.primary }}>{line.speaker}: </span>
                     {line.text}
                   </div>
