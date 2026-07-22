@@ -61,6 +61,7 @@ function buildSnapshot(state: GameStoreState): GameStoreSnapshot {
       karma: state.playerState.karma,
       stress: state.playerState.stress,
       visitedNodes: state.playerState.visitedNodes,
+      equippedThoughtIds: state.equippedThoughtIds ?? [],
       progression: state.playerState.progression,
     },
     collectedPoems: state.collectedPoems,

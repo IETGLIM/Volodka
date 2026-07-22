@@ -3,6 +3,8 @@
 import type { CombatState } from './types';
 import { dispatchGameAction, getGameSnapshot } from '@/engine/GameActionDispatcher';
 import { resolveCombatPerkModifiers } from '@/shared/perks/perkModifiers';
+import { resolveThoughtCombatEffects, type ThoughtCombatEffect } from './thoughtCombatModifiers';
+import { THOUGHT_CABINET_MAP } from '@/data/thoughtCabinet';
 
 /* ═══════════════════════════════════════════════════════════════
    Damage formulas — centralized combat math
@@ -88,6 +90,19 @@ export function computeCritChance(writingSkill: number): number {
   );
 }
 
+/** Player crit chance including thought bonuses (intuition → +3% per thought).
+ *  Wraps computeCritChance and adds thought crit bonus (as percentage). */
+export function getPlayerCritChance(): number {
+  const s = snap();
+  const baseChance = computeCritChance(s.playerState.skills.writing);
+  const thoughtEffects = resolveThoughtEffects();
+  // critChanceBonus is in percentage points (e.g. 3 = 3%), convert to 0–1 range.
+  return Math.min(
+    COMBAT_CONSTANTS.CRIT_MAX_CHANCE,
+    baseChance + thoughtEffects.critChanceBonus / 100,
+  );
+}
+
 export function rollCritical(writingSkill: number, rng: CombatRng = defaultCombatRng): boolean {
   return rng() < computeCritChance(writingSkill);
 }
@@ -128,6 +143,17 @@ function snap() {
   return getGameSnapshot();
 }
 
+/** Resolve equipped thought combat effects from the current game state.
+ *  Reads equippedThoughtIds from the snapshot and maps them to
+ *  ThoughtCabinetItem definitions using THOUGHT_CABINET_MAP. */
+function resolveThoughtEffects(): ThoughtCombatEffect {
+  const s = snap();
+  const equippedThoughts = (s.playerState.equippedThoughtIds ?? [])
+    .map((id) => THOUGHT_CABINET_MAP[id])
+    .filter(Boolean);
+  return resolveThoughtCombatEffects(equippedThoughts);
+}
+
 export function getPlayerAttack(): number {
   const s = snap();
   const { skills } = s.playerState;
@@ -137,7 +163,9 @@ export function getPlayerAttack(): number {
     stress: s.playerState.stress,
     timeOfDay: s.exploration?.timeOfDay,
   });
-  return base + perks.flatAttackBonus;
+  // Thought combat bonus (e.g. coding thoughts → +0.4 attack per thought).
+  const thoughtEffects = resolveThoughtEffects();
+  return base + perks.flatAttackBonus + thoughtEffects.attackBonus;
 }
 
 export function getPlayerDefense(): number {
@@ -149,7 +177,9 @@ export function getPlayerDefense(): number {
     stress: s.playerState.stress,
     timeOfDay: s.exploration?.timeOfDay,
   });
-  return Math.floor(base * perks.defenseMultiplier) + perks.flatDefenseBonus;
+  // Thought combat bonus (e.g. logic thoughts → +0.3 defense per thought).
+  const thoughtEffects = resolveThoughtEffects();
+  return Math.floor(base * perks.defenseMultiplier) + perks.flatDefenseBonus + thoughtEffects.defenseBonus;
 }
 
 export function getPlayerMaxHp(): number {
@@ -160,7 +190,9 @@ export function getPlayerMaxHp(): number {
   // even at 0 energy, player retains level-scaled base HP.
   const baseFromLevel = 20 + (level - 1) * 5;
   const fromEnergy = energy * 2;
-  return Math.max(baseFromLevel, fromEnergy);
+  // Thought combat bonus (e.g. writing thoughts → +5 HP per thought).
+  const thoughtEffects = resolveThoughtEffects();
+  return Math.max(baseFromLevel, fromEnergy) + thoughtEffects.hpBonus;
 }
 
 /** Credits earned on combat victory — scales with enemy tier and combo. */
@@ -181,6 +213,20 @@ export function isPowerAvailable(poemId: string, state: CombatState): boolean {
   if (!snap().collectedPoems.includes(poemId)) return false;
   if ((state.powerCooldowns[poemId] ?? 0) > 0) return false;
   return true;
+}
+
+/** Thought-derived flee chance bonus (empathy → +5% per thought).
+ *  Returns percentage points to add to the flee chance calculation.
+ *  CombatSystem should add this to its flee chance formula. */
+export function getPlayerThoughtFleeBonus(): number {
+  return resolveThoughtEffects().fleeChanceBonus;
+}
+
+/** Thought-derived combo multiplier bonus (persuasion → +0.1, rhythm → +0.05).
+ *  Returns additive bonus to the combo damage multiplier.
+ *  CombatSystem should add this to its combo multiplier calculation. */
+export function getPlayerThoughtComboMultiplierBonus(): number {
+  return resolveThoughtEffects().comboMultiplier;
 }
 
 export { calculateXpToNextLevel } from '@/shared/progression/xp';

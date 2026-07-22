@@ -34,6 +34,7 @@ import { getSceneVisualProfile } from '@/config/sceneVisualProfiles';
 import { createPatrolState, updatePatrol, shouldPatrol, type PatrolState } from '@/engine/npc/npcPatrol';
 import { buildNpcAvoidanceObstacles, type NpcObstacleAabb } from '@/engine/npc/npcObstacleAvoidance';
 import { SCENE_DEFINITIONS } from '@/config/sceneDefinitions';
+import { getSceneFloorY } from '@/config/scenes';
 import type { ColliderDef } from '@/shared/types/sceneDefinition';
 import { getNpcQuestMarkerDisplay } from '@/store/questStore';
 import { resolveNpcQuestBark } from '@/engine/npc/npcQuestBark';
@@ -259,6 +260,8 @@ export function NPC({
         delta,
         undefined,
         avoidanceObstacles,
+        sceneId,
+        getSceneFloorY(sceneId),
       );
       if (result.activity !== patrolActivityRef.current) {
         patrolActivityRef.current = result.activity;

@@ -8,13 +8,18 @@ import {
   type DiceRollResult,
   DICE_SKILL_LABELS,
   getSuccessProbability,
-} from '@/engine/skillCheck/diceRollSkillCheck';
+  getSuccessDegreeLabel,
+  getSuccessDegreeColor,
+  type SuccessDegree,
+} from '@/engine/skillCheck';
 
 export interface DiceRollDisplayProps {
   result: DiceRollResult;
   skill: TrainablePlayerSkill;
   skillLevel: number;
   thoughtBonus?: number;
+  /** Partial success degree — overrides the legacy resultLabel/color with Disco Elysium-style granular outcome. */
+  successDegree?: SuccessDegree;
   onComplete: () => void;
   autoDismissMs?: number;
 }
@@ -168,6 +173,7 @@ export function DiceRollDisplay({
   skill,
   skillLevel,
   thoughtBonus = 0,
+  successDegree,
   onComplete,
   autoDismissMs = 3000,
 }: DiceRollDisplayProps) {
@@ -179,21 +185,25 @@ export function DiceRollDisplay({
   const skillLabel = DICE_SKILL_LABELS[skill];
   const { dice, total, modifier, dc, success, criticalSuccess, criticalFailure } = result;
 
-  const resultColor = criticalSuccess
+  // Use success degree for more granular result display when available
+  const degreeLabel = successDegree ? getSuccessDegreeLabel(successDegree) : null;
+  const degreeColor = successDegree ? getSuccessDegreeColor(successDegree) : null;
+
+  const resultColor = degreeColor ?? (criticalSuccess
     ? '#fbbf24'  // gold
     : criticalFailure
       ? '#ef4444'  // red
       : success
         ? '#10b981'  // emerald
-        : '#ef4444'; // red
+        : '#ef4444'); // red
 
-  const resultLabel = criticalSuccess
+  const resultLabel = degreeLabel ?? (criticalSuccess
     ? 'КРИТИЧЕСКИЙ УСПЕХ'
     : criticalFailure
       ? 'КРИТИЧЕСКИЙ ПРОВАЛ'
       : success
         ? 'УСПЕХ'
-        : 'ПРОВАЛ';
+        : 'ПРОВАЛ');
 
   const probability = getSuccessProbability(modifier, dc);
   const probPercent = Math.round(probability * 100);
@@ -381,6 +391,24 @@ export function DiceRollDisplay({
                 >
                   {resultLabel}
                 </span>
+                {/* Flavor text from partial success degree */}
+                {result.partialEffects?.flavorText && (
+                  <div className="text-[11px] font-mono text-white/40 mt-1 italic">
+                    {result.partialEffects.flavorText}
+                  </div>
+                )}
+                {/* Retry hint for failed white checks */}
+                {!success && !criticalFailure && (
+                  <div className="text-[10px] font-mono text-amber-300/60 mt-0.5">
+                    Можно повторить, если навык вырастет
+                  </div>
+                )}
+                {/* Red check closure hint */}
+                {criticalFailure && (
+                  <div className="text-[10px] font-mono text-red-400/70 mt-0.5">
+                    Проверка закрыта навсегда
+                  </div>
+                )}
                 {/* Probability hint */}
                 <div className="text-[10px] font-mono text-white/25 mt-1">
                   вероятность: {probPercent}%

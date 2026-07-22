@@ -4,12 +4,19 @@ import type { SceneId } from '@/config/sceneDefinitions';
 import type { ChoiceCondition } from '../common/conditions';
 import type { StoryEffect } from '../common/effects';
 import type { NarrativeTextVariants, KarmaThresholds } from './narrative';
+import type { CheckType } from '@/engine/narrative/whiteRedCheckSystem';
 
 export interface DialogueChoice {
   readonly text: string;
   readonly next: string | null;
   readonly effects?: StoryEffect[];
   readonly condition?: ChoiceCondition;
+  /** Effects that trigger on marginal success (half effectiveness). */
+  readonly partialSuccessEffects?: string[];
+  /** Extra negative effects on disastrous failure. */
+  readonly disastrousFailureEffects?: string[];
+  /** Bonus effects on strong/critical success (e.g. extra XP, bonus relation). */
+  readonly strongSuccessEffects?: string[];
 }
 
 export type DialogueTextVariants = NarrativeTextVariants;
@@ -33,4 +40,6 @@ export interface DialogueNode {
   readonly emotion?: 'calm' | 'angry' | 'sad' | 'happy' | 'whisper';
   readonly voiceLineId?: string;
   readonly cameraShot?: 'close' | 'medium' | 'wide';
+  /** Thought IDs that should interject on this node (inner voice lines during dialogue). */
+  readonly thoughtInterjections?: string[];
 }

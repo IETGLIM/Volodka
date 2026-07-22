@@ -50,6 +50,7 @@ export interface GameStoreSnapshot {
     karma: number;
     stress: number;
     visitedNodes: string[];
+    equippedThoughtIds: string[];
     progression: {
       level: number;
       currentAct: number;

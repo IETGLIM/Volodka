@@ -1,6 +1,7 @@
 /* ─── Shared story / dialogue / exit gates ─── */
 
 import type { PlayerSkills, TrainablePlayerSkill } from '../definitions/skills';
+import type { CheckType } from '@/engine/narrative/whiteRedCheckSystem';
 
 /** Dialogue/story skill gate; difficulty validated as integer 1–20 at runtime. */
 export interface MinSkillCheck {
@@ -15,6 +16,10 @@ export interface ChoiceCondition {
   readonly minSkill?: Partial<PlayerSkills>;
   /** Probabilistic skill gate; difficulty is validated as integer 1–20 at runtime. */
   readonly minSkillCheck?: MinSkillCheck;
+  /** Check type: 'white' (retryable after skill growth) or 'red' (one-shot). Default: 'white'. */
+  readonly checkType?: CheckType;
+  /** Thought ID that must be equipped to see this choice (thought-gated dialogue options). */
+  readonly thoughtRequired?: string;
   readonly flag?: string;
   /** Hide when this flag is already set */
   readonly missingFlag?: string;

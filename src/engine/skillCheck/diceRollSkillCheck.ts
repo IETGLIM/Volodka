@@ -5,6 +5,8 @@ import {
   SeededCombatRng,
   createCombatRngState,
 } from '@/engine/combat/combatRng';
+import type { SuccessDegree, PartialSuccessEffects, PartialSuccessResult } from '@/engine/narrative/partialSuccessSystem';
+import { resolveSuccessDegree, isSuccessDegree } from '@/engine/narrative/partialSuccessSystem';
 
 /* ══════════════════════════════════════════════════════════════
    Types
@@ -27,6 +29,10 @@ export interface DiceRollResult {
   criticalFailure: boolean;
   /** total + modifier − dc (positive = exceeded by this much). */
   margin: number;
+  /** Partial success degree — Disco Elysium-style granular outcome classification. */
+  degree: SuccessDegree;
+  /** Partial success effects — bonus/penalty/reduced effects based on degree. */
+  partialEffects: PartialSuccessEffects;
 }
 
 export interface DiceRollParams {
@@ -109,8 +115,19 @@ export function performDiceRoll(params: DiceRollParams): DiceRollResult {
 
   // Resolution
   const rawMargin = total + modifier - dc;
-  const success = criticalSuccess || (!criticalFailure && rawMargin >= 0);
-  const margin = success ? rawMargin : rawMargin; // keep negative for failure
+
+  // Partial success degree — Disco Elysium-style granular outcome
+  const partialResult = resolveSuccessDegree(
+    total,
+    modifier,
+    dc,
+    criticalSuccess,
+    criticalFailure,
+  );
+
+  // Backward-compatible success boolean: true for all "passing" degrees
+  const success = isSuccessDegree(partialResult.degree);
+  const margin = rawMargin; // keep negative for failure
 
   return {
     dice,
@@ -121,6 +138,8 @@ export function performDiceRoll(params: DiceRollParams): DiceRollResult {
     criticalSuccess,
     criticalFailure,
     margin,
+    degree: partialResult.degree,
+    partialEffects: partialResult.effects,
   };
 }
 

@@ -50,7 +50,14 @@ import {
   DICE_SKILL_LABELS,
   type DiceRollResult,
 } from '@/engine/skillCheck';
-import { useThoughtSkillModifiers } from '@/store/selectors/thoughtCabinetSelectors';
+import { useThoughtSkillModifiers, useEquippedThoughts } from '@/store/selectors/thoughtCabinetSelectors';
+import { resolveThoughtInterjections, type ThoughtInterjection } from '@/engine/narrative/thoughtInterjection';
+import {
+  resolveCheckType,
+  recordFailedCheck,
+  hasFailedCheckForChoice,
+  type CheckType,
+} from '@/engine/narrative/whiteRedCheckSystem';
 
 /* ── Emotion detection from text ── */
 function detectEmotion(text: string): 'calm' | 'angry' | 'sad' | 'happy' {
@@ -101,6 +108,60 @@ function getChoiceImpact(effects: StoryEffect[] | undefined, npcId?: string): Ch
 }
 
 /* ══════════════════════════════════════════════════════════════
+   Thought Interjection display — inner voice lines
+   ══════════════════════════════════════════════════════════════ */
+function ThoughtInterjectionLine({ interjection, accentColor }: {
+  interjection: ThoughtInterjection;
+  accentColor: string;
+}) {
+  const emotionColorMap: Record<string, string> = {
+    calm: 'text-amber-300/90',
+    angry: 'text-red-300/90',
+    sad: 'text-blue-300/80',
+    whisper: 'text-amber-200/70',
+    insight: 'text-emerald-300/90',
+  };
+  const colorClass = emotionColorMap[interjection.emotion ?? 'calm'] ?? 'text-amber-300/90';
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 4 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, delay: 0.15 }}
+      className={`my-1.5 px-3 py-1.5 rounded-md border border-amber-500/20 bg-amber-950/15 backdrop-blur-sm ${colorClass} italic text-sm font-light`}
+      style={{ boxShadow: `0 0 8px ${accentColor}15` }}
+    >
+      <span className="font-mono text-xs text-amber-400/70 not-italic mr-1">
+        [{interjection.thoughtName}]
+      </span>
+      {interjection.text}
+    </motion.div>
+  );
+}
+
+/* ── White/Red check badge for choices ── */
+function CheckTypeBadge({ checkType, isRetryable }: {
+  checkType: CheckType;
+  isRetryable: boolean;
+}) {
+  if (checkType === 'red') {
+    return (
+      <span className="text-[10px] font-mono text-red-400 border border-red-500/30 rounded px-1 py-0.5">
+        ✗ закрыта
+      </span>
+    );
+  }
+  if (isRetryable) {
+    return (
+      <span className="text-[10px] font-mono text-emerald-400 border border-emerald-500/30 rounded px-1 py-0.5">
+        ↻ повтор
+      </span>
+    );
+  }
+  return null;
+}
+
+/* ══════════════════════════════════════════════════════════════
    DIALOGUE HISTORY — tracks previous lines for scrolling
    ══════════════════════════════════════════════════════════════ */
 interface HistoryLine {
@@ -114,6 +175,7 @@ export function DialogueRenderer() {
   const { mode: _mode, showStoryOverlay, currentNodeId, karma, skills, flags, progression, npcRelations, timeOfDay, collectedPoems, activeTTLFlags, ownedItemIdsKey } = useDialogueContext();
   const visitNode = useVisitNode();
   const thoughtModifiers = useThoughtSkillModifiers();
+  const equippedThoughts = useEquippedThoughts();
 
   const [skillCheckBanner, setSkillCheckBanner] = useState<{
     skill: TrainablePlayerSkill;
@@ -205,6 +267,12 @@ export function DialogueRenderer() {
       ownedItemIdsKey,
       activeTTLFlags }, collectedPoems);
   }, [karma, skills, flags, progression, npcRelations, timeOfDay, node, collectedPoems, activeTTLFlags, ownedItemIdsKey]);
+
+  // ── Thought interjections for current node ──
+  const thoughtInterjections = useMemo(() => {
+    if (!node || equippedThoughts.length === 0) return [] as ThoughtInterjection[];
+    return resolveThoughtInterjections(node, equippedThoughts, skills);
+  }, [node, equippedThoughts, skills]);
   const { displayed, done, skip, reducedMotion } = useNarrativeTypewriter(resolvedText, 30);
 
   // Reset dice roll state when dialogue node changes
@@ -302,20 +370,35 @@ export function DialogueRenderer() {
   const handleDiceRollComplete = useCallback(() => {
     if (!diceRollState || !pendingDiceChoiceRef.current) return;
     const pending = pendingDiceChoiceRef.current;
+    const result = diceRollState.result;
     pendingDiceChoiceRef.current = null;
     diceRollActiveRef.current = false;
 
-    if (diceRollState.result.success) {
+    if (result.success) {
       setDiceRollState(null);
       executeDialogueChoice(pending.choice);
     } else {
+      // Record the failed check for retry tracking
+      const checkType: CheckType = pending.choice.condition?.checkType ?? 'white';
+      const skill = diceRollState.skill;
+      const dc = result.dc;
+      recordFailedCheck(
+        currentNodeId ?? '',
+        pending.index,
+        skill,
+        dc,
+        result.total + result.modifier,
+        false,
+        checkType,
+      );
+
       // Keep the result visible briefly, then clear
       if (skillCheckTimerRef.current !== null) clearTimeout(skillCheckTimerRef.current);
       skillCheckTimerRef.current = setTimeout(() => {
         setDiceRollState(null);
       }, 1200);
     }
-  }, [diceRollState]);
+  }, [diceRollState, currentNodeId]);
 
   const handleChoice = useCallback(
     (choice: DialogueChoice) => {
@@ -566,12 +649,27 @@ export function DialogueRenderer() {
                   skill={diceRollState.skill}
                   skillLevel={diceRollState.skillLevel}
                   thoughtBonus={diceRollState.thoughtBonus}
+                  successDegree={diceRollState.result.degree}
                   onComplete={handleDiceRollComplete}
                   autoDismissMs={2000}
                 />
               </motion.div>
             )}
           </AnimatePresence>
+          {/* Thought interjections — inner voice lines */}
+          {thoughtInterjections.length > 0 && (
+            <div className="mb-2 w-full max-w-2xl">
+              {thoughtInterjections
+                .filter((ti) => ti.timing === 'after_npc' || ti.timing === 'on_skill_check')
+                .map((ti) => (
+                  <ThoughtInterjectionLine
+                    key={`${ti.thoughtId}-${ti.timing}`}
+                    interjection={ti}
+                    accentColor={portraitColors.primary}
+                  />
+                ))}
+            </div>
+          )}
           <AnimatePresence>
             {skillCheckBanner && !diceRollState && (
               <motion.div
@@ -600,13 +698,24 @@ export function DialogueRenderer() {
           choices={node.choices.map((choice, i) => {
             const cond = checkStoryCondition(choice.condition, conditionCtx);
             const impact = getChoiceImpact(choice.effects, npcId);
+            // Thought-gated choices: only visible if required thought is equipped
+            const thoughtRequired = choice.condition?.thoughtRequired;
+            const thoughtGatedPass = thoughtRequired
+              ? equippedThoughts.some((t) => t.id === thoughtRequired)
+              : true;
             // minSkillCheck choices are always clickable (dice determines outcome)
             const isDiceCheck = Boolean(
               choice.condition?.minSkillCheck &&
               cond.skillCheckResult &&
               !cond.skillCheckResult.autoPass,
             );
-            const effectivePass = isDiceCheck ? true : cond.pass;
+            const effectivePass = isDiceCheck ? thoughtGatedPass : (cond.pass && thoughtGatedPass);
+            // White/red check type
+            const checkType: CheckType = choice.condition?.checkType ?? 'white';
+            const isRedCheck = checkType === 'red';
+            const hasFailedBefore = currentNodeId
+              ? hasFailedCheckForChoice(currentNodeId, i)
+              : false;
             return {
               key: `${currentNodeId}-dlg-${i}`,
               text: choice.text,
@@ -615,9 +724,14 @@ export function DialogueRenderer() {
               onSelect: () => trySelectChoice(i),
               trailing:
                 isDiceCheck && cond.skillCheckResult ? (
-                  <span className="flex items-center gap-1 text-xs text-cyan-300 shrink-0">
+                  <span className="flex items-center gap-1 text-xs shrink-0">
                     <span>🎲</span>
-                    {DICE_SKILL_LABELS[cond.skillCheckResult.skill]} {cond.skillCheckResult.difficulty}
+                    <span className={isRedCheck ? 'text-red-300' : 'text-cyan-300'}>
+                      {DICE_SKILL_LABELS[cond.skillCheckResult.skill]} {cond.skillCheckResult.difficulty}
+                    </span>
+                    {hasFailedBefore && (
+                      <CheckTypeBadge checkType={checkType} isRetryable={checkType === 'white'} />
+                    )}
                   </span>
                 ) : !cond.pass && cond.karmaNeeded ? (
                   <span className="text-[10px] font-mono text-rose-300">

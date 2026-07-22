@@ -30,6 +30,7 @@ function baseSnapshot(overrides: Partial<GameStoreSnapshot> = {}): GameStoreSnap
       karma: 0,
       stress: 0,
       visitedNodes: [],
+      equippedThoughtIds: [],
       progression: {
         level: 1,
         currentAct: 1,
