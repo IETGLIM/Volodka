@@ -60,11 +60,11 @@ function MiniGameHubPanelInner({ open, onClose }: MiniGameHubProps) {
       };
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       {open && (
         <motion.div
           className="fixed inset-0 flex items-center justify-center font-mono"
-          style={{ zIndex: UI_LAYERS.MENU }}
+          style={{ zIndex: UI_LAYERS.MINIGAME }}
           data-testid="minigame-hub"
           {...shellMotion}
         >

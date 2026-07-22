@@ -939,7 +939,7 @@ export function CombatUI() {
         className={`fixed inset-0 flex flex-col pointer-events-none ${screenShake ? 'combat-shake' : ''} ${isActive ? 'combat-vignette-active' : ''}`}
         style={{ zIndex: UI_LAYERS.COMBAT }}
       >
-        <AnimatePresence>
+        <AnimatePresence mode="wait">
           {introVisible && introMeta && (
             <CombatIntroSplash
               key={`${introMeta.name}-${introMeta.emoji}`}
@@ -951,7 +951,7 @@ export function CombatUI() {
         </AnimatePresence>
 
         {/* Screen flash overlay */}
-        <AnimatePresence>
+        <AnimatePresence mode="wait">
           {flashColor && (
             <motion.div
               initial={{ opacity: 1 }}

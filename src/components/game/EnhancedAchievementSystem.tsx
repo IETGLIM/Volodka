@@ -30,6 +30,7 @@ import {
   Filter,
   Search,
 } from 'lucide-react';
+import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
 /* ─── Types ─── */
 export type AchievementRarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
@@ -522,8 +523,8 @@ export function AchievementUnlockOverlay({
           animate={{ opacity: 1, x: 0, scale: 1 }}
           exit={{ opacity: 0, x: -50, scale: 0.9 }}
           transition={{ type: 'spring', stiffness: 200, damping: 20 }}
-          className="fixed top-20 right-4 z-[--z-toasts]"
-          style={{ zIndex: 35 }}
+          className="fixed top-20 right-4"
+          style={{ zIndex: UI_LAYERS.TOASTS }}
         >
           <motion.div
             layout

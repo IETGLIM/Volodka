@@ -374,14 +374,15 @@ export function BashTerminalGame({ onClose }: BashTerminalGameProps) {
   const timerPercent = (timeLeft / TIME_LIMIT) * 100;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      transition={{ duration: 0.25, ease: 'easeOut' }}
-      className="fixed inset-0 flex items-center justify-center"
-      style={{ zIndex: UI_LAYERS.MINIGAME }}
-    >
+    <AnimatePresence mode="wait">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        transition={{ duration: 0.25, ease: 'easeOut' }}
+        className="fixed inset-0 flex items-center justify-center"
+        style={{ zIndex: UI_LAYERS.MINIGAME }}
+      >
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/85 backdrop-blur-sm"
@@ -684,5 +685,6 @@ export function BashTerminalGame({ onClose }: BashTerminalGameProps) {
         `}</style>
       </div>
     </motion.div>
+    </AnimatePresence>
   );
 }

@@ -34,7 +34,8 @@ const SkipButton = memo(function SkipButton({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ delay: 1, duration: 0.8 }}
-      className="fixed top-8 right-8 z-[70] flex flex-col items-end gap-2"
+      className="fixed top-8 right-8 flex flex-col items-end gap-2"
+      style={{ zIndex: UI_LAYERS.CINEMATIC_TRANSITION }}
     >
       <motion.button
         type="button"
@@ -110,7 +111,7 @@ export function IntroScreen({ poemId = INTRO_POEM_ID }: IntroScreenProps) {
       {fx.filmGrain && <FilmGrain opacity={0.045} zIndex={60} />}
       {fx.cinematicBars && <CinematicBars variant="intro" />}
 
-      <div className="absolute inset-0 flex flex-col items-center justify-center z-[30] px-6">
+      <div className="absolute inset-0 flex flex-col items-center justify-center px-6" style={{ zIndex: UI_LAYERS.DIALOGUE }}>
         <motion.p
           initial={{ opacity: 0, y: -6 }}
           animate={{ opacity: 0.5, y: 0 }}

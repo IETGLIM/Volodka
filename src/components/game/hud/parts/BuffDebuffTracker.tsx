@@ -41,6 +41,7 @@ import {
   Eye,
   LucideIcon,
 } from 'lucide-react';
+import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
 /* ─── Type Definitions ─── */
 
@@ -608,7 +609,7 @@ const BuffDebuffTracker = memo(function BuffDebuffTracker({
       style={{
         position: 'fixed',
         ...positionStyle,
-        zIndex: 75,
+        zIndex: UI_LAYERS.HUD,
         display: 'flex',
         alignItems: 'center',
         gap: ICON_GAP,

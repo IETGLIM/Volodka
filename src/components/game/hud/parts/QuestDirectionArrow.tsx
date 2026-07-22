@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { eventBus } from '@/engine/EventBus';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
 const ARROW_SIZE = 28;
 const UPDATE_INTERVAL_MS = 800;
@@ -81,7 +82,7 @@ export function QuestDirectionArrow() {
             transform: 'translateX(-50%)',
             width: ARROW_SIZE,
             height: ARROW_SIZE,
-            zIndex: 9998,
+            zIndex: UI_LAYERS.HUD,
           }}
           aria-hidden="true"
         >

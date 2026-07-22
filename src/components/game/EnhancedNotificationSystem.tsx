@@ -26,6 +26,7 @@ import {
   Sparkles,
   X,
 } from 'lucide-react';
+import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
 /* ─── Types ─── */
 export type NotificationType = 'info' | 'success' | 'warning' | 'error' | 'achievement' | 'quest' | 'loot' | 'karma' | 'poem' | 'levelup' | 'combat';
@@ -435,10 +436,10 @@ export function EnhancedNotificationSystem({
 
   return (
     <div
-      className={`${positionStyles[position]} z-[--z-toasts]`}
+      className={`${positionStyles[position]}`}
       role="region"
       aria-label="Уведомления"
-      style={{ zIndex: 35 }}
+      style={{ zIndex: UI_LAYERS.TOASTS }}
     >
       <AnimatePresence mode="popLayout">
         {notifications.map((notification) => (

@@ -30,8 +30,8 @@ import { UI_LAYERS } from '@/shared/constants/uiLayers';
 const CinematicBars = memo(function CinematicBars() {
   return (
     <>
-      <div className="absolute top-0 left-0 right-0 z-[65] h-[6dvh] min-h-[24px] bg-black pointer-events-none" />
-      <div className="absolute bottom-0 left-0 right-0 z-[65] h-[6dvh] min-h-[24px] bg-black pointer-events-none" />
+      <div className="absolute top-0 left-0 right-0 h-[6dvh] min-h-[24px] bg-black pointer-events-none" style={{ zIndex: UI_LAYERS.CINEMATIC_TRANSITION }} />
+      <div className="absolute bottom-0 left-0 right-0 h-[6dvh] min-h-[24px] bg-black pointer-events-none" style={{ zIndex: UI_LAYERS.CINEMATIC_TRANSITION }} />
     </>
   );
 });
@@ -47,15 +47,17 @@ type MotionBoxProps = {
   className?: string;
   children: ReactNode;
   delay?: number;
+  style?: React.CSSProperties;
 };
 
-function MotionBox({ fx, className, children, delay = 0 }: MotionBoxProps) {
+function MotionBox({ fx, className, children, delay = 0, style }: MotionBoxProps) {
   if (!fx.contentMotion) {
-    return <div className={className}>{children}</div>;
+    return <div className={className} style={style}>{children}</div>;
   }
   return (
     <motion.div
       className={className}
+      style={style}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ delay, duration: 0.6 }}
@@ -138,27 +140,29 @@ export function LoadingScreen({
 
       {fx.filmGrain && (
         <div
-          className="absolute inset-0 pointer-events-none z-[2] opacity-[0.04] mix-blend-overlay animate-[cinematic-grain_0.4s_steps(8)_infinite]"
+          className="absolute inset-0 pointer-events-none opacity-[0.04] mix-blend-overlay animate-[cinematic-grain_0.4s_steps(8)_infinite]"
           style={{
             backgroundImage:
               "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E\")",
             backgroundSize: '128px 128px',
+            zIndex: 2,
           }}
         />
       )}
 
       {/* Scan-line overlay — CSS only, subtle CRT aesthetic */}
       <div
-        className="absolute inset-0 pointer-events-none z-[4]"
+        className="absolute inset-0 pointer-events-none"
         style={{
+          zIndex: 4,
           background: 'repeating-linear-gradient(0deg, transparent 0px, transparent 1px, rgba(0,0,0,0.05) 1px, rgba(0,0,0,0.05) 2px)',
           animation: 'loading-scanline-scroll 8s linear infinite',
         }}
       />
       {/* Moving scan-line bar — single bright line sweeping down */}
       <div
-        className="absolute inset-0 pointer-events-none z-[4] overflow-hidden"
-        style={{ animation: 'loading-scanline-bar 4s ease-in-out infinite' }}
+        className="absolute inset-0 pointer-events-none overflow-hidden"
+        style={{ zIndex: 4, animation: 'loading-scanline-bar 4s ease-in-out infinite' }}
       >
         <div
           className="absolute left-0 right-0 h-[2px]"
@@ -178,7 +182,8 @@ export function LoadingScreen({
             animate={{ opacity: 1 }}
             exit={fx.contentMotion ? { opacity: 0 } : undefined}
             transition={{ duration: fx.contentMotion ? 1 : 0 }}
-            className="absolute inset-0 z-[5]"
+            className="absolute inset-0"
+            style={{ zIndex: 5 }}
           >
             <TerminalBootText />
           </motion.div>
@@ -188,7 +193,8 @@ export function LoadingScreen({
       {fx.breathingGlow && (
         <>
           <motion.div
-            className="absolute inset-0 pointer-events-none z-[6]"
+            className="absolute inset-0 pointer-events-none"
+            style={{ zIndex: 6 }}
             animate={{
               background: [
                 'radial-gradient(ellipse at 40% 50%, rgb(var(--cyber-cyan-rgb) / 0.03) 0%, transparent 70%)',
@@ -199,7 +205,8 @@ export function LoadingScreen({
             transition={{ duration: 6, repeat: Infinity, repeatType: 'reverse' }}
           />
           <motion.div
-            className="absolute inset-0 pointer-events-none z-[6]"
+            className="absolute inset-0 pointer-events-none"
+            style={{ zIndex: 6 }}
             animate={{
               background: [
                 'radial-gradient(ellipse at 70% 60%, rgba(251,191,36,0.015) 0%, transparent 50%)',
@@ -214,20 +221,20 @@ export function LoadingScreen({
 
       {fx.crtSweep && <CRTSweep />}
 
-      <div className="absolute inset-0 pointer-events-none z-[55] bg-[radial-gradient(ellipse_at_center,transparent_25%,rgba(0,0,0,0.7)_100%)]" />
+      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,transparent_25%,rgba(0,0,0,0.7)_100%)]" style={{ zIndex: 55 }} />
 
       {fx.cinematicBars && <CinematicBars />}
 
       {fx.cornerDecor && (
         <>
-          <motion.div className="absolute top-4 left-4 w-16 h-16 border-l-2 border-t-2 border-cyan-500/20 z-[70]" animate={{ opacity: [0.2, 0.4, 0.2] }} transition={{ duration: 3, repeat: Infinity }} />
-          <motion.div className="absolute top-4 right-4 w-16 h-16 border-r-2 border-t-2 border-cyan-500/20 z-[70]" animate={{ opacity: [0.2, 0.4, 0.2] }} transition={{ duration: 3, repeat: Infinity, delay: 0.5 }} />
-          <motion.div className="absolute bottom-4 left-4 w-16 h-16 border-l-2 border-b-2 border-amber-500/15 z-[70]" animate={{ opacity: [0.15, 0.3, 0.15] }} transition={{ duration: 3, repeat: Infinity, delay: 1 }} />
-          <motion.div className="absolute bottom-4 right-4 w-16 h-16 border-r-2 border-b-2 border-amber-500/15 z-[70]" animate={{ opacity: [0.15, 0.3, 0.15] }} transition={{ duration: 3, repeat: Infinity, delay: 1.5 }} />
+          <motion.div className="absolute top-4 left-4 w-16 h-16 border-l-2 border-t-2 border-cyan-500/20" style={{ zIndex: UI_LAYERS.CINEMATIC_TRANSITION }} animate={{ opacity: [0.2, 0.4, 0.2] }} transition={{ duration: 3, repeat: Infinity }} />
+          <motion.div className="absolute top-4 right-4 w-16 h-16 border-r-2 border-t-2 border-cyan-500/20" style={{ zIndex: UI_LAYERS.CINEMATIC_TRANSITION }} animate={{ opacity: [0.2, 0.4, 0.2] }} transition={{ duration: 3, repeat: Infinity, delay: 0.5 }} />
+          <motion.div className="absolute bottom-4 left-4 w-16 h-16 border-l-2 border-b-2 border-amber-500/15" style={{ zIndex: UI_LAYERS.CINEMATIC_TRANSITION }} animate={{ opacity: [0.15, 0.3, 0.15] }} transition={{ duration: 3, repeat: Infinity, delay: 1 }} />
+          <motion.div className="absolute bottom-4 right-4 w-16 h-16 border-r-2 border-b-2 border-amber-500/15" style={{ zIndex: UI_LAYERS.CINEMATIC_TRANSITION }} animate={{ opacity: [0.15, 0.3, 0.15] }} transition={{ duration: 3, repeat: Infinity, delay: 1.5 }} />
         </>
       )}
 
-      <div className="relative z-[60] flex flex-col items-center gap-5">
+      <div className="relative flex flex-col items-center gap-5" style={{ zIndex: UI_LAYERS.LOADING }}>
         {showTitle && (
           <GlitchTitle text={LOADING_TITLE_TEXT} animate={fx.glitchTitle} />
         )}
@@ -378,14 +385,14 @@ export function LoadingScreen({
         </MotionBox>
       </div>
 
-      <MotionBox fx={fx} className="absolute bottom-8 right-6 z-[70] flex flex-col items-end gap-0.5" delay={2}>
+      <MotionBox fx={fx} className="absolute bottom-8 right-6 flex flex-col items-end gap-0.5" style={{ zIndex: UI_LAYERS.CINEMATIC_TRANSITION }} delay={2}>
         <span className="font-mono text-[10px] tracking-[0.15em] text-cyan-500/25">v{APP_VERSION}</span>
         <span className="font-mono text-[8px] tracking-[0.1em] text-slate-700/40">build.2026</span>
       </MotionBox>
 
       <MotionBox
         fx={fx}
-        className="absolute bottom-8 left-6 font-serif text-[10px] text-slate-500/30 tracking-wider z-[70] italic dedication-glow"
+        className="absolute bottom-8 left-6 font-serif text-[10px] text-slate-500/30 tracking-wider italic dedication-glow" style={{ zIndex: UI_LAYERS.CINEMATIC_TRANSITION }}
         delay={3}
       >
         {LOADING_DEDICATION_TEXT}

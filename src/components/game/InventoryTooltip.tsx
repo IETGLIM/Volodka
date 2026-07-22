@@ -9,6 +9,7 @@ import { buildInventoryTooltipContent } from '@/engine/inventory/inventoryToolti
 import type { TooltipComparisonDelta } from '@/engine/inventory/inventoryTooltipPresentation';
 import { inventoryTelemetry } from '@/engine/inventory/inventoryTelemetry';
 import { useInventoryTooltipPosition } from '@/components/game/inventory/useInventoryTooltipPosition';
+import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
 export interface InventoryTooltipProps {
   view: InventoryItemView;
@@ -101,8 +102,8 @@ export const InventoryTooltip = memo(function InventoryTooltip({
           id={tooltipId}
           role="tooltip"
           aria-hidden={!visible}
-          className="fixed z-[9999] pointer-events-none w-64 max-w-[calc(100vw-16px)]"
-          style={{ top: coords.top, left: coords.left }}
+          className="fixed pointer-events-none w-64 max-w-[calc(100vw-16px)]"
+          style={{ top: coords.top, left: coords.left, zIndex: UI_LAYERS.TOOLTIP }}
           initial={reducedMotion ? false : { opacity: 0, scale: 0.96 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={reducedMotion ? undefined : { opacity: 0, scale: 0.96 }}

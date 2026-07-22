@@ -18,6 +18,7 @@ import { useState, useCallback, memo } from 'react';
 import { AnimatePresence, motion, useAnimation } from 'framer-motion';
 import { Clock, Zap } from 'lucide-react';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
 /* Import enhanced quick slot styles */
 import '@/styles/hud-round12.css';
@@ -621,7 +622,7 @@ export const SkillRechargeHUD = memo(function SkillRechargeHUD({
         border: `1px solid rgba(100, 120, 140, 0.2)`,
         backdropFilter: 'blur(8px)',
         WebkitBackdropFilter: 'blur(8px)',
-        zIndex: 50,
+        zIndex: UI_LAYERS.COMBAT,
         /* Subtle shadow */
         boxShadow: `
           0 4px 24px rgba(0, 0, 0, 0.4),

@@ -311,7 +311,7 @@ export function QuizGame({ onClose }: QuizGameProps) {
   return (
     <motion.div
       className="fixed inset-0 flex items-center justify-center font-mono"
-      style={{ zIndex: UI_LAYERS.MENU }}
+      style={{ zIndex: UI_LAYERS.MINIGAME }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}

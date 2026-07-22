@@ -418,7 +418,7 @@ export function AchievementDetailsPanel({ open, onClose }: AchievementDetailsPan
   }, [open, onClose, detailPopup]);
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       {open && (
         <FocusTrap initialFocusRef={closeButtonRef}>
         <motion.div

@@ -9,6 +9,7 @@
 
 import React, { memo, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
 /* ══════════════════════════════════════════════════════════════
    TYPE DEFINITIONS / ОПРЕДЕЛЕНИЯ ТИПОВ
@@ -1131,7 +1132,7 @@ const EnvironmentalEffectsOverlay = memo<EnvironmentalEffectsOverlayProps>((prop
       className="fixed inset-0 overflow-hidden pointer-events-none"
       role="presentation"
       aria-label="Environmental effects overlay"
-      style={{ zIndex: 15, isolation: 'isolate' }}
+      style={{ zIndex: UI_LAYERS.HUD, isolation: 'isolate' }}
     >
       {/* Layer 1: Time-of-day vignette (bottom layer) */}
       <TimeVignette phase={effects.timePhase} reducedMotion={reducedMotion} />

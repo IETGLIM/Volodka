@@ -94,7 +94,7 @@ export function InnerMonologueOverlay() {
   );
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       {thought && (
         <motion.div
           key={`thought-${thought.key}`}

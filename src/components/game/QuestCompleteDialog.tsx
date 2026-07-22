@@ -85,7 +85,7 @@ export function QuestCompleteDialog({ questId, npcId, onClose }: QuestCompleteDi
         : 'ЕЖЕДНЕВНОЕ'
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       {visible && (
         <motion.div
           initial={{ opacity: 0 }}

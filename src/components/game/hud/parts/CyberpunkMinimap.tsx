@@ -37,6 +37,7 @@ import {
   Minimize2,
 } from 'lucide-react';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
 /* ─── Type Definitions ─── */
 
@@ -593,7 +594,7 @@ export const CyberpunkMinimap = memo(function CyberpunkMinimap({
         backdropFilter: 'blur(8px)',
         WebkitBackdropFilter: 'blur(8px)',
         cursor: 'pointer',
-        zIndex: 60,
+        zIndex: UI_LAYERS.HUD,
         overflow: 'hidden',
       }}
       onClick={handleZoomToggle}

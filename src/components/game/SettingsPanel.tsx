@@ -724,7 +724,7 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
   }, [open, onClose]);
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       {open && (
         <motion.div
           className="fixed inset-0 flex items-center justify-center"

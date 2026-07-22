@@ -180,7 +180,7 @@ export function LevelUpSummaryDialog({ data, reducedMotion, onDismiss }: LevelUp
         <motion.div
           key={data.id}
           className="fixed inset-0 flex items-center justify-center pointer-events-auto"
-          style={{ zIndex: UI_LAYERS.LOADING }}
+          style={{ zIndex: UI_LAYERS.PANEL }}
           initial={reducedMotion ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={reducedMotion ? undefined : { opacity: 0 }}

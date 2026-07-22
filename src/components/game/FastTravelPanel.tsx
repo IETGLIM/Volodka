@@ -189,7 +189,7 @@ export function FastTravelPanel({ open, onClose }: FastTravelPanelProps) {
           <motion.div
             key="fast-travel-fade"
             className="fixed inset-0 bg-black pointer-events-none"
-            style={{ zIndex: UI_LAYERS.MENU - 1 }}
+            style={{ zIndex: UI_LAYERS.PANEL - 1 }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -203,7 +203,7 @@ export function FastTravelPanel({ open, onClose }: FastTravelPanelProps) {
           <motion.div
             key="fast-travel-panel"
             className="fixed inset-0 flex items-center justify-center"
-            style={{ zIndex: UI_LAYERS.MENU }}
+            style={{ zIndex: UI_LAYERS.PANEL }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}

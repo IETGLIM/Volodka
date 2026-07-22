@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { audioEngine } from '@/engine/AudioEngine';
 import { safePlayMenuSfx } from '@/engine/menu/menuPresentation';
 import { useMenuVisualToggles } from '@/store/selectors';
@@ -47,7 +48,8 @@ export function MenuSettingsPanel({ musicEnabled, onToggleMusic, onClose }: Menu
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 flex items-center justify-center z-[60]"
+      className="fixed inset-0 flex items-center justify-center"
+      style={{ zIndex: UI_LAYERS.MENU }}
       onClick={onClose}
       role="dialog"
       aria-modal="true"

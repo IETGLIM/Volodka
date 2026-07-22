@@ -207,7 +207,7 @@ function HitLane({
       />
 
       {/* Hit feedback text */}
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {feedback && (
           <motion.div
             key={feedback.id}
@@ -557,14 +557,15 @@ export function RhythmGame({ onClose }: RhythmGameProps) {
      ═══════════════════════════════════════════════════════════════ */
 
   return (
-    <motion.div
-      className="fixed inset-0 flex items-center justify-center font-mono"
-      style={{ zIndex: UI_LAYERS.MINIGAME }}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.25 }}
-    >
+    <AnimatePresence mode="wait">
+      <motion.div
+        className="fixed inset-0 flex items-center justify-center font-mono"
+        style={{ zIndex: UI_LAYERS.MINIGAME }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.25 }}
+      >
       {/* ── Backdrop ── */}
       <motion.div
         className="absolute inset-0 backdrop-blur-md"
@@ -1221,7 +1222,8 @@ export function RhythmGame({ onClose }: RhythmGameProps) {
             boxShadow: `2px 2px 10px rgba(${ACCENT_RGB}, 0.05)`,
           }}
         />
+        </motion.div>
       </motion.div>
-    </motion.div>
+    </AnimatePresence>
   );
 }

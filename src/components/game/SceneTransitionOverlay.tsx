@@ -96,7 +96,7 @@ export function SceneTransitionOverlay() {
   );
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       {isActive && (
         <motion.div
           key="scene-transition-overlay"

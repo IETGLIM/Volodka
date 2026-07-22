@@ -94,7 +94,7 @@ export function GiftDialog({ open, onClose, npcId }: GiftDialogProps) {
   if (!npcDef) return null;
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       {open && (
         <motion.div
           initial={{ opacity: 0 }}
@@ -102,7 +102,7 @@ export function GiftDialog({ open, onClose, npcId }: GiftDialogProps) {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
           className="fixed inset-0 flex items-center justify-center"
-          style={{ zIndex: UI_LAYERS.PANEL + 1 }}
+          style={{ zIndex: UI_LAYERS.PANEL }}
         >
           <div
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"

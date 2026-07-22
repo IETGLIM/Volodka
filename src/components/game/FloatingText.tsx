@@ -56,7 +56,7 @@ export function FloatingTextLayer() {
       <AriaLiveRegion message={latestLiveMessage} priority="assertive" />
       <div
         className="fixed inset-0 pointer-events-none overflow-hidden"
-        style={{ zIndex: UI_LAYERS.TOASTS + 1 }}
+        style={{ zIndex: UI_LAYERS.HUD }}
         aria-hidden="true"
       >
         <AnimatePresence>

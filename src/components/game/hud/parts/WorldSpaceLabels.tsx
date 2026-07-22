@@ -4,6 +4,7 @@ import React, { useState, useMemo, memo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, Package, Hand, AlertCircle, Star } from 'lucide-react';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
 // ============================================================================
 // Type Definitions
@@ -530,7 +531,8 @@ function WorldSpaceLabelsComponent({
 
   return (
     <div
-      className="fixed inset-0 overflow-hidden pointer-events-none z-30"
+      className="fixed inset-0 overflow-hidden pointer-events-none"
+      style={{ zIndex: UI_LAYERS.WORLD_LABELS }}
       aria-label="World space entity labels"
       role="region"
       aria-live="polite"

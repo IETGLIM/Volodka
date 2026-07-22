@@ -228,7 +228,7 @@ export function DataTerminalOverlay() {
   useEffect(() => () => clearAllTimers(), [clearAllTimers]);
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       {state && (
         <motion.div
           key="data-terminal"

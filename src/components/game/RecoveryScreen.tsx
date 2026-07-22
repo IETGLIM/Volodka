@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
+import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import type { ErrorRecoveryContext } from '@/engine/recovery/errorRecoveryTypes';
 
 type RecoveryScreenProps = {
@@ -75,7 +76,8 @@ export function RecoveryScreen({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.25 }}
-      className="fixed inset-0 bg-black flex items-center justify-center z-[9999]"
+      className="fixed inset-0 bg-black flex items-center justify-center"
+      style={{ zIndex: UI_LAYERS.DEV_PANEL }}
       role="alertdialog"
       aria-modal="true"
       aria-labelledby="recovery-title"

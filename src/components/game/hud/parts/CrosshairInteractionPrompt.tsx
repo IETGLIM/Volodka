@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { eventBus } from '@/engine/EventBus';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
 export function CrosshairInteractionPrompt() {
   const [visible, setVisible] = useState(false);
@@ -28,7 +29,7 @@ export function CrosshairInteractionPrompt() {
       className="absolute top-1/2 left-1/2 pointer-events-none"
       style={{
         transform: 'translate(-50%, 24px)',
-        zIndex: 10,
+        zIndex: UI_LAYERS.HUD,
       }}
       aria-hidden="true"
     >

@@ -34,6 +34,7 @@ import {
   Volume2,
 } from 'lucide-react';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
 /* ─── Type Definitions ─── */
 
@@ -773,11 +774,12 @@ export function QuickTimeEventOverlay({
   return (
     <>
       {/* ── Фоновый оверлей / Background overlay ── */}
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {(isActive || showResult) && (
           <motion.div
-            className="fixed inset-0 z-[9999] flex items-center justify-center"
+            className="fixed inset-0 flex items-center justify-center"
             style={{
+              zIndex: UI_LAYERS.MINIGAME,
               background: 'radial-gradient(circle at center, rgba(0,0,0,0.85), rgba(0,0,0,0.95))',
               backdropFilter: 'blur(8px)',
             }}

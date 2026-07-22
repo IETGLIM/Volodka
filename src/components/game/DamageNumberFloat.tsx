@@ -323,7 +323,7 @@ export function DamageNumberFloat() {
   return (
     <div
       className="fixed inset-0 pointer-events-none overflow-hidden"
-      style={{ zIndex: UI_LAYERS.HUD }}
+      style={{ zIndex: UI_LAYERS.COMBAT }}
     >
       <AnimatePresence>
         {numbers.map((entry) => (

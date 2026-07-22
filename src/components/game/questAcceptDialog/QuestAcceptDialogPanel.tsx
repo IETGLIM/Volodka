@@ -42,7 +42,7 @@ function QuestAcceptDialogInner(props: QuestAcceptDialogProps) {
   const staticClass = reducedMotion ? ' quest-accept-dialog--static' : '';
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       {visible && (
         <motion.div
           initial={overlayMotion.initial}

@@ -256,7 +256,8 @@ function MenuScreenPanelInner() {
         {showNewGameDialog ? (
           <motion.div
             key="new-game-dialog-backdrop"
-            className="fixed inset-0 z-[65] flex items-center justify-center bg-black/70 backdrop-blur-sm"
+            className="fixed inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+            style={{ zIndex: UI_LAYERS.MENU }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -334,11 +335,12 @@ function MenuScreenPanelInner() {
         ) : null}
       </AnimatePresence>
 
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {menu.isFadingOut ? (
           <motion.div
             key="menu-fadeout"
-            className="fixed inset-0 bg-black z-[70]"
+            className="fixed inset-0 bg-black"
+            style={{ zIndex: UI_LAYERS.PANEL }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}

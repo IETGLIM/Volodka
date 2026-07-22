@@ -10,6 +10,7 @@ import { useNpcStates, usePlayerPosition, useCurrentSceneId } from '@/store/sele
 import { selectNpcRelations } from '@/store/selectors';
 import { ALL_NPC_DEFINITIONS } from '@/data/allNpcDefinitions';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
 const PROXIMITY_THRESHOLD = 4.5; // world units
 const DISPLAY_Y_OFFSET = 80; // pixels above crosshair center
@@ -97,7 +98,7 @@ export function NPCProximityIndicator() {
             top: `calc(50% - ${DISPLAY_Y_OFFSET}px)`,
             left: '50%',
             transform: 'translateX(-50%)',
-            zIndex: 90,
+            zIndex: UI_LAYERS.HUD,
           }}
           aria-label={`${nearest.name}, ${relationLabel(nearest.relation)}`}
           role="status"

@@ -631,7 +631,7 @@ function SaveSlotManagerContent({ onClose }: { onClose: () => void }) {
         </div>
 
         {/* ── Notification Toast ── */}
-        <AnimatePresence>
+        <AnimatePresence mode="wait">
           {notification && (
             <motion.div
               id="save-slot-notification"
@@ -758,7 +758,7 @@ export function SaveSlotManager({ open, onClose }: SaveSlotManagerProps) {
   }, [open, onClose]);
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       {open && (
         <motion.div
           className="fixed inset-0 flex items-center justify-center"
