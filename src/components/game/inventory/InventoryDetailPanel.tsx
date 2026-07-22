@@ -1,4 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion';
+import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { Hand, Lock, Shield, Trash2, X } from 'lucide-react';
 import { getRarityBg, getRarityColor, getRarityLabel } from '@/data/items';
 import { Badge } from '@/components/ui/badge';
@@ -89,10 +90,11 @@ export function InventoryDetailPanel({
       aria-label={`Детали: ${displayName}`}
       className={`
         w-full sm:w-64 shrink-0
-        fixed inset-0 z-40 sm:relative sm:inset-auto sm:z-auto
+        fixed inset-0 sm:relative sm:inset-auto sm:z-auto
         bg-black/80 sm:bg-transparent
         flex items-end sm:items-start sm:block
       `}
+      style={{ zIndex: UI_LAYERS.PANEL }}
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}

@@ -8,6 +8,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { eventBus } from '@/engine/EventBus';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
 const SPRINT_TIMEOUT_MS = 1200;
 
@@ -54,6 +55,7 @@ export function SprintDrainOverlay() {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3, ease: 'easeOut' }}
           className="fixed inset-0 pointer-events-none"
+          style={{ zIndex: UI_LAYERS.HUD }}
           aria-hidden="true"
         >
           {/* Amber-rose vignette tint for energy drain */}

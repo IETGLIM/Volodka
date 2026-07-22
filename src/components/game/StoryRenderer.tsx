@@ -3,6 +3,7 @@
 */
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   useStoryContext,
@@ -312,7 +313,7 @@ export function StoryRenderer() {
   // Loading state: node data is being fetched (not yet cached)
   if (isLoadingNode && !node) {
     return (
-      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm">
+      <div className="fixed inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm" style={{ zIndex: UI_LAYERS.DIALOGUE }}>
         <div className="flex items-center gap-3 text-cyan-300/80 text-lg font-mono animate-pulse">
           <span className="tracking-widest">···</span>
         </div>
@@ -322,7 +323,7 @@ export function StoryRenderer() {
   // Error state: story node fetch failed
   if (errorRef.current && !node) {
     return (
-      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm">
+      <div className="fixed inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm" style={{ zIndex: UI_LAYERS.DIALOGUE }}>
         <div className="flex flex-col items-center gap-4">
           <p className="text-red-400 text-lg font-mono">Не удалось загрузить сюжетный узел</p>
           <button

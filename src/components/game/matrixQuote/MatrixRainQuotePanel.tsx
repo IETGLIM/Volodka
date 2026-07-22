@@ -68,7 +68,7 @@ function MatrixRainQuotePanel({
   if (!bodyText) return null;
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       {visible && (
         <motion.div
           ref={overlayRef}

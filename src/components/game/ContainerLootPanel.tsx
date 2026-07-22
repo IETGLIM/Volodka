@@ -4,6 +4,7 @@
 
 import { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { Lock, Package, X, Check } from 'lucide-react';
 import { getItemDefinition } from '@/data/gameDataLoader';
 import { createInventoryItem } from '@/data/items';
@@ -104,7 +105,8 @@ export function ContainerLootPanel({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.15 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+          className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+          style={{ zIndex: UI_LAYERS.PANEL }}
           onClick={(e) => {
             if (e.target === e.currentTarget) onClose();
           }}

@@ -281,7 +281,7 @@ export function PoemReadingCutscene() {
   }, [activePoemId]);
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       {activePoemId && (
         <PoemReadingContent key={activePoemId} poemId={activePoemId} onFinished={handleFinished} />
       )}

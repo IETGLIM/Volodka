@@ -424,7 +424,7 @@ export function CutsceneOverlay() {
   return (
     <>
       <AriaLiveRegion message={ariaAnnouncement} priority="assertive" />
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
       {active && (
         <motion.div
           key={`cutscene-overlay-${overlayKey}`}

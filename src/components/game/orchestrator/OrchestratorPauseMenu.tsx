@@ -34,7 +34,7 @@ export function OrchestratorPauseMenu({ pauseDialog, panels, onClose }: Props) {
   const menuVisible = isPanelOpen('menu') && (mode === 'exploration' || mode === 'cutscene' || mode === 'combat');
 
   return (
-    <AnimatePresence initial={false}>
+    <AnimatePresence mode="wait" initial={false}>
       {menuVisible && (
         <PanelStackSlot panelId="menu">
           <motion.div

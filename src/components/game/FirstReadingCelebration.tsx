@@ -124,7 +124,7 @@ export function FirstReadingCelebrationView({
   const exitDuration = reducedMotion ? 0 : EXIT_DURATION_S;
 
   return (
-    <AnimatePresence onExitComplete={handleExitComplete}>
+    <AnimatePresence mode="wait" onExitComplete={handleExitComplete}>
       {visible && (
         <motion.div
           data-testid="first-reading-celebration"

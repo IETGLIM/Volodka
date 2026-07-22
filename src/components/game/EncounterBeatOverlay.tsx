@@ -35,12 +35,12 @@ export const EncounterBeatOverlay = memo(function EncounterBeatOverlay() {
   const presentation = resolveExaminePresentation('#ff6688');
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       {ctx && title && (
         <motion.div
           key={`encounter-${ctx.enemyType}-${title}`}
           className="fixed inset-0 flex items-center justify-center pointer-events-none"
-          style={{ zIndex: UI_LAYERS.DIALOGUE - 1 }}
+          style={{ zIndex: UI_LAYERS.DIALOGUE }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}

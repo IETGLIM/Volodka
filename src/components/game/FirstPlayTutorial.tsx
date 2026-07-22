@@ -485,7 +485,7 @@ export function FirstPlayTutorial() {
       : 'Завершить обучение';
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       {shouldShow && (
         <motion.div
           className="fixed inset-0 flex items-center justify-center pointer-events-auto"

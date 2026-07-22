@@ -13,7 +13,7 @@ export const NarrativeWorldDim = memo(function NarrativeWorldDim() {
   const visible = mode === 'exploration' && (showStoryOverlay || isDiegeticOnly);
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       {visible ? (
         <motion.div
           key="narrative-world-dim"

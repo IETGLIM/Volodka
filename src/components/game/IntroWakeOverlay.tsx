@@ -83,7 +83,7 @@ export const IntroWakeOverlay = memo(function IntroWakeOverlay() {
   }, [visible, showSkip]);
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       {visible && (
         <motion.div
           key="intro-wake-overlay"

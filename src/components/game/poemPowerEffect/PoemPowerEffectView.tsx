@@ -140,7 +140,7 @@ export function PoemPowerEffectView({
 
   return (
     <>
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {notification && (
           <motion.div
             key={`overlay-${notification.id}`}
@@ -213,7 +213,7 @@ export function PoemPowerEffectView({
         )}
       </AnimatePresence>
 
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {notification && (
           <motion.div
             key={`text-${notification.id}`}

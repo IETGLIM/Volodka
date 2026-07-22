@@ -75,7 +75,7 @@ export function SceneEntryTextOverlay() {
   const motionFadeIn = reducedMotion ? { duration: 0 } : { duration: FADE_IN_DURATION, ease: 'easeOut' as const };
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       {visible && (
         <motion.div
           key={`scene-entry-${sceneName}`}

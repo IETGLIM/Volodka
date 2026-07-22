@@ -141,7 +141,7 @@ function PoemWorldEffectInner() {
   }, [tint]);
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       {activeEvent ? (
         <motion.div
           key={activeEvent.id}
