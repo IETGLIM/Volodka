@@ -161,7 +161,7 @@ Gothic (живой мир, NPC расписания), GTA (открытые пр
 - [x] **Фаза 6.5: DE-style dialogue systems** — thought interjection, white/red checks, partial success, thought-gated choices
 - [x] **Фаза 6.6: Thought→Combat bridge** — equipped thoughts affect attack/defense/crit/flee/combo/HP
 - [x] **Фаза 7.1: Критический фикс дёргания модели (v2)** — weight-based blend tree, rotation reversal, hysteresis widening, walk bob reduction
-- [ ] **Фаза 7: Система одежды/внешности** — влияет на статы и диалоги
+- [x] **Фаза 7: Система одежды/внешности** — 6 слотов, 20 предметов, social perception tags, DialogueModifier, ClothingTab UI
 - [ ] **Фаза 8: Улучшенные 3D модели** — AI3DGen для ключевых NPC и окружения
 - [ ] **Фаза 9: Больше анимаций** — Mixamo/UAL, эмоциональные реакции NPC
 - [ ] **Фаза 10: TTS озвучивание** — ключевые сцены и диалоги
@@ -174,6 +174,26 @@ Gothic (живой мир, NPC расписания), GTA (открытые пр
 ---
 
 ## 📝 История сессий
+
+### Сессия: 2026-07-23 — "Phase 7: Система одежды/внешности"
+**Коммит:** ec5cac7c
+**Что сделано (16 файлов, +899/-9 строк):**
+- **EquipmentSlot расширен** — 3→6 слотов (head/body/legs/feet/hands/accessory)
+- **clothingCatalog.ts** — 20 предметов в постсоветском киберпанк стиле:
+  - 4 head (ушанка, кибер-визор, каска, неоновая бандана)
+  - 5 body (потёртая куртка, униформа IT, кибер-плащ, кожанка, рабочий халат)
+  - 4 legs, 3 feet, 2 hands, 2 accessory
+  - Каждый предмет имеет socialPerception tags и DialogueModifier
+- **SocialPerceptionTag** — 'official', 'shabby', 'cyberpunk_chic', 'worker', 'casual', 'suspicious'
+- **DialogueModifier** — dcAdjustment, skillBonus, unlockTag, lockTag (outfit gating dialogue choices)
+- **clothingSelectors.ts** — 4 selectors + React hooks:
+  - getEquippedClothing, getSocialPerceptionTags, getClothingSkillModifiers, getClothingDialogueModifier
+- **ClothingTab.tsx** — новая вкладка в Journal UI (6 слотов, perception tags, skill modifiers, каталог)
+- **DialogueRenderer integration** — clothing modifiers affect skill check DC and skill bonuses
+- **storyConditions.ts** — clothingTagRequired/clothingTagForbidden для dialogue gating
+- **Save backward compatibility** — новые слоты optional/default null в Zod schema
+- TypeScript: 0 ошибок
+**Следующий шаг:** Фаза 8 — Улучшенные 3D модели
 
 ### Сессия: 2026-07-23 — "Phase 7.1: Критический фикс дёргания модели (v2)"
 **Коммит:** 1391c40f
