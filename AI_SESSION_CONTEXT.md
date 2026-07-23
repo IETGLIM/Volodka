@@ -163,7 +163,7 @@ Gothic (живой мир, NPC расписания), GTA (открытые пр
 - [x] **Фаза 7.1: Критический фикс дёргания модели (v2)** — weight-based blend tree, rotation reversal, hysteresis widening, walk bob reduction
 - [x] **Фаза 7: Система одежды/внешности** — 6 слотов, 20 предметов, social perception tags, DialogueModifier, ClothingTab UI
 - [ ] **Фаза 8: Улучшенные 3D модели** — AI3DGen для ключевых NPC и окружения
-- [ ] **Фаза 9: Больше анимаций** — Mixamo/UAL, эмоциональные реакции NPC
+- [x] **Фаза 9.1: NPC эмоциональные реакции** — 7 эмоций, idle variants, proximity awareness, EventBus bridge, emotion-linked barks
 - [ ] **Фаза 10: TTS озвучивание** — ключевые сцены и диалоги
 - [ ] **Фаза 11: Полировка боевой системы** — больше врагов, тактики, окружение
 - [ ] **Фаза 12: Музыкальное разнообразие** — уникальные темы для каждого акта
@@ -174,6 +174,23 @@ Gothic (живой мир, NPC расписания), GTA (открытые пр
 ---
 
 ## 📝 История сессий
+
+### Сессия: 2026-07-23 — "Phase 9.1: NPC Emotional Reactions & Ambient Behaviors"
+**Коммит:** e7c9a4e7
+**Что сделано (12 файлов, +1248/-33 строк):**
+- **npcEmotionTypes.ts** — NpcEmotion type: 7 эмоций (neutral/curious/alarmed/contemplative/annoyed/respectful/fearful)
+- **npcEmotionalReactions.ts** — emotion→behavior mapping, outfit→emotion resolution, per-NPC emotion state with duration/decay
+- **npcIdleVariants.ts** — 5 idle variants: relaxed/alert/bored/working/social, role→variant mapping
+- **npcScheduleAnimations.ts** — 8 schedule-driven behavior animations (office→typing, cafe→pouring, etc.)
+- **npcEmotionalReactionEngine.ts** — EventBus bridge: weather/combat/poem events trigger NPC emotional reactions
+- **headTracking.ts** — proximity awareness: 5m focus zone, distance-scaled intensity, dialogue pause (600ms resume), emotion-based tracking
+- **npcAmbientBarkSystem.ts** — emotion-adjusted cooldown and bark selection
+- **npcBark.ts** — 4 Russian lines per emotion (curious/alarmed/contemplative/respectful/annoyed/fearful)
+- **useNpcVisualBehavior.ts** — emotion system integration, priority chain (emotion>idle variant>activity>default)
+- **npcEvents.ts** — npc:emotion_triggered / npc:emotion_decayed events
+- **npc.ts** — idleVariant field in NPCDefinition
+- TypeScript: 0 ошибок
+**Следующий шаг:** Фаза 10 — TTS озвучивание
 
 ### Сессия: 2026-07-23 — "Phase 7: Система одежды/внешности"
 **Коммит:** ec5cac7c
