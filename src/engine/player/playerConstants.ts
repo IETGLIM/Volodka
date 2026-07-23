@@ -12,7 +12,14 @@ export const GRAVITY = -15;
 export const FOOTSTEP_INTERVAL = 0.4;
 export const PLAYER_HEIGHT = 1.75;
 export const PLAYER_RADIUS = 0.3;
-export const ROTATION_SPEED = 10;
+export const ROTATION_SPEED = 8;
+/** Speed for 180-degree direction reversals — slower than normal rotation
+ *  so the character appears to physically turn around rather than snapping.
+ *  GTA/Gothic-style games use 4–5 for reversal turns. */
+export const ROTATION_SPEED_REVERSAL = 4.5;
+/** Angle threshold (radians) above which a direction reversal turn is used.
+ *  ~90° = half a direction change. Anything larger triggers the slower reversal. */
+export const ROTATION_REVERSAL_THRESHOLD = Math.PI / 4;
 
 export const SKIN_WIDTH = 0.04;
 export const MAX_SLOPE_CLIMB = Math.PI / 4;

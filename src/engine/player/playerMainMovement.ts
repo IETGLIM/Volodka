@@ -23,6 +23,8 @@ import {
   JUMP_FORCE,
   GRAVITY,
   ROTATION_SPEED,
+  ROTATION_SPEED_REVERSAL,
+  ROTATION_REVERSAL_THRESHOLD,
   SNAP_DISTANCE,
   BLOCKED_RATIO,
   COYOTE_TIME,
@@ -229,7 +231,16 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
       // Face the movement direction. moveDir is already normalized to the
       // camera-relative horizontal movement vector.
       const targetYaw = Math.atan2(moveDir.x, moveDir.z);
-      const rotT = 1 - Math.exp(-ROTATION_SPEED * dt);
+      // GTA/Gothic-style rotation: use a slower speed for large direction
+      // changes (reversals) so the character physically turns around.
+      // Small directional adjustments use full ROTATION_SPEED for responsiveness.
+      let yawDiff = targetYaw - deps.livePlayerRotationRef.current;
+      while (yawDiff > Math.PI) yawDiff -= Math.PI * 2;
+      while (yawDiff < -Math.PI) yawDiff += Math.PI * 2;
+      const effectiveRotSpeed = Math.abs(yawDiff) > ROTATION_REVERSAL_THRESHOLD
+        ? ROTATION_SPEED_REVERSAL
+        : ROTATION_SPEED;
+      const rotT = 1 - Math.exp(-effectiveRotSpeed * dt);
       deps.livePlayerRotationRef.current = lerpAngle(
         deps.livePlayerRotationRef.current, targetYaw, rotT,
       );

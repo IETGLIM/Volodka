@@ -51,7 +51,7 @@ export function preparePlayerFrame(
   const vel = scratch.vel;
   const fallbackFloorY = scratch.floorY;
 
-  const dt = Math.min(delta, 0.05);
+  const dt = Math.min(delta, 0.1); // Consistent with camera delta cap (0.1) — prevents physics/animation/camera desync on long frames
   scratch.dt = dt;
 
   const phase = game.gamePhase;

@@ -4,7 +4,6 @@ import * as THREE from 'three';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import {
   resolveLocomotionClipState,
-  resolveRunWalkCrossfadeTarget,
 } from '@/engine/player/playerLocomotionPresentation';
 import {
   bindPlayerClipActions,
@@ -15,8 +14,18 @@ import {
   PLAYER_RUN_CLIP_NAMES,
 } from '@/engine/player/playerClipResolution';
 
+// ── Blend speeds for weight-based locomotion blending ──
+// Exponential damping: newWeight = prevWeight + (targetWeight - prevWeight) * (1 - exp(-blendSpeed * delta))
+const BLEND_ACCEL = 6;       // Idle→Walk: fast but smooth acceleration
+const BLEND_WALK_RUN = 4;    // Walk→Run: slightly slower for natural feel
+const BLEND_DECEL = 3;       // Walk→Idle / Run→Walk: natural deceleration
+const BLEND_CINEMATIC = 8;   // Cinematic entry/exit: fast (~0.35s equivalent)
+
 const CLIP_CROSSFADE_SEC = 0.2;
 const CINEMATIC_CROSSFADE_SEC = 0.35;
+
+/** Weight threshold — below this, clamp to 0 to allow the mixer to deactivate the action. */
+const WEIGHT_EPSILON = 0.001;
 
 const LOCOMOTION_CLIP_NAMES = new Set<string>([
   ...PLAYER_IDLE_CLIP_NAMES,
@@ -41,7 +50,7 @@ const CINEMATIC_CLIP_NAMES = new Set<string>([
  * Build a bind-key that ONLY changes when the locomotion-relevant actions
  * (idle/walk/run) change. Loading a non-locomotion Mixamo clip (e.g.
  * 'sitting', 'sleeping') does NOT change this key, so the locomotion
- * actions are not needlessly re-bound (which would reset the crossfade
+ * actions are not needlessly re-bound (which would reset the blend weights
  * and cause the walk animation to flicker/restart).
  */
 function computeLocomotionBindKey(
@@ -65,10 +74,10 @@ export interface UsePlayerLocomotionControllerOptions {
 }
 
 /**
- * AAA locomotion blend tree for the hero GLB — idle / walk / run with crossfade,
- * PLUS cinematic clip support (sitting / sleeping / talking / working) for
- * cutscenes and dialogue. The cinematic clips crossfade in/out of the
- * locomotion blend tree based on `currentAnimRef.current`.
+ * AAA weight-based locomotion blend tree for the hero GLB — idle / walk / run
+ * clips play simultaneously with varying weights, eliminating the pose-restart
+ * stutter caused by crossFadeTo. Cinematic clips (sitting / sleeping / talking /
+ * working) still use fadeOut/fadeIn for transitions.
  *
  * Binds once per mixer+actions identity; updates after physics sets currentAnimRef.
  */
@@ -84,8 +93,12 @@ export function usePlayerLocomotionController({
   const runActionRef = useRef<THREE.AnimationAction | null>(null);
   const cinematicActionRef = useRef<THREE.AnimationAction | null>(null);
   const prevCinematicClipRef = useRef<string | null>(null);
-  const prevLocomotionRef = useRef(false);
-  const prevRunWeightRef = useRef(0);
+
+  // ── Weight tracking refs for blend tree ──
+  const currentIdleWeightRef = useRef(1);
+  const currentWalkWeightRef = useRef(0);
+  const currentRunWeightRef = useRef(0);
+
   const boundKeyRef = useRef<string | null>(null);
   // Track the latest actions object so the frame tick can look up
   // cinematic clips by name without re-registering the tick callback
@@ -138,7 +151,6 @@ export function usePlayerLocomotionController({
     if (idleAction) {
       idleAction.setLoop(THREE.LoopRepeat, Infinity);
       idleAction.reset();
-      idleAction.setEffectiveWeight(1);
       idleAction.play();
       idleActionRef.current = idleAction;
     } else {
@@ -148,37 +160,48 @@ export function usePlayerLocomotionController({
     if (walkAction && walkAction !== idleAction) {
       walkAction.setLoop(THREE.LoopRepeat, Infinity);
       walkAction.reset();
-      walkAction.setEffectiveWeight(0);
       walkAction.play();
       walkActionRef.current = walkAction;
     } else {
-      walkActionRef.current = walkAction && walkAction !== idleAction ? walkAction : null;
+      walkActionRef.current = null;
     }
 
     if (runAction && runAction !== walkAction && runAction !== idleAction) {
       runAction.setLoop(THREE.LoopRepeat, Infinity);
       runAction.reset();
-      runAction.setEffectiveWeight(0);
       runAction.play();
       runActionRef.current = runAction;
     } else {
       runActionRef.current = null;
     }
 
-    // Preserve the current locomotion state across re-binds. Previously
-    // this was reset to false, which caused the walk crossfade to restart
-    // every time a Mixamo clip loaded (6 clips = 6 restarts). Instead,
-    // check the current anim and set prevLocomotionRef to match, so the
-    // crossfade logic only fires when the anim ACTUALLY changes.
-    const currentClipState = resolveLocomotionClipState(currentAnimRef.current);
-    prevLocomotionRef.current = currentClipState.locomotionActive && !!walkAction;
-    prevRunWeightRef.current = currentClipState.runWeight;
-    // If the player is already walking, immediately start the crossfade
-    // so there's no 1-frame gap where the walk action has weight 0.
-    if (prevLocomotionRef.current && idleAction && walkAction) {
-      idleAction.setEffectiveWeight(0);
-      walkAction.setEffectiveWeight(1);
+    // ── Initialize blend weights based on current locomotion state ──
+    // This preserves the locomotion state across re-binds, so the blend
+    // tree doesn't restart from idle when a Mixamo clip loads.
+    const clipState = resolveLocomotionClipState(currentAnimRef.current);
+    const locomotionActive = clipState.locomotionActive && !!walkActionRef.current;
+
+    if (locomotionActive) {
+      if (clipState.runWeight >= 1 && runActionRef.current) {
+        currentIdleWeightRef.current = 0;
+        currentWalkWeightRef.current = 0;
+        currentRunWeightRef.current = 1;
+      } else {
+        currentIdleWeightRef.current = 0;
+        currentWalkWeightRef.current = 1;
+        currentRunWeightRef.current = 0;
+      }
+    } else {
+      currentIdleWeightRef.current = 1;
+      currentWalkWeightRef.current = 0;
+      currentRunWeightRef.current = 0;
     }
+
+    // Apply initial weights on actions
+    if (idleAction) idleAction.setEffectiveWeight(currentIdleWeightRef.current);
+    if (walkAction && walkAction !== idleAction) walkAction.setEffectiveWeight(currentWalkWeightRef.current);
+    if (runAction && runAction !== walkAction && runAction !== idleAction) runAction.setEffectiveWeight(currentRunWeightRef.current);
+
     mixer.update(0);
 
     return () => {
@@ -222,14 +245,12 @@ export function usePlayerLocomotionController({
         const targetAction = currentActions?.[animName] ?? null;
 
         if (targetAction && prevCinematicClipRef.current !== animName) {
-          // Transitioning into a new cinematic clip: fade out everything
-          // else (locomotion + previous cinematic), fade in the target.
+          // Transitioning into a new cinematic clip: fade out previous
+          // cinematic, fade in the target. Locomotion weights will be
+          // damped to 0 by the blend tree below.
           if (cinematicActionRef.current && cinematicActionRef.current !== targetAction) {
             cinematicActionRef.current.fadeOut(CINEMATIC_CROSSFADE_SEC);
           }
-          if (idleAction) idleAction.fadeOut(CINEMATIC_CROSSFADE_SEC);
-          if (walkAction) walkAction.fadeOut(CINEMATIC_CROSSFADE_SEC);
-          if (runAction) runAction.fadeOut(CINEMATIC_CROSSFADE_SEC);
 
           targetAction.setLoop(THREE.LoopRepeat, Infinity);
           targetAction.reset();
@@ -239,11 +260,24 @@ export function usePlayerLocomotionController({
 
           cinematicActionRef.current = targetAction;
           prevCinematicClipRef.current = animName;
-          // Reset locomotion tracking so when we exit cinematic, the
-          // crossfade back to idle/walk fires correctly.
-          prevLocomotionRef.current = false;
-          prevRunWeightRef.current = 0;
         }
+
+        // During cinematic: damp locomotion weights toward 0 with fast
+        // cinematic blend speed. This creates a smooth hand-off to the
+        // cinematic clip's fadeIn without pose-restart stutter.
+        const cinematicDamp = 1 - Math.exp(-BLEND_CINEMATIC * delta);
+        currentIdleWeightRef.current += (0 - currentIdleWeightRef.current) * cinematicDamp;
+        currentWalkWeightRef.current += (0 - currentWalkWeightRef.current) * cinematicDamp;
+        currentRunWeightRef.current += (0 - currentRunWeightRef.current) * cinematicDamp;
+
+        // Clamp negligible weights to 0 so the mixer can deactivate actions
+        if (currentIdleWeightRef.current < WEIGHT_EPSILON) currentIdleWeightRef.current = 0;
+        if (currentWalkWeightRef.current < WEIGHT_EPSILON) currentWalkWeightRef.current = 0;
+        if (currentRunWeightRef.current < WEIGHT_EPSILON) currentRunWeightRef.current = 0;
+
+        if (idleAction) idleAction.setEffectiveWeight(currentIdleWeightRef.current);
+        if (walkAction) walkAction.setEffectiveWeight(currentWalkWeightRef.current);
+        if (runAction) runAction.setEffectiveWeight(currentRunWeightRef.current);
 
         mixer.update(delta);
         return;
@@ -256,64 +290,92 @@ export function usePlayerLocomotionController({
           cinematicActionRef.current = null;
         }
         prevCinematicClipRef.current = null;
-        // Fade locomotion back in. The crossfade logic below will set
-        // the correct weights based on the current locomotion state.
-        if (idleAction) {
-          idleAction.reset();
-          idleAction.setEffectiveWeight(0);
-          idleAction.play();
-          idleAction.fadeIn(CINEMATIC_CROSSFADE_SEC);
-        }
-        if (walkAction && currentAnimRef.current === 'walk') {
-          walkAction.setEffectiveWeight(0);
-          walkAction.play();
-          walkAction.fadeIn(CINEMATIC_CROSSFADE_SEC);
-        }
-        // Symmetric fade-in for runAction — without this, if the player was
-        // running when the cinematic started, runAction stays at weight 0 for
-        // one frame after the cinematic ends, causing a brief walk→run stutter
-        // as the locomotion blend tree re-balances the weights.
-        if (runAction && currentAnimRef.current === 'run') {
-          runAction.setEffectiveWeight(0);
-          runAction.play();
-          runAction.fadeIn(CINEMATIC_CROSSFADE_SEC);
-        }
+        // Reset weight refs to 0 — the blend tree will ramp them up
+        // from 0 to the target weights, creating a smooth transition
+        // from cinematic back to locomotion. The cinematic fadeOut
+        // and locomotion weight ramp together produce a seamless crossfade.
+        currentIdleWeightRef.current = 0;
+        currentWalkWeightRef.current = 0;
+        currentRunWeightRef.current = 0;
       }
 
-      // ── Locomotion blend tree (idle / walk / run) ──
+      // ── Weight-based locomotion blend tree (idle / walk / run) ──
       const clipState = resolveLocomotionClipState(animName);
       const locomotionActive = clipState.locomotionActive && !!walkAction;
 
-      if (locomotionActive !== prevLocomotionRef.current) {
-        if (locomotionActive && walkAction && idleAction) {
-          idleAction.crossFadeTo(walkAction, CLIP_CROSSFADE_SEC, false);
-        } else if (!locomotionActive && idleAction && walkAction) {
-          walkAction.crossFadeTo(idleAction, CLIP_CROSSFADE_SEC, false);
-          prevRunWeightRef.current = 0;
-        }
-        prevLocomotionRef.current = locomotionActive;
+      // Compute target weights based on locomotion state
+      let targetIdleWeight: number;
+      let targetWalkWeight: number;
+      let targetRunWeight: number;
+
+      if (!locomotionActive) {
+        targetIdleWeight = 1;
+        targetWalkWeight = 0;
+        targetRunWeight = 0;
+      } else if (clipState.runWeight >= 1 && runAction) {
+        targetIdleWeight = 0;
+        targetWalkWeight = 0;
+        targetRunWeight = 1;
+      } else {
+        targetIdleWeight = 0;
+        targetWalkWeight = 1;
+        targetRunWeight = 0;
       }
 
-      if (locomotionActive && walkAction) {
-        walkAction.timeScale = clipState.walkTimeScale;
-        if (runAction) {
-          runAction.timeScale = clipState.runTimeScale;
-          const crossfadeTarget = resolveRunWalkCrossfadeTarget(
-            prevRunWeightRef.current,
-            clipState.runWeight,
-          );
-          if (crossfadeTarget === 'walk_to_run') {
-            walkAction.crossFadeTo(runAction, CLIP_CROSSFADE_SEC, false);
-          } else if (crossfadeTarget === 'run_to_walk') {
-            runAction.crossFadeTo(walkAction, CLIP_CROSSFADE_SEC, false);
-          }
-          prevRunWeightRef.current = clipState.runWeight;
+      // ── Choose blend speed based on transition direction ──
+      // Using a single blend speed per frame keeps weights normalized
+      // (sum ≈ 1) when starting from a normalized state, which ensures
+      // the character pose is always fully driven by the blend tree.
+      const currentIntensity = currentWalkWeightRef.current + currentRunWeightRef.current;
+      const targetIntensity = targetWalkWeight + targetRunWeight;
+
+      let blendSpeed: number;
+      if (currentIntensity < targetIntensity - 0.01) {
+        // Accelerating (idle→walk or idle→run)
+        blendSpeed = targetRunWeight > 0.5 ? BLEND_WALK_RUN : BLEND_ACCEL;
+      } else if (currentIntensity > targetIntensity + 0.01) {
+        // Decelerating (walk→idle, run→idle, run→walk)
+        blendSpeed = BLEND_DECEL;
+      } else {
+        // Same intensity level — walk↔run redistribution
+        if (targetRunWeight > currentRunWeightRef.current + 0.01) {
+          blendSpeed = BLEND_WALK_RUN;  // walk→run
+        } else if (targetRunWeight < currentRunWeightRef.current - 0.01) {
+          blendSpeed = BLEND_DECEL;     // run→walk
         } else {
-          walkAction.timeScale = clipState.runWeight > 0
-            ? clipState.runTimeScale
-            : clipState.walkTimeScale;
+          // No significant change — maintain current weights with gentle blend
+          blendSpeed = BLEND_DECEL;
         }
-      } else if (idleAction) {
+      }
+
+      // ── Apply exponential damping ──
+      // Frame-rate-independent: newWeight = prevWeight + (targetWeight - prevWeight) * (1 - exp(-blendSpeed * delta))
+      const dampFactor = 1 - Math.exp(-blendSpeed * delta);
+      currentIdleWeightRef.current += (targetIdleWeight - currentIdleWeightRef.current) * dampFactor;
+      currentWalkWeightRef.current += (targetWalkWeight - currentWalkWeightRef.current) * dampFactor;
+      currentRunWeightRef.current += (targetRunWeight - currentRunWeightRef.current) * dampFactor;
+
+      // Clamp negligible weights to 0 so the mixer can deactivate actions
+      if (currentIdleWeightRef.current < WEIGHT_EPSILON && targetIdleWeight === 0) currentIdleWeightRef.current = 0;
+      if (currentWalkWeightRef.current < WEIGHT_EPSILON && targetWalkWeight === 0) currentWalkWeightRef.current = 0;
+      if (currentRunWeightRef.current < WEIGHT_EPSILON && targetRunWeight === 0) currentRunWeightRef.current = 0;
+
+      // ── Set effective weights and time scales on actions ──
+      if (idleAction) idleAction.setEffectiveWeight(currentIdleWeightRef.current);
+      if (walkAction) {
+        walkAction.setEffectiveWeight(currentWalkWeightRef.current);
+        walkAction.timeScale = locomotionActive ? clipState.walkTimeScale : 1;
+      }
+      if (runAction) {
+        runAction.setEffectiveWeight(currentRunWeightRef.current);
+        runAction.timeScale = locomotionActive ? clipState.runTimeScale : 1;
+      }
+
+      // When no walk clip is available, adjust idle timeScale as a
+      // fallback so the character doesn't slide at idle speed while moving.
+      if (!walkAction && clipState.locomotionActive && idleAction) {
+        idleAction.timeScale = clipState.runWeight > 0 ? clipState.runTimeScale : clipState.walkTimeScale;
+      } else if (idleAction && !clipState.locomotionActive) {
         idleAction.timeScale = 1;
       }
 

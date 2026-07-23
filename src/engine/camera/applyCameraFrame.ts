@@ -29,7 +29,7 @@ const _camFwd = new THREE.Vector3();
 
 /* ── Walking head bob state ── */
 let _walkBobPhase = 0;
-const WALK_BOB_AMPLITUDE = 0.012; // 12mm vertical displacement
+const WALK_BOB_AMPLITUDE = 0.006; // 6mm vertical displacement (halved from 0.012 to reduce micro-jitter)
 const WALK_BOB_SPEED = 10;       // rad/s — matches walking pace
 const WALK_BOB_SPEED_THRESHOLD = 0.5; // minimum player speed to activate
 const WALK_BOB_SPEED_FULL = 3.0;     // speed at which bob is at full intensity

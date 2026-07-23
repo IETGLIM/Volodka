@@ -16,10 +16,16 @@ const MIN_FOOTSTEP_INTERVAL = 0.2;
 const FULL_SPRINT_SPEED = 7.0;
 /** Pitch variation range per step — adds subtle timbre variety (0.9–1.1). */
 const STEP_PITCH_RANGE = 0.1;
-/** Upper threshold for switching from idle to walk/run (m/s). */
-const ANIM_UPPER_THRESHOLD = 0.5;
-/** Lower threshold for reverting from walk/run to idle (m/s) — hysteresis band prevents flickering. */
-const ANIM_LOWER_THRESHOLD = 0.25;
+/** Upper threshold for switching from idle to walk/run (m/s).
+ *  Wider than previous 0.5 — with KEYBOARD_ACCEL=50 the velocity reaches
+ *  walk speed in ~0.08s, so the old 0.25 band was too narrow to prevent
+ *  idle↔walk flickering. Now the band is 0.45 m/s wide (0.6–0.15). */
+const ANIM_UPPER_THRESHOLD = 0.6;
+/** Lower threshold for reverting from walk/run to idle (m/s) —
+ *  Widened from 0.25 to 0.15 to create a larger hysteresis band that
+ *  prevents animation state flickering when velocity oscillates near
+ *  the boundary during rapid acceleration/deceleration cycles. */
+const ANIM_LOWER_THRESHOLD = 0.15;
 
 /** Animations, footsteps, position sync, ground enforce, DEV timing. */
 export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
