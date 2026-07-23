@@ -13,10 +13,14 @@
  *   - Skipped if the NPC has no `ambientBarks` config.
  *
  * Band selection (resolveNpcAmbientBark):
- *   - 20 % chance → pensive (if defined)
+ *   - Emotion-linked barks take priority when an NPC is in an emotional state.
+ *   - 20 % chance → pensive (if defined, and emotion is neutral)
  *   - else, if NPC has `working`-class animations (pour_drink / play_guitar)
  *     → working band (if defined)
  *   - else → idle band
+ *
+ * Emotion-linked barks modify cooldown: annoyed NPCs bark more frequently
+ * (cooldown halved), while contemplative NPCs bark less (cooldown doubled).
  *
  * Frame budget: runs in the 'npc' frame system, pre_render phase, so it
  * shares the NPC batch CPU budget and shows up in the per-system profiler.
@@ -32,12 +36,15 @@ import { getNPCGroup, getRegisteredNPCIds } from '@/engine/interaction/npcRegist
 import { getInteractionState, getInteractionTargetNPCId } from '@/engine/interaction/interactionSession';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 import { getGameSnapshot } from '@/engine/StateDispatcher';
-import { resolveNpcAmbientBark } from '@/shared/npcBark';
+import { resolveNpcAmbientBark, resolveNpcAmbientBarkBand } from '@/shared/npcBark';
 import { findNpcById } from '@/data/allNpcDefinitions';
 import type { NPCDefinition } from '@/shared/types/game';
+import type { NpcEmotion } from '@/engine/npc/npcEmotionTypes';
+import { getNpcEmotion } from '@/engine/npc/npcEmotionalReactions';
+import { resolveEmotionBehavior } from '@/engine/npc/npcEmotionalReactions';
 import { registerHmrDispose } from '@/shared/dev/hmrDispose';
 
-/** Min seconds between ambient barks for the same NPC. */
+/** Min seconds between ambient barks for the same NPC (base). */
 export const NPC_AMBIENT_BARK_COOLDOWN_S = 25;
 
 /** Player distance (m) within which ambient barks may fire. */
@@ -72,12 +79,28 @@ function npcIsWorking(def: NPCDefinition): boolean {
 }
 
 /**
+ * Resolve the effective cooldown for an NPC, adjusted by emotion.
+ * Annoyed NPCs bark more frequently (cooldown halved).
+ * Contemplative NPCs bark less (cooldown doubled).
+ * Other emotions use normal cooldown scaled by barkProbabilityMultiplier.
+ */
+function resolveEffectiveCooldownMs(npcId: string, baseCooldownMs: number): number {
+  const emotion = getNpcEmotion(npcId);
+  const behavior = resolveEmotionBehavior(emotion);
+  const multiplier = behavior.barkProbabilityMultiplier;
+
+  // Higher probability multiplier = shorter cooldown (more barks)
+  return Math.max(5000, Math.round(baseCooldownMs / multiplier));
+}
+
+/**
  * Pure tick function — call once per frame from the React hook.
  *
  * Mutates `cooldowns` (or the module singleton if omitted) to enforce the
- * per-NPC 25 s cooldown.
+ * per-NPC cooldown (emotion-adjusted).
  *
  * Emits `npc:ambient_bark` events for any NPC that qualifies this frame.
+ * The band field now includes emotion-linked bands.
  */
 export function tickNpcAmbientBarks(params: {
   playerPosition: THREE.Vector3;
@@ -108,18 +131,26 @@ export function tickNpcAmbientBarks(params: {
   if (interactionLocked) return;
 
   const radiusSq = NPC_AMBIENT_BARK_RADIUS_M * NPC_AMBIENT_BARK_RADIUS_M;
-  const cooldownMs = NPC_AMBIENT_BARK_COOLDOWN_S * 1000;
+  const baseCooldownMs = NPC_AMBIENT_BARK_COOLDOWN_S * 1000;
 
   for (const npcId of registeredIds) {
     // Skip the NPC the player is currently walking up to / talking to.
     if (npcId === interactionTargetNpcIdParam) continue;
 
-    // Per-NPC cooldown.
+    // Per-NPC cooldown (emotion-adjusted).
+    const effectiveCooldownMs = resolveEffectiveCooldownMs(npcId, baseCooldownMs);
     const lastTs = cooldowns.get(npcId) ?? 0;
-    if (now - lastTs < cooldownMs) continue;
+    if (now - lastTs < effectiveCooldownMs) continue;
 
     const def = getNpcDef(npcId);
-    if (!def?.ambientBarks) continue;
+    if (!def) continue;
+
+    // Get current NPC emotion for bark selection
+    const emotion = getNpcEmotion(npcId);
+
+    // Allow barks even if no ambientBarks config when emotion is active
+    // (DEFAULT_EMOTION_BARKS provides fallback text)
+    const hasCustomBarks = def.ambientBarks !== undefined;
 
     const group = getNpcGroupFn(npcId);
     if (!group) continue;
@@ -132,21 +163,29 @@ export function tickNpcAmbientBarks(params: {
     const distSq = dx * dx + dy * dy + dz * dz;
     if (distSq > radiusSq) continue;
 
-    // Eligible: pick a band and a line.
+    // Eligible: pick a band and a line (emotion-aware).
     const roll = rng();
-    const text = resolveNpcAmbientBark(def.ambientBarks, npcIsWorking(def), roll);
+    const text = resolveNpcAmbientBark(
+      def.ambientBarks,
+      npcIsWorking(def),
+      emotion,
+      roll,
+    );
     if (!text) continue;
 
-    // Determine which band was selected so the consumer (NPC component)
-    // can theme the bubble if it wants to.
-    const band = roll < 0.2 && def.ambientBarks.pensive
-      ? 'pensive'
-      : (npcIsWorking(def) && def.ambientBarks.working)
-        ? 'working'
-        : 'idle';
+    // Determine which band was selected for UI styling
+    const band = resolveNpcAmbientBarkBand(
+      def.ambientBarks,
+      npcIsWorking(def),
+      emotion,
+      roll,
+    );
 
     cooldowns.set(npcId, now);
-    eventBus.emit('npc:ambient_bark', { npcId, text, band });
+
+    // Emit with band type compatible with NpcEvents
+    const bandStr = band as 'idle' | 'working' | 'pensive' | 'curious' | 'alarmed' | 'contemplative' | 'annoyed' | 'respectful' | 'fearful';
+    eventBus.emit('npc:ambient_bark', { npcId, text, band: bandStr });
   }
 }
 

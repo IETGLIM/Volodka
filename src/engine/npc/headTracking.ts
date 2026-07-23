@@ -2,6 +2,8 @@
 
 import * as THREE from 'three';
 import { registerGlobalCleanup, registerModuleGlobalCleanupBinder } from '@/engine/core/GlobalCleanupService';
+import type { NpcEmotion } from '@/engine/npc/npcEmotionTypes';
+import { resolveEmotionBehavior } from '@/engine/npc/npcEmotionalReactions';
 
 /**
  * Makes an NPC's head bone track the player position using
@@ -58,6 +60,17 @@ interface HeadTrackingState {
   /** Layered mode — smoothed additive offsets applied after Mixamo / limb pose. */
   layeredYaw: number;
   layeredPitch: number;
+  /** ─── Proximity awareness fields ─── */
+  /** Whether head tracking is paused (e.g. during dialogue). */
+  paused: boolean;
+  /** Timestamp when tracking was paused (ms). */
+  pausedAt: number;
+  /** Timestamp when tracking should resume after dialogue ends (ms). */
+  resumeAt: number;
+  /** Current emotion — affects tracking intensity. */
+  emotion: NpcEmotion;
+  /** Smoothed intensity factor (0–1), lerped based on distance + emotion. */
+  intensityFactor: number;
 }
 
 export interface LayeredHeadTrackResult {
@@ -83,6 +96,11 @@ function createHeadTrackingState(): HeadTrackingState {
     axis: new THREE.Vector3(),
     layeredYaw: 0,
     layeredPitch: 0,
+    paused: false,
+    pausedAt: 0,
+    resumeAt: 0,
+    emotion: 'neutral',
+    intensityFactor: 1.0,
   };
 }
 
@@ -440,6 +458,23 @@ export function cleanupHeadTracking(npcId: string): void {
   headTrackingStates.delete(npcId);
 }
 
+/** Dispose proximity-aware tracking state for all NPCs. */
+export function disposeAllProximityAwareHeadTracking(): void {
+  disposeAllHeadTracking();
+}
+
+/** Get the current proximity intensity factor for an NPC (for diagnostics). */
+export function getHeadTrackingIntensity(npcId: string): number {
+  const state = headTrackingStates.get(npcId);
+  return state?.intensityFactor ?? 0;
+}
+
+/** Get whether head tracking is paused for an NPC. */
+export function isHeadTrackingPaused(npcId: string): boolean {
+  const state = headTrackingStates.get(npcId);
+  return state?.paused ?? false;
+}
+
 /** Remove all NPC head-tracking entries (scene unload / canvas teardown). */
 export function disposeAllHeadTracking(): void {
   headTrackingStates.clear();
@@ -458,3 +493,134 @@ function bindHeadTrackingGlobalCleanup(): void {
 
 registerModuleGlobalCleanupBinder(bindHeadTrackingGlobalCleanup);
 bindHeadTrackingGlobalCleanup();
+
+/* ─── Proximity-aware head tracking enhancements ─── */
+
+/** Distance within which NPCs focus more intensely on the player (5 m). */
+export const HEAD_TRACK_PROXIMITY_RADIUS = 5.0;
+
+/** Natural transition delay after dialogue ends before resuming tracking (ms). */
+export const HEAD_TRACK_RESUME_DELAY_MS = 600;
+
+/** Minimum intensity factor at the edge of activation distance. */
+const MIN_PROXIMITY_INTENSITY = 0.4;
+
+/** Maximum intensity factor at the proximity radius. */
+const MAX_PROXIMITY_INTENSITY = 1.0;
+
+/** Pause head tracking for an NPC (e.g. when dialogue starts). */
+export function pauseHeadTracking(npcId: string): void {
+  const state = headTrackingStates.get(npcId);
+  if (!state) return;
+  state.paused = true;
+  state.pausedAt = typeof performance !== 'undefined' ? performance.now() : Date.now();
+  state.resumeAt = 0; // Will be set when dialogue ends
+}
+
+/** Resume head tracking after dialogue, with a natural transition delay. */
+export function resumeHeadTrackingDelayed(npcId: string): void {
+  const state = headTrackingStates.get(npcId);
+  if (!state) return;
+  const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+  state.resumeAt = now + HEAD_TRACK_RESUME_DELAY_MS;
+  state.paused = false;
+}
+
+/** Set the NPC's current emotion for intensity scaling. */
+export function setHeadTrackingEmotion(npcId: string, emotion: NpcEmotion): void {
+  const state = headTrackingStates.get(npcId);
+  if (!state) return;
+  state.emotion = emotion;
+}
+
+/** Resolve proximity-scaled tracking intensity based on distance and emotion. */
+function resolveProximityIntensity(distance: number, emotion: NpcEmotion): number {
+  const emotionBehavior = resolveEmotionBehavior(emotion);
+  const emotionIntensity = emotionBehavior.headTrackingIntensity;
+
+  // If emotion disables tracking (e.g. fearful = 0), return 0 immediately
+  if (emotionIntensity <= 0) return 0;
+
+  // Scale intensity by distance: closer = more focused
+  // At proximity radius (5m) → MAX intensity, at activation distance (8m) → MIN intensity
+  const proximitySq = HEAD_TRACK_PROXIMITY_RADIUS * HEAD_TRACK_PROXIMITY_RADIUS;
+  const activationSq = DEFAULT_HEAD_TRACKING_CONFIG.activationDistance * DEFAULT_HEAD_TRACKING_CONFIG.activationDistance;
+
+  if (distance <= proximitySq) {
+    return Math.min(MAX_PROXIMITY_INTENSITY, emotionIntensity);
+  }
+
+  if (distance >= activationSq) {
+    return 0;
+  }
+
+  // Linear interpolation between proximity and activation distance
+  const t = (Math.sqrt(distance) - HEAD_TRACK_PROXIMITY_RADIUS) /
+            (DEFAULT_HEAD_TRACKING_CONFIG.activationDistance - HEAD_TRACK_PROXIMITY_RADIUS);
+  const distIntensity = MIN_PROXIMITY_INTENSITY + (MAX_PROXIMITY_INTENSITY - MIN_PROXIMITY_INTENSITY) * (1 - t);
+
+  return distIntensity * emotionIntensity;
+}
+
+/** Enhanced head tracking with proximity awareness and emotion scaling. */
+export function updateProximityAwareHeadTracking(
+  npcId: string,
+  npcGroup: THREE.Group,
+  playerPosition: THREE.Vector3,
+  delta: number,
+  now?: number,
+): void {
+  const state = getOrCreateState(npcId);
+
+  // Check if tracking is paused (during dialogue)
+  const currentTime = now ?? (typeof performance !== 'undefined' ? performance.now() : Date.now());
+  if (state.paused && currentTime < state.resumeAt) {
+    // Still in pause/delay period — smoothly return to original
+    const headObj = resolveHeadObject(npcGroup, state);
+    if (headObj && state.hasCapturedOriginal) {
+      if (state.isProcedural) {
+        headObj.rotation.y += (state.originalRotY - headObj.rotation.y) * Math.min(1, DEFAULT_HEAD_TRACKING_CONFIG.trackSpeed * delta * 0.3);
+      } else {
+        headObj.quaternion.slerp(state.originalQuat, DEFAULT_HEAD_TRACKING_CONFIG.trackSpeed * delta * 0.3);
+      }
+    }
+    return;
+  }
+
+  // Clear paused state once delay has elapsed
+  if (state.paused && currentTime >= state.resumeAt) {
+    state.paused = false;
+    state.resumeAt = 0;
+  }
+
+  // Compute distance for intensity scaling
+  const distSq = npcGroup.position.distanceToSquared(playerPosition);
+  const targetIntensity = resolveProximityIntensity(distSq, state.emotion);
+
+  // Smooth the intensity factor for natural transitions
+  const intensityLerp = Math.min(1, DEFAULT_HEAD_TRACKING_CONFIG.trackSpeed * delta * 0.5);
+  state.intensityFactor += (targetIntensity - state.intensityFactor) * intensityLerp;
+
+  // If intensity is effectively zero, just return head toward original
+  if (state.intensityFactor < 0.05) {
+    const headObj = resolveHeadObject(npcGroup, state);
+    if (headObj && state.hasCapturedOriginal) {
+      if (state.isProcedural) {
+        headObj.rotation.y += (state.originalRotY - headObj.rotation.y) * Math.min(1, DEFAULT_HEAD_TRACKING_CONFIG.trackSpeed * delta * 0.5);
+      } else {
+        headObj.quaternion.slerp(state.originalQuat, DEFAULT_HEAD_TRACKING_CONFIG.trackSpeed * delta * 0.5);
+      }
+    }
+    return;
+  }
+
+  // Delegate to the original tracking, but scale the result by intensity
+  // We modify trackSpeed proportionally — this gives natural tracking at all distances
+  const scaledConfig: HeadTrackingConfig = {
+    ...DEFAULT_HEAD_TRACKING_CONFIG,
+    trackSpeed: DEFAULT_HEAD_TRACKING_CONFIG.trackSpeed * state.intensityFactor,
+    maxAngle: DEFAULT_HEAD_TRACKING_CONFIG.maxAngle * state.intensityFactor,
+  };
+
+  updateHeadTracking(npcId, npcGroup, playerPosition, delta, scaledConfig);
+}

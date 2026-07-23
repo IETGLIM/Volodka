@@ -15,6 +15,20 @@ import {
   resolveNpcBehaviorState,
   type NpcBehaviorState,
 } from '@/engine/npc/npcStateMachine';
+import { eventBus } from '@/engine/EventBus';
+import type { NpcEmotion } from '@/engine/npc/npcEmotionTypes';
+import {
+  getNpcEmotion,
+  resolveEmotionBehavior,
+  mergeEmotionClipOverrides,
+} from '@/engine/npc/npcEmotionalReactions';
+import { resolveEffectiveIdleClipOverrides } from '@/engine/npc/npcIdleVariants';
+import {
+  pauseHeadTracking,
+  resumeHeadTrackingDelayed,
+  setHeadTrackingEmotion,
+} from '@/engine/npc/headTracking';
+import { findNpcById } from '@/data/allNpcDefinitions';
 
 export interface UseNpcVisualBehaviorOptions {
   npcId: string;
@@ -30,11 +44,14 @@ export interface NpcVisualBehaviorResult {
   behavior: NpcBehaviorState;
   animState: NPCAnimationState;
   clipOverrides: NpcAnimationClipOverrides | undefined;
+  /** Current NPC emotion (for downstream systems like ambient barks). */
+  emotion: NpcEmotion;
 }
 
 /**
  * Resolves behavioral FSM + animation state and syncs npcRegistry for any mesh type.
  * Subscribes to `npc:animation` bus overrides during active interaction.
+ * Integrates emotion-driven animation overrides and idle variant selection.
  */
 export function useNpcVisualBehavior({
   npcId,
@@ -46,6 +63,7 @@ export function useNpcVisualBehavior({
   clipOverrides,
 }: UseNpcVisualBehaviorOptions): NpcVisualBehaviorResult {
   const [busAnimState, setBusAnimState] = useState<NPCAnimationState | null>(null);
+  const [currentEmotion, setCurrentEmotion] = useState<NpcEmotion>('neutral');
 
   const behavior = useMemo(
     () =>
@@ -70,38 +88,97 @@ export function useNpcVisualBehavior({
     [activity, patrolActivity, interactionState, isInteractionTarget],
   );
 
+  // Resolve emotion-driven animation state override
+  const emotionAnimOverride = useMemo(() => {
+    const emotion = getNpcEmotion(npcId);
+    setCurrentEmotion(emotion);
+    if (emotion === 'neutral') return undefined;
+    const emotionBehavior = resolveEmotionBehavior(emotion);
+    return emotionBehavior.animStateOverride;
+  }, [npcId]);
+
   const activityClipOverrides = useMemo(
     () => resolveNpcActivityClipOverrides(activity),
     [activity],
   );
 
+  // Resolve NPC definition idle variant
+  const definitionIdleVariant = useMemo(() => {
+    const def = findNpcById(npcId);
+    return def?.idleVariant;
+  }, [npcId]);
+
+  // Merge clip overrides: activity → idle variant → emotion
   const mergedClipOverrides = useMemo(() => {
-    if (!activityClipOverrides && !clipOverrides) return undefined;
-    return { ...clipOverrides, ...activityClipOverrides };
-  }, [activityClipOverrides, clipOverrides]);
+    // Start with activity overrides
+    let base: NpcAnimationClipOverrides | undefined = undefined;
+    if (activityClipOverrides || clipOverrides) {
+      base = { ...clipOverrides, ...activityClipOverrides };
+    }
 
-  const animState = busAnimState ?? resolvedAnimState;
+    // Add idle variant overrides (if NPC definition specifies one)
+    const idleVariantOverrides = resolveEffectiveIdleClipOverrides(
+      currentEmotion,
+      definitionIdleVariant,
+    );
+    if (idleVariantOverrides) {
+      base = { ...base, ...idleVariantOverrides };
+    }
 
+    // Emotion overrides take highest priority
+    return mergeEmotionClipOverrides(currentEmotion, base);
+  }, [activityClipOverrides, clipOverrides, currentEmotion, definitionIdleVariant]);
+
+  // Final animation state: bus override → emotion override → resolved state
+  const animState = busAnimState ?? emotionAnimOverride ?? resolvedAnimState;
+
+  // Sync behavior state to npcRegistry
   useEffect(() => {
     syncNpcBehaviorState(npcId, behavior);
   }, [npcId, behavior]);
 
+  // Subscribe to animation bus events
   useEffect(() => onNpcAnimation(npcId, setBusAnimState), [npcId]);
 
-  // Clear bus-driven anim state once the interaction ends so schedule/patrol
-  // activities (sleep, work, walk) can drive the NPC again. Without this,
-  // the last `npc:animation` event (typically `state:'idle'` emitted on
-  // interaction:end) permanently shadows `resolvedAnimState`, leaving
-  // patrolling NPCs sliding in idle pose and sleeping NPCs standing.
+  // Clear bus-driven anim state once the interaction ends
   useEffect(() => {
     if (!isInteractionTarget && interactionState === InteractionState.Idle) {
       setBusAnimState(null);
     }
   }, [isInteractionTarget, interactionState]);
 
+  // Pause/resume head tracking during dialogue
+  useEffect(() => {
+    if (isInteractionTarget && interactionState === InteractionState.Dialogue) {
+      pauseHeadTracking(npcId);
+    } else if (!isInteractionTarget && interactionState === InteractionState.Idle) {
+      resumeHeadTrackingDelayed(npcId);
+    }
+  }, [npcId, isInteractionTarget, interactionState]);
+
+  // Subscribe to emotion events and update head tracking
+  useEffect(() => {
+    const unsub = eventBus.on('npc:emotion_triggered', ({ npcId: targetId, emotion }) => {
+      if (targetId !== npcId) return;
+      setCurrentEmotion(emotion);
+      setHeadTrackingEmotion(npcId, emotion);
+    });
+    return unsub;
+  }, [npcId]);
+
+  useEffect(() => {
+    const unsub = eventBus.on('npc:emotion_decayed', ({ npcId: targetId }) => {
+      if (targetId !== npcId) return;
+      setCurrentEmotion('neutral');
+      setHeadTrackingEmotion(npcId, 'neutral');
+    });
+    return unsub;
+  }, [npcId]);
+
   return {
     behavior,
     animState,
     clipOverrides: mergedClipOverrides,
+    emotion: currentEmotion,
   };
 }

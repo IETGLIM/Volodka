@@ -1,6 +1,7 @@
 /* ─── NPC definitions ─── */
 
 import type { NPCBarkTexts, NPCAmbientBarks } from '@/shared/npcBark';
+import type { NpcIdleVariant } from '@/engine/npc/npcIdleVariants';
 
 export type { NPCBarkBand, NPCBarkTexts, NPCAmbientBarks } from '@/shared/npcBark';
 
@@ -76,4 +77,9 @@ export interface NPCDefinition {
   readonly appearance?: NPCAppearance;
   /** Override render fidelity; scene defaults apply when omitted. */
   readonly renderTier?: NpcRenderTier;
+  /** Preferred idle animation variant based on personality/role.
+   *  Determines which idle pose the NPC uses when not in an active activity.
+   *  When an emotion overrides the idle, the emotion's variant takes priority.
+   */
+  readonly idleVariant?: NpcIdleVariant;
 }

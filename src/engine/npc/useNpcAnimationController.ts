@@ -32,7 +32,7 @@ export function useNpcAnimationController({
   isInteractionTarget,
   gamePhase,
 }: UseNpcAnimationControllerOptions) {
-  const { animState, clipOverrides: mergedClipOverrides } = useNpcVisualBehavior({
+  const { animState, clipOverrides: mergedClipOverrides, emotion } = useNpcVisualBehavior({
     npcId,
     activity,
     patrolActivity,
@@ -48,5 +48,5 @@ export function useNpcAnimationController({
     crossfadeTo(animState);
   }, [animState, crossfadeTo]);
 
-  return { crossfadeTo, animState, clipOverrides: mergedClipOverrides };
+  return { crossfadeTo, animState, clipOverrides: mergedClipOverrides, emotion };
 }

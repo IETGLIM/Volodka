@@ -1,4 +1,6 @@
 /** NPC dialogue, animation, gifts — DialogueRenderer, useNPCAnimation. */
+import type { NpcEmotion } from '@/engine/npc/npcEmotionTypes';
+
 export interface NpcEvents {
   'npc:talked': { npcId: string; dialogueNodeId?: string };
   'npc:animation': { npcId: string; state: 'idle' | 'walk' | 'talk' | 'sit' | 'listen' | 'gesture' };
@@ -15,6 +17,18 @@ export interface NpcEvents {
   'npc:ambient_bark': {
     npcId: string;
     text: string;
-    band: 'idle' | 'working' | 'pensive';
+    band: 'idle' | 'working' | 'pensive' | 'curious' | 'alarmed' | 'contemplative' | 'annoyed' | 'respectful' | 'fearful';
   };
+  /**
+   * Emitted when an NPC's emotional state changes (triggered by game events
+   * like weather, combat nearby, poem reading, outfit perception, proximity).
+   * The NPC component listens and adjusts animation, head tracking, and bark
+   * behavior accordingly.
+   */
+  'npc:emotion_triggered': { npcId: string; emotion: NpcEmotion; source: string; duration: number };
+  /**
+   * Emitted when an NPC's emotion decays back to neutral (after the duration
+   * expires). The NPC component restores default animation and behavior.
+   */
+  'npc:emotion_decayed': { npcId: string; previousEmotion: NpcEmotion };
 }
