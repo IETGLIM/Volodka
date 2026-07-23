@@ -43,6 +43,10 @@ export interface ChoiceCondition {
   readonly activeTTLFlag?: string;
   /** Hide while this poem-power TTL flag is live */
   readonly missingActiveTTLFlag?: string;
+  /** Clothing unlock tag required to see this choice (outfit-gated dialogue). */
+  readonly clothingTagRequired?: string;
+  /** Clothing lock tag that hides this choice (outfit-blocked dialogue). */
+  readonly clothingTagForbidden?: string;
 }
 
 /** Alias for ChoiceCondition — used in exit filtering and story gates. */

@@ -66,18 +66,27 @@ export const INVENTORY_CATEGORY_LABELS: Record<string, string> = {
 export const INVENTORY_SLOT_LABELS: Record<string, string> = {
   head: 'Голова',
   body: 'Тело',
+  legs: 'Ноги',
+  feet: 'Обувь',
+  hands: 'Руки',
   accessory: 'Аксессуар',
 };
 
 export const INVENTORY_SLOT_ICONS: Record<string, string> = {
   head: '🧠',
   body: '🛡️',
+  legs: '👖',
+  feet: '👟',
+  hands: '🧤',
   accessory: '💍',
 };
 
 export const INVENTORY_SLOT_BORDER_COLORS: Record<string, string> = {
   head: 'border-cyan-500/40',
   body: 'border-emerald-500/40',
+  legs: 'border-violet-500/40',
+  feet: 'border-orange-500/40',
+  hands: 'border-sky-500/40',
   accessory: 'border-amber-500/40',
 };
 

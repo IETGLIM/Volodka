@@ -292,6 +292,15 @@ export function storePatchFromSave(payload: SavePayload): Partial<GameStoreState
         body: payload.playerState.equippedItems.body
           ? normalizeInventoryItem(payload.playerState.equippedItems.body)
           : null,
+        legs: payload.playerState.equippedItems.legs
+          ? normalizeInventoryItem(payload.playerState.equippedItems.legs)
+          : null,
+        feet: payload.playerState.equippedItems.feet
+          ? normalizeInventoryItem(payload.playerState.equippedItems.feet)
+          : null,
+        hands: payload.playerState.equippedItems.hands
+          ? normalizeInventoryItem(payload.playerState.equippedItems.hands)
+          : null,
         accessory: payload.playerState.equippedItems.accessory
           ? normalizeInventoryItem(payload.playerState.equippedItems.accessory)
           : null,

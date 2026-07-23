@@ -2,7 +2,19 @@
 
 import type { ItemId } from '../brands';
 
-export type EquipmentSlot = 'head' | 'body' | 'accessory';
+export type EquipmentSlot = 'head' | 'body' | 'legs' | 'feet' | 'hands' | 'accessory';
+
+/** Clothing/appearance modifiers that affect dialogue skill checks. */
+export interface DialogueModifier {
+  /** Skill check DC modifier (negative = easier, positive = harder) */
+  dcAdjustment?: number;
+  /** Which skills get bonuses from this outfit in dialogue */
+  skillBonus?: Partial<Record<import('./skills').TrainablePlayerSkill, number>>;
+  /** Tags that unlock specific dialogue branches */
+  unlockTag?: string;
+  /** Tags that lock specific dialogue branches */
+  lockTag?: string;
+}
 
 /** Linked content for books that open poems/lore */
 export interface LinkedContent {

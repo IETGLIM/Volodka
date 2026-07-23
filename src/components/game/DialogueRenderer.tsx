@@ -51,6 +51,7 @@ import {
   type DiceRollResult,
 } from '@/engine/skillCheck';
 import { useThoughtSkillModifiers, useEquippedThoughts } from '@/store/selectors/thoughtCabinetSelectors';
+import { useClothingDialogueModifier } from '@/store/selectors/clothingSelectors';
 import { resolveThoughtInterjections, type ThoughtInterjection } from '@/engine/narrative/thoughtInterjection';
 import {
   resolveCheckType,
@@ -176,6 +177,7 @@ export function DialogueRenderer() {
   const visitNode = useVisitNode();
   const thoughtModifiers = useThoughtSkillModifiers();
   const equippedThoughts = useEquippedThoughts();
+  const clothingDialogueMod = useClothingDialogueModifier();
 
   const [skillCheckBanner, setSkillCheckBanner] = useState<{
     skill: TrainablePlayerSkill;
@@ -265,8 +267,10 @@ export function DialogueRenderer() {
       npcId: npcDef?.id ?? '',
       timeOfDay,
       ownedItemIdsKey,
-      activeTTLFlags }, collectedPoems);
-  }, [karma, skills, flags, progression, npcRelations, timeOfDay, node, collectedPoems, activeTTLFlags, ownedItemIdsKey]);
+      activeTTLFlags,
+      clothingUnlockTags: clothingDialogueMod.unlockTags,
+      clothingLockTags: clothingDialogueMod.lockTags }, collectedPoems);
+  }, [karma, skills, flags, progression, npcRelations, timeOfDay, node, collectedPoems, activeTTLFlags, ownedItemIdsKey, clothingDialogueMod]);
 
   // ── Thought interjections for current node ──
   const thoughtInterjections = useMemo(() => {
@@ -435,11 +439,15 @@ export function DialogueRenderer() {
         }
 
         // Perform the dice roll
+        // Clothing modifiers: DC adjustment and skill bonuses from outfit
+        const clothingDcAdjust = clothingDialogueMod.dcAdjustment;
+        const clothingSkillBonus = clothingDialogueMod.skillBonus[skill] ?? 0;
         const result = performDiceRoll({
           skill,
           skillLevel: skills[skill] ?? 0,
-          dc: difficulty,
+          dc: difficulty - clothingDcAdjust, // negative dcAdjustment = easier check
           thoughtModifiers,
+          situationalModifier: clothingSkillBonus,
         });
 
         diceRollActiveRef.current = true;
@@ -459,7 +467,7 @@ export function DialogueRenderer() {
 
       handleChoice(choice);
     },
-    [node, done, conditionCtx, handleChoice, skills, thoughtModifiers],
+    [node, done, conditionCtx, handleChoice, skills, thoughtModifiers, clothingDialogueMod],
   );
 
   useNarrativeChoiceKeyboard({

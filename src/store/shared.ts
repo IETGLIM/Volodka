@@ -100,7 +100,7 @@ export function pushNotification(
 
 /* ─── Journal system ─── */
 
-export type JournalTab = 'notes' | 'skills' | 'poems' | 'lore' | 'thoughts' | 'cabinet';
+export type JournalTab = 'notes' | 'skills' | 'poems' | 'lore' | 'thoughts' | 'cabinet' | 'clothing';
 
 /** Single entry in Volodka's thought history (FIFO, max 50). */
 export interface ThoughtHistoryEntry {
@@ -193,6 +193,9 @@ export function createDefaultPlayerState(): PlayerState {
     equippedItems: {
       head: null,
       body: null,
+      legs: null,
+      feet: null,
+      hands: null,
       accessory: null } as Record<EquipmentSlot, InventoryItem | null>,
     flags: {},
     visitedNodes: [],

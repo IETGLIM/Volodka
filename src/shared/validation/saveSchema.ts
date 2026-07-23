@@ -73,6 +73,9 @@ const InventoryItemSchema = z.discriminatedUnion('stackable', [
 const EquippedItemsSchema = z.object({
   head: InventoryItemSchema.nullable(),
   body: InventoryItemSchema.nullable(),
+  legs: InventoryItemSchema.nullable().optional().default(null),
+  feet: InventoryItemSchema.nullable().optional().default(null),
+  hands: InventoryItemSchema.nullable().optional().default(null),
   accessory: InventoryItemSchema.nullable(),
 });
 
@@ -268,7 +271,7 @@ const LegacyGameModeSchema = z.enum([
 
 const GameModeSchema = z.literal('exploration');
 
-const JournalTabSchema = z.enum(['notes', 'skills', 'poems', 'lore', 'thoughts', 'cabinet']);
+const JournalTabSchema = z.enum(['notes', 'skills', 'poems', 'lore', 'thoughts', 'cabinet', 'clothing']);
 
 /* ─── Full save payload schema ─── */
 /* When adding a persisted field: extend this schema, then add its default in

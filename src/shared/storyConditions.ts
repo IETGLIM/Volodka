@@ -25,6 +25,10 @@ export interface StoryConditionContext {
   timeOfDay?: number;
   /** Pipe-delimited sorted item ids from player inventory */
   ownedItemIdsKey?: string;
+  /** Clothing unlock tags from equipped outfit (for dialogue gating). */
+  clothingUnlockTags?: ReadonlySet<string>;
+  /** Clothing lock tags from equipped outfit (for dialogue gating). */
+  clothingLockTags?: ReadonlySet<string>;
 }
 
 export interface StoryConditionExtras {
@@ -35,6 +39,10 @@ export interface StoryConditionExtras {
   currentAct?: number;
   ownedItemIdsKey?: string;
   activeTTLFlags?: ActiveTTLFlagMap;
+  /** Clothing unlock tags from equipped outfit. */
+  clothingUnlockTags?: ReadonlySet<string>;
+  /** Clothing lock tags from equipped outfit. */
+  clothingLockTags?: ReadonlySet<string>;
 }
 
 /** Build condition context from player state — shared by StoryRenderer & DialogueRenderer. */
@@ -54,6 +62,8 @@ export function buildStoryConditionContext(
     npcId: extras.npcId,
     timeOfDay: extras.timeOfDay,
     ownedItemIdsKey: extras.ownedItemIdsKey,
+    clothingUnlockTags: extras.clothingUnlockTags,
+    clothingLockTags: extras.clothingLockTags,
   };
 }
 
@@ -126,6 +136,16 @@ export function checkStoryCondition(
 
   if (condition.minCollectedPoems !== undefined) {
     if (ctx.collectedPoems.length < condition.minCollectedPoems) return { pass: false };
+  }
+
+  // Clothing tag gating: outfit-based dialogue branch access
+  if (condition.clothingTagRequired !== undefined) {
+    const unlockTags = ctx.clothingUnlockTags ?? new Set<string>();
+    if (!unlockTags.has(condition.clothingTagRequired)) return { pass: false };
+  }
+  if (condition.clothingTagForbidden !== undefined) {
+    const lockTags = ctx.clothingLockTags ?? new Set<string>();
+    if (lockTags.has(condition.clothingTagForbidden)) return { pass: false };
   }
 
   if (condition.minNpcRelation !== undefined && ctx.npcId && ctx.npcRelations) {

@@ -280,6 +280,9 @@ function NpcRelationBar({ npcId, value }: { npcId: string; value: number }) {
 const SLOT_CONFIG: Record<EquipmentSlot, { label: string; Icon: typeof HardHat }> = {
   head: { label: 'Голова', Icon: HardHat },
   body: { label: 'Тело', Icon: Shirt },
+  legs: { label: 'Ноги', Icon: Activity },
+  feet: { label: 'Обувь', Icon: Footprints },
+  hands: { label: 'Руки', Icon: Zap },
   accessory: { label: 'Аксессуар', Icon: Gem } };
 
 /* ── Skill display name mapping ── */
@@ -615,7 +618,7 @@ export function CharacterProfilePanel({ open, onClose }: { open: boolean; onClos
                         <span className="text-[10px] text-slate-500 font-mono uppercase tracking-widest">Экипировка</span>
                       </div>
                       <div className="flex gap-2">
-                        {(['head', 'body', 'accessory'] as EquipmentSlot[]).map((slot) => {
+                        {(['head', 'body', 'legs', 'feet', 'hands', 'accessory'] as EquipmentSlot[]).map((slot) => {
                           const equipped = equippedItems[slot];
                           const _equipDef = equipped ? getItemDefinition(equipped.id) : undefined;
                           const cfg = SLOT_CONFIG[slot];
