@@ -160,6 +160,7 @@ Gothic (живой мир, NPC расписания), GTA (открытые пр
 - [x] **Фаза 6: A* навигация для NPC** — nav mesh builder, A* pathfinder, path smoothing, npcPatrol integration
 - [x] **Фаза 6.5: DE-style dialogue systems** — thought interjection, white/red checks, partial success, thought-gated choices
 - [x] **Фаза 6.6: Thought→Combat bridge** — equipped thoughts affect attack/defense/crit/flee/combo/HP
+- [x] **Фаза 7.1: Критический фикс дёргания модели (v2)** — weight-based blend tree, rotation reversal, hysteresis widening, walk bob reduction
 - [ ] **Фаза 7: Система одежды/внешности** — влияет на статы и диалоги
 - [ ] **Фаза 8: Улучшенные 3D модели** — AI3DGen для ключевых NPC и окружения
 - [ ] **Фаза 9: Больше анимаций** — Mixamo/UAL, эмоциональные реакции NPC
@@ -173,6 +174,29 @@ Gothic (живой мир, NPC расписания), GTA (открытые пр
 ---
 
 ## 📝 История сессий
+
+### Сессия: 2026-07-23 — "Phase 7.1: Критический фикс дёргания модели (v2)"
+**Коммит:** 1391c40f
+**Что сделано (6 файлов, +177/-91 строк):**
+- **🔴 Fix 1: Weight-Based Animation Blend Tree** — переписан `usePlayerLocomotionController.ts`
+  - Заменён `crossFadeTo()` на weight-based blending через `setEffectiveWeight()`
+  - All 3 locomotion clips (idle/walk/run) play simultaneously with varying weights — no pose restart
+  - Exponential damping: `newWeight = prev + (target-prev) * (1-exp(-blendSpeed*dt))`
+  - Blend speeds: accel=6, walk→run=4, decel=3, cinematic=8
+  - Устранён primary root cause: pose-restart stutter на idle→walk transitions
+- **🟠 Fix 2: Rotation-Camera Sync** — `playerMainMovement.ts` + `playerConstants.ts`
+  - ROTATION_SPEED: 10→8 (менее агрессивный, лучше синхронизируется с камерой)
+  - Новый ROTATION_SPEED_REVERSAL=4.5 для 180° разворотов (>45° yaw diff)
+  - GTA/Gothic-style: персонаж физически поворачивается вместо snap-дёргания
+- **🟡 Fix 3: Animation Hysteresis Widening** — `playerFinalizeFrame.ts`
+  - ANIM_UPPER_THRESHOLD: 0.5→0.6 (вход в locomotion)
+  - ANIM_LOWER_THRESHOLD: 0.25→0.15 (выход из locomotion)
+  - Band 0.45 m/s (был 0.25) — предотвращает idle↔walk flickering при KEYBOARD_ACCEL=50
+- **🟢 Fix 4: Walk Bob & Delta Consistency** — `applyCameraFrame.ts` + `playerFramePrepare.ts`
+  - WALK_BOB_AMPLITUDE: 0.012→0.006 (halved, меньше camera micro-jitter叠加)
+  - Physics delta cap: 0.05→0.1 (согласовано с camera delta, предотвращает desync)
+- TypeScript: 0 ошибок
+**Следующий шаг:** Фаза 7 — Система одежды/внешности
 
 ### Сессия: 2026-03-06 — "Phase 5.6: Asset Audit & LOD Pipeline Fix"
 **Что сделано:**
