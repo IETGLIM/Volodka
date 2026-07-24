@@ -183,6 +183,37 @@ export function resolveOutfitEmotion(tags: SocialPerceptionTag[]): NpcEmotion {
   return 'neutral';
 }
 
+/* ─── Karma → emotion mapping (Phase 12.3) ───
+ *
+ * Player karma influences how NPCs emotionally respond to proximity.
+ * High karma: NPCs are more respectful/curious, less fearful/annoyed.
+ * Low karma: NPCs are more fearful/annoyed, less respectful.
+ * Medium karma (35-65): no karma-based override — baseline behavior.
+ */
+
+/** Karma thresholds matching the global constants. */
+const KARMA_HIGH = 65;
+const KARMA_LOW = 35;
+
+/**
+ * Resolve an NPC emotion modifier based on player karma.
+ * Returns a lower-priority emotion that only applies when the NPC
+ * has no event-driven emotion active (i.e. weather, combat, poem).
+ *
+ * Priority: event-driven > karma > outfit > default neutral.
+ */
+export function getKarmaEmotionModifier(karma: number): NpcEmotion | null {
+  if (karma >= KARMA_HIGH) return 'respectful';
+  if (karma <= KARMA_LOW) return 'fearful';
+  return null; // Neutral range — no karma override
+}
+
+// Karma-aware triggers for the EMOTION_TRIGGERS map (used by reaction engine).
+export const KARMA_EMOTION_TRIGGERS: Record<string, NpcEmotionTrigger> = {
+  karma_high: { source: 'karma_high', emotion: 'respectful', duration: 0 },
+  karma_low: { source: 'karma_low', emotion: 'fearful', duration: 0 },
+};
+
 /* ─── Event source → emotion mapping ─── */
 
 export interface NpcEmotionTrigger {

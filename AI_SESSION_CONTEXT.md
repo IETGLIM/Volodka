@@ -13,7 +13,7 @@
 который находит стихи в серверном коде и обнаруживает, что слова меняют реальность.
 
 **Автор стихов:** Владимир Лебедев (правообладатель). Стихи НЕEDITABLE.
-**Версия:** v4.5.0
+**Версия:** v4.6.0
 **Деплой:** https://volodka.vercel.app/
 **Стек:** React 19 + Vite 6 + Three.js 0.172 + R3F 9 + Rapier 2.2 + Zustand 5 + Tailwind 4
 
@@ -263,7 +263,7 @@ Gothic (живой мир, NPC расписания), GTA (открытые пр
 - TypeScript: 0 ошибок
 **Следующий шаг:** Фаза 10 — TTS озвучивание или Фаза 12 — Музыкальное разнообразие
 
-### Сессия: 2026-07-23 — "Phase 9.1: NPC Emotional Reactions & Ambient Behaviors"
+### Сессия: 2026-07-24 — "Phase 12: Reactive World & Consequence System"
 **Коммит:** e7c9a4e7
 **Что сделано (12 файлов, +1248/-33 строк):**
 - **npcEmotionTypes.ts** — NpcEmotion type: 7 эмоций (neutral/curious/alarmed/contemplative/annoyed/respectful/fearful)
