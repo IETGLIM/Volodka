@@ -223,21 +223,47 @@ export function processGltfAsset({
       // Instead, LOD1/LOD2 use Draco-compressed geometry + texture resize.
       // This saves bandwidth while keeping animation-compatible geometry.
       //
-      // LOD1: Draco + 50% texture scale (texture-compress resize)
-      // LOD2: Draco + 25% texture scale
+      // gltf-transform 4.x moved --texture-compress/--texture-size to 'optimize' only,
+      // so we use a two-step approach: resize textures first, then Draco compress.
+      //
+      // LOD1: resize textures to 512px + Draco geometry compression
+      // LOD2: resize textures to 256px + Draco geometry compression
       console.log('\n  Skinned LOD: texture-resize strategy (geometry unchanged)');
+
+      const lod1ResizedTmp = `${paths.lod0}.lod1-resized.tmp.glb`;
+      const lod2ResizedTmp = `${paths.lod0}.lod2-resized.tmp.glb`;
+
+      // Step A: Resize textures for each LOD level
       runGltfTransform(
         root,
-        ['draco', paths.lod0, paths.lod1, '--texture-compress', 'resize', '--texture-size', '512'],
+        ['resize', paths.lod0, lod1ResizedTmp, '--width', '512', '--height', '512'],
+        `resize textures 512 → lod1-prep`,
+        { exitOnFail },
+      );
+      runGltfTransform(
+        root,
+        ['resize', paths.lod0, lod2ResizedTmp, '--width', '256', '--height', '256'],
+        `resize textures 256 → lod2-prep`,
+        { exitOnFail },
+      );
+
+      // Step B: Draco-compress the resized versions
+      runGltfTransform(
+        root,
+        ['draco', lod1ResizedTmp, paths.lod1],
         `lod1 (skinned) → ${rel(paths.lod1)} (draco+tex50%)`,
         { exitOnFail },
       );
       runGltfTransform(
         root,
-        ['draco', paths.lod0, paths.lod2, '--texture-compress', 'resize', '--texture-size', '256'],
+        ['draco', lod2ResizedTmp, paths.lod2],
         `lod2 (skinned) → ${rel(paths.lod2)} (draco+tex25%)`,
         { exitOnFail },
       );
+
+      // Clean up temp resized files
+      try { if (existsSync(lod1ResizedTmp)) unlinkSync(lod1ResizedTmp); } catch {}
+      try { if (existsSync(lod2ResizedTmp)) unlinkSync(lod2ResizedTmp); } catch {}
     } else {
       // ── Static mesh LOD strategy ──
       // Weld merges split vertices for cross-submesh simplification.
