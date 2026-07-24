@@ -257,8 +257,14 @@ export function DialogueRenderer() {
     [dialogueNodes, currentNodeId, dialoguePackVersion],
   );
   const resolvedText = useMemo(
-    () => (node ? resolveDialogueText(node, karma) : ''),
-    [node, karma],
+    () => {
+      if (!node) return '';
+      const npcRel = node.speakerId
+        ? npcRelations.find((r) => r.npcId === node.speakerId)?.value
+        : undefined;
+      return resolveDialogueText(node, karma, npcRel);
+    },
+    [node, karma, npcRelations],
   );
   const conditionCtx = useMemo(() => {
     const npcDef = node ? findNpcByName(node.speaker) : undefined;

@@ -39,6 +39,8 @@ function baseSnapshot(overrides: Partial<GameStoreSnapshot> = {}): GameStoreSnap
         unlockedPerks: [],
         perkPoints: 0,
       },
+      choiceLog: [],
+      moralChoices: [],
     },
     collectedPoems: [],
     quests: [],

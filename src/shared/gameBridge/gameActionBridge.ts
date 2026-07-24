@@ -61,6 +61,10 @@ export interface GameStoreSnapshot {
     };
     rngSeed?: number;
     combatEncounterSeq?: number;
+    /** JSON-stringified choice log (populated by narrativeChoiceExecutor). */
+    choiceLog: string[];
+    /** JSON-stringified moral choice log. */
+    moralChoices: string[];
   };
   collectedPoems: string[];
   quests: QuestState[];

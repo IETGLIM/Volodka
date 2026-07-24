@@ -5,6 +5,7 @@ import {
   buildNarrativeLiveMessage,
   resolveNarrativeText } from '@/shared/narrativePresentation';
 import { ALL_NPC_DEFINITIONS } from '@/data/allNpcDefinitions';
+import { sanitizePlainText } from '@/shared/utils/sanitizePlainText';
 
 export { DEFAULT_KARMA_THRESHOLDS } from '@/shared/narrativePresentation';
 
@@ -23,11 +24,36 @@ const DIALOGUE_RETURN_ENTRY_NODES: Readonly<Record<string, string>> = (() => {
   return map;
 })();
 
+/** Default relation thresholds for text variant selection. */
+const DEFAULT_RELATION_THRESHOLDS = { high: 60, low: 30 } as const;
+
 export function resolveDialogueText(
   node: Pick<DialogueNode, 'text' | 'textVariants' | 'karmaThresholds'>,
   karma: number,
+  npcRelation?: number,
 ): string {
-  return resolveNarrativeText(node, karma);
+  const variants = node.textVariants;
+  if (!variants) return resolveNarrativeText(node, karma);
+
+  // Priority: karma > relation > neutralKarma > default text.
+  // Karma is checked first (global player trait), then relation (per-NPC).
+  const karmaText = resolveNarrativeText(node, karma);
+  if (karmaText !== resolveNarrativeText({ ...node, textVariants: undefined }, karma)) {
+    // A karma variant was selected — it takes priority over relation.
+    return karmaText;
+  }
+
+  // No karma variant matched — check relation.
+  if (npcRelation !== undefined) {
+    if (npcRelation >= DEFAULT_RELATION_THRESHOLDS.high && variants.highRelation) {
+      return sanitizePlainText(variants.highRelation);
+    }
+    if (npcRelation <= DEFAULT_RELATION_THRESHOLDS.low && variants.lowRelation) {
+      return sanitizePlainText(variants.lowRelation);
+    }
+  }
+
+  return karmaText;
 }
 
 export function resolveDialogueEntryNodeId(

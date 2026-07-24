@@ -139,13 +139,16 @@ export function DiegeticDialogueHud() {
 
   const resolvedText = useMemo(() => {
     if (kind === 'dialogue' && dialogueNode) {
-      return resolveDialogueText(dialogueNode, karma);
+      const npcRel = dialogueNode.speakerId
+        ? dialogueCtx.npcRelations.find((r) => r.npcId === dialogueNode.speakerId)?.value
+        : undefined;
+      return resolveDialogueText(dialogueNode, karma, npcRel);
     }
     if (kind === 'story' && storyNode) {
       return resolveNarrativeText(storyNode, karma);
     }
     return '';
-  }, [kind, dialogueNode, storyNode, karma]);
+  }, [kind, dialogueNode, storyNode, karma, dialogueCtx.npcRelations]);
 
   const choices = useMemo(() => {
     if (kind === 'dialogue') return dialogueNode?.choices ?? [];

@@ -36,6 +36,8 @@ describe('applyEffects via bridges', () => {
           visitedNodes: [],
           equippedThoughtIds: [],
           progression: { level: 1, currentAct: 1, skillPoints: 0, unlockedSkills: [], unlockedPerks: [], perkPoints: 0 },
+          choiceLog: [],
+          moralChoices: [],
         },
         collectedPoems: [],
         quests: [],

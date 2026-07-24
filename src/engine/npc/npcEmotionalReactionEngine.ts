@@ -20,8 +20,10 @@ import type { SocialPerceptionTag } from '@/data/clothingCatalog';
 import {
   setNpcEmotion,
   clearNpcEmotion,
+  getNpcEmotion,
   resolveOutfitEmotion,
   resolveEmotionTrigger,
+  getKarmaEmotionModifier,
   EMOTION_TRIGGERS,
   decayNpcEmotions,
 } from '@/engine/npc/npcEmotionalReactions';
@@ -254,12 +256,18 @@ export function tickNpcProximityEmotions(
     const distSq = group.position.distanceToSquared(playerPosition);
 
     if (distSq <= proximitySq) {
-      // Player is close — set curious if no stronger emotion is active
-      // (curious is a low-priority emotion, so only set it when neutral)
-      const trigger = resolveEmotionTrigger('player_proximity');
-      if (trigger) {
-        setNpcEmotion(npcId, trigger.emotion, trigger.source, trigger.duration);
-        setHeadTrackingEmotion(npcId, trigger.emotion);
+      // Priority: event-driven > karma > proximity-curious.
+      // Only override when the NPC is currently neutral.
+      const currentEmotion = getNpcEmotion(npcId, now);
+      if (currentEmotion === 'neutral') {
+        const karmaEmotion = getKarmaEmotionModifier(snap.playerState.karma);
+        const effectiveEmotion = karmaEmotion ?? 'curious';
+        const source = karmaEmotion
+          ? (snap.playerState.karma >= 65 ? 'karma_high' : 'karma_low')
+          : 'player_proximity';
+        const duration = karmaEmotion ? 5000 : (resolveEmotionTrigger('player_proximity')?.duration ?? 5000);
+        setNpcEmotion(npcId, effectiveEmotion, source, duration);
+        setHeadTrackingEmotion(npcId, effectiveEmotion);
       }
     }
   }
