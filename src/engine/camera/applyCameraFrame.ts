@@ -29,11 +29,21 @@ const _camFwd = new THREE.Vector3();
 
 /* ── Walking head bob state ── */
 let _walkBobPhase = 0;
+// FIX 1.2: Smoothed delta for walk-bob phase accumulation. Phase-based
+// oscillators are extremely sensitive to per-frame delta variance — a 50fps
+// frame followed by a 60fps frame produces a visible phase jump that reads
+// as micro-jitter even when amplitude is small. We maintain a moving-average
+// delta so the phase advances uniformly regardless of frame rate variance.
+let _smoothedDelta = 1 / 60;
 const WALK_BOB_AMPLITUDE = 0.006; // 6mm vertical displacement (halved from 0.012 to reduce micro-jitter)
 const WALK_BOB_SPEED = 10;       // rad/s — matches walking pace
 const WALK_BOB_SPEED_THRESHOLD = 0.5; // minimum player speed to activate
 const WALK_BOB_SPEED_FULL = 3.0;     // speed at which bob is at full intensity
 const WALK_BOB_BLEND_SPEED = 4;       // how fast bob intensity transitions
+// Delta smoothing factor: low value = more smoothing (less responsive to spikes).
+// 0.15 means ~7 frames of history — enough to absorb frame drops without
+// making the bob lag visibly behind player movement.
+const WALK_BOB_DELTA_SMOOTH = 0.15;
 
 export interface PostModeFrameState {
   isInDialogue: boolean;
@@ -88,8 +98,17 @@ export function applyCameraFrame(
   if (!isInDialogue && !isCutscene && !isCombat && !isFpExploration) {
     const playerSpeed = playerVelocity.length();
 
-    // Accumulate bob phase based on time (always ticks so it stays in sync)
-    _walkBobPhase += WALK_BOB_SPEED * delta;
+    // FIX 1.2: Smooth the delta used for phase advance. Raw r3f delta at
+    // variable frame rates (50-60fps oscillation, occasional frame drops)
+    // produces uneven phase advance → `Math.sin(_walkBobPhase)` becomes
+    // non-uniform and reads as visible micro-jitter. The smoothed delta
+    // absorbs the per-frame variance while still tracking real time over
+    // a ~7-frame window. Prior Phase 5.5 halved the amplitude but didn't
+    // fix the uneven phase, so the jitter was reduced but not eliminated.
+    _smoothedDelta += (delta - _smoothedDelta) * WALK_BOB_DELTA_SMOOTH;
+
+    // Accumulate bob phase based on smoothed time (always ticks so it stays in sync)
+    _walkBobPhase += WALK_BOB_SPEED * _smoothedDelta;
 
     if (playerSpeed > WALK_BOB_SPEED_THRESHOLD) {
       // Smooth intensity ramp: 0 at threshold, 1.0 at full running speed
@@ -114,6 +133,8 @@ export function applyCameraFrame(
   } else {
     // Reset bob phase when not in exploration to avoid jarring snap on mode switch
     _walkBobPhase = 0;
+    // Also reset smoothed delta so it starts fresh on next exploration entry
+    _smoothedDelta = 1 / 60;
   }
 
   if (isFpExploration) {

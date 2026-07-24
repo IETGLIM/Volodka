@@ -1,3 +1,15 @@
+/* ─── FIX-1D (Phase 11.1 — TS error cleanup) ─────────────────────
+ *  Date: 2026-07-24
+ *  Changes:
+ *    - Split `CombatState` import to come from `@/shared/types/state/combat`
+ *      (it was incorrectly imported from `definitions/combat` in Phase 11).
+ *    - Use `snap.playerState.inventory` (cast to `{ id, quantity }[]`) instead
+ *      of the non-existent `snap.inventory` field on `GameStoreSnapshot`.
+ *  Effect: Resolves TS2305 (CombatState not exported), TS2339 (inventory
+ *  not on snapshot), and the cascading TS7006 implicit-any errors on the
+ *  filter/map callbacks (state.buffs / inventory items were untyped before).
+ * ─────────────────────────────────────────────────────────────────── */
+
 /* ─── Combat Consumables — Use Inventory Items During Combat ───
  *  Phase 11: Players can now use items from their inventory during combat.
  *  This adds strategic depth (like Persona/Disco Elysium consumables) and
@@ -14,7 +26,8 @@
  *  the player's turn (just like defend or poem_power), then the enemy acts.
  */
 
-import type { CombatState, CombatLogEntry } from '@/shared/types/definitions/combat';
+import type { CombatLogEntry } from '@/shared/types/definitions/combat';
+import type { CombatState } from '@/shared/types/state/combat';
 import { appendLog } from '@/engine/combat/types';
 import { createBuff, addBuff } from '@/engine/combat/buffSystem';
 import { getPlayerMaxHp } from '@/engine/combat/formulas';
@@ -159,14 +172,17 @@ export function findCombatConsumable(itemId: string): CombatConsumableEffect | u
 /** Check if the player has the required item in their inventory. */
 export function hasItemForCombat(itemId: string): boolean {
   const snap = getGameSnapshot();
-  const inventory = snap.inventory ?? [];
+  // FIX-1D: GameStoreSnapshot only exposes `playerState.inventory` as a limited
+  // `Array<{ id: string }>` view. Cast to the full shape so we can read `quantity`.
+  const inventory = (snap.playerState.inventory ?? []) as Array<{ id: string; quantity: number }>;
   return inventory.some(item => item.id === itemId && item.quantity > 0);
 }
 
 /** Get all consumables the player currently has in their inventory. */
 export function getAvailableCombatConsumables(): CombatConsumableEffect[] {
   const snap = getGameSnapshot();
-  const inventory = snap.inventory ?? [];
+  // FIX-1D: see `hasItemForCombat` — cast snapshot inventory to expose `quantity`.
+  const inventory = (snap.playerState.inventory ?? []) as Array<{ id: string; quantity: number }>;
   const availableIds = new Set(inventory.filter(i => i.quantity > 0).map(i => i.id));
   return COMBAT_CONSUMABLES.filter(c => availableIds.has(c.itemId));
 }

@@ -35,6 +35,8 @@ import {
   FOOTSTEP_INTERVAL,
   KEYBOARD_ACCEL,
   ROTATION_SPEED,
+  ROTATION_SPEED_REVERSAL,
+  ROTATION_REVERSAL_THRESHOLD,
   RUN_SPEED,
   WALK_SPEED,
 } from '@/engine/player/playerConstants';
@@ -319,22 +321,52 @@ export function SimplePlayer({
       const targetVx = moveDir.x * speed;
       const targetVz = moveDir.z * speed;
 
+      // FIX 1.6: Use damped velocity even for keyboard to avoid hard-snap
+      // "kicks" that the camera spring then has to chase (visible as a
+      // micro-twitch on every keypress). High stiffness (25) keeps it
+      // responsive while smoothing the edges.
       if (keyboardDrivesMove) {
-        vel.x = targetVx;
-        vel.z = targetVz;
+        const k = 25;
+        vel.x = THREE.MathUtils.damp(vel.x, targetVx, k, dt);
+        vel.z = THREE.MathUtils.damp(vel.z, targetVz, k, dt);
       } else {
         vel.x = THREE.MathUtils.damp(vel.x, targetVx, moveAccel, dt);
         vel.z = THREE.MathUtils.damp(vel.z, targetVz, moveAccel, dt);
       }
 
-      const targetYaw = Math.atan2(moveDir.x, moveDir.z);
-      // Frame-rate-independent rotation using exponential decay
-      const rotT = 1 - Math.exp(-ROTATION_SPEED * dt);
-      livePlayerRotationRef.current = lerpAngle(
-        livePlayerRotationRef.current,
-        targetYaw,
-        rotT,
-      );
+      // FIX 2.1 (CRITICAL): Gate rotation on forwardIntent so A/D strafe
+      // sideways WITHOUT spinning the model 360°. Mirrors the gating in
+      // playerMainMovement.ts:229-247 (the PhysicsPlayer path).
+      //
+      // Without this gate, pressing A alone sets moveDir = -camRight, then
+      // targetYaw = atan2(-camRight.x, -camRight.z) ≈ ±90°, the model
+      // rotates to face left, the auto-follow camera orbits to stay
+      // behind, next frame camRight is rotated, pressing A again produces
+      // a new world moveDir, model rotates again → continuous 360° spin.
+      //
+      // FIX 2.2: threshold raised from 0.01 to 0.1 to filter gamepad
+      // stick noise (typical 0.02-0.05) that leaked through the old
+      // 0.01 threshold and fired rotation during "strafe-only" intent.
+      const forwardIntent = fwd - bwd; // W = +1, S = -1, neither = 0
+      if (Math.abs(forwardIntent) > 0.1) {
+        const targetYaw = Math.atan2(moveDir.x, moveDir.z);
+        // GTA/Gothic-style: slower rotation for big direction reversals
+        // so the character physically turns around instead of snapping.
+        let yawDiff = targetYaw - livePlayerRotationRef.current;
+        while (yawDiff > Math.PI) yawDiff -= Math.PI * 2;
+        while (yawDiff < -Math.PI) yawDiff += Math.PI * 2;
+        const effectiveRotSpeed = Math.abs(yawDiff) > ROTATION_REVERSAL_THRESHOLD
+          ? ROTATION_SPEED_REVERSAL
+          : ROTATION_SPEED;
+        const rotT = 1 - Math.exp(-effectiveRotSpeed * dt);
+        livePlayerRotationRef.current = lerpAngle(
+          livePlayerRotationRef.current,
+          targetYaw,
+          rotT,
+        );
+      }
+      // Strafe-only movement (A/D without W/S) keeps current facing —
+      // the character steps sideways like in Gothic / Max Payne.
 
       const newAnim = running ? 'run' : 'walk';
       if (currentAnimRef.current !== newAnim) {

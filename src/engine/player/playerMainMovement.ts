@@ -227,7 +227,10 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
     // the "spinning in circles" bug because strafe doesn't change moveDir's
     // forward/backward component enough to flip the yaw.
     const forwardIntent = fwd - bwd; // W = +1, S = -1, neither = 0
-    if (Math.abs(forwardIntent) > 0.01) {
+    // FIX 2.2: threshold raised from 0.01 to 0.1 to filter gamepad stick
+    // noise (typical 0.02-0.05) that leaked through the old 0.01 threshold
+    // and fired rotation during "strafe-only" intent on the KCC path too.
+    if (Math.abs(forwardIntent) > 0.1) {
       // Face the movement direction. moveDir is already normalized to the
       // camera-relative horizontal movement vector.
       const targetYaw = Math.atan2(moveDir.x, moveDir.z);

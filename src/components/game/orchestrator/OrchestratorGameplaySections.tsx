@@ -58,7 +58,9 @@ import { DayNightCycleIndicator } from '../DayNightCycleIndicator';
 import { FloatingTextLayer } from '../FloatingText';
 import { ScreenEffects } from '../ScreenEffects';
 import { CutsceneOverlay } from '@/components/game/CutsceneOverlay';
-import { IntroWakeOverlay } from '@/components/game/IntroWakeOverlay';
+// FIX-C1: IntroWakeOverlay import removed — CutsceneOverlay now handles
+// the intro_wakeup cutscene's letterbox + skip + per-phase text. The
+// standalone IntroWakeOverlay component was deleted as dead code.
 import { PoetryPowerBar } from '@/components/game/PoetryPowerBar';
 import { PoemPowerEffect } from '@/components/game/PoemPowerEffect';
 import { PoemWorldEffect } from '@/components/game/poemWorldEffect/PoemWorldEffect';
@@ -217,13 +219,19 @@ export const GameplayScreenEffectsLayer = memo(function GameplayScreenEffectsLay
   return <ScreenEffects />;
 });
 
-/** Intro wake cinematic letterbox — only during intro_wakeup cutscene. */
-export const GameplayIntroWakeOverlay = memo(function GameplayIntroWakeOverlay() {
-  const cutsceneId = useActiveCutsceneId();
-  if (cutsceneId !== 'intro_wakeup') return null;
-
-  return <IntroWakeOverlay />;
-});
+// FIX-C1 (Phase 7.2 — Prologue/IntroWake duplicate-frame cleanup):
+// GameplayIntroWakeOverlay REMOVED. It was a pre-timeline standalone
+// overlay that rendered 7dvh letterbox bars + hardcoded "03:47 — писк
+// терминала" text + an ESC skip button during the intro_wakeup cutscene.
+// When CinematicTimelineRunner was added, CutsceneOverlay became the
+// generic handler for cutscene:overlay events and already renders 4dvh
+// 'thin' letterbox bars + the timeline's per-phase main text (which for
+// phase 1 is "Ты просыпаешься от назойливого писка терминала.") + a
+// "Пропустить" skip button. Both overlays were mounted simultaneously
+// during the entire 29s intro_wakeup cutscene, producing the visible
+// "double-thick letterbox + duplicate skip button" the user reported as
+// "duplicate frames in the prologue". The IntroWakeOverlay file itself
+// is also deleted as dead code.
 
 /**
  * Cutscene text overlay — mounted while a cutscene is active.
@@ -294,7 +302,8 @@ export const GameplaySharedEffects = memo(function GameplaySharedEffects() {
       <GameplayEventNotifications />
       <GameplayCombatVisualFx />
       <GameplayScreenEffectsLayer />
-      <GameplayIntroWakeOverlay />
+      {/* FIX-C1: <GameplayIntroWakeOverlay /> removed — CutsceneOverlay
+          below already handles the intro_wakeup letterbox + skip + text. */}
       <EncounterBeatOverlay />
       <GameplayCutsceneOverlay />
       <GameplayPoemReadingCutscene />

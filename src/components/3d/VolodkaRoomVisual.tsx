@@ -1,7 +1,7 @@
 
 /* ─── Volodka RPG – Volodka's room procedural 3D visual ─── */
 
-import { useMemo, useRef, useEffect, type MutableRefObject } from 'react';
+import { memo, useMemo, useRef, useEffect, type MutableRefObject } from 'react';
 import * as THREE from 'three';
 import { getSharedStandardMaterial, mat } from '@/engine/three/moduleMaterialRegistry';
 import {
@@ -21,7 +21,9 @@ import { useVolodkaRoomAnimations } from './sceneVisuals/volodkaRoom/useVolodkaR
 import { FlickeringCeilingLight } from './sceneVisuals/volodkaRoom/FlickeringCeilingLight';
 import { useMonitorGlitch } from './sceneVisuals/volodkaRoom/useMonitorGlitch';
 import { useZabbixAlertPulse } from './sceneVisuals/volodkaRoom/useZabbixAlertPulse';
-import { DustParticles } from './DustParticles';
+// FIX-B1: DustParticles import removed — VolodkaRoomVisual no longer renders
+// its own dust system. AtmosphericEffects' DustMotes already covers
+// volodka_room (it's in DUST_SCENES), so the duplicate system is gone.
 
 interface VolodkaRoomVisualProps {
   livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
@@ -223,7 +225,13 @@ function bookSpineMaterial(color: string) {
   return mat(color, { roughness: 0.6 });
 }
 
-export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRef }: VolodkaRoomVisualProps) {
+// FIX-B6 (Phase 7.2 — Volodka Room duplicate-frame cleanup):
+// Wrap VolodkaRoomVisual in memo() so that any incidental parent re-render
+// (e.g. from a Zustand store read elsewhere in the tree) does NOT cause
+// this heavy procedural-geometry component to reconcile. The component has
+// no internal useState and all its animation state lives in refs, so a
+// shallow props comparison is sufficient to prevent wasted renders.
+export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRef }: VolodkaRoomVisualProps) {
   // Canvas textures created synchronously via useMemo
   const floorTexture = useCachedCanvasTexture('volodka_room:floor', createFloorTexture);
   const wallTexture = useCachedCanvasTexture('volodka_room:wall', createWallTexture);
@@ -732,11 +740,18 @@ export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
       {/* ── Radiator on left wall near bed ── */}
       <Radiator position={[-W / 2 + 0.06, 0.3, 1.5]} rotation={[0, Math.PI / 2, 0]} color="#a0a0a0" />
 
-      {/* ── Atmospheric dust particles ── */}
-      <DustParticles />
+      {/* FIX-B1 (Phase 7.2 — Volodka Room duplicate-frame cleanup):
+          Removed <DustParticles /> — it was a SECOND dust particle system
+          running simultaneously with AtmosphericEffects' DustMotes (which
+          mounts automatically because 'volodka_room' is in DUST_SCENES).
+          Both wrote GPU buffers every frame, both rendered ~visible dust
+          motes. DustMotes is preferred because it has player-wake response
+          + mobile particle scaling; DustParticles is a static 400-particle
+          raw useFrame loop. Keeping DustMotes alone saves 400 particles
+          of per-frame BufferAttribute writes. */}
     </group>
   );
-}
+});
 
 /* ─── Canvas Texture Helpers ─── */
 

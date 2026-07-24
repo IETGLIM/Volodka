@@ -83,8 +83,15 @@ export const explorationStrategy: CameraModeStrategy = {
     offset.multiplyScalar(effectiveDistance);
 
     // ── Running FOV boost: widen FOV slightly when sprinting for speed feel ──
+    // FIX 1.3: `ctx.playerVelocity` is already in m/s (built in FollowCamera
+    // as `(playerPos - prevPlayerPos) * (1/delta)`). The previous code divided
+    // again by `ctx.delta`, giving m/s² — at 60fps with playerSpeed=4 m/s,
+    // speedMs was 240, so `t=1` and FOV was boosted +3° during ANY movement.
+    // This produced a constant +3° FOV pulse on movement start/stop. Use
+    // playerSpeed directly so RUN_FOV_BOOST actually engages only when
+    // sprinting (>5.5 m/s), as designed.
     const playerSpeed = ctx.playerVelocity.length();
-    const speedMs = ctx.delta > 0.0001 ? playerSpeed / ctx.delta : 0;
+    const speedMs = playerSpeed;
     let fovBoost = 0;
     if (speedMs > RUN_FOV_SPEED_MIN) {
       const t = Math.min(1, (speedMs - RUN_FOV_SPEED_MIN) / (RUN_FOV_SPEED_FULL - RUN_FOV_SPEED_MIN));

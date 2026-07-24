@@ -1,3 +1,16 @@
+/* ─── FIX-1D (Phase 11.1 — TS error cleanup) ─────────────────────
+ *  Date: 2026-07-24
+ *  Changes:
+ *    - Extended the `combat:action` event payload with an optional `itemId`
+ *      field so `CombatSystem.playerUseItem` can emit the consumed item ID
+ *      alongside the `use_item` action (previously rejected by TS2353).
+ *  Rationale: `combat:action` is the canonical per-turn action event; the
+ *  Phase 11 item-use path legitimately needs to surface the consumed item
+ *  so UI/animation listeners can react. Adding an optional field is the
+ *  cleanest fix and is fully backwards-compatible with existing emitters
+ *  that omit `itemId`.
+ * ─────────────────────────────────────────────────────────────────── */
+
 import type { EncounterContext } from '@/engine/combat/encounterTypes';
 import type { CombatAction, EnemyType, SceneId } from '@/shared/types/game';
 import type { CombatDpadDirection } from '@/engine/combat/combatGamepadMap';
@@ -8,7 +21,7 @@ export interface CombatEvents {
   'encounter:presentation_end': EncounterContext;
   'combat:start': { enemyType: EnemyType; encounterName?: string; encounterEmoji?: string };
   'combat:turn': { turn: number; isPlayerTurn: boolean };
-  'combat:action': { action: CombatAction; damage?: number };
+  'combat:action': { action: CombatAction; damage?: number; itemId?: string };
   'combat:victory': { enemyType: EnemyType; xpGained: number; karmaGained: number; creditsGained: number; lootItemId?: string };
   'combat:defeat': { enemyType: EnemyType; energyLost: number; karmaLost: number };
   'combat:fled': { enemyType: EnemyType };

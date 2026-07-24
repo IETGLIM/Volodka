@@ -101,6 +101,30 @@ export function useMixamoAnimationClips(
     const loader = new GLTFLoader();
     extendGltfLoader(loader);
 
+    // FIX 1.4: Coalesce per-clip setMixamoActions calls into a single batched
+    // flush. Previously, each of the 6 critical clips called setMixamoActions
+    // individually as it loaded (~1-2ms apart), triggering 6 React re-renders
+    // of CesiumPlayerModelInner during the first ~1-2s of gameplay. If the
+    // user started moving during this window, they saw model hitches. Now we
+    // accumulate loaded actions in a pending map and flush them via a single
+    // microtask queue, so all concurrent clip loads coalesce into 1 setState.
+    const pendingActions: Record<string, THREE.AnimationAction> = {};
+    let flushScheduled = false;
+    const scheduleFlush = (): void => {
+      if (flushScheduled) return;
+      flushScheduled = true;
+      queueMicrotask(() => {
+        flushScheduled = false;
+        if (cancelled) return;
+        if (Object.keys(pendingActions).length === 0) return;
+        setMixamoActions((prev) => ({ ...prev, ...pendingActions }));
+        // Move pending into the flushed map (so it's not re-flushed)
+        for (const key of Object.keys(pendingActions)) {
+          delete pendingActions[key];
+        }
+      });
+    };
+
     // ── Critical clips: load immediately in parallel (no gate, no scheduler) ──
     // These are needed for the core idle↔walk locomotion blend tree. Without
     // them the avatar has no walk cycle and slides in a static pose.
@@ -122,10 +146,8 @@ export function useMixamoAnimationClips(
           renamed.name = binding.canonicalName;
           const action = mixer.clipAction(renamed, root);
           action.enabled = true;
-          setMixamoActions((prev) => ({
-            ...prev,
-            [binding.canonicalName]: action,
-          }));
+          pendingActions[binding.canonicalName] = action;
+          scheduleFlush();
         } catch {
           // Clip missing on disk despite on-disk registry — skip.
         }
@@ -162,10 +184,8 @@ export function useMixamoAnimationClips(
               renamed.name = binding.canonicalName;
               const action = mixer.clipAction(renamed, root);
               action.enabled = true;
-              setMixamoActions((prev) => ({
-                ...prev,
-                [binding.canonicalName]: action,
-              }));
+              pendingActions[binding.canonicalName] = action;
+              scheduleFlush();
             } catch {
               // Clip missing on disk despite on-disk registry — skip until re-import.
             }

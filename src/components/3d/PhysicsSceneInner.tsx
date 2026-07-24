@@ -68,7 +68,23 @@ function PhysicsSceneInner({
     <Physics
       gravity={[0, GRAVITY, 0]}
       timeStep={1 / 60}
-      interpolate
+      // FIX 1.1: Disable Rapier interpolation for the kinematic player body.
+      // The player RigidBody is `type="kinematicPosition"` and its position
+      // is set imperatively every frame inside the KCC substep loop
+      // (physicsSubstep.ts). With `interpolate` enabled, @react-three/rapier
+      // lerps the visual rigid-body transform between physics steps, so the
+      // GLB avatar (child of <RigidBody>) is rendered at
+      // `lerp(prevPos, currentPos, alpha)` while the camera (driven by
+      // `livePlayerPositionRef = rb.translation()` from finalizePlayerFrame)
+      // is positioned at `currentPos`. The avatar lags the camera by one
+      // interpolation step → visible jitter/twitch during continuous movement,
+      // exactly matching the user's report ("model twitches like a rerender
+      // happens during movement"). Interpolation is designed for dynamic
+      // bodies moved by forces, not kinematic bodies moved imperatively.
+      // Other dynamic bodies in the scene (PatrollingCreeps, AmbientNPCs
+      // physics props) lose interpolation smoothness, but the player is the
+      // dominant focus — they are set directly via refs every frame anyway.
+      interpolate={false}
       debug={false}
       paused={physicsPaused}
       updatePriority={FRAME_PHYSICS_R3F_PRIORITY}

@@ -29,39 +29,27 @@ export interface EnvAnimation {
 // ─── Scene Animation Definitions ───
 
 const SCENE_ENV_ANIMATIONS: Partial<Record<SceneId, EnvAnimation[]>> = {
-  // ─── Volodka's Room: monitor scan + desk lamp flicker + CRT + lamp sway ───
-  volodka_room: [
-    {
-      id: 'monitor_flicker',
-      type: 'monitor_scan',
-      position: [0, 1.12, -2.68],
-      config: { speed: 2, intensity: 0.3 },
-    },
-    {
-      id: 'desk_lamp_flicker',
-      type: 'light_flicker',
-      position: [0.3, 1.5, -2.3],
-      config: { minIntensity: 0.3, maxIntensity: 0.6, flickerRate: 0.02 },
-    },
-    {
-      id: 'monitor_glow_pulse',
-      type: 'neon_pulse',
-      position: [0, 1.12, -2.68],
-      config: { colorR: 0, colorG: 1, colorB: 0.27, speed: 1.2, minEmissive: 0.3, maxEmissive: 0.9 },
-    },
-    {
-      id: 'crt_monitor_effect',
-      type: 'crt_monitor',
-      position: [0, 1.12, -2.68],
-      config: { baseIntensity: 4.0, pulseAmp: 0.1, pulseSpeed: 60, flickerChance: 0.005 },
-    },
-    {
-      id: 'hanging_lamp_sway',
-      type: 'lamp_sway',
-      position: [0, 2.8, -1.0],
-      config: { amplitude: 0.02, frequency: 0.5 },
-    },
-  ],
+  // ─── Volodka's Room ───
+  // FIX-B2/B3/B4 (Phase 7.2 — Volodka Room duplicate-frame cleanup):
+  // Previously this scene had 5 env-animation entries (monitor_flicker,
+  // desk_lamp_flicker, monitor_glow_pulse, crt_monitor_effect,
+  // hanging_lamp_sway) that ALL duplicated work already done by
+  // VolodkaRoomVisual.tsx itself:
+  //   • desk_lamp_flicker [0.3,1.5,-2.3] ≈ VolodkaRoomVisual's static
+  //     intensity-3.5 desk lamp at the same position → 2 lights rendered
+  //     at the same spot, one of them flickering 0.3-0.6 → visual jitter.
+  //   • hanging_lamp_sway [0,2.8,-1.0] ≈ FlickeringCeilingLight at
+  //     [0,2.85,-1] → 2 ceiling lights + a duplicate cord/shade/bulb
+  //     group rendered at the same spot, one of them swaying.
+  //   • monitor_flicker/monitor_glow_pulse/crt_monitor_effect all stack
+  //     3 overlay meshes on the terminal monitor at [0,1.12,-2.68] that
+  //     VolodkaRoomVisual already renders with its own useMonitorGlitch +
+  //     texture-scroll animation → 4 meshes at the same world position,
+  //     each writing emissiveIntensity every frame.
+  // Removing the entries eliminates 5 wasted useFrameTick callbacks,
+  // 4 duplicate point lights, 4 duplicate meshes, and the "monitor
+  // flicker fighting the terminal text" visual jitter.
+  volodka_room: [],
 
   // ─── Corridor: fluorescent flicker + drip ───
   volodka_corridor: [

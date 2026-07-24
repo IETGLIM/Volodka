@@ -1,3 +1,16 @@
+/* ─── FIX-1D (Phase 11.1 — TS error cleanup) ─────────────────────
+ *  Date: 2026-07-24
+ *  Changes:
+ *    - Extended the `BuffEffect.stat_drain` union to include `'empathy'`
+ *      alongside `'logic' | 'energy' | 'karma'`. Phase 11 enemies
+ *      (`grief_echo` Потеря Надежды, `memory_devourer` Поглощение Навыка)
+ *      apply empathy-drain debuffs; the prior type rejected them (TS2322).
+ *  Rationale: `empathy` is a valid `PlayerSkill` and is already used as a
+ *  drain target by `memory_wraith` (existing enemy) and the Phase 11
+ *  successors. `CombatSystem.transitionToPlayerTurn` has been updated to
+ *  handle the new `'empathy'` branch via `player/addSkill`.
+ * ─────────────────────────────────────────────────────────────────── */
+
 /* ─── Combat entity definitions ─── */
 
 import type { TrainablePlayerSkill } from './skills';
@@ -59,7 +72,7 @@ export type BuffEffect =
   | { type: 'damage_multiplier'; value: number }
   | { type: 'damage_reduction'; value: number }
   | { type: 'skip_turn' }
-  | { type: 'stat_drain'; stat: 'logic' | 'energy' | 'karma'; value: number }
+  | { type: 'stat_drain'; stat: 'logic' | 'energy' | 'karma' | 'empathy'; value: number }
   | { type: 'defense_boost'; value: number }
   | { type: 'attack_boost'; value: number }
   | { type: 'hp_drain_percent'; value: number }

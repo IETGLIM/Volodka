@@ -13,7 +13,7 @@
 который находит стихи в серверном коде и обнаруживает, что слова меняют реальность.
 
 **Автор стихов:** Владимир Лебедев (правообладатель). Стихи НЕEDITABLE.
-**Версия:** v4.4.0
+**Версия:** v4.5.0
 **Деплой:** https://volodka.vercel.app/
 **Стек:** React 19 + Vite 6 + Three.js 0.172 + R3F 9 + Rapier 2.2 + Zustand 5 + Tailwind 4
 
@@ -165,11 +165,13 @@ Gothic (живой мир, NPC расписания), GTA (открытые пр
 - [x] **Фаза 6.5: DE-style dialogue systems** — thought interjection, white/red checks, partial success, thought-gated choices
 - [x] **Фаза 6.6: Thought→Combat bridge** — equipped thoughts affect attack/defense/crit/flee/combo/HP
 - [x] **Фаза 7.1: Критический фикс дёргания модели (v2)** — weight-based blend tree, rotation reversal, hysteresis widening, walk bob reduction
+- [x] **Фаза 7.2: Deep-fix jitter + 360° rotation + Volodka Room & Prologue duplicate-frame cleanup (v3)** — Rapier interpolate disabled, walk-bob delta smoothing, FOV unit bug, Mixamo clip coalescing, SimplePlayer strafe gate, Volodka Room env-anim dedup, IntroWakeOverlay dead-code removal
 - [x] **Фаза 7: Система одежды/внешности** — 6 слотов, 20 предметов, social perception tags, DialogueModifier, ClothingTab UI
 - [ ] **Фаза 8: Улучшенные 3D модели** — AI3DGen для ключевых NPC и окружения
 - [x] **Фаза 9.1: NPC эмоциональные реакции** — 7 эмоций, idle variants, proximity awareness, EventBus bridge, emotion-linked barks
 - [ ] **Фаза 10: TTS озвучивание** — ключевые сцены и диалоги
 - [x] **Фаза 11: Полировка боевой системы** — affinity system, 6 new enemies (20 total), combo decay, combat consumables, bullet time
+- [x] **Фаза 11.1: TS error cleanup** — 12 pre-existing errors fixed (combatConsumables, combatEvents, enemyVisualRegistry, BuffEffect, CombatSystem)
 - [ ] **Фаза 12: Музыкальное разнообразие** — уникальные темы для каждого акта
 - [ ] **Фаза 13: Мобильная оптимизация** — touch-контроли, виртуальный джойстик
 - [ ] **Фаза 14: Балансировка** — сложность, экономика, квестовая прогрессия
@@ -178,6 +180,47 @@ Gothic (живой мир, NPC расписания), GTA (открытые пр
 ---
 
 ## 📝 История сессий
+
+### Сессия: 2026-07-24 — "Phase 7.2: Deep-fix jitter + 360° rotation + Volodka Room & Prologue duplicate-frame cleanup (v3)"
+**Что сделано (16 файлов, ~+450/-220 строк):**
+
+Пользователь (Володька) сообщил что после Phase 5.5 и Phase 7.1 модель всё ещё дёргается при движении, а управление крутит по кругу вместо шага в сторону. Также просил проверить дубликаты кадров и ререндеры в volodka room и прологе. Проведено 3 параллельных глубоких аудита (Task IDs 1-A/1-B/1-C), найдены конкретные root cause'ы, применены точечные фиксы.
+
+**Bug #2 (вращение вместо стрейфа) — ROOT CAUSE:**
+- **FIX 2.1 (CRITICAL): `SimplePlayer.tsx`** — fallback-путь (когда Rapier WASM не загрузился) вообще НЕ имел strafe-gate'а. При нажатии A/D модель безусловно поворачивалась к moveDir через `Math.atan2(moveDir.x, moveDir.z)`, а камера в `applyCameraFrame.ts` автоследовала за новым facing'ом → игрок+камера ко-вращались → 360° spin на месте. Добавлен тот же `forwardIntent`-гейт что в `playerMainMovement.ts:229-247`, плюс reversal-логика GTA/Gothic-style.
+- **FIX 2.2: `playerMainMovement.ts` + `SimplePlayer.tsx`** — порог `forwardIntent` поднят с `0.01` до `0.1`. Старый 0.01 пропускал геймпадный стик-шум 0.02-0.05 и стрелял ротацией при "strafe-only" интенте.
+
+**Bug #1 (дёргание модели при движении) — ROOT CAUSES:**
+- **FIX 1.1 (HIGHEST IMPACT): `PhysicsSceneInner.tsx`** — `interpolate={false}` на `<Physics>`. Player RigidBody — `type="kinematicPosition"`, KCC вызывает `rb.setTranslation(...)` 1-4 раза/кадр в `physicsSubstep.ts`. С `interpolate` enabled @react-three/rapier лерпил визуальный трансформ между physics steps → GLB avatar рендерился на `lerp(prevPos, curPos, α)`, а камера (`livePlayerPositionRef = rb.translation()`) стояла на `curPos` → avatar лагал на один interpolation step → видимый твитч. Это transform-sync проблема, не React-rerender — Phase 5.5/7.1 её не починили потому что трогали spring/bob/delta-clamp, а не interpolation. Trade-off: другие dynamic bodies (PatrollingCreeps, AmbientNPCs props) теряют interpolation smoothness, но player — доминирующий фокус.
+- **FIX 1.2: `applyCameraFrame.ts`** — `_walkBobPhase` теперь копит smoothed delta (`_smoothedDelta += (delta - _smoothedDelta) * 0.15`). Phase-based осцилляторы крайне чувствительны к вариациям delta — 50fps+60fps кадры дают видимый phase jump даже при маленькой амплитуде. Phase 5.5 только halved amplitude, не фиксила uneven phase advance.
+- **FIX 1.3: `explorationStrategy.ts:87`** — `speedMs = playerSpeed / ctx.delta` → `speedMs = playerSpeed`. `ctx.playerVelocity` уже в m/s (построен в FollowCamera как `(pos - prevPos)/delta`), повторное деление на delta давало m/s². При 60fps + playerSpeed=4 m/s → speedMs=240, `t=1`, FOV буст +3° на ЛЮБОМ движении.
+- **FIX 1.4: `useMixamoAnimationClips.ts`** — 6 отдельных `setMixamoActions` вызовов (по одному на critical clip load) коалесированы в один batched flush через `queueMicrotask` + pending map. Раньше: 6 re-render'ов CesiumPlayerModelInner в первые 1-2s игры → если игрок начинал двигаться в этом окне, модель hitch'ила.
+- **FIX 1.6: `SimplePlayer.tsx:322-324`** — keyboard velocity теперь damped (stiffness 25) вместо hard-snap. Hard-snap давал instant velocity change который camera spring должен был догонять — видимый "kick" на каждое нажатие клавиши.
+
+**Volodka Room duplicate-frame cleanup (Task 1-B):**
+Найдены 4 HIGH-severity duplicate-frame source'а — все дублировали работу которую VolodkaRoomVisual уже делает сама:
+- **FIX-B1: `VolodkaRoomVisual.tsx`** — удалён `<DustParticles />` (400 частиц, raw useFrame). AtmosphericEffects'ный `DustMotes` (50 частиц, useFrameTick('weather'), player-wake, mobile scaling) уже покрывает volodka_room. Оба писали GPU-буферы каждый кадр.
+- **FIX-B2/B3/B4: `EnvironmentalAnimations.ts`** — удалены все 5 env-animation записей для volodka_room (`monitor_flicker`, `desk_lamp_flicker`, `monitor_glow_pulse`, `crt_monitor_effect`, `hanging_lamp_sway`). Все 5 дублировали VolodkaRoomVisual's собственные: desk lamp at `[0.3,1.5,-2.3]`, FlickeringCeilingLight at `[0,2.85,-1]`, terminal monitor with useMonitorGlitch + texture-scroll. После удаления: -4 duplicate point lights, -4 duplicate meshes, -5 wasted useFrameTick callbacks, -1 "monitor flicker fighting terminal text" visual jitter.
+- **FIX-B5: `sceneDefinitions.ts`** — удалён bedside accent light at `[-1.5,2.0,2.0]` (дублировал VolodkaRoomVisual's bed fill at `[-1.5,1.8,2.5]`, 0.5m apart).
+- **FIX-B6: `VolodkaRoomVisual.tsx`** — обёрнут в `memo()` для defensive hardening против incidental parent re-renders.
+
+**Prologue/IntroWake duplicate-frame cleanup (Task 1-C):**
+- **FIX-C1 (CRITICAL): `OrchestratorGameplaySections.tsx` + `IntroWakeOverlay.tsx` (DELETED)** — во время всего 29s intro_wakeup cutscene ОДНОВРЕМЕННО монтировались ДВЕ letterbox-overlay системы: standalone `IntroWakeOverlay` (7dvh letterbox + hardcoded "03:47 — писк терминала" + ESC skip) И generic `CutsceneOverlay` (4dvh 'thin' letterbox + timeline's per-phase main text + "Пропустить" skip). Это и было "duplicate frames in the prologue". Standalone overlay — pre-timeline legacy code, оставшийся после добавления CinematicTimelineRunner. Удалён `GameplayIntroWakeOverlay` компонент, его mount в `GameplaySharedEffects`, import, и сам файл `IntroWakeOverlay.tsx` (159 строк dead code). CutsceneOverlay уже рендерит phase 1's text "Ты просыпаешься от назойливого писка терминала." — никакой контент не потерян.
+
+**Pre-existing TS error cleanup (Task 1-D):**
+- Phase 11 оставила проект в состоянии с 12 TypeScript ошибок (блокировали Vercel build `node scripts/tsc7.mjs -b`). Все 12 исправлены в 5 файлах:
+  - `combatConsumables.ts` — CombatState import перенесён из `definitions/combat` в `state/combat`; `snap.inventory` → `snap.playerState.inventory as Array<{id,quantity}>`.
+  - `combatEvents.ts` — добавлено `itemId?: string` в `combat:action` event payload type.
+  - `enemyVisualRegistry.ts` — добавлены 6 EnemyVisualSpec для новых Phase 11 enemy types (corporate_ai, grief_echo, memory_devourer, network_spy, quantum_ghost, rust_sentinel).
+  - `combat.ts` — расширен `BuffEffect.stat_drain` union до `'empathy'` (также чинит 2 errors в enemies.ts).
+  - `CombatSystem.ts` — обновлён cast + добавлена `'empathy'` ветка в per-turn stat-drain handler (latent runtime bug: empathy-drain debuffs от grief_echo/memory_devourer ранее no-op'или).
+
+**Verification:**
+- `bun run typecheck` → 0 ошибок ✅
+- `npx vite build` → 41s, 0 ошибок ✅ (предупреждения о chunk size — pre-existing, informational)
+- ESLint — локально не запускается (incompatibility между @typescript-eslint и TS7), но Vercel build не запускает lint (`vercel.json: buildCommand = "node scripts/tsc7.mjs -b && npx vite build"`)
+
+**Следующий шаг:** Пользовательский QA на https://volodka.vercel.app/ — проверить что (1) модель больше не дёргается при движении, (2) A/D делает шаг в сторону вместо вращения, (3) volodka room визуально чище без дубликатов, (4) пролог показывает только одну letterbox + один skip button. Затем — Фаза 8 (Улучшенные 3D модели) или Фаза 10 (TTS озвучивание).
 
 ### Сессия: 2026-07-24 — "Phase 11: Combat Polish — Affinity System + New Enemies + Consumables + Bullet Time"
 **Что сделано (10 файлов, ~600+ строк):**

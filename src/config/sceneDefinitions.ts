@@ -65,8 +65,13 @@ export const volodka_room_def: SceneDefinition = {
     { position: [1.5, 1.3, -3.0], intensity: 2.0, color: '#20ee90', distance: 8 },
     // Warm ceiling lamp — boosted so the player can actually see the room
     { position: [0, 2.5, 0], intensity: 2.2, color: '#ffaa55', distance: 9 },
-    // Bedside accent — slightly brighter for readability
-    { position: [-1.5, 2.0, 2.0], intensity: 0.9, color: '#6655aa', distance: 6 },
+    // FIX-B5 (Phase 7.2 — Volodka Room duplicate-frame cleanup):
+    // Removed the bedside accent at [-1.5, 2.0, 2.0] — VolodkaRoomVisual
+    // already renders a bed fill light at [-1.5, 1.8, 2.5] (0.5m apart),
+    // making these two lights visually redundant. Removing the scene-def
+    // duplicate cuts ~1 point light from the per-frame forward-render
+    // loop without losing the bed-area illumination (VolodkaRoomVisual's
+    // bed fill covers it).
     // Cold blue "moonlight through curtain" rim light — cold-warm contrast
     { position: [2.3, 2.2, 1.5], intensity: 0.6, color: '#4466aa', distance: 7 },
   ],

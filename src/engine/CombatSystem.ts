@@ -1,3 +1,17 @@
+/* ─── FIX-1D (Phase 11.1 — TS error cleanup) ─────────────────────
+ *  Date: 2026-07-24
+ *  Changes:
+ *    - Updated the `stat_drain` cast in `transitionToPlayerTurn` to include
+ *      `'empathy'` (mirrors the `BuffEffect` union extension in
+ *      `shared/types/definitions/combat.ts`).
+ *    - Added a new `'empathy'` branch in the per-turn stat-drain handler
+ *      that drains `playerState.skills.empathy` via `player/addSkill` —
+ *      matching the existing `'logic'` branch.
+ *  Effect: Phase 11 enemies (`grief_echo`, `memory_devourer`) which apply
+ *  `stat_drain: empathy` debuffs now correctly tick down the player's
+ *  empathy stat each turn instead of silently no-oping.
+ * ─────────────────────────────────────────────────────────────────── */
+
 /* ─── Volodka RPG – Turn-based Combat System (Orchestrator) ───
    Бой — это не только сила. Это мудрость.
    Each collected poem = unique combat ability.
@@ -800,7 +814,8 @@ function transitionToPlayerTurn(state: CombatState): void {
   let playerHpAfterDrain = afterBuffTick.playerHp;
   for (const buff of afterBuffTick.buffs) {
     if (buff.target === 'player' && buff.effect.type === 'stat_drain') {
-      const eff = buff.effect as { type: 'stat_drain'; stat: 'logic' | 'energy' | 'karma'; value: number };
+      // FIX-1D: cast extended to include 'empathy' (matches BuffEffect union).
+      const eff = buff.effect as { type: 'stat_drain'; stat: 'logic' | 'energy' | 'karma' | 'empathy'; value: number };
       const snap = getGameSnapshot();
       if (eff.stat === 'energy') {
         const current = snap.playerState.energy ?? 0;
@@ -817,6 +832,12 @@ function transitionToPlayerTurn(state: CombatState): void {
         const drainAmount = Math.min(eff.value, currentLogic);
         dispatchGameAction({ type: 'player/addSkill', skill: 'logic', amount: -drainAmount });
         drainLog.push({ turn: afterBuffTick.turn, text: `💀 ${buff.name}: Логика -${drainAmount}`, type: 'info' });
+      } else if (eff.stat === 'empathy') {
+        // FIX-1D: Phase 11 empathy drain (grief_echo, memory_devourer).
+        const currentEmpathy = snap.playerState.skills.empathy;
+        const drainAmount = Math.min(eff.value, currentEmpathy);
+        dispatchGameAction({ type: 'player/addSkill', skill: 'empathy', amount: -drainAmount });
+        drainLog.push({ turn: afterBuffTick.turn, text: `💀 ${buff.name}: Эмпатия -${drainAmount}`, type: 'info' });
       }
     }
     /* ── Enhanced: Process hp_drain_percent (Цифровая лихорадка) ── */
