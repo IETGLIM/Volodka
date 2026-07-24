@@ -7,6 +7,7 @@ import {
 } from '@/shared/gameBridge/stateDispatcher';
 import { requestSceneTransitionFromBridge } from '@/shared/gameBridge/sceneTransitionBridge';
 import { resolveCanonicalNpcId } from '@/shared/npcIdAliases';
+import { propagateFactionRelationChange } from '@/engine/npc/factionPropagation';
 import type { StoryEffect, TrainablePlayerSkill, EnemyType, SceneId } from '@/shared/types/game';
 
 /**
@@ -78,6 +79,8 @@ export function applyEffects(
             npcId,
             delta: fx.npcChange.relation,
           });
+          // Phase 12.2: Propagate diluted relation change to faction-mates.
+          propagateFactionRelationChange(npcId, fx.npcChange.relation);
           if (Math.abs(fx.npcChange.relation) >= 5) {
             emitAppEvent('choice:made', {
               karmaChange: 0,
