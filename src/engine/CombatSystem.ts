@@ -59,6 +59,12 @@ import {
   consumeSideEffects,
   checkPoemPowerCombo,
 } from './combat/actions';
+import {
+  resolveActionChannel,
+  applyAffinityToDamage,
+  AFFINITY_LABELS,
+  type DamageChannel,
+} from './combat/combatAffinities';
 
 // ── Re-export types so existing imports of CombatSystem don't break ──
 export type {
@@ -437,19 +443,40 @@ export function playerAttack(): CombatState | null {
     damage = applyCritMultiplier(damage);
   }
 
+  /* ── Phase 11: Affinity System — elemental weakness/resistance ──
+   *  Standard attacks use 'physical' channel. Apply the affinity multiplier
+   *  from the enemy's type matchup table. Super-effective = 2×, resisted = 0.7×,
+   *  immune = 0 damage. Adds strategic depth like Persona/Disco Elysium. */
+  const attackChannel = resolveActionChannel('attack');
+  const affinityResult = applyAffinityToDamage(damage, cs.enemy.type, attackChannel);
+  damage = affinityResult.damage;
+
+  // Affinity label for log entry — "Суперэффективно!" / "Сильное сопротивление" / "Иммунитет"
+  const affinityLabel = affinityResult.label;
+
   const newEnemyHp = Math.max(0, cs.enemy.hp - damage);
 
   const logEntry: CombatLogEntry = {
     turn: cs.turn,
     text: isCritical
-      ? `⚔️💥 КРИТИЧЕСКИЙ УДАР! ${damage} урона!`
+      ? `⚔️💥 КРИТИЧЕСКИЙ УДАР! ${damage} урона!${affinityLabel ? ' ' + affinityLabel : ''}`
       : comboMultiplier > 1.0
-        ? `⚔️🔥 Комбо x${newComboCount}! ${damage} урона!`
-        : `⚔️ Атака! ${damage} урона!`,
-    type: isCritical ? 'critical_hit' : comboMultiplier > 1.0 ? 'combo_hit' : 'player_attack',
+        ? `⚔️🔥 Комбо x${newComboCount}! ${damage} урона!${affinityLabel ? ' ' + affinityLabel : ''}`
+        : affinityLabel
+          ? `⚔️ ${damage} урона! ${affinityLabel}`
+          : `⚔️ Атака! ${damage} урона!`,
+    type: affinityResult.multiplier >= 2.0
+      ? 'affinity_super'
+      : affinityResult.multiplier <= 0.0
+        ? 'affinity_immune'
+        : affinityResult.multiplier < 1.0
+          ? 'affinity_weak'
+          : isCritical ? 'critical_hit' : comboMultiplier > 1.0 ? 'combo_hit' : 'player_attack',
     damage,
     isCritical,
-    comboCount: newComboCount };
+    comboCount: newComboCount,
+    affinityMultiplier: affinityResult.multiplier,
+    damageChannel: attackChannel };
 
   const newMaxCombo = Math.max(cs.maxCombo, newComboCount);
 
@@ -466,6 +493,19 @@ export function playerAttack(): CombatState | null {
 
   eventBus.emit('combat:action', { action: 'attack', damage });
   eventBus.emit('camera:combat_impact', { intensity: isCritical ? 0.6 : 0.3 });
+
+  /* ── Phase 11: Max Payne-style slow motion on critical/super-effective hits ──
+   *  When a critical hit or super-effective affinity occurs, emit a "bullet time"
+   *  event that slows the camera and animation for ~0.3s. This creates the
+   *  cinematic "impact freeze" feel from Max Payne / Cyberpunk 2077. */
+  if (isCritical || affinityResult.multiplier >= 2.0) {
+    eventBus.emit('combat:bullet_time', {
+      duration: 0.3,         // slow-motion window in seconds
+      intensity: isCritical && affinityResult.multiplier >= 2.0 ? 0.15 : 0.25,  // timeScale (lower = slower)
+      reason: isCritical ? 'critical_hit' : 'affinity_super',
+    });
+  }
+
   notifyCombatDamage(logEntry);
 
   // Check victory
@@ -673,8 +713,58 @@ export function playerFlee(): CombatState | null {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   §8 — ENEMY TURN (with special attacks & buff processing)
+   §7.5 — USE ITEM (Phase 11: Combat Consumables)
+   Player uses an inventory item during combat. This takes the
+   player's turn (like defend/flee), then the enemy acts.
    ═══════════════════════════════════════════════════════════════ */
+
+import {
+  findCombatConsumable,
+  consumeCombatItem,
+  getAvailableCombatConsumables,
+} from './combat/combatConsumables';
+
+export function playerUseItem(itemId: string): CombatState | null {
+  const cs = combat.getState();
+  if (!cs || cs.status !== 'active' || !cs.isPlayerTurn) return cs ?? null;
+
+  const consumable = findCombatConsumable(itemId);
+  if (!consumable) {
+    // Item not defined as a combat consumable — log and skip
+    combat.setState({
+      ...cs,
+      log: appendLog(cs.log, { turn: cs.turn, text: `❌ ${itemId} нельзя использовать в бою!`, type: 'info' }),
+    });
+    combat.notifyListeners();
+    return combat.getState()!;
+  }
+
+  // Execute the consumable effect on combat state
+  const nextState = consumable.execute(cs);
+
+  // Consume the item from inventory if marked as consumed
+  if (consumable.consumes) {
+    consumeCombatItem(itemId);
+  }
+
+  combat.setState(nextState);
+  combat.notifyListeners();
+
+  eventBus.emit('combat:action', { action: 'use_item', itemId });
+
+  return endPlayerTurn();
+}
+
+/** Get all consumable items the player can use in combat right now.
+ *  Returns array of { itemId, name, emoji, description } for UI rendering. */
+export function getAvailableCombatItems(): Array<{ itemId: string; name: string; emoji: string; description: string }> {
+  return getAvailableCombatConsumables().map(c => ({
+    itemId: c.itemId,
+    name: c.name,
+    emoji: c.emoji,
+    description: c.description,
+  }));
+}
 
 function endPlayerTurn(): CombatState {
   const cs = combat.getState();
@@ -965,7 +1055,10 @@ function executeEnemyTurn() {
     ...workingState,
     playerHp: newPlayerHp,
     playerDefending: false,
-    comboCount: 0, // Taking damage resets combo
+    // Phase 11: Combo decay — instead of instant reset, decay by 2 levels.
+    // This makes combo building less punishing and rewards sustained aggression.
+    // Only fully resets if combo was at 0 or 1 (no meaningful combo to preserve).
+    comboCount: Math.max(0, workingState.comboCount - 2),
     enemyDefenseReduction: getEnemyDefenseReduction(workingState),
     enemy: {
       ...workingState.enemy,

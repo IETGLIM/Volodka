@@ -949,6 +949,348 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
       'Страж деактивирован. Периметр нарушен.',
     ],
   },
+  /* ─── Phase 11: 6 New Enemy Types (20 total) ─── */
+  network_spy: {
+    type: 'network_spy',
+    name: 'Сетевой Шпион',
+    emoji: '🔍',
+    description: 'Невидимый наблюдатель — крадёт информацию и дезориентирует',
+    baseHp: 45,
+    baseAttack: 8,
+    baseDefense: 3,
+    baseSpeed: 12,
+    targetsStat: 'logic',
+    lootTable: ['spy_report', 'code_fragment', 'nano_patch'],
+    xpReward: 32,
+    specialAttacks: [
+      {
+        id: 'spy_data_extraction',
+        name: 'Извлечение Данных',
+        description: 'Крадёт навык и передаёт врагу',
+        chance: 0.3,
+        cooldown: 3,
+        execute: (state, enemy) => {
+          const buff = createBuff(state, 'Извлечение Данных', 'spy_data_extraction', 'debuff', 'player', 2, { type: 'stat_drain', stat: 'logic', value: 3 });
+          const s = addBuff(state, buff);
+          const eBuff = createBuff(s, 'Данные: атака', 'spy_data_extraction_atk', 'buff', 'enemy', 2, { type: 'attack_boost', value: 3 });
+          const s2 = addBuff(s, eBuff);
+          return { ...s2, log: [...s2.log, { turn: state.turn, text: `${enemy.emoji} Извлечение Данных! Ваша логика -3, враг +3 атака!`, type: 'enemy_special' as const }] };
+        },
+      },
+      {
+        id: 'spy misinformation',
+        name: 'Дезинформация',
+        description: 'Создает ложные данные, снижая интуицию',
+        chance: 0.25,
+        cooldown: 4,
+        execute: (state, enemy) => {
+          const buff = createBuff(state, 'Дезинформация', 'spy_misinformation', 'debuff', 'player', 2, { type: 'stat_drain', stat: 'karma', value: 4 });
+          const s = addBuff(state, buff);
+          return { ...s, log: [...s.log, { turn: state.turn, text: `${enemy.emoji} Дезинформация! Ваша карма -4 на 2 хода!`, type: 'enemy_special' as const }] };
+        },
+      },
+    ],
+    attackBarks: [
+      'Я видел ваши данные. Они — мои.',
+      'Сеть знает всё. И я знаю вас.',
+    ],
+    defeatBarks: [
+      'Шпион... теряет... связь...',
+      'Передача... прекращена... навсегда...',
+    ],
+  },
+  quantum_ghost: {
+    type: 'quantum_ghost',
+    name: 'Квантовый Призрак',
+    emoji: '⚛️',
+    description: 'Нестабильная квантовая сущность — непредсказуемая и смертоносная',
+    baseHp: 35,
+    baseAttack: 14,
+    baseDefense: 2,
+    baseSpeed: 16,
+    targetsStat: 'logic',
+    lootTable: ['quantum_fragment', 'code_fragment', 'energy_drink'],
+    xpReward: 42,
+    specialAttacks: [
+      {
+        id: 'quantum_superposition',
+        name: 'Суперпозиция',
+        description: 'Атакует дважды с разной интенсивностью — квантовая неопределённость',
+        chance: 0.35,
+        cooldown: 3,
+        execute: (state, enemy) => {
+          const effectiveAttack = enemy.attack + getEnemyAttackBoost(state);
+          // First hit: 0.6 multiplier
+          const roll1 = rollEnemyDamage(state, { attack: effectiveAttack, multiplier: 0.6 });
+          let dmg1 = roll1.damage;
+          // Second hit: 0.8 multiplier (quantum fluctuation)
+          const roll2 = rollEnemyDamage(roll1.state, { attack: effectiveAttack, multiplier: 0.8 });
+          let dmg2 = roll2.damage;
+          let nextState = roll2.state;
+          const qSnapshot = getGameSnapshot();
+          dmg1 = scaleEnemyDamageByDifficulty(dmg1, undefined, qSnapshot.playerState.progression.currentAct, qSnapshot.playerState.progression.level);
+          dmg2 = scaleEnemyDamageByDifficulty(dmg2, undefined, qSnapshot.playerState.progression.currentAct, qSnapshot.playerState.progression.level);
+          const playerDmgReduction = getPlayerDamageReduction(nextState);
+          if (playerDmgReduction > 0) { dmg1 = scaleDamageByFraction(dmg1, playerDmgReduction, 'reduction'); dmg2 = scaleDamageByFraction(dmg2, playerDmgReduction, 'reduction'); }
+          const playerVulnerability = getPlayerVulnerability(nextState);
+          if (playerVulnerability > 0) { dmg1 = scaleDamageByFraction(dmg1, playerVulnerability, 'vulnerability'); dmg2 = scaleDamageByFraction(dmg2, playerVulnerability, 'vulnerability'); }
+          const totalDamage = dmg1 + dmg2;
+          const newPlayerHp = Math.max(0, nextState.playerHp - totalDamage);
+          return { ...nextState, playerHp: newPlayerHp, log: [...nextState.log, { turn: state.turn, text: `${enemy.emoji} Суперпозиция! Двойная атака: -${dmg1} + -${dmg2} = -${totalDamage} HP!`, type: 'enemy_special' as const, damage: totalDamage }] };
+        },
+      },
+      {
+        id: 'quantum_entangle',
+        name: 'Квантовая Связь',
+        description: 'Связывает состояния — ваш дебафф усиливает врага',
+        chance: 0.2,
+        cooldown: 5,
+        execute: (state, enemy) => {
+          const playerDebuffs = state.buffs.filter(b => b.target === 'player' && b.kind === 'debuff');
+          const eBuff = createBuff(state, 'Квантовая Связь', 'quantum_entangle', 'buff', 'enemy', 2, { type: 'attack_boost', value: Math.max(2, playerDebuffs.length * 3) });
+          const s = addBuff(state, eBuff);
+          return { ...s, log: [...s.log, { turn: state.turn, text: `${enemy.emoji} Квантовая Связь! Враг absorbs ваши слабости: +${Math.max(2, playerDebuffs.length * 3)} атака!`, type: 'enemy_special' as const }] };
+        },
+      },
+    ],
+    attackBarks: [
+      'Я существую и не существую одновременно.',
+      'Квантовая неопределённость — ваш враг.',
+    ],
+    defeatBarks: [
+      'Суперпозиция... коллапсирует...',
+      'Вероятность... становится... нулём...',
+    ],
+  },
+  grief_echo: {
+    type: 'grief_echo',
+    name: 'Эхо Скорби',
+    emoji: '😔',
+    description: 'Осколок невыносимой боли — питается эмоциями и подавляет дух',
+    baseHp: 55,
+    baseAttack: 6,
+    baseDefense: 5,
+    baseSpeed: 7,
+    targetsStat: 'empathy',
+    lootTable: ['herbal_tea', 'comfort_letter', 'poem_fragment'],
+    xpReward: 38,
+    specialAttacks: [
+      {
+        id: 'grief_overwhelm',
+        name: 'Потеря Надежды',
+        description: 'Подавляет дух — дрейн энергии и стресс',
+        chance: 0.3,
+        cooldown: 3,
+        execute: (state, enemy) => {
+          const buff1 = createBuff(state, 'Потеря Надежды: энергия', 'grief_overwhelm_energy', 'debuff', 'player', 2, { type: 'stat_drain', stat: 'energy', value: 4 });
+          let s = addBuff(state, buff1);
+          const buff2 = createBuff(s, 'Потеря Надежды: эмпатия', 'grief_overwhelm_empathy', 'debuff', 'player', 2, { type: 'stat_drain', stat: 'empathy', value: 3 });
+          s = addBuff(s, buff2);
+          return { ...s, _sideEffects: [{ type: 'addStress', value: 8 } as SideEffect], log: [...s.log, { turn: state.turn, text: `${enemy.emoji} Потеря Надежды! Энергия -4, эмпатия -3, стресс +8!`, type: 'enemy_special' as const }] };
+        },
+      },
+      {
+        id: 'grief_mirror',
+        name: 'Зеркало Скорби',
+        description: 'Отражает ваш стресс как физический урон',
+        chance: 0.25,
+        cooldown: 4,
+        execute: (state, enemy) => {
+          const gSnapshot = getGameSnapshot();
+          const stress = gSnapshot.playerState.stress;
+          let damage = Math.floor(stress * 0.2);
+          damage = scaleEnemyDamageByDifficulty(damage, undefined, gSnapshot.playerState.progression.currentAct, gSnapshot.playerState.progression.level);
+          const playerDmgReduction = getPlayerDamageReduction(state);
+          if (playerDmgReduction > 0) damage = scaleDamageByFraction(damage, playerDmgReduction, 'reduction');
+          damage = Math.max(1, damage);
+          const newPlayerHp = Math.max(0, state.playerHp - damage);
+          return { ...state, playerHp: newPlayerHp, log: [...state.log, { turn: state.turn, text: `${enemy.emoji} Зеркало Скорби! Ваш стресс (${stress}) обращается в -${damage} HP!`, type: 'enemy_special' as const, damage }] };
+        },
+      },
+    ],
+    attackBarks: [
+      'Ваша боль... моя сила...',
+      'Плачь. Я выпью ваши слёзы.',
+    ],
+    defeatBarks: [
+      'Скорбь... наконец... растворяется...',
+      'Эхо... замолкает... в тишине...',
+    ],
+  },
+  corporate_ai: {
+    type: 'corporate_ai',
+    name: 'Корпоративный ИИ',
+    emoji: '🤖',
+    description: 'Алгоритмический oppressor — оптимизирован для уничтожения',
+    baseHp: 70,
+    baseAttack: 12,
+    baseDefense: 8,
+    baseSpeed: 10,
+    targetsStat: 'logic',
+    lootTable: ['ai_core', 'data_chip', 'combat_stim'],
+    xpReward: 50,
+    specialAttacks: [
+      {
+        id: 'ai_optimize',
+        name: 'Оптимизация Уничтожения',
+        description: 'Увеличивает атаку и снижает вашу защиту',
+        chance: 0.3,
+        cooldown: 3,
+        execute: (state, enemy) => {
+          const eBuff = createBuff(state, 'Оптимизация: атака', 'ai_optimize_atk', 'buff', 'enemy', 2, { type: 'attack_boost', value: 5 });
+          let s = addBuff(state, eBuff);
+          const pDebuff = createBuff(s, 'Оптимизация: дебафф защиты', 'ai_optimize_def', 'debuff', 'player', 2, { type: 'defense_reduction', value: 0.3 });
+          s = addBuff(s, pDebuff);
+          return { ...s, log: [...s.log, { turn: state.turn, text: `${enemy.emoji} Оптимизация Уничтожения! Враг +5 атака, ваша защита -30%!`, type: 'enemy_special' as const }] };
+        },
+      },
+      {
+        id: 'ai_predict',
+        name: 'Предиктивная Анализ',
+        description: 'Вычисляет ваши действия — снижает шанс крита и комбо',
+        chance: 0.2,
+        cooldown: 4,
+        execute: (state, enemy) => {
+          // Reset combo — AI predicts and counters
+          const newCombo = Math.max(0, state.comboCount - 2); // decay by 2 instead of full reset
+          const buff = createBuff(state, 'Предиктивная Анализ', 'ai_predict', 'debuff', 'player', 2, { type: 'silence_specials' });
+          const s = addBuff(state, buff);
+          return { ...s, comboCount: newCombo, log: [...s.log, { turn: state.turn, text: `${enemy.emoji} Предиктивная Анализ! Комбо снижено до ${newCombo}, стихи заблокированы на 2 хода!`, type: 'enemy_special' as const }] };
+        },
+      },
+    ],
+    attackBarks: [
+      'Оптимизация завершена. Уничтожение — единственный выход.',
+      'Ваше поведение предсказуемо. Ваши действия — неэффективны.',
+    ],
+    defeatBarks: [
+      'Ошибка... оптимизация... невозможна...',
+      'Алгоритм... прекращает... выполнение...',
+    ],
+  },
+  rust_sentinel: {
+    type: 'rust_sentinel',
+    name: 'Ржавый Страж',
+    emoji: '⚙️',
+    description: 'Деградированный старый протокол — всё ещё опасный, но хрупкий',
+    baseHp: 60,
+    baseAttack: 10,
+    baseDefense: 6,
+    baseSpeed: 4,
+    targetsStat: 'energy',
+    lootTable: ['rust_scrap', 'old_circuit', 'coffee'],
+    xpReward: 28,
+    specialAttacks: [
+      {
+        id: 'rust_corrode',
+        name: 'Коррозия',
+        description: 'Деградация — снижает вашу защиту на 25%',
+        chance: 0.3,
+        cooldown: 3,
+        execute: (state, enemy) => {
+          const debuff = createBuff(state, 'Коррозия', 'rust_corrode', 'debuff', 'player', 2, { type: 'defense_reduction', value: 0.25 });
+          const s = addBuff(state, debuff);
+          return { ...s, log: [...s.log, { turn: state.turn, text: `${enemy.emoji} Коррозия! Ваша защита снижена на 25%!`, type: 'enemy_special' as const }] };
+        },
+      },
+      {
+        id: 'rust_overload',
+        name: 'Перегрузка Систем',
+        description: 'Самоповреждающаяся атака — мощная, но снижает вражескую HP',
+        chance: 0.2,
+        cooldown: 4,
+        execute: (state, enemy) => {
+          const effectiveAttack = enemy.attack + getEnemyAttackBoost(state);
+          const rolled = rollEnemyDamage(state, { attack: effectiveAttack, multiplier: 1.8 });
+          let damage = rolled.damage;
+          let nextState = rolled.state;
+          const rSnapshot = getGameSnapshot();
+          damage = scaleEnemyDamageByDifficulty(damage, undefined, rSnapshot.playerState.progression.currentAct, rSnapshot.playerState.progression.level);
+          const playerDmgReduction = getPlayerDamageReduction(nextState);
+          if (playerDmgReduction > 0) damage = scaleDamageByFraction(damage, playerDmgReduction, 'reduction');
+          // Sentinel damages itself too — 10% of its current HP
+          const selfDamage = Math.max(1, Math.floor(enemy.hp * 0.1));
+          const newEnemyHp = Math.max(1, nextState.enemy.hp - selfDamage);
+          const newPlayerHp = Math.max(0, nextState.playerHp - damage);
+          return { ...nextState, playerHp: newPlayerHp, enemy: { ...nextState.enemy, hp: newEnemyHp }, log: [...nextState.log, { turn: state.turn, text: `${enemy.emoji} Перегрузка Систем! -${damage} HP вам, -${selfDamage} HP себе!`, type: 'enemy_special' as const, damage }] };
+        },
+      },
+    ],
+    attackBarks: [
+      'Старый протокол... всё ещё... функционален...',
+      'Ржавчина... не слабость... а... опыт...',
+    ],
+    defeatBarks: [
+      'Системы... окончательно... деградированы...',
+      'Ржавый... страж... становится... пылью...',
+    ],
+  },
+  memory_devourer: {
+    type: 'memory_devourer',
+    name: 'Пожиратель Памяти',
+    emoji: '🫠',
+    description: 'Хищник идентичности — стирает навыки и воспоминания',
+    baseHp: 75,
+    baseAttack: 13,
+    baseDefense: 7,
+    baseSpeed: 6,
+    targetsStat: 'empathy',
+    lootTable: ['memory_crystal', 'poem_fragment', 'herbal_tea'],
+    xpReward: 58,
+    specialAttacks: [
+      {
+        id: 'devourer_consume',
+        name: 'Поглощение Навыка',
+        description: 'Крадёт навык и превращает в урон',
+        chance: 0.3,
+        cooldown: 3,
+        execute: (state, enemy) => {
+          const dSnapshot = getGameSnapshot();
+          // Drain highest player skill
+          const skills = dSnapshot.playerState.skills;
+          const maxSkill = Math.max(skills.logic, skills.coding, skills.empathy, skills.writing, skills.intuition, skills.persuasion);
+          let damage = Math.floor(maxSkill * 0.5);
+          damage = scaleEnemyDamageByDifficulty(damage, undefined, dSnapshot.playerState.progression.currentAct, dSnapshot.playerState.progression.level);
+          damage = Math.max(1, damage);
+          const playerDmgReduction = getPlayerDamageReduction(state);
+          if (playerDmgReduction > 0) damage = scaleDamageByFraction(damage, playerDmgReduction, 'reduction');
+          const newPlayerHp = Math.max(0, state.playerHp - damage);
+          const debuff = createBuff(state, 'Поглощение Навыка', 'devourer_consume', 'debuff', 'player', 3, { type: 'stat_drain', stat: 'empathy', value: 5 });
+          const s = addBuff(state, debuff);
+          return { ...s, playerHp: newPlayerHp, _sideEffects: [{ type: 'addSkill', skill: 'empathy', value: -2 } as SideEffect], log: [...s.log, { turn: state.turn, text: `${enemy.emoji} Поглощение Навыка! -${damage} HP, эмпатия дрейн!`, type: 'enemy_special' as const, damage }] };
+        },
+      },
+      {
+        id: 'devourer_identity_erase',
+        name: 'Стирание Идентичности',
+        description: 'Критический удар — стирает баффы и комбо',
+        chance: 0.2,
+        cooldown: 5,
+        execute: (state, enemy) => {
+          const effectiveAttack = enemy.attack + getEnemyAttackBoost(state);
+          const rolled = rollEnemyDamage(state, { attack: effectiveAttack, multiplier: 1.5 });
+          let damage = rolled.damage;
+          let nextState = rolled.state;
+          const dSnapshot2 = getGameSnapshot();
+          damage = scaleEnemyDamageByDifficulty(damage, undefined, dSnapshot2.playerState.progression.currentAct, dSnapshot2.playerState.progression.level);
+          const playerDmgReduction = getPlayerDamageReduction(nextState);
+          if (playerDmgReduction > 0) damage = scaleDamageByFraction(damage, playerDmgReduction, 'reduction');
+          // Erase player buffs
+          const remainingBuffs = nextState.buffs.filter(b => b.target !== 'player' || b.kind === 'debuff');
+          const newPlayerHp = Math.max(0, nextState.playerHp - damage);
+          return { ...nextState, playerHp: newPlayerHp, buffs: remainingBuffs, comboCount: 0, log: [...nextState.log, { turn: state.turn, text: `${enemy.emoji} Стирание Идентичности! -${damage} HP, ваши усиления стёрты, комбо = 0!`, type: 'enemy_special' as const, damage }] };
+        },
+      },
+    ],
+    attackBarks: [
+      'Ваша идентичность... моя пища...',
+      'Я помню то, что вы забыли. И я это заберу.',
+    ],
+    defeatBarks: [
+      'Пожиратель... теряет... последнюю... память...',
+      'Идентичность... не может... быть... стёрта... полностью...',
+    ],
+  },
 };
 
 /* ═══════════════════════════════════════════════════════════════
@@ -967,7 +1309,7 @@ export function resolveEnemyType(requestedType: EnemyType): EnemyType {
   const playerLevel = snapshot.playerState.progression.level;
   const currentAct = snapshot.playerState.progression.currentAct;
 
-  // Phase restrictions by act and level
+  // Phase restrictions by act and level (Phase 11: +6 new types)
   const PHASE_UNLOCKS: Partial<Record<EnemyType, { minLevel: number; minAct: number }>> = {
     system_daemon: { minLevel: 1, minAct: 1 },
     corporate_golem: { minLevel: 1, minAct: 1 },
@@ -983,6 +1325,13 @@ export function resolveEnemyType(requestedType: EnemyType): EnemyType {
     poetry_hunter: { minLevel: 5, minAct: 2 },
     nexus_guardian: { minLevel: 8, minAct: 6 },
     void_echo: { minLevel: 7, minAct: 6 },
+    // Phase 11: New enemy availability
+    rust_sentinel: { minLevel: 1, minAct: 1 },      // Available from start — old degraded tech
+    network_spy: { minLevel: 2, minAct: 2 },         // Act 2+: surveillance theme
+    grief_echo: { minLevel: 1, minAct: 2 },          // Act 2+: emotional theme
+    quantum_ghost: { minLevel: 4, minAct: 3 },       // Act 3+: advanced data entities
+    corporate_ai: { minLevel: 5, minAct: 4 },        // Act 4+: late-game AI
+    memory_devourer: { minLevel: 6, minAct: 5 },     // Act 5+: endgame identity threat
   };
 
   const unlock = PHASE_UNLOCKS[requestedType];
@@ -1015,8 +1364,8 @@ export function pickEnemyForCurrentState(): EnemyType {
   const level = snapshot.playerState.progression.level;
   const act = snapshot.playerState.progression.currentAct;
 
-  // Base pool — always available
-  const pool: EnemyType[] = ['system_daemon', 'corporate_golem', 'corporate_drone'];
+  // Base pool — always available (Phase 11: +rust_sentinel as degraded old tech)
+  const pool: EnemyType[] = ['system_daemon', 'corporate_golem', 'corporate_drone', 'rust_sentinel'];
 
   // Act 1+ level 2+
   if (level >= 2) pool.push('censor_drone');
@@ -1024,15 +1373,28 @@ export function pickEnemyForCurrentState(): EnemyType {
   // Act 1+ level 3+
   if (level >= 3) pool.push('shadow_agent');
 
-  // Act 2+ enemies
+  // Act 2+ enemies (Phase 11: +network_spy, grief_echo)
   if (act >= 2) {
     pool.push('data_phantom', 'code_inquisitor', 'data_wraith', 'memory_wraith');
+    if (level >= 2) pool.push('network_spy');
+    pool.push('grief_echo');
     if (level >= 5) pool.push('poetry_hunter');
   }
 
-  // Act 3+ enemies
+  // Act 3+ enemies (Phase 11: +quantum_ghost)
   if (act >= 3) {
     if (level >= 3) pool.push('guild_enforcer', 'firewall_guardian');
+    if (level >= 4) pool.push('quantum_ghost');
+  }
+
+  // Act 4+ enemies (Phase 11: +corporate_ai)
+  if (act >= 4) {
+    if (level >= 5) pool.push('corporate_ai');
+  }
+
+  // Act 5+ enemies (Phase 11: +memory_devourer)
+  if (act >= 5) {
+    if (level >= 6) pool.push('memory_devourer');
   }
 
   // Late-game enemies

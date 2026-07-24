@@ -1063,6 +1063,10 @@ export function updateSceneTransition(
 
 let globalTimeScale = 1.0;
 
+/** Pre-globalTimeScale value before bullet time — restored after duration expires. */
+let preBulletTimeScale = 1.0;
+let bulletTimeTimer = 0;
+
 export function setGlobalTimeScale(scale: number): void {
   globalTimeScale = scale;
 }
@@ -1072,9 +1076,32 @@ export function getGlobalTimeScale(): number {
 }
 
 export function applyTimeScale(delta: number): number {
+  // ── Phase 11: Bullet time recovery ──
+  // If bullet time is active, tick the timer and restore normal speed when expired
+  if (bulletTimeTimer > 0) {
+    bulletTimeTimer -= delta;
+    if (bulletTimeTimer <= 0) {
+      bulletTimeTimer = 0;
+      globalTimeScale = preBulletTimeScale;
+    }
+  }
   return delta * globalTimeScale;
 }
 
 export function resetGlobalTimeScale(): void {
   globalTimeScale = 1.0;
+  bulletTimeTimer = 0;
+  preBulletTimeScale = 1.0;
+}
+
+/* ── Phase 11: Bullet Time (Max Payne-style slow motion) ──
+ *  Temporarily reduces globalTimeScale for cinematic impact moments.
+ *  Called when a critical hit or super-effective affinity hit occurs.
+ *  Duration: how long the slow motion lasts (seconds)
+ *  Intensity: the target timeScale during bullet time (0.15 = very slow, 0.25 = moderate)
+ *  After the duration expires, timeScale smoothly recovers to its previous value. */
+export function enterBulletTime(duration: number, intensity: number): void {
+  preBulletTimeScale = globalTimeScale;
+  globalTimeScale = intensity;
+  bulletTimeTimer = duration;
 }

@@ -25,4 +25,8 @@ export interface CombatEvents {
   'combat:gamepad_poem_cycle_next': Record<string, never>;
   'combat:gamepad_poem_use_selected': Record<string, never>;
   'combat:gamepad_dpad_nav': { direction: CombatDpadDirection };
+  /** Phase 11: Max Payne-style bullet time slow motion — slows camera/animation on critical/super-effective hits. */
+  'combat:bullet_time': { duration: number; intensity: number; reason: 'critical_hit' | 'affinity_super' };
+  /** Phase 11: Combat consumable item used — for UI animation feedback. */
+  'combat:item_used': { itemId: string; name: string; emoji: string };
 }

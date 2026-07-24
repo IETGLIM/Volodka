@@ -60,6 +60,7 @@ import {
   acquireCameraOwnership,
   releaseCameraOwnership,
 } from './cameraOwnerState';
+import { enterBulletTime } from './cinematicCamera';
 import { isCinematicTimelineActive } from '@/engine/cinematic/cinematicTimelineOrchestrator';
 import { sharedCameraYawRef } from '@/engine/PlayerRotationState';
 import { eventBus } from '@/engine/EventBus';
@@ -746,6 +747,14 @@ export function subscribeCameraEventHub(options: CameraEventHubOptions): () => v
 
   unsubs.push(eventBus.on('camera:combat_shake', ({ intensity }) => {
     if (subsystems.combat.current) triggerCombatShake(subsystems.combat.current, intensity);
+  }));
+
+  /* ── Phase 11: Bullet Time handler — Max Payne-style slow motion ──
+   *  When combat:bullet_time event fires (from critical/super-effective hits),
+   *  call enterBulletTime() which temporarily reduces globalTimeScale.
+   *  The applyTimeScale() function in cinematicCamera.ts handles recovery. */
+  unsubs.push(eventBus.on('combat:bullet_time', ({ duration, intensity }) => {
+    enterBulletTime(duration, intensity);
   }));
 
   unsubs.push(eventBus.on('camera:npc_cutscene_start', ({ waypoints, npcId }) => {

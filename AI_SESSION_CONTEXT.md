@@ -102,9 +102,13 @@ Gothic (живой мир, NPC расписания), GTA (открытые пр
 | Файл | Назначение |
 |------|-----------|
 | `src/engine/skillCheck/diceRollSkillCheck.ts` | Dice-roll система (2d6) |
-| `src/engine/combat/CombatSystem.ts` | Пошаговый бой |
+| `src/engine/combat/CombatSystem.ts` | Пошаговый бой (оркестратор) |
+| `src/engine/combat/combatAffinities.ts` | **Phase 11** — Elemental weakness/resistance system |
+| `src/engine/combat/combatConsumables.ts` | **Phase 11** — Combat consumable items (5 items) |
+| `src/engine/combat/enemies.ts` | Enemy templates (20 types) + special attacks |
+| `src/engine/combat/formulas.ts` | Damage formulas, player stats, cooldowns |
 | `src/engine/narrative/` | Система нарратива |
-| `src/engine/camera/` | Камера и стратегии |
+| `src/engine/camera/cinematicCamera.ts` | Камера, spring, bullet time |
 | `src/engine/audio/` | Процедурный звук |
 
 ### Store
@@ -165,7 +169,7 @@ Gothic (живой мир, NPC расписания), GTA (открытые пр
 - [ ] **Фаза 8: Улучшенные 3D модели** — AI3DGen для ключевых NPC и окружения
 - [x] **Фаза 9.1: NPC эмоциональные реакции** — 7 эмоций, idle variants, proximity awareness, EventBus bridge, emotion-linked barks
 - [ ] **Фаза 10: TTS озвучивание** — ключевые сцены и диалоги
-- [ ] **Фаза 11: Полировка боевой системы** — больше врагов, тактики, окружение
+- [x] **Фаза 11: Полировка боевой системы** — affinity system, 6 new enemies (20 total), combo decay, combat consumables, bullet time
 - [ ] **Фаза 12: Музыкальное разнообразие** — уникальные темы для каждого акта
 - [ ] **Фаза 13: Мобильная оптимизация** — touch-контроли, виртуальный джойстик
 - [ ] **Фаза 14: Балансировка** — сложность, экономика, квестовая прогрессия
@@ -174,6 +178,47 @@ Gothic (живой мир, NPC расписания), GTA (открытые пр
 ---
 
 ## 📝 История сессий
+
+### Сессия: 2026-07-24 — "Phase 11: Combat Polish — Affinity System + New Enemies + Consumables + Bullet Time"
+**Что сделано (10 файлов, ~600+ строк):**
+- **combatAffinities.ts** — Elemental weakness/resistance system (Persona/Disco Elysium-style)
+  - 6 damage channels: code, logic, empathy, intuition, writing, physical
+  - Affinity multipliers: 2.0 (super effective), 1.5 (effective), 1.0 (neutral), 0.7/0.5 (resist), 0.0 (immune)
+  - 20 enemy affinity maps — each has ≥1 weakness and ≥1 resistance
+  - Design: daemons weak to code, ghosts immune to physical, censors weak to writing
+  - Poem→damage channel mapping (23 poems → thematic channels)
+  - Russian labels + cyberPalette colors for UI display
+  - API: resolveAffinityMultiplier(), getEnemyWeaknesses(), getEnemyResistances(), applyAffinityToDamage()
+- **6 new enemy types** (14→20 total):
+  - Сетевой Шпион (network_spy) — Act 2+, data extraction/misinformation specials
+  - Квантовый Призрак (quantum_ghost) — Act 3+, superposition double-attack, quantum entangle
+  - Эхо Скорби (grief_echo) — Act 2+, stress-based damage mirror, overwhelm debuffs
+  - Корпоративный ИИ (corporate_ai) — Act 4+, optimization buffs, predictive silence
+  - Ржавый Страж (rust_sentinel) — Act 1+, corrosion debuff, self-damaging overload
+  - Пожиратель Памяти (memory_devourer) — Act 5+, skill drain, identity erase (wipes buffs+combo)
+- **Combo decay** — damage now decays combo by -2 instead of instant reset
+  - Makes combo building less punishing, rewards sustained aggression (Gothic/DE-style)
+- **Combat consumables** (combatConsumables.ts) — 5 usable items during combat:
+  - energy_drink: +20 HP, +5 attack 2 turns
+  - combat_stim: +8 attack 3 turns, +5 stress
+  - nano_patch: +15 HP, remove 1 debuff
+  - herbal_tea: +10 HP, -8 stress, +3 defense
+  - coffee: +4 attack 2 turns, +3 stress
+  - New action type: 'use_item' (takes player turn like defend/flee)
+  - playerUseItem(itemId) exported from CombatSystem
+- **Max Payne bullet time** — cinematic slow-motion on critical/super-effective hits
+  - enterBulletTime() in cinematicCamera.ts — temporarily reduces globalTimeScale
+  - 0.3s duration, 0.15 intensity for double crit+super, 0.25 for single
+  - Camera state machine subscribes to combat:bullet_time event
+- **Affinity integration in CombatSystem** — player attacks apply affinity multiplier
+  - Log entries show affinity labels ("Суперэффективно!", "Иммунитет!")
+  - New log types: affinity_super, affinity_weak, affinity_immune
+- **CombatAction extended** — 'use_item' added
+- **CombatLogEntry extended** — affinityMultiplier, damageChannel, itemId fields
+- **combatEvents.ts** — combat:bullet_time, combat:item_used event types
+- **resolveEnemyType/pickEnemyForCurrentState** — updated for 6 new enemy phase unlocks
+- TypeScript: 0 ошибок
+**Следующий шаг:** Фаза 10 — TTS озвучивание или Фаза 12 — Музыкальное разнообразие
 
 ### Сессия: 2026-07-23 — "Phase 9.1: NPC Emotional Reactions & Ambient Behaviors"
 **Коммит:** e7c9a4e7
