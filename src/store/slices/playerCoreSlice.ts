@@ -69,6 +69,10 @@ export interface PlayerCoreSliceActions {
   bumpCombatEncounterSeq: () => void;
   /** Override master RNG seed (dev / test reproducibility). */
   setRngSeed: (seed: number) => void;
+  /** Record a player choice in the persistent choice log. */
+  logChoice: (nodeId: string, choiceText: string, kind: 'story' | 'dialogue') => void;
+  /** Record a morally significant choice. */
+  logMoralChoice: (nodeId: string, choiceText: string) => void;
   /** Batched player + notification updates (single set pass) for cross-slice reward flows. */
   applyPlayerRewardBatch: (
     apply: (draft: RewardBatchDraft, sideEffects: RewardBatchSideEffects) => void,
@@ -316,6 +320,23 @@ export const createPlayerCoreSlice: StateCreator<
         rngSeed: seed >>> 0,
       },
     })),
+
+  logChoice: (nodeId, choiceText, kind) =>
+    set((state) => {
+      // Cap at 500 entries to prevent unbounded growth across 120h playthroughs.
+      const log = state.playerState.choiceLog;
+      const entry = JSON.stringify({ n: nodeId, t: choiceText, k: kind, ts: Date.now() });
+      const updated = log.length >= 500 ? [...log.slice(-499), entry] : [...log, entry];
+      return { playerState: { ...state.playerState, choiceLog: updated } };
+    }),
+
+  logMoralChoice: (nodeId, choiceText) =>
+    set((state) => {
+      const mc = state.playerState.moralChoices;
+      const entry = JSON.stringify({ n: nodeId, t: choiceText, ts: Date.now() });
+      const updated = mc.length >= 200 ? [...mc.slice(-199), entry] : [...mc, entry];
+      return { playerState: { ...state.playerState, moralChoices: updated } };
+    }),
 
   applyPlayerRewardBatch: (apply) => {
     const sideEffects = createRewardBatchSideEffects();

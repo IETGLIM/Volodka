@@ -68,6 +68,8 @@ export function applyGameAction(_state: GameStoreState, action: GameAction): voi
     case 'player/setNpcRelation':
       world.setNpcRelation(action.npcId, action.delta);
       break;
+    case 'player/logChoice': player.logChoice(action.nodeId, action.choiceText, action.kind); break;
+    case 'player/logMoralChoice': player.logMoralChoice(action.nodeId, action.choiceText); break;
     case 'poem/upsertTTLFlag': player.upsertActiveTTLFlag(action.flag); break;
     case 'poem/upsertTTLFlags': player.upsertActiveTTLFlags(action.flags); break;
     case 'poem/removeTTLFlags': player.removeActiveTTLFlags(action.keys); break;

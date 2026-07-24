@@ -104,6 +104,8 @@ export type GameAction =
   | { type: 'player/setRngSeed'; seed: number }
   | { type: 'player/bumpCombatEncounterSeq' }
   | { type: 'player/setNpcRelation'; npcId: string; delta: number }
+  | { type: 'player/logChoice'; nodeId: string; choiceText: string; kind: 'story' | 'dialogue' }
+  | { type: 'player/logMoralChoice'; nodeId: string; choiceText: string }
   | { type: 'poem/upsertTTLFlag'; flag: ActiveTTLFlagSnapshot }
   | { type: 'poem/upsertTTLFlags'; flags: ActiveTTLFlagSnapshot[] }
   | { type: 'poem/removeTTLFlags'; keys: string[] }

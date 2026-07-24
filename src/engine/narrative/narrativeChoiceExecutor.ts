@@ -49,6 +49,16 @@ export function executeStoryChoice(
   const transitionsScene =
     choice.effects?.some((fx) => fx.type === 'transitionScene') ?? false;
 
+  // Phase 12: Record every choice for consequence tracking.
+  dispatchGameAction({ type: 'player/logChoice', nodeId: ctx.currentNodeId, choiceText: choice.text, kind: 'story' });
+  // Auto-detect moral choices: any choice that modifies karma or NPC relations.
+  const hasMoralWeight = choice.effects?.some(
+    (fx) => fx.type === 'addKarma' || (fx.type === 'npcChange' && fx.npcChange?.relation)
+  );
+  if (hasMoralWeight) {
+    dispatchGameAction({ type: 'player/logMoralChoice', nodeId: ctx.currentNodeId, choiceText: choice.text });
+  }
+
   if (choice.effects) {
     if (transitionsScene) {
       // Race #15: apply effects (including requestSceneTransition) BEFORE closing
@@ -119,6 +129,15 @@ export function executeDialogueChoice(choice: DialogueChoice): void {
 
   const transitionsScene =
     choice.effects?.some((fx) => fx.type === 'transitionScene') ?? false;
+
+  // Phase 12: Record every dialogue choice for consequence tracking.
+  dispatchGameAction({ type: 'player/logChoice', nodeId: 'dialogue', choiceText: choice.text, kind: 'dialogue' });
+  const hasMoralWeight = choice.effects?.some(
+    (fx) => fx.type === 'addKarma' || (fx.type === 'npcChange' && fx.npcChange?.relation)
+  );
+  if (hasMoralWeight) {
+    dispatchGameAction({ type: 'player/logMoralChoice', nodeId: 'dialogue', choiceText: choice.text });
+  }
 
   if (choice.effects) {
     if (transitionsScene) {
