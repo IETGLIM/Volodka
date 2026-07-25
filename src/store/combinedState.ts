@@ -38,15 +38,21 @@ export function resetSliceMutationSchedulerForTests(): void {
 }
 
 export function subscribeAllStores(listener: () => void): () => void {
+  let active = true;
   let scheduled = false;
   const batchedListener = (): void => {
+    if (!active) return;
     if (scheduled) return;
     scheduled = true;
     queueMicrotask(() => {
       scheduled = false;
+      if (!active) return;
       listener();
     });
   };
   const unsubs = SLICE_STORES.map((store) => store.subscribe(batchedListener));
-  return () => { for (const unsub of unsubs) unsub(); };
+  return () => {
+    active = false;
+    for (const unsub of unsubs) unsub();
+  };
 }
