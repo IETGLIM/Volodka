@@ -27,7 +27,6 @@ function buildSnapshotCacheKey(state: GameStoreState): SnapshotCacheKey {
     state.playerState.karma,
     state.playerState.stress,
     state.playerState.visitedNodes,
-    state.playerState.equippedThoughtIds ?? [],
     state.playerState.choiceLog ?? [],
     state.playerState.moralChoices ?? [],
     progression?.level ?? 1,

@@ -79,6 +79,11 @@ import {
   AFFINITY_LABELS,
   type DamageChannel,
 } from './combat/combatAffinities';
+import {
+  computeEnemyIncomingDamage,
+  resolveStatDrain,
+  type StatDrainAction,
+} from './combat/enemyTurn';
 
 // ── Re-export types so existing imports of CombatSystem don't break ──
 export type {
@@ -973,98 +978,35 @@ function executeEnemyTurn() {
     workingState = { ...workingState, rng: specialRng.getState() };
   }
 
-  const enemyAtkBoost = getEnemyAttackBoost(workingState);
-  const effectiveEnemyAttack = workingState.enemy.attack + enemyAtkBoost;
-  const enemyDmgMultiplier = getEnemyDamageMultiplier(workingState);
-
+  // ── Basic attack: use extracted damage pipeline ──
   const attackRng = SeededCombatRng.fromState(workingState.rng);
-  const roll = attackRng.asRollFn();
-  let enemyDamage = computeDamage({
-    attack: effectiveEnemyAttack,
-    multiplier: enemyDmgMultiplier,
-    varianceProfile: 'enemy',
-    rng: roll,
-  });
   const combatSnap = snap();
-  const combatAct = combatSnap.playerState.progression.currentAct;
-  const combatLevel = combatSnap.playerState.progression.level;
-  enemyDamage = scaleEnemyDamageByDifficulty(enemyDamage, undefined, combatAct, combatLevel);
-
-  // Player defending is now handled by the damage_reduction buff system.
-  // The legacy playerDefending flag is kept in state for UI mirroring only.
-  const isPlayerDefending = hasBuffEffect(workingState, 'player', 'damage_reduction');
-  if (isPlayerDefending) {
-    const playerDef = getPlayerDefense();
-    enemyDamage = computeDefendedDamage(enemyDamage, playerDef);
-  }
-
-  const playerDefBoost = getPlayerDefenseBoost(workingState);
-  if (playerDefBoost > 0) {
-    enemyDamage = Math.max(1, enemyDamage - playerDefBoost);
-  }
-
-  const playerDmgReduction = getPlayerDamageReduction(workingState);
-  if (playerDmgReduction > 0) {
-    enemyDamage = scaleDamageByFraction(enemyDamage, playerDmgReduction, 'reduction');
-  }
-
-  const playerVulnerability = getPlayerVulnerability(workingState);
-  if (playerVulnerability > 0) {
-    enemyDamage = scaleDamageByFraction(enemyDamage, playerVulnerability, 'vulnerability');
-  }
-
-  const spiritualLevel = snap().playerState.progression.unlockedSkills.filter(
+  const spiritualLevel = combatSnap.playerState.progression.unlockedSkills.filter(
     (id) => id.startsWith('spirit_'),
   ).length;
-  if (spiritualLevel > 0) {
-    enemyDamage = scaleDamageByFraction(
-      enemyDamage,
-      spiritualLevel * COMBAT_CONSTANTS.SPIRITUAL_DAMAGE_REDUCTION_PER_LEVEL,
-      'reduction',
-    );
-  }
-
-  /* ── Perk incoming damage reduction (fortitude -20%) — stacks with
-     spiritual reduction but capped at 0.8 total in the resolver. ── */
-  const perkSnap = snap();
-  const perkMods = resolveCombatPerkModifiers(perkSnap.playerState.progression?.unlockedPerks ?? [], {
-    stress: perkSnap.playerState.stress,
-    timeOfDay: perkSnap.exploration?.timeOfDay,
+  const perkMods = resolveCombatPerkModifiers(combatSnap.playerState.progression?.unlockedPerks ?? [], {
+    stress: combatSnap.playerState.stress,
+    timeOfDay: combatSnap.exploration?.timeOfDay,
   });
-  if (perkMods.incomingDamageReduction > 0) {
-    enemyDamage = scaleDamageByFraction(
-      enemyDamage,
-      perkMods.incomingDamageReduction,
-      'reduction',
-    );
+
+  const { damage: enemyDamage, rng: updatedRng } = computeEnemyIncomingDamage({
+    combatState: workingState,
+    rng: attackRng,
+    currentAct: combatSnap.playerState.progression.currentAct,
+    currentLevel: combatSnap.playerState.progression.level,
+    spiritualSkillCount: spiritualLevel,
+    perkMods,
+  });
+
+  // ── Stat drain side effect ──
+  const { action: statDrainAction, label: statEffectText } = resolveStatDrain(
+    workingState.enemy.targetsStat, updatedRng,
+  );
+  if (statDrainAction) {
+    dispatchGameAction(statDrainAction);
   }
 
   const newPlayerHp = Math.max(0, workingState.playerHp - enemyDamage);
-
-  // Enemy also targets a specific stat (basic attack debuff)
-  const targetedStat = workingState.enemy.targetsStat;
-  let statEffectText = '';
-  if (targetedStat === 'logic') {
-    if (attackRng.roll(0.3)) {
-      dispatchGameAction({ type: 'player/addSkill', skill: 'logic', amount: -1 });
-      statEffectText = ' Логика -1!';
-    }
-  } else if (targetedStat === 'energy') {
-    if (attackRng.roll(0.4)) {
-      dispatchGameAction({ type: 'player/addEnergy', amount: -5 });
-      statEffectText = ' Энергия -5!';
-    }
-  } else if (targetedStat === 'karma') {
-    if (attackRng.roll(0.3)) {
-      dispatchGameAction({ type: 'player/addKarma', amount: -3 });
-      statEffectText = ' Карма -3!';
-    }
-  } else if (targetedStat === 'empathy') {
-    if (attackRng.roll(0.3)) {
-      dispatchGameAction({ type: 'player/addSkill', skill: 'empathy', amount: -1 });
-      statEffectText = ' Эмпатия -1!';
-    }
-  }
 
   const enemyAttackLog: CombatLogEntry = {
     turn: workingState.turn,
@@ -1085,7 +1027,7 @@ function executeEnemyTurn() {
       ...workingState.enemy,
       specialCooldown: Math.max(0, workingState.enemy.specialCooldown - 1) },
     log: [...workingState.log, enemyAttackLog],
-    rng: attackRng.getState() });
+    rng: updatedRng.getState() });
 
   eventBus.emit('camera:combat_shake', { intensity: 0.2 });
   notifyCombatDamage(enemyAttackLog);
