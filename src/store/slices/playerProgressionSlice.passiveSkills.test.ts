@@ -8,7 +8,7 @@ import { preloadBootGameData } from '@/data/gameDataLoader';
 const TIER5_PREREQS: Record<string, string[]> = {
   tech_t5_ultimate: ['tech_t4_coding', 'tech_t4_logic'],
   social_t5_ultimate: ['social_t4_empathy', 'social_t4_persuasion'],
-  spirit_t5_ultimate: ['spirit_t4_intuition', 'spirit_t4_writing'],
+  spirit_t5_ultimate: ['spirit_t4_intuition', 'spirit_t4_writing', 'spirit_t4_rhythm'],
 };
 
 describe('unlockSkillTreeNode tier-5 passives', () => {

@@ -18,6 +18,7 @@ vi.mock('@/engine/GameActionDispatcher', () => ({
 
 vi.mock('@/engine/scene/narrativeOverlay', () => ({
   closeNarrativeOverlay: () => closeNarrativeOverlay(),
+  closeDiegeticNarrative: vi.fn(),
 }));
 
 vi.mock('@/engine/interaction/interactionEndDedup', () => ({
@@ -26,6 +27,7 @@ vi.mock('@/engine/interaction/interactionEndDedup', () => ({
 
 vi.mock('@/engine/EventBus', () => ({
   eventBus: {
+    on: vi.fn(),
     emit: (...args: unknown[]) => eventBusEmit(...args),
   },
 }));

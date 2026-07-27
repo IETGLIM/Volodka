@@ -51,6 +51,7 @@ vi.mock('@/store/visitedNodesIndex', () => ({
 vi.mock('@/engine/scene/narrativeOverlay', () => ({
   openNarrativeOverlay: vi.fn(),
   closeNarrativeOverlay: () => closeNarrativeOverlay(),
+  closeDiegeticNarrative: vi.fn(),
 }));
 
 vi.mock('@/engine/scene/sceneTransition', () => ({

@@ -49,7 +49,7 @@ describe('contactShadowTexture', () => {
   });
 
   it('exposes stable cache keys for player and npc', () => {
-    expect(CONTACT_SHADOW_CACHE_KEYS.player).toBe('contact_shadow:player:64');
+    expect(CONTACT_SHADOW_CACHE_KEYS.player).toBe('contact_shadow:player:128');
     expect(CONTACT_SHADOW_CACHE_KEYS.npc).toBe('contact_shadow:npc:64');
   });
 });
