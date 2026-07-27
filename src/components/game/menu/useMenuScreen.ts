@@ -38,19 +38,24 @@ export function useMenuScreen({ loadGame, resetGame, musicEnabled, toggleMusic }
       }
 
       const store = useGameStore.getState();
-      store.setCurrentNodeId('start');
-      store.setIntroSeen(true);
-      store.setPlayerPosition([0.5, 0.01, 2.4]);
-      store.setPlayerRotation(Math.PI);
       store.setMainMenuOpen(false);
       store.setIntroActive(false);
+      store.setIntroSeen(true);
+
       if (!skipPrologue) {
+        // Prologue path: spawn in bed, play cinematic, then open 'start' node
+        store.setCurrentNodeId('start');
+        store.setPlayerPosition([0.5, 0.01, 2.4]);
+        store.setPlayerRotation(Math.PI);
         store.setCutscene('intro_wakeup', []);
         // Don't emit intro:wakeup_sequence here — the 3D canvas hasn't mounted
         // yet. The CinematicTimelineRunner will detect activeCutsceneId ===
         // 'intro_wakeup' after canvas:first-frame and start the timeline then.
         // This fixes the "character flying above the floor" bug where the
         // RigidBody doesn't exist yet when the timeline sets player position.
+      } else {
+        // Skip-prologue path: spawn at room center, show narrative intro
+        store.openNarrativeOverlay('skip_prologue_intro', 'story');
       }
     }, NEW_GAME_FADE_MS);
   }, [isFadingOut, resetGame]);

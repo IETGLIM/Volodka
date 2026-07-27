@@ -3,6 +3,34 @@ import type { StoryNode } from '@/shared/types/game';
 type StoryNodeStructure = Omit<StoryNode, 'text'> & { text?: string; choices: StoryNode['choices'] };
 
 export const ACT1_STRUCTURE: Record<string, StoryNodeStructure> = {
+  "skip_prologue_intro": {
+    "id": "skip_prologue_intro",
+    "speaker": "narrator",
+    "sceneId": "volodka_room",
+    "musicCue": "mystery",
+    "autoSave": true,
+    "guidanceObjectiveType": "visit_location",
+    "choices": [
+      {
+        "text": "",
+        "next": "explore_mode",
+        "goldenPath": true,
+        "effects": [
+          { "type": "setFlag", "flag": "woke_up", "flagValue": true },
+          { "type": "setFlag", "flag": "skip_prologue_seen", "flagValue": true },
+          { "type": "triggerQuest", "questId": "morning_ritual" }
+        ]
+      },
+      {
+        "text": "",
+        "next": "room_terminal_wake",
+        "effects": [
+          { "type": "setFlag", "flag": "skip_prologue_seen", "flagValue": true },
+          { "type": "setFlag", "flag": "morning_ritual_terminal", "flagValue": true }
+        ]
+      }
+    ]
+  },
   "start": {
     "id": "start",
     "karmaThresholds": {
