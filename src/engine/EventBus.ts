@@ -116,6 +116,13 @@ export class EventBusClass<TMap extends object = EventMap>
   /** Whether this bus has been disposed — subscribe only after revive(). */
   private disposed = false;
 
+  /**
+   * Count of auto-revives triggered by subscribe on a disposed bus.
+   * Non-zero indicates a Strict Mode timing race (child effect before parent revive).
+   * Inspectable in dev tools for debugging handler leaks.
+   */
+  private autoReviveCount = 0;
+
   constructor(options: EventBusOptions = {}) {
     this.maxHandlersPerEvent = options.maxHandlersPerEvent ?? 20;
     this.maxAnyHandlers = options.maxAnyHandlers ?? 20;
@@ -129,12 +136,21 @@ export class EventBusClass<TMap extends object = EventMap>
     );
   }
 
-  private assertSubscribable(_operation: 'on' | 'onAny'): void {
+  private assertSubscribable(operation: 'on' | 'onAny'): void {
     if (!this.disposed) return;
     // Auto-revive: in React Strict Mode the singleton bus may be disposed
     // during the first unmount while child effects from the second mount
     // race to subscribe before the parent's revive call.  Reviving here
     // is safe — the bus has already been cleared by dispose().
+    this.autoReviveCount++;
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn(
+        `[EventBus] Auto-revive #${this.autoReviveCount} on ${operation}(). ` +
+        'A handler was subscribed on a disposed bus. This is expected in React ' +
+        'Strict Mode (child effect before parent revive). If you see this outside ' +
+        'Strict Mode, a subscription leak or lifecycle ordering bug may exist.',
+      );
+    }
     this.disposed = false;
     clearDedupSlots(this.dedupSlots);
   }
@@ -349,6 +365,7 @@ export class EventBusClass<TMap extends object = EventMap>
     this.anyHandlers.length = 0;
     this.listenerIndexById.clear();
     this.disposed = true;
+    this.autoReviveCount = 0;
   }
 
   /**
@@ -368,6 +385,11 @@ export class EventBusClass<TMap extends object = EventMap>
   /** Returns whether this bus instance has been disposed. */
   isDisposed(): boolean {
     return this.disposed;
+  }
+
+  /** Returns the number of auto-revives since the last dispose(). Non-zero in dev indicates Strict Mode races. */
+  getAutoReviveCount(): number {
+    return this.autoReviveCount;
   }
 
   /** Whether at least one typed handler is registered for the event. */

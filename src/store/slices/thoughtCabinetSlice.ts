@@ -4,8 +4,8 @@
 import type { StateCreator } from 'zustand';
 import type { ThoughtCabinetItem, ThoughtCabinetEffect, TrainablePlayerSkill } from '@/shared/types/game';
 import { THOUGHT_CABINET_MAP, MAX_EQUIPPED_THOUGHTS } from '@/data/thoughtCabinet';
-import { pushNotification } from '../shared';
 import type { GameStoreState } from '../types';
+import { pickThoughtCabinetCrossActions } from '../crossSliceReads';
 
 /* ─── Slice types ─── */
 
@@ -35,12 +35,13 @@ export const createThoughtCabinetSlice: StateCreator<
   acquiredThoughtIds: [],
   equippedThoughtIds: [],
 
-  acquireThought: (id) =>
+  acquireThought: (id) => {
+    const thoughtDef = THOUGHT_CABINET_MAP[id];
+    if (!thoughtDef) return;
+    const countBefore = get().acquiredThoughtIds.length;
+
     set((state) => {
       if (state.acquiredThoughtIds.includes(id)) return state;
-
-      const thoughtDef = THOUGHT_CABINET_MAP[id];
-      if (!thoughtDef) return state;
 
       // If this thought is mutually exclusive with an already-acquired thought,
       // do not acquire it.
@@ -53,22 +54,27 @@ export const createThoughtCabinetSlice: StateCreator<
 
       return {
         acquiredThoughtIds: [...state.acquiredThoughtIds, id],
-        notifications: pushNotification(
-          state.notifications,
-          'skill',
-          `Мысль получена: ${thoughtDef.name}`,
-        ),
       };
-    }),
+    });
 
-  equipThought: (id) =>
+    // Cross-slice notification (outside set() — no cross-slice read/write)
+    if (get().acquiredThoughtIds.length > countBefore) {
+      pickThoughtCabinetCrossActions().pushNotification(
+        'skill',
+        `Мысль получена: ${thoughtDef.name}`,
+      );
+    }
+  },
+
+  equipThought: (id) => {
+    const thoughtDef = THOUGHT_CABINET_MAP[id];
+    if (!thoughtDef) return;
+    const equippedBefore = get().equippedThoughtIds;
+
     set((state) => {
       if (!state.acquiredThoughtIds.includes(id)) return state;
       if (state.equippedThoughtIds.includes(id)) return state;
       if (state.equippedThoughtIds.length >= MAX_EQUIPPED_THOUGHTS) return state;
-
-      const thoughtDef = THOUGHT_CABINET_MAP[id];
-      if (!thoughtDef) return state;
 
       // Remove any mutually exclusive equipped thoughts
       let newEquipped = [...state.equippedThoughtIds];
@@ -83,13 +89,17 @@ export const createThoughtCabinetSlice: StateCreator<
 
       return {
         equippedThoughtIds: [...newEquipped, id],
-        notifications: pushNotification(
-          state.notifications,
-          'skill',
-          `Мысль активирована: ${thoughtDef.name}`,
-        ),
       };
-    }),
+    });
+
+    // Cross-slice notification (outside set() — no cross-slice read/write)
+    if (!equippedBefore.includes(id) && get().equippedThoughtIds.includes(id)) {
+      pickThoughtCabinetCrossActions().pushNotification(
+        'skill',
+        `Мысль активирована: ${thoughtDef.name}`,
+      );
+    }
+  },
 
   unequipThought: (id) =>
     set((state) => {

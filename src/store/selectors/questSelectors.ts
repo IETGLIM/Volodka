@@ -333,6 +333,9 @@ export function useNextTrackedObjective(
 
 export function useQuestIndicatorForNpc(npcId: string): QuestIndicatorType | null {
   const quests = useGameSelector((state) => state.quests);
+  // Subscribe to flags & collectedPoems so indicators update when prerequisites change
+  const flags = useGameSelector((state) => state.playerState.flags);
+  const collectedPoems = useGameSelector((state) => state.collectedPoems);
   const canonicalNpcId = resolveCanonicalNpcId(npcId);
 
   let hasAvailable = false;
@@ -346,8 +349,8 @@ export function useQuestIndicatorForNpc(npcId: string): QuestIndicatorType | nul
 
     if (!questState || questState.status === 'inactive') {
       const deps = areDependenciesMet(def.id);
-      const flagMet = !def.requiredFlag || getGameStore().playerState.flags[def.requiredFlag] === true;
-      const poemMet = !def.requiredPoem || getGameStore().collectedPoems.includes(def.requiredPoem);
+      const flagMet = !def.requiredFlag || flags[def.requiredFlag] === true;
+      const poemMet = !def.requiredPoem || collectedPoems.includes(def.requiredPoem);
       if (deps.met && flagMet && poemMet) {
         hasAvailable = true;
       }

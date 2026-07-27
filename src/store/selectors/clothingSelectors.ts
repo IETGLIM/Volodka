@@ -22,9 +22,9 @@ export interface CombinedDialogueModifier {
   /** Skill bonuses summed across all equipped clothing. */
   skillBonus: ClothingSkillModifiers;
   /** Tags that unlock dialogue branches (union of all unlockTags). */
-  unlockTags: Set<string>;
+  unlockTags: string[];
   /** Tags that lock dialogue branches (union of all lockTags). */
-  lockTags: Set<string>;
+  lockTags: string[];
 }
 
 /* ─── Pure selector functions (non-React) ─── */
@@ -80,38 +80,41 @@ export function getClothingSkillModifiers(
 export function getClothingDialogueModifier(
   equippedItems: Record<EquipmentSlot, InventoryItem | null>,
 ): CombinedDialogueModifier {
-  const result: CombinedDialogueModifier = {
-    dcAdjustment: 0,
-    skillBonus: {},
-    unlockTags: new Set<string>(),
-    lockTags: new Set<string>(),
-  };
+  const unlockSet = new Set<string>();
+  const lockSet = new Set<string>();
+  let dcAdjustment = 0;
+  const skillBonus: ClothingSkillModifiers = {};
 
   for (const item of getEquippedClothing(equippedItems)) {
     const clothing = getClothingById(item.id as string);
     if (clothing?.dialogueModifier) {
       const dm = clothing.dialogueModifier;
       if (dm.dcAdjustment !== undefined) {
-        result.dcAdjustment += dm.dcAdjustment;
+        dcAdjustment += dm.dcAdjustment;
       }
       if (dm.skillBonus) {
         for (const [skill, value] of Object.entries(dm.skillBonus)) {
           if (value !== undefined) {
-            result.skillBonus[skill as TrainablePlayerSkill] =
-              (result.skillBonus[skill as TrainablePlayerSkill] ?? 0) + value;
+            skillBonus[skill as TrainablePlayerSkill] =
+              (skillBonus[skill as TrainablePlayerSkill] ?? 0) + value;
           }
         }
       }
       if (dm.unlockTag) {
-        result.unlockTags.add(dm.unlockTag);
+        unlockSet.add(dm.unlockTag);
       }
       if (dm.lockTag) {
-        result.lockTags.add(dm.lockTag);
+        lockSet.add(dm.lockTag);
       }
     }
   }
 
-  return result;
+  return {
+    dcAdjustment,
+    skillBonus,
+    unlockTags: [...unlockSet],
+    lockTags: [...lockSet],
+  };
 }
 
 /** Get the ClothingDefinition for an equipped item, if it's in the clothing catalog. */

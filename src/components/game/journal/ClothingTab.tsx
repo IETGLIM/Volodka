@@ -238,14 +238,14 @@ export function ClothingTab({ searchQuery }: ClothingTabProps) {
             </div>
           )}
 
-          {dialogueModifier.unlockTags.size > 0 && (
+          {dialogueModifier.unlockTags.length > 0 && (
             <div className="px-3 py-2 rounded-lg bg-emerald-950/20 border border-emerald-700/20 mb-2">
               <div className="flex items-center gap-1.5 mb-1">
                 <Unlock className="size-3 text-emerald-400" aria-hidden />
                 <span className="text-[10px] text-emerald-400 uppercase tracking-wider">Открывает</span>
               </div>
               <div className="flex flex-wrap gap-1">
-                {[...dialogueModifier.unlockTags].map((tag) => (
+                {dialogueModifier.unlockTags.map((tag) => (
                   <span key={tag} className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-900/30 text-emerald-300 border border-emerald-700/20">
                     {tag}
                   </span>
@@ -254,14 +254,14 @@ export function ClothingTab({ searchQuery }: ClothingTabProps) {
             </div>
           )}
 
-          {dialogueModifier.lockTags.size > 0 && (
+          {dialogueModifier.lockTags.length > 0 && (
             <div className="px-3 py-2 rounded-lg bg-red-950/20 border border-red-700/20 mb-2">
               <div className="flex items-center gap-1.5 mb-1">
                 <Lock className="size-3 text-red-400" aria-hidden />
                 <span className="text-[10px] text-red-400 uppercase tracking-wider">Блокирует</span>
               </div>
               <div className="flex flex-wrap gap-1">
-                {[...dialogueModifier.lockTags].map((tag) => (
+                {dialogueModifier.lockTags.map((tag) => (
                   <span key={tag} className="text-[10px] px-1.5 py-0.5 rounded bg-red-900/30 text-red-300 border border-red-700/20">
                     {tag}
                   </span>
@@ -271,8 +271,8 @@ export function ClothingTab({ searchQuery }: ClothingTabProps) {
           )}
 
           {dialogueModifier.dcAdjustment === 0
-            && dialogueModifier.unlockTags.size === 0
-            && dialogueModifier.lockTags.size === 0
+            && dialogueModifier.unlockTags.length === 0
+            && dialogueModifier.lockTags.length === 0
             && (
             <p className="text-[10px] text-slate-600 italic px-3">Одежда не влияет на диалоги</p>
           )}
