@@ -1,5 +1,8 @@
 import {
+  CRITICAL_FRAME_SYSTEMS,
+  FRAME_BUDGET_MS,
   FRAME_SYSTEM_ORDER,
+  isFrameSystemCritical,
   normalizeFrameTickPhase,
   type FrameSystemId,
   type FrameTickCallback,
@@ -11,6 +14,7 @@ import {
 import { isFrameSimulationActive } from './frameVisibility';
 
 export type { RegisteredFrameTick };
+export { CRITICAL_FRAME_SYSTEMS, FRAME_BUDGET_MS, isFrameSystemCritical };
 
 let nextTickId = 1;
 const ticks = new Map<number, RegisteredFrameTick>();
@@ -43,6 +47,11 @@ let lastTotalCpuMs = 0;
 let lastPhysicsStepMs = 0;
 let registeredTickCount = 0;
 let frameBudgetStartMs = 0;
+/** Non-critical pre-draw ticks soft-skipped last frame due to budget. */
+let lastSkippedTickCount = 0;
+/** Cumulative CPU across soft-skip phases within the current frame. */
+let frameSoftSkipCumulativeMs = 0;
+let softSkipOverBudget = false;
 
 /** Prod dev-panel / e2e profiling — set by FrameProfilerBridge when mounted. */
 let profileArmed = false;
@@ -72,6 +81,7 @@ export function registerFrameTick(
     label: options.label ?? `tick-${id}`,
     enabled: options.enabled ?? true,
     phase: normalizeFrameTickPhase(options.phase),
+    critical: isFrameSystemCritical(system, options.critical),
     callback,
   });
   registeredTickCount = ticks.size;
@@ -95,6 +105,10 @@ export function setFrameTickEnabled(id: number, enabled: boolean): void {
 
 export function getRegisteredTickCount(): number {
   return registeredTickCount;
+}
+
+export function getLastSkippedTickCount(): number {
+  return lastSkippedTickCount;
 }
 
 export function setPhysicsStepMs(ms: number): void {
@@ -222,25 +236,51 @@ function runTicks(
   ctx: FrameTickContext,
   phase: FrameTickPhase,
   trackSystemCpu: boolean,
+  softSkip: boolean,
 ): void {
   if (!isFrameSimulationActive()) return;
 
   const buffer = getSortedTicksForPhase(phase);
 
   const trackTiming = shouldTrackFrameTiming();
+  let skipped = 0;
 
   for (const tick of buffer) {
-    if (trackTiming) {
+    if (softSkip && softSkipOverBudget && !tick.critical) {
+      skipped += 1;
+      if (trackTiming) {
+        recordTickCpuMs(tickCpuKey(phase, tick), 0);
+      }
+      continue;
+    }
+
+    // Soft-skip needs wall time even when profiler timing is off.
+    const needMeasure = softSkip || trackTiming;
+    if (needMeasure) {
       const t0 = performance.now();
       tick.callback(ctx);
       const elapsed = performance.now() - t0;
-      if (trackSystemCpu) {
-        systemCpuMs[tick.system] += elapsed;
+
+      if (softSkip) {
+        frameSoftSkipCumulativeMs += elapsed;
+        if (frameSoftSkipCumulativeMs >= FRAME_BUDGET_MS) {
+          softSkipOverBudget = true;
+        }
       }
-      recordTickCpuMs(tickCpuKey(phase, tick), elapsed);
+
+      if (trackTiming) {
+        if (trackSystemCpu) {
+          systemCpuMs[tick.system] += elapsed;
+        }
+        recordTickCpuMs(tickCpuKey(phase, tick), elapsed);
+      }
     } else {
       tick.callback(ctx);
     }
+  }
+
+  if (softSkip) {
+    lastSkippedTickCount += skipped;
   }
 }
 
@@ -250,6 +290,9 @@ function beginFrameBudget(): void {
   }
   // Always reset per-frame tick map before any runTicks call (all phases).
   tickCpuMs.clear();
+  lastSkippedTickCount = 0;
+  frameSoftSkipCumulativeMs = 0;
+  softSkipOverBudget = false;
   frameBudgetStartMs = shouldTrackFrameTiming() ? performance.now() : 0;
 }
 
@@ -269,23 +312,42 @@ export function runFrameBudgetForPhase(ctx: FrameTickContext, phase: FrameTickPh
   if (phase === 'post_render') {
     return;
   }
-  runTicks(ctx, phase, true);
+  runTicks(ctx, phase, true, true);
   if (phase === 'pre_render') {
     finalizePreRenderBudget();
   }
 }
 
-/** Runs all pre-draw phases (pre_physics → post_physics → pre_render). */
+/** Runs all pre-draw phases (pre_physics → post_physics → pre_render) with soft-skip. */
 export function runFrameBudget(ctx: FrameTickContext): void {
   beginFrameBudget();
-  runTicks(ctx, 'pre_physics', true);
-  runTicks(ctx, 'post_physics', true);
-  runTicks(ctx, 'pre_render', true);
+  runTicks(ctx, 'pre_physics', true, true);
+  runTicks(ctx, 'post_physics', true, true);
+  runTicks(ctx, 'pre_render', true, true);
   finalizePreRenderBudget();
 }
 
-/** Run post_render ticks (profiler, canvas guards) after WebGL draw. */
+/** Run post_render ticks (profiler, canvas guards) after WebGL draw — never soft-skipped. */
 export function runPostFrameBudget(ctx: FrameTickContext): void {
-  runTicks(ctx, 'post_render', false);
+  runTicks(ctx, 'post_render', false, false);
   lastCompletedTopTickTimings = collectTopTickTimings(TICK_CPU_MS_MAX_SIZE);
+}
+
+/** Test-only: clear all registered ticks and timing state. */
+export function resetFrameBudgetRegistryForTests(): void {
+  ticks.clear();
+  nextTickId = 1;
+  registeredTickCount = 0;
+  lastTotalCpuMs = 0;
+  lastPhysicsStepMs = 0;
+  lastSkippedTickCount = 0;
+  frameSoftSkipCumulativeMs = 0;
+  softSkipOverBudget = false;
+  frameBudgetStartMs = 0;
+  lastCompletedTopTickTimings = [];
+  tickCpuMs.clear();
+  for (const key of FRAME_SYSTEM_ORDER) {
+    systemCpuMs[key] = 0;
+  }
+  invalidateTickCache();
 }

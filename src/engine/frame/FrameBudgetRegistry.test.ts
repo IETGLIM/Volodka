@@ -1,143 +1,144 @@
-import { describe, it, expect, afterEach, vi } from 'vitest';
-import type { RootState } from '@react-three/fiber';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-  getCurrentFrameTopTickTimings,
-  getRegisteredTickCount,
-  getTopTickTimings,
+  FRAME_BUDGET_MS,
+  getLastSkippedTickCount,
   registerFrameTick,
+  resetFrameBudgetRegistryForTests,
   runFrameBudget,
-  runFrameBudgetForPhase,
   runPostFrameBudget,
-  setFrameBudgetProfilingArmed,
   unregisterFrameTick,
 } from './FrameBudgetRegistry';
+import { resetFrameVisibilityForTests } from './frameVisibility';
 import { DEFAULT_FRAME_GAME_SNAPSHOT } from './frameGameSnapshot';
+import type { FrameTickContext } from './types';
 
-const frameCtx = { state: {} as RootState, delta: 1 / 60, game: DEFAULT_FRAME_GAME_SNAPSHOT };
+function fakeCtx(): FrameTickContext {
+  return {
+    state: {} as FrameTickContext['state'],
+    delta: 1 / 60,
+    game: DEFAULT_FRAME_GAME_SNAPSHOT,
+  };
+}
 
-describe('FrameBudgetRegistry', () => {
-  const registeredIds: number[] = [];
+describe('FrameBudgetRegistry soft-skip', () => {
+  let now = 0;
+
+  beforeEach(() => {
+    resetFrameVisibilityForTests();
+    resetFrameBudgetRegistryForTests();
+    now = 0;
+    vi.spyOn(performance, 'now').mockImplementation(() => now);
+  });
 
   afterEach(() => {
-    while (registeredIds.length > 0) {
-      unregisterFrameTick(registeredIds.pop()!);
-    }
     vi.restoreAllMocks();
-    setFrameBudgetProfilingArmed(true);
-    runFrameBudget(frameCtx);
-    runPostFrameBudget(frameCtx);
-    setFrameBudgetProfilingArmed(false);
+    resetFrameBudgetRegistryForTests();
   });
 
-  it('unregisterFrameTick removes tick before next runFrameBudget', () => {
-    setFrameBudgetProfilingArmed(true);
-    const calls: number[] = [];
-    const id = registerFrameTick('player', () => {
-      calls.push(1);
-    }, { label: 'test-player' });
-    registeredIds.push(id);
+  /** Advance simulated clock inside a tick so elapsed contributes to the budget. */
+  function burn(ms: number): () => void {
+    return () => {
+      now += ms;
+    };
+  }
 
-    runFrameBudget(frameCtx);
-    expect(calls).toHaveLength(1);
-
-    unregisterFrameTick(id);
-    registeredIds.pop();
-    runFrameBudget(frameCtx);
-    expect(calls).toHaveLength(1);
-    expect(getRegisteredTickCount()).toBe(0);
-  });
-
-  it('disabled ticks are skipped without unregistering', () => {
-    setFrameBudgetProfilingArmed(true);
-    const calls: number[] = [];
-    const id = registerFrameTick('player', () => {
-      calls.push(1);
-    }, { label: 'disabled-player', enabled: false });
-    registeredIds.push(id);
-
-    runFrameBudget(frameCtx);
-    expect(calls).toHaveLength(0);
-    expect(getRegisteredTickCount()).toBe(1);
-  });
-
-  it('caps tickCpuMs growth when many unique ticks run in one frame', () => {
-    setFrameBudgetProfilingArmed(true);
-    let now = 0;
-    vi.spyOn(performance, 'now').mockImplementation(() => now);
-
-    for (let i = 0; i < 140; i++) {
-      const tickIndex = i;
-      const id = registerFrameTick(
-        'misc',
-        () => {
-          now += tickIndex + 1;
-        },
-        { label: `dynamic-${i}`, priority: i },
-      );
-      registeredIds.push(id);
-    }
-
-    runFrameBudget(frameCtx);
-    runPostFrameBudget(frameCtx);
-
-    expect(getCurrentFrameTopTickTimings(140)).toHaveLength(128);
-    expect(getTopTickTimings(140)).toHaveLength(128);
-  });
-
-  it('getTopTickTimings returns last completed frame snapshot', () => {
-    setFrameBudgetProfilingArmed(true);
-    const id = registerFrameTick('player', () => {}, { label: 'snapshot-player' });
-    registeredIds.push(id);
-
-    expect(getTopTickTimings()).toEqual([]);
-
-    runFrameBudget(frameCtx);
-    expect(getTopTickTimings()).toEqual([]);
-
-    runPostFrameBudget(frameCtx);
-    const snapshot = getTopTickTimings(8);
-    expect(snapshot.some((entry) => entry.label === 'snapshot-player')).toBe(true);
-
-    unregisterFrameTick(id);
-    registeredIds.pop();
-    runFrameBudget(frameCtx);
-    runPostFrameBudget(frameCtx);
-    expect(getTopTickTimings().some((entry) => entry.label === 'snapshot-player')).toBe(false);
-  });
-
-  it('runFrameBudgetForPhase runs only ticks registered for that phase', () => {
-    setFrameBudgetProfilingArmed(true);
+  it('runs all ticks when under budget', () => {
     const order: string[] = [];
-    const preId = registerFrameTick(
+    registerFrameTick('player', () => order.push('player'), { label: 'p' });
+    registerFrameTick('weather', () => order.push('weather'), { label: 'w' });
+    registerFrameTick('misc', () => order.push('misc'), { label: 'm' });
+
+    runFrameBudget(fakeCtx());
+
+    expect(order).toEqual(['player', 'weather', 'misc']);
+    expect(getLastSkippedTickCount()).toBe(0);
+  });
+
+  it('skips non-critical ticks after cumulative work exceeds FRAME_BUDGET_MS', () => {
+    const order: string[] = [];
+    // Critical work alone exceeds the 16.67ms budget.
+    registerFrameTick(
       'player',
       () => {
-        order.push('pre_physics');
+        order.push('player');
+        now += FRAME_BUDGET_MS + 1;
       },
-      { label: 'pre', phase: 'pre_physics' },
+      { label: 'physics' },
     );
-    const postId = registerFrameTick(
-      'player',
-      () => {
-        order.push('post_physics');
-      },
-      { label: 'post', phase: 'post_physics' },
-    );
-    const renderId = registerFrameTick(
-      'camera',
-      () => {
-        order.push('pre_render');
-      },
-      { label: 'render', phase: 'pre_render' },
-    );
-    registeredIds.push(preId, postId, renderId);
+    registerFrameTick('weather', () => order.push('weather'), { label: 'rain' });
+    registerFrameTick('postfx', () => order.push('postfx'), { label: 'godrays' });
+    registerFrameTick('misc', () => order.push('misc'), { label: 'props' });
 
-    runFrameBudgetForPhase(frameCtx, 'pre_physics');
-    expect(order).toEqual(['pre_physics']);
+    runFrameBudget(fakeCtx());
 
-    runFrameBudgetForPhase(frameCtx, 'post_physics');
-    expect(order).toEqual(['pre_physics', 'post_physics']);
+    expect(order).toEqual(['player']);
+    expect(getLastSkippedTickCount()).toBe(3);
+  });
 
-    runFrameBudgetForPhase(frameCtx, 'pre_render');
-    expect(order).toEqual(['pre_physics', 'post_physics', 'pre_render']);
+  it('always runs later critical ticks even when already over budget', () => {
+    const order: string[] = [];
+    registerFrameTick('interaction', burn(FRAME_BUDGET_MS + 1), { label: 'input' });
+    registerFrameTick('player', () => order.push('player'), { label: 'physics' });
+    registerFrameTick('npc', () => order.push('npc'), { label: 'ai' });
+    registerFrameTick('camera', () => order.push('camera'), { label: 'follow' });
+    registerFrameTick('weather', () => order.push('weather'), { label: 'fx' });
+
+    runFrameBudget(fakeCtx());
+
+    expect(order).toEqual(['player', 'npc', 'camera']);
+    expect(getLastSkippedTickCount()).toBe(1);
+  });
+
+  it('respects critical: true override on a normally skippable system', () => {
+    const order: string[] = [];
+    registerFrameTick('player', burn(FRAME_BUDGET_MS + 1), { label: 'physics' });
+    registerFrameTick('weather', () => order.push('weather-critical'), {
+      label: 'must-run',
+      critical: true,
+    });
+    registerFrameTick('misc', () => order.push('misc'), { label: 'skip-me' });
+
+    runFrameBudget(fakeCtx());
+
+    expect(order).toEqual(['weather-critical']);
+    expect(getLastSkippedTickCount()).toBe(1);
+  });
+
+  it('respects critical: false override on a normally critical system', () => {
+    const order: string[] = [];
+    registerFrameTick('interaction', burn(FRAME_BUDGET_MS + 1), { label: 'input' });
+    registerFrameTick('player', () => order.push('player-soft'), {
+      label: 'cosmetic-anim',
+      critical: false,
+    });
+    registerFrameTick('camera', () => order.push('camera'), { label: 'follow' });
+
+    runFrameBudget(fakeCtx());
+
+    expect(order).toEqual(['camera']);
+    expect(getLastSkippedTickCount()).toBe(1);
+  });
+
+  it('never soft-skips post-render ticks', () => {
+    const order: string[] = [];
+    registerFrameTick('player', burn(FRAME_BUDGET_MS + 1), { label: 'physics' });
+    registerFrameTick('misc', () => order.push('post-misc'), {
+      label: 'guard',
+      phase: 'post_render',
+    });
+
+    runFrameBudget(fakeCtx());
+    expect(getLastSkippedTickCount()).toBe(0);
+
+    runPostFrameBudget(fakeCtx());
+    expect(order).toEqual(['post-misc']);
+  });
+
+  it('unregister removes ticks from subsequent frames', () => {
+    const fn = vi.fn();
+    const id = registerFrameTick('misc', fn, { label: 'tmp' });
+    unregisterFrameTick(id);
+    runFrameBudget(fakeCtx());
+    expect(fn).not.toHaveBeenCalled();
   });
 });

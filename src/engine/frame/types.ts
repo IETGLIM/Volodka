@@ -76,7 +76,32 @@ export const FRAME_SYSTEM_ORDER: readonly FrameSystemId[] = [
   'misc',
 ] as const;
 
+/**
+ * Soft-skip policy:
+ * - Critical systems always run: interaction, player, npc, camera
+ * - Skippable: weather, postfx, misc (VFX / atmosphere / cosmetic)
+ * - Once cumulative CPU across pre-draw phases exceeds FRAME_BUDGET_MS,
+ *   remaining non-critical ticks are soft-skipped for that frame
+ * - Per-tick override: FrameTickOptions.critical
+ * - Post-render ticks never soft-skip
+ */
+export const CRITICAL_FRAME_SYSTEMS: ReadonlySet<FrameSystemId> = new Set([
+  'interaction',
+  'player',
+  'npc',
+  'camera',
+]);
+
 export const FRAME_BUDGET_MS = 1000 / 60;
+
+/** Resolve effective criticality for a tick (explicit override or system default). */
+export function isFrameSystemCritical(
+  system: FrameSystemId,
+  override?: boolean,
+): boolean {
+  if (override !== undefined) return override;
+  return CRITICAL_FRAME_SYSTEMS.has(system);
+}
 
 export interface FrameTickContext {
   state: RootState;
@@ -94,6 +119,11 @@ export interface FrameTickOptions {
   phase?: FrameTickPhase | LegacyFrameTickPhase;
   /** Skip when this Object3D or an ancestor has visible=false. Page visibility is handled centrally. */
   visibilityRef?: RefObject<THREE.Object3D | null>;
+  /**
+   * Soft-skip override. Default: true for CRITICAL_FRAME_SYSTEMS, false otherwise.
+   * Critical ticks always run; non-critical may be skipped when over FRAME_BUDGET_MS.
+   */
+  critical?: boolean;
 }
 
 export interface RegisteredFrameTick {
@@ -103,5 +133,6 @@ export interface RegisteredFrameTick {
   label: string;
   enabled: boolean;
   phase: FrameTickPhase;
+  critical: boolean;
   callback: FrameTickCallback;
 }

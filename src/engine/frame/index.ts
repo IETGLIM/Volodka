@@ -4,6 +4,8 @@ export {
   FRAME_PHYSICS_R3F_PRIORITY,
   FRAME_SYSTEM_ORDER,
   FRAME_BUDGET_MS,
+  CRITICAL_FRAME_SYSTEMS,
+  isFrameSystemCritical,
   normalizeFrameTickPhase,
   type FramePipelinePhase,
   type FrameTickPhase,
@@ -32,10 +34,12 @@ export {
   shouldTrackFrameTiming,
   setPhysicsStepMs,
   getRegisteredTickCount,
+  getLastSkippedTickCount,
   getSystemCpuMs,
   getTotalBudgetCpuMs,
   getTopTickTimings,
   getCurrentFrameTopTickTimings,
+  resetFrameBudgetRegistryForTests,
 } from './FrameBudgetRegistry';
 
 export {

@@ -96,7 +96,8 @@ export function useMinigameForQuest(questId?: string): MinigameForQuestResult {
 
   const hasMinigameRequirement = currentMapping !== null
 
-  // Listen for minigame completions and auto-complete quest objectives
+  // Listen for minigame completions and auto-complete quest objectives.
+  // Do not apply payload.reward here — completeMinigame already applied once.
   useEffect(() => {
     const unsub = eventBus.on('minigame:complete', (payload) => {
       if (!currentMapping) return

@@ -37,21 +37,21 @@ export function useFrameTick(
   const callbackRef = useRef(callback);
   callbackRef.current = callback;
 
-  const { priority = 0, label, enabled = true, phase = 'pre_render', visibilityRef } = options;
+  const { priority = 0, label, enabled = true, phase = 'pre_render', visibilityRef, critical } = options;
   const tickIdRef = useRef<number | null>(null);
 
   useLayoutEffect(() => {
     const id = registerFrameTick(
       system,
       wrapFrameTickGuards((ctx) => callbackRef.current(ctx), visibilityRef),
-      { priority, label, enabled, phase: normalizeFrameTickPhase(phase) },
+      { priority, label, enabled, phase: normalizeFrameTickPhase(phase), critical },
     );
     tickIdRef.current = id;
     return () => {
       unregisterFrameTick(id);
       tickIdRef.current = null;
     };
-  }, [system, priority, label, phase, enabled, visibilityRef]);
+  }, [system, priority, label, phase, enabled, visibilityRef, critical]);
 
   useLayoutEffect(() => {
     if (tickIdRef.current != null) {
