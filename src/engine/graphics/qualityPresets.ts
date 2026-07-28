@@ -86,17 +86,17 @@ export const QUALITY_PRESETS: Record<Exclude<QualityPresetId, 'auto'>, QualityPr
     id: 'medium',
     label: 'Medium',
     labelRu: 'Среднее',
-    dpr: [1, 1.25],
+    dpr: [1, 1.35],
     shadows: true,
     antialias: true,
     postProcessing: true,
-    effectsScale: 0.5,
-    lodBias: 0.85,
+    effectsScale: 0.62,
+    lodBias: 0.9,
     textureScale: 0.5,
-    maxDrawDistance: 60,
+    maxDrawDistance: 65,
     useInstancing: true,
     useImpostors: true,
-    impostorDistance: 28,
+    impostorDistance: 30,
     bakedLighting: true,
     compression: 'draco',
     npcRenderMode: 'hybrid',
@@ -231,8 +231,10 @@ export function capQualityTierForGpuMemory(
     if (capped === 'high' && devicePixelRatio >= 2) capped = 'medium';
   }
 
-  if (hasCoarsePointer() && capped === 'ultra') {
-    capped = 'high';
+  // Touch / tablet form-factors: auto rarely benefits from ultra or high@3x.
+  if (hasCoarsePointer()) {
+    if (capped === 'ultra') capped = 'high';
+    if (capped === 'high' && devicePixelRatio >= 2) capped = 'medium';
   }
 
   return capped;

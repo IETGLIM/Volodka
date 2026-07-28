@@ -38,7 +38,9 @@ export function buildGuidanceDirectionHint(
   currentSceneId: SceneId,
 ): string | null {
   if (!targetSceneId) return null;
-  if (targetSceneId === currentSceneId) return 'Идите к цели';
+  if (targetSceneId === currentSceneId) {
+    return 'Цель в этой локации — ищите метку';
+  }
   const sceneConfig = getSceneConfig(targetSceneId);
   return `Перейдите: ${sceneConfig.name}`;
 }

@@ -8,7 +8,7 @@ import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { eventBus } from '@/engine/EventBus';
-import { Sword, Shield, Sparkles, LogOut, ChevronDown, Heart, Clock, Zap, Flame, Swords, HeartPulse, ShieldPlus, Skull } from 'lucide-react';
+import { Sword, Shield, Sparkles, LogOut, ChevronDown, Heart, Zap, Flame } from 'lucide-react';
 import { useUIStore } from '@/store/stores/uiStore';
 import { useCutsceneStore } from '@/store/stores/cutsceneStore';
 import { getGamePhase } from '@/shared/gamePhase';
@@ -27,76 +27,16 @@ import type { CombatState, CombatLogEntry } from '@/shared/types/game';
 import { useGamepadConnected } from '@/hooks/useGamepadConnected';
 import { useTouchDevice } from '@/hooks/useTouchDevice';
 import { COMBAT_BUTTON_HINTS } from '@/engine/combat/combatGamepadMap';
-import { POEM_COMBAT_ABILITIES } from '@/engine/combat/actions';
-import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { CombatDamageTimeline } from '@/components/game/hud/parts/CombatDamageTimeline';
 import { EnemyWeaknessDisplay } from '@/components/game/hud/parts/EnemyWeaknessDisplay';
 import { TurnPhaseIndicator } from '@/components/game/hud/parts/TurnPhaseIndicator';
 import { CombatTouchControls } from '@/components/game/CombatTouchControls';
 import { VictoryScreen, DefeatScreen } from '@/components/game/combatUi/CombatOutcomeScreens';
 import { BuffDebuffBar } from '@/components/game/combatUi/CombatStatusBadges';
-
-/* ── Poem combat effect category for UI tags ── */
-type PoemEffectCategory = 'damage' | 'heal' | 'buff' | 'debuff' | 'mixed';
-
-function getPoemEffectCategory(poemId: string): PoemEffectCategory {
-  switch (poemId) {
-    case 'poem_1': return 'debuff';
-    case 'poem_2': return 'heal';
-    case 'poem_3': return 'debuff';
-    case 'poem_4': return 'heal';
-    case 'poem_5': return 'damage';
-    case 'poem_6': return 'buff';
-    case 'poem_7': return 'debuff';
-    case 'poem_8': return 'damage';
-    case 'poem_9': return 'damage';
-    case 'poem_10': return 'buff';
-    case 'poem_11': return 'damage';
-    case 'poem_12': return 'damage';
-    case 'poem_13': return 'mixed';
-    case 'poem_14': return 'heal';
-    case 'poem_15': return 'mixed';
-    case 'poem_16': return 'mixed';
-    case 'poem_17': return 'mixed';
-    case 'poem_18': return 'damage';
-    case 'poem_19': return 'buff';
-    case 'poem_20': return 'mixed';
-    case 'poem_21': return 'damage';
-    case 'poem_22': return 'mixed';
-    case 'poem_23': return 'damage';
-    default: return 'mixed';
-  }
-}
-
-function getPoemEffectLabel(category: PoemEffectCategory): string {
-  switch (category) {
-    case 'damage': return 'Урон';
-    case 'heal': return 'Лечение';
-    case 'buff': return 'Усиление';
-    case 'debuff': return 'Ослабление';
-    case 'mixed': return 'Комбо';
-  }
-}
-
-function getPoemEffectIcon(category: PoemEffectCategory) {
-  switch (category) {
-    case 'damage': return Swords;
-    case 'heal': return HeartPulse;
-    case 'buff': return ShieldPlus;
-    case 'debuff': return Skull;
-    case 'mixed': return Sparkles;
-  }
-}
-
-function getPoemCategoryColor(category: PoemEffectCategory): string {
-  switch (category) {
-    case 'damage': return 'text-red-400 bg-red-950/50 border-red-800/40';
-    case 'heal': return 'text-emerald-400 bg-emerald-950/50 border-emerald-800/40';
-    case 'buff': return 'text-cyan-400 bg-cyan-950/50 border-cyan-800/40';
-    case 'debuff': return 'text-amber-400 bg-amber-950/50 border-amber-800/40';
-    case 'mixed': return 'text-fuchsia-400 bg-fuchsia-950/50 border-fuchsia-800/40';
-  }
-}
+import { CombatIntroSplash } from '@/components/game/combatUi/CombatIntroSplash';
+import { CombatLogLine } from '@/components/game/combatUi/CombatLogLine';
+import { PoemPowersSubmenu } from '@/components/game/combatUi/CombatPoemPowers';
 
 /* ── Animated Health Bar with gradient & glow ── */
 const AnimatedHPBar = React.memo(function AnimatedHPBar({ current, max, label, isPlayer, ariaLabel }: {
@@ -250,42 +190,6 @@ function ThoughtCombatBadges() {
   );
 }
 
-/* ── Combat intro splash (first ~1.5s of each fight) ── */
-function CombatIntroSplash({
-  emoji,
-  name,
-  onDone }: {
-  emoji: string;
-  name: string;
-  onDone: () => void;
-}) {
-  useEffect(() => {
-    const timer = setTimeout(onDone, 1550);
-    return () => clearTimeout(timer);
-  }, [onDone]);
-
-  return (
-    <motion.div
-      className="combat-intro-overlay"
-      style={{ zIndex: UI_LAYERS.COMBAT + 3 }}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.15 }}
-    >
-      <div className="combat-intro-card">
-        <div className="combat-intro-slash" aria-hidden />
-        <div className="combat-intro-emoji mb-2 enemy-hologram">{emoji}</div>
-        <div className="combat-intro-title mb-2">БОЙ</div>
-        <div className="text-sm text-red-200/90 font-mono tracking-widest uppercase">{name}</div>
-        <div className="text-[10px] text-slate-500 font-mono mt-3 tracking-wide">
-          1 атака · 2 защита · 3 стих · 4 побег
-        </div>
-      </div>
-    </motion.div>
-  );
-}
-
 /* ── Enemy Silhouette (CSS animated) ── */
 function EnemyPortrait({ emoji, hp, maxHp }: { emoji: string; hp: number; maxHp: number }) {
   const hurt = hp / maxHp < 0.3;
@@ -353,215 +257,7 @@ function TerminalButton({
   );
 }
 
-/* ── Enhanced Combat Log Entry with turn numbers & type icons ── */
-function CombatLogLine({ entry, className }: { entry: CombatLogEntry; className?: string }) {
-  const typeStyles: Record<string, string> = {
-    player_attack: 'text-cyan-400',
-    enemy_attack: 'text-red-400',
-    enemy_special: 'text-orange-400 font-semibold',
-    player_defend: 'text-emerald-400',
-    player_power: 'text-amber-300',
-    player_flee: 'text-slate-300',
-    info: 'text-slate-400',
-    victory: 'text-emerald-400 font-bold',
-    defeat: 'text-red-400 font-bold',
-    buff_expire: 'text-slate-500 italic',
-    critical_hit: 'text-yellow-300 font-bold',
-    combo_hit: 'text-orange-300 font-semibold',
-    status_effect: 'text-purple-400',
-    poem_combo: 'text-fuchsia-400 font-bold' };
-  const typeIcons: Record<string, string> = {
-    player_attack: '⚔️',
-    enemy_attack: '💥',
-    enemy_special: '⚠️',
-    player_defend: '🛡️',
-    player_power: '✦',
-    player_flee: '🏃',
-    info: '●',
-    victory: '🏆',
-    defeat: '💀',
-    buff_expire: '⏳',
-    critical_hit: '💥',
-    combo_hit: '🔥',
-    status_effect: '✨',
-    poem_combo: '💫' };
-  const style = typeStyles[entry.type] || 'text-slate-400';
-  const icon = typeIcons[entry.type] || '●';
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, x: -8 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.15 }}
-      className={`text-[10px] sm:text-xs leading-relaxed font-mono ${style} ${className || ''}`}
-    >
-      <span className="opacity-30 mr-1 text-[8px]">Т{entry.turn}</span>
-      <span className="mr-0.5">{icon}</span>
-      {entry.text}
-    </motion.div>
-  );
-}
-
-/* ── Victory / Defeat — see combatUi/CombatOutcomeScreens ── */
-
-/* ── Poem Power Card for the enhanced submenu ── */
-function PoemPowerCard({
-  power,
-  index,
-  onCooldown,
-  isGamepadSelected,
-  onSelect,
-  gamepadUseHint,
-}: {
-  power: { poemId: string; name: string; description: string; cooldownRemaining: number };
-  index: number;
-  onCooldown: boolean;
-  isGamepadSelected: boolean;
-  onSelect: () => void;
-  gamepadUseHint?: string;
-}) {
-  const category = getPoemEffectCategory(power.poemId);
-  const categoryColor = getPoemCategoryColor(category);
-  const categoryLabel = getPoemEffectLabel(category);
-  const CategoryIcon = getPoemEffectIcon(category);
-
-  // Get total cooldown from POEM_COMBAT_ABILITIES
-  const ability = POEM_COMBAT_ABILITIES[power.poemId];
-  const totalCooldown = ability?.cooldown ?? 0;
-
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <button
-          onClick={onSelect}
-          disabled={onCooldown}
-          className={`relative w-full px-3 py-2 text-left transition-all border-b border-slate-800/30 last:border-0 font-mono ${
-            onCooldown
-              ? 'opacity-30 cursor-not-allowed grayscale'
-              : isGamepadSelected
-                ? 'bg-amber-900/50 ring-1 ring-amber-400/40'
-                : 'hover:bg-amber-900/30'
-          }`}
-        >
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-1.5 min-w-0">
-              {/* Keyboard shortcut hint */}
-              {!onCooldown && (
-                <span className="text-[8px] text-slate-600 bg-slate-800/60 rounded px-1 py-px font-mono shrink-0">
-                  {index + 1}
-                </span>
-              )}
-              <span className="text-xs text-amber-300 font-medium truncate">{power.name}</span>
-            </div>
-            <div className="flex items-center gap-1.5 shrink-0">
-              {/* Effect category tag */}
-              <span className={`inline-flex items-center gap-0.5 text-[7px] px-1 py-px rounded border ${categoryColor}`}>
-                <CategoryIcon className="size-2" />
-                {categoryLabel}
-              </span>
-              {gamepadUseHint && isGamepadSelected && !onCooldown && (
-                <span className="text-[8px] text-amber-500/70 font-mono">{gamepadUseHint}</span>
-              )}
-              {onCooldown && (
-                <span className="flex items-center gap-0.5 text-[8px] text-slate-500">
-                  <Clock className="size-2.5" /> {power.cooldownRemaining}х
-                </span>
-              )}
-            </div>
-          </div>
-          <div className="text-[9px] text-slate-500 mt-0.5">{power.description}</div>
-          {/* Cooldown progress bar */}
-          {onCooldown && totalCooldown > 0 && (
-            <div className="mt-1 w-full h-0.5 bg-slate-800/60 rounded overflow-hidden">
-              <div
-                className="h-full bg-amber-700/40 rounded transition-all"
-                style={{ width: `${((totalCooldown - power.cooldownRemaining) / totalCooldown) * 100}%` }}
-              />
-            </div>
-          )}
-        </button>
-      </TooltipTrigger>
-      <TooltipContent
-        side="left"
-        className="bg-black/90 border border-slate-700/50 text-[10px] font-mono text-slate-200 max-w-[220px]"
-        sideOffset={4}
-      >
-        <div className="font-semibold text-amber-300 mb-1">{power.name}</div>
-        <div className="text-slate-400">{power.description}</div>
-        <div className="mt-1 text-slate-500">Кулдаун: {totalCooldown} х.</div>
-        <div className="text-slate-500">Эффект: {categoryLabel}</div>
-        {onCooldown && <div className="text-red-400 mt-1">⏳ Готовность через {power.cooldownRemaining} х.</div>}
-      </TooltipContent>
-    </Tooltip>
-  );
-}
-
-/* ── Poem Powers Submenu with smart positioning ── */
-function PoemPowersSubmenu({ showPowers, availablePowers, gamepadConnected, gamepadSelectedIdx, onSelectPower }: {
-  showPowers: boolean;
-  availablePowers: ReturnType<typeof getAvailableCombatPowers>;
-  gamepadConnected: boolean;
-  gamepadSelectedIdx: number;
-  onSelectPower: (poemId: string) => void;
-}) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [positionAbove, setPositionAbove] = useState(true);
-
-  useEffect(() => {
-    if (!showPowers || !containerRef.current) return;
-    const btn = containerRef.current;
-    const rect = btn.getBoundingClientRect();
-    // Estimate submenu height: header (~32px) + items (~56px each), capped at max-h-60 (240px)
-    const estimatedHeight = Math.min(32 + availablePowers.length * 56, 240);
-    const spaceAbove = rect.top;
-    const spaceBelow = window.innerHeight - rect.bottom;
-    // Position above if there's enough room, otherwise below
-    setPositionAbove(spaceAbove >= estimatedHeight || spaceAbove >= spaceBelow);
-  }, [showPowers, availablePowers.length]);
-
-  if (!showPowers || availablePowers.length === 0) return null;
-
-  return (
-    <AnimatePresence>
-      <motion.div
-        ref={containerRef}
-        initial={{ opacity: 0, y: positionAbove ? 10 : -10, scale: 0.95 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: positionAbove ? 10 : -10, scale: 0.95 }}
-        transition={{ duration: 0.15 }}
-        className={`absolute left-0 right-0 bg-black/95 border border-amber-700/30 rounded-lg backdrop-blur-md overflow-hidden max-h-60 overflow-y-auto ${
-          positionAbove ? 'bottom-full mb-2' : 'top-full mt-2'
-        }`}
-        style={{ zIndex: UI_LAYERS.COMBAT, scrollbarWidth: 'thin', scrollbarColor: '#78716c transparent' }}
-      >
-        {/* Submenu header with hint */}
-        <div className="sticky top-0 bg-black/90 border-b border-amber-900/30 px-3 py-1.5 flex items-center justify-between z-10">
-          <span className="text-[9px] text-amber-400/80 font-mono font-semibold uppercase tracking-wider">
-            ⚡ Стихотворения
-          </span>
-          <span className="text-[8px] text-slate-500 font-mono">
-            [1-{Math.min(9, availablePowers.length)}] выбор · [Esc] закрыть
-          </span>
-        </div>
-        {availablePowers.map((power, idx) => {
-          const onCooldown = power.cooldownRemaining > 0;
-          const isGamepadSelected = gamepadConnected && idx === gamepadSelectedIdx;
-          return (
-            <PoemPowerCard
-              key={power.poemId}
-              power={power}
-              index={idx}
-              onCooldown={onCooldown}
-              isGamepadSelected={isGamepadSelected}
-              onSelect={() => !onCooldown && onSelectPower(power.poemId)}
-              gamepadUseHint={gamepadConnected ? COMBAT_BUTTON_HINTS.poem_use_selected : undefined}
-            />
-          );
-        })}
-      </motion.div>
-    </AnimatePresence>
-  );
-}
+/* ── Victory / Defeat / Poem powers / Log / Intro — see combatUi/* ── */
 
 /* ── Main Component ── */
 export function CombatUI() {

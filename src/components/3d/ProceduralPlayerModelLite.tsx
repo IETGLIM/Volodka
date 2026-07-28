@@ -88,35 +88,35 @@ export const ProceduralPlayerModelLite = memo(function ProceduralPlayerModelLite
   return (
     <group ref={groupRef} scale={[modelScale, modelScale, modelScale]}>
       <group name="torso" position={[0, 1.05, 0.02]} rotation={[0.06, 0, 0]}>
-        <mesh geometry={geo.torso} material={mat.hoodie} />
+        <mesh castShadow geometry={geo.torso} material={mat.hoodie} />
 
-        <mesh position={[0.08, -0.12, 0.128]} material={karmaMat.phoneGlow}>
+        <mesh castShadow position={[0.08, -0.12, 0.128]} material={karmaMat.phoneGlow}>
           <boxGeometry args={[0.04, 0.06, 0.003]} />
         </mesh>
 
         <group name="head" position={[0, 0.47, 0.02]}>
-          <mesh geometry={geo.head} material={mat.skin} />
-          <mesh position={[0, 0.06, -0.02]} geometry={geo.hair} material={mat.hair} />
+          <mesh castShadow geometry={geo.head} material={mat.skin} />
+          <mesh castShadow position={[0, 0.06, -0.02]} geometry={geo.hair} material={mat.hair} />
         </group>
 
         <group name="leftArm" position={[0.24, 0.18, 0]} rotation={[0, 0, 0.12]}>
-          <mesh position={[0, -0.22, 0]} geometry={geo.arm} material={mat.hoodie} />
-          <mesh position={[0, -0.395, 0]} geometry={karmaMat.wristbandGeo} material={karmaMat.wristbandGlow} />
+          <mesh castShadow position={[0, -0.22, 0]} geometry={geo.arm} material={mat.hoodie} />
+          <mesh castShadow position={[0, -0.395, 0]} geometry={karmaMat.wristbandGeo} material={karmaMat.wristbandGlow} />
         </group>
 
         <group name="rightArm" position={[-0.24, 0.18, 0]} rotation={[0, 0, -0.12]}>
-          <mesh position={[0, -0.22, 0]} geometry={geo.arm} material={mat.hoodie} />
+          <mesh castShadow position={[0, -0.22, 0]} geometry={geo.arm} material={mat.hoodie} />
         </group>
       </group>
 
       <group name="leftLeg" position={[0.09, 0.9, 0]}>
-        <mesh position={[0, -0.28, 0]} geometry={geo.leg} material={mat.jeans} />
-        <mesh position={[0, -0.55, 0.02]} geometry={geo.sneaker} material={mat.sneaker} />
+        <mesh castShadow position={[0, -0.28, 0]} geometry={geo.leg} material={mat.jeans} />
+        <mesh castShadow position={[0, -0.55, 0.02]} geometry={geo.sneaker} material={mat.sneaker} />
       </group>
 
       <group name="rightLeg" position={[-0.09, 0.9, 0]}>
-        <mesh position={[0, -0.28, 0]} geometry={geo.leg} material={mat.jeans} />
-        <mesh position={[0, -0.55, 0.02]} geometry={geo.sneaker} material={mat.sneaker} />
+        <mesh castShadow position={[0, -0.28, 0]} geometry={geo.leg} material={mat.jeans} />
+        <mesh castShadow position={[0, -0.55, 0.02]} geometry={geo.sneaker} material={mat.sneaker} />
       </group>
     </group>
   );

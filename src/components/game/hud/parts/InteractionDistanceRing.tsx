@@ -82,11 +82,13 @@ export function InteractionDistanceRing() {
               width: ringSize,
               height: ringSize,
               borderColor: `rgb(var(--cyber-cyan-rgb) / ${borderAlpha})`,
-              boxShadow: `0 0 12px rgb(var(--cyber-cyan-rgb) / ${glowAlpha}), inset 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.08)`,
+              boxShadow: inRange
+                ? `0 0 16px rgb(var(--cyber-cyan-rgb) / ${glowAlpha + 0.08}), inset 0 0 10px rgb(var(--cyber-cyan-rgb) / 0.12)`
+                : `0 0 12px rgb(var(--cyber-cyan-rgb) / ${glowAlpha}), inset 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.08)`,
             }}
-            transition={{ duration: 0.2, ease: 'easeOut' }}
+            transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
             className={`rounded-full border ${inRange ? 'distance-ring-in-range' : ''}`}
-            style={{ borderWidth: 1, marginLeft: -ringSize / 2, marginTop: -ringSize / 2 }}
+            style={{ borderWidth: inRange ? 1.5 : 1, marginLeft: -ringSize / 2, marginTop: -ringSize / 2 }}
           />
           {/* Tick marks at cardinal points when within interact range */}
           {inRange && (

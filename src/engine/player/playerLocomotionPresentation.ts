@@ -187,9 +187,10 @@ export function computeSlopeLocomotionScale(
   const horizontal = Math.hypot(actualDx, actualDz);
   if (horizontal < 0.001) return 1;
   const riseRatio = Math.abs(actualDy) / horizontal;
-  if (riseRatio < 0.08) return 1;
-  const t = Math.min(1, (riseRatio - 0.08) / 0.17);
-  return 1 - t * 0.15;
+  // Start earlier and peak ~22% so stair/ramp climbs read as intentional effort.
+  if (riseRatio < 0.06) return 1;
+  const t = Math.min(1, (riseRatio - 0.06) / 0.18);
+  return 1 - t * 0.22;
 }
 
 export function getAccessibilityLocomotionScale(): number {

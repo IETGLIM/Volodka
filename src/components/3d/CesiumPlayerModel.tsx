@@ -9,6 +9,7 @@ import { usePlayerLocomotionController } from '@/engine/player/usePlayerLocomoti
 import { useMixamoAnimationClips } from '@/hooks/useMixamoAnimationClips';
 import { useSkinnedGltfClone } from '@/hooks/useSkinnedGltfClone';
 import type { ProceduralPlayerModelProps } from './useProceduralPlayerAnimation';
+import { ProceduralPlayerModelLite } from './ProceduralPlayerModelLite';
 
 const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeof useGLTF>[3]>;
 const PLAYER_MODEL_URL = getPlayerVolodkaModelUrl();
@@ -135,10 +136,10 @@ function CesiumPlayerModelInner({ modelScale, currentAnimRef, rotationRef }: Pro
   );
 }
 
-/** Cesium avatar with a procedural fallback while the GLB streams / on error. */
+/** Cesium avatar with a lite procedural fallback while the GLB streams. */
 export function CesiumPlayerModel(props: ProceduralPlayerModelProps) {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<ProceduralPlayerModelLite {...props} />}>
       <CesiumPlayerModelInner {...props} />
     </Suspense>
   );

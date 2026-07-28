@@ -39,7 +39,7 @@ describe('guidanceLocation', () => {
   });
 
   it('builds in-scene direction hint', () => {
-    expect(buildGuidanceDirectionHint('street_night', 'street_night')).toBe('Идите к цели');
+    expect(buildGuidanceDirectionHint('street_night', 'street_night')).toMatch(/этой локации/);
   });
 
   it('builds travel direction hint for other scenes', () => {

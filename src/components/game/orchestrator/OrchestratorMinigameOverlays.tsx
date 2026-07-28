@@ -3,6 +3,7 @@ import { AnimatePresence } from 'framer-motion';
 import { FocusTrap } from '@/components/a11y/FocusTrap';
 import { closeMinigame } from '@/shared/constants/minigames';
 import type { MinigamePanelSetters } from '@/shared/constants/minigames';
+import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { runOverlayCleanup } from './panelLifecycle';
 import {
   LazyCodeBreakerGame,
@@ -49,7 +50,23 @@ function resolveActiveMinigame(props: Props): MinigameId | null {
   return null;
 }
 
-/** Single AnimatePresence for all minigames — one layout exit path instead of eight. */
+function MinigameLoadingFallback() {
+  return (
+    <div
+      className="fixed inset-0 flex items-center justify-center bg-black/50"
+      style={{ zIndex: UI_LAYERS.MINIGAME }}
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
+      tabIndex={-1}
+    >
+      <p className="text-cyan-300/80 text-sm font-mono tracking-wide">Загрузка мини-игры…</p>
+    </div>
+  );
+}
+
+/** Single AnimatePresence for all minigames — one layout exit path instead of eight.
+ *  FocusTrap wraps every CodeBreaker/Bash/etc. overlay (Sprint A + D). */
 export function OrchestratorMinigameOverlays(props: Props) {
   const active = resolveActiveMinigame(props);
   const { minigameSetters } = props;
@@ -63,7 +80,7 @@ export function OrchestratorMinigameOverlays(props: Props) {
     <AnimatePresence initial={false} mode="wait">
       {active && (
         <FocusTrap key={active} active>
-          <Suspense fallback={null}>
+          <Suspense fallback={<MinigameLoadingFallback />}>
             {active === 'codebreaker' && (
               <LazyCodeBreakerGame onClose={() => closeMinigame('codebreaker', minigameSetters)} />
             )}

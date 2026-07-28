@@ -538,9 +538,25 @@ export function DialogueRenderer() {
   // Loading state: node data is being fetched (not yet cached)
   if (isLoadingNode && !node) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm" style={{ zIndex: UI_LAYERS.DIALOGUE }}>
-        <div className="flex items-center gap-3 text-amber-300/80 text-lg font-mono animate-pulse">
-          <span className="tracking-widest">···</span>
+      <div
+        className="fixed inset-0 flex items-center justify-center bg-black/55 backdrop-blur-[2px]"
+        style={{ zIndex: UI_LAYERS.DIALOGUE }}
+        role="status"
+        aria-live="polite"
+        aria-busy="true"
+      >
+        <div className="flex flex-col items-center gap-3 px-6 py-5 rounded-xl border border-amber-700/35 bg-black/75 shadow-[0_0_28px_rgba(251,191,36,0.12)]">
+          <div className="flex items-center gap-1.5" aria-hidden>
+            {[0, 1, 2].map((i) => (
+              <span
+                key={i}
+                className="size-1.5 rounded-full bg-amber-300/80 animate-pulse"
+                style={{ animationDelay: `${i * 140}ms` }}
+              />
+            ))}
+          </div>
+          <p className="text-amber-200/85 text-sm font-mono tracking-wide">Загрузка диалога…</p>
+          <p className="text-[10px] text-slate-500 font-mono">Холодный путь пакета — почти готово</p>
         </div>
       </div>
     );

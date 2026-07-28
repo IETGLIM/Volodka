@@ -95,7 +95,12 @@ const PROFILES: Partial<Record<SceneId, SceneVisualProfile>> = {
   },
   chk_forest_zorge: { ...STANDARD_PROFILE, forceFullPostFx: true, bloomIntensityScale: 1.1 },
   chk_campfire_night: { ...STANDARD_PROFILE, forceFullPostFx: true, bloomIntensityScale: 1.14 },
-  factory_roof: { ...STANDARD_PROFILE, forceFullPostFx: true, bloomIntensityScale: 1.08 },
+  factory_roof: {
+    ...STANDARD_PROFILE,
+    forceFullPostFx: true,
+    bloomIntensityScale: 1.12,
+    enhancedAmbientOcclusion: false,
+  },
   city_square: {
     ...STANDARD_PROFILE,
     forceFullPostFx: true,

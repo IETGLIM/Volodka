@@ -9,7 +9,9 @@ import {
   createContactShadowTexture,
 } from '@/engine/three/contactShadowTexture';
 
-/** Contact shadow — flat circle mesh under player feet with radial gradient */
+/** Contact shadow — flat circle mesh under player feet with radial gradient.
+ *  Slightly softer than NPC so real shadow maps + blob don't double-ink feet.
+ */
 export function PhysicsPlayerContactShadow() {
   const shadowTexture = useCachedCanvasTexture(
     CONTACT_SHADOW_CACHE_KEYS.player,
@@ -17,13 +19,15 @@ export function PhysicsPlayerContactShadow() {
   );
 
   return (
-    <mesh rotation-x={-Math.PI / 2} position={[0, 0.005, 0]}>
-      <circleGeometry args={[0.45, 32]} />
+    <mesh rotation-x={-Math.PI / 2} position={[0, 0.004, 0]} renderOrder={-1}>
+      <circleGeometry args={[0.42, 32]} />
       <meshBasicMaterial
         map={shadowTexture}
         transparent
-        opacity={0.75}
+        opacity={0.55}
         depthWrite={false}
+        polygonOffset
+        polygonOffsetFactor={-1}
       />
     </mesh>
   );

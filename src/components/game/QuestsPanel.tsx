@@ -31,10 +31,11 @@ import {
   isCriticalPathQuest,
   QUEST_RETRY_PENALTY,
 } from '@/shared/quest/questFailureBypass';
-import { useQuests } from '@/store/selectors';
+import { useQuests, useCurrentSceneId } from '@/store/selectors';
 import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { buildQuestJournalContextualHint } from '@/hooks/questJournalHint';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
@@ -172,6 +173,7 @@ function RewardBadge({ reward, index }: { reward: { type: string; skill?: string
 export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
   const reducedMotion = useEffectiveReducedMotion();
   const quests = useQuests();
+  const currentSceneId = useCurrentSceneId();
   const [showCompleted, setShowCompleted] = useState(false);
   const [showFailed, setShowFailed] = useState(true);
   const [expandedQuests, setExpandedQuests] = useState<Set<string>>(new Set());
@@ -503,12 +505,17 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                                 </div>
 
                                 {/* Hint section */}
-                                {def.hint && !isExpanded && (
+                                {(() => {
+                                  const contextual = buildQuestJournalContextualHint(qs.questId, currentSceneId);
+                                  const collapsedHint = contextual ?? def.hint;
+                                  if (!collapsedHint || isExpanded) return null;
+                                  return (
                                   <div className="flex items-start gap-1.5 mt-2">
                                     <Lightbulb className="size-3 text-amber-400/50 shrink-0 mt-0.5" />
-                                    <p className="text-[10px] text-amber-400/50 italic leading-relaxed">{def.hint}</p>
+                                    <p className="text-[10px] text-amber-400/50 italic leading-relaxed">{collapsedHint}</p>
                                   </div>
-                                )}
+                                  );
+                                })()}
 
                                 {/* Reward preview (collapsed) */}
                                 {def.rewards && def.rewards.length > 0 && !isExpanded && (
@@ -539,16 +546,33 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                                     })()}
                                   </p>
 
-                                  {/* Hint section (expanded) */}
-                                  {def.hint && (
-                                    <div className="mb-3 p-2.5 rounded-lg bg-amber-950/20 border border-amber-800/25">
-                                      <div className="text-[10px] text-amber-400 mb-1 flex items-center gap-1">
-                                        <Lightbulb className="size-3" />
-                                        Подсказка
-                                      </div>
-                                      <p className="text-[11px] text-amber-300/60 leading-relaxed">{def.hint}</p>
+                                  {/* Contextual next-step + static quest hint */}
+                                  {(() => {
+                                    const contextual = buildQuestJournalContextualHint(qs.questId, currentSceneId);
+                                    if (!contextual && !def.hint) return null;
+                                    return (
+                                    <div className="mb-3 p-2.5 rounded-lg bg-amber-950/20 border border-amber-800/25 space-y-2">
+                                      {contextual && (
+                                        <div>
+                                          <div className="text-[10px] text-cyan-400 mb-1 flex items-center gap-1">
+                                            <MapPin className="size-3" />
+                                            Сейчас
+                                          </div>
+                                          <p className="text-[11px] text-cyan-200/70 leading-relaxed">{contextual}</p>
+                                        </div>
+                                      )}
+                                      {def.hint && (
+                                        <div>
+                                          <div className="text-[10px] text-amber-400 mb-1 flex items-center gap-1">
+                                            <Lightbulb className="size-3" />
+                                            Подсказка
+                                          </div>
+                                          <p className="text-[11px] text-amber-300/60 leading-relaxed">{def.hint}</p>
+                                        </div>
+                                      )}
                                     </div>
-                                  )}
+                                    );
+                                  })()}
 
                                   {/* Dependencies */}
                                   {!deps.met && (

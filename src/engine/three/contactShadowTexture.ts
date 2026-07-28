@@ -20,19 +20,19 @@ const CONTACT_SHADOW_PRESETS: Record<ContactShadowVariant, ContactShadowPreset> 
   player: {
     size: 128,
     stops: [
-      [0, 0.5],
-      [0.35, 0.3],
-      [0.6, 0.12],
-      [0.85, 0.03],
+      [0, 0.42],
+      [0.32, 0.26],
+      [0.58, 0.1],
+      [0.82, 0.025],
       [1, 0],
     ],
   },
   npc: {
     size: 64,
     stops: [
-      [0, 0.4],
-      [0.4, 0.2],
-      [0.7, 0.06],
+      [0, 0.38],
+      [0.4, 0.18],
+      [0.7, 0.055],
       [1, 0],
     ],
   },
