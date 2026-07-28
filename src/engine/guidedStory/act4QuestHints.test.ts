@@ -1,5 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import {
+  getArchiveOfForgottenHint,
   getBlindSpotHint,
   getGuildInfiltrationHint,
   getLastPoemHint,
@@ -79,6 +80,18 @@ describe('act4QuestHints', () => {
     expect(getBlindSpotHint('street_night')).toMatch(/лог|офис/i);
     snap.quests[0].objectives = { check_office_logs: true };
     expect(getBlindSpotHint('cafe_evening')).toMatch(/Допрос|кафе/i);
+  });
+
+  it('archive_of_forgotten guides library then basement', () => {
+    snap.quests = [{
+      questId: 'archive_of_forgotten',
+      status: 'active',
+      objectives: {},
+      startedAtTime: 0,
+    }];
+    expect(getArchiveOfForgottenHint('street_night')).toMatch(/библиотек|Алина/i);
+    snap.quests[0].objectives = { meet_vera_library: true };
+    expect(getArchiveOfForgottenHint('library_day')).toMatch(/подвал|архив/i);
   });
 
   it('returns null when quest inactive', () => {

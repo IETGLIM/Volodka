@@ -656,6 +656,16 @@ export function subscribeCameraEventHub(options: CameraEventHubOptions): () => v
     dispatchCameraState(runtime, { type: 'recenter' }, sceneId);
   }));
 
+  unsubs.push(eventBus.on('camera:look_toward', ({ x, z }) => {
+    if (FIRST_PERSON_ENABLED) return;
+    const playerPos = runtime.livePlayerPosition.current;
+    const dx = x - playerPos.x;
+    const dz = z - playerPos.z;
+    if (dx * dx + dz * dz < 0.01) return;
+    const faceYaw = Math.atan2(dx, dz);
+    runtime.orbit.yaw.current = faceYaw + Math.PI;
+  }));
+
   unsubs.push(eventBus.on('camera:intro_wake', () => {
     if (FIRST_PERSON_ENABLED) return;
     cancelInFlightSceneTransition(runtime, sceneId);

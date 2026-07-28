@@ -36,6 +36,7 @@ vi.mock('@/engine/guidedStory/act4QuestHints', () => ({
   getRoofOfTheWorldHint: () => 'Доберись до крыши — место финальной встречи',
   getLastPoemHint: () => 'Найди тихое место на краю крыши',
   getBlindSpotHint: () => 'Логи гильдии у Сергея — иди в офис',
+  getArchiveOfForgottenHint: () => 'Алина знает пароль архива — ищи её в библиотеке',
 }));
 
 vi.mock('@/engine/guidedStory/act5QuestHints', () => ({
@@ -43,6 +44,14 @@ vi.mock('@/engine/guidedStory/act5QuestHints', () => ({
   getMachineConfessionHint: () => 'Вернись на заброшенный завод «Хром-М» ночью',
   getEchoOfVladimirHint: () => 'Катя знает о тайнике — ищи её в библиотеке',
   getNightBeforeDawnHint: () => 'Алберт должен подтвердить сторону — найди его',
+}));
+
+vi.mock('@/engine/guidedStory/act6QuestHints', () => ({
+  getTraitorInTheGuildHint: () => 'Секретные логи на заброшенной фабрике — начни там',
+  getUndergroundResistanceHint: () => 'Ночные улицы — там собираются те, кто не хочет быть найденным',
+  getDataHeistHint: () => 'Офис гильдии ночью — время проникновения',
+  getAct6SecretArchiveHint: () => 'Секретный архив под заброшенной фабрикой',
+  getRooftopConfrontationHint: () => 'Поднимись на крышу для финальной встречи',
 }));
 
 vi.mock('@/store/questStore', () => ({
@@ -177,6 +186,30 @@ describe('buildQuestJournalContextualHint', () => {
 
   it('prefers night_before_dawn live cue', () => {
     expect(buildQuestJournalContextualHint('night_before_dawn', 'street_night')).toContain('Алберт');
+  });
+
+  it('prefers archive_of_forgotten live cue', () => {
+    expect(buildQuestJournalContextualHint('archive_of_forgotten', 'street_night')).toContain('архив');
+  });
+
+  it('prefers traitor_in_the_guild live cue', () => {
+    expect(buildQuestJournalContextualHint('traitor_in_the_guild', 'street_night')).toContain('фабрик');
+  });
+
+  it('prefers underground_resistance live cue', () => {
+    expect(buildQuestJournalContextualHint('underground_resistance', 'volodka_room')).toContain('улиц');
+  });
+
+  it('prefers data_heist live cue', () => {
+    expect(buildQuestJournalContextualHint('data_heist', 'street_night')).toMatch(/офис/i);
+  });
+
+  it('prefers act6_secret_archive live cue', () => {
+    expect(buildQuestJournalContextualHint('act6_secret_archive', 'street_night')).toContain('архив');
+  });
+
+  it('prefers rooftop_confrontation live cue', () => {
+    expect(buildQuestJournalContextualHint('rooftop_confrontation', 'street_night')).toContain('крыш');
   });
 
   it('combines next objective with travel direction', () => {

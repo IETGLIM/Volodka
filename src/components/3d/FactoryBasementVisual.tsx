@@ -18,6 +18,11 @@ import {
 } from '@/engine/three/moduleGeometryRegistry';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { createFactoryBasementCoreGlowTexture } from '@/engine/graphics/proceduralSkyTextures';
+import {
+  getIndustrialDampFloorSettings,
+  getRainSpillInFloorBoost,
+} from '@/engine/graphics/wetStreetScenes';
+import { useGameStore } from '@/store/gameStore';
 import { EnvironmentDetail } from './lod/PropDistanceGate';
 
 interface FactoryBasementVisualProps {
@@ -42,6 +47,12 @@ export function FactoryBasementVisual(_props: FactoryBasementVisualProps) {
     'factory_basement:core-ceiling',
     createFactoryBasementCoreGlowTexture,
   );
+  const damp = useMemo(() => getIndustrialDampFloorSettings('factory_basement'), []);
+  const rainIntensity = useGameStore((s) => s.rainIntensity);
+  const spill = useMemo(
+    () => getRainSpillInFloorBoost('factory_basement', rainIntensity),
+    [rainIntensity],
+  );
   const coreRef = useRef<THREE.Mesh>(null);
   const coreLightRef = useRef<THREE.PointLight>(null);
   const rootGroupRef = useRef<THREE.Group>(null);
@@ -60,6 +71,9 @@ export function FactoryBasementVisual(_props: FactoryBasementVisualProps) {
     }
   }, { visibilityRef: rootGroupRef });
 
+  const floorRoughness = Math.max(0.2, (damp?.roughness ?? 0.85) - (spill?.roughnessDrop ?? 0));
+  const floorMetalness = Math.min(0.55, (damp?.metalness ?? 0) + (spill?.metalnessBoost ?? 0));
+
   return (
     <group ref={rootGroupRef}>
       {/* ── Stained concrete floor ── */}
@@ -67,12 +81,27 @@ export function FactoryBasementVisual(_props: FactoryBasementVisualProps) {
         <meshStandardMaterial
           map={floorTexture}
           color="#23282a"
-          roughness={0.85}
+          roughness={floorRoughness}
+          metalness={floorMetalness}
           polygonOffset
           polygonOffsetFactor={1}
           polygonOffsetUnits={1}
         />
       </mesh>
+      {spill && (
+        <mesh rotation-x={-Math.PI / 2} position={[0, 0.008, D * 0.35]} geometry={getSharedCircleGeometry(2.4, 24)}>
+          <meshStandardMaterial
+            color="#1a2830"
+            metalness={damp?.oilMetalness ?? 0.55}
+            roughness={damp?.oilRoughness ?? 0.22}
+            transparent
+            opacity={spill.puddleOpacity}
+            polygonOffset
+            polygonOffsetFactor={1}
+            polygonOffsetUnits={1}
+          />
+        </mesh>
+      )}
 
       {/* ── Walls + low ceiling ── */}
       {[

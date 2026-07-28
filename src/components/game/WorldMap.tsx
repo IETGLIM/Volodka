@@ -14,6 +14,10 @@ import { useGameStore } from '@/store/gameStore';
 import { useFastTravelState, useActiveQuests } from '@/store/selectors';
 import { getQuestMarker } from '@/store/questStore';
 import { getQuestDefinitions } from '@/data/gameDataLoader';
+import {
+  emitTravelQuestPinOnArrival,
+  resolveTravelQuestPin,
+} from '@/components/game/worldMapTravelQuestPin';
 import { eventBus } from '@/engine/EventBus';
 import { SCENE_CONFIG } from '@/config/scenes';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
@@ -398,16 +402,18 @@ export function WorldMap({ open, onClose }: WorldMapProps) {
   // Confirm travel
   const confirmTravel = useCallback(() => {
     if (!travelTarget) return;
+    const pin = resolveTravelQuestPin(travelTarget.id, activeQuests);
     setIsTraveling(true);
     setTimeout(() => {
       fastTravelTo(travelTarget.id);
       setTimeout(() => {
+        if (pin) emitTravelQuestPinOnArrival(pin);
         setIsTraveling(false);
         setTravelTarget(null);
         onClose();
       }, 400);
     }, 300);
-  }, [travelTarget, fastTravelTo, onClose]);
+  }, [travelTarget, fastTravelTo, onClose, activeQuests]);
 
   // Cancel travel
   const cancelTravel = useCallback(() => {

@@ -55,11 +55,11 @@ export const VARIABLE_JUMP_FALL_MULT = 2.2;
 
 // ── Running FOV boost ──
 /** Additional FOV degrees when sprinting (adds peripheral speed feel). */
-export const RUN_FOV_BOOST = 3.5;
+export const RUN_FOV_BOOST = 4.0;
 /** Player speed (m/s) at which FOV boost is at full intensity. */
-export const RUN_FOV_SPEED_FULL = 5.25;
+export const RUN_FOV_SPEED_FULL = 5.1;
 /** Player speed (m/s) at which FOV boost begins. */
-export const RUN_FOV_SPEED_MIN = 2.35;
+export const RUN_FOV_SPEED_MIN = 2.25;
 /** Cap KCC controller recreates per incident to avoid WASM churn loops. */
 export const MAX_KCC_RECREATE_ATTEMPTS_PER_INCIDENT = 5;
 /** Max horizontal direct-translation step when KCC is unavailable (prevents wall teleport). */

@@ -70,8 +70,8 @@ export function TerminalButton({
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`relative flex-1 py-2.5 rounded border ${c.border} ${c.bg} ${c.text} ${c.hoverBg} disabled:opacity-30 disabled:cursor-not-allowed transition-all text-xs font-mono font-semibold flex items-center justify-center gap-1.5 overflow-hidden group combat-btn-enhanced`}
-      style={!disabled ? { boxShadow: `0 0 8px ${c.glow}20, inset 0 0 8px ${c.glow}10` } : {}}
+      className={`relative flex-1 py-2.5 rounded border ${c.border} ${c.bg} ${c.text} ${c.hoverBg} disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-150 text-xs font-mono font-semibold flex items-center justify-center gap-1.5 overflow-hidden group combat-btn-enhanced active:scale-[0.97] active:brightness-110`}
+      style={!disabled ? { boxShadow: `0 0 10px ${c.glow}28, inset 0 0 10px ${c.glow}14` } : {}}
     >
       <div
         className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
@@ -80,6 +80,13 @@ export function TerminalButton({
             'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,255,0.03) 2px, rgba(0,255,255,0.03) 4px)',
         }}
       />
+      {!disabled && (
+        <div
+          className="absolute inset-x-0 bottom-0 h-px opacity-70 pointer-events-none"
+          style={{ background: `linear-gradient(90deg, transparent, ${c.glow}, transparent)` }}
+          aria-hidden
+        />
+      )}
       {gamepadHint && <GamepadHint label={gamepadHint} />}
       <span className="absolute top-0 left-0 text-[8px] leading-none opacity-30">┌</span>
       <span className="absolute bottom-0 right-0 text-[8px] leading-none opacity-30">┘</span>

@@ -750,11 +750,32 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                                       .map((obj) => {
                                       const completed = qs.objectives[obj.id] === true;
                                       return (
-                                        <div
+                                        <button
+                                          type="button"
                                           key={obj.id}
-                                          className={`flex items-start gap-2 text-xs ${
-                                            completed ? 'text-emerald-400/70' : 'text-slate-300'
+                                          disabled={completed}
+                                          className={`flex items-start gap-2 text-xs text-left w-full rounded-md px-1 py-0.5 -mx-1 transition-colors ${
+                                            completed
+                                              ? 'text-emerald-400/70 cursor-default'
+                                              : 'text-slate-300 hover:bg-cyan-950/30 hover:text-cyan-100'
                                           }`}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            if (completed) return;
+                                            const marker = getQuestMarker(qs.questId);
+                                            eventBus.emit('quest:pulse_marker', {
+                                              questId: qs.questId,
+                                              sceneId: marker?.sceneId,
+                                            });
+                                            if (marker?.sceneId && marker.sceneId !== currentSceneId) {
+                                              eventBus.emit('ui:open_panel', {
+                                                panel: 'worldMap',
+                                                sceneId: marker.sceneId,
+                                              });
+                                            } else if (marker?.sceneId === currentSceneId) {
+                                              onClose();
+                                            }
+                                          }}
                                         >
                                           {completed ? (
                                             <ObjectiveCheckmark justCompleted={completed} />
@@ -776,7 +797,7 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                                               </div>
                                             )}
                                           </div>
-                                        </div>
+                                        </button>
                                       );
                                     })}
                                     {/* Progressive reveal indicator */}
