@@ -52,10 +52,24 @@ export function InteractionDistanceRing() {
       setVisible(false);
     });
 
+    const unsubStuck = eventBus.on('interaction:stuck_recovery', () => {
+      // Juice: keep ring primed until emitStuckRecoveryNpcRingFocus fires hint.
+      lastHintRef.current = Date.now();
+      setVisible(true);
+      setProximity01(0.85);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      timeoutRef.current = setTimeout(() => {
+        if (Date.now() - lastHintRef.current >= DECAY_MS * 2) {
+          setVisible(false);
+        }
+      }, DECAY_MS * 2);
+    });
+
     return () => {
       unsubHint();
       unsubEnd();
       unsubStart();
+      unsubStuck();
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
   }, []);

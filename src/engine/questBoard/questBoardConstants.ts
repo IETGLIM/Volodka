@@ -51,6 +51,9 @@ export const QUEST_BOARD_LABELS = {
   objectiveProgress: (current: number, target: number, description: string) =>
     `${description}: ${current} из ${target}`,
   objectiveComplete: (description: string) => `Выполнено: ${description}`,
+  openJournal: 'В журнал',
+  openJournalAria: 'Открыть журнал квестов',
+  openJournalHint: 'Смотреть сюжетные задания в журнале',
 } as const;
 
 export const QUEST_BOARD_DIFFICULTY_DIAMOND_COUNT = {

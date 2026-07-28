@@ -8,6 +8,7 @@ import { useQuestBoardController } from '@/components/game/questBoard/useQuestBo
 import '@/components/game/questBoard/quest-board.css';
 import { QUEST_BOARD_LABELS, QUEST_BOARD_TAB_IDS } from '@/engine/questBoard/questBoardConstants';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { eventBus } from '@/engine/EventBus';
 
 export type QuestBoardPanelProps = {
   open: boolean;
@@ -54,11 +55,25 @@ function QuestBoardPanelInner({ open, onClose }: QuestBoardPanelProps) {
         </div>
       }
       footer={
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-2 flex-wrap">
           <span className="text-[9px] text-slate-600 font-mono">{QUEST_BOARD_LABELS.urlPath}</span>
-          <span className="text-[9px] text-slate-500 font-mono">
-            {QUEST_BOARD_LABELS.footerStats(board.activeCount, board.completedCount, board.maxActive)}
-          </span>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              className="text-[10px] font-mono text-cyan-400/80 hover:text-cyan-300 underline-offset-2 hover:underline transition-colors"
+              aria-label={QUEST_BOARD_LABELS.openJournalAria}
+              title={QUEST_BOARD_LABELS.openJournalHint}
+              onClick={() => {
+                onClose();
+                eventBus.emit('ui:open_panel', { panel: 'quests' });
+              }}
+            >
+              {QUEST_BOARD_LABELS.openJournal}
+            </button>
+            <span className="text-[9px] text-slate-500 font-mono">
+              {QUEST_BOARD_LABELS.footerStats(board.activeCount, board.completedCount, board.maxActive)}
+            </span>
+          </div>
         </div>
       }
     >

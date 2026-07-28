@@ -16,6 +16,7 @@ import { closeNarrativeOverlay, closeDiegeticNarrative } from '@/engine/scene/na
 import { eventBus } from '@/engine/EventBus';
 import { devWarn } from '@/shared/utils/devLog';
 import { getStuckRecoveryReapproachHint, getStuckRecoveryUserMessage } from '@/engine/interaction/stuckRecoveryFeedback';
+import { emitStuckRecoveryNpcRingFocus } from '@/engine/interaction/stuckRecoveryNpcFocus';
 
 export function forceResetAllInteractionState(): void {
   // Snapshot the target NPC BEFORE resetting the module session, so we can
@@ -59,6 +60,7 @@ export function forceResetAllInteractionState(): void {
     title: reapproach,
     type: 'info' as const,
   });
+  emitStuckRecoveryNpcRingFocus(prevTargetNpcId);
 
   devWarn('[emergencyInteractionReset] All interaction state force-reset.');
 }

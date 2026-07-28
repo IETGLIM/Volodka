@@ -215,12 +215,14 @@ function TravelConfirmDialog({
   sceneId: _sceneId,
   sceneName,
   travelHours,
+  questTitles,
   onConfirm,
   onCancel,
 }: {
   sceneId: SceneId;
   sceneName: string;
   travelHours: number;
+  questTitles: string[];
   onConfirm: () => void;
   onCancel: () => void;
 }) {
@@ -254,14 +256,36 @@ function TravelConfirmDialog({
         </div>
         <p className="text-slate-300 text-sm mb-1">{sceneName}</p>
         {travelHours > 0 && (
-          <p className="text-xs text-slate-400 flex items-center gap-1.5 mb-4">
+          <p className="text-xs text-slate-400 flex items-center gap-1.5 mb-2">
             <Clock className="size-3" />
             Время в пути: {travelHours} ч.
           </p>
         )}
         {travelHours === 0 && (
-          <p className="text-xs text-emerald-400/70 mb-4">Мгновенный переход</p>
+          <p className="text-xs text-emerald-400/70 mb-2">Мгновенный переход</p>
         )}
+        {questTitles.length > 0 && (
+          <div
+            className="mb-4 rounded-md border border-amber-500/25 px-2.5 py-2"
+            style={{ background: 'rgba(251, 191, 36, 0.06)' }}
+          >
+            <p className="text-[10px] font-mono uppercase tracking-wider text-amber-400/80 mb-1 flex items-center gap-1">
+              <MapPin className="size-3" />
+              Активные квесты
+            </p>
+            <ul className="space-y-0.5">
+              {questTitles.slice(0, 3).map((title) => (
+                <li key={title} className="text-xs text-amber-100/90 truncate">
+                  · {title}
+                </li>
+              ))}
+              {questTitles.length > 3 && (
+                <li className="text-[10px] text-amber-400/60">+{questTitles.length - 3} ещё</li>
+              )}
+            </ul>
+          </div>
+        )}
+        {questTitles.length === 0 && <div className="mb-2" />}
         <div className="flex items-center gap-3 justify-end">
           <button
             type="button"
@@ -844,6 +868,7 @@ export function WorldMap({ open, onClose }: WorldMapProps) {
                         sceneId={travelTarget.id}
                         sceneName={travelTarget.name}
                         travelHours={travelTarget.hours}
+                        questTitles={questTitlesByScene.get(travelTarget.id) ?? []}
                         onConfirm={confirmTravel}
                         onCancel={cancelTravel}
                       />

@@ -23,10 +23,18 @@ import {
   getZaremaRescueHint,
 } from '@/engine/guidedStory/act23QuestHints';
 import {
+  getBlindSpotHint,
   getGuildInfiltrationHint,
+  getLastPoemHint,
   getPoetryBroadcastHint,
   getRoofOfTheWorldHint,
 } from '@/engine/guidedStory/act4QuestHints';
+import {
+  getEchoOfVladimirHint,
+  getFinalCodeHint,
+  getMachineConfessionHint,
+  getNightBeforeDawnHint,
+} from '@/engine/guidedStory/act5QuestHints';
 import { buildGuidanceDirectionHint } from '@/engine/guidedStory/guidanceLocation';
 import {
   getNextTrackedObjective,
@@ -125,6 +133,30 @@ export function buildQuestJournalContextualHint(
   }
   if (questId === 'roof_of_the_world') {
     const live = getRoofOfTheWorldHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'last_poem') {
+    const live = getLastPoemHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'blind_spot') {
+    const live = getBlindSpotHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'final_code') {
+    const live = getFinalCodeHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'machine_confession') {
+    const live = getMachineConfessionHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'echo_of_vladimir') {
+    const live = getEchoOfVladimirHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'night_before_dawn') {
+    const live = getNightBeforeDawnHint(currentSceneId);
     if (live) return live;
   }
 

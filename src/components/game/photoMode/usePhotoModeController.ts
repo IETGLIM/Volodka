@@ -8,6 +8,10 @@ import {
   type PhotoFilterPreset,
 } from '@/engine/photo/photoModeConstants';
 import {
+  pushPhotoCaptureHistory,
+  type PhotoCaptureHistoryEntry,
+} from '@/engine/photo/photoCaptureHistory';
+import {
   capturePhotoStill,
   downloadPhotoStill,
   formatGameTimeOfDay,
@@ -39,6 +43,7 @@ export function usePhotoModeController() {
   const [active, setActive] = useState(false);
   const [flash, setFlash] = useState(false);
   const [preview, setPreview] = useState<PhotoPreviewData | null>(null);
+  const [captureHistory, setCaptureHistory] = useState<PhotoCaptureHistoryEntry[]>([]);
   const [liveAnnouncement, setLiveAnnouncement] = useState('');
   const [filterPreset, setFilterPreset] = useState<PhotoFilterPreset>('neon');
 
@@ -48,6 +53,8 @@ export function usePhotoModeController() {
   previewRef.current = preview;
   const filterPresetRef = useRef(filterPreset);
   filterPresetRef.current = filterPreset;
+  const sceneNameRef = useRef(sceneName);
+  sceneNameRef.current = sceneName;
 
   const bumpPreviewTimer = useCallback(() => {
     if (previewTimerRef.current) window.clearTimeout(previewTimerRef.current);
@@ -91,7 +98,16 @@ export function usePhotoModeController() {
     void capturePhotoStill(filterPreset).then((result) => {
       if (!activeRef.current) return;
       if (result.ok) {
-        setPreview({ dataUrl: result.dataUrl, timestamp: Date.now() });
+        const timestamp = Date.now();
+        setPreview({ dataUrl: result.dataUrl, timestamp });
+        setCaptureHistory((prev) =>
+          pushPhotoCaptureHistory(prev, {
+            dataUrl: result.dataUrl,
+            timestamp,
+            filter: filterPresetRef.current,
+            sceneName: sceneNameRef.current,
+          }),
+        );
         bumpPreviewTimer();
         eventBus.emit('sound:play', { type: 'screenshot' });
         eventBus.emit('game:notification', {
@@ -106,6 +122,12 @@ export function usePhotoModeController() {
       }
     });
   }, [reducedMotion, filterPreset, bumpPreviewTimer]);
+
+  const selectHistoryCapture = useCallback((entry: PhotoCaptureHistoryEntry) => {
+    setPreview({ dataUrl: entry.dataUrl, timestamp: entry.timestamp });
+    bumpPreviewTimer();
+    setLiveAnnouncement(`${PHOTO_MODE_LABELS.gallerySelect}: ${entry.sceneName}`);
+  }, [bumpPreviewTimer]);
 
   const downloadPreview = useCallback(() => {
     const current = previewRef.current;
@@ -207,6 +229,7 @@ export function usePhotoModeController() {
     active,
     flash,
     preview,
+    captureHistory,
     liveAnnouncement,
     reducedMotion,
     sceneName,
@@ -214,6 +237,7 @@ export function usePhotoModeController() {
     filterPreset,
     exitPhotoMode,
     captureScreenshot,
+    selectHistoryCapture,
     toggleFilterPreset,
     downloadPreview,
     sharePreview,

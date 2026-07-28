@@ -76,7 +76,8 @@ describe('extension scene env LOD profiles', () => {
   it('defines finite cull radii for extension hubs (not default 999)', () => {
     expect(getEnvironmentLodProfile('guild_mainframe').clutterDistance).toBeLessThan(999);
     expect(getEnvironmentLodProfile('albert_backroom').clutterDistance).toBeLessThan(999);
-    expect(getEnvironmentLodProfile('chk_campfire_night').clutterDistance).toBeLessThan(999);
+    expect(getEnvironmentLodProfile('chk_campfire_night').clutterDistance).toBe(10);
+    expect(getEnvironmentLodProfile('abandoned_factory').clutterDistance).toBe(12);
     expect(getEnvironmentLodProfile('city_square').clutterDistance).toBe(16);
     expect(getEnvironmentLodProfile('pier_evening').clutterDistance).toBe(12);
     expect(getEnvironmentLodProfile('river_pier').clutterDistance).toBe(12);

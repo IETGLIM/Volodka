@@ -34,6 +34,15 @@ vi.mock('@/engine/guidedStory/act4QuestHints', () => ({
   getGuildInfiltrationHint: () => 'Пропуск гильдии — ищи в офисе IT',
   getPoetryBroadcastHint: () => 'Выход на крышу — к передающей башне',
   getRoofOfTheWorldHint: () => 'Доберись до крыши — место финальной встречи',
+  getLastPoemHint: () => 'Найди тихое место на краю крыши',
+  getBlindSpotHint: () => 'Логи гильдии у Сергея — иди в офис',
+}));
+
+vi.mock('@/engine/guidedStory/act5QuestHints', () => ({
+  getFinalCodeHint: () => 'Собери всех союзников перед операцией «Занавес»',
+  getMachineConfessionHint: () => 'Вернись на заброшенный завод «Хром-М» ночью',
+  getEchoOfVladimirHint: () => 'Катя знает о тайнике — ищи её в библиотеке',
+  getNightBeforeDawnHint: () => 'Алберт должен подтвердить сторону — найди его',
 }));
 
 vi.mock('@/store/questStore', () => ({
@@ -144,6 +153,30 @@ describe('buildQuestJournalContextualHint', () => {
 
   it('prefers roof_of_the_world live cue', () => {
     expect(buildQuestJournalContextualHint('roof_of_the_world', 'street_night')).toContain('крыши');
+  });
+
+  it('prefers last_poem live cue', () => {
+    expect(buildQuestJournalContextualHint('last_poem', 'street_night')).toContain('крыши');
+  });
+
+  it('prefers blind_spot live cue', () => {
+    expect(buildQuestJournalContextualHint('blind_spot', 'street_night')).toContain('офис');
+  });
+
+  it('prefers final_code live cue', () => {
+    expect(buildQuestJournalContextualHint('final_code', 'street_night')).toContain('союзник');
+  });
+
+  it('prefers machine_confession live cue', () => {
+    expect(buildQuestJournalContextualHint('machine_confession', 'street_night')).toContain('завод');
+  });
+
+  it('prefers echo_of_vladimir live cue', () => {
+    expect(buildQuestJournalContextualHint('echo_of_vladimir', 'street_night')).toContain('Катя');
+  });
+
+  it('prefers night_before_dawn live cue', () => {
+    expect(buildQuestJournalContextualHint('night_before_dawn', 'street_night')).toContain('Алберт');
   });
 
   it('combines next objective with travel direction', () => {

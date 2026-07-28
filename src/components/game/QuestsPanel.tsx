@@ -378,6 +378,18 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
           <Button
             variant="ghost"
             size="sm"
+            onClick={() => {
+              onClose();
+              eventBus.emit('ui:open_panel', { panel: 'questBoard' });
+            }}
+            title="Открыть доску ежедневных заданий"
+            className="text-xs text-emerald-400/80 border border-emerald-500/20 hover:text-emerald-300 hover:bg-emerald-950/20"
+          >
+            Доска
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => setShowFailed(!showFailed)}
             title="Показать/скрыть проваленные задания"
             className={`text-xs transition-all ${showFailed ? 'text-red-400 border border-red-500/30 bg-red-950/20' : 'text-slate-500 border border-transparent hover:text-red-400/70'}`}

@@ -96,7 +96,7 @@ const DEFAULT_ENV_PROFILE: EnvironmentLodProfile = {
 export const SCENE_ENV_LOD: Partial<Record<string, EnvironmentLodProfile>> = {
   street_night: { clutterDistance: 16, decorativeDistance: 24 },
   street_winter: { clutterDistance: 16, decorativeDistance: 24 },
-  abandoned_factory: { clutterDistance: 14, decorativeDistance: 20 },
+  abandoned_factory: { clutterDistance: 12, decorativeDistance: 18 },
   park_day: { clutterDistance: 18, decorativeDistance: 28 },
   office_day: { clutterDistance: 12, decorativeDistance: 18 },
   cafe_evening: { clutterDistance: 10, decorativeDistance: 14 },
@@ -110,17 +110,17 @@ export const SCENE_ENV_LOD: Partial<Record<string, EnvironmentLodProfile>> = {
   zarema_albert_room: { clutterDistance: 8, decorativeDistance: 12 },
   solnysh_room: { clutterDistance: 8, decorativeDistance: 12 },
   factory_basement: { clutterDistance: 10, decorativeDistance: 14 },
-  chk_campfire_night: { clutterDistance: 14, decorativeDistance: 20 },
+  chk_campfire_night: { clutterDistance: 10, decorativeDistance: 14 },
   city_square: { clutterDistance: 16, decorativeDistance: 24 },
   pier_evening: { clutterDistance: 12, decorativeDistance: 18 },
-  factory_roof: { clutterDistance: 12, decorativeDistance: 18 },
+  factory_roof: { clutterDistance: 10, decorativeDistance: 15 },
   library_basement: { clutterDistance: 12, decorativeDistance: 18 },
   underground_bunker: { clutterDistance: 10, decorativeDistance: 14 },
   guild_mainframe: { clutterDistance: 8, decorativeDistance: 12 },
   zarema_room: { clutterDistance: 8, decorativeDistance: 10 },
   albert_backroom: { clutterDistance: 6, decorativeDistance: 9 },
   river_pier: { clutterDistance: 12, decorativeDistance: 18 },
-  chk_forest_zorge: { clutterDistance: 14, decorativeDistance: 20 },
+  chk_forest_zorge: { clutterDistance: 12, decorativeDistance: 18 },
 };
 
 export function getEnvironmentLodProfile(sceneId: string): EnvironmentLodProfile {

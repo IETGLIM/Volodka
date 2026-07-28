@@ -305,7 +305,12 @@ function VisualScene({ sceneId, livePlayerPositionRef }: VisualSceneProps) {
     case 'solnysh_room':
       return <SolnyshRoomVisual livePlayerPositionRef={livePlayerPositionRef} />;
     case 'chk_forest_zorge':
-      return <ChkForestZorgeVisual livePlayerPositionRef={livePlayerPositionRef} />;
+      return (
+        <ChkForestZorgeVisual
+          sceneId={sceneId}
+          livePlayerPositionRef={livePlayerPositionRef}
+        />
+      );
     case 'factory_basement':
       return <FactoryBasementVisual livePlayerPositionRef={livePlayerPositionRef} />;
     case 'river_pier':
