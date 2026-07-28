@@ -35,13 +35,20 @@ jobs:
 
       - run: mkdir -p reports
 
-      - run: npx vitest run --reporter=default --reporter=junit --outputFile.junit=reports/vitest-junit.xml
+      - run: npm run test:coverage -- --reporter=default --reporter=junit --outputFile.junit=reports/vitest-junit.xml
 
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: vitest-junit
           path: reports/vitest-junit.xml
+          if-no-files-found: ignore
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-lcov
+          path: coverage/lcov.info
           if-no-files-found: ignore
 
       - run: npm run build

@@ -299,6 +299,7 @@ function MenuScreenPanelInner() {
                 <div className="flex flex-col gap-2 px-4 pt-2 pb-4">
                   <button
                     type="button"
+                    data-testid="menu-start-prologue"
                     onClick={handleDialogStartPrologue}
                     className="w-full px-4 py-2.5 font-mono text-xs tracking-[0.15em] uppercase
                                text-cyan-200/90 border border-cyan-500/30 bg-cyan-500/5
@@ -311,6 +312,7 @@ function MenuScreenPanelInner() {
                   </button>
                   <button
                     type="button"
+                    data-testid="menu-skip-prologue"
                     onClick={handleDialogSkipPrologue}
                     className="w-full px-4 py-2.5 font-mono text-xs tracking-[0.15em] uppercase
                                text-slate-400/80 border border-slate-500/20 bg-transparent
