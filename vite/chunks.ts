@@ -80,17 +80,25 @@ const DATA_QUESTS = new Set([
   'cutscenes',
   'npcCutscenes',
   'questItems',
+  // Colocate with quests/questItems — avoids data-quests ↔ data-misc TDZ.
+  'expansionQuestStubs',
+  'expansionItemStubs',
 ]);
 
 const DATA_POEMS = new Set([
   'poems',
   'matrixQuotes',
   'unifiedPoemRegistry',
+  // Colocate with poems — poemMargins (misc) → poems → stubs would TDZ across chunks.
+  'expansionPoemStubs',
+  'poemMargins',
 ]);
 
 const DATA_LORE_NARRATIVE = new Set([
   'loreEntries',
   'loreSceneMap',
+  // Colocate with loreEntries — avoids data-lore ↔ data-misc TDZ.
+  'expansionLoreStubs',
 ]);
 
 const DATA_NARRATIVE = new Set([
@@ -113,6 +121,8 @@ const DATA_WORLD = new Set([
   'triggerZones',
   'weatherEffects',
   'ambientSounds',
+  // Colocate with triggerZones — value import world→misc + type import misc→world TDZ.
+  'narrativeExpansionTriggerZones',
 ]);
 
 const DATA_MECHANICS = new Set([
