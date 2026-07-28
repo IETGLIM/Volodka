@@ -18,7 +18,7 @@ const DEFAULT_SHAKE_DECAY = 5;
 // CAM-2: Frame-id guard — prevent double-decay if getCameraShakeOffset
 // is called multiple times per frame (e.g., from multiple useFrame hooks).
 let _lastShakeFrameId = -1;
-let _lastShakeFrameOffset = { x: 0, y: 0 };
+const _lastShakeFrameOffset = { x: 0, y: 0 };
 
 function finiteOr(value: number, fallback: number): number {
   return Number.isFinite(value) ? value : fallback;

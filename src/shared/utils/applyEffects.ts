@@ -7,7 +7,7 @@ import {
 } from '@/shared/gameBridge/stateDispatcher';
 import { requestSceneTransitionFromBridge } from '@/shared/gameBridge/sceneTransitionBridge';
 import { resolveCanonicalNpcId } from '@/shared/npcIdAliases';
-import { propagateFactionRelationChange } from '@/engine/npc/factionPropagation';
+import { propagateFactionRelationChange } from '@/shared/gameBridge/factionBridge';
 import type { StoryEffect, TrainablePlayerSkill, EnemyType, SceneId } from '@/shared/types/game';
 
 /**

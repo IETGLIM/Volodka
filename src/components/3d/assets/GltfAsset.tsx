@@ -1,8 +1,6 @@
 /* eslint-disable react-refresh/only-export-components -- co-located helpers and lazy exports */
-import { Suspense, useMemo, useRef, useState, useEffect } from 'react';
+import { Suspense, useMemo, useState, useEffect } from 'react';
 import { useGLTF } from '@react-three/drei';
-import { useFrameTick } from '@/engine/frame/useFrameTick';
-import * as THREE from 'three';
 import { getAssetDefinition, isAssetEffectiveShipped, resolveAssetUrl } from '@/config/assetManifest';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
 import {

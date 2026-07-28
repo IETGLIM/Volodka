@@ -2,7 +2,6 @@
 /* Disco Elysium-inspired inner voices: acquire, equip (max 3), mutual exclusivity. */
 
 import type { StateCreator } from 'zustand';
-import type { ThoughtCabinetItem, ThoughtCabinetEffect, TrainablePlayerSkill } from '@/shared/types/game';
 import { THOUGHT_CABINET_MAP, MAX_EQUIPPED_THOUGHTS } from '@/data/thoughtCabinet';
 import type { GameStoreState } from '../types';
 import { pickThoughtCabinetCrossActions } from '../crossSliceReads';

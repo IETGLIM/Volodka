@@ -1,6 +1,6 @@
 /* ─── Volodka RPG – Thought Cabinet selectors ─── */
 
-import type { ThoughtCabinetItem, ThoughtCabinetEffect, TrainablePlayerSkill } from '@/shared/types/game';
+import type { ThoughtCabinetItem, TrainablePlayerSkill } from '@/shared/types/game';
 import { THOUGHT_CABINET_ITEMS, THOUGHT_CABINET_MAP } from '@/data/thoughtCabinet';
 import { useGameSelector, useGamePrimitive } from './hooks';
 

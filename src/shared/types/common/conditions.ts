@@ -1,7 +1,9 @@
 /* ─── Shared story / dialogue / exit gates ─── */
 
 import type { PlayerSkills, TrainablePlayerSkill } from '../definitions/skills';
-import type { CheckType } from '@/engine/narrative/whiteRedCheckSystem';
+
+/** Skill check type: 'white' (retryable after skill growth) or 'red' (one-shot). */
+export type CheckType = 'white' | 'red';
 
 /** Dialogue/story skill gate; difficulty validated as integer 1–20 at runtime. */
 export interface MinSkillCheck {

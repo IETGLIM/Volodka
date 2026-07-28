@@ -7,7 +7,7 @@
    – Responsive design
 */
 
-import { memo, useCallback, useState, useRef, useEffect } from 'react';
+import { memo, useCallback, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Sword,
@@ -103,7 +103,7 @@ const ActionBarButton = memo(function ActionBarButton({
   compact,
   showLabels,
   onExecute,
-  index,
+  _index,
 }: {
   action: ActionBarAction;
   compact: boolean;

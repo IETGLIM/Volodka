@@ -5,7 +5,7 @@
 
 import type { EquipmentSlot, InventoryItem } from '@/shared/types/game';
 import type { TrainablePlayerSkill } from '@/shared/types/definitions/skills';
-import type { DialogueModifier } from '@/shared/types/definitions/items';
+
 import type { SocialPerceptionTag, ClothingDefinition } from '@/data/clothingCatalog';
 import { getClothingById } from '@/data/clothingCatalog';
 import { useGameSelector } from './hooks';

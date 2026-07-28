@@ -4,15 +4,7 @@
  * Used by emotional reactions, ambient barks, head tracking, and animation.
  */
 
-/** NPC emotional states driven by game context and events. */
-export type NpcEmotion =
-  | 'neutral'
-  | 'curious'
-  | 'alarmed'
-  | 'contemplative'
-  | 'annoyed'
-  | 'respectful'
-  | 'fearful';
+export type { NpcEmotion } from '@/shared/types/definitions/npc';
 
 /** All available NpcEmotion values for exhaustive checks. */
 export const NPC_EMOTIONS: readonly NpcEmotion[] = [

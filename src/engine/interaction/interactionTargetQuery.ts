@@ -128,7 +128,7 @@ export function hasInteractionLineOfSight(
   const oz = _eye.z;
 
   // H4: Reuse cached Ray object instead of allocating each call.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const ray = _reusableRay as any;
   if (ray && _reusableRayRapier === ctx.rapier) {
     ray.origin.x = ox;

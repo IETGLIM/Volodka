@@ -21,7 +21,7 @@ const BLEND_WALK_RUN = 4;    // Walk→Run: slightly slower for natural feel
 const BLEND_DECEL = 3;       // Walk→Idle / Run→Walk: natural deceleration
 const BLEND_CINEMATIC = 8;   // Cinematic entry/exit: fast (~0.35s equivalent)
 
-const CLIP_CROSSFADE_SEC = 0.2;
+const _CLIP_CROSSFADE_SEC = 0.2;
 const CINEMATIC_CROSSFADE_SEC = 0.35;
 
 /** Weight threshold — below this, clamp to 0 to allow the mixer to deactivate the action. */

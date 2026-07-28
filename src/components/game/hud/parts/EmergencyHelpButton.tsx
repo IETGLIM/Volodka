@@ -98,7 +98,7 @@ export function EmergencyHelpButton() {
       const snap = getGameSnapshot();
       const guidance = getCurrentGuidance();
 
-      const questTitle = guidance
+      const _questTitle = guidance
         ? (snap.quests.find((q) => q.questId === guidance.targetId)?.status === 'active'
           ? guidance.objectiveText
           : null)

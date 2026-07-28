@@ -24,13 +24,9 @@ import {
   resolveOutfitEmotion,
   resolveEmotionTrigger,
   getKarmaEmotionModifier,
-  EMOTION_TRIGGERS,
   decayNpcEmotions,
 } from '@/engine/npc/npcEmotionalReactions';
-import type { NpcEmotion } from '@/engine/npc/npcEmotionTypes';
 import {
-  pauseHeadTracking,
-  resumeHeadTrackingDelayed,
   setHeadTrackingEmotion,
 } from '@/engine/npc/headTracking';
 import { registerHmrDispose } from '@/shared/dev/hmrDispose';
@@ -44,7 +40,7 @@ export const NPC_EMOTION_RADIUS_M = 6;
 export const NPC_PERCEPTION_RADIUS_M = 5;
 
 /** Default duration for proximity-triggered curiosity (ms). */
-const PROXIMITY_EMOTION_DURATION = 5000;
+const _PROXIMITY_EMOTION_DURATION = 5000;
 
 /* ─── EventBus subscription management ─── */
 

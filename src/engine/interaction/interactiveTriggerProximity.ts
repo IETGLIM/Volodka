@@ -1,7 +1,7 @@
 import type { MutableRefObject } from 'react';
 import * as THREE from 'three';
 import type { InteractionTargetHit } from '@/engine/interaction/interactionTargetQuery';
-import { isCanvasAreaTarget } from '@/engine/input/domUtils';
+
 
 /** Maximum number of visible [E] prompts at once */
 export const MAX_VISIBLE_PROMPTS = 2;

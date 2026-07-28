@@ -12,7 +12,7 @@ import type { TrainablePlayerSkill } from '@/shared/types/definitions/skills';
    Types
    ══════════════════════════════════════════════════════════════ */
 
-export type CheckType = 'white' | 'red';
+export type { CheckType } from '@/shared/types/common/conditions';
 
 export interface CheckAttemptRecord {
   /** Dialogue node where the check occurred. */
@@ -202,8 +202,8 @@ export function recordFailedCheck(
  */
 export function canRetryWhiteCheck(
   attempt: CheckAttemptRecord,
-  currentSkillLevel: number,
-  currentThoughtBonus: number,
+  _currentSkillLevel: number,
+  _currentThoughtBonus: number,
 ): boolean {
   // Red checks are never retryable
   if (attempt.checkType === 'red') return false;

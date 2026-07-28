@@ -21,7 +21,7 @@
  * typical grid sizes (10×14 = 140 cells for volodka_room). */
 
 import type { NavMeshGraph, NavMeshCell } from './navMeshBuilder';
-import { navMeshCellKey, parseNavMeshCellKey } from './navMeshBuilder';
+import { navMeshCellKey } from './navMeshBuilder';
 
 // ─── Types ───
 

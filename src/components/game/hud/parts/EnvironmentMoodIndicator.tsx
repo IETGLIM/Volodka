@@ -24,7 +24,7 @@ function deriveMood(
   weatherEnabled: boolean,
   rainIntensity: number
 ): MoodData {
-  const config = SCENE_CONFIG[sceneId];
+  const _config = SCENE_CONFIG[sceneId];
   const category = SCENE_LOCATION_CATEGORIES[sceneId as SceneId] ?? 'unknown';
 
   // Night time (20:00-06:00)

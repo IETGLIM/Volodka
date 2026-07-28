@@ -8,27 +8,20 @@
    – Filter & search
 */
 
-import { memo, useState, useMemo, useCallback, useEffect } from 'react';
+import { memo, useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Trophy,
-  Star,
   Lock,
-  Unlock,
   CheckCircle,
   Target,
-  Zap,
   BookOpen,
   Heart,
-  Shield,
   Sword,
-  Brain,
   Gift,
   Crown,
   Sparkles,
   ChevronRight,
-  Filter,
-  Search,
 } from 'lucide-react';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
@@ -645,7 +638,7 @@ export function AchievementUnlockOverlay({
 }
 
 /* ─── CSS Keyframes (would be in global CSS ideally) ─── */
-const AchievementStylesCSS = `
+const _AchievementStylesCSS = `
   @keyframes scanline {
     0% { left: -100%; }
     100% { left: 100%; }

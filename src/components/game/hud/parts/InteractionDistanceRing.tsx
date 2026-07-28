@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { eventBus } from '@/engine/EventBus';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 
-const RING_MAX_SIZE = 56;
+const _RING_MAX_SIZE = 56;
 const RING_MIN_SIZE = 32;
 const DECAY_MS = 800;
 

@@ -6,7 +6,6 @@ import { memo, useCallback, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   AlertTriangle,
-  Check,
   ChevronLeft,
   Cpu,
   Eye,

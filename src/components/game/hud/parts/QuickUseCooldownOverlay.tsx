@@ -4,7 +4,7 @@
    Uses CSS animation + JS-controlled stroke-dashoffset for precise timing.
 */
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { eventBus } from '@/engine/EventBus';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 
@@ -23,7 +23,7 @@ export function QuickUseCooldownOverlay() {
 
   // Listen for sound:play events as a proxy for item use timing
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const unsub = eventBus.on('sound:play' as any, (payload: any) => {
       const p = payload as { type?: string; slotIndex?: number; itemId?: string; cooldownMs?: number } | undefined;
       if (!p || p.type !== 'item_use') return;

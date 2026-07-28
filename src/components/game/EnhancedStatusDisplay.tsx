@@ -17,7 +17,6 @@ import {
   Brain,
   Shield,
   Flame,
-  Snowflake,
   TrendingUp,
   AlertTriangle,
   Activity,

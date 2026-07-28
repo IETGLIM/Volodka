@@ -12,7 +12,6 @@
  */
 
 import { getGameSnapshot } from '@/engine/GameActionDispatcher';
-import type { GameStoreSnapshot } from '@/shared/gameBridge/gameActionBridge';
 
 interface ParsedChoice {
   nodeId: string;
@@ -79,7 +78,7 @@ export function getMoralHistory(): ParsedMoralChoice[] {
  */
 export function generateActRecap(actNumber: number): string {
   const snap = getGameSnapshot();
-  const choices = parseChoiceLog(snap.playerState.choiceLog);
+  const _choices = parseChoiceLog(snap.playerState.choiceLog);
   const moralChoices = parseMoralChoices(snap.playerState.moralChoices);
   const karma = snap.playerState.karma;
 

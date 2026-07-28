@@ -485,7 +485,7 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
           { x: -0.10, w: 0.03, c: '#208020' }, { x: -0.04, w: 0.06, c: '#806020' },
           { x: 0.06, w: 0.04, c: '#602080' }, { x: 0.14, w: 0.05, c: '#804020' },
           { x: 0.22, w: 0.03, c: '#208080' },
-        ].map((b, i) => (
+        ].map((b, _i) => (
           <mesh key={`s1-${b.c}`} position={[b.x, 0.27, 0.02]} geometry={bookSpineGeo(b.w, 0.2)} material={bookSpineMaterial(b.c)} />
         ))}
         {/* Shelf 2 */}
@@ -493,7 +493,7 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
           { x: -0.22, w: 0.05, c: '#a03020' }, { x: -0.12, w: 0.04, c: '#304090' },
           { x: -0.04, w: 0.06, c: '#307030' }, { x: 0.08, w: 0.03, c: '#907030' },
           { x: 0.15, w: 0.05, c: '#703090' },
-        ].map((b, i) => (
+        ].map((b, _i) => (
           <mesh key={`s2-${b.c}`} position={[b.x, 0.77, 0.02]} geometry={bookSpineGeo(b.w, 0.18)} material={bookSpineMaterial(b.c)} />
         ))}
         {/* Shelf 3 */}
@@ -501,7 +501,7 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
           { x: -0.20, w: 0.04, c: '#b04030' }, { x: -0.10, w: 0.06, c: '#2050a0' },
           { x: 0.02, w: 0.03, c: '#30a040' }, { x: 0.10, w: 0.05, c: '#a08030' },
           { x: 0.18, w: 0.04, c: '#8040a0' }, { x: 0.25, w: 0.03, c: '#30a0a0' },
-        ].map((b, i) => (
+        ].map((b, _i) => (
           <mesh key={`s3-${b.c}`} position={[b.x, 1.27, 0.02]} geometry={bookSpineGeo(b.w, 0.2)} material={bookSpineMaterial(b.c)} />
         ))}
         {/* Shelf 4 (top) — a few books, leaning */}
@@ -509,7 +509,7 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
           { x: -0.15, w: 0.05, c: '#c05040', lean: 0.05 },
           { x: -0.05, w: 0.04, c: '#3060b0', lean: -0.08 },
           { x: 0.06, w: 0.06, c: '#40b050', lean: 0.02 },
-        ].map((b, i) => (
+        ].map((b, _i) => (
           <mesh key={`s4-${i}`} position={[b.x, 1.77, 0.02]} rotation={[0, 0, b.lean]} geometry={bookSpineGeo(b.w, 0.18)} material={bookSpineMaterial(b.c)} />
         ))}
       </group>

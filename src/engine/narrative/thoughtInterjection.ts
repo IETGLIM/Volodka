@@ -72,7 +72,7 @@ const SKILL_DEFAULT_EMOTION: Record<TrainablePlayerSkill, ThoughtInterjection['e
 export function resolveThoughtInterjections(
   dialogueNode: DialogueNode,
   equippedThoughts: ThoughtCabinetItem[],
-  playerSkills: Record<TrainablePlayerSkill, number>,
+  _playerSkills: Record<TrainablePlayerSkill, number>,
 ): ThoughtInterjection[] {
   if (equippedThoughts.length === 0) return [];
 

@@ -15,7 +15,7 @@ const UPDATE_INTERVAL_MS = 800;
 
 export function QuestDirectionArrow() {
   const [visible, setVisible] = useState(false);
-  const [rotation, setRotation] = useState(0);
+  const [_rotation, setRotation] = useState(0);
   const reducedMotion = useEffectiveReducedMotion();
   const yawRef = useRef(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);

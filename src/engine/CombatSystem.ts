@@ -58,12 +58,10 @@ import { appendLog } from './combat/types';
 import {
   createBuff, addBuff, sumBuffEffect, hasBuffEffect, tickBuffs,
   getEnemyDefenseReduction, getPlayerDamageMultiplier,
-  getPlayerDamageReduction, getPlayerVulnerability,
-  getEnemyDamageMultiplier, getEnemyAttackBoost,
-  getPlayerAttackBoost, getPlayerDefenseBoost } from './combat/buffSystem';
-import { getPlayerAttack, getPlayerDefense, getPlayerMaxHp, tickPowerCooldowns, isPowerAvailable, addXp, computeCombatCredits, computeDamage, computeCritChance, applyCritMultiplier, getComboDamageMultiplier, computeDefendedDamage, scaleDamageByFraction, COMBAT_CONSTANTS } from './combat/formulas';
+  getPlayerAttackBoost } from './combat/buffSystem';
+import { getPlayerAttack, getPlayerMaxHp, tickPowerCooldowns, isPowerAvailable, addXp, computeCombatCredits, computeCritChance, applyCritMultiplier, getComboDamageMultiplier } from './combat/formulas';
 import { initCombatRngForEncounter, SeededCombatRng, type CombatRngState } from './combat/combatRng';
-import { getFleeChanceBonus, scaleEnemyDamageByDifficulty, computeEnemyScalingFactor } from './combat/combatDifficulty';
+import { getFleeChanceBonus, computeEnemyScalingFactor } from './combat/combatDifficulty';
 import { getPassiveSkillModifiers } from '@/engine/skills/passiveSkillModifiers';
 import { resolveCombatPerkModifiers } from '@/shared/perks/perkModifiers';
 import { applyExplorationPoemCombatBridge } from '@/engine/poemEffects/poemTTLRuntime';
@@ -76,13 +74,10 @@ import {
 import {
   resolveActionChannel,
   applyAffinityToDamage,
-  AFFINITY_LABELS,
-  type DamageChannel,
 } from './combat/combatAffinities';
 import {
   computeEnemyIncomingDamage,
   resolveStatDrain,
-  type StatDrainAction,
 } from './combat/enemyTurn';
 
 // ── Re-export types so existing imports of CombatSystem don't break ──

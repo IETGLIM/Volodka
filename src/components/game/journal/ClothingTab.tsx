@@ -54,13 +54,13 @@ const TAG_LABELS: Record<SocialPerceptionTag, string> = {
 };
 
 export function ClothingTab({ searchQuery }: ClothingTabProps) {
-  const playerState = usePlayerState();
+  const _playerState = usePlayerState();
   const equippedItems = useEquippedItems();
   const socialTags = useSocialPerceptionTags();
   const skillModifiers = useClothingSkillModifiers();
   const dialogueModifier = useClothingDialogueModifier();
 
-  const clothingById = useMemo(() => {
+  const _clothingById = useMemo(() => {
     const map = new Map<string, ClothingDefinition>();
     for (const c of CLOTHING_CATALOG) {
       map.set(c.id, c);

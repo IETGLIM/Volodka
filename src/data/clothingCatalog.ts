@@ -5,7 +5,6 @@
  */
 
 import type { EquipmentSlot, DialogueModifier } from '@/shared/types/definitions/items';
-import type { TrainablePlayerSkill } from '@/shared/types/definitions/skills';
 import type { ItemRarity, ItemEffect } from '@/data/items';
 
 /* ─── Social perception tags ─── */

@@ -1,6 +1,6 @@
 /* ─── NPC proximity bark text resolution ─── */
 
-import type { NpcEmotion } from '@/engine/npc/npcEmotionTypes';
+import type { NpcEmotion } from '@/shared/types/definitions/npc';
 
 /** Single line or a pool of variants — engine picks one at runtime. */
 export type NPCBarkBand = string | readonly string[];

@@ -54,7 +54,6 @@ import { useThoughtSkillModifiers, useEquippedThoughts } from '@/store/selectors
 import { useClothingDialogueModifier } from '@/store/selectors/clothingSelectors';
 import { resolveThoughtInterjections, type ThoughtInterjection } from '@/engine/narrative/thoughtInterjection';
 import {
-  resolveCheckType,
   recordFailedCheck,
   hasFailedCheckForChoice,
   type CheckType,

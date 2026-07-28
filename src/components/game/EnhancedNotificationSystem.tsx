@@ -21,8 +21,6 @@ import {
   BookOpen,
   Gift,
   Target,
-  Shield,
-  Heart,
   Sparkles,
   X,
 } from 'lucide-react';
@@ -369,7 +367,7 @@ const NotificationCard = memo(function NotificationCard({
 export function EnhancedNotificationSystem({
   position = 'top-right',
   maxVisible = 5,
-  stackSpacing = 12,
+  _stackSpacing = 12,
   onDismiss,
   onAction,
 }: EnhancedNotificationSystemProps) {

@@ -21,7 +21,7 @@ export function SprintDrainOverlay() {
   useEffect(() => {
     if (reducedMotion) return;
 
-    const unsub = eventBus.on('exploration:footstep', (payload) => {
+    const unsub = eventBus.on('exploration:footstep', (_payload) => {
       const now = Date.now();
       // Sprint = footsteps closer than 350ms apart
       const gap = now - lastFootstepRef.current;

@@ -142,9 +142,9 @@ const WHISPER_TEXT_STYLE: React.CSSProperties = {
 
 export const ProximityWhisperOverlay = memo(function ProximityWhisperOverlay() {
   const reducedMotion = useEffectiveReducedMotion();
-  const sceneId = useGameStore((s) => s.exploration.currentSceneId);
-  const playerPos = useGameStore((s) => s.exploration.playerPosition);
-  const flags = useGameStore((s) => s.playerState.flags);
+  const _sceneId = useGameStore((s) => s.exploration.currentSceneId);
+  const _playerPos = useGameStore((s) => s.exploration.playerPosition);
+  const _flags = useGameStore((s) => s.playerState.flags);
 
   const [visibleWhispers, setVisibleWhispers] = useState<WhisperPoint[]>([]);
   const rafRef = useRef<number | null>(null);

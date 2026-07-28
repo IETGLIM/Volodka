@@ -43,7 +43,6 @@ const DEFAULTS: Omit<Required<AmbientParticlesConfig>, 'opacityFn'> & { opacityF
 export function AmbientParticles(config: AmbientParticlesConfig = {}) {
   const cfg = { ...DEFAULTS, ...config };
   const pointsRef = useRef<THREE.Points>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const materialRef = useRef<any>(null);
 
   const count = cfg.count;

@@ -5,7 +5,7 @@
  * woven into a single poem scene as requested.
  */
 
-import { memo, useCallback, useEffect, useRef, useState } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { FilmGrain, Vignette, CinematicBars } from '@/components/game/cinematic';

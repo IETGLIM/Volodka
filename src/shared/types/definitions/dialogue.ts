@@ -4,7 +4,6 @@ import type { SceneId } from '@/config/sceneDefinitions';
 import type { ChoiceCondition } from '../common/conditions';
 import type { StoryEffect } from '../common/effects';
 import type { NarrativeTextVariants, KarmaThresholds } from './narrative';
-import type { CheckType } from '@/engine/narrative/whiteRedCheckSystem';
 
 export interface DialogueChoice {
   readonly text: string;

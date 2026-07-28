@@ -4,9 +4,8 @@
    based on karma value. Breathing glow animation.
 */
 
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { getKarmaTierLabel, getKarmaTier, type KarmaTier } from '@/shared/utils/karmaTier';
-import { KARMA_LOW_THRESHOLD, KARMA_HIGH_THRESHOLD } from '@/data/constants';
 
 const TIER_STYLES: Record<KarmaTier, {
   color: string;

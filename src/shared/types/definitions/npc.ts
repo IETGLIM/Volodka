@@ -1,15 +1,28 @@
 /* ─── NPC definitions ─── */
 
 import type { NPCBarkTexts, NPCAmbientBarks } from '@/shared/npcBark';
-import type { NpcIdleVariant } from '@/engine/npc/npcIdleVariants';
+/* NpcIdleVariant removed — type now lives in this file (see below). */
 
 export type { NPCBarkBand, NPCBarkTexts, NPCAmbientBarks } from '@/shared/npcBark';
+
+/** NPC emotional states driven by game context and events. */
+export type NpcEmotion =
+  | 'neutral'
+  | 'curious'
+  | 'alarmed'
+  | 'contemplative'
+  | 'annoyed'
+  | 'respectful'
+  | 'fearful';
 
 export type NPCHeadAccessory = 'none' | 'glasses' | 'hat' | 'scarf' | 'earring';
 export type NPCSilhouette = 'slim' | 'average' | 'heavy';
 
 /** Visual/update fidelity — background skips head tracking and heavy per-frame work. */
 export type NpcRenderTier = 'hero' | 'interactive' | 'background';
+
+/** Preferred idle animation variant based on personality/role. */
+export type NpcIdleVariant = 'idle_relaxed' | 'idle_alert' | 'idle_bored' | 'idle_working' | 'idle_social';
 
 export interface NPCAppearance {
   readonly bodyColor: string;

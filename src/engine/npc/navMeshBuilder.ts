@@ -85,7 +85,7 @@ interface BlockingAabb {
  * but without the height filter (that happens in buildBlockingAabbs).
  */
 function colliderToAabb(collider: ColliderDef): BlockingAabb {
-  const [halfW, halfH, halfD] = collider.size;
+  const [halfW, , halfD] = collider.size;
   const [cx, , cz] = collider.position;
   const rot = collider.rotation ?? 0;
 
@@ -262,7 +262,7 @@ export function buildNavMeshFromScene(sceneId: string): NavMeshGraph {
     [-1, -1, true],   // NW
   ];
 
-  for (const [key, cell] of cells) {
+  for (const [_key, cell] of cells) {
     if (!cell.walkable) continue;
 
     for (const [dgx, dgz, isDiagonal] of NEIGHBOR_OFFSETS) {

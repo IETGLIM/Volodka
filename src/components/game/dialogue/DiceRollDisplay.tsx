@@ -1,6 +1,6 @@
 /* ─── Volodka RPG – Cyberpunk Dice Roll Display (Disco Elysium-style) ─── */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { TrainablePlayerSkill } from '@/shared/types/game';
 import { eventBus } from '@/engine/EventBus';

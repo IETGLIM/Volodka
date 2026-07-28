@@ -39,7 +39,7 @@ import { getGameSnapshot } from '@/engine/StateDispatcher';
 import { resolveNpcAmbientBark, resolveNpcAmbientBarkBand } from '@/shared/npcBark';
 import { findNpcById } from '@/data/allNpcDefinitions';
 import type { NPCDefinition } from '@/shared/types/game';
-import type { NpcEmotion } from '@/engine/npc/npcEmotionTypes';
+
 import { getNpcEmotion } from '@/engine/npc/npcEmotionalReactions';
 import { resolveEmotionBehavior } from '@/engine/npc/npcEmotionalReactions';
 import { registerHmrDispose } from '@/shared/dev/hmrDispose';
@@ -150,7 +150,7 @@ export function tickNpcAmbientBarks(params: {
 
     // Allow barks even if no ambientBarks config when emotion is active
     // (DEFAULT_EMOTION_BARKS provides fallback text)
-    const hasCustomBarks = def.ambientBarks !== undefined;
+    const _hasCustomBarks = def.ambientBarks !== undefined;
 
     const group = getNpcGroupFn(npcId);
     if (!group) continue;

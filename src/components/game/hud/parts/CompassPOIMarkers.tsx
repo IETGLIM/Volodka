@@ -77,7 +77,7 @@ export function CompassPOIMarkers() {
       {markers.map((m, i) => {
         const x = 25 + Math.sin(m.angle) * COMPASS_RADIUS_PX;
         const y = 25 - Math.cos(m.angle) * COMPASS_RADIUS_PX;
-        const isOffscreen = Math.abs(m.angle) > Math.PI * 0.85;
+        const _isOffscreen = Math.abs(m.angle) > Math.PI * 0.85;
 
         return (
           <motion.div

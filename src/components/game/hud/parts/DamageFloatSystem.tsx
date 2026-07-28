@@ -556,7 +556,6 @@ const DamageFloatItem = memo(function DamageFloatItem({
   const showComboTotal = event.comboTotal !== undefined && event.comboTotal > event.value;
 
   return (
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     <motion.div
       className="damage-number-float absolute pointer-events-none select-none z-[var(--z-combat)] whitespace-nowrap"
       style={positionStyle}

@@ -5,7 +5,7 @@ import {
   SeededCombatRng,
   createCombatRngState,
 } from '@/engine/combat/combatRng';
-import type { SuccessDegree, PartialSuccessEffects, PartialSuccessResult } from '@/engine/narrative/partialSuccessSystem';
+import type { SuccessDegree, PartialSuccessEffects } from '@/engine/narrative/partialSuccessSystem';
 import { resolveSuccessDegree, isSuccessDegree } from '@/engine/narrative/partialSuccessSystem';
 
 /* ══════════════════════════════════════════════════════════════

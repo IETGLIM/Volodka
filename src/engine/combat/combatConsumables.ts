@@ -84,7 +84,7 @@ export const COMBAT_CONSUMABLES: CombatConsumableEffect[] = [
     consumes: true,
     execute: (state) => {
       const buff = createBuff(state, 'Стимулятор: атака', 'combat_stim_atk', 'buff', 'player', 3, { type: 'attack_boost', value: 8 });
-      let s = addBuff(state, buff);
+      const s = addBuff(state, buff);
       const log: CombatLogEntry = {
         turn: state.turn,
         text: `💉 Боевой Стимулятор! +8 атака на 3 хода, стресс +5!`,

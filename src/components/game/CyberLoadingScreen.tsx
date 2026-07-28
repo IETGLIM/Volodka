@@ -8,7 +8,7 @@
    – Smooth transitions
 */
 
-import { memo, useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 /* ─── Cyber Quotes (loading screen tips) ─── */
@@ -69,22 +69,6 @@ function MatrixRain() {
         </div>
       ))}
     </div>
-  );
-}
-
-/* ─── Glitch Text Effect ─── */
-function GlitchText({ text, className = '' }: { text: string; className?: string }) {
-  return (
-    <span 
-      className={`relative inline-block ${className}`}
-      style={{
-        animation: 'textGlitchSubtle 4s ease-in-out infinite',
-      }}
-    >
-      <span aria-hidden="true" className="absolute inset-0 text-cyan-400 opacity-50 -translate-x-px">{text}</span>
-      <span aria-hidden="true" className="absolute inset-0 text-rose-400 opacity-50 translate-x-px">{text}</span>
-      <span>{text}</span>
-    </span>
   );
 }
 

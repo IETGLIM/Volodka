@@ -8,7 +8,7 @@
  * (setState, eventBus, dispatchGameAction) itself.
  */
 
-import type { CombatState, CombatLogEntry } from './types';
+import type { CombatState } from './types';
 import {
   getPlayerDefense,
   computeDefendedDamage,
