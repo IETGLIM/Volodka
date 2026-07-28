@@ -15,6 +15,7 @@ import {
   loadPersistedPhotoGallery,
   persistPhotoGallery,
 } from '@/engine/photo/photoCapturePersist';
+import { exportPhotoGalleryBatch } from '@/engine/photo/photoGalleryBatchExport';
 import {
   capturePhotoStill,
   downloadPhotoStill,
@@ -168,6 +169,23 @@ export function usePhotoModeController() {
     });
   }, [bumpPreviewTimer]);
 
+  const exportGalleryBatch = useCallback(() => {
+    setCaptureHistory((prev) => {
+      if (prev.length === 0) return prev;
+      void exportPhotoGalleryBatch(prev).then((result) => {
+        const title =
+          result.downloaded === 0
+            ? PHOTO_MODE_LABELS.galleryExportBatchFailed
+            : result.failed > 0
+              ? PHOTO_MODE_LABELS.galleryExportBatchPartial
+              : PHOTO_MODE_LABELS.galleryExportBatchSuccess;
+        setLiveAnnouncement(title);
+        eventBus.emit('game:notification', { title, type: 'info' as const });
+      });
+      return prev;
+    });
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
     void loadPersistedPhotoGallery().then((entries) => {
@@ -258,5 +276,6 @@ export function usePhotoModeController() {
     toggleFilterPreset,
     downloadPreview,
     sharePreview,
+    exportGalleryBatch,
   };
 }

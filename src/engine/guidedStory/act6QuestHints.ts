@@ -111,6 +111,30 @@ export function getAct6SecretArchiveHint(currentSceneId: string): string | null 
   return null;
 }
 
+/** Проникновение в систему — analyze → factory → guardian → core → truth. */
+export function getSystemInfiltrationHint(currentSceneId: string): string | null {
+  const quest = findActiveQuest('system_infiltration');
+  if (!quest) return null;
+  if (!objectiveDone(quest, 'analyze_blackmail_data')) {
+    return 'Проанализируй украденные данные — найди точку входа в «Надзор»';
+  }
+  if (!objectiveDone(quest, 'reach_nadzor_core')) {
+    return currentSceneId === 'abandoned_factory' || currentSceneId === 'factory_basement'
+      ? 'Ядро «Надзора» где-то в глубинах завода — иди глубже'
+      : 'Ядро «Надзора» на заброшенной фабрике — начни там';
+  }
+  if (!objectiveDone(quest, 'defeat_nadzor_guardian')) {
+    return 'Хранитель «Надзора» блокирует путь — победи его';
+  }
+  if (!objectiveDone(quest, 'access_system_core')) {
+    return 'Получи доступ к ядру — «Предатель» откроет путь';
+  }
+  if (!objectiveDone(quest, 'discover_nadzor_truth')) {
+    return 'Узнай правду о происхождении «Надзора»';
+  }
+  return null;
+}
+
 /** Конфронтация на крыше — rooftop → ghost → battle → choice. */
 export function getRooftopConfrontationHint(currentSceneId: string): string | null {
   const quest = findActiveQuest('rooftop_confrontation');

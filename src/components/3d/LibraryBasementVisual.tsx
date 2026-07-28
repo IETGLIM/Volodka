@@ -7,9 +7,15 @@ import * as THREE from 'three';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import {
   getSharedBoxGeometry,
+  getSharedCircleGeometry,
   getSharedPlaneGeometry,
 } from '@/engine/three/moduleGeometryRegistry';
 import { getSharedStandardMaterial } from '@/engine/three/moduleMaterialRegistry';
+import {
+  getIndustrialDampFloorSettings,
+  getRainSpillInFloorBoost,
+} from '@/engine/graphics/wetStreetScenes';
+import { useGameStore } from '@/store/gameStore';
 
 interface LibraryBasementVisualProps {
   livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
@@ -19,13 +25,6 @@ const W = 14;
 const D = 12;
 const H = 2.9;
 
-const matFloor = getSharedStandardMaterial({
-  color: '#1a1610',
-  roughness: 0.92,
-  polygonOffset: true,
-  polygonOffsetFactor: 1,
-  polygonOffsetUnits: 1,
-});
 const matWall = getSharedStandardMaterial({ color: '#16120e', roughness: 0.9 });
 const matCeil = getSharedStandardMaterial({ color: '#100c08', roughness: 0.95 });
 const matShelf = getSharedStandardMaterial({ color: '#3a2e22', roughness: 0.75, metalness: 0.15 });
@@ -41,6 +40,14 @@ export function LibraryBasementVisual(_props: LibraryBasementVisualProps) {
   const rootRef = useRef<THREE.Group>(null);
   const screenRef = useRef<THREE.Mesh>(null);
   const tRef = useRef(0);
+  const damp = useMemo(() => getIndustrialDampFloorSettings('library_basement'), []);
+  const rainIntensity = useGameStore((s) => s.rainIntensity);
+  const spill = useMemo(
+    () => getRainSpillInFloorBoost('library_basement', rainIntensity),
+    [rainIntensity],
+  );
+  const floorRoughness = Math.max(0.22, (damp?.roughness ?? 0.92) - (spill?.roughnessDrop ?? 0));
+  const floorMetalness = Math.min(0.5, (damp?.metalness ?? 0) + (spill?.metalnessBoost ?? 0));
 
   const shelves = useMemo(
     () =>
@@ -69,7 +76,30 @@ export function LibraryBasementVisual(_props: LibraryBasementVisualProps) {
 
   return (
     <group ref={rootRef}>
-      <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={getSharedPlaneGeometry(W, D)} material={matFloor} />
+      <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={getSharedPlaneGeometry(W, D)}>
+        <meshStandardMaterial
+          color="#1a1610"
+          roughness={floorRoughness}
+          metalness={floorMetalness}
+          polygonOffset
+          polygonOffsetFactor={1}
+          polygonOffsetUnits={1}
+        />
+      </mesh>
+      {spill && (
+        <mesh rotation-x={-Math.PI / 2} position={[0, 0.008, D * 0.32]} geometry={getSharedCircleGeometry(2.1, 22)}>
+          <meshStandardMaterial
+            color="#1a2218"
+            metalness={damp?.oilMetalness ?? 0.48}
+            roughness={damp?.oilRoughness ?? 0.28}
+            transparent
+            opacity={spill.puddleOpacity}
+            polygonOffset
+            polygonOffsetFactor={1}
+            polygonOffsetUnits={1}
+          />
+        </mesh>
+      )}
       <mesh position={[0, H, 0]} rotation-x={Math.PI / 2} geometry={getSharedPlaneGeometry(W, D)} material={matCeil} />
 
       {[

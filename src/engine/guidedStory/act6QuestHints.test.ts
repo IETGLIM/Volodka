@@ -3,6 +3,7 @@ import {
   getAct6SecretArchiveHint,
   getDataHeistHint,
   getRooftopConfrontationHint,
+  getSystemInfiltrationHint,
   getTraitorInTheGuildHint,
   getUndergroundResistanceHint,
 } from './act6QuestHints';
@@ -62,6 +63,16 @@ describe('act6QuestHints', () => {
       objectives: {},
     });
     expect(getRooftopConfrontationHint('street_night')).toContain('крыш');
+  });
+
+  it('system_infiltration — factory core', () => {
+    quests.push({
+      questId: 'system_infiltration',
+      status: 'active',
+      objectives: { analyze_blackmail_data: true },
+    });
+    expect(getSystemInfiltrationHint('street_night')).toContain('фабрик');
+    expect(getSystemInfiltrationHint('abandoned_factory')).toContain('Ядро');
   });
 
   it('returns null when quest inactive', () => {

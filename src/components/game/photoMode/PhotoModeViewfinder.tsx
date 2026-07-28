@@ -31,6 +31,7 @@ type PhotoModeViewfinderProps = {
   onSelectHistory?: (entry: PhotoCaptureHistoryEntry) => void;
   onDownloadPreview?: () => void;
   onSharePreview?: () => void;
+  onExportGalleryBatch?: () => void;
 };
 
 export function PhotoModeViewfinder({
@@ -47,6 +48,7 @@ export function PhotoModeViewfinder({
   onSelectHistory,
   onDownloadPreview,
   onSharePreview,
+  onExportGalleryBatch,
 }: PhotoModeViewfinderProps) {
   const blinkDot = getBlinkDotMotion(reducedMotion);
   const isNoir = filterPreset === 'noir';
@@ -346,6 +348,17 @@ export function PhotoModeViewfinder({
           <span className="text-[8px] font-mono uppercase tracking-wider" style={{ color: accent(0.55) }}>
             {PHOTO_MODE_LABELS.galleryTitle}
           </span>
+          {onExportGalleryBatch && captureHistory.length > 1 && (
+            <button
+              type="button"
+              onClick={onExportGalleryBatch}
+              className="self-start text-[8px] font-mono px-1.5 py-0.5 rounded border bg-black/40 touch-manipulation min-h-[28px]"
+              style={{ color: accent(0.9), borderColor: accent(0.35) }}
+              aria-label={PHOTO_MODE_LABELS.galleryExportBatch}
+            >
+              {PHOTO_MODE_LABELS.galleryExportBatch}
+            </button>
+          )}
           <div className="flex items-center gap-1.5">
             {captureHistory.slice(0, 6).map((entry) => (
               <button
@@ -354,10 +367,10 @@ export function PhotoModeViewfinder({
                 role="listitem"
                 onClick={() => onSelectHistory(entry)}
                 aria-label={`${PHOTO_MODE_LABELS.gallerySelect}: ${entry.sceneName}`}
-                className="rounded border overflow-hidden transition-opacity hover:opacity-100 opacity-80"
+                className="rounded border overflow-hidden transition-opacity hover:opacity-100 opacity-80 touch-manipulation"
                 style={{
-                  width: 44,
-                  height: 28,
+                  width: 48,
+                  height: 32,
                   borderColor: accent(0.35),
                   boxShadow: `0 0 8px ${accent(0.12)}`,
                 }}

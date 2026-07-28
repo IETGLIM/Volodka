@@ -102,7 +102,7 @@ const SCENE_VIGNETTE: Record<string, { offset: number; darkness: number }> = {
   office_day:         { offset: 0.4,  darkness: 0.3 },
   park_day:           { offset: 0.35, darkness: 0.35 },
   library_day:        { offset: 0.4,  darkness: 0.3 },
-  street_winter:      { offset: 0.42, darkness: 0.2 },
+  street_winter:      { offset: 0.44, darkness: 0.18 },
   zarema_albert_room: { offset: 0.4,  darkness: 0.3 },
   solnysh_room:       { offset: 0.42, darkness: 0.28 },
   chk_forest_zorge:   { offset: 0.4,  darkness: 0.28 },
@@ -116,7 +116,7 @@ const SCENE_VIGNETTE: Record<string, { offset: number; darkness: number }> = {
   guild_mainframe:    { offset: 0.3,  darkness: 0.36 },
   albert_backroom:    { offset: 0.36, darkness: 0.32 },
   zarema_room:        { offset: 0.38, darkness: 0.3 },
-  library_basement:   { offset: 0.32, darkness: 0.36 },
+  library_basement:   { offset: 0.3,  darkness: 0.4 },
 };
 const DEFAULT_VIGNETTE = { offset: 0.4, darkness: 0.32 };
 

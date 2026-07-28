@@ -26,6 +26,7 @@ export const INDUSTRIAL_DAMP_SHEEN_SCENE_IDS = [
   'abandoned_factory',
   'factory_roof',
   'factory_basement',
+  'library_basement',
   'chk_campfire_night',
 ] as const satisfies readonly SceneId[];
 
@@ -44,6 +45,7 @@ export function isIndustrialDampSheenScene(
 export const RAIN_SPILL_IN_SCENE_IDS = [
   'factory_basement',
   'abandoned_factory',
+  'library_basement',
   'volodka_corridor',
 ] as const satisfies readonly SceneId[];
 
@@ -67,6 +69,9 @@ export function getIndustrialDampFloorSettings(sceneId: SceneId): {
   if (sceneId === 'factory_basement') {
     return { roughness: 0.48, metalness: 0.22, oilMetalness: 0.62, oilRoughness: 0.18 };
   }
+  if (sceneId === 'library_basement') {
+    return { roughness: 0.58, metalness: 0.16, oilMetalness: 0.48, oilRoughness: 0.28 };
+  }
   return { roughness: 0.55, metalness: 0.18, oilMetalness: 0.55, oilRoughness: 0.22 };
 }
 
@@ -81,10 +86,26 @@ export function getRainSpillInFloorBoost(
   if (!isRainSpillInScene(sceneId)) return null;
   const t = Math.min(1, Math.max(0, rainIntensity));
   if (t <= 0.05) return null;
+  const corridorBoost = sceneId === 'volodka_corridor' || sceneId === 'library_basement' ? 1.08 : 1;
   return {
-    roughnessDrop: 0.08 + 0.18 * t,
-    metalnessBoost: 0.06 + 0.14 * t,
-    puddleOpacity: 0.2 + 0.35 * t,
+    roughnessDrop: (0.08 + 0.18 * t) * corridorBoost,
+    metalnessBoost: (0.06 + 0.14 * t) * corridorBoost,
+    puddleOpacity: Math.min(0.72, (0.2 + 0.35 * t) * corridorBoost),
+  };
+}
+
+/** Winter sidewalk ice sheen — no planar reflector, cooler metal gloss. */
+export function getWinterIceSheenSettings(): {
+  groundColor: string;
+  dryRoughness: number;
+  dryMetalness: number;
+  sheenBoost: number;
+} {
+  return {
+    groundColor: '#a8b0c0',
+    dryRoughness: 0.36,
+    dryMetalness: 0.34,
+    sheenBoost: 0.12,
   };
 }
 

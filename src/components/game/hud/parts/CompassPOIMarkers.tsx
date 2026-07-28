@@ -1,17 +1,20 @@
 /* ─── Volodka RPG – Compass POI Markers ───
    Renders directional markers around the compass indicator for active quest objectives.
    Shows small glowing dots with labels at the correct angle relative to player facing.
+   Journal `quest:pulse_marker` briefly boosts the matching POI pulse.
 */
 
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useActiveQuests, getQuestMarker } from '@/store/selectors/questSelectors';
 import { usePlayerPosition, usePlayerRotation, useCurrentSceneId } from '@/store/selectors';
 import { SCENE_CONFIG } from '@/config/scenes';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { eventBus } from '@/engine/EventBus';
 
 const COMPASS_RADIUS_PX = 32; // distance from compass center to POI markers
 const MAX_MARKERS = 4;
+const PULSE_DECAY_MS = 1800;
 
 export function CompassPOIMarkers() {
   const activeQuests = useActiveQuests();
@@ -19,6 +22,23 @@ export function CompassPOIMarkers() {
   const playerRot = usePlayerRotation();
   const sceneId = useCurrentSceneId();
   const reducedMotion = useEffectiveReducedMotion();
+  const [pulseQuestId, setPulseQuestId] = useState<string | null>(null);
+  const pulseTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    const unsub = eventBus.on('quest:pulse_marker', ({ questId }) => {
+      setPulseQuestId(questId);
+      if (pulseTimerRef.current) window.clearTimeout(pulseTimerRef.current);
+      pulseTimerRef.current = window.setTimeout(() => {
+        setPulseQuestId(null);
+        pulseTimerRef.current = null;
+      }, PULSE_DECAY_MS);
+    });
+    return () => {
+      unsub();
+      if (pulseTimerRef.current) window.clearTimeout(pulseTimerRef.current);
+    };
+  }, []);
 
   const markers = useMemo(() => {
     const result: Array<{
@@ -77,7 +97,7 @@ export function CompassPOIMarkers() {
       {markers.map((m, i) => {
         const x = 25 + Math.sin(m.angle) * COMPASS_RADIUS_PX;
         const y = 25 - Math.cos(m.angle) * COMPASS_RADIUS_PX;
-        const _isOffscreen = Math.abs(m.angle) > Math.PI * 0.85;
+        const pulsed = pulseQuestId === m.questId;
 
         return (
           <motion.div
@@ -85,18 +105,28 @@ export function CompassPOIMarkers() {
             className="compass-poi-marker"
             initial={reducedMotion ? false : { scale: 0 }}
             animate={{
-              scale: 1,
+              scale: pulsed ? [1, 1.55, 1.15] : 1,
               left: x - 4,
               top: y - 4,
-              opacity: m.inScene ? 1 : 0.5,
+              opacity: pulsed ? 1 : m.inScene ? 1 : 0.5,
             }}
-            transition={{ duration: 0.3, delay: i * 0.05 }}
+            transition={
+              pulsed && !reducedMotion
+                ? { duration: 0.55, repeat: 2, ease: 'easeInOut' }
+                : { duration: 0.3, delay: i * 0.05 }
+            }
             style={{
               position: 'absolute',
-              background: m.inScene ? 'var(--cyber-cyan)' : 'rgba(251,191,36,0.8)',
-              boxShadow: m.inScene
-                ? '0 0 6px rgb(var(--cyber-cyan-rgb) / 0.5)'
-                : '0 0 4px rgba(251,191,36,0.4)',
+              background: pulsed
+                ? 'var(--cyber-magenta, #f0abfc)'
+                : m.inScene
+                  ? 'var(--cyber-cyan)'
+                  : 'rgba(251,191,36,0.8)',
+              boxShadow: pulsed
+                ? '0 0 10px rgb(240 171 252 / 0.75)'
+                : m.inScene
+                  ? '0 0 6px rgb(var(--cyber-cyan-rgb) / 0.5)'
+                  : '0 0 4px rgba(251,191,36,0.4)',
             }}
             title={`${m.label}${m.inScene ? ` · ${Math.round(m.distance)}м` : ''}`}
           />

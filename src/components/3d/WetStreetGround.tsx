@@ -9,6 +9,7 @@ import { useIsMobileVisual } from '@/hooks/use-mobile';
 import { allowsHeavyGfxFeature } from '@/engine/graphics/qualityFeatureGates';
 import {
   getReflectorMaterialSettings,
+  getWinterIceSheenSettings,
   isWetStreetScene,
   scaleReflectorMixStrength,
 } from '@/engine/graphics/wetStreetScenes';
@@ -38,15 +39,16 @@ export function WetStreetGround({
   const coarsePointer = useIsMobileVisual();
   const reducedMotion = useEffectiveReducedMotion();
   const reflectorSettings = getReflectorMaterialSettings(preset.id);
+  const winterSheen = isWinter ? getWinterIceSheenSettings() : null;
   const usePlanarReflector =
     isWetStreetScene(sceneId)
     && !isWinter
     && !reducedMotion
     && allowsHeavyGfxFeature(selectedPreset, 'reflector', { coarsePointer });
-  const groundColor = groundColorOverride ?? (isWinter ? '#a0a8b8' : '#3a3a52');
+  const groundColor = groundColorOverride ?? (winterSheen?.groundColor ?? '#3a3a52');
   // Winter: icy sidewalk sheen (metalness up, roughness down) without planar reflector.
-  const dryRoughness = isWinter ? 0.42 : 0.85;
-  const dryMetalness = isWinter ? 0.28 : 0.05;
+  const dryRoughness = winterSheen?.dryRoughness ?? 0.85;
+  const dryMetalness = winterSheen?.dryMetalness ?? 0.05;
   const effectiveRain = isWinter ? 0 : rainIntensity;
   const mixStrength = scaleReflectorMixStrength(reflectorSettings.mixStrength, effectiveRain);
 

@@ -79,6 +79,10 @@ export function emitStuckRecoveryNpcRingFocus(preferredNpcId: string | null): St
   if (group) {
     group.getWorldPosition(_npc);
     eventBus.emit('camera:look_toward', { x: _npc.x, y: _npc.y, z: _npc.z });
+    const meters = Math.max(0.5, Math.round(focus.distance * 10) / 10);
+    eventBus.emit('ui:exploration_message', {
+      text: `Путь к ${focus.label}: ~${meters}м — подойди и нажми [E]`,
+    });
   }
 
   return focus;

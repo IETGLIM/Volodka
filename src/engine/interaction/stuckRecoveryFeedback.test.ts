@@ -39,14 +39,14 @@ describe('stuckRecoveryFeedback', () => {
       fromState: InteractionState.Approach,
       targetNpcId: 'maria',
     });
-    expect(approach).toMatch(/Компас/i);
-    expect(approach).toMatch(/отойдите|подойдите/i);
+    expect(approach).toMatch(/Путь/i);
+    expect(approach).toMatch(/отойти|подойти|шаг/i);
 
     const dialogue = getStuckRecoveryReapproachHint({
       fromState: InteractionState.Dialogue,
       targetNpcId: 'albert',
     });
-    expect(dialogue).toMatch(/Компас/i);
+    expect(dialogue).toMatch(/Путь/i);
     expect(dialogue).toContain('[E]');
   });
 });

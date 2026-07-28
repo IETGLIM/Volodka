@@ -3,6 +3,7 @@ import {
   getIndustrialDampFloorSettings,
   getRainSpillInFloorBoost,
   getReflectorMaterialSettings,
+  getWinterIceSheenSettings,
   isIndustrialDampSheenScene,
   isRainSpillInScene,
   isWetStreetScene,
@@ -30,23 +31,35 @@ describe('wetStreetScenes', () => {
     expect(isIndustrialDampSheenScene('abandoned_factory')).toBe(true);
     expect(isIndustrialDampSheenScene('factory_roof')).toBe(true);
     expect(isIndustrialDampSheenScene('factory_basement')).toBe(true);
+    expect(isIndustrialDampSheenScene('library_basement')).toBe(true);
     expect(isIndustrialDampSheenScene('chk_campfire_night')).toBe(true);
     expect(isIndustrialDampSheenScene('street_night')).toBe(false);
     const factory = getIndustrialDampFloorSettings('abandoned_factory');
     expect(factory?.oilMetalness).toBeGreaterThan(factory!.roughness * 0.5);
     const basement = getIndustrialDampFloorSettings('factory_basement');
     expect(basement?.oilMetalness).toBeGreaterThan(0.5);
+    expect(getIndustrialDampFloorSettings('library_basement')?.oilMetalness).toBeGreaterThan(0.4);
     expect(getIndustrialDampFloorSettings('cafe_evening')).toBeNull();
   });
 
   it('boosts spill-in floors when outdoor rain bleeds indoors', () => {
     expect(isRainSpillInScene('factory_basement')).toBe(true);
     expect(isRainSpillInScene('abandoned_factory')).toBe(true);
+    expect(isRainSpillInScene('library_basement')).toBe(true);
+    expect(isRainSpillInScene('volodka_corridor')).toBe(true);
     expect(getRainSpillInFloorBoost('factory_basement', 0)).toBeNull();
     const wet = getRainSpillInFloorBoost('factory_basement', 0.8);
     expect(wet?.puddleOpacity).toBeGreaterThan(0.3);
     expect(wet?.metalnessBoost).toBeGreaterThan(0.1);
+    const corridor = getRainSpillInFloorBoost('volodka_corridor', 0.8);
+    expect(corridor?.puddleOpacity).toBeGreaterThan(wet!.puddleOpacity);
     expect(getRainSpillInFloorBoost('cafe_evening', 1)).toBeNull();
+  });
+
+  it('exposes winter ice sheen knobs', () => {
+    const winter = getWinterIceSheenSettings();
+    expect(winter.dryMetalness).toBeGreaterThan(0.25);
+    expect(winter.dryRoughness).toBeLessThan(0.45);
   });
 
   it('uses lighter reflector buffers on high than ultra', () => {
