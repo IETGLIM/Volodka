@@ -8,9 +8,16 @@ import {
 
 describe('wetStreetScenes', () => {
   it('lists night street scenes eligible for planar wet reflections', () => {
-    expect(WET_STREET_SCENE_IDS).toEqual(['street_night', 'city_square']);
+    expect(WET_STREET_SCENE_IDS).toEqual([
+      'street_night',
+      'city_square',
+      'river_pier',
+      'pier_evening',
+    ]);
     expect(isWetStreetScene('street_night')).toBe(true);
     expect(isWetStreetScene('city_square')).toBe(true);
+    expect(isWetStreetScene('river_pier')).toBe(true);
+    expect(isWetStreetScene('pier_evening')).toBe(true);
     expect(isWetStreetScene('street_winter')).toBe(false);
     expect(isWetStreetScene('cafe_evening')).toBe(false);
   });

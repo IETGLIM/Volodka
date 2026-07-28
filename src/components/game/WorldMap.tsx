@@ -13,6 +13,7 @@ import { X, Map as MapIcon, Lock, Clock, MapPin, Navigation } from 'lucide-react
 import { useGameStore } from '@/store/gameStore';
 import { useFastTravelState, useActiveQuests } from '@/store/selectors';
 import { getQuestMarker } from '@/store/questStore';
+import { getQuestDefinitions } from '@/data/gameDataLoader';
 import { eventBus } from '@/engine/EventBus';
 import { SCENE_CONFIG } from '@/config/scenes';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
@@ -301,6 +302,20 @@ export function WorldMap({ open, onClose }: WorldMapProps) {
       if (marker?.sceneId) ids.add(marker.sceneId);
     }
     return ids;
+  }, [activeQuests]);
+
+  const questTitlesByScene = useMemo(() => {
+    const map = new Map<SceneId, string[]>();
+    const defs = getQuestDefinitions();
+    for (const quest of activeQuests) {
+      const marker = getQuestMarker(quest.questId);
+      if (!marker?.sceneId) continue;
+      const title = defs.find((d) => d.id === quest.questId)?.title ?? quest.questId;
+      const list = map.get(marker.sceneId) ?? [];
+      if (!list.includes(title)) list.push(title);
+      map.set(marker.sceneId, list);
+    }
+    return map;
   }, [activeQuests]);
 
   const [hoveredScene, setHoveredScene] = useState<SceneId | null>(null);
@@ -709,6 +724,7 @@ export function WorldMap({ open, onClose }: WorldMapProps) {
                       const gateOpen = isSceneGateOpen(hoveredScene, playerFlags);
                       const isRumored = !isDiscovered && gateOpen;
                       const regionColor = REGION_COLORS[node.region];
+                      const questTitles = questTitlesByScene.get(hoveredScene) ?? [];
 
                       // Position tooltip, clamped to not overflow
                       const tooltipX = Math.min(Math.max(node.x, 15), 75);
@@ -732,16 +748,20 @@ export function WorldMap({ open, onClose }: WorldMapProps) {
                             className="px-3 py-2 rounded-md border backdrop-blur-md min-w-[170px] max-w-[240px]"
                             style={{
                               background: 'rgba(8, 12, 22, 0.92)',
-                              borderColor: isCurrent
-                                ? `${regionColor}66`
-                                : isDiscovered
-                                  ? `${regionColor}44`
-                                  : 'rgba(71, 85, 105, 0.3)',
-                              boxShadow: `0 0 15px ${isCurrent ? `${regionColor}28` : isDiscovered ? `${regionColor}18` : 'rgba(0,0,0,0.3)'}`,
+                              borderColor: questTitles.length > 0
+                                ? 'rgba(251, 191, 36, 0.45)'
+                                : isCurrent
+                                  ? `${regionColor}66`
+                                  : isDiscovered
+                                    ? `${regionColor}44`
+                                    : 'rgba(71, 85, 105, 0.3)',
+                              boxShadow: questTitles.length > 0
+                                ? '0 0 16px rgba(251, 191, 36, 0.22)'
+                                : `0 0 15px ${isCurrent ? `${regionColor}28` : isDiscovered ? `${regionColor}18` : 'rgba(0,0,0,0.3)'}`,
                             }}
                           >
                             <div className="flex items-center gap-2 mb-1">
-                              <MapPin className="size-3" style={{ color: regionColor }} />
+                              <MapPin className="size-3" style={{ color: questTitles.length > 0 ? '#fbbf24' : regionColor }} />
                               <span
                                 className="text-xs font-semibold"
                                 style={{
@@ -757,6 +777,24 @@ export function WorldMap({ open, onClose }: WorldMapProps) {
                                 <p className="text-[10px] text-slate-400 leading-tight mb-1.5">
                                   {SCENE_DESCRIPTIONS[hoveredScene] ?? ''}
                                 </p>
+                                {questTitles.length > 0 && (
+                                  <div className="mb-1.5 space-y-0.5">
+                                    {questTitles.slice(0, 3).map((title) => (
+                                      <p
+                                        key={title}
+                                        className="text-[9px] font-mono text-amber-300/85 leading-tight flex items-start gap-1"
+                                      >
+                                        <span className="mt-0.5 size-1.5 rounded-full bg-amber-400 shrink-0 shadow-[0_0_4px_rgba(251,191,36,0.8)]" aria-hidden="true" />
+                                        <span>Квест: {title}</span>
+                                      </p>
+                                    ))}
+                                    {questTitles.length > 3 && (
+                                      <p className="text-[9px] font-mono text-amber-400/55 pl-2.5">
+                                        +{questTitles.length - 3} ещё
+                                      </p>
+                                    )}
+                                  </div>
+                                )}
                                 <div className="flex items-center gap-2 flex-wrap">
                                   {isCurrent ? (
                                     <span className="text-[9px] font-mono flex items-center gap-1" style={{ color: regionColor }}>
@@ -778,9 +816,20 @@ export function WorldMap({ open, onClose }: WorldMapProps) {
                             )}
 
                             {!isDiscovered && (
-                              <p className="text-[10px] text-slate-600 italic">
-                                {isRumored ? 'Слухи об этом месте…' : 'Не исследовано'}
-                              </p>
+                              <>
+                                {questTitles.length > 0 && (
+                                  <div className="mb-1 space-y-0.5">
+                                    {questTitles.slice(0, 2).map((title) => (
+                                      <p key={title} className="text-[9px] font-mono text-amber-300/70">
+                                        Квест: {title}
+                                      </p>
+                                    ))}
+                                  </div>
+                                )}
+                                <p className="text-[10px] text-slate-600 italic">
+                                  {isRumored ? 'Слухи об этом месте…' : 'Не исследовано'}
+                                </p>
+                              </>
                             )}
                           </div>
                         </motion.div>

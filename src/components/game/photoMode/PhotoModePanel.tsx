@@ -19,6 +19,8 @@ function PhotoModeInner() {
           filterPreset={photo.filterPreset}
           onCapture={photo.captureScreenshot}
           onExit={photo.exitPhotoMode}
+          onDownloadPreview={photo.downloadPreview}
+          onSharePreview={photo.sharePreview}
         />
       )}
     </AnimatePresence>

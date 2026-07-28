@@ -309,7 +309,7 @@ function VisualScene({ sceneId, livePlayerPositionRef }: VisualSceneProps) {
     case 'factory_basement':
       return <FactoryBasementVisual livePlayerPositionRef={livePlayerPositionRef} />;
     case 'river_pier':
-      return <RiverPierVisual livePlayerPositionRef={livePlayerPositionRef} />;
+      return <RiverPierVisual sceneId={sceneId} livePlayerPositionRef={livePlayerPositionRef} />;
     case 'guild_mainframe':
       return <GuildMainframeVisual livePlayerPositionRef={livePlayerPositionRef} />;
     case 'city_square':

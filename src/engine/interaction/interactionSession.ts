@@ -6,7 +6,7 @@ import {
 import { eventBus } from '@/engine/EventBus';
 import { devWarn } from '@/shared/utils/devLog';
 import { registerHmrDispose } from '@/shared/dev/hmrDispose';
-import { getStuckRecoveryUserMessage } from '@/engine/interaction/stuckRecoveryFeedback';
+import { getStuckRecoveryReapproachHint, getStuckRecoveryUserMessage } from '@/engine/interaction/stuckRecoveryFeedback';
 export interface InteractionSessionSnapshot {
   state: InteractionState;
   targetNpcId: string | null;
@@ -62,9 +62,18 @@ function scheduleStuckRecoveryWatchdog(): void {
       fromState: stuckState,
       targetNpcId: stuckNpcId,
     });
+    const reapproach = getStuckRecoveryReapproachHint({
+      fromState: stuckState,
+      targetNpcId: stuckNpcId,
+    });
     eventBus.emit('ui:exploration_message', { text: recoveryText });
     eventBus.emit('game:notification', {
       title: recoveryText,
+      type: 'info' as const,
+    });
+    eventBus.emit('ui:exploration_message', { text: reapproach });
+    eventBus.emit('game:notification', {
+      title: reapproach,
       type: 'info' as const,
     });
   }, STUCK_RECOVERY_TIMEOUT_MS);

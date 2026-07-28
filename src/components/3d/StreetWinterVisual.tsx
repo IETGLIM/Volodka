@@ -7,6 +7,7 @@ import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
 import { EnvironmentDetail, PropDistanceGate } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { createStreetWinterColdSkyTexture } from '@/engine/graphics/proceduralSkyTextures';
+import { WetStreetGround } from './WetStreetGround';
 
 interface StreetWinterVisualProps {
   livePlayerPositionRef?: React.MutableRefObject<THREE.Vector3>;
@@ -22,13 +23,23 @@ export function StreetWinterVisual({ livePlayerPositionRef }: StreetWinterVisual
 
   return (
     <group>
-      {/* ── Snow-covered ground ── */}
-      <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001}>
+      {/* ── Snow ground + icy sheen (no planar reflector) ── */}
+      <WetStreetGround
+        sceneId="street_winter"
+        isWinter
+        rainIntensity={0}
+        size={Math.max(W, D)}
+        groundColor="#d0d8e8"
+      />
+      <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.004}>
         <planeGeometry args={[W, D]} />
         <meshStandardMaterial
           map={groundTexture}
           color="#d0d8e8"
-          roughness={0.7}
+          roughness={0.48}
+          metalness={0.22}
+          transparent
+          opacity={0.92}
           polygonOffset
           polygonOffsetFactor={1}
           polygonOffsetUnits={1}
@@ -38,7 +49,14 @@ export function StreetWinterVisual({ livePlayerPositionRef }: StreetWinterVisual
       {/* ── Sidewalk ── */}
       <mesh rotation-x={-Math.PI / 2} position={[0, 0.02, 0]} receiveShadow>
         <planeGeometry args={[5, 30]} />
-        <meshStandardMaterial color="#c0c8d8" roughness={0.75} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+        <meshStandardMaterial
+          color="#c0c8d8"
+          roughness={0.4}
+          metalness={0.3}
+          polygonOffset
+          polygonOffsetFactor={1}
+          polygonOffsetUnits={1}
+        />
       </mesh>
 
       {/* ═══════════════════════════════════════════════ */}

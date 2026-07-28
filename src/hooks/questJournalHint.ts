@@ -22,6 +22,11 @@ import {
   getVaultKeyFragmentsHint,
   getZaremaRescueHint,
 } from '@/engine/guidedStory/act23QuestHints';
+import {
+  getGuildInfiltrationHint,
+  getPoetryBroadcastHint,
+  getRoofOfTheWorldHint,
+} from '@/engine/guidedStory/act4QuestHints';
 import { buildGuidanceDirectionHint } from '@/engine/guidedStory/guidanceLocation';
 import {
   getNextTrackedObjective,
@@ -108,6 +113,18 @@ export function buildQuestJournalContextualHint(
   }
   if (questId === 'thread_of_18_lines') {
     const live = getThreadOf18LinesHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'guild_infiltration') {
+    const live = getGuildInfiltrationHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'poetry_broadcast') {
+    const live = getPoetryBroadcastHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'roof_of_the_world') {
+    const live = getRoofOfTheWorldHint(currentSceneId);
     if (live) return live;
   }
 

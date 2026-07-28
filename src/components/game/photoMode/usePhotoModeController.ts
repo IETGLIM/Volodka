@@ -9,9 +9,11 @@ import {
 } from '@/engine/photo/photoModeConstants';
 import {
   capturePhotoStill,
+  downloadPhotoStill,
   formatGameTimeOfDay,
   getCaptureFailureMessage,
   resolveSceneDisplayName,
+  shareOrDownloadPhotoStill,
 } from '@/engine/photo/photoModePresentation';
 import { setPhotoModeActive } from '@/engine/photo/photoModeState';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
@@ -42,6 +44,15 @@ export function usePhotoModeController() {
 
   const previewTimerRef = useRef<number | null>(null);
   const activeRef = useRef(false);
+  const previewRef = useRef<PhotoPreviewData | null>(null);
+  previewRef.current = preview;
+  const filterPresetRef = useRef(filterPreset);
+  filterPresetRef.current = filterPreset;
+
+  const bumpPreviewTimer = useCallback(() => {
+    if (previewTimerRef.current) window.clearTimeout(previewTimerRef.current);
+    previewTimerRef.current = window.setTimeout(() => setPreview(null), PHOTO_PREVIEW_DISPLAY_MS);
+  }, []);
 
   const exitPhotoMode = useCallback(() => {
     if (!activeRef.current) return;
@@ -81,8 +92,7 @@ export function usePhotoModeController() {
       if (!activeRef.current) return;
       if (result.ok) {
         setPreview({ dataUrl: result.dataUrl, timestamp: Date.now() });
-        if (previewTimerRef.current) window.clearTimeout(previewTimerRef.current);
-        previewTimerRef.current = window.setTimeout(() => setPreview(null), PHOTO_PREVIEW_DISPLAY_MS);
+        bumpPreviewTimer();
         eventBus.emit('sound:play', { type: 'screenshot' });
         eventBus.emit('game:notification', {
           title: PHOTO_MODE_LABELS.captureSuccess,
@@ -95,7 +105,40 @@ export function usePhotoModeController() {
         });
       }
     });
-  }, [reducedMotion, filterPreset]);
+  }, [reducedMotion, filterPreset, bumpPreviewTimer]);
+
+  const downloadPreview = useCallback(() => {
+    const current = previewRef.current;
+    if (!current) return;
+    const result = downloadPhotoStill(current.dataUrl, filterPresetRef.current);
+    bumpPreviewTimer();
+    eventBus.emit('game:notification', {
+      title: result.ok ? PHOTO_MODE_LABELS.downloadSuccess : PHOTO_MODE_LABELS.captureFailed,
+      type: 'info' as const,
+    });
+  }, [bumpPreviewTimer]);
+
+  const sharePreview = useCallback(() => {
+    const current = previewRef.current;
+    if (!current) return;
+    void shareOrDownloadPhotoStill(current.dataUrl, filterPresetRef.current).then((result) => {
+      bumpPreviewTimer();
+      if (!result.ok) {
+        eventBus.emit('game:notification', {
+          title: PHOTO_MODE_LABELS.captureFailed,
+          type: 'info' as const,
+        });
+        return;
+      }
+      eventBus.emit('game:notification', {
+        title:
+          result.method === 'share'
+            ? PHOTO_MODE_LABELS.shareSuccess
+            : PHOTO_MODE_LABELS.shareUnavailable,
+        type: 'info' as const,
+      });
+    });
+  }, [bumpPreviewTimer]);
 
   useEffect(() => {
     const unsub = eventBus.on(PHOTO_EVENTS.toggle, () => {
@@ -172,5 +215,7 @@ export function usePhotoModeController() {
     exitPhotoMode,
     captureScreenshot,
     toggleFilterPreset,
+    downloadPreview,
+    sharePreview,
   };
 }

@@ -30,6 +30,12 @@ vi.mock('@/engine/guidedStory/act23QuestHints', () => ({
   getThreadOf18LinesHint: () => 'Мемориал в парке — след Великого Сбоя 2029',
 }));
 
+vi.mock('@/engine/guidedStory/act4QuestHints', () => ({
+  getGuildInfiltrationHint: () => 'Пропуск гильдии — ищи в офисе IT',
+  getPoetryBroadcastHint: () => 'Выход на крышу — к передающей башне',
+  getRoofOfTheWorldHint: () => 'Доберись до крыши — место финальной встречи',
+}));
+
 vi.mock('@/store/questStore', () => ({
   getNextTrackedObjective: (questId: string) =>
     questId === 'side_demo'
@@ -126,6 +132,18 @@ describe('buildQuestJournalContextualHint', () => {
 
   it('prefers thread_of_18_lines live cue', () => {
     expect(buildQuestJournalContextualHint('thread_of_18_lines', 'street_night')).toContain('парке');
+  });
+
+  it('prefers guild_infiltration live cue', () => {
+    expect(buildQuestJournalContextualHint('guild_infiltration', 'street_night')).toContain('офисе');
+  });
+
+  it('prefers poetry_broadcast live cue', () => {
+    expect(buildQuestJournalContextualHint('poetry_broadcast', 'street_night')).toContain('крышу');
+  });
+
+  it('prefers roof_of_the_world live cue', () => {
+    expect(buildQuestJournalContextualHint('roof_of_the_world', 'street_night')).toContain('крыши');
   });
 
   it('combines next objective with travel direction', () => {

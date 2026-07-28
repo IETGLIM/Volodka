@@ -1,8 +1,16 @@
 import type { SceneId } from '@/shared/types/game';
 import type { QualityPresetId } from './qualityPresets';
 
-/** Night street scenes with rain-wet planar ground reflections (not winter). */
-export const WET_STREET_SCENE_IDS = ['street_night', 'city_square'] as const satisfies readonly SceneId[];
+/**
+ * Scenes with rain-wet planar ground reflections.
+ * Winter uses WetStreetGround ice sheen without planar reflector.
+ */
+export const WET_STREET_SCENE_IDS = [
+  'street_night',
+  'city_square',
+  'river_pier',
+  'pier_evening',
+] as const satisfies readonly SceneId[];
 
 export type WetStreetSceneId = (typeof WET_STREET_SCENE_IDS)[number];
 

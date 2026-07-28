@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 import {
   getStuckRecoveryHintDetail,
+  getStuckRecoveryReapproachHint,
   getStuckRecoveryUserMessage,
 } from './stuckRecoveryFeedback';
 
@@ -31,5 +32,21 @@ describe('stuckRecoveryFeedback', () => {
         targetNpcId: 'kate',
       }),
     ).toContain('Lock');
+  });
+
+  it('offers compass re-approach hint after recovery', () => {
+    const approach = getStuckRecoveryReapproachHint({
+      fromState: InteractionState.Approach,
+      targetNpcId: 'maria',
+    });
+    expect(approach).toMatch(/Компас/i);
+    expect(approach).toMatch(/отойдите|подойдите/i);
+
+    const dialogue = getStuckRecoveryReapproachHint({
+      fromState: InteractionState.Dialogue,
+      targetNpcId: 'albert',
+    });
+    expect(dialogue).toMatch(/Компас/i);
+    expect(dialogue).toContain('[E]');
   });
 });

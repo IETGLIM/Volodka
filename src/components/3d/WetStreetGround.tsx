@@ -44,8 +44,9 @@ export function WetStreetGround({
     && !reducedMotion
     && allowsHeavyGfxFeature(selectedPreset, 'reflector', { coarsePointer });
   const groundColor = groundColorOverride ?? (isWinter ? '#a0a8b8' : '#3a3a52');
-  const dryRoughness = isWinter ? 0.7 : 0.85;
-  const dryMetalness = 0.05;
+  // Winter: icy sidewalk sheen (metalness up, roughness down) without planar reflector.
+  const dryRoughness = isWinter ? 0.42 : 0.85;
+  const dryMetalness = isWinter ? 0.28 : 0.05;
   const effectiveRain = isWinter ? 0 : rainIntensity;
   const mixStrength = scaleReflectorMixStrength(reflectorSettings.mixStrength, effectiveRain);
 

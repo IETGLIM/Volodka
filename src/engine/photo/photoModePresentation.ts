@@ -141,3 +141,75 @@ export async function capturePhotoStill(
   if (!result.ok || filter !== 'noir') return result;
   return { ok: true, dataUrl: await applyNoirGradeToDataUrl(result.dataUrl) };
 }
+
+export type PhotoExportResult =
+  | { ok: true; method: 'download' | 'share' }
+  | { ok: false; reason: 'invalid_data' | 'unknown' };
+
+function photoFilename(filter: 'neon' | 'noir', date = new Date()): string {
+  const stamp = [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, '0'),
+    String(date.getDate()).padStart(2, '0'),
+    '-',
+    String(date.getHours()).padStart(2, '0'),
+    String(date.getMinutes()).padStart(2, '0'),
+    String(date.getSeconds()).padStart(2, '0'),
+  ].join('');
+  return `volodka-${filter}-${stamp}.png`;
+}
+
+/** Download a captured still (noir already baked into dataUrl when applicable). */
+export function downloadPhotoStill(
+  dataUrl: string,
+  filter: 'neon' | 'noir' = 'neon',
+): PhotoExportResult {
+  if (!dataUrl.startsWith('data:image/')) {
+    return { ok: false, reason: 'invalid_data' };
+  }
+  try {
+    const link = document.createElement('a');
+    link.href = dataUrl;
+    link.download = photoFilename(filter);
+    link.rel = 'noopener';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    return { ok: true, method: 'download' };
+  } catch {
+    return { ok: false, reason: 'unknown' };
+  }
+}
+
+/**
+ * Share captured still via Web Share API when available; otherwise download.
+ * dataUrl should already include baked noir grade for noir captures.
+ */
+export async function shareOrDownloadPhotoStill(
+  dataUrl: string,
+  filter: 'neon' | 'noir' = 'neon',
+): Promise<PhotoExportResult> {
+  if (!dataUrl.startsWith('data:image/')) {
+    return { ok: false, reason: 'invalid_data' };
+  }
+
+  const filename = photoFilename(filter);
+  try {
+    if (typeof navigator !== 'undefined' && typeof navigator.share === 'function' && typeof navigator.canShare === 'function') {
+      const res = await fetch(dataUrl);
+      const blob = await res.blob();
+      const file = new File([blob], filename, { type: blob.type || 'image/png' });
+      if (navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: filter === 'noir' ? 'VOLODKA Noir' : 'VOLODKA',
+        });
+        return { ok: true, method: 'share' };
+      }
+    }
+  } catch {
+    // Fall through to download (user cancel / unsupported).
+  }
+
+  return downloadPhotoStill(dataUrl, filter);
+}

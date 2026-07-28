@@ -27,6 +27,24 @@ export function getStuckRecoveryUserMessage(payload: StuckRecoveryPayload): stri
   }
 }
 
+/**
+ * Short compass / re-approach CTA after recovery — secondary toast line.
+ * Keeps the primary message short; this nudges spatial retry.
+ */
+export function getStuckRecoveryReapproachHint(payload: StuckRecoveryPayload): string {
+  const fromState = payload.fromState as InteractionState;
+  if (
+    fromState === InteractionState.Approach
+    || fromState === InteractionState.Align
+  ) {
+    return 'Компас: отойдите на шаг, развернитесь к NPC и подойдите снова';
+  }
+  if (fromState === InteractionState.Dialogue) {
+    return 'Компас: отойдите от NPC, затем подойдите спереди и нажмите [E]';
+  }
+  return 'Компас: найдите NPC рядом, подойдите спереди и нажмите [E]';
+}
+
 /** Optional secondary line for notifications / a11y. */
 export function getStuckRecoveryHintDetail(payload: StuckRecoveryPayload): string {
   const label = INTERACTION_STATE_LABELS[payload.fromState as InteractionState] ?? 'unknown';

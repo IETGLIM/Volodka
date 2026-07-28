@@ -562,10 +562,25 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                                       </div>
                                     )}
                                     {routeCta && (
-                                      <div className="flex items-center gap-1.5 pl-4">
-                                        <MapPin className="size-3 text-cyan-400/60 shrink-0" />
-                                        <p className="text-[10px] text-cyan-300/65 font-mono tracking-wide">{routeCta}</p>
-                                      </div>
+                                      <button
+                                        type="button"
+                                        className="flex items-center gap-1.5 pl-4 text-left group"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          const marker = getQuestMarker(qs.questId);
+                                          if (marker?.sceneId) {
+                                            eventBus.emit('ui:open_panel', {
+                                              panel: 'worldMap',
+                                              sceneId: marker.sceneId,
+                                            });
+                                          }
+                                        }}
+                                      >
+                                        <MapPin className="size-3 text-cyan-400/60 shrink-0 group-hover:text-cyan-300" />
+                                        <p className="text-[10px] text-cyan-300/65 font-mono tracking-wide group-hover:text-cyan-200 underline-offset-2 group-hover:underline">
+                                          {routeCta} · на карте
+                                        </p>
+                                      </button>
                                     )}
                                   </div>
                                   );

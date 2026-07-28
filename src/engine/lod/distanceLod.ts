@@ -112,14 +112,14 @@ export const SCENE_ENV_LOD: Partial<Record<string, EnvironmentLodProfile>> = {
   factory_basement: { clutterDistance: 10, decorativeDistance: 14 },
   chk_campfire_night: { clutterDistance: 14, decorativeDistance: 20 },
   city_square: { clutterDistance: 16, decorativeDistance: 24 },
-  pier_evening: { clutterDistance: 14, decorativeDistance: 22 },
+  pier_evening: { clutterDistance: 12, decorativeDistance: 18 },
   factory_roof: { clutterDistance: 12, decorativeDistance: 18 },
   library_basement: { clutterDistance: 12, decorativeDistance: 18 },
   underground_bunker: { clutterDistance: 10, decorativeDistance: 14 },
   guild_mainframe: { clutterDistance: 8, decorativeDistance: 12 },
   zarema_room: { clutterDistance: 8, decorativeDistance: 10 },
   albert_backroom: { clutterDistance: 6, decorativeDistance: 9 },
-  river_pier: { clutterDistance: 14, decorativeDistance: 22 },
+  river_pier: { clutterDistance: 12, decorativeDistance: 18 },
   chk_forest_zorge: { clutterDistance: 14, decorativeDistance: 20 },
 };
 

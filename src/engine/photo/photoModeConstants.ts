@@ -21,6 +21,11 @@ export const PHOTO_MODE_LABELS = {
   noirOn: 'Фильтр нуар',
   noirOff: 'Фильтр неон',
   controlsSummary: 'Пробел — снимок. N — нуар/неон. P или Escape — выход.',
+  downloadAction: 'Скачать снимок',
+  shareAction: 'Поделиться',
+  downloadSuccess: 'Снимок скачан',
+  shareSuccess: 'Снимок отправлен',
+  shareUnavailable: 'Шеринг недоступен — снимок скачан',
 } as const;
 
 export type PhotoFilterPreset = 'neon' | 'noir';

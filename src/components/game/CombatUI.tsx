@@ -2,19 +2,16 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Zap } from 'lucide-react';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
-import type { CombatLogEntry } from '@/shared/types/game';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { CombatDamageTimeline } from '@/components/game/hud/parts/CombatDamageTimeline';
-import { TurnPhaseIndicator } from '@/components/game/hud/parts/TurnPhaseIndicator';
 import { CombatIntroSplash } from '@/components/game/combatUi/CombatIntroSplash';
-import { CombatLogLine } from '@/components/game/combatUi/CombatLogLine';
 import { CombatScreenFlash, DamageNumber } from '@/components/game/combatUi/CombatDamageFx';
 import { CombatEnemyPanel } from '@/components/game/combatUi/CombatEnemyPanel';
 import { CombatActionBar } from '@/components/game/combatUi/CombatActionBar';
 import { CombatPlayerCard } from '@/components/game/combatUi/CombatPlayerCard';
 import { CombatOutcomeChrome } from '@/components/game/combatUi/CombatOutcomeChrome';
+import { CombatPhaseChrome } from '@/components/game/combatUi/CombatPhaseChrome';
+import { CombatLogPanel } from '@/components/game/combatUi/CombatLogPanel';
 import { useCombatUiController } from '@/components/game/combatUi/useCombatUiController';
 
 export function CombatUI() {
@@ -90,27 +87,10 @@ export function CombatUI() {
 
           {isActive && (
             <>
-              <div className="mb-1.5 flex flex-col items-center gap-0.5">
-                <TurnPhaseIndicator />
-                <div className="flex items-center gap-2 text-[9px] font-mono">
-                  {isSilenced && (
-                    <span className="text-red-400">🔇 СПОСОБНОСТИ ЗАБЛОКИРОВАНЫ</span>
-                  )}
-                  {combatState.fleeAttempts > 0 && (
-                    <span className="text-amber-400/60">
-                      <Zap className="inline size-2.5" /> Побег: +{combatState.fleeAttempts * 15}%
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex justify-center mb-1.5">
-                <CombatDamageTimeline />
-              </div>
-
-              <div className="signal-wave mb-1.5">
-                <span /><span /><span /><span /><span />
-              </div>
+              <CombatPhaseChrome
+                isSilenced={isSilenced}
+                fleeAttempts={combatState.fleeAttempts}
+              />
 
               <CombatActionBar
                 isTouchDevice={ui.isTouchDevice}
@@ -131,21 +111,11 @@ export function CombatUI() {
             </>
           )}
 
-          <div
-            aria-live={isActive ? 'off' : 'polite'}
-            aria-label="Combat log"
-            className="max-h-28 overflow-y-auto bg-black/70 border border-slate-800/30 rounded-lg p-2 font-mono"
-            style={{ scrollbarWidth: 'thin', scrollbarColor: '#334155 transparent' }}
-          >
-            {combatState.log.map((entry: CombatLogEntry, i: number) => (
-              <CombatLogLine
-                key={`log-${i}-${entry.turn}-${entry.type}-${entry.text.slice(0, 20)}`}
-                entry={entry}
-                className="typing-cursor"
-              />
-            ))}
-            <div ref={ui.logEndRef} />
-          </div>
+          <CombatLogPanel
+            log={combatState.log}
+            isActive={isActive}
+            logEndRef={ui.logEndRef}
+          />
         </motion.div>
 
         <div

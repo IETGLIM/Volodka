@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   applyNoirGradeToDataUrl,
+  downloadPhotoStill,
   formatGameTimeOfDay,
   formatRealClockTime,
   getBlinkDotMotion,
@@ -36,5 +37,9 @@ describe('photoModePresentation', () => {
   it('applyNoirGradeToDataUrl resolves without throwing on empty image', async () => {
     const out = await applyNoirGradeToDataUrl('data:image/png;base64,');
     expect(typeof out).toBe('string');
+  });
+
+  it('downloadPhotoStill rejects non-image payloads', () => {
+    expect(downloadPhotoStill('not-an-image').ok).toBe(false);
   });
 });

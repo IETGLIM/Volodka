@@ -26,6 +26,8 @@ type PhotoModeViewfinderProps = {
   filterPreset: PhotoFilterPreset;
   onCapture: () => void;
   onExit: () => void;
+  onDownloadPreview?: () => void;
+  onSharePreview?: () => void;
 };
 
 export function PhotoModeViewfinder({
@@ -38,6 +40,8 @@ export function PhotoModeViewfinder({
   filterPreset,
   onCapture,
   onExit,
+  onDownloadPreview,
+  onSharePreview,
 }: PhotoModeViewfinderProps) {
   const blinkDot = getBlinkDotMotion(reducedMotion);
   const isNoir = filterPreset === 'noir';
@@ -294,10 +298,34 @@ export function PhotoModeViewfinder({
                 alt={PHOTO_MODE_LABELS.previewAlt}
                 className={`w-full h-full object-cover ${isNoir ? 'photo-mode-preview-noir' : ''}`}
               />
-              <div className="absolute bottom-0 left-0 right-0 px-2 py-1 bg-black/60 backdrop-blur-sm">
+              <div className="absolute bottom-0 left-0 right-0 px-2 py-1 bg-black/60 backdrop-blur-sm flex items-center justify-between gap-1">
                 <span className="text-[8px] font-mono" style={{ color: accent(0.8) }}>
                   {formatRealClockTime()}
                 </span>
+                <div className="flex items-center gap-1">
+                  {onDownloadPreview && (
+                    <button
+                      type="button"
+                      onClick={onDownloadPreview}
+                      className="text-[8px] font-mono px-1 py-0.5 rounded border bg-black/40"
+                      style={{ color: accent(0.9), borderColor: accent(0.35) }}
+                      aria-label={PHOTO_MODE_LABELS.downloadAction}
+                    >
+                      ↓
+                    </button>
+                  )}
+                  {onSharePreview && (
+                    <button
+                      type="button"
+                      onClick={onSharePreview}
+                      className="text-[8px] font-mono px-1 py-0.5 rounded border bg-black/40"
+                      style={{ color: accent(0.9), borderColor: accent(0.35) }}
+                      aria-label={PHOTO_MODE_LABELS.shareAction}
+                    >
+                      ↗
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </motion.div>

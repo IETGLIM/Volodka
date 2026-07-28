@@ -18,8 +18,12 @@ import {
 
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
+import { useGameStore } from '@/store/gameStore';
+import { WetStreetGround } from './WetStreetGround';
+import type { SceneId } from '@/shared/types/game';
 
 interface RiverPierVisualProps {
+  sceneId?: SceneId;
   livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
 }
 
@@ -34,8 +38,9 @@ function pierSeededRandom(seed: number): () => number {
   };
 }
 
-export function RiverPierVisual(_props: RiverPierVisualProps) {
+export function RiverPierVisual({ sceneId = 'river_pier' }: RiverPierVisualProps) {
   const plankTexture = useCachedCanvasTexture('river_pier:planks', createPlankTexture);
+  const rainIntensity = useGameStore((s) => s.rainIntensity);
   const waterRef = useRef<THREE.Mesh>(null);
   const fireRef = useRef<THREE.Mesh>(null);
   const moonRoadRef = useRef<THREE.Mesh>(null);
@@ -58,14 +63,26 @@ export function RiverPierVisual(_props: RiverPierVisualProps) {
     }
   });
 
+  const waterMetalness = 0.85 + Math.min(0.12, rainIntensity * 0.12);
+  const waterRoughness = Math.max(0.08, 0.18 - rainIntensity * 0.08);
+
   return (
     <group>
+      {/* Wet approach apron under / around the pier (planar reflector when raining) */}
+      <WetStreetGround
+        sceneId={sceneId}
+        rainIntensity={rainIntensity}
+        size={Math.max(W, D) + 8}
+        groundColor="#2a2830"
+      />
+
       {/* ── Wooden pier deck (player area) ── */}
-      <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={getSharedPlaneGeometry(W, D)}>
+      <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.012} geometry={getSharedPlaneGeometry(W, D)}>
         <meshStandardMaterial
           map={plankTexture}
           color="#4a3e30"
-          roughness={0.9}
+          roughness={Math.max(0.35, 0.9 - rainIntensity * 0.4)}
+          metalness={0.05 + rainIntensity * 0.18}
           polygonOffset
           polygonOffsetFactor={1}
           polygonOffsetUnits={1}
@@ -76,8 +93,8 @@ export function RiverPierVisual(_props: RiverPierVisualProps) {
       <mesh ref={waterRef} rotation-x={-Math.PI / 2} position={[0, -0.35, -26]} geometry={getSharedPlaneGeometry(90, 44)}>
         <meshStandardMaterial
           color="#0d1b26"
-          metalness={0.85}
-          roughness={0.18}
+          metalness={waterMetalness}
+          roughness={waterRoughness}
           transparent
           opacity={0.94}
         />
