@@ -1,4 +1,7 @@
-/* ─── AAA narrative expansion — 3D trigger zones ─── */
+/* ─── AAA narrative expansion — 3D trigger zones ───
+ * Chunk: data-world (with triggerZones). triggerZones value-imports this
+ * module; keeping both in one chunk avoids data-world ↔ data-misc TDZ.
+ */
 
 import type { TriggerZone } from '@/data/triggerZones';
 

@@ -20,6 +20,15 @@ describe('resolveManualChunk', () => {
     expect(resolveManualChunk('G:/1O1O1/src/data/loreEntries.ts')).toBe('data-lore');
   });
 
+  it('colocates expansion stubs and narrative zones to break data-misc TDZ cycles', () => {
+    expect(resolveManualChunk('G:/1O1O1/src/data/expansion/expansionPoemStubs.ts')).toBe('data-poems');
+    expect(resolveManualChunk('G:/1O1O1/src/data/poemMargins.ts')).toBe('data-poems');
+    expect(resolveManualChunk('G:/1O1O1/src/data/expansion/expansionLoreStubs.ts')).toBe('data-lore');
+    expect(resolveManualChunk('G:/1O1O1/src/data/expansion/expansionQuestStubs.ts')).toBe('data-quests');
+    expect(resolveManualChunk('G:/1O1O1/src/data/expansion/expansionItemStubs.ts')).toBe('data-quests');
+    expect(resolveManualChunk('G:/1O1O1/src/data/narrativeExpansionTriggerZones.ts')).toBe('data-world');
+  });
+
   it('routes shared GPU registries to boot-shared (breaks combat ↔ toast panel cycle)', () => {
     expect(resolveManualChunk('G:/1O1O1/src/engine/three/moduleGeometryRegistry.ts')).toBe('boot-shared');
     expect(resolveManualChunk('G:/1O1O1/src/engine/three/disposeThreeResources.ts')).toBe('boot-shared');
