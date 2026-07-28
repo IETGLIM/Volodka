@@ -26,6 +26,9 @@ export const PHOTO_MODE_LABELS = {
   downloadSuccess: 'Снимок скачан',
   shareSuccess: 'Снимок отправлен',
   shareUnavailable: 'Шеринг недоступен — снимок скачан',
+  galleryTitle: 'Галерея сессии',
+  galleryEmpty: 'Пока нет снимков',
+  gallerySelect: 'Открыть снимок из галереи',
 } as const;
 
 export type PhotoFilterPreset = 'neon' | 'noir';

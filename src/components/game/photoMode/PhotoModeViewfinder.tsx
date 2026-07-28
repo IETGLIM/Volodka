@@ -15,10 +15,12 @@ import {
 } from '@/engine/photo/photoModePresentation';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import type { PhotoPreviewData } from '@/components/game/photoMode/usePhotoModeController';
+import type { PhotoCaptureHistoryEntry } from '@/engine/photo/photoCaptureHistory';
 
 type PhotoModeViewfinderProps = {
   flash: boolean;
   preview: PhotoPreviewData | null;
+  captureHistory?: PhotoCaptureHistoryEntry[];
   liveAnnouncement: string;
   reducedMotion: boolean;
   sceneName: string;
@@ -26,6 +28,7 @@ type PhotoModeViewfinderProps = {
   filterPreset: PhotoFilterPreset;
   onCapture: () => void;
   onExit: () => void;
+  onSelectHistory?: (entry: PhotoCaptureHistoryEntry) => void;
   onDownloadPreview?: () => void;
   onSharePreview?: () => void;
 };
@@ -33,6 +36,7 @@ type PhotoModeViewfinderProps = {
 export function PhotoModeViewfinder({
   flash,
   preview,
+  captureHistory = [],
   liveAnnouncement,
   reducedMotion,
   sceneName,
@@ -40,6 +44,7 @@ export function PhotoModeViewfinder({
   filterPreset,
   onCapture,
   onExit,
+  onSelectHistory,
   onDownloadPreview,
   onSharePreview,
 }: PhotoModeViewfinderProps) {
@@ -331,6 +336,42 @@ export function PhotoModeViewfinder({
           </motion.div>
         )}
       </AnimatePresence>
+
+      {captureHistory.length > 0 && onSelectHistory && (
+        <div
+          className="absolute bottom-6 left-6 sm:left-10 pointer-events-auto flex flex-col gap-1.5"
+          role="list"
+          aria-label={PHOTO_MODE_LABELS.galleryTitle}
+        >
+          <span className="text-[8px] font-mono uppercase tracking-wider" style={{ color: accent(0.55) }}>
+            {PHOTO_MODE_LABELS.galleryTitle}
+          </span>
+          <div className="flex items-center gap-1.5">
+            {captureHistory.slice(0, 6).map((entry) => (
+              <button
+                key={entry.id}
+                type="button"
+                role="listitem"
+                onClick={() => onSelectHistory(entry)}
+                aria-label={`${PHOTO_MODE_LABELS.gallerySelect}: ${entry.sceneName}`}
+                className="rounded border overflow-hidden transition-opacity hover:opacity-100 opacity-80"
+                style={{
+                  width: 44,
+                  height: 28,
+                  borderColor: accent(0.35),
+                  boxShadow: `0 0 8px ${accent(0.12)}`,
+                }}
+              >
+                <img
+                  src={entry.dataUrl}
+                  alt=""
+                  className={`w-full h-full object-cover ${entry.filter === 'noir' ? 'photo-mode-preview-noir' : ''}`}
+                />
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </motion.div>
   );
 }

@@ -12,11 +12,11 @@ export const GRAVITY = -15;
 export const FOOTSTEP_INTERVAL = 0.4;
 export const PLAYER_HEIGHT = 1.75;
 export const PLAYER_RADIUS = 0.3;
-export const ROTATION_SPEED = 8.5;
+export const ROTATION_SPEED = 9.0;
 /** Speed for 180-degree direction reversals — slower than normal rotation
  *  so the character appears to physically turn around rather than snapping.
  *  GTA/Gothic-style games use 4–5 for reversal turns. */
-export const ROTATION_SPEED_REVERSAL = 5.0;
+export const ROTATION_SPEED_REVERSAL = 5.25;
 /** Angle threshold (radians) above which a direction reversal turn is used.
  *  ~120° — mid camera-relative redirects stay snappy; only hard about-faces slow. */
 export const ROTATION_REVERSAL_THRESHOLD = (Math.PI * 2) / 3;
@@ -55,11 +55,11 @@ export const VARIABLE_JUMP_FALL_MULT = 2.2;
 
 // ── Running FOV boost ──
 /** Additional FOV degrees when sprinting (adds peripheral speed feel). */
-export const RUN_FOV_BOOST = 3;
+export const RUN_FOV_BOOST = 3.5;
 /** Player speed (m/s) at which FOV boost is at full intensity. */
-export const RUN_FOV_SPEED_FULL = 5.5;
+export const RUN_FOV_SPEED_FULL = 5.25;
 /** Player speed (m/s) at which FOV boost begins. */
-export const RUN_FOV_SPEED_MIN = 2.5;
+export const RUN_FOV_SPEED_MIN = 2.35;
 /** Cap KCC controller recreates per incident to avoid WASM churn loops. */
 export const MAX_KCC_RECREATE_ATTEMPTS_PER_INCIDENT = 5;
 /** Max horizontal direct-translation step when KCC is unavailable (prevents wall teleport). */

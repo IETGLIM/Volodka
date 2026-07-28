@@ -16,6 +16,7 @@ import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
 import { EnvironmentDetail, PropDistanceGate } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { createAbandonedFactoryIndustrialSkyTexture } from '@/engine/graphics/proceduralSkyTextures';
+import { getIndustrialDampFloorSettings } from '@/engine/graphics/wetStreetScenes';
 
 interface AbandonedFactoryVisualProps {
   livePlayerPositionRef?: React.MutableRefObject<THREE.Vector3>;
@@ -30,6 +31,7 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
     createAbandonedFactoryIndustrialSkyTexture,
   );
   const envProfile = useMemo(() => getEnvironmentLodProfile('abandoned_factory'), []);
+  const damp = useMemo(() => getIndustrialDampFloorSettings('abandoned_factory'), []);
 
   const W = 20;
   const D = 18;
@@ -66,7 +68,8 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
         <meshStandardMaterial
           map={floorTexture}
           color="#2a2520"
-          roughness={0.9}
+          roughness={damp?.roughness ?? 0.9}
+          metalness={damp?.metalness ?? 0}
           polygonOffset
           polygonOffsetFactor={1}
           polygonOffsetUnits={1}
@@ -318,9 +321,30 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
         <meshStandardMaterial color="#1a1a1a" emissive="#44ff44" emissiveIntensity={0.1} roughness={0.95} />
       </mesh>
 
-      {/* ── Oil puddle on floor ── */}
+      {/* ── Oil puddle on floor — industrial damp sheen ── */}
       <mesh rotation-x={-Math.PI / 2} position={[-5, 0.008, 3]} geometry={getSharedCircleGeometry(0.6, 12)}>
-        <meshStandardMaterial color="#0a0a05" metalness={0.4} roughness={0.3} transparent opacity={0.5} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+        <meshStandardMaterial
+          color="#0a0a05"
+          metalness={damp?.oilMetalness ?? 0.4}
+          roughness={damp?.oilRoughness ?? 0.3}
+          transparent
+          opacity={0.55}
+          polygonOffset
+          polygonOffsetFactor={1}
+          polygonOffsetUnits={1}
+        />
+      </mesh>
+      <mesh rotation-x={-Math.PI / 2} position={[2.2, 0.007, -4]} geometry={getSharedCircleGeometry(0.35, 10)}>
+        <meshStandardMaterial
+          color="#080810"
+          metalness={damp?.oilMetalness ?? 0.4}
+          roughness={(damp?.oilRoughness ?? 0.3) + 0.05}
+          transparent
+          opacity={0.4}
+          polygonOffset
+          polygonOffsetFactor={1}
+          polygonOffsetUnits={1}
+        />
       </mesh>
     </group>
   );

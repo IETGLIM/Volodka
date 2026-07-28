@@ -84,3 +84,49 @@ export function getRoofOfTheWorldHint(currentSceneId: string): string | null {
   }
   return null;
 }
+
+/** Последнее Стихотворение — phrases → quiet place → compose → recite. */
+export function getLastPoemHint(currentSceneId: string): string | null {
+  const quest = findActiveQuest('last_poem');
+  if (!quest) return null;
+  if (!objectiveDone(quest, 'collect_all_phrases')) {
+    return 'Собери все фразы из предыдущих заданий — материал для финала';
+  }
+  if (!objectiveDone(quest, 'find_quiet_place')) {
+    return currentSceneId === 'rooftop_edge'
+      ? 'Тихое место найдено — садись писать'
+      : 'Найди тихое место на краю крыши';
+  }
+  if (!objectiveDone(quest, 'compose_poem')) {
+    return 'Составь собственное стихотворение из собранных фрагментов';
+  }
+  if (!objectiveDone(quest, 'recite_final')) {
+    return 'Продекламируй финальное стихотворение — каждое слово решает исход';
+  }
+  return null;
+}
+
+/** Слепое Пятно — logs → cafe → identify → confront. */
+export function getBlindSpotHint(currentSceneId: string): string | null {
+  const quest = findActiveQuest('blind_spot');
+  if (!quest) return null;
+  if (!objectiveDone(quest, 'check_office_logs')) {
+    return currentSceneId === 'office_day'
+      ? 'Сергей и логи доступа — проверь посещения офиса [E]'
+      : 'Логи гильдии у Сергея — иди в офис';
+  }
+  if (!objectiveDone(quest, 'interrogation_round')) {
+    return currentSceneId === 'cafe_evening'
+      ? 'Допрос подозреваемых в кафе — слушай внимательно'
+      : 'Допрос в кафе «Синяя яма» — выйди туда';
+  }
+  if (!objectiveDone(quest, 'identify_mole')) {
+    return 'Вычисли шпиона — стих «Ну а тебе, друг мой!» поможет увидеть скрытое';
+  }
+  if (!objectiveDone(quest, 'confront_mole')) {
+    return currentSceneId === 'office_day' || currentSceneId === 'guild_mainframe'
+      ? 'Столкнись с Олегом — предатель рядом [E]'
+      : 'Олег — цель конфронтации; найди его в гильдии';
+  }
+  return null;
+}

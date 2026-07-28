@@ -1,6 +1,8 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import {
+  getBlindSpotHint,
   getGuildInfiltrationHint,
+  getLastPoemHint,
   getPoetryBroadcastHint,
   getRoofOfTheWorldHint,
 } from './act4QuestHints';
@@ -54,6 +56,29 @@ describe('act4QuestHints', () => {
     }];
     expect(getRoofOfTheWorldHint('rooftop_edge')).toContain('Александру');
     expect(getRoofOfTheWorldHint('cafe_evening')).toContain('крыши');
+  });
+
+  it('last_poem guides quiet rooftop write', () => {
+    snap.quests = [{
+      questId: 'last_poem',
+      status: 'active',
+      objectives: { collect_all_phrases: true },
+      startedAtTime: 0,
+    }];
+    expect(getLastPoemHint('street_night')).toMatch(/крыш/i);
+    expect(getLastPoemHint('rooftop_edge')).toMatch(/писать|Тихое/i);
+  });
+
+  it('blind_spot guides logs then cafe', () => {
+    snap.quests = [{
+      questId: 'blind_spot',
+      status: 'active',
+      objectives: {},
+      startedAtTime: 0,
+    }];
+    expect(getBlindSpotHint('street_night')).toMatch(/лог|офис/i);
+    snap.quests[0].objectives = { check_office_logs: true };
+    expect(getBlindSpotHint('cafe_evening')).toMatch(/Допрос|кафе/i);
   });
 
   it('returns null when quest inactive', () => {

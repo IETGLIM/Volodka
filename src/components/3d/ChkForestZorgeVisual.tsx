@@ -17,9 +17,13 @@ import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
 import { EnvironmentDetail, SceneClutterGate } from './lod/PropDistanceGate';
 import { scratchColor } from '@/engine/three/frameScratch';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
+import { getIndustrialDampFloorSettings } from '@/engine/graphics/wetStreetScenes';
+import type { SceneId } from '@/shared/types/game';
 
 interface ChkForestZorgeVisualProps {
   livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
+  /** Actual scene id (may be chk_campfire_night via inheritance). */
+  sceneId?: SceneId;
 }
 
 const W = 36;
@@ -35,9 +39,17 @@ function seededRandom(seed: number): () => number {
 }
 
 /** Night forest clearing: campfire, port wine crates, guitar spot */
-export function ChkForestZorgeVisual({ livePlayerPositionRef }: ChkForestZorgeVisualProps) {
+export function ChkForestZorgeVisual({
+  livePlayerPositionRef,
+  sceneId = 'chk_forest_zorge',
+}: ChkForestZorgeVisualProps) {
   const groundTexture = useCachedCanvasTexture('chk_forest_zorge:ground', createForestGroundTexture);
-  const envProfile = useMemo(() => getEnvironmentLodProfile('chk_forest_zorge'), []);
+  const envProfile = useMemo(
+    () => getEnvironmentLodProfile(sceneId === 'chk_campfire_night' ? 'chk_campfire_night' : 'chk_forest_zorge'),
+    [sceneId],
+  );
+  const damp = useMemo(() => getIndustrialDampFloorSettings('chk_campfire_night'), []);
+  const showCampfireDamp = sceneId === 'chk_campfire_night' && damp != null;
   const fireLightRef = useRef<THREE.PointLight>(null);
   const fireMeshRef = useRef<THREE.Mesh>(null);
   const tRef = useRef(0);
@@ -124,6 +136,20 @@ export function ChkForestZorgeVisual({ livePlayerPositionRef }: ChkForestZorgeVi
 
       {/* Campfire ring */}
       <group position={[0, 0, 0]}>
+        {showCampfireDamp && damp && (
+          <mesh rotation-x={-Math.PI / 2} position={[0, 0.006, 0]} geometry={getSharedCircleGeometry(1.8, 24)}>
+            <meshStandardMaterial
+              color="#1a1814"
+              metalness={damp.metalness}
+              roughness={damp.roughness}
+              transparent
+              opacity={0.55}
+              polygonOffset
+              polygonOffsetFactor={1}
+              polygonOffsetUnits={1}
+            />
+          </mesh>
+        )}
         {Array.from({ length: 8 }).map((_, i) => {
           const a = (i / 8) * Math.PI * 2;
           return (

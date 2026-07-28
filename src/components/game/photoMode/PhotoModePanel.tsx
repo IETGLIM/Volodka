@@ -12,6 +12,7 @@ function PhotoModeInner() {
         <PhotoModeViewfinder
           flash={photo.flash}
           preview={photo.preview}
+          captureHistory={photo.captureHistory}
           liveAnnouncement={photo.liveAnnouncement}
           reducedMotion={photo.reducedMotion}
           sceneName={photo.sceneName}
@@ -19,6 +20,7 @@ function PhotoModeInner() {
           filterPreset={photo.filterPreset}
           onCapture={photo.captureScreenshot}
           onExit={photo.exitPhotoMode}
+          onSelectHistory={photo.selectHistoryCapture}
           onDownloadPreview={photo.downloadPreview}
           onSharePreview={photo.sharePreview}
         />

@@ -18,6 +18,38 @@ export function isWetStreetScene(sceneId: SceneId): sceneId is WetStreetSceneId 
   return (WET_STREET_SCENE_IDS as readonly string[]).includes(sceneId);
 }
 
+/**
+ * Industrial / campfire damp sheen — no planar reflector, darker wet concrete / ash.
+ * Applied as material polish (factory oil, campfire damp ring).
+ */
+export const INDUSTRIAL_DAMP_SHEEN_SCENE_IDS = [
+  'abandoned_factory',
+  'factory_roof',
+  'chk_campfire_night',
+] as const satisfies readonly SceneId[];
+
+export type IndustrialDampSheenSceneId = (typeof INDUSTRIAL_DAMP_SHEEN_SCENE_IDS)[number];
+
+export function isIndustrialDampSheenScene(
+  sceneId: SceneId,
+): sceneId is IndustrialDampSheenSceneId {
+  return (INDUSTRIAL_DAMP_SHEEN_SCENE_IDS as readonly string[]).includes(sceneId);
+}
+
+/** Factory oil / damp concrete material knobs (no rain required). */
+export function getIndustrialDampFloorSettings(sceneId: SceneId): {
+  roughness: number;
+  metalness: number;
+  oilMetalness: number;
+  oilRoughness: number;
+} | null {
+  if (!isIndustrialDampSheenScene(sceneId)) return null;
+  if (sceneId === 'chk_campfire_night') {
+    return { roughness: 0.72, metalness: 0.08, oilMetalness: 0.2, oilRoughness: 0.45 };
+  }
+  return { roughness: 0.55, metalness: 0.18, oilMetalness: 0.55, oilRoughness: 0.22 };
+}
+
 export interface ReflectorMaterialSettings {
   resolution: number;
   blur: [number, number];
