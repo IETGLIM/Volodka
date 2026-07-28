@@ -1,5 +1,7 @@
 /* ─── Expansion poem stubs (exploration fragments, not canonical poem_1–35) ───
  * Placeholder texts until full fragments are authored. Does not modify poems.ts.
+ * Chunk: data-poems — poems.ts imports these; poemMargins also pulls poems, so
+ * leaving stubs in data-misc caused poems ↔ misc circular init TDZ in production.
  */
 
 import type { Poem } from '@/shared/types/game';
