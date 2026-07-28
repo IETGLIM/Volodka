@@ -69,4 +69,4 @@ export const NPC_INTERACTION_RANGE = 3.0;
 /** Query range used by interaction targeting + HUD ring fallback (slightly wider than prompt). */
 export const NPC_INTERACTION_QUERY_RANGE = 3.5;
 /** Fraction of maxRange under which the target is considered “in interact range” for scoring/UI. */
-export const INTERACTION_IN_RANGE_FRACTION = 0.55;
+export const INTERACTION_IN_RANGE_FRACTION = 0.6;

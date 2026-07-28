@@ -20,4 +20,12 @@ describe('wetStreetScenes', () => {
     expect(high.resolution).toBeLessThan(ultra.resolution);
     expect(high.mixStrength).toBeLessThan(ultra.mixStrength);
   });
+
+  it('uses lightest reflector buffers on medium', () => {
+    const medium = getReflectorMaterialSettings('medium');
+    const high = getReflectorMaterialSettings('high');
+    expect(medium.resolution).toBe(256);
+    expect(medium.resolution).toBeLessThan(high.resolution);
+    expect(medium.mixStrength).toBeLessThan(high.mixStrength);
+  });
 });

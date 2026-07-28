@@ -4,6 +4,7 @@ import {
   formatRealClockTime,
   getBlinkDotMotion,
   getFlashOverlayTransition,
+  getPhotoFilterTitle,
 } from '@/engine/photo/photoModePresentation';
 
 describe('photoModePresentation', () => {
@@ -24,5 +25,10 @@ describe('photoModePresentation', () => {
   it('getFlashOverlayTransition is instant with reduced motion', () => {
     expect(getFlashOverlayTransition(true).duration).toBe(0);
     expect(getFlashOverlayTransition(false).duration).toBeGreaterThan(0);
+  });
+
+  it('getPhotoFilterTitle switches neon/noir labels', () => {
+    expect(getPhotoFilterTitle('neon')).toBe('PHOTO MODE');
+    expect(getPhotoFilterTitle('noir')).toBe('NOIR MODE');
   });
 });

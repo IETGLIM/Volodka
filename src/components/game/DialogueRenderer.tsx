@@ -15,7 +15,7 @@ import {
   resolveNpcIdFromSpeaker,
   isNarrativeGameDataLoaded,
   ensureDialogueNode,
-  prefetchDialogueNodes,
+  prefetchDialogueFrontier,
 } from '@/data/gameDataLoader';
 import { audioEngine } from '@/engine/AudioEngine';
 import { consumePoemSkillCheckFlag } from '@/engine/poemPower/poemSkillCheckModifiers';
@@ -237,7 +237,10 @@ export function DialogueRenderer() {
           setDialoguePackVersion((v) => v + 1);
           const loaded = getDialogueNodes()[currentNodeId];
           if (loaded?.choices?.length) {
-            prefetchDialogueNodes(loaded.choices.map((c) => c.next));
+            prefetchDialogueFrontier([
+              currentNodeId,
+              ...loaded.choices.map((c) => c.next),
+            ]);
           }
         }
       })

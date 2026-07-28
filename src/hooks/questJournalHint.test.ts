@@ -17,6 +17,14 @@ vi.mock('@/engine/guidedStory/act1QuestHints', () => ({
   getSolnyshSpineHint: () => 'Солныш в коридоре или в своей комнате — найди её и поговори',
 }));
 
+vi.mock('@/engine/guidedStory/act23QuestHints', () => ({
+  getCafeSafehouseHint: () => 'Иди в кафе «Синяя яма» — бариста может дать явочную',
+  getDmitryDefectionHint: () => 'Дмитрий в офисе гильдии — время ограничено, иди туда',
+  getBasementHumHint: () => 'Ключ Трофима открывает подвал «Хрома-М» — иди на завод',
+  getZaremaRescueHint: () => 'Блок задержания в гильдии — стих «Прорыв» открывает путь',
+  getMariaTruthHint: () => 'Бариста в «Синей яме» знает больше, чем кажется',
+}));
+
 vi.mock('@/store/questStore', () => ({
   getNextTrackedObjective: (questId: string) =>
     questId === 'side_demo'
@@ -73,6 +81,26 @@ describe('buildQuestJournalContextualHint', () => {
     expect(buildQuestJournalContextualHint('solnysh_comfort', 'street_night')).toContain(
       'Солныш',
     );
+  });
+
+  it('prefers cafe_safehouse live cue', () => {
+    expect(buildQuestJournalContextualHint('cafe_safehouse', 'street_night')).toContain('явочную');
+  });
+
+  it('prefers dmitry_defection live cue', () => {
+    expect(buildQuestJournalContextualHint('dmitry_defection', 'volodka_room')).toContain('Дмитрий');
+  });
+
+  it('prefers basement_hum live cue', () => {
+    expect(buildQuestJournalContextualHint('basement_hum', 'street_night')).toContain('завод');
+  });
+
+  it('prefers zarema_rescue live cue', () => {
+    expect(buildQuestJournalContextualHint('zarema_rescue', 'street_night')).toContain('Прорыв');
+  });
+
+  it('prefers maria_truth live cue', () => {
+    expect(buildQuestJournalContextualHint('maria_truth', 'volodka_room')).toContain('яме');
   });
 
   it('combines next objective with travel direction', () => {

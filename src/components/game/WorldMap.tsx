@@ -150,6 +150,7 @@ const CONNECTIONS: [SceneId, SceneId][] = [
   ['abandoned_factory', 'river_pier'],
   // Misc
   ['river_pier', 'pier_evening'],
+  ['pier_evening', 'park_day'],
   ['volodka_room', 'sleep_dream'],
 ];
 

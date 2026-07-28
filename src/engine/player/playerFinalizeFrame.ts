@@ -3,6 +3,7 @@ import { audioEngine } from '@/engine/AudioEngine';
 import { KCC_STUCK_FRAMES_BEFORE_RECREATE } from '@/engine/player/playerConstants';
 import {
   logKccRecreateAttempt,
+  notifyKccUnstuck,
   restoreKccMovementMode,
 } from '@/engine/player/directMovementTelemetry';
 import { shouldAttemptKccRecreate } from '@/engine/player/kccRecoveryState';
@@ -163,6 +164,8 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
             deps.noMovementFramesRef.current = 0;
             if (deps.controlsDegradedRef.current) {
               restoreKccMovementMode(deps.directMovementTelemetry, { sceneId: deps.sceneId });
+            } else if (deps.directMovementTelemetry.recreateAttemptsRef.current === 1) {
+              notifyKccUnstuck({ sceneId: deps.sceneId });
             }
           }
         }

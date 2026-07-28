@@ -72,3 +72,7 @@ export function getFlashOverlayTransition(reducedMotion: boolean) {
 export function getCaptureFailureMessage(): string {
   return PHOTO_MODE_LABELS.captureFailed;
 }
+
+export function getPhotoFilterTitle(filter: 'neon' | 'noir'): string {
+  return filter === 'noir' ? PHOTO_MODE_LABELS.titleNoir : PHOTO_MODE_LABELS.title;
+}

@@ -16,6 +16,7 @@ function PhotoModeInner() {
           reducedMotion={photo.reducedMotion}
           sceneName={photo.sceneName}
           timeStr={photo.timeStr}
+          filterPreset={photo.filterPreset}
           onCapture={photo.captureScreenshot}
           onExit={photo.exitPhotoMode}
         />

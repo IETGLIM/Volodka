@@ -16,6 +16,7 @@ describe('formatQualityPresetDetailRu', () => {
     const detail = formatQualityPresetDetailRu('medium', QUALITY_PRESETS.medium);
     expect(detail).toContain('Уникальные аватары (RPM)');
     expect(detail).toContain('Карты теней + мягкий blob');
+    expect(detail).toContain('Мокрые отражения на улице');
   });
 
   it('describes full shadow maps on high', () => {
@@ -33,17 +34,20 @@ describe('formatQualityPresetDetailRu', () => {
     expect(ultra).not.toContain('выберите');
   });
 
-  it('nudges auto→high/ultra users to pick an explicit preset for reflector', () => {
+  it('nudges auto→medium/high/ultra users to pick an explicit preset for reflector', () => {
     expect(formatQualityPresetDetailRu('auto', QUALITY_PRESETS.ultra)).toContain(
-      'Мокрые отражения: выберите пресет «Высокое» или выше',
+      'Мокрые отражения: выберите пресет «Среднее» или выше',
     );
     expect(formatQualityPresetDetailRu('auto', QUALITY_PRESETS.high)).toContain(
-      'Мокрые отражения: выберите пресет «Высокое» или выше',
+      'Мокрые отражения: выберите пресет «Среднее» или выше',
+    );
+    expect(formatQualityPresetDetailRu('auto', QUALITY_PRESETS.medium)).toContain(
+      'Мокрые отражения: выберите пресет «Среднее» или выше',
     );
   });
 
-  it('does not show reflector hint for auto resolved to medium', () => {
-    const detail = formatQualityPresetDetailRu('auto', QUALITY_PRESETS.medium);
+  it('does not show reflector hint for auto resolved to low', () => {
+    const detail = formatQualityPresetDetailRu('auto', QUALITY_PRESETS.low);
     expect(detail).not.toContain('Мокрые отражения');
   });
 });

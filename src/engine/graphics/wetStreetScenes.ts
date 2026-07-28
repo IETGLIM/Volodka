@@ -16,12 +16,16 @@ export interface ReflectorMaterialSettings {
   mixStrength: number;
 }
 
-/** Tiered reflector cost — high uses a lighter buffer than ultra. */
+/** Tiered reflector cost — medium is lightest; high lighter than ultra. */
 export function getReflectorMaterialSettings(
   presetId: Exclude<QualityPresetId, 'auto'>,
 ): ReflectorMaterialSettings {
   if (presetId === 'ultra') {
     return { resolution: 512, blur: [256, 128], mixStrength: 0.65 };
   }
-  return { resolution: 384, blur: [192, 96], mixStrength: 0.55 };
+  if (presetId === 'high') {
+    return { resolution: 384, blur: [192, 96], mixStrength: 0.55 };
+  }
+  // medium (and low fallback if ever gated)
+  return { resolution: 256, blur: [128, 64], mixStrength: 0.4 };
 }

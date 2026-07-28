@@ -2,6 +2,7 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import {
   logKccRecreateAttempt,
   notifyControlsDegraded,
+  notifyKccUnstuck,
   restoreKccMovementMode,
   type DirectMovementTelemetryRefs,
 } from './directMovementTelemetry';
@@ -51,6 +52,13 @@ describe('directMovementTelemetry', () => {
       'input_no_displacement',
       expect.objectContaining({ attempt: 1, sceneId: 'home_evening' }),
     );
+  });
+
+  it('emits stuck-recovery exploration toast', () => {
+    notifyKccUnstuck({ sceneId: 'home_evening' });
+    expect(eventBusEmit).toHaveBeenCalledWith('ui:exploration_message', {
+      text: expect.stringContaining('Застревание'),
+    });
   });
 
   it('notifies controls degraded once per reason', () => {

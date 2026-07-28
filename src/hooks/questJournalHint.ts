@@ -10,6 +10,13 @@ import {
   getSolnyshSpineHint,
   getVaultBackupTrialHint,
 } from '@/engine/guidedStory/act1QuestHints';
+import {
+  getBasementHumHint,
+  getCafeSafehouseHint,
+  getDmitryDefectionHint,
+  getMariaTruthHint,
+  getZaremaRescueHint,
+} from '@/engine/guidedStory/act23QuestHints';
 import { buildGuidanceDirectionHint } from '@/engine/guidedStory/guidanceLocation';
 import {
   getNextTrackedObjective,
@@ -24,7 +31,7 @@ const SOLNYSH_SPINE_QUEST_IDS = new Set([
 ]);
 
 /**
- * Prefer live Act-1/2 spine cues; otherwise next objective + scene travel hint.
+ * Prefer live Act-1/2/3 spine cues; otherwise next objective + scene travel hint.
  */
 export function buildQuestJournalContextualHint(
   questId: string,
@@ -56,6 +63,26 @@ export function buildQuestJournalContextualHint(
   }
   if (SOLNYSH_SPINE_QUEST_IDS.has(questId)) {
     const live = getSolnyshSpineHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'cafe_safehouse') {
+    const live = getCafeSafehouseHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'dmitry_defection') {
+    const live = getDmitryDefectionHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'basement_hum') {
+    const live = getBasementHumHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'zarema_rescue') {
+    const live = getZaremaRescueHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'maria_truth') {
+    const live = getMariaTruthHint(currentSceneId);
     if (live) return live;
   }
 

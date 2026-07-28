@@ -20,7 +20,7 @@ export function allowsHeavyGfxFeature(
 
   if (
     options?.coarsePointer
-    && (selectedPreset === 'ultra' || selectedPreset === 'high')
+    && (selectedPreset === 'ultra' || selectedPreset === 'high' || selectedPreset === 'medium')
   ) {
     if (feature === 'reflector' || feature === 'godRays') return false;
   }
@@ -29,7 +29,7 @@ export function allowsHeavyGfxFeature(
     case 'n8ao':
       return selectedPreset === 'high' || selectedPreset === 'ultra';
     case 'reflector':
-      return selectedPreset === 'high' || selectedPreset === 'ultra';
+      return selectedPreset === 'medium' || selectedPreset === 'high' || selectedPreset === 'ultra';
     case 'galaxySky':
       return selectedPreset === 'high' || selectedPreset === 'ultra';
     case 'godRays':

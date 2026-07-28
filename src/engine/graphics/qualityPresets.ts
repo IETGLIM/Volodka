@@ -424,13 +424,17 @@ export function formatQualityPresetDetailRu(
   if (glbCapable) {
     hints.push('Уникальные аватары (RPM): от «Среднее»');
   }
-  if (selectedPreset === 'ultra' || selectedPreset === 'high') {
+  if (
+    selectedPreset === 'ultra'
+    || selectedPreset === 'high'
+    || selectedPreset === 'medium'
+  ) {
     hints.push('Мокрые отражения на улице');
   } else if (
     selectedPreset === 'auto'
-    && (preset.id === 'ultra' || preset.id === 'high')
+    && (preset.id === 'ultra' || preset.id === 'high' || preset.id === 'medium')
   ) {
-    hints.push('Мокрые отражения: выберите пресет «Высокое» или выше');
+    hints.push('Мокрые отражения: выберите пресет «Среднее» или выше');
   }
 
   return hints.length > 0 ? `${base} · ${hints.join(' · ')}` : base;

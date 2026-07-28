@@ -36,6 +36,56 @@
   opacity: 0.5;
 }
 
+/* Noir grade — desat + contrast wash over the live canvas */
+.photo-mode-noir-grade {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at center, transparent 35%, rgba(0, 0, 0, 0.55) 100%),
+    linear-gradient(180deg, rgba(12, 12, 18, 0.25), rgba(0, 0, 0, 0.35));
+  mix-blend-mode: multiply;
+  opacity: 0.85;
+}
+
+.photo-mode-noir-grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.18;
+  mix-blend-mode: overlay;
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 1px,
+      rgba(255, 255, 255, 0.03) 1px,
+      rgba(255, 255, 255, 0.03) 2px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 1px,
+      rgba(0, 0, 0, 0.04) 1px,
+      rgba(0, 0, 0, 0.04) 2px
+    );
+}
+
+.photo-mode-noir-letterbox {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0 9vh 0 0 rgba(0, 0, 0, 0.92), inset 0 -9vh 0 0 rgba(0, 0, 0, 0.92);
+}
+
+.photo-mode-preview-noir {
+  filter: grayscale(1) contrast(1.15) brightness(0.92);
+}
+
+.photo-mode--reduced-motion .photo-mode-noir-grain {
+  opacity: 0.1;
+}
+
 .inv-border-glow-legendary {
   animation: inv-legendary-border-pulse 2s ease-in-out infinite;
 }

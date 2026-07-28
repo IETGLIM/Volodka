@@ -34,7 +34,7 @@ interface StreetVisualProps {
   livePlayerPositionRef?: React.MutableRefObject<THREE.Vector3>;
 }
 
-/** Rain-wet ground plane for street scenes. High+ uses planar reflections on wet streets. */
+/** Rain-wet ground plane for street scenes. Medium+ uses planar reflections on wet streets. */
 function StreetGround({
   sceneId,
   isWinter,

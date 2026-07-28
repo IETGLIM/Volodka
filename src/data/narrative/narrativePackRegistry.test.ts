@@ -51,6 +51,17 @@ describe('narrativePackRegistry', () => {
     expect(getDialogueNodesCache()['albert_greeting']).toBeDefined();
   });
 
+  it('prefetchDialogueFrontier walks choice next hops without throwing', async () => {
+    vi.useFakeTimers();
+    await loadBootstrapNarrativePacks();
+    const { prefetchDialogueFrontier } = await import('./narrativePackRegistry');
+    const root = Object.values(getDialogueNodesCache()).find((n) => n.choices?.some((c) => c.next));
+    expect(root).toBeDefined();
+    prefetchDialogueFrontier([root!.id], 2, 12);
+    await vi.runAllTimersAsync();
+    vi.useRealTimers();
+  });
+
   it('loadAllNarrativePacks merges full story spine', async () => {
     await loadAllNarrativePacks();
 

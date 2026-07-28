@@ -4,12 +4,15 @@ import { PHOTO_EVENTS, PHOTO_EMPTY_PAYLOAD } from '@/engine/events';
 import {
   PHOTO_FLASH_DURATION_MS,
   PHOTO_MODE_LABELS,
-  PHOTO_PREVIEW_DISPLAY_MS } from '@/engine/photo/photoModeConstants';
+  PHOTO_PREVIEW_DISPLAY_MS,
+  type PhotoFilterPreset,
+} from '@/engine/photo/photoModeConstants';
 import {
   captureWebGlCanvasScreenshot,
   formatGameTimeOfDay,
   getCaptureFailureMessage,
-  resolveSceneDisplayName } from '@/engine/photo/photoModePresentation';
+  resolveSceneDisplayName,
+} from '@/engine/photo/photoModePresentation';
 import { setPhotoModeActive } from '@/engine/photo/photoModeState';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { useTransitionDirector } from '@/hooks/useTransitionDirector';
@@ -35,6 +38,7 @@ export function usePhotoModeController() {
   const [flash, setFlash] = useState(false);
   const [preview, setPreview] = useState<PhotoPreviewData | null>(null);
   const [liveAnnouncement, setLiveAnnouncement] = useState('');
+  const [filterPreset, setFilterPreset] = useState<PhotoFilterPreset>('neon');
 
   const previewTimerRef = useRef<number | null>(null);
   const activeRef = useRef(false);
@@ -57,6 +61,14 @@ export function usePhotoModeController() {
     eventBus.emit(PHOTO_EVENTS.active, PHOTO_EMPTY_PAYLOAD);
   }, []);
 
+  const toggleFilterPreset = useCallback(() => {
+    setFilterPreset((prev) => {
+      const next: PhotoFilterPreset = prev === 'neon' ? 'noir' : 'neon';
+      setLiveAnnouncement(next === 'noir' ? PHOTO_MODE_LABELS.noirOn : PHOTO_MODE_LABELS.noirOff);
+      return next;
+    });
+  }, []);
+
   const captureScreenshot = useCallback(() => {
     if (!activeRef.current) return;
 
@@ -74,11 +86,13 @@ export function usePhotoModeController() {
       eventBus.emit('sound:play', { type: 'screenshot' });
       eventBus.emit('game:notification', {
         title: PHOTO_MODE_LABELS.captureSuccess,
-        type: 'info' as const });
+        type: 'info' as const,
+      });
     } else {
       eventBus.emit('game:notification', {
         title: getCaptureFailureMessage(),
-        type: 'info' as const });
+        type: 'info' as const,
+      });
     }
   }, [reducedMotion]);
 
@@ -105,6 +119,11 @@ export function usePhotoModeController() {
         event.stopPropagation();
         exitPhotoMode();
       }
+      if (event.code === 'KeyN' && !event.ctrlKey && !event.shiftKey && !event.altKey) {
+        event.preventDefault();
+        event.stopPropagation();
+        toggleFilterPreset();
+      }
       if (event.code === 'Space' || event.code === 'Enter') {
         event.preventDefault();
         event.stopPropagation();
@@ -114,7 +133,7 @@ export function usePhotoModeController() {
 
     window.addEventListener('keydown', handleKey, true);
     return () => window.removeEventListener('keydown', handleKey, true);
-  }, [active, exitPhotoMode, captureScreenshot]);
+  }, [active, exitPhotoMode, captureScreenshot, toggleFilterPreset]);
 
   useEffect(() => {
     if (gamePhase !== 'exploration' && activeRef.current) {
@@ -148,6 +167,9 @@ export function usePhotoModeController() {
     reducedMotion,
     sceneName,
     timeStr,
+    filterPreset,
     exitPhotoMode,
-    captureScreenshot };
+    captureScreenshot,
+    toggleFilterPreset,
+  };
 }
