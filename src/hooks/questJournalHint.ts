@@ -23,6 +23,7 @@ import {
   getZaremaRescueHint,
 } from '@/engine/guidedStory/act23QuestHints';
 import {
+  getArchiveOfForgottenHint,
   getBlindSpotHint,
   getGuildInfiltrationHint,
   getLastPoemHint,
@@ -35,6 +36,13 @@ import {
   getMachineConfessionHint,
   getNightBeforeDawnHint,
 } from '@/engine/guidedStory/act5QuestHints';
+import {
+  getAct6SecretArchiveHint,
+  getDataHeistHint,
+  getRooftopConfrontationHint,
+  getTraitorInTheGuildHint,
+  getUndergroundResistanceHint,
+} from '@/engine/guidedStory/act6QuestHints';
 import { buildGuidanceDirectionHint } from '@/engine/guidedStory/guidanceLocation';
 import {
   getNextTrackedObjective,
@@ -157,6 +165,30 @@ export function buildQuestJournalContextualHint(
   }
   if (questId === 'night_before_dawn') {
     const live = getNightBeforeDawnHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'archive_of_forgotten') {
+    const live = getArchiveOfForgottenHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'traitor_in_the_guild') {
+    const live = getTraitorInTheGuildHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'underground_resistance') {
+    const live = getUndergroundResistanceHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'data_heist') {
+    const live = getDataHeistHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'act6_secret_archive') {
+    const live = getAct6SecretArchiveHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'rooftop_confrontation') {
+    const live = getRooftopConfrontationHint(currentSceneId);
     if (live) return live;
   }
 

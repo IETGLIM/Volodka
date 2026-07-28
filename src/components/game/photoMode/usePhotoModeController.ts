@@ -12,6 +12,10 @@ import {
   type PhotoCaptureHistoryEntry,
 } from '@/engine/photo/photoCaptureHistory';
 import {
+  loadPersistedPhotoGallery,
+  persistPhotoGallery,
+} from '@/engine/photo/photoCapturePersist';
+import {
   capturePhotoStill,
   downloadPhotoStill,
   formatGameTimeOfDay,
@@ -100,14 +104,16 @@ export function usePhotoModeController() {
       if (result.ok) {
         const timestamp = Date.now();
         setPreview({ dataUrl: result.dataUrl, timestamp });
-        setCaptureHistory((prev) =>
-          pushPhotoCaptureHistory(prev, {
+        setCaptureHistory((prev) => {
+          const next = pushPhotoCaptureHistory(prev, {
             dataUrl: result.dataUrl,
             timestamp,
             filter: filterPresetRef.current,
             sceneName: sceneNameRef.current,
-          }),
-        );
+          });
+          void persistPhotoGallery(next);
+          return next;
+        });
         bumpPreviewTimer();
         eventBus.emit('sound:play', { type: 'screenshot' });
         eventBus.emit('game:notification', {
@@ -161,6 +167,17 @@ export function usePhotoModeController() {
       });
     });
   }, [bumpPreviewTimer]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void loadPersistedPhotoGallery().then((entries) => {
+      if (cancelled || entries.length === 0) return;
+      setCaptureHistory((prev) => (prev.length > 0 ? prev : entries));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     const unsub = eventBus.on(PHOTO_EVENTS.toggle, () => {

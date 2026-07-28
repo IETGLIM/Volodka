@@ -17,6 +17,8 @@ export interface CameraEvents {
   'camera:scene_flythrough': { targetPos: [number, number, number]; targetLookAt: [number, number, number] };
   'camera:cinematic_transition': { phase: 'fadeOut' | 'hold' | 'fadeIn'; sceneId: SceneId };
   'camera:recenter': Record<string, never>;
+  /** Soft orbit yaw nudge toward a world point (stuck recovery / guidance). */
+  'camera:look_toward': { x: number; y: number; z: number };
   'camera:intro_wake': Record<string, never>;
   'camera:poem_reading_start': Record<string, never>;
   'camera:poem_reading_end': Record<string, never>;

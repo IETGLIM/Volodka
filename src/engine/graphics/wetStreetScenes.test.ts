@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
   getIndustrialDampFloorSettings,
+  getRainSpillInFloorBoost,
   getReflectorMaterialSettings,
   isIndustrialDampSheenScene,
+  isRainSpillInScene,
   isWetStreetScene,
   scaleReflectorMixStrength,
   WET_STREET_SCENE_IDS,
@@ -24,14 +26,27 @@ describe('wetStreetScenes', () => {
     expect(isWetStreetScene('cafe_evening')).toBe(false);
   });
 
-  it('marks factory / campfire for industrial damp sheen', () => {
+  it('marks factory / campfire / basement for industrial damp sheen', () => {
     expect(isIndustrialDampSheenScene('abandoned_factory')).toBe(true);
     expect(isIndustrialDampSheenScene('factory_roof')).toBe(true);
+    expect(isIndustrialDampSheenScene('factory_basement')).toBe(true);
     expect(isIndustrialDampSheenScene('chk_campfire_night')).toBe(true);
     expect(isIndustrialDampSheenScene('street_night')).toBe(false);
     const factory = getIndustrialDampFloorSettings('abandoned_factory');
     expect(factory?.oilMetalness).toBeGreaterThan(factory!.roughness * 0.5);
+    const basement = getIndustrialDampFloorSettings('factory_basement');
+    expect(basement?.oilMetalness).toBeGreaterThan(0.5);
     expect(getIndustrialDampFloorSettings('cafe_evening')).toBeNull();
+  });
+
+  it('boosts spill-in floors when outdoor rain bleeds indoors', () => {
+    expect(isRainSpillInScene('factory_basement')).toBe(true);
+    expect(isRainSpillInScene('abandoned_factory')).toBe(true);
+    expect(getRainSpillInFloorBoost('factory_basement', 0)).toBeNull();
+    const wet = getRainSpillInFloorBoost('factory_basement', 0.8);
+    expect(wet?.puddleOpacity).toBeGreaterThan(0.3);
+    expect(wet?.metalnessBoost).toBeGreaterThan(0.1);
+    expect(getRainSpillInFloorBoost('cafe_evening', 1)).toBeNull();
   });
 
   it('uses lighter reflector buffers on high than ultra', () => {

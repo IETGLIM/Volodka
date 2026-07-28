@@ -25,6 +25,7 @@ export function isWetStreetScene(sceneId: SceneId): sceneId is WetStreetSceneId 
 export const INDUSTRIAL_DAMP_SHEEN_SCENE_IDS = [
   'abandoned_factory',
   'factory_roof',
+  'factory_basement',
   'chk_campfire_night',
 ] as const satisfies readonly SceneId[];
 
@@ -34,6 +35,22 @@ export function isIndustrialDampSheenScene(
   sceneId: SceneId,
 ): sceneId is IndustrialDampSheenSceneId {
   return (INDUSTRIAL_DAMP_SHEEN_SCENE_IDS as readonly string[]).includes(sceneId);
+}
+
+/**
+ * Indoor / semi-indoor scenes that inherit wet sheen from outdoor rain
+ * (stairs, loading docks, basement spill-in — no planar reflector).
+ */
+export const RAIN_SPILL_IN_SCENE_IDS = [
+  'factory_basement',
+  'abandoned_factory',
+  'volodka_corridor',
+] as const satisfies readonly SceneId[];
+
+export type RainSpillInSceneId = (typeof RAIN_SPILL_IN_SCENE_IDS)[number];
+
+export function isRainSpillInScene(sceneId: SceneId): sceneId is RainSpillInSceneId {
+  return (RAIN_SPILL_IN_SCENE_IDS as readonly string[]).includes(sceneId);
 }
 
 /** Factory oil / damp concrete material knobs (no rain required). */
@@ -47,7 +64,28 @@ export function getIndustrialDampFloorSettings(sceneId: SceneId): {
   if (sceneId === 'chk_campfire_night') {
     return { roughness: 0.72, metalness: 0.08, oilMetalness: 0.2, oilRoughness: 0.45 };
   }
+  if (sceneId === 'factory_basement') {
+    return { roughness: 0.48, metalness: 0.22, oilMetalness: 0.62, oilRoughness: 0.18 };
+  }
   return { roughness: 0.55, metalness: 0.18, oilMetalness: 0.55, oilRoughness: 0.22 };
+}
+
+/**
+ * Extra floor wetness when outdoor rain bleeds into spill-in scenes.
+ * rainIntensity 0–1; returns null when dry or scene not eligible.
+ */
+export function getRainSpillInFloorBoost(
+  sceneId: SceneId,
+  rainIntensity: number,
+): { roughnessDrop: number; metalnessBoost: number; puddleOpacity: number } | null {
+  if (!isRainSpillInScene(sceneId)) return null;
+  const t = Math.min(1, Math.max(0, rainIntensity));
+  if (t <= 0.05) return null;
+  return {
+    roughnessDrop: 0.08 + 0.18 * t,
+    metalnessBoost: 0.06 + 0.14 * t,
+    puddleOpacity: 0.2 + 0.35 * t,
+  };
 }
 
 export interface ReflectorMaterialSettings {

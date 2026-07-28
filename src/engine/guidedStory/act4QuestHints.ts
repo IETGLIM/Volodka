@@ -130,3 +130,31 @@ export function getBlindSpotHint(currentSceneId: string): string | null {
   }
   return null;
 }
+
+/** Архив Забытых — solnysh → basement → unlock → save → escape. */
+export function getArchiveOfForgottenHint(currentSceneId: string): string | null {
+  const quest = findActiveQuest('archive_of_forgotten');
+  if (!quest) return null;
+  if (!objectiveDone(quest, 'meet_vera_library')) {
+    return currentSceneId === 'library_day'
+      ? 'Алина (Солныш) в библиотеке — спроси про архив [E]'
+      : 'Алина знает пароль архива — ищи её в библиотеке';
+  }
+  if (!objectiveDone(quest, 'find_hidden_archive')) {
+    return currentSceneId === 'library_day' || currentSceneId === 'library_basement'
+      ? 'Тайный архив в подвале библиотеки — спустись'
+      : 'Архив забытых стихов — подвал библиотеки';
+  }
+  if (!objectiveDone(quest, 'unlock_archive')) {
+    return 'Разблокируй архив — взлом кода (codebreaker)';
+  }
+  if (!objectiveDone(quest, 'save_poems_archive')) {
+    return 'Сохрани все стихи из архива до зачистки';
+  }
+  if (!objectiveDone(quest, 'escape_before_purge')) {
+    return currentSceneId === 'street_night'
+      ? 'Ты на улице — архив спасён вовремя'
+      : 'Покинь библиотеку до зачистки — на ночную улицу';
+  }
+  return null;
+}

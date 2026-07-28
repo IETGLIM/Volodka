@@ -3,16 +3,17 @@
 import type { SceneId } from '@/shared/types/game';
 import { getSceneConfig } from '@/config/scenes';
 
-export const DEFAULT_DISTANCE = 3.0;
-export const MIN_DISTANCE = 1.2;
+/** Slightly tighter chase cam — reads more intimate / cyber-noir. */
+export const DEFAULT_DISTANCE = 2.85;
+export const MIN_DISTANCE = 1.15;
 export const MAX_DISTANCE = 12.0;
 
 /** First-person exploration — disabled; third-person orbit is the default. */
 export const FIRST_PERSON_ENABLED = false;
 export const FIRST_PERSON_EYE_HEIGHT = 1.62;
-export const FIRST_PERSON_FOV = 72;
+export const FIRST_PERSON_FOV = 74;
 export const FIRST_PERSON_FOV_MIN = 55;
-export const FIRST_PERSON_FOV_MAX = 88;
+export const FIRST_PERSON_FOV_MAX = 90;
 
 /** Multiplicative wheel zoom — higher = faster pinch toward the character's back. */
 export const ZOOM_WHEEL_EXP = 0.011;
@@ -23,21 +24,21 @@ export const ZOOM_SPRING_SNAP = 0.72;
 export const LOOK_HEIGHT = 1.3;
 export const WALL_MARGIN = 0.25;
 
-export const AUTO_FOLLOW_SPEED = 3.0;
+export const AUTO_FOLLOW_SPEED = 3.4;
 export const AUTO_FOLLOW_IDLE_THRESHOLD = 0.3;
 export const AUTO_FOLLOW_MIN_YAW_DELTA = 0.05;
-export const AUTO_FOLLOW_RETURN_SPEED = 1.5;
+export const AUTO_FOLLOW_RETURN_SPEED = 1.65;
 
 export const NPC_INTERACTION_DISTANCE = 2.0;
-export const DISTANCE_LERP_SPEED = 2.0;
+export const DISTANCE_LERP_SPEED = 2.15;
 export const DIALOGUE_EXIT_LERP_SPEED = 4.0;
 export const BREATHING_BOB_AMPLITUDE = 0.005;
 export const BREATHING_BOB_SPEED = Math.PI;
-export const LOOK_AHEAD_STRENGTH = 0.2;
-export const LOOK_AHEAD_LERP_SPEED = 3.8;
-export const INDOOR_FOV = 55;
-export const OUTDOOR_FOV = 70;
-export const FOV_TRANSITION_SPEED = 2.5;
+export const LOOK_AHEAD_STRENGTH = 0.28;
+export const LOOK_AHEAD_LERP_SPEED = 4.2;
+export const INDOOR_FOV = 54;
+export const OUTDOOR_FOV = 71;
+export const FOV_TRANSITION_SPEED = 2.7;
 
 export const CINEMATIC_FREEZE_TIMEOUT = 2.0;
 
@@ -59,7 +60,10 @@ const INDOOR_SCENES: Set<SceneId> = new Set([
   'cafe_evening',
   'office_day',
   'library_day',
+  'library_basement',
   'abandoned_factory',
+  'factory_basement',
+  'guild_mainframe',
   'zarema_albert_room',
 ]);
 

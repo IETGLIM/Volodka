@@ -74,5 +74,12 @@ export function emitStuckRecoveryNpcRingFocus(preferredNpcId: string | null): St
     distance: focus.distance,
     maxRange: Math.max(focus.distance + 0.5, NPC_INTERACTION_QUERY_RANGE),
   });
+
+  const group = getNPCGroup(focus.npcId);
+  if (group) {
+    group.getWorldPosition(_npc);
+    eventBus.emit('camera:look_toward', { x: _npc.x, y: _npc.y, z: _npc.z });
+  }
+
   return focus;
 }

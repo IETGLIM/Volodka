@@ -5,12 +5,13 @@
    Also renders a pulsing vertical beam of light at the quest target position
    when the target is in the current scene. */
 
-import { useRef, useMemo } from 'react';
+import { useRef, useMemo, useEffect } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import { useQuestWaypointState } from '@/store/selectors';
 import { SCENE_CONFIG } from '@/config/scenes';
 import { getQuestMarker } from '@/store/selectors/questSelectors';
+import { eventBus } from '@/engine/EventBus';
 import type { SceneId, SceneExit } from '@/shared/types/game';
 
 interface QuestWaypointsProps {
@@ -71,6 +72,7 @@ export function QuestWaypoints({ livePlayerPositionRef }: QuestWaypointsProps) {
         <QuestTargetBeam
           position={sameSceneMarker.position}
           playerPosRef={livePlayerPositionRef}
+          questId={sameSceneMarker.questId}
         />
       )}
     </group>
@@ -140,14 +142,25 @@ function QuestArrow({
 function QuestTargetBeam({
   position,
   playerPosRef: _playerPosRef,
+  questId,
 }: {
   position: [number, number, number];
   playerPosRef: React.MutableRefObject<THREE.Vector3>;
+  questId: string;
 }) {
   const beamRef = useRef<THREE.Group>(null);
   const glowRef = useRef<THREE.Mesh>(null);
   const baseGlowRef = useRef<THREE.Mesh>(null);
   const timeRef = useRef(0);
+  const pulseBoostRef = useRef(0);
+
+  useEffect(() => {
+    const unsub = eventBus.on('quest:pulse_marker', ({ questId: id }) => {
+      if (id !== questId) return;
+      pulseBoostRef.current = 1;
+    });
+    return unsub;
+  }, [questId]);
 
   const BEAM_HEIGHT = 2;
   const BEAM_RADIUS = 0.02;
@@ -157,21 +170,25 @@ function QuestTargetBeam({
     timeRef.current += delta;
     const t = timeRef.current;
 
-    // Pulse the emissive intensity
-    const pulse = 0.5 + 0.5 * Math.sin(t * 2.5);
+    if (pulseBoostRef.current > 0) {
+      pulseBoostRef.current = Math.max(0, pulseBoostRef.current - delta * 0.55);
+    }
+
+    const boost = pulseBoostRef.current;
+    const pulse = 0.5 + 0.5 * Math.sin(t * (2.5 + boost * 4));
+    const amp = 1 + boost * 1.4;
 
     if (glowRef.current) {
       const mat = glowRef.current.material as THREE.MeshStandardMaterial;
-      mat.emissiveIntensity = 0.3 + pulse * 0.7;
-      mat.opacity = 0.15 + pulse * 0.15;
+      mat.emissiveIntensity = (0.3 + pulse * 0.7) * amp;
+      mat.opacity = Math.min(0.55, (0.15 + pulse * 0.15) * (1 + boost));
     }
 
     if (baseGlowRef.current) {
       const mat = baseGlowRef.current.material as THREE.MeshStandardMaterial;
-      mat.emissiveIntensity = 0.4 + pulse * 0.6;
-      mat.opacity = 0.2 + pulse * 0.15;
-      // Gentle scale pulse
-      const s = 1 + pulse * 0.2;
+      mat.emissiveIntensity = (0.4 + pulse * 0.6) * amp;
+      mat.opacity = Math.min(0.55, (0.2 + pulse * 0.15) * (1 + boost * 0.8));
+      const s = (1 + pulse * 0.2) * (1 + boost * 0.55);
       baseGlowRef.current.scale.set(s, 0.3, s);
     }
   });

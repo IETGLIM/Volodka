@@ -30,19 +30,22 @@ export const DamageNumber = React.memo(function DamageNumber({
 
   return (
     <motion.div
-      initial={{ opacity: 1, y: 0, scale: isCritical ? 1.4 : 0.8 }}
-      animate={{ opacity: 0, y: -60, scale: isCritical ? 1.8 : 1.1 }}
+      initial={{ opacity: 1, y: 0, scale: isCritical ? 1.45 : 0.8, rotate: isCritical ? -4 : 0 }}
+      animate={{ opacity: 0, y: -68, scale: isCritical ? 1.95 : 1.1, rotate: 0 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: isCritical ? 1.8 : 1.2, ease: [0.2, 0, 0.3, 1] }}
+      transition={{ duration: isCritical ? 1.85 : 1.2, ease: [0.2, 0, 0.3, 1] }}
       className={`absolute ${size} font-bold ${color} pointer-events-none select-none ${isCritical ? 'glitch-skew' : ''}`}
       style={{
         zIndex: UI_LAYERS.COMBAT,
-        textShadow: `0 0 ${isCritical ? 16 : 8}px currentColor, 0 2px 4px rgba(0,0,0,0.8)`,
+        textShadow: `0 0 ${isCritical ? 18 : 8}px currentColor, 0 2px 4px rgba(0,0,0,0.8)`,
+        letterSpacing: isCritical ? '0.04em' : undefined,
       }}
     >
       {isHeal ? '+' : '-'}
       {damage}
-      {isCritical && <span className="text-lg ml-1">💥</span>}
+      {isCritical && (
+        <span className="ml-1 text-sm font-mono tracking-widest text-yellow-200/90">CRIT</span>
+      )}
     </motion.div>
   );
 });
