@@ -42,6 +42,9 @@ import { PoemActiveEffectsHudSlot } from '@/components/game/poemActiveEffects/Po
 import { eventBus } from '@/engine/EventBus';
 import { PHOTO_EMPTY_PAYLOAD, PHOTO_EVENTS } from '@/engine/events';
 import type { SecondaryAction } from '@/components/game/hud/hudTypes';
+import {
+  HUD_OVERFLOW_SECTION_TITLES,
+} from '@/components/game/hud/hudIa';
 import { StatusEffectsBar } from '@/components/game/StatusEffectsBar';
 import { useHudQuietStyle } from '@/hooks/useHudQuiet';
 import { getKarmaTierLabel } from '@/shared/utils/karmaTier';
@@ -263,6 +266,9 @@ export function ExplorationHUD(props: HUDProps) {
   } = props;
 
   const secondaryActions: SecondaryAction[] = useMemo(() => [
+    { icon: <BookOpen className="size-4" />, label: 'Журнал', shortcut: 'J', onClick: onOpenJournal },
+    { icon: <Camera className="size-4" />, label: 'Фото', shortcut: '⇧P', onClick: () => eventBus.emit(PHOTO_EVENTS.toggle, PHOTO_EMPTY_PAYLOAD) },
+    { icon: <BarChart3 className="size-4" />, label: 'Статистика', shortcut: 'S', onClick: onOpenStats },
     { icon: <span className="size-4 flex items-center justify-center text-sm">🧭</span>, label: 'Быстрый переход', shortcut: 'F', onClick: onOpenFastTravel },
     { icon: <Sparkles className="size-4" />, label: 'Навыки', shortcut: 'T', onClick: onOpenSkillTree },
     { icon: <Sparkles className="size-4" />, label: 'Черты', shortcut: 'V', onClick: onOpenPerks },
@@ -279,7 +285,9 @@ export function ExplorationHUD(props: HUDProps) {
     { icon: <Save className="size-4" />, label: 'Сохранение', shortcut: 'F9', onClick: onOpenSaveSlots },
     { icon: <Lightbulb className="size-4" />, label: 'Подсказки', onClick: onToggleTutorials },
     { icon: <Menu className="size-4" />, label: 'Меню', onClick: onOpenMenu },
-  ], [onOpenFastTravel, onOpenSkillTree, onOpenPerks, onOpenQuestBoard, onOpenTrading, onOpenCrafting, onOpenMiniGames, onOpenWorldMap, onOpenCharacterProfile, onOpenNPCRelations, onOpenCodex, onOpenDialogueHistory, onOpenAchievements, onOpenSaveSlots, onToggleTutorials, onOpenMenu]);
+  ], [onOpenJournal, onOpenStats, onOpenFastTravel, onOpenSkillTree, onOpenPerks, onOpenQuestBoard, onOpenTrading, onOpenCrafting, onOpenMiniGames, onOpenWorldMap, onOpenCharacterProfile, onOpenNPCRelations, onOpenCodex, onOpenDialogueHistory, onOpenAchievements, onOpenSaveSlots, onToggleTutorials, onOpenMenu]);
+
+  const overflowMenuLabel = `Ещё · ${HUD_OVERFLOW_SECTION_TITLES.play}`;
 
   if (photoModeOn) return null;
 
@@ -500,23 +508,9 @@ export function ExplorationHUD(props: HUDProps) {
               </AnimatePresence>
             </div>
 
-            <HUDButton icon={<BookOpen className="size-3.5 sm:size-4" />} label="Журнал [J]" onClick={onOpenJournal} tooltip="Журнал [J]" />
             <HUDButton icon={<Package className="size-3.5 sm:size-4" />} label="Инвентарь [I]" onClick={onOpenInventory} tooltip="Инвентарь [I]" />
 
-            {/* Hide some buttons on small screens; hide trading during onboarding */}
-            <div className={`${isOnboarding ? 'hidden' : 'hidden sm:block'}`}>
-              <HUDButton icon={<ShoppingCart className="size-3.5 sm:size-4" />} label="Торговля [⇧T]" onClick={onOpenTrading} tooltip="Торговля [⇧T]" />
-            </div>
-            <div className={`${isOnboarding ? 'hidden' : 'hidden md:block'}`}>
-              <HUDButton icon={<Hammer className="size-3.5 sm:size-4" />} label="Крафт [G]" onClick={onOpenCrafting} tooltip="Крафт [G]" />
-            </div>
             <HUDButton icon={<Save className="size-3.5 sm:size-4" />} label="Сохранить" onClick={handleSave} tooltip="Сохранить [F5]" />
-            {!isOnboarding && (
-              <HUDButton icon={<Camera className="size-3.5 sm:size-4" />} label="Фото" onClick={() => eventBus.emit(PHOTO_EVENTS.toggle, PHOTO_EMPTY_PAYLOAD)} tooltip="Фото [⇧P]" />
-            )}
-            {!isOnboarding && (
-              <HUDButton icon={<BarChart3 className="size-3.5 sm:size-4" />} label="Статистика" onClick={onOpenStats} tooltip="Статистика [S]" />
-            )}
 
             {/* Weather status indicator */}
             {currentWeather !== 'clear' && (
@@ -533,10 +527,10 @@ export function ExplorationHUD(props: HUDProps) {
             <div className="relative" ref={moreMenuRef}>
               <HUDButton
                 icon={<MoreVertical className="size-3.5 sm:size-4" />}
-                label="Ещё"
+                label={overflowMenuLabel}
                 onClick={() => setMoreMenuOpen((prev) => !prev)}
                 active={moreMenuOpen}
-                tooltip="Ещё [...]"
+                tooltip={overflowMenuLabel}
               />
 
               <AnimatePresence>

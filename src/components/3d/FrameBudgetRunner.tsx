@@ -1,7 +1,9 @@
 /**
  * Pre-draw frame budget orchestrator — one R3F useFrame per pipeline phase.
+ * Soft-skips non-critical ticks when cumulative work exceeds FRAME_BUDGET_MS
+ * (critical: interaction / player / npc / camera — see types.ts).
  * Rapier physics steps at FRAME_PHYSICS_R3F_PRIORITY (0) between pre/post physics.
- * Post-render ticks run via PostFrameBudgetRunner (+1000).
+ * Post-render ticks run via PostFrameBudgetRunner (+1000) and are never skipped.
  * Components register via useFrameTick() / usePostFrameTick().
  */
 

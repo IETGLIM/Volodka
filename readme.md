@@ -90,12 +90,16 @@ npm run assets:validate
 
 ## ✅ Качество
 
+Текущая версия пакета: **4.2.42** (`package.json` / `APP_VERSION`).
+
 - typecheck / ESLint: 0 ошибок · unit + component tests: **1300+** · e2e smoke (Playwright, 38)
 - `npm run test:unit` — Vitest (unit + component) · `npm run test:e2e` — production build + Playwright
 - `npm run validate:content` — квесты, история, стихи, golden path
 - Валидатор контента: квесты, история, стихи, golden path — 0 ошибок
 - Бюджеты бандла в CI: boot target 450 КБ gzip (hard max 650), game-start target 1.2 МБ (hard max 1.8)
 - `npm run assets:bootstrap` — CC0 GLB для первого production-деплоя · `npm run assets:validate` — гейт в build
+- Security-заголовки + CSP Report-Only / Permissions-Policy (`vercel.json`)
+- Versioned save migrations (`saveMigrations.ts`) before Zod validate
 
 ## 📦 Vercel Deploy
 
