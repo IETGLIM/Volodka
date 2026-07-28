@@ -421,6 +421,9 @@ export function NPC({
         <CapsuleImpostorNPC appearance={appearance} />
       </group>
 
+      {/* Contact shadow stays visible at impostor LOD for grounding. */}
+      <NPCContactShadow />
+
       <group ref={fullDetailRef} visible={false}>
         <Suspense fallback={<CapsuleImpostorNPC appearance={appearance} />}>
           <NPCModelWithErrorBoundary
@@ -433,7 +436,6 @@ export function NPC({
             livePlayerPositionRef={livePlayerPositionRef}
           />
         </Suspense>
-        <NPCContactShadow />
 
         {barkPhase !== 'hidden' && interactionState === InteractionState.Idle && (
           <SpeechBubble

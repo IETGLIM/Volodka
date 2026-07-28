@@ -11,6 +11,7 @@ import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover
 import { getGameSnapshot } from '@/engine/GameActionDispatcher';
 import { getCurrentGuidance } from '@/engine/GuidedStoryManager';
 import { forceResetAllInteractionState } from '@/engine/interaction/emergencyInteractionReset';
+import { getFirstReadingHint } from '@/engine/guidedStory/firstReadingHint';
 import { TRIGGER_ZONES } from '@/data/triggerZones';
 import { useCurrentSceneId } from '@/store/selectors';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
@@ -18,27 +19,6 @@ import { bottomStatusEffectsPx } from '@/shared/constants/hudLayout';
 import { eventBus } from '@/engine/EventBus';
 
 const IDLE_PULSE_THRESHOLD_MS = 15_000;
-
-/** Contextual hint for the first_reading quest. */
-function getFirstReadingContextualHint(): string | null {
-  try {
-    const snap = getGameSnapshot();
-    if (snap.playerState.progression.currentAct !== 1) return null;
-    const quest = snap.quests.find(
-      (q) => q.questId === 'first_reading' && q.status === 'active',
-    );
-    if (!quest) return null;
-    const deskDone = snap.playerState.flags['interacted_desk'] === true;
-    if (!deskDone) return 'Подойди к рабочему столу и нажми [E]';
-    const hasPoem2 = snap.collectedPoems.includes('poem_2');
-    const monitorRead = snap.playerState.flags['terminal_poem_read'] === true;
-    if (!monitorRead && !hasPoem2) return 'Активируй монитор на столе [E] — стих мерцает на экране';
-    if (!hasPoem2) return 'Стихотворение можно найти на книжной полке слева от стола';
-    return null;
-  } catch {
-    return null;
-  }
-}
 
 export function EmergencyHelpButton() {
   const currentSceneId = useCurrentSceneId();
@@ -113,7 +93,7 @@ export function EmergencyHelpButton() {
         }
       }
 
-      const firstReadingHint = getFirstReadingContextualHint();
+      const firstReadingHint = getFirstReadingHint();
 
       // Trigger zones for current scene
       const sceneZones = TRIGGER_ZONES.filter((z) => z.sceneId === currentSceneId)

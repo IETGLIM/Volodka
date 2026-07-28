@@ -23,7 +23,7 @@ import {
   subscribeToCombat } from '@/engine/CombatSystem';
 import { useEquippedThoughts } from '@/store/selectors/thoughtCabinetSelectors';
 import { resolveThoughtCombatContributions, hasThoughtCombatEffects, resolveThoughtCombatEffects } from '@/engine/combat/thoughtCombatModifiers';
-import type { CombatState, CombatLogEntry, CombatBuff, BuffEffect } from '@/shared/types/game';
+import type { CombatState, CombatLogEntry } from '@/shared/types/game';
 import { useGamepadConnected } from '@/hooks/useGamepadConnected';
 import { useTouchDevice } from '@/hooks/useTouchDevice';
 import { COMBAT_BUTTON_HINTS } from '@/engine/combat/combatGamepadMap';
@@ -33,24 +33,8 @@ import { CombatDamageTimeline } from '@/components/game/hud/parts/CombatDamageTi
 import { EnemyWeaknessDisplay } from '@/components/game/hud/parts/EnemyWeaknessDisplay';
 import { TurnPhaseIndicator } from '@/components/game/hud/parts/TurnPhaseIndicator';
 import { CombatTouchControls } from '@/components/game/CombatTouchControls';
-
-/* ── Buff effect descriptions for tooltips ── */
-function getBuffEffectDescription(effect: BuffEffect): string {
-  switch (effect.type) {
-    case 'defense_reduction': return `Защита -${Math.round(effect.value * 100)}%`;
-    case 'damage_multiplier': return `Урон ×${effect.value}`;
-    case 'damage_reduction': return `Получаемый урон -${Math.round(effect.value * 100)}%`;
-    case 'skip_turn': return 'Пропускает ход';
-    case 'stat_drain': return `${effect.stat} -${effect.value}`;
-    case 'defense_boost': return `Защита +${effect.value}`;
-    case 'attack_boost': return `Атака +${effect.value}`;
-    case 'hp_drain_percent': return `HP -${Math.round(effect.value * 100)}%/ход`;
-    case 'silence_specials': return 'Спецатаки заблокированы';
-    case 'defensive_verse': return 'Защитный стих: -30% урона';
-    case 'stun_immune': return 'Иммунитет к оглушению';
-    default: return '';
-  }
-}
+import { VictoryScreen, DefeatScreen } from '@/components/game/combatUi/CombatOutcomeScreens';
+import { BuffDebuffBar } from '@/components/game/combatUi/CombatStatusBadges';
 
 /* ── Poem combat effect category for UI tags ── */
 type PoemEffectCategory = 'damage' | 'heal' | 'buff' | 'debuff' | 'mixed';
@@ -222,93 +206,7 @@ function ComboCounter({ count }: { count: number }) {
   );
 }
 
-/* ── Enhanced Status Effect Badge with Tooltip ── */
-function StatusBadge({ buff }: { buff: CombatBuff }) {
-  const isDebuff = buff.kind === 'debuff';
-  const iconMap: Record<string, string> = {
-    defense_reduction: '🛡️↓',
-    damage_multiplier: '⚔️↑',
-    damage_reduction: '🛡️',
-    skip_turn: '😵',
-    stat_drain: '📉',
-    defense_boost: '🛡️↑',
-    attack_boost: '⚔️',
-    hp_drain_percent: '🦠',
-    silence_specials: '🔇',
-    defensive_verse: '📜' };
-  const icon = iconMap[buff.effect.type] || (isDebuff ? '⬇️' : '⬆️');
-
-  // Color coding: green for positive buffs, red for debuffs
-  // On player: buffs are good (green), debuffs are bad (red)
-  // On enemy: debuffs are good for player (amber), buffs are bad for player (red)
-  const isOnPlayer = buff.target === 'player';
-  const isPositive = isOnPlayer ? !isDebuff : isDebuff;
-
-  const borderColor = isPositive
-    ? 'border-emerald-600/60'
-    : 'border-red-600/60';
-  const bgColor = isPositive
-    ? 'bg-emerald-950/50 text-emerald-300'
-    : 'bg-red-950/50 text-red-300';
-  const glowStyle = isPositive
-    ? '0 0 6px rgba(16,185,129,0.2)'
-    : '0 0 6px rgba(239,68,68,0.2)';
-  const pulseBorderColor = isPositive ? '#10b981' : '#ef4444';
-
-  const effectDesc = getBuffEffectDescription(buff.effect);
-  const tooltipText = `${buff.name}${effectDesc ? ' — ' + effectDesc : ''} (${buff.duration} х.)`;
-
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <motion.div
-          layout
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0, opacity: 0 }}
-          transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-          className={`relative inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[8px] font-mono border ${borderColor} ${bgColor} cursor-default select-none`}
-          style={{ boxShadow: glowStyle }}
-        >
-          <span>{icon}</span>
-          <span className="truncate max-w-[60px]">{buff.name}</span>
-          <span className="opacity-60">{buff.duration}х</span>
-          <motion.div
-            className="absolute inset-0 rounded border"
-            animate={{ borderColor: [pulseBorderColor, 'transparent', pulseBorderColor] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
-          />
-        </motion.div>
-      </TooltipTrigger>
-      <TooltipContent
-        side="top"
-        className="bg-black/90 border border-slate-700/50 text-[10px] font-mono text-slate-200 max-w-[200px]"
-        sideOffset={4}
-      >
-        {tooltipText}
-      </TooltipContent>
-    </Tooltip>
-  );
-}
-
-/* ── Buff/Debuff Indicator Bar ── */
-function BuffDebuffBar({ buffs, label }: { buffs: CombatBuff[]; label: string }) {
-  if (buffs.length === 0) return null;
-  const positiveBuffs = buffs.filter(b => b.kind === 'buff');
-  const negativeBuffs = buffs.filter(b => b.kind === 'debuff');
-
-  return (
-    <div className="flex flex-col gap-1">
-      <div className="text-[8px] text-slate-500 font-mono uppercase tracking-widest">{label}</div>
-      <div className="flex flex-wrap gap-1">
-        <AnimatePresence mode="popLayout">
-          {positiveBuffs.map((b) => <StatusBadge key={b.id} buff={b} />)}
-          {negativeBuffs.map((b) => <StatusBadge key={b.id} buff={b} />)}
-        </AnimatePresence>
-      </div>
-    </div>
-  );
-}
+/* ── Enhanced Status Effect Badge with Tooltip — see combatUi/CombatStatusBadges ── */
 
 /* ── Thought Combat Effects — amber/gold badges near player stats ── */
 function ThoughtCombatBadges() {
@@ -504,80 +402,7 @@ function CombatLogLine({ entry, className }: { entry: CombatLogEntry; className?
   );
 }
 
-/* ── Victory Screen ── */
-function VictoryScreen({ rewards, maxCombo }: { rewards: import('@/shared/types/game').CombatReward; maxCombo: number }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.8 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className="flex flex-col items-center gap-3 py-4"
-    >
-      <motion.div
-        animate={{ scale: [1, 1.1, 1], textShadow: ['0 0 20px #10b981', '0 0 40px #10b981', '0 0 20px #10b981'] }}
-        transition={{ duration: 1.5, repeat: Infinity }}
-        className="text-4xl"
-      >
-        🏆
-      </motion.div>
-      <div className="text-xl font-bold text-emerald-400 font-mono" style={{ textShadow: '0 0 12px #10b98180' }}>
-        ПОБЕДА!
-      </div>
-      <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs font-mono">
-        <span className="text-slate-400">ОПЫТ:</span>
-        <span className="text-cyan-400">+{rewards.xp}</span>
-        <span className="text-slate-400">Карма:</span>
-        <span className="text-amber-400">+{rewards.karma}</span>
-        <span className="text-slate-400">Кредиты:</span>
-        <span className="text-yellow-300">+{rewards.credits}</span>
-        {rewards.lootItems.length > 0 && (
-          <>
-            <span className="text-slate-400">Добыча:</span>
-            <span className="text-emerald-400">✓</span>
-          </>
-        )}
-        {maxCombo >= 2 && (
-          <>
-            <span className="text-slate-400">Комбо:</span>
-            <span className="text-orange-400">x{maxCombo}</span>
-          </>
-        )}
-      </div>
-      {/* Skill XP */}
-      {rewards.skillXp && Object.keys(rewards.skillXp).length > 0 && (
-        <div className="text-[9px] text-slate-500 font-mono">
-          {Object.entries(rewards.skillXp).map(([skill, xp]) => (
-            <span key={skill} className="mr-2">{skill}: +{xp}</span>
-          ))}
-        </div>
-      )}
-    </motion.div>
-  );
-}
-
-/* ── Defeat Screen ── */
-function DefeatScreen() {
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="flex flex-col items-center gap-3 py-4"
-    >
-      <motion.div
-        animate={{ rotate: [0, -5, 5, -3, 3, 0] }}
-        transition={{ duration: 0.5 }}
-        className="text-4xl"
-      >
-        💀
-      </motion.div>
-      <div className="text-xl font-bold text-red-400 font-mono" style={{ textShadow: '0 0 12px #ef444480' }}>
-        ПОРАЖЕНИЕ
-      </div>
-      <div className="text-xs text-slate-400 font-mono text-center">
-        Тьма поглощает... но не навсегда.
-      </div>
-    </motion.div>
-  );
-}
+/* ── Victory / Defeat — see combatUi/CombatOutcomeScreens ── */
 
 /* ── Poem Power Card for the enhanced submenu ── */
 function PoemPowerCard({

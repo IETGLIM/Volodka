@@ -42,6 +42,9 @@ export function forceResetAllInteractionState(): void {
     npcId: prevTargetNpcId ?? undefined,
   });
   eventBus.emit('interaction:end', {});
+  eventBus.emit('ui:exploration_message', {
+    text: 'Взаимодействие сброшено — можно продолжать',
+  });
 
   devWarn('[emergencyInteractionReset] All interaction state force-reset.');
 }

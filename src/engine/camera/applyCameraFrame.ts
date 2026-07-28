@@ -18,6 +18,7 @@ import {
 import type { CameraModeContext, CameraModeTarget, SpringOverride } from './types';
 import { getInteractionState } from '@/components/3d/InteractionSystemBridge';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
+import { isEffectiveReducedMotion } from '@/engine/accessibility/accessibilitySettings';
 
 /** Pre-allocated temps for camera roll (avoid 4× Vector3 alloc per frame). */
 const _rollUp = new THREE.Vector3(0, 1, 0);
@@ -95,7 +96,8 @@ export function applyCameraFrame(
     FIRST_PERSON_ENABLED && !isInDialogue && !isCutscene && !isCombat;
 
   // ── Walking head bob (third-person exploration only) ──
-  if (!isInDialogue && !isCutscene && !isCombat && !isFpExploration) {
+  // Skip bob + breathing under reduced motion (matches FPS arms / shake gates).
+  if (!isInDialogue && !isCutscene && !isCombat && !isFpExploration && !isEffectiveReducedMotion()) {
     const playerSpeed = playerVelocity.length();
 
     // FIX 1.2: Smooth the delta used for phase advance. Raw r3f delta at

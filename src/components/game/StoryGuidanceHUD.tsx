@@ -11,6 +11,7 @@ import {
   buildGuidanceDirectionHint,
   resolveAvailableQuestTargetScene,
 } from '@/engine/guidedStory/guidanceLocation';
+import { getFirstReadingHint } from '@/engine/guidedStory/firstReadingHint';
 import { getNextTrackedObjective, areDependenciesMet, getQuestMarker } from '@/store/questStore';
 import {
   useQuests,
@@ -22,7 +23,6 @@ import {
 // useTutorialActive removed — guidance is now shown during tutorial too
 import { QUEST_DEFINITIONS } from '@/data/quests';
 import { GOLDEN_PATH_QUEST_SPINE } from '@/data/goldenPath';
-import { getGameSnapshot } from '@/engine/GameActionDispatcher';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import {
   EXPLORATION_HUD_LAYOUT,
@@ -45,33 +45,6 @@ import {
 } from '@/hooks/questHudPresentation';
 import type { QuestType } from '@/shared/types/game';
 const GUIDANCE_DISMISS_KEY = 'volodka_guidance_dismissed_sig';
-
-/** Contextual hint for the first_reading quest — tells the player *where* to go. */
-function getFirstReadingHint(): string | null {
-  try {
-    const snap = getGameSnapshot();
-    if (snap.playerState.progression.currentAct !== 1) return null;
-    const quest = snap.quests.find(
-      (q) => q.questId === 'first_reading' && q.status === 'active',
-    );
-    if (!quest) return null;
-    const deskDone = snap.playerState.flags['interacted_desk'] === true;
-    if (!deskDone) {
-      return 'Подойди к рабочему столу и нажми [E]';
-    }
-    const hasPoem2 = snap.collectedPoems.includes('poem_2');
-    const monitorRead = snap.playerState.flags['terminal_poem_read'] === true;
-    if (!monitorRead && !hasPoem2) {
-      return 'Активируй монитор на столе [E] — стих мерцает на экране';
-    }
-    if (!hasPoem2) {
-      return 'Стихотворение можно найти на книжной полке слева от стола';
-    }
-    return null;
-  } catch {
-    return null;
-  }
-}
 
 export function StoryGuidanceHUD() {
   const reducedMotion = useEffectiveReducedMotion();
