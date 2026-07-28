@@ -29,3 +29,12 @@ export function getReflectorMaterialSettings(
   // medium (and low fallback if ever gated)
   return { resolution: 256, blur: [128, 64], mixStrength: 0.4 };
 }
+
+/**
+ * Scale planar reflector mix by live rain intensity.
+ * Keeps a faint wet sheen at light rain; full preset strength in a storm.
+ */
+export function scaleReflectorMixStrength(baseMix: number, rainIntensity: number): number {
+  const t = Math.min(1, Math.max(0, rainIntensity));
+  return baseMix * (0.25 + 0.75 * t);
+}

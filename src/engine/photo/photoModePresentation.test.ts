@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  applyNoirGradeToDataUrl,
   formatGameTimeOfDay,
   formatRealClockTime,
   getBlinkDotMotion,
@@ -30,5 +31,10 @@ describe('photoModePresentation', () => {
   it('getPhotoFilterTitle switches neon/noir labels', () => {
     expect(getPhotoFilterTitle('neon')).toBe('PHOTO MODE');
     expect(getPhotoFilterTitle('noir')).toBe('NOIR MODE');
+  });
+
+  it('applyNoirGradeToDataUrl resolves without throwing on empty image', async () => {
+    const out = await applyNoirGradeToDataUrl('data:image/png;base64,');
+    expect(typeof out).toBe('string');
   });
 });

@@ -7,7 +7,7 @@ import {
 vi.mock('@/data/gameDataLoader', () => ({
   findNpcById: (id: string) =>
     id === 'maria' ? { id: 'maria', dialogueNodeId: 'maria_greeting' } : undefined,
-  prefetchDialogueNodes: vi.fn(),
+  prefetchDialogueFrontier: vi.fn(),
   prefetchStoryNodes: vi.fn(),
 }));
 
@@ -30,15 +30,15 @@ describe('prefetchNpcNarrativeOnApproach', () => {
     vi.clearAllMocks();
   });
 
-  it('prefetches dialogue + GLB once per NPC', async () => {
-    const { prefetchDialogueNodes } = await import('@/data/gameDataLoader');
+  it('prefetches dialogue frontier depth-2 + GLB once per NPC', async () => {
+    const { prefetchDialogueFrontier } = await import('@/data/gameDataLoader');
     const { preloadNpcModel } = await import('@/engine/scene/sceneGpuLifecycle');
 
     prefetchNpcNarrativeOnApproach('maria', 'street_night');
     prefetchNpcNarrativeOnApproach('maria', 'street_night');
 
     expect(preloadNpcModel).toHaveBeenCalledTimes(1);
-    expect(prefetchDialogueNodes).toHaveBeenCalledWith(['maria_greeting']);
+    expect(prefetchDialogueFrontier).toHaveBeenCalledWith(['maria_greeting'], 2);
   });
 
   it('prefetches story nodes when target is story', async () => {

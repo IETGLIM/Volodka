@@ -15,6 +15,11 @@ import {
   getCafeSafehouseHint,
   getDmitryDefectionHint,
   getMariaTruthHint,
+  getPierWatchmanKeyHint,
+  getPoetrySmugglingHint,
+  getThreadOf18LinesHint,
+  getVaultDefenseHint,
+  getVaultKeyFragmentsHint,
   getZaremaRescueHint,
 } from '@/engine/guidedStory/act23QuestHints';
 import { buildGuidanceDirectionHint } from '@/engine/guidedStory/guidanceLocation';
@@ -83,6 +88,26 @@ export function buildQuestJournalContextualHint(
   }
   if (questId === 'maria_truth') {
     const live = getMariaTruthHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'vault_key_fragments') {
+    const live = getVaultKeyFragmentsHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'poetry_smuggling') {
+    const live = getPoetrySmugglingHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'pier_watchman_key') {
+    const live = getPierWatchmanKeyHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'vault_defense') {
+    const live = getVaultDefenseHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'thread_of_18_lines') {
+    const live = getThreadOf18LinesHint(currentSceneId);
     if (live) return live;
   }
 

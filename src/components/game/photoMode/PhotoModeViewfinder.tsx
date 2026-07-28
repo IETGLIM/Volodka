@@ -74,7 +74,9 @@ export function PhotoModeViewfinder({
         </button>
       </div>
 
+      {isNoir && <div className="photo-mode-noir-desat" aria-hidden="true" />}
       {isNoir && <div className="photo-mode-noir-grade" aria-hidden="true" />}
+      {isNoir && <div className="photo-mode-noir-contrast" aria-hidden="true" />}
       {isNoir && <div className="photo-mode-noir-grain" aria-hidden="true" />}
       {isNoir && <div className="photo-mode-noir-letterbox" aria-hidden="true" />}
 

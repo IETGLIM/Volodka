@@ -11,7 +11,8 @@ import { FocusTrap } from '@/components/a11y/FocusTrap';
 import { usePanelDialog } from '@/components/a11y/usePanelDialog';
 import { X, Map as MapIcon, Lock, Clock, MapPin, Navigation } from 'lucide-react';
 import { useGameStore } from '@/store/gameStore';
-import { useFastTravelState } from '@/store/selectors';
+import { useFastTravelState, useActiveQuests } from '@/store/selectors';
+import { getQuestMarker } from '@/store/questStore';
 import { eventBus } from '@/engine/EventBus';
 import { SCENE_CONFIG } from '@/config/scenes';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
@@ -291,6 +292,16 @@ export function WorldMap({ open, onClose }: WorldMapProps) {
   const { closeButtonRef, dialogProps, titleProps } = usePanelDialog();
   const { currentSceneId, timeOfDay, discoveredScenes, playerFlags } = useFastTravelState();
   const fastTravelTo = useGameStore((s) => s.fastTravelTo);
+  const activeQuests = useActiveQuests();
+
+  const questMarkerSceneIds = useMemo(() => {
+    const ids = new Set<SceneId>();
+    for (const quest of activeQuests) {
+      const marker = getQuestMarker(quest.questId);
+      if (marker?.sceneId) ids.add(marker.sceneId);
+    }
+    return ids;
+  }, [activeQuests]);
 
   const [hoveredScene, setHoveredScene] = useState<SceneId | null>(null);
   const [focusSceneId, setFocusSceneId] = useState<SceneId | null>(null);
@@ -537,6 +548,7 @@ export function WorldMap({ open, onClose }: WorldMapProps) {
                       const accessible = isAccessible(node.id);
                       const gateOpen = isSceneGateOpen(node.id, playerFlags);
                       const isRumored = !isDiscovered && gateOpen;
+                      const hasQuestMarker = questMarkerSceneIds.has(node.id);
                       const config = SCENE_CONFIG[node.id];
                       const regionColor = REGION_COLORS[node.region];
 
@@ -573,21 +585,29 @@ export function WorldMap({ open, onClose }: WorldMapProps) {
                                   : 'rgba(51, 65, 85, 0.15)',
                               border: isFocused
                                 ? '2px solid rgba(0,229,255,0.7)'
-                                : isCurrent
-                                  ? `2px solid ${regionColor}99`
-                                  : isDiscovered
-                                    ? `1.5px solid ${regionColor}55`
-                                    : '1px solid rgba(71, 85, 105, 0.2)',
+                                : hasQuestMarker
+                                  ? '2px solid rgba(251, 191, 36, 0.75)'
+                                  : isCurrent
+                                    ? `2px solid ${regionColor}99`
+                                    : isDiscovered
+                                      ? `1.5px solid ${regionColor}55`
+                                      : '1px solid rgba(71, 85, 105, 0.2)',
                               boxShadow: isFocused
                                 ? '0 0 18px rgba(0,229,255,0.55), 0 0 4px rgba(255,200,80,0.4)'
-                                : isCurrent
-                                  ? `0 0 20px ${regionColor}44, inset 0 0 10px ${regionColor}18`
-                                  : isDiscovered
-                                    ? `0 0 8px ${regionColor}22`
-                                    : 'none',
+                                : hasQuestMarker
+                                  ? '0 0 16px rgba(251, 191, 36, 0.55), 0 0 4px rgba(251, 191, 36, 0.35)'
+                                  : isCurrent
+                                    ? `0 0 20px ${regionColor}44, inset 0 0 10px ${regionColor}18`
+                                    : isDiscovered
+                                      ? `0 0 8px ${regionColor}22`
+                                      : 'none',
                             }}
-                            animate={isFocused ? { scale: [1, 1.08, 1] } : undefined}
-                            transition={isFocused ? { duration: 1.4, repeat: Infinity, ease: 'easeInOut' } : undefined}
+                            animate={isFocused || hasQuestMarker ? { scale: [1, 1.08, 1] } : undefined}
+                            transition={
+                              isFocused || hasQuestMarker
+                                ? { duration: hasQuestMarker && !isFocused ? 1.8 : 1.4, repeat: Infinity, ease: 'easeInOut' }
+                                : undefined
+                            }
                             whileTap={accessible && !isCurrent ? { scale: 0.9 } : {}}
                           >
                             {/* Current location pulsing glow */}
@@ -605,16 +625,39 @@ export function WorldMap({ open, onClose }: WorldMapProps) {
                               />
                             )}
 
+                            {/* Active quest marker glow */}
+                            {hasQuestMarker && !isCurrent && (
+                              <motion.div
+                                className="absolute inset-[-3px] rounded-full pointer-events-none"
+                                aria-hidden="true"
+                                animate={{
+                                  boxShadow: [
+                                    '0 0 0px rgba(251, 191, 36, 0)',
+                                    '0 0 18px rgba(251, 191, 36, 0.7)',
+                                    '0 0 0px rgba(251, 191, 36, 0)',
+                                  ],
+                                }}
+                                transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
+                              />
+                            )}
+
                             {/* Node content */}
                             {isDiscovered ? (
                               <MapPin
-                                className={`size-4 ${isCurrent ? 'size-5' : ''}`}
-                                style={{ color: regionColor }}
+                                className={`size-4 ${isCurrent ? 'size-5' : ''} ${hasQuestMarker ? 'text-amber-300' : ''}`}
+                                style={{ color: hasQuestMarker ? undefined : regionColor }}
                               />
                             ) : isRumored ? (
                               <span className="text-[8px] font-mono text-amber-400/50">?</span>
                             ) : (
                               <div className="size-1.5 rounded-full bg-slate-700" />
+                            )}
+
+                            {hasQuestMarker && (
+                              <span
+                                className="absolute -top-1 -right-1 size-2 rounded-full bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.9)]"
+                                aria-label="Активный квест"
+                              />
                             )}
 
                             {/* Scene name below node */}

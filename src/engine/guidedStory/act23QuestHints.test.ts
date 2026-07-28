@@ -4,6 +4,11 @@ import {
   getCafeSafehouseHint,
   getDmitryDefectionHint,
   getMariaTruthHint,
+  getPierWatchmanKeyHint,
+  getPoetrySmugglingHint,
+  getThreadOf18LinesHint,
+  getVaultDefenseHint,
+  getVaultKeyFragmentsHint,
   getZaremaRescueHint,
 } from './act23QuestHints';
 
@@ -105,5 +110,85 @@ describe('act23QuestHints', () => {
     ];
     expect(getMariaTruthHint('volodka_room')).toContain('яме');
     expect(getMariaTruthHint('cafe_evening')).toContain('баристу');
+  });
+
+  it('vault_key_fragments guides guild fragment first', () => {
+    snap.quests = [
+      {
+        questId: 'vault_key_fragments',
+        status: 'active',
+        objectives: {
+          find_guild_fragment: false,
+          find_network_fragment: false,
+        },
+        startedAtTime: 0,
+      },
+    ];
+    expect(getVaultKeyFragmentsHint('street_night')).toContain('офис');
+    expect(getVaultKeyFragmentsHint('office_day')).toContain('фрагмент');
+  });
+
+  it('poetry_smuggling guides library pickup', () => {
+    snap.quests = [
+      {
+        questId: 'poetry_smuggling',
+        status: 'active',
+        objectives: {
+          retrieve_poems_library: false,
+          evade_guild_patrol_park: false,
+        },
+        startedAtTime: 0,
+      },
+    ];
+    expect(getPoetrySmugglingHint('street_night')).toContain('библиотек');
+    expect(getPoetrySmugglingHint('library_day')).toContain('тайник');
+  });
+
+  it('pier_watchman_key guides Trofim meet', () => {
+    snap.quests = [
+      {
+        questId: 'pier_watchman_key',
+        status: 'active',
+        objectives: {
+          meet_trofim: false,
+          bring_portwine: false,
+        },
+        startedAtTime: 0,
+      },
+    ];
+    expect(getPierWatchmanKeyHint('street_night')).toContain('пирс');
+    expect(getPierWatchmanKeyHint('pier_evening')).toContain('Трофимом');
+  });
+
+  it('vault_defense guides firewall after rally', () => {
+    snap.quests = [
+      {
+        questId: 'vault_defense',
+        status: 'active',
+        objectives: {
+          receive_vault_alert: true,
+          rally_defenders: true,
+          deploy_firewall: false,
+        },
+        startedAtTime: 0,
+      },
+    ];
+    expect(getVaultDefenseHint('street_night')).toContain('фаервол');
+  });
+
+  it('thread_of_18_lines guides park memorial first', () => {
+    snap.quests = [
+      {
+        questId: 'thread_of_18_lines',
+        status: 'active',
+        objectives: {
+          trace_crash: false,
+          trace_4729: false,
+        },
+        startedAtTime: 0,
+      },
+    ];
+    expect(getThreadOf18LinesHint('street_night')).toContain('парке');
+    expect(getThreadOf18LinesHint('park_day')).toContain('Сбое');
   });
 });

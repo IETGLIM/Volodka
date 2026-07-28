@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   getReflectorMaterialSettings,
   isWetStreetScene,
+  scaleReflectorMixStrength,
   WET_STREET_SCENE_IDS,
 } from './wetStreetScenes';
 
@@ -27,5 +28,14 @@ describe('wetStreetScenes', () => {
     expect(medium.resolution).toBe(256);
     expect(medium.resolution).toBeLessThan(high.resolution);
     expect(medium.mixStrength).toBeLessThan(high.mixStrength);
+  });
+
+  it('scales reflector mix with rain intensity', () => {
+    const base = 0.4;
+    expect(scaleReflectorMixStrength(base, 0)).toBeCloseTo(0.1);
+    expect(scaleReflectorMixStrength(base, 1)).toBeCloseTo(0.4);
+    expect(scaleReflectorMixStrength(base, 0.5)).toBeGreaterThan(
+      scaleReflectorMixStrength(base, 0.2),
+    );
   });
 });

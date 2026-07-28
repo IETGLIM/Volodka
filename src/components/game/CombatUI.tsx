@@ -2,21 +2,19 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, Zap } from 'lucide-react';
+import { Zap } from 'lucide-react';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import type { CombatLogEntry } from '@/shared/types/game';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { CombatDamageTimeline } from '@/components/game/hud/parts/CombatDamageTimeline';
 import { TurnPhaseIndicator } from '@/components/game/hud/parts/TurnPhaseIndicator';
-import { VictoryScreen, DefeatScreen } from '@/components/game/combatUi/CombatOutcomeScreens';
-import { BuffDebuffBar } from '@/components/game/combatUi/CombatStatusBadges';
 import { CombatIntroSplash } from '@/components/game/combatUi/CombatIntroSplash';
 import { CombatLogLine } from '@/components/game/combatUi/CombatLogLine';
-import { AnimatedHPBar } from '@/components/game/combatUi/CombatHpBars';
 import { CombatScreenFlash, DamageNumber } from '@/components/game/combatUi/CombatDamageFx';
-import { ThoughtCombatBadges } from '@/components/game/combatUi/CombatThoughtBadges';
 import { CombatEnemyPanel } from '@/components/game/combatUi/CombatEnemyPanel';
 import { CombatActionBar } from '@/components/game/combatUi/CombatActionBar';
+import { CombatPlayerCard } from '@/components/game/combatUi/CombatPlayerCard';
+import { CombatOutcomeChrome } from '@/components/game/combatUi/CombatOutcomeChrome';
 import { useCombatUiController } from '@/components/game/combatUi/useCombatUiController';
 
 export function CombatUI() {
@@ -78,50 +76,17 @@ export function CombatUI() {
           animate={{ y: ui.introVisible ? 20 : 0, opacity: ui.introVisible ? 0.35 : 1 }}
           transition={{ delay: ui.introVisible ? 0 : 0.4, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
         >
-          <div
-            className="bg-black/60 backdrop-blur-sm border border-cyan-900/30 rounded-lg p-3 mb-2 data-pulse"
-            style={{ boxShadow: '0 0 20px rgba(6,182,212,0.08)' }}
-          >
-            <div className="flex items-center gap-2 mb-2">
-              <Heart className="size-4 text-cyan-500 shrink-0" />
-              <div className="flex-1">
-                <AnimatedHPBar
-                  current={combatState.playerHp}
-                  max={combatState.playerMaxHp}
-                  label="ВОЛОДЬКА"
-                  isPlayer={true}
-                />
-              </div>
-            </div>
-            {ui.playerBuffs.length > 0 && (
-              <div className="ml-6">
-                <BuffDebuffBar buffs={ui.playerBuffs} label="ВАШИ ЭФФЕКТЫ" />
-              </div>
-            )}
-            <ThoughtCombatBadges />
-          </div>
+          <CombatPlayerCard
+            playerHp={combatState.playerHp}
+            playerMaxHp={combatState.playerMaxHp}
+            playerBuffs={ui.playerBuffs}
+          />
 
-          {!isActive && (
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              className={`rounded-lg mb-2 border overflow-hidden ${
-                combatState.status === 'victory'
-                  ? 'bg-emerald-950/70 border-emerald-700/40'
-                  : combatState.status === 'defeat'
-                    ? 'bg-red-950/70 border-red-700/40'
-                    : 'bg-amber-950/70 border-amber-700/40'
-              }`}
-            >
-              {combatState.status === 'victory' && combatState.rewards && (
-                <VictoryScreen rewards={combatState.rewards} maxCombo={combatState.maxCombo} />
-              )}
-              {combatState.status === 'defeat' && <DefeatScreen />}
-              {combatState.status === 'fled' && (
-                <div className="text-center py-3 font-bold text-amber-400 font-mono">🏃 Побег!</div>
-              )}
-            </motion.div>
-          )}
+          <CombatOutcomeChrome
+            status={combatState.status}
+            rewards={combatState.rewards}
+            maxCombo={combatState.maxCombo}
+          />
 
           {isActive && (
             <>

@@ -8,7 +8,7 @@ import {
   type PhotoFilterPreset,
 } from '@/engine/photo/photoModeConstants';
 import {
-  captureWebGlCanvasScreenshot,
+  capturePhotoStill,
   formatGameTimeOfDay,
   getCaptureFailureMessage,
   resolveSceneDisplayName,
@@ -77,24 +77,25 @@ export function usePhotoModeController() {
       window.setTimeout(() => setFlash(false), PHOTO_FLASH_DURATION_MS);
     }
 
-    const result = captureWebGlCanvasScreenshot();
-
-    if (result.ok) {
-      setPreview({ dataUrl: result.dataUrl, timestamp: Date.now() });
-      if (previewTimerRef.current) window.clearTimeout(previewTimerRef.current);
-      previewTimerRef.current = window.setTimeout(() => setPreview(null), PHOTO_PREVIEW_DISPLAY_MS);
-      eventBus.emit('sound:play', { type: 'screenshot' });
-      eventBus.emit('game:notification', {
-        title: PHOTO_MODE_LABELS.captureSuccess,
-        type: 'info' as const,
-      });
-    } else {
-      eventBus.emit('game:notification', {
-        title: getCaptureFailureMessage(),
-        type: 'info' as const,
-      });
-    }
-  }, [reducedMotion]);
+    void capturePhotoStill(filterPreset).then((result) => {
+      if (!activeRef.current) return;
+      if (result.ok) {
+        setPreview({ dataUrl: result.dataUrl, timestamp: Date.now() });
+        if (previewTimerRef.current) window.clearTimeout(previewTimerRef.current);
+        previewTimerRef.current = window.setTimeout(() => setPreview(null), PHOTO_PREVIEW_DISPLAY_MS);
+        eventBus.emit('sound:play', { type: 'screenshot' });
+        eventBus.emit('game:notification', {
+          title: PHOTO_MODE_LABELS.captureSuccess,
+          type: 'info' as const,
+        });
+      } else {
+        eventBus.emit('game:notification', {
+          title: getCaptureFailureMessage(),
+          type: 'info' as const,
+        });
+      }
+    });
+  }, [reducedMotion, filterPreset]);
 
   useEffect(() => {
     const unsub = eventBus.on(PHOTO_EVENTS.toggle, () => {

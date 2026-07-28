@@ -6,6 +6,7 @@ import {
 import { eventBus } from '@/engine/EventBus';
 import { devWarn } from '@/shared/utils/devLog';
 import { registerHmrDispose } from '@/shared/dev/hmrDispose';
+import { getStuckRecoveryUserMessage } from '@/engine/interaction/stuckRecoveryFeedback';
 export interface InteractionSessionSnapshot {
   state: InteractionState;
   targetNpcId: string | null;
@@ -57,8 +58,14 @@ function scheduleStuckRecoveryWatchdog(): void {
     // Also fire interaction:end so any proximity hint / indicator visuals
     // are torn down consistently with a normal interaction exit.
     eventBus.emit('interaction:end', {});
-    eventBus.emit('ui:exploration_message', {
-      text: 'Взаимодействие сброшено — можно продолжать',
+    const recoveryText = getStuckRecoveryUserMessage({
+      fromState: stuckState,
+      targetNpcId: stuckNpcId,
+    });
+    eventBus.emit('ui:exploration_message', { text: recoveryText });
+    eventBus.emit('game:notification', {
+      title: recoveryText,
+      type: 'info' as const,
     });
   }, STUCK_RECOVERY_TIMEOUT_MS);
 }

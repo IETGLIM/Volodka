@@ -36,38 +36,55 @@
   opacity: 0.5;
 }
 
-/* Noir grade — desat + contrast wash over the live canvas */
+/* Noir grade — true desaturation of live canvas via saturation blend + contrast wash */
+.photo-mode-noir-desat {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: #7a7a7a;
+  mix-blend-mode: saturation;
+  opacity: 0.95;
+}
+
 .photo-mode-noir-grade {
   position: absolute;
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(ellipse at center, transparent 35%, rgba(0, 0, 0, 0.55) 100%),
-    linear-gradient(180deg, rgba(12, 12, 18, 0.25), rgba(0, 0, 0, 0.35));
+    radial-gradient(ellipse at center, transparent 30%, rgba(0, 0, 0, 0.62) 100%),
+    linear-gradient(180deg, rgba(8, 8, 12, 0.2), rgba(0, 0, 0, 0.42));
   mix-blend-mode: multiply;
-  opacity: 0.85;
+  opacity: 0.9;
+}
+
+.photo-mode-noir-contrast {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: rgba(255, 255, 255, 0.04);
+  mix-blend-mode: soft-light;
 }
 
 .photo-mode-noir-grain {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  opacity: 0.18;
+  opacity: 0.22;
   mix-blend-mode: overlay;
   background-image:
     repeating-linear-gradient(
       0deg,
       transparent,
       transparent 1px,
-      rgba(255, 255, 255, 0.03) 1px,
-      rgba(255, 255, 255, 0.03) 2px
+      rgba(255, 255, 255, 0.035) 1px,
+      rgba(255, 255, 255, 0.035) 2px
     ),
     repeating-linear-gradient(
       90deg,
       transparent,
       transparent 1px,
-      rgba(0, 0, 0, 0.04) 1px,
-      rgba(0, 0, 0, 0.04) 2px
+      rgba(0, 0, 0, 0.05) 1px,
+      rgba(0, 0, 0, 0.05) 2px
     );
 }
 
@@ -79,11 +96,15 @@
 }
 
 .photo-mode-preview-noir {
-  filter: grayscale(1) contrast(1.15) brightness(0.92);
+  filter: grayscale(1) contrast(1.22) brightness(0.9);
 }
 
 .photo-mode--reduced-motion .photo-mode-noir-grain {
   opacity: 0.1;
+}
+
+.photo-mode--reduced-motion .photo-mode-noir-desat {
+  opacity: 0.75;
 }
 
 .inv-border-glow-legendary {

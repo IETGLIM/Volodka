@@ -5,12 +5,13 @@
 import { useMemo, useRef, type MutableRefObject } from 'react';
 import * as THREE from 'three';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
+import { useGameStore } from '@/store/gameStore';
 import {
   getSharedBoxGeometry,
   getSharedCircleGeometry,
-  getSharedPlaneGeometry,
 } from '@/engine/three/moduleGeometryRegistry';
 import { getSharedStandardMaterial } from '@/engine/three/moduleMaterialRegistry';
+import { WetStreetGround } from './WetStreetGround';
 
 interface CitySquareVisualProps {
   livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
@@ -19,14 +20,6 @@ interface CitySquareVisualProps {
 const W = 28;
 const D = 28;
 
-const matAsphalt = getSharedStandardMaterial({
-  color: '#2a2e38',
-  roughness: 0.72,
-  metalness: 0.12,
-  polygonOffset: true,
-  polygonOffsetFactor: 1,
-  polygonOffsetUnits: 1,
-});
 const matStone = getSharedStandardMaterial({ color: '#3a4050', roughness: 0.8 });
 const matNeonCyan = getSharedStandardMaterial({
   color: '#001820',
@@ -52,6 +45,7 @@ export function CitySquareVisual(_props: CitySquareVisualProps) {
   const rootRef = useRef<THREE.Group>(null);
   const neonRef = useRef<THREE.Mesh>(null);
   const tRef = useRef(0);
+  const rainIntensity = useGameStore((s) => s.rainIntensity);
 
   const benches = useMemo(
     () =>
@@ -79,7 +73,12 @@ export function CitySquareVisual(_props: CitySquareVisualProps) {
 
   return (
     <group ref={rootRef}>
-      <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={getSharedPlaneGeometry(W, D)} material={matAsphalt} />
+      <WetStreetGround
+        sceneId="city_square"
+        rainIntensity={rainIntensity}
+        size={Math.max(W, D)}
+        groundColor="#2a2e38"
+      />
 
       <mesh position={[0, 0.04, 0]} rotation-x={-Math.PI / 2} geometry={getSharedCircleGeometry(5.5, 48)} material={matStone} />
 

@@ -23,6 +23,11 @@ vi.mock('@/engine/guidedStory/act23QuestHints', () => ({
   getBasementHumHint: () => 'Ключ Трофима открывает подвал «Хрома-М» — иди на завод',
   getZaremaRescueHint: () => 'Блок задержания в гильдии — стих «Прорыв» открывает путь',
   getMariaTruthHint: () => 'Бариста в «Синей яме» знает больше, чем кажется',
+  getVaultKeyFragmentsHint: () => 'Фрагмент гильдии — в офисе IT. Иди туда',
+  getPoetrySmugglingHint: () => 'Стихи ждут в библиотеке — зайди тихо',
+  getPierWatchmanKeyHint: () => 'Трофим на пирсе №3 — иди к воде',
+  getVaultDefenseHint: () => 'Без фаервола Хранилище обречено — установи защиту',
+  getThreadOf18LinesHint: () => 'Мемориал в парке — след Великого Сбоя 2029',
 }));
 
 vi.mock('@/store/questStore', () => ({
@@ -101,6 +106,26 @@ describe('buildQuestJournalContextualHint', () => {
 
   it('prefers maria_truth live cue', () => {
     expect(buildQuestJournalContextualHint('maria_truth', 'volodka_room')).toContain('яме');
+  });
+
+  it('prefers vault_key_fragments live cue', () => {
+    expect(buildQuestJournalContextualHint('vault_key_fragments', 'street_night')).toContain('офис');
+  });
+
+  it('prefers poetry_smuggling live cue', () => {
+    expect(buildQuestJournalContextualHint('poetry_smuggling', 'street_night')).toContain('библиотек');
+  });
+
+  it('prefers pier_watchman_key live cue', () => {
+    expect(buildQuestJournalContextualHint('pier_watchman_key', 'street_night')).toContain('пирс');
+  });
+
+  it('prefers vault_defense live cue', () => {
+    expect(buildQuestJournalContextualHint('vault_defense', 'street_night')).toContain('фаервол');
+  });
+
+  it('prefers thread_of_18_lines live cue', () => {
+    expect(buildQuestJournalContextualHint('thread_of_18_lines', 'street_night')).toContain('парке');
   });
 
   it('combines next objective with travel direction', () => {

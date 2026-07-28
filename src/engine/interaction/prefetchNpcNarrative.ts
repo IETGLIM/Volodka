@@ -4,7 +4,7 @@
  */
 
 import { findNpcById } from '@/data/gameDataLoader';
-import { prefetchDialogueNodes, prefetchStoryNodes } from '@/data/gameDataLoader';
+import { prefetchDialogueFrontier, prefetchStoryNodes } from '@/data/gameDataLoader';
 import { preloadNpcModel } from '@/engine/scene/sceneGpuLifecycle';
 import { resolveNpcNarrativeTarget } from '@/engine/interaction/npcNarrativeRouting';
 import type { SceneId } from '@/shared/types/game';
@@ -28,7 +28,8 @@ export function prefetchNpcNarrativeOnApproach(
   if (target.kind === 'story') {
     prefetchStoryNodes([target.nodeId]);
   } else {
-    prefetchDialogueNodes([target.nodeId]);
+    // Root + choice frontier depth-2 so talk open does not hitch on pack load.
+    prefetchDialogueFrontier([target.nodeId], 2);
   }
 }
 
