@@ -64,9 +64,13 @@ export function useCombatOrchestrator() {
 
     scope.on('combat:hit', ({ isPlayerHit, damage }) => {
       audioEngine.playSfx('combat_hit');
-      triggerCameraShake(isPlayerHit ? 0.14 : 0.08, isPlayerHit ? 6 : 4);
-      if (damage >= 20) {
-        triggerCameraShake(0.12, 8);
+      // Differentiated shake: crit-tier hits, player stagger, normal swings
+      if (isPlayerHit) {
+        triggerCameraShake(damage >= 20 ? 0.55 : 0.5, 5);
+      } else if (damage >= 25) {
+        triggerCameraShake(0.8, 4);
+      } else {
+        triggerCameraShake(0.3, 6);
       }
     }, EventBusPriority.FX);
 

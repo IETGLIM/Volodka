@@ -59,6 +59,7 @@ import {
   NpcQuestMarkerSprite,
   NpcActivityBarkSprite,
 } from '@/engine/npc/npcWorldSprite';
+import { NpcEmotionIndicator } from '@/components/3d/NpcEmotionIndicator';
 
 /* ─── NPC models ───
  *  GLB when a shipped asset exists (npcModelRegistry); otherwise ProceduralNPCModel.
@@ -458,6 +459,10 @@ export function NPC({
             bodyColor={appearance.bodyColor}
             opacity={nameLabelOpacity}
           />
+        )}
+
+        {npcTierHasNameLabels(renderTier) && (
+          <NpcEmotionIndicator npcId={definition.id} />
         )}
       </group>
 

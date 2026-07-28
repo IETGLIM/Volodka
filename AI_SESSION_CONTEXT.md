@@ -167,13 +167,14 @@ Gothic (живой мир, NPC расписания), GTA (открытые пр
 - [x] **Фаза 7.1: Критический фикс дёргания модели (v2)** — weight-based blend tree, rotation reversal, hysteresis widening, walk bob reduction
 - [x] **Фаза 7.2: Deep-fix jitter + 360° rotation + Volodka Room & Prologue duplicate-frame cleanup (v3)** — Rapier interpolate disabled, walk-bob delta smoothing, FOV unit bug, Mixamo clip coalescing, SimplePlayer strafe gate, Volodka Room env-anim dedup, IntroWakeOverlay dead-code removal
 - [x] **Фаза 7: Система одежды/внешности** — 6 слотов, 20 предметов, social perception tags, DialogueModifier, ClothingTab UI
+- [x] **Фаза 7.3 (UX polish): Combat feel + NPC emotion HUD + touch combat + clothing empty slots** — bullet-time on combo/stagger, differentiated shake, NpcEmotionIndicator, CombatTouchControls, ClothingTab empty hints
 - [ ] **Фаза 8: Улучшенные 3D модели** — AI3DGen для ключевых NPC и окружения
 - [x] **Фаза 9.1: NPC эмоциональные реакции** — 7 эмоций, idle variants, proximity awareness, EventBus bridge, emotion-linked barks
 - [ ] **Фаза 10: TTS озвучивание** — ключевые сцены и диалоги
 - [x] **Фаза 11: Полировка боевой системы** — affinity system, 6 new enemies (20 total), combo decay, combat consumables, bullet time
 - [x] **Фаза 11.1: TS error cleanup** — 12 pre-existing errors fixed (combatConsumables, combatEvents, enemyVisualRegistry, BuffEffect, CombatSystem)
 - [ ] **Фаза 12: Музыкальное разнообразие** — уникальные темы для каждого акта
-- [ ] **Фаза 13: Мобильная оптимизация** — touch-контроли, виртуальный джойстик
+- [ ] **Фаза 13: Мобильная оптимизация** — touch-контроли, виртуальный джойстик (combat touch done; exploration joystick pending)
 - [ ] **Фаза 14: Балансировка** — сложность, экономика, квестовая прогрессия
 - [ ] **Фаза 15: Финальная полировка** — QA, оптимизация, багфикс
 
@@ -181,6 +182,19 @@ Gothic (живой мир, NPC расписания), GTA (открытые пр
 
 ## 📝 История сессий
 
+### Сессия: 2026-07-28 — "Phase 7.3: Combat feel + NPC emotion HUD + touch combat"
+**Контекст:** Свежий clone с GitHub в `C:\Users\IETGL\Projects\Volodka` (OneDrive-копия была битая/устаревшая). Typecheck 0 errors, 1513/1513 tests pass.
+
+**Что сделано:**
+- Combat hit-pause: bullet-time на combo ≥ 3 и player stagger; дифференцированный camera shake
+- `combat:action` payload: damageChannel / isCritical / comboCount
+- `NpcEmotionIndicator` — облачко эмоции над NPC (Html billboard)
+- `CombatTouchControls` — крупные touch-кнопки + swipe по стихам
+- ClothingTab: пунктирные пустые слоты + tooltip «Можно надеть: …»
+
+**Следующий шаг:** Фаза 8 (модели) / Фаза 13 (exploration joystick) / контент 120+ часов — по приоритету автора.
+
+---
 ### Сессия: 2026-07-24 — "Phase 7.2: Deep-fix jitter + 360° rotation + Volodka Room & Prologue duplicate-frame cleanup (v3)"
 **Что сделано (16 файлов, ~+450/-220 строк):**
 

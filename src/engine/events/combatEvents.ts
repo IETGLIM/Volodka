@@ -21,7 +21,15 @@ export interface CombatEvents {
   'encounter:presentation_end': EncounterContext;
   'combat:start': { enemyType: EnemyType; encounterName?: string; encounterEmoji?: string };
   'combat:turn': { turn: number; isPlayerTurn: boolean };
-  'combat:action': { action: CombatAction; damage?: number; itemId?: string };
+  'combat:action': {
+    action: CombatAction;
+    damage?: number;
+    itemId?: string;
+    /** Affinity / poem damage channel when attack or poem power deals damage */
+    damageChannel?: string;
+    isCritical?: boolean;
+    comboCount?: number;
+  };
   'combat:victory': { enemyType: EnemyType; xpGained: number; karmaGained: number; creditsGained: number; lootItemId?: string };
   'combat:defeat': { enemyType: EnemyType; energyLost: number; karmaLost: number };
   'combat:fled': { enemyType: EnemyType };
@@ -38,8 +46,12 @@ export interface CombatEvents {
   'combat:gamepad_poem_cycle_next': Record<string, never>;
   'combat:gamepad_poem_use_selected': Record<string, never>;
   'combat:gamepad_dpad_nav': { direction: CombatDpadDirection };
-  /** Phase 11: Max Payne-style bullet time slow motion — slows camera/animation on critical/super-effective hits. */
-  'combat:bullet_time': { duration: number; intensity: number; reason: 'critical_hit' | 'affinity_super' };
+  /** Max Payne-style bullet time — crit / affinity / combo / player stagger. */
+  'combat:bullet_time': {
+    duration: number;
+    intensity: number;
+    reason: 'critical_hit' | 'affinity_super' | 'combo_hit' | 'player_stagger';
+  };
   /** Phase 11: Combat consumable item used — for UI animation feedback. */
   'combat:item_used': { itemId: string; name: string; emoji: string };
 }

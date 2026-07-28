@@ -505,18 +505,31 @@ export function playerAttack(): CombatState | null {
     lastCritical: isCritical,
     rng: seeded.getState() });
 
-  eventBus.emit('combat:action', { action: 'attack', damage });
-  eventBus.emit('camera:combat_impact', { intensity: isCritical ? 0.6 : 0.3 });
+  eventBus.emit('combat:action', {
+    action: 'attack',
+    damage,
+    damageChannel: attackChannel,
+    isCritical,
+    comboCount: newComboCount,
+  });
+  // Differentiated impact: crit hits harder than a normal swing
+  eventBus.emit('camera:combat_impact', {
+    intensity: isCritical ? 0.8 : affinityResult.multiplier >= 2.0 ? 0.55 : 0.3,
+  });
 
-  /* ── Phase 11: Max Payne-style slow motion on critical/super-effective hits ──
-   *  When a critical hit or super-effective affinity occurs, emit a "bullet time"
-   *  event that slows the camera and animation for ~0.3s. This creates the
-   *  cinematic "impact freeze" feel from Max Payne / Cyberpunk 2077. */
+  /* ── Hit-pause / bullet time ──
+   * Crit + super-effective (existing), combo ≥ 3 (light slow-mo). */
   if (isCritical || affinityResult.multiplier >= 2.0) {
     eventBus.emit('combat:bullet_time', {
-      duration: 0.3,         // slow-motion window in seconds
-      intensity: isCritical && affinityResult.multiplier >= 2.0 ? 0.15 : 0.25,  // timeScale (lower = slower)
+      duration: 0.3,
+      intensity: isCritical && affinityResult.multiplier >= 2.0 ? 0.15 : 0.25,
       reason: isCritical ? 'critical_hit' : 'affinity_super',
+    });
+  } else if (newComboCount >= 3) {
+    eventBus.emit('combat:bullet_time', {
+      duration: 0.15,
+      intensity: 0.5,
+      reason: 'combo_hit',
     });
   }
 
@@ -1024,7 +1037,13 @@ function executeEnemyTurn() {
     log: [...workingState.log, enemyAttackLog],
     rng: updatedRng.getState() });
 
-  eventBus.emit('camera:combat_shake', { intensity: 0.2 });
+  eventBus.emit('camera:combat_shake', { intensity: enemyDamage >= 20 ? 0.55 : 0.5 });
+  // Brief stagger when the player takes a hit (Max Payne / Gothic feel)
+  eventBus.emit('combat:bullet_time', {
+    duration: 0.1,
+    intensity: 0.6,
+    reason: 'player_stagger',
+  });
   notifyCombatDamage(enemyAttackLog);
 
   // Check defeat

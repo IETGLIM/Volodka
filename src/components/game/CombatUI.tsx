@@ -25,12 +25,14 @@ import { useEquippedThoughts } from '@/store/selectors/thoughtCabinetSelectors';
 import { resolveThoughtCombatContributions, hasThoughtCombatEffects, resolveThoughtCombatEffects } from '@/engine/combat/thoughtCombatModifiers';
 import type { CombatState, CombatLogEntry, CombatBuff, BuffEffect } from '@/shared/types/game';
 import { useGamepadConnected } from '@/hooks/useGamepadConnected';
+import { useTouchDevice } from '@/hooks/useTouchDevice';
 import { COMBAT_BUTTON_HINTS } from '@/engine/combat/combatGamepadMap';
 import { POEM_COMBAT_ABILITIES } from '@/engine/combat/actions';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 import { CombatDamageTimeline } from '@/components/game/hud/parts/CombatDamageTimeline';
 import { EnemyWeaknessDisplay } from '@/components/game/hud/parts/EnemyWeaknessDisplay';
 import { TurnPhaseIndicator } from '@/components/game/hud/parts/TurnPhaseIndicator';
+import { CombatTouchControls } from '@/components/game/CombatTouchControls';
 
 /* ── Buff effect descriptions for tooltips ── */
 function getBuffEffectDescription(effect: BuffEffect): string {
@@ -755,6 +757,7 @@ export function CombatUI() {
   const [introVisible, setIntroVisible] = useState(false);
   const [introMeta, setIntroMeta] = useState<{ emoji: string; name: string } | null>(null);
   const gamepadConnected = useGamepadConnected();
+  const isTouchDevice = useTouchDevice();
   const [gamepadSelectedIdx, setGamepadSelectedIdx] = useState(0);
   const logEndRef = useRef<HTMLDivElement>(null);
   const damageIdRef = useRef(0);
@@ -1138,7 +1141,35 @@ export function CombatUI() {
                 <span /><span /><span /><span /><span />
               </div>
 
-              {/* Action Buttons */}
+              {/* Touch action bar (mobile) — large tap targets */}
+              {isTouchDevice && (
+                <CombatTouchControls
+                  disabled={!isPlayerTurn || pendingAction}
+                  poemDisabled={availablePowers.length === 0 || isSilenced}
+                  poemOpen={showPowers}
+                  onAttack={handleAttack}
+                  onDefend={handleDefend}
+                  onPoemToggle={() => {
+                    if (availablePowers.length === 1) {
+                      handlePower(availablePowers[0].poemId);
+                    } else {
+                      setShowPowers((p) => !p);
+                    }
+                  }}
+                  onFlee={handleFlee}
+                  onPoemSwipe={(dir) => {
+                    if (availablePowers.length === 0) return;
+                    setShowPowers(true);
+                    setGamepadSelectedIdx((prev) => {
+                      const next = (prev + dir + availablePowers.length) % availablePowers.length;
+                      return next;
+                    });
+                  }}
+                />
+              )}
+
+              {/* Action Buttons (desktop / gamepad) */}
+              {!isTouchDevice && (
               <div className="flex gap-1.5 mb-2">
                 <TerminalButton onClick={handleAttack} disabled={!isPlayerTurn || pendingAction} accentColor="cyan" gamepadHint={gamepadConnected ? COMBAT_BUTTON_HINTS.attack : undefined}>
                   <Sword className="size-3.5" />
@@ -1174,6 +1205,20 @@ export function CombatUI() {
                   БЕЖАТЬ
                 </TerminalButton>
               </div>
+              )}
+
+              {/* Poem submenu for touch — keep accessible under touch bar */}
+              {isTouchDevice && (
+                <div className="relative mb-2">
+                  <PoemPowersSubmenu
+                    showPowers={showPowers}
+                    availablePowers={availablePowers}
+                    gamepadConnected={false}
+                    gamepadSelectedIdx={gamepadSelectedIdx}
+                    onSelectPower={handlePower}
+                  />
+                </div>
+              )}
             </>
           )}
 

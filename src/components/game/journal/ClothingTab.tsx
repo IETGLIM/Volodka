@@ -12,7 +12,7 @@ import {
   useClothingDialogueModifier,
   getClothingDefinitionForEquipped,
 } from '@/store/selectors/clothingSelectors';
-import { CLOTHING_CATALOG } from '@/data/clothingCatalog';
+import { CLOTHING_CATALOG, getClothingBySlot } from '@/data/clothingCatalog';
 import type { ClothingDefinition, SocialPerceptionTag } from '@/data/clothingCatalog';
 import type { EquipmentSlot } from '@/shared/types/game';
 import {
@@ -26,6 +26,12 @@ import { getRarityLabel } from '@/data/items';
 import { JOURNAL_SKILL_LABELS } from '@/components/game/journal/journalConstants';
 import type { TrainablePlayerSkill } from '@/shared/types/definitions/skills';
 import { Shield, Tag, Swords, MessageCircle, Lock, Unlock } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 interface ClothingTabProps {
   searchQuery: string;
@@ -94,9 +100,10 @@ export function ClothingTab({ searchQuery }: ClothingTabProps) {
   }, [skillModifiers]);
 
   return (
+    <TooltipProvider delayDuration={200}>
     <ScrollArea className="h-full">
       <div className="p-4 space-y-5">
-        {/* ── Equipment Slots ── */}
+        {/* ── EquipmentSlots ── */}
         <div>
           <h3 className="text-xs font-medium text-slate-400 mb-3 flex items-center gap-1.5 font-mono uppercase tracking-wider">
             <Shield className="size-3.5 text-cyan-400" aria-hidden />
@@ -109,14 +116,18 @@ export function ClothingTab({ searchQuery }: ClothingTabProps) {
               const rarity: ItemRarity = clothing?.rarity ?? 'common';
               const rarityTextClass = INVENTORY_RARITY_TEXT_CLASS[rarity];
               const rarityBorderClass = INVENTORY_RARITY_BORDER_CLASS[rarity];
+              const slotCandidates = getClothingBySlot(slot);
+              const emptyHint =
+                slotCandidates.length > 0
+                  ? `Можно надеть: ${slotCandidates.map((c) => c.name).join(', ')}`
+                  : 'Пока нет предметов для этого слота';
 
-              return (
+              const slotCard = (
                 <div
-                  key={slot}
                   className={`rounded-lg border p-2.5 transition-all duration-200 ${
                     item
                       ? `${rarityBorderClass} bg-slate-900/50`
-                      : 'border-slate-700/20 bg-slate-900/20'
+                      : 'border-dashed border-cyan-800/35 bg-slate-950/40 outline outline-1 outline-offset-[-1px] outline-cyan-900/20'
                   }`}
                 >
                   <div className="text-[10px] text-slate-500 mb-1.5 flex items-center gap-1">
@@ -155,9 +166,29 @@ export function ClothingTab({ searchQuery }: ClothingTabProps) {
                       )}
                     </div>
                   ) : (
-                    <p className="text-[10px] text-slate-600 italic">Пусто</p>
+                    <div className="space-y-1">
+                      <p className="text-[11px] text-slate-500 font-mono tracking-wide">Пусто</p>
+                      <p className="text-[9px] text-slate-600 line-clamp-2">{emptyHint}</p>
+                    </div>
                   )}
                 </div>
+              );
+
+              if (item) {
+                return (
+                  <div key={slot} className="contents">
+                    {slotCard}
+                  </div>
+                );
+              }
+
+              return (
+                <Tooltip key={slot}>
+                  <TooltipTrigger asChild>{slotCard}</TooltipTrigger>
+                  <TooltipContent side="top" className="max-w-xs text-xs">
+                    {emptyHint}
+                  </TooltipContent>
+                </Tooltip>
               );
             })}
           </div>
@@ -341,5 +372,6 @@ export function ClothingTab({ searchQuery }: ClothingTabProps) {
         )}
       </div>
     </ScrollArea>
+    </TooltipProvider>
   );
 }
