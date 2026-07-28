@@ -31,6 +31,14 @@ export function logKccRecreateAttempt(
   });
 }
 
+const KCC_UNSTUCK_USER_MESSAGE =
+  'Застревание снято — контроллер движения перезапущен';
+
+/** Player-facing toast after a silent KCC recreate (first attempt only). */
+export function notifyKccUnstuck(_meta: { sceneId: SceneId }): void {
+  eventBus.emit('ui:exploration_message', { text: KCC_UNSTUCK_USER_MESSAGE });
+}
+
 export function notifyControlsDegraded(
   refs: DirectMovementTelemetryRefs,
   reason: string,

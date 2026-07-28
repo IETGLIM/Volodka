@@ -2,6 +2,8 @@ import { getSceneConfig } from '@/config/scenes';
 import { STORY_NODE_TO_NPC_ID } from '@/data/goldenPath';
 import { getStoryNodeSceneId } from '@/engine/guidedStory/createGuidedStoryDeps';
 import type { GuidanceInfo } from '@/engine/guidedStory/guidedStoryTypes';
+import { getNPCLocationForTime } from '@/shared/schedule/ScheduleEngine';
+import type { ScheduleContext } from '@/shared/scheduleContext';
 import type { SceneId } from '@/shared/types/game';
 
 /** Resolve the 3D scene where the player should go for this guidance step. */
@@ -36,9 +38,21 @@ export function buildGuidanceDirectionHint(
   currentSceneId: SceneId,
 ): string | null {
   if (!targetSceneId) return null;
-  if (targetSceneId === currentSceneId) return 'Идите к цели';
+  if (targetSceneId === currentSceneId) {
+    return 'Цель в этой локации — ищите метку';
+  }
   const sceneConfig = getSceneConfig(targetSceneId);
   return `Перейдите: ${sceneConfig.name}`;
+}
+
+/** Scene where an available quest's giver currently is (schedule-aware). */
+export function resolveAvailableQuestTargetScene(
+  questGiverNpcId: string | undefined,
+  hour: number,
+  ctx: ScheduleContext,
+): SceneId | undefined {
+  if (!questGiverNpcId) return undefined;
+  return getNPCLocationForTime(questGiverNpcId, hour, ctx)?.sceneId;
 }
 
 export function enrichGuidanceWithLocation(

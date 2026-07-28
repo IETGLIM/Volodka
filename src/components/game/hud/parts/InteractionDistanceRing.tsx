@@ -8,21 +8,32 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { eventBus } from '@/engine/EventBus';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import {
+  INTERACTION_IN_RANGE_FRACTION,
+  NPC_INTERACTION_QUERY_RANGE,
+} from '@/engine/player/playerConstants';
 
-const _RING_MAX_SIZE = 56;
+const RING_MAX_SIZE = 56;
 const RING_MIN_SIZE = 32;
 const DECAY_MS = 800;
 
 export function InteractionDistanceRing() {
   const [visible, setVisible] = useState(false);
+  const [proximity01, setProximity01] = useState(1);
   const lastHintRef = useRef(0);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const reducedMotion = useEffectiveReducedMotion();
 
   useEffect(() => {
-    const unsubHint = eventBus.on('interaction:hint', () => {
+    const unsubHint = eventBus.on('interaction:hint', (payload) => {
       lastHintRef.current = Date.now();
       setVisible(true);
+      const maxRange = payload.maxRange && payload.maxRange > 0
+        ? payload.maxRange
+        : NPC_INTERACTION_QUERY_RANGE;
+      const distance = typeof payload.distance === 'number' ? payload.distance : 0;
+      const next = 1 - Math.min(1, Math.max(0, distance / maxRange));
+      setProximity01(next);
 
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       timeoutRef.current = setTimeout(() => {
@@ -49,11 +60,25 @@ export function InteractionDistanceRing() {
     };
   }, []);
 
-  if (reducedMotion || !visible) return null;
+  if (!visible) return null;
 
-  // When visible, we're close enough — show full in-range ring
-  const ringSize = RING_MIN_SIZE + 6;
-  const inRange = true;
+  // Reduced motion: keep a static in-range tick instead of hiding entirely.
+  if (reducedMotion) {
+    const inRange = proximity01 >= INTERACTION_IN_RANGE_FRACTION;
+    if (!inRange) return null;
+    return (
+      <div
+        className="absolute top-1/2 left-1/2 pointer-events-none size-9 rounded-full border border-cyan-400/45"
+        aria-hidden="true"
+        style={{ marginLeft: -18, marginTop: -18 }}
+      />
+    );
+  }
+
+  const ringSize = RING_MIN_SIZE + (RING_MAX_SIZE - RING_MIN_SIZE) * proximity01;
+  const inRange = proximity01 >= INTERACTION_IN_RANGE_FRACTION;
+  const borderAlpha = 0.25 + proximity01 * 0.4;
+  const glowAlpha = 0.1 + proximity01 * 0.25;
 
   return (
     <AnimatePresence>
@@ -66,25 +91,31 @@ export function InteractionDistanceRing() {
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
           aria-hidden="true"
         >
-          {/* Outer proximity ring */}
           <motion.div
             animate={{
               width: ringSize,
               height: ringSize,
-              borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.5)',
-              boxShadow: '0 0 12px rgb(var(--cyber-cyan-rgb) / 0.25), inset 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.08)',
+              borderColor: `rgb(var(--cyber-cyan-rgb) / ${borderAlpha})`,
+              boxShadow: inRange
+                ? `0 0 16px rgb(var(--cyber-cyan-rgb) / ${glowAlpha + 0.08}), inset 0 0 10px rgb(var(--cyber-cyan-rgb) / 0.12)`
+                : `0 0 12px rgb(var(--cyber-cyan-rgb) / ${glowAlpha}), inset 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.08)`,
             }}
-            transition={{ duration: 0.3, ease: 'easeOut' }}
-            className="rounded-full border distance-ring-in-range"
-            style={{ borderWidth: 1 }}
+            transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+            className={`rounded-full border ${inRange ? 'distance-ring-in-range' : ''}`}
+            style={{ borderWidth: inRange ? 1.5 : 1, marginLeft: -ringSize / 2, marginTop: -ringSize / 2 }}
           />
-          {/* Tick marks at cardinal points */}
           {inRange && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.2 }}
-              className="absolute inset-0"
+              className="absolute"
+              style={{
+                width: ringSize,
+                height: ringSize,
+                marginLeft: -ringSize / 2,
+                marginTop: -ringSize / 2,
+              }}
             >
               {[0, 90, 180, 270].map((deg) => (
                 <div
@@ -102,13 +133,16 @@ export function InteractionDistanceRing() {
               ))}
             </motion.div>
           )}
-          {/* In-range fill glow */}
           {inRange && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="absolute inset-1 rounded-full distance-ring-fill"
+              className="absolute rounded-full distance-ring-fill"
               style={{
+                width: ringSize - 8,
+                height: ringSize - 8,
+                marginLeft: -(ringSize - 8) / 2,
+                marginTop: -(ringSize - 8) / 2,
                 background: 'radial-gradient(circle, rgb(var(--cyber-cyan-rgb) / 0.04) 0%, transparent 70%)',
               }}
             />

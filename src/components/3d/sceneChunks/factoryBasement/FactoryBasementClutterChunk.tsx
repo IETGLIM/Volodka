@@ -4,6 +4,7 @@ import {
 } from '@/engine/three/moduleGeometryRegistry';
 import { getSharedStandardMaterial } from '@/engine/three/moduleMaterialRegistry';
 import { createSceneModuleGpu } from '@/engine/three/sceneModuleGpu';
+import { EnvironmentDetail } from '../../lod/PropDistanceGate';
 
 function buildFactoryBasementClutterGpu() {
   return {
@@ -23,9 +24,9 @@ export function FactoryBasementClutterChunk() {
   );
 
   return (
-    <group>
+    <EnvironmentDetail minLod="full" position={[0, 0, 0.2]}>
       <mesh position={[1.2, 0.4, -0.8]} castShadow geometry={gpu.geo_box} material={gpu.mat_box} />
       <mesh position={[-1.5, 0.25, 1.2]} geometry={gpu.geo_cyl} material={gpu.mat_cyl} />
-    </group>
+    </EnvironmentDetail>
   );
 }

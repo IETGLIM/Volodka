@@ -94,6 +94,14 @@ export function generateSceneConfig(def: SceneDefinition): SceneConfig {
     floorMaterial,
     fogNear: effectiveFog?.near,
     fogFar: effectiveFog?.far,
+    fogEnabled: def.fogEnabled,
+    ...(effectiveFog && {
+      fog: {
+        near: effectiveFog.near,
+        far: effectiveFog.far,
+        ...(effectiveFog.fogColor && { fogColor: effectiveFog.fogColor }),
+      },
+    }),
     ambientColor: def.ambientColor,
     ambientIntensity: def.ambientIntensity,
     groundColor: def.groundColor,

@@ -1,4 +1,4 @@
-import { Suspense, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
@@ -8,20 +8,14 @@ import { fitCharacterGltf, measureCharacterGltfBounds } from '@/engine/assets/gl
 import { usePlayerLocomotionController } from '@/engine/player/usePlayerLocomotionController';
 import { useMixamoAnimationClips } from '@/hooks/useMixamoAnimationClips';
 import { useSkinnedGltfClone } from '@/hooks/useSkinnedGltfClone';
+import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import type { ProceduralPlayerModelProps } from './useProceduralPlayerAnimation';
+import { ProceduralPlayerModelLite } from './ProceduralPlayerModelLite';
 
 const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeof useGLTF>[3]>;
 const PLAYER_MODEL_URL = getPlayerVolodkaModelUrl();
 useGLTF.preload(PLAYER_MODEL_URL, true, true, extendLoader);
 
-// Eagerly preload ALL 6 Mixamo clips at module load so they are ready
-// BEFORE the wake-up cutscene starts. useMixamoAnimationClips now marks
-// all 6 clips as CRITICAL (bypassing the overlay gate), but the preload
-// here ensures the GLB bytes are in the browser HTTP cache so the
-// critical-clip loader resolves in ~1-2ms per clip from cache.
-// Without this, the wake-up cutscene's 'sleeping' phase (lying in bed)
-// and 'sitting' phases (at desk) would fall back to the embedded 'idle'
-// clip and the avatar would slide in a standing pose.
 const ANIMATIONS_BASE = '/models/animations';
 const PLAYER_CRITICAL_ANIM_URLS = [
   `${ANIMATIONS_BASE}/idle.glb`,
@@ -33,7 +27,6 @@ const PLAYER_CRITICAL_ANIM_URLS = [
 ];
 if (typeof window !== 'undefined') {
   for (const url of PLAYER_CRITICAL_ANIM_URLS) {
-    // useGLTF.preload caches the GLB in drei's suspense cache
     useGLTF.preload(url, true, true, extendLoader);
   }
 }
@@ -53,21 +46,29 @@ interface Fit {
   y: number;
 }
 
-function CesiumPlayerModelInner({ modelScale, currentAnimRef, rotationRef }: ProceduralPlayerModelProps) {
+interface CesiumPlayerModelInnerProps extends ProceduralPlayerModelProps {
+  onReadyChange?: (ready: boolean) => void;
+}
+
+function CesiumPlayerModelInner({
+  modelScale,
+  currentAnimRef,
+  rotationRef,
+  onReadyChange,
+}: CesiumPlayerModelInnerProps) {
+  const { preset } = useGraphicsQuality();
   const gltf = useGLTF(PLAYER_MODEL_URL, true, true, extendLoader);
-  const { scene, mixer, ready } = useSkinnedGltfClone(gltf.scene, gltf.animations, { castShadow: true });
+  const { scene, mixer, ready } = useSkinnedGltfClone(gltf.scene, gltf.animations, {
+    castShadow: preset.shadows,
+  });
   const yawRef = useRef<THREE.Group>(null);
   const [fit, setFit] = useState<Fit>({ scale: 1, rotX: 0, y: 0 });
 
-  // CRITICAL: Measure bounds in a useLayoutEffect BEFORE usePlayerLocomotionController.
-  // The locomotion controller's internal useLayoutEffect calls mixer.update(0) which
-  // advances the idle animation past frame 0, overriding the bind pose. React runs
-  // useLayoutEffects in call order, so placing this BEFORE the locomotion controller
-  // ensures we measure the bind-pose skeleton before the mixer touches it.
-  // Previously this was a useEffect (runs AFTER all useLayoutEffects) gated on
-  // `ready`, which meant mixer.update(0) had already corrupted the bone matrices
-  // → bounds.size.y ≈ 8.5m → scale = 0.206 (model 5x too small, invisible at 3m
-  // camera distance). (Task 5-A/5-B #1, CRITICAL.)
+  useEffect(() => {
+    onReadyChange?.(ready);
+    return () => onReadyChange?.(false);
+  }, [ready, onReadyChange]);
+
   useLayoutEffect(() => {
     const bounds = measureCharacterGltfBounds(scene);
     const { scale, rotX, footY } = fitCharacterGltf(bounds, {
@@ -86,11 +87,7 @@ function CesiumPlayerModelInner({ modelScale, currentAnimRef, rotationRef }: Pro
       });
     }
 
-    // Defense-in-depth: if the bounds measurement produced an absurd scale
-    // (e.g., model measured as >5m or <0.3m tall), fall back to a safe default.
     const safeScale = scale > 0.3 && scale < 3.0 ? scale : 1.0;
-    // footY is the Y offset to place feet at y=0. Do NOT clamp to 0.5 — that
-    // sinks models whose origin is >0.5m above the feet (normal for Mixamo rigs).
     const safeFootY = Number.isFinite(footY) ? footY : 0;
     setFit({ scale: safeScale, rotX, y: safeFootY });
   }, [scene, modelScale]);
@@ -120,6 +117,7 @@ function CesiumPlayerModelInner({ modelScale, currentAnimRef, rotationRef }: Pro
     if (yawRef.current) yawRef.current.rotation.y = rotationRef.current + FORWARD_OFFSET;
   }, { label: 'PlayerAvatarYaw', phase: 'pre_render' });
 
+  // Stay mounted (invisible) while mixer warms — parent keeps lite silhouette.
   if (!ready) return null;
 
   return (
@@ -135,11 +133,19 @@ function CesiumPlayerModelInner({ modelScale, currentAnimRef, rotationRef }: Pro
   );
 }
 
-/** Cesium avatar with a procedural fallback while the GLB streams / on error. */
+/** Cesium avatar with a lite procedural fallback while the GLB streams.
+ *  Keeps the lite silhouette until the skinned clone is ready — avoids the
+ *  mobile flash where Suspense resolves → null → GLB pop-in.
+ */
 export function CesiumPlayerModel(props: ProceduralPlayerModelProps) {
+  const [glbReady, setGlbReady] = useState(false);
+
   return (
-    <Suspense fallback={null}>
-      <CesiumPlayerModelInner {...props} />
-    </Suspense>
+    <group>
+      {!glbReady && <ProceduralPlayerModelLite {...props} />}
+      <Suspense fallback={null}>
+        <CesiumPlayerModelInner {...props} onReadyChange={setGlbReady} />
+      </Suspense>
+    </group>
   );
 }

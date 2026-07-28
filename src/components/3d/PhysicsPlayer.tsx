@@ -81,14 +81,14 @@ export function PhysicsPlayer({
         restitution={0}
       />
 
+      {/* Contact blob always under capsule (TP body + FP-ready foot mark). */}
+      <PhysicsPlayerContactShadow firstPerson={!showThirdPersonBody} />
+
       {showThirdPersonBody && (
-        <>
-          <CinematicPlayerAvatar
-            currentAnimRef={currentAnimRef}
-            rotationRef={livePlayerRotationRef}
-          />
-          <PhysicsPlayerContactShadow />
-        </>
+        <CinematicPlayerAvatar
+          currentAnimRef={currentAnimRef}
+          rotationRef={livePlayerRotationRef}
+        />
       )}
     </RigidBody>
   );

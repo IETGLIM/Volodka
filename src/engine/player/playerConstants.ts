@@ -6,29 +6,29 @@ export const RUN_SPEED = 7;
  *  external velocity injection from producing extreme speeds. */
 export const MAX_HORIZONTAL_SPEED = 15;
 /** Keyboard gets snappier response than touch/gamepad damp tuning. */
-export const KEYBOARD_ACCEL = 50;
+export const KEYBOARD_ACCEL = 55;
 export const JUMP_FORCE = 5.5;
 export const GRAVITY = -15;
 export const FOOTSTEP_INTERVAL = 0.4;
 export const PLAYER_HEIGHT = 1.75;
 export const PLAYER_RADIUS = 0.3;
-export const ROTATION_SPEED = 8;
+export const ROTATION_SPEED = 8.5;
 /** Speed for 180-degree direction reversals — slower than normal rotation
  *  so the character appears to physically turn around rather than snapping.
  *  GTA/Gothic-style games use 4–5 for reversal turns. */
-export const ROTATION_SPEED_REVERSAL = 4.5;
+export const ROTATION_SPEED_REVERSAL = 5.0;
 /** Angle threshold (radians) above which a direction reversal turn is used.
- *  ~90° = half a direction change. Anything larger triggers the slower reversal. */
-export const ROTATION_REVERSAL_THRESHOLD = Math.PI / 4;
+ *  ~120° — mid camera-relative redirects stay snappy; only hard about-faces slow. */
+export const ROTATION_REVERSAL_THRESHOLD = (Math.PI * 2) / 3;
 
 export const SKIN_WIDTH = 0.04;
 export const MAX_SLOPE_CLIMB = Math.PI / 4;
 export const MIN_SLOPE_SLIDE = Math.PI / 6;
-export const AUTOSTEP_HEIGHT = 0.3;
-export const AUTOSTEP_WIDTH = 0.2;
-export const SNAP_DISTANCE = 0.15;
+export const AUTOSTEP_HEIGHT = 0.44;
+export const AUTOSTEP_WIDTH = 0.26;
+export const SNAP_DISTANCE = 0.22;
 export const BLOCKED_RATIO = 0.35;
-export const COYOTE_TIME = 0.15;
+export const COYOTE_TIME = 0.2;
 export const JUMP_COOLDOWN = 0.3;
 export const TERMINAL_VELOCITY = GRAVITY * 1.5; // -22.5 m/s — safe for substep budget
 export const WARMUP_DURATION_S = 0.2;
@@ -66,3 +66,7 @@ export const MAX_KCC_RECREATE_ATTEMPTS_PER_INCIDENT = 5;
 export const MAX_DIRECT_DISPLACEMENT = 0.3;
 /** Distance (m) at which NPC proximity prompt becomes visible. */
 export const NPC_INTERACTION_RANGE = 3.0;
+/** Query range used by interaction targeting + HUD ring fallback (slightly wider than prompt). */
+export const NPC_INTERACTION_QUERY_RANGE = 3.5;
+/** Fraction of maxRange under which the target is considered “in interact range” for scoring/UI. */
+export const INTERACTION_IN_RANGE_FRACTION = 0.6;

@@ -4,7 +4,7 @@ import {
   releaseCachedCanvasTexture,
 } from '@/engine/three/cachedCanvasTexture';
 
-export type ContactShadowVariant = 'player' | 'npc';
+export type ContactShadowVariant = 'player' | 'playerFp' | 'npc';
 
 export interface ContactShadowTextureParams {
   variant: ContactShadowVariant;
@@ -21,18 +21,29 @@ const CONTACT_SHADOW_PRESETS: Record<ContactShadowVariant, ContactShadowPreset> 
     size: 128,
     stops: [
       [0, 0.5],
-      [0.35, 0.3],
-      [0.6, 0.12],
-      [0.85, 0.03],
+      [0.3, 0.3],
+      [0.55, 0.12],
+      [0.8, 0.03],
+      [1, 0],
+    ],
+  },
+  /** Tighter, denser core for first-person capsule grounding. */
+  playerFp: {
+    size: 96,
+    stops: [
+      [0, 0.62],
+      [0.26, 0.36],
+      [0.5, 0.14],
+      [0.76, 0.035],
       [1, 0],
     ],
   },
   npc: {
     size: 64,
     stops: [
-      [0, 0.4],
-      [0.4, 0.2],
-      [0.7, 0.06],
+      [0, 0.42],
+      [0.38, 0.2],
+      [0.68, 0.06],
       [1, 0],
     ],
   },
@@ -40,6 +51,7 @@ const CONTACT_SHADOW_PRESETS: Record<ContactShadowVariant, ContactShadowPreset> 
 
 export const CONTACT_SHADOW_CACHE_KEYS = {
   player: contactShadowCacheKey({ variant: 'player' }),
+  playerFp: contactShadowCacheKey({ variant: 'playerFp' }),
   npc: contactShadowCacheKey({ variant: 'npc' }),
 } as const;
 

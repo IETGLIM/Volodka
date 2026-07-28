@@ -2,11 +2,13 @@ import { AnimatePresence, motion } from 'framer-motion';
 import {
   PHOTO_CORNER_BRACKET_SIZE,
   PHOTO_MODE_LABELS,
+  type PhotoFilterPreset,
 } from '@/engine/photo/photoModeConstants';
 import {
   formatRealClockTime,
   getBlinkDotMotion,
   getFlashOverlayTransition,
+  getPhotoFilterTitle,
   getPhotoHintTransition,
   getPhotoOverlayTransition,
   getPhotoPreviewTransition,
@@ -21,8 +23,11 @@ type PhotoModeViewfinderProps = {
   reducedMotion: boolean;
   sceneName: string;
   timeStr: string;
+  filterPreset: PhotoFilterPreset;
   onCapture: () => void;
   onExit: () => void;
+  onDownloadPreview?: () => void;
+  onSharePreview?: () => void;
 };
 
 export function PhotoModeViewfinder({
@@ -32,16 +37,24 @@ export function PhotoModeViewfinder({
   reducedMotion,
   sceneName,
   timeStr,
+  filterPreset,
   onCapture,
   onExit,
+  onDownloadPreview,
+  onSharePreview,
 }: PhotoModeViewfinderProps) {
   const blinkDot = getBlinkDotMotion(reducedMotion);
+  const isNoir = filterPreset === 'noir';
+  const accentSolid = isNoir ? 'rgb(200, 200, 210)' : 'var(--cyber-cyan)';
+  const accent = (alpha: number) =>
+    isNoir ? `rgb(180 180 190 / ${alpha})` : `rgb(var(--cyber-cyan-rgb) / ${alpha})`;
   const reducedMotionClass = reducedMotion ? 'photo-mode--reduced-motion' : '';
+  const filterClass = isNoir ? 'photo-mode--noir' : 'photo-mode--neon';
 
   return (
     <motion.div
       key="photo-mode"
-      className={`fixed inset-0 photo-mode-viewfinder ${reducedMotionClass}`}
+      className={`fixed inset-0 photo-mode-viewfinder ${filterClass} ${reducedMotionClass}`}
       style={{ zIndex: UI_LAYERS.LOADING }}
       initial={reducedMotion ? false : { opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -65,13 +78,18 @@ export function PhotoModeViewfinder({
         </button>
       </div>
 
+      {isNoir && <div className="photo-mode-noir-desat" aria-hidden="true" />}
+      {isNoir && <div className="photo-mode-noir-grade" aria-hidden="true" />}
+      {isNoir && <div className="photo-mode-noir-contrast" aria-hidden="true" />}
+      {isNoir && <div className="photo-mode-noir-grain" aria-hidden="true" />}
+      {isNoir && <div className="photo-mode-noir-letterbox" aria-hidden="true" />}
+
       <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
         <div
           className="absolute inset-4 sm:inset-8 md:inset-12 lg:inset-16"
           style={{
-            border: '2px solid rgb(var(--cyber-cyan-rgb) / 0.5)',
-            boxShadow:
-              '0 0 12px rgb(var(--cyber-cyan-rgb) / 0.15), inset 0 0 12px rgb(var(--cyber-cyan-rgb) / 0.05)',
+            border: `2px solid ${accent(0.5)}`,
+            boxShadow: `0 0 12px ${accent(0.15)}, inset 0 0 12px ${accent(0.05)}`,
           }}
         >
           <div
@@ -81,9 +99,9 @@ export function PhotoModeViewfinder({
               left: -2,
               width: PHOTO_CORNER_BRACKET_SIZE,
               height: PHOTO_CORNER_BRACKET_SIZE,
-              borderTop: '2px solid var(--cyber-cyan)',
-              borderLeft: '2px solid var(--cyber-cyan)',
-              boxShadow: '-2px -2px 6px rgb(var(--cyber-cyan-rgb) / 0.4)',
+              borderTop: `2px solid ${accentSolid}`,
+              borderLeft: `2px solid ${accentSolid}`,
+              boxShadow: `-2px -2px 6px ${accent(0.4)}`,
             }}
           />
           <div
@@ -93,9 +111,9 @@ export function PhotoModeViewfinder({
               right: -2,
               width: PHOTO_CORNER_BRACKET_SIZE,
               height: PHOTO_CORNER_BRACKET_SIZE,
-              borderTop: '2px solid var(--cyber-cyan)',
-              borderRight: '2px solid var(--cyber-cyan)',
-              boxShadow: '2px -2px 6px rgb(var(--cyber-cyan-rgb) / 0.4)',
+              borderTop: `2px solid ${accentSolid}`,
+              borderRight: `2px solid ${accentSolid}`,
+              boxShadow: `2px -2px 6px ${accent(0.4)}`,
             }}
           />
           <div
@@ -105,9 +123,9 @@ export function PhotoModeViewfinder({
               left: -2,
               width: PHOTO_CORNER_BRACKET_SIZE,
               height: PHOTO_CORNER_BRACKET_SIZE,
-              borderBottom: '2px solid var(--cyber-cyan)',
-              borderLeft: '2px solid var(--cyber-cyan)',
-              boxShadow: '-2px 2px 6px rgb(var(--cyber-cyan-rgb) / 0.4)',
+              borderBottom: `2px solid ${accentSolid}`,
+              borderLeft: `2px solid ${accentSolid}`,
+              boxShadow: `-2px 2px 6px ${accent(0.4)}`,
             }}
           />
           <div
@@ -117,56 +135,68 @@ export function PhotoModeViewfinder({
               right: -2,
               width: PHOTO_CORNER_BRACKET_SIZE,
               height: PHOTO_CORNER_BRACKET_SIZE,
-              borderBottom: '2px solid var(--cyber-cyan)',
-              borderRight: '2px solid var(--cyber-cyan)',
-              boxShadow: '2px 2px 6px rgb(var(--cyber-cyan-rgb) / 0.4)',
+              borderBottom: `2px solid ${accentSolid}`,
+              borderRight: `2px solid ${accentSolid}`,
+              boxShadow: `2px 2px 6px ${accent(0.4)}`,
             }}
           />
         </div>
 
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-px bg-cyan-400/30 viewfinder-pulse" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-px h-8 bg-cyan-400/30 viewfinder-pulse" />
+          <div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-px viewfinder-pulse"
+            style={{ background: accent(0.3) }}
+          />
+          <div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-px h-8 viewfinder-pulse"
+            style={{ background: accent(0.3) }}
+          />
           <div
             className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full viewfinder-pulse"
             style={{
-              background: 'rgb(var(--cyber-cyan-rgb) / 0.6)',
-              boxShadow: '0 0 6px rgb(var(--cyber-cyan-rgb) / 0.5)',
+              background: accent(0.6),
+              boxShadow: `0 0 6px ${accent(0.5)}`,
             }}
           />
         </div>
 
         <div className="absolute inset-4 sm:inset-8 md:inset-12 lg:inset-16">
-          <div className="absolute top-0 bottom-0 left-1/3 w-px border-l border-dashed border-cyan-400/10" />
-          <div className="absolute top-0 bottom-0 left-2/3 w-px border-l border-dashed border-cyan-400/10" />
-          <div className="absolute left-0 right-0 top-1/3 h-px border-t border-dashed border-cyan-400/10" />
-          <div className="absolute left-0 right-0 top-2/3 h-px border-t border-dashed border-cyan-400/10" />
+          <div className="absolute top-0 bottom-0 left-1/3 w-px border-l border-dashed" style={{ borderColor: accent(0.1) }} />
+          <div className="absolute top-0 bottom-0 left-2/3 w-px border-l border-dashed" style={{ borderColor: accent(0.1) }} />
+          <div className="absolute left-0 right-0 top-1/3 h-px border-t border-dashed" style={{ borderColor: accent(0.1) }} />
+          <div className="absolute left-0 right-0 top-2/3 h-px border-t border-dashed" style={{ borderColor: accent(0.1) }} />
         </div>
       </div>
 
       <div className="absolute top-6 sm:top-10 md:top-14 lg:top-18 left-1/2 -translate-x-1/2 flex items-center gap-2 pointer-events-none">
         <motion.span
-          className="w-2 h-2 rounded-full bg-cyan-400"
+          className="w-2 h-2 rounded-full"
+          style={{
+            background: accentSolid,
+            boxShadow: `0 0 8px ${accent(0.6)}`,
+          }}
           animate={blinkDot.animate}
           transition={blinkDot.transition}
-          style={{ boxShadow: '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.6)' }}
           aria-hidden="true"
         />
         <span
-          className="text-xs sm:text-sm font-mono font-bold tracking-[0.2em] text-cyan-400 uppercase"
+          className="text-xs sm:text-sm font-mono font-bold tracking-[0.2em] uppercase"
           style={{
-            textShadow:
-              '0 0 12px rgb(var(--cyber-cyan-rgb) / 0.5), 0 0 24px rgb(var(--cyber-cyan-rgb) / 0.2)',
+            color: accentSolid,
+            textShadow: `0 0 12px ${accent(0.5)}, 0 0 24px ${accent(0.2)}`,
           }}
         >
-          {PHOTO_MODE_LABELS.title}
+          {getPhotoFilterTitle(filterPreset)}
         </span>
       </div>
 
       <div className="absolute bottom-6 sm:bottom-10 md:bottom-14 lg:bottom-18 left-6 sm:left-10 md:left-14 lg:left-18 pointer-events-none">
         <span
-          className="text-[10px] sm:text-xs font-mono text-cyan-400/70 tracking-wider"
-          style={{ textShadow: '0 0 6px rgb(var(--cyber-cyan-rgb) / 0.3)' }}
+          className="text-[10px] sm:text-xs font-mono tracking-wider"
+          style={{
+            color: accent(0.7),
+            textShadow: `0 0 6px ${accent(0.3)}`,
+          }}
         >
           {sceneName}
         </span>
@@ -174,8 +204,11 @@ export function PhotoModeViewfinder({
 
       <div className="absolute bottom-6 sm:bottom-10 md:bottom-14 lg:bottom-18 right-6 sm:right-10 md:right-14 lg:right-18 pointer-events-none">
         <span
-          className="text-[10px] sm:text-xs font-mono text-cyan-400/70 tabular-nums"
-          style={{ textShadow: '0 0 6px rgb(var(--cyber-cyan-rgb) / 0.3)' }}
+          className="text-[10px] sm:text-xs font-mono tabular-nums"
+          style={{
+            color: accent(0.7),
+            textShadow: `0 0 6px ${accent(0.3)}`,
+          }}
         >
           {timeStr}
         </span>
@@ -188,15 +221,42 @@ export function PhotoModeViewfinder({
         transition={getPhotoHintTransition(reducedMotion)}
         aria-hidden="true"
       >
-        <div className="flex items-center gap-1 px-2 py-1 rounded border border-cyan-400/20 bg-black/40 backdrop-blur-sm">
-          <kbd className="text-[9px] font-mono text-cyan-400/80">{PHOTO_MODE_LABELS.captureHintKey}</kbd>
-          <span className="text-[9px] font-mono text-cyan-400/50">{PHOTO_MODE_LABELS.captureHint}</span>
+        <div
+          className="flex items-center gap-1 px-2 py-1 rounded border bg-black/40 backdrop-blur-sm"
+          style={{ borderColor: accent(0.2) }}
+        >
+          <kbd className="text-[9px] font-mono" style={{ color: accent(0.8) }}>
+            {PHOTO_MODE_LABELS.captureHintKey}
+          </kbd>
+          <span className="text-[9px] font-mono" style={{ color: accent(0.5) }}>
+            {PHOTO_MODE_LABELS.captureHint}
+          </span>
         </div>
-        <div className="flex items-center gap-1 px-2 py-1 rounded border border-cyan-400/20 bg-black/40 backdrop-blur-sm">
-          <kbd className="text-[9px] font-mono text-cyan-400/80">{PHOTO_MODE_LABELS.exitHintKey}</kbd>
-          <span className="text-[9px] font-mono text-cyan-400/50">/</span>
-          <kbd className="text-[9px] font-mono text-cyan-400/80">{PHOTO_MODE_LABELS.exitHintAlt}</kbd>
-          <span className="text-[9px] font-mono text-cyan-400/50">{PHOTO_MODE_LABELS.exitHint}</span>
+        <div
+          className="flex items-center gap-1 px-2 py-1 rounded border bg-black/40 backdrop-blur-sm"
+          style={{ borderColor: accent(0.2) }}
+        >
+          <kbd className="text-[9px] font-mono" style={{ color: accent(0.8) }}>
+            {PHOTO_MODE_LABELS.filterHintKey}
+          </kbd>
+          <span className="text-[9px] font-mono" style={{ color: accent(0.5) }}>
+            {isNoir ? PHOTO_MODE_LABELS.filterHintNoir : PHOTO_MODE_LABELS.filterHintNeon}
+          </span>
+        </div>
+        <div
+          className="flex items-center gap-1 px-2 py-1 rounded border bg-black/40 backdrop-blur-sm"
+          style={{ borderColor: accent(0.2) }}
+        >
+          <kbd className="text-[9px] font-mono" style={{ color: accent(0.8) }}>
+            {PHOTO_MODE_LABELS.exitHintKey}
+          </kbd>
+          <span className="text-[9px] font-mono" style={{ color: accent(0.5) }}>/</span>
+          <kbd className="text-[9px] font-mono" style={{ color: accent(0.8) }}>
+            {PHOTO_MODE_LABELS.exitHintAlt}
+          </kbd>
+          <span className="text-[9px] font-mono" style={{ color: accent(0.5) }}>
+            {PHOTO_MODE_LABELS.exitHint}
+          </span>
         </div>
       </motion.div>
 
@@ -204,7 +264,7 @@ export function PhotoModeViewfinder({
         {flash && (
           <motion.div
             key="photo-flash"
-            className="absolute inset-0 bg-white pointer-events-none"
+            className={`absolute inset-0 pointer-events-none ${isNoir ? 'bg-zinc-200' : 'bg-white'}`}
             initial={{ opacity: reducedMotion ? 0.35 : 0.9 }}
             animate={{ opacity: 0 }}
             exit={{ opacity: 0 }}
@@ -227,9 +287,8 @@ export function PhotoModeViewfinder({
             <div
               className="relative rounded-lg overflow-hidden border-2"
               style={{
-                borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.5)',
-                boxShadow:
-                  '0 0 16px rgb(var(--cyber-cyan-rgb) / 0.3), 0 4px 16px rgba(0, 0, 0, 0.5)',
+                borderColor: accent(0.5),
+                boxShadow: `0 0 16px ${accent(0.3)}, 0 4px 16px rgba(0, 0, 0, 0.5)`,
                 width: '160px',
                 height: '90px',
               }}
@@ -237,10 +296,36 @@ export function PhotoModeViewfinder({
               <img
                 src={preview.dataUrl}
                 alt={PHOTO_MODE_LABELS.previewAlt}
-                className="w-full h-full object-cover"
+                className={`w-full h-full object-cover ${isNoir ? 'photo-mode-preview-noir' : ''}`}
               />
-              <div className="absolute bottom-0 left-0 right-0 px-2 py-1 bg-black/60 backdrop-blur-sm">
-                <span className="text-[8px] font-mono text-cyan-400/80">{formatRealClockTime()}</span>
+              <div className="absolute bottom-0 left-0 right-0 px-2 py-1 bg-black/60 backdrop-blur-sm flex items-center justify-between gap-1">
+                <span className="text-[8px] font-mono" style={{ color: accent(0.8) }}>
+                  {formatRealClockTime()}
+                </span>
+                <div className="flex items-center gap-1">
+                  {onDownloadPreview && (
+                    <button
+                      type="button"
+                      onClick={onDownloadPreview}
+                      className="text-[8px] font-mono px-1 py-0.5 rounded border bg-black/40"
+                      style={{ color: accent(0.9), borderColor: accent(0.35) }}
+                      aria-label={PHOTO_MODE_LABELS.downloadAction}
+                    >
+                      ↓
+                    </button>
+                  )}
+                  {onSharePreview && (
+                    <button
+                      type="button"
+                      onClick={onSharePreview}
+                      className="text-[8px] font-mono px-1 py-0.5 rounded border bg-black/40"
+                      style={{ color: accent(0.9), borderColor: accent(0.35) }}
+                      aria-label={PHOTO_MODE_LABELS.shareAction}
+                    >
+                      ↗
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </motion.div>

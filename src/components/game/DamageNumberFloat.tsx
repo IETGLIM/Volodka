@@ -242,7 +242,7 @@ export function DamageNumberFloat() {
     timersRef.current[id] = timer;
   }, []);
 
-  /* ── Listen for combat:damage ── */
+  /* ── Listen for combat:damage (authoritative float channel; combat:hit is FX-only) ── */
   useEffect(() => {
     const unsub = eventBus.on('combat:damage', (payload) => {
       const type: DamageNumberType = payload.critical ? 'critical' : 'damage';
@@ -255,14 +255,6 @@ export function DamageNumberFloat() {
   useEffect(() => {
     const unsub = eventBus.on('combat:heal', (payload) => {
       addNumber('heal', payload.amount);
-    }, EventBusPriority.FX);
-    return unsub;
-  }, [addNumber]);
-
-  /* ── Listen for combat:hit (existing event) ── */
-  useEffect(() => {
-    const unsub = eventBus.on('combat:hit', (payload) => {
-      addNumber(payload.isPlayerHit ? 'damage' : 'damage', payload.damage);
     }, EventBusPriority.FX);
     return unsub;
   }, [addNumber]);

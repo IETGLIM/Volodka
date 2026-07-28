@@ -31,6 +31,13 @@ vi.mock('@/hooks/useGameplayPresentationProfile', () => ({
 vi.mock('@/store/selectors', () => ({
   useQuests: () => [],
   useCurrentSceneId: () => 'volodka_room',
+  useTimeOfDay: () => 12,
+  useScheduleContext: () => ({
+    currentAct: 1,
+    completedQuestIds: new Set(),
+    activeFlagKeys: new Set(),
+    playerFlags: {},
+  }),
   useOrchestratorNarrativeOverlay: () => ({
     showStoryOverlay: hudMocks.showStoryOverlay,
     narrativeKind: hudMocks.narrativeKind,

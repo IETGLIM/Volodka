@@ -72,3 +72,144 @@ export function getFlashOverlayTransition(reducedMotion: boolean) {
 export function getCaptureFailureMessage(): string {
   return PHOTO_MODE_LABELS.captureFailed;
 }
+
+export function getPhotoFilterTitle(filter: 'neon' | 'noir'): string {
+  return filter === 'noir' ? PHOTO_MODE_LABELS.titleNoir : PHOTO_MODE_LABELS.title;
+}
+
+/**
+ * Bake a noir grade into a captured PNG data URL (grayscale + contrast + vignette).
+ * Safe no-op on failure — resolves with the original dataUrl.
+ */
+export function applyNoirGradeToDataUrl(dataUrl: string): Promise<string> {
+  if (typeof document === 'undefined') return Promise.resolve(dataUrl);
+
+  return new Promise((resolve) => {
+    try {
+      const img = new Image();
+      img.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            resolve(dataUrl);
+            return;
+          }
+          const w = img.naturalWidth || img.width;
+          const h = img.naturalHeight || img.height;
+          if (!w || !h) {
+            resolve(dataUrl);
+            return;
+          }
+          canvas.width = w;
+          canvas.height = h;
+          ctx.filter = 'grayscale(1) contrast(1.22) brightness(0.9)';
+          ctx.drawImage(img, 0, 0);
+          ctx.filter = 'none';
+
+          const gradient = ctx.createRadialGradient(
+            w * 0.5,
+            h * 0.5,
+            Math.min(w, h) * 0.25,
+            w * 0.5,
+            h * 0.5,
+            Math.max(w, h) * 0.72,
+          );
+          gradient.addColorStop(0, 'rgba(0,0,0,0)');
+          gradient.addColorStop(1, 'rgba(0,0,0,0.45)');
+          ctx.fillStyle = gradient;
+          ctx.fillRect(0, 0, w, h);
+
+          resolve(canvas.toDataURL('image/png'));
+        } catch {
+          resolve(dataUrl);
+        }
+      };
+      img.onerror = () => resolve(dataUrl);
+      img.src = dataUrl;
+    } catch {
+      resolve(dataUrl);
+    }
+  });
+}
+
+/** Capture WebGL canvas and optionally bake noir grade into the still. */
+export async function capturePhotoStill(
+  filter: 'neon' | 'noir',
+): Promise<CanvasCaptureResult> {
+  const result = captureWebGlCanvasScreenshot();
+  if (!result.ok || filter !== 'noir') return result;
+  return { ok: true, dataUrl: await applyNoirGradeToDataUrl(result.dataUrl) };
+}
+
+export type PhotoExportResult =
+  | { ok: true; method: 'download' | 'share' }
+  | { ok: false; reason: 'invalid_data' | 'unknown' };
+
+function photoFilename(filter: 'neon' | 'noir', date = new Date()): string {
+  const stamp = [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, '0'),
+    String(date.getDate()).padStart(2, '0'),
+    '-',
+    String(date.getHours()).padStart(2, '0'),
+    String(date.getMinutes()).padStart(2, '0'),
+    String(date.getSeconds()).padStart(2, '0'),
+  ].join('');
+  return `volodka-${filter}-${stamp}.png`;
+}
+
+/** Download a captured still (noir already baked into dataUrl when applicable). */
+export function downloadPhotoStill(
+  dataUrl: string,
+  filter: 'neon' | 'noir' = 'neon',
+): PhotoExportResult {
+  if (!dataUrl.startsWith('data:image/')) {
+    return { ok: false, reason: 'invalid_data' };
+  }
+  try {
+    const link = document.createElement('a');
+    link.href = dataUrl;
+    link.download = photoFilename(filter);
+    link.rel = 'noopener';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    return { ok: true, method: 'download' };
+  } catch {
+    return { ok: false, reason: 'unknown' };
+  }
+}
+
+/**
+ * Share captured still via Web Share API when available; otherwise download.
+ * dataUrl should already include baked noir grade for noir captures.
+ */
+export async function shareOrDownloadPhotoStill(
+  dataUrl: string,
+  filter: 'neon' | 'noir' = 'neon',
+): Promise<PhotoExportResult> {
+  if (!dataUrl.startsWith('data:image/')) {
+    return { ok: false, reason: 'invalid_data' };
+  }
+
+  const filename = photoFilename(filter);
+  try {
+    if (typeof navigator !== 'undefined' && typeof navigator.share === 'function' && typeof navigator.canShare === 'function') {
+      const res = await fetch(dataUrl);
+      const blob = await res.blob();
+      const file = new File([blob], filename, { type: blob.type || 'image/png' });
+      if (navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: filter === 'noir' ? 'VOLODKA Noir' : 'VOLODKA',
+        });
+        return { ok: true, method: 'share' };
+      }
+    }
+  } catch {
+    // Fall through to download (user cancel / unsupported).
+  }
+
+  return downloadPhotoStill(dataUrl, filter);
+}

@@ -10,10 +10,10 @@ import type { GameStoreState } from '../types';
 import { getCombinedGameState } from '../storeBindings';
 import { readExplorationFromPlayer } from '../crossSliceReads';
 import { emitSoundPlay, scheduleWorldHourChanged } from '../storeEffects';
-import { buildNPCStatesForTime } from '@/shared/schedule/ScheduleEngine';
 import { requestSceneTransitionFromStore } from '../storeEngineHost';
 import { buildScheduleContext } from '@/shared/scheduleContext';
 import { isSceneGateOpen } from '@/shared/sceneGates';
+import { buildWorldHourChangedPayload } from '@/shared/schedule/syncWorldSchedule';
 import {
   clearAutoCloseTimer,
   deleteAutoCloseTimer,
@@ -114,15 +114,15 @@ export const createExplorationSlice: StateCreator<
     }
 
     const scheduleCtx = buildScheduleContext(getCombinedGameState());
-    const npcStates = buildNPCStatesForTime(newTime, scheduleCtx);
+    const payload = buildWorldHourChangedPayload(newTime, previousHour, scheduleCtx);
 
     set((state) => ({
       exploration: {
         ...state.exploration,
         timeOfDay: newTime,
-        npcStates } }));
+        npcStates: payload.npcStates } }));
 
-    scheduleWorldHourChanged({ hour: newTime, previousHour, npcStates });
+    scheduleWorldHourChanged(payload);
   },
 
   toggleWeather: () => set((state) => ({ weatherEnabled: !state.weatherEnabled })),
@@ -200,17 +200,17 @@ export const createExplorationSlice: StateCreator<
     const newTime = ((previousHour + travelHours) % 24 + 24) % 24;
 
     const scheduleCtx = buildScheduleContext(getCombinedGameState());
-    const npcStates = buildNPCStatesForTime(newTime, scheduleCtx);
+    const payload = buildWorldHourChangedPayload(newTime, previousHour, scheduleCtx);
 
     set((prev) => ({
       exploration: {
         ...prev.exploration,
         timeOfDay: newTime,
-        npcStates,
+        npcStates: payload.npcStates,
       },
     }));
 
-    scheduleWorldHourChanged({ hour: newTime, previousHour, npcStates });
+    scheduleWorldHourChanged(payload);
 
     requestSceneTransitionFromStore(sceneId, [...targetConfig.spawnPoint] as [number, number, number]);
   },

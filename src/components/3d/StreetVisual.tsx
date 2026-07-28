@@ -1,18 +1,9 @@
 
 /* ─── Volodka RPG – Street scene procedural 3D visual ─── */
 
-import { useRef, useMemo, useEffect, useLayoutEffect, type ComponentRef } from 'react';
-import { MeshReflectorMaterial } from '@react-three/drei';
+import { useRef, useMemo, useEffect } from 'react';
 import { useGameStore } from '@/store/gameStore';
-import { useWetSurfaceMaterial } from '@/hooks/useWetSurfaceMaterial';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
-import { registerFrameTick, unregisterFrameTick } from '@/engine/frame/FrameBudgetRegistry';
-import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
-import { useIsMobileVisual } from '@/hooks/use-mobile';
-import { allowsHeavyGfxFeature } from '@/engine/graphics/qualityFeatureGates';
-import { getReflectorMaterialSettings, isWetStreetScene } from '@/engine/graphics/wetStreetScenes';
-import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
-import { applyWetness } from '@/engine/graphics/materials/pbrPresets';
 import * as THREE from 'three';
 import {
   getSharedBoxGeometry,
@@ -28,87 +19,11 @@ import { EnvironmentDetail, PropDistanceGate } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { createStreetNightSynthwaveSkyTexture } from '@/engine/graphics/proceduralSkyTextures';
 import { AmbientParticles } from './AmbientParticles';
+import { WetStreetGround } from './WetStreetGround';
 
 interface StreetVisualProps {
   sceneId?: SceneId;
   livePlayerPositionRef?: React.MutableRefObject<THREE.Vector3>;
-}
-
-/** Rain-wet ground plane for street scenes. High+ uses planar reflections on wet streets. */
-function StreetGround({
-  sceneId,
-  isWinter,
-  rainIntensity,
-}: {
-  sceneId: SceneId;
-  isWinter: boolean;
-  rainIntensity: number;
-}) {
-  const { preset, selectedPreset } = useGraphicsQuality();
-  const coarsePointer = useIsMobileVisual();
-  const reducedMotion = useEffectiveReducedMotion();
-  const reflectorSettings = getReflectorMaterialSettings(preset.id);
-  const usePlanarReflector =
-    isWetStreetScene(sceneId)
-    && !isWinter
-    && !reducedMotion
-    && allowsHeavyGfxFeature(selectedPreset, 'reflector', { coarsePointer });
-  const groundColor = isWinter ? '#a0a8b8' : '#3a3a52';
-  const dryRoughness = isWinter ? 0.7 : 0.85;
-  const dryMetalness = 0.05;
-  const effectiveRain = isWinter ? 0 : rainIntensity;
-
-  const wetMat = useWetSurfaceMaterial(groundColor, {
-    dryRoughness,
-    dryMetalness,
-    rainIntensity: effectiveRain,
-  });
-
-  const reflectorMatRef = useRef<ComponentRef<typeof MeshReflectorMaterial>>(null);
-  const wetActive = effectiveRain > 0;
-
-  useLayoutEffect(() => {
-    if (!usePlanarReflector) return;
-
-    const mat = reflectorMatRef.current;
-    if (!mat) return;
-
-    if (!wetActive) {
-      applyWetness(mat, dryRoughness, dryMetalness, 0);
-      return;
-    }
-
-    const tickId = registerFrameTick('weather', () => {
-      const current = reflectorMatRef.current;
-      if (!current) return;
-      applyWetness(current, dryRoughness, dryMetalness, effectiveRain);
-    });
-
-    return () => unregisterFrameTick(tickId);
-  }, [usePlanarReflector, wetActive, dryRoughness, dryMetalness, effectiveRain]);
-
-  return (
-    <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={getSharedPlaneGeometry(60, 60)}>
-      {usePlanarReflector ? (
-        <MeshReflectorMaterial
-          ref={reflectorMatRef}
-          color={groundColor}
-          roughness={dryRoughness}
-          metalness={dryMetalness}
-          blur={reflectorSettings.blur}
-          resolution={reflectorSettings.resolution}
-          mixBlur={0.85}
-          mixStrength={reflectorSettings.mixStrength}
-          mirror={0.45}
-          depthScale={1}
-          minDepthThreshold={0.5}
-          maxDepthThreshold={1.4}
-        />
-      ) : (
-        <primitive object={wetMat} attach="material" />
-      )}
-    </mesh>
-  );
 }
 
 /** Street scene with buildings, neon, fog, lamps, and weather */
@@ -120,7 +35,7 @@ export function StreetVisual({ sceneId = 'street_night', livePlayerPositionRef }
   return (
     <group>
       {!isWinter && sceneId === 'street_night' ? <StreetNightSkyDome /> : null}
-      <StreetGround sceneId={sceneId} isWinter={isWinter} rainIntensity={rainIntensity} />
+      <WetStreetGround sceneId={sceneId} isWinter={isWinter} rainIntensity={rainIntensity} />
 
       {/* ── Sidewalk ── */}
       <mesh rotation-x={-Math.PI / 2} position={[0, 0.015, 0]} receiveShadow geometry={getSharedPlaneGeometry(6, 40)}>

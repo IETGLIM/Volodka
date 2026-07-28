@@ -14,7 +14,9 @@ import {
   findNpcByName,
   resolveNpcIdFromSpeaker,
   isNarrativeGameDataLoaded,
-  ensureDialogueNode } from '@/data/gameDataLoader';
+  ensureDialogueNode,
+  prefetchDialogueFrontier,
+} from '@/data/gameDataLoader';
 import { audioEngine } from '@/engine/AudioEngine';
 import { consumePoemSkillCheckFlag } from '@/engine/poemPower/poemSkillCheckModifiers';
 import { eventBus } from '@/engine/EventBus';
@@ -233,6 +235,13 @@ export function DialogueRenderer() {
         if (!cancelled) {
           setIsLoadingNode(false);
           setDialoguePackVersion((v) => v + 1);
+          const loaded = getDialogueNodes()[currentNodeId];
+          if (loaded?.choices?.length) {
+            prefetchDialogueFrontier([
+              currentNodeId,
+              ...loaded.choices.map((c) => c.next),
+            ]);
+          }
         }
       })
       .catch((error) => {
@@ -529,12 +538,43 @@ export function DialogueRenderer() {
 
   if (!isOpen) return null;
 
-  // Loading state: node data is being fetched (not yet cached)
+  // Loading state: dialogue-shaped skeleton (portrait + text bars + choice stubs)
   if (isLoadingNode && !node) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm" style={{ zIndex: UI_LAYERS.DIALOGUE }}>
-        <div className="flex items-center gap-3 text-amber-300/80 text-lg font-mono animate-pulse">
-          <span className="tracking-widest">···</span>
+      <div
+        className="fixed inset-0 flex items-end sm:items-center justify-center bg-black/55 backdrop-blur-[2px] p-3 sm:p-6"
+        style={{ zIndex: UI_LAYERS.DIALOGUE }}
+        role="status"
+        aria-live="polite"
+        aria-busy="true"
+        aria-label="Загрузка диалога"
+      >
+        <div className="w-full max-w-2xl rounded-xl border border-cyan-800/35 bg-black/80 shadow-[0_0_32px_rgba(6,182,212,0.1)] overflow-hidden">
+          <div className="flex gap-3 p-4 border-b border-cyan-900/25">
+            <div className="size-14 shrink-0 rounded-lg bg-slate-800/80 border border-slate-700/50 animate-pulse" />
+            <div className="flex-1 space-y-2 pt-1">
+              <div className="h-3 w-28 rounded bg-cyan-900/40 animate-pulse" />
+              <div className="h-2.5 w-full rounded bg-slate-800/70 animate-pulse" />
+              <div className="h-2.5 w-5/6 rounded bg-slate-800/50 animate-pulse" />
+            </div>
+          </div>
+          <div className="px-4 py-3 space-y-2">
+            <div className="h-2.5 w-full rounded bg-slate-800/60 animate-pulse" />
+            <div className="h-2.5 w-11/12 rounded bg-slate-800/45 animate-pulse" />
+            <div className="h-2.5 w-4/5 rounded bg-slate-800/35 animate-pulse" />
+          </div>
+          <div className="px-4 pb-4 pt-1 flex flex-col gap-2">
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className="h-9 rounded border border-cyan-900/20 bg-cyan-950/20 animate-pulse"
+                style={{ animationDelay: `${i * 120}ms` }}
+              />
+            ))}
+          </div>
+          <p className="px-4 pb-3 text-[10px] text-slate-500 font-mono tracking-wide">
+            Синхронизация узла диалога…
+          </p>
         </div>
       </div>
     );

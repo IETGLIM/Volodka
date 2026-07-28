@@ -1,7 +1,9 @@
 import { Suspense, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
+import { FocusTrap } from '@/components/a11y/FocusTrap';
 import { closeMinigame } from '@/shared/constants/minigames';
 import type { MinigamePanelSetters } from '@/shared/constants/minigames';
+import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { runOverlayCleanup } from './panelLifecycle';
 import {
   LazyCodeBreakerGame,
@@ -48,7 +50,23 @@ function resolveActiveMinigame(props: Props): MinigameId | null {
   return null;
 }
 
-/** Single AnimatePresence for all minigames — one layout exit path instead of eight. */
+function MinigameLoadingFallback() {
+  return (
+    <div
+      className="fixed inset-0 flex items-center justify-center bg-black/50"
+      style={{ zIndex: UI_LAYERS.MINIGAME }}
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
+      tabIndex={-1}
+    >
+      <p className="text-cyan-300/80 text-sm font-mono tracking-wide">Загрузка мини-игры…</p>
+    </div>
+  );
+}
+
+/** Single AnimatePresence for all minigames — one layout exit path instead of eight.
+ *  FocusTrap wraps every CodeBreaker/Bash/etc. overlay (Sprint A + D). */
 export function OrchestratorMinigameOverlays(props: Props) {
   const active = resolveActiveMinigame(props);
   const { minigameSetters } = props;
@@ -61,32 +79,34 @@ export function OrchestratorMinigameOverlays(props: Props) {
   return (
     <AnimatePresence initial={false} mode="wait">
       {active && (
-        <Suspense key={active} fallback={null}>
-          {active === 'codebreaker' && (
-            <LazyCodeBreakerGame onClose={() => closeMinigame('codebreaker', minigameSetters)} />
-          )}
-          {active === 'openstack_terminal' && (
-            <LazyOpenStackTerminalGame onClose={() => closeMinigame('openstack_terminal', minigameSetters)} />
-          )}
-          {active === 'bash_terminal' && (
-            <LazyBashTerminalGame onClose={() => closeMinigame('bash_terminal', minigameSetters)} />
-          )}
-          {active === 'poetry' && (
-            <LazyPoetryCompositionGame onClose={() => closeMinigame('poetry', minigameSetters)} />
-          )}
-          {active === 'hacking' && (
-            <LazyHackingGame onClose={() => closeMinigame('hacking', minigameSetters)} />
-          )}
-          {active === 'memory' && (
-            <LazyMemoryPuzzleGame onClose={() => closeMinigame('memory', minigameSetters)} />
-          )}
-          {active === 'quiz' && (
-            <LazyQuizGame onClose={() => closeMinigame('quiz', minigameSetters)} />
-          )}
-          {active === 'rhythm' && (
-            <LazyRhythmGame onClose={() => closeMinigame('rhythm', minigameSetters)} />
-          )}
-        </Suspense>
+        <FocusTrap key={active} active>
+          <Suspense fallback={<MinigameLoadingFallback />}>
+            {active === 'codebreaker' && (
+              <LazyCodeBreakerGame onClose={() => closeMinigame('codebreaker', minigameSetters)} />
+            )}
+            {active === 'openstack_terminal' && (
+              <LazyOpenStackTerminalGame onClose={() => closeMinigame('openstack_terminal', minigameSetters)} />
+            )}
+            {active === 'bash_terminal' && (
+              <LazyBashTerminalGame onClose={() => closeMinigame('bash_terminal', minigameSetters)} />
+            )}
+            {active === 'poetry' && (
+              <LazyPoetryCompositionGame onClose={() => closeMinigame('poetry', minigameSetters)} />
+            )}
+            {active === 'hacking' && (
+              <LazyHackingGame onClose={() => closeMinigame('hacking', minigameSetters)} />
+            )}
+            {active === 'memory' && (
+              <LazyMemoryPuzzleGame onClose={() => closeMinigame('memory', minigameSetters)} />
+            )}
+            {active === 'quiz' && (
+              <LazyQuizGame onClose={() => closeMinigame('quiz', minigameSetters)} />
+            )}
+            {active === 'rhythm' && (
+              <LazyRhythmGame onClose={() => closeMinigame('rhythm', minigameSetters)} />
+            )}
+          </Suspense>
+        </FocusTrap>
       )}
     </AnimatePresence>
   );

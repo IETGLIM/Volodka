@@ -15,6 +15,7 @@ import { dispatchStateAction } from '@/engine/StateDispatcher';
 import { closeNarrativeOverlay, closeDiegeticNarrative } from '@/engine/scene/narrativeOverlay';
 import { eventBus } from '@/engine/EventBus';
 import { devWarn } from '@/shared/utils/devLog';
+import { getStuckRecoveryReapproachHint, getStuckRecoveryUserMessage } from '@/engine/interaction/stuckRecoveryFeedback';
 
 export function forceResetAllInteractionState(): void {
   // Snapshot the target NPC BEFORE resetting the module session, so we can
@@ -42,6 +43,22 @@ export function forceResetAllInteractionState(): void {
     npcId: prevTargetNpcId ?? undefined,
   });
   eventBus.emit('interaction:end', {});
+  const recoveryPayload = {
+    fromState: InteractionState.Dialogue,
+    targetNpcId: prevTargetNpcId,
+  };
+  const recoveryText = getStuckRecoveryUserMessage(recoveryPayload);
+  const reapproach = getStuckRecoveryReapproachHint(recoveryPayload);
+  eventBus.emit('ui:exploration_message', { text: recoveryText });
+  eventBus.emit('game:notification', {
+    title: recoveryText,
+    type: 'info' as const,
+  });
+  eventBus.emit('ui:exploration_message', { text: reapproach });
+  eventBus.emit('game:notification', {
+    title: reapproach,
+    type: 'info' as const,
+  });
 
   devWarn('[emergencyInteractionReset] All interaction state force-reset.');
 }

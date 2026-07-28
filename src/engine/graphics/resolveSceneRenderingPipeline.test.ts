@@ -25,12 +25,22 @@ describe('resolveSceneRenderingPipeline', () => {
 
   it('uses lite post-FX on standard scenes when visualLite', () => {
     const pipe = resolveSceneRenderingPipeline(
-      'chk_forest_zorge',
+      'battle',
       QUALITY_PRESETS.medium,
       true,
     );
     expect(pipe.useLitePostFx).toBe(true);
     expect(pipe.useAmbientOcclusion).toBe(false);
+  });
+
+  it('keeps full post-FX on promoted thin scenes when visualLite', () => {
+    const pipe = resolveSceneRenderingPipeline(
+      'chk_forest_zorge',
+      QUALITY_PRESETS.medium,
+      true,
+    );
+    expect(pipe.useLitePostFx).toBe(false);
+    expect(pipe.bloomIntensityScale).toBe(1.1);
   });
 
   it('enables AO on hero scenes when profile has enhancedAmbientOcclusion', () => {

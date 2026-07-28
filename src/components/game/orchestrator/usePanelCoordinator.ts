@@ -307,6 +307,9 @@ export function usePanelCoordinator({
       if (payload.questId) {
         eventBus.emit('quests:select_quest', { questId: payload.questId });
       }
+      if (payload.sceneId && panel === 'worldMap') {
+        eventBus.emit('worldmap:focus_scene', { sceneId: payload.sceneId });
+      }
     });
 
     return withHmrCleanup(() => {

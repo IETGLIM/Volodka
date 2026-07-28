@@ -3,6 +3,7 @@ import { audioEngine } from '@/engine/AudioEngine';
 import { KCC_STUCK_FRAMES_BEFORE_RECREATE } from '@/engine/player/playerConstants';
 import {
   logKccRecreateAttempt,
+  notifyKccUnstuck,
   restoreKccMovementMode,
 } from '@/engine/player/directMovementTelemetry';
 import { shouldAttemptKccRecreate } from '@/engine/player/kccRecoveryState';
@@ -117,14 +118,11 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
         position: [pos.x, pos.y, pos.z],
         yaw: deps.livePlayerRotationRef.current,
       });
-      // ── Session 9: Subtle pitch variation per step for natural feel ──
-      // Faster steps get slightly higher pitch (more urgent). The offset is
-      // computed for future use by an enhanced audio engine; currently
-      // playFootstep uses its internal default pitch variation.
-      const _pitchOffset = easedSpeed * STEP_PITCH_RANGE;
-      void _pitchOffset;
+      // Subtle pitch rise with gait — faster steps sound slightly more urgent.
+      const pitchOffset = easedSpeed * STEP_PITCH_RANGE;
       audioEngine.playFootstep(deps.currentFloorMaterialRef.current, {
         sourceId: 'player-footstep',
+        pitchOffset,
       });
     }
   } else {
@@ -166,6 +164,8 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
             deps.noMovementFramesRef.current = 0;
             if (deps.controlsDegradedRef.current) {
               restoreKccMovementMode(deps.directMovementTelemetry, { sceneId: deps.sceneId });
+            } else if (deps.directMovementTelemetry.recreateAttemptsRef.current === 1) {
+              notifyKccUnstuck({ sceneId: deps.sceneId });
             }
           }
         }

@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
+  applyNoirGradeToDataUrl,
+  downloadPhotoStill,
   formatGameTimeOfDay,
   formatRealClockTime,
   getBlinkDotMotion,
   getFlashOverlayTransition,
+  getPhotoFilterTitle,
 } from '@/engine/photo/photoModePresentation';
 
 describe('photoModePresentation', () => {
@@ -24,5 +27,19 @@ describe('photoModePresentation', () => {
   it('getFlashOverlayTransition is instant with reduced motion', () => {
     expect(getFlashOverlayTransition(true).duration).toBe(0);
     expect(getFlashOverlayTransition(false).duration).toBeGreaterThan(0);
+  });
+
+  it('getPhotoFilterTitle switches neon/noir labels', () => {
+    expect(getPhotoFilterTitle('neon')).toBe('PHOTO MODE');
+    expect(getPhotoFilterTitle('noir')).toBe('NOIR MODE');
+  });
+
+  it('applyNoirGradeToDataUrl resolves without throwing on empty image', async () => {
+    const out = await applyNoirGradeToDataUrl('data:image/png;base64,');
+    expect(typeof out).toBe('string');
+  });
+
+  it('downloadPhotoStill rejects non-image payloads', () => {
+    expect(downloadPhotoStill('not-an-image').ok).toBe(false);
   });
 });

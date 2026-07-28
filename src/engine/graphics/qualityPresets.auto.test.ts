@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   QUALITY_PRESETS,
   applyGfxPressureToPreset,
@@ -73,6 +73,27 @@ describe('applyGfxPressureToPreset', () => {
     const degraded = applyGfxPressureToPreset(QUALITY_PRESETS.medium, 'memory');
     expect(degraded.postProcessing).toBe(true);
     expect(degraded.effectsScale).toBeCloseTo(QUALITY_PRESETS.medium.effectsScale * 0.75);
+  });
+
+  it('forces contact-only on medium + coarse pointer under memory pressure', () => {
+    vi.stubGlobal('window', {
+      matchMedia: (query: string) => ({
+        matches: query.includes('pointer: coarse'),
+        media: query,
+        onchange: null,
+        addListener: () => undefined,
+        removeListener: () => undefined,
+        addEventListener: () => undefined,
+        removeEventListener: () => undefined,
+        dispatchEvent: () => false,
+      }),
+    });
+
+    const degraded = applyGfxPressureToPreset(QUALITY_PRESETS.medium, 'memory');
+    expect(degraded.postProcessing).toBe(false);
+    expect(degraded.shadows).toBe(false);
+
+    vi.unstubAllGlobals();
   });
 
   it('leaves preset unchanged when pressure is none', () => {

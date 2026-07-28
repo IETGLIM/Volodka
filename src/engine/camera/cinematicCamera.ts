@@ -15,6 +15,8 @@ import {
   isCameraCollisionHit,
 } from '@/engine/camera/cameraCollisionLayers';
 import { getExplorationCameraMotionScale } from '@/engine/player/playerLocomotionPresentation';
+import { isEffectiveReducedMotion } from '@/engine/accessibility/accessibilitySettings';
+import { getVisualSettings } from '@/engine/visualSettings';
 
 /* ════════════════════════════════════════════════════
  * CONSTANTS
@@ -898,7 +900,8 @@ export function createCombatCameraState(): CombatCameraState {
 export function triggerCombatImpact(state: CombatCameraState, intensity: number = 1.0): void {
   state.targetFov = COMBAT_ZOOM_FOV;
   state.zoomTimer = COMBAT_ZOOM_DURATION;
-  // Also trigger screen shake
+  // Shake gated by reduced motion + visual settings (same as cameraShake.ts)
+  if (!getVisualSettings().cameraShakeEnabled || isEffectiveReducedMotion()) return;
   state.shake.active = true;
   state.shake.elapsed = 0;
   state.shake.intensity = COMBAT_SHAKE_INTENSITY * intensity;
@@ -906,6 +909,7 @@ export function triggerCombatImpact(state: CombatCameraState, intensity: number 
 
 /** Trigger screen shake without zoom (for lighter events) */
 export function triggerCombatShake(state: CombatCameraState, intensity: number = 0.5): void {
+  if (!getVisualSettings().cameraShakeEnabled || isEffectiveReducedMotion()) return;
   state.shake.active = true;
   state.shake.elapsed = 0;
   state.shake.intensity = COMBAT_SHAKE_INTENSITY * intensity;

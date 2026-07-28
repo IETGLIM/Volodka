@@ -39,12 +39,25 @@ describe('guidanceLocation', () => {
   });
 
   it('builds in-scene direction hint', () => {
-    expect(buildGuidanceDirectionHint('street_night', 'street_night')).toBe('Идите к цели');
+    expect(buildGuidanceDirectionHint('street_night', 'street_night')).toMatch(/этой локации/);
   });
 
   it('builds travel direction hint for other scenes', () => {
     const hint = buildGuidanceDirectionHint('cafe_evening', 'volodka_room');
     expect(hint).toMatch(/Перейдите:/);
+  });
+
+  it('resolves available quest giver scene from schedule', async () => {
+    const { resolveAvailableQuestTargetScene } = await import('@/engine/guidedStory/guidanceLocation');
+    const { resetScheduleEngineCache } = await import('@/shared/schedule/ScheduleEngine');
+    resetScheduleEngineCache();
+    const scene = resolveAvailableQuestTargetScene('kate', 10, {
+      currentAct: 1,
+      completedQuestIds: new Set(),
+      activeFlagKeys: new Set(),
+      playerFlags: {},
+    });
+    expect(scene).toBe('library_day');
   });
 
   it('enriches guidance with targetSceneId', () => {

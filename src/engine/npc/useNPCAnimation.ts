@@ -20,6 +20,7 @@ export function useNPCAnimation(
   clipOverrides?: NpcAnimationClipOverrides,
 ) {
   const currentAnimRef = useRef<NPCAnimationState>('idle');
+  const previousActionRef = useRef<THREE.AnimationAction | null>(null);
   const crossfadeDuration = 0.3;
 
   const findAction = useCallback(
@@ -38,13 +39,14 @@ export function useNPCAnimation(
       const targetAction = findAction(newState);
       if (!targetAction) return;
 
-      for (const action of Object.values(actions)) {
-        if (action === targetAction) {
-          action.reset().fadeIn(crossfadeDuration).play();
-        } else {
-          action.fadeOut(crossfadeDuration);
-        }
+      // Fade only previous + target — blanket fadeOut on every clip yankes deferred
+      // Mixamo actions mid-load and hitch walk↔idle (player locomotion uses weight blend).
+      const previous = previousActionRef.current;
+      if (previous && previous !== targetAction) {
+        previous.fadeOut(crossfadeDuration);
       }
+      targetAction.reset().fadeIn(crossfadeDuration).play();
+      previousActionRef.current = targetAction;
     },
     [actions, findAction],
   );
@@ -76,6 +78,7 @@ export function useNPCAnimation(
   useEffect(() => {
     if (!actions) {
       hasBoundInitialRef.current = false;
+      previousActionRef.current = null;
     }
   }, [actions]);
 

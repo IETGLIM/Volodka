@@ -30,10 +30,12 @@ describe('useNPCAnimation', () => {
   it('crossfades to walk without replaying idle when state changes', () => {
     const actions = mockActions(['Idle', 'Walk']);
     const idlePlaySpy = vi.spyOn(actions.Idle, 'play');
+    const idleFadeOutSpy = vi.spyOn(actions.Idle, 'fadeOut');
     const walkPlaySpy = vi.spyOn(actions.Walk, 'play');
 
     const { result } = renderHook(() => useNPCAnimation('test_npc', actions));
     idlePlaySpy.mockClear();
+    idleFadeOutSpy.mockClear();
 
     act(() => {
       result.current.crossfadeTo('walk');
@@ -41,5 +43,20 @@ describe('useNPCAnimation', () => {
 
     expect(walkPlaySpy).toHaveBeenCalled();
     expect(idlePlaySpy).not.toHaveBeenCalled();
+    expect(idleFadeOutSpy).toHaveBeenCalled();
+  });
+
+  it('does not fadeOut unrelated deferred clips when switching idle↔walk', () => {
+    const actions = mockActions(['Idle', 'Walk', 'Talk']);
+    const talkFadeOutSpy = vi.spyOn(actions.Talk, 'fadeOut');
+
+    const { result } = renderHook(() => useNPCAnimation('test_npc', actions));
+    talkFadeOutSpy.mockClear();
+
+    act(() => {
+      result.current.crossfadeTo('walk');
+    });
+
+    expect(talkFadeOutSpy).not.toHaveBeenCalled();
   });
 });

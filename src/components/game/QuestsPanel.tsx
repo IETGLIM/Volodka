@@ -12,8 +12,19 @@ import {
   Lightbulb, Shield, Swords, Zap, Star, Package, MapPin, MessageCircle, Gamepad2,
 } from 'lucide-react';
 import { QUEST_DEFINITIONS } from '@/data/quests';
-import type { QuestDefinition } from '@/shared/types/game';
-import { findNpcById } from '@/data/gameDataLoader';
+import type {
+  QuestDefinition,
+  QuestType,
+  QuestState,
+  QuestDifficulty,
+  SceneId,
+  StoryEffect,
+  TrainablePlayerSkill,
+} from '@/shared/types/game';
+import { findNpcById, getItemDefinition } from '@/data/gameDataLoader';
+import { JOURNAL_SKILL_LABELS } from '@/components/game/journal/journalConstants';
+import { getQuestMarker } from '@/store/questStore';
+import { eventBus } from '@/engine/EventBus';
 
 /* ── O(1) quest definition lookup (replaces O(n) .find() scans) ── */
 const QUEST_DEF_MAP = new Map<string, QuestDefinition>(QUEST_DEFINITIONS.map((d) => [d.id, d]));
@@ -31,16 +42,18 @@ import {
   isCriticalPathQuest,
   QUEST_RETRY_PENALTY,
 } from '@/shared/quest/questFailureBypass';
-import { useQuests } from '@/store/selectors';
+import { useQuests, useCurrentSceneId } from '@/store/selectors';
 import { useGameStore } from '@/store/gameStore';
-import { eventBus } from '@/engine/EventBus';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import {
+  buildQuestJournalContextualHint,
+  buildQuestJournalRouteCta,
+} from '@/hooks/questJournalHint';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { PanelWrapper } from '@/components/game/PanelWrapper';
-import type { QuestType, QuestState, QuestDifficulty } from '@/shared/types/game';
 import { remainingQuestHours } from '@/engine/quest/questTimeLimits';
 
 interface QuestsPanelProps {
@@ -142,16 +155,28 @@ function ObjectiveCheckmark({ justCompleted }: { justCompleted: boolean }) {
   );
 }
 
-function RewardBadge({ reward, index }: { reward: { type: string; skill?: string; value?: number; itemId?: string; flag?: string; flagValue?: boolean }; index: number }) {
-  const getLabel = () => {
-    if (reward.type === 'addSkill' && reward.skill) return `${reward.skill} +${reward.value ?? 0}`;
-    if (reward.type === 'addKarma') return `карма +${reward.value ?? 0}`;
-    if (reward.type === 'addCredits') return `кредиты +${reward.value ?? 0}`;
-    if (reward.type === 'addXp') return `опыт +${reward.value ?? 0}`;
-    if (reward.type === 'addItem' && reward.itemId) return reward.itemId;
-    if (reward.type === 'setFlag') return reward.flag ?? 'флаг';
-    return reward.type;
-  };
+function humanizeRewardLabel(reward: StoryEffect): string {
+  if (reward.type === 'addSkill' && reward.skill) {
+    const skill = reward.skill as TrainablePlayerSkill;
+    const name = JOURNAL_SKILL_LABELS[skill]?.name ?? reward.skill;
+    return `${name} +${reward.value ?? 0}`;
+  }
+  if (reward.type === 'addKarma') return `Карма +${reward.value ?? 0}`;
+  if (reward.type === 'addCredits') return `Кредиты +${reward.value ?? 0}`;
+  if (reward.type === 'addXp') return `Опыт +${reward.value ?? 0}`;
+  if (reward.type === 'addItem' && reward.itemId) {
+    const itemName = getItemDefinition(reward.itemId)?.name ?? reward.itemId;
+    return itemName;
+  }
+  if (reward.type === 'setFlag') {
+    if (reward.flag === 'network_member') return 'Статус: член Сети';
+    return 'Прогресс сюжета';
+  }
+  return reward.type;
+}
+
+function RewardBadge({ reward, index }: { reward: StoryEffect; index: number }) {
+  const label = humanizeRewardLabel(reward);
 
   const getIcon = () => {
     if (reward.type === 'addSkill') return <Star className="size-2.5 text-amber-400/60" />;
@@ -162,16 +187,36 @@ function RewardBadge({ reward, index }: { reward: { type: string; skill?: string
   };
 
   return (
-    <span key={index} className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] rounded-md border border-slate-700/30 bg-slate-800/40 text-slate-400">
+    <span key={index} className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] rounded-md border border-slate-700/30 bg-slate-800/40 text-slate-300">
       {getIcon()}
-      {getLabel()}
+      {label}
     </span>
+  );
+}
+
+function ShowOnMapButton({ questId, currentSceneId }: { questId: string; currentSceneId: SceneId }) {
+  const marker = getQuestMarker(questId);
+  if (!marker?.sceneId || marker.sceneId === currentSceneId) return null;
+
+  return (
+    <button
+      type="button"
+      className="inline-flex items-center gap-1 mt-2 px-2 py-1 rounded-md text-[10px] font-mono tracking-wide text-cyan-300/90 border border-cyan-700/40 bg-cyan-950/30 hover:bg-cyan-900/40 hover:border-cyan-500/50 transition-colors"
+      onClick={(e) => {
+        e.stopPropagation();
+        eventBus.emit('ui:open_panel', { panel: 'worldMap', sceneId: marker.sceneId });
+      }}
+    >
+      <MapPin className="size-3 text-cyan-400" />
+      На карте
+    </button>
   );
 }
 
 export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
   const reducedMotion = useEffectiveReducedMotion();
   const quests = useQuests();
+  const currentSceneId = useCurrentSceneId();
   const [showCompleted, setShowCompleted] = useState(false);
   const [showFailed, setShowFailed] = useState(true);
   const [expandedQuests, setExpandedQuests] = useState<Set<string>>(new Set());
@@ -503,12 +548,43 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                                 </div>
 
                                 {/* Hint section */}
-                                {def.hint && !isExpanded && (
-                                  <div className="flex items-start gap-1.5 mt-2">
-                                    <Lightbulb className="size-3 text-amber-400/50 shrink-0 mt-0.5" />
-                                    <p className="text-[10px] text-amber-400/50 italic leading-relaxed">{def.hint}</p>
+                                {(() => {
+                                  const contextual = buildQuestJournalContextualHint(qs.questId, currentSceneId);
+                                  const routeCta = buildQuestJournalRouteCta(qs.questId, currentSceneId);
+                                  const collapsedHint = contextual ?? def.hint;
+                                  if ((!collapsedHint && !routeCta) || isExpanded) return null;
+                                  return (
+                                  <div className="mt-2 space-y-1">
+                                    {collapsedHint && (
+                                      <div className="flex items-start gap-1.5">
+                                        <Lightbulb className="size-3 text-amber-400/50 shrink-0 mt-0.5" />
+                                        <p className="text-[10px] text-amber-400/50 italic leading-relaxed">{collapsedHint}</p>
+                                      </div>
+                                    )}
+                                    {routeCta && (
+                                      <button
+                                        type="button"
+                                        className="flex items-center gap-1.5 pl-4 text-left group"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          const marker = getQuestMarker(qs.questId);
+                                          if (marker?.sceneId) {
+                                            eventBus.emit('ui:open_panel', {
+                                              panel: 'worldMap',
+                                              sceneId: marker.sceneId,
+                                            });
+                                          }
+                                        }}
+                                      >
+                                        <MapPin className="size-3 text-cyan-400/60 shrink-0 group-hover:text-cyan-300" />
+                                        <p className="text-[10px] text-cyan-300/65 font-mono tracking-wide group-hover:text-cyan-200 underline-offset-2 group-hover:underline">
+                                          {routeCta} · на карте
+                                        </p>
+                                      </button>
+                                    )}
                                   </div>
-                                )}
+                                  );
+                                })()}
 
                                 {/* Reward preview (collapsed) */}
                                 {def.rewards && def.rewards.length > 0 && !isExpanded && (
@@ -539,16 +615,41 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                                     })()}
                                   </p>
 
-                                  {/* Hint section (expanded) */}
-                                  {def.hint && (
-                                    <div className="mb-3 p-2.5 rounded-lg bg-amber-950/20 border border-amber-800/25">
-                                      <div className="text-[10px] text-amber-400 mb-1 flex items-center gap-1">
-                                        <Lightbulb className="size-3" />
-                                        Подсказка
-                                      </div>
-                                      <p className="text-[11px] text-amber-300/60 leading-relaxed">{def.hint}</p>
+                                  {/* Contextual next-step + static quest hint */}
+                                  {(() => {
+                                    const contextual = buildQuestJournalContextualHint(qs.questId, currentSceneId);
+                                    const routeCta = buildQuestJournalRouteCta(qs.questId, currentSceneId);
+                                    if (!contextual && !def.hint && !routeCta) return null;
+                                    return (
+                                    <div className="mb-3 p-2.5 rounded-lg bg-amber-950/20 border border-amber-800/25 space-y-2">
+                                      {contextual && (
+                                        <div>
+                                          <div className="text-[10px] text-cyan-400 mb-1 flex items-center gap-1">
+                                            <MapPin className="size-3" />
+                                            Сейчас
+                                          </div>
+                                          <p className="text-[11px] text-cyan-200/70 leading-relaxed">{contextual}</p>
+                                        </div>
+                                      )}
+                                      {routeCta && (
+                                        <div className="text-[11px] text-cyan-300/80 font-mono flex items-center gap-1.5">
+                                          <MapPin className="size-3 text-cyan-400" />
+                                          {routeCta}
+                                        </div>
+                                      )}
+                                      <ShowOnMapButton questId={qs.questId} currentSceneId={currentSceneId} />
+                                      {def.hint && (
+                                        <div>
+                                          <div className="text-[10px] text-amber-400 mb-1 flex items-center gap-1">
+                                            <Lightbulb className="size-3" />
+                                            Подсказка
+                                          </div>
+                                          <p className="text-[11px] text-amber-300/60 leading-relaxed">{def.hint}</p>
+                                        </div>
+                                      )}
                                     </div>
-                                  )}
+                                    );
+                                  })()}
 
                                   {/* Dependencies */}
                                   {!deps.met && (

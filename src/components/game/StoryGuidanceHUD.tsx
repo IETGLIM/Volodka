@@ -7,13 +7,22 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, BookOpen, Compass } from 'lucide-react';
 import { eventBus } from '@/engine/EventBus';
 import { getCurrentGuidance, type GuidanceInfo } from '@/engine/GuidedStoryManager';
-import { buildGuidanceDirectionHint } from '@/engine/guidedStory/guidanceLocation';
+import {
+  buildGuidanceDirectionHint,
+  resolveAvailableQuestTargetScene,
+} from '@/engine/guidedStory/guidanceLocation';
+import { getFirstReadingHint } from '@/engine/guidedStory/firstReadingHint';
 import { getNextTrackedObjective, areDependenciesMet, getQuestMarker } from '@/store/questStore';
-import { useQuests, useCurrentSceneId, useOrchestratorNarrativeOverlay } from '@/store/selectors';
+import {
+  useQuests,
+  useCurrentSceneId,
+  useOrchestratorNarrativeOverlay,
+  useTimeOfDay,
+  useScheduleContext,
+} from '@/store/selectors';
 // useTutorialActive removed — guidance is now shown during tutorial too
 import { QUEST_DEFINITIONS } from '@/data/quests';
 import { GOLDEN_PATH_QUEST_SPINE } from '@/data/goldenPath';
-import { getGameSnapshot } from '@/engine/GameActionDispatcher';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import {
   EXPLORATION_HUD_LAYOUT,
@@ -34,35 +43,8 @@ import {
   resolveQuestUrgency,
   type QuestObjectiveKind,
 } from '@/hooks/questHudPresentation';
-import type { QuestType, SceneId } from '@/shared/types/game';
+import type { QuestType } from '@/shared/types/game';
 const GUIDANCE_DISMISS_KEY = 'volodka_guidance_dismissed_sig';
-
-/** Contextual hint for the first_reading quest — tells the player *where* to go. */
-function getFirstReadingHint(): string | null {
-  try {
-    const snap = getGameSnapshot();
-    if (snap.playerState.progression.currentAct !== 1) return null;
-    const quest = snap.quests.find(
-      (q) => q.questId === 'first_reading' && q.status === 'active',
-    );
-    if (!quest) return null;
-    const deskDone = snap.playerState.flags['interacted_desk'] === true;
-    if (!deskDone) {
-      return 'Подойди к рабочему столу и нажми [E]';
-    }
-    const hasPoem2 = snap.collectedPoems.includes('poem_2');
-    const monitorRead = snap.playerState.flags['terminal_poem_read'] === true;
-    if (!monitorRead && !hasPoem2) {
-      return 'Активируй монитор на столе [E] — стих мерцает на экране';
-    }
-    if (!hasPoem2) {
-      return 'Стихотворение можно найти на книжной полке слева от стола';
-    }
-    return null;
-  } catch {
-    return null;
-  }
-}
 
 export function StoryGuidanceHUD() {
   const reducedMotion = useEffectiveReducedMotion();
@@ -70,7 +52,6 @@ export function StoryGuidanceHUD() {
 
   const [guidance, setGuidance] = useState<GuidanceInfo | null>(null);
   const [expanded, setExpanded] = useState(false);
-  const [_lostHint, setLostHint] = useState<string | null>(null);
   const [firstReadingHint, setFirstReadingHint] = useState<string | null>(getFirstReadingHint);
   const [dismissedSig, setDismissedSig] = useState<string | null>(() => {
     try {
@@ -84,6 +65,8 @@ export function StoryGuidanceHUD() {
   const profile = useGameplayPresentationProfile();
   const { showStoryOverlay, narrativeKind, diegeticNarrative } = useOrchestratorNarrativeOverlay();
   const currentSceneId = useCurrentSceneId();
+  const timeOfDay = useTimeOfDay();
+  const scheduleCtx = useScheduleContext();
   const [interactionLocked, setInteractionLocked] = useState(() => isInteractionLocked());
   const [revealReady, setRevealReady] = useState(false);
   const revealTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -149,21 +132,29 @@ export function StoryGuidanceHUD() {
       const deps = areDependenciesMet(questId);
       if (!deps.met) continue;
 
+      const targetSceneId =
+        resolveAvailableQuestTargetScene(questDef.questGiverNpcId, timeOfDay, scheduleCtx)
+        ?? null;
+      const directionHint = buildGuidanceDirectionHint(
+        targetSceneId ?? undefined,
+        currentSceneId,
+      );
+
       return {
         text: `Прими задание: ${questDef.title}`,
         questTitle: questDef.title,
         questType: questDef.questType,
         questId,
         objectiveType: 'available_quest' as const,
-        directionHint: null as string | null,
-        targetSceneId: null as SceneId | null,
+        directionHint,
+        targetSceneId,
         completedObjectives: 0,
         totalObjectives: questDef.objectives.length,
       };
     }
 
     return null;
-  }, [quests, currentSceneId]);
+  }, [quests, currentSceneId, timeOfDay, scheduleCtx]);
   useEffect(() => {
     const refresh = () => {
       const next = getCurrentGuidance();
@@ -174,15 +165,11 @@ export function StoryGuidanceHUD() {
     const unsubs = [
       eventBus.on('story:guidance_update', (payload) => {
         setGuidance(payload);
-        setLostHint(null); // clear lost hint when guidance updates
         setFirstReadingHint(getFirstReadingHint());
       }),
       eventBus.on('scene:loaded', () => {
         refresh();
         setFirstReadingHint(getFirstReadingHint());
-      }),
-      eventBus.on('story:player_lost', (payload) => {
-        setLostHint(payload.hint);
       }),
       eventBus.on('quest:completed', () => {
         setFirstReadingHint(getFirstReadingHint());
@@ -481,7 +468,7 @@ export function StoryGuidanceHUD() {
             <button
               type="button"
               onClick={handleOpenJournal}
-              className="w-6 h-6 flex items-center justify-center rounded text-slate-400 hover:text-white hover:bg-white/10 transition-colors hud-button-cyber"
+              className="min-w-[44px] min-h-[44px] w-11 h-11 sm:min-w-0 sm:min-h-0 sm:w-7 sm:h-7 flex items-center justify-center rounded text-slate-400 hover:text-white hover:bg-white/10 transition-colors hud-button-cyber"
               aria-label="Открыть журнал заданий"
               title="Журнал (Q)"
             >
@@ -490,7 +477,7 @@ export function StoryGuidanceHUD() {
             <button
               type="button"
               onClick={handleDismiss}
-              className="w-6 h-6 flex items-center justify-center rounded text-slate-400 hover:text-white hover:bg-white/10 transition-colors hud-button-cyber"
+              className="min-w-[44px] min-h-[44px] w-11 h-11 sm:min-w-0 sm:min-h-0 sm:w-7 sm:h-7 flex items-center justify-center rounded text-slate-400 hover:text-white hover:bg-white/10 transition-colors hud-button-cyber"
               aria-label="Скрыть подсказку цели"
             >
               <X className="size-3.5" />
@@ -556,10 +543,18 @@ export function PlayerLostHintToast() {
   const motionDuration = reducedMotion ? 0 : 0.4;
 
   useEffect(() => {
-    const unsub = eventBus.on('story:player_lost', (payload) => {
-      setHint(payload.hint);
-    });
-    return unsub;
+    const unsubs = [
+      eventBus.on('story:player_lost', (payload) => {
+        setHint(payload.hint);
+      }),
+      // New guidance means the player is back on track — dismiss lost toast.
+      eventBus.on('story:guidance_update', () => {
+        setHint(null);
+      }),
+    ];
+    return () => {
+      for (const unsub of unsubs) unsub();
+    };
   }, []);
 
   // Auto-dismiss after 8 seconds
@@ -599,10 +594,10 @@ export function PlayerLostHintToast() {
           <button
             type="button"
             onClick={dismiss}
-            className="w-5 h-5 flex items-center justify-center rounded text-slate-500 hover:text-white hover:bg-white/10 transition-colors shrink-0"
+            className="min-w-[44px] min-h-[44px] w-11 h-11 flex items-center justify-center rounded text-slate-500 hover:text-white hover:bg-white/10 transition-colors shrink-0"
             aria-label="Закрыть подсказку"
           >
-            <X className="size-3" />
+            <X className="size-3.5" />
           </button>
         </div>
       </motion.div>

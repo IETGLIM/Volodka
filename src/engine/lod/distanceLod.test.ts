@@ -78,6 +78,8 @@ describe('extension scene env LOD profiles', () => {
     expect(getEnvironmentLodProfile('albert_backroom').clutterDistance).toBeLessThan(999);
     expect(getEnvironmentLodProfile('chk_campfire_night').clutterDistance).toBeLessThan(999);
     expect(getEnvironmentLodProfile('city_square').clutterDistance).toBe(16);
+    expect(getEnvironmentLodProfile('pier_evening').clutterDistance).toBe(12);
+    expect(getEnvironmentLodProfile('river_pier').clutterDistance).toBe(12);
   });
 });
 

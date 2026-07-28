@@ -18,8 +18,17 @@ function disposeAllSceneChunkGpuForHmr(): void {
   disposeAllModuleGeometries();
 }
 
+/** Pure guard — derived variants share parent GPU pools and must not unload mid-hop. */
+export function shouldUnloadSceneGpuOnTransition(
+  sceneId: SceneId,
+  nextSceneId: SceneId,
+): boolean {
+  if (sceneId === nextSceneId) return false;
+  return resolveDerivedSceneId(sceneId) !== resolveDerivedSceneId(nextSceneId);
+}
+
 function onSceneUnload({ sceneId, nextSceneId }: { sceneId: SceneId; nextSceneId: SceneId }): void {
-  if (sceneId === nextSceneId) return;
+  if (!shouldUnloadSceneGpuOnTransition(sceneId, nextSceneId)) return;
   unloadSceneGpuResources(resolveDerivedSceneId(sceneId));
 }
 

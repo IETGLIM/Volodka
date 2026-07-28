@@ -45,6 +45,8 @@ import {
   getCachedProceduralLut3DTexture,
   resolveProceduralLutKind,
 } from '@/engine/graphics/proceduralLutTextures';
+import { resolveDerivedSceneId } from '@/config/sceneInheritance';
+import type { SceneId } from '@/shared/types/game';
 
 /** Per-scene color grading overrides for CyberPunk2077 / Noir / Gothic feel */
 const SCENE_COLOR_GRADE: Record<string, { hue: number; saturation: number; brightness: number; contrast: number }> = {
@@ -66,14 +68,21 @@ const SCENE_COLOR_GRADE: Record<string, { hue: number; saturation: number; brigh
   solnysh_room:       { hue: 0.05,  saturation: 0.12, brightness: 0.02, contrast: 0.1  }, // warm cozy carpets
   chk_forest_zorge:   { hue: 0.03,  saturation: 0.08, brightness: 0.05, contrast: 0.1 }, // campfire warmth
   river_pier:         { hue: 0.04,  saturation: 0.1,  brightness: 0.04, contrast: 0.12 }, // warm fire vs cold water
+  pier_evening:       { hue: 0.05,  saturation: 0.12, brightness: 0.02, contrast: 0.14 }, // amber pier dusk
+  chk_campfire_night: { hue: 0.05,  saturation: 0.14, brightness: 0.03, contrast: 0.14 }, // fire-lit noir
+  factory_roof:       { hue: 0.02,  saturation: -0.04, brightness: 0.03, contrast: 0.16 }, // industrial dusk
+  city_square:        { hue: -0.02, saturation: 0.08, brightness: 0.02, contrast: 0.16 }, // cool plaza neon
+  underground_bunker: { hue: -0.06, saturation: -0.02, brightness: -0.02, contrast: 0.22 }, // resistance green CRT
 };
 
 const DEFAULT_COLOR_GRADE = { hue: 0, saturation: 0, brightness: 0, contrast: 0.15 };
 
-/** Indoor scenes that get subtle film grain for cinematic feel (high quality only) */
+/** Indoor scenes that get subtle film grain for cinematic feel (high/ultra) */
 const NOISE_SCENES = new Set([
   'volodka_room', 'volodka_corridor', 'home_evening', 'library_day',
   'factory_basement', 'zarema_albert_room', 'solnysh_room',
+  'guild_mainframe', 'albert_backroom', 'zarema_room',
+  'library_basement', 'underground_bunker', 'sleep_dream',
 ]);
 
 /** Scenes that get CRT scanline overlay for cyberpunk terminal aesthetic */
@@ -99,6 +108,15 @@ const SCENE_VIGNETTE: Record<string, { offset: number; darkness: number }> = {
   chk_forest_zorge:   { offset: 0.4,  darkness: 0.28 },
   factory_basement:   { offset: 0.3,  darkness: 0.38 },
   river_pier:         { offset: 0.4,  darkness: 0.26 },
+  pier_evening:       { offset: 0.38, darkness: 0.3 },
+  chk_campfire_night: { offset: 0.36, darkness: 0.34 },
+  factory_roof:       { offset: 0.34, darkness: 0.3 },
+  city_square:        { offset: 0.38, darkness: 0.28 },
+  underground_bunker: { offset: 0.28, darkness: 0.4 },
+  guild_mainframe:    { offset: 0.3,  darkness: 0.36 },
+  albert_backroom:    { offset: 0.36, darkness: 0.32 },
+  zarema_room:        { offset: 0.38, darkness: 0.3 },
+  library_basement:   { offset: 0.32, darkness: 0.36 },
 };
 const DEFAULT_VIGNETTE = { offset: 0.4, darkness: 0.32 };
 
@@ -122,6 +140,12 @@ const SCENE_BLOOM: Record<string, { intensity: number; threshold: number; smooth
   chk_forest_zorge:   { intensity: 0.45, threshold: 0.55, smoothing: 0.45 }, // campfire bloom
   factory_basement:   { intensity: 0.55, threshold: 0.5,  smoothing: 0.45 }, // Заря-М core glow
   river_pier:         { intensity: 0.5,  threshold: 0.55, smoothing: 0.45 }, // fire + string lights
+  pier_evening:       { intensity: 0.55, threshold: 0.52, smoothing: 0.44 }, // evening pier neon
+  chk_campfire_night: { intensity: 0.62, threshold: 0.48, smoothing: 0.42 }, // fire bloom
+  factory_roof:       { intensity: 0.4,  threshold: 0.62, smoothing: 0.5 },  // dusk skyline
+  city_square:        { intensity: 0.72, threshold: 0.48, smoothing: 0.44 }, // plaza neon spill
+  underground_bunker: { intensity: 0.48, threshold: 0.55, smoothing: 0.46 }, // resistance CRT glow
+  guild_mainframe:    { intensity: 0.6,  threshold: 0.5,  smoothing: 0.42 }, // server rack bloom
 };
 const DEFAULT_BLOOM = { intensity: 0.5, threshold: 0.7, smoothing: 0.5 };
 
@@ -374,9 +398,15 @@ function PostFXPipeline() {
   const { brightness: userBrightness } = useVisualSettings();
   const userBrightnessOffset = (userBrightness - 1) * 0.3;
 
-  const colorGrade = SCENE_COLOR_GRADE[sceneId] ?? DEFAULT_COLOR_GRADE;
-  const vignetteParams = SCENE_VIGNETTE[sceneId] ?? DEFAULT_VIGNETTE;
-  const bloomParams = SCENE_BLOOM[sceneId] ?? DEFAULT_BLOOM;
+  const colorGrade = SCENE_COLOR_GRADE[sceneId]
+    ?? SCENE_COLOR_GRADE[resolveDerivedSceneId(sceneId as SceneId)]
+    ?? DEFAULT_COLOR_GRADE;
+  const vignetteParams = SCENE_VIGNETTE[sceneId]
+    ?? SCENE_VIGNETTE[resolveDerivedSceneId(sceneId as SceneId)]
+    ?? DEFAULT_VIGNETTE;
+  const bloomParams = SCENE_BLOOM[sceneId]
+    ?? SCENE_BLOOM[resolveDerivedSceneId(sceneId as SceneId)]
+    ?? DEFAULT_BLOOM;
 
   const effectiveSaturation = noirMode
     ? Math.min(colorGrade.saturation - 0.35, 0)
@@ -397,7 +427,7 @@ function PostFXPipeline() {
   const stress = usePlayerStress();
   const stressFactor = stress / 100;
   const wantsScanlines = SCANLINE_SCENES.has(sceneId);
-  const wantsNoise = NOISE_SCENES.has(sceneId) && preset.id === 'high';
+  const wantsNoise = NOISE_SCENES.has(sceneId) && (preset.id === 'high' || preset.id === 'ultra');
   const activeTTLFlags = useGameStore((s) => s.activeTTLFlags ?? {});
   const reducedMotion = useEffectiveReducedMotion();
   const poemBoost = resolvePoemTTLPostFxBoost(activeTTLFlags, reducedMotion);

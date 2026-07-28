@@ -47,6 +47,7 @@ import {
 } from '@/components/game/hud/hudIa';
 import { StatusEffectsBar } from '@/components/game/StatusEffectsBar';
 import { useHudQuietStyle } from '@/hooks/useHudQuiet';
+import { useHudProximityFxActive } from '@/hooks/useHudProximityFxActive';
 import { getKarmaTierLabel } from '@/shared/utils/karmaTier';
 import { useHUDController } from '@/components/game/hud/useHUDController';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
@@ -191,6 +192,7 @@ export function ExplorationHUD(props: HUDProps) {
   const state = useHUDController(props);
   const reducedMotion = useEffectiveReducedMotion();
   const quietStyle = useHudQuietStyle();
+  const proximityFxActive = useHudProximityFxActive();
   const totalPoems = TOTAL_MAIN_POEMS;
   const { currentHint, dismissHint } = useContextualHints();
   const {
@@ -316,14 +318,19 @@ export function ExplorationHUD(props: HUDProps) {
       <SprintDrainOverlay />
       <HUDChromaticEdge />
 
-      {/* ── Center: Crosshair + E-key prompt + Cooldown ring + Radar pulse + Proximity glow ── */}
+      {/* ── Center: Crosshair + E-key prompt + Cooldown ring + Radar pulse + Proximity glow ──
+          Proximity chrome gates on quiet-HUD / panels / dialogue so the scene owns the frame. */}
       <DynamicCrosshair />
-      <InteractionProximityGlow />
-      <InteractionDistanceRing />
-      <CrosshairInteractionPrompt />
-      <InteractionCooldownRing />
-      <InteractionRadarPulse />
-      <LootProximityIndicator />
+      {proximityFxActive ? (
+        <>
+          <InteractionProximityGlow />
+          <InteractionDistanceRing />
+          <CrosshairInteractionPrompt />
+          <InteractionCooldownRing />
+          <InteractionRadarPulse />
+          <LootProximityIndicator />
+        </>
+      ) : null}
 
       {/* ── Scene discovery celebration toast ── */}
       <SceneDiscoveryCelebration />

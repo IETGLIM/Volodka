@@ -405,6 +405,88 @@ export function prefetchRemainingStoryPacksInIdle(): void {
   }, 200);
 }
 
+/** Warm dialogue choice targets so the next talk does not hitch on pack load. */
+export function prefetchDialogueNodes(nodeIds: readonly (string | null | undefined)[]): void {
+  const pending = nodeIds.filter((id): id is string => !!id && !hasDialogueNode(id));
+  if (pending.length === 0) return;
+
+  scheduleIdleWork(() => {
+    void (async () => {
+      for (const nodeId of pending) {
+        try {
+          await ensureDialogueNode(nodeId);
+        } catch {
+          /* choice may point to story-only id — ignore */
+        }
+      }
+    })().catch((err) => {
+      devWarn('[narrativePackRegistry] prefetchDialogueNodes failed:', err);
+    });
+  }, 50);
+}
+
+const DEFAULT_DIALOGUE_FRONTIER_DEPTH = 2;
+const DEFAULT_DIALOGUE_FRONTIER_MAX_NODES = 24;
+
+/**
+ * BFS prefetch of dialogue choice frontiers (depth 2 by default).
+ * Safe: caps node count, ignores missing/story-only ids, idle-scheduled.
+ */
+export function prefetchDialogueFrontier(
+  rootNodeIds: readonly (string | null | undefined)[],
+  depth: number = DEFAULT_DIALOGUE_FRONTIER_DEPTH,
+  maxNodes: number = DEFAULT_DIALOGUE_FRONTIER_MAX_NODES,
+): void {
+  const seeds = [...new Set(rootNodeIds.filter((id): id is string => !!id))];
+  if (seeds.length === 0 || depth < 1) return;
+
+  scheduleIdleWork(() => {
+    void (async () => {
+      const visited = new Set<string>();
+      let frontier = seeds;
+      let remaining = Math.max(1, Math.floor(depth));
+
+      while (frontier.length > 0 && remaining > 0 && visited.size < maxNodes) {
+        const nextFrontier: string[] = [];
+        for (const nodeId of frontier) {
+          if (visited.has(nodeId) || visited.size >= maxNodes) continue;
+          visited.add(nodeId);
+          try {
+            await ensureDialogueNode(nodeId);
+          } catch {
+            continue;
+          }
+          const node = dialogueNodes[nodeId];
+          if (!node?.choices?.length) continue;
+          for (const choice of node.choices) {
+            if (choice.next && !visited.has(choice.next)) {
+              nextFrontier.push(choice.next);
+            }
+          }
+        }
+        frontier = nextFrontier;
+        remaining -= 1;
+      }
+    })().catch((err) => {
+      devWarn('[narrativePackRegistry] prefetchDialogueFrontier failed:', err);
+    });
+  }, 50);
+}
+
+/** Low-priority sequential prefetch of unloaded dialogue packs after bootstrap. */
+export function prefetchRemainingDialoguePacksInIdle(): void {
+  scheduleIdleWork(() => {
+    void (async () => {
+      for (const pack of DIALOGUE_PACK_ORDER) {
+        if (loadedDialoguePacks.has(pack)) continue;
+        await loadDialoguePackInternal(pack);
+      }
+    })().catch((err) => {
+      devWarn('[narrativePackRegistry] prefetchRemainingDialoguePacksInIdle failed:', err);
+    });
+  }, 250);
+}
+
 /** Test / dev reset — not used in production hot path. */
 export function resetNarrativePackRegistryForTests(): void {
   for (const key of Object.keys(storyNodes)) delete storyNodes[key];

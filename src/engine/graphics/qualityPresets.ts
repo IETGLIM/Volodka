@@ -86,17 +86,17 @@ export const QUALITY_PRESETS: Record<Exclude<QualityPresetId, 'auto'>, QualityPr
     id: 'medium',
     label: 'Medium',
     labelRu: 'Среднее',
-    dpr: [1, 1.25],
+    dpr: [1, 1.35],
     shadows: true,
     antialias: true,
     postProcessing: true,
-    effectsScale: 0.5,
-    lodBias: 0.85,
+    effectsScale: 0.62,
+    lodBias: 0.9,
     textureScale: 0.5,
-    maxDrawDistance: 60,
+    maxDrawDistance: 65,
     useInstancing: true,
     useImpostors: true,
-    impostorDistance: 28,
+    impostorDistance: 30,
     bakedLighting: true,
     compression: 'draco',
     npcRenderMode: 'hybrid',
@@ -231,8 +231,10 @@ export function capQualityTierForGpuMemory(
     if (capped === 'high' && devicePixelRatio >= 2) capped = 'medium';
   }
 
-  if (hasCoarsePointer() && capped === 'ultra') {
-    capped = 'high';
+  // Touch / tablet form-factors: auto rarely benefits from ultra or high@3x.
+  if (hasCoarsePointer()) {
+    if (capped === 'ultra') capped = 'high';
+    if (capped === 'high' && devicePixelRatio >= 2) capped = 'medium';
   }
 
   return capped;
@@ -342,6 +344,15 @@ export function applyGfxPressureToPreset(
     case 'none':
       return preset;
     case 'memory':
+      // Medium + coarse pointer (phones/tablets): drop PostFX/shadow maps → contact-blob only.
+      if (preset.id === 'medium' && hasCoarsePointer()) {
+        return {
+          ...preset,
+          postProcessing: false,
+          shadows: false,
+          effectsScale: Math.min(preset.effectsScale, 0.4),
+        };
+      }
       return preset.postProcessing
         ? { ...preset, effectsScale: preset.effectsScale * 0.75 }
         : preset;
@@ -349,6 +360,7 @@ export function applyGfxPressureToPreset(
       return {
         ...preset,
         postProcessing: false,
+        shadows: false,
         effectsScale: preset.effectsScale * 0.5,
         antialias: preset.id === 'low' ? false : preset.antialias,
       };
@@ -399,19 +411,30 @@ export function formatQualityPresetDetailRu(
       : `${preset.labelRu}: ${preset.npcRenderMode} NPC · ${preset.environmentRenderMode} окружение · DPR ${preset.dpr[0]}–${preset.dpr[1]}`;
 
   const hints: string[] = [];
+  if (!preset.shadows) {
+    hints.push('Только contact-blob у ног');
+  } else if (preset.visualLite) {
+    hints.push('Карты теней + мягкий blob');
+  } else {
+    hints.push('Полные карты теней');
+  }
   const glbCapable =
     allowsGlbAssetRendering(preset.npcRenderMode)
     || allowsGlbAssetRendering(preset.environmentRenderMode);
   if (glbCapable) {
     hints.push('Уникальные аватары (RPM): от «Среднее»');
   }
-  if (selectedPreset === 'ultra' || selectedPreset === 'high') {
+  if (
+    selectedPreset === 'ultra'
+    || selectedPreset === 'high'
+    || selectedPreset === 'medium'
+  ) {
     hints.push('Мокрые отражения на улице');
   } else if (
     selectedPreset === 'auto'
-    && (preset.id === 'ultra' || preset.id === 'high')
+    && (preset.id === 'ultra' || preset.id === 'high' || preset.id === 'medium')
   ) {
-    hints.push('Мокрые отражения: выберите пресет «Высокое» или выше');
+    hints.push('Мокрые отражения: выберите пресет «Среднее» или выше');
   }
 
   return hints.length > 0 ? `${base} · ${hints.join(' · ')}` : base;

@@ -14,7 +14,7 @@
  * 3. world:hour_changed events from any source
  *
  * On each tick:
- *  - NPC states are rebuilt via buildNPCStatesForTime()
+ *  - NPC states are rebuilt via buildWorldHourChangedPayload()
  *  - world:tick event is emitted for downstream systems
  *  - Quest time limits are checked
  *  - Weather cycles are evaluated
@@ -25,7 +25,8 @@ import { useGameStore } from '@/store/gameStore';
 import { readGamePhase } from '@/shared/gamePhase';
 import { useGamePhase } from '@/store/selectors';
 import { eventBus } from '@/engine/EventBus';
-import { buildNPCStatesForTime } from '@/engine/ScheduleEngine';
+import { buildNPCStatesForTime } from '@/shared/schedule/ScheduleEngine';
+import { buildWorldHourChangedPayload } from '@/shared/schedule/syncWorldSchedule';
 import { buildScheduleContext } from '@/shared/scheduleContext';
 import { isGameplayOverlayLocomotionLocked } from '@/engine/player/playerLocomotionGate';
 import {
@@ -58,21 +59,16 @@ export function useWorldClock() {
       // Advance time by a small increment
       const newHour = (previousHour + WORLD_CLOCK_HOURS_PER_TICK) % 24;
 
-      // Rebuild NPC states for the new time
       const scheduleCtx = buildScheduleContext(store);
-      const npcStates = buildNPCStatesForTime(newHour, scheduleCtx);
+      const payload = buildWorldHourChangedPayload(newHour, previousHour, scheduleCtx);
 
       // Update store with new time and NPC states
       store.setExplorationTimeOfDay(newHour);
-      store.setExplorationNPCStates(npcStates);
+      store.setExplorationNPCStates(payload.npcStates);
 
       // Emit world events for downstream systems (NPC schedules, weather, quest timers).
       eventBus.emit('world:tick', { hour: newHour, deltaHours: WORLD_CLOCK_HOURS_PER_TICK });
-      eventBus.emit('world:hour_changed', {
-        hour: newHour,
-        previousHour,
-        npcStates,
-      });
+      eventBus.emit('world:hour_changed', payload);
     }, WORLD_CLOCK_TICK_INTERVAL_S * 1000);
 
     return () => clearInterval(interval);

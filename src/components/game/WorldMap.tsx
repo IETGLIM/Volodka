@@ -11,7 +11,10 @@ import { FocusTrap } from '@/components/a11y/FocusTrap';
 import { usePanelDialog } from '@/components/a11y/usePanelDialog';
 import { X, Map as MapIcon, Lock, Clock, MapPin, Navigation } from 'lucide-react';
 import { useGameStore } from '@/store/gameStore';
-import { useFastTravelState } from '@/store/selectors';
+import { useFastTravelState, useActiveQuests } from '@/store/selectors';
+import { getQuestMarker } from '@/store/questStore';
+import { getQuestDefinitions } from '@/data/gameDataLoader';
+import { eventBus } from '@/engine/EventBus';
 import { SCENE_CONFIG } from '@/config/scenes';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import type { SceneId } from '@/shared/types/game';
@@ -149,6 +152,7 @@ const CONNECTIONS: [SceneId, SceneId][] = [
   ['abandoned_factory', 'river_pier'],
   // Misc
   ['river_pier', 'pier_evening'],
+  ['pier_evening', 'park_day'],
   ['volodka_room', 'sleep_dream'],
 ];
 
@@ -289,10 +293,47 @@ export function WorldMap({ open, onClose }: WorldMapProps) {
   const { closeButtonRef, dialogProps, titleProps } = usePanelDialog();
   const { currentSceneId, timeOfDay, discoveredScenes, playerFlags } = useFastTravelState();
   const fastTravelTo = useGameStore((s) => s.fastTravelTo);
+  const activeQuests = useActiveQuests();
+
+  const questMarkerSceneIds = useMemo(() => {
+    const ids = new Set<SceneId>();
+    for (const quest of activeQuests) {
+      const marker = getQuestMarker(quest.questId);
+      if (marker?.sceneId) ids.add(marker.sceneId);
+    }
+    return ids;
+  }, [activeQuests]);
+
+  const questTitlesByScene = useMemo(() => {
+    const map = new Map<SceneId, string[]>();
+    const defs = getQuestDefinitions();
+    for (const quest of activeQuests) {
+      const marker = getQuestMarker(quest.questId);
+      if (!marker?.sceneId) continue;
+      const title = defs.find((d) => d.id === quest.questId)?.title ?? quest.questId;
+      const list = map.get(marker.sceneId) ?? [];
+      if (!list.includes(title)) list.push(title);
+      map.set(marker.sceneId, list);
+    }
+    return map;
+  }, [activeQuests]);
 
   const [hoveredScene, setHoveredScene] = useState<SceneId | null>(null);
+  const [focusSceneId, setFocusSceneId] = useState<SceneId | null>(null);
   const [isTraveling, setIsTraveling] = useState(false);
   const [travelTarget, setTravelTarget] = useState<{ id: SceneId; name: string; hours: number } | null>(null);
+
+  useEffect(() => {
+    if (!open) {
+      setFocusSceneId(null);
+      return;
+    }
+    const unsub = eventBus.on('worldmap:focus_scene', ({ sceneId }) => {
+      setFocusSceneId(sceneId);
+      setHoveredScene(sceneId);
+    });
+    return unsub;
+  }, [open]);
 
   // Build lookup for node positions
   const nodeMap = useMemo(() => {
@@ -518,9 +559,11 @@ export function WorldMap({ open, onClose }: WorldMapProps) {
                     {MAP_NODES.filter((n) => !isExcluded(n.id)).map((node) => {
                       const isDiscovered = discoveredScenes.includes(node.id);
                       const isCurrent = node.id === currentSceneId;
+                      const isFocused = focusSceneId === node.id;
                       const accessible = isAccessible(node.id);
                       const gateOpen = isSceneGateOpen(node.id, playerFlags);
                       const isRumored = !isDiscovered && gateOpen;
+                      const hasQuestMarker = questMarkerSceneIds.has(node.id);
                       const config = SCENE_CONFIG[node.id];
                       const regionColor = REGION_COLORS[node.region];
 
@@ -534,7 +577,7 @@ export function WorldMap({ open, onClose }: WorldMapProps) {
                           <motion.button
                             onClick={() => handleNodeClick(node.id)}
                             onMouseEnter={() => setHoveredScene(node.id)}
-                            onMouseLeave={() => setHoveredScene(null)}
+                            onMouseLeave={() => setHoveredScene(focusSceneId)}
                             disabled={!accessible || isCurrent}
                             className={`
                               relative flex flex-col items-center justify-center
@@ -542,7 +585,7 @@ export function WorldMap({ open, onClose }: WorldMapProps) {
                               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/60
                               ${isCurrent
                                 ? 'w-14 h-14'
-                                : isDiscovered
+                                : isDiscovered || isFocused
                                   ? 'w-11 h-11 hover:scale-110'
                                   : isRumored
                                     ? 'w-9 h-9 cursor-default'
@@ -555,17 +598,31 @@ export function WorldMap({ open, onClose }: WorldMapProps) {
                                 : isDiscovered
                                   ? `${regionColor}12`
                                   : 'rgba(51, 65, 85, 0.15)',
-                              border: isCurrent
-                                ? `2px solid ${regionColor}99`
-                                : isDiscovered
-                                  ? `1.5px solid ${regionColor}55`
-                                  : '1px solid rgba(71, 85, 105, 0.2)',
-                              boxShadow: isCurrent
-                                ? `0 0 20px ${regionColor}44, inset 0 0 10px ${regionColor}18`
-                                : isDiscovered
-                                  ? `0 0 8px ${regionColor}22`
-                                  : 'none',
+                              border: isFocused
+                                ? '2px solid rgba(0,229,255,0.7)'
+                                : hasQuestMarker
+                                  ? '2px solid rgba(251, 191, 36, 0.75)'
+                                  : isCurrent
+                                    ? `2px solid ${regionColor}99`
+                                    : isDiscovered
+                                      ? `1.5px solid ${regionColor}55`
+                                      : '1px solid rgba(71, 85, 105, 0.2)',
+                              boxShadow: isFocused
+                                ? '0 0 18px rgba(0,229,255,0.55), 0 0 4px rgba(255,200,80,0.4)'
+                                : hasQuestMarker
+                                  ? '0 0 16px rgba(251, 191, 36, 0.55), 0 0 4px rgba(251, 191, 36, 0.35)'
+                                  : isCurrent
+                                    ? `0 0 20px ${regionColor}44, inset 0 0 10px ${regionColor}18`
+                                    : isDiscovered
+                                      ? `0 0 8px ${regionColor}22`
+                                      : 'none',
                             }}
+                            animate={isFocused || hasQuestMarker ? { scale: [1, 1.08, 1] } : undefined}
+                            transition={
+                              isFocused || hasQuestMarker
+                                ? { duration: hasQuestMarker && !isFocused ? 1.8 : 1.4, repeat: Infinity, ease: 'easeInOut' }
+                                : undefined
+                            }
                             whileTap={accessible && !isCurrent ? { scale: 0.9 } : {}}
                           >
                             {/* Current location pulsing glow */}
@@ -583,16 +640,39 @@ export function WorldMap({ open, onClose }: WorldMapProps) {
                               />
                             )}
 
+                            {/* Active quest marker glow */}
+                            {hasQuestMarker && !isCurrent && (
+                              <motion.div
+                                className="absolute inset-[-3px] rounded-full pointer-events-none"
+                                aria-hidden="true"
+                                animate={{
+                                  boxShadow: [
+                                    '0 0 0px rgba(251, 191, 36, 0)',
+                                    '0 0 18px rgba(251, 191, 36, 0.7)',
+                                    '0 0 0px rgba(251, 191, 36, 0)',
+                                  ],
+                                }}
+                                transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
+                              />
+                            )}
+
                             {/* Node content */}
                             {isDiscovered ? (
                               <MapPin
-                                className={`size-4 ${isCurrent ? 'size-5' : ''}`}
-                                style={{ color: regionColor }}
+                                className={`size-4 ${isCurrent ? 'size-5' : ''} ${hasQuestMarker ? 'text-amber-300' : ''}`}
+                                style={{ color: hasQuestMarker ? undefined : regionColor }}
                               />
                             ) : isRumored ? (
                               <span className="text-[8px] font-mono text-amber-400/50">?</span>
                             ) : (
                               <div className="size-1.5 rounded-full bg-slate-700" />
+                            )}
+
+                            {hasQuestMarker && (
+                              <span
+                                className="absolute -top-1 -right-1 size-2 rounded-full bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.9)]"
+                                aria-label="Активный квест"
+                              />
                             )}
 
                             {/* Scene name below node */}
@@ -644,6 +724,7 @@ export function WorldMap({ open, onClose }: WorldMapProps) {
                       const gateOpen = isSceneGateOpen(hoveredScene, playerFlags);
                       const isRumored = !isDiscovered && gateOpen;
                       const regionColor = REGION_COLORS[node.region];
+                      const questTitles = questTitlesByScene.get(hoveredScene) ?? [];
 
                       // Position tooltip, clamped to not overflow
                       const tooltipX = Math.min(Math.max(node.x, 15), 75);
@@ -667,16 +748,20 @@ export function WorldMap({ open, onClose }: WorldMapProps) {
                             className="px-3 py-2 rounded-md border backdrop-blur-md min-w-[170px] max-w-[240px]"
                             style={{
                               background: 'rgba(8, 12, 22, 0.92)',
-                              borderColor: isCurrent
-                                ? `${regionColor}66`
-                                : isDiscovered
-                                  ? `${regionColor}44`
-                                  : 'rgba(71, 85, 105, 0.3)',
-                              boxShadow: `0 0 15px ${isCurrent ? `${regionColor}28` : isDiscovered ? `${regionColor}18` : 'rgba(0,0,0,0.3)'}`,
+                              borderColor: questTitles.length > 0
+                                ? 'rgba(251, 191, 36, 0.45)'
+                                : isCurrent
+                                  ? `${regionColor}66`
+                                  : isDiscovered
+                                    ? `${regionColor}44`
+                                    : 'rgba(71, 85, 105, 0.3)',
+                              boxShadow: questTitles.length > 0
+                                ? '0 0 16px rgba(251, 191, 36, 0.22)'
+                                : `0 0 15px ${isCurrent ? `${regionColor}28` : isDiscovered ? `${regionColor}18` : 'rgba(0,0,0,0.3)'}`,
                             }}
                           >
                             <div className="flex items-center gap-2 mb-1">
-                              <MapPin className="size-3" style={{ color: regionColor }} />
+                              <MapPin className="size-3" style={{ color: questTitles.length > 0 ? '#fbbf24' : regionColor }} />
                               <span
                                 className="text-xs font-semibold"
                                 style={{
@@ -692,6 +777,24 @@ export function WorldMap({ open, onClose }: WorldMapProps) {
                                 <p className="text-[10px] text-slate-400 leading-tight mb-1.5">
                                   {SCENE_DESCRIPTIONS[hoveredScene] ?? ''}
                                 </p>
+                                {questTitles.length > 0 && (
+                                  <div className="mb-1.5 space-y-0.5">
+                                    {questTitles.slice(0, 3).map((title) => (
+                                      <p
+                                        key={title}
+                                        className="text-[9px] font-mono text-amber-300/85 leading-tight flex items-start gap-1"
+                                      >
+                                        <span className="mt-0.5 size-1.5 rounded-full bg-amber-400 shrink-0 shadow-[0_0_4px_rgba(251,191,36,0.8)]" aria-hidden="true" />
+                                        <span>Квест: {title}</span>
+                                      </p>
+                                    ))}
+                                    {questTitles.length > 3 && (
+                                      <p className="text-[9px] font-mono text-amber-400/55 pl-2.5">
+                                        +{questTitles.length - 3} ещё
+                                      </p>
+                                    )}
+                                  </div>
+                                )}
                                 <div className="flex items-center gap-2 flex-wrap">
                                   {isCurrent ? (
                                     <span className="text-[9px] font-mono flex items-center gap-1" style={{ color: regionColor }}>
@@ -713,9 +816,20 @@ export function WorldMap({ open, onClose }: WorldMapProps) {
                             )}
 
                             {!isDiscovered && (
-                              <p className="text-[10px] text-slate-600 italic">
-                                {isRumored ? 'Слухи об этом месте…' : 'Не исследовано'}
-                              </p>
+                              <>
+                                {questTitles.length > 0 && (
+                                  <div className="mb-1 space-y-0.5">
+                                    {questTitles.slice(0, 2).map((title) => (
+                                      <p key={title} className="text-[9px] font-mono text-amber-300/70">
+                                        Квест: {title}
+                                      </p>
+                                    ))}
+                                  </div>
+                                )}
+                                <p className="text-[10px] text-slate-600 italic">
+                                  {isRumored ? 'Слухи об этом месте…' : 'Не исследовано'}
+                                </p>
+                              </>
                             )}
                           </div>
                         </motion.div>

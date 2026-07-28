@@ -1,7 +1,7 @@
 /* ─── Volodka RPG – Animated GLB NPC mesh with procedural fallback ─── */
 
 /* eslint-disable react-refresh/only-export-components -- co-located helpers and lazy exports */
-import { Component, Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { Component, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Html, useGLTF } from '@react-three/drei';
 import { useThree } from '@react-three/fiber';
 import { useRegisterNpcFrame } from '@/engine/npc/npcFrameBatch';
@@ -47,6 +47,8 @@ interface GltfNPCModelInnerProps {
   interactionState: InteractionState;
   isInteractionTarget: boolean;
   visible?: boolean;
+  /** Fired once the GLTF scene is fitted — used by dual-LOD keep-alive swap. */
+  onReady?: () => void;
   livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
 }
 
@@ -60,6 +62,7 @@ function GltfNPCModelInner({
   activity,
   patrolActivity,
   visible = true,
+  onReady,
   livePlayerPositionRef,
 }: GltfNPCModelInnerProps & {
   activity: string;
@@ -69,6 +72,10 @@ function GltfNPCModelInner({
   const fitRef = useRef<THREE.Group>(null);
   const { scene, mixer } = useSkinnedGltfClone(gltf.scene, gltf.animations, { castShadow: true });
   const [fit, setFit] = useState<Fit>({ scale: modelScale, rotX: 0, y: 0 });
+  const onReadyRef = useRef(onReady);
+  useEffect(() => {
+    onReadyRef.current = onReady;
+  }, [onReady]);
 
   const embeddedActions = useMemo(() => {
     if (!mixer) return null;
@@ -106,13 +113,16 @@ function GltfNPCModelInner({
     [actions, mergedClipOverrides],
   );
 
-  useEffect(() => {
+  // Layout effect before paint — same order as CesiumPlayerModel, avoids first-frame
+  // wrong-scale / foot sink while the mixer already runs.
+  useLayoutEffect(() => {
     const bounds = measureCharacterGltfBounds(scene);
     const { scale, rotX, footY } = fitCharacterGltf(bounds, {
       heightFactor: targetHeightFactor,
       scaleMultiplier: modelScale,
     });
     setFit({ scale, rotX, y: footY });
+    onReadyRef.current?.();
   }, [scene, modelScale, targetHeightFactor]);
 
   useRegisterNpcFrame(definition.id, 'mixer', ({ delta }) => {
@@ -175,7 +185,9 @@ interface GltfNPCModelSceneProps {
   livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
 }
 
-/** Preloads manifest LOD/compression urls and swaps visibility by camera distance. */
+/** Preloads manifest LOD/compression urls and swaps visibility by camera distance.
+ *  Dual-LOD keep-alive: previous mesh stays visible until the next LOD is fitted,
+ *  so distance swaps never blank the NPC (no remount jank / Suspense hole). */
 function GltfNPCModelScene({
   definition,
   fallbackUrl,
@@ -190,15 +202,11 @@ function GltfNPCModelScene({
 }: GltfNPCModelSceneProps) {
   const anchorRef = useRef<THREE.Group>(null);
   const worldPosRef = useRef(new THREE.Vector3());
-  const activeUrlRef = useRef(fallbackUrl);
   const lastLodDistRef = useRef(-1);
   const camera = useThree((s) => s.camera);
   const { preset } = useGraphicsQuality();
-  // State to trigger re-render when LOD distance changes the active URL.
-  // Needed because activeUrlRef is a ref (not reactive) — the frame tick
-  // updates it, and this state forces React to re-render so the visibility
-  // prop on each LOD branch updates.
-  const [, setActiveUrlTick] = useState(0);
+  const [displayedUrl, setDisplayedUrl] = useState(fallbackUrl);
+  const [pendingUrl, setPendingUrl] = useState<string | null>(null);
 
   const manifestId = getNpcManifestId(definition.id);
   const asset = manifestId ? ASSET_MANIFEST[manifestId] : undefined;
@@ -207,10 +215,6 @@ function GltfNPCModelScene({
 
   const urls = useMemo(() => {
     if (!useManifestLod || !asset) return [fallbackUrl];
-    // Only preload the URLs we might actually use: lod0 + lod1 + lod2
-    // for the CURRENT compression variant, not all 5 variants.
-    // The frame tick below switches between LODs by distance — we only
-    // need the URLs that resolveNpcAssetUrl can return for this preset.
     const set = new Set<string>();
     for (const lod of asset.lods) {
       if (lod.url) set.add(lod.url);
@@ -222,32 +226,34 @@ function GltfNPCModelScene({
     for (const url of urls) {
       useGLTF.preload(url, true, true, extendLoader);
     }
-    activeUrlRef.current = urls[0] ?? fallbackUrl;
+    setDisplayedUrl((prev) => (urls.includes(prev) ? prev : (urls[0] ?? fallbackUrl)));
+    setPendingUrl(null);
   }, [urls, fallbackUrl]);
 
   useFrameTick(
     'misc',
     () => {
-      if (!useManifestLod || !asset || !anchorRef.current) return;
+      if (!useManifestLod || !asset || !anchorRef.current || pendingUrl) return;
       const dist = camera.position.distanceTo(
         anchorRef.current.getWorldPosition(worldPosRef.current),
       );
-      // Throttle LOD checks — only re-evaluate when distance changes by
-      // more than 2m. Avoids re-rendering on every frame when the player
-      // is standing still or moving slowly.
       if (Math.abs(dist - lastLodDistRef.current) < 2.0) return;
       lastLodDistRef.current = dist;
       const next =
         resolveNpcAssetUrl(definition.id, preset.compression, dist, preset.lodBias) ??
         resolveAssetUrl(asset, preset.compression, dist, preset.lodBias);
-      if (next && next !== activeUrlRef.current) {
-        activeUrlRef.current = next;
-        // Trigger re-render so the active LOD branch mounts/unmounts.
-        setActiveUrlTick((t) => t + 1);
+      if (next && next !== displayedUrl) {
+        setPendingUrl(next);
       }
     },
     { label: `GltfNPCModel:${definition.id}` },
   );
+
+  const handlePendingReady = () => {
+    if (!pendingUrl) return;
+    setDisplayedUrl(pendingUrl);
+    setPendingUrl(null);
+  };
 
   if (!useManifestLod) {
     return (
@@ -267,19 +273,11 @@ function GltfNPCModelScene({
 
   return (
     <group ref={anchorRef}>
-      {/* Single GltfNPCModelInner instance with URL prop swap.
-          - No key={activeUrl}: avoids full subtree remount (mixer recreation,
-            animation restart, GC pressure) on LOD change.
-          - No all-LODs-mounted: avoids loading 3 GLTFs per NPC simultaneously
-            (caused OOM → page crash in CI's resource-constrained Chromium).
-          - useGLTF caches by URL, so switching activeUrl loads from cache
-            (preloaded via useGLTF.preload in the useEffect above) without
-            network refetch. The component suspends briefly while drei
-            resolves the cached GLTF, then re-renders with the new scene. */}
+      {/* Displayed LOD stays mounted until pending is fitted — max 2 GLTFs. */}
       <Suspense fallback={null}>
         <GltfNPCModelInner
           definition={definition}
-          url={activeUrlRef.current}
+          url={displayedUrl}
           modelScale={modelScale}
           targetHeightFactor={targetHeightFactor}
           interactionState={interactionState}
@@ -290,6 +288,23 @@ function GltfNPCModelScene({
           livePlayerPositionRef={livePlayerPositionRef}
         />
       </Suspense>
+      {pendingUrl ? (
+        <Suspense fallback={null}>
+          <GltfNPCModelInner
+            definition={definition}
+            url={pendingUrl}
+            modelScale={modelScale}
+            targetHeightFactor={targetHeightFactor}
+            interactionState={interactionState}
+            isInteractionTarget={isInteractionTarget}
+            activity={activity}
+            patrolActivity={patrolActivity}
+            visible={false}
+            onReady={handlePendingReady}
+            livePlayerPositionRef={livePlayerPositionRef}
+          />
+        </Suspense>
+      ) : null}
     </group>
   );
 }

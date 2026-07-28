@@ -3,6 +3,10 @@ import { INTERACTION_LABELS, type TriggerZone } from '@/data/triggerZones';
 import { FIRST_PERSON_ENABLED, FIRST_PERSON_EYE_HEIGHT } from '@/engine/camera/cameraConstants';
 import { getInteractionQueryContext, type InteractionQueryContext } from '@/engine/interaction/interactionQueryContext';
 import { getNPCGroup } from '@/engine/interaction/npcRegistry';
+import {
+  INTERACTION_IN_RANGE_FRACTION,
+  NPC_INTERACTION_QUERY_RANGE,
+} from '@/engine/player/playerConstants';
 export type InteractionTargetKind = 'zone' | 'npc' | 'exit';
 
 export interface InteractionTargetHit {
@@ -11,6 +15,8 @@ export interface InteractionTargetHit {
   distance: number;
   /** Lower is better (distance × facing penalty). */
   score: number;
+  /** Metres used for the proximity score — approach UX ring. */
+  maxRange: number;
   npcId?: string;
   triggerZoneId?: string;
   label: string;
@@ -66,7 +72,7 @@ export function resolveNpcWorldPosition(
   return [_npcLivePos.x, _npcLivePos.y, _npcLivePos.z];
 }
 
-const NPC_MAX_RANGE = 3.5;
+const NPC_MAX_RANGE = NPC_INTERACTION_QUERY_RANGE;
 const ZONE_RANGE_PADDING = 1.55;
 
 /** Score a target by distance and whether the player faces it (horizontal only). */
@@ -92,7 +98,7 @@ export function scoreInteractionTarget(
   let facingPenalty =
     facingDot < 0 ? 1.5 + -facingDot : Math.max(0.35, 0.85 - facingDot * 0.5);
 
-  if (distance < maxRange * 0.55) {
+  if (distance < maxRange * INTERACTION_IN_RANGE_FRACTION) {
     facingPenalty = Math.min(facingPenalty, 0.45);
   }
 
@@ -167,6 +173,7 @@ function pushZoneTarget(
     kind: 'zone',
     distance: scored.distance,
     score: scored.score,
+    maxRange: range,
     triggerZoneId: zone.id,
     label: zone.interactionLabel ?? (zone.interactionType ? INTERACTION_LABELS[zone.interactionType] : zone.id),
   });
@@ -190,6 +197,7 @@ function pushNpcTarget(
     kind: 'npc',
     distance: scored.distance,
     score: scored.score,
+    maxRange: NPC_MAX_RANGE,
     npcId: npc.npcId,
     label: npc.label,
   });
@@ -230,6 +238,7 @@ export function queryInteractionTargets(
       kind: 'exit',
       distance: scored.distance,
       score: scored.score,
+      maxRange: exit.maxRange,
       label: exit.label,
     });
   }

@@ -48,6 +48,7 @@ import {
   type ZoneProximityRuntime,
 } from '@/engine/interaction/interactiveTriggerProximity';
 import { getGameSnapshot } from '@/engine/GameActionDispatcher';
+import { prefetchNpcNarrativeOnApproach } from '@/engine/interaction/prefetchNpcNarrative';
 import { resolveNpcBarkForRelation } from '@/shared/npcBark';
 import { NPCProximityTriggers } from './interactiveTriggers/NpcProximityMarkers';
 import { TriggerZoneComponent } from './interactiveTriggers/TriggerZoneComponent';
@@ -365,10 +366,14 @@ export function InteractiveTriggers({
               : primaryHit.kind === 'exit'
                 ? 'exit'
                 : 'object',
+          distance: primaryHit.distance,
+          maxRange: primaryHit.maxRange,
         });
         // Session 9: Subtle camera POI nudge toward NPC/object on first hint
         if (primaryHit.kind === 'npc' && npcTarget) {
           setCameraPOITarget(new THREE.Vector3(...npcTarget.position));
+          // Warm dialogue/story packs + NPC GLB before the player confirms [E].
+          prefetchNpcNarrativeOnApproach(npcTarget.npcId, sceneIdRef.current);
         }
       }
     } else if (lastHintIdRef.current !== null) {
