@@ -57,6 +57,9 @@ function scheduleStuckRecoveryWatchdog(): void {
     // Also fire interaction:end so any proximity hint / indicator visuals
     // are torn down consistently with a normal interaction exit.
     eventBus.emit('interaction:end', {});
+    eventBus.emit('ui:exploration_message', {
+      text: 'Взаимодействие сброшено — можно продолжать',
+    });
   }, STUCK_RECOVERY_TIMEOUT_MS);
 }
 

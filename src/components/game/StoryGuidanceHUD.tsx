@@ -52,7 +52,6 @@ export function StoryGuidanceHUD() {
 
   const [guidance, setGuidance] = useState<GuidanceInfo | null>(null);
   const [expanded, setExpanded] = useState(false);
-  const [_lostHint, setLostHint] = useState<string | null>(null);
   const [firstReadingHint, setFirstReadingHint] = useState<string | null>(getFirstReadingHint);
   const [dismissedSig, setDismissedSig] = useState<string | null>(() => {
     try {
@@ -166,15 +165,11 @@ export function StoryGuidanceHUD() {
     const unsubs = [
       eventBus.on('story:guidance_update', (payload) => {
         setGuidance(payload);
-        setLostHint(null); // clear lost hint when guidance updates
         setFirstReadingHint(getFirstReadingHint());
       }),
       eventBus.on('scene:loaded', () => {
         refresh();
         setFirstReadingHint(getFirstReadingHint());
-      }),
-      eventBus.on('story:player_lost', (payload) => {
-        setLostHint(payload.hint);
       }),
       eventBus.on('quest:completed', () => {
         setFirstReadingHint(getFirstReadingHint());
@@ -548,10 +543,18 @@ export function PlayerLostHintToast() {
   const motionDuration = reducedMotion ? 0 : 0.4;
 
   useEffect(() => {
-    const unsub = eventBus.on('story:player_lost', (payload) => {
-      setHint(payload.hint);
-    });
-    return unsub;
+    const unsubs = [
+      eventBus.on('story:player_lost', (payload) => {
+        setHint(payload.hint);
+      }),
+      // New guidance means the player is back on track — dismiss lost toast.
+      eventBus.on('story:guidance_update', () => {
+        setHint(null);
+      }),
+    ];
+    return () => {
+      for (const unsub of unsubs) unsub();
+    };
   }, []);
 
   // Auto-dismiss after 8 seconds
