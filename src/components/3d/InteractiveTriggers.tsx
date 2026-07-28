@@ -365,6 +365,8 @@ export function InteractiveTriggers({
               : primaryHit.kind === 'exit'
                 ? 'exit'
                 : 'object',
+          distance: primaryHit.distance,
+          maxRange: primaryHit.maxRange,
         });
         // Session 9: Subtle camera POI nudge toward NPC/object on first hint
         if (primaryHit.kind === 'npc' && npcTarget) {

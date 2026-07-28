@@ -85,12 +85,19 @@ const PROFILES: Partial<Record<SceneId, SceneVisualProfile>> = {
     enhancedAmbientOcclusion: false,
     bloomIntensityScale: 1.12,
   },
+  // Thin / extension scenes — promote to hero PostFX parity so neon/bloom aren't DEFAULT-flat
+  river_pier: { ...STANDARD_PROFILE, forceFullPostFx: true, bloomIntensityScale: 1.12 },
+  pier_evening: { ...STANDARD_PROFILE, forceFullPostFx: true, bloomIntensityScale: 1.12 },
+  chk_forest_zorge: { ...STANDARD_PROFILE, forceFullPostFx: true, bloomIntensityScale: 1.1 },
+  chk_campfire_night: { ...STANDARD_PROFILE, forceFullPostFx: true, bloomIntensityScale: 1.14 },
+  factory_roof: { ...STANDARD_PROFILE, forceFullPostFx: true, bloomIntensityScale: 1.08 },
+  city_square: { ...STANDARD_PROFILE, forceFullPostFx: true, bloomIntensityScale: 1.12 },
   // Extension indoor scenes — AO adds depth to enclosed spaces
-  guild_mainframe: { ...STANDARD_PROFILE, forceFullPostFx: true, enhancedAmbientOcclusion: true, aoIntensity: 2.4, aoRadius: 0.5 },
-  albert_backroom: { ...STANDARD_PROFILE, forceFullPostFx: true, enhancedAmbientOcclusion: true, aoIntensity: 2.6, aoRadius: 0.5 },
-  zarema_room: { ...STANDARD_PROFILE, forceFullPostFx: true, enhancedAmbientOcclusion: true, aoIntensity: 2.6, aoRadius: 0.5 },
-  library_basement: { ...STANDARD_PROFILE, forceFullPostFx: true, enhancedAmbientOcclusion: true, aoIntensity: 2.8, aoRadius: 0.55 },
-  underground_bunker: { ...STANDARD_PROFILE, forceFullPostFx: true, enhancedAmbientOcclusion: true, aoIntensity: 2.6, aoRadius: 0.55 },
+  guild_mainframe: { ...STANDARD_PROFILE, forceFullPostFx: true, enhancedAmbientOcclusion: true, aoIntensity: 2.4, aoRadius: 0.5, bloomIntensityScale: 1.06 },
+  albert_backroom: { ...STANDARD_PROFILE, forceFullPostFx: true, enhancedAmbientOcclusion: true, aoIntensity: 2.6, aoRadius: 0.5, bloomIntensityScale: 1.05 },
+  zarema_room: { ...STANDARD_PROFILE, forceFullPostFx: true, enhancedAmbientOcclusion: true, aoIntensity: 2.6, aoRadius: 0.5, bloomIntensityScale: 1.05 },
+  library_basement: { ...STANDARD_PROFILE, forceFullPostFx: true, enhancedAmbientOcclusion: true, aoIntensity: 2.8, aoRadius: 0.55, bloomIntensityScale: 1.04 },
+  underground_bunker: { ...STANDARD_PROFILE, forceFullPostFx: true, enhancedAmbientOcclusion: true, aoIntensity: 2.6, aoRadius: 0.55, bloomIntensityScale: 1.06 },
 };
 
 export function getSceneVisualProfile(sceneId: SceneId): SceneVisualProfile {

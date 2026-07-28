@@ -38,10 +38,15 @@ export function markHudActivity(): void {
 }
 
 function tick(): void {
-  // Never fade during combat or while a story overlay holds the screen.
+  // Never fade during combat, narrative overlays, or journal — the player
+  // is reading / deciding and ambient chrome should stay legible.
   const state = useGameStore.getState();
   const phase = readGamePhase(state);
-  const shouldStayAwake = phase === 'combat' || state.showStoryOverlay;
+  const shouldStayAwake =
+    phase === 'combat'
+    || state.showStoryOverlay
+    || state.diegeticNarrative != null
+    || state.journalOpen;
   const idle = Date.now() - lastActivityTs > QUIET_AFTER_MS;
   const next = idle && !shouldStayAwake;
   if (next !== quiet) {

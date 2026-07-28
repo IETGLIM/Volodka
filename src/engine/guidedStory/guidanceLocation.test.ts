@@ -47,6 +47,19 @@ describe('guidanceLocation', () => {
     expect(hint).toMatch(/Перейдите:/);
   });
 
+  it('resolves available quest giver scene from schedule', async () => {
+    const { resolveAvailableQuestTargetScene } = await import('@/engine/guidedStory/guidanceLocation');
+    const { resetScheduleEngineCache } = await import('@/shared/schedule/ScheduleEngine');
+    resetScheduleEngineCache();
+    const scene = resolveAvailableQuestTargetScene('kate', 10, {
+      currentAct: 1,
+      completedQuestIds: new Set(),
+      activeFlagKeys: new Set(),
+      playerFlags: {},
+    });
+    expect(scene).toBe('library_day');
+  });
+
   it('enriches guidance with targetSceneId', () => {
     const base: GuidanceInfo = {
       objectiveText: 'Подойди к незнакомке',

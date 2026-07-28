@@ -12,9 +12,16 @@ import { useTouchDevice } from '@/hooks/useTouchDevice';
 import { formatInteractionHintKey } from '@/engine/exploration/explorationUxPresentation';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
+function truncateLabel(label: string, max = 18): string {
+  const trimmed = label.trim();
+  if (trimmed.length <= max) return trimmed;
+  return `${trimmed.slice(0, max - 1)}…`;
+}
+
 export function CrosshairInteractionPrompt() {
   const [visible, setVisible] = useState(false);
   const [promptKey, setPromptKey] = useState('E');
+  const [label, setLabel] = useState<string | null>(null);
   const reducedMotion = useEffectiveReducedMotion();
   const gamepadConnected = useGamepadConnected();
   const isTouchDevice = useTouchDevice();
@@ -25,6 +32,7 @@ export function CrosshairInteractionPrompt() {
         gamepadConnected,
         touchDevice: isTouchDevice,
       }));
+      setLabel(payload.label ? truncateLabel(payload.label) : null);
       setVisible(true);
     });
     const unsubEnd = eventBus.on('interaction:end', () => setVisible(false));
@@ -73,7 +81,7 @@ export function CrosshairInteractionPrompt() {
                     boxShadow: { duration: 1.5, repeat: Infinity, ease: 'easeInOut' },
                   }
             }
-            className="flex items-center justify-center min-w-8 h-8 px-1.5 rounded-md"
+            className="flex items-center gap-1.5 min-w-8 min-h-[44px] sm:min-h-8 h-auto px-1.5 py-1 rounded-md"
             style={{
               background: 'linear-gradient(180deg, rgba(15,23,42,0.95) 0%, rgba(2,6,23,0.98) 100%)',
               border: '1px solid rgb(var(--cyber-cyan-rgb) / 0.5)',
@@ -88,7 +96,7 @@ export function CrosshairInteractionPrompt() {
               }}
             />
             <span
-              className="text-sm font-bold font-mono select-none"
+              className="text-sm font-bold font-mono select-none shrink-0"
               style={{
                 color: 'var(--cyber-cyan)',
                 textShadow: '0 0 6px rgb(var(--cyber-cyan-rgb) / 0.6)',
@@ -96,6 +104,14 @@ export function CrosshairInteractionPrompt() {
             >
               {promptKey}
             </span>
+            {label ? (
+              <span
+                className="text-[10px] font-mono tracking-wide max-w-[7.5rem] truncate"
+                style={{ color: '#9ad8d8' }}
+              >
+                {label}
+              </span>
+            ) : null}
           </motion.div>
         )}
       </AnimatePresence>

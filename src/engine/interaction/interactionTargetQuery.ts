@@ -11,6 +11,8 @@ export interface InteractionTargetHit {
   distance: number;
   /** Lower is better (distance × facing penalty). */
   score: number;
+  /** Metres used for the proximity score — approach UX ring. */
+  maxRange: number;
   npcId?: string;
   triggerZoneId?: string;
   label: string;
@@ -167,6 +169,7 @@ function pushZoneTarget(
     kind: 'zone',
     distance: scored.distance,
     score: scored.score,
+    maxRange: range,
     triggerZoneId: zone.id,
     label: zone.interactionLabel ?? (zone.interactionType ? INTERACTION_LABELS[zone.interactionType] : zone.id),
   });
@@ -190,6 +193,7 @@ function pushNpcTarget(
     kind: 'npc',
     distance: scored.distance,
     score: scored.score,
+    maxRange: NPC_MAX_RANGE,
     npcId: npc.npcId,
     label: npc.label,
   });
@@ -230,6 +234,7 @@ export function queryInteractionTargets(
       kind: 'exit',
       distance: scored.distance,
       score: scored.score,
+      maxRange: exit.maxRange,
       label: exit.label,
     });
   }

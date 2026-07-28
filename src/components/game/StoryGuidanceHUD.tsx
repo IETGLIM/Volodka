@@ -7,9 +7,18 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, BookOpen, Compass } from 'lucide-react';
 import { eventBus } from '@/engine/EventBus';
 import { getCurrentGuidance, type GuidanceInfo } from '@/engine/GuidedStoryManager';
-import { buildGuidanceDirectionHint } from '@/engine/guidedStory/guidanceLocation';
+import {
+  buildGuidanceDirectionHint,
+  resolveAvailableQuestTargetScene,
+} from '@/engine/guidedStory/guidanceLocation';
 import { getNextTrackedObjective, areDependenciesMet, getQuestMarker } from '@/store/questStore';
-import { useQuests, useCurrentSceneId, useOrchestratorNarrativeOverlay } from '@/store/selectors';
+import {
+  useQuests,
+  useCurrentSceneId,
+  useOrchestratorNarrativeOverlay,
+  useTimeOfDay,
+  useScheduleContext,
+} from '@/store/selectors';
 // useTutorialActive removed — guidance is now shown during tutorial too
 import { QUEST_DEFINITIONS } from '@/data/quests';
 import { GOLDEN_PATH_QUEST_SPINE } from '@/data/goldenPath';
@@ -34,7 +43,7 @@ import {
   resolveQuestUrgency,
   type QuestObjectiveKind,
 } from '@/hooks/questHudPresentation';
-import type { QuestType, SceneId } from '@/shared/types/game';
+import type { QuestType } from '@/shared/types/game';
 const GUIDANCE_DISMISS_KEY = 'volodka_guidance_dismissed_sig';
 
 /** Contextual hint for the first_reading quest — tells the player *where* to go. */
@@ -84,6 +93,8 @@ export function StoryGuidanceHUD() {
   const profile = useGameplayPresentationProfile();
   const { showStoryOverlay, narrativeKind, diegeticNarrative } = useOrchestratorNarrativeOverlay();
   const currentSceneId = useCurrentSceneId();
+  const timeOfDay = useTimeOfDay();
+  const scheduleCtx = useScheduleContext();
   const [interactionLocked, setInteractionLocked] = useState(() => isInteractionLocked());
   const [revealReady, setRevealReady] = useState(false);
   const revealTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -149,21 +160,29 @@ export function StoryGuidanceHUD() {
       const deps = areDependenciesMet(questId);
       if (!deps.met) continue;
 
+      const targetSceneId =
+        resolveAvailableQuestTargetScene(questDef.questGiverNpcId, timeOfDay, scheduleCtx)
+        ?? null;
+      const directionHint = buildGuidanceDirectionHint(
+        targetSceneId ?? undefined,
+        currentSceneId,
+      );
+
       return {
         text: `Прими задание: ${questDef.title}`,
         questTitle: questDef.title,
         questType: questDef.questType,
         questId,
         objectiveType: 'available_quest' as const,
-        directionHint: null as string | null,
-        targetSceneId: null as SceneId | null,
+        directionHint,
+        targetSceneId,
         completedObjectives: 0,
         totalObjectives: questDef.objectives.length,
       };
     }
 
     return null;
-  }, [quests, currentSceneId]);
+  }, [quests, currentSceneId, timeOfDay, scheduleCtx]);
   useEffect(() => {
     const refresh = () => {
       const next = getCurrentGuidance();
@@ -481,7 +500,7 @@ export function StoryGuidanceHUD() {
             <button
               type="button"
               onClick={handleOpenJournal}
-              className="w-6 h-6 flex items-center justify-center rounded text-slate-400 hover:text-white hover:bg-white/10 transition-colors hud-button-cyber"
+              className="min-w-[44px] min-h-[44px] w-11 h-11 sm:min-w-0 sm:min-h-0 sm:w-7 sm:h-7 flex items-center justify-center rounded text-slate-400 hover:text-white hover:bg-white/10 transition-colors hud-button-cyber"
               aria-label="Открыть журнал заданий"
               title="Журнал (Q)"
             >
@@ -490,7 +509,7 @@ export function StoryGuidanceHUD() {
             <button
               type="button"
               onClick={handleDismiss}
-              className="w-6 h-6 flex items-center justify-center rounded text-slate-400 hover:text-white hover:bg-white/10 transition-colors hud-button-cyber"
+              className="min-w-[44px] min-h-[44px] w-11 h-11 sm:min-w-0 sm:min-h-0 sm:w-7 sm:h-7 flex items-center justify-center rounded text-slate-400 hover:text-white hover:bg-white/10 transition-colors hud-button-cyber"
               aria-label="Скрыть подсказку цели"
             >
               <X className="size-3.5" />
@@ -599,10 +618,10 @@ export function PlayerLostHintToast() {
           <button
             type="button"
             onClick={dismiss}
-            className="w-5 h-5 flex items-center justify-center rounded text-slate-500 hover:text-white hover:bg-white/10 transition-colors shrink-0"
+            className="min-w-[44px] min-h-[44px] w-11 h-11 flex items-center justify-center rounded text-slate-500 hover:text-white hover:bg-white/10 transition-colors shrink-0"
             aria-label="Закрыть подсказку"
           >
-            <X className="size-3" />
+            <X className="size-3.5" />
           </button>
         </div>
       </motion.div>

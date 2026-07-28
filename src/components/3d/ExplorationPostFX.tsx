@@ -68,6 +68,8 @@ const SCENE_COLOR_GRADE: Record<string, { hue: number; saturation: number; brigh
   solnysh_room:       { hue: 0.05,  saturation: 0.12, brightness: 0.02, contrast: 0.1  }, // warm cozy carpets
   chk_forest_zorge:   { hue: 0.03,  saturation: 0.08, brightness: 0.05, contrast: 0.1 }, // campfire warmth
   river_pier:         { hue: 0.04,  saturation: 0.1,  brightness: 0.04, contrast: 0.12 }, // warm fire vs cold water
+  chk_campfire_night: { hue: 0.05,  saturation: 0.14, brightness: 0.03, contrast: 0.14 }, // fire-lit noir
+  factory_roof:       { hue: 0.02,  saturation: -0.04, brightness: 0.03, contrast: 0.16 }, // industrial dusk
 };
 
 const DEFAULT_COLOR_GRADE = { hue: 0, saturation: 0, brightness: 0, contrast: 0.15 };
@@ -101,6 +103,8 @@ const SCENE_VIGNETTE: Record<string, { offset: number; darkness: number }> = {
   chk_forest_zorge:   { offset: 0.4,  darkness: 0.28 },
   factory_basement:   { offset: 0.3,  darkness: 0.38 },
   river_pier:         { offset: 0.4,  darkness: 0.26 },
+  chk_campfire_night: { offset: 0.36, darkness: 0.34 },
+  factory_roof:       { offset: 0.34, darkness: 0.3 },
 };
 const DEFAULT_VIGNETTE = { offset: 0.4, darkness: 0.32 };
 
@@ -124,6 +128,8 @@ const SCENE_BLOOM: Record<string, { intensity: number; threshold: number; smooth
   chk_forest_zorge:   { intensity: 0.45, threshold: 0.55, smoothing: 0.45 }, // campfire bloom
   factory_basement:   { intensity: 0.55, threshold: 0.5,  smoothing: 0.45 }, // Заря-М core glow
   river_pier:         { intensity: 0.5,  threshold: 0.55, smoothing: 0.45 }, // fire + string lights
+  chk_campfire_night: { intensity: 0.62, threshold: 0.48, smoothing: 0.42 }, // fire bloom
+  factory_roof:       { intensity: 0.4,  threshold: 0.62, smoothing: 0.5 },  // dusk skyline
 };
 const DEFAULT_BLOOM = { intensity: 0.5, threshold: 0.7, smoothing: 0.5 };
 

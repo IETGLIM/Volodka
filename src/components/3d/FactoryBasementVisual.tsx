@@ -18,6 +18,7 @@ import {
 } from '@/engine/three/moduleGeometryRegistry';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { createFactoryBasementCoreGlowTexture } from '@/engine/graphics/proceduralSkyTextures';
+import { EnvironmentDetail } from './lod/PropDistanceGate';
 
 interface FactoryBasementVisualProps {
   livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
@@ -104,11 +105,19 @@ export function FactoryBasementVisual(_props: FactoryBasementVisualProps) {
         </mesh>
       ))}
 
-      {/* ── Server rack rows with blinking LEDs ── */}
-      <ServerRackRow position={[-4.5, 0, -1]} length={5.2} seed={11} />
-      <ServerRackRow position={[4.5, 0, -1]} length={5.2} seed={22} />
-      <ServerRackRow position={[-4.5, 0, 3.5]} length={3.6} seed={33} />
-      <ServerRackRow position={[4.5, 0, 3.5]} length={3.6} seed={44} />
+      {/* ── Server rack rows with blinking LEDs (distance-gated clutter) ── */}
+      <EnvironmentDetail minLod="standard" position={[-4.5, 0, -1]}>
+        <ServerRackRow position={[-4.5, 0, -1]} length={5.2} seed={11} />
+      </EnvironmentDetail>
+      <EnvironmentDetail minLod="standard" position={[4.5, 0, -1]}>
+        <ServerRackRow position={[4.5, 0, -1]} length={5.2} seed={22} />
+      </EnvironmentDetail>
+      <EnvironmentDetail minLod="full" position={[-4.5, 0, 3.5]}>
+        <ServerRackRow position={[-4.5, 0, 3.5]} length={3.6} seed={33} />
+      </EnvironmentDetail>
+      <EnvironmentDetail minLod="full" position={[4.5, 0, 3.5]}>
+        <ServerRackRow position={[4.5, 0, 3.5]} length={3.6} seed={44} />
+      </EnvironmentDetail>
 
       {/* ── «Заря-М» monolith ── */}
       <group position={[0, 0, -5.2]}>
