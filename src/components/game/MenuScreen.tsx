@@ -3,7 +3,7 @@
 
 import { memo, useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { FilmGrain, CinematicBars } from '@/components/game/cinematic';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Volume2, VolumeX } from 'lucide-react';
 import { useGameStore } from '@/store/gameStore';
 import { useMenuScreenActions, useMenuVisualToggles } from '@/store/selectors';
@@ -16,7 +16,7 @@ import { CanvasMatrixRain } from './shared/CanvasMatrixRain';
 import { validateSaveData } from '@/shared/validation/saveSchema';
 
 const TOTAL_POEMS = POEMS.length;
-const VERSION = '3.0.0';
+const VERSION = '3.0.1';
 
 // ============================================
 // MENU ITEM DEFINITIONS
@@ -38,7 +38,6 @@ const MenuParticles = memo(function MenuParticles() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- client-only mount guard to prevent hydration mismatch
     setMounted(true);
   }, []);
 
@@ -674,8 +673,7 @@ const SystemStatusReadout = memo(function SystemStatusReadout() {
 // ============================================
 
 export function MenuScreen() {
-  const { setIntroActive, loadGame, resetGame, musicEnabled, toggleMusic } = useMenuScreenActions();
-  const reduceMotion = useReducedMotion();
+  const { loadGame, resetGame, musicEnabled, toggleMusic } = useMenuScreenActions();
 
   const hasSave = useSyncExternalStore(
     () => () => {},
@@ -749,7 +747,6 @@ export function MenuScreen() {
 
   // ── Keyboard navigation (arrow keys + Enter) ──
   useEffect(() => {
-    const enabledItems = menuItems.filter(item => !item.disabled);
     const enabledIndices = menuItems.map((item, i) => !item.disabled ? i : -1).filter(i => i >= 0);
 
     const handleKeyDown = (e: KeyboardEvent) => {

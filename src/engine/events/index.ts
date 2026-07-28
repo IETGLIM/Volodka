@@ -87,6 +87,7 @@ export const EVENT_DOMAINS = {
   object: 'object',
   interaction: 'interaction',
   scene: 'scene',
+  schedule: 'schedule',
   canvas: 'canvas',
   minigame: 'minigame',
   fx: 'fx',

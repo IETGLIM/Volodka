@@ -9,12 +9,12 @@
  * into a "living hub city" — the core of the World Director pattern.
  *
  * Tick sources:
- * 1. Periodic interval (every WORLD_TICK_INTERVAL_S seconds during exploration)
- * 2. advanceTime() in explorationSlice (fast travel, rest, story events)
- * 3. world:hour_changed events from any source
+ * 1. Periodic interval → advanceTime() → schedule:sync_npcs
+ * 2. Manual advanceTime() / fastTravelTo in explorationSlice
+ * 3. world:hour_changed from scheduleSyncController
  *
  * On each tick:
- *  - NPC states are rebuilt via buildNPCStatesForTime()
+ *  - advanceTime rebuilds NPC states via schedule:sync_npcs
  *  - world:tick event is emitted for downstream systems
  *  - Quest time limits are checked
  *  - Weather cycles are evaluated
@@ -25,8 +25,6 @@ import { useGameStore } from '@/store/gameStore';
 import { readGamePhase } from '@/shared/gamePhase';
 import { useGamePhase } from '@/store/selectors';
 import { eventBus } from '@/engine/EventBus';
-import { buildNPCStatesForTime } from '@/engine/ScheduleEngine';
-import { buildScheduleContext } from '@/shared/scheduleContext';
 
 /** How often the world clock ticks in seconds (game minutes per tick) */
 const WORLD_TICK_INTERVAL_S = 60; // Every 60 real seconds = 1 game hour
@@ -51,40 +49,22 @@ export function useWorldClock() {
       // Double-check we're still in exploration
       if (readGamePhase(store) !== 'exploration') return;
 
-      const previousHour = store.exploration.timeOfDay;
-      // Advance time by a small increment
-      const newHour = (previousHour + HOURS_PER_TICK) % 24;
-
-      // Rebuild NPC states for the new time
-      const scheduleCtx = buildScheduleContext(store);
-      const npcStates = buildNPCStatesForTime(newHour, scheduleCtx);
-
-      // Update store with new time and NPC states
-      store.setExplorationTimeOfDay(newHour);
-      store.setExplorationNPCStates(npcStates);
-
-      // Emit world events
-      eventBus.emit('world:tick', { hour: newHour, deltaHours: HOURS_PER_TICK });
-      eventBus.emit('world:hour_changed', {
-        hour: newHour,
-        previousHour,
-        npcStates,
-      });
+      // advanceTime → schedule:sync_npcs → NPC rebuild + world:hour_changed
+      store.advanceTime(HOURS_PER_TICK);
+      const hour = useGameStore.getState().exploration.timeOfDay;
+      eventBus.emit('world:tick', { hour, deltaHours: HOURS_PER_TICK });
     }, WORLD_TICK_INTERVAL_S * 1000);
 
     return () => clearInterval(interval);
   }, [mode]);
 
-  // ── Initialize NPC states on mount / scene change ──
+  // ── Initialize NPC states on mount (no time advance) ──
   const initRef = useRef(false);
   useEffect(() => {
     if (initRef.current) return;
     initRef.current = true;
 
-    const store = useGameStore.getState();
-    const hour = store.exploration.timeOfDay;
-    const scheduleCtx = buildScheduleContext(store);
-    const npcStates = buildNPCStatesForTime(hour, scheduleCtx);
-    store.setExplorationNPCStates(npcStates);
+    const hour = useGameStore.getState().exploration.timeOfDay;
+    eventBus.emit('schedule:sync_npcs', { hour, previousHour: hour });
   }, []);
 }

@@ -6,7 +6,7 @@
  */
 
 import { useState, useCallback, useEffect, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   ScrollText,
   Diamond,
@@ -42,7 +42,6 @@ import {
 } from 'lucide-react';
 import { useQuestBoardPanelState } from '@/store/selectors';
 import {
-  DAILY_MISSION_POOL,
   DAILY_MISSION_CATEGORY_META,
   getDailyMissionPool,
   getWeeklyMissionPool,

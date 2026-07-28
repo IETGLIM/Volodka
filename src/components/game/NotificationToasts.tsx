@@ -13,8 +13,6 @@ import { toastManager, type ToastType, type ToastMessage } from '@/engine/ToastM
 import type { NotificationType } from '@/store/gameStore';
 import { useGamePhase, useNotifications } from '@/store/selectors';
 import { eventBus, EventBusPriority } from '@/engine/EventBus';
-import type { TrainablePlayerSkill } from '@/shared/types/game';
-
 /* ─── Constants ─── */
 
 const MAX_VISIBLE = 5;
@@ -96,18 +94,6 @@ interface VisibleToast {
   delta?: number;
   timestamp: number;
 }
-
-/* ─── Skill name mapping ─── */
-
-const SKILL_NAMES: Record<TrainablePlayerSkill, string> = {
-  logic: 'Логика',
-  coding: 'Программирование',
-  empathy: 'Эмпатия',
-  persuasion: 'Убеждение',
-  intuition: 'Интуиция',
-  writing: 'Письмо',
-  rhythm: 'Ритм',
-};
 
 /* ─── Single Toast Component ─── */
 
@@ -337,35 +323,4 @@ export function NotificationToasts() {
       </AnimatePresence>
     </div>
   );
-}
-
-/* ─── Convenience helpers (can be imported from anywhere) ─── */
-
-export function showKarmaToast(delta: number) {
-  const sign = delta > 0 ? '+' : '';
-  toastManager.addToast('karma', `Карма ${sign}${delta}`, delta);
-}
-
-export function showEnergyToast(delta: number) {
-  const sign = delta > 0 ? '+' : '';
-  toastManager.addToast('energy', `Энергия ${sign}${delta}`, delta);
-}
-
-export function showStressToast(delta: number) {
-  const sign = delta > 0 ? '+' : '';
-  toastManager.addToast('stress', `Стресс ${sign}${delta}`, delta);
-}
-
-export function showSkillToast(skill: TrainablePlayerSkill, delta: number) {
-  const name = SKILL_NAMES[skill] ?? skill;
-  const sign = delta > 0 ? '+' : '';
-  toastManager.addToast('skill', `Навык: ${name} ${sign}${delta}`, delta);
-}
-
-export function showPoemToast(title: string) {
-  toastManager.addToast('poem', `Стих собран: ${title}`);
-}
-
-export function showQuestToast(text: string) {
-  toastManager.addToast('quest', text);
 }

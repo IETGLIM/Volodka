@@ -21,13 +21,8 @@ import { useGameStore } from '@/store/gameStore';
 import { readGamePhase } from '@/shared/gamePhase';
 import { closeNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
 import {
-  getInteractionState,
-  getInteractionTargetNPCId,
-  isInteractionLocked,
   writeInteractionSession,
 } from '@/engine/interaction/interactionSession';
-
-export { getInteractionState, getInteractionTargetNPCId, isInteractionLocked };
 
 function publishInteraction(
   stateRef: React.MutableRefObject<InteractionState>,

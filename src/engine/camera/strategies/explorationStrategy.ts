@@ -1,4 +1,3 @@
-import * as THREE from 'three';
 import {
   updateExplorationState,
   resolveCameraCollision,
@@ -12,7 +11,7 @@ import {
   LOOK_AHEAD_STRENGTH,
   LOOK_AHEAD_LERP_SPEED,
 } from '../cameraConstants';
-import type { CameraModeContext, CameraModeStrategy } from '../types';
+import type { CameraModeStrategy } from '../types';
 
 /** Default spring-based exploration camera with look-ahead and breathing bob */
 export const explorationStrategy: CameraModeStrategy = {

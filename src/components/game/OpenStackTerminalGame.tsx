@@ -3,9 +3,10 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { FocusTrap } from '@/components/a11y/FocusTrap';
+import { usePanelDialog } from '@/components/a11y/usePanelDialog';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
-import { useGameStore } from '@/store/gameStore';
-import { eventBus } from '@/engine/EventBus';
+import { completeMinigame } from '@/engine/minigame/claimMinigameRewards';
 
 /* ─── Types ─── */
 
@@ -155,6 +156,7 @@ interface OpenStackTerminalGameProps {
 }
 
 export function OpenStackTerminalGame({ onClose }: OpenStackTerminalGameProps) {
+  const { closeButtonRef, dialogProps, titleProps } = usePanelDialog();
   const [phase, setPhase] = useState<GamePhase>('alert');
   const [terminalLines, setTerminalLines] = useState<TerminalLine[]>([]);
   const [timeLeft, setTimeLeft] = useState(TIME_LIMIT);
@@ -189,11 +191,13 @@ export function OpenStackTerminalGame({ onClose }: OpenStackTerminalGameProps) {
     if (completedRef.current) return;
     completedRef.current = true;
     setPhase('failure');
-    useGameStore.getState().addStress(3);
-    useGameStore.getState().setFlag('openstack_terminal_failed', true);
-    eventBus.emit('minigame:complete', {
+    completeMinigame({
       gameType: 'openstack_terminal',
       success: false,
+      rewards: [
+        { type: 'addStat', stat: 'stress', value: 3 },
+        { type: 'setFlag', flag: 'openstack_terminal_failed', flagValue: true },
+      ],
     });
   }, []);
 
@@ -202,15 +206,13 @@ export function OpenStackTerminalGame({ onClose }: OpenStackTerminalGameProps) {
     if (completedRef.current) return;
     completedRef.current = true;
     setPhase('success');
-    useGameStore.getState().addSkill('coding', 5);
-    useGameStore.getState().addKarma(3);
-    useGameStore.getState().setFlag('openstack_terminal_solved', true);
-    eventBus.emit('minigame:complete', {
+    completeMinigame({
       gameType: 'openstack_terminal',
       success: true,
-      reward: [
-        { type: 'addSkill' as const, value: 5 },
-        { type: 'addKarma' as const, value: 3 },
+      rewards: [
+        { type: 'addSkill', skill: 'coding', value: 5 },
+        { type: 'addKarma', value: 3 },
+        { type: 'setFlag', flag: 'openstack_terminal_solved', flagValue: true },
       ],
     });
   }, []);
@@ -351,8 +353,10 @@ export function OpenStackTerminalGame({ onClose }: OpenStackTerminalGameProps) {
       <div
         className="absolute inset-0 bg-black/80 backdrop-blur-sm"
         onClick={onClose}
+        aria-hidden="true"
       />
 
+      <FocusTrap initialFocusRef={closeButtonRef}>
       {/* Game panel */}
       <div
         className="relative z-10 w-full max-w-lg mx-4 rounded-lg border overflow-hidden"
@@ -361,6 +365,7 @@ export function OpenStackTerminalGame({ onClose }: OpenStackTerminalGameProps) {
           borderColor: 'rgba(68, 255, 136, 0.25)',
           boxShadow: '0 0 30px rgba(68, 255, 136, 0.08), inset 0 0 30px rgba(68, 255, 136, 0.02)',
         }}
+        {...dialogProps}
       >
         {/* Header */}
         <div
@@ -371,8 +376,9 @@ export function OpenStackTerminalGame({ onClose }: OpenStackTerminalGameProps) {
           }}
         >
           <div className="flex items-center gap-2">
-            <span style={{ color: '#44ff88', fontSize: '18px' }}>🖥</span>
+            <span style={{ color: '#44ff88', fontSize: '18px' }} aria-hidden="true">🖥</span>
             <h2
+              {...titleProps}
               className="text-sm font-bold tracking-widest uppercase"
               style={{ color: '#44ff88', fontFamily: 'monospace' }}
             >
@@ -403,8 +409,11 @@ export function OpenStackTerminalGame({ onClose }: OpenStackTerminalGameProps) {
               </span>
             )}
             <button
+              ref={closeButtonRef}
+              type="button"
               onClick={onClose}
               className="text-slate-500 hover:text-slate-300 transition-colors text-lg font-mono"
+              aria-label="Закрыть игру"
             >
               ✕
             </button>
@@ -717,6 +726,7 @@ export function OpenStackTerminalGame({ onClose }: OpenStackTerminalGameProps) {
           </AnimatePresence>
         </div>
       </div>
+      </FocusTrap>
     </motion.div>
   );
 }

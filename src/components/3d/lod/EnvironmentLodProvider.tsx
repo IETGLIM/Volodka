@@ -1,8 +1,6 @@
 /* ─── Scene-wide environment LOD from player position ─── */
 
 import {
-  createContext,
-  useContext,
   useMemo,
   useRef,
   useState,
@@ -18,16 +16,7 @@ import {
   getEnvironmentLodProfile,
   type EnvironmentLodLevel,
 } from '@/engine/lod/distanceLod';
-
-interface EnvironmentLodContextValue {
-  lod: EnvironmentLodLevel;
-}
-
-const EnvironmentLodContext = createContext<EnvironmentLodContextValue>({ lod: 'full' });
-
-export function useEnvironmentLod(): EnvironmentLodContextValue {
-  return useContext(EnvironmentLodContext);
-}
+import { EnvironmentLodContext } from './useEnvironmentLod';
 
 interface EnvironmentLodProviderProps {
   livePlayerPositionRef: MutableRefObject<THREE.Vector3>;

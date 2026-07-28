@@ -16,11 +16,8 @@ export type {
 
 import type {
   EnemyType,
-  CombatEnemy,
   CombatState,
   CombatLogEntry,
-  CombatBuff,
-  BuffEffect,
   EnemySpecialAttack,
 } from '@/shared/types/game';
 

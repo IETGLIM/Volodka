@@ -4,7 +4,7 @@ import { SCENE_CONFIG } from '@/config/scenes';
 import { useActiveQuests } from '@/store/questStore';
 import { eventBus } from '@/engine/EventBus';
 import { PHOTO_EVENTS } from '@/engine/events';
-import { floatKarma, floatEnergy, floatStress, floatXP } from '@/components/game/FloatingText';
+import { floatKarma, floatEnergy, floatStress, floatXP } from '@/components/game/floatingTextApi';
 import { determineWeatherType, type WeatherType } from '@/data/weatherEffects';
 import type { HUDProps } from './hudTypes';
 

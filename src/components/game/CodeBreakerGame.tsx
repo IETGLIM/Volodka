@@ -3,9 +3,10 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { FocusTrap } from '@/components/a11y/FocusTrap';
+import { usePanelDialog } from '@/components/a11y/usePanelDialog';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
-import { useGameStore } from '@/store/gameStore';
-import { eventBus } from '@/engine/EventBus';
+import { completeMinigame } from '@/engine/minigame/claimMinigameRewards';
 
 /* ─── Constants ─── */
 const CODE_LENGTH = 4;
@@ -66,6 +67,7 @@ interface CodeBreakerGameProps {
 }
 
 export function CodeBreakerGame({ onClose }: CodeBreakerGameProps) {
+  const { closeButtonRef, dialogProps, titleProps } = usePanelDialog();
   const [secretCode] = useState(() => generateSecretCode());
   const [currentGuess, setCurrentGuess] = useState<number[]>([]);
   const [guessHistory, setGuessHistory] = useState<GuessRow[]>([]);
@@ -91,17 +93,17 @@ export function CodeBreakerGame({ onClose }: CodeBreakerGameProps) {
 
       if (feedback.exact === CODE_LENGTH) {
         setGameState('won');
-        // Award +5 karma and trigger poem discovery
-        useGameStore.getState().addKarma(5);
-        useGameStore.getState().setFlag('codebreaker_solved', true);
-        eventBus.emit('minigame:complete', {
+        completeMinigame({
           gameType: 'codebreaker',
           success: true,
-          reward: [{ type: 'addKarma', value: 5 }],
+          rewards: [
+            { type: 'addKarma', value: 5 },
+            { type: 'setFlag', flag: 'codebreaker_solved', flagValue: true },
+          ],
         });
       } else if (guessHistory.length + 1 >= MAX_ATTEMPTS) {
         setGameState('lost');
-        eventBus.emit('minigame:complete', {
+        completeMinigame({
           gameType: 'codebreaker',
           success: false,
         });
@@ -117,10 +119,6 @@ export function CodeBreakerGame({ onClose }: CodeBreakerGameProps) {
     setCurrentGuess((prev) => prev.slice(0, -1));
     setSelectedSlot(Math.max(0, currentGuess.length - 1));
   }, [currentGuess, gameState]);
-
-  const handleSubmit = useCallback(() => {
-    // This is auto-submitted when 4 digits are entered
-  }, []);
 
   // Keyboard support
   useEffect(() => {
@@ -151,8 +149,10 @@ export function CodeBreakerGame({ onClose }: CodeBreakerGameProps) {
       <div
         className="absolute inset-0 bg-black/80 backdrop-blur-sm"
         onClick={onClose}
+        aria-hidden="true"
       />
 
+      <FocusTrap initialFocusRef={closeButtonRef}>
       {/* Game panel */}
       <div
         ref={containerRef}
@@ -162,6 +162,7 @@ export function CodeBreakerGame({ onClose }: CodeBreakerGameProps) {
           borderColor: 'rgba(0, 255, 238, 0.25)',
           boxShadow: '0 0 30px rgba(0, 255, 238, 0.08), inset 0 0 30px rgba(0, 255, 238, 0.02)',
         }}
+        {...dialogProps}
       >
         {/* Header */}
         <div
@@ -172,8 +173,9 @@ export function CodeBreakerGame({ onClose }: CodeBreakerGameProps) {
           }}
         >
           <div className="flex items-center gap-2">
-            <span style={{ color: '#00ffee', fontSize: '18px' }}>⚡</span>
+            <span style={{ color: '#00ffee', fontSize: '18px' }} aria-hidden="true">⚡</span>
             <h2
+              {...titleProps}
               className="text-sm font-bold tracking-widest uppercase"
               style={{ color: '#00ffee', fontFamily: 'monospace' }}
             >
@@ -181,8 +183,11 @@ export function CodeBreakerGame({ onClose }: CodeBreakerGameProps) {
             </h2>
           </div>
           <button
+            ref={closeButtonRef}
+            type="button"
             onClick={onClose}
             className="text-slate-500 hover:text-slate-300 transition-colors text-lg font-mono"
+            aria-label="Закрыть игру"
           >
             ✕
           </button>
@@ -417,6 +422,7 @@ export function CodeBreakerGame({ onClose }: CodeBreakerGameProps) {
           </div>
         </div>
       </div>
+      </FocusTrap>
     </motion.div>
   );
 }

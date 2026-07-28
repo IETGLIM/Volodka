@@ -107,7 +107,7 @@ export const ProceduralPlayerModel = memo(function ProceduralPlayerModel({
       Object.values(sharedGeo).forEach(g => g.dispose());
       Object.values(sharedMat).forEach(m => m.dispose());
     };
-  }, []);
+  }, [sharedGeo, sharedMat]);
 
   /* ─── Karma-dependent materials (optimization 5) ─── */
   const karmaMat = useMemo(() => ({

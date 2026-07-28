@@ -7,7 +7,6 @@
 import { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Cloud,
   CloudRain,
   CloudSnow,
   CloudFog,

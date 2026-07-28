@@ -317,10 +317,8 @@ export function FastTravelPanel({ open, onClose }: FastTravelPanelProps) {
                       const isDiscovered = discoveredScenes.includes(node.id);
                       const isCurrent = node.id === currentSceneId;
                       const accessible = isAccessible(node.id);
-                      const isHovered = hoveredScene === node.id;
                       const gateOpen = isSceneGateOpen(node.id, playerFlags);
                       const isRumored = !isDiscovered && gateOpen;
-                      const travelHours = TRAVEL_TIME[node.id] ?? 0.5;
                       const config = SCENE_CONFIG[node.id];
 
                       return (

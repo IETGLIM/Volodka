@@ -3,9 +3,10 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { FocusTrap } from '@/components/a11y/FocusTrap';
+import { usePanelDialog } from '@/components/a11y/usePanelDialog';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
-import { useGameStore } from '@/store/gameStore';
-import { eventBus } from '@/engine/EventBus';
+import { completeMinigame } from '@/engine/minigame/claimMinigameRewards';
 
 /* ─── Types ─── */
 
@@ -177,6 +178,7 @@ interface BashTerminalGameProps {
 }
 
 export function BashTerminalGame({ onClose }: BashTerminalGameProps) {
+  const { closeButtonRef, dialogProps, titleProps } = usePanelDialog();
   const [gameStatus, setGameStatus] = useState<GameStatus>('playing');
   const [currentPhaseIndex, setCurrentPhaseIndex] = useState(0);
   const [terminalLines, setTerminalLines] = useState<TerminalLine[]>(() => [
@@ -216,25 +218,24 @@ export function BashTerminalGame({ onClose }: BashTerminalGameProps) {
       setGameStatus(success ? 'won' : 'lost');
 
       if (success) {
-        useGameStore.getState().addSkill('coding', 4);
-        useGameStore.getState().addSkill('logic', 2);
-        useGameStore.getState().addKarma(5);
-        useGameStore.getState().setFlag('bash_terminal_solved', true);
-        eventBus.emit('minigame:complete', {
+        completeMinigame({
           gameType: 'bash_terminal',
           success: true,
-          reward: [
-            { type: 'addSkill' as const, skill: 'coding' as const, value: 4 },
-            { type: 'addSkill' as const, skill: 'logic' as const, value: 2 },
-            { type: 'addKarma' as const, value: 5 },
+          rewards: [
+            { type: 'addSkill', skill: 'coding', value: 4 },
+            { type: 'addSkill', skill: 'logic', value: 2 },
+            { type: 'addKarma', value: 5 },
+            { type: 'setFlag', flag: 'bash_terminal_solved', flagValue: true },
           ],
         });
       } else {
-        useGameStore.getState().addStress(5);
-        useGameStore.getState().setFlag('bash_terminal_failed', true);
-        eventBus.emit('minigame:complete', {
+        completeMinigame({
           gameType: 'bash_terminal',
           success: false,
+          rewards: [
+            { type: 'addStat', stat: 'stress', value: 5 },
+            { type: 'setFlag', flag: 'bash_terminal_failed', flagValue: true },
+          ],
         });
       }
 
@@ -386,8 +387,10 @@ export function BashTerminalGame({ onClose }: BashTerminalGameProps) {
       <div
         className="absolute inset-0 bg-black/85 backdrop-blur-sm"
         onClick={onClose}
+        aria-hidden="true"
       />
 
+      <FocusTrap initialFocusRef={closeButtonRef}>
       {/* Terminal panel */}
       <div
         className="relative z-10 w-full max-w-lg mx-4 rounded-lg border overflow-hidden"
@@ -396,6 +399,7 @@ export function BashTerminalGame({ onClose }: BashTerminalGameProps) {
           borderColor: 'rgba(0, 255, 65, 0.3)',
           boxShadow: '0 0 40px rgba(0, 255, 65, 0.08), inset 0 0 40px rgba(0, 255, 65, 0.02)',
         }}
+        {...dialogProps}
       >
         {/* Scanlines overlay */}
         <div
@@ -424,8 +428,9 @@ export function BashTerminalGame({ onClose }: BashTerminalGameProps) {
           }}
         >
           <div className="flex items-center gap-2">
-            <span style={{ color: '#00ff41', fontSize: '14px' }}>&#9608;</span>
+            <span style={{ color: '#00ff41', fontSize: '14px' }} aria-hidden="true">&#9608;</span>
             <h2
+              {...titleProps}
               className="text-xs font-bold tracking-widest uppercase"
               style={{ color: '#00ff41', fontFamily: 'monospace' }}
             >
@@ -453,8 +458,11 @@ export function BashTerminalGame({ onClose }: BashTerminalGameProps) {
               {timeLeft}
             </span>
             <button
+              ref={closeButtonRef}
+              type="button"
               onClick={onClose}
               className="text-slate-600 hover:text-slate-300 transition-colors text-sm font-mono ml-1"
+              aria-label="Закрыть игру"
             >
               ✕
             </button>
@@ -683,6 +691,7 @@ export function BashTerminalGame({ onClose }: BashTerminalGameProps) {
           }
         `}</style>
       </div>
+      </FocusTrap>
     </motion.div>
   );
 }

@@ -6,10 +6,9 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
-import { Sword, Shield, Sparkles, LogOut, ChevronDown, Heart, Clock, Zap, Flame, Skull, Trophy, RotateCcw, Eye, Bug, ShieldAlert, Music2 } from 'lucide-react';
+import { Sword, Shield, Sparkles, LogOut, ChevronDown, Heart, Clock, Zap, Flame } from 'lucide-react';
 import { useGameMode } from '@/store/selectors';
 import {
-  getCombatState,
   playerAttack,
   playerDefend,
   playerUsePoemPower,
@@ -404,7 +403,10 @@ export function CombatUI() {
     }
   }, [combatState?.isPlayerTurn, combatState?.turn]);
 
-  const availablePowers = useMemo(() => getAvailableCombatPowers(), [combatState]);
+  const availablePowers = useMemo(() => {
+    void combatState; // invalidate when combat turn/state changes (powers read live store)
+    return getAvailableCombatPowers();
+  }, [combatState]);
   const handleAttack = useCallback(() => {
     if (pendingAction || !combatState?.isPlayerTurn) return;
     setPendingAction(true);

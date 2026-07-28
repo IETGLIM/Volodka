@@ -1,12 +1,12 @@
 
 /* ─── Volodka RPG – Corridor procedural 3D visual ─── */
 
-import { useMemo, useRef, useEffect, type MutableRefObject } from 'react';
+import { useRef, useEffect, type MutableRefObject } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
-import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
+import { useEnvironmentLod } from './lod/useEnvironmentLod';
 import { EnvironmentDetail } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 

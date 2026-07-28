@@ -15,6 +15,7 @@ import { getGameStore } from '@/store/gameStore';
 import { readGamePhase } from '@/shared/gamePhase';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { SCENE_CONFIG } from '@/config/scenes';
+import { photoModeActive } from './photoModeState';
 
 /* ─── Types ─── */
 
@@ -28,10 +29,6 @@ interface PreviewData {
 const FLASH_DURATION_MS = 200;
 const PREVIEW_DISPLAY_MS = 3000;
 const CORNER_BRACKET_SIZE = 16;
-
-/* ─── Shared state for HUD visibility ─── */
-/** Other components can read this to decide whether to hide themselves. */
-export const photoModeActive = { current: false };
 
 /* ─── Component ─── */
 

@@ -14,7 +14,7 @@ import {
   AUTO_FOLLOW_RETURN_SPEED,
 } from './cameraConstants';
 import type { CameraModeContext, CameraModeTarget } from './types';
-import { getInteractionState } from '@/components/3d/InteractionSystemBridge';
+import { getInteractionState } from '@/engine/interaction/interactionSession';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 
 export interface PostModeFrameState {
@@ -33,7 +33,8 @@ export function applyCameraFrame(
   frameState: PostModeFrameState,
 ): void {
   const { spring, camera: cam, delta, playerPos, playerVelocity } = ctx;
-  let { targetPos, targetLook, targetFov, targetRoll } = targets;
+  let { targetPos } = targets;
+  const { targetLook, targetFov, targetRoll } = targets;
 
   const isInDialogue = frameState.isInDialogue;
   const isCutscene = frameState.isCutscene;

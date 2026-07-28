@@ -2,7 +2,6 @@
 /* ─── Volodka RPG – NPC Animation State Hook ─── */
 
 import { useRef, useEffect, useCallback } from 'react';
-import { useAnimations } from '@react-three/drei';
 import * as THREE from 'three';
 import { eventBus } from '@/engine/EventBus';
 import type { NPCAnimationState } from '@/engine/interaction/interactionMachine';

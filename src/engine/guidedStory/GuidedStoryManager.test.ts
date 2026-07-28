@@ -29,7 +29,7 @@ const TEST_PATH: GuidedStoryPathConfig = {
 };
 
 function createTestDeps(overrides?: Partial<GuidedStorySnapshot>): GuidedStoryDeps {
-  let snapshot: GuidedStorySnapshot = {
+  const snapshot: GuidedStorySnapshot = {
     visitedNodes: ['start'],
     currentAct: 1,
     flags: {},

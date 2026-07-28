@@ -6,14 +6,14 @@
 
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { FocusTrap } from '@/components/a11y/FocusTrap';
+import { usePanelDialog } from '@/components/a11y/usePanelDialog';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
-import { useGameStore } from '@/store/gameStore';
-import { eventBus } from '@/engine/EventBus';
+import { completeMinigame } from '@/engine/minigame/claimMinigameRewards';
 
 /* ─── Accent colors (emerald theme for neural network) ─── */
 const ACCENT_RGB = '52, 211, 153';
 const ACCENT_COLOR = `rgba(${ACCENT_RGB}, 0.9)`;
-const ACCENT_GLOW = `rgba(${ACCENT_RGB}, 0.3)`;
 const RED_RGB = '239, 68, 68';
 const CYAN_RGB = '0, 229, 255';
 
@@ -85,7 +85,7 @@ function getRating(roundsCompleted: number): { label: string; color: string } {
 
 /* ─── Cell component ─── */
 function NeuralCell({
-  index,
+  index: _index,
   isActive,
   isWrong,
   isCorrectWave,
@@ -101,12 +101,6 @@ function NeuralCell({
   onClick: () => void;
   delay?: number;
 }) {
-  const row = Math.floor(index / GRID_SIZE);
-  const col = index % GRID_SIZE;
-
-  // Hexagonal offset for even rows
-  const offsetStyle = row % 2 === 1 ? { marginLeft: 'calc(50% + 2px)' } : {};
-
   return (
     <motion.div
       className="relative flex items-center justify-center rounded-lg select-none"
@@ -213,6 +207,7 @@ function NeuralCell({
 
 /* ─── Main Component ─── */
 export function MemoryPuzzleGame({ onClose }: MemoryPuzzleGameProps) {
+  const { closeButtonRef, dialogProps, titleProps } = usePanelDialog();
   const [difficulty, setDifficulty] = useState<Difficulty>('hacker');
   const [gamePhase, setGamePhase] = useState<GamePhase>('setup');
   const [pattern, setPattern] = useState<number[]>([]);
@@ -223,7 +218,7 @@ export function MemoryPuzzleGame({ onClose }: MemoryPuzzleGameProps) {
   const [round, setRound] = useState(0);
   const [lives, setLives] = useState(MAX_LIVES);
   const [score, setScore] = useState(0);
-  const [showingIndex, setShowingIndex] = useState(-1);
+  const [, setShowingIndex] = useState(-1);
   const [roundsCompleted, setRoundsCompleted] = useState(0);
   const [rewardsClaimed, setRewardsClaimed] = useState(false);
 
@@ -383,23 +378,19 @@ export function MemoryPuzzleGame({ onClose }: MemoryPuzzleGameProps) {
     return { xpReward, karmaReward, codingSkill };
   }, [roundsCompleted]);
 
-  // Handle claiming rewards
+  // Handle claiming rewards (single apply path — see claimMinigameRewards)
   const handleClaimRewards = useCallback(() => {
     if (rewardsClaimed) return;
     const rewards = calculateRewards();
-    const store = useGameStore.getState();
 
-    store.addXp(rewards.xpReward);
-    store.addKarma(rewards.karmaReward);
-    store.addSkill('coding', rewards.codingSkill);
-    store.setFlag('memory_puzzle_complete', true);
-
-    eventBus.emit('minigame:complete', {
+    completeMinigame({
       gameType: 'memory',
       success: true,
-      reward: [
+      rewards: [
         { type: 'addXp', value: rewards.xpReward },
         { type: 'addKarma', value: rewards.karmaReward },
+        { type: 'addSkill', skill: 'coding', value: rewards.codingSkill },
+        { type: 'setFlag', flag: 'memory_puzzle_complete', flagValue: true },
       ],
     });
 
@@ -885,17 +876,20 @@ export function MemoryPuzzleGame({ onClose }: MemoryPuzzleGameProps) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
+        aria-hidden="true"
       />
 
       {/* Scanlines overlay */}
       <div
         className="absolute inset-0 pointer-events-none"
+        aria-hidden="true"
         style={{
           background:
             'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 0, 0, 0.04) 2px, rgba(0, 0, 0, 0.04) 4px)',
         }}
       />
 
+      <FocusTrap initialFocusRef={closeButtonRef}>
       {/* Main panel */}
       <motion.div
         className="relative z-10 w-full max-w-md mx-4"
@@ -903,6 +897,7 @@ export function MemoryPuzzleGame({ onClose }: MemoryPuzzleGameProps) {
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.92, opacity: 0, y: 30 }}
         transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+        {...dialogProps}
       >
         <div
           className="rounded-lg border overflow-hidden"
@@ -923,10 +918,11 @@ export function MemoryPuzzleGame({ onClose }: MemoryPuzzleGameProps) {
             }}
           >
             <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full" style={{ background: `rgba(${ACCENT_RGB}, 0.8)` }} />
-              <span className="h-2 w-2 rounded-full bg-amber-400/80" />
-              <span className="h-2 w-2 rounded-full bg-red-500/80" />
+              <span className="h-2 w-2 rounded-full" style={{ background: `rgba(${ACCENT_RGB}, 0.8)` }} aria-hidden="true" />
+              <span className="h-2 w-2 rounded-full bg-amber-400/80" aria-hidden="true" />
+              <span className="h-2 w-2 rounded-full bg-red-500/80" aria-hidden="true" />
               <span
+                {...titleProps}
                 className="ml-2 font-mono text-[9px] uppercase tracking-[0.2em]"
                 style={{ color: `rgba(${ACCENT_RGB}, 0.35)` }}
               >
@@ -934,6 +930,8 @@ export function MemoryPuzzleGame({ onClose }: MemoryPuzzleGameProps) {
               </span>
             </div>
             <button
+              ref={closeButtonRef}
+              type="button"
               onClick={onClose}
               className="w-7 h-7 flex items-center justify-center rounded-md text-slate-500 hover:text-slate-200 hover:bg-white/5 transition-colors font-mono text-sm"
               aria-label="Закрыть игру"
@@ -1020,6 +1018,7 @@ export function MemoryPuzzleGame({ onClose }: MemoryPuzzleGameProps) {
           }}
         />
       </motion.div>
+      </FocusTrap>
     </motion.div>
   );
 }

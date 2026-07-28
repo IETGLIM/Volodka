@@ -16,7 +16,7 @@
 
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Zap, Lock, ChevronRight, Sparkles, Info, Star } from 'lucide-react';
+import { Zap, Lock, Sparkles, Star } from 'lucide-react';
 import { useSkillTreePanelState } from '@/store/selectors';
 import {
   SKILL_TREE_BY_BRANCH,

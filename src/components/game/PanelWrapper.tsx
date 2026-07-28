@@ -16,8 +16,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { FocusTrap } from '@/components/a11y/FocusTrap';
 import { usePanelDialog } from '@/components/a11y/usePanelDialog';
-import { usePanelId, usePanelStack } from '@/components/game/orchestrator/PanelStackContext';
-import { usePanelExitComplete } from '@/components/game/orchestrator/PanelExitContext';
+import { usePanelId, usePanelStack } from '@/components/game/orchestrator/usePanelStack';
+import { usePanelExitComplete } from '@/components/game/orchestrator/usePanelExitComplete';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
 /* ─── Accent color mapping ─── */

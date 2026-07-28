@@ -8,6 +8,11 @@ export interface SecondaryAction {
   badge?: number;
 }
 
+export interface HudOverflowSection {
+  title: string;
+  actions: SecondaryAction[];
+}
+
 export type HUDProps = {
   onOpenQuests?: () => void;
   onOpenInventory?: () => void;

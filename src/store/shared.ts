@@ -3,11 +3,9 @@
  * used by multiple Zustand slices. Extracted here to avoid duplication. */
 
 import type {
-  GameMode,
   PlayerState,
   PlayerProgression,
   ExplorationState,
-  TrainablePlayerSkill,
   EquipmentSlot,
   InventoryItem,
 } from '@/shared/types/game';

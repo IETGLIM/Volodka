@@ -10,7 +10,6 @@
  */
 
 import { useEffect, useRef } from 'react';
-import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
 import { audioEngine } from '@/engine/AudioEngine';
 import { performSceneTransition } from '@/engine/core/SceneTransitionManager';

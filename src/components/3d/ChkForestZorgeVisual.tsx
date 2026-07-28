@@ -5,7 +5,7 @@ import { useMemo, useRef, type MutableRefObject } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
-import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
+import { useEnvironmentLod } from './lod/useEnvironmentLod';
 import { EnvironmentDetail, SceneClutterGate } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 

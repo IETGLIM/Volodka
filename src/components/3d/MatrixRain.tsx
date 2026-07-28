@@ -283,12 +283,13 @@ export function MatrixRain({ sceneId: sceneIdProp }: MatrixRainProps) {
       }),
     );
 
+    const glitchTimers = glitchTimersRef.current;
     return () => {
       unsubs.forEach((u) => u());
-      for (const timer of glitchTimersRef.current) {
+      for (const timer of glitchTimers) {
         clearTimeout(timer);
       }
-      glitchTimersRef.current.clear();
+      glitchTimers.clear();
     };
   }, [activePreset.speed]);
 

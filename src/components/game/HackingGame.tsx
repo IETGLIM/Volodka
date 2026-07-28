@@ -5,15 +5,15 @@
 
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { FocusTrap } from '@/components/a11y/FocusTrap';
+import { usePanelDialog } from '@/components/a11y/usePanelDialog';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
-import { useGameStore } from '@/store/gameStore';
-import { eventBus } from '@/engine/EventBus';
+import { completeMinigame } from '@/engine/minigame/claimMinigameRewards';
 import { CYBER_CYAN_RGB } from '@/shared/constants/cyberPalette';
 
 /* ─── Accent colors (red theme for hacking) ─── */
 const ACCENT_RGB = '239, 68, 68';
 const ACCENT_COLOR = `rgba(${ACCENT_RGB}, 0.9)`;
-const ACCENT_GLOW = `rgba(${ACCENT_RGB}, 0.3)`;
 const CYAN_RGB = CYBER_CYAN_RGB;
 const CYAN_COLOR = `rgba(${CYAN_RGB}, 0.9)`;
 const GREEN_RGB = '34, 197, 94';
@@ -384,6 +384,7 @@ function NetworkNode({
 
 /* ─── Main Component ─── */
 export function HackingGame({ onClose }: HackingGameProps) {
+  const { closeButtonRef, dialogProps, titleProps } = usePanelDialog();
   const [difficulty, setDifficulty] = useState<Difficulty>('hacker');
   const [gamePhase, setGamePhase] = useState<GamePhase>('setup');
   const [turn, setTurn] = useState(0);
@@ -570,22 +571,18 @@ export function HackingGame({ onClose }: HackingGameProps) {
     return { totalXP, dataBonus, bandwidthBonus, karmaReward, codingSkill, dataCount: dataCollected.size };
   }, [dataCollected, bandwidth]);
 
-  // Handle claiming rewards
+  // Handle claiming rewards (single apply path — see claimMinigameRewards)
   const handleClaimRewards = useCallback(() => {
     const rewards = calculateRewards();
-    const store = useGameStore.getState();
 
-    store.addXp(rewards.totalXP);
-    store.addKarma(rewards.karmaReward);
-    store.addSkill('coding', rewards.codingSkill);
-    store.setFlag('hacking_complete', true);
-
-    eventBus.emit('minigame:complete', {
+    completeMinigame({
       gameType: 'hacking',
       success: true,
-      reward: [
+      rewards: [
         { type: 'addXp', value: rewards.totalXP },
         { type: 'addKarma', value: rewards.karmaReward },
+        { type: 'addSkill', skill: 'coding', value: rewards.codingSkill },
+        { type: 'setFlag', flag: 'hacking_complete', flagValue: true },
       ],
     });
 
@@ -1158,8 +1155,10 @@ export function HackingGame({ onClose }: HackingGameProps) {
       <div
         className="absolute inset-0 bg-black/80 backdrop-blur-sm"
         onClick={onClose}
+        aria-hidden="true"
       />
 
+      <FocusTrap initialFocusRef={closeButtonRef}>
       {/* Game panel */}
       <div
         className="relative z-10 w-full max-w-lg mx-4 rounded-lg border overflow-hidden"
@@ -1168,6 +1167,7 @@ export function HackingGame({ onClose }: HackingGameProps) {
           borderColor: `rgba(${ACCENT_RGB}, 0.25)`,
           boxShadow: `0 0 30px rgba(${ACCENT_RGB}, 0.08), inset 0 0 30px rgba(${ACCENT_RGB}, 0.02)`,
         }}
+        {...dialogProps}
       >
         {/* Header */}
         <div
@@ -1178,8 +1178,9 @@ export function HackingGame({ onClose }: HackingGameProps) {
           }}
         >
           <div className="flex items-center gap-2">
-            <span style={{ color: ACCENT_COLOR, fontSize: '18px' }}>🔓</span>
+            <span style={{ color: ACCENT_COLOR, fontSize: '18px' }} aria-hidden="true">🔓</span>
             <h2
+              {...titleProps}
               className="text-sm font-bold tracking-widest uppercase"
               style={{ color: ACCENT_COLOR, fontFamily: 'monospace' }}
             >
@@ -1205,8 +1206,11 @@ export function HackingGame({ onClose }: HackingGameProps) {
               </div>
             )}
             <button
+              ref={closeButtonRef}
+              type="button"
               onClick={onClose}
               className="text-slate-500 hover:text-slate-300 transition-colors text-lg font-mono"
+              aria-label="Закрыть игру"
             >
               ✕
             </button>
@@ -1251,6 +1255,7 @@ export function HackingGame({ onClose }: HackingGameProps) {
           </div>
         </div>
       </div>
+      </FocusTrap>
     </motion.div>
   );
 }

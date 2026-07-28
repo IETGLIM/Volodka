@@ -18,7 +18,7 @@ import {
   EXPLORATION_HUD_LAYOUT,
   explorationObjectiveTopPx,
 } from '@/shared/constants/hudLayout'
-import { isInteractionLocked } from '@/components/3d/InteractionSystemBridge'
+import { isInteractionLocked } from '@/engine/interaction/interactionSession'
 import type { SceneId } from '@/shared/types/game'
 
 const GUIDANCE_DISMISS_KEY = 'volodka_guidance_dismissed_sig'

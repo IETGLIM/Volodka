@@ -1,6 +1,8 @@
 export {
   FRAME_SYSTEM_ORDER,
   FRAME_BUDGET_MS,
+  CRITICAL_FRAME_SYSTEMS,
+  isFrameSystemCritical,
   type FrameSystemId,
   type FrameTickContext,
   type FrameTickCallback,
@@ -12,11 +14,14 @@ export {
   unregisterFrameTick,
   setFrameTickEnabled,
   runFrameBudget,
+  runPostFrameBudget,
   setPhysicsStepMs,
   getRegisteredTickCount,
+  getLastSkippedTickCount,
   getSystemCpuMs,
   getTotalBudgetCpuMs,
   getTopTickTimings,
+  resetFrameBudgetRegistryForTests,
 } from './FrameBudgetRegistry';
 
 export {

@@ -17,7 +17,6 @@ import type { GameStoreState } from '../types';
 import { readUIFromExploration } from '../crossSliceReads';
 import { getInitialLoreEntries } from '@/data/gameDataLoader';
 import { eventBus } from '@/engine/EventBus';
-import { musicEngine } from '@/engine/MusicEngine';
 
 /* ─── Slice types ─── */
 
@@ -155,7 +154,7 @@ export const createUISlice: StateCreator<
   setMusicVolume: (volume) => {
     const clampedVolume = clamp(volume, 0, 1);
     set({ musicVolume: clampedVolume });
-    musicEngine.setVolume(clampedVolume);
+    eventBus.emit('music:set_volume', { volume: clampedVolume });
     try {
       localStorage.setItem('volodka_music_volume', String(Math.round(clampedVolume * 100)));
     } catch {
@@ -166,12 +165,11 @@ export const createUISlice: StateCreator<
   toggleMusic: () =>
     set((state) => {
       const newEnabled = !state.musicEnabled;
-      if (!newEnabled) {
-        musicEngine.stopMusic(1);
-      } else {
-        const { currentSceneId } = readUIFromExploration(get());
-        musicEngine.playSceneMusic(currentSceneId);
-      }
+      const { currentSceneId } = readUIFromExploration(get());
+      eventBus.emit('music:set_enabled', {
+        enabled: newEnabled,
+        sceneId: currentSceneId,
+      });
       return { musicEnabled: newEnabled };
     }),
 

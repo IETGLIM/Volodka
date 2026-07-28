@@ -1,13 +1,15 @@
-/* ─── Volodka RPG – panel stack context ─── */
-
-import { createContext, useContext, useMemo, type ReactNode } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import {
   MENU_LAYER_PANELS,
   type NonNullPanelType,
 } from './panelStackReducer';
-
-export type { NonNullPanelType } from './panelStackReducer';
+import {
+  PanelStackContext,
+  PanelIdContext,
+  usePanelStack,
+  type PanelStackContextValue,
+} from './usePanelStack';
 
 function buildStackIndexMap(stack: readonly NonNullPanelType[]): Map<NonNullPanelType, number> {
   const indexByPanel = new Map<NonNullPanelType, number>();
@@ -16,19 +18,6 @@ function buildStackIndexMap(stack: readonly NonNullPanelType[]): Map<NonNullPane
   }
   return indexByPanel;
 }
-
-export interface PanelStackContextValue {
-  stack: NonNullPanelType[];
-  isPanelOpen: (panel: NonNullPanelType) => boolean;
-  isTopPanel: (panel: NonNullPanelType) => boolean;
-  getStackIndex: (panel: NonNullPanelType) => number;
-  getStackZIndex: (panel: NonNullPanelType) => number;
-}
-
-const PanelStackContext = createContext<PanelStackContextValue | null>(null);
-
-/** Per-panel id for z-index / backdrop inside LazyPanelSlot. */
-export const PanelIdContext = createContext<NonNullPanelType | null>(null);
 
 export function PanelStackProvider({
   stack,
@@ -61,24 +50,6 @@ export function PanelStackProvider({
       {children}
     </PanelStackContext.Provider>
   );
-}
-
-export function usePanelStack(): PanelStackContextValue {
-  const ctx = useContext(PanelStackContext);
-  if (!ctx) {
-    return {
-      stack: [],
-      isPanelOpen: () => false,
-      isTopPanel: () => true,
-      getStackIndex: () => 0,
-      getStackZIndex: () => UI_LAYERS.PANEL,
-    };
-  }
-  return ctx;
-}
-
-export function usePanelId(): NonNullPanelType | null {
-  return useContext(PanelIdContext);
 }
 
 export function PanelStackSlot({

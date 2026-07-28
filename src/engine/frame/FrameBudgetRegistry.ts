@@ -1,5 +1,8 @@
 import {
+  CRITICAL_FRAME_SYSTEMS,
+  FRAME_BUDGET_MS,
   FRAME_SYSTEM_ORDER,
+  isFrameSystemCritical,
   type FrameSystemId,
   type FrameTickCallback,
   type FrameTickContext,
@@ -8,6 +11,7 @@ import {
 } from './types';
 
 export type { RegisteredFrameTick };
+export { CRITICAL_FRAME_SYSTEMS, FRAME_BUDGET_MS, isFrameSystemCritical };
 
 let nextTickId = 1;
 const ticks = new Map<number, RegisteredFrameTick>();
@@ -29,6 +33,8 @@ const tickCpuMs = new Map<string, number>();
 let lastTotalCpuMs = 0;
 let lastPhysicsStepMs = 0;
 let registeredTickCount = 0;
+/** Non-critical pre ticks soft-skipped last frame due to budget. */
+let lastSkippedTickCount = 0;
 
 export function registerFrameTick(
   system: FrameSystemId,
@@ -43,6 +49,7 @@ export function registerFrameTick(
     label: options.label ?? `tick-${id}`,
     enabled: options.enabled ?? true,
     phase: options.phase ?? 'pre',
+    critical: isFrameSystemCritical(system, options.critical),
     callback,
   });
   registeredTickCount = ticks.size;
@@ -61,6 +68,10 @@ export function setFrameTickEnabled(id: number, enabled: boolean): void {
 
 export function getRegisteredTickCount(): number {
   return registeredTickCount;
+}
+
+export function getLastSkippedTickCount(): number {
+  return lastSkippedTickCount;
 }
 
 export function setPhysicsStepMs(ms: number): void {
@@ -106,34 +117,70 @@ function runTicks(
   ctx: FrameTickContext,
   phase: RegisteredFrameTick['phase'],
   trackSystemCpu: boolean,
+  softSkip: boolean,
 ): void {
   const sorted = sortTicks([...ticks.values()].filter((t) => t.enabled && t.phase === phase));
+  let cumulativeMs = 0;
+  let overBudget = false;
+  let skipped = 0;
 
   for (const tick of sorted) {
+    if (softSkip && overBudget && !tick.critical) {
+      skipped += 1;
+      const keyPrefix = phase === 'post' ? 'post:' : '';
+      tickCpuMs.set(`${keyPrefix}${tick.system}:${tick.label}`, 0);
+      continue;
+    }
+
     const t0 = performance.now();
     tick.callback(ctx);
     const elapsed = performance.now() - t0;
+    cumulativeMs += elapsed;
+
     if (trackSystemCpu) {
       systemCpuMs[tick.system] += elapsed;
     }
     const keyPrefix = phase === 'post' ? 'post:' : '';
     tickCpuMs.set(`${keyPrefix}${tick.system}:${tick.label}`, elapsed);
+
+    if (softSkip && cumulativeMs >= FRAME_BUDGET_MS) {
+      overBudget = true;
+    }
+  }
+
+  if (softSkip) {
+    lastSkippedTickCount = skipped;
   }
 }
 
-/** Run pre-render ticks in deterministic system + priority order. */
+/** Run pre-render ticks in deterministic system + priority order (with soft-skip). */
 export function runFrameBudget(ctx: FrameTickContext): void {
   for (const key of FRAME_SYSTEM_ORDER) {
     systemCpuMs[key] = 0;
   }
   tickCpuMs.clear();
+  lastSkippedTickCount = 0;
 
   const frameStart = performance.now();
-  runTicks(ctx, 'pre', true);
+  runTicks(ctx, 'pre', true, true);
   lastTotalCpuMs = performance.now() - frameStart;
 }
 
-/** Run post-render ticks (profiler, canvas guards) after WebGL draw. */
+/** Run post-render ticks (profiler, canvas guards) after WebGL draw — never soft-skipped. */
 export function runPostFrameBudget(ctx: FrameTickContext): void {
-  runTicks(ctx, 'post', false);
+  runTicks(ctx, 'post', false, false);
+}
+
+/** Test-only: clear all registered ticks and timing state. */
+export function resetFrameBudgetRegistryForTests(): void {
+  ticks.clear();
+  nextTickId = 1;
+  registeredTickCount = 0;
+  lastTotalCpuMs = 0;
+  lastPhysicsStepMs = 0;
+  lastSkippedTickCount = 0;
+  tickCpuMs.clear();
+  for (const key of FRAME_SYSTEM_ORDER) {
+    systemCpuMs[key] = 0;
+  }
 }

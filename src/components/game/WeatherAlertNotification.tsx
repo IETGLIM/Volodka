@@ -6,7 +6,7 @@
  * Listens on EventBus `weather:changed` event.
  * Also listens on `weather:rain` and `weather:snow` for real-time detection. */
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useEffectEvent } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Sun,
@@ -21,9 +21,8 @@ import {
 import { eventBus } from '@/engine/EventBus';
 import { useWeatherAlertState } from '@/store/selectors';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
-import { WEATHER_EFFECTS, determineWeatherType } from '@/data/weatherEffects';
+import { determineWeatherType } from '@/data/weatherEffects';
 import type { EventWeatherType } from '@/shared/types/game';
-import type { SceneId } from '@/shared/types/game';
 
 /* ─── Types ─── */
 
@@ -328,15 +327,14 @@ function WeatherAlertCard({ alert, index }: { alert: WeatherAlertData; index: nu
 export function WeatherAlertNotification() {
   const [alerts, setAlerts] = useState<WeatherAlertData[]>([]);
   const timersMap = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
-  const timers = timersMap.current;
 
   /* ── Track previous weather to detect changes from store ── */
   const { currentSceneId, timeOfDay, weatherEnabled, rainIntensity } = useWeatherAlertState();
 
   const prevWeatherRef = useRef<EventWeatherType | null>(null);
 
-  /** Add a weather alert */
-  const addAlert = (weatherType: EventWeatherType, temperature: number, debuffs?: string[]) => {
+  /** Add a weather alert — Effect Event so listeners stay subscribed without churn */
+  const addAlert = useEffectEvent((weatherType: EventWeatherType, temperature: number, debuffs?: string[]) => {
     // Don't show alerts for clear weather returning to clear
     if (weatherType === 'clear' && prevWeatherRef.current === 'clear') return;
 
@@ -356,11 +354,11 @@ export function WeatherAlertNotification() {
     // Auto-remove after duration + exit animation
     const removeTimer = setTimeout(() => {
       setAlerts((prev) => prev.filter((a) => a.id !== id));
-      delete timers[id];
+      delete timersMap.current[id];
     }, NOTIFICATION_DURATION_MS + 600);
 
-    timers[id] = removeTimer;
-  };
+    timersMap.current[id] = removeTimer;
+  });
 
   /* ── Listen for weather:changed events (explicit) ── */
   useEffect(() => {
@@ -381,7 +379,6 @@ export function WeatherAlertNotification() {
 
   /** Get temperature for weather type */
   const weatherTemperature = useMemo(() => {
-    const effect = WEATHER_EFFECTS[derivedWeather];
     // Use scene-based temperature estimation
     const isNight = timeOfDay >= 21 || timeOfDay < 6;
     switch (derivedWeather) {
@@ -403,6 +400,7 @@ export function WeatherAlertNotification() {
 
   /* ── Cleanup all timers on unmount ── */
   useEffect(() => {
+    const timers = timersMap.current;
     return () => {
       for (const key of Object.keys(timers)) {
         clearTimeout(timers[key]);

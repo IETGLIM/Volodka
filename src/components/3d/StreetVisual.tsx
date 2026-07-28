@@ -6,7 +6,7 @@ import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import type { SceneId } from '@/shared/types/game';
 import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
-import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
+import { useEnvironmentLod } from './lod/useEnvironmentLod';
 import { EnvironmentDetail, PropDistanceGate } from './lod/PropDistanceGate';
 
 interface StreetVisualProps {
@@ -218,7 +218,7 @@ function NeonSigns({ isWinter }: { isWinter: boolean }) {
   const kafeOnRef = useRef(true);
   const kafeNextToggleRef = useRef(0);
 
-  useFrameTick('misc', ({ state, delta }) => {
+  useFrameTick('misc', ({ state }) => {
     const t = state.clock.elapsedTime;
 
     // Red neon flicker — occasional quick flashes

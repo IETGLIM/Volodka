@@ -15,10 +15,7 @@ import {
   Scale,
   ChevronUp,
   Swords,
-  Wind,
   Heart,
-  Wrench,
-  Eye,
   X,
   Code2,
   Handshake,
@@ -33,7 +30,7 @@ import {
   STATUS_EFFECTS,
   getStatusEffectById,
 } from '@/data/statusEffects';
-import { type WeatherType, determineWeatherType, WEATHER_EFFECTS } from '@/data/weatherEffects';
+import { type WeatherType, determineWeatherType } from '@/data/weatherEffects';
 import { type TrainablePlayerSkill } from '@/shared/types/game';
 import { eventBus } from '@/engine/EventBus';
 

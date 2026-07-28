@@ -177,12 +177,6 @@ function assertNarrativeLoaded(): void {
   }
 }
 
-function assertLoaded(): void {
-  if (!isGameDataLoaded()) {
-    throw new Error('[gameDataLoader] Game data not loaded — call preloadGameData() first');
-  }
-}
-
 export function getQuestDefinitions(): QuestDefinition[] {
   assertQuestsLoaded();
   return questsMod!.QUEST_DEFINITIONS;

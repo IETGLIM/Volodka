@@ -39,7 +39,10 @@ export interface GameStoreSnapshot {
   exploration: {
     currentSceneId: SceneId;
     timeOfDay: number;
+    playerPosition: [number, number, number];
   };
+  /** One-time interactive object usage (exploration trigger zones). */
+  interactiveObjectStates: Record<string, boolean>;
   playerState: {
     flags: Record<string, boolean>;
     inventory: Array<{ id: string }>;
@@ -97,6 +100,10 @@ export type GameAction =
   | { type: 'story/advanceAct' }
   /* ── Inventory ── */
   | { type: 'inventory/addItem'; item: InventoryItem }
+  | { type: 'inventory/removeItem'; itemId: string; quantity: number }
+  /* ── Poems / lore ── */
+  | { type: 'poem/collect'; poemId: string }
+  | { type: 'lore/discover'; entryId: string }
   /* ── Achievements ── */
   | { type: 'achievement/unlock'; achievementId: string }
   | { type: 'achievement/trackSceneVisit'; sceneId: string }
@@ -110,7 +117,18 @@ export type GameAction =
   | { type: 'skill/unlockTreeNode'; skillId: string }
   /* ── Notifications ── */
   | { type: 'notification/push'; notificationType: NotificationType; text: string }
-  | { type: 'notification/dismiss'; id: string };
+  | { type: 'notification/dismiss'; id: string }
+  /* ── Exploration ── */
+  | { type: 'exploration/toggleInteractiveObject'; id: string }
+  | {
+      type: 'exploration/commitSceneTransition';
+      sceneId: SceneId;
+      spawnAt: [number, number, number];
+    }
+  | {
+      type: 'exploration/setNpcStates';
+      npcStates: Record<string, { position: [number, number, number]; sceneId: SceneId }>;
+    };
 
 /** Optional selector + equality for narrow store subscriptions (avoids firing on unrelated mutations). */
 export interface GameSnapshotSubscribeOptions<T> {

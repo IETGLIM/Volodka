@@ -26,7 +26,7 @@ export function MoralCompassHUD() {
     const controls = animate(pulseScale, 1.5, { duration: 0.8 });
     animate(pulseOpacity, 0, { duration: 0.8 });
     return () => controls.stop();
-  }, [karma]);
+  }, [karma, pulseScale, pulseOpacity]);
 
   // Color based on karma level
   const color =

@@ -20,6 +20,24 @@ export const FRAME_SYSTEM_ORDER: readonly FrameSystemId[] = [
   'misc',
 ] as const;
 
+/**
+ * Soft-skip policy (Phase 4/6 P0):
+ * - Critical systems always run: interaction, player, npc, camera
+ *   (input / physics / combat / NPC AI / camera — gameplay-critical).
+ * - Skippable: weather, postfx, misc (VFX / atmosphere / cosmetic).
+ * - Within a pre-render frame, ticks run in system + priority order.
+ *   Once cumulative CPU exceeds FRAME_BUDGET_MS, remaining non-critical
+ *   ticks are soft-skipped for that frame; critical ticks still run.
+ * - Per-tick override: FrameTickOptions.critical.
+ * - Post-render ticks never soft-skip (profiler / canvas guards).
+ */
+export const CRITICAL_FRAME_SYSTEMS: ReadonlySet<FrameSystemId> = new Set([
+  'interaction',
+  'player',
+  'npc',
+  'camera',
+]);
+
 /** 16.67 ms @ 60 fps — soft budget target for all CPU systems combined. */
 export const FRAME_BUDGET_MS = 1000 / 60;
 
@@ -41,6 +59,11 @@ export interface FrameTickOptions {
   enabled?: boolean;
   /** Pre-render (default) or post-render (after WebGL draw). */
   phase?: FrameTickPhase;
+  /**
+   * Soft-skip override. Default: true for CRITICAL_FRAME_SYSTEMS, false otherwise.
+   * Critical ticks always run; non-critical may be skipped when over FRAME_BUDGET_MS.
+   */
+  critical?: boolean;
 }
 
 export interface RegisteredFrameTick {
@@ -50,5 +73,15 @@ export interface RegisteredFrameTick {
   label: string;
   enabled: boolean;
   phase: FrameTickPhase;
+  critical: boolean;
   callback: FrameTickCallback;
+}
+
+/** Resolve effective criticality for a tick (explicit override or system default). */
+export function isFrameSystemCritical(
+  system: FrameSystemId,
+  override?: boolean,
+): boolean {
+  if (override !== undefined) return override;
+  return CRITICAL_FRAME_SYSTEMS.has(system);
 }

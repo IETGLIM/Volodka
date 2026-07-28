@@ -1,9 +1,8 @@
-import * as THREE from 'three';
 import {
   updateSceneTransition,
   DEFAULT_FOV,
 } from '../cinematicCamera';
-import type { CameraModeContext, CameraModeStrategy } from '../types';
+import type { CameraModeStrategy } from '../types';
 
 /** Scene transition fly-through — highest priority, bypasses spring */
 export const transitionStrategy: CameraModeStrategy = {

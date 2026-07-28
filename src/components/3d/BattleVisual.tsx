@@ -2,7 +2,7 @@
 /* ─── Volodka RPG – Combat Arena procedural 3D visual ─── */
 
 import * as THREE from 'three';
-import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
+import { useEnvironmentLod } from './lod/useEnvironmentLod';
 import { EnvironmentDetail } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 

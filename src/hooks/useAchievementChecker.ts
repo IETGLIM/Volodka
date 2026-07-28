@@ -18,8 +18,6 @@ import {
   initAchievementEngine,
   notifyCombatVictory,
   notifyCombatDefeat,
-  notifyCombo,
-  notifyCriticalHit,
   notifyPoemPowerUsed,
   type AchievementCheckState,
 } from '@/engine/AchievementEngine';

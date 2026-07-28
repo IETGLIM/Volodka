@@ -99,8 +99,9 @@ export function useCutsceneController() {
       }
     }, totalDuration);
 
+    const cutsceneSession = cutsceneSessionRef.current;
     return () => {
-      cutsceneSessionRef.current.cancel();
+      cutsceneSession.cancel();
     };
   }, [currentNodeId]);
 

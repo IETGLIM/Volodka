@@ -82,8 +82,8 @@ export function QuestWaypoints({ livePlayerPositionRef }: QuestWaypointsProps) {
 function QuestArrow({
   position,
   playerPosRef,
-  label,
-  targetScene,
+  label: _label,
+  targetScene: _targetScene,
 }: {
   position: [number, number, number];
   playerPosRef: React.MutableRefObject<THREE.Vector3>;
@@ -92,11 +92,6 @@ function QuestArrow({
 }) {
   const meshRef = useRef<THREE.Mesh>(null);
   const timeRef = useRef(0);
-
-  // Get target scene name for display
-  const targetName = useMemo(() => {
-    return SCENE_CONFIG[targetScene]?.name ?? label;
-  }, [targetScene, label]);
 
   useFrameTick('interaction', ({ delta }) => {
     timeRef.current += delta;
@@ -138,7 +133,7 @@ function QuestArrow({
 
 function QuestTargetBeam({
   position,
-  playerPosRef,
+  playerPosRef: _playerPosRef,
 }: {
   position: [number, number, number];
   playerPosRef: React.MutableRefObject<THREE.Vector3>;

@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, type RefObject } from 'react';
+import { useEffect, useLayoutEffect, useRef, useCallback, type RefObject } from 'react';
 import { useThree } from '@react-three/fiber';
 import type * as THREE from 'three';
 import {
@@ -34,16 +34,16 @@ export function useThreeCleanup(
   optionsRef.current = options;
   const sceneId = options?.sceneId;
 
-  const disposeTree = () => {
+  const disposeTree = useCallback(() => {
     disposeObject3DTree(groupRef.current, optionsRef.current);
-  };
+  }, [groupRef]);
 
   useLayoutEffect(() => {
     if (sceneId === undefined) return undefined;
     return disposeTree;
-  }, [sceneId]);
+  }, [sceneId, disposeTree]);
 
-  useEffect(() => () => disposeTree(), [groupRef]);
+  useEffect(() => () => disposeTree(), [disposeTree]);
 }
 
 /**

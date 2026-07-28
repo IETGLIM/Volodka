@@ -16,10 +16,12 @@ import {
   tryOpenDialogue,
   tryOpenStory,
 } from '@/engine/interaction/narrativeOpenHelpers';
-import { notifyItemReceived } from '@/components/game/LootNotification';
-import { applyEffects } from '@/shared/utils/applyEffects';
-import { useGameStore } from '@/store/gameStore';
-import { readGamePhase } from '@/shared/gamePhase';
+import { notifyItemReceived } from '@/components/game/lootNotificationApi';
+import { applyEffects } from '@/engine/effects/applyEffects';
+import {
+  dispatchGameAction,
+  getGameSnapshot,
+} from '@/engine/GameActionDispatcher';
 import {
   closeMinigame,
   isKnownMinigameId,
@@ -136,19 +138,23 @@ export class InteractionController {
       return;
     }
 
-    const store = useGameStore.getState();
-    if (readGamePhase(store) !== 'exploration') return;
+    const snapshot = getGameSnapshot();
+    if (snapshot.mode !== 'exploration') return;
 
-    if (zone.requiredAct && store.playerState.progression.currentAct < zone.requiredAct) {
+    if (zone.requiredAct && snapshot.playerState.progression.currentAct < zone.requiredAct) {
       devWarn(
         `[InteractionController] Zone "${triggerZoneId}" requires act ${zone.requiredAct}, ` +
-        `current act ${store.playerState.progression.currentAct}`,
+        `current act ${snapshot.playerState.progression.currentAct}`,
       );
-      store.pushNotification('quest', `Станет доступно в акте ${zone.requiredAct}`);
+      dispatchGameAction({
+        type: 'notification/push',
+        notificationType: 'quest',
+        text: `Станет доступно в акте ${zone.requiredAct}`,
+      });
       return;
     }
 
-    if (zone.isOneTime && store.interactiveObjectStates[triggerZoneId]) {
+    if (zone.isOneTime && snapshot.interactiveObjectStates[triggerZoneId]) {
       devWarn(`[InteractionController] One-time zone already used: "${triggerZoneId}"`);
       return;
     }
@@ -158,11 +164,11 @@ export class InteractionController {
     }
 
     if (zone.isOneTime) {
-      store.toggleInteractiveObject(triggerZoneId);
+      dispatchGameAction({ type: 'exploration/toggleInteractiveObject', id: triggerZoneId });
     }
 
     if (zone.linkedQuestId) {
-      store.activateQuest(zone.linkedQuestId);
+      dispatchGameAction({ type: 'quest/activate', questId: zone.linkedQuestId });
     }
 
     const hasLinkedContent = !!(zone.linkedDialogueNodeId || zone.linkedStoryNodeId || zone.linkedMinigame);
@@ -181,8 +187,8 @@ export class InteractionController {
 
   handleNpcInteractStaged(npcId: string): void {
     if (this.session.isDisposed()) return;
-    const store = useGameStore.getState();
-    if (readGamePhase(store) !== 'exploration') return;
+    const snapshot = getGameSnapshot();
+    if (snapshot.mode !== 'exploration') return;
 
     const npcDef = findNpcById(npcId);
     if (!npcDef) {
@@ -197,7 +203,7 @@ export class InteractionController {
         this.applyInteractionEffects(npcZone.effects);
       }
       if (npcZone.linkedQuestId) {
-        store.activateQuest(npcZone.linkedQuestId);
+        dispatchGameAction({ type: 'quest/activate', questId: npcZone.linkedQuestId });
       }
     }
 

@@ -8,8 +8,7 @@ import type { SceneExit, SceneId } from '@/shared/types/game';
 import { useSceneExitState } from '@/store/selectors';
 import { getSceneExits } from '@/config/scenes';
 import { eventBus } from '@/engine/EventBus';
-import { requestSceneTransition } from '@/engine/scene/sceneTransition';
-import { isInteractionLocked } from './InteractionSystemBridge';
+import { isInteractionLocked } from '@/engine/interaction/interactionSession';
 import { TRIGGER_ZONES } from '@/data/triggerZones';
 
 /* ─── Global E-key debounce: shared with InteractiveTriggers ─── */
@@ -105,9 +104,12 @@ function ExitMarker({
       (window as any).__volodka_ekey_consumed = true;
       setTimeout(() => { (window as any).__volodka_ekey_consumed = false; }, 200);
 
-      // Trigger transition
+      // Trigger transition via bus (same path as store fastTravelTo)
       cooldownRef.current = EXIT_COOLDOWN;
-      requestSceneTransition(exit.targetScene, exit.spawnAt);
+      eventBus.emit('scene:request_transition', {
+        targetScene: exit.targetScene,
+        spawnAt: exit.spawnAt,
+      });
     };
 
     const handleInteractPress = () => {
@@ -121,7 +123,10 @@ function ExitMarker({
       setTimeout(() => { (window as any).__volodka_ekey_consumed = false; }, 200);
 
       cooldownRef.current = EXIT_COOLDOWN;
-      requestSceneTransition(exit.targetScene, exit.spawnAt);
+      eventBus.emit('scene:request_transition', {
+        targetScene: exit.targetScene,
+        spawnAt: exit.spawnAt,
+      });
     };
     window.addEventListener('keydown', handleKeyDown);
     const unsubInteract = eventBus.on('interact:press', handleInteractPress);

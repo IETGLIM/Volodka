@@ -10,7 +10,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BookOpen, Sparkles, Feather, Lock, ChevronLeft, Zap, Clock, ChevronRight } from 'lucide-react';
 import { useGameStore } from '@/store/gameStore';
-import { POEMS, getMainPoems, getHiddenPoems } from '@/data/poems';
+import { POEMS } from '@/data/poems';
 import { getPoemPower, canUsePower, activatePoemPowerById, getCooldownRemaining, getAllPoemPowers } from '@/engine/PoemPowerSystem';
 import { audioEngine } from '@/engine/AudioEngine';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -477,9 +477,6 @@ export function PoetryBook({ open, onClose }: PoetryBookProps) {
   const [selectedPoemId, setSelectedPoemId] = useState<string | null>(null);
   const [pageDirection, setPageDirection] = useState(0);
   const [activeTab, setActiveTab] = useState<PoetryBookTab>('poems');
-
-  const mainPoems = getMainPoems();
-  const hiddenPoems = getHiddenPoems();
 
   const collected = POEMS.filter((p) => collectedPoems.includes(p.id));
   const collectedMain = collected.filter((p) => !p.bonus);

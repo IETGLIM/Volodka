@@ -334,11 +334,10 @@ function EmberSystem({ config }: { config: EmberConfig }) {
   const materialRef = useRef<THREE.PointsMaterial>(null);
   const timeRef = useRef(0);
 
-  const { positions, phases, sizes } = useMemo(() => {
+  const { positions, phases } = useMemo(() => {
     const count = config.count;
     const pos = new Float32Array(count * 3);
     const pha = new Float32Array(count);
-    const siz = new Float32Array(count);
 
     for (let i = 0; i < count; i++) {
       const i3 = i * 3;
@@ -347,10 +346,9 @@ function EmberSystem({ config }: { config: EmberConfig }) {
       pos[i3 + 2] = config.position[2] + (Math.random() - 0.5) * config.spread[2];
 
       pha[i] = Math.random() * Math.PI * 2;
-      siz[i] = 0.02 + Math.random() * 0.04;
     }
 
-    return { positions: pos, phases: pha, sizes: siz };
+    return { positions: pos, phases: pha };
   }, [config]);
 
   const geometry = useMemo(() => {

@@ -17,7 +17,6 @@ import type {
 } from './types';
 import { chunkKey } from './types';
 import {
-  getCellForScene,
   getChunkForScene,
   getPrimarySceneForChunk,
   getRegionForScene,

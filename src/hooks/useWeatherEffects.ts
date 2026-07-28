@@ -11,7 +11,6 @@ import { eventBus } from '@/engine/EventBus';
 import {
   type WeatherType,
   type WeatherEffect,
-  WEATHER_EFFECT_CLEAR,
   determineWeatherType,
   getWeatherEffect,
 } from '@/data/weatherEffects';

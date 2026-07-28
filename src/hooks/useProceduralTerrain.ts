@@ -113,24 +113,34 @@ export interface TerrainConfig {
  */
 export function useProceduralTerrain(config: TerrainConfig) {
   const { width, depth, segments, preset } = config;
-
-  const presetKey = useMemo(() => serializePreset(preset), [preset]);
+  const {
+    seed,
+    noiseType,
+    frequency,
+    fractalType,
+    octaves,
+    lacunarity,
+    gain,
+    warpType,
+    warpAmp,
+    amplitude,
+  } = preset;
 
   const { geometry, getHeightAt } = useMemo(() => {
     // ── Configure noise generator ──
-    const noise = new FastNoiseLite(preset.seed);
-    noise.SetNoiseType(preset.noiseType);
-    noise.SetFrequency(preset.frequency);
-    noise.SetFractalType(preset.fractalType);
-    noise.SetFractalOctaves(preset.octaves);
-    noise.SetFractalLacunarity(preset.lacunarity);
-    noise.SetFractalGain(preset.gain);
+    const noise = new FastNoiseLite(seed);
+    noise.SetNoiseType(noiseType);
+    noise.SetFrequency(frequency);
+    noise.SetFractalType(fractalType);
+    noise.SetFractalOctaves(octaves);
+    noise.SetFractalLacunarity(lacunarity);
+    noise.SetFractalGain(gain);
 
     // ── Configure domain warp (makes terrain more organic) ──
-    const warper = new FastNoiseLite(preset.seed + 1000);
+    const warper = new FastNoiseLite(seed + 1000);
     warper.SetNoiseType(FastNoiseLite.NoiseType.OpenSimplex2);
-    warper.SetDomainWarpType(preset.warpType);
-    warper.SetDomainWarpAmp(preset.warpAmp);
+    warper.SetDomainWarpType(warpType);
+    warper.SetDomainWarpAmp(warpAmp);
     warper.SetFractalType(FastNoiseLite.FractalType.DomainWarpIndependent);
     warper.SetFractalOctaves(3);
     warper.SetFrequency(0.02);
@@ -157,7 +167,7 @@ export function useProceduralTerrain(config: TerrainConfig) {
         warper.DomainWrap(coord);
 
         // Sample noise at warped coordinates
-        const height = noise.GetNoise(coord.x, coord.y) * preset.amplitude;
+        const height = noise.GetNoise(coord.x, coord.y) * amplitude;
 
         positions[idx] = x;
         positions[idx + 1] = height;
@@ -222,7 +232,21 @@ export function useProceduralTerrain(config: TerrainConfig) {
     };
 
     return { geometry: geo, getHeightAt: getHeightAtPoint };
-  }, [width, depth, segments, presetKey]);
+  }, [
+    width,
+    depth,
+    segments,
+    seed,
+    noiseType,
+    frequency,
+    fractalType,
+    octaves,
+    lacunarity,
+    gain,
+    warpType,
+    warpAmp,
+    amplitude,
+  ]);
 
   // Dispose previous geometry when config changes or component unmounts
   useEffect(() => () => {

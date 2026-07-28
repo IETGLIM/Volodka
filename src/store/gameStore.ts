@@ -8,16 +8,6 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 import { getGamePhase } from '@/shared/gamePhase';
-import type {
-  PlayerState,
-  ExplorationState,
-  QuestState,
-  InventoryItem,
-  NPCRelation,
-  TrainablePlayerSkill,
-  SceneId,
-} from '@/shared/types/game';
-import type { CameraWaypointData } from '@/engine/events';
 
 // Re-export shared types that consumers currently import from gameStore
 export type {
@@ -44,7 +34,7 @@ import { createUISlice } from './slices/uiSlice';
 import { createCutsceneSlice } from './slices/cutsceneSlice';
 import { createSaveSlice } from './slices/saveSlice';
 import { eventBus } from '@/engine/EventBus';
-import { wrapStoreSubscribe } from '@/engine/frame/frameProfilerCounters';
+import { wrapStoreSubscribe } from '@/shared/dev/frameProfilerCounters';
 import {
   registerGameActionBridge,
   type GameAction,
@@ -92,7 +82,9 @@ function toGameSnapshot(state: GameStoreState): GameStoreSnapshot {
     exploration: {
       currentSceneId: state.exploration.currentSceneId,
       timeOfDay: state.exploration.timeOfDay,
+      playerPosition: state.exploration.playerPosition,
     },
+    interactiveObjectStates: state.interactiveObjectStates,
     playerState: {
       flags: state.playerState.flags,
       inventory: state.playerState.inventory,
@@ -206,6 +198,15 @@ registerGameActionBridge({
       case 'inventory/addItem':
         store.addItem(action.item);
         break;
+      case 'inventory/removeItem':
+        store.removeItem(action.itemId, action.quantity);
+        break;
+      case 'poem/collect':
+        store.collectPoem(action.poemId);
+        break;
+      case 'lore/discover':
+        store.discoverLoreEntry(action.entryId);
+        break;
       case 'achievement/unlock':
         store.unlockAchievement(action.achievementId);
         break;
@@ -238,6 +239,18 @@ registerGameActionBridge({
         break;
       case 'notification/dismiss':
         store.dismissNotification(action.id);
+        break;
+      case 'exploration/toggleInteractiveObject':
+        store.toggleInteractiveObject(action.id);
+        break;
+      case 'exploration/commitSceneTransition':
+        store.setExplorationScene(action.sceneId);
+        store.setPlayerPosition(action.spawnAt);
+        store.discoverScene(action.sceneId);
+        store.autoRegenBetweenScenes();
+        break;
+      case 'exploration/setNpcStates':
+        store.setExplorationNPCStates(action.npcStates);
         break;
     }
   },

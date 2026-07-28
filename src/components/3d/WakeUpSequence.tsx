@@ -6,7 +6,7 @@
  *  Triggered by 'intro:wakeup_sequence' event from IntroScreen.
  *  Emits 'intro:wakeup_complete' when the animation finishes. */
 
-import { useRef, useEffect, useState, useCallback } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { useThree } from '@react-three/fiber';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
@@ -31,7 +31,6 @@ const BED_EDGE = new THREE.Vector3(0.3, 0.01, 1.8);       // Sitting on edge
 const STAND_POSITION = new THREE.Vector3(0.3, 0.01, 1.5);  // Standing beside bed
 const DESK_POSITION = new THREE.Vector3(0.0, 0.01, -1.0);  // At the desk
 const CHAIR_POSITION = new THREE.Vector3(0.0, 0.0, -1.3);  // Seated at desk
-const DESK_LOOK_TARGET = new THREE.Vector3(0.0, 0.8, -1.5); // Looking at monitor
 
 /* ── Camera waypoints for cinematic angles ── */
 const CAMERA_WAYPOINTS = [

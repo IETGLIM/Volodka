@@ -24,8 +24,10 @@
 import { useMemo } from 'react';
 import { useGameStore } from '@/store/gameStore';
 import { useMobileVisualPerf } from '@/hooks/use-mobile';
-import { VolumetricFog, FOG_PRESETS } from './VolumetricFog';
-import { GodRays, GODRAY_PRESETS } from './GodRays';
+import { VolumetricFog } from './VolumetricFog';
+import { FOG_PRESETS } from './fogPresets';
+import { GodRays } from './GodRays';
+import { GODRAY_PRESETS } from './godRayPresets';
 import { SteamParticles } from './SteamParticles';
 import { MatrixFogParticles } from './MatrixFogParticles';
 import { DustMotes, RainStreaks, EmberParticles, SnowDrift } from './WeatherParticles';
@@ -41,12 +43,6 @@ function sceneHasFog(sceneId: string): boolean {
  *  Outdoor: from sun/moon/environment */
 function sceneHasGodRays(sceneId: string): boolean {
   return sceneId in GODRAY_PRESETS;
-}
-
-/** Indoor scenes — should NOT have outdoor effects like rain, snow, etc. */
-function isIndoorScene(sceneId: string): boolean {
-  return ['volodka_room', 'volodka_corridor', 'home_evening', 'cafe_evening',
-    'office_day', 'library_day', 'abandoned_factory', 'zarema_albert_room'].includes(sceneId);
 }
 
 /** Scenes that get special coffee steam particles */

@@ -3,6 +3,14 @@ import type { WorldCellId, WorldLocationKind, WorldRegionId } from '@/engine/wor
 
 /** World clock, chunk streaming, region/cell graph — useWorldClock, useWorldStream. */
 export interface WorldEvents {
+  /**
+   * Store → engine: time advanced; scheduleSyncController rebuilds NPC states
+   * then emits world:hour_changed. explorationSlice must not call ScheduleEngine.
+   */
+  'schedule:sync_npcs': {
+    hour: number;
+    previousHour: number;
+  };
   'world:hour_changed': {
     hour: number;
     previousHour: number;

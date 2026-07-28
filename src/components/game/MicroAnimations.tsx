@@ -5,9 +5,17 @@
  *  All UI text in Russian. CSS-first animations where possible.
  */
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import {
+  statChangePool,
+  statChangeListeners,
+  notifyStatChangePoolListeners,
+  itemGainedPool,
+  itemGainedListeners,
+  notifyItemGainedPoolListeners,
+} from './microAnimationsApi';
 
 /* ══════════════════════════════════════════════════════════════
    STAT CHANGE INDICATOR — Shows "+5 Код" floating up
@@ -41,39 +49,6 @@ export function StatChangeIndicator({ statName, value, color }: StatChangeProps)
 }
 
 /* ── Pool-based StatChangeIndicator manager ── */
-interface StatChangeEntry {
-  id: number;
-  statName: string;
-  value: number;
-  color?: string;
-  x: number;
-  y: number;
-  createdAt: number;
-}
-
-let statChangeNextId = 0;
-const statChangePool: StatChangeEntry[] = [];
-const statChangeListeners = new Set<() => void>();
-
-function notifyStatChangeListeners() {
-  for (const fn of statChangeListeners) fn();
-}
-
-export function showStatChange(statName: string, value: number, color?: string) {
-  const entry: StatChangeEntry = {
-    id: statChangeNextId++,
-    statName,
-    value,
-    color,
-    x: window.innerWidth / 2 + (Math.random() - 0.5) * 80,
-    y: window.innerHeight * 0.4 + (Math.random() - 0.5) * 40,
-    createdAt: Date.now(),
-  };
-  statChangePool.push(entry);
-  while (statChangePool.length > 8) statChangePool.shift();
-  notifyStatChangeListeners();
-}
-
 export function StatChangeLayer() {
   const [, forceUpdate] = useState(0);
 
@@ -87,7 +62,7 @@ export function StatChangeLayer() {
       while (statChangePool.length > 0 && now - statChangePool[0].createdAt > 1800) {
         statChangePool.shift();
       }
-      if (statChangePool.length !== before) notifyStatChangeListeners();
+      if (statChangePool.length !== before) notifyStatChangePoolListeners();
     }, 200);
 
     return () => {
@@ -119,36 +94,6 @@ export function StatChangeLayer() {
 /* ══════════════════════════════════════════════════════════════
    ITEM GAINED POPUP — Brief popup when gaining an item
    ══════════════════════════════════════════════════════════════ */
-interface ItemGainedEntry {
-  id: number;
-  name: string;
-  icon?: string;
-  rarity?: string;
-  createdAt: number;
-}
-
-let itemGainedNextId = 0;
-const itemGainedPool: ItemGainedEntry[] = [];
-const itemGainedListeners = new Set<() => void>();
-
-function notifyItemGainedListeners() {
-  for (const fn of itemGainedListeners) fn();
-}
-
-export function showItemGained(name: string, icon?: string, rarity?: string) {
-  const entry: ItemGainedEntry = {
-    id: itemGainedNextId++,
-    name,
-    icon,
-    rarity,
-    createdAt: Date.now(),
-  };
-  itemGainedPool.push(entry);
-  // Only keep last 3
-  while (itemGainedPool.length > 3) itemGainedPool.shift();
-  notifyItemGainedListeners();
-}
-
 export function ItemGainedPopupLayer() {
   const [, forceUpdate] = useState(0);
 
@@ -162,7 +107,7 @@ export function ItemGainedPopupLayer() {
       while (itemGainedPool.length > 0 && now - itemGainedPool[0].createdAt > 2500) {
         itemGainedPool.shift();
       }
-      if (itemGainedPool.length !== before) notifyItemGainedListeners();
+      if (itemGainedPool.length !== before) notifyItemGainedPoolListeners();
     }, 250);
 
     return () => {

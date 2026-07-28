@@ -4,7 +4,7 @@
 import type { MutableRefObject } from 'react';
 import * as THREE from 'three';
 import { Desk, Chair, Laptop, Lamp, Radiator, Plant } from './lazyInteriorModels';
-import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
+import { useEnvironmentLod } from './lod/useEnvironmentLod';
 import { EnvironmentDetail } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 

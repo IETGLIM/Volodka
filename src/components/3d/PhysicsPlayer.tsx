@@ -33,8 +33,7 @@ import { setPhysicsStepMs } from '@/engine/frame/FrameBudgetRegistry';
 import { RigidBody, CapsuleCollider, useRapier, type RapierRigidBody, type RapierCollider } from '@react-three/rapier';
 import * as THREE from 'three';
 
-import { getGameStore } from '@/store/gameStore';
-import { readGamePhase } from '@/shared/gamePhase';
+import { getGameSnapshot } from '@/engine/GameActionDispatcher';
 import { useCurrentSceneId, usePlayerKarma } from '@/store/selectors';
 import { usePlayerControls, type VirtualControls } from '@/hooks/useGamePhysics';
 
@@ -48,7 +47,7 @@ import { eventBus } from '@/engine/EventBus';
 import { forceEmitInteractionEnd } from '@/engine/interaction/interactionEndDedup';
 import { audioEngine } from '@/engine/AudioEngine';
 
-import { getInteractionState, isInteractionLocked } from './InteractionSystemBridge';
+import { getInteractionState, isInteractionLocked } from '@/engine/interaction/interactionSession';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 import { setPlayerRigidBody, getPlayerExternalVelocity, clearPlayerRigidBody } from '@/engine/PlayerRigidBodyState';
 import { devLog, devWarn } from '@/shared/utils/devLog';
@@ -119,12 +118,11 @@ export function PhysicsPlayer({
   const prevSceneIdRef = useRef(sceneId);
   const currentFloorMaterialRef = useRef<string>('default');
   const stuckLockTimerRef = useRef(0);
-  const lastDebugLogRef = useRef(0);
   const warmupFramesRef = useRef(0);
   const prevRbPosRef = useRef(new THREE.Vector3());
   const noMovementFramesRef = useRef(0);
 
-  const { world, rapier } = useRapier();
+  const { world } = useRapier();
 
   // Track whether character controller works — if it fails consistently,
   // switch to direct movement mode (no collision resolution, but the player MOVES).
@@ -172,7 +170,7 @@ export function PhysicsPlayer({
     if (sceneId !== prevSceneIdRef.current) {
       prevSceneIdRef.current = sceneId;
       const newConfig = getSceneConfig(sceneId);
-      const storeSpawn = getGameStore().exploration.playerPosition;
+      const storeSpawn = getGameSnapshot().exploration.playerPosition;
       const spawn = storeSpawn ?? newConfig.spawnPoint;
 
       warmupFramesRef.current = 0;
@@ -200,7 +198,7 @@ export function PhysicsPlayer({
   // closing the one-frame gap where store position and RigidBody diverge.
   useEffect(() => {
     const unsub = eventBus.on('scene:enter', ({ sceneId: enteredScene }) => {
-      const spawn = getGameStore().exploration.playerPosition;
+      const spawn = getGameSnapshot().exploration.playerPosition;
       prevSceneIdRef.current = enteredScene;
       warmupFramesRef.current = 0;
       jumpCooldownRef.current = 0;
@@ -255,9 +253,11 @@ export function PhysicsPlayer({
     // Hold warmup only during intro/cutscene modes where Rapier may still be settling.
     // Narrative overlay (showStoryOverlay) and tutorials use the isLocked branch below —
     // resetting warmup for those caused infinite warmup (player frozen, camera stuck).
-    const storeSnapshot = getGameStore();
+    // CRITICAL: Read phase DIRECTLY from dispatcher snapshot (not React state)
+    // to avoid stale closures — React may lag the store by one render cycle.
+    const storeSnapshot = getGameSnapshot();
     const shouldHoldWarmup =
-      readGamePhase(storeSnapshot) === 'cutscene' || readGamePhase(storeSnapshot) === 'intro';
+      storeSnapshot.mode === 'cutscene' || storeSnapshot.mode === 'intro';
 
     if (shouldHoldWarmup) {
       warmupFramesRef.current = 0;
@@ -265,7 +265,7 @@ export function PhysicsPlayer({
     warmupFramesRef.current++;
     if (warmupFramesRef.current < 10) {
       vel.set(0, 0, 0);
-      const storePos = getGameStore().exploration.playerPosition;
+      const storePos = storeSnapshot.exploration.playerPosition;
       const holdX = storePos[0];
       const holdY = storePos[1];
       const holdZ = storePos[2];
@@ -280,8 +280,7 @@ export function PhysicsPlayer({
     // If the RigidBody drops well below floorY, teleport back to floor level.
     const currentPos = rb.translation();
     if (currentPos.y < floorY - 0.1) {
-      // Player fell below floor — snap back to spawn point
-      const spawn = config.spawnPoint;
+      // Player fell below floor — snap back to floor level
       rb.setTranslation({ x: currentPos.x, y: floorY, z: currentPos.z }, true);
       vel.set(0, 0, 0);
       isGroundedRef.current = true;
@@ -295,19 +294,14 @@ export function PhysicsPlayer({
     if (coyoteTimerRef.current > 0) coyoteTimerRef.current -= dt;
 
     // ─── Check interaction lock ───
-    // CRITICAL: Read mode DIRECTLY from store (not from React state) to avoid
-    // stale closures — React state may lag behind the actual store state by
-    // one render cycle, causing the player to remain frozen even after mode
-    // has already changed to 'exploration'.
-    const lockState = getGameStore();
-    const currentMode = readGamePhase(lockState);
-    const showStoryOverlay = lockState.showStoryOverlay;
-    const currentNodeId = lockState.currentNodeId;
+    const currentMode = storeSnapshot.mode;
+    const showStoryOverlay = storeSnapshot.showStoryOverlay;
+    const currentNodeId = storeSnapshot.currentNodeId;
     // ── World Director: lock movement during narrative overlay or cutscene ──
     // Explore hub nodes (explore_mode, corridor_explore_mode) keep the overlay
     // as an in-world menu but allow walking — fixes freeze after door transition.
     const isLocked =
-      isNarrativeMovementLocked(showStoryOverlay, currentNodeId) ||
+      isNarrativeMovementLocked(showStoryOverlay, currentNodeId ?? '') ||
       currentMode === 'cutscene' ||
       currentMode === 'intro' ||
       isInteractionLocked();

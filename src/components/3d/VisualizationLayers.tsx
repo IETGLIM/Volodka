@@ -2,24 +2,16 @@
 /* ─── Volodka RPG – Visualization Layer System ─── */
 /* Three.js layer separation for depth, parallax, and performance control */
 
-import { createContext, memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { useThree } from '@react-three/fiber';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
-
-// ─── Layer Definitions ───
-
-export const LAYER = {
-  DEFAULT: 0,
-  BACKGROUND: 1,
-  MIDGROUND: 2,
-  FOREGROUND: 3,
-  OVERLAY: 4,
-} as const;
-
-export type LayerName = keyof typeof LAYER;
-
-const LAYER_NAMES: LayerName[] = ['DEFAULT', 'BACKGROUND', 'MIDGROUND', 'FOREGROUND', 'OVERLAY'];
+import {
+  LAYER,
+  LayerContext,
+  useVisualizationLayer,
+  type LayerName,
+  type LayerContextValue,
+} from './visualizationLayerContext';
 
 /** Parallax factor per layer — background shifts opposite to player movement */
 const LAYER_PARALLAX: Record<LayerName, number> = {
@@ -46,32 +38,6 @@ interface LayerRegistryEntry {
   layer: LayerName;
 }
 
-interface LayerContextValue {
-  registerObject: (ref: THREE.Object3D, layer: LayerName) => void;
-  unregisterObject: (ref: THREE.Object3D) => void;
-  getLayerObjects: (layer: LayerName) => THREE.Object3D[];
-  setLayerEnabled: (layer: LayerName, enabled: boolean) => void;
-  isLayerEnabled: (layer: LayerName) => boolean;
-}
-
-const LayerContext = createContext<LayerContextValue | null>(null);
-
-/** Hook to access the visualization layer system */
-export function useVisualizationLayer(): LayerContextValue {
-  const ctx = useContext(LayerContext);
-  if (!ctx) {
-    // Return a no-op fallback when used outside the provider
-    return {
-      registerObject: () => {},
-      unregisterObject: () => {},
-      getLayerObjects: () => [],
-      setLayerEnabled: () => {},
-      isLayerEnabled: () => true,
-    };
-  }
-  return ctx;
-}
-
 // ─── SceneLayer Component ───
 
 interface SceneLayerProps {
@@ -90,12 +56,11 @@ export const SceneLayer = memo(function SceneLayer({ layer, children }: SceneLay
 
   // Register the group with the layer system
   useEffect(() => {
-    if (!groupRef.current) return;
-    registerObject(groupRef.current, layer);
+    const group = groupRef.current;
+    if (!group) return;
+    registerObject(group, layer);
     return () => {
-      if (groupRef.current) {
-        unregisterObject(groupRef.current);
-      }
+      unregisterObject(group);
     };
   }, [layer, registerObject, unregisterObject]);
 
@@ -133,7 +98,6 @@ function BackgroundParallax({ livePlayerPositionRef, children }: BackgroundParal
   const groupRef = useRef<THREE.Group>(null);
   const offsetRef = useRef(new THREE.Vector3(0, 0, 0));
   const targetOffsetRef = useRef(new THREE.Vector3(0, 0, 0));
-  const prevPlayerPos = useRef(new THREE.Vector3(0, 0, 0));
 
   useFrameTick(
     'misc',
@@ -245,11 +209,12 @@ function DepthFogLayer({ layer, children }: DepthFogProps) {
 
     lastFogFactorRef.current = fogFactor;
 
+    const group = groupRef.current;
     return () => {
       // Restore original materials
       clonedMaterials.forEach((original, cloned) => {
         // Find meshes using the cloned material and restore original
-        groupRef.current?.traverse((child) => {
+        group?.traverse((child) => {
           if ((child as THREE.Mesh).isMesh && (child as THREE.Mesh).material === cloned) {
             (child as THREE.Mesh).material = original;
           }
@@ -276,7 +241,7 @@ interface VisualizationLayersProps {
  * Provides the LayerContext and renders children with proper layer separation.
  * Add parallax for background and depth-fog for distant layers.
  */
-export function VisualizationLayers({ livePlayerPositionRef, children }: VisualizationLayersProps) {
+export function VisualizationLayers({ livePlayerPositionRef: _livePlayerPositionRef, children }: VisualizationLayersProps) {
   // Layer registry
   const registryRef = useRef<Map<string, LayerRegistryEntry>>(new Map());
   const [enabledLayers, setEnabledLayers] = useState<Record<LayerName, boolean>>({

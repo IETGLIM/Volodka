@@ -14,19 +14,19 @@ import {
 } from '@/store/selectors';
 import { getStoryNodes, isNarrativeGameDataLoaded, ensureStoryNode, prefetchStoryNodes } from '@/data/gameDataLoader';
 import { audioEngine } from '@/engine/AudioEngine';
-import { requestSceneTransitionForStoryNode } from '@/engine/scene/sceneTransition';
+import { eventBus } from '@/engine/EventBus';
 import { closeNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
 import { EXPLORE_HUB_NODE_IDS } from '@/shared/exploreHubNodes';
 import { KARMA_LOW_THRESHOLD, KARMA_HIGH_THRESHOLD } from '@/data/constants';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
-import type { StoryChoice, StoryEffect } from '@/shared/types/game';
+import type { SceneId, StoryChoice, StoryEffect } from '@/shared/types/game';
 import { checkStoryCondition, buildStoryConditionContext } from '@/shared/storyConditions';
 
 /* ── Typewriter hook — shared ── */
 import { useTypewriter } from '@/hooks/useTypewriter';
 
 /* ── Apply effects — shared ── */
-import { applyEffects } from '@/shared/utils/applyEffects';
+import { applyEffects } from '@/engine/effects/applyEffects';
 import { AriaLiveRegion } from '@/components/a11y/AriaLiveRegion';
 import { FocusTrap } from '@/components/a11y/FocusTrap';
 import { buildChoiceAriaLabel } from '@/shared/utils/choiceAriaLabel';
@@ -150,10 +150,10 @@ export function StoryRenderer() {
   }, [currentNodeId]);
 
   const storyNodes = isNarrativeGameDataLoaded() ? getStoryNodes() : null;
-  const node = useMemo(
-    () => (storyNodes ? storyNodes[currentNodeId] : undefined),
-    [storyNodes, currentNodeId, storyPackVersion],
-  );
+  const node = useMemo(() => {
+    void storyPackVersion; // invalidate when story pack hot-reloads
+    return storyNodes ? storyNodes[currentNodeId] : undefined;
+  }, [storyNodes, currentNodeId, storyPackVersion]);
 
   const { displayed, done, skip } = useTypewriter(node?.text ?? '', 28);
 
@@ -166,7 +166,11 @@ export function StoryRenderer() {
     clearEffectTimers();
     const effectGen = ++nodeEffectGenRef.current;
     visitNode(node.id);
-    requestSceneTransitionForStoryNode(node.id, node.sceneId);
+    if (node.sceneId) {
+      eventBus.emit('scene:request_transition', {
+        targetScene: node.sceneId as SceneId,
+      });
+    }
 
     if (node.effects && node.effects.length > 0) {
       applyEffects(node.effects);
@@ -185,7 +189,7 @@ export function StoryRenderer() {
         setAppliedEffects([]);
       }, 0);
     }
-  }, [node?.id, visitNode, clearEffectTimers, scheduleEffectTimer]);
+  }, [node, visitNode, clearEffectTimers, scheduleEffectTimer]);
 
   const handleChoice = useCallback(
     (choice: StoryChoice) => {

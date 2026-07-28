@@ -5,7 +5,7 @@
 */
 
 import { useMemo, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   CheckCircle2, Circle, Trophy, BookOpen, EyeOff,
   Clock, AlertTriangle, RotateCcw, ChevronRight, Sparkles,

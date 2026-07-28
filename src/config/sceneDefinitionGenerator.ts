@@ -6,7 +6,7 @@
  * ARCHITECTURE: SceneDefinition is the internal model; SceneConfig is generated
  * on-the-fly — no duplicate data maintenance needed. */
 
-import type { SceneDefinition, ColliderDef, ExitDef, LightDef, FloorMaterial, FogConfig } from '@/shared/types/sceneDefinition';
+import type { SceneDefinition, ColliderDef, ExitDef, LightDef, FloorMaterial } from '@/shared/types/sceneDefinition';
 import { FOG_DEFAULTS } from '@/shared/types/sceneDefinition';
 import type { SceneConfig, SceneExit } from '@/shared/types/game';
 

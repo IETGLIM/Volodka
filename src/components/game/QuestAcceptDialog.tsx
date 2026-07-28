@@ -10,7 +10,6 @@ import { useGameStore } from '@/store/gameStore'
 import { QUEST_DEFINITIONS } from '@/data/quests'
 import { findNpcById } from '@/data/allNpcDefinitions'
 import { resolveCanonicalNpcId } from '@/data/goldenPath'
-import { eventBus } from '@/engine/EventBus'
 import { UI_LAYERS } from '@/shared/constants/uiLayers'
 import type { NPCDefinition, QuestDefinition, QuestObjective } from '@/shared/types/game'
 

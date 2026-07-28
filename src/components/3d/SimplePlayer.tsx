@@ -20,7 +20,7 @@ import {
 } from '@/config/scenes';
 import { eventBus } from '@/engine/EventBus';
 import { audioEngine } from '@/engine/AudioEngine';
-import { isInteractionLocked } from './InteractionSystemBridge';
+import { isInteractionLocked } from '@/engine/interaction/interactionSession';
 import { ProceduralPlayerModelAdaptive } from './ProceduralPlayerModel';
 
 function lerpAngle(a: number, b: number, t: number): number {

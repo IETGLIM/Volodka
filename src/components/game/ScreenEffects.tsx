@@ -10,6 +10,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { eventBus, EventBusPriority } from '@/engine/EventBus';
 import { useScreenEffectsVitals } from '@/store/selectors';
+import {
+  triggerFlash,
+  triggerShake,
+  triggerVignette,
+  triggerChromaticAberration,
+} from './screenEffectsApi';
 
 /* ── Effect state types ── */
 interface FlashEffect {
@@ -26,35 +32,6 @@ interface ShakeEffect {
 }
 
 let nextEffectId = 0;
-
-/* ── Public API (triggered via import) ── */
-export function triggerFlash(color: string = 'white', opacity: number = 0.3, duration: number = 300) {
-  eventBus.emit('fx:flash', { color, opacity, duration });
-}
-
-export function triggerShake(intensity: number = 8, duration: number = 400) {
-  eventBus.emit('fx:shake', { intensity, duration });
-}
-
-export function triggerVignette(intensity: number = 0.7, duration: number = 2000) {
-  eventBus.emit('fx:vignette', { intensity, duration });
-}
-
-export function triggerChromaticAberration(intensity: number = 3, duration: number = 500) {
-  eventBus.emit('fx:chromatic', { intensity, duration });
-}
-
-export function triggerSlowMotion(duration: number = 800) {
-  eventBus.emit('fx:slowmo', { duration });
-}
-
-export function triggerAchievement(title: string, description: string, icon?: string) {
-  eventBus.emit('fx:achievement', { title, description, icon });
-}
-
-export function triggerXpGain(amount: number, source?: string) {
-  eventBus.emit('fx:xp_gain', { amount, source });
-}
 
 /* ── Component ── */
 export function ScreenEffects() {

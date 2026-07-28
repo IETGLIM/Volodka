@@ -7,7 +7,7 @@
 
 import { useMemo, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Gift, Heart, ThumbsUp, Package, Frown, Angry } from 'lucide-react';
+import { X, Gift, Package } from 'lucide-react';
 import { useGiftDialogState } from '@/store/selectors';
 import { findNpcById } from '@/data/allNpcDefinitions';
 import { getItemDefinition } from '@/data/items';
@@ -25,16 +25,6 @@ import {
 } from '@/data/npcGifts';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { ScrollArea } from '@/components/ui/scroll-area';
-
-/* ─── Preference indicator icons ─── */
-
-const PREFERENCE_ICONS: Record<GiftPreference, typeof Heart> = {
-  loved: Heart,
-  liked: ThumbsUp,
-  neutral: Package,
-  disliked: Frown,
-  hated: Angry,
-};
 
 const PREFERENCE_LABELS: Record<GiftPreference, string> = {
   loved: 'Обожает',
@@ -248,13 +238,11 @@ export function GiftDialog({ open, onClose, npcId }: GiftDialogProps) {
               {giftableItems.length > 0 ? (
                 <div className="flex flex-col gap-1.5">
                   {giftableItems.map((item) => {
-                    const PrefIcon = PREFERENCE_ICONS[item.preference];
                     const prefColor = getGiftPreferenceColor(item.preference);
                     const prefBg = getGiftPreferenceBg(item.preference);
                     const prefGlow = getGiftPreferenceGlow(item.preference);
                     const prefIcon = getGiftPreferenceIcon(item.preference);
                     const isGifting = giftingItemId === item.id;
-                    const itemDef = getItemDefinition(item.id);
 
                     return (
                       <motion.div

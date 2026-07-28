@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useEffectEvent, useState } from 'react';
 import { useOrchestratorShell, useOrchestratorNarrativeOverlay, useArmDevTools } from '@/store/selectors';
 import { sharedVirtualControlsRef } from '@/engine/VirtualControlsState';
 import { useCombatOrchestrator } from '@/hooks/useCombatOrchestrator';
@@ -39,8 +39,16 @@ export function useOrchestratorRuntime() {
   const { showStoryOverlay, narrativeKind } = useOrchestratorNarrativeOverlay();
   const [canvasMounted, setCanvasMounted] = useState(!mainMenuOpen);
 
+  // Phase 4 P0: release WebGL when returning to main menu (was sticky forever).
+  // Delayed unmount avoids hitching the pause→menu transition; remount is covered by
+  // CanvasTransitionController + canvas:first-frame invalidate on mode change.
   useEffect(() => {
-    if (!mainMenuOpen) setCanvasMounted(true);
+    if (!mainMenuOpen) {
+      setCanvasMounted(true);
+      return;
+    }
+    const id = window.setTimeout(() => setCanvasMounted(false), 400);
+    return () => window.clearTimeout(id);
   }, [mainMenuOpen]);
 
   const pauseDialog = usePanelDialog();
@@ -85,11 +93,15 @@ export function useOrchestratorRuntime() {
     onPanelOpened: interaction.resetExamine,
   });
 
-  useEffect(() => {
-    if (!isOverlayActive) return;
+  const dismissOverlayChrome = useEffectEvent(() => {
     interaction.dismissForNarrativeOverlay();
     panels.closeAllPanels();
-  }, [isOverlayActive, interaction.dismissForNarrativeOverlay, panels.closeAllPanels]);
+  });
+
+  useEffect(() => {
+    if (!isOverlayActive) return;
+    dismissOverlayChrome();
+  }, [isOverlayActive]);
 
   const panelClosers = useStablePanelClosers(panels.closePanelByType);
 

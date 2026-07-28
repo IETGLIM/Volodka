@@ -3,8 +3,9 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence, useSpring } from 'framer-motion';
-import { eventBus } from '@/engine/EventBus';
-import { useGameStore } from '@/store/gameStore';
+import { FocusTrap } from '@/components/a11y/FocusTrap';
+import { usePanelDialog } from '@/components/a11y/usePanelDialog';
+import { completeMinigame } from '@/engine/minigame/claimMinigameRewards';
 import { getQuizPool, type QuizQuestion } from '@/data/quizQuestions';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
@@ -120,8 +121,9 @@ function TypewriterText({ text, speed = 25 }: { text: string; speed?: number }) 
 
 // ─── Main Component ───
 export function QuizGame({ onClose }: QuizGameProps) {
+  const { closeButtonRef, dialogProps, titleProps } = usePanelDialog();
   const [phase, setPhase] = useState<GamePhase>('difficulty');
-  const [difficulty, setDifficulty] = useState<DifficultyLevel>(2);
+  const [, setDifficulty] = useState<DifficultyLevel>(2);
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [score, setScore] = useState(0);
@@ -249,31 +251,15 @@ export function QuizGame({ onClose }: QuizGameProps) {
     isAnsweredRef.current = false;
   }, [currentIdx, questions.length, maxTime]);
 
-  // ── Claim rewards ──
+  // ── Claim rewards (single apply path — see claimMinigameRewards) ──
   const handleClaimRewards = useCallback(() => {
-    const store = useGameStore.getState();
-
-    // Calculate total XP and karma from correct answers
-    let totalXp = 0;
-    let totalKarma = 0;
-    questions.forEach((q, i) => {
-      // We only reward for correctly answered questions
-      // We track this via correctCount — but need a better approach
-      // Since we don't track per-question correctness, use score-based XP
-    });
-
-    // Score-based rewards
     const xpReward = Math.round(score / 5) + 20;
     const karmaReward = Math.min(correctCount * 3, 15);
 
-    store.addXp(xpReward);
-    store.addKarma(karmaReward);
-    store.addSkill('logic', 1);
-
-    eventBus.emit('minigame:complete', {
+    completeMinigame({
       gameType: 'quiz',
       success: correctCount >= 3,
-      reward: [
+      rewards: [
         { type: 'addXp', value: xpReward },
         { type: 'addKarma', value: karmaReward },
         { type: 'addSkill', skill: 'logic', value: 1 },
@@ -281,7 +267,7 @@ export function QuizGame({ onClose }: QuizGameProps) {
     });
 
     onClose();
-  }, [score, correctCount, questions, onClose]);
+  }, [score, correctCount, onClose]);
 
   // ── ESC to close ──
   useEffect(() => {
@@ -301,8 +287,6 @@ export function QuizGame({ onClose }: QuizGameProps) {
     if (s >= 30) return { name: 'Оператор', color: 'rgba(251, 191, 36, 0.9)', icon: '⚡' };
     return { name: 'Новичок', color: 'rgba(148, 163, 184, 0.7)', icon: '📖' };
   };
-
-  const maxScore = QUESTIONS_PER_ROUND * 100; // approximate max
 
   // ═══════════════════════════════════════════════════════════════
   // RENDER
@@ -324,17 +308,20 @@ export function QuizGame({ onClose }: QuizGameProps) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
+        aria-hidden="true"
       />
 
       {/* ── Scanlines ── */}
       <div
         className="absolute inset-0 pointer-events-none"
+        aria-hidden="true"
         style={{
           background:
             'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(56, 189, 248, 0.015) 2px, rgba(56, 189, 248, 0.015) 4px)',
         }}
       />
 
+      <FocusTrap initialFocusRef={closeButtonRef}>
       {/* ── Panel ── */}
       <motion.div
         className="relative z-10 w-full max-w-2xl mx-4"
@@ -342,6 +329,7 @@ export function QuizGame({ onClose }: QuizGameProps) {
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.9, opacity: 0, y: 30 }}
         transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+        {...dialogProps}
       >
         <div
           className="rounded-lg border overflow-hidden"
@@ -361,14 +349,20 @@ export function QuizGame({ onClose }: QuizGameProps) {
             }}
           >
             <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-emerald-500/80" />
-              <span className="h-2 w-2 rounded-full bg-amber-400/80" />
-              <span className="h-2 w-2 rounded-full bg-red-500/80" />
-              <span className="ml-2 font-mono text-[9px] uppercase tracking-[0.2em]" style={{ color: `rgba(${ACCENT_RGB}, 0.5)` }}>
+              <span className="h-2 w-2 rounded-full bg-emerald-500/80" aria-hidden="true" />
+              <span className="h-2 w-2 rounded-full bg-amber-400/80" aria-hidden="true" />
+              <span className="h-2 w-2 rounded-full bg-red-500/80" aria-hidden="true" />
+              <span
+                {...titleProps}
+                className="ml-2 font-mono text-[9px] uppercase tracking-[0.2em]"
+                style={{ color: `rgba(${ACCENT_RGB}, 0.5)` }}
+              >
                 📡 КИБЕР-ВИКТОРИНА
               </span>
             </div>
             <button
+              ref={closeButtonRef}
+              type="button"
               onClick={onClose}
               className="w-7 h-7 flex items-center justify-center rounded-md text-slate-500 hover:text-slate-200 hover:bg-white/5 transition-colors font-mono text-sm"
               aria-label="Закрыть викторину"
@@ -905,6 +899,7 @@ export function QuizGame({ onClose }: QuizGameProps) {
           }}
         />
       </motion.div>
+      </FocusTrap>
     </motion.div>
   );
 }

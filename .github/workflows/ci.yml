@@ -6,6 +6,13 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   check:
     runs-on: ubuntu-latest
@@ -30,7 +37,8 @@ jobs:
 
       - run: npm run build
 
-      - run: npm run budgets
+      # Hard gate: local `npm run build` stays soft (--report); CI must fail on budget breach
+      - run: npm run budgets:check
 
   e2e:
     runs-on: ubuntu-latest

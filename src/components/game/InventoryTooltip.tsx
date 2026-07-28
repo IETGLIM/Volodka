@@ -6,8 +6,7 @@
  */
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { getItemDefinition, getRarityColor, getRarityLabel, type ItemRarity } from '@/data/items'
-import { CYBERPUNK_COLORS, cyberGlowText } from './CyberpunkTheme'
+import { getItemDefinition, getRarityLabel, type ItemRarity } from '@/data/items'
 import type { InventoryItem, TrainablePlayerSkill } from '@/shared/types/game'
 
 /* ─── Types ─── */

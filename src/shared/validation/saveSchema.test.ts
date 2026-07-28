@@ -52,4 +52,35 @@ describe('validateSaveData', () => {
     const result = validateSaveData('{not json');
     expect(result.success).toBe(false);
   });
+
+  it('runs migrate then Zod: upgrades v1 array TTL flags', () => {
+    const v1 = {
+      ...buildValidSavePayload(),
+      saveVersion: 1,
+      activeTTLFlags: [
+        { key: 'truth_voice_active', poemId: 'poem_1', expiryTimestamp: 123 },
+      ],
+    };
+    const result = validateSaveData(JSON.stringify(v1));
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.saveVersion).toBe(SAVE_VERSION);
+      expect(result.data.activeTTLFlags).toEqual({
+        truth_voice_active: {
+          key: 'truth_voice_active',
+          poemId: 'poem_1',
+          expiryTimestamp: 123,
+        },
+      });
+    }
+  });
+
+  it('rejects future saveVersion before Zod', () => {
+    const future = { ...buildValidSavePayload(), saveVersion: SAVE_VERSION + 10 };
+    const result = validateSaveData(JSON.stringify(future));
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error).toMatch(/будущей версии/);
+    }
+  });
 });

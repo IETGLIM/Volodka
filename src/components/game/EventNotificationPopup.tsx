@@ -230,7 +230,6 @@ function NotificationCard({ entry, index }: { entry: NotificationEntry; index: n
 export function EventNotificationPopup() {
   const [notifications, setNotifications] = useState<NotificationEntry[]>([]);
   const timersMap = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
-  const timers = timersMap.current;
 
   /** Add a notification to the queue */
   const addNotification = useCallback((entry: Omit<NotificationEntry, 'id' | 'createdAt'>) => {
@@ -250,10 +249,10 @@ export function EventNotificationPopup() {
     // Auto-remove after duration + exit animation time
     const removeTimer = setTimeout(() => {
       setNotifications((prev) => prev.filter((n) => n.id !== id));
-      delete timers[id];
+      delete timersMap.current[id];
     }, NOTIFICATION_DURATION_MS + 500); // extra 500ms for exit animation
 
-    timers[id] = removeTimer;
+    timersMap.current[id] = removeTimer;
   }, []);
 
   /* ── Listen for game:notification events ── */
@@ -298,6 +297,7 @@ export function EventNotificationPopup() {
 
   /* ── Cleanup all timers on unmount ── */
   useEffect(() => {
+    const timers = timersMap.current;
     return () => {
       for (const key of Object.keys(timers)) {
         clearTimeout(timers[key]);

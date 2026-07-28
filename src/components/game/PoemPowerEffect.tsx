@@ -20,7 +20,7 @@ import { eventBus } from '@/engine/EventBus';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { getPoemPower } from '@/engine/PoemPowerSystem';
 import { usePoemPowers } from '@/store/selectors';
-import { cyberGlowText } from './CyberpunkTheme';
+import { cyberGlowText } from './cyberpunkThemeUtils';
 
 /* ─── Color theme mapping ─── */
 

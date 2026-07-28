@@ -108,7 +108,7 @@ export function buildGuidanceFromObjective(
   findNpcById: (id: string) => { name: string } | undefined,
 ): GuidanceInfo {
   let objectiveType: GuidanceInfo['objectiveType'] = 'complete_quest';
-  let targetId = obj.target ?? obj.id;
+  const targetId = obj.target ?? obj.id;
   let objectiveText = obj.description;
 
   switch (obj.type) {

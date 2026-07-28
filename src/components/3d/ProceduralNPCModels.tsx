@@ -29,7 +29,6 @@ import {
   cylinderGeo,
   capsuleGeo,
   torusGeo,
-  circleGeo,
   DEFAULT_ARM_WIDTH,
   DEFAULT_FOREARM_WIDTH,
   DEFAULT_LEG_WIDTH,
@@ -40,13 +39,9 @@ import {
 /* ─── Shared color constants ─── */
 const SKIN_LIGHT = '#c4a882';
 const SKIN_MEDIUM = '#b09070';
-const SKIN_DARK = '#8a6a50';
 const SKIN_SHADOW_LIGHT = '#b89a72';
 const SKIN_SHADOW_MED = '#9a7a60';
 const HAIR_DARK = '#2a1e12';
-const HAIR_BROWN = '#4a3020';
-const HAIR_GRAY = '#888890';
-const HAIR_BLACK = '#0e0a08';
 
 /* ─── Shared body parts ─── */
 
@@ -119,16 +114,15 @@ function Arms({
 }) {
   const sleeveMat = useMemo(() => clothingMat(sleeveColor), [sleeveColor]);
   const skin = skinMat(skinColor);
-  const armScale: [number, number, number] = [armWidth / DEFAULT_ARM_WIDTH, 1, armWidth / DEFAULT_ARM_WIDTH];
-  const forearmScale: [number, number, number] = [forearmWidth / DEFAULT_FOREARM_WIDTH, 1, forearmWidth / DEFAULT_FOREARM_WIDTH];
 
-  const sleeveGeo = useMemo(
-    () => buildMerged([
+  const sleeveGeo = useMemo(() => {
+    const armScale: [number, number, number] = [armWidth / DEFAULT_ARM_WIDTH, 1, armWidth / DEFAULT_ARM_WIDTH];
+    const forearmScale: [number, number, number] = [forearmWidth / DEFAULT_FOREARM_WIDTH, 1, forearmWidth / DEFAULT_FOREARM_WIDTH];
+    return buildMerged([
       { geo: sharedGeo.upperArmCapsule, position: [0, -0.14, 0], scale: armScale },
       { geo: sharedGeo.forearmCapsule, position: [0, -0.3, 0], scale: forearmScale },
-    ]),
-    [armWidth, forearmWidth],
-  );
+    ]);
+  }, [armWidth, forearmWidth]);
   const handGeo = useMemo(
     () => buildMerged([
       { geo: sharedGeo.wristCapsule, position: [0, -0.38, 0] },
@@ -197,17 +191,16 @@ function Legs({
     [accentGlow, accentColor],
   );
 
-  const legScale: [number, number, number] = [legWidth / DEFAULT_LEG_WIDTH, 1, legWidth / DEFAULT_LEG_WIDTH];
-  const lowerLegScale: [number, number, number] = [lowerLegWidth / DEFAULT_LOWER_LEG_WIDTH, 1, lowerLegWidth / DEFAULT_LOWER_LEG_WIDTH];
-  const shoeScaleVec: [number, number, number] = [shoeScale, shoeScale, shoeScale];
-
-  const pantsGeo = useMemo(
-    () => buildMerged([
+  const pantsGeo = useMemo(() => {
+    const legScale: [number, number, number] = [legWidth / DEFAULT_LEG_WIDTH, 1, legWidth / DEFAULT_LEG_WIDTH];
+    const lowerLegScale: [number, number, number] = [lowerLegWidth / DEFAULT_LOWER_LEG_WIDTH, 1, lowerLegWidth / DEFAULT_LOWER_LEG_WIDTH];
+    return buildMerged([
       { geo: sharedGeo.upperLegCapsule, position: [0, -0.18, 0], scale: legScale },
       { geo: sharedGeo.lowerLegCapsule, position: [0, -0.4, 0], scale: lowerLegScale },
-    ]),
-    [legWidth, lowerLegWidth],
-  );
+    ]);
+  }, [legWidth, lowerLegWidth]);
+
+  const shoeScaleVec: [number, number, number] = [shoeScale, shoeScale, shoeScale];
 
   const legSegment = (side: 'left' | 'right') => (
     <group name={side === 'left' ? 'leftLeg' : 'rightLeg'} position={[side === 'left' ? 0.09 : -0.09, 0.9, 0]}>

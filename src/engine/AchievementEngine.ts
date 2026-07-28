@@ -13,16 +13,13 @@ import {
   dispatchGameAction,
   getGameSnapshot,
 } from '@/engine/GameActionDispatcher';
-import { ACHIEVEMENT_MAP, TOTAL_ACHIEVEMENTS } from '@/data/achievements';
+import { ACHIEVEMENT_MAP } from '@/data/achievements';
 import type { EnemyType } from '@/shared/types/game';
 
 /* ─── Session-only tracking (not persisted — ephemeral per page load) ─── */
 
 /** Previous game mode for transition detection */
 let prevMode: string | null = null;
-
-/** Previous energy value for recovery detection */
-let prevEnergy = 0;
 
 /** Whether we already checked the "first awakening" this session */
 let firstAwakeningChecked = false;
@@ -84,8 +81,6 @@ export function checkAchievements(state: AchievementCheckState): void {
   const mode = state.mode;
   const sceneId = state.currentSceneId;
   const poems = state.collectedPoems;
-  const karma = state.karma;
-  const energy = state.energy;
   const flags = state.flags;
   const npcRelations = state.npcRelations;
   const timeOfDay = state.timeOfDay;
@@ -228,7 +223,6 @@ export function checkAchievements(state: AchievementCheckState): void {
   }
 
   prevMode = mode;
-  prevEnergy = energy;
 }
 
 /* ─── Event-driven updates ─── */
@@ -255,6 +249,5 @@ export function notifyPoemPowerUsed(): void {
 
 export function resetAchievementTracking(): void {
   prevMode = null;
-  prevEnergy = 0;
   firstAwakeningChecked = false;
 }

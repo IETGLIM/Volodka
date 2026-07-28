@@ -4,9 +4,12 @@ import {
   getDialogueNodes,
   getStoryNodes,
 } from '@/data/gameDataLoader';
-import { requestSceneTransition, requestSceneTransitionForStoryNode } from '@/engine/scene/sceneTransition';
+import { eventBus } from '@/engine/EventBus';
 import { openNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
-import { useGameStore } from '@/store/gameStore';
+import {
+  dispatchGameAction,
+  getGameSnapshot,
+} from '@/engine/GameActionDispatcher';
 import { hasVisitedNode } from '@/store/visitedNodesIndex';
 import { devWarn } from '@/shared/utils/devLog';
 import type { SceneId } from '@/shared/types/game';
@@ -28,7 +31,19 @@ function notifyNarrativeUnavailable(
   } else {
     devWarn(`[narrative] ${kind} node not found: "${nodeId}"`);
   }
-  useGameStore.getState().pushNotification('quest', userMessageForKind(kind));
+  dispatchGameAction({
+    type: 'notification/push',
+    notificationType: 'quest',
+    text: userMessageForKind(kind),
+  });
+}
+
+/** Command travel via EventBus — binder owns dedupe + requestSceneTransition. */
+function emitSceneTransitionRequest(sceneId: string | undefined): void {
+  if (!sceneId) return;
+  eventBus.emit('scene:request_transition', {
+    targetScene: sceneId as SceneId,
+  });
 }
 
 export async function tryOpenDialogue(nodeId: string): Promise<boolean> {
@@ -53,7 +68,7 @@ export async function tryOpenStory(nodeId: string): Promise<boolean> {
       notifyNarrativeUnavailable('story', nodeId, 'missing');
       return false;
     }
-    requestSceneTransitionForStoryNode(nodeId, storyNode.sceneId);
+    emitSceneTransitionRequest(storyNode.sceneId);
     openNarrativeOverlay(nodeId, 'story');
     return true;
   } catch (error) {
@@ -77,16 +92,13 @@ export async function openLinkedDialogue(nodeId: string): Promise<boolean> {
     return false;
   }
 
-  const store = useGameStore.getState();
-  const alreadyVisited = hasVisitedNode(store.playerState.visitedNodes, nodeId);
+  const alreadyVisited = hasVisitedNode(getGameSnapshot().playerState.visitedNodes, nodeId);
   if (alreadyVisited && dlgNode.sceneId) {
-    requestSceneTransition(dlgNode.sceneId as SceneId);
+    emitSceneTransitionRequest(dlgNode.sceneId);
     return true;
   }
 
-  if (dlgNode.sceneId) {
-    requestSceneTransitionForStoryNode(nodeId, dlgNode.sceneId);
-  }
+  emitSceneTransitionRequest(dlgNode.sceneId);
   openNarrativeOverlay(nodeId, 'dialogue');
   return true;
 }
@@ -106,14 +118,13 @@ export async function openLinkedStory(nodeId: string): Promise<boolean> {
     return false;
   }
 
-  const store = useGameStore.getState();
-  const alreadyVisited = hasVisitedNode(store.playerState.visitedNodes, nodeId);
+  const alreadyVisited = hasVisitedNode(getGameSnapshot().playerState.visitedNodes, nodeId);
   if (alreadyVisited && storyNode.sceneId) {
-    requestSceneTransition(storyNode.sceneId as SceneId);
+    emitSceneTransitionRequest(storyNode.sceneId);
     return true;
   }
 
-  requestSceneTransitionForStoryNode(nodeId, storyNode.sceneId);
+  emitSceneTransitionRequest(storyNode.sceneId);
   openNarrativeOverlay(nodeId, 'story');
   return true;
 }

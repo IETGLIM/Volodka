@@ -23,11 +23,11 @@ import { SceneEnvironment } from './SceneEnvironment';
 import { EnvironmentalAnimator } from './EnvironmentalAnimator';
 import { ProximityReactivityRenderer } from './ProximityReactivityRenderer';
 import { InteractionQueryBridge } from './InteractionQueryBridge';
+import { InteractionSystemBridge } from './InteractionSystemBridge';
 import {
-  InteractionSystemBridge,
   getInteractionState,
   getInteractionTargetNPCId,
-} from './InteractionSystemBridge';
+} from '@/engine/interaction/interactionSession';
 import { WakeUpSequence } from './WakeUpSequence';
 import { NPCSystem } from './NPCSystem';
 import { RotationSyncBridge } from './RotationSyncBridge';

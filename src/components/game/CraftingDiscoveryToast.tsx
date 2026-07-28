@@ -9,7 +9,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FlaskConical, Sparkles, Crown, Gem, Star } from 'lucide-react';
+import { FlaskConical, Sparkles, Crown, Gem } from 'lucide-react';
 import { eventBus } from '@/engine/EventBus';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { type ItemRarity } from '@/data/items';
@@ -240,7 +240,6 @@ function CraftingToastCard({ toast, index }: { toast: CraftingToastData; index: 
 export function CraftingDiscoveryToast() {
   const [toasts, setToasts] = useState<CraftingToastData[]>([]);
   const timersMap = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
-  const timers = timersMap.current;
 
   /* ── Listen for crafting:discovered events ── */
   useEffect(() => {
@@ -260,10 +259,10 @@ export function CraftingDiscoveryToast() {
       // Auto-remove after duration + exit animation
       const removeTimer = setTimeout(() => {
         setToasts((prev) => prev.filter((t) => t.id !== id));
-        delete timers[id];
+        delete timersMap.current[id];
       }, TOAST_DURATION_MS + 600);
 
-      timers[id] = removeTimer;
+      timersMap.current[id] = removeTimer;
     });
 
     return unsub;
@@ -271,6 +270,7 @@ export function CraftingDiscoveryToast() {
 
   /* ── Cleanup all timers on unmount ── */
   useEffect(() => {
+    const timers = timersMap.current;
     return () => {
       for (const key of Object.keys(timers)) {
         clearTimeout(timers[key]);

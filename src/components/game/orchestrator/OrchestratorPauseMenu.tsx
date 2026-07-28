@@ -2,7 +2,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useGameStore } from '@/store/gameStore';
 import { FocusTrap } from '@/components/a11y/FocusTrap';
 import type { usePanelDialog } from '@/components/a11y/usePanelDialog';
-import { PanelStackSlot, usePanelStack } from './PanelStackContext';
+import { PanelStackSlot } from './PanelStackContext';
+import { usePanelStack } from './usePanelStack';
 import type { PanelCoordinatorResult } from './usePanelCoordinator';
 import type { PanelCloseHandlers } from './useStablePanelClosers';
 

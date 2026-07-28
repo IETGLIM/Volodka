@@ -129,8 +129,10 @@ function ProximityEffectRenderer({
 
   // Cleanup sound effects on unmount
   useEffect(() => {
+    const soundEffects = activeSoundEffectsRef.current;
+    const effectId = effect.id;
     return () => {
-      activeSoundEffectsRef.current.delete(effect.id);
+      soundEffects.delete(effectId);
     };
   }, [effect.id, activeSoundEffectsRef]);
 

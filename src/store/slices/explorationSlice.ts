@@ -1,6 +1,9 @@
 /* ─── Volodka RPG – Exploration Slice ─── */
 /* Scene navigation, player position, time of day, weather,
- * rain intensity, interactive object states, and fast travel. */
+ * rain intensity, interactive object states, and fast travel.
+ *
+ * ScheduleEngine / requestSceneTransition are NOT imported here —
+ * time → schedule:sync_npcs; travel → scene:request_transition. */
 
 import type { StateCreator } from 'zustand';
 import type { ExplorationState, SceneId } from '@/shared/types/game';
@@ -9,17 +12,15 @@ import { clamp, createDefaultExploration } from '../shared';
 import type { GameStoreState } from '../types';
 import { readExplorationFromPlayer } from '../crossSliceReads';
 import { eventBus } from '@/engine/EventBus';
-import { requestSceneTransition } from '@/engine/scene/sceneTransition';
-import { buildNPCStatesForTime } from '@/engine/ScheduleEngine';
-import { buildScheduleContext } from '@/shared/scheduleContext';
 import { isSceneGateOpen } from '@/shared/sceneGates';
 import { registerHmrDispose } from '@/shared/dev/hmrDispose';
+import { registerGameEngineDisposeStep } from '@/engine/disposeSteps';
 
 /* ─── Auto-close timer tracking for interactive objects ─── */
 const autoCloseTimers = new Map<string, ReturnType<typeof setTimeout>>();
 let autoCloseGeneration = 0;
 
-/** Clear all pending auto-close timers (game reset / HMR). */
+/** Clear all pending auto-close timers (game reset / HMR / engine dispose). */
 export function clearAutoCloseTimers(): void {
   autoCloseGeneration++;
   for (const timer of autoCloseTimers.values()) {
@@ -29,6 +30,7 @@ export function clearAutoCloseTimers(): void {
 }
 
 registerHmrDispose(clearAutoCloseTimers);
+registerGameEngineDisposeStep(clearAutoCloseTimers);
 
 /* ─── Travel time cost per scene (hours) — based on distance from city center ─── */
 const TRAVEL_TIME: Partial<Record<SceneId, number>> = {
@@ -74,7 +76,7 @@ export interface ExplorationSliceActions {
   fastTravelTo: (sceneId: SceneId) => void;
   /** Set time of day directly (used by WorldClock) */
   setExplorationTimeOfDay: (hour: number) => void;
-  /** Set NPC states directly (used by WorldClock) */
+  /** Set NPC states directly (used by WorldClock / schedule sync) */
   setExplorationNPCStates: (npcStates: Record<string, { position: [number, number, number]; sceneId: SceneId }>) => void;
 }
 
@@ -115,26 +117,18 @@ export const createExplorationSlice: StateCreator<
       exploration: { ...state.exploration, playerRotation: rot },
     })),
 
-  advanceTime: (hours) =>
-    set((state) => {
-      const previousHour = state.exploration.timeOfDay;
-      let newTime = (state.exploration.timeOfDay + hours) % 24;
-      if (newTime < 0) {
-        newTime = newTime + 24;
-      }
-      // ── World Clock: rebuild NPC states when time changes ──
-      const scheduleCtx = buildScheduleContext(state);
-      const npcStates = buildNPCStatesForTime(newTime, scheduleCtx);
-      // Emit world:hour_changed so other systems (quests, weather, achievements) can react
-      // Use setTimeout to avoid emitting during Zustand setState (can cause issues)
-      const hour = newTime;
-      setTimeout(() => {
-        eventBus.emit('world:hour_changed', { hour, previousHour, npcStates });
-      }, 0);
-      return {
-        exploration: { ...state.exploration, timeOfDay: newTime, npcStates },
-      };
-    }),
+  advanceTime: (hours) => {
+    const previousHour = get().exploration.timeOfDay;
+    let newTime = (previousHour + hours) % 24;
+    if (newTime < 0) {
+      newTime = newTime + 24;
+    }
+    set((state) => ({
+      exploration: { ...state.exploration, timeOfDay: newTime },
+    }));
+    // Engine listener rebuilds NPC states + emits world:hour_changed
+    eventBus.emit('schedule:sync_npcs', { hour: newTime, previousHour });
+  },
 
   toggleWeather: () => set((state) => ({ weatherEnabled: !state.weatherEnabled })),
 
@@ -215,7 +209,10 @@ export const createExplorationSlice: StateCreator<
       },
     }));
 
-    requestSceneTransition(sceneId, [...targetConfig.spawnPoint] as [number, number, number]);
+    eventBus.emit('scene:request_transition', {
+      targetScene: sceneId,
+      spawnAt: [...targetConfig.spawnPoint] as [number, number, number],
+    });
   },
 
   setExplorationTimeOfDay: (hour) =>

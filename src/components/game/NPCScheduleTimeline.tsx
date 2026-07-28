@@ -229,7 +229,6 @@ export function NPCScheduleTimeline({
   if (segments.length === 0) return null;
 
   const HOURS_TOTAL = 24;
-  const hourPercent = (h: number) => `${(h / HOURS_TOTAL) * 100}%`;
   const currentHourPercent = ((currentHour % 24) / HOURS_TOTAL) * 100;
 
   return (

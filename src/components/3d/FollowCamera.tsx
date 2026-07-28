@@ -60,7 +60,7 @@ import { applyPendingGamepadOrbit } from '@/engine/input/gamepadCamera';
 import { configureCameraCollisionRaycaster } from '@/engine/camera/cameraCollisionLayers';
 import { applyCameraFrame, isInDialogueInteraction } from '@/engine/camera/applyCameraFrame';
 import type { CameraModeContext } from '@/engine/camera/types';
-import { isInteractionLocked } from './InteractionSystemBridge';
+import { isInteractionLocked } from '@/engine/interaction/interactionSession';
 import { getNPCGroup } from '@/engine/interaction/npcRegistry';
 import { eventBus } from '@/engine/EventBus';
 import type { CameraWaypointData } from '@/engine/events';
@@ -135,6 +135,8 @@ export function FollowCamera({
 
   // ── Previous scene for transition detection ──
   const prevSceneIdRef = useRef(sceneId);
+  const sceneIdRef = useRef(sceneId);
+  sceneIdRef.current = sceneId;
 
   // ── NPC interaction distance lerping ──
   const interactionDistanceRef = useRef(DEFAULT_DISTANCE);
@@ -171,7 +173,9 @@ export function FollowCamera({
 
   // ── Initialize all camera subsystems ──
   useEffect(() => {
-    const config = getSceneConfig(sceneId);
+    // Mount-only seed; scene changes teleport via useLayoutEffect below
+    const initialSceneId = sceneIdRef.current;
+    const config = getSceneConfig(initialSceneId);
     const spawn = config.spawnPoint;
     // Camera yaw must be BEHIND the player (opposite of player facing direction)
     const cameraYaw = (config.initialRotation ?? 0) + Math.PI;
@@ -195,7 +199,7 @@ export function FollowCamera({
     _prevPlayerPos.current.set(spawn[0], spawn[1], spawn[2]);
 
     // Initialize scene FOV
-    currentSceneFovRef.current = getSceneSpecificFov(sceneId);
+    currentSceneFovRef.current = getSceneSpecificFov(initialSceneId);
 
     // CRITICAL: Immediately apply the spring camera to the actual Three.js camera
     // so the first rendered frame already shows the correct view (not the default
@@ -204,7 +208,7 @@ export function FollowCamera({
     if (cam) {
       cam.position.copy(initPos);
       cam.lookAt(initLook);
-      cam.fov = getSceneSpecificFov(sceneId);
+      cam.fov = getSceneSpecificFov(initialSceneId);
       cam.updateProjectionMatrix();
     }
   }, []);
@@ -284,7 +288,7 @@ export function FollowCamera({
       const playerRotation = livePlayerRotationRef.current;
       yawRef.current = playerRotation + Math.PI; // Camera looks at player from behind
       pitchRef.current = 0.3;
-      const sceneDist = getSceneDefaultDistance(sceneId);
+      const sceneDist = getSceneDefaultDistance(sceneIdRef.current);
       distanceRef.current = sceneDist;
       interactionDistanceRef.current = sceneDist;
       initializedRef.current = false; // Force re-initialization
@@ -293,7 +297,6 @@ export function FollowCamera({
       if (springRef.current) {
         const playerPos = livePlayerPositionRef.current;
         const cameraYaw = playerRotation + Math.PI;
-        const sceneDist = getSceneDefaultDistance(sceneId);
         const newCamPos = new THREE.Vector3(
           playerPos.x + Math.sin(cameraYaw) * Math.cos(0.3) * sceneDist,
           playerPos.y + LOOK_HEIGHT + Math.sin(0.3) * sceneDist,
@@ -386,13 +389,13 @@ export function FollowCamera({
       initializedRef.current = false;
     }
     prevGameModeRef.current = gameMode;
-  }, [gameMode, livePlayerPositionRef, livePlayerRotationRef]);
+  }, [gameMode, sceneId, livePlayerPositionRef, livePlayerRotationRef]);
 
   // ── Cutscene: listen for start/end events and store changes ──
   useEffect(() => {
     const unsubs: (() => void)[] = [];
 
-    unsubs.push(eventBus.on('camera:cutscene_start', ({ cutsceneId: id, waypoints }) => {
+    unsubs.push(eventBus.on('camera:cutscene_start', ({ cutsceneId: _id, waypoints }) => {
       const controller = buildCutsceneController(waypoints);
       if (controller) {
         cutsceneRef.current = controller;

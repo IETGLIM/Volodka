@@ -7,7 +7,7 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronRight, Zap, Shield, Skull, Circle, Clock, FastForward, History, Eye } from 'lucide-react';
+import { X, ChevronRight, Shield, Skull, Circle, FastForward, History } from 'lucide-react';
 import {
   useDialogueContext,
   useSetCurrentNodeId,
@@ -15,25 +15,24 @@ import {
 } from '@/store/selectors';
 import {
   getDialogueNodes,
-  findNpcById,
   findNpcByName,
-  createInventoryItem,
   isNarrativeGameDataLoaded,
   ensureDialogueNode,
 } from '@/data/gameDataLoader';
 import { audioEngine } from '@/engine/AudioEngine';
 import { eventBus } from '@/engine/EventBus';
 import { closeNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
-import { requestSceneTransitionForStoryNode } from '@/engine/scene/sceneTransition';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import type {
   DialogueChoice,
+  SceneId,
   StoryEffect,
   TrainablePlayerSkill,
   NPCRelation,
 } from '@/shared/types/game';
 import { checkStoryCondition, buildStoryConditionContext } from '@/shared/storyConditions';
-import { NPCPortrait, NPC_PORTRAIT_COLORS } from './shared/NPCPortrait';
+import { NPCPortrait } from './shared/NPCPortrait';
+import { NPC_PORTRAIT_COLORS } from './shared/npcPortraitColors';
 import { AriaLiveRegion } from '@/components/a11y/AriaLiveRegion';
 import { FocusTrap } from '@/components/a11y/FocusTrap';
 import { buildChoiceAriaLabel } from '@/shared/utils/choiceAriaLabel';
@@ -74,7 +73,7 @@ const RELATION_GLOW: Record<string, { color: string; shadow: string; border: str
 import { useTypewriter } from '@/hooks/useTypewriter';
 
 /* ── Apply effects ── */
-import { applyEffects } from '@/shared/utils/applyEffects';
+import { applyEffects } from '@/engine/effects/applyEffects';
 
 /* ── Skill icons & labels (consistent with LevelUpSummary) ── */
 const SKILL_LABELS: Record<TrainablePlayerSkill, string> = {
@@ -139,7 +138,7 @@ interface HistoryLine {
 
 /* ── Component ── */
 export function DialogueRenderer() {
-  const { mode, showStoryOverlay, currentNodeId, storyConditionPlayer, karma, npcRelations, timeOfDay } = useDialogueContext();
+  const { showStoryOverlay, currentNodeId, storyConditionPlayer, karma, npcRelations, timeOfDay } = useDialogueContext();
   const setCurrentNodeId = useSetCurrentNodeId();
   const visitNode = useVisitNode();
 
@@ -180,10 +179,10 @@ export function DialogueRenderer() {
 
   const dialogueNodes = isNarrativeGameDataLoaded() ? getDialogueNodes() : null;
   const isOpen = showStoryOverlay && !!dialogueNodes?.[currentNodeId];
-  const node = useMemo(
-    () => (dialogueNodes ? dialogueNodes[currentNodeId] : undefined),
-    [dialogueNodes, currentNodeId, dialoguePackVersion],
-  );
+  const node = useMemo(() => {
+    void dialoguePackVersion; // invalidate when dialogue pack hot-reloads
+    return dialogueNodes ? dialogueNodes[currentNodeId] : undefined;
+  }, [dialogueNodes, currentNodeId, dialoguePackVersion]);
   const conditionCtx = useMemo(() => {
     const npcDef = node ? findNpcByName(node.speaker) : undefined;
     return buildStoryConditionContext(storyConditionPlayer, {
@@ -202,7 +201,9 @@ export function DialogueRenderer() {
 
       visitNode(node.id);
       if (node.sceneId) {
-        requestSceneTransitionForStoryNode(node.id, node.sceneId);
+        eventBus.emit('scene:request_transition', {
+          targetScene: node.sceneId as SceneId,
+        });
       }
 
       // Add to history (deferred to avoid sync setState in effect)

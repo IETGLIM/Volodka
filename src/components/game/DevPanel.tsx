@@ -2,7 +2,7 @@
 /* ─── Volodka RPG – Developer Debug Panel (F3) ─── */
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { FocusTrap } from '@/components/a11y/FocusTrap';
 import { usePanelDialog } from '@/components/a11y/usePanelDialog';
 import { useGameStore } from '@/store/gameStore';
@@ -18,7 +18,6 @@ import {
 } from '@/engine/performance';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { SCENE_CONFIG } from '@/config/scenes';
-import { requestSceneTransition } from '@/engine/scene/sceneTransition';
 import type { SceneId } from '@/shared/types/game';
 import { POEMS } from '@/data/poems';
 
@@ -31,9 +30,6 @@ interface EventLogEntry {
   event: string;
   payload: unknown;
 }
-
-/* ── All valid scene IDs ── */
-const SCENE_IDS = Object.keys(SCENE_CONFIG) as SceneId[];
 
 /* ── Scene category groupings ── */
 const SCENE_GROUPS: Record<string, SceneId[]> = {
@@ -429,7 +425,10 @@ function SceneTab() {
   const handleSceneSwitch = useCallback((id: SceneId) => {
     const config = SCENE_CONFIG[id];
     if (!config) return;
-    requestSceneTransition(id, config.spawnPoint as [number, number, number]);
+    eventBus.emit('scene:request_transition', {
+      targetScene: id,
+      spawnAt: config.spawnPoint as [number, number, number],
+    });
   }, []);
 
   return (

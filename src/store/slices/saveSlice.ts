@@ -15,7 +15,6 @@ import {
   pickSavePayload,
   storePatchFromSave,
 } from '../persistedState';
-import { resetGuidedStoryManager } from '@/engine/GuidedStoryManager';
 import { clearAutoCloseTimers } from './explorationSlice';
 
 /* ─── localStorage key ─── */
@@ -47,7 +46,6 @@ function writeSaveToLocalStorage(json: string): boolean {
 
 /* ─── Slice types ─── */
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface SaveSliceState {
   // lastSaveTimestamp lives in UISlice, not here — but save actions need it
 }
@@ -77,7 +75,8 @@ export const createSaveSlice: StateCreator<
     clearAutoCloseTimers();
 
     set(createDefaultResetState());
-    resetGuidedStoryManager();
+    // GuidedStoryManager listens via bindGuidedStoryLifecycleListeners (boot binder).
+    eventBus.emit('game:reset', {} as Record<string, never>);
   },
 
   saveGame: (options) => {
@@ -160,8 +159,7 @@ export const createSaveSlice: StateCreator<
 
       clearAutoCloseTimers();
       set(storePatchFromSave(validation.data));
-      resetGuidedStoryManager();
-
+      // GuidedStoryManager resets on this event (bindGuidedStoryLifecycleListeners).
       eventBus.emit('game:loaded', {} as Record<string, never>);
     } catch (err) {
       // Unexpected runtime error — also notify

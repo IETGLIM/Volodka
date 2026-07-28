@@ -11,7 +11,6 @@ import {
   Moon,
   Sunrise,
   Sunset,
-  Stars,
 } from 'lucide-react';
 import { useTimeOfDay } from '@/store/selectors';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
@@ -96,29 +95,6 @@ function getPhase(timeOfDay: number): TimePhase {
   if (timeOfDay >= 10 && timeOfDay < 18) return 'day';
   if (timeOfDay >= 18 && timeOfDay < 21) return 'evening';
   return 'night';
-}
-
-/* ── Calculate progress within current phase (0-1) ── */
-function getPhaseProgress(timeOfDay: number, phase: TimePhase): number {
-  const range = PHASE_RANGES.find((r) => r.phase === phase)!;
-  const adjustedEnd = range.end > 24 ? range.end - 24 : range.end;
-  const adjustedStart = range.start;
-
-  let duration: number;
-  let elapsed: number;
-
-  if (adjustedEnd < adjustedStart) {
-    // Crosses midnight (night: 21→6)
-    duration = (24 - adjustedStart) + adjustedEnd;
-    elapsed = timeOfDay >= adjustedStart
-      ? timeOfDay - adjustedStart
-      : (24 - adjustedStart) + timeOfDay;
-  } else {
-    duration = adjustedEnd - adjustedStart;
-    elapsed = timeOfDay - adjustedStart;
-  }
-
-  return Math.max(0, Math.min(1, elapsed / duration));
 }
 
 /* ── Calculate overall cycle position (0-1 for the full 24h arc) ── */

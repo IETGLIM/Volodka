@@ -1,5 +1,6 @@
 import { lazy, memo, Suspense, type ComponentType } from 'react';
-import { PanelStackSlot, usePanelStack } from './PanelStackContext';
+import { PanelStackSlot } from './PanelStackContext';
+import { usePanelStack } from './usePanelStack';
 import { PanelExitProvider } from './PanelExitContext';
 import { usePanelKeepAlive } from './usePanelKeepAlive';
 import { usePanelMountCleanup } from './usePanelMountCleanup';

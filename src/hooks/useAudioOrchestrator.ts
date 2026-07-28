@@ -96,6 +96,16 @@ export function useAudioOrchestrator() {
       triggerCameraShake(0.05, 8);
     });
 
+    scope.on('music:set_volume', ({ volume }) => {
+      if (disposedRef.current) return;
+      ctrl.setMusicVolume(volume);
+    });
+
+    scope.on('music:set_enabled', ({ enabled, sceneId }) => {
+      if (disposedRef.current) return;
+      ctrl.setMusicEnabled(enabled, sceneId as SceneId);
+    });
+
     return withHmrCleanup(() => scope.dispose());
   }, []);
 

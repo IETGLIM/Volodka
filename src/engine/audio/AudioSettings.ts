@@ -4,7 +4,7 @@
  */
 
 import { audioEngine } from './AudioEngine';
-import { musicEngine } from '../MusicEngine';
+import { musicEngine } from './MusicEngine';
 import { ambientEngine } from './AmbientEngine';
 
 export const AUDIO_SETTINGS_CHANGED = 'volodka:audio-settings-changed';

@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import { INTERACTION_LABELS, type TriggerZone } from '@/data/triggerZones';
-import type { SceneId } from '@/shared/types/game';
 import { getInteractionQueryContext } from '@/engine/interaction/interactionQueryContext';
 
 export type InteractionTargetKind = 'zone' | 'npc' | 'exit';

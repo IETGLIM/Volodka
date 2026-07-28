@@ -1,7 +1,5 @@
 /* ─── Volodka RPG – Achievement Definitions ─── */
 
-import type { StoryEffect } from '@/shared/types/game';
-
 /* ─── Types ─── */
 
 export type AchievementCategory = 'story' | 'combat' | 'exploration' | 'poetry' | 'social' | 'hidden';

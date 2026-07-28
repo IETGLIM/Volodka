@@ -5,7 +5,6 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { LootNotification } from '../LootNotification';
 import { NotificationToasts } from '../NotificationToasts';
 import { ExaminePanel } from '../ExaminePanel';
-import { MoralCompassHUD } from '../MoralCompassHUD';
 import { TutorialOverlay } from '../TutorialOverlay';
 import { FirstPlayTutorial } from '../FirstPlayTutorial';
 import { StressIndicator } from '../StressIndicator';
@@ -44,6 +43,7 @@ import {
 } from './lazyPanels';
 import { OrchestratorMinigameOverlays } from './OrchestratorMinigameOverlays';
 import { OrchestratorStatsPanel } from './OrchestratorPanelSlots';
+import { useDeferredHudChrome } from './useDeferredHudChrome';
 import type { PanelCloseHandlers } from './useStablePanelClosers';
 import type { OrchestratorRuntime } from './useOrchestratorRuntime';
 import type { GamePhase } from '@/shared/gamePhase';
@@ -73,6 +73,9 @@ export function OrchestratorGameplayLayer({
   panelClosers,
 }: Props) {
   const isGameplayMode = mode === 'exploration' || mode === 'cutscene' || mode === 'combat';
+  // Hook must run unconditionally (rules-of-hooks); enabled flag gates the timer.
+  const deferredChrome = useDeferredHudChrome(mode === 'exploration' && gameDataReady);
+
   if (!isGameplayMode) return null;
 
   const {
@@ -221,12 +224,16 @@ export function OrchestratorGameplayLayer({
           <Suspense fallback={null}>
             <LazyMiniMap />
           </Suspense>
-          <MoralCompassHUD />
-          <WeatherIndicator />
-          <DayNightCycleIndicator />
-          <TutorialOverlay />
+          {/* MoralCompassHUD lives inside LazyHUD — avoid duplicate mount */}
           <FirstPlayTutorial />
           <PoetryPowerBar />
+          {deferredChrome && (
+            <>
+              <WeatherIndicator />
+              <DayNightCycleIndicator />
+              <TutorialOverlay />
+            </>
+          )}
         </>
       )}
 

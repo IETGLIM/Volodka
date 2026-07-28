@@ -3,7 +3,7 @@
  * React hook useAudioOrchestrator delegates here.
  */
 
-import { musicEngine } from '../MusicEngine';
+import { musicEngine } from './MusicEngine';
 import { ambientEngine } from './AmbientEngine';
 import { sfxEngine } from './SfxEngine';
 import { applyAudioSettings } from './AudioSettings';
@@ -146,6 +146,22 @@ export class SceneAudioController {
     } else if (phase === 'exploration') {
       sfxEngine.enableDialogueMuffle(false);
       ambientEngine.setDialogueDucked(false);
+    }
+  }
+
+  /** UI music volume slider (store emits music:set_volume). */
+  setMusicVolume(volume: number): void {
+    if (!this.guard()) return;
+    musicEngine.setVolume(volume);
+  }
+
+  /** UI music mute toggle (store emits music:set_enabled). */
+  setMusicEnabled(enabled: boolean, sceneId: SceneId): void {
+    if (!this.guard()) return;
+    if (!enabled) {
+      musicEngine.stopMusic(1);
+    } else {
+      musicEngine.playSceneMusic(sceneId);
     }
   }
 

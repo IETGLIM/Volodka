@@ -30,7 +30,6 @@ const ROLL_LERP_SPEED = 4;
 /* ── Dialogue ── */
 const DIALOGUE_SHOT_INTERVAL = 3.5;
 const DIALOGUE_FOV = 50;
-const DIALOGUE_TIME_SCALE = 0.92;
 
 /* ── Exploration enhancements ── */
 const TURN_TILT_MAX = 0.025;          // max roll radians when turning
@@ -238,7 +237,7 @@ export function getDialogueShot(
   type: DialogueShotType,
   playerPos: THREE.Vector3,
   npcPos: THREE.Vector3,
-  npcRotation: number = 0,
+  _npcRotation: number = 0,
 ): CameraShot {
   // Direction from player to NPC
   const dir = _tempLook.copy(npcPos).sub(playerPos);
@@ -786,7 +785,7 @@ export function triggerCombatShake(state: CombatCameraState, intensity: number =
 export function updateCombatCamera(
   state: CombatCameraState,
   delta: number,
-  cameraPosition: THREE.Vector3,
+  _cameraPosition: THREE.Vector3,
 ): { shakeOffset: THREE.Vector3; effectiveFov: number } {
   const dt = Math.min(delta, 0.05);
   let effectiveFov = state.targetFov;

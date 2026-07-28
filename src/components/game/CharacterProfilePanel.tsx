@@ -15,7 +15,6 @@ import {
   Gem,
   BookOpen,
   Trophy,
-  MapPin,
   Package,
   Footprints,
   Star,
@@ -35,9 +34,8 @@ import { findNpcById } from '@/data/allNpcDefinitions';
 import { POEMS } from '@/data/poems';
 import { KARMA_LOW_THRESHOLD, KARMA_HIGH_THRESHOLD } from '@/data/constants';
 import { Card, CardContent } from '@/components/ui/card';
-import { getItemDefinition } from '@/data/items';
-import { PERKS_MAP, PERKS_BY_CATEGORY, PERK_CATEGORY_META } from '@/data/perks';
-import type { EquipmentSlot, NPCRelation } from '@/shared/types/game';
+import { PERKS_MAP, PERK_CATEGORY_META } from '@/data/perks';
+import type { EquipmentSlot } from '@/shared/types/game';
 
 const TOTAL_POEMS = POEMS.length;
 
@@ -632,7 +630,6 @@ export function CharacterProfilePanel({ open, onClose }: { open: boolean; onClos
                       <div className="flex gap-2">
                         {(['head', 'body', 'accessory'] as EquipmentSlot[]).map((slot) => {
                           const equipped = equippedItems[slot];
-                          const equipDef = equipped ? getItemDefinition(equipped.id) : undefined;
                           const cfg = SLOT_CONFIG[slot];
                           return (
                             <div

@@ -9,8 +9,9 @@ import type {
   TrainablePlayerSkill,
 } from '@/shared/types/game';
 import { getPoemById, getQuestDefinitions, getAchievementMap, getDailyMissionById, getTotalAchievements } from '@/data/gameDataLoader';
+import type { AchievementReward } from '@/data/achievements';
 import { eventBus } from '@/engine/EventBus';
-import { clamp, pushNotification, type GameNotification, type PoemPowerState } from '../shared';
+import { clamp, pushNotification, type NotificationType, type PoemPowerState } from '../shared';
 import { applyFairmathRelation } from '@/shared/fairmath';
 import type { GameStoreState } from '../types';
 import { readWorldFromExploration, readWorldFromPlayer } from '../crossSliceReads';
@@ -106,6 +107,45 @@ export interface WorldSliceActions {
 
 export type WorldSlice = WorldSliceState & WorldSliceActions;
 
+/** Cross-slice notification patch (world → player notifications). */
+function notifyFromWorld(
+  get: () => GameStoreState,
+  type: NotificationType,
+  text: string,
+): { notifications: ReturnType<typeof pushNotification> } {
+  const { notifications } = readWorldFromPlayer(get());
+  return { notifications: pushNotification(notifications, type, text) };
+}
+
+/** Apply achievement reward definitions into a reward-batch draft. */
+function applyAchievementRewards(
+  draft: ReturnType<typeof createRewardBatchDraft>,
+  sideEffects: ReturnType<typeof createRewardBatchSideEffects>,
+  rewards: AchievementReward[],
+): void {
+  for (const reward of rewards) {
+    switch (reward.type) {
+      case 'xp':
+        if (reward.value) batchAddXp(draft, sideEffects, reward.value);
+        break;
+      case 'karma':
+        if (reward.value) batchAddKarma(draft, sideEffects, reward.value);
+        break;
+      case 'skill':
+        if (reward.skill && reward.value) {
+          batchAddSkill(draft, reward.skill as TrainablePlayerSkill, reward.value);
+        }
+        break;
+      case 'credits':
+        if (reward.value) batchAddCredits(draft, reward.value);
+        break;
+      case 'flag':
+        if (reward.flag) batchSetFlag(draft, reward.flag, reward.flagValue ?? true);
+        break;
+    }
+  }
+}
+
 /* ─── Slice creator ─── */
 export const createWorldSlice: StateCreator<
   GameStoreState,
@@ -155,10 +195,9 @@ export const createWorldSlice: StateCreator<
       eventBus.emit('quest:accepted', { questId, questTitle: definition.title });
 
       const questTitle = definition.title;
-      const { notifications: currentNotifications } = readWorldFromPlayer(get());
       return {
         quests,
-        notifications: pushNotification(currentNotifications, 'quest', `Новое задание: ${questTitle}`),
+        ...notifyFromWorld(get, 'quest', `Новое задание: ${questTitle}`),
       };
     }),
 
@@ -197,10 +236,9 @@ export const createWorldSlice: StateCreator<
 
       eventBus.emit('quest:completed', { questId, npcId: questDef?.questGiverNpcId });
       const questTitle = questDef?.title ?? questId;
-      const { notifications: currentNotifications } = readWorldFromPlayer(get());
       return {
         quests,
-        notifications: pushNotification(currentNotifications, 'quest', `Задание выполнено: ${questTitle}`),
+        ...notifyFromWorld(get, 'quest', `Задание выполнено: ${questTitle}`),
       };
     }),
 
@@ -225,10 +263,9 @@ export const createWorldSlice: StateCreator<
       if (!poem) return state;
       const poemTitle = poem.title;
       eventBus.emit('poem:collected', { poemId });
-      const { notifications: currentNotifications } = readWorldFromPlayer(get());
       return {
         collectedPoems: [...state.collectedPoems, poemId],
-        notifications: pushNotification(currentNotifications, 'poem', `Стих собран: ${poemTitle}`),
+        ...notifyFromWorld(get, 'poem', `Стих собран: ${poemTitle}`),
       };
     }),
 
@@ -297,28 +334,7 @@ export const createWorldSlice: StateCreator<
 
     set((state) => {
       const draft = createRewardBatchDraft(state.playerState, state.notifications);
-
-      for (const reward of def.rewards) {
-        switch (reward.type) {
-          case 'xp':
-            if (reward.value) batchAddXp(draft, sideEffects, reward.value);
-            break;
-          case 'karma':
-            if (reward.value) batchAddKarma(draft, sideEffects, reward.value);
-            break;
-          case 'skill':
-            if (reward.skill && reward.value) {
-              batchAddSkill(draft, reward.skill as TrainablePlayerSkill, reward.value);
-            }
-            break;
-          case 'credits':
-            if (reward.value) batchAddCredits(draft, reward.value);
-            break;
-          case 'flag':
-            if (reward.flag) batchSetFlag(draft, reward.flag, reward.flagValue ?? true);
-            break;
-        }
-      }
+      applyAchievementRewards(draft, sideEffects, def.rewards);
 
       return {
         unlockedAchievements: [...state.unlockedAchievements, { id: achievementId, unlockedAt: timestamp }],
@@ -386,10 +402,9 @@ export const createWorldSlice: StateCreator<
         claimed: false,
       };
 
-      const { notifications: currentNotifications } = readWorldFromPlayer(get());
       return {
         acceptedDailyMissions: [...state.acceptedDailyMissions, newMission],
-        notifications: pushNotification(currentNotifications, 'quest', `Ежедневное задание принято`),
+        ...notifyFromWorld(get, 'quest', `Ежедневное задание принято`),
       };
     }),
 
@@ -436,10 +451,9 @@ export const createWorldSlice: StateCreator<
       );
 
       if (newlyCompleted) {
-        const { notifications: currentNotifications } = readWorldFromPlayer(get());
         return {
           acceptedDailyMissions: missions,
-          notifications: pushNotification(currentNotifications, 'quest', `Ежедневное задание выполнено: ${missionDef.title}`),
+          ...notifyFromWorld(get, 'quest', `Ежедневное задание выполнено: ${missionDef.title}`),
         };
       }
 

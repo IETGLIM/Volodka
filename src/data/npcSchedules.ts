@@ -6,7 +6,7 @@
  * Act-conditional schedules override the base schedule when
  * story flags or quest completions change NPC behavior. */
 
-import type { ScheduleEntry, SceneId } from '@/shared/types/game';
+import type { ScheduleEntry } from '@/shared/types/game';
 import { CHK_NPC_SCHEDULES } from './chkTolpa/schedules';
 
 /* ─── NPC Schedule Type ─── */

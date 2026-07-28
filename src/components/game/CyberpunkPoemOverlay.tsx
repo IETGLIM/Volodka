@@ -10,10 +10,9 @@
    ─ Skip (Space/Enter/Escape) support
    ═══════════════════════════════════════════════════════════════ */
 
-import { useState, useEffect, useCallback, useRef, memo } from 'react';
+import { useState, useEffect, useRef, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Poem } from '@/shared/types/game';
-import { eventBus } from '@/engine/EventBus';
 import { MatrixRain } from '@/components/3d/MatrixRain';
 import '@/styles/cyberpunk-poem.css';
 
@@ -48,7 +47,7 @@ const CyberpunkPoemCutscene = memo(function CyberpunkPoemCutscene({
   onComplete: () => void;
   showMatrix?: boolean;
 }) {
-  const [revealedLines, setRevealedLines] = useState(0);
+  const [, setRevealedLines] = useState(0);
   const [showPrompt, setShowPrompt] = useState(false);
   const rafRef = useRef<number>(0);
   const stateRef = useRef({ line: 0, char: 0, complete: false });

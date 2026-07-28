@@ -7,7 +7,7 @@
  */
 
 import { disposeEventBus } from '@/engine/EventBus';
-import { disposeGuidedStoryManager } from '@/engine/GuidedStoryManager';
+import { disposeGuidedStoryManager, bindGuidedStoryLifecycleListeners, unbindGuidedStoryLifecycleListeners } from '@/engine/GuidedStoryManager';
 import { disposeQuestTracker } from '@/engine/QuestTracker';
 import { disposeCombatSystem } from '@/engine/CombatSystem';
 import { disposeWorldEventDirector } from '@/engine/world/WorldEventDirector';
@@ -20,7 +20,6 @@ import { disposeAudioEngine, reviveAudioEngine } from '@/engine/audio/AudioEngin
 import { disposeSharedAudioContext } from '@/engine/SharedAudioContext';
 import { resetInteractionSession } from '@/engine/interaction/interactionSession';
 import { resetInteractionEndDedupState } from '@/engine/interaction/interactionEndDedup';
-import { clearAutoCloseTimers } from '@/store/slices/explorationSlice';
 import {
   clearPlayerExternalVelocity,
   clearPlayerRigidBody,
@@ -33,7 +32,28 @@ import {
   resetGlobalCleanupRegistry,
   runGlobalUnmountCleanup,
 } from '@/engine/core/GlobalCleanupService';
-import { getGameStore } from '@/store/gameStore';
+import { getGameSnapshot } from '@/engine/GameActionDispatcher';
+import { runGameEngineDisposeSteps } from '@/engine/disposeSteps';
+import {
+  bindScheduleSyncController,
+  unbindScheduleSyncController,
+} from '@/engine/schedule/scheduleSyncController';
+import {
+  bindSceneTransitionRequestListener,
+  unbindSceneTransitionRequestListener,
+} from '@/engine/scene/sceneTransition';
+import type { SceneId } from '@/shared/types/game';
+
+/** Store default when bridge is absent (unit tests / early HMR dispose). */
+const FALLBACK_UNMOUNT_SCENE: SceneId = 'volodka_room';
+
+function readSceneIdForUnmount(): SceneId {
+  try {
+    return getGameSnapshot().exploration.currentSceneId;
+  } catch {
+    return FALLBACK_UNMOUNT_SCENE;
+  }
+}
 
 let engineDisposed = false;
 
@@ -51,7 +71,11 @@ export function disposeGameEngine(): void {
     clearPlayerRigidBody();
     resetInteractionEndDedupState();
     resetInteractionSession();
-    clearAutoCloseTimers();
+    runGameEngineDisposeSteps();
+
+    unbindScheduleSyncController();
+    unbindSceneTransitionRequestListener();
+    unbindGuidedStoryLifecycleListeners();
 
     disposeCombatSystem();
     disposeQuestTracker();
@@ -69,7 +93,7 @@ export function disposeGameEngine(): void {
     disposeAudioEngine();
     disposeSharedAudioContext();
 
-    runGlobalUnmountCleanup(getGameStore().exploration.currentSceneId);
+    runGlobalUnmountCleanup(readSceneIdForUnmount());
     resetGlobalCleanupRegistry();
 
     disposeEventBus();
@@ -88,6 +112,14 @@ export function reviveGameEngine(): void {
   reviveAudioEngine();
   reviveAmbientEngine();
   getSceneAudioController().init();
+  bindScheduleSyncController();
+  bindSceneTransitionRequestListener();
+  bindGuidedStoryLifecycleListeners();
 }
 
 registerHmrDispose(disposeGameEngine);
+
+/* Boot-time bind so advanceTime / fastTravel / save reset work before first revive. */
+bindScheduleSyncController();
+bindSceneTransitionRequestListener();
+bindGuidedStoryLifecycleListeners();

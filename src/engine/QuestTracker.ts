@@ -173,7 +173,8 @@ export class QuestTracker {
       }),
     );
 
-    // Subscribe to minigame completion — check minigame_completed objectives
+    // Subscribe to minigame completion — quest objectives only (never apply payload.reward;
+    // rewards are applied once by completeMinigame with rewardsApplied: true).
     this.unsubscribeEvents.push(
       eventBus.on('minigame:complete', (payload) => {
         if (payload.success !== false) {

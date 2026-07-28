@@ -1,13 +1,13 @@
 
 /* ─── Volodka RPG – Home Evening room procedural 3D visual ─── */
 
-import { useMemo, useRef, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
 import { Radiator, Plant, Picture } from './lazyInteriorModels';
-import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
+import { useEnvironmentLod } from './lod/useEnvironmentLod';
 import { EnvironmentDetail } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { HomeEveningProps } from './sceneChunks/homeEvening';

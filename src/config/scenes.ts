@@ -11,7 +11,7 @@
 
 import type { SceneConfig, SceneExit } from '@/shared/types/game';
 import { SCENE_DEFINITIONS, SCENE_IDS, type SceneId } from '@/config/sceneDefinitions';
-import { generateSceneConfig, generateAllSceneConfigs } from '@/config/sceneDefinitionGenerator';
+import { generateAllSceneConfigs } from '@/config/sceneDefinitionGenerator';
 
 /** Complete scene configuration map — GENERATED from SceneDefinitions.
  *  No more hardcoded data — all scene config derives from sceneDefinitions.ts. */

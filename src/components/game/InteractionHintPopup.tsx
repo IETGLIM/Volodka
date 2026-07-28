@@ -4,7 +4,7 @@
    interactive objects/NPCs. Cyberpunk glass-morphism styling.
 */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, Package, DoorOpen, Sparkles, Hand } from 'lucide-react';
 import { useGamePhase } from '@/store/selectors';

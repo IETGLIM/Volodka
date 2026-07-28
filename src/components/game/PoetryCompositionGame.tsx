@@ -3,14 +3,14 @@
 
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { FocusTrap } from '@/components/a11y/FocusTrap';
+import { usePanelDialog } from '@/components/a11y/usePanelDialog';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
-import { useGameStore } from '@/store/gameStore';
-import { eventBus } from '@/engine/EventBus';
+import { completeMinigame } from '@/engine/minigame/claimMinigameRewards';
 
 /* ─── Accent colors ─── */
 const ACCENT_RGB = '168, 85, 247';
 const ACCENT_COLOR = `rgba(${ACCENT_RGB}, 0.9)`;
-const ACCENT_GLOW = `rgba(${ACCENT_RGB}, 0.3)`;
 
 /* ─── Types ─── */
 interface WordOption {
@@ -354,6 +354,7 @@ function shuffleArray<T>(arr: T[]): T[] {
 
 /* ─── Main Component ─── */
 export function PoetryCompositionGame({ onClose }: PoetryCompositionGameProps) {
+  const { closeButtonRef, dialogProps, titleProps } = usePanelDialog();
   const TOTAL_ROUNDS = 3;
 
   // Pick 3 random templates
@@ -437,7 +438,7 @@ export function PoetryCompositionGame({ onClose }: PoetryCompositionGameProps) {
   }, [filledBlanks]);
 
   // Handle clicking a word from the bank
-  const handleWordClick = useCallback((word: WordOption, blankIndex: number) => {
+  const handleWordClick = useCallback((word: WordOption, _blankIndex: number) => {
     if (usedWords.has(word.word)) return; // already used
 
     // If no blank is selected, and there's a first empty blank, auto-select it
@@ -497,30 +498,23 @@ export function PoetryCompositionGame({ onClose }: PoetryCompositionGameProps) {
     }
   }, [round, calculateRoundScore]);
 
-  // Handle game completion — apply rewards
+  // Handle game completion — single apply path (see claimMinigameRewards)
   const handleClaimRewards = useCallback(() => {
     const totalScore = score;
-    const store = useGameStore.getState();
 
     // XP reward: score * 2 (5-15 range)
     const xpReward = Math.min(15, Math.max(5, totalScore));
-    store.addXp(xpReward);
-
     // Karma bonus: 2-8 based on quality
     const karmaReward = Math.min(8, Math.max(2, Math.floor(totalScore / 3)));
-    store.addKarma(karmaReward);
 
-    // Writing skill +1 for completing all 3 rounds
-    store.addSkill('writing', 1);
-
-    // Set completion flag
-    store.setFlag('poetry_composition_complete', true);
-
-    eventBus.emit('minigame:complete', {
+    completeMinigame({
       gameType: 'poetry',
       success: true,
-      reward: [
+      rewards: [
+        { type: 'addXp', value: xpReward },
         { type: 'addKarma', value: karmaReward },
+        { type: 'addSkill', skill: 'writing', value: 1 },
+        { type: 'setFlag', flag: 'poetry_composition_complete', flagValue: true },
       ],
     });
 
@@ -552,8 +546,10 @@ export function PoetryCompositionGame({ onClose }: PoetryCompositionGameProps) {
       <div
         className="absolute inset-0 bg-black/80 backdrop-blur-sm"
         onClick={onClose}
+        aria-hidden="true"
       />
 
+      <FocusTrap initialFocusRef={closeButtonRef}>
       {/* Game panel */}
       <div
         className="relative z-10 w-full max-w-lg mx-4 rounded-lg border overflow-hidden"
@@ -562,6 +558,7 @@ export function PoetryCompositionGame({ onClose }: PoetryCompositionGameProps) {
           borderColor: `rgba(${ACCENT_RGB}, 0.25)`,
           boxShadow: `0 0 30px rgba(${ACCENT_RGB}, 0.08), inset 0 0 30px rgba(${ACCENT_RGB}, 0.02)`,
         }}
+        {...dialogProps}
       >
         {/* Header */}
         <div
@@ -572,8 +569,9 @@ export function PoetryCompositionGame({ onClose }: PoetryCompositionGameProps) {
           }}
         >
           <div className="flex items-center gap-2">
-            <span style={{ color: ACCENT_COLOR, fontSize: '18px' }}>✨</span>
+            <span style={{ color: ACCENT_COLOR, fontSize: '18px' }} aria-hidden="true">✨</span>
             <h2
+              {...titleProps}
               className="text-sm font-bold tracking-widest uppercase"
               style={{ color: ACCENT_COLOR, fontFamily: 'monospace' }}
             >
@@ -605,8 +603,11 @@ export function PoetryCompositionGame({ onClose }: PoetryCompositionGameProps) {
               </motion.span>
             </div>
             <button
+              ref={closeButtonRef}
+              type="button"
               onClick={onClose}
               className="text-slate-500 hover:text-slate-300 transition-colors text-lg font-mono"
+              aria-label="Закрыть игру"
             >
               ✕
             </button>
@@ -985,6 +986,7 @@ export function PoetryCompositionGame({ onClose }: PoetryCompositionGameProps) {
           </div>
         </div>
       </div>
+      </FocusTrap>
     </motion.div>
   );
 }

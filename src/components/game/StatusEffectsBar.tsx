@@ -14,7 +14,7 @@ import {
   STATUS_EFFECTS,
   getStatusEffectById,
 } from '@/data/statusEffects';
-import { type WeatherType, determineWeatherType, WEATHER_EFFECTS } from '@/data/weatherEffects';
+import { type WeatherType, determineWeatherType } from '@/data/weatherEffects';
 import { eventBus } from '@/engine/EventBus';
 
 /* ─── Active effect instance ─── */
@@ -246,7 +246,6 @@ const MAX_VISIBLE_EFFECTS = 8;
 
 export function StatusEffectsBar() {
   const {
-    karma,
     energy,
     stress,
     unlockedPerks,

@@ -7,7 +7,7 @@ import * as THREE from 'three';
 import { useGLTF } from '@react-three/drei';
 import type { SceneId } from '@/shared/types/game';
 import { getAssetDefinition } from '@/config/assetManifest';
-import { preloadGltfAsset } from '@/components/3d/assets/GltfAsset';
+import { preloadGltfAsset } from '@/components/3d/assets/preloadGltfAsset';
 import { preloadSceneJsChunks } from '@/components/3d/sceneChunks/sceneChunkRegistry';
 
 /** GLB assets warmed per scene — extend as interior props migrate off procedural meshes. */

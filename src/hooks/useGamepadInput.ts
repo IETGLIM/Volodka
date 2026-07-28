@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, type Dispatch, type MutableRefObject } from 'react';
 import { useGameStore } from '@/store/gameStore';
-import { getInteractionState } from '@/components/3d/InteractionSystemBridge';
+import { getInteractionState } from '@/engine/interaction/interactionSession';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 import {
   GAMEPAD,

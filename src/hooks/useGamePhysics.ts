@@ -1,7 +1,7 @@
 
 /* ─── Volodka RPG – player controls hook ─── */
 
-import { useEffect, useRef, useCallback, useState } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 
 export interface VirtualControls {
   forward: number;

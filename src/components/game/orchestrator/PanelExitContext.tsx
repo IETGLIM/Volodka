@@ -1,6 +1,5 @@
-import { createContext, useContext, type ReactNode } from 'react';
-
-const PanelExitContext = createContext<(() => void) | null>(null);
+import type { ReactNode } from 'react';
+import { PanelExitContext } from './usePanelExitComplete';
 
 export function PanelExitProvider({
   onExitComplete,
@@ -14,9 +13,4 @@ export function PanelExitProvider({
       {children}
     </PanelExitContext.Provider>
   );
-}
-
-/** Called by PanelWrapper when Framer exit animation completes. */
-export function usePanelExitComplete(): (() => void) | null {
-  return useContext(PanelExitContext);
 }

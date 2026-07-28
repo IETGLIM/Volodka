@@ -48,7 +48,6 @@ export class GuidedStoryManager {
   private unsubNpcTalked: (() => void) | null = null;
   private unsubSceneEnter: (() => void) | null = null;
   private unsubFlagSet: (() => void) | null = null;
-  private unsubGameLoaded: (() => void) | null = null;
 
   constructor(private readonly deps: GuidedStoryDeps = createDefaultGuidedStoryDeps()) {}
 
@@ -306,10 +305,6 @@ export class GuidedStoryManager {
       },
     );
 
-    this.unsubGameLoaded = eventBus.on('game:loaded', () => {
-      this.resetState();
-    });
-
     this.emitGuidanceUpdate();
   }
 
@@ -322,14 +317,12 @@ export class GuidedStoryManager {
     this.unsubNpcTalked?.();
     this.unsubSceneEnter?.();
     this.unsubFlagSet?.();
-    this.unsubGameLoaded?.();
 
     this.unsubVisitNode = null;
     this.unsubQuestCompleted = null;
     this.unsubNpcTalked = null;
     this.unsubSceneEnter = null;
     this.unsubFlagSet = null;
-    this.unsubGameLoaded = null;
 
     this.currentStepIndex = 0;
     this.currentQuestSpineIndex = 0;
@@ -358,6 +351,28 @@ export function initGuidedStoryManager() {
 export function resetGuidedStoryManager() {
   invalidateStoryGraphIndex();
   guidedStoryManager.resetState();
+}
+
+/**
+ * Boot binder: saveSlice emits game:loaded / game:reset; store must not import this module.
+ * Idempotent. Bound from disposeGameEngine revive + module boot (like scheduleSyncController).
+ */
+let unbindLifecycle: (() => void) | null = null;
+
+export function bindGuidedStoryLifecycleListeners(): void {
+  if (unbindLifecycle) return;
+  const onReplaced = () => resetGuidedStoryManager();
+  const uLoaded = eventBus.on('game:loaded', onReplaced);
+  const uReset = eventBus.on('game:reset', onReplaced);
+  unbindLifecycle = () => {
+    uLoaded();
+    uReset();
+  };
+}
+
+export function unbindGuidedStoryLifecycleListeners(): void {
+  unbindLifecycle?.();
+  unbindLifecycle = null;
 }
 
 export function reconcileGuidedStory() {

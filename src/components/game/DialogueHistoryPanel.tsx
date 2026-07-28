@@ -17,9 +17,9 @@ import { useGameStore } from '@/store/gameStore';
 import { findNpcById } from '@/data/allNpcDefinitions';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Button } from '@/components/ui/button';
 import type { ConversationLogEntry } from '@/store/shared';
-import { NPCPortrait, NPC_PORTRAIT_COLORS } from './shared/NPCPortrait';
+import { NPCPortrait } from './shared/NPCPortrait';
+import { NPC_PORTRAIT_COLORS } from './shared/npcPortraitColors';
 
 /* ══════════════════════════════════════════════════════════════
    Helpers

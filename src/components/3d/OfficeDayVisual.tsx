@@ -5,7 +5,7 @@ import { useMemo, type MutableRefObject } from 'react';
 import * as THREE from 'three';
 import { Plant, Radiator, Clock } from './lazyInteriorModels';
 import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
-import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
+import { useEnvironmentLod } from './lod/useEnvironmentLod';
 import { EnvironmentDetail, SceneClutterGate } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 

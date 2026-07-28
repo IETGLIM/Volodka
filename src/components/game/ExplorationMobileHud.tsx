@@ -3,7 +3,7 @@
    v3 fixes (real fixes, not pretend):
    - D-pad uses BOTH onTouchStart AND onPointerDown for max browser compat
    - Interact button fires: (1) synthetic KeyE, (2) EventBus 'interact:press',
-     (3) direct scene:transition when near exit — triple fallback
+     (3) scene:request_transition when near exit — triple fallback
    - z-index set to 90 (below only loading/cinematic) — above ALL game UI
    - Viewport-relative sizing with CSS custom properties — no overflow ever
    - Landscape layout: compact horizontal strip at bottom
@@ -13,7 +13,7 @@
    - No pointer-events-none on container — uses isolated stacking context
 */
 
-import { useCallback, useState, useEffect, useRef } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { Package, Hand, ArrowUp, Zap } from 'lucide-react';
 import { useVirtualControlsRef } from '@/engine/VirtualControlsState';
 import type { VirtualControls } from '@/hooks/useGamePhysics';
@@ -22,7 +22,6 @@ import { readGamePhase } from '@/shared/gamePhase';
 import { useGamePhase } from '@/store/selectors';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { eventBus } from '@/engine/EventBus';
-import { requestSceneTransition } from '@/engine/scene/sceneTransition';
 import { getSceneExits } from '@/config/scenes';
 import { TRIGGER_ZONES } from '@/data/triggerZones';
 import { CYBER_CYAN } from '@/shared/constants/cyberPalette';
@@ -143,7 +142,10 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
                 Math.abs(z.position[2] - exit.position[2]) < 1.5,
             );
             if (!hasOverlap) {
-              requestSceneTransition(exit.targetScene, exit.spawnAt);
+              eventBus.emit('scene:request_transition', {
+                targetScene: exit.targetScene,
+                spawnAt: exit.spawnAt,
+              });
             }
             break; // Only transition to the nearest exit
           }
@@ -179,7 +181,6 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
   // On normal phones (360-430px), use standard sizes.
   // On tablets (>430px), use larger sizes.
   const isSmallScreen = vw < 360;
-  const isTablet = vw > 430;
 
   // D-pad button sizes (touch target >= 44px but visual can be smaller with padding)
   const dpadSize = isLandscape

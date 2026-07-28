@@ -15,21 +15,23 @@ export function useFrameTick(
   const callbackRef = useRef(callback);
   callbackRef.current = callback;
 
-  const { priority = 0, label, enabled = true, phase = 'pre' } = options;
+  const { priority = 0, label, enabled = true, phase = 'pre', critical } = options;
   const tickIdRef = useRef<number | null>(null);
+  const enabledRef = useRef(enabled);
+  enabledRef.current = enabled;
 
   useEffect(() => {
     const id = registerFrameTick(
       system,
       (ctx) => callbackRef.current(ctx),
-      { priority, label, enabled, phase },
+      { priority, label, enabled: enabledRef.current, phase, critical },
     );
     tickIdRef.current = id;
     return () => {
       unregisterFrameTick(id);
       tickIdRef.current = null;
     };
-  }, [system, priority, label, phase]);
+  }, [system, priority, label, phase, critical]);
 
   useEffect(() => {
     if (tickIdRef.current != null) {

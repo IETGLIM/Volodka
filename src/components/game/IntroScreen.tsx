@@ -3,7 +3,7 @@ import { memo, useEffect, useLayoutEffect, useState, useMemo, useCallback, useRe
 import { FilmGrain, Vignette, CinematicBars } from '@/components/game/cinematic';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { useGameStore } from '@/store/gameStore';
-import { GAME_INTRO, GAME_INTRO_PARAGRAPHS, POEMS } from '@/data/poems';
+import { GAME_INTRO_PARAGRAPHS, POEMS } from '@/data/poems';
 import type { Poem } from '@/shared/types/game';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { eventBus } from '@/engine/EventBus';
@@ -472,11 +472,6 @@ const PhaseBlack = memo(function PhaseBlack() {
 // ════════════════════════════════════════════════════════════════
 
 type ProseStyle = 'greeting' | 'default' | 'emphasis' | 'spacer' | 'love';
-
-interface ProseParagraph {
-  text: string;
-  style: ProseStyle;
-}
 
 /** Get visual style props for a paragraph based on its style type */
 function getProseStyleProps(style: ProseStyle): {

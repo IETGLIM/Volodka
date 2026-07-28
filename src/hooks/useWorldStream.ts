@@ -57,10 +57,10 @@ export function useWorldStream(enabled = true): UseWorldStreamResult {
     };
   }, [enabled, manager, sceneId, localPosition]);
 
-  const streamState = useMemo(
-    () => manager.getStreamState(sceneId, localPosition),
-    [manager, sceneId, localPosition, activeChunks],
-  );
+  const streamState = useMemo(() => {
+    void activeChunks; // recompute when streamed chunk set changes
+    return manager.getStreamState(sceneId, localPosition);
+  }, [manager, sceneId, localPosition, activeChunks]);
 
   return {
     streamState,

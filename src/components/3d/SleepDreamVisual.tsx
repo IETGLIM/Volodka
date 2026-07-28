@@ -6,7 +6,7 @@ import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import FastNoiseLite from 'fastnoise-lite';
 import { useProceduralTerrain, DREAM_TERRAIN } from '@/hooks/useProceduralTerrain';
-import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
+import { useEnvironmentLod } from './lod/useEnvironmentLod';
 import { EnvironmentDetail } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 
@@ -17,7 +17,7 @@ export function SleepDreamVisual() {
   const { lod } = useEnvironmentLod();
 
   // ── Procedural terrain with FastNoiseLite ──
-  const { geometry, getHeightAt } = useProceduralTerrain({
+  const { geometry } = useProceduralTerrain({
     width: W,
     depth: D,
     segments: 128,
@@ -278,8 +278,6 @@ function DreamDustField({ width, depth }: { width: number; depth: number }) {
     const maxParticles = 300;
     const posArr: number[] = [];
     const colArr: number[] = [];
-    const halfW = width / 2;
-    const halfD = depth / 2;
 
     // Spawn particles with density proportional to noise value
     for (let i = 0; i < maxParticles * 3 && posArr.length < maxParticles * 3; i++) {

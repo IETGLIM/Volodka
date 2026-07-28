@@ -8,11 +8,15 @@ import { SCENE_IDS } from '@/config/sceneDefinitions';
 import { sanitizeExplorationSceneId } from '@/config/scenes';
 import { MAX_STORY_ACT } from '@/data/storyActs';
 import type { SceneId } from '@/shared/types/game';
+import { migrateSave } from './saveMigrations';
 
 /* ─── Constants ─── */
 
-/** Current save format version — bump when breaking changes are made */
-export const SAVE_VERSION = 1;
+/**
+ * Current save format version — bump when adding a migrator in saveMigrations.ts.
+ * Load path: migrateSave → Zod validate (see validateSaveData).
+ */
+export const SAVE_VERSION = 2;
 
 /* ─── Primitive helpers ─── */
 
@@ -302,6 +306,7 @@ export type SaveValidationResult =
 /**
  * Validates a raw JSON string from localStorage against the save schema.
  *
+ * Pipeline: JSON.parse → migrateSave (versioned) → Zod safeParse.
  * Returns `{ success: true, data }` on valid saves,
  * or `{ success: false, error }` with a human-readable message on failure.
  */
@@ -316,7 +321,12 @@ export function validateSaveData(raw: string): SaveValidationResult {
     };
   }
 
-  const result = SavePayloadSchema.safeParse(parsed);
+  const migrated = migrateSave(parsed, SAVE_VERSION);
+  if (!migrated.success) {
+    return { success: false, error: migrated.error };
+  }
+
+  const result = SavePayloadSchema.safeParse(migrated.data);
 
   if (result.success) {
     return { success: true, data: result.data };

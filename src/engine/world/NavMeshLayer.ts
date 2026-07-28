@@ -9,7 +9,6 @@ import type {
   NavMeshLayerSnapshot,
   NavMeshNode,
   WorldCellId,
-  WorldChunkCoord,
   WorldRegionId,
 } from './types';
 import { chunkWorldCenter, getWorldCell, getChunkForScene } from './worldRegistry';

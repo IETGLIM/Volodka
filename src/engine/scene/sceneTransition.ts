@@ -1,7 +1,8 @@
 /* ─── Scene transition coordinator ───
- * Single entry point for all scene changes. Callers emit ONLY through
- * requestSceneTransition — SceneTransitionHandler owns store updates,
- * audio, scene:enter, and cinematic side effects.
+ * Commanders emit scene:request_transition; the binder calls
+ * requestSceneTransition (dedupe) which emits scene:transition.
+ * SceneTransitionHandler owns store updates, audio, scene:enter,
+ * and cinematic side effects.
  *
  * Prevents races where orchestrator + StoryRenderer both mutate the store
  * and emit scene:transition in the same React commit.
@@ -9,7 +10,7 @@
 
 import { SCENE_CONFIG } from '@/config/scenes';
 import { eventBus } from '@/engine/EventBus';
-import { getGameStore } from '@/store/gameStore';
+import { getGameSnapshot } from '@/engine/GameActionDispatcher';
 import type { SceneId } from '@/shared/types/game';
 
 type SpawnTuple = [number, number, number];
@@ -57,8 +58,7 @@ export function requestSceneTransition(
     return false;
   }
 
-  const store = getGameStore();
-  const { currentSceneId, playerPosition } = store.exploration;
+  const { currentSceneId, playerPosition } = getGameSnapshot().exploration;
   if (currentSceneId === targetScene && sameSpawn(playerPosition, spawn)) {
     lastDedupeKey = dedupeKey;
     lastDedupeAt = now;
@@ -79,4 +79,23 @@ export function requestSceneTransitionForStoryNode(
 ): boolean {
   if (!sceneId) return false;
   return requestSceneTransition(sceneId as SceneId);
+}
+
+let unsubRequest: (() => void) | null = null;
+
+/**
+ * Commanders (store/UI/engine) emit scene:request_transition;
+ * this forwards to requestSceneTransition (dedupe + scene:transition).
+ * Idempotent. Call from reviveGameEngine (and tests).
+ */
+export function bindSceneTransitionRequestListener(): void {
+  if (unsubRequest) return;
+  unsubRequest = eventBus.on('scene:request_transition', ({ targetScene, spawnAt }) => {
+    requestSceneTransition(targetScene, spawnAt);
+  });
+}
+
+export function unbindSceneTransitionRequestListener(): void {
+  unsubRequest?.();
+  unsubRequest = null;
 }

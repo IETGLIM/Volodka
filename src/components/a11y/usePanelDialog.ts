@@ -14,6 +14,16 @@ export interface PanelDialogA11y {
   };
 }
 
+/** Pure dialog a11y props for role=dialog overlays (testable without DOM). */
+export function panelDialogProps(titleId: string): PanelDialogA11y['dialogProps'] {
+  return {
+    role: 'dialog',
+    'aria-modal': true,
+    'aria-labelledby': titleId,
+    'data-panel': '',
+  };
+}
+
 /** Stable ids + refs for modal game panels (role=dialog, focus on close). */
 export function usePanelDialog(): PanelDialogA11y {
   const titleId = useId();
@@ -21,12 +31,7 @@ export function usePanelDialog(): PanelDialogA11y {
   return {
     titleId,
     closeButtonRef,
-    dialogProps: {
-      role: 'dialog',
-      'aria-modal': true,
-      'aria-labelledby': titleId,
-      'data-panel': '',
-    },
+    dialogProps: panelDialogProps(titleId),
     titleProps: { id: titleId },
   };
 }

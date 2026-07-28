@@ -11,7 +11,6 @@ import { FocusTrap } from '@/components/a11y/FocusTrap';
 import { usePanelDialog } from '@/components/a11y/usePanelDialog';
 import {
   X, Lock, Trophy, CheckCircle2, Clock,
-  ChevronRight, Filter,
 } from 'lucide-react';
 import { useGameStore } from '@/store/gameStore';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';

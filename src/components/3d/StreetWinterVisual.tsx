@@ -4,7 +4,7 @@
 import { useMemo } from 'react';
 import * as THREE from 'three';
 import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
-import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
+import { useEnvironmentLod } from './lod/useEnvironmentLod';
 import { EnvironmentDetail, PropDistanceGate } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 

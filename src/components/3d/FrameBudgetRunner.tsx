@@ -1,6 +1,8 @@
 /**
  * Pre-render frame budget orchestrator (priority −1000).
- * Post-render ticks run via PostFrameBudgetRunner (+1000).
+ * Soft-skips non-critical ticks when cumulative work exceeds FRAME_BUDGET_MS
+ * (critical: interaction / player / npc / camera — see types.ts).
+ * Post-render ticks run via PostFrameBudgetRunner (+1000) and are never skipped.
  * Components register via useFrameTick() / usePostFrameTick().
  */
 

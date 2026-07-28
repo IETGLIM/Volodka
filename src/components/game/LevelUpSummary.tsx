@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { eventBus } from '@/engine/EventBus'
 import { useLevelUpSummaryState } from '@/store/selectors'
 import { UI_LAYERS } from '@/shared/constants/uiLayers'
-import { CYBERPUNK_COLORS } from './CyberpunkTheme'
+import { CYBERPUNK_COLORS } from '@/shared/constants/cyberPalette'
 import type { PlayerSkills, TrainablePlayerSkill } from '@/shared/types/game'
 
 /* ─── Skill Labels ─── */
@@ -115,6 +115,8 @@ export function LevelUpSummary() {
     })
     return () => {
       unsub()
+      // latest auto-dismiss timer may be set after this effect runs
+      // eslint-disable-next-line react-hooks/exhaustive-deps -- clear current timer on unmount
       if (timerRef.current) clearTimeout(timerRef.current)
     }
   }, [triggerLevelUp])
@@ -153,9 +155,6 @@ export function LevelUpSummary() {
     : []
 
   // Compute point changes
-  const skillPointsGained = levelUpData
-    ? progression.skillPoints - levelUpData.prevSkillPoints + (levelUpData.newLevel - levelUpData.prevLevel) // they spent some
-    : 0
   const perkPointsGained = levelUpData
     ? (Array.from({ length: levelUpData.newLevel - levelUpData.prevLevel }, (_, i) => levelUpData.prevLevel + 1 + i)
         .filter((l) => l % 3 === 0).length)

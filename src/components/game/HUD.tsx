@@ -14,7 +14,6 @@ import {
   Sun,
   Moon,
   CloudSun,
-  Cloud,
   CloudRain,
   Snowflake,
   CloudFog,
@@ -48,13 +47,14 @@ import { type WeatherType, WEATHER_EFFECTS } from '@/data/weatherEffects';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { eventBus } from '@/engine/EventBus';
 import { PHOTO_EMPTY_PAYLOAD, PHOTO_EVENTS } from '@/engine/events';
-import { floatLevelUp } from '@/components/game/FloatingText';
-import type { SecondaryAction } from '@/components/game/hud/hudTypes';
+import { floatLevelUp } from '@/components/game/floatingTextApi';
+import type { HudOverflowSection, SecondaryAction } from '@/components/game/hud/hudTypes';
 import { StatusEffectsBar } from '@/components/game/StatusEffectsBar';
 import { MoralCompassHUD } from '@/components/game/MoralCompassHUD';
 import { AriaLiveRegion } from '@/components/a11y/AriaLiveRegion';
 import { getKarmaTierLabel } from '@/shared/utils/karmaTier';
 import { useHUDController } from '@/components/game/hud/useHUDController';
+import { HUD_OVERFLOW_SECTION_TITLES } from '@/components/game/hud/hudIa';
 import type { HUDProps } from '@/components/game/hud/hudTypes';
 
 export type { HUDProps } from '@/components/game/hud/hudTypes';
@@ -75,7 +75,6 @@ function WeatherIcon({ type, className = 'size-4' }: { type: WeatherType; classN
 /* ── Ambient particles for status panel background ── */
 function AmbientParticles() {
   const [mounted, setMounted] = useState(false);
-  // eslint-disable-next-line react-hooks/set-state-in-effect -- client-only mount guard to prevent hydration mismatch
   useEffect(() => { setMounted(true); }, []);
 
   const particles = useMemo(() =>
@@ -456,7 +455,6 @@ export function HUD(props: HUDProps) {
     collectedPoems,
     questNotificationCount,
     showSaveIndicator,
-    handleSave,
     karma,
     energy,
     stress,
@@ -498,21 +496,52 @@ export function HUD(props: HUDProps) {
     onOpenQuestBoard,
   } = props;
 
-  const secondaryActions: SecondaryAction[] = useMemo(() => [
-    { icon: <span className="size-4 flex items-center justify-center text-sm">🧭</span>, label: 'Быстрый переход', shortcut: 'F', onClick: onOpenFastTravel },
-    { icon: <Sparkles className="size-4" />, label: 'Навыки', shortcut: 'T', onClick: onOpenSkillTree },
-    { icon: <Sparkles className="size-4" />, label: 'Черты', shortcut: 'V', onClick: onOpenPerks },
-    { icon: <ScrollText className="size-4" />, label: 'Доска заданий', shortcut: 'B', onClick: onOpenQuestBoard },
-    { icon: <ShoppingCart className="size-4" />, label: 'Торговля', shortcut: '⇧T', onClick: onOpenTrading },
-    { icon: <Gamepad2 className="size-4" />, label: 'Мини-игры', shortcut: 'M', onClick: onOpenMiniGames },
-    { icon: <User className="size-4" />, label: 'Профиль', shortcut: 'C', onClick: onOpenCharacterProfile },
-    { icon: <Users className="size-4" />, label: 'Отношения', shortcut: 'N', onClick: onOpenNPCRelations },
-    { icon: <BookMarked className="size-4" />, label: 'Кодекс', shortcut: 'K', onClick: onOpenCodex },
-    { icon: <MessageCircle className="size-4" />, label: 'История диалогов', shortcut: 'L', onClick: onOpenDialogueHistory },
-    { icon: <Trophy className="size-4" />, label: 'Достижения', shortcut: 'H', onClick: onOpenAchievements },
-    { icon: <Lightbulb className="size-4" />, label: 'Подсказки', onClick: onToggleTutorials },
-    { icon: <Menu className="size-4" />, label: 'Меню', onClick: onOpenMenu },
-  ], [onOpenFastTravel, onOpenSkillTree, onOpenPerks, onOpenQuestBoard, onOpenTrading, onOpenMiniGames, onOpenCharacterProfile, onOpenNPCRelations, onOpenCodex, onOpenDialogueHistory, onOpenAchievements, onToggleTutorials, onOpenMenu]);
+  // Sprint 0 IA: primary = Задания + Инвентарь; low-freq (Журнал/Крафт/Торговля/Фото/Статы) → «Ещё».
+  // Save stays in pause (Esc) — not duplicated on the top bar.
+  const overflowSections: HudOverflowSection[] = useMemo(() => [
+    {
+      title: HUD_OVERFLOW_SECTION_TITLES.play,
+      actions: [
+        { icon: <BookOpen className="size-4" />, label: 'Журнал', shortcut: 'J', onClick: onOpenJournal },
+        { icon: <Hammer className="size-4" />, label: 'Крафт', shortcut: 'G', onClick: onOpenCrafting },
+        { icon: <ShoppingCart className="size-4" />, label: 'Торговля', shortcut: '⇧T', onClick: onOpenTrading },
+        { icon: <Camera className="size-4" />, label: 'Фото', shortcut: 'P', onClick: () => eventBus.emit(PHOTO_EVENTS.toggle, PHOTO_EMPTY_PAYLOAD) },
+        { icon: <BarChart3 className="size-4" />, label: 'Статистика', shortcut: 'S', onClick: onOpenStats },
+      ],
+    },
+    {
+      title: HUD_OVERFLOW_SECTION_TITLES.character,
+      actions: [
+        { icon: <Sparkles className="size-4" />, label: 'Навыки', shortcut: 'T', onClick: onOpenSkillTree },
+        { icon: <Sparkles className="size-4" />, label: 'Черты', shortcut: 'V', onClick: onOpenPerks },
+        { icon: <User className="size-4" />, label: 'Профиль', shortcut: 'C', onClick: onOpenCharacterProfile },
+        { icon: <Users className="size-4" />, label: 'Отношения', shortcut: 'N', onClick: onOpenNPCRelations },
+      ],
+    },
+    {
+      title: HUD_OVERFLOW_SECTION_TITLES.world,
+      actions: [
+        { icon: <span className="size-4 flex items-center justify-center text-sm">🧭</span>, label: 'Быстрый переход', shortcut: 'F', onClick: onOpenFastTravel },
+        { icon: <ScrollText className="size-4" />, label: 'Доска заданий', shortcut: 'B', onClick: onOpenQuestBoard },
+        { icon: <Gamepad2 className="size-4" />, label: 'Мини-игры', shortcut: 'M', onClick: onOpenMiniGames },
+        { icon: <BookMarked className="size-4" />, label: 'Кодекс', shortcut: 'K', onClick: onOpenCodex },
+        { icon: <MessageCircle className="size-4" />, label: 'История диалогов', shortcut: 'L', onClick: onOpenDialogueHistory },
+        { icon: <Trophy className="size-4" />, label: 'Достижения', shortcut: 'H', onClick: onOpenAchievements },
+      ],
+    },
+    {
+      title: HUD_OVERFLOW_SECTION_TITLES.system,
+      actions: [
+        { icon: <Lightbulb className="size-4" />, label: 'Подсказки', onClick: onToggleTutorials },
+        { icon: <Menu className="size-4" />, label: 'Меню / пауза', shortcut: 'Esc', onClick: onOpenMenu },
+      ],
+    },
+  ], [
+    onOpenJournal, onOpenCrafting, onOpenTrading, onOpenStats,
+    onOpenFastTravel, onOpenSkillTree, onOpenPerks, onOpenQuestBoard, onOpenMiniGames,
+    onOpenCharacterProfile, onOpenNPCRelations, onOpenCodex, onOpenDialogueHistory,
+    onOpenAchievements, onToggleTutorials, onOpenMenu,
+  ]);
 
   if (photoModeOn) return null;
 
@@ -626,7 +655,7 @@ export function HUD(props: HUDProps) {
               </div>
             )}
 
-            {/* Quest button with notification badge */}
+            {/* Quest button with notification badge — primary (first-hour) */}
             <div className="relative">
               <HUDButton icon={<ScrollText className="size-3.5 sm:size-4" />} label="Задания [Q]" onClick={onOpenQuests} tooltip="Задания [Q]" />
               {/* Notification badge */}
@@ -646,19 +675,7 @@ export function HUD(props: HUDProps) {
               </AnimatePresence>
             </div>
 
-            <HUDButton icon={<BookOpen className="size-3.5 sm:size-4" />} label="Журнал [J]" onClick={onOpenJournal} tooltip="Журнал [J]" />
             <HUDButton icon={<Package className="size-3.5 sm:size-4" />} label="Инвентарь [I]" onClick={onOpenInventory} tooltip="Инвентарь [I]" />
-
-            {/* Hide some buttons on small screens */}
-            <div className="hidden sm:block">
-              <HUDButton icon={<ShoppingCart className="size-3.5 sm:size-4" />} label="Торговля [⇧T]" onClick={onOpenTrading} tooltip="Торговля [⇧T]" />
-            </div>
-            <div className="hidden md:block">
-              <HUDButton icon={<Hammer className="size-3.5 sm:size-4" />} label="Крафт [G]" onClick={onOpenCrafting} tooltip="Крафт [G]" />
-            </div>
-            <HUDButton icon={<Save className="size-3.5 sm:size-4" />} label="Сохранить" onClick={handleSave} tooltip="Сохранить [F5]" />
-            <HUDButton icon={<Camera className="size-3.5 sm:size-4" />} label="Фото" onClick={() => eventBus.emit(PHOTO_EVENTS.toggle, PHOTO_EMPTY_PAYLOAD)} tooltip="Фото [P]" />
-            <HUDButton icon={<BarChart3 className="size-3.5 sm:size-4" />} label="Статистика" onClick={onOpenStats} tooltip="Статистика [S]" />
 
             {/* Weather status indicator */}
             {currentWeather !== 'clear' && (
@@ -674,14 +691,14 @@ export function HUD(props: HUDProps) {
               </div>
             )}
 
-            {/* More dropdown trigger */}
+            {/* Overflow: journal / craft / trade / photo / stats / progression / system */}
             <div className="relative" ref={moreMenuRef}>
               <HUDButton
                 icon={<MoreVertical className="size-3.5 sm:size-4" />}
                 label="Ещё"
                 onClick={() => setMoreMenuOpen((prev) => !prev)}
                 active={moreMenuOpen}
-                tooltip="Ещё [...]"
+                tooltip="Ещё […] — журнал, крафт, фото, меню"
               />
 
               <AnimatePresence>
@@ -691,7 +708,7 @@ export function HUD(props: HUDProps) {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -8, scale: 0.95 }}
                     transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
-                    className="absolute right-0 top-full mt-1.5 w-52 rounded-lg border backdrop-blur-xl overflow-hidden"
+                    className="absolute right-0 top-full mt-1.5 w-56 rounded-lg border backdrop-blur-xl overflow-hidden"
                     style={{
                       background: 'linear-gradient(145deg, rgba(0,0,0,0.92) 0%, rgba(15,23,42,0.88) 50%, rgba(0,0,0,0.85) 100%)',
                       borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.2)',
@@ -702,22 +719,30 @@ export function HUD(props: HUDProps) {
                     <div className="px-3 py-2 border-b border-slate-700/30">
                       <span className="text-[10px] text-slate-500 font-mono uppercase tracking-widest">Действия</span>
                     </div>
-                    <div className="py-1 px-1 max-h-64 overflow-y-auto">
-                      {secondaryActions.map((action) => (
-                        <HUDMenuItem
-                          key={action.label}
-                          icon={action.icon}
-                          label={action.label}
-                          shortcut={action.shortcut}
-                          badge={action.label === 'Задания' ? questNotificationCount : undefined}
-                          onClick={() => { setMoreMenuOpen(false); action.onClick?.(); }}
-                        />
+                    <div className="py-1 px-1 max-h-80 overflow-y-auto">
+                      {overflowSections.map((section) => (
+                        <div key={section.title} className="mb-1 last:mb-0">
+                          <div className="px-2.5 pt-1.5 pb-0.5">
+                            <span className="text-[9px] text-slate-500/80 font-mono uppercase tracking-wider">
+                              {section.title}
+                            </span>
+                          </div>
+                          {section.actions.map((action) => (
+                            <HUDMenuItem
+                              key={action.label}
+                              icon={action.icon}
+                              label={action.label}
+                              shortcut={action.shortcut}
+                              onClick={() => { setMoreMenuOpen(false); action.onClick?.(); }}
+                            />
+                          ))}
+                        </div>
                       ))}
                     </div>
                     <div className="px-3 py-1.5 border-t border-slate-700/30">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[8px] text-slate-400 font-mono">volodka://actions</span>
-                        <div className="flex items-center gap-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[8px] text-slate-500 font-mono">Сохранить — Esc → пауза</span>
+                        <div className="flex items-center gap-1 shrink-0">
                           <kbd className="text-[8px] text-slate-500 font-mono px-1 py-0.5 rounded border border-slate-700/30 bg-slate-800/40">Esc</kbd>
                           <span className="text-[8px] text-slate-500">закрыть</span>
                         </div>

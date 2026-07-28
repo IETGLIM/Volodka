@@ -131,7 +131,6 @@ export function computeStereoPan(
   panRadius = 12,
 ): number {
   const dx = position[0] - listener[0];
-  const dz = position[2] - listener[2];
   if (panRadius <= 0) return 0;
   return Math.max(-1, Math.min(1, dx / panRadius));
 }
@@ -199,7 +198,6 @@ export function connectSpatialSource(
     try {
       const panner = ctx.createPanner();
       configurePanner(panner, caps);
-      const now = ctx.currentTime;
       setPannerPosition(panner, ctx, position[0], position[1], position[2]);
       panner.refDistance = refDistance;
       panner.maxDistance = maxDistance;

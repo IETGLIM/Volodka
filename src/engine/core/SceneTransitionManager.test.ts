@@ -1,19 +1,26 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { eventBus } from '@/engine/EventBus';
-import { performSceneTransition } from './SceneTransitionManager';
 import { registerGlobalCleanup, resetGlobalCleanupRegistry } from './GlobalCleanupService';
 
-vi.mock('@/store/gameStore', () => ({
-  getGameStore: () => ({
-    exploration: { currentSceneId: 'volodka_room' },
-    setExplorationScene: vi.fn(),
-    setPlayerPosition: vi.fn(),
-    discoverScene: vi.fn(),
-    autoRegenBetweenScenes: vi.fn(),
-  }),
+const getGameSnapshot = vi.fn();
+const dispatchGameAction = vi.fn();
+
+vi.mock('@/engine/GameActionDispatcher', () => ({
+  getGameSnapshot: (...args: unknown[]) => getGameSnapshot(...args),
+  dispatchGameAction: (...args: unknown[]) => dispatchGameAction(...args),
 }));
 
+import { performSceneTransition } from './SceneTransitionManager';
+
 describe('SceneTransitionManager', () => {
+  beforeEach(() => {
+    getGameSnapshot.mockReset();
+    dispatchGameAction.mockReset();
+    getGameSnapshot.mockReturnValue({
+      exploration: { currentSceneId: 'volodka_room' },
+    });
+  });
+
   it('emits unload → enter → loaded in order', () => {
     resetGlobalCleanupRegistry();
     const order: string[] = [];
@@ -30,6 +37,11 @@ describe('SceneTransitionManager', () => {
     });
 
     expect(order).toEqual(['unload', 'cleanup', 'enter', 'loaded']);
+    expect(dispatchGameAction).toHaveBeenCalledWith({
+      type: 'exploration/commitSceneTransition',
+      sceneId: 'cafe_evening',
+      spawnAt: [1, 0, 2],
+    });
     unsub();
     resetGlobalCleanupRegistry();
   });
@@ -48,6 +60,11 @@ describe('SceneTransitionManager', () => {
     });
 
     expect(order).toEqual(['enter', 'loaded']);
+    expect(dispatchGameAction).toHaveBeenCalledWith({
+      type: 'exploration/commitSceneTransition',
+      sceneId: 'volodka_room',
+      spawnAt: [0, 0, 0],
+    });
     resetGlobalCleanupRegistry();
   });
 });

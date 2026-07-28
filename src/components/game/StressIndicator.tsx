@@ -1,7 +1,6 @@
 
 /* ─── Volodka RPG – Stress visual effect overlay ─── */
 
-import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { usePlayerStress } from '@/store/selectors';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';

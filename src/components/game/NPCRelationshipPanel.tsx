@@ -17,7 +17,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { NPCScheduleTimeline } from '@/components/game/NPCScheduleTimeline';
 import { GiftDialog } from '@/components/game/GiftDialog';
 import { getAffinityLevel } from '@/data/npcGifts';
-import { NPCPortrait, NPC_PORTRAIT_COLORS } from './shared/NPCPortrait';
+import { NPCPortrait } from './shared/NPCPortrait';
+import { NPC_PORTRAIT_COLORS } from './shared/npcPortraitColors';
 import type { NPCRelation, SceneId } from '@/shared/types/game';
 
 /* ══════════════════════════════════════════════════════════════

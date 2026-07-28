@@ -401,7 +401,7 @@ export function PerksPanel({ open, onClose }: { open: boolean; onClose: () => vo
   const { perkPoints, unlockedPerks } = progression;
   const level = progression.level;
   const [activeCategory, setActiveCategory] = useState<PerkCategory | 'all'>('all');
-  const [recentlyAcquired, setRecentlyAcquired] = useState<string | null>(null);
+  const [, setRecentlyAcquired] = useState<string | null>(null);
 
   // Close on Escape handled by PanelWrapper
   const handleClose = useCallback(() => {

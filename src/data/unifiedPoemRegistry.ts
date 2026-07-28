@@ -12,7 +12,7 @@
    ═══════════════════════════════════════════════════════════════ */
 
 import type { Poem } from '@/shared/types/game';
-import { POEMS, getPoemById } from '@/data/poems';
+import { getPoemById } from '@/data/poems';
 
 /* ─── Unified Poem Descriptor ─── */
 export interface UnifiedPoemDescriptor {

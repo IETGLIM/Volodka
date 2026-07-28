@@ -5,7 +5,7 @@
    Быстрая панель поэтических способностей.
 */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { bottomPoetryPx } from '@/shared/constants/hudLayout';
@@ -18,32 +18,12 @@ import {
   getCooldownRemaining,
 } from '@/engine/PoemPowerSystem';
 import { audioEngine } from '@/engine/AudioEngine';
-import { eventBus } from '@/engine/EventBus';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-
-/** Hook: requestAnimationFrame-based timer that ticks at a given interval (ms) */
-function useRafTick(intervalMs: number): number {
-  const [tick, setTick] = useState(0);
-  useEffect(() => {
-    let rafId: number;
-    let lastUpdate = 0;
-    const loop = (timestamp: number) => {
-      if (timestamp - lastUpdate >= intervalMs) {
-        lastUpdate = timestamp;
-        setTick((t) => t + 1);
-      }
-      rafId = requestAnimationFrame(loop);
-    };
-    rafId = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(rafId);
-  }, [intervalMs]);
-  return tick;
-}
 
 /* ── Single power slot ── */
 function PowerSlot({ poemId, slotIndex }: { poemId: string; slotIndex: number }) {

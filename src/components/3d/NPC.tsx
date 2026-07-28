@@ -97,15 +97,17 @@ export function NPC({
   // ── Patrol state ──
   const patrolRef = useRef<PatrolState | null>(null);
   const [patrolActivity, setPatrolActivity] = useState<'idle' | 'walk'>('idle');
+  const positionRef = useRef(position);
+  positionRef.current = position;
 
   // Initialize patrol state when waypoints are available
   useEffect(() => {
     if (patrolWaypoints && patrolWaypoints.length > 0) {
-      patrolRef.current = createPatrolState(patrolWaypoints, position);
+      // Seed from latest position at waypoint rebind; live pos comes from patrol/frame
+      patrolRef.current = createPatrolState(patrolWaypoints, positionRef.current);
     } else {
       patrolRef.current = null;
     }
-  // Only re-create if the waypoints array reference changes, not every position change
   }, [patrolWaypoints]);
 
   // Proximity bark

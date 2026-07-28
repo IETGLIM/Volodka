@@ -2,8 +2,7 @@
 /* ─── Volodka RPG – Library procedural 3D visual ─── */
 
 import * as THREE from 'three';
-import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
-import { EnvironmentDetail } from './lod/PropDistanceGate';
+import { useEnvironmentLod } from './lod/useEnvironmentLod';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { LibraryDayInterior } from './sceneChunks/libraryDay';
 

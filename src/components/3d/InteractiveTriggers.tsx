@@ -6,7 +6,7 @@ import { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { Html } from '@react-three/drei';
 import * as THREE from 'three';
-import { getGameStore, useGameStore } from '@/store/gameStore';
+import { getGameSnapshot } from '@/engine/GameActionDispatcher';
 import { useCurrentSceneId, useInteractionOverlay, useTimeOfDay, useSceneExitState, useScheduleContext } from '@/store/selectors';
 import { useSceneEnterEffect } from '@/hooks/useSceneEnterEffect';
 import { TRIGGER_ZONES, type TriggerZone, INTERACTION_LABELS } from '@/data/triggerZones';
@@ -14,7 +14,7 @@ import { findNpcById, findNpcByDialogueNodeId } from '@/data/allNpcDefinitions';
 import type { NPCDefinition } from '@/shared/types/game';
 import { getNPCsForScene, getCurrentScheduleEntry } from '@/engine/ScheduleEngine';
 import { eventBus } from '@/engine/EventBus';
-import { isInteractionLocked } from './InteractionSystemBridge';
+import { isInteractionLocked } from '@/engine/interaction/interactionSession';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { bottomInteractPromptPx } from '@/shared/constants/hudLayout';
 import { getSceneExits } from '@/config/scenes';
@@ -388,7 +388,7 @@ function NPCProximityTrigger({
   npcId,
   npcName,
   position,
-  dialogueNodeId,
+  dialogueNodeId: _dialogueNodeId,
   livePlayerPositionRef,
   allowedIdsRef,
   registerPrompt,
@@ -784,7 +784,7 @@ function TriggerZoneComponent({
         (window as any).__volodka_ekey_consumed = false;
       }, 200);
 
-      const sceneId = getGameStore().exploration.currentSceneId;
+      const sceneId = getGameSnapshot().exploration.currentSceneId;
 
       // Check if this trigger zone is linked to an NPC dialogue
       // If so, route through the staged interaction system
@@ -839,7 +839,7 @@ function TriggerZoneComponent({
         (window as any).__volodka_ekey_consumed = false;
       }, 200);
 
-      const sceneId = getGameStore().exploration.currentSceneId;
+      const sceneId = getGameSnapshot().exploration.currentSceneId;
 
       if (zone.linkedDialogueNodeId) {
         const npcDef = findNpcByDialogueNodeId(zone.linkedDialogueNodeId);
@@ -878,7 +878,7 @@ function TriggerZoneComponent({
       unsubInteract();
       if (outlineFlashTimer.current) clearTimeout(outlineFlashTimer.current);
     };
-  }, [zone.id, zone.linkedDialogueNodeId, spawnParticles, allowedIdsRef]);
+  }, [zone.id, zone.linkedDialogueNodeId, zone.position, zone.size, spawnParticles, allowedIdsRef]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -926,7 +926,7 @@ function TriggerZoneComponent({
 export function WorldItem({
   id,
   position,
-  label,
+  label: _label,
   onPickup,
 }: {
   id: string;
@@ -959,7 +959,7 @@ export function WorldItem({
           onPickup?.(id);
           eventBus.emit('object:interact', {
             objectId: id,
-            sceneId: getGameStore().exploration.currentSceneId,
+            sceneId: getGameSnapshot().exploration.currentSceneId,
           });
         }}
       >

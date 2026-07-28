@@ -6,7 +6,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { usePanelExitComplete } from '@/components/game/orchestrator/PanelExitContext';
+import { usePanelExitComplete } from '@/components/game/orchestrator/usePanelExitComplete';
 import { FocusTrap } from '@/components/a11y/FocusTrap';
 import { usePanelDialog } from '@/components/a11y/usePanelDialog';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
@@ -24,10 +24,9 @@ import {
   Zap,
   Lock,
   ChevronLeft,
-  ChevronRight,
   FileText,
 } from 'lucide-react';
-import type { JournalTab, LoreEntry } from '@/store/gameStore';
+import type { JournalTab } from '@/store/gameStore';
 import {
   useAddLoreEntry,
   useCollectedPoems,
@@ -47,7 +46,6 @@ import { audioEngine } from '@/engine/AudioEngine';
 import { INITIAL_LORE_ENTRIES } from '@/data/loreEntries';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import type { TrainablePlayerSkill } from '@/shared/types/game';
 import type { SceneId } from '@/shared/types/game';
@@ -132,6 +130,7 @@ function NotesTab({ searchQuery }: { searchQuery: string }) {
 
   // Build notes from visited story nodes
   const discoveredNotes = useMemo(() => {
+    void notesVersion; // invalidate when notes pack hot-reloads
     const storyNodes = isNarrativeGameDataLoaded() ? getStoryNodes() : {};
     const notes: { id: string; text: string; speaker?: string; sceneId: string; timestamp: number }[] = [];
     for (const nodeId of visitedNodes) {
@@ -740,7 +739,7 @@ export function JournalPanel({
   onClose?: () => void;
 } = {}) {
   const { closeButtonRef, dialogProps, titleProps } = usePanelDialog();
-  const { journalOpen: storeJournalOpen, journalTab, loreEntries } = useJournalShell();
+  const { journalOpen: storeJournalOpen, journalTab } = useJournalShell();
   const journalOpen = openProp ?? storeJournalOpen;
   const notifyPanelExit = usePanelExitComplete();
   const setJournalTab = useSetJournalTab();
