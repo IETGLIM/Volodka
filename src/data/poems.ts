@@ -10,6 +10,7 @@
 
 import type { Poem } from '@/shared/types/game';
 import { isMainPoemId } from '@/data/poemCollectionMeta';
+import { EXPANSION_POEM_STUBS } from '@/data/expansion/expansionPoemStubs';
 
 // ─── ИНТРО-ПРОЗА К ИГРЕ ───
 // Each paragraph is a separate cinematic beat.
@@ -1570,7 +1571,10 @@ export const POEMS: Poem[] = [
    ═══════════════════════════════════════════════════════════════ */
 
 export function getPoemById(id: string): Poem | undefined {
-  return POEMS.find((p) => p.id === id);
+  const canonical = POEMS.find((p) => p.id === id);
+  if (canonical) return canonical;
+  // Expansion fragments (not in canonical poem_1–35 corpus)
+  return EXPANSION_POEM_STUBS.find((p) => p.id === id);
 }
 
 export function getPoemsByTheme(theme: string): Poem[] {

@@ -30,6 +30,7 @@ import { STORY_NODES_FACTORY } from './factoryStory';
 import { STORY_NODES_RESISTANCE } from './resistanceStory';
 import { STORY_NODES_SCENE_EXPLORE_HUBS } from './sceneExploreHubs';
 import { STORY_NODES_EPILOGUE } from './epilogueStory';
+import { STORY_NODES_PHASE5_QUESTS } from './phase5QuestStory';
 
 /** Master story node registry with collision detection in dev. */
 export function buildStoryNodes(): Record<string, StoryNode> {
@@ -60,6 +61,7 @@ export function buildStoryNodes(): Record<string, StoryNode> {
     { name: 'factory', nodes: STORY_NODES_FACTORY },
     { name: 'resistance', nodes: STORY_NODES_RESISTANCE },
     { name: 'epilogue', nodes: STORY_NODES_EPILOGUE },
+    { name: 'phase5Quests', nodes: STORY_NODES_PHASE5_QUESTS },
   ];
 
   const registry: Record<string, StoryNode> = {};

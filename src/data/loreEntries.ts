@@ -1,6 +1,7 @@
 /* ─── Volodka RPG – Lore entries for the Codex ─── */
 
 import type { LoreEntry } from '@/store/gameStore';
+import { EXPANSION_LORE_STUBS } from './expansion/expansionLoreStubs';
 
 /* ══════════════════════════════════════════════════════════════
    HISTORY (5) — Background about the city, the collapse, the digital revolution
@@ -779,6 +780,7 @@ export const INITIAL_LORE_ENTRIES: LoreEntry[] = [
   ...CULTURE_ENTRIES,
   ...MYSTERY_ENTRIES,
   ...ADDITIONAL_ENTRIES,
+  ...EXPANSION_LORE_STUBS,
 ];
 
 /** Category metadata for UI display */

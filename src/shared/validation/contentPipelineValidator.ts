@@ -17,6 +17,7 @@ import { validateNpcDefinitionModelPaths } from '@/data/npcDefinitions';
 import { EXPANDED_NPC_QUEST_LINKS } from '@/data/expandedNPCs';
 import { SCENE_DEFINITIONS, type SceneId } from '@/config/sceneDefinitions';
 import { POEMS } from '@/data/poems';
+import { EXPANSION_POEM_STUBS, EXPANSION_POEM_IDS } from '@/data/expansion/expansionPoemStubs';
 import { getAllItemDefinitions } from '@/data/items';
 import { getAllUnifiedPoems } from '@/data/unifiedPoemRegistry';
 import {
@@ -82,7 +83,10 @@ function buildSets() {
   const questIds = new Set(QUEST_DEFINITIONS.map((q) => q.id));
   const npcIds = new Set(ALL_NPC_DEFINITIONS.map((n) => n.id));
   const sceneIds = new Set(Object.keys(SCENE_DEFINITIONS) as SceneId[]);
-  const poemIds = new Set(POEMS.map((p) => p.id));
+  const poemIds = new Set([
+    ...POEMS.map((p) => p.id),
+    ...EXPANSION_POEM_STUBS.map((p) => p.id),
+  ]);
   const unifiedPoemIds = new Set(getAllUnifiedPoems().map((p) => p.id));
   const itemIds = new Set([
     ...getAllItemDefinitions().map((i) => i.id),
@@ -603,6 +607,7 @@ function validatePoems(reg: ReturnType<typeof buildSets>, out: ValidationIssue[]
   }
 
   for (const poemId of reg.poemIds) {
+    if (EXPANSION_POEM_IDS.includes(poemId)) continue;
     if (!reg.unifiedPoemIds.has(poemId)) {
       out.push(issue('warning', 'poem', `poem:${poemId}`, 'missing from UNIFIED_POEM_REGISTRY'));
     }

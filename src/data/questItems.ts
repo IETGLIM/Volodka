@@ -4,6 +4,7 @@
  */
 
 import type { InventoryItem } from '@/shared/types/game'
+import { EXPANSION_ITEM_STUBS } from './expansion/expansionItemStubs'
 
 /* ─── Start Items ───
  * Items given to the player when they accept a quest.
@@ -96,6 +97,7 @@ export const QUEST_ITEM_DEFINITIONS: Record<string, {
     category: 'equipment',
     rarity: 'rare',
   },
+  ...EXPANSION_ITEM_STUBS,
 }
 
 /* ─── Helpers ─── */
