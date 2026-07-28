@@ -11,6 +11,15 @@ import {
   getVaultBackupTrialHint,
 } from '@/engine/guidedStory/act1QuestHints';
 import {
+  getAlbertsLessonHint,
+  getCafeBackroomEchoHint,
+  getCorridorLetterHint,
+  getMorningRitualHint,
+  getMorningSyncHint,
+  getNightShiftMysteryHint,
+  getZaremaRadioHint,
+} from '@/engine/guidedStory/act1SideQuestHints';
+import {
   getBasementHumHint,
   getCafeSafehouseHint,
   getDmitryDefectionHint,
@@ -24,11 +33,15 @@ import {
 } from '@/engine/guidedStory/act23QuestHints';
 import {
   getArchiveOfForgottenHint,
+  getBankingCrashHint,
   getBlindSpotHint,
+  getDigitalGhostHint,
   getGuildInfiltrationHint,
   getLastPoemHint,
   getPoetryBroadcastHint,
   getRoofOfTheWorldHint,
+  getSecretsOfOldCodeHint,
+  getVoicesOfFactoryHint,
 } from '@/engine/guidedStory/act4QuestHints';
 import {
   getEchoOfVladimirHint,
@@ -52,6 +65,19 @@ import {
   getSystemTakedownHint,
   getVolodkaLegacyHint,
 } from '@/engine/guidedStory/act7QuestHints';
+import {
+  getTolpaAct3SanctuaryHint,
+  getTolpaAct4ExfiltrationHint,
+  getTolpaAct4ServerHeistHint,
+  getTolpaBondHint,
+  getTolpaFirstFireHint,
+  getTolpaForestGuideHint,
+  getTolpaGuitarNightHint,
+  getTolpaPoemFireHint,
+  getTolpaPortwineOathHint,
+  getTolpaQuantumFireHint,
+  getTolpaWhisperHint,
+} from '@/engine/guidedStory/chkTolpaQuestHints';
 import { buildGuidanceDirectionHint } from '@/engine/guidedStory/guidanceLocation';
 import {
   getNextTrackedObjective,
@@ -98,6 +124,78 @@ export function buildQuestJournalContextualHint(
   }
   if (SOLNYSH_SPINE_QUEST_IDS.has(questId)) {
     const live = getSolnyshSpineHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'night_shift_mystery') {
+    const live = getNightShiftMysteryHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'alberts_lesson') {
+    const live = getAlbertsLessonHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'corridor_letter') {
+    const live = getCorridorLetterHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'zarema_radio') {
+    const live = getZaremaRadioHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'morning_ritual') {
+    const live = getMorningRitualHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'cafe_backroom_echo') {
+    const live = getCafeBackroomEchoHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'morning_sync') {
+    const live = getMorningSyncHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'tolpa_whisper') {
+    const live = getTolpaWhisperHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'tolpa_first_fire') {
+    const live = getTolpaFirstFireHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'tolpa_portwine_oath') {
+    const live = getTolpaPortwineOathHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'tolpa_quantum_fire') {
+    const live = getTolpaQuantumFireHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'tolpa_forest_guide') {
+    const live = getTolpaForestGuideHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'tolpa_guitar_night') {
+    const live = getTolpaGuitarNightHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'tolpa_bond') {
+    const live = getTolpaBondHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'tolpa_poem_fire') {
+    const live = getTolpaPoemFireHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'tolpa_act3_sanctuary') {
+    const live = getTolpaAct3SanctuaryHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'tolpa_act4_exfiltration') {
+    const live = getTolpaAct4ExfiltrationHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'tolpa_act4_server_heist') {
+    const live = getTolpaAct4ServerHeistHint(currentSceneId);
     if (live) return live;
   }
   if (questId === 'cafe_safehouse') {
@@ -178,6 +276,22 @@ export function buildQuestJournalContextualHint(
   }
   if (questId === 'archive_of_forgotten') {
     const live = getArchiveOfForgottenHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'digital_ghost') {
+    const live = getDigitalGhostHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'voices_of_factory') {
+    const live = getVoicesOfFactoryHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'secrets_of_old_code') {
+    const live = getSecretsOfOldCodeHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'banking_crash') {
+    const live = getBankingCrashHint(currentSceneId);
     if (live) return live;
   }
   if (questId === 'traitor_in_the_guild') {

@@ -6,15 +6,16 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronUp, Pin, PinOff, BookOpen } from 'lucide-react';
+import { ChevronUp, Pin, PinOff, BookOpen, Map as MapIcon } from 'lucide-react';
 import { QUEST_DEFINITIONS } from '@/data/quests';
 import { getNextTrackedObjective } from '@/store/questStore';
 import { getQuestProgress } from '@/store/selectors/questSelectors';
-import { useQuests } from '@/store/selectors';
+import { useQuests, useCurrentSceneId } from '@/store/selectors';
 import { eventBus } from '@/engine/EventBus';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import type { QuestType } from '@/shared/types/game';
+import { focusQuestOnMap } from './focusQuestOnMap';
 
 const CYCLE_INTERVAL_MS = 10_000;
 
@@ -48,6 +49,7 @@ function getObjectiveTypeIcon(type: string): string {
 export function ActiveQuestMiniTracker() {
   const reducedMotion = useEffectiveReducedMotion();
   const quests = useQuests();
+  const currentSceneId = useCurrentSceneId();
   const [expanded, setExpanded] = useState(false);
   const [pinnedQuestId, setPinnedQuestId] = useState<string | null>(null);
   const [cycleIndex, setCycleIndex] = useState(0);
@@ -181,6 +183,11 @@ export function ActiveQuestMiniTracker() {
       ...(displayQuest ? { questId: displayQuest.questId } : {}),
     });
   }, [displayQuest]);
+
+  const openQuestOnMap = useCallback(() => {
+    if (!displayQuest) return;
+    focusQuestOnMap(displayQuest.questId, currentSceneId);
+  }, [displayQuest, currentSceneId]);
 
   /* ── Don't render if no active quests ── */
   if (!displayQuest || !questDef) return null;
@@ -377,6 +384,16 @@ export function ActiveQuestMiniTracker() {
                   >
                     <BookOpen className="size-3" />
                     Журнал
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); openQuestOnMap(); }}
+                    className="flex items-center gap-1 text-[9px] font-mono px-1.5 py-0.5 rounded hover:bg-white/10 transition-colors"
+                    style={{ color: '#667777' }}
+                    aria-label="Показать цель на карте"
+                  >
+                    <MapIcon className="size-3" />
+                    Карта
                   </button>
                   {activeQuests.length > 1 && (
                     <span className="text-[8px] font-mono ml-auto" style={{ color: '#556666' }}>

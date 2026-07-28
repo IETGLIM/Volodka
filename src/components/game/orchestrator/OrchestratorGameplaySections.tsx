@@ -479,8 +479,8 @@ export const GameplayNarrativeOverlay = memo(function GameplayNarrativeOverlay()
         >
           {/* Visible skeleton placeholder + screen-reader text so assistive tech
               announces *what* is loading (the bare skeleton announces only "busy"). */}
-          <span className="sr-only">Загрузка сцены…</span>
-          <span className="text-xs font-mono tracking-widest text-cyan-300/60 cyber-loading-skeleton inline-block w-40 h-4"></span>
+          <span className="sr-only">Загрузка диалога…</span>
+          <span className="text-xs font-mono tracking-widest text-cyan-300/55 cyber-loading-skeleton inline-block w-32 h-3.5"></span>
         </div>
       )}
       {isStoryActive && (

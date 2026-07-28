@@ -33,12 +33,16 @@ describe('wetStreetScenes', () => {
     expect(isIndustrialDampSheenScene('factory_basement')).toBe(true);
     expect(isIndustrialDampSheenScene('library_basement')).toBe(true);
     expect(isIndustrialDampSheenScene('chk_campfire_night')).toBe(true);
+    expect(isIndustrialDampSheenScene('guild_mainframe')).toBe(true);
+    expect(isIndustrialDampSheenScene('underground_bunker')).toBe(true);
+    expect(isIndustrialDampSheenScene('albert_backroom')).toBe(true);
     expect(isIndustrialDampSheenScene('street_night')).toBe(false);
     const factory = getIndustrialDampFloorSettings('abandoned_factory');
     expect(factory?.oilMetalness).toBeGreaterThan(factory!.roughness * 0.5);
     const basement = getIndustrialDampFloorSettings('factory_basement');
     expect(basement?.oilMetalness).toBeGreaterThan(0.5);
     expect(getIndustrialDampFloorSettings('library_basement')?.oilMetalness).toBeGreaterThan(0.4);
+    expect(getIndustrialDampFloorSettings('guild_mainframe')?.metalness).toBeGreaterThan(0.3);
     expect(getIndustrialDampFloorSettings('cafe_evening')).toBeNull();
   });
 

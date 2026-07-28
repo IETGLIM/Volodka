@@ -37,6 +37,7 @@ const INDOOR_AMBIENT: Record<string, { color: string; intensity: number }> = {
   sleep_dream:        { color: '#3a2850', intensity: 0.58 },
   guild_mainframe:    { color: '#1a2838', intensity: 0.48 },
   albert_backroom:    { color: '#2a2038', intensity: 0.5 },
+  underground_bunker: { color: '#1a2820', intensity: 0.46 },
 };
 const DEFAULT_INDOOR_AMBIENT = { color: '#2a2a3a', intensity: 0.52 };
 
@@ -57,6 +58,7 @@ const INDOOR_FILL: Record<string, { position: [number, number, number]; intensit
   sleep_dream:        { position: [0, 2.4, 0], intensity: 1.5, color: '#8866aa', distance: 14 },
   guild_mainframe:    { position: [0, 2.4, -1], intensity: 1.85, color: '#66ccaa', distance: 11 },
   albert_backroom:    { position: [0, 2.0, -0.5], intensity: 1.75, color: '#ddaa77', distance: 9 },
+  underground_bunker: { position: [0, 2.3, -1], intensity: 1.55, color: '#66aa88', distance: 12 },
 };
 const OUTDOOR_READABILITY_AMBIENT: Record<string, { intensity: number; color: string }> = {
   park_day:         { intensity: 0.14, color: '#8a9888' },
@@ -343,6 +345,12 @@ const SCENE_ACCENT_LIGHTS: Record<string, AccentLight[]> = {
   albert_backroom: [
     { position: [0, 2, -0.5], color: '#ddaa55', intensity: 1.4, distance: 8, animated: 'candle_flicker' }, // desk lamp
     { position: [-1, 1.5, 1], color: '#cc9944', intensity: 0.8, distance: 6 },       // ambient fill
+    { position: [2.2, 1.8, 0], color: '#ff4499', intensity: 0.7, distance: 5, animated: 'neon_cycle' },
+  ],
+  underground_bunker: [
+    { position: [0, 2.2, -4], color: '#44ff88', intensity: 1.8, distance: 11, animated: 'cold_pulse' },
+    { position: [-4, 2.0, 2], color: '#ff5544', intensity: 1.1, distance: 9, animated: 'candle_flicker' },
+    { position: [3.5, 1.8, 3], color: '#6688aa', intensity: 0.8, distance: 8 },
   ],
   sleep_dream: [
     { position: [0, 2, 0], color: '#aa66ff', intensity: 1.8, distance: 14, animated: 'cold_pulse' },    // dream pulse

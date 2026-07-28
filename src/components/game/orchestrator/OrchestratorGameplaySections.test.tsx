@@ -48,7 +48,7 @@ describe('GameplayNarrativeOverlay', () => {
     render(<GameplayNarrativeOverlay />);
 
     expect(screen.getByTestId('narrative-kind-recovery')).toBeInTheDocument();
-    expect(screen.getByText('Загрузка сцены…')).toBeInTheDocument();
+    expect(screen.getByText('Загрузка диалога…')).toBeInTheDocument();
   });
 
   it('mounts story renderer once narrativeKind resolves to story', () => {

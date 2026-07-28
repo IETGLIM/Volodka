@@ -62,7 +62,7 @@ export function CinematicNarrativeChoices({
           type="button"
           initial={reducedMotion ? false : { opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={reducedMotion ? { duration: 0 } : { delay: i * 0.07, duration: 0.28 }}
+          transition={reducedMotion ? { duration: 0 } : { delay: i * 0.04, duration: 0.18 }}
           whileHover={choice.pass && !reducedMotion ? { scale: 1.01 } : undefined}
           whileTap={choice.pass && !reducedMotion ? { scale: 0.99 } : undefined}
           onClick={() => {
