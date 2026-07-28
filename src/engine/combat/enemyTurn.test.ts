@@ -4,6 +4,7 @@ import type { IncomingDamageParams } from './enemyTurn';
 import { SeededCombatRng } from './combatRng';
 import type { CombatState } from './types';
 import type { CombatEnemy, CombatBuff } from '@/shared/types/game';
+import type { CombatPerkModifiers } from '@/shared/perks/perkModifiers';
 
 // getPlayerDefense() reads from the game store — mock it for pure unit tests
 const mockGetPlayerDefense = vi.fn(() => 8);
@@ -11,9 +12,20 @@ vi.mock('./formulas', async (importOriginal) => {
   const mod = await importOriginal<typeof import('./formulas')>();
   return {
     ...mod,
-    getPlayerDefense: (...args: unknown[]) => mockGetPlayerDefense(...args),
+    getPlayerDefense: ((...args: Parameters<typeof mod.getPlayerDefense>) =>
+      mockGetPlayerDefense(...args)) as typeof mod.getPlayerDefense,
   };
 });
+
+const EMPTY_PERK_MODS: CombatPerkModifiers = {
+  flatAttackBonus: 0,
+  flatDefenseBonus: 0,
+  outgoingDamageMultiplier: 1,
+  incomingDamageReduction: 0,
+  counterAttackChance: 0,
+  fleeEncounterChance: 0,
+  defenseMultiplier: 1,
+};
 
 /* ═══════════════════════════════════════════════════════════════
    Helpers
@@ -21,7 +33,7 @@ vi.mock('./formulas', async (importOriginal) => {
 
 function makeEnemy(overrides: Partial<CombatEnemy> = {}): CombatEnemy {
   return {
-    type: 'bug',
+    type: 'system_daemon',
     name: 'Тестовый Баг',
     emoji: '🐛',
     hp: 50,
@@ -32,9 +44,7 @@ function makeEnemy(overrides: Partial<CombatEnemy> = {}): CombatEnemy {
     lootTable: [],
     xpReward: 20,
     targetsStat: 'logic',
-    specialAttacks: [],
-    attackBarks: ['Бугагаша!'],
-    defeatBarks: ['*пых*'],
+    specialCooldown: 0,
     ...overrides,
   };
 }
@@ -59,6 +69,8 @@ function makeCombatState(overrides: Partial<CombatState> = {}): CombatState {
     comboCount: 0,
     maxCombo: 0,
     lastCritical: false,
+    lastPoemPowersUsed: [null, null],
+    lastUsedPoemId: null,
     rng: { state: 42, rolls: 0, pity: { rollsSinceCrit: 0, rollsSinceHit: 0 } },
     ...overrides,
   };
@@ -97,13 +109,7 @@ function makeParams(overrides: Partial<IncomingDamageParams> = {}): IncomingDama
     currentAct: 1,
     currentLevel: 1,
     spiritualSkillCount: 0,
-    perkMods: {
-      flatAttackBonus: 0,
-      flatDefenseBonus: 0,
-      outgoingDamageMultiplier: 1,
-      incomingDamageReduction: 0,
-      counterAttackChance: 0,
-    },
+    perkMods: { ...EMPTY_PERK_MODS },
     ...overrides,
   };
 }
@@ -187,10 +193,10 @@ describe('computeEnemyIncomingDamage', () => {
 
   it('applies perk incomingDamageReduction', () => {
     const base = computeEnemyIncomingDamage(makeParams({
-      perkMods: { flatAttackBonus: 0, flatDefenseBonus: 0, outgoingDamageMultiplier: 1, incomingDamageReduction: 0, counterAttackChance: 0 },
+      perkMods: { ...EMPTY_PERK_MODS },
     }));
     const withPerk = computeEnemyIncomingDamage(makeParams({
-      perkMods: { flatAttackBonus: 0, flatDefenseBonus: 0, outgoingDamageMultiplier: 1, incomingDamageReduction: 0.2, counterAttackChance: 0 },
+      perkMods: { ...EMPTY_PERK_MODS, incomingDamageReduction: 0.2 },
     }));
 
     expect(withPerk.damage).toBeLessThan(base.damage);
@@ -202,11 +208,11 @@ describe('computeEnemyIncomingDamage', () => {
       combatState: makeCombatState({
         buffs: [
           makeBuff({ effect: { type: 'damage_reduction', value: 0.5 } }),
-          makeBuff({ effect: { type: 'defensive_verse', value: 0.3 } }),
+          makeBuff({ effect: { type: 'defensive_verse' } }),
         ],
       }),
       spiritualSkillCount: 10,
-      perkMods: { flatAttackBonus: 0, flatDefenseBonus: 0, outgoingDamageMultiplier: 1, incomingDamageReduction: 0.8, counterAttackChance: 0 },
+      perkMods: { ...EMPTY_PERK_MODS, incomingDamageReduction: 0.8 },
     }));
 
     expect(result.damage).toBeGreaterThanOrEqual(1);
@@ -323,7 +329,7 @@ describe('resolveStatDrain', () => {
         return;
       }
     }
-    fail('No seed triggered empathy drain in 10000 attempts');
+    expect.fail('No seed triggered empathy drain in 10000 attempts');
   });
 
   it('returns correct action for energy drain', () => {
@@ -336,7 +342,7 @@ describe('resolveStatDrain', () => {
         return;
       }
     }
-    fail('No seed triggered energy drain in 10000 attempts');
+    expect.fail('No seed triggered energy drain in 10000 attempts');
   });
 
   it('returns correct action for karma drain', () => {
@@ -349,7 +355,7 @@ describe('resolveStatDrain', () => {
         return;
       }
     }
-    fail('No seed triggered karma drain in 10000 attempts');
+    expect.fail('No seed triggered karma drain in 10000 attempts');
   });
 
   it('drain probability differs per stat type', () => {

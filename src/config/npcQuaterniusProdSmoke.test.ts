@@ -22,7 +22,7 @@ describe('Quaternius NPC prod smoke', () => {
   it('all Quaternius story NPCs now render with shipped GLBs', () => {
     // Every Quaternius story NPC slot should now have a real GLB model.
     for (const npcId of QUATERNIUS_STORY_NPC_SLOT_IDS) {
-      expect(shouldRenderGltfNpc(npcId, 'ultra'), npcId).toBe(true);
+      expect(shouldRenderGltfNpc(npcId, 'glb'), npcId).toBe(true);
     }
   });
 

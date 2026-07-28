@@ -104,7 +104,6 @@ const ActionBarButton = memo(function ActionBarButton({
   compact,
   showLabels,
   onExecute,
-  _index,
 }: {
   action: ActionBarAction;
   compact: boolean;

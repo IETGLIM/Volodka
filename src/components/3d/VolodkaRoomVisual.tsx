@@ -510,7 +510,7 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
           { x: -0.05, w: 0.04, c: '#3060b0', lean: -0.08 },
           { x: 0.06, w: 0.06, c: '#40b050', lean: 0.02 },
         ].map((b, _i) => (
-          <mesh key={`s4-${i}`} position={[b.x, 1.77, 0.02]} rotation={[0, 0, b.lean]} geometry={bookSpineGeo(b.w, 0.18)} material={bookSpineMaterial(b.c)} />
+          <mesh key={`s4-${b.c}`} position={[b.x, 1.77, 0.02]} rotation={[0, 0, b.lean]} geometry={bookSpineGeo(b.w, 0.18)} material={bookSpineMaterial(b.c)} />
         ))}
       </group>
 

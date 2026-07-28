@@ -3,6 +3,7 @@
 
 import type { StateCreator } from 'zustand';
 import { THOUGHT_CABINET_MAP, MAX_EQUIPPED_THOUGHTS } from '@/data/thoughtCabinet';
+import type { ThoughtCabinetEffect } from '@/shared/types/definitions/thoughtCabinet';
 import type { GameStoreState } from '../types';
 import { pickThoughtCabinetCrossActions } from '../crossSliceReads';
 

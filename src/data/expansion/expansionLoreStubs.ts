@@ -12,6 +12,7 @@ function stubLore(
     title,
     category,
     body: 'Запись ещё не полностью расшифрована. Фрагмент сохранён в кодексе — полный текст появится в следующем обновлении контента.',
+    sceneId: 'volodka_room',
     rarity: 'uncommon',
     discovered: false,
   };

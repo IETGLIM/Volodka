@@ -8,17 +8,15 @@
  */
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { execFileSync } from 'node:child_process';
+import { spawnSync } from 'node:child_process';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const tsc7Bin = resolve(__dirname, '..', 'node_modules', '@typescript', 'native', 'bin', 'tsc');
 
-try {
-  execFileSync(tsc7Bin, process.argv.slice(2), {
-    stdio: 'inherit',
-    env: process.env,
-  });
-} catch (e) {
-  // execFileSync throws on non-zero exit — just forward the exit code
-  process.exitCode = e.status ?? 1;
-}
+// On Windows, shebang scripts are not executable via execFileSync — run through node.
+const result = spawnSync(process.execPath, [tsc7Bin, ...process.argv.slice(2)], {
+  stdio: 'inherit',
+  env: process.env,
+});
+
+process.exitCode = result.status ?? 1;

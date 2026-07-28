@@ -4,7 +4,8 @@
  * Used by emotional reactions, ambient barks, head tracking, and animation.
  */
 
-export type { NpcEmotion } from '@/shared/types/definitions/npc';
+import type { NpcEmotion } from '@/shared/types/definitions/npc';
+export type { NpcEmotion };
 
 /** All available NpcEmotion values for exhaustive checks. */
 export const NPC_EMOTIONS: readonly NpcEmotion[] = [

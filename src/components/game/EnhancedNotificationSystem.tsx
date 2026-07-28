@@ -368,7 +368,6 @@ const NotificationCard = memo(function NotificationCard({
 export function EnhancedNotificationSystem({
   position = 'top-right',
   maxVisible = 5,
-  _stackSpacing = 12,
   onDismiss,
   onAction,
 }: EnhancedNotificationSystemProps) {

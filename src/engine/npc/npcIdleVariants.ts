@@ -20,7 +20,8 @@ import { resolveEmotionBehavior } from '@/engine/npc/npcEmotionalReactions';
 
 /* ─── Idle variant definitions ─── */
 
-export type { NpcIdleVariant } from '@/shared/types/definitions/npc';
+import type { NpcIdleVariant } from '@/shared/types/definitions/npc';
+export type { NpcIdleVariant };
 
 /** All available idle variant values. */
 export const NPC_IDLE_VARIANTS: readonly NpcIdleVariant[] = [

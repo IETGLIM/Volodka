@@ -5,14 +5,14 @@
    - Default: if not specified, all checks are 'white'
 */
 
-import type { ChoiceCondition } from '@/shared/types/common/conditions';
+import type { CheckType, ChoiceCondition } from '@/shared/types/common/conditions';
 import type { TrainablePlayerSkill } from '@/shared/types/definitions/skills';
 
 /* ══════════════════════════════════════════════════════════════
    Types
    ══════════════════════════════════════════════════════════════ */
 
-export type { CheckType } from '@/shared/types/common/conditions';
+export type { CheckType };
 
 export interface CheckAttemptRecord {
   /** Dialogue node where the check occurred. */
