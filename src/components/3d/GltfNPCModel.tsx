@@ -1,7 +1,7 @@
 /* ─── Volodka RPG – Animated GLB NPC mesh with procedural fallback ─── */
 
 /* eslint-disable react-refresh/only-export-components -- co-located helpers and lazy exports */
-import { Component, Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { Component, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Html, useGLTF } from '@react-three/drei';
 import { useThree } from '@react-three/fiber';
 import { useRegisterNpcFrame } from '@/engine/npc/npcFrameBatch';
@@ -106,7 +106,9 @@ function GltfNPCModelInner({
     [actions, mergedClipOverrides],
   );
 
-  useEffect(() => {
+  // Layout effect before paint — same order as CesiumPlayerModel, avoids first-frame
+  // wrong-scale / foot sink while the mixer already runs.
+  useLayoutEffect(() => {
     const bounds = measureCharacterGltfBounds(scene);
     const { scale, rotX, footY } = fitCharacterGltf(bounds, {
       heightFactor: targetHeightFactor,

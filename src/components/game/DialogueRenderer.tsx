@@ -14,7 +14,9 @@ import {
   findNpcByName,
   resolveNpcIdFromSpeaker,
   isNarrativeGameDataLoaded,
-  ensureDialogueNode } from '@/data/gameDataLoader';
+  ensureDialogueNode,
+  prefetchDialogueNodes,
+} from '@/data/gameDataLoader';
 import { audioEngine } from '@/engine/AudioEngine';
 import { consumePoemSkillCheckFlag } from '@/engine/poemPower/poemSkillCheckModifiers';
 import { eventBus } from '@/engine/EventBus';
@@ -233,6 +235,10 @@ export function DialogueRenderer() {
         if (!cancelled) {
           setIsLoadingNode(false);
           setDialoguePackVersion((v) => v + 1);
+          const loaded = getDialogueNodes()[currentNodeId];
+          if (loaded?.choices?.length) {
+            prefetchDialogueNodes(loaded.choices.map((c) => c.next));
+          }
         }
       })
       .catch((error) => {

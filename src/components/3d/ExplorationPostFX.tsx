@@ -45,6 +45,8 @@ import {
   getCachedProceduralLut3DTexture,
   resolveProceduralLutKind,
 } from '@/engine/graphics/proceduralLutTextures';
+import { resolveDerivedSceneId } from '@/config/sceneInheritance';
+import type { SceneId } from '@/shared/types/game';
 
 /** Per-scene color grading overrides for CyberPunk2077 / Noir / Gothic feel */
 const SCENE_COLOR_GRADE: Record<string, { hue: number; saturation: number; brightness: number; contrast: number }> = {
@@ -374,9 +376,15 @@ function PostFXPipeline() {
   const { brightness: userBrightness } = useVisualSettings();
   const userBrightnessOffset = (userBrightness - 1) * 0.3;
 
-  const colorGrade = SCENE_COLOR_GRADE[sceneId] ?? DEFAULT_COLOR_GRADE;
-  const vignetteParams = SCENE_VIGNETTE[sceneId] ?? DEFAULT_VIGNETTE;
-  const bloomParams = SCENE_BLOOM[sceneId] ?? DEFAULT_BLOOM;
+  const colorGrade = SCENE_COLOR_GRADE[sceneId]
+    ?? SCENE_COLOR_GRADE[resolveDerivedSceneId(sceneId as SceneId)]
+    ?? DEFAULT_COLOR_GRADE;
+  const vignetteParams = SCENE_VIGNETTE[sceneId]
+    ?? SCENE_VIGNETTE[resolveDerivedSceneId(sceneId as SceneId)]
+    ?? DEFAULT_VIGNETTE;
+  const bloomParams = SCENE_BLOOM[sceneId]
+    ?? SCENE_BLOOM[resolveDerivedSceneId(sceneId as SceneId)]
+    ?? DEFAULT_BLOOM;
 
   const effectiveSaturation = noirMode
     ? Math.min(colorGrade.saturation - 0.35, 0)

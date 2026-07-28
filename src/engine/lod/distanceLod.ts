@@ -1,6 +1,7 @@
 /* ─── Shared distance LOD thresholds (hysteresis) ─── */
 
 import { getSceneVisualProfile } from '@/config/sceneVisualProfiles';
+import { resolveDerivedSceneId } from '@/config/sceneInheritance';
 import type { SceneId } from '@/shared/types/game';
 
 /** NPC visual tiers */
@@ -107,6 +108,8 @@ export const SCENE_ENV_LOD: Partial<Record<string, EnvironmentLodProfile>> = {
   sleep_dream: { clutterDistance: 20, decorativeDistance: 30 },
   battle: { clutterDistance: 10, decorativeDistance: 14 },
   zarema_albert_room: { clutterDistance: 8, decorativeDistance: 12 },
+  solnysh_room: { clutterDistance: 8, decorativeDistance: 12 },
+  factory_basement: { clutterDistance: 10, decorativeDistance: 14 },
   chk_campfire_night: { clutterDistance: 14, decorativeDistance: 20 },
   city_square: { clutterDistance: 16, decorativeDistance: 24 },
   pier_evening: { clutterDistance: 14, decorativeDistance: 22 },
@@ -121,7 +124,8 @@ export const SCENE_ENV_LOD: Partial<Record<string, EnvironmentLodProfile>> = {
 };
 
 export function getEnvironmentLodProfile(sceneId: string): EnvironmentLodProfile {
-  const base = SCENE_ENV_LOD[sceneId] ?? DEFAULT_ENV_PROFILE;
+  const visualId = resolveDerivedSceneId(sceneId as SceneId);
+  const base = SCENE_ENV_LOD[sceneId] ?? SCENE_ENV_LOD[visualId] ?? DEFAULT_ENV_PROFILE;
   const scale = getSceneVisualProfile(sceneId as SceneId).detailDistanceScale;
   return {
     clutterDistance: base.clutterDistance * scale,

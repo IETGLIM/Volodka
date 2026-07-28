@@ -41,6 +41,8 @@ export type PlayFootstepOptions = {
   sourceId?: string;
   /** Default false when sourceId is set; true when omitted (legacy one-shot behavior). */
   allowOverlap?: boolean;
+  /** Additive playback-rate offset (e.g. 0.05 ≈ +5% pitch for faster gait). */
+  pitchOffset?: number;
 };
 
 type FootstepVoice = {
@@ -361,6 +363,8 @@ class AudioEngine {
 
     const noiseSource = ctx.createBufferSource();
     noiseSource.buffer = buffer;
+    const pitchRate = Math.max(0.7, Math.min(1.4, 1 + (options?.pitchOffset ?? 0)));
+    noiseSource.playbackRate.setValueAtTime(pitchRate, now);
 
     // Band-pass filter to shape the sound for the material
     const filter = ctx.createBiquadFilter();
@@ -384,7 +388,10 @@ class AudioEngine {
     if (preset.clickFreq > 0) {
       clickOsc = ctx.createOscillator();
       clickOsc.type = 'sine';
-      clickOsc.frequency.setValueAtTime(preset.clickFreq * (0.9 + Math.random() * 0.2), now);
+      clickOsc.frequency.setValueAtTime(
+        preset.clickFreq * (0.9 + Math.random() * 0.2) * pitchRate,
+        now,
+      );
 
       const clickGain = ctx.createGain();
       clickGain.gain.setValueAtTime(preset.clickGain, now);

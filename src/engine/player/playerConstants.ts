@@ -18,8 +18,8 @@ export const ROTATION_SPEED = 8;
  *  GTA/Gothic-style games use 4–5 for reversal turns. */
 export const ROTATION_SPEED_REVERSAL = 4.5;
 /** Angle threshold (radians) above which a direction reversal turn is used.
- *  ~90° = half a direction change. Anything larger triggers the slower reversal. */
-export const ROTATION_REVERSAL_THRESHOLD = Math.PI / 4;
+ *  ~120° — mid camera-relative redirects stay snappy; only hard about-faces slow. */
+export const ROTATION_REVERSAL_THRESHOLD = (Math.PI * 2) / 3;
 
 export const SKIN_WIDTH = 0.04;
 export const MAX_SLOPE_CLIMB = Math.PI / 4;

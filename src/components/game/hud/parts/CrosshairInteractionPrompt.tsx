@@ -1,5 +1,5 @@
 /* ─── Volodka RPG – Crosshair Interaction Prompt ───
- * Animated "E" key prompt shown near the crosshair when
+ * Animated key prompt shown near the crosshair when
  * the player is near an interactive object.
  */
 
@@ -7,14 +7,26 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { eventBus } from '@/engine/EventBus';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { useGamepadConnected } from '@/hooks/useGamepadConnected';
+import { useTouchDevice } from '@/hooks/useTouchDevice';
+import { formatInteractionHintKey } from '@/engine/exploration/explorationUxPresentation';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
 export function CrosshairInteractionPrompt() {
   const [visible, setVisible] = useState(false);
+  const [promptKey, setPromptKey] = useState('E');
   const reducedMotion = useEffectiveReducedMotion();
+  const gamepadConnected = useGamepadConnected();
+  const isTouchDevice = useTouchDevice();
 
   useEffect(() => {
-    const unsubHint = eventBus.on('interaction:hint', () => setVisible(true));
+    const unsubHint = eventBus.on('interaction:hint', (payload) => {
+      setPromptKey(formatInteractionHintKey(payload.key, {
+        gamepadConnected,
+        touchDevice: isTouchDevice,
+      }));
+      setVisible(true);
+    });
     const unsubEnd = eventBus.on('interaction:end', () => setVisible(false));
     const unsubStart = eventBus.on('interaction:start', () => setVisible(false));
     return () => {
@@ -22,7 +34,7 @@ export function CrosshairInteractionPrompt() {
       unsubEnd();
       unsubStart();
     };
-  }, []);
+  }, [gamepadConnected, isTouchDevice]);
 
   return (
     <div
@@ -61,7 +73,7 @@ export function CrosshairInteractionPrompt() {
                     boxShadow: { duration: 1.5, repeat: Infinity, ease: 'easeInOut' },
                   }
             }
-            className="flex items-center justify-center w-8 h-8 rounded-md"
+            className="flex items-center justify-center min-w-8 h-8 px-1.5 rounded-md"
             style={{
               background: 'linear-gradient(180deg, rgba(15,23,42,0.95) 0%, rgba(2,6,23,0.98) 100%)',
               border: '1px solid rgb(var(--cyber-cyan-rgb) / 0.5)',
@@ -82,7 +94,7 @@ export function CrosshairInteractionPrompt() {
                 textShadow: '0 0 6px rgb(var(--cyber-cyan-rgb) / 0.6)',
               }}
             >
-              E
+              {promptKey}
             </span>
           </motion.div>
         )}

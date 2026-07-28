@@ -7,6 +7,7 @@
 
 import { useGameStore } from '@/store/gameStore';
 import { getSceneConfig } from '@/config/scenes';
+import { resolveDerivedSceneId } from '@/config/sceneInheritance';
 import { useIsMobileVisual, useMobileVisualPerf } from '@/hooks/use-mobile';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { resolveSceneRenderingPipeline } from '@/engine/graphics/resolveSceneRenderingPipeline';
@@ -136,7 +137,10 @@ export function ExplorationLighting() {
 
   // Indoor fill — per-scene tuned or disabled
   const indoorFill = isIndoor ? (INDOOR_FILL[sceneId] ?? DEFAULT_INDOOR_FILL) : null;
-  const outdoorReadability = !isIndoor ? OUTDOOR_READABILITY_AMBIENT[sceneId] : null;
+  const outdoorReadability = !isIndoor
+    ? (OUTDOOR_READABILITY_AMBIENT[sceneId]
+      ?? OUTDOOR_READABILITY_AMBIENT[resolveDerivedSceneId(sceneId)])
+    : null;
 
   // Scene-dimension-aware shadow camera frustum sizing
   const shadowHalfW = Math.max(15, (config.dimensions?.[0] ?? 15) * 0.6);

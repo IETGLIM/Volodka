@@ -1,5 +1,6 @@
 import { Suspense, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
+import { FocusTrap } from '@/components/a11y/FocusTrap';
 import { closeMinigame } from '@/shared/constants/minigames';
 import type { MinigamePanelSetters } from '@/shared/constants/minigames';
 import { runOverlayCleanup } from './panelLifecycle';
@@ -61,32 +62,34 @@ export function OrchestratorMinigameOverlays(props: Props) {
   return (
     <AnimatePresence initial={false} mode="wait">
       {active && (
-        <Suspense key={active} fallback={null}>
-          {active === 'codebreaker' && (
-            <LazyCodeBreakerGame onClose={() => closeMinigame('codebreaker', minigameSetters)} />
-          )}
-          {active === 'openstack_terminal' && (
-            <LazyOpenStackTerminalGame onClose={() => closeMinigame('openstack_terminal', minigameSetters)} />
-          )}
-          {active === 'bash_terminal' && (
-            <LazyBashTerminalGame onClose={() => closeMinigame('bash_terminal', minigameSetters)} />
-          )}
-          {active === 'poetry' && (
-            <LazyPoetryCompositionGame onClose={() => closeMinigame('poetry', minigameSetters)} />
-          )}
-          {active === 'hacking' && (
-            <LazyHackingGame onClose={() => closeMinigame('hacking', minigameSetters)} />
-          )}
-          {active === 'memory' && (
-            <LazyMemoryPuzzleGame onClose={() => closeMinigame('memory', minigameSetters)} />
-          )}
-          {active === 'quiz' && (
-            <LazyQuizGame onClose={() => closeMinigame('quiz', minigameSetters)} />
-          )}
-          {active === 'rhythm' && (
-            <LazyRhythmGame onClose={() => closeMinigame('rhythm', minigameSetters)} />
-          )}
-        </Suspense>
+        <FocusTrap key={active} active>
+          <Suspense fallback={null}>
+            {active === 'codebreaker' && (
+              <LazyCodeBreakerGame onClose={() => closeMinigame('codebreaker', minigameSetters)} />
+            )}
+            {active === 'openstack_terminal' && (
+              <LazyOpenStackTerminalGame onClose={() => closeMinigame('openstack_terminal', minigameSetters)} />
+            )}
+            {active === 'bash_terminal' && (
+              <LazyBashTerminalGame onClose={() => closeMinigame('bash_terminal', minigameSetters)} />
+            )}
+            {active === 'poetry' && (
+              <LazyPoetryCompositionGame onClose={() => closeMinigame('poetry', minigameSetters)} />
+            )}
+            {active === 'hacking' && (
+              <LazyHackingGame onClose={() => closeMinigame('hacking', minigameSetters)} />
+            )}
+            {active === 'memory' && (
+              <LazyMemoryPuzzleGame onClose={() => closeMinigame('memory', minigameSetters)} />
+            )}
+            {active === 'quiz' && (
+              <LazyQuizGame onClose={() => closeMinigame('quiz', minigameSetters)} />
+            )}
+            {active === 'rhythm' && (
+              <LazyRhythmGame onClose={() => closeMinigame('rhythm', minigameSetters)} />
+            )}
+          </Suspense>
+        </FocusTrap>
       )}
     </AnimatePresence>
   );

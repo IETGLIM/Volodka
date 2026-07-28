@@ -34,6 +34,8 @@ import {
   ensureNarrativeNodeIds,
   prefetchStoryNodes,
   prefetchRemainingStoryPacksInIdle,
+  prefetchDialogueNodes,
+  prefetchRemainingDialoguePacksInIdle,
   getStoryNodesCache,
   getDialogueNodesCache,
   onNarrativePacksChanged,
@@ -256,6 +258,7 @@ export async function preloadNarrativeGameData(): Promise<void> {
         questsLoaded = true;
         narrativeLoaded = true;
         prefetchRemainingStoryPacksInIdle();
+        prefetchRemainingDialoguePacksInIdle();
 
         if (import.meta.env?.DEV) {
           console.debug(
@@ -389,6 +392,7 @@ export {
   ensureDialogueNode,
   ensureNarrativeNodeIds,
   prefetchStoryNodes,
+  prefetchDialogueNodes,
   loadAllNarrativePacks,
   hasStoryNode,
   hasDialogueNode,

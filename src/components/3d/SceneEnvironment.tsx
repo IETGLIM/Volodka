@@ -54,6 +54,10 @@ const SCENE_FOG_COLORS: Record<string, string> = {
 
   // ─── CHK forest ───
   chk_forest_zorge:   '#142018', // dark pine night mist
+
+  // ─── Thin / outdoor hubs (visualSceneId roots) ───
+  river_pier:         '#1a2830', // cold water mist vs warm pier lights
+  solnysh_room:       '#1a140c', // warm domestic dusk
 };
 
 /** Background colors (deeper than fog for atmospheric depth).
@@ -75,6 +79,8 @@ const SCENE_BG_COLORS: Record<string, string> = {
   library_day:        '#1a1408',
   zarema_albert_room: '#100a04',
   chk_forest_zorge:   '#0c1810',
+  river_pier:         '#0e1820',
+  solnysh_room:       '#100c06',
 };
 
 /** Per-scene fog animation parameters */

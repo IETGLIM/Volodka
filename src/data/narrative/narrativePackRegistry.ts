@@ -405,6 +405,40 @@ export function prefetchRemainingStoryPacksInIdle(): void {
   }, 200);
 }
 
+/** Warm dialogue choice targets so the next talk does not hitch on pack load. */
+export function prefetchDialogueNodes(nodeIds: readonly (string | null | undefined)[]): void {
+  const pending = nodeIds.filter((id): id is string => !!id && !hasDialogueNode(id));
+  if (pending.length === 0) return;
+
+  scheduleIdleWork(() => {
+    void (async () => {
+      for (const nodeId of pending) {
+        try {
+          await ensureDialogueNode(nodeId);
+        } catch {
+          /* choice may point to story-only id — ignore */
+        }
+      }
+    })().catch((err) => {
+      devWarn('[narrativePackRegistry] prefetchDialogueNodes failed:', err);
+    });
+  }, 50);
+}
+
+/** Low-priority sequential prefetch of unloaded dialogue packs after bootstrap. */
+export function prefetchRemainingDialoguePacksInIdle(): void {
+  scheduleIdleWork(() => {
+    void (async () => {
+      for (const pack of DIALOGUE_PACK_ORDER) {
+        if (loadedDialoguePacks.has(pack)) continue;
+        await loadDialoguePackInternal(pack);
+      }
+    })().catch((err) => {
+      devWarn('[narrativePackRegistry] prefetchRemainingDialoguePacksInIdle failed:', err);
+    });
+  }, 250);
+}
+
 /** Test / dev reset — not used in production hot path. */
 export function resetNarrativePackRegistryForTests(): void {
   for (const key of Object.keys(storyNodes)) delete storyNodes[key];
