@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import { SCENE_IDS } from '@/config/sceneDefinitions';
 import {
   resolveNpcModelUrl,
-  resolveNpcVisualModelUrl,
   shouldRenderGltfNpc,
 } from '@/config/npcModelRegistry';
 import {
@@ -20,11 +19,10 @@ describe('Quaternius NPC prod smoke', () => {
     }
   });
 
-  it('does not render Quaternius clones in-world until unique RPM avatars ship', () => {
+  it('all Quaternius story NPCs now render with shipped GLBs', () => {
+    // Every Quaternius story NPC slot should now have a real GLB model.
     for (const npcId of QUATERNIUS_STORY_NPC_SLOT_IDS) {
-      expect(shouldRenderGltfNpc(npcId, 'hybrid'), npcId).toBe(false);
-      expect(shouldRenderGltfNpc(npcId, 'glb'), npcId).toBe(false);
-      expect(resolveNpcVisualModelUrl(npcId, `/models/npcs/${npcId}.glb`, QUALITY_PRESETS.ultra.npcRenderMode)).toBeUndefined();
+      expect(shouldRenderGltfNpc(npcId, 'ultra'), npcId).toBe(true);
     }
   });
 

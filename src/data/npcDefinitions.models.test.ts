@@ -34,10 +34,10 @@ describe('npcDefinitions model paths', () => {
     }
   });
 
-  it('uses procedural silhouettes for CC0 Quaternius (RPM not required)', () => {
+  it('renders albert with shipped GLB now that unique model is available', () => {
     const albert = ALL_NPC_DEFINITIONS.find((npc) => npc.id === 'albert');
     expect(albert?.modelPath).toMatch(/\.glb$/);
     expect(resolveNpcModelUrl('albert', albert?.modelPath)).toBeTruthy();
-    expect(resolveNpcVisualModelUrl('albert', albert?.modelPath, QUALITY_PRESETS.ultra.npcRenderMode)).toBeUndefined();
+    expect(resolveNpcVisualModelUrl('albert', albert?.modelPath, QUALITY_PRESETS.ultra.npcRenderMode)).toBe(albert?.modelPath);
   });
 });

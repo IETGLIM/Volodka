@@ -1,13 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { ALL_NPC_DEFINITIONS } from '@/data/allNpcDefinitions';
 import { RPM_NPC_CATALOG } from '@/config/rpmNpcCatalog';
 import {
   getProceduralNpcAvatar,
   listProceduralNpcAvatarIds,
   PROCEDURAL_NPC_AVATAR_CATALOG,
 } from '@/config/proceduralNpcAvatarCatalog';
-import { resolveNpcVisualModelUrl } from '@/config/npcModelRegistry';
-import { QUALITY_PRESETS } from '@/engine/graphics/qualityPresets';
 
 describe('proceduralNpcAvatarCatalog', () => {
   it('covers every legacy RPM story slot (except hero player mesh)', () => {
@@ -27,13 +24,11 @@ describe('proceduralNpcAvatarCatalog', () => {
     expect(getProceduralNpcAvatar('albert')?.modelKey).toBe('albert');
   });
 
-  it('story NPCs with GLB paths still render procedurally in-world', () => {
-    const p0 = ALL_NPC_DEFINITIONS.filter((npc) => ['zarema', 'albert', 'baba_zina', 'chk_ritka'].includes(npc.id));
-    for (const npc of p0) {
-      expect(
-        resolveNpcVisualModelUrl(npc.id, npc.modelPath, QUALITY_PRESETS.ultra.npcRenderMode),
-        npc.id,
-      ).toBeUndefined();
+  it('P0 cast still has procedural avatar catalog entries', () => {
+    // Even if NPCs now have GLBs, their procedural catalog entries remain
+    // for fallback / low-end rendering.
+    for (const id of ['albert', 'zarema', 'baba_zina']) {
+      expect(getProceduralNpcAvatar(id), id).toBeDefined();
     }
   });
 

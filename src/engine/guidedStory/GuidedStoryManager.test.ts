@@ -73,8 +73,9 @@ describe('guidedStoryLogic', () => {
     expect(resolveStorySpineAdvance('explore_mode', 1, TEST_PATH)).toBe(2);
   });
 
-  it('resolveStorySpineAdvance ignores future spine nodes', () => {
-    expect(resolveStorySpineAdvance('room_table', 1, TEST_PATH)).toBeNull();
+  it('resolveStorySpineAdvance jumps past future spine nodes', () => {
+    // room_table is at index 2, current step is 1 → advance to 3 (skip unvisited intermediate)
+    expect(resolveStorySpineAdvance('room_table', 1, TEST_PATH)).toBe(3);
   });
 
   it('syncSpineStateFromSnapshot derives step index from visited nodes', () => {

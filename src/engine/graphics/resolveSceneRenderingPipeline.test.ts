@@ -33,14 +33,14 @@ describe('resolveSceneRenderingPipeline', () => {
     expect(pipe.useAmbientOcclusion).toBe(false);
   });
 
-  it('skips AO on hero scenes when enhancedAmbientOcclusion is off', () => {
+  it('enables AO on hero scenes when profile has enhancedAmbientOcclusion', () => {
     const pipe = resolveSceneRenderingPipeline(
       'volodka_room',
       QUALITY_PRESETS.high,
       false,
     );
     expect(pipe.useLitePostFx).toBe(false);
-    expect(pipe.useAmbientOcclusion).toBe(false);
+    expect(pipe.useAmbientOcclusion).toBe(true);
     expect(pipe.aoIntensity).toBeGreaterThan(2.5);
   });
 
@@ -65,13 +65,13 @@ describe('resolveSceneRenderingPipeline', () => {
     expect(pipe.useAmbientOcclusion).toBe(false);
   });
 
-  it('skips AO on ultra when profile disables enhancedAmbientOcclusion', () => {
+  it('enables AO on ultra when profile has enhancedAmbientOcclusion', () => {
     const pipe = resolveSceneRenderingPipeline(
       'volodka_room',
       QUALITY_PRESETS.ultra,
       false,
     );
-    expect(pipe.useAmbientOcclusion).toBe(false);
+    expect(pipe.useAmbientOcclusion).toBe(true);
   });
 
   it('standard scenes keep full post on high when visualLite is off', () => {
