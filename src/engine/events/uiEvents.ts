@@ -4,7 +4,9 @@ import type { TrainablePlayerSkill } from '@/shared/types/definitions/skills';
 
 export interface UiEvents {
   'ui:exploration_message': { text: string };
-  'ui:open_panel': { panel: string; loreId?: string; questId?: string };
+  'ui:open_panel': { panel: string; loreId?: string; questId?: string; sceneId?: SceneId };
+  /** Focus a scene node on the world map (quest journal → map). */
+  'worldmap:focus_scene': { sceneId: SceneId };
   'ui:music_volume': { volume: number };
   'ui:music_enabled': { enabled: boolean; sceneId: SceneId };
   'game:notification': { title: string; subtitle?: string; type: 'combat' | 'scene' | 'achievement' | 'quest' | 'info' };

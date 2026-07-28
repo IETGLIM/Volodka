@@ -4,7 +4,7 @@
      AAA+ visual differentiation (color, accessories, glow, name labels),
      and procedural 3D models ─── */
 
-import { useRef, useState, useEffect, Suspense, useMemo } from 'react';
+import { useRef, useState, useEffect, Suspense, useMemo, useCallback } from 'react';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import {
   CONTACT_SHADOW_CACHE_KEYS,
@@ -121,11 +121,14 @@ export function NPC({
   const fullDetailRef = useRef<THREE.Group>(null);
   const questMarkerRef = useRef<THREE.Group>(null);
   const lodLevelRef = useRef<NpcLodLevel>('impostor');
+  /** Keep impostor mounted briefly when promoting to full — soft mobile LOD handoff. */
+  const impostorHoldUntilMsRef = useRef(0);
   // State mirror of lodLevelRef — triggers re-render so GltfNPCModel receives
   // the updated lodVisible prop. Updated only when LOD actually changes
   // (throttled by distance hysteresis, not every frame).
   const [lodLevel, setLodLevel] = useState<NpcLodLevel>('impostor');
   const { preset } = useGraphicsQuality();
+  const preferLodCrossfade = preset.visualLite || preset.id === 'medium' || preset.id === 'low';
   const sceneId = useCurrentSceneId();
   const npcLodDistanceScale = getSceneVisualProfile(sceneId).npcLodDistanceScale ?? 1;
   const npcLodThresholds = useMemo(
@@ -238,8 +241,12 @@ export function NPC({
       return;
     }
     root.visible = true;
+    const holdImpostor =
+      preferLodCrossfade
+      && lod === 'full'
+      && performance.now() < impostorHoldUntilMsRef.current;
     if (impostorRef.current) {
-      impostorRef.current.visible = lod === 'impostor';
+      impostorRef.current.visible = lod === 'impostor' || holdImpostor;
     }
     if (fullDetailRef.current) {
       fullDetailRef.current.visible = lod === 'full';
@@ -300,6 +307,9 @@ export function NPC({
     );
 
     if (newLod !== lodLevelRef.current) {
+      if (preferLodCrossfade && newLod === 'full' && lodLevelRef.current === 'impostor') {
+        impostorHoldUntilMsRef.current = performance.now() + 200;
+      }
       lodLevelRef.current = newLod;
       setLodLevel(newLod);
       invalidateHeadTracking(definition.id);
@@ -655,27 +665,18 @@ function NPCModelWithErrorBoundary({
   return (
     <NpcEmissiveGlow npcId={definition.id} glowColor={appearance.glowColor} enabled={Boolean(gltfUrl)}>
       {gltfUrl ? (
-        <Suspense fallback={
-          <ProceduralNPCModel
-            definitionId={definition.id}
-            appearance={appearance}
-            interactionState={interactionState}
-            isInteractionTarget={isInteractionTarget}
-            activity={activity}
-            patrolActivity={patrolActivity}
-            livePlayerPositionRef={livePlayerPositionRef}
-          />
-        }>
-          <GltfNPCModel
-            definition={definition}
-            interactionState={interactionState}
-            isInteractionTarget={isInteractionTarget}
-            activity={activity}
-            patrolActivity={patrolActivity}
-            lodVisible={lodVisible}
-            livePlayerPositionRef={livePlayerPositionRef}
-          />
-        </Suspense>
+        <NpcGlbProceduralCrossfade
+          definition={definition}
+          appearance={appearance}
+          interactionState={interactionState}
+          isInteractionTarget={isInteractionTarget}
+          activity={activity}
+          patrolActivity={patrolActivity}
+          lodVisible={lodVisible}
+          livePlayerPositionRef={livePlayerPositionRef}
+          gltfUrl={gltfUrl}
+          enableCrossfade={preset.visualLite || preset.npcRenderMode === 'hybrid'}
+        />
       ) : (
         <ProceduralNPCModel
           definitionId={definition.id}
@@ -689,6 +690,99 @@ function NPCModelWithErrorBoundary({
       )}
     </NpcEmissiveGlow>
   );
+}
+
+/** Keep procedural avatar visible until GLB mounts — soft handoff on hybrid/mobile. */
+function NpcGlbProceduralCrossfade({
+  definition,
+  appearance,
+  interactionState,
+  isInteractionTarget,
+  activity,
+  patrolActivity,
+  lodVisible,
+  livePlayerPositionRef,
+  gltfUrl: _gltfUrl,
+  enableCrossfade,
+}: {
+  definition: NPCDefinition;
+  appearance: NPCAppearance;
+  interactionState: InteractionState;
+  isInteractionTarget: boolean;
+  activity: string;
+  patrolActivity?: 'idle' | 'walk';
+  lodVisible: boolean;
+  livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
+  gltfUrl: string;
+  enableCrossfade: boolean;
+}) {
+  const [glbReady, setGlbReady] = useState(!enableCrossfade);
+  const markReady = useCallback(() => setGlbReady(true), []);
+
+  useEffect(() => {
+    if (!enableCrossfade) {
+      setGlbReady(true);
+      return;
+    }
+    setGlbReady(false);
+  }, [definition.id, enableCrossfade]);
+
+  return (
+    <group>
+      {enableCrossfade && !glbReady && (
+        <ProceduralNPCModel
+          definitionId={definition.id}
+          appearance={appearance}
+          interactionState={interactionState}
+          isInteractionTarget={isInteractionTarget}
+          activity={activity}
+          patrolActivity={patrolActivity}
+          livePlayerPositionRef={livePlayerPositionRef}
+        />
+      )}
+      <Suspense
+        fallback={
+          enableCrossfade ? null : (
+            <ProceduralNPCModel
+              definitionId={definition.id}
+              appearance={appearance}
+              interactionState={interactionState}
+              isInteractionTarget={isInteractionTarget}
+              activity={activity}
+              patrolActivity={patrolActivity}
+              livePlayerPositionRef={livePlayerPositionRef}
+            />
+          )
+        }
+      >
+        <GltfReadyGate onReady={markReady}>
+          <GltfNPCModel
+            definition={definition}
+            interactionState={interactionState}
+            isInteractionTarget={isInteractionTarget}
+            activity={activity}
+            patrolActivity={patrolActivity}
+            lodVisible={lodVisible}
+            livePlayerPositionRef={livePlayerPositionRef}
+          />
+        </GltfReadyGate>
+      </Suspense>
+    </group>
+  );
+}
+
+/** Fires onReady once children have committed (GLB Suspense resolved). */
+function GltfReadyGate({
+  onReady,
+  children,
+}: {
+  onReady: () => void;
+  children: React.ReactNode;
+}) {
+  useEffect(() => {
+    onReady();
+  }, [onReady]);
+  return <>{children}</>;
 }
 
 /* NPCHeadAccessory removed — accessories are now handled by each ProceduralNPCModel variant */

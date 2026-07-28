@@ -46,7 +46,9 @@ export type VisualComponentName =
   | 'RiverPierVisual'
   | 'GuildMainframeVisual'
   | 'CitySquareVisual'
-  | 'UndergroundBunkerVisual';
+  | 'UndergroundBunkerVisual'
+  | 'LibraryBasementVisual'
+  | 'AlbertBackroomVisual';
 
 // ─── Doorway ───
 

@@ -344,6 +344,15 @@ export function applyGfxPressureToPreset(
     case 'none':
       return preset;
     case 'memory':
+      // Medium + coarse pointer (phones/tablets): drop PostFX/shadow maps → contact-blob only.
+      if (preset.id === 'medium' && hasCoarsePointer()) {
+        return {
+          ...preset,
+          postProcessing: false,
+          shadows: false,
+          effectsScale: Math.min(preset.effectsScale, 0.4),
+        };
+      }
       return preset.postProcessing
         ? { ...preset, effectsScale: preset.effectsScale * 0.75 }
         : preset;

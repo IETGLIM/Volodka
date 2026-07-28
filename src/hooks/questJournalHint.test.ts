@@ -12,6 +12,9 @@ vi.mock('@/engine/guidedStory/act1QuestHints', () => ({
   getMariaConnectionHint: () => 'Выйди на ночную улицу — Виктория сама тебя найдёт',
   getIncidentScrollHint: () => 'Иди в офис IT-гильдии — Александр ждёт у инцидента #4729',
   getPoetryCollectionHint: () => 'Следующий стих: Рабочий стол',
+  getVaultBackupTrialHint: () => 'Вернись в офис IT-гильдии — коллега знает про Хранилище',
+  getNetworkInitiationHint: () => 'Виктория ждёт для посвящения — ищи её на улице или в кафе',
+  getSolnyshSpineHint: () => 'Солныш в коридоре или в своей комнате — найди её и поговори',
 }));
 
 vi.mock('@/store/questStore', () => ({
@@ -51,6 +54,24 @@ describe('buildQuestJournalContextualHint', () => {
   it('prefers poetry_collection live cue', () => {
     expect(buildQuestJournalContextualHint('poetry_collection', 'volodka_room')).toContain(
       'стих',
+    );
+  });
+
+  it('prefers vault_backup_trial live cue', () => {
+    expect(buildQuestJournalContextualHint('vault_backup_trial', 'street_night')).toContain(
+      'Хранилище',
+    );
+  });
+
+  it('prefers network_initiation live cue', () => {
+    expect(buildQuestJournalContextualHint('network_initiation', 'volodka_room')).toContain(
+      'Виктория',
+    );
+  });
+
+  it('prefers solnysh spine live cue', () => {
+    expect(buildQuestJournalContextualHint('solnysh_comfort', 'street_night')).toContain(
+      'Солныш',
     );
   });
 

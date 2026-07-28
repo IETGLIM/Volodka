@@ -2,7 +2,10 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import {
   getIncidentScrollHint,
   getMariaConnectionHint,
+  getNetworkInitiationHint,
   getPoetryCollectionHint,
+  getSolnyshSpineHint,
+  getVaultBackupTrialHint,
 } from './act1QuestHints';
 
 const snap = {
@@ -80,5 +83,52 @@ describe('act1QuestHints', () => {
       },
     ];
     expect(getPoetryCollectionHint()).toBe('Следующий стих: Книжная полка');
+  });
+
+  it('vault_backup_trial guides office colleague first', () => {
+    snap.quests = [
+      {
+        questId: 'vault_backup_trial',
+        status: 'active',
+        objectives: {
+          learn_about_vault: false,
+          hack_vault_terminal: false,
+        },
+        startedAtTime: 0,
+      },
+    ];
+    expect(getVaultBackupTrialHint('street_night')).toContain('офис');
+    expect(getVaultBackupTrialHint('office_day')).toContain('коллегу');
+  });
+
+  it('network_initiation guides Victoria meet', () => {
+    snap.quests = [
+      {
+        questId: 'network_initiation',
+        status: 'active',
+        objectives: {
+          meet_maria_again: false,
+          navigate_network: false,
+        },
+        startedAtTime: 0,
+      },
+    ];
+    expect(getNetworkInitiationHint('volodka_room')).toContain('Виктория');
+  });
+
+  it('solnysh spine guides comfort talk', () => {
+    snap.quests = [
+      {
+        questId: 'solnysh_comfort',
+        status: 'active',
+        objectives: {
+          talk_solnysh: false,
+          comfort_solnysh: false,
+        },
+        startedAtTime: 0,
+      },
+    ];
+    expect(getSolnyshSpineHint('street_night')).toContain('Солныш');
+    expect(getSolnyshSpineHint('volodka_corridor')).toContain('Подойди');
   });
 });

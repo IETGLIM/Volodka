@@ -6,17 +6,17 @@ export const RUN_SPEED = 7;
  *  external velocity injection from producing extreme speeds. */
 export const MAX_HORIZONTAL_SPEED = 15;
 /** Keyboard gets snappier response than touch/gamepad damp tuning. */
-export const KEYBOARD_ACCEL = 50;
+export const KEYBOARD_ACCEL = 55;
 export const JUMP_FORCE = 5.5;
 export const GRAVITY = -15;
 export const FOOTSTEP_INTERVAL = 0.4;
 export const PLAYER_HEIGHT = 1.75;
 export const PLAYER_RADIUS = 0.3;
-export const ROTATION_SPEED = 8;
+export const ROTATION_SPEED = 8.5;
 /** Speed for 180-degree direction reversals — slower than normal rotation
  *  so the character appears to physically turn around rather than snapping.
  *  GTA/Gothic-style games use 4–5 for reversal turns. */
-export const ROTATION_SPEED_REVERSAL = 4.5;
+export const ROTATION_SPEED_REVERSAL = 5.0;
 /** Angle threshold (radians) above which a direction reversal turn is used.
  *  ~120° — mid camera-relative redirects stay snappy; only hard about-faces slow. */
 export const ROTATION_REVERSAL_THRESHOLD = (Math.PI * 2) / 3;

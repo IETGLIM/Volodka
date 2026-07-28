@@ -42,11 +42,13 @@ describe('AAA narrative expansion', () => {
     expect(SCENE_IDS.length).toBeGreaterThanOrEqual(26);
   });
 
-  it('extension scenes inherit from parent visuals (except dedicated Sprint E rooms)', () => {
+  it('extension scenes inherit from parent visuals (except dedicated Sprint E/F rooms)', () => {
     const dedicatedVisuals = new Set([
       'city_square',
       'underground_bunker',
       'guild_mainframe',
+      'library_basement',
+      'albert_backroom',
     ]);
     for (const id of EXTENSION_SCENE_IDS) {
       if (dedicatedVisuals.has(id)) {

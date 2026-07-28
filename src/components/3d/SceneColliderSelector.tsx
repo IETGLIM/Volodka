@@ -78,6 +78,8 @@ const RiverPierVisual = lazySceneVisual('river_pier', () => import('./RiverPierV
 const GuildMainframeVisual = lazySceneVisual('guild_mainframe', () => import('./GuildMainframeVisual'), 'GuildMainframeVisual');
 const CitySquareVisual = lazySceneVisual('city_square', () => import('./CitySquareVisual'), 'CitySquareVisual');
 const UndergroundBunkerVisual = lazySceneVisual('underground_bunker', () => import('./UndergroundBunkerVisual'), 'UndergroundBunkerVisual');
+const LibraryBasementVisual = lazySceneVisual('library_basement', () => import('./LibraryBasementVisual'), 'LibraryBasementVisual');
+const AlbertBackroomVisual = lazySceneVisual('albert_backroom', () => import('./AlbertBackroomVisual'), 'AlbertBackroomVisual');
 
 interface SceneColliderSelectorProps {
   livePlayerPositionRef: MutableRefObject<THREE.Vector3>;
@@ -314,6 +316,10 @@ function VisualScene({ sceneId, livePlayerPositionRef }: VisualSceneProps) {
       return <CitySquareVisual livePlayerPositionRef={livePlayerPositionRef} />;
     case 'underground_bunker':
       return <UndergroundBunkerVisual livePlayerPositionRef={livePlayerPositionRef} />;
+    case 'library_basement':
+      return <LibraryBasementVisual livePlayerPositionRef={livePlayerPositionRef} />;
+    case 'albert_backroom':
+      return <AlbertBackroomVisual livePlayerPositionRef={livePlayerPositionRef} />;
     default:
       return <FallbackVisual sceneId={sceneId} />;
   }

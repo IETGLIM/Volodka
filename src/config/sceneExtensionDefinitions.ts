@@ -163,7 +163,7 @@ export const EXTENSION_SCENE_DEFINITIONS = {
       { type: 'cuboidObstacle', size: [0.35, 1.1, 0.7], position: [-2.2, 1.1, 1.5], footstepMaterial: 'wood' },
     ],
     ceilings: [{ type: 'cuboid', size: [7, 0.1, 6], position: [0, 2.8, 0] }],
-    visualComponent: 'LibraryVisual',
+    visualComponent: 'LibraryBasementVisual',
     lights: [
       { position: [0, 2.2, -2], intensity: 1.55, color: '#ffdd99', distance: 11 },
       { position: [-2.5, 1.8, 1], intensity: 0.75, color: '#ccaa66', distance: 7 },
@@ -374,7 +374,7 @@ export const EXTENSION_SCENE_DEFINITIONS = {
       { type: 'cuboidObstacle', size: [0.8, 0.9, 0.5], position: [-1.5, 0.9, -1], footstepMaterial: 'metal' },
     ],
     ceilings: [{ type: 'cuboid', size: [4, 0.1, 3], position: [0, 2.6, 0] }],
-    visualComponent: 'CafeVisual',
+    visualComponent: 'AlbertBackroomVisual',
     lights: [
       { position: [0, 2.0, -1], intensity: 2.0, color: '#ffaa66', distance: 9 },
       { position: [1.5, 1.8, 0.5], intensity: 0.9, color: '#6688cc', distance: 7 },

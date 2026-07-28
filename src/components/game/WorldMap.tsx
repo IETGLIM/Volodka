@@ -12,6 +12,7 @@ import { usePanelDialog } from '@/components/a11y/usePanelDialog';
 import { X, Map as MapIcon, Lock, Clock, MapPin, Navigation } from 'lucide-react';
 import { useGameStore } from '@/store/gameStore';
 import { useFastTravelState } from '@/store/selectors';
+import { eventBus } from '@/engine/EventBus';
 import { SCENE_CONFIG } from '@/config/scenes';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import type { SceneId } from '@/shared/types/game';
@@ -291,8 +292,21 @@ export function WorldMap({ open, onClose }: WorldMapProps) {
   const fastTravelTo = useGameStore((s) => s.fastTravelTo);
 
   const [hoveredScene, setHoveredScene] = useState<SceneId | null>(null);
+  const [focusSceneId, setFocusSceneId] = useState<SceneId | null>(null);
   const [isTraveling, setIsTraveling] = useState(false);
   const [travelTarget, setTravelTarget] = useState<{ id: SceneId; name: string; hours: number } | null>(null);
+
+  useEffect(() => {
+    if (!open) {
+      setFocusSceneId(null);
+      return;
+    }
+    const unsub = eventBus.on('worldmap:focus_scene', ({ sceneId }) => {
+      setFocusSceneId(sceneId);
+      setHoveredScene(sceneId);
+    });
+    return unsub;
+  }, [open]);
 
   // Build lookup for node positions
   const nodeMap = useMemo(() => {
@@ -518,6 +532,7 @@ export function WorldMap({ open, onClose }: WorldMapProps) {
                     {MAP_NODES.filter((n) => !isExcluded(n.id)).map((node) => {
                       const isDiscovered = discoveredScenes.includes(node.id);
                       const isCurrent = node.id === currentSceneId;
+                      const isFocused = focusSceneId === node.id;
                       const accessible = isAccessible(node.id);
                       const gateOpen = isSceneGateOpen(node.id, playerFlags);
                       const isRumored = !isDiscovered && gateOpen;
@@ -534,7 +549,7 @@ export function WorldMap({ open, onClose }: WorldMapProps) {
                           <motion.button
                             onClick={() => handleNodeClick(node.id)}
                             onMouseEnter={() => setHoveredScene(node.id)}
-                            onMouseLeave={() => setHoveredScene(null)}
+                            onMouseLeave={() => setHoveredScene(focusSceneId)}
                             disabled={!accessible || isCurrent}
                             className={`
                               relative flex flex-col items-center justify-center
@@ -542,7 +557,7 @@ export function WorldMap({ open, onClose }: WorldMapProps) {
                               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/60
                               ${isCurrent
                                 ? 'w-14 h-14'
-                                : isDiscovered
+                                : isDiscovered || isFocused
                                   ? 'w-11 h-11 hover:scale-110'
                                   : isRumored
                                     ? 'w-9 h-9 cursor-default'
@@ -555,17 +570,23 @@ export function WorldMap({ open, onClose }: WorldMapProps) {
                                 : isDiscovered
                                   ? `${regionColor}12`
                                   : 'rgba(51, 65, 85, 0.15)',
-                              border: isCurrent
-                                ? `2px solid ${regionColor}99`
-                                : isDiscovered
-                                  ? `1.5px solid ${regionColor}55`
-                                  : '1px solid rgba(71, 85, 105, 0.2)',
-                              boxShadow: isCurrent
-                                ? `0 0 20px ${regionColor}44, inset 0 0 10px ${regionColor}18`
-                                : isDiscovered
-                                  ? `0 0 8px ${regionColor}22`
-                                  : 'none',
+                              border: isFocused
+                                ? '2px solid rgba(0,229,255,0.7)'
+                                : isCurrent
+                                  ? `2px solid ${regionColor}99`
+                                  : isDiscovered
+                                    ? `1.5px solid ${regionColor}55`
+                                    : '1px solid rgba(71, 85, 105, 0.2)',
+                              boxShadow: isFocused
+                                ? '0 0 18px rgba(0,229,255,0.55), 0 0 4px rgba(255,200,80,0.4)'
+                                : isCurrent
+                                  ? `0 0 20px ${regionColor}44, inset 0 0 10px ${regionColor}18`
+                                  : isDiscovered
+                                    ? `0 0 8px ${regionColor}22`
+                                    : 'none',
                             }}
+                            animate={isFocused ? { scale: [1, 1.08, 1] } : undefined}
+                            transition={isFocused ? { duration: 1.4, repeat: Infinity, ease: 'easeInOut' } : undefined}
                             whileTap={accessible && !isCurrent ? { scale: 0.9 } : {}}
                           >
                             {/* Current location pulsing glow */}

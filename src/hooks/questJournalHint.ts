@@ -5,7 +5,10 @@ import { getFirstReadingHint } from '@/engine/guidedStory/firstReadingHint';
 import {
   getIncidentScrollHint,
   getMariaConnectionHint,
+  getNetworkInitiationHint,
   getPoetryCollectionHint,
+  getSolnyshSpineHint,
+  getVaultBackupTrialHint,
 } from '@/engine/guidedStory/act1QuestHints';
 import { buildGuidanceDirectionHint } from '@/engine/guidedStory/guidanceLocation';
 import {
@@ -14,8 +17,14 @@ import {
 } from '@/store/questStore';
 import type { SceneId } from '@/shared/types/game';
 
+const SOLNYSH_SPINE_QUEST_IDS = new Set([
+  'solnysh_comfort',
+  'solnysh_roof_wine',
+  'solnysh_relocation',
+]);
+
 /**
- * Prefer live Act-1 spine cues; otherwise next objective + scene travel hint.
+ * Prefer live Act-1/2 spine cues; otherwise next objective + scene travel hint.
  */
 export function buildQuestJournalContextualHint(
   questId: string,
@@ -35,6 +44,18 @@ export function buildQuestJournalContextualHint(
   }
   if (questId === 'poetry_collection') {
     const live = getPoetryCollectionHint();
+    if (live) return live;
+  }
+  if (questId === 'vault_backup_trial') {
+    const live = getVaultBackupTrialHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'network_initiation') {
+    const live = getNetworkInitiationHint(currentSceneId);
+    if (live) return live;
+  }
+  if (SOLNYSH_SPINE_QUEST_IDS.has(questId)) {
+    const live = getSolnyshSpineHint(currentSceneId);
     if (live) return live;
   }
 
