@@ -11,6 +11,7 @@ import { isEncounterPresentationActive } from '@/engine/combat/encounterPresenta
 import { isCinematicHoldActive } from '@/engine/camera/cinematicPresentation';
 import { isNarrativeMovementLocked } from '@/shared/exploreHubNodes';
 import type { GameStoreSnapshot } from '@/shared/gameBridge/gameActionBridge';
+import { isStuckSoftLocomotionUnlockActive } from '@/engine/interaction/stuckSoftLocomotionUnlock';
 
 let panelStackBlocksLocomotion = false;
 let minigameBlocksLocomotion = false;
@@ -35,15 +36,19 @@ export function isGameplayOverlayLocomotionLocked(): boolean {
 /** Single gate for per-frame locomotion lock (narrative + phase + overlays). */
 export function resolvePlayerMovementLocked(store: GameStoreSnapshot): boolean {
   const { showStoryOverlay, currentNodeId, mode: gamePhase } = store;
-  return (
+  const phaseLocked =
     isNarrativeMovementLocked(showStoryOverlay, currentNodeId ?? '') ||
     gamePhase === 'cutscene' ||
     gamePhase === 'intro' ||
     gamePhase === 'combat' ||
-    isEncounterPresentationActive() ||
-    isCinematicHoldActive() ||
-    isGameplayOverlayLocomotionLocked()
-  );
+    isEncounterPresentationActive();
+
+  if (phaseLocked) return true;
+
+  // Soft unlock after stuck recovery: ignore residual cinematic/overlay gates briefly.
+  if (isStuckSoftLocomotionUnlockActive()) return false;
+
+  return isCinematicHoldActive() || isGameplayOverlayLocomotionLocked();
 }
 
 /** Test-only reset */

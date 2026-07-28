@@ -23,6 +23,7 @@ function PhotoModeInner() {
           onSelectHistory={photo.selectHistoryCapture}
           onDownloadPreview={photo.downloadPreview}
           onSharePreview={photo.sharePreview}
+          onExportGalleryBatch={photo.exportGalleryBatch}
         />
       )}
     </AnimatePresence>

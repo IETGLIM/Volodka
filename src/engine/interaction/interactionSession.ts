@@ -8,6 +8,7 @@ import { devWarn } from '@/shared/utils/devLog';
 import { registerHmrDispose } from '@/shared/dev/hmrDispose';
 import { getStuckRecoveryReapproachHint, getStuckRecoveryUserMessage } from '@/engine/interaction/stuckRecoveryFeedback';
 import { emitStuckRecoveryNpcRingFocus } from '@/engine/interaction/stuckRecoveryNpcFocus';
+import { triggerStuckSoftLocomotionUnlock } from '@/engine/interaction/stuckSoftLocomotionUnlock';
 export interface InteractionSessionSnapshot {
   state: InteractionState;
   targetNpcId: string | null;
@@ -77,6 +78,7 @@ function scheduleStuckRecoveryWatchdog(): void {
       title: reapproach,
       type: 'info' as const,
     });
+    triggerStuckSoftLocomotionUnlock();
     emitStuckRecoveryNpcRingFocus(stuckNpcId);
   }, STUCK_RECOVERY_TIMEOUT_MS);
 }

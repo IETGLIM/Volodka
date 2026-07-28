@@ -51,7 +51,17 @@ vi.mock('@/engine/guidedStory/act6QuestHints', () => ({
   getUndergroundResistanceHint: () => 'Ночные улицы — там собираются те, кто не хочет быть найденным',
   getDataHeistHint: () => 'Офис гильдии ночью — время проникновения',
   getAct6SecretArchiveHint: () => 'Секретный архив под заброшенной фабрикой',
+  getSystemInfiltrationHint: () => 'Ядро «Надзора» на заброшенной фабрике — начни там',
   getRooftopConfrontationHint: () => 'Поднимись на крышу для финальной встречи',
+}));
+
+vi.mock('@/engine/guidedStory/act7QuestHints', () => ({
+  getRebuildTheGuildHint: () => 'Кафе — там собираются те, кто готов строить новое',
+  getSystemTakedownHint: () => 'Собери отряд с Максимом перед штурмом ядра',
+  getFinalPoemHint: () => 'Парк днём — единственное место услышать себя',
+  getVolodkaLegacyHint: () => 'Вернись в свою комнату — где всё началось',
+  getEpilogueLettersHint: () => 'Вернись в комнату после финала — там письма',
+  getEpilogueMonumentHint: () => 'Парк — у обелиска без гильдейской таблички',
 }));
 
 vi.mock('@/store/questStore', () => ({
@@ -210,6 +220,34 @@ describe('buildQuestJournalContextualHint', () => {
 
   it('prefers rooftop_confrontation live cue', () => {
     expect(buildQuestJournalContextualHint('rooftop_confrontation', 'street_night')).toContain('крыш');
+  });
+
+  it('prefers system_infiltration live cue', () => {
+    expect(buildQuestJournalContextualHint('system_infiltration', 'street_night')).toContain('Надзор');
+  });
+
+  it('prefers rebuild_the_guild live cue', () => {
+    expect(buildQuestJournalContextualHint('rebuild_the_guild', 'street_night')).toContain('Кафе');
+  });
+
+  it('prefers system_takedown live cue', () => {
+    expect(buildQuestJournalContextualHint('system_takedown', 'volodka_room')).toContain('Максим');
+  });
+
+  it('prefers final_poem live cue', () => {
+    expect(buildQuestJournalContextualHint('final_poem', 'street_night')).toContain('Парк');
+  });
+
+  it('prefers volodka_legacy live cue', () => {
+    expect(buildQuestJournalContextualHint('volodka_legacy', 'street_night')).toContain('комнат');
+  });
+
+  it('prefers epilogue_letters live cue', () => {
+    expect(buildQuestJournalContextualHint('epilogue_letters', 'park_day')).toContain('комнат');
+  });
+
+  it('prefers epilogue_monument live cue', () => {
+    expect(buildQuestJournalContextualHint('epilogue_monument', 'volodka_room')).toContain('Парк');
   });
 
   it('combines next objective with travel direction', () => {

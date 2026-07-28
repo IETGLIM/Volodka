@@ -82,6 +82,11 @@ describe('extension scene env LOD profiles', () => {
     expect(getEnvironmentLodProfile('pier_evening').clutterDistance).toBe(11);
     expect(getEnvironmentLodProfile('river_pier').clutterDistance).toBe(11);
     expect(getEnvironmentLodProfile('factory_basement').clutterDistance).toBe(8);
+    expect(getEnvironmentLodProfile('library_basement').clutterDistance).toBeLessThan(12);
+    expect(getEnvironmentLodProfile('volodka_corridor').clutterDistance).toBeLessThan(12);
+    expect(getEnvironmentLodProfile('library_basement').clutterDistance).toBeLessThan(
+      getEnvironmentLodProfile('library_day').clutterDistance,
+    );
   });
 });
 

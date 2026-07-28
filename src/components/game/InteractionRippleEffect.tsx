@@ -9,15 +9,15 @@ import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { useOrchestratorShell } from '@/store/selectors';
 
 /** Duration of the ripple animation in ms. */
-const RIPPLE_DURATION_MS = 600;
+const RIPPLE_DURATION_MS = 720;
 
 interface RippleState {
   key: number;
+  accent: 'cyan' | 'magenta';
 }
 
 /**
- * 2D overlay: a cyan/teal ring that expands from the screen center
- * and fades out over 600 ms when the player interacts with an object.
+ * 2D overlay: expanding ring from screen center on interact / journal pulse.
  * Only active during exploration mode.
  */
 export function InteractionRippleEffect() {
@@ -26,21 +26,32 @@ export function InteractionRippleEffect() {
   const [ripple, setRipple] = useState<RippleState | null>(null);
   const keyCounter = useRef(0);
 
-  const showRipple = useCallback(() => {
+  const showRipple = useCallback((accent: RippleState['accent'] = 'cyan') => {
     if (mode !== 'exploration') return;
     keyCounter.current += 1;
-    setRipple({ key: keyCounter.current });
+    setRipple({ key: keyCounter.current, accent });
   }, [mode]);
 
-  /* ── Listen to object:interact on EventBus ── */
   useEffect(() => {
-    const unsub = eventBus.on('object:interact', () => {
-      showRipple();
+    const unsubInteract = eventBus.on('object:interact', () => {
+      showRipple('cyan');
     });
-    return unsub;
+    const unsubPulse = eventBus.on('quest:pulse_marker', () => {
+      showRipple('magenta');
+    });
+    return () => {
+      unsubInteract();
+      unsubPulse();
+    };
   }, [showRipple]);
 
   if (mode !== 'exploration') return null;
+
+  const isMagenta = ripple?.accent === 'magenta';
+  const ringColor = isMagenta ? 'rgba(240, 171, 252, 0.65)' : 'rgba(34, 211, 238, 0.6)';
+  const glowColor = isMagenta ? 'rgba(240, 171, 252, 0.2)' : 'rgba(34, 211, 238, 0.15)';
+  const innerColor = isMagenta ? 'rgba(240, 171, 252, 0.4)' : 'rgba(34, 211, 238, 0.35)';
+  const dotColor = isMagenta ? 'rgba(240, 171, 252, 0.9)' : 'rgba(34, 211, 238, 0.8)';
 
   return (
     <AnimatePresence>
@@ -55,8 +66,8 @@ export function InteractionRippleEffect() {
             reducedMotion
               ? { opacity: 0.6 }
               : {
-                  opacity: [0.7, 0.3, 0],
-                  scale: [0, 1],
+                  opacity: [0.75, 0.35, 0],
+                  scale: [0, 1.05],
                 }
           }
           exit={reducedMotion ? { opacity: 0 } : { opacity: 0 }}
@@ -67,34 +78,40 @@ export function InteractionRippleEffect() {
           }
           onAnimationComplete={() => setRipple(null)}
         >
-          {/* Outer ring */}
           <div
             className="absolute rounded-full"
             style={{
-              width: 160,
-              height: 160,
-              border: '2px solid rgba(34, 211, 238, 0.6)',
-              boxShadow: '0 0 20px rgba(34, 211, 238, 0.15), inset 0 0 20px rgba(34, 211, 238, 0.05)',
+              width: 176,
+              height: 176,
+              border: `2px solid ${ringColor}`,
+              boxShadow: `0 0 24px ${glowColor}, inset 0 0 20px ${glowColor}`,
             }}
           />
-          {/* Inner ring */}
           <div
             className="absolute rounded-full"
             style={{
-              width: 60,
-              height: 60,
-              border: '1px solid rgba(34, 211, 238, 0.35)',
-              boxShadow: '0 0 10px rgba(34, 211, 238, 0.1)',
+              width: 100,
+              height: 100,
+              border: `1.5px solid ${innerColor}`,
+              boxShadow: `0 0 12px ${glowColor}`,
             }}
           />
-          {/* Center dot */}
+          <div
+            className="absolute rounded-full"
+            style={{
+              width: 52,
+              height: 52,
+              border: `1px solid ${innerColor}`,
+              boxShadow: `0 0 10px ${glowColor}`,
+            }}
+          />
           <div
             className="absolute rounded-full"
             style={{
               width: 6,
               height: 6,
-              backgroundColor: 'rgba(34, 211, 238, 0.8)',
-              boxShadow: '0 0 8px rgba(34, 211, 238, 0.5)',
+              backgroundColor: dotColor,
+              boxShadow: `0 0 8px ${glowColor}`,
             }}
           />
         </motion.div>

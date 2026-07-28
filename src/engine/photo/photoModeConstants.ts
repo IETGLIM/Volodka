@@ -29,6 +29,10 @@ export const PHOTO_MODE_LABELS = {
   galleryTitle: 'Галерея сессии',
   galleryEmpty: 'Пока нет снимков',
   gallerySelect: 'Открыть снимок из галереи',
+  galleryExportBatch: 'Скачать все',
+  galleryExportBatchSuccess: 'Галерея скачана',
+  galleryExportBatchPartial: 'Часть снимков скачана',
+  galleryExportBatchFailed: 'Не удалось скачать галерею',
 } as const;
 
 export type PhotoFilterPreset = 'neon' | 'noir';

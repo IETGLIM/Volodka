@@ -12,6 +12,10 @@ import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { createVolodkaCorridorRainySkyTexture } from '@/engine/graphics/proceduralSkyTextures';
 import { registerModuleGeometries } from '@/engine/three/moduleGeometryRegistry';
 import { AmbientParticles } from './AmbientParticles';
+import {
+  getRainSpillInFloorBoost,
+} from '@/engine/graphics/wetStreetScenes';
+import { getSharedCircleGeometry } from '@/engine/three/moduleGeometryRegistry';
 
 interface VolodkaCorridorVisualProps {
   livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
@@ -145,18 +149,26 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
     'volodka_corridor:rainy-ceiling',
     createVolodkaCorridorRainySkyTexture,
   );
+  const rainIntensity = useGameStore((s) => s.rainIntensity);
+  const spill = useMemo(
+    () => getRainSpillInFloorBoost('volodka_corridor', rainIntensity),
+    [rainIntensity],
+  );
+  const floorRoughness = Math.max(0.35, 0.85 - (spill?.roughnessDrop ?? 0));
+  const floorMetalness = Math.min(0.42, spill?.metalnessBoost ?? 0.02);
 
   const mat_floor = useMemo(
     () =>
       getSharedStandardMaterial({
         map: floorTexture,
         color: '#5a4a40',
-        roughness: 0.85,
+        roughness: floorRoughness,
+        metalness: floorMetalness,
         polygonOffset: true,
         polygonOffsetFactor: 2,
         polygonOffsetUnits: 2,
       }),
-    [floorTexture],
+    [floorTexture, floorRoughness, floorMetalness],
   );
   const mat_carpet = useMemo(
     () =>
@@ -305,6 +317,20 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
     <group ref={rootGroupRef}>
       {/* ── Floor (linoleum) ── */}
       <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.002} renderOrder={0} geometry={geo_pln_1} material={mat_floor} />
+      {spill && (
+        <mesh rotation-x={-Math.PI / 2} position={[0, 0.006, 6.2]} renderOrder={2} geometry={getSharedCircleGeometry(1.35, 18)}>
+          <meshStandardMaterial
+            color="#2a3038"
+            metalness={0.45}
+            roughness={0.28}
+            transparent
+            opacity={spill.puddleOpacity}
+            polygonOffset
+            polygonOffsetFactor={1}
+            polygonOffsetUnits={1}
+          />
+        </mesh>
+      )}
 
       {/* ── Carpet runner (decal on floor — no physics collider) ── */}
       <mesh rotation-x={-Math.PI / 2} position-y={0.004} renderOrder={1} geometry={geo_pln_2} material={mat_carpet} />

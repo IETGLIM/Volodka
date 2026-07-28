@@ -4,8 +4,8 @@ import type { SceneId } from '@/shared/types/game';
 import { getSceneConfig } from '@/config/scenes';
 
 /** Slightly tighter chase cam — reads more intimate / cyber-noir. */
-export const DEFAULT_DISTANCE = 2.85;
-export const MIN_DISTANCE = 1.15;
+export const DEFAULT_DISTANCE = 2.78;
+export const MIN_DISTANCE = 1.1;
 export const MAX_DISTANCE = 12.0;
 
 /** First-person exploration — disabled; third-person orbit is the default. */
@@ -20,25 +20,25 @@ export const ZOOM_WHEEL_EXP = 0.011;
 /** Minimum per-tick distance change (m) so trackpads still feel responsive. */
 export const ZOOM_WHEEL_MIN_STEP = 0.12;
 /** Spring snap strength after wheel input (0–1, applied once per frame until decay). */
-export const ZOOM_SPRING_SNAP = 0.72;
-export const LOOK_HEIGHT = 1.3;
+export const ZOOM_SPRING_SNAP = 0.74;
+export const LOOK_HEIGHT = 1.32;
 export const WALL_MARGIN = 0.25;
 
-export const AUTO_FOLLOW_SPEED = 3.4;
-export const AUTO_FOLLOW_IDLE_THRESHOLD = 0.3;
-export const AUTO_FOLLOW_MIN_YAW_DELTA = 0.05;
-export const AUTO_FOLLOW_RETURN_SPEED = 1.65;
+export const AUTO_FOLLOW_SPEED = 3.55;
+export const AUTO_FOLLOW_IDLE_THRESHOLD = 0.28;
+export const AUTO_FOLLOW_MIN_YAW_DELTA = 0.045;
+export const AUTO_FOLLOW_RETURN_SPEED = 1.72;
 
 export const NPC_INTERACTION_DISTANCE = 2.0;
-export const DISTANCE_LERP_SPEED = 2.15;
-export const DIALOGUE_EXIT_LERP_SPEED = 4.0;
+export const DISTANCE_LERP_SPEED = 2.25;
+export const DIALOGUE_EXIT_LERP_SPEED = 4.1;
 export const BREATHING_BOB_AMPLITUDE = 0.005;
 export const BREATHING_BOB_SPEED = Math.PI;
-export const LOOK_AHEAD_STRENGTH = 0.28;
-export const LOOK_AHEAD_LERP_SPEED = 4.2;
-export const INDOOR_FOV = 54;
-export const OUTDOOR_FOV = 71;
-export const FOV_TRANSITION_SPEED = 2.7;
+export const LOOK_AHEAD_STRENGTH = 0.32;
+export const LOOK_AHEAD_LERP_SPEED = 4.45;
+export const INDOOR_FOV = 53;
+export const OUTDOOR_FOV = 72;
+export const FOV_TRANSITION_SPEED = 2.85;
 
 export const CINEMATIC_FREEZE_TIMEOUT = 2.0;
 

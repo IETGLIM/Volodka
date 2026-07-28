@@ -40,9 +40,18 @@ import {
   getAct6SecretArchiveHint,
   getDataHeistHint,
   getRooftopConfrontationHint,
+  getSystemInfiltrationHint,
   getTraitorInTheGuildHint,
   getUndergroundResistanceHint,
 } from '@/engine/guidedStory/act6QuestHints';
+import {
+  getEpilogueLettersHint,
+  getEpilogueMonumentHint,
+  getFinalPoemHint,
+  getRebuildTheGuildHint,
+  getSystemTakedownHint,
+  getVolodkaLegacyHint,
+} from '@/engine/guidedStory/act7QuestHints';
 import { buildGuidanceDirectionHint } from '@/engine/guidedStory/guidanceLocation';
 import {
   getNextTrackedObjective,
@@ -187,8 +196,36 @@ export function buildQuestJournalContextualHint(
     const live = getAct6SecretArchiveHint(currentSceneId);
     if (live) return live;
   }
+  if (questId === 'system_infiltration') {
+    const live = getSystemInfiltrationHint(currentSceneId);
+    if (live) return live;
+  }
   if (questId === 'rooftop_confrontation') {
     const live = getRooftopConfrontationHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'rebuild_the_guild') {
+    const live = getRebuildTheGuildHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'system_takedown') {
+    const live = getSystemTakedownHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'final_poem') {
+    const live = getFinalPoemHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'volodka_legacy') {
+    const live = getVolodkaLegacyHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'epilogue_letters') {
+    const live = getEpilogueLettersHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'epilogue_monument') {
+    const live = getEpilogueMonumentHint(currentSceneId);
     if (live) return live;
   }
 

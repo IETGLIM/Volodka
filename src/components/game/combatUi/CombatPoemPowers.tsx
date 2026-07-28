@@ -42,12 +42,12 @@ function PoemPowerCard({
           type="button"
           onClick={onSelect}
           disabled={onCooldown}
-          className={`relative w-full px-3 py-2 text-left transition-all border-b border-slate-800/30 last:border-0 font-mono ${
+          className={`relative w-full min-h-[52px] px-3 py-2.5 text-left transition-all border-b border-slate-800/30 last:border-0 font-mono touch-manipulation active:scale-[0.99] ${
             onCooldown
               ? 'opacity-30 cursor-not-allowed grayscale'
               : isGamepadSelected
                 ? 'bg-amber-900/50 ring-1 ring-amber-400/40'
-                : 'hover:bg-amber-900/30'
+                : 'hover:bg-amber-900/30 active:bg-amber-900/40'
           }`}
         >
           <div className="flex items-center justify-between gap-2">
@@ -94,7 +94,7 @@ function PoemPowerCard({
         <div className="text-slate-400">{power.description}</div>
         <div className="mt-1 text-slate-500">Кулдаун: {totalCooldown} х.</div>
         <div className="text-slate-500">Эффект: {categoryLabel}</div>
-        {onCooldown && <div className="text-red-400 mt-1">⏳ Готовность через {power.cooldownRemaining} х.</div>}
+        {onCooldown && <div className="text-red-400 mt-1">Готовность через {power.cooldownRemaining} х.</div>}
       </TooltipContent>
     </Tooltip>
   );
@@ -121,7 +121,7 @@ export function PoemPowersSubmenu({
     if (!showPowers || !containerRef.current) return;
     const btn = containerRef.current;
     const rect = btn.getBoundingClientRect();
-    const estimatedHeight = Math.min(32 + availablePowers.length * 56, 240);
+    const estimatedHeight = Math.min(36 + availablePowers.length * 60, 280);
     const spaceAbove = rect.top;
     const spaceBelow = window.innerHeight - rect.bottom;
     setPositionAbove(spaceAbove >= estimatedHeight || spaceAbove >= spaceBelow);
@@ -137,17 +137,17 @@ export function PoemPowersSubmenu({
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: positionAbove ? 10 : -10, scale: 0.95 }}
         transition={{ duration: 0.15 }}
-        className={`absolute left-0 right-0 bg-black/95 border border-amber-700/30 rounded-lg backdrop-blur-md overflow-hidden max-h-60 overflow-y-auto ${
+        className={`absolute left-0 right-0 bg-black/95 border border-amber-700/30 rounded-lg backdrop-blur-md overflow-hidden max-h-72 overflow-y-auto overscroll-contain touch-pan-y ${
           positionAbove ? 'bottom-full mb-2' : 'top-full mt-2'
         }`}
         style={{ zIndex: UI_LAYERS.COMBAT, scrollbarWidth: 'thin', scrollbarColor: '#78716c transparent' }}
       >
-        <div className="sticky top-0 bg-black/90 border-b border-amber-900/30 px-3 py-1.5 flex items-center justify-between z-10">
+        <div className="sticky top-0 bg-black/90 border-b border-amber-900/30 px-3 py-2 flex items-center justify-between z-10">
           <span className="text-[9px] text-amber-400/80 font-mono font-semibold uppercase tracking-wider">
-            ⚡ Стихотворения
+            Стихотворения
           </span>
           <span className="text-[8px] text-slate-500 font-mono">
-            [1-{Math.min(9, availablePowers.length)}] выбор · [Esc] закрыть
+            [1-{Math.min(9, availablePowers.length)}] · Esc
           </span>
         </div>
         {availablePowers.map((power, idx) => {
