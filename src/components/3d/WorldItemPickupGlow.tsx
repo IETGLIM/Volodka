@@ -1,9 +1,10 @@
 /* ─── Volodka RPG – World item pickup glow ─── */
 /* Visual highlight for trigger zones with interactionType: 'take'.
    Renders a pulsing glow ring + floating "[E] Взять" label above the item
-   so players notice pickable objects in the world (Gothic-style focus). */
+   so players notice pickable objects in the world (Gothic-style focus).
+   On collect, spawns a short amber sparkle burst. */
 
-import { useRef, useMemo, useEffect } from 'react';
+import { useRef, useMemo, useEffect, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useGameStore } from '@/store/gameStore';
@@ -11,6 +12,13 @@ import { useCurrentSceneId } from '@/store/selectors';
 import { TRIGGER_ZONES, isTriggerZoneAvailable } from '@/data/triggerZones';
 import { Html } from '@react-three/drei';
 import { useSceneLoadedGate } from '@/hooks/useSceneLoadedGate';
+import {
+  buildPickupCollectBurst,
+  PICKUP_COLLECT_BURST_COLOR,
+  PICKUP_COLLECT_BURST_DURATION_MS,
+  type CollectBurstParticle,
+} from '@/engine/interaction/pickupCollectBurst';
+import { getSharedCircleGeometry } from '@/engine/three/moduleGeometryRegistry';
 
 const GLOW_COLOR = '#fbbf24'; // amber
 const GLOW_RADIUS = 0.35;
@@ -27,7 +35,6 @@ function PickupGlow({ position, label }: PickupGlowProps) {
   const ringRef = useRef<THREE.Mesh>(null);
   const matRef = useRef<THREE.MeshBasicMaterial>(null);
 
-  // Pre-allocated geometry/material — shared across all glows in this scene.
   const geometry = useMemo(() => new THREE.RingGeometry(GLOW_RADIUS * 0.8, GLOW_RADIUS, 32), []);
   const material = useMemo(
     () =>
@@ -41,10 +48,6 @@ function PickupGlow({ position, label }: PickupGlowProps) {
     [],
   );
 
-  // Dispose geometry on unmount — R3F does not auto-dispose geometries
-  // attached via the `geometry` prop. (The `material` useMemo is overridden
-  // by the JSX <meshBasicMaterial> child, so it never reaches the GPU, but
-  // we dispose it anyway for cleanliness.)
   useEffect(() => {
     return () => {
       geometry.dispose();
@@ -66,7 +69,6 @@ function PickupGlow({ position, label }: PickupGlowProps) {
 
   return (
     <group position={position}>
-      {/* Glow ring on the ground */}
       <mesh
         ref={ringRef}
         geometry={geometry}
@@ -83,7 +85,6 @@ function PickupGlow({ position, label }: PickupGlowProps) {
           depthTest={false}
         />
       </mesh>
-      {/* Floating label */}
       <Html
         position={[0, GLOW_HEIGHT_OFFSET, 0]}
         center
@@ -113,6 +114,64 @@ function PickupGlow({ position, label }: PickupGlowProps) {
   );
 }
 
+type BurstState = {
+  id: string;
+  position: [number, number, number];
+  particles: CollectBurstParticle[];
+  bornAt: number;
+};
+
+function CollectBurst({ burst, onDone }: { burst: BurstState; onDone: (id: string) => void }) {
+  const groupRef = useRef<THREE.Group>(null);
+  const matsRef = useRef<(THREE.MeshBasicMaterial | null)[]>([]);
+
+  useFrame((_, delta) => {
+    const age = (performance.now() - burst.bornAt) / 1000;
+    const maxLife = Math.max(...burst.particles.map((p) => p.life), 0.4);
+    if (age >= maxLife) {
+      onDone(burst.id);
+      return;
+    }
+    const g = groupRef.current;
+    if (!g) return;
+    for (let i = 0; i < burst.particles.length; i++) {
+      const p = burst.particles[i];
+      const child = g.children[i] as THREE.Mesh | undefined;
+      if (!child || !p) continue;
+      const t = Math.min(1, age / p.life);
+      const dist = p.speed * age * (1 - t * 0.35);
+      child.position.set(
+        Math.cos(p.angle) * dist,
+        0.15 + age * 0.9,
+        Math.sin(p.angle) * dist,
+      );
+      const s = p.size * (1.2 - t);
+      child.scale.setScalar(Math.max(0.01, s / 0.06));
+      const mat = matsRef.current[i];
+      if (mat) mat.opacity = (1 - t) * 0.85;
+    }
+    void delta;
+  });
+
+  return (
+    <group ref={groupRef} position={burst.position}>
+      {burst.particles.map((p, i) => (
+        <mesh key={i} geometry={getSharedCircleGeometry(0.06, 8)} rotation-x={-Math.PI / 2}>
+          <meshBasicMaterial
+            ref={(m) => {
+              matsRef.current[i] = m;
+            }}
+            color={PICKUP_COLLECT_BURST_COLOR}
+            transparent
+            opacity={0.85}
+            depthWrite={false}
+          />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
 /** Renders pickup glows for all 'take' trigger zones in the active scene. */
 export function WorldItemPickupGlows() {
   const sceneId = useCurrentSceneId();
@@ -121,6 +180,9 @@ export function WorldItemPickupGlows() {
   const currentAct = useGameStore((s) => s.playerState.progression.currentAct);
   const activeTTLFlags = useGameStore((s) => s.activeTTLFlags);
   const interactiveObjectStates = useGameStore((s) => s.interactiveObjectStates);
+  const [bursts, setBursts] = useState<BurstState[]>([]);
+  const prevZoneIdsRef = useRef<Set<string>>(new Set());
+  const zonePosRef = useRef<Map<string, [number, number, number]>>(new Map());
 
   const pickupZones = useMemo(
     () =>
@@ -129,13 +191,46 @@ export function WorldItemPickupGlows() {
           z.sceneId === sceneId &&
           z.interactionType === 'take' &&
           isTriggerZoneAvailable(z, flags, currentAct, activeTTLFlags) &&
-          // Hide glow if already picked up.
           !(z.isOneTime && interactiveObjectStates[z.id]),
       ),
     [sceneId, flags, currentAct, activeTTLFlags, interactiveObjectStates],
   );
 
-  if (!sceneLoaded || pickupZones.length === 0) return null;
+  useEffect(() => {
+    const nextIds = new Set(pickupZones.map((z) => z.id));
+    for (const z of pickupZones) {
+      zonePosRef.current.set(z.id, z.position);
+    }
+    const prev = prevZoneIdsRef.current;
+    if (prev.size > 0) {
+      for (const id of prev) {
+        if (!nextIds.has(id)) {
+          const position = zonePosRef.current.get(id) ?? ([0, 0, 0] as [number, number, number]);
+          const bornAt = performance.now();
+          setBursts((list) => [
+            ...list,
+            {
+              id: `${id}:${bornAt}`,
+              position,
+              particles: buildPickupCollectBurst(id),
+              bornAt,
+            },
+          ]);
+          window.setTimeout(() => {
+            setBursts((list) => list.filter((b) => !b.id.startsWith(`${id}:`)));
+          }, PICKUP_COLLECT_BURST_DURATION_MS + 120);
+        }
+      }
+    }
+    prevZoneIdsRef.current = nextIds;
+  }, [pickupZones]);
+
+  useEffect(() => {
+    prevZoneIdsRef.current = new Set();
+    setBursts([]);
+  }, [sceneId]);
+
+  if (!sceneLoaded) return null;
 
   return (
     <group key={`pickups:${sceneId}`}>
@@ -144,6 +239,13 @@ export function WorldItemPickupGlows() {
           key={zone.id}
           position={zone.position}
           label={zone.interactionLabel ?? 'Взять'}
+        />
+      ))}
+      {bursts.map((burst) => (
+        <CollectBurst
+          key={burst.id}
+          burst={burst}
+          onDone={(id) => setBursts((list) => list.filter((b) => b.id !== id))}
         />
       ))}
     </group>

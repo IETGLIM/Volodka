@@ -158,3 +158,96 @@ export function getArchiveOfForgottenHint(currentSceneId: string): string | null
   }
   return null;
 }
+
+/** Цифровой Призрак — Lena → server room → traces → firewall → fragment. */
+export function getDigitalGhostHint(currentSceneId: string): string | null {
+  const quest = findActiveQuest('digital_ghost');
+  if (!quest) return null;
+  if (!objectiveDone(quest, 'consult_lena')) {
+    return currentSceneId === 'office_day' || currentSceneId === 'library_day'
+      ? 'Спроси Лену о цифровых следах в сети [E]'
+      : 'Лена знает про следы удалённого ИИ — найди её';
+  }
+  if (!objectiveDone(quest, 'find_server_room')) {
+    return currentSceneId === 'office_day' || currentSceneId === 'guild_mainframe'
+      ? 'Серверная комната в офисе гильдии — найди вход'
+      : 'Серверная гильдии — ищи в офисе или mainframe';
+  }
+  if (!objectiveDone(quest, 'detect_ai_traces')) {
+    return 'Обнаружь следы удалённого ИИ в старых логах';
+  }
+  if (!objectiveDone(quest, 'bypass_firewall')) {
+    return 'Обойди фаервол — «Прорыв» пробьёт защиту';
+  }
+  if (!objectiveDone(quest, 'recover_ai_fragment')) {
+    return 'Восстанови фрагмент сознания удалённого ИИ';
+  }
+  return null;
+}
+
+/** Голоса завода — factory → Zarya-M → poem → protect. */
+export function getVoicesOfFactoryHint(currentSceneId: string): string | null {
+  const quest = findActiveQuest('voices_of_factory');
+  if (!quest) return null;
+  if (!objectiveDone(quest, 'reach_factory')) {
+    return currentSceneId === 'abandoned_factory'
+      ? 'Ты на «Хром-М» — ищи вход в подвал'
+      : 'Заброшенный завод «Хром-М» — Дмитрий знает дорогу';
+  }
+  if (!objectiveDone(quest, 'find_zarya_m')) {
+    return currentSceneId === 'factory_basement' || currentSceneId === 'abandoned_factory'
+      ? 'Квантовый вычислитель «Заря-М» в подвале'
+      : '«Заря-М» — в подвале завода';
+  }
+  if (!objectiveDone(quest, 'read_machine_poem')) {
+    return 'Прочитай стихотворение, написанное машиной — «Прорыв» поможет';
+  }
+  if (!objectiveDone(quest, 'protect_machine')) {
+    return 'Убедись, что гильдия не узнает о «Заре-М»';
+  }
+  return null;
+}
+
+/** Тайны старого кода — living code file → decode → factory → Lena. */
+export function getSecretsOfOldCodeHint(currentSceneId: string): string | null {
+  const quest = findActiveQuest('secrets_of_old_code');
+  if (!quest) return null;
+  if (!objectiveDone(quest, 'find_living_code_file')) {
+    return currentSceneId === 'albert_backroom' || currentSceneId === 'cafe_evening'
+      ? 'Старый терминал в подсобке — файл «живой_код_v0.1.dat»'
+      : 'Живой код 2028 — терминал в подсобке кафе';
+  }
+  if (!objectiveDone(quest, 'decode_poetic_code')) {
+    return 'Расшифруй поэтический код — «Прорыв» или Альберт помогут';
+  }
+  if (!objectiveDone(quest, 'find_more_code_files')) {
+    return currentSceneId === 'abandoned_factory'
+      ? 'Ищи другие файлы «живого кода» на заводе'
+      : 'Другие файлы живого кода — на заброшенном заводе';
+  }
+  if (!objectiveDone(quest, 'share_with_lena')) {
+    return 'Покажи Лене расшифрованный «живой код» [E]';
+  }
+  return null;
+}
+
+/** Банковская Авария — bash → investigate → verify → Zarema. */
+export function getBankingCrashHint(currentSceneId: string): string | null {
+  const quest = findActiveQuest('banking_crash');
+  if (!quest) return null;
+  if (!objectiveDone(quest, 'access_bash_terminal')) {
+    return 'Получи доступ к Bash-терминалу банковской системы';
+  }
+  if (!objectiveDone(quest, 'investigate_crash')) {
+    return 'Исследуй логи через терминал — найди причину сбоя';
+  }
+  if (!objectiveDone(quest, 'verify_recovery')) {
+    return 'Убедись, что banking-daemon снова отвечает';
+  }
+  if (!objectiveDone(quest, 'inform_zarema')) {
+    return currentSceneId === 'home_evening'
+      ? 'Сообщи Зареме о восстановлении системы [E]'
+      : 'Зарема ждёт новости о банке — зайди домой';
+  }
+  return null;
+}

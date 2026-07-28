@@ -17,6 +17,30 @@ vi.mock('@/engine/guidedStory/act1QuestHints', () => ({
   getSolnyshSpineHint: () => 'Солныш в коридоре или в своей комнате — найди её и поговори',
 }));
 
+vi.mock('@/engine/guidedStory/act1SideQuestHints', () => ({
+  getNightShiftMysteryHint: () => 'Ночные серверы гильдии — зайди в офис после заката',
+  getAlbertsLessonHint: () => 'Альберт в «Синей яме» — код и стих одним языком',
+  getCorridorLetterHint: () => 'Конверт без адреса — проверь ящики в коридоре',
+  getZaremaRadioHint: () => 'Зарема слышит голос в статике — зайди домой',
+  getMorningRitualHint: () => 'Утренний обход начинается с комнаты — терминал',
+  getCafeBackroomEchoHint: () => 'Подсобка «Синей ямы» — зайди в кафе',
+  getMorningSyncHint: () => 'Срочная оперативка — подойди к терминалу',
+}));
+
+vi.mock('@/engine/guidedStory/chkTolpaQuestHints', () => ({
+  getTolpaWhisperHint: () => 'В офисе шепчутся о ЧК на Зорге — зайди к коллегам',
+  getTolpaFirstFireHint: () => 'Из парка — тропа на север к костру ЧК, когда стемнеет',
+  getTolpaPortwineOathHint: () => 'Клятва портвейна — Басед у костра ЧК',
+  getTolpaQuantumFireHint: () => 'Смерть читает лекцию у костра ЧК',
+  getTolpaForestGuideHint: () => 'Сталкер патрулирует опушку ЧК',
+  getTolpaGuitarNightHint: () => 'Элис поёт у костра ЧК — иди в лес',
+  getTolpaBondHint: () => 'Заверши ритуалы ЧК — стань членом ТОЛПА',
+  getTolpaPoemFireHint: () => 'Вернись к костру после песни — стих ЧК',
+  getTolpaAct3SanctuaryHint: () => 'После удара по Хранилищу — сходи к Ру в лес',
+  getTolpaAct4ExfiltrationHint: () => 'Перед штурмом — маршрут Сталкера в ЧК',
+  getTolpaAct4ServerHeistHint: () => 'Ру предложил саботаж — дата-центр гильдии',
+}));
+
 vi.mock('@/engine/guidedStory/act23QuestHints', () => ({
   getCafeSafehouseHint: () => 'Иди в кафе «Синяя яма» — бариста может дать явочную',
   getDmitryDefectionHint: () => 'Дмитрий в офисе гильдии — время ограничено, иди туда',
@@ -37,6 +61,10 @@ vi.mock('@/engine/guidedStory/act4QuestHints', () => ({
   getLastPoemHint: () => 'Найди тихое место на краю крыши',
   getBlindSpotHint: () => 'Логи гильдии у Сергея — иди в офис',
   getArchiveOfForgottenHint: () => 'Алина знает пароль архива — ищи её в библиотеке',
+  getDigitalGhostHint: () => 'Лена знает про следы удалённого ИИ — найди её',
+  getVoicesOfFactoryHint: () => 'Заброшенный завод «Хром-М» — Дмитрий знает дорогу',
+  getSecretsOfOldCodeHint: () => 'Живой код 2028 — терминал в подсобке кафе',
+  getBankingCrashHint: () => 'Получи доступ к Bash-терминалу банковской системы',
 }));
 
 vi.mock('@/engine/guidedStory/act5QuestHints', () => ({
@@ -248,6 +276,24 @@ describe('buildQuestJournalContextualHint', () => {
 
   it('prefers epilogue_monument live cue', () => {
     expect(buildQuestJournalContextualHint('epilogue_monument', 'volodka_room')).toContain('Парк');
+  });
+
+  it('prefers act1 side live cues', () => {
+    expect(buildQuestJournalContextualHint('corridor_letter', 'volodka_room')).toContain('коридор');
+    expect(buildQuestJournalContextualHint('night_shift_mystery', 'volodka_room')).toContain('офис');
+    expect(buildQuestJournalContextualHint('alberts_lesson', 'street_night')).toContain('яме');
+  });
+
+  it('prefers CHK Tolpa live cues', () => {
+    expect(buildQuestJournalContextualHint('tolpa_whisper', 'volodka_room')).toContain('ЧК');
+    expect(buildQuestJournalContextualHint('tolpa_first_fire', 'park_day')).toContain('костру');
+  });
+
+  it('prefers act4 side live cues', () => {
+    expect(buildQuestJournalContextualHint('digital_ghost', 'street_night')).toContain('Лена');
+    expect(buildQuestJournalContextualHint('voices_of_factory', 'volodka_room')).toContain('Хром');
+    expect(buildQuestJournalContextualHint('secrets_of_old_code', 'street_night')).toContain('подсобке');
+    expect(buildQuestJournalContextualHint('banking_crash', 'home_evening')).toContain('Bash');
   });
 
   it('combines next objective with travel direction', () => {

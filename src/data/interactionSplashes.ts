@@ -37,7 +37,7 @@ export interface InteractionSplashPreset {
 export const SPLASH_PROP_PUSH_IN: InteractionSplashPreset = {
   id: 'prop_push_in',
   kind: 'prop_push_in',
-  durationMs: 1400,
+  durationMs: 900,
   letterboxStyle: 'thin',
   waypoints: [
     { position: [0.4, 1.6, 2.2], lookAt: [0, 0.75, 0], fov: 52, duration: 0 },
@@ -45,14 +45,14 @@ export const SPLASH_PROP_PUSH_IN: InteractionSplashPreset = {
       position: [0.15, 1.15, 1.25],
       lookAt: [0, 0.65, 0],
       fov: 44,
-      duration: 0.85,
+      duration: 0.5,
       controlPoint: [0.25, 1.35, 1.7],
     },
     {
       position: [0.05, 1.0, 0.95],
       lookAt: [0, 0.6, 0],
       fov: 38,
-      duration: 0.55,
+      duration: 0.4,
       controlPoint: [0.1, 1.05, 1.1],
     },
   ],

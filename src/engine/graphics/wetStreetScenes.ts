@@ -28,6 +28,9 @@ export const INDUSTRIAL_DAMP_SHEEN_SCENE_IDS = [
   'factory_basement',
   'library_basement',
   'chk_campfire_night',
+  'guild_mainframe',
+  'underground_bunker',
+  'albert_backroom',
 ] as const satisfies readonly SceneId[];
 
 export type IndustrialDampSheenSceneId = (typeof INDUSTRIAL_DAMP_SHEEN_SCENE_IDS)[number];
@@ -71,6 +74,15 @@ export function getIndustrialDampFloorSettings(sceneId: SceneId): {
   }
   if (sceneId === 'library_basement') {
     return { roughness: 0.58, metalness: 0.16, oilMetalness: 0.48, oilRoughness: 0.28 };
+  }
+  if (sceneId === 'guild_mainframe') {
+    return { roughness: 0.42, metalness: 0.38, oilMetalness: 0.58, oilRoughness: 0.2 };
+  }
+  if (sceneId === 'underground_bunker') {
+    return { roughness: 0.62, metalness: 0.14, oilMetalness: 0.4, oilRoughness: 0.32 };
+  }
+  if (sceneId === 'albert_backroom') {
+    return { roughness: 0.7, metalness: 0.1, oilMetalness: 0.28, oilRoughness: 0.4 };
   }
   return { roughness: 0.55, metalness: 0.18, oilMetalness: 0.55, oilRoughness: 0.22 };
 }
