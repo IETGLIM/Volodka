@@ -83,7 +83,6 @@ function CesiumPlayerModelInner({ modelScale, currentAnimRef, rotationRef }: Pro
         boundsMin: bounds.min.toArray().map((v: number) => v.toFixed(3)),
         boundsMax: bounds.max.toArray().map((v: number) => v.toFixed(3)),
         modelScale,
-        ready,
       });
     }
 

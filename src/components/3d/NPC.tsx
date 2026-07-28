@@ -1,4 +1,4 @@
-
+/* eslint-disable react-refresh/only-export-components */
 /* ─── Volodka RPG – Single NPC component with LOD, speech bubbles, quest markers,
      head tracking, interaction system integration,
      AAA+ visual differentiation (color, accessories, glow, name labels),

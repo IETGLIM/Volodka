@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 /* ─── Volodka RPG – Enhanced Notification System v2.0 ───
    Система уведомлений с:
    – Киберпанк стилизацией (neon glow, holographic panels)

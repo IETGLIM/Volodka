@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 /* ─── Volodka RPG – Enhanced Action Bar with Cyberpunk Visuals v2.0 ───
    Новая компонента с расширенными визуальными эффектами:
    – Neon buttons с pulse анимацией

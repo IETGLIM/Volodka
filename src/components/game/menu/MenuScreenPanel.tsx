@@ -102,17 +102,20 @@ function MenuScreenPanelInner() {
       }
       menu.handleMenuAction(id);
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- method refs already in deps
     [showNewGameDialog, menu.handleMenuAction],
   );
 
   const handleDialogStartPrologue = useCallback(() => {
     setShowNewGameDialog(false);
     menu.handleNewGame(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- method refs already in deps
   }, [menu.handleNewGame]);
 
   const handleDialogSkipPrologue = useCallback(() => {
     setShowNewGameDialog(false);
     menu.handleNewGame(true);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- method refs already in deps
   }, [menu.handleNewGame]);
 
   const handleDialogClose = useCallback(() => {

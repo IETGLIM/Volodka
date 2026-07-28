@@ -550,7 +550,7 @@ export function QuickTimeEventOverlay({
   difficulty = 'normal',
   targetPresses = 10,
   onSoundTrigger,
-  contextData,
+  contextData: _contextData,
 }: QuickTimeEventOverlayProps) {
   /* Hooks */
   const [state, setState] = useState<QTEState>({
@@ -592,7 +592,7 @@ export function QuickTimeEventOverlay({
     setShowResult(true);
     playSound(SOUNDS.success);
     onSuccess?.('success');
-  }, [onSuccess, playSound, contextData]);
+  }, [onSuccess, playSound]);
 
   /**
    * Обработчик неудачи / Handle failure result
@@ -602,7 +602,7 @@ export function QuickTimeEventOverlay({
     setShowResult(true);
     playSound(SOUNDS.failure);
     onFailure?.(reason);
-  }, [onFailure, playSound, contextData]);
+  }, [onFailure, playSound]);
 
   /**
    * Обработка ввода от пользователя / Process user input
@@ -740,7 +740,7 @@ export function QuickTimeEventOverlay({
         timerRef.current = null;
       }
     };
-  }, [isActive, eventType, adjustedDuration, handleFailure, playSound, showResult]);
+  }, [isActive, eventType, adjustedDuration, handleFailure, playSound, showResult, keyBindings]);
 
   /**
    * Глобальный обработчик клавиатуры / Global keyboard handler

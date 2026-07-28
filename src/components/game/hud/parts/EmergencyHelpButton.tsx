@@ -138,7 +138,8 @@ export function EmergencyHelpButton() {
         currentAct: 1,
       };
     }
-  }, [open, currentSceneId]); // recompute when popover opens
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- recompute when popover opens
+  }, [open, currentSceneId]);
 
   return (
     <div

@@ -44,6 +44,7 @@ export function NPCProximityIndicator() {
   const rafRef = useRef<number>(0);
   const [nearest, setNearest] = useState<NearbyNPC | null>(null);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- npcStates is a proxy trigger for store reactivity
   const relations = useMemo(() => selectNpcRelations(), [npcStates]);
 
   // Calculate nearest NPC in current scene
