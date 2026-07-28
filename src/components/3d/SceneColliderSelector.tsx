@@ -75,6 +75,9 @@ const StreetWinterVisual = lazySceneVisual('street_winter', () => import('./Stre
 const ChkForestZorgeVisual = lazySceneVisual('chk_forest_zorge', () => import('./ChkForestZorgeVisual'), 'ChkForestZorgeVisual');
 const FactoryBasementVisual = lazySceneVisual('factory_basement', () => import('./FactoryBasementVisual'), 'FactoryBasementVisual');
 const RiverPierVisual = lazySceneVisual('river_pier', () => import('./RiverPierVisual'), 'RiverPierVisual');
+const GuildMainframeVisual = lazySceneVisual('guild_mainframe', () => import('./GuildMainframeVisual'), 'GuildMainframeVisual');
+const CitySquareVisual = lazySceneVisual('city_square', () => import('./CitySquareVisual'), 'CitySquareVisual');
+const UndergroundBunkerVisual = lazySceneVisual('underground_bunker', () => import('./UndergroundBunkerVisual'), 'UndergroundBunkerVisual');
 
 interface SceneColliderSelectorProps {
   livePlayerPositionRef: MutableRefObject<THREE.Vector3>;
@@ -305,6 +308,12 @@ function VisualScene({ sceneId, livePlayerPositionRef }: VisualSceneProps) {
       return <FactoryBasementVisual livePlayerPositionRef={livePlayerPositionRef} />;
     case 'river_pier':
       return <RiverPierVisual livePlayerPositionRef={livePlayerPositionRef} />;
+    case 'guild_mainframe':
+      return <GuildMainframeVisual livePlayerPositionRef={livePlayerPositionRef} />;
+    case 'city_square':
+      return <CitySquareVisual livePlayerPositionRef={livePlayerPositionRef} />;
+    case 'underground_bunker':
+      return <UndergroundBunkerVisual livePlayerPositionRef={livePlayerPositionRef} />;
     default:
       return <FallbackVisual sceneId={sceneId} />;
   }

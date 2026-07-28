@@ -8,11 +8,14 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { eventBus } from '@/engine/EventBus';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import {
+  INTERACTION_IN_RANGE_FRACTION,
+  NPC_INTERACTION_QUERY_RANGE,
+} from '@/engine/player/playerConstants';
 
 const RING_MAX_SIZE = 56;
 const RING_MIN_SIZE = 32;
 const DECAY_MS = 800;
-const DEFAULT_MAX_RANGE = 2.5;
 
 export function InteractionDistanceRing() {
   const [visible, setVisible] = useState(false);
@@ -27,9 +30,8 @@ export function InteractionDistanceRing() {
       setVisible(true);
       const maxRange = payload.maxRange && payload.maxRange > 0
         ? payload.maxRange
-        : DEFAULT_MAX_RANGE;
+        : NPC_INTERACTION_QUERY_RANGE;
       const distance = typeof payload.distance === 'number' ? payload.distance : 0;
-      // 0 = far approach edge, 1 = on top of target
       const next = 1 - Math.min(1, Math.max(0, distance / maxRange));
       setProximity01(next);
 
@@ -58,10 +60,23 @@ export function InteractionDistanceRing() {
     };
   }, []);
 
-  if (reducedMotion || !visible) return null;
+  if (!visible) return null;
+
+  // Reduced motion: keep a static in-range tick instead of hiding entirely.
+  if (reducedMotion) {
+    const inRange = proximity01 >= INTERACTION_IN_RANGE_FRACTION;
+    if (!inRange) return null;
+    return (
+      <div
+        className="absolute top-1/2 left-1/2 pointer-events-none size-9 rounded-full border border-cyan-400/45"
+        aria-hidden="true"
+        style={{ marginLeft: -18, marginTop: -18 }}
+      />
+    );
+  }
 
   const ringSize = RING_MIN_SIZE + (RING_MAX_SIZE - RING_MIN_SIZE) * proximity01;
-  const inRange = proximity01 >= 0.55;
+  const inRange = proximity01 >= INTERACTION_IN_RANGE_FRACTION;
   const borderAlpha = 0.25 + proximity01 * 0.4;
   const glowAlpha = 0.1 + proximity01 * 0.25;
 
@@ -76,7 +91,6 @@ export function InteractionDistanceRing() {
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
           aria-hidden="true"
         >
-          {/* Outer proximity ring — shrinks as the player aligns */}
           <motion.div
             animate={{
               width: ringSize,
@@ -90,7 +104,6 @@ export function InteractionDistanceRing() {
             className={`rounded-full border ${inRange ? 'distance-ring-in-range' : ''}`}
             style={{ borderWidth: inRange ? 1.5 : 1, marginLeft: -ringSize / 2, marginTop: -ringSize / 2 }}
           />
-          {/* Tick marks at cardinal points when within interact range */}
           {inRange && (
             <motion.div
               initial={{ opacity: 0 }}
@@ -120,7 +133,6 @@ export function InteractionDistanceRing() {
               ))}
             </motion.div>
           )}
-          {/* In-range fill glow */}
           {inRange && (
             <motion.div
               initial={{ opacity: 0 }}

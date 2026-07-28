@@ -8,7 +8,7 @@ import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { eventBus } from '@/engine/EventBus';
-import { Sword, Shield, Sparkles, LogOut, ChevronDown, Heart, Zap, Flame } from 'lucide-react';
+import { Sword, Shield, Sparkles, LogOut, ChevronDown, Heart, Zap } from 'lucide-react';
 import { useUIStore } from '@/store/stores/uiStore';
 import { useCutsceneStore } from '@/store/stores/cutsceneStore';
 import { getGamePhase } from '@/shared/gamePhase';
@@ -37,116 +37,9 @@ import { BuffDebuffBar } from '@/components/game/combatUi/CombatStatusBadges';
 import { CombatIntroSplash } from '@/components/game/combatUi/CombatIntroSplash';
 import { CombatLogLine } from '@/components/game/combatUi/CombatLogLine';
 import { PoemPowersSubmenu } from '@/components/game/combatUi/CombatPoemPowers';
-
-/* ── Animated Health Bar with gradient & glow ── */
-const AnimatedHPBar = React.memo(function AnimatedHPBar({ current, max, label, isPlayer, ariaLabel }: {
-  current: number; max: number; label: string; isPlayer: boolean; ariaLabel?: string;
-}) {
-  const pct = max > 0 ? Math.max(0, (current / max) * 100) : 0;
-  const color = isPlayer
-    ? pct > 60 ? 'from-emerald-500 to-cyan-400'
-      : pct > 30 ? 'from-amber-500 to-yellow-400'
-      : 'from-red-600 to-red-400'
-    : pct > 60 ? 'from-red-600 to-rose-400'
-      : pct > 30 ? 'from-orange-600 to-amber-400'
-      : 'from-yellow-500 to-emerald-400';
-  const glowColor = isPlayer
-    ? pct > 60 ? 'shadow-emerald-500/50' : pct > 30 ? 'shadow-amber-500/50' : 'shadow-red-500/60'
-    : pct > 60 ? 'shadow-red-500/50' : pct > 30 ? 'shadow-orange-500/50' : 'shadow-yellow-500/50';
-
-  return (
-    <div className={`flex flex-col ${isPlayer ? 'items-start' : 'items-end'} w-full`}>
-      <div className="text-[10px] text-slate-400 mb-0.5 font-mono uppercase tracking-wider">{label}</div>
-      <div
-        role="progressbar"
-        aria-valuenow={Math.max(0, current)}
-        aria-valuemin={0}
-        aria-valuemax={max}
-        aria-label={ariaLabel || (isPlayer ? 'Здоровье игрока' : 'Здоровье противника')}
-        className="w-full h-3.5 bg-black/80 border border-slate-700/40 rounded-sm overflow-hidden relative"
-      >
-        <motion.div
-          className={`h-full bg-gradient-to-r ${color} ${glowColor} shadow-sm rounded-sm`}
-          style={{ boxShadow: `0 0 8px ${isPlayer ? (pct > 60 ? '#10b981' : pct > 30 ? '#f59e0b' : '#ef4444') : (pct > 60 ? '#ef4444' : pct > 30 ? '#f97316' : '#eab308')}40` }}
-          initial={false}
-          animate={{ width: `${pct}%` }}
-          transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
-        />
-        <div className="absolute inset-0 flex items-center justify-center text-[9px] text-white font-mono font-bold drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
-          {Math.max(0, current)} / {max}
-        </div>
-      </div>
-    </div>
-  );
-});
-
-/* ── Floating Damage Number with physics ── */
-const DamageNumber = React.memo(function DamageNumber({ damage, type, isCritical }: { damage: number; type: string; isCritical?: boolean }) {
-  const isHeal = type === 'player_power' && damage > 0;
-  const isPoemCombo = type === 'poem_combo';
-  const color = type === 'enemy_attack' || type === 'enemy_special'
-    ? 'text-red-400'
-    : isPoemCombo
-      ? 'text-fuchsia-400'
-      : isHeal
-        ? 'text-emerald-400'
-        : isCritical
-          ? 'text-yellow-300'
-          : 'text-cyan-300';
-  const size = isCritical ? 'text-4xl' : isPoemCombo ? 'text-3xl' : 'text-2xl';
-
-  return (
-    <motion.div
-      initial={{ opacity: 1, y: 0, scale: isCritical ? 1.4 : 0.8 }}
-      animate={{ opacity: 0, y: -60, scale: isCritical ? 1.8 : 1.1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: isCritical ? 1.8 : 1.2, ease: [0.2, 0, 0.3, 1] }}
-      className={`absolute ${size} font-bold ${color} pointer-events-none select-none ${isCritical ? 'glitch-skew' : ''}`}
-      style={{ zIndex: UI_LAYERS.COMBAT, textShadow: `0 0 ${isCritical ? 16 : 8}px currentColor, 0 2px 4px rgba(0,0,0,0.8)` }}
-    >
-      {isHeal ? '+' : '-'}{damage}
-      {isCritical && <span className="text-lg ml-1">💥</span>}
-    </motion.div>
-  );
-});
-
-/* ── Combo Counter ── */
-function ComboCounter({ count }: { count: number }) {
-  if (count < 1) return null;
-  const multiplier = count >= 3 ? 2.0 : count >= 2 ? 1.5 : 1.2;
-  const intensity = Math.min(count, 5);
-  const colors = ['text-cyan-400', 'text-cyan-300', 'text-amber-400', 'text-orange-400', 'text-red-400', 'text-fuchsia-400'];
-  const color = colors[Math.min(count, colors.length - 1)];
-
-  return (
-    <motion.div
-      key={count}
-      initial={{ scale: 1.6, opacity: 0.8 }}
-      animate={{ scale: 1, opacity: 1 }}
-      className="flex flex-col items-center"
-    >
-      <div className={`text-3xl font-black ${color} font-mono`}
-        style={{
-          textShadow: `0 0 ${8 + intensity * 4}px currentColor, 0 0 ${16 + intensity * 8}px ${count >= 3 ? '#f97316' : '#06b6d4'}40` }}
-      >
-        <Flame className="inline size-5 mr-0.5" />
-        x{count}
-      </div>
-      <div className="text-[9px] text-slate-400 font-mono">×{multiplier} УРОН</div>
-      {count >= 3 && (
-        <motion.div
-          className="text-[8px] text-orange-400 font-mono mt-0.5"
-          animate={{ opacity: [1, 0.4, 1] }}
-          transition={{ duration: 0.5, repeat: Infinity }}
-        >
-          🔥 МАКСИМАЛЬНЫЙ КОМБО!
-        </motion.div>
-      )}
-    </motion.div>
-  );
-}
-
-/* ── Enhanced Status Effect Badge with Tooltip — see combatUi/CombatStatusBadges ── */
+import { AnimatedHPBar } from '@/components/game/combatUi/CombatHpBars';
+import { ComboCounter, CombatScreenFlash, DamageNumber } from '@/components/game/combatUi/CombatDamageFx';
+import { TerminalButton } from '@/components/game/combatUi/CombatActionChrome';
 
 /* ── Thought Combat Effects — amber/gold badges near player stats ── */
 function ThoughtCombatBadges() {
@@ -202,7 +95,6 @@ function EnemyPortrait({ emoji, hp, maxHp }: { emoji: string; hp: number; maxHp:
       >
         {emoji}
       </motion.div>
-      {/* Glow ring */}
       <div
         className="absolute inset-0 rounded-full opacity-20"
         style={{
@@ -213,51 +105,6 @@ function EnemyPortrait({ emoji, hp, maxHp }: { emoji: string; hp: number; maxHp:
     </div>
   );
 }
-
-/* ── Gamepad button hint badge ── */
-function GamepadHint({ label }: { label: string }) {
-  return (
-    <span className="ml-1 text-[8px] leading-none bg-white/10 rounded px-1 py-px font-mono opacity-60 select-none">
-      {label}
-    </span>
-  );
-}
-
-/* ── Terminal-style Action Button ── */
-function TerminalButton({
-  onClick, disabled, accentColor, children, gamepadHint }: {
-  onClick: () => void; disabled: boolean; accentColor: string; children: React.ReactNode; gamepadHint?: string;
-}) {
-  const colorMap: Record<string, { border: string; bg: string; text: string; hoverBg: string; glow: string }> = {
-    cyan: { border: 'border-cyan-700/60', bg: 'bg-cyan-950/50', text: 'text-cyan-400', hoverBg: 'hover:bg-cyan-900/40', glow: '#06b6d4' },
-    emerald: { border: 'border-emerald-700/60', bg: 'bg-emerald-950/50', text: 'text-emerald-400', hoverBg: 'hover:bg-emerald-900/40', glow: '#10b981' },
-    amber: { border: 'border-amber-700/60', bg: 'bg-amber-950/50', text: 'text-amber-400', hoverBg: 'hover:bg-amber-900/40', glow: '#f59e0b' },
-    slate: { border: 'border-slate-600/60', bg: 'bg-slate-900/50', text: 'text-slate-300', hoverBg: 'hover:bg-slate-800/40', glow: '#94a3b8' },
-    rose: { border: 'border-rose-700/60', bg: 'bg-rose-950/50', text: 'text-rose-400', hoverBg: 'hover:bg-rose-900/40', glow: '#f43f5e' } };
-  const c = colorMap[accentColor] || colorMap.slate;
-
-  return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      className={`relative flex-1 py-2.5 rounded border ${c.border} ${c.bg} ${c.text} ${c.hoverBg} disabled:opacity-30 disabled:cursor-not-allowed transition-all text-xs font-mono font-semibold flex items-center justify-center gap-1.5 overflow-hidden group combat-btn-enhanced`}
-      style={!disabled ? { boxShadow: `0 0 8px ${c.glow}20, inset 0 0 8px ${c.glow}10` } : {}}
-    >
-      {/* Scanline overlay on hover */}
-      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
-        style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,255,0.03) 2px, rgba(0,255,255,0.03) 4px)' }}
-      />
-      {/* Gamepad hint */}
-      {gamepadHint && <GamepadHint label={gamepadHint} />}
-      {/* Corner brackets */}
-      <span className="absolute top-0 left-0 text-[8px] leading-none opacity-30">┌</span>
-      <span className="absolute bottom-0 right-0 text-[8px] leading-none opacity-30">┘</span>
-      {children}
-    </button>
-  );
-}
-
-/* ── Victory / Defeat / Poem powers / Log / Intro — see combatUi/* ── */
 
 /* ── Main Component ── */
 export function CombatUI() {
@@ -518,19 +365,7 @@ export function CombatUI() {
           )}
         </AnimatePresence>
 
-        {/* Screen flash overlay */}
-        <AnimatePresence mode="wait">
-          {flashColor && (
-            <motion.div
-              initial={{ opacity: 1 }}
-              animate={{ opacity: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="fixed inset-0 pointer-events-none"
-              style={{ backgroundColor: flashColor, zIndex: UI_LAYERS.COMBAT + 1 }}
-            />
-          )}
-        </AnimatePresence>
+        <CombatScreenFlash flashColor={flashColor} />
 
         {/* ── Top Section: Enemy Info ── */}
         <motion.div

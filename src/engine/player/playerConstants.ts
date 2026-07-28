@@ -66,3 +66,7 @@ export const MAX_KCC_RECREATE_ATTEMPTS_PER_INCIDENT = 5;
 export const MAX_DIRECT_DISPLACEMENT = 0.3;
 /** Distance (m) at which NPC proximity prompt becomes visible. */
 export const NPC_INTERACTION_RANGE = 3.0;
+/** Query range used by interaction targeting + HUD ring fallback (slightly wider than prompt). */
+export const NPC_INTERACTION_QUERY_RANGE = 3.5;
+/** Fraction of maxRange under which the target is considered “in interact range” for scoring/UI. */
+export const INTERACTION_IN_RANGE_FRACTION = 0.55;

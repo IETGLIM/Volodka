@@ -203,7 +203,7 @@ export const EXTENSION_SCENE_DEFINITIONS = {
     walls: [],
     obstacles: [],
     ceilings: [],
-    visualComponent: 'StreetVisual',
+    visualComponent: 'CitySquareVisual',
     lights: [
       { position: [0, 4, 0], intensity: 2.2, color: '#aaccff', distance: 26 },
       { position: [-8, 3.2, -6], intensity: 1.4, color: '#6688ff', distance: 16 },
@@ -247,7 +247,7 @@ export const EXTENSION_SCENE_DEFINITIONS = {
       { type: 'cuboidObstacle', size: [1.2, 0.8, 0.6], position: [3, 0.8, -2], footstepMaterial: 'metal' },
     ],
     ceilings: [{ type: 'cuboid', size: [9, 0.1, 8], position: [0, 3.2, 0] }],
-    visualComponent: 'FactoryBasementVisual',
+    visualComponent: 'UndergroundBunkerVisual',
     lights: [
       { position: [0, 2.5, -3], intensity: 2.0, color: '#44ff88', distance: 13 },
       { position: [-4, 2.5, 2], intensity: 0.85, color: '#ff5544', distance: 9 },
@@ -290,7 +290,7 @@ export const EXTENSION_SCENE_DEFINITIONS = {
       { type: 'cuboidObstacle', size: [0.5, 2.0, 1.0], position: [3, 2, -1], footstepMaterial: 'metal' },
     ],
     ceilings: [{ type: 'cuboid', size: [8, 0.1, 7], position: [0, 3.2, 0] }],
-    visualComponent: 'OfficeDayVisual',
+    visualComponent: 'GuildMainframeVisual',
     lights: [
       { position: [0, 2.8, -3], intensity: 2.6, color: '#00ffaa', distance: 13 },
       { position: [-3, 2.2, 1], intensity: 1.1, color: '#4488ff', distance: 10 },

@@ -351,6 +351,7 @@ export function applyGfxPressureToPreset(
       return {
         ...preset,
         postProcessing: false,
+        shadows: false,
         effectsScale: preset.effectsScale * 0.5,
         antialias: preset.id === 'low' ? false : preset.antialias,
       };
@@ -401,6 +402,13 @@ export function formatQualityPresetDetailRu(
       : `${preset.labelRu}: ${preset.npcRenderMode} NPC · ${preset.environmentRenderMode} окружение · DPR ${preset.dpr[0]}–${preset.dpr[1]}`;
 
   const hints: string[] = [];
+  if (!preset.shadows) {
+    hints.push('Только contact-blob у ног');
+  } else if (preset.visualLite) {
+    hints.push('Карты теней + мягкий blob');
+  } else {
+    hints.push('Полные карты теней');
+  }
   const glbCapable =
     allowsGlbAssetRendering(preset.npcRenderMode)
     || allowsGlbAssetRendering(preset.environmentRenderMode);

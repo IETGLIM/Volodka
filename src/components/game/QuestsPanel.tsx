@@ -35,7 +35,10 @@ import { useQuests, useCurrentSceneId } from '@/store/selectors';
 import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
-import { buildQuestJournalContextualHint } from '@/hooks/questJournalHint';
+import {
+  buildQuestJournalContextualHint,
+  buildQuestJournalRouteCta,
+} from '@/hooks/questJournalHint';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
@@ -507,12 +510,23 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                                 {/* Hint section */}
                                 {(() => {
                                   const contextual = buildQuestJournalContextualHint(qs.questId, currentSceneId);
+                                  const routeCta = buildQuestJournalRouteCta(qs.questId, currentSceneId);
                                   const collapsedHint = contextual ?? def.hint;
-                                  if (!collapsedHint || isExpanded) return null;
+                                  if ((!collapsedHint && !routeCta) || isExpanded) return null;
                                   return (
-                                  <div className="flex items-start gap-1.5 mt-2">
-                                    <Lightbulb className="size-3 text-amber-400/50 shrink-0 mt-0.5" />
-                                    <p className="text-[10px] text-amber-400/50 italic leading-relaxed">{collapsedHint}</p>
+                                  <div className="mt-2 space-y-1">
+                                    {collapsedHint && (
+                                      <div className="flex items-start gap-1.5">
+                                        <Lightbulb className="size-3 text-amber-400/50 shrink-0 mt-0.5" />
+                                        <p className="text-[10px] text-amber-400/50 italic leading-relaxed">{collapsedHint}</p>
+                                      </div>
+                                    )}
+                                    {routeCta && (
+                                      <div className="flex items-center gap-1.5 pl-4">
+                                        <MapPin className="size-3 text-cyan-400/60 shrink-0" />
+                                        <p className="text-[10px] text-cyan-300/65 font-mono tracking-wide">{routeCta}</p>
+                                      </div>
+                                    )}
                                   </div>
                                   );
                                 })()}
@@ -549,7 +563,8 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                                   {/* Contextual next-step + static quest hint */}
                                   {(() => {
                                     const contextual = buildQuestJournalContextualHint(qs.questId, currentSceneId);
-                                    if (!contextual && !def.hint) return null;
+                                    const routeCta = buildQuestJournalRouteCta(qs.questId, currentSceneId);
+                                    if (!contextual && !def.hint && !routeCta) return null;
                                     return (
                                     <div className="mb-3 p-2.5 rounded-lg bg-amber-950/20 border border-amber-800/25 space-y-2">
                                       {contextual && (
@@ -559,6 +574,12 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                                             Сейчас
                                           </div>
                                           <p className="text-[11px] text-cyan-200/70 leading-relaxed">{contextual}</p>
+                                        </div>
+                                      )}
+                                      {routeCta && (
+                                        <div className="text-[11px] text-cyan-300/80 font-mono flex items-center gap-1.5">
+                                          <MapPin className="size-3 text-cyan-400" />
+                                          {routeCta}
                                         </div>
                                       )}
                                       {def.hint && (

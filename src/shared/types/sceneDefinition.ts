@@ -43,7 +43,10 @@ export type VisualComponentName =
   | 'SolnyshRoomVisual'
   | 'ChkForestVisual'
   | 'FactoryBasementVisual'
-  | 'RiverPierVisual';
+  | 'RiverPierVisual'
+  | 'GuildMainframeVisual'
+  | 'CitySquareVisual'
+  | 'UndergroundBunkerVisual';
 
 // ─── Doorway ───
 
