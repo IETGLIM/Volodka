@@ -669,21 +669,6 @@ export const ACT1_STRUCTURE: Record<string, StoryNodeStructure> = {
             "flagValue": true
           }
         ]
-      },
-      {
-        "text": "",
-        "next": "cafe_barista_victoria_whisper",
-        "effects": [
-          {
-            "type": "triggerQuest",
-            "questId": "cafe_street_whisper"
-          },
-          {
-            "type": "addSkill",
-            "skill": "intuition",
-            "value": 1
-          }
-        ]
       }
     ]
   },
@@ -882,22 +867,17 @@ export const ACT1_STRUCTURE: Record<string, StoryNodeStructure> = {
         "type": "setFlag",
         "flag": "met_maria",
         "flagValue": true
-      },
-      {
-        "type": "setFlag",
-        "flag": "spotted_maria",
-        "flagValue": true
-      },
-      {
-        "type": "triggerQuest",
-        "questId": "maria_connection"
       }
     ],
     "choices": [
       {
         "text": "",
-        "next": "maria_chip_trust",
-        "goldenPath": true,
+        "next": "cafe_enter",
+        "goldenPath": true
+      },
+      {
+        "text": "",
+        "next": "maria_introduction",
         "effects": [
           {
             "type": "addItem",
@@ -915,13 +895,6 @@ export const ACT1_STRUCTURE: Record<string, StoryNodeStructure> = {
           },
           {
             "type": "npcChange",
-            "npcId": "maria",
-            "npcChange": {
-              "relation": 10
-            }
-          },
-          {
-            "type": "npcChange",
             "npcId": "office_colleague",
             "npcChange": {
               "relation": -5
@@ -930,22 +903,6 @@ export const ACT1_STRUCTURE: Record<string, StoryNodeStructure> = {
           {
             "type": "triggerQuest",
             "questId": "maria_connection"
-          }
-        ]
-      },
-      {
-        "text": "",
-        "next": "cafe_enter",
-        "effects": [
-          {
-            "type": "addStat",
-            "stat": "stress",
-            "value": 2
-          },
-          {
-            "type": "setFlag",
-            "flag": "deferred_maria_chip",
-            "flagValue": true
           }
         ]
       },
