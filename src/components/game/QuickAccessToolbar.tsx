@@ -40,39 +40,21 @@ function StatBar({
         className="size-3.5 shrink-0"
         style={{ color }}
       />
-      <div className="relative w-16 h-2.5 rounded-full overflow-hidden"
+      <div className="relative w-16 h-1.5 overflow-hidden"
         style={{
-          background: 'rgba(15, 23, 42, 0.6)',
-          border: `1px solid ${color}33`,
-          boxShadow: warningPulse ? undefined : `0 0 4px ${glowColor}40`,
+          background: 'rgba(214, 211, 209, 0.1)',
+          boxShadow: warningPulse ? `0 0 6px ${glowColor}50` : undefined,
         }}
       >
-        {/* Fill */}
         <motion.div
-          className="absolute inset-y-0 left-0 rounded-full"
+          className="absolute inset-y-0 left-0"
           style={{
-            background: `linear-gradient(90deg, ${color}cc, ${color})`,
-            boxShadow: `0 0 6px ${glowColor}60, inset 0 0 2px ${glowColor}30`,
+            background: `linear-gradient(90deg, transparent, ${color})`,
           }}
           initial={false}
           animate={{ width: `${pct}%` }}
           transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
         />
-        {/* Shimmer sweep */}
-        <div
-          className="absolute inset-y-0 left-0 rounded-full overflow-hidden"
-          style={{ width: `${pct}%` }}
-        >
-          <motion.div
-            className="absolute inset-0"
-            style={{
-              background: `linear-gradient(90deg, transparent 0%, ${color}25 50%, transparent 100%)`,
-              backgroundSize: '200% 100%',
-            }}
-            animate={{ backgroundPosition: ['200% 0', '-200% 0'] }}
-            transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
-          />
-        </div>
       </div>
       <span
         className="text-[10px] font-mono w-6 text-right tabular-nums"
@@ -85,36 +67,27 @@ function StatBar({
   );
 }
 
-/** Karma ring indicator with breathing glow */
+/** Karma ring — filmic stone accent, no neon breathe soup */
 function KarmaRing({ value, max }: { value: number; max: number }) {
   const pct = value / max;
   const radius = 12;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference * (1 - pct);
 
-  // Karma color: red (low) → amber (mid) → cyan (high)
   const karmaColor =
-    value >= 70 ? 'var(--cyber-cyan)' : value >= 40 ? '#fbbf24' : '#fb7185';
-  const karmaGlow =
-    value >= 70
-      ? 'rgb(var(--cyber-cyan-rgb) / 0.3)'
-      : value >= 40
-        ? 'rgba(251, 191, 36, 0.3)'
-        : 'rgba(251, 113, 133, 0.3)';
+    value >= 70 ? 'rgba(196,181,160,0.9)' : value >= 40 ? 'rgba(252,211,165,0.85)' : 'rgba(252,165,165,0.85)';
 
   return (
     <div className="relative flex items-center justify-center" title={`Карма: ${value}`}>
       <svg width={30} height={30} viewBox="0 0 30 30" className="rotate-[-90deg]">
-        {/* Background ring */}
         <circle
           cx="15"
           cy="15"
           r={radius}
           fill="none"
-          stroke="rgba(100, 116, 139, 0.15)"
+          stroke="rgba(168, 162, 158, 0.18)"
           strokeWidth={2.5}
         />
-        {/* Progress ring */}
         <motion.circle
           cx="15"
           cy="15"
@@ -127,27 +100,8 @@ function KarmaRing({ value, max }: { value: number; max: number }) {
           initial={false}
           animate={{ strokeDashoffset: offset }}
           transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
-          style={{
-            filter: `drop-shadow(0 0 3px ${karmaGlow})`,
-          }}
         />
       </svg>
-      {/* Breathing glow overlay */}
-      <motion.div
-        className="absolute inset-0 rounded-full"
-        style={{
-          background: `radial-gradient(circle, ${karmaGlow} 0%, transparent 70%)`,
-        }}
-        animate={{
-          opacity: [0.3, 0.6, 0.3],
-          scale: [1, 1.08, 1],
-        }}
-        transition={{
-          duration: 4,
-          repeat: Infinity,
-          ease: 'easeInOut',
-        }}
-      />
       <span
         className="absolute text-[8px] font-mono font-bold"
         style={{ color: karmaColor }}
@@ -165,28 +119,25 @@ function LevelBadge({ level, xp, xpToNext }: { level: number; xp: number; xpToNe
   return (
     <div className="flex items-center gap-1.5" title={`Уровень ${level} | XP: ${xp}/${xpToNext}`}>
       <div
-        className="flex items-center justify-center w-6 h-6 rounded border text-[9px] font-mono font-bold"
+        className="flex items-center justify-center w-6 h-6 rounded-sm border text-[9px] font-mono font-bold"
         style={{
-          borderColor: 'rgba(251, 191, 36, 0.3)',
-          background: 'rgba(251, 191, 36, 0.08)',
-          color: '#fbbf24',
-          boxShadow: '0 0 6px rgba(251, 191, 36, 0.15)',
+          borderColor: 'var(--hud-filmic-border)',
+          background: 'rgba(255,255,255,0.03)',
+          color: 'var(--hud-filmic-accent)',
         }}
       >
         {level}
       </div>
       <div
-        className="w-10 h-1.5 rounded-full overflow-hidden"
+        className="w-10 h-1 overflow-hidden"
         style={{
-          background: 'rgba(15, 23, 42, 0.6)',
-          border: '1px solid rgba(251, 191, 36, 0.15)',
+          background: 'rgba(214, 211, 209, 0.1)',
         }}
       >
         <motion.div
-          className="h-full rounded-full"
+          className="h-full"
           style={{
-            background: 'linear-gradient(90deg, #fbbf24cc, #fbbf24)',
-            boxShadow: '0 0 4px rgba(251, 191, 36, 0.3)',
+            background: 'linear-gradient(90deg, transparent, var(--hud-filmic-accent))',
           }}
           initial={false}
           animate={{ width: `${pct}%` }}
@@ -208,20 +159,16 @@ function ExplorationCompact() {
 
   return (
     <div
-      className="flex items-center gap-1.5 px-1.5 py-0.5 rounded cursor-default"
+      className="flex items-center gap-1.5 px-1.5 py-0.5 cursor-default"
       title={`Исследовано: ${discoveredCount}/${totalScenes} локаций (${pct}%)`}
-      style={{
-        background: 'rgba(0, 255, 100, 0.06)',
-        border: '1px solid rgba(0, 255, 100, 0.12)',
-      }}
     >
       <MapPin
         className="size-3"
-        style={{ color: 'rgba(0, 255, 100, 0.6)', filter: 'drop-shadow(0 0 2px rgba(0,255,100,0.3))' }}
+        style={{ color: 'var(--hud-filmic-ink-muted)' }}
       />
       <span
-        className="text-[9px] font-mono tabular-nums"
-        style={{ color: 'rgba(0, 255, 100, 0.65)' }}
+        className="hud-filmic-kicker tabular-nums"
+        style={{ letterSpacing: '0.08em', fontSize: 9 }}
       >
         {discoveredCount}/{totalScenes}
       </span>
