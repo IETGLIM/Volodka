@@ -35,6 +35,21 @@ const matTerminal = getSharedStandardMaterial({
   emissiveIntensity: 1.35,
 });
 const matPipe = getSharedStandardMaterial({ color: '#2a3230', metalness: 0.55, roughness: 0.4 });
+const matCrate = getSharedStandardMaterial({ color: '#2e2418', roughness: 0.88 });
+const matDust = getSharedStandardMaterial({
+  color: '#3a3020',
+  transparent: true,
+  opacity: 0.18,
+  depthWrite: false,
+});
+const matAmberSpill = getSharedStandardMaterial({
+  color: '#1a1000',
+  emissive: '#ffaa44',
+  emissiveIntensity: 0.35,
+  transparent: true,
+  opacity: 0.4,
+  depthWrite: false,
+});
 
 export function LibraryBasementVisual(_props: LibraryBasementVisualProps) {
   const rootRef = useRef<THREE.Group>(null);
@@ -128,6 +143,27 @@ export function LibraryBasementVisual(_props: LibraryBasementVisualProps) {
 
       <mesh position={[-1.5, 2.55, 0]} geometry={getSharedBoxGeometry(4, 0.08, 0.08)} material={matPipe} />
       <mesh position={[2.2, 2.55, -1]} geometry={getSharedBoxGeometry(0.08, 0.08, 3)} material={matPipe} />
+      <mesh position={[0, 2.55, 2.4]} geometry={getSharedBoxGeometry(6, 0.06, 0.06)} material={matPipe} />
+
+      {/* Archive crates + amber monitor spill */}
+      {[
+        [-1.8, -3.4],
+        [1.6, -3.5],
+        [0.2, 3.2],
+      ].map(([x, z], i) => (
+        <mesh
+          key={`crate-${i}`}
+          position={[x, 0.28, z]}
+          castShadow
+          geometry={getSharedBoxGeometry(0.7, 0.55, 0.55)}
+          material={matCrate}
+        />
+      ))}
+      <mesh position={[0, 0.02, -2.6]} rotation-x={-Math.PI / 2} geometry={getSharedCircleGeometry(1.4, 18)} material={matAmberSpill} />
+      <mesh position={[0, 1.4, 0]} rotation-x={-Math.PI / 2} geometry={getSharedCircleGeometry(3.2, 20)} material={matDust} />
+
+      <pointLight position={[0, 2.2, -2.8]} intensity={0.85} color="#ffcc66" distance={9} />
+      <pointLight position={[-2.5, 1.8, 1]} intensity={0.35} color="#668888" distance={7} />
     </group>
   );
 }

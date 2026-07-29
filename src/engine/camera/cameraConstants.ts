@@ -24,21 +24,21 @@ export const ZOOM_SPRING_SNAP = 0.74;
 export const LOOK_HEIGHT = 1.32;
 export const WALL_MARGIN = 0.25;
 
-export const AUTO_FOLLOW_SPEED = 3.85;
-export const AUTO_FOLLOW_IDLE_THRESHOLD = 0.26;
-export const AUTO_FOLLOW_MIN_YAW_DELTA = 0.04;
-export const AUTO_FOLLOW_RETURN_SPEED = 1.95;
+export const AUTO_FOLLOW_SPEED = 4.05;
+export const AUTO_FOLLOW_IDLE_THRESHOLD = 0.24;
+export const AUTO_FOLLOW_MIN_YAW_DELTA = 0.035;
+export const AUTO_FOLLOW_RETURN_SPEED = 2.1;
 
 export const NPC_INTERACTION_DISTANCE = 2.0;
 export const DISTANCE_LERP_SPEED = 2.45;
 export const DIALOGUE_EXIT_LERP_SPEED = 4.85;
 export const BREATHING_BOB_AMPLITUDE = 0.005;
 export const BREATHING_BOB_SPEED = Math.PI;
-export const LOOK_AHEAD_STRENGTH = 0.36;
-export const LOOK_AHEAD_LERP_SPEED = 4.85;
-export const INDOOR_FOV = 53;
-export const OUTDOOR_FOV = 72;
-export const FOV_TRANSITION_SPEED = 3.05;
+export const LOOK_AHEAD_STRENGTH = 0.38;
+export const LOOK_AHEAD_LERP_SPEED = 5.15;
+export const INDOOR_FOV = 52;
+export const OUTDOOR_FOV = 73;
+export const FOV_TRANSITION_SPEED = 3.25;
 
 export const CINEMATIC_FREEZE_TIMEOUT = 2.0;
 
@@ -67,6 +67,7 @@ const INDOOR_SCENES: Set<SceneId> = new Set([
   'zarema_albert_room',
   'albert_backroom',
   'underground_bunker',
+  'solnysh_room',
 ]);
 
 export function getSceneDefaultDistance(sceneId: SceneId): number {
