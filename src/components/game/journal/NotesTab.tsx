@@ -10,6 +10,8 @@ import {
 } from '@/engine/journal/journalNotesPresentation';
 import { journalTelemetry } from '@/engine/journal/journalTelemetry';
 import { DualPaneList } from '@/components/game/journal/DualPaneList';
+import { ConsequenceRecapPanel } from '@/components/game/journal/ConsequenceRecapPanel';
+import { CyberSkeleton } from '@/components/game/CyberLoadingScreen';
 import { formatJournalNoteTime } from '@/components/game/journal/useJournalListNavigation';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useVisitedNodeTimestamps, useVisitedNodes } from '@/store/selectors';
@@ -129,60 +131,81 @@ export function NotesTab({ searchQuery }: NotesTabProps) {
     );
   }
 
+  if (!isNarrativeGameDataLoaded()) {
+    return (
+      <div className="flex flex-col gap-3 p-4" aria-busy="true" aria-label="Загрузка записей">
+        {Array.from({ length: 6 }, (_, i) => (
+          <div key={i} className="space-y-2 rounded-lg border border-cyan-900/20 bg-slate-950/40 p-3">
+            <CyberSkeleton width="w-3/4" height="h-3" variant="text" />
+            <CyberSkeleton width="w-1/2" height="h-2" variant="text" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   if (discoveredNotes.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-full py-20">
-        <ScrollText className="size-12 text-slate-700 mb-4" aria-hidden />
-        <p className="text-slate-500 text-sm mb-1">Нет записей</p>
-        <p className="text-slate-600 text-xs">Исследуйте мир, чтобы записи появились здесь</p>
+      <div className="flex h-full min-h-0 flex-col">
+        <ConsequenceRecapPanel />
+        <div className="flex flex-1 flex-col items-center justify-center py-20">
+          <ScrollText className="size-12 text-slate-700 mb-4" aria-hidden />
+          <p className="text-slate-500 text-sm mb-1">Нет записей</p>
+          <p className="text-slate-600 text-xs">Исследуйте мир, чтобы записи появились здесь</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <DualPaneList
-      items={filteredNotes}
-      selectedId={selectedNodeId}
-      onSelect={handleSelect}
-      getItemId={(note) => note.id}
-      listLabel="Записи журнала"
-      renderListItem={renderListItem}
-      emptyList={<p className="text-center text-slate-600 text-xs py-4">Ничего не найдено</p>}
-      emptyDetail={(
-        <div className="flex items-center justify-center h-full">
-          <div className="text-center">
-            <FileText className="size-10 text-slate-700 mx-auto mb-3" aria-hidden />
-            <p className="text-slate-500 text-sm">Выберите запись</p>
-          </div>
-        </div>
-      )}
-      renderDetail={(note) => (
-        <ScrollArea className="h-full">
-          <div className="p-5">
-            <div className="flex items-center gap-2 mb-1">
-              <FileText className="size-4 text-cyan-400/60" aria-hidden />
-              <h3 className="text-sm font-semibold text-cyan-200 break-words">{note.id.replace(/_/g, ' ')}</h3>
-            </div>
-            {SCENE_CONFIG[note.sceneId as SceneId] && (
-              <p className="text-xs text-slate-500 mb-4">
-                <MapPin className="size-3 inline mr-0.5" aria-hidden />
-                {SCENE_CONFIG[note.sceneId as SceneId].name}
-              </p>
-            )}
-            <div className="h-px bg-gradient-to-r from-cyan-800/30 to-transparent mb-4" />
-            <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-line break-words">
-              {note.text}
-            </p>
-            {note.speaker && (
-              <div className="mt-4 px-3 py-2 rounded-lg bg-slate-900/30 border border-cyan-900/20">
-                <p className="text-xs text-cyan-400/60">
-                  Говорил: <span className="text-slate-300">{note.speaker}</span>
-                </p>
+    <div className="flex h-full min-h-0 flex-col">
+      <ConsequenceRecapPanel />
+      <div className="min-h-0 flex-1">
+        <DualPaneList
+          items={filteredNotes}
+          selectedId={selectedNodeId}
+          onSelect={handleSelect}
+          getItemId={(note) => note.id}
+          listLabel="Записи журнала"
+          renderListItem={renderListItem}
+          emptyList={<p className="text-center text-slate-600 text-xs py-4">Ничего не найдено</p>}
+          emptyDetail={(
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center">
+                <FileText className="size-10 text-slate-700 mx-auto mb-3" aria-hidden />
+                <p className="text-slate-500 text-sm">Выберите запись</p>
               </div>
-            )}
-          </div>
-        </ScrollArea>
-      )}
-    />
+            </div>
+          )}
+          renderDetail={(note) => (
+            <ScrollArea className="h-full">
+              <div className="p-5">
+                <div className="flex items-center gap-2 mb-1">
+                  <FileText className="size-4 text-cyan-400/60" aria-hidden />
+                  <h3 className="text-sm font-semibold text-cyan-200 break-words">{note.id.replace(/_/g, ' ')}</h3>
+                </div>
+                {SCENE_CONFIG[note.sceneId as SceneId] && (
+                  <p className="text-xs text-slate-500 mb-4">
+                    <MapPin className="size-3 inline mr-0.5" aria-hidden />
+                    {SCENE_CONFIG[note.sceneId as SceneId].name}
+                  </p>
+                )}
+                <div className="h-px bg-gradient-to-r from-cyan-800/30 to-transparent mb-4" />
+                <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-line break-words">
+                  {note.text}
+                </p>
+                {note.speaker && (
+                  <div className="mt-4 px-3 py-2 rounded-lg bg-slate-900/30 border border-cyan-900/20">
+                    <p className="text-xs text-cyan-400/60">
+                      Говорил: <span className="text-slate-300">{note.speaker}</span>
+                    </p>
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
+          )}
+        />
+      </div>
+    </div>
   );
 }

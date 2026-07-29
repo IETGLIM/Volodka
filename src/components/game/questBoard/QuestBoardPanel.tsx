@@ -2,12 +2,14 @@ import { useId } from 'react';
 import { AlertCircle, ScrollText } from 'lucide-react';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { PanelWrapper } from '@/components/game/PanelWrapper';
+import { CyberSkeleton } from '@/components/game/CyberLoadingScreen';
 import { QuestBoardMissionCard } from '@/components/game/questBoard/QuestBoardMissionCard';
 import { QuestBoardTabs } from '@/components/game/questBoard/QuestBoardTabs';
 import { useQuestBoardController } from '@/components/game/questBoard/useQuestBoardController';
 import '@/components/game/questBoard/quest-board.css';
 import { QUEST_BOARD_LABELS, QUEST_BOARD_TAB_IDS } from '@/engine/questBoard/questBoardConstants';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { useGameDataPreload } from '@/hooks/useGameDataPreload';
 import { eventBus } from '@/engine/EventBus';
 
 export type QuestBoardPanelProps = {
@@ -19,6 +21,7 @@ function QuestBoardPanelInner({ open, onClose }: QuestBoardPanelProps) {
   const reducedMotion = useEffectiveReducedMotion();
   const board = useQuestBoardController();
   const gridPatternId = useId();
+  const gameDataReady = useGameDataPreload();
 
   const staticClass = reducedMotion ? ' quest-board-dialog--static' : '';
   const badgeFull = board.slotsFull;
@@ -187,13 +190,23 @@ function QuestBoardPanelInner({ open, onClose }: QuestBoardPanelProps) {
               </section>
             )}
 
-            {board.currentMissions.length === 0 && (
+            {!gameDataReady ? (
+              <div className="space-y-3" aria-busy="true" aria-label="Загрузка миссий">
+                {Array.from({ length: 3 }, (_, i) => (
+                  <div key={i} className="space-y-2 rounded-lg border border-emerald-900/20 bg-slate-950/40 p-3">
+                    <CyberSkeleton width="w-2/3" height="h-3" variant="text" />
+                    <CyberSkeleton width="w-full" height="h-2" variant="text" />
+                    <CyberSkeleton width="w-1/3" height="h-2" variant="text" />
+                  </div>
+                ))}
+              </div>
+            ) : board.currentMissions.length === 0 ? (
               <div className="text-center py-12" role="status">
                 <AlertCircle className="size-8 text-slate-700 mx-auto mb-3" aria-hidden="true" />
                 <p className="text-sm text-slate-500 font-mono">{QUEST_BOARD_LABELS.emptyTitle}</p>
                 <p className="text-[10px] text-slate-600 mt-1">{QUEST_BOARD_LABELS.emptyHint}</p>
               </div>
-            )}
+            ) : null}
           </div>
         </div>
       </div>

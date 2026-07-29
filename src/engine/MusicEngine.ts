@@ -20,6 +20,7 @@ import {
   subscribeMusicIntensityLayer,
   type MusicIntensityLayer,
 } from './audio/musicIntensityLayers';
+import { getGameSnapshot } from '@/engine/GameActionDispatcher';
 
 /* ──────────────────── Helpers ──────────────────── */
 
@@ -148,6 +149,32 @@ interface SceneMusicConfig {
   tempo: number;
   /** Master gain for the entire music layer (0.03-0.06 recommended) */
   masterGain: number;
+}
+
+/** Per-act harmonic/tempo identity layered on top of scene beds. */
+const ACT_MUSIC_TINT: Record<number, { rootMidiDelta: number; tempoMult: number }> = {
+  1: { rootMidiDelta: 0, tempoMult: 1 },
+  2: { rootMidiDelta: 2, tempoMult: 1.02 },
+  3: { rootMidiDelta: -1, tempoMult: 0.96 },
+  4: { rootMidiDelta: 3, tempoMult: 1.05 },
+  5: { rootMidiDelta: -2, tempoMult: 0.92 },
+  6: { rootMidiDelta: 4, tempoMult: 1.08 },
+  7: { rootMidiDelta: 1, tempoMult: 0.9 },
+};
+
+function applyActMusicTint(config: SceneMusicConfig): SceneMusicConfig {
+  let act = 1;
+  try {
+    act = getGameSnapshot().playerState.progression.currentAct ?? 1;
+  } catch {
+    /* snapshot may be unavailable during early boot */
+  }
+  const tint = ACT_MUSIC_TINT[act] ?? ACT_MUSIC_TINT[1];
+  return {
+    ...config,
+    rootMidi: config.rootMidi + tint.rootMidiDelta,
+    tempo: Math.max(30, Math.round(config.tempo * tint.tempoMult)),
+  };
 }
 
 /**
@@ -756,7 +783,7 @@ class MusicEngine {
     setTimeout(() => {
       // Guard: if another scene change happened since we started, abort
       if (this.disposed || this.sceneGeneration !== myGeneration) return;
-      this.startMusicForScene(sceneId, config);
+      this.startMusicForScene(sceneId, applyActMusicTint(config));
     }, startDelay);
   }
 

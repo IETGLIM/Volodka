@@ -18,12 +18,14 @@ interface ParsedChoice {
   text: string;
   kind: 'story' | 'dialogue';
   timestamp: number;
+  act: number;
 }
 
 interface ParsedMoralChoice {
   nodeId: string;
   text: string;
   timestamp: number;
+  act: number;
 }
 
 function parseChoiceLog(raw: string[]): ParsedChoice[] {
@@ -32,7 +34,13 @@ function parseChoiceLog(raw: string[]): ParsedChoice[] {
     try {
       const obj = JSON.parse(entry);
       if (obj.n && obj.t) {
-        parsed.push({ nodeId: obj.n, text: obj.t, kind: obj.k ?? 'story', timestamp: obj.ts ?? 0 });
+        parsed.push({
+          nodeId: obj.n,
+          text: obj.t,
+          kind: obj.k ?? 'story',
+          timestamp: obj.ts ?? 0,
+          act: typeof obj.a === 'number' ? obj.a : 0,
+        });
       }
     } catch { /* skip malformed entries */ }
   }
@@ -45,7 +53,12 @@ function parseMoralChoices(raw: string[]): ParsedMoralChoice[] {
     try {
       const obj = JSON.parse(entry);
       if (obj.n && obj.t) {
-        parsed.push({ nodeId: obj.n, text: obj.t, timestamp: obj.ts ?? 0 });
+        parsed.push({
+          nodeId: obj.n,
+          text: obj.t,
+          timestamp: obj.ts ?? 0,
+          act: typeof obj.a === 'number' ? obj.a : 0,
+        });
       }
     } catch { /* skip */ }
   }
@@ -78,7 +91,7 @@ export function getMoralHistory(): ParsedMoralChoice[] {
  */
 export function generateActRecap(actNumber: number): string {
   const snap = getGameSnapshot();
-  const _choices = parseChoiceLog(snap.playerState.choiceLog);
+  const choices = parseChoiceLog(snap.playerState.choiceLog);
   const moralChoices = parseMoralChoices(snap.playerState.moralChoices);
   const karma = snap.playerState.karma;
 
@@ -91,13 +104,21 @@ export function generateActRecap(actNumber: number): string {
     lines.push('Начало пути.');
   }
 
-  // Moral choices summary (capped at 3 most recent)
-  if (moralChoices.length > 0) {
-    const recent = moralChoices.slice(-3).reverse();
-    for (const mc of recent) {
-      const text = mc.text.length > 60 ? mc.text.slice(0, 57) + '...' : mc.text;
-      lines.push(`• ${text}`);
-    }
+  // Prefer choices stamped with the previous act; fall back to recent moral choices.
+  const priorAct = Math.max(1, actNumber - 1);
+  const actMoral = moralChoices.filter((mc) => mc.act === priorAct || mc.act === actNumber);
+  const recent =
+    actMoral.length > 0
+      ? actMoral.slice(-3).reverse()
+      : moralChoices.slice(-3).reverse();
+
+  for (const mc of recent) {
+    const text = mc.text.length > 60 ? mc.text.slice(0, 57) + '...' : mc.text;
+    lines.push(`• ${text}`);
+  }
+
+  if (recent.length === 0 && choices.length > 0) {
+    lines.push(`Записано решений: ${choices.length}.`);
   }
 
   // Karma assessment
