@@ -15,6 +15,7 @@ import { fireInteractPress } from '@/engine/input/fireInteractPress';
 import { isNarrativeMovementLocked } from '@/shared/exploreHubNodes';
 import { isEncounterPresentationActive } from '@/engine/combat/encounterPresentation';
 import { isGameplayOverlayLocomotionLocked } from '@/engine/player/playerLocomotionGate';
+import { getGamePhase, type GamePhase } from '@/shared/gamePhase';
 import type { VirtualControls } from '@/hooks/useGamePhysics';
 import type { PanelType } from '@/components/game/orchestrator/types';
 
@@ -32,7 +33,18 @@ function dispatchKey(code: string, key: string): void {
   );
 }
 
-function shouldBlockMovement(mode: string, panelStackLength: number): boolean {
+/** uiSlice.mode is always `'exploration'` — phase must come from getGamePhase(). */
+function readGamepadPhase(): GamePhase {
+  const s = useGameStore.getState();
+  return getGamePhase({
+    mainMenuOpen: s.mainMenuOpen,
+    introActive: s.introActive,
+    combatActive: s.combatActive,
+    activeCutsceneId: s.activeCutsceneId,
+  });
+}
+
+function shouldBlockMovement(mode: GamePhase, panelStackLength: number): boolean {
   const { showStoryOverlay, currentNodeId } = useGameStore.getState();
   if (mode !== 'exploration' && mode !== 'combat') return true;
   if (isEncounterPresentationActive()) return true;
@@ -43,13 +55,13 @@ function shouldBlockMovement(mode: string, panelStackLength: number): boolean {
   return false;
 }
 
-function shouldBlockOrbit(mode: string): boolean {
+function shouldBlockOrbit(mode: GamePhase): boolean {
   const { showStoryOverlay, currentNodeId } = useGameStore.getState();
   if (isNarrativeMovementLocked(showStoryOverlay, currentNodeId) || mode === 'cutscene') return true;
   return getInteractionState() === InteractionState.Dialogue;
 }
 
-function shouldBlockZoom(mode: string): boolean {
+function shouldBlockZoom(mode: GamePhase): boolean {
   const { showStoryOverlay, currentNodeId } = useGameStore.getState();
   if (mode !== 'exploration' || isNarrativeMovementLocked(showStoryOverlay, currentNodeId)) return true;
   return getInteractionState() === InteractionState.Dialogue;
@@ -82,7 +94,7 @@ export function useGamepadInput({
 
     const tick = () => {
       const frame = pollGamepad();
-      const { mode } = useGameStore.getState();
+      const mode = readGamepadPhase();
       const panelCount = panelStackLengthRef.current;
       const blockMove = shouldBlockMovement(mode, panelCount);
       const blockOrbit = shouldBlockOrbit(mode);

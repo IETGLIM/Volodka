@@ -22,6 +22,7 @@ import {
   LMB_CLICK_DRAG_THRESHOLD_PX,
 } from '@/engine/interaction/interactiveTriggerProximity';
 import { isCanvasAreaTarget } from '@/engine/input/domUtils';
+import { getGamePhase } from '@/shared/gamePhase';
 
 export interface UseEKeyInteractionOptions {
   livePlayerPositionRef: MutableRefObject<THREE.Vector3>;
@@ -169,7 +170,15 @@ export function useEKeyInteraction({
       if (!isInteractionLocked()) return;
 
       try {
-        if (getGameStore().mode !== 'exploration') return;
+        // uiSlice.mode is always 'exploration' — use computed phase flags.
+        const s = getGameStore();
+        const phase = getGamePhase({
+          mainMenuOpen: s.mainMenuOpen,
+          introActive: s.introActive,
+          combatActive: s.combatActive,
+          activeCutsceneId: s.activeCutsceneId,
+        });
+        if (phase !== 'exploration') return;
       } catch {
         /* store not ready */
         return;
