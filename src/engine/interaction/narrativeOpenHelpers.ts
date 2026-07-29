@@ -133,8 +133,9 @@ export async function tryOpenStory(nodeId: string): Promise<boolean> {
 
 /** Zone/object linked dialogue — includes scene transition for visited nodes. */
 export async function openLinkedDialogue(nodeId: string): Promise<boolean> {
-  const snapshot = getGameSnapshot();
-  const resolvedId = resolveDialogueEntryNodeId(nodeId, snapshot.playerState.visitedNodes);
+  const snapshotBefore = getGameSnapshot();
+  const sceneBefore = snapshotBefore.exploration.currentSceneId;
+  const resolvedId = resolveDialogueEntryNodeId(nodeId, snapshotBefore.playerState.visitedNodes);
 
   try {
     await ensureDialogueNode(resolvedId);
@@ -148,9 +149,13 @@ export async function openLinkedDialogue(nodeId: string): Promise<boolean> {
     return false;
   }
 
+  const snapshot = getGameSnapshot();
+  const sceneChanged = snapshot.exploration.currentSceneId !== sceneBefore;
   const alreadyVisited = hasVisitedNode(snapshot.playerState.visitedNodes, resolvedId);
   if (alreadyVisited && dlgNode.sceneId) {
-    requestSceneTransition(dlgNode.sceneId as SceneId);
+    if (!sceneChanged) {
+      requestSceneTransition(dlgNode.sceneId as SceneId);
+    }
     return true;
   }
 

@@ -100,9 +100,6 @@ export function CinematicTimelineRunner() {
     // act1.ts first_reading objectives.
     setCinematicPresentationMode('third_person');
     eventBus.emit('intro:wakeup_complete', {});
-    if (getActiveCinematicTimelineId() === 'intro_wakeup') {
-      completeCinematicTimeline('intro_wakeup');
-    }
 
     // CRITICAL: Emit scene:loaded for the current scene. During "New Game",
     // there is no scene transition (we stay in volodka_room), so scene:loaded
@@ -175,6 +172,9 @@ export function CinematicTimelineRunner() {
       openDiegeticNarrative('start', 'story');
     };
 
+    // Arm prologue listener BEFORE completeCinematicTimeline — otherwise the
+    // overlay_end emit is dropped and the player waits the full 9s fallback
+    // (meanwhile free to examine props and miss the start beat).
     if (!store.isCutsceneTriggered('act1_prologue')) {
       store.setCurrentNodeId('start');
       prologueUnsubRef.current = eventBus.on('cutscene:overlay_end', () => {
@@ -185,6 +185,10 @@ export function CinematicTimelineRunner() {
       }, 9_000);
     } else {
       openPrologueStory();
+    }
+
+    if (getActiveCinematicTimelineId() === 'intro_wakeup') {
+      completeCinematicTimeline('intro_wakeup');
     }
   };
 
@@ -397,6 +401,13 @@ export function CinematicTimelineRunner() {
       if (prologueUnsubRef.current) {
         prologueUnsubRef.current();
         prologueUnsubRef.current = null;
+      }
+      // Orphaned timeline hold: remount (Strict Mode / canvas churn) must not
+      // leave activeTimelineId set with an empty stateRef — start would no-op.
+      const orphanId = timelineIdRef.current;
+      if (orphanId && getActiveCinematicTimelineId() === orphanId) {
+        stopCinematicTimeline(orphanId);
+        cleanupRunnerState();
       }
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps -- stable camera ref

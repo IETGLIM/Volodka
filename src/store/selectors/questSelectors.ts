@@ -84,7 +84,7 @@ export function getQuestMarker(
   questId: string,
 ): { sceneId: SceneId; position: [number, number, number] } | null {
   const definition = getQuestDefinitions().find((d) => d.id === questId);
-  if (!definition?.linkedStoryNodeId) return null;
+  if (!definition) return null;
 
   const quests = selectQuests();
   const questState = quests.find((q) => q.questId === questId);

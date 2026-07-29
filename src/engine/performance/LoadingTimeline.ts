@@ -29,6 +29,18 @@ let gameDataReadyFlag = false;
 /** Reset session flags so a new game / engine revive can re-measure boot path. */
 export function resetLoadingTimelineForSession(): void {
   gameDataReadyFlag = false;
+  for (const name of Object.values(LOADING_MARKS)) {
+    try {
+      performance.clearMarks(name);
+    } catch {
+      /* Performance API may be unavailable in some test envs */
+    }
+  }
+  try {
+    performance.clearMeasures('volodka:first-scene-playable-duration');
+  } catch {
+    /* ignore */
+  }
 }
 
 function navStart(): number {

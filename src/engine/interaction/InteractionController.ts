@@ -331,20 +331,27 @@ export class InteractionController {
         return;
       }
 
-      if (zone.effects && zone.effects.length > 0) {
-        this.applyInteractionEffects(zone.effects);
-      }
-
-      if (zone.isOneTime) {
-        dispatchGameAction({ type: 'exploration/toggleInteractiveObject', objectId: triggerZoneId });
-      }
-
-      if (zone.linkedQuestId) {
-        dispatchGameAction({ type: 'quest/activate', questId: zone.linkedQuestId });
-      }
-
       const hasLinkedContent = !!(zone.linkedDialogueNodeId || zone.linkedStoryNodeId || zone.linkedMinigame);
       const { ui } = this.deps;
+      const deferProgress =
+        !!zone.examineData && !openStoryDirectly && hasLinkedContent;
+
+      // When examine opens with linked story/dialogue, defer effects + isOneTime
+      // until Continue — Escape must not burn the zone (e.g. terminal_poem_read
+      // hiding the monitor before terminal_boot_poem runs).
+      if (!deferProgress) {
+        if (zone.effects && zone.effects.length > 0) {
+          this.applyInteractionEffects(zone.effects);
+        }
+
+        if (zone.isOneTime) {
+          dispatchGameAction({ type: 'exploration/toggleInteractiveObject', objectId: triggerZoneId });
+        }
+
+        if (zone.linkedQuestId) {
+          dispatchGameAction({ type: 'quest/activate', questId: zone.linkedQuestId });
+        }
+      }
 
       if (zone.examineData && !openStoryDirectly) {
         ui.setExamineData(zone.examineData);
@@ -465,6 +472,21 @@ export class InteractionController {
     ui.setExamineData(null);
     ui.setExamineHasLinkedContent(false);
     this.deps.setPendingTriggerZone(null);
+
+    // Apply deferred progress (effects / one-time / quest) now that the player
+    // committed via Continue — Escape leaves the zone reusable.
+    if (zoneSnapshot.effects && zoneSnapshot.effects.length > 0) {
+      this.applyInteractionEffects(zoneSnapshot.effects);
+    }
+    if (zoneSnapshot.isOneTime) {
+      dispatchGameAction({
+        type: 'exploration/toggleInteractiveObject',
+        objectId: zoneSnapshot.id,
+      });
+    }
+    if (zoneSnapshot.linkedQuestId) {
+      dispatchGameAction({ type: 'quest/activate', questId: zoneSnapshot.linkedQuestId });
+    }
 
     // Let ExaminePanel exit animation finish before opening narrative overlay (avoids dual FocusTrap / React #185).
     // Consume E-key for longer than the schedule delay to prevent re-interaction

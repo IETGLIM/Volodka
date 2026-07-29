@@ -178,7 +178,15 @@ export function completeCinematicTimeline(timelineId: string, skipped = false): 
 
 export function skipCinematicTimeline(): void {
   if (!activeTimelineId) return;
-  eventBus.emit('cinematic:timeline_skip', { timelineId: activeTimelineId });
+  const id = activeTimelineId;
+  eventBus.emit('cinematic:timeline_skip', { timelineId: id });
+  // If the runner has no state yet (unmounted / pre-start), force-complete so
+  // Escape doesn't claim success while the timeline stays stuck.
+  queueMicrotask(() => {
+    if (activeTimelineId === id) {
+      completeCinematicTimeline(id, true);
+    }
+  });
 }
 
 /** Reset module state (unit tests). */

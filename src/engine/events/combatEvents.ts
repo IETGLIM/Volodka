@@ -50,7 +50,7 @@ export interface CombatEvents {
   'combat:bullet_time': {
     duration: number;
     intensity: number;
-    reason: 'critical_hit' | 'affinity_super' | 'combo_hit' | 'player_stagger';
+    reason: 'critical_hit' | 'affinity_super' | 'combo_hit' | 'player_stagger' | 'poem_power';
   };
   /** Phase 11: Combat consumable item used — for UI animation feedback. */
   'combat:item_used': { itemId: string; name: string; emoji: string };

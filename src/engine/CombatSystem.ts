@@ -653,8 +653,30 @@ export function playerUsePoemPower(poemId: string): CombatState | null {
   eventBus.emit('poem:power_used', { poemId, powerName: ability.name });
   notifyNewCombatLogEntries(logLenBefore);
 
-  // Check if enemy died from the ability
   const afterUse = combat.getState();
+  if (afterUse) {
+    const dealt = Math.max(0, cs.enemy.hp - afterUse.enemy.hp);
+    const healed = Math.max(0, afterUse.playerHp - cs.playerHp);
+    if (dealt > 0) {
+      eventBus.emit('camera:combat_impact', {
+        intensity: dealt >= 25 ? 0.65 : 0.4,
+      });
+      if (dealt >= 20) {
+        eventBus.emit('combat:bullet_time', {
+          duration: 0.2,
+          intensity: 0.35,
+          reason: 'poem_power',
+        });
+      }
+    } else if (healed > 0) {
+      eventBus.emit('combat:heal', { amount: healed, source: poemId });
+      eventBus.emit('camera:combat_impact', { intensity: 0.2 });
+    } else {
+      eventBus.emit('camera:combat_impact', { intensity: 0.25 });
+    }
+  }
+
+  // Check if enemy died from the ability
   if (afterUse && afterUse.enemy.hp <= 0) {
     return handleVictory();
   }

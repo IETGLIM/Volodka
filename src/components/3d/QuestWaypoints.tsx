@@ -51,13 +51,29 @@ export function QuestWaypoints({ livePlayerPositionRef }: QuestWaypointsProps) {
     return null;
   }, [quests, currentSceneId]);
 
+  // Only show exit arrows that lead toward an active quest objective scene
+  const questTargetScenes = useMemo(() => {
+    const scenes = new Set<SceneId>();
+    for (const aq of quests) {
+      if (aq.status !== 'active') continue;
+      const marker = getQuestMarker(aq.questId);
+      if (marker) scenes.add(marker.sceneId);
+    }
+    return scenes;
+  }, [quests]);
+
+  const questExits = useMemo(() => {
+    if (sameSceneMarker) return [];
+    return exits.filter((exit) => questTargetScenes.has(exit.targetScene));
+  }, [exits, questTargetScenes, sameSceneMarker]);
+
   // Don't render anything if no active quests or no exits and no same-scene marker
   if (!hasActiveQuests) return null;
 
   return (
     <group key={`quest-waypoints:${currentSceneId}`}>
-      {/* Exit arrows — pointing toward quest target exits */}
-      {exits.map((exit, i) => (
+      {/* Exit arrows — only exits toward active quest target scenes */}
+      {questExits.map((exit, i) => (
         <QuestArrow
           key={`quest-arrow-${exit.targetScene}-${i}`}
           position={exit.position}

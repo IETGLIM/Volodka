@@ -26,7 +26,9 @@ import { isSceneTransitionInProgress } from '@/engine/core/sceneTransitionGuard'
 import {
   isCinematicTimelineActive,
   skipCinematicTimeline,
+  startCinematicTimeline,
 } from '@/engine/cinematic/cinematicTimelineOrchestrator';
+import { INTRO_WAKE_TIMELINE } from '@/engine/cinematic/introWakeTimeline';
 
 /** Watches story node changes and drives cutscene overlays + camera events. */
 export function useCutsceneController() {
@@ -41,15 +43,24 @@ export function useCutsceneController() {
   const skipActiveCutscene = useCallback((): boolean => {
     const store = useGameStore.getState();
 
-    // If a unified cinematic timeline is driving this cutscene (e.g.
-    // `intro_wakeup`), defer to the timeline orchestrator's skip path.
-    // Otherwise we would clear the store state here, call
-    // e.stopImmediatePropagation() in the keyboard manager, and BLOCK the
-    // IntroWakeOverlay's ESC listener (which emits `intro:wakeup_skip`) —
-    // leaving the timeline running for ~29s with no overlay and no player
-    // control. The orchestrator emits `cinematic:timeline_skip` → runner's
-    // onSkip → completeCinematicTimeline(id, true) → onSkippedComplete →
-    // finishIntroWake, which performs full camera/avatar/state cleanup.
+    // Intro wake owns the unified timeline. Escape before the runner starts
+    // (canvas:first-frame + poll gap) used to clear activeCutsceneId without
+    // finishIntroWake — no woke_up, no quests, no prologue. Force skipMotion
+    // start so finishIntroWake still runs.
+    if (store.activeCutsceneId === 'intro_wakeup') {
+      if (isCinematicTimelineActive()) {
+        skipCinematicTimeline();
+      } else {
+        startCinematicTimeline({
+          def: INTRO_WAKE_TIMELINE,
+          options: { skipMotion: true },
+        });
+      }
+      return true;
+    }
+
+    // If a unified cinematic timeline is driving this cutscene, defer to the
+    // timeline orchestrator's skip path.
     if (isCinematicTimelineActive()) {
       skipCinematicTimeline();
       return true;

@@ -367,27 +367,27 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
       {/* ── Ceiling — matrix monitor HDR wash ── */}
       <mesh position={[0, H, 0]} rotation-x={Math.PI / 2} geometry={geo_pln_1} material={mat_ceiling} />
 
-      {/* ── Walls — Poly Haven plaster (canvas fallback while loading) ── */}
+      {/* ── Walls — inset slightly to avoid coplanar z-fight at corners/door ── */}
       <Suspense
         fallback={
           <>
-            <mesh position={[0, H / 2, -D / 2]} geometry={geo_pln_2} material={mat_wall} />
-            <mesh position={[0, H / 2, D / 2]} rotation-y={Math.PI} geometry={geo_pln_2} material={mat_wall} />
-            <mesh position={[-W / 2, H / 2, 0]} rotation-y={Math.PI / 2} geometry={geo_pln_3} material={mat_wall} />
-            <mesh position={[W / 2, H / 2, 0]} rotation-y={-Math.PI / 2} geometry={geo_pln_3} material={mat_wall} />
+            <mesh position={[0, H / 2, -D / 2 + 0.01]} geometry={geo_pln_2} material={mat_wall} />
+            <mesh position={[0, H / 2, D / 2 - 0.01]} rotation-y={Math.PI} geometry={geo_pln_2} material={mat_wall} />
+            <mesh position={[-W / 2 + 0.01, H / 2, 0]} rotation-y={Math.PI / 2} geometry={geo_pln_3} material={mat_wall} />
+            <mesh position={[W / 2 - 0.01, H / 2, 0]} rotation-y={-Math.PI / 2} geometry={geo_pln_3} material={mat_wall} />
           </>
         }
       >
-        <mesh position={[0, H / 2, -D / 2]} geometry={geo_pln_2}>
+        <mesh position={[0, H / 2, -D / 2 + 0.01]} geometry={geo_pln_2}>
           <PolyHavenStandardMaterial materialId="plastered_wall" repeatScale={0.7} color="#9a94a8" roughness={0.92} />
         </mesh>
-        <mesh position={[0, H / 2, D / 2]} rotation-y={Math.PI} geometry={geo_pln_2}>
+        <mesh position={[0, H / 2, D / 2 - 0.01]} rotation-y={Math.PI} geometry={geo_pln_2}>
           <PolyHavenStandardMaterial materialId="plastered_wall" repeatScale={0.7} color="#9a94a8" roughness={0.92} />
         </mesh>
-        <mesh position={[-W / 2, H / 2, 0]} rotation-y={Math.PI / 2} geometry={geo_pln_3}>
+        <mesh position={[-W / 2 + 0.01, H / 2, 0]} rotation-y={Math.PI / 2} geometry={geo_pln_3}>
           <PolyHavenStandardMaterial materialId="plastered_wall" repeatScale={0.75} color="#9a94a8" roughness={0.92} />
         </mesh>
-        <mesh position={[W / 2, H / 2, 0]} rotation-y={-Math.PI / 2} geometry={geo_pln_3}>
+        <mesh position={[W / 2 - 0.01, H / 2, 0]} rotation-y={-Math.PI / 2} geometry={geo_pln_3}>
           <PolyHavenStandardMaterial materialId="plastered_wall" repeatScale={0.75} color="#9a94a8" roughness={0.92} />
         </mesh>
       </Suspense>
@@ -423,14 +423,14 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
       {/* ═══════════════════════════════════════════════ */}
 
       {/* ── Room Door (front wall, swings open) ── */}
-      {/* Door frame */}
-      <mesh position={[0, 1.1, D / 2 - 0.01]} rotation-y={Math.PI} geometry={geo_box_4} material={mat_1} />
+      {/* Door frame — pushed further off the inset wall to avoid z-fight */}
+      <mesh position={[0, 1.1, D / 2 - 0.04]} rotation-y={Math.PI} geometry={geo_box_4} material={mat_1} />
       {/* Door frame border */}
-      <mesh position={[-0.5, 1.1, D / 2 - 0.015]} rotation-y={Math.PI} geometry={geo_box_5} material={mat_2} />
-      <mesh position={[0.5, 1.1, D / 2 - 0.015]} rotation-y={Math.PI} geometry={geo_box_5} material={mat_2} />
-      <mesh position={[0, 2.2, D / 2 - 0.015]} rotation-y={Math.PI} geometry={geo_box_6} material={mat_2} />
+      <mesh position={[-0.5, 1.1, D / 2 - 0.045]} rotation-y={Math.PI} geometry={geo_box_5} material={mat_2} />
+      <mesh position={[0.5, 1.1, D / 2 - 0.045]} rotation-y={Math.PI} geometry={geo_box_5} material={mat_2} />
+      <mesh position={[0, 2.2, D / 2 - 0.045]} rotation-y={Math.PI} geometry={geo_box_6} material={mat_2} />
       {/* Animated door panel — pivot on left edge */}
-      <group position={[-0.45, 0, D / 2 - 0.03]} ref={roomDoorRef}>
+      <group position={[-0.45, 0, D / 2 - 0.06]} ref={roomDoorRef}>
         <mesh position={[0.45, 1.1, 0]} geometry={geo_box_7} material={mat_3} />
         {/* Door handle */}
         <mesh position={[0.78, 1.05, 0.03]} rotation={[0, 0, Math.PI / 2]} geometry={geo_cyl_8} material={mat_4} />

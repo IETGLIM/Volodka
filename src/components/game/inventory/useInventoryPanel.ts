@@ -202,7 +202,7 @@ export function useInventoryPanel(
 
         if (def.linkedContent) {
           if (def.linkedContent.type === 'poem') {
-            getGameStore().getState().collectPoem(def.linkedContent.id);
+            getGameStore().collectPoem(def.linkedContent.id);
             onOpenPoetryBook?.();
           } else if (def.linkedContent.type === 'lore') {
             addLoreEntry({
