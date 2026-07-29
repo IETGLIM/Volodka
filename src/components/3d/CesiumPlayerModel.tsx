@@ -32,13 +32,13 @@ if (typeof window !== 'undefined') {
 }
 
 /**
- * Yaw offset for the avatar model. The Volodka hero GLB faces +Z by default
- * (front of the model points toward +Z), but facingYFromDirection assumes
- * humanoid forward = -Z (Three.js convention). Without this offset the avatar
- * walks backwards — facing away from its movement direction. Math.PI flips
- * the model 180° so it faces the direction it walks toward.
+ * Yaw for the avatar model. The Volodka hero GLB and procedural lite both face
+ * +Z at rotation.y = 0. Movement / camera write `livePlayerRotationRef` as
+ * `atan2(moveDir.x, moveDir.z)` — the world yaw that aims +Z toward the move
+ * direction. Do NOT add π here: that double-flipped the GLB vs ProceduralLite
+ * and made WASD look like moonwalking (спиной).
  */
-const FORWARD_OFFSET = Math.PI;
+const FORWARD_OFFSET = 0;
 
 interface Fit {
   scale: number;

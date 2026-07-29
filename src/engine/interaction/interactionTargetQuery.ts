@@ -105,6 +105,12 @@ export function scoreInteractionTarget(
   return { distance, score: distance * facingPenalty };
 }
 
+/** Mutable Rapier ray fields — API uses `dir`, not `direction`. */
+type MutableRapierRay = {
+  origin?: { x: number; y: number; z: number };
+  dir?: { x: number; y: number; z: number };
+};
+
 /** H4: Rapier raycast from player eye to target — returns false when blocked by static geometry.
  *  Uses a reusable Ray object and 3-frame throttle to reduce per-NPC allocations + raycasts. */
 export function hasInteractionLineOfSight(
@@ -132,27 +138,54 @@ export function hasInteractionLineOfSight(
   const ox = _eye.x;
   const oy = _eye.y;
   const oz = _eye.z;
+  const dirX = dx * invDist;
+  const dirY = dy * invDist;
+  const dirZ = dz * invDist;
 
-  // H4: Reuse cached Ray object instead of allocating each call.
-   
-  const ray = _reusableRay as any;
-  if (ray && _reusableRayRapier === ctx.rapier) {
+  // H4: Reuse cached Ray. Rapier.Ray exposes `dir` (not `direction`) — writing
+  // `ray.direction.x` threw every throttled frame: Cannot set properties of
+  // undefined (setting 'x') → crash loop in the physics-scene chunk.
+  const ray = _reusableRay as MutableRapierRay | null;
+  if (
+    ray &&
+    _reusableRayRapier === ctx.rapier &&
+    ray.origin &&
+    ray.dir
+  ) {
     ray.origin.x = ox;
     ray.origin.y = oy;
     ray.origin.z = oz;
-    ray.direction.x = dx * invDist;
-    ray.direction.y = dy * invDist;
-    ray.direction.z = dz * invDist;
+    ray.dir.x = dirX;
+    ray.dir.y = dirY;
+    ray.dir.z = dirZ;
   } else {
-    _reusableRay = new ctx.rapier.Ray(
-      { x: ox, y: oy, z: oz },
-      { x: dx * invDist, y: dy * invDist, z: dz * invDist },
-    );
-    _reusableRayRapier = ctx.rapier;
+    try {
+      _reusableRay = new ctx.rapier.Ray(
+        { x: ox, y: oy, z: oz },
+        { x: dirX, y: dirY, z: dirZ },
+      );
+      _reusableRayRapier = ctx.rapier;
+    } catch {
+      // World/Ray unavailable during teardown — treat as clear LOS.
+      _reusableRay = null;
+      _reusableRayRapier = null;
+      return true;
+    }
   }
 
-  const hit = ctx.world.castRay(_reusableRay, maxDist - 0.2, true);
-  return hit === null;
+  try {
+    const hit = ctx.world.castRay(_reusableRay, maxDist - 0.2, true);
+    return hit === null;
+  } catch {
+    // Disposed world during scene transition — skip LOS for this frame.
+    return true;
+  }
+}
+
+/** Clear cached LOS ray when the Rapier world unregisters (scene teardown). */
+export function clearInteractionLineOfSightCache(): void {
+  _reusableRay = null;
+  _reusableRayRapier = null;
 }
 
 function pushZoneTarget(

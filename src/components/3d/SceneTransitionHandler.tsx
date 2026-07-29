@@ -46,16 +46,23 @@ export function SceneTransitionHandler() {
       const { targetScene, spawnAt } = payload;
       const spawnKey = spawnAt.map((v) => v.toFixed(3)).join(',');
 
-      // Cooldown guard: ignore transitions requested within 500ms of the last one
+      // Cooldown: only debounce identical target+spawn (cutscene double-fire).
+      // A different targetScene within 500ms must still apply — otherwise
+      // stacked exit zones soft-lock the player on the first destination.
       const now = Date.now();
-      if (now - lastTransitionTimeRef.current < TRANSITION_COOLDOWN_MS) {
+      const sameTarget =
+        activeTransitionRef.current?.target === targetScene &&
+        activeTransitionRef.current?.spawnKey === spawnKey;
+      if (
+        now - lastTransitionTimeRef.current < TRANSITION_COOLDOWN_MS &&
+        sameTarget
+      ) {
         return;
       }
 
       if (
         transitioningRef.current &&
-        activeTransitionRef.current?.target === targetScene &&
-        activeTransitionRef.current?.spawnKey === spawnKey
+        sameTarget
       ) {
         return;
       }

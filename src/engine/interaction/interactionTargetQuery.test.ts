@@ -1,10 +1,16 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import * as THREE from 'three';
 import {
   pickPrimaryInteractionTarget,
   queryInteractionTargets,
   scoreInteractionTarget,
+  hasInteractionLineOfSight,
+  clearInteractionLineOfSightCache,
 } from './interactionTargetQuery';
+import {
+  registerInteractionQueryContext,
+  unregisterInteractionQueryContext,
+} from './interactionQueryContext';
 
 describe('scoreInteractionTarget', () => {
   const playerPos = new THREE.Vector3(0, 0, 0);
@@ -74,5 +80,54 @@ describe('queryInteractionTargets', () => {
     });
 
     expect(primary?.id).toBe('only');
+  });
+});
+
+describe('hasInteractionLineOfSight', () => {
+  beforeEach(() => {
+    clearInteractionLineOfSightCache();
+  });
+
+  afterEach(() => {
+    clearInteractionLineOfSightCache();
+  });
+
+  it('mutates rapier Ray.dir (not .direction) without throwing', () => {
+    class FakeRay {
+      origin: { x: number; y: number; z: number };
+      dir: { x: number; y: number; z: number };
+      constructor(
+        origin: { x: number; y: number; z: number },
+        dir: { x: number; y: number; z: number },
+      ) {
+        this.origin = { ...origin };
+        this.dir = { ...dir };
+      }
+    }
+
+    const castRay = vi.fn(() => null);
+    const ctx = {
+      world: { castRay },
+      rapier: { Ray: FakeRay },
+    };
+    registerInteractionQueryContext(ctx);
+
+    const player = new THREE.Vector3(0, 0, 0);
+    const target = new THREE.Vector3(0, 0, 3);
+    let clear = true;
+    for (let i = 0; i < 6; i++) {
+      queryInteractionTargets({
+        playerPos: player,
+        playerYaw: 0,
+        zones: [],
+        npcs: [{ id: 'n', npcId: 'npc', position: [0, 0, 3], label: 'N' }],
+        checkLineOfSight: true,
+      });
+      clear = hasInteractionLineOfSight(player, target);
+    }
+
+    expect(clear).toBe(true);
+    expect(castRay).toHaveBeenCalled();
+    unregisterInteractionQueryContext(ctx);
   });
 });

@@ -70,9 +70,8 @@ function spawnBurst(
   count: number,
 ): void {
   // Spread outward in a cone pointing away from the player's facing.
-  // Player forward (in world space, given the model's +Z forward offset
-  // and the yaw convention used elsewhere) is (sin(yaw), 0, cos(yaw)).
-  // We want particles to fan out roughly around the feet, biased forward.
+  // Player forward (world) for yaw convention matching livePlayerRotationRef
+  // / +Z-facing models is (sin(yaw), 0, cos(yaw)).
   const fwdX = Math.sin(yaw);
   const fwdZ = Math.cos(yaw);
   let spawned = 0;

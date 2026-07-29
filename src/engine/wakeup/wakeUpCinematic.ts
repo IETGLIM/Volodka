@@ -113,21 +113,18 @@ export function easeInOutCubic(t: number): number {
   return c < 0.5 ? 4 * c * c * c : 1 - Math.pow(-2 * c + 2, 3) / 2;
 }
 
-/** Y rotation so a humanoid model (GLB facing +Z, with FORWARD_OFFSET=π applied
- *  by CesiumPlayerModel to face -Z) faces the movement direction (dx, dz).
+/** Y rotation so a humanoid model (GLB / procedural lite facing +Z at yaw 0)
+ *  faces the movement direction (dx, dz).
  *
- *  Derivation: CesiumPlayerModel applies total rotation = facingY + π.
- *  For a +Z-facing model, the rotation to face (dx, dz) is atan2(dx, dz).
- *  So we need facingY + π = atan2(dx, dz), i.e. facingY = atan2(dx, dz) - π
- *  = atan2(-dx, -dz) (by the atan2 identity atan2(y,x) - π = atan2(-y,-x)).
+ *  Model forward after yaw θ is (sin θ, 0, cos θ). Solving for θ that aims at
+ *  (dx, dz) gives θ = atan2(dx, dz) — same convention as playerMainMovement /
+ *  SimplePlayer (`livePlayerRotationRef`). CesiumPlayerModel applies no extra π.
  *
- *  Note: we use `0 - dx` instead of `-dx` to avoid producing -0 (negative zero),
- *  which would make atan2(-0, -1) return -π instead of π. (Task 5-B #5.)
- *
- *  Previously this returned atan2(dx, -dz), which has the sign of dx flipped —
- *  the avatar walked backwards for X-dominant movement. */
+ *  Note: we use `0 + dx` style only where needed to avoid -0 atan2 quirks on
+ *  the negated form; the direct atan2(dx, dz) path is the canonical one.
+ */
 export function facingYFromDirection(dx: number, dz: number): number {
-  return Math.atan2(0 - dx, 0 - dz);
+  return Math.atan2(dx, dz);
 }
 
 export function facingYBetween(from: THREE.Vector3, to: THREE.Vector3): number {
