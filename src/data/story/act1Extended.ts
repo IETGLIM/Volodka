@@ -355,8 +355,10 @@ export const STORY_NODES_ACT1_EXTENDED: Record<string, StoryNode> = {
         next: 'street_bench_view',
         effects: [
           { type: 'setFlag', flag: 'spotted_night_servers', flagValue: true },
+          { type: 'setFlag', flag: 'night_city_pulse_felt', flagValue: true },
           { type: 'addSkill', skill: 'logic', value: 1 },
           { type: 'triggerQuest', questId: 'night_shift_mystery' },
+          { type: 'triggerQuest', questId: 'night_city_call' },
         ],
       },
       {
@@ -465,7 +467,34 @@ export const STORY_NODES_ACT1_EXTENDED: Record<string, StoryNode> = {
           { type: 'addXp', value: 40 },
           { type: 'addKarma', value: 3 },
           { type: 'setFlag', flag: 'morning_ritual_complete', flagValue: true },
+          { type: 'triggerQuest', questId: 'night_city_call' },
         ],
+      },
+    ],
+  },
+
+  night_city_call_start: {
+    id: 'night_city_call_start',
+    text: 'За окном улица дышит неоном. Стих ещё звенит в ушах — будто город подхватил строку и пустил её по проводам. Коридор, лестница, мокрый асфальт, вывеска «Синяя яма». Где-то у скамейки уже ждут. Не инструкция — зов.',
+    contextNote: 'Пролог продолжается за порогом квартиры. Город зовёт без туториала.',
+    speaker: 'narrator',
+    sceneId: 'volodka_room',
+    guidanceHint: 'Выйди из квартиры — ночной город сам покажет путь.',
+    guidanceObjectiveType: 'visit_location',
+    guidanceSceneLabel: 'Улица',
+    choices: [
+      {
+        text: 'Выйти в коридор',
+        next: 'corridor_door',
+        effects: [
+          { type: 'triggerQuest', questId: 'night_city_call' },
+          { type: 'addSkill', skill: 'intuition', value: 1 },
+        ],
+      },
+      {
+        text: 'Сначала ещё раз глянуть в окно',
+        next: 'kitchen_window',
+        effects: [{ type: 'triggerQuest', questId: 'night_city_call' }],
       },
     ],
   },

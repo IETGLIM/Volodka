@@ -5,6 +5,7 @@ import { getFirstReadingHint } from '@/engine/guidedStory/firstReadingHint';
 import {
   getIncidentScrollHint,
   getMariaConnectionHint,
+  getNightCityCallHint,
   getNetworkInitiationHint,
   getPoetryCollectionHint,
   getSolnyshSpineHint,
@@ -131,6 +132,10 @@ export function buildQuestJournalContextualHint(
   if (questId === 'first_reading') {
     const early = getFirstReadingHint();
     if (early) return early;
+  }
+  if (questId === 'night_city_call') {
+    const live = getNightCityCallHint(currentSceneId);
+    if (live) return live;
   }
   if (questId === 'maria_connection') {
     const live = getMariaConnectionHint();

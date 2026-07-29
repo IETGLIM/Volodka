@@ -15,6 +15,13 @@ export const EXPANSION_QUEST_STUBS: QuestDefinition[] = [
     hint: 'Продолжи глубокий разговор с Альбертом в кафе.',
     objectives: [
       {
+        id: 'deep_talk_albert',
+        description: 'Продолжить глубокий разговор с Альбертом в кафе',
+        type: 'npc_talked',
+        target: 'albert',
+        completed: false,
+      },
+      {
         id: 'form_alliance',
         description: 'Закрепить союз с Альбертом',
         type: 'flag_set',

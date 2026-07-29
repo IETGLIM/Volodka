@@ -348,7 +348,28 @@ interface SpineQuestReconcileRule {
   progressFlags: readonly string[];
 }
 
+const NIGHT_CITY_CALL_ACTIVATION_NODES = new Set([
+  'go_to_cafe',
+  'street_bench',
+  'street_bench_view',
+  'street_guild_pulse',
+  'cafe_enter',
+  'kitchen_window',
+  'night_city_call_start',
+]);
+
+const NIGHT_CITY_CALL_PROGRESS_FLAGS = [
+  'going_to_cafe',
+  'night_city_pulse_felt',
+  'night_city_call_done',
+] as const;
+
 const SPINE_QUEST_RECONCILE_RULES: SpineQuestReconcileRule[] = [
+  {
+    questId: 'night_city_call',
+    activationNodes: NIGHT_CITY_CALL_ACTIVATION_NODES,
+    progressFlags: NIGHT_CITY_CALL_PROGRESS_FLAGS,
+  },
   {
     questId: 'network_initiation',
     activationNodes: NETWORK_INITIATION_ACTIVATION_NODES,

@@ -4,6 +4,9 @@ import type { SceneId } from '@/shared/types/game';
 export const QUEST_OBJECTIVE_NPC_HINTS: Readonly<
   Record<string, Readonly<Record<string, string>>>
 > = {
+  night_city_call: {
+    enter_cafe: 'cafe_barista',
+  },
   solnysh_comfort: {
     talk_solnysh: 'solnysh',
     comfort_solnysh: 'solnysh',
@@ -23,6 +26,12 @@ export const QUEST_OBJECTIVE_NPC_HINTS: Readonly<
 export const QUEST_OBJECTIVE_SCENE_HINTS: Readonly<
   Record<string, Readonly<Record<string, { sceneId: SceneId; position: [number, number, number] }>>>
 > = {
+  night_city_call: {
+    leave_home: { sceneId: 'volodka_corridor', position: [0, 0, 1.2] },
+    reach_street: { sceneId: 'street_night', position: [0, 0.01, 0] },
+    enter_cafe: { sceneId: 'cafe_evening', position: [0, 0, 1.0] },
+    feel_city_pulse: { sceneId: 'street_night', position: [-2.5, 0.01, 3.0] },
+  },
   solnysh_comfort: {
     talk_solnysh: { sceneId: 'volodka_corridor', position: [0, 0, 1.5] },
     comfort_solnysh: { sceneId: 'volodka_corridor', position: [0, 0, 1.5] },

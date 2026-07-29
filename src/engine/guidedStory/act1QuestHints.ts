@@ -33,6 +33,33 @@ export function getMariaConnectionHint(): string | null {
   return null;
 }
 
+/** Вызов ночного города — corridor → street → cafe → pulse. */
+export function getNightCityCallHint(currentSceneId: string): string | null {
+  const quest = findActiveQuest('night_city_call');
+  if (!quest) return null;
+  if (!objectiveDone(quest, 'leave_home')) {
+    return currentSceneId === 'volodka_room'
+      ? 'Открой дверь в коридор [E] — город уже зовёт'
+      : 'Выйди в коридор подъезда — первый шаг за порог';
+  }
+  if (!objectiveDone(quest, 'reach_street')) {
+    return currentSceneId === 'volodka_corridor' || currentSceneId === 'volodka_kitchen'
+      ? 'Через кухню или подъезд — на ночную улицу'
+      : 'Выйди на ночную улицу — неон покажет «Синюю яму»';
+  }
+  if (!objectiveDone(quest, 'enter_cafe')) {
+    return currentSceneId === 'street_night'
+      ? 'Зайди в кафе «Синяя яма» — вывеска мигает в дожде'
+      : 'Кафе «Синяя яма» ждёт — иди с ночной улицы';
+  }
+  if (!objectiveDone(quest, 'feel_city_pulse')) {
+    return currentSceneId === 'street_night'
+      ? 'Присядь на скамейку или глянь на башню гильдии — услышь пульс'
+      : 'Вернись на улицу — пульс города у скамейки и у башни';
+  }
+  return null;
+}
+
 /** Инцидент #4729 — office → Alexander → codebreaker. */
 export function getIncidentScrollHint(currentSceneId: string): string | null {
   const quest = findActiveQuest('incident_scroll_4729');

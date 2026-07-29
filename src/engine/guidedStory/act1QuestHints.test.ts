@@ -2,6 +2,7 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import {
   getIncidentScrollHint,
   getMariaConnectionHint,
+  getNightCityCallHint,
   getNetworkInitiationHint,
   getPoetryCollectionHint,
   getSolnyshSpineHint,
@@ -131,4 +132,22 @@ describe('act1QuestHints', () => {
     expect(getSolnyshSpineHint('street_night')).toContain('Солныш');
     expect(getSolnyshSpineHint('volodka_corridor')).toContain('Подойди');
   });
+
+  it('guides night_city_call from room toward corridor', () => {
+    snap.quests = [
+      {
+        questId: 'night_city_call',
+        status: 'active',
+        objectives: {
+          leave_home: false,
+          reach_street: false,
+          enter_cafe: false,
+          feel_city_pulse: false,
+        },
+        startedAtTime: 0,
+      },
+    ];
+    expect(getNightCityCallHint('volodka_room')).toContain('коридор');
+  });
+
 });

@@ -291,6 +291,8 @@ export const STORY_NODE_OBJECTIVE_TYPE: Record<
 
 /** Story flags that may advance the golden path (exact flag key → spine node). */
 export const STORY_FLAG_TO_NODE_ID: Record<string, string> = {
+  night_city_pulse_felt: 'street_bench',
+  night_city_call_done: 'maria_curious',
   act2_started: 'act2_transition',
   advanced_to_act2: 'act2_transition',
   advanced_to_act3: 'act3_transition',
@@ -389,6 +391,7 @@ export const ACT_TRANSITIONS: ActTransition[] = [
     entryNodeId: 'start',
     questSpineIds: [
       'first_reading',
+      'night_city_call',
       'maria_connection',
       'incident_scroll_4729',
       'vault_backup_trial',
@@ -492,7 +495,7 @@ export const GOLDEN_PATH_BRANCH_HINTS: Record<string, string> = {
   solnysh_roof_arrival: 'Побудь рядом — иногда молчание важнее слов.',
   solnysh_relocation_talk: 'Поддержи их решение о переезде — ты для неё якорь.',
   kitchen_window: 'Иди в кафе — дорога начинается с первого шага.',
-  go_to_cafe: 'Присядь на скамейку у подъезда — город ещё не сказал всё.',
+  go_to_cafe: 'Выйди на улицу и зайди в «Синюю яму» — город ещё не сказал всё.',
   street_bench: 'Огляди улицу — в переулке кто-то ждёт именно тебя.',
   cafe_explore_mode: 'Осмотри «Синюю яму» — затем подойди к баристе.',
   cafe_barista: 'Закажи обычный кофе — путь в гильдию начинается здесь.',
@@ -622,6 +625,7 @@ export const ACT1_SOLNYSH_QUEST_SPINE: string[] = [
 export const GOLDEN_PATH_QUEST_SPINE: string[] = [
   // Act 1
   'first_reading',
+  'night_city_call',
   'maria_connection',
   'incident_scroll_4729',
   'vault_backup_trial',

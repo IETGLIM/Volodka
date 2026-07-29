@@ -680,6 +680,15 @@ export const ACT1_STRUCTURE: Record<string, StoryNodeStructure> = {
       {
         "type": "collectPoem",
         "poemId": "poem_30"
+      },
+      {
+        "type": "setFlag",
+        "flag": "night_city_pulse_felt",
+        "flagValue": true
+      },
+      {
+        "type": "triggerQuest",
+        "questId": "night_city_call"
       }
     ],
     "choices": [
@@ -974,6 +983,10 @@ export const ACT1_STRUCTURE: Record<string, StoryNodeStructure> = {
         "type": "setFlag",
         "flag": "going_to_cafe",
         "flagValue": true
+      },
+      {
+        "type": "triggerQuest",
+        "questId": "night_city_call"
       }
     ]
   },

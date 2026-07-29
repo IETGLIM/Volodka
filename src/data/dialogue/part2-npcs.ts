@@ -418,6 +418,11 @@ export const DIALOGUE_PART2: Record<string, DialogueNode> = {
     text: 'Знаешь, ты задаёшь слишком правильные вопросы для человека, который просто пьёт кофе. Может, тебе стоит спросить что-нибудь... неправильное. Я слышал, в этом городе есть люди, которые читают стихи не книгам — серверам. Звучит безумно? Может. Но они знают вещи, которые не знает никто. Если хочешь — приходи во второй вторник. Вечером. Когда закрываемся.',
     choices: [
       {
+        text: 'Улица сегодня странно гудит… ты тоже слышишь?',
+        next: 'cafe_barista_night_pulse',
+        effects: [{ type: 'addSkill', skill: 'intuition', value: 1 }],
+      },
+      {
         text: 'Кто эти люди? Как их найти?',
         next: 'cafe_barista_network_reveal',
         condition: { minKarma: 50 },
@@ -440,6 +445,32 @@ export const DIALOGUE_PART2: Record<string, DialogueNode> = {
         effects: [
           { type: 'addStat', stat: 'stress', value: 3 },
           { type: 'npcChange', npcId: 'cafe_barista', npcChange: { relation: -3 } },
+        ],
+      },
+    ],
+  },
+
+  cafe_barista_night_pulse: {
+    id: 'cafe_barista_night_pulse',
+    speaker: 'Бариста',
+    text: 'Слышишь? Улица сегодня громче обычного. Не дождь — пульс. Башня гильдии мигает не в такт рекламе, а скамейка у подъезда… кто-то уже сидит и делает вид, что курит. Если выйдешь — не смотри прямо. Пусть город сам вас представит.',
+    choices: [
+      {
+        text: 'Выйду на улицу — послушаю',
+        next: null,
+        effects: [
+          { type: 'setFlag', flag: 'night_city_pulse_felt', flagValue: true },
+          { type: 'setFlag', flag: 'barista_night_pulse_hint', flagValue: true },
+          { type: 'addSkill', skill: 'intuition', value: 1 },
+          { type: 'npcChange', npcId: 'cafe_barista', npcChange: { relation: 3 } },
+        ],
+      },
+      {
+        text: 'Сначала кофе — потом улица',
+        next: null,
+        effects: [
+          { type: 'setFlag', flag: 'barista_night_pulse_hint', flagValue: true },
+          { type: 'addStat', stat: 'energy', value: 5 },
         ],
       },
     ],

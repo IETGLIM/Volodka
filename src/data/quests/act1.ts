@@ -39,6 +39,60 @@ export const QUESTS_ACT1: QuestDefinition[] = [
     questGiverNpcId: undefined, // Self-discovered quest (no NPC giver)
   },
 
+  /* ─────────────── QUEST 1b: Night city call (bridge to Maria) ─────────────── */
+  {
+    id: 'night_city_call',
+    title: 'Вызов ночного города',
+    description:
+      'Стих прочитан. За окном — неоновый пульс. Выйди из квартиры, пройди ночную улицу, зайди в «Синюю яму» и прислушайся к городу — кто-то уже ищет тебя на скамейке у подъезда.',
+    act: 1,
+    faction: undefined,
+    questType: 'main',
+    difficulty: 'easy',
+    hint: 'Коридор → улица → кафе «Синяя яма». У скамейки или у башни гильдии город сам подскажет следующий шаг.',
+    requiresQuests: ['first_reading'],
+    spineOrder: 2,
+    objectives: [
+      {
+        id: 'leave_home',
+        description: 'Выйти в коридор подъезда',
+        type: 'location_visited',
+        target: 'volodka_corridor',
+        completed: false,
+      },
+      {
+        id: 'reach_street',
+        description: 'Выйти на ночную улицу',
+        type: 'location_visited',
+        target: 'street_night',
+        completed: false,
+      },
+      {
+        id: 'enter_cafe',
+        description: 'Зайти в кафе «Синяя яма»',
+        type: 'location_visited',
+        target: 'cafe_evening',
+        completed: false,
+      },
+      {
+        id: 'feel_city_pulse',
+        description: 'Прислушаться к пульсу города у скамейки или у башни',
+        type: 'flag_set',
+        target: 'night_city_pulse_felt',
+        completed: false,
+      },
+    ],
+    rewards: [
+      { type: 'addSkill', skill: 'intuition', value: 2 },
+      { type: 'addKarma', value: 3 },
+      { type: 'addXp', value: 50 },
+      { type: 'setFlag', flag: 'night_city_call_done', flagValue: true },
+    ],
+    linkedStoryNodeId: 'go_to_cafe',
+    linkedStoryNodeIds: ['go_to_cafe', 'street_bench', 'cafe_enter', 'street_guild_pulse'],
+    questGiverNpcId: undefined,
+  },
+
   /* ─────────────── QUEST 2: Connection with Maria ─────────────── */
   {
     id: 'maria_connection',
