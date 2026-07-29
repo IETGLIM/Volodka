@@ -4,6 +4,9 @@ import type { SceneId } from '@/config/sceneDefinitions';
  * Variant scenes reuse visuals/audio/weather from a parent scene.
  * Keeps Record<SceneId, …> registries maintainable when adding location variants.
  *
+ * Chunk: boot-shared (vite/chunks.ts) — leaf used by scenes.ts (narrative) and
+ * AudioEngine (combat); colocating either side alone recreates combat ↔ narrative TDZ.
+ *
  * Sprint E/F: city_square / underground_bunker / guild_mainframe /
  * library_basement / albert_backroom have dedicated visuals — they are
  * intentionally absent here (own GPU chunk + VisualScene case).
