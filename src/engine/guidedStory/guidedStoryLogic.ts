@@ -364,11 +364,50 @@ const NIGHT_CITY_CALL_PROGRESS_FLAGS = [
   'night_city_call_done',
 ] as const;
 
+const MARIA_CONNECTION_ACTIVATION_NODES = new Set([
+  'maria_curious',
+  'maria_chip_trust',
+  'street_bench_view',
+  'street_alley_shadow',
+]);
+
+const MARIA_CONNECTION_PROGRESS_FLAGS = [
+  'met_maria',
+  'accepted_maria_chip',
+  'read_maria_poem',
+  'maria_connection_done',
+  'spotted_maria',
+] as const;
+
+const CAFE_STREET_WHISPER_ACTIVATION_NODES = new Set([
+  'cafe_enter',
+  'cafe_barista',
+  'cafe_barista_victoria_whisper',
+  'cafe_explore_mode',
+  'go_to_cafe',
+]);
+
+const CAFE_STREET_WHISPER_PROGRESS_FLAGS = [
+  'barista_maria_hint',
+  'spotted_maria',
+  'cafe_street_whisper_done',
+] as const;
+
 const SPINE_QUEST_RECONCILE_RULES: SpineQuestReconcileRule[] = [
   {
     questId: 'night_city_call',
     activationNodes: NIGHT_CITY_CALL_ACTIVATION_NODES,
     progressFlags: NIGHT_CITY_CALL_PROGRESS_FLAGS,
+  },
+  {
+    questId: 'maria_connection',
+    activationNodes: MARIA_CONNECTION_ACTIVATION_NODES,
+    progressFlags: MARIA_CONNECTION_PROGRESS_FLAGS,
+  },
+  {
+    questId: 'cafe_street_whisper',
+    activationNodes: CAFE_STREET_WHISPER_ACTIVATION_NODES,
+    progressFlags: CAFE_STREET_WHISPER_PROGRESS_FLAGS,
   },
   {
     questId: 'network_initiation',

@@ -293,6 +293,7 @@ export const STORY_NODE_OBJECTIVE_TYPE: Record<
 export const STORY_FLAG_TO_NODE_ID: Record<string, string> = {
   night_city_pulse_felt: 'street_bench',
   night_city_call_done: 'maria_curious',
+  maria_connection_done: 'cafe_enter',
   act2_started: 'act2_transition',
   advanced_to_act2: 'act2_transition',
   advanced_to_act3: 'act3_transition',
@@ -502,7 +503,9 @@ export const GOLDEN_PATH_BRANCH_HINTS: Record<string, string> = {
   office_explore_mode: 'Сядь за терминал Александра — инцидент #4729 ждёт расшифровки.',
   street_bench_view: 'Подойди к незнакомке — Виктория знает правду.',
   maria_curious: 'Возьми чип данных — в нём скрыто стихотворение.',
+  maria_chip_trust: 'Стих уже с тобой — зайди в «Синюю яму» или останься на улице.',
   cafe_enter: 'Поговори с баристой — он знает больше, чем говорит.',
+  cafe_barista_victoria_whisper: 'Выйди на улицу — силуэт у подъезда уже ждёт.',
   office_alexander: 'Помоги Александру — инцидент касается всех.',
   start_diagnosis: 'Расшифруй код — стихи скрыты в самой структуре.',
   fix_success: 'Остановись и подумай — несправедливость мира заслуживает слова.',

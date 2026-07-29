@@ -870,6 +870,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     interactionType: 'talk',
     effects: [
       { type: 'setFlag', flag: 'spotted_maria', flagValue: true },
+      { type: 'setFlag', flag: 'met_maria', flagValue: true },
       { type: 'addKarma', value: 2 },
     ],
   },

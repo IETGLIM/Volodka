@@ -1,5 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import {
+  getCafeStreetWhisperHint,
   getIncidentScrollHint,
   getMariaConnectionHint,
   getNightCityCallHint,
@@ -52,7 +53,25 @@ describe('act1QuestHints', () => {
         startedAtTime: 0,
       },
     ];
-    expect(getMariaConnectionHint()).toContain('улицу');
+    expect(getMariaConnectionHint('volodka_room')).toContain('улицу');
+    expect(getMariaConnectionHint('street_night')).toContain('Переулок');
+  });
+
+  it('cafe_street_whisper guides barista then alley', () => {
+    snap.quests = [
+      {
+        questId: 'cafe_street_whisper',
+        status: 'active',
+        objectives: {
+          ask_barista_tip: false,
+          spot_alley_silhouette: false,
+        },
+        startedAtTime: 0,
+      },
+    ];
+    expect(getCafeStreetWhisperHint('street_night')).toContain('Синюю яму');
+    snap.quests[0]!.objectives.ask_barista_tip = true;
+    expect(getCafeStreetWhisperHint('street_night')).toContain('переулок');
   });
 
   it('incident_scroll adapts to office presence', () => {

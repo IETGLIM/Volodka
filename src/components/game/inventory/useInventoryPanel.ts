@@ -201,8 +201,9 @@ export function useInventoryPanel(
         if (isConsumed) removeItem(item.id, 1);
 
         if (def.linkedContent) {
-          if (def.linkedContent.type === 'poem' && onOpenPoetryBook) {
-            onOpenPoetryBook();
+          if (def.linkedContent.type === 'poem') {
+            getGameStore().getState().collectPoem(def.linkedContent.id);
+            onOpenPoetryBook?.();
           } else if (def.linkedContent.type === 'lore') {
             addLoreEntry({
               id: def.linkedContent.id,

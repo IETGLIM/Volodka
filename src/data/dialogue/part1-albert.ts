@@ -673,7 +673,21 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
         text: 'Кто ты такая? Откуда ты меня знаешь?',
         next: 'maria_dialogue_identity',
         condition: { minTimeOfDay: 18 },
-        effects: [{ type: 'addSkill', skill: 'intuition', value: 1 }],
+        effects: [
+          { type: 'addSkill', skill: 'intuition', value: 1 },
+          { type: 'setFlag', flag: 'met_maria', flagValue: true },
+          { type: 'setFlag', flag: 'spotted_maria', flagValue: true },
+        ],
+      },
+      {
+        text: 'Ты протягивала чип. Я готов принять.',
+        next: 'maria_dialogue_offer_chip',
+        condition: { missingFlag: 'accepted_maria_chip' },
+        effects: [
+          { type: 'setFlag', flag: 'met_maria', flagValue: true },
+          { type: 'setFlag', flag: 'spotted_maria', flagValue: true },
+          { type: 'triggerQuest', questId: 'maria_connection' },
+        ],
       },
       {
         text: 'Что за чип ты мне дала?',
@@ -686,6 +700,7 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
         effects: [
           { type: 'addStat', stat: 'stress', value: 5 },
           { type: 'addKarma', value: -2 },
+          { type: 'setFlag', flag: 'met_maria', flagValue: true },
         ],
       },
       {
@@ -705,6 +720,37 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
         text: 'В архивах есть строки, которые не стареют.',
         next: 'maria_archive_whisper',
         condition: { collectedPoem: 'poem_11', requiredAct: 5 },
+      },
+    ],
+  },
+
+  maria_dialogue_offer_chip: {
+    id: 'maria_dialogue_offer_chip',
+    speaker: 'Виктория',
+    speakerId: 'maria',
+    text: 'Хорошо. Без театра. На чипе — фрагмент стёртого архива. Стих, от которого гильдия дергается, как от короткого замыкания. Возьми. Прочитай сам — или открой чип в инвентаре, когда будешь готов.',
+    choices: [
+      {
+        text: 'Беру. И прочитаю.',
+        next: null,
+        effects: [
+          { type: 'addItem', itemId: 'maria_data_chip', value: 1 },
+          { type: 'collectPoem', poemId: 'poem_6' },
+          { type: 'setFlag', flag: 'accepted_maria_chip', flagValue: true },
+          { type: 'setFlag', flag: 'read_maria_poem', flagValue: true },
+          { type: 'setFlag', flag: 'met_maria', flagValue: true },
+          { type: 'addKarma', value: 5 },
+          { type: 'npcChange', npcId: 'maria', npcChange: { relation: 10 } },
+          { type: 'triggerQuest', questId: 'maria_connection' },
+        ],
+      },
+      {
+        text: 'Сначала скажи, кто ты.',
+        next: 'maria_dialogue_identity',
+        effects: [
+          { type: 'addSkill', skill: 'intuition', value: 1 },
+          { type: 'setFlag', flag: 'asked_maria_identity', flagValue: true },
+        ],
       },
     ],
   },
@@ -1244,9 +1290,18 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
         ],
       },
       {
+        text: 'На улице пульс странный… кто ходит сюда ночами?',
+        next: 'cafe_barista_victoria_tip',
+        condition: { missingFlag: 'barista_maria_hint' },
+        effects: [
+          { type: 'addSkill', skill: 'intuition', value: 1 },
+          { type: 'triggerQuest', questId: 'cafe_street_whisper' },
+        ],
+      },
+      {
         text: 'У тебя тут не бывает... необычных клиентов?',
         next: 'cafe_barista_hint',
-        condition: { minKarma: 45 },
+        condition: { minKarma: 45, missingFlag: 'barista_maria_hint' },
         effects: [{ type: 'addSkill', skill: 'intuition', value: 1 }],
       },
       {
@@ -1261,6 +1316,32 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
         text: 'Расскажи о своей «секретной жизни».',
         next: 'barista_secret_life',
         condition: { requiredAct: 3, flag: 'barista_special_hint', minKarma: 50 },
+      },
+    ],
+  },
+
+  cafe_barista_victoria_tip: {
+    id: 'cafe_barista_victoria_tip',
+    speaker: 'Бариста',
+    text: 'Ночью сюда заходит одна. Не заказывает. Смотрит в терминал так, будто читает чужие логи. Если увидишь силуэт у подъезда — не беги. Она уже знает, как звучит твой код.',
+    choices: [
+      {
+        text: 'Выйду на улицу — поищу',
+        next: null,
+        effects: [
+          { type: 'setFlag', flag: 'barista_maria_hint', flagValue: true },
+          { type: 'addSkill', skill: 'empathy', value: 1 },
+          { type: 'npcChange', npcId: 'cafe_barista', npcChange: { relation: 4 } },
+          { type: 'triggerQuest', questId: 'cafe_street_whisper' },
+        ],
+      },
+      {
+        text: 'Спасибо. Запомню.',
+        next: null,
+        effects: [
+          { type: 'setFlag', flag: 'barista_maria_hint', flagValue: true },
+          { type: 'addKarma', value: 1 },
+        ],
       },
     ],
   },
@@ -1310,10 +1391,11 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
       {
         text: 'Спасибо за информацию.',
         next: null,
-        effects: [
-          { type: 'setFlag', flag: 'barista_maria_hint', flagValue: true },
-          { type: 'addSkill', skill: 'empathy', value: 1 },
-        ],
+    effects: [
+      { type: 'setFlag', flag: 'barista_maria_hint', flagValue: true },
+      { type: 'addSkill', skill: 'empathy', value: 1 },
+      { type: 'triggerQuest', questId: 'cafe_street_whisper' },
+    ],
       },
     ],
   },
