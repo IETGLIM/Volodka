@@ -18,17 +18,85 @@ function objectiveDone(quest: QuestState, objectiveId: string): boolean {
 }
 
 /** Связь с Викторией — street meet → chip → poem. */
-export function getMariaConnectionHint(): string | null {
+export function getMariaConnectionHint(currentSceneId?: string): string | null {
   const quest = findActiveQuest('maria_connection');
   if (!quest) return null;
   if (!objectiveDone(quest, 'meet_maria')) {
-    return 'Выйди на ночную улицу — Виктория сама тебя найдёт';
+    return currentSceneId === 'street_night'
+      ? 'Переулок у подъезда — Виктория ждёт в тени [E]'
+      : 'Выйди на ночную улицу — Виктория в переулке у подъезда';
   }
   if (!objectiveDone(quest, 'accept_chip')) {
-    return 'Прими чип данных у Виктории [E] — это ключ к её стиху';
+    return 'Прими чип данных у Виктории — в диалоге или в истории встречи';
   }
   if (!objectiveDone(quest, 'read_maria_poem')) {
-    return 'Открой чип в инвентаре / журнале стихов и прочитай стихотворение';
+    return 'Открой чип в инвентаре или дочитай стих в сцене встречи';
+  }
+  return null;
+}
+
+/** Шёпот за стойкой — barista tip → alley silhouette. */
+export function getCafeStreetWhisperHint(currentSceneId: string): string | null {
+  const quest = findActiveQuest('cafe_street_whisper');
+  if (!quest) return null;
+  if (!objectiveDone(quest, 'ask_barista_tip')) {
+    return currentSceneId === 'cafe_evening'
+      ? 'Спроси баристу про ночных гостей у стойки [E]'
+      : 'Зайди в «Синюю яму» — бариста знает про силуэт у подъезда';
+  }
+  if (!objectiveDone(quest, 'spot_alley_silhouette')) {
+    return currentSceneId === 'street_night'
+      ? 'Глянь в переулок у подъезда — силуэт уже смотрит на тебя'
+      : 'Выйди на ночную улицу — ищи силуэт в переулке';
+  }
+  return null;
+}
+
+/** Пропуск из Синей ямы — cafe echo → summons → guild lobby. */
+export function getChipCafeClearanceHint(currentSceneId: string): string | null {
+  const quest = findActiveQuest('chip_cafe_clearance');
+  if (!quest) return null;
+  if (!objectiveDone(quest, 'return_cafe_with_chip')) {
+    return currentSceneId === 'cafe_evening'
+      ? 'Ты в «Синей яме» — подойди к стойке, чип уже теплеет'
+      : 'Вернись в «Синюю яму» со стихом чипа — бариста услышит эхо';
+  }
+  if (!objectiveDone(quest, 'barista_hears_echo')) {
+    return currentSceneId === 'cafe_evening'
+      ? 'У стойки — дай баристе услышать эхо чипа [E]'
+      : 'Стойка «Синей ямы» ждёт — эхо чипа открывает пропуск';
+  }
+  if (!objectiveDone(quest, 'receive_guild_summons')) {
+    return currentSceneId === 'cafe_evening'
+      ? 'Дождись пропуска на пене — свиток и единица'
+      : 'Забери невидимый пропуск у баристы, затем к башне';
+  }
+  if (!objectiveDone(quest, 'reach_guild_lobby')) {
+    return currentSceneId === 'office_day'
+      ? 'Ты в холле гильдии — эхо чипа уже здесь'
+      : 'Иди в офис IT-гильдии — холл и доска #4729';
+  }
+  return null;
+}
+
+/** Дозор в холле — chip warmth → bulletin → colleague gaze. */
+export function getOfficeLobbyWatchHint(currentSceneId: string): string | null {
+  const quest = findActiveQuest('office_lobby_watch');
+  if (!quest) return null;
+  if (!objectiveDone(quest, 'feel_chip_warmth')) {
+    return currentSceneId === 'office_day'
+      ? 'У стены серверной чип теплеет — постой рядом'
+      : 'Зайди в холл офиса — у серверной стены чип отзовётся';
+  }
+  if (!objectiveDone(quest, 'read_incident_bulletin')) {
+    return currentSceneId === 'office_day'
+      ? 'Глянь на доску объявлений — бриф #4729'
+      : 'В холле гильдии на доске — приоритет инцидента';
+  }
+  if (!objectiveDone(quest, 'notice_colleague_watch')) {
+    return currentSceneId === 'office_day'
+      ? 'Коллега у турникета слишком долго смотрит — заметь его'
+      : 'В холле кто-то следит — вернись и поймай взгляд';
   }
   return null;
 }

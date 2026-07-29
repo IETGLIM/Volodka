@@ -870,6 +870,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     interactionType: 'talk',
     effects: [
       { type: 'setFlag', flag: 'spotted_maria', flagValue: true },
+      { type: 'setFlag', flag: 'met_maria', flagValue: true },
       { type: 'addKarma', value: 2 },
     ],
   },
@@ -891,6 +892,29 @@ export const TRIGGER_ZONES: TriggerZone[] = [
   },
 
   /* ─────────────── OFFICE DAY ─────────────── */
+  {
+    id: 'office_lobby_bulletin',
+    sceneId: 'office_day',
+    position: [0.5, 0.5, 2.5],
+    size: [1.2, 1.8, 0.8],
+    enterToast: 'Доска объявлений: инцидент #4729 — приоритет.',
+    linkedStoryNodeId: 'office_lobby_arrival',
+    linkedQuestId: 'office_lobby_watch',
+    interactionType: 'examine',
+    examineData: {
+      title: 'Доска инцидентов',
+      description: 'Краткий бриф #4729. Не обсуждать вне кабинета Александра.',
+      detailText:
+        'Приоритет: аномальный модуль в продакшене. Симптомы — стихотворные метафоры в логах. Чип у серверной стены теплеет, будто узнаёт родной гул.',
+      icon: '📋',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'incident_bulletin_read', flagValue: true },
+      { type: 'setFlag', flag: 'chip_office_resonance', flagValue: true },
+      { type: 'setFlag', flag: 'lobby_colleague_noticed', flagValue: true },
+      { type: 'triggerQuest', questId: 'office_lobby_watch' },
+    ],
+  },
   {
     id: 'office_alexander_desk',
     sceneId: 'office_day',

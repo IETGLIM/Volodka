@@ -5,8 +5,8 @@ describe('Act I golden path markers', () => {
   it('marks cafe spine nodes with single goldenPath choices', () => {
     const cases: Array<{ nodeId: string; next: string }> = [
       { nodeId: 'go_to_cafe', next: 'street_bench' },
-      { nodeId: 'maria_curious', next: 'cafe_enter' },
-      { nodeId: 'cafe_barista', next: 'office_alexander' },
+      { nodeId: 'maria_curious', next: 'maria_chip_trust' },
+      { nodeId: 'cafe_barista', next: 'cafe_chip_resonance' },
     ];
 
     for (const { nodeId, next } of cases) {

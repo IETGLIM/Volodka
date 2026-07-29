@@ -3,10 +3,13 @@
 import { getSceneConfig } from '@/config/scenes';
 import { getFirstReadingHint } from '@/engine/guidedStory/firstReadingHint';
 import {
+  getCafeStreetWhisperHint,
+  getChipCafeClearanceHint,
   getIncidentScrollHint,
   getMariaConnectionHint,
   getNightCityCallHint,
   getNetworkInitiationHint,
+  getOfficeLobbyWatchHint,
   getPoetryCollectionHint,
   getSolnyshSpineHint,
   getVaultBackupTrialHint,
@@ -138,7 +141,19 @@ export function buildQuestJournalContextualHint(
     if (live) return live;
   }
   if (questId === 'maria_connection') {
-    const live = getMariaConnectionHint();
+    const live = getMariaConnectionHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'cafe_street_whisper') {
+    const live = getCafeStreetWhisperHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'chip_cafe_clearance') {
+    const live = getChipCafeClearanceHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'office_lobby_watch') {
+    const live = getOfficeLobbyWatchHint(currentSceneId);
     if (live) return live;
   }
   if (questId === 'incident_scroll_4729') {

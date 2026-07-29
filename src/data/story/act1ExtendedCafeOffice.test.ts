@@ -60,6 +60,10 @@ describe('Act 1 cafe/office extended story nodes', () => {
 
   it('nodes with guidance have golden path branch hints', () => {
     const ids = [
+      'cafe_barista_victoria_whisper',
+      'cafe_chip_resonance',
+      'cafe_guild_clearance',
+      'office_lobby_arrival',
       'cafe_special_coffee',
       'cafe_backroom_peek',
       'office_incident_debrief',

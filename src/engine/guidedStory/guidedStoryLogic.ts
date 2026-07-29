@@ -364,11 +364,94 @@ const NIGHT_CITY_CALL_PROGRESS_FLAGS = [
   'night_city_call_done',
 ] as const;
 
+const MARIA_CONNECTION_ACTIVATION_NODES = new Set([
+  'maria_curious',
+  'maria_chip_trust',
+  'street_bench_view',
+  'street_alley_shadow',
+]);
+
+const MARIA_CONNECTION_PROGRESS_FLAGS = [
+  'met_maria',
+  'accepted_maria_chip',
+  'read_maria_poem',
+  'maria_connection_done',
+  'spotted_maria',
+] as const;
+
+const CAFE_STREET_WHISPER_ACTIVATION_NODES = new Set([
+  'cafe_enter',
+  'cafe_barista',
+  'cafe_barista_victoria_whisper',
+  'cafe_explore_mode',
+  'go_to_cafe',
+]);
+
+const CAFE_STREET_WHISPER_PROGRESS_FLAGS = [
+  'barista_maria_hint',
+  'spotted_maria',
+  'cafe_street_whisper_done',
+] as const;
+
+const CHIP_CAFE_CLEARANCE_ACTIVATION_NODES = new Set([
+  'maria_chip_trust',
+  'cafe_enter',
+  'cafe_barista',
+  'cafe_chip_resonance',
+  'cafe_guild_clearance',
+  'office_lobby_arrival',
+  'cafe_explore_mode',
+  'cafe_special_coffee',
+]);
+
+const CHIP_CAFE_CLEARANCE_PROGRESS_FLAGS = [
+  'chip_cafe_returned',
+  'barista_chip_resonance',
+  'guild_summons_received',
+  'chip_cafe_clearance_done',
+  'read_maria_poem',
+  'accepted_maria_chip',
+] as const;
+
+const OFFICE_LOBBY_WATCH_ACTIVATION_NODES = new Set([
+  'office_lobby_arrival',
+  'office_alexander',
+  'office_explore_mode',
+  'office_colleague',
+]);
+
+const OFFICE_LOBBY_WATCH_PROGRESS_FLAGS = [
+  'chip_office_resonance',
+  'incident_bulletin_read',
+  'lobby_colleague_noticed',
+  'office_lobby_watch_done',
+] as const;
+
 const SPINE_QUEST_RECONCILE_RULES: SpineQuestReconcileRule[] = [
   {
     questId: 'night_city_call',
     activationNodes: NIGHT_CITY_CALL_ACTIVATION_NODES,
     progressFlags: NIGHT_CITY_CALL_PROGRESS_FLAGS,
+  },
+  {
+    questId: 'maria_connection',
+    activationNodes: MARIA_CONNECTION_ACTIVATION_NODES,
+    progressFlags: MARIA_CONNECTION_PROGRESS_FLAGS,
+  },
+  {
+    questId: 'cafe_street_whisper',
+    activationNodes: CAFE_STREET_WHISPER_ACTIVATION_NODES,
+    progressFlags: CAFE_STREET_WHISPER_PROGRESS_FLAGS,
+  },
+  {
+    questId: 'chip_cafe_clearance',
+    activationNodes: CHIP_CAFE_CLEARANCE_ACTIVATION_NODES,
+    progressFlags: CHIP_CAFE_CLEARANCE_PROGRESS_FLAGS,
+  },
+  {
+    questId: 'office_lobby_watch',
+    activationNodes: OFFICE_LOBBY_WATCH_ACTIVATION_NODES,
+    progressFlags: OFFICE_LOBBY_WATCH_PROGRESS_FLAGS,
   },
   {
     questId: 'network_initiation',

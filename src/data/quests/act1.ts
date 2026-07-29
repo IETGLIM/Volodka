@@ -97,18 +97,21 @@ export const QUESTS_ACT1: QuestDefinition[] = [
   {
     id: 'maria_connection',
     title: 'Связь с Викторией',
-    description: 'Таинственная незнакомка на улице знает о тебе больше, чем следует. Кто она? И почему доверяет именно тебе?',
+    description:
+      'После пульса города в переулке ждёт незнакомка — Виктория. Она видела твой код в архивах и протягивает чип со стёртым стихом. Возьми его и прочитай — это первый мост к Сети.',
     act: 1,
     faction: undefined,
     questType: 'main',
     difficulty: 'medium',
-    hint: 'Гуляй по улице ночью — незнакомка сама тебя найдёт.',
+    hint: 'Улица ночью → переулок у подъезда → чип → стих. Бариста в «Синей яме» может подсказать, кого искать.',
+    requiresQuests: ['night_city_call'],
+    spineOrder: 3,
     objectives: [
       {
         id: 'meet_maria',
-        description: 'Встретить Викторию на улице',
-        type: 'npc_talked',
-        target: 'maria',
+        description: 'Встретить Викторию на ночной улице',
+        type: 'flag_set',
+        target: 'met_maria',
         completed: false,
       },
       {
@@ -131,9 +134,163 @@ export const QUESTS_ACT1: QuestDefinition[] = [
       { type: 'addSkill', skill: 'empathy', value: 2 },
       { type: 'addKarma', value: 5 },
       { type: 'addXp', value: 75 },
+      { type: 'setFlag', flag: 'maria_connection_done', flagValue: true },
+      { type: 'npcChange', npcId: 'maria', npcChange: { relation: 8 } },
     ],
     linkedStoryNodeId: 'maria_curious',
+    linkedStoryNodeIds: ['maria_curious', 'street_bench_view', 'maria_chip_trust'],
     questGiverNpcId: 'maria',
+  },
+
+  /* ─────────────── QUEST 1c: Barista street whisper (side bridge) ─────────────── */
+  {
+    id: 'cafe_street_whisper',
+    title: 'Шёпот за стойкой',
+    description:
+      'В «Синей яме» бариста знает тех, кто не заказывает кофе. Спроси про ночных гостей — и выйди на улицу: силуэт в переулке уже смотрит на тебя.',
+    act: 1,
+    faction: undefined,
+    questType: 'side',
+    difficulty: 'easy',
+    hint: 'Стойка кафе → вопрос про необычных клиентов → переулок у подъезда.',
+    requiresQuests: ['first_reading'],
+    objectives: [
+      {
+        id: 'ask_barista_tip',
+        description: 'Узнать у баристы про ночную незнакомку',
+        type: 'flag_set',
+        target: 'barista_maria_hint',
+        completed: false,
+      },
+      {
+        id: 'spot_alley_silhouette',
+        description: 'Заметить силуэт Виктории в переулке',
+        type: 'flag_set',
+        target: 'spotted_maria',
+        completed: false,
+      },
+    ],
+    rewards: [
+      { type: 'addSkill', skill: 'intuition', value: 2 },
+      { type: 'addKarma', value: 3 },
+      { type: 'addXp', value: 40 },
+      { type: 'npcChange', npcId: 'cafe_barista', npcChange: { relation: 5 } },
+      { type: 'setFlag', flag: 'cafe_street_whisper_done', flagValue: true },
+    ],
+    linkedStoryNodeId: 'cafe_barista',
+    linkedStoryNodeIds: ['cafe_barista', 'cafe_barista_victoria_whisper', 'street_bench_view'],
+    questGiverNpcId: 'cafe_barista',
+  },
+
+  /* ─────────────── QUEST 2b: Cafe → guild clearance after chip ─────────────── */
+  {
+    id: 'chip_cafe_clearance',
+    title: 'Пропуск из Синей ямы',
+    description:
+      'Стих с чипа Виктории ещё звенит. Вернись в «Синюю яму»: бариста услышит эхо в пене, даст невидимый пропуск Сети — и укажет путь в офис гильдии, где уже ждёт инцидент #4729.',
+    act: 1,
+    faction: undefined,
+    questType: 'main',
+    difficulty: 'medium',
+    hint: 'Кафе → стойка (эхо чипа) → пропуск на пене → холл офиса гильдии.',
+    requiresQuests: ['maria_connection'],
+    spineOrder: 4,
+    objectives: [
+      {
+        id: 'return_cafe_with_chip',
+        description: 'Вернуться в «Синюю яму» со стихом чипа',
+        type: 'flag_set',
+        target: 'chip_cafe_returned',
+        completed: false,
+      },
+      {
+        id: 'barista_hears_echo',
+        description: 'Дать баристе услышать эхо чипа за стойкой',
+        type: 'flag_set',
+        target: 'barista_chip_resonance',
+        completed: false,
+      },
+      {
+        id: 'receive_guild_summons',
+        description: 'Получить невидимый пропуск Сети к гильдии',
+        type: 'flag_set',
+        target: 'guild_summons_received',
+        completed: false,
+      },
+      {
+        id: 'reach_guild_lobby',
+        description: 'Войти в холл офиса IT-гильдии',
+        type: 'location_visited',
+        target: 'office_day',
+        completed: false,
+      },
+    ],
+    rewards: [
+      { type: 'addSkill', skill: 'intuition', value: 2 },
+      { type: 'addSkill', skill: 'coding', value: 1 },
+      { type: 'addKarma', value: 4 },
+      { type: 'addXp', value: 85 },
+      { type: 'setFlag', flag: 'chip_cafe_clearance_done', flagValue: true },
+      { type: 'npcChange', npcId: 'cafe_barista', npcChange: { relation: 6 } },
+      { type: 'triggerQuest', questId: 'incident_scroll_4729' },
+    ],
+    linkedStoryNodeId: 'cafe_chip_resonance',
+    linkedStoryNodeIds: [
+      'cafe_chip_resonance',
+      'cafe_guild_clearance',
+      'office_lobby_arrival',
+      'cafe_enter',
+      'cafe_barista',
+    ],
+    questGiverNpcId: 'cafe_barista',
+  },
+
+  /* ─────────────── QUEST 2c: Office lobby watch (side) ─────────────── */
+  {
+    id: 'office_lobby_watch',
+    title: 'Дозор в холле',
+    description:
+      'В холле гильдии чип теплеет у серверной стены. На доске объявлений — краткий бриф #4729. Коллега смотрит слишком внимательно: заметь эхо, прочти доску и не дай себя выдать до разговора с Александром.',
+    act: 1,
+    faction: 'it_guild',
+    questType: 'side',
+    difficulty: 'easy',
+    hint: 'Холл офиса → тепло чипа у стены → доска #4729 → взгляд коллеги.',
+    requiresQuests: ['maria_connection'],
+    objectives: [
+      {
+        id: 'feel_chip_warmth',
+        description: 'Почувствовать тепло чипа у серверной стены',
+        type: 'flag_set',
+        target: 'chip_office_resonance',
+        completed: false,
+      },
+      {
+        id: 'read_incident_bulletin',
+        description: 'Прочитать бриф инцидента #4729 на доске',
+        type: 'flag_set',
+        target: 'incident_bulletin_read',
+        completed: false,
+      },
+      {
+        id: 'notice_colleague_watch',
+        description: 'Заметить, что коллега следит из холла',
+        type: 'flag_set',
+        target: 'lobby_colleague_noticed',
+        completed: false,
+      },
+    ],
+    rewards: [
+      { type: 'addSkill', skill: 'intuition', value: 2 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+      { type: 'addKarma', value: 3 },
+      { type: 'addXp', value: 55 },
+      { type: 'setFlag', flag: 'office_lobby_watch_done', flagValue: true },
+      { type: 'npcChange', npcId: 'office_colleague', npcChange: { relation: 3 } },
+    ],
+    linkedStoryNodeId: 'office_lobby_arrival',
+    linkedStoryNodeIds: ['office_lobby_arrival', 'office_alexander', 'office_colleague'],
+    questGiverNpcId: undefined,
   },
 
   /* ─────────────── QUEST 3: IT guild incident ─────────────── */
@@ -145,7 +302,10 @@ export const QUESTS_ACT1: QuestDefinition[] = [
     faction: 'it_guild',
     questType: 'main',
     difficulty: 'medium',
-    hint: 'Отправляйся в офис гильдии и поговори с Александром — он ждёт тебя.',
+    hint: 'Отправляйся в офис гильдии и поговори с Александром — он ждёт тебя. После чипа путь удобнее через «Синюю яму».',
+    // Soft spine: chip_cafe_clearance is preferred (HUD/order) but not a hard gate —
+    // players can still reach Alexander if they skip café resonance.
+    spineOrder: 5,
     objectives: [
       {
         id: 'visit_office',

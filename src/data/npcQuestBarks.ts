@@ -10,6 +10,30 @@ export interface NpcQuestBarkEntry {
 }
 
 export const NPC_QUEST_BARKS: Record<string, NpcQuestBarkEntry[]> = {
+  office_colleague: [
+    {
+      questId: 'office_lobby_watch',
+      objectiveId: 'notice_colleague_watch',
+      text: 'Не пялься на доску слишком долго. Александр не любит, когда в холле читают вслух.',
+    },
+    {
+      questId: 'vault_backup_trial',
+      objectiveId: 'learn_about_vault',
+      text: 'Хранилище? Тише. Подойди к станциям — расскажу, когда камеры моргнут.',
+    },
+  ],
+  office_alexander: [
+    {
+      questId: 'chip_cafe_clearance',
+      objectiveId: 'reach_guild_lobby',
+      text: 'Холл. Доска. Потом — мой кабинет. Инцидент #4729 не терпит коридорных сплетен.',
+    },
+    {
+      questId: 'incident_scroll_4729',
+      objectiveId: 'talk_alexander',
+      text: 'Подойди. #4729 — не баг. В коде спрятаны стихи, и гильдия хочет их стереть.',
+    },
+  ],
   zarema: [
     {
       questId: 'first_reading',
@@ -48,6 +72,31 @@ export const NPC_QUEST_BARKS: Record<string, NpcQuestBarkEntry[]> = {
     },
   ],
   maria: [
+    {
+      questId: 'maria_connection',
+      objectiveId: 'meet_maria',
+      text: 'Я здесь. В тени. Чип — не подарок. Это тест: услышишь ли стих между строк.',
+    },
+    {
+      questId: 'maria_connection',
+      objectiveId: 'accept_chip',
+      text: 'Возьми чип. Гильдия боится слов сильнее вирусов.',
+    },
+    {
+      questId: 'maria_connection',
+      objectiveId: 'read_maria_poem',
+      text: 'Прочитай. Потом — кафе. Там уже шепчут твоё имя.',
+    },
+    {
+      questId: 'chip_cafe_clearance',
+      objectiveId: 'return_cafe_with_chip',
+      text: '«Синяя яма». Бариста услышит эхо. Офис подождёт — сначала стойка.',
+    },
+    {
+      questId: 'cafe_street_whisper',
+      objectiveId: 'spot_alley_silhouette',
+      text: 'Бариста правильно сказал. Я ждала, пока город сам тебя приведёт.',
+    },
     {
       questId: 'machine_confession',
       text: '«Заря-М» зовёт на завод. Ночью патрули реже — там она расскажет, что скрывала.',
@@ -152,6 +201,38 @@ export const NPC_QUEST_BARKS: Record<string, NpcQuestBarkEntry[]> = {
       questId: 'echo_of_vladimir',
       objectiveId: 'find_kate_clue',
       text: 'Тайник Владимира в библиотеке — не на карте. Я покажу, если ты готов к последнему стиху.',
+    },
+  ],
+  cafe_barista: [
+    {
+      questId: 'cafe_street_whisper',
+      objectiveId: 'ask_barista_tip',
+      text: 'Спроси про ночных гостей. Я не называю имён — только силуэты у подъезда.',
+    },
+    {
+      questId: 'cafe_street_whisper',
+      objectiveId: 'spot_alley_silhouette',
+      text: 'Выйди. Переулок. Не смотри прямо — пусть город вас представит.',
+    },
+    {
+      questId: 'chip_cafe_clearance',
+      objectiveId: 'barista_hears_echo',
+      text: 'Чип поёт. Закажи кофе — пальцы поймают частоту, и я дам пропуск.',
+    },
+    {
+      questId: 'chip_cafe_clearance',
+      objectiveId: 'receive_guild_summons',
+      text: 'На пене — свиток. Это не напиток. Это дверь в холл гильдии.',
+    },
+    {
+      questId: 'chip_cafe_clearance',
+      objectiveId: 'reach_guild_lobby',
+      text: 'Башня. Холл. Доска #4729. Чип на ресепшене не свети.',
+    },
+    {
+      questId: 'night_city_call',
+      objectiveId: 'feel_city_pulse',
+      text: 'Улица сегодня громче. Скамейка или башня — город сам подскажет.',
     },
   ],
 };

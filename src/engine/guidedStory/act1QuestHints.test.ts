@@ -1,9 +1,12 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import {
+  getCafeStreetWhisperHint,
+  getChipCafeClearanceHint,
   getIncidentScrollHint,
   getMariaConnectionHint,
   getNightCityCallHint,
   getNetworkInitiationHint,
+  getOfficeLobbyWatchHint,
   getPoetryCollectionHint,
   getSolnyshSpineHint,
   getVaultBackupTrialHint,
@@ -52,7 +55,25 @@ describe('act1QuestHints', () => {
         startedAtTime: 0,
       },
     ];
-    expect(getMariaConnectionHint()).toContain('улицу');
+    expect(getMariaConnectionHint('volodka_room')).toContain('улицу');
+    expect(getMariaConnectionHint('street_night')).toContain('Переулок');
+  });
+
+  it('cafe_street_whisper guides barista then alley', () => {
+    snap.quests = [
+      {
+        questId: 'cafe_street_whisper',
+        status: 'active',
+        objectives: {
+          ask_barista_tip: false,
+          spot_alley_silhouette: false,
+        },
+        startedAtTime: 0,
+      },
+    ];
+    expect(getCafeStreetWhisperHint('street_night')).toContain('Синюю яму');
+    snap.quests[0]!.objectives.ask_barista_tip = true;
+    expect(getCafeStreetWhisperHint('street_night')).toContain('переулок');
   });
 
   it('incident_scroll adapts to office presence', () => {
@@ -148,6 +169,40 @@ describe('act1QuestHints', () => {
       },
     ];
     expect(getNightCityCallHint('volodka_room')).toContain('коридор');
+  });
+
+  it('guides chip_cafe_clearance from street toward cafe', () => {
+    snap.quests = [
+      {
+        questId: 'chip_cafe_clearance',
+        status: 'active',
+        objectives: {
+          return_cafe_with_chip: false,
+          barista_hears_echo: false,
+          receive_guild_summons: false,
+          reach_guild_lobby: false,
+        },
+        startedAtTime: 0,
+      },
+    ];
+    expect(getChipCafeClearanceHint('street_night')).toContain('Синюю яму');
+    expect(getChipCafeClearanceHint('cafe_evening')).toContain('стойке');
+  });
+
+  it('guides office_lobby_watch toward server wall', () => {
+    snap.quests = [
+      {
+        questId: 'office_lobby_watch',
+        status: 'active',
+        objectives: {
+          feel_chip_warmth: false,
+          read_incident_bulletin: false,
+          notice_colleague_watch: false,
+        },
+        startedAtTime: 0,
+      },
+    ];
+    expect(getOfficeLobbyWatchHint('office_day')).toContain('серверн');
   });
 
 });

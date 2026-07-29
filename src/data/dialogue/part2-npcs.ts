@@ -51,6 +51,15 @@ export const DIALOGUE_PART2: Record<string, DialogueNode> = {
         ],
       },
       {
+        text: 'Ты слишком долго смотрел в холле. Что видел?',
+        next: 'office_colleague_lobby_watch',
+        condition: { flag: 'lobby_colleague_noticed' },
+        effects: [
+          { type: 'addSkill', skill: 'intuition', value: 1 },
+          { type: 'setFlag', flag: 'lobby_colleague_noticed', flagValue: true },
+        ],
+      },
+      {
         text: 'Ты знаешь что-то про арест Заремы?',
         next: 'colleague_moral_conflict',
         condition: { requiredAct: 3, flag: 'zarema_arrested' },
@@ -59,6 +68,34 @@ export const DIALOGUE_PART2: Record<string, DialogueNode> = {
         text: 'Штормовой ветер ещё во мне — помоги разобрать логи быстрее.',
         next: 'dialogue_storm_wind_live',
         condition: { activeTTLFlag: 'storm_wind_active', collectedPoem: 'poem_5' },
+      },
+    ],
+  },
+
+  office_colleague_lobby_watch: {
+    id: 'office_colleague_lobby_watch',
+    speaker: 'Коллега',
+    text: '*тише* В холле… у тебя что-то теплело у серверной стены. И доска #4729 вспыхнула раньше, чем Александр вызвал. Я не спрашиваю про чип. Только — не свети его на ресепшене. Меня за это уже один раз вызывали «на чай».',
+    choices: [
+      {
+        text: 'Спасибо, что предупредил.',
+        next: null,
+        effects: [
+          { type: 'setFlag', flag: 'lobby_colleague_noticed', flagValue: true },
+          { type: 'setFlag', flag: 'incident_bulletin_read', flagValue: true },
+          { type: 'addKarma', value: 2 },
+          { type: 'npcChange', npcId: 'office_colleague', npcChange: { relation: 5 } },
+          { type: 'triggerQuest', questId: 'office_lobby_watch' },
+        ],
+      },
+      {
+        text: 'Ты тоже что-то чувствовал?',
+        next: null,
+        effects: [
+          { type: 'setFlag', flag: 'lobby_colleague_noticed', flagValue: true },
+          { type: 'addSkill', skill: 'empathy', value: 1 },
+          { type: 'npcChange', npcId: 'office_colleague', npcChange: { relation: 3 } },
+        ],
       },
     ],
   },
