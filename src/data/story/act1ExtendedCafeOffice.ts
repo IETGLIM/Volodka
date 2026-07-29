@@ -5,6 +5,45 @@ import type { StoryNode } from '@/shared/types/game';
  * Optional branches; golden path (cafe → barista → office → diagnosis) unchanged.
  */
 export const STORY_NODES_ACT1_CAFE_OFFICE: Record<string, StoryNode> = {
+  cafe_barista_victoria_whisper: {
+    id: 'cafe_barista_victoria_whisper',
+    text: 'Бариста не поднимает глаз от чашки, но голос становится тише. «Ночью сюда заходит одна. Не заказывает. Смотрит в терминал так, будто читает чужие сны. Если увидишь силуэт у подъезда — не беги. Она уже знает твоё имя в логах.» Он ставит эспрессо. «А теперь пей. Или иди. Город сам вас представит.»',
+    contextNote: 'Стойка «Синей ямы». Бариста намекает на Викторию.',
+    ambientSound: 'sounds/ambient/cafe_jazz_quiet.ogg',
+    speaker: 'Бариста',
+    sceneId: 'cafe_evening',
+    guidanceHint: 'Выйди на улицу — ищи силуэт у подъезда.',
+    guidanceObjectiveType: 'talk_to_npc',
+    guidanceNpcId: 'cafe_barista',
+    effects: [
+      { type: 'setFlag', flag: 'barista_maria_hint', flagValue: true },
+      { type: 'triggerQuest', questId: 'cafe_street_whisper' },
+    ],
+    choices: [
+      {
+        text: 'Выйти на улицу — искать силуэт',
+        next: 'street_bench_view',
+        effects: [
+          { type: 'addSkill', skill: 'intuition', value: 1 },
+          { type: 'npcChange', npcId: 'cafe_barista', npcChange: { relation: 4 } },
+        ],
+      },
+      {
+        text: 'Сначала обычный кофе — потом улица',
+        next: 'cafe_explore_mode',
+        effects: [
+          { type: 'addStat', stat: 'energy', value: 10 },
+          { type: 'npcChange', npcId: 'cafe_barista', npcChange: { relation: 2 } },
+        ],
+      },
+      {
+        text: 'Пора в офис гильдии',
+        next: 'office_alexander',
+        effects: [{ type: 'addKarma', value: 1 }],
+      },
+    ],
+  },
+
   cafe_special_coffee: {
     id: 'cafe_special_coffee',
     text: 'Бариста наклоняется ближе. «Особый — для своих. Двойной эспрессо с синтаксическим сахаром и каплей чего-то, что гильдия не умеет называть.» Он ставит чашку — на пене проступает символ: свиток и единица. «Задняя комната иногда шепчет тем, кто слушает. Но сначала — офис. Инцидент не ждёт.»',

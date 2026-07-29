@@ -119,13 +119,16 @@ const ITEMS: ItemDefinition[] = [
   {
     id: 'maria_data_chip',
     name: 'Чип данных Виктории',
-    description: 'Маленький чип с зашифрованными данными. Виктория доверила его тебе.',
-    category: 'quest_item',
+    description:
+      'Маленький чип с зашифрованными данными. Виктория доверила его тебе. Открой — внутри стих, который гильдия пыталась стереть.',
+    category: 'book',
     rarity: 'uncommon',
     icon: 'Chip',
     stackable: false,
     maxStack: 1,
-    effects: [],
+    effects: [{ skill: 'intuition', value: 1 }],
+    useMessage: 'Чип расшифрован — строки вспыхивают в сознании',
+    linkedContent: { type: 'poem', id: 'poem_6' },
     questRelated: true,
   },
   {

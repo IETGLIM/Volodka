@@ -498,4 +498,42 @@ export const STORY_NODES_ACT1_EXTENDED: Record<string, StoryNode> = {
       },
     ],
   },
+
+  /* Chip accepted — poem unfolds without jumping to Act 2 maria_introduction. */
+  maria_chip_trust: {
+    id: 'maria_chip_trust',
+    text: 'Чип тёплый от её ладони. На миг экран внутреннего HUD вспыхивает строками — не лог, не дамп. Стих, который гильдия пыталась стереть. Виктория уже отступает в тень: «Прочитай. Потом — кафе. Там знают больше, чем говорят. А офис… офис подождёт, пока ты услышишь.»',
+    contextNote: 'Переулок. Чип в кармане. Стих вспыхивает в сознании.',
+    accessibilityAnnounce: 'Вы приняли чип Виктории. Открыто стихотворение.',
+    soundEffect: 'notify',
+    speaker: 'narrator',
+    sceneId: 'street_night',
+    guidanceHint: 'Стих уже с тобой — зайди в «Синюю яму» или поговори с Викторией ещё раз.',
+    guidanceObjectiveType: 'visit_location',
+    guidanceSceneLabel: 'Кафе',
+    effects: [
+      { type: 'collectPoem', poemId: 'poem_6' },
+      { type: 'setFlag', flag: 'read_maria_poem', flagValue: true },
+      { type: 'setFlag', flag: 'maria_introduced', flagValue: true },
+    ],
+    choices: [
+      {
+        text: 'Зайти в кафе «Синяя яма»',
+        next: 'cafe_enter',
+        goldenPath: true,
+        effects: [
+          { type: 'addKarma', value: 2 },
+          { type: 'addSkill', skill: 'empathy', value: 1 },
+        ],
+      },
+      {
+        text: 'Остаться на улице — переварить строки',
+        next: 'street_bench',
+        effects: [
+          { type: 'addStat', stat: 'stress', value: -2 },
+          { type: 'addSkill', skill: 'writing', value: 1 },
+        ],
+      },
+    ],
+  },
 };

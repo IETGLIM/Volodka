@@ -3,6 +3,7 @@
 import { getSceneConfig } from '@/config/scenes';
 import { getFirstReadingHint } from '@/engine/guidedStory/firstReadingHint';
 import {
+  getCafeStreetWhisperHint,
   getIncidentScrollHint,
   getMariaConnectionHint,
   getNightCityCallHint,
@@ -138,7 +139,11 @@ export function buildQuestJournalContextualHint(
     if (live) return live;
   }
   if (questId === 'maria_connection') {
-    const live = getMariaConnectionHint();
+    const live = getMariaConnectionHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'cafe_street_whisper') {
+    const live = getCafeStreetWhisperHint(currentSceneId);
     if (live) return live;
   }
   if (questId === 'incident_scroll_4729') {
