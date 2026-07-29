@@ -10,6 +10,7 @@ describe('chunkLoadRecovery', () => {
   afterEach(() => {
     clearChunkReloadFlag();
     vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 
   it('detects dynamic import fetch failures', () => {
@@ -24,6 +25,8 @@ describe('chunkLoadRecovery', () => {
   it('reloads once on stale chunk, then rethrows on second call', () => {
     const reload = vi.fn();
     const storage = new Map<string, string>();
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     vi.stubGlobal('window', {
       location: { reload },
@@ -45,10 +48,15 @@ describe('chunkLoadRecovery', () => {
     recoverFromStaleChunk(err);
     expect(reload).toHaveBeenCalledTimes(1);
     expect(storage.get(CHUNK_RELOAD_SESSION_KEY)).toBe('1');
+    expect(warnSpy).toHaveBeenCalledWith(
+      '[chunkLoadRecovery] Stale chunk detected, reloading…',
+      err,
+    );
 
     // Second call: reload was already attempted — rethrows the error
     // so the caller (retryLazy) doesn't retry infinitely.
     expect(() => recoverFromStaleChunk(err)).toThrow(err);
     expect(reload).toHaveBeenCalledTimes(1);
+    expect(errorSpy).not.toHaveBeenCalled();
   });
 });
