@@ -666,6 +666,8 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     effects: [
       { type: 'addSkill', skill: 'intuition', value: 1 },
       { type: 'setFlag', flag: 'looked_out_kitchen_window', flagValue: true },
+      { type: 'setFlag', flag: 'left_office_after_vault', flagValue: true },
+      { type: 'triggerQuest', questId: 'friday_spleen' },
     ],
   },
   {
@@ -758,6 +760,30 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     effects: [
       { type: 'setFlag', flag: 'met_albert', flagValue: true },
       { type: 'npcChange', npcId: 'albert', npcChange: { relation: 3 } },
+    ],
+  },
+  {
+    id: 'cafe_albert_friday_bridge',
+    sceneId: 'cafe_evening',
+    position: [-3.0, 0, -2.5],
+    size: [2.0, 2.0, 2.0],
+    enterToast: 'Альберт постукивает пальцами — ритм как в логах #4729.',
+    requiredFlag: 'found_first_poem',
+    hiddenWhenFlag: 'friday_albert_bridge_heard',
+    linkedStoryNodeId: 'cafe_albert_friday_bridge',
+    linkedNpcId: 'albert',
+    linkedQuestId: 'friday_spleen',
+    interactionType: 'talk',
+    interactionLabel: 'Спросить про живой код',
+    examineData: {
+      title: 'Альберт в углу',
+      description: 'Философ с кружкой — сегодня смотрит так, будто уже читал твой дифф.',
+      detailText: 'Стих из #4729 ещё звенит. Он знает про «живой код» и путь к Сети.',
+      icon: '☕',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'friday_albert_bridge_heard', flagValue: true },
+      { type: 'triggerQuest', questId: 'friday_spleen' },
     ],
   },
   {
@@ -934,6 +960,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     enterToast: 'Коллега нервно перебирает провода.',
     linkedDialogueNodeId: 'office_colleague_dialogue',
     linkedNpcId: 'office_colleague',
+    linkedQuestId: 'code_poem_aftermath',
     interactionType: 'talk',
   },
   {
@@ -958,6 +985,8 @@ export const TRIGGER_ZONES: TriggerZone[] = [
       { type: 'collectPoem', poemId: 'poem_1' },
       { type: 'setFlag', flag: 'read_poem_1', flagValue: true },
       { type: 'setFlag', flag: 'found_first_poem', flagValue: true },
+      { type: 'setFlag', flag: 'guild_poem_pressure', flagValue: true },
+      { type: 'triggerQuest', questId: 'code_poem_aftermath' },
     ],
   },
   {

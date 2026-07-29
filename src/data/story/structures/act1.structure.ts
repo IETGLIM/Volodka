@@ -839,8 +839,24 @@ export const ACT1_STRUCTURE: Record<string, StoryNodeStructure> = {
     "choices": [
       {
         "text": "",
-        "next": "colleague_persuasion_line",
+        "next": "office_colleague_vault_whisper",
         "goldenPath": true,
+        "effects": [
+          {
+            "type": "addSkill",
+            "skill": "persuasion",
+            "value": 1
+          },
+          {
+            "type": "setFlag",
+            "flag": "vault_rumor_heard",
+            "flagValue": true
+          }
+        ]
+      },
+      {
+        "text": "",
+        "next": "colleague_persuasion_line",
         "condition": {
           "minSkill": {
             "persuasion": 3
@@ -1051,11 +1067,6 @@ export const ACT1_STRUCTURE: Record<string, StoryNodeStructure> = {
         "text": "",
         "next": "fix_success",
         "goldenPath": true,
-        "condition": {
-          "minSkill": {
-            "coding": 2
-          }
-        },
         "effects": [
           {
             "type": "addSkill",
@@ -1100,6 +1111,15 @@ export const ACT1_STRUCTURE: Record<string, StoryNodeStructure> = {
       {
         "type": "triggerQuest",
         "questId": "vault_backup_trial"
+      },
+      {
+        "type": "triggerQuest",
+        "questId": "code_poem_aftermath"
+      },
+      {
+        "type": "setFlag",
+        "flag": "vault_rumor_heard",
+        "flagValue": true
       }
     ],
     "choices": [
@@ -1124,11 +1144,25 @@ export const ACT1_STRUCTURE: Record<string, StoryNodeStructure> = {
             "flagValue": true
           },
           {
+            "type": "setFlag",
+            "flag": "vault_rumor_heard",
+            "flagValue": true
+          },
+          {
+            "type": "setFlag",
+            "flag": "left_office_after_vault",
+            "flagValue": true
+          },
+          {
             "type": "npcChange",
             "npcId": "office_colleague",
             "npcChange": {
               "relation": 10
             }
+          },
+          {
+            "type": "triggerQuest",
+            "questId": "friday_spleen"
           }
         ]
       },
@@ -1164,7 +1198,7 @@ export const ACT1_STRUCTURE: Record<string, StoryNodeStructure> = {
     "choices": [
       {
         "text": "",
-        "next": "office_colleague",
+        "next": "office_poem_aftermath",
         "goldenPath": true,
         "effects": [
           {
@@ -1193,6 +1227,11 @@ export const ACT1_STRUCTURE: Record<string, StoryNodeStructure> = {
           },
           {
             "type": "setFlag",
+            "flag": "guild_poem_pressure",
+            "flagValue": true
+          },
+          {
+            "type": "setFlag",
             "flag": "solved_albert_riddle",
             "flagValue": true
           },
@@ -1200,6 +1239,10 @@ export const ACT1_STRUCTURE: Record<string, StoryNodeStructure> = {
             "type": "setFlag",
             "flag": "proved_poetry_code_link",
             "flagValue": true
+          },
+          {
+            "type": "triggerQuest",
+            "questId": "code_poem_aftermath"
           }
         ]
       },
@@ -1232,8 +1275,22 @@ export const ACT1_STRUCTURE: Record<string, StoryNodeStructure> = {
           },
           {
             "type": "setFlag",
+            "flag": "found_first_poem",
+            "flagValue": true
+          },
+          {
+            "type": "setFlag",
             "flag": "thread_lore_4729",
             "flagValue": true
+          },
+          {
+            "type": "setFlag",
+            "flag": "guild_poem_pressure",
+            "flagValue": true
+          },
+          {
+            "type": "triggerQuest",
+            "questId": "code_poem_aftermath"
           }
         ]
       }
@@ -1267,6 +1324,15 @@ export const ACT1_STRUCTURE: Record<string, StoryNodeStructure> = {
           {
             "type": "addKarma",
             "value": 3
+          },
+          {
+            "type": "setFlag",
+            "flag": "left_office_after_vault",
+            "flagValue": true
+          },
+          {
+            "type": "triggerQuest",
+            "questId": "friday_spleen"
           }
         ]
       },
@@ -1313,7 +1379,7 @@ export const ACT1_STRUCTURE: Record<string, StoryNodeStructure> = {
     "choices": [
       {
         "text": "",
-        "next": "act2_transition",
+        "next": "friday_spleen_night",
         "goldenPath": true,
         "effects": [
           {
@@ -1329,6 +1395,20 @@ export const ACT1_STRUCTURE: Record<string, StoryNodeStructure> = {
             "type": "addStat",
             "stat": "stress",
             "value": -5
+          },
+          {
+            "type": "setFlag",
+            "flag": "friday_spleen_written",
+            "flagValue": true
+          },
+          {
+            "type": "setFlag",
+            "flag": "left_office_after_vault",
+            "flagValue": true
+          },
+          {
+            "type": "triggerQuest",
+            "questId": "friday_spleen"
           }
         ]
       },
@@ -1344,6 +1424,20 @@ export const ACT1_STRUCTURE: Record<string, StoryNodeStructure> = {
           {
             "type": "addKarma",
             "value": 1
+          },
+          {
+            "type": "setFlag",
+            "flag": "friday_spleen_written",
+            "flagValue": true
+          },
+          {
+            "type": "setFlag",
+            "flag": "friday_albert_bridge_heard",
+            "flagValue": true
+          },
+          {
+            "type": "triggerQuest",
+            "questId": "friday_spleen"
           }
         ]
       },

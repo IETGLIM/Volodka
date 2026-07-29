@@ -5,6 +5,8 @@ import { getFirstReadingHint } from '@/engine/guidedStory/firstReadingHint';
 import {
   getCafeStreetWhisperHint,
   getChipCafeClearanceHint,
+  getCodePoemAftermathHint,
+  getFridaySpleenHint,
   getIncidentScrollHint,
   getMariaConnectionHint,
   getNightCityCallHint,
@@ -158,6 +160,14 @@ export function buildQuestJournalContextualHint(
   }
   if (questId === 'incident_scroll_4729') {
     const live = getIncidentScrollHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'code_poem_aftermath') {
+    const live = getCodePoemAftermathHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'friday_spleen') {
+    const live = getFridaySpleenHint(currentSceneId);
     if (live) return live;
   }
   if (questId === 'poetry_collection') {

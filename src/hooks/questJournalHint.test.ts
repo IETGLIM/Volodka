@@ -11,8 +11,12 @@ vi.mock('@/engine/guidedStory/firstReadingHint', () => ({
 vi.mock('@/engine/guidedStory/act1QuestHints', () => ({
   getMariaConnectionHint: () => 'Выйди на ночную улицу — Виктория сама тебя найдёт',
   getCafeStreetWhisperHint: () => 'Спроси баристу про ночных гостей у стойки [E]',
+  getChipCafeClearanceHint: () => 'Вернись в «Синюю яму» со стихом чипа — бариста услышит эхо',
+  getOfficeLobbyWatchHint: () => 'Зайди в холл офиса — у серверной стены чип отзовётся',
   getNightCityCallHint: () => 'Открой дверь в коридор [E] — город уже зовёт',
   getIncidentScrollHint: () => 'Иди в офис IT-гильдии — Александр ждёт у инцидента #4729',
+  getCodePoemAftermathHint: () => 'Дочитай стих на терминале инцидента — строки уже проступают',
+  getFridaySpleenHint: () => 'Зайди в «Синюю яму» к Альберту — он знает мост к Сети',
   getPoetryCollectionHint: () => 'Следующий стих: Рабочий стол',
   getVaultBackupTrialHint: () => 'Вернись в офис IT-гильдии — коллега знает про Хранилище',
   getNetworkInitiationHint: () => 'Виктория ждёт для посвящения — ищи её на улице или в кафе',
@@ -158,6 +162,14 @@ describe('buildQuestJournalContextualHint', () => {
     expect(buildQuestJournalContextualHint('incident_scroll_4729', 'street_night')).toContain(
       'офис',
     );
+  });
+
+  it('prefers code_poem_aftermath live cue', () => {
+    expect(buildQuestJournalContextualHint('code_poem_aftermath', 'office_day')).toContain('стих');
+  });
+
+  it('prefers friday_spleen live cue', () => {
+    expect(buildQuestJournalContextualHint('friday_spleen', 'volodka_room')).toContain('Альберту');
   });
 
   it('prefers poetry_collection live cue', () => {

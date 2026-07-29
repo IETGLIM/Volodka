@@ -348,9 +348,136 @@ export const QUESTS_ACT1: QuestDefinition[] = [
       { type: 'addSkill', skill: 'logic', value: 2 },
       { type: 'addItem', itemId: 'guild_access_badge', value: 1 },
       { type: 'addXp', value: 100 },
+      { type: 'triggerQuest', questId: 'code_poem_aftermath' },
     ],
     linkedStoryNodeId: 'office_alexander',
     questGiverNpcId: 'office_alexander',
+  },
+
+  /* ─────────────── QUEST 3b: Poem aftermath → vault lead ─────────────── */
+  {
+    id: 'code_poem_aftermath',
+    title: 'Стих в логах',
+    description:
+      'Инцидент #4729 раскрыл стихи в коде. Гильдия уже давит KPI и тишиной. Прочитай расшифровку, почувствуй офисную политику, спроси коллегу про стёртые архивы — слух о Хранилище откроет следующий шаг.',
+    act: 1,
+    faction: 'it_guild',
+    questType: 'main',
+    difficulty: 'medium',
+    hint: 'Офис → стих на экране → давление гильдии → коллега шепчет про Хранилище.',
+    // Soft spine: preferred after incident_scroll_4729, but not a hard gate —
+    // fix_success / terminal can start this before the incident quest auto-completes.
+    spineOrder: 6,
+    objectives: [
+      {
+        id: 'absorb_decoded_poem',
+        description: 'Принять расшифрованный стих из логов #4729',
+        type: 'flag_set',
+        target: 'found_first_poem',
+        completed: false,
+      },
+      {
+        id: 'feel_guild_pressure',
+        description: 'Почувствовать давление гильдии после находки',
+        type: 'flag_set',
+        target: 'guild_poem_pressure',
+        completed: false,
+      },
+      {
+        id: 'ask_colleague_politics',
+        description: 'Поговорить с коллегой об офисной политике и стихах',
+        type: 'npc_talked',
+        target: 'office_colleague',
+        completed: false,
+      },
+      {
+        id: 'hear_vault_lead',
+        description: 'Услышать от коллеги слух о Хранилище',
+        type: 'flag_set',
+        target: 'vault_rumor_heard',
+        completed: false,
+      },
+    ],
+    rewards: [
+      { type: 'addSkill', skill: 'intuition', value: 2 },
+      { type: 'addSkill', skill: 'persuasion', value: 2 },
+      { type: 'addSkill', skill: 'writing', value: 1 },
+      { type: 'addKarma', value: 4 },
+      { type: 'addXp', value: 90 },
+      { type: 'setFlag', flag: 'code_poem_aftermath_done', flagValue: true },
+      { type: 'npcChange', npcId: 'office_colleague', npcChange: { relation: 6 } },
+      { type: 'triggerQuest', questId: 'vault_backup_trial' },
+    ],
+    linkedStoryNodeId: 'office_poem_aftermath',
+    linkedStoryNodeIds: [
+      'fix_success',
+      'office_poem_aftermath',
+      'office_colleague',
+      'office_colleague_vault_whisper',
+      'colleague_persuasion_line',
+    ],
+    questGiverNpcId: 'office_colleague',
+  },
+
+  /* ─────────────── QUEST 3c: Friday spleen → Act 2 bridge (side) ─────────────── */
+  {
+    id: 'friday_spleen',
+    title: 'Сплин пятницы',
+    description:
+      'После офиса и намёка на Хранилище пятница ложится на комнату. Запиши сплин, постой на пороге дома — и, если хватит сил, зайди к Альберту: «живой код» уже зовёт к Сети.',
+    act: 1,
+    faction: undefined,
+    questType: 'side',
+    difficulty: 'easy',
+    hint: 'Балкон/дом → стих пятницы → Альберт в «Синей яме» → путь к Акту 2.',
+    // Soft spine: preferred after incident; skipping Albert café still completes via street skip flags.
+    objectives: [
+      {
+        id: 'leave_office_dusk',
+        description: 'Уйти из офиса после разговора о Хранилище',
+        type: 'flag_set',
+        target: 'left_office_after_vault',
+        completed: false,
+      },
+      {
+        id: 'stand_on_balcony',
+        description: 'Постоять на балконе или дома вечером',
+        type: 'location_visited',
+        target: 'home_evening',
+        completed: false,
+      },
+      {
+        id: 'write_friday_poem',
+        description: 'Написать стих пятничного сплина',
+        type: 'poem_collected',
+        target: 'poem_4',
+        completed: false,
+      },
+      {
+        id: 'hear_albert_bridge',
+        description: 'Услышать от Альберта мост к «живому коду» и Сети',
+        type: 'flag_set',
+        target: 'friday_albert_bridge_heard',
+        completed: false,
+      },
+    ],
+    rewards: [
+      { type: 'addSkill', skill: 'writing', value: 2 },
+      { type: 'addSkill', skill: 'intuition', value: 2 },
+      { type: 'addKarma', value: 3 },
+      { type: 'addXp', value: 70 },
+      { type: 'setFlag', flag: 'friday_spleen_done', flagValue: true },
+      { type: 'npcChange', npcId: 'albert', npcChange: { relation: 5 } },
+    ],
+    linkedStoryNodeId: 'friday_spleen_night',
+    linkedStoryNodeIds: [
+      'balcony_thought',
+      'friday_arrives',
+      'friday_spleen_night',
+      'cafe_albert_friday_bridge',
+      'act2_transition',
+    ],
+    questGiverNpcId: 'albert',
   },
 
   /* ─────────────── QUEST 4: Vault backup trial ─────────────── */
@@ -358,12 +485,14 @@ export const QUESTS_ACT1: QuestDefinition[] = [
     id: 'vault_backup_trial',
     title: 'Испытание Хранилища',
     description: 'Коллега рассказал о Хранилище — месте, где хранятся стёртые архивы. Но доступ туда есть только у старших членов гильдии. Нужно найти способ проникнуть внутрь.',
-    // Запускается в акте 1 (story: colleague_persuasion_line) и входит в quest spine акта 1.
+    // Запускается в акте 1 (story: colleague_persuasion_line / code_poem_aftermath) и входит в quest spine акта 1.
     act: 1,
     faction: 'it_guild',
     questType: 'main',
     difficulty: 'hard',
     hint: 'Коллега знает больше, чем говорит. Поговори с ним ещё раз — но осторожно.',
+    // Soft spine: code_poem_aftermath preferred after #4729, not a hard gate.
+    spineOrder: 7,
     objectives: [
       {
         id: 'learn_about_vault',
@@ -403,7 +532,13 @@ export const QUESTS_ACT1: QuestDefinition[] = [
       { type: 'addItem', itemId: 'vault_key_fragment', value: 1 },
       { type: 'addXp', value: 150 },
     ],
-    linkedStoryNodeId: 'colleague_persuasion_line',
+    linkedStoryNodeId: 'office_colleague_vault_whisper',
+    linkedStoryNodeIds: [
+      'office_colleague_vault_whisper',
+      'colleague_persuasion_line',
+      'office_vault_archive',
+      'office_colleague',
+    ],
     questGiverNpcId: 'office_colleague',
   },
 

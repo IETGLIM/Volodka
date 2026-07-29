@@ -427,6 +427,41 @@ const OFFICE_LOBBY_WATCH_PROGRESS_FLAGS = [
   'office_lobby_watch_done',
 ] as const;
 
+const CODE_POEM_AFTERMATH_ACTIVATION_NODES = new Set([
+  'fix_success',
+  'office_poem_aftermath',
+  'office_colleague',
+  'office_colleague_vault_whisper',
+  'colleague_persuasion_line',
+  'start_diagnosis',
+  'office_alexander',
+]);
+
+const CODE_POEM_AFTERMATH_PROGRESS_FLAGS = [
+  'found_first_poem',
+  'guild_poem_pressure',
+  'vault_rumor_heard',
+  'code_poem_aftermath_done',
+  'thread_lore_4729',
+  'read_poem_1',
+] as const;
+
+const FRIDAY_SPLEEN_ACTIVATION_NODES = new Set([
+  'balcony_thought',
+  'friday_arrives',
+  'friday_spleen_night',
+  'cafe_albert_friday_bridge',
+  'colleague_persuasion_line',
+  'act2_transition',
+]);
+
+const FRIDAY_SPLEEN_PROGRESS_FLAGS = [
+  'left_office_after_vault',
+  'friday_spleen_written',
+  'friday_albert_bridge_heard',
+  'friday_spleen_done',
+] as const;
+
 const SPINE_QUEST_RECONCILE_RULES: SpineQuestReconcileRule[] = [
   {
     questId: 'night_city_call',
@@ -452,6 +487,16 @@ const SPINE_QUEST_RECONCILE_RULES: SpineQuestReconcileRule[] = [
     questId: 'office_lobby_watch',
     activationNodes: OFFICE_LOBBY_WATCH_ACTIVATION_NODES,
     progressFlags: OFFICE_LOBBY_WATCH_PROGRESS_FLAGS,
+  },
+  {
+    questId: 'code_poem_aftermath',
+    activationNodes: CODE_POEM_AFTERMATH_ACTIVATION_NODES,
+    progressFlags: CODE_POEM_AFTERMATH_PROGRESS_FLAGS,
+  },
+  {
+    questId: 'friday_spleen',
+    activationNodes: FRIDAY_SPLEEN_ACTIVATION_NODES,
+    progressFlags: FRIDAY_SPLEEN_PROGRESS_FLAGS,
   },
   {
     questId: 'network_initiation',

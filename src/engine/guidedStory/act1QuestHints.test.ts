@@ -2,6 +2,8 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import {
   getCafeStreetWhisperHint,
   getChipCafeClearanceHint,
+  getCodePoemAftermathHint,
+  getFridaySpleenHint,
   getIncidentScrollHint,
   getMariaConnectionHint,
   getNightCityCallHint,
@@ -203,6 +205,40 @@ describe('act1QuestHints', () => {
       },
     ];
     expect(getOfficeLobbyWatchHint('office_day')).toContain('серверн');
+  });
+
+  it('guides code_poem_aftermath from poem to colleague', () => {
+    snap.quests = [
+      {
+        questId: 'code_poem_aftermath',
+        status: 'active',
+        objectives: {
+          absorb_decoded_poem: true,
+          feel_guild_pressure: true,
+          ask_colleague_politics: false,
+          hear_vault_lead: false,
+        },
+        startedAtTime: 0,
+      },
+    ];
+    expect(getCodePoemAftermathHint('office_day')).toContain('коллеге');
+  });
+
+  it('guides friday_spleen toward Albert cafe', () => {
+    snap.quests = [
+      {
+        questId: 'friday_spleen',
+        status: 'active',
+        objectives: {
+          leave_office_dusk: true,
+          stand_on_balcony: true,
+          write_friday_poem: true,
+          hear_albert_bridge: false,
+        },
+        startedAtTime: 0,
+      },
+    ];
+    expect(getFridaySpleenHint('volodka_room')).toContain('Альберту');
   });
 
 });

@@ -38,10 +38,10 @@ describe('Act I golden path markers', () => {
     expect(golden[0]?.next).toBe('friday_arrives');
   });
 
-  it('marks friday_arrives golden branch to act2_transition', () => {
+  it('marks friday_arrives golden branch to friday_spleen_night', () => {
     const node = STORY_NODES_ACT1.friday_arrives;
     const golden = node.choices.filter((c) => c.goldenPath === true);
     expect(golden).toHaveLength(1);
-    expect(golden[0]?.next).toBe('act2_transition');
+    expect(golden[0]?.next).toBe('friday_spleen_night');
   });
 });

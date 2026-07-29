@@ -38,6 +38,16 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
         effects: [{ type: 'visitStoryNode', nodeId: 'cafe_albert_lesson_intro' }],
       },
       {
+        text: 'Я вытащил стих из #4729. Что такое «живой код»?',
+        next: null,
+        condition: { flag: 'found_first_poem' },
+        effects: [
+          { type: 'visitStoryNode', nodeId: 'cafe_albert_friday_bridge' },
+          { type: 'setFlag', flag: 'friday_albert_bridge_heard', flagValue: true },
+          { type: 'triggerQuest', questId: 'friday_spleen' },
+        ],
+      },
+      {
         text: 'Расскажи что-нибудь новое. Я готов слушать.',
         next: 'albert_philosophy',
         condition: { flag: 'albert_relation_warm', minNpcRelation: 60, minTimeOfDay: 15, maxTimeOfDay: 22 },

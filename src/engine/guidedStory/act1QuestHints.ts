@@ -152,6 +152,58 @@ export function getIncidentScrollHint(currentSceneId: string): string | null {
   return null;
 }
 
+/** Стих в логах — poem pressure → colleague → vault rumor. */
+export function getCodePoemAftermathHint(currentSceneId: string): string | null {
+  const quest = findActiveQuest('code_poem_aftermath');
+  if (!quest) return null;
+  if (!objectiveDone(quest, 'absorb_decoded_poem')) {
+    return currentSceneId === 'office_day'
+      ? 'Дочитай стих на терминале инцидента — строки уже проступают'
+      : 'Вернись в офис — стих из #4729 ждёт на экране';
+  }
+  if (!objectiveDone(quest, 'feel_guild_pressure')) {
+    return currentSceneId === 'office_day'
+      ? 'Гильдия уже шепчет за стеклом — почувствуй давление KPI'
+      : 'В офисе после расшифровки давят тишиной — вернись';
+  }
+  if (!objectiveDone(quest, 'ask_colleague_politics')) {
+    return currentSceneId === 'office_day'
+      ? 'Подойди к коллеге у станций — пока Александр отвернулся [E]'
+      : 'Коллега в офисе знает про стёртые архивы — найди его';
+  }
+  if (!objectiveDone(quest, 'hear_vault_lead')) {
+    return currentSceneId === 'office_day'
+      ? 'Вытащи из коллеги слух о Хранилище — шёпотом'
+      : 'Слух о Хранилище — у коллеги в офисе гильдии';
+  }
+  return null;
+}
+
+/** Сплин пятницы — home → poem_4 → Albert bridge. */
+export function getFridaySpleenHint(currentSceneId: string): string | null {
+  const quest = findActiveQuest('friday_spleen');
+  if (!quest) return null;
+  if (!objectiveDone(quest, 'leave_office_dusk')) {
+    return currentSceneId === 'office_day'
+      ? 'Пора уйти из офиса — балкон и дом ждут'
+      : 'После намёка на Хранилище выйди из офиса к вечеру';
+  }
+  if (!objectiveDone(quest, 'stand_on_balcony')) {
+    return currentSceneId === 'home_evening' || currentSceneId === 'volodka_room'
+      ? 'Постой у окна или на балконе — город диктует строки'
+      : 'Вернись домой вечером — балкон и кухня зовут';
+  }
+  if (!objectiveDone(quest, 'write_friday_poem')) {
+    return 'Запиши пятничный сплин — стих об одиночестве уже складывается';
+  }
+  if (!objectiveDone(quest, 'hear_albert_bridge')) {
+    return currentSceneId === 'cafe_evening'
+      ? 'Альберт в углу — спроси про живой код [E]'
+      : 'Зайди в «Синюю яму» к Альберту — он знает мост к Сети';
+  }
+  return null;
+}
+
 /** Собрание стихов — nudge toward next poem target label. */
 export function getPoetryCollectionHint(): string | null {
   const quest = findActiveQuest('poetry_collection');

@@ -10,6 +10,7 @@ import { STORY_NODES_SOLNYSH } from './solnyshStory';
 import { STORY_NODES_ACT1 } from './act1';
 import { STORY_NODES_ACT1_EXTENDED } from './act1Extended';
 import { STORY_NODES_ACT1_CAFE_OFFICE } from './act1ExtendedCafeOffice';
+import { STORY_NODES_ACT1_OFFICE_AFTERMATH } from './act1ExtendedOfficeAftermath';
 import { ACT1_ROOM_EXPANDED_NODES } from './act1-room-expanded';
 import { STORY_NODES_ACT2 } from './act2';
 import { ACT2_STORY_EXPANDED_NODES } from './act2-story-expanded';
@@ -38,6 +39,7 @@ export function buildStoryNodes(): Record<string, StoryNode> {
     { name: 'act1', nodes: STORY_NODES_ACT1 },
     { name: 'act1Extended', nodes: STORY_NODES_ACT1_EXTENDED },
     { name: 'act1CafeOffice', nodes: STORY_NODES_ACT1_CAFE_OFFICE },
+    { name: 'act1OfficeAftermath', nodes: STORY_NODES_ACT1_OFFICE_AFTERMATH },
     { name: 'act1RoomExpanded', nodes: ACT1_ROOM_EXPANDED_NODES },
     { name: 'solnysh', nodes: STORY_NODES_SOLNYSH },
     { name: 'sceneExploreHubs', nodes: STORY_NODES_SCENE_EXPLORE_HUBS },

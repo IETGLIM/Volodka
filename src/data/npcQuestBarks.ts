@@ -17,6 +17,16 @@ export const NPC_QUEST_BARKS: Record<string, NpcQuestBarkEntry[]> = {
       text: 'Не пялься на доску слишком долго. Александр не любит, когда в холле читают вслух.',
     },
     {
+      questId: 'code_poem_aftermath',
+      objectiveId: 'ask_colleague_politics',
+      text: 'Псс. Стих на твоём экране уже увидели. Подойди — расскажу про то, чего нет в KPI.',
+    },
+    {
+      questId: 'code_poem_aftermath',
+      objectiveId: 'hear_vault_lead',
+      text: 'Хранилище… тише. Старшие ходят туда по ночам. Я дам намёк, если камеры моргнут.',
+    },
+    {
       questId: 'vault_backup_trial',
       objectiveId: 'learn_about_vault',
       text: 'Хранилище? Тише. Подойди к станциям — расскажу, когда камеры моргнут.',
@@ -32,6 +42,23 @@ export const NPC_QUEST_BARKS: Record<string, NpcQuestBarkEntry[]> = {
       questId: 'incident_scroll_4729',
       objectiveId: 'talk_alexander',
       text: 'Подойди. #4729 — не баг. В коде спрятаны стихи, и гильдия хочет их стереть.',
+    },
+    {
+      questId: 'code_poem_aftermath',
+      objectiveId: 'feel_guild_pressure',
+      text: 'Аномалия задокументирована. Не распространять. KPI не любит поэзию в логах.',
+    },
+  ],
+  albert: [
+    {
+      questId: 'friday_spleen',
+      objectiveId: 'hear_albert_bridge',
+      text: 'Садись. Ты вытащил ямб из продакшена — гильдия назовёт инцидентом. Я — дверью.',
+    },
+    {
+      questId: 'alberts_lesson',
+      objectiveId: 'talk_albert_lesson',
+      text: 'Код и стих — один язык. Покажи, что видишь оба.',
     },
   ],
   zarema: [

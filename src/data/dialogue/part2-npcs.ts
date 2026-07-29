@@ -60,6 +60,15 @@ export const DIALOGUE_PART2: Record<string, DialogueNode> = {
         ],
       },
       {
+        text: 'Стих из #4729 уже на экране. Что гильдия сделает со мной?',
+        next: 'office_colleague_poem_aftermath',
+        condition: { flag: 'found_first_poem' },
+        effects: [
+          { type: 'addSkill', skill: 'intuition', value: 1 },
+          { type: 'setFlag', flag: 'guild_poem_pressure', flagValue: true },
+        ],
+      },
+      {
         text: 'Ты знаешь что-то про арест Заремы?',
         next: 'colleague_moral_conflict',
         condition: { requiredAct: 3, flag: 'zarema_arrested' },
@@ -95,6 +104,47 @@ export const DIALOGUE_PART2: Record<string, DialogueNode> = {
           { type: 'setFlag', flag: 'lobby_colleague_noticed', flagValue: true },
           { type: 'addSkill', skill: 'empathy', value: 1 },
           { type: 'npcChange', npcId: 'office_colleague', npcChange: { relation: 3 } },
+        ],
+      },
+    ],
+  },
+
+  office_colleague_poem_aftermath: {
+    id: 'office_colleague_poem_aftermath',
+    speaker: 'Коллега',
+    text: '*шепчет* KPI уже красный. Александр скажет «аномалия», но он видел стих — я видел, как у него дрогнул глаз. Олег тоже видел стихи в логах… и исчез. Если хочешь жить в архиве, а не в KPI — слушай: после Краха стёрли разделы. Копия может быть в Хранилище. Официально его нет.',
+    choices: [
+      {
+        text: 'Расскажи про Хранилище — тихо.',
+        next: null,
+        effects: [
+          { type: 'visitStoryNode', nodeId: 'office_colleague_vault_whisper' },
+          { type: 'setFlag', flag: 'guild_poem_pressure', flagValue: true },
+          { type: 'setFlag', flag: 'vault_rumor_heard', flagValue: true },
+          { type: 'setFlag', flag: 'colleague_shared_poetry_code', flagValue: true },
+          { type: 'triggerQuest', questId: 'code_poem_aftermath' },
+          { type: 'npcChange', npcId: 'office_colleague', npcChange: { relation: 8 } },
+        ],
+      },
+      {
+        text: 'Я не хочу исчезнуть, как Олег.',
+        next: 'office_colleague_fear',
+        effects: [
+          { type: 'setFlag', flag: 'guild_poem_pressure', flagValue: true },
+          { type: 'setFlag', flag: 'vault_rumor_heard', flagValue: true },
+          { type: 'addSkill', skill: 'empathy', value: 1 },
+          { type: 'triggerQuest', questId: 'code_poem_aftermath' },
+        ],
+      },
+      {
+        text: 'Спасибо. Я запомню.',
+        next: null,
+        effects: [
+          { type: 'setFlag', flag: 'guild_poem_pressure', flagValue: true },
+          { type: 'setFlag', flag: 'vault_rumor_heard', flagValue: true },
+          { type: 'addKarma', value: 2 },
+          { type: 'triggerQuest', questId: 'code_poem_aftermath' },
+          { type: 'triggerQuest', questId: 'vault_backup_trial' },
         ],
       },
     ],

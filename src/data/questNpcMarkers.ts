@@ -24,6 +24,14 @@ export const QUEST_OBJECTIVE_NPC_HINTS: Readonly<
   office_lobby_watch: {
     notice_colleague_watch: 'office_colleague',
   },
+  code_poem_aftermath: {
+    feel_guild_pressure: 'office_alexander',
+    ask_colleague_politics: 'office_colleague',
+    hear_vault_lead: 'office_colleague',
+  },
+  friday_spleen: {
+    hear_albert_bridge: 'albert',
+  },
   solnysh_comfort: {
     talk_solnysh: 'solnysh',
     comfort_solnysh: 'solnysh',
@@ -68,6 +76,18 @@ export const QUEST_OBJECTIVE_SCENE_HINTS: Readonly<
     feel_chip_warmth: { sceneId: 'office_day', position: [-1.5, 0.5, -3.0] },
     read_incident_bulletin: { sceneId: 'office_day', position: [0.5, 0.5, 2.5] },
     notice_colleague_watch: { sceneId: 'office_day', position: [1.0, 0, 0.5] },
+  },
+  code_poem_aftermath: {
+    absorb_decoded_poem: { sceneId: 'office_day', position: [-1.5, 0.5, -3.0] },
+    feel_guild_pressure: { sceneId: 'office_day', position: [3.0, 0, -2.0] },
+    ask_colleague_politics: { sceneId: 'office_day', position: [1.0, 0, 0.5] },
+    hear_vault_lead: { sceneId: 'office_day', position: [1.0, 0, 0.5] },
+  },
+  friday_spleen: {
+    leave_office_dusk: { sceneId: 'office_day', position: [0, 0, 4.0] },
+    stand_on_balcony: { sceneId: 'home_evening', position: [3.0, 1.0, -2.5] },
+    write_friday_poem: { sceneId: 'volodka_room', position: [0, 0, 0] },
+    hear_albert_bridge: { sceneId: 'cafe_evening', position: [-3.0, 0, -2.5] },
   },
   solnysh_comfort: {
     talk_solnysh: { sceneId: 'volodka_corridor', position: [0, 0, 1.5] },
