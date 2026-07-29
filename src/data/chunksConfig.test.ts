@@ -34,6 +34,14 @@ describe('resolveManualChunk', () => {
     expect(resolveManualChunk('G:/1O1O1/src/engine/three/disposeThreeResources.ts')).toBe('boot-shared');
   });
 
+  it('routes cross-engine leaves to boot-shared (breaks combat ↔ narrative TDZ)', () => {
+    expect(resolveManualChunk('G:/1O1O1/src/config/sceneInheritance.ts')).toBe('boot-shared');
+    expect(resolveManualChunk('G:/1O1O1/src/engine/EventBus.ts')).toBe('boot-shared');
+    expect(resolveManualChunk('G:/1O1O1/src/shared/gameBridge/gameActionBridge.ts')).toBe('boot-shared');
+    expect(resolveManualChunk('G:/1O1O1/src/shared/ttlClock.ts')).toBe('boot-shared');
+    expect(resolveManualChunk('G:/1O1O1/src/shared/activeTTLFlags.ts')).toBe('boot-shared');
+  });
+
   it('routes notification toasts HUD to game-ui-notification-toasts', () => {
     expect(
       resolveManualChunk('G:/1O1O1/src/components/game/notificationToasts/NotificationToastsPanel.tsx'),

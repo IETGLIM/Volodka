@@ -155,6 +155,26 @@ const BOOT_SHARED_GPU_MODULES = new Set([
   'objectPool',
 ]);
 
+/**
+ * Shared leaves used by both engine-combat and engine-narrative.
+ * Keep in boot-shared — otherwise Rollup parks EventBus/bridge in combat and
+ * sceneInheritance/ttl helpers in narrative, recreating a combat ↔ narrative TDZ
+ * (prod: Cannot access 'hn'/SCENE_DERIVED_FROM before initialization).
+ */
+const BOOT_SHARED_CROSS_ENGINE_MODULES = new Set([
+  'EventBus',
+  'eventBusDedup',
+  'eventBusPriority',
+  'eventBusScope',
+  'emptyPayload',
+  'photoEvents',
+  'gameActionBridge',
+  'ttlClock',
+  'activeTTLFlags',
+  'hmrDispose',
+  'sceneInheritance',
+]);
+
 const SATELLITE_STORY_FILES: Readonly<Record<string, string>> = {
   pierStory: 'data-story-pier',
   libraryStory: 'data-story-library',
@@ -320,6 +340,11 @@ function resolveBootSharedChunk(posix: string): string | undefined {
     if (BOOT_SHARED_GPU_MODULES.has(base)) {
       return 'boot-shared';
     }
+  }
+
+  const base = fileBase(posix);
+  if (BOOT_SHARED_CROSS_ENGINE_MODULES.has(base)) {
+    return 'boot-shared';
   }
 
   return undefined;
