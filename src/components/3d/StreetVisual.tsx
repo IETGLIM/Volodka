@@ -1,7 +1,7 @@
 
 /* ─── Volodka RPG – Street scene procedural 3D visual ─── */
 
-import { useRef, useMemo, useEffect } from 'react';
+import { useRef, useMemo, useEffect, Suspense } from 'react';
 import { useGameStore } from '@/store/gameStore';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
@@ -20,6 +20,14 @@ import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { createStreetNightSynthwaveSkyTexture } from '@/engine/graphics/proceduralSkyTextures';
 import { AmbientParticles } from './AmbientParticles';
 import { WetStreetGround } from './WetStreetGround';
+import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
+import { getCachedSurfaceDetailMaps } from '@/engine/graphics/proceduralSurfaceTextures';
+import { PBR_PRESETS } from '@/engine/graphics/materials/pbrPresets';
+import { HeroStreetFacadesWithAssets } from './PolyHavenStreetDressing';
+import { PolyHavenStandardMaterial } from './PolyHavenStandardMaterial';
+import { usesPhotographicHdriBackground } from '@/config/polyhavenAssets';
+import { isProceduralAaaFlagActive } from '@/proceduralAaa/params';
+import { ProceduralAaaHybridOverlay } from '@/proceduralAaa/ProceduralAaaHybridOverlay';
 
 interface StreetVisualProps {
   sceneId?: SceneId;
@@ -32,27 +40,26 @@ export function StreetVisual({ sceneId = 'street_night', livePlayerPositionRef }
   const rainIntensity = useGameStore((s) => s.rainIntensity);
   const envProfile = useMemo(() => getEnvironmentLodProfile(sceneId), [sceneId]);
 
+  // Ultra / ?proceduralAaa=1 — hybrid: keep Poly Haven grounds/facades, add procedural accents
+  const hybridAaa = !isWinter && sceneId === 'street_night' && isProceduralAaaFlagActive();
+
   return (
     <group>
-      {!isWinter && sceneId === 'street_night' ? <StreetNightSkyDome /> : null}
+      {!isWinter && sceneId === 'street_night' && !usesPhotographicHdriBackground(sceneId)
+        ? <StreetNightSkyDome />
+        : null}
       <WetStreetGround sceneId={sceneId} isWinter={isWinter} rainIntensity={rainIntensity} />
 
       {/* ── Sidewalk ── */}
-      <mesh rotation-x={-Math.PI / 2} position={[0, 0.015, 0]} receiveShadow geometry={getSharedPlaneGeometry(6, 40)}>
-        <meshStandardMaterial
-          color={isWinter ? '#b0b8c8' : '#4a4a62'}
-          roughness={0.8}
-          polygonOffset
-          polygonOffsetFactor={1}
-          polygonOffsetUnits={1}
-        />
-      </mesh>
+      <StreetSidewalk isWinter={isWinter} />
 
-      {/* ── Panel Building Silhouettes + neon (hidden at minimal environment LOD) ── */}
+      {/* ── Bevelled panel buildings + neon fascia (hero silhouette) ── */}
       <EnvironmentDetail minLod="standard" position={[0, 0, -10]}>
-        <PanelBuildings />
+        <HeroStreetFacadesWithAssets />
         <NeonSigns isWinter={isWinter} />
       </EnvironmentDetail>
+
+      {hybridAaa ? <ProceduralAaaHybridOverlay /> : null}
 
       {/* ── Playable-area boundary: curb + railing so the invisible wall reads as a barrier ── */}
       <StreetBoundary isWinter={isWinter} />
@@ -65,56 +72,15 @@ export function StreetVisual({ sceneId = 'street_night', livePlayerPositionRef }
       {/* ── ENVIRONMENTAL CLUTTER / STORYTELLING ── */}
       {/* ═══════════════════════════════════════════════ */}
 
-      {/* ── Wet bench (matches street_bench_zone trigger at origin) ── */}
-      <group position={[0, 0, 0]}>
-        <mesh position={[0, 0.25, 0]} castShadow receiveShadow geometry={getSharedBoxGeometry(1.6, 0.08, 0.55)}>
-          <meshStandardMaterial color="#3a4a3a" roughness={0.85} />
-        </mesh>
-        <mesh position={[-0.65, 0.45, 0]} castShadow geometry={getSharedBoxGeometry(0.08, 0.32, 0.5)}>
-          <meshStandardMaterial color="#2a3a2a" roughness={0.9} />
-        </mesh>
-        <mesh position={[0.65, 0.45, 0]} castShadow geometry={getSharedBoxGeometry(0.08, 0.32, 0.5)}>
-          <meshStandardMaterial color="#2a3a2a" roughness={0.9} />
-        </mesh>
-      </group>
-
-      {/* ── Overflowing trash cans ── */}
-      <StreetClutterGate
-        livePlayerPositionRef={livePlayerPositionRef}
-        position={[2, 0, 3]}
-        maxDistance={envProfile.clutterDistance}
-      >
-        {/* Trash can */}
-        <mesh position={[0, 0.5, 0]} castShadow geometry={getSharedCylinderGeometry(0.25, 0.2, 1.0, 8)}>
-          <meshStandardMaterial color="#3a4a3a" metalness={0.3} roughness={0.7} />
-        </mesh>
-        {/* Overflow trash on top */}
-        <mesh position={[0.1, 1.05, 0]} rotation={[0.2, 0.5, 0]} geometry={getSharedBoxGeometry(0.12, 0.06, 0.08)}>
-          <meshStandardMaterial color="#6a5a40" roughness={0.95} />
-        </mesh>
-        <mesh position={[-0.08, 1.08, 0.1]} rotation={[0.3, 1.2, 0.1]} geometry={getSharedSphereGeometry(0.05, 5, 5)}>
-          <meshStandardMaterial color="#8a8a80" roughness={0.95} />
-        </mesh>
-      </StreetClutterGate>
-
-      {/* Second trash can */}
-      <StreetClutterGate
-        livePlayerPositionRef={livePlayerPositionRef}
-        position={[-2.5, 0, -8]}
-        maxDistance={envProfile.clutterDistance}
-      >
-        <mesh position={[0, 0.45, 0]} castShadow geometry={getSharedCylinderGeometry(0.22, 0.18, 0.9, 8)}>
-          <meshStandardMaterial color="#4a3a2a" metalness={0.3} roughness={0.7} />
-        </mesh>
-      </StreetClutterGate>
+      {/* Wet bench + trash cans replaced by Poly Haven GLTF in HeroStreetFacadesWithAssets */}
 
       {/* ── Puddle reflections - polygonOffset prevents Z-fighting */}
       <EnvironmentDetail minLod="full" position={[1.5, 0.02, 2]}>
         <mesh rotation-x={-Math.PI / 2} position={[1.5, 0.02, 2]} geometry={getSharedCircleGeometry(0.6, 12)}>
-          <meshStandardMaterial color="#0e0e1e" metalness={0.8} roughness={0.1} transparent opacity={0.5} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+          <meshStandardMaterial color="#0e0e1e" metalness={0.55} roughness={0.22} transparent opacity={0.45} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
         </mesh>
         <mesh rotation-x={-Math.PI / 2} position={[-1, 0.02, -4]} geometry={getSharedCircleGeometry(0.4, 12)}>
-          <meshStandardMaterial color="#0e0e1e" metalness={0.7} roughness={0.1} transparent opacity={0.4} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+          <meshStandardMaterial color="#0e0e1e" metalness={0.5} roughness={0.25} transparent opacity={0.38} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
         </mesh>
       </EnvironmentDetail>
 
@@ -151,6 +117,78 @@ export function StreetVisual({ sceneId = 'street_night', livePlayerPositionRef }
         </mesh>
       </StreetClutterGate>
     </group>
+  );
+}
+
+/** Tiled sidewalk — Poly Haven concrete PBR (procedural fallback while loading). */
+function StreetSidewalk({ isWinter }: { isWinter: boolean }) {
+  return (
+    <Suspense fallback={<StreetSidewalkProcedural isWinter={isWinter} />}>
+      <mesh rotation-x={-Math.PI / 2} position={[0, 0.015, 0]} receiveShadow geometry={getSharedPlaneGeometry(6, 40)}>
+        <PolyHavenStandardMaterial
+          materialId="concrete_floor_painted"
+          repeatScale={isWinter ? 0.9 : 1.1}
+          color={isWinter ? '#c8d0dc' : '#ffffff'}
+          metalness={0.03}
+          polygonOffset
+        />
+      </mesh>
+    </Suspense>
+  );
+}
+
+function StreetSidewalkProcedural({ isWinter }: { isWinter: boolean }) {
+  const { preset } = useGraphicsQuality();
+  const maps = useMemo(
+    () => getCachedSurfaceDetailMaps('sidewalk', preset.textureScale),
+    [preset.textureScale],
+  );
+  const map = useMemo(() => {
+    const t = maps.map.clone();
+    t.wrapS = THREE.RepeatWrapping;
+    t.wrapT = THREE.RepeatWrapping;
+    t.repeat.set(maps.repeat * 0.35, maps.repeat * 2.2);
+    t.needsUpdate = true;
+    return t;
+  }, [maps]);
+  const normalMap = useMemo(() => {
+    const t = maps.normalMap.clone();
+    t.wrapS = THREE.RepeatWrapping;
+    t.wrapT = THREE.RepeatWrapping;
+    t.repeat.copy(map.repeat);
+    t.needsUpdate = true;
+    return t;
+  }, [maps, map]);
+  const roughnessMap = useMemo(() => {
+    const t = maps.roughnessMap.clone();
+    t.wrapS = THREE.RepeatWrapping;
+    t.wrapT = THREE.RepeatWrapping;
+    t.repeat.copy(map.repeat);
+    t.needsUpdate = true;
+    return t;
+  }, [maps, map]);
+
+  useEffect(() => () => {
+    map.dispose();
+    normalMap.dispose();
+    roughnessMap.dispose();
+  }, [map, normalMap, roughnessMap]);
+
+  return (
+    <mesh rotation-x={-Math.PI / 2} position={[0, 0.015, 0]} receiveShadow geometry={getSharedPlaneGeometry(6, 40)}>
+      <meshStandardMaterial
+        color={isWinter ? '#b0b8c8' : PBR_PRESETS.sidewalk.color}
+        map={isWinter ? undefined : map}
+        normalMap={normalMap}
+        normalScale={new THREE.Vector2(0.45, 0.45)}
+        roughnessMap={roughnessMap}
+        roughness={isWinter ? 0.72 : PBR_PRESETS.sidewalk.roughness}
+        metalness={PBR_PRESETS.sidewalk.metalness}
+        polygonOffset
+        polygonOffsetFactor={1}
+        polygonOffsetUnits={1}
+      />
+    </mesh>
   );
 }
 
@@ -253,158 +291,6 @@ function StreetClutterGate({
   );
 }
 
-/** 5 panel building silhouettes using InstancedMesh */
-/** Modular facade buildings with emissive window grid (replaces flat instanced boxes). */
-
-/** Generate a procedural window grid texture — rows/cols of lit/unlit cells */
-function createWindowGridTexture(
-  cols: number,
-  rows: number,
-  seed: number,
-  litColor: string = '#88ccff',
-  darkColor: string = '#0a0f1a',
-): THREE.CanvasTexture {
-  const cellW = 32;
-  const cellH = 40;
-  const padX = 4;
-  const padY = 6;
-  const w = cols * (cellW + padX) + padX;
-  const h = rows * (cellH + padY) + padY;
-
-  const canvas = document.createElement('canvas');
-  canvas.width = w;
-  canvas.height = h;
-  const ctx = canvas.getContext('2d')!;
-
-  // Dark wall background
-  ctx.fillStyle = darkColor;
-  ctx.fillRect(0, 0, w, h);
-
-  // Seeded pseudo-random
-  let s = seed;
-  const rand = () => { s = (s * 16807 + 0) % 2147483647; return s / 2147483647; };
-
-  for (let row = 0; row < rows; row++) {
-    for (let col = 0; col < cols; col++) {
-      const x = padX + col * (cellW + padX);
-      const y = padY + row * (cellH + padY);
-
-      const isLit = rand() > 0.35;
-      if (isLit) {
-        // Window glow
-        const warmth = rand();
-        if (warmth > 0.6) {
-          ctx.fillStyle = '#ffdd88'; // warm yellow
-        } else if (warmth > 0.3) {
-          ctx.fillStyle = litColor; // cool blue
-        } else {
-          ctx.fillStyle = '#aabbcc'; // dim white
-        }
-        // Subtle brightness variation
-        const alpha = 0.6 + rand() * 0.4;
-        ctx.globalAlpha = alpha;
-        ctx.fillRect(x, y, cellW, cellH);
-
-        // Cross divider (window frame)
-        ctx.globalAlpha = 0.15;
-        ctx.fillStyle = darkColor;
-        ctx.fillRect(x + cellW / 2 - 0.5, y, 1, cellH);
-        ctx.fillRect(x, y + cellH / 2 - 0.5, cellW, 1);
-        ctx.globalAlpha = 1;
-      } else {
-        // Dark window — subtle reflection
-        ctx.fillStyle = '#0e1525';
-        ctx.fillRect(x, y, cellW, cellH);
-        // Faint cross
-        ctx.globalAlpha = 0.08;
-        ctx.fillStyle = '#334466';
-        ctx.fillRect(x + cellW / 2 - 0.5, y, 1, cellH);
-        ctx.fillRect(x, y + cellH / 2 - 0.5, cellW, 1);
-        ctx.globalAlpha = 1;
-      }
-    }
-  }
-
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.minFilter = THREE.LinearFilter;
-  tex.magFilter = THREE.LinearFilter;
-  return tex;
-}
-
-function PanelBuildings() {
-  const buildings = useMemo(
-    () => [
-      { pos: [-12, 0, -15] as [number, number, number], w: 8, h: 18, d: 6, seed: 42 },
-      { pos: [12, 0, -20] as [number, number, number], w: 10, h: 22, d: 6, seed: 137 },
-      { pos: [-15, 0, 5] as [number, number, number], w: 7, h: 15, d: 5, seed: 256 },
-      { pos: [14, 0, 8] as [number, number, number], w: 9, h: 20, d: 6, seed: 389 },
-      { pos: [0, 0, -25] as [number, number, number], w: 12, h: 25, d: 8, seed: 512 },
-    ],
-    [],
-  );
-
-  // Create window grid textures per building
-  const windowTextures = useMemo(() =>
-    buildings.map((b) => {
-      const cols = Math.max(2, Math.floor(b.w * 0.7));
-      const rows = Math.max(3, Math.floor(b.h * 0.5));
-      return createWindowGridTexture(cols, rows, b.seed);
-    }),
-    [buildings],
-  );
-
-  // Dispose CanvasTextures on unmount / when windowTextures changes.
-  // R3F auto-disposes the JSX <meshStandardMaterial> but NOT textures attached
-  // via map/emissiveMap props (Material.dispose() does not cascade to textures).
-  useEffect(() => {
-    const textures = windowTextures;
-    return () => {
-      for (const t of textures) t.dispose();
-    };
-  }, [windowTextures]);
-
-  return (
-    <group>
-      {buildings.map((b, i) => (
-        <group key={`facade-${i}`} position={b.pos}>
-          <mesh position={[0, b.h / 2, 0]} castShadow receiveShadow geometry={getSharedBoxGeometry(b.w, b.h, b.d)}>
-            <meshStandardMaterial color="#2a2a3e" roughness={0.92} metalness={0.08} />
-          </mesh>
-          {/* Window grid facade — procedural canvas texture.
-              polygonOffset prevents z-fighting with the building facade box behind it. */}
-          <mesh position={[0, b.h * 0.55, b.d / 2 + 0.02]} geometry={getSharedPlaneGeometry(b.w * 0.85, b.h * 0.75)}>
-            <meshStandardMaterial
-              map={windowTextures[i]}
-              emissive="#446688"
-              emissiveIntensity={0.2}
-              emissiveMap={windowTextures[i]}
-              roughness={0.6}
-              transparent
-              opacity={0.95}
-              polygonOffset
-              polygonOffsetFactor={1}
-              polygonOffsetUnits={1}
-            />
-          </mesh>
-          {/* Ground floor shop front */}
-          <mesh position={[0, 1.2, b.d / 2 + 0.03]} geometry={getSharedPlaneGeometry(b.w * 0.4, 2.2)}>
-            <meshStandardMaterial
-              color="#ffaa44"
-              emissive="#ff8800"
-              emissiveIntensity={0.5}
-              transparent
-              opacity={0.85}
-              polygonOffset
-              polygonOffsetFactor={1}
-              polygonOffsetUnits={1}
-            />
-          </mesh>
-        </group>
-      ))}
-    </group>
-  );
-}
-
 /** Neon sign strips with emissive glow — with flicker animation */
 function NeonSigns({ isWinter }: { isWinter: boolean }) {
   const redSignRef = useRef<THREE.Mesh>(null);
@@ -464,16 +350,23 @@ function NeonSigns({ isWinter }: { isWinter: boolean }) {
 
   return (
     <group>
-      {/* "Синяя яма" cafe sign */}
+      {/* "Синяя яма" cafe sign — metal housing + restrained emissive tube */}
       <group position={[8, 4, -8]}>
-        <mesh ref={cafeSignRef} geometry={getSharedBoxGeometry(2.5, 0.3, 0.05)}>
+        <mesh geometry={getSharedBoxGeometry(2.6, 0.36, 0.08)}>
+          <Suspense fallback={<meshStandardMaterial color="#101018" roughness={0.7} metalness={0.4} />}>
+            <PolyHavenStandardMaterial materialId="metal_plate" repeatScale={1.8} color="#1c1c24" metalness={0.5} roughness={0.5} />
+          </Suspense>
+        </mesh>
+        <mesh ref={cafeSignRef} position={[0, 0, 0.05]} geometry={getSharedBoxGeometry(2.35, 0.18, 0.04)}>
           <meshStandardMaterial
             color="#001133"
             emissive="#1a4aff"
-            emissiveIntensity={isWinter ? 1.2 : 1.5}
+            emissiveIntensity={isWinter ? 0.95 : 1.15}
+            roughness={0.55}
+            metalness={0.15}
           />
         </mesh>
-        <pointLight position={[0, -0.5, 0.5]} color="#1a4aff" intensity={2.5} distance={9} />
+        <pointLight position={[0, -0.5, 0.5]} color="#1a4aff" intensity={1.8} distance={9} decay={2} />
       </group>
 
       {/* "КАФЕ" neon sign — flickering broken tube style */}

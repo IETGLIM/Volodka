@@ -19,6 +19,7 @@ export interface CinematicTimelineEvents {
     timelineId: string;
     phaseId: string;
     phaseIndex: number;
+    lightCue?: 'neon_surge' | 'dim_hold' | 'warm_practical';
   };
   /** Intro wake — emitted when handoff phase begins. */
   'cinematic:intro_handoff': { timelineId: string };

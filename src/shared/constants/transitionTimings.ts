@@ -5,12 +5,12 @@
 
 /** Cinematic transition phase durations (in seconds) */
 export const CINEMATIC_PHASES = {
-  /** Glitch(0.15s) + wipe-in(0.35s) */
-  FADE_OUT_DURATION: 0.5,
-  /** Hold/black phase */
-  HOLD_DURATION: 0.3,
-  /** Wipe-out / fade-in phase */
-  FADE_IN_DURATION: 0.4,
+  /** Glitch(0.15s) + wipe-in(0.4s) — slightly longer fade for softer scene handoff */
+  FADE_OUT_DURATION: 0.55,
+  /** Hold/black phase — brief title card beat, not a hard black cut */
+  HOLD_DURATION: 0.22,
+  /** Wipe-out / fade-in phase — extended ease into the new scene */
+  FADE_IN_DURATION: 0.52,
 } as const;
 
 /** Scene transition handler timings (in milliseconds) */
@@ -44,9 +44,9 @@ export const CUTSCENE_TIMINGS = {
    *  resource-constrained devices and cold WASM initialisation. */
   CANVAS_TIMEOUT_MS: 6000,
   /** Black overlay fade after canvas is ready */
-  CANVAS_FADE_OUT_MS: 680,
+  CANVAS_FADE_OUT_MS: 780,
   /** Quick fade when canvas was already warm */
-  CANVAS_FADE_OUT_WARM_MS: 420,
+  CANVAS_FADE_OUT_WARM_MS: 520,
 } as const;
 
 /** Shared motion curves (Framer Motion cubic-bezier) */

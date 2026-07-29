@@ -61,7 +61,9 @@ import {
   releaseCameraOwnership,
 } from './cameraOwnerState';
 import { enterBulletTime } from './cinematicCamera';
-import { isCinematicTimelineActive } from '@/engine/cinematic/cinematicTimelineOrchestrator';
+import { isCinematicTimelineActive, startCinematicTimeline } from '@/engine/cinematic/cinematicTimelineOrchestrator';
+import { STREET_ARRIVAL_TIMELINE } from '@/engine/cinematic/streetArrivalTimeline';
+import { PROCEDURAL_AAA_ARRIVAL_TIMELINE } from '@/engine/cinematic/proceduralAaaArrivalTimeline';
 import { sharedCameraYawRef } from '@/engine/PlayerRotationState';
 import { eventBus } from '@/engine/EventBus';
 import { getNPCGroup } from '@/engine/interaction/npcRegistry';
@@ -473,6 +475,16 @@ export function startSceneFlythrough(runtime: CameraRuntimeRefs, sceneId: SceneI
   );
   const targetLook = new THREE.Vector3(spawn[0], spawn[1] + LOOK_HEIGHT, spawn[2]);
 
+  // street_night / procedural_aaa: staged timelines (actor + light cues + holds).
+  if (sceneId === 'street_night' && !isCinematicTimelineActive()) {
+    startCinematicTimeline({ def: STREET_ARRIVAL_TIMELINE, options: {} });
+    return;
+  }
+  if (sceneId === 'procedural_aaa' && !isCinematicTimelineActive()) {
+    startCinematicTimeline({ def: PROCEDURAL_AAA_ARRIVAL_TIMELINE, options: {} });
+    return;
+  }
+
   startSceneTransition(
     subsystems.transition.current,
     subsystems.spring.current.position,
@@ -596,7 +608,7 @@ export function buildCutsceneController(
 ): CutsceneController | null {
   if (waypoints.length === 0) return null;
 
-  const cameraWaypoints: CameraWaypoint[] = waypoints.map((wp) => ({
+  const cameraWaypoints: CameraWaypoint[] = waypoints.map((wp, index) => ({
     position: offset
       ? new THREE.Vector3(...wp.position).add(offset)
       : new THREE.Vector3(...wp.position),
@@ -604,7 +616,8 @@ export function buildCutsceneController(
       ? new THREE.Vector3(...wp.lookAt).add(offset)
       : new THREE.Vector3(...wp.lookAt),
     fov: wp.fov,
-    duration: wp.duration,
+    // First beat must ease in from live camera — duration 0 teleports (anti-AAA snap).
+    duration: wp.duration <= 0 ? (index === 0 ? 1.35 : 0.001) : wp.duration,
     controlPoint: wp.controlPoint
       ? offset
         ? new THREE.Vector3(...wp.controlPoint).add(offset)

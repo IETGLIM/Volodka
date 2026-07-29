@@ -8,7 +8,7 @@ import type { SceneId } from '@/config/sceneDefinitions';
  * AudioEngine (combat); colocating either side alone recreates combat ↔ narrative TDZ.
  *
  * Sprint E/F: city_square / underground_bunker / guild_mainframe /
- * library_basement / albert_backroom have dedicated visuals — they are
+ * library_basement / albert_backroom / procedural_aaa have dedicated visuals — they are
  * intentionally absent here (own GPU chunk + VisualScene case).
  */
 export const SCENE_DERIVED_FROM: Partial<Record<SceneId, SceneId>> = {

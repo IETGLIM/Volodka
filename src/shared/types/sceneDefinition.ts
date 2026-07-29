@@ -48,7 +48,8 @@ export type VisualComponentName =
   | 'CitySquareVisual'
   | 'UndergroundBunkerVisual'
   | 'LibraryBasementVisual'
-  | 'AlbertBackroomVisual';
+  | 'AlbertBackroomVisual'
+  | 'ProceduralAaaVisual';
 
 // ─── Doorway ───
 

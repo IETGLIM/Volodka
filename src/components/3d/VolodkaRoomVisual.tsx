@@ -1,12 +1,14 @@
 
 /* ─── Volodka RPG – Volodka's room procedural 3D visual ─── */
 
-import { memo, useMemo, useRef, useEffect, type MutableRefObject } from 'react';
+import { memo, useMemo, useRef, useEffect, Suspense, type MutableRefObject } from 'react';
 import * as THREE from 'three';
 import { getSharedStandardMaterial, mat } from '@/engine/three/moduleMaterialRegistry';
 import {
   registerModuleGeometries,
   registerModuleGeometry,
+  getSharedBoxGeometry,
+  getSharedCylinderGeometry,
 } from '@/engine/three/moduleGeometryRegistry';
 import { Lamp, Rug, Radiator } from './lazyInteriorModels';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
@@ -21,6 +23,10 @@ import { useVolodkaRoomAnimations } from './sceneVisuals/volodkaRoom/useVolodkaR
 import { FlickeringCeilingLight } from './sceneVisuals/volodkaRoom/FlickeringCeilingLight';
 import { useMonitorGlitch } from './sceneVisuals/volodkaRoom/useMonitorGlitch';
 import { useZabbixAlertPulse } from './sceneVisuals/volodkaRoom/useZabbixAlertPulse';
+import { PolyHavenStandardMaterial } from './PolyHavenStandardMaterial';
+import { CraftedDeskShell, ThinMonitor } from './CraftedDeskAndMonitors';
+import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
+import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
 // FIX-B1: DustParticles import removed — VolodkaRoomVisual no longer renders
 // its own dust system. AtmosphericEffects' DustMotes already covers
 // volodka_room (it's in DUST_SCENES), so the duplicate system is gone.
@@ -232,9 +238,11 @@ function bookSpineMaterial(color: string) {
 // no internal useState and all its animation state lives in refs, so a
 // shallow props comparison is sufficient to prevent wasted renders.
 export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRef }: VolodkaRoomVisualProps) {
+  const { preset } = useGraphicsQuality();
+  const useGltfFurniture = allowsGlbAssetRendering(preset.environmentRenderMode);
   // Canvas textures created synchronously via useMemo
-  const floorTexture = useCachedCanvasTexture('volodka_room:floor', createFloorTexture);
-  const wallTexture = useCachedCanvasTexture('volodka_room:wall', createWallTexture);
+  const floorTexture = useCachedCanvasTexture('volodka_room:floor:v2', createFloorTexture);
+  const wallTexture = useCachedCanvasTexture('volodka_room:wall:v2', createWallTexture);
   const ceilingWashTexture = useCachedCanvasTexture(
     'volodka_room:matrix-ceiling',
     createVolodkaRoomNightSkyTexture,
@@ -244,8 +252,9 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
     () =>
       getSharedStandardMaterial({
         map: floorTexture,
-        color: '#5a4a3a',
-        roughness: 0.8,
+        color: '#5c4a36',
+        roughness: 0.78,
+        metalness: 0.02,
         polygonOffset: true,
         polygonOffsetFactor: 1,
         polygonOffsetUnits: 1,
@@ -337,23 +346,77 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
 
   return (
     <group>
-      {/* ── Floor ── */}
-      <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={geo_pln_1} material={mat_floor} />
+      {/* ── Floor — Poly Haven wood parquet (canvas fallback while loading) ── */}
+      <Suspense
+        fallback={
+          <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={geo_pln_1} material={mat_floor} />
+        }
+      >
+        <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={geo_pln_1}>
+          <PolyHavenStandardMaterial
+            materialId="wood_floor"
+            repeatScale={0.85}
+            color="#c8b090"
+            metalness={0.02}
+            roughness={0.82}
+            polygonOffset
+          />
+        </mesh>
+      </Suspense>
 
       {/* ── Ceiling — matrix monitor HDR wash ── */}
       <mesh position={[0, H, 0]} rotation-x={Math.PI / 2} geometry={geo_pln_1} material={mat_ceiling} />
 
-      {/* ── Back Wall (z = -D/2) ── */}
-      <mesh position={[0, H / 2, -D / 2]} geometry={geo_pln_2} material={mat_wall} />
+      {/* ── Walls — Poly Haven plaster (canvas fallback while loading) ── */}
+      <Suspense
+        fallback={
+          <>
+            <mesh position={[0, H / 2, -D / 2]} geometry={geo_pln_2} material={mat_wall} />
+            <mesh position={[0, H / 2, D / 2]} rotation-y={Math.PI} geometry={geo_pln_2} material={mat_wall} />
+            <mesh position={[-W / 2, H / 2, 0]} rotation-y={Math.PI / 2} geometry={geo_pln_3} material={mat_wall} />
+            <mesh position={[W / 2, H / 2, 0]} rotation-y={-Math.PI / 2} geometry={geo_pln_3} material={mat_wall} />
+          </>
+        }
+      >
+        <mesh position={[0, H / 2, -D / 2]} geometry={geo_pln_2}>
+          <PolyHavenStandardMaterial materialId="plastered_wall" repeatScale={0.7} color="#9a94a8" roughness={0.92} />
+        </mesh>
+        <mesh position={[0, H / 2, D / 2]} rotation-y={Math.PI} geometry={geo_pln_2}>
+          <PolyHavenStandardMaterial materialId="plastered_wall" repeatScale={0.7} color="#9a94a8" roughness={0.92} />
+        </mesh>
+        <mesh position={[-W / 2, H / 2, 0]} rotation-y={Math.PI / 2} geometry={geo_pln_3}>
+          <PolyHavenStandardMaterial materialId="plastered_wall" repeatScale={0.75} color="#9a94a8" roughness={0.92} />
+        </mesh>
+        <mesh position={[W / 2, H / 2, 0]} rotation-y={-Math.PI / 2} geometry={geo_pln_3}>
+          <PolyHavenStandardMaterial materialId="plastered_wall" repeatScale={0.75} color="#9a94a8" roughness={0.92} />
+        </mesh>
+      </Suspense>
 
-      {/* ── Front Wall (z = +D/2) ── */}
-      <mesh position={[0, H / 2, D / 2]} rotation-y={Math.PI} geometry={geo_pln_2} material={mat_wall} />
-
-      {/* ── Left Wall (x = -W/2) ── */}
-      <mesh position={[-W / 2, H / 2, 0]} rotation-y={Math.PI / 2} geometry={geo_pln_3} material={mat_wall} />
-
-      {/* ── Right Wall (x = +W/2) ── */}
-      <mesh position={[W / 2, H / 2, 0]} rotation-y={-Math.PI / 2} geometry={geo_pln_3} material={mat_wall} />
+      {/* Architectural trim — baseboards + crown (breaks flat-plane room read) */}
+      <mesh position={[0, 0.06, -D / 2 + 0.02]} geometry={getSharedBoxGeometry(W - 0.08, 0.12, 0.04)}>
+        <meshStandardMaterial color="#3a342c" roughness={0.82} metalness={0.04} />
+      </mesh>
+      <mesh position={[0, 0.06, D / 2 - 0.02]} geometry={getSharedBoxGeometry(W - 0.08, 0.12, 0.04)}>
+        <meshStandardMaterial color="#3a342c" roughness={0.82} metalness={0.04} />
+      </mesh>
+      <mesh position={[-W / 2 + 0.02, 0.06, 0]} geometry={getSharedBoxGeometry(0.04, 0.12, D - 0.08)}>
+        <meshStandardMaterial color="#3a342c" roughness={0.82} metalness={0.04} />
+      </mesh>
+      <mesh position={[W / 2 - 0.02, 0.06, 0]} geometry={getSharedBoxGeometry(0.04, 0.12, D - 0.08)}>
+        <meshStandardMaterial color="#3a342c" roughness={0.82} metalness={0.04} />
+      </mesh>
+      <mesh position={[0, H - 0.08, -D / 2 + 0.03]} geometry={getSharedBoxGeometry(W - 0.1, 0.1, 0.06)}>
+        <meshStandardMaterial color="#2a2834" roughness={0.78} metalness={0.06} />
+      </mesh>
+      <mesh position={[0, H - 0.08, D / 2 - 0.03]} geometry={getSharedBoxGeometry(W - 0.1, 0.1, 0.06)}>
+        <meshStandardMaterial color="#2a2834" roughness={0.78} metalness={0.06} />
+      </mesh>
+      <mesh position={[-W / 2 + 0.03, H - 0.08, 0]} geometry={getSharedBoxGeometry(0.06, 0.1, D - 0.1)}>
+        <meshStandardMaterial color="#2a2834" roughness={0.78} metalness={0.06} />
+      </mesh>
+      <mesh position={[W / 2 - 0.03, H - 0.08, 0]} geometry={getSharedBoxGeometry(0.06, 0.1, D - 0.1)}>
+        <meshStandardMaterial color="#2a2834" roughness={0.78} metalness={0.06} />
+      </mesh>
 
       {/* ═══════════════════════════════════════════════ */}
       {/* ── INTERACTIVE ANIMATED OBJECTS ── */}
@@ -376,7 +439,8 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
         <mesh position={[0.45, 0.7, 0.025]} geometry={geo_box_9} material={mat_5} />
       </group>
 
-      {/* ── Wardrobe (left wall, near bed) ── */}
+      {/* ── Wardrobe — Kenney GLB via ScenePropDressing when hybrid/glb; procedural fallback ── */}
+      {!useGltfFurniture ? (
       <group position={[-2.2, 0, 2.5]}>
         {/* Wardrobe body */}
         <mesh position={[0, 1.0, 0]} castShadow geometry={geo_box_10} material={mat_6} />
@@ -397,69 +461,48 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
         <mesh position={[0.19, 1.0, 0.295]} geometry={geo_box_13} material={mat_9} />
         <mesh position={[0.06, 1.0, 0.315]} geometry={geo_sph_14} material={mat_4} />
       </group>
+      ) : (
+        <group ref={roomWardrobeDoorRef} visible={false} />
+      )}
 
-      {/* ── Desk ── */}
+      {/* ── Desk — crafted non-box shell + thin monitor slabs ── */}
       <group position={[0, 0, -2.5]}>
-        {/* Table top */}
-        <mesh position={[0, 0.75, 0]} castShadow receiveShadow geometry={geo_box_16} material={mat_11} />
-        {/* Legs */}
-        {[[-0.85, -0.35], [0.85, -0.35], [-0.85, 0.35], [0.85, 0.35]].map(([x, z], i) => (
-          <mesh key={i} position={[x, 0.375, z]} geometry={geo_box_17} material={mat_12} />
-        ))}
-        {/* ── Triple monitor rig: Grafana · terminal · Zabbix ── */}
+        <CraftedDeskShell matFallback={mat_11} />
         {([
           { id: 'grafana', tex: grafanaTexture, x: -0.62, rotY: 0.24 },
           { id: 'terminal', tex: terminalTexture, x: 0, rotY: 0 },
           { id: 'zabbix', tex: zabbixTexture, x: 0.62, rotY: -0.24 },
         ] as const).map(({ id, tex, x, rotY }) => (
-          <group key={id} position={[x, 1.12, -0.18]} rotation={[0, rotY, 0]} ref={id === 'terminal' ? terminalMonitorGroupRef : undefined}>
-            {/* Bezel */}
-            <mesh geometry={geo_box_18} renderOrder={1} material={mat_13} />
-            {/* Screen — emissive StandardMaterial with toneMapped:true for HDR
-             *  consistency. ISSUE #5: replaced meshBasicMaterial + toneMapped:false which
-             *  caused tone mapping artifacts and didn't respond to scene lighting. */}
-            <mesh position={[0, 0, 0.028]} geometry={geo_pln_19} renderOrder={2}>
-              <meshStandardMaterial map={tex} emissive={MONITOR_EMISSIVE_COLOR} emissiveMap={tex} emissiveIntensity={1.5} toneMapped depthWrite={false} />
-            </mesh>
-            {/* Zabbix blinking alert LED */}
-            {id === 'zabbix' && (
-              <mesh position={[0.205, 0.145, 0.03]} geometry={geo_cir_20} material={mat_zabbix_led} />
-            )}
-            {/* Stand */}
-            <mesh position={[0, -0.27, -0.02]} geometry={geo_box_21} material={mat_14} />
-            <mesh position={[0, -0.35, 0]} geometry={geo_box_22} material={mat_14} />
-          </group>
+          <ThinMonitor
+            key={id}
+            id={id}
+            tex={tex}
+            x={x}
+            rotY={rotY}
+            groupRef={id === 'terminal' ? terminalMonitorGroupRef : undefined}
+            alertLed={id === 'zabbix' ? mat_zabbix_led : undefined}
+          />
         ))}
 
-        {/* ISSUE #7: Reduced from 3 per-monitor lights to 1 combined desk glow.
-         * 3 separate point lights for 3 monitors was expensive and the lights
-         * were too close together to produce distinct shadows. One central glow
-         * is visually equivalent at a fraction of the GPU cost. */}
-        <pointLight position={[0, 1.25, 0.15]} color="#33ddaa" intensity={3.5} distance={12} />
-        {/* Keyboard */}
-        <mesh position={[0, 0.78, 0.1]} geometry={geo_box_23} material={mat_15} />
-        {/* Keyboard LED indicators */}
-        <mesh position={[0.15, 0.795, 0.02]} geometry={geo_box_24} material={mat_16} />
-        <mesh position={[0.17, 0.795, 0.02]} geometry={geo_box_24} material={mat_17} />
-        {/* Mouse pad */}
-        <mesh position={[0.6, 0.775, 0.1]} rotation={[0, 0.1, 0]} geometry={geo_box_25} material={mat_18} />
-        {/* Mouse */}
-        <mesh position={[0.6, 0.79, 0.1]} rotation={[0, 0.1, 0]} geometry={geo_box_26} material={mat_19} />
-        {/* Coffee mug on desk (fixed: was at Z=-2.2 → world -4.7, behind wall) */}
+        <pointLight position={[0, 1.25, 0.15]} color="#33ddaa" intensity={3.5} distance={12} decay={2} />
+        {/* Keyboard — flat slab not cube pile */}
+        <mesh position={[0, 0.785, 0.12]} geometry={getSharedBoxGeometry(0.42, 0.018, 0.14)} material={mat_15} />
+        <mesh position={[0.15, 0.8, 0.05]} geometry={getSharedBoxGeometry(0.012, 0.006, 0.012)} material={mat_16} />
+        <mesh position={[0.17, 0.8, 0.05]} geometry={getSharedBoxGeometry(0.012, 0.006, 0.012)} material={mat_17} />
+        <mesh position={[0.6, 0.78, 0.1]} rotation={[0, 0.1, 0]} geometry={getSharedBoxGeometry(0.18, 0.004, 0.2)} material={mat_18} />
+        <mesh position={[0.6, 0.79, 0.1]} rotation={[0, 0.1, 0]} geometry={getSharedBoxGeometry(0.06, 0.022, 0.1)} material={mat_19} />
         <group position={[-0.55, 0.78, 0.25]}>
           <mesh position={[0, 0.04, 0]} geometry={geo_cyl_27} material={mat_20} />
-          {/* Mug handle */}
           <mesh position={[0.04, 0.04, 0]} rotation={[0, 0, Math.PI / 2]} geometry={geo_tor_28} material={mat_20} />
-          {/* Coffee surface */}
           <mesh position={[0, 0.075, 0]} geometry={geo_cyl_29} material={mat_21} />
         </group>
-        {/* Scattered papers/documents on desk (fixed: were behind wall) */}
         <mesh position={[0.3, 0.78, 0.2]} rotation={[0, 0.4, 0]} geometry={geo_box_30} material={mat_22} />
         <mesh position={[0.35, 0.785, 0.15]} rotation={[0, -0.2, 0.02]} geometry={geo_box_31} material={mat_23} />
         <mesh position={[-0.2, 0.78, 0.3]} rotation={[0, 0.7, -0.01]} geometry={geo_box_32} material={mat_24} />
       </group>
 
-      {/* ── Chair ── */}
+      {/* ── Chair — Kenney GLB when available ── */}
+      {!useGltfFurniture ? (
       <group position={[0, 0, -1.5]}>
         {/* Seat */}
         <mesh position={[0, 0.45, 0]} castShadow geometry={geo_box_33} material={mat_25} />
@@ -470,8 +513,10 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
           <mesh key={i} position={[x, 0.225, z]} geometry={geo_box_35} material={mat_26} />
         ))}
       </group>
+      ) : null}
 
-      {/* ── Bookshelf ── */}
+      {/* ── Bookshelf — Kenney GLB when available ── */}
+      {!useGltfFurniture ? (
       <group position={[-2.2, 0, 0]}>
         <mesh position={[0, 1.0, 0]} castShadow geometry={geo_box_36} material={mat_27} />
         {/* Shelf dividers */}
@@ -513,6 +558,7 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
           <mesh key={`s4-${b.c}`} position={[b.x, 1.77, 0.02]} rotation={[0, 0, b.lean]} geometry={bookSpineGeo(b.w, 0.18)} material={bookSpineMaterial(b.c)} />
         ))}
       </group>
+      ) : null}
 
       {/* ── Wall Poster — concert/tech conference poster (between desk and window) ── */}
       <group position={[1.8, 1.6, -3.45]}>
@@ -532,7 +578,8 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
         <mesh position={[0, 0, 0.013]} geometry={geo_photoBack} material={mat_photoWarm} />
       </group>
 
-      {/* ── Bed ── */}
+      {/* ── Bed — Kenney GLB when available ── */}
+      {!useGltfFurniture ? (
       <group position={[1.8, 0, 2.0]}>
         {/* Mattress */}
         <mesh position={[0, 0.35, 0]} castShadow geometry={geo_box_38} material={mat_29} />
@@ -543,6 +590,7 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
         {/* Blanket */}
         <mesh position={[0, 0.52, 0.2]} geometry={geo_box_41} material={mat_32} />
       </group>
+      ) : null}
 
       {/* ── Window (right wall, emissive blue — nighttime city glow) ── */}
       <group position={[W / 2 - 0.025, 1.5, -2.0]}>
@@ -609,15 +657,16 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
         ))}
       </group>
 
-      {/* ── Desk lamp — warm accent light, boosted to balance the monitor glow ── */}
+      {/* ── Desk lamp — warm practical with soft shadow on High/Ultra ── */}
       <pointLight
         position={[0.3, 1.5, -2.3]}
         color="#ffcc88"
-        intensity={3.5}
-        distance={9}
-        castShadow={false}
-        shadow-mapSize-width={256}
-        shadow-mapSize-height={256}
+        intensity={4.2}
+        distance={10}
+        decay={2}
+        castShadow={preset.shadows}
+        shadow-mapSize-width={512}
+        shadow-mapSize-height={512}
         shadow-bias={-0.003}
         shadow-normalBias={0.04}
       />
@@ -625,9 +674,19 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
       {/* ── Subtle warm fill near bed area — brightened so bed/bookshelf are visible ── */}
       <pointLight
         position={[-1.5, 1.8, 2.5]}
-        color="#aa99bb"
-        intensity={1.4}
+        color="#c8b8d0"
+        intensity={1.85}
+        distance={6}
+        decay={2}
+      />
+
+      {/* Soft practical near wardrobe / door */}
+      <pointLight
+        position={[-1.8, 2.0, 1.2]}
+        color="#ffe0c0"
+        intensity={1.1}
         distance={5}
+        decay={2}
       />
 
       {/* ── Ceiling ambient glow panel (dim — noir apartment) ── */}
@@ -762,35 +821,52 @@ function createFloorTexture(): THREE.CanvasTexture {
   canvas.height = size;
   const ctx = canvas.getContext('2d')!;
 
-  // Brighter wood base
-  ctx.fillStyle = '#5a4a3a';
+  // Worn Soviet parquet — warm mid-tone with plank bands
+  ctx.fillStyle = '#5c4a36';
   ctx.fillRect(0, 0, size, size);
 
-  // Wood plank lines
-  ctx.strokeStyle = '#4a3a2a';
-  ctx.lineWidth = 1;
-  for (let i = 0; i < size; i += 32) {
-    ctx.beginPath();
-    ctx.moveTo(0, i);
-    ctx.lineTo(size, i);
-    ctx.stroke();
+  const plankH = 36;
+  for (let row = 0; row < size / plankH; row++) {
+    const y = row * plankH;
+    const shade = 78 + ((row * 17) % 28);
+    ctx.fillStyle = `rgb(${shade},${(shade * 0.78) | 0},${(shade * 0.48) | 0})`;
+    ctx.fillRect(0, y, size, plankH - 1);
+    // Seam
+    ctx.fillStyle = 'rgba(28,18,10,0.55)';
+    ctx.fillRect(0, y + plankH - 1, size, 1);
+    // Vertical plank joints staggered per row
+    const offset = (row % 2) * 48;
+    for (let x = offset; x < size; x += 96) {
+      ctx.fillStyle = 'rgba(24,16,10,0.35)';
+      ctx.fillRect(x, y, 1, plankH - 1);
+    }
   }
 
-  // Subtle grain
-  ctx.globalAlpha = 0.1;
-  for (let i = 0; i < 80; i++) {
-    const y = Math.random() * size;
-    ctx.strokeStyle = Math.random() > 0.5 ? '#4a3a2a' : '#2a1a0a';
+  // Deterministic grain streaks
+  ctx.globalAlpha = 0.14;
+  for (let i = 0; i < 120; i++) {
+    const y = ((i * 97) % size) + 0.5;
+    ctx.strokeStyle = i % 2 === 0 ? '#3a2a18' : '#6a5640';
+    ctx.lineWidth = 0.8;
     ctx.beginPath();
     ctx.moveTo(0, y);
-    ctx.lineTo(size, y + (Math.random() - 0.5) * 10);
+    ctx.lineTo(size, y + ((i * 13) % 9) - 4);
     ctx.stroke();
   }
-  ctx.globalAlpha = 1.0;
+  ctx.globalAlpha = 1;
+
+  // Soft scuff / wear near center traffic path
+  const wear = ctx.createRadialGradient(size * 0.5, size * 0.55, 20, size * 0.5, size * 0.55, size * 0.45);
+  wear.addColorStop(0, 'rgba(90,70,50,0.18)');
+  wear.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = wear;
+  ctx.fillRect(0, 0, size, size);
 
   const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
   tex.wrapS = THREE.RepeatWrapping;
   tex.wrapT = THREE.RepeatWrapping;
+  tex.anisotropy = 4;
   tex.repeat.set(3, 4);
   return tex;
 }
@@ -802,24 +878,35 @@ function createWallTexture(): THREE.CanvasTexture {
   canvas.height = size;
   const ctx = canvas.getContext('2d')!;
 
-  // Brighter wall base
+  // Faded wallpaper / plaster base — cool violet-grey apartment noir
   ctx.fillStyle = '#4a4050';
   ctx.fillRect(0, 0, size, size);
 
-  // Subtle plaster variation
-  ctx.globalAlpha = 0.05;
-  for (let i = 0; i < 30; i++) {
-    const x = Math.random() * size;
-    const y = Math.random() * size;
-    const r = Math.random() * 30 + 10;
-    ctx.fillStyle = Math.random() > 0.5 ? '#5a5058' : '#3a3038';
-    ctx.fillRect(x, y, r, r);
+  for (let i = 0; i < 90; i++) {
+    const x = (i * 53) % size;
+    const y = (i * 97) % size;
+    const r = 8 + (i % 24);
+    ctx.globalAlpha = 0.04 + (i % 5) * 0.008;
+    ctx.fillStyle = i % 2 === 0 ? '#5a5058' : '#3a3038';
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
   }
-  ctx.globalAlpha = 1.0;
+  ctx.globalAlpha = 1;
+
+  // Subtle vertical wallpaper stripe
+  ctx.globalAlpha = 0.06;
+  for (let x = 0; x < size; x += 28) {
+    ctx.fillStyle = '#6a6070';
+    ctx.fillRect(x, 0, 2, size);
+  }
+  ctx.globalAlpha = 1;
 
   const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
   tex.wrapS = THREE.RepeatWrapping;
   tex.wrapT = THREE.RepeatWrapping;
+  tex.anisotropy = 4;
   tex.repeat.set(2, 2);
   return tex;
 }

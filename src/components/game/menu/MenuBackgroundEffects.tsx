@@ -9,6 +9,7 @@ import { getMenuParticleCounts } from '@/engine/menu/menuFxTier';
 import { SYSTEM_MESSAGES } from '@/engine/menu/menuConstants';
 import type { DeviceTier } from '@/hooks/useDeviceTier';
 import { seededRand } from '@/shared/utils/seededRand';
+import { POLYHAVEN_MENU_PLATE } from '@/config/polyhavenAssets';
 
 type MenuBackgroundEffectsProps = {
   fx: MenuScreenFx;
@@ -235,12 +236,53 @@ export const MenuBackgroundEffects = memo(function MenuBackgroundEffects({
         <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
           <motion.div
             className="absolute"
-            style={{ width: '120%', height: '120%', top: '-10%', left: '-10%', background: 'radial-gradient(ellipse at 30% 50%, rgba(0,255,255,0.03) 0%, transparent 50%)' }}
+            style={{ width: '120%', height: '120%', top: '-10%', left: '-10%', background: 'radial-gradient(ellipse at 30% 50%, rgba(0,255,255,0.04) 0%, transparent 52%)' }}
             animate={contentMotion ? { x: ['-5%', '5%', '-5%'], y: ['-3%', '3%', '-3%'] } : false}
             transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
           />
+          <motion.div
+            className="absolute"
+            style={{ width: '130%', height: '130%', top: '-15%', left: '-15%', background: 'radial-gradient(ellipse at 72% 38%, rgba(255,40,140,0.045) 0%, transparent 48%)' }}
+            animate={contentMotion ? { x: ['4%', '-4%', '4%'], y: ['2%', '-2%', '2%'] } : false}
+            transition={{ duration: 26, repeat: Infinity, ease: 'easeInOut' }}
+          />
+          {/* Photographic night plate (Poly Haven CC0) + noir grade overlays */}
+          <div
+            className="absolute inset-0 bg-cover bg-center scale-[1.08]"
+            style={{
+              backgroundImage: `url(${POLYHAVEN_MENU_PLATE})`,
+              filter: 'saturate(0.75) brightness(0.55) contrast(1.15)',
+            }}
+          />
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage:
+                'radial-gradient(ellipse 90% 55% at 50% 38%, rgba(20,40,70,0.35) 0%, transparent 70%), linear-gradient(180deg, rgba(2,2,8,0.55) 0%, rgba(10,16,32,0.25) 42%, rgba(18,16,26,0.45) 70%, rgba(5,5,8,0.85) 100%)',
+            }}
+          />
+          <div
+            className="absolute inset-x-0 top-[18%] h-[38%]"
+            style={{
+              background:
+                'linear-gradient(90deg, transparent 0%, rgba(255,40,140,0.08) 18%, rgba(0,220,255,0.1) 50%, rgba(120,60,255,0.08) 78%, transparent 100%)',
+              filter: 'blur(28px)',
+              opacity: 0.65,
+            }}
+          />
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                'radial-gradient(ellipse at 50% 115%, rgba(8,12,28,0.92) 0%, transparent 55%), linear-gradient(180deg, rgba(0,0,0,0.45) 0%, transparent 22%, transparent 78%, rgba(0,0,0,0.7) 100%)',
+            }}
+          />
         </div>
       ) : null}
+
+      {/* Persistent cinematic letterbox — title-card language */}
+      <div className="absolute inset-x-0 top-0 h-[7vh] min-h-[36px] bg-black z-[60] pointer-events-none" aria-hidden="true" />
+      <div className="absolute inset-x-0 bottom-0 h-[7vh] min-h-[36px] bg-black z-[60] pointer-events-none" aria-hidden="true" />
 
       {fx.circuitGridLines ? <CircuitGridLines /> : null}
 

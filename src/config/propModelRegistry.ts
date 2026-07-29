@@ -51,8 +51,8 @@ export const PROP_MODEL_REGISTRY: Record<string, PropModelDefinition> = {
   kenney_desk: {
     id: 'kenney_desk',
     url: `${PROPS}/desk.glb`,
-    targetSizeM: [0.73, 0.38, 0.39],
-    offset: [0, 0, 0],
+    targetSizeM: [1.6, 0.76, 0.75],
+    fitAxis: 'height',
     license: 'CC0',
     source: 'Kenney Furniture Kit — desk',
     sourceUrl: 'https://opengameart.org/content/furniture-kit',
@@ -60,7 +60,8 @@ export const PROP_MODEL_REGISTRY: Record<string, PropModelDefinition> = {
   kenney_bookshelf: {
     id: 'kenney_bookshelf',
     url: `${PROPS}/bookshelf.glb`,
-    targetSizeM: [0.4, 0.85, 0.25],
+    targetSizeM: [0.85, 1.95, 0.4],
+    fitAxis: 'height',
     license: 'CC0',
     source: 'Kenney Furniture Kit — bookcaseClosed',
     sourceUrl: 'https://opengameart.org/content/furniture-kit',
@@ -92,7 +93,8 @@ export const PROP_MODEL_REGISTRY: Record<string, PropModelDefinition> = {
   kenney_wardrobe: {
     id: 'kenney_wardrobe',
     url: `${PROPS}/wardrobe.glb`,
-    targetSizeM: [0.8, 0.79, 0.25],
+    targetSizeM: [1.05, 2.05, 0.55],
+    fitAxis: 'height',
     license: 'CC0',
     source: 'Kenney Furniture Kit — bookcaseClosedWide',
     sourceUrl: 'https://opengameart.org/content/furniture-kit',
@@ -108,7 +110,8 @@ export const PROP_MODEL_REGISTRY: Record<string, PropModelDefinition> = {
   kenney_bed: {
     id: 'kenney_bed',
     url: `${PROPS}/bed.glb`,
-    targetSizeM: [0.57, 0.37, 1.13],
+    targetSizeM: [0.95, 0.55, 2.05],
+    fitAxis: 'depth',
     license: 'CC0',
     source: 'Kenney Furniture Kit — bedSingle',
     sourceUrl: KENNEY_FURNITURE_URL,
@@ -142,7 +145,8 @@ export const PROP_MODEL_REGISTRY: Record<string, PropModelDefinition> = {
   kenney_city_chair: {
     id: 'kenney_city_chair',
     url: `${CITYKIT}/chair.glb`,
-    targetSizeM: [0.2, 0.47, 0.2],
+    targetSizeM: [0.48, 0.92, 0.52],
+    fitAxis: 'height',
     license: 'CC0',
     source: 'Kenney Furniture Kit — chair',
     sourceUrl: KENNEY_FURNITURE_URL,

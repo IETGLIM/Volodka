@@ -39,7 +39,7 @@ const _SCENE_IDS = Object.keys(SCENE_CONFIG) as SceneId[];
 /* ── Scene category groupings ── */
 const SCENE_GROUPS: Record<string, SceneId[]> = {
   '🏠 Дом': ['volodka_room', 'volodka_corridor', 'home_evening', 'solnysh_room', 'zarema_albert_room'],
-  '🌆 Улица': ['street_night', 'street_winter'],
+  '🌆 Улица': ['street_night', 'street_winter', 'procedural_aaa'],
   '🏢 Локации': ['cafe_evening', 'office_day', 'park_day', 'library_day'],
   '⚔️ Особые': ['battle', 'sleep_dream', 'rooftop_edge', 'abandoned_factory'],
 };
@@ -514,6 +514,29 @@ function SceneTab() {
         Objects
       </div>
       <Row label="NPC States" value={Object.keys(npcStates).length} />
+
+      <div style={{ color: '#555', fontSize: 9, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 6, marginTop: 12 }}>
+        Procedural AAA
+      </div>
+      <button
+        type="button"
+        onClick={() => {
+          void import('@/proceduralAaa').then((m) => m.generateProceduralAaaScene());
+        }}
+        style={{
+          width: '100%',
+          padding: '6px 8px',
+          marginBottom: 8,
+          background: '#3a5cff',
+          color: '#fff',
+          border: 'none',
+          borderRadius: 4,
+          cursor: 'pointer',
+          fontSize: 11,
+        }}
+      >
+        Generate procedural AAA scene
+      </button>
 
       {/* Scene switcher */}
       <div style={{ color: '#555', fontSize: 9, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 6, marginTop: 12 }}>

@@ -248,7 +248,10 @@ export function ExplorationHUD(props: HUDProps) {
   // buttons, the full karma/energy/stress panel) so the player can focus on
   // movement, the story overlay, and the quest guidance HUD. The moment the
   // player gains a level OR collects a second poem, the full UI fades in.
+  // Diegetic exploration HUD — strip systems chrome; keep filmic crosshair + scene context + quest.
+  // Onboarding already hid some panels; Session 5 extends this to all free exploration.
   const isOnboarding = level <= 1 && mainPoemCount <= 1;
+  const diegeticHud = true;
 
   const {
     onToggleTutorials,
@@ -300,35 +303,34 @@ export function ExplorationHUD(props: HUDProps) {
       className={`fixed inset-0 pointer-events-none transition-opacity duration-500 ease-out ${hudMounted ? 'opacity-100' : 'opacity-0'}`}
       style={{ zIndex: UI_LAYERS.HUD }}
     >
-      {/* ── Ambient noise overlay (subtle film grain) ── */}
-      <div className="ambient-noise-overlay" />
+      {/* ── Ambient noise overlay (subtle film grain) — off in diegetic strip ── */}
+      {!diegeticHud ? <div className="ambient-noise-overlay" /> : null}
 
       {/* ── Achievement popup ── */}
       <AchievementPopup achievement={skillAchievement} />
 
-      {/* ── HUD Boot Sequence (one-time boot-up animation) ── */}
-      <HUDBootSequence />
+      {/* ── HUD Boot Sequence — skipped in diegetic exploration ── */}
+      {!diegeticHud ? <HUDBootSequence /> : null}
 
       {/* ── Combat Pre-Engagement Warning ── */}
       <CombatPreEngagementWarning />
 
-      {/* ── Scene Ambient Vignette (time/weather reactive edge tint) ── */}
-      <SceneAmbientVignette />
+      {/* ── Scene Ambient Vignette / chrome FX — filmic only when not diegetic ── */}
+      {!diegeticHud ? <SceneAmbientVignette /> : null}
       <RainScreenEffect />
       <SprintDrainOverlay />
-      <HUDChromaticEdge />
+      {!diegeticHud ? <HUDChromaticEdge /> : null}
 
-      {/* ── Center: Crosshair + E-key prompt + Cooldown ring + Radar pulse + Proximity glow ──
-          Proximity chrome gates on quiet-HUD / panels / dialogue so the scene owns the frame. */}
+      {/* ── Center: Crosshair + filmic prompt; proximity radar/glow stripped in diegetic ── */}
       <DynamicCrosshair />
       {proximityFxActive ? (
         <>
-          <InteractionProximityGlow />
-          <InteractionDistanceRing />
+          {!diegeticHud ? <InteractionProximityGlow /> : null}
+          {!diegeticHud ? <InteractionDistanceRing /> : null}
           <CrosshairInteractionPrompt />
-          <InteractionCooldownRing />
-          <InteractionRadarPulse />
-          <LootProximityIndicator />
+          {!diegeticHud ? <InteractionCooldownRing /> : null}
+          {!diegeticHud ? <InteractionRadarPulse /> : null}
+          {!diegeticHud ? <LootProximityIndicator /> : null}
         </>
       ) : null}
 
@@ -338,11 +340,15 @@ export function ExplorationHUD(props: HUDProps) {
       {/* ── Top bar (fades when HUD is quiet — crosshair stays) ── */}
       <div className="absolute top-0 left-0 right-0 pointer-events-auto" style={quietStyle}>
         <div
-          className="relative flex items-center justify-between px-2 py-1.5 sm:px-4 sm:py-2.5 hud-scanline-bar hud-topbar-mount"
-          style={STYLE_TOP_BAR_BG}
+          className={`relative flex items-center justify-between px-2 py-1.5 sm:px-4 sm:py-2.5 ${diegeticHud ? '' : 'hud-scanline-bar hud-topbar-mount'}`}
+          style={diegeticHud
+            ? { background: 'linear-gradient(180deg, rgba(6,8,14,0.55) 0%, rgba(6,8,14,0.0) 100%)', borderBottom: 'none' }
+            : STYLE_TOP_BAR_BG}
         >
-          {/* Animated gradient border line at bottom of top bar */}
-          <div className="top-bar-gradient-border absolute bottom-0 left-0 right-0 h-px pointer-events-none" />
+          {/* Animated gradient border — hidden in diegetic */}
+          {!diegeticHud ? (
+            <div className="top-bar-gradient-border absolute bottom-0 left-0 right-0 h-px pointer-events-none" />
+          ) : null}
 
           {/* Left: Scene name + time */}
           <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
@@ -367,62 +373,68 @@ export function ExplorationHUD(props: HUDProps) {
               {formatGameClock(timeOfDay)}
             </span>
 
-            {/* Karma tier badge (hidden during onboarding) */}
-            {!isOnboarding && <KarmaTierBadge karma={karma} />}
+            {/* Karma tier / scene chips — hidden in diegetic exploration */}
+            {!diegeticHud && !isOnboarding && <KarmaTierBadge karma={karma} />}
 
-            {/* Scene context chip — type + NPC/exit counts */}
-            {!isOnboarding && (
+            {!diegeticHud && !isOnboarding && (
               <div className="hidden md:block">
                 <SceneContextChip />
               </div>
             )}
 
-            {/* Environment mood indicator (hidden during onboarding) */}
-            {!isOnboarding && (
+            {!diegeticHud && !isOnboarding && (
               <div className="hidden lg:block">
                 <EnvironmentMoodIndicator />
               </div>
             )}
           </div>
 
-          {/* Center: Data ticker (desktop) */}
-          <div className="hidden sm:flex items-center flex-1 justify-center mx-2">
-            <TopBarDataTicker />
-          </div>
+          {/* Center: Data ticker — stripped in diegetic mode */}
+          {!diegeticHud ? (
+            <div className="hidden sm:flex items-center flex-1 justify-center mx-2">
+              <TopBarDataTicker />
+            </div>
+          ) : (
+            <div className="flex-1" />
+          )}
 
           {/* Right: Level + XP + Poem + Quest + Buttons + More */}
           <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
-            <LevelBadge level={level} perkCount={perkCount} xp={xp} xpToNext={xpToNext} justLeveled={justLeveled} />
+            {!diegeticHud ? (
+              <>
+                <LevelBadge level={level} perkCount={perkCount} xp={xp} xpToNext={xpToNext} justLeveled={justLeveled} />
 
-            {/* XP progress mini-bar */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="hidden md:flex flex-col items-center gap-0 w-16 cursor-default">
-                  <div className="relative h-1 w-full bg-slate-800/60 rounded-full overflow-hidden">
-                    <motion.div
-                      className="h-full rounded-full"
-                      style={STYLE_XP_MINI_BG}
-                      initial={false}
-                      animate={{ width: `${(xp / xpToNext) * 100}%` }}
-                      transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
-                    />
-                    <div className="xp-shimmer-overlay absolute inset-0 rounded-full pointer-events-none" />
-                  </div>
-                  <span className="text-[8px] text-slate-400 font-mono tabular-nums">{xp}/{xpToNext} XP</span>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent
-                side="bottom"
-                sideOffset={4}
-                className="border backdrop-blur-xl px-3 py-2 max-w-[200px] space-y-1"
-                style={STYLE_TOOLTIP_BG}
-              >
-                <div className="text-xs font-semibold text-cyan-300 font-mono">⬆ XP: {xp}/{xpToNext}</div>
-                <div className="text-[10px] text-slate-400">До уровня {level + 1}: <span className="text-cyan-400">{xpToNext - xp} XP</span></div>
-              </TooltipContent>
-            </Tooltip>
+                {/* XP progress mini-bar */}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="hidden md:flex flex-col items-center gap-0 w-16 cursor-default">
+                      <div className="relative h-1 w-full bg-slate-800/60 rounded-full overflow-hidden">
+                        <motion.div
+                          className="h-full rounded-full"
+                          style={STYLE_XP_MINI_BG}
+                          initial={false}
+                          animate={{ width: `${(xp / xpToNext) * 100}%` }}
+                          transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
+                        />
+                        <div className="xp-shimmer-overlay absolute inset-0 rounded-full pointer-events-none" />
+                      </div>
+                      <span className="text-[8px] text-slate-400 font-mono tabular-nums">{xp}/{xpToNext} XP</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent
+                    side="bottom"
+                    sideOffset={4}
+                    className="border backdrop-blur-xl px-3 py-2 max-w-[200px] space-y-1"
+                    style={STYLE_TOOLTIP_BG}
+                  >
+                    <div className="text-xs font-semibold text-cyan-300 font-mono">⬆ XP: {xp}/{xpToNext}</div>
+                    <div className="text-[10px] text-slate-400">До уровня {level + 1}: <span className="text-cyan-400">{xpToNext - xp} XP</span></div>
+                  </TooltipContent>
+                </Tooltip>
 
-            <div className="w-px h-5 bg-slate-700/30 mx-0.5 hidden md:block" />
+                <div className="w-px h-5 bg-slate-700/30 mx-0.5 hidden md:block" />
+              </>
+            ) : null}
 
             {/* Poem count badge */}
             <motion.button
@@ -648,7 +660,7 @@ export function ExplorationHUD(props: HUDProps) {
       {/* Hidden during onboarding to reduce cognitive overload. The LevelBadge
           in the top bar already shows level/XP; karma/energy/stress become
           meaningful only after the first combat or dialogue choice. */}
-      <div className={`absolute left-3 sm:left-4 pointer-events-auto ${isOnboarding ? 'hidden' : 'hidden lg:block'}`} style={{ bottom: 96 }}>
+      <div className={`absolute left-3 sm:left-4 pointer-events-auto ${diegeticHud || isOnboarding ? 'hidden' : 'hidden lg:block'}`} style={{ bottom: 96 }}>
         <div
           className={`relative rounded-2xl p-4 sm:p-5 border backdrop-blur-xl min-w-[260px] overflow-hidden panel-scanlines hex-grid-bg neon-border-breathe stats-panel-breathing hud-glass-shimmer glass-panel-data-pattern ${isLowEnergy || isHighStress ? 'warning-pulse energy-critical-screen' : ''}`}
           style={{
@@ -977,44 +989,52 @@ export function ExplorationHUD(props: HUDProps) {
 
       <PhysicsDegradedDevBadge />
 
-      {/* ── HUD Notification Feed (left side, below top bar) ── */}
-      <HUDNotificationFeed />
+      {/* ── HUD Notification Feed — hidden in diegetic strip ── */}
+      {!diegeticHud ? <HUDNotificationFeed /> : null}
 
       {/* ── Contextual hint (floating bottom center) ── */}
-      <ContextualHint hint={currentHint} onDismiss={dismissHint} />
+      {!diegeticHud ? <ContextualHint hint={currentHint} onDismiss={dismissHint} /> : null}
 
-      {/* ── Quest direction arrow (edge-of-screen) ── */}
-      <QuestDirectionArrow />
+      {/* ── Quest direction arrow — StoryGuidanceHUD owns diegetic quest ── */}
+      {!diegeticHud ? <QuestDirectionArrow /> : null}
 
-      {/* ── Floating action indicator (bottom center) ── */}
-      <FloatingActionIndicator />
+      {/* ── Floating action indicator ── */}
+      {!diegeticHud ? <FloatingActionIndicator /> : null}
 
-      {/* ── NPC proximity indicator (above crosshair) ── */}
-      <NPCProximityIndicator />
+      {/* ── NPC proximity indicator ── */}
+      {!diegeticHud ? <NPCProximityIndicator /> : null}
 
-      {/* ── Compass + POI markers + Exploration progress (top-right, below top bar) ── */}
+      {/* ── Compass + quest progress — diegetic: quest tracker only ── */}
       <div className="absolute top-16 sm:top-20 right-3 sm:right-4 flex flex-col items-center gap-3 pointer-events-none" style={{ zIndex: UI_LAYERS.HUD + 1 }}>
-        <div className="relative">
-          <CompassIndicator />
-          <CompassPOIMarkers />
+        {!diegeticHud ? (
+          <>
+            <div className="relative">
+              <CompassIndicator />
+              <CompassPOIMarkers />
+            </div>
+            <ExplorationProgressBadge />
+            <SessionPlayTimer />
+            <FootstepPedometer />
+          </>
+        ) : null}
+      </div>
+
+      {/* ── Active quest mini-tracker — diegetic uses StoryGuidanceHUD only ── */}
+      {!diegeticHud ? (
+        <div
+          className="absolute left-3 sm:left-4 pointer-events-auto"
+          style={{ bottom: bottomStatusEffectsPx() + 40, zIndex: UI_LAYERS.HUD + 1 }}
+        >
+          <ActiveQuestMiniTracker />
         </div>
-        <ExplorationProgressBadge />
-        <SessionPlayTimer />
-        <FootstepPedometer />
-      </div>
+      ) : null}
 
-      {/* ── Active quest mini-tracker (bottom-left, above mobile controls) ── */}
-      <div
-        className="absolute left-3 sm:left-4 pointer-events-auto"
-        style={{ bottom: bottomStatusEffectsPx() + 40, zIndex: UI_LAYERS.HUD + 1 }}
-      >
-        <ActiveQuestMiniTracker />
-      </div>
-
-      {/* ── Player coordinates display (below minimap, desktop only) ── */}
-      <div className="absolute pointer-events-none hidden lg:block" style={{ top: 'auto', bottom: 216, right: 16, zIndex: UI_LAYERS.HUD }}>
-        <PlayerCoordinatesDisplay />
-      </div>
+      {/* ── Player coordinates — stripped in diegetic mode ── */}
+      {!diegeticHud ? (
+        <div className="absolute pointer-events-none hidden lg:block" style={{ top: 'auto', bottom: 216, right: 16, zIndex: UI_LAYERS.HUD }}>
+          <PlayerCoordinatesDisplay />
+        </div>
+      ) : null}
 
       {/* ── Edge warning overlays for low energy / high stress ── */}
       <AnimatePresence>

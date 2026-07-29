@@ -10,6 +10,7 @@ export const HERO_SCENE_IDS = [
   'office_day',
   'park_day',
   'library_day',
+  'procedural_aaa',
 ] as const satisfies readonly SceneId[];
 
 export type HeroSceneId = (typeof HERO_SCENE_IDS)[number];
@@ -62,9 +63,16 @@ const PROFILES: Partial<Record<SceneId, SceneVisualProfile>> = {
   street_night: {
     ...HERO_PROFILE,
     enhancedAmbientOcclusion: true,
-    bloomIntensityScale: 1.18,
+    bloomIntensityScale: 1.08,
   },
-  cafe_evening: { ...HERO_PROFILE, enhancedAmbientOcclusion: true, bloomIntensityScale: 1.15 },
+  procedural_aaa: {
+    ...HERO_PROFILE,
+    enhancedAmbientOcclusion: true,
+    bloomIntensityScale: 1.12,
+    aoIntensity: 2.6,
+    aoRadius: 0.55,
+  },
+  cafe_evening: { ...HERO_PROFILE, enhancedAmbientOcclusion: true, bloomIntensityScale: 1.08 },
   office_day: { ...HERO_PROFILE, enhancedAmbientOcclusion: true, bloomIntensityScale: 1.04 },
   park_day: { ...HERO_PROFILE, enhancedAmbientOcclusion: false, bloomIntensityScale: 1.06 },
   library_day: { ...HERO_PROFILE, enhancedAmbientOcclusion: true, bloomIntensityScale: 1.05 },
@@ -86,12 +94,21 @@ const PROFILES: Partial<Record<SceneId, SceneVisualProfile>> = {
     bloomIntensityScale: 1.12,
   },
   // Thin / extension scenes — promote to hero PostFX parity so neon/bloom aren't DEFAULT-flat
-  river_pier: { ...STANDARD_PROFILE, forceFullPostFx: true, bloomIntensityScale: 1.12 },
-  pier_evening: {
+  river_pier: {
     ...STANDARD_PROFILE,
     forceFullPostFx: true,
     bloomIntensityScale: 1.14,
-    enhancedAmbientOcclusion: false,
+    enhancedAmbientOcclusion: true,
+    aoIntensity: 2.4,
+    aoRadius: 0.48,
+  },
+  pier_evening: {
+    ...STANDARD_PROFILE,
+    forceFullPostFx: true,
+    bloomIntensityScale: 1.16,
+    enhancedAmbientOcclusion: true,
+    aoIntensity: 2.5,
+    aoRadius: 0.5,
   },
   chk_forest_zorge: { ...STANDARD_PROFILE, forceFullPostFx: true, bloomIntensityScale: 1.1 },
   chk_campfire_night: { ...STANDARD_PROFILE, forceFullPostFx: true, bloomIntensityScale: 1.14 },
@@ -104,8 +121,12 @@ const PROFILES: Partial<Record<SceneId, SceneVisualProfile>> = {
   city_square: {
     ...STANDARD_PROFILE,
     forceFullPostFx: true,
-    bloomIntensityScale: 1.16,
-    ambientNpcCountBoost: 1,
+    bloomIntensityScale: 1.18,
+    ambientNpcCountBoost: 2,
+    enhancedAmbientOcclusion: true,
+    aoIntensity: 2.6,
+    aoRadius: 0.5,
+    shadowMapScale: 1.15,
   },
   // Extension indoor scenes — AO adds depth to enclosed spaces
   guild_mainframe: { ...STANDARD_PROFILE, forceFullPostFx: true, enhancedAmbientOcclusion: true, aoIntensity: 2.4, aoRadius: 0.5, bloomIntensityScale: 1.06 },

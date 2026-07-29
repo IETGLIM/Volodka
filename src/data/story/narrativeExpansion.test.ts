@@ -16,6 +16,7 @@ const EXTENSION_SCENE_IDS = [
   'guild_mainframe',
   'zarema_room',
   'albert_backroom',
+  'procedural_aaa',
 ] as const;
 
 const SIDE_QUEST_IDS = [
@@ -34,7 +35,7 @@ const SIDE_QUEST_IDS = [
 ] as const;
 
 describe('AAA narrative expansion', () => {
-  it('registers all 9 extension scenes', () => {
+  it('registers all 10 extension scenes', () => {
     for (const id of EXTENSION_SCENE_IDS) {
       expect(SCENE_DEFINITIONS[id], id).toBeTruthy();
       expect(SCENE_IDS).toContain(id);
@@ -49,6 +50,7 @@ describe('AAA narrative expansion', () => {
       'guild_mainframe',
       'library_basement',
       'albert_backroom',
+      'procedural_aaa',
     ]);
     for (const id of EXTENSION_SCENE_IDS) {
       if (dedicatedVisuals.has(id)) {

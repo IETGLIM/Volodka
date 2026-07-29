@@ -1,8 +1,58 @@
 /* ══════════════════════════════════════════════════════════════
-   SESSION 8: MenuScreen Enhancements
+   SESSION 8: Cinematic menu / pause — filmic plate language
+   (no terminal chrome, hex-grid, volodka:// headers, emoji chrome)
    ══════════════════════════════════════════════════════════════ */
 
-/* ─── Menu button signal line animation (hover) ─── */
+.cinematic-menu-shell {
+  isolation: isolate;
+}
+
+.cinematic-menu-panel {
+  background: linear-gradient(180deg, rgba(8, 10, 16, 0.55) 0%, rgba(4, 5, 10, 0.72) 100%);
+  border: 1px solid rgba(168, 162, 158, 0.12);
+  backdrop-filter: blur(10px);
+}
+
+.cinematic-menu-item {
+  display: block;
+  width: 100%;
+  padding: 0.7rem 1rem;
+  font-family: ui-serif, Georgia, 'Times New Roman', serif;
+  font-size: 0.95rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(214, 211, 209, 0.72);
+  background: transparent;
+  border: none;
+  border-left: 2px solid transparent;
+  transition: color 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+.cinematic-menu-item:hover:not(:disabled),
+.cinematic-menu-item--selected {
+  color: rgba(250, 250, 249, 0.95);
+  border-left-color: rgba(214, 211, 209, 0.55);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.cinematic-menu-item--muted {
+  color: rgba(120, 113, 108, 0.7);
+  letter-spacing: 0.18em;
+  font-size: 0.8rem;
+}
+
+.cinematic-menu-item--danger {
+  color: rgba(252, 165, 165, 0.75);
+}
+
+.cinematic-menu-item--danger:hover:not(:disabled) {
+  color: rgba(254, 202, 202, 0.95);
+  border-left-color: rgba(252, 165, 165, 0.45);
+}
+
+/* ─── Legacy Session 8 signal lines (kept for non-menu surfaces) ─── */
 @keyframes menu-signal-extend {
   0% { width: 0; opacity: 0; }
   60% { width: 100%; opacity: 0.3; }
@@ -30,7 +80,6 @@
   animation: menu-signal-extend 0.6s ease-out forwards;
 }
 
-/* ─── Disabled menu button pulsing dot ─── */
 @keyframes menu-disabled-dot-pulse {
   0%, 100% { opacity: 0.3; transform: scale(0.8); }
   50% { opacity: 0.7; transform: scale(1.2); }
@@ -48,7 +97,6 @@
   animation: menu-disabled-dot-pulse 1.5s ease-in-out infinite;
 }
 
-/* ─── Menu button signal line (hover extension from left) ─── */
 @keyframes menu-btn-signal-extend {
   0% { width: 0; opacity: 0; }
   60% { width: 100%; opacity: 0.3; }
@@ -76,7 +124,6 @@
   animation: menu-btn-signal-extend 0.6s ease-out forwards;
 }
 
-/* ─── Continue button pulsing dots before "нет сохранения" ─── */
 @keyframes menu-continue-dot-pulse {
   0%, 100% { opacity: 0.3; transform: scale(0.8); }
   50% { opacity: 0.7; transform: scale(1.2); }
@@ -96,33 +143,17 @@
 
 /* ─── SESSION 14: DirectionalDamageIndicator ─── */
 
-/* Directional gradient flash — subtle vertical pan for scan-line texture */
 @keyframes damage-edge-flash {
-  0% {
-    background-position: 0 0;
-  }
-  100% {
-    background-position: 0 4px;
-  }
+  0% { background-position: 0 0; }
+  100% { background-position: 0 4px; }
 }
 
-/* Emerald pulse effect for heal overlay */
 @keyframes heal-pulse {
-  0% {
-    transform: scale(0.95);
-    opacity: 0.8;
-  }
-  50% {
-    transform: scale(1.02);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 0;
-  }
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.02); opacity: 1; }
+  100% { transform: scale(1); opacity: 0; }
 }
 
-/* Horizontal displacement glitch for heavy damage (>30) */
 @keyframes damage-glitch {
   0% {
     clip-path: inset(0 0 80% 0);
@@ -150,7 +181,6 @@
   }
 }
 
-/* Damage indicator overlay base styles */
 .damage-indicator-overlay {
   position: absolute;
   inset: 0;
@@ -159,7 +189,6 @@
   font-family: 'Geist Mono', monospace;
 }
 
-/* Heal indicator overlay base styles */
 .heal-indicator-overlay {
   position: absolute;
   inset: 0;

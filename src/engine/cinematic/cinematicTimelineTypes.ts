@@ -67,6 +67,11 @@ export interface CinematicTimelinePhase {
   audioCue?: 'footstep' | 'notify' | 'ui_open' | 'mystery';
   /** Trigger camera shake at the start of this phase. */
   cameraShake?: { intensity: number; frequency?: number };
+  /**
+   * Staging light cue — multiplies outdoor neon/practical intensity for a beat.
+   * Handled by SceneEnvironment / street neon listeners via cinematic:timeline_phase.
+   */
+  lightCue?: 'neon_surge' | 'dim_hold' | 'warm_practical';
 }
 
 export interface CinematicTimelineAnchor {

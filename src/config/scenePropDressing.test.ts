@@ -6,12 +6,15 @@ import {
 } from './scenePropDressing';
 
 describe('scenePropDressing', () => {
-  it('splits volodka_room into critical essentials and deferred dressing', () => {
+  it('splits volodka_room into critical furniture and deferred desk props', () => {
     const { critical, deferred } = splitScenePropDressing('volodka_room');
 
-    // volodka_room only has ai3dgen props (all deferred);
-    // the procedural VolodkaRoomVisual provides walls, floor, desk, bed, etc.
-    expect(critical).toHaveLength(0);
+    expect(critical.map((p) => p.propModelId)).toEqual([
+      'kenney_bed',
+      'kenney_wardrobe',
+      'kenney_bookshelf',
+      'kenney_city_chair',
+    ]);
     expect(deferred.map((p) => p.propModelId)).toEqual([
       'ai3dgen_poetic_compiler',
       'ai3dgen_neural_filter',

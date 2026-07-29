@@ -30,4 +30,12 @@ export {
 } from './cinematicTimelineOrchestrator';
 
 export { INTRO_WAKE_TIMELINE } from './introWakeTimeline';
+export { STREET_ARRIVAL_TIMELINE } from './streetArrivalTimeline';
+export { PROCEDURAL_AAA_ARRIVAL_TIMELINE } from './proceduralAaaArrivalTimeline';
+export {
+  setCinematicLightCue,
+  getCinematicLightCue,
+  getCinematicNeonIntensityScale,
+  clearCinematicLightCue,
+} from './cinematicLightStaging';
 export { resolvedSplashToTimeline, splashPresetToTimeline } from './splashToTimeline';

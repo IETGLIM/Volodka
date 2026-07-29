@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-/** Shared PBR material presets for procedural scenes. */
+/** Shared PBR material presets for procedural scenes — tuned away from plastic kit look. */
 export const PBR_PRESETS = {
   asphalt: {
     color: '#3a3a52',
@@ -9,18 +9,50 @@ export const PBR_PRESETS = {
   },
   asphaltWet: {
     color: '#2a2a3a',
-    roughness: 0.35,
-    metalness: 0.25,
+    roughness: 0.32,
+    metalness: 0.22,
   },
   concrete: {
     color: '#5a5a6a',
     roughness: 0.92,
     metalness: 0.02,
   },
+  sidewalk: {
+    color: '#4a4a62',
+    roughness: 0.86,
+    metalness: 0.04,
+  },
+  plaster: {
+    color: '#7a7468',
+    roughness: 0.9,
+    metalness: 0.01,
+  },
+  wornWood: {
+    color: '#6a4a32',
+    roughness: 0.78,
+    metalness: 0.02,
+  },
+  fabric: {
+    color: '#4a4050',
+    roughness: 0.95,
+    metalness: 0,
+  },
+  paintedMetal: {
+    color: '#4a5568',
+    roughness: 0.55,
+    metalness: 0.45,
+  },
   wetMetal: {
     color: '#4a5568',
     roughness: 0.25,
     metalness: 0.85,
+  },
+  neonEmissive: {
+    color: '#101018',
+    roughness: 0.35,
+    metalness: 0.4,
+    emissive: '#22ffdd',
+    emissiveIntensity: 1.4,
   },
   monitorGlass: {
     color: '#0a0a12',
@@ -46,6 +78,12 @@ export function createStandardFromPreset(
     color: p.color,
     roughness: p.roughness,
     metalness: p.metalness,
+    ...('emissive' in p
+      ? {
+          emissive: p.emissive,
+          emissiveIntensity: 'emissiveIntensity' in p ? p.emissiveIntensity : 1,
+        }
+      : {}),
     ...overrides,
   });
 }
@@ -63,6 +101,12 @@ export function createPhysicalFromPreset(
     metalness: p.metalness,
     transmission,
     thickness,
+    ...('emissive' in p
+      ? {
+          emissive: p.emissive,
+          emissiveIntensity: 'emissiveIntensity' in p ? p.emissiveIntensity : 1,
+        }
+      : {}),
     ...overrides,
   });
 }

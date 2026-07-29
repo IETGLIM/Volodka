@@ -135,6 +135,7 @@ function getSceneConfigName(sceneId: SceneId): string {
     guild_mainframe: 'Серверная гильдии',
     zarema_room: 'Комната Заремы',
     albert_backroom: 'Подсобка кафе',
+    procedural_aaa: 'Procedural AAA',
   };
   return names[sceneId] ?? sceneId;
 }

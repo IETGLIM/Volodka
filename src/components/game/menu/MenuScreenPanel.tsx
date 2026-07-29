@@ -177,14 +177,7 @@ function MenuScreenPanelInner() {
           transition={{ duration: 0.6, delay: d(1.8, visited) }}
           className="mt-8 w-full max-w-xs"
         >
-          <div
-            className="relative border border-cyan-500/20 bg-black/60 backdrop-blur-md overflow-hidden hex-grid-bg menu-corner-brackets"
-            style={{ clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))' }}
-          >
-            <div className="menu-corner-bracket-pair" aria-hidden="true" />
-            <div className="flex items-center gap-2 border-b border-cyan-500/15 bg-black/40 px-3 py-2">
-              <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-cyan-500/30">volodka://main</span>
-            </div>
+          <div className="relative overflow-hidden cinematic-menu-panel">
             <MenuNavigationList
               items={menu.menuItems}
               selectedIndex={menu.selectedIndex}
@@ -204,8 +197,8 @@ function MenuScreenPanelInner() {
           className="mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5"
           aria-hidden="true"
         >
-          <span className="text-[10px] text-slate-400/70 font-mono">↑↓ Навигация</span>
-          <span className="text-[10px] text-slate-400/70 font-mono">Enter Выбрать</span>
+          <span className="font-serif text-[10px] tracking-[0.18em] text-stone-400/55">↑↓ Навигация</span>
+          <span className="font-serif text-[10px] tracking-[0.18em] text-stone-400/55">Enter Выбрать</span>
         </motion.div>
       </div>
 
@@ -218,16 +211,16 @@ function MenuScreenPanelInner() {
           menu.toggleMusic();
           safePlayMenuSfx(audioEngine.playSfx.bind(audioEngine), 'click');
         }}
-        className="absolute bottom-4 right-4 z-50 flex items-center gap-1.5 px-3 py-2 rounded-sm border border-cyan-500/30 bg-black/50 backdrop-blur-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-400/70"
+        className="absolute bottom-8 right-6 z-50 flex items-center gap-1.5 px-2 py-1.5 text-stone-400/60 hover:text-stone-200/80 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-stone-300/50"
         aria-label={menu.musicEnabled ? 'Выключить музыку' : 'Включить музыку'}
       >
         {menu.musicEnabled ? (
-          <Volume2 className="w-4 h-4 text-cyan-400/70" />
+          <Volume2 className="w-3.5 h-3.5" />
         ) : (
-          <VolumeX className="w-4 h-4 text-slate-500/60" />
+          <VolumeX className="w-3.5 h-3.5" />
         )}
-        <span className="font-mono text-[9px] uppercase tracking-widest text-cyan-500/50">
-          {menu.musicEnabled ? 'ON' : 'OFF'}
+        <span className="font-serif text-[9px] tracking-[0.2em] uppercase">
+          {menu.musicEnabled ? 'Музыка' : 'Тишина'}
         </span>
       </motion.button>
 
@@ -235,10 +228,10 @@ function MenuScreenPanelInner() {
         initial={contentMotion ? { opacity: 0 } : false}
         animate={{ opacity: 1 }}
         transition={{ delay: d(2.5, visited) }}
-        className="absolute bottom-6 right-6 z-30"
+        className="absolute bottom-8 left-6 z-30"
         aria-hidden="true"
       >
-        <span className="font-mono text-[10px] text-cyan-400/50">v{APP_VERSION}</span>
+        <span className="font-serif text-[10px] tracking-[0.15em] text-stone-500/45">v{APP_VERSION}</span>
       </motion.div>
 
       <AnimatePresence>
@@ -270,43 +263,29 @@ function MenuScreenPanelInner() {
             <motion.div
               key="new-game-dialog"
               className="w-full max-w-xs mx-4"
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              transition={{ duration: 0.25 }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 8 }}
+              transition={{ duration: 0.28 }}
               onClick={(e) => e.stopPropagation()}
             >
-              <div
-                className="relative border border-cyan-500/30 bg-black/80 backdrop-blur-md overflow-hidden"
-                style={{ clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))' }}
-              >
-                {/* Header */}
-                <div className="flex items-center gap-2 border-b border-cyan-500/20 bg-black/50 px-3 py-2">
-                  <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-cyan-500/40">volodka://new-game</span>
-                </div>
+              <div className="relative overflow-hidden cinematic-menu-panel px-5 py-5 text-center">
+                <p className="font-serif text-[11px] tracking-[0.3em] uppercase text-stone-400/55 mb-2">
+                  Начало
+                </p>
+                <p className="font-serif text-xl tracking-[0.12em] text-stone-100/90 mb-2">
+                  Новая игра
+                </p>
+                <p className="font-serif text-sm text-stone-400/70 leading-relaxed mb-5">
+                  Запустить пролог с cinematic-вступлением или перейти сразу к gameplay?
+                </p>
 
-                {/* Body */}
-                <div className="px-4 pt-4 pb-2">
-                  <p className="font-mono text-sm text-cyan-200/90 tracking-wide mb-1">
-                    Новая игра
-                  </p>
-                  <p className="font-mono text-xs text-slate-400/80 leading-relaxed">
-                    Запустить пролог с cinematic-вступлением или перейти сразу к gameplay?
-                  </p>
-                </div>
-
-                {/* Buttons */}
-                <div className="flex flex-col gap-2 px-4 pt-2 pb-4">
+                <div className="flex flex-col gap-1">
                   <button
                     type="button"
                     data-testid="menu-start-prologue"
                     onClick={handleDialogStartPrologue}
-                    className="w-full px-4 py-2.5 font-mono text-xs tracking-[0.15em] uppercase
-                               text-cyan-200/90 border border-cyan-500/30 bg-cyan-500/5
-                               hover:bg-cyan-500/15 hover:border-cyan-400/50
-                               rounded-sm transition-all duration-200
-                               active:bg-cyan-400/20 active:scale-[0.98]
-                               touch-manipulation select-none"
+                    className="cinematic-menu-item cinematic-menu-item--selected"
                   >
                     Начать с пролога
                   </button>
@@ -314,22 +293,14 @@ function MenuScreenPanelInner() {
                     type="button"
                     data-testid="menu-skip-prologue"
                     onClick={handleDialogSkipPrologue}
-                    className="w-full px-4 py-2.5 font-mono text-xs tracking-[0.15em] uppercase
-                               text-slate-400/80 border border-slate-500/20 bg-transparent
-                               hover:bg-slate-500/10 hover:border-slate-400/40 hover:text-slate-300/90
-                               rounded-sm transition-all duration-200
-                               active:bg-slate-400/15 active:scale-[0.98]
-                               touch-manipulation select-none"
+                    className="cinematic-menu-item"
                   >
                     Пропустить пролог
                   </button>
                   <button
                     type="button"
                     onClick={handleDialogClose}
-                    className="w-full px-4 py-1.5 font-mono text-[10px] tracking-wider uppercase
-                               text-slate-500/60 hover:text-slate-400/80
-                               transition-colors duration-200
-                               touch-manipulation select-none"
+                    className="cinematic-menu-item cinematic-menu-item--muted mt-1"
                   >
                     Отмена
                   </button>

@@ -6,14 +6,14 @@ import * as THREE from 'three';
 import { LOOK_HEIGHT } from '@/engine/camera/cameraConstants';
 
 export const WAKEUP_PHASE = {
-  terminal: 4.2,   // slower initial reveal — let the player absorb the scene
-  rise: 3.8,       // slightly longer for natural wake-up feel
-  standing: 2.5,   // a bit more time to register the room
-  walking: 5.0,
-  sitting: 3.0,
-  settle: 1.8,     // gentle settling pause before monitor push-in
-  monitor: 6.0,
-  handoff: 2.8,    // slightly longer handoff for smoother blend to exploration
+  terminal: 4.6,   // longer terminal hold — show-don't-tell room beat
+  rise: 4.0,
+  standing: 2.8,   // hold on lived-in apartment silhouette
+  walking: 5.2,
+  sitting: 3.2,
+  settle: 2.2,     // pause before monitor push-in
+  monitor: 6.2,
+  handoff: 3.0,
 } as const;
 
 export const WAKEUP_TOTAL =

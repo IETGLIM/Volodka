@@ -106,6 +106,8 @@ export const INTRO_WAKE_TIMELINE: CinematicTimelineDef = {
         ],
       },
       camera: { mode: 'waypoint', to: wpToData(WAKEUP_CAMERA_WAYPOINTS[2]) },
+      lightCue: 'warm_practical',
+      audioCue: 'notify',
       overlay: {
         text: 'Тусклый свет монитора едва прорезает полумрак комнаты.',
         letterboxStyle: 'thin',

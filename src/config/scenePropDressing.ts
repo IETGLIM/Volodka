@@ -22,9 +22,12 @@ export interface SplitScenePropDressing {
 /** Kenney + AI3DGen props placed in scene visuals (see propModelRegistry). */
 export const SCENE_PROP_DRESSING: Partial<Record<SceneId, readonly ScenePropPlacement[]>> = {
   volodka_room: [
-    // Procedural VolodkaRoomVisual already renders: walls, floor, ceiling,
-    // desk, bed, wardrobe, bookshelf, door, windows, monitors, fan, etc.
-    // Only keep unique ai3dgen props that the procedural room does NOT provide.
+    // Kenney furniture replaces procedural box bed/wardrobe/bookshelf/chair (High/Ultra GLB).
+    // Desk shell stays procedural so monitor screens + interaction stay intact.
+    { propModelId: 'kenney_bed', position: [1.8, 0, 2.0], rotationY: Math.PI },
+    { propModelId: 'kenney_wardrobe', position: [-2.15, 0, 2.45], rotationY: Math.PI / 2 },
+    { propModelId: 'kenney_bookshelf', position: [-2.2, 0, 0], rotationY: Math.PI / 2 },
+    { propModelId: 'kenney_city_chair', position: [0, 0, -1.45], rotationY: Math.PI },
     { propModelId: 'ai3dgen_poetic_compiler', position: [-0.35, 0.82, -2.38], rotationY: 0.25, loadTier: 'deferred' },
     { propModelId: 'ai3dgen_neural_filter', position: [0.95, 0.82, -2.55], rotationY: -0.35, loadTier: 'deferred' },
     { propModelId: 'ai3dgen_digital_amulet', position: [-2.05, 1.55, 0.05], rotationY: Math.PI / 2, loadTier: 'deferred' },
@@ -50,13 +53,17 @@ export const SCENE_PROP_DRESSING: Partial<Record<SceneId, readonly ScenePropPlac
     { propModelId: 'kenney_city_coffee_machine', position: [2.5, 0, -1.2], rotationY: -Math.PI / 2 },
     { propModelId: 'kenney_city_table_small', position: [-2.0, 0, 1.5] },
     { propModelId: 'kenney_city_chair', position: [-2.0, 0, 2.3], rotationY: Math.PI },
+    { propModelId: 'kenney_city_table_small', position: [1.2, 0, 2.0], rotationY: 0.35 },
+    { propModelId: 'kenney_city_chair', position: [1.2, 0, 2.75], rotationY: Math.PI + 0.2 },
+    { propModelId: 'kenney_city_chair', position: [1.55, 0, 1.35], rotationY: 0.4 },
+    { propModelId: 'kenney_bookshelf', position: [4.2, 0, -3.2], rotationY: -Math.PI / 2 },
     { propModelId: 'kenney_city_bottle', position: [-1.85, 0.55, 1.55] },
     { propModelId: 'ai3dgen_poetic_compiler', position: [-4.0, 0.55, -3.5] },
   ],
   street_night: [
-    { propModelId: 'kenney_city_bench', position: [-4.5, 0, 2.0], rotationY: Math.PI / 2 },
-    { propModelId: 'kenney_city_lamp_post', position: [-6.0, 0, -1.5] },
-    { propModelId: 'kenney_city_lamp_post', position: [5.5, 0, 3.0], rotationY: Math.PI / 4 },
+    // Poly Haven street setpiece owns benches/lamps/trash — keep only sparse Kenney accents
+    { propModelId: 'kenney_city_lamp_post', position: [-3.2, 0, -9.0], rotationY: 0.2 },
+    { propModelId: 'kenney_city_bottle', position: [-4.2, 0.45, 2.15], loadTier: 'deferred' },
   ],
   rooftop_edge: [
     { propModelId: 'kenney_city_guitar', position: [-1.2, 0.05, -2.0], rotationY: 0.6 },

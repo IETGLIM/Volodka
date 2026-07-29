@@ -49,6 +49,7 @@ import {
   bindAdaptiveQualityBridge,
   unbindAdaptiveQualityBridge,
 } from '@/engine/graphics/adaptiveQualityBridge';
+import { bindSoftWorkBudget } from '@/engine/graphics/softWorkBudget';
 import { clearSessionAutoResolvedTier } from '@/engine/graphics/autoQualitySession';
 import {
   bindPoemWorldEventBridge,
@@ -155,6 +156,7 @@ export function reviveGameEngine(): void {
   bindPoemReadingCutsceneLifecycleListeners();
   bindPoemWorldEventBridge();
   bindAdaptiveQualityBridge();
+  bindSoftWorkBudget();
 
   reviveQuestTracker();
   reviveGuidedStoryManager();

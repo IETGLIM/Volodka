@@ -1,4 +1,4 @@
-import { memo, useMemo } from 'react';
+import { memo, useMemo, lazy, Suspense } from 'react';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import type { PanelCloseHandlers } from './useStablePanelClosers';
 import {
@@ -29,6 +29,12 @@ import {
   LazyNotificationHistoryPanel,
   LazySettingsPanel,
 } from './lazyPanels';
+
+const LazyProceduralAaaTweakPanel = lazy(() =>
+  import('@/proceduralAaa/ProceduralAaaTweakPanel').then((m) => ({
+    default: m.ProceduralAaaTweakPanel,
+  })),
+);
 
 type PanelCloseProps = {
   onClose: PanelCloseHandlers;
@@ -133,6 +139,9 @@ export const OrchestratorPanelLayer = memo(function OrchestratorPanelLayer({
       )}
       <OrchestratorMenuLayerPanels onClose={onClose} />
       <OrchestratorDevPanel devToolsArmed={devToolsArmed} devPanelStartOpen={devPanelStartOpen} />
+      <Suspense fallback={null}>
+        <LazyProceduralAaaTweakPanel startOpen={false} />
+      </Suspense>
     </>
   );
 });

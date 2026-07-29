@@ -2,17 +2,40 @@ import { describe, expect, it } from 'vitest';
 import { getMenuScreenFx, getMenuParticleCounts } from '@/engine/menu/menuFxTier';
 import {
   buildMenuItems,
-  getAccentColors,
+  getFilmicMenuItemClass,
   parseMenuSavePreview,
 } from '@/engine/menu/menuPresentation';
 
 describe('menuFxTier', () => {
-  it('disables heavy fx on low tier', () => {
+  it('keeps filmic plate without matrix/ASCII soup on low tier', () => {
     const fx = getMenuScreenFx('low', false);
-    expect(fx.matrixRain).toBe(true);
+    expect(fx.matrixRain).toBe(false);
+    expect(fx.asciiDecoration).toBe(false);
+    expect(fx.atmosphericPan).toBe(true);
     expect(fx.menuParticles).toBe(false);
     expect(fx.particleSystem).toBe(false);
     expect(fx.fullScreenScanLine).toBe(false);
+  });
+
+  it('keeps filmic high-tier title without cyber soup', () => {
+    const fx = getMenuScreenFx('high', false);
+    expect(fx.atmosphericPan).toBe(true);
+    expect(fx.cinematicBars).toBe(true);
+    expect(fx.matrixRain).toBe(false);
+    expect(fx.asciiDecoration).toBe(false);
+    expect(fx.crtSweep).toBe(false);
+    expect(fx.circuitGridLines).toBe(false);
+    expect(fx.filmGrain).toBe(true);
+  });
+
+  it('pause and title share filmic language (no matrix/ASCII/CRT)', () => {
+    for (const tier of ['low', 'medium', 'high'] as const) {
+      const fx = getMenuScreenFx(tier, false);
+      expect(fx.matrixRain).toBe(false);
+      expect(fx.asciiDecoration).toBe(false);
+      expect(fx.crtSweep).toBe(false);
+      expect(fx.cinematicBars).toBe(true);
+    }
   });
 
   it('disables animated fx when reduced motion', () => {
@@ -33,9 +56,9 @@ describe('menuPresentation', () => {
     expect(items.find((item) => item.id === 'continue')?.disabled).toBe(true);
   });
 
-  it('returns accent colors for selected cyan item', () => {
-    const colors = getAccentColors('cyan', true);
-    expect(colors.border).toContain('cyan-400');
+  it('returns filmic menu item classes without neon card chrome', () => {
+    expect(getFilmicMenuItemClass(true, false)).toContain('cinematic-menu-item--selected');
+    expect(getFilmicMenuItemClass(false, true)).toContain('cinematic-menu-item--muted');
   });
 
   it('returns null save preview when no save exists', () => {

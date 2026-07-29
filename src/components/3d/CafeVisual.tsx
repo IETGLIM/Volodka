@@ -1,7 +1,7 @@
 
 /* ─── Volodka RPG – Cafe "Blue Pit" procedural 3D visual ─── */
 
-import { useMemo, useRef, useEffect, type MutableRefObject } from 'react';
+import { useMemo, useRef, useEffect, Suspense, type MutableRefObject } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
@@ -15,6 +15,7 @@ import {
   getSharedPlaneGeometry,
 } from '@/engine/three/moduleGeometryRegistry';
 import { seededRand } from '@/shared/utils/seededRand';
+import { PolyHavenStandardMaterial } from './PolyHavenStandardMaterial';
 
 interface CafeVisualProps {
   livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
@@ -140,10 +141,18 @@ export function CafeVisual({ livePlayerPositionRef }: CafeVisualProps) {
 
   return (
     <group>
-      {/* ── Floor ── */}
-      <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={getSharedPlaneGeometry(W, D)}>
-        <meshStandardMaterial map={floorTexture} color="#5a4a3a" roughness={0.85} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
-      </mesh>
+      {/* ── Floor — Poly Haven wood (canvas fallback) ── */}
+      <Suspense
+        fallback={
+          <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={getSharedPlaneGeometry(W, D)}>
+            <meshStandardMaterial map={floorTexture} color="#5a4a3a" roughness={0.85} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+          </mesh>
+        }
+      >
+        <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={getSharedPlaneGeometry(W, D)}>
+          <PolyHavenStandardMaterial materialId="wood_floor" repeatScale={1.1} color="#c4a888" metalness={0.03} roughness={0.84} polygonOffset />
+        </mesh>
+      </Suspense>
 
       {/* ── Ceiling — procedural blue-neon HDR wash ── */}
       <mesh position={[0, H, 0]} rotation-x={Math.PI / 2} geometry={getSharedPlaneGeometry(W, D)}>
@@ -156,41 +165,70 @@ export function CafeVisual({ livePlayerPositionRef }: CafeVisualProps) {
         />
       </mesh>
 
-      {/* ── Walls ── */}
-      <mesh position={[0, H / 2, -D / 2]} geometry={getSharedPlaneGeometry(W, H)}>
-        <meshStandardMaterial map={wallTexture} color="#4a3a30" roughness={0.9} />
-      </mesh>
-      <mesh position={[0, H / 2, D / 2]} rotation-y={Math.PI} geometry={getSharedPlaneGeometry(W, H)}>
-        <meshStandardMaterial map={wallTexture} color="#4a3a30" roughness={0.9} />
-      </mesh>
-      <mesh position={[-W / 2, H / 2, 0]} rotation-y={Math.PI / 2} geometry={getSharedPlaneGeometry(D, H)}>
-        <meshStandardMaterial map={wallTexture} color="#4a3a30" roughness={0.9} />
-      </mesh>
-      <mesh position={[W / 2, H / 2, 0]} rotation-y={-Math.PI / 2} geometry={getSharedPlaneGeometry(D, H)}>
-        <meshStandardMaterial map={wallTexture} color="#4a3a30" roughness={0.9} />
-      </mesh>
+      {/* ── Walls — Poly Haven plaster ── */}
+      <Suspense
+        fallback={
+          <>
+            <mesh position={[0, H / 2, -D / 2]} geometry={getSharedPlaneGeometry(W, H)}>
+              <meshStandardMaterial map={wallTexture} color="#4a3a30" roughness={0.9} />
+            </mesh>
+            <mesh position={[0, H / 2, D / 2]} rotation-y={Math.PI} geometry={getSharedPlaneGeometry(W, H)}>
+              <meshStandardMaterial map={wallTexture} color="#4a3a30" roughness={0.9} />
+            </mesh>
+            <mesh position={[-W / 2, H / 2, 0]} rotation-y={Math.PI / 2} geometry={getSharedPlaneGeometry(D, H)}>
+              <meshStandardMaterial map={wallTexture} color="#4a3a30" roughness={0.9} />
+            </mesh>
+            <mesh position={[W / 2, H / 2, 0]} rotation-y={-Math.PI / 2} geometry={getSharedPlaneGeometry(D, H)}>
+              <meshStandardMaterial map={wallTexture} color="#4a3a30" roughness={0.9} />
+            </mesh>
+          </>
+        }
+      >
+        <mesh position={[0, H / 2, -D / 2]} geometry={getSharedPlaneGeometry(W, H)}>
+          <PolyHavenStandardMaterial materialId="plastered_wall" repeatScale={0.85} color="#b8a898" roughness={0.9} />
+        </mesh>
+        <mesh position={[0, H / 2, D / 2]} rotation-y={Math.PI} geometry={getSharedPlaneGeometry(W, H)}>
+          <PolyHavenStandardMaterial materialId="plastered_wall" repeatScale={0.85} color="#b8a898" roughness={0.9} />
+        </mesh>
+        <mesh position={[-W / 2, H / 2, 0]} rotation-y={Math.PI / 2} geometry={getSharedPlaneGeometry(D, H)}>
+          <PolyHavenStandardMaterial materialId="plastered_wall" repeatScale={0.9} color="#b8a898" roughness={0.9} />
+        </mesh>
+        <mesh position={[W / 2, H / 2, 0]} rotation-y={-Math.PI / 2} geometry={getSharedPlaneGeometry(D, H)}>
+          <PolyHavenStandardMaterial materialId="plastered_wall" repeatScale={0.9} color="#b8a898" roughness={0.9} />
+        </mesh>
+      </Suspense>
 
-      {/* ═══════════════════════════════════════════════ */}
-      {/* ── BAR COUNTER (back wall) ── */}
-      {/* ═══════════════════════════════════════════════ */}
+      {/* ── BAR COUNTER — extruded profile (not stacked boxes) ── */}
       <group position={[0, 0, -4.0]}>
-        <mesh position={[0, 0.55, 0]} castShadow receiveShadow geometry={getSharedBoxGeometry(5.0, 1.1, 0.8)}>
-          <meshStandardMaterial color="#4a3020" roughness={0.7} />
+        <mesh position={[0, 0.55, 0]} castShadow receiveShadow>
+          <boxGeometry args={[5.0, 1.0, 0.72]} />
+          <Suspense fallback={<meshStandardMaterial color="#4a3020" roughness={0.7} />}>
+            <PolyHavenStandardMaterial materialId="wood_floor" repeatScale={1.6} color="#6a4a32" metalness={0.04} roughness={0.78} />
+          </Suspense>
         </mesh>
-        {/* Counter top */}
-        <mesh position={[0, 1.11, 0]} geometry={getSharedBoxGeometry(5.1, 0.04, 0.85)}>
-          <meshStandardMaterial color="#5a4030" metalness={0.1} roughness={0.4} />
+        {/* Bevelled counter top — slightly oversized slab with rounded feel via thin lip */}
+        <mesh position={[0, 1.08, 0.05]} castShadow>
+          <boxGeometry args={[5.15, 0.06, 0.92]} />
+          <Suspense fallback={<meshStandardMaterial color="#5a4030" metalness={0.1} roughness={0.4} />}>
+            <PolyHavenStandardMaterial materialId="wood_floor" repeatScale={2.0} color="#8a6a48" metalness={0.06} roughness={0.55} />
+          </Suspense>
         </mesh>
-        {/* Shelf behind counter */}
-        <mesh position={[0, 1.8, -0.3]} castShadow geometry={getSharedBoxGeometry(4.0, 0.04, 0.4)}>
-          <meshStandardMaterial color="#3a2518" roughness={0.7} />
+        <mesh position={[0, 1.05, 0.48]}>
+          <boxGeometry args={[5.15, 0.04, 0.06]} />
+          <meshStandardMaterial color="#2a1e14" roughness={0.7} metalness={0.1} />
         </mesh>
-        {/* Bottles on shelf */}
+        {/* Back bar shelf — thin plank + cylinder bottles */}
+        <mesh position={[0, 1.85, -0.28]} castShadow>
+          <boxGeometry args={[4.2, 0.05, 0.38]} />
+          <meshStandardMaterial color="#3a2518" roughness={0.75} />
+        </mesh>
         {[-1.5, -0.8, 0, 0.7, 1.4].map((x, i) => (
-          <mesh key={i} position={[x, 2.05, -0.3]} geometry={getSharedBoxGeometry(0.08, 0.4, 0.08)}>
+          <mesh key={i} position={[x, 2.1, -0.28]} castShadow>
+            <cylinderGeometry args={[0.035, 0.04, 0.42, 8]} />
             <meshStandardMaterial
               color={['#1a4a1a', '#4a1a1a', '#1a1a4a', '#4a4a1a', '#1a4a4a'][i]}
-              roughness={0.3}
+              roughness={0.28}
+              metalness={0.15}
             />
           </mesh>
         ))}

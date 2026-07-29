@@ -1237,6 +1237,7 @@ export const SCENE_DEFINITIONS = {
   guild_mainframe: withSceneAmbience(EXTENSION_SCENE_DEFINITIONS.guild_mainframe),
   zarema_room: withSceneAmbience(EXTENSION_SCENE_DEFINITIONS.zarema_room),
   albert_backroom: withSceneAmbience(EXTENSION_SCENE_DEFINITIONS.albert_backroom),
+  procedural_aaa: withSceneAmbience(EXTENSION_SCENE_DEFINITIONS.procedural_aaa),
 } as const satisfies Record<SceneId, SceneDefinition>;
 
 export type { SceneId, ExtensionSceneId, CoreSceneId } from './sceneIds';

@@ -44,6 +44,7 @@ import {
   type CinematicTimelineState,
 } from '@/engine/cinematic/cinematicTimelineController';
 import { INTRO_WAKE_TIMELINE } from '@/engine/cinematic/introWakeTimeline';
+import { setCinematicLightCue } from '@/engine/cinematic/cinematicLightStaging';
 import type { CinematicTimelineDef } from '@/engine/cinematic/cinematicTimelineTypes';
 import { CinematicPlayerAvatar } from './CinematicPlayerAvatar';
 
@@ -62,6 +63,7 @@ export function CinematicTimelineRunner() {
   const handoffEmittedRef = useRef(false);
   const lastFootstepRef = useRef(-1);
   const audioCuePhaseRef = useRef<string | null>(null);
+  const lightCuePhaseRef = useRef<string | null>(null);
   const lastReportedPhaseRef = useRef<string | null>(null);
   const playerGroupRef = useRef<THREE.Group>(null);
   const currentAnimRef = useRef('idle');
@@ -279,6 +281,7 @@ export function CinematicTimelineRunner() {
     handoffEmittedRef.current = false;
     lastFootstepRef.current = -1;
     audioCuePhaseRef.current = null;
+    lightCuePhaseRef.current = null;
     lastReportedPhaseRef.current = null;
   };
 
@@ -462,6 +465,11 @@ export function CinematicTimelineRunner() {
       }
     }
 
+    if (phase?.lightCue && lightCuePhaseRef.current !== phase.id) {
+      lightCuePhaseRef.current = phase.id;
+      setCinematicLightCue(phase.lightCue, Math.max(1.2, phase.duration));
+    }
+
     if (result.isHandoff && timelineIdRef.current === 'intro_wakeup' && !handoffEmittedRef.current) {
       handoffEmittedRef.current = true;
       eventBus.emit('intro:wakeup_handoff', {});
@@ -493,6 +501,7 @@ export function CinematicTimelineRunner() {
         timelineId: state.def.id,
         phaseId: result.phaseId,
         phaseIndex: result.phaseIndex,
+        lightCue: phase?.lightCue,
       });
     }
 

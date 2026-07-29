@@ -5,7 +5,8 @@
  *  FIX: EffectComposer.addPass() accesses renderer.getContext().getContextAttributes().alpha
  *  which returns null if WebGL context isn't ready. We guard with useThree readiness check.
  *
- *  PERF: SSAO removed. DOF only active during dialogue/cutscene (~0% GPU in exploration).
+ *  PERF: Classic SSAO removed in favor of gated N8AO. DOF only during dialogue/cutscene.
+ *  AA: native MSAA disabled on composer (multisampling=0); SMAA closes edge crawl on high/ultra.
  */
 
 import { useState, useEffect, useLayoutEffect, useRef, useMemo, type ComponentProps } from 'react';
@@ -24,11 +25,13 @@ import {
   Scanline,
   Noise,
   DepthOfField,
+  SMAA,
 } from '@react-three/postprocessing';
-import { BlendFunction, KernelSize, ToneMappingMode } from 'postprocessing';
+import { BlendFunction, KernelSize, ToneMappingMode, SMAAPreset } from 'postprocessing';
 import type { EffectComposer as EffectComposerImpl, DepthOfFieldEffect } from 'postprocessing';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { dialogueFocusTarget } from '@/engine/graphics/dialogueFocusTarget';
+import { isSoftWorkAffordable } from '@/engine/graphics/softWorkBudget';
 import { usePostFxSceneState, usePlayerStress, useGamePhase } from '@/store/selectors';
 import { useGameStore } from '@/store/gameStore';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
@@ -54,6 +57,7 @@ const SCENE_COLOR_GRADE: Record<string, { hue: number; saturation: number; brigh
   volodka_corridor:   { hue: -0.05, saturation: -0.15, brightness: 0.01, contrast: 0.22 }, // oppressive noir
   home_evening:       { hue: 0.06,  saturation: 0.16, brightness: 0.02, contrast: 0.14 }, // warm amber mood
   street_night:       { hue: 0.08,  saturation: 0.22, brightness: 0.05, contrast: 0.35 }, // synthwave neon rain
+  procedural_aaa:     { hue: 0.06,  saturation: 0.18, brightness: 0.04, contrast: 0.32 },
   street_winter:      { hue: -0.02, saturation: -0.12, brightness: 0.12, contrast: 0.08  },
   cafe_evening:       { hue: 0.06,  saturation: 0.20, brightness: 0.02, contrast: 0.16 }, // hazy blue-neon café
   office_day:         { hue: -0.02, saturation: -0.12, brightness: 0.04, contrast: 0.08 }, // sterile overcast
@@ -94,6 +98,7 @@ const SCENE_VIGNETTE: Record<string, { offset: number; darkness: number }> = {
   volodka_corridor:   { offset: 0.28, darkness: 0.40 },
   home_evening:       { offset: 0.4,  darkness: 0.35 },
   street_night:       { offset: 0.4,  darkness: 0.3 },
+  procedural_aaa:     { offset: 0.36, darkness: 0.34 },
   cafe_evening:       { offset: 0.34, darkness: 0.36 },
   sleep_dream:        { offset: 0.25, darkness: 0.42 },
   abandoned_factory:  { offset: 0.32, darkness: 0.36 },
@@ -125,8 +130,9 @@ const SCENE_BLOOM: Record<string, { intensity: number; threshold: number; smooth
   volodka_room:       { intensity: 0.78, threshold: 0.45, smoothing: 0.45 }, // monitor glow bloom
   volodka_corridor:   { intensity: 0.35, threshold: 0.72, smoothing: 0.55 }, // dim corridor haze
   home_evening:       { intensity: 0.48, threshold: 0.66, smoothing: 0.48 },  // warm lamp bloom
-  street_night:       { intensity: 0.83, threshold: 0.45, smoothing: 0.44 }, // wet neon reflections
-  cafe_evening:       { intensity: 0.75, threshold: 0.45, smoothing: 0.41 }, // blue neon bar glow
+  street_night:       { intensity: 0.62, threshold: 0.52, smoothing: 0.48 }, // wet neon — restrained
+  procedural_aaa:     { intensity: 0.58, threshold: 0.5, smoothing: 0.5 },
+  cafe_evening:       { intensity: 0.58, threshold: 0.52, smoothing: 0.46 }, // blue neon bar glow
   office_day:         { intensity: 0.28, threshold: 0.82, smoothing: 0.58 }, // fluorescent spill
   park_day:           { intensity: 0.42, threshold: 0.74, smoothing: 0.52 },
   library_day:        { intensity: 0.32, threshold: 0.78, smoothing: 0.55 },  // banker-lamp glow
@@ -427,7 +433,13 @@ function PostFXPipeline() {
   const stress = usePlayerStress();
   const stressFactor = stress / 100;
   const wantsScanlines = SCANLINE_SCENES.has(sceneId);
-  const wantsNoise = NOISE_SCENES.has(sceneId) && (preset.id === 'high' || preset.id === 'ultra');
+  const softOk = isSoftWorkAffordable();
+  // Session 8: Ultra skips film grain proactively (High keeps it). Soft gate also blocks under FPS fail.
+  const wantsNoise =
+    softOk
+    && preset.id !== 'ultra'
+    && NOISE_SCENES.has(sceneId)
+    && preset.id === 'high';
   const activeTTLFlags = useGameStore((s) => s.activeTTLFlags ?? {});
   const reducedMotion = useEffectiveReducedMotion();
   const poemBoost = resolvePoemTTLPostFxBoost(activeTTLFlags, reducedMotion);
@@ -446,13 +458,15 @@ function PostFXPipeline() {
 
   // ── Part 4: Stress-driven chromatic aberration ──
   // Activates when stress ≥ 70, scales linearly to max offset 0.002 at stress=100.
-  // Disabled on mobile, medium quality, and reduced-motion.
+  // Disabled on Ultra (proactive), mobile, medium, reduced-motion, and under FPS budget pressure.
   const stressChromaticEligible =
-    !reducedMotion
+    softOk
+    && preset.id !== 'ultra'
+    && !reducedMotion
     && !visualLite
     && !coarsePointer
-    && (preset.id === 'high' || preset.id === 'ultra')
-    && (selectedPreset === 'high' || selectedPreset === 'ultra');
+    && preset.id === 'high'
+    && selectedPreset === 'high';
   const stressChromaticAmount = stressChromaticEligible
     ? Math.max(0, (stress - 70) / 30)  // 0 at stress≤70, 1 at stress=100
     : 0;
@@ -463,18 +477,20 @@ function PostFXPipeline() {
   );
 
   // ── Part 3: Cinematic DOF for dialogue / cutscene moments ──
-  // On high/ultra: render DOF always (with animated bokehScale 0↔target).
-  // Smooth 0.4s easeInOutCubic transition when dialogue opens/closes.
+  // High: mount DOF always (bokehScale animated 0↔target).
+  // Ultra: mount ONLY during active dialogue/cutscene (Session 8 60fps — no idle DOF cost).
   const showStoryOverlay = useGameStore((s) => s.showStoryOverlay);
   const activeCutsceneId = useGameStore((s) => s.activeCutsceneId);
   const isInDialogue = showStoryOverlay;
   const isInCutscene = !!activeCutsceneId;
-  // DOF only on high/ultra quality, not on mobile, not with reduced motion.
-  // Always mounted when eligible — bokehScale animated per-frame via ref.
+  const dialogueOrCutscene = isInDialogue || isInCutscene;
   const wantsCinematicDOF =
-    !reducedMotion && !visualLite && !coarsePointer &&
-    (preset.id === 'high' || preset.id === 'ultra') &&
-    (selectedPreset === 'high' || selectedPreset === 'ultra');
+    softOk
+    && !reducedMotion && !visualLite && !coarsePointer
+    && (
+      (preset.id === 'high' && selectedPreset === 'high')
+      || (preset.id === 'ultra' && selectedPreset === 'ultra' && dialogueOrCutscene)
+    );
 
   // Refs + transition state for smooth DOF bokehScale animation.
   const dofRef = useRef<DepthOfFieldEffect | null>(null);
@@ -523,7 +539,17 @@ function PostFXPipeline() {
     effect.bokehScale = t.current;
   });
 
-  const pipelineKey = `${sceneId}-${rendering.useLitePostFx ? 'lite' : rendering.useAmbientOcclusion ? 'ao' : 'full'}${wantsCinematicDOF ? '-dof' : ''}`;
+  // SMAA: Medium=LOW, High=MEDIUM, Ultra=MEDIUM (Session 8 — Ultra no longer uses SMAA HIGH by default).
+  const wantsSmaa =
+    !visualLite
+    && !coarsePointer
+    && (preset.id === 'medium' || preset.id === 'high' || preset.id === 'ultra');
+  const smaaPreset =
+    preset.id === 'ultra' || preset.id === 'high'
+      ? SMAAPreset.MEDIUM
+      : SMAAPreset.LOW;
+
+  const pipelineKey = `${sceneId}-${rendering.useLitePostFx ? 'lite' : rendering.useAmbientOcclusion ? 'ao' : 'full'}${wantsCinematicDOF ? '-dof' : ''}${wantsSmaa ? `-smaa${smaaPreset}` : ''}`;
   const lutKind = resolveProceduralLutKind(sceneId);
   const proceduralLut = useMemo(
     () => (lutKind ? getCachedProceduralLut3DTexture(lutKind) : null),
@@ -554,6 +580,7 @@ function PostFXPipeline() {
           mode={ToneMappingMode.ACES_FILMIC}
           exposure={SCENE_VISIBILITY.toneExposure}
         />
+        {wantsSmaa ? <SMAA preset={smaaPreset} /> : null as any}
       </ManagedEffectComposer>
     );
   }
@@ -589,6 +616,7 @@ function PostFXPipeline() {
       {proceduralLut ? <LUT lut={proceduralLut} tetrahedralInterpolation blendFunction={BlendFunction.NORMAL} /> : null as any}
       {wantsNoise ? <Noise premultiply blendFunction={BlendFunction.NORMAL} opacity={0.035} /> : null as any}
       <ToneMapping mode={ToneMappingMode.ACES_FILMIC} exposure={SCENE_VISIBILITY.toneExposure} />
+      {wantsSmaa ? <SMAA preset={smaaPreset} /> : null as any}
     </ManagedEffectComposer>
   );
 }

@@ -6,7 +6,6 @@ import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useGameStore } from '@/store/gameStore';
 import { getSceneConfig } from '@/config/scenes';
 import { resolveDerivedSceneId } from '@/config/sceneInheritance';
-import { Environment } from '@react-three/drei';
 import * as THREE from 'three';
 import { liftHexColor, SCENE_VISIBILITY } from '@/shared/constants/sceneVisibility';
 import { ENV_MAP_WARMUP_FRAMES } from '@/shared/constants/transitionTimings';
@@ -14,6 +13,8 @@ import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import type { QualityPresetId } from '@/engine/graphics/qualityPresets';
 import { isHeroScene } from '@/config/sceneVisualProfiles';
 import { VolumetricLightShafts } from './VolumetricLightShaft';
+import { HeroEnvironment } from './HeroEnvironment';
+import { usesPhotographicHdriBackground } from '@/config/polyhavenAssets';
 
 /** Per-scene fog color overrides matching style pillars:
  *  Noir, CyberPunk2077, Gothic, Dark Fantasy, Glitch, MatrixRain
@@ -31,6 +32,7 @@ const SCENE_FOG_COLORS: Record<string, string> = {
 
   // ─── CyberPunk2077 ───
   street_night:       '#323448', // gray rainy night haze
+  procedural_aaa:     '#2a3048',
 
   // ─── Gothic ───
   park_day:           '#2a3828', // misty green-gray (Gothic forest)
@@ -68,6 +70,7 @@ const SCENE_BG_COLORS: Record<string, string> = {
   home_evening:       '#120c04',  // dark amber
   cafe_evening:       '#080c18',  // dark blue-black
   street_night:       '#1a1a2c',  // gray rainy night sky
+  procedural_aaa:     '#121820',
   park_day:           '#101810',
   abandoned_factory:  '#100804',
   factory_basement:   '#060a08',
@@ -127,6 +130,7 @@ const OUTDOOR_EXP_FOG_DENSITY: Record<string, number> = {
   river_pier:       0.022,  // water mist over the river
   chk_forest_zorge: 0.020,  // forest depth
   street_night:     0.020,  // rain haze
+  procedural_aaa:   0.024,
   street_winter:    0.015,  // cold crisp air (less fog)
 };
 
@@ -152,7 +156,14 @@ export function SceneEnvironment() {
 
   const isIndoor = config.hasCeiling;
   const heroScene = isHeroScene(visualSceneId);
-  const enableEnvMap = !isIndoor && !preset.visualLite;
+  // Outdoor IBL on medium+; indoor hero IBL on high/ultra for rich indirect bounce
+  // without the plastic flat-ambient look of rooms lit only by point lights.
+  const enableEnvMap =
+    !preset.visualLite
+    && (
+      !isIndoor
+      || (heroScene && (preset.id === 'high' || preset.id === 'ultra'))
+    );
 
   useFrameTick('misc', () => {
     if (!enableEnvMap || envMapReady) return;
@@ -200,7 +211,7 @@ export function SceneEnvironment() {
 
   // Choose environment preset based on scene
   const envPreset = getEnvPreset(visualSceneId);
-  const envIntensity = getEnvironmentIntensity(visualSceneId, heroScene, preset.id);
+  const envIntensity = getEnvironmentIntensity(visualSceneId, heroScene, preset.id, isIndoor);
 
   // Fog animation config
   const fogAnim = SCENE_FOG_ANIM[visualSceneId] ?? DEFAULT_FOG_ANIM;
@@ -256,15 +267,17 @@ export function SceneEnvironment() {
         <fog ref={fogRef} attach="fog" args={[fogColor, effectiveFogNear, effectiveFogFar]} />
       )}
 
-      {/* Background color — deeper than fog for atmospheric depth */}
-      <color attach="background" args={[bgColor]} />
+      {/* Solid bg — skipped when photographic HDRI is the sky */}
+      {!usesPhotographicHdriBackground(visualSceneId) ? (
+        <color attach="background" args={[bgColor]} />
+      ) : null}
 
-      {/* Environment map — deferred after scene settle; skipped on low/medium tiers */}
+      {/* Environment map — custom hero bake when available; stock preset otherwise */}
       {enableEnvMap && envMapReady && (
-        <Environment
-          preset={envPreset}
-          background={false}
-          environmentIntensity={envIntensity}
+        <HeroEnvironment
+          sceneId={visualSceneId}
+          intensity={envIntensity}
+          fallbackPreset={envPreset}
         />
       )}
 
@@ -279,35 +292,75 @@ function getEnvironmentIntensity(
   sceneId: string,
   heroScene: boolean,
   presetId: Exclude<QualityPresetId, 'auto'>,
+  isIndoor: boolean,
 ): number {
   const ultraBoost = presetId === 'ultra' ? 0.06 : 0;
+  if (isIndoor) {
+    // Keep indoor IBL subtle so local lamps/monitor remain the hero light.
+    if (sceneId === 'volodka_room') {
+      return presetId === 'ultra' ? 0.32 : 0.26;
+    }
+    return presetId === 'ultra' ? 0.34 : 0.28;
+  }
   if (sceneId === 'street_night') {
-    return presetId === 'ultra' ? 0.45 : 0.38;
+    return presetId === 'ultra' ? 0.62 : 0.52;
+  }
+  if (sceneId === 'cafe_evening' || sceneId === 'city_square') {
+    return presetId === 'ultra' ? 0.48 : 0.4;
   }
   if (heroScene) {
-    return presetId === 'ultra' ? 0.38 + ultraBoost : 0.32;
+    return presetId === 'ultra' ? 0.42 + ultraBoost : 0.36;
   }
-  return presetId === 'ultra' ? 0.35 : 0.28;
+  return presetId === 'ultra' ? 0.38 : 0.3;
 }
 
-function getEnvPreset(sceneId: string): 'night' | 'dawn' | 'sunset' | 'city' | 'park' | 'warehouse' | 'forest' {
+type EnvPresetName =
+  | 'night'
+  | 'dawn'
+  | 'sunset'
+  | 'city'
+  | 'park'
+  | 'warehouse'
+  | 'forest'
+  | 'apartment'
+  | 'lobby';
+
+function getEnvPreset(sceneId: string): EnvPresetName {
   switch (sceneId) {
     case 'street_night':
       return 'night';
     case 'street_winter':
       return 'dawn';
     case 'park_day':
+    case 'chk_forest_zorge':
+    case 'chk_campfire_night':
       return 'forest';
     case 'office_day':
-      return 'warehouse';
     case 'abandoned_factory':
+    case 'factory_basement':
+    case 'guild_mainframe':
+    case 'underground_bunker':
       return 'warehouse';
     case 'rooftop_edge':
+    case 'pier_evening':
+    case 'river_pier':
       return 'sunset';
     case 'sleep_dream':
       return 'night';
-    case 'chk_forest_zorge':
-      return 'forest';
+    case 'volodka_room':
+    case 'volodka_corridor':
+    case 'home_evening':
+    case 'solnysh_room':
+    case 'zarema_albert_room':
+    case 'zarema_room':
+    case 'albert_backroom':
+      return 'apartment';
+    case 'cafe_evening':
+    case 'library_day':
+    case 'library_basement':
+      return 'lobby';
+    case 'city_square':
+      return 'city';
     default:
       return 'city';
   }

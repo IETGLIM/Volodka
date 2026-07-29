@@ -92,6 +92,21 @@ function CesiumPlayerModelInner({
     setFit({ scale: safeScale, rotX, y: safeFootY });
   }, [scene, modelScale]);
 
+  useLayoutEffect(() => {
+    scene.traverse((obj) => {
+      const mesh = obj as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+      for (const m of mats) {
+        if (!m || !(m as THREE.MeshStandardMaterial).isMeshStandardMaterial) continue;
+        const std = m as THREE.MeshStandardMaterial;
+        std.envMapIntensity = 0.85;
+        std.roughness = Math.min(1, Math.max(0.48, (std.roughness ?? 0.55) * 1.15));
+        std.metalness = Math.min(0.28, std.metalness ?? 0);
+      }
+    });
+  }, [scene]);
+
   const embeddedActions = useMemo(() => {
     if (!mixer) return null;
     const record: Record<string, THREE.AnimationAction> = {};

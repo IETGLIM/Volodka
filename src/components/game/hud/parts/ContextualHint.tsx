@@ -1,7 +1,5 @@
 /* ─── Volodka RPG – Contextual Hint (floating bottom hint) ───
-   Shows a small floating hint near the bottom of the screen.
-   Framer Motion animation: slide up, fade in, then fade out.
-   Hints are queued one-at-a-time by useContextualHints.
+   Filmic caption — no emoji chrome, no glowing tutorial cards.
 */
 
 import { motion, AnimatePresence } from 'framer-motion';
@@ -13,38 +11,13 @@ interface ContextualHintProps {
   onDismiss: () => void;
 }
 
-/* ── Category icon / accent ── */
-const CATEGORY_ACCENT: Record<HintCategory, { border: string; glow: string; icon: string }> = {
-  combat: {
-    border: 'rgba(244,63,94,0.5)',
-    glow: '0 0 16px rgba(244,63,94,0.25), 0 4px 20px rgba(0,0,0,0.5)',
-    icon: '⚔',
-  },
-  quest: {
-    border: 'rgba(251,191,36,0.45)',
-    glow: '0 0 16px rgba(251,191,36,0.2), 0 4px 20px rgba(0,0,0,0.5)',
-    icon: '📜',
-  },
-  interaction: {
-    border: 'rgb(var(--cyber-cyan-rgb) / 0.4)',
-    glow: '0 0 16px rgb(var(--cyber-cyan-rgb) / 0.2), 0 4px 20px rgba(0,0,0,0.5)',
-    icon: '👆',
-  },
-  low_stats: {
-    border: 'rgba(251,113,133,0.4)',
-    glow: '0 0 16px rgba(251,113,133,0.2), 0 4px 20px rgba(0,0,0,0.5)',
-    icon: '⚠',
-  },
-  scene: {
-    border: 'rgb(var(--cyber-cyan-rgb) / 0.25)',
-    glow: '0 0 12px rgb(var(--cyber-cyan-rgb) / 0.1), 0 4px 16px rgba(0,0,0,0.4)',
-    icon: '📍',
-  },
-  tutorial: {
-    border: 'rgba(100,116,139,0.3)',
-    glow: '0 0 12px rgba(100,116,139,0.15), 0 4px 16px rgba(0,0,0,0.4)',
-    icon: '💡',
-  },
+const CATEGORY_RULE: Record<HintCategory, string> = {
+  combat: 'rgba(244,120,120,0.55)',
+  quest: 'rgba(220,190,120,0.5)',
+  interaction: 'rgba(160,210,220,0.45)',
+  low_stats: 'rgba(240,150,150,0.45)',
+  scene: 'rgba(160,190,210,0.35)',
+  tutorial: 'rgba(150,160,175,0.3)',
 };
 
 export function ContextualHint({ hint, onDismiss }: ContextualHintProps) {
@@ -53,36 +26,34 @@ export function ContextualHint({ hint, onDismiss }: ContextualHintProps) {
       {hint && (
         <motion.div
           key={hint.id}
-          initial={{ opacity: 0, y: 20, scale: 0.95 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -10, scale: 0.95 }}
-          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
           className="fixed left-1/2 -translate-x-1/2 pointer-events-auto cursor-pointer"
           style={{
-            bottom: 'clamp(80px, 12vh, 140px)',
+            bottom: 'clamp(72px, 11vh, 128px)',
             zIndex: UI_LAYERS.HUD + 3,
           }}
           onClick={onDismiss}
           role="status"
           aria-live="polite"
         >
-          <div
-            className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl border backdrop-blur-xl max-w-[90vw] sm:max-w-md hint-breathe-glow"
-            style={{
-              background: 'linear-gradient(135deg, rgba(2,6,23,0.92) 0%, rgba(15,23,42,0.88) 50%, rgba(0,0,0,0.85) 100%)',
-              borderColor: CATEGORY_ACCENT[hint.category].border,
-            }}
-          >
-            <span className="text-base shrink-0" aria-hidden="true">
-              {CATEGORY_ACCENT[hint.category].icon}
-            </span>
-            <span className="text-xs sm:text-sm text-slate-200 font-medium leading-snug">
+          <div className="flex flex-col items-center gap-2 max-w-[88vw] sm:max-w-md px-3">
+            <div
+              className="w-16 h-px"
+              style={{ background: `linear-gradient(90deg, transparent, ${CATEGORY_RULE[hint.category]}, transparent)` }}
+            />
+            <p
+              className="text-center font-serif text-[12px] sm:text-[13px] leading-relaxed tracking-wide italic"
+              style={{ color: 'rgba(210,220,230,0.82)', textShadow: '0 1px 8px rgba(0,0,0,0.65)' }}
+            >
               {hint.text}
-            </span>
-            {/* Subtle dismiss indicator */}
-            <span className="text-[9px] text-slate-500 font-mono shrink-0 ml-1 hidden sm:inline">
-              [×]
-            </span>
+            </p>
+            <div
+              className="w-10 h-px opacity-60"
+              style={{ background: `linear-gradient(90deg, transparent, ${CATEGORY_RULE[hint.category]}, transparent)` }}
+            />
           </div>
         </motion.div>
       )}

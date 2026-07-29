@@ -126,6 +126,19 @@ export function getAccentBarColor(accent?: string): string {
   }
 }
 
+/** Session 8 — filmic title-card menu items (no neon card / hex / terminal chrome). */
+export function getFilmicMenuItemClass(isSelected: boolean, isDisabled: boolean): string {
+  const base =
+    'cinematic-menu-item w-full px-4 py-3 font-serif text-base transition-colors duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-stone-300/50 focus-visible:outline-offset-2';
+  if (isDisabled) {
+    return `${base} cinematic-menu-item--muted opacity-35 cursor-not-allowed`;
+  }
+  if (isSelected) {
+    return `${base} cinematic-menu-item--selected cursor-pointer`;
+  }
+  return `${base} cursor-pointer`;
+}
+
 export function parseMenuSavePreview(): MenuSavePreview | null {
   if (typeof window === 'undefined') return null;
 
