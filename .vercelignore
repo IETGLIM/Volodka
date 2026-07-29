@@ -1,7 +1,8 @@
 # Khronos glTF sample models — reference/debug only, not game assets.
-# These 13 CC0 models (58MB) are used by the bootstrap pipeline for
-# interim placeholders but should NOT be shipped to production users.
-models/khronos/
+# These 13 CC0 models (~58MB) live under public/ for the bootstrap pipeline
+# (interim placeholders) but must NOT be uploaded to Vercel / shipped to users.
+# Also stripped from dist/ after vite build (see scripts/strip-deploy-debug-assets.mjs).
+public/models/khronos/
 
 # Source asset pipeline (dev-time only)
 assets-source/

@@ -35,6 +35,36 @@ import path from 'node:path';
  */
 export const GLTF_OUTPUT_LAYOUTS = ['suffix-lod', 'hero-lod', 'npc-flat', 'single'];
 
+/** @type {boolean | null} */
+let ktxCliAvailableCache = null;
+let ktxSkipWarned = false;
+
+/**
+ * Detect KTX-Software CLI (`ktx`) once per process.
+ * gltf-transform's etc1s path shells out to `command -v ktx` without a try/catch on
+ * Linux — when absent that surfaces as a hard-looking `error: Command failed`.
+ * We probe first and skip etc1s entirely so CI without KTX-Software stays green.
+ */
+export function isKtxCliAvailable() {
+  if (ktxCliAvailableCache !== null) return ktxCliAvailableCache;
+  try {
+    const result =
+      process.platform === 'win32'
+        ? spawnSync('where', ['ktx'], { encoding: 'utf8', shell: true, windowsHide: true })
+        : spawnSync('sh', ['-c', 'command -v ktx'], { encoding: 'utf8' });
+    ktxCliAvailableCache = result.status === 0 && Boolean((result.stdout || '').trim());
+  } catch {
+    ktxCliAvailableCache = false;
+  }
+  return ktxCliAvailableCache;
+}
+
+/** Test helper — reset ktx detection cache between cases. */
+export function resetKtxCliAvailabilityCache() {
+  ktxCliAvailableCache = null;
+  ktxSkipWarned = false;
+}
+
 /**
  * @param {string} layout
  * @param {string} outBase absolute path without extension
@@ -178,26 +208,37 @@ export function processGltfAsset({
     // ETC1S offers 60-75% texture size reduction with minimal visual quality loss.
     // GPU-native transcoding avoids runtime decompression overhead on all modern GPUs.
     // This targets low/medium/high quality tiers where bandwidth savings matter most.
-    // Note: Requires KTX-Software installed on the build machine.
+    // Requires KTX-Software (`ktx` CLI). When missing, skip with a clear warn and
+    // keep Draco-only — meshopt/LOD still run.
     if (!skipTextureCompress) {
-      const dracoKtx2Tmp = `${paths.draco}.ktx2.tmp.glb`;
-      const etc1sOk = runGltfTransform(
-        root,
-        ['etc1s', paths.draco, dracoKtx2Tmp, '--quality', '192', '--compression', '1', '--jobs', '4'],
-        `ktx2 etc1s → ${rel(paths.draco)}`,
-        { exitOnFail: false }, // non-fatal: KTX-Software may not be installed
-      );
-      if (etc1sOk && existsSync(dracoKtx2Tmp)) {
-        try {
-          if (existsSync(paths.draco)) unlinkSync(paths.draco);
-          renameSync(dracoKtx2Tmp, paths.draco);
-        } catch (err) {
-          console.warn(`⚠ Failed to finalize KTX2 Draco: ${err.message}`);
-          // Keep the Draco-only file as fallback
-          if (existsSync(dracoKtx2Tmp)) unlinkSync(dracoKtx2Tmp);
+      if (!isKtxCliAvailable()) {
+        if (!ktxSkipWarned) {
+          console.warn(
+            '⚠ KTX-Software CLI (`ktx`) not found — skipping KTX2/ETC1S texture compression. ' +
+              'Draco/meshopt/LOD continue with original textures. Install KTX-Software to enable.',
+          );
+          ktxSkipWarned = true;
         }
-      } else if (existsSync(dracoKtx2Tmp)) {
-        unlinkSync(dracoKtx2Tmp);
+      } else {
+        const dracoKtx2Tmp = `${paths.draco}.ktx2.tmp.glb`;
+        const etc1sOk = runGltfTransform(
+          root,
+          ['etc1s', paths.draco, dracoKtx2Tmp, '--quality', '192', '--compression', '1', '--jobs', '4'],
+          `ktx2 etc1s → ${rel(paths.draco)}`,
+          { exitOnFail: false }, // non-fatal even if ktx probe raced / etc1s fails
+        );
+        if (etc1sOk && existsSync(dracoKtx2Tmp)) {
+          try {
+            if (existsSync(paths.draco)) unlinkSync(paths.draco);
+            renameSync(dracoKtx2Tmp, paths.draco);
+          } catch (err) {
+            console.warn(`⚠ Failed to finalize KTX2 Draco: ${err.message}`);
+            // Keep the Draco-only file as fallback
+            if (existsSync(dracoKtx2Tmp)) unlinkSync(dracoKtx2Tmp);
+          }
+        } else if (existsSync(dracoKtx2Tmp)) {
+          unlinkSync(dracoKtx2Tmp);
+        }
       }
     }
 
