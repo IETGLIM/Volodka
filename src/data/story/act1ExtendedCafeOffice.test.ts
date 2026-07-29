@@ -74,4 +74,30 @@ describe('Act 1 cafe/office extended story nodes', () => {
       expect(GOLDEN_PATH_BRANCH_HINTS[id], id).toBeTruthy();
     }
   });
+
+  it('cafe_chip_resonance golden path leads to guild clearance', () => {
+    const node = STORY_NODES_ACT1_CAFE_OFFICE.cafe_chip_resonance;
+    const golden = node.choices.filter((c) => c.goldenPath === true);
+    expect(golden).toHaveLength(1);
+    expect(golden[0]?.next).toBe('cafe_guild_clearance');
+    expect(node.effects).toContainEqual({
+      type: 'setFlag',
+      flag: 'barista_chip_resonance',
+      flagValue: true,
+    });
+  });
+
+  it('office_lobby_arrival auto-progresses clearance flags and side watch', () => {
+    const node = STORY_NODES_ACT1_CAFE_OFFICE.office_lobby_arrival;
+    expect(node.effects).toContainEqual({
+      type: 'triggerQuest',
+      questId: 'office_lobby_watch',
+    });
+    expect(node.effects).toContainEqual({
+      type: 'setFlag',
+      flag: 'guild_summons_received',
+      flagValue: true,
+    });
+    expect(node.choices.find((c) => c.goldenPath)?.next).toBe('office_alexander');
+  });
 });

@@ -118,9 +118,11 @@ describe('office_lobby_watch side deepen', () => {
     expect(GOLDEN_PATH_QUEST_SPINE).not.toContain('office_lobby_watch');
   });
 
-  it('incident requires clearance so spine stays ordered', () => {
+  it('incident follows clearance on spine without hard requiresQuests soft-lock', () => {
     const incident = QUESTS_ACT1.find((q) => q.id === 'incident_scroll_4729');
-    expect(incident?.requiresQuests).toEqual(['chip_cafe_clearance']);
     expect(incident?.spineOrder).toBe(5);
+    expect(GOLDEN_PATH_QUEST_SPINE.indexOf('incident_scroll_4729')).toBe(
+      GOLDEN_PATH_QUEST_SPINE.indexOf('chip_cafe_clearance') + 1,
+    );
   });
 });
