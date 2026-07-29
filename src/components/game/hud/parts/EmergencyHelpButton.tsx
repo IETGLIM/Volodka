@@ -134,28 +134,30 @@ export function EmergencyHelpButton() {
         <PopoverTrigger asChild>
           <button
             type="button"
-            className="relative flex items-center justify-center rounded-full hud-button-cyber focus:outline-none focus-visible:ring-1 focus-visible:ring-cyan-400/50"
+            className="relative flex items-center justify-center rounded-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-stone-400/40"
             style={{
               width: 28,
               height: 28,
-              background: 'rgba(0, 10, 18, 0.8)',
-              border: '1px solid rgba(100, 116, 139, 0.25)',
-              boxShadow: '0 0 8px rgba(0, 0, 0, 0.4)',
+              background: 'var(--hud-filmic-plate-strong)',
+              border: '1px solid var(--hud-filmic-border)',
+              boxShadow: 'var(--hud-filmic-shadow)',
               backdropFilter: 'blur(8px)',
+              color: 'var(--hud-filmic-ink-muted)',
             }}
             aria-label="Что делать?"
             title="Что делать?"
           >
-            <CircleHelp className="size-4 text-slate-400" />
+            <CircleHelp className="size-4" />
             {/* Idle pulse ring */}
             <AnimatePresence>
               {isIdle && !open && (
                 <motion.span
                   key="idle-pulse"
-                  className="absolute inset-0 rounded-full border border-cyan-400/40"
+                  className="absolute inset-0 rounded-sm border"
+                  style={{ borderColor: 'rgba(196,181,160,0.35)' }}
                   initial={{ opacity: 0, scale: 1 }}
-                  animate={{ opacity: [0, 0.6, 0], scale: [1, 1.4, 1.6] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: 'easeOut' }}
+                  animate={{ opacity: [0, 0.5, 0], scale: [1, 1.35, 1.5] }}
+                  transition={{ duration: 2.4, repeat: Infinity, ease: 'easeOut' }}
                   aria-hidden
                 />
               )}
@@ -166,18 +168,15 @@ export function EmergencyHelpButton() {
           side="top"
           sideOffset={8}
           align="end"
-          className="w-72 p-0 overflow-hidden border border-slate-700/40"
+          className="w-72 p-0 overflow-hidden hud-filmic-plate border-0"
           style={{
-            background: 'linear-gradient(145deg, rgba(2,6,23,0.96) 0%, rgba(8,12,28,0.94) 100%)',
-            backdropFilter: 'blur(12px)',
-            boxShadow: '0 0 24px rgba(0,0,0,0.6), 0 0 8px rgb(0 255 238 / 0.06)',
             zIndex: UI_LAYERS.HUD + 20,
           }}
         >
           {/* Header */}
-          <div className="flex items-center gap-2 px-3 py-2.5 border-b border-slate-700/30">
-            <CircleHelp className="size-4 text-cyan-400/80" />
-            <span className="text-xs font-semibold font-mono text-cyan-300">Что делать?</span>
+          <div className="flex items-center gap-2 px-3 py-2.5 border-b" style={{ borderColor: 'var(--hud-filmic-border)' }}>
+            <CircleHelp className="size-4" style={{ color: 'var(--hud-filmic-ink-muted)' }} />
+            <span className="hud-filmic-kicker">Что делать?</span>
           </div>
 
           {/* Content */}
@@ -185,8 +184,8 @@ export function EmergencyHelpButton() {
             {/* Current objective */}
             {helpContent.objectiveText && (
               <div>
-                <p className="text-[9px] font-mono text-slate-500 mb-0.5">ТЕКУЩАЯ ЦЕЛЬ</p>
-                <p className="text-[11px] font-mono leading-snug text-cyan-100/90">
+                <p className="hud-filmic-kicker mb-0.5">Текущая цель</p>
+                <p className="hud-filmic-body text-[12px]" style={{ textAlign: 'left' }}>
                   {helpContent.objectiveText}
                 </p>
               </div>
@@ -195,9 +194,9 @@ export function EmergencyHelpButton() {
             {/* First reading contextual hint */}
             {helpContent.firstReadingHint && (
               <div>
-                <p className="text-[9px] font-mono text-amber-500/70 mb-0.5">ПОДСКАЗКА</p>
-                <p className="text-[11px] font-mono leading-snug text-amber-200/90">
-                  → {helpContent.firstReadingHint}
+                <p className="hud-filmic-kicker mb-0.5" style={{ color: 'var(--hud-filmic-accent)' }}>Подсказка</p>
+                <p className="hud-filmic-body text-[12px] opacity-90" style={{ textAlign: 'left', fontStyle: 'italic' }}>
+                  {helpContent.firstReadingHint}
                 </p>
               </div>
             )}
@@ -205,46 +204,47 @@ export function EmergencyHelpButton() {
             {/* Available interactions */}
             {helpContent.sceneZones.length > 0 && (
               <div>
-                <p className="text-[9px] font-mono text-slate-500 mb-1">
+                <p className="hud-filmic-kicker mb-1">
                   <Eye className="size-2.5 inline-block mr-1 -mt-px" />
-                  ЧТО РЯДОМ ({helpContent.sceneZones.length})
+                  Что рядом ({helpContent.sceneZones.length})
                 </p>
                 <div className="space-y-0.5">
                   {helpContent.sceneZones.map((zone) => (
                     <p
                       key={zone.id}
-                      className="text-[10px] font-mono leading-snug text-slate-400/80 pl-3"
+                      className="text-[11px] font-serif leading-snug pl-3"
+                      style={{ color: 'var(--hud-filmic-ink-muted)' }}
                     >
-                      <span className="text-slate-500/60 mr-1">[E]</span>
+                      <span className="hud-filmic-kicker mr-1" style={{ letterSpacing: '0.1em' }}>E</span>
                       {zone.enterToast ?? zone.examineData?.title ?? zone.id}
                     </p>
                   ))}
                   {helpContent.sceneZones.length >= 6 && (
-                    <p className="text-[9px] font-mono text-slate-600 pl-3">…и другие</p>
+                    <p className="hud-filmic-kicker pl-3">…и другие</p>
                   )}
                 </div>
               </div>
             )}
 
             {/* Divider */}
-            <div className="h-px bg-slate-700/20" />
+            <div className="h-px" style={{ background: 'var(--hud-filmic-border)' }} />
 
             {/* Reset interaction */}
             <button
               type="button"
               onClick={handleResetInteraction}
-              className="flex items-center gap-1.5 w-full text-left px-2 py-1.5 rounded hover:bg-white/5 transition-colors group"
+              className="flex items-center gap-1.5 w-full text-left px-2 py-1.5 rounded-sm hover:bg-white/5 transition-colors group"
             >
-              <RotateCcw className="size-3 text-slate-500 group-hover:text-cyan-400 transition-colors" />
-              <span className="text-[10px] font-mono text-slate-400 group-hover:text-slate-200 transition-colors">
+              <RotateCcw className="size-3 text-stone-500 group-hover:text-stone-300 transition-colors" />
+              <span className="text-[10px] font-mono text-stone-500 group-hover:text-stone-300 transition-colors">
                 Сбросить взаимодействие
               </span>
             </button>
 
             {/* Last resort hint */}
             <div className="flex items-start gap-1.5 px-2 pt-0.5">
-              <AlertTriangle className="size-3 text-slate-600 mt-px shrink-0" />
-              <p className="text-[9px] font-mono leading-snug text-slate-600">
+              <AlertTriangle className="size-3 text-stone-600 mt-px shrink-0" />
+              <p className="hud-filmic-kicker leading-snug" style={{ letterSpacing: '0.06em' }}>
                 Если ничего не помогает — сохраните и загрузите игру
               </p>
             </div>

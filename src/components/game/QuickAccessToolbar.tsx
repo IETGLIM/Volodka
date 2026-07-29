@@ -262,86 +262,16 @@ export function QuickAccessToolbar() {
           transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
         >
           <div
-            className={`relative hex-grid-bg ${isStressHigh ? 'warning-pulse' : ''}`}
-            style={{
-              backdropFilter: 'blur(16px)',
-              WebkitBackdropFilter: 'blur(16px)',
-              background:
-                'linear-gradient(180deg, rgba(8, 12, 18, 0.88) 0%, rgba(5, 8, 14, 0.92) 100%)',
-              border: `1px solid ${isStressHigh ? 'rgba(251, 113, 133, 0.4)' : 'rgb(var(--cyber-cyan-rgb) / 0.25)'}`,
-              borderRadius: '10px',
-              boxShadow: isStressHigh
-                ? '0 0 20px rgba(251, 113, 133, 0.18), 0 4px 20px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(251,113,133,0.1)'
-                : '0 0 20px rgb(var(--cyber-cyan-rgb) / 0.1), 0 4px 20px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgb(var(--cyber-cyan-rgb) / 0.08)',
-              maxHeight: '48px',
-              overflow: 'hidden',
-            }}
+            className={`relative hud-filmic-toolbar ${isStressHigh ? 'hud-filmic-toolbar--warn' : ''}`}
           >
-            {/* Corner bracket decorations */}
-            <div className="corner-bracket-sm corner-bracket-sm-tl" />
-            <div className="corner-bracket-sm corner-bracket-sm-tr" />
-            <div className="corner-bracket-sm corner-bracket-sm-bl" />
-            <div className="corner-bracket-sm corner-bracket-sm-br" />
-            {/* Large corner brackets for premium feel */}
-            <div className="corner-bracket-lg corner-bracket-lg-tl" />
-            <div className="corner-bracket-lg corner-bracket-lg-tr" />
-            <div className="corner-bracket-lg corner-bracket-lg-bl" />
-            <div className="corner-bracket-lg corner-bracket-lg-br" />
-
-            {/* Top edge glow line */}
-            <motion.div
-              className="absolute top-0 left-2 right-2 h-px"
-              animate={{ opacity: [0.5, 1, 0.5] }}
-              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-              style={{
-                background: `linear-gradient(90deg, transparent, ${isStressHigh ? 'rgba(251,113,133,0.4)' : 'rgb(var(--cyber-cyan-rgb) / 0.35)'} 50%, transparent)`,
-              }}
-            />
-
-            {/* Scan-line sweep on hover */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none z-10 group">
-              <div
-                className="absolute inset-x-0 h-8 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                style={{
-                  background:
-                    'linear-gradient(180deg, transparent 0%, rgb(var(--cyber-cyan-rgb) / 0.06) 40%, rgb(var(--cyber-cyan-rgb) / 0.1) 50%, rgb(var(--cyber-cyan-rgb) / 0.06) 60%, transparent 100%)',
-                  animation: 'scanline-overlay 2s linear infinite',
-                }}
-              />
-            </div>
-
-            {/* Neon border glow animation */}
-            <motion.div
-              className="absolute inset-0 rounded-[8px] pointer-events-none"
-              animate={{
-                boxShadow: isStressHigh
-                  ? [
-                      '0 0 8px rgba(251, 113, 133, 0.1), inset 0 0 4px rgba(251, 113, 133, 0.03)',
-                      '0 0 16px rgba(251, 113, 133, 0.2), inset 0 0 8px rgba(251, 113, 133, 0.06)',
-                      '0 0 8px rgba(251, 113, 133, 0.1), inset 0 0 4px rgba(251, 113, 133, 0.03)',
-                    ]
-                  : [
-                      '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.08), inset 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.02)',
-                      '0 0 16px rgb(var(--cyber-cyan-rgb) / 0.15), inset 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.04)',
-                      '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.08), inset 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.02)',
-                    ],
-              }}
-              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-            />
-
             {/* Content row */}
             <div className="relative z-20 flex items-center gap-3 px-4 py-2">
-              {/* Data stream accent (left edge) */}
-              <div
-                className="absolute left-0 top-1 bottom-1 w-px data-stream-accent pointer-events-none"
-                style={{ backgroundSize: '100% 8px' }}
-              />
               {/* Energy bar */}
               <StatBar
                 value={energy}
                 max={100}
-                color={isEnergyLow ? '#fb7185' : 'var(--cyber-cyan)'}
-                glowColor={isEnergyLow ? '#fb7185' : 'var(--cyber-cyan)'}
+                color={isEnergyLow ? '#fb7185' : 'rgba(196,181,160,0.85)'}
+                glowColor={isEnergyLow ? '#fb7185' : 'rgba(196,181,160,0.4)'}
                 icon={Zap}
                 label="Энергия"
                 warningPulse={isEnergyLow}
@@ -350,15 +280,15 @@ export function QuickAccessToolbar() {
               {/* Divider */}
               <div
                 className="w-px h-5"
-                style={{ background: 'rgba(100, 116, 139, 0.2)' }}
+                style={{ background: 'var(--hud-filmic-border)' }}
               />
 
               {/* Stress bar */}
               <StatBar
                 value={stress}
                 max={100}
-                color={isStressHigh ? '#fb7185' : '#fbbf24'}
-                glowColor={isStressHigh ? '#fb7185' : '#fbbf24'}
+                color={isStressHigh ? '#fb7185' : 'rgba(252,211,165,0.75)'}
+                glowColor={isStressHigh ? '#fb7185' : 'rgba(252,211,165,0.35)'}
                 icon={Activity}
                 label="Стресс"
                 warningPulse={isStressHigh}
@@ -367,7 +297,7 @@ export function QuickAccessToolbar() {
               {/* Divider */}
               <div
                 className="w-px h-5"
-                style={{ background: 'rgba(100, 116, 139, 0.2)' }}
+                style={{ background: 'var(--hud-filmic-border)' }}
               />
 
               {/* Karma ring */}
@@ -376,7 +306,7 @@ export function QuickAccessToolbar() {
               {/* Divider */}
               <div
                 className="w-px h-5"
-                style={{ background: 'rgba(100, 116, 139, 0.2)' }}
+                style={{ background: 'var(--hud-filmic-border)' }}
               />
 
               {/* Level + XP */}
@@ -385,7 +315,7 @@ export function QuickAccessToolbar() {
               {/* Divider */}
               <div
                 className="w-px h-5"
-                style={{ background: 'rgba(100, 116, 139, 0.2)' }}
+                style={{ background: 'var(--hud-filmic-border)' }}
               />
 
               {/* Exploration progress (compact) */}
@@ -394,13 +324,13 @@ export function QuickAccessToolbar() {
               {/* Music toggle */}
               <button
                 onClick={toggleMusic}
-                className="flex items-center justify-center w-7 h-7 rounded transition-colors duration-200 focus-cyber"
+                className="flex items-center justify-center w-7 h-7 rounded-sm transition-colors duration-200"
                 style={{
                   background: musicEnabled
-                    ? 'rgb(var(--cyber-cyan-rgb) / 0.08)'
-                    : 'rgba(251, 113, 133, 0.08)',
-                  border: `1px solid ${musicEnabled ? 'rgb(var(--cyber-cyan-rgb) / 0.2)' : 'rgba(251, 113, 133, 0.2)'}`,
-                  color: musicEnabled ? 'var(--cyber-cyan)' : '#fb7185',
+                    ? 'rgba(255,255,255,0.04)'
+                    : 'rgba(252,165,165,0.06)',
+                  border: `1px solid ${musicEnabled ? 'var(--hud-filmic-border)' : 'rgba(252,165,165,0.25)'}`,
+                  color: musicEnabled ? 'var(--hud-filmic-ink-muted)' : 'var(--hud-filmic-danger)',
                 }}
                 title={musicEnabled ? 'Выключить музыку' : 'Включить музыку'}
                 aria-label={musicEnabled ? 'Выключить музыку' : 'Включить музыку'}

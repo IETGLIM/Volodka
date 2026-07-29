@@ -59,33 +59,18 @@ export function CrosshairInteractionPrompt() {
             animate={{ opacity: 1, y: 0 }}
             exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 4 }}
             transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
-            className="flex flex-col items-center gap-1.5 min-w-[7rem]"
+            className="hud-filmic-caption min-w-[7rem]"
           >
-            {/* Thin film rule */}
-            <div
-              className="w-10 h-px"
-              style={{ background: 'linear-gradient(90deg, transparent, rgba(220,230,240,0.55), transparent)' }}
-            />
+            <div className="hud-filmic-rule" aria-hidden />
             <div className="flex items-baseline gap-2 px-1">
-              <span
-                className="font-mono text-[10px] tracking-[0.28em] uppercase"
-                style={{ color: 'rgba(210,230,235,0.88)' }}
-              >
-                {promptKey}
-              </span>
+              <span className="hud-filmic-kicker">{promptKey}</span>
               {label ? (
-                <span
-                  className="font-serif text-[11px] tracking-wide italic max-w-[9rem] truncate"
-                  style={{ color: 'rgba(190,205,215,0.72)' }}
-                >
+                <span className="hud-filmic-body text-[11px] max-w-[9rem] truncate" style={{ fontStyle: 'italic' }}>
                   {label}
                 </span>
               ) : null}
             </div>
-            <div
-              className="w-10 h-px"
-              style={{ background: 'linear-gradient(90deg, transparent, rgba(220,230,240,0.35), transparent)' }}
-            />
+            <div className="hud-filmic-rule hud-filmic-rule--soft" aria-hidden />
           </motion.div>
         )}
       </AnimatePresence>

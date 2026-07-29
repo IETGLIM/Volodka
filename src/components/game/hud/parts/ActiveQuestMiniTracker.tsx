@@ -21,27 +21,27 @@ import { buildQuestJournalContextualHint } from '@/hooks/questJournalHint';
 const CYCLE_INTERVAL_MS = 10_000;
 
 const QUEST_TYPE_ICON: Record<QuestType, string> = {
-  main: '⚔',
-  side: '◈',
-  hidden: '◆',
-  daily: '◎',
+  main: '◆',
+  side: '◇',
+  hidden: '◈',
+  daily: '○',
 };
 
 const QUEST_TYPE_COLOR: Record<QuestType, string> = {
-  main: '#ff6644',
-  side: '#00d4e0',
-  hidden: '#cc66ff',
-  daily: '#aaaaaa',
+  main: '#c4b5a0',
+  side: '#a8b4bc',
+  hidden: '#a78bfa',
+  daily: '#78716c',
 };
 
 function getObjectiveTypeIcon(type: string): string {
   switch (type) {
-    case 'npc_talked': return '💬';
-    case 'location_visited': return '📍';
-    case 'item_collected': return '📦';
-    case 'poem_collected': return '📜';
-    case 'flag_set': return '⚡';
-    case 'minigame_completed': return '🎮';
+    case 'npc_talked': return '◇';
+    case 'location_visited': return '△';
+    case 'item_collected': return '□';
+    case 'poem_collected': return '※';
+    case 'flag_set': return '▸';
+    case 'minigame_completed': return '◎';
     case 'custom': return '○';
     default: return '●';
   }
@@ -235,14 +235,10 @@ export function ActiveQuestMiniTracker() {
               toggleExpand();
             }
           }}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-md cursor-pointer quest-tracker-glow quest-tracker-flow-border"
+          className="flex items-center gap-2 px-3 py-1.5 rounded-sm cursor-pointer hud-filmic-plate"
           style={{
-            background: 'linear-gradient(135deg, rgba(0, 8, 16, 0.82) 0%, rgba(4, 12, 24, 0.78) 100%)',
-            border: `1px solid ${typeColor}33`,
-            '--quest-glow-color': `${typeColor}15`,
-            boxShadow: `0 0 8px ${typeColor}10, 0 2px 8px rgba(0,0,0,0.4)`,
-            backdropFilter: 'blur(8px)',
-          } as React.CSSProperties}
+            borderColor: `${typeColor}33`,
+          }}
           aria-label={
             liveHint || nextObjective
               ? `${questDef.title}: ${trackerLine}`
@@ -252,21 +248,21 @@ export function ActiveQuestMiniTracker() {
           {/* Quest type icon */}
           <span
             className="text-xs flex-shrink-0"
-            style={{ color: typeColor, textShadow: `0 0 4px ${typeColor}44` }}
+            style={{ color: typeColor }}
             aria-hidden="true"
           >
             {typeIcon}
           </span>
 
           {/* Objective icon */}
-          <span className="text-xs flex-shrink-0" aria-hidden="true">
+          <span className="text-xs flex-shrink-0 text-stone-500" aria-hidden="true">
             {objIcon}
           </span>
 
           {/* Objective text — prefer live contextual hint */}
           <p
-            className={`text-[10px] font-mono leading-snug truncate flex-1 rounded px-1 -mx-1 ${objectiveFlash ? 'objective-flash' : ''}`}
-            style={{ color: '#c8e8e8', textShadow: objectiveFlash ? `0 0 8px ${typeColor}44` : 'none', transition: 'text-shadow 0.3s ease' }}
+            className={`text-[11px] font-serif italic leading-snug truncate flex-1 rounded px-1 -mx-1 ${objectiveFlash ? 'objective-flash' : ''}`}
+            style={{ color: 'var(--hud-filmic-ink)', transition: 'opacity 0.3s ease' }}
           >
             {trackerLine}
           </p>
@@ -291,9 +287,8 @@ export function ActiveQuestMiniTracker() {
               animate={{ height: 'auto', opacity: 1 }}
               exit={reducedMotion ? undefined : { height: 0, opacity: 0 }}
               transition={{ duration: motionDuration }}
-              className="overflow-hidden rounded-b-md cyber-border-animated panel-glass-dark-9"
+              className="overflow-hidden rounded-b-sm hud-filmic-plate"
               style={{
-                border: '1px solid rgba(0,255,238,0.15)',
                 borderTop: 'none',
               }}
             >
@@ -302,16 +297,15 @@ export function ActiveQuestMiniTracker() {
                 <div className="flex items-center gap-2">
                   <span
                     className="text-[10px] font-mono font-bold tracking-wider"
-                    style={{ color: typeColor, textShadow: `0 0 6px ${typeColor}44` }}
+                    style={{ color: typeColor }}
                   >
                     {questDef.title}
                   </span>
                   <span
-                    className="text-[8px] font-mono px-1 py-px rounded ml-auto"
+                    className="text-[8px] font-mono px-1 py-px rounded-sm ml-auto"
                     style={{
                       color: typeColor,
                       border: `1px solid ${typeColor}33`,
-                      background: `${typeColor}11`,
                     }}
                   >
                     {questType === 'main' ? 'ОСН' : questType === 'side' ? 'ПОБ' : questType === 'hidden' ? 'СКР' : 'ЕЖД'}
@@ -319,29 +313,23 @@ export function ActiveQuestMiniTracker() {
                 </div>
 
                 {liveHint && (
-                  <p
-                    className="text-[9px] font-mono leading-snug text-cyan-200/80 px-1 py-1 rounded"
-                    style={{
-                      background: 'rgba(0, 212, 224, 0.06)',
-                      border: '1px solid rgba(0, 212, 224, 0.12)',
-                    }}
-                  >
+                  <p className="hud-filmic-body text-[11px] px-1" style={{ textAlign: 'left' }}>
                     {liveHint}
                   </p>
                 )}
 
                 {/* Progress bar */}
                 <div className="flex items-center gap-2">
-                  <div className="flex-1 h-1 bg-white/8 rounded-full overflow-hidden">
+                  <div className="flex-1 h-px overflow-hidden" style={{ background: 'rgba(214,211,209,0.12)' }}>
                     <motion.div
-                      className="h-full rounded-full quest-progress-shimmer"
-                      style={{ background: `linear-gradient(90deg, ${typeColor}66, ${typeColor}cc, ${typeColor})`, boxShadow: `0 0 6px ${typeColor}40` }}
+                      className="h-full"
+                      style={{ background: `linear-gradient(90deg, transparent, ${typeColor})` }}
                       initial={false}
                       animate={{ width: `${progress}%` }}
                       transition={{ duration: 0.4 }}
                     />
                   </div>
-                  <span className="text-[8px] font-mono tabular-nums" style={{ color: `${typeColor}aa` }}>
+                  <span className="hud-filmic-kicker tabular-nums" style={{ letterSpacing: '0.08em', fontSize: 8 }}>
                     {progress}%
                   </span>
                 </div>
@@ -354,9 +342,9 @@ export function ActiveQuestMiniTracker() {
                     : completedObjs >= 2 && completedObjs <= 4 ? 'стихотворения'
                     : 'стихотворений';
                   return (
-                    <div className="flex items-center gap-1.5 px-1 py-0.5 rounded" style={{ background: 'rgba(0,255,238,0.06)', border: '1px solid rgba(0,255,238,0.1)' }}>
-                      <BookOpen className="size-2.5 text-cyan-400/60 shrink-0" />
-                      <span className="text-[9px] font-mono text-cyan-300/70">
+                    <div className="flex items-center gap-1.5 px-1 py-0.5">
+                      <BookOpen className="size-2.5 text-stone-500 shrink-0" />
+                      <span className="hud-filmic-kicker" style={{ letterSpacing: '0.08em' }}>
                         Собрано {poemWord}: {completedObjs} из {totalObjs}
                       </span>
                     </div>
@@ -364,20 +352,20 @@ export function ActiveQuestMiniTracker() {
                 })()}
 
                 {/* All objectives */}
-                <div className="space-y-1 max-h-32 overflow-y-auto" style={{ scrollbarWidth: 'thin', scrollbarColor: '#00ffee22 transparent' }}>
+                <div className="space-y-1 max-h-32 overflow-y-auto" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(168,162,158,0.25) transparent' }}>
                   {questDef.objectives.map((obj) => {
                     const isCompleted = displayQuest.objectives[obj.id] === true;
                     return (
                       <div
                         key={obj.id}
-                        className={`flex items-start gap-1.5 text-[10px] font-mono ${
-                          isCompleted ? 'text-emerald-400/60' : 'text-slate-300'
+                        className={`flex items-start gap-1.5 text-[11px] font-serif ${
+                          isCompleted ? 'text-stone-500' : 'text-stone-300'
                         }`}
                       >
                         <span className="flex-shrink-0 mt-px" aria-hidden="true">
-                          {isCompleted ? '✓' : obj.type === 'flag_set' ? '⚡' : '○'}
+                          {isCompleted ? '✓' : '○'}
                         </span>
-                        <span className={isCompleted ? 'line-through' : ''}>
+                        <span className={isCompleted ? 'line-through opacity-70' : ''}>
                           {obj.description}
                         </span>
                       </div>
@@ -386,12 +374,12 @@ export function ActiveQuestMiniTracker() {
                 </div>
 
                 {/* Actions row */}
-                <div className="flex items-center gap-2 pt-1 border-t" style={{ borderColor: 'rgba(0,255,238,0.1)' }}>
+                <div className="flex items-center gap-2 pt-1 border-t" style={{ borderColor: 'var(--hud-filmic-border)' }}>
                   <button
                     type="button"
                     onClick={(e) => { e.stopPropagation(); togglePin(); }}
-                    className="flex items-center gap-1 text-[9px] font-mono px-1.5 py-0.5 rounded hover:bg-white/10 transition-colors"
-                    style={{ color: pinnedQuestId ? '#ffaa00' : '#667777' }}
+                    className="flex items-center gap-1 text-[9px] font-mono px-1.5 py-0.5 rounded-sm hover:bg-white/5 transition-colors"
+                    style={{ color: pinnedQuestId ? 'var(--hud-filmic-accent)' : 'var(--hud-filmic-ink-faint)' }}
                     aria-label={pinnedQuestId ? 'Открепить' : 'Закрепить'}
                   >
                     {pinnedQuestId ? <PinOff className="size-3" /> : <Pin className="size-3" />}
@@ -400,8 +388,8 @@ export function ActiveQuestMiniTracker() {
                   <button
                     type="button"
                     onClick={(e) => { e.stopPropagation(); openQuestJournal(); }}
-                    className="flex items-center gap-1 text-[9px] font-mono px-1.5 py-0.5 rounded hover:bg-white/10 transition-colors"
-                    style={{ color: '#667777' }}
+                    className="flex items-center gap-1 text-[9px] font-mono px-1.5 py-0.5 rounded-sm hover:bg-white/5 transition-colors"
+                    style={{ color: 'var(--hud-filmic-ink-faint)' }}
                     aria-label="Открыть журнал"
                   >
                     <BookOpen className="size-3" />
@@ -410,15 +398,15 @@ export function ActiveQuestMiniTracker() {
                   <button
                     type="button"
                     onClick={(e) => { e.stopPropagation(); openQuestOnMap(); }}
-                    className="flex items-center gap-1 text-[9px] font-mono px-1.5 py-0.5 rounded hover:bg-white/10 transition-colors"
-                    style={{ color: '#667777' }}
+                    className="flex items-center gap-1 text-[9px] font-mono px-1.5 py-0.5 rounded-sm hover:bg-white/5 transition-colors"
+                    style={{ color: 'var(--hud-filmic-ink-faint)' }}
                     aria-label="Показать цель на карте"
                   >
                     <MapIcon className="size-3" />
                     Карта
                   </button>
                   {activeQuests.length > 1 && (
-                    <span className="text-[8px] font-mono ml-auto" style={{ color: '#556666' }}>
+                    <span className="hud-filmic-kicker ml-auto" style={{ letterSpacing: '0.08em', fontSize: 8 }}>
                       {activeQuests.indexOf(displayQuest) + 1}/{activeQuests.length}
                     </span>
                   )}

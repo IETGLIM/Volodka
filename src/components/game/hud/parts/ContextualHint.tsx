@@ -12,12 +12,12 @@ interface ContextualHintProps {
 }
 
 const CATEGORY_RULE: Record<HintCategory, string> = {
-  combat: 'rgba(244,120,120,0.55)',
-  quest: 'rgba(220,190,120,0.5)',
-  interaction: 'rgba(160,210,220,0.45)',
-  low_stats: 'rgba(240,150,150,0.45)',
-  scene: 'rgba(160,190,210,0.35)',
-  tutorial: 'rgba(150,160,175,0.3)',
+  combat: 'rgba(252,165,165,0.45)',
+  quest: 'rgba(196,181,160,0.5)',
+  interaction: 'rgba(168,180,188,0.4)',
+  low_stats: 'rgba(252,165,165,0.4)',
+  scene: 'rgba(168,162,158,0.35)',
+  tutorial: 'rgba(120,113,108,0.3)',
 };
 
 export function ContextualHint({ hint, onDismiss }: ContextualHintProps) {
@@ -39,20 +39,19 @@ export function ContextualHint({ hint, onDismiss }: ContextualHintProps) {
           role="status"
           aria-live="polite"
         >
-          <div className="flex flex-col items-center gap-2 max-w-[88vw] sm:max-w-md px-3">
+          <div className="hud-filmic-caption max-w-[88vw] sm:max-w-md px-3">
             <div
-              className="w-16 h-px"
+              className="h-px w-16"
               style={{ background: `linear-gradient(90deg, transparent, ${CATEGORY_RULE[hint.category]}, transparent)` }}
+              aria-hidden
             />
-            <p
-              className="text-center font-serif text-[12px] sm:text-[13px] leading-relaxed tracking-wide italic"
-              style={{ color: 'rgba(210,220,230,0.82)', textShadow: '0 1px 8px rgba(0,0,0,0.65)' }}
-            >
+            <p className="hud-filmic-body text-[12px] sm:text-[13px]">
               {hint.text}
             </p>
             <div
-              className="w-10 h-px opacity-60"
+              className="h-px w-10 opacity-60"
               style={{ background: `linear-gradient(90deg, transparent, ${CATEGORY_RULE[hint.category]}, transparent)` }}
+              aria-hidden
             />
           </div>
         </motion.div>

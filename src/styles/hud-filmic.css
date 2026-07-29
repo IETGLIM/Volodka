@@ -1,0 +1,355 @@
+/* ══════════════════════════════════════════════════════════════
+   Filmic / diegetic exploration HUD — AAA-adjacent captions
+   Matches menu-session8 plate language: restrained, readable,
+   no hex grids, neon soup, emoji keycaps, or plastic chrome.
+   Class prefix: hud-filmic-* (shared by StoryGuidance + exploration)
+   ══════════════════════════════════════════════════════════════ */
+
+:root {
+  --hud-filmic-ink: rgba(214, 211, 209, 0.9);
+  --hud-filmic-ink-muted: rgba(168, 162, 158, 0.75);
+  --hud-filmic-ink-dim: rgba(120, 113, 108, 0.65);
+  --hud-filmic-rule: rgba(220, 230, 240, 0.42);
+  --hud-filmic-rule-soft: rgba(220, 230, 240, 0.22);
+  --hud-filmic-plate: rgba(6, 8, 14, 0.62);
+  --hud-filmic-plate-strong: rgba(4, 5, 10, 0.82);
+  --hud-filmic-border: rgba(168, 162, 158, 0.14);
+  --hud-filmic-accent: rgba(196, 181, 160, 0.75);
+  --hud-filmic-warn: rgba(252, 211, 165, 0.72);
+  --hud-filmic-danger: rgba(252, 165, 165, 0.75);
+  --hud-filmic-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+}
+
+/* Thin film hairline — caption punctuation */
+.hud-filmic-rule {
+  height: 1px;
+  width: 2.5rem;
+  margin-inline: auto;
+  background: linear-gradient(90deg, transparent, var(--hud-filmic-rule), transparent);
+  border: none;
+}
+
+.hud-filmic-rule--wide {
+  width: 4.5rem;
+}
+
+.hud-filmic-rule--soft {
+  background: linear-gradient(90deg, transparent, var(--hud-filmic-rule-soft), transparent);
+}
+
+.hud-filmic-kicker {
+  font-family: var(--font-mono, 'Geist Mono', ui-monospace, monospace);
+  font-size: 0.5625rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--hud-filmic-ink-dim);
+}
+
+.hud-filmic-body {
+  font-family: ui-serif, Georgia, 'Times New Roman', serif;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  letter-spacing: 0.02em;
+  color: var(--hud-filmic-ink);
+  text-align: center;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.65);
+}
+
+/* Objective strip — transparent caption, not a neon card */
+.hud-filmic-objective {
+  position: relative;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  overflow: visible;
+}
+
+.hud-filmic-objective .quest-objective-text::after {
+  display: none !important;
+  animation: none !important;
+}
+
+/* Caption stack — crosshair / contextual hints */
+.hud-filmic-caption {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  max-width: min(92vw, 26rem);
+  text-align: center;
+}
+
+.hud-filmic-caption__key {
+  font-family: var(--font-mono, 'Geist Mono', ui-monospace, monospace);
+  font-size: 0.625rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--hud-filmic-ink);
+}
+
+.hud-filmic-caption__text {
+  font-family: ui-serif, Georgia, 'Times New Roman', serif;
+  font-size: 0.75rem;
+  font-style: italic;
+  letter-spacing: 0.04em;
+  line-height: 1.45;
+  color: var(--hud-filmic-ink-muted);
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.7);
+}
+
+/* Soft plate for menus / toolbars / toasts / dialogue */
+.hud-filmic-plate {
+  background: linear-gradient(180deg, rgba(8, 10, 16, 0.72) 0%, rgba(4, 5, 10, 0.88) 100%);
+  border: 1px solid var(--hud-filmic-border);
+  border-radius: 2px;
+  backdrop-filter: blur(12px);
+  box-shadow: var(--hud-filmic-shadow);
+  overflow: hidden;
+}
+
+.hud-filmic-plate::before {
+  content: '';
+  display: block;
+  height: 1px;
+  margin: 0 12%;
+  background: linear-gradient(90deg, transparent, var(--hud-filmic-rule-soft), transparent);
+}
+
+.hud-filmic-topbar {
+  background: linear-gradient(180deg, rgba(6, 8, 14, 0.5) 0%, rgba(6, 8, 14, 0) 100%);
+  border-bottom: none;
+}
+
+.hud-filmic-topbar__scene {
+  font-family: ui-serif, Georgia, 'Times New Roman', serif;
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--hud-filmic-ink);
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.65);
+}
+
+.hud-filmic-topbar__clock {
+  font-family: var(--font-mono, 'Geist Mono', ui-monospace, monospace);
+  font-size: 0.625rem;
+  letter-spacing: 0.08em;
+  color: var(--hud-filmic-ink-dim);
+}
+
+.hud-filmic-topbar__dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--hud-filmic-ink-dim);
+  box-shadow: none;
+}
+
+.hud-filmic-topbar-btn {
+  color: var(--hud-filmic-ink-dim);
+  background: transparent;
+  border: none;
+}
+
+.hud-filmic-topbar-btn:hover {
+  color: var(--hud-filmic-ink);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.hud-filmic-menu {
+  background: linear-gradient(180deg, rgba(8, 10, 16, 0.9) 0%, rgba(4, 5, 10, 0.96) 100%);
+  border: 1px solid var(--hud-filmic-border);
+  border-radius: 2px;
+  backdrop-filter: blur(12px);
+  box-shadow: var(--hud-filmic-shadow);
+  overflow: hidden;
+}
+
+.hud-filmic-menu__header {
+  font-family: var(--font-mono, 'Geist Mono', ui-monospace, monospace);
+  font-size: 0.5625rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--hud-filmic-ink-dim);
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--hud-filmic-border);
+}
+
+.hud-filmic-kbd {
+  font-family: var(--font-mono, 'Geist Mono', ui-monospace, monospace);
+  font-size: 0.5625rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--hud-filmic-ink-dim);
+  background: transparent;
+  border: 1px solid var(--hud-filmic-border);
+  border-radius: 1px;
+  padding: 0.1rem 0.35rem;
+}
+
+.hud-filmic-toolbar {
+  position: relative;
+  background: linear-gradient(180deg, rgba(8, 10, 16, 0.78) 0%, rgba(4, 5, 10, 0.88) 100%);
+  border: 1px solid var(--hud-filmic-border);
+  border-radius: 2px;
+  backdrop-filter: blur(12px);
+  box-shadow: var(--hud-filmic-shadow);
+  max-height: 48px;
+  overflow: hidden;
+}
+
+.hud-filmic-toolbar--warn {
+  border-color: rgba(252, 165, 165, 0.28);
+}
+
+.hud-filmic-toolbar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--hud-filmic-rule-soft), transparent);
+  pointer-events: none;
+}
+
+.hud-filmic-toast {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: linear-gradient(180deg, rgba(8, 10, 16, 0.82) 0%, rgba(4, 5, 10, 0.9) 100%);
+  border: 1px solid var(--hud-filmic-border);
+  border-radius: 2px;
+  backdrop-filter: blur(10px);
+  box-shadow: var(--hud-filmic-shadow);
+  color: var(--hud-filmic-ink-muted);
+  font-family: ui-serif, Georgia, 'Times New Roman', serif;
+  font-size: 0.75rem;
+  font-style: italic;
+}
+
+.hud-filmic-toast--warn {
+  border-color: rgba(252, 211, 165, 0.22);
+  color: var(--hud-filmic-warn);
+}
+
+.hud-filmic-dialogue,
+.hud-filmic-dialogue-plate {
+  background: linear-gradient(180deg, rgba(8, 10, 16, 0.72) 0%, rgba(4, 5, 10, 0.88) 100%);
+  border: 1px solid var(--hud-filmic-border);
+  border-radius: 2px;
+  backdrop-filter: blur(14px);
+  box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+.hud-filmic-dialogue::before,
+.hud-filmic-dialogue-plate::before {
+  content: '';
+  display: block;
+  height: 1px;
+  margin: 0 12%;
+  background: linear-gradient(90deg, transparent, var(--hud-filmic-rule-soft), transparent);
+}
+
+.hud-filmic-dialogue__speaker {
+  font-family: var(--font-mono, 'Geist Mono', ui-monospace, monospace);
+  font-size: 0.6875rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--hud-filmic-ink-muted);
+}
+
+.hud-filmic-dialogue__body {
+  font-family: ui-serif, Georgia, 'Times New Roman', serif;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: rgba(245, 245, 244, 0.92);
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.55);
+}
+
+.hud-filmic-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  min-width: 44px;
+  min-height: 44px;
+  color: var(--hud-filmic-ink-dim);
+  background: transparent;
+  border: none;
+  border-radius: 2px;
+  transition: color 0.2s ease, background 0.2s ease;
+}
+
+.hud-filmic-icon-btn:hover {
+  color: var(--hud-filmic-ink);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* Narrative choice rows — filmic letterbox language */
+.hud-filmic-choice {
+  color: var(--hud-filmic-ink-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.hud-filmic-choice:hover:not(:disabled),
+.hud-filmic-choice:focus-visible {
+  color: var(--hud-filmic-ink);
+  background: rgba(255, 255, 255, 0.03);
+  border-color: var(--hud-filmic-border);
+  outline: none;
+}
+
+.hud-filmic-choice:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+@media (min-width: 640px) {
+  .hud-filmic-icon-btn {
+    min-width: 0;
+    min-height: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+}
+
+/* Soften legacy cyber buttons inside exploration filmic surfaces */
+[data-exploration-ui] .hud-btn-shimmer,
+[data-exploration-ui] .cyber-hover-glow {
+  box-shadow: none !important;
+}
+
+[data-exploration-ui] button.hud-btn-shimmer {
+  color: var(--hud-filmic-ink-dim);
+  border-radius: 2px;
+}
+
+[data-exploration-ui] button.hud-btn-shimmer:hover {
+  color: var(--hud-filmic-ink);
+  background: rgba(255, 255, 255, 0.04) !important;
+}
+
+[data-exploration-ui] button.hud-btn-shimmer:hover > .absolute {
+  opacity: 0 !important;
+}
+
+/* Kill neon quest-tracker scanline when filmic objective is active */
+.quest-tracker-strip.hud-filmic-objective::before,
+.hud-filmic-objective.quest-tracker-strip::before {
+  display: none !important;
+  animation: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-toolbar::before,
+  .hud-filmic-dialogue::before,
+  .hud-filmic-plate::before {
+    animation: none;
+  }
+}

@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { ChevronRight, Zap, Lock } from 'lucide-react';
+import { ChevronRight, Lock } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { buildChoiceAriaLabel } from '@/shared/utils/choiceAriaLabel';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
@@ -72,24 +72,17 @@ export function NarrativeChoiceList({
         type="button"
         initial={reducedMotion ? false : { opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        whileHover={reducedMotion ? undefined : { scale: 1.01 }}
-        whileTap={reducedMotion ? undefined : { scale: 0.99 }}
         onClick={onContinue}
         aria-label={continueHint ? `${continueLabel}. ${continueHint}` : continueLabel}
-        className={`group w-full text-left ${padding} rounded-lg border border-white/15 bg-black/50 backdrop-blur-md text-slate-100 hover:bg-black/65 hover:border-white/25 transition-all`}
-        style={{ boxShadow: `0 0 20px ${accentColor}12` }}
+        className={`group w-full text-left ${padding} hud-filmic-choice`}
       >
         <div className="flex flex-col items-center gap-1">
           <div className="flex items-center gap-2 justify-center">
-            <ChevronRight className="size-4" style={{ color: accentColor }} />
-            <span className={textSize} style={{ fontFamily: '"Georgia", "Times New Roman", serif' }}>
-              {continueLabel}
-            </span>
+            <ChevronRight className="size-3.5 opacity-60" />
+            <span className={textSize}>{continueLabel}</span>
           </div>
           {continueHint ? (
-            <span className="text-[10px] font-mono text-slate-500 tracking-wide">
-              {continueHint}
-            </span>
+            <span className="hud-filmic-kicker">{continueHint}</span>
           ) : null}
         </div>
       </motion.button>
@@ -102,39 +95,32 @@ export function NarrativeChoiceList({
         <motion.button
           key={choice.key}
           type="button"
-          initial={reducedMotion ? false : { opacity: 0, y: 10 }}
+          initial={reducedMotion ? false : { opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={reducedMotion ? { duration: 0 } : { delay: i * 0.05, duration: 0.22 }}
-          whileHover={choice.pass && !reducedMotion ? { scale: 1.01 } : undefined}
-          whileTap={choice.pass && !reducedMotion ? { scale: 0.99 } : undefined}
+          transition={reducedMotion ? { duration: 0 } : { delay: i * 0.04, duration: 0.2 }}
           onClick={() => {
             if (choice.pass) choice.onSelect();
           }}
           disabled={!choice.pass}
           aria-label={buildChoiceAriaLabel({ index: i, text: choice.text, cond: choice.cond })}
           aria-disabled={!choice.pass}
-          className={`group w-full text-left ${padding} rounded-lg border backdrop-blur-md transition-all ${textSize} ${
-            choice.pass
-              ? 'border-white/15 bg-black/50 text-slate-100 hover:bg-black/65 hover:border-white/25 cursor-pointer narrative-choice-hover'
-              : 'border-white/5 bg-black/30 text-slate-500 cursor-not-allowed opacity-55'
+          className={`group w-full text-left ${padding} hud-filmic-choice ${textSize} ${
+            choice.pass ? 'cursor-pointer' : 'opacity-45 cursor-not-allowed'
           }`}
-          style={choice.pass ? { boxShadow: `0 0 16px ${accentColor}10` } : undefined}
         >
           <div className="flex items-start gap-2">
             <span
-              className="text-[10px] font-mono w-4 shrink-0 text-center mt-0.5"
-              style={{ color: choice.pass ? accentColor : undefined }}
+              className="hud-filmic-kicker w-4 shrink-0 text-center mt-0.5"
+              style={{ color: choice.pass ? accentColor : undefined, letterSpacing: '0.08em' }}
             >
               {i + 1}
             </span>
             <div className="flex-1 min-w-0">
-              <span className="block" style={{ fontFamily: '"Georgia", "Times New Roman", serif' }}>
-                {choice.text}
-              </span>
+              <span className="block font-serif">{choice.text}</span>
               {!choice.pass && (() => {
                 const reason = formatCondFailReason(choice.cond);
                 return reason ? (
-                  <span className="flex items-center gap-1 mt-1 text-[10px] text-slate-500/80 font-mono">
+                  <span className="flex items-center gap-1 mt-1 hud-filmic-kicker" style={{ letterSpacing: '0.06em' }}>
                     <Lock className="size-2.5 shrink-0" />
                     {reason}
                   </span>
@@ -142,9 +128,6 @@ export function NarrativeChoiceList({
               })()}
             </div>
             {choice.trailing}
-            {choice.pass && (
-              <Zap className="size-3 opacity-0 group-hover:opacity-40 transition-opacity mt-0.5" style={{ color: accentColor }} />
-            )}
           </div>
         </motion.button>
       ))}

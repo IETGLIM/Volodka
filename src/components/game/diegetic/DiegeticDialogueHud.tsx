@@ -53,7 +53,7 @@ import { devWarn } from '@/shared/utils/devLog';
 import { NPCPortrait, NPC_PORTRAIT_COLORS } from '@/components/game/shared/NPCPortrait';
 import type { SceneId } from '@/shared/types/game';
 
-const ACCENT = '#44ddcc';
+const ACCENT = 'rgba(196, 181, 160, 0.9)';
 
 export function DiegeticDialogueHud() {
   const isTouchDevice = useTouchDevice();
@@ -313,13 +313,6 @@ export function DiegeticDialogueHud() {
     choiceCount: choices.length,
   });
 
-  const breathingGlow = reducedMotion ? undefined : `
-    @keyframes diegetic-border-breathe {
-      0%, 100% { border-color: rgba(255,255,255,0.10); box-shadow: 0 -4px 40px ${accentColor}10, inset 0 0 0 transparent; }
-      50% { border-color: rgba(255,255,255,0.18); box-shadow: 0 -4px 48px ${accentColor}22, inset 0 1px 0 ${accentColor}08; }
-    }
-  `;
-
   return (
     <AnimatePresence mode="wait">
       <motion.div
@@ -330,7 +323,7 @@ export function DiegeticDialogueHud() {
         aria-label={speaker}
         initial={reducedMotion ? false : { opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
-        exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 16, scale: 0.98 }}
+        exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 16 }}
         transition={{ duration: reducedMotion ? 0 : 0.22, ease: [0.16, 1, 0.3, 1] }}
         className="fixed left-0 right-0 bottom-0 pointer-events-auto px-3 sm:px-6"
         style={{
@@ -338,22 +331,15 @@ export function DiegeticDialogueHud() {
           paddingBottom: diegeticDialogueBottomPadCss(isTouchDevice, !suppressBottomHud),
         }}
       >
-        {breathingGlow && <style>{breathingGlow}</style>}
-        <div
-          className="mx-auto max-w-3xl rounded-xl border border-white/10 bg-black/55 backdrop-blur-lg shadow-2xl overflow-hidden"
-          style={{
-            boxShadow: `0 -4px 40px ${accentColor}15`,
-            animation: reducedMotion ? 'none' : 'diegetic-border-breathe 4s ease-in-out infinite',
-          }}
-        >
+        <div className="mx-auto max-w-3xl hud-filmic-dialogue-plate overflow-hidden">
           <div className="px-4 pt-3 pb-1 flex items-center justify-between gap-2">
             <div className="flex items-center gap-2.5 min-w-0">
               {npcId && (
-                <NPCPortrait npcId={npcId} size="mini" className="!w-8 !h-8 !rounded-lg" />
+                <NPCPortrait npcId={npcId} size="mini" className="!w-8 !h-8 !rounded-sm" />
               )}
               <p
-                className="text-sm font-semibold tracking-wide truncate"
-                style={{ color: accentColor }}
+                className="hud-filmic-kicker truncate"
+                style={{ color: accentColor, letterSpacing: '0.18em' }}
                 id={`diegetic-speaker-${nodeId}`}
               >
                 {speaker}
@@ -362,7 +348,7 @@ export function DiegeticDialogueHud() {
             <button
               type="button"
               onClick={handleClose}
-              className="text-xs text-slate-400 hover:text-slate-200 px-2 py-1 shrink-0"
+              className="hud-filmic-kicker px-2 py-1 shrink-0 hover:text-stone-200"
               aria-label="Закрыть"
             >
               Esc
@@ -370,7 +356,10 @@ export function DiegeticDialogueHud() {
           </div>
 
           {skillCheckBanner && (
-            <p className={`px-4 text-xs font-mono ${skillCheckBanner.success ? 'text-emerald-400' : 'text-rose-400'}`}>
+            <p
+              className="px-4 text-xs font-mono"
+              style={{ color: skillCheckBanner.success ? 'rgba(167,243,208,0.85)' : 'var(--hud-filmic-warn)' }}
+            >
               {skillCheckBanner.success ? '✓' : '✗'} {skillCheckBanner.skill}
             </p>
           )}
@@ -378,22 +367,26 @@ export function DiegeticDialogueHud() {
           <button
             type="button"
             onClick={handleTextAdvance}
-            className="w-full text-left px-4 pb-2 text-sm sm:text-base text-slate-100 leading-relaxed font-serif hover:bg-white/5 transition-colors rounded-md overflow-y-auto"
-            style={{ maxHeight: EXPLORATION_HUD_LAYOUT.DIEGETIC_DIALOGUE_TEXT_MAX_HEIGHT }}
+            className="w-full text-left px-4 pb-2 font-serif text-sm sm:text-base leading-relaxed hover:bg-white/[0.03] transition-colors overflow-y-auto"
+            style={{
+              maxHeight: EXPLORATION_HUD_LAYOUT.DIEGETIC_DIALOGUE_TEXT_MAX_HEIGHT,
+              color: 'var(--hud-filmic-ink)',
+              textShadow: 'var(--hud-filmic-shadow)',
+            }}
             aria-label={controlHint}
           >
             {displayed}
-            {!done && !reducedMotion ? <span className="animate-pulse">▌</span> : null}
+            {!done && !reducedMotion ? <span className="animate-pulse opacity-50">▌</span> : null}
           </button>
 
           {!hasContinueOnly ? (
-            <p className="px-4 pb-2 text-[10px] font-mono text-slate-500 tracking-wide">
+            <p className="px-4 pb-2 hud-filmic-kicker" style={{ letterSpacing: '0.14em' }}>
               {controlHint}
             </p>
           ) : null}
 
           {done && (
-            <div className="px-3 pb-3 flex flex-col gap-1.5 max-h-48 overflow-y-auto">
+            <div className="px-3 pb-3 flex flex-col gap-1 max-h-48 overflow-y-auto">
               <NarrativeChoiceList
                 choices={choiceItems.filter((c) => c.text.trim().length > 0)}
                 accentColor={accentColor}

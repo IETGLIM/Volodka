@@ -4,14 +4,15 @@ export type QuestGuidanceUrgency = 'required' | 'recommended' | 'optional';
 
 export type QuestObjectiveKind = 'active_quest' | 'available_quest' | 'story_guidance';
 
+/** Filmic stone accents — readable without neon cyber glow. */
 export function getQuestUrgencyColor(urgency: QuestGuidanceUrgency): string {
   switch (urgency) {
     case 'required':
-      return '#00ffee';
+      return '#c4b5a0';
     case 'recommended':
-      return '#66ffaa';
+      return '#a8b4bc';
     case 'optional':
-      return '#888888';
+      return '#78716c';
     default: {
       const _exhaustive: never = urgency;
       return _exhaustive;

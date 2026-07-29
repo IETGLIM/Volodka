@@ -311,19 +311,18 @@ export function StoryGuidanceHUD() {
         initial={reducedMotion ? false : { opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: motionDuration }}
-        className="fixed left-1/2 -translate-x-1/2 pointer-events-auto font-mono text-[10px] tracking-wider px-2.5 py-1 rounded-full border hud-button-cyber"
+        className="fixed left-1/2 -translate-x-1/2 pointer-events-auto hud-filmic-kicker px-1 py-1"
         style={{
           top: topPx,
           zIndex: UI_LAYERS.HUD + 2,
-          color: urgencyColor,
-          borderColor: `${urgencyColor}44`,
-          background: 'rgba(0, 8, 16, 0.75)',
-          backdropFilter: 'blur(8px)',
+          color: 'var(--hud-filmic-ink-muted)',
+          background: 'transparent',
+          border: 'none',
         }}
         onClick={handleRestore}
         aria-label="Показать текущую цель"
       >
-        ► Цель
+        Цель
       </motion.button>
     );
   }
@@ -363,112 +362,65 @@ export function StoryGuidanceHUD() {
               openQuestJournal(currentObjective?.questId);
             }
           }}
-          className="relative rounded-md cursor-pointer quest-tracker-strip"
-          style={{
-            background: 'rgba(0, 10, 18, 0.82)',
-            border: `1px solid ${urgencyColor}33`,
-            boxShadow: `0 0 10px ${urgencyColor}12`,
-            backdropFilter: 'blur(10px)',
-          }}
+          className="relative cursor-pointer hud-filmic-objective px-1 pt-1"
           aria-label={`Цель акта ${actNumber}: ${displayText}`}
         >
-          <div className="flex items-start gap-2 px-3 py-2 pr-16">
-            <span
-              className="text-xs font-bold flex-shrink-0 mt-0.5"
-              style={{ color: urgencyColor, textShadow: `0 0 6px ${urgencyColor}44` }}
-              aria-hidden
-            >
-              ►
-            </span>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                <span
-                  className="text-[9px] font-mono tracking-wider font-semibold"
-                  style={{ color: '#00ffeeaa' }}
-                >
-                  ЦЕЛЬ · АКТ {actNumber}
+          <div className="flex flex-col items-center gap-1.5 px-8 sm:px-10">
+            <div className="hud-filmic-rule hud-filmic-rule--wide" aria-hidden />
+            <div className="flex items-center gap-2 flex-wrap justify-center">
+              <span className="hud-filmic-kicker" style={{ color: urgencyColor }}>
+                Акт {actNumber}
+                {typeStripLabel ? ` · ${typeStripLabel}` : ''}
+              </span>
+              {directionHint && !expanded ? (
+                <span className="hud-filmic-kicker truncate max-w-[140px]" style={{ letterSpacing: '0.12em' }}>
+                  {directionHint}
                 </span>
-                {typeStripLabel ? (
-                  <span
-                    className="text-[8px] font-mono tracking-wider px-1 py-px rounded"
+              ) : null}
+            </div>
+            <p
+              className={`hud-filmic-body quest-objective-text ${expanded ? '' : 'line-clamp-2'}`}
+              style={{ maxWidth: '100%' }}
+            >
+              {displayText}
+            </p>
+            {firstReadingHint && !expanded ? (
+              <p className="hud-filmic-body text-[11px] opacity-80" style={{ fontStyle: 'italic' }}>
+                {firstReadingHint}
+              </p>
+            ) : null}
+            {currentObjective && currentObjective.totalObjectives > 0 && !expanded ? (
+              <div className="w-full max-w-[220px] flex items-center gap-2 mt-0.5">
+                <div className="flex-1 h-px overflow-hidden" style={{ background: 'rgba(214,211,209,0.12)' }}>
+                  <div
+                    className="h-full"
                     style={{
-                      color: urgencyColor,
-                      border: `1px solid ${urgencyColor}44`,
-                      background: `${urgencyColor}11`,
+                      width: `${progressPercent}%`,
+                      background: `linear-gradient(90deg, transparent, ${urgencyColor})`,
+                      transition: reducedMotion ? undefined : 'width 0.5s ease',
                     }}
-                  >
-                    {typeStripLabel}
-                  </span>
-                ) : null}
-                {directionHint && !expanded ? (
-                  <span
-                    className="text-[9px] font-mono tracking-wide truncate max-w-[120px]"
-                    style={{ color: '#66ccffaa' }}
-                  >
-                    → {directionHint}
-                  </span>
-                ) : null}
-                {isAvailableQuest && !expanded ? (
-                  <span
-                    className="text-[9px] font-mono tracking-wide ml-auto shrink-0"
-                    style={{ color: `${urgencyColor}cc` }}
-                  >
-                    Журнал · Q
-                  </span>
-                ) : null}
-                {!isAvailableQuest && !expanded && displayText ? (
-                  <span
-                    className="text-[9px] font-mono tracking-wide ml-auto shrink-0 opacity-60"
-                    aria-hidden
-                  >
-                    ▾
+                  />
+                </div>
+                {progressLabel ? (
+                  <span className="hud-filmic-kicker shrink-0" style={{ letterSpacing: '0.08em', fontSize: 8 }}>
+                    {progressLabel}
                   </span>
                 ) : null}
               </div>
-              <p
-                className={`text-xs font-mono leading-snug quest-objective-text ${expanded ? '' : 'line-clamp-2'}`}
-                style={{ color: '#c8e8e8' }}
-              >
-                {displayText}
-              </p>
-              {firstReadingHint && !expanded ? (
-                <p
-                  className="text-[10px] font-mono mt-1 leading-snug"
-                  style={{ color: '#66ccff' }}
-                >
-                  → {firstReadingHint}
-                </p>
-              ) : null}
-              {currentObjective && currentObjective.totalObjectives > 0 && !expanded ? (
-                <div className="mt-1.5 flex items-center gap-2">
-                  <div className="flex-1 h-1 rounded-full overflow-hidden bg-white/8">
-                    <div
-                      className="h-full rounded-full"
-                      style={{
-                        width: `${progressPercent}%`,
-                        background: `linear-gradient(90deg, ${urgencyColor}88, ${urgencyColor})`,
-                        transition: reducedMotion ? undefined : 'width 0.5s ease',
-                      }}
-                    />
-                  </div>
-                  {progressLabel ? (
-                    <span
-                      className="text-[8px] font-mono tabular-nums shrink-0"
-                      style={{ color: `${urgencyColor}aa` }}
-                    >
-                      {progressLabel}
-                    </span>
-                  ) : null}
-                </div>
-              ) : null}
-            </div>
+            ) : null}
+            {isAvailableQuest && !expanded ? (
+              <span className="hud-filmic-kicker" style={{ letterSpacing: '0.18em' }}>
+                Журнал · Q
+              </span>
+            ) : null}
+            <div className="hud-filmic-rule hud-filmic-rule--soft" aria-hidden />
           </div>
 
-          <div className="absolute top-1.5 right-1.5 flex items-center gap-0.5">
+          <div className="absolute top-0 right-0 flex items-center gap-0.5">
             <button
               type="button"
               onClick={handleOpenJournal}
-              className="min-w-[44px] min-h-[44px] w-11 h-11 sm:min-w-0 sm:min-h-0 sm:w-7 sm:h-7 flex items-center justify-center rounded text-slate-400 hover:text-white hover:bg-white/10 transition-colors hud-button-cyber"
+              className="min-w-[44px] min-h-[44px] w-11 h-11 sm:min-w-0 sm:min-h-0 sm:w-7 sm:h-7 flex items-center justify-center rounded-sm text-stone-500 hover:text-stone-200 hover:bg-white/5 transition-colors"
               aria-label="Открыть журнал заданий"
               title="Журнал (Q)"
             >
@@ -477,7 +429,7 @@ export function StoryGuidanceHUD() {
             <button
               type="button"
               onClick={handleDismiss}
-              className="min-w-[44px] min-h-[44px] w-11 h-11 sm:min-w-0 sm:min-h-0 sm:w-7 sm:h-7 flex items-center justify-center rounded text-slate-400 hover:text-white hover:bg-white/10 transition-colors hud-button-cyber"
+              className="min-w-[44px] min-h-[44px] w-11 h-11 sm:min-w-0 sm:min-h-0 sm:w-7 sm:h-7 flex items-center justify-center rounded-sm text-stone-500 hover:text-stone-200 hover:bg-white/5 transition-colors"
               aria-label="Скрыть подсказку цели"
             >
               <X className="size-3.5" />
@@ -491,41 +443,34 @@ export function StoryGuidanceHUD() {
                 animate={{ height: 'auto', opacity: 1 }}
                 exit={reducedMotion ? undefined : { height: 0, opacity: 0 }}
                 transition={{ duration: reducedMotion ? 0 : 0.2 }}
-                className="overflow-hidden border-t px-3 py-2"
-                style={{ borderColor: `${urgencyColor}22` }}
+                className="overflow-hidden px-3 py-2 mt-1"
               >
                 {directionHint ? (
-                  <p className="text-[10px] font-mono mb-1" style={{ color: '#66ccff' }}>
-                    → {directionHint}
-                  </p>
+                  <p className="hud-filmic-body text-[11px] mb-1 opacity-80">{directionHint}</p>
                 ) : null}
                 {firstReadingHint ? (
-                  <p className="text-[10px] font-mono mb-1" style={{ color: '#66ccff' }}>
-                    → {firstReadingHint}
-                  </p>
+                  <p className="hud-filmic-body text-[11px] mb-1 opacity-80">{firstReadingHint}</p>
                 ) : null}
                 {currentObjective?.questTitle ? (
-                  <p className="text-[10px] font-mono" style={{ color: '#889999' }}>
-                    Задание: <span style={{ color: '#ffaa88' }}>{currentObjective.questTitle}</span>
+                  <p className="hud-filmic-kicker mb-1" style={{ letterSpacing: '0.12em' }}>
+                    {currentObjective.questTitle}
                   </p>
                 ) : null}
                 {chapterTitle ? (
-                  <p className="text-[10px] font-mono mt-1" style={{ color: '#668888' }}>
-                    {chapterTitle}
-                  </p>
+                  <p className="hud-filmic-body text-[11px] opacity-70 mt-1">{chapterTitle}</p>
                 ) : null}
                 {progressLabel ? (
-                  <p className="text-[10px] font-mono mt-1" style={{ color: `${urgencyColor}99` }}>
-                    Прогресс: {progressLabel} ({progressPercent}%)
+                  <p className="hud-filmic-kicker mt-1" style={{ letterSpacing: '0.1em', fontSize: 8 }}>
+                    {progressLabel} · {progressPercent}%
                   </p>
                 ) : null}
                 <button
                   type="button"
                   onClick={handleOpenJournal}
-                  className="text-[9px] font-mono mt-1.5 underline-offset-2 hover:underline"
-                  style={{ color: `${urgencyColor}cc` }}
+                  className="hud-filmic-kicker mt-2 underline-offset-2 hover:underline"
+                  style={{ color: 'var(--hud-filmic-accent)' }}
                 >
-                  Q — журнал заданий
+                  Q — журнал
                 </button>
               </motion.div>
             )}
@@ -578,23 +523,15 @@ export function PlayerLostHintToast() {
         className="fixed bottom-24 left-1/2 -translate-x-1/2 pointer-events-auto"
         style={{ zIndex: UI_LAYERS.HUD + 3, maxWidth: 320 }}
       >
-        <div
-          className="flex items-center gap-2 px-3 py-2 rounded-lg"
-          style={{
-            background: 'rgba(0, 10, 18, 0.88)',
-            border: '1px solid #ffaa4433',
-            boxShadow: '0 0 12px #ffaa4412',
-            backdropFilter: 'blur(10px)',
-          }}
-        >
-          <Compass className="size-4 text-amber-400/70 shrink-0" aria-hidden />
-          <p className="text-[11px] font-mono leading-snug text-amber-200/80 flex-1">
+        <div className="flex items-center gap-2 px-3 py-2 hud-filmic-toast">
+          <Compass className="size-3.5 shrink-0" style={{ color: 'var(--hud-filmic-accent)' }} aria-hidden />
+          <p className="hud-filmic-body text-[12px] flex-1" style={{ textAlign: 'left', fontStyle: 'italic' }}>
             {hint}
           </p>
           <button
             type="button"
             onClick={dismiss}
-            className="min-w-[44px] min-h-[44px] w-11 h-11 flex items-center justify-center rounded text-slate-500 hover:text-white hover:bg-white/10 transition-colors shrink-0"
+            className="min-w-[44px] min-h-[44px] w-11 h-11 flex items-center justify-center rounded-sm text-stone-500 hover:text-stone-200 hover:bg-white/5 transition-colors shrink-0"
             aria-label="Закрыть подсказку"
           >
             <X className="size-3.5" />

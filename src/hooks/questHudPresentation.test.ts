@@ -16,9 +16,10 @@ describe('questHudPresentation', () => {
     expect(formatQuestObjectiveProgress(0, 0)).toBe('');
   });
 
-  it('maps urgency to colors', () => {
-    expect(getQuestUrgencyColor('required')).toBe('#00ffee');
-    expect(getQuestUrgencyColor('optional')).toBe('#888888');
+  it('maps urgency to filmic colors', () => {
+    expect(getQuestUrgencyColor('required')).toBe('#c4b5a0');
+    expect(getQuestUrgencyColor('recommended')).toBe('#a8b4bc');
+    expect(getQuestUrgencyColor('optional')).toBe('#78716c');
   });
 
   it('labels quest strip by type and availability', () => {

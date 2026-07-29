@@ -7,6 +7,8 @@ interface HUDButtonProps {
   active?: boolean;
   disabled?: boolean;
   tooltip?: string;
+  /** Filmic exploration chrome — no neon shimmer / glow kitsch. */
+  variant?: 'cyber' | 'filmic';
 }
 
 export function HUDButton({
@@ -16,12 +18,30 @@ export function HUDButton({
   active = false,
   disabled = false,
   tooltip,
+  variant = 'cyber',
 }: HUDButtonProps) {
   const ariaLabel = tooltip ?? label;
+  const filmic = variant === 'filmic';
 
   const handleClick = () => {
     if (!disabled) onClick?.();
   };
+
+  if (filmic) {
+    return (
+      <button
+        type="button"
+        onClick={handleClick}
+        disabled={disabled}
+        aria-disabled={disabled || undefined}
+        aria-label={ariaLabel}
+        title={ariaLabel}
+        className={`group w-11 h-11 sm:w-9 sm:h-9 flex items-center justify-center rounded-sm transition-colors duration-200 relative hud-filmic-topbar-btn focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-stone-400/40 ${active ? 'text-stone-100 bg-white/5' : ''} ${disabled ? 'opacity-40 pointer-events-none' : ''}`}
+      >
+        <span className="relative z-10">{icon}</span>
+      </button>
+    );
+  }
 
   return (
     <button

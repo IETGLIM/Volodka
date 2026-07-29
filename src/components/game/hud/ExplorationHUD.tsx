@@ -34,6 +34,7 @@ import {
   TrendingDown,
   BarChart3,
   Camera,
+  Navigation,
 } from 'lucide-react';
 import { countCollectedMainPoems, TOTAL_MAIN_POEMS } from '@/data/poemCollectionMeta';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
@@ -274,7 +275,7 @@ export function ExplorationHUD(props: HUDProps) {
     { icon: <BookOpen className="size-4" />, label: 'Журнал', shortcut: 'J', onClick: onOpenJournal },
     { icon: <Camera className="size-4" />, label: 'Фото', shortcut: '⇧P', onClick: () => eventBus.emit(PHOTO_EVENTS.toggle, PHOTO_EMPTY_PAYLOAD) },
     { icon: <BarChart3 className="size-4" />, label: 'Статистика', shortcut: 'S', onClick: onOpenStats },
-    { icon: <span className="size-4 flex items-center justify-center text-sm">🧭</span>, label: 'Быстрый переход', shortcut: 'F', onClick: onOpenFastTravel },
+    { icon: <Navigation className="size-4" />, label: 'Быстрый переход', shortcut: 'F', onClick: onOpenFastTravel },
     { icon: <Sparkles className="size-4" />, label: 'Навыки', shortcut: 'T', onClick: onOpenSkillTree },
     { icon: <Sparkles className="size-4" />, label: 'Черты', shortcut: 'V', onClick: onOpenPerks },
     { icon: <ScrollText className="size-4" />, label: 'Доска заданий', shortcut: 'B', onClick: onOpenQuestBoard },
@@ -340,10 +341,8 @@ export function ExplorationHUD(props: HUDProps) {
       {/* ── Top bar (fades when HUD is quiet — crosshair stays) ── */}
       <div className="absolute top-0 left-0 right-0 pointer-events-auto" style={quietStyle}>
         <div
-          className={`relative flex items-center justify-between px-2 py-1.5 sm:px-4 sm:py-2.5 ${diegeticHud ? '' : 'hud-scanline-bar hud-topbar-mount'}`}
-          style={diegeticHud
-            ? { background: 'linear-gradient(180deg, rgba(6,8,14,0.55) 0%, rgba(6,8,14,0.0) 100%)', borderBottom: 'none' }
-            : STYLE_TOP_BAR_BG}
+          className={`relative flex items-center justify-between px-2 py-1.5 sm:px-4 sm:py-2.5 ${diegeticHud ? 'hud-filmic-topbar' : 'hud-scanline-bar hud-topbar-mount'}`}
+          style={diegeticHud ? undefined : STYLE_TOP_BAR_BG}
         >
           {/* Animated gradient border — hidden in diegetic */}
           {!diegeticHud ? (
@@ -352,26 +351,53 @@ export function ExplorationHUD(props: HUDProps) {
 
           {/* Left: Scene name + time */}
           <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
-            <div className="flex items-center gap-1 shrink-0">
-              <div className="w-1.5 h-1.5 rounded-full" style={{ background: karmaStroke(karma), boxShadow: `0 0 6px ${karmaStroke(karma)}40` }} />
-            </div>
+            {!diegeticHud ? (
+              <div className="flex items-center gap-1 shrink-0">
+                <div className="w-1.5 h-1.5 rounded-full" style={{ background: karmaStroke(karma), boxShadow: `0 0 6px ${karmaStroke(karma)}40` }} />
+              </div>
+            ) : null}
             <TimeIcon hour={timeOfDay} />
             <div className="flex flex-col min-w-0">
               <div className="flex items-center gap-1 sm:gap-1.5">
-                <span key={sceneName} className="text-slate-100 text-sm sm:text-base font-semibold tracking-wide truncate neon-text-cyan location-name-glow scene-name-transition">{sceneName}</span>
-                <span className="text-[9px] text-slate-500 font-mono hidden sm:inline">●</span>
-                <span className="text-[10px] text-slate-300/80 font-mono hidden sm:inline" style={{ textShadow: getTimeOfDayShadow(timeOfDay), transition: 'text-shadow 1s ease' }}>{timeLabel(timeOfDay)}</span>
+                <span
+                  key={sceneName}
+                  className={`text-sm sm:text-base tracking-wide truncate scene-name-transition ${
+                    diegeticHud
+                      ? 'font-serif italic text-stone-200/90'
+                      : 'text-slate-100 font-semibold neon-text-cyan location-name-glow'
+                  }`}
+                >
+                  {sceneName}
+                </span>
+                {!diegeticHud ? (
+                  <>
+                    <span className="text-[9px] text-slate-500 font-mono hidden sm:inline">●</span>
+                    <span className="text-[10px] text-slate-300/80 font-mono hidden sm:inline" style={{ textShadow: getTimeOfDayShadow(timeOfDay), transition: 'text-shadow 1s ease' }}>{timeLabel(timeOfDay)}</span>
+                  </>
+                ) : (
+                  <span className="hud-filmic-kicker hidden sm:inline" style={{ letterSpacing: '0.14em' }}>
+                    {formatGameClock(timeOfDay)}
+                  </span>
+                )}
               </div>
             </div>
-            <div className="hidden sm:flex items-center gap-1 px-1.5 py-0.5 rounded border ml-0.5"
-              style={STYLE_CLOCK_BORDER}
-            >
-              <Clock className="size-2.5 text-cyan-500/60" />
-              <span className="text-cyan-400/80 text-[11px] font-mono tabular-nums">{formatGameClock(timeOfDay)}</span>
-            </div>
-            <span className="sm:hidden text-cyan-400/70 text-[10px] font-mono tabular-nums">
-              {formatGameClock(timeOfDay)}
-            </span>
+            {!diegeticHud ? (
+              <>
+                <div className="hidden sm:flex items-center gap-1 px-1.5 py-0.5 rounded border ml-0.5"
+                  style={STYLE_CLOCK_BORDER}
+                >
+                  <Clock className="size-2.5 text-cyan-500/60" />
+                  <span className="text-cyan-400/80 text-[11px] font-mono tabular-nums">{formatGameClock(timeOfDay)}</span>
+                </div>
+                <span className="sm:hidden text-cyan-400/70 text-[10px] font-mono tabular-nums">
+                  {formatGameClock(timeOfDay)}
+                </span>
+              </>
+            ) : (
+              <span className="sm:hidden hud-filmic-kicker tabular-nums">
+                {formatGameClock(timeOfDay)}
+              </span>
+            )}
 
             {/* Karma tier / scene chips — hidden in diegetic exploration */}
             {!diegeticHud && !isOnboarding && <KarmaTierBadge karma={karma} />}
@@ -441,21 +467,25 @@ export function ExplorationHUD(props: HUDProps) {
               data-testid="hud-poem-button"
               onClick={onOpenPoetry}
               animate={
-                reducedMotion || !poemBadgePulse
+                reducedMotion || !poemBadgePulse || diegeticHud
                   ? { scale: 1 }
                   : { scale: [1, 1.08, 1], boxShadow: ['0 0 12px rgba(251,191,36,0.15)', '0 0 28px rgba(251,191,36,0.55)', '0 0 12px rgba(251,191,36,0.15)'] }
               }
               transition={
-                reducedMotion || !poemBadgePulse
+                reducedMotion || !poemBadgePulse || diegeticHud
                   ? { duration: 0 }
                   : { duration: 1.4, repeat: Infinity, ease: 'easeInOut' }
               }
-              className="relative flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-1 rounded-md text-xs border transition-colors hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60"
+              className={`relative flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-1 text-xs transition-colors focus-visible:outline-none ${
+                diegeticHud
+                  ? 'rounded-sm border border-transparent hover:border-stone-500/25 hover:bg-white/5 focus-visible:ring-1 focus-visible:ring-stone-400/40'
+                  : 'rounded-md border hover:scale-105 focus-visible:ring-2 focus-visible:ring-amber-400/60'
+              }`}
               title="Стихи [P]"
               aria-label={`Стихи: ${mainPoemCount} из ${totalPoems}`}
-              style={poemBadgePulse ? STYLE_POEM_BG_PULSE : STYLE_POEM_BG_IDLE}
+              style={diegeticHud ? undefined : (poemBadgePulse ? STYLE_POEM_BG_PULSE : STYLE_POEM_BG_IDLE)}
             >
-              {poemBadgePulse ? (
+              {!diegeticHud && poemBadgePulse ? (
                 <span
                   className="absolute -top-1.5 -right-1 text-[7px] font-mono font-bold px-1 py-px rounded bg-amber-400 text-black tracking-wider"
                   aria-hidden
@@ -463,30 +493,39 @@ export function ExplorationHUD(props: HUDProps) {
                   NEW
                 </span>
               ) : null}
-              <span className="text-sm">📖</span>
-              <span className="text-amber-200 font-semibold hidden sm:inline" style={STYLE_POEM_TEXT_SHADOW}>Стихи:</span>
-              <AnimatedCounter value={mainPoemCount} className="text-amber-300 font-bold" style={STYLE_POEM_COUNTER_SHADOW} />
-              <span className="text-amber-500/60 hidden sm:inline">/</span>
-              <span className="text-amber-400/70 hidden sm:inline">{totalPoems}</span>
+              <BookOpen className={`size-3.5 ${diegeticHud ? 'text-stone-400' : 'text-amber-300/90'}`} />
+              {!diegeticHud ? (
+                <span className="text-amber-200 font-semibold hidden sm:inline" style={STYLE_POEM_TEXT_SHADOW}>Стихи:</span>
+              ) : null}
+              <AnimatedCounter
+                value={mainPoemCount}
+                className={diegeticHud ? 'text-stone-300 font-mono text-[11px]' : 'text-amber-300 font-bold'}
+                style={diegeticHud ? undefined : STYLE_POEM_COUNTER_SHADOW}
+              />
+              <span className={`hidden sm:inline ${diegeticHud ? 'text-stone-600' : 'text-amber-500/60'}`}>/</span>
+              <span className={`hidden sm:inline ${diegeticHud ? 'text-stone-500 font-mono text-[11px]' : 'text-amber-400/70'}`}>{totalPoems}</span>
             </motion.button>
 
-            <div className="w-px h-4 bg-slate-700/25 mx-0.5" />
+            <div className={`w-px h-4 mx-0.5 ${diegeticHud ? 'bg-stone-700/30' : 'bg-slate-700/25'}`} />
 
             {/* Status effects count badge */}
             {activeStatusEffectCount > 0 && (
               <div
-                className="flex items-center gap-1 px-1.5 py-0.5 rounded-md border cyber-tooltip"
-                data-tooltip={`Эффекты: ${activeStatusEffectCount}`}
-                style={STYLE_STATUS_EFFECTS_BADGE}
+                className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md border ${diegeticHud ? '' : 'cyber-tooltip'}`}
+                data-tooltip={diegeticHud ? undefined : `Эффекты: ${activeStatusEffectCount}`}
+                style={diegeticHud
+                  ? { borderColor: 'rgba(168,162,158,0.18)', background: 'transparent' }
+                  : STYLE_STATUS_EFFECTS_BADGE}
               >
-                <Activity className="size-3 text-slate-400" />
-                <span className="text-[9px] text-slate-300/70 font-mono font-semibold">{activeStatusEffectCount}</span>
+                <Activity className={`size-3 ${diegeticHud ? 'text-stone-500' : 'text-slate-400'}`} />
+                <span className={`text-[9px] font-mono font-semibold ${diegeticHud ? 'text-stone-400' : 'text-slate-300/70'}`}>{activeStatusEffectCount}</span>
               </div>
             )}
 
             {/* Quest button with notification badge */}
             <div className="relative" data-testid="hud-quest-button">
               <HUDButton
+                variant={diegeticHud ? 'filmic' : 'cyber'}
                 icon={<ScrollText className="size-3.5 sm:size-4" />}
                 label={`Задания [Q]${activeQuestCount > 0 ? ` · ${activeQuestCount} активных` : ''}`}
                 onClick={onOpenQuests}
@@ -512,10 +551,14 @@ export function ExplorationHUD(props: HUDProps) {
                           ? { scale: { duration: 1.2, repeat: Infinity, ease: 'easeInOut' }, opacity: { duration: 0.2 } }
                           : { type: 'spring', stiffness: 500, damping: 25 }
                     }
-                    className={`absolute -top-1 -right-1 min-w-4 h-4 rounded-full text-[8px] font-bold text-black flex items-center justify-center px-1 cyber-badge-dot ${
-                      questBadgePulse ? 'bg-amber-500' : 'bg-cyan-600/90'
+                    className={`absolute -top-1 -right-1 min-w-4 h-4 rounded-full text-[8px] font-bold flex items-center justify-center px-1 ${
+                      diegeticHud
+                        ? 'bg-stone-300 text-stone-900'
+                        : questBadgePulse
+                          ? 'bg-amber-500 text-black cyber-badge-dot'
+                          : 'bg-cyan-600/90 text-black cyber-badge-dot'
                     }`}
-                    style={{
+                    style={diegeticHud ? undefined : {
                       boxShadow: questBadgePulse
                         ? '0 0 8px rgba(251,191,36,0.5)'
                         : '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.35)',
@@ -527,24 +570,27 @@ export function ExplorationHUD(props: HUDProps) {
               </AnimatePresence>
             </div>
 
-            <HUDButton icon={<Package className="size-3.5 sm:size-4" />} label="Инвентарь [I]" onClick={onOpenInventory} tooltip="Инвентарь [I]" />
+            <HUDButton variant={diegeticHud ? 'filmic' : 'cyber'} icon={<Package className="size-3.5 sm:size-4" />} label="Инвентарь [I]" onClick={onOpenInventory} tooltip="Инвентарь [I]" />
 
-            <HUDButton icon={<Save className="size-3.5 sm:size-4" />} label="Сохранить" onClick={handleSave} tooltip="Сохранить [F5]" />
+            <HUDButton variant={diegeticHud ? 'filmic' : 'cyber'} icon={<Save className="size-3.5 sm:size-4" />} label="Сохранить" onClick={handleSave} tooltip="Сохранить [F5]" />
 
             {/* Weather status indicator */}
             {currentWeather !== 'clear' && (
               <div
-                className="hidden sm:flex items-center gap-1 px-1.5 py-0.5 rounded-md border weather-badge-shimmer"
-                style={STYLE_WEATHER_BADGE}
+                className={`hidden sm:flex items-center gap-1 px-1.5 py-0.5 rounded-md border ${diegeticHud ? '' : 'weather-badge-shimmer'}`}
+                style={diegeticHud
+                  ? { borderColor: 'rgba(168,162,158,0.16)', background: 'transparent' }
+                  : STYLE_WEATHER_BADGE}
                 title={getWeatherDescription(currentWeather)}
               >
-                <WeatherIcon type={currentWeather} className="size-3 weather-icon-bob" />
+                <WeatherIcon type={currentWeather} className={`size-3 ${diegeticHud ? '' : 'weather-icon-bob'}`} />
               </div>
             )}
 
             {/* More dropdown trigger */}
             <div className="relative" ref={moreMenuRef}>
               <HUDButton
+                variant={diegeticHud ? 'filmic' : 'cyber'}
                 icon={<MoreVertical className="size-3.5 sm:size-4" />}
                 label={overflowMenuLabel}
                 onClick={() => setMoreMenuOpen((prev) => !prev)}
@@ -559,18 +605,24 @@ export function ExplorationHUD(props: HUDProps) {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -8, scale: 0.95 }}
                     transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
-                    className="absolute right-0 top-full mt-1.5 w-52 rounded-lg border backdrop-blur-xl overflow-hidden panel-corner-accent panel-data-stream more-menu-enhanced"
-                    style={{ ...STYLE_MORE_MENU_BG, zIndex: UI_LAYERS.HUD + 5 }}
+                    className={`absolute right-0 top-full mt-1.5 w-52 overflow-hidden ${
+                      diegeticHud
+                        ? 'hud-filmic-plate rounded-sm'
+                        : 'rounded-lg border backdrop-blur-xl panel-corner-accent panel-data-stream more-menu-enhanced'
+                    }`}
+                    style={diegeticHud
+                      ? { zIndex: UI_LAYERS.HUD + 5 }
+                      : { ...STYLE_MORE_MENU_BG, zIndex: UI_LAYERS.HUD + 5 }}
                   >
-                    <div className="px-3 py-2 border-b border-slate-700/30">
-                      <span className="text-[10px] text-slate-500 font-mono uppercase tracking-widest">Действия</span>
+                    <div className={`px-3 py-2 border-b ${diegeticHud ? 'border-stone-700/30' : 'border-slate-700/30'}`}>
+                      <span className={`text-[10px] uppercase tracking-widest ${diegeticHud ? 'hud-filmic-kicker' : 'text-slate-500 font-mono'}`}>Действия</span>
                     </div>
                     <div className="py-1 px-1 max-h-64 overflow-y-auto">
                       {secondaryActions.map((action, idx) => (
                         <div
                           key={action.label}
-                          className="more-menu-item-stagger"
-                          style={{ animationDelay: `${idx * 30}ms` }}
+                          className={diegeticHud ? undefined : 'more-menu-item-stagger'}
+                          style={diegeticHud ? undefined : { animationDelay: `${idx * 30}ms` }}
                         >
                           <HUDMenuItem
                             icon={action.icon}
@@ -582,36 +634,42 @@ export function ExplorationHUD(props: HUDProps) {
                         </div>
                       ))}
                     </div>
-                    <div className="px-3 py-1.5 border-t border-slate-700/30">
-                      <div className="flex items-center justify-between">
-                        {import.meta.env.DEV && (
-                          <span className="text-[8px] text-slate-400 font-mono">volodka://actions</span>
-                        )}
-                        <div className="flex items-center gap-1">
-                          <kbd className="cyber-keyboard-hint">Esc</kbd>
-                          <span className="text-[8px] text-slate-500">закрыть</span>
+                    {!diegeticHud ? (
+                      <div className="px-3 py-1.5 border-t border-slate-700/30">
+                        <div className="flex items-center justify-between">
+                          {import.meta.env.DEV && (
+                            <span className="text-[8px] text-slate-400 font-mono">volodka://actions</span>
+                          )}
+                          <div className="flex items-center gap-1">
+                            <kbd className="cyber-keyboard-hint">Esc</kbd>
+                            <span className="text-[8px] text-slate-500">закрыть</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    ) : null}
                   </motion.div>
                 )}
               </AnimatePresence>
             </div>
 
-            <div className="hidden lg:flex items-center px-1.5 py-0.5 rounded border border-slate-700/20 bg-slate-900/30">
-              <kbd className="cyber-keyboard-hint">F1</kbd>
-              <span className="text-[9px] text-slate-400 ml-1">Справка</span>
-            </div>
+            {!diegeticHud ? (
+              <div className="hidden lg:flex items-center px-1.5 py-0.5 rounded border border-slate-700/20 bg-slate-900/30">
+                <kbd className="cyber-keyboard-hint">F1</kbd>
+                <span className="text-[9px] text-slate-400 ml-1">Справка</span>
+              </div>
+            ) : null}
           </div>
         </div>
 
-        {/* Bottom edge glow line */}
-        <motion.div
-          className="h-px mx-4"
-          animate={{ opacity: [0.6, 1, 0.6] }}
-          transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-          style={STYLE_BOTTOM_GLOW_LINE}
-        />
+        {/* Bottom edge glow line — stripped in diegetic */}
+        {!diegeticHud ? (
+          <motion.div
+            className="h-px mx-4"
+            animate={{ opacity: [0.6, 1, 0.6] }}
+            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+            style={STYLE_BOTTOM_GLOW_LINE}
+          />
+        ) : null}
       </div>
 
       {/* Quest objective: single strip in StoryGuidanceHUD (below compass) — not duplicated here */}
@@ -620,38 +678,46 @@ export function ExplorationHUD(props: HUDProps) {
       <AnimatePresence>
         {showSaveIndicator && (
           <motion.div
-            initial={{ opacity: 0, y: -10, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -10, scale: 0.9 }}
-            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute top-16 right-3 sm:top-20 sm:right-4 flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-900/80 border border-cyan-900/30 backdrop-blur-md save-toast-animated overflow-hidden"
-            style={{ zIndex: UI_LAYERS.HUD + 1, boxShadow: '0 0 12px rgba(34,211,238,0.25), inset 0 0 12px rgba(34,211,238,0.05)' }}
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+            className={`absolute top-16 right-3 sm:top-20 sm:right-4 flex items-center gap-2 px-3 py-2 overflow-hidden ${
+              diegeticHud ? 'hud-filmic-toast rounded-sm' : 'rounded-lg bg-slate-900/80 border border-cyan-900/30 backdrop-blur-md save-toast-animated'
+            }`}
+            style={diegeticHud
+              ? { zIndex: UI_LAYERS.HUD + 1 }
+              : { zIndex: UI_LAYERS.HUD + 1, boxShadow: '0 0 12px rgba(34,211,238,0.25), inset 0 0 12px rgba(34,211,238,0.05)' }}
           >
-            {/* Animated progress bar */}
-            <motion.div
-              className="absolute bottom-0 left-0 h-[2px] bg-cyan-400/70"
-              initial={{ width: '0%' }}
-              animate={{ width: '100%' }}
-              transition={{ duration: 2, ease: 'linear' }}
-            />
-            {/* Scanline overlay */}
-            <div
-              className="absolute inset-0 pointer-events-none opacity-10"
-              style={{
-                backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(34,211,238,0.15) 2px, rgba(34,211,238,0.15) 4px)',
-              }}
-            />
-            {/* Slot label */}
-            <span className="absolute top-0.5 right-1.5 text-[8px] font-mono tracking-widest text-cyan-600/50 select-none">СЛОТ АВТО</span>
-            {/* Cyan pulse glow border */}
-            <motion.div
-              className="absolute inset-0 rounded-lg pointer-events-none"
-              initial={{ boxShadow: '0 0 6px rgba(34,211,238,0.3), inset 0 0 6px rgba(34,211,238,0.05)' }}
-              animate={{ boxShadow: ['0 0 6px rgba(34,211,238,0.3), inset 0 0 6px rgba(34,211,238,0.05)', '0 0 18px rgba(34,211,238,0.5), inset 0 0 10px rgba(34,211,238,0.1)', '0 0 6px rgba(34,211,238,0.3), inset 0 0 6px rgba(34,211,238,0.05)'] }}
-              transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
-            />
-            <Save className="size-3.5 text-cyan-400" />
-            <span className="text-xs text-cyan-300 font-medium">💾 Сохранено</span>
+            {!diegeticHud ? (
+              <>
+                <motion.div
+                  className="absolute bottom-0 left-0 h-[2px] bg-cyan-400/70"
+                  initial={{ width: '0%' }}
+                  animate={{ width: '100%' }}
+                  transition={{ duration: 2, ease: 'linear' }}
+                />
+                <div
+                  className="absolute inset-0 pointer-events-none opacity-10"
+                  style={{
+                    backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(34,211,238,0.15) 2px, rgba(34,211,238,0.15) 4px)',
+                  }}
+                />
+                <span className="absolute top-0.5 right-1.5 text-[8px] font-mono tracking-widest text-cyan-600/50 select-none">СЛОТ АВТО</span>
+                <motion.div
+                  className="absolute inset-0 rounded-lg pointer-events-none"
+                  initial={{ boxShadow: '0 0 6px rgba(34,211,238,0.3), inset 0 0 6px rgba(34,211,238,0.05)' }}
+                  animate={{ boxShadow: ['0 0 6px rgba(34,211,238,0.3), inset 0 0 6px rgba(34,211,238,0.05)', '0 0 18px rgba(34,211,238,0.5), inset 0 0 10px rgba(34,211,238,0.1)', '0 0 6px rgba(34,211,238,0.3), inset 0 0 6px rgba(34,211,238,0.05)'] }}
+                  transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
+                />
+              </>
+            ) : (
+              <div className="absolute bottom-0 left-0 right-0 h-px" style={{ background: 'linear-gradient(90deg, transparent, var(--hud-filmic-rule), transparent)' }} />
+            )}
+            <Save className={`size-3.5 ${diegeticHud ? 'text-stone-400' : 'text-cyan-400'}`} />
+            <span className={diegeticHud ? 'hud-filmic-body text-[12px]' : 'text-xs text-cyan-300 font-medium'}>
+              {diegeticHud ? 'Сохранено' : 'Сохранено'}
+            </span>
           </motion.div>
         )}
       </AnimatePresence>
@@ -925,9 +991,8 @@ export function ExplorationHUD(props: HUDProps) {
         </div>
       </div>
 
-      {/* ── Mobile compact stats bar — ENHANCED ── */}
-      {/* Hidden during onboarding (same gate as desktop stats panel). */}
-      <div className={`absolute top-12 left-2 right-2 pointer-events-auto ${isOnboarding ? 'hidden' : 'lg:hidden'}`} style={quietStyle}>
+      {/* ── Mobile compact stats bar — hidden in diegetic strip ── */}
+      <div className={`absolute top-12 left-2 right-2 pointer-events-auto ${diegeticHud || isOnboarding ? 'hidden' : 'lg:hidden'}`} style={quietStyle}>
         <div
           className={`flex items-center gap-2.5 px-3 py-2 rounded-xl border backdrop-blur-xl panel-scanlines-subtle ${isLowEnergy || isHighStress ? 'warning-pulse' : ''}`}
           style={{
@@ -992,8 +1057,8 @@ export function ExplorationHUD(props: HUDProps) {
       {/* ── HUD Notification Feed — hidden in diegetic strip ── */}
       {!diegeticHud ? <HUDNotificationFeed /> : null}
 
-      {/* ── Contextual hint (floating bottom center) ── */}
-      {!diegeticHud ? <ContextualHint hint={currentHint} onDismiss={dismissHint} /> : null}
+      {/* ── Contextual hint (floating bottom center) — filmic captions stay in diegetic ── */}
+      <ContextualHint hint={currentHint} onDismiss={dismissHint} />
 
       {/* ── Quest direction arrow — StoryGuidanceHUD owns diegetic quest ── */}
       {!diegeticHud ? <QuestDirectionArrow /> : null}
