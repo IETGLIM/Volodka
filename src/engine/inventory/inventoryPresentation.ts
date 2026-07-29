@@ -146,7 +146,6 @@ export function filterAndSortInventoryViews(
 export function canUseInventoryItem(view: InventoryItemView): boolean {
   if (!view.def) return false;
   if (view.def.useMessage) return true;
-  if (view.def.linkedContent) return true;
   return (
     (view.def.category === 'consumable'
       || view.def.category === 'book'

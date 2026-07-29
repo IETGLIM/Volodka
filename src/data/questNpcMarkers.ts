@@ -7,14 +7,6 @@ export const QUEST_OBJECTIVE_NPC_HINTS: Readonly<
   night_city_call: {
     enter_cafe: 'cafe_barista',
   },
-  maria_connection: {
-    meet_maria: 'maria',
-    accept_chip: 'maria',
-  },
-  cafe_street_whisper: {
-    ask_barista_tip: 'cafe_barista',
-    spot_alley_silhouette: 'maria',
-  },
   solnysh_comfort: {
     talk_solnysh: 'solnysh',
     comfort_solnysh: 'solnysh',
@@ -39,15 +31,6 @@ export const QUEST_OBJECTIVE_SCENE_HINTS: Readonly<
     reach_street: { sceneId: 'street_night', position: [0, 0.01, 0] },
     enter_cafe: { sceneId: 'cafe_evening', position: [0, 0, 1.0] },
     feel_city_pulse: { sceneId: 'street_night', position: [-2.5, 0.01, 3.0] },
-  },
-  maria_connection: {
-    meet_maria: { sceneId: 'street_night', position: [-4.0, 0.01, -1.5] },
-    accept_chip: { sceneId: 'street_night', position: [-4.0, 0.01, -1.5] },
-    read_maria_poem: { sceneId: 'street_night', position: [-4.0, 0.01, -1.5] },
-  },
-  cafe_street_whisper: {
-    ask_barista_tip: { sceneId: 'cafe_evening', position: [0, 0.5, -4.0] },
-    spot_alley_silhouette: { sceneId: 'street_night', position: [-4.0, 0.01, -1.5] },
   },
   solnysh_comfort: {
     talk_solnysh: { sceneId: 'volodka_corridor', position: [0, 0, 1.5] },

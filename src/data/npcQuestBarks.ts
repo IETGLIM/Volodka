@@ -49,26 +49,6 @@ export const NPC_QUEST_BARKS: Record<string, NpcQuestBarkEntry[]> = {
   ],
   maria: [
     {
-      questId: 'maria_connection',
-      objectiveId: 'meet_maria',
-      text: 'Я здесь. В тени. Чип — не подарок. Это тест: услышишь ли стих между строк.',
-    },
-    {
-      questId: 'maria_connection',
-      objectiveId: 'accept_chip',
-      text: 'Возьми чип. Гильдия боится слов сильнее вирусов.',
-    },
-    {
-      questId: 'maria_connection',
-      objectiveId: 'read_maria_poem',
-      text: 'Прочитай. Потом — кафе. Там уже шепчут твоё имя.',
-    },
-    {
-      questId: 'cafe_street_whisper',
-      objectiveId: 'spot_alley_silhouette',
-      text: 'Бариста правильно сказал. Я ждала, пока город сам тебя приведёт.',
-    },
-    {
       questId: 'machine_confession',
       text: '«Заря-М» зовёт на завод. Ночью патрули реже — там она расскажет, что скрывала.',
     },
@@ -172,23 +152,6 @@ export const NPC_QUEST_BARKS: Record<string, NpcQuestBarkEntry[]> = {
       questId: 'echo_of_vladimir',
       objectiveId: 'find_kate_clue',
       text: 'Тайник Владимира в библиотеке — не на карте. Я покажу, если ты готов к последнему стиху.',
-    },
-  ],
-  cafe_barista: [
-    {
-      questId: 'cafe_street_whisper',
-      objectiveId: 'ask_barista_tip',
-      text: 'Спроси про ночных гостей. Я не называю имён — только силуэты у подъезда.',
-    },
-    {
-      questId: 'cafe_street_whisper',
-      objectiveId: 'spot_alley_silhouette',
-      text: 'Выйди. Переулок. Не смотри прямо — пусть город вас представит.',
-    },
-    {
-      questId: 'night_city_call',
-      objectiveId: 'feel_city_pulse',
-      text: 'Улица сегодня громче. Скамейка или башня — город сам подскажет.',
     },
   ],
 };

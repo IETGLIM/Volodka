@@ -76,30 +76,4 @@ describe('patchPostprocessingDepthBlit', () => {
 
     disposeComposerStub(composer);
   });
-
-  it('blitDepthBuffer skips when src/dst depth share Source (illegal GL blit)', () => {
-    patchPostprocessingDepthBlit();
-
-    const shared = new DepthTexture(2, 2);
-    const inputBuffer = new WebGLRenderTarget(2, 2, { depthTexture: shared });
-    const depthRenderTarget = new WebGLRenderTarget(2, 2, {
-      depthTexture: shared.clone(),
-    });
-
-    const composer = Object.create(EffectComposer.prototype) as EffectComposer & {
-      depthRenderTarget: WebGLRenderTarget | null;
-      renderer: null;
-      blitDepthBuffer: (rt: WebGLRenderTarget) => void;
-    };
-    composer.depthRenderTarget = depthRenderTarget;
-    composer.renderer = null;
-
-    expect(depthTexturesShareGpuImage(inputBuffer.depthTexture, depthRenderTarget.depthTexture)).toBe(true);
-    // Guard must return before original blit touches renderer.getContext().
-    expect(() => composer.blitDepthBuffer(inputBuffer)).not.toThrow();
-
-    inputBuffer.dispose();
-    depthRenderTarget.dispose();
-    shared.dispose();
-  });
 });

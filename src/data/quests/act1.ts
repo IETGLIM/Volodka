@@ -97,21 +97,18 @@ export const QUESTS_ACT1: QuestDefinition[] = [
   {
     id: 'maria_connection',
     title: 'Связь с Викторией',
-    description:
-      'После пульса города в переулке ждёт незнакомка — Виктория. Она видела твой код в архивах и протягивает чип со стёртым стихом. Возьми его и прочитай — это первый мост к Сети.',
+    description: 'Таинственная незнакомка на улице знает о тебе больше, чем следует. Кто она? И почему доверяет именно тебе?',
     act: 1,
     faction: undefined,
     questType: 'main',
     difficulty: 'medium',
-    hint: 'Улица ночью → переулок у подъезда → чип → стих. Бариста в «Синей яме» может подсказать, кого искать.',
-    requiresQuests: ['night_city_call'],
-    spineOrder: 3,
+    hint: 'Гуляй по улице ночью — незнакомка сама тебя найдёт.',
     objectives: [
       {
         id: 'meet_maria',
-        description: 'Встретить Викторию на ночной улице',
-        type: 'flag_set',
-        target: 'met_maria',
+        description: 'Встретить Викторию на улице',
+        type: 'npc_talked',
+        target: 'maria',
         completed: false,
       },
       {
@@ -134,52 +131,9 @@ export const QUESTS_ACT1: QuestDefinition[] = [
       { type: 'addSkill', skill: 'empathy', value: 2 },
       { type: 'addKarma', value: 5 },
       { type: 'addXp', value: 75 },
-      { type: 'setFlag', flag: 'maria_connection_done', flagValue: true },
-      { type: 'npcChange', npcId: 'maria', npcChange: { relation: 8 } },
     ],
     linkedStoryNodeId: 'maria_curious',
-    linkedStoryNodeIds: ['maria_curious', 'street_bench_view', 'maria_chip_trust'],
     questGiverNpcId: 'maria',
-  },
-
-  /* ─────────────── QUEST 1c: Barista street whisper (side bridge) ─────────────── */
-  {
-    id: 'cafe_street_whisper',
-    title: 'Шёпот за стойкой',
-    description:
-      'В «Синей яме» бариста знает тех, кто не заказывает кофе. Спроси про ночных гостей — и выйди на улицу: силуэт в переулке уже смотрит на тебя.',
-    act: 1,
-    faction: undefined,
-    questType: 'side',
-    difficulty: 'easy',
-    hint: 'Стойка кафе → вопрос про необычных клиентов → переулок у подъезда.',
-    requiresQuests: ['first_reading'],
-    objectives: [
-      {
-        id: 'ask_barista_tip',
-        description: 'Узнать у баристы про ночную незнакомку',
-        type: 'flag_set',
-        target: 'barista_maria_hint',
-        completed: false,
-      },
-      {
-        id: 'spot_alley_silhouette',
-        description: 'Заметить силуэт Виктории в переулке',
-        type: 'flag_set',
-        target: 'spotted_maria',
-        completed: false,
-      },
-    ],
-    rewards: [
-      { type: 'addSkill', skill: 'intuition', value: 2 },
-      { type: 'addKarma', value: 3 },
-      { type: 'addXp', value: 40 },
-      { type: 'npcChange', npcId: 'cafe_barista', npcChange: { relation: 5 } },
-      { type: 'setFlag', flag: 'cafe_street_whisper_done', flagValue: true },
-    ],
-    linkedStoryNodeId: 'cafe_barista',
-    linkedStoryNodeIds: ['cafe_barista', 'cafe_barista_victoria_whisper', 'street_bench_view'],
-    questGiverNpcId: 'cafe_barista',
   },
 
   /* ─────────────── QUEST 3: IT guild incident ─────────────── */

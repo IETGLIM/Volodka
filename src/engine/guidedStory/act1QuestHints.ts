@@ -18,36 +18,17 @@ function objectiveDone(quest: QuestState, objectiveId: string): boolean {
 }
 
 /** Связь с Викторией — street meet → chip → poem. */
-export function getMariaConnectionHint(currentSceneId?: string): string | null {
+export function getMariaConnectionHint(): string | null {
   const quest = findActiveQuest('maria_connection');
   if (!quest) return null;
   if (!objectiveDone(quest, 'meet_maria')) {
-    return currentSceneId === 'street_night'
-      ? 'Переулок у подъезда — Виктория ждёт в тени [E]'
-      : 'Выйди на ночную улицу — Виктория в переулке у подъезда';
+    return 'Выйди на ночную улицу — Виктория сама тебя найдёт';
   }
   if (!objectiveDone(quest, 'accept_chip')) {
-    return 'Прими чип данных у Виктории — в диалоге или в истории встречи';
+    return 'Прими чип данных у Виктории [E] — это ключ к её стиху';
   }
   if (!objectiveDone(quest, 'read_maria_poem')) {
-    return 'Открой чип в инвентаре или дочитай стих в сцене встречи';
-  }
-  return null;
-}
-
-/** Шёпот за стойкой — barista tip → alley silhouette. */
-export function getCafeStreetWhisperHint(currentSceneId: string): string | null {
-  const quest = findActiveQuest('cafe_street_whisper');
-  if (!quest) return null;
-  if (!objectiveDone(quest, 'ask_barista_tip')) {
-    return currentSceneId === 'cafe_evening'
-      ? 'Спроси баристу про ночных гостей у стойки [E]'
-      : 'Зайди в «Синюю яму» — бариста знает про силуэт у подъезда';
-  }
-  if (!objectiveDone(quest, 'spot_alley_silhouette')) {
-    return currentSceneId === 'street_night'
-      ? 'Глянь в переулок у подъезда — силуэт уже смотрит на тебя'
-      : 'Выйди на ночную улицу — ищи силуэт в переулке';
+    return 'Открой чип в инвентаре / журнале стихов и прочитай стихотворение';
   }
   return null;
 }

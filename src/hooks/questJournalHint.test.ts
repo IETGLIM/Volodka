@@ -10,8 +10,6 @@ vi.mock('@/engine/guidedStory/firstReadingHint', () => ({
 
 vi.mock('@/engine/guidedStory/act1QuestHints', () => ({
   getMariaConnectionHint: () => 'Выйди на ночную улицу — Виктория сама тебя найдёт',
-  getCafeStreetWhisperHint: () => 'Спроси баристу про ночных гостей у стойки [E]',
-  getNightCityCallHint: () => 'Открой дверь в коридор [E] — город уже зовёт',
   getIncidentScrollHint: () => 'Иди в офис IT-гильдии — Александр ждёт у инцидента #4729',
   getPoetryCollectionHint: () => 'Следующий стих: Рабочий стол',
   getVaultBackupTrialHint: () => 'Вернись в офис IT-гильдии — коллега знает про Хранилище',

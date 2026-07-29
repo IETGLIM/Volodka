@@ -56,18 +56,9 @@ describe('Act 1 extended story nodes', () => {
       'corridor_letter_read',
       'zarema_radio_request',
       'cafe_albert_riddle_solved',
-      'maria_chip_trust',
     ] as const;
     for (const id of ids) {
       expect(GOLDEN_PATH_BRANCH_HINTS[id], id).toBeTruthy();
     }
-  });
-
-  it('maria_chip_trust grants poem and returns to cafe spine', () => {
-    const node = STORY_NODES_ACT1_EXTENDED.maria_chip_trust;
-    expect(node.effects).toContainEqual({ type: 'collectPoem', poemId: 'poem_6' });
-    const golden = node.choices.filter((c) => c.goldenPath === true);
-    expect(golden).toHaveLength(1);
-    expect(golden[0]?.next).toBe('cafe_enter');
   });
 });
