@@ -155,8 +155,12 @@ function disposeSkeleton(ctx: DisposeContext, skeleton: THREE.Skeleton | null | 
 
 function disposeSkinnedMeshExtras(ctx: DisposeContext, mesh: THREE.SkinnedMesh): void {
   disposeSkeleton(ctx, mesh.skeleton);
-  mesh.skeleton = null as unknown as THREE.Skeleton;
+  // Do NOT assign null. three WebGLObjects.update() calls skeleton.update() with
+  // no null guard; EffectComposer/RenderPass can still visit the mesh for one
+  // more frame after dispose → "Cannot read properties of null (reading 'update')".
+  mesh.skeleton = new THREE.Skeleton([]);
   mesh.bindMatrix.identity();
+  mesh.visible = false;
 }
 
 function disposeDrawable(

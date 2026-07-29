@@ -50,8 +50,27 @@ describe('disposeObject3DTree', () => {
     expect(geometry.dispose).toHaveBeenCalled();
     expect(material.dispose).toHaveBeenCalled();
     expect(boneTexture.dispose).toHaveBeenCalled();
-    expect(skinned.skeleton).toBeNull();
+    // Keep a live empty skeleton so WebGLObjects.skeleton.update() cannot crash
+    // if EffectComposer still visits the mesh after dispose.
+    expect(skinned.skeleton).toBeInstanceOf(THREE.Skeleton);
+    expect(skinned.skeleton.bones).toHaveLength(0);
+    expect(skinned.visible).toBe(false);
   });
+
+  it('disposed SkinnedMesh survives skeleton.update() without throwing', () => {
+    const geometry = new THREE.BoxGeometry(1, 1, 1);
+    const material = new THREE.MeshStandardMaterial({ color: '#fff' });
+    const skinned = new THREE.SkinnedMesh(geometry, material);
+    const bone = new THREE.Bone();
+    skinned.bind(new THREE.Skeleton([bone]), new THREE.Matrix4());
+    const group = new THREE.Group();
+    group.add(skinned);
+
+    disposeObject3DTree(group);
+
+    expect(() => skinned.skeleton.update()).not.toThrow();
+  });
+
 
   it('disposeAnimationMixer stops actions and uncaches root', () => {
     const root = new THREE.Group();

@@ -7,11 +7,17 @@
  *
  *  PERF: Classic SSAO removed in favor of gated N8AO. DOF only during dialogue/cutscene.
  *  AA: native MSAA disabled on composer (multisampling=0); SMAA closes edge crawl on high/ultra.
+ *
+ *  DEPTH: postprocessing 6.39 stable-depth blit used DepthTexture.clone() which shares
+ *  Three.js Source → identical GL depth image on blit (GL_INVALID_OPERATION). Patched in
+ *  patchPostprocessingDepthBlit before any EffectComposer mounts.
  */
 
 import { useState, useEffect, useLayoutEffect, useRef, useMemo, type ComponentProps } from 'react';
 import { useThree } from '@react-three/fiber';
 import * as THREE from 'three';
+// Side-effect: patch EffectComposer depth blit before R3F postprocessing mounts.
+import '@/engine/three/patchPostprocessingDepthBlit';
 import {
   EffectComposer,
   Bloom,
@@ -558,7 +564,13 @@ function PostFXPipeline() {
 
   if (rendering.useLitePostFx) {
     return (
-      <ManagedEffectComposer remountKey={pipelineKey} sceneId={sceneId} multisampling={0}>
+      <ManagedEffectComposer
+        remountKey={pipelineKey}
+        sceneId={sceneId}
+        multisampling={0}
+        depthBuffer
+        stencilBuffer={false}
+      >
         <Bloom
           intensity={(0.45 + poemBoost.bloomIntensity) * rendering.bloomIntensityScale}
           luminanceThreshold={0.75}
@@ -586,7 +598,13 @@ function PostFXPipeline() {
   }
 
   return (
-    <ManagedEffectComposer remountKey={pipelineKey} sceneId={sceneId} multisampling={0}>
+    <ManagedEffectComposer
+      remountKey={pipelineKey}
+      sceneId={sceneId}
+      multisampling={0}
+      depthBuffer
+      stencilBuffer={false}
+    >
       <Bloom
         intensity={effectiveBloomIntensity}
         luminanceThreshold={bloomParams.threshold}
@@ -597,7 +615,17 @@ function PostFXPipeline() {
       {/* TS-1: React 19 stricter children types — null cast to any */}
       {showChromatic ? <ChromaticAberration offset={chromaticOffset} blendFunction={BlendFunction.NORMAL} /> : null as any}
       {wantsScanlines ? <Scanline blendFunction={BlendFunction.OVERLAY} density={1.2} /> : null as any}
-      {rendering.useAmbientOcclusion ? <N8AO aoRadius={rendering.aoRadius} intensity={rendering.aoIntensity} distanceFalloff={0.5} halfRes color="black" /> : null as any}
+      {/* halfRes=false: N8AO half-res MRT can share depth with composer input and
+          trigger the same glBlitFramebuffer identical-attachment error (n8ao#53). */}
+      {rendering.useAmbientOcclusion ? (
+        <N8AO
+          aoRadius={rendering.aoRadius}
+          intensity={rendering.aoIntensity}
+          distanceFalloff={0.5}
+          halfRes={false}
+          color="black"
+        />
+      ) : null as any}
       {/* Part 3: Cinematic DOF — always mounted on high/ultra, bokehScale animated 0↔target via ref.
           Smooth 0.4s easeInOutCubic transition when dialogue/cutscene opens/closes.
           Focus target follows the active NPC (dialogueFocusTarget singleton). */}
