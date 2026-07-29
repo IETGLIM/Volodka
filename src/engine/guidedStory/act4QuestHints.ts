@@ -251,3 +251,129 @@ export function getBankingCrashHint(currentSceneId: string): string | null {
   }
   return null;
 }
+
+/** Банковский Перевод — discover → trace → confront → moral. */
+export function getBankTransferHint(currentSceneId: string): string | null {
+  const quest = findActiveQuest('bank_transfer');
+  if (!quest) return null;
+  if (!objectiveDone(quest, 'discover_bank_issue')) {
+    return currentSceneId === 'home_evening'
+      ? 'Ноутбук Заремы — подозрительная транзакция [E]'
+      : 'Зарема дома — на её ноутбуке странный перевод';
+  }
+  if (!objectiveDone(quest, 'trace_transaction')) {
+    return 'Отследи путь украденных средств через банковскую систему';
+  }
+  if (!objectiveDone(quest, 'confront_culprit')) {
+    return currentSceneId === 'office_day' || currentSceneId === 'guild_mainframe'
+      ? 'Корпоративный счёт гильдии — виновный рядом'
+      : 'Следы ведут к офису гильдии';
+  }
+  if (!objectiveDone(quest, 'moral_choice_return')) {
+    return 'Вернуть деньги Зареме или оставить себе — выбор за тобой';
+  }
+  return null;
+}
+
+/** Ночной Дозор — patrol → mugger → child → friend. */
+export function getNightWatchHint(currentSceneId: string): string | null {
+  const quest = findActiveQuest('night_watch');
+  if (!quest) return null;
+  if (!objectiveDone(quest, 'patrol_street')) {
+    return currentSceneId === 'street_winter' || currentSceneId === 'street_night'
+      ? 'Патруль начат — иди по тёмным переулкам'
+      : 'Выйди на ночное патрулирование зимней улицы';
+  }
+  if (!objectiveDone(quest, 'encounter_mugger')) {
+    return 'Тёмный переулок — грабитель где-то в тени';
+  }
+  if (!objectiveDone(quest, 'find_lost_child')) {
+    return 'Потерявшийся ребёнок на улице — прислушайся';
+  }
+  if (!objectiveDone(quest, 'meet_old_friend')) {
+    return 'Старый знакомый в ночном городе — узнай его';
+  }
+  return null;
+}
+
+/** Стих под Прикрытием — spot → infiltrate → identify → extract. */
+export function getPoemUndercoverHint(currentSceneId: string): string | null {
+  const quest = findActiveQuest('poem_undercover');
+  if (!quest) return null;
+  if (!objectiveDone(quest, 'spot_poetry_reading')) {
+    return currentSceneId === 'cafe_evening'
+      ? 'Подозрительное чтение в кафе — присмотрись'
+      : 'Поэтический вечер в кафе — прикрытие для Сети';
+  }
+  if (!objectiveDone(quest, 'infiltrate_reading')) {
+    return currentSceneId === 'cafe_evening'
+      ? 'Проникни на чтение под прикрытием [E]'
+      : 'Кафе «Синяя яма» — вечер уже идёт';
+  }
+  if (!objectiveDone(quest, 'identify_network_agents')) {
+    return 'Опознай агентов Сети — «Прорыв» поможет выглядеть своим';
+  }
+  if (!objectiveDone(quest, 'extract_intel')) {
+    return 'Вытяни разведданные о планах Сети';
+  }
+  return null;
+}
+
+/** Сломанный Терминал — fix 1→2→3. */
+export function getBrokenTerminalHint(currentSceneId: string): string | null {
+  const quest = findActiveQuest('broken_terminal');
+  if (!quest) return null;
+  if (!objectiveDone(quest, 'fix_terminal_1')) {
+    return currentSceneId === 'office_day' || currentSceneId === 'guild_mainframe'
+      ? 'Терминал #1 — ошибка «СТИХ_НЕ_НАЙДЕН»'
+      : 'Три сломанных терминала в офисе гильдии';
+  }
+  if (!objectiveDone(quest, 'fix_terminal_2')) {
+    return 'Терминал #2 — обрывки стихотворных строк';
+  }
+  if (!objectiveDone(quest, 'fix_terminal_3')) {
+    return 'Терминал #3 — фрагмент скрытого стиха; «Прорыв» ускорит диагностику';
+  }
+  return null;
+}
+
+/** Голос Прошлого — find → listen ×3. */
+export function getVoiceOfThePastHint(currentSceneId: string): string | null {
+  const quest = findActiveQuest('voice_of_the_past');
+  if (!quest) return null;
+  if (!objectiveDone(quest, 'find_recordings')) {
+    return currentSceneId === 'abandoned_factory' || currentSceneId === 'factory_basement'
+      ? 'Аудио-модуль Владимира где-то на заводе'
+      : 'Записи голоса Владимира — на заброшенной фабрике';
+  }
+  if (!objectiveDone(quest, 'listen_first_recording')) {
+    return 'Первая запись — прощание. Слушай';
+  }
+  if (!objectiveDone(quest, 'listen_second_recording')) {
+    return 'Вторая запись — стихотворение';
+  }
+  if (!objectiveDone(quest, 'listen_final_recording')) {
+    return 'Последняя запись — завещание';
+  }
+  return null;
+}
+
+/** Кризис OpenStack — access → diagnose → report. */
+export function getOpenstackCrisisHint(currentSceneId: string): string | null {
+  const quest = findActiveQuest('openstack_crisis');
+  if (!quest) return null;
+  if (!objectiveDone(quest, 'access_openstack_terminal')) {
+    return currentSceneId === 'office_day' || currentSceneId === 'guild_mainframe'
+      ? 'Терминал OpenStack рядом — получи доступ'
+      : 'Терминал OpenStack в офисе гильдии';
+  }
+  if (!objectiveDone(quest, 'diagnose_servers')) {
+    return 'Диагностика через nova list — восстанови VM до коллапса';
+  }
+  if (!objectiveDone(quest, 'report_server_status')) {
+    return currentSceneId === 'office_day'
+      ? 'Доложи Александру о результатах [E]'
+      : 'Александр ждёт доклад о серверах — иди в офис';
+  }
+  return null;
+}

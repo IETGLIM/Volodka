@@ -106,27 +106,27 @@ export const SPLASH_DOOR_HOLD: InteractionSplashPreset = {
   ],
 };
 
-/** NPC orbit — approach face from slight angle */
+/** NPC orbit — snappier approach face from slight angle */
 export const SPLASH_NPC_ORBIT: InteractionSplashPreset = {
   id: 'npc_orbit',
   kind: 'npc_orbit',
-  durationMs: 1800,
+  durationMs: 1450,
   letterboxStyle: 'thin',
   waypoints: [
     { position: [1.8, 2.0, 3.8], lookAt: [0, 1.35, 0], fov: 52, duration: 0 },
     {
-      position: [1.2, 1.65, 2.4],
+      position: [1.15, 1.6, 2.25],
       lookAt: [0, 1.4, 0],
-      fov: 46,
-      duration: 0.85,
-      controlPoint: [1.5, 1.85, 3.0],
+      fov: 45,
+      duration: 0.65,
+      controlPoint: [1.45, 1.8, 2.9],
     },
     {
-      position: [0.85, 1.45, 1.75],
+      position: [0.8, 1.42, 1.65],
       lookAt: [0, 1.45, 0],
-      fov: 40,
-      duration: 0.95,
-      controlPoint: [1.0, 1.55, 2.05],
+      fov: 39,
+      duration: 0.7,
+      controlPoint: [0.95, 1.5, 1.9],
     },
   ],
 };
@@ -140,7 +140,7 @@ function createNpcSplashPreset(
   return {
     id: presetId,
     kind: 'npc_orbit',
-    durationMs: 1700,
+    durationMs: 1400,
     letterboxStyle: 'thin',
     textOverlay,
     subtitle,

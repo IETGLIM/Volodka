@@ -31,6 +31,7 @@ const INDOOR_AMBIENT: Record<string, { color: string; intensity: number }> = {
   cafe_evening:       { color: '#2a3048', intensity: 0.58 },
   office_day:         { color: '#c0c8d0', intensity: 0.65 },
   library_day:        { color: '#4a4438', intensity: 0.62 },
+  library_basement:   { color: '#2a2418', intensity: 0.42 },
   abandoned_factory:  { color: '#3a3228', intensity: 0.58 },
   factory_basement:   { color: '#283830', intensity: 0.55 },
   solnysh_room:       { color: '#3a3428', intensity: 0.6 },
@@ -51,6 +52,7 @@ const INDOOR_FILL: Record<string, { position: [number, number, number]; intensit
   cafe_evening:       { position: [0, 2.5, -1], intensity: 1.75, color: '#aa99cc', distance: 13 },
   office_day:         { position: [0, 2.5, 0], intensity: 2.8, color: '#dde8f8', distance: 16 },
   library_day:        { position: [0, 2.5, 0], intensity: 1.85, color: '#ccaa77', distance: 14 },
+  library_basement:   { position: [0, 2.0, -1], intensity: 1.15, color: '#aa8844', distance: 10 },
   abandoned_factory:  { position: [0, 3.0, 0], intensity: 1.45, color: '#cc9966', distance: 16 },
   factory_basement:   { position: [0, 2.4, 0], intensity: 1.35, color: '#668877', distance: 14 },
   zarema_albert_room: { position: [0, 2.2, 0], intensity: 1.65, color: '#aa9977', distance: 12 },
@@ -64,6 +66,7 @@ const OUTDOOR_READABILITY_AMBIENT: Record<string, { intensity: number; color: st
   park_day:         { intensity: 0.14, color: '#8a9888' },
   rooftop_edge:     { intensity: 0.12, color: '#8899aa' },
   river_pier:       { intensity: 0.13, color: '#778899' },
+  city_square:      { intensity: 0.13, color: '#6a7890' },
   chk_forest_zorge: { intensity: 0.11, color: '#6a7868' },
   chk_campfire_night: { intensity: 0.14, color: '#5a6858' },
 };

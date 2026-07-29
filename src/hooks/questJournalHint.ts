@@ -33,16 +33,46 @@ import {
 } from '@/engine/guidedStory/act23QuestHints';
 import {
   getArchiveOfForgottenHint,
+  getBankTransferHint,
   getBankingCrashHint,
   getBlindSpotHint,
+  getBrokenTerminalHint,
   getDigitalGhostHint,
   getGuildInfiltrationHint,
   getLastPoemHint,
+  getNightWatchHint,
+  getOpenstackCrisisHint,
+  getPoemUndercoverHint,
   getPoetryBroadcastHint,
   getRoofOfTheWorldHint,
   getSecretsOfOldCodeHint,
+  getVoiceOfThePastHint,
   getVoicesOfFactoryHint,
 } from '@/engine/guidedStory/act4QuestHints';
+import {
+  getChkGuitarStringsHint,
+  getChkPortwineDeliveryHint,
+  getFactoryBabaZinaTeaHint,
+  getFactoryZaryaMemoryHint,
+  getLibraryKatyaResearchHint,
+  getLibraryLostArchiveHint,
+  getPierMidnightFishingHint,
+  getPierRitkaStringsHint,
+  getResistanceDefectorRescueHint,
+  getResistanceSafehouseHint,
+} from '@/engine/guidedStory/aaaSideQuestHints';
+import {
+  getBunkerCodePoemBreakHint,
+  getChkNeonArchiveHint,
+  getDefectorRescueExpandedHint,
+  getParkCyberBloomHint,
+  getPoetsMonumentInscriptionHint,
+  getRooftopBroadcastSetupHint,
+  getServerPoemHuntHint,
+  getStreetSamizdatHint,
+  getZaremaEvidenceRunHint,
+  getZaryaMemoryRestoreHint,
+} from '@/engine/guidedStory/phase5SideQuestHints';
 import {
   getEchoOfVladimirHint,
   getFinalCodeHint,
@@ -292,6 +322,110 @@ export function buildQuestJournalContextualHint(
   }
   if (questId === 'banking_crash') {
     const live = getBankingCrashHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'bank_transfer') {
+    const live = getBankTransferHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'night_watch') {
+    const live = getNightWatchHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'poem_undercover') {
+    const live = getPoemUndercoverHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'broken_terminal') {
+    const live = getBrokenTerminalHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'voice_of_the_past') {
+    const live = getVoiceOfThePastHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'openstack_crisis') {
+    const live = getOpenstackCrisisHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'pier_midnight_fishing') {
+    const live = getPierMidnightFishingHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'pier_ritka_strings') {
+    const live = getPierRitkaStringsHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'library_lost_archive') {
+    const live = getLibraryLostArchiveHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'library_katya_research') {
+    const live = getLibraryKatyaResearchHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'factory_zarya_memory') {
+    const live = getFactoryZaryaMemoryHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'factory_baba_zina_tea') {
+    const live = getFactoryBabaZinaTeaHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'resistance_safehouse') {
+    const live = getResistanceSafehouseHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'resistance_defector_rescue') {
+    const live = getResistanceDefectorRescueHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'chk_portwine_delivery') {
+    const live = getChkPortwineDeliveryHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'chk_guitar_strings') {
+    const live = getChkGuitarStringsHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'quest_act2_server_poem_hunt') {
+    const live = getServerPoemHuntHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'quest_act2_chk_neon_archive') {
+    const live = getChkNeonArchiveHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'quest_act3_park_cyber_bloom') {
+    const live = getParkCyberBloomHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'quest_act3_zarema_evidence_run') {
+    const live = getZaremaEvidenceRunHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'quest_act4_rooftop_broadcast_setup') {
+    const live = getRooftopBroadcastSetupHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'quest_act4_street_samizdat') {
+    const live = getStreetSamizdatHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'quest_act5_factory_zarya_memory_restore') {
+    const live = getZaryaMemoryRestoreHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'quest_act5_bunker_code_poem_break') {
+    const live = getBunkerCodePoemBreakHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'quest_act6_defector_rescue_expanded') {
+    const live = getDefectorRescueExpandedHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'quest_act7_poets_monument_inscription') {
+    const live = getPoetsMonumentInscriptionHint(currentSceneId);
     if (live) return live;
   }
   if (questId === 'traitor_in_the_guild') {

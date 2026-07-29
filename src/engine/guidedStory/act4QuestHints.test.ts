@@ -1,14 +1,20 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import {
   getArchiveOfForgottenHint,
+  getBankTransferHint,
   getBankingCrashHint,
   getBlindSpotHint,
+  getBrokenTerminalHint,
   getDigitalGhostHint,
   getGuildInfiltrationHint,
   getLastPoemHint,
+  getNightWatchHint,
+  getOpenstackCrisisHint,
+  getPoemUndercoverHint,
   getPoetryBroadcastHint,
   getRoofOfTheWorldHint,
   getSecretsOfOldCodeHint,
+  getVoiceOfThePastHint,
   getVoicesOfFactoryHint,
 } from './act4QuestHints';
 
@@ -41,6 +47,36 @@ describe('act4QuestHints sides', () => {
   it('banking_crash — bash terminal', () => {
     quests.push({ questId: 'banking_crash', status: 'active', objectives: {} });
     expect(getBankingCrashHint('home_evening')).toContain('Bash');
+  });
+
+  it('bank_transfer — Zarema laptop', () => {
+    quests.push({ questId: 'bank_transfer', status: 'active', objectives: {} });
+    expect(getBankTransferHint('street_night')).toContain('Зарема');
+  });
+
+  it('night_watch — winter street', () => {
+    quests.push({ questId: 'night_watch', status: 'active', objectives: {} });
+    expect(getNightWatchHint('volodka_room')).toContain('патрулирование');
+  });
+
+  it('poem_undercover — cafe', () => {
+    quests.push({ questId: 'poem_undercover', status: 'active', objectives: {} });
+    expect(getPoemUndercoverHint('street_night')).toContain('кафе');
+  });
+
+  it('broken_terminal — office', () => {
+    quests.push({ questId: 'broken_terminal', status: 'active', objectives: {} });
+    expect(getBrokenTerminalHint('street_night')).toContain('терминала');
+  });
+
+  it('voice_of_the_past — factory', () => {
+    quests.push({ questId: 'voice_of_the_past', status: 'active', objectives: {} });
+    expect(getVoiceOfThePastHint('street_night')).toContain('Владимира');
+  });
+
+  it('openstack_crisis — terminal', () => {
+    quests.push({ questId: 'openstack_crisis', status: 'active', objectives: {} });
+    expect(getOpenstackCrisisHint('street_night')).toContain('OpenStack');
   });
 
   it('keeps spine hints', () => {

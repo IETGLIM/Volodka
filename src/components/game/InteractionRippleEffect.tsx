@@ -9,7 +9,7 @@ import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { useOrchestratorShell } from '@/store/selectors';
 
 /** Duration of the ripple animation in ms. */
-const RIPPLE_DURATION_MS = 720;
+const RIPPLE_DURATION_MS = 780;
 
 interface RippleState {
   key: number;
@@ -66,18 +66,28 @@ export function InteractionRippleEffect() {
             reducedMotion
               ? { opacity: 0.6 }
               : {
-                  opacity: [0.75, 0.35, 0],
-                  scale: [0, 1.05],
+                  opacity: [0.8, 0.4, 0],
+                  scale: [0, 1.12],
                 }
           }
           exit={reducedMotion ? { opacity: 0 } : { opacity: 0 }}
           transition={
             reducedMotion
               ? { duration: 0.2 }
-              : { duration: RIPPLE_DURATION_MS / 1000, ease: 'easeOut' }
+              : { duration: RIPPLE_DURATION_MS / 1000, ease: [0.16, 1, 0.3, 1] }
           }
           onAnimationComplete={() => setRipple(null)}
         >
+          <div
+            className="absolute rounded-full"
+            style={{
+              width: 220,
+              height: 220,
+              border: `1.5px solid ${ringColor}`,
+              opacity: 0.55,
+              boxShadow: `0 0 28px ${glowColor}`,
+            }}
+          />
           <div
             className="absolute rounded-full"
             style={{

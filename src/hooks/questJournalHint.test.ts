@@ -65,6 +65,38 @@ vi.mock('@/engine/guidedStory/act4QuestHints', () => ({
   getVoicesOfFactoryHint: () => 'Заброшенный завод «Хром-М» — Дмитрий знает дорогу',
   getSecretsOfOldCodeHint: () => 'Живой код 2028 — терминал в подсобке кафе',
   getBankingCrashHint: () => 'Получи доступ к Bash-терминалу банковской системы',
+  getBankTransferHint: () => 'Зарема дома — на её ноутбуке странный перевод',
+  getNightWatchHint: () => 'Выйди на ночное патрулирование зимней улицы',
+  getPoemUndercoverHint: () => 'Поэтический вечер в кафе — прикрытие для Сети',
+  getBrokenTerminalHint: () => 'Три сломанных терминала в офисе гильдии',
+  getVoiceOfThePastHint: () => 'Записи голоса Владимира — на заброшенной фабрике',
+  getOpenstackCrisisHint: () => 'Терминал OpenStack в офисе гильдии',
+}));
+
+vi.mock('@/engine/guidedStory/aaaSideQuestHints', () => ({
+  getPierMidnightFishingHint: () => 'Найди Трофима на вечернем пирсе',
+  getPierRitkaStringsHint: () => 'Запасная струна в ЧК у Элис',
+  getLibraryLostArchiveHint: () => 'Поговори с Катей в библиотеке, затем спустись в подвал',
+  getLibraryKatyaResearchHint: () => 'Катя ждёт в библиотеке — нужна ночь на исследование',
+  getFactoryZaryaMemoryHint: () => 'Найди Бабу Зину на заводе — память «Зари-М»',
+  getFactoryBabaZinaTeaHint: () => 'Загляни к Бабе Зине в цех — просто чай и истории',
+  getResistanceSafehouseHint: () => 'Найди бункер через контакт Жеки — убежище Сопротивления',
+  getResistanceDefectorRescueHint: () => 'Максим ждёт в бункере — через два часа стирание',
+  getChkPortwineDeliveryHint: () => 'Поговори с Баседом в ЧК — портвейн из «Синей ямы»',
+  getChkGuitarStringsHint: () => 'Элис у костра в ЧК — струна E в офисе гильдии',
+}));
+
+vi.mock('@/engine/guidedStory/phase5SideQuestHints', () => ({
+  getServerPoemHuntHint: () => 'Серверные стихи — начни с логов в офисе гильдии',
+  getChkNeonArchiveHint: () => 'Басед у ночного костра в ЧК — поговори, затем ищи вывеску',
+  getParkCyberBloomHint: () => 'Парк днём — три кибер-цветка ждут твоего голоса',
+  getZaremaEvidenceRunHint: () => 'Встреть Зарему у библиотеки — нужно провести её в подвал',
+  getRooftopBroadcastSetupHint: () => 'Крыша блока 4-Б — Александр указал путь',
+  getStreetSamizdatHint: () => 'Первая точка самиздата — пирс',
+  getZaryaMemoryRestoreHint: () => 'Баба Зина в цеху — начни восстановление памяти «Зари-М»',
+  getBunkerCodePoemBreakHint: () => 'Бункер — там терминал шифра «Солныш»',
+  getDefectorRescueExpandedHint: () => 'Максим в бункере — маршрут через коллектор под КПП',
+  getPoetsMonumentInscriptionHint: () => 'Парк — обелиск ждёт имён тех, кого помнишь',
 }));
 
 vi.mock('@/engine/guidedStory/act5QuestHints', () => ({
@@ -294,6 +326,19 @@ describe('buildQuestJournalContextualHint', () => {
     expect(buildQuestJournalContextualHint('voices_of_factory', 'volodka_room')).toContain('Хром');
     expect(buildQuestJournalContextualHint('secrets_of_old_code', 'street_night')).toContain('подсобке');
     expect(buildQuestJournalContextualHint('banking_crash', 'home_evening')).toContain('Bash');
+    expect(buildQuestJournalContextualHint('bank_transfer', 'street_night')).toContain('Зарема');
+    expect(buildQuestJournalContextualHint('openstack_crisis', 'street_night')).toContain('OpenStack');
+  });
+
+  it('prefers AAA + phase5 expansion live cues', () => {
+    expect(buildQuestJournalContextualHint('pier_midnight_fishing', 'street_night')).toContain('Трофим');
+    expect(buildQuestJournalContextualHint('library_lost_archive', 'street_night')).toContain('Катей');
+    expect(buildQuestJournalContextualHint('quest_act2_server_poem_hunt', 'volodka_room')).toContain(
+      'офисе',
+    );
+    expect(buildQuestJournalContextualHint('quest_act7_poets_monument_inscription', 'volodka_room')).toContain(
+      'Парк',
+    );
   });
 
   it('combines next objective with travel direction', () => {

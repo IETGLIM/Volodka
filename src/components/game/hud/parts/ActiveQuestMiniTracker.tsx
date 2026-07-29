@@ -16,6 +16,7 @@ import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import type { QuestType } from '@/shared/types/game';
 import { focusQuestOnMap } from './focusQuestOnMap';
+import { buildQuestJournalContextualHint } from '@/hooks/questJournalHint';
 
 const CYCLE_INTERVAL_MS = 10_000;
 
@@ -134,6 +135,14 @@ export function ActiveQuestMiniTracker() {
     [displayQuest],
   );
 
+  const liveHint = useMemo(
+    () =>
+      displayQuest
+        ? buildQuestJournalContextualHint(displayQuest.questId, currentSceneId)
+        : null,
+    [displayQuest, currentSceneId],
+  );
+
   const progress = useMemo(
     () => (displayQuest ? getQuestProgress(displayQuest.questId) : 0),
     [displayQuest],
@@ -152,7 +161,7 @@ export function ActiveQuestMiniTracker() {
       flashTimerRef.current = setTimeout(() => {
         setObjectiveFlash(false);
         flashTimerRef.current = null;
-      }, 300);
+      }, 480);
     }
 
     prevObjectiveKeyRef.current = currentKey;
@@ -195,6 +204,7 @@ export function ActiveQuestMiniTracker() {
   const questType = questDef.questType;
   const typeColor = QUEST_TYPE_COLOR[questType];
   const typeIcon = QUEST_TYPE_ICON[questType];
+  const trackerLine = liveHint ?? nextObjective?.description ?? 'Все цели выполнены';
   const objIcon = nextObjective
     ? getObjectiveTypeIcon(
         questDef.objectives.find((o) => o.id === nextObjective.objectiveId)?.type ?? 'custom',
@@ -234,8 +244,8 @@ export function ActiveQuestMiniTracker() {
             backdropFilter: 'blur(8px)',
           } as React.CSSProperties}
           aria-label={
-            nextObjective
-              ? `${questDef.title}: ${nextObjective.description}`
+            liveHint || nextObjective
+              ? `${questDef.title}: ${trackerLine}`
               : `${questDef.title}: все цели выполнены`
           }
         >
@@ -253,12 +263,12 @@ export function ActiveQuestMiniTracker() {
             {objIcon}
           </span>
 
-          {/* Objective text */}
+          {/* Objective text — prefer live contextual hint */}
           <p
             className={`text-[10px] font-mono leading-snug truncate flex-1 rounded px-1 -mx-1 ${objectiveFlash ? 'objective-flash' : ''}`}
             style={{ color: '#c8e8e8', textShadow: objectiveFlash ? `0 0 8px ${typeColor}44` : 'none', transition: 'text-shadow 0.3s ease' }}
           >
-            {nextObjective ? nextObjective.description : 'Все цели выполнены'}
+            {trackerLine}
           </p>
 
           {/* Pin indicator */}
@@ -307,6 +317,18 @@ export function ActiveQuestMiniTracker() {
                     {questType === 'main' ? 'ОСН' : questType === 'side' ? 'ПОБ' : questType === 'hidden' ? 'СКР' : 'ЕЖД'}
                   </span>
                 </div>
+
+                {liveHint && (
+                  <p
+                    className="text-[9px] font-mono leading-snug text-cyan-200/80 px-1 py-1 rounded"
+                    style={{
+                      background: 'rgba(0, 212, 224, 0.06)',
+                      border: '1px solid rgba(0, 212, 224, 0.12)',
+                    }}
+                  >
+                    {liveHint}
+                  </p>
+                )}
 
                 {/* Progress bar */}
                 <div className="flex items-center gap-2">
