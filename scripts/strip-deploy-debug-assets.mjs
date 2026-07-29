@@ -10,11 +10,12 @@
 import { existsSync, rmSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { KHRONOS_STRIP_DIRS } from './lib/deployEnv.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = path.join(ROOT, 'dist');
 
-const STRIP_DIRS = ['models/khronos'];
+const STRIP_DIRS = KHRONOS_STRIP_DIRS;
 
 function dirSizeBytes(dir) {
   let total = 0;

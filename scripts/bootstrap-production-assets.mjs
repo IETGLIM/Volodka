@@ -13,6 +13,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import { NPC_QUATERNIUS_MAP } from './quaternius-import.mjs';
 import { readMixamoClipIdsOnDisk, writeMixamoClipIdsOnDisk } from './lib/mixamoOnDisk.mjs';
+import { skipKhronosBootstrap } from './lib/deployEnv.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PUBLIC = path.join(ROOT, 'public');
@@ -176,6 +177,10 @@ function hasGltfMagic(filePath) {
 }
 
 async function ensureRemoteAssets() {
+  if (skipKhronosBootstrap()) {
+    console.log('⊘ skip Khronos download (CI/Vercel — committed GLBs used; see SKIP_KHRONOS_BOOTSTRAP)');
+    return;
+  }
   for (const [rel, url] of Object.entries(REMOTE_ASSETS)) {
     const dest = path.join(PUBLIC, rel);
     if (existsSync(dest) && hasGltfMagic(dest)) {
@@ -191,6 +196,10 @@ async function ensureRemoteAssets() {
 }
 
 function stageProductionLayout() {
+  if (skipKhronosBootstrap()) {
+    console.log('⊘ skip Khronos staging (CI/Vercel — using committed catalog GLBs)');
+    return;
+  }
   // Hero Volodka — single interim lod0; process-catalog builds real LOD/compression chain
   if (!existsSync(path.join(QUATERNIUS_SOURCE, 'male_01.glb'))) {
     stageCopy('models/khronos/RiggedFigure.glb', ['models/characters/volodka/volodka_lod0.glb']);
@@ -242,6 +251,14 @@ function stageInteriorShells() {
       copyFileSync(freekitSrc, dest);
       staged += 1;
       console.log(`✓ Kenney ${destName} → ${destRel}`);
+      continue;
+    }
+    if (skipKhronosBootstrap()) {
+      if (existsSync(dest) && hasGltfMagic(dest)) {
+        console.log(`⊘ skip ${destRel} (committed shell on disk)`);
+        continue;
+      }
+      console.warn(`  ⚠ skip ${destRel} — no Kenney source and Khronos bootstrap disabled`);
       continue;
     }
     stageCopy(fallbackRel, [destRel]);

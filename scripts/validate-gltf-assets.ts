@@ -5,7 +5,7 @@
  *  1. ASSET_MANIFEST entries with `shipped: true` — full LOD/variant/impostor/lightmap set.
  *     Unshipped assets are skipped (runtime skips them too) and reported as info.
  *  2. Runtime registries that load eagerly per scene: PROP_MODEL_REGISTRY,
- *     NPC_MODEL_ASSETS, first-person arms, MODEL_URLS (public/models/khronos).
+ *     NPC_MODEL_ASSETS, first-person arms, MODEL_URLS.
  *     Files must exist AND start with the binary glTF magic — catches
  *     "404: Not Found" HTML/text stubs saved as .glb.
  *
@@ -29,6 +29,9 @@ import { FPS_ARMS_URL } from '../src/config/fpsArmsUrl';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PUBLIC = path.join(ROOT, 'public');
 const warnOnly = process.argv.includes('--warn-only');
+
+const { skipKhronosBootstrap } = await import('./lib/deployEnv.mjs');
+const khronosExcludedFromDeploy = skipKhronosBootstrap();
 
 function publicPath(url: string): string | null {
   if (!url.startsWith('/')) return null;
@@ -177,8 +180,10 @@ if (rpmPending > 0) {
 if (skippedManifest.length > 0) {
   console.log(`ℹ Skipped unshipped manifest assets: ${skippedManifest.join(', ')}`);
 }
-if (khronosCount > 0) {
-  console.warn(`⚠ Khronos reference models in production: ${khronosCount} files, ${khronosMB}MB — these should be excluded from deployment (use .vercelignore or build filter)`);
+if (khronosCount > 0 && !khronosExcludedFromDeploy) {
+  console.warn(
+    `⚠ Khronos reference models on disk: ${khronosCount} files, ${khronosMB}MB — dev-only; excluded from Vercel via .vercelignore`,
+  );
 }
 if (lodWarnings.length > 0) {
   console.warn(`⚠ LOD size warnings (${lodWarnings.length}):`);

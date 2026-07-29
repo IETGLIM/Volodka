@@ -13,6 +13,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { NPC_QUATERNIUS_MAP } from './quaternius-import.mjs';
 import { processGltfAsset } from './lib/gltfProcess.mjs';
+import { hasGltfMagic } from './lib/assetDiskPresence.mjs';
+import { skipKhronosBootstrap } from './lib/deployEnv.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SOURCE_NPCS = path.join(ROOT, 'assets-source/ai3dgen/npcs');
@@ -85,6 +87,15 @@ function processInteriors() {
 }
 
 function processEnvironmentStubs() {
+  const outLod0 = path.join(PUBLIC, 'models/environments/cafe/props_lod0.glb');
+  if (existsSync(outLod0) && hasGltfMagic(outLod0)) {
+    console.log('\n⊘ skip env_cafe_props (output already on disk)');
+    return 0;
+  }
+  if (skipKhronosBootstrap()) {
+    console.log('\n⊘ skip env_cafe_props (Khronos bootstrap disabled on CI/Vercel)');
+    return 0;
+  }
   const cafeSrc = path.join(ROOT, 'public/models/khronos/BrainStem.glb');
   if (!existsSync(cafeSrc)) return 0;
   const outBase = path.join(PUBLIC, 'models/environments/cafe/props');
@@ -100,6 +111,15 @@ function processEnvironmentStubs() {
 }
 
 function processVegetationStub() {
+  const outLod0 = path.join(PUBLIC, 'models/vegetation/pine/pine_lod0.glb');
+  if (existsSync(outLod0) && hasGltfMagic(outLod0)) {
+    console.log('\n⊘ skip veg_tree_pine (output already on disk)');
+    return 0;
+  }
+  if (skipKhronosBootstrap()) {
+    console.log('\n⊘ skip veg_tree_pine (Khronos bootstrap disabled on CI/Vercel)');
+    return 0;
+  }
   const pineSrc = path.join(ROOT, 'public/models/khronos/Avocado.glb');
   if (!existsSync(pineSrc)) return 0;
   const outBase = path.join(PUBLIC, 'models/vegetation/pine/pine');
