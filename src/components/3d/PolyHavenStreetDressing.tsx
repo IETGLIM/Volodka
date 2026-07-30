@@ -67,6 +67,9 @@ function clonePreparedScene(
           if (typeof std.roughness === 'number') {
             std.roughness = Math.min(1, Math.max(variant?.roughnessFloor ?? 0.4, std.roughness * 1.1));
           }
+          std.polygonOffset = true;
+          std.polygonOffsetFactor = 1;
+          std.polygonOffsetUnits = 1;
           std.needsUpdate = true;
         }
       }

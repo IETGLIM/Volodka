@@ -33,6 +33,11 @@ import { STORY_NODES_SCENE_EXPLORE_HUBS } from './sceneExploreHubs';
 import { STORY_NODES_EPILOGUE } from './epilogueStory';
 import { STORY_NODES_PHASE5_QUESTS } from './phase5QuestStory';
 
+/** Known pack overrides — later sources intentionally replace earlier spine nodes. */
+const INTENTIONAL_STORY_NODE_OVERRIDES: Record<string, readonly string[]> = {
+  act1OfficeAftermath: ['fix_success', 'office_colleague', 'balcony_thought', 'friday_arrives'],
+};
+
 /** Master story node registry with collision detection in dev. */
 export function buildStoryNodes(): Record<string, StoryNode> {
   const sources: Array<{ name: string; nodes: Record<string, StoryNode> }> = [
@@ -70,8 +75,9 @@ export function buildStoryNodes(): Record<string, StoryNode> {
   const collisions: string[] = [];
 
   for (const source of sources) {
+    const intentional = new Set(INTENTIONAL_STORY_NODE_OVERRIDES[source.name] ?? []);
     for (const [id, node] of Object.entries(source.nodes)) {
-      if (registry[id]) {
+      if (registry[id] && !intentional.has(id)) {
         collisions.push(`"${id}" in "${source.name}" (overrides existing)`);
       }
       registry[id] = node;

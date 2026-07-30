@@ -41,6 +41,11 @@ function cloneInteriorShell(source: THREE.Object3D, castShadow: boolean): THREE.
           if (typeof standard.roughness === 'number') {
             standard.roughness = Math.min(1, Math.max(0.42, standard.roughness));
           }
+          // Pull shell geometry slightly back in depth so procedural props,
+          // contact shadows, and inset trim planes win without coplanar flicker.
+          standard.polygonOffset = true;
+          standard.polygonOffsetFactor = -1;
+          standard.polygonOffsetUnits = -1;
           standard.needsUpdate = true;
         }
       }

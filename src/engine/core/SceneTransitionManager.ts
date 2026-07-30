@@ -51,7 +51,8 @@ export function bindDeferredCombatStartListener(): void {
   });
 }
 
-function bindCombatStartGateTimeout(): void {
+/** Re-arm combat timeout handler after EventBus dispose/revive. */
+export function bindCombatStartGateTimeout(): void {
   registerCombatStartGateTimeoutHandler(() => {
     if (import.meta.env.DEV) {
       console.warn(

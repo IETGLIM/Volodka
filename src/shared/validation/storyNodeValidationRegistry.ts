@@ -3,6 +3,7 @@ import { QUEST_DEFINITIONS } from '@/data/quests';
 import { ALL_NPC_DEFINITIONS } from '@/data/allNpcDefinitions';
 import { SCENE_DEFINITIONS, type SceneId } from '@/config/sceneDefinitions';
 import { POEMS } from '@/data/poems';
+import { EXPANSION_POEM_IDS } from '@/data/expansion/expansionPoemStubs';
 import { getAllItemDefinitions } from '@/data/items';
 import { INITIAL_LORE_ENTRIES } from '@/data/loreEntries';
 import { QUEST_ITEM_DEFINITIONS } from '@/data/questItems';
@@ -20,7 +21,7 @@ export function buildStoryNodeValidationRegistry(
     questIds: new Set(QUEST_DEFINITIONS.map((q) => q.id)),
     npcIds: new Set(ALL_NPC_DEFINITIONS.map((n) => n.id)),
     sceneIds: new Set(Object.keys(SCENE_DEFINITIONS) as SceneId[]),
-    poemIds: new Set(POEMS.map((p) => p.id)),
+    poemIds: new Set([...POEMS.map((p) => p.id), ...EXPANSION_POEM_IDS]),
     itemIds: new Set([
       ...getAllItemDefinitions().map((i) => i.id),
       ...Object.keys(QUEST_ITEM_DEFINITIONS),

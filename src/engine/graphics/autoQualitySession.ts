@@ -9,9 +9,19 @@ const VALID_TIERS = new Set<ConcreteQualityPresetId>(['low', 'medium', 'high', '
 /** Runtime tier cap when user selected `auto` — persisted across sessions. */
 let sessionAutoResolvedTier: ConcreteQualityPresetId | null = readPersistedAutoTier();
 
-function readPersistedAutoTier(): ConcreteQualityPresetId | null {
+function getAutoTierStorage(): Storage | null {
   if (typeof window === 'undefined') return null;
-  const raw = localStorage.getItem(AUTO_QUALITY_SESSION_TIER_KEY);
+  try {
+    return typeof localStorage !== 'undefined' ? localStorage : null;
+  } catch {
+    return null;
+  }
+}
+
+function readPersistedAutoTier(): ConcreteQualityPresetId | null {
+  const storage = getAutoTierStorage();
+  if (!storage) return null;
+  const raw = storage.getItem(AUTO_QUALITY_SESSION_TIER_KEY);
   if (raw && VALID_TIERS.has(raw as ConcreteQualityPresetId)) {
     return raw as ConcreteQualityPresetId;
   }
@@ -19,12 +29,13 @@ function readPersistedAutoTier(): ConcreteQualityPresetId | null {
 }
 
 function writePersistedAutoTier(tier: ConcreteQualityPresetId | null): void {
-  if (typeof window === 'undefined') return;
+  const storage = getAutoTierStorage();
+  if (!storage) return;
   if (tier === null) {
-    localStorage.removeItem(AUTO_QUALITY_SESSION_TIER_KEY);
+    storage.removeItem(AUTO_QUALITY_SESSION_TIER_KEY);
     return;
   }
-  localStorage.setItem(AUTO_QUALITY_SESSION_TIER_KEY, tier);
+  storage.setItem(AUTO_QUALITY_SESSION_TIER_KEY, tier);
 }
 
 export function getSessionAutoResolvedTier(): ConcreteQualityPresetId | null {

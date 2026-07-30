@@ -55,7 +55,11 @@ import {
   bindPoemWorldEventBridge,
   unbindPoemWorldEventBridge,
 } from '@/engine/poemWorld/poemWorldEventBridge';
-import { bindDeferredCombatStartListener, bindSceneTransitionGuardListeners } from '@/engine/core/SceneTransitionManager';
+import {
+  bindCombatStartGateTimeout,
+  bindDeferredCombatStartListener,
+  bindSceneTransitionGuardListeners,
+} from '@/engine/core/SceneTransitionManager';
 import { bindSceneLoadedBridge } from '@/engine/core/sceneLoadedGate';
 import {
   bindGpuResourceBaselineBridge,
@@ -151,6 +155,7 @@ export function reviveGameEngine(): void {
   bindGpuResourceBaselineBridge();
   bindSceneChunkGpuLifecycle();
   bindSceneTransitionGuardListeners();
+  bindCombatStartGateTimeout();
   bindDeferredCombatStartListener();
   bindPoemResetListener();
   bindPoemReadingCutsceneLifecycleListeners();

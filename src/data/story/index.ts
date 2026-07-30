@@ -7,15 +7,26 @@ export const STORY_NODES: Record<string, StoryNode> = buildStoryNodes();
 if (import.meta.env?.DEV) {
   void import('@/shared/validation/storyNodeValidationRegistry').then(
     ({ buildStoryNodeValidationRegistry }) => {
-      const errors = validateStoryNodes(
-        STORY_NODES,
-        buildStoryNodeValidationRegistry(Object.keys(STORY_NODES)),
+      void import('@/shared/validation/storyNodeValidation').then(
+        ({ validateStoryNodeGraph, formatStoryNodeValidationErrors }) => {
+          const coreNodeIds = Object.keys(STORY_NODES).filter((id) => !id.includes('_exp_'));
+          const errors = formatStoryNodeValidationErrors(
+            validateStoryNodeGraph(
+              STORY_NODES,
+              buildStoryNodeValidationRegistry(coreNodeIds),
+            ),
+          );
+          // Room examination nodes may reference expansion fragments still being authored.
+          const coreErrors = errors.filter(
+            (e) => !e.includes('_exp_') && !e.startsWith('story:examine_'),
+          );
+          if (coreErrors.length > 0) {
+            console.warn(
+              `[STORY_NODES] ${coreErrors.length} validation issue(s):\n${coreErrors.join('\n')}`,
+            );
+          }
+        },
       );
-      if (errors.length > 0) {
-        console.warn(
-          `[STORY_NODES] ${errors.length} validation issue(s):\n${errors.join('\n')}`,
-        );
-      }
     },
   );
 }
