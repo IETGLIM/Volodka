@@ -157,6 +157,38 @@ export const SCENE_ASSET_OWNERSHIP: readonly SceneAssetOwnershipEntry[] = [
     exclusive: false,
     assetIds: ['veg_tree_pine'],
   },
+  ...([
+    'volodka_room',
+    'volodka_corridor',
+    'office_day',
+    'library_day',
+    'cafe_evening',
+    'rooftop_edge',
+    'river_pier',
+    'chk_forest_zorge',
+    'zarema_albert_room',
+    'abandoned_factory',
+    'factory_basement',
+  ] as const).map(
+    (sceneId): SceneAssetOwnershipEntry => ({
+      sceneId,
+      slot: 'prop_dressing',
+      owner: 'scene_prop_dressing',
+      systems: ['ScenePropDressing'],
+      quality: ENABLED_ALL,
+      exclusive: false,
+      notes: 'ScenePropDressing registry owns interior/outdoor clutter for this location.',
+    }),
+  ),
+  {
+    sceneId: 'street_night',
+    slot: 'prop_dressing',
+    owner: 'scene_prop_dressing',
+    systems: ['ScenePropDressing'],
+    quality: ENABLED_ALL,
+    exclusive: false,
+    notes: 'Kenney street clutter; PolyHaven hero setpieces stay in street_setpiece slot.',
+  },
 ];
 
 export function getSceneAssetOwnership(sceneId: SceneId): readonly SceneAssetOwnershipEntry[] {

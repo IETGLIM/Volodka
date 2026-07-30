@@ -35,4 +35,10 @@ describe('assetOwnership', () => {
       ]),
     );
   });
+
+  it('documents prop_dressing ownership for dressed interior scenes', () => {
+    expect(getSceneSlotOwnership('cafe_evening', 'prop_dressing')).toHaveLength(1);
+    expect(isSceneAssetSystemAllowed('cafe_evening', 'prop_dressing', 'ScenePropDressing')).toBe(true);
+    expect(getSceneSlotOwnership('volodka_room', 'prop_dressing')).toHaveLength(1);
+  });
 });
