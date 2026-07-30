@@ -9,7 +9,6 @@ import { useContextualHints } from '@/hooks/useContextualHints';
 import { useHudProximityFxActive } from '@/hooks/useHudProximityFxActive';
 import { useHUDController } from '@/components/game/hud/useHUDController';
 import type { HUDProps } from '@/components/game/hud/hudTypes';
-import { ActiveQuestMiniTracker } from '@/components/game/hud/parts/ActiveQuestMiniTracker';
 import { CombatPreEngagementWarning } from '@/components/game/hud/parts/CombatPreEngagementWarning';
 import { ContextualHint } from '@/components/game/hud/parts/ContextualHint';
 import { CrosshairInteractionPrompt } from '@/components/game/hud/parts/CrosshairInteractionPrompt';
@@ -90,13 +89,6 @@ export function ExplorationHUD(props: HUDProps) {
 
       <DynamicCrosshair />
       {proximityFxActive ? <CrosshairInteractionPrompt /> : null}
-
-      <div
-        className="absolute left-1/2 -translate-x-1/2 pointer-events-auto"
-        style={{ top: 'clamp(28px, 5vh, 56px)', zIndex: UI_LAYERS.HUD + 1 }}
-      >
-        <ActiveQuestMiniTracker />
-      </div>
 
       <AnimatePresence>
         <CriticalStatusWhisper

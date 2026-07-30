@@ -35,6 +35,7 @@ import {
   isExplorationHudProfile,
   useGameplayPresentationProfile,
 } from '@/hooks/useGameplayPresentationProfile';
+import { useTouchDevice } from '@/hooks/useTouchDevice';
 import {
   computeObjectiveProgressPercent,
   formatQuestObjectiveProgress,
@@ -63,6 +64,7 @@ export function StoryGuidanceHUD() {
 
   const quests = useQuests();
   const profile = useGameplayPresentationProfile();
+  const isTouchDevice = useTouchDevice();
   const { showStoryOverlay, narrativeKind, diegeticNarrative } = useOrchestratorNarrativeOverlay();
   const currentSceneId = useCurrentSceneId();
   const timeOfDay = useTimeOfDay();
@@ -303,6 +305,35 @@ export function StoryGuidanceHUD() {
 
   const isDismissed = Boolean(dismissedSig && dismissedSig === objectiveSig);
   const topPx = explorationObjectiveTopPx();
+
+  if (!isTouchDevice) {
+    return (
+      <AnimatePresence>
+        <motion.div
+          initial={reducedMotion ? false : { opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={reducedMotion ? undefined : { opacity: 0, y: -8 }}
+          transition={{ duration: motionDuration, ease: 'easeOut' }}
+          className="fixed left-1/2 -translate-x-1/2 pointer-events-none"
+          data-exploration-ui
+          data-testid="story-guidance-hud"
+          role="status"
+          aria-live="polite"
+          style={{
+            top: topPx,
+            zIndex: UI_LAYERS.HUD + 2,
+            width: 'min(84vw, 420px)',
+          }}
+        >
+          <div className="hud-filmic-caption px-4">
+            <p className="hud-filmic-body text-[12px] truncate" style={{ color: 'var(--hud-filmic-ink)' }}>
+              {displayText}
+            </p>
+          </div>
+        </motion.div>
+      </AnimatePresence>
+    );
+  }
 
   if (isDismissed) {
     return (

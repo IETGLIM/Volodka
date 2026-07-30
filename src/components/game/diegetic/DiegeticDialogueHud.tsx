@@ -186,9 +186,6 @@ export function DiegeticDialogueHud() {
       }
       appliedRef.current = storyNode.id;
       applyStoryNodeMountEffects(storyNode);
-      if (storyNode.accessibilityAnnounce) {
-        eventBus.emit('ui:exploration_message', { text: storyNode.accessibilityAnnounce });
-      }
       if (storyNode.soundEffect) audioEngine.playSfx(storyNode.soundEffect);
       if (storyNode.musicCue) audioEngine.playStinger(storyNode.musicCue);
       const mappedNpcId = STORY_NODE_TO_NPC_ID[storyNode.id];
@@ -209,7 +206,6 @@ export function DiegeticDialogueHud() {
           resolveNpcIdFromSpeaker(dialogueNode.speaker, dialogueNode.speakerId)
           ?? dialogueNode.speaker.toLowerCase().replace(/\s+/g, '_');
         eventBus.emit('npc:talked', { npcId, dialogueNodeId: dialogueNode.id });
-        eventBus.emit('ui:exploration_message', { text: `${dialogueNode.speaker}: ${resolvedText.slice(0, 80)}…` });
       }
     }
   }, [isOpen, kind, storyNode, dialogueNode, conditionCtx, resolvedText]);

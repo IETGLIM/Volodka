@@ -68,11 +68,6 @@ export const INTRO_WAKE_TIMELINE: CinematicTimelineDef = {
         to: wpToData(WAKEUP_CAMERA_WAYPOINTS[0]),
       },
       audioCue: 'notify',
-      overlay: {
-        text: 'Ты просыпаешься от назойливого писка терминала.',
-        letterboxStyle: 'thin',
-        accentColor: '#44ffff',
-      },
     },
     {
       id: 'rise',
@@ -88,11 +83,6 @@ export const INTRO_WAKE_TIMELINE: CinematicTimelineDef = {
         ],
       },
       camera: { mode: 'waypoint', to: wpToData(WAKEUP_CAMERA_WAYPOINTS[1]) },
-      overlay: {
-        text: 'В правом запястье — тянущий спазм. Двенадцать часов за клавиатурой.',
-        letterboxStyle: 'thin',
-        accentColor: '#44ffff',
-      },
     },
     {
       id: 'standing',
@@ -108,11 +98,6 @@ export const INTRO_WAKE_TIMELINE: CinematicTimelineDef = {
       camera: { mode: 'waypoint', to: wpToData(WAKEUP_CAMERA_WAYPOINTS[2]) },
       lightCue: 'warm_practical',
       audioCue: 'notify',
-      overlay: {
-        text: 'Тусклый свет монитора едва прорезает полумрак комнаты.',
-        letterboxStyle: 'thin',
-        accentColor: '#44ffff',
-      },
     },
     {
       id: 'walking',
@@ -127,11 +112,6 @@ export const INTRO_WAKE_TIMELINE: CinematicTimelineDef = {
       },
       camera: { mode: 'waypoint', to: wpToData(WAKEUP_CAMERA_WAYPOINTS[3]) },
       audioCue: 'footstep',
-      overlay: {
-        text: 'На столе — полупустая кружка кофе, остывшая пять часов назад.',
-        letterboxStyle: 'thin',
-        accentColor: '#44ffff',
-      },
     },
     {
       id: 'sitting',
@@ -148,11 +128,6 @@ export const INTRO_WAKE_TIMELINE: CinematicTimelineDef = {
       },
       camera: { mode: 'waypoint', to: wpToData(WAKEUP_CAMERA_WAYPOINTS[4]) },
       audioCue: 'ui_open',
-      overlay: {
-        text: 'На экране — новое сообщение от IT-гильдии.',
-        letterboxStyle: 'thin',
-        accentColor: '#44ffff',
-      },
     },
     {
       id: 'settle',
@@ -183,11 +158,6 @@ export const INTRO_WAKE_TIMELINE: CinematicTimelineDef = {
       },
       camera: { mode: 'waypoint', to: wpToData(WAKEUP_CAMERA_WAYPOINTS[6]) },
       audioCue: 'notify',
-      overlay: {
-        text: 'За окном моросит дождь. Город тонет в привычной серости.',
-        letterboxStyle: 'thin',
-        accentColor: '#44ffff',
-      },
     },
     {
       id: 'handoff',
@@ -210,7 +180,7 @@ export const INTRO_WAKE_TIMELINE: CinematicTimelineDef = {
         },
       },
       overlay: {
-        text: 'Твоё имя — Володька. Сегодня всё изменится.',
+        text: 'Володька.',
         letterboxStyle: 'thin',
         accentColor: '#ffaa55',
       },

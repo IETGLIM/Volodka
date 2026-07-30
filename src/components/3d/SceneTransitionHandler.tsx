@@ -82,11 +82,6 @@ export function SceneTransitionHandler() {
 
       performSceneTransition({ targetScene, spawnAt });
 
-      const config = getSceneConfigName(targetScene);
-      eventBus.emit('ui:exploration_message', {
-        text: `Переход: ${config}`,
-      });
-
       eventBus.emit('camera:recenter', {});
 
       const doorCloseTimer = setTimeout(() => {
@@ -110,39 +105,4 @@ export function SceneTransitionHandler() {
   }, []);
 
   return null;
-}
-
-/** Quick lookup for scene display name without importing full config */
-function getSceneConfigName(sceneId: SceneId): string {
-  const names: Record<SceneId, string> = {
-    volodka_room: 'Комната Володьки',
-    volodka_corridor: 'Коридор коммуналки',
-    home_evening: 'Кухня — вечер',
-    street_night: 'Улица — ночь',
-    street_winter: 'Улица — зима',
-    cafe_evening: 'Кафе «Синяя яма»',
-    office_day: 'Офис IT-гильдии',
-    park_day: 'Парк — день',
-    library_day: 'Библиотека',
-    battle: 'Бой',
-    sleep_dream: 'Сон',
-    rooftop_edge: 'Край крыши',
-    abandoned_factory: 'Заброшенный завод',
-    zarema_albert_room: 'Комната Заремы и Альберта',
-    solnysh_room: 'Комната Солныш и Лёни',
-    chk_forest_zorge: 'ЧК · Лес · Зорге',
-    factory_basement: 'Подвал завода',
-    river_pier: 'Пирс у реки',
-    chk_campfire_night: 'Костёр ЧК — ночь',
-    pier_evening: 'Пирс — вечер',
-    factory_roof: 'Крыша завода',
-    library_basement: 'Подвал библиотеки',
-    city_square: 'Центральная площадь',
-    underground_bunker: 'Бункер Сопротивления',
-    guild_mainframe: 'Серверная гильдии',
-    zarema_room: 'Комната Заремы',
-    albert_backroom: 'Подсобка кафе',
-    procedural_aaa: 'Procedural AAA',
-  };
-  return names[sceneId] ?? sceneId;
 }

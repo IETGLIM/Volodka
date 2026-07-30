@@ -225,13 +225,11 @@ export const GameplayScreenEffectsLayer = memo(function GameplayScreenEffectsLay
 // терминала" text + an ESC skip button during the intro_wakeup cutscene.
 // When CinematicTimelineRunner was added, CutsceneOverlay became the
 // generic handler for cutscene:overlay events and already renders 4dvh
-// 'thin' letterbox bars + the timeline's per-phase main text (which for
-// phase 1 is "Ты просыпаешься от назойливого писка терминала.") + a
-// "Пропустить" skip button. Both overlays were mounted simultaneously
-// during the entire 29s intro_wakeup cutscene, producing the visible
-// "double-thick letterbox + duplicate skip button" the user reported as
-// "duplicate frames in the prologue". The IntroWakeOverlay file itself
-// is also deleted as dead code.
+// 'thin' letterbox bars + the timeline's sparse text beats + a "Пропустить"
+// skip button. Both overlays were mounted simultaneously during the entire
+// 29s intro_wakeup cutscene, producing the visible "double-thick letterbox +
+// duplicate skip button" the user reported as "duplicate frames in the
+// prologue". The IntroWakeOverlay file itself is also deleted as dead code.
 
 /**
  * Cutscene text overlay — mounted while a cutscene is active.
