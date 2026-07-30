@@ -101,6 +101,16 @@ const mat_light_tube = getSharedStandardMaterial({
 const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeof useGLTF>[3]>;
 const KENNEY_TERMINAL_MODEL = '/models/props/terminal.glb';
 
+/** Desk slots kept when authored shell + GLB dressing replace the full procedural grid. */
+const OFFICE_HERO_DESK_POSITIONS: readonly [number, number, number][] = [
+  [-4.5, 0, -3.5],
+  [-1.5, 0, -1.0],
+  [-1.5, 0, 1.5],
+  [1.5, 0, -3.5],
+  [1.5, 0, 1.5],
+  [4.5, 0, -1.0],
+];
+
 function cloneOfficeAsset(source: THREE.Object3D, castShadow: boolean): THREE.Object3D {
   const clone = source.clone(true);
   clone.traverse((node) => {
@@ -182,6 +192,23 @@ export function OfficeDayVisual({ livePlayerPositionRef }: OfficeDayVisualProps)
   const { preset } = useGraphicsQuality();
   const useAuthoredShell = !preset.visualLite;
   const useAuthoredDesks = !preset.visualLite && allowsGlbAssetRendering(preset.environmentRenderMode);
+  const hideProceduralDeskGrid = useAuthoredShell && useAuthoredDesks;
+  const deskPositions = hideProceduralDeskGrid
+    ? OFFICE_HERO_DESK_POSITIONS
+    : ([
+        [-4.5, 0, -3.5],
+        [-4.5, 0, -1.0],
+        [-4.5, 0, 1.5],
+        [-1.5, 0, -3.5],
+        [-1.5, 0, -1.0],
+        [-1.5, 0, 1.5],
+        [1.5, 0, -3.5],
+        [1.5, 0, -1.0],
+        [1.5, 0, 1.5],
+        [4.5, 0, -3.5],
+        [4.5, 0, -1.0],
+        [4.5, 0, 1.5],
+      ] as const);
   const floorTexture = useCachedCanvasTexture('office_day:floor', createOfficeFloorTexture);
   const wallTexture = useCachedCanvasTexture('office_day:wall', createOfficeWallTexture);
   const ceilingWashTexture = useCachedCanvasTexture(
@@ -264,25 +291,14 @@ export function OfficeDayVisual({ livePlayerPositionRef }: OfficeDayVisualProps)
       {/* ── ROWS OF DESKS WITH MONITORS ── */}
       {/* ═══════════════════════════════════════════════ */}
 
-      {/* Row 1 - left side */}
-      <OfficeDesk position={[-4.5, 0, -3.5]} authored={useAuthoredDesks} castShadow={preset.shadows} />
-      <OfficeDesk position={[-4.5, 0, -1.0]} authored={useAuthoredDesks} castShadow={preset.shadows} />
-      <OfficeDesk position={[-4.5, 0, 1.5]} authored={useAuthoredDesks} castShadow={preset.shadows} />
-
-      {/* Row 2 - center-left */}
-      <OfficeDesk position={[-1.5, 0, -3.5]} authored={useAuthoredDesks} castShadow={preset.shadows} />
-      <OfficeDesk position={[-1.5, 0, -1.0]} authored={useAuthoredDesks} castShadow={preset.shadows} />
-      <OfficeDesk position={[-1.5, 0, 1.5]} authored={useAuthoredDesks} castShadow={preset.shadows} />
-
-      {/* Row 3 - center-right */}
-      <OfficeDesk position={[1.5, 0, -3.5]} authored={useAuthoredDesks} castShadow={preset.shadows} />
-      <OfficeDesk position={[1.5, 0, -1.0]} authored={useAuthoredDesks} castShadow={preset.shadows} />
-      <OfficeDesk position={[1.5, 0, 1.5]} authored={useAuthoredDesks} castShadow={preset.shadows} />
-
-      {/* Row 4 - right side */}
-      <OfficeDesk position={[4.5, 0, -3.5]} authored={useAuthoredDesks} castShadow={preset.shadows} />
-      <OfficeDesk position={[4.5, 0, -1.0]} authored={useAuthoredDesks} castShadow={preset.shadows} />
-      <OfficeDesk position={[4.5, 0, 1.5]} authored={useAuthoredDesks} castShadow={preset.shadows} />
+      {deskPositions.map((position) => (
+        <OfficeDesk
+          key={`desk-${position[0]}-${position[2]}`}
+          position={[position[0], position[1], position[2]]}
+          authored={useAuthoredDesks}
+          castShadow={preset.shadows}
+        />
+      ))}
 
       {/* ═══════════════════════════════════════════════ */}
       {/* ── SERVER RACKS (back wall) ── */}
@@ -454,27 +470,23 @@ export function OfficeDayVisual({ livePlayerPositionRef }: OfficeDayVisualProps)
       {/* ═══════════════════════════════════════════════ */}
 
       {/* ── Cubicle dividers between desk rows ── */}
-      {[
-        // Between row 1 and row 2 (left side)
-        { pos: [-3.0, 0, -2.25] as [number, number, number], rot: 0 },
-        { pos: [-3.0, 0, 0.25] as [number, number, number], rot: 0 },
-        // Between row 3 and row 4 (right side)
-        { pos: [3.0, 0, -2.25] as [number, number, number], rot: 0 },
-        { pos: [3.0, 0, 0.25] as [number, number, number], rot: 0 },
-        // Along row 2 (center-left) backs
-        { pos: [-1.5, 0, -2.25] as [number, number, number], rot: 0 },
-        // Along row 3 (center-right) backs
-        { pos: [1.5, 0, -2.25] as [number, number, number], rot: 0 },
-      ].map((div, i) => (
-        <group key={`divider-${i}`} position={div.pos} rotation={[0, div.rot, 0]}>
-          {/* Divider panel */}
-          <mesh position={[0, 0.75, 0]} castShadow material={mat_17}>
-            <boxGeometry args={[1.4, 0.8, 0.03]} /></mesh>
-          {/* Divider top rail */}
-          <mesh position={[0, 1.16, 0]} material={mat_18}>
-            <boxGeometry args={[1.42, 0.025, 0.035]} /></mesh>
-        </group>
-      ))}
+      {!hideProceduralDeskGrid
+        ? [
+            { pos: [-3.0, 0, -2.25] as [number, number, number], rot: 0 },
+            { pos: [-3.0, 0, 0.25] as [number, number, number], rot: 0 },
+            { pos: [3.0, 0, -2.25] as [number, number, number], rot: 0 },
+            { pos: [3.0, 0, 0.25] as [number, number, number], rot: 0 },
+            { pos: [-1.5, 0, -2.25] as [number, number, number], rot: 0 },
+            { pos: [1.5, 0, -2.25] as [number, number, number], rot: 0 },
+          ].map((div, i) => (
+            <group key={`divider-${i}`} position={div.pos} rotation={[0, div.rot, 0]}>
+              <mesh position={[0, 0.75, 0]} castShadow material={mat_17}>
+                <boxGeometry args={[1.4, 0.8, 0.03]} /></mesh>
+              <mesh position={[0, 1.16, 0]} material={mat_18}>
+                <boxGeometry args={[1.42, 0.025, 0.035]} /></mesh>
+            </group>
+          ))
+        : null}
 
       {/* ── Printer/copier in corner ── */}
       <group position={[-6.0, 0, 2.0]}>

@@ -114,6 +114,12 @@ import {
   getTolpaQuantumFireHint,
   getTolpaWhisperHint,
 } from '@/engine/guidedStory/chkTolpaQuestHints';
+import {
+  getCafeOfficeRelayHint,
+  getNightCityWatchHint,
+  getPierCafeFrequencyHint,
+  getStreetChkSamizdatHint,
+} from '@/engine/guidedStory/expansionHubQuestHints';
 import { buildGuidanceDirectionHint } from '@/engine/guidedStory/guidanceLocation';
 import {
   getNextTrackedObjective,
@@ -212,6 +218,22 @@ export function buildQuestJournalContextualHint(
   }
   if (questId === 'morning_sync') {
     const live = getMorningSyncHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'act2_cafe_office_relay') {
+    const live = getCafeOfficeRelayHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'act2_street_chk_samizdat') {
+    const live = getStreetChkSamizdatHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'act2_pier_cafe_frequency') {
+    const live = getPierCafeFrequencyHint(currentSceneId);
+    if (live) return live;
+  }
+  if (questId === 'act2_night_city_watch') {
+    const live = getNightCityWatchHint(currentSceneId);
     if (live) return live;
   }
   if (questId === 'tolpa_whisper') {

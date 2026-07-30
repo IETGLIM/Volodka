@@ -38,7 +38,7 @@ const SCENE_GLTF_ASSETS: Partial<Record<SceneId, readonly string[]>> = {
   factory_basement: ['interior_basement'],
   rooftop_edge: ['interior_rooftop'],
   river_pier: ['interior_pier'],
-  chk_forest_zorge: ['interior_forest_clearing'],
+  chk_forest_zorge: ['interior_forest_clearing', 'veg_tree_pine'],
   street_night: [],
 };
 

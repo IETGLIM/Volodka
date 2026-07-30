@@ -169,6 +169,16 @@ export const SCENE_ASSET_OWNERSHIP: readonly SceneAssetOwnershipEntry[] = [
     exclusive: false,
     assetIds: ['veg_tree_pine'],
   },
+  {
+    sceneId: 'chk_forest_zorge',
+    slot: 'manifest_environment',
+    owner: 'manifest_environment',
+    systems: ['SceneManifestAssets', 'PhysicsSceneInner', 'prune-deploy-assets'],
+    quality: HIGH_ONLY,
+    exclusive: false,
+    assetIds: ['veg_tree_pine'],
+    notes: 'Shipped pine LODs at clearing perimeter; backdrop shell + props own hero clutter.',
+  },
   ...([
     'volodka_room',
     'volodka_corridor',

@@ -114,6 +114,8 @@ export const SCENE_PROP_DRESSING: Partial<Record<SceneId, readonly ScenePropPlac
     { propModelId: 'polyhaven_barrel', position: [0, 0, -2.0], rotationY: 0.12, loadTier: 'deferred' },
     { propModelId: 'polyhaven_street_lamp', position: [-8.5, 0, 1.5], rotationY: 0.18, loadTier: 'deferred' },
     { propModelId: 'polyhaven_old_tyre', position: [-6.2, 0, 3.2], rotationY: 0.55, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_cardboard_box', position: [1.8, 0, -3.4], rotationY: -0.2, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_trashbag', position: [-3.5, 0, 2.8], rotationY: 0.35, loadTier: 'deferred' },
   ],
   chk_forest_zorge: [
     { propModelId: 'kenney_city_campfire', position: [0, 0, -2.0] },

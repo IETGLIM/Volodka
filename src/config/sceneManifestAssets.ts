@@ -19,6 +19,12 @@ export const SCENE_MANIFEST_ASSETS: Partial<Record<SceneId, readonly SceneManife
     { assetId: 'veg_tree_pine', position: [9, 0, -6], scale: 1.8, rotation: [0, 0.6, 0] },
     { assetId: 'veg_tree_pine', position: [-10, 0, 5], scale: 2.2, rotation: [0, -0.4, 0] },
   ],
+  chk_forest_zorge: [
+    { assetId: 'veg_tree_pine', position: [-12, 0, -10], scale: 2.4, rotation: [0, 0.35, 0] },
+    { assetId: 'veg_tree_pine', position: [11, 0, -9], scale: 2.1, rotation: [0, -0.5, 0] },
+    { assetId: 'veg_tree_pine', position: [-13, 0, 5], scale: 2.0, rotation: [0, 0.8, 0] },
+    { assetId: 'veg_tree_pine', position: [10, 0, 8], scale: 1.9, rotation: [0, -0.25, 0] },
+  ],
 };
 
 export function getSceneManifestAssets(sceneId: SceneId): readonly SceneManifestPlacement[] {

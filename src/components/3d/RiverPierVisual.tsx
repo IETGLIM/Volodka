@@ -44,6 +44,8 @@ function pierSeededRandom(seed: number): () => number {
 export function RiverPierVisual({ sceneId = 'river_pier' }: RiverPierVisualProps) {
   const { preset } = useGraphicsQuality();
   const useGltfDressing = allowsGlbAssetRendering(preset.environmentRenderMode);
+  const useAuthoredBackdrop = !preset.visualLite && useGltfDressing;
+  const hideDockClutter = useAuthoredBackdrop;
   const plankTexture = useCachedCanvasTexture('river_pier:planks', createPlankTexture);
   const rainIntensity = useGameStore((s) => s.rainIntensity);
   const waterRef = useRef<THREE.Mesh>(null);
@@ -84,7 +86,7 @@ export function RiverPierVisual({ sceneId = 'river_pier' }: RiverPierVisualProps
       />
 
       {/* ── Wooden pier deck (player area) ── */}
-      <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.012} geometry={getSharedPlaneGeometry(W, D)}>
+      <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={useAuthoredBackdrop ? 0.018 : 0.012} geometry={getSharedPlaneGeometry(W, D)}>
         <meshStandardMaterial
           map={plankTexture}
           color="#4a3e30"
@@ -126,14 +128,16 @@ export function RiverPierVisual({ sceneId = 'river_pier' }: RiverPierVisualProps
       ))}
 
       {/* ── Pier railing along the water edge ── */}
-      <PierRailing />
+      {!hideDockClutter ? <PierRailing /> : null}
 
       {/* ── Pilings under the deck edge ── */}
-      {[-10, -6, -2, 2, 6, 10].map((x) => (
+      {!hideDockClutter
+        ? [-10, -6, -2, 2, 6, 10].map((x) => (
         <mesh key={`piling-${x}`} position={[x, -0.5, -9.2]} geometry={getSharedCylinderGeometry(0.14, 0.16, 1.6, 7)}>
           <meshStandardMaterial color="#2c2419" roughness={0.95} />
         </mesh>
-      ))}
+      ))
+        : null}
 
       {/* ── Barrel fire — keep animated flame; barrel mesh owned by prop dressing ── */}
       <group position={[0, 0, -2]}>
@@ -198,18 +202,22 @@ export function RiverPierVisual({ sceneId = 'river_pier' }: RiverPierVisualProps
       </group>
       ) : null}
 
-      {/* ── Old overturned boat on the bank ── */}
+      {/* ── Old overturned boat on the bank — prop dressing owns tyre/crate clutter ── */}
+      {!hideDockClutter ? (
       <group position={[-6, 0, 3]} rotation={[0, 0.4, Math.PI]}>
         <mesh position={[0, -0.4, 0]} castShadow>
           <cylinderGeometry args={[0.5, 0.7, 2.8, 7, 1, false, 0, Math.PI]} />
           <meshStandardMaterial color="#3f4a50" roughness={0.85} side={THREE.DoubleSide} />
         </mesh>
       </group>
+      ) : null}
 
       {/* ── Fishing rod leaning on the railing ── */}
+      {!hideDockClutter ? (
       <mesh position={[4.5, 0.7, -8.2]} rotation={[0.5, 0, 0.15]} castShadow geometry={getSharedCylinderGeometry(0.012, 0.02, 2.4, 5)}>
         <meshStandardMaterial color="#5a4a34" roughness={0.8} />
       </mesh>
+      ) : null}
 
       {/* ── String lights between two poles ── */}
       <StringLights />

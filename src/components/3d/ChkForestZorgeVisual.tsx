@@ -48,6 +48,8 @@ export function ChkForestZorgeVisual({
 }: ChkForestZorgeVisualProps) {
   const { preset } = useGraphicsQuality();
   const useGltfDressing = allowsGlbAssetRendering(preset.environmentRenderMode);
+  const useAuthoredBackdrop = !preset.visualLite && useGltfDressing;
+  const hideProceduralForestBelt = useAuthoredBackdrop;
   const backdropSceneId: SceneId = sceneId === 'chk_campfire_night' ? 'chk_forest_zorge' : sceneId;
   const groundTexture = useCachedCanvasTexture('chk_forest_zorge:ground', createForestGroundTexture);
   const envProfile = useMemo(
@@ -95,7 +97,7 @@ export function ChkForestZorgeVisual({
       <SceneBackdropShell sceneId={backdropSceneId} />
 
       {/* Ground — mossy clearing */}
-      <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={getSharedPlaneGeometry(W, D)}>
+      <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={useAuthoredBackdrop ? 0.012 : 0.001} geometry={getSharedPlaneGeometry(W, D)}>
         <meshStandardMaterial
           map={groundTexture}
           color="#2a4a22"
@@ -112,7 +114,8 @@ export function ChkForestZorgeVisual({
       </mesh>
 
       {/* Forest perimeter — lightweight procedural trees (no ez-tree bundle) */}
-        {treePlacements.map((t) => (
+      {!hideProceduralForestBelt
+        ? treePlacements.map((t) => (
           <EnvironmentDetail key={`tree-lod-${t.seed}`} minLod="standard" position={t.pos}>
           <SceneClutterGate
             key={t.seed}
@@ -128,10 +131,27 @@ export function ChkForestZorgeVisual({
             />
           </SceneClutterGate>
           </EnvironmentDetail>
+        ))
+        : treePlacements.slice(0, 4).map((t) => (
+          <EnvironmentDetail key={`tree-lod-${t.seed}`} minLod="standard" position={t.pos}>
+            <SceneClutterGate
+              key={t.seed}
+              livePlayerPositionRef={livePlayerPositionRef}
+              position={t.pos}
+              maxDistance={envProfile.decorativeDistance}
+            >
+              <ForestTree
+                position={[0, 0, 0]}
+                preset={t.preset}
+                scale={t.scale}
+                rotation={t.rot}
+              />
+            </SceneClutterGate>
+          </EnvironmentDetail>
         ))}
 
       {/* Dense instanced tree belt — closes the clearing into an actual forest */}
-      <InstancedTreeBelt />
+      {!hideProceduralForestBelt ? <InstancedTreeBelt /> : null}
 
       {/* Night sky: moon disc + starfield (fog-exempt, skybox is disabled here) */}
       <NightSky />
@@ -172,8 +192,9 @@ export function ChkForestZorgeVisual({
         <pointLight ref={fireLightRef} color="#ff8833" intensity={3.2} distance={14} position={[0, 1.2, 0]} castShadow />
       </group>
 
-      {/* Log seats around fire */}
-      {[
+      {/* Log seats around fire — ScenePropDressing owns bench/crate seating on High/Ultra */}
+      {!useGltfDressing
+        ? [
         [-2.2, 0, 0.8],
         [2.2, 0, 0.6],
         [0.5, 0, -2.0],
@@ -183,7 +204,8 @@ export function ChkForestZorgeVisual({
         <mesh key={`seat-${i}`} position={[x, y + 0.12, z]} rotation={[0, i * 0.7, 0]} castShadow geometry={getSharedCylinderGeometry(0.18, 0.2, 0.24, 8)}>
           <meshStandardMaterial color="#4a3520" roughness={0.85} />
         </mesh>
-      ))}
+      ))
+        : null}
 
       {/* Port wine crate + bottles — ScenePropDressing owns High/Ultra */}
       {!useGltfDressing ? (
