@@ -158,6 +158,7 @@ export const LORE_STORY_NODE_MAP: Record<string, string[]> = {
   act3_exp_library_relay_echo: ['lore_frequency_poem'],
   act3_exp_cafe_relay_ack: ['lore_hub_relay_network'],
   act3_exp_office_relay_ack: ['lore_hub_relay_network'],
+  act3_exp_guild_relay_ack: ['lore_hub_relay_network'],
   factory_basement_familiar: ['lore_zarya_project_early'],
   machine_confession_scene_thread: ['lore_great_crash_2029', 'lore_incident_4729'],
 

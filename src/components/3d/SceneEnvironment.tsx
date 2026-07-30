@@ -41,6 +41,7 @@ const SCENE_FOG_COLORS: Record<string, string> = {
 
   // ─── Bank / IT Support ───
   office_day:         '#c8d4e0', // sterile blue-white
+  guild_mainframe:    '#081820', // cold teal server-rack haze
 
   // ─── Dark Fantasy ───
   sleep_dream:        '#100828', // deep purple fog (Dark Fantasy dreamscape)
@@ -75,6 +76,7 @@ const SCENE_BG_COLORS: Record<string, string> = {
   abandoned_factory:  '#100804',
   factory_basement:   '#060a08',
   office_day:         '#b0bcc8',
+  guild_mainframe:    '#040c10',
   sleep_dream:        '#060210',
   battle:             '#0a0202',
   rooftop_edge:       '#100804',
@@ -105,9 +107,10 @@ const SCENE_FOG_ANIM: Record<string, FogAnimConfig> = {
   home_evening:       { pulseFreq: 0.06, nearAmplitude: 0.04, farAmplitude: 0.02, colorShiftAmp: 0 },
   street_night:       { pulseFreq: 0.05, nearAmplitude: 0.06, farAmplitude: 0.04, altFogColor: '#404458', colorShiftAmp: 0.18 },
   cafe_evening:       { pulseFreq: 0.07, nearAmplitude: 0.05, farAmplitude: 0.03, altFogColor: '#0d0818', colorShiftAmp: 0.15 },
-  office_day:         { pulseFreq: 0.03, nearAmplitude: 0.02, farAmplitude: 0.01, colorShiftAmp: 0 },
+  office_day:         { pulseFreq: 0.03, nearAmplitude: 0.02, farAmplitude: 0.01, altFogColor: '#b8c8dc', colorShiftAmp: 0.08 },
+  guild_mainframe:    { pulseFreq: 0.05, nearAmplitude: 0.04, farAmplitude: 0.03, altFogColor: '#0a2830', colorShiftAmp: 0.12 },
+  library_day:        { pulseFreq: 0.02, nearAmplitude: 0.03, farAmplitude: 0.02, altFogColor: '#1a1810', colorShiftAmp: 0.06 },
   park_day:           { pulseFreq: 0.04, nearAmplitude: 0.12, farAmplitude: 0.1,  altFogColor: '#1a2a18', colorShiftAmp: 0.3 },
-  library_day:        { pulseFreq: 0.02, nearAmplitude: 0.03, farAmplitude: 0.02, colorShiftAmp: 0 },
   battle:             { pulseFreq: 0.3,  nearAmplitude: 0.15, farAmplitude: 0.1,  altFogColor: '#200505', colorShiftAmp: 0.3 },
   sleep_dream:        { pulseFreq: 0.02, nearAmplitude: 0.2,  farAmplitude: 0.15, altFogColor: '#100830', colorShiftAmp: 0.4 },
   rooftop_edge:       { pulseFreq: 0.06, nearAmplitude: 0.08, farAmplitude: 0.06, altFogColor: '#1a1008', colorShiftAmp: 0.2 },

@@ -1,9 +1,9 @@
 /**
  * PhysicsSceneInner mount-order invariants.
  *
- * Full decomposition is deferred (P1). These sections document the required
- * relative order when extracting child components — changing order can break
- * Rapier init, interaction queries, GPU preload, or lighting passes.
+ * PhysicsSceneInner is a thin orchestrator of section wrappers below.
+ * Changing section order can break Rapier init, interaction queries,
+ * GPU preload, or lighting passes.
  */
 
 /** Ordered mount sections inside `<Physics>` — do not reorder sections relative to each other. */
@@ -66,7 +66,10 @@ export const PHYSICS_SCENE_MOUNT_WRAPPERS = {
   PhysicsSceneCinematicMounts: 'cinematic_and_triggers',
   PhysicsSceneInteractionBridges: 'interaction_bridges',
   PhysicsSceneProximityQuestMounts: 'proximity_and_quests',
+  PhysicsSceneTransitionMounts: 'scene_transitions',
   PhysicsSceneLifecycleMounts: 'lifecycle_bridges',
+  PhysicsSceneInteractionSystemMounts: 'interaction_system',
+  PhysicsSceneLightingMounts: 'lighting_and_environment',
 } as const satisfies Record<string, PhysicsSceneMountSection>;
 
 /** Individual mount ids within each section (for regression tests). */
@@ -114,12 +117,20 @@ export const PHYSICS_SCENE_SECTION_MOUNTS: Record<PhysicsSceneMountSection, read
     'QuestWaypoints',
     'ChoiceReactivity',
   ],
-  scene_transitions: ['SceneTransitionHandler'],
+  scene_transitions: ['PhysicsSceneTransitionMounts', 'SceneTransitionHandler'],
   lifecycle_bridges: [
     'PhysicsSceneLifecycleMounts',
     'SceneGpuLifecycleBridge',
     'RapierWorldLifecycleBridge',
   ],
-  interaction_system: ['InteractionSystemBridge', 'RotationSyncBridge'],
-  lighting_and_environment: ['ExplorationLighting', 'SceneEnvironment'],
+  interaction_system: [
+    'PhysicsSceneInteractionSystemMounts',
+    'InteractionSystemBridge',
+    'RotationSyncBridge',
+  ],
+  lighting_and_environment: [
+    'PhysicsSceneLightingMounts',
+    'ExplorationLighting',
+    'SceneEnvironment',
+  ],
 };

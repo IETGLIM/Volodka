@@ -1798,4 +1798,30 @@ export const ACT3_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
       },
     ],
   },
+
+  /* ══════════════════════════════════════════════════════════════════════════
+     Act 3 hub beat — guild mainframe closes office→mainframe relay leg
+     ══════════════════════════════════════════════════════════════════════════ */
+  act3_exp_guild_relay_ack: {
+    id: 'act3_exp_guild_relay_ack',
+    text: [
+      'Стойки гудят не от охлаждения — от частоты. На центральной консоли вспыхивает строка, которую никто не вводил: «777 / OFFICE / ACK». Светодиоды на кабельных лотках мигают в такт, как heartbeat «Прогресс-7» под пирсом.',
+      '',
+      '«Офис передал,» — шепчет экран, будто помнит голос коллеги. «Гильдия не логирует. Мейнфрейм — помнит. Когда архив сотрёт офис, узел останется здесь — под полом, где push не дотягивается.»',
+    ].join('\n'),
+    speaker: 'narrator',
+    sceneId: 'guild_mainframe',
+    contextNote: 'После office relay серверная подтверждает hub-mesh: office → guild mainframe.',
+    choices: [
+      {
+        text: 'Запомнить — узел жив под полом',
+        next: 'office_explore_mode',
+        effects: [
+          { type: 'setFlag', flag: 'act3_guild_relay_ack_done', flagValue: true },
+          { type: 'discoverLore', loreId: 'lore_hub_relay_network' },
+          { type: 'addXp', value: 25 },
+        ],
+      },
+    ],
+  },
 };

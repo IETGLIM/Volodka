@@ -46,19 +46,22 @@ describe('physicsSceneMountOrder', () => {
     expect(cinematicIdx).toBeLessThan(bridgesIdx);
   });
 
-  it('documents extracted mount wrappers for Stage 11+ decomposition', () => {
+  it('documents extracted mount wrappers for full PhysicsSceneInner decomposition', () => {
     expect(PHYSICS_SCENE_MOUNT_WRAPPERS.PhysicsScenePlayerMounts).toBe('colliders_and_player');
     expect(PHYSICS_SCENE_MOUNT_WRAPPERS.PhysicsSceneCameraMounts).toBe('camera_and_hands');
     expect(PHYSICS_SCENE_MOUNT_WRAPPERS.PhysicsSceneWorldDressingMounts).toBe('world_dressing');
     expect(PHYSICS_SCENE_MOUNT_WRAPPERS.PhysicsSceneNpcMounts).toBe('npc_and_ambient');
     expect(PHYSICS_SCENE_MOUNT_WRAPPERS.PhysicsSceneCinematicMounts).toBe('cinematic_and_triggers');
     expect(PHYSICS_SCENE_MOUNT_WRAPPERS.PhysicsSceneProximityQuestMounts).toBe('proximity_and_quests');
-    expect(PHYSICS_SCENE_SECTION_MOUNTS.colliders_and_player[0]).toBe('PhysicsScenePlayerMounts');
-    expect(PHYSICS_SCENE_SECTION_MOUNTS.camera_and_hands[0]).toBe('PhysicsSceneCameraMounts');
-    expect(PHYSICS_SCENE_SECTION_MOUNTS.world_dressing[0]).toBe('PhysicsSceneWorldDressingMounts');
-    expect(PHYSICS_SCENE_SECTION_MOUNTS.npc_and_ambient[0]).toBe('PhysicsSceneNpcMounts');
-    expect(PHYSICS_SCENE_SECTION_MOUNTS.cinematic_and_triggers[0]).toBe('PhysicsSceneCinematicMounts');
-    expect(PHYSICS_SCENE_SECTION_MOUNTS.proximity_and_quests[0]).toBe('PhysicsSceneProximityQuestMounts');
+    expect(PHYSICS_SCENE_MOUNT_WRAPPERS.PhysicsSceneTransitionMounts).toBe('scene_transitions');
+    expect(PHYSICS_SCENE_MOUNT_WRAPPERS.PhysicsSceneInteractionSystemMounts).toBe('interaction_system');
+    expect(PHYSICS_SCENE_MOUNT_WRAPPERS.PhysicsSceneLightingMounts).toBe('lighting_and_environment');
+    expect(Object.keys(PHYSICS_SCENE_MOUNT_WRAPPERS).length).toBe(PHYSICS_SCENE_MOUNT_SECTIONS.length);
+    for (const section of PHYSICS_SCENE_MOUNT_SECTIONS) {
+      const wrapperEntry = Object.entries(PHYSICS_SCENE_MOUNT_WRAPPERS).find(([, s]) => s === section);
+      expect(wrapperEntry, `missing wrapper for ${section}`).toBeDefined();
+      expect(PHYSICS_SCENE_SECTION_MOUNTS[section][0]).toBe(wrapperEntry![0]);
+    }
   });
 
   it('keeps player mounts before camera mounts before world dressing', () => {
