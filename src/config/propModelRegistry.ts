@@ -122,7 +122,8 @@ export const PROP_MODEL_REGISTRY: Record<string, PropModelDefinition> = {
   kenney_city_bench: {
     id: 'kenney_city_bench',
     url: `${CITYKIT}/bench.glb`,
-    targetSizeM: [0.4, 0.47, 0.2],
+    targetSizeM: [1.8, 0.86, 0.62],
+    fitAxis: 'width',
     license: 'CC0',
     source: 'Kenney Furniture Kit — bench',
     sourceUrl: KENNEY_FURNITURE_URL,
@@ -130,7 +131,7 @@ export const PROP_MODEL_REGISTRY: Record<string, PropModelDefinition> = {
   kenney_city_lamp_post: {
     id: 'kenney_city_lamp_post',
     url: `${CITYKIT}/lamp_post.glb`,
-    targetSizeM: [0.05, 0.6, 0.24],
+    targetSizeM: [0.32, 3.0, 0.32],
     fitAxis: 'height',
     license: 'CC0',
     source: 'Kenney City Kit (Roads) — light-square',
@@ -139,7 +140,8 @@ export const PROP_MODEL_REGISTRY: Record<string, PropModelDefinition> = {
   kenney_city_table_small: {
     id: 'kenney_city_table_small',
     url: `${CITYKIT}/table_small.glb`,
-    targetSizeM: [0.53, 0.38, 0.22],
+    targetSizeM: [0.72, 0.48, 0.72],
+    fitAxis: 'maxHorizontal',
     license: 'CC0',
     source: 'Kenney Furniture Kit — sideTable',
     sourceUrl: KENNEY_FURNITURE_URL,
@@ -156,7 +158,8 @@ export const PROP_MODEL_REGISTRY: Record<string, PropModelDefinition> = {
   kenney_city_bookshelf: {
     id: 'kenney_city_bookshelf',
     url: `${CITYKIT}/bookshelf.glb`,
-    targetSizeM: [0.4, 0.85, 0.25],
+    targetSizeM: [0.85, 1.95, 0.4],
+    fitAxis: 'height',
     license: 'CC0',
     source: 'Kenney Furniture Kit — bookcaseClosed',
     sourceUrl: KENNEY_FURNITURE_URL,
@@ -164,7 +167,8 @@ export const PROP_MODEL_REGISTRY: Record<string, PropModelDefinition> = {
   kenney_city_terminal: {
     id: 'kenney_city_terminal',
     url: `${CITYKIT}/terminal.glb`,
-    targetSizeM: [0.39, 0.29, 0.1],
+    targetSizeM: [0.42, 0.34, 0.18],
+    fitAxis: 'width',
     license: 'CC0',
     source: 'Kenney Furniture Kit — computerScreen',
     sourceUrl: KENNEY_FURNITURE_URL,
@@ -172,7 +176,8 @@ export const PROP_MODEL_REGISTRY: Record<string, PropModelDefinition> = {
   kenney_city_coffee_machine: {
     id: 'kenney_city_coffee_machine',
     url: `${CITYKIT}/coffee_machine.glb`,
-    targetSizeM: [0.19, 0.18, 0.24],
+    targetSizeM: [0.32, 0.34, 0.36],
+    fitAxis: 'height',
     license: 'CC0',
     source: 'Kenney Furniture Kit — kitchenCoffeeMachine',
     sourceUrl: KENNEY_FURNITURE_URL,
@@ -180,7 +185,8 @@ export const PROP_MODEL_REGISTRY: Record<string, PropModelDefinition> = {
   kenney_city_guitar: {
     id: 'kenney_city_guitar',
     url: `${CITYKIT}/guitar.glb`,
-    targetSizeM: [0.32, 0.23, 0.1],
+    targetSizeM: [0.42, 1.02, 0.12],
+    fitAxis: 'height',
     license: 'CC0',
     source: 'Kenney Furniture Kit — radio (interim guitar prop)',
     sourceUrl: KENNEY_FURNITURE_URL,
@@ -188,7 +194,8 @@ export const PROP_MODEL_REGISTRY: Record<string, PropModelDefinition> = {
   kenney_city_bottle: {
     id: 'kenney_city_bottle',
     url: `${CITYKIT}/bottle.glb`,
-    targetSizeM: [0.66, 0.23, 0.4],
+    targetSizeM: [0.08, 0.23, 0.08],
+    fitAxis: 'height',
     license: 'CC0',
     source: 'Kenney Furniture Kit — tableCoffeeGlass',
     sourceUrl: KENNEY_FURNITURE_URL,

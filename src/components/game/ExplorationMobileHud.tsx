@@ -27,6 +27,10 @@ import { requestSceneTransition } from '@/engine/scene/sceneTransition';
 import { getSceneExits } from '@/config/scenes';
 import { TRIGGER_ZONES } from '@/data/triggerZones';
 import { CYBER_CYAN } from '@/shared/constants/cyberPalette';
+import { isCinematicTimelineActive } from '@/engine/cinematic/cinematicTimelineOrchestrator';
+import { isInteractionLocked } from '@/engine/interaction/interactionSession';
+import { isGameplayOverlayLocomotionLocked } from '@/engine/player/playerLocomotionGate';
+import { isNarrativeMovementLocked } from '@/shared/exploreHubNodes';
 
 /** Apple HIG minimum touch target (px). */
 const MIN_TOUCH_TARGET = 44;
@@ -36,6 +40,15 @@ const TAP_DEBOUNCE_MS = 280;
 const SWIPE_THRESHOLD_PX = 80;
 const SWIPE_MAX_Y_DRIFT_PX = 100;
 const SWIPE_TIMEOUT_MS = 500;
+
+function canUseMobileExitFallback(store: ReturnType<typeof useGameStore.getState>): boolean {
+  if (readGamePhase(store) !== 'exploration') return false;
+  if (store.activeCutsceneId || isCinematicTimelineActive()) return false;
+  if (isInteractionLocked() || isGameplayOverlayLocomotionLocked()) return false;
+  if (isNarrativeMovementLocked(store.showStoryOverlay, store.currentNodeId)) return false;
+  if (store.diegeticNarrative != null) return false;
+  return true;
+}
 
 /** Haptic feedback helper — uses Vibration API when available */
 function hapticTap(): void {
@@ -211,7 +224,7 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory, onOpenJ
     // directly emit scene:transition for the nearest available exit.
     try {
       const store = useGameStore.getState();
-      if (readGamePhase(store) === 'exploration') {
+      if (canUseMobileExitFallback(store)) {
         const playerPos = store.exploration.playerPosition;
         const sceneId = store.exploration.currentSceneId;
         const flags = store.playerState.flags;
