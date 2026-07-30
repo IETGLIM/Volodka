@@ -2,6 +2,10 @@
 
 import type { SceneId } from '@/shared/types/game';
 import { isSceneAssetSystemAllowed } from '@/config/assetOwnership';
+import { getInteriorShellUniformScale } from '@/config/interiorShellScale';
+
+const CORRIDOR_TARGET_BOUNDS_M: [number, number, number] = [6, 3, 16];
+const CORRIDOR_SHELL_UNIFORM_SCALE = getInteriorShellUniformScale('corridor', CORRIDOR_TARGET_BOUNDS_M);
 
 export interface SceneInteriorPlacement {
   assetId: string;
@@ -16,7 +20,12 @@ export const SCENE_INTERIOR_ASSETS: Partial<Record<SceneId, readonly SceneInteri
   // volodka_room: removed — VolodkaRoomVisual provides full procedural geometry;
   // the interior_room_bedroom GLB shell was overlapping with procedural walls/floor/ceiling.
   volodka_corridor: [
-    { assetId: 'interior_corridor', position: [0, 0, 4], scale: 2.0, rotation: [0, Math.PI / 2, 0] },
+    {
+      assetId: 'interior_corridor',
+      position: [0, 0, 4],
+      scale: CORRIDOR_SHELL_UNIFORM_SCALE,
+      rotation: [0, Math.PI / 2, 0],
+    },
   ],
   // cafe_evening, office_day, library_day, abandoned_factory, factory_basement,
   // guild_mainframe, river_pier, and chk_forest_zorge backdrop shells are owned

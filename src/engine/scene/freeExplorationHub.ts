@@ -43,14 +43,25 @@ function showHubLocationContext(hubId: string, revisit: boolean): void {
  *  hub is entered rapidly (preventing stale location text from the previous scene). */
 let _hubToastTimer: ReturnType<typeof setTimeout> | null = null;
 
-// Clear hub toast on any scene transition (not just hub re-entry).
-// Accepts module-level lifetime — fine for a singleton module.
-eventBus.on('scene:transition_start', () => {
-  if (_hubToastTimer !== null) {
-    clearTimeout(_hubToastTimer);
-    _hubToastTimer = null;
-  }
-});
+let hubTransitionUnsub: (() => void) | null = null;
+
+/** (Re)bind hub toast cancel on scene transition after EventBus dispose/revive. */
+export function bindFreeExplorationHubListeners(): void {
+  unbindFreeExplorationHubListeners();
+  hubTransitionUnsub = eventBus.on('scene:transition_start', () => {
+    if (_hubToastTimer !== null) {
+      clearTimeout(_hubToastTimer);
+      _hubToastTimer = null;
+    }
+  });
+}
+
+export function unbindFreeExplorationHubListeners(): void {
+  hubTransitionUnsub?.();
+  hubTransitionUnsub = null;
+}
+
+bindFreeExplorationHubListeners();
 
 /**
  * Promote to a closed-overlay explore hub: spine tracking, closed overlay,

@@ -260,7 +260,7 @@ export function disposeCombatSystem(): void {
 
 /** Re-arm after orchestrator remount (React StrictMode). CombatManager has no disposed gate. */
 export function reviveCombatSystem(): void {
-  // No-op — session state is recreated on next combat start.
+  bindCombatGamepadListeners();
 }
 
 registerCombatStartExecutor((enemyType, options) => {
@@ -1299,22 +1299,26 @@ function resetGamepadPoemSelection(): void {
   gamepadSelectedPoemIndex = 0;
 }
 
-// Register gamepad event listeners on the eventBus (unsubs stored for HMR cleanup)
 const gamepadUnsubs: Array<() => void> = [];
-gamepadUnsubs.push(eventBus.on('combat:gamepad_attack', handleGamepadAttack));
-gamepadUnsubs.push(eventBus.on('combat:gamepad_defend', handleGamepadDefend));
-gamepadUnsubs.push(eventBus.on('combat:gamepad_flee', handleGamepadFlee));
-gamepadUnsubs.push(eventBus.on('combat:gamepad_poem_cycle_prev', handleGamepadPoemCyclePrev));
-gamepadUnsubs.push(eventBus.on('combat:gamepad_poem_cycle_next', handleGamepadPoemCycleNext));
-gamepadUnsubs.push(eventBus.on('combat:gamepad_poem_use_selected', handleGamepadPoemUseSelected));
-
-// Reset poem selection when combat starts
-gamepadUnsubs.push(eventBus.on('combat:start', resetGamepadPoemSelection));
 
 function unsubscribeGamepadListeners(): void {
   for (const unsub of gamepadUnsubs) unsub();
   gamepadUnsubs.length = 0;
 }
+
+/** (Re)bind combat gamepad handlers after EventBus dispose/revive. */
+export function bindCombatGamepadListeners(): void {
+  unsubscribeGamepadListeners();
+  gamepadUnsubs.push(eventBus.on('combat:gamepad_attack', handleGamepadAttack));
+  gamepadUnsubs.push(eventBus.on('combat:gamepad_defend', handleGamepadDefend));
+  gamepadUnsubs.push(eventBus.on('combat:gamepad_flee', handleGamepadFlee));
+  gamepadUnsubs.push(eventBus.on('combat:gamepad_poem_cycle_prev', handleGamepadPoemCyclePrev));
+  gamepadUnsubs.push(eventBus.on('combat:gamepad_poem_cycle_next', handleGamepadPoemCycleNext));
+  gamepadUnsubs.push(eventBus.on('combat:gamepad_poem_use_selected', handleGamepadPoemUseSelected));
+  gamepadUnsubs.push(eventBus.on('combat:start', resetGamepadPoemSelection));
+}
+
+bindCombatGamepadListeners();
 
 /* ═══════════════════════════════════════════════════════════════
    §11 — GET AVAILABLE POEM POWERS (cooldown-based)

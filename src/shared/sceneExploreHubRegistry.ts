@@ -58,7 +58,7 @@ export const SCENE_EXPLORE_HUB_DEFS: readonly SceneExploreHubDef[] = [
     sceneId: 'street_winter',
     hubText:
       'Зимняя улица — снег хрустит под ногами, пар изо рта, редкие прохожие в тёплых шапках. Город кажется тише, но не менее опасным.',
-    entryNodeIds: ['act4_peaceful_march', 'act4_march_continues'],
+    entryNodeIds: [],
   },
   {
     hubId: 'park_explore_mode',

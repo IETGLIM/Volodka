@@ -16,7 +16,7 @@ import { bindAppEventBus, resetAppEventBusForTests } from '@/shared/events/appEv
 import { bindSceneTransitionBridge, resetSceneTransitionBridgeForTests } from '@/shared/gameBridge/sceneTransitionBridge';
 import { wrapStoreSubscribe } from '@/engine/frame/frameProfilerCounters';
 import { isInteractionLocked } from '@/engine/interaction/interactionSession';
-import { resetSceneLoadedGate } from '@/engine/core/sceneLoadedGate';
+import { cancelPendingSceneLoaded } from '@/engine/core/sceneLoadedGate';
 
 let bound = false;
 
@@ -30,7 +30,7 @@ export function bindApplicationLayers(): void {
     resetEngineModuleRuntimeState,
     canStartQuest,
     isInteractionLocked,
-    resetSceneLoadedGate,
+    resetSceneLoadedGate: cancelPendingSceneLoaded,
   });
 
   bindStoreLifecycleHost({ resetPlayerXpBatch });

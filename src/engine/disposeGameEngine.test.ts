@@ -18,6 +18,12 @@ import { getNavMeshLayer } from '@/engine/world/NavMeshLayer';
 import { isWorldComputeWorkerAvailable, getWorldComputeWorker } from '@/engine/workers/computeWorkerClient';
 import { bindKeyboardInput, sampleKeyboardMovement } from '@/engine/keyboardInputState';
 import {
+  getInteractionSession,
+  writeInteractionSession,
+} from '@/engine/interaction/interactionSession';
+import { InteractionState } from '@/engine/interaction/interactionMachine';
+import { bindSceneLoadedBridge, scheduleSceneLoaded } from '@/engine/core/sceneLoadedGate';
+import {
   getRegisteredGlobalCleanupHandlerCount,
   runGlobalUnmountCleanup,
 } from '@/engine/core/GlobalCleanupService';
@@ -199,5 +205,46 @@ describe('disposeGameEngine', () => {
     expect(sampleKeyboardMovement().forward).toBe(false);
 
     vi.unstubAllGlobals();
+  });
+
+  it('reviveGameEngine re-binds interaction session reset on scene:transition_start', () => {
+    writeInteractionSession(InteractionState.Dialogue, 'npc_maria', { force: true });
+
+    disposeGameEngine();
+    // dispose resets session to Idle; re-arm Dialogue to prove listener is gone.
+    writeInteractionSession(InteractionState.Dialogue, 'npc_maria', { force: true });
+    eventBus.emit('scene:transition_start', {
+      targetScene: 'volodka_corridor',
+      fromSceneId: 'volodka_room',
+      spawnAt: [0, 0, 0],
+    });
+    expect(getInteractionSession().state).toBe(InteractionState.Dialogue);
+
+    reviveGameEngine();
+    writeInteractionSession(InteractionState.Dialogue, 'npc_maria', { force: true });
+    eventBus.emit('scene:transition_start', {
+      targetScene: 'volodka_corridor',
+      fromSceneId: 'volodka_room',
+      spawnAt: [0, 0, 0],
+    });
+    expect(getInteractionSession().state).toBe(InteractionState.Idle);
+  });
+
+  it('reviveGameEngine re-binds scene:loaded bridge after dispose cycle', () => {
+    bindSceneLoadedBridge();
+
+    disposeGameEngine();
+    reviveGameEngine();
+
+    const loaded = vi.fn();
+    eventBus.on('scene:loaded', loaded);
+
+    scheduleSceneLoaded({ sceneId: 'cafe_evening', fromSceneId: 'volodka_room' });
+    eventBus.emit('canvas:first-frame', { generation: 1 });
+
+    expect(loaded).toHaveBeenCalledWith({
+      sceneId: 'cafe_evening',
+      fromSceneId: 'volodka_room',
+    });
   });
 });

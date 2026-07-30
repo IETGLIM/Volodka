@@ -40,7 +40,7 @@ export const SCENE_PROP_DRESSING: Partial<Record<SceneId, readonly ScenePropPlac
   ],
   volodka_corridor: [
     { propModelId: 'kenney_door', position: [0, 0, 7.3] },
-    { propModelId: 'polyhaven_shutter_door', position: [-1.8, 0, 6.95], rotationY: Math.PI, loadTier: 'deferred' },
+    { propModelId: 'kenney_door', position: [-1.8, 0, 6.95], rotationY: Math.PI, loadTier: 'deferred' },
     { propModelId: 'polyhaven_cardboard_box', position: [1.25, 0, 5.9], rotationY: 0.2, loadTier: 'deferred' },
     { propModelId: 'polyhaven_trashbag', position: [1.75, 0, 5.55], rotationY: -0.45, loadTier: 'deferred' },
   ],

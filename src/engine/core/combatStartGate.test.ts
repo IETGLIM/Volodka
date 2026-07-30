@@ -106,4 +106,21 @@ describe('combatStartGate', () => {
 
     expect(executor).not.toHaveBeenCalled();
   });
+
+  it('does not overwrite an existing deferred combat request', async () => {
+    const executor = vi.fn();
+    registerCombatStartExecutor(executor);
+
+    performSceneTransition({
+      targetScene: 'battle',
+      spawnAt: [0, 0, 0],
+    });
+
+    expect(deferCombatStartIfTransitionBusy('system_daemon')).toBe(true);
+    expect(deferCombatStartIfTransitionBusy('corporate_golem')).toBe(true);
+
+    await flushSceneLoaded();
+    expect(executor).toHaveBeenCalledTimes(1);
+    expect(executor).toHaveBeenCalledWith('system_daemon', undefined);
+  });
 });

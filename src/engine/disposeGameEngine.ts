@@ -18,7 +18,7 @@ import { disposeMusicEngine, reviveMusicEngine } from '@/engine/MusicEngine';
 import { disposeAmbientEngine, reviveAmbientEngine } from '@/engine/audio/AmbientEngine';
 import { disposeAudioEngine, reviveAudioEngine } from '@/engine/audio/AudioEngine';
 import { disposeSharedAudioContext, reviveSharedAudioContext } from '@/engine/SharedAudioContext';
-import { resetInteractionSession } from '@/engine/interaction/interactionSession';
+import { resetInteractionSession, bindInteractionSessionListeners, unbindInteractionSessionListeners } from '@/engine/interaction/interactionSession';
 import {
   resumeAutoCloseTimers,
   suspendAutoCloseTimers,
@@ -60,7 +60,7 @@ import {
   bindDeferredCombatStartListener,
   bindSceneTransitionGuardListeners,
 } from '@/engine/core/SceneTransitionManager';
-import { bindSceneLoadedBridge } from '@/engine/core/sceneLoadedGate';
+import { bindSceneLoadedBridge, cancelPendingSceneLoaded } from '@/engine/core/sceneLoadedGate';
 import {
   bindGpuResourceBaselineBridge,
   unbindGpuResourceBaselineBridge,
@@ -74,6 +74,15 @@ import {
   reviveTransitionDirector,
 } from '@/engine/scene/TransitionDirector';
 import { disposeCinematicTimelineOrchestrator } from '@/engine/cinematic/cinematicTimelineOrchestrator';
+import { bindCombatGamepadListeners } from '@/engine/CombatSystem';
+import {
+  bindGpuContextRestoreListener,
+  unbindGpuContextRestoreListener,
+} from '@/engine/three/gpuResourceLifecycle';
+import {
+  bindFreeExplorationHubListeners,
+  unbindFreeExplorationHubListeners,
+} from '@/engine/scene/freeExplorationHub';
 import { detachKeyboardListeners } from '@/engine/keyboardInputState';
 import { clearNpcRegistry } from '@/engine/interaction/npcRegistry';
 import type { SceneId } from '@/shared/types/game';
@@ -132,6 +141,10 @@ export function disposeGameEngine(): void {
     unbindPoemWorldEventBridge();
     unbindGpuResourceBaselineBridge();
     unbindSceneChunkGpuLifecycle();
+    unbindInteractionSessionListeners();
+    unbindGpuContextRestoreListener();
+    unbindFreeExplorationHubListeners();
+    cancelPendingSceneLoaded();
     disposeTransitionDirector();
     disposeCinematicTimelineOrchestrator();
     disposeEventBus();
@@ -152,6 +165,9 @@ export function reviveGameEngine(): void {
   reviveFrameVisibility();
   reviveEventBus();
   bindSceneLoadedBridge();
+  bindInteractionSessionListeners();
+  bindGpuContextRestoreListener();
+  bindFreeExplorationHubListeners();
   bindGpuResourceBaselineBridge();
   bindSceneChunkGpuLifecycle();
   bindSceneTransitionGuardListeners();

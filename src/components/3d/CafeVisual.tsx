@@ -51,7 +51,7 @@ export function CafeVisual({ livePlayerPositionRef }: CafeVisualProps) {
 
   const W = 10;
   const D = 10;
-  const H = 3.2;
+  const H = 3;
 
   // ── Coffee machine steam particles (seeded for deterministic initial positions) ──
   const steamResetBase = useMemo(() => {

@@ -17,8 +17,24 @@ export interface AppEventBusBinding {
 
 let binding: AppEventBusBinding | null = null;
 
+type QueuedEmit<E extends ApplicationEventName = ApplicationEventName> = {
+  event: E;
+  payload: ApplicationEventMap[E];
+};
+
+const preBindQueue: QueuedEmit[] = [];
+
+function flushPreBindQueue(): void {
+  if (!binding || preBindQueue.length === 0) return;
+  const queued = preBindQueue.splice(0);
+  for (const item of queued) {
+    binding.emit(item.event, item.payload);
+  }
+}
+
 export function bindAppEventBus(next: AppEventBusBinding): void {
   binding = next;
+  flushPreBindQueue();
 }
 
 export function emitAppEvent<E extends ApplicationEventName>(
@@ -26,8 +42,9 @@ export function emitAppEvent<E extends ApplicationEventName>(
   payload: ApplicationEventMap[E],
 ): void {
   if (!binding) {
+    preBindQueue.push({ event, payload });
     if (import.meta.env?.DEV) {
-      console.warn('[AppEventBus] emit before bind — dropped:', event);
+      console.warn('[AppEventBus] emit before bind — queued:', event);
     }
     return;
   }
@@ -50,4 +67,5 @@ export function onAppEvent<E extends ApplicationEventName>(
 /** Test helper — reset binding between unit tests. */
 export function resetAppEventBusForTests(): void {
   binding = null;
+  preBindQueue.length = 0;
 }

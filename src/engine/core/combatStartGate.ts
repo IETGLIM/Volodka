@@ -70,6 +70,16 @@ export function deferCombatStartIfTransitionBusy(
 ): boolean {
   if (!isSceneTransitionInProgress()) return false;
 
+  if (pending) {
+    if (import.meta.env.DEV) {
+      console.warn(
+        '[CombatStartGate] Ignored duplicate deferral — transition already has pending combat',
+        { existing: pending.enemyType, incoming: enemyType },
+      );
+    }
+    return true;
+  }
+
   pending = {
     enemyType,
     options,

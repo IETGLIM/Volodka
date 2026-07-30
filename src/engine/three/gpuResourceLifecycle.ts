@@ -102,10 +102,22 @@ registerHmrDispose(disposeGpuResourcesForHmr);
  * textures/buffers automatically on context restore; only GL handles need
  * disposal, which forceDisposeOrphanedWebGLResources handles safely.
  */
-eventBus.on('canvas:context-restored', () => {
-  try {
-    forceDisposeOrphanedWebGLResources('gpu-lifecycle:context-restored');
-  } catch (err) {
-    console.warn('[gpuResourceLifecycle] context-restored cleanup failed:', err);
-  }
-});
+let contextRestoreUnsub: (() => void) | null = null;
+
+export function bindGpuContextRestoreListener(): void {
+  unbindGpuContextRestoreListener();
+  contextRestoreUnsub = eventBus.on('canvas:context-restored', () => {
+    try {
+      forceDisposeOrphanedWebGLResources('gpu-lifecycle:context-restored');
+    } catch (err) {
+      console.warn('[gpuResourceLifecycle] context-restored cleanup failed:', err);
+    }
+  });
+}
+
+export function unbindGpuContextRestoreListener(): void {
+  contextRestoreUnsub?.();
+  contextRestoreUnsub = null;
+}
+
+bindGpuContextRestoreListener();

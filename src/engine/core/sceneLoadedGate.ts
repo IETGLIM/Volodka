@@ -153,6 +153,11 @@ export function ensureSceneLoadedBridge(): void {
   bindSceneLoadedBridge();
 }
 
+/** Cancel in-flight scene:loaded without tearing down bridge listeners (save load). */
+export function cancelPendingSceneLoaded(): void {
+  cancelPendingLoaded();
+}
+
 /** Test harness — reset pending latch between cases. */
 export function resetSceneLoadedGate(): void {
   cancelPendingLoaded();

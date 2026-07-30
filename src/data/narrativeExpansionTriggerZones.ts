@@ -189,7 +189,7 @@ export const NARRATIVE_EXPANSION_TRIGGER_ZONES: TriggerZone[] = [
     enterToast: 'Каталог дрожит — карточка «777» вылезла сама.',
     linkedStoryNodeId: 'act3_exp_library_relay_echo',
     requiredAct: 3,
-    requiredFlag: 'zarema_arrested',
+    requiredFlag: 'act3_pier_relay_whisper_done',
     hiddenWhenFlag: 'act3_library_relay_echo_done',
     isOneTime: true,
     interactionType: 'examine',

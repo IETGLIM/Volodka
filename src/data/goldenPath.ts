@@ -8,6 +8,15 @@ import { NPC_ID_ALIASES as SHARED_NPC_ID_ALIASES, resolveCanonicalNpcId as resol
  * act-5 reconciliation ending and onward into acts 6–7, finishing at act7_true_end.
  * Players can deviate, but this is the "intended" narrative backbone.
  * Poem unlock nodes are woven into the path at key emotional moments.
+ *
+ * Act 1 spine (strict chain, side quests branch off and rejoin):
+ *   start → explore_mode → room_table → corridor_door → corridor_explore_mode
+ *   → kitchen_table → kitchen_window → go_to_cafe → street_bench → street_bench_view
+ *   → maria_curious → maria_chip_trust → cafe_enter → cafe_explore_mode → cafe_barista
+ *   → … → office → poem aftermath → act2_transition
+ *
+ * Side meshes (not on spine): expansion hub relays (act2), act3 hub relay mesh
+ * (pier→library→café→office→guild→factory→basement, flag-sequenced), explore hubs.
  */
 export const GOLDEN_PATH_STORY_SPINE: string[] = [
   // Act 1 — Пробуждение

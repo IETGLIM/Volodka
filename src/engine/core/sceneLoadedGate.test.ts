@@ -10,6 +10,7 @@ import {
   ensureSceneLoadedBridge,
   resetSceneLoadedGate,
   scheduleSceneLoaded,
+  cancelPendingSceneLoaded,
 } from './sceneLoadedGate';
 
 describe('sceneLoadedGate', () => {
@@ -131,6 +132,27 @@ describe('sceneLoadedGate', () => {
     expect(loaded).toHaveBeenCalledTimes(1);
     vi.advanceTimersByTime(SCENE_LOADED_FIRST_FRAME_WATCHDOG_MS);
     expect(failed).not.toHaveBeenCalled();
+
+    unregisterCanvasForFirstFrame(canvas);
+  });
+
+  it('cancelPendingSceneLoaded preserves bridge listeners (save-load path)', () => {
+    const canvas = {} as HTMLCanvasElement;
+    registerCanvasForFirstFrame(canvas);
+
+    const loaded = vi.fn();
+    eventBus.on('scene:loaded', loaded);
+
+    scheduleSceneLoaded({ sceneId: 'cafe_evening', fromSceneId: 'volodka_room' });
+    cancelPendingSceneLoaded();
+
+    scheduleSceneLoaded({ sceneId: 'street_night', fromSceneId: 'cafe_evening' });
+    eventBus.emit('canvas:first-frame', { generation: 1 });
+
+    expect(loaded).toHaveBeenCalledWith({
+      sceneId: 'street_night',
+      fromSceneId: 'cafe_evening',
+    });
 
     unregisterCanvasForFirstFrame(canvas);
   });

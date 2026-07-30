@@ -792,6 +792,7 @@ export const ACT5_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
      ══════════════════════════════════════════════════════════════════════════ */
   act5_exp_bunker_radio_bench: {
     id: 'act5_exp_bunker_radio_bench',
+    contextNote: 'Бункер Сопротивления. Радиостанция Ани на частоте 433.',
     text: 'Радиостанция на столе — три ручки, антенна из медной проволоки, на экране частота 433. Аня подписала стикером: «Не трогать без пароля». Но гул в динамике — не помехи, а дыхание: кто-то на другом конце тоже не спит.',
     speaker: 'narrator',
     sceneId: 'underground_bunker',
@@ -806,6 +807,7 @@ export const ACT5_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
 
   act5_exp_bunker_map_wall: {
     id: 'act5_exp_bunker_map_wall',
+    contextNote: 'Бункер Сопротивления. Карта города с нитями между ключевыми точками.',
     text: 'Карта города на фанере — нитки между заводом, библиотекой и пирсом. Максим карандашом обвёл три точки и написал: «node». Не схема победы — схема выживания. Каждая нить — человек, который ещё не сдался.',
     speaker: 'narrator',
     sceneId: 'underground_bunker',

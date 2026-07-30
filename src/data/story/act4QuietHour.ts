@@ -111,6 +111,7 @@ export const STORY_NODES_ACT4_QUIET_HOUR: Record<string, StoryNode> = {
 
   act4_exp_backroom_grinder: {
     id: 'act4_exp_backroom_grinder',
+    contextNote: 'Подсобка кафе. Кофемолка «для своих» — эспрессо для разговоров без клиентов.',
     text: 'Кофемолка ещё тёплая — зерно arabica, обожжённое чуть сильнее, чем в зале. На боку маркером: «для своих». Альберт не продаёт этот эспрессо — он оставляет его для разговоров, которые нельзя вести при клиентах.',
     speaker: 'narrator',
     sceneId: 'albert_backroom',
@@ -125,6 +126,7 @@ export const STORY_NODES_ACT4_QUIET_HOUR: Record<string, StoryNode> = {
 
   act4_exp_backroom_photo: {
     id: 'act4_exp_backroom_photo',
+    contextNote: 'Подсобка кафе. Фото молодых Альберта и Заремы «до протокола».',
     text: 'Фотография под стеклом — молодые Альберт и Зарема на фоне старого кафе. Подпись выцвела, но видно: «до протокола». Он не прячет её — просто держит там, где гильдия не смотрит.',
     speaker: 'narrator',
     sceneId: 'albert_backroom',

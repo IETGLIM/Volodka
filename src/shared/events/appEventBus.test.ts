@@ -15,4 +15,17 @@ describe('appEventBus', () => {
     resetAppEventBusForTests();
     expect(() => emitAppEvent('game:loaded', {})).not.toThrow();
   });
+
+  it('queues pre-bind emits and flushes on bind', () => {
+    resetAppEventBusForTests();
+    emitAppEvent('game:loaded', {});
+    emitAppEvent('game:loaded', {});
+
+    const emit = vi.fn();
+    bindAppEventBus({ emit, on: vi.fn(() => () => undefined) });
+
+    expect(emit).toHaveBeenCalledTimes(2);
+    expect(emit).toHaveBeenNthCalledWith(1, 'game:loaded', {});
+    expect(emit).toHaveBeenNthCalledWith(2, 'game:loaded', {});
+  });
 });

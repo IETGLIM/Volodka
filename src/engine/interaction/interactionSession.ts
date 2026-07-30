@@ -148,14 +148,26 @@ export function resetInteractionSession(): void {
   session = { ...IDLE };
 }
 
-const unsubSceneTransitionStart = eventBus.on('scene:transition_start', () => {
-  resetInteractionSession();
-});
+let sceneTransitionUnsub: (() => void) | null = null;
+
+/** (Re)bind scene:transition_start → FSM reset after EventBus dispose/revive. */
+export function bindInteractionSessionListeners(): void {
+  unbindInteractionSessionListeners();
+  sceneTransitionUnsub = eventBus.on('scene:transition_start', () => {
+    resetInteractionSession();
+  });
+}
+
+export function unbindInteractionSessionListeners(): void {
+  sceneTransitionUnsub?.();
+  sceneTransitionUnsub = null;
+}
 
 function disposeInteractionSessionModule(): void {
-  unsubSceneTransitionStart();
+  unbindInteractionSessionListeners();
   clearStuckRecoveryWatchdog();
   resetInteractionSession();
 }
 
+bindInteractionSessionListeners();
 registerHmrDispose(disposeInteractionSessionModule);
