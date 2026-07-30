@@ -24,6 +24,7 @@ export function CrosshairInteractionPrompt() {
   const reducedMotion = useEffectiveReducedMotion();
   const gamepadConnected = useGamepadConnected();
   const isTouchDevice = useTouchDevice();
+  const ariaLabel = label ? `${promptKey} — ${label}` : `${promptKey} — взаимодействовать`;
 
   useEffect(() => {
     const unsubHint = eventBus.on('interaction:hint', (payload) => {
@@ -50,7 +51,9 @@ export function CrosshairInteractionPrompt() {
         transform: 'translate(-50%, 36px)',
         zIndex: UI_LAYERS.HUD,
       }}
-      aria-hidden="true"
+      role="status"
+      aria-live="polite"
+      aria-label={visible ? ariaLabel : undefined}
     >
       <AnimatePresence>
         {visible && (
@@ -63,7 +66,7 @@ export function CrosshairInteractionPrompt() {
           >
             <div className="hud-filmic-rule" aria-hidden />
             <div className="flex items-baseline gap-2 px-1">
-              <span className="hud-filmic-kicker">{promptKey}</span>
+              <span className="hud-filmic-kicker" aria-hidden="true">{promptKey}</span>
               {label ? (
                 <span className="hud-filmic-body text-[11px] max-w-[9rem] truncate" style={{ fontStyle: 'italic' }}>
                   {label}

@@ -72,7 +72,7 @@ export function getTransitionProgressVisual(isComplete: boolean): TransitionProg
 }
 
 export function formatTransitionProgressLabel(sceneName: string, isComplete: boolean): string {
-  return isComplete ? `✓ Загрузка: ${sceneName}` : `Загрузка: ${sceneName}`;
+  return isComplete ? `Готово: ${sceneName}` : `Переход: ${sceneName}`;
 }
 
 export const GAMEPAD_INTERACT_BUTTON = 'A';
@@ -100,7 +100,7 @@ export function formatInteractionHintKey(
   const mode = resolveInteractionInputMode(options);
   switch (mode) {
     case 'touch':
-      return 'touch';
+      return 'касание';
     case 'gamepad':
       return GAMEPAD_INTERACT_BUTTON;
     case 'keyboard':
@@ -117,7 +117,7 @@ export function formatInteractionHintBadge(
   options: InteractionHintInputOptions,
 ): string {
   const key = formatInteractionHintKey(keyboardKey, options);
-  if (key === 'touch') return '';
+  if (key === 'касание') return '';
   return `[${key}]`;
 }
 

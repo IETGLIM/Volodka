@@ -18,9 +18,15 @@ describe('applyRadialDeadzone', () => {
 });
 
 describe('stickToVirtualMovement', () => {
-  it('preserves analog magnitude for partial stick deflection', () => {
+  it('applies a responsive locomotion curve for partial stick deflection', () => {
     const move = stickToVirtualMovement({ x: 0, y: -0.5 });
-    expect(move.forward).toBeCloseTo(0.5);
-    expect(move.moveMagnitude).toBeCloseTo(0.5);
+    expect(move.forward).toBeGreaterThan(0.5);
+    expect(move.moveMagnitude).toBeGreaterThan(0.5);
+    expect(move.forward).toBeCloseTo(move.moveMagnitude);
+  });
+
+  it('preserves stick direction after the locomotion response curve', () => {
+    const move = stickToVirtualMovement({ x: 0.3, y: -0.4 });
+    expect(move.forward / move.right).toBeCloseTo(4 / 3);
   });
 });

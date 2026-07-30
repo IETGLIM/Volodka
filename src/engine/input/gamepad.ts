@@ -19,6 +19,7 @@ export const GAMEPAD = {
 export const DEFAULT_DEADZONE = 0.2;
 export const GAMEPAD_ORBIT_SENSITIVITY = 2.4;
 export const GAMEPAD_ZOOM_SPEED = 2.5;
+const LOCOMOTION_RESPONSE_EXPONENT = 0.85;
 
 export interface GamepadStick {
   x: number;
@@ -150,11 +151,17 @@ export function stickToVirtualMovement(stick: GamepadStick): {
   moveMagnitude: number;
 } {
   const moveMagnitude = Math.min(1, Math.hypot(stick.x, stick.y));
+  const curvedMagnitude = moveMagnitude > 0
+    ? Math.min(1, Math.pow(moveMagnitude, LOCOMOTION_RESPONSE_EXPONENT))
+    : 0;
+  const scale = moveMagnitude > 0 ? curvedMagnitude / moveMagnitude : 0;
+  const x = stick.x * scale;
+  const y = stick.y * scale;
   return {
-    forward: Math.max(0, -stick.y),
-    backward: Math.max(0, stick.y),
-    left: Math.max(0, -stick.x),
-    right: Math.max(0, stick.x),
-    moveMagnitude,
+    forward: Math.max(0, -y),
+    backward: Math.max(0, y),
+    left: Math.max(0, -x),
+    right: Math.max(0, x),
+    moveMagnitude: curvedMagnitude,
   };
 }

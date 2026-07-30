@@ -29,6 +29,7 @@ import {
 import { requestSceneTransition } from '@/engine/scene/sceneTransition';
 import { sharedCameraYawRef } from '@/engine/PlayerRotationState';
 import { resetEKeyConsumption } from '@/engine/input/eKeyConsumption';
+import { triggerInteractionFeedback } from '@/engine/input/interactionFeedback';
 import { NPC_INTERACTION_RANGE } from '@/engine/player/playerConstants';
 import { setCameraPOITarget } from '@/engine/camera/cameraPOI';
 import { isEffectiveReducedMotion } from '@/engine/accessibility/accessibilitySettings';
@@ -189,6 +190,7 @@ export function InteractiveTriggers({
 
   const executeInteractionHit = useCallback((hit: InteractionTargetHit): boolean => {
     if (hit.kind === 'npc' && hit.npcId) {
+      triggerInteractionFeedback('npc');
       eventBus.emit('interaction:start', { npcId: hit.npcId });
       return true;
     }
@@ -199,6 +201,7 @@ export function InteractiveTriggers({
         const idx = Number.parseInt(hit.id.slice(lastSep + 1), 10);
         const exit = sceneExits[idx];
         if (exit) {
+          triggerInteractionFeedback('exit');
           requestSceneTransition(exit.targetScene, exit.spawnAt);
           return true;
         }
@@ -214,11 +217,13 @@ export function InteractiveTriggers({
         ? findNpcById(zone.linkedNpcId)
         : findNpcByDialogueNodeId(zone.linkedDialogueNodeId!);
       if (npcDef) {
+        triggerInteractionFeedback('npc');
         eventBus.emit('interaction:start', { npcId: npcDef.id });
         return true;
       }
     }
 
+    triggerInteractionFeedback('object');
     eventBus.emit('object:interact', {
       objectId: zone.id,
       sceneId,

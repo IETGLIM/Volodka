@@ -2,7 +2,7 @@
    Subscribes to EventBus events and player state to produce contextual
    hint messages displayed near the bottom of the exploration HUD.
    Priority: combat > quest > interaction > low stats.
-   Debounce: same hint key suppressed for 30 seconds.
+   Debounce: same hint key suppressed for 45 seconds.
 */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -32,8 +32,8 @@ const CATEGORY_PRIORITY: Record<HintCategory, number> = {
   tutorial: -1,
 };
 
-const DEBOUNCE_MS = 30_000;
-const DEFAULT_DURATION_MS = 4000;
+const DEBOUNCE_MS = 45_000;
+const DEFAULT_DURATION_MS = 3600;
 
 /* ── Internal queue entry ── */
 interface QueuedHint extends ContextualHintData {
@@ -63,8 +63,8 @@ export function useContextualHints() {
       if (now - ts > DEBOUNCE_MS) shownMapRef.current.delete(key);
     }
 
-    // Remove expired entries from queue (older than 10s — stale)
-    queueRef.current = queueRef.current.filter((h) => now - h.enqueuedAt < 10_000);
+    // Remove expired entries from queue so hints do not surface late.
+    queueRef.current = queueRef.current.filter((h) => now - h.enqueuedAt < 8_000);
 
     if (queueRef.current.length === 0) {
       setCurrentHint(null);
@@ -146,25 +146,15 @@ export function useContextualHints() {
 
   /* ── EventBus subscriptions ── */
 
-  // Interaction hint: "E — взаимодействие"
-  useEffect(() => {
-    const unsub = eventBus.on('interaction:hint', (payload) => {
-      const label = payload.label ?? 'взаимодействие';
-      enqueueHint({
-        id: `interact_${payload.type}_${payload.key}`,
-        text: `${payload.key.toUpperCase()} — ${label}`,
-        category: 'interaction',
-      });
-    });
-    return () => { unsub(); };
-  }, [enqueueHint]);
+  // Hover interaction prompts are handled by the crosshair caption; duplicating
+  // them here made every nearby NPC feel like a tutorial popup.
 
   // Combat start: "Враг близко!"
   useEffect(() => {
     const unsubStart = eventBus.on('combat:start', (payload) => {
       enqueueHint({
         id: 'combat_nearby',
-        text: `Враг близко! — ${payload.encounterEmoji ?? '⚔'} ${payload.encounterName ?? 'Бой!'}`,
+        text: `Опасность рядом — ${payload.encounterName ?? 'бой'}`,
         category: 'combat',
       });
     });
@@ -197,9 +187,9 @@ export function useContextualHints() {
       const sceneName = SCENE_CONFIG[currentSceneId]?.name ?? 'Неизвестно';
       enqueueHint({
         id: `scene_enter_${currentSceneId}`,
-        text: `📍 ${sceneName}`,
+        text: `· ${sceneName} ·`,
         category: 'scene',
-        duration: 3000,
+        duration: 2400,
       });
     }
   }, [currentSceneId, enqueueHint]);
@@ -214,14 +204,14 @@ export function useContextualHints() {
       lastLowStatHintRef.current = now;
       enqueueHint({
         id: 'low_energy',
-        text: '☕ Кофе поможет восстановить энергию',
+        text: 'Сил мало. Кофе вернет дыхание.',
         category: 'low_stats',
       });
     } else if (stress > 80) {
       lastLowStatHintRef.current = now;
       enqueueHint({
         id: 'high_stress',
-        text: '📖 Стихи или отдых снизят стресс',
+        text: 'Мысли шумят. Стихи или отдых помогут.',
         category: 'low_stats',
       });
     }

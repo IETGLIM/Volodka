@@ -279,7 +279,7 @@ function MenuScreenPanelInner() {
                   Новая игра
                 </p>
                 <p className="font-serif text-sm text-stone-400/70 leading-relaxed mb-5">
-                  Запустить пролог с cinematic-вступлением или перейти сразу к gameplay?
+                  Пройти вступление с пробуждением и первыми шагами или сразу выйти в город?
                 </p>
 
                 <div className="flex flex-col gap-1">

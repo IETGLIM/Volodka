@@ -120,7 +120,7 @@ export function ExplorationHUD(props: HUDProps) {
             aria-live="polite"
           >
             <Save className="size-3 text-stone-500" aria-hidden />
-            <span className="hud-filmic-body text-[12px]">Сохранено</span>
+            <span className="hud-filmic-body text-[12px]">Запись сохранена</span>
           </motion.div>
         )}
       </AnimatePresence>
