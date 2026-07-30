@@ -28,6 +28,9 @@ node_modules
 
 # misc
 .DS_Store
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
 *.pem
 
 # debug
@@ -38,6 +41,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -47,6 +51,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 local-*
+*.local
 .claude
 .z-ai-config
 *.log
@@ -69,6 +74,7 @@ upload/
 /.tmp-external/
 /.tmp-kenney/
 /.tmp-quaternius-men/
+/.tmp-*/
 /.tmp-quaternius.html
 /assets-source/ai3dgen/npcs/_quaternius_raw/
 /assets-source/animations/_downloads/

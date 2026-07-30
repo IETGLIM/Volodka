@@ -1,137 +1,121 @@
 # ВОЛОДЬКА — киберпанк-сказка между сменами
 
-> Интерактивная 3D RPG в память о Володьке — уставшем инженере, который искал стихи, спрятанные в коде.
+> Браузерная 3D RPG на русском языке про уставшего инженера, постсоветский киберпанк и стихи, которые меняют реальность.
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new)
 
 ---
 
-## 📖 О проекте
+## О проекте
 
-**ВОЛОДЬКА** — сюжетная 3D RPG в стиле киберпанк-нуар, целиком работающая в браузере.
-История о программисте, который находит стихи, спрятанные в серверном коде, и обнаруживает,
-что слова могут менять реальность.
+**ВОЛОДЬКА** — сюжетная web RPG на React, Vite и Three.js. Игра работает прямо в браузере: 3D-исследование, диалоги, квесты, пошаговый бой, стелс, Кабинет Мыслей, dice-roll проверки и поэтическая магия собраны в единый нарративный слой.
 
-Стихи в игре — **авторское произведение Владимира Лебедева** (правообладатель проекта).
-Они неотъемлемая часть нарратива; тексты неприкосновенны для контрибьюторов.
+Стихи в игре — **авторское произведение Владимира Лебедева** (правообладатель проекта). Они являются частью сюжета и не редактируются контрибьюторами.
 
-## 🎮 Особенности
+## Что уже есть
 
-- **27 режиссированных 3D-локаций** (18 core + 9 extension) — от комнаты Володьки до ночного леса, завода и края крыши
-- **7 актов сюжета** с 6+ концовками; все концовки ведут в эпилог и акты 6–7
-- **55 квестов** — основная линия, побочные, скрытые, ежедневные и линия «ЧК · ТОЛПА»
-- **Патрулирующие враги и стелс** — видимые конусы зрения, погоня, побег; контакт = пошаговый бой (11 типов врагов, комбо, баффы/дебаффы)
-- **Поэтическая магия** — стихи дают силы в бою и меняют мир: «Путеводная Звезда» сужает зрение врагов
-- **Кабинет Мыслей** — 18 внутренних голосов (как в Disco Elysium): «Внутренний Критик», «Серверный Шёпот», «Тёмный Юмор» и другие. 3 mutually exclusive пары — настоящие моральные выборы. Экипированные мысли дают модификаторы к проверкам навыков
-- **Dice-roll проверки** — система 2d6 + модификатор vs DC с критическими успехами/провалами и анимированными 3D-кубиками в киберпанк-стиле
-- **Глубокий нарратив** — 2100+ строк нового контента: расширенные диалоги с Альбертом (30 нод) и интерактивное исследование комнаты Володьки (28 нод с проверками навыков)
-- **Физический мир** — Rapier KCC, дверные ниши, пинаемые банки/ящики с процедурным звуком
-- **12+ NPC** с диалоговыми деревьями, расписаниями и отношениями
-- **Крафт, торговля, дерево навыков и перков**
-- **Процедурная музыка** (Web Audio, три слоя на сцену) и динамическая погода
-- **AAA пост-обработка** — Bloom, ACES-тонмаппинг, цветокоррекция, стресс-реактивная виньетка; `ExplorationPostFX` с tier-aware деградацией
-- **Работает на любом устройстве** — пресеты качества low→ultra с авто-детектом (GPU probe, Battery API, DPR), graceful degradation (физика KCC, postFX, сейвы)
+- **27 режиссированных 3D-локаций**: комната Володьки, коридор, кафе, офис, библиотека, завод, подвал, пирс, ночной город, крыша, лес ЧК и другие сцены.
+- **7 актов, эпилог и 6+ концовок**: все сюжетные ветки возвращаются к финальной линии и продолжают последствия выбора.
+- **55+ квестов**: основная линия, побочные, скрытые, ежедневные миссии и линия «ЧК · ТОЛПА».
+- **Стелс и бой**: патрули, конусы зрения, погоня, побег, turn-based combat, комбо, баффы, дебаффы и разные типы врагов.
+- **Поэтическая магия**: стихи работают как боевые способности и world effects, например «Путеводная Звезда» сужает зрение врагов.
+- **Кабинет Мыслей**: внутренние голоса в духе Disco Elysium, взаимоисключающие идеи и модификаторы к проверкам навыков.
+- **Физический мир**: Rapier KCC, коллайдеры сцен, дверные ниши, пинаемые банки и ящики с процедурным звуком.
+- **AAA visual direction**: HDRI/IBL, PBR-материалы, Poly Haven/Quaternius/Kenney ассеты, Bloom, ACES tone mapping, color grading, vignette и tier-aware деградация.
 
-## 🛠️ Технологии
+## Технологии
 
 | Стек | |
 |---|---|
-| **Фреймворк** | React 19 + Vite 6 |
-| **3D-движок** | Three.js 0.172 + React Three Fiber 9 |
-| **Физика** | Rapier 2.2 (Kinematic Character Controller, WASM) |
-| **Пост-обработка** | @react-three/postprocessing 3.0 |
-| **Стейт** | Zustand 5 (+ Zod-валидация сейвов) |
-| **UI** | Tailwind CSS 4 + shadcn/ui + Radix UI |
-| **Анимации** | Framer Motion 12 |
-| **Аудио** | Web Audio API (процедурная музыка и SFX, ноль аудиофайлов) |
-| **Деплой** | Vercel (SPA) |
+| Фреймворк | React 19 + Vite 6 |
+| 3D | Three.js 0.172 + React Three Fiber 9 |
+| Физика | Rapier 2.2, Kinematic Character Controller |
+| Пост-обработка | `@react-three/postprocessing` |
+| Состояние | Zustand 5 + Zod-валидация сейвов |
+| UI | Tailwind CSS 4 + shadcn/ui + Radix UI |
+| Анимации | Framer Motion 12 |
+| Аудио | Web Audio API, процедурная музыка и SFX |
+| Деплой | Vercel SPA |
 
-Подробная карта систем — в [ARCHITECTURE.md](./ARCHITECTURE.md).
-История изменений — в [CHANGELOG.md](./CHANGELOG.md).
+Карта систем: [ARCHITECTURE.md](./ARCHITECTURE.md). История изменений: [CHANGELOG.md](./CHANGELOG.md). Контекст для AI-агентов: [AI_SESSION_CONTEXT.md](./AI_SESSION_CONTEXT.md).
 
-## 🚀 Быстрый старт
+## Быстрый старт
 
 ```bash
 npm install
-npm run dev          # Dev-сервер на localhost:3000
-npm run typecheck    # tsc --noEmit
-npm run test:unit    # Vitest (unit + component)
-npm run check        # Полный гейт: lint + typecheck + контент + сборка + бюджеты
-npm run build        # Production-сборка в dist/
+npm run dev          # Vite dev server
+npm run typecheck    # TypeScript без emit
+npm run test:unit    # Vitest unit/component
+npm run check        # lint + typecheck + content + assets + build + deploy verify
+npm run build        # production build в dist/
 ```
 
-### Пресеты качества
+Dev-сервер Vite по умолчанию поднимается на `localhost:3000`.
 
-| Пресет | DPR | PostFX | Тени | Сжатие GLB | NPC/среда |
-|--------|-----|--------|------|------------|-----------|
-| **low** | 0.75–1 | выкл | выкл | Draco | procedural |
-| **medium** | 1–1.25 | вкл | вкл | Draco | hybrid |
-| **high** | 1–1.75 | вкл | вкл | Draco | hybrid |
-| **ultra** | 1.25–2 | вкл | вкл | meshopt | GLB |
-| **auto** | эвристика | — | — | — | viewport + GPU probe + battery cap |
+## Asset Pipeline
 
-`auto` сохраняет разрешённый tier в сессии (`autoQualitySession`). При давлении на GPU срабатывает `applyGfxPressureToPreset` и runtime degrade через `adaptiveQualityBridge`.
-
-### 3D-ассеты (AI3DGen)
-
-Каталог целей: `src/config/ai3dgenAssetCatalog.ts`. Импорт OBJ/GLB с [AI3DGen](https://www.ai3dgen.com/ru/image-to-3d-model-free):
+Production build сам готовит ассеты через `assets:prepare`: bootstrap базовых GLB, загрузка Poly Haven моделей, обработка catalog assets, синхронизация shipped flags и валидация.
 
 ```bash
-npm run assets:ai3dgen-import -- --list
-npm run assets:ai3dgen-import -- --id npc_albert --file ./downloads/albert.obj
-npm run assets:validate
+npm run assets:bootstrap         # CC0 fallback GLB для первого запуска/deploy
+npm run assets:polyhaven-models  # Poly Haven GLTF + textures из manifest
+npm run assets:process-catalog   # обработка catalog assets
+npm run assets:sync-shipped      # синхронизация shipped flags
+npm run assets:validate          # GLB/GLTF gate
+npm run assets:status            # сводка pipeline и пропусков
 ```
 
-Подробный цикл — в [assets-source/ai3dgen/README.md](./assets-source/ai3dgen/README.md).
+Источники ассетов:
 
-### Доступность
+- `public/models/` — shipped GLB/GLTF, персонажи, NPC, интерьеры, props, Poly Haven модели.
+- `public/hdri/`, `public/textures/polyhaven/`, `public/menu/` — HDRI, PBR surfaces и cinematic menu plate.
+- `assets-source/ai3dgen/` — staging для AI3DGen Pro, Kenney, Poly Pizza и ручных CC0 импортов.
+- `assets-source/mixamo/` и `assets-source/animations/` — ручные/ретаргетнутые анимации.
 
-Настройки (субтитры, скорость текста, reduced motion, дальтонизм) хранятся в `localStorage`, синхронизируются между вкладками и рассылают `accessibility:changed` через `eventBus`. Инициализация — `initAccessibilitySettings()` в `main.tsx`.
+Полные правила и лицензии: [public/models/ATTRIBUTION.md](./public/models/ATTRIBUTION.md), [ATTRIBUTION.md](./ATTRIBUTION.md), [assets-source/ai3dgen/README.md](./assets-source/ai3dgen/README.md).
 
-## ✅ Качество
+## Качество и визуальный бар
 
 Текущая версия пакета: **4.2.42** (`package.json` / `APP_VERSION`).
 
-- typecheck / ESLint: 0 ошибок · unit + component tests: **1300+** · e2e smoke (Playwright, 38)
-- `npm run test:unit` — Vitest (unit + component) · `npm run test:e2e` — production build + Playwright
-- `npm run validate:content` — квесты, история, стихи, golden path
-- Валидатор контента: квесты, история, стихи, golden path — 0 ошибок
-- Бюджеты бандла в CI: boot target 450 КБ gzip (hard max 650), game-start target 1.2 МБ (hard max 1.8)
-- `npm run assets:bootstrap` — CC0 GLB для первого production-деплоя · `npm run assets:validate` — гейт в build
-- Security-заголовки + CSP Report-Only / Permissions-Policy (`vercel.json`)
-- Versioned save migrations (`saveMigrations.ts`) before Zod validate
+- `npm run lint` — ESLint для `src`.
+- `npm run typecheck` — TypeScript gate.
+- `npm run validate:content` — квесты, история, стихи, golden path.
+- `npm run assets:validate` — проверка shipped GLB/GLTF.
+- `npm run budgets` — bundle budgets после production build.
+- `npm run test:e2e` — production build + Playwright smoke.
 
-## 📦 Vercel Deploy
+Пресеты качества:
 
-`vercel.json` настроен (SPA-rewrites, immutable-кэш `/assets/` и `/models/`, security-заголовки).
+| Пресет | DPR | PostFX | Тени | GLB strategy | Назначение |
+|--------|-----|--------|------|--------------|------------|
+| `low` | 0.75-1 | off | off | Draco/fallback | слабые устройства |
+| `medium` | 1-1.25 | on | on | hybrid | базовый desktop |
+| `high` | 1-1.75 | on | on | hybrid/PBR | целевой polished режим |
+| `ultra` | 1.25-2 | on | on | meshopt/GLB | максимальная картинка |
+| `auto` | runtime | runtime | runtime | GPU/battery probe | безопасный default |
 
-**Перед первым деплоем:**
+`auto` сохраняет выбранный tier в сессии (`autoQualitySession`). При давлении на GPU `adaptiveQualityBridge` и `applyGfxPressureToPreset` снижают нагрузку без потери сейвов и критичного gameplay.
+
+После визуальных, lighting, material, HUD, transition, cutscene или asset изменений запускайте независимую проверку `.cursor/agents/aaa-visual-judge.md`. Судья намеренно строгий: AAA parity важнее оценки «хорошо для браузера».
+
+## Vercel Deploy
+
+`vercel.json` настроен для SPA rewrites, immutable-кэша `/assets/` и `/models/`, security headers, CSP Report-Only и Permissions-Policy.
 
 ```bash
-npm run assets:bootstrap   # скачать CC0 GLB (если ещё не в репо)
-npm run check              # lint + typecheck + validate + build + verify:deploy
+npm run check
 ```
 
-**Vercel Environment Variables** (см. `.env.example`):
+Перед promotion проверьте preview: New Game, загрузка 3D-сцен, отсутствие 404 на `.glb`, `.gltf`, `.bin`, `.jpg`, `.hdr`.
+
+Environment variables:
 
 | Variable | Значение |
 |----------|----------|
-| `VITE_SITE_URL` | `https://volodka.vercel.app` — canonical + OG preview |
+| `VITE_SITE_URL` | Canonical URL и OG preview, например `https://volodka.vercel.app` |
 
-**Чек-лист production:**
-
-1. `npm run check` — зелёный
-2. Preview: New Game → 10 мин без 404 на `.glb`
-3. Promote to Production
-
-**Подключение:**
-
-1. Залей репозиторий на GitHub
-2. Подключи Vercel к репозиторию
-3. Задай `VITE_SITE_URL` в Environment Variables
-4. Vercel автоматически определит Vite и соберёт проект
-
-## 🎯 Управление
+## Управление
 
 | Клавиша | Действие |
 |---|---|
@@ -150,11 +134,9 @@ npm run check              # lint + typecheck + validate + build + verify:deploy
 | Shift+P | Фото-режим |
 | M | Карта |
 | Shift+J | Кабинет Мыслей |
-| F3 | Панель разработчика (только dev) |
+| F3 | Панель разработчика в dev |
 
 ---
 
 *С любовью, от тех, кто верит в слова.*
-
-Архитектурный контекст для AI-агентов: [AI_SESSION_CONTEXT.md](./AI_SESSION_CONTEXT.md)
 

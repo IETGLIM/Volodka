@@ -1,9 +1,18 @@
 # 3D Asset Attribution
 
-Shipped GLB assets under `public/models/` and their licenses.  
-Production bootstrap: `npm run assets:bootstrap` (distinct CC0 interim meshes until AI3DGen Pro art lands).
+Shipped GLB/GLTF assets under `public/models/` and their licenses.
 
-**Last updated:** June 2026 · **Production target:** AI3DGen Pro commercial tier
+**Last updated:** July 2026 · **Production direction:** authored AAA-quality GLB/GLTF where available, with CC0/Free interim assets kept only when they are intentionally wired into scenes.
+
+Key commands:
+
+```bash
+npm run assets:bootstrap         # CC0 fallback GLB for deploy
+npm run assets:polyhaven-models  # Poly Haven GLTF + texture set
+npm run assets:process-catalog   # process catalog GLB/GLTF
+npm run assets:sync-shipped      # sync shipped flags
+npm run assets:validate          # asset gate before build
+```
 
 **Где брать бесплатно (CC0 / free):** Mixamo, Sketchfab (CC0 filter), Quaternius, Kenney.nl, Poly Pizza — таблица, прямые ссылки, папки `assets-source/ai3dgen/` и команды импорта: [`assets-source/ai3dgen/README.md`](../../assets-source/ai3dgen/README.md#где-брать-бесплатно).
 
@@ -98,7 +107,14 @@ Rendered via `ScenePropDressing` in volodka_room, corridor, office, library, caf
 
 Downloaded via `npm run assets:polyhaven-models` from the [Poly Haven API](https://api.polyhaven.com) / CDN. License: CC0 · Author/source: [Poly Haven](https://polyhaven.com).
 
-Scene-facing set under `models/polyhaven/`: modular urban apartments facade, modular fire escape, road barriers, benches, industrial lamps, roller shutter doors/windows, barrel, cardboard box, trash can, street lamps, trash bag, wet floor sign, gothic statue, exterior aircon unit, power box, security camera, utility box, old tyre, manhole cover, wooden crate, arm chair, painted wooden table/cabinet, worn wooden bookshelf, desk lamp arm, sofa, and portable cassette player.
+Scene-facing set under `models/polyhaven/`:
+
+- Urban shell: modular urban apartments facade, modular fire escape, roller shutter door/window, road barriers, manhole cover.
+- Street/industrial props: barrel, cardboard box, metal trash can, street lamp, trash bag, wet floor sign, exterior aircon unit, power box, security camera, utility box, old tyre.
+- Interior/cinematic props: arm chair, painted wooden bench/table/cabinet, worn wooden bookshelf, desk lamp arm, sofa, portable cassette player, wooden crate.
+- Mood/landmark props: hanging industrial lamp, gothic statue.
+
+Each downloaded model keeps its source `.gltf`, `.bin`, and required texture maps together in its own folder. Do not delete these folders as "large junk" unless the manifest no longer references the asset and `npm run assets:validate` confirms it is unused.
 
 ## Kenney interior shells (Poly Pizza TODO)
 
@@ -166,6 +182,10 @@ Bundled CC0 samples used by `MODEL_URLS` and cinematic fallbacks:
 
 Стихи (poem_1–poem_18) — **авторское произведение правообладателя проекта** (Владимир Лебедев).  
 Тексты неприкосновенны для контрибьюторов; внешняя лицензия на стихи не требуется.
+
+## Repo hygiene note
+
+Large binary assets in `public/models/`, `public/hdri/`, `public/textures/`, and `public/menu/` are expected shipped game content. Cleanup should target temp downloads, duplicate staging files, logs, and broken generated output, not scene-wired assets.
 
 ## AI3DGen commercial policy
 
