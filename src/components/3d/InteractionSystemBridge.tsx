@@ -30,6 +30,7 @@ import { getGameSnapshot } from "@/engine/GameActionDispatcher";
 import { closeNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
 import { preloadNpcModel } from '@/engine/scene/sceneGpuLifecycle';
 import { getSceneConfig } from '@/config/scenes';
+import { isClosedOverlayExploreHub } from '@/shared/sceneExploreHubRegistry';
 import {
   getInteractionState,
   getInteractionTargetNPCId,
@@ -105,7 +106,12 @@ export function InteractionSystemBridge({
   const wasNarrativeInteractionRef = useRef(false);
 
   const emitExplorationResumeHint = (): void => {
-    const sceneId = getGameSnapshot().exploration.currentSceneId;
+    const snapshot = getGameSnapshot();
+    // Skip redundant toast when explore hub already owns location context.
+    if (snapshot.currentNodeId && isClosedOverlayExploreHub(snapshot.currentNodeId)) {
+      return;
+    }
+    const sceneId = snapshot.exploration.currentSceneId;
     const sceneName = getSceneConfig(sceneId).name;
     eventBus.emit('ui:exploration_message', {
       text: `· ${sceneName} · свободное исследование`,

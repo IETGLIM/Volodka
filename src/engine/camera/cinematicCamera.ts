@@ -32,8 +32,8 @@ const FOV_LERP_SPEED = 3;
 const ROLL_LERP_SPEED = 4;
 
 /* ── Dialogue ── */
-const DIALOGUE_SHOT_INTERVAL_MIN = 3.2;
-const DIALOGUE_SHOT_INTERVAL_MAX = 4.0;
+const DIALOGUE_SHOT_INTERVAL_MIN = 3.6;
+const DIALOGUE_SHOT_INTERVAL_MAX = 4.5;
 const DIALOGUE_FOV = 50;
 const _DIALOGUE_TIME_SCALE = 0.92;
 const DIALOGUE_SHOT_TRANSITION_SPEED = 2.5; // speed of shot blend (higher = faster)

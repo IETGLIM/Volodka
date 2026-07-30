@@ -5,6 +5,12 @@ import { EXPANSION_HUB_QUESTS } from '@/data/expansion/expansionHubQuests';
 import { QUEST_DEFINITIONS } from '@/data/quests';
 import { STORY_NODES } from '@/data/story';
 import { getPoemById } from '@/data/poems';
+import { NPC_SCHEDULES } from '@/data/npcSchedules';
+import type { SceneId } from '@/shared/types/game';
+import {
+  resolveExploreHubIntroText,
+  resolveExploreHubRevisitText,
+} from '@/shared/contentTruthManifest';
 
 describe('expansion narrative content', () => {
   it('expansion poems have real literary lines (no stub placeholder)', () => {
@@ -48,6 +54,25 @@ describe('expansion narrative content', () => {
       'act2_archive_seven_resolve',
     ] as const) {
       expect(STORY_NODES[id], id).toBeTruthy();
+    }
+  });
+
+  it('hub connector scenes have first-visit whispers via content truth', () => {
+    for (const hubId of ['street_bench_view', 'pier_explore_mode', 'factory_explore_mode'] as const) {
+      expect(resolveExploreHubIntroText(hubId), hubId).toBeTruthy();
+      expect(resolveExploreHubRevisitText(hubId), hubId).toBeTruthy();
+    }
+  });
+
+  it('hub cast schedules span connector scenes', () => {
+    const hubScenes = new Set<SceneId>(['cafe_evening', 'street_night', 'office_day', 'chk_forest_zorge', 'river_pier']);
+    const hubCast = ['albert', 'cafe_barista', 'office_colleague', 'zarema', 'fisherman_trofim', 'chk_based'];
+    for (const npcId of hubCast) {
+      const schedule = NPC_SCHEDULES.find((s) => s.npcId === npcId);
+      expect(schedule, npcId).toBeTruthy();
+      const scenes = new Set(schedule!.entries.map((e) => e.sceneId));
+      const hits = [...hubScenes].filter((s) => scenes.has(s));
+      expect(hits.length, `${npcId} hub coverage`).toBeGreaterThanOrEqual(2);
     }
   });
 });

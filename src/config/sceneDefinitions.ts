@@ -195,10 +195,10 @@ export const street_night_def: SceneDefinition = {
     { position: [0, 6, 0], intensity: 0.6, color: '#ccbbaa', distance: 30 },
   ],
   ambientColor: '#3a3a58',
-  ambientIntensity: 0.72,
+  ambientIntensity: 0.68,
   groundColor: '#28283e',
   fogEnabled: true,
-  fog: { near: 12, far: 48, fogColor: '#080c16' },
+  fog: { near: 12, far: 52, fogColor: '#080c16' },
   transitionStyle: 'flash',
   entryText: 'Неон и снег. Город не спит.',
 };
@@ -250,7 +250,7 @@ export const cafe_evening_def: SceneDefinition = {
   visualComponent: 'CafeVisual',
   lights: [
     { position: [-3, 2, 0], intensity: 2.2, color: '#3377ee', distance: 9 },
-    { position: [2, 1.5, 1], intensity: 1.2, color: '#ff9955', distance: 7 },
+    { position: [2, 1.5, 1], intensity: 1.35, color: '#ff9955', distance: 7 },
     { position: [0, 2.5, -2], intensity: 0.6, color: '#886644', distance: 8 },
     { position: [3, 2.2, -3], intensity: 1.0, color: '#2266cc', distance: 8 },
   ],
@@ -522,11 +522,11 @@ export const office_day_def: SceneDefinition = {
     { position: [-4, 2.5, -2], intensity: 1.0, color: '#eef4ff', distance: 8 },
     { position: [4, 2.5, -2], intensity: 1.0, color: '#eef4ff', distance: 8 },
   ],
-  ambientColor: '#e0e8f0',
-  ambientIntensity: 0.7,
+  ambientColor: '#dce4ec',
+  ambientIntensity: 0.65,
   groundColor: '#c8d0d8',
   fogEnabled: true,
-  fog: { near: 8, far: 18 },
+  fog: { near: 8, far: 20 },
   entryText: 'Флуоресцентные лампы. Бумажные горы.',
 };
 
@@ -1175,7 +1175,7 @@ export const river_pier_def: SceneDefinition = {
   ambientIntensity: 0.6,
   groundColor: '#2c2c38',
   fogEnabled: true,
-  fog: { near: 12, far: 42 },
+  fog: { near: 10, far: 44 },
   transitionStyle: 'dissolve',
   entryText: 'Плеск воды. Костёр и гитара.',
 };

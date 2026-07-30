@@ -92,6 +92,16 @@ export const NPC_QUEST_BARKS: Record<string, NpcQuestBarkEntry[]> = {
     },
     {
       questId: 'act2_street_chk_samizdat',
+      objectiveId: 'receive_samizdat',
+      text: 'Скамейка у фонаря. Не оглядывайся — пакет лёгкий, но гильдия его тяжёлым считает.',
+    },
+    {
+      questId: 'act2_street_chk_samizdat',
+      objectiveId: 'deliver_chk_samizdat',
+      text: 'Костёр в ЧК. Басед ждёт. Ногами — VPN гильдия любит.',
+    },
+    {
+      questId: 'act2_street_chk_samizdat',
       text: 'Пакет для костра. Ногами — VPN гильдия любит.',
     },
   ],
@@ -296,6 +306,48 @@ export const NPC_QUEST_BARKS: Record<string, NpcQuestBarkEntry[]> = {
       questId: 'act2_pier_cafe_frequency',
       objectiveId: 'match_cafe_wall',
       text: 'Трофим прислал частоту? Сравни со стеной — jukebox замолкнет ровно на секунду.',
+    },
+    {
+      questId: 'act2_cafe_office_relay',
+      objectiveId: 'take_cafe_envelope',
+      text: 'Конверт на стойке. Серверная, не KPI. Три минуты, пока камера моргает.',
+    },
+  ],
+  chk_based: [
+    {
+      questId: 'act2_street_chk_samizdat',
+      objectiveId: 'deliver_chk_samizdat',
+      text: 'Пакет от Заремы? К костру — тише. Гильдия лес не сканирует, но люди — сканируют.',
+    },
+    {
+      questId: 'act2_street_chk_samizdat',
+      text: 'Самиздат принимаем у огня. Не называй имён — только ритм.',
+    },
+    {
+      questId: 'act2_night_city_watch',
+      text: 'Альберт просил проверить костёр? Огонь горит. Релей жив.',
+    },
+  ],
+  chk_ru: [
+    {
+      questId: 'act2_night_city_watch',
+      text: 'Ночной обход? Костёр в порядке. Металл играет тише, чем в офисе.',
+    },
+    {
+      questId: 'act2_street_chk_samizdat',
+      objectiveId: 'deliver_chk_samizdat',
+      text: 'Зарема знает протокол. Отдай Баседу — он разберётся со стеной.',
+    },
+  ],
+  chk_ritka: [
+    {
+      questId: 'act2_pier_cafe_frequency',
+      objectiveId: 'hear_pier_frequency',
+      text: 'Трофим слышит реку. Я слышу струны. Частота одна — просто инструменты разные.',
+    },
+    {
+      questId: 'act2_night_city_watch',
+      text: 'Пирс тихий. Поплавок сторожит. Обход можно отметить.',
     },
   ],
 };

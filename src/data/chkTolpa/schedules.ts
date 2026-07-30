@@ -8,7 +8,9 @@ const CHK_RU_DAY: NPCSchedule = {
   npcId: 'chk_ru',
   entries: [
     { startHour: 0, endHour: 8, sceneId: 'street_night', position: [2.0, 0, -1.0], activity: 'sleep' },
-    { startHour: 8, endHour: 19, sceneId: 'office_day', position: [-2.0, 0, 1.5], activity: 'work' },
+    { startHour: 8, endHour: 12, sceneId: 'office_day', position: [-2.0, 0, 1.5], activity: 'work' },
+    { startHour: 12, endHour: 13, sceneId: 'cafe_evening', position: [-1.5, 0, 0.5], activity: 'rest' },
+    { startHour: 13, endHour: 19, sceneId: 'office_day', position: [-2.0, 0, 1.5], activity: 'work' },
     { startHour: 19, endHour: 24, sceneId: 'chk_forest_zorge', position: [-1.8, 0, 0.5], activity: 'talk' },
   ],
 };
@@ -18,7 +20,9 @@ const CHK_BASED_DAY: NPCSchedule = {
   npcId: 'chk_based',
   entries: [
     { startHour: 0, endHour: 7, sceneId: 'street_night', position: [1.0, 0, -2.0], activity: 'sleep' },
-    { startHour: 7, endHour: 18, sceneId: 'office_day', position: [2.5, 0, -2.0], activity: 'work' },
+    { startHour: 7, endHour: 12, sceneId: 'office_day', position: [2.5, 0, -2.0], activity: 'work' },
+    { startHour: 12, endHour: 13, sceneId: 'cafe_evening', position: [1.0, 0, 0.5], activity: 'rest' },
+    { startHour: 13, endHour: 18, sceneId: 'office_day', position: [2.5, 0, -2.0], activity: 'work' },
     { startHour: 18, endHour: 24, sceneId: 'chk_forest_zorge', position: [1.5, 0, 1.2], activity: 'talk' },
   ],
 };

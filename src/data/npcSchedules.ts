@@ -47,11 +47,12 @@ const ALBERT_SCHEDULE: NPCSchedule = {
   npcId: 'albert',
   entries: [
     { startHour: 0, endHour: 7, sceneId: 'zarema_albert_room', position: [-1.5, 0, 1.0], activity: 'sleep' },
-    { startHour: 7, endHour: 8, sceneId: 'home_evening', position: [0, 0, -2.0], activity: 'rest' },
+    { startHour: 7, endHour: 8, sceneId: 'street_night', position: [0.5, 0, -1.5], activity: 'walk' },
     { startHour: 8, endHour: 9, sceneId: 'volodka_corridor', position: [0.6, 0, -2.5], activity: 'walk' },
     { startHour: 9, endHour: 14, sceneId: 'cafe_evening', position: [-2.5, 0, -3.0], activity: 'read' },
     { startHour: 14, endHour: 15, sceneId: 'park_day', position: [2.0, 0, -1.0], activity: 'walk' },
-    { startHour: 15, endHour: 22, sceneId: 'cafe_evening', position: [-2.5, 0, -3.0], activity: 'talk' },
+    { startHour: 15, endHour: 21, sceneId: 'cafe_evening', position: [-2.5, 0, -3.0], activity: 'talk' },
+    { startHour: 21, endHour: 22, sceneId: 'river_pier', position: [0.5, 0, -2.0], activity: 'talk' },
     { startHour: 22, endHour: 24, sceneId: 'street_night', position: [1.0, 0, -2.0], activity: 'walk' },
   ],
 };
@@ -71,7 +72,9 @@ const ZAREMA_SCHEDULE: NPCSchedule = {
     { startHour: 11, endHour: 13, sceneId: 'cafe_evening', position: [1.0, 0, 1.5], activity: 'talk' },
     { startHour: 13, endHour: 16, sceneId: 'park_day', position: [-1.0, 0, 3.0], activity: 'walk' },
     { startHour: 16, endHour: 18, sceneId: 'library_day', position: [2.0, 0, -1.0], activity: 'read' },
-    { startHour: 18, endHour: 22, sceneId: 'home_evening', position: [1.5, 0, 2.0], activity: 'work' },
+    { startHour: 18, endHour: 20, sceneId: 'home_evening', position: [1.5, 0, 2.0], activity: 'work' },
+    { startHour: 20, endHour: 21, sceneId: 'street_night', position: [-1.5, 0, 0.5], activity: 'walk' },
+    { startHour: 21, endHour: 22, sceneId: 'home_evening', position: [1.5, 0, 2.0], activity: 'work' },
     { startHour: 22, endHour: 24, sceneId: 'zarema_albert_room', position: [1.5, 0, 1.0], activity: 'rest' },
   ],
 };
@@ -86,7 +89,9 @@ const CAFE_BARISTA_SCHEDULE: NPCSchedule = {
   entries: [
     { startHour: 0, endHour: 7, sceneId: 'street_night', position: [-1.0, 0, -3.0], activity: 'sleep' },
     { startHour: 7, endHour: 8, sceneId: 'street_night', position: [0, 0, -1.0], activity: 'walk' },
-    { startHour: 8, endHour: 22, sceneId: 'cafe_evening', position: [0, 0, -4.0], activity: 'work' },
+    { startHour: 8, endHour: 13, sceneId: 'cafe_evening', position: [0, 0, -4.0], activity: 'work' },
+    { startHour: 13, endHour: 14, sceneId: 'street_night', position: [2.0, 0, -1.0], activity: 'walk' },
+    { startHour: 14, endHour: 22, sceneId: 'cafe_evening', position: [0, 0, -4.0], activity: 'work' },
     { startHour: 22, endHour: 24, sceneId: 'street_night', position: [0.5, 0, -2.0], activity: 'walk' },
   ],
 };
@@ -104,7 +109,9 @@ const ALEXANDER_SCHEDULE: NPCSchedule = {
     { startHour: 7, endHour: 8, sceneId: 'home_evening', position: [-1.0, 0, 0.5], activity: 'rest' },
     { startHour: 8, endHour: 13, sceneId: 'office_day', position: [3.0, 0, -2.0], activity: 'work' },
     { startHour: 13, endHour: 14, sceneId: 'cafe_evening', position: [1.5, 0, -1.0], activity: 'rest' },
-    { startHour: 14, endHour: 20, sceneId: 'office_day', position: [3.5, 0, -1.0], activity: 'work' },
+    { startHour: 14, endHour: 17, sceneId: 'office_day', position: [3.5, 0, -1.0], activity: 'work' },
+    { startHour: 17, endHour: 18, sceneId: 'park_day', position: [0.0, 0, 1.0], activity: 'walk' },
+    { startHour: 18, endHour: 20, sceneId: 'office_day', position: [3.5, 0, -1.0], activity: 'work' },
     { startHour: 20, endHour: 22, sceneId: 'office_day', position: [4.0, 0, -1.5], activity: 'talk' },
     { startHour: 22, endHour: 24, sceneId: 'street_night', position: [1.5, 0, -1.5], activity: 'walk' },
   ],
@@ -120,7 +127,9 @@ const COLLEAGUE_SCHEDULE: NPCSchedule = {
   entries: [
     { startHour: 0, endHour: 7, sceneId: 'volodka_corridor', position: [-0.8, 0, 0.5], activity: 'sleep' },
     { startHour: 7, endHour: 8, sceneId: 'volodka_corridor', position: [-0.6, 0, -2.0], activity: 'walk' },
-    { startHour: 8, endHour: 12, sceneId: 'office_day', position: [1.0, 0, 0.5], activity: 'work' },
+    { startHour: 8, endHour: 10, sceneId: 'office_day', position: [1.0, 0, 0.5], activity: 'work' },
+    { startHour: 10, endHour: 11, sceneId: 'street_night', position: [-1.0, 0, 0.0], activity: 'walk' },
+    { startHour: 11, endHour: 12, sceneId: 'office_day', position: [1.0, 0, 0.5], activity: 'work' },
     { startHour: 12, endHour: 13, sceneId: 'cafe_evening', position: [0.5, 0, 1.0], activity: 'rest' },
     { startHour: 13, endHour: 16, sceneId: 'office_day', position: [1.0, 0, 0.5], activity: 'work' },
     { startHour: 16, endHour: 18, sceneId: 'library_day', position: [-1.0, 0, 1.0], activity: 'read' },
@@ -393,7 +402,8 @@ const TROFIM_SCHEDULE: NPCSchedule = {
   npcId: 'fisherman_trofim',
   entries: [
     { startHour: 0, endHour: 5, sceneId: 'river_pier', position: [-5.6, 0, 4.2], activity: 'sleep' },
-    { startHour: 5, endHour: 12, sceneId: 'river_pier', position: [4.0, 0, -7.2], activity: 'work' },
+    { startHour: 5, endHour: 6, sceneId: 'cafe_evening', position: [-1.0, 0, 1.0], activity: 'rest' },
+    { startHour: 6, endHour: 12, sceneId: 'river_pier', position: [4.0, 0, -7.2], activity: 'work' },
     { startHour: 12, endHour: 14, sceneId: 'park_day', position: [4.0, 0, 3.0], activity: 'walk' },
     { startHour: 14, endHour: 19, sceneId: 'river_pier', position: [4.0, 0, -7.2], activity: 'work' },
     { startHour: 19, endHour: 24, sceneId: 'river_pier', position: [1.0, 0, -3.0], activity: 'rest' },
@@ -641,6 +651,57 @@ export const ACT_SCHEDULE_OVERRIDES: ActScheduleOverride[] = [
     excludedFlags: ['factory_roof_scouted'],
     entries: [
       { startHour: 0, endHour: 24, sceneId: 'factory_roof', position: [0, 0, -2.0], activity: 'rest' },
+    ],
+  },
+
+  /* ── Act 2: Zarema waits at street bench for samizdat handoff ── */
+  {
+    id: 'override_zarema_samizdat_offer',
+    npcId: 'zarema',
+    minAct: 2,
+    excludedFlags: ['street_samizdat_received'],
+    entries: [
+      { startHour: 0, endHour: 6, sceneId: 'zarema_albert_room', position: [1.5, 0, 1.0], activity: 'sleep' },
+      { startHour: 6, endHour: 7, sceneId: 'zarema_albert_room', position: [1.5, 0, 1.0], activity: 'rest' },
+      { startHour: 7, endHour: 10, sceneId: 'home_evening', position: [1.5, 0, 2.0], activity: 'work' },
+      { startHour: 10, endHour: 11, sceneId: 'volodka_corridor', position: [-0.5, 0, 2.5], activity: 'walk' },
+      { startHour: 11, endHour: 13, sceneId: 'cafe_evening', position: [1.0, 0, 1.5], activity: 'talk' },
+      { startHour: 13, endHour: 16, sceneId: 'park_day', position: [-1.0, 0, 3.0], activity: 'walk' },
+      { startHour: 16, endHour: 18, sceneId: 'library_day', position: [2.0, 0, -1.0], activity: 'read' },
+      { startHour: 18, endHour: 20, sceneId: 'home_evening', position: [1.5, 0, 2.0], activity: 'work' },
+      { startHour: 20, endHour: 23, sceneId: 'street_night', position: [-1.5, 0, 0.5], activity: 'walk' },
+      { startHour: 23, endHour: 24, sceneId: 'zarema_albert_room', position: [1.5, 0, 1.0], activity: 'rest' },
+    ],
+  },
+
+  /* ── Act 2: Colleague on relay duty near server room ── */
+  {
+    id: 'override_colleague_relay_waiting',
+    npcId: 'office_colleague',
+    minAct: 2,
+    requiredFlags: ['cafe_relay_envelope_taken'],
+    excludedFlags: ['cafe_relay_envelope_delivered'],
+    entries: [
+      { startHour: 0, endHour: 7, sceneId: 'volodka_corridor', position: [-0.8, 0, 0.5], activity: 'sleep' },
+      { startHour: 7, endHour: 8, sceneId: 'volodka_corridor', position: [-0.6, 0, -2.0], activity: 'walk' },
+      { startHour: 8, endHour: 20, sceneId: 'office_day', position: [2.5, 0, -1.5], activity: 'work' },
+      { startHour: 20, endHour: 22, sceneId: 'cafe_evening', position: [0.5, 0, 1.0], activity: 'talk' },
+      { startHour: 22, endHour: 24, sceneId: 'volodka_corridor', position: [-0.8, 0, -1.0], activity: 'rest' },
+    ],
+  },
+
+  /* ── Act 2: Albert on night watch relay — holds cafe for debrief ── */
+  {
+    id: 'override_albert_night_watch',
+    npcId: 'albert',
+    minAct: 2,
+    requiredFlags: ['act2_night_city_watch_active'],
+    excludedFlags: ['night_city_watch_reported'],
+    entries: [
+      { startHour: 0, endHour: 7, sceneId: 'zarema_albert_room', position: [-1.5, 0, 1.0], activity: 'sleep' },
+      { startHour: 7, endHour: 9, sceneId: 'cafe_evening', position: [-2.5, 0, -3.0], activity: 'read' },
+      { startHour: 9, endHour: 18, sceneId: 'cafe_evening', position: [-2.5, 0, -3.0], activity: 'talk' },
+      { startHour: 18, endHour: 24, sceneId: 'cafe_evening', position: [-2.5, 0, -3.0], activity: 'talk' },
     ],
   },
 ];

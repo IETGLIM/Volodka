@@ -13,7 +13,7 @@ export const WAKEUP_PHASE = {
   sitting: 3.2,
   settle: 2.2,     // pause before monitor push-in
   monitor: 6.2,
-  handoff: 3.0,
+  handoff: 3.5,
 } as const;
 
 export const WAKEUP_TOTAL =
