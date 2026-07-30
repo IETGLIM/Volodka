@@ -1,5 +1,6 @@
 /* ─── Library Basement: archive vault under the stacks ───
  * Not LibraryDay — low concrete, rusted shelves, amber terminal glow.
+ * library GLB shell + prop dressing replace procedural shelf clutter at high quality.
  */
 
 import { useMemo, useRef, type MutableRefObject } from 'react';
@@ -16,6 +17,11 @@ import {
   getRainSpillInFloorBoost,
 } from '@/engine/graphics/wetStreetScenes';
 import { useGameStore } from '@/store/gameStore';
+import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
+import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
+import { INTERIOR_SHELL_MODELS } from '@/config/interiorShellModels';
+import { getInteriorShellScale } from '@/config/interiorShellScale';
+import { AuthoredInteriorShell } from './AuthoredInteriorShell';
 
 interface LibraryBasementVisualProps {
   livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
@@ -52,6 +58,10 @@ const matAmberSpill = getSharedStandardMaterial({
 });
 
 export function LibraryBasementVisual(_props: LibraryBasementVisualProps) {
+  const { preset } = useGraphicsQuality();
+  const useAuthoredShell = !preset.visualLite;
+  const useGltfDressing = allowsGlbAssetRendering(preset.environmentRenderMode);
+  const hideProceduralClutter = useAuthoredShell && useGltfDressing;
   const rootRef = useRef<THREE.Group>(null);
   const screenRef = useRef<THREE.Mesh>(null);
   const tRef = useRef(0);
@@ -63,6 +73,10 @@ export function LibraryBasementVisual(_props: LibraryBasementVisualProps) {
   );
   const floorRoughness = Math.max(0.22, (damp?.roughness ?? 0.92) - (spill?.roughnessDrop ?? 0));
   const floorMetalness = Math.min(0.5, (damp?.metalness ?? 0) + (spill?.metalnessBoost ?? 0));
+  const shellScale = useMemo(
+    () => getInteriorShellScale('library', [W, H, D]),
+    [],
+  );
 
   const shelves = useMemo(
     () =>
@@ -91,6 +105,27 @@ export function LibraryBasementVisual(_props: LibraryBasementVisualProps) {
 
   return (
     <group ref={rootRef}>
+      {useAuthoredShell ? (
+        <AuthoredInteriorShell
+          sceneId="library_basement"
+          url={INTERIOR_SHELL_MODELS.library}
+          scale={shellScale}
+          castShadow={preset.shadows}
+        />
+      ) : (
+        <>
+          {[
+            { pos: [0, H / 2, -D / 2] as [number, number, number], size: [W, H, 0.18] as [number, number, number] },
+            { pos: [0, H / 2, D / 2] as [number, number, number], size: [W, H, 0.18] as [number, number, number] },
+            { pos: [-W / 2, H / 2, 0] as [number, number, number], size: [0.18, H, D] as [number, number, number] },
+            { pos: [W / 2, H / 2, 0] as [number, number, number], size: [0.18, H, D] as [number, number, number] },
+          ].map((w, i) => (
+            <mesh key={i} position={w.pos} geometry={getSharedBoxGeometry(w.size[0], w.size[1], w.size[2])} material={matWall} castShadow receiveShadow />
+          ))}
+          <mesh position={[0, H, 0]} rotation-x={Math.PI / 2} geometry={getSharedPlaneGeometry(W, D)} material={matCeil} />
+        </>
+      )}
+
       <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={getSharedPlaneGeometry(W, D)}>
         <meshStandardMaterial
           color="#1a1610"
@@ -115,25 +150,38 @@ export function LibraryBasementVisual(_props: LibraryBasementVisualProps) {
           />
         </mesh>
       )}
-      <mesh position={[0, H, 0]} rotation-x={Math.PI / 2} geometry={getSharedPlaneGeometry(W, D)} material={matCeil} />
 
-      {[
-        { pos: [0, H / 2, -D / 2] as [number, number, number], size: [W, H, 0.18] as [number, number, number] },
-        { pos: [0, H / 2, D / 2] as [number, number, number], size: [W, H, 0.18] as [number, number, number] },
-        { pos: [-W / 2, H / 2, 0] as [number, number, number], size: [0.18, H, D] as [number, number, number] },
-        { pos: [W / 2, H / 2, 0] as [number, number, number], size: [0.18, H, D] as [number, number, number] },
-      ].map((w, i) => (
-        <mesh key={i} position={w.pos} geometry={getSharedBoxGeometry(w.size[0], w.size[1], w.size[2])} material={matWall} castShadow receiveShadow />
-      ))}
+      {!hideProceduralClutter ? (
+        <>
+          {shelves.map(([x, z], i) => (
+            <group key={i} position={[x, 0, z]}>
+              <mesh position={[0, 1.1, 0]} castShadow geometry={getSharedBoxGeometry(0.35, 2.2, 1.4)} material={matShelf} />
+              <mesh position={[x < 0 ? 0.22 : -0.22, 1.4, 0]} geometry={getSharedBoxGeometry(0.12, 0.7, 1.1)} material={matBook} />
+            </group>
+          ))}
 
-      {shelves.map(([x, z], i) => (
-        <group key={i} position={[x, 0, z]}>
-          <mesh position={[0, 1.1, 0]} castShadow geometry={getSharedBoxGeometry(0.35, 2.2, 1.4)} material={matShelf} />
-          <mesh position={[x < 0 ? 0.22 : -0.22, 1.4, 0]} geometry={getSharedBoxGeometry(0.12, 0.7, 1.1)} material={matBook} />
-        </group>
-      ))}
+          <mesh position={[0, 0.45, -3.2]} castShadow geometry={getSharedBoxGeometry(1.1, 0.9, 0.55)} material={matShelf} />
 
-      <mesh position={[0, 0.45, -3.2]} castShadow geometry={getSharedBoxGeometry(1.1, 0.9, 0.55)} material={matShelf} />
+          <mesh position={[-1.5, 2.55, 0]} geometry={getSharedBoxGeometry(4, 0.08, 0.08)} material={matPipe} />
+          <mesh position={[2.2, 2.55, -1]} geometry={getSharedBoxGeometry(0.08, 0.08, 3)} material={matPipe} />
+          <mesh position={[0, 2.55, 2.4]} geometry={getSharedBoxGeometry(6, 0.06, 0.06)} material={matPipe} />
+
+          {[
+            [-1.8, -3.4],
+            [1.6, -3.5],
+            [0.2, 3.2],
+          ].map(([x, z], i) => (
+            <mesh
+              key={`crate-${i}`}
+              position={[x, 0.28, z]}
+              castShadow
+              geometry={getSharedBoxGeometry(0.7, 0.55, 0.55)}
+              material={matCrate}
+            />
+          ))}
+        </>
+      ) : null}
+
       <mesh
         ref={screenRef}
         position={[0, 0.95, -2.95]}
@@ -141,24 +189,6 @@ export function LibraryBasementVisual(_props: LibraryBasementVisualProps) {
         material={matTerminal}
       />
 
-      <mesh position={[-1.5, 2.55, 0]} geometry={getSharedBoxGeometry(4, 0.08, 0.08)} material={matPipe} />
-      <mesh position={[2.2, 2.55, -1]} geometry={getSharedBoxGeometry(0.08, 0.08, 3)} material={matPipe} />
-      <mesh position={[0, 2.55, 2.4]} geometry={getSharedBoxGeometry(6, 0.06, 0.06)} material={matPipe} />
-
-      {/* Archive crates + amber monitor spill */}
-      {[
-        [-1.8, -3.4],
-        [1.6, -3.5],
-        [0.2, 3.2],
-      ].map(([x, z], i) => (
-        <mesh
-          key={`crate-${i}`}
-          position={[x, 0.28, z]}
-          castShadow
-          geometry={getSharedBoxGeometry(0.7, 0.55, 0.55)}
-          material={matCrate}
-        />
-      ))}
       <mesh position={[0, 0.02, -2.6]} rotation-x={-Math.PI / 2} geometry={getSharedCircleGeometry(1.4, 18)} material={matAmberSpill} />
       <mesh position={[0, 1.4, 0]} rotation-x={-Math.PI / 2} geometry={getSharedCircleGeometry(3.2, 20)} material={matDust} />
 

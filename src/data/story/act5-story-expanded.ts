@@ -786,4 +786,35 @@ export const ACT5_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
       },
     ],
   },
+
+  /* ══════════════════════════════════════════════════════════════════════════
+     BUNKER AMBIENT EXPLORE — short beats for free exploration
+     ══════════════════════════════════════════════════════════════════════════ */
+  act5_exp_bunker_radio_bench: {
+    id: 'act5_exp_bunker_radio_bench',
+    text: 'Радиостанция на столе — три ручки, антенна из медной проволоки, на экране частота 433. Аня подписала стикером: «Не трогать без пароля». Но гул в динамике — не помехи, а дыхание: кто-то на другом конце тоже не спит.',
+    speaker: 'narrator',
+    sceneId: 'underground_bunker',
+    choices: [
+      {
+        text: 'Отойти — пусть частота остаётся чужой',
+        next: 'bunker_explore_mode',
+        effects: [{ type: 'setFlag', flag: 'bunker_radio_examined', flagValue: true }],
+      },
+    ],
+  },
+
+  act5_exp_bunker_map_wall: {
+    id: 'act5_exp_bunker_map_wall',
+    text: 'Карта города на фанере — нитки между заводом, библиотекой и пирсом. Максим карандашом обвёл три точки и написал: «node». Не схема победы — схема выживания. Каждая нить — человек, который ещё не сдался.',
+    speaker: 'narrator',
+    sceneId: 'underground_bunker',
+    choices: [
+      {
+        text: 'Запомнить маршруты и вернуться',
+        next: 'bunker_explore_mode',
+        effects: [{ type: 'setFlag', flag: 'bunker_map_examined', flagValue: true }],
+      },
+    ],
+  },
 };

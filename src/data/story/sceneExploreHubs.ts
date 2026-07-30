@@ -59,6 +59,14 @@ const GOLDEN_PATH_HUB_CONTINUE: Partial<
     next: 'resistance_bunker_hub',
     text: 'Встретиться с Максимом',
   },
+  albert_backroom_explore_mode: {
+    next: 'act4_quiet_albert_backroom',
+    text: 'Заглянуть к Альберту в подсобку',
+  },
+  mainframe_explore_mode: {
+    next: 'act4_quiet_mainframe',
+    text: 'Заглянуть в серверную гильдии',
+  },
   factory_roof_explore_mode: {
     next: 'factory_roof_lookout',
     text: 'Подняться к Жеке на крышу',

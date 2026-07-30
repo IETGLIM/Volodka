@@ -109,6 +109,34 @@ export const STORY_NODES_ACT4_QUIET_HOUR: Record<string, StoryNode> = {
     ],
   },
 
+  act4_exp_backroom_grinder: {
+    id: 'act4_exp_backroom_grinder',
+    text: 'Кофемолка ещё тёплая — зерно arabica, обожжённое чуть сильнее, чем в зале. На боку маркером: «для своих». Альберт не продаёт этот эспрессо — он оставляет его для разговоров, которые нельзя вести при клиентах.',
+    speaker: 'narrator',
+    sceneId: 'albert_backroom',
+    choices: [
+      {
+        text: 'Вернуться к ящикам',
+        next: 'albert_backroom_explore_mode',
+        effects: [{ type: 'setFlag', flag: 'backroom_grinder_examined', flagValue: true }],
+      },
+    ],
+  },
+
+  act4_exp_backroom_photo: {
+    id: 'act4_exp_backroom_photo',
+    text: 'Фотография под стеклом — молодые Альберт и Зарема на фоне старого кафе. Подпись выцвела, но видно: «до протокола». Он не прячет её — просто держит там, где гильдия не смотрит.',
+    speaker: 'narrator',
+    sceneId: 'albert_backroom',
+    choices: [
+      {
+        text: 'Не трогать рамку',
+        next: 'albert_backroom_explore_mode',
+        effects: [{ type: 'setFlag', flag: 'backroom_photo_examined', flagValue: true }],
+      },
+    ],
+  },
+
   act4_quiet_solnysh_call: {
     id: 'act4_quiet_solnysh_call',
     text: 'Солныш отвечает на третьем гудке. Голос тёплый, чуть сонный: «Ты не спишь? Я тоже.» Вы молчите вместе — не неловко, а правильно. Потом она читает вслух четыре строки, которые написала сегодня. Ты запоминаешь ритм — на случай, если завтра понадобится якорь.',

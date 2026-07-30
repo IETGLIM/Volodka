@@ -46,9 +46,14 @@ describe('npcClipResolution', () => {
     expect(findNpcClipActionByName(actions, 'walk')?.getClip().name).toBe('Walk');
   });
 
+  it('resolves gesture via shipped talking clip aliases', () => {
+    const actions = mockActions(['Idle', 'talking', 'Walking']);
+    expect(resolveNpcClipAction('gesture', actions)?.getClip().name).toBe('talking');
+  });
+
   it('falls back to idle for unknown non-idle states', () => {
     const actions = mockActions(['Idle']);
-    expect(resolveNpcClipAction('gesture', actions)?.getClip().name).toBe('Idle');
+    expect(resolveNpcClipAction('work', actions)?.getClip().name).toBe('Idle');
   });
 
   it('skips Death as idle fallback when clips are ordered Death-first', () => {

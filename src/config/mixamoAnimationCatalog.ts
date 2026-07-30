@@ -133,6 +133,10 @@ export function getMixamoClipAliasesByNpcState(): Record<NPCAnimationState, stri
   };
   for (const spec of MIXAMO_ANIMATION_CATALOG) {
     map[spec.npcState].push(spec.canonicalClipName, ...spec.clipAliases);
+    // Shipped talking clip covers emphatic gesture beats until a dedicated gesture import lands.
+    if (spec.id === 'talking') {
+      map.gesture.push(spec.canonicalClipName, ...spec.clipAliases);
+    }
   }
   return map;
 }

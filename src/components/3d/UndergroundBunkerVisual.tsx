@@ -1,5 +1,6 @@
 /* ─── Underground Bunker: resistance hideout ───
  * Green terminal glow, sandbags, radio desk — not factory basement.
+ * basement GLB shell + prop dressing replace procedural wall clutter at high quality.
  */
 
 import { useMemo, useRef, type MutableRefObject } from 'react';
@@ -13,6 +14,10 @@ import {
 } from '@/engine/three/moduleGeometryRegistry';
 import { getSharedStandardMaterial } from '@/engine/three/moduleMaterialRegistry';
 import { getIndustrialDampFloorSettings } from '@/engine/graphics/wetStreetScenes';
+import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
+import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
+import { INTERIOR_SHELL_MODELS } from '@/config/interiorShellModels';
+import { AuthoredInteriorShell } from './AuthoredInteriorShell';
 
 interface UndergroundBunkerVisualProps {
   livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
@@ -45,6 +50,10 @@ const matRadio = getSharedStandardMaterial({
 });
 
 export function UndergroundBunkerVisual(_props: UndergroundBunkerVisualProps) {
+  const { preset } = useGraphicsQuality();
+  const useAuthoredShell = !preset.visualLite;
+  const useGltfDressing = allowsGlbAssetRendering(preset.environmentRenderMode);
+  const hideProceduralClutter = useAuthoredShell && useGltfDressing;
   const rootRef = useRef<THREE.Group>(null);
   const screenRef = useRef<THREE.Mesh>(null);
   const radioRef = useRef<THREE.Mesh>(null);
@@ -71,16 +80,52 @@ export function UndergroundBunkerVisual(_props: UndergroundBunkerVisualProps) {
 
   return (
     <group ref={rootRef}>
-      <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={getSharedPlaneGeometry(W, D)}>
-        <meshStandardMaterial
-          color="#1c2220"
-          roughness={floorRoughness}
-          metalness={floorMetalness}
-          polygonOffset
-          polygonOffsetFactor={1}
-          polygonOffsetUnits={1}
+      {useAuthoredShell ? (
+        <AuthoredInteriorShell
+          sceneId="underground_bunker"
+          url={INTERIOR_SHELL_MODELS.basement}
+          position={[-1, 0.15, -2.5]}
+          rotationY={Math.PI / 6}
+          scale={2.65}
+          castShadow={preset.shadows}
         />
-      </mesh>
+      ) : (
+        <>
+          <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={getSharedPlaneGeometry(W, D)}>
+            <meshStandardMaterial
+              color="#1c2220"
+              roughness={floorRoughness}
+              metalness={floorMetalness}
+              polygonOffset
+              polygonOffsetFactor={1}
+              polygonOffsetUnits={1}
+            />
+          </mesh>
+          <mesh position={[0, H, 0]} rotation-x={Math.PI / 2} geometry={getSharedPlaneGeometry(W, D)} material={matCeil} />
+          {[
+            { pos: [0, H / 2, -D / 2] as [number, number, number], size: [W, H, 0.2] as [number, number, number] },
+            { pos: [0, H / 2, D / 2] as [number, number, number], size: [W, H, 0.2] as [number, number, number] },
+            { pos: [-W / 2, H / 2, 0] as [number, number, number], size: [0.2, H, D] as [number, number, number] },
+            { pos: [W / 2, H / 2, 0] as [number, number, number], size: [0.2, H, D] as [number, number, number] },
+          ].map((w, i) => (
+            <mesh key={i} position={w.pos} geometry={getSharedBoxGeometry(w.size[0], w.size[1], w.size[2])} material={matWall} castShadow receiveShadow />
+          ))}
+        </>
+      )}
+
+      {useAuthoredShell ? (
+        <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={getSharedPlaneGeometry(W, D)}>
+          <meshStandardMaterial
+            color="#1c2220"
+            roughness={floorRoughness}
+            metalness={floorMetalness}
+            polygonOffset
+            polygonOffsetFactor={1}
+            polygonOffsetUnits={1}
+          />
+        </mesh>
+      ) : null}
+
       {damp && (
         <mesh rotation-x={-Math.PI / 2} position={[2.5, 0.008, 1]} geometry={getSharedCircleGeometry(1.8, 18)}>
           <meshStandardMaterial
@@ -95,27 +140,31 @@ export function UndergroundBunkerVisual(_props: UndergroundBunkerVisualProps) {
           />
         </mesh>
       )}
-      <mesh position={[0, H, 0]} rotation-x={Math.PI / 2} geometry={getSharedPlaneGeometry(W, D)} material={matCeil} />
 
-      {[
-        { pos: [0, H / 2, -D / 2] as [number, number, number], size: [W, H, 0.2] as [number, number, number] },
-        { pos: [0, H / 2, D / 2] as [number, number, number], size: [W, H, 0.2] as [number, number, number] },
-        { pos: [-W / 2, H / 2, 0] as [number, number, number], size: [0.2, H, D] as [number, number, number] },
-        { pos: [W / 2, H / 2, 0] as [number, number, number], size: [0.2, H, D] as [number, number, number] },
-      ].map((w, i) => (
-        <mesh key={i} position={w.pos} geometry={getSharedBoxGeometry(w.size[0], w.size[1], w.size[2])} material={matWall} castShadow receiveShadow />
-      ))}
+      {!hideProceduralClutter ? (
+        <>
+          {[
+            [-4, -3],
+            [-2.5, -3.4],
+            [3.5, -2.8],
+            [5, -3.2],
+            [-5.2, -1.2],
+            [4.8, 0.5],
+          ].map(([x, z], i) => (
+            <mesh key={i} position={[x, 0.35, z]} castShadow geometry={getSharedBoxGeometry(1.4, 0.7, 0.55)} material={matSandbag} />
+          ))}
 
-      {[
-        [-4, -3],
-        [-2.5, -3.4],
-        [3.5, -2.8],
-        [5, -3.2],
-        [-5.2, -1.2],
-        [4.8, 0.5],
-      ].map(([x, z], i) => (
-        <mesh key={i} position={[x, 0.35, z]} castShadow geometry={getSharedBoxGeometry(1.4, 0.7, 0.55)} material={matSandbag} />
-      ))}
+          <mesh position={[-5.5, 0.45, 2]} castShadow geometry={getSharedBoxGeometry(1.3, 0.9, 0.9)} material={matMetal} />
+          <mesh position={[5.2, 0.45, 1.5]} castShadow geometry={getSharedBoxGeometry(1.1, 0.9, 1.0)} material={matMetal} />
+          <mesh position={[-3.2, 0.4, 3.5]} castShadow geometry={getSharedBoxGeometry(0.8, 0.8, 0.7)} material={matCrate} />
+          <mesh position={[-2.3, 0.35, 3.7]} castShadow geometry={getSharedBoxGeometry(0.65, 0.7, 0.55)} material={matCrate} />
+          <mesh position={[3.0, 0.35, 4.0]} castShadow geometry={getSharedBoxGeometry(1.0, 0.7, 0.5)} material={matCrate} />
+
+          <mesh position={[-2, 3.1, 0]} geometry={getSharedBoxGeometry(6, 0.08, 0.1)} material={matPipe} />
+          <mesh position={[3, 3.1, -2]} geometry={getSharedBoxGeometry(0.1, 0.08, 5)} material={matPipe} />
+          <mesh position={[0, 2.9, 4]} geometry={getSharedCylinderGeometry(0.15, 0.15, 0.4, 8)} material={matPipe} />
+        </>
+      ) : null}
 
       <mesh position={[0, 0.55, -4.5]} castShadow geometry={getSharedBoxGeometry(2.4, 0.12, 1.0)} material={matMetal} />
       <mesh position={[-0.7, 0.28, -4.5]} geometry={getSharedBoxGeometry(0.12, 0.55, 0.9)} material={matMetal} />
@@ -128,16 +177,6 @@ export function UndergroundBunkerVisual(_props: UndergroundBunkerVisualProps) {
         geometry={getSharedBoxGeometry(0.45, 0.28, 0.22)}
         material={matRadio}
       />
-
-      <mesh position={[-5.5, 0.45, 2]} castShadow geometry={getSharedBoxGeometry(1.3, 0.9, 0.9)} material={matMetal} />
-      <mesh position={[5.2, 0.45, 1.5]} castShadow geometry={getSharedBoxGeometry(1.1, 0.9, 1.0)} material={matMetal} />
-      <mesh position={[-3.2, 0.4, 3.5]} castShadow geometry={getSharedBoxGeometry(0.8, 0.8, 0.7)} material={matCrate} />
-      <mesh position={[-2.3, 0.35, 3.7]} castShadow geometry={getSharedBoxGeometry(0.65, 0.7, 0.55)} material={matCrate} />
-      <mesh position={[3.0, 0.35, 4.0]} castShadow geometry={getSharedBoxGeometry(1.0, 0.7, 0.5)} material={matCrate} />
-
-      <mesh position={[-2, 3.1, 0]} geometry={getSharedBoxGeometry(6, 0.08, 0.1)} material={matPipe} />
-      <mesh position={[3, 3.1, -2]} geometry={getSharedBoxGeometry(0.1, 0.08, 5)} material={matPipe} />
-      <mesh position={[0, 2.9, 4]} geometry={getSharedCylinderGeometry(0.15, 0.15, 0.4, 8)} material={matPipe} />
 
       <mesh position={[-6.5, 1.8, -2]} geometry={getSharedBoxGeometry(0.08, 1.2, 0.08)} material={matWarn} />
       <mesh position={[6.5, 1.8, 2]} geometry={getSharedBoxGeometry(0.08, 1.2, 0.08)} material={matWarn} />

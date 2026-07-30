@@ -11,7 +11,7 @@ License: free for commercial games when downloaded with your Adobe ID — see [M
 2. **Pick animations** from the catalog in `src/config/mixamoAnimationCatalog.ts`:
    - Idle (standing)
    - Walking
-   - Talking (gesturing)
+   - Talking (gesturing — also drives `gesture` NPC state when no dedicated clip is imported)
    - Sitting
 3. **Download** each clip (see export settings below).
 4. **Import** into the repo:

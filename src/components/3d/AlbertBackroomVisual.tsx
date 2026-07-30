@@ -1,5 +1,6 @@
 /* ─── Albert Backroom: café storage / hush room ───
  * Not CaféVisual — crates, warm desk lamp, magenta neon drip.
+ * cafe GLB shell + prop dressing replace procedural crate clutter at high quality.
  */
 
 import { useMemo, useRef, type MutableRefObject } from 'react';
@@ -13,6 +14,11 @@ import {
 } from '@/engine/three/moduleGeometryRegistry';
 import { getSharedStandardMaterial } from '@/engine/three/moduleMaterialRegistry';
 import { getIndustrialDampFloorSettings } from '@/engine/graphics/wetStreetScenes';
+import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
+import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
+import { INTERIOR_SHELL_MODELS } from '@/config/interiorShellModels';
+import { getInteriorShellScale } from '@/config/interiorShellScale';
+import { AuthoredInteriorShell } from './AuthoredInteriorShell';
 
 interface AlbertBackroomVisualProps {
   livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
@@ -45,6 +51,10 @@ const matTerminal = getSharedStandardMaterial({
 });
 
 export function AlbertBackroomVisual(_props: AlbertBackroomVisualProps) {
+  const { preset } = useGraphicsQuality();
+  const useAuthoredShell = !preset.visualLite;
+  const useGltfDressing = allowsGlbAssetRendering(preset.environmentRenderMode);
+  const hideProceduralClutter = useAuthoredShell && useGltfDressing;
   const rootRef = useRef<THREE.Group>(null);
   const neonRef = useRef<THREE.Mesh>(null);
   const lampRef = useRef<THREE.Mesh>(null);
@@ -53,6 +63,10 @@ export function AlbertBackroomVisual(_props: AlbertBackroomVisualProps) {
   const damp = useMemo(() => getIndustrialDampFloorSettings('albert_backroom'), []);
   const floorRoughness = damp?.roughness ?? 0.8;
   const floorMetalness = damp?.metalness ?? 0.08;
+  const shellScale = useMemo(
+    () => getInteriorShellScale('cafe', [W, H, D]),
+    [],
+  );
 
   useFrameTick(
     'misc',
@@ -76,6 +90,27 @@ export function AlbertBackroomVisual(_props: AlbertBackroomVisualProps) {
 
   return (
     <group ref={rootRef}>
+      {useAuthoredShell ? (
+        <AuthoredInteriorShell
+          sceneId="albert_backroom"
+          url={INTERIOR_SHELL_MODELS.cafe}
+          scale={shellScale}
+          castShadow={preset.shadows}
+        />
+      ) : (
+        <>
+          {[
+            { pos: [0, H / 2, -D / 2] as [number, number, number], size: [W, H, 0.16] as [number, number, number] },
+            { pos: [0, H / 2, D / 2] as [number, number, number], size: [W, H, 0.16] as [number, number, number] },
+            { pos: [-W / 2, H / 2, 0] as [number, number, number], size: [0.16, H, D] as [number, number, number] },
+            { pos: [W / 2, H / 2, 0] as [number, number, number], size: [0.16, H, D] as [number, number, number] },
+          ].map((w, i) => (
+            <mesh key={i} position={w.pos} geometry={getSharedBoxGeometry(w.size[0], w.size[1], w.size[2])} material={matWall} castShadow receiveShadow />
+          ))}
+          <mesh position={[0, H, 0]} rotation-x={Math.PI / 2} geometry={getSharedPlaneGeometry(W, D)} material={matCeil} />
+        </>
+      )}
+
       <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={getSharedPlaneGeometry(W, D)}>
         <meshStandardMaterial
           color="#1e1820"
@@ -100,26 +135,27 @@ export function AlbertBackroomVisual(_props: AlbertBackroomVisualProps) {
           />
         </mesh>
       )}
-      <mesh position={[0, H, 0]} rotation-x={Math.PI / 2} geometry={getSharedPlaneGeometry(W, D)} material={matCeil} />
 
-      {[
-        { pos: [0, H / 2, -D / 2] as [number, number, number], size: [W, H, 0.16] as [number, number, number] },
-        { pos: [0, H / 2, D / 2] as [number, number, number], size: [W, H, 0.16] as [number, number, number] },
-        { pos: [-W / 2, H / 2, 0] as [number, number, number], size: [0.16, H, D] as [number, number, number] },
-        { pos: [W / 2, H / 2, 0] as [number, number, number], size: [0.16, H, D] as [number, number, number] },
-      ].map((w, i) => (
-        <mesh key={i} position={w.pos} geometry={getSharedBoxGeometry(w.size[0], w.size[1], w.size[2])} material={matWall} castShadow receiveShadow />
-      ))}
+      {!hideProceduralClutter ? (
+        <>
+          {[
+            [-2.2, -1.4],
+            [-1.4, -1.5],
+            [2.0, -1.2],
+            [2.5, 1.4],
+            [-2.4, 1.2],
+          ].map(([x, z], i) => (
+            <mesh key={i} position={[x, 0.45, z]} castShadow geometry={getSharedBoxGeometry(0.7, 0.9, 0.55)} material={matCrate} />
+          ))}
 
-      {[
-        [-2.2, -1.4],
-        [-1.4, -1.5],
-        [2.0, -1.2],
-        [2.5, 1.4],
-        [-2.4, 1.2],
-      ].map(([x, z], i) => (
-        <mesh key={i} position={[x, 0.45, z]} castShadow geometry={getSharedBoxGeometry(0.7, 0.9, 0.55)} material={matCrate} />
-      ))}
+          <mesh position={[0.2, 1.1, -2.7]} castShadow geometry={getSharedBoxGeometry(2.4, 2.2, 0.2)} material={matShelf} />
+          <mesh position={[0.2, 0.7, -2.55]} geometry={getSharedBoxGeometry(2.1, 0.08, 0.35)} material={matShelf} />
+          <mesh position={[0.2, 1.3, -2.55]} geometry={getSharedBoxGeometry(2.1, 0.08, 0.35)} material={matShelf} />
+          <mesh position={[0.2, 1.9, -2.55]} geometry={getSharedBoxGeometry(2.1, 0.08, 0.35)} material={matShelf} />
+          <mesh position={[-0.6, 0.35, 1.8]} castShadow geometry={getSharedBoxGeometry(0.55, 0.7, 0.45)} material={matSack} />
+          <mesh position={[0.1, 0.3, 1.9]} castShadow geometry={getSharedBoxGeometry(0.5, 0.6, 0.4)} material={matSack} />
+        </>
+      ) : null}
 
       <mesh position={[-1.5, 0.55, -1]} castShadow geometry={getSharedBoxGeometry(0.9, 0.85, 0.5)} material={matMetal} />
       <mesh
@@ -134,13 +170,6 @@ export function AlbertBackroomVisual(_props: AlbertBackroomVisualProps) {
         geometry={getSharedBoxGeometry(0.35, 0.22, 0.03)}
         material={matTerminal}
       />
-
-      <mesh position={[0.2, 1.1, -2.7]} castShadow geometry={getSharedBoxGeometry(2.4, 2.2, 0.2)} material={matShelf} />
-      <mesh position={[0.2, 0.7, -2.55]} geometry={getSharedBoxGeometry(2.1, 0.08, 0.35)} material={matShelf} />
-      <mesh position={[0.2, 1.3, -2.55]} geometry={getSharedBoxGeometry(2.1, 0.08, 0.35)} material={matShelf} />
-      <mesh position={[0.2, 1.9, -2.55]} geometry={getSharedBoxGeometry(2.1, 0.08, 0.35)} material={matShelf} />
-      <mesh position={[-0.6, 0.35, 1.8]} castShadow geometry={getSharedBoxGeometry(0.55, 0.7, 0.45)} material={matSack} />
-      <mesh position={[0.1, 0.3, 1.9]} castShadow geometry={getSharedBoxGeometry(0.5, 0.6, 0.4)} material={matSack} />
 
       <mesh
         ref={neonRef}

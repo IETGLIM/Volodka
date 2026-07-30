@@ -180,6 +180,30 @@ export const SCENE_PROP_DRESSING: Partial<Record<SceneId, readonly ScenePropPlac
     { propModelId: 'polyhaven_power_box', position: [-4.5, 0, -4.5], rotationY: 0.25, loadTier: 'deferred' },
     { propModelId: 'polyhaven_wooden_crate', position: [3.6, 0, 2.8], rotationY: -0.4, loadTier: 'deferred' },
   ],
+  underground_bunker: [
+    { propModelId: 'kenney_terminal', position: [0, 0.78, -4.2], offset: [0, -0.28, 0] },
+    { propModelId: 'polyhaven_industrial_lamp', position: [0, 2.6, -4.0], rotationY: 0.1 },
+    { propModelId: 'polyhaven_utility_box', position: [-4.8, 0, 2.2], rotationY: 0.35 },
+    { propModelId: 'polyhaven_power_box', position: [4.5, 0, 1.8], rotationY: -0.2 },
+    { propModelId: 'polyhaven_cardboard_box', position: [-3.0, 0, 3.2], rotationY: 0.25, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_wooden_crate', position: [3.2, 0, 3.5], rotationY: -0.35, loadTier: 'deferred' },
+    { propModelId: 'ai3dgen_server_fragment', position: [-5.2, 0.35, -1.5], rotationY: 0.15, loadTier: 'deferred' },
+  ],
+  library_basement: [
+    { propModelId: 'polyhaven_wooden_bookshelf_worn', position: [-3.0, 0, -1.0] },
+    { propModelId: 'polyhaven_wooden_bookshelf_worn', position: [3.0, 0, -1.0], rotationY: Math.PI },
+    { propModelId: 'kenney_terminal', position: [0, 0.78, -2.8], offset: [0, -0.28, 0] },
+    { propModelId: 'polyhaven_cardboard_box', position: [-1.6, 0, -3.2], rotationY: 0.4, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_cardboard_box', position: [1.4, 0, 3.0], rotationY: -0.25, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_metal_trash_can', position: [2.8, 0, 2.5], rotationY: 0.15, loadTier: 'deferred' },
+  ],
+  albert_backroom: [
+    { propModelId: 'kenney_city_coffee_machine', position: [0.2, 0, -2.4], rotationY: Math.PI / 2 },
+    { propModelId: 'kenney_city_bottle', position: [-1.4, 0.55, -0.9] },
+    { propModelId: 'polyhaven_cardboard_box', position: [2.0, 0, -1.0], rotationY: -0.3 },
+    { propModelId: 'polyhaven_metal_trash_can', position: [-2.3, 0, 1.4], rotationY: 0.2, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_trashbag', position: [2.4, 0, 1.2], rotationY: 0.45, loadTier: 'deferred' },
+  ],
 };
 
 export function getScenePropDressing(sceneId: SceneId): readonly ScenePropPlacement[] {

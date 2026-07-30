@@ -33,7 +33,13 @@ describe('assetOwnership', () => {
   });
 
   it('mounts industrial indoor shells from scene visuals via AuthoredInteriorShell', () => {
-    for (const sceneId of ['guild_mainframe', 'factory_basement'] as const) {
+    for (const sceneId of [
+      'guild_mainframe',
+      'factory_basement',
+      'underground_bunker',
+      'library_basement',
+      'albert_backroom',
+    ] as const) {
       expect(isSceneAssetSystemAllowed(sceneId, 'interior_shell', 'AuthoredInteriorShell')).toBe(true);
       expect(isSceneAssetSystemAllowed(sceneId, 'interior_shell', 'SceneInteriorAssets')).toBe(false);
       expect(getSceneInteriorAssets(sceneId)).toEqual([]);

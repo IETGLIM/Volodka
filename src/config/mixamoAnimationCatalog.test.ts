@@ -33,6 +33,8 @@ describe('mixamoAnimationCatalog', () => {
     expect(byState.sit).toContain('sitting');
     expect(byState.sit).toContain('working');
     expect(byState.talk).toContain('talking');
+    expect(byState.gesture).toContain('talking');
+    expect(byState.gesture).toContain('Gesture');
     expect(byState.idle).toContain('sleeping');
   });
 
