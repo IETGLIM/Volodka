@@ -565,7 +565,9 @@ export function InteractionSystemBridge({
         // Safety: if we're in Dialogue state but the narrative overlay
         // is NOT showing (dialogue closed without emitting interaction:end),
         // force the interaction to end.
-        if (phaseTimerRef.current >= 0.3) {
+        // Grace is long enough for async dialogue pack load (ensureDialogueNode)
+        // after npc:interact_staged — 300ms was exiting before the overlay opened.
+        if (phaseTimerRef.current >= 2.5) {
           const snap2 = getGameSnapshot();
           // Use pre-computed mode from snapshot (already accounts for mainMenu/intro/combat/cutscene)
           const currentMode = snap2.mode;

@@ -1,6 +1,7 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import * as THREE from 'three';
 import {
+  beginInteractionQueryFrame,
   pickPrimaryInteractionTarget,
   queryInteractionTargets,
   scoreInteractionTarget,
@@ -116,6 +117,15 @@ describe('hasInteractionLineOfSight', () => {
     const target = new THREE.Vector3(0, 0, 3);
     let clear = true;
     for (let i = 0; i < 6; i++) {
+      beginInteractionQueryFrame();
+      // Dual query in one frame (prompts + E-key) must not advance the throttle twice.
+      queryInteractionTargets({
+        playerPos: player,
+        playerYaw: 0,
+        zones: [],
+        npcs: [{ id: 'n', npcId: 'npc', position: [0, 0, 3], label: 'N' }],
+        checkLineOfSight: true,
+      });
       queryInteractionTargets({
         playerPos: player,
         playerYaw: 0,

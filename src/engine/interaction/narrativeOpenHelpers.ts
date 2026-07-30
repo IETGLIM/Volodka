@@ -31,9 +31,22 @@ import {
   markEntryBeatHubPromoted,
   resetEntryBeatState,
 } from '@/engine/interaction/entryBeatState';
+import { isCinematicTimelineActive } from '@/engine/cinematic/cinematicTimelineOrchestrator';
 
 /** Guards against concurrent openLinkedStory calls from rapid scene transitions. */
 let entryStoryInFlight = false;
+
+/** After async pack load — refuse to present if cinema/cutscene took over mid-await. */
+function shouldAbortNarrativePresentation(): boolean {
+  const snapshot = getGameSnapshot();
+  if (snapshot.activeCutsceneId) return true;
+  try {
+    if (isCinematicTimelineActive()) return true;
+  } catch {
+    /* orchestrator unavailable during teardown */
+  }
+  return false;
+}
 
 export {
   consumePendingEntryBeatFromZoneInteraction,
@@ -104,6 +117,7 @@ export async function tryOpenDialogue(nodeId: string): Promise<boolean> {
     const snapshot = getGameSnapshot();
     const resolvedId = resolveDialogueEntryNodeId(nodeId, snapshot.playerState.visitedNodes);
     await ensureDialogueNode(resolvedId);
+    if (shouldAbortNarrativePresentation()) return false;
     if (getDialogueNodes()[resolvedId]) {
       safePresentNarrativeBeat(resolvedId, 'dialogue');
       return true;
@@ -118,6 +132,7 @@ export async function tryOpenDialogue(nodeId: string): Promise<boolean> {
 export async function tryOpenStory(nodeId: string): Promise<boolean> {
   try {
     await ensureStoryNode(nodeId);
+    if (shouldAbortNarrativePresentation()) return false;
     const storyNode = getStoryNodes()[nodeId];
     if (!storyNode) {
       notifyNarrativeUnavailable('story', nodeId, 'missing');
@@ -143,6 +158,7 @@ export async function openLinkedDialogue(nodeId: string): Promise<boolean> {
     notifyNarrativeUnavailable('dialogue', nodeId, 'load_failed', error);
     return false;
   }
+  if (shouldAbortNarrativePresentation()) return false;
   const dlgNode = getDialogueNodes()[resolvedId];
   if (!dlgNode) {
     notifyNarrativeUnavailable('dialogue', resolvedId, 'missing');
@@ -158,6 +174,9 @@ export async function openLinkedDialogue(nodeId: string): Promise<boolean> {
     }
     return true;
   }
+
+  // Mid-load scene change — presenting dialogue against a stale zone is unsafe.
+  if (sceneChanged) return false;
 
   safePresentNarrativeBeat(resolvedId, 'dialogue');
   return true;
@@ -188,9 +207,14 @@ export async function openLinkedStory(nodeId: string): Promise<boolean> {
   // We still proceed for same-scene cases, but skip scene-transition decisions.
   const snapshot = getGameSnapshot();
   const sceneChanged = snapshot.exploration.currentSceneId !== sceneBefore;
+  const cinemaBlocking = shouldAbortNarrativePresentation();
 
   // Door/arrival beats — first visit plays cutscene + story; revisit walks through to hub.
+  // Arrival flythrough timelines often start during ensureStoryNode; still arm/visit/set
+  // the entry node so cutscene controller can start after cinema ends (do not hard-abort).
   const entryHubId = SCENE_ENTRY_NODE_TO_HUB[nodeId];
+  if (cinemaBlocking && !entryHubId) return false;
+
   if (entryHubId && storyNode.sceneId) {
     const alreadyVisited = hasVisitedNode(snapshot.playerState.visitedNodes, nodeId);
 
@@ -218,7 +242,8 @@ export async function openLinkedStory(nodeId: string): Promise<boolean> {
       requestSceneTransition(storyNode.sceneId as SceneId);
     }
     dispatchStateAction({ type: 'story/setCurrentNodeId', nodeId });
-    if (!getCutsceneForNode(nodeId)) {
+    // Skip VN present while arrival cinema is live — cutscene/hub path resumes after.
+    if (!getCutsceneForNode(nodeId) && !cinemaBlocking) {
       safePresentNarrativeBeat(nodeId, 'story');
     }
     return true;

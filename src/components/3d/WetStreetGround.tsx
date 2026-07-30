@@ -76,7 +76,7 @@ function WetStreetGroundPbr({
     <mesh
       rotation-x={-Math.PI / 2}
       receiveShadow
-      position-y={0.001}
+      position-y={0.0025}
       geometry={getSharedPlaneGeometry(size, size)}
     >
       {usePlanarReflector ? (
@@ -98,6 +98,9 @@ function WetStreetGroundPbr({
           depthScale={1.15}
           minDepthThreshold={0.45}
           maxDepthThreshold={1.5}
+          polygonOffset
+          polygonOffsetFactor={1}
+          polygonOffsetUnits={1}
         />
       ) : (
         <meshStandardMaterial
@@ -109,6 +112,9 @@ function WetStreetGroundPbr({
           aoMap={maps.aoMap}
           roughness={dryRoughness}
           metalness={dryMetalness}
+          polygonOffset
+          polygonOffsetFactor={1}
+          polygonOffsetUnits={1}
         />
       )}
     </mesh>
@@ -173,7 +179,7 @@ function WetStreetGroundProceduralFallback({
     <mesh
       rotation-x={-Math.PI / 2}
       receiveShadow
-      position-y={0.001}
+      position-y={0.0025}
       geometry={getSharedPlaneGeometry(size, size)}
     >
       {usePlanarReflector ? (
@@ -190,6 +196,9 @@ function WetStreetGroundProceduralFallback({
           depthScale={1.15}
           minDepthThreshold={0.45}
           maxDepthThreshold={1.5}
+          polygonOffset
+          polygonOffsetFactor={1}
+          polygonOffsetUnits={1}
         />
       ) : (
         <primitive object={wetMat} attach="material" />

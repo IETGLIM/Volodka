@@ -20,6 +20,7 @@ import { isNarrativeMovementLocked } from '@/shared/exploreHubNodes';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { getSceneExits } from '@/config/scenes';
 import {
+  beginInteractionQueryFrame,
   queryInteractionTargets,
   type InteractionTargetHit,
   type NpcQueryTarget,
@@ -260,6 +261,10 @@ export function InteractiveTriggers({
   }, []);
 
   useFrameTick('interaction', ({ delta }) => {
+    // Advance LOS throttle once per interaction frame so prompt ranking and
+    // E-key queries share the same "every 3rd frame" raycast gate.
+    beginInteractionQueryFrame();
+
     if (isOverlayBlocking) {
       if (promptsMapRef.current.size > 0) {
         promptsMapRef.current.clear();

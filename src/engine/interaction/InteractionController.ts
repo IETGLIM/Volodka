@@ -494,6 +494,14 @@ export class InteractionController {
     consumeEKey(400);
     this.session.schedule(() => {
       if (this.session.isDisposed()) return;
+      // Examine close delay can overlap cutscene/arrival cinema — do not stack narrative.
+      try {
+        const snap = getGameSnapshot();
+        if (snap.mode !== 'exploration' || snap.activeCutsceneId) return;
+        if (isCinematicTimelineActive()) return;
+      } catch {
+        return;
+      }
       runInteractionTask('triggerLinkedContent', () => triggerLinkedContent(zoneSnapshot));
     }, 300);
   }

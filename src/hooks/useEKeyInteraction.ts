@@ -20,6 +20,7 @@ import type { SceneExit } from '@/shared/types/definitions/scene';
 import {
   EXIT_PROXIMITY_RANGE,
   LMB_CLICK_DRAG_THRESHOLD_PX,
+  getTopPrompts,
 } from '@/engine/interaction/interactiveTriggerProximity';
 import { isCanvasAreaTarget } from '@/engine/input/domUtils';
 import { getGamePhase } from '@/shared/gamePhase';
@@ -98,7 +99,8 @@ export function useEKeyInteraction({
       checkLineOfSight: true,
     });
 
-    const primary = hits[0];
+    // Match InteractiveTriggers HUD prompt ranking (not raw hits[0] alone).
+    const primary = getTopPrompts(hits)[0];
     if (!primary) return false;
 
     const handled = executeInteractionHitRef.current(primary);

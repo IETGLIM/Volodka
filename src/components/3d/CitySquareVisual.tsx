@@ -48,6 +48,9 @@ const matGlass = getSharedStandardMaterial({
   metalness: 0.1,
   roughness: 0.08,
   depthWrite: false,
+  polygonOffset: true,
+  polygonOffsetFactor: -1,
+  polygonOffsetUnits: -1,
 });
 const matRail = getSharedStandardMaterial({ color: '#3a4450', metalness: 0.65, roughness: 0.38 });
 const matLampPost = getSharedStandardMaterial({ color: '#222830', metalness: 0.45, roughness: 0.5 });
@@ -115,13 +118,23 @@ export function CitySquareVisual(_props: CitySquareVisualProps) {
         groundColor="#2a2e38"
       />
 
-      {/* Plaza ring + tram rail hints */}
-      <mesh position={[0, 0.04, 0]} rotation-x={-Math.PI / 2} geometry={getSharedCircleGeometry(5.5, 48)} material={matStone} />
-      <mesh position={[0, 0.045, 0]} rotation-x={-Math.PI / 2} geometry={getSharedCircleGeometry(6.2, 48)}>
-        <meshStandardMaterial color="#252a34" roughness={0.55} metalness={0.12} transparent opacity={0.55} />
+      {/* Plaza ring + tram rail hints — keep rings separated to avoid wet-ground z-fight */}
+      <mesh position={[0, 0.035, 0]} rotation-x={-Math.PI / 2} geometry={getSharedCircleGeometry(5.5, 48)} material={matStone} />
+      <mesh position={[0, 0.055, 0]} rotation-x={-Math.PI / 2} renderOrder={1} geometry={getSharedCircleGeometry(6.2, 48)}>
+        <meshStandardMaterial
+          color="#252a34"
+          roughness={0.55}
+          metalness={0.12}
+          transparent
+          opacity={0.55}
+          depthWrite={false}
+          polygonOffset
+          polygonOffsetFactor={-1}
+          polygonOffsetUnits={-1}
+        />
       </mesh>
-      <mesh position={[0, 0.06, -7]} geometry={getSharedBoxGeometry(18, 0.04, 0.12)} material={matRail} />
-      <mesh position={[0, 0.06, -6.55]} geometry={getSharedBoxGeometry(18, 0.04, 0.12)} material={matRail} />
+      <mesh position={[0, 0.07, -7]} geometry={getSharedBoxGeometry(18, 0.04, 0.12)} material={matRail} />
+      <mesh position={[0, 0.07, -6.55]} geometry={getSharedBoxGeometry(18, 0.04, 0.12)} material={matRail} />
 
       {/* Obelisk + plaque + neon crown */}
       <mesh position={[0, 2.2, 0]} castShadow geometry={getSharedBoxGeometry(0.7, 4.2, 0.7)} material={matObelisk} />
@@ -170,7 +183,13 @@ export function CitySquareVisual(_props: CitySquareVisualProps) {
         [-11, 3.5, 13],
         [11, 4.5, 12],
       ].map(([x, h, z], i) => (
-        <mesh key={`facade-${i}`} position={[x, h / 2, z]} geometry={getSharedBoxGeometry(4.5, h, 0.35)} material={matGlass} />
+        <mesh
+          key={`facade-${i}`}
+          renderOrder={2}
+          position={[x, h / 2, z]}
+          geometry={getSharedBoxGeometry(4.5, h, 0.35)}
+          material={matGlass}
+        />
       ))}
 
       {/* Corner bollards */}

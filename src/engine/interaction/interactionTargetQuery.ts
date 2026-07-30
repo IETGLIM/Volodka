@@ -61,6 +61,15 @@ let _reusableRayRapier: InteractionQueryContext['rapier'] | null = null;
 /** H4: Frame counter for LOS throttle — check every 3rd frame. */
 let _losFrameCounter = 0;
 
+/**
+ * Advance the LOS throttle once per render/interaction frame.
+ * Must NOT be called from every `queryInteractionTargets` — prompts and E-key
+ * both query in the same frame and would desync the "every 3rd frame" gate.
+ */
+export function beginInteractionQueryFrame(): void {
+  _losFrameCounter++;
+}
+
 /** Prefer live NPC group world position over schedule anchor when registered. */
 export function resolveNpcWorldPosition(
   npcId: string,
@@ -250,9 +259,6 @@ export function queryInteractionTargets(
   } = params;
 
   const hits: InteractionTargetHit[] = [];
-
-  // H4: Advance LOS frame counter (called once per frame from interaction system).
-  _losFrameCounter++;
 
   for (const zone of zones) {
     pushZoneTarget(hits, playerPos, playerYaw, zone, checkLineOfSight);

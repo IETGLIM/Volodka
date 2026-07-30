@@ -56,6 +56,7 @@ export function CinematicTimelineRunner() {
   const stateRef = useRef<CinematicTimelineState | null>(null);
   const timelineIdRef = useRef<string | null>(null);
   const fallbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const introWakeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prologueTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prologueUnsubRef = useRef<(() => void) | null>(null);
   const prologueStoryOpenedRef = useRef(false);
@@ -363,8 +364,11 @@ export function CinematicTimelineRunner() {
     const startIntroWakeWhenReady = () => {
       if (sequenceStartedRef.current) return;
       if (getGameStore().activeCutsceneId !== 'intro_wakeup') return;
+      // Coalesce canvas:first-frame / scene:loaded / poll into one pending start.
+      if (introWakeTimerRef.current) return;
       // Small delay after first-frame to let the KCC controller settle.
-      setTimeout(() => {
+      introWakeTimerRef.current = setTimeout(() => {
+        introWakeTimerRef.current = null;
         if (sequenceStartedRef.current) return;
         if (getGameStore().activeCutsceneId !== 'intro_wakeup') return;
         startCinematicTimeline({ def: INTRO_WAKE_TIMELINE, options: {} });
@@ -393,6 +397,10 @@ export function CinematicTimelineRunner() {
     return () => {
       unsubs.forEach((u) => u());
       clearFallback();
+      if (introWakeTimerRef.current) {
+        clearTimeout(introWakeTimerRef.current);
+        introWakeTimerRef.current = null;
+      }
       if (prologueTimerRef.current) clearTimeout(prologueTimerRef.current);
       // Also tear down the prologue EventBus subscription if neither the
       // overlay_end early-fire path nor the 9s timeout ever ran (e.g. the

@@ -593,26 +593,26 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
       ) : null}
 
       {/* ── Window (right wall, emissive blue — nighttime city glow) ── */}
-      <group position={[W / 2 - 0.025, 1.5, -2.0]}>
-        <mesh rotation-y={-Math.PI / 2} geometry={geo_pln_42} material={mat_33} />
+      <group position={[W / 2 - 0.04, 1.5, -2.0]}>
+        <mesh renderOrder={1} rotation-y={-Math.PI / 2} geometry={geo_pln_42} material={mat_33} />
         {/* Window frame */}
-        <mesh rotation-y={-Math.PI / 2} position={[0.01, 0, 0]} geometry={geo_box_43} material={mat_26} />
+        <mesh renderOrder={2} rotation-y={-Math.PI / 2} position={[0.015, 0, 0]} geometry={geo_box_43} material={mat_26} />
         {/* Window blue light spill into room */}
         <pointLight position={[-0.8, 0, 0.5]} color="#4488ee" intensity={3.0} distance={5} />
         {/* City building silhouettes through window */}
-        <mesh rotation-y={-Math.PI / 2} position={[-0.01, -0.15, -0.3]} geometry={geo_pln_75} material={mat_62} />
-        <mesh rotation-y={-Math.PI / 2} position={[-0.01, -0.1, 0.2]} geometry={geo_pln_76} material={mat_62} />
+        <mesh renderOrder={3} rotation-y={-Math.PI / 2} position={[-0.02, -0.15, -0.3]} geometry={geo_pln_75} material={mat_62} />
+        <mesh renderOrder={3} rotation-y={-Math.PI / 2} position={[-0.02, -0.1, 0.2]} geometry={geo_pln_76} material={mat_62} />
         {/* Tiny window lights on buildings */}
-        <mesh rotation-y={-Math.PI / 2} position={[-0.015, -0.2, -0.3]} geometry={geo_pln_77} material={mat_63} />
-        <mesh rotation-y={-Math.PI / 2} position={[-0.015, -0.05, 0.2]} geometry={geo_pln_77} material={mat_63} />
-        <mesh rotation-y={-Math.PI / 2} position={[-0.015, -0.12, 0.22]} geometry={geo_pln_78} material={mat_64} />
+        <mesh renderOrder={4} rotation-y={-Math.PI / 2} position={[-0.028, -0.2, -0.3]} geometry={geo_pln_77} material={mat_63} />
+        <mesh renderOrder={4} rotation-y={-Math.PI / 2} position={[-0.028, -0.05, 0.2]} geometry={geo_pln_77} material={mat_63} />
+        <mesh renderOrder={4} rotation-y={-Math.PI / 2} position={[-0.028, -0.12, 0.22]} geometry={geo_pln_78} material={mat_64} />
       </group>
 
       {/* ── Second Window (back wall, emissive blue — nighttime city) ── */}
-      <group position={[-1.0, 1.5, -D / 2 + 0.025]}>
-        <mesh geometry={geo_pln_44} material={mat_34} />
+      <group position={[-1.0, 1.5, -D / 2 + 0.04]}>
+        <mesh renderOrder={1} geometry={geo_pln_44} material={mat_34} />
         {/* Window frame */}
-        <mesh position={[0, 0, -0.01]} geometry={geo_box_45} material={mat_26} />
+        <mesh renderOrder={2} position={[0, 0, -0.015]} geometry={geo_box_45} material={mat_26} />
         {/* ISSUE #7: Removed per-window pointLight — the right wall window light +
             desk lamp + ambient pulse provide sufficient fill. The window material's
             emissive (mat_34, emissiveIntensity=3.5) already creates a visible glow. */}
@@ -708,22 +708,22 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
       {/* ── ADDITIONAL ROOM DETAILS ── */}
       {/* ═══════════════════════════════════════════════ */}
 
-      {/* ── Posters on back wall ── */}
-      <group position={[-1.0, 1.8, -D / 2 + 0.02]}>
+      {/* ── Posters on back wall (renderOrder + offset to kill wall z-fight) ── */}
+      <group position={[-1.0, 1.8, -D / 2 + 0.035]}>
         {/* Poster 1 — dark with neon accent */}
-        <mesh geometry={geo_box_56} material={mat_43} />
+        <mesh renderOrder={2} geometry={geo_box_56} material={mat_43} />
         {/* Poster design — colored rectangles */}
-        <mesh position={[0, 0.1, 0.004]} geometry={geo_box_57} material={mat_44} />
-        <mesh position={[0, -0.1, 0.004]} geometry={geo_box_58} material={mat_45} />
+        <mesh renderOrder={3} position={[0, 0.1, 0.012]} geometry={geo_box_57} material={mat_44} />
+        <mesh renderOrder={3} position={[0, -0.1, 0.012]} geometry={geo_box_58} material={mat_45} />
       </group>
 
-      <group position={[1.5, 1.6, -D / 2 + 0.02]}>
+      <group position={[1.5, 1.6, -D / 2 + 0.035]}>
         {/* Poster 2 — punk band poster */}
-        <mesh geometry={geo_box_59} material={mat_46} />
-        <mesh position={[0, 0.08, 0.004]} geometry={geo_box_60} material={mat_47} />
+        <mesh renderOrder={2} geometry={geo_box_59} material={mat_46} />
+        <mesh renderOrder={3} position={[0, 0.08, 0.012]} geometry={geo_box_60} material={mat_47} />
         {/* Tape on corners */}
-        <mesh position={[-0.2, 0.28, 0.005]} rotation={[0, 0, 0.3]} geometry={geo_box_61} material={mat_48} />
-        <mesh position={[0.2, -0.28, 0.005]} rotation={[0, 0, -0.2]} geometry={geo_box_61} material={mat_48} />
+        <mesh renderOrder={4} position={[-0.2, 0.28, 0.018]} rotation={[0, 0, 0.3]} geometry={geo_box_61} material={mat_48} />
+        <mesh renderOrder={4} position={[0.2, -0.28, 0.018]} rotation={[0, 0, -0.2]} geometry={geo_box_61} material={mat_48} />
       </group>
 
       {/* ── Headphones on desk ── */}
@@ -763,7 +763,7 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
         {/* Charging cable */}
         <mesh position={[0.05, 0.51, -0.05]} rotation={[0.8, 0.2, 0]} geometry={geo_cyl_64} material={mat_59} />
         {/* Water glass on nightstand */}
-        <mesh position={[-0.1, 0.56, -0.05]} geometry={geo_cyl_73} material={mat_60} />
+        <mesh renderOrder={2} position={[-0.1, 0.565, -0.05]} geometry={geo_cyl_73} material={mat_60} />
       </group>
 
       {/* ── Slippers on floor near bed ── */}

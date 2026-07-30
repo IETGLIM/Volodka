@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ControllerSession } from '@/engine/controller/ControllerSession';
 import { useGameStore } from '@/store/gameStore';
 import { useGamePrimitive } from '@/store/selectors';
@@ -12,7 +12,6 @@ import { openNarrativeAfterCutscene } from '@/engine/scene/postCutsceneNarrative
 import { clearGameplayPhaseFlags, readGamePhase } from '@/shared/gamePhase';
 import type { SceneId } from '@/shared/types/game';
 import {
-  isIntroWakeupCutscene,
   setCinematicHoldActive,
   setCinematicPresentationMode,
 } from '@/engine/camera/cinematicPresentation';
@@ -35,6 +34,17 @@ export function useCutsceneController() {
   const currentNodeId = useGamePrimitive((s) => s.currentNodeId);
   const currentSceneId = useGamePrimitive((s) => s.exploration?.currentSceneId);
   const cutsceneSessionRef = useRef(new ControllerSession());
+  /** Bumps when a cinematic timeline ends so deferred story cutscenes can retry. */
+  const [timelineGateTick, setTimelineGateTick] = useState(0);
+
+  useEffect(() => {
+    const bump = () => setTimelineGateTick((n) => n + 1);
+    const unsubs = [
+      eventBus.on('cinematic:timeline_complete', bump),
+      eventBus.on('cinematic:timeline_stop', bump),
+    ];
+    return () => unsubs.forEach((u) => u());
+  }, []);
 
   const cancelCutsceneSession = useCallback(() => {
     cutsceneSessionRef.current.cancel();
@@ -109,8 +119,9 @@ export function useCutsceneController() {
     const store = useGameStore.getState();
     if (store.triggeredCutscenes.includes(cutscene.id)) return;
 
-    // Wake-up owns its own camera + avatar — do not replace with story title cards.
-    if (isIntroWakeupCutscene(store.activeCutsceneId)) return;
+    // Scene-id effect re-runs must not restart while a cutscene is already live
+    // (same or different id, including intro wakeup) — otherwise overlays/waypoints double-fire.
+    if (store.activeCutsceneId) return;
 
     // Guard against starting a story cutscene while a unified cinematic
     // timeline is still active (e.g., a splash timeline still running).
@@ -247,7 +258,7 @@ export function useCutsceneController() {
       }
       session.cancel();
     };
-  }, [currentNodeId, currentSceneId]);
+  }, [currentNodeId, currentSceneId, timelineGateTick]);
 
   return { skipActiveCutscene };
 }
