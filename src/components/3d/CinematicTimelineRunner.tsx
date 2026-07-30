@@ -316,7 +316,42 @@ export function CinematicTimelineRunner() {
       setShowAvatar(false);
       stateRef.current = null;
       timelineIdRef.current = null;
+      sequenceStartedRef.current = false;
       clearFallback();
+      if (introWakeTimerRef.current) {
+        clearTimeout(introWakeTimerRef.current);
+        introWakeTimerRef.current = null;
+      }
+      if (prologueTimerRef.current) {
+        clearTimeout(prologueTimerRef.current);
+        prologueTimerRef.current = null;
+      }
+      if (prologueUnsubRef.current) {
+        prologueUnsubRef.current();
+        prologueUnsubRef.current = null;
+      }
+    };
+
+    const onSceneTransitionStart = (): void => {
+      const orphanId = timelineIdRef.current;
+      if (!orphanId) return;
+      if (getActiveCinematicTimelineId() === orphanId) {
+        stopCinematicTimeline(orphanId);
+      }
+      cleanupRunnerState();
+      sequenceStartedRef.current = false;
+      if (introWakeTimerRef.current) {
+        clearTimeout(introWakeTimerRef.current);
+        introWakeTimerRef.current = null;
+      }
+      if (prologueTimerRef.current) {
+        clearTimeout(prologueTimerRef.current);
+        prologueTimerRef.current = null;
+      }
+      if (prologueUnsubRef.current) {
+        prologueUnsubRef.current();
+        prologueUnsubRef.current = null;
+      }
     };
 
     const onIntroWakeLegacy = () => {
@@ -351,6 +386,7 @@ export function CinematicTimelineRunner() {
       eventBus.on('cinematic:timeline_start', onStart),
       eventBus.on('cinematic:timeline_skip', onSkip),
       eventBus.on('cinematic:timeline_stop', onStop),
+      eventBus.on('scene:transition_start', onSceneTransitionStart),
       eventBus.on('intro:wakeup_sequence', onIntroWakeLegacy),
       eventBus.on('intro:wakeup_skip', onIntroSkipLegacy),
       eventBus.on('cinematic:timeline_complete', onSkippedComplete),

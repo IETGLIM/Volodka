@@ -2,7 +2,7 @@
  * Not a reused alley — open plaza, central obelisk, wet asphalt sheen.
  */
 
-import { Suspense, useMemo, useRef, type MutableRefObject } from 'react';
+import { Suspense, useEffect, useMemo, useRef, useState, type MutableRefObject } from 'react';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
@@ -14,6 +14,7 @@ import {
   STREET_SHUTTER_DOOR_SCALE,
 } from '@/config/metricScaleCoherence';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
+import { disposeClonedScene, createSourceSkipSet } from '@/engine/three/disposeThreeResources';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
 import {
@@ -106,10 +107,25 @@ function AuthoredPlazaProp({
   castShadow: boolean;
 }) {
   const gltf = useGLTF(url, true, true, extendLoader);
-  const scene = useMemo(
-    () => prepareAuthoredClone(gltf.scene, castShadow),
-    [gltf.scene, castShadow],
-  );
+  const [scene, setScene] = useState<THREE.Object3D | null>(null);
+  const cloneRef = useRef<THREE.Object3D | null>(null);
+
+  useEffect(() => {
+    const next = prepareAuthoredClone(gltf.scene, castShadow);
+    if (cloneRef.current) {
+      disposeClonedScene(cloneRef.current, { skip: createSourceSkipSet(gltf.scene) });
+    }
+    cloneRef.current = next;
+    setScene(next);
+    return () => {
+      if (cloneRef.current) {
+        disposeClonedScene(cloneRef.current, { skip: createSourceSkipSet(gltf.scene) });
+        cloneRef.current = null;
+      }
+    };
+  }, [gltf.scene, castShadow]);
+
+  if (!scene) return null;
 
   return (
     <group position={position} rotation={[0, rotationY, 0]} scale={scale}>

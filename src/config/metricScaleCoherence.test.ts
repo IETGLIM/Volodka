@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
   METRIC_SCALE_AUDIT,
+  NPC_GLTF_TARGET_HEIGHT_M,
   PLAYER_METRIC,
   PLAZA_MONUMENT_SCALE,
   STREET_FACADE_SCALE,
   STREET_SHUTTER_DOOR_SCALE,
+  STREET_SHUTTER_WINDOW_SCALE,
 } from './metricScaleCoherence';
 import { WAKEUP_CAMERA_WAYPOINTS } from '@/engine/wakeup/wakeUpCinematic';
 
@@ -15,10 +17,20 @@ describe('metricScaleCoherence', () => {
     expect(PLAYER_METRIC.eyeHeightM).toBeLessThan(1.75);
   });
 
-  it('keeps street shutter multiplier near human door band', () => {
+  it('keeps street shutter door multiplier near residential door band', () => {
     const shutterHeightM = PLAYER_METRIC.storefrontShutterHeightM * STREET_SHUTTER_DOOR_SCALE;
     expect(shutterHeightM).toBeGreaterThan(2.0);
-    expect(shutterHeightM).toBeLessThan(2.8);
+    expect(shutterHeightM).toBeLessThan(2.3);
+  });
+
+  it('keeps street shutter window multiplier in residential window band', () => {
+    const windowHeightM = PLAYER_METRIC.storefrontShutterWindowHeightM * STREET_SHUTTER_WINDOW_SCALE;
+    expect(windowHeightM).toBeGreaterThan(1.2);
+    expect(windowHeightM).toBeLessThan(1.5);
+  });
+
+  it('anchors NPC runtime fit to player height', () => {
+    expect(NPC_GLTF_TARGET_HEIGHT_M).toBe(PLAYER_METRIC.heightM);
   });
 
   it('keeps plaza monument under 2 m at configured scale', () => {

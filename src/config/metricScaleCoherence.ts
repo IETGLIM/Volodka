@@ -15,11 +15,24 @@ export const PLAYER_METRIC = {
   deskHeightM: 0.76,
   chairSeatHeightM: 0.45,
   residentialDoorHeightM: 2.1,
-  storefrontShutterHeightM: 2.6,
+  /** Upper-floor residential window band (m). */
+  residentialWindowHeightM: 1.35,
+  /** Poly Haven rollershutter door GLB native height at scale 1 (m). */
+  storefrontShutterHeightM: 2.4,
+  /** Poly Haven rollershutter window GLB native height at scale 1 (m). */
+  storefrontShutterWindowHeightM: 1.85,
 } as const;
 
-/** Poly Haven rollershutter door GLB ≈ 2.6 m tall at scale 1 — street multiplier band. */
-export const STREET_SHUTTER_DOOR_SCALE = 0.88;
+/** Canonical NPC GLB fit target — same band as player humanoid. */
+export const NPC_GLTF_TARGET_HEIGHT_M = PLAYER_METRIC.heightM;
+
+/** Poly Haven rollershutter door — street multiplier ≈ 2.1 m storefront band. */
+export const STREET_SHUTTER_DOOR_SCALE =
+  PLAYER_METRIC.residentialDoorHeightM / PLAYER_METRIC.storefrontShutterHeightM;
+
+/** Poly Haven upper-floor shutter windows — was ×1.5–1.75 (~2.8–3.2 m). */
+export const STREET_SHUTTER_WINDOW_SCALE =
+  PLAYER_METRIC.residentialWindowHeightM / PLAYER_METRIC.storefrontShutterWindowHeightM;
 
 /** Urban facade backdrop — ~3 m shell × multiplier ≈ 7–8 m (2–3 storeys). */
 export const STREET_FACADE_SCALE = {
@@ -83,12 +96,20 @@ export const METRIC_SCALE_AUDIT: readonly ScaleAuditRow[] = [
     note: 'Seating uses Kenney city chair, not oversized PH armchair in hero desks',
   },
   {
-    id: 'street_shutter',
+    id: 'street_shutter_door',
     domain: 'street',
-    targetM: PLAYER_METRIC.storefrontShutterHeightM,
-    applied: `PH shutter × ${STREET_SHUTTER_DOOR_SCALE} ≈ 2.3 m`,
+    targetM: PLAYER_METRIC.residentialDoorHeightM,
+    applied: `PH door × ${STREET_SHUTTER_DOOR_SCALE.toFixed(2)} ≈ 2.1 m`,
     status: 'fixed',
     note: 'Was ×1.55–1.7 (~4 m) — dwarfed 1.75 m player',
+  },
+  {
+    id: 'street_shutter_window',
+    domain: 'street',
+    targetM: PLAYER_METRIC.residentialWindowHeightM,
+    applied: `PH window × ${STREET_SHUTTER_WINDOW_SCALE.toFixed(2)} ≈ 1.35 m`,
+    status: 'fixed',
+    note: 'Was ×1.5–1.75 (~2.8–3.2 m) on upper floors',
   },
   {
     id: 'street_facade',
@@ -115,11 +136,19 @@ export const METRIC_SCALE_AUDIT: readonly ScaleAuditRow[] = [
     note: 'room/cafe/corridor/office/library shells',
   },
   {
+    id: 'npc_glb_runtime',
+    domain: 'player',
+    targetM: NPC_GLTF_TARGET_HEIGHT_M,
+    applied: 'fitCharacterGltf → 1.75 m at runtime',
+    status: 'ok',
+    note: 'Quaternius/CC0 via GltfNPCModel; per-NPC scale only for story height',
+  },
+  {
     id: 'npc_glb_batch',
     domain: 'player',
     targetM: PLAYER_METRIC.heightM,
     applied: 'authoring pipeline (not runtime code)',
     status: 'debt',
-    note: 'GLB height normalization pending art pass — do not commit mass GLB',
+    note: 'On-disk GLB re-export batch deferred — do not commit mass GLB',
   },
 ];

@@ -17,6 +17,7 @@ import { preloadSceneJsChunks } from '@/components/3d/sceneChunks/sceneChunkRegi
 import { isUniqueNpcMeshOnDisk, resolveNpcModelUrl } from '@/config/npcModelRegistry';
 import { getPropModelDefinition } from '@/config/propModelRegistry';
 import { getScenePropDressingIds } from '@/config/scenePropDressing';
+import { getSceneStreetDressingUrls } from '@/config/streetDressingGpuUrls';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
 import {
   GltfPreloadPriority,
@@ -185,6 +186,17 @@ export function evictSceneGpuCache(fromSceneId: SceneId, keepSceneId?: SceneId):
     if (keepNpcIds.has(npcId)) continue;
     const url = resolveNpcModelUrl(npcId);
     if (url) evictGltfUrl(url);
+  }
+
+  const keepStreetDressingUrls = new Set<string>();
+  if (keepRoot !== undefined) {
+    for (const url of getSceneStreetDressingUrls(keepSceneId!)) {
+      keepStreetDressingUrls.add(url);
+    }
+  }
+  for (const url of getSceneStreetDressingUrls(fromSceneId)) {
+    if (keepStreetDressingUrls.has(url)) continue;
+    evictGltfUrl(url);
   }
 }
 

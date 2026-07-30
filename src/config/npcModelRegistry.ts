@@ -307,6 +307,12 @@ export function getNpcModelMeta(npcId: string): NpcModelAssetMeta | undefined {
   return CC0_NPC_MODEL_ASSETS[npcId];
 }
 
+/** Post-fit scale multiplier — prefer NPCDefinition.scale for story height tweaks. */
+export function resolveNpcModelScale(npcId: string, definitionScale?: number): number {
+  const meta = getNpcModelMeta(npcId);
+  return definitionScale ?? meta?.scale ?? 1;
+}
+
 export function getNpcModelUrls(): string[] {
   const urls = new Set<string>();
   for (const url of CC0_SHIPPED_NPC_GLB_URLS) {

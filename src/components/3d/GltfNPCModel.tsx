@@ -14,7 +14,8 @@ import {
   resolveAssetUrl,
   resolveNpcAssetUrl,
 } from '@/config/assetManifest';
-import { getNpcModelMeta, resolveNpcModelUrl } from '@/config/npcModelRegistry';
+import { resolveNpcModelScale, resolveNpcModelUrl } from '@/config/npcModelRegistry';
+import { NPC_GLTF_TARGET_HEIGHT_M } from '@/config/metricScaleCoherence';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
 import { useSkinnedGltfClone } from '@/hooks/useSkinnedGltfClone';
 import { useNpcAnimationController } from '@/engine/npc/useNpcAnimationController';
@@ -118,6 +119,7 @@ function GltfNPCModelInner({
   useLayoutEffect(() => {
     const bounds = measureCharacterGltfBounds(scene);
     const { scale, rotX, footY } = fitCharacterGltf(bounds, {
+      targetHeightM: NPC_GLTF_TARGET_HEIGHT_M,
       heightFactor: targetHeightFactor,
       scaleMultiplier: modelScale,
     });
@@ -400,7 +402,6 @@ export function GltfNPCModel({
   livePlayerPositionRef,
 }: GltfNPCModelProps) {
   const url = resolveNpcModelUrl(definition.id, definition.modelPath);
-  const meta = getNpcModelMeta(definition.id);
   const appearance = definition.appearance;
 
   const proceduralFallback = (
@@ -419,7 +420,7 @@ export function GltfNPCModel({
     return proceduralFallback;
   }
 
-  const scale = definition.scale ?? meta?.scale ?? 1;
+  const scale = resolveNpcModelScale(definition.id, definition.scale);
   const targetHeightFactor = appearance?.height ?? 1;
 
   return (

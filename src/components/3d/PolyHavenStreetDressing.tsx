@@ -1,6 +1,6 @@
 /* Street dressing: unique authored facades + Poly Haven props (no facade GLB clone grid). */
 
-import { Suspense, useMemo } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
@@ -8,9 +8,11 @@ import { POLYHAVEN_MODELS } from '@/config/polyhavenAssets';
 import {
   STREET_FACADE_SCALE,
   STREET_SHUTTER_DOOR_SCALE,
+  STREET_SHUTTER_WINDOW_SCALE,
 } from '@/config/metricScaleCoherence';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
+import { disposeClonedScene, createSourceSkipSet } from '@/engine/three/disposeThreeResources';
 import { UniqueStreetFacades } from './UniqueStreetFacades';
 
 const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeof useGLTF>[3]>;
@@ -98,10 +100,26 @@ function GltfProp({
   variant?: GltfMaterialVariant;
 }) {
   const gltf = useGLTF(url, true, true, extendLoader);
-  const scene = useMemo(
-    () => clonePreparedScene(gltf.scene, castShadow, variant),
-    [gltf.scene, castShadow, variant],
-  );
+  const [scene, setScene] = useState<THREE.Object3D | null>(null);
+  const cloneRef = useRef<THREE.Object3D | null>(null);
+
+  useEffect(() => {
+    const next = clonePreparedScene(gltf.scene, castShadow, variant);
+    if (cloneRef.current) {
+      disposeClonedScene(cloneRef.current, { skip: createSourceSkipSet(gltf.scene) });
+    }
+    cloneRef.current = next;
+    setScene(next);
+    return () => {
+      if (cloneRef.current) {
+        disposeClonedScene(cloneRef.current, { skip: createSourceSkipSet(gltf.scene) });
+        cloneRef.current = null;
+      }
+    };
+  }, [gltf.scene, castShadow, variant]);
+
+  if (!scene) return null;
+
   return (
     <group position={position} rotation={[0, rotationY, 0]} scale={scale}>
       <primitive object={scene} />
@@ -137,7 +155,7 @@ function StreetPropDressing() {
         <GltfProp url={POLYHAVEN_MODELS.bench} position={[3.8, 0, -6.4]} rotationY={-0.4} scale={1.1} />
       </Suspense>
       <Suspense fallback={null}>
-        <GltfProp url={POLYHAVEN_MODELS.shutterDoor} position={[11.6, 0, -17.8]} rotationY={Math.PI} scale={1.6} />
+        <GltfProp url={POLYHAVEN_MODELS.shutterDoor} position={[11.6, 0, -17.8]} rotationY={Math.PI} scale={STREET_SHUTTER_DOOR_SCALE} />
       </Suspense>
       <Suspense fallback={null}>
         <GltfProp url={POLYHAVEN_MODELS.roadBarrierAlt} position={[-5.9, 0, 8.7]} rotationY={-0.18} scale={1.15} />
@@ -191,7 +209,7 @@ function StreetPropDressing() {
         <GltfProp url={POLYHAVEN_MODELS.industrialLamp} position={[-5.5, 3.8, -2]} scale={1.25} />
       </Suspense>
       <Suspense fallback={null}>
-        <GltfProp url={POLYHAVEN_MODELS.shutterWindow} position={[12.5, 5.2, -19.2]} rotationY={Math.PI} scale={1.5} />
+        <GltfProp url={POLYHAVEN_MODELS.shutterWindow} position={[12.5, 5.2, -19.2]} rotationY={Math.PI} scale={STREET_SHUTTER_WINDOW_SCALE} />
       </Suspense>
       <Suspense fallback={null}>
         <GltfProp url={POLYHAVEN_MODELS.exteriorAirconUnit} position={[-12.3, 4.25, -11.6]} rotationY={0.08} scale={1.1} />
@@ -234,16 +252,16 @@ function AuthoredStreetArchitecture() {
         <GltfProp url={POLYHAVEN_MODELS.shutterDoor} position={[12.2, 0, -14.8]} rotationY={Math.PI} scale={STREET_SHUTTER_DOOR_SCALE * 0.96} variant={{ tint: '#746a62', roughnessFloor: 0.64 }} />
       </Suspense>
       <Suspense fallback={null}>
-        <GltfProp url={POLYHAVEN_MODELS.shutterWindow} position={[-12.0, 5.4, -9.8]} rotationY={0.08} scale={1.65} variant={{ tint: '#9299a2' }} />
+        <GltfProp url={POLYHAVEN_MODELS.shutterWindow} position={[-12.0, 5.4, -9.8]} rotationY={0.08} scale={STREET_SHUTTER_WINDOW_SCALE * 1.04} variant={{ tint: '#9299a2' }} />
       </Suspense>
       <Suspense fallback={null}>
-        <GltfProp url={POLYHAVEN_MODELS.shutterWindowAlt} position={[13.1, 5.8, -3.8]} rotationY={Math.PI} scale={1.55} variant={{ tint: '#7b858c' }} />
+        <GltfProp url={POLYHAVEN_MODELS.shutterWindowAlt} position={[13.1, 5.8, -3.8]} rotationY={Math.PI} scale={STREET_SHUTTER_WINDOW_SCALE * 0.98} variant={{ tint: '#7b858c' }} />
       </Suspense>
       <Suspense fallback={null}>
-        <GltfProp url={POLYHAVEN_MODELS.shutterWindow} position={[-12.4, 6.2, 3.4]} rotationY={Math.PI / 2 + 0.04} scale={1.5} variant={{ tint: '#a08f80' }} />
+        <GltfProp url={POLYHAVEN_MODELS.shutterWindow} position={[-12.4, 6.2, 3.4]} rotationY={Math.PI / 2 + 0.04} scale={STREET_SHUTTER_WINDOW_SCALE} variant={{ tint: '#a08f80' }} />
       </Suspense>
       <Suspense fallback={null}>
-        <GltfProp url={POLYHAVEN_MODELS.shutterWindow} position={[0.2, 6.4, -24.7]} rotationY={0.02} scale={1.75} variant={{ tint: '#6f747c' }} />
+        <GltfProp url={POLYHAVEN_MODELS.shutterWindow} position={[0.2, 6.4, -24.7]} rotationY={0.02} scale={STREET_SHUTTER_WINDOW_SCALE * 1.06} variant={{ tint: '#6f747c' }} />
       </Suspense>
       <Suspense fallback={null}>
         <GltfProp url={POLYHAVEN_MODELS.shutterDoor} position={[5.4, 0, -24.4]} rotationY={0.02} scale={STREET_SHUTTER_DOOR_SCALE * 0.94} variant={{ tint: '#8c8378', roughnessFloor: 0.62 }} />
