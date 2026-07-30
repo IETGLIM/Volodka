@@ -272,32 +272,32 @@
     {
       "mimeType": "image/jpeg",
       "name": "modular_fire_escape_01_nor_gl",
-      "uri": "textures/modular_fire_escape_01_nor_gl_2k.jpg"
+      "uri": "textures/modular_fire_escape_01_nor_gl_1k.jpg"
     },
     {
       "mimeType": "image/jpeg",
       "name": "modular_fire_escape_01_diff",
-      "uri": "textures/modular_fire_escape_01_diff_2k.jpg"
+      "uri": "textures/modular_fire_escape_01_diff_1k.jpg"
     },
     {
       "mimeType": "image/jpeg",
       "name": "modular_fire_escape_01_metal-modular_fire_escape_01_rough",
-      "uri": "textures/modular_fire_escape_01_arm_2k.jpg"
+      "uri": "textures/modular_fire_escape_01_arm_1k.jpg"
     },
     {
       "mimeType": "image/jpeg",
       "name": "modular_fire_escape_02_nor_gl",
-      "uri": "textures/modular_fire_escape_02_nor_gl_2k.jpg"
+      "uri": "textures/modular_fire_escape_02_nor_gl_1k.jpg"
     },
     {
       "mimeType": "image/jpeg",
       "name": "modular_fire_escape_02_diff",
-      "uri": "textures/modular_fire_escape_02_diff_2k.jpg"
+      "uri": "textures/modular_fire_escape_02_diff_1k.jpg"
     },
     {
       "mimeType": "image/jpeg",
       "name": "modular_fire_escape_02_metal-modular_fire_escape_02_rough",
-      "uri": "textures/modular_fire_escape_02_arm_2k.jpg"
+      "uri": "textures/modular_fire_escape_02_arm_1k.jpg"
     }
   ],
   "accessors": [

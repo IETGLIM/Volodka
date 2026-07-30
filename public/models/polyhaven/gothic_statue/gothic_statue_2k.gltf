@@ -75,17 +75,17 @@
     {
       "mimeType": "image/jpeg",
       "name": "gothic_statue_nor_gl",
-      "uri": "textures/gothic_statue_nor_gl_2k.jpg"
+      "uri": "textures/gothic_statue_nor_gl_1k.jpg"
     },
     {
       "mimeType": "image/jpeg",
       "name": "gothic_statue_diff",
-      "uri": "textures/gothic_statue_diff_2k.jpg"
+      "uri": "textures/gothic_statue_diff_1k.jpg"
     },
     {
       "mimeType": "image/jpeg",
       "name": "gothic_statue_rough",
-      "uri": "textures/gothic_statue_arm_2k.jpg"
+      "uri": "textures/gothic_statue_arm_1k.jpg"
     }
   ],
   "accessors": [

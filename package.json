@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "dev:inspect": "vite --mode inspect",
-    "build": "npm run assets:prepare && npm run validate && npm run assets:validate && node scripts/tsc7.mjs -b && vite build && node scripts/strip-deploy-debug-assets.mjs && npm run budgets && npm run verify:deploy",
+    "build": "npm run assets:prepare && npm run validate && npm run assets:validate && node scripts/tsc7.mjs -b && vite build && npx tsx --tsconfig tsconfig.json scripts/prune-deploy-assets.ts && npm run budgets && npm run verify:deploy",
     "build:analyze": "npm run validate && node scripts/tsc7.mjs -b && vite build --mode analyze && npm run budgets",
     "validate": "npx tsx --tsconfig tsconfig.json scripts/validate-content.ts && npx tsx --tsconfig tsconfig.json scripts/verify-act1-extended.ts",
     "validate:content": "npx tsx --tsconfig tsconfig.json scripts/validate-content.ts",

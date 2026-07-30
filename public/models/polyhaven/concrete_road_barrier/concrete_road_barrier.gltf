@@ -70,17 +70,17 @@
     {
       "mimeType": "image/jpeg",
       "name": "concrete_road_barrier_nor_gl",
-      "uri": "textures/concrete_road_barrier_nor_gl_2k.jpg"
+      "uri": "textures/concrete_road_barrier_nor_gl_1k.jpg"
     },
     {
       "mimeType": "image/jpeg",
       "name": "concrete_road_barrier_diff",
-      "uri": "textures/concrete_road_barrier_diff_2k.jpg"
+      "uri": "textures/concrete_road_barrier_diff_1k.jpg"
     },
     {
       "mimeType": "image/jpeg",
       "name": "concrete_road_barrier_rough",
-      "uri": "textures/concrete_road_barrier_arm_2k.jpg"
+      "uri": "textures/concrete_road_barrier_arm_1k.jpg"
     }
   ],
   "accessors": [

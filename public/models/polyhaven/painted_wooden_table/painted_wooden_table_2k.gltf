@@ -70,17 +70,17 @@
     {
       "mimeType": "image/jpeg",
       "name": "painted_wooden_table_nor_gl",
-      "uri": "textures/painted_wooden_table_nor_gl_2k.jpg"
+      "uri": "textures/painted_wooden_table_nor_gl_1k.jpg"
     },
     {
       "mimeType": "image/jpeg",
       "name": "painted_wooden_table_diff",
-      "uri": "textures/painted_wooden_table_diff_2k.jpg"
+      "uri": "textures/painted_wooden_table_diff_1k.jpg"
     },
     {
       "mimeType": "image/jpeg",
       "name": "painted_wooden_table_rough",
-      "uri": "textures/painted_wooden_table_arm_2k.jpg"
+      "uri": "textures/painted_wooden_table_arm_1k.jpg"
     }
   ],
   "accessors": [

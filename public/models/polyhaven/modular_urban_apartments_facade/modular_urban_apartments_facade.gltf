@@ -4099,62 +4099,62 @@
     {
       "mimeType": "image/jpeg",
       "name": "modular_urban_apartments_facade_objects_nor_gl",
-      "uri": "textures/modular_urban_apartments_facade_objects_nor_gl_2k.jpg"
+      "uri": "textures/modular_urban_apartments_facade_objects_nor_gl_1k.jpg"
     },
     {
       "mimeType": "image/jpeg",
       "name": "modular_urban_apartments_facade_objects_diff-modular_urban_apartments_facade_objects_alpha",
-      "uri": "textures/modular_urban_apartments_facade_objects_diff_2k.jpg"
+      "uri": "textures/modular_urban_apartments_facade_objects_diff_1k.jpg"
     },
     {
       "mimeType": "image/jpeg",
       "name": "modular_urban_apartments_facade_objects_metal-modular_urban_apartments_facade_objects_rough",
-      "uri": "textures/modular_urban_apartments_facade_objects_arm_2k.jpg"
+      "uri": "textures/modular_urban_apartments_facade_objects_arm_1k.jpg"
     },
     {
       "mimeType": "image/jpeg",
       "name": "modular_urban_apartments_facade_trim_01_nor_gl",
-      "uri": "textures/modular_urban_apartments_facade_trim_01_nor_gl_2k.jpg"
+      "uri": "textures/modular_urban_apartments_facade_trim_01_nor_gl_1k.jpg"
     },
     {
       "mimeType": "image/jpeg",
       "name": "modular_urban_apartments_facade_trim_01_diff",
-      "uri": "textures/modular_urban_apartments_facade_trim_01_diff_2k.jpg"
+      "uri": "textures/modular_urban_apartments_facade_trim_01_diff_1k.jpg"
     },
     {
       "mimeType": "image/jpeg",
       "name": "modular_urban_apartments_facade_trim_01_rough",
-      "uri": "textures/modular_urban_apartments_facade_trim_01_arm_2k.jpg"
+      "uri": "textures/modular_urban_apartments_facade_trim_01_arm_1k.jpg"
     },
     {
       "mimeType": "image/jpeg",
       "name": "modular_urban_apartments_facade_trim_02_nor_gl",
-      "uri": "textures/modular_urban_apartments_facade_trim_02_nor_gl_2k.jpg"
+      "uri": "textures/modular_urban_apartments_facade_trim_02_nor_gl_1k.jpg"
     },
     {
       "mimeType": "image/jpeg",
       "name": "modular_urban_apartments_facade_trim_02_diff",
-      "uri": "textures/modular_urban_apartments_facade_trim_02_diff_2k.jpg"
+      "uri": "textures/modular_urban_apartments_facade_trim_02_diff_1k.jpg"
     },
     {
       "mimeType": "image/jpeg",
       "name": "modular_urban_apartments_facade_trim_02_rough",
-      "uri": "textures/modular_urban_apartments_facade_trim_02_arm_2k.jpg"
+      "uri": "textures/modular_urban_apartments_facade_trim_02_arm_1k.jpg"
     },
     {
       "mimeType": "image/jpeg",
       "name": "modular_urban_apartments_facade_plaster_nor_gl",
-      "uri": "textures/modular_urban_apartments_facade_plaster_nor_gl_2k.jpg"
+      "uri": "textures/modular_urban_apartments_facade_plaster_nor_gl_1k.jpg"
     },
     {
       "mimeType": "image/jpeg",
       "name": "modular_urban_apartments_facade_plaster_diff",
-      "uri": "textures/modular_urban_apartments_facade_plaster_diff_2k.jpg"
+      "uri": "textures/modular_urban_apartments_facade_plaster_diff_1k.jpg"
     },
     {
       "mimeType": "image/jpeg",
       "name": "modular_urban_apartments_facade_plaster_rough",
-      "uri": "textures/modular_urban_apartments_facade_plaster_arm_2k.jpg"
+      "uri": "textures/modular_urban_apartments_facade_plaster_arm_1k.jpg"
     }
   ],
   "accessors": [

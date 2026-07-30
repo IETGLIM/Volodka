@@ -17,13 +17,14 @@ const API_BASE = 'https://api.polyhaven.com/files';
 
 const ASSETS = [
   // Existing authored street/plaza references; repair missing bins/textures.
-  ['modular_urban_apartments_facade', 'modular_urban_apartments_facade.gltf', '2k'],
-  ['modular_fire_escape', 'modular_fire_escape.gltf', '2k'],
-  ['concrete_road_barrier', 'concrete_road_barrier.gltf', '2k'],
-  ['painted_wooden_bench', 'painted_wooden_bench.gltf', '2k'],
-  ['hanging_industrial_lamp', 'hanging_industrial_lamp.gltf', '2k'],
-  ['rollershutter_window_01', 'rollershutter_window_01.gltf', '2k'],
-  ['Barrel_01', 'Barrel_01.gltf', '2k'],
+  // Keep stable legacy filenames, but stage 1k payloads for deploy size.
+  ['modular_urban_apartments_facade', 'modular_urban_apartments_facade.gltf', '1k'],
+  ['modular_fire_escape', 'modular_fire_escape.gltf', '1k'],
+  ['concrete_road_barrier', 'concrete_road_barrier.gltf', '1k'],
+  ['painted_wooden_bench', 'painted_wooden_bench.gltf', '1k'],
+  ['hanging_industrial_lamp', 'hanging_industrial_lamp.gltf', '1k'],
+  ['rollershutter_window_01', 'rollershutter_window_01.gltf', '1k'],
+  ['Barrel_01', 'Barrel_01.gltf', '1k'],
   ['cardboard_box_01', 'cardboard_box_01_1k.gltf', '1k'],
   ['metal_trash_can', 'metal_trash_can_1k.gltf', '1k'],
   ['street_lamp_01', 'street_lamp_01_1k.gltf', '1k'],
@@ -32,7 +33,7 @@ const ASSETS = [
   ['rollershutter_door', 'rollershutter_door_1k.gltf', '1k'],
 
   // Higher-fidelity street/interior upgrades.
-  ['gothic_statue', 'gothic_statue_2k.gltf', '2k'],
+  ['gothic_statue', 'gothic_statue_2k.gltf', '1k'],
   ['street_lamp_02', 'street_lamp_02_1k.gltf', '1k'],
   ['concrete_road_barrier_02', 'concrete_road_barrier_02_1k.gltf', '1k'],
   ['rollershutter_window_02', 'rollershutter_window_02_1k.gltf', '1k'],
@@ -43,12 +44,12 @@ const ASSETS = [
   ['old_tyre', 'old_tyre_1k.gltf', '1k'],
   ['water_manhole_cover', 'water_manhole_cover_1k.gltf', '1k'],
   ['wooden_crate_01', 'wooden_crate_01_1k.gltf', '1k'],
-  ['ArmChair_01', 'ArmChair_01_2k.gltf', '2k'],
-  ['painted_wooden_table', 'painted_wooden_table_2k.gltf', '2k'],
-  ['painted_wooden_cabinet', 'painted_wooden_cabinet_2k.gltf', '2k'],
-  ['wooden_bookshelf_worn', 'wooden_bookshelf_worn_2k.gltf', '2k'],
-  ['desk_lamp_arm_01', 'desk_lamp_arm_01_2k.gltf', '2k'],
-  ['sofa_02', 'sofa_02_2k.gltf', '2k'],
+  ['ArmChair_01', 'ArmChair_01_2k.gltf', '1k'],
+  ['painted_wooden_table', 'painted_wooden_table_2k.gltf', '1k'],
+  ['painted_wooden_cabinet', 'painted_wooden_cabinet_2k.gltf', '1k'],
+  ['wooden_bookshelf_worn', 'wooden_bookshelf_worn_2k.gltf', '1k'],
+  ['desk_lamp_arm_01', 'desk_lamp_arm_01_2k.gltf', '1k'],
+  ['sofa_02', 'sofa_02_2k.gltf', '1k'],
   ['portable_cassette_player', 'portable_cassette_player_1k.gltf', '1k'],
 ];
 
@@ -59,9 +60,9 @@ function requestJson(url) {
   });
 }
 
-function download(url, dest, expectedSize) {
+function download(url, dest, expectedSize, options = {}) {
   return new Promise((resolve, reject) => {
-    if (existsSync(dest) && (!expectedSize || statSync(dest).size === expectedSize)) {
+    if (!options.force && existsSync(dest) && (!expectedSize || statSync(dest).size === expectedSize)) {
       resolve(false);
       return;
     }
@@ -75,7 +76,7 @@ function download(url, dest, expectedSize) {
           reject(new Error(`Redirect without location: ${url}`));
           return;
         }
-        download(redirect, dest, expectedSize).then(resolve).catch(reject);
+        download(redirect, dest, expectedSize, options).then(resolve).catch(reject);
         return;
       }
       if (response.statusCode !== 200) {
@@ -107,7 +108,11 @@ async function downloadAsset(assetId, targetFile, preferredRes) {
 
   const assetDir = path.join(POLYHAVEN_DIR, assetId);
   let changed = 0;
-  const mainChanged = await download(entry.url, path.join(assetDir, targetFile), entry.size);
+  // Force-refresh the manifest: different Poly Haven resolutions can share
+  // similar .gltf sizes while pointing at different texture sidecars.
+  const mainChanged = await download(entry.url, path.join(assetDir, targetFile), entry.size, {
+    force: true,
+  });
   if (mainChanged) changed += 1;
 
   for (const [includePath, includeEntry] of Object.entries(entry.include ?? {})) {
