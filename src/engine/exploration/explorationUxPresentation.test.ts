@@ -28,7 +28,7 @@ describe('explorationUxPresentation', () => {
   });
 
   it('formats transition and hint labels', () => {
-    expect(formatTransitionProgressLabel('Улица', true)).toContain('✓');
+    expect(formatTransitionProgressLabel('Улица', true)).toBe('Готово: Улица');
     expect(formatInteractionHintAria('Поговорить', 'E', 'Идёт по делам')).toContain('E');
   });
 
@@ -40,7 +40,7 @@ describe('explorationUxPresentation', () => {
 
   it('formatInteractionHintKey maps gamepad to A and touch sentinel', () => {
     expect(formatInteractionHintKey('E', { gamepadConnected: true })).toBe('A');
-    expect(formatInteractionHintKey('E', { touchDevice: true })).toBe('touch');
+    expect(formatInteractionHintKey('E', { touchDevice: true })).toBe('касание');
     expect(formatInteractionHintKey('E', {})).toBe('E');
   });
 

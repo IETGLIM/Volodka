@@ -28,7 +28,7 @@ describe('getFirstReadingHint', () => {
 
   it('returns desk cue before desk interaction', () => {
     getGameSnapshotMock.mockReturnValue(snap({}));
-    expect(getFirstReadingHint()).toContain('рабочему столу');
+    expect(getFirstReadingHint()).toContain('Рабочий стол');
   });
 
   it('returns monitor cue after desk, before poem', () => {
@@ -40,7 +40,7 @@ describe('getFirstReadingHint', () => {
         },
       }),
     );
-    expect(getFirstReadingHint()).toContain('монитор');
+    expect(getFirstReadingHint()).toContain('Монитор');
   });
 
   it('returns null when poem_2 is collected', () => {

@@ -83,6 +83,8 @@ export const SCENE_AUDIO_PROFILES: Partial<Record<SceneId, SceneAudioProfile>> =
   guild_mainframe: { sceneId: 'guild_mainframe', reverbPreset: 'corridor', musicMood: 'tension' },
   zarema_room: { sceneId: 'zarema_room', reverbPreset: 'small_room', musicMood: 'cozy_indoor' },
   albert_backroom: { sceneId: 'albert_backroom', reverbPreset: 'corridor', musicMood: 'cozy_indoor', enterStinger: 'discovery' },
+  /** Procedural AAA showcase — street-adjacent noir bed for dev / hero scene */
+  procedural_aaa: { sceneId: 'procedural_aaa', reverbPreset: 'large_space', musicMood: 'noir_street', enterStinger: 'mystery' },
 };
 
 const MOTIF_STUB = (

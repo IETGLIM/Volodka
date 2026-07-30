@@ -12,6 +12,7 @@ export type StoryPackId = 'act1' | 'act2' | 'act3' | 'act4' | 'act5' | 'act6' | 
 export type StorySatellitePackId =
   | 'act1Extended'
   | 'act1CafeOffice'
+  | 'act1OfficeAftermath'
   | 'act1RoomExpanded'
   | 'solnysh'
   | 'act4QuietHour'
@@ -80,6 +81,8 @@ const storySatelliteLoaders: Record<
   act1Extended: () => import('../story/act1Extended').then((m) => m.STORY_NODES_ACT1_EXTENDED),
   act1CafeOffice: () =>
     import('../story/act1ExtendedCafeOffice').then((m) => m.STORY_NODES_ACT1_CAFE_OFFICE),
+  act1OfficeAftermath: () =>
+    import('../story/act1ExtendedOfficeAftermath').then((m) => m.STORY_NODES_ACT1_OFFICE_AFTERMATH),
   act1RoomExpanded: () =>
     import('../story/act1-room-expanded').then((m) => m.ACT1_ROOM_EXPANDED_NODES),
   solnysh: () => import('../story/solnyshStory').then((m) => m.STORY_NODES_SOLNYSH),
@@ -97,7 +100,7 @@ const storySatelliteLoaders: Record<
 
 /** Satellites loaded automatically when their parent act pack loads. */
 const ACT_STORY_SATELLITES: Partial<Record<StoryPackId, readonly StorySatellitePackId[]>> = {
-  act1: ['act1Extended', 'act1CafeOffice', 'act1RoomExpanded', 'solnysh'],
+  act1: ['act1Extended', 'act1CafeOffice', 'act1OfficeAftermath', 'act1RoomExpanded', 'solnysh'],
   act4: ['act4QuietHour'],
   chk: ['chkExtended'],
 };

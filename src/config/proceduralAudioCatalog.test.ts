@@ -38,7 +38,7 @@ describe('proceduralAudioCatalog', () => {
   });
 
   it('every shipped scene has a catalog entry or documented inherit rule', () => {
-    expect(SCENE_IDS.length).toBe(27);
+    expect(SCENE_IDS.length).toBe(28);
 
     for (const sceneId of SCENE_IDS) {
       const direct = SCENE_AUDIO_PROFILES[sceneId];
