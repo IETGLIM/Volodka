@@ -102,6 +102,15 @@ describe('proceduralAudioCatalog', () => {
     expect(second).toEqual(first);
   });
 
+  it('hero hub scenes have distinct reverb presets (pier / CHK / factory)', () => {
+    expect(getSceneReverbPreset('river_pier')).toBe('large_space');
+    expect(getSceneReverbPreset('chk_forest_zorge')).toBe('nature');
+    expect(getSceneReverbPreset('abandoned_factory')).toBe('corridor');
+    expect(getSceneMusicMood('river_pier')).toBe('noir_street');
+    expect(getSceneMusicMood('chk_forest_zorge')).toBe('nature');
+    expect(getSceneMusicMood('abandoned_factory')).toBe('tension');
+  });
+
   it('lists story NPCs still on hash-derived fallback stubs', () => {
     for (const npcId of STORY_NPCS_WITHOUT_DEDICATED_MOTIFS) {
       expect(hasDedicatedCharacterMotif(npcId)).toBe(false);

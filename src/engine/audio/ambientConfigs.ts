@@ -842,6 +842,7 @@ const AMBIENT_MUSIC_CONFIGS: Partial<Record<SceneId, AmbientMusicConfig>> = {
 const REVERB_PRESETS: Record<string, ReverbPresetConfig> = {
   small_room: { decay: 0.5, wetMix: 0.15 },
   corridor: { decay: 1.0, wetMix: 0.3 },
+  nature: { decay: 1.4, wetMix: 0.28 },
   large_space: { decay: 2.0, wetMix: 0.45 },
   dream: { decay: 3.0, wetMix: 0.6 },
 };
@@ -858,10 +859,11 @@ const SCENE_REVERB_PRESETS: Partial<Record<SceneId, string>> = {
   library_day: 'corridor',
   street_night: 'large_space',
   park_day: 'large_space',
-  chk_forest_zorge: 'large_space',
+  chk_forest_zorge: 'nature',
   street_winter: 'large_space',
   rooftop_edge: 'large_space',
-  abandoned_factory: 'large_space',
+  abandoned_factory: 'corridor',
+  river_pier: 'large_space',
   battle: 'corridor',
   sleep_dream: 'dream',
 };

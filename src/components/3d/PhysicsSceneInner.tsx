@@ -11,18 +11,16 @@ import { PhysicsPlayer } from './PhysicsPlayer';
 import { FollowCamera } from './FollowCamera';
 import { AmbientNPCs } from './AmbientNPCs';
 import { InteractiveTriggers } from './InteractiveTriggers';
-import { InteractionHighlight } from './InteractionHighlight';
 import { SceneExitIndicator } from './SceneExitIndicator';
 import { QuestWaypoints } from './QuestWaypoints';
 import { ChoiceReactivity } from './ChoiceReactivity';
 import { SceneTransitionHandler } from './SceneTransitionHandler';
-import { SceneGpuLifecycleBridge } from './SceneGpuLifecycleBridge';
-import { RapierWorldLifecycleBridge } from './RapierWorldLifecycleBridge';
+import { PhysicsSceneLifecycleMounts } from './PhysicsSceneLifecycleMounts';
+import { PhysicsSceneInteractionBridges } from './PhysicsSceneInteractionBridges';
 import { ExplorationLighting } from './Lighting';
 import { SceneEnvironment } from './SceneEnvironment';
 import { EnvironmentalAnimator } from './EnvironmentalAnimator';
 import { ProximityReactivityRenderer } from './ProximityReactivityRenderer';
-import { InteractionQueryBridge } from './InteractionQueryBridge';
 import { GRAVITY } from '@/engine/player/playerConstants';
 import {
   InteractionSystemBridge,
@@ -125,15 +123,13 @@ function PhysicsSceneInner({
         livePlayerPositionRef={livePlayerPositionRef}
         livePlayerRotationRef={livePlayerRotationRef}
       />
-      <InteractionQueryBridge />
-      <InteractionHighlight />
+      <PhysicsSceneInteractionBridges />
       <ProximityReactivityRenderer livePlayerPositionRef={livePlayerPositionRef} />
       <SceneExitIndicator livePlayerPositionRef={livePlayerPositionRef} />
       <QuestWaypoints livePlayerPositionRef={livePlayerPositionRef} />
       <ChoiceReactivity />
       <SceneTransitionHandler />
-      <SceneGpuLifecycleBridge />
-      <RapierWorldLifecycleBridge />
+      <PhysicsSceneLifecycleMounts />
       <InteractionSystemBridge
         livePlayerPositionRef={livePlayerPositionRef}
         livePlayerRotationRef={livePlayerRotationRef}

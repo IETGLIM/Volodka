@@ -1689,4 +1689,33 @@ export const ACT3_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
       },
     ],
   },
+
+  /* ══════════════════════════════════════════════════════════════════════════
+     Act 3 hub beat — pier relay after Zarema's arrest (connects hub mesh to war arc)
+     ══════════════════════════════════════════════════════════════════════════ */
+  act3_exp_pier_relay_after_arrest: {
+    id: 'act3_exp_pier_relay_after_arrest',
+    text: [
+      'Трофим не спрашивает, что случилось. Он смотрит на воду, как на экран, и говорит тихо: «Зарему забрали — значит, релей сжимается. Гирлянда на столбах зажглась сама. Река слышит.»',
+      '',
+      'Он протягивает мокрую салфетку — на ней три кружка, как у Альберта, и цифра «1». «Отнеси в кафе. Не в телефон. Гильдия читает push. А вода — нет.»',
+      '',
+      'На секунду под пирсом гулит «Прогресс-7» — не громко, как heartbeat. Трофим кивает: «Завод тоже в сети. Просто молчит громче, чем мы.»',
+    ].join('\n'),
+    speaker: 'Трофим',
+    sceneId: 'river_pier',
+    contextNote: 'После ареста Заремы Трофим передаёт relay-сигнал на кафе.',
+    choices: [
+      {
+        text: 'Взять салфетку — relay жив',
+        next: 'pier_explore_mode',
+        effects: [
+          { type: 'setFlag', flag: 'act3_pier_relay_whisper_done', flagValue: true },
+          { type: 'discoverLore', loreId: 'lore_hub_relay_network' },
+          { type: 'npcChange', npcId: 'fisherman_trofim', npcChange: { relation: 4 } },
+          { type: 'addXp', value: 35 },
+        ],
+      },
+    ],
+  },
 };

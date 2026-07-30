@@ -80,6 +80,14 @@ export const LORE_SCENE_MAP: Partial<Record<SceneId, string[]>> = {
     'lore_tolpa_chk',          // TOLPA / Black Room discovered at campfire
     'lore_chk_moonlight',      // Moonlight on the forest clearing
     'lore_chk_port_wine_777',  // Port wine ritual on the clearing
+    'lore_chk_network_role',   // CHK as offline mesh support node
+  ],
+  abandoned_factory: [
+    'lore_factory',            // Factory discovered by visiting
+    'lore_factory_workers',    // Workers' story discovered at factory
+    'lore_quantum_computer',   // Quantum computer discovered at factory
+    'lore_resistance_fragment', // Resistance fragment found in the factory
+    'lore_zarya_poetry',       // Zarya-M machine poetry in the hum
   ],
   library_day: [
     'lore_forbidden_books',    // Forbidden books discovered in library
@@ -91,12 +99,6 @@ export const LORE_SCENE_MAP: Partial<Record<SceneId, string[]>> = {
     'lore_rooftop_community',  // Rooftop community discovered
     'lore_rooftop_poets',      // Rooftop poets' gatherings
   ],
-  abandoned_factory: [
-    'lore_factory',            // Factory discovered by visiting
-    'lore_factory_workers',    // Workers' story discovered at factory
-    'lore_quantum_computer',   // Quantum computer discovered at factory
-    'lore_resistance_fragment', // Resistance fragment found in the factory
-  ],
   factory_basement: [
     'lore_factory_progress7',  // Secret sublevel discovered by descending
     'lore_zarya_project_early', // Early Zarya project context in the basement
@@ -107,6 +109,8 @@ export const LORE_SCENE_MAP: Partial<Record<SceneId, string[]>> = {
     'lore_watchman_trofim',    // Trofim's watchman history at the pier
     'lore_river_remembers',    // River phantom signals / factory hum echo
     'lore_pier_string_lights', // Solar string lights failover hangout
+    'lore_factory_underwater', // Factory cooling loop under the pier
+    'lore_frequency_poem',     // Frequency poems heard at the water
   ],
   sleep_dream: [
     'lore_dreamworld',         // Dream world rules discovered in dream
@@ -150,6 +154,7 @@ export const LORE_STORY_NODE_MAP: Record<string, string[]> = {
 
   // Pier / basement payoff nodes
   pier_arrival: ['lore_pier_three'],
+  act3_exp_pier_relay_after_arrest: ['lore_hub_relay_network'],
   factory_basement_familiar: ['lore_zarya_project_early'],
   machine_confession_scene_thread: ['lore_great_crash_2029', 'lore_incident_4729'],
 

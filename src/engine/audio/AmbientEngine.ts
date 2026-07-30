@@ -137,6 +137,7 @@ export class AmbientSoundPlayer {
     const cutoffByPreset: Record<string, number> = {
       small_room: 2200,
       corridor: 1400,
+      nature: 1100,
       large_space: 900,
       dream: 650,
     };
