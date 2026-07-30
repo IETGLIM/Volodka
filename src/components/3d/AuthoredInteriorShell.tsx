@@ -90,3 +90,6 @@ useGLTF.preload(INTERIOR_SHELL_MODELS.volodkaBedroom, true, true, extendLoader);
 useGLTF.preload(INTERIOR_SHELL_MODELS.cafe, true, true, extendLoader);
 useGLTF.preload(INTERIOR_SHELL_MODELS.office, true, true, extendLoader);
 useGLTF.preload(INTERIOR_SHELL_MODELS.library, true, true, extendLoader);
+useGLTF.preload(INTERIOR_SHELL_MODELS.factory, true, true, extendLoader);
+useGLTF.preload(INTERIOR_SHELL_MODELS.pier, true, true, extendLoader);
+useGLTF.preload(INTERIOR_SHELL_MODELS.forestClearing, true, true, extendLoader);

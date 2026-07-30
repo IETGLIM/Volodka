@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { createLibraryDayWarmSkyTexture } from '@/engine/graphics/proceduralSkyTextures';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
+import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
 import { INTERIOR_SHELL_MODELS } from '../../config/interiorShellModels';
 import { AuthoredInteriorShell } from './AuthoredInteriorShell';
 import { LibraryDayInterior } from './sceneChunks/libraryDay';
@@ -14,6 +15,8 @@ import { getInteriorShellScale } from '@/config/interiorShellScale';
 export function LibraryDayVisual() {
   const { preset } = useGraphicsQuality();
   const useAuthoredShell = !preset.visualLite;
+  const useGltfDressing = allowsGlbAssetRendering(preset.environmentRenderMode);
+  const hideProceduralShelves = useAuthoredShell && useGltfDressing;
   const floorTexture = useCachedCanvasTexture('library_day:floor', createLibraryFloorTexture);
   const wallTexture = useCachedCanvasTexture('library_day:wall', createLibraryWallTexture);
   const ceilingWashTexture = useCachedCanvasTexture(
@@ -83,9 +86,11 @@ export function LibraryDayVisual() {
       )}
 
       {/* ═══════════════════════════════════════════════ */}
-      {/* ── TALL BOOKSHELVES (3m+) ── */}
+      {/* ── TALL BOOKSHELVES (3m+) — shell + ScenePropDressing own High/Ultra ── */}
       {/* ═══════════════════════════════════════════════ */}
 
+      {!hideProceduralShelves ? (
+        <>
       {/* Back wall shelves */}
       <Bookshelf position={[-6, 0, -6.5]} height={2.2} />
       <Bookshelf position={[-3.5, 0, -6.5]} height={2.2} />
@@ -110,6 +115,8 @@ export function LibraryDayVisual() {
 
       <Bookshelf position={[2.5, 0, -2]} height={2.0} />
       <Bookshelf position={[2.5, 0, 1]} height={2.0} />
+        </>
+      ) : null}
 
       {/* ═══════════════════════════════════════════════ */}
       {/* ── READING TABLES WITH GREEN BANKER LAMPS ── */}

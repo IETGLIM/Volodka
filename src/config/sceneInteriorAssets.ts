@@ -18,23 +18,14 @@ export const SCENE_INTERIOR_ASSETS: Partial<Record<SceneId, readonly SceneInteri
   volodka_corridor: [
     { assetId: 'interior_corridor', position: [0, 0, 4], scale: 2.0, rotation: [0, Math.PI / 2, 0] },
   ],
-  // cafe_evening, office_day, and library_day are owned by their scene visuals'
-  // AuthoredInteriorShell mounts. Keep them out of the generic Physics subtree
-  // to avoid duplicate offset shell rendering.
-  abandoned_factory: [
-    { assetId: 'interior_factory', position: [-2, 0, -8], scale: 0.8, rotation: [0, 0.35, 0] },
-  ],
+  // cafe_evening, office_day, library_day, abandoned_factory, river_pier, and
+  // chk_forest_zorge backdrop shells are owned by their scene visuals via
+  // SceneBackdropShell / AuthoredInteriorShell — not the generic Physics subtree.
   factory_basement: [
     { assetId: 'interior_basement', position: [-1, 0.2, -3], scale: 2.5, rotation: [0, -Math.PI / 4, 0] },
   ],
   rooftop_edge: [
     { assetId: 'interior_rooftop', position: [4, 0, -6], scale: 1.8, rotation: [0, Math.PI / 3, 0] },
-  ],
-  river_pier: [
-    { assetId: 'interior_pier', position: [0, 0, -4], scale: 3.0, rotation: [0, Math.PI, 0] },
-  ],
-  chk_forest_zorge: [
-    { assetId: 'interior_forest_clearing', position: [-6, 0, -8], scale: 4.0, rotation: [0, 0.2, 0] },
   ],
 };
 

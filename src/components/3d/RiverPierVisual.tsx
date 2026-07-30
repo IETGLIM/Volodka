@@ -19,6 +19,9 @@ import {
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { useGameStore } from '@/store/gameStore';
+import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
+import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
+import { SceneBackdropShell } from './SceneBackdropShell';
 import { WetStreetGround } from './WetStreetGround';
 import type { SceneId } from '@/shared/types/game';
 
@@ -39,6 +42,8 @@ function pierSeededRandom(seed: number): () => number {
 }
 
 export function RiverPierVisual({ sceneId = 'river_pier' }: RiverPierVisualProps) {
+  const { preset } = useGraphicsQuality();
+  const useGltfDressing = allowsGlbAssetRendering(preset.environmentRenderMode);
   const plankTexture = useCachedCanvasTexture('river_pier:planks', createPlankTexture);
   const rainIntensity = useGameStore((s) => s.rainIntensity);
   const waterRef = useRef<THREE.Mesh>(null);
@@ -68,6 +73,8 @@ export function RiverPierVisual({ sceneId = 'river_pier' }: RiverPierVisualProps
 
   return (
     <group>
+      <SceneBackdropShell sceneId="river_pier" />
+
       {/* Wet approach apron under / around the pier (planar reflector when raining) */}
       <WetStreetGround
         sceneId={sceneId}
@@ -128,24 +135,29 @@ export function RiverPierVisual({ sceneId = 'river_pier' }: RiverPierVisualProps
         </mesh>
       ))}
 
-      {/* ── Barrel fire ── */}
+      {/* ── Barrel fire — keep animated flame; barrel mesh owned by prop dressing ── */}
       <group position={[0, 0, -2]}>
+        {!useGltfDressing ? (
         <mesh position={[0, 0.5, 0]} castShadow geometry={getSharedCylinderGeometry(0.34, 0.32, 1.0, 12)}>
           <meshStandardMaterial color="#3a3026" metalness={0.55} roughness={0.6} />
         </mesh>
+        ) : null}
         {/* Glow holes punched in the barrel */}
-        {[0.4, 1.6, 2.9, 4.2].map((a) => (
+        {!useGltfDressing
+          ? [0.4, 1.6, 2.9, 4.2].map((a) => (
           <mesh key={`hole-${a}`} position={[Math.cos(a) * 0.33, 0.45, Math.sin(a) * 0.33]} rotation={[0, -a + Math.PI / 2, 0]} geometry={getSharedCircleGeometry(0.045, 8)}>
             <meshStandardMaterial color="#200a00" emissive="#ff7722" emissiveIntensity={2.2} toneMapped={false} />
           </mesh>
-        ))}
+        ))
+          : null}
         <mesh ref={fireRef} position={[0, 1.15, 0]} geometry={getSharedConeGeometry(0.22, 0.5, 8)}>
           <meshStandardMaterial color="#ff6622" emissive="#ff4400" emissiveIntensity={2.6} transparent opacity={0.85} />
         </mesh>
       </group>
 
       {/* ── Crate seats around the fire ── */}
-      {[
+      {!useGltfDressing
+        ? [
         { pos: [-1.6, -1.2] as const, rot: 0.3 },
         { pos: [1.7, -1.4] as const, rot: -0.5 },
         { pos: [0.4, -3.6] as const, rot: 1.1 },
@@ -153,9 +165,11 @@ export function RiverPierVisual({ sceneId = 'river_pier' }: RiverPierVisualProps
         <mesh key={`crate-${i}`} position={[crate.pos[0], 0.25, crate.pos[1]]} rotation={[0, crate.rot, 0]} castShadow geometry={getSharedBoxGeometry(0.65, 0.5, 0.65)}>
           <meshStandardMaterial color="#54422c" roughness={0.9} />
         </mesh>
-      ))}
+      ))
+        : null}
 
       {/* ── Port wine: bottles + tin cups on a crate-table ── */}
+      {!useGltfDressing ? (
       <group position={[-0.7, 0, -2.9]}>
         <mesh position={[0, 0.2, 0]} castShadow geometry={getSharedBoxGeometry(0.55, 0.4, 0.45)}>
           <meshStandardMaterial color="#4a3a26" roughness={0.9} />
@@ -170,8 +184,10 @@ export function RiverPierVisual({ sceneId = 'river_pier' }: RiverPierVisualProps
           <meshStandardMaterial color="#8a8d90" metalness={0.8} roughness={0.35} />
         </mesh>
       </group>
+      ) : null}
 
-      {/* ── Guitar against a crate ── */}
+      {/* ── Guitar against a crate — ScenePropDressing owns High/Ultra ── */}
+      {!useGltfDressing ? (
       <group position={[2.4, 0, -2.6]} rotation={[0, -0.7, 0]}>
         <mesh position={[0, 0.42, 0]} rotation={[0.18, 0, -0.3]} castShadow geometry={getSharedCylinderGeometry(0.26, 0.3, 0.09, 12)}>
           <meshStandardMaterial color="#7a4f24" roughness={0.55} />
@@ -180,6 +196,7 @@ export function RiverPierVisual({ sceneId = 'river_pier' }: RiverPierVisualProps
           <meshStandardMaterial color="#3c2a16" roughness={0.6} />
         </mesh>
       </group>
+      ) : null}
 
       {/* ── Old overturned boat on the bank ── */}
       <group position={[-6, 0, 3]} rotation={[0, 0.4, Math.PI]}>

@@ -94,11 +94,8 @@ export const SCENE_ASSET_OWNERSHIP: readonly SceneAssetOwnershipEntry[] = [
   },
   ...([
     ['volodka_corridor', 'interior_corridor'],
-    ['abandoned_factory', 'interior_factory'],
     ['factory_basement', 'interior_basement'],
     ['rooftop_edge', 'interior_rooftop'],
-    ['river_pier', 'interior_pier'],
-    ['chk_forest_zorge', 'interior_forest_clearing'],
   ] as const).map(([sceneId, assetId]): SceneAssetOwnershipEntry => ({
     sceneId,
     slot: 'interior_shell',
@@ -107,6 +104,21 @@ export const SCENE_ASSET_OWNERSHIP: readonly SceneAssetOwnershipEntry[] = [
     quality: DEFERRED_HIGH_ONLY,
     exclusive: true,
     assetIds: [assetId],
+  })),
+  ...([
+    ['abandoned_factory', 'interior_factory', INTERIOR_SHELL_MODELS.factory],
+    ['river_pier', 'interior_pier', INTERIOR_SHELL_MODELS.pier],
+    ['chk_forest_zorge', 'interior_forest_clearing', INTERIOR_SHELL_MODELS.forestClearing],
+  ] as const).map(([sceneId, assetId, publicUrl]): SceneAssetOwnershipEntry => ({
+    sceneId,
+    slot: 'interior_shell',
+    owner: 'kenney_fallback',
+    systems: ['AuthoredInteriorShell', 'prune-deploy-assets'],
+    quality: DEFERRED_HIGH_ONLY,
+    exclusive: true,
+    assetIds: [assetId],
+    publicUrls: [publicUrl],
+    notes: 'Hero backdrop shell owned by scene visual; SceneInteriorAssets must not duplicate it.',
   })),
   {
     sceneId: 'street_night',

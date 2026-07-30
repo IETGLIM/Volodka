@@ -26,6 +26,12 @@ describe('assetOwnership', () => {
     expect(isSceneAssetSystemAllowed('volodka_corridor', 'interior_shell', 'AuthoredInteriorShell')).toBe(false);
   });
 
+  it('mounts hero outdoor backdrops from scene visuals via AuthoredInteriorShell', () => {
+    expect(isSceneAssetSystemAllowed('river_pier', 'interior_shell', 'AuthoredInteriorShell')).toBe(true);
+    expect(isSceneAssetSystemAllowed('river_pier', 'interior_shell', 'SceneInteriorAssets')).toBe(false);
+    expect(getSceneInteriorAssets('river_pier')).toEqual([]);
+  });
+
   it('publishes ownership-owned deploy keep-list urls', () => {
     expect(collectAssetOwnershipPublicUrls()).toEqual(
       expect.arrayContaining([

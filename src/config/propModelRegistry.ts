@@ -383,6 +383,15 @@ export const PROP_MODEL_REGISTRY: Record<string, PropModelDefinition> = {
     source: 'Poly Haven — portable cassette player',
     sourceUrl: POLYHAVEN_URL,
   },
+  polyhaven_gothic_statue: {
+    id: 'polyhaven_gothic_statue',
+    url: POLYHAVEN_MODELS.gothicStatue,
+    targetSizeM: [0.55, 1.85, 0.55],
+    fitAxis: 'height',
+    license: 'CC0',
+    source: 'Poly Haven — gothic statue',
+    sourceUrl: POLYHAVEN_URL,
+  },
   polyhaven_old_tyre: {
     id: 'polyhaven_old_tyre',
     url: POLYHAVEN_MODELS.oldTyre,

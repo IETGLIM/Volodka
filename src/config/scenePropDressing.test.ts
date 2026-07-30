@@ -62,4 +62,11 @@ describe('scenePropDressing', () => {
       .filter((p) => p.propModelId === 'kenney_city_chair');
     expect(cafeChairPlacements).toHaveLength(3);
   });
+
+  it('densifies hero hub scenes with Poly Haven props in Stage 5', () => {
+    expect(getScenePropDressing('river_pier').map((p) => p.propModelId)).toContain('polyhaven_bench');
+    expect(getScenePropDressing('library_day').map((p) => p.propModelId)).toContain('polyhaven_gothic_statue');
+    expect(getScenePropDressing('abandoned_factory').map((p) => p.propModelId)).toContain('polyhaven_industrial_lamp');
+    expect(getScenePropDressing('chk_forest_zorge').map((p) => p.propModelId)).toContain('polyhaven_wooden_crate');
+  });
 });

@@ -12,6 +12,7 @@ import { EnvironmentDetail, SceneClutterGate } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { createOfficeDayOvercastSkyTexture } from '@/engine/graphics/proceduralSkyTextures';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
+import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
 import {
   getSharedBoxGeometry,
   getSharedPlaneGeometry,
@@ -180,7 +181,7 @@ function AuthoredOfficeDesk({ castShadow }: { castShadow: boolean }) {
 export function OfficeDayVisual({ livePlayerPositionRef }: OfficeDayVisualProps) {
   const { preset } = useGraphicsQuality();
   const useAuthoredShell = !preset.visualLite;
-  const useAuthoredDesks = !preset.visualLite;
+  const useAuthoredDesks = !preset.visualLite && allowsGlbAssetRendering(preset.environmentRenderMode);
   const floorTexture = useCachedCanvasTexture('office_day:floor', createOfficeFloorTexture);
   const wallTexture = useCachedCanvasTexture('office_day:wall', createOfficeWallTexture);
   const ceilingWashTexture = useCachedCanvasTexture(

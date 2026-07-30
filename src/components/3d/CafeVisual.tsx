@@ -11,6 +11,7 @@ import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { createCafeEveningNeonSkyTexture } from '@/engine/graphics/proceduralSkyTextures';
 import { useOwnedBufferGeometry } from '@/hooks/useOwnedBufferGeometry';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
+import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
 import {
   getSharedBoxGeometry,
   getSharedPlaneGeometry,
@@ -29,6 +30,8 @@ interface CafeVisualProps {
 export function CafeVisual({ livePlayerPositionRef }: CafeVisualProps) {
   const { preset } = useGraphicsQuality();
   const useAuthoredShell = !preset.visualLite;
+  const useGltfDressing = allowsGlbAssetRendering(preset.environmentRenderMode);
+  const hideProceduralFurniture = useAuthoredShell && useGltfDressing;
   const floorTexture = useCachedCanvasTexture('cafe_evening:floor', createCafeFloorTexture);
   const wallTexture = useCachedCanvasTexture('cafe_evening:wall', createCafeWallTexture);
   const ceilingGlowTexture = useCachedCanvasTexture(
@@ -268,14 +271,18 @@ export function CafeVisual({ livePlayerPositionRef }: CafeVisualProps) {
       {/* ── TABLES AND CHAIRS ── */}
       {/* ═══════════════════════════════════════════════ */}
 
-      {/* Table 1 - center-left (Albert's corner) */}
-      <CafeTable position={[-3.0, 0, -2.0]} />
-      {/* Table 2 - center-right */}
-      <CafeTable position={[3.0, 0, 0]} />
-      {/* Table 3 - near entrance */}
-      <CafeTable position={[0, 0, 2.5]} />
-      {/* Table 4 - left side */}
-      <CafeTable position={[-3.0, 0, 1.5]} />
+      {!hideProceduralFurniture ? (
+        <>
+          {/* Table 1 - center-left (Albert's corner) */}
+          <CafeTable position={[-3.0, 0, -2.0]} />
+          {/* Table 2 - center-right */}
+          <CafeTable position={[3.0, 0, 0]} />
+          {/* Table 3 - near entrance */}
+          <CafeTable position={[0, 0, 2.5]} />
+          {/* Table 4 - left side */}
+          <CafeTable position={[-3.0, 0, 1.5]} />
+        </>
+      ) : null}
 
       {/* ═══════════════════════════════════════════════ */}
       {/* ── WARM LIGHTING ── */}
@@ -329,7 +336,8 @@ export function CafeVisual({ livePlayerPositionRef }: CafeVisualProps) {
         <meshStandardMaterial color="#e0d8d0" roughness={0.5} />
       </mesh>
 
-      {/* ── Espresso machine on counter ── */}
+      {/* ── Espresso machine on counter — ScenePropDressing owns High/Ultra ── */}
+      {!useGltfDressing ? (
       <group position={[-0.5, 1.13, -3.9]}>
         {/* Machine body */}
         <mesh position={[0, 0.15, 0]} castShadow>
@@ -362,6 +370,7 @@ export function CafeVisual({ livePlayerPositionRef }: CafeVisualProps) {
           <meshStandardMaterial color="#ff3333" emissive="#ff3333" emissiveIntensity={2.0} />
         </mesh>
       </group>
+      ) : null}
 
       {/* ── Menu board on back wall ── */}
       <group position={[2.5, 2.2, -4.85]}>

@@ -18,6 +18,9 @@ import { EnvironmentDetail, SceneClutterGate } from './lod/PropDistanceGate';
 import { scratchColor } from '@/engine/three/frameScratch';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { getIndustrialDampFloorSettings } from '@/engine/graphics/wetStreetScenes';
+import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
+import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
+import { SceneBackdropShell } from './SceneBackdropShell';
 import type { SceneId } from '@/shared/types/game';
 
 interface ChkForestZorgeVisualProps {
@@ -43,6 +46,9 @@ export function ChkForestZorgeVisual({
   livePlayerPositionRef,
   sceneId = 'chk_forest_zorge',
 }: ChkForestZorgeVisualProps) {
+  const { preset } = useGraphicsQuality();
+  const useGltfDressing = allowsGlbAssetRendering(preset.environmentRenderMode);
+  const backdropSceneId: SceneId = sceneId === 'chk_campfire_night' ? 'chk_forest_zorge' : sceneId;
   const groundTexture = useCachedCanvasTexture('chk_forest_zorge:ground', createForestGroundTexture);
   const envProfile = useMemo(
     () => getEnvironmentLodProfile(sceneId === 'chk_campfire_night' ? 'chk_campfire_night' : 'chk_forest_zorge'),
@@ -86,6 +92,8 @@ export function ChkForestZorgeVisual({
 
   return (
     <group>
+      <SceneBackdropShell sceneId={backdropSceneId} />
+
       {/* Ground — mossy clearing */}
       <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={getSharedPlaneGeometry(W, D)}>
         <meshStandardMaterial
@@ -177,7 +185,8 @@ export function ChkForestZorgeVisual({
         </mesh>
       ))}
 
-      {/* Port wine crate + bottles */}
+      {/* Port wine crate + bottles — ScenePropDressing owns High/Ultra */}
+      {!useGltfDressing ? (
       <group position={[1.8, 0, 1.6]}>
         <mesh position={[0, 0.2, 0]} castShadow geometry={getSharedBoxGeometry(0.7, 0.4, 0.5)}>
           <meshStandardMaterial color="#5a3020" roughness={0.8} />
@@ -189,13 +198,16 @@ export function ChkForestZorgeVisual({
           <meshStandardMaterial color="#1a0610" roughness={0.4} metalness={0.3} />
         </mesh>
       </group>
+      ) : null}
 
-      {/* Guitar lean spot (Элис) */}
+      {/* Guitar lean spot (Элис) — ScenePropDressing owns High/Ultra */}
+      {!useGltfDressing ? (
       <group position={[-1.6, 0, -1.2]} rotation={[0, 0.4, 0]}>
         <mesh position={[0, 0.55, 0]} rotation={[0.15, 0, -0.25]} castShadow geometry={getSharedBoxGeometry(0.35, 0.55, 0.06)}>
           <meshStandardMaterial color="#8B4513" roughness={0.7} />
         </mesh>
       </group>
+      ) : null}
 
       {/* Portable speaker (heavy music) */}
       <mesh position={[2.5, 0.25, -1.0]} castShadow geometry={getSharedBoxGeometry(0.35, 0.5, 0.25)}>

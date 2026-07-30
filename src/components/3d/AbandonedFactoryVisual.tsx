@@ -17,6 +17,9 @@ import { EnvironmentDetail, PropDistanceGate } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { createAbandonedFactoryIndustrialSkyTexture } from '@/engine/graphics/proceduralSkyTextures';
 import { getIndustrialDampFloorSettings } from '@/engine/graphics/wetStreetScenes';
+import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
+import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
+import { SceneBackdropShell } from './SceneBackdropShell';
 
 interface AbandonedFactoryVisualProps {
   livePlayerPositionRef?: React.MutableRefObject<THREE.Vector3>;
@@ -24,6 +27,8 @@ interface AbandonedFactoryVisualProps {
 
 /** Gothic/Industrial abandoned factory (20×18m) */
 export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFactoryVisualProps) {
+  const { preset } = useGraphicsQuality();
+  const useGltfDressing = allowsGlbAssetRendering(preset.environmentRenderMode);
   const floorTexture = useCachedCanvasTexture('abandoned_factory:floor', createFactoryFloorTexture);
   const wallTexture = useCachedCanvasTexture('abandoned_factory:wall', createFactoryWallTexture);
   const ceilingWashTexture = useCachedCanvasTexture(
@@ -63,6 +68,8 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
 
   return (
     <group>
+      <SceneBackdropShell sceneId="abandoned_factory" />
+
       {/* ── Floor ── */}
       <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={getSharedPlaneGeometry(W, D)}>
         <meshStandardMaterial
