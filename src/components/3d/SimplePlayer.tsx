@@ -234,7 +234,7 @@ export function SimplePlayer({
               position: [pos.x, pos.y, pos.z],
               yaw: livePlayerRotationRef.current,
             });
-            audioEngine.playFootstep('default');
+            audioEngine.playFootstep(config.floorMaterial);
           }
         } else {
           footstepTimerRef.current = 0;
@@ -408,7 +408,7 @@ export function SimplePlayer({
           position: [pos.x, pos.y, pos.z],
           yaw: livePlayerRotationRef.current,
         });
-        audioEngine.playFootstep('default');
+        audioEngine.playFootstep(config.floorMaterial);
       }
     } else {
       vel.x = THREE.MathUtils.damp(vel.x, 0, stopDamping, dt);

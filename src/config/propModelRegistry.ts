@@ -71,6 +71,7 @@ export const PROP_MODEL_REGISTRY: Record<string, PropModelDefinition> = {
     id: 'kenney_window',
     url: `${PROPS}/window.glb`,
     targetSizeM: [1.0, 1.29, 0.09],
+    fitAxis: 'height',
     license: 'CC0',
     source: 'Kenney Furniture Kit — wallWindow',
     sourceUrl: 'https://opengameart.org/content/furniture-kit',

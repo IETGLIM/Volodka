@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { GltfPreloadPriority } from '@/engine/assets/gltfPreloadScheduler';
 import {
+  getScenePropDressing,
   resolvePropDressingPreloadPriority,
   splitScenePropDressing,
 } from './scenePropDressing';
@@ -52,5 +53,13 @@ describe('scenePropDressing', () => {
         loadTier: 'deferred',
       }),
     ).toBe(GltfPreloadPriority.Deferred);
+  });
+
+  it('uses apartment-scale chairs for cafe and office seating', () => {
+    expect(getScenePropDressing('office_day').map((p) => p.propModelId)).toContain('kenney_city_chair');
+
+    const cafeChairPlacements = getScenePropDressing('cafe_evening')
+      .filter((p) => p.propModelId === 'kenney_city_chair');
+    expect(cafeChairPlacements).toHaveLength(3);
   });
 });

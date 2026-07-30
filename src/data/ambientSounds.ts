@@ -582,6 +582,11 @@ const OUTDOOR_SCENES = new Set<SceneId>([
   'rooftop_edge',
   'river_pier',
   'chk_forest_zorge',
+  'chk_campfire_night',
+  'pier_evening',
+  'factory_roof',
+  'city_square',
+  'procedural_aaa',
 ]);
 
 /** Weather-driven ambient overrides for outdoor exploration scenes */

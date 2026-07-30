@@ -25,6 +25,14 @@ describe('ambientSounds', () => {
     expect(rain.sound).toBe('rain');
     expect(rain.weatherApplied).toBe(true);
 
+    const squareRain = applyWeatherAmbienceOverride('city_square', 'street', 'rain');
+    expect(squareRain.sound).toBe('rain');
+    expect(squareRain.weatherApplied).toBe(true);
+
+    const factoryRoofSnow = applyWeatherAmbienceOverride('factory_roof', 'rooftop', 'snow');
+    expect(factoryRoofSnow.sound).toBe('snow');
+    expect(factoryRoofSnow.weatherApplied).toBe(true);
+
     const indoor = applyWeatherAmbienceOverride('cafe_evening', 'cafe', 'rain');
     expect(indoor.sound).toBe('cafe');
     expect(indoor.weatherApplied).toBe(false);

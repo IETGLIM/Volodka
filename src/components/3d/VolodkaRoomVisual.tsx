@@ -284,15 +284,6 @@ function AuthoredVolodkaRoomDressing({ castShadow }: { castShadow: boolean }) {
     <group>
       <Suspense fallback={null}>
         <AuthoredRoomProp
-          url={POLYHAVEN_MODELS.sofa}
-          position={[1.78, 0, 2.0]}
-          rotationY={-Math.PI / 2}
-          scale={0.92}
-          castShadow={castShadow}
-        />
-      </Suspense>
-      <Suspense fallback={null}>
-        <AuthoredRoomProp
           url={POLYHAVEN_MODELS.armChair}
           position={[-0.55, 0, -1.35]}
           rotationY={Math.PI}
@@ -808,8 +799,7 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
         </group>
       ) : null}
 
-      {/* ── Bed — fallback only; GLTF presets use Poly Haven bench/prop dressing ── */}
-      {!useGltfFurniture ? (
+      {/* ── Bed — fixed metre-scale bed on every preset (1×2m sleeping surface) ── */}
       <group position={[1.8, 0, 2.0]}>
         {/* Mattress */}
         <mesh position={[0, 0.35, 0]} castShadow geometry={geo_box_38} material={mat_29} />
@@ -820,7 +810,6 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
         {/* Blanket */}
         <mesh position={[0, 0.52, 0.2]} geometry={geo_box_41} material={mat_32} />
       </group>
-      ) : null}
 
       {!useGltfFurniture ? (
         <>
@@ -1158,7 +1147,6 @@ function createWallTexture(): THREE.CanvasTexture {
   return tex;
 }
 
-useGLTF.preload(POLYHAVEN_MODELS.sofa, true, true, extendLoader);
 useGLTF.preload(POLYHAVEN_MODELS.armChair, true, true, extendLoader);
 useGLTF.preload(POLYHAVEN_MODELS.woodenBookshelfWorn, true, true, extendLoader);
 useGLTF.preload(POLYHAVEN_MODELS.paintedWoodenCabinet, true, true, extendLoader);
