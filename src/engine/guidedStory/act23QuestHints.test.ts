@@ -208,4 +208,12 @@ describe('act23QuestHints', () => {
     expect(getAct3HubRelayHint('volodka_room')).toContain('гильдии');
     expect(getAct3HubRelayHint('guild_mainframe')).toContain('мейнфрейму');
   });
+
+  it('act3 hub relay is silent after mesh closed', () => {
+    snap.playerState.flags = {
+      zarema_arrested: true,
+      act3_hub_relay_mesh_closed: true,
+    };
+    expect(getAct3HubRelayHint('factory_basement')).toBeNull();
+  });
 });

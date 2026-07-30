@@ -94,7 +94,6 @@ export const SCENE_ASSET_OWNERSHIP: readonly SceneAssetOwnershipEntry[] = [
   },
   ...([
     ['volodka_corridor', 'interior_corridor'],
-    ['factory_basement', 'interior_basement'],
     ['rooftop_edge', 'interior_rooftop'],
   ] as const).map(([sceneId, assetId]): SceneAssetOwnershipEntry => ({
     sceneId,
@@ -107,6 +106,8 @@ export const SCENE_ASSET_OWNERSHIP: readonly SceneAssetOwnershipEntry[] = [
   })),
   ...([
     ['abandoned_factory', 'interior_factory', INTERIOR_SHELL_MODELS.factory],
+    ['factory_basement', 'interior_basement', INTERIOR_SHELL_MODELS.basement],
+    ['guild_mainframe', 'interior_office', INTERIOR_SHELL_MODELS.office],
     ['river_pier', 'interior_pier', INTERIOR_SHELL_MODELS.pier],
     ['chk_forest_zorge', 'interior_forest_clearing', INTERIOR_SHELL_MODELS.forestClearing],
   ] as const).map(([sceneId, assetId, publicUrl]): SceneAssetOwnershipEntry => ({

@@ -55,6 +55,7 @@ import {
   resolveProceduralLutKind,
 } from '@/engine/graphics/proceduralLutTextures';
 import { resolveDerivedSceneId } from '@/config/sceneInheritance';
+import { shouldUseDenseSceneAmbientOcclusion } from '@/config/sceneVisualProfiles';
 import type { SceneId } from '@/shared/types/game';
 
 /** Per-scene color grading overrides for CyberPunk2077 / Noir / Gothic feel */
@@ -557,6 +558,9 @@ function PostFXPipeline() {
 
   const pipelineKey = `${sceneId}-${rendering.useLitePostFx ? 'lite' : rendering.useAmbientOcclusion ? 'ao' : 'full'}${wantsCinematicDOF ? '-dof' : ''}${wantsSmaa ? `-smaa${smaaPreset}` : ''}`;
   const lutKind = resolveProceduralLutKind(sceneId);
+  const useAmbientOcclusion =
+    rendering.useAmbientOcclusion
+    && shouldUseDenseSceneAmbientOcclusion(sceneId as SceneId, softOk);
   const proceduralLut = useMemo(
     () => (lutKind ? getCachedProceduralLut3DTexture(lutKind) : null),
     [lutKind],
@@ -617,7 +621,7 @@ function PostFXPipeline() {
       {wantsScanlines ? <Scanline blendFunction={BlendFunction.OVERLAY} density={1.2} /> : null as any}
       {/* halfRes=false: N8AO half-res MRT can share depth with composer input and
           trigger the same glBlitFramebuffer identical-attachment error (n8ao#53). */}
-      {rendering.useAmbientOcclusion ? (
+      {useAmbientOcclusion ? (
         <N8AO
           aoRadius={rendering.aoRadius}
           intensity={rendering.aoIntensity}

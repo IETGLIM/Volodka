@@ -1852,4 +1852,35 @@ export const ACT3_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
       },
     ],
   },
+
+  /* ══════════════════════════════════════════════════════════════════════════
+     Act 3 hub epilogue — basement whisper after mesh ring closes
+     ══════════════════════════════════════════════════════════════════════════ */
+  act3_exp_basement_relay_epilogue: {
+    id: 'act3_exp_basement_relay_epilogue',
+    text: [
+      '«Заря-М» не говорит словами — она дышит ритмом, который ты уже слышал на пирсе, в библиотеке, в кафе, в офисе, в серверной и на заводе. Кольцо замкнулось. Под полом — не резервная копия, а последний журнал, который архив не может стереть.',
+      '',
+      'На корпусе проступает строка, будто выцарапанная частотой: «mesh closed — basement holds». Гильдия видит ржавый подвал. Сеть — видит узел, который переживёт push.',
+    ].join('\n'),
+    speaker: 'narrator',
+    sceneId: 'factory_basement',
+    contextNote: 'После замыкания hub-mesh «Заря-М» шепчет эпilogue в подвале.',
+    choices: [
+      {
+        text: 'Записать в журнал — кольцо живёт под полом',
+        next: 'factory_basement_familiar',
+        effects: [
+          { type: 'setFlag', flag: 'act3_basement_relay_epilogue_done', flagValue: true },
+          { type: 'discoverLore', loreId: 'lore_hub_relay_network' },
+          {
+            type: 'showThought',
+            thought: 'Семь узлов — один ритм. Пока «Заря-М» дышит, relay не умрёт, даже если архив сотрёт офис и кафе.',
+            thoughtDuration: 6000,
+          },
+          { type: 'addXp', value: 20 },
+        ],
+      },
+    ],
+  },
 };

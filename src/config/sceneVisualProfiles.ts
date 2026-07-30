@@ -150,3 +150,18 @@ export function getSceneVisualProfile(sceneId: SceneId): SceneVisualProfile {
 export function isHeroScene(sceneId: SceneId): boolean {
   return getSceneVisualProfile(sceneId).tier === 'hero';
 }
+
+/** Dense industrial hero-adjacent scenes — N8AO drops under soft-work budget pressure. */
+export const DENSE_INDUSTRIAL_SCENE_IDS = new Set<SceneId>([
+  'guild_mainframe',
+  'factory_basement',
+  'abandoned_factory',
+]);
+
+export function shouldUseDenseSceneAmbientOcclusion(
+  sceneId: SceneId,
+  softWorkAffordable: boolean,
+): boolean {
+  if (softWorkAffordable) return true;
+  return !DENSE_INDUSTRIAL_SCENE_IDS.has(sceneId);
+}

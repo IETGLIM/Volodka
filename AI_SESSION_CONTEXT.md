@@ -157,6 +157,12 @@ Gothic (живой мир, NPC расписания), GTA (открытые пр
   - TypeScript: 0 ошибок
 
 ### 🔄 Следующие шаги (приоритет по убыванию)
+
+#### Hub Visual Expansion (Stages 11–16)
+- [x] **Stage 11–15** — PhysicsSceneInner mount split, Act 3 hub relay ring (pier→library→café→office→guild→factory), hero scene GLB shells + prop dressing
+- [x] **Stage 16** — Guild mainframe + factory basement AuthoredInteriorShell (office/basement GLB), densified props, procedural rack clutter gated when shell active, dense-industrial N8AO soft-budget gate, basement relay epilogue after `act3_hub_relay_mesh_closed`
+- [ ] **Stage 17+** — Mixamo hero clips, AI3DGen Pro NPCs, remaining extension scene shell parity, AAA visual judge re-run
+
 - [x] **Фаза 5 (продолжение): Расширение story-нод Актов 2-7** — +120 exploration nodes (20 per act)
 - [x] **Фаза 5 (продолжение): Новые квесты Актов 2-7** — 10 дополнительных побочных квестов
 - [x] **Фаза 5.5: Критический фикс дёргания модели** — animation blending, camera spring rebalance, hysteresis

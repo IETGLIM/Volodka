@@ -17,4 +17,8 @@ describe('sceneBackdropShells', () => {
     expect(getSceneBackdropShell('river_pier')?.url).toContain('/models/interiors/pier.glb');
     expect(getSceneBackdropShell('abandoned_factory')?.scale).toBe(0.8);
   });
+
+  it('does not duplicate factory_basement shell via generic interior assets', () => {
+    expect(getSceneInteriorAssets('factory_basement')).toEqual([]);
+  });
 });

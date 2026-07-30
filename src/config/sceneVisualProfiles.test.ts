@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getSceneVisualProfile, isHeroScene, HERO_SCENE_IDS } from '@/config/sceneVisualProfiles';
+import { getSceneVisualProfile, isHeroScene, HERO_SCENE_IDS, shouldUseDenseSceneAmbientOcclusion } from '@/config/sceneVisualProfiles';
 
 describe('sceneVisualProfiles', () => {
   it('marks hero scenes with enhanced visual tier', () => {
@@ -47,5 +47,11 @@ describe('sceneVisualProfiles', () => {
     expect(getSceneVisualProfile('street_winter').bloomIntensityScale).toBe(1.04);
     expect(getSceneVisualProfile('zarema_albert_room').bloomIntensityScale).toBe(1.05);
     expect(getSceneVisualProfile('abandoned_factory').bloomIntensityScale).toBe(1.06);
+  });
+
+  it('drops dense industrial N8AO under soft-work budget pressure', () => {
+    expect(shouldUseDenseSceneAmbientOcclusion('guild_mainframe', true)).toBe(true);
+    expect(shouldUseDenseSceneAmbientOcclusion('guild_mainframe', false)).toBe(false);
+    expect(shouldUseDenseSceneAmbientOcclusion('volodka_room', false)).toBe(true);
   });
 });

@@ -23,6 +23,10 @@ import {
   getRainSpillInFloorBoost,
 } from '@/engine/graphics/wetStreetScenes';
 import { useGameStore } from '@/store/gameStore';
+import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
+import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
+import { INTERIOR_SHELL_MODELS } from '@/config/interiorShellModels';
+import { AuthoredInteriorShell } from './AuthoredInteriorShell';
 import { EnvironmentDetail } from './lod/PropDistanceGate';
 
 interface FactoryBasementVisualProps {
@@ -42,6 +46,10 @@ function basementSeededRandom(seed: number): () => number {
 }
 
 export function FactoryBasementVisual(_props: FactoryBasementVisualProps) {
+  const { preset } = useGraphicsQuality();
+  const useAuthoredShell = !preset.visualLite;
+  const useGltfDressing = allowsGlbAssetRendering(preset.environmentRenderMode);
+  const hideProceduralClutter = useAuthoredShell && useGltfDressing;
   const floorTexture = useCachedCanvasTexture('factory_basement:floor', createBasementFloorTexture);
   const ceilingWashTexture = useCachedCanvasTexture(
     'factory_basement:core-ceiling',
@@ -76,6 +84,40 @@ export function FactoryBasementVisual(_props: FactoryBasementVisualProps) {
 
   return (
     <group ref={rootGroupRef}>
+      {useAuthoredShell ? (
+        <AuthoredInteriorShell
+          sceneId="factory_basement"
+          url={INTERIOR_SHELL_MODELS.basement}
+          position={[-1, 0.2, -3]}
+          rotationY={-Math.PI / 4}
+          scale={2.5}
+          castShadow={preset.shadows}
+        />
+      ) : (
+        <>
+          {/* ── Walls + low ceiling (lite fallback) ── */}
+          {[
+            { pos: [0, CEIL_H / 2, -D / 2] as const, size: [W, CEIL_H, 0.2] as const },
+            { pos: [0, CEIL_H / 2, D / 2] as const, size: [W, CEIL_H, 0.2] as const },
+            { pos: [-W / 2, CEIL_H / 2, 0] as const, size: [0.2, CEIL_H, D] as const },
+            { pos: [W / 2, CEIL_H / 2, 0] as const, size: [0.2, CEIL_H, D] as const },
+          ].map((wall, i) => (
+            <mesh key={`wall-${i}`} position={[wall.pos[0], wall.pos[1], wall.pos[2]]} receiveShadow geometry={getSharedBoxGeometry(wall.size[0], wall.size[1], wall.size[2])}>
+              <meshStandardMaterial color="#2c3134" roughness={0.95} />
+            </mesh>
+          ))}
+          <mesh rotation-x={Math.PI / 2} position-y={CEIL_H} geometry={getSharedPlaneGeometry(W, D)}>
+            <meshStandardMaterial
+              map={ceilingWashTexture}
+              color="#101818"
+              emissive="#204838"
+              emissiveIntensity={0.22}
+              roughness={0.95}
+            />
+          </mesh>
+        </>
+      )}
+
       {/* ── Stained concrete floor ── */}
       <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={getSharedPlaneGeometry(W, D)}>
         <meshStandardMaterial
@@ -103,50 +145,33 @@ export function FactoryBasementVisual(_props: FactoryBasementVisualProps) {
         </mesh>
       )}
 
-      {/* ── Walls + low ceiling ── */}
-      {[
-        { pos: [0, CEIL_H / 2, -D / 2] as const, size: [W, CEIL_H, 0.2] as const },
-        { pos: [0, CEIL_H / 2, D / 2] as const, size: [W, CEIL_H, 0.2] as const },
-        { pos: [-W / 2, CEIL_H / 2, 0] as const, size: [0.2, CEIL_H, D] as const },
-        { pos: [W / 2, CEIL_H / 2, 0] as const, size: [0.2, CEIL_H, D] as const },
-      ].map((wall, i) => (
-        <mesh key={`wall-${i}`} position={[wall.pos[0], wall.pos[1], wall.pos[2]]} receiveShadow geometry={getSharedBoxGeometry(wall.size[0], wall.size[1], wall.size[2])}>
-          <meshStandardMaterial color="#2c3134" roughness={0.95} />
-        </mesh>
-      ))}
-      <mesh rotation-x={Math.PI / 2} position-y={CEIL_H} geometry={getSharedPlaneGeometry(W, D)}>
-        <meshStandardMaterial
-          map={ceilingWashTexture}
-          color="#101818"
-          emissive="#204838"
-          emissiveIntensity={0.22}
-          roughness={0.95}
-        />
-      </mesh>
+      {!hideProceduralClutter ? (
+        <>
+          {/* ── Support columns ── */}
+          {[
+            [-2.5, 0],
+            [2.5, 0],
+          ].map(([x, z]) => (
+            <mesh key={`col-${x}`} position={[x, CEIL_H / 2, z]} castShadow geometry={getSharedBoxGeometry(0.6, CEIL_H, 0.6)}>
+              <meshStandardMaterial color="#33383b" roughness={0.9} />
+            </mesh>
+          ))}
 
-      {/* ── Support columns ── */}
-      {[
-        [-2.5, 0],
-        [2.5, 0],
-      ].map(([x, z]) => (
-        <mesh key={`col-${x}`} position={[x, CEIL_H / 2, z]} castShadow geometry={getSharedBoxGeometry(0.6, CEIL_H, 0.6)}>
-          <meshStandardMaterial color="#33383b" roughness={0.9} />
-        </mesh>
-      ))}
-
-      {/* ── Server rack rows with blinking LEDs (distance-gated clutter) ── */}
-      <EnvironmentDetail minLod="standard" position={[-4.5, 0, -1]}>
-        <ServerRackRow position={[-4.5, 0, -1]} length={5.2} seed={11} />
-      </EnvironmentDetail>
-      <EnvironmentDetail minLod="standard" position={[4.5, 0, -1]}>
-        <ServerRackRow position={[4.5, 0, -1]} length={5.2} seed={22} />
-      </EnvironmentDetail>
-      <EnvironmentDetail minLod="full" position={[-4.5, 0, 3.5]}>
-        <ServerRackRow position={[-4.5, 0, 3.5]} length={3.6} seed={33} />
-      </EnvironmentDetail>
-      <EnvironmentDetail minLod="full" position={[4.5, 0, 3.5]}>
-        <ServerRackRow position={[4.5, 0, 3.5]} length={3.6} seed={44} />
-      </EnvironmentDetail>
+          {/* ── Server rack rows with blinking LEDs (distance-gated clutter) ── */}
+          <EnvironmentDetail minLod="standard" position={[-4.5, 0, -1]}>
+            <ServerRackRow position={[-4.5, 0, -1]} length={5.2} seed={11} />
+          </EnvironmentDetail>
+          <EnvironmentDetail minLod="standard" position={[4.5, 0, -1]}>
+            <ServerRackRow position={[4.5, 0, -1]} length={5.2} seed={22} />
+          </EnvironmentDetail>
+          <EnvironmentDetail minLod="full" position={[-4.5, 0, 3.5]}>
+            <ServerRackRow position={[-4.5, 0, 3.5]} length={3.6} seed={33} />
+          </EnvironmentDetail>
+          <EnvironmentDetail minLod="full" position={[4.5, 0, 3.5]}>
+            <ServerRackRow position={[4.5, 0, 3.5]} length={3.6} seed={44} />
+          </EnvironmentDetail>
+        </>
+      ) : null}
 
       {/* ── «Заря-М» monolith ── */}
       <group position={[0, 0, -5.2]}>
