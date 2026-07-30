@@ -1,5 +1,5 @@
 
-/* ─── Volodka RPG – Tutorial tips overlay (enhanced) ─── */
+/* ─── Volodka RPG – handheld tutorial tips overlay ─── */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -30,14 +30,9 @@ function KeyCap({ children, wide }: { children: React.ReactNode; wide?: boolean 
   return (
     <span
       className={`
-        inline-flex items-center justify-center rounded-md text-xs font-bold font-mono
-        border shadow-sm select-none
+        hud-filmic-kbd inline-flex items-center justify-center select-none
         ${wide ? 'px-2 h-7' : 'w-7 h-7'}
-        bg-slate-800/80 border-slate-600/50 text-slate-300 shadow-black/20
       `}
-      style={{
-        boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.3)',
-      }}
     >
       {children}
     </span>
@@ -65,51 +60,51 @@ function ControlHint({ keys, label, icon }: { keys: React.ReactNode; label: stri
       <div className="shrink-0 flex items-center gap-0.5 min-w-[60px] justify-center">
         {keys}
       </div>
-      <span className="text-xs text-slate-400 flex-1">{label}</span>
-      {icon && <span className="shrink-0 text-cyan-400/70">{icon}</span>}
+      <span className="hud-filmic-body text-xs flex-1" style={{ textAlign: 'left' }}>{label}</span>
+      {icon && <span className="shrink-0" style={{ color: 'var(--hud-filmic-ink-muted)' }}>{icon}</span>}
     </div>
   );
 }
 
 const TUTORIALS: Record<TutorialType, { icon: React.ReactNode; title: string; content: React.ReactNode }> = {
   movement: {
-    icon: <Gamepad2 className="size-5 text-cyan-400" />,
+    icon: <Gamepad2 className="size-5" style={{ color: 'var(--hud-filmic-accent)' }} />,
     title: 'Передвижение',
     content: (
       <div className="space-y-1">
         <div className="flex items-center gap-3">
           <WASDLayout />
-          <span className="text-xs text-slate-400">— движение</span>
+          <span className="hud-filmic-body text-xs">— движение</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="flex gap-0.5">
             <KeyCap>⇧</KeyCap>
           </div>
-          <span className="text-xs text-slate-400">— бег</span>
+          <span className="hud-filmic-body text-xs">— бег</span>
         </div>
         <div className="flex items-center gap-2">
           <KeyCap>Space</KeyCap>
-          <span className="text-xs text-slate-400">— прыжок</span>
+          <span className="hud-filmic-body text-xs">— прыжок</span>
         </div>
         <div className="flex items-center gap-2">
-          <Eye className="size-4 text-cyan-500/50 shrink-0" />
-          <span className="text-xs text-slate-400">— мышь: обзор камеры</span>
+          <Eye className="size-4 shrink-0" style={{ color: 'var(--hud-filmic-ink-dim)' }} />
+          <span className="hud-filmic-body text-xs">— мышь: обзор камеры</span>
         </div>
       </div>
     ),
   },
   interact: {
-    icon: <Hand className="size-5 text-cyan-400" />,
+    icon: <Hand className="size-5" style={{ color: 'var(--hud-filmic-accent)' }} />,
     title: 'Взаимодействие',
     content: (
       <div className="space-y-1">
         <ControlHint keys={<KeyCap>E</KeyCap>} label="Взаимодействовать с объектами и NPC" icon={<Hand className="size-3.5" />} />
-        <p className="text-xs text-slate-400 mt-1">Подойди ближе к объекту и нажми E</p>
+        <p className="hud-filmic-body text-xs mt-1" style={{ textAlign: 'left' }}>Подойди ближе к объекту и нажми E</p>
       </div>
     ),
   },
   controls: {
-    icon: <LayoutGrid className="size-5 text-cyan-400" />,
+    icon: <LayoutGrid className="size-5" style={{ color: 'var(--hud-filmic-accent)' }} />,
     title: 'Управление',
     content: (
       <div className="space-y-0.5 divide-y divide-slate-800/50">
@@ -152,63 +147,63 @@ const TUTORIALS: Record<TutorialType, { icon: React.ReactNode; title: string; co
     ),
   },
   poem_power: {
-    icon: <Zap className="size-5 text-amber-400" />,
+    icon: <Zap className="size-5" style={{ color: 'var(--hud-filmic-warn)' }} />,
     title: 'Стих-способности',
     content: (
       <div className="space-y-1.5">
-        <p className="text-xs text-slate-400">
+        <p className="hud-filmic-body text-xs" style={{ textAlign: 'left' }}>
           Каждый стих даёт уникальную способность с перезарядкой.
         </p>
         <div className="flex items-center gap-2">
           <KeyCap>1</KeyCap><KeyCap>2</KeyCap><KeyCap>3</KeyCap>
-          <span className="text-xs text-slate-400">— выбор способности</span>
+          <span className="hud-filmic-body text-xs">— выбор способности</span>
         </div>
         <div className="flex items-center gap-2">
           <KeyCap>F</KeyCap>
-          <span className="text-xs text-slate-400">— активировать способность</span>
+          <span className="hud-filmic-body text-xs">— активировать способность</span>
         </div>
-        <p className="text-[11px] text-amber-400/70 mt-1">
-          ⏱ После использования способность уходит на перезарядку
+        <p className="hud-filmic-kicker mt-1" style={{ color: 'var(--hud-filmic-warn)', letterSpacing: '0.08em' }}>
+          После использования способность уходит на перезарядку
         </p>
       </div>
     ),
   },
   combat: {
-    icon: <Swords className="size-5 text-rose-400" />,
+    icon: <Swords className="size-5" style={{ color: 'var(--hud-filmic-danger)' }} />,
     title: 'Бой',
     content: (
       <div className="space-y-1.5">
-        <p className="text-xs text-slate-400">
+        <p className="hud-filmic-body text-xs" style={{ textAlign: 'left' }}>
           В бою используй стих-способности для преимущества!
         </p>
         <div className="flex items-center gap-2">
           <KeyCap>F</KeyCap>
-          <span className="text-xs text-slate-400">— стих-способность в бою</span>
+          <span className="hud-filmic-body text-xs">— стих-способность в бою</span>
         </div>
         <div className="flex items-center gap-2">
           <KeyCap>E</KeyCap>
-          <span className="text-xs text-slate-400">— обычная атака</span>
+          <span className="hud-filmic-body text-xs">— обычная атака</span>
         </div>
-        <p className="text-[11px] text-rose-400/70 mt-1">
-          ⚔ Стих-способности наносят усиленный урон
+        <p className="hud-filmic-kicker mt-1" style={{ color: 'var(--hud-filmic-danger)', letterSpacing: '0.08em' }}>
+          Стих-способности наносят усиленный урон
         </p>
       </div>
     ),
   },
   quest_board: {
-    icon: <ClipboardList className="size-5 text-emerald-400" />,
+    icon: <ClipboardList className="size-5" style={{ color: 'var(--hud-filmic-accent)' }} />,
     title: 'Доска заданий',
     content: (
       <div className="space-y-1.5">
-        <p className="text-xs text-slate-400">
+        <p className="hud-filmic-body text-xs" style={{ textAlign: 'left' }}>
           На доске заданий доступны ежедневные и сюжетные миссии.
         </p>
         <div className="flex items-center gap-2">
           <KeyCap>Q</KeyCap>
-          <span className="text-xs text-slate-400">— открыть журнал заданий</span>
+          <span className="hud-filmic-body text-xs">— открыть журнал заданий</span>
         </div>
-        <p className="text-[11px] text-emerald-400/70 mt-1">
-          📋 Ежедневные задания обновляются каждый игровой день
+        <p className="hud-filmic-kicker mt-1" style={{ color: 'var(--hud-filmic-accent)', letterSpacing: '0.08em' }}>
+          Ежедневные задания обновляются каждый игровой день
         </p>
       </div>
     ),
@@ -333,24 +328,24 @@ export function TutorialOverlay() {
           className="fixed left-3 sm:left-4 pointer-events-auto"
           style={{ zIndex: UI_LAYERS.HUD, bottom: bottomTutorialTipPx() }}
         >
-          <div className="relative bg-slate-950/95 border border-cyan-900/40 rounded-lg p-3 max-w-[260px] sm:max-w-xs backdrop-blur-md shadow-xl shadow-black/40">
-            {/* Subtle gradient accent */}
-            <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-cyan-500/[0.03] to-transparent pointer-events-none" />
-
+          <div className="relative hud-filmic-plate p-3 max-w-[260px] sm:max-w-xs">
             <div className="flex items-start gap-3 relative">
               {/* Icon */}
-              <div className="shrink-0 mt-0.5 w-8 h-8 flex items-center justify-center rounded-md bg-slate-800/80 border border-slate-700/30">
+              <div
+                className="shrink-0 mt-0.5 w-8 h-8 flex items-center justify-center rounded-sm"
+                style={{ border: '1px solid var(--hud-filmic-border)' }}
+              >
                 {TUTORIALS[activeTutorial].icon}
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-xs font-semibold text-slate-100 mb-1.5 font-mono tracking-wider uppercase">
+                <h3 className="hud-filmic-kicker mb-1.5" style={{ color: 'var(--hud-filmic-ink-muted)' }}>
                   {TUTORIALS[activeTutorial].title}
                 </h3>
                 {TUTORIALS[activeTutorial].content}
               </div>
               <button
                 onClick={handleDismiss}
-                className="shrink-0 w-6 h-6 flex items-center justify-center rounded-md text-slate-400 hover:text-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/60 transition-colors"
+                className="hud-filmic-icon-btn shrink-0 w-6 h-6 flex items-center justify-center rounded-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-stone-400/40 transition-colors"
                 aria-label="Закрыть"
               >
                 <X className="size-3" />
@@ -358,16 +353,16 @@ export function TutorialOverlay() {
             </div>
 
             {/* Don't show again checkbox */}
-            <div className="mt-2 pt-1.5 border-t border-slate-800/50 flex items-center gap-2">
+            <div className="mt-2 pt-1.5 border-t flex items-center gap-2" style={{ borderColor: 'var(--hud-filmic-border)' }}>
               <Checkbox
                 id="tutorial-dont-show"
                 checked={dontShowAgain}
                 onCheckedChange={(checked) => setDontShowAgain(checked === true)}
-                className="size-3.5 border-slate-600 data-[state=checked]:bg-slate-600 data-[state=checked]:border-slate-500"
+                className="size-3.5 border-stone-600 data-[state=checked]:bg-stone-600 data-[state=checked]:border-stone-500"
               />
               <label
                 htmlFor="tutorial-dont-show"
-                className="text-[11px] text-slate-400 cursor-pointer hover:text-slate-300 transition-colors"
+                className="hud-filmic-kicker cursor-pointer hover:text-stone-300 transition-colors"
               >
                 Больше не показывать
               </label>

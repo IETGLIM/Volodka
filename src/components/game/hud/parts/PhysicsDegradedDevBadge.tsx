@@ -5,6 +5,12 @@ import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
 /** DEV-only HUD chip when KCC fallback (direct movement) is active. */
 export function PhysicsDegradedDevBadge() {
+  if (!import.meta.env.DEV) return null;
+
+  return <PhysicsDegradedDevBadgeInner />;
+}
+
+function PhysicsDegradedDevBadgeInner() {
   const [degraded, setDegraded] = useState(false);
   const [reason, setReason] = useState<string | null>(null);
   const [frameCount, setFrameCount] = useState(0);

@@ -1,6 +1,6 @@
 
 /* ─── Volodka RPG – Event Notification Popup ─── */
-/* Dramatic in-game event notifications with cyberpunk styling.
+/* Restrained in-game event notifications with filmic styling.
  * Listens on EventBus for game:notification and other game events
  * (scene:enter, combat:start, combat:victory, quest:completed, achievement:unlocked)
  * and displays dramatic popups that slide in from the right, stack vertically
@@ -42,51 +42,33 @@ const STAGGER_DELAY_MS = 120;
 
 const ACCENT_MAP: Record<NotificationType, {
   primary: string;
-  glow: string;
   border: string;
   bg: string;
-  shadow: string;
-  iconBg: string;
 }> = {
   combat: {
     primary: '#fb7185',     // rose-400
-    glow: 'rgba(251, 113, 133, 0.15)',
     border: 'rgba(251, 113, 133, 0.35)',
     bg: 'rgba(30, 12, 16, 0.82)',
-    shadow: '0 0 12px rgba(251, 113, 133, 0.12)',
-    iconBg: 'rgba(251, 113, 133, 0.12)',
   },
   scene: {
-    primary: 'var(--cyber-cyan)',     // cyan-400
-    glow: 'rgb(var(--cyber-cyan-rgb) / 0.15)',
-    border: 'rgb(var(--cyber-cyan-rgb) / 0.35)',
-    bg: 'rgba(8, 20, 30, 0.82)',
-    shadow: '0 0 12px rgb(var(--cyber-cyan-rgb) / 0.12)',
-    iconBg: 'rgb(var(--cyber-cyan-rgb) / 0.12)',
+    primary: 'var(--hud-filmic-accent)',
+    border: 'var(--hud-filmic-border)',
+    bg: 'var(--hud-filmic-plate-strong)',
   },
   achievement: {
     primary: '#fbbf24',     // amber-400
-    glow: 'rgba(251, 191, 36, 0.15)',
     border: 'rgba(251, 191, 36, 0.35)',
     bg: 'rgba(20, 16, 8, 0.82)',
-    shadow: '0 0 12px rgba(251, 191, 36, 0.12)',
-    iconBg: 'rgba(251, 191, 36, 0.12)',
   },
   quest: {
     primary: '#34d399',     // emerald-400
-    glow: 'rgba(52, 211, 153, 0.15)',
     border: 'rgba(52, 211, 153, 0.35)',
     bg: 'rgba(8, 24, 18, 0.82)',
-    shadow: '0 0 12px rgba(52, 211, 153, 0.12)',
-    iconBg: 'rgba(52, 211, 153, 0.12)',
   },
   info: {
     primary: '#94a3b8',     // slate-400
-    glow: 'rgba(148, 163, 184, 0.10)',
     border: 'rgba(148, 163, 184, 0.25)',
     bg: 'rgba(15, 18, 24, 0.82)',
-    shadow: '0 0 12px rgba(148, 163, 184, 0.08)',
-    iconBg: 'rgba(148, 163, 184, 0.10)',
   },
 };
 
@@ -242,7 +224,7 @@ export function EventNotificationPopup() {
 
   /* scene:enter — handled by center scene banner in GameOrchestrator (no duplicate toast) */
 
-  /* combat:start — handled by CombatUI intro overlay (emoji + enemy name).
+  /* combat:start — handled by CombatUI intro overlay (enemy name).
      Previously duplicated here as a toast — removed to avoid double-display. */
 
   /* combat:victory — handled by DamageNumberFloat (floating "+X ОД" number)

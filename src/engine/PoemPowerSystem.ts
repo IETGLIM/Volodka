@@ -270,7 +270,7 @@ const POEM_POWERS: Record<string, PoemPower> = {
     description: 'Найти путь сквозь тьму. Показывает скрытые выходы и подсказки в текущей сцене.',
     cooldownMs: 120000,
     effect: () => {
-      eventBus.emit('ui:exploration_message', { text: '⭐ Путеводная Звезда освещает скрытые пути...' });
+      eventBus.emit('ui:exploration_message', { text: 'Путеводная Звезда освещает скрытые пути.' });
     },
     flagsToSet: [{ key: 'guiding_star_active', durationMs: 60000 }],
   },
@@ -318,7 +318,7 @@ const POEM_POWERS: Record<string, PoemPower> = {
     cooldownMs: 180000,
     effect: () => {
       addSkill('intuition', 3);
-      eventBus.emit('ui:exploration_message', { text: '👁 Детский Взгляд раскрывает скрытое...' });
+      eventBus.emit('ui:exploration_message', { text: 'Детский Взгляд раскрывает скрытое.' });
     },
     flagsToSet: [{ key: 'child_gaze_active', durationMs: 45000 }],
     reverseOnExpiry: [{ type: 'skill', key: 'intuition', value: -3 }],
@@ -363,7 +363,7 @@ const POEM_POWERS: Record<string, PoemPower> = {
     cooldownMs: 120000,
     effect: () => {
       addSkill('intuition', 4);
-      eventBus.emit('ui:exploration_message', { text: '🌆 Голос Улиц шепчет секреты...' });
+      eventBus.emit('ui:exploration_message', { text: 'Голос Улиц шепчет секреты.' });
     },
     flagsToSet: [{ key: 'city_voice_active', durationMs: 45000 }],
     reverseOnExpiry: [{ type: 'skill', key: 'intuition', value: -4 }],
@@ -398,7 +398,7 @@ const POEM_POWERS: Record<string, PoemPower> = {
       addSkill('writing', 5);
       addSkill('logic', 5);
       addStress(5);
-      eventBus.emit('ui:exploration_message', { text: '🧠 Глубокое Размышление... Мысли тяжелеют, но обретают ясность.' });
+      eventBus.emit('ui:exploration_message', { text: 'Глубокое Размышление. Мысли тяжелеют, но обретают ясность.' });
     },
     flagsToSet: [{ key: 'deep_thought_active', durationMs: 45000 }],
     reverseOnExpiry: [{ type: 'skill', key: 'writing', value: -5 }, { type: 'skill', key: 'logic', value: -5 }, { type: 'stress', value: -5 }],
@@ -410,7 +410,7 @@ const POEM_POWERS: Record<string, PoemPower> = {
     cooldownMs: 150000,
     effect: () => {
       addSkill('persuasion', 4);
-      eventBus.emit('ui:exploration_message', { text: '😏 Ироничный Шёпот раскрывает скрытые смыслы...' });
+      eventBus.emit('ui:exploration_message', { text: 'Ироничный Шёпот раскрывает скрытые смыслы.' });
     },
     flagsToSet: [{ key: 'ironic_whisper_active', durationMs: 45000 }],
     reverseOnExpiry: [{ type: 'skill', key: 'persuasion', value: -4 }],
@@ -423,7 +423,7 @@ const POEM_POWERS: Record<string, PoemPower> = {
     effect: () => {
       addEnergy(40);
       addSkill('empathy', 3);
-      eventBus.emit('ui:exploration_message', { text: '👶 Эхо Детства... Воспоминания придают сил.' });
+      eventBus.emit('ui:exploration_message', { text: 'Эхо Детства. Воспоминания придают сил.' });
     },
     flagsToSet: [{ key: 'childhood_echo_active', durationMs: 30000 }],
     reverseOnExpiry: [{ type: 'energy', value: -40 }, { type: 'skill', key: 'empathy', value: -3 }],
@@ -440,7 +440,7 @@ const POEM_POWERS: Record<string, PoemPower> = {
         setNpcRelation(best.npcId, 10);
       }
       addStress(-10);
-      eventBus.emit('ui:exploration_message', { text: '🤝 Невидимая Связь... Мы не одни в этом мире.' });
+      eventBus.emit('ui:exploration_message', { text: 'Невидимая Связь. Мы не одни в этом мире.' });
     },
     flagsToSet: [{ key: 'invisible_bond_active', durationMs: 30000 }],
   },
@@ -452,7 +452,7 @@ const POEM_POWERS: Record<string, PoemPower> = {
     effect: () => {
       addKarma(12);
       addStress(-25);
-      eventBus.emit('ui:exploration_message', { text: '⚖️ Возвращение Правды... Истина освобождает.' });
+      eventBus.emit('ui:exploration_message', { text: 'Возвращение Правды. Истина освобождает.' });
     },
     flagsToSet: [{ key: 'truth_return_active', durationMs: 30000 }],
   },
@@ -465,7 +465,7 @@ const POEM_POWERS: Record<string, PoemPower> = {
       addKarma(8);
       addEnergy(30);
       addSkill('empathy', 4);
-      eventBus.emit('ui:exploration_message', { text: '🕯️ Неоновая Панихида... Память павших наполняет силой.' });
+      eventBus.emit('ui:exploration_message', { text: 'Неоновая Панихида. Память павших наполняет силой.' });
     },
     flagsToSet: [{ key: 'neon_requiem_active', durationMs: 35000 }],
     reverseOnExpiry: [{ type: 'skill', key: 'empathy', value: -4 }],
@@ -478,7 +478,7 @@ const POEM_POWERS: Record<string, PoemPower> = {
     effect: () => {
       addSkill('coding', 15);
       addStress(-20);
-      eventBus.emit('ui:exploration_message', { text: '🔓 Чип в затылке... Свобода думать — величайшая сила.' });
+      eventBus.emit('ui:exploration_message', { text: 'Чип в затылке. Свобода думать — величайшая сила.' });
     },
     flagsToSet: [{ key: 'chip_resistance_active', durationMs: 40000 }, { key: 'corporate_immune', durationMs: 40000 }],
     reverseOnExpiry: [{ type: 'skill', key: 'coding', value: -15 }],
@@ -494,7 +494,7 @@ const POEM_POWERS: Record<string, PoemPower> = {
       addEnergy(Math.max(0, 100 - energy));
       addStress(-50);
       addSkill('persuasion', 5);
-      eventBus.emit('ui:exploration_message', { text: '🌊 Белая Река... Древняя сила смывает тьму. Чёрный Кабель разорван.' });
+      eventBus.emit('ui:exploration_message', { text: 'Белая Река. Древняя сила смывает тьму. Чёрный Кабель разорван.' });
     },
     flagsToSet: [{ key: 'white_river_purification', durationMs: 45000 }],
     reverseOnExpiry: [{ type: 'skill', key: 'persuasion', value: -5 }],
@@ -508,7 +508,7 @@ const POEM_POWERS: Record<string, PoemPower> = {
       addKarma(6);
       addStress(-30);
       addSkill('empathy', 3);
-      eventBus.emit('ui:exploration_message', { text: '🏕️ Портвейн у костра... Чекисты держат тыл.' });
+      eventBus.emit('ui:exploration_message', { text: 'Портвейн у костра. Чекисты держат тыл.' });
     },
     flagsToSet: [{ key: 'tolpa_campfire_blessing', durationMs: 40000 }],
     reverseOnExpiry: [{ type: 'skill', key: 'empathy', value: -3 }],
@@ -521,7 +521,7 @@ const POEM_POWERS: Record<string, PoemPower> = {
     effect: () => {
       addSkill('intuition', 6);
       addKarma(4);
-      eventBus.emit('ui:exploration_message', { text: '🌃 Город шепчет... Провода несут правду.' });
+      eventBus.emit('ui:exploration_message', { text: 'Город шепчет. Провода несут правду.' });
     },
     flagsToSet: [{ key: 'city_whisper_active', durationMs: 40000 }],
     reverseOnExpiry: [{ type: 'skill', key: 'intuition', value: -6 }],
@@ -534,7 +534,7 @@ const POEM_POWERS: Record<string, PoemPower> = {
     effect: () => {
       addSkill('coding', 10);
       addKarma(8);
-      eventBus.emit('ui:exploration_message', { text: '⚔️ Сопротивление... Код становится оружием.' });
+      eventBus.emit('ui:exploration_message', { text: 'Сопротивление. Код становится оружием.' });
     },
     flagsToSet: [{ key: 'resistance_poem_active', durationMs: 45000 }],
     reverseOnExpiry: [{ type: 'skill', key: 'coding', value: -10 }],
@@ -547,7 +547,7 @@ const POEM_POWERS: Record<string, PoemPower> = {
     effect: () => {
       addSkill('logic', 8);
       addStress(-15);
-      eventBus.emit('ui:exploration_message', { text: '🗡️ Предатель... Истина открывает двери.' });
+      eventBus.emit('ui:exploration_message', { text: 'Предатель. Истина открывает двери.' });
     },
     flagsToSet: [{ key: 'traitor_truth_active', durationMs: 45000 }],
     reverseOnExpiry: [{ type: 'skill', key: 'logic', value: -8 }],
@@ -561,7 +561,7 @@ const POEM_POWERS: Record<string, PoemPower> = {
       addKarma(12);
       addSkill('writing', 6);
       addStress(-25);
-      eventBus.emit('ui:exploration_message', { text: '🌅 Финал — не конец... Система падает. Люди остаются.' });
+      eventBus.emit('ui:exploration_message', { text: 'Финал — не конец. Система падает. Люди остаются.' });
     },
     flagsToSet: [{ key: 'system_shutdown_poem_active', durationMs: 60000 }],
     reverseOnExpiry: [{ type: 'skill', key: 'writing', value: -6 }],
@@ -575,7 +575,7 @@ const POEM_POWERS: Record<string, PoemPower> = {
       addKarma(15);
       addStress(-30);
       addSkill('writing', 8);
-      eventBus.emit('ui:exploration_message', { text: '✨ Строка 00... История завершена. Новое начало.' });
+      eventBus.emit('ui:exploration_message', { text: 'Строка 00. История завершена. Новое начало.' });
     },
     flagsToSet: [{ key: 'epilogue_line_zero', durationMs: 60000 }],
     reverseOnExpiry: [{ type: 'skill', key: 'writing', value: -8 }],

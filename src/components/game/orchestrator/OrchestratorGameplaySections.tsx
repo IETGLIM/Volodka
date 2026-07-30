@@ -34,7 +34,6 @@ import { MoralCompassHUD } from '../MoralCompassHUD';
 import { TutorialOverlay } from '../TutorialOverlay';
 import { FirstPlayTutorial } from '../FirstPlayTutorial';
 import { StressIndicator } from '../StressIndicator';
-import { QuickAccessToolbar } from '../QuickAccessToolbar';
 import { AutoSaveIndicator } from '../AutoSaveIndicator';
 import { AmbientSoundMixer } from '../AmbientSoundMixer';
 import { SceneTransitionProgress } from '../SceneTransitionProgress';
@@ -74,7 +73,6 @@ import {
   LazyDialogueRenderer,
   LazyCombatUI,
   LazyHUD,
-  LazyMiniMap,
   LazyQuestNotificationSystem,
   LazyStoryGuidanceHUD,
   LazyPlayerLostHintToast,
@@ -366,7 +364,6 @@ export const GameplayAmbientExplorationHud = memo(function GameplayAmbientExplor
       <StressIndicator />
       <QuickUseBar />
       <QuickInventoryBar />
-      <QuickAccessToolbar />
       <AutoSaveIndicator />
       <CompassHUD />
       {/* Proximity whispers */}
@@ -401,9 +398,6 @@ export const GameplayExplorationHud = memo(function GameplayExplorationHud({
           onOpenMenu={panelOpeners.onOpenMenu}
           {...hudSecondaryOpeners}
         />
-      </Suspense>
-      <Suspense fallback={null}>
-        <LazyMiniMap />
       </Suspense>
       <MoralCompassHUD />
       <InteractionHintPopup />
