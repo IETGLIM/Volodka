@@ -1,9 +1,9 @@
 /* ─── Volodka RPG – NPC GLB animation: state machine + event bus ─── */
 
-import { useEffect } from 'react';
 import type * as THREE from 'three';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 import { useNPCAnimation } from '@/engine/npc/useNPCAnimation';
+import { useNpcLocomotionBlend } from '@/engine/npc/useNpcLocomotionBlend';
 import type { NpcAnimationClipOverrides } from '@/engine/npc/npcClipResolution';
 import type { GamePhase } from '@/shared/gamePhase';
 import { useNpcVisualBehavior } from '@/engine/npc/useNpcVisualBehavior';
@@ -42,11 +42,17 @@ export function useNpcAnimationController({
     clipOverrides,
   });
 
-  const { crossfadeTo } = useNPCAnimation(npcId, actions, mergedClipOverrides);
+  const { crossfadeTo } = useNPCAnimation(npcId, actions, mergedClipOverrides, {
+    locomotionBlend: true,
+  });
 
-  useEffect(() => {
-    crossfadeTo(animState);
-  }, [animState, crossfadeTo]);
+  useNpcLocomotionBlend({
+    npcId,
+    actions,
+    animState,
+    clipOverrides: mergedClipOverrides,
+    crossfadeTo,
+  });
 
   return { crossfadeTo, animState, clipOverrides: mergedClipOverrides, emotion };
 }

@@ -24,6 +24,10 @@ export const SCENE_MANIFEST_ASSETS: Partial<Record<SceneId, readonly SceneManife
     { assetId: 'veg_tree_pine', position: [11, 0, -9], scale: 2.1, rotation: [0, -0.5, 0] },
     { assetId: 'veg_tree_pine', position: [-13, 0, 5], scale: 2.0, rotation: [0, 0.8, 0] },
     { assetId: 'veg_tree_pine', position: [10, 0, 8], scale: 1.9, rotation: [0, -0.25, 0] },
+    { assetId: 'veg_tree_pine', position: [-14, 0, -2], scale: 2.15, rotation: [0, 0.15, 0] },
+    { assetId: 'veg_tree_pine', position: [13, 0, 1], scale: 2.05, rotation: [0, -0.7, 0] },
+    { assetId: 'veg_tree_pine', position: [-9, 0, 11], scale: 1.85, rotation: [0, 0.55, 0] },
+    { assetId: 'veg_tree_pine', position: [8, 0, -13], scale: 2.25, rotation: [0, -0.35, 0] },
   ],
 };
 

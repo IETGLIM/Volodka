@@ -1,6 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import {
   getCafeOfficeRelayHint,
+  getExpansionHubQuestHint,
   getNightCityWatchHint,
   getPierCafeFrequencyHint,
   getStreetChkSamizdatHint,
@@ -77,5 +78,31 @@ describe('expansionHubQuestHints', () => {
     });
     expect(getNightCityWatchHint('river_pier')).toContain('ЧК');
     expect(getNightCityWatchHint('chk_forest_zorge')).toContain('Костёр');
+  });
+
+  it('guides office envelope delivery at server room', () => {
+    mockSnapshot.mockReturnValue({
+      quests: [
+        {
+          questId: 'act2_cafe_office_relay',
+          status: 'active',
+          objectives: { take_cafe_envelope: true, deliver_office_envelope: false },
+        },
+      ],
+    });
+    expect(getCafeOfficeRelayHint('office_day')).toContain('серверной');
+  });
+
+  it('aggregates first active hub hint', () => {
+    mockSnapshot.mockReturnValue({
+      quests: [
+        {
+          questId: 'act2_pier_cafe_frequency',
+          status: 'active',
+          objectives: { hear_pier_frequency: false, match_cafe_wall: false },
+        },
+      ],
+    });
+    expect(getExpansionHubQuestHint('street_night')).toContain('Трофим');
   });
 });

@@ -2,10 +2,17 @@
 
 import { useRef, useEffect, useCallback } from 'react';
 import * as THREE from 'three';
-import type { NPCAnimationState } from '@/engine/interaction/interactionMachine';import {
+import type { NPCAnimationState } from '@/engine/interaction/interactionMachine';
+import {
   resolveNpcClipAction,
   type NpcAnimationClipOverrides,
 } from '@/engine/npc/npcClipResolution';
+import { isNpcLocomotionAnimState } from '@/engine/npc/useNpcLocomotionBlend';
+
+export interface UseNPCAnimationOptions {
+  /** When true, idle/walk/listen are owned by `useNpcLocomotionBlend`. */
+  locomotionBlend?: boolean;
+}
 
 /**
  * Hook that manages NPC animation state with crossfade.
@@ -16,8 +23,10 @@ import type { NPCAnimationState } from '@/engine/interaction/interactionMachine'
  * Bus-driven overrides are handled by `useNpcVisualBehavior`; this hook only crossfades.
  */
 export function useNPCAnimation(
-  _npcId: string,  actions: Record<string, THREE.AnimationAction> | null | undefined,
+  _npcId: string,
+  actions: Record<string, THREE.AnimationAction> | null | undefined,
   clipOverrides?: NpcAnimationClipOverrides,
+  options?: UseNPCAnimationOptions,
 ) {
   const currentAnimRef = useRef<NPCAnimationState>('idle');
   const previousActionRef = useRef<THREE.AnimationAction | null>(null);
@@ -30,9 +39,10 @@ export function useNPCAnimation(
   );
 
   const applyState = useCallback(
-    (newState: NPCAnimationState, options?: { force?: boolean }) => {
+    (newState: NPCAnimationState, opts?: { force?: boolean }) => {
       if (!actions) return;
-      if (!options?.force && newState === currentAnimRef.current) return;
+      if (options?.locomotionBlend && isNpcLocomotionAnimState(newState)) return;
+      if (!opts?.force && newState === currentAnimRef.current) return;
 
       currentAnimRef.current = newState;
 
@@ -48,7 +58,7 @@ export function useNPCAnimation(
       targetAction.reset().fadeIn(crossfadeDuration).play();
       previousActionRef.current = targetAction;
     },
-    [actions, findAction],
+    [actions, findAction, options?.locomotionBlend],
   );
 
   const crossfadeTo = useCallback(
@@ -66,12 +76,13 @@ export function useNPCAnimation(
   // a new clip loads (4 deferred clips = 4 stumbles).
   const hasBoundInitialRef = useRef(false);
   useEffect(() => {
+    if (options?.locomotionBlend) return;
     if (hasBoundInitialRef.current) return;
     const idleAction = findAction('idle');
     if (!idleAction) return;
     hasBoundInitialRef.current = true;
     applyState('idle', { force: true });
-  }, [applyState, findAction]);
+  }, [applyState, findAction, options?.locomotionBlend]);
 
   // Reset the initial-bound flag if the entire actions object is replaced
   // (e.g. mixer recreated on scene change) so the force-idle can re-fire.

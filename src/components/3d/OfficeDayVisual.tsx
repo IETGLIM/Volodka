@@ -190,10 +190,12 @@ function AuthoredOfficeDesk({ castShadow }: { castShadow: boolean }) {
 
 export function OfficeDayVisual({ livePlayerPositionRef }: OfficeDayVisualProps) {
   const { preset } = useGraphicsQuality();
+  const glbDressing = allowsGlbAssetRendering(preset.environmentRenderMode);
   const useAuthoredShell = !preset.visualLite;
-  const useAuthoredDesks = !preset.visualLite && allowsGlbAssetRendering(preset.environmentRenderMode);
-  const hideProceduralDeskGrid = useAuthoredShell && useAuthoredDesks;
-  const deskPositions = hideProceduralDeskGrid
+  const useAuthoredDesks = !preset.visualLite && glbDressing;
+  const useSparseDeskGrid = (useAuthoredShell && useAuthoredDesks) || !glbDressing;
+  const hideProceduralDeskGrid = useSparseDeskGrid;
+  const deskPositions = useSparseDeskGrid
     ? OFFICE_HERO_DESK_POSITIONS
     : ([
         [-4.5, 0, -3.5],
@@ -594,7 +596,8 @@ export function OfficeDayVisual({ livePlayerPositionRef }: OfficeDayVisualProps)
       </group>
 
       {/* ── More sticky notes cluster on divider ── */}
-      {[
+      {!hideProceduralDeskGrid
+        ? [
         { pos: [-3.0, 1.0, -2.2] as [number, number, number], color: '#ffff88', rot: 0.1 },
         { pos: [-3.0, 1.15, -2.2] as [number, number, number], color: '#ffaaaa', rot: -0.05 },
         { pos: [-3.0, 1.05, -2.3] as [number, number, number], color: '#aaffaa', rot: 0.15 },
@@ -603,7 +606,8 @@ export function OfficeDayVisual({ livePlayerPositionRef }: OfficeDayVisualProps)
       ].map((note, i) => (
         <mesh key={`extra-postit-${i}`} position={note.pos} rotation={[0, 0, note.rot]} material={mat(note.color, { roughness: 0.9, side: THREE.DoubleSide })}>
           <planeGeometry args={[0.06, 0.06]} /></mesh>
-      ))}
+      ))
+        : null}
 
       {/* ── Phone on desk ── */}
       <group position={[1.5, 0, -3.5]}>

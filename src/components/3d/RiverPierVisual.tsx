@@ -45,7 +45,7 @@ export function RiverPierVisual({ sceneId = 'river_pier' }: RiverPierVisualProps
   const { preset } = useGraphicsQuality();
   const useGltfDressing = allowsGlbAssetRendering(preset.environmentRenderMode);
   const useAuthoredBackdrop = !preset.visualLite && useGltfDressing;
-  const hideDockClutter = useAuthoredBackdrop;
+  const hideDockClutter = useAuthoredBackdrop || !useGltfDressing;
   const plankTexture = useCachedCanvasTexture('river_pier:planks', createPlankTexture);
   const rainIntensity = useGameStore((s) => s.rainIntensity);
   const waterRef = useRef<THREE.Mesh>(null);
@@ -223,7 +223,7 @@ export function RiverPierVisual({ sceneId = 'river_pier' }: RiverPierVisualProps
       <StringLights />
 
       {/* ── Reeds along the bank edges ── */}
-      <Reeds />
+      {!hideDockClutter ? <Reeds /> : null}
 
       {/* ── Scene-level ambient lighting ── */}
       {/* Moonlight — cold blue overhead illumination for the pier */}
