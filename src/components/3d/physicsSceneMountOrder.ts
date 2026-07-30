@@ -59,9 +59,11 @@ export const PHYSICS_SCENE_MOUNT_INVARIANTS: ReadonlyArray<{
  * {@link PHYSICS_SCENE_SECTION_MOUNTS}. Order inside a wrapper matches JSX.
  */
 export const PHYSICS_SCENE_MOUNT_WRAPPERS = {
+  PhysicsSceneWorldDressingMounts: 'world_dressing',
   PhysicsSceneNpcMounts: 'npc_and_ambient',
   PhysicsSceneCinematicMounts: 'cinematic_and_triggers',
   PhysicsSceneInteractionBridges: 'interaction_bridges',
+  PhysicsSceneProximityQuestMounts: 'proximity_and_quests',
   PhysicsSceneLifecycleMounts: 'lifecycle_bridges',
 } as const satisfies Record<string, PhysicsSceneMountSection>;
 
@@ -70,6 +72,7 @@ export const PHYSICS_SCENE_SECTION_MOUNTS: Record<PhysicsSceneMountSection, read
   colliders_and_player: ['SceneColliderSelector', 'EnvironmentalAnimator', 'PhysicsPlayer'],
   camera_and_hands: ['FollowCamera', 'FirstPersonHands'],
   world_dressing: [
+    'PhysicsSceneWorldDressingMounts',
     'TriggerZoneProps',
     'WorldItemPickupGlows',
     'ScenePropDressing',
@@ -98,6 +101,7 @@ export const PHYSICS_SCENE_SECTION_MOUNTS: Record<PhysicsSceneMountSection, read
     'InteractionHighlight',
   ],
   proximity_and_quests: [
+    'PhysicsSceneProximityQuestMounts',
     'ProximityReactivityRenderer',
     'SceneExitIndicator',
     'QuestWaypoints',

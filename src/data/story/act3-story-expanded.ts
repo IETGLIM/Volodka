@@ -1744,4 +1744,31 @@ export const ACT3_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
       },
     ],
   },
+
+  /* ══════════════════════════════════════════════════════════════════════════
+     Act 3 hub beat — café acknowledges library relay (closes pier→library→café mesh)
+     ══════════════════════════════════════════════════════════════════════════ */
+  act3_exp_cafe_relay_ack: {
+    id: 'act3_exp_cafe_relay_ack',
+    text: [
+      'Бариста не поднимает глаз от эспрессо-машины. На стойке — салфетка, сложенная треугольником: три кружки и цифра «1», как на пирсе. Рядом — карточка «777», прижатая к чашке, будто её принесли не руками, а частотой.',
+      '',
+      '«Релей дошёл,» — шепчет он. «Гильдия видит только экран. Мы — видим стол. Отнеси Альберту: сеть жива, пока кто-то помнит, где поставить чашку.»',
+    ].join('\n'),
+    speaker: 'npc_barista',
+    sceneId: 'cafe_evening',
+    contextNote: 'После library relay бариста подтверждает hub-mesh: пирс → библиотека → кафе.',
+    choices: [
+      {
+        text: 'Кивнуть — relay замкнулся',
+        next: 'cafe_explore_mode',
+        effects: [
+          { type: 'setFlag', flag: 'act3_cafe_relay_ack_done', flagValue: true },
+          { type: 'discoverLore', loreId: 'lore_hub_relay_network' },
+          { type: 'npcChange', npcId: 'cafe_barista', npcChange: { relation: 3 } },
+          { type: 'addXp', value: 25 },
+        ],
+      },
+    ],
+  },
 };
