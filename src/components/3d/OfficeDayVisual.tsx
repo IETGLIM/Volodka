@@ -237,6 +237,7 @@ export function OfficeDayVisual({ livePlayerPositionRef }: OfficeDayVisualProps)
     <group>
       {useAuthoredShell ? (
         <AuthoredInteriorShell
+          sceneId="office_day"
           url={INTERIOR_SHELL_MODELS.office}
           scale={[W / 1.36, H / 2.88, D / 1.36]}
           castShadow={preset.shadows}

@@ -1,6 +1,7 @@
 /* ─── Volodka RPG – CC0 interior GLB shells per scene ─── */
 
 import type { SceneId } from '@/shared/types/game';
+import { isSceneAssetSystemAllowed } from '@/config/assetOwnership';
 
 export interface SceneInteriorPlacement {
   assetId: string;
@@ -38,7 +39,11 @@ export const SCENE_INTERIOR_ASSETS: Partial<Record<SceneId, readonly SceneInteri
 };
 
 export function getSceneInteriorAssets(sceneId: SceneId): readonly SceneInteriorPlacement[] {
-  return SCENE_INTERIOR_ASSETS[sceneId] ?? [];
+  const placements = SCENE_INTERIOR_ASSETS[sceneId] ?? [];
+  if (!isSceneAssetSystemAllowed(sceneId, 'interior_shell', 'SceneInteriorAssets')) {
+    return [];
+  }
+  return placements;
 }
 
 export function getSceneInteriorAssetIds(sceneId: SceneId): string[] {

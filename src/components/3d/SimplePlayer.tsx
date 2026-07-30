@@ -12,7 +12,6 @@ import * as THREE from 'three';
 import { getGameStore } from '@/store/gameStore';
 import { getGameSnapshot } from '@/engine/StateDispatcher';
 import { useCurrentSceneId, usePlayerKarma } from '@/store/selectors';
-import { isNarrativeMovementLocked } from '@/shared/exploreHubNodes';
 import { createFrameGameSnapshot } from '@/engine/frame/frameGameSnapshot';
 import { clearSharedVirtualControls } from '@/engine/VirtualControlsState';
 import { resetKeyboardInputState } from '@/engine/keyboardInputState';
@@ -39,6 +38,7 @@ import {
   ROTATION_REVERSAL_THRESHOLD,
   RUN_SPEED,
   WALK_SPEED,
+  MAX_HORIZONTAL_SPEED,
 } from '@/engine/player/playerConstants';
 import { eventBus } from '@/engine/EventBus';
 import { audioEngine } from '@/engine/AudioEngine';
@@ -46,13 +46,22 @@ import {
   getInteractionState,
   isInteractionLocked,
 } from '@/engine/interaction/interactionSession';
-import { InteractionState } from '@/engine/interaction/interactionMachine';
 import { forceEmitInteractionEnd } from '@/engine/interaction/interactionEndDedup';
 import { devWarn } from '@/shared/utils/devLog';
 import { getPlayerExternalVelocity } from '@/engine/PlayerRigidBodyState';
 import {
   resolveLockedLocomotionPresentation,
 } from '@/engine/player/playerLocomotionPresentation';
+import {
+  addPlayerMovementLockReasons,
+  createPlayerMovementFrameContract,
+  shouldConsumeExternalVelocity,
+  SIMPLE_PLAYER_FINALIZE_FRAME_CONTRACT,
+} from '@/engine/player/playerMovementContract';
+import {
+  createIdleMovementScratch,
+  syncMovementScratchFields,
+} from '@/engine/player/playerScratchSync';
 import { ProceduralPlayerModelAdaptive } from './ProceduralPlayerModel';
 
 function lerpAngle(a: number, b: number, t: number): number {
@@ -86,6 +95,7 @@ export function SimplePlayer({
   const footstepTimerRef = useRef(0);
   const virtualHoldTimesRef = useRef<VirtualHoldTimes>({});
   const prevSceneIdRef = useRef(sceneId);
+  const movementScratchRef = useRef(createIdleMovementScratch());
 
   useEffect(() => {
     setPlayerMovementMode('simple');
@@ -149,31 +159,29 @@ export function SimplePlayer({
     const vel = velocityRef.current;
     const floorY = config.floorY;
 
-    const lockState = getGameStore();
     const game = createFrameGameSnapshot(getGameSnapshot());
     const currentMode = game.gamePhase;
-    const showStoryOverlay = lockState.showStoryOverlay;
-    const currentNodeId = lockState.currentNodeId;
-    const narrativeLocked = isNarrativeMovementLocked(showStoryOverlay, currentNodeId ?? '');
+    const interactionState = getInteractionState();
     const interactionLocked = isInteractionLocked();
-    const isLocked = game.movementLocked || interactionLocked;
+    const lockContract = addPlayerMovementLockReasons(
+      game.movementLock,
+      interactionLocked ? ['interaction_lock'] : [],
+      { interactionState },
+    );
+    const frameContract = createPlayerMovementFrameContract(lockContract, {
+      finalizeFrame: SIMPLE_PLAYER_FINALIZE_FRAME_CONTRACT,
+      externalVelocityConsumers: ['simple_locked_movement'],
+    });
+    const isLocked = frameContract.lock.locked;
 
-    if (isLocked && !prevLocomotionLockedRef.current) {
+    if (frameContract.lock.shouldResetInputOnEnter && !prevLocomotionLockedRef.current) {
       vel.set(0, 0, 0);
       resetKeyboardInputState();
       clearSharedVirtualControls();
     }
     prevLocomotionLockedRef.current = isLocked;
 
-    const interactionState = getInteractionState();
-    const inExpectedLongInteractionPhase =
-      interactionState === InteractionState.Approach ||
-      interactionState === InteractionState.Cutscene;
-    const shouldWatchStuckLock =
-      interactionLocked &&
-      currentMode === 'exploration' &&
-      !narrativeLocked &&
-      !inExpectedLongInteractionPhase;
+    const shouldWatchStuckLock = currentMode === 'exploration' && frameContract.lock.shouldWatchStuckInteraction;
 
     if (shouldWatchStuckLock) {
       stuckLockTimerRef.current += dt;
@@ -189,21 +197,20 @@ export function SimplePlayer({
 
     if (isLocked) {
       const external = getPlayerExternalVelocity();
-      const approachViaExternal =
-        interactionLocked &&
-        !narrativeLocked &&
-        currentMode !== 'cutscene' &&
-        currentMode !== 'intro' &&
-        external.active;
+      const consumeExternal = shouldConsumeExternalVelocity(
+        frameContract.lock,
+        'simple_locked_movement',
+        external.active,
+      );
 
-      if (approachViaExternal) {
-        vel.x = external.vx;
-        vel.z = external.vz;
+      if (consumeExternal) {
+        vel.x = Math.max(-MAX_HORIZONTAL_SPEED, Math.min(MAX_HORIZONTAL_SPEED, external.vx));
+        vel.z = Math.max(-MAX_HORIZONTAL_SPEED, Math.min(MAX_HORIZONTAL_SPEED, external.vz));
 
         const presentation = resolveLockedLocomotionPresentation({
           externalActive: true,
-          vx: external.vx,
-          vz: external.vz,
+          vx: vel.x,
+          vz: vel.z,
           gamePhase: currentMode,
         });
         currentAnimRef.current = presentation.anim;
@@ -249,6 +256,16 @@ export function SimplePlayer({
 
           livePlayerPositionRef.current.copy(groupRef.current.position);
         }
+        syncMovementScratchFields(movementScratchRef.current, {
+          isGroundedNow: true,
+          onFlatGround: true,
+          airborneIntent: false,
+          isMoving: presentation.hSpeed > 0.12,
+          running: false,
+          keyboardDrivesMove: false,
+          blockedByWall: false,
+          prevVelY: vel.y,
+        });
         return;
       }
 
@@ -267,6 +284,16 @@ export function SimplePlayer({
           livePlayerPositionRef.current.copy(groupRef.current.position);
         }
       }
+      syncMovementScratchFields(movementScratchRef.current, {
+        isGroundedNow: true,
+        onFlatGround: true,
+        airborneIntent: false,
+        isMoving: false,
+        running: false,
+        keyboardDrivesMove: false,
+        blockedByWall: false,
+        prevVelY: vel.y,
+      });
       return;
     }
 
@@ -415,6 +442,17 @@ export function SimplePlayer({
       // Update ref for camera
       livePlayerPositionRef.current.copy(groupRef.current.position);
     }
+    const horizontalSpeed = Math.sqrt(vel.x * vel.x + vel.z * vel.z);
+    syncMovementScratchFields(movementScratchRef.current, {
+      isGroundedNow: true,
+      onFlatGround: true,
+      airborneIntent: false,
+      isMoving: isMoving || horizontalSpeed > 0.15,
+      running,
+      keyboardDrivesMove,
+      blockedByWall: false,
+      prevVelY: vel.y,
+    });
   });
 
   const karmaGlow = useMemo(() => {

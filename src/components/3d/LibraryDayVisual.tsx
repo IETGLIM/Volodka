@@ -29,6 +29,7 @@ export function LibraryDayVisual() {
     <group>
       {useAuthoredShell ? (
         <AuthoredInteriorShell
+          sceneId="library_day"
           url={INTERIOR_SHELL_MODELS.library}
           scale={[W / 0.97, H / 1.293, D / 0.94]}
           castShadow={preset.shadows}

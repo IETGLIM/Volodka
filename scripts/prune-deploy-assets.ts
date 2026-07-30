@@ -28,6 +28,7 @@ import {
 } from '../src/config/polyhavenAssets';
 import { MIXAMO_ANIMATION_CATALOG } from '../src/config/mixamoAnimationCatalog';
 import { MIXAMO_CLIP_IDS_ON_DISK } from '../src/config/mixamoClipsOnDisk';
+import { collectAssetOwnershipPublicUrls } from '../src/config/assetOwnership';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = path.join(ROOT, 'dist');
@@ -82,6 +83,7 @@ function collectRuntimePublicPaths(): Set<string> {
   for (const url of Object.values(MODEL_URLS)) addUrl(keep, url);
   for (const url of Object.values(POLYHAVEN_MODELS)) addUrl(keep, url);
   for (const url of Object.values(POLYHAVEN_HDRI)) addUrl(keep, url);
+  for (const url of collectAssetOwnershipPublicUrls()) addUrl(keep, url);
   for (const rel of VERCEL_GLB_EXTERNAL_TEXTURES) addUrl(keep, rel);
   addUrl(keep, POLYHAVEN_MENU_PLATE);
 

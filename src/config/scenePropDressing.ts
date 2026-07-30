@@ -2,6 +2,7 @@
 
 import type { SceneId } from '@/shared/types/game';
 import { GltfPreloadPriority } from '@/engine/assets/gltfPreloadScheduler';
+import { isSceneAssetSystemAllowed } from '@/config/assetOwnership';
 
 export type PropLoadTier = 'critical' | 'deferred';
 
@@ -139,7 +140,14 @@ export const SCENE_PROP_DRESSING: Partial<Record<SceneId, readonly ScenePropPlac
 };
 
 export function getScenePropDressing(sceneId: SceneId): readonly ScenePropPlacement[] {
-  return SCENE_PROP_DRESSING[sceneId] ?? [];
+  const placements = SCENE_PROP_DRESSING[sceneId] ?? [];
+  if (!isSceneAssetSystemAllowed(sceneId, 'prop_dressing', 'ScenePropDressing')) {
+    return [];
+  }
+  if (!isSceneAssetSystemAllowed(sceneId, 'street_setpiece', 'ScenePropDressing')) {
+    return placements.filter((placement) => !placement.propModelId.startsWith('polyhaven_'));
+  }
+  return placements;
 }
 
 export function getScenePropDressingIds(sceneId: SceneId): string[] {

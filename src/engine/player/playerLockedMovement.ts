@@ -10,6 +10,7 @@ import { lerpAngle, enforceFloor, clampHorizontalDisplacement } from '@/engine/p
 import { computeKccMovementSubstepped } from '@/engine/player/physicsSubstep';
 import { updateMoveBlendRef, resolveLockedLocomotionPresentation } from '@/engine/player/playerLocomotionPresentation';
 import { syncResolvedMovementScratch } from '@/engine/player/playerScratchSync';
+import { shouldConsumeExternalVelocity } from '@/engine/player/playerMovementContract';
 import type { PlayerMovementDeps } from '@/engine/player/playerFrameTypes';
 
 /** Locked branch — combat anim, external velocity, KCC/direct when interaction holds movement. */
@@ -25,7 +26,13 @@ export function runLockedPlayerMovement(deps: PlayerMovementDeps): void {
 
   const external = getPlayerExternalVelocity();
 
-  if (external.active) {
+  const consumeExternal = shouldConsumeExternalVelocity(
+    scratch.lockContract,
+    'kcc_locked_movement',
+    external.active,
+  );
+
+  if (consumeExternal) {
     vel.x = Math.max(-MAX_HORIZONTAL_SPEED, Math.min(MAX_HORIZONTAL_SPEED, external.vx));
     vel.z = Math.max(-MAX_HORIZONTAL_SPEED, Math.min(MAX_HORIZONTAL_SPEED, external.vz));
 
@@ -97,7 +104,7 @@ export function runLockedPlayerMovement(deps: PlayerMovementDeps): void {
   }
 
   const presentation = resolveLockedLocomotionPresentation({
-    externalActive: external.active,
+    externalActive: consumeExternal,
     vx: vel.x,
     vz: vel.z,
     gamePhase: currentMode,

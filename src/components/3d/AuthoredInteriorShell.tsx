@@ -2,13 +2,16 @@ import { Suspense, useMemo } from 'react';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { INTERIOR_SHELL_MODELS } from '@/config/interiorShellModels';
+import { isSceneAssetSystemAllowed } from '@/config/assetOwnership';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
+import type { SceneId } from '@/shared/types/game';
 
 const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeof useGLTF>[3]>;
 
 type InteriorShellScale = number | [number, number, number];
 
 interface AuthoredInteriorShellProps {
+  sceneId?: SceneId;
   url: string;
   position?: [number, number, number];
   rotationY?: number;
@@ -64,6 +67,13 @@ function AuthoredInteriorShellModel({
 }
 
 export function AuthoredInteriorShell(props: AuthoredInteriorShellProps) {
+  if (
+    props.sceneId &&
+    !isSceneAssetSystemAllowed(props.sceneId, 'interior_shell', 'AuthoredInteriorShell')
+  ) {
+    return null;
+  }
+
   return (
     <Suspense fallback={null}>
       <AuthoredInteriorShellModel {...props} />

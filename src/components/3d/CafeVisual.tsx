@@ -148,6 +148,7 @@ export function CafeVisual({ livePlayerPositionRef }: CafeVisualProps) {
     <group>
       {useAuthoredShell ? (
         <AuthoredInteriorShell
+          sceneId="cafe_evening"
           url={INTERIOR_SHELL_MODELS.cafe}
           scale={[W / 0.884, H / 0.893, D / 1.09]}
           castShadow={preset.shadows}

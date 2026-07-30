@@ -41,6 +41,7 @@ import {
   sampleIdleMonologueThreshold,
   tryEmitIdleMonologue,
 } from '@/engine/player/idleMonologueSystem';
+import { createPlayerMovementLockContract } from '@/engine/player/playerMovementContract';
 
 export interface UsePhysicsPlayerMovementOptions {
   livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
@@ -164,6 +165,7 @@ export function usePhysicsPlayerMovement({
     vel: velocityRef.current,
     floorY: config.floorY,
     isLocked: false,
+    lockContract: createPlayerMovementLockContract([]),
     currentMode: 'exploration',
     wasGrounded: true,
     isMoving: false,

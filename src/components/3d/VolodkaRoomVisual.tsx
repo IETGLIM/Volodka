@@ -554,6 +554,7 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
     <group>
       {useAuthoredShell ? (
         <AuthoredInteriorShell
+          sceneId="volodka_room"
           url={INTERIOR_SHELL_MODELS.volodkaBedroom}
           scale={[W / 1.3, H / 0.83354, D / 1.02814]}
           castShadow={preset.shadows}

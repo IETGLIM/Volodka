@@ -1,5 +1,4 @@
 import { getInteractionState, isInteractionLocked } from '@/engine/interaction/interactionSession';
-import { InteractionState } from '@/engine/interaction/interactionMachine';
 import { forceEmitInteractionEnd } from '@/engine/interaction/interactionEndDedup';
 import { eventBus } from '@/engine/EventBus';
 import { setPlayerRigidBody } from '@/engine/PlayerRigidBodyState';
@@ -10,6 +9,7 @@ import { clearSharedVirtualControls } from '@/engine/VirtualControlsState';
 import { resetKeyboardInputState } from '@/engine/keyboardInputState';
 import { isMovementEpochStale } from '@/engine/player/playerMovementSceneSync';
 import { SIM_DELTA_MAX } from '@/engine/player/playerOwnership';
+import { addPlayerMovementLockReasons } from '@/engine/player/playerMovementContract';
 import type { FrameGameSnapshot } from '@/engine/frame/frameGameSnapshot';
 import type { PlayerMovementDeps } from '@/engine/player/playerFrameTypes';
 
@@ -116,35 +116,31 @@ export function preparePlayerFrame(
   if (deps.coyoteTimerRef.current > 0) deps.coyoteTimerRef.current -= dt;
 
   const currentMode = game.gamePhase;
-  const showStoryOverlay = game.showStoryOverlay;
-  const isLocked =
-    game.movementLocked ||
-    isInteractionLocked();
+  const interactionState = getInteractionState();
+  const interactionLocked = isInteractionLocked();
+  const lockContract = addPlayerMovementLockReasons(
+    game.movementLock,
+    interactionLocked ? ['interaction_lock'] : [],
+    { interactionState },
+  );
+  const isLocked = lockContract.locked;
 
   scratch.isLocked = isLocked;
+  scratch.lockContract = lockContract;
   scratch.currentMode = currentMode;
 
-  if (isLocked && !deps.prevLocomotionLockedRef.current) {
+  if (lockContract.shouldResetInputOnEnter && !deps.prevLocomotionLockedRef.current) {
     vel.set(0, 0, 0);
     resetKeyboardInputState();
     clearSharedVirtualControls();
   }
   deps.prevLocomotionLockedRef.current = isLocked;
 
-  const interactionState = getInteractionState();
-  const inExpectedLongInteractionPhase =
-    interactionState === InteractionState.Approach ||
-    interactionState === InteractionState.Cutscene;
   // MEDIUM-2 (audit-4 follow-up): suppress the 2s stuck-lock recovery when a
   // diegetic (in-world) narrative panel is open. Diegetic panels don't set
   // showStoryOverlay, so without this guard the watchdog would force-emit
   // interaction:end after 2s and silently break in-world dialogues.
-  const shouldWatchStuckLock =
-    isInteractionLocked() &&
-    currentMode === 'exploration' &&
-    !showStoryOverlay &&
-    !game.diegeticNarrative &&
-    !inExpectedLongInteractionPhase;
+  const shouldWatchStuckLock = currentMode === 'exploration' && lockContract.shouldWatchStuckInteraction;
 
   if (shouldWatchStuckLock) {
     deps.stuckLockTimerRef.current += dt;

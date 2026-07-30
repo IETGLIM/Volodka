@@ -9,6 +9,7 @@ import type { VirtualHoldTimes } from '@/engine/VirtualInputHold';
 import type { getSceneConfig, getExplorationMovementTuning } from '@/config/scenes';
 import type { GroundProbeRapier, GroundProbeWorld } from '@/engine/physics/groundProbe';
 import type { GroundProbeCacheState } from '@/engine/physics/groundProbeCache';
+import type { PlayerMovementLockContract } from '@/engine/player/playerMovementContract';
 
 /** Per-frame scratch shared across sequential player tick stages. */
 export interface PlayerFrameScratch {
@@ -19,6 +20,7 @@ export interface PlayerFrameScratch {
   vel: THREE.Vector3;
   floorY: number;
   isLocked: boolean;
+  lockContract: PlayerMovementLockContract;
   currentMode: string;
   wasGrounded: boolean;
   isMoving: boolean;
