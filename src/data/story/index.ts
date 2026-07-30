@@ -9,11 +9,10 @@ if (import.meta.env?.DEV) {
     ({ buildStoryNodeValidationRegistry }) => {
       void import('@/shared/validation/storyNodeValidation').then(
         ({ validateStoryNodeGraph, formatStoryNodeValidationErrors }) => {
-          const coreNodeIds = Object.keys(STORY_NODES).filter((id) => !id.includes('_exp_'));
           const errors = formatStoryNodeValidationErrors(
             validateStoryNodeGraph(
               STORY_NODES,
-              buildStoryNodeValidationRegistry(coreNodeIds),
+              buildStoryNodeValidationRegistry(Object.keys(STORY_NODES)),
             ),
           );
           // Room examination nodes may reference expansion fragments still being authored.

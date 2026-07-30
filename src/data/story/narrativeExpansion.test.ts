@@ -64,11 +64,10 @@ describe('AAA narrative expansion', () => {
   });
 
   it('story graph has no broken choice links (core nodes only)', () => {
-    // Expanded nodes (_exp_*) may reference future content not yet catalogued.
-    const coreNodeIds = Object.keys(STORY_NODES).filter((id) => !id.includes('_exp_'));
+    // All registered nodes are valid link targets; _exp_ / examine_* paths may still reference WIP content.
     const errors = validateStoryNodes(
       STORY_NODES,
-      buildStoryNodeValidationRegistry(coreNodeIds),
+      buildStoryNodeValidationRegistry(Object.keys(STORY_NODES)),
     );
     // Filter out errors from _exp_ and examine_* paths (future content gaps)
     const coreErrors = errors.filter((e) => !e.includes('_exp_') && !e.includes('examine_'));

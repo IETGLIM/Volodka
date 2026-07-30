@@ -60,11 +60,10 @@ describe('storyNodeValidation', () => {
   });
 
   it('validates production story graph without errors (core nodes only)', () => {
-    // Expanded nodes (_exp_*) and room examination nodes reference future content.
-    const coreNodeIds = Object.keys(STORY_NODES).filter((id) => !id.includes('_exp_'));
+    // All registered nodes are valid link targets; _exp_ / examine_* paths may still reference WIP content.
     const errors = validateStoryNodeGraph(
       STORY_NODES,
-      buildStoryNodeValidationRegistry(coreNodeIds),
+      buildStoryNodeValidationRegistry(Object.keys(STORY_NODES)),
     );
     // Filter _exp_ paths and room-examination content gaps (examine_*)
     const coreErrors = errors.filter((e) => !e.path.includes('_exp_') && !e.path.startsWith('story:examine_'));
