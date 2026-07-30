@@ -47,14 +47,26 @@ describe('physicsSceneMountOrder', () => {
   });
 
   it('documents extracted mount wrappers for Stage 11+ decomposition', () => {
+    expect(PHYSICS_SCENE_MOUNT_WRAPPERS.PhysicsScenePlayerMounts).toBe('colliders_and_player');
+    expect(PHYSICS_SCENE_MOUNT_WRAPPERS.PhysicsSceneCameraMounts).toBe('camera_and_hands');
     expect(PHYSICS_SCENE_MOUNT_WRAPPERS.PhysicsSceneWorldDressingMounts).toBe('world_dressing');
     expect(PHYSICS_SCENE_MOUNT_WRAPPERS.PhysicsSceneNpcMounts).toBe('npc_and_ambient');
     expect(PHYSICS_SCENE_MOUNT_WRAPPERS.PhysicsSceneCinematicMounts).toBe('cinematic_and_triggers');
     expect(PHYSICS_SCENE_MOUNT_WRAPPERS.PhysicsSceneProximityQuestMounts).toBe('proximity_and_quests');
+    expect(PHYSICS_SCENE_SECTION_MOUNTS.colliders_and_player[0]).toBe('PhysicsScenePlayerMounts');
+    expect(PHYSICS_SCENE_SECTION_MOUNTS.camera_and_hands[0]).toBe('PhysicsSceneCameraMounts');
     expect(PHYSICS_SCENE_SECTION_MOUNTS.world_dressing[0]).toBe('PhysicsSceneWorldDressingMounts');
     expect(PHYSICS_SCENE_SECTION_MOUNTS.npc_and_ambient[0]).toBe('PhysicsSceneNpcMounts');
     expect(PHYSICS_SCENE_SECTION_MOUNTS.cinematic_and_triggers[0]).toBe('PhysicsSceneCinematicMounts');
     expect(PHYSICS_SCENE_SECTION_MOUNTS.proximity_and_quests[0]).toBe('PhysicsSceneProximityQuestMounts');
+  });
+
+  it('keeps player mounts before camera mounts before world dressing', () => {
+    const playerIdx = PHYSICS_SCENE_MOUNT_SECTIONS.indexOf('colliders_and_player');
+    const cameraIdx = PHYSICS_SCENE_MOUNT_SECTIONS.indexOf('camera_and_hands');
+    const dressingIdx = PHYSICS_SCENE_MOUNT_SECTIONS.indexOf('world_dressing');
+    expect(playerIdx).toBeLessThan(cameraIdx);
+    expect(cameraIdx).toBeLessThan(dressingIdx);
   });
 
   it('keeps world dressing before npc mounts and proximity after interaction bridges', () => {

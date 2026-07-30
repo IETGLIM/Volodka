@@ -59,6 +59,8 @@ export const PHYSICS_SCENE_MOUNT_INVARIANTS: ReadonlyArray<{
  * {@link PHYSICS_SCENE_SECTION_MOUNTS}. Order inside a wrapper matches JSX.
  */
 export const PHYSICS_SCENE_MOUNT_WRAPPERS = {
+  PhysicsScenePlayerMounts: 'colliders_and_player',
+  PhysicsSceneCameraMounts: 'camera_and_hands',
   PhysicsSceneWorldDressingMounts: 'world_dressing',
   PhysicsSceneNpcMounts: 'npc_and_ambient',
   PhysicsSceneCinematicMounts: 'cinematic_and_triggers',
@@ -69,8 +71,13 @@ export const PHYSICS_SCENE_MOUNT_WRAPPERS = {
 
 /** Individual mount ids within each section (for regression tests). */
 export const PHYSICS_SCENE_SECTION_MOUNTS: Record<PhysicsSceneMountSection, readonly string[]> = {
-  colliders_and_player: ['SceneColliderSelector', 'EnvironmentalAnimator', 'PhysicsPlayer'],
-  camera_and_hands: ['FollowCamera', 'FirstPersonHands'],
+  colliders_and_player: [
+    'PhysicsScenePlayerMounts',
+    'SceneColliderSelector',
+    'EnvironmentalAnimator',
+    'PhysicsPlayer',
+  ],
+  camera_and_hands: ['PhysicsSceneCameraMounts', 'FollowCamera', 'FirstPersonHands'],
   world_dressing: [
     'PhysicsSceneWorldDressingMounts',
     'TriggerZoneProps',

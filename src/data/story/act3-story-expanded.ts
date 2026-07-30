@@ -1771,4 +1771,31 @@ export const ACT3_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
       },
     ],
   },
+
+  /* ══════════════════════════════════════════════════════════════════════════
+     Act 3 hub beat — office server room closes café→office relay leg
+     ══════════════════════════════════════════════════════════════════════════ */
+  act3_exp_office_relay_ack: {
+    id: 'act3_exp_office_relay_ack',
+    text: [
+      'Коллега не отрывается от терминала, но монитор мигает — не ошибкой, а ритмом. На клавиатуре лежит конверт из кафе, тот самый, что бариста когда-то передавал через сеть. Внутри — одна строка: «777 дошла».',
+      '',
+      '«Серверная слышит то, что Гильдия не логирует,» — говорит он тихо. «Кафе передало. Библиотека хранит. Пирс начал. Мы — последний узел, пока офис не стёрли в архив.»',
+    ].join('\n'),
+    speaker: 'office_colleague',
+    sceneId: 'office_day',
+    contextNote: 'После café relay коллега подтверждает hub-mesh: café → office server room.',
+    choices: [
+      {
+        text: 'Запомнить — сеть замкнула офис',
+        next: 'office_explore_mode',
+        effects: [
+          { type: 'setFlag', flag: 'act3_office_relay_ack_done', flagValue: true },
+          { type: 'discoverLore', loreId: 'lore_hub_relay_network' },
+          { type: 'npcChange', npcId: 'office_colleague', npcChange: { relation: 5 } },
+          { type: 'addXp', value: 25 },
+        ],
+      },
+    ],
+  },
 };
