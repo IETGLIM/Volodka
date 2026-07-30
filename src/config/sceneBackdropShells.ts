@@ -21,8 +21,8 @@ export const SCENE_BACKDROP_SHELLS: Partial<Record<SceneId, SceneBackdropShellPl
   },
   river_pier: {
     url: INTERIOR_SHELL_MODELS.pier,
-    position: [0, 0, -4],
-    scale: 3.0,
+    position: [0, 0, -5.5],
+    scale: 3.2,
     rotationY: Math.PI,
   },
   chk_forest_zorge: {

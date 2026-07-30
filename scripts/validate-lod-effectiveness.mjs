@@ -104,12 +104,8 @@ for (const npc of npcNames) {
   });
 }
 
-// Environment
-checkAsset('env_cafe_props', {
-  lod0: path.join(PUBLIC, 'environments/cafe/props_lod0.glb'),
-  lod1: path.join(PUBLIC, 'environments/cafe/props_lod1.glb'),
-  lod2: path.join(PUBLIC, 'environments/cafe/props_lod2.glb'),
-});
+// Environment — single-LOD interim café props (Khronos BrainStem; fake LOD1/LOD2
+// on disk are heavier than LOD0 — disabled in assetManifest like veg_tree_pine).
 
 // Vegetation — single-LOD interim pine until AI3DGen Pro chain replaces Khronos stubs.
 // (pine_lod1/lod2 on disk are same-size copies — not used in manifest.)

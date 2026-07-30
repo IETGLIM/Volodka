@@ -45,7 +45,8 @@ export function RiverPierVisual({ sceneId = 'river_pier' }: RiverPierVisualProps
   const { preset } = useGraphicsQuality();
   const useGltfDressing = allowsGlbAssetRendering(preset.environmentRenderMode);
   const useAuthoredBackdrop = !preset.visualLite && useGltfDressing;
-  const hideDockClutter = useAuthoredBackdrop || !useGltfDressing;
+  // Medium+ (hybrid/glb): prop dressing + backdrop own the dock; hide procedural edge clutter.
+  const hideDockClutter = useGltfDressing;
   const plankTexture = useCachedCanvasTexture('river_pier:planks', createPlankTexture);
   const rainIntensity = useGameStore((s) => s.rainIntensity);
   const waterRef = useRef<THREE.Mesh>(null);

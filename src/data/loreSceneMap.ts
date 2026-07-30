@@ -79,6 +79,7 @@ export const LORE_SCENE_MAP: Partial<Record<SceneId, string[]>> = {
   chk_forest_zorge: [
     'lore_tolpa_chk',          // TOLPA / Black Room discovered at campfire
     'lore_chk_moonlight',      // Moonlight on the forest clearing
+    'lore_chk_port_wine_777',  // Port wine ritual on the clearing
   ],
   library_day: [
     'lore_forbidden_books',    // Forbidden books discovered in library
@@ -104,6 +105,8 @@ export const LORE_SCENE_MAP: Partial<Record<SceneId, string[]>> = {
   river_pier: [
     'lore_pier_three',         // Pier history discovered by visiting
     'lore_watchman_trofim',    // Trofim's watchman history at the pier
+    'lore_river_remembers',    // River phantom signals / factory hum echo
+    'lore_pier_string_lights', // Solar string lights failover hangout
   ],
   sleep_dream: [
     'lore_dreamworld',         // Dream world rules discovered in dream

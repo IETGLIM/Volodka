@@ -239,6 +239,15 @@ export const PROP_MODEL_REGISTRY: Record<string, PropModelDefinition> = {
     source: 'Poly Haven — street lamp 01',
     sourceUrl: POLYHAVEN_URL,
   },
+  polyhaven_street_lamp_alt: {
+    id: 'polyhaven_street_lamp_alt',
+    url: POLYHAVEN_MODELS.streetLampAlt,
+    targetSizeM: [0.72, 3.4, 0.72],
+    fitAxis: 'height',
+    license: 'CC0',
+    source: 'Poly Haven — street lamp 02',
+    sourceUrl: POLYHAVEN_URL,
+  },
   polyhaven_fire_escape: {
     id: 'polyhaven_fire_escape',
     url: POLYHAVEN_MODELS.fireEscape,

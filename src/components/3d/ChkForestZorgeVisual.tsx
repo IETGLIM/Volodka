@@ -300,7 +300,7 @@ function ForestTree({
 }
 
 /* ─── Dense instanced tree belt around the clearing ───
- * 3 draw calls total (trunks + two canopy layers) for ~46 trees (full) or ~18 (sparse).
+ * 3 draw calls total (trunks + two canopy layers) for ~46 trees (full) or ~24 (sparse).
  * A gap is left at the north path entrance (exit to park). */
 function InstancedTreeBelt({ density = 'full' }: { density?: 'full' | 'sparse' }) {
   const trunkRef = useRef<THREE.InstancedMesh>(null);
@@ -310,9 +310,9 @@ function InstancedTreeBelt({ density = 'full' }: { density?: 'full' | 'sparse' }
   const placements = useMemo(() => {
     const rng = seededRandom(density === 'sparse' ? 888002 : 777001);
     const out: Array<{ x: number; z: number; s: number; rot: number; tint: number }> = [];
-    const COUNT = density === 'sparse' ? 18 : 46;
-    const radiusMin = density === 'sparse' ? 14.0 : 15.5;
-    const radiusSpan = density === 'sparse' ? 2.5 : 3.5;
+    const COUNT = density === 'sparse' ? 24 : 46;
+    const radiusMin = density === 'sparse' ? 13.5 : 15.5;
+    const radiusSpan = density === 'sparse' ? 3.0 : 3.5;
     for (let i = 0; i < COUNT; i++) {
       const angle = (i / COUNT) * Math.PI * 2 + rng() * 0.12;
       const radius = radiusMin + rng() * radiusSpan;

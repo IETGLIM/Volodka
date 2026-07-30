@@ -128,11 +128,9 @@ export const ASSET_MANIFEST: Record<string, GltfAssetDefinition> = {
   env_cafe_props: {
     id: 'env_cafe_props',
     category: 'environment',
-    lods: [
-      { url: `${MODELS}/environments/cafe/props_lod0.glb`, maxDistance: 0 },
-      { url: `${MODELS}/environments/cafe/props_lod1.glb`, maxDistance: 20 },
-      { url: `${MODELS}/environments/cafe/props_lod2.glb`, maxDistance: 40 },
-    ],
+    // Khronos interim café kit — LOD1/LOD2 on disk are heavier than LOD0 (158%/94%
+    // file size) despite vertex reduction; single LOD until AI3DGen Pro chain lands.
+    lods: [{ url: `${MODELS}/environments/cafe/props_lod0.glb`, maxDistance: 0 }],
     variants: {
       none: `${MODELS}/environments/cafe/props_lod0.glb`,
       draco: `${MODELS}/environments/cafe/props.draco.glb`,

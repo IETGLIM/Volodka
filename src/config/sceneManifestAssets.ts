@@ -28,6 +28,10 @@ export const SCENE_MANIFEST_ASSETS: Partial<Record<SceneId, readonly SceneManife
     { assetId: 'veg_tree_pine', position: [13, 0, 1], scale: 2.05, rotation: [0, -0.7, 0] },
     { assetId: 'veg_tree_pine', position: [-9, 0, 11], scale: 1.85, rotation: [0, 0.55, 0] },
     { assetId: 'veg_tree_pine', position: [8, 0, -13], scale: 2.25, rotation: [0, -0.35, 0] },
+    { assetId: 'veg_tree_pine', position: [-11, 0, -14], scale: 2.0, rotation: [0, 0.62, 0] },
+    { assetId: 'veg_tree_pine', position: [12, 0, 12], scale: 1.95, rotation: [0, -0.48, 0] },
+    { assetId: 'veg_tree_pine', position: [-15, 0, 9], scale: 2.1, rotation: [0, 0.28, 0] },
+    { assetId: 'veg_tree_pine', position: [6, 0, 13], scale: 2.05, rotation: [0, -0.18, 0] },
   ],
 };
 
