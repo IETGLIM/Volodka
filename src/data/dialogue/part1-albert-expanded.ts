@@ -649,6 +649,7 @@ export const ALBERT_EXPANDED_DIALOGUE: Record<string, DialogueNode> = {
           { type: 'addSkill', skill: 'writing', value: 1 },
           { type: 'npcChange', npcId: 'albert', npcChange: { relation: 15 } },
           { type: 'setFlag', flag: 'albert_archive7_chip', flagValue: true },
+          { type: 'setFlag', flag: 'act1_albert_alliance_done', flagValue: true },
           { type: 'triggerQuest', questId: 'act2_archive_seven' },
           { type: 'discoverLore', loreId: 'lore_archive_seven_truth' },
           { type: 'collectPoem', poemId: 'poem_12' },
@@ -1062,6 +1063,7 @@ export const ALBERT_EXPANDED_DIALOGUE: Record<string, DialogueNode> = {
           { type: 'npcChange', npcId: 'albert', npcChange: { relation: 8 } },
           { type: 'setFlag', flag: 'albert_deep_completed', flagValue: true },
           { type: 'setFlag', flag: 'albert_relation_warm', flagValue: true },
+          { type: 'setFlag', flag: 'act1_albert_alliance_done', flagValue: true },
         ],
       },
       {

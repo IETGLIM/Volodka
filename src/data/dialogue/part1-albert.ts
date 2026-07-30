@@ -64,6 +64,21 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
         ],
       },
       {
+        text: 'Нужен ночной обход — скамейка, пирс, костёр?',
+        next: null,
+        condition: { flag: 'act1_albert_alliance_done', missingFlag: 'night_city_watch_reported' },
+        effects: [
+          { type: 'triggerQuest', questId: 'act2_night_city_watch' },
+          { type: 'visitStoryNode', nodeId: 'act2_night_city_watch_start' },
+        ],
+      },
+      {
+        text: 'Обход сделан. Везде «1».',
+        next: null,
+        condition: { flag: 'act2_night_city_watch_active', missingFlag: 'night_city_watch_reported' },
+        effects: [{ type: 'visitStoryNode', nodeId: 'act2_night_city_watch_report' }],
+      },
+      {
         text: 'Гильдия давит сильнее. Как сопротивляться словом?',
         next: 'albert_resistance',
         condition: { requiredAct: 3, minNpcRelation: 55 },
@@ -475,6 +490,15 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
         next: 'zarema_poetry',
         effects: [
           { type: 'addSkill', skill: 'empathy', value: 1 },
+        ],
+      },
+      {
+        text: 'Нужно донести пакет до ЧК — ты доверяешь?',
+        next: null,
+        condition: { requiredAct: 2, missingFlag: 'street_samizdat_received' },
+        effects: [
+          { type: 'triggerQuest', questId: 'act2_street_chk_samizdat' },
+          { type: 'visitStoryNode', nodeId: 'act2_street_chk_samizdat_start' },
         ],
       },
     ],
@@ -1335,6 +1359,20 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
         text: 'Расскажи о своей «секретной жизни».',
         next: 'barista_secret_life',
         condition: { requiredAct: 3, flag: 'barista_special_hint', minKarma: 50 },
+      },
+      {
+        text: 'Нужно передать что-то в офис — без Slack?',
+        next: null,
+        condition: { requiredAct: 2, missingFlag: 'cafe_relay_envelope_taken' },
+        effects: [
+          { type: 'triggerQuest', questId: 'act2_cafe_office_relay' },
+          { type: 'visitStoryNode', nodeId: 'act2_cafe_office_relay_start' },
+        ],
+      },
+      {
+        text: 'Трофим дал частоту с пирса — ты её ждал?',
+        next: 'cafe_barista_frequency_match',
+        condition: { flag: 'pier_frequency_heard', missingFlag: 'pier_cafe_frequency_matched' },
       },
     ],
   },

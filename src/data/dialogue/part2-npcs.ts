@@ -78,6 +78,11 @@ export const DIALOGUE_PART2: Record<string, DialogueNode> = {
         next: 'dialogue_storm_wind_live',
         condition: { activeTTLFlag: 'storm_wind_active', collectedPoem: 'poem_5' },
       },
+      {
+        text: 'Бариста передал конверт. Это для тебя.',
+        next: 'office_colleague_relay_receive',
+        condition: { flag: 'cafe_relay_envelope_taken', missingFlag: 'cafe_relay_envelope_delivered' },
+      },
     ],
   },
 
@@ -910,6 +915,11 @@ export const DIALOGUE_PART2: Record<string, DialogueNode> = {
         ],
       },
       {
+        text: 'Как связаны кафе, офис и пирс?',
+        next: 'maria_hub_network',
+        condition: { requiredAct: 2, flag: 'network_contact' },
+      },
+      {
         text: 'Мне пора.',
         next: null,
       },
@@ -944,6 +954,73 @@ export const DIALOGUE_PART2: Record<string, DialogueNode> = {
       {
         text: 'Увидимся, Дмитрий.',
         next: null,
+      },
+    ],
+  },
+
+  office_colleague_relay_receive: {
+    id: 'office_colleague_relay_receive',
+    speaker: 'Коллега',
+    text: '*хватает конверт* Три минуты, пока камера моргает. Не спрашивай, откуда я знаю про бариста. Мы все — relay, просто кто-то ближе к кофе, кто-то — к серверной.',
+    choices: [
+      {
+        text: 'Передать',
+        next: null,
+        effects: [{ type: 'visitStoryNode', nodeId: 'act2_cafe_office_relay_deliver' }],
+      },
+    ],
+  },
+
+  cafe_barista_frequency_match: {
+    id: 'cafe_barista_frequency_match',
+    speaker: 'Бариста',
+    text: 'Трофим снова прав. Цифры на стене — те же. Подожди... jukebox замолк. Секунда тишины — и ритм. Это не баг. Это ответ города.',
+    choices: [
+      {
+        text: 'Слушать',
+        next: null,
+        effects: [{ type: 'visitStoryNode', nodeId: 'act2_pier_cafe_frequency_match' }],
+      },
+    ],
+  },
+
+  maria_hub_network: {
+    id: 'maria_hub_network',
+    speaker: 'Виктория',
+    speakerId: 'maria',
+    text: 'Сеть — не приложение. Это маршрут: кафе, улица, офис, пирс, костёр. Ты уже ходишь по нему ногами. Гильдия видит hub. Мы — mesh. Каждый раз, когда ты несёшь слово, а не файл — mesh крепнет.',
+    choices: [
+      {
+        text: 'Понял. Продолжаю.',
+        next: null,
+        effects: [
+          { type: 'discoverLore', loreId: 'lore_hub_relay_network' },
+          { type: 'npcChange', npcId: 'maria', npcChange: { relation: 4 } },
+        ],
+      },
+      {
+        text: 'Архив-7 — правда в чипе?',
+        next: null,
+        condition: { flag: 'albert_archive7_chip' },
+        effects: [
+          { type: 'visitStoryNode', nodeId: 'act2_archive_seven_resolve' },
+          { type: 'discoverLore', loreId: 'lore_archive_seven_truth' },
+        ],
+      },
+    ],
+  },
+
+  chk_based_samizdat_handoff: {
+    id: 'chk_based_samizdat_handoff',
+    speaker: 'Басед',
+    speakerId: 'chk_based',
+    text: 'Зарема прислала? У костра место для бумаги всегда найдётся. Гильдия VPN любит — мы огонь.',
+    choices: [
+      {
+        text: 'Передать пакет',
+        next: null,
+        condition: { flag: 'street_samizdat_received', missingFlag: 'street_samizdat_delivered' },
+        effects: [{ type: 'visitStoryNode', nodeId: 'act2_street_chk_samizdat_deliver' }],
       },
     ],
   },

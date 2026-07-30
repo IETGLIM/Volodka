@@ -22,7 +22,8 @@ export type StorySatellitePackId =
   | 'factory'
   | 'resistance'
   | 'epilogue'
-  | 'phase5Quests';
+  | 'phase5Quests'
+  | 'expansionQuests';
 export type DialoguePackId =
   | 'part1'
   | 'part1AlbertExpanded'
@@ -96,6 +97,7 @@ const storySatelliteLoaders: Record<
   resistance: () => import('../story/resistanceStory').then((m) => m.STORY_NODES_RESISTANCE),
   epilogue: () => import('../story/epilogueStory').then((m) => m.STORY_NODES_EPILOGUE),
   phase5Quests: () => import('../story/phase5QuestStory').then((m) => m.STORY_NODES_PHASE5_QUESTS),
+  expansionQuests: () => import('../story/expansionQuestStory').then((m) => m.STORY_NODES_EXPANSION_QUESTS),
 };
 
 /** Satellites loaded automatically when their parent act pack loads. */
@@ -113,6 +115,7 @@ export const STANDALONE_STORY_SATELLITE_ORDER: readonly StorySatellitePackId[] =
   'resistance',
   'epilogue',
   'phase5Quests',
+  'expansionQuests',
 ] as const;
 
 const dialogueLoaders: Record<DialoguePackId, () => Promise<Record<string, DialogueNode>>> = {

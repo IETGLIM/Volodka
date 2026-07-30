@@ -11,6 +11,7 @@ import { QUESTS_ACT7 } from './act7';
 import { QUESTS_SIDE } from './sideQuests';
 import { QUESTS_PHASE5_SIDE } from './phase5SideQuests';
 import { EXPANSION_QUEST_STUBS } from '../expansion/expansionQuestStubs';
+import { EXPANSION_HUB_QUESTS } from '../expansion/expansionHubQuests';
 
 export const QUEST_DEFINITIONS: QuestDefinition[] = [
   ...QUESTS_ACT1,
@@ -24,5 +25,6 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
   ...QUESTS_SIDE,
   ...QUESTS_PHASE5_SIDE,
   ...EXPANSION_QUEST_STUBS,
+  ...EXPANSION_HUB_QUESTS,
   ...CHK_QUESTS,
 ];

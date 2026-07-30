@@ -27,6 +27,11 @@ export const NPC_QUEST_BARKS: Record<string, NpcQuestBarkEntry[]> = {
       text: 'Хранилище… тише. Старшие ходят туда по ночам. Я дам намёк, если камеры моргнут.',
     },
     {
+      questId: 'act2_cafe_office_relay',
+      objectiveId: 'deliver_office_envelope',
+      text: 'Конверт от бариста? Быстро — камера моргнула.',
+    },
+    {
       questId: 'vault_backup_trial',
       objectiveId: 'learn_about_vault',
       text: 'Хранилище? Тише. Подойди к станциям — расскажу, когда камеры моргнут.',
@@ -60,6 +65,20 @@ export const NPC_QUEST_BARKS: Record<string, NpcQuestBarkEntry[]> = {
       objectiveId: 'talk_albert_lesson',
       text: 'Код и стих — один язык. Покажи, что видишь оба.',
     },
+    {
+      questId: 'act1_albert_alliance',
+      objectiveId: 'deep_talk_albert',
+      text: 'Мы год пьём этот кофе. Пора поговорить не о тикетах — о нас.',
+    },
+    {
+      questId: 'act2_night_city_watch',
+      text: 'Три кружка на салфетке — скамейка, пирс, костёр. Обойди и вернись.',
+    },
+    {
+      questId: 'act2_archive_seven',
+      objectiveId: 'find_archive_chip',
+      text: 'Чип — ключ. Следы — в подвале ЧК, на стене кафе, в логах серверной.',
+    },
   ],
   zarema: [
     {
@@ -70,6 +89,10 @@ export const NPC_QUEST_BARKS: Record<string, NpcQuestBarkEntry[]> = {
       questId: 'incident_scroll_4729',
       objectiveId: 'talk_alexander',
       text: 'Гильдия зовёт — но сначала выпей чаю. Голодный поэт код не взламывает.',
+    },
+    {
+      questId: 'act2_street_chk_samizdat',
+      text: 'Пакет для костра. Ногами — VPN гильдия любит.',
     },
   ],
   fisherman_trofim: [
@@ -96,6 +119,10 @@ export const NPC_QUEST_BARKS: Record<string, NpcQuestBarkEntry[]> = {
     {
       questId: 'machine_confession',
       text: 'Ключ от подвала — не пропуск. Это обещание слушать, а не ломать. «Заря-М» помнит, кто держал слово.',
+    },
+    {
+      questId: 'act2_pier_cafe_frequency',
+      text: 'Река гудит — запиши частоту. Бариста на стене ждёт те же цифры.',
     },
   ],
   maria: [
@@ -260,6 +287,15 @@ export const NPC_QUEST_BARKS: Record<string, NpcQuestBarkEntry[]> = {
       questId: 'night_city_call',
       objectiveId: 'feel_city_pulse',
       text: 'Улица сегодня громче. Скамейка или башня — город сам подскажет.',
+    },
+    {
+      questId: 'act2_cafe_office_relay',
+      text: 'Конверт для офиса. Только ногами — Slack читают.',
+    },
+    {
+      questId: 'act2_pier_cafe_frequency',
+      objectiveId: 'match_cafe_wall',
+      text: 'Трофим прислал частоту? Сравни со стеной — jukebox замолкнет ровно на секунду.',
     },
   ],
 };

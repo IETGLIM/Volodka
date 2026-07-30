@@ -88,4 +88,11 @@ export const EXPANSION_ITEM_STUBS: Record<string, QuestItemDef> = {
     category: 'quest',
     rarity: 'legendary',
   },
+  sealed_relay_envelope: {
+    id: 'sealed_relay_envelope',
+    name: 'Запечатанный конверт',
+    description: 'Без маркировки. Бариста сказал: только ногами, не через Slack.',
+    category: 'quest',
+    rarity: 'common',
+  },
 };

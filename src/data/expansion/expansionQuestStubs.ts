@@ -33,6 +33,7 @@ export const EXPANSION_QUEST_STUBS: QuestDefinition[] = [
       { type: 'npcChange', npcId: 'albert', npcChange: { relation: 10 } },
       { type: 'addXp', value: 60 },
     ],
+    linkedStoryNodeId: 'act1_albert_alliance_start',
     questGiverNpcId: 'albert',
   },
   {
@@ -66,6 +67,8 @@ export const EXPANSION_QUEST_STUBS: QuestDefinition[] = [
       { type: 'addSkill', skill: 'intuition', value: 2 },
       { type: 'addXp', value: 100 },
     ],
+    linkedStoryNodeId: 'act2_archive_seven_start',
+    linkedStoryNodeIds: ['act2_archive_seven_start', 'act2_archive_seven_resolve'],
     questGiverNpcId: 'albert',
   },
 ];

@@ -262,6 +262,11 @@ export const CHK_DIALOGUE_NODES: Record<string, DialogueNode> = {
         next: null,
         effects: [{ type: 'npcChange', npcId: 'chk_based', npcChange: { relation: 2 } }],
       },
+      {
+        text: 'Зарема прислала самиздат.',
+        next: 'chk_based_samizdat_handoff',
+        condition: { flag: 'street_samizdat_received', missingFlag: 'street_samizdat_delivered' },
+      },
     ],
   },
   chk_based_gift_wine: {

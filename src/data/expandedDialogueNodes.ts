@@ -767,6 +767,15 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
         next: 'trofim_thread_lore',
         condition: { flag: 'thread_lore_4729' },
       },
+      {
+        text: 'Река снова гудит на той частоте?',
+        next: null,
+        condition: { requiredAct: 2, missingFlag: 'pier_frequency_heard' },
+        effects: [
+          { type: 'triggerQuest', questId: 'act2_pier_cafe_frequency' },
+          { type: 'visitStoryNode', nodeId: 'act2_pier_cafe_frequency_start' },
+        ],
+      },
       { text: 'Пойду я.', next: null },
     ],
   },
