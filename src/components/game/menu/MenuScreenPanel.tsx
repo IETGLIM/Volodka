@@ -137,26 +137,28 @@ function MenuScreenPanelInner() {
       />
 
       <div className="relative z-10 flex min-h-[100dvh] w-full flex-col items-center justify-center p-4">
-        <MenuGlitchTitle text={MENU_TITLE} animate={fx.titleGlitch} parallax={fx.titleParallax} />
-        <MenuTypewriterSubtitle text={MENU_SUBTITLE} delay={d(1, visited)} enabled={contentMotion} />
+        <div className="cinematic-menu-brand-stage flex flex-col items-center px-4">
+          <MenuGlitchTitle text={MENU_TITLE} animate={fx.titleGlitch} parallax={fx.titleParallax} />
+          <MenuTypewriterSubtitle text={MENU_SUBTITLE} delay={d(1, visited)} enabled={contentMotion} />
 
-        <motion.p
-          initial={contentMotion ? { opacity: 0, y: 5 } : false}
-          animate={{ opacity: 0.7, y: 0 }}
-          transition={{ delay: d(1.8, visited), duration: 1.2 }}
-          className="mt-1 font-serif text-sm md:text-base tracking-[0.15em] text-slate-300/70"
-        >
-          {MENU_TAGLINE}
-        </motion.p>
+          <motion.p
+            initial={contentMotion ? { opacity: 0, y: 5 } : false}
+            animate={{ opacity: 0.68, y: 0 }}
+            transition={{ delay: d(1.8, visited), duration: 1.2 }}
+            className="mt-1 max-w-md text-center font-serif text-sm md:text-base tracking-[0.18em] text-stone-300/70"
+          >
+            {MENU_TAGLINE}
+          </motion.p>
 
-        <motion.p
-          initial={contentMotion ? { opacity: 0, y: 5 } : false}
-          animate={{ opacity: 0.6, y: 0 }}
-          transition={{ delay: d(2.5, visited), duration: 1.2 }}
-          className="mt-2 font-serif text-xs md:text-sm tracking-[0.2em] italic text-slate-400/60"
-        >
-          {MENU_POET_CREDIT}
-        </motion.p>
+          <motion.p
+            initial={contentMotion ? { opacity: 0, y: 5 } : false}
+            animate={{ opacity: 0.52, y: 0 }}
+            transition={{ delay: d(2.5, visited), duration: 1.2 }}
+            className="mt-2 font-serif text-xs md:text-sm tracking-[0.2em] italic text-stone-400/55"
+          >
+            {MENU_POET_CREDIT}
+          </motion.p>
+        </div>
 
         <motion.div
           initial={contentMotion ? { opacity: 0, y: 8 } : false}
@@ -177,7 +179,7 @@ function MenuScreenPanelInner() {
           transition={{ duration: 0.6, delay: d(1.8, visited) }}
           className="mt-8 w-full max-w-xs"
         >
-          <div className="relative overflow-hidden cinematic-menu-panel">
+          <div className="relative overflow-hidden cinematic-menu-panel cinematic-menu-primary-nav">
             <MenuNavigationList
               items={menu.menuItems}
               selectedIndex={menu.selectedIndex}

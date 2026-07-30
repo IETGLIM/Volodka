@@ -77,8 +77,14 @@ const DEFAULT_INDOOR_FILL: NonNullable<typeof INDOOR_FILL[string]> = {
 /** Scene-specific point lights rendered from scene config */
 function ScenePointLights() {
   const sceneId = useGameStore((s) => s.exploration.currentSceneId);
+  const { preset } = useGraphicsQuality();
   const config = getSceneConfig(sceneId);
   const lights = config.lights ?? [];
+  const heroLocalShadowScene =
+    sceneId === 'volodka_room' ||
+    sceneId === 'street_night' ||
+    sceneId === 'cafe_evening' ||
+    sceneId === 'abandoned_factory';
 
   if (lights.length === 0) return null;
 
@@ -91,6 +97,12 @@ function ScenePointLights() {
           intensity={light.intensity * SCENE_VISIBILITY.pointLightScale}
           color={light.color}
           distance={light.distance}
+          decay={2}
+          castShadow={preset.shadows && heroLocalShadowScene && i < 2}
+          shadow-mapSize-width={preset.id === 'ultra' ? 512 : 256}
+          shadow-mapSize-height={preset.id === 'ultra' ? 512 : 256}
+          shadow-bias={SHADOW_BIAS}
+          shadow-normalBias={SHADOW_NORMAL_BIAS}
         />
       ))}
     </>
@@ -221,6 +233,7 @@ export function ExplorationLighting() {
           intensity={indoorFill.intensity}
           color={indoorFill.color}
           distance={indoorFill.distance}
+          decay={2}
         />
       )}
 
@@ -253,25 +266,27 @@ interface AccentLight {
   distance: number;
   /** If true, this light animates (color cycle or flicker) */
   animated?: 'neon_cycle' | 'candle_flicker' | 'cold_pulse';
+  /** Quality-gated local shadow for hero practicals only. */
+  shadowCaster?: boolean;
 }
 
 const SCENE_ACCENT_LIGHTS: Record<string, AccentLight[]> = {
   street_night: [
-    { position: [-6, 3, -2], color: '#ff22aa', intensity: 2.5, distance: 10, animated: 'neon_cycle' },
-    { position: [5, 3, -3], color: '#22ffdd', intensity: 2.2, distance: 9, animated: 'neon_cycle' },
-    { position: [2, 2.5, 1], color: '#ffaa22', intensity: 1.8, distance: 8 },
-    { position: [-3, 3.5, -5], color: '#aa44ff', intensity: 1.5, distance: 12, animated: 'neon_cycle' },
-    { position: [7, 2.8, 0], color: '#4488ff', intensity: 1.8, distance: 8 },
-    { position: [-8, 3, 5], color: '#ff4488', intensity: 2.0, distance: 10, animated: 'neon_cycle' },
+    { position: [-6, 3, -2], color: '#d88a9c', intensity: 0.95, distance: 10, animated: 'neon_cycle' },
+    { position: [5, 3, -3], color: '#8fb8b8', intensity: 0.9, distance: 9, animated: 'neon_cycle' },
+    { position: [2, 2.5, 1], color: '#ffaa66', intensity: 1.15, distance: 8, shadowCaster: true },
+    { position: [-3, 3.5, -5], color: '#9b86bc', intensity: 0.72, distance: 12, animated: 'neon_cycle' },
+    { position: [7, 2.8, 0], color: '#8da8d8', intensity: 0.95, distance: 8, shadowCaster: true },
+    { position: [-8, 3, 5], color: '#cf8f96', intensity: 0.82, distance: 10, animated: 'neon_cycle' },
   ],
   home_evening: [
     { position: [0.5, 1.8, -0.5], color: '#ff9944', intensity: 2.0, distance: 8, animated: 'candle_flicker' },
     { position: [-1, 1.5, 1], color: '#ffbb66', intensity: 1.2, distance: 6, animated: 'candle_flicker' },
   ],
   cafe_evening: [
-    { position: [-3, 2.5, -1], color: '#3366ee', intensity: 1.8, distance: 9, animated: 'cold_pulse' },
-    { position: [2, 2.2, 2], color: '#2244aa', intensity: 1.4, distance: 8, animated: 'cold_pulse' },
-    { position: [0, 1.5, -3], color: '#ff8844', intensity: 1.0, distance: 6 },
+    { position: [-3, 2.5, -1], color: '#6688cc', intensity: 1.15, distance: 9, animated: 'cold_pulse' },
+    { position: [2, 2.2, 2], color: '#5f74aa', intensity: 0.95, distance: 8, animated: 'cold_pulse' },
+    { position: [0, 1.5, -3], color: '#ff9966', intensity: 1.0, distance: 6, shadowCaster: true },
   ],
   volodka_corridor: [
     { position: [0, 2.5, 0], color: '#ccaa55', intensity: 1.6, distance: 10, animated: 'candle_flicker' },
@@ -304,7 +319,7 @@ const SCENE_ACCENT_LIGHTS: Record<string, AccentLight[]> = {
   ],
   volodka_room: [
     { position: [1.2, 1.4, -2.5], color: '#66ffaa', intensity: 1.4, distance: 6, animated: 'cold_pulse' },  // monitor glow (data flow)
-    { position: [-0.5, 1.8, 0.5], color: '#ffcc88', intensity: 1.0, distance: 5, animated: 'candle_flicker' }, // bedside lamp
+    { position: [-0.5, 1.8, 0.5], color: '#ffcc88', intensity: 1.0, distance: 5, animated: 'candle_flicker', shadowCaster: true }, // bedside lamp
     { position: [0, 0.3, -2.5], color: '#ff9944', intensity: 0.35, distance: 3 },     // under-desk warm glow
     { position: [2.3, 0.2, 1.0], color: '#334488', intensity: 0.3, distance: 4 },    // floor-level cold bounce from window wall
   ],
@@ -363,6 +378,7 @@ const SCENE_ACCENT_LIGHTS: Record<string, AccentLight[]> = {
 };
 
 function SceneAccentLights({ sceneId, isMobile }: { sceneId: string; isMobile: boolean }) {
+  const { preset } = useGraphicsQuality();
   const lights = SCENE_ACCENT_LIGHTS[sceneId];
   if (!lights) return null;
 
@@ -372,12 +388,14 @@ function SceneAccentLights({ sceneId, isMobile }: { sceneId: string; isMobile: b
   return (
     <>
       {effectiveLights.map((light, i) => {
+        const castShadow = preset.shadows && !isMobile && light.shadowCaster === true;
         if (light.animated) {
           return (
             <AnimatedAccentLight
               key={`accent-${sceneId}-${i}`}
               config={light}
               seed={i * 997}
+              castShadow={castShadow}
             />
           );
         }
@@ -388,6 +406,12 @@ function SceneAccentLights({ sceneId, isMobile }: { sceneId: string; isMobile: b
             intensity={light.intensity}
             color={light.color}
             distance={light.distance}
+            decay={2}
+            castShadow={castShadow}
+            shadow-mapSize-width={preset.id === 'ultra' ? 512 : 256}
+            shadow-mapSize-height={preset.id === 'ultra' ? 512 : 256}
+            shadow-bias={SHADOW_BIAS}
+            shadow-normalBias={SHADOW_NORMAL_BIAS}
           />
         );
       })}
@@ -396,7 +420,7 @@ function SceneAccentLights({ sceneId, isMobile }: { sceneId: string; isMobile: b
 }
 
 /** Animated accent light with neon color cycling, candle flicker, or cold pulse */
-function AnimatedAccentLight({ config, seed }: { config: AccentLight; seed: number }) {
+function AnimatedAccentLight({ config, seed, castShadow }: { config: AccentLight; seed: number; castShadow: boolean }) {
   const lightRef = useRef<THREE.PointLight>(null);
   const timeRef = useRef(0);
   const baseColor = useMemo(() => new THREE.Color(config.color), [config.color]);
@@ -461,6 +485,12 @@ function AnimatedAccentLight({ config, seed }: { config: AccentLight; seed: numb
       intensity={config.intensity}
       color={config.color}
       distance={config.distance}
+      decay={2}
+      castShadow={castShadow}
+      shadow-mapSize-width={512}
+      shadow-mapSize-height={512}
+      shadow-bias={SHADOW_BIAS}
+      shadow-normalBias={SHADOW_NORMAL_BIAS}
     />
   );
 }

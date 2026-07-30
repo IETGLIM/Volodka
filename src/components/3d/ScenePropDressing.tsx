@@ -42,6 +42,15 @@ function buildPropClone(source: THREE.Object3D): THREE.Object3D {
     if (node instanceof THREE.Mesh) {
       node.castShadow = true;
       node.receiveShadow = true;
+      const materials = Array.isArray(node.material) ? node.material : [node.material];
+      for (const material of materials) {
+        if (!material || !('isMeshStandardMaterial' in material)) continue;
+        const standard = material as THREE.MeshStandardMaterial;
+        standard.envMapIntensity = 0.72;
+        standard.roughness = Math.min(1, Math.max(0.5, standard.roughness || 0.72));
+        standard.metalness = Math.min(0.82, Math.max(0, standard.metalness || 0));
+        standard.needsUpdate = true;
+      }
     }
   });
   return root;

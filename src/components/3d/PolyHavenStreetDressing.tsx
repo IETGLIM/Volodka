@@ -15,23 +15,59 @@ const FIRE_ESCAPES: Array<{ position: [number, number, number]; rotationY: numbe
   { position: [-10.0, 0, -15.2], rotationY: 0.12, scale: 1.2 },
   { position: [10.8, 0, -18.5], rotationY: Math.PI - 0.08, scale: 1.25 },
   { position: [-11.2, 0, -5.8], rotationY: 0.2, scale: 1.05 },
+  { position: [13.8, 0, 6.2], rotationY: -Math.PI / 2 - 0.04, scale: 0.95 },
+  { position: [-0.8, 0, -24.2], rotationY: 0.03, scale: 1.15 },
 ];
 
-function clonePreparedScene(source: THREE.Object3D, castShadow: boolean): THREE.Object3D {
+type GltfMaterialVariant = {
+  tint?: string;
+  envMapIntensity?: number;
+  roughnessFloor?: number;
+};
+
+const AUTHORED_STREET_FACADES: Array<{
+  position: [number, number, number];
+  rotationY: number;
+  scale: number;
+  variant: GltfMaterialVariant;
+}> = [
+  { position: [-12.4, 0, -16.0], rotationY: 0.06, scale: 2.65, variant: { tint: '#9aa0ad', envMapIntensity: 0.84, roughnessFloor: 0.48 } },
+  { position: [-12.8, 0, -5.4], rotationY: 0.18, scale: 2.18, variant: { tint: '#7f8b96', envMapIntensity: 0.72, roughnessFloor: 0.58 } },
+  { position: [-11.8, 0, 6.3], rotationY: Math.PI / 2 + 0.04, scale: 1.95, variant: { tint: '#a28d7c', envMapIntensity: 0.78, roughnessFloor: 0.52 } },
+  { position: [12.8, 0, -18.8], rotationY: Math.PI - 0.11, scale: 2.72, variant: { tint: '#7b8190', envMapIntensity: 0.92, roughnessFloor: 0.44 } },
+  { position: [14.0, 0, -7.0], rotationY: Math.PI + 0.14, scale: 2.24, variant: { tint: '#8c7f72', envMapIntensity: 0.76, roughnessFloor: 0.62 } },
+  { position: [12.5, 0, 5.5], rotationY: -Math.PI / 2 - 0.09, scale: 2.02, variant: { tint: '#8fa0a5', envMapIntensity: 0.82, roughnessFloor: 0.5 } },
+  { position: [0.6, 0, -25.2], rotationY: 0.02, scale: 2.8, variant: { tint: '#756f74', envMapIntensity: 0.7, roughnessFloor: 0.64 } },
+];
+
+function clonePreparedScene(
+  source: THREE.Object3D,
+  castShadow: boolean,
+  variant?: GltfMaterialVariant,
+): THREE.Object3D {
   const clone = source.clone(true);
   clone.traverse((obj) => {
     if ((obj as THREE.Mesh).isMesh) {
       const mesh = obj as THREE.Mesh;
       mesh.castShadow = castShadow;
       mesh.receiveShadow = true;
+      if (Array.isArray(mesh.material)) {
+        mesh.material = mesh.material.map((m) => m.clone());
+      } else {
+        mesh.material = mesh.material.clone();
+      }
       const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
       for (const m of mats) {
         if (m && 'envMapIntensity' in m) {
           const std = m as THREE.MeshStandardMaterial;
-          std.envMapIntensity = 0.9;
-          if (typeof std.roughness === 'number') {
-            std.roughness = Math.min(1, Math.max(0.4, std.roughness * 1.1));
+          std.envMapIntensity = variant?.envMapIntensity ?? 0.9;
+          if (variant?.tint && std.color) {
+            std.color.multiply(new THREE.Color(variant.tint));
           }
+          if (typeof std.roughness === 'number') {
+            std.roughness = Math.min(1, Math.max(variant?.roughnessFloor ?? 0.4, std.roughness * 1.1));
+          }
+          std.needsUpdate = true;
         }
       }
     }
@@ -45,17 +81,19 @@ function GltfProp({
   rotationY = 0,
   scale = 1,
   castShadow = true,
+  variant,
 }: {
   url: string;
   position: [number, number, number];
   rotationY?: number;
   scale?: number;
   castShadow?: boolean;
+  variant?: GltfMaterialVariant;
 }) {
   const gltf = useGLTF(url, true, true, extendLoader);
   const scene = useMemo(
-    () => clonePreparedScene(gltf.scene, castShadow),
-    [gltf.scene, castShadow],
+    () => clonePreparedScene(gltf.scene, castShadow, variant),
+    [gltf.scene, castShadow, variant],
   );
   return (
     <group position={position} rotation={[0, rotationY, 0]} scale={scale}>
@@ -95,6 +133,9 @@ function StreetPropDressing() {
         <GltfProp url={POLYHAVEN_MODELS.shutterDoor} position={[11.6, 0, -17.8]} rotationY={Math.PI} scale={1.6} />
       </Suspense>
       <Suspense fallback={null}>
+        <GltfProp url={POLYHAVEN_MODELS.roadBarrierAlt} position={[-5.9, 0, 8.7]} rotationY={-0.18} scale={1.15} />
+      </Suspense>
+      <Suspense fallback={null}>
         <GltfProp url={POLYHAVEN_MODELS.roadBarrier} position={[0.3, 0, 9.2]} rotationY={0.08} scale={1.25} />
       </Suspense>
       <Suspense fallback={null}>
@@ -125,10 +166,19 @@ function StreetPropDressing() {
         <GltfProp url={POLYHAVEN_MODELS.cardboardBox} position={[-4.7, 0.55, -3.3]} rotationY={-0.6} scale={1.15} />
       </Suspense>
       <Suspense fallback={null}>
+        <GltfProp url={POLYHAVEN_MODELS.woodenCrate} position={[4.7, 0, -6.9]} rotationY={0.25} scale={1.3} />
+      </Suspense>
+      <Suspense fallback={null}>
+        <GltfProp url={POLYHAVEN_MODELS.oldTyre} position={[4.2, 0, -7.45]} rotationY={0.8} scale={1.2} />
+      </Suspense>
+      <Suspense fallback={null}>
+        <GltfProp url={POLYHAVEN_MODELS.manholeCover} position={[-0.8, 0.018, -1.8]} rotationY={0.4} scale={1.25} />
+      </Suspense>
+      <Suspense fallback={null}>
         <GltfProp url={POLYHAVEN_MODELS.streetLamp} position={[-6.2, 0, -1.2]} scale={1.0} castShadow={castShadow} />
       </Suspense>
       <Suspense fallback={null}>
-        <GltfProp url={POLYHAVEN_MODELS.streetLamp} position={[5.8, 0, 2.8]} rotationY={Math.PI / 5} scale={1.0} castShadow={castShadow} />
+        <GltfProp url={POLYHAVEN_MODELS.streetLampAlt} position={[5.8, 0, 2.8]} rotationY={Math.PI / 5} scale={1.0} castShadow={castShadow} />
       </Suspense>
       <Suspense fallback={null}>
         <GltfProp url={POLYHAVEN_MODELS.industrialLamp} position={[-5.5, 3.8, -2]} scale={1.25} />
@@ -136,18 +186,79 @@ function StreetPropDressing() {
       <Suspense fallback={null}>
         <GltfProp url={POLYHAVEN_MODELS.shutterWindow} position={[12.5, 5.2, -19.2]} rotationY={Math.PI} scale={1.5} />
       </Suspense>
+      <Suspense fallback={null}>
+        <GltfProp url={POLYHAVEN_MODELS.exteriorAirconUnit} position={[-12.3, 4.25, -11.6]} rotationY={0.08} scale={1.1} />
+      </Suspense>
+      <Suspense fallback={null}>
+        <GltfProp url={POLYHAVEN_MODELS.securityCamera} position={[12.3, 4.8, -13.2]} rotationY={Math.PI} scale={0.85} />
+      </Suspense>
+      <Suspense fallback={null}>
+        <GltfProp url={POLYHAVEN_MODELS.powerBox} position={[-10.7, 0, 2.4]} rotationY={0.08} scale={1.0} />
+      </Suspense>
+      <Suspense fallback={null}>
+        <GltfProp url={POLYHAVEN_MODELS.utilityBox} position={[9.8, 0, -3.2]} rotationY={Math.PI} scale={1.05} />
+      </Suspense>
     </group>
   );
 }
 
-/** Unique BufferGeometry facades on all presets; PH props when GLB env mode allows. */
-export function HeroStreetFacadesWithAssets() {
+function AuthoredStreetArchitecture() {
   const { preset } = useGraphicsQuality();
-  const glbProps = allowsGlbAssetRendering(preset.environmentRenderMode);
+  const castShadow = preset.shadows;
 
   return (
     <group>
-      <UniqueStreetFacades />
+      {AUTHORED_STREET_FACADES.map((p, i) => (
+        <Suspense key={`street-authored-facade-${i}`} fallback={null}>
+          <GltfProp
+            url={POLYHAVEN_MODELS.urbanFacade}
+            position={p.position}
+            rotationY={p.rotationY}
+            scale={p.scale}
+            castShadow={castShadow}
+            variant={p.variant}
+          />
+        </Suspense>
+      ))}
+      <Suspense fallback={null}>
+        <GltfProp url={POLYHAVEN_MODELS.shutterDoor} position={[-10.6, 0, -2.4]} rotationY={0.08} scale={1.7} variant={{ tint: '#8a8f96', roughnessFloor: 0.56 }} />
+      </Suspense>
+      <Suspense fallback={null}>
+        <GltfProp url={POLYHAVEN_MODELS.shutterDoor} position={[12.2, 0, -14.8]} rotationY={Math.PI} scale={1.65} variant={{ tint: '#746a62', roughnessFloor: 0.64 }} />
+      </Suspense>
+      <Suspense fallback={null}>
+        <GltfProp url={POLYHAVEN_MODELS.shutterWindow} position={[-12.0, 5.4, -9.8]} rotationY={0.08} scale={1.65} variant={{ tint: '#9299a2' }} />
+      </Suspense>
+      <Suspense fallback={null}>
+        <GltfProp url={POLYHAVEN_MODELS.shutterWindowAlt} position={[13.1, 5.8, -3.8]} rotationY={Math.PI} scale={1.55} variant={{ tint: '#7b858c' }} />
+      </Suspense>
+      <Suspense fallback={null}>
+        <GltfProp url={POLYHAVEN_MODELS.shutterWindow} position={[-12.4, 6.2, 3.4]} rotationY={Math.PI / 2 + 0.04} scale={1.5} variant={{ tint: '#a08f80' }} />
+      </Suspense>
+      <Suspense fallback={null}>
+        <GltfProp url={POLYHAVEN_MODELS.shutterWindow} position={[0.2, 6.4, -24.7]} rotationY={0.02} scale={1.75} variant={{ tint: '#6f747c' }} />
+      </Suspense>
+      <Suspense fallback={null}>
+        <GltfProp url={POLYHAVEN_MODELS.shutterDoor} position={[5.4, 0, -24.4]} rotationY={0.02} scale={1.55} variant={{ tint: '#8c8378', roughnessFloor: 0.62 }} />
+      </Suspense>
+    </group>
+  );
+}
+
+/** Procedural facades on lite tiers; authored GLTF architecture on high/ultra. */
+export function HeroStreetFacadesWithAssets() {
+  const { preset } = useGraphicsQuality();
+  const glbProps = !preset.visualLite && allowsGlbAssetRendering(preset.environmentRenderMode);
+
+  return (
+    <group>
+      {glbProps ? (
+        <Suspense fallback={null}>
+          <AuthoredStreetArchitecture />
+        </Suspense>
+      ) : (
+        <UniqueStreetFacades />
+      )}
       {glbProps ? (
         <Suspense fallback={null}>
           <StreetPropDressing />
@@ -159,3 +270,24 @@ export function HeroStreetFacadesWithAssets() {
 
 useGLTF.preload(POLYHAVEN_MODELS.bench, true, true, extendLoader);
 useGLTF.preload(POLYHAVEN_MODELS.fireEscape, true, true, extendLoader);
+useGLTF.preload(POLYHAVEN_MODELS.urbanFacade, true, true, extendLoader);
+useGLTF.preload(POLYHAVEN_MODELS.shutterDoor, true, true, extendLoader);
+useGLTF.preload(POLYHAVEN_MODELS.shutterWindow, true, true, extendLoader);
+useGLTF.preload(POLYHAVEN_MODELS.shutterWindowAlt, true, true, extendLoader);
+useGLTF.preload(POLYHAVEN_MODELS.streetLamp, true, true, extendLoader);
+useGLTF.preload(POLYHAVEN_MODELS.streetLampAlt, true, true, extendLoader);
+useGLTF.preload(POLYHAVEN_MODELS.industrialLamp, true, true, extendLoader);
+useGLTF.preload(POLYHAVEN_MODELS.metalTrashCan, true, true, extendLoader);
+useGLTF.preload(POLYHAVEN_MODELS.trashbag, true, true, extendLoader);
+useGLTF.preload(POLYHAVEN_MODELS.roadBarrier, true, true, extendLoader);
+useGLTF.preload(POLYHAVEN_MODELS.roadBarrierAlt, true, true, extendLoader);
+useGLTF.preload(POLYHAVEN_MODELS.wetFloorSign, true, true, extendLoader);
+useGLTF.preload(POLYHAVEN_MODELS.barrel, true, true, extendLoader);
+useGLTF.preload(POLYHAVEN_MODELS.cardboardBox, true, true, extendLoader);
+useGLTF.preload(POLYHAVEN_MODELS.woodenCrate, true, true, extendLoader);
+useGLTF.preload(POLYHAVEN_MODELS.oldTyre, true, true, extendLoader);
+useGLTF.preload(POLYHAVEN_MODELS.manholeCover, true, true, extendLoader);
+useGLTF.preload(POLYHAVEN_MODELS.exteriorAirconUnit, true, true, extendLoader);
+useGLTF.preload(POLYHAVEN_MODELS.powerBox, true, true, extendLoader);
+useGLTF.preload(POLYHAVEN_MODELS.securityCamera, true, true, extendLoader);
+useGLTF.preload(POLYHAVEN_MODELS.utilityBox, true, true, extendLoader);

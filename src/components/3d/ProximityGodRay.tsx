@@ -39,6 +39,8 @@ export function ProximityGodRay({
   const fillRef = useRef<THREE.PointLight>(null);
   const coneMatRef = useRef<THREE.MeshBasicMaterial>(null);
   const coneMeshRef = useRef<THREE.Mesh>(null);
+  const glintMatRef = useRef<THREE.MeshBasicMaterial>(null);
+  const glintMeshRef = useRef<THREE.Mesh>(null);
   const pulseRef = useRef(0);
   const usesActiveRef = activeRef !== undefined;
   const resolvedColor = colorRef?.current ?? color;
@@ -51,10 +53,13 @@ export function ProximityGodRay({
       if (fillRef.current) fillRef.current.intensity = 0;
       if (coneMatRef.current) coneMatRef.current.opacity = 0;
       if (coneMeshRef.current) coneMeshRef.current.visible = false;
+      if (glintMatRef.current) glintMatRef.current.opacity = 0;
+      if (glintMeshRef.current) glintMeshRef.current.visible = false;
       return;
     }
 
     if (coneMeshRef.current) coneMeshRef.current.visible = true;
+    if (glintMeshRef.current) glintMeshRef.current.visible = true;
     if (!pulsePhaseRef) pulseRef.current += delta * 3.4;
     const prox = Math.max(0.25, Math.min(1, proximityRef?.current ?? 1));
     const phase = pulsePhaseRef?.current ?? pulseRef.current;
@@ -73,6 +78,14 @@ export function ProximityGodRay({
     if (coneMatRef.current) {
       coneMatRef.current.opacity = (0.1 + hoverPulse * 0.04 + flashBoost * 0.06) * prox;
       coneMatRef.current.color.set(liveColor);
+    }
+    if (glintMatRef.current) {
+      glintMatRef.current.opacity = (0.24 + Math.max(hoverPulse, 0) * 0.22 + flashBoost * 0.16) * prox;
+      glintMatRef.current.color.set(liveColor);
+    }
+    if (glintMeshRef.current) {
+      const scale = 1 + Math.max(hoverPulse, 0) * 0.75 + flashBoost * 0.6;
+      glintMeshRef.current.scale.setScalar(scale);
     }
   });
 
@@ -102,6 +115,17 @@ export function ProximityGodRay({
           opacity={0.1}
           depthWrite={false}
           side={THREE.DoubleSide}
+          blending={THREE.AdditiveBlending}
+        />
+      </mesh>
+      <mesh ref={glintMeshRef} position={[0, 0.06, 0]} renderOrder={3}>
+        <sphereGeometry args={[0.045, 8, 8]} />
+        <meshBasicMaterial
+          ref={glintMatRef}
+          color={resolvedColor}
+          transparent
+          opacity={0.24}
+          depthWrite={false}
           blending={THREE.AdditiveBlending}
         />
       </mesh>

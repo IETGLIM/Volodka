@@ -120,22 +120,22 @@
     {
       "mimeType": "image/jpeg",
       "name": "rollershutter_window_01_nor_gl",
-      "uri": "textures/rollershutter_window_01_nor_gl_1k.jpg"
+      "uri": "textures/rollershutter_window_01_nor_gl_2k.jpg"
     },
     {
       "mimeType": "image/jpeg",
       "name": "rollershutter_window_01_diff",
-      "uri": "textures/rollershutter_window_01_diff_1k.jpg"
+      "uri": "textures/rollershutter_window_01_diff_2k.jpg"
     },
     {
       "mimeType": "image/jpeg",
       "name": "rollershutter_window_01_metal-rollershutter_window_01_rough",
-      "uri": "textures/rollershutter_window_01_arm_1k.jpg"
+      "uri": "textures/rollershutter_window_01_arm_2k.jpg"
     },
     {
       "mimeType": "image/jpeg",
       "name": "rollershutter_window_01_graffiti_diff",
-      "uri": "textures/rollershutter_window_01_graffiti_diff_1k.jpg"
+      "uri": "textures/rollershutter_window_01_graffiti_diff_2k.jpg"
     }
   ],
   "accessors": [

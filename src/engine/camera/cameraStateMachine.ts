@@ -64,6 +64,7 @@ import { enterBulletTime } from './cinematicCamera';
 import { isCinematicTimelineActive, startCinematicTimeline } from '@/engine/cinematic/cinematicTimelineOrchestrator';
 import { STREET_ARRIVAL_TIMELINE } from '@/engine/cinematic/streetArrivalTimeline';
 import { PROCEDURAL_AAA_ARRIVAL_TIMELINE } from '@/engine/cinematic/proceduralAaaArrivalTimeline';
+import { CITY_SQUARE_ARRIVAL_TIMELINE } from '@/engine/cinematic/citySquareArrivalTimeline';
 import { sharedCameraYawRef } from '@/engine/PlayerRotationState';
 import { eventBus } from '@/engine/EventBus';
 import { getNPCGroup } from '@/engine/interaction/npcRegistry';
@@ -475,9 +476,13 @@ export function startSceneFlythrough(runtime: CameraRuntimeRefs, sceneId: SceneI
   );
   const targetLook = new THREE.Vector3(spawn[0], spawn[1] + LOOK_HEIGHT, spawn[2]);
 
-  // street_night / procedural_aaa: staged timelines (actor + light cues + holds).
+  // Hero spaces use staged timelines (actor + light cues + holds), not only camera waypoints.
   if (sceneId === 'street_night' && !isCinematicTimelineActive()) {
     startCinematicTimeline({ def: STREET_ARRIVAL_TIMELINE, options: {} });
+    return;
+  }
+  if (sceneId === 'city_square' && !isCinematicTimelineActive()) {
+    startCinematicTimeline({ def: CITY_SQUARE_ARRIVAL_TIMELINE, options: {} });
     return;
   }
   if (sceneId === 'procedural_aaa' && !isCinematicTimelineActive()) {

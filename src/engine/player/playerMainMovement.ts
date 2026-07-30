@@ -49,6 +49,7 @@ import {
   resolveMovementIntent,
   updateMoveBlendRef,
 } from '@/engine/player/playerLocomotionPresentation';
+import { syncResolvedMovementScratch } from '@/engine/player/playerScratchSync';
 import type { PlayerMovementDeps } from '@/engine/player/playerFrameTypes';
 function applyDegradedMovement(deps: PlayerMovementDeps, onFlatGround: boolean): void {
   const scratch = deps.frameScratchRef.current;
@@ -76,15 +77,30 @@ function applyDegradedMovement(deps: PlayerMovementDeps, onFlatGround: boolean):
   const newZ = Math.max(-halfD, Math.min(halfD, pos.z + dz));
   const newY = onFlatGround ? pos.y : pos.y + vel.y * dt;
 
+  const prevVelY = vel.y;
   rb.setTranslation({ x: newX, y: newY, z: newZ }, true);
-  if (enforceFloor(rb, vel, groundY)) {
+  const floorEnforced = enforceFloor(rb, vel, groundY);
+  const isGroundedNow = floorEnforced || onFlatGround;
+  if (floorEnforced) {
     deps.isGroundedRef.current = true;
     deps.coyoteTimerRef.current = 0;
+  } else if (!onFlatGround) {
+    deps.isGroundedRef.current = false;
   }
   // Position publish is finalizePlayerFrame-only (post_physics).
 
   const hSpeed = Math.sqrt(vel.x * vel.x + vel.z * vel.z);
   updateMoveBlendRef(deps.moveBlendRef, hSpeed > 0.15 ? 1 : 0, dt);
+  syncResolvedMovementScratch(deps, {
+    isGroundedNow,
+    onFlatGround: isGroundedNow && !scratch.airborneIntent,
+    airborneIntent: scratch.airborneIntent,
+    isMoving: hSpeed > 0.15,
+    running: scratch.running,
+    keyboardDrivesMove: scratch.keyboardDrivesMove,
+    blockedByWall: false,
+    prevVelY,
+  });
 }
 
 function tryRecoverKcc(deps: PlayerMovementDeps, reason: string): boolean {

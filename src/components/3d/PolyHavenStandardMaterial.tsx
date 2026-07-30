@@ -2,6 +2,7 @@
 
 import { usePolyHavenPbr } from '@/hooks/usePolyHavenPbr';
 import type { PolyHavenMaterialId } from '@/config/polyhavenAssets';
+import { useMemo } from 'react';
 import * as THREE from 'three';
 
 interface PolyHavenStandardMaterialProps {
@@ -13,6 +14,7 @@ interface PolyHavenStandardMaterialProps {
   polygonOffset?: boolean;
   transparent?: boolean;
   opacity?: number;
+  depthWrite?: boolean;
 }
 
 export function PolyHavenStandardMaterial({
@@ -24,18 +26,21 @@ export function PolyHavenStandardMaterial({
   polygonOffset = false,
   transparent = false,
   opacity = 1,
+  depthWrite = true,
 }: PolyHavenStandardMaterialProps) {
   const maps = usePolyHavenPbr(materialId, repeatScale);
+  const normalScale = useMemo(() => new THREE.Vector2(0.62, 0.62), []);
 
   return (
     <meshStandardMaterial
       color={color}
       map={maps.map}
       normalMap={maps.normalMap}
-      normalScale={new THREE.Vector2(0.7, 0.7)}
+      normalScale={normalScale}
       roughnessMap={maps.roughnessMap}
       aoMap={maps.aoMap}
-      aoMapIntensity={0.85}
+      aoMapIntensity={0.95}
+      envMapIntensity={0.72}
       metalness={metalness}
       roughness={roughness}
       polygonOffset={polygonOffset}
@@ -43,6 +48,7 @@ export function PolyHavenStandardMaterial({
       polygonOffsetUnits={polygonOffset ? 1 : 0}
       transparent={transparent}
       opacity={opacity}
+      depthWrite={depthWrite}
     />
   );
 }

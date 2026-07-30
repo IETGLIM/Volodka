@@ -94,6 +94,12 @@ Preload: `cafe_evening` → `env_cafe_props`, `park_day` → `veg_tree_pine` (`s
 
 Rendered via `ScenePropDressing` in volodka_room, corridor, office, library, café, street_night, pier, CHK forest, rooftop.
 
+## Poly Haven authored GLTF models
+
+Downloaded via `npm run assets:polyhaven-models` from the [Poly Haven API](https://api.polyhaven.com) / CDN. License: CC0 · Author/source: [Poly Haven](https://polyhaven.com).
+
+Scene-facing set under `models/polyhaven/`: modular urban apartments facade, modular fire escape, road barriers, benches, industrial lamps, roller shutter doors/windows, barrel, cardboard box, trash can, street lamps, trash bag, wet floor sign, gothic statue, exterior aircon unit, power box, security camera, utility box, old tyre, manhole cover, wooden crate, arm chair, painted wooden table/cabinet, worn wooden bookshelf, desk lamp arm, sofa, and portable cassette player.
+
 ## Kenney interior shells (Poly Pizza TODO)
 
 | Manifest ID | File | Interim source | Target |

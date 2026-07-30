@@ -17,15 +17,9 @@ export const SCENE_INTERIOR_ASSETS: Partial<Record<SceneId, readonly SceneInteri
   volodka_corridor: [
     { assetId: 'interior_corridor', position: [0, 0, 4], scale: 2.0, rotation: [0, Math.PI / 2, 0] },
   ],
-  cafe_evening: [
-    { assetId: 'interior_cafe', position: [3, 0, -5], scale: 1.1, rotation: [0, -Math.PI / 6, 0] },
-  ],
-  office_day: [
-    { assetId: 'interior_office', position: [0, 0, -6], scale: 0.9, rotation: [0, 0, 0] },
-  ],
-  library_day: [
-    { assetId: 'interior_library', position: [0, 0, -5], scale: 1.1, rotation: [0, Math.PI, 0] },
-  ],
+  // cafe_evening, office_day, and library_day are owned by their scene visuals'
+  // AuthoredInteriorShell mounts. Keep them out of the generic Physics subtree
+  // to avoid duplicate offset shell rendering.
   abandoned_factory: [
     { assetId: 'interior_factory', position: [-2, 0, -8], scale: 0.8, rotation: [0, 0.35, 0] },
   ],

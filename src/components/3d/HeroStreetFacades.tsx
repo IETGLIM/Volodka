@@ -187,19 +187,19 @@ function BevelledFacade({ spec }: { spec: FacadeSpec }) {
         <meshStandardMaterial color="#4a4a62" roughness={0.65} metalness={0.2} />
       </mesh>
 
-      {/* Neon fascia strip (MeshPhysical — controlled emissive, not plastic kitsch) */}
+      {/* Restrained fascia strip — signage accent, not skyline-defining toy neon. */}
       <mesh position={[0, neonY, spec.d * 0.52]} geometry={getSharedBoxGeometry(spec.w * 0.55, 0.22, 0.08)}>
         <meshPhysicalMaterial
           color="#101018"
           emissive={spec.neon}
-          emissiveIntensity={1.35}
+          emissiveIntensity={0.72}
           roughness={0.32}
           metalness={0.5}
           clearcoat={0.45}
           clearcoatRoughness={0.3}
         />
       </mesh>
-      <pointLight position={[0, neonY, spec.d * 0.7]} color={spec.neon} intensity={1.05} distance={9} />
+      <pointLight position={[0, neonY, spec.d * 0.7]} color={spec.neon} intensity={0.42} distance={8} />
 
       {/* Shop-front warm glass */}
       <mesh position={[0, 1.15, spec.d * 0.52]} geometry={getSharedPlaneGeometry(spec.w * 0.42, 1.8)}>

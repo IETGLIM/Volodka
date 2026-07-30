@@ -21,6 +21,7 @@ import { createStreetNightSynthwaveSkyTexture } from '@/engine/graphics/procedur
 import { AmbientParticles } from './AmbientParticles';
 import { WetStreetGround } from './WetStreetGround';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
+import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
 import { getCachedSurfaceDetailMaps } from '@/engine/graphics/proceduralSurfaceTextures';
 import { PBR_PRESETS } from '@/engine/graphics/materials/pbrPresets';
 import { HeroStreetFacadesWithAssets } from './PolyHavenStreetDressing';
@@ -39,6 +40,9 @@ export function StreetVisual({ sceneId = 'street_night', livePlayerPositionRef }
   const isWinter = sceneId === 'street_winter';
   const rainIntensity = useGameStore((s) => s.rainIntensity);
   const envProfile = useMemo(() => getEnvironmentLodProfile(sceneId), [sceneId]);
+  const { preset } = useGraphicsQuality();
+  const useAuthoredDressing = allowsGlbAssetRendering(preset.environmentRenderMode);
+  const useHighUltraAuthored = !preset.visualLite;
 
   // Ultra / ?proceduralAaa=1 — hybrid: keep Poly Haven grounds/facades, add procedural accents
   const hybridAaa = !isWinter && sceneId === 'street_night' && isProceduralAaaFlagActive();
@@ -56,7 +60,7 @@ export function StreetVisual({ sceneId = 'street_night', livePlayerPositionRef }
       {/* ── Bevelled panel buildings + neon fascia (hero silhouette) ── */}
       <EnvironmentDetail minLod="standard" position={[0, 0, -10]}>
         <HeroStreetFacadesWithAssets />
-        <NeonSigns isWinter={isWinter} />
+        {!useHighUltraAuthored ? <NeonSigns isWinter={isWinter} /> : null}
       </EnvironmentDetail>
 
       {hybridAaa ? <ProceduralAaaHybridOverlay /> : null}
@@ -84,38 +88,42 @@ export function StreetVisual({ sceneId = 'street_night', livePlayerPositionRef }
         </mesh>
       </EnvironmentDetail>
 
-      <StreetClutterGate
-        livePlayerPositionRef={livePlayerPositionRef}
-        position={[-12, 0, -12]}
-        maxDistance={envProfile.decorativeDistance}
-      >
-        {/* Dripping pipe (thin cylinder from building) */}
-        <mesh position={[0, 3.5, 0]} rotation={[0, 0, Math.PI / 2]} geometry={getSharedCylinderGeometry(0.02, 0.02, 0.8, 6)}>
-          <meshStandardMaterial color="#5a5a5a" metalness={0.6} roughness={0.4} />
-        </mesh>
-        {/* Drip at end of pipe */}
-        <mesh position={[0, 3.1, 0]} geometry={getSharedSphereGeometry(0.02, 6, 6)}>
-          <meshStandardMaterial color="#4a6a8a" transparent opacity={0.7} />
-        </mesh>
-      </StreetClutterGate>
+      {!useAuthoredDressing ? (
+        <>
+          <StreetClutterGate
+            livePlayerPositionRef={livePlayerPositionRef}
+            position={[-12, 0, -12]}
+            maxDistance={envProfile.decorativeDistance}
+          >
+            {/* Dripping pipe (thin cylinder from building) */}
+            <mesh position={[0, 3.5, 0]} rotation={[0, 0, Math.PI / 2]} geometry={getSharedCylinderGeometry(0.02, 0.02, 0.8, 6)}>
+              <meshStandardMaterial color="#5a5a5a" metalness={0.6} roughness={0.4} />
+            </mesh>
+            {/* Drip at end of pipe */}
+            <mesh position={[0, 3.1, 0]} geometry={getSharedSphereGeometry(0.02, 6, 6)}>
+              <meshStandardMaterial color="#4a6a8a" transparent opacity={0.7} />
+            </mesh>
+          </StreetClutterGate>
 
-      <StreetClutterGate
-        livePlayerPositionRef={livePlayerPositionRef}
-        position={[12, 0, -18]}
-        maxDistance={envProfile.decorativeDistance}
-      >
-        {/* Broken window in building */}
-        <mesh position={[0, 8, 0]} geometry={getSharedPlaneGeometry(0.8, 1.0)}>
-          <meshStandardMaterial color="#0a0a12" roughness={0.95} />
-        </mesh>
-        {/* Broken glass shards */}
-        <mesh position={[0, 8.3, 0.01]} geometry={getSharedPlaneGeometry(0.25, 0.3)}>
-          <meshStandardMaterial color="#607080" transparent opacity={0.3} metalness={0.2} roughness={0.1} side={THREE.DoubleSide} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
-        </mesh>
-        <mesh position={[0.15, 7.7, 0.01]} geometry={getSharedPlaneGeometry(0.2, 0.35)}>
-          <meshStandardMaterial color="#607080" transparent opacity={0.2} metalness={0.2} roughness={0.1} side={THREE.DoubleSide} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
-        </mesh>
-      </StreetClutterGate>
+          <StreetClutterGate
+            livePlayerPositionRef={livePlayerPositionRef}
+            position={[12, 0, -18]}
+            maxDistance={envProfile.decorativeDistance}
+          >
+            {/* Broken window in building */}
+            <mesh position={[0, 8, 0]} geometry={getSharedPlaneGeometry(0.8, 1.0)}>
+              <meshStandardMaterial color="#0a0a12" roughness={0.95} />
+            </mesh>
+            {/* Broken glass shards */}
+            <mesh position={[0, 8.3, 0.01]} geometry={getSharedPlaneGeometry(0.25, 0.3)}>
+              <meshStandardMaterial color="#607080" transparent opacity={0.3} metalness={0.2} roughness={0.1} side={THREE.DoubleSide} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+            </mesh>
+            <mesh position={[0.15, 7.7, 0.01]} geometry={getSharedPlaneGeometry(0.2, 0.35)}>
+              <meshStandardMaterial color="#607080" transparent opacity={0.2} metalness={0.2} roughness={0.1} side={THREE.DoubleSide} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+            </mesh>
+          </StreetClutterGate>
+        </>
+      ) : null}
     </group>
   );
 }
@@ -229,23 +237,23 @@ function StreetBoundary({ isWinter }: { isWinter: boolean }) {
   return (
     <group>
       <instancedMesh ref={postsRef} args={[getSharedCylinderGeometry(0.035, 0.035, 1.1, 6), undefined, postPositions.length]} castShadow frustumCulled={false}>
-        <meshStandardMaterial color={railColor} metalness={0.6} roughness={0.5} />
+        <PolyHavenStandardMaterial materialId="metal_plate" repeatScale={3.6} color={railColor} metalness={0.62} roughness={0.52} />
       </instancedMesh>
 
       {/* Two horizontal rails per side */}
       {[0.6, 1.0].map((y) => (
         <group key={`rails-${y}`}>
           <mesh position={[0, y, -edge]} geometry={getSharedBoxGeometry(span, 0.04, 0.04)}>
-            <meshStandardMaterial color={railColor} metalness={0.6} roughness={0.5} />
+            <PolyHavenStandardMaterial materialId="metal_plate" repeatScale={4.2} color={railColor} metalness={0.62} roughness={0.52} />
           </mesh>
           <mesh position={[0, y, edge]} geometry={getSharedBoxGeometry(span, 0.04, 0.04)}>
-            <meshStandardMaterial color={railColor} metalness={0.6} roughness={0.5} />
+            <PolyHavenStandardMaterial materialId="metal_plate" repeatScale={4.2} color={railColor} metalness={0.62} roughness={0.52} />
           </mesh>
           <mesh position={[-edge, y, 0]} rotation={[0, Math.PI / 2, 0]} geometry={getSharedBoxGeometry(span, 0.04, 0.04)}>
-            <meshStandardMaterial color={railColor} metalness={0.6} roughness={0.5} />
+            <PolyHavenStandardMaterial materialId="metal_plate" repeatScale={4.2} color={railColor} metalness={0.62} roughness={0.52} />
           </mesh>
           <mesh position={[edge, y, 0]} rotation={[0, Math.PI / 2, 0]} geometry={getSharedBoxGeometry(span, 0.04, 0.04)}>
-            <meshStandardMaterial color={railColor} metalness={0.6} roughness={0.5} />
+            <PolyHavenStandardMaterial materialId="metal_plate" repeatScale={4.2} color={railColor} metalness={0.62} roughness={0.52} />
           </mesh>
         </group>
       ))}
@@ -258,7 +266,7 @@ function StreetBoundary({ isWinter }: { isWinter: boolean }) {
         { pos: [HALF - 0.1, 0.08, 0] as const, rot: Math.PI / 2 },
       ].map((c, i) => (
         <mesh key={`curb-${i}`} position={[c.pos[0], c.pos[1], c.pos[2]]} rotation={[0, c.rot, 0]} receiveShadow geometry={getSharedBoxGeometry(HALF * 2, 0.16, 0.35)}>
-          <meshStandardMaterial color={curbColor} roughness={0.9} />
+          <PolyHavenStandardMaterial materialId="concrete_floor_painted" repeatScale={2.8} color={curbColor} roughness={0.9} />
         </mesh>
       ))}
     </group>
@@ -308,15 +316,15 @@ function NeonSigns({ isWinter }: { isWinter: boolean }) {
 
     // Red neon flicker — time-gated deterministic on/off
     if (redSignRef.current) {
-      const flicker = Math.sin(t * 17.3 + 4.1) > 0.9 ? 0.3 : 1.2;
+      const flicker = Math.sin(t * 17.3 + 4.1) > 0.9 ? 0.18 : 0.72;
       (redSignRef.current.material as THREE.MeshStandardMaterial).emissiveIntensity = flicker;
     }
     if (redLightRef.current) {
-      redLightRef.current.intensity = Math.sin(t * 17.3 + 4.1) > 0.9 ? 0.2 : 0.8;
+      redLightRef.current.intensity = Math.sin(t * 17.3 + 4.1) > 0.9 ? 0.12 : 0.45;
     }
     // Cafe sign subtle pulse
     if (cafeSignRef.current) {
-      const pulse = (isWinter ? 1.2 : 1.5) + Math.sin(t * 2) * 0.15;
+      const pulse = (isWinter ? 0.85 : 1.0) + Math.sin(t * 2) * 0.08;
       (cafeSignRef.current.material as THREE.MeshStandardMaterial).emissiveIntensity = pulse;
     }
 
@@ -328,23 +336,23 @@ function NeonSigns({ isWinter }: { isWinter: boolean }) {
     }
     if (cafeKafeRef.current) {
       (cafeKafeRef.current.material as THREE.MeshStandardMaterial).emissiveIntensity =
-        kafeOnRef.current ? 2.0 : 0.05;
+        kafeOnRef.current ? 1.15 : 0.04;
     }
     if (cafeKafeLightRef.current) {
-      cafeKafeLightRef.current.intensity = kafeOnRef.current ? 1.5 : 0;
+      cafeKafeLightRef.current.intensity = kafeOnRef.current ? 0.85 : 0;
     }
 
     // Bar scrolling neon light — traveling bright segment
     if (barScrollRef.current) {
-      const baseIntensity = 0.6;
-      const scrollBoost = 1.5;
+      const baseIntensity = 0.35;
+      const scrollBoost = 0.85;
       (barScrollRef.current.material as THREE.MeshStandardMaterial).emissiveIntensity =
         baseIntensity + scrollBoost * 0.5 * (1 + Math.sin(t * 4));
     }
     if (barScrollLightRef.current) {
       const scrollX = Math.sin(t * 0.8) * 1.5;
       barScrollLightRef.current.position.x = scrollX;
-      barScrollLightRef.current.intensity = 0.8 + Math.sin(t * 2) * 0.3;
+      barScrollLightRef.current.intensity = 0.45 + Math.sin(t * 2) * 0.16;
     }
   });
 
@@ -361,19 +369,19 @@ function NeonSigns({ isWinter }: { isWinter: boolean }) {
           <meshStandardMaterial
             color="#001133"
             emissive="#1a4aff"
-            emissiveIntensity={isWinter ? 0.95 : 1.15}
+            emissiveIntensity={isWinter ? 0.78 : 0.9}
             roughness={0.55}
             metalness={0.15}
           />
         </mesh>
-        <pointLight position={[0, -0.5, 0.5]} color="#1a4aff" intensity={1.8} distance={9} decay={2} />
+        <pointLight position={[0, -0.5, 0.5]} color="#1a4aff" intensity={1.05} distance={9} decay={2} />
       </group>
 
       {/* "КАФЕ" neon sign — flickering broken tube style */}
       <group position={[-6, 5, -10]}>
         {/* Sign backing */}
         <mesh position={[0, 0.15, -0.02]} geometry={getSharedBoxGeometry(2.0, 0.6, 0.02)}>
-          <meshStandardMaterial color="#111111" roughness={0.9} />
+          <PolyHavenStandardMaterial materialId="metal_plate" repeatScale={2.2} color="#16161a" metalness={0.48} roughness={0.58} />
         </mesh>
         {/* Neon letter frames — 4 Cyrillic letters К А Ф Е */}
         {[-0.7, -0.2, 0.2, 0.7].map((x, i) => (
@@ -381,7 +389,7 @@ function NeonSigns({ isWinter }: { isWinter: boolean }) {
             <meshStandardMaterial
               color="#001133"
               emissive="#ff4488"
-              emissiveIntensity={2.0}
+              emissiveIntensity={1.15}
               toneMapped={false}
             />
           </mesh>
@@ -399,14 +407,14 @@ function NeonSigns({ isWinter }: { isWinter: boolean }) {
       <group position={[5, 6, -15]}>
         {/* Sign panel */}
         <mesh position={[0, 0.2, -0.02]} geometry={getSharedBoxGeometry(3.0, 0.8, 0.02)}>
-          <meshStandardMaterial color="#0a0a0a" roughness={0.9} />
+          <PolyHavenStandardMaterial materialId="metal_plate" repeatScale={2.4} color="#101014" metalness={0.45} roughness={0.6} />
         </mesh>
         {/* Bar name neon strip */}
         <mesh ref={barScrollRef} position={[0, 0.3, 0]} geometry={getSharedBoxGeometry(2.6, 0.15, 0.05)}>
           <meshStandardMaterial
             color="#001a00"
             emissive="#00ffaa"
-            emissiveIntensity={1.5}
+            emissiveIntensity={0.85}
             toneMapped={false}
           />
         </mesh>
@@ -415,7 +423,7 @@ function NeonSigns({ isWinter }: { isWinter: boolean }) {
           <meshStandardMaterial
             color="#1a0000"
             emissive="#ff2200"
-            emissiveIntensity={1.0}
+            emissiveIntensity={0.55}
             toneMapped={false}
           />
         </mesh>
@@ -435,10 +443,10 @@ function NeonSigns({ isWinter }: { isWinter: boolean }) {
           <meshStandardMaterial
             color="#330011"
             emissive="#ff1a3a"
-            emissiveIntensity={1.2}
+            emissiveIntensity={0.72}
           />
         </mesh>
-        <pointLight ref={redLightRef} position={[0, -0.3, 0.5]} color="#ff1a3a" intensity={2.0} distance={9} />
+        <pointLight ref={redLightRef} position={[0, -0.3, 0.5]} color="#ff1a3a" intensity={0.9} distance={9} />
       </group>
 
       {/* Green pharmacy cross */}
@@ -447,10 +455,10 @@ function NeonSigns({ isWinter }: { isWinter: boolean }) {
           <meshStandardMaterial
             color="#003311"
             emissive="#00ff44"
-            emissiveIntensity={1.0}
+            emissiveIntensity={0.55}
           />
         </mesh>
-        <pointLight position={[0, -0.3, 0.5]} color="#00ff44" intensity={2.0} distance={7} />
+        <pointLight position={[0, -0.3, 0.5]} color="#00ff44" intensity={0.85} distance={7} />
       </group>
 
       {/* Yellow advertisement strip */}
@@ -459,7 +467,7 @@ function NeonSigns({ isWinter }: { isWinter: boolean }) {
           <meshStandardMaterial
             color="#332200"
             emissive="#ffaa00"
-            emissiveIntensity={0.8}
+            emissiveIntensity={0.45}
           />
         </mesh>
       </group>

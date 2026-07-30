@@ -10,12 +10,15 @@ import { FloorLamp, PastryCase, Window, Plant } from './lazyInteriorModels';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { createCafeEveningNeonSkyTexture } from '@/engine/graphics/proceduralSkyTextures';
 import { useOwnedBufferGeometry } from '@/hooks/useOwnedBufferGeometry';
+import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import {
   getSharedBoxGeometry,
   getSharedPlaneGeometry,
 } from '@/engine/three/moduleGeometryRegistry';
 import { seededRand } from '@/shared/utils/seededRand';
 import { PolyHavenStandardMaterial } from './PolyHavenStandardMaterial';
+import { INTERIOR_SHELL_MODELS } from '../../config/interiorShellModels';
+import { AuthoredInteriorShell } from './AuthoredInteriorShell';
 
 interface CafeVisualProps {
   livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
@@ -23,6 +26,8 @@ interface CafeVisualProps {
 
 /** Blue Pit cafe – cozy interior with bar counter, tables, warm lighting */
 export function CafeVisual({ livePlayerPositionRef }: CafeVisualProps) {
+  const { preset } = useGraphicsQuality();
+  const useAuthoredShell = !preset.visualLite;
   const floorTexture = useCachedCanvasTexture('cafe_evening:floor', createCafeFloorTexture);
   const wallTexture = useCachedCanvasTexture('cafe_evening:wall', createCafeWallTexture);
   const ceilingGlowTexture = useCachedCanvasTexture(
@@ -141,62 +146,72 @@ export function CafeVisual({ livePlayerPositionRef }: CafeVisualProps) {
 
   return (
     <group>
-      {/* ── Floor — Poly Haven wood (canvas fallback) ── */}
-      <Suspense
-        fallback={
-          <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={getSharedPlaneGeometry(W, D)}>
-            <meshStandardMaterial map={floorTexture} color="#5a4a3a" roughness={0.85} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
-          </mesh>
-        }
-      >
-        <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={getSharedPlaneGeometry(W, D)}>
-          <PolyHavenStandardMaterial materialId="wood_floor" repeatScale={1.1} color="#c4a888" metalness={0.03} roughness={0.84} polygonOffset />
-        </mesh>
-      </Suspense>
-
-      {/* ── Ceiling — procedural blue-neon HDR wash ── */}
-      <mesh position={[0, H, 0]} rotation-x={Math.PI / 2} geometry={getSharedPlaneGeometry(W, D)}>
-        <meshStandardMaterial
-          map={ceilingGlowTexture}
-          color="#3a3038"
-          emissive="#1a2850"
-          emissiveIntensity={0.35}
-          roughness={0.95}
+      {useAuthoredShell ? (
+        <AuthoredInteriorShell
+          url={INTERIOR_SHELL_MODELS.cafe}
+          scale={[W / 0.884, H / 0.893, D / 1.09]}
+          castShadow={preset.shadows}
         />
-      </mesh>
+      ) : (
+        <>
+          {/* ── Floor — Poly Haven wood (canvas fallback) ── */}
+          <Suspense
+            fallback={
+              <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={getSharedPlaneGeometry(W, D)}>
+                <meshStandardMaterial map={floorTexture} color="#5a4a3a" roughness={0.85} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+              </mesh>
+            }
+          >
+            <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={getSharedPlaneGeometry(W, D)}>
+              <PolyHavenStandardMaterial materialId="wood_floor" repeatScale={1.1} color="#c4a888" metalness={0.03} roughness={0.84} polygonOffset />
+            </mesh>
+          </Suspense>
 
-      {/* ── Walls — Poly Haven plaster ── */}
-      <Suspense
-        fallback={
-          <>
+          {/* ── Ceiling — procedural blue-neon HDR wash ── */}
+          <mesh position={[0, H, 0]} rotation-x={Math.PI / 2} geometry={getSharedPlaneGeometry(W, D)}>
+            <meshStandardMaterial
+              map={ceilingGlowTexture}
+              color="#3a3038"
+              emissive="#1a2850"
+              emissiveIntensity={0.35}
+              roughness={0.95}
+            />
+          </mesh>
+
+          {/* ── Walls — Poly Haven plaster ── */}
+          <Suspense
+            fallback={
+              <>
+                <mesh position={[0, H / 2, -D / 2]} geometry={getSharedPlaneGeometry(W, H)}>
+                  <meshStandardMaterial map={wallTexture} color="#4a3a30" roughness={0.9} />
+                </mesh>
+                <mesh position={[0, H / 2, D / 2]} rotation-y={Math.PI} geometry={getSharedPlaneGeometry(W, H)}>
+                  <meshStandardMaterial map={wallTexture} color="#4a3a30" roughness={0.9} />
+                </mesh>
+                <mesh position={[-W / 2, H / 2, 0]} rotation-y={Math.PI / 2} geometry={getSharedPlaneGeometry(D, H)}>
+                  <meshStandardMaterial map={wallTexture} color="#4a3a30" roughness={0.9} />
+                </mesh>
+                <mesh position={[W / 2, H / 2, 0]} rotation-y={-Math.PI / 2} geometry={getSharedPlaneGeometry(D, H)}>
+                  <meshStandardMaterial map={wallTexture} color="#4a3a30" roughness={0.9} />
+                </mesh>
+              </>
+            }
+          >
             <mesh position={[0, H / 2, -D / 2]} geometry={getSharedPlaneGeometry(W, H)}>
-              <meshStandardMaterial map={wallTexture} color="#4a3a30" roughness={0.9} />
+              <PolyHavenStandardMaterial materialId="plastered_wall" repeatScale={0.85} color="#b8a898" roughness={0.9} />
             </mesh>
             <mesh position={[0, H / 2, D / 2]} rotation-y={Math.PI} geometry={getSharedPlaneGeometry(W, H)}>
-              <meshStandardMaterial map={wallTexture} color="#4a3a30" roughness={0.9} />
+              <PolyHavenStandardMaterial materialId="plastered_wall" repeatScale={0.85} color="#b8a898" roughness={0.9} />
             </mesh>
             <mesh position={[-W / 2, H / 2, 0]} rotation-y={Math.PI / 2} geometry={getSharedPlaneGeometry(D, H)}>
-              <meshStandardMaterial map={wallTexture} color="#4a3a30" roughness={0.9} />
+              <PolyHavenStandardMaterial materialId="plastered_wall" repeatScale={0.9} color="#b8a898" roughness={0.9} />
             </mesh>
             <mesh position={[W / 2, H / 2, 0]} rotation-y={-Math.PI / 2} geometry={getSharedPlaneGeometry(D, H)}>
-              <meshStandardMaterial map={wallTexture} color="#4a3a30" roughness={0.9} />
+              <PolyHavenStandardMaterial materialId="plastered_wall" repeatScale={0.9} color="#b8a898" roughness={0.9} />
             </mesh>
-          </>
-        }
-      >
-        <mesh position={[0, H / 2, -D / 2]} geometry={getSharedPlaneGeometry(W, H)}>
-          <PolyHavenStandardMaterial materialId="plastered_wall" repeatScale={0.85} color="#b8a898" roughness={0.9} />
-        </mesh>
-        <mesh position={[0, H / 2, D / 2]} rotation-y={Math.PI} geometry={getSharedPlaneGeometry(W, H)}>
-          <PolyHavenStandardMaterial materialId="plastered_wall" repeatScale={0.85} color="#b8a898" roughness={0.9} />
-        </mesh>
-        <mesh position={[-W / 2, H / 2, 0]} rotation-y={Math.PI / 2} geometry={getSharedPlaneGeometry(D, H)}>
-          <PolyHavenStandardMaterial materialId="plastered_wall" repeatScale={0.9} color="#b8a898" roughness={0.9} />
-        </mesh>
-        <mesh position={[W / 2, H / 2, 0]} rotation-y={-Math.PI / 2} geometry={getSharedPlaneGeometry(D, H)}>
-          <PolyHavenStandardMaterial materialId="plastered_wall" repeatScale={0.9} color="#b8a898" roughness={0.9} />
-        </mesh>
-      </Suspense>
+          </Suspense>
+        </>
+      )}
 
       {/* ── BAR COUNTER — extruded profile (not stacked boxes) ── */}
       <group position={[0, 0, -4.0]}>

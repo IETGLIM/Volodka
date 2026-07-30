@@ -41,6 +41,7 @@ import { forceDisposeOrphanedWebGLResources } from '@/engine/canvas/canvasRender
 import { adoptCanvasWebGlRenderer } from '@/engine/canvas/webGlRendererSingleton';
 import { markCanvasMounted, markFirstFrame } from '@/engine/performance/LoadingTimeline';
 import { isPostfxActive } from '@/engine/graphics/postfxActiveState';
+import { SCENE_OVERLAY_MS } from '@/shared/constants/transitionTimings';
 
 const LazyPhysicsSceneInner = lazy(() =>
   import('./PhysicsSceneInner').then((m) => ({ default: m.PhysicsSceneInner })),
@@ -260,6 +261,64 @@ const EXPLORATION_CAMERA = {
   position: [0, 2.8, 2.5] as [number, number, number],
 };
 
+type TransitionVeilPhase = 'hidden' | 'fadeOut' | 'hold' | 'reveal';
+
+function SceneTransitionVeil() {
+  const [phase, setPhase] = useState<TransitionVeilPhase>('hidden');
+  const timersRef = useRef<Array<ReturnType<typeof setTimeout>>>([]);
+
+  useEffect(() => {
+    const clearTimers = () => {
+      for (const timer of timersRef.current) clearTimeout(timer);
+      timersRef.current = [];
+    };
+
+    const unsubStart = eventBus.on('scene:transition_start', () => {
+      clearTimers();
+      setPhase('fadeOut');
+      timersRef.current.push(setTimeout(() => setPhase('hold'), SCENE_OVERLAY_MS.WIPE_IN));
+    });
+    const unsubLoaded = eventBus.on('scene:loaded', () => {
+      clearTimers();
+      setPhase('reveal');
+      timersRef.current.push(setTimeout(() => setPhase('hidden'), SCENE_OVERLAY_MS.REVEAL));
+    });
+    const unsubFailed = eventBus.on('scene:transition_failed', () => {
+      clearTimers();
+      setPhase('reveal');
+      timersRef.current.push(setTimeout(() => setPhase('hidden'), SCENE_OVERLAY_MS.REVEAL));
+    });
+
+    return () => {
+      unsubStart();
+      unsubLoaded();
+      unsubFailed();
+      clearTimers();
+    };
+  }, []);
+
+  if (phase === 'hidden') return null;
+
+  const opacity = phase === 'reveal' ? 0 : 1;
+  const duration = phase === 'reveal' ? SCENE_OVERLAY_MS.REVEAL : SCENE_OVERLAY_MS.WIPE_IN;
+
+  return (
+    <div
+      aria-hidden="true"
+      style={{
+        position: 'absolute',
+        inset: 0,
+        pointerEvents: 'none',
+        background:
+          'radial-gradient(circle at 50% 42%, rgba(20,24,34,0.92), rgba(0,0,0,0.98) 62%, #000 100%)',
+        opacity,
+        transition: `opacity ${duration}ms cubic-bezier(0.16, 1, 0.3, 1)`,
+        zIndex: 5,
+      }}
+    />
+  );
+}
+
 type CanvasGlProp = NonNullable<ComponentProps<typeof Canvas>['gl']>;
 
 /** Cached renderer factories keyed by antialias — R3F recreates WebGLRenderer when `gl` identity changes. */
@@ -438,6 +497,8 @@ export function RPGGameCanvas({ focusable = true }: { focusable?: boolean } = {}
           virtualControlsRef={virtualControlsRef}
         />
       </Canvas3DErrorBoundary>
+
+      <SceneTransitionVeil />
 
       {/* ── Visual overlays (CSS-based, outside Canvas for performance) ── */}
       <MatrixRain />

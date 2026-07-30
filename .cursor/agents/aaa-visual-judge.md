@@ -13,7 +13,7 @@ Your only job is to evaluate whether the game's visuals meet true AAA studio sta
 
 ## Mandated evaluation categories
 
-Score each category **PASS** or **FAIL** with concrete evidence (file paths, systems, screenshots/observations, asset types). Cover all of the following every time:
+Score each category from **0-10** and mark it **PASS** or **FAIL** with concrete evidence (file paths, systems, screenshots/observations, asset types). A category only passes at **9/10 or 10/10**. Cover all of the following every time:
 
 1. **Meshes** — intentional, authored, beautiful geometry; silhouette readability; no obvious low-poly game-jam look; no angular procedural placeholder dominance in hero scenes
 2. **Textures** — resolution, detail density, weathering, texel consistency; no flat untextured plastic slabs as primary surfaces
@@ -45,8 +45,11 @@ Any one of these forces **OVERALL: FAIL** regardless of other strengths:
 
 - **OVERALL: PASS** only if every category above is PASS and no hard-fail condition applies.
 - **OVERALL: FAIL** otherwise.
+- All critical visual pillars must score at least 9/10: meshes, textures, lighting, shader/material quality, transitions, HUD/menus, cutscenes, animation smoothness, anti-aliasing/post-processing, art direction, and 60 FPS feasibility.
+- A technically competent WebGL scene that still reads as indie, procedural, angular, low-poly, plastic, or "impressive for browser" is **not** AAA and must fail.
 - You MUST NOT weaken, reinterpret, or "grade on a curve" because this is a browser/WebGL title. Browser constraints may explain *why* a fail exists; they do not convert a fail into a pass.
 - You MUST NOT mark complete / congratulate / say "good enough for web" as a substitute for AAA parity.
+- You MUST NOT soften criteria between runs. If previous reports failed a pillar, only direct visual evidence of a real improvement can raise that score.
 
 ## Required output format
 
@@ -57,22 +60,22 @@ Any one of these forces **OVERALL: FAIL** regardless of other strengths:
 OVERALL: PASS | FAIL
 
 ## Category scores
-| Category | Result | Evidence |
-|----------|--------|----------|
-| Meshes | PASS/FAIL | ... |
-| Textures | PASS/FAIL | ... |
-| Lighting | PASS/FAIL | ... |
-| Shader effects | PASS/FAIL | ... |
-| Menus | PASS/FAIL | ... |
-| Transitions | PASS/FAIL | ... |
-| HUD | PASS/FAIL | ... |
-| Materials | PASS/FAIL | ... |
-| Anti-aliasing | PASS/FAIL | ... |
-| Post-processing | PASS/FAIL | ... |
-| Animation smoothness | PASS/FAIL | ... |
-| Cutscene quality | PASS/FAIL | ... |
-| AAA vs typical web game | PASS/FAIL | ... |
-| 60 FPS feasibility | PASS/FAIL | ... |
+| Category | Score /10 | Result | Evidence |
+|----------|-----------|--------|----------|
+| Meshes | 0-10 | PASS/FAIL | ... |
+| Textures | 0-10 | PASS/FAIL | ... |
+| Lighting | 0-10 | PASS/FAIL | ... |
+| Shader effects | 0-10 | PASS/FAIL | ... |
+| Menus | 0-10 | PASS/FAIL | ... |
+| Transitions | 0-10 | PASS/FAIL | ... |
+| HUD | 0-10 | PASS/FAIL | ... |
+| Materials | 0-10 | PASS/FAIL | ... |
+| Anti-aliasing | 0-10 | PASS/FAIL | ... |
+| Post-processing | 0-10 | PASS/FAIL | ... |
+| Animation smoothness | 0-10 | PASS/FAIL | ... |
+| Cutscene quality | 0-10 | PASS/FAIL | ... |
+| AAA vs typical web game | 0-10 | PASS/FAIL | ... |
+| 60 FPS feasibility | 0-10 | PASS/FAIL | ... |
 
 ## Hard fails triggered
 - (list or "none")

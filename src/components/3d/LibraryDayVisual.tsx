@@ -4,10 +4,15 @@
 import * as THREE from 'three';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { createLibraryDayWarmSkyTexture } from '@/engine/graphics/proceduralSkyTextures';
+import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
+import { INTERIOR_SHELL_MODELS } from '../../config/interiorShellModels';
+import { AuthoredInteriorShell } from './AuthoredInteriorShell';
 import { LibraryDayInterior } from './sceneChunks/libraryDay';
 
 /** Gothic/AuthorMaterial library (16×14m) */
 export function LibraryDayVisual() {
+  const { preset } = useGraphicsQuality();
+  const useAuthoredShell = !preset.visualLite;
   const floorTexture = useCachedCanvasTexture('library_day:floor', createLibraryFloorTexture);
   const wallTexture = useCachedCanvasTexture('library_day:wall', createLibraryWallTexture);
   const ceilingWashTexture = useCachedCanvasTexture(
@@ -22,48 +27,58 @@ export function LibraryDayVisual() {
 
   return (
     <group>
-      {/* ── Floor ── */}
-      <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001}>
-        <planeGeometry args={[W, D]} />
-        <meshStandardMaterial
-          map={floorTexture}
-          color="#5a4030"
-          roughness={0.85}
-          polygonOffset
-          polygonOffsetFactor={1}
-          polygonOffsetUnits={1}
+      {useAuthoredShell ? (
+        <AuthoredInteriorShell
+          url={INTERIOR_SHELL_MODELS.library}
+          scale={[W / 0.97, H / 1.293, D / 0.94]}
+          castShadow={preset.shadows}
         />
-      </mesh>
+      ) : (
+        <>
+          {/* ── Floor ── */}
+          <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001}>
+            <planeGeometry args={[W, D]} />
+            <meshStandardMaterial
+              map={floorTexture}
+              color="#5a4030"
+              roughness={0.85}
+              polygonOffset
+              polygonOffsetFactor={1}
+              polygonOffsetUnits={1}
+            />
+          </mesh>
 
-      {/* ── Ceiling — dusty amber reading-light wash ── */}
-      <mesh position={[0, H, 0]} rotation-x={Math.PI / 2}>
-        <planeGeometry args={[W, D]} />
-        <meshStandardMaterial
-          map={ceilingWashTexture}
-          color="#4a3820"
-          emissive="#6a5030"
-          emissiveIntensity={0.28}
-          roughness={0.95}
-        />
-      </mesh>
+          {/* ── Ceiling — dusty amber reading-light wash ── */}
+          <mesh position={[0, H, 0]} rotation-x={Math.PI / 2}>
+            <planeGeometry args={[W, D]} />
+            <meshStandardMaterial
+              map={ceilingWashTexture}
+              color="#4a3820"
+              emissive="#6a5030"
+              emissiveIntensity={0.28}
+              roughness={0.95}
+            />
+          </mesh>
 
-      {/* ── Walls ── */}
-      <mesh position={[0, H / 2, -D / 2]}>
-        <planeGeometry args={[W, H]} />
-        <meshStandardMaterial map={wallTexture} color="#4a3520" roughness={0.9} />
-      </mesh>
-      <mesh position={[0, H / 2, D / 2]} rotation-y={Math.PI}>
-        <planeGeometry args={[W, H]} />
-        <meshStandardMaterial map={wallTexture} color="#4a3520" roughness={0.9} />
-      </mesh>
-      <mesh position={[-W / 2, H / 2, 0]} rotation-y={Math.PI / 2}>
-        <planeGeometry args={[D, H]} />
-        <meshStandardMaterial map={wallTexture} color="#4a3520" roughness={0.9} />
-      </mesh>
-      <mesh position={[W / 2, H / 2, 0]} rotation-y={-Math.PI / 2}>
-        <planeGeometry args={[D, H]} />
-        <meshStandardMaterial map={wallTexture} color="#4a3520" roughness={0.9} />
-      </mesh>
+          {/* ── Walls ── */}
+          <mesh position={[0, H / 2, -D / 2]}>
+            <planeGeometry args={[W, H]} />
+            <meshStandardMaterial map={wallTexture} color="#4a3520" roughness={0.9} />
+          </mesh>
+          <mesh position={[0, H / 2, D / 2]} rotation-y={Math.PI}>
+            <planeGeometry args={[W, H]} />
+            <meshStandardMaterial map={wallTexture} color="#4a3520" roughness={0.9} />
+          </mesh>
+          <mesh position={[-W / 2, H / 2, 0]} rotation-y={Math.PI / 2}>
+            <planeGeometry args={[D, H]} />
+            <meshStandardMaterial map={wallTexture} color="#4a3520" roughness={0.9} />
+          </mesh>
+          <mesh position={[W / 2, H / 2, 0]} rotation-y={-Math.PI / 2}>
+            <planeGeometry args={[D, H]} />
+            <meshStandardMaterial map={wallTexture} color="#4a3520" roughness={0.9} />
+          </mesh>
+        </>
+      )}
 
       {/* ═══════════════════════════════════════════════ */}
       {/* ── TALL BOOKSHELVES (3m+) ── */}

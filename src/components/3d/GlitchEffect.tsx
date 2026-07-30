@@ -102,10 +102,10 @@ export function GlitchEffect() {
       }),
     );
 
-    // Scene transitions trigger a mild glitch
+    // Scene transitions now use a cinematic veil; keep only a restrained signal tick.
     unsubs.push(
       eventBus.on('scene:enter', () => {
-        triggerGlitch({ intensity: 0.3, duration: 400 });
+        triggerGlitch({ intensity: 0.14, duration: 260 });
       }),
     );
 

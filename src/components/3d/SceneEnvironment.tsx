@@ -149,11 +149,6 @@ export function SceneEnvironment() {
   const [envMapReady, setEnvMapReady] = useState(false);
   const envWarmupFrames = useRef(0);
 
-  useEffect(() => {
-    envWarmupFrames.current = 0;
-    setEnvMapReady(false);
-  }, [sceneId]);
-
   const isIndoor = config.hasCeiling;
   const heroScene = isHeroScene(visualSceneId);
   // Outdoor IBL on medium+; indoor hero IBL on high/ultra for rich indirect bounce
@@ -164,6 +159,13 @@ export function SceneEnvironment() {
       !isIndoor
       || (heroScene && (preset.id === 'high' || preset.id === 'ultra'))
     );
+
+  useEffect(() => {
+    envWarmupFrames.current = 0;
+    // Hero scenes need IBL/env presence before the first readable frame; keep
+    // delayed warmup only for secondary scenes where local lights are enough.
+    setEnvMapReady(enableEnvMap && heroScene);
+  }, [sceneId, enableEnvMap, heroScene]);
 
   useFrameTick('misc', () => {
     if (!enableEnvMap || envMapReady) return;

@@ -9,6 +9,7 @@ import {
 import { lerpAngle, enforceFloor, clampHorizontalDisplacement } from '@/engine/player/playerMath';
 import { computeKccMovementSubstepped } from '@/engine/player/physicsSubstep';
 import { updateMoveBlendRef, resolveLockedLocomotionPresentation } from '@/engine/player/playerLocomotionPresentation';
+import { syncResolvedMovementScratch } from '@/engine/player/playerScratchSync';
 import type { PlayerMovementDeps } from '@/engine/player/playerFrameTypes';
 
 /** Locked branch — combat anim, external velocity, KCC/direct when interaction holds movement. */
@@ -58,6 +59,7 @@ export function runLockedPlayerMovement(deps: PlayerMovementDeps): void {
   const desiredDisp = { x: vel.x * dt, y: vel.y * dt, z: vel.z * dt };
   const posBeforeMovement = rb.translation();
   const lockedCollider = deps.capsuleColliderRef.current;
+  let isGroundedNow = wasGrounded;
   if (lockedCollider && controller) {
     const { actualDisplacement: actual, isGrounded: grounded } = computeKccMovementSubstepped(
       controller,
@@ -66,6 +68,7 @@ export function runLockedPlayerMovement(deps: PlayerMovementDeps): void {
       desiredDisp,
       dt,
     );
+    isGroundedNow = grounded;
 
     if (grounded) {
       vel.y = 0;
@@ -89,6 +92,8 @@ export function runLockedPlayerMovement(deps: PlayerMovementDeps): void {
       y: posBeforeMovement.y + desiredDisp.y,
       z: posBeforeMovement.z + dz,
     }, true);
+    isGroundedNow = enforceFloor(rb, vel, groundY);
+    if (isGroundedNow) deps.isGroundedRef.current = true;
   }
 
   const presentation = resolveLockedLocomotionPresentation({
@@ -103,5 +108,17 @@ export function runLockedPlayerMovement(deps: PlayerMovementDeps): void {
   // Single floor policy after KCC (finalize publishes livePlayerPositionRef).
   if (enforceFloor(rb, vel, groundY)) {
     deps.isGroundedRef.current = true;
+    isGroundedNow = true;
   }
+  const lockedSpeed = Math.sqrt(vel.x * vel.x + vel.z * vel.z);
+  syncResolvedMovementScratch(deps, {
+    isGroundedNow,
+    onFlatGround: deps.isGroundedRef.current && vel.y <= 0.2,
+    airborneIntent: vel.y > 0.2,
+    isMoving: lockedSpeed > 0.12,
+    running: false,
+    keyboardDrivesMove: false,
+    blockedByWall: false,
+    prevVelY: vel.y,
+  });
 }

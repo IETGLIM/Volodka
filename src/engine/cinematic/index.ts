@@ -31,6 +31,7 @@ export {
 
 export { INTRO_WAKE_TIMELINE } from './introWakeTimeline';
 export { STREET_ARRIVAL_TIMELINE } from './streetArrivalTimeline';
+export { CITY_SQUARE_ARRIVAL_TIMELINE } from './citySquareArrivalTimeline';
 export { PROCEDURAL_AAA_ARRIVAL_TIMELINE } from './proceduralAaaArrivalTimeline';
 export {
   setCinematicLightCue,

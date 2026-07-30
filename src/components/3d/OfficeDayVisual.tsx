@@ -1,7 +1,8 @@
 
 /* ─── Volodka RPG – IT Guild Office procedural 3D visual ─── */
 
-import { useMemo, type MutableRefObject } from 'react';
+import { Suspense, useMemo, type MutableRefObject } from 'react';
+import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { seededRand } from '@/shared/utils/seededRand';
 import { getSharedStandardMaterial, mat } from '@/engine/three/moduleMaterialRegistry';
@@ -10,10 +11,15 @@ import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
 import { EnvironmentDetail, SceneClutterGate } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { createOfficeDayOvercastSkyTexture } from '@/engine/graphics/proceduralSkyTextures';
+import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import {
   getSharedBoxGeometry,
   getSharedPlaneGeometry,
 } from '@/engine/three/moduleGeometryRegistry';
+import { INTERIOR_SHELL_MODELS } from '../../config/interiorShellModels';
+import { AuthoredInteriorShell } from './AuthoredInteriorShell';
+import { POLYHAVEN_MODELS } from '@/config/polyhavenAssets';
+import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
 
 interface OfficeDayVisualProps {
   livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
@@ -90,8 +96,90 @@ const mat_light_tube = getSharedStandardMaterial({
   emissive: '#f4faff',
   emissiveIntensity: 1.6,
 });
+const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeof useGLTF>[3]>;
+const KENNEY_TERMINAL_MODEL = '/models/props/terminal.glb';
+
+function cloneOfficeAsset(source: THREE.Object3D, castShadow: boolean): THREE.Object3D {
+  const clone = source.clone(true);
+  clone.traverse((node) => {
+    if ((node as THREE.Mesh).isMesh) {
+      const mesh = node as THREE.Mesh;
+      mesh.castShadow = castShadow;
+      mesh.receiveShadow = true;
+      const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+      for (const material of mats) {
+        if (material && 'envMapIntensity' in material) {
+          const standard = material as THREE.MeshStandardMaterial;
+          standard.envMapIntensity = 0.72;
+          if (typeof standard.roughness === 'number') {
+            standard.roughness = Math.min(1, Math.max(0.42, standard.roughness));
+          }
+        }
+      }
+    }
+  });
+  return clone;
+}
+
+function AuthoredOfficeProp({
+  url,
+  position,
+  rotationY = 0,
+  scale = 1,
+  castShadow,
+}: {
+  url: string;
+  position: [number, number, number];
+  rotationY?: number;
+  scale?: number;
+  castShadow: boolean;
+}) {
+  const gltf = useGLTF(url, true, true, extendLoader);
+  const scene = useMemo(() => cloneOfficeAsset(gltf.scene, castShadow), [gltf.scene, castShadow]);
+  return (
+    <group position={position} rotation={[0, rotationY, 0]} scale={scale}>
+      <primitive object={scene} />
+    </group>
+  );
+}
+
+function AuthoredOfficeDesk({ castShadow }: { castShadow: boolean }) {
+  return (
+    <group>
+      <Suspense fallback={null}>
+        <AuthoredOfficeProp
+          url={POLYHAVEN_MODELS.paintedWoodenTable}
+          position={[0, 0, 0]}
+          rotationY={Math.PI / 2}
+          scale={0.58}
+          castShadow={castShadow}
+        />
+      </Suspense>
+      <Suspense fallback={null}>
+        <AuthoredOfficeProp
+          url={KENNEY_TERMINAL_MODEL}
+          position={[0, 0.8, -0.22]}
+          scale={1.08}
+          castShadow={castShadow}
+        />
+      </Suspense>
+      <Suspense fallback={null}>
+        <AuthoredOfficeProp
+          url={POLYHAVEN_MODELS.armChair}
+          position={[0, 0, 0.68]}
+          rotationY={Math.PI}
+          scale={0.52}
+          castShadow={castShadow}
+        />
+      </Suspense>
+    </group>
+  );
+}
 
 export function OfficeDayVisual({ livePlayerPositionRef }: OfficeDayVisualProps) {
+  const { preset } = useGraphicsQuality();
+  const useAuthoredShell = !preset.visualLite;
+  const useAuthoredDesks = !preset.visualLite;
   const floorTexture = useCachedCanvasTexture('office_day:floor', createOfficeFloorTexture);
   const wallTexture = useCachedCanvasTexture('office_day:wall', createOfficeWallTexture);
   const ceilingWashTexture = useCachedCanvasTexture(
@@ -147,41 +235,51 @@ export function OfficeDayVisual({ livePlayerPositionRef }: OfficeDayVisualProps)
 
   return (
     <group>
-      {/* ── Floor ── */}
-      <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={getSharedPlaneGeometry(W, D)} material={mat_floor} />
+      {useAuthoredShell ? (
+        <AuthoredInteriorShell
+          url={INTERIOR_SHELL_MODELS.office}
+          scale={[W / 1.36, H / 2.88, D / 1.36]}
+          castShadow={preset.shadows}
+        />
+      ) : (
+        <>
+          {/* ── Floor ── */}
+          <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={getSharedPlaneGeometry(W, D)} material={mat_floor} />
 
-      {/* ── Ceiling — procedural overcast HDR wash ── */}
-      <mesh position={[0, H, 0]} rotation-x={Math.PI / 2} geometry={getSharedPlaneGeometry(W, D)} material={mat_ceiling} />
+          {/* ── Ceiling — procedural overcast HDR wash ── */}
+          <mesh position={[0, H, 0]} rotation-x={Math.PI / 2} geometry={getSharedPlaneGeometry(W, D)} material={mat_ceiling} />
 
-      {/* ── Walls ── */}
-      <mesh position={[0, H / 2, -D / 2]} geometry={getSharedPlaneGeometry(W, H)} material={mat_wall} />
-      <mesh position={[0, H / 2, D / 2]} rotation-y={Math.PI} geometry={getSharedPlaneGeometry(W, H)} material={mat_wall} />
-      <mesh position={[-W / 2, H / 2, 0]} rotation-y={Math.PI / 2} geometry={getSharedPlaneGeometry(D, H)} material={mat_wall} />
-      <mesh position={[W / 2, H / 2, 0]} rotation-y={-Math.PI / 2} geometry={getSharedPlaneGeometry(D, H)} material={mat_wall} />
+          {/* ── Walls ── */}
+          <mesh position={[0, H / 2, -D / 2]} geometry={getSharedPlaneGeometry(W, H)} material={mat_wall} />
+          <mesh position={[0, H / 2, D / 2]} rotation-y={Math.PI} geometry={getSharedPlaneGeometry(W, H)} material={mat_wall} />
+          <mesh position={[-W / 2, H / 2, 0]} rotation-y={Math.PI / 2} geometry={getSharedPlaneGeometry(D, H)} material={mat_wall} />
+          <mesh position={[W / 2, H / 2, 0]} rotation-y={-Math.PI / 2} geometry={getSharedPlaneGeometry(D, H)} material={mat_wall} />
+        </>
+      )}
 
       {/* ═══════════════════════════════════════════════ */}
       {/* ── ROWS OF DESKS WITH MONITORS ── */}
       {/* ═══════════════════════════════════════════════ */}
 
       {/* Row 1 - left side */}
-      <OfficeDesk position={[-4.5, 0, -3.5]} />
-      <OfficeDesk position={[-4.5, 0, -1.0]} />
-      <OfficeDesk position={[-4.5, 0, 1.5]} />
+      <OfficeDesk position={[-4.5, 0, -3.5]} authored={useAuthoredDesks} castShadow={preset.shadows} />
+      <OfficeDesk position={[-4.5, 0, -1.0]} authored={useAuthoredDesks} castShadow={preset.shadows} />
+      <OfficeDesk position={[-4.5, 0, 1.5]} authored={useAuthoredDesks} castShadow={preset.shadows} />
 
       {/* Row 2 - center-left */}
-      <OfficeDesk position={[-1.5, 0, -3.5]} />
-      <OfficeDesk position={[-1.5, 0, -1.0]} />
-      <OfficeDesk position={[-1.5, 0, 1.5]} />
+      <OfficeDesk position={[-1.5, 0, -3.5]} authored={useAuthoredDesks} castShadow={preset.shadows} />
+      <OfficeDesk position={[-1.5, 0, -1.0]} authored={useAuthoredDesks} castShadow={preset.shadows} />
+      <OfficeDesk position={[-1.5, 0, 1.5]} authored={useAuthoredDesks} castShadow={preset.shadows} />
 
       {/* Row 3 - center-right */}
-      <OfficeDesk position={[1.5, 0, -3.5]} />
-      <OfficeDesk position={[1.5, 0, -1.0]} />
-      <OfficeDesk position={[1.5, 0, 1.5]} />
+      <OfficeDesk position={[1.5, 0, -3.5]} authored={useAuthoredDesks} castShadow={preset.shadows} />
+      <OfficeDesk position={[1.5, 0, -1.0]} authored={useAuthoredDesks} castShadow={preset.shadows} />
+      <OfficeDesk position={[1.5, 0, 1.5]} authored={useAuthoredDesks} castShadow={preset.shadows} />
 
       {/* Row 4 - right side */}
-      <OfficeDesk position={[4.5, 0, -3.5]} />
-      <OfficeDesk position={[4.5, 0, -1.0]} />
-      <OfficeDesk position={[4.5, 0, 1.5]} />
+      <OfficeDesk position={[4.5, 0, -3.5]} authored={useAuthoredDesks} castShadow={preset.shadows} />
+      <OfficeDesk position={[4.5, 0, -1.0]} authored={useAuthoredDesks} castShadow={preset.shadows} />
+      <OfficeDesk position={[4.5, 0, 1.5]} authored={useAuthoredDesks} castShadow={preset.shadows} />
 
       {/* ═══════════════════════════════════════════════ */}
       {/* ── SERVER RACKS (back wall) ── */}
@@ -543,7 +641,23 @@ export function OfficeDayVisual({ livePlayerPositionRef }: OfficeDayVisualProps)
 }
 
 /** Office desk with emissive blue monitor */
-function OfficeDesk({ position }: { position: [number, number, number] }) {
+function OfficeDesk({
+  position,
+  authored,
+  castShadow,
+}: {
+  position: [number, number, number];
+  authored: boolean;
+  castShadow: boolean;
+}) {
+  if (authored) {
+    return (
+      <group position={position}>
+        <AuthoredOfficeDesk castShadow={castShadow} />
+      </group>
+    );
+  }
+
   return (
     <group position={position}>
       {/* Desk top */}
@@ -690,3 +804,7 @@ function createOfficeWallTexture(): THREE.CanvasTexture {
   tex.repeat.set(4, 2);
   return tex;
 }
+
+useGLTF.preload(POLYHAVEN_MODELS.paintedWoodenTable, true, true, extendLoader);
+useGLTF.preload(POLYHAVEN_MODELS.armChair, true, true, extendLoader);
+useGLTF.preload(KENNEY_TERMINAL_MODEL, true, true, extendLoader);
