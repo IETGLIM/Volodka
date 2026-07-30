@@ -280,8 +280,11 @@ function SceneTransitionVeil() {
     });
     const unsubLoaded = eventBus.on('scene:loaded', () => {
       clearTimers();
-      setPhase('reveal');
-      timersRef.current.push(setTimeout(() => setPhase('hidden'), SCENE_OVERLAY_MS.REVEAL));
+      // Hold beat before reveal — lets camera rail + first frame settle (avoids hard pop).
+      timersRef.current.push(setTimeout(() => setPhase('reveal'), SCENE_OVERLAY_MS.HOLD));
+      timersRef.current.push(
+        setTimeout(() => setPhase('hidden'), SCENE_OVERLAY_MS.HOLD + SCENE_OVERLAY_MS.REVEAL),
+      );
     });
     const unsubFailed = eventBus.on('scene:transition_failed', () => {
       clearTimers();
@@ -300,7 +303,12 @@ function SceneTransitionVeil() {
   if (phase === 'hidden') return null;
 
   const opacity = phase === 'reveal' ? 0 : 1;
-  const duration = phase === 'reveal' ? SCENE_OVERLAY_MS.REVEAL : SCENE_OVERLAY_MS.WIPE_IN;
+  const duration =
+    phase === 'reveal'
+      ? SCENE_OVERLAY_MS.REVEAL
+      : phase === 'hold'
+        ? SCENE_OVERLAY_MS.HOLD
+        : SCENE_OVERLAY_MS.WIPE_IN;
 
   return (
     <div

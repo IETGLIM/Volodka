@@ -191,6 +191,7 @@ export const SCENE_ASSET_OWNERSHIP: readonly SceneAssetOwnershipEntry[] = [
     'zarema_albert_room',
     'abandoned_factory',
     'factory_basement',
+    'guild_mainframe',
   ] as const).map(
     (sceneId): SceneAssetOwnershipEntry => ({
       sceneId,

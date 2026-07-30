@@ -308,14 +308,16 @@ const SCENE_ACCENT_LIGHTS: Record<string, AccentLight[]> = {
     { position: [0, 2.5, -4], color: '#eebb66', intensity: 0.9, distance: 10 },
   ],
   guild_mainframe: [
-    { position: [-3, 2, -2], color: '#22aadd', intensity: 2.0, distance: 10, animated: 'cold_pulse' },
-    { position: [3, 2, -4], color: '#44ddff', intensity: 1.8, distance: 9, animated: 'cold_pulse' },
-    { position: [0, 3, 0], color: '#1188cc', intensity: 1.5, distance: 12 },
+    { position: [-3, 2, -2], color: '#22aadd', intensity: 2.2, distance: 10, animated: 'cold_pulse' },
+    { position: [3, 2, -4], color: '#44ddff', intensity: 2.0, distance: 9, animated: 'cold_pulse' },
+    { position: [0, 3, 0], color: '#1188cc', intensity: 1.6, distance: 12 },
+    { position: [0, 2.2, -5.2], color: '#00ffaa', intensity: 1.4, distance: 8, animated: 'cold_pulse' },
   ],
   abandoned_factory: [
-    { position: [-2, 2.5, 2], color: '#ff8833', intensity: 2.2, distance: 12, animated: 'candle_flicker' },
-    { position: [4, 2, -3], color: '#dd6622', intensity: 1.5, distance: 10, animated: 'candle_flicker' },
-    { position: [0, 3, -4], color: '#ffaa44', intensity: 1.2, distance: 8, animated: 'candle_flicker' },
+    { position: [-2, 2.5, 2], color: '#ff8833', intensity: 2.4, distance: 12, animated: 'candle_flicker' },
+    { position: [4, 2, -3], color: '#dd6622', intensity: 1.7, distance: 10, animated: 'candle_flicker' },
+    { position: [0, 3, -4], color: '#ffaa44', intensity: 1.4, distance: 8, animated: 'candle_flicker' },
+    { position: [-2, 1.8, -3.5], color: '#22aa66', intensity: 0.9, distance: 6, animated: 'cold_pulse' },
   ],
   volodka_room: [
     { position: [1.2, 1.4, -2.5], color: '#66ffaa', intensity: 1.4, distance: 6, animated: 'cold_pulse' },  // monitor glow (data flow)
@@ -324,8 +326,9 @@ const SCENE_ACCENT_LIGHTS: Record<string, AccentLight[]> = {
     { position: [2.3, 0.2, 1.0], color: '#334488', intensity: 0.3, distance: 4 },    // floor-level cold bounce from window wall
   ],
   factory_basement: [
-    { position: [0, 2.4, -5], color: '#22ff88', intensity: 1.8, distance: 10 },        // Заря-М core glow
-    { position: [2, 2, -2], color: '#44ffaa', intensity: 1.0, distance: 7 },
+    { position: [0, 2.4, -5], color: '#22ff88', intensity: 2.0, distance: 10 },
+    { position: [2, 2, -2], color: '#44ffaa', intensity: 1.2, distance: 7 },
+    { position: [-2.5, 2.1, -3.5], color: '#33cc88', intensity: 0.85, distance: 6, animated: 'cold_pulse' },
   ],
   rooftop_edge: [
     { position: [-3, 3, 0], color: '#ff8844', intensity: 1.8, distance: 14 },        // sunset warm glow

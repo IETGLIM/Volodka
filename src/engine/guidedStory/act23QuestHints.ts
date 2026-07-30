@@ -229,3 +229,46 @@ export function getThreadOf18LinesHint(currentSceneId: string): string | null {
   }
   return null;
 }
+
+/** Act 3 hub relay mesh — pier → library → café → office → guild → factory (flag-driven, no quest). */
+export function getAct3HubRelayHint(currentSceneId: string): string | null {
+  try {
+    const flags = getGameSnapshot().playerState.flags;
+    if (flags.act3_hub_relay_mesh_closed) return null;
+    if (!flags.zarema_arrested) return null;
+
+    if (!flags.act3_pier_relay_whisper_done) {
+      return currentSceneId === 'river_pier'
+        ? 'Поговори с Трофимом у гирлянды — relay начинается на пирсе [E]'
+        : 'Пирс №3 — Трофим передаёт первый relay после ареста Заремы';
+    }
+    if (!flags.act3_library_relay_echo_done) {
+      return currentSceneId === 'library_day'
+        ? 'Прислушайся к каталогу — карточка «777» [E]'
+        : 'Библиотека — каталог откликается на relay с пирса';
+    }
+    if (!flags.act3_cafe_relay_ack_done) {
+      return currentSceneId === 'cafe_evening'
+        ? 'Спроси бариста о релее — салфетка уже на стойке [E]'
+        : '«Синяя яма» — бариста подтверждает relay из библиотеки';
+    }
+    if (!flags.act3_office_relay_ack_done) {
+      return currentSceneId === 'office_day'
+        ? 'Спроси коллегу о релее — монитор мигает ритмом [E]'
+        : 'Офис — серверная замыкает relay из кафе';
+    }
+    if (!flags.act3_guild_relay_ack_done) {
+      return currentSceneId === 'guild_mainframe'
+        ? 'Прислушайся к мейнфрейму — «777 / OFFICE / ACK» [E]'
+        : 'Серверная гильдии — мейнфрейм помнит relay из офиса';
+    }
+    if (!flags.act3_factory_relay_ack_done) {
+      return currentSceneId === 'abandoned_factory'
+        ? 'Прислушайся к реле у паяльной станции — кольцо замкнётся [E]'
+        : 'Завод «Хром-М» — последний узел hub-mesh под полом';
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}

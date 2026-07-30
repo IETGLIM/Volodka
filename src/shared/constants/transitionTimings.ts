@@ -5,12 +5,12 @@
 
 /** Cinematic transition phase durations (in seconds) */
 export const CINEMATIC_PHASES = {
-  /** Glitch(0.15s) + wipe-in(0.4s) — slightly longer fade for softer scene handoff */
-  FADE_OUT_DURATION: 0.55,
-  /** Hold/black phase — brief title card beat, not a hard black cut */
-  HOLD_DURATION: 0.22,
-  /** Wipe-out / fade-in phase — extended ease into the new scene */
-  FADE_IN_DURATION: 0.52,
+  /** Glitch(0.15s) + wipe-in — longer fade for softer hero scene handoff */
+  FADE_OUT_DURATION: 0.65,
+  /** Hold/black phase — brief beat while camera rail settles */
+  HOLD_DURATION: 0.28,
+  /** Wipe-out / fade-in phase — extended crossfade into the new scene */
+  FADE_IN_DURATION: 0.68,
 } as const;
 
 /** Scene transition handler timings (in milliseconds) */

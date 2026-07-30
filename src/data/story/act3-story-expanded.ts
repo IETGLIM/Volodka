@@ -1815,11 +1815,39 @@ export const ACT3_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Запомнить — узел жив под полом',
-        next: 'office_explore_mode',
+        next: 'mainframe_explore_mode',
         effects: [
           { type: 'setFlag', flag: 'act3_guild_relay_ack_done', flagValue: true },
           { type: 'discoverLore', loreId: 'lore_hub_relay_network' },
           { type: 'addXp', value: 25 },
+        ],
+      },
+    ],
+  },
+
+  /* ══════════════════════════════════════════════════════════════════════════
+     Act 3 hub beat — factory floor closes guild→factory relay leg (hub mesh ring)
+     ══════════════════════════════════════════════════════════════════════════ */
+  act3_exp_factory_relay_ack: {
+    id: 'act3_exp_factory_relay_ack',
+    text: [
+      'Паяльная станция холодная, но индикатор на стене горит — «777 / MAINFRAME / ACK». Кабель уходит в пол, туда же, где когда-то шла охлаждающая петля «Прогресс-7». Гул под ногами не вибрация — ритм. Тот же, что на пирсе и в серверной гильдии.',
+      '',
+      'На металлической бирке — три кружки, выжженные не паяльником, а частотой: «mesh closed / factory / do not log». Гильдия видит заброшенный цех. Мейнфрейм — видит последний узел кольца. Пока «Заря-М» дышит под полом, relay не умрёт — даже если архив сотрёт офис и кафе.',
+    ].join('\n'),
+    speaker: 'narrator',
+    sceneId: 'abandoned_factory',
+    contextNote: 'После guild relay завод подтверждает hub-mesh: guild mainframe → factory floor.',
+    choices: [
+      {
+        text: 'Запомнить — кольцо замкнулось на заводе',
+        next: 'factory_explore_mode',
+        effects: [
+          { type: 'setFlag', flag: 'act3_factory_relay_ack_done', flagValue: true },
+          { type: 'setFlag', flag: 'act3_hub_relay_mesh_closed', flagValue: true },
+          { type: 'discoverLore', loreId: 'lore_zarya_poetry' },
+          { type: 'discoverLore', loreId: 'lore_hub_relay_network' },
+          { type: 'addXp', value: 30 },
         ],
       },
     ],

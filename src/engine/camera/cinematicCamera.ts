@@ -57,7 +57,7 @@ const COMBAT_SHAKE_INTENSITY = 0.12;  // max shake offset
 const COMBAT_SHAKE_DURATION = 0.4;    // seconds shake lasts
 
 /* ── Scene transition ── */
-const TRANSITION_FLY_DURATION = 1.2;  // seconds for fly-through
+const TRANSITION_FLY_DURATION = 1.45;  // seconds for fly-through — aligned with overlay crossfade
 const TRANSITION_FLY_HEIGHT = 4.0;    // camera rises during transition
 /** Session 9: Subtle lateral sway amplitude (world units) during scene transition fly-through. */
 const TRANSITION_SWAY_AMPLITUDE = 0.6;

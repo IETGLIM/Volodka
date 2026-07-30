@@ -10,6 +10,7 @@ import {
   getVaultDefenseHint,
   getVaultKeyFragmentsHint,
   getZaremaRescueHint,
+  getAct3HubRelayHint,
 } from './act23QuestHints';
 
 const snap = {
@@ -19,6 +20,9 @@ const snap = {
     objectives: Record<string, boolean>;
     startedAtTime: number;
   }>,
+  playerState: {
+    flags: {} as Record<string, boolean>,
+  },
 };
 
 vi.mock('@/engine/GameActionDispatcher', () => ({
@@ -28,6 +32,7 @@ vi.mock('@/engine/GameActionDispatcher', () => ({
 describe('act23QuestHints', () => {
   beforeEach(() => {
     snap.quests = [];
+    snap.playerState.flags = {};
   });
 
   it('cafe_safehouse adapts to cafe presence', () => {
@@ -190,5 +195,17 @@ describe('act23QuestHints', () => {
     ];
     expect(getThreadOf18LinesHint('street_night')).toContain('парке');
     expect(getThreadOf18LinesHint('park_day')).toContain('Сбое');
+  });
+
+  it('act3 hub relay guides guild mainframe when office ack done', () => {
+    snap.playerState.flags = {
+      zarema_arrested: true,
+      act3_pier_relay_whisper_done: true,
+      act3_library_relay_echo_done: true,
+      act3_cafe_relay_ack_done: true,
+      act3_office_relay_ack_done: true,
+    };
+    expect(getAct3HubRelayHint('volodka_room')).toContain('гильдии');
+    expect(getAct3HubRelayHint('guild_mainframe')).toContain('мейнфрейму');
   });
 });

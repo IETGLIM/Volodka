@@ -28,7 +28,9 @@ interface AbandonedFactoryVisualProps {
 /** Gothic/Industrial abandoned factory (20×18m) */
 export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFactoryVisualProps) {
   const { preset } = useGraphicsQuality();
+  const useAuthoredShell = !preset.visualLite;
   const useGltfDressing = allowsGlbAssetRendering(preset.environmentRenderMode);
+  const hideProceduralClutter = useAuthoredShell && useGltfDressing;
   const floorTexture = useCachedCanvasTexture('abandoned_factory:floor', createFactoryFloorTexture);
   const wallTexture = useCachedCanvasTexture('abandoned_factory:wall', createFactoryWallTexture);
   const ceilingWashTexture = useCachedCanvasTexture(
@@ -168,8 +170,9 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
       </group>
 
       {/* ═══════════════════════════════════════════════ */}
-      {/* ── CONVEYOR BELTS ── */}
+      {/* ── CONVEYOR BELTS (hidden when GLB shell + props own the floor) ── */}
       {/* ═══════════════════════════════════════════════ */}
+      {!hideProceduralClutter ? (
       <EnvironmentDetail minLod="standard" position={[0, 0, 2]}>
       <group position={[0, 0, 2]}>
         {/* Belt surface */}
@@ -190,10 +193,12 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
         ))}
       </group>
       </EnvironmentDetail>
+      ) : null}
 
       {/* ═══════════════════════════════════════════════ */}
-      {/* ── CHEMICAL VATS ── */}
+      {/* ── CHEMICAL VATS (procedural clutter — GLB dressing replaces) ── */}
       {/* ═══════════════════════════════════════════════ */}
+      {!hideProceduralClutter ? (
       <EnvironmentDetail minLod="full" position={[-4, 0, 4]}>
       <FactoryPropGate livePlayerPositionRef={livePlayerPositionRef} position={[-4, 0, 4]} maxDistance={envProfile.clutterDistance}>
         <ChemicalVat position={[-1, 0, 1]} color="#22aa44" />
@@ -201,10 +206,12 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
         <ChemicalVat position={[0, 0, -1]} color="#44aa22" />
       </FactoryPropGate>
       </EnvironmentDetail>
+      ) : null}
 
       {/* ═══════════════════════════════════════════════ */}
       {/* ── CATWALK (elevated) ── */}
       {/* ═══════════════════════════════════════════════ */}
+      {!hideProceduralClutter ? (
       <EnvironmentDetail minLod="standard" position={[0, 3.5, -7]}>
       <group position={[0, 3.5, -7]}>
         {/* Walkway */}
@@ -223,10 +230,12 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
         </mesh>
       </group>
       </EnvironmentDetail>
+      ) : null}
 
       {/* ═══════════════════════════════════════════════ */}
       {/* ── GRAFFITI WALLS ── */}
       {/* ═══════════════════════════════════════════════ */}
+      {!hideProceduralClutter ? (
       <EnvironmentDetail minLod="full" position={[-7.5, 2.5, -2.5]}>
       <group position={[-W / 2 + 0.02, 2, 0]}>
         {/* Graffiti patch 1 */}
@@ -240,10 +249,12 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
         </mesh>
       </group>
       </EnvironmentDetail>
+      ) : null}
 
       {/* ═══════════════════════════════════════════════ */}
       {/* ── COLLAPSED CEILING SECTION ── */}
       {/* ═══════════════════════════════════════════════ */}
+      {!hideProceduralClutter ? (
       <EnvironmentDetail minLod="full" position={[5, 0, -5]}>
       <FactoryPropGate livePlayerPositionRef={livePlayerPositionRef} position={[5, 0, -5]} maxDistance={envProfile.decorativeDistance}>
       <group position={[0, 0, 0]}>
@@ -264,6 +275,7 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
       </group>
       </FactoryPropGate>
       </EnvironmentDetail>
+      ) : null}
 
       {/* ═══════════════════════════════════════════════ */}
       {/* ── LIGHTS ── */}
