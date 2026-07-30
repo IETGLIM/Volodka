@@ -33,7 +33,7 @@ let unsubTransitionGuardComplete: (() => void) | null = null;
 
 /** Clear async guard after scene:loaded or failed transition. */
 export function bindSceneTransitionGuardListeners(): void {
-  unsubTransitionGuardComplete?.();
+  unbindSceneTransitionGuardListeners();
   const clearAsyncGuard = () => setAsyncSceneTransitionInProgress(false);
   const unsubLoaded = eventBus.on('scene:loaded', clearAsyncGuard);
   const unsubFailed = eventBus.on('scene:transition_failed', clearAsyncGuard);
@@ -43,12 +43,22 @@ export function bindSceneTransitionGuardListeners(): void {
   };
 }
 
+export function unbindSceneTransitionGuardListeners(): void {
+  unsubTransitionGuardComplete?.();
+  unsubTransitionGuardComplete = null;
+}
+
 /** (Re)bind scene:loaded → deferred combat flush after EventBus dispose/revive. */
 export function bindDeferredCombatStartListener(): void {
-  unsubDeferredCombatStart?.();
+  unbindDeferredCombatStartListener();
   unsubDeferredCombatStart = eventBus.on('scene:loaded', () => {
     queueMicrotask(() => flushDeferredCombatStart());
   });
+}
+
+export function unbindDeferredCombatStartListener(): void {
+  unsubDeferredCombatStart?.();
+  unsubDeferredCombatStart = null;
 }
 
 /** Re-arm combat timeout handler after EventBus dispose/revive. */

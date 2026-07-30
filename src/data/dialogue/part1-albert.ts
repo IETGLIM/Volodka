@@ -495,7 +495,7 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
       {
         text: 'Нужно донести пакет до ЧК — ты доверяешь?',
         next: null,
-        condition: { requiredAct: 2, missingFlag: 'street_samizdat_received' },
+        condition: { flag: 'act2_network_initiation', missingFlag: 'street_samizdat_received' },
         effects: [
           { type: 'triggerQuest', questId: 'act2_street_chk_samizdat' },
           { type: 'visitStoryNode', nodeId: 'act2_street_chk_samizdat_start' },
@@ -1363,7 +1363,7 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
       {
         text: 'Нужно передать что-то в офис — без Slack?',
         next: null,
-        condition: { requiredAct: 2, missingFlag: 'cafe_relay_envelope_taken' },
+        condition: { flag: 'act2_network_initiation', missingFlag: 'cafe_relay_envelope_taken' },
         effects: [
           { type: 'triggerQuest', questId: 'act2_cafe_office_relay' },
           { type: 'visitStoryNode', nodeId: 'act2_cafe_office_relay_start' },

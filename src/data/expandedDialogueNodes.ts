@@ -770,7 +770,7 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
       {
         text: 'Река снова гудит на той частоте?',
         next: null,
-        condition: { requiredAct: 2, missingFlag: 'pier_frequency_heard' },
+        condition: { flag: 'act2_network_initiation', missingFlag: 'pier_frequency_heard' },
         effects: [
           { type: 'triggerQuest', questId: 'act2_pier_cafe_frequency' },
           { type: 'visitStoryNode', nodeId: 'act2_pier_cafe_frequency_start' },

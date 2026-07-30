@@ -130,7 +130,7 @@ let unsubPoemReadingLifecycle: (() => void) | null = null;
 
 /** Re-bind after EventBus dispose (StrictMode / HMR). */
 export function bindPoemReadingCutsceneLifecycleListeners(): void {
-  unsubPoemReadingLifecycle?.();
+  unbindPoemReadingCutsceneLifecycleListeners();
   const unsubs = [
     eventBus.on('scene:transition_start', () => {
       abortPoemReadingIfPending();
@@ -142,6 +142,11 @@ export function bindPoemReadingCutsceneLifecycleListeners(): void {
   unsubPoemReadingLifecycle = () => {
     for (const unsub of unsubs) unsub();
   };
+}
+
+export function unbindPoemReadingCutsceneLifecycleListeners(): void {
+  unsubPoemReadingLifecycle?.();
+  unsubPoemReadingLifecycle = null;
 }
 
 bindPoemReadingCutsceneLifecycleListeners();

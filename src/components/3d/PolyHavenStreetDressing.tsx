@@ -5,6 +5,10 @@ import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
 import { POLYHAVEN_MODELS } from '@/config/polyhavenAssets';
+import {
+  STREET_FACADE_SCALE,
+  STREET_SHUTTER_DOOR_SCALE,
+} from '@/config/metricScaleCoherence';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
 import { UniqueStreetFacades } from './UniqueStreetFacades';
@@ -31,13 +35,13 @@ const AUTHORED_STREET_FACADES: Array<{
   scale: number;
   variant: GltfMaterialVariant;
 }> = [
-  { position: [-12.4, 0, -16.0], rotationY: 0.06, scale: 2.65, variant: { tint: '#9aa0ad', envMapIntensity: 0.84, roughnessFloor: 0.48 } },
-  { position: [-12.8, 0, -5.4], rotationY: 0.18, scale: 2.18, variant: { tint: '#7f8b96', envMapIntensity: 0.72, roughnessFloor: 0.58 } },
-  { position: [-11.8, 0, 6.3], rotationY: Math.PI / 2 + 0.04, scale: 1.95, variant: { tint: '#a28d7c', envMapIntensity: 0.78, roughnessFloor: 0.52 } },
-  { position: [12.8, 0, -18.8], rotationY: Math.PI - 0.11, scale: 2.72, variant: { tint: '#7b8190', envMapIntensity: 0.92, roughnessFloor: 0.44 } },
-  { position: [14.0, 0, -7.0], rotationY: Math.PI + 0.14, scale: 2.24, variant: { tint: '#8c7f72', envMapIntensity: 0.76, roughnessFloor: 0.62 } },
-  { position: [12.5, 0, 5.5], rotationY: -Math.PI / 2 - 0.09, scale: 2.02, variant: { tint: '#8fa0a5', envMapIntensity: 0.82, roughnessFloor: 0.5 } },
-  { position: [0.6, 0, -25.2], rotationY: 0.02, scale: 2.8, variant: { tint: '#756f74', envMapIntensity: 0.7, roughnessFloor: 0.64 } },
+  { position: [-12.4, 0, -16.0], rotationY: 0.06, scale: STREET_FACADE_SCALE.hero, variant: { tint: '#9aa0ad', envMapIntensity: 0.84, roughnessFloor: 0.48 } },
+  { position: [-12.8, 0, -5.4], rotationY: 0.18, scale: STREET_FACADE_SCALE.mid, variant: { tint: '#7f8b96', envMapIntensity: 0.72, roughnessFloor: 0.58 } },
+  { position: [-11.8, 0, 6.3], rotationY: Math.PI / 2 + 0.04, scale: STREET_FACADE_SCALE.side, variant: { tint: '#a28d7c', envMapIntensity: 0.78, roughnessFloor: 0.52 } },
+  { position: [12.8, 0, -18.8], rotationY: Math.PI - 0.11, scale: STREET_FACADE_SCALE.hero + 0.06, variant: { tint: '#7b8190', envMapIntensity: 0.92, roughnessFloor: 0.44 } },
+  { position: [14.0, 0, -7.0], rotationY: Math.PI + 0.14, scale: STREET_FACADE_SCALE.mid + 0.04, variant: { tint: '#8c7f72', envMapIntensity: 0.76, roughnessFloor: 0.62 } },
+  { position: [12.5, 0, 5.5], rotationY: -Math.PI / 2 - 0.09, scale: STREET_FACADE_SCALE.side + 0.04, variant: { tint: '#8fa0a5', envMapIntensity: 0.82, roughnessFloor: 0.5 } },
+  { position: [0.6, 0, -25.2], rotationY: 0.02, scale: STREET_FACADE_SCALE.hero + 0.1, variant: { tint: '#756f74', envMapIntensity: 0.7, roughnessFloor: 0.64 } },
 ];
 
 function clonePreparedScene(
@@ -224,10 +228,10 @@ function AuthoredStreetArchitecture() {
         </Suspense>
       ))}
       <Suspense fallback={null}>
-        <GltfProp url={POLYHAVEN_MODELS.shutterDoor} position={[-10.6, 0, -2.4]} rotationY={0.08} scale={1.7} variant={{ tint: '#8a8f96', roughnessFloor: 0.56 }} />
+        <GltfProp url={POLYHAVEN_MODELS.shutterDoor} position={[-10.6, 0, -2.4]} rotationY={0.08} scale={STREET_SHUTTER_DOOR_SCALE} variant={{ tint: '#8a8f96', roughnessFloor: 0.56 }} />
       </Suspense>
       <Suspense fallback={null}>
-        <GltfProp url={POLYHAVEN_MODELS.shutterDoor} position={[12.2, 0, -14.8]} rotationY={Math.PI} scale={1.65} variant={{ tint: '#746a62', roughnessFloor: 0.64 }} />
+        <GltfProp url={POLYHAVEN_MODELS.shutterDoor} position={[12.2, 0, -14.8]} rotationY={Math.PI} scale={STREET_SHUTTER_DOOR_SCALE * 0.96} variant={{ tint: '#746a62', roughnessFloor: 0.64 }} />
       </Suspense>
       <Suspense fallback={null}>
         <GltfProp url={POLYHAVEN_MODELS.shutterWindow} position={[-12.0, 5.4, -9.8]} rotationY={0.08} scale={1.65} variant={{ tint: '#9299a2' }} />
@@ -242,7 +246,7 @@ function AuthoredStreetArchitecture() {
         <GltfProp url={POLYHAVEN_MODELS.shutterWindow} position={[0.2, 6.4, -24.7]} rotationY={0.02} scale={1.75} variant={{ tint: '#6f747c' }} />
       </Suspense>
       <Suspense fallback={null}>
-        <GltfProp url={POLYHAVEN_MODELS.shutterDoor} position={[5.4, 0, -24.4]} rotationY={0.02} scale={1.55} variant={{ tint: '#8c8378', roughnessFloor: 0.62 }} />
+        <GltfProp url={POLYHAVEN_MODELS.shutterDoor} position={[5.4, 0, -24.4]} rotationY={0.02} scale={STREET_SHUTTER_DOOR_SCALE * 0.94} variant={{ tint: '#8c8378', roughnessFloor: 0.62 }} />
       </Suspense>
     </group>
   );

@@ -3,7 +3,7 @@
  */
 
 import * as THREE from 'three';
-import { LOOK_HEIGHT } from '@/engine/camera/cameraConstants';
+import { PLAYER_METRIC } from '@/config/metricScaleCoherence';
 
 export const WAKEUP_PHASE = {
   terminal: 4.6,   // longer terminal hold — show-don't-tell room beat
@@ -34,8 +34,8 @@ export const DESK_POSITION = new THREE.Vector3(0.0, 0.01, -1.0);
 export const CHAIR_POSITION = new THREE.Vector3(0.0, 0.01, -1.3);
 /** Third-person handoff behind the desk — matches exploration orbit framing. */
 export const DESK_EXPLORATION_CAM = {
-  position: new THREE.Vector3(0.0, LOOK_HEIGHT + 0.25, 1.15),
-  lookAt: new THREE.Vector3(0, LOOK_HEIGHT, -1.0),
+  position: new THREE.Vector3(0.0, PLAYER_METRIC.eyeHeightM - 0.05, 1.15),
+  lookAt: new THREE.Vector3(0, PLAYER_METRIC.seatedEyeHeightM + 0.02, -1.0),
   fov: 54,
 };
 
@@ -65,32 +65,32 @@ export const WAKEUP_CAMERA_WAYPOINTS: WakeCameraWaypoint[] = [
     controlPoint: new THREE.Vector3(1.05, 1.58, 0.85),
   },
   {
-    position: new THREE.Vector3(-1.42, 1.34, 1.68),
-    lookAt: new THREE.Vector3(0.34, 0.98, 1.52),
+    position: new THREE.Vector3(-1.42, 1.48, 1.68),
+    lookAt: new THREE.Vector3(0.34, PLAYER_METRIC.eyeHeightM - 0.08, 1.52),
     fov: 50,
     duration: WAKEUP_PHASE.standing,
-    controlPoint: new THREE.Vector3(-0.25, 1.62, 2.18),
+    controlPoint: new THREE.Vector3(-0.25, 1.72, 2.18),
   },
   {
-    position: new THREE.Vector3(1.32, 1.5, 0.52),
-    lookAt: new THREE.Vector3(0.05, 0.85, -0.6),
+    position: new THREE.Vector3(1.32, 1.58, 0.52),
+    lookAt: new THREE.Vector3(0.05, PLAYER_METRIC.eyeHeightM - 0.12, -0.6),
     fov: 54,
     duration: WAKEUP_PHASE.walking,
-    controlPoint: new THREE.Vector3(0.62, 1.72, 1.36),
+    controlPoint: new THREE.Vector3(0.62, 1.78, 1.36),
   },
   {
-    position: new THREE.Vector3(1.62, 1.26, -0.38),
-    lookAt: new THREE.Vector3(0, 0.75, -1.34),
+    position: new THREE.Vector3(1.62, 1.32, -0.38),
+    lookAt: new THREE.Vector3(0, PLAYER_METRIC.seatedEyeHeightM - 0.05, -1.34),
     fov: 48,
     duration: WAKEUP_PHASE.sitting,
-    controlPoint: new THREE.Vector3(1.18, 1.18, -0.92),
+    controlPoint: new THREE.Vector3(1.18, 1.22, -0.92),
   },
   {
-    position: new THREE.Vector3(0.32, 1.54, -0.22),
-    lookAt: new THREE.Vector3(0, 0.95, -2.2),
+    position: new THREE.Vector3(0.32, 1.58, -0.22),
+    lookAt: new THREE.Vector3(0, PLAYER_METRIC.seatedEyeHeightM, -2.2),
     fov: 52,
     duration: WAKEUP_PHASE.settle,
-    controlPoint: new THREE.Vector3(0.82, 1.42, -0.82),
+    controlPoint: new THREE.Vector3(0.82, 1.48, -0.82),
   },
   // Phase: monitor — camera pushes in close to the screen, showing poem lines
   // and the "sync soon" notification. Tight fov for a cinematic close-up.

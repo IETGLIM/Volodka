@@ -44,7 +44,10 @@ import {
 } from '@/engine/core/GlobalCleanupService';
 import { getGameSnapshot } from '@/engine/GameActionDispatcher';
 import { bindPoemResetListener } from '@/engine/PoemPowerSystem';
-import { bindPoemReadingCutsceneLifecycleListeners } from '@/engine/poemReading/poemReadingOrchestrator';
+import {
+  bindPoemReadingCutsceneLifecycleListeners,
+  unbindPoemReadingCutsceneLifecycleListeners,
+} from '@/engine/poemReading/poemReadingOrchestrator';
 import {
   bindAdaptiveQualityBridge,
   unbindAdaptiveQualityBridge,
@@ -59,6 +62,8 @@ import {
   bindCombatStartGateTimeout,
   bindDeferredCombatStartListener,
   bindSceneTransitionGuardListeners,
+  unbindDeferredCombatStartListener,
+  unbindSceneTransitionGuardListeners,
 } from '@/engine/core/SceneTransitionManager';
 import { bindSceneLoadedBridge, cancelPendingSceneLoaded } from '@/engine/core/sceneLoadedGate';
 import {
@@ -144,6 +149,9 @@ export function disposeGameEngine(): void {
     unbindInteractionSessionListeners();
     unbindGpuContextRestoreListener();
     unbindFreeExplorationHubListeners();
+    unbindDeferredCombatStartListener();
+    unbindSceneTransitionGuardListeners();
+    unbindPoemReadingCutsceneLifecycleListeners();
     cancelPendingSceneLoaded();
     disposeTransitionDirector();
     disposeCinematicTimelineOrchestrator();
@@ -171,6 +179,7 @@ export function reviveGameEngine(): void {
   bindGpuResourceBaselineBridge();
   bindSceneChunkGpuLifecycle();
   bindSceneTransitionGuardListeners();
+  bindDeferredCombatStartListener();
   bindCombatStartGateTimeout();
   bindDeferredCombatStartListener();
   bindPoemResetListener();

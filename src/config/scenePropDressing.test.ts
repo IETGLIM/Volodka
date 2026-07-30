@@ -31,7 +31,7 @@ describe('scenePropDressing', () => {
     const { critical, deferred } = splitScenePropDressing('volodka_corridor');
     expect(critical.map((p) => p.propModelId)).toEqual(['kenney_door']);
     expect(deferred.map((p) => p.propModelId)).toEqual([
-      'polyhaven_shutter_door',
+      'kenney_door',
       'polyhaven_cardboard_box',
       'polyhaven_trashbag',
     ]);

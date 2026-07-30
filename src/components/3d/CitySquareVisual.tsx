@@ -8,6 +8,11 @@ import * as THREE from 'three';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useGameStore } from '@/store/gameStore';
 import { POLYHAVEN_MODELS } from '@/config/polyhavenAssets';
+import {
+  PLAZA_MONUMENT_SCALE,
+  STREET_FACADE_SCALE,
+  STREET_SHUTTER_DOOR_SCALE,
+} from '@/config/metricScaleCoherence';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
@@ -124,7 +129,7 @@ const authoredBenches = [
 const authoredProps = [
   { url: POLYHAVEN_MODELS.roadBarrier, position: [-10.2, 0, -8.2] as [number, number, number], rotationY: 0.2, scale: 1.45 },
   { url: POLYHAVEN_MODELS.roadBarrierAlt, position: [-6.8, 0, -9.4] as [number, number, number], rotationY: -0.1, scale: 1.15 },
-  { url: POLYHAVEN_MODELS.shutterDoor, position: [10.25, 0, -8.3] as [number, number, number], rotationY: Math.PI + 0.02, scale: 1.2 },
+  { url: POLYHAVEN_MODELS.shutterDoor, position: [10.25, 0, -8.3] as [number, number, number], rotationY: Math.PI + 0.02, scale: STREET_SHUTTER_DOOR_SCALE },
   { url: POLYHAVEN_MODELS.metalTrashCan, position: [-9.7, 0, 8.4] as [number, number, number], rotationY: 0.5, scale: 1.15 },
   { url: POLYHAVEN_MODELS.trashbag, position: [-9.25, 0, 8.75] as [number, number, number], rotationY: -0.4, scale: 1.2 },
   { url: POLYHAVEN_MODELS.cardboardBox, position: [9.4, 0, 8.25] as [number, number, number], rotationY: 0.35, scale: 1.25 },
@@ -142,14 +147,14 @@ const authoredProps = [
 ];
 
 const authoredArchitecture = [
-  { url: POLYHAVEN_MODELS.urbanFacade, position: [-13.3, 0, -9.5] as [number, number, number], rotationY: Math.PI / 2 + 0.04, scale: 2.35 },
-  { url: POLYHAVEN_MODELS.urbanFacade, position: [-13.0, 0, 3.6] as [number, number, number], rotationY: Math.PI / 2 - 0.03, scale: 2.1 },
-  { url: POLYHAVEN_MODELS.urbanFacade, position: [13.2, 0, -10.3] as [number, number, number], rotationY: -Math.PI / 2 - 0.05, scale: 2.28 },
-  { url: POLYHAVEN_MODELS.urbanFacade, position: [13.4, 0, 4.2] as [number, number, number], rotationY: -Math.PI / 2 + 0.04, scale: 2.05 },
-  { url: POLYHAVEN_MODELS.urbanFacade, position: [-4.2, 0, -13.4] as [number, number, number], rotationY: 0.02, scale: 2.15 },
-  { url: POLYHAVEN_MODELS.urbanFacade, position: [5.6, 0, -13.25] as [number, number, number], rotationY: -0.03, scale: 2.05 },
-  { url: POLYHAVEN_MODELS.shutterDoor, position: [-10.9, 0, -4.8] as [number, number, number], rotationY: Math.PI / 2, scale: 1.55 },
-  { url: POLYHAVEN_MODELS.shutterDoor, position: [10.9, 0, 5.2] as [number, number, number], rotationY: -Math.PI / 2, scale: 1.45 },
+  { url: POLYHAVEN_MODELS.urbanFacade, position: [-13.3, 0, -9.5] as [number, number, number], rotationY: Math.PI / 2 + 0.04, scale: STREET_FACADE_SCALE.hero },
+  { url: POLYHAVEN_MODELS.urbanFacade, position: [-13.0, 0, 3.6] as [number, number, number], rotationY: Math.PI / 2 - 0.03, scale: STREET_FACADE_SCALE.mid },
+  { url: POLYHAVEN_MODELS.urbanFacade, position: [13.2, 0, -10.3] as [number, number, number], rotationY: -Math.PI / 2 - 0.05, scale: STREET_FACADE_SCALE.hero + 0.04 },
+  { url: POLYHAVEN_MODELS.urbanFacade, position: [13.4, 0, 4.2] as [number, number, number], rotationY: -Math.PI / 2 + 0.04, scale: STREET_FACADE_SCALE.mid + 0.02 },
+  { url: POLYHAVEN_MODELS.urbanFacade, position: [-4.2, 0, -13.4] as [number, number, number], rotationY: 0.02, scale: STREET_FACADE_SCALE.mid },
+  { url: POLYHAVEN_MODELS.urbanFacade, position: [5.6, 0, -13.25] as [number, number, number], rotationY: -0.03, scale: STREET_FACADE_SCALE.mid },
+  { url: POLYHAVEN_MODELS.shutterDoor, position: [-10.9, 0, -4.8] as [number, number, number], rotationY: Math.PI / 2, scale: STREET_SHUTTER_DOOR_SCALE },
+  { url: POLYHAVEN_MODELS.shutterDoor, position: [10.9, 0, 5.2] as [number, number, number], rotationY: -Math.PI / 2, scale: STREET_SHUTTER_DOOR_SCALE * 0.96 },
   { url: POLYHAVEN_MODELS.fireEscape, position: [-12.85, 0, 1.2] as [number, number, number], rotationY: Math.PI / 2, scale: 1.25 },
   { url: POLYHAVEN_MODELS.fireEscape, position: [12.9, 0, -6.2] as [number, number, number], rotationY: -Math.PI / 2, scale: 1.18 },
 ];
@@ -216,7 +221,7 @@ function AuthoredPlazaLandmark({ castShadow }: { castShadow: boolean }) {
           url={POLYHAVEN_MODELS.gothicStatue}
           position={[0, 0.34, 0]}
           rotationY={Math.PI / 4}
-          scale={1.18}
+          scale={PLAZA_MONUMENT_SCALE}
           castShadow={castShadow}
         />
       </Suspense>

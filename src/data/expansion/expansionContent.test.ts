@@ -64,6 +64,16 @@ describe('expansion narrative content', () => {
     }
   });
 
+  it('hub connector quests require act2 spine flag (side branches)', () => {
+    const gated = EXPANSION_HUB_QUESTS.filter((q) =>
+      ['act2_cafe_office_relay', 'act2_street_chk_samizdat', 'act2_pier_cafe_frequency'].includes(q.id),
+    );
+    expect(gated).toHaveLength(3);
+    for (const quest of gated) {
+      expect(quest.requiredFlag, quest.id).toBe('act2_network_initiation');
+    }
+  });
+
   it('hub cast schedules span connector scenes', () => {
     const hubScenes = new Set<SceneId>(['cafe_evening', 'street_night', 'office_day', 'chk_forest_zorge', 'river_pier']);
     const hubCast = ['albert', 'cafe_barista', 'office_colleague', 'zarema', 'fisherman_trofim', 'chk_based'];

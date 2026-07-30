@@ -12,6 +12,7 @@ export const EXPANSION_HUB_QUESTS: QuestDefinition[] = [
     faction: 'network',
     questType: 'side',
     difficulty: 'easy',
+    requiredFlag: 'act2_network_initiation',
     hint: 'Возьми конверт у бариста в кафе и найди коллегу у серверной в офисе.',
     objectives: [
       {
@@ -46,6 +47,7 @@ export const EXPANSION_HUB_QUESTS: QuestDefinition[] = [
     faction: 'tolpa',
     questType: 'side',
     difficulty: 'medium',
+    requiredFlag: 'act2_network_initiation',
     hint: 'Зарема у уличной скамейки — затем костёр в ЧК и Басед.',
     objectives: [
       {
@@ -81,6 +83,7 @@ export const EXPANSION_HUB_QUESTS: QuestDefinition[] = [
     faction: 'network',
     questType: 'side',
     difficulty: 'medium',
+    requiredFlag: 'act2_network_initiation',
     hint: 'Поговори с Трофимом на пирсе, затем — с бариста у стены стихов в кафе.',
     objectives: [
       {
