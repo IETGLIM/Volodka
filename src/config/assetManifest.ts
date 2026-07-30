@@ -145,11 +145,9 @@ export const ASSET_MANIFEST: Record<string, GltfAssetDefinition> = {
   veg_tree_pine: {
     id: 'veg_tree_pine',
     category: 'vegetation',
-    lods: [
-      { url: `${MODELS}/vegetation/pine/pine_lod0.glb`, maxDistance: 0 },
-      { url: `${MODELS}/vegetation/pine/pine_lod1.glb`, maxDistance: 25 },
-      { url: `${MODELS}/vegetation/pine/pine_lod2.glb`, maxDistance: 50 },
-    ],
+    // Khronos interim pine is single-mesh until AI3DGen Pro stylized LOD chain lands.
+    // Fake LOD1/LOD2 copies (Avocado/Lantern/WaterBottle) were same-size — disabled.
+    lods: [{ url: `${MODELS}/vegetation/pine/pine_lod0.glb`, maxDistance: 0 }],
     // impostor atlas — add when vegetation impostor bake is ready
     instancing: true,
     shipped: true,

@@ -57,14 +57,14 @@ describe('resolveNpcVisualAnimationState', () => {
     ).toBe('walk');
   });
 
-  it('maps schedule work to sit', () => {
+  it('maps schedule work to work (Mixamo working clip)', () => {
     expect(
       resolveNpcVisualAnimationState({
         activity: 'work',
         interactionState: InteractionState.Idle,
         isInteractionTarget: false,
       }),
-    ).toBe('sit');
+    ).toBe('work');
   });
 
   it('maps schedule sleep to idle', () => {

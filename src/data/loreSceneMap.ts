@@ -55,6 +55,7 @@ export const LORE_SCENE_MAP: Partial<Record<SceneId, string[]>> = {
     'lore_poem_virus',         // Poem virus phenomenon discussed at cafe
     'lore_digital_resistance',  // Resistance discovered at cafe
     'lore_cafe_backroom',      // Hidden backroom behind the bar
+    'lore_barista_arm',        // Barista cyber-arm guarantee at the espresso bar
   ],
   office_day: [
     'lore_it_guild',           // Guild lore discovered at the office

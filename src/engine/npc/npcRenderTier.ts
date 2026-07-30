@@ -4,11 +4,13 @@ import type { NPCDefinition, SceneId } from '@/shared/types/game';
 
 export type NpcRenderTier = 'hero' | 'interactive' | 'background';
 
-/** Story-critical NPCs — always full visual treatment. */
+/** Hero / story NPCs — always full visual treatment + Mixamo clip overrides. */
 const HERO_NPC_IDS = new Set<string>([
   'volodka',
   'zarema',
   'albert',
+  'cafe_barista',
+  'office_colleague',
   'maria',
   'solnysh',
   'lyonya',

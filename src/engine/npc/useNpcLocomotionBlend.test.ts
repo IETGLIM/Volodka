@@ -8,9 +8,10 @@ describe('useNpcLocomotionBlend helpers', () => {
     expect(isNpcLocomotionAnimState('listen')).toBe(true);
   });
 
-  it('excludes talk, sit, and gesture from locomotion blend', () => {
+  it('excludes talk, sit, work, and gesture from locomotion blend', () => {
     expect(isNpcLocomotionAnimState('talk')).toBe(false);
     expect(isNpcLocomotionAnimState('sit')).toBe(false);
+    expect(isNpcLocomotionAnimState('work')).toBe(false);
     expect(isNpcLocomotionAnimState('gesture')).toBe(false);
   });
 });

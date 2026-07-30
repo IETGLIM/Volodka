@@ -38,6 +38,7 @@ export function resolveNpcAnimationFromActivity(activity: string): NPCAnimationS
     case 'talk':
       return 'talk';
     case 'work':
+      return 'work';
     case 'read':
     case 'rest':
       return 'sit';

@@ -13,6 +13,18 @@ Quaternius modular rigs share one body silhouette — not enough for a story RPG
 
 Optional unique GLB override: manual drop or `npm run assets:rpm-import` (legacy; RPM unavailable in some regions).
 
+## Ready Player Me (Stage 8 — skipped)
+
+`RPM_NPC_GLB_URLS_ON_DISK` is empty — no RPM API keys or avatar exports on disk.
+
+Hero NPCs (Albert, Zarema, barista, colleague) use **Quaternius CC0 GLBs** staged under `public/models/npcs/` via `assets:quaternius-import`. To wire RPM later:
+
+1. Create avatars at [readyplayer.me](https://readyplayer.me/) (free tier).
+2. Export GLBs to `assets-source/ai3dgen/npcs/npc_<id>.glb`.
+3. Run `npm run assets:rpm-import -- --apply-all` — overrides CC0 when source files exist.
+
+No paid AI3DGen API required for current ship path.
+
 ## NPC Composer pipeline
 
 ```bash

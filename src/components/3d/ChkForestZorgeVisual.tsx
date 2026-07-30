@@ -150,8 +150,8 @@ export function ChkForestZorgeVisual({
           </EnvironmentDetail>
         ))}
 
-      {/* Dense instanced tree belt — closes the clearing into an actual forest */}
-      {!hideProceduralForestBelt ? <InstancedTreeBelt /> : null}
+      {/* Instanced belt — full ring at Lite/procedural; sparse ring when backdrop+GLB hide hero trees */}
+      <InstancedTreeBelt density={hideProceduralForestBelt ? 'sparse' : 'full'} />
 
       {/* Night sky: moon disc + starfield (fog-exempt, skybox is disabled here) */}
       <NightSky />
@@ -300,20 +300,22 @@ function ForestTree({
 }
 
 /* ─── Dense instanced tree belt around the clearing ───
- * 3 draw calls total (trunks + two canopy layers) for ~46 trees.
+ * 3 draw calls total (trunks + two canopy layers) for ~46 trees (full) or ~18 (sparse).
  * A gap is left at the north path entrance (exit to park). */
-function InstancedTreeBelt() {
+function InstancedTreeBelt({ density = 'full' }: { density?: 'full' | 'sparse' }) {
   const trunkRef = useRef<THREE.InstancedMesh>(null);
   const canopyLowRef = useRef<THREE.InstancedMesh>(null);
   const canopyTopRef = useRef<THREE.InstancedMesh>(null);
 
   const placements = useMemo(() => {
-    const rng = seededRandom(777001);
+    const rng = seededRandom(density === 'sparse' ? 888002 : 777001);
     const out: Array<{ x: number; z: number; s: number; rot: number; tint: number }> = [];
-    const COUNT = 46;
+    const COUNT = density === 'sparse' ? 18 : 46;
+    const radiusMin = density === 'sparse' ? 14.0 : 15.5;
+    const radiusSpan = density === 'sparse' ? 2.5 : 3.5;
     for (let i = 0; i < COUNT; i++) {
       const angle = (i / COUNT) * Math.PI * 2 + rng() * 0.12;
-      const radius = 15.5 + rng() * 3.5;
+      const radius = radiusMin + rng() * radiusSpan;
       const x = Math.cos(angle) * radius;
       const z = Math.sin(angle) * radius;
       // Path gap at north entrance (exit corridor to park)
@@ -321,7 +323,7 @@ function InstancedTreeBelt() {
       out.push({ x, z, s: 0.85 + rng() * 0.5, rot: rng() * Math.PI * 2, tint: rng() });
     }
     return out;
-  }, []);
+  }, [density]);
 
   useLayoutEffect(() => {
     const dummy = new THREE.Object3D();

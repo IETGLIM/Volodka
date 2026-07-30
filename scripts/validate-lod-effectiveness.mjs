@@ -111,12 +111,8 @@ checkAsset('env_cafe_props', {
   lod2: path.join(PUBLIC, 'environments/cafe/props_lod2.glb'),
 });
 
-// Vegetation
-checkAsset('veg_tree_pine', {
-  lod0: path.join(PUBLIC, 'vegetation/pine/pine_lod0.glb'),
-  lod1: path.join(PUBLIC, 'vegetation/pine/pine_lod1.glb'),
-  lod2: path.join(PUBLIC, 'vegetation/pine/pine_lod2.glb'),
-});
+// Vegetation — single-LOD interim pine until AI3DGen Pro chain replaces Khronos stubs.
+// (pine_lod1/lod2 on disk are same-size copies — not used in manifest.)
 
 console.log('\n=== LOD Effectiveness Validation ===');
 console.log(`\n✅ Effective LODs (${successes.length}):`);
