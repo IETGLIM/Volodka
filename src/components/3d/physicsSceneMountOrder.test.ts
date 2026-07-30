@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   PHYSICS_SCENE_MOUNT_INVARIANTS,
   PHYSICS_SCENE_MOUNT_SECTIONS,
+  PHYSICS_SCENE_MOUNT_WRAPPERS,
   PHYSICS_SCENE_SECTION_MOUNTS,
 } from './physicsSceneMountOrder';
 
@@ -35,5 +36,20 @@ describe('physicsSceneMountOrder', () => {
     for (const section of PHYSICS_SCENE_MOUNT_SECTIONS) {
       expect(PHYSICS_SCENE_SECTION_MOUNTS[section].length, section).toBeGreaterThan(0);
     }
+  });
+
+  it('keeps npc mounts before cinematic triggers before interaction bridges', () => {
+    const npcIdx = PHYSICS_SCENE_MOUNT_SECTIONS.indexOf('npc_and_ambient');
+    const cinematicIdx = PHYSICS_SCENE_MOUNT_SECTIONS.indexOf('cinematic_and_triggers');
+    const bridgesIdx = PHYSICS_SCENE_MOUNT_SECTIONS.indexOf('interaction_bridges');
+    expect(npcIdx).toBeLessThan(cinematicIdx);
+    expect(cinematicIdx).toBeLessThan(bridgesIdx);
+  });
+
+  it('documents extracted mount wrappers for Stage 11+ decomposition', () => {
+    expect(PHYSICS_SCENE_MOUNT_WRAPPERS.PhysicsSceneNpcMounts).toBe('npc_and_ambient');
+    expect(PHYSICS_SCENE_MOUNT_WRAPPERS.PhysicsSceneCinematicMounts).toBe('cinematic_and_triggers');
+    expect(PHYSICS_SCENE_SECTION_MOUNTS.npc_and_ambient[0]).toBe('PhysicsSceneNpcMounts');
+    expect(PHYSICS_SCENE_SECTION_MOUNTS.cinematic_and_triggers[0]).toBe('PhysicsSceneCinematicMounts');
   });
 });

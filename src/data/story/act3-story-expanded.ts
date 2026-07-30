@@ -1718,4 +1718,30 @@ export const ACT3_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
       },
     ],
   },
+
+  /* ══════════════════════════════════════════════════════════════════════════
+     Act 3 hub beat — library card index hums after Zarema's arrest
+     ══════════════════════════════════════════════════════════════════════════ */
+  act3_exp_library_relay_echo: {
+    id: 'act3_exp_library_relay_echo',
+    text: [
+      'Каталог в подвале гудит не от вентиляции — от частоты. Карточка «777» вылезла сама, как язык, который долго держали за зубами. На обратной стороне — три слова, написанные чужим почерком: «Релей не умер».',
+      '',
+      'Ты понимаешь: пирс передал сигнал сюда, через воду и провода, пока Гильдия смотрела только в push-уведомления. Библиотека — тихий узел. Тихий — не значит мёртвый.',
+    ].join('\n'),
+    speaker: 'narrator',
+    sceneId: 'library_day',
+    contextNote: 'После ареста Заремы каталог в библиотеке откликается на hub-relay.',
+    choices: [
+      {
+        text: 'Запомнить частоту — сеть дышит',
+        next: 'library_explore_mode',
+        effects: [
+          { type: 'setFlag', flag: 'act3_library_relay_echo_done', flagValue: true },
+          { type: 'discoverLore', loreId: 'lore_frequency_poem' },
+          { type: 'addXp', value: 30 },
+        ],
+      },
+    ],
+  },
 };

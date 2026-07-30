@@ -21,6 +21,7 @@ import {
   splashTimelineId,
 } from '@/engine/interaction/playInteractionSplash';
 import { stopCinematicTimeline } from '@/engine/cinematic/cinematicTimelineOrchestrator';
+import { resetDialogueCameraDrift } from '@/engine/camera/dialogueCameraDrift';
 import { findTriggerZoneByNpcId } from '@/data/triggerZones';
 import { getTriggerZones } from '@/data/gameDataLoader';
 import { eventBus } from '@/engine/EventBus';
@@ -68,6 +69,8 @@ const APPROACH_SPEED_MAX = 3.8;
 const APPROACH_SPEED_MIN = 1.2;
 /** Distance at which deceleration easing begins (world units from arrival point). */
 const APPROACH_EASE_DISTANCE = 3.0;
+/** Extra quadratic falloff zone in the final metres before arrival — soft stop. */
+const APPROACH_FINAL_DECEL_DISTANCE = 0.6;
 /** If the NPC moves more than this far during approach, cancel — prevents infinite chasing. */
 const APPROACH_MAX_DISTANCE = 8.0;
 const ALIGN_LERP_SPEED = 8;
@@ -233,6 +236,9 @@ export function InteractionSystemBridge({
 
       phaseTimerRef.current = 0;
       globalTimerRef.current = 0; // Reset global safety timer
+
+      // Fresh interaction — clear any stale dialogue drift from a prior session.
+      resetDialogueCameraDrift();
 
       publishInteraction(stateRef, targetNPCIdRef, InteractionState.Approach, npcId);
 
@@ -452,6 +458,7 @@ export function InteractionSystemBridge({
 
           if (splash) {
             cutsceneDurationRef.current = splash.durationMs / 1000;
+            resetDialogueCameraDrift();
             publishInteraction(stateRef, targetNPCIdRef, InteractionState.Cutscene);
 
             eventBus.emit('interaction:state_change', {
@@ -477,7 +484,10 @@ export function InteractionSystemBridge({
           const easeT = Math.min(distFromArrival / APPROACH_EASE_DISTANCE, 1);
           // Smoothstep ease-out for natural deceleration
           const smoothT = easeT * easeT * (3 - 2 * easeT);
-          const speed = APPROACH_SPEED_MIN + (APPROACH_SPEED_MAX - APPROACH_SPEED_MIN) * smoothT;
+          const finalT = Math.min(distFromArrival / APPROACH_FINAL_DECEL_DISTANCE, 1);
+          const finalDecel = finalT * finalT;
+          const speed =
+            (APPROACH_SPEED_MIN + (APPROACH_SPEED_MAX - APPROACH_SPEED_MIN) * smoothT) * finalDecel;
 
           const dirX = dx / dist;
           const dirZ = dz / dist;

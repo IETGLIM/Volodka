@@ -155,6 +155,7 @@ export const LORE_STORY_NODE_MAP: Record<string, string[]> = {
   // Pier / basement payoff nodes
   pier_arrival: ['lore_pier_three'],
   act3_exp_pier_relay_after_arrest: ['lore_hub_relay_network'],
+  act3_exp_library_relay_echo: ['lore_frequency_poem'],
   factory_basement_familiar: ['lore_zarya_project_early'],
   machine_confession_scene_thread: ['lore_great_crash_2029', 'lore_incident_4729'],
 

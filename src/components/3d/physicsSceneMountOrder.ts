@@ -54,6 +54,17 @@ export const PHYSICS_SCENE_MOUNT_INVARIANTS: ReadonlyArray<{
   },
 ];
 
+/**
+ * Extracted mount wrappers — each expands to the leaf mounts listed in
+ * {@link PHYSICS_SCENE_SECTION_MOUNTS}. Order inside a wrapper matches JSX.
+ */
+export const PHYSICS_SCENE_MOUNT_WRAPPERS = {
+  PhysicsSceneNpcMounts: 'npc_and_ambient',
+  PhysicsSceneCinematicMounts: 'cinematic_and_triggers',
+  PhysicsSceneInteractionBridges: 'interaction_bridges',
+  PhysicsSceneLifecycleMounts: 'lifecycle_bridges',
+} as const satisfies Record<string, PhysicsSceneMountSection>;
+
 /** Individual mount ids within each section (for regression tests). */
 export const PHYSICS_SCENE_SECTION_MOUNTS: Record<PhysicsSceneMountSection, readonly string[]> = {
   colliders_and_player: ['SceneColliderSelector', 'EnvironmentalAnimator', 'PhysicsPlayer'],
@@ -66,6 +77,7 @@ export const PHYSICS_SCENE_SECTION_MOUNTS: Record<PhysicsSceneMountSection, read
     'SceneInteriorAssets',
   ],
   npc_and_ambient: [
+    'PhysicsSceneNpcMounts',
     'NPCSystemWrapper',
     'NpcAmbientBarkMount',
     'UmkaDog',
@@ -75,8 +87,16 @@ export const PHYSICS_SCENE_SECTION_MOUNTS: Record<PhysicsSceneMountSection, read
     'DynamicProps',
     'PatrollingCreeps',
   ],
-  cinematic_and_triggers: ['CinematicTimelineRunner', 'InteractiveTriggers'],
-  interaction_bridges: ['InteractionQueryBridge', 'InteractionHighlight'],
+  cinematic_and_triggers: [
+    'PhysicsSceneCinematicMounts',
+    'CinematicTimelineRunner',
+    'InteractiveTriggers',
+  ],
+  interaction_bridges: [
+    'PhysicsSceneInteractionBridges',
+    'InteractionQueryBridge',
+    'InteractionHighlight',
+  ],
   proximity_and_quests: [
     'ProximityReactivityRenderer',
     'SceneExitIndicator',
@@ -84,7 +104,11 @@ export const PHYSICS_SCENE_SECTION_MOUNTS: Record<PhysicsSceneMountSection, read
     'ChoiceReactivity',
   ],
   scene_transitions: ['SceneTransitionHandler'],
-  lifecycle_bridges: ['SceneGpuLifecycleBridge', 'RapierWorldLifecycleBridge'],
+  lifecycle_bridges: [
+    'PhysicsSceneLifecycleMounts',
+    'SceneGpuLifecycleBridge',
+    'RapierWorldLifecycleBridge',
+  ],
   interaction_system: ['InteractionSystemBridge', 'RotationSyncBridge'],
   lighting_and_environment: ['ExplorationLighting', 'SceneEnvironment'],
 };
