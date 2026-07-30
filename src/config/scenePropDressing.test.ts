@@ -6,16 +6,20 @@ import {
 } from './scenePropDressing';
 
 describe('scenePropDressing', () => {
-  it('splits volodka_room into critical furniture and deferred desk props', () => {
+  it('keeps volodka_room apartment openings and clutter deferred', () => {
     const { critical, deferred } = splitScenePropDressing('volodka_room');
 
-    expect(critical.map((p) => p.propModelId)).toEqual([
-      'kenney_bed',
-      'kenney_wardrobe',
-      'kenney_bookshelf',
-      'kenney_city_chair',
-    ]);
+    expect(critical.map((p) => p.propModelId)).toEqual([]);
     expect(deferred.map((p) => p.propModelId)).toEqual([
+      'kenney_door',
+      'kenney_window',
+      'kenney_window',
+      'polyhaven_industrial_lamp',
+      'polyhaven_barrel',
+      'polyhaven_cardboard_box',
+      'polyhaven_cardboard_box',
+      'polyhaven_metal_trash_can',
+      'polyhaven_trashbag',
       'ai3dgen_poetic_compiler',
       'ai3dgen_neural_filter',
       'ai3dgen_digital_amulet',
@@ -24,8 +28,12 @@ describe('scenePropDressing', () => {
 
   it('treats unspecified loadTier as critical', () => {
     const { critical, deferred } = splitScenePropDressing('volodka_corridor');
-    expect(critical).toHaveLength(1);
-    expect(deferred).toHaveLength(0);
+    expect(critical.map((p) => p.propModelId)).toEqual(['kenney_door']);
+    expect(deferred.map((p) => p.propModelId)).toEqual([
+      'polyhaven_shutter_door',
+      'polyhaven_cardboard_box',
+      'polyhaven_trashbag',
+    ]);
   });
 
   it('maps load tiers to preload priorities', () => {

@@ -20,6 +20,7 @@ import { INTERIOR_SHELL_MODELS } from '../../config/interiorShellModels';
 import { AuthoredInteriorShell } from './AuthoredInteriorShell';
 import { POLYHAVEN_MODELS } from '@/config/polyhavenAssets';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
+import { getInteriorShellScale } from '@/config/interiorShellScale';
 
 interface OfficeDayVisualProps {
   livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
@@ -239,7 +240,7 @@ export function OfficeDayVisual({ livePlayerPositionRef }: OfficeDayVisualProps)
         <AuthoredInteriorShell
           sceneId="office_day"
           url={INTERIOR_SHELL_MODELS.office}
-          scale={[W / 1.36, H / 2.88, D / 1.36]}
+          scale={getInteriorShellScale('office', [W, H, D])}
           castShadow={preset.shadows}
         />
       ) : (

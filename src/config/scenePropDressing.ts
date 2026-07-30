@@ -23,13 +23,11 @@ export interface SplitScenePropDressing {
 /** Authored GLTF props placed in scene visuals (see propModelRegistry). */
 export const SCENE_PROP_DRESSING: Partial<Record<SceneId, readonly ScenePropPlacement[]>> = {
   volodka_room: [
-    // High/Ultra path intentionally avoids Kenney hero furniture; Poly Haven
-    // dressing is preferable to low-poly placeholder beds/chairs/bookcases.
-    { propModelId: 'polyhaven_bench', position: [1.58, 0, 1.82], rotationY: Math.PI, loadTier: 'deferred' },
-    { propModelId: 'polyhaven_bench', position: [-1.78, 0, 0.2], rotationY: Math.PI / 2, loadTier: 'deferred' },
-    { propModelId: 'polyhaven_shutter_door', position: [0, 0, 3.36], rotationY: Math.PI, loadTier: 'deferred' },
-    { propModelId: 'polyhaven_shutter_window', position: [2.43, 1.08, -2.0], rotationY: -Math.PI / 2, loadTier: 'deferred' },
-    { propModelId: 'polyhaven_shutter_window', position: [-1.0, 1.08, -3.37], loadTier: 'deferred' },
+    // Keep apartment-scale openings here. Poly Haven roller shutters have a
+    // storefront footprint and made the 1.75m player read like a dwarf.
+    { propModelId: 'kenney_door', position: [0.5, 0, 3.43], rotationY: Math.PI, loadTier: 'deferred' },
+    { propModelId: 'kenney_window', position: [2.43, 1.05, -2.0], rotationY: -Math.PI / 2, loadTier: 'deferred' },
+    { propModelId: 'kenney_window', position: [-1.5, 1.05, -3.37], loadTier: 'deferred' },
     { propModelId: 'polyhaven_industrial_lamp', position: [0.15, 2.55, -1.25], rotationY: 0.2, loadTier: 'deferred' },
     { propModelId: 'polyhaven_barrel', position: [2.12, 0, 2.12], rotationY: -0.2, loadTier: 'deferred' },
     { propModelId: 'polyhaven_cardboard_box', position: [-1.55, 0, 2.78], rotationY: -0.35, loadTier: 'deferred' },

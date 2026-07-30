@@ -31,6 +31,7 @@ import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
 import { POLYHAVEN_MODELS } from '@/config/polyhavenAssets';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
+import { getInteriorShellScale } from '@/config/interiorShellScale';
 // FIX-B1: DustParticles import removed — VolodkaRoomVisual no longer renders
 // its own dust system. AtmosphericEffects' DustMotes already covers
 // volodka_room (it's in DUST_SCENES), so the duplicate system is gone.
@@ -556,7 +557,7 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
         <AuthoredInteriorShell
           sceneId="volodka_room"
           url={INTERIOR_SHELL_MODELS.volodkaBedroom}
-          scale={[W / 1.3, H / 0.83354, D / 1.02814]}
+          scale={getInteriorShellScale('volodkaBedroom', [W, H, D])}
           castShadow={preset.shadows}
         />
       ) : (

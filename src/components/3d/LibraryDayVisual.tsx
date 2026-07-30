@@ -8,6 +8,7 @@ import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { INTERIOR_SHELL_MODELS } from '../../config/interiorShellModels';
 import { AuthoredInteriorShell } from './AuthoredInteriorShell';
 import { LibraryDayInterior } from './sceneChunks/libraryDay';
+import { getInteriorShellScale } from '@/config/interiorShellScale';
 
 /** Gothic/AuthorMaterial library (16×14m) */
 export function LibraryDayVisual() {
@@ -31,7 +32,7 @@ export function LibraryDayVisual() {
         <AuthoredInteriorShell
           sceneId="library_day"
           url={INTERIOR_SHELL_MODELS.library}
-          scale={[W / 0.97, H / 1.293, D / 0.94]}
+          scale={getInteriorShellScale('library', [W, H, D])}
           castShadow={preset.shadows}
         />
       ) : (

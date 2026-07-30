@@ -19,6 +19,7 @@ import { seededRand } from '@/shared/utils/seededRand';
 import { PolyHavenStandardMaterial } from './PolyHavenStandardMaterial';
 import { INTERIOR_SHELL_MODELS } from '../../config/interiorShellModels';
 import { AuthoredInteriorShell } from './AuthoredInteriorShell';
+import { getInteriorShellScale } from '@/config/interiorShellScale';
 
 interface CafeVisualProps {
   livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
@@ -150,7 +151,7 @@ export function CafeVisual({ livePlayerPositionRef }: CafeVisualProps) {
         <AuthoredInteriorShell
           sceneId="cafe_evening"
           url={INTERIOR_SHELL_MODELS.cafe}
-          scale={[W / 0.884, H / 0.893, D / 1.09]}
+          scale={getInteriorShellScale('cafe', [W, H, D])}
           castShadow={preset.shadows}
         />
       ) : (

@@ -47,8 +47,7 @@ const KENNEY_CITY_URL = 'https://kenney.nl/assets/city-kit-roads';
 const KENNEY_FURNITURE_URL = 'https://kenney.nl/assets/furniture-kit';
 const POLYHAVEN_URL = 'https://polyhaven.com';
 
-/** Kenney Furniture Kit (CC0) — metre-scale GLBs (1 unit = 1 m).
- *  targetSizeM matches measured bounds; runtime fit keeps scale ≈ 1. */
+/** Kenney Furniture Kit (CC0) — normalized GLBs fitted to metre targets. */
 export const PROP_MODEL_REGISTRY: Record<string, PropModelDefinition> = {
   kenney_desk: {
     id: 'kenney_desk',
@@ -79,7 +78,8 @@ export const PROP_MODEL_REGISTRY: Record<string, PropModelDefinition> = {
   kenney_door: {
     id: 'kenney_door',
     url: `${PROPS}/door.glb`,
-    targetSizeM: [0.49, 1.01, 0.11],
+    targetSizeM: [1.0, 2.1, 0.24],
+    fitAxis: 'height',
     license: 'CC0',
     source: 'Kenney Furniture Kit — doorway',
     sourceUrl: 'https://opengameart.org/content/furniture-kit',
@@ -87,7 +87,8 @@ export const PROP_MODEL_REGISTRY: Record<string, PropModelDefinition> = {
   kenney_door_open: {
     id: 'kenney_door_open',
     url: `${PROPS}/door_open.glb`,
-    targetSizeM: [0.49, 1.01, 0.09],
+    targetSizeM: [1.0, 2.1, 0.19],
+    fitAxis: 'height',
     license: 'CC0',
     source: 'Kenney Furniture Kit — doorwayOpen',
     sourceUrl: 'https://opengameart.org/content/furniture-kit',
