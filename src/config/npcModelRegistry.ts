@@ -14,6 +14,11 @@ import {
   RPM_NPC_CATALOG,
 } from '@/config/rpmNpcCatalog';
 import { RPM_NPC_GLB_URLS_ON_DISK } from '@/config/rpmNpcOnDisk.generated';
+import {
+  getAssetLod0Url,
+  isAssetEffectiveShipped,
+  resolveCharacterManifestId,
+} from '@/config/assetManifest';
 
 export interface NpcModelAssetMeta {
   url: string;
@@ -263,11 +268,21 @@ export const NPC_MODEL_ASSETS: Partial<Record<string, NpcModelAssetMeta>> = {
   ...RPM_NPC_MODEL_ASSETS,
 };
 
+function resolveManifestNpcUrl(npcId: string): string | undefined {
+  const manifestId = resolveCharacterManifestId(npcId);
+  if (!isAssetEffectiveShipped(manifestId)) return undefined;
+  return getAssetLod0Url(manifestId);
+}
+
 export function resolveNpcModelUrl(npcId: string, modelPath?: string): string | undefined {
   const rpmEntry = getRpmNpcByRegistryId(npcId);
   if (rpmEntry && RPM_ON_DISK.has(rpmEntry.publicUrl)) {
     return rpmEntry.publicUrl;
   }
+
+  // Single shipped source: ASSET_MANIFEST before hardcoded CC0 table.
+  const fromManifest = resolveManifestNpcUrl(npcId);
+  if (fromManifest) return fromManifest;
 
   if (!modelPath || modelPath === NPC_PROCEDURAL_MODEL_PLACEHOLDER) {
     return resolveCc0Url(npcId);

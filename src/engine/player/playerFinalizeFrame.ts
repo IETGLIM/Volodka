@@ -132,12 +132,15 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
   let finalPos = rb.translation();
   const finalGroundY = groundY;
 
+  // Single floor snap: only rescue micro-hover when KCC disagrees and we are
+  // not intentionally airborne — avoids fighting grounded resolution (vertical twitch).
   const floorSnapEps = isOutdoor ? 0.02 : 0.008;
-  if (
-    onFlatGround &&
-    !isGroundedNow &&
-    Math.abs(finalPos.y - finalGroundY) > floorSnapEps
-  ) {
+  const microHover =
+    !airborneIntent &&
+    vel.y <= 0 &&
+    finalPos.y <= finalGroundY + 0.05 &&
+    Math.abs(finalPos.y - finalGroundY) > floorSnapEps;
+  if (onFlatGround && !isGroundedNow && microHover) {
     rb.setTranslation({ x: finalPos.x, y: finalGroundY, z: finalPos.z }, true);
     vel.y = 0;
     deps.isGroundedRef.current = true;

@@ -81,8 +81,7 @@ function applyDegradedMovement(deps: PlayerMovementDeps, onFlatGround: boolean):
     deps.isGroundedRef.current = true;
     deps.coyoteTimerRef.current = 0;
   }
-  const finalPos = rb.translation();
-  deps.livePlayerPositionRef.current.set(finalPos.x, finalPos.y, finalPos.z);
+  // Position publish is finalizePlayerFrame-only (post_physics).
 
   const hSpeed = Math.sqrt(vel.x * vel.x + vel.z * vel.z);
   updateMoveBlendRef(deps.moveBlendRef, hSpeed > 0.15 ? 1 : 0, dt);

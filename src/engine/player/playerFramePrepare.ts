@@ -9,6 +9,7 @@ import { WARMUP_DURATION_S } from '@/engine/player/playerConstants';
 import { clearSharedVirtualControls } from '@/engine/VirtualControlsState';
 import { resetKeyboardInputState } from '@/engine/keyboardInputState';
 import { isMovementEpochStale } from '@/engine/player/playerMovementSceneSync';
+import { SIM_DELTA_MAX } from '@/engine/player/playerOwnership';
 import type { FrameGameSnapshot } from '@/engine/frame/frameGameSnapshot';
 import type { PlayerMovementDeps } from '@/engine/player/playerFrameTypes';
 
@@ -51,7 +52,9 @@ export function preparePlayerFrame(
   const vel = scratch.vel;
   const fallbackFloorY = scratch.floorY;
 
-  const dt = Math.min(delta, 0.1); // Consistent with camera delta cap (0.1) — prevents physics/animation/camera desync on long frames
+  // Same cap as FollowCamera / InteractionSystemBridge — hitch frames must not
+  // advance player farther than camera/interaction assume.
+  const dt = Math.min(delta, SIM_DELTA_MAX);
   scratch.dt = dt;
 
   const phase = game.gamePhase;

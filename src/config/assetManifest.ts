@@ -231,6 +231,22 @@ export function getAssetDefinition(assetId: string): GltfAssetDefinition | undef
   return ASSET_MANIFEST[assetId];
 }
 
+/** LOD0 (or first) URL from the manifest — preferred public path for loaders. */
+export function getAssetLod0Url(assetId: string): string | undefined {
+  return ASSET_MANIFEST[assetId]?.lods[0]?.url;
+}
+
+/**
+ * Resolve game character id → manifest id.
+ * Player uses `player_volodka`; most NPCs are `npc_<id>` with a few aliases.
+ */
+export function resolveCharacterManifestId(characterId: string): string {
+  if (characterId === 'volodka' || characterId === 'player_volodka') {
+    return 'player_volodka';
+  }
+  return NPC_ID_TO_MANIFEST[characterId] ?? `npc_${characterId}`;
+}
+
 /** Whether manifest + on-disk flags agree the asset is ready to load. */
 export function isAssetEffectiveShipped(assetId: string): boolean {
   const asset = ASSET_MANIFEST[assetId];

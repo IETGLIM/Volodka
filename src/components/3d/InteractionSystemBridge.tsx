@@ -11,6 +11,7 @@
 import { useRef, useEffect } from 'react';
 import { devWarn } from '@/shared/utils/devLog';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
+import { SIM_DELTA_MAX } from '@/engine/player/playerOwnership';
 import * as THREE from 'three';
 import { InteractionState, DEFAULT_CUTSCENE_DURATION } from '@/engine/interaction/interactionMachine';
 import { resolveNpcInteractionSplash, deriveZoneRepeatSkipFlag } from '@/engine/interaction/resolveInteractionSplash';
@@ -311,7 +312,7 @@ export function InteractionSystemBridge({
   // Priority -1: runs BEFORE PhysicsPlayer's useFrame (default priority 0)
   // so that external velocity is set before PhysicsPlayer reads it.
   useFrameTick('interaction', ({ delta }) => {
-    const dt = Math.min(delta, 0.05);
+    const dt = Math.min(delta, SIM_DELTA_MAX);
 
     if (stateRef.current === InteractionState.Idle) return;
 
@@ -476,7 +477,8 @@ export function InteractionSystemBridge({
           const dirZ = dz / dist;
           setPlayerExternalVelocity(dirX * speed, dirZ * speed);
 
-          livePlayerRotationRef.current = Math.atan2(dirX, dirZ);
+          // Facing: locked locomotion owns body yaw from external velocity.
+          // Do not snap livePlayerRotationRef here — dual-write caused approach jitter.
 
           if (targetNPCIdRef.current) {
             eventBus.emit('npc:animation', {

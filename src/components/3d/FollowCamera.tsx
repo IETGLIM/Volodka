@@ -28,6 +28,7 @@ import {
 } from '@/engine/camera/cameraConstants';
 import { shouldUseFirstPersonExploration } from '@/engine/camera/cinematicPresentation';
 import { sharedCameraYawRef } from '@/engine/PlayerRotationState';
+import { SIM_DELTA_MAX } from '@/engine/player/playerOwnership';
 import { resolveCameraMode } from '@/engine/camera/strategies';
 import { useCameraOrbitInput } from '@/engine/camera/useCameraOrbitInput';
 import { applyPendingGamepadOrbit } from '@/engine/input/gamepadCamera';
@@ -230,7 +231,7 @@ export function FollowCamera({
     if (owner === 'followCamera' && !acquireCameraOwnership('followCamera')) return;
     if (owner !== 'followCamera' && !canWriteCamera(owner)) return;
 
-    const delta = applyTimeScale(Math.min(rawDelta, 0.05));
+    const delta = applyTimeScale(Math.min(rawDelta, SIM_DELTA_MAX));
     timeRef.current += delta;
 
     applyPendingGamepadOrbit(yawRef, pitchRef, distanceRef, interactionDistanceRef, delta);

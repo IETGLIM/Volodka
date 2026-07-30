@@ -138,7 +138,10 @@ function PhysicsSceneInner({
         livePlayerPositionRef={livePlayerPositionRef}
         livePlayerRotationRef={livePlayerRotationRef}
       />
-      <RotationSyncBridge livePlayerRotationRef={livePlayerRotationRef} />
+      <RotationSyncBridge
+        livePlayerRotationRef={livePlayerRotationRef}
+        livePlayerPositionRef={livePlayerPositionRef}
+      />
       <ExplorationLighting />
       <SceneEnvironment />
     </Physics>

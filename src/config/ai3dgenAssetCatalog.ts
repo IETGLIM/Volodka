@@ -4,7 +4,12 @@
  *
  * Free tier exports OBJ (no textures); Pro adds GLB + PBR.
  * After download: npm run assets:ai3dgen-import -- --id <catalog-id> --file <path>
+ *
+ * Character publicUrl values prefer ASSET_MANIFEST (single shipped source).
  */
+
+import { getAssetLod0Url } from '@/config/assetManifest';
+import { getPlayerVolodkaModelUrl } from '@/config/playerModelUrl';
 
 export type Ai3dgenAssetCategory =
   | 'character'
@@ -43,6 +48,10 @@ export interface Ai3dgenAssetSpec {
 const AI3DGEN = 'assets-source/ai3dgen';
 const MODELS = '/models';
 
+function manifestOrNpcUrl(manifestId: string, fileBase: string): string {
+  return getAssetLod0Url(manifestId) ?? `${MODELS}/npcs/${fileBase}.glb`;
+}
+
 /** Priority catalog — extend as art drops land. */
 export const AI3DGEN_ASSET_CATALOG: Ai3dgenAssetSpec[] = [
   // ── Hero character ──
@@ -52,7 +61,7 @@ export const AI3DGEN_ASSET_CATALOG: Ai3dgenAssetSpec[] = [
     title: 'Володя (герой)',
     imageBrief: 'Cyberpunk poet, hoodie, tired eyes, single full-body T-pose, plain background',
     sourceRelativePath: `${AI3DGEN}/characters/volodka.glb`,
-    publicUrl: `${MODELS}/characters/volodka/volodka_lod0.glb`,
+    publicUrl: getPlayerVolodkaModelUrl(),
     wire: { kind: 'manifest', assetManifestId: 'player_volodka' },
     licenseTier: 'pro',
   },
@@ -63,7 +72,7 @@ export const AI3DGEN_ASSET_CATALOG: Ai3dgenAssetSpec[] = [
     title: 'Альберт',
     imageBrief: 'Middle-aged mentor, glasses, cardigan, kind face, full body neutral pose',
     sourceRelativePath: `${AI3DGEN}/npcs/albert.glb`,
-    publicUrl: `${MODELS}/npcs/albert.glb`,
+    publicUrl: manifestOrNpcUrl('npc_albert', 'albert'),
     wire: { kind: 'npc', npcId: 'albert' },
     defaultScale: 1,
     licenseTier: 'pro',
@@ -74,7 +83,7 @@ export const AI3DGEN_ASSET_CATALOG: Ai3dgenAssetSpec[] = [
     title: 'Зарема',
     imageBrief: 'Young woman, cyberpunk streetwear, confident stance, full body',
     sourceRelativePath: `${AI3DGEN}/npcs/zarema.glb`,
-    publicUrl: `${MODELS}/npcs/zarema.glb`,
+    publicUrl: manifestOrNpcUrl('npc_zarema', 'zarema'),
     wire: { kind: 'npc', npcId: 'zarema' },
     defaultScale: 1,
     licenseTier: 'pro',
@@ -260,7 +269,7 @@ export const AI3DGEN_ASSET_CATALOG: Ai3dgenAssetSpec[] = [
     title: 'Володя (Quaternius male_01)',
     imageBrief: 'Quaternius Ultimate Modular Men — Adventurer rig',
     sourceRelativePath: `${AI3DGEN}/npcs/male_01.glb`,
-    publicUrl: `${MODELS}/characters/volodka/volodka_lod0.glb`,
+    publicUrl: getPlayerVolodkaModelUrl(),
     wire: { kind: 'manifest', assetManifestId: 'player_volodka' },
     licenseTier: 'free',
   },
@@ -270,7 +279,7 @@ export const AI3DGEN_ASSET_CATALOG: Ai3dgenAssetSpec[] = [
     title: 'Альберт (Quaternius male_02)',
     imageBrief: 'Quaternius men pack — Beach rig',
     sourceRelativePath: `${AI3DGEN}/npcs/male_02.glb`,
-    publicUrl: `${MODELS}/npcs/albert.glb`,
+    publicUrl: manifestOrNpcUrl('npc_albert', 'albert'),
     wire: { kind: 'npc', npcId: 'albert' },
     licenseTier: 'free',
   },
@@ -280,7 +289,7 @@ export const AI3DGEN_ASSET_CATALOG: Ai3dgenAssetSpec[] = [
     title: 'Зарема (Quaternius female_01)',
     imageBrief: 'Quaternius women pack — Adventurer rig',
     sourceRelativePath: `${AI3DGEN}/npcs/female_01.glb`,
-    publicUrl: `${MODELS}/npcs/zarema.glb`,
+    publicUrl: manifestOrNpcUrl('npc_zarema', 'zarema'),
     wire: { kind: 'npc', npcId: 'zarema' },
     licenseTier: 'free',
   },

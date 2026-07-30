@@ -1,11 +1,14 @@
 /**
  * Hybrid overlay for street_night when procedural AAA flag is on.
- * Keeps Poly Haven PBR ground/facades; adds atmosphere + character + GLB landmarks.
+ * Keeps Poly Haven PBR ground/facades; adds atmosphere + GLB landmarks.
+ *
+ * Does NOT mount ProceduralCharacter — PhysicsPlayer / CesiumPlayerModel is
+ * the sole player avatar (AAA single-owner). A second walking mannequin caused
+ * duplicate character meshes on the hybrid street.
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
-import { ProceduralCharacter } from './ProceduralCharacter';
 import { ProceduralAtmosphereLayer } from './ProceduralAtmosphereLayer';
 import { StreetHybridGlbLandmarks } from './HybridGlbLandmarks';
 import {
@@ -15,7 +18,6 @@ import {
 
 export function ProceduralAaaHybridOverlay() {
   const [, setGenKey] = useState(getProceduralAaaGenerationKey);
-  const spectrumRef = useRef(0);
   const groundMeshesRef = useRef<THREE.Object3D[]>([]);
 
   useEffect(() => onProceduralAaaRegenerate(setGenKey), []);
@@ -39,12 +41,6 @@ export function ProceduralAaaHybridOverlay() {
       </mesh>
       {/* Authored landmarks — no repeating box soup on hybrid street */}
       <StreetHybridGlbLandmarks />
-      <ProceduralCharacter
-        position={[0, 0, 2.5]}
-        spectrumRef={spectrumRef}
-        groundMeshesRef={groundMeshesRef}
-        walking
-      />
     </group>
   );
 }

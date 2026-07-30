@@ -17,6 +17,7 @@ import {
 import { getExplorationCameraMotionScale } from '@/engine/player/playerLocomotionPresentation';
 import { isEffectiveReducedMotion } from '@/engine/accessibility/accessibilitySettings';
 import { getVisualSettings } from '@/engine/visualSettings';
+import { SIM_DELTA_MAX } from '@/engine/player/playerOwnership';
 
 /* ════════════════════════════════════════════════════
  * CONSTANTS
@@ -146,7 +147,7 @@ export function updateSpringCamera(
   stiffness: number = SPRING_STIFFNESS,
   damping: number = SPRING_DAMPING,
 ): void {
-  const dt = Math.min(delta, 0.1);
+  const dt = Math.min(delta, SIM_DELTA_MAX);
 
   // Defense-in-depth: if any target or current state has NaN/Infinity, the
   // spring can never recover (NaN propagates via lerp/add and sticks). Reset
@@ -580,7 +581,7 @@ export function updateExplorationState(
   delta: number,
   moveBlend = 0,
 ): { targetRoll: number; targetHeight: number } {
-  const dt = Math.min(delta, 0.1);
+  const dt = Math.min(delta, SIM_DELTA_MAX);
   const motionScale = getExplorationCameraMotionScale(moveBlend);
 
   // ── Height smoothing (for stairs/slopes) ──
@@ -753,7 +754,7 @@ export function updateCutsceneController(
 ): { position: THREE.Vector3; lookAt: THREE.Vector3; fov: number } | null {
   if (!controller.isPlaying || controller.isComplete) return null;
 
-  const dt = Math.min(delta, 0.1);
+  const dt = Math.min(delta, SIM_DELTA_MAX);
   controller.elapsed += dt;
 
   const waypoints = controller.waypoints;
@@ -924,7 +925,7 @@ export function updateCombatCamera(
   delta: number,
   _cameraPosition: THREE.Vector3,
 ): { shakeOffset: THREE.Vector3; effectiveFov: number } {
-  const dt = Math.min(delta, 0.1);
+  const dt = Math.min(delta, SIM_DELTA_MAX);
   let effectiveFov = state.targetFov;
 
   // ── Zoom recovery ──
@@ -1029,7 +1030,7 @@ export function updateSceneTransition(
 ): { position: THREE.Vector3; lookAt: THREE.Vector3 } | null {
   if (!state.active) return null;
 
-  const dt = Math.min(delta, 0.1);
+  const dt = Math.min(delta, SIM_DELTA_MAX);
   state.progress += dt / TRANSITION_FLY_DURATION;
 
   if (state.progress >= 1) {

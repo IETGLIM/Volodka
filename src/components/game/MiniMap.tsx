@@ -14,6 +14,10 @@ import { ALL_NPC_DEFINITIONS } from '@/data/allNpcDefinitions';
 import { useActiveQuests, getQuestMarker } from '@/store/questStore';
 import { cyberCyan } from '@/shared/constants/cyberPalette';
 import { useHudQuietStyle } from '@/hooks/useHudQuiet';
+import {
+  sharedPlayerPositionRef,
+  sharedPlayerRotationRef,
+} from '@/engine/PlayerRotationState';
 
 const MAP_SIZE = 160;
 const MAP_PADDING = 16; // Extra padding for cardinal labels
@@ -82,6 +86,7 @@ export function MiniMap() {
     }));
   }, [sceneConfig]);
 
+  // Live pose mirrors (AAA) — store playerPos/Rotation are transition/save only.
   const playerPosRef = useRef(playerPos);
   const playerRotationRef = useRef(playerRotation);
   const npcsInSceneRef = useRef(npcsInScene);
@@ -268,9 +273,15 @@ export function MiniMap() {
       }
 
       // ── Player breadcrumb trail (fading dots) ──
+      // Live pose from shared mirrors (store pos/rot are transition/save only).
+      const livePos = sharedPlayerPositionRef.current;
+      const liveX = Number.isFinite(livePos.x) ? livePos.x : playerPosRef.current[0];
+      const liveZ = Number.isFinite(livePos.z) ? livePos.z : playerPosRef.current[2];
+      const liveYaw = sharedPlayerRotationRef.current;
+
       trailFrameCountRef.current++;
       if (trailFrameCountRef.current % TRAIL_SAMPLE_INTERVAL === 0) {
-        trailRef.current.push({ x: playerPosRef.current[0], z: playerPosRef.current[2] });
+        trailRef.current.push({ x: liveX, z: liveZ });
         if (trailRef.current.length > MAX_TRAIL) {
           trailRef.current.shift();
         }
@@ -294,8 +305,8 @@ export function MiniMap() {
       }
 
       // ── Player dot with direction indicator and pulsing glow ──
-      const px = toMapX(playerPosRef.current[0]);
-      const py = toMapY(playerPosRef.current[2]);
+      const px = toMapX(liveX);
+      const py = toMapY(liveZ);
 
       // Pulsing outer glow
       const glowSize = 5 + pulse * 3;
@@ -313,7 +324,7 @@ export function MiniMap() {
       ctx.stroke();
 
       // Direction triangle (small triangle pointing in player facing direction)
-      const dirAngle = playerRotationRef.current; // Y-axis rotation
+      const dirAngle = liveYaw; // Y-axis rotation
       ctx.save();
       ctx.translate(px, py);
       ctx.rotate(-dirAngle + Math.PI / 2); // Adjust for coordinate system

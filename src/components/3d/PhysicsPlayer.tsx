@@ -7,7 +7,7 @@
 import type * as THREE from 'three';
 import { RigidBody, CapsuleCollider } from '@react-three/rapier';
 
-import { useCurrentSceneId, usePlayerPresentationState } from '@/store/selectors';
+import { useCurrentSceneId, usePlayerPresentationState, usePlayerPosition } from '@/store/selectors';
 import type { VirtualControls } from '@/hooks/useGamePhysics';
 import {
   isIntroWakeupCutscene,
@@ -41,6 +41,7 @@ export function PhysicsPlayer({
   moveBlendRef,
 }: PhysicsPlayerProps) {
   const sceneId = useCurrentSceneId();
+  const storeSpawn = usePlayerPosition();
   const { activeCutsceneId, gameMode } = usePlayerPresentationState();
   const timelineActive = useCinematicTimelineActive();
   const hideForCinematicAvatar =
@@ -57,7 +58,10 @@ export function PhysicsPlayer({
     moveBlendRef,
   });
 
-  const spawnPoint = getSceneConfig(sceneId).spawnPoint;
+  // Prefer transition spawn from store over config default — avoids one-frame
+  // doorway remount pop (config spawn ≠ exit spawnAt).
+  const configSpawn = getSceneConfig(sceneId).spawnPoint;
+  const spawnPoint = storeSpawn ?? configSpawn;
 
   // Force RigidBody to remount on scene change to prevent stale position.
   // Without this key, React may reuse the RigidBody instance when sceneId

@@ -30,6 +30,7 @@ export function runLockedPlayerMovement(deps: PlayerMovementDeps): void {
 
     const hSpeed = Math.sqrt(vel.x * vel.x + vel.z * vel.z);
     if (hSpeed > 0.1) {
+      // Sole body-yaw writer during Approach (InteractionSystemBridge only sets velocity).
       const targetYaw = Math.atan2(vel.x, vel.z);
       const rotT = 1 - Math.exp(-ROTATION_SPEED * dt);
       deps.livePlayerRotationRef.current = lerpAngle(
@@ -52,10 +53,6 @@ export function runLockedPlayerMovement(deps: PlayerMovementDeps): void {
     // slopes/walls. Allow larger upward velocities (e.g. intentional jump
     // impulse still decaying) to pass through.
     if (vel.y > 0 && vel.y < 0.5) vel.y = 0;
-  }
-
-  if (enforceFloor(rb, vel, groundY)) {
-    deps.isGroundedRef.current = true;
   }
 
   const desiredDisp = { x: vel.x * dt, y: vel.y * dt, z: vel.z * dt };
@@ -103,9 +100,8 @@ export function runLockedPlayerMovement(deps: PlayerMovementDeps): void {
   deps.currentAnimRef.current = presentation.anim;
   updateMoveBlendRef(deps.moveBlendRef, presentation.moveBlendTarget, dt);
 
+  // Single floor policy after KCC (finalize publishes livePlayerPositionRef).
   if (enforceFloor(rb, vel, groundY)) {
     deps.isGroundedRef.current = true;
   }
-  const pos = rb.translation();
-  deps.livePlayerPositionRef.current.set(pos.x, pos.y, pos.z);
 }

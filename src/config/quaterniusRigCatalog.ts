@@ -1,8 +1,13 @@
 import type { QuaterniusRigRef } from '@/config/npcComposer/types';
+import { getAssetLod0Url } from '@/config/assetManifest';
+import { getPlayerVolodkaModelUrl } from '@/config/playerModelUrl';
 
 const RIGS = '/models/npcs/_rigs';
 const NPCS = '/models/npcs';
-const HERO = '/models/characters/volodka';
+
+function npcFallback(manifestId: string, fileBase: string): string {
+  return getAssetLod0Url(manifestId) ?? `${NPCS}/${fileBase}.glb`;
+}
 
 /**
  * Staged animation-driver rigs (`npm run assets:npc-composer`).
@@ -31,28 +36,28 @@ export const QUATERNIUS_STAGED_RIG_URLS: Record<QuaterniusRigRef, string> = {
   female_09: `${RIGS}/female_09.glb`,
 };
 
-/** Canonical shipped NPC GLB per rig (fallback when `_rigs/` not staged). */
+/** Canonical shipped NPC GLB per rig (fallback when `_rigs/` not staged) — ASSET_MANIFEST first. */
 export const QUATERNIUS_RIG_FALLBACK_URLS: Record<QuaterniusRigRef, string> = {
-  male_01: `${HERO}/volodka_lod0.glb`,
-  male_02: `${NPCS}/albert.glb`,
-  male_03: `${NPCS}/office_dmitry.glb`,
-  male_04: `${NPCS}/cafe_barista.glb`,
-  male_05: `${NPCS}/office_alexander.glb`,
-  male_06: `${NPCS}/chk_ru.glb`,
-  male_07: `${NPCS}/chk_based.glb`,
-  male_08: `${NPCS}/chk_stalker.glb`,
-  male_09: `${NPCS}/maxim.glb`,
-  male_10: `${NPCS}/zeka.glb`,
-  male_11: `${NPCS}/trofim.glb`,
-  female_01: `${NPCS}/zarema.glb`,
-  female_02: `${NPCS}/solnysh.glb`,
-  female_03: `${NPCS}/maria.glb`,
-  female_04: `${NPCS}/chk_smert.glb`,
-  female_05: `${NPCS}/chk_elis.glb`,
-  female_06: `${NPCS}/chk_ritka.glb`,
-  female_07: `${NPCS}/anya.glb`,
-  female_08: `${NPCS}/baba_zina.glb`,
-  female_09: `${NPCS}/kate.glb`,
+  male_01: getPlayerVolodkaModelUrl(),
+  male_02: npcFallback('npc_albert', 'albert'),
+  male_03: npcFallback('npc_office_dmitry', 'office_dmitry'),
+  male_04: npcFallback('npc_cafe_barista', 'cafe_barista'),
+  male_05: npcFallback('npc_office_alexander', 'office_alexander'),
+  male_06: npcFallback('npc_chk_ru', 'chk_ru'),
+  male_07: npcFallback('npc_chk_based', 'chk_based'),
+  male_08: npcFallback('npc_chk_stalker', 'chk_stalker'),
+  male_09: npcFallback('npc_maxim', 'maxim'),
+  male_10: npcFallback('npc_zeka', 'zeka'),
+  male_11: npcFallback('npc_trofim', 'trofim'),
+  female_01: npcFallback('npc_zarema', 'zarema'),
+  female_02: npcFallback('npc_solnysh', 'solnysh'),
+  female_03: npcFallback('npc_maria_ai3dgen', 'maria'),
+  female_04: npcFallback('npc_chk_smert', 'chk_smert'),
+  female_05: npcFallback('npc_chk_elis', 'chk_elis'),
+  female_06: npcFallback('npc_chk_ritka', 'chk_ritka'),
+  female_07: npcFallback('npc_anya', 'anya'),
+  female_08: npcFallback('npc_baba_zina', 'baba_zina'),
+  female_09: npcFallback('npc_kate', 'kate'),
 };
 
 export function resolveQuaterniusRigFallbackUrl(rigRef: QuaterniusRigRef): string {
