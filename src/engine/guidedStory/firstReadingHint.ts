@@ -16,12 +16,12 @@ export function getFirstReadingHint(): string | null {
     if (!quest) return null;
 
     const deskDone = snap.playerState.flags['interacted_desk'] === true;
-    if (!deskDone) return 'Подойди к рабочему столу и нажми [E]';
+    if (!deskDone) return 'Рабочий стол выделяется среди утреннего беспорядка';
 
     const hasPoem2 = snap.collectedPoems.includes('poem_2');
     const monitorRead = snap.playerState.flags['terminal_poem_read'] === true;
     if (!monitorRead && !hasPoem2) {
-      return 'Активируй монитор на столе [E] — стих мерцает на экране';
+      return 'Монитор на столе мерцает строками стихотворения';
     }
     if (!hasPoem2) {
       return 'Стихотворение можно найти на книжной полке слева от стола';

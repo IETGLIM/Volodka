@@ -118,95 +118,50 @@ function NotificationCard({ entry, index }: { entry: NotificationEntry; index: n
         <motion.div
           layout
           key={entry.id}
-          className="event-notification-popup pointer-events-auto relative overflow-hidden"
+          className="event-notification-popup hud-filmic-toast pointer-events-auto relative overflow-hidden"
           style={{
-            backdropFilter: 'blur(12px)',
-            WebkitBackdropFilter: 'blur(12px)',
             background: accent.bg,
-            border: `1px solid ${accent.border}`,
-            borderRadius: '8px',
-            boxShadow: accent.shadow,
+            borderColor: accent.border,
             minWidth: '220px',
             maxWidth: '320px',
           }}
-          initial={{ opacity: 0, x: 80, scale: 0.9 }}
-          animate={{ opacity: 1, x: 0, scale: 1 }}
-          exit={{ opacity: 0, x: 60, scale: 0.9 }}
+          initial={{ opacity: 0, x: 24 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: 16 }}
           transition={{
-            duration: 0.4,
+            duration: 0.32,
             delay: index * (STAGGER_DELAY_MS / 1000),
-            ease: [0.25, 0.46, 0.45, 0.94],
+            ease: [0.16, 1, 0.3, 1],
           }}
         >
-          {/* ── Horizontal line sweep animation on entry ── */}
-          <motion.div
-            className="absolute inset-0 pointer-events-none z-10"
-            style={{
-              background: `linear-gradient(90deg, transparent 0%, ${accent.primary}20 40%, ${accent.primary}50 50%, ${accent.primary}20 60%, transparent 100%)`,
-              backgroundSize: '300% 100%',
-            }}
-            initial={{ backgroundPosition: '100% 0%' }}
-            animate={{ backgroundPosition: '-100% 0%' }}
-            transition={{ duration: 0.8, ease: 'easeOut' }}
-          />
-
-          {/* ── Hex-grid pattern overlay (subtle) ── */}
-          <div
-            className="absolute inset-0 pointer-events-none z-0"
-            style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='49' viewBox='0 0 28 49'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='${encodeURIComponent(accent.primary)}' fill-opacity='0.015'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9zM0 15l12.98-7.5V0h-2v6.35L0 12.69v2.3zm0 18.5L12.98 41v8h-2v-6.85L0 35.81v-2.3zM15 0v7.5L27.99 15H28v-2.31h-.01L17 6.35V0h-2zm0 49v-8l12.99-7.5H28v2.31h-.01L17 42.15V49h-2z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-              opacity: 0.6,
-            }}
-          />
-
-          {/* ── Neon border glow pulse ── */}
-          <motion.div
-            className="absolute inset-0 rounded-[8px] pointer-events-none"
-            animate={{
-              boxShadow: [
-                `0 0 6px ${accent.glow}, inset 0 0 3px ${accent.glow}`,
-                `0 0 16px ${accent.glow}, inset 0 0 6px ${accent.glow}`,
-                `0 0 6px ${accent.glow}, inset 0 0 3px ${accent.glow}`,
-              ],
-            }}
-            transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
-          />
-
-          {/* ── Corner bracket decorations ── */}
-          <div className="absolute top-0 left-0 w-3 h-3 pointer-events-none z-20" style={{ borderTop: `1px solid ${accent.primary}40`, borderLeft: `1px solid ${accent.primary}40` }} />
-          <div className="absolute top-0 right-0 w-3 h-3 pointer-events-none z-20" style={{ borderTop: `1px solid ${accent.primary}40`, borderRight: `1px solid ${accent.primary}40` }} />
-          <div className="absolute bottom-0 left-0 w-3 h-3 pointer-events-none z-20" style={{ borderBottom: `1px solid ${accent.primary}40`, borderLeft: `1px solid ${accent.primary}40` }} />
-          <div className="absolute bottom-0 right-0 w-3 h-3 pointer-events-none z-20" style={{ borderBottom: `1px solid ${accent.primary}40`, borderRight: `1px solid ${accent.primary}40` }} />
-
           {/* ── Content ── */}
-          <div className="relative z-10 flex items-center gap-3 px-4 py-3">
+          <div className="relative z-10 flex items-center gap-3">
             {/* Icon */}
             <div
-              className="event-notification-icon flex items-center justify-center w-8 h-8 shrink-0 rounded"
+              className="event-notification-icon flex items-center justify-center w-6 h-6 shrink-0"
               style={{
-                background: accent.iconBg,
-                boxShadow: `0 0 8px ${accent.glow}`,
+                color: accent.primary,
               }}
             >
-              {entry.type === 'combat' && <Shield className="size-4" style={{ color: accent.primary }} />}
-              {entry.type === 'scene' && <Map className="size-4" style={{ color: accent.primary }} />}
-              {entry.type === 'achievement' && <Trophy className="size-4" style={{ color: accent.primary }} />}
-              {entry.type === 'quest' && <Scroll className="size-4" style={{ color: accent.primary }} />}
-              {entry.type === 'info' && <Info className="size-4" style={{ color: accent.primary }} />}
+              {entry.type === 'combat' && <Shield className="size-3.5" />}
+              {entry.type === 'scene' && <Map className="size-3.5" />}
+              {entry.type === 'achievement' && <Trophy className="size-3.5" />}
+              {entry.type === 'quest' && <Scroll className="size-3.5" />}
+              {entry.type === 'info' && <Info className="size-3.5" />}
             </div>
 
             {/* Text */}
             <div className="flex flex-col gap-0.5 min-w-0">
               <span
-                className="text-sm font-mono font-bold tracking-wide truncate"
+                className="hud-filmic-kicker truncate"
                 style={{ color: accent.primary }}
               >
                 {entry.title}
               </span>
               {entry.subtitle && (
                 <span
-                  className="text-[11px] font-mono truncate"
-                  style={{ color: 'rgba(148, 163, 184, 0.65)' }}
+                  className="hud-filmic-body text-[11px] truncate"
+                  style={{ textAlign: 'left' }}
                 >
                   {entry.subtitle}
                 </span>
@@ -216,8 +171,8 @@ function NotificationCard({ entry, index }: { entry: NotificationEntry; index: n
 
           {/* ── Bottom accent bar ── */}
           <motion.div
-            className="absolute bottom-0 left-0 h-[2px]"
-            style={{ background: accent.primary, boxShadow: `0 0 6px ${accent.glow}` }}
+            className="absolute bottom-0 left-0 h-px"
+            style={{ background: accent.primary, opacity: 0.45 }}
             initial={{ width: '100%' }}
             animate={{ width: '0%' }}
             transition={{ duration: NOTIFICATION_DURATION_MS / 1000, ease: 'linear' }}

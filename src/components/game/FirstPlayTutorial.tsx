@@ -14,6 +14,7 @@ import { useTutorialFlags, useTutorialReady } from '@/store/selectors';
 import { useGameStore } from '@/store/gameStore';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { useGamepadConnected } from '@/hooks/useGamepadConnected';
+import { useTouchDevice } from '@/hooks/useTouchDevice';
 import {
   isExplorationHudProfile,
   useGameplayPresentationProfile,
@@ -348,6 +349,7 @@ const stepVariants = {
 export function FirstPlayTutorial() {
   const reducedMotion = useEffectiveReducedMotion();
   const profile = useGameplayPresentationProfile();
+  const isTouchDevice = useTouchDevice();
   const tutorialFlags = useTutorialFlags();
   const tutorialReady = useTutorialReady();
   const showStoryOverlay = useGameStore((s) => s.showStoryOverlay);
@@ -369,6 +371,7 @@ export function FirstPlayTutorial() {
   const shouldShow =
     !dismissed &&
     isExplorationHudProfile(profile) &&
+    isTouchDevice &&
     !tutorialFlags.tutorialsDisabled &&
     !tutorialFlags.tutorialsCompleted &&
     tutorialReady &&

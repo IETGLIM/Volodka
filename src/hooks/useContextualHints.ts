@@ -184,7 +184,9 @@ export function useContextualHints() {
   useEffect(() => {
     if (prevSceneRef.current !== currentSceneId) {
       prevSceneRef.current = currentSceneId;
-      const sceneName = SCENE_CONFIG[currentSceneId]?.name ?? 'Неизвестно';
+      const sceneConfig = SCENE_CONFIG[currentSceneId];
+      if (sceneConfig?.entryText) return;
+      const sceneName = sceneConfig?.name ?? 'Неизвестно';
       enqueueHint({
         id: `scene_enter_${currentSceneId}`,
         text: `· ${sceneName} ·`,

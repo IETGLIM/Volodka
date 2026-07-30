@@ -10,6 +10,7 @@ import { useGameStore } from '@/store/gameStore';
 import { useGamePhase, useTutorialFlags } from '@/store/selectors';
 import { eventBus } from '@/engine/EventBus';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useTouchDevice } from '@/hooks/useTouchDevice';
 
 type TutorialType = 'movement' | 'interact' | 'controls' | 'poem_power' | 'combat' | 'quest_board';
 
@@ -218,6 +219,7 @@ export function TutorialOverlay() {
   const mode = useGamePhase();
   const tutorialFlags = useTutorialFlags();
   const showStoryOverlay = useGameStore((s) => s.showStoryOverlay);
+  const isTouchDevice = useTouchDevice();
 
   const [dismissed, setDismissed] = useState<Set<TutorialType>>(new Set());
   const [dontShowAgain, setDontShowAgain] = useState(isTutorialDisabled);
@@ -261,6 +263,7 @@ export function TutorialOverlay() {
   const activeTutorial: TutorialType | null = (() => {
     if (tutorialFlags.tutorialsDisabled || isTutorialDisabled()) return null;
     if (mode !== 'exploration') return null;
+    if (!isTouchDevice) return null;
     if (showStoryOverlay) return null;
     // Don't show contextual tips if the first-play tutorial hasn't been completed yet
     if (!tutorialFlags.tutorialsCompleted) return null;

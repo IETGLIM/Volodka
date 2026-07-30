@@ -11,6 +11,7 @@ import { MapPin, Sparkles } from 'lucide-react';
 import { eventBus } from '@/engine/EventBus';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { SCENE_CONFIG } from '@/config/scenes';
 import { SCENE_IDS, SCENE_DEFINITIONS } from '@/config/sceneDefinitions';
 import type { SceneId } from '@/shared/types/game';
 
@@ -62,6 +63,8 @@ export function SceneDiscoveryToast() {
     }
 
     const sceneName = getSceneDisplayName(sceneId) ?? sceneId;
+    const hasEntryText = Boolean(SCENE_CONFIG[sceneId]?.entryText);
+    if (hasEntryText) return;
 
     // Clear any existing timer
     if (timerRef.current) {
@@ -91,95 +94,46 @@ export function SceneDiscoveryToast() {
       {discovery && (
         <motion.div
           key={`discovery-${discovery.sceneId}`}
-          initial={reducedMotion ? { opacity: 1 } : { opacity: 0, y: 30, scale: 0.95 }}
+          initial={reducedMotion ? { opacity: 1 } : { opacity: 0, y: 12 }}
           animate={
             discovery.show
               ? reducedMotion
                 ? { opacity: 1 }
-                : { opacity: 1, y: 0, scale: 1 }
+                : { opacity: 1, y: 0 }
               : reducedMotion
                 ? { opacity: 0 }
-                : { opacity: 0, y: -10, scale: 0.98 }
+                : { opacity: 0, y: -8 }
           }
-          exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -20 }}
+          exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -8 }}
           transition={{ duration: reducedMotion ? 0.15 : 0.5, ease: [0.16, 1, 0.3, 1] }}
           className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none"
           style={{ zIndex: UI_LAYERS.CINEMATIC_TRANSITION - 5 }}
         >
-          <div
-            className="relative flex flex-col items-center gap-3 px-8 py-5 rounded-xl border overflow-hidden"
-            style={{
-              background: 'linear-gradient(145deg, rgba(2,6,23,0.92) 0%, rgba(8,12,28,0.88) 100%)',
-              borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.35)',
-              boxShadow: '0 0 40px rgb(var(--cyber-cyan-rgb) / 0.15), 0 0 80px rgb(var(--cyber-cyan-rgb) / 0.05), inset 0 1px 0 rgb(var(--cyber-cyan-rgb) / 0.1)',
-              backdropFilter: 'blur(16px)',
-              minWidth: '240px',
-            }}
-          >
-            {/* Top scan line */}
-            <div
-              className="absolute top-0 left-0 right-0 h-px"
-              style={{
-                background: 'linear-gradient(90deg, transparent, rgb(var(--cyber-cyan-rgb) / 0.6), transparent)',
-                boxShadow: '0 0 12px rgb(var(--cyber-cyan-rgb) / 0.4)',
-              }}
-            />
-
-            {/* Corner brackets */}
-            <div className="absolute top-1 left-1 w-2.5 h-2.5 border-t border-l border-cyan-400/40 pointer-events-none" />
-            <div className="absolute top-1 right-1 w-2.5 h-2.5 border-t border-r border-cyan-400/40 pointer-events-none" />
-            <div className="absolute bottom-1 left-1 w-2.5 h-2.5 border-b border-l border-cyan-400/40 pointer-events-none" />
-            <div className="absolute bottom-1 right-1 w-2.5 h-2.5 border-b border-r border-cyan-400/40 pointer-events-none" />
-
-            {/* Icon + label */}
-            <div className="flex items-center gap-2.5">
-              <div
-                className="flex items-center justify-center w-8 h-8 rounded-lg"
-                style={{
-                  background: 'rgb(var(--cyber-cyan-rgb) / 0.1)',
-                  boxShadow: '0 0 12px rgb(var(--cyber-cyan-rgb) / 0.2)',
-                }}
-              >
-                <MapPin className="size-4 text-cyan-400" />
-              </div>
-              <span
-                className="text-[10px] font-mono uppercase tracking-[0.25em] text-cyan-400/70"
-                style={{ textShadow: '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.3)' }}
-              >
+          <div className="hud-filmic-caption px-4">
+            <div className="hud-filmic-rule hud-filmic-rule--wide" aria-hidden />
+            <div className="flex items-center gap-2">
+              <MapPin className="size-3.5 text-stone-500" aria-hidden />
+              <span className="hud-filmic-kicker">
                 Новое место
               </span>
             </div>
-
-            {/* Scene name */}
-            <span
-              className="text-lg font-bold text-cyan-100 tracking-wide text-center text-fade-in-up"
-              style={{ textShadow: '0 0 12px rgb(var(--cyber-cyan-rgb) / 0.3)' }}
-            >
+            <span className="hud-filmic-body text-[16px] text-fade-in-up">
               {discovery.sceneName}
             </span>
-
-            {/* Discovery count */}
-            <div className="flex items-center gap-1.5 text-[11px] text-slate-400 font-mono">
-              <Sparkles className="size-3 text-amber-400/70" />
-              <span>
-                Открыто: <span className="text-cyan-300">{discovery.count}</span>
-                <span className="text-slate-500"> / {TOTAL_SCENES}</span>
+            <div className="flex items-center gap-1.5">
+              <Sparkles className="size-3 text-stone-500" aria-hidden />
+              <span className="hud-filmic-kicker" style={{ letterSpacing: '0.1em' }}>
+                Открыто {discovery.count} / {TOTAL_SCENES}
               </span>
             </div>
-
-            {/* Progress bar */}
-            <div className="w-full h-1 bg-slate-800/80 rounded-full overflow-hidden">
-              <motion.div
-                className="h-full rounded-full"
-                style={{
-                  background: 'linear-gradient(90deg, rgb(var(--cyber-cyan-rgb) / 0.6), rgb(var(--cyber-cyan-rgb) / 0.9))',
-                  boxShadow: '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.4)',
-                }}
-                initial={{ width: 0 }}
-                animate={{ width: `${Math.min(100, (discovery.count / TOTAL_SCENES) * 100)}%` }}
-                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
-              />
-            </div>
+            <div className="hud-filmic-rule hud-filmic-rule--soft" aria-hidden />
+            <span className="sr-only">
+              Открыто:
+              <span>
+                {' '}
+                {discovery.count} / {TOTAL_SCENES}
+              </span>
+            </span>
           </div>
         </motion.div>
       )}

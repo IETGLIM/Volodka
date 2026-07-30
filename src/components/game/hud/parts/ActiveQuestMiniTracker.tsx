@@ -13,6 +13,7 @@ import { getQuestProgress } from '@/store/selectors/questSelectors';
 import { useQuests, useCurrentSceneId } from '@/store/selectors';
 import { eventBus } from '@/engine/EventBus';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { useTouchDevice } from '@/hooks/useTouchDevice';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import type { QuestType } from '@/shared/types/game';
 import { focusQuestOnMap } from './focusQuestOnMap';
@@ -49,6 +50,7 @@ function getObjectiveTypeIcon(type: string): string {
 
 export function ActiveQuestMiniTracker() {
   const reducedMotion = useEffectiveReducedMotion();
+  const isTouchDevice = useTouchDevice();
   const quests = useQuests();
   const currentSceneId = useCurrentSceneId();
   const [expanded, setExpanded] = useState(false);
@@ -198,8 +200,8 @@ export function ActiveQuestMiniTracker() {
     focusQuestOnMap(displayQuest.questId, currentSceneId);
   }, [displayQuest, currentSceneId]);
 
-  /* ── Don't render if no active quests ── */
-  if (!displayQuest || !questDef) return null;
+  /* StoryGuidanceHUD is the canonical desktop objective strip; keep this as a touch/journal surface. */
+  if (!isTouchDevice || !displayQuest || !questDef) return null;
 
   const questType = questDef.questType;
   const typeColor = QUEST_TYPE_COLOR[questType];

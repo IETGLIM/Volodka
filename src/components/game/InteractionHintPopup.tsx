@@ -11,6 +11,7 @@ import {
   isExplorationHudProfile,
   useGameplayPresentationProfile,
 } from '@/hooks/useGameplayPresentationProfile';
+import { useHudProximityFxActive } from '@/hooks/useHudProximityFxActive';
 import { useTouchDevice } from '@/hooks/useTouchDevice';
 import { useDiegeticNarrativeState } from '@/store/selectors';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -55,6 +56,7 @@ export function InteractionHintPopup() {
   const explorationHudActive = isExplorationHudProfile(profile);
   const reducedMotion = useEffectiveReducedMotion();
   const isTouchDevice = useTouchDevice();
+  const crosshairPromptActive = useHudProximityFxActive();
   const gamepadConnected = useGamepadConnected();
   const diegeticNarrative = useDiegeticNarrativeState();
   const [hint, setHint] = useState<InteractionHint | null>(null);
@@ -90,7 +92,11 @@ export function InteractionHintPopup() {
     }
   }, [explorationHudActive]);
 
-  const shouldRender = explorationHudActive && hint !== null && diegeticNarrative == null;
+  const shouldRender =
+    explorationHudActive
+    && hint !== null
+    && diegeticNarrative == null
+    && !crosshairPromptActive;
 
   /* ── Get accent style for current hint type ── */
   const accent = hint ? getInteractionHintVisual(hint.type) : getInteractionHintVisual('npc');
