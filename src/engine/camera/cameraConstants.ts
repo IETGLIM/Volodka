@@ -65,6 +65,7 @@ const INDOOR_SCENES: Set<SceneId> = new Set([
   'factory_basement',
   'guild_mainframe',
   'zarema_albert_room',
+  'zarema_room',
   'albert_backroom',
   'underground_bunker',
   'solnysh_room',
