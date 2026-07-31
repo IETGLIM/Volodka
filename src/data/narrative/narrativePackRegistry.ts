@@ -17,6 +17,7 @@ export type StorySatellitePackId =
   | 'act2Expanded'
   | 'solnysh'
   | 'act4QuietHour'
+  | 'act4SideQuests'
   | 'chkExtended'
   | 'pier'
   | 'library'
@@ -92,6 +93,8 @@ const storySatelliteLoaders: Record<
   solnysh: () => import('../story/solnyshStory').then((m) => m.STORY_NODES_SOLNYSH),
   act4QuietHour: () =>
     import('../story/act4QuietHour').then((m) => m.STORY_NODES_ACT4_QUIET_HOUR),
+  act4SideQuests: () =>
+    import('../story/act4SideQuestStory').then((m) => m.STORY_NODES_ACT4_SIDE_QUESTS),
   chkExtended: () =>
     import('../chkTolpa/storyNodesExtended').then((m) => m.CHK_STORY_NODES_EXTENDED),
   pier: () => import('../story/pierStory').then((m) => m.STORY_NODES_PIER),
@@ -107,7 +110,7 @@ const storySatelliteLoaders: Record<
 const ACT_STORY_SATELLITES: Partial<Record<StoryPackId, readonly StorySatellitePackId[]>> = {
   act1: ['act1Extended', 'act1CafeOffice', 'act1OfficeAftermath', 'act1RoomExpanded', 'solnysh'],
   act2: ['act2Expanded'],
-  act4: ['act4QuietHour'],
+  act4: ['act4QuietHour', 'act4SideQuests'],
   chk: ['chkExtended'],
 };
 

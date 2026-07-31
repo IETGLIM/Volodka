@@ -1841,7 +1841,8 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     position: [2.0, 0, -1.5],
     size: [1.5, 2.0, 1.5],
     enterToast: 'Алина у стеллажа — смотрит на люк, как на таймер.',
-    linkedNpcId: 'solnysh',
+    // Spatial/hub beat only — omit linkedNpcId so casual Solnysh talk
+    // outside home scenes still falls back to default dialogue.
     linkedStoryNodeId: 'archive_forgotten_meet',
     linkedQuestId: 'archive_of_forgotten',
     requiredAct: 4,
