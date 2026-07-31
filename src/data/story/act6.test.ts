@@ -72,7 +72,7 @@ describe('Act 6 story presentation', () => {
     const node = STORY_NODES_ACT6.act6_traitor_revealed;
     expect(node.effects).toContainEqual({ type: 'setFlag', flag: 'traitor_revealed', flagValue: true });
     expect(node.contextNote).toBeTruthy();
-    expect(GOLDEN_PATH_BRANCH_HINTS.act6_traitor_revealed).toBeTruthy();
+    expect(node.guidanceHint || GOLDEN_PATH_BRANCH_HINTS.act6_traitor_revealed).toBeTruthy();
   });
 
   it('office confrontation has dmitry_defected branch', () => {
@@ -111,7 +111,10 @@ describe('Act 6 story presentation', () => {
       'act6_final_confrontation',
     ] as const;
     for (const id of ids) {
-      expect(GOLDEN_PATH_BRANCH_HINTS[id], id).toBeTruthy();
+      expect(
+        STORY_NODES_ACT6[id]?.guidanceHint || GOLDEN_PATH_BRANCH_HINTS[id],
+        id,
+      ).toBeTruthy();
     }
   });
 

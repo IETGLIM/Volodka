@@ -2,7 +2,7 @@
 
 > Sequential waves toward **whole-codebase architectural uniformity**.
 > Companion to [`ARCHITECTURE.md`](../ARCHITECTURE.md) Target Uniform Architecture.
-> Last updated: 2026-07-31 (Wave 4 done + Wave 5 toast/float hygiene).
+> Last updated: 2026-07-31 (Waves 6–7 done).
 
 ## North star
 
@@ -36,7 +36,7 @@ Poem reveal FIFO is the reference exclusive-UI pattern — do not undo it.
 | **Leave-scan** | Acts 5–7 expanded meshes are finite climax chains (leave at act7 epilogue); solnysh roof mid-beat gained leave; no true soft-locks left in scan |
 | **Cutscene playback** | `useCutsceneController` → `startCinematicTimeline(cutsceneDefToTimeline(...))`; camera/overlay via `CinematicTimelineRunner` |
 
-## Wave 4 — DONE (this session)
+## Wave 4 — DONE
 
 | Cluster | Action |
 |---------|--------|
@@ -45,7 +45,7 @@ Poem reveal FIFO is the reference exclusive-UI pattern — do not undo it.
 | **Settings detail strings** | Dropped unused English `QualityPreset.label`; Settings buttons use `labelRu`; RU detail aligned to gates (reflector @ medium; MeshPhysical accents @ high/ultra) |
 | **MeshPhysical gates** | Hero street neon/glass + `home_evening` night window via `allowsSelectiveMeshPhysicalWet` / `roomNightWindow`; CRT/wet hubs already on gates |
 
-## Wave 5 — DONE (partial, this session)
+## Wave 5 — DONE
 
 | Cluster | Action |
 |---------|--------|
@@ -54,20 +54,28 @@ Poem reveal FIFO is the reference exclusive-UI pattern — do not undo it.
 | **Hub toast** | Already single path (`ui:exploration_message` / first-visit `game:notification` → `EventNotificationPopup`); no further duplicate copy found |
 | **Expanded leave** | Acts 5–7 / expansion leave-scan clean; quiet-hour hub↔vignette loops intentional |
 
-## Inventory of remaining inconsistencies (ordered)
+## Wave 6 — DONE
 
-### Wave 6 — Input / a11y polish
+| Cluster | Action |
+|---------|--------|
+| **Mouse vs gamepad clear** | `setSharedVirtualControlsWritable(false)` on overlay lock clears axes + blocks writers; mouse-both-buttons uses `applyMouseBothButtonsForward`; gamepad block uses `clearSharedVirtualControls()` |
+| **Merge-order test** | `locomotionInputMerge.test.ts` — keyboard wins over virtual; virtual when idle; write-gate blocks mouse fight after clear |
 
-1. Ensure mouse-both-buttons forward never fights gamepad clear on overlay lock (single clear API already exists).
-2. Touch HUD + gamepad both write only `sharedVirtualControlsRef` — add a unit test that samples merge order with keyboard singleton.
+## Wave 7 — DONE
 
-### Wave 7 — Docs / zombie purge
+| Cluster | Action |
+|---------|--------|
+| **Zombie alias** | Deleted `setPoemDiscoveryRevealInterstitialActive` (zero production imports) |
+| **BRANCH_HINTS** | Removed 95 rows where `node.guidanceHint` owns copy; 31 table-only fallbacks remain |
+| **CI story nodes** | Validator reads via `getCiParityStoryNodes()` from `contentTruthManifest` (eager parity; runtime stays lazy packs) |
+| **Docs** | `ARCHITECTURE.md` migration table + uniformity bumped |
 
-1. Delete remaining deprecated aliases after zero imports (`setPoemDiscoveryRevealInterstitialActive`).
-2. Keep `ARCHITECTURE.md` migration table in sync each wave; bump honest % below.
-3. Residual: CI eager `STORY_NODES` vs runtime lazy packs — keep parity test; move validators fully onto resolvers.
-4. Further `BRANCH_HINTS` shrinkage where `guidanceHint` differs but node should own copy.
-5. Optional expanded-pack mid-resume leftovers if leave-scan finds new soft-locks.
+## Inventory of remaining inconsistencies (post Wave 7)
+
+1. Content/AI-gen edges and Mixamo↔Quaternius bone remap interim — not pattern unification.
+2. Optional: author `guidanceHint` onto the 31 remaining `BRANCH_HINTS`-only nodes, then delete those rows.
+3. Optional expanded-pack mid-resume polish if leave-scan finds new soft-locks.
+4. Dual registry (eager CI vs lazy runtime) stays by design — parity test + `getCiParityStoryNodes` are the bridge.
 
 ## Honest uniformity estimate
 
@@ -77,7 +85,8 @@ Poem reveal FIFO is the reference exclusive-UI pattern — do not undo it.
 | Wave 1 | ~48% |
 | Wave 2 + Wave 3 start | ~62% |
 | Wave 3 done + Wave 4 PostFX policy | ~72% |
-| **Wave 4 + Wave 5 hygiene** | **~80%** |
-| Full backlog (Waves 6–7) | ~90%+ (never 100% — content/AI gen edges remain) |
+| Wave 4 + Wave 5 hygiene | ~80% |
+| **Waves 6–7 done** | **~90%** |
+| Theoretical ceiling | never 100% — content/AI gen edges remain |
 
 Estimate is architectural pattern coverage, not line-count rewrite.

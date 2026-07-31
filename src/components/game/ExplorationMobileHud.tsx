@@ -16,7 +16,11 @@
 
 import { useCallback, useState, useEffect, useRef } from 'react';
 import { Package, Hand, ArrowUp, Zap, BookOpen } from 'lucide-react';
-import { useVirtualControlsRef } from '@/engine/VirtualControlsState';
+import {
+  areSharedVirtualControlsWritable,
+  clearSharedVirtualControls,
+  useVirtualControlsRef,
+} from '@/engine/VirtualControlsState';
 import type { VirtualControls } from '@/hooks/useGamePhysics';
 import { useGameStore } from '@/store/gameStore';
 import { readGamePhase } from '@/shared/gamePhase';
@@ -115,6 +119,10 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory, onOpenJ
   const pointerBindingsRef = useRef<Map<number, keyof VirtualControls>>(new Map());
 
   const syncMovementControls = useCallback(() => {
+    if (!areSharedVirtualControlsWritable()) {
+      clearSharedVirtualControls();
+      return;
+    }
     const vc = virtualControlsRef.current;
     const active = new Set(pointerBindingsRef.current.values());
     const directionKeys = ['forward', 'backward', 'left', 'right'] as const;
@@ -147,6 +155,7 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory, onOpenJ
   );
 
   const toggleRun = useCallback(() => {
+    if (!areSharedVirtualControlsWritable()) return;
     setRunToggled((prev) => {
       const next = !prev;
       virtualControlsRef.current.run = next ? 1 : 0;
@@ -156,16 +165,9 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory, onOpenJ
 
   const resetAllControls = useCallback(() => {
     pointerBindingsRef.current.clear();
-    const vc = virtualControlsRef.current;
-    vc.forward = 0;
-    vc.backward = 0;
-    vc.left = 0;
-    vc.right = 0;
-    vc.run = 0;
-    vc.jump = 0;
-    vc.moveMagnitude = 0;
+    clearSharedVirtualControls();
     setRunToggled(false);
-  }, [virtualControlsRef]);
+  }, []);
 
   // Release stuck D-pad / run when app loses focus (Alt+Tab, notification shade).
   useEffect(() => {

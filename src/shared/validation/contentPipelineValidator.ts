@@ -9,7 +9,6 @@ import {
   validateStoryEffects,
   type StoryNodeValidationRegistry,
 } from '@/shared/validation/storyNodeValidation';
-import { STORY_NODES } from '@/data/storyNodes';
 import { DIALOGUE_NODES } from '@/data/dialogueNodes';
 import { QUEST_DEFINITIONS } from '@/data/quests';
 import { ALL_NPC_DEFINITIONS, detectNpcDuplicateIds } from '@/data/allNpcDefinitions';
@@ -39,6 +38,7 @@ import { getGoldenPathDerivationReport } from '@/engine/guidedStory/buildGuidedS
 import {
   STORY_DEFINED_EXPLORE_HUB_IDS,
   resolveExploreHubIntroText,
+  getCiParityStoryNodes,
 } from '@/shared/contentTruthManifest';
 import { SCENE_EXPLORE_HUB_DEFS } from '@/shared/sceneExploreHubRegistry';
 import { QUEST_ITEM_DEFINITIONS } from '@/data/questItems';
@@ -76,6 +76,9 @@ function issue(
 ): ValidationIssue {
   return { severity, category, path, message };
 }
+
+/** Eager CI story graph via content-truth resolver (parity with story/index). */
+const STORY_NODES = getCiParityStoryNodes();
 
 function buildSets() {
   const storyNodeIds = new Set(Object.keys(STORY_NODES));

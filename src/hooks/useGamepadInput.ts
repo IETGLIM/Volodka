@@ -17,6 +17,10 @@ import { isEncounterPresentationActive } from '@/engine/combat/encounterPresenta
 import { isGameplayOverlayLocomotionLocked } from '@/engine/player/playerLocomotionGate';
 import { getGamePhase, type GamePhase } from '@/shared/gamePhase';
 import type { VirtualControls } from '@/hooks/useGamePhysics';
+import {
+  areSharedVirtualControlsWritable,
+  clearSharedVirtualControls,
+} from '@/engine/VirtualControlsState';
 import type { PanelType } from '@/components/game/orchestrator/types';
 
 export interface UseGamepadInputOptions {
@@ -101,7 +105,7 @@ export function useGamepadInput({
       const blockZoom = shouldBlockZoom(mode);
 
       if (frame.connected) {
-        if (!blockMove) {
+        if (!blockMove && areSharedVirtualControlsWritable()) {
           const move = stickToVirtualMovement(frame.leftStick);
           const vc = virtualControlsRef.current;
           vc.forward = move.forward;
@@ -112,14 +116,8 @@ export function useGamepadInput({
           vc.run = frame.buttons[GAMEPAD.LB] ? 1 : 0;
           vc.jump = frame.buttons[GAMEPAD.B] ? 1 : 0;
         } else if (wasConnectedRef.current) {
-          const vc = virtualControlsRef.current;
-          vc.forward = 0;
-          vc.backward = 0;
-          vc.left = 0;
-          vc.right = 0;
-          vc.moveMagnitude = 0;
-          vc.run = 0;
-          vc.jump = 0;
+          // Single clear API — same zeros as overlay-lock path (no parallel clear).
+          clearSharedVirtualControls();
         }
 
         if (!blockOrbit && !blockZoom) {
@@ -165,14 +163,7 @@ export function useGamepadInput({
         wasConnectedRef.current = true;
       } else {
         if (wasConnectedRef.current) {
-          const vc = virtualControlsRef.current;
-          vc.forward = 0;
-          vc.backward = 0;
-          vc.left = 0;
-          vc.right = 0;
-          vc.moveMagnitude = 0;
-          vc.run = 0;
-          vc.jump = 0;
+          clearSharedVirtualControls();
           previousButtonsRef.current.clear();
           wasConnectedRef.current = false;
         }

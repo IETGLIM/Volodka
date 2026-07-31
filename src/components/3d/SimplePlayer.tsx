@@ -13,7 +13,7 @@ import { getGameStore } from '@/store/gameStore';
 import { getGameSnapshot } from '@/engine/StateDispatcher';
 import { useCurrentSceneId, usePlayerKarma } from '@/store/selectors';
 import { createFrameGameSnapshot } from '@/engine/frame/frameGameSnapshot';
-import { clearSharedVirtualControls } from '@/engine/VirtualControlsState';
+import { setSharedVirtualControlsWritable } from '@/engine/VirtualControlsState';
 import { resetKeyboardInputState } from '@/engine/keyboardInputState';
 import { usePlayerControls, type VirtualControls } from '@/hooks/useGamePhysics';
 import {
@@ -174,10 +174,14 @@ export function SimplePlayer({
     });
     const isLocked = frameContract.lock.locked;
 
-    if (frameContract.lock.shouldResetInputOnEnter && !prevLocomotionLockedRef.current) {
-      vel.set(0, 0, 0);
-      resetKeyboardInputState();
-      clearSharedVirtualControls();
+    if (isLocked) {
+      if (frameContract.lock.shouldResetInputOnEnter && !prevLocomotionLockedRef.current) {
+        vel.set(0, 0, 0);
+        resetKeyboardInputState();
+      }
+      setSharedVirtualControlsWritable(false);
+    } else if (prevLocomotionLockedRef.current) {
+      setSharedVirtualControlsWritable(true);
     }
     prevLocomotionLockedRef.current = isLocked;
 

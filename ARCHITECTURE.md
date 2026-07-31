@@ -47,7 +47,7 @@ config/        — scene/metric/shell policy tables
 | Leave + mid-resume | leave choice → hub + hub mid-split + zones + `entryNodeIds` | next-only mid-beat soft-locks |
 | Heavy GPU features | `qualityFeatureGates.allowsHeavyGfxFeature` | ad-hoc `preset.id === 'ultra'` checks |
 | Quality knobs | live fields on `QualityPreset` only (DPR, shadows, postFX, LOD, render modes, …) | dead preset flags with no consumers |
-| Locomotion input | touch/gamepad → `sharedVirtualControlsRef`; keyboard → `keyboardInputState`; merge in `usePlayerControls` | writing axes from panel shortcut managers |
+| Locomotion input | touch/gamepad/mouse → `sharedVirtualControlsRef` behind write gate; keyboard → `keyboardInputState`; merge in `resolveMovementIntent` (keyboard wins) | writing axes from panel shortcut managers; mouse re-assert after overlay clear |
 | Poem collect UX | `PoemRevealHost` (verse); store `poem` notif = history only | floating text + toast mirrors of the same beat |
 | Stat / FX floats | `floatingTextService` (xp/karma/damage/…) | discovery copy on `poem:collected` |
 | Notification channels | `notificationChannelRegistry` + `useNotificationSlot` | unregistered popup components |
@@ -65,7 +65,7 @@ config/        — scene/metric/shell policy tables
 ### Deprecation rule
 
 Prefer **delete or re-export shim** over leaving zombie parallel components.
-Legacy interstitial alias `setPoemDiscoveryRevealInterstitialActive` → `setPoemRevealInterstitialActive` — do not grow new aliases. `poemDiscovery/*` shim deleted.
+`setPoemDiscoveryRevealInterstitialActive` deleted (Wave 7) — use `setPoemRevealInterstitialActive` only. `poemDiscovery/*` shim deleted.
 
 ### Migration status (honest)
 
@@ -76,6 +76,8 @@ Legacy interstitial alias `setPoemDiscoveryRevealInterstitialActive` → `setPoe
 | Dead quality preset knobs removed; heavy features via gates | ✅ Wave 1 |
 | Poem discovery language (reveal owns UI; toast/float suppressed) | ✅ Wave 1 |
 | Input write-path documented + enforced in code comments | ✅ Wave 1 |
+| Mouse-both-buttons / gamepad / touch share write gate + clear API | ✅ Wave 6 |
+| Locomotion merge-order unit test (keyboard > virtual) | ✅ Wave 6 |
 | Quest-complete / chain-unlock folded into interstitial kinds | ✅ Wave 2 |
 | Dialogue busy documented store-owned forever | ✅ Wave 2 |
 | Dead `npcCutscenes` deleted; splash + cutscene → `CinematicTimelineDef` | ✅ Wave 2 |
@@ -86,11 +88,13 @@ Legacy interstitial alias `setPoemDiscoveryRevealInterstitialActive` → `setPoe
 | Golden path: markers cover spine; table = parity fallback | ✅ Wave 3 |
 | Expand story-defined hubs (cafe/office/home prose → act JSON) | ✅ Wave 3 |
 | Story cutscene playback on timeline orchestrator | ✅ Wave 3 (`useCutsceneController` → `cutsceneDefToTimeline`) |
-| Full goldenPath.ts table retirement when markers complete | ✅ spine parity-only; BRANCH_HINTS/NPC maps remain guidance fallbacks |
+| Full goldenPath.ts table retirement when markers complete | ✅ spine parity-only; BRANCH_HINTS = fallback-only (31 rows, Wave 7) |
 | Hero PostFX lite on low (forceFullPostFx ignored at low) | ✅ Wave 4 |
 | Settings preset detail strings ↔ qualityFeatureGates; drop English `label` | ✅ Wave 4 |
 | MeshPhysical / wet / CRT via `allowsHeavyGfxFeature` (+ home_evening / hero facades) | ✅ Wave 4 |
 | showPoemToast / showQuestToast removed; float hygiene | ✅ Wave 5 |
+| `setPoemDiscoveryRevealInterstitialActive` deleted | ✅ Wave 7 |
+| Eager `STORY_NODES` CI + runtime lazy packs parity | ✅ Wave 7 (`getCiParityStoryNodes` + parity test; validator via manifest) |
 
 Full ordered backlog: [`docs/ARCHITECTURE_UNIFICATION.md`](./docs/ARCHITECTURE_UNIFICATION.md).
 
@@ -102,7 +106,7 @@ Full ordered backlog: [`docs/ARCHITECTURE_UNIFICATION.md`](./docs/ARCHITECTURE_U
 |-------|-----------------|-----------------|
 | Story nodes (runtime) | `narrativePackRegistry` → `gameDataLoader.getStoryNodes()` | `ensureStoryNode` |
 | Dialogue nodes | `narrativePackRegistry` → `getDialogueNodes()` | `ensureDialogueNode` |
-| CI parity | `story/index.ts` `STORY_NODES` (eager merge) | `narrativeRegistryParity.test.ts` |
+| CI parity | `getCiParityStoryNodes()` → `story/index` eager merge | `narrativeRegistryParity.test.ts` |
 | Narrative UI open | **`presentNarrativeBeat`** | hub / diegetic / VN overlay |
 | Explore-hub topology | `sceneExploreHubRegistry.ts` | `hubId`, `sceneId`, `entryNodeIds` |
 | Explore-hub **проза** | `act*.json` / story pack (`hubIntroText`, `hubRevisitText`, `text`) | `resolveExploreHubIntroText` |
@@ -733,8 +737,8 @@ XSS: `sanitizePlainText` на основном пути рендера (`narrati
 
 | Область | Статус |
 |---------|--------|
-| Content truth dual registry (CI eager vs runtime lazy) | parity test есть; validator ещё на eager STORY_NODES |
-| Golden path sources | derive + frozen parity spine; markers complete; BRANCH_HINTS remain guidance fallback |
+| Content truth dual registry (CI eager vs runtime lazy) | ✅ parity + `getCiParityStoryNodes`; validators on manifest resolver |
+| Golden path sources | derive + frozen parity spine; BRANCH_HINTS = 31 fallbacks without node `guidanceHint` |
 | NPC behavioral FSM → 3D | ✅ `useNpcVisualBehavior` (GLB + procedural parity) |
 | JSON narrative migration | тексты act1–7; hubIntroText for story-defined hubs incl. cafe/office/kitchen |
 | Pause Escape vs panels | ✅ `escapeDismissAction` + capture-phase `useKeyboardShortcutManager` |
@@ -747,7 +751,7 @@ XSS: `sanitizePlainText` на основном пути рендера (`narrati
 | Exclusive interstitial kinds | ✅ Wave 2: + quest_complete / quest_chain_unlock; dialogue store-owned |
 | Poem discovery notification language | ✅ PoemRevealHost owns UI; toast/float mirrors suppressed |
 | Dead quality preset flags | ✅ removed (useInstancing / impostors / bakedLighting) |
-| Input locomotion write path | ✅ virtual ref + keyboard singleton documented |
+| Input locomotion write path | ✅ virtual ref + keyboard singleton; Wave 6 write-gate on overlay lock |
 | PostFX on low hero scenes | ✅ low always lite (`resolveSceneRenderingPipeline`) |
 | GameOrchestrator priorities | разнесены по файлам |
 | npcRegistry baseline | устаревшие id в тестах |
@@ -756,7 +760,7 @@ XSS: `sanitizePlainText` на основном пути рендера (`narrati
 | Cinematic registries | ✅ converters + story cutscene playback via timeline orchestrator |
 | Dialogue/quest busy → interstitial fold | ✅ quest UI in interstitial; dialogue stays store-owned |
 | Explore hub ID set | ✅ `STORY_DEFINED` prose + `ACT_PACK_STRUCTURE` auto-gen skip |
-| Golden path sources | ✅ derive + parity fallback; guidanceHint annotation |
+| Golden path sources | ✅ derive + parity fallback; guidanceHint owns copy; BRANCH_HINTS shrunk (Wave 7) |
 
 AA visual/content waves и tick log — [`docs/AA_QUALITY_ROADMAP.md`](./docs/AA_QUALITY_ROADMAP.md).
 Агентный контекст сессий — [`AI_SESSION_CONTEXT.md`](./AI_SESSION_CONTEXT.md).

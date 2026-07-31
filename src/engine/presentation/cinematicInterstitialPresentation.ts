@@ -58,13 +58,6 @@ export function setQuestChainUnlockInterstitialActive(active: boolean): void {
   notifyListeners();
 }
 
-/**
- * @deprecated Use setPoemRevealInterstitialActive — discovery is a poem-reveal mode, not a parallel interstitial.
- */
-export function setPoemDiscoveryRevealInterstitialActive(active: boolean): void {
-  setPoemRevealInterstitialActive(active);
-}
-
 /** Matrix quote, celebration, poem reveal, or quest completion UI. */
 export function isCinematicInterstitialActive(): boolean {
   return (

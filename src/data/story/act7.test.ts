@@ -120,7 +120,10 @@ describe('Act 7 story presentation', () => {
       'act7_poet_legacy_mirror',
     ] as const;
     for (const id of ids) {
-      expect(GOLDEN_PATH_BRANCH_HINTS[id], id).toBeTruthy();
+      expect(
+        STORY_NODES_ACT7[id]?.guidanceHint || GOLDEN_PATH_BRANCH_HINTS[id],
+        id,
+      ).toBeTruthy();
     }
   });
 

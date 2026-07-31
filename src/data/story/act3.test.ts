@@ -70,7 +70,10 @@ describe('Act 3 story presentation', () => {
       'act3_hide_network',
     ] as const;
     for (const id of ids) {
-      expect(GOLDEN_PATH_BRANCH_HINTS[id], id).toBeTruthy();
+      expect(
+        STORY_NODES_ACT3[id]?.guidanceHint || GOLDEN_PATH_BRANCH_HINTS[id],
+        id,
+      ).toBeTruthy();
     }
   });
 });

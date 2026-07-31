@@ -5,6 +5,7 @@
 
 import { resetAchievementTracking } from '@/engine/AchievementEngine';
 import { resetKeyboardInputState } from '@/engine/keyboardInputState';
+import { resetSharedVirtualControlsState } from '@/engine/VirtualControlsState';
 import { resetLoadingTimelineForSession } from '@/engine/performance/LoadingTimeline';
 import { invalidateStoryGraphIndex } from '@/engine/story/storyGraphIndex';
 import { resetCameraShake } from '@/engine/camera/cameraShake';
@@ -35,5 +36,6 @@ export function resetEngineModuleRuntimeState(): void {
   resetAchievementTracking();
   invalidateStoryGraphIndex();
   resetKeyboardInputState();
+  resetSharedVirtualControlsState();
   resetLoadingTimelineForSession();
 }

@@ -4,7 +4,6 @@ import {
   isCinematicInterstitialActive,
   setFirstReadingCelebrationInterstitialActive,
   setMatrixQuoteInterstitialActive,
-  setPoemDiscoveryRevealInterstitialActive,
   setPoemRevealInterstitialActive,
   setQuestChainUnlockInterstitialActive,
   setQuestCompleteInterstitialActive,
@@ -51,11 +50,5 @@ describe('cinematicInterstitialPresentation', () => {
       'quest_chain_unlock',
     ]);
     expect(isCinematicInterstitialActive()).toBe(true);
-  });
-
-  it('aliases legacy discovery setter onto poem reveal', () => {
-    setPoemDiscoveryRevealInterstitialActive(true);
-    expect(isCinematicInterstitialActive()).toBe(true);
-    expect(getActiveExclusiveInterstitialKinds()).toEqual(['poem_reveal']);
   });
 });

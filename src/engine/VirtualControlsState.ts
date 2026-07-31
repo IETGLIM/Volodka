@@ -11,7 +11,11 @@
  * Orchestrator shortcuts use `useKeyboardShortcutManager` (panels / Escape) —
  * never write locomotion axes there.
  *
- * Clear path: `clearSharedVirtualControls()` on overlay lock / scene handoff.
+ * Clear / gate path:
+ *   `clearSharedVirtualControls()` zeros axes (overlay lock, gamepad block, HUD reset).
+ *   `setSharedVirtualControlsWritable(false)` zeros + closes the write gate for the
+ *   whole locomotion lock so mouse-both-buttons cannot re-assert over gamepad clear.
+ *   Unlock → `setSharedVirtualControlsWritable(true)`.
  */
 
 import { createContext, useContext } from 'react';
@@ -44,9 +48,10 @@ export const sharedVirtualControlsRef: MutableRefObject<VirtualControls> = {
   current: defaultControls,
 };
 
-/** Zero touch / gamepad locomotion input (overlay lock, scene transitions). */
-export function clearSharedVirtualControls(): void {
-  const vc = sharedVirtualControlsRef.current;
+/** Closed while locomotion locked — blocks touch / gamepad / mouse writers. */
+let writable = true;
+
+function zeroVirtualControls(vc: VirtualControls): void {
   vc.forward = 0;
   vc.backward = 0;
   vc.left = 0;
@@ -54,6 +59,55 @@ export function clearSharedVirtualControls(): void {
   vc.run = 0;
   vc.jump = 0;
   vc.moveMagnitude = 0;
+}
+
+/** Zero touch / gamepad / mouse locomotion input (overlay lock, scene transitions). */
+export function clearSharedVirtualControls(): void {
+  zeroVirtualControls(sharedVirtualControlsRef.current);
+}
+
+export function areSharedVirtualControlsWritable(): boolean {
+  return writable;
+}
+
+/**
+ * Open/close the shared virtual write gate.
+ * Closing also zeros axes so mouse-both-buttons cannot fight gamepad clear mid-lock.
+ */
+export function setSharedVirtualControlsWritable(next: boolean): void {
+  writable = next;
+  if (!next) {
+    zeroVirtualControls(sharedVirtualControlsRef.current);
+  }
+}
+
+/**
+ * WoW-style both-mouse-buttons → forward.
+ * Returns updated ownership; no-ops (and clears ownership) while write gate is closed.
+ */
+export function applyMouseBothButtonsForward(buttons: number, ownsForward: boolean): boolean {
+  const vc = sharedVirtualControlsRef.current;
+  if (!writable) {
+    return false;
+  }
+
+  const bothHeld = (buttons & 1) !== 0 && (buttons & 2) !== 0;
+  if (bothHeld) {
+    vc.forward = 1;
+    vc.moveMagnitude = 1;
+    return true;
+  }
+  if (ownsForward) {
+    vc.forward = 0;
+    vc.moveMagnitude = 0;
+  }
+  return false;
+}
+
+/** Test / engine-reset: reopen gate and zero axes. */
+export function resetSharedVirtualControlsState(): void {
+  writable = true;
+  zeroVirtualControls(sharedVirtualControlsRef.current);
 }
 
 /**

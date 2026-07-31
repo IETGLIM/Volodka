@@ -83,7 +83,10 @@ describe('Act 1 extended story nodes', () => {
       'maria_chip_trust',
     ] as const;
     for (const id of ids) {
-      expect(GOLDEN_PATH_BRANCH_HINTS[id], id).toBeTruthy();
+      expect(
+        STORY_NODES_ACT1_EXTENDED[id]?.guidanceHint || GOLDEN_PATH_BRANCH_HINTS[id],
+        id,
+      ).toBeTruthy();
     }
   });
 

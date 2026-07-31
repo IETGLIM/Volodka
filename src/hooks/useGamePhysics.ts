@@ -3,6 +3,7 @@
 
 import { useEffect, useRef, useCallback, type MutableRefObject } from 'react';
 import { bindKeyboardInput, sampleKeyboardMovement } from '@/engine/keyboardInputState';
+import { applyMouseBothButtonsForward } from '@/engine/VirtualControlsState';
 
 export interface VirtualControls {
   forward: number;
@@ -79,18 +80,11 @@ export function usePlayerControls(
 
   useEffect(() => {
     // WoW-style: both mouse buttons held → walk forward (desktop only).
+    // Writes go through applyMouseBothButtonsForward so overlay lock /
+    // clearSharedVirtualControls cannot fight a stuck mouse-forward assert.
     let mouseOwnsForward = false;
     const updateMouseMove = (buttons: number) => {
-      const bothHeld = (buttons & 1) !== 0 && (buttons & 2) !== 0;
-      if (bothHeld) {
-        virtualControlsRef.current.forward = 1;
-        virtualControlsRef.current.moveMagnitude = 1;
-        mouseOwnsForward = true;
-      } else if (mouseOwnsForward) {
-        virtualControlsRef.current.forward = 0;
-        virtualControlsRef.current.moveMagnitude = 0;
-        mouseOwnsForward = false;
-      }
+      mouseOwnsForward = applyMouseBothButtonsForward(buttons, mouseOwnsForward);
     };
     const onMouseDown = (e: MouseEvent) => updateMouseMove(e.buttons);
     const onMouseUp = (e: MouseEvent) => updateMouseMove(e.buttons);
@@ -103,8 +97,7 @@ export function usePlayerControls(
       window.removeEventListener('mouseup', onMouseUp);
       window.removeEventListener('mousemove', onMouseMove);
       if (mouseOwnsForward) {
-        // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
-        virtualControlsRef.current.forward = 0;
+        applyMouseBothButtonsForward(0, true);
       }
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps

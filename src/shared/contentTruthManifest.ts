@@ -17,6 +17,15 @@ import {
 
 export { STORY_DEFINED_EXPLORE_HUB_IDS } from '@/shared/sceneExploreHubRegistry';
 
+/**
+ * CI / validator eager story graph — same merge as `story/index` STORY_NODES.
+ * Runtime UI/engine should prefer `getStoryNodes()` via resolvers; keep parity
+ * tests against this static snapshot.
+ */
+export function getCiParityStoryNodes(): Readonly<Record<string, StoryNode>> {
+  return STATIC_STORY_NODES;
+}
+
 function resolveStoryNodesForProse(
   storyNodes?: Readonly<Record<string, StoryNode>>,
 ): Readonly<Record<string, StoryNode>> {

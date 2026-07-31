@@ -101,7 +101,10 @@ describe('Act 5 story presentation', () => {
       'ending_poet',
     ] as const;
     for (const id of ids) {
-      expect(GOLDEN_PATH_BRANCH_HINTS[id], id).toBeTruthy();
+      expect(
+        STORY_NODES_ACT5[id]?.guidanceHint || GOLDEN_PATH_BRANCH_HINTS[id],
+        id,
+      ).toBeTruthy();
     }
   });
 });

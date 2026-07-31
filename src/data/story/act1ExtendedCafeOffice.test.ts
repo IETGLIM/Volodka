@@ -71,7 +71,10 @@ describe('Act 1 cafe/office extended story nodes', () => {
       'office_vault_archive',
     ] as const;
     for (const id of ids) {
-      expect(GOLDEN_PATH_BRANCH_HINTS[id], id).toBeTruthy();
+      expect(
+        STORY_NODES_ACT1_CAFE_OFFICE[id]?.guidanceHint || GOLDEN_PATH_BRANCH_HINTS[id],
+        id,
+      ).toBeTruthy();
     }
   });
 

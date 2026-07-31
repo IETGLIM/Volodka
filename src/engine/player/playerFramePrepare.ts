@@ -5,7 +5,7 @@ import { setPlayerRigidBody } from '@/engine/PlayerRigidBodyState';
 import { devWarn } from '@/shared/utils/devLog';
 import { resolveCachedGroundY } from '@/engine/physics/groundProbeCache';
 import { WARMUP_DURATION_S } from '@/engine/player/playerConstants';
-import { clearSharedVirtualControls } from '@/engine/VirtualControlsState';
+import { setSharedVirtualControlsWritable } from '@/engine/VirtualControlsState';
 import { resetKeyboardInputState } from '@/engine/keyboardInputState';
 import { isMovementEpochStale } from '@/engine/player/playerMovementSceneSync';
 import { SIM_DELTA_MAX } from '@/engine/player/playerOwnership';
@@ -129,10 +129,16 @@ export function preparePlayerFrame(
   scratch.lockContract = lockContract;
   scratch.currentMode = currentMode;
 
-  if (lockContract.shouldResetInputOnEnter && !deps.prevLocomotionLockedRef.current) {
-    vel.set(0, 0, 0);
-    resetKeyboardInputState();
-    clearSharedVirtualControls();
+  if (isLocked) {
+    if (lockContract.shouldResetInputOnEnter && !deps.prevLocomotionLockedRef.current) {
+      vel.set(0, 0, 0);
+      resetKeyboardInputState();
+    }
+    // Keep write gate closed for the whole lock so mouse-both-buttons cannot
+    // re-assert forward after gamepad / clearSharedVirtualControls zeros axes.
+    setSharedVirtualControlsWritable(false);
+  } else if (deps.prevLocomotionLockedRef.current) {
+    setSharedVirtualControlsWritable(true);
   }
   deps.prevLocomotionLockedRef.current = isLocked;
 
