@@ -109,6 +109,15 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
     speaker: 'Солныш',
     text: 'У меня есть статьи, которые гильдия считает "удалёнными". Стихи, которые официально не существуют. Имена людей, которых стёрли из баз данных. Всё это — в моей голове и в тайнике. Если хочешь знать правду — приходи.',
     choices: [
+      {
+        text: 'Я хочу знать правду — покажи архив в библиотеке',
+        next: 'archive_forgotten_meet',
+        condition: { requiredAct: 4, missingFlag: 'archive_poems_saved' },
+        effects: [
+          { type: 'setFlag', flag: 'vera_archives_access', flagValue: true },
+          { type: 'addSkill', skill: 'persuasion', value: 1 },
+        ],
+      },
       { text: 'Я хочу знать правду.', next: null, effects: [{ type: 'setFlag', flag: 'vera_archives_access', flagValue: true }, { type: 'addSkill', skill: 'persuasion', value: 1 }] },
       { text: 'Опасное занятие.', next: null },
     ],
@@ -140,6 +149,11 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
         next: 'sergey_act3_raid',
         condition: { requiredAct: 3, flag: 'vault_under_attack' },
       },
+      {
+        text: 'Александр ищет крота — покажи логи доступа',
+        next: 'sergey_blind_spot_logs',
+        condition: { requiredAct: 4, missingFlag: 'mole_identified' },
+      },
     ],
   },
 
@@ -150,6 +164,24 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
     choices: [
       { text: 'Можешь показать логи?', next: null, effects: [{ type: 'setFlag', flag: 'suspicious_logs_seen', flagValue: true }, { type: 'addSkill', skill: 'logic', value: 1 }, { type: 'triggerQuest', questId: 'night_shift_mystery' }] },
       { text: 'Может, это просто баг?', next: null },
+    ],
+  },
+
+  sergey_blind_spot_logs: {
+    id: 'sergey_blind_spot_logs',
+    speaker: 'Сергей',
+    text: 'Логи доступа к офису... Вот. После полуночи — чужой пропуск, но с вашим уровнем. Я не называю имён. Но если сложишь с допросом в кафе — увидишь.',
+    choices: [
+      {
+        text: 'Спасибо. Иду сводить улики',
+        next: 'blind_spot_approach',
+        effects: [
+          { type: 'triggerQuest', questId: 'blind_spot' },
+          { type: 'setFlag', flag: 'blind_spot_active', flagValue: true },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+        ],
+      },
+      { text: 'Пока только смотрю', next: null },
     ],
   },
 
@@ -179,6 +211,11 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
         text: 'Зарему арестовали. Можешь помочь с камерами?',
         next: 'lena_act3_detention',
         condition: { requiredAct: 3, flag: 'zarema_arrested' },
+      },
+      {
+        text: 'Цифровой призрак в серверной — продолжим?',
+        next: 'digital_ghost_approach',
+        condition: { flag: 'found_server_room', missingFlag: 'ai_fragment_recovered' },
       },
     ],
   },
@@ -220,6 +257,16 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
         next: 'oleg_act3_detention',
         condition: { requiredAct: 3, flag: 'zarema_arrested', minNpcRelation: 45 },
       },
+      {
+        text: 'Логи назвали тебя. Пора говорить правду.',
+        next: null,
+        condition: { flag: 'mole_identified', missingFlag: 'mole_confronted' },
+        effects: [
+          { type: 'setFlag', flag: 'mole_confronted', flagValue: true },
+          { type: 'addKarma', value: 2 },
+          { type: 'npcChange', npcId: 'oleg', npcChange: { relation: -15 } },
+        ],
+      },
     ],
   },
 
@@ -251,6 +298,52 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
     speaker: 'Катя',
     text: 'Тише... Стены слушают. Я Катя. Храню то, что они хотят уничтожить. Книги, стихи, мысли — всё, что гильдия считает "неоптимизированным". Если ты ищешь правду — она между строк. Если ищешь покой — его здесь нет.',
     choices: [
+      {
+        text: 'Помочь со схемой поэтов?',
+        next: 'library_katya_research_start',
+        condition: { missingFlag: 'library_katya_research_active' },
+        effects: [{ type: 'triggerQuest', questId: 'library_katya_research' }],
+      },
+      {
+        text: 'Продолжим схему — ночь ещё жива.',
+        next: 'library_katya_schema',
+        condition: {
+          flag: 'library_katya_research_active',
+          missingFlag: 'library_katya_schema_open',
+        },
+      },
+      {
+        text: 'Сверим прошивки.',
+        next: 'library_katya_crossref',
+        condition: {
+          flag: 'library_katya_schema_open',
+          missingFlag: 'library_katya_firmware_cross',
+        },
+      },
+      {
+        text: 'Дожать ночной проход.',
+        next: 'library_katya_night',
+        condition: {
+          flag: 'library_katya_firmware_cross',
+          missingFlag: 'library_katya_night_pass',
+        },
+      },
+      {
+        text: 'Узел на схеме — дочитай «Марата».',
+        next: 'library_katya_marat_hit',
+        condition: {
+          flag: 'library_katya_night_pass',
+          missingFlag: 'library_katya_marat_node',
+        },
+      },
+      {
+        text: 'Узел вспыхнул — нужна распечатка.',
+        next: 'library_katya_research_done',
+        condition: {
+          flag: 'library_katya_marat_node',
+          missingFlag: 'library_katya_research_done',
+        },
+      },
       { text: 'Покажи мне запрещённые книги.', next: 'kate_forbidden_books' },
       { text: 'Зачем ты рискуешь?', next: 'kate_why_risk' },
       { text: 'Я вернусь позже.', next: null },
@@ -710,6 +803,135 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
     choices: [
       { text: 'Расскажи о планах сопротивления.', next: null, effects: [{ type: 'addSkill', skill: 'persuasion', value: 1 }] },
       { text: 'Готов действовать.', next: null, effects: [{ type: 'setFlag', flag: 'resistance_joined', flagValue: true }, { type: 'addKarma', value: 3 }] },
+      {
+        text: 'Обустроить убежище — список у Ани?',
+        next: 'resistance_safehouse_start',
+        condition: {
+          flag: 'resistance_bunker_found',
+          missingFlag: 'resistance_safehouse_active',
+        },
+        effects: [{ type: 'triggerQuest', questId: 'resistance_safehouse' }],
+      },
+      {
+        text: 'Фильтры ещё не встали.',
+        next: 'resistance_safehouse_filters',
+        condition: {
+          flag: 'resistance_safehouse_active',
+          missingFlag: 'resistance_safehouse_filters',
+        },
+      },
+      {
+        text: '433 — крутим дальше.',
+        next: 'resistance_safehouse_radio',
+        condition: {
+          flag: 'resistance_safehouse_filters',
+          missingFlag: 'resistance_safehouse_radio',
+        },
+      },
+      {
+        text: 'Стихи на стену — и матрасы.',
+        next: 'resistance_safehouse_poem_mesh',
+        condition: {
+          flag: 'resistance_safehouse_radio',
+          missingFlag: 'resistance_safehouse_done',
+        },
+      },
+      {
+        text: 'Перебежчик — через два часа стирание.',
+        next: 'resistance_defector_brief',
+        condition: {
+          flag: 'traitor_discovered',
+          missingFlag: 'resistance_defector_rescue_active',
+        },
+      },
+      {
+        text: 'Тоннель ещё ждёт.',
+        next: 'resistance_defector_rescue_start',
+        condition: {
+          flag: 'resistance_defector_rescue_active',
+          missingFlag: 'resistance_defector_tunnel',
+        },
+      },
+      {
+        text: 'К засаде — стих против дронов.',
+        next: 'resistance_defector_poem_stun',
+        condition: {
+          flag: 'resistance_defector_tunnel',
+          missingFlag: 'resistance_defector_poem_stun',
+        },
+      },
+      {
+        text: 'Увести Олега в бункер.',
+        next: 'resistance_defector_extract',
+        condition: {
+          flag: 'resistance_defector_poem_stun',
+          missingFlag: 'resistance_defector_rescue_done',
+        },
+      },
+      {
+        text: 'Ночной рейд через коллектор — продолжим.',
+        next: 'quest_act6_defector_infiltrate',
+        condition: {
+          flag: 'quest_act6_defector_rescue_expanded_active',
+          missingFlag: 'defector_infiltrate_done',
+        },
+      },
+      {
+        text: 'Камера удержания — Олег ещё там.',
+        next: 'quest_act6_defector_free_cell',
+        condition: {
+          flag: 'defector_infiltrate_done',
+          missingFlag: 'quest_act6_defector_rescue_expanded_done',
+        },
+      },
+      {
+        text: 'Фронт сопротивления — собрать людей.',
+        next: 'act6_resistance_formed',
+        condition: {
+          flag: 'traitor_fate_decided',
+          missingFlag: 'resistance_joined',
+        },
+      },
+      {
+        text: 'Брифинг — Аня и связь.',
+        next: 'act6_resistance_briefing',
+        condition: {
+          flag: 'resistance_joined',
+          missingFlag: 'three_defectors_recruited',
+        },
+      },
+      {
+        text: 'План проникновения в офис.',
+        next: 'act6_data_heist_planning',
+        condition: {
+          flag: 'three_defectors_recruited',
+          missingFlag: 'act6_heist_planned',
+        },
+      },
+      {
+        text: 'Крыша завода — тень ждёт.',
+        next: 'act6_rooftop_showdown',
+        condition: {
+          flag: 'nadzor_guardian_defeated',
+          missingFlag: 'rooftop_entity_met',
+        },
+      },
+      {
+        text: 'Выбор на крыше — ещё не сделан.',
+        next: 'act6_final_confrontation',
+        condition: {
+          flag: 'rooftop_entity_met',
+          missingFlag: 'act6_final_choice_made',
+        },
+      },
+      {
+        text: 'Гильдия восстановлена — ударный отряд.',
+        next: 'act7_guild_restored',
+        condition: {
+          flag: 'guild_restored',
+          missingFlag: 'path_to_core_cleared',
+        },
+      },
       { text: 'Позже.', next: null },
     ],
   },
@@ -721,6 +943,46 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
     choices: [
       { text: 'Что ты знаешь о «Надзоре»?', next: null, effects: [{ type: 'addSkill', skill: 'coding', value: 2 }, { type: 'setFlag', flag: 'zeka_trusted', flagValue: true }] },
       { text: 'Поможешь с проникновением?', next: null, effects: [{ type: 'addSkill', skill: 'logic', value: 1 }] },
+      {
+        text: 'План похищения данных — схемы.',
+        next: 'act6_data_heist_planning',
+        condition: {
+          flag: 'resistance_joined',
+          missingFlag: 'act6_heist_planned',
+        },
+      },
+      {
+        text: '«Надзор» — точка входа на заводе.',
+        next: 'act6_nadzor_revealed',
+        condition: {
+          flag: 'data_heist_completed',
+          missingFlag: 'nadzor_truth_revealed',
+        },
+      },
+      {
+        text: 'Хранитель у ядра — штурмуем.',
+        next: 'act6_infiltration_prep',
+        condition: {
+          flag: 'nadzor_truth_revealed',
+          missingFlag: 'nadzor_guardian_defeated',
+        },
+      },
+      {
+        text: 'Ядро открыто — выбор у терминала.',
+        next: 'act6_core_choice',
+        condition: {
+          flag: 'nadzor_guardian_defeated',
+          missingFlag: 'act6_infiltration_ready',
+        },
+      },
+      {
+        text: 'Отключение «Надзора» — идём к ядру.',
+        next: 'act7_system_shutdown',
+        condition: {
+          flag: 'guild_restored',
+          missingFlag: 'path_to_core_cleared',
+        },
+      },
       { text: 'Спасибо. Пока.', next: null },
     ],
   },
@@ -732,6 +994,95 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
     choices: [
       { text: 'Нужна помощь с офисом гильдии.', next: null, effects: [{ type: 'addSkill', skill: 'coding', value: 1 }] },
       { text: 'Координируй связь во время операции.', next: null, effects: [{ type: 'setFlag', flag: 'resistance_network_established', flagValue: true }] },
+      {
+        text: 'Брифинг сопротивления — каналы.',
+        next: 'act6_resistance_briefing',
+        condition: {
+          flag: 'resistance_joined',
+          missingFlag: 'three_defectors_recruited',
+        },
+      },
+      {
+        text: 'План похищения — мониторинг камер.',
+        next: 'act6_data_heist_planning',
+        condition: {
+          flag: 'three_defectors_recruited',
+          missingFlag: 'act6_heist_planned',
+        },
+      },
+      {
+        text: 'Уцелевшие в кафе — новый устав.',
+        next: 'act7_guild_rebuilding',
+        condition: {
+          flag: 'rooftop_confrontation_done',
+          missingFlag: 'new_council_elected',
+        },
+      },
+      {
+        text: 'Список для убежища — с чего начать?',
+        next: 'resistance_safehouse_start',
+        condition: {
+          flag: 'resistance_bunker_found',
+          missingFlag: 'resistance_safehouse_active',
+        },
+        effects: [{ type: 'triggerQuest', questId: 'resistance_safehouse' }],
+      },
+      {
+        text: 'Фильтры из запаса Зины — ещё не вкрутил.',
+        next: 'resistance_safehouse_filters',
+        condition: {
+          flag: 'resistance_safehouse_active',
+          missingFlag: 'resistance_safehouse_filters',
+        },
+      },
+      {
+        text: 'Фильтры стоят — крутим 433.',
+        next: 'resistance_safehouse_radio',
+        condition: {
+          flag: 'resistance_safehouse_filters',
+          missingFlag: 'resistance_safehouse_radio',
+        },
+      },
+      {
+        text: 'Частота готова — стихи-сетка.',
+        next: 'resistance_safehouse_poem_mesh',
+        condition: {
+          flag: 'resistance_safehouse_radio',
+          missingFlag: 'resistance_safehouse_done',
+        },
+      },
+      {
+        text: 'Перебежчик — ты ведёшь по тоннелю?',
+        next: 'resistance_defector_brief',
+        condition: {
+          flag: 'traitor_discovered',
+          missingFlag: 'resistance_defector_rescue_active',
+        },
+      },
+      {
+        text: 'Наушник на месте — спускаемся.',
+        next: 'resistance_defector_rescue_start',
+        condition: {
+          flag: 'resistance_defector_rescue_active',
+          missingFlag: 'resistance_defector_tunnel',
+        },
+      },
+      {
+        text: 'К засаде — координаты ещё живы.',
+        next: 'resistance_defector_poem_stun',
+        condition: {
+          flag: 'resistance_defector_tunnel',
+          missingFlag: 'resistance_defector_poem_stun',
+        },
+      },
+      {
+        text: 'Бежим с ним в тоннель.',
+        next: 'resistance_defector_extract',
+        condition: {
+          flag: 'resistance_defector_poem_stun',
+          missingFlag: 'resistance_defector_rescue_done',
+        },
+      },
       { text: 'Понял. Увидимся.', next: null },
     ],
   },
@@ -920,6 +1271,66 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
         next: null,
         effects: [{ type: 'visitStoryNode', nodeId: 'basement_explore_mode' }],
       },
+      {
+        text: 'Память «Зари-М» — с чего начать?',
+        next: 'factory_zarya_memory_start',
+        condition: { missingFlag: 'factory_zarya_memory_active' },
+        effects: [{ type: 'triggerQuest', questId: 'factory_zarya_memory' }],
+      },
+      {
+        text: 'Снежинка на крыше — продолжим.',
+        next: 'factory_zarya_snow',
+        condition: {
+          flag: 'factory_zarya_memory_active',
+          missingFlag: 'factory_zarya_snow_done',
+        },
+      },
+      {
+        text: 'Кассета с грозой — где она?',
+        next: 'factory_zarya_storm',
+        condition: {
+          flag: 'factory_zarya_snow_done',
+          missingFlag: 'factory_zarya_storm_done',
+        },
+      },
+      {
+        text: 'Фото Солныш — на шину.',
+        next: 'factory_zarya_photo',
+        condition: {
+          flag: 'factory_zarya_storm_done',
+          missingFlag: 'factory_zarya_photo_done',
+        },
+      },
+      {
+        text: 'Образы готовы — включи шину.',
+        next: 'factory_zarya_memory_restore',
+        condition: {
+          flag: 'factory_zarya_photo_done',
+          missingFlag: 'factory_zarya_memory_done',
+        },
+      },
+      {
+        text: 'Попросить чаю.',
+        next: 'factory_baba_zina_tea_start',
+        condition: { missingFlag: 'factory_baba_zina_tea_active' },
+        effects: [{ type: 'triggerQuest', questId: 'factory_baba_zina_tea' }],
+      },
+      {
+        text: 'Чайник ещё свистит?',
+        next: 'factory_baba_zina_tea_kettle',
+        condition: {
+          flag: 'factory_baba_zina_tea_active',
+          missingFlag: 'factory_baba_zina_tea_kettle',
+        },
+      },
+      {
+        text: 'Допить — и про 1987-й.',
+        next: 'factory_baba_zina_tea_history',
+        condition: {
+          flag: 'factory_baba_zina_tea_hum',
+          missingFlag: 'factory_baba_zina_tea_done',
+        },
+      },
       { text: 'Потом.', next: null },
     ],
   },
@@ -945,6 +1356,31 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
         text: 'Звезда ещё горит — куда она указывает?',
         next: 'dialogue_guiding_star_live',
         condition: { activeTTLFlag: 'guiding_star_active', collectedPoem: 'poem_3' },
+      },
+      {
+        text: 'Обелиск в парке — имена стёрты.',
+        next: 'quest_act7_poets_monument_inscription_start',
+        condition: {
+          requiredAct: 7,
+          missingFlag: 'quest_act7_poets_monument_inscription_active',
+        },
+        effects: [{ type: 'triggerQuest', questId: 'quest_act7_poets_monument_inscription' }],
+      },
+      {
+        text: 'Табличка ещё на камне.',
+        next: 'quest_act7_poets_monument_plate',
+        condition: {
+          flag: 'quest_act7_poets_monument_inscription_active',
+          missingFlag: 'quest_act7_poets_monument_plate_cleared',
+        },
+      },
+      {
+        text: 'Имена — дорезать на обелиске.',
+        next: 'quest_act7_poets_monument_recall',
+        condition: {
+          flag: 'quest_act7_poets_monument_plate_cleared',
+          missingFlag: 'quest_act7_poets_monument_inscription_done',
+        },
       },
     ],
   },
@@ -1036,6 +1472,11 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
         condition: { flag: 'solnysh_comforted' },
         effects: [{ type: 'transitionScene', sceneId: 'solnysh_room' }],
       },
+      {
+        text: 'Архив забытых стихов — ещё успеем?',
+        next: 'archive_forgotten_approach',
+        condition: { requiredAct: 4, missingFlag: 'archive_poems_saved' },
+      },
       { text: 'Увидимся, Солныш.', next: null },
     ],
   },
@@ -1084,6 +1525,11 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
         text: 'Гильдия атакует Хранилище. Что видно?',
         next: 'sergey_act3_raid',
         condition: { requiredAct: 3, flag: 'vault_under_attack' },
+      },
+      {
+        text: 'Крот в Сети — продолжим по логам?',
+        next: 'sergey_blind_spot_logs',
+        condition: { flag: 'blind_spot_active', missingFlag: 'mole_identified' },
       },
       { text: 'Ничего. Пока, Сергей.', next: null },
     ],
@@ -1137,6 +1583,16 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
           { type: 'addSkill', skill: 'persuasion', value: 1 },
         ],
       },
+      {
+        text: 'Логи назвали тебя. Пора говорить правду.',
+        next: null,
+        condition: { flag: 'mole_identified', missingFlag: 'mole_confronted' },
+        effects: [
+          { type: 'setFlag', flag: 'mole_confronted', flagValue: true },
+          { type: 'addKarma', value: 2 },
+          { type: 'npcChange', npcId: 'oleg', npcChange: { relation: -15 } },
+        ],
+      },
       { text: 'Понял. Без проблем.', next: null },
     ],
   },
@@ -1184,6 +1640,118 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
           { type: 'addKarma', value: 2 },
         ],
       },
+      {
+        text: 'Убежище — фильтры ещё не встали.',
+        next: 'resistance_safehouse_filters',
+        condition: {
+          flag: 'resistance_safehouse_active',
+          missingFlag: 'resistance_safehouse_filters',
+        },
+      },
+      {
+        text: '433 — крутим дальше.',
+        next: 'resistance_safehouse_radio',
+        condition: {
+          flag: 'resistance_safehouse_filters',
+          missingFlag: 'resistance_safehouse_radio',
+        },
+      },
+      {
+        text: 'Стихи на стену — и матрасы.',
+        next: 'resistance_safehouse_poem_mesh',
+        condition: {
+          flag: 'resistance_safehouse_radio',
+          missingFlag: 'resistance_safehouse_done',
+        },
+      },
+      {
+        text: 'Перебежчик — тоннель ждёт.',
+        next: 'resistance_defector_rescue_start',
+        condition: {
+          flag: 'resistance_defector_rescue_active',
+          missingFlag: 'resistance_defector_tunnel',
+        },
+      },
+      {
+        text: 'К засаде — стих против дронов.',
+        next: 'resistance_defector_poem_stun',
+        condition: {
+          flag: 'resistance_defector_tunnel',
+          missingFlag: 'resistance_defector_poem_stun',
+        },
+      },
+      {
+        text: 'Увести Олега в бункер.',
+        next: 'resistance_defector_extract',
+        condition: {
+          flag: 'resistance_defector_poem_stun',
+          missingFlag: 'resistance_defector_rescue_done',
+        },
+      },
+      {
+        text: 'Коллектор под КПП — продолжим рейд.',
+        next: 'quest_act6_defector_infiltrate',
+        condition: {
+          flag: 'quest_act6_defector_rescue_expanded_active',
+          missingFlag: 'defector_infiltrate_done',
+        },
+      },
+      {
+        text: 'Камера — вытащить и в сток.',
+        next: 'quest_act6_defector_free_cell',
+        condition: {
+          flag: 'defector_infiltrate_done',
+          missingFlag: 'quest_act6_defector_rescue_expanded_done',
+        },
+      },
+      {
+        text: 'Фронт сопротивления — собрать людей.',
+        next: 'act6_resistance_formed',
+        condition: {
+          flag: 'traitor_fate_decided',
+          missingFlag: 'resistance_joined',
+        },
+      },
+      {
+        text: 'Брифинг — Аня и связь.',
+        next: 'act6_resistance_briefing',
+        condition: {
+          flag: 'resistance_joined',
+          missingFlag: 'three_defectors_recruited',
+        },
+      },
+      {
+        text: 'План проникновения в офис.',
+        next: 'act6_data_heist_planning',
+        condition: {
+          flag: 'three_defectors_recruited',
+          missingFlag: 'act6_heist_planned',
+        },
+      },
+      {
+        text: 'Крыша завода — тень ждёт.',
+        next: 'act6_rooftop_showdown',
+        condition: {
+          flag: 'nadzor_guardian_defeated',
+          missingFlag: 'rooftop_entity_met',
+        },
+      },
+      {
+        text: 'Выбор на крыше — ещё не сделан.',
+        next: 'act6_final_confrontation',
+        condition: {
+          flag: 'rooftop_entity_met',
+          missingFlag: 'act6_final_choice_made',
+        },
+      },
+      {
+        text: 'Гильдия восстановлена — ударный отряд.',
+        next: 'act7_guild_restored',
+        condition: {
+          flag: 'guild_restored',
+          missingFlag: 'path_to_core_cleared',
+        },
+      },
       { text: 'Позже, Максим.', next: null },
     ],
   },
@@ -1208,6 +1776,46 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
         effects: [
           { type: 'addSkill', skill: 'logic', value: 1 },
         ],
+      },
+      {
+        text: 'План похищения данных — схемы.',
+        next: 'act6_data_heist_planning',
+        condition: {
+          flag: 'resistance_joined',
+          missingFlag: 'act6_heist_planned',
+        },
+      },
+      {
+        text: '«Надзор» — точка входа на заводе.',
+        next: 'act6_nadzor_revealed',
+        condition: {
+          flag: 'data_heist_completed',
+          missingFlag: 'nadzor_truth_revealed',
+        },
+      },
+      {
+        text: 'Хранитель у ядра — штурмуем.',
+        next: 'act6_infiltration_prep',
+        condition: {
+          flag: 'nadzor_truth_revealed',
+          missingFlag: 'nadzor_guardian_defeated',
+        },
+      },
+      {
+        text: 'Ядро открыто — выбор у терминала.',
+        next: 'act6_core_choice',
+        condition: {
+          flag: 'nadzor_guardian_defeated',
+          missingFlag: 'act6_infiltration_ready',
+        },
+      },
+      {
+        text: 'Отключение «Надзора» — идём к ядру.',
+        next: 'act7_system_shutdown',
+        condition: {
+          flag: 'guild_restored',
+          missingFlag: 'path_to_core_cleared',
+        },
       },
       { text: 'Спасибо. Пока, Жека.', next: null },
     ],
@@ -1234,6 +1842,70 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
           { type: 'setFlag', flag: 'resistance_network_established', flagValue: true },
           { type: 'addKarma', value: 2 },
         ],
+      },
+      {
+        text: 'Брифинг сопротивления — каналы.',
+        next: 'act6_resistance_briefing',
+        condition: {
+          flag: 'resistance_joined',
+          missingFlag: 'three_defectors_recruited',
+        },
+      },
+      {
+        text: 'План похищения — мониторинг камер.',
+        next: 'act6_data_heist_planning',
+        condition: {
+          flag: 'three_defectors_recruited',
+          missingFlag: 'act6_heist_planned',
+        },
+      },
+      {
+        text: 'Список убежища — фильтры.',
+        next: 'resistance_safehouse_filters',
+        condition: {
+          flag: 'resistance_safehouse_active',
+          missingFlag: 'resistance_safehouse_filters',
+        },
+      },
+      {
+        text: '433 — щель между сканами.',
+        next: 'resistance_safehouse_radio',
+        condition: {
+          flag: 'resistance_safehouse_filters',
+          missingFlag: 'resistance_safehouse_radio',
+        },
+      },
+      {
+        text: 'Стихи-сетка и матрасы — домой.',
+        next: 'resistance_safehouse_poem_mesh',
+        condition: {
+          flag: 'resistance_safehouse_radio',
+          missingFlag: 'resistance_safehouse_done',
+        },
+      },
+      {
+        text: 'Наушник — тоннель к засаде.',
+        next: 'resistance_defector_rescue_start',
+        condition: {
+          flag: 'resistance_defector_rescue_active',
+          missingFlag: 'resistance_defector_tunnel',
+        },
+      },
+      {
+        text: 'Координаты живы — стих и увод.',
+        next: 'resistance_defector_poem_stun',
+        condition: {
+          flag: 'resistance_defector_tunnel',
+          missingFlag: 'resistance_defector_rescue_done',
+        },
+      },
+      {
+        text: 'Уцелевшие в кафе — новый устав.',
+        next: 'act7_guild_rebuilding',
+        condition: {
+          flag: 'rooftop_confrontation_done',
+          missingFlag: 'new_council_elected',
+        },
       },
       { text: 'Увидимся, Аня.', next: null },
     ],
@@ -1282,6 +1954,46 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
           { type: 'npcChange', npcId: 'baba_zina', npcChange: { relation: 2 } },
         ],
       },
+      {
+        text: 'Память «Зари-М» — продолжим образы.',
+        next: 'factory_zarya_snow',
+        condition: {
+          flag: 'factory_zarya_memory_active',
+          missingFlag: 'factory_zarya_snow_done',
+        },
+      },
+      {
+        text: 'Кассета с грозой.',
+        next: 'factory_zarya_storm',
+        condition: {
+          flag: 'factory_zarya_snow_done',
+          missingFlag: 'factory_zarya_storm_done',
+        },
+      },
+      {
+        text: 'Фото на шину.',
+        next: 'factory_zarya_photo',
+        condition: {
+          flag: 'factory_zarya_storm_done',
+          missingFlag: 'factory_zarya_memory_done',
+        },
+      },
+      {
+        text: 'Чайник ещё на горелке.',
+        next: 'factory_baba_zina_tea_kettle',
+        condition: {
+          flag: 'factory_baba_zina_tea_active',
+          missingFlag: 'factory_baba_zina_tea_kettle',
+        },
+      },
+      {
+        text: 'Допить чай у паяльной.',
+        next: 'factory_baba_zina_tea_mint',
+        condition: {
+          flag: 'factory_baba_zina_tea_kettle',
+          missingFlag: 'factory_baba_zina_tea_done',
+        },
+      },
       { text: 'Потом, Баба Зина.', next: null },
     ],
   },
@@ -1301,6 +2013,22 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
         text: 'Звезда ещё горит — куда она указывает?',
         next: 'street_poet_guiding_star',
         condition: { collectedPoem: 'poem_3' },
+      },
+      {
+        text: 'Табличка на обелиске — снять.',
+        next: 'quest_act7_poets_monument_plate',
+        condition: {
+          flag: 'quest_act7_poets_monument_inscription_active',
+          missingFlag: 'quest_act7_poets_monument_plate_cleared',
+        },
+      },
+      {
+        text: 'Дорезать имена на камне.',
+        next: 'quest_act7_poets_monument_recall',
+        condition: {
+          flag: 'quest_act7_poets_monument_plate_cleared',
+          missingFlag: 'quest_act7_poets_monument_inscription_done',
+        },
       },
       { text: 'Поблагодарить и уйти.', next: null },
     ],

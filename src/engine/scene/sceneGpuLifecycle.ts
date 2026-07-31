@@ -117,6 +117,16 @@ function preloadSceneNpcModels(sceneId: SceneId): void {
   }
 }
 
+function preloadSceneStreetDressing(sceneId: SceneId): void {
+  for (const url of getSceneStreetDressingUrls(sceneId)) {
+    scheduleGltfPreload(
+      url,
+      () => useGLTF.preload(url, true, true, extendLoader),
+      GltfPreloadPriority.High,
+    );
+  }
+}
+
 export function preloadSceneGpuAssets(sceneId: SceneId): void {
   resetGltfPreloadQueue();
 
@@ -128,6 +138,7 @@ export function preloadSceneGpuAssets(sceneId: SceneId): void {
   }
   preloadTriggerZoneProps(sceneId, GltfPreloadPriority.High);
   preloadScenePropModels(sceneId);
+  preloadSceneStreetDressing(sceneId);
   preloadSceneNpcModels(sceneId);
   if (isAssetEffectiveShipped('fps_arms')) {
     scheduleGltfPreload(

@@ -35,7 +35,7 @@ const STEAM_SCENES = new Set(['cafe_evening', 'home_evening']);
 const MATRIX_FOG_SCENES = new Set(['battle']);
 const DUST_SCENES = new Set(['volodka_room', 'volodka_corridor', 'library_day', 'park_day', 'home_evening', 'battle', 'abandoned_factory']);
 const EMBER_SCENES = new Set(['abandoned_factory', 'battle']);
-const NEON_REFLECTION_SCENES = new Set(['street_night']);
+const NEON_REFLECTION_SCENES = new Set(['street_night', 'city_square']);
 const MIST_SCENES = new Set(['guild_mainframe']);
 const FLICKERING_LIGHT_SCENES = new Set(['factory_basement', 'abandoned_factory']);
 

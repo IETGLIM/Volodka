@@ -32,7 +32,8 @@ const SCENE_WEATHER: Partial<Record<SceneId, WeatherType>> = {
   solnysh_room: 'none',
   chk_forest_zorge: 'snow_light',
   factory_basement: 'none',
-  river_pier: 'none',
+  // Light mist/rain so WetStreetGround apron + pier water read as wet without street storm density.
+  river_pier: 'rain_light',
 };
 
 /** Weather controller — activates appropriate weather system per scene */

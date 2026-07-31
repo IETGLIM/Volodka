@@ -13,17 +13,21 @@ export interface ContactShadowTextureParams {
 
 interface ContactShadowPreset {
   size: number;
+  /** Radial alpha stops — soft penumbra (more stops = smoother falloff). */
   stops: readonly [number, number][];
 }
 
-const CONTACT_SHADOW_PRESETS: Record<ContactShadowVariant, ContactShadowPreset> = {
+/** Soft-falloff radial presets — dense core, long penumbra, no hard rim. */
+export const CONTACT_SHADOW_PRESETS: Record<ContactShadowVariant, ContactShadowPreset> = {
   player: {
     size: 128,
     stops: [
-      [0, 0.5],
-      [0.3, 0.3],
-      [0.55, 0.12],
-      [0.8, 0.03],
+      [0, 0.48],
+      [0.18, 0.36],
+      [0.38, 0.2],
+      [0.58, 0.09],
+      [0.78, 0.03],
+      [0.92, 0.008],
       [1, 0],
     ],
   },
@@ -31,19 +35,23 @@ const CONTACT_SHADOW_PRESETS: Record<ContactShadowVariant, ContactShadowPreset> 
   playerFp: {
     size: 96,
     stops: [
-      [0, 0.62],
-      [0.26, 0.36],
-      [0.5, 0.14],
-      [0.76, 0.035],
+      [0, 0.58],
+      [0.16, 0.42],
+      [0.34, 0.24],
+      [0.52, 0.11],
+      [0.72, 0.04],
+      [0.9, 0.01],
       [1, 0],
     ],
   },
   npc: {
     size: 64,
     stops: [
-      [0, 0.42],
-      [0.38, 0.2],
-      [0.68, 0.06],
+      [0, 0.4],
+      [0.22, 0.26],
+      [0.45, 0.12],
+      [0.68, 0.045],
+      [0.88, 0.01],
       [1, 0],
     ],
   },

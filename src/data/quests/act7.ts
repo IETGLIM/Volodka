@@ -61,6 +61,13 @@ export const QUESTS_ACT7: QuestDefinition[] = [
       { type: 'addXp', value: 400 },
     ],
     linkedStoryNodeId: 'act7_guild_rebuilding',
+    linkedStoryNodeIds: [
+      'act7_guild_rebuilding',
+      'act7_charter_drafting',
+      'act7_community_voice',
+      'act7_library_archive',
+      'act7_guild_restored',
+    ],
     questGiverNpcId: 'anya',
   },
 
@@ -123,6 +130,12 @@ export const QUESTS_ACT7: QuestDefinition[] = [
       { type: 'addXp', value: 500 },
     ],
     linkedStoryNodeId: 'act7_guild_restored',
+    linkedStoryNodeIds: [
+      'act7_guild_restored',
+      'act7_system_shutdown',
+      'act7_core_battle',
+      'act7_nadzor_dies',
+    ],
     questGiverNpcId: 'maxim',
   },
 
@@ -183,6 +196,12 @@ export const QUESTS_ACT7: QuestDefinition[] = [
       { type: 'addXp', value: 500 },
     ],
     linkedStoryNodeId: 'act7_final_poem_creation',
+    linkedStoryNodeIds: [
+      'act7_final_poem_creation',
+      'act7_poem_written',
+      'act7_rooftop_recital',
+      'act7_poem_published',
+    ],
     questGiverNpcId: undefined,
   },
 
@@ -244,6 +263,12 @@ export const QUESTS_ACT7: QuestDefinition[] = [
       { type: 'addXp', value: 600 },
     ],
     linkedStoryNodeId: 'act7_legacy_walk',
+    linkedStoryNodeIds: [
+      'act7_legacy_walk',
+      'act7_goodbye_zarema',
+      'act7_final_walk',
+      'act7_maria_future',
+    ],
     questGiverNpcId: 'maria',
   },
 ];

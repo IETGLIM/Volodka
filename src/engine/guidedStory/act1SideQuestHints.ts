@@ -41,14 +41,24 @@ export function getNightShiftMysteryHint(currentSceneId: string): string | null 
   return null;
 }
 
-/** Урок Альберта — talk → riddle → poetry-code link. */
+/** Урок Альберта — talk → napkin → riddle → poetry-code → poem. */
 export function getAlbertsLessonHint(currentSceneId: string): string | null {
   const quest = findActiveQuest('alberts_lesson');
   if (!quest) return null;
-  if (!objectiveDone(quest, 'talk_albert_lesson')) {
+  if (!objectiveDone(quest, 'talk_albert_lesson') || !objectiveDone(quest, 'accept_albert_lesson')) {
     return currentSceneId === 'cafe_evening' || currentSceneId === 'albert_backroom'
       ? 'Альберт здесь — попроси урок [E]'
       : 'Альберт в «Синей яме» — код и стих одним языком';
+  }
+  if (!objectiveDone(quest, 'study_albert_napkin')) {
+    return currentSceneId === 'cafe_evening'
+      ? 'Салфетка с псевдокодом — изучи комментарий [E]'
+      : 'Вернись к Альберту — салфетка ещё на столе';
+  }
+  if (!objectiveDone(quest, 'hear_albert_riddle')) {
+    return currentSceneId === 'cafe_evening'
+      ? 'Альберт ждёт — выслушай загадку [E]'
+      : 'Загадка Альберта — в «Синей яме»';
   }
   if (!objectiveDone(quest, 'solve_code_riddle')) {
     return 'Разгадай кодовую загадку Альберта — «Прорыв» поможет';
@@ -56,25 +66,34 @@ export function getAlbertsLessonHint(currentSceneId: string): string | null {
   if (!objectiveDone(quest, 'show_poem_understanding')) {
     return 'Покажи, что видишь связь кода и стихов';
   }
+  if (!objectiveDone(quest, 'keep_breakthrough_poem')) {
+    return 'Сохрани стих «Прорыв» — Альберт уже протянул его';
+  }
   return null;
 }
 
-/** Письмо без адреса — open → keep → Zarema. */
+/** Письмо без адреса — mailboxes → open → scheme → keep → Zarema. */
 export function getCorridorLetterHint(currentSceneId: string): string | null {
   const quest = findActiveQuest('corridor_letter');
   if (!quest) return null;
-  if (!objectiveDone(quest, 'open_letter')) {
+  if (!objectiveDone(quest, 'examine_mailboxes') || !objectiveDone(quest, 'open_letter')) {
     return currentSceneId === 'volodka_corridor'
       ? 'Почтовые ящики — третий сверху, конверт без марки [E]'
       : 'Конверт без адреса — проверь ящики в коридоре';
+  }
+  if (!objectiveDone(quest, 'read_letter_scheme')) {
+    return 'Прочти оборот письма — схема ведёт в «Синюю яму»';
   }
   if (!objectiveDone(quest, 'keep_letter')) {
     return 'Сохрани письмо — оно ещё пригодится';
   }
   if (!objectiveDone(quest, 'show_letter_zarema')) {
     return currentSceneId === 'home_evening'
-      ? 'Покажи письмо Зареме [E]'
-      : 'Зарема на кухне — покажи ей письмо';
+      ? 'Покажи письмо Зареме или спрячь до времени [E]'
+      : 'Спрячь письмо или покажи Зареме на кухне';
+  }
+  if (!objectiveDone(quest, 'heed_zarema_warning')) {
+    return 'Закрой дело письма — выбор уже почти сделан';
   }
   return null;
 }
@@ -96,7 +115,7 @@ export function getZaremaRadioHint(currentSceneId: string): string | null {
   return null;
 }
 
-/** Утренний обход — terminal → wardrobe → intercom. */
+/** Утренний обход — terminal → wardrobe → bookshelf → intercom → tea → window. */
 export function getMorningRitualHint(currentSceneId: string): string | null {
   const quest = findActiveQuest('morning_ritual');
   if (!quest) return null;
@@ -110,10 +129,25 @@ export function getMorningRitualHint(currentSceneId: string): string | null {
       ? 'Загляни в платяной шкаф'
       : 'Шкаф в комнате — следующая точка обхода';
   }
+  if (!objectiveDone(quest, 'ritual_bookshelf')) {
+    return currentSceneId === 'volodka_room'
+      ? 'Книжная полка — проведи пальцем по корешкам [E]'
+      : 'Полка в комнате — ещё одна улика утра';
+  }
   if (!objectiveDone(quest, 'ritual_intercom')) {
     return currentSceneId === 'volodka_corridor' || currentSceneId === 'volodka_room'
       ? 'Домофон шепчет — прислушайся [E]'
       : 'Домофон в коридоре — услышь утренний шёпот';
+  }
+  if (!objectiveDone(quest, 'ritual_tea')) {
+    return currentSceneId === 'home_evening'
+      ? 'Зарема ждёт с чаем у стола [E]'
+      : 'Кухня — чай у Заремы закрывает обход';
+  }
+  if (!objectiveDone(quest, 'ritual_window')) {
+    return currentSceneId === 'home_evening'
+      ? 'Взгляни в кухонное окно на город [E]'
+      : 'Окно на кухне — последний взгляд перед городом';
   }
   return null;
 }

@@ -61,6 +61,32 @@ export const PBR_PRESETS = {
     transmission: 0.15,
     thickness: 0.2,
   },
+  /** Selective hero wet glass — plaza facades / cafe panes (MeshPhysical). */
+  wetGlass: {
+    color: '#88aacc',
+    roughness: 0.06,
+    metalness: 0.12,
+    transmission: 0.22,
+    thickness: 0.35,
+  },
+  /** Rain puddle sheen — few instances only, not blanket ground. */
+  wetAsphaltPuddle: {
+    color: '#1a2230',
+    roughness: 0.12,
+    metalness: 0.28,
+    transmission: 0,
+    thickness: 0,
+  },
+  /** Neon tube / fascia with wet clearcoat read. */
+  neonWetGlass: {
+    color: '#101018',
+    roughness: 0.22,
+    metalness: 0.45,
+    transmission: 0.08,
+    thickness: 0.15,
+    emissive: '#22ffdd',
+    emissiveIntensity: 1.1,
+  },
 } as const;
 
 export type PbrPresetId = keyof typeof PBR_PRESETS;
@@ -95,12 +121,20 @@ export function createPhysicalFromPreset(
   const p = PBR_PRESETS[preset];
   const transmission = 'transmission' in p ? p.transmission : 0;
   const thickness = 'thickness' in p ? p.thickness : 0;
+  const wetGlassLike = preset === 'wetGlass' || preset === 'neonWetGlass' || preset === 'wetAsphaltPuddle';
   return new THREE.MeshPhysicalMaterial({
     color: p.color,
     roughness: p.roughness,
     metalness: p.metalness,
     transmission,
     thickness,
+    ...(wetGlassLike
+      ? {
+          clearcoat: preset === 'wetAsphaltPuddle' ? 0.85 : 0.55,
+          clearcoatRoughness: preset === 'wetAsphaltPuddle' ? 0.12 : 0.28,
+          ior: preset === 'wetGlass' ? 1.45 : 1.35,
+        }
+      : {}),
     ...('emissive' in p
       ? {
           emissive: p.emissive,

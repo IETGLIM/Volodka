@@ -590,6 +590,18 @@ export class QuestTracker {
         if (!objective.target) continue;
         if (objective.target === gameType) {
           this.completeObjective(quest.questId, objective.id);
+          // Архив Забытых: vault mid-resume flag only after successful codebreaker
+          // (never on zone interact — aborting the minigame would soft-lock unlock).
+          if (quest.questId === 'archive_of_forgotten' && objective.id === 'unlock_archive') {
+            const flags = getGameSnapshot().playerState.flags;
+            if (!flags['archive_vault_accessed']) {
+              dispatchGameAction({
+                type: 'player/setFlag',
+                key: 'archive_vault_accessed',
+                value: true,
+              });
+            }
+          }
         }
       }
     }

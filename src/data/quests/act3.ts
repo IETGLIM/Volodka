@@ -55,6 +55,14 @@ export const QUESTS_ACT3: QuestDefinition[] = [
       { type: 'addXp', value: 200 },
     ],
     linkedStoryNodeId: 'act3_zarema_arrest',
+    linkedStoryNodeIds: [
+      'act3_zarema_warning',
+      'act3_zarema_arrest',
+      'act3_detention_infiltration',
+      'act3_zarema_cell',
+      'act3_zarema_rescue_choice',
+      'act3_save_zarema',
+    ],
     questGiverNpcId: 'zarema',
   },
 
@@ -108,6 +116,11 @@ export const QUESTS_ACT3: QuestDefinition[] = [
       { type: 'addXp', value: 200 },
     ],
     linkedStoryNodeId: 'act3_guild_counterattack',
+    linkedStoryNodeIds: [
+      'act3_guild_counterattack',
+      'act3_vault_siege',
+      'act3_hide_network',
+    ],
     questGiverNpcId: 'albert',
   },
 
@@ -158,6 +171,11 @@ export const QUESTS_ACT3: QuestDefinition[] = [
       { type: 'addXp', value: 200 },
     ],
     linkedStoryNodeId: 'act3_maria_mystery',
+    linkedStoryNodeIds: [
+      'act3_maria_mystery',
+      'act3_maria_revelation',
+      'act3_maria_truth_accepted',
+    ],
     questGiverNpcId: 'maria',
   },
 

@@ -13,7 +13,15 @@ import { useOwnedBufferGeometry } from '@/hooks/useOwnedBufferGeometry';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
 import {
+  allowsSelectiveMeshPhysicalWet,
+  getWetGlassPhysicalParams,
+  getWetPuddlePhysicalParams,
+} from '@/engine/graphics/wetStreetScenes';
+import { useIsMobileVisual } from '@/hooks/use-mobile';
+import { useGameStore } from '@/store/gameStore';
+import {
   getSharedBoxGeometry,
+  getSharedCircleGeometry,
   getSharedPlaneGeometry,
 } from '@/engine/three/moduleGeometryRegistry';
 import { seededRand } from '@/shared/utils/seededRand';
@@ -28,10 +36,21 @@ interface CafeVisualProps {
 
 /** Blue Pit cafe – cozy interior with bar counter, tables, warm lighting */
 export function CafeVisual({ livePlayerPositionRef }: CafeVisualProps) {
-  const { preset } = useGraphicsQuality();
+  const { preset, selectedPreset } = useGraphicsQuality();
+  const coarsePointer = useIsMobileVisual();
+  const rainIntensity = useGameStore((s) => s.rainIntensity);
   const useAuthoredShell = !preset.visualLite;
   const useGltfDressing = allowsGlbAssetRendering(preset.environmentRenderMode);
   const hideProceduralFurniture = useAuthoredShell && useGltfDressing;
+  const usePhysicalWet = allowsSelectiveMeshPhysicalWet('cafe_evening', selectedPreset, {
+    coarsePointer,
+  });
+  const wetPane = useMemo(() => getWetGlassPhysicalParams('cafePane'), []);
+  const wetNeon = useMemo(() => getWetGlassPhysicalParams('neonFascia'), []);
+  const entranceSpill = useMemo(
+    () => getWetPuddlePhysicalParams(Math.max(0.35, rainIntensity * 0.85)),
+    [rainIntensity],
+  );
   const floorTexture = useCachedCanvasTexture('cafe_evening:floor', createCafeFloorTexture);
   const wallTexture = useCachedCanvasTexture('cafe_evening:wall', createCafeWallTexture);
   const ceilingGlowTexture = useCachedCanvasTexture(
@@ -257,15 +276,54 @@ export function CafeVisual({ livePlayerPositionRef }: CafeVisualProps) {
       {/* ── Neon Sign behind bar ── */}
       <group position={[0, 2.5, -4.8]}>
         <mesh geometry={getSharedBoxGeometry(3.0, 0.4, 0.05)}>
-          <meshStandardMaterial
-            color="#001133"
-            emissive="#1a4aff"
-            emissiveIntensity={3.0}
-            toneMapped={false}
-          />
+          {usePhysicalWet ? (
+            <meshPhysicalMaterial
+              color="#001133"
+              emissive="#1a4aff"
+              emissiveIntensity={3.0}
+              toneMapped={false}
+              roughness={wetNeon.roughness}
+              metalness={wetNeon.metalness}
+              transmission={wetNeon.transmission}
+              thickness={wetNeon.thickness}
+              clearcoat={wetNeon.clearcoat}
+              clearcoatRoughness={wetNeon.clearcoatRoughness}
+            />
+          ) : (
+            <meshStandardMaterial
+              color="#001133"
+              emissive="#1a4aff"
+              emissiveIntensity={3.0}
+              toneMapped={false}
+            />
+          )}
         </mesh>
         <pointLight position={[0, -0.5, 0.5]} color="#1a4aff" intensity={2.0} distance={6} />
       </group>
+
+      {/* Rain spill-in near entrance — selective MeshPhysical puddle (not full floor). */}
+      {usePhysicalWet ? (
+        <mesh
+          rotation-x={-Math.PI / 2}
+          position={[0, 0.014, D * 0.42]}
+          geometry={getSharedCircleGeometry(1.15, 20)}
+          renderOrder={2}
+        >
+          <meshPhysicalMaterial
+            color="#1a2030"
+            roughness={entranceSpill.roughness}
+            metalness={entranceSpill.metalness}
+            clearcoat={entranceSpill.clearcoat}
+            clearcoatRoughness={entranceSpill.clearcoatRoughness}
+            transparent
+            opacity={Math.min(0.55, entranceSpill.opacity * 0.72)}
+            depthWrite={false}
+            polygonOffset
+            polygonOffsetFactor={1}
+            polygonOffsetUnits={1}
+          />
+        </mesh>
+      ) : null}
 
       {/* ═══════════════════════════════════════════════ */}
       {/* ── TABLES AND CHAIRS ── */}
@@ -404,12 +462,26 @@ export function CafeVisual({ livePlayerPositionRef }: CafeVisualProps) {
         {/* Neon tube shape — horizontal bar */}
         <mesh>
           <boxGeometry args={[1.5, 0.08, 0.05]} />
-          <meshStandardMaterial
-            color="#ff2200"
-            emissive="#ff4400"
-            emissiveIntensity={3.0}
-            roughness={0.3}
-          />
+          {usePhysicalWet ? (
+            <meshPhysicalMaterial
+              color="#ff2200"
+              emissive="#ff4400"
+              emissiveIntensity={3.0}
+              roughness={wetNeon.roughness}
+              metalness={wetNeon.metalness}
+              clearcoat={wetNeon.clearcoat}
+              clearcoatRoughness={wetNeon.clearcoatRoughness}
+              transmission={0.04}
+              thickness={0.08}
+            />
+          ) : (
+            <meshStandardMaterial
+              color="#ff2200"
+              emissive="#ff4400"
+              emissiveIntensity={3.0}
+              roughness={0.3}
+            />
+          )}
         </mesh>
         {/* Neon glow */}
         <pointLight position={[0, -0.3, 0.5]} color="#ff4400" intensity={1.2} distance={4} />
@@ -422,11 +494,30 @@ export function CafeVisual({ livePlayerPositionRef }: CafeVisualProps) {
         {/* Window pane */}
         <mesh rotation-y={-Math.PI / 2}>
           <planeGeometry args={[1.5, 1.2]} />
-          <meshStandardMaterial
-            color="#0a0a20"
-            emissive="#1a2a55"
-            emissiveIntensity={2.0}
-          />
+          {usePhysicalWet ? (
+            <meshPhysicalMaterial
+              color="#0a0a20"
+              emissive="#1a2a55"
+              emissiveIntensity={1.6}
+              roughness={wetPane.roughness}
+              metalness={wetPane.metalness}
+              transmission={wetPane.transmission}
+              thickness={wetPane.thickness}
+              clearcoat={wetPane.clearcoat}
+              clearcoatRoughness={wetPane.clearcoatRoughness}
+              transparent
+              opacity={wetPane.opacity}
+              polygonOffset
+              polygonOffsetFactor={1}
+              polygonOffsetUnits={1}
+            />
+          ) : (
+            <meshStandardMaterial
+              color="#0a0a20"
+              emissive="#1a2a55"
+              emissiveIntensity={2.0}
+            />
+          )}
         </mesh>
         {/* Night light spill */}
         <pointLight position={[0.3, 0, 0.8]} color="#1a2a55" intensity={1.2} distance={5} />
@@ -456,7 +547,24 @@ export function CafeVisual({ livePlayerPositionRef }: CafeVisualProps) {
       <group position={[-1.5, 1.15, -4.0]}>
         <mesh>
           <cylinderGeometry args={[0.06, 0.06, 0.12, 8]} />
-          <meshStandardMaterial color="#d0c8b0" transparent opacity={0.6} roughness={0.2} metalness={0.1} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+          {usePhysicalWet ? (
+            <meshPhysicalMaterial
+              color="#d0c8b0"
+              roughness={0.12}
+              metalness={0.08}
+              transmission={0.55}
+              thickness={0.25}
+              clearcoat={0.7}
+              clearcoatRoughness={0.18}
+              transparent
+              opacity={0.72}
+              polygonOffset
+              polygonOffsetFactor={1}
+              polygonOffsetUnits={1}
+            />
+          ) : (
+            <meshStandardMaterial color="#d0c8b0" transparent opacity={0.6} roughness={0.2} metalness={0.1} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+          )}
         </mesh>
         {/* Coins visible */}
         <mesh position={[0, -0.03, 0]}>

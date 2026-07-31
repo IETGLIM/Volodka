@@ -41,6 +41,16 @@ const NEON_CONFIGS: Record<string, NeonReflectionConfig> = {
       { position: [7, 0.02, 0], color: '#4488ff', radius: 2.8, intensity: 0.28, pulseSpeed: 0.45, pulsePhase: 3.6 },
     ],
   },
+  city_square: {
+    count: 64,
+    pools: [
+      { position: [-8, 0.02, -6], color: '#55e8dd', radius: 3.8, intensity: 0.32, pulseSpeed: 0.38, pulsePhase: 0.2 },
+      { position: [8, 0.02, 7], color: '#ff6688', radius: 3.4, intensity: 0.3, pulseSpeed: 0.42, pulsePhase: 1.4 },
+      { position: [0, 0.02, 0], color: '#aaccff', radius: 4.2, intensity: 0.26, pulseSpeed: 0.28, pulsePhase: 2.1 },
+      { position: [6, 0.02, -4], color: '#ffaa66', radius: 2.8, intensity: 0.24, pulseSpeed: 0.48, pulsePhase: 3.0 },
+      { position: [-5, 0.02, 5], color: '#9b86bc', radius: 3.0, intensity: 0.22, pulseSpeed: 0.33, pulsePhase: 0.9 },
+    ],
+  },
 };
 
 export function NeonRainReflections({ sceneId }: { sceneId: string }) {

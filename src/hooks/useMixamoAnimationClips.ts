@@ -12,7 +12,7 @@ import {
   GltfPreloadPriority,
   scheduleGltfPreload,
 } from '@/engine/assets/gltfPreloadScheduler';
-import { filterClipTracksToExistingNodes } from '@/engine/animation/filterClipTracks';
+import { filterClipTracksToExistingNodes, stripRootTranslationTracks } from '@/engine/animation/filterClipTracks';
 
 export interface MixamoClipBinding {
   clipId: MixamoClipId;
@@ -141,7 +141,9 @@ export function useMixamoAnimationClips(
           // handslotr/Rig_Medium which don't exist in the Quaternius
           // player skeleton). Silences THREE.PropertyBinding warnings and
           // avoids wasted per-frame binding-resolution work.
-          const filtered = filterClipTracksToExistingNodes(clip, root);
+          const filtered = stripRootTranslationTracks(
+            filterClipTracksToExistingNodes(clip, root),
+          );
           const renamed = filtered.clone();
           renamed.name = binding.canonicalName;
           const action = mixer.clipAction(renamed, root);
@@ -179,7 +181,9 @@ export function useMixamoAnimationClips(
                 return;
               }
               // Filter orphan tracks (see criticalBindings comment above).
-              const filtered = filterClipTracksToExistingNodes(clip, root);
+              const filtered = stripRootTranslationTracks(
+            filterClipTracksToExistingNodes(clip, root),
+          );
               const renamed = filtered.clone();
               renamed.name = binding.canonicalName;
               const action = mixer.clipAction(renamed, root);

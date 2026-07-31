@@ -180,7 +180,13 @@ export const QUESTS_ACT4: QuestDefinition[] = [
       { type: 'setFlag', flag: 'digital_ghost_resolved', flagValue: true },
       { type: 'addXp', value: 120 },
     ],
-    linkedStoryNodeId: 'library_explore_mode',
+    linkedStoryNodeId: 'digital_ghost_approach',
+    linkedStoryNodeIds: [
+      'digital_ghost_approach',
+      'digital_ghost_traces',
+      'digital_ghost_firewall',
+      'digital_ghost_recover',
+    ],
     questGiverNpcId: 'lena',
   },
 
@@ -230,11 +236,16 @@ export const QUESTS_ACT4: QuestDefinition[] = [
       { type: 'setFlag', flag: 'bank_transfer_resolved', flagValue: true },
       { type: 'addXp', value: 100 },
     ],
-    linkedStoryNodeId: 'kitchen_table',
+    linkedStoryNodeId: 'bank_transfer_approach',
+    linkedStoryNodeIds: [
+      'bank_transfer_approach',
+      'bank_transfer_trace',
+      'bank_transfer_culprit',
+      'bank_transfer_moral',
+      'zarema_bank_discovery',
+    ],
     questGiverNpcId: 'zarema',
   },
-
-  /* ─────────────── QUEST 20: Ночной Дозор ─────────────── */
   {
     id: 'night_watch',
     title: 'Ночной Дозор',
@@ -281,11 +292,10 @@ export const QUESTS_ACT4: QuestDefinition[] = [
       { type: 'setFlag', flag: 'night_watch_completed', flagValue: true },
       { type: 'addXp', value: 100 },
     ],
-    linkedStoryNodeId: 'street_bench',
+    linkedStoryNodeId: 'night_watch_child',
+    linkedStoryNodeIds: ['night_watch_child', 'night_watch_friend'],
     questGiverNpcId: 'sergey',
   },
-
-  /* ─────────────── QUEST 21: Стих под Прикрытием ─────────────── */
   {
     id: 'poem_undercover',
     title: 'Стих под Прикрытием',
@@ -333,11 +343,15 @@ export const QUESTS_ACT4: QuestDefinition[] = [
       { type: 'setFlag', flag: 'undercover_mission_complete', flagValue: true },
       { type: 'addXp', value: 100 },
     ],
-    linkedStoryNodeId: 'cafe_enter',
+    linkedStoryNodeId: 'poem_undercover_approach',
+    linkedStoryNodeIds: [
+      'poem_undercover_approach',
+      'poem_undercover_infiltrate',
+      'poem_undercover_identify',
+      'poem_undercover_extract',
+    ],
     questGiverNpcId: 'maria',
   },
-
-  /* ─────────────── QUEST 22: Сломанный Терминал ─────────────── */
   {
     id: 'broken_terminal',
     title: 'Сломанный Терминал',
@@ -428,11 +442,15 @@ export const QUESTS_ACT4: QuestDefinition[] = [
       { type: 'setFlag', flag: 'vladimir_voice_heard', flagValue: true },
       { type: 'addXp', value: 150 },
     ],
-    linkedStoryNodeId: 'volodka_inner',
+    linkedStoryNodeId: 'voice_of_the_past_approach',
+    linkedStoryNodeIds: [
+      'voice_of_the_past_approach',
+      'voice_of_the_past_listen_1',
+      'voice_of_the_past_listen_2',
+      'voice_of_the_past_listen_final',
+    ],
     questGiverNpcId: 'cafe_barista',
   },
-
-  /* ─────────────── QUEST 24: Крыша Мира ─────────────── */
   {
     id: 'roof_of_the_world',
     title: 'Крыша Мира',
@@ -475,7 +493,8 @@ export const QUESTS_ACT4: QuestDefinition[] = [
       { type: 'setFlag', flag: 'roof_confrontation_ended', flagValue: true },
       { type: 'addXp', value: 250 },
     ],
-    linkedStoryNodeId: 'office_alexander',
+    linkedStoryNodeId: 'roof_of_the_world_approach',
+    linkedStoryNodeIds: ['roof_of_the_world_approach', 'roof_of_the_world_ending'],
     questGiverNpcId: 'office_alexander',
   },
 
@@ -526,7 +545,8 @@ export const QUESTS_ACT4: QuestDefinition[] = [
       { type: 'setFlag', flag: 'last_poem_written', flagValue: true },
       { type: 'addXp', value: 500 },
     ],
-    linkedStoryNodeId: 'volodka_inner',
+    linkedStoryNodeId: 'last_poem_approach',
+    linkedStoryNodeIds: ['last_poem_approach', 'last_poem_compose', 'last_poem_recite'],
     questGiverNpcId: undefined,
   },
 
@@ -625,13 +645,10 @@ export const QUESTS_ACT4: QuestDefinition[] = [
       { type: 'addItem', itemId: 'bank_access_token', value: 1 },
       { type: 'addXp', value: 150 },
     ],
-    linkedStoryNodeId: 'kitchen_table',
+    linkedStoryNodeId: 'banking_crash_verify',
+    linkedStoryNodeIds: ['banking_crash_verify', 'kitchen_table'],
     questGiverNpcId: 'zarema',
   },
-
-  /* ═══════════════════════════════════════════════════════════════════
-     NEW QUESTS — Task 6: Lore & Story Expansion
-     ═══════════════════════════════════════════════════════════════════ */
 
   /* ─────────────── QUEST: Тайны старого кода ─────────────── */
   {
@@ -692,6 +709,7 @@ export const QUESTS_ACT4: QuestDefinition[] = [
       { type: 'addXp', value: 150 },
     ],
     linkedStoryNodeId: 'old_code',
+    linkedStoryNodeIds: ['old_code', 'old_code_read'],
     questGiverNpcId: 'office_dmitry',
   },
 
@@ -754,12 +772,13 @@ export const QUESTS_ACT4: QuestDefinition[] = [
       { type: 'addXp', value: 150 },
     ],
     linkedStoryNodeId: 'abandoned_workshop',
+    linkedStoryNodeIds: [
+      'abandoned_workshop',
+      'voices_of_factory_poem',
+      'voices_of_factory_protect',
+    ],
     questGiverNpcId: 'maria',
   },
-
-  /* ═══════════════════════════════════════════════════════════════════
-     ACT 4 — ADDITIONAL QUESTS: Underground resistance, final preparations
-     ═══════════════════════════════════════════════════════════════════ */
 
   /* ─────────────── QUEST: Слепое Пятно ─────────────── */
   {
@@ -799,8 +818,8 @@ export const QUESTS_ACT4: QuestDefinition[] = [
       {
         id: 'confront_mole',
         description: 'Столкнуться с предателем',
-        type: 'npc_talked',
-        target: 'oleg',
+        type: 'flag_set',
+        target: 'mole_confronted',
         completed: false,
       },
     ],
@@ -811,7 +830,8 @@ export const QUESTS_ACT4: QuestDefinition[] = [
       { type: 'setFlag', flag: 'mole_exposed', flagValue: true },
       { type: 'addXp', value: 200 },
     ],
-    linkedStoryNodeId: 'act3_hide_network',
+    linkedStoryNodeId: 'blind_spot_approach',
+    linkedStoryNodeIds: ['blind_spot_approach', 'blind_spot_identify', 'blind_spot_confront'],
     questGiverNpcId: 'office_alexander',
   },
 
@@ -871,7 +891,12 @@ export const QUESTS_ACT4: QuestDefinition[] = [
       { type: 'setFlag', flag: 'archive_saved', flagValue: true },
       { type: 'addXp', value: 200 },
     ],
-    linkedStoryNodeId: 'library_entrance',
+    linkedStoryNodeId: 'archive_forgotten_approach',
+    linkedStoryNodeIds: [
+      'archive_forgotten_approach',
+      'archive_forgotten_meet',
+      'archive_forgotten_save',
+    ],
     questGiverNpcId: 'solnysh',
   },
 

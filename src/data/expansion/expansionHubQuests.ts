@@ -13,13 +13,34 @@ export const EXPANSION_HUB_QUESTS: QuestDefinition[] = [
     questType: 'side',
     difficulty: 'easy',
     requiredFlag: 'act2_network_initiation',
-    hint: 'Возьми конверт у бариста в кафе и найди коллегу у серверной в офисе.',
+    hint: 'Бариста → конверт → ночная улица → холл офиса → коллега → второй лист.',
     objectives: [
+      {
+        id: 'hear_relay_brief',
+        description: 'Выслушать бриф баристы о «ножном» протоколе',
+        type: 'flag_set',
+        target: 'cafe_relay_brief_heard',
+        completed: false,
+      },
       {
         id: 'take_cafe_envelope',
         description: 'Получить конверт у бариста в кафе',
         type: 'flag_set',
         target: 'cafe_relay_envelope_taken',
+        completed: false,
+      },
+      {
+        id: 'cross_street_with_envelope',
+        description: 'Пройти ночную улицу с конвертом',
+        type: 'location_visited',
+        target: 'street_night',
+        completed: false,
+      },
+      {
+        id: 'enter_office_with_envelope',
+        description: 'Войти в офис, минуя сканеры каналов',
+        type: 'location_visited',
+        target: 'office_day',
         completed: false,
       },
       {
@@ -29,13 +50,26 @@ export const EXPANSION_HUB_QUESTS: QuestDefinition[] = [
         target: 'cafe_relay_envelope_delivered',
         completed: false,
       },
+      {
+        id: 'read_relay_second_sheet',
+        description: 'Прочитать второй лист у серверной',
+        type: 'flag_set',
+        target: 'cafe_relay_second_sheet_read',
+        completed: false,
+      },
     ],
     rewards: [
       { type: 'addSkill', skill: 'persuasion', value: 1 },
       { type: 'discoverLore', loreId: 'lore_hub_relay_network' },
       { type: 'addXp', value: 45 },
+      { type: 'npcChange', npcId: 'office_colleague', npcChange: { relation: 4 } },
     ],
     linkedStoryNodeId: 'act2_cafe_office_relay_start',
+    linkedStoryNodeIds: [
+      'act2_cafe_office_relay_start',
+      'act2_cafe_office_relay_street',
+      'act2_cafe_office_relay_deliver',
+    ],
     questGiverNpcId: 'cafe_barista',
   },
   {
@@ -48,8 +82,15 @@ export const EXPANSION_HUB_QUESTS: QuestDefinition[] = [
     questType: 'side',
     difficulty: 'medium',
     requiredFlag: 'act2_network_initiation',
-    hint: 'Зарема у уличной скамейки — затем костёр в ЧК и Басед.',
+    hint: 'Скамейка → пакет → переулок → костёр ЧК → Басед → стена архива.',
     objectives: [
+      {
+        id: 'meet_zarema_bench',
+        description: 'Встретить Зарему у ночной скамейки',
+        type: 'npc_talked',
+        target: 'zarema',
+        completed: false,
+      },
       {
         id: 'receive_samizdat',
         description: 'Получить самиздат у Заремы на улице',
@@ -58,10 +99,31 @@ export const EXPANSION_HUB_QUESTS: QuestDefinition[] = [
         completed: false,
       },
       {
+        id: 'evade_oka_patrol',
+        description: 'Обойти патруль «Ока» по переулку',
+        type: 'flag_set',
+        target: 'street_samizdat_patrol_evaded',
+        completed: false,
+      },
+      {
+        id: 'reach_chk_with_packet',
+        description: 'Донести пакет до костра ЧК',
+        type: 'location_visited',
+        target: 'chk_forest_zorge',
+        completed: false,
+      },
+      {
         id: 'deliver_chk_samizdat',
         description: 'Передать пакет Баседу у костра ЧК',
         type: 'flag_set',
         target: 'street_samizdat_delivered',
+        completed: false,
+      },
+      {
+        id: 'archive_wall_handwritten',
+        description: 'Увидеть, как лист уходит на стену архива',
+        type: 'flag_set',
+        target: 'street_samizdat_archived',
         completed: false,
       },
     ],
@@ -72,6 +134,11 @@ export const EXPANSION_HUB_QUESTS: QuestDefinition[] = [
       { type: 'addXp', value: 70 },
     ],
     linkedStoryNodeId: 'act2_street_chk_samizdat_start',
+    linkedStoryNodeIds: [
+      'act2_street_chk_samizdat_start',
+      'act2_street_chk_samizdat_patrol',
+      'act2_street_chk_samizdat_deliver',
+    ],
     questGiverNpcId: 'zarema',
   },
   {
@@ -84,8 +151,15 @@ export const EXPANSION_HUB_QUESTS: QuestDefinition[] = [
     questType: 'side',
     difficulty: 'medium',
     requiredFlag: 'act2_network_initiation',
-    hint: 'Поговори с Трофимом на пирсе, затем — с бариста у стены стихов в кафе.',
+    hint: 'Пирс → частота → улица → стена кафе → jukebox → ритм города.',
     objectives: [
+      {
+        id: 'meet_trofim_pier',
+        description: 'Поговорить с Трофимом на пирсе',
+        type: 'npc_talked',
+        target: 'fisherman_trofim',
+        completed: false,
+      },
       {
         id: 'hear_pier_frequency',
         description: 'Услышать частоту реки у Трофима',
@@ -94,10 +168,31 @@ export const EXPANSION_HUB_QUESTS: QuestDefinition[] = [
         completed: false,
       },
       {
+        id: 'carry_frequency_street',
+        description: 'Пронести частоту через ночную улицу',
+        type: 'location_visited',
+        target: 'street_night',
+        completed: false,
+      },
+      {
+        id: 'reach_cafe_with_frequency',
+        description: 'Добраться до «Синей ямы» с записью частоты',
+        type: 'location_visited',
+        target: 'cafe_evening',
+        completed: false,
+      },
+      {
         id: 'match_cafe_wall',
         description: 'Сопоставить частоту со стеной стихов в кафе',
         type: 'flag_set',
         target: 'pier_cafe_frequency_matched',
+        completed: false,
+      },
+      {
+        id: 'feel_city_heartbeat',
+        description: 'Почувствовать совпадение ритма города',
+        type: 'flag_set',
+        target: 'pier_cafe_heartbeat_felt',
         completed: false,
       },
     ],
@@ -108,6 +203,11 @@ export const EXPANSION_HUB_QUESTS: QuestDefinition[] = [
       { type: 'addXp', value: 65 },
     ],
     linkedStoryNodeId: 'act2_pier_cafe_frequency_start',
+    linkedStoryNodeIds: [
+      'act2_pier_cafe_frequency_start',
+      'act2_pier_cafe_frequency_street',
+      'act2_pier_cafe_frequency_match',
+    ],
     questGiverNpcId: 'fisherman_trofim',
   },
   {
@@ -122,6 +222,13 @@ export const EXPANSION_HUB_QUESTS: QuestDefinition[] = [
     requiresQuests: ['act1_albert_alliance'],
     hint: 'Альберт в кафе — затем улица, пирс, ЧК и снова кафе.',
     objectives: [
+      {
+        id: 'accept_watch_brief',
+        description: 'Принять бриф дозора на салфетке у Альберта',
+        type: 'flag_set',
+        target: 'act2_night_city_watch_active',
+        completed: false,
+      },
       {
         id: 'watch_street_bench',
         description: 'Отметить ночную скамейку',
@@ -150,6 +257,13 @@ export const EXPANSION_HUB_QUESTS: QuestDefinition[] = [
         target: 'night_city_watch_reported',
         completed: false,
       },
+      {
+        id: 'burn_napkin_log',
+        description: 'Сжечь салфетку-лог после прочтения',
+        type: 'flag_set',
+        target: 'night_city_watch_napkin_burned',
+        completed: false,
+      },
     ],
     rewards: [
       { type: 'npcChange', npcId: 'albert', npcChange: { relation: 8 } },
@@ -157,6 +271,10 @@ export const EXPANSION_HUB_QUESTS: QuestDefinition[] = [
       { type: 'addXp', value: 90 },
     ],
     linkedStoryNodeId: 'act2_night_city_watch_start',
+    linkedStoryNodeIds: [
+      'act2_night_city_watch_start',
+      'act2_night_city_watch_report',
+    ],
     questGiverNpcId: 'albert',
   },
 ];

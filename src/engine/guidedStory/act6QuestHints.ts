@@ -93,20 +93,26 @@ export function getDataHeistHint(currentSceneId: string): string | null {
   return null;
 }
 
-/** Секретный архив (act6 side) — factory → decode → extract. */
+/** Секретный архив (act6 side) — hatch → door → decode → extract → seal. */
 export function getAct6SecretArchiveHint(currentSceneId: string): string | null {
   const quest = findActiveQuest('act6_secret_archive');
   if (!quest) return null;
-  if (!objectiveDone(quest, 'reach_secret_archive')) {
+  if (!objectiveDone(quest, 'find_hidden_hatch')) {
     return currentSceneId === 'abandoned_factory' || currentSceneId === 'factory_basement'
-      ? 'Скрытый вход к архиву на заводе — ищи глубже'
-      : 'Секретный архив под заброшенной фабрикой';
+      ? 'Скрытый люк под цехом — ищи гул «Голоса Улиц»'
+      : 'Секретный архив под заброшенной фабрикой — найди люк';
+  }
+  if (!objectiveDone(quest, 'open_archive_door')) {
+    return 'Открой дверь без ручки стихом «Голос Улиц»';
   }
   if (!objectiveDone(quest, 'decode_street_archive')) {
     return 'Расшифруй уличные записи — «Голос Улиц» ключ';
   }
   if (!objectiveDone(quest, 'extract_hidden_poems')) {
     return 'Извлеки спасённые стихи из архива до зачистки';
+  }
+  if (!objectiveDone(quest, 'seal_before_purge')) {
+    return 'Запечатай люк — не оставляй след для гильдии';
   }
   return null;
 }

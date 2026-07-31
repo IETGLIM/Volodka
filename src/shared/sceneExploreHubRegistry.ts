@@ -35,7 +35,7 @@ export const SCENE_EXPLORE_HUB_DEFS: readonly SceneExploreHubDef[] = [
     hubText:
       'Общая кухня пахнет чаем, вареньем и нафталином из шкафа. Радиоприёмник «Океан» шипит между станциями — Зарема называет это «голосом тех, кого Сеть не слышит». За окном — серые панели и неон; здесь, между плитой и столом, время идёт по часам, а не по NTP.',
     hubTextRevisit: 'Кухня. Чайник свистит. Радио шипит.',
-    entryNodeIds: ['kitchen_table', 'kitchen_window'],
+    entryNodeIds: ['kitchen_table', 'kitchen_window', 'bank_transfer_moral', 'banking_crash_verify'],
   },
   {
     hubId: 'cafe_explore_mode',
@@ -43,7 +43,17 @@ export const SCENE_EXPLORE_HUB_DEFS: readonly SceneExploreHubDef[] = [
     hubText:
       'Кафе «Синяя яма» — подвал с синими неоновыми трубками, запахом жжёного кофе и старым джазом из колонки без Bluetooth. Стены пропитаны поэтическим кодом: камеры слепнут, микрофоны глохнут. За стойкой — бариста с кибернетической рукой; в углу — Альберт, постукивающий пальцами в нервном ритме.',
     hubTextRevisit: 'Синяя яма. Мёртвая зона. Кофе горячий.',
-    entryNodeIds: ['go_to_cafe', 'cafe_enter'],
+    entryNodeIds: [
+      'go_to_cafe',
+      'cafe_enter',
+      'blind_spot_approach',
+      'poem_undercover_approach',
+      'poem_undercover_infiltrate',
+      'poem_undercover_identify',
+      'poem_undercover_extract',
+      'old_code',
+      'old_code_read',
+    ],
   },
   {
     hubId: 'office_explore_mode',
@@ -51,14 +61,14 @@ export const SCENE_EXPLORE_HUB_DEFS: readonly SceneExploreHubDef[] = [
     hubText:
       'Офис IT-гильдии — стекло, хром и тихий гул серверов за перегородкой. Терминалы мерцают, коллеги снуют между кабинками с глазами, уставшими от «НейроМоста». Где-то в глубине — кабинет Александра. Воздух пахнет озоном и страхом перед инцидентом #4729.',
     hubTextRevisit: 'Офис. Гул серверов. Александр где-то там.',
-    entryNodeIds: ['office_alexander'],
+    entryNodeIds: ['office_alexander', 'digital_ghost_approach', 'bank_transfer_culprit', 'blind_spot_confront'],
   },
   {
     hubId: 'street_winter_explore_mode',
     sceneId: 'street_winter',
     hubText:
       'Зимняя улица — снег хрустит под ногами, пар изо рта, редкие прохожие в тёплых шапках. Город кажется тише, но не менее опасным.',
-    entryNodeIds: [],
+    entryNodeIds: ['night_watch_child', 'night_watch_friend'],
   },
   {
     hubId: 'park_explore_mode',
@@ -74,7 +84,13 @@ export const SCENE_EXPLORE_HUB_DEFS: readonly SceneExploreHubDef[] = [
     hubText:
       'Библиотека — пыльные стеллажи, запах старой бумаги и тихий скрип половиц. На первом этаже — картотека, которую не оцифровали; на третьем — Запретный Фонд за решёткой. Между томами спрятаны истории, которые система пыталась стереть.',
     hubTextRevisit: 'Библиотека. Бумага не зависает.',
-    entryNodeIds: ['library_entrance', 'act7_library_archive'],
+    entryNodeIds: [
+      'library_entrance',
+      'act7_library_archive',
+      'archive_forgotten_approach',
+      'archive_forgotten_meet',
+      'archive_forgotten_save',
+    ],
   },
   {
     hubId: 'rooftop_explore_mode',
@@ -82,17 +98,24 @@ export const SCENE_EXPLORE_HUB_DEFS: readonly SceneExploreHubDef[] = [
     hubText:
       'Край крыши — ветер, огни города внизу и ощущение, что один шаг отделяет тебя от неба. «Высотники» на соседних крышах молчат; белый флаг с словом «ЖИВЫ» трепещет. Здесь слова звучат громче, чем в любой переговорке гильдии.',
     hubTextRevisit: 'Крыша. Ветер. Город как схема данных.',
-    entryNodeIds: ['act4_transition', 'act4_rooftop_broadcast', 'rooftop_of_the_world', 'act6_rooftop_showdown', 'solnysh_roof_arrival', 'solnysh_roof_afterglow'],
+    entryNodeIds: ['act4_transition', 'act4_rooftop_broadcast', 'rooftop_of_the_world', 'roof_of_the_world_approach', 'roof_of_the_world_ending', 'last_poem_approach', 'last_poem_recite', 'act6_rooftop_showdown', 'solnysh_roof_arrival', 'solnysh_roof_afterglow'],
   },
   {
     hubId: 'factory_explore_mode',
     sceneId: 'abandoned_factory',
-    entryNodeIds: ['abandoned_workshop', 'act2_network_initiation'],
+    entryNodeIds: [
+      'abandoned_workshop',
+      'act2_network_initiation',
+      'voice_of_the_past_approach',
+      'voice_of_the_past_listen_1',
+      'voice_of_the_past_listen_2',
+      'voice_of_the_past_listen_final',
+    ],
   },
   {
     hubId: 'basement_explore_mode',
     sceneId: 'factory_basement',
-    entryNodeIds: ['factory_basement', 'factory_basement_familiar'],
+    entryNodeIds: ['factory_basement', 'factory_basement_familiar', 'voices_of_factory_poem', 'voices_of_factory_protect'],
   },
   {
     hubId: 'chk_explore_mode',

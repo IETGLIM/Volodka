@@ -231,8 +231,11 @@ export const STORY_NODES_ACT1_CAFE_OFFICE: Record<string, StoryNode> = {
         text: 'Запомнить строку и выйти в зал',
         next: 'cafe_explore_mode',
         effects: [
-          { type: 'setFlag', flag: 'cafe_backroom_echo_heard', flagValue: true },
+          { type: 'setFlag', flag: 'asked_special_coffee', flagValue: true },
           { type: 'setFlag', flag: 'noticed_cafe_backroom', flagValue: true },
+          { type: 'setFlag', flag: 'cafe_backroom_entered', flagValue: true },
+          { type: 'setFlag', flag: 'cafe_backroom_echo_heard', flagValue: true },
+          { type: 'setFlag', flag: 'cafe_backroom_secret_kept', flagValue: true },
           { type: 'triggerQuest', questId: 'cafe_backroom_echo' },
           { type: 'addSkill', skill: 'writing', value: 1 },
           { type: 'collectPoem', poemId: 'poem_7' },
@@ -242,7 +245,9 @@ export const STORY_NODES_ACT1_CAFE_OFFICE: Record<string, StoryNode> = {
         text: 'Пойти к баристе — пора в офис',
         next: 'cafe_barista',
         effects: [
+          { type: 'setFlag', flag: 'asked_special_coffee', flagValue: true },
           { type: 'setFlag', flag: 'noticed_cafe_backroom', flagValue: true },
+          { type: 'setFlag', flag: 'cafe_backroom_entered', flagValue: true },
           { type: 'addStat', stat: 'stress', value: -2 },
         ],
       },

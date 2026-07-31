@@ -544,6 +544,16 @@ export const ACT6_STRUCTURE: Record<string, StoryNodeStructure> = {
             "flagValue": true
           },
           {
+            "type": "setFlag",
+            "flag": "three_defectors_recruited",
+            "flagValue": true
+          },
+          {
+            "type": "setFlag",
+            "flag": "resistance_network_established",
+            "flagValue": true
+          },
+          {
             "type": "triggerQuest",
             "questId": "data_heist"
           }
@@ -559,6 +569,16 @@ export const ACT6_STRUCTURE: Record<string, StoryNodeStructure> = {
           {
             "type": "setFlag",
             "flag": "resistance_joined",
+            "flagValue": true
+          },
+          {
+            "type": "setFlag",
+            "flag": "three_defectors_recruited",
+            "flagValue": true
+          },
+          {
+            "type": "setFlag",
+            "flag": "resistance_network_established",
             "flagValue": true
           },
           {
@@ -582,6 +602,11 @@ export const ACT6_STRUCTURE: Record<string, StoryNodeStructure> = {
       {
         "type": "setFlag",
         "flag": "three_defectors_recruited",
+        "flagValue": true
+      },
+      {
+        "type": "setFlag",
+        "flag": "resistance_network_established",
         "flagValue": true
       }
     ],

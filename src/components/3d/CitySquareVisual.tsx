@@ -18,6 +18,12 @@ import { disposeClonedScene, createSourceSkipSet } from '@/engine/three/disposeT
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
 import {
+  allowsSelectiveMeshPhysicalWet,
+  getWetGlassPhysicalParams,
+  getWetPuddlePhysicalParams,
+} from '@/engine/graphics/wetStreetScenes';
+import { useIsMobileVisual } from '@/hooks/use-mobile';
+import {
   getSharedBoxGeometry,
   getSharedCircleGeometry,
   getSharedCylinderGeometry,
@@ -253,9 +259,29 @@ export function CitySquareVisual(_props: CitySquareVisualProps) {
   const plaqueRef = useRef<THREE.Mesh>(null);
   const tRef = useRef(0);
   const rainIntensity = useGameStore((s) => s.rainIntensity);
-  const { preset } = useGraphicsQuality();
+  const { preset, selectedPreset } = useGraphicsQuality();
+  const coarsePointer = useIsMobileVisual();
   const useAuthoredDressing = allowsGlbAssetRendering(preset.environmentRenderMode);
   const useHighUltraAuthored = !preset.visualLite;
+  const usePhysicalWet = allowsSelectiveMeshPhysicalWet('city_square', selectedPreset, {
+    coarsePointer,
+  });
+  const wetGlass = useMemo(() => getWetGlassPhysicalParams('plazaFacade'), []);
+  const wetNeon = useMemo(() => getWetGlassPhysicalParams('neonFascia'), []);
+  const wetPuddle = useMemo(
+    () => getWetPuddlePhysicalParams(rainIntensity),
+    [rainIntensity],
+  );
+  const plazaPuddles = useMemo(
+    () =>
+      [
+        { pos: [-3.2, 2.4] as const, r: 0.85 },
+        { pos: [4.1, -1.8] as const, r: 0.62 },
+        { pos: [-5.5, -5.2] as const, r: 0.48 },
+        { pos: [2.8, 6.1] as const, r: 0.55 },
+      ] as const,
+    [],
+  );
 
   const benches = useMemo(
     () =>
@@ -307,6 +333,33 @@ export function CitySquareVisual(_props: CitySquareVisualProps) {
         size={Math.max(W, D)}
         groundColor="#2a2e38"
       />
+
+      {/* Selective wet asphalt puddles — MeshPhysical clearcoat, few discs only. */}
+      {usePhysicalWet && rainIntensity > 0.08
+        ? plazaPuddles.map((p, i) => (
+            <mesh
+              key={`plaza-puddle-${i}`}
+              rotation-x={-Math.PI / 2}
+              position={[p.pos[0], 0.012, p.pos[1]]}
+              geometry={getSharedCircleGeometry(p.r, 16)}
+              renderOrder={2}
+            >
+              <meshPhysicalMaterial
+                color="#1a2230"
+                roughness={wetPuddle.roughness}
+                metalness={wetPuddle.metalness}
+                clearcoat={wetPuddle.clearcoat}
+                clearcoatRoughness={wetPuddle.clearcoatRoughness}
+                transparent
+                opacity={wetPuddle.opacity}
+                depthWrite={false}
+                polygonOffset
+                polygonOffsetFactor={1}
+                polygonOffsetUnits={1}
+              />
+            </mesh>
+          ))
+        : null}
 
       {/* Plaza ring + tram rail hints — hidden on high/ultra where GLTF landmark/dressing carries the center read. */}
       {useHighUltraAuthored ? (
@@ -410,11 +463,27 @@ export function CitySquareVisual(_props: CitySquareVisualProps) {
       ].map((b, i) => (
         <group key={i} position={b.pos}>
           <mesh castShadow geometry={getSharedBoxGeometry(b.size[0], b.size[1], b.size[2])} material={matStone} />
-          <mesh
-            position={[0, 0.75, 0.55]}
-            geometry={getSharedBoxGeometry(b.size[0] * 0.8, 0.08, 0.06)}
-            material={i % 2 === 0 ? matNeonCyan : matNeonMagenta}
-          />
+          {usePhysicalWet ? (
+            <mesh position={[0, 0.75, 0.55]} geometry={getSharedBoxGeometry(b.size[0] * 0.8, 0.08, 0.06)}>
+              <meshPhysicalMaterial
+                color="#101018"
+                emissive={i % 2 === 0 ? '#00e5ff' : '#ff4488'}
+                emissiveIntensity={0.72}
+                roughness={wetNeon.roughness}
+                metalness={wetNeon.metalness}
+                transmission={wetNeon.transmission}
+                thickness={wetNeon.thickness}
+                clearcoat={wetNeon.clearcoat}
+                clearcoatRoughness={wetNeon.clearcoatRoughness}
+              />
+            </mesh>
+          ) : (
+            <mesh
+              position={[0, 0.75, 0.55]}
+              geometry={getSharedBoxGeometry(b.size[0] * 0.8, 0.08, 0.06)}
+              material={i % 2 === 0 ? matNeonCyan : matNeonMagenta}
+            />
+          )}
           <mesh position={[0, 0.05, 0]} geometry={getSharedBoxGeometry(b.size[0] + 0.4, 0.08, b.size[2] + 0.35)} material={matCurb} />
         </group>
       )) : null}
@@ -445,13 +514,38 @@ export function CitySquareVisual(_props: CitySquareVisualProps) {
         [-11, 3.5, 13],
         [11, 4.5, 12],
       ].map(([x, h, z], i) => (
-        <mesh
-          key={`facade-${i}`}
-          renderOrder={2}
-          position={[x, h / 2, z]}
-          geometry={getSharedBoxGeometry(4.5, h, 0.35)}
-          material={matGlass}
-        />
+        usePhysicalWet ? (
+          <mesh
+            key={`facade-${i}`}
+            renderOrder={2}
+            position={[x, h / 2, z]}
+            geometry={getSharedBoxGeometry(4.5, h, 0.35)}
+          >
+            <meshPhysicalMaterial
+              color="#88aacc"
+              roughness={wetGlass.roughness}
+              metalness={wetGlass.metalness}
+              transmission={wetGlass.transmission}
+              thickness={wetGlass.thickness}
+              clearcoat={wetGlass.clearcoat}
+              clearcoatRoughness={wetGlass.clearcoatRoughness}
+              transparent
+              opacity={wetGlass.opacity}
+              depthWrite={false}
+              polygonOffset
+              polygonOffsetFactor={-1}
+              polygonOffsetUnits={-1}
+            />
+          </mesh>
+        ) : (
+          <mesh
+            key={`facade-${i}`}
+            renderOrder={2}
+            position={[x, h / 2, z]}
+            geometry={getSharedBoxGeometry(4.5, h, 0.35)}
+            material={matGlass}
+          />
+        )
       )) : null}
 
       {/* Corner bollards */}

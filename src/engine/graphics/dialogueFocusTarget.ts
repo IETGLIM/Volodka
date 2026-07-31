@@ -44,7 +44,8 @@ class DialogueFocusTargetStore {
       const group = getNPCGroup(npcId);
       if (group) {
         if (!this.cachedPosition) this.cachedPosition = new THREE.Vector3();
-        this.cachedPosition.copy(group.position);
+        // World space — NPC roots may sit under scene transform parents.
+        group.getWorldPosition(this.cachedPosition);
       } else {
         // NPC group not registered yet — keep position null, but stay active.
         this.cachedPosition = null;
@@ -62,7 +63,7 @@ class DialogueFocusTargetStore {
     const group = getNPCGroup(this.npcId);
     if (!group) return false;
     if (!this.cachedPosition) this.cachedPosition = new THREE.Vector3();
-    this.cachedPosition.copy(group.position);
+    group.getWorldPosition(this.cachedPosition);
     return true;
   }
 

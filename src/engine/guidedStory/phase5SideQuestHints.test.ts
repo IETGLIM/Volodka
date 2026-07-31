@@ -84,4 +84,20 @@ describe('phase5SideQuestHints', () => {
     });
     expect(getPoetsMonumentInscriptionHint('volodka_room')).toContain('Парк');
   });
+
+  it('poets monument — mid-beats after visit', () => {
+    quests.push({
+      questId: 'quest_act7_poets_monument_inscription',
+      status: 'active',
+      objectives: { visit_monument: true },
+    });
+    expect(getPoetsMonumentInscriptionHint('park_day')).toContain('табличк');
+    quests[0]!.objectives = {
+      visit_monument: true,
+      scrape_plate: true,
+      recall_names: true,
+      carve_names: true,
+    };
+    expect(getPoetsMonumentInscriptionHint('park_day')).toContain('тишину');
+  });
 });

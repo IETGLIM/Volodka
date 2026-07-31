@@ -188,14 +188,20 @@ export const STORY_NODES_ACT1_EXTENDED: Record<string, StoryNode> = {
         effects: [
           { type: 'addSkill', skill: 'intuition', value: 2 },
           { type: 'addKarma', value: 3 },
+          { type: 'setFlag', flag: 'corridor_letter_scheme_noted', flagValue: true },
           { type: 'setFlag', flag: 'corridor_letter_kept', flagValue: true },
+          { type: 'setFlag', flag: 'corridor_letter_choice_made', flagValue: true },
+          { type: 'setFlag', flag: 'corridor_letter_resolved', flagValue: true },
           { type: 'addItem', itemId: 'anonymous_letter', value: 1 },
         ],
       },
       {
         text: 'Показать Зареме — может, она знает почерк',
         next: 'zarema_letter_reaction',
-        effects: [{ type: 'transitionScene', sceneId: 'home_evening' }],
+        effects: [
+          { type: 'setFlag', flag: 'corridor_letter_scheme_noted', flagValue: true },
+          { type: 'transitionScene', sceneId: 'home_evening' },
+        ],
       },
     ],
   },
@@ -217,6 +223,9 @@ export const STORY_NODES_ACT1_EXTENDED: Record<string, StoryNode> = {
           { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 8 } },
           { type: 'addKarma', value: 5 },
           { type: 'setFlag', flag: 'corridor_letter_kept', flagValue: true },
+          { type: 'setFlag', flag: 'corridor_letter_zarema_warned', flagValue: true },
+          { type: 'setFlag', flag: 'corridor_letter_choice_made', flagValue: true },
+          { type: 'setFlag', flag: 'corridor_letter_resolved', flagValue: true },
           { type: 'addItem', itemId: 'anonymous_letter', value: 1 },
         ],
       },
@@ -252,7 +261,11 @@ export const STORY_NODES_ACT1_EXTENDED: Record<string, StoryNode> = {
       {
         text: 'Проигнорировать — слишком похоже на паранойю',
         next: 'corridor_explore_mode',
-        effects: [{ type: 'addStat', stat: 'stress', value: 3 }],
+        effects: [
+          { type: 'addStat', stat: 'stress', value: 3 },
+          // Still heard the whisper — ritual objective must not soft-lock on ignore.
+          { type: 'setFlag', flag: 'morning_ritual_intercom', flagValue: true },
+        ],
       },
     ],
   },
@@ -297,7 +310,7 @@ export const STORY_NODES_ACT1_EXTENDED: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Попробую настроить приёмник',
-        next: 'home_evening_explore_mode',
+        next: 'zarema_radio_tune',
         effects: [
           { type: 'triggerQuest', questId: 'zarema_radio' },
           { type: 'setFlag', flag: 'zarema_radio_quest_started', flagValue: true },
@@ -308,6 +321,24 @@ export const STORY_NODES_ACT1_EXTENDED: Record<string, StoryNode> = {
         text: 'Сейчас некогда — мне в кафе',
         next: 'kitchen_window',
         effects: [{ type: 'npcChange', npcId: 'zarema', npcChange: { relation: -2 } }],
+      },
+    ],
+  },
+
+  zarema_radio_tune: {
+    id: 'zarema_radio_tune',
+    text: 'Ты крутишь шкалу «Океана». Между «Маяком» и рекламой портвейна — узкая полоса, где шум становится ритмом. Не станция. Не помеха. Кто-то держит частоту открытой, пока гильдия спит.',
+    contextNote: 'Приёмник «Океан». Между станциями — полоса белого шума с ритмом.',
+    ambientSound: 'sounds/ambient/radio_static.ogg',
+    speaker: 'narrator',
+    sceneId: 'home_evening',
+    guidanceHint: 'Задержись на полосе между станциями.',
+    guidanceObjectiveType: 'complete_quest',
+    choices: [
+      {
+        text: 'Задержать настройку — слушать',
+        next: 'zarema_radio_success',
+        effects: [{ type: 'setFlag', flag: 'zarema_radio_band_found', flagValue: true }],
       },
     ],
   },
@@ -334,6 +365,7 @@ export const STORY_NODES_ACT1_EXTENDED: Record<string, StoryNode> = {
           { type: 'addKarma', value: 5 },
           { type: 'addSkill', skill: 'intuition', value: 2 },
           { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 10 } },
+          { type: 'setFlag', flag: 'zarema_radio_band_found', flagValue: true },
           { type: 'setFlag', flag: 'zarema_radio_fixed', flagValue: true },
           { type: 'collectPoem', poemId: 'poem_16' },
         ],
@@ -381,13 +413,35 @@ export const STORY_NODES_ACT1_EXTENDED: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Принять вызов — какая загадка?',
-        next: 'cafe_albert_riddle',
-        effects: [{ type: 'triggerQuest', questId: 'alberts_lesson' }],
+        next: 'cafe_albert_napkin',
+        effects: [
+          { type: 'triggerQuest', questId: 'alberts_lesson' },
+          { type: 'setFlag', flag: 'albert_lesson_started', flagValue: true },
+        ],
       },
       {
         text: 'Мне некогда — инцидент ждёт',
         next: 'cafe_explore_mode',
         effects: [{ type: 'addStat', stat: 'stress', value: 2 }],
+      },
+    ],
+  },
+
+  cafe_albert_napkin: {
+    id: 'cafe_albert_napkin',
+    text: 'Салфетка пропитана кофе и чернилами. Строки кривые, но читаемые: `const truth = poem(); // не удалять`. Альберт стучит пальцем по комментарию: «Гильдия вычищает комментарии как шум. А это — стих, спрятанный в синтаксисе. Запомни салфетку — потом загадка.»',
+    contextNote: 'Салфетка с псевдокодом. Комментарий — стих.',
+    accessibilityAnnounce: 'Салфетка с кодом. Комментарий нельзя удалить.',
+    speaker: 'Альберт',
+    sceneId: 'cafe_evening',
+    guidanceNpcId: 'albert',
+    guidanceHint: 'Изучи салфетку — потом Альберт задаст загадку.',
+    guidanceObjectiveType: 'collect_item',
+    choices: [
+      {
+        text: 'Запомнить. Готов к загадке.',
+        next: 'cafe_albert_riddle',
+        effects: [{ type: 'setFlag', flag: 'albert_napkin_studied', flagValue: true }],
       },
     ],
   },
@@ -405,7 +459,7 @@ export const STORY_NODES_ACT1_EXTENDED: Record<string, StoryNode> = {
         text: 'Запомнил. Спасибо, Альберт.',
         next: 'cafe_explore_mode',
         effects: [
-          { type: 'setFlag', flag: 'albert_lesson_started', flagValue: true },
+          { type: 'setFlag', flag: 'albert_riddle_heard', flagValue: true },
           { type: 'npcChange', npcId: 'albert', npcChange: { relation: 5 } },
           { type: 'addSkill', skill: 'coding', value: 1 },
         ],
@@ -414,11 +468,13 @@ export const STORY_NODES_ACT1_EXTENDED: Record<string, StoryNode> = {
         text: 'Я уже видел truth в логах — вот ответ',
         next: 'cafe_albert_riddle_solved',
         condition: { flag: 'started_decryption' },
+        effects: [{ type: 'setFlag', flag: 'albert_riddle_heard', flagValue: true }],
       },
       {
         text: 'Стих в коде — я уже расшифровал',
         next: 'cafe_albert_riddle_solved',
         condition: { flag: 'found_first_poem' },
+        effects: [{ type: 'setFlag', flag: 'albert_riddle_heard', flagValue: true }],
       },
     ],
   },

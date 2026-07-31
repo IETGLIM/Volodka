@@ -591,6 +591,7 @@ export const DIALOGUE_PART3: Record<string, DialogueNode> = {
           { type: 'addSkill', skill: 'coding', value: 1 },
           { type: 'addSkill', skill: 'intuition', value: 1 },
           { type: 'setFlag', flag: 'barista_maria_hint', flagValue: true },
+          { type: 'setFlag', flag: 'barista_maria_confirmed', flagValue: true },
         ],
       },
       {
@@ -599,6 +600,7 @@ export const DIALOGUE_PART3: Record<string, DialogueNode> = {
         effects: [
           { type: 'addSkill', skill: 'persuasion', value: 1 },
           { type: 'npcChange', npcId: 'cafe_barista', npcChange: { relation: 3 } },
+          { type: 'setFlag', flag: 'barista_maria_confirmed', flagValue: true },
         ],
       },
     ],

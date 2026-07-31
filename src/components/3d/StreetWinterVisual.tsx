@@ -7,6 +7,7 @@ import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
 import { EnvironmentDetail, PropDistanceGate } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { createStreetWinterColdSkyTexture } from '@/engine/graphics/proceduralSkyTextures';
+import { getWinterIceSheenSettings } from '@/engine/graphics/wetStreetScenes';
 import { WetStreetGround } from './WetStreetGround';
 
 interface StreetWinterVisualProps {
@@ -17,6 +18,13 @@ interface StreetWinterVisualProps {
 export function StreetWinterVisual({ livePlayerPositionRef }: StreetWinterVisualProps) {
   const groundTexture = useCachedCanvasTexture('street_winter:ground', createWinterGroundTexture);
   const envProfile = useMemo(() => getEnvironmentLodProfile('street_winter'), []);
+  const iceSheen = useMemo(() => getWinterIceSheenSettings(), []);
+  const sidewalkRoughness = Math.max(0.14, iceSheen.dryRoughness - iceSheen.sheenBoost);
+  const sidewalkMetalness = Math.min(0.62, iceSheen.dryMetalness + iceSheen.sheenBoost);
+  const snowOverlayRoughness = Math.min(0.72, iceSheen.dryRoughness + 0.12);
+  const snowOverlayMetalness = Math.max(0.12, iceSheen.dryMetalness - 0.12);
+  const icePuddleRoughness = Math.max(0.06, iceSheen.dryRoughness - iceSheen.sheenBoost * 1.5);
+  const icePuddleMetalness = Math.min(0.72, iceSheen.dryMetalness + iceSheen.sheenBoost * 1.4);
 
   const W = 25;
   const D = 25;
@@ -36,8 +44,8 @@ export function StreetWinterVisual({ livePlayerPositionRef }: StreetWinterVisual
         <meshStandardMaterial
           map={groundTexture}
           color="#d0d8e8"
-          roughness={0.48}
-          metalness={0.22}
+          roughness={snowOverlayRoughness}
+          metalness={snowOverlayMetalness}
           transparent
           opacity={0.92}
           polygonOffset
@@ -46,13 +54,13 @@ export function StreetWinterVisual({ livePlayerPositionRef }: StreetWinterVisual
         />
       </mesh>
 
-      {/* ── Sidewalk ── */}
+      {/* ── Sidewalk — packed ice via getWinterIceSheenSettings ── */}
       <mesh rotation-x={-Math.PI / 2} position={[0, 0.02, 0]} receiveShadow>
         <planeGeometry args={[5, 30]} />
         <meshStandardMaterial
-          color="#c0c8d8"
-          roughness={0.4}
-          metalness={0.3}
+          color={iceSheen.groundColor}
+          roughness={sidewalkRoughness}
+          metalness={sidewalkMetalness}
           polygonOffset
           polygonOffsetFactor={1}
           polygonOffsetUnits={1}
@@ -109,7 +117,16 @@ export function StreetWinterVisual({ livePlayerPositionRef }: StreetWinterVisual
       ].map((pos, i) => (
         <mesh key={i} rotation-x={-Math.PI / 2} position={pos as [number, number, number]}>
           <circleGeometry args={[0.5 + i * 0.15, 12]} />
-          <meshStandardMaterial color="#8a9ab0" metalness={0.3} roughness={0.1} transparent opacity={0.5} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+          <meshStandardMaterial
+            color="#8a9ab0"
+            metalness={icePuddleMetalness}
+            roughness={icePuddleRoughness}
+            transparent
+            opacity={0.5}
+            polygonOffset
+            polygonOffsetFactor={1}
+            polygonOffsetUnits={1}
+          />
         </mesh>
       ))}
 

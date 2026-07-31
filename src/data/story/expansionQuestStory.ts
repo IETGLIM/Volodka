@@ -10,9 +10,65 @@ export const STORY_NODES_EXPANSION_QUESTS: Record<string, StoryNode> = {
     sceneId: 'cafe_evening',
     choices: [
       {
-        text: 'Продолжить глубокий разговор',
-        next: 'cafe_explore_mode',
+        text: 'Слушать условия',
+        next: 'act1_albert_alliance_terms',
         effects: [{ type: 'setFlag', flag: 'act1_albert_alliance_active', flagValue: true }],
+      },
+    ],
+  },
+
+  act1_albert_alliance_terms: {
+    id: 'act1_albert_alliance_terms',
+    text: '«Правила простые. Я делюсь логами, которые гильдия прячет в KPI. Ты не сдаёшь меня в тикет. Если улица шумит — ты уходишь первым. Если кафе горит — я остаюсь последним. И ещё: ничего в облако. Только живой разговор.»',
+    speaker: 'Альберт',
+    sceneId: 'cafe_evening',
+    choices: [
+      {
+        text: 'Принято. Проверю улицу',
+        next: 'act1_albert_alliance_street',
+        effects: [
+          { type: 'setFlag', flag: 'act1_albert_terms_agreed', flagValue: true },
+          { type: 'addKarma', value: 2 },
+        ],
+      },
+      {
+        text: 'Это слишком похоже на клятву Сети',
+        next: 'cafe_explore_mode',
+        effects: [{ type: 'addStat', stat: 'stress', value: 2 }],
+      },
+    ],
+  },
+
+  act1_albert_alliance_street: {
+    id: 'act1_albert_alliance_street',
+    text: 'Ночная улица мокрая. Скамейка пуста. В отражении витрины — ни патруля, ни чужого микрофона. Только пульс башни гильдии. Ты возвращаешься к кафе: условия проверены ногами, не скриптом.',
+    speaker: 'narrator',
+    sceneId: 'street_night',
+    choices: [
+      {
+        text: 'Вернуться в «Синюю яму»',
+        next: 'act1_albert_alliance_seal',
+        effects: [{ type: 'addSkill', skill: 'intuition', value: 1 }],
+      },
+    ],
+  },
+
+  act1_albert_alliance_seal: {
+    id: 'act1_albert_alliance_seal',
+    text: 'Альберт кивает, когда ты садишься. «Значит, улица чистая. Тогда — союз. Не дружба в Instagram. Не контракт. Просто: если город начнёт стирать строки — мы держим друг друга в исходнике.» Он чокается остывшим кофе.',
+    speaker: 'Альберт',
+    sceneId: 'cafe_evening',
+    choices: [
+      {
+        text: 'Закрепить союз',
+        next: 'cafe_explore_mode',
+        effects: [
+          { type: 'setFlag', flag: 'act1_albert_alliance_active', flagValue: true },
+          { type: 'setFlag', flag: 'act1_albert_terms_agreed', flagValue: true },
+          { type: 'setFlag', flag: 'act1_albert_alliance_done', flagValue: true },
+          { type: 'npcChange', npcId: 'albert', npcChange: { relation: 8 } },
+          { type: 'addXp', value: 40 },
+        ],
       },
     ],
   },
@@ -24,12 +80,48 @@ export const STORY_NODES_EXPANSION_QUESTS: Record<string, StoryNode> = {
     sceneId: 'cafe_evening',
     choices: [
       {
+        text: 'Начать с костра ЧК',
+        next: 'act2_archive_seven_chk_trace',
+        effects: [
+          { type: 'setFlag', flag: 'act2_archive_seven_active', flagValue: true },
+          { type: 'discoverLore', loreId: 'lore_archive_7_hint' },
+        ],
+      },
+      {
         text: 'Искать следы Архива-7',
         next: 'street_bench_view',
         effects: [
           { type: 'setFlag', flag: 'act2_archive_seven_active', flagValue: true },
           { type: 'discoverLore', loreId: 'lore_archive_7_hint' },
         ],
+      },
+    ],
+  },
+
+  act2_archive_seven_chk_trace: {
+    id: 'act2_archive_seven_chk_trace',
+    text: 'У костра Басед показывает обгоревший край листа: «Это не самиздат. Это индекс. Кто-то пометил Архив-7 как „удалён“, но огонь помнит checksum.» След один. Два других — стена кафе и серверная.',
+    speaker: 'Басед',
+    sceneId: 'chk_forest_zorge',
+    choices: [
+      {
+        text: 'Идти к стене «Синей ямы»',
+        next: 'act2_archive_seven_cafe_trace',
+        effects: [{ type: 'setFlag', flag: 'archive7_chk_trace', flagValue: true }],
+      },
+    ],
+  },
+
+  act2_archive_seven_cafe_trace: {
+    id: 'act2_archive_seven_cafe_trace',
+    text: 'На стене стихов — цифры между строками, как timestamp с ямбом. Бариста не смотрит: «Трофим сказал бы — река. Я скажу — архив. Третий кусок в серверной. Не в Slack.»',
+    speaker: 'Бариста',
+    sceneId: 'cafe_evening',
+    choices: [
+      {
+        text: 'К серверной офиса',
+        next: 'office_explore_mode',
+        effects: [{ type: 'setFlag', flag: 'archive7_cafe_trace', flagValue: true }],
       },
     ],
   },
@@ -52,6 +144,7 @@ export const STORY_NODES_EXPANSION_QUESTS: Record<string, StoryNode> = {
         text: 'Запомнить — и идти дальше',
         next: 'cafe_explore_mode',
         effects: [
+          { type: 'setFlag', flag: 'act2_archive_seven_active', flagValue: true },
           { type: 'setFlag', flag: 'act2_archive_seven_done', flagValue: true },
           { type: 'discoverLore', loreId: 'lore_archive_seven_truth' },
           { type: 'addSkill', skill: 'intuition', value: 2 },
@@ -70,8 +163,9 @@ export const STORY_NODES_EXPANSION_QUESTS: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Взять конверт',
-        next: 'street_bench_view',
+        next: 'act2_cafe_office_relay_street',
         effects: [
+          { type: 'setFlag', flag: 'cafe_relay_brief_heard', flagValue: true },
           { type: 'setFlag', flag: 'cafe_relay_envelope_taken', flagValue: true },
           { type: 'addItem', itemId: 'sealed_relay_envelope' },
           { type: 'discoverLore', loreId: 'lore_cafe_telegraph' },
@@ -80,7 +174,24 @@ export const STORY_NODES_EXPANSION_QUESTS: Record<string, StoryNode> = {
       {
         text: 'Отказаться — слишком рискованно',
         next: 'cafe_explore_mode',
-        effects: [{ type: 'addStat', stat: 'stress', value: 2 }],
+        effects: [
+          { type: 'setFlag', flag: 'cafe_relay_brief_heard', flagValue: true },
+          { type: 'addStat', stat: 'stress', value: 2 },
+        ],
+      },
+    ],
+  },
+
+  act2_cafe_office_relay_street: {
+    id: 'act2_cafe_office_relay_street',
+    text: 'Конверт жжёт карман сильнее, чем должен. На улице патруль «Ока» смотрит в телефоны — не в руки. Ты идёшь ногами, как просил бариста. Офис впереди: камеры моргают, но бумагу ещё не научили читать на лету.',
+    speaker: 'narrator',
+    sceneId: 'street_night',
+    choices: [
+      {
+        text: 'Войти в холл офиса',
+        next: 'office_explore_mode',
+        effects: [{ type: 'addSkill', skill: 'intuition', value: 1 }],
       },
     ],
   },
@@ -95,7 +206,10 @@ export const STORY_NODES_EXPANSION_QUESTS: Record<string, StoryNode> = {
         text: 'Принято. Я видел.',
         next: 'office_explore_mode',
         effects: [
+          { type: 'setFlag', flag: 'cafe_relay_brief_heard', flagValue: true },
+          { type: 'setFlag', flag: 'cafe_relay_envelope_taken', flagValue: true },
           { type: 'setFlag', flag: 'cafe_relay_envelope_delivered', flagValue: true },
+          { type: 'setFlag', flag: 'cafe_relay_second_sheet_read', flagValue: true },
           { type: 'npcChange', npcId: 'office_colleague', npcChange: { relation: 6 } },
           { type: 'discoverLore', loreId: 'lore_hub_relay_network' },
           { type: 'addXp', value: 45 },
@@ -113,7 +227,7 @@ export const STORY_NODES_EXPANSION_QUESTS: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Забрать пакет',
-        next: 'act2_exp_street_rain',
+        next: 'act2_street_chk_samizdat_patrol',
         effects: [
           { type: 'setFlag', flag: 'street_samizdat_received', flagValue: true },
           { type: 'addKarma', value: 2 },
@@ -124,6 +238,20 @@ export const STORY_NODES_EXPANSION_QUESTS: Record<string, StoryNode> = {
         text: 'Не сейчас — слишком горячо',
         next: 'street_bench_view',
         effects: [{ type: 'addStat', stat: 'stress', value: 3 }],
+      },
+    ],
+  },
+
+  act2_street_chk_samizdat_patrol: {
+    id: 'act2_street_chk_samizdat_patrol',
+    text: 'Переулок пахнет мокрым бетоном. Силуэт патруля «Ока» мелькает у угла — ты сворачиваешь раньше, чем они поднимают взгляд. Пакет не звенит. Листовки не кричат. Только шаги и дождь.',
+    speaker: 'narrator',
+    sceneId: 'street_night',
+    choices: [
+      {
+        text: 'Идти к костру ЧК',
+        next: 'act2_exp_street_rain',
+        effects: [{ type: 'setFlag', flag: 'street_samizdat_patrol_evaded', flagValue: true }],
       },
     ],
   },
@@ -142,7 +270,10 @@ export const STORY_NODES_EXPANSION_QUESTS: Record<string, StoryNode> = {
         text: 'Рад помочь',
         next: 'chk_explore_mode',
         effects: [
+          { type: 'setFlag', flag: 'street_samizdat_received', flagValue: true },
+          { type: 'setFlag', flag: 'street_samizdat_patrol_evaded', flagValue: true },
           { type: 'setFlag', flag: 'street_samizdat_delivered', flagValue: true },
+          { type: 'setFlag', flag: 'street_samizdat_archived', flagValue: true },
           { type: 'npcChange', npcId: 'chk_based', npcChange: { relation: 4 } },
           { type: 'collectPoem', poemId: 'poem_wall_handwritten' },
           { type: 'discoverLore', loreId: 'lore_banned_poetry_tapes' },
@@ -161,12 +292,26 @@ export const STORY_NODES_EXPANSION_QUESTS: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Записать частоту',
-        next: 'act2_exp_pier_sunrise_poem',
+        next: 'act2_pier_cafe_frequency_street',
         effects: [
           { type: 'setFlag', flag: 'pier_frequency_heard', flagValue: true },
           { type: 'addItem', itemId: 'node_coords_paper' },
           { type: 'npcChange', npcId: 'fisherman_trofim', npcChange: { relation: 3 } },
         ],
+      },
+    ],
+  },
+
+  act2_pier_cafe_frequency_street: {
+    id: 'act2_pier_cafe_frequency_street',
+    text: 'Цифры на крышке от бутылки стучат в карман, как метроном. Улица несёт тебя к «Синей яме»: не как курьера, а как провод. Частота ещё жива — пока не ушла в шум рекламы.',
+    speaker: 'narrator',
+    sceneId: 'street_night',
+    choices: [
+      {
+        text: 'Войти в кафе',
+        next: 'act2_pier_cafe_frequency_match',
+        effects: [{ type: 'addSkill', skill: 'rhythm', value: 1 }],
       },
     ],
   },
@@ -185,7 +330,9 @@ export const STORY_NODES_EXPANSION_QUESTS: Record<string, StoryNode> = {
         text: 'Запомнить ритм',
         next: 'cafe_explore_mode',
         effects: [
+          { type: 'setFlag', flag: 'pier_frequency_heard', flagValue: true },
           { type: 'setFlag', flag: 'pier_cafe_frequency_matched', flagValue: true },
+          { type: 'setFlag', flag: 'pier_cafe_heartbeat_felt', flagValue: true },
           { type: 'collectPoem', poemId: 'poem_river_frequency' },
           { type: 'discoverLore', loreId: 'lore_frequency_poem' },
           { type: 'addSkill', skill: 'rhythm', value: 1 },
@@ -220,7 +367,9 @@ export const STORY_NODES_EXPANSION_QUESTS: Record<string, StoryNode> = {
         text: 'Понял. Продолжаем.',
         next: 'cafe_explore_mode',
         effects: [
+          { type: 'setFlag', flag: 'act2_night_city_watch_active', flagValue: true },
           { type: 'setFlag', flag: 'night_city_watch_reported', flagValue: true },
+          { type: 'setFlag', flag: 'night_city_watch_napkin_burned', flagValue: true },
           { type: 'npcChange', npcId: 'albert', npcChange: { relation: 8 } },
           { type: 'discoverLore', loreId: 'lore_hub_relay_network' },
           { type: 'addXp', value: 90 },

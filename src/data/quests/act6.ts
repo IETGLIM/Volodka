@@ -63,6 +63,13 @@ export const QUESTS_ACT6: QuestDefinition[] = [
       { type: 'addXp', value: 350 },
     ],
     linkedStoryNodeId: 'act6_traitor_discovery',
+    linkedStoryNodeIds: [
+      'act6_factory_investigation',
+      'act6_traitor_discovery',
+      'act6_traitor_revealed',
+      'act6_office_confrontation',
+      'act6_dmitry_confession',
+    ],
     questGiverNpcId: 'maria',
   },
 
@@ -115,6 +122,10 @@ export const QUESTS_ACT6: QuestDefinition[] = [
       { type: 'addXp', value: 350 },
     ],
     linkedStoryNodeId: 'act6_resistance_formed',
+    linkedStoryNodeIds: [
+      'act6_resistance_formed',
+      'act6_resistance_briefing',
+    ],
     questGiverNpcId: 'maxim',
   },
 
@@ -179,6 +190,12 @@ export const QUESTS_ACT6: QuestDefinition[] = [
       { type: 'addXp', value: 400 },
     ],
     linkedStoryNodeId: 'act6_data_heist_planning',
+    linkedStoryNodeIds: [
+      'act6_data_heist_planning',
+      'act6_heist_execution',
+      'act6_heist_success',
+      'act6_escape_success',
+    ],
     questGiverNpcId: 'zeka',
   },
 
@@ -241,6 +258,13 @@ export const QUESTS_ACT6: QuestDefinition[] = [
       { type: 'addXp', value: 450 },
     ],
     linkedStoryNodeId: 'act6_nadzor_revealed',
+    linkedStoryNodeIds: [
+      'act6_nadzor_revealed',
+      'act6_infiltration_prep',
+      'act6_nadzor_battle',
+      'act6_battle_victory',
+      'act6_core_choice',
+    ],
     questGiverNpcId: 'zeka',
   },
 
@@ -294,6 +318,10 @@ export const QUESTS_ACT6: QuestDefinition[] = [
       { type: 'addXp', value: 500 },
     ],
     linkedStoryNodeId: 'act6_rooftop_showdown',
+    linkedStoryNodeIds: [
+      'act6_rooftop_showdown',
+      'act6_final_confrontation',
+    ],
     questGiverNpcId: 'maxim',
   },
 
@@ -301,21 +329,31 @@ export const QUESTS_ACT6: QuestDefinition[] = [
   {
     id: 'act6_secret_archive',
     title: 'Секретный архив',
-    description: 'Под заброшенной фабрикой спрятан архив, который гильдия не внесла в реестр. Без «Голоса Улиц» дверь не слышит. Нужно добраться, расшифровать записи и вынести стихи до зачистки.',
+    description:
+      'Под заброшенной фабрикой спрятан архив, который гильдия не внесла в реестр. Без «Голоса Улиц» дверь не слышит. Нужно найти люк, открыть дверь, расшифровать уличные записи, вынести стихи и запечатать следы до зачистки.',
     act: 6,
     faction: 'network',
     questType: 'side',
     difficulty: 'hard',
-    hint: 'Зарема или Виктория намекнут путь, если у тебя есть стих «Голос Улиц».',
+    hint: 'Фабрика — скрытый люк под цехом. Альберт или Виктория намекнут, если есть «Голос Улиц».',
     requiresQuests: ['underground_resistance'],
     requiredPoem: 'poem_11',
     objectives: [
       {
-        id: 'reach_secret_archive',
-        description: 'Найти скрытый вход к архиву на заброшенной фабрике',
-        type: 'location_visited',
-        target: 'abandoned_factory',
+        id: 'find_hidden_hatch',
+        description: 'Найти скрытый люк к архиву под цехом',
+        type: 'flag_set',
+        target: 'act6_secret_archive_active',
         completed: false,
+      },
+      {
+        id: 'open_archive_door',
+        description: 'Открыть дверь архива стихом «Голос Улиц»',
+        type: 'flag_set',
+        target: 'act6_secret_archive_opened',
+        completed: false,
+        poemPowerBypass: 'poem_11',
+        poemPowerHint: '«Голос Улиц» откроет дверь без ручки',
       },
       {
         id: 'decode_street_archive',
@@ -333,6 +371,13 @@ export const QUESTS_ACT6: QuestDefinition[] = [
         target: 'act6_secret_archive_saved',
         completed: false,
       },
+      {
+        id: 'seal_before_purge',
+        description: 'Запечатать люк до зачистки гильдии',
+        type: 'flag_set',
+        target: 'act6_secret_archive_sealed',
+        completed: false,
+      },
     ],
     rewards: [
       { type: 'addSkill', skill: 'writing', value: 4 },
@@ -341,7 +386,15 @@ export const QUESTS_ACT6: QuestDefinition[] = [
       { type: 'setFlag', flag: 'act6_secret_archive_done', flagValue: true },
       { type: 'addXp', value: 280 },
     ],
-    linkedStoryNodeId: 'act6_factory_investigation',
+    linkedStoryNodeId: 'act6_secret_archive_start',
+    linkedStoryNodeIds: [
+      'act6_secret_archive_approach',
+      'act6_secret_archive_start',
+      'act6_secret_archive_door',
+      'act6_secret_archive_decode',
+      'act6_secret_archive_extract',
+      'act6_secret_archive_seal',
+    ],
     questGiverNpcId: 'zarema',
   },
 

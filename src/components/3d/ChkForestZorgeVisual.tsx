@@ -56,8 +56,9 @@ export function ChkForestZorgeVisual({
     () => getEnvironmentLodProfile(sceneId === 'chk_campfire_night' ? 'chk_campfire_night' : 'chk_forest_zorge'),
     [sceneId],
   );
-  const damp = useMemo(() => getIndustrialDampFloorSettings('chk_campfire_night'), []);
-  const showCampfireDamp = sceneId === 'chk_campfire_night' && damp != null;
+  const dampSceneId: SceneId =
+    sceneId === 'chk_campfire_night' ? 'chk_campfire_night' : 'chk_forest_zorge';
+  const damp = useMemo(() => getIndustrialDampFloorSettings(dampSceneId), [dampSceneId]);
   const fireLightRef = useRef<THREE.PointLight>(null);
   const fireMeshRef = useRef<THREE.Mesh>(null);
   const tRef = useRef(0);
@@ -96,22 +97,75 @@ export function ChkForestZorgeVisual({
     <group>
       <SceneBackdropShell sceneId={backdropSceneId} />
 
-      {/* Ground — mossy clearing */}
+      {/* Ground — mossy clearing with snow-dew damp sheen */}
       <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={useAuthoredBackdrop ? 0.012 : 0.001} geometry={getSharedPlaneGeometry(W, D)}>
         <meshStandardMaterial
           map={groundTexture}
           color="#2a4a22"
-          roughness={0.95}
+          roughness={damp?.roughness ?? 0.95}
+          metalness={damp?.metalness ?? 0}
           polygonOffset
           polygonOffsetFactor={1}
           polygonOffsetUnits={1}
         />
       </mesh>
 
-      {/* Dirt path from north edge */}
+      {/* Dirt path from north edge — frost/dew polish */}
       <mesh rotation-x={-Math.PI / 2} position={[0, 0.015, -14]} receiveShadow geometry={getSharedPlaneGeometry(2.2, 8)}>
-        <meshStandardMaterial color="#4a3a28" roughness={1} />
+        <meshStandardMaterial
+          color="#4a3a28"
+          roughness={damp ? Math.max(0.55, damp.roughness - 0.08) : 1}
+          metalness={damp?.metalness ?? 0}
+        />
       </mesh>
+
+      {/* Selective dew / melt discs near fire + path (no planar reflector — snow hub) */}
+      {damp && (
+        <>
+          <EnvironmentDetail minLod="full" position={[-1.4, 0.018, 1.1]}>
+            <mesh rotation-x={-Math.PI / 2} position={[-1.4, 0.018, 1.1]} geometry={getSharedCircleGeometry(0.45, 12)}>
+              <meshStandardMaterial
+                color="#1a2218"
+                metalness={damp.oilMetalness}
+                roughness={damp.oilRoughness}
+                transparent
+                opacity={0.42}
+                polygonOffset
+                polygonOffsetFactor={1}
+                polygonOffsetUnits={1}
+              />
+            </mesh>
+          </EnvironmentDetail>
+          <EnvironmentDetail minLod="full" position={[1.6, 0.018, -0.9]}>
+            <mesh rotation-x={-Math.PI / 2} position={[1.6, 0.018, -0.9]} geometry={getSharedCircleGeometry(0.38, 12)}>
+              <meshStandardMaterial
+                color="#182018"
+                metalness={damp.oilMetalness}
+                roughness={damp.oilRoughness}
+                transparent
+                opacity={0.38}
+                polygonOffset
+                polygonOffsetFactor={1}
+                polygonOffsetUnits={1}
+              />
+            </mesh>
+          </EnvironmentDetail>
+          <EnvironmentDetail minLod="full" position={[0.2, 0.02, -12.5]}>
+            <mesh rotation-x={-Math.PI / 2} position={[0.2, 0.02, -12.5]} geometry={getSharedCircleGeometry(0.5, 12)}>
+              <meshStandardMaterial
+                color="#3a3428"
+                metalness={damp.oilMetalness * 0.85}
+                roughness={damp.oilRoughness}
+                transparent
+                opacity={0.35}
+                polygonOffset
+                polygonOffsetFactor={1}
+                polygonOffsetUnits={1}
+              />
+            </mesh>
+          </EnvironmentDetail>
+        </>
+      )}
 
       {/* Forest perimeter — lightweight procedural trees (no ez-tree bundle) */}
       {!hideProceduralForestBelt
@@ -162,16 +216,16 @@ export function ChkForestZorgeVisual({
       {/* Fallen logs, stumps and boulders along the clearing edge */}
       <ForestFloorClutter />
 
-      {/* Campfire ring */}
+      {/* Campfire ring — ash / damp ring on both forest + night campfire */}
       <group position={[0, 0, 0]}>
-        {showCampfireDamp && damp && (
+        {damp && (
           <mesh rotation-x={-Math.PI / 2} position={[0, 0.006, 0]} geometry={getSharedCircleGeometry(1.8, 24)}>
             <meshStandardMaterial
               color="#1a1814"
               metalness={damp.metalness}
               roughness={damp.roughness}
               transparent
-              opacity={0.55}
+              opacity={sceneId === 'chk_campfire_night' ? 0.55 : 0.4}
               polygonOffset
               polygonOffsetFactor={1}
               polygonOffsetUnits={1}

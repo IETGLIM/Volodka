@@ -48,7 +48,7 @@ export function PhysicsPlayerContactShadow({
       scale={[radiusX / 0.42, 1, radiusZ / 0.42]}
       renderOrder={-1}
     >
-      <circleGeometry args={[0.42, 32]} />
+      <circleGeometry args={[0.42, 48]} />
       <meshBasicMaterial
         map={shadowTexture}
         transparent

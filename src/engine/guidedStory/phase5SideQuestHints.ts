@@ -152,12 +152,16 @@ export function getBunkerCodePoemBreakHint(currentSceneId: string): string | nul
   const quest = findActiveQuest('quest_act5_bunker_code_poem_break');
   if (!quest) return null;
   if (!objectiveDone(quest, 'find_poem_key')) {
-    return currentSceneId === 'underground_bunker'
-      ? 'Терминал гильдейского шифра — ищи стих-ключ в leaking-потоке'
-      : 'Бункер — там терминал шифра «Солныш»';
+    return currentSceneId === 'factory_basement'
+      ? 'Leaking-поток — выдерни стихотворную строку-ключ'
+      : currentSceneId === 'underground_bunker'
+        ? 'Терминал гильдейского шифра — ищи стих-ключ в leaking-потоке'
+        : 'Бункер — там терминал шифра «Солныш»';
   }
   if (!objectiveDone(quest, 'break_encryption')) {
-    return 'Подставь стих-ключ и пробей шифр — один неверный ритм, и архив схлопнется';
+    return currentSceneId === 'underground_bunker'
+      ? 'Подставь стих-ключ и пробей шифр — один неверный ритм, и архив схлопнется'
+      : 'Вернись к терминалу в бункере со стих-ключом';
   }
   return null;
 }
@@ -180,17 +184,26 @@ export function getDefectorRescueExpandedHint(currentSceneId: string): string | 
   return null;
 }
 
-/** Имена на камне — visit → inscribe. */
+/** Имена на камне — visit → plate → recall → carve → inscribe. */
 export function getPoetsMonumentInscriptionHint(currentSceneId: string): string | null {
   const quest = findActiveQuest('quest_act7_poets_monument_inscription');
   if (!quest) return null;
   if (!objectiveDone(quest, 'visit_monument')) {
     return currentSceneId === 'park_day'
-      ? 'Обелиск без таблички — подойди ближе'
+      ? 'Обелиск с чужой табличкой — подойди ближе'
       : 'Парк — обелиск ждёт имён тех, кого помнишь';
   }
+  if (!objectiveDone(quest, 'scrape_plate')) {
+    return 'Соскреби гильдейскую табличку с обелиска';
+  }
+  if (!objectiveDone(quest, 'recall_names')) {
+    return 'Вспомни подписи из leaking-потока — кого стёрли';
+  }
+  if (!objectiveDone(quest, 'carve_names')) {
+    return 'Вырежи первые имена собственной рукой';
+  }
   if (!objectiveDone(quest, 'inscribe_names')) {
-    return 'Впиши имена погибших поэтов на камень — собственной рукой';
+    return 'Допиши последнюю строку и прими тишину парка';
   }
   return null;
 }

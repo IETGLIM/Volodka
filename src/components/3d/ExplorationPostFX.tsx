@@ -162,10 +162,13 @@ const SCENE_BLOOM: Record<string, { intensity: number; threshold: number; smooth
 };
 const DEFAULT_BLOOM = { intensity: 0.5, threshold: 0.7, smoothing: 0.5 };
 
-/** DOF focus distance for dialogue — third-person camera ~3m from subject */
-const DOF_DIALOGUE_FOCUS = 0.0;    // focus at camera depth (near subject)
+/** DOF — third-person dialogue focuses via world-space NPC target (autofocus).
+ *  Fallback focusDistance used only when no dialogueFocusTarget is resolved yet. */
+const DOF_DIALOGUE_FOCUS = 0.02;
 const DOF_DIALOGUE_BOKEH = 3;      // how many meters of depth are blurred
 const DOF_CUTSCENE_BOKEH = 2.5;
+/** Approximate NPC chest/face height for dialogue autofocus (meters). */
+const DOF_NPC_FOCUS_HEIGHT_M = 1.45;
 
 /** Check if the WebGL renderer context is fully initialized.
  *  postprocessing v6.39 EffectComposer.addPass() calls
@@ -501,6 +504,7 @@ function PostFXPipeline() {
 
   // Refs + transition state for smooth DOF bokehScale animation.
   const dofRef = useRef<DepthOfFieldEffect | null>(null);
+  const dofFocusTarget = useMemo(() => new THREE.Vector3(0, DOF_NPC_FOCUS_HEIGHT_M, -3), []);
   const dofTransitionRef = useRef({
     current: 0,
     target: 0,
@@ -515,6 +519,10 @@ function PostFXPipeline() {
 
     // Refresh the live NPC position from the registry (cheap).
     dialogueFocusTarget.refresh();
+    const npcPos = dialogueFocusTarget.peekPosition();
+    if (npcPos) {
+      dofFocusTarget.set(npcPos.x, npcPos.y + DOF_NPC_FOCUS_HEIGHT_M, npcPos.z);
+    }
 
     // Determine target bokehScale based on dialogue / cutscene state.
     const dialogueActive = dialogueFocusTarget.isActive() || isInDialogue;
@@ -636,6 +644,7 @@ function PostFXPipeline() {
       {wantsCinematicDOF ? (
         <DepthOfField
           ref={dofRef as any}
+          target={dofFocusTarget}
           focusDistance={DOF_DIALOGUE_FOCUS}
           focalLength={0.05}
           bokehScale={0}

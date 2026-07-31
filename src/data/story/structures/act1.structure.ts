@@ -171,6 +171,22 @@ export const ACT1_STRUCTURE: Record<string, StoryNodeStructure> = {
             "flagValue": true
           }
         ]
+      },
+      {
+        "text": "Прощальный круг — комната, где всё началось",
+        "next": "act7_legacy_walk",
+        "condition": {
+          "flag": "final_poem_published",
+          "missingFlag": "volodka_legacy_complete"
+        }
+      },
+      {
+        "text": "Записи о Виктории — дочитать в яме",
+        "next": "act3_maria_mystery",
+        "condition": {
+          "flag": "maria_truth_started",
+          "missingFlag": "found_maria_records"
+        }
       }
     ]
   },
@@ -259,6 +275,11 @@ export const ACT1_STRUCTURE: Record<string, StoryNodeStructure> = {
           {
             "type": "addKarma",
             "value": 2
+          },
+          {
+            "type": "setFlag",
+            "flag": "morning_ritual_bookshelf",
+            "flagValue": true
           }
         ]
       },
@@ -273,6 +294,11 @@ export const ACT1_STRUCTURE: Record<string, StoryNodeStructure> = {
             "type": "addSkill",
             "skill": "writing",
             "value": 1
+          },
+          {
+            "type": "setFlag",
+            "flag": "morning_ritual_bookshelf",
+            "flagValue": true
           }
         ]
       },
@@ -284,6 +310,11 @@ export const ACT1_STRUCTURE: Record<string, StoryNodeStructure> = {
             "type": "addSkill",
             "skill": "intuition",
             "value": 1
+          },
+          {
+            "type": "setFlag",
+            "flag": "morning_ritual_bookshelf",
+            "flagValue": true
           }
         ]
       }
@@ -535,6 +566,11 @@ export const ACT1_STRUCTURE: Record<string, StoryNodeStructure> = {
             "npcChange": {
               "relation": 5
             }
+          },
+          {
+            "type": "setFlag",
+            "flag": "morning_ritual_tea",
+            "flagValue": true
           }
         ]
       },
@@ -553,6 +589,11 @@ export const ACT1_STRUCTURE: Record<string, StoryNodeStructure> = {
             "type": "addStat",
             "stat": "stress",
             "value": -5
+          },
+          {
+            "type": "setFlag",
+            "flag": "morning_ritual_tea",
+            "flagValue": true
           }
         ]
       }
@@ -566,7 +607,14 @@ export const ACT1_STRUCTURE: Record<string, StoryNodeStructure> = {
       {
         "text": "",
         "next": "go_to_cafe",
-        "goldenPath": true
+        "goldenPath": true,
+        "effects": [
+          {
+            "type": "setFlag",
+            "flag": "morning_ritual_kitchen",
+            "flagValue": true
+          }
+        ]
       },
       {
         "text": "",
@@ -576,6 +624,11 @@ export const ACT1_STRUCTURE: Record<string, StoryNodeStructure> = {
             "type": "addStat",
             "stat": "energy",
             "value": 10
+          },
+          {
+            "type": "setFlag",
+            "flag": "morning_ritual_kitchen",
+            "flagValue": true
           }
         ]
       },
@@ -587,6 +640,11 @@ export const ACT1_STRUCTURE: Record<string, StoryNodeStructure> = {
             "type": "addSkill",
             "skill": "writing",
             "value": 1
+          },
+          {
+            "type": "setFlag",
+            "flag": "morning_ritual_kitchen",
+            "flagValue": true
           }
         ]
       }
@@ -754,6 +812,16 @@ export const ACT1_STRUCTURE: Record<string, StoryNodeStructure> = {
             "flagValue": true
           },
           {
+            "type": "setFlag",
+            "flag": "cafe_whisper_alley_approached",
+            "flagValue": true
+          },
+          {
+            "type": "setFlag",
+            "flag": "cafe_street_whisper_done",
+            "flagValue": true
+          },
+          {
             "type": "addKarma",
             "value": 2
           },
@@ -773,6 +841,30 @@ export const ACT1_STRUCTURE: Record<string, StoryNodeStructure> = {
             "value": 5
           }
         ]
+      },
+      {
+        "text": "Контакты сопротивления в тени",
+        "next": "act6_resistance_formed",
+        "condition": {
+          "flag": "traitor_fate_decided",
+          "missingFlag": "resistance_joined"
+        }
+      },
+      {
+        "text": "Брифинг сопротивления — Аня ждёт",
+        "next": "act6_resistance_briefing",
+        "condition": {
+          "flag": "resistance_joined",
+          "missingFlag": "three_defectors_recruited"
+        }
+      },
+      {
+        "text": "Люк в бункер сопротивления",
+        "next": "resistance_story_intro",
+        "condition": {
+          "flag": "zeka_trusted",
+          "missingFlag": "resistance_bunker_found"
+        }
       }
     ]
   },

@@ -32,11 +32,12 @@ const SCENE_FOG_COLORS: Record<string, string> = {
 
   // ─── CyberPunk2077 ───
   street_night:       '#323448', // gray rainy night haze
+  city_square:        '#2c3348', // cool plaza neon haze
   procedural_aaa:     '#2a3048',
 
   // ─── Gothic ───
   park_day:           '#2a3828', // misty green-gray (Gothic forest)
-  abandoned_factory:  '#1a1008', // dark rust (Gothic industrial)
+  abandoned_factory:  '#181008', // bunker-approach exterior — soot + sodium
   factory_basement:   '#0a1410', // machine-core green-black
 
   // ─── Bank / IT Support ───
@@ -57,10 +58,13 @@ const SCENE_FOG_COLORS: Record<string, string> = {
 
   // ─── CHK forest ───
   chk_forest_zorge:   '#142018', // dark pine night mist
+  chk_campfire_night: '#1a1810', // fire-smoke haze
 
   // ─── Thin / outdoor hubs (visualSceneId roots) ───
   river_pier:         '#1a2830', // cold water mist vs warm pier lights
+  pier_evening:       '#1c2430', // dusk pier moisture
   solnysh_room:       '#1a140c', // warm domestic dusk
+  factory_roof:       '#1c140c', // rust dusk haze (overrides rooftop noir parent)
 };
 
 /** Background colors (deeper than fog for atmospheric depth).
@@ -71,20 +75,24 @@ const SCENE_BG_COLORS: Record<string, string> = {
   home_evening:       '#120c04',  // dark amber
   cafe_evening:       '#080c18',  // dark blue-black
   street_night:       '#1a1a2c',  // gray rainy night sky
+  city_square:        '#141824',  // cool plaza night void
   procedural_aaa:     '#121820',
   park_day:           '#101810',
-  abandoned_factory:  '#100804',
+  abandoned_factory:  '#0c0804',
   factory_basement:   '#060a08',
   office_day:         '#b0bcc8',
   guild_mainframe:    '#040c10',
   sleep_dream:        '#060210',
   battle:             '#0a0202',
   rooftop_edge:       '#100804',
+  factory_roof:       '#100804',
   street_winter:      '#7080a0',
   library_day:        '#1a1408',
   zarema_albert_room: '#100a04',
   chk_forest_zorge:   '#0c1810',
+  chk_campfire_night: '#0e1008',
   river_pier:         '#0e1820',
+  pier_evening:       '#0c141c',
   solnysh_room:       '#100c06',
 };
 
@@ -106,19 +114,23 @@ const SCENE_FOG_ANIM: Record<string, FogAnimConfig> = {
   volodka_corridor:   { pulseFreq: 0.06, nearAmplitude: 0.1, farAmplitude: 0.06, altFogColor: '#101828', colorShiftAmp: 0.22 },
   home_evening:       { pulseFreq: 0.06, nearAmplitude: 0.04, farAmplitude: 0.02, colorShiftAmp: 0 },
   street_night:       { pulseFreq: 0.05, nearAmplitude: 0.06, farAmplitude: 0.04, altFogColor: '#404458', colorShiftAmp: 0.18 },
+  city_square:        { pulseFreq: 0.05, nearAmplitude: 0.05, farAmplitude: 0.04, altFogColor: '#3a4458', colorShiftAmp: 0.16 },
   cafe_evening:       { pulseFreq: 0.07, nearAmplitude: 0.05, farAmplitude: 0.03, altFogColor: '#0d0818', colorShiftAmp: 0.15 },
   office_day:         { pulseFreq: 0.03, nearAmplitude: 0.02, farAmplitude: 0.01, altFogColor: '#b8c8dc', colorShiftAmp: 0.08 },
   guild_mainframe:    { pulseFreq: 0.05, nearAmplitude: 0.06, farAmplitude: 0.04, altFogColor: '#0a2830', colorShiftAmp: 0.14 },
-  library_day:        { pulseFreq: 0.02, nearAmplitude: 0.03, farAmplitude: 0.02, altFogColor: '#1a1810', colorShiftAmp: 0.06 },
+  library_day:        { pulseFreq: 0.03, nearAmplitude: 0.05, farAmplitude: 0.04, altFogColor: '#1a1810', colorShiftAmp: 0.1 },
   park_day:           { pulseFreq: 0.04, nearAmplitude: 0.12, farAmplitude: 0.1,  altFogColor: '#1a2a18', colorShiftAmp: 0.3 },
   battle:             { pulseFreq: 0.3,  nearAmplitude: 0.15, farAmplitude: 0.1,  altFogColor: '#200505', colorShiftAmp: 0.3 },
   sleep_dream:        { pulseFreq: 0.02, nearAmplitude: 0.2,  farAmplitude: 0.15, altFogColor: '#100830', colorShiftAmp: 0.4 },
   rooftop_edge:       { pulseFreq: 0.06, nearAmplitude: 0.08, farAmplitude: 0.06, altFogColor: '#1a1008', colorShiftAmp: 0.2 },
-  abandoned_factory:  { pulseFreq: 0.08, nearAmplitude: 0.12, farAmplitude: 0.1, altFogColor: '#1a1205', colorShiftAmp: 0.22 },
+  abandoned_factory:  { pulseFreq: 0.06, nearAmplitude: 0.1, farAmplitude: 0.08, altFogColor: '#221408', colorShiftAmp: 0.2 },
   factory_basement:   { pulseFreq: 0.06, nearAmplitude: 0.1, farAmplitude: 0.08, altFogColor: '#102018', colorShiftAmp: 0.2 },
-  street_winter:      { pulseFreq: 0.04, nearAmplitude: 0.1,  farAmplitude: 0.08, altFogColor: '#90a0b8', colorShiftAmp: 0.15 },
+  street_winter:      { pulseFreq: 0.045, nearAmplitude: 0.11, farAmplitude: 0.09, altFogColor: '#90a0b8', colorShiftAmp: 0.18 },
   zarema_albert_room: { pulseFreq: 0.05, nearAmplitude: 0.03, farAmplitude: 0.02, colorShiftAmp: 0 },
   chk_forest_zorge:   { pulseFreq: 0.03, nearAmplitude: 0.1, farAmplitude: 0.08, altFogColor: '#1a3020', colorShiftAmp: 0.2 },
+  river_pier:         { pulseFreq: 0.04, nearAmplitude: 0.08, farAmplitude: 0.06, altFogColor: '#243848', colorShiftAmp: 0.22 },
+  pier_evening:       { pulseFreq: 0.045, nearAmplitude: 0.07, farAmplitude: 0.05, altFogColor: '#2a3440', colorShiftAmp: 0.2 },
+  factory_roof:       { pulseFreq: 0.05, nearAmplitude: 0.09, farAmplitude: 0.07, altFogColor: '#2a1810', colorShiftAmp: 0.22 },
 };
 
 const DEFAULT_FOG_ANIM: FogAnimConfig = { pulseFreq: 0.05, nearAmplitude: 0.05, farAmplitude: 0.03, colorShiftAmp: 0 };
@@ -128,19 +140,34 @@ const DEFAULT_FOG_ANIM: FogAnimConfig = { pulseFreq: 0.05, nearAmplitude: 0.05, 
  *  obscure gameplay but adds atmospheric distance fade.
  *  Replaces the linear <fog> attach for these scenes only. */
 const OUTDOOR_EXP_FOG_DENSITY: Record<string, number> = {
-  park_day:         0.018,  // subtle forest mist
-  rooftop_edge:     0.020,  // city haze at sunset
-  river_pier:       0.022,  // water mist over the river
-  chk_forest_zorge: 0.020,  // forest depth
-  street_night:     0.020,  // rain haze
-  procedural_aaa:   0.024,
-  street_winter:    0.015,  // cold crisp air (less fog)
+  park_day:           0.018,  // subtle forest mist
+  rooftop_edge:       0.020,  // city haze at sunset
+  factory_roof:       0.022,  // denser industrial dusk than parent rooftop
+  abandoned_factory:  0.021,  // bunker-approach exterior soot haze
+  river_pier:         0.022,  // water mist over the river
+  pier_evening:       0.021,  // dusk pier moisture
+  chk_forest_zorge:   0.020,  // forest depth
+  chk_campfire_night: 0.019,  // smoke-soft distance
+  street_night:       0.020,  // rain haze
+  city_square:        0.019,  // plaza neon depth
+  procedural_aaa:     0.024,
+  street_winter:      0.017,  // cold snow haze (slightly denser for depth)
 };
 
 const DEFAULT_OUTDOOR_EXP_FOG_DENSITY = 0.018;
 
 function isOutdoorExpFogScene(sceneId: string): boolean {
   return sceneId in OUTDOOR_EXP_FOG_DENSITY;
+}
+
+/** Prefer raw sceneId override, then derived visual parent (factory_roof → rooftop_edge). */
+function resolveSceneTableKey(
+  table: Record<string, unknown>,
+  sceneId: string,
+  visualSceneId: string,
+): string {
+  if (sceneId in table) return sceneId;
+  return visualSceneId;
 }
 
 /** Optimized scene environment: fog, background, environment preset, animated fog */
@@ -186,18 +213,24 @@ export function SceneEnvironment() {
   const fogFar = config.fogFar ?? 20;
 
   // Part 5: Outdoor scenes use FogExp2 for cinematic depth perception.
-  const useExpFog = isOutdoorExpFogScene(visualSceneId);
+  // Raw sceneId wins so factory_roof can densify beyond rooftop_edge parent.
+  const fogLookupId = resolveSceneTableKey(OUTDOOR_EXP_FOG_DENSITY, sceneId, visualSceneId);
+  const useExpFog = isOutdoorExpFogScene(fogLookupId);
   const expFogDensity = useExpFog
-    ? (OUTDOOR_EXP_FOG_DENSITY[visualSceneId] ?? DEFAULT_OUTDOOR_EXP_FOG_DENSITY)
+    ? (OUTDOOR_EXP_FOG_DENSITY[fogLookupId] ?? DEFAULT_OUTDOOR_EXP_FOG_DENSITY)
     : 0;
+
+  const fogColorKey = resolveSceneTableKey(SCENE_FOG_COLORS, sceneId, visualSceneId);
+  const bgColorKey = resolveSceneTableKey(SCENE_BG_COLORS, sceneId, visualSceneId);
+  const fogAnimKey = resolveSceneTableKey(SCENE_FOG_ANIM, sceneId, visualSceneId);
 
   // Use style-pillar-matched fog colors, fall back to scene config ambient
   const fogColor = liftHexColor(
-    config.fog?.fogColor ?? SCENE_FOG_COLORS[visualSceneId] ?? config.ambientColor ?? '#1a1a2e',
+    config.fog?.fogColor ?? SCENE_FOG_COLORS[fogColorKey] ?? config.ambientColor ?? '#1a1a2e',
     SCENE_VISIBILITY.fogColorLift,
   );
   const bgColor = liftHexColor(
-    SCENE_BG_COLORS[visualSceneId] ?? fogColor,
+    SCENE_BG_COLORS[bgColorKey] ?? fogColor,
     SCENE_VISIBILITY.fogColorLift * 0.85,
   );
 
@@ -219,7 +252,7 @@ export function SceneEnvironment() {
   const envIntensity = getEnvironmentIntensity(visualSceneId, heroScene, preset.id, isIndoor);
 
   // Fog animation config
-  const fogAnim = SCENE_FOG_ANIM[visualSceneId] ?? DEFAULT_FOG_ANIM;
+  const fogAnim = SCENE_FOG_ANIM[fogAnimKey] ?? DEFAULT_FOG_ANIM;
 
   // Pre-compute fog color and alternate color as THREE.Color for blending
   const baseFogColor = useMemo(() => new THREE.Color(fogColor), [fogColor]);
@@ -307,10 +340,13 @@ function getEnvironmentIntensity(
     }
     return presetId === 'ultra' ? 0.34 : 0.28;
   }
-  if (sceneId === 'street_night') {
+  if (sceneId === 'street_night' || sceneId === 'city_square') {
     return presetId === 'ultra' ? 0.62 : 0.52;
   }
-  if (sceneId === 'cafe_evening' || sceneId === 'city_square') {
+  if (sceneId === 'river_pier' || sceneId === 'pier_evening') {
+    return presetId === 'ultra' ? 0.56 : 0.46;
+  }
+  if (sceneId === 'cafe_evening') {
     return presetId === 'ultra' ? 0.48 : 0.4;
   }
   if (heroScene) {

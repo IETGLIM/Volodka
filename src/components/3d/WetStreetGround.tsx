@@ -47,8 +47,12 @@ function WetStreetGroundPbr({
     && !reducedMotion
     && allowsHeavyGfxFeature(selectedPreset, 'reflector', { coarsePointer });
   const groundColor = groundColorOverride ?? (winterSheen?.groundColor ?? '#ffffff');
-  const dryRoughness = winterSheen?.dryRoughness ?? 0.85;
-  const dryMetalness = winterSheen?.dryMetalness ?? 0.05;
+  const dryRoughness = winterSheen
+    ? Math.max(0.12, winterSheen.dryRoughness - winterSheen.sheenBoost * 0.5)
+    : 0.85;
+  const dryMetalness = winterSheen
+    ? Math.min(0.7, winterSheen.dryMetalness + winterSheen.sheenBoost * 0.5)
+    : 0.05;
   const effectiveRain = isWinter ? 0 : rainIntensity;
   const mixStrength = scaleReflectorMixStrength(reflectorSettings.mixStrength, effectiveRain);
   const maps = usePolyHavenPbr(isWinter ? 'concrete_floor_painted' : 'asphalt_02', size / 60);
@@ -140,8 +144,12 @@ function WetStreetGroundProceduralFallback({
     && !reducedMotion
     && allowsHeavyGfxFeature(selectedPreset, 'reflector', { coarsePointer });
   const groundColor = groundColorOverride ?? (winterSheen?.groundColor ?? '#3a3a52');
-  const dryRoughness = winterSheen?.dryRoughness ?? 0.85;
-  const dryMetalness = winterSheen?.dryMetalness ?? 0.05;
+  const dryRoughness = winterSheen
+    ? Math.max(0.12, winterSheen.dryRoughness - winterSheen.sheenBoost * 0.5)
+    : 0.85;
+  const dryMetalness = winterSheen
+    ? Math.min(0.7, winterSheen.dryMetalness + winterSheen.sheenBoost * 0.5)
+    : 0.05;
   const effectiveRain = isWinter ? 0 : rainIntensity;
   const mixStrength = scaleReflectorMixStrength(reflectorSettings.mixStrength, effectiveRain);
   const wetMat = useWetSurfaceMaterial(groundColor, {

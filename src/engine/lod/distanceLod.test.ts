@@ -78,7 +78,8 @@ describe('extension scene env LOD profiles', () => {
     expect(getEnvironmentLodProfile('albert_backroom').clutterDistance).toBeLessThan(999);
     expect(getEnvironmentLodProfile('chk_campfire_night').clutterDistance).toBe(9);
     expect(getEnvironmentLodProfile('abandoned_factory').clutterDistance).toBe(11);
-    expect(getEnvironmentLodProfile('city_square').clutterDistance).toBe(15);
+    // city_square is hero-tier — detailDistanceScale 1.15 expands base clutter 15 → 17.25
+    expect(getEnvironmentLodProfile('city_square').clutterDistance).toBe(17.25);
     expect(getEnvironmentLodProfile('pier_evening').clutterDistance).toBe(11);
     expect(getEnvironmentLodProfile('river_pier').clutterDistance).toBe(11);
     expect(getEnvironmentLodProfile('factory_basement').clutterDistance).toBe(8);

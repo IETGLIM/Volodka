@@ -497,12 +497,14 @@ function NPCContactShadow() {
       rotation-x={-Math.PI / 2}
       position={[0, 0.005, 0]}
     >
-      <circleGeometry args={[0.35, 16]} />
+      <circleGeometry args={[0.35, 24]} />
       <meshBasicMaterial
         map={shadowTexture}
         transparent
-        opacity={0.6}
+        opacity={0.55}
         depthWrite={false}
+        polygonOffset
+        polygonOffsetFactor={-1}
       />
     </mesh>
   );

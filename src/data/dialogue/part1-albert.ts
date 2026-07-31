@@ -79,6 +79,24 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
         effects: [{ type: 'visitStoryNode', nodeId: 'act2_night_city_watch_report' }],
       },
       {
+        text: 'Басед просил портвейн «777» — для леса.',
+        next: null,
+        condition: {
+          flag: 'chk_portwine_active',
+          missingFlag: 'chk_portwine_albert_asked',
+        },
+        effects: [{ type: 'visitStoryNode', nodeId: 'chk_portwine_albert_ask' }],
+      },
+      {
+        text: 'Забрать ящик «777» из подсобки',
+        next: null,
+        condition: {
+          flag: 'chk_portwine_albert_asked',
+          missingFlag: 'chk_portwine_carried',
+        },
+        effects: [{ type: 'visitStoryNode', nodeId: 'chk_portwine_pickup' }],
+      },
+      {
         text: 'Гильдия давит сильнее. Как сопротивляться словом?',
         next: 'albert_resistance',
         condition: { requiredAct: 3, minNpcRelation: 55 },
@@ -442,6 +460,16 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
         text: 'Город шепчет — ты слышишь?',
         next: 'zarema_street_voice',
         condition: { collectedPoem: 'poem_11' },
+      },
+      {
+        text: 'Про ноутбук и странный перевод…',
+        next: 'bank_transfer_approach',
+        condition: { flag: 'found_zarema_bank', missingFlag: 'bank_moral_choice_made' },
+      },
+      {
+        text: 'Банк снова зелёный — проверить вместе?',
+        next: 'banking_crash_verify',
+        condition: { flag: 'bash_terminal_solved', missingFlag: 'banking_system_recovered' },
       },
     ],
   },
@@ -1137,6 +1165,12 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
         next: 'dmitry_about_factory',
         condition: { requiredAct: 2, minNpcRelation: 45 },
       },
+      {
+        text: 'Логи Александра назвали тебя. Правда.',
+        next: null,
+        condition: { flag: 'traitor_revealed', missingFlag: 'traitor_fate_decided' },
+        effects: [{ type: 'visitStoryNode', nodeId: 'act6_office_confrontation' }],
+      },
     ],
   },
 
@@ -1373,6 +1407,16 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
         text: 'Трофим дал частоту с пирса — ты её ждал?',
         next: 'cafe_barista_frequency_match',
         condition: { flag: 'pier_frequency_heard', missingFlag: 'pier_cafe_frequency_matched' },
+      },
+      {
+        text: 'Виктория… кто она на самом деле? У тебя есть зацепки?',
+        next: 'barista_maria',
+        condition: {
+          requiredAct: 3,
+          flag: 'found_maria_records',
+          missingFlag: 'barista_maria_confirmed',
+        },
+        effects: [{ type: 'addSkill', skill: 'intuition', value: 1 }],
       },
     ],
   },
@@ -2103,6 +2147,30 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
     text: 'Снова за столом? Хорошо. Я как раз размышлял: если каждая строка кода — это предложение, то рекурсия — это рефрен. А ты? Вернулся — значит, вопрос не отпускает.',
     choices: [
       {
+        text: 'Басед просил портвейн «777» — для леса.',
+        next: null,
+        condition: {
+          flag: 'chk_portwine_active',
+          missingFlag: 'chk_portwine_albert_asked',
+        },
+        effects: [{ type: 'visitStoryNode', nodeId: 'chk_portwine_albert_ask' }],
+      },
+      {
+        text: 'Забрать ящик «777» из подсобки',
+        next: null,
+        condition: {
+          flag: 'chk_portwine_albert_asked',
+          missingFlag: 'chk_portwine_carried',
+        },
+        effects: [{ type: 'visitStoryNode', nodeId: 'chk_portwine_pickup' }],
+      },
+      {
+        text: 'Обход сделан. Везде «1».',
+        next: null,
+        condition: { flag: 'act2_night_city_watch_active', missingFlag: 'night_city_watch_reported' },
+        effects: [{ type: 'visitStoryNode', nodeId: 'act2_night_city_watch_report' }],
+      },
+      {
         text: 'Расскажи ещё о связи кода и стихов.',
         next: 'albert_greeting_poetry',
         effects: [{ type: 'addSkill', skill: 'intuition', value: 1 }],
@@ -2164,6 +2232,16 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
           { type: 'addKarma', value: 2 },
           { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 1 } },
         ],
+      },
+      {
+        text: 'Про ноутбук и странный перевод…',
+        next: 'bank_transfer_approach',
+        condition: { flag: 'found_zarema_bank', missingFlag: 'bank_moral_choice_made' },
+      },
+      {
+        text: 'Банк снова зелёный — проверить вместе?',
+        next: 'banking_crash_verify',
+        condition: { flag: 'bash_terminal_solved', missingFlag: 'banking_system_recovered' },
       },
       {
         text: 'Увидимся, Зарема.',

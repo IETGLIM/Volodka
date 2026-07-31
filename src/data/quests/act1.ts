@@ -147,12 +147,12 @@ export const QUESTS_ACT1: QuestDefinition[] = [
     id: 'cafe_street_whisper',
     title: 'Шёпот за стойкой',
     description:
-      'В «Синей яме» бариста знает тех, кто не заказывает кофе. Спроси про ночных гостей — и выйди на улицу: силуэт в переулке уже смотрит на тебя.',
+      'В «Синей яме» бариста знает тех, кто не заказывает кофе. Спроси про ночных гостей, запомни намёк, выйди на улицу и заметь силуэт в переулке — город уже смотрит на тебя.',
     act: 1,
     faction: undefined,
     questType: 'side',
     difficulty: 'easy',
-    hint: 'Стойка кафе → вопрос про необычных клиентов → переулок у подъезда.',
+    hint: 'Стойка кафе → вопрос про необычных клиентов → улица → переулок у подъезда.',
     requiresQuests: ['first_reading'],
     objectives: [
       {
@@ -163,10 +163,31 @@ export const QUESTS_ACT1: QuestDefinition[] = [
         completed: false,
       },
       {
+        id: 'leave_cafe_with_whisper',
+        description: 'Выйти из кафе с намёком баристы',
+        type: 'location_visited',
+        target: 'street_night',
+        completed: false,
+      },
+      {
+        id: 'approach_alley',
+        description: 'Подойти к переулку у подъезда',
+        type: 'flag_set',
+        target: 'cafe_whisper_alley_approached',
+        completed: false,
+      },
+      {
         id: 'spot_alley_silhouette',
         description: 'Заметить силуэт Виктории в переулке',
         type: 'flag_set',
         target: 'spotted_maria',
+        completed: false,
+      },
+      {
+        id: 'connect_whisper_to_city',
+        description: 'Связать шёпот стойки с пульсом улицы',
+        type: 'flag_set',
+        target: 'cafe_street_whisper_done',
         completed: false,
       },
     ],
@@ -682,18 +703,40 @@ export const QUESTS_ACT1: QuestDefinition[] = [
   {
     id: 'alberts_lesson',
     title: 'Урок Альберта',
-    description: 'Альберт утверждает, что код и поэзия — две стороны одного таланта. Он предлагает научить тебя особым приёмам программирования, если ты докажешь, что видишь глубже поверхности.',
+    description:
+      'Альберт утверждает, что код и поэзия — две стороны одного таланта. Прими урок, изучи салфетку-псевдокод, услышь загадку, разгадай её и докажи связь — сохрани «Прорыв».',
     act: 1,
     faction: 'neutral',
     questType: 'side',
     difficulty: 'medium',
-    hint: 'Код и стих — один язык. Покажи Альберту, что понимаешь оба.',
+    hint: 'Кафе → Альберт → салфетка → загадка → ответ → «Прорыв».',
     objectives: [
       {
         id: 'talk_albert_lesson',
         description: 'Поговорить с Альбертом в кафе',
         type: 'npc_talked',
         target: 'albert',
+        completed: false,
+      },
+      {
+        id: 'accept_albert_lesson',
+        description: 'Принять вызов Альберта',
+        type: 'flag_set',
+        target: 'albert_lesson_started',
+        completed: false,
+      },
+      {
+        id: 'study_albert_napkin',
+        description: 'Изучить салфетку с псевдокодом',
+        type: 'flag_set',
+        target: 'albert_napkin_studied',
+        completed: false,
+      },
+      {
+        id: 'hear_albert_riddle',
+        description: 'Выслушать кодовую загадку',
+        type: 'flag_set',
+        target: 'albert_riddle_heard',
         completed: false,
       },
       {
@@ -712,6 +755,13 @@ export const QUESTS_ACT1: QuestDefinition[] = [
         target: 'proved_poetry_code_link',
         completed: false,
       },
+      {
+        id: 'keep_breakthrough_poem',
+        description: 'Сохранить стих «Прорыв»',
+        type: 'poem_collected',
+        target: 'poem_8',
+        completed: false,
+      },
     ],
     rewards: [
       { type: 'addSkill', skill: 'coding', value: 4 },
@@ -720,7 +770,13 @@ export const QUESTS_ACT1: QuestDefinition[] = [
       { type: 'setFlag', flag: 'albert_trained', flagValue: true },
       { type: 'addXp', value: 100 },
     ],
-    linkedStoryNodeId: 'cafe_enter',
+    linkedStoryNodeId: 'cafe_albert_lesson_intro',
+    linkedStoryNodeIds: [
+      'cafe_albert_lesson_intro',
+      'cafe_albert_napkin',
+      'cafe_albert_riddle',
+      'cafe_albert_riddle_solved',
+    ],
     questGiverNpcId: 'albert',
   },
 
@@ -728,18 +784,33 @@ export const QUESTS_ACT1: QuestDefinition[] = [
   {
     id: 'corridor_letter',
     title: 'Письмо без адреса',
-    description: 'В почтовом ящике — конверт без марки и обратного адреса. Почерк почти знаком. Кто-то оставил послание до того, как его доставили.',
+    description:
+      'В почтовом ящике — конверт без марки. Осмотри ящики, открой письмо, прочти схему на обороте, сохрани, покажи Зареме и прими её предупреждение.',
     act: 1,
     faction: undefined,
     questType: 'side',
     difficulty: 'easy',
-    hint: 'Проверь почтовые ящики в коридоре — третий сверху.',
+    hint: 'Коридор → ящики → письмо → схема → Зарема → предупреждение.',
     objectives: [
+      {
+        id: 'examine_mailboxes',
+        description: 'Осмотреть почтовые ящики в коридоре',
+        type: 'flag_set',
+        target: 'examined_corridor_mailboxes',
+        completed: false,
+      },
       {
         id: 'open_letter',
         description: 'Открыть письмо без обратного адреса',
         type: 'flag_set',
         target: 'corridor_letter_opened',
+        completed: false,
+      },
+      {
+        id: 'read_letter_scheme',
+        description: 'Прочитать схему на обороте письма',
+        type: 'flag_set',
+        target: 'corridor_letter_scheme_noted',
         completed: false,
       },
       {
@@ -751,9 +822,16 @@ export const QUESTS_ACT1: QuestDefinition[] = [
       },
       {
         id: 'show_letter_zarema',
-        description: 'Показать письмо Зареме',
-        type: 'npc_talked',
-        target: 'zarema',
+        description: 'Показать письмо Зареме или спрятать до времени',
+        type: 'flag_set',
+        target: 'corridor_letter_choice_made',
+        completed: false,
+      },
+      {
+        id: 'heed_zarema_warning',
+        description: 'Закрыть дело письма',
+        type: 'flag_set',
+        target: 'corridor_letter_resolved',
         completed: false,
       },
     ],
@@ -763,6 +841,11 @@ export const QUESTS_ACT1: QuestDefinition[] = [
       { type: 'addXp', value: 60 },
     ],
     linkedStoryNodeId: 'corridor_letter_open',
+    linkedStoryNodeIds: [
+      'corridor_letter_open',
+      'corridor_letter_read',
+      'zarema_letter_reaction',
+    ],
     questGiverNpcId: undefined,
   },
 
@@ -770,12 +853,13 @@ export const QUESTS_ACT1: QuestDefinition[] = [
   {
     id: 'zarema_radio',
     title: 'Голос в белом шуме',
-    description: 'Старый радиоприёмник «Океан» шипит между станциями. Зарема слышит в статике голос — может, это эхо Краха. Настрой приёмник.',
+    description:
+      'Старый радиоприёмник «Океан» шипит между станциями. Зарема слышит в статике голос — может, это эхо Краха. Согласись помочь, настрой приёмник, улови строки и поблагодари её.',
     act: 1,
     faction: undefined,
     questType: 'side',
     difficulty: 'medium',
-    hint: 'Поговори с Заремой на кухне или покрути радиоприёмник у окна.',
+    hint: 'Кухня → Зарема → «Океан» у окна → эфир → благодарность.',
     objectives: [
       {
         id: 'start_radio_quest',
@@ -785,10 +869,38 @@ export const QUESTS_ACT1: QuestDefinition[] = [
         completed: false,
       },
       {
+        id: 'examine_ocean_receiver',
+        description: 'Осмотреть приёмник «Океан» у окна',
+        type: 'flag_set',
+        target: 'zarema_radio_needs_fix',
+        completed: false,
+      },
+      {
+        id: 'tune_static_band',
+        description: 'Найти полосу между станциями',
+        type: 'flag_set',
+        target: 'zarema_radio_band_found',
+        completed: false,
+      },
+      {
         id: 'fix_radio',
         description: 'Уловить голос в эфире',
         type: 'flag_set',
         target: 'zarema_radio_fixed',
+        completed: false,
+      },
+      {
+        id: 'thank_zarema_radio',
+        description: 'Поблагодарить Зарему за доверие',
+        type: 'npc_talked',
+        target: 'zarema',
+        completed: false,
+      },
+      {
+        id: 'keep_echo_poem',
+        description: 'Сохранить эхо-стих из эфира',
+        type: 'poem_collected',
+        target: 'poem_16',
         completed: false,
       },
     ],
@@ -798,6 +910,7 @@ export const QUESTS_ACT1: QuestDefinition[] = [
       { type: 'addXp', value: 80 },
     ],
     linkedStoryNodeId: 'zarema_radio_request',
+    linkedStoryNodeIds: ['zarema_radio_request', 'zarema_radio_tune', 'zarema_radio_success'],
     questGiverNpcId: 'zarema',
   },
 
@@ -805,12 +918,13 @@ export const QUESTS_ACT1: QuestDefinition[] = [
   {
     id: 'morning_ritual',
     title: 'Утренний обход',
-    description: 'Проснуться — не значит проснуться по-настоящему. Осмотри комнату, коридор и кухню, прежде чем шагнуть в город.',
+    description:
+      'Проснуться — не значит проснуться по-настоящему. Проверь терминал, шкаф и полку, услышь домофон, выпей чай у Заремы и загляни в окно — прежде чем шагнуть в город.',
     act: 1,
     faction: undefined,
     questType: 'side',
     difficulty: 'easy',
-    hint: 'Исследуй комнату, коридор и кухню — каждый угол хранит утреннюю улику.',
+    hint: 'Комната → терминал → шкаф → полка → коридор/домофон → кухня/чай → окно.',
     objectives: [
       {
         id: 'ritual_terminal',
@@ -827,10 +941,31 @@ export const QUESTS_ACT1: QuestDefinition[] = [
         completed: false,
       },
       {
+        id: 'ritual_bookshelf',
+        description: 'Провести пальцем по книжной полке',
+        type: 'flag_set',
+        target: 'morning_ritual_bookshelf',
+        completed: false,
+      },
+      {
         id: 'ritual_intercom',
         description: 'Услышать шёпот в домофоне',
         type: 'flag_set',
         target: 'morning_ritual_intercom',
+        completed: false,
+      },
+      {
+        id: 'ritual_tea',
+        description: 'Выпить чай с Заремой на кухне',
+        type: 'flag_set',
+        target: 'morning_ritual_tea',
+        completed: false,
+      },
+      {
+        id: 'ritual_window',
+        description: 'Взглянуть в кухонное окно на город',
+        type: 'flag_set',
+        target: 'morning_ritual_kitchen',
         completed: false,
       },
     ],
@@ -838,8 +973,16 @@ export const QUESTS_ACT1: QuestDefinition[] = [
       { type: 'addSkill', skill: 'intuition', value: 2 },
       { type: 'addKarma', value: 5 },
       { type: 'addXp', value: 70 },
+      { type: 'setFlag', flag: 'morning_ritual_complete', flagValue: true },
     ],
     linkedStoryNodeId: 'explore_mode',
+    linkedStoryNodeIds: [
+      'explore_mode',
+      'room_terminal_wake',
+      'room_wardrobe_memory',
+      'corridor_intercom_whisper',
+      'morning_ritual_complete',
+    ],
     questGiverNpcId: undefined,
   },
 
@@ -847,18 +990,33 @@ export const QUESTS_ACT1: QuestDefinition[] = [
   {
     id: 'cafe_backroom_echo',
     title: 'Эхо подсобки',
-    description: 'За стеллажом в «Синей яме» — дверь без таблички. Терминал в нише иногда дописывает строки сам. Бариста называет это «сердцем кафе».',
+    description:
+      'За стеллажом в «Синей яме» — дверь без таблички. Терминал в нише иногда дописывает строки сам. Бариста называет это «сердцем кафе». Заметь дверь, войди, услышь строку и спроси баристу про «особый» кофе.',
     act: 1,
     faction: 'neutral',
     questType: 'side',
     difficulty: 'easy',
-    hint: 'Осмотри заднюю дверь за стеллажом с зёрнами — или спроси бариста про «особый» кофе.',
+    hint: 'Зал кафе → стеллаж с зёрнами → подсобка → терминал → бариста.',
     objectives: [
+      {
+        id: 'ask_special_coffee',
+        description: 'Спросить баристу про «особый» кофе или подсобку',
+        type: 'flag_set',
+        target: 'asked_special_coffee',
+        completed: false,
+      },
       {
         id: 'notice_backroom',
         description: 'Заметить дверь в подсобку',
         type: 'flag_set',
         target: 'noticed_cafe_backroom',
+        completed: false,
+      },
+      {
+        id: 'enter_backroom_niche',
+        description: 'Войти в нишу за стеллажом',
+        type: 'flag_set',
+        target: 'cafe_backroom_entered',
         completed: false,
       },
       {
@@ -868,6 +1026,20 @@ export const QUESTS_ACT1: QuestDefinition[] = [
         target: 'cafe_backroom_echo_heard',
         completed: false,
       },
+      {
+        id: 'keep_backroom_secret',
+        description: 'Согласиться держать эхо подсобки в тайне',
+        type: 'flag_set',
+        target: 'cafe_backroom_secret_kept',
+        completed: false,
+      },
+      {
+        id: 'tell_barista_echo',
+        description: 'Кивнуть баристе — правило подсобки соблюдено',
+        type: 'npc_talked',
+        target: 'cafe_barista',
+        completed: false,
+      },
     ],
     rewards: [
       { type: 'addSkill', skill: 'writing', value: 2 },
@@ -875,6 +1047,7 @@ export const QUESTS_ACT1: QuestDefinition[] = [
       { type: 'addXp', value: 65 },
     ],
     linkedStoryNodeId: 'cafe_backroom_peek',
+    linkedStoryNodeIds: ['cafe_backroom_peek', 'cafe_barista'],
     questGiverNpcId: 'cafe_barista',
   },
 

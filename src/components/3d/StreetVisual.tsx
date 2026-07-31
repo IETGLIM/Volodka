@@ -24,11 +24,19 @@ import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
 import { getCachedSurfaceDetailMaps } from '@/engine/graphics/proceduralSurfaceTextures';
 import { PBR_PRESETS } from '@/engine/graphics/materials/pbrPresets';
+import {
+  allowsSelectiveMeshPhysicalWet,
+  getRainWetSidewalkSettings,
+  getWetGlassPhysicalParams,
+  getWetPuddlePhysicalParams,
+} from '@/engine/graphics/wetStreetScenes';
 import { HeroStreetFacadesWithAssets } from './PolyHavenStreetDressing';
 import { PolyHavenStandardMaterial } from './PolyHavenStandardMaterial';
 import { usesPhotographicHdriBackground } from '@/config/polyhavenAssets';
 import { isProceduralAaaFlagActive } from '@/proceduralAaa/params';
 import { ProceduralAaaHybridOverlay } from '@/proceduralAaa/ProceduralAaaHybridOverlay';
+import { allowsHeavyGfxFeature } from '@/engine/graphics/qualityFeatureGates';
+import { useIsMobileVisual } from '@/hooks/use-mobile';
 
 interface StreetVisualProps {
   sceneId?: SceneId;
@@ -40,9 +48,23 @@ export function StreetVisual({ sceneId = 'street_night', livePlayerPositionRef }
   const isWinter = sceneId === 'street_winter';
   const rainIntensity = useGameStore((s) => s.rainIntensity);
   const envProfile = useMemo(() => getEnvironmentLodProfile(sceneId), [sceneId]);
-  const { preset } = useGraphicsQuality();
+  const { preset, selectedPreset } = useGraphicsQuality();
+  const coarsePointer = useIsMobileVisual();
   const useAuthoredDressing = allowsGlbAssetRendering(preset.environmentRenderMode);
   const useHighUltraAuthored = !preset.visualLite;
+  const usePhysicalPuddles =
+    !isWinter
+    && allowsHeavyGfxFeature(selectedPreset, 'meshPhysicalWet', { coarsePointer });
+  const usePhysicalWetGlass =
+    !isWinter
+    && sceneId === 'street_night'
+    && allowsSelectiveMeshPhysicalWet('street_night', selectedPreset, { coarsePointer });
+  const wetPuddle = useMemo(
+    () => getWetPuddlePhysicalParams(rainIntensity),
+    [rainIntensity],
+  );
+  const wetShopGlass = useMemo(() => getWetGlassPhysicalParams('streetShopWindow'), []);
+  const wetNeonFascia = useMemo(() => getWetGlassPhysicalParams('neonFascia'), []);
 
   // Ultra / ?proceduralAaa=1 — hybrid: keep Poly Haven grounds/facades, add procedural accents
   const hybridAaa = !isWinter && sceneId === 'street_night' && isProceduralAaaFlagActive();
@@ -55,7 +77,7 @@ export function StreetVisual({ sceneId = 'street_night', livePlayerPositionRef }
       <WetStreetGround sceneId={sceneId} isWinter={isWinter} rainIntensity={rainIntensity} />
 
       {/* ── Sidewalk ── */}
-      <StreetSidewalk isWinter={isWinter} />
+      <StreetSidewalk isWinter={isWinter} rainIntensity={rainIntensity} />
 
       {/* ── Bevelled panel buildings + neon fascia (hero silhouette) ── */}
       <EnvironmentDetail minLod="standard" position={[0, 0, -10]}>
@@ -80,13 +102,104 @@ export function StreetVisual({ sceneId = 'street_night', livePlayerPositionRef }
 
       {/* ── Puddle reflections - polygonOffset prevents Z-fighting */}
       <EnvironmentDetail minLod="full" position={[1.5, 0.02, 2]}>
-        <mesh rotation-x={-Math.PI / 2} position={[1.5, 0.02, 2]} geometry={getSharedCircleGeometry(0.6, 12)}>
-          <meshStandardMaterial color="#0e0e1e" metalness={0.55} roughness={0.22} transparent opacity={0.45} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
-        </mesh>
-        <mesh rotation-x={-Math.PI / 2} position={[-1, 0.02, -4]} geometry={getSharedCircleGeometry(0.4, 12)}>
-          <meshStandardMaterial color="#0e0e1e" metalness={0.5} roughness={0.25} transparent opacity={0.38} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
-        </mesh>
+        {usePhysicalPuddles && rainIntensity > 0.08 ? (
+          <>
+            <mesh rotation-x={-Math.PI / 2} position={[1.5, 0.02, 2]} geometry={getSharedCircleGeometry(0.6, 12)} renderOrder={2}>
+              <meshPhysicalMaterial
+                color="#0e0e1e"
+                metalness={wetPuddle.metalness}
+                roughness={wetPuddle.roughness}
+                clearcoat={wetPuddle.clearcoat}
+                clearcoatRoughness={wetPuddle.clearcoatRoughness}
+                transparent
+                opacity={wetPuddle.opacity}
+                depthWrite={false}
+                polygonOffset
+                polygonOffsetFactor={1}
+                polygonOffsetUnits={1}
+              />
+            </mesh>
+            <mesh rotation-x={-Math.PI / 2} position={[-1, 0.02, -4]} geometry={getSharedCircleGeometry(0.4, 12)} renderOrder={2}>
+              <meshPhysicalMaterial
+                color="#0e0e1e"
+                metalness={wetPuddle.metalness * 0.92}
+                roughness={Math.min(1, wetPuddle.roughness + 0.04)}
+                clearcoat={wetPuddle.clearcoat * 0.9}
+                clearcoatRoughness={wetPuddle.clearcoatRoughness}
+                transparent
+                opacity={Math.max(0.2, wetPuddle.opacity * 0.85)}
+                depthWrite={false}
+                polygonOffset
+                polygonOffsetFactor={1}
+                polygonOffsetUnits={1}
+              />
+            </mesh>
+          </>
+        ) : (
+          <>
+            <mesh rotation-x={-Math.PI / 2} position={[1.5, 0.02, 2]} geometry={getSharedCircleGeometry(0.6, 12)}>
+              <meshStandardMaterial
+                color="#0e0e1e"
+                metalness={0.55 + rainIntensity * 0.15}
+                roughness={Math.max(0.12, 0.22 - rainIntensity * 0.08)}
+                transparent
+                opacity={0.35 + rainIntensity * 0.2}
+                polygonOffset
+                polygonOffsetFactor={1}
+                polygonOffsetUnits={1}
+              />
+            </mesh>
+            <mesh rotation-x={-Math.PI / 2} position={[-1, 0.02, -4]} geometry={getSharedCircleGeometry(0.4, 12)}>
+              <meshStandardMaterial
+                color="#0e0e1e"
+                metalness={0.5 + rainIntensity * 0.12}
+                roughness={Math.max(0.14, 0.25 - rainIntensity * 0.08)}
+                transparent
+                opacity={0.3 + rainIntensity * 0.18}
+                polygonOffset
+                polygonOffsetFactor={1}
+                polygonOffsetUnits={1}
+              />
+            </mesh>
+          </>
+        )}
       </EnvironmentDetail>
+
+      {/* Selective wet shop glass + neon fascia (high/ultra) — plaza/café parity */}
+      {usePhysicalWetGlass ? (
+        <EnvironmentDetail minLod="standard" position={[0, 0, 0]}>
+          <mesh position={[6.2, 1.55, -9.15]} geometry={getSharedBoxGeometry(1.8, 1.35, 0.04)}>
+            <meshPhysicalMaterial
+              color="#1a2238"
+              roughness={wetShopGlass.roughness}
+              metalness={wetShopGlass.metalness}
+              transmission={wetShopGlass.transmission}
+              thickness={wetShopGlass.thickness}
+              clearcoat={wetShopGlass.clearcoat}
+              clearcoatRoughness={wetShopGlass.clearcoatRoughness}
+              transparent
+              opacity={wetShopGlass.opacity}
+              depthWrite={false}
+            />
+          </mesh>
+          <mesh position={[-5.8, 4.85, -9.85]} geometry={getSharedBoxGeometry(2.15, 0.12, 0.06)}>
+            <meshPhysicalMaterial
+              color="#201018"
+              roughness={wetNeonFascia.roughness}
+              metalness={wetNeonFascia.metalness}
+              transmission={wetNeonFascia.transmission}
+              thickness={wetNeonFascia.thickness}
+              clearcoat={wetNeonFascia.clearcoat}
+              clearcoatRoughness={wetNeonFascia.clearcoatRoughness}
+              transparent
+              opacity={wetNeonFascia.opacity}
+              emissive="#ff4488"
+              emissiveIntensity={0.35}
+              depthWrite={false}
+            />
+          </mesh>
+        </EnvironmentDetail>
+      ) : null}
 
       {!useAuthoredDressing ? (
         <>
@@ -129,15 +242,20 @@ export function StreetVisual({ sceneId = 'street_night', livePlayerPositionRef }
 }
 
 /** Tiled sidewalk — Poly Haven concrete PBR (procedural fallback while loading). */
-function StreetSidewalk({ isWinter }: { isWinter: boolean }) {
+function StreetSidewalk({ isWinter, rainIntensity }: { isWinter: boolean; rainIntensity: number }) {
+  const wet = useMemo(
+    () => (isWinter ? null : getRainWetSidewalkSettings(rainIntensity)),
+    [isWinter, rainIntensity],
+  );
   return (
-    <Suspense fallback={<StreetSidewalkProcedural isWinter={isWinter} />}>
+    <Suspense fallback={<StreetSidewalkProcedural isWinter={isWinter} rainIntensity={rainIntensity} />}>
       <mesh rotation-x={-Math.PI / 2} position={[0, 0.015, 0]} receiveShadow geometry={getSharedPlaneGeometry(6, 40)}>
         <PolyHavenStandardMaterial
           materialId="concrete_floor_painted"
           repeatScale={isWinter ? 0.9 : 1.1}
           color={isWinter ? '#c8d0dc' : '#ffffff'}
-          metalness={0.03}
+          metalness={wet?.metalness ?? 0.03}
+          roughness={wet?.roughness ?? 1}
           polygonOffset
         />
       </mesh>
@@ -145,8 +263,12 @@ function StreetSidewalk({ isWinter }: { isWinter: boolean }) {
   );
 }
 
-function StreetSidewalkProcedural({ isWinter }: { isWinter: boolean }) {
+function StreetSidewalkProcedural({ isWinter, rainIntensity }: { isWinter: boolean; rainIntensity: number }) {
   const { preset } = useGraphicsQuality();
+  const wet = useMemo(
+    () => (isWinter ? null : getRainWetSidewalkSettings(rainIntensity)),
+    [isWinter, rainIntensity],
+  );
   const maps = useMemo(
     () => getCachedSurfaceDetailMaps('sidewalk', preset.textureScale),
     [preset.textureScale],
@@ -190,8 +312,8 @@ function StreetSidewalkProcedural({ isWinter }: { isWinter: boolean }) {
         normalMap={normalMap}
         normalScale={new THREE.Vector2(0.45, 0.45)}
         roughnessMap={roughnessMap}
-        roughness={isWinter ? 0.72 : PBR_PRESETS.sidewalk.roughness}
-        metalness={PBR_PRESETS.sidewalk.metalness}
+        roughness={isWinter ? 0.72 : (wet?.roughness ?? PBR_PRESETS.sidewalk.roughness)}
+        metalness={wet?.metalness ?? PBR_PRESETS.sidewalk.metalness}
         polygonOffset
         polygonOffsetFactor={1}
         polygonOffsetUnits={1}

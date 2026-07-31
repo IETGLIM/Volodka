@@ -1,6 +1,12 @@
 import type { QualityPresetId } from './qualityPresets';
 
-export type HeavyGfxFeature = 'n8ao' | 'reflector' | 'galaxySky' | 'godRays';
+export type HeavyGfxFeature =
+  | 'n8ao'
+  | 'reflector'
+  | 'galaxySky'
+  | 'godRays'
+  /** Selective MeshPhysical wet glass / puddles — not blanket Physical. */
+  | 'meshPhysicalWet';
 
 export interface HeavyGfxFeatureOptions {
   /** Touch / coarse-pointer devices — caps ultra-tier overdraw features. */
@@ -22,7 +28,9 @@ export function allowsHeavyGfxFeature(
     options?.coarsePointer
     && (selectedPreset === 'ultra' || selectedPreset === 'high' || selectedPreset === 'medium')
   ) {
-    if (feature === 'reflector' || feature === 'godRays') return false;
+    if (feature === 'reflector' || feature === 'godRays' || feature === 'meshPhysicalWet') {
+      return false;
+    }
   }
 
   switch (feature) {
@@ -33,6 +41,9 @@ export function allowsHeavyGfxFeature(
     case 'galaxySky':
       return selectedPreset === 'high' || selectedPreset === 'ultra';
     case 'godRays':
+      return selectedPreset === 'high' || selectedPreset === 'ultra';
+    case 'meshPhysicalWet':
+      // High/ultra only — MeshPhysical clearcoat/transmission is selective hero cost.
       return selectedPreset === 'high' || selectedPreset === 'ultra';
     default: {
       const _exhaustive: never = feature;

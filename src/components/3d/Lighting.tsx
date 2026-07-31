@@ -83,6 +83,7 @@ function ScenePointLights() {
   const heroLocalShadowScene =
     sceneId === 'volodka_room' ||
     sceneId === 'street_night' ||
+    sceneId === 'city_square' ||
     sceneId === 'cafe_evening' ||
     sceneId === 'abandoned_factory';
 
@@ -136,10 +137,19 @@ export function ExplorationLighting() {
 
   // Different light settings per scene type
   const isIndoor = config.hasCeiling;
-  const isNight = sceneId === 'street_night' || sceneId === 'cafe_evening';
-  const isStreet = sceneId === 'street_night' || sceneId === 'street_winter';
+  const visualSceneId = resolveDerivedSceneId(sceneId);
+  const isNight =
+    sceneId === 'street_night'
+    || sceneId === 'city_square'
+    || sceneId === 'cafe_evening'
+    || visualSceneId === 'river_pier';
+  const isStreet =
+    sceneId === 'street_night'
+    || sceneId === 'city_square'
+    || sceneId === 'street_winter';
   const isChkForest = sceneId === 'chk_forest_zorge' || sceneId === 'chk_campfire_night';
   const isDream = sceneId === 'sleep_dream';
+  const isPier = visualSceneId === 'river_pier';
 
   // Directional light — very dim indoors (barely-there ceiling bounce)
   // to let scene-specific point lights dominate the atmosphere
@@ -214,6 +224,14 @@ export function ExplorationLighting() {
         <ambientLight intensity={0.45} color="#606088" />
       )}
 
+      {sceneId === 'city_square' && (
+        <ambientLight intensity={0.4} color="#586878" />
+      )}
+
+      {isPier && (
+        <ambientLight intensity={0.38} color="#4a5870" />
+      )}
+
       {sceneId === 'street_winter' && (
         <ambientLight intensity={0.42} color="#c0ccd8" />
       )}
@@ -279,12 +297,20 @@ const SCENE_ACCENT_LIGHTS: Record<string, AccentLight[]> = {
     { position: [7, 2.8, 0], color: '#8da8d8', intensity: 0.95, distance: 8, shadowCaster: true },
     { position: [-8, 3, 5], color: '#cf8f96', intensity: 0.82, distance: 10, animated: 'neon_cycle' },
   ],
+  city_square: [
+    { position: [-8, 3.4, -6], color: '#55e8dd', intensity: 0.95, distance: 14, animated: 'neon_cycle' },
+    { position: [8, 3.2, 7], color: '#ff6688', intensity: 0.9, distance: 13, animated: 'neon_cycle' },
+    { position: [0, 4.2, 0], color: '#aaccff', intensity: 1.15, distance: 16, shadowCaster: true },
+    { position: [-5, 3.0, 5], color: '#9b86bc', intensity: 0.75, distance: 12, animated: 'neon_cycle' },
+    { position: [6, 2.8, -4], color: '#ffaa66', intensity: 1.05, distance: 11, shadowCaster: true },
+    { position: [-3, 3.6, -8], color: '#8fb8b8', intensity: 0.82, distance: 12, animated: 'cold_pulse' },
+  ],
   home_evening: [
     { position: [0.5, 1.8, -0.5], color: '#ff9944', intensity: 2.0, distance: 8, animated: 'candle_flicker' },
     { position: [-1, 1.5, 1], color: '#ffbb66', intensity: 1.2, distance: 6, animated: 'candle_flicker' },
   ],
   cafe_evening: [
-    { position: [-3, 2.5, -1], color: '#6688cc', intensity: 1.15, distance: 9, animated: 'cold_pulse' },
+    { position: [-3, 2.5, -1], color: '#6688cc', intensity: 1.15, distance: 9, animated: 'cold_pulse', shadowCaster: true },
     { position: [2, 2.2, 2], color: '#5f74aa', intensity: 0.95, distance: 8, animated: 'cold_pulse' },
     { position: [0, 1.5, -3], color: '#ff9966', intensity: 1.0, distance: 6, shadowCaster: true },
   ],
@@ -301,6 +327,7 @@ const SCENE_ACCENT_LIGHTS: Record<string, AccentLight[]> = {
   library_day: [
     { position: [0, 1.8, -2], color: '#ddaa55', intensity: 1.5, distance: 8, animated: 'candle_flicker' },
     { position: [2, 2.2, 0], color: '#cc9944', intensity: 0.8, distance: 7, animated: 'candle_flicker' },
+    { position: [-2.2, 2.0, 1.5], color: '#8899aa', intensity: 0.55, distance: 9, animated: 'cold_pulse' }, // window cool fill
   ],
   park_day: [
     { position: [2, 4, -1], color: '#ffdd88', intensity: 1.6, distance: 14 },
@@ -314,7 +341,7 @@ const SCENE_ACCENT_LIGHTS: Record<string, AccentLight[]> = {
     { position: [0, 2.2, -5.2], color: '#00ffaa', intensity: 1.4, distance: 8, animated: 'cold_pulse' },
   ],
   abandoned_factory: [
-    { position: [-2, 2.5, 2], color: '#ff8833', intensity: 2.4, distance: 12, animated: 'candle_flicker' },
+    { position: [-2, 2.5, 2], color: '#ff8833', intensity: 2.4, distance: 12, animated: 'candle_flicker', shadowCaster: true },
     { position: [4, 2, -3], color: '#dd6622', intensity: 1.7, distance: 10, animated: 'candle_flicker' },
     { position: [0, 3, -4], color: '#ffaa44', intensity: 1.4, distance: 8, animated: 'candle_flicker' },
     { position: [-2, 1.8, -3.5], color: '#22aa66', intensity: 0.9, distance: 6, animated: 'cold_pulse' },
@@ -331,15 +358,25 @@ const SCENE_ACCENT_LIGHTS: Record<string, AccentLight[]> = {
     { position: [-2.5, 2.1, -3.5], color: '#33cc88', intensity: 0.85, distance: 6, animated: 'cold_pulse' },
   ],
   rooftop_edge: [
-    { position: [-3, 3, 0], color: '#ff8844', intensity: 1.8, distance: 14 },        // sunset warm glow
+    { position: [-3, 3, 0], color: '#ff8844', intensity: 1.8, distance: 14, shadowCaster: true }, // sunset warm + ground contact
     { position: [4, 2.5, -2], color: '#ff6633', intensity: 1.4, distance: 12 },        // distant city reflection
     { position: [0, 2, 3], color: '#ffaa66', intensity: 1.0, distance: 10 },         // ambient warmth
   ],
-  river_pier: [
-    { position: [0, 1.5, -1], color: '#ff9944', intensity: 2.0, distance: 8, animated: 'candle_flicker' },   // campfire
-    { position: [3, 2.5, 0], color: '#ffbb55', intensity: 1.2, distance: 10 },       // string lights
-    { position: [-2, 2, 1], color: '#ffcc66', intensity: 0.8, distance: 8 },        // warm fill
+  // factory_roof denser industrial spill (own row — does not fall through to rooftop_edge)
+  factory_roof: [
+    { position: [-3, 3, 0], color: '#ff7744', intensity: 1.9, distance: 14, shadowCaster: true },
+    { position: [4, 2.5, -2], color: '#ff5522', intensity: 1.35, distance: 12 },
+    { position: [0, 2, 3], color: '#ff9944', intensity: 1.05, distance: 10 },
+    { position: [2, 1.2, -1], color: '#88aacc', intensity: 0.55, distance: 8, animated: 'cold_pulse' },
   ],
+  river_pier: [
+    { position: [0, 1.5, -1], color: '#ff9944', intensity: 2.0, distance: 8, animated: 'candle_flicker', shadowCaster: true },
+    { position: [3, 2.5, 0], color: '#ffbb55', intensity: 1.25, distance: 11 },
+    { position: [-2, 2, 1], color: '#ffcc66', intensity: 0.85, distance: 9 },
+    { position: [5, 3.2, -8], color: '#8aa0c0', intensity: 0.7, distance: 14, animated: 'cold_pulse' },
+    { position: [-4, 2.4, -3], color: '#ffaa66', intensity: 0.95, distance: 10, animated: 'candle_flicker' },
+  ],
+  // pier_evening inherits via resolveDerivedSceneId fallback in SceneAccentLights
   solnysh_room: [
     { position: [0, 1.6, 0], color: '#ffcc88', intensity: 1.5, distance: 7, animated: 'candle_flicker' },  // table lamp
     { position: [-1, 1.2, 1], color: '#ffbb77', intensity: 1.0, distance: 5, animated: 'candle_flicker' },  // corner lamp
@@ -382,7 +419,11 @@ const SCENE_ACCENT_LIGHTS: Record<string, AccentLight[]> = {
 
 function SceneAccentLights({ sceneId, isMobile }: { sceneId: string; isMobile: boolean }) {
   const { preset } = useGraphicsQuality();
-  const lights = SCENE_ACCENT_LIGHTS[sceneId];
+  // Variant scenes (pier_evening → river_pier, factory_roof → rooftop_edge, …)
+  // share parent accents unless they define their own row.
+  const lights =
+    SCENE_ACCENT_LIGHTS[sceneId]
+    ?? SCENE_ACCENT_LIGHTS[resolveDerivedSceneId(sceneId as SceneId)];
   if (!lights) return null;
 
   // On mobile, limit accent lights to prevent performance issues

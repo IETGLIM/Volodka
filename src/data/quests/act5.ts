@@ -107,7 +107,13 @@ export const QUESTS_ACT5: QuestDefinition[] = [
       { type: 'setFlag', flag: 'machine_confessed', flagValue: true },
       { type: 'addXp', value: 250 },
     ],
-    linkedStoryNodeId: 'factory_basement',
+    linkedStoryNodeId: 'machine_confession_scene',
+    linkedStoryNodeIds: [
+      'factory_basement',
+      'machine_confession_scene',
+      'machine_confession_scene_familiar',
+      'machine_confession_scene_thread',
+    ],
     questGiverNpcId: 'maria',
   },
 

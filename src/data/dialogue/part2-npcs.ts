@@ -12,6 +12,15 @@ export const DIALOGUE_PART2: Record<string, DialogueNode> = {
     text: 'Псс. Ты новый? Или... тебя Александр прислал? Слушай, я тут случайно наткнулся на кое-что в логах. Странные совпадения. Но я не уверен, что стоит кому-то рассказывать...',
     choices: [
       {
+        text: 'Элис из ЧК просила струну E. «Для костра.»',
+        next: 'chk_guitar_office_pickup',
+        condition: {
+          flag: 'chk_guitar_strings_active',
+          missingFlag: 'chk_guitar_string_taken',
+        },
+        effects: [{ type: 'setFlag', flag: 'chk_guitar_office_reached', flagValue: true }],
+      },
+      {
         text: 'Расскажи мне. Я умею держать язык за зубами.',
         next: 'office_colleague_share',
         condition: {
@@ -798,6 +807,15 @@ export const DIALOGUE_PART2: Record<string, DialogueNode> = {
     text: 'Псс... Ты снова здесь. *оглядывается* Я... я не против. Просто — тише, ладно? После прошлого раза я три дня проверял, не следят ли за мной.',
     choices: [
       {
+        text: 'Элис из ЧК просила струну E. «Для костра.»',
+        next: 'chk_guitar_office_pickup',
+        condition: {
+          flag: 'chk_guitar_strings_active',
+          missingFlag: 'chk_guitar_string_taken',
+        },
+        effects: [{ type: 'setFlag', flag: 'chk_guitar_office_reached', flagValue: true }],
+      },
+      {
         text: 'Что нового? Какие-нибудь свежие логи?',
         next: 'office_colleague_share',
         effects: [{ type: 'addSkill', skill: 'intuition', value: 1 }],
@@ -846,6 +864,25 @@ export const DIALOGUE_PART2: Record<string, DialogueNode> = {
         effects: [
           { type: 'addSkill', skill: 'empathy', value: 1 },
           { type: 'npcChange', npcId: 'office_alexander', npcChange: { relation: 3 } },
+        ],
+      },
+      {
+        text: 'На крыше — финальный разговор',
+        next: 'roof_of_the_world_approach',
+        condition: { flag: 'rooftop_unlocked', missingFlag: 'confronted_alexander_roof' },
+      },
+      {
+        text: 'На крыше — финальный выбор',
+        next: 'roof_of_the_world_ending',
+        condition: { flag: 'confronted_alexander_roof', missingFlag: 'roof_ending_chosen' },
+      },
+      {
+        text: 'В Сети крот — нужны логи доступа',
+        next: 'blind_spot_approach',
+        condition: { requiredAct: 4, missingFlag: 'mole_identified' },
+        effects: [
+          { type: 'triggerQuest', questId: 'blind_spot' },
+          { type: 'setFlag', flag: 'blind_spot_active', flagValue: true },
         ],
       },
       {
@@ -950,6 +987,12 @@ export const DIALOGUE_PART2: Record<string, DialogueNode> = {
         text: 'Помоги с расшифровкой инцидента.',
         next: 'dmitry_technical_assist',
         condition: { flag: 'started_decryption' },
+      },
+      {
+        text: 'Логи Александра назвали тебя. Правда.',
+        next: null,
+        condition: { flag: 'traitor_revealed', missingFlag: 'traitor_fate_decided' },
+        effects: [{ type: 'visitStoryNode', nodeId: 'act6_office_confrontation' }],
       },
       {
         text: 'Увидимся, Дмитрий.',

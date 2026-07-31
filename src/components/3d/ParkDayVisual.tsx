@@ -17,6 +17,7 @@ import { EnvironmentDetail, SceneClutterGate } from './lod/PropDistanceGate';
 import { scratchColor } from '@/engine/three/frameScratch';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { createParkHazySkyTexture } from '@/engine/graphics/proceduralSkyTextures';
+import { getIndustrialDampFloorSettings } from '@/engine/graphics/wetStreetScenes';
 
 interface ParkDayVisualProps {
   livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
@@ -35,6 +36,7 @@ const DISTANT_TREES: Array<[number, number, number]> = [
 export function ParkDayVisual({ livePlayerPositionRef }: ParkDayVisualProps) {
   const groundTexture = useCachedCanvasTexture('park_day:ground', createParkGroundTexture);
   const envProfile = useMemo(() => getEnvironmentLodProfile('park_day'), []);
+  const damp = useMemo(() => getIndustrialDampFloorSettings('park_day'), []);
 
   const W = 30;
   const D = 30;
@@ -44,26 +46,89 @@ export function ParkDayVisual({ livePlayerPositionRef }: ParkDayVisualProps) {
       {/* ── Overcast haze sky dome (fog-exempt) ── */}
       <ParkHazySkyDome />
 
-      {/* ── Ground ── */}
+      {/* ── Ground — mist dew sheen ── */}
       <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={getSharedPlaneGeometry(W, D)}>
         <meshStandardMaterial
           map={groundTexture}
           color="#3a5a2a"
-          roughness={0.9}
+          roughness={damp?.roughness ?? 0.9}
+          metalness={damp?.metalness ?? 0}
           polygonOffset
           polygonOffsetFactor={1}
           polygonOffsetUnits={1}
         />
       </mesh>
 
-      {/* ── Path (gravel) ── */}
+      {/* ── Path (gravel) — dew polish ── */}
       <mesh rotation-x={-Math.PI / 2} position={[0, 0.02, 0]} receiveShadow geometry={getSharedPlaneGeometry(2.5, 20)}>
-        <meshStandardMaterial color="#7a7a70" roughness={0.95} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+        <meshStandardMaterial
+          color="#7a7a70"
+          roughness={damp ? Math.max(0.58, damp.roughness - 0.1) : 0.95}
+          metalness={damp?.metalness ?? 0}
+          polygonOffset
+          polygonOffsetFactor={1}
+          polygonOffsetUnits={1}
+        />
       </mesh>
       {/* Cross path */}
       <mesh rotation={[-Math.PI / 2, 0, Math.PI / 2]} position={[0, 0.025, 0]} receiveShadow geometry={getSharedPlaneGeometry(2.5, 20)}>
-        <meshStandardMaterial color="#7a7a70" roughness={0.95} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+        <meshStandardMaterial
+          color="#7a7a70"
+          roughness={damp ? Math.max(0.58, damp.roughness - 0.1) : 0.95}
+          metalness={damp?.metalness ?? 0}
+          polygonOffset
+          polygonOffsetFactor={1}
+          polygonOffsetUnits={1}
+        />
       </mesh>
+
+      {/* Selective dew discs near path + obelisk (no planar reflector — mist hub) */}
+      {damp && (
+        <>
+          <EnvironmentDetail minLod="full" position={[-1.2, 0.028, 1.8]}>
+            <mesh rotation-x={-Math.PI / 2} position={[-1.2, 0.028, 1.8]} geometry={getSharedCircleGeometry(0.55, 12)}>
+              <meshStandardMaterial
+                color="#1a2a22"
+                metalness={damp.oilMetalness}
+                roughness={damp.oilRoughness}
+                transparent
+                opacity={0.4}
+                polygonOffset
+                polygonOffsetFactor={1}
+                polygonOffsetUnits={1}
+              />
+            </mesh>
+          </EnvironmentDetail>
+          <EnvironmentDetail minLod="full" position={[1.4, 0.028, -1.2]}>
+            <mesh rotation-x={-Math.PI / 2} position={[1.4, 0.028, -1.2]} geometry={getSharedCircleGeometry(0.42, 12)}>
+              <meshStandardMaterial
+                color="#182820"
+                metalness={damp.oilMetalness}
+                roughness={damp.oilRoughness}
+                transparent
+                opacity={0.36}
+                polygonOffset
+                polygonOffsetFactor={1}
+                polygonOffsetUnits={1}
+              />
+            </mesh>
+          </EnvironmentDetail>
+          <EnvironmentDetail minLod="full" position={[0.3, 0.03, -3.2]}>
+            <mesh rotation-x={-Math.PI / 2} position={[0.3, 0.03, -3.2]} geometry={getSharedCircleGeometry(0.48, 12)}>
+              <meshStandardMaterial
+                color="#2a3228"
+                metalness={damp.oilMetalness * 0.9}
+                roughness={damp.oilRoughness}
+                transparent
+                opacity={0.34}
+                polygonOffset
+                polygonOffsetFactor={1}
+                polygonOffsetUnits={1}
+              />
+            </mesh>
+          </EnvironmentDetail>
+        </>
+      )}
 
       {/* ═══════════════════════════════════════════════ */}
       {/* ── ANCIENT TREES (distant — distance gated) ── */}
@@ -149,14 +214,27 @@ export function ParkDayVisual({ livePlayerPositionRef }: ParkDayVisualProps) {
       <group position={[-8, 0, 8]}>
         {/* Pond surface - polygonOffset prevents Z-fighting with ground */}
         <mesh rotation-x={-Math.PI / 2} position={[0, 0.02, 0]} geometry={getSharedCircleGeometry(3, 16)}>
-          <meshStandardMaterial color="#1a3a3a" metalness={0.3} roughness={0.2} transparent opacity={0.7} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+          <meshStandardMaterial
+            color="#1a3a3a"
+            metalness={damp ? Math.min(0.45, damp.oilMetalness + 0.2) : 0.3}
+            roughness={damp ? Math.max(0.14, damp.oilRoughness - 0.28) : 0.2}
+            transparent
+            opacity={0.7}
+            polygonOffset
+            polygonOffsetFactor={1}
+            polygonOffsetUnits={1}
+          />
         </mesh>
         {/* Pond edge stones */}
         {Array.from({ length: 12 }).map((_, i) => {
           const angle = (i / 12) * Math.PI * 2;
           return (
             <mesh key={i} position={[Math.cos(angle) * 3.1, 0.1, Math.sin(angle) * 3.1]} geometry={getSharedSphereGeometry(0.2, 6, 6)}>
-              <meshStandardMaterial color="#6a6a60" roughness={0.9} />
+              <meshStandardMaterial
+                color="#6a6a60"
+                roughness={damp ? Math.max(0.55, damp.roughness - 0.12) : 0.9}
+                metalness={damp?.metalness ?? 0}
+              />
             </mesh>
           );
         })}
@@ -232,9 +310,18 @@ export function ParkDayVisual({ livePlayerPositionRef }: ParkDayVisualProps) {
         <meshStandardMaterial color="#c8c0a0" roughness={0.95} side={THREE.DoubleSide} />
       </mesh>
 
-      {/* ── Puddle with reflection near path ── */}
+      {/* Legacy path puddle — driven by damp knobs when present */}
       <mesh rotation-x={-Math.PI / 2} position={[-1, 0.03, 2]} geometry={getSharedCircleGeometry(0.5, 12)}>
-        <meshStandardMaterial color="#1a3a3a" metalness={0.5} roughness={0.1} transparent opacity={0.6} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+        <meshStandardMaterial
+          color="#1a3a3a"
+          metalness={damp?.oilMetalness ?? 0.5}
+          roughness={damp ? Math.max(0.12, damp.oilRoughness - 0.3) : 0.1}
+          transparent
+          opacity={0.6}
+          polygonOffset
+          polygonOffsetFactor={1}
+          polygonOffsetUnits={1}
+        />
       </mesh>
     </group>
   );

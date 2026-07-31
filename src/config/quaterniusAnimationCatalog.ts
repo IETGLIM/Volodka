@@ -10,7 +10,11 @@ import type { NPCAnimationState } from '@/engine/interaction/interactionMachine'
 export const QUATERNIUS_CLIP_ALIASES: Record<NPCAnimationState, readonly string[]> = {
   idle: ['Idle', 'Idle_Neutral', 'Death', 'Idle_Sword', 'Idle_Gun'],
   walk: ['Walk', 'Run', 'Run_Forward'],
-  talk: ['Wave', 'Interact', 'Idle_Gun_Pointing'],
+  talk: [
+    // Prefer Interact / idle over Wave — Wave is a greeting flip that reads as
+    // foot-slide / arm-flail when Mixamo `talking` has not bound yet.
+    'Interact', 'Idle_Neutral', 'Wave', 'Idle_Gun_Pointing',
+  ],
   sit: [
     'Sitting_Idle_Loop', 'sitting', 'Sitting', 'Fixing_Kneeling', 'working', 'Working',
     'Interact', 'Idle_Neutral',

@@ -22,10 +22,15 @@ describe('npcClipResolution', () => {
     expect(resolveNpcClipAction('walk', actions)?.getClip().name).toBe('Walk');
   });
 
-  it('maps talk and sit to Quaternius Wave and Interact', () => {
+  it('maps talk to Interact before Wave; sit to Interact', () => {
     const actions = mockActions(['Idle', 'Walk', 'Wave', 'Interact', 'Idle_Neutral']);
-    expect(resolveNpcClipAction('talk', actions)?.getClip().name).toBe('Wave');
+    expect(resolveNpcClipAction('talk', actions)?.getClip().name).toBe('Interact');
     expect(resolveNpcClipAction('sit', actions)?.getClip().name).toBe('Interact');
+  });
+
+  it('prefers Mixamo talking over Quaternius Interact for talk', () => {
+    const actions = mockActions(['Idle', 'Interact', 'talking', 'Wave']);
+    expect(resolveNpcClipAction('talk', actions)?.getClip().name).toBe('talking');
   });
 
   it('honors activity clip overrides for shipped Mixamo canonical names', () => {

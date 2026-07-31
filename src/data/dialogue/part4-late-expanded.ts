@@ -315,6 +315,8 @@ export const DIALOGUE_PART4_EXPANDED: Record<string, DialogueNode> = {
         effects: [
           { type: 'addKarma', value: 5 },
           { type: 'addSkill', skill: 'empathy', value: 2 },
+          { type: 'setFlag', flag: 'roof_ending_chosen', flagValue: true },
+          { type: 'setFlag', flag: 'roof_ending_word', flagValue: true },
         ],
       },
       {
@@ -323,6 +325,8 @@ export const DIALOGUE_PART4_EXPANDED: Record<string, DialogueNode> = {
         effects: [
           { type: 'addSkill', skill: 'persuasion', value: 2 },
           { type: 'setFlag', flag: 'alexander_joins', flagValue: true },
+          { type: 'setFlag', flag: 'roof_ending_chosen', flagValue: true },
+          { type: 'setFlag', flag: 'roof_ending_word', flagValue: true },
           { type: 'npcChange', npcId: 'office_alexander', npcChange: { relation: 15 } },
         ],
       },

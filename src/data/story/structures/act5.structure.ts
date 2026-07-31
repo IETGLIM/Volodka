@@ -1523,6 +1523,9 @@ export const ACT5_STRUCTURE: Record<string, StoryNodeStructure> = {
       {
         "text": "",
         "next": "old_code_read",
+        "condition": {
+          "missingFlag": "found_living_code"
+        },
         "effects": [
           {
             "type": "addSkill",
@@ -1535,6 +1538,15 @@ export const ACT5_STRUCTURE: Record<string, StoryNodeStructure> = {
             "flagValue": true
           },
           {
+            "type": "setFlag",
+            "flag": "found_living_code",
+            "flagValue": true
+          },
+          {
+            "type": "triggerQuest",
+            "questId": "secrets_of_old_code"
+          },
+          {
             "type": "addStat",
             "stat": "energy",
             "value": -10
@@ -1543,7 +1555,10 @@ export const ACT5_STRUCTURE: Record<string, StoryNodeStructure> = {
       },
       {
         "text": "",
-        "next": "explore_mode",
+        "next": "cafe_explore_mode",
+        "condition": {
+          "missingFlag": "found_living_code"
+        },
         "effects": [
           {
             "type": "addItem",
@@ -1556,6 +1571,20 @@ export const ACT5_STRUCTURE: Record<string, StoryNodeStructure> = {
             "flagValue": true
           },
           {
+            "type": "setFlag",
+            "flag": "found_marat_code",
+            "flagValue": true
+          },
+          {
+            "type": "setFlag",
+            "flag": "found_living_code",
+            "flagValue": true
+          },
+          {
+            "type": "triggerQuest",
+            "questId": "secrets_of_old_code"
+          },
+          {
             "type": "addSkill",
             "skill": "logic",
             "value": 1
@@ -1564,7 +1593,7 @@ export const ACT5_STRUCTURE: Record<string, StoryNodeStructure> = {
       },
       {
         "text": "",
-        "next": "explore_mode",
+        "next": "cafe_explore_mode",
         "effects": [
           {
             "type": "addStat",
@@ -1572,6 +1601,14 @@ export const ACT5_STRUCTURE: Record<string, StoryNodeStructure> = {
             "value": -3
           }
         ]
+      },
+      {
+        "text": "Вернуться к расшифровке живого кода",
+        "next": "old_code_read",
+        "condition": {
+          "flag": "found_living_code",
+          "missingFlag": "decoded_poetic_code"
+        }
       }
     ]
   },
@@ -1592,7 +1629,10 @@ export const ACT5_STRUCTURE: Record<string, StoryNodeStructure> = {
     "choices": [
       {
         "text": "",
-        "next": "explore_mode",
+        "next": "cafe_explore_mode",
+        "condition": {
+          "missingFlag": "decoded_poetic_code"
+        },
         "effects": [
           {
             "type": "addKarma",
@@ -1609,6 +1649,11 @@ export const ACT5_STRUCTURE: Record<string, StoryNodeStructure> = {
             "flagValue": true
           },
           {
+            "type": "setFlag",
+            "flag": "decoded_poetic_code",
+            "flagValue": true
+          },
+          {
             "type": "triggerQuest",
             "questId": "secrets_of_old_code"
           }
@@ -1616,7 +1661,10 @@ export const ACT5_STRUCTURE: Record<string, StoryNodeStructure> = {
       },
       {
         "text": "",
-        "next": "explore_mode",
+        "next": "cafe_explore_mode",
+        "condition": {
+          "missingFlag": "decoded_poetic_code"
+        },
         "effects": [
           {
             "type": "npcChange",
@@ -1631,10 +1679,19 @@ export const ACT5_STRUCTURE: Record<string, StoryNodeStructure> = {
             "flagValue": true
           },
           {
+            "type": "setFlag",
+            "flag": "decoded_poetic_code",
+            "flagValue": true
+          },
+          {
             "type": "triggerQuest",
             "questId": "secrets_of_old_code"
           }
         ]
+      },
+      {
+        "text": "Отойти к стойке — расшифрую позже",
+        "next": "cafe_explore_mode"
       }
     ]
   },
@@ -2628,6 +2685,118 @@ export const ACT5_STRUCTURE: Record<string, StoryNodeStructure> = {
         ]
       },
       {
+        "text": "Прослушать первую запись «В.Л.»",
+        "next": "voice_of_the_past_listen_1",
+        "condition": {
+          "flag": "found_vladimir_recordings",
+          "missingFlag": "listened_recording_1"
+        }
+      },
+      {
+        "text": "Прослушать вторую запись «В.Л.»",
+        "next": "voice_of_the_past_listen_2",
+        "condition": {
+          "flag": "listened_recording_1",
+          "missingFlag": "listened_recording_2"
+        }
+      },
+      {
+        "text": "Прослушать завещание «В.Л.»",
+        "next": "voice_of_the_past_listen_final",
+        "condition": {
+          "flag": "listened_recording_2",
+          "missingFlag": "listened_recording_final"
+        }
+      },
+      {
+        "text": "Оборона Хранилища — фаервол под ударом",
+        "next": "act3_vault_siege",
+        "condition": {
+          "flag": "rally_defenders_met",
+          "missingFlag": "vault_defense_held"
+        }
+      },
+      {
+        "text": "Уйти в подполье — спрятать Сеть",
+        "next": "act3_hide_network",
+        "condition": {
+          "flag": "vault_defense_held",
+          "missingFlag": "network_hidden"
+        }
+      },
+      {
+        "text": "Правда Виктории — потребовать ответ у Хранилища",
+        "next": "act3_maria_revelation",
+        "condition": {
+          "flag": "found_maria_records",
+          "missingFlag": "maria_truth_revealed"
+        }
+      },
+      {
+        "text": "Скрытый люк — секретный архив",
+        "next": "act6_secret_archive_approach",
+        "condition": {
+          "requiredAct": 6,
+          "missingFlag": "act6_secret_archive_sealed"
+        }
+      },
+      {
+        "text": "Тайник Александра — логи гильдии",
+        "next": "act6_factory_investigation",
+        "condition": {
+          "requiredAct": 6,
+          "missingFlag": "alexander_logs_decrypted"
+        }
+      },
+      {
+        "text": "Расшифрованные логи — кто крот?",
+        "next": "act6_traitor_discovery",
+        "condition": {
+          "flag": "alexander_logs_decrypted",
+          "missingFlag": "traitor_revealed"
+        }
+      },
+      {
+        "text": "Ядро «Надзора» — точка входа",
+        "next": "act6_nadzor_revealed",
+        "condition": {
+          "flag": "data_heist_completed",
+          "missingFlag": "nadzor_truth_revealed"
+        }
+      },
+      {
+        "text": "Штурм «Надзора» — Хранитель ждёт",
+        "next": "act6_infiltration_prep",
+        "condition": {
+          "flag": "nadzor_truth_revealed",
+          "missingFlag": "nadzor_guardian_defeated"
+        }
+      },
+      {
+        "text": "Ядро открыто — выбор у терминала",
+        "next": "act6_core_choice",
+        "condition": {
+          "flag": "nadzor_guardian_defeated",
+          "missingFlag": "act6_infiltration_ready"
+        }
+      },
+      {
+        "text": "Отключение «Надзора» — Жека у ядра",
+        "next": "act7_system_shutdown",
+        "condition": {
+          "flag": "guild_restored",
+          "missingFlag": "path_to_core_cleared"
+        }
+      },
+      {
+        "text": "Штурм ядра — путь расчищен",
+        "next": "act7_core_battle",
+        "condition": {
+          "flag": "path_to_core_cleared",
+          "missingFlag": "nadzor_shutdown_complete"
+        }
+      },
+      {
         "text": "",
         "next": "factory_explore_mode"
       }
@@ -2700,6 +2869,22 @@ export const ACT5_STRUCTURE: Record<string, StoryNodeStructure> = {
             "value": 3
           }
         ]
+      },
+      {
+        "text": "Прочитать стих «Зари-М»",
+        "next": "voices_of_factory_poem",
+        "condition": {
+          "flag": "found_quantum_computer",
+          "missingFlag": "read_factory_poem"
+        }
+      },
+      {
+        "text": "Скрыть «Зарю-М» от гильдии",
+        "next": "voices_of_factory_protect",
+        "condition": {
+          "flag": "read_factory_poem",
+          "missingFlag": "dmitry_factory_protect"
+        }
       },
       {
         "text": "",

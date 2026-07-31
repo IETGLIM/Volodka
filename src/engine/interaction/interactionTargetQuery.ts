@@ -282,7 +282,16 @@ export function queryInteractionTargets(
     });
   }
 
-  hits.sort((a, b) => a.score - b.score || a.distance - b.distance);
+  hits.sort((a, b) => {
+    const scoreDelta = a.score - b.score;
+    if (Math.abs(scoreDelta) > 1e-4) return scoreDelta;
+    const distDelta = a.distance - b.distance;
+    if (Math.abs(distDelta) > 1e-4) return distDelta;
+    // Near-ties: prefer NPCs (dialogue focus) over zones/exits for E-key.
+    const kindRank = (k: InteractionTargetKind): number =>
+      k === 'npc' ? 0 : k === 'zone' ? 1 : 2;
+    return kindRank(a.kind) - kindRank(b.kind);
+  });
   return hits;
 }
 

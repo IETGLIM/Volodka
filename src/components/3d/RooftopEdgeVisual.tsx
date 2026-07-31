@@ -22,6 +22,10 @@ import {
   createRooftopHorizonStarGeometry,
   createRooftopSunsetGalaxySkyTexture,
 } from '@/engine/graphics/proceduralSkyTextures';
+import { useGameStore } from '@/store/gameStore';
+import { WetStreetGround } from './WetStreetGround';
+import { getWetPuddlePhysicalParams } from '@/engine/graphics/wetStreetScenes';
+import { useIsMobileVisual } from '@/hooks/use-mobile';
 
 interface RooftopEdgeVisualProps {
   livePlayerPositionRef?: React.MutableRefObject<THREE.Vector3>;
@@ -42,6 +46,16 @@ const SKYLINE_BUILDINGS = [
 /** Noir/CyberPunk2077 rooftop (10×8m) */
 export function RooftopEdgeVisual({ livePlayerPositionRef: _livePlayerPositionRef }: RooftopEdgeVisualProps) {
   const floorTexture = useCachedCanvasTexture('rooftop_edge:floor', createRooftopFloorTexture);
+  const rainIntensity = useGameStore((s) => s.rainIntensity);
+  const { selectedPreset } = useGraphicsQuality();
+  const coarsePointer = useIsMobileVisual();
+  const usePhysicalWet =
+    allowsHeavyGfxFeature(selectedPreset, 'meshPhysicalWet', { coarsePointer })
+    && rainIntensity > 0.08;
+  const puddleParams = useMemo(
+    () => getWetPuddlePhysicalParams(rainIntensity),
+    [rainIntensity],
+  );
 
   const W = 10;
   const D = 8;
@@ -75,12 +89,21 @@ export function RooftopEdgeVisual({ livePlayerPositionRef: _livePlayerPositionRe
       {/* ── Sunset gradient sky dome (scene skybox is disabled, fog-exempt) ── */}
       <SunsetSkyDome />
 
+      {/* Wet apron under tar deck — planar reflector when raining */}
+      <WetStreetGround
+        sceneId="rooftop_edge"
+        rainIntensity={rainIntensity}
+        size={Math.max(W, D) + 6}
+        groundColor="#2a2830"
+      />
+
       {/* ── Rooftop surface ── */}
       <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={getSharedPlaneGeometry(W, D)}>
         <meshStandardMaterial
           map={floorTexture}
           color="#3a3a3a"
-          roughness={0.85}
+          roughness={Math.max(0.35, 0.85 - rainIntensity * 0.4)}
+          metalness={0.05 + rainIntensity * 0.2}
           polygonOffset
           polygonOffsetFactor={1}
           polygonOffsetUnits={1}
@@ -90,10 +113,58 @@ export function RooftopEdgeVisual({ livePlayerPositionRef: _livePlayerPositionRe
       {/* ── Rain puddles on the tar surface ── */}
       <EnvironmentDetail minLod="full" position={[-2.2, 0.02, 0.8]}>
         <mesh rotation-x={-Math.PI / 2} position={[-2.2, 0.02, 0.8]} geometry={getSharedCircleGeometry(0.55, 12)}>
-          <meshStandardMaterial color="#101622" metalness={0.85} roughness={0.08} transparent opacity={0.55} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+          {usePhysicalWet ? (
+            <meshPhysicalMaterial
+              color="#101622"
+              metalness={puddleParams.metalness}
+              roughness={puddleParams.roughness}
+              clearcoat={puddleParams.clearcoat}
+              clearcoatRoughness={puddleParams.clearcoatRoughness}
+              transparent
+              opacity={puddleParams.opacity}
+              polygonOffset
+              polygonOffsetFactor={1}
+              polygonOffsetUnits={1}
+            />
+          ) : (
+            <meshStandardMaterial
+              color="#101622"
+              metalness={0.85}
+              roughness={0.08}
+              transparent
+              opacity={0.55}
+              polygonOffset
+              polygonOffsetFactor={1}
+              polygonOffsetUnits={1}
+            />
+          )}
         </mesh>
         <mesh rotation-x={-Math.PI / 2} position={[1.4, 0.02, 1.9]} geometry={getSharedCircleGeometry(0.35, 12)}>
-          <meshStandardMaterial color="#101622" metalness={0.8} roughness={0.1} transparent opacity={0.45} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+          {usePhysicalWet ? (
+            <meshPhysicalMaterial
+              color="#101622"
+              metalness={puddleParams.metalness * 0.95}
+              roughness={puddleParams.roughness + 0.02}
+              clearcoat={puddleParams.clearcoat}
+              clearcoatRoughness={puddleParams.clearcoatRoughness}
+              transparent
+              opacity={Math.min(0.7, puddleParams.opacity * 0.9)}
+              polygonOffset
+              polygonOffsetFactor={1}
+              polygonOffsetUnits={1}
+            />
+          ) : (
+            <meshStandardMaterial
+              color="#101622"
+              metalness={0.8}
+              roughness={0.1}
+              transparent
+              opacity={0.45}
+              polygonOffset
+              polygonOffsetFactor={1}
+              polygonOffsetUnits={1}
+            />
+          )}
         </mesh>
       </EnvironmentDetail>
 

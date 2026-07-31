@@ -56,3 +56,31 @@ export function filterClipTracksToExistingNodes(
     clip.blendMode,
   );
 }
+
+const ROOT_BONE_NAMES = new Set([
+  'hips',
+  'mixamorighips',
+  'mixamorig:hips',
+  'root',
+  'armature',
+]);
+
+/**
+ * Drop root-bone *translation* tracks so locomotion is driven by the capsule /
+ * patrol mover — not by Mixamo in-place→with-root double motion (cheap foot-slide).
+ * Rotation/scale on the root bone are kept for hip sway.
+ */
+export function stripRootTranslationTracks(clip: THREE.AnimationClip): THREE.AnimationClip {
+  const kept = clip.tracks.filter((track) => {
+    const dotIndex = track.name.indexOf('.');
+    if (dotIndex === -1) return true;
+    const nodeName = track.name.substring(0, dotIndex).replace(/\s+/g, '').toLowerCase();
+    const prop = track.name.substring(dotIndex + 1).toLowerCase();
+    if (!ROOT_BONE_NAMES.has(nodeName)) return true;
+    return !prop.startsWith('position');
+  });
+
+  if (kept.length === clip.tracks.length) return clip;
+
+  return new THREE.AnimationClip(clip.name, clip.duration, kept, clip.blendMode);
+}

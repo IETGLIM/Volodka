@@ -36,7 +36,7 @@ describe('sceneVisualProfiles', () => {
 
   it('boosts interior mood bloom for home, library, office', () => {
     expect(getSceneVisualProfile('home_evening').bloomIntensityScale).toBe(1.08);
-    expect(getSceneVisualProfile('library_day').bloomIntensityScale).toBe(1.05);
+    expect(getSceneVisualProfile('library_day').bloomIntensityScale).toBe(1.06);
     expect(getSceneVisualProfile('office_day').bloomIntensityScale).toBe(1.04);
   });
 
@@ -49,9 +49,44 @@ describe('sceneVisualProfiles', () => {
     expect(getSceneVisualProfile('abandoned_factory').bloomIntensityScale).toBe(1.06);
   });
 
+  it('promotes city_square to hero outdoor parity with street_night', () => {
+    expect(isHeroScene('city_square')).toBe(true);
+    const profile = getSceneVisualProfile('city_square');
+    expect(profile.tier).toBe('hero');
+    expect(profile.forceFullPostFx).toBe(true);
+    expect(profile.enhancedAmbientOcclusion).toBe(true);
+    expect(profile.bloomIntensityScale).toBe(1.18);
+    expect(profile.shadowMapScale).toBe(1.2);
+  });
+
+  it('boosts pier hubs toward street/plaza shadow + NPC LOD parity', () => {
+    for (const sceneId of ['river_pier', 'pier_evening'] as const) {
+      const profile = getSceneVisualProfile(sceneId);
+      expect(profile.forceFullPostFx).toBe(true);
+      expect(profile.enhancedAmbientOcclusion).toBe(true);
+      expect(profile.shadowMapScale).toBe(1.15);
+      expect(profile.ambientNpcCountBoost).toBe(1);
+      expect(profile.npcLodDistanceScale).toBe(1.1);
+    }
+  });
+
+  it('thickens factory_roof industrial dusk cues', () => {
+    const profile = getSceneVisualProfile('factory_roof');
+    expect(profile.forceFullPostFx).toBe(true);
+    expect(profile.enhancedAmbientOcclusion).toBe(true);
+    expect(profile.shadowMapScale).toBe(1.12);
+    expect(profile.bloomIntensityScale).toBe(1.14);
+    expect(profile.npcLodDistanceScale).toBe(1.1);
+  });
+
+  it('grounds abandoned_factory bunker-approach shadows', () => {
+    expect(getSceneVisualProfile('abandoned_factory').shadowMapScale).toBe(1.1);
+  });
+
   it('drops dense industrial N8AO under soft-work budget pressure', () => {
     expect(shouldUseDenseSceneAmbientOcclusion('guild_mainframe', true)).toBe(true);
     expect(shouldUseDenseSceneAmbientOcclusion('guild_mainframe', false)).toBe(false);
+    expect(shouldUseDenseSceneAmbientOcclusion('factory_roof', false)).toBe(false);
     expect(shouldUseDenseSceneAmbientOcclusion('volodka_room', false)).toBe(true);
   });
 });

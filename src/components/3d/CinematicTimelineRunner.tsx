@@ -61,6 +61,7 @@ export function CinematicTimelineRunner() {
   const prologueUnsubRef = useRef<(() => void) | null>(null);
   const prologueStoryOpenedRef = useRef(false);
   const sequenceStartedRef = useRef(false);
+  const cameraAcquireRetryRef = useRef<string | null>(null);
   const handoffEmittedRef = useRef(false);
   const lastFootstepRef = useRef(-1);
   const audioCuePhaseRef = useRef<string | null>(null);
@@ -220,6 +221,8 @@ export function CinematicTimelineRunner() {
     setShowAvatar(false);
     stateRef.current = null;
     timelineIdRef.current = null;
+    sequenceStartedRef.current = false;
+    cameraAcquireRetryRef.current = null;
     clearFallback();
   };
 
@@ -244,11 +247,26 @@ export function CinematicTimelineRunner() {
     // fire, and let the caller decide whether to retry.
     const acquired = acquireCameraOwnership(TIMELINE_OWNER);
     if (!acquired) {
-      // Stop the orchestrator-side state so the orphan watchdog doesn't
-      // fire later for a timeline that never actually started.
+      // Cutscene (priority 5) may still own the camera for a frame or two after
+      // overlay end. Stop orchestrator state so the orphan watchdog doesn't fire,
+      // then retry once shortly — otherwise non-intro timelines silently never start.
       stopCinematicTimeline(def.id);
+      if (
+        cameraAcquireRetryRef.current !== def.id &&
+        !(options.skipMotion ?? isEffectiveReducedMotion())
+      ) {
+        cameraAcquireRetryRef.current = def.id;
+        window.setTimeout(() => {
+          if (sequenceStartedRef.current) return;
+          if (getActiveCinematicTimelineId() === def.id) return;
+          startCinematicTimeline({ def, options });
+        }, 120);
+      } else {
+        cameraAcquireRetryRef.current = null;
+      }
       return;
     }
+    cameraAcquireRetryRef.current = null;
 
     sequenceStartedRef.current = true;
     timelineIdRef.current = def.id;

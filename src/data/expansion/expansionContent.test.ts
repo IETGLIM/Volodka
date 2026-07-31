@@ -48,12 +48,30 @@ describe('expansion narrative content', () => {
   it('expansion quest story nodes link to explore hubs', () => {
     for (const id of [
       'act2_cafe_office_relay_start',
+      'act2_cafe_office_relay_street',
       'act2_street_chk_samizdat_start',
+      'act2_street_chk_samizdat_patrol',
       'act2_pier_cafe_frequency_start',
+      'act2_pier_cafe_frequency_street',
       'act2_night_city_watch_start',
       'act2_archive_seven_resolve',
+      'act1_albert_alliance_terms',
+      'act1_albert_alliance_seal',
     ] as const) {
       expect(STORY_NODES[id], id).toBeTruthy();
+    }
+  });
+
+  it('hub connector quests are multi-beat investigations', () => {
+    for (const quest of EXPANSION_HUB_QUESTS) {
+      expect(quest.objectives.length, quest.id).toBeGreaterThanOrEqual(5);
+    }
+    const stubs = QUEST_DEFINITIONS.filter((q) =>
+      ['act1_albert_alliance', 'act2_archive_seven'].includes(q.id),
+    );
+    expect(stubs).toHaveLength(2);
+    for (const quest of stubs) {
+      expect(quest.objectives.length, quest.id).toBeGreaterThanOrEqual(6);
     }
   });
 

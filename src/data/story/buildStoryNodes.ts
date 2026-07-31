@@ -33,6 +33,7 @@ import { STORY_NODES_SCENE_EXPLORE_HUBS } from './sceneExploreHubs';
 import { STORY_NODES_EPILOGUE } from './epilogueStory';
 import { STORY_NODES_PHASE5_QUESTS } from './phase5QuestStory';
 import { STORY_NODES_EXPANSION_QUESTS } from './expansionQuestStory';
+import { STORY_NODES_ACT4_SIDE_QUESTS } from './act4SideQuestStory';
 
 /** Known pack overrides — later sources intentionally replace earlier spine nodes. */
 const INTENTIONAL_STORY_NODE_OVERRIDES: Record<string, readonly string[]> = {
@@ -71,6 +72,7 @@ export function buildStoryNodes(): Record<string, StoryNode> {
     { name: 'epilogue', nodes: STORY_NODES_EPILOGUE },
     { name: 'phase5Quests', nodes: STORY_NODES_PHASE5_QUESTS },
     { name: 'expansionQuests', nodes: STORY_NODES_EXPANSION_QUESTS },
+    { name: 'act4SideQuests', nodes: STORY_NODES_ACT4_SIDE_QUESTS },
   ];
 
   const registry: Record<string, StoryNode> = {};

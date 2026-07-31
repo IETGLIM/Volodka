@@ -75,6 +75,10 @@ export const QUESTS_PHASE5_SIDE: QuestDefinition[] = [
       { type: 'addXp', value: 80 },
     ],
     linkedStoryNodeId: 'quest_act2_chk_neon_archive_start',
+    linkedStoryNodeIds: [
+      'quest_act2_chk_neon_archive_start',
+      'quest_act2_chk_neon_archive_hack',
+    ],
     questGiverNpcId: 'chk_based',
   },
 
@@ -119,6 +123,12 @@ export const QUESTS_PHASE5_SIDE: QuestDefinition[] = [
       { type: 'addXp', value: 70 },
     ],
     linkedStoryNodeId: 'quest_act3_park_cyber_bloom_start',
+    linkedStoryNodeIds: [
+      'quest_act3_park_cyber_bloom_start',
+      'quest_act3_park_cyber_bloom_alpha',
+      'quest_act3_park_cyber_bloom_beta',
+      'quest_act3_park_cyber_bloom_gamma',
+    ],
   },
   {
     id: 'quest_act3_zarema_evidence_run',
@@ -152,6 +162,10 @@ export const QUESTS_PHASE5_SIDE: QuestDefinition[] = [
       { type: 'addXp', value: 120 },
     ],
     linkedStoryNodeId: 'quest_act3_zarema_evidence_run_start',
+    linkedStoryNodeIds: [
+      'quest_act3_zarema_evidence_run_start',
+      'quest_act3_zarema_evidence_secure',
+    ],
     questGiverNpcId: 'zarema',
   },
 
@@ -188,6 +202,10 @@ export const QUESTS_PHASE5_SIDE: QuestDefinition[] = [
       { type: 'addXp', value: 90 },
     ],
     linkedStoryNodeId: 'quest_act4_rooftop_broadcast_setup_start',
+    linkedStoryNodeIds: [
+      'quest_act4_rooftop_broadcast_setup_start',
+      'quest_act4_rooftop_broadcast_repair',
+    ],
     questGiverNpcId: 'office_alexander',
   },
   {
@@ -229,6 +247,12 @@ export const QUESTS_PHASE5_SIDE: QuestDefinition[] = [
       { type: 'addXp', value: 100 },
     ],
     linkedStoryNodeId: 'quest_act4_street_samizdat_start',
+    linkedStoryNodeIds: [
+      'quest_act4_street_samizdat_start',
+      'quest_act4_street_samizdat_pier',
+      'quest_act4_street_samizdat_chk',
+      'quest_act4_street_samizdat_library',
+    ],
     questGiverNpcId: 'chk_based',
   },
 
@@ -272,6 +296,12 @@ export const QUESTS_PHASE5_SIDE: QuestDefinition[] = [
       { type: 'addXp', value: 120 },
     ],
     linkedStoryNodeId: 'quest_act5_factory_zarya_memory_restore_start',
+    linkedStoryNodeIds: [
+      'quest_act5_factory_zarya_memory_restore_start',
+      'quest_act5_zarya_fragment_1',
+      'quest_act5_zarya_fragment_2',
+      'quest_act5_zarya_fragment_3',
+    ],
     questGiverNpcId: 'baba_zina',
   },
   {
@@ -306,6 +336,11 @@ export const QUESTS_PHASE5_SIDE: QuestDefinition[] = [
       { type: 'addXp', value: 110 },
     ],
     linkedStoryNodeId: 'quest_act5_bunker_code_poem_break_start',
+    linkedStoryNodeIds: [
+      'quest_act5_bunker_code_poem_break_start',
+      'quest_act5_bunker_poem_key',
+      'quest_act5_bunker_code_break',
+    ],
     questGiverNpcId: 'maxim',
   },
 
@@ -325,8 +360,8 @@ export const QUESTS_PHASE5_SIDE: QuestDefinition[] = [
       {
         id: 'infiltrate_checkpoint',
         description: 'Пройти через коллектор к КПП гильдии',
-        type: 'location_visited',
-        target: 'underground_bunker',
+        type: 'flag_set',
+        target: 'defector_infiltrate_done',
         completed: false,
       },
       {
@@ -350,6 +385,12 @@ export const QUESTS_PHASE5_SIDE: QuestDefinition[] = [
       { type: 'addXp', value: 150 },
     ],
     linkedStoryNodeId: 'quest_act6_defector_rescue_expanded_start',
+    linkedStoryNodeIds: [
+      'quest_act6_defector_rescue_expanded_start',
+      'quest_act6_defector_infiltrate',
+      'quest_act6_defector_free_cell',
+      'quest_act6_defector_escape_sewers',
+    ],
     questGiverNpcId: 'maxim',
   },
 
@@ -358,24 +399,45 @@ export const QUESTS_PHASE5_SIDE: QuestDefinition[] = [
     id: 'quest_act7_poets_monument_inscription',
     title: 'Имена на камне',
     description:
-      'Памятник в парке восстановлен — но на обелиске нет имен тех, кто молчал, кто стихи прятал в серверах, кто исчез в чистке. Володька знает эти имена: каждый стих, который он нашёл в leaking-потоке, подписан. Нужно дописать их на камень — не гильдейской гравировкой, а собственной рукой, как поэт пишет строку.',
+      'Памятник в парке восстановлен — но на обелиске нет имен тех, кто молчал, кто стихи прятал в серверах, кто исчез в чистке. Володька знает эти имена: каждый стих, который он нашёл в leaking-потоке, подписан. Нужно соскрести гильдейскую табличку, вспомнить подписи, вырезать имена и принять тишину — не гравировкой гильдии, а собственной рукой.',
     act: 7,
     faction: 'network',
     questType: 'side',
     difficulty: 'easy',
     requiresQuests: ['rebuild_the_guild'],
-    hint: 'Парк — обелиск без гильдейской таблички. Дописай имена тех, кого помнишь.',
+    hint: 'Парк — обелиск: табличка → память → резьба → тишина.',
     objectives: [
       {
         id: 'visit_monument',
         description: 'Прийти к обелиску в парке',
-        type: 'location_visited',
-        target: 'park_day',
+        type: 'flag_set',
+        target: 'quest_act7_poets_monument_inscription_active',
+        completed: false,
+      },
+      {
+        id: 'scrape_plate',
+        description: 'Соскрести гильдейскую табличку с обелиска',
+        type: 'flag_set',
+        target: 'quest_act7_poets_monument_plate_cleared',
+        completed: false,
+      },
+      {
+        id: 'recall_names',
+        description: 'Вспомнить имена из leaking-потока',
+        type: 'flag_set',
+        target: 'quest_act7_poets_monument_names_recalled',
+        completed: false,
+      },
+      {
+        id: 'carve_names',
+        description: 'Вырезать первые имена на камне',
+        type: 'flag_set',
+        target: 'quest_act7_poets_monument_carved',
         completed: false,
       },
       {
         id: 'inscribe_names',
-        description: 'Вписать имена погибших поэтов на камень',
+        description: 'Завершить надпись и принять тишину парка',
         type: 'flag_set',
         target: 'quest_act7_poets_monument_inscription_done',
         completed: false,
@@ -387,5 +449,12 @@ export const QUESTS_PHASE5_SIDE: QuestDefinition[] = [
       { type: 'addXp', value: 50 },
     ],
     linkedStoryNodeId: 'quest_act7_poets_monument_inscription_start',
+    linkedStoryNodeIds: [
+      'quest_act7_poets_monument_inscription_start',
+      'quest_act7_poets_monument_plate',
+      'quest_act7_poets_monument_recall',
+      'quest_act7_poets_monument_carve',
+      'quest_act7_poets_monument_inscribe',
+    ],
   },
 ];

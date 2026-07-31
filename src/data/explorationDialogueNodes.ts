@@ -56,18 +56,25 @@ export const EXPLORATION_DIALOGUE_NODES: Record<string, DialogueNode> = {
         effects: [
           { type: 'collectPoem', poemId: 'poem_2' },
           { type: 'addKarma', value: 2 },
+          { type: 'setFlag', flag: 'morning_ritual_bookshelf', flagValue: true },
         ],
       },
       {
         text: 'Перечитать знакомые строки',
         next: null,
         condition: { collectedPoem: 'poem_2' },
-        effects: [{ type: 'addSkill', skill: 'writing', value: 1 }],
+        effects: [
+          { type: 'addSkill', skill: 'writing', value: 1 },
+          { type: 'setFlag', flag: 'morning_ritual_bookshelf', flagValue: true },
+        ],
       },
       {
         text: 'Отложить листок, читать дальше',
         next: null,
-        effects: [{ type: 'addSkill', skill: 'intuition', value: 1 }],
+        effects: [
+          { type: 'addSkill', skill: 'intuition', value: 1 },
+          { type: 'setFlag', flag: 'morning_ritual_bookshelf', flagValue: true },
+        ],
       },
     ],
   },
@@ -114,12 +121,16 @@ export const EXPLORATION_DIALOGUE_NODES: Record<string, DialogueNode> = {
         effects: [
           { type: 'addKarma', value: 3 },
           { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 5 } },
+          { type: 'setFlag', flag: 'morning_ritual_tea', flagValue: true },
         ],
       },
       {
         text: 'Промолчать и пить чай',
         next: 'explore_kitchen_window',
-        effects: [{ type: 'addStat', stat: 'stress', value: -5 }],
+        effects: [
+          { type: 'addStat', stat: 'stress', value: -5 },
+          { type: 'setFlag', flag: 'morning_ritual_tea', flagValue: true },
+        ],
       },
     ],
   },
@@ -135,18 +146,25 @@ export const EXPLORATION_DIALOGUE_NODES: Record<string, DialogueNode> = {
         next: null,
         effects: [
           { type: 'setFlag', flag: 'going_to_cafe', flagValue: true },
+          { type: 'setFlag', flag: 'morning_ritual_kitchen', flagValue: true },
           { type: 'transitionScene', sceneId: 'street_night' },
         ],
       },
       {
         text: 'Ещё немного побуду дома',
         next: null,
-        effects: [{ type: 'addStat', stat: 'energy', value: 10 }],
+        effects: [
+          { type: 'addStat', stat: 'energy', value: 10 },
+          { type: 'setFlag', flag: 'morning_ritual_kitchen', flagValue: true },
+        ],
       },
       {
         text: 'Выйти на балкон — подышать',
         next: null,
-        effects: [{ type: 'addSkill', skill: 'writing', value: 1 }],
+        effects: [
+          { type: 'addSkill', skill: 'writing', value: 1 },
+          { type: 'setFlag', flag: 'morning_ritual_kitchen', flagValue: true },
+        ],
       },
     ],
   },
@@ -252,6 +270,8 @@ export const EXPLORATION_DIALOGUE_NODES: Record<string, DialogueNode> = {
         effects: [
           { type: 'visitStoryNode', nodeId: 'maria_curious' },
           { type: 'setFlag', flag: 'spotted_maria', flagValue: true },
+          { type: 'setFlag', flag: 'cafe_whisper_alley_approached', flagValue: true },
+          { type: 'setFlag', flag: 'cafe_street_whisper_done', flagValue: true },
           { type: 'addKarma', value: 2 },
           { type: 'collectPoem', poemId: 'poem_19' },
         ],
@@ -523,8 +543,9 @@ export const EXPLORATION_DIALOGUE_NODES: Record<string, DialogueNode> = {
         text: 'Слушать исповедь машины',
         next: null,
         effects: [
-          { type: 'visitStoryNode', nodeId: 'machine_confession_scene' },
           { type: 'setFlag', flag: 'zarya_confession_requested', flagValue: true },
+          { type: 'triggerQuest', questId: 'machine_confession' },
+          { type: 'visitStoryNode', nodeId: 'machine_confession_scene' },
         ],
       },
       {

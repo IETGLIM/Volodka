@@ -47,13 +47,23 @@ describe('act6QuestHints', () => {
     expect(getDataHeistHint('street_night')).toMatch(/офис/i);
   });
 
-  it('act6_secret_archive — factory entrance', () => {
+  it('act6_secret_archive — factory hatch first', () => {
     quests.push({
       questId: 'act6_secret_archive',
       status: 'active',
       objectives: {},
     });
     expect(getAct6SecretArchiveHint('street_night')).toContain('фабрик');
+    expect(getAct6SecretArchiveHint('abandoned_factory')).toMatch(/люк|Голос/i);
+  });
+
+  it('act6_secret_archive — decode after door', () => {
+    quests.push({
+      questId: 'act6_secret_archive',
+      status: 'active',
+      objectives: { find_hidden_hatch: true, open_archive_door: true },
+    });
+    expect(getAct6SecretArchiveHint('abandoned_factory')).toMatch(/Расшифр/i);
   });
 
   it('rooftop_confrontation — go to roof', () => {

@@ -21,8 +21,16 @@ import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { useGameStore } from '@/store/gameStore';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
+import { allowsHeavyGfxFeature } from '@/engine/graphics/qualityFeatureGates';
+import { useIsMobileVisual } from '@/hooks/use-mobile';
 import { SceneBackdropShell } from './SceneBackdropShell';
 import { WetStreetGround } from './WetStreetGround';
+import {
+  allowsSelectiveMeshPhysicalWet,
+  getRainWetPlankSettings,
+  getWetGlassPhysicalParams,
+  getWetPuddlePhysicalParams,
+} from '@/engine/graphics/wetStreetScenes';
 import type { SceneId } from '@/shared/types/game';
 
 interface RiverPierVisualProps {
@@ -42,13 +50,21 @@ function pierSeededRandom(seed: number): () => number {
 }
 
 export function RiverPierVisual({ sceneId = 'river_pier' }: RiverPierVisualProps) {
-  const { preset } = useGraphicsQuality();
+  const { preset, selectedPreset } = useGraphicsQuality();
+  const coarsePointer = useIsMobileVisual();
   const useGltfDressing = allowsGlbAssetRendering(preset.environmentRenderMode);
   const useAuthoredBackdrop = !preset.visualLite && useGltfDressing;
   // Medium+ (hybrid/glb): prop dressing + backdrop own the dock; hide procedural edge clutter.
   const hideDockClutter = useGltfDressing;
+  const usePhysicalWater = allowsHeavyGfxFeature(selectedPreset, 'meshPhysicalWet', {
+    coarsePointer,
+  });
+  const useWetGlass = allowsSelectiveMeshPhysicalWet(sceneId, selectedPreset, { coarsePointer });
+  const wetLanternGlass = useMemo(() => getWetGlassPhysicalParams('pierLanternGlass'), []);
   const plankTexture = useCachedCanvasTexture('river_pier:planks', createPlankTexture);
   const rainIntensity = useGameStore((s) => s.rainIntensity);
+  const plankWet = useMemo(() => getRainWetPlankSettings(rainIntensity), [rainIntensity]);
+  const wetPuddle = useMemo(() => getWetPuddlePhysicalParams(rainIntensity), [rainIntensity]);
   const waterRef = useRef<THREE.Mesh>(null);
   const fireRef = useRef<THREE.Mesh>(null);
   const moonRoadRef = useRef<THREE.Mesh>(null);
@@ -73,6 +89,7 @@ export function RiverPierVisual({ sceneId = 'river_pier' }: RiverPierVisualProps
 
   const waterMetalness = 0.85 + Math.min(0.12, rainIntensity * 0.12);
   const waterRoughness = Math.max(0.08, 0.18 - rainIntensity * 0.08);
+  const waterClearcoat = 0.35 + Math.min(0.45, rainIntensity * 0.4);
 
   return (
     <group>
@@ -91,23 +108,70 @@ export function RiverPierVisual({ sceneId = 'river_pier' }: RiverPierVisualProps
         <meshStandardMaterial
           map={plankTexture}
           color="#4a3e30"
-          roughness={Math.max(0.35, 0.9 - rainIntensity * 0.4)}
-          metalness={0.05 + rainIntensity * 0.18}
+          roughness={plankWet.roughness}
+          metalness={plankWet.metalness}
           polygonOffset
           polygonOffsetFactor={1}
           polygonOffsetUnits={1}
         />
       </mesh>
 
+      {/* Deck spill puddles — few MeshPhysical discs only (high/ultra). */}
+      {usePhysicalWater && rainIntensity > 0.08
+        ? (
+          [
+            { pos: [-2.4, -1.2] as const, r: 0.55 },
+            { pos: [1.8, 2.1] as const, r: 0.42 },
+            { pos: [0.3, -4.6] as const, r: 0.7 },
+          ] as const
+        ).map((p, i) => (
+          <mesh
+            key={`pier-puddle-${i}`}
+            rotation-x={-Math.PI / 2}
+            position={[p.pos[0], 0.02, p.pos[1]]}
+            geometry={getSharedCircleGeometry(p.r, 16)}
+            renderOrder={2}
+          >
+            <meshPhysicalMaterial
+              color="#1a2230"
+              roughness={wetPuddle.roughness}
+              metalness={wetPuddle.metalness}
+              clearcoat={wetPuddle.clearcoat}
+              clearcoatRoughness={wetPuddle.clearcoatRoughness}
+              transparent
+              opacity={wetPuddle.opacity}
+              depthWrite={false}
+              polygonOffset
+              polygonOffsetFactor={1}
+              polygonOffsetUnits={1}
+            />
+          </mesh>
+        ))
+        : null}
+
       {/* ── Water — dark plane stretching south past the railing ── */}
       <mesh ref={waterRef} rotation-x={-Math.PI / 2} position={[0, -0.35, -26]} geometry={getSharedPlaneGeometry(90, 44)}>
-        <meshStandardMaterial
-          color="#0d1b26"
-          metalness={waterMetalness}
-          roughness={waterRoughness}
-          transparent
-          opacity={0.94}
-        />
+        {usePhysicalWater ? (
+          <meshPhysicalMaterial
+            color="#0d1b26"
+            metalness={waterMetalness}
+            roughness={waterRoughness}
+            clearcoat={waterClearcoat}
+            clearcoatRoughness={Math.max(0.08, 0.22 - rainIntensity * 0.1)}
+            transmission={0.06}
+            thickness={1.2}
+            transparent
+            opacity={0.94}
+          />
+        ) : (
+          <meshStandardMaterial
+            color="#0d1b26"
+            metalness={waterMetalness}
+            roughness={waterRoughness}
+            transparent
+            opacity={0.94}
+          />
+        )}
       </mesh>
       {/* Moon road on the water (fog-exempt shimmer) */}
       <mesh ref={moonRoadRef} rotation-x={-Math.PI / 2} position={[5, -0.33, -22]} geometry={getSharedPlaneGeometry(2.2, 30)}>
@@ -180,16 +244,77 @@ export function RiverPierVisual({ sceneId = 'river_pier' }: RiverPierVisualProps
           <meshStandardMaterial color="#4a3a26" roughness={0.9} />
         </mesh>
         <mesh position={[-0.12, 0.55, 0.05]} castShadow geometry={getSharedCylinderGeometry(0.042, 0.048, 0.3, 8)}>
-          <meshStandardMaterial color="#2a0814" roughness={0.3} metalness={0.2} />
+          {useWetGlass ? (
+            <meshPhysicalMaterial
+              color="#2a0814"
+              roughness={wetLanternGlass.roughness}
+              metalness={wetLanternGlass.metalness}
+              transmission={wetLanternGlass.transmission}
+              thickness={wetLanternGlass.thickness}
+              clearcoat={wetLanternGlass.clearcoat}
+              clearcoatRoughness={wetLanternGlass.clearcoatRoughness}
+              transparent
+              opacity={wetLanternGlass.opacity}
+            />
+          ) : (
+            <meshStandardMaterial color="#2a0814" roughness={0.3} metalness={0.2} />
+          )}
         </mesh>
         <mesh position={[0.14, 0.52, -0.08]} castShadow geometry={getSharedCylinderGeometry(0.04, 0.045, 0.26, 8)}>
-          <meshStandardMaterial color="#1c0610" roughness={0.3} metalness={0.2} />
+          {useWetGlass ? (
+            <meshPhysicalMaterial
+              color="#1c0610"
+              roughness={wetLanternGlass.roughness}
+              metalness={wetLanternGlass.metalness}
+              transmission={wetLanternGlass.transmission * 0.85}
+              thickness={wetLanternGlass.thickness}
+              clearcoat={wetLanternGlass.clearcoat}
+              clearcoatRoughness={wetLanternGlass.clearcoatRoughness}
+              transparent
+              opacity={wetLanternGlass.opacity}
+            />
+          ) : (
+            <meshStandardMaterial color="#1c0610" roughness={0.3} metalness={0.2} />
+          )}
         </mesh>
         <mesh position={[0.05, 0.44, 0.14]} geometry={getSharedCylinderGeometry(0.035, 0.03, 0.08, 8)}>
           <meshStandardMaterial color="#8a8d90" metalness={0.8} roughness={0.35} />
         </mesh>
       </group>
       ) : null}
+
+      {/* Selective wet lantern glass — few panes on string-light poles (high/ultra). */}
+      {useWetGlass
+        ? (
+          [
+            { pos: [-5.2, 2.35, -1.8] as const },
+            { pos: [5.2, 2.35, -1.8] as const },
+            { pos: [0.1, 2.55, -4.2] as const },
+          ] as const
+        ).map((g, i) => (
+          <mesh
+            key={`pier-lantern-glass-${i}`}
+            position={g.pos}
+            geometry={getSharedSphereGeometry(0.11, 10, 8)}
+            renderOrder={2}
+          >
+            <meshPhysicalMaterial
+              color="#e8d8a8"
+              roughness={wetLanternGlass.roughness}
+              metalness={wetLanternGlass.metalness}
+              transmission={wetLanternGlass.transmission}
+              thickness={wetLanternGlass.thickness}
+              clearcoat={wetLanternGlass.clearcoat}
+              clearcoatRoughness={wetLanternGlass.clearcoatRoughness}
+              transparent
+              opacity={Math.min(0.85, wetLanternGlass.opacity + 0.08)}
+              emissive="#ffaa44"
+              emissiveIntensity={0.35}
+              depthWrite={false}
+            />
+          </mesh>
+        ))
+        : null}
 
       {/* ── Guitar against a crate — ScenePropDressing owns High/Ultra ── */}
       {!useGltfDressing ? (

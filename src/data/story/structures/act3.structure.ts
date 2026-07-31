@@ -982,6 +982,11 @@ export const ACT3_STRUCTURE: Record<string, StoryNodeStructure> = {
       {
         "type": "triggerQuest",
         "questId": "maria_truth"
+      },
+      {
+        "type": "setFlag",
+        "flag": "maria_truth_started",
+        "flagValue": true
       }
     ],
     "choices": [

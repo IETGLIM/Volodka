@@ -72,15 +72,22 @@ describe('cafe_street_whisper side bridge', () => {
     expect(quest?.requiresQuests).toEqual(['first_reading']);
   });
 
-  it('tracks barista tip then alley silhouette', () => {
+  it('tracks barista tip through alley silhouette and city pulse', () => {
     const ids = quest?.objectives.map((o) => o.id) ?? [];
-    expect(ids).toEqual(['ask_barista_tip', 'spot_alley_silhouette']);
+    expect(ids).toEqual([
+      'ask_barista_tip',
+      'leave_cafe_with_whisper',
+      'approach_alley',
+      'spot_alley_silhouette',
+      'connect_whisper_to_city',
+    ]);
     expect(quest?.objectives.find((o) => o.id === 'ask_barista_tip')?.target).toBe(
       'barista_maria_hint',
     );
     expect(quest?.objectives.find((o) => o.id === 'spot_alley_silhouette')?.target).toBe(
       'spotted_maria',
     );
+    expect(quest?.objectives.length).toBeGreaterThanOrEqual(5);
   });
 
   it('is not on golden path quest spine (HUD stays on main)', () => {

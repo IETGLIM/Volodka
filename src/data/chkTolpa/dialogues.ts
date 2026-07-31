@@ -254,6 +254,24 @@ export const CHK_DIALOGUE_NODES: Record<string, DialogueNode> = {
         condition: { hasItem: 'port_wine_777' },
       },
       {
+        text: 'Нужен ящик «777» для костра?',
+        next: 'chk_portwine_delivery_start',
+        condition: { missingFlag: 'chk_portwine_active' },
+      },
+      {
+        text: 'Про неоновый архив на вывеске?',
+        next: 'quest_act2_chk_neon_archive_start',
+        condition: { missingFlag: 'chk_neon_archive_done' },
+      },
+      {
+        text: 'Ящик донёс — жду тост.',
+        next: 'chk_portwine_toast',
+        condition: {
+          flag: 'chk_portwine_delivery_done',
+          missingFlag: 'chk_portwine_toast_shared',
+        },
+      },
+      {
         text: 'За uptime!',
         next: 'chk_based_oath',
       },
@@ -436,6 +454,37 @@ export const CHK_DIALOGUE_NODES: Record<string, DialogueNode> = {
     contextNote: 'Элис настраивает гитару у костра. Струны звенят тихо, между смехом и треском дров.',
     choices: [
       {
+        text: 'Струна E оборвалась — помочь?',
+        next: 'chk_guitar_strings_start',
+        condition: { missingFlag: 'chk_guitar_strings_active' },
+      },
+      {
+        text: 'Принёс твою струну из офиса',
+        next: 'chk_guitar_return_elis',
+        condition: {
+          flag: 'chk_guitar_string_taken',
+          missingFlag: 'chk_guitar_string_returned',
+        },
+      },
+      {
+        text: 'Слушаю аккорд — камеры ждут',
+        next: 'chk_guitar_blind_song',
+        condition: {
+          flag: 'chk_guitar_string_returned',
+          missingFlag: 'chk_guitar_song_heard',
+        },
+      },
+      {
+        text: 'Ритка с пирса просила струны',
+        next: 'pier_ritka_elis_ask',
+        condition: { flag: 'pier_ritka_strings_active', missingFlag: 'pier_ritka_elis_asked' },
+      },
+      {
+        text: 'Принёс струну из офиса — для Ритки',
+        next: 'pier_ritka_elis_pack',
+        condition: { flag: 'pier_ritka_get_strings_done', missingFlag: 'pier_ritka_elis_pack_ready' },
+      },
+      {
         text: 'Поём вместе.',
         next: 'chk_elis_song',
       },
@@ -601,6 +650,17 @@ export const CHK_DIALOGUE_NODES: Record<string, DialogueNode> = {
     speakerId: 'chk_ritka',
     text: '*перебирает струны, не поднимая головы* Если ты от Ру — передай, что я не потерялась. Я тут. Огни на воде лучше, чем огни на мониторе. *поднимает глаза* Ритка. ЧК, младший состав. Гитара, как видишь, при мне. Почти живая.',
     choices: [
+      {
+        text: 'Про струны — могу помочь',
+        next: 'pier_ritka_strings_start',
+        condition: { missingFlag: 'pier_ritka_strings_active' },
+        effects: [{ type: 'triggerQuest', questId: 'pier_ritka_strings' }],
+      },
+      {
+        text: 'Принёс струны от Элис',
+        next: 'pier_ritka_strings_delivered',
+        condition: { flag: 'pier_ritka_elis_pack_ready', missingFlag: 'pier_ritka_strings_done' },
+      },
       { text: 'Что это за место?', next: 'chk_ritka_about' },
       { text: 'Сыграешь что-нибудь?', next: 'chk_ritka_song_request' },
       {
@@ -833,6 +893,24 @@ export const CHK_DIALOGUE_NODES: Record<string, DialogueNode> = {
         next: 'chk_based_oath',
       },
       {
+        text: 'Нужен ящик «777» для костра?',
+        next: 'chk_portwine_delivery_start',
+        condition: { missingFlag: 'chk_portwine_active' },
+      },
+      {
+        text: 'Про неоновый архив на вывеске?',
+        next: 'quest_act2_chk_neon_archive_start',
+        condition: { missingFlag: 'chk_neon_archive_done' },
+      },
+      {
+        text: 'Ящик донёс — жду тост.',
+        next: 'chk_portwine_toast',
+        condition: {
+          flag: 'chk_portwine_delivery_done',
+          missingFlag: 'chk_portwine_toast_shared',
+        },
+      },
+      {
         text: 'Новый портвейн? Что за сорт?',
         next: null,
         effects: [
@@ -917,6 +995,32 @@ export const CHK_DIALOGUE_NODES: Record<string, DialogueNode> = {
     text: 'Тест-кейсы опять зелёные — значит, можно петь. Вернулся за аккордами или за разговорами?',
     contextNote: 'Элис перебирает струны. Третья струна дребезжит, но она не обращает внимания.',
     choices: [
+      {
+        text: 'Струна E оборвалась — помочь?',
+        next: 'chk_guitar_strings_start',
+        condition: { missingFlag: 'chk_guitar_strings_active' },
+      },
+      {
+        text: 'Принёс твою струну из офиса',
+        next: 'chk_guitar_return_elis',
+        condition: {
+          flag: 'chk_guitar_string_taken',
+          missingFlag: 'chk_guitar_string_returned',
+        },
+      },
+      {
+        text: 'Слушаю аккорд — камеры ждут',
+        next: 'chk_guitar_blind_song',
+        condition: {
+          flag: 'chk_guitar_string_returned',
+          missingFlag: 'chk_guitar_song_heard',
+        },
+      },
+      {
+        text: 'Принёс струну из офиса — для Ритки',
+        next: 'pier_ritka_elis_pack',
+        condition: { flag: 'pier_ritka_get_strings_done', missingFlag: 'pier_ritka_elis_pack_ready' },
+      },
       {
         text: 'Поём вместе.',
         next: 'chk_elis_song',

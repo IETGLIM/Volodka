@@ -26,7 +26,14 @@ describe('expansionHubQuestHints', () => {
         {
           questId: 'act2_cafe_office_relay',
           status: 'active',
-          objectives: { take_cafe_envelope: false, deliver_office_envelope: false },
+          objectives: {
+            hear_relay_brief: false,
+            take_cafe_envelope: false,
+            cross_street_with_envelope: false,
+            enter_office_with_envelope: false,
+            deliver_office_envelope: false,
+            read_relay_second_sheet: false,
+          },
         },
       ],
     });
@@ -40,7 +47,14 @@ describe('expansionHubQuestHints', () => {
         {
           questId: 'act2_street_chk_samizdat',
           status: 'active',
-          objectives: { receive_samizdat: true, deliver_chk_samizdat: false },
+          objectives: {
+            meet_zarema_bench: true,
+            receive_samizdat: true,
+            evade_oka_patrol: true,
+            reach_chk_with_packet: true,
+            deliver_chk_samizdat: false,
+            archive_wall_handwritten: false,
+          },
         },
       ],
     });
@@ -53,7 +67,14 @@ describe('expansionHubQuestHints', () => {
         {
           questId: 'act2_pier_cafe_frequency',
           status: 'active',
-          objectives: { hear_pier_frequency: true, match_cafe_wall: false },
+          objectives: {
+            meet_trofim_pier: true,
+            hear_pier_frequency: true,
+            carry_frequency_street: true,
+            reach_cafe_with_frequency: true,
+            match_cafe_wall: false,
+            feel_city_heartbeat: false,
+          },
         },
       ],
     });
@@ -68,10 +89,12 @@ describe('expansionHubQuestHints', () => {
           questId: 'act2_night_city_watch',
           status: 'active',
           objectives: {
+            accept_watch_brief: true,
             watch_street_bench: true,
             watch_pier: true,
             watch_chk_campfire: false,
             report_albert_cafe: false,
+            burn_napkin_log: false,
           },
         },
       ],
@@ -80,29 +103,23 @@ describe('expansionHubQuestHints', () => {
     expect(getNightCityWatchHint('chk_forest_zorge')).toContain('Костёр');
   });
 
-  it('guides office envelope delivery at server room', () => {
+  it('returns first matching hub hint', () => {
     mockSnapshot.mockReturnValue({
       quests: [
         {
           questId: 'act2_cafe_office_relay',
           status: 'active',
-          objectives: { take_cafe_envelope: true, deliver_office_envelope: false },
+          objectives: {
+            hear_relay_brief: true,
+            take_cafe_envelope: true,
+            cross_street_with_envelope: true,
+            enter_office_with_envelope: true,
+            deliver_office_envelope: false,
+            read_relay_second_sheet: false,
+          },
         },
       ],
     });
-    expect(getCafeOfficeRelayHint('office_day')).toContain('серверной');
-  });
-
-  it('aggregates first active hub hint', () => {
-    mockSnapshot.mockReturnValue({
-      quests: [
-        {
-          questId: 'act2_pier_cafe_frequency',
-          status: 'active',
-          objectives: { hear_pier_frequency: false, match_cafe_wall: false },
-        },
-      ],
-    });
-    expect(getExpansionHubQuestHint('street_night')).toContain('Трофим');
+    expect(getExpansionHubQuestHint('office_day')).toContain('конверт');
   });
 });
