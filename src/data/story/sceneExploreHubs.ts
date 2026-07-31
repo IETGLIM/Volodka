@@ -732,6 +732,30 @@ function buildSceneExploreHubNode(def: (typeof SCENE_EXPLORE_HUB_DEFS)[number]):
         },
       },
       {
+        text: 'Перебежчик — тоннель ещё ждёт',
+        next: 'resistance_defector_rescue_start',
+        condition: {
+          flag: 'resistance_defector_rescue_active',
+          missingFlag: 'resistance_defector_tunnel',
+        },
+      },
+      {
+        text: 'Стих у засады — дроны ещё слушают',
+        next: 'resistance_defector_poem_stun',
+        condition: {
+          flag: 'resistance_defector_tunnel',
+          missingFlag: 'resistance_defector_poem_stun',
+        },
+      },
+      {
+        text: 'Увод в тоннель — Олег ещё снаружи',
+        next: 'resistance_defector_extract',
+        condition: {
+          flag: 'resistance_defector_poem_stun',
+          missingFlag: 'resistance_defector_rescue_done',
+        },
+      },
+      {
         text: 'Ночной рейд — коллектор под КПП',
         next: 'quest_act6_defector_rescue_expanded_start',
         condition: {
@@ -1000,7 +1024,7 @@ function buildSceneExploreHubNode(def: (typeof SCENE_EXPLORE_HUB_DEFS)[number]):
         next: 'library_archive_descent',
         condition: {
           flag: 'library_archive_key_found',
-          missingFlag: 'library_lost_archive_done',
+          missingFlag: 'library_basement_entered',
         },
         effects: [{ type: 'transitionScene', sceneId: 'library_basement' }],
       },
@@ -1009,6 +1033,14 @@ function buildSceneExploreHubNode(def: (typeof SCENE_EXPLORE_HUB_DEFS)[number]):
         next: 'library_katya_research_start',
         condition: { missingFlag: 'library_katya_research_active' },
         effects: [{ type: 'triggerQuest', questId: 'library_katya_research' }],
+      },
+      {
+        text: 'Продолжить схему — петля ещё не отмечена',
+        next: 'library_katya_schema',
+        condition: {
+          flag: 'library_katya_research_active',
+          missingFlag: 'library_katya_schema_open',
+        },
       },
       {
         text: 'Продолжить схему — кросс-сверка с прошивкой',
@@ -1024,6 +1056,22 @@ function buildSceneExploreHubNode(def: (typeof SCENE_EXPLORE_HUB_DEFS)[number]):
         condition: {
           flag: 'library_katya_firmware_cross',
           missingFlag: 'library_katya_night_pass',
+        },
+      },
+      {
+        text: 'Узел «Марат» — дочитай вспышку',
+        next: 'library_katya_marat_hit',
+        condition: {
+          flag: 'library_katya_night_pass',
+          missingFlag: 'library_katya_marat_node',
+        },
+      },
+      {
+        text: 'Распечатка у Кати — координаты серверной',
+        next: 'library_katya_research_done',
+        condition: {
+          flag: 'library_katya_marat_node',
+          missingFlag: 'library_katya_research_done',
         },
       },
       {
@@ -1087,8 +1135,16 @@ function buildSceneExploreHubNode(def: (typeof SCENE_EXPLORE_HUB_DEFS)[number]):
       {
         text: 'Сесть с Трофимом — ночная рыбалка',
         next: 'pier_midnight_fishing_start',
-        condition: { missingFlag: 'pier_midnight_fishing_done' },
+        condition: { missingFlag: 'pier_fishing_float_taken' },
         effects: [{ type: 'triggerQuest', questId: 'pier_midnight_fishing' }],
+      },
+      {
+        text: 'Вернуться к удочке — леска ещё в воде',
+        next: 'pier_midnight_fishing_sit',
+        condition: {
+          flag: 'pier_fishing_float_taken',
+          missingFlag: 'pier_fishing_seated',
+        },
       },
       {
         text: 'Прислушаться к гулу под сваей',
@@ -1096,6 +1152,14 @@ function buildSceneExploreHubNode(def: (typeof SCENE_EXPLORE_HUB_DEFS)[number]):
         condition: {
           flag: 'pier_fishing_seated',
           missingFlag: 'pier_factory_bass_heard',
+        },
+      },
+      {
+        text: 'Трофим готов — ключ под третьей сваей',
+        next: 'pier_midnight_fishing_key',
+        condition: {
+          flag: 'pier_factory_bass_heard',
+          missingFlag: 'pier_midnight_fishing_done',
         },
       },
       {

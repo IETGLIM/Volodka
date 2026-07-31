@@ -307,6 +307,21 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
     text: 'Тише... Стены слушают. Я Катя. Храню то, что они хотят уничтожить. Книги, стихи, мысли — всё, что гильдия считает "неоптимизированным". Если ты ищешь правду — она между строк. Если ищешь покой — его здесь нет.',
     choices: [
       {
+        text: 'Помочь найти утерянный архив?',
+        next: 'library_lost_archive_start',
+        condition: { missingFlag: 'library_lost_archive_active' },
+        effects: [{ type: 'triggerQuest', questId: 'library_lost_archive' }],
+      },
+      {
+        text: 'Ключ в кармане — спуск в подвал.',
+        next: 'library_archive_descent',
+        condition: {
+          flag: 'library_archive_key_found',
+          missingFlag: 'library_basement_entered',
+        },
+        effects: [{ type: 'transitionScene', sceneId: 'library_basement' }],
+      },
+      {
         text: 'Помочь со схемой поэтов?',
         next: 'library_katya_research_start',
         condition: { missingFlag: 'library_katya_research_active' },
@@ -1817,6 +1832,67 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
     text: 'Тише... Стены по-прежнему слушают. Но ты знаешь, куда идти. Запрещённый фонд на месте — пока.',
     choices: [
       {
+        text: 'Помочь найти утерянный архив?',
+        next: 'library_lost_archive_start',
+        condition: { missingFlag: 'library_lost_archive_active' },
+        effects: [{ type: 'triggerQuest', questId: 'library_lost_archive' }],
+      },
+      {
+        text: 'Ключ в кармане — спуск в подвал.',
+        next: 'library_archive_descent',
+        condition: {
+          flag: 'library_archive_key_found',
+          missingFlag: 'library_basement_entered',
+        },
+        effects: [{ type: 'transitionScene', sceneId: 'library_basement' }],
+      },
+      {
+        text: 'Помочь со схемой поэтов?',
+        next: 'library_katya_research_start',
+        condition: { missingFlag: 'library_katya_research_active' },
+        effects: [{ type: 'triggerQuest', questId: 'library_katya_research' }],
+      },
+      {
+        text: 'Продолжим схему — ночь ещё жива.',
+        next: 'library_katya_schema',
+        condition: {
+          flag: 'library_katya_research_active',
+          missingFlag: 'library_katya_schema_open',
+        },
+      },
+      {
+        text: 'Сверим прошивки.',
+        next: 'library_katya_crossref',
+        condition: {
+          flag: 'library_katya_schema_open',
+          missingFlag: 'library_katya_firmware_cross',
+        },
+      },
+      {
+        text: 'Дожать ночной проход.',
+        next: 'library_katya_night',
+        condition: {
+          flag: 'library_katya_firmware_cross',
+          missingFlag: 'library_katya_night_pass',
+        },
+      },
+      {
+        text: 'Узел на схеме — дочитай «Марата».',
+        next: 'library_katya_marat_hit',
+        condition: {
+          flag: 'library_katya_night_pass',
+          missingFlag: 'library_katya_marat_node',
+        },
+      },
+      {
+        text: 'Узел вспыхнул — нужна распечатка.',
+        next: 'library_katya_research_done',
+        condition: {
+          flag: 'library_katya_marat_node',
+          missingFlag: 'library_katya_research_done',
+        },
+      },
+      {
         text: 'Покажи мне запрещённые книги.',
         next: 'kate_forbidden_books',
         effects: [{ type: 'addSkill', skill: 'writing', value: 1 }],
@@ -2155,10 +2231,18 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
         },
       },
       {
-        text: 'Координаты живы — стих и увод.',
+        text: 'К засаде — стих против дронов.',
         next: 'resistance_defector_poem_stun',
         condition: {
           flag: 'resistance_defector_tunnel',
+          missingFlag: 'resistance_defector_poem_stun',
+        },
+      },
+      {
+        text: 'Увести Олега — люк открыт.',
+        next: 'resistance_defector_extract',
+        condition: {
+          flag: 'resistance_defector_poem_stun',
           missingFlag: 'resistance_defector_rescue_done',
         },
       },

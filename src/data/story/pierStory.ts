@@ -47,6 +47,11 @@ export const STORY_NODES_PIER: Record<string, StoryNode> = {
           { type: 'setFlag', flag: 'pier_fishing_float_taken', flagValue: true },
         ],
       },
+      {
+        text: 'Позже — река подождёт',
+        next: 'pier_evening_explore_mode',
+        condition: { missingFlag: 'pier_fishing_float_taken' },
+      },
     ],
   },
 
@@ -65,6 +70,11 @@ export const STORY_NODES_PIER: Record<string, StoryNode> = {
         text: 'Прислушаться к воде',
         next: 'pier_midnight_fishing_bass',
         effects: [{ type: 'setFlag', flag: 'pier_fishing_seated', flagValue: true }],
+      },
+      {
+        text: 'Отойти — леска ещё в воде',
+        next: 'pier_evening_explore_mode',
+        condition: { missingFlag: 'pier_fishing_seated' },
       },
     ],
   },
@@ -85,6 +95,11 @@ export const STORY_NODES_PIER: Record<string, StoryNode> = {
         text: 'Кивнуть — слушаю',
         next: 'pier_midnight_fishing_key',
         effects: [{ type: 'setFlag', flag: 'pier_factory_bass_heard', flagValue: true }],
+      },
+      {
+        text: 'Отойти — бас ещё гудит под сваей',
+        next: 'pier_evening_explore_mode',
+        condition: { missingFlag: 'pier_factory_bass_heard' },
       },
     ],
   },
@@ -108,6 +123,11 @@ export const STORY_NODES_PIER: Record<string, StoryNode> = {
           { type: 'setFlag', flag: 'pier_midnight_fishing_done', flagValue: true },
           { type: 'npcChange', npcId: 'npc_trofim', npcChange: { relation: 5 } },
         ],
+      },
+      {
+        text: 'Отойти — свая подождёт',
+        next: 'pier_evening_explore_mode',
+        condition: { missingFlag: 'pier_midnight_fishing_done' },
       },
     ],
   },
@@ -201,6 +221,11 @@ export const STORY_NODES_PIER: Record<string, StoryNode> = {
           { type: 'transitionScene', sceneId: 'chk_campfire_night' },
         ],
       },
+      {
+        text: 'Отойти — свёрток ещё в ящике',
+        next: 'office_explore_mode',
+        condition: { missingFlag: 'pier_ritka_get_strings_done' },
+      },
     ],
   },
 
@@ -222,6 +247,11 @@ export const STORY_NODES_PIER: Record<string, StoryNode> = {
           { type: 'setFlag', flag: 'pier_ritka_elis_pack_ready', flagValue: true },
           { type: 'transitionScene', sceneId: 'pier_evening' },
         ],
+      },
+      {
+        text: 'Отойти — комплект ещё у костра',
+        next: 'chk_campfire_night_explore_mode',
+        condition: { missingFlag: 'pier_ritka_elis_pack_ready' },
       },
     ],
   },

@@ -935,6 +935,30 @@ export const ACT1_STRUCTURE: Record<string, StoryNodeStructure> = {
           "flag": "act6_maria_warning_open",
           "missingFlag": "act6_maria_warning_resolved"
         }
+      },
+      {
+        "text": "Тоннель к засаде — Аня в наушнике",
+        "next": "resistance_defector_rescue_start",
+        "condition": {
+          "flag": "resistance_defector_rescue_active",
+          "missingFlag": "resistance_defector_tunnel"
+        }
+      },
+      {
+        "text": "Засада у входа — стих против дронов",
+        "next": "resistance_defector_poem_stun",
+        "condition": {
+          "flag": "resistance_defector_tunnel",
+          "missingFlag": "resistance_defector_poem_stun"
+        }
+      },
+      {
+        "text": "Увести Олега — люк в бункер открыт",
+        "next": "resistance_defector_extract",
+        "condition": {
+          "flag": "resistance_defector_poem_stun",
+          "missingFlag": "resistance_defector_rescue_done"
+        }
       }
     ]
   },

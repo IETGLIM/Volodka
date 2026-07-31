@@ -89,6 +89,11 @@ export const STORY_NODES_LIBRARY: Record<string, StoryNode> = {
         next: 'library_archive_gate',
         effects: [{ type: 'setFlag', flag: 'library_basement_entered', flagValue: true }],
       },
+      {
+        text: 'Отойти — лестница ещё сырая',
+        next: 'library_basement_explore_mode',
+        condition: { missingFlag: 'library_basement_entered' },
+      },
     ],
   },
 
@@ -106,6 +111,11 @@ export const STORY_NODES_LIBRARY: Record<string, StoryNode> = {
         text: 'Открыть нижний ряд',
         next: 'library_lost_archive_found',
         effects: [{ type: 'setFlag', flag: 'library_archive_gate_open', flagValue: true }],
+      },
+      {
+        text: 'Отойти — RFID ещё мигает',
+        next: 'library_basement_explore_mode',
+        condition: { missingFlag: 'library_archive_gate_open' },
       },
     ],
   },
@@ -125,6 +135,11 @@ export const STORY_NODES_LIBRARY: Record<string, StoryNode> = {
         text: 'Помочь оцифровать тайно',
         next: 'library_archive_digitize',
         effects: [{ type: 'setFlag', flag: 'library_archive_recovered', flagValue: true }],
+      },
+      {
+        text: 'Отойти — коробки подождут',
+        next: 'library_basement_explore_mode',
+        condition: { missingFlag: 'library_archive_recovered' },
       },
     ],
   },
@@ -192,6 +207,11 @@ export const STORY_NODES_LIBRARY: Record<string, StoryNode> = {
         next: 'library_katya_crossref',
         effects: [{ type: 'setFlag', flag: 'library_katya_schema_open', flagValue: true }],
       },
+      {
+        text: 'Отойти — схема подождёт на столе',
+        next: 'library_explore_mode',
+        condition: { missingFlag: 'library_katya_schema_open' },
+      },
     ],
   },
 
@@ -209,6 +229,11 @@ export const STORY_NODES_LIBRARY: Record<string, StoryNode> = {
         text: 'Зафиксировать совпадение хеша',
         next: 'library_katya_night',
         effects: [{ type: 'setFlag', flag: 'library_katya_firmware_cross', flagValue: true }],
+      },
+      {
+        text: 'Отойти — хеши подождут у лампы',
+        next: 'library_explore_mode',
+        condition: { missingFlag: 'library_katya_firmware_cross' },
       },
     ],
   },
@@ -241,6 +266,11 @@ export const STORY_NODES_LIBRARY: Record<string, StoryNode> = {
           { type: 'addStat', stat: 'energy', value: -12 },
         ],
       },
+      {
+        text: 'Отойти — ночь ещё длинная',
+        next: 'library_explore_mode',
+        condition: { missingFlag: 'library_katya_night_pass' },
+      },
     ],
   },
 
@@ -262,6 +292,11 @@ export const STORY_NODES_LIBRARY: Record<string, StoryNode> = {
           { type: 'setFlag', flag: 'library_katya_marat_node', flagValue: true },
           { type: 'transitionScene', sceneId: 'library_day' },
         ],
+      },
+      {
+        text: 'Отойти — распечатка ещё греется',
+        next: 'library_explore_mode',
+        condition: { missingFlag: 'library_katya_marat_node' },
       },
     ],
   },

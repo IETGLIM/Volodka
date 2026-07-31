@@ -35,6 +35,9 @@ export const SCENE_EXPLORE_HUB_DEFS: readonly SceneExploreHubDef[] = [
       'act6_maria_warning',
       'act7_final_walk',
       'act7_maria_future',
+      'resistance_defector_tunnel',
+      'resistance_defector_poem_stun',
+      'resistance_defector_extract',
     ],
   },
   {
@@ -100,6 +103,7 @@ export const SCENE_EXPLORE_HUB_DEFS: readonly SceneExploreHubDef[] = [
       'night_before_dawn_dmitry',
       'quest_act2_server_poem_hunt_start',
       'quest_act2_server_poem_office',
+      'pier_ritka_office_string',
     ],
   },
   {
@@ -150,6 +154,14 @@ export const SCENE_EXPLORE_HUB_DEFS: readonly SceneExploreHubDef[] = [
       'act7_guardian_legacy_mirror',
       'quest_act4_street_samizdat_library',
       'quest_act3_zarema_evidence_run_start',
+      'library_lost_archive_start',
+      'library_archive_fund_key',
+      'library_katya_research_start',
+      'library_katya_schema',
+      'library_katya_crossref',
+      'library_katya_night',
+      'library_katya_marat_hit',
+      'library_katya_research_done',
     ],
   },
   {
@@ -240,6 +252,8 @@ export const SCENE_EXPLORE_HUB_DEFS: readonly SceneExploreHubDef[] = [
       'quest_act4_street_samizdat_chk',
       'quest_act2_server_poem_chk',
       'quest_act2_chk_neon_archive_start',
+      'pier_ritka_elis_ask',
+      'pier_ritka_elis_pack',
     ],
   },
   {
@@ -274,14 +288,30 @@ export const SCENE_EXPLORE_HUB_DEFS: readonly SceneExploreHubDef[] = [
     hubText:
       'Вечерний пирс — вода темнее, костёр в бочке рыжее, чем в лесу. Трофим смотрит на поплавок, Ритка перебирает струны. Здесь ЧК дышит спокойнее.',
     hubTextRevisit: 'Пирс. Вода. Костёр.',
-    entryNodeIds: ['pier_story_intro', 'pier_midnight_fishing_start', 'quest_act4_street_samizdat_pier', 'quest_act2_server_poem_pier'],
+    entryNodeIds: [
+      'pier_story_intro',
+      'pier_midnight_fishing_start',
+      'pier_midnight_fishing_sit',
+      'pier_midnight_fishing_bass',
+      'pier_midnight_fishing_key',
+      'quest_act4_street_samizdat_pier',
+      'quest_act2_server_poem_pier',
+    ],
   },
   {
     hubId: 'library_basement_explore_mode',
     sceneId: 'library_basement',
     hubText:
       'Подвал библиотеки — сырость, железная решётка, запах бумаги, которую не успели сжечь. Катя знает каждый ящик с пометкой «УТИЛЬ».',
-    entryNodeIds: ['library_lost_archive_start', 'library_marat_echo', 'quest_act3_zarema_evidence_secure'],
+    entryNodeIds: [
+      'library_lost_archive_start',
+      'library_archive_descent',
+      'library_archive_gate',
+      'library_lost_archive_found',
+      'library_archive_digitize',
+      'library_marat_echo',
+      'quest_act3_zarema_evidence_secure',
+    ],
   },
   {
     hubId: 'city_square_explore_mode',
@@ -306,6 +336,8 @@ export const SCENE_EXPLORE_HUB_DEFS: readonly SceneExploreHubDef[] = [
       'resistance_story_intro',
       'quest_act5_bunker_code_poem_break_start',
       'quest_act5_bunker_code_break',
+      'resistance_defector_rescue_start',
+      'resistance_defector_rescued',
       'quest_act6_defector_rescue_expanded_start',
       'quest_act6_defector_infiltrate',
       'quest_act6_defector_free_cell',
@@ -343,7 +375,11 @@ export const SCENE_EXPLORE_HUB_DEFS: readonly SceneExploreHubDef[] = [
     sceneId: 'chk_campfire_night',
     hubText:
       'Ночной костёр ЧК — огонь выше, тени длиннее. То, о чём днём молчат, здесь звучит вполголоса под гитару Элис.',
-    entryNodeIds: ['chk_campfire_night_arrival', 'chk_portwine_delivered'],
+    entryNodeIds: [
+      'chk_campfire_night_arrival',
+      'chk_portwine_delivered',
+      'pier_ritka_elis_pack',
+    ],
   },
   {
     hubId: 'zarema_room_solo_explore_mode',

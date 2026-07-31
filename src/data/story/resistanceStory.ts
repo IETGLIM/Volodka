@@ -70,10 +70,18 @@ export const STORY_NODES_RESISTANCE: Record<string, StoryNode> = {
         },
       },
       {
-        text: 'Стих и увод — Олег ещё снаружи',
+        text: 'Стих у засады — дроны ещё слушают',
         next: 'resistance_defector_poem_stun',
         condition: {
           flag: 'resistance_defector_tunnel',
+          missingFlag: 'resistance_defector_poem_stun',
+        },
+      },
+      {
+        text: 'Увод в тоннель — Олег ещё снаружи',
+        next: 'resistance_defector_extract',
+        condition: {
+          flag: 'resistance_defector_poem_stun',
           missingFlag: 'resistance_defector_rescue_done',
         },
       },
@@ -318,6 +326,7 @@ export const STORY_NODES_RESISTANCE: Record<string, StoryNode> = {
           { type: 'transitionScene', sceneId: 'street_night' },
         ],
       },
+      { text: 'Позже — наушник подождёт', next: 'bunker_explore_mode' },
     ],
   },
 
@@ -335,6 +344,11 @@ export const STORY_NODES_RESISTANCE: Record<string, StoryNode> = {
         text: 'Выйти к засаде',
         next: 'resistance_defector_poem_stun',
         effects: [{ type: 'setFlag', flag: 'resistance_defector_tunnel', flagValue: true }],
+      },
+      {
+        text: 'Отойти — тоннель ещё тёмный',
+        next: 'street_bench_view',
+        condition: { missingFlag: 'resistance_defector_tunnel' },
       },
     ],
   },
@@ -354,6 +368,11 @@ export const STORY_NODES_RESISTANCE: Record<string, StoryNode> = {
         next: 'resistance_defector_extract',
         goldenPath: true,
         effects: [{ type: 'setFlag', flag: 'resistance_defector_poem_stun', flagValue: true }],
+      },
+      {
+        text: 'Отойти — дроны ещё кружат',
+        next: 'street_bench_view',
+        condition: { missingFlag: 'resistance_defector_poem_stun' },
       },
     ],
   },
@@ -376,6 +395,11 @@ export const STORY_NODES_RESISTANCE: Record<string, StoryNode> = {
           { type: 'setFlag', flag: 'resistance_defector_extract', flagValue: true },
           { type: 'transitionScene', sceneId: 'underground_bunker' },
         ],
+      },
+      {
+        text: 'Отойти — люк ещё закрыт',
+        next: 'street_bench_view',
+        condition: { missingFlag: 'resistance_defector_rescue_done' },
       },
     ],
   },

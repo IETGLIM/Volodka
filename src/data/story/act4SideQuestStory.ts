@@ -55,6 +55,11 @@ export const STORY_NODES_ACT4_SIDE_QUESTS: Record<string, StoryNode> = {
           { type: 'addSkill', skill: 'logic', value: 1 },
         ],
       },
+      {
+        text: 'Закрыть ноутбук — маршрут ещё на экране',
+        next: 'zarema_room_explore_mode',
+        condition: { missingFlag: 'traced_bank_transfer' },
+      },
     ],
   },
   bank_transfer_culprit: {
@@ -75,6 +80,11 @@ export const STORY_NODES_ACT4_SIDE_QUESTS: Record<string, StoryNode> = {
           { type: 'setFlag', flag: 'identified_bank_culprit', flagValue: true },
           { type: 'addSkill', skill: 'persuasion', value: 1 },
         ],
+      },
+      {
+        text: 'Отойти — счёт ещё на терминале',
+        next: 'office_explore_mode',
+        condition: { missingFlag: 'identified_bank_culprit' },
       },
     ],
   },
@@ -183,6 +193,11 @@ export const STORY_NODES_ACT4_SIDE_QUESTS: Record<string, StoryNode> = {
           { type: 'addSkill', skill: 'coding', value: 1 },
         ],
       },
+      {
+        text: 'Отойти — логи ещё шепчут',
+        next: 'office_explore_mode',
+        condition: { missingFlag: 'detected_ai_traces' },
+      },
     ],
   },
   digital_ghost_firewall: {
@@ -202,6 +217,11 @@ export const STORY_NODES_ACT4_SIDE_QUESTS: Record<string, StoryNode> = {
           { type: 'setFlag', flag: 'firewall_bypassed', flagValue: true },
           { type: 'addSkill', skill: 'coding', value: 2 },
         ],
+      },
+      {
+        text: 'Отойти — фаервол ещё держит сектор',
+        next: 'office_explore_mode',
+        condition: { missingFlag: 'firewall_bypassed' },
       },
     ],
   },
@@ -353,6 +373,11 @@ export const STORY_NODES_ACT4_SIDE_QUESTS: Record<string, StoryNode> = {
           { type: 'addKarma', value: 4 },
           { type: 'addSkill', skill: 'empathy', value: 1 },
         ],
+      },
+      {
+        text: 'Отойти — мальчик ещё у фонаря',
+        next: 'street_winter_explore_mode',
+        condition: { missingFlag: 'found_lost_child' },
       },
     ],
   },

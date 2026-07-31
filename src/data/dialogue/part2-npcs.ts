@@ -21,6 +21,14 @@ export const DIALOGUE_PART2: Record<string, DialogueNode> = {
         effects: [{ type: 'setFlag', flag: 'chk_guitar_office_reached', flagValue: true }],
       },
       {
+        text: 'Элис просила запасную для Ритки с пирса.',
+        next: 'pier_ritka_office_string',
+        condition: {
+          flag: 'pier_ritka_elis_asked',
+          missingFlag: 'pier_ritka_get_strings_done',
+        },
+      },
+      {
         text: 'Расскажи мне. Я умею держать язык за зубами.',
         next: 'office_colleague_share',
         condition: {
@@ -814,6 +822,14 @@ export const DIALOGUE_PART2: Record<string, DialogueNode> = {
           missingFlag: 'chk_guitar_string_taken',
         },
         effects: [{ type: 'setFlag', flag: 'chk_guitar_office_reached', flagValue: true }],
+      },
+      {
+        text: 'Элис просила запасную для Ритки с пирса.',
+        next: 'pier_ritka_office_string',
+        condition: {
+          flag: 'pier_ritka_elis_asked',
+          missingFlag: 'pier_ritka_get_strings_done',
+        },
       },
       {
         text: 'Что нового? Какие-нибудь свежие логи?',

@@ -81,6 +81,178 @@ describe('Act 1–2 thin stub → multi-beat conversion', () => {
     expect(effects.some((e) => e.type === 'setFlag' && e.flag === 'library_lost_archive_done')).toBe(true);
   });
 
+  it('library_lost_archive leave + mid-resume splits descent→gate→found', () => {
+    expect(
+      STORY_NODES.library_archive_descent.choices.some((c) => c.next === 'library_basement_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.library_archive_gate.choices.some((c) => c.next === 'library_basement_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.library_lost_archive_found.choices.some((c) => c.next === 'library_basement_explore_mode'),
+    ).toBe(true);
+
+    const library = STORY_NODES.library_explore_mode;
+    const descent = library.choices.find((c) => c.next === 'library_archive_descent');
+    expect(descent?.condition?.flag).toBe('library_archive_key_found');
+    expect(descent?.condition?.missingFlag).toBe('library_basement_entered');
+
+    const basement = STORY_NODES.library_basement_explore_mode;
+    expect(basement.choices.some((c) => c.next === 'library_archive_gate')).toBe(true);
+    expect(basement.choices.some((c) => c.next === 'library_lost_archive_found')).toBe(true);
+    expect(basement.choices.some((c) => c.next === 'library_archive_digitize')).toBe(true);
+
+    expect(TRIGGER_ZONES.find((z) => z.id === 'library_archive_key_descent')?.hiddenWhenFlag).toBe(
+      'library_basement_entered',
+    );
+    expect(TRIGGER_ZONES.find((z) => z.id === 'library_basement_archive_found')?.linkedStoryNodeId).toBe(
+      'library_lost_archive_found',
+    );
+  });
+
+  it('library_katya_research leave + mid-resume splits schema→crossref→night→marat', () => {
+    expect(
+      STORY_NODES.library_katya_schema.choices.some((c) => c.next === 'library_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.library_katya_crossref.choices.some((c) => c.next === 'library_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.library_katya_night.choices.some((c) => c.next === 'library_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.library_katya_marat_hit.choices.some((c) => c.next === 'library_explore_mode'),
+    ).toBe(true);
+
+    const library = STORY_NODES.library_explore_mode;
+    expect(library.choices.some((c) => c.next === 'library_katya_schema')).toBe(true);
+    expect(library.choices.some((c) => c.next === 'library_katya_marat_hit')).toBe(true);
+    expect(library.choices.some((c) => c.next === 'library_katya_research_done')).toBe(true);
+
+    expect(TRIGGER_ZONES.find((z) => z.id === 'library_katya_schema_mid')?.linkedStoryNodeId).toBe(
+      'library_katya_schema',
+    );
+    expect(TRIGGER_ZONES.find((z) => z.id === 'library_katya_marat_mid')?.hiddenWhenFlag).toBe(
+      'library_katya_marat_node',
+    );
+  });
+
+  it('pier_midnight_fishing leave + mid-resume splits sit→bass→key', () => {
+    expect(
+      STORY_NODES.pier_midnight_fishing_start.choices.some((c) => c.next === 'pier_evening_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.pier_midnight_fishing_sit.choices.some((c) => c.next === 'pier_evening_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.pier_midnight_fishing_bass.choices.some((c) => c.next === 'pier_evening_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.pier_midnight_fishing_key.choices.some(
+        (c) =>
+          c.next === 'pier_evening_explore_mode'
+          && !(c.effects ?? []).some(
+            (e) => e.type === 'setFlag' && e.flag === 'pier_midnight_fishing_done',
+          ),
+      ),
+    ).toBe(true);
+
+    const pier = STORY_NODES.pier_evening_explore_mode;
+    const start = pier.choices.find((c) => c.next === 'pier_midnight_fishing_start');
+    expect(start?.condition?.missingFlag).toBe('pier_fishing_float_taken');
+    expect(pier.choices.some((c) => c.next === 'pier_midnight_fishing_sit')).toBe(true);
+    expect(pier.choices.some((c) => c.next === 'pier_midnight_fishing_key')).toBe(true);
+
+    expect(TRIGGER_ZONES.find((z) => z.id === 'pier_evening_fishing_sit')?.linkedStoryNodeId).toBe(
+      'pier_midnight_fishing_sit',
+    );
+    expect(TRIGGER_ZONES.find((z) => z.id === 'pier_evening_fishing_key')?.hiddenWhenFlag).toBe(
+      'pier_midnight_fishing_done',
+    );
+  });
+
+  it('pier_ritka office/elis leave + hub/zone/dialogue mid-resume', () => {
+    expect(
+      STORY_NODES.pier_ritka_office_string.choices.some(
+        (c) =>
+          c.next === 'office_explore_mode'
+          && !(c.effects ?? []).some(
+            (e) => e.type === 'setFlag' && e.flag === 'pier_ritka_get_strings_done',
+          ),
+      ),
+    ).toBe(true);
+    expect(
+      STORY_NODES.pier_ritka_elis_pack.choices.some(
+        (c) =>
+          c.next === 'chk_campfire_night_explore_mode'
+          && !(c.effects ?? []).some(
+            (e) => e.type === 'setFlag' && e.flag === 'pier_ritka_elis_pack_ready',
+          ),
+      ),
+    ).toBe(true);
+
+    const office = STORY_NODES.office_explore_mode;
+    const camp = STORY_NODES.chk_campfire_night_explore_mode;
+    const chk = STORY_NODES.chk_explore_mode;
+    expect(office.choices.some((c) => c.next === 'pier_ritka_office_string')).toBe(true);
+    expect(camp.choices.some((c) => c.next === 'pier_ritka_elis_pack')).toBe(true);
+    expect(chk.choices.some((c) => c.next === 'pier_ritka_elis_pack')).toBe(true);
+
+    expect(TRIGGER_ZONES.find((z) => z.id === 'office_ritka_string')?.linkedStoryNodeId).toBe(
+      'pier_ritka_office_string',
+    );
+    expect(TRIGGER_ZONES.find((z) => z.id === 'office_ritka_string')?.hiddenWhenFlag).toBe(
+      'pier_ritka_get_strings_done',
+    );
+    expect(TRIGGER_ZONES.find((z) => z.id === 'chk_campfire_ritka_pack')?.linkedStoryNodeId).toBe(
+      'pier_ritka_elis_pack',
+    );
+    expect(TRIGGER_ZONES.find((z) => z.id === 'chk_campfire_ritka_pack')?.hiddenWhenFlag).toBe(
+      'pier_ritka_elis_pack_ready',
+    );
+  });
+
+  it('pier_ritka office colleague dialogue mid-resume', async () => {
+    const { DIALOGUE_PART2 } = await import('@/data/dialogue/part2-npcs');
+    expect(
+      DIALOGUE_PART2.office_colleague_dialogue.choices.some(
+        (c) => c.next === 'pier_ritka_office_string',
+      ),
+    ).toBe(true);
+    expect(
+      DIALOGUE_PART2.office_colleague_return.choices.some(
+        (c) => c.next === 'pier_ritka_office_string',
+      ),
+    ).toBe(true);
+  });
+
+  it('Act 4 bank_transfer / digital_ghost / night_watch leave + hub mid-resume', () => {
+    expect(
+      STORY_NODES.bank_transfer_trace.choices.some((c) => c.next === 'zarema_room_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.bank_transfer_culprit.choices.some((c) => c.next === 'office_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.digital_ghost_traces.choices.some((c) => c.next === 'office_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.digital_ghost_firewall.choices.some((c) => c.next === 'office_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.night_watch_child.choices.some((c) => c.next === 'street_winter_explore_mode'),
+    ).toBe(true);
+
+    const zarema = STORY_NODES.zarema_room_explore_mode;
+    const office = STORY_NODES.office_explore_mode;
+    const winter = STORY_NODES.street_winter_explore_mode;
+    expect(zarema.choices.some((c) => c.next === 'bank_transfer_trace')).toBe(true);
+    expect(office.choices.some((c) => c.next === 'bank_transfer_culprit')).toBe(true);
+    expect(office.choices.some((c) => c.next === 'digital_ghost_traces')).toBe(true);
+    expect(office.choices.some((c) => c.next === 'digital_ghost_firewall')).toBe(true);
+    expect(winter.choices.some((c) => c.next === 'night_watch_child')).toBe(true);
+  });
+
   it('chk portwine delivery spans albert → street → toast', () => {
     expect(STORY_NODES.chk_portwine_promise).toBeTruthy();
     expect(STORY_NODES.chk_portwine_albert_ask).toBeTruthy();
@@ -442,6 +614,54 @@ describe('Act 1–2 thin stub → multi-beat conversion', () => {
         (e) => e.type === 'setFlag' && e.flag === 'resistance_defector_rescue_done',
       ),
     ).toBe(true);
+  });
+
+  it('resistance_defector_rescue leave + mid-resume splits tunnel→stun→extract', () => {
+    expect(
+      STORY_NODES.resistance_defector_rescue_start.choices.some((c) => c.next === 'bunker_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.resistance_defector_tunnel.choices.some((c) => c.next === 'street_bench_view'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.resistance_defector_poem_stun.choices.some((c) => c.next === 'street_bench_view'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.resistance_defector_extract.choices.some(
+        (c) =>
+          c.next === 'street_bench_view'
+          && !(c.effects ?? []).some(
+            (e) => e.type === 'setFlag' && e.flag === 'resistance_defector_rescue_done',
+          ),
+      ),
+    ).toBe(true);
+
+    const hub = STORY_NODES.resistance_bunker_hub;
+    const poem = hub.choices.find((c) => c.next === 'resistance_defector_poem_stun');
+    expect(poem?.condition?.flag).toBe('resistance_defector_tunnel');
+    expect(poem?.condition?.missingFlag).toBe('resistance_defector_poem_stun');
+    const extract = hub.choices.find((c) => c.next === 'resistance_defector_extract');
+    expect(extract?.condition?.flag).toBe('resistance_defector_poem_stun');
+    expect(extract?.condition?.missingFlag).toBe('resistance_defector_rescue_done');
+
+    const bunker = STORY_NODES.bunker_explore_mode;
+    expect(bunker.choices.some((c) => c.next === 'resistance_defector_rescue_start')).toBe(true);
+    expect(bunker.choices.some((c) => c.next === 'resistance_defector_poem_stun')).toBe(true);
+    expect(bunker.choices.some((c) => c.next === 'resistance_defector_extract')).toBe(true);
+
+    const street = STORY_NODES.street_bench_view;
+    expect(street.choices.some((c) => c.next === 'resistance_defector_poem_stun')).toBe(true);
+    expect(street.choices.some((c) => c.next === 'resistance_defector_extract')).toBe(true);
+
+    expect(TRIGGER_ZONES.find((z) => z.id === 'bunker_defector_rescue_start')?.linkedStoryNodeId).toBe(
+      'resistance_defector_rescue_start',
+    );
+    expect(TRIGGER_ZONES.find((z) => z.id === 'street_defector_poem_stun')?.hiddenWhenFlag).toBe(
+      'resistance_defector_poem_stun',
+    );
+    expect(TRIGGER_ZONES.find((z) => z.id === 'street_defector_extract')?.linkedStoryNodeId).toBe(
+      'resistance_defector_extract',
+    );
   });
 
   it('quest_act7 poets monument spans plate → recall → carve → inscribe', () => {
@@ -2077,6 +2297,7 @@ describe('Maxim/Anya resistance dialogue resume hooks', () => {
       expect(nexts.has('resistance_safehouse_filters'), `${nodeId} filters`).toBe(true);
       expect(nexts.has('resistance_defector_rescue_start'), `${nodeId} defector start`).toBe(true);
       expect(nexts.has('resistance_defector_poem_stun'), `${nodeId} poem stun`).toBe(true);
+      expect(nexts.has('resistance_defector_extract'), `${nodeId} extract`).toBe(true);
     }
     const maximGreet = EXPANDED_DIALOGUE_NODES.maxim_greeting;
     expect(
