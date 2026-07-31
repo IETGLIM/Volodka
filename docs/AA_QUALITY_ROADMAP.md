@@ -4,7 +4,7 @@
 
 > Honest plan to push this browser RPG toward **AA-studio visual + systems density** with **$0 spend**.
 
-> Companion to `AI_SESSION_CONTEXT.md` / `readme.md`. Last updated: 2026-07-31 (Tick 44 continuous).
+> Companion to `ARCHITECTURE.md` / `AI_SESSION_CONTEXT.md` / `readme.md`. Last updated: 2026-07-31 (Tick 47 continuous).
 
 
 
@@ -1166,11 +1166,11 @@ From `config/performanceBudgets.json` + build gate:
 
 ## Next 3 actions
 
-1. `act6_secret_archive` door→decode→extract→seal — leave + hub/zone mid-resume if still next-only.
+1. Act 4 quiet-hour leave-scan leftovers (`act4_quiet_*` hub loops) + expansionQuestStory next-only chains.
 
-2. `machine_confession` / `echo_of_vladimir` mid-beats — leave + hub mid-resume if still forced-overlay.
+2. Mixamo ↔ Quaternius full bone remap (hip filter + talk fallback still interim).
 
-3. Mixamo ↔ Quaternius full bone remap (hip filter + talk fallback still interim).
+3. MeshPhysical thin hub gaps / `banking_crash_verify` → kitchen_table leave if still next-only.
 
 ---
 
@@ -1195,6 +1195,46 @@ From `config/performanceBudgets.json` + build gate:
 ---
 
 
+
+## Tick 47 (this session)
+
+| Change | Why |
+|--------|-----|
+| `pier_ritka_office_string` leave → office hub; `pier_ritka_elis_pack` leave → campfire hub | **Bug fix:** office/pack forced overlay — leave stuck |
+| Zones `office_ritka_string` + `chk_campfire_ritka_pack`; registry entry nodes | Full 3D RPG / closed-overlay mid-resume |
+| Office colleague greeting/return → `pier_ritka_office_string` | Dialogue mid-resume parity with guitar path |
+| Act 4 `bank_transfer` trace/culprit + `digital_ghost` traces/firewall + `night_watch_child` leave → hubs | Soft-lock hygiene — leave-scan leftovers; hub mid-resume already existed |
+| Test: ritka leave/hub/zone/dialogue + Act 4 leave/hub mid-resume | Regression guard |
+
+---
+
+
+
+## Tick 46 (this session)
+
+| Change | Why |
+|--------|-----|
+| Brace-aware leave-scan: phase5 / resistance / factory / epilogue / act6 core = **0** next-only | Confirmed Tick 45 targets clean — no redo |
+| `library_lost_archive` leave on descent/gate/found → basement hub; library hub descent mid = `!basement_entered` | **Bug fix:** mid-archive forced overlay — leave stuck |
+| `library_katya_research` leave on schema/crossref/night/marat → library hub; hub + Kate dialogue mid-split; zones | Soft-lock hygiene — leave mid-schema/night stuck |
+| `pier_midnight_fishing` leave on start/sit/bass/key → pier hub; sit→bass→key mid-resume + zones | **Bug fix:** mid-fishing forced overlay only |
+| Registry entry nodes for library / basement / pier fishing beats | Full 3D RPG re-entry |
+| Test: archive / Katya / fishing leave + mid-resume | Regression guard |
+
+---
+
+## Tick 45 (this session)
+
+| Change | Why |
+|--------|-----|
+| Verified `act6_secret_archive` / `machine_confession` / `echo_of_vladimir` leave + hub/zone mid-resume already shipped | Prompt targets 1–2 done — no redo |
+| `resistance_defector_rescue` leave on start/tunnel/poem_stun/extract → bunker / street hubs | **Bug fix:** mid-raid forced overlay only — leave stuck |
+| Bunker hub + `bunker_explore_mode` mid-split poem_stun vs extract (was coarse until done) | Soft-lock hygiene — leave mid-extract replayed poem |
+| `street_bench_view` mid-resume tunnel→stun→extract; Anya return extract split | Closed-overlay / dialogue mid-resume parity |
+| Zones: bunker start + street stun/extract; registry entry nodes | Full 3D RPG re-entry |
+| Test: defector leave + hub/zone/dialogue extract mid-resume | Regression guard |
+
+---
 
 ## Tick 44 (this session)
 

@@ -1,6 +1,13 @@
 # Архитектура — ВОЛОДЬКА RPG
 
-> Карта систем проекта для инженеров. Актуально для v4.2.42 (content-truth unification).
+> Карта систем для инженеров. Актуально для **v4.2.42** (`package.json` / `APP_VERSION`).
+> AA visual/content density plan: [`docs/AA_QUALITY_ROADMAP.md`](./docs/AA_QUALITY_ROADMAP.md).
+>
+> **Стек:** React 19 · Vite 6 · Three.js 0.172 · R3F 9 · Rapier Wasm (`@react-three/rapier` 2.2) ·
+> Zustand 5 · Zod 4 · Tailwind 4 · Vercel SPA.
+>
+> **Честный объём:** ~10–40 h плотного AA-прохождения сейчас; «120 h» — целевая фабрика контента,
+> не текущий shipped playtime.
 
 ## Content Truth — единая линия данных
 
@@ -172,7 +179,7 @@ patrol→chase→engaged→cooldown, конус зрения проецируе�
 | Selectors | `src/store/selectors/thoughtCabinetSelectors.ts` |
 | UI (вкладка журнала) | `src/components/game/journal/ThoughtCabinetTab.tsx` |
 
-**Контент:** 18 мыслей. Каждая содержит:
+**Контент:** 30 мыслей. Каждая содержит:
 
 | Поле | Описание |
 |------|----------|
@@ -185,13 +192,16 @@ patrol→chase→engaged→cooldown, конус зрения проецируе�
 | `mutuallyExclusive[]` | id конфликтующих мыслей |
 | `effects[]` | массив эффектов-модификаторов |
 
-**Взаимоисключающие пары (3):**
+**Взаимоисключающие пары (6):**
 
 | Мысль A | Мысль B |
 |---------|---------|
 | Post-Soviet Nostalgia | Cyberpunk Future |
 | Resist the System | Adapt to System |
 | Loneliness as Shield | Bonds That Save |
+| Resonator Awakening | Silent Observer |
+| Virus of Freedom | Quarantine Protocol |
+| Hive Mind | Lone Wolf Protocol |
 
 **Ограничения:** максимум 3 экипированных мысли одновременно. При экипировке конфликтующей мысли автоматическое снятие предыдущей.
 
@@ -405,14 +415,15 @@ OrchestratorQuestOverlays    — quest complete / board overlays
 | HUD | 10 | health, minimap, quick-use |
 | DIALOGUE | 30 | story / NPC overlay |
 | TOASTS | 35 | loot, lore, system alerts |
+| EXAMINE | 38 | examine panel |
 | MINIGAME | 40 | terminal, codebreaker |
-| MENU | 45 | pause, fast-travel backdrop |
 | COMBAT | 50 | пошаговый бой |
-| PANEL | 55 | inventory, journal, quests |
+| MENU | 58 | pause, settings |
+| PANEL | 60 | inventory, journal, quests |
 | LOADING | 100 | boot / scene load |
 | DEV_PANEL | 200 | F3 debug |
 
-**Известные UI-дыры (P0):** конфликт Escape между pause и панелями; inventory иногда перекрывается examine-toast — сверять `PanelStackSlot` z-index.
+Escape / panel routing: `escapeDismissAction` + capture-phase `useKeyboardShortcutManager` (см. known gaps).
 
 ### Камера: FSM (`cameraStateMachine.ts`)
 
@@ -489,6 +500,64 @@ Combat camera — отдельный `CombatCameraState` внутри cinematic 
 
 Пресеты: low = postFX off + Draco + procedural NPC; ultra = meshopt + full GLB.
 
+### Metric scale + interior shell mount policy
+
+**Конвенция:** 1 Three.js unit = 1 metre. Канонические human/prop targets —
+`src/config/metricScaleCoherence.ts` (`PLAYER_METRIC`, street shutter/facade scales, `METRIC_SCALE_AUDIT`).
+Cascade anchor: wake cutscene в `volodka_room` (≈1.75 m humanoid).
+
+**Shell mount kinds** (`src/config/interiorShellScale.ts`):
+
+| Kind | Meaning | Examples |
+|------|---------|----------|
+| `walkable_envelope` | GLB may replace procedural walls | `corridor` |
+| `exterior_building` | Kenney facade impostor — **never** walkable room | bedroom, café, office, library |
+| `backdrop_dressing` | Outdoor/industrial impostor via `SceneBackdropShell` only | factory, basement, pier, forest |
+
+`AuthoredInteriorShell` отказывает `exterior_building` shells (`isExteriorBuildingShell` → `null`),
+даже если ownership/scene allow-list иначе разрешает mount. High/Ultra **не** должны опустошать
+procedural clutter ради Kenney facade, который не монтируется: clutter gated on
+`isWalkableInteriorShellAllowed` / actual shell mount, not bare quality tier.
+
+### Selective MeshPhysical (wet / CRT accents)
+
+Не blanket `MeshPhysicalMaterial`. Quality-gated accents:
+
+- Gate: `allowsHeavyGfxFeature(..., 'meshPhysicalWet')` + scene allow-list in
+  `src/engine/graphics/wetStreetScenes.ts`.
+- Knobs: `getWetPuddlePhysicalParams`, `getWetGlassPhysicalParams` (`crtTerminalGlass`,
+  shop/pier/rooftop/office glass kinds, etc.).
+- Consumers: plaza/café/street/pier/rooftop/CHK/park/winter + industrial CRT/oil accents
+  (basement, guild, bunker, factory yard, albert backroom, …).
+
+Mid/low + coarse-pointer stay on Standard paths.
+
+### Leave + hub/zone mid-resume (soft-lock pattern)
+
+Closed-overlay explore hubs (`CLOSED_OVERLAY_EXPLORE_HUB_IDS` in `sceneExploreHubRegistry.ts`)
+закрывают VN overlay и отпускают игрока в 3D. Multi-beat side/spine chains **обязаны**:
+
+1. **Leave choice** на mid-beats → `*_explore_mode` hub (`next` + `missingFlag` на done-флаге).
+2. **Hub mid-split** — gated choices resume правильный beat (не coarse «start until done»).
+3. **Trigger zones** в `narrativeExpansionTriggerZones.ts` (+ scene interactables) с
+   `requiredFlag` / `hiddenWhenFlag` / entry node ids.
+4. **Registry `entryNodeIds`** — physical scene enter / closed-overlay re-entry maps beat → hub.
+5. **Dialogue greeting/return** — NPC mid-resume parity с hub.
+
+Regression guard: `src/data/quests/act1ThinStubs.test.ts` (+ leave-scan tooling).
+Live cues: `src/engine/guidedStory/aaaSideQuestHints.ts`.
+Narrative pack parity: runtime lazy packs ↔ CI eager `STORY_NODES`
+(`narrativeRegistryParity.test.ts`); satellites в `ACT_STORY_SATELLITES` / `narrativePackRegistry`.
+
+### Cinematic timeline
+
+- Runner UI: `src/components/3d/CinematicTimelineRunner.tsx`
+- Controller/orchestrator: `src/engine/cinematic/cinematicTimelineController.ts`,
+  `cinematicTimelineOrchestrator.ts`
+- Cleanup must reset `sequenceStartedRef` / one-shot camera-acquire retry — иначе
+  non-intro timelines silently skip after abort/transition.
+- Wake + dialogue DOF autofocus (world-space) завязаны на cinematic / FollowCamera stack.
+
 ### Нарратив: packs, тексты и presentation router
 
 ```
@@ -533,13 +602,15 @@ XSS: `sanitizePlainText` на основном пути рендера (`narrati
 - **DialogueRenderer**: NPC lookup/emotion/relation — `useMemo` по speaker/text
   (не пересчитывается на каждый тик typewriter 30 ms).
 
-### GPU и Three.js lifecycle (v4.1)
-- `sceneGpuLifecycle.ts`, `graphicsGpuCleanup.ts` — централизованный teardown
-  текстур/геометрий при смене сцены и quality preset.
+### GPU и Three.js lifecycle (v4.1+)
+- `src/engine/scene/sceneGpuLifecycle.ts` + `SceneGpuLifecycleBridge.tsx` — preload/evict
+  (street dressing URLs, Poly Haven) на scene transition.
+- `graphicsGpuCleanup.ts`, `unloadSceneGpuResources.ts`, `sceneGpuOwnership.ts` —
+  централизованный teardown текстур/геометрий при смене сцены и quality preset.
 - `moduleGeometryRegistry.ts` — учёт shared BufferGeometry между сценами.
 - `bufferGeometrySanitize.ts` — guard NaN/Inf в атрибутах (god-rays, процедурка).
 - `textureReuseMap` / `cachedCanvasTexture` / `objectPool` — ref-count + dispose
-  при последнем unmount; тесты в `gpuLifecycle.test.ts`.
+  при последнем unmount; тесты в `gpuLifecycle.test.ts` / `sceneGpuUnload.test.ts`.
 
 ### Аудио (v4.1)
 - `AudioEngine` — capability probe (`audioCapabilities.ts`), graceful mute при
@@ -567,13 +638,18 @@ XSS: `sanitizePlainText` на основном пути рендера (`narrati
 | Inventory z-index vs examine | ✅ PANEL 60; toasts скрываются при открытых панелях |
 | NPC cutscene vs explore mode | ✅ toast «свободное исследование» после interaction Exit |
 | Combat Escape | ✅ noop в combat/cutscene; pause toggle только в exploration |
+| Leave / mid-resume soft-locks | ✅ pattern shipped; residual next-only chains still scanned per tick |
+| Interior Kenney exteriors as rooms | ✅ blocked (`exterior_building`); procedural envelopes own walkables |
+| Selective MeshPhysical wet/CRT | ✅ quality-gated accents; not blanket Physical |
 | PostFX on low hero scenes | частично |
 | GameOrchestrator priorities | разнесены по файлам |
 | npcRegistry baseline | устаревшие id в тестах |
+| Mixamo ↔ Quaternius bone remap | ⚠️ hip filter + talk fallback interim |
 | act7 mirror flags | только в structure JSON — сканер обновлён |
 | Cinematic registries | cutscenes / npcCutscenes / interactionSplashes — три схемы |
 
-Спринт-гейты и CI-команды — `ROADMAP.md`, skill `.cursor/skills/volodka-roadmap-automations/`.
+AA visual/content waves и tick log — [`docs/AA_QUALITY_ROADMAP.md`](./docs/AA_QUALITY_ROADMAP.md).
+Агентный контекст сессий — [`AI_SESSION_CONTEXT.md`](./AI_SESSION_CONTEXT.md).
 
 ## Сборка и бюджеты
 
@@ -626,3 +702,5 @@ npm run assets:bootstrap # CC0 production placeholders (первый депло�
 8. Любая правка проходит `npm run check` перед коммитом.
 9. Deploy-архив исходников: `node scripts/create-deploy-archive.mjs`
    → `deploy-archive/volodka-vercel-*.zip` (или `DEPLOY_ARCHIVE_DIR`).
+10. AA density / soft-lock / visual parity work — follow `docs/AA_QUALITY_ROADMAP.md`;
+    do not claim 120 h playtime in player-facing copy.

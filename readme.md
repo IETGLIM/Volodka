@@ -16,12 +16,12 @@
 
 - **27 режиссированных 3D-локаций**: комната Володьки, коридор, кафе, офис, библиотека, завод, подвал, пирс, ночной город, крыша, лес ЧК и другие сцены.
 - **7 актов, эпилог и 6+ концовок**: все сюжетные ветки возвращаются к финальной линии и продолжают последствия выбора.
-- **55+ квестов**: основная линия, побочные, скрытые, ежедневные миссии и линия «ЧК · ТОЛПА».
+- **~100 квестов**: основная линия, побочные, скрытые, ежедневные миссии и линия «ЧК · ТОЛПА» (плотный playtime ~10–40 h; 120 h — целевая фабрика, не текущий shipped объём).
 - **Стелс и бой**: патрули, конусы зрения, погоня, побег, turn-based combat, комбо, баффы, дебаффы и разные типы врагов.
 - **Поэтическая магия**: стихи работают как боевые способности и world effects, например «Путеводная Звезда» сужает зрение врагов.
 - **Кабинет Мыслей**: внутренние голоса в духе Disco Elysium, взаимоисключающие идеи и модификаторы к проверкам навыков.
 - **Физический мир**: Rapier KCC, коллайдеры сцен, дверные ниши, пинаемые банки и ящики с процедурным звуком.
-- **AAA visual direction**: HDRI/IBL, PBR-материалы, Poly Haven/Quaternius/Kenney ассеты, Bloom, ACES tone mapping, color grading, vignette и tier-aware деградация.
+- **AA visual direction (free stack)**: HDRI/IBL, selective MeshPhysical wet/CRT accents, Poly Haven/Quaternius/Kenney, Bloom, ACES, quality-tier degrade — см. `docs/AA_QUALITY_ROADMAP.md`.
 
 ## Технологии
 
@@ -37,7 +37,7 @@
 | Аудио | Web Audio API, процедурная музыка и SFX |
 | Деплой | Vercel SPA |
 
-Карта систем: [ARCHITECTURE.md](./ARCHITECTURE.md). История изменений: [CHANGELOG.md](./CHANGELOG.md). Контекст для AI-агентов: [AI_SESSION_CONTEXT.md](./AI_SESSION_CONTEXT.md).
+Карта систем: [ARCHITECTURE.md](./ARCHITECTURE.md). AA quality roadmap: [docs/AA_QUALITY_ROADMAP.md](./docs/AA_QUALITY_ROADMAP.md). История изменений: [CHANGELOG.md](./CHANGELOG.md). Контекст для AI-агентов: [AI_SESSION_CONTEXT.md](./AI_SESSION_CONTEXT.md).
 
 ## Быстрый старт
 

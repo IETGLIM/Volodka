@@ -3,27 +3,28 @@
 > **ЭТОТ ФАЙЛ — КЛЮЧЕВОЙ ДОКУМЕНТ ДЛЯ НЕПРЕРЫВНОСТИ РАЗРАБОТКИ.**
 > Каждый AI-агент ДОЛЖЕН прочитать его перед началом работы.
 > После каждой сессии — ОБНОВИТЬ этот файл.
+>
+> Каноническая карта систем: [`ARCHITECTURE.md`](./ARCHITECTURE.md).
+> AA visual/content ticks: [`docs/AA_QUALITY_ROADMAP.md`](./docs/AA_QUALITY_ROADMAP.md).
 
 ---
 
 ## 📌 Краткое резюме проекта
 
-**ВОЛОДЬКА** — браузерная 3D RPG (285K+ строк кода, 1701 файл, 304MB ассетов).
-Киберпанк-нуар о Володьке — уставшем IT-инженере в постсоветском городе,
-который находит стихи в серверном коде и обнаруживает, что слова меняют реальность.
+**ВОЛОДЬКА** — браузерная 3D RPG (киберпанк-нуар о Володьке — уставшем IT-инженере
+в постсоветском городе, который находит стихи в серверном коде).
 
 **Автор стихов:** Владимир Лебедев (правообладатель). Стихи НЕEDITABLE.
-**Версия:** v4.6.0
+**Версия:** v4.2.42 (`package.json` / `APP_VERSION`)
 **Деплой:** https://volodka.vercel.app/
-**Стек:** React 19 + Vite 6 + Three.js 0.172 + R3F 9 + Rapier 2.2 + Zustand 5 + Tailwind 4
+**Стек:** React 19 + Vite 6 + Three.js 0.172 + R3F 9 + Rapier 2.2 Wasm + Zustand 5 + Zod 4 + Tailwind 4 → Vercel SPA
 
 ---
 
 ## 🎯 Видение проекта
 
-Цель: создать диско-элизиумоподобную RPG в киберпанк постсоветском пространстве.
-Вдохновение: Disco Elysium (нарративная глубина, проверки навыков, внутренние голоса),
-Gothic (живой мир, NPC расписания), GTA (открытые пространства), Max Payne (кинематографичность).
+Цель: Disco Elysium–подобная RPG в постсоветском киберпанке (выбор, Thought Cabinet,
+dice checks, живые хабы). Вдохновение также: Gothic (расписания), Max Payne (кинематограф).
 
 Ключевые принципы:
 1. Стихи Владимира Лебедева — священный контент, никогда не менять
@@ -31,51 +32,36 @@ Gothic (живой мир, NPC расписания), GTA (открытые пр
 3. Глубокий нарратив — каждая проверка навыков, каждый диалог имеет вес
 4. Thought Cabinet — внутренние голоса как в Disco Elysium
 5. Dice-roll механика — случайность в проверках навыков
-6. 120+ часов контента (целевой масштаб)
+6. **Честный масштаб:** сейчас ~10–40 h плотного AA; **120 h** — aspiration через content factory
+   (structure/text split + lazy packs), не маркетинговый shipped claim
 
 ---
 
 ## 📊 Текущее состояние систем
 
 ### Полностью реализованные системы (✅)
-- 3D рендеринг (R3F, пост-обработка, LOD, адаптивное качество)
-- Физика (Rapier KCC, коллизии, стелс с конусами зрения)
-- Камера от 3-го лица (пружинная система, 7 стратегий, кинематограф)
-- Движение игрока (WASD, спринт, прыжок, coyote time)
-- 7 актов + эпилог, 6+ концовок, 116-node golden path
-- 18+ стихов как механика игры (poem powers, synergies, combat abilities)
-- Диалоги с проверками навыков и dice-roll анимацией
-- 55 квестов с зависимостями, таймерами, ежедневными миссиями
-- Пошаговый бой (11 типов врагов, комбо, баффы/дебаффы)
-- Стелс/патрули (FSM, конусы зрения, погоня)
-- 12+ NPC (диалоги, расписания, отношения, LOD, баки)
-- 27 сцен (18 core + 9 extension)
-- Процедурный звук (Web Audio, 0 аудиофайлов)
-- Погода (5 типов с геймплеевыми эффектами)
-- Инвентарь, крафтинг, торговля
-- Дерево навыков (45 узлов), перки (28)
-- Система сохранений (Zod, миграции, автовосстановление)
-- 4 миниигры (хакинг, стихосложение, память, терминал)
-- HUD (50+ компонентов), журнал (5 вкладок + Thought Cabinet)
-- Адаптивное качество, GPU probe, graceful degradation
-- Accessibility (субтитры, reduced motion, дальтонизм)
-
-### Новые системы (добавлены в v4.3.0)
-- **Thought Cabinet** — 30 мыслей, 6 mutually exclusive пар, макс. 3 экипированных
-- **Dice-Roll Skill Checks** — 2d6 + модификатор vs DC, криты, анимация
-- **Расширенный контент Акта 1** — 30 нод диалога с Альбертом, 28 нод комнаты
-
-### Новые системы (добавлены в v4.4.0)
-- **Расширенные диалоги Актов 2-7** — 123 новых ноды диалога
-- **Thought Cabinet расширен** — 12 новых мыслей (всего 30), 3 новых mutually exclusive пары
-- **Глубокие NPC-арки** — Дмитрий (дезертир), Александр (искупление), Зарема (камера-освобождение)
+- 3D рендеринг (R3F, PostFX, selective MeshPhysical wet/CRT, LOD, adaptive quality, scene GPU lifecycle)
+- Физика (Rapier KCC, коллизии, стелс с конусами зрения); degraded → SimplePlayer
+- Камера / cinematic timelines (`CinematicTimelineRunner` + camera FSM)
+- Metric scale coherence + interior shell mount policy (`exterior_building` blocked as walkable)
+- 7 актов + эпилог, 6+ концовок, ~116-node golden path; closed-overlay explore hubs
+- Leave + hub/zone/dialogue mid-resume soft-lock pattern (AA ticks; residual scan ongoing)
+- Narrative packs + registry parity (lazy runtime ↔ CI eager)
+- ~30 Thought Cabinet thoughts (6 mutually exclusive pairs), dice-roll skill checks
+- ~100 quest definitions (spine + sides + CHK + expansion); density uneven — stubs→cases ongoing
+- Пошаговый бой, стелс/патрули, 27 сцен, procedural Web Audio
+- Zod saves + migrations, bundle budgets, Vercel SPA
 
 ### Нуждающиеся в доработке (⚠️)
-- Навигационная сетка (A*) — NPC используют waypoint patrols, не A*
-- Озвучивание — весь текст, диалоги без голоса
-- Локализация — только русский
-- Количество контента — для 120+ часов нужно значительно больше текста
-- Качество 3D моделей — CC0/Quaternius, не AAA
+- Mixamo ↔ Quaternius full bone remap (hip filter / talk fallback interim)
+- Authored score / VO — procedural audio only
+- Content factory toward 120 h (authoring, not engine)
+- GLB mass re-export / AI3DGen hero meshes (asset pipeline debt)
+- PostFX on low for some hero scenes — partial gap
+
+### Новые системы (исторически v4.3–4.4; всё ещё в дереве)
+- Thought Cabinet, dice-roll checks, Act 1–7 expanded dialogue packs
+- DE-style dialogue extras, clothing, combat affinities — см. session history ниже
 
 ---
 
@@ -85,47 +71,34 @@ Gothic (живой мир, NPC расписания), GTA (открытые пр
 | Файл | Назначение |
 |------|-----------|
 | `src/data/poems.ts` | **НЕ РЕДАКТИРОВАТЬ** — стихи Владимира Лебедева |
-| `src/data/thoughtCabinet.ts` | Определения 30 мыслей для Thought Cabinet |
-| `src/data/dialogue/part1-albert-expanded.ts` | Расширенный диалог с Альбертом (30 нод) |
-| `src/data/story/act1-room-expanded.ts` | Интерактивные ноды комнаты (28 нод) |
-| `src/data/dialogue/part1-albert.ts` | Основной диалог Акта 1 |
-| `src/data/dialogue/part2-npcs.ts` — `part5-final.ts` | Диалоги Актов 2-5 |
-| `src/data/dialogue/part2-npcs-expanded.ts` | Расширенные диалоги Акта 2 (33 ноды) |
-| `src/data/dialogue/part3-mid-expanded.ts` | Расширенные диалоги Акта 3 (30 нод) |
-| `src/data/dialogue/part4-late-expanded.ts` | Расширенные диалоги Актов 4-5 (30 нод) |
-| `src/data/dialogue/part5-final-expanded.ts` | Расширенные диалоги Актов 5-7 (30 нод) |
-| `src/data/story/act1.ts` — `act7.ts` | Стори ноды всех актов |
-| `src/data/quests/` | Все квесты (55+) |
-| `src/data/npc/npcDefinitions.ts` | Определения NPC (12+) |
+| `src/data/thoughtCabinet.ts` | Определения ~30 мыслей для Thought Cabinet |
+| `src/data/narrative/narrativePackRegistry.ts` | Lazy act packs + satellites |
+| `src/shared/sceneExploreHubRegistry.ts` | Hub topology / entryNodeIds / closed-overlay set |
+| `src/data/narrativeExpansionTriggerZones.ts` | 3D trigger zones for mid-resume / discovery |
+| `src/data/story/act1.ts` — `act7.ts` + `structures/` + `texts/` | Story packs |
+| `src/data/quests/` | Quest definitions (~100 via index merge) |
+| `src/data/npc/npcDefinitions.ts` | NPC definitions |
 
-### Движок и механики
+### Движок / AA visuals
 | Файл | Назначение |
 |------|-----------|
-| `src/engine/skillCheck/diceRollSkillCheck.ts` | Dice-roll система (2d6) |
-| `src/engine/combat/CombatSystem.ts` | Пошаговый бой (оркестратор) |
-| `src/engine/combat/combatAffinities.ts` | **Phase 11** — Elemental weakness/resistance system |
-| `src/engine/combat/combatConsumables.ts` | **Phase 11** — Combat consumable items (5 items) |
-| `src/engine/combat/enemies.ts` | Enemy templates (20 types) + special attacks |
-| `src/engine/combat/formulas.ts` | Damage formulas, player stats, cooldowns |
-| `src/engine/narrative/` | Система нарратива |
-| `src/engine/camera/cinematicCamera.ts` | Камера, spring, bullet time |
-| `src/engine/audio/` | Процедурный звук |
+| `src/config/metricScaleCoherence.ts` | 1u=1m human/prop targets |
+| `src/config/interiorShellScale.ts` | Shell mount kinds + fit scales |
+| `src/engine/graphics/wetStreetScenes.ts` | Selective MeshPhysical wet/CRT gates |
+| `src/engine/scene/sceneGpuLifecycle.ts` | Scene GPU preload/evict |
+| `src/engine/narrative/presentNarrativeBeat.ts` | Единая точка открытия story/dialogue |
+| `src/engine/guidedStory/aaaSideQuestHints.ts` | Live side-quest cues |
+| `src/components/3d/CinematicTimelineRunner.tsx` | Cinematic timeline runner |
+| `src/engine/skillCheck/diceRollSkillCheck.ts` | Dice-roll (2d6) |
+| `src/engine/combat/CombatSystem.ts` | Turn combat |
 
-### Store
+### Store / UI
 | Файл | Назначение |
 |------|-----------|
-| `src/store/slices/thoughtCabinetSlice.ts` | Thought Cabinet стор |
-| `src/store/slices/playerSlice.ts` | Композитный плеер-слайс |
-| `src/store/selectors/thoughtCabinetSelectors.ts` | Селекторы Thought Cabinet |
-| `src/store/gameStore.ts` | Фасад всех сторов |
-
-### UI
-| Файл | Назначение |
-|------|-----------|
-| `src/components/game/journal/ThoughtCabinetTab.tsx` | UI Кабинета Мыслей |
-| `src/components/game/dialogue/DiceRollDisplay.tsx` | Анимация броска кубиков |
-| `src/components/game/DialogueRenderer.tsx` | Рендерер диалогов |
-| `src/components/game/journal/JournalPanel.tsx` | Журнал (все вкладки) |
+| `src/store/gameStore.ts` | Фасад сторов |
+| `src/store/slices/thoughtCabinetSlice.ts` | Thought Cabinet state |
+| `src/components/game/journal/ThoughtCabinetTab.tsx` | Thought Cabinet UI |
+| `src/components/game/dialogue/DiceRollDisplay.tsx` | Dice animation |
 
 ---
 
@@ -134,61 +107,47 @@ Gothic (живой мир, NPC расписания), GTA (открытые пр
 1. **`src/data/poems.ts` — НЕВОСПОЛНИМО. Никогда не редактировать.**
 2. Store и Engine НЕ импортируют друг друга напрямую (ESLint rule)
 3. Все мутации состояния — через `dispatchGameAction()` / `applyGameAction()`
-4. Новый контент = новые файлы данных, не модификация существующих
+4. Новый контент = данные (packs/hubs/zones/quests); не размазывать overlay open
 5. Нарратив открывается ТОЛЬКО через `presentNarrativeBeat()`
-6. `npm run check` перед каждым коммитом (lint + tsc + validate + build + budgets)
-7. TypeScript strict mode, 0 ошибок обязательно
+6. Kenney `exterior_building` shells — не walkable rooms (`AuthoredInteriorShell` refuses)
+7. Mid-beat quests need leave → hub + zone + dialogue mid-resume (soft-lock pattern)
+8. `npm run check` перед каждым коммитом (lint + tsc + validate + build + budgets)
+9. TypeScript strict mode, 0 ошибок обязательно
+10. Полная карта — `ARCHITECTURE.md`; AA ticks — `docs/AA_QUALITY_ROADMAP.md`
 
 ---
 
-## 🗺️ Дорожная карта (ROADMAP)
+## 🗺️ Дорожная карта
 
-### ✅ Выполнено
-- [x] Фаза 1: Ускоренный онбординг (90с → 30с, skip prologue)
-- [x] Фаза 2: Thought Cabinet (18 мыслей, mutually exclusive пары, UI)
-- [x] Фаза 3: Dice-roll проверки навыков (2d6, анимация, интеграция)
-- [x] Фаза 4: Расширение контента Акта 1 (30 диалогов + 28 комнатных нод)
-- [x] **Фаза 5 (частично): Расширение Актов 2-7** — 123 новых ноды диалога
-  - Акт 2: 33 ноды (Альберт 8, Виктория 7, Дмитрий 6, Бариста 6, Коллега 6)
-  - Акт 3: 30 нод (Зарема 8, Александр 7, Альберт 5, Виктория 5, Бариста 5)
-  - Акты 4-5: 30 нод (Володька 6, Зарема 5, Александр 5, Виктория 4, Альберт 5+5)
-  - Акты 5-7: 30 нод (Зарема 5, Виктория 5, Альберт 5, Александр 5, Бариста 5, Коллега 5)
-  - Thought Cabinet: +12 мыслей (всего 30), +3 mutually exclusive пары (всего 6)
-  - TypeScript: 0 ошибок
+Исторические фазы 1–15 и session log ниже сохранены как хроника.
+**Актуальный AA план:** [`docs/AA_QUALITY_ROADMAP.md`](./docs/AA_QUALITY_ROADMAP.md)
+(Wave 1–2 visuals done; soft-lock / quest flesh ticks continuous; Mixamo remap + act mood audio open).
 
-### 🔄 Следующие шаги (приоритет по убыванию)
+### ✅ Выполнено (сводка)
+- Thought Cabinet, dice-roll, Act 1–7 expanded dialogue, free-exploration hubs
+- Hub visual stages 11–17, AA selective wet/CRT, interior shell policy
+- Leave/mid-resume soft-lock pattern across Acts 1–7 (residual leave-scan ongoing)
+- Combat polish, clothing, NPC emotion, adaptive quality, Zod saves
 
-#### Hub Visual Expansion (Stages 11–16)
-- [x] **Stage 11–15** — PhysicsSceneInner mount split, Act 3 hub relay ring (pier→library→café→office→guild→factory), hero scene GLB shells + prop dressing
-- [x] **Stage 16** — Guild mainframe + factory basement AuthoredInteriorShell (office/basement GLB), densified props, procedural rack clutter gated when shell active, dense-industrial N8AO soft-budget gate, basement relay epilogue after `act3_hub_relay_mesh_closed`
-- [x] **Stage 17** — Extension scene shell parity (bunker/library basement/albert backroom AuthoredInteriorShell + prop dressing + procedural clutter gate), Mixamo talking→gesture alias wiring, bunker/backroom ambient explore beats
-- [ ] **Stage 18+** — AI3DGen Pro NPCs, AAA visual judge re-run, dedicated Mixamo gesture clip (optional)
-
-- [x] **Фаза 5 (продолжение): Расширение story-нод Актов 2-7** — +120 exploration nodes (20 per act)
-- [x] **Фаза 5 (продолжение): Новые квесты Актов 2-7** — 10 дополнительных побочных квестов
-- [x] **Фаза 5.5: Критический фикс дёргания модели** — animation blending, camera spring rebalance, hysteresis
-- [x] **Фаза 5.6: Asset Audit & LOD Pipeline Fix** — mesh validation, LOD effectiveness analysis, pipeline v2
-- [x] **Фаза 6: A* навигация для NPC** — nav mesh builder, A* pathfinder, path smoothing, npcPatrol integration
-- [x] **Фаза 6.5: DE-style dialogue systems** — thought interjection, white/red checks, partial success, thought-gated choices
-- [x] **Фаза 6.6: Thought→Combat bridge** — equipped thoughts affect attack/defense/crit/flee/combo/HP
-- [x] **Фаза 7.1: Критический фикс дёргания модели (v2)** — weight-based blend tree, rotation reversal, hysteresis widening, walk bob reduction
-- [x] **Фаза 7.2: Deep-fix jitter + 360° rotation + Volodka Room & Prologue duplicate-frame cleanup (v3)** — Rapier interpolate disabled, walk-bob delta smoothing, FOV unit bug, Mixamo clip coalescing, SimplePlayer strafe gate, Volodka Room env-anim dedup, IntroWakeOverlay dead-code removal
-- [x] **Фаза 7: Система одежды/внешности** — 6 слотов, 20 предметов, social perception tags, DialogueModifier, ClothingTab UI
-- [x] **Фаза 7.3 (UX polish): Combat feel + NPC emotion HUD + touch combat + clothing empty slots** — bullet-time on combo/stagger, differentiated shake, NpcEmotionIndicator, CombatTouchControls, ClothingTab empty hints
-- [ ] **Фаза 8: Улучшенные 3D модели** — AI3DGen для ключевых NPC и окружения
-- [x] **Фаза 9.1: NPC эмоциональные реакции** — 7 эмоций, idle variants, proximity awareness, EventBus bridge, emotion-linked barks
-- [ ] **Фаза 10: TTS озвучивание** — ключевые сцены и диалоги
-- [x] **Фаза 11: Полировка боевой системы** — affinity system, 6 new enemies (20 total), combo decay, combat consumables, bullet time
-- [x] **Фаза 11.1: TS error cleanup** — 12 pre-existing errors fixed (combatConsumables, combatEvents, enemyVisualRegistry, BuffEffect, CombatSystem)
-- [ ] **Фаза 12: Музыкальное разнообразие** — уникальные темы для каждого акта
-- [ ] **Фаза 13: Мобильная оптимизация** — touch-контроли, виртуальный джойстик (combat touch done; exploration joystick pending)
-- [ ] **Фаза 14: Балансировка** — сложность, экономика, квестовая прогрессия
-- [ ] **Фаза 15: Финальная полировка** — QA, оптимизация, багфикс
+### 🔄 Следующие шаги
+- Residual leave-scan / quiet-hour / expansionQuestStory next-only chains
+- Mixamo ↔ Quaternius full bone remap
+- Procedural act mood tables / optional CC0 stems
+- Content factory toward honest dense hours (not vanity quest IDs)
+- AI3DGen hero meshes / visual judge on remaining thin hubs
 
 ---
 
 ## 📝 История сессий
 
+### Сессия: 2026-07-31 — "AA docs + leave/mid-resume ticks 45–47"
+**Контекст:** Документация приведена к актуальной архитектуре (shell policy, MeshPhysical,
+GPU lifecycle, soft-lock pattern). Uncommitted leave/mid-resume для `pier_ritka`,
+library archive/Katya, fishing, resistance defector, Act 4 bank/AI/night_watch.
+
+**Следующий шаг:** по `docs/AA_QUALITY_ROADMAP.md` Next 3 actions.
+
+---
 ### Сессия: 2026-07-28 — "Phase 7.3: Combat feel + NPC emotion HUD + touch combat"
 **Контекст:** Свежий clone с GitHub в `C:\Users\IETGL\Projects\Volodka` (OneDrive-копия была битая/устаревшая). Typecheck 0 errors, 1513/1513 tests pass.
 
@@ -199,7 +158,7 @@ Gothic (живой мир, NPC расписания), GTA (открытые пр
 - `CombatTouchControls` — крупные touch-кнопки + swipe по стихам
 - ClothingTab: пунктирные пустые слоты + tooltip «Можно надеть: …»
 
-**Следующий шаг:** Фаза 8 (модели) / Фаза 13 (exploration joystick) / контент 120+ часов — по приоритету автора.
+**Следующий шаг:** Фаза 8 (модели) / Фаза 13 (exploration joystick) / контент factory — по приоритету автора.
 
 ---
 ### Сессия: 2026-07-24 — "Phase 7.2: Deep-fix jitter + 360° rotation + Volodka Room & Prologue duplicate-frame cleanup (v3)"
