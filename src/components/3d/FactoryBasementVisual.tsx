@@ -19,14 +19,16 @@ import {
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { createFactoryBasementCoreGlowTexture } from '@/engine/graphics/proceduralSkyTextures';
 import {
+  allowsSelectiveMeshPhysicalWet,
   getIndustrialDampFloorSettings,
   getRainSpillInFloorBoost,
+  getWetGlassPhysicalParams,
+  getWetPuddlePhysicalParams,
 } from '@/engine/graphics/wetStreetScenes';
-import { useGameStore } from '@/store/gameStore';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
-import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
-import { INTERIOR_SHELL_MODELS } from '@/config/interiorShellModels';
-import { AuthoredInteriorShell } from './AuthoredInteriorShell';
+import { useIsMobileVisual } from '@/hooks/use-mobile';
+import { useGameStore } from '@/store/gameStore';
+import { SceneBackdropShell } from './SceneBackdropShell';
 import { EnvironmentDetail } from './lod/PropDistanceGate';
 
 interface FactoryBasementVisualProps {
@@ -46,10 +48,14 @@ function basementSeededRandom(seed: number): () => number {
 }
 
 export function FactoryBasementVisual(_props: FactoryBasementVisualProps) {
-  const { preset } = useGraphicsQuality();
-  const useAuthoredShell = !preset.visualLite;
-  const useGltfDressing = allowsGlbAssetRendering(preset.environmentRenderMode);
-  const hideProceduralClutter = useAuthoredShell && useGltfDressing;
+  // Basement GLB is backdrop_dressing only (SceneBackdropShell). Keep procedural
+  // walls + rack rows — sparse prop dressing cannot replace the catacombs density.
+  const { selectedPreset } = useGraphicsQuality();
+  const coarsePointer = useIsMobileVisual();
+  const usePhysicalCrt = allowsSelectiveMeshPhysicalWet('factory_basement', selectedPreset, {
+    coarsePointer,
+  });
+  const crtGlass = useMemo(() => getWetGlassPhysicalParams('crtTerminalGlass'), []);
   const floorTexture = useCachedCanvasTexture('factory_basement:floor', createBasementFloorTexture);
   const ceilingWashTexture = useCachedCanvasTexture(
     'factory_basement:core-ceiling',
@@ -61,7 +67,19 @@ export function FactoryBasementVisual(_props: FactoryBasementVisualProps) {
     () => getRainSpillInFloorBoost('factory_basement', rainIntensity),
     [rainIntensity],
   );
+  // Oil puddles: damp sheen bias + rain spill-in — few MeshPhysical discs only (high/ultra).
+  const oilPuddle = useMemo(() => {
+    const base = getWetPuddlePhysicalParams(Math.max(0.45, rainIntensity * 0.9));
+    return {
+      roughness: Math.min(base.roughness, damp?.oilRoughness ?? base.roughness),
+      metalness: Math.max(base.metalness, (damp?.oilMetalness ?? base.metalness) * 0.55),
+      clearcoat: base.clearcoat,
+      clearcoatRoughness: Math.min(base.clearcoatRoughness, 0.16),
+      opacity: Math.min(0.72, base.opacity + 0.08),
+    };
+  }, [damp, rainIntensity]);
   const coreRef = useRef<THREE.Mesh>(null);
+  const terminalRef = useRef<THREE.Mesh>(null);
   const coreLightRef = useRef<THREE.PointLight>(null);
   const rootGroupRef = useRef<THREE.Group>(null);
   const tRef = useRef(0);
@@ -74,6 +92,10 @@ export function FactoryBasementVisual(_props: FactoryBasementVisualProps) {
     if (coreRef.current) {
       (coreRef.current.material as THREE.MeshStandardMaterial).emissiveIntensity = 1.2 * pulse;
     }
+    if (terminalRef.current) {
+      (terminalRef.current.material as THREE.MeshStandardMaterial).emissiveIntensity =
+        0.35 + Math.sin(t * 3.6) * 0.12;
+    }
     if (coreLightRef.current) {
       coreLightRef.current.intensity = 2.2 * pulse;
     }
@@ -84,39 +106,28 @@ export function FactoryBasementVisual(_props: FactoryBasementVisualProps) {
 
   return (
     <group ref={rootGroupRef}>
-      {useAuthoredShell ? (
-        <AuthoredInteriorShell
-          sceneId="factory_basement"
-          url={INTERIOR_SHELL_MODELS.basement}
-          position={[-1, 0.2, -3]}
-          rotationY={-Math.PI / 4}
-          scale={2.5}
-          castShadow={preset.shadows}
+      <SceneBackdropShell sceneId="factory_basement" />
+
+      {/* ── Walls + low ceiling (procedural walkable envelope) ── */}
+      {[
+        { pos: [0, CEIL_H / 2, -D / 2] as const, size: [W, CEIL_H, 0.2] as const },
+        { pos: [0, CEIL_H / 2, D / 2] as const, size: [W, CEIL_H, 0.2] as const },
+        { pos: [-W / 2, CEIL_H / 2, 0] as const, size: [0.2, CEIL_H, D] as const },
+        { pos: [W / 2, CEIL_H / 2, 0] as const, size: [0.2, CEIL_H, D] as const },
+      ].map((wall, i) => (
+        <mesh key={`wall-${i}`} position={[wall.pos[0], wall.pos[1], wall.pos[2]]} receiveShadow geometry={getSharedBoxGeometry(wall.size[0], wall.size[1], wall.size[2])}>
+          <meshStandardMaterial color="#2c3134" roughness={0.95} />
+        </mesh>
+      ))}
+      <mesh rotation-x={Math.PI / 2} position-y={CEIL_H} geometry={getSharedPlaneGeometry(W, D)}>
+        <meshStandardMaterial
+          map={ceilingWashTexture}
+          color="#101818"
+          emissive="#204838"
+          emissiveIntensity={0.22}
+          roughness={0.95}
         />
-      ) : (
-        <>
-          {/* ── Walls + low ceiling (lite fallback) ── */}
-          {[
-            { pos: [0, CEIL_H / 2, -D / 2] as const, size: [W, CEIL_H, 0.2] as const },
-            { pos: [0, CEIL_H / 2, D / 2] as const, size: [W, CEIL_H, 0.2] as const },
-            { pos: [-W / 2, CEIL_H / 2, 0] as const, size: [0.2, CEIL_H, D] as const },
-            { pos: [W / 2, CEIL_H / 2, 0] as const, size: [0.2, CEIL_H, D] as const },
-          ].map((wall, i) => (
-            <mesh key={`wall-${i}`} position={[wall.pos[0], wall.pos[1], wall.pos[2]]} receiveShadow geometry={getSharedBoxGeometry(wall.size[0], wall.size[1], wall.size[2])}>
-              <meshStandardMaterial color="#2c3134" roughness={0.95} />
-            </mesh>
-          ))}
-          <mesh rotation-x={Math.PI / 2} position-y={CEIL_H} geometry={getSharedPlaneGeometry(W, D)}>
-            <meshStandardMaterial
-              map={ceilingWashTexture}
-              color="#101818"
-              emissive="#204838"
-              emissiveIntensity={0.22}
-              roughness={0.95}
-            />
-          </mesh>
-        </>
-      )}
+      </mesh>
 
       {/* ── Stained concrete floor ── */}
       <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={getSharedPlaneGeometry(W, D)}>
@@ -132,46 +143,57 @@ export function FactoryBasementVisual(_props: FactoryBasementVisualProps) {
       </mesh>
       {spill && (
         <mesh rotation-x={-Math.PI / 2} position={[0, 0.008, D * 0.35]} geometry={getSharedCircleGeometry(2.4, 24)}>
-          <meshStandardMaterial
-            color="#1a2830"
-            metalness={damp?.oilMetalness ?? 0.55}
-            roughness={damp?.oilRoughness ?? 0.22}
-            transparent
-            opacity={spill.puddleOpacity}
-            polygonOffset
-            polygonOffsetFactor={1}
-            polygonOffsetUnits={1}
-          />
+          {usePhysicalCrt ? (
+            <meshPhysicalMaterial
+              color="#1a2830"
+              metalness={Math.max(damp?.oilMetalness ?? 0.55, oilPuddle.metalness + 0.2)}
+              roughness={Math.min(damp?.oilRoughness ?? 0.22, oilPuddle.roughness)}
+              clearcoat={oilPuddle.clearcoat}
+              clearcoatRoughness={oilPuddle.clearcoatRoughness}
+              transparent
+              opacity={Math.min(0.78, Math.max(spill.puddleOpacity, oilPuddle.opacity * 0.85))}
+              polygonOffset
+              polygonOffsetFactor={1}
+              polygonOffsetUnits={1}
+            />
+          ) : (
+            <meshStandardMaterial
+              color="#1a2830"
+              metalness={damp?.oilMetalness ?? 0.55}
+              roughness={damp?.oilRoughness ?? 0.22}
+              transparent
+              opacity={spill.puddleOpacity}
+              polygonOffset
+              polygonOffsetFactor={1}
+              polygonOffsetUnits={1}
+            />
+          )}
         </mesh>
       )}
 
-      {!hideProceduralClutter ? (
-        <>
-          {/* ── Support columns ── */}
-          {[
-            [-2.5, 0],
-            [2.5, 0],
-          ].map(([x, z]) => (
-            <mesh key={`col-${x}`} position={[x, CEIL_H / 2, z]} castShadow geometry={getSharedBoxGeometry(0.6, CEIL_H, 0.6)}>
-              <meshStandardMaterial color="#33383b" roughness={0.9} />
-            </mesh>
-          ))}
+      {/* ── Support columns ── */}
+      {[
+        [-2.5, 0],
+        [2.5, 0],
+      ].map(([x, z]) => (
+        <mesh key={`col-${x}`} position={[x, CEIL_H / 2, z]} castShadow geometry={getSharedBoxGeometry(0.6, CEIL_H, 0.6)}>
+          <meshStandardMaterial color="#33383b" roughness={0.9} />
+        </mesh>
+      ))}
 
-          {/* ── Server rack rows with blinking LEDs (distance-gated clutter) ── */}
-          <EnvironmentDetail minLod="standard" position={[-4.5, 0, -1]}>
-            <ServerRackRow position={[-4.5, 0, -1]} length={5.2} seed={11} />
-          </EnvironmentDetail>
-          <EnvironmentDetail minLod="standard" position={[4.5, 0, -1]}>
-            <ServerRackRow position={[4.5, 0, -1]} length={5.2} seed={22} />
-          </EnvironmentDetail>
-          <EnvironmentDetail minLod="full" position={[-4.5, 0, 3.5]}>
-            <ServerRackRow position={[-4.5, 0, 3.5]} length={3.6} seed={33} />
-          </EnvironmentDetail>
-          <EnvironmentDetail minLod="full" position={[4.5, 0, 3.5]}>
-            <ServerRackRow position={[4.5, 0, 3.5]} length={3.6} seed={44} />
-          </EnvironmentDetail>
-        </>
-      ) : null}
+      {/* ── Server rack rows with blinking LEDs (distance-gated clutter) ── */}
+      <EnvironmentDetail minLod="standard" position={[-4.5, 0, -1]}>
+        <ServerRackRow position={[-4.5, 0, -1]} length={5.2} seed={11} />
+      </EnvironmentDetail>
+      <EnvironmentDetail minLod="standard" position={[4.5, 0, -1]}>
+        <ServerRackRow position={[4.5, 0, -1]} length={5.2} seed={22} />
+      </EnvironmentDetail>
+      <EnvironmentDetail minLod="full" position={[-4.5, 0, 3.5]}>
+        <ServerRackRow position={[-4.5, 0, 3.5]} length={3.6} seed={33} />
+      </EnvironmentDetail>
+      <EnvironmentDetail minLod="full" position={[4.5, 0, 3.5]}>
+        <ServerRackRow position={[4.5, 0, 3.5]} length={3.6} seed={44} />
+      </EnvironmentDetail>
 
       {/* ── «Заря-М» monolith ── */}
       <group position={[0, 0, -5.2]}>
@@ -179,10 +201,29 @@ export function FactoryBasementVisual(_props: FactoryBasementVisualProps) {
         <mesh position={[0, 1.6, 0]} castShadow geometry={getSharedBoxGeometry(2.4, 3.2, 1.6)}>
           <meshStandardMaterial color="#1a2420" metalness={0.6} roughness={0.4} />
         </mesh>
-        {/* Pulsing core seam */}
-        <mesh ref={coreRef} position={[0, 1.6, 0.82]} geometry={getSharedPlaneGeometry(0.35, 2.6)}>
-          <meshStandardMaterial color="#03130c" emissive="#22ff88" emissiveIntensity={1.2} toneMapped={false} />
-        </mesh>
+        {/* Pulsing core seam — selective MeshPhysical CRT glass on high presets */}
+        {usePhysicalCrt ? (
+          <mesh ref={coreRef} position={[0, 1.6, 0.82]} geometry={getSharedPlaneGeometry(0.35, 2.6)}>
+            <meshPhysicalMaterial
+              color="#03130c"
+              emissive="#22ff88"
+              emissiveIntensity={1.2}
+              toneMapped={false}
+              roughness={crtGlass.roughness}
+              metalness={crtGlass.metalness}
+              transmission={crtGlass.transmission}
+              thickness={crtGlass.thickness}
+              clearcoat={crtGlass.clearcoat}
+              clearcoatRoughness={crtGlass.clearcoatRoughness}
+              transparent
+              opacity={Math.min(0.92, crtGlass.opacity + 0.2)}
+            />
+          </mesh>
+        ) : (
+          <mesh ref={coreRef} position={[0, 1.6, 0.82]} geometry={getSharedPlaneGeometry(0.35, 2.6)}>
+            <meshStandardMaterial color="#03130c" emissive="#22ff88" emissiveIntensity={1.2} toneMapped={false} />
+          </mesh>
+        )}
         {/* Side vents */}
         {[-0.85, 0.85].map((x) => (
           <mesh key={`vent-${x}`} position={[x, 1.6, 0.81]} geometry={getSharedPlaneGeometry(0.5, 2.2)}>
@@ -209,23 +250,39 @@ export function FactoryBasementVisual(_props: FactoryBasementVisualProps) {
         </mesh>
       ))}
 
-      {/* ── Puddles ── */}
+      {/* ── Puddles — selective MeshPhysical oil sheen on high presets ── */}
       {[
         { pos: [-2.2, 1.8] as const, r: 0.7 },
         { pos: [1.6, -2.4] as const, r: 0.5 },
         { pos: [3.4, 1.2] as const, r: 0.4 },
       ].map((p, i) => (
         <mesh key={`puddle-${i}`} rotation-x={-Math.PI / 2} position={[p.pos[0], 0.015, p.pos[1]]} geometry={getSharedCircleGeometry(p.r, 14)}>
-          <meshStandardMaterial
-            color="#0a1812"
-            metalness={0.85}
-            roughness={0.08}
-            transparent
-            opacity={0.6}
-            polygonOffset
-            polygonOffsetFactor={1}
-            polygonOffsetUnits={1}
-          />
+          {usePhysicalCrt ? (
+            <meshPhysicalMaterial
+              color="#0a1812"
+              metalness={oilPuddle.metalness}
+              roughness={oilPuddle.roughness}
+              clearcoat={oilPuddle.clearcoat}
+              clearcoatRoughness={oilPuddle.clearcoatRoughness}
+              transparent
+              opacity={oilPuddle.opacity}
+              depthWrite={false}
+              polygonOffset
+              polygonOffsetFactor={1}
+              polygonOffsetUnits={1}
+            />
+          ) : (
+            <meshStandardMaterial
+              color="#0a1812"
+              metalness={damp?.oilMetalness ?? 0.85}
+              roughness={damp?.oilRoughness ?? 0.08}
+              transparent
+              opacity={0.6}
+              polygonOffset
+              polygonOffsetFactor={1}
+              polygonOffsetUnits={1}
+            />
+          )}
         </mesh>
       ))}
 
@@ -237,9 +294,37 @@ export function FactoryBasementVisual(_props: FactoryBasementVisualProps) {
         <mesh position={[0, 0.62, -0.1]} rotation={[-0.12, 0, 0]} castShadow geometry={getSharedBoxGeometry(0.45, 0.35, 0.08)}>
           <meshStandardMaterial color="#22251f" roughness={0.7} />
         </mesh>
-        <mesh position={[0, 0.62, -0.05]} rotation={[-0.12, 0, 0]} geometry={getSharedPlaneGeometry(0.38, 0.27)}>
-          <meshStandardMaterial color="#020503" emissive="#143" emissiveIntensity={0.4} />
-        </mesh>
+        {usePhysicalCrt ? (
+          <mesh
+            ref={terminalRef}
+            position={[0, 0.62, -0.05]}
+            rotation={[-0.12, 0, 0]}
+            geometry={getSharedPlaneGeometry(0.38, 0.27)}
+          >
+            <meshPhysicalMaterial
+              color="#020503"
+              emissive="#143"
+              emissiveIntensity={0.4}
+              roughness={crtGlass.roughness}
+              metalness={crtGlass.metalness}
+              transmission={crtGlass.transmission}
+              thickness={crtGlass.thickness}
+              clearcoat={crtGlass.clearcoat}
+              clearcoatRoughness={crtGlass.clearcoatRoughness}
+              transparent
+              opacity={crtGlass.opacity}
+            />
+          </mesh>
+        ) : (
+          <mesh
+            ref={terminalRef}
+            position={[0, 0.62, -0.05]}
+            rotation={[-0.12, 0, 0]}
+            geometry={getSharedPlaneGeometry(0.38, 0.27)}
+          >
+            <meshStandardMaterial color="#020503" emissive="#143" emissiveIntensity={0.4} />
+          </mesh>
+        )}
       </group>
 
       {/* ── Red emergency lamps on side walls ── */}

@@ -602,6 +602,30 @@ export class QuestTracker {
               });
             }
           }
+          // Эхо Владимира: unlock mid-resume flag only after successful poetry
+          // (never on zone interact — aborting would soft-lock read).
+          if (quest.questId === 'echo_of_vladimir' && objective.id === 'unlock_final_poem') {
+            const flags = getGameSnapshot().playerState.flags;
+            if (!flags['final_poem_unlocked']) {
+              dispatchGameAction({
+                type: 'player/setFlag',
+                key: 'final_poem_unlocked',
+                value: true,
+              });
+            }
+          }
+          // Последний Код: virus mid-resume flag only after successful OpenStack
+          // (never on zone interact — aborting would soft-lock core).
+          if (quest.questId === 'final_code' && objective.id === 'write_freedom_virus') {
+            const flags = getGameSnapshot().playerState.flags;
+            if (!flags['freedom_virus_written']) {
+              dispatchGameAction({
+                type: 'player/setFlag',
+                key: 'freedom_virus_written',
+                value: true,
+              });
+            }
+          }
         }
       }
     }
@@ -674,6 +698,17 @@ export class QuestTracker {
         if (objective.poemPowerBypass === poemId) {
           // Auto-bypass the objective when the matching poem power is used
           this.completeObjective(quest.questId, objective.id);
+          // Последний Код: poem bypass must unlock virus mid-resume the same way as OpenStack.
+          if (quest.questId === 'final_code' && objective.id === 'write_freedom_virus') {
+            const flags = getGameSnapshot().playerState.flags;
+            if (!flags['freedom_virus_written']) {
+              dispatchGameAction({
+                type: 'player/setFlag',
+                key: 'freedom_virus_written',
+                value: true,
+              });
+            }
+          }
           eventBus.emit('quest:poem_bypass', {
             questId: quest.questId,
             objectiveId: objective.id,
@@ -702,6 +737,16 @@ export class QuestTracker {
     if (!snapshot.collectedPoems.includes(poemId)) return;
 
     this.completeObjective(questId, objectiveId);
+    if (questId === 'final_code' && objectiveId === 'write_freedom_virus') {
+      const flags = snapshot.playerState.flags;
+      if (!flags['freedom_virus_written']) {
+        dispatchGameAction({
+          type: 'player/setFlag',
+          key: 'freedom_virus_written',
+          value: true,
+        });
+      }
+    }
   }
 
   /** Try to complete a specific objective by quest+objective ID */

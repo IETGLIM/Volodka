@@ -6,6 +6,7 @@ import {
   dismissTitleCardIfPresent,
   skipWakeCinematic,
   waitForExplorationInputReady,
+  startNewGameFromMenu,
   waitForMenuReady,
 } from './helpers';
 
@@ -18,8 +19,7 @@ test.describe('Act I physical dialogue path', () => {
 
   test('room_door interact → corridor cutscene → free exploration without VN overlay', async ({ page }) => {
     await waitForMenuReady(page);
-    await page.getByTestId('menu-new-game').click();
-    await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
+    await startNewGameFromMenu(page);
 
     await skipWakeCinematic(page);
     await advancePastAct1WakePrologue(page);

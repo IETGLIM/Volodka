@@ -957,6 +957,24 @@ export const DIALOGUE_PART2: Record<string, DialogueNode> = {
         condition: { requiredAct: 2, flag: 'network_contact' },
       },
       {
+        text: 'Ночная улица — прощальная прогулка.',
+        next: null,
+        condition: {
+          flag: 'act7_goodbye_zarema_done',
+          missingFlag: 'act7_final_walk_done',
+        },
+        effects: [{ type: 'visitStoryNode', nodeId: 'act7_final_walk' }],
+      },
+      {
+        text: 'Кто я теперь — выбор с тобой.',
+        next: null,
+        condition: {
+          flag: 'act7_final_walk_done',
+          missingFlag: 'volodka_future_chosen',
+        },
+        effects: [{ type: 'visitStoryNode', nodeId: 'act7_maria_future' }],
+      },
+      {
         text: 'Мне пора.',
         next: null,
       },
@@ -991,8 +1009,23 @@ export const DIALOGUE_PART2: Record<string, DialogueNode> = {
       {
         text: 'Логи Александра назвали тебя. Правда.',
         next: null,
-        condition: { flag: 'traitor_revealed', missingFlag: 'traitor_fate_decided' },
+        condition: {
+          flag: 'traitor_revealed',
+          missingFlag: 'act6_dmitry_judgment_pending',
+        },
         effects: [{ type: 'visitStoryNode', nodeId: 'act6_office_confrontation' }],
+      },
+      {
+        text: 'Союз с Максимом — ты ещё здесь?',
+        next: null,
+        condition: { flag: 'dmitry_forgiven', missingFlag: 'traitor_fate_decided' },
+        effects: [{ type: 'visitStoryNode', nodeId: 'act6_alliance_formed' }],
+      },
+      {
+        text: 'Чип на столе — ты уже ушёл?',
+        next: null,
+        condition: { flag: 'dmitry_exiled', missingFlag: 'traitor_fate_decided' },
+        effects: [{ type: 'visitStoryNode', nodeId: 'act6_dmitry_exiled' }],
       },
       {
         text: 'Увидимся, Дмитрий.',

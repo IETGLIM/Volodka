@@ -1,22 +1,35 @@
 
 /* ─── Volodka RPG – Library procedural 3D visual ─── */
 
+import { useMemo } from 'react';
 import * as THREE from 'three';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { createLibraryDayWarmSkyTexture } from '@/engine/graphics/proceduralSkyTextures';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
+import {
+  allowsSelectiveMeshPhysicalWet,
+  getWetGlassPhysicalParams,
+} from '@/engine/graphics/wetStreetScenes';
+import { useIsMobileVisual } from '@/hooks/use-mobile';
 import { INTERIOR_SHELL_MODELS } from '../../config/interiorShellModels';
 import { AuthoredInteriorShell } from './AuthoredInteriorShell';
 import { LibraryDayInterior } from './sceneChunks/libraryDay';
-import { getInteriorShellScale } from '@/config/interiorShellScale';
+import { getInteriorShellScale, isWalkableInteriorShellAllowed } from '@/config/interiorShellScale';
 
 /** Gothic/AuthorMaterial library (16×14m) */
 export function LibraryDayVisual() {
-  const { preset } = useGraphicsQuality();
-  const useAuthoredShell = !preset.visualLite;
+  const { preset, selectedPreset } = useGraphicsQuality();
+  const coarsePointer = useIsMobileVisual();
+  const useAuthoredShell =
+    !preset.visualLite && isWalkableInteriorShellAllowed('library');
   const useGltfDressing = allowsGlbAssetRendering(preset.environmentRenderMode);
+  // Shell blocked — keep tall shelf rows; ScenePropDressing only places ~2 hero bookshelves.
   const hideProceduralShelves = useAuthoredShell && useGltfDressing;
+  const usePhysicalGlass = allowsSelectiveMeshPhysicalWet('library_day', selectedPreset, {
+    coarsePointer,
+  });
+  const wetGlass = useMemo(() => getWetGlassPhysicalParams('libraryStainedGlass'), []);
   const floorTexture = useCachedCanvasTexture('library_day:floor', createLibraryFloorTexture);
   const wallTexture = useCachedCanvasTexture('library_day:wall', createLibraryWallTexture);
   const ceilingWashTexture = useCachedCanvasTexture(
@@ -158,11 +171,27 @@ export function LibraryDayVisual() {
       <group position={[W / 2 - 0.01, 1.5, -2]}>
         <mesh rotation-y={-Math.PI / 2}>
           <planeGeometry args={[2.2, 2.0]} />
-          <meshStandardMaterial
-            color="#1a0a20"
-            emissive="#8800aa"
-            emissiveIntensity={0.4}
-          />
+          {usePhysicalGlass ? (
+            <meshPhysicalMaterial
+              color="#1a0a20"
+              emissive="#8800aa"
+              emissiveIntensity={0.4}
+              roughness={wetGlass.roughness}
+              metalness={wetGlass.metalness}
+              transmission={wetGlass.transmission}
+              thickness={wetGlass.thickness}
+              clearcoat={wetGlass.clearcoat}
+              clearcoatRoughness={wetGlass.clearcoatRoughness}
+              transparent
+              opacity={wetGlass.opacity}
+            />
+          ) : (
+            <meshStandardMaterial
+              color="#1a0a20"
+              emissive="#8800aa"
+              emissiveIntensity={0.4}
+            />
+          )}
         </mesh>
         {/* Window frame */}
         <mesh rotation-y={-Math.PI / 2} position={[0.01, 0, 0]}>
@@ -476,11 +505,27 @@ export function LibraryDayVisual() {
       <group position={[-W / 2 + 0.01, 1.5, -2]}>
         <mesh rotation-y={Math.PI / 2}>
           <planeGeometry args={[2.2, 2.0]} />
-          <meshStandardMaterial
-            color="#0a0a20"
-            emissive="#2255aa"
-            emissiveIntensity={0.3}
-          />
+          {usePhysicalGlass ? (
+            <meshPhysicalMaterial
+              color="#0a0a20"
+              emissive="#2255aa"
+              emissiveIntensity={0.3}
+              roughness={wetGlass.roughness}
+              metalness={wetGlass.metalness}
+              transmission={wetGlass.transmission}
+              thickness={wetGlass.thickness}
+              clearcoat={wetGlass.clearcoat}
+              clearcoatRoughness={wetGlass.clearcoatRoughness}
+              transparent
+              opacity={wetGlass.opacity}
+            />
+          ) : (
+            <meshStandardMaterial
+              color="#0a0a20"
+              emissive="#2255aa"
+              emissiveIntensity={0.3}
+            />
+          )}
         </mesh>
         {/* Window frame */}
         <mesh rotation-y={Math.PI / 2} position={[-0.01, 0, 0]}>

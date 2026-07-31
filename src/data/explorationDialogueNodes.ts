@@ -542,10 +542,22 @@ export const EXPLORATION_DIALOGUE_NODES: Record<string, DialogueNode> = {
       {
         text: 'Слушать исповедь машины',
         next: null,
+        condition: { missingFlag: 'heard_machine_confession' },
         effects: [
           { type: 'setFlag', flag: 'zarya_confession_requested', flagValue: true },
           { type: 'triggerQuest', questId: 'machine_confession' },
-          { type: 'visitStoryNode', nodeId: 'machine_confession_scene' },
+          { type: 'visitStoryNode', nodeId: 'machine_confession_approach' },
+        ],
+      },
+      {
+        text: 'Решить судьбу «Зари-М»',
+        next: null,
+        condition: {
+          flag: 'heard_machine_confession',
+          missingFlag: 'machine_fate_decided',
+        },
+        effects: [
+          { type: 'visitStoryNode', nodeId: 'machine_confession_approach' },
         ],
       },
       {

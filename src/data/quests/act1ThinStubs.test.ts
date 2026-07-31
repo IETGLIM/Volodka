@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { QUEST_DEFINITIONS } from '@/data/quests';
 import { STORY_NODES } from '@/data/story';
 import { TRIGGER_ZONES } from '@/data/triggerZones';
+import { EXPANDED_DIALOGUE_NODES } from '@/data/expandedDialogueNodes';
 
 const THICKENED = [
   'alberts_lesson',
@@ -131,6 +132,72 @@ describe('Act 1–2 thin stub → multi-beat conversion', () => {
     expect(effects.some((e) => e.type === 'setFlag' && e.flag === 'chk_neon_archive_done')).toBe(true);
   });
 
+  it('Act 2 server poem hunt + neon archive leave to hubs + mid-resume', () => {
+    expect(STORY_NODES.quest_act2_server_poem_office).toBeTruthy();
+    expect(STORY_NODES.quest_act2_server_poem_pier).toBeTruthy();
+    expect(STORY_NODES.quest_act2_server_poem_chk).toBeTruthy();
+    expect(STORY_NODES.quest_act2_server_poem_hunt_start.choices[0]?.next).toBe(
+      'quest_act2_server_poem_office',
+    );
+    expect(
+      STORY_NODES.quest_act2_server_poem_office.choices.some((c) => c.next === 'office_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.quest_act2_server_poem_pier.choices.some(
+        (c) => c.next === 'pier_evening_explore_mode',
+      ),
+    ).toBe(true);
+    expect(
+      STORY_NODES.quest_act2_server_poem_chk.choices.some((c) => c.next === 'chk_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.quest_act2_chk_neon_archive_hack.choices.some(
+        (c) => c.next === 'cafe_explore_mode' && !(c.effects ?? []).length,
+      ),
+    ).toBe(true);
+    expect(
+      STORY_NODES.office_explore_mode.choices.some(
+        (c) => c.next === 'quest_act2_server_poem_office',
+      ),
+    ).toBe(true);
+    expect(
+      STORY_NODES.pier_evening_explore_mode.choices.some(
+        (c) => c.next === 'quest_act2_server_poem_pier',
+      ),
+    ).toBe(true);
+    expect(
+      STORY_NODES.chk_explore_mode.choices.some((c) => c.next === 'quest_act2_server_poem_chk'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.cafe_explore_mode.choices.some(
+        (c) => c.next === 'quest_act2_chk_neon_archive_hack',
+      ),
+    ).toBe(true);
+    const poemQuest = QUEST_DEFINITIONS.find((q) => q.id === 'quest_act2_server_poem_hunt');
+    expect(poemQuest?.objectives.every((o) => o.type === 'flag_set')).toBe(true);
+    expect(poemQuest?.linkedStoryNodeIds).toEqual([
+      'quest_act2_server_poem_hunt_start',
+      'quest_act2_server_poem_office',
+      'quest_act2_server_poem_pier',
+      'quest_act2_server_poem_chk',
+    ]);
+  });
+
+  it('chk_act7_farewell leaves to forest hub — not room explore_mode', () => {
+    const farewell = STORY_NODES.chk_act7_farewell;
+    expect(farewell.choices.every((c) => c.next === 'chk_explore_mode')).toBe(true);
+    expect(farewell.choices.some((c) => c.next === 'explore_mode')).toBe(false);
+    expect(
+      (farewell.choices[0]?.effects ?? []).some(
+        (e) => e.type === 'setFlag' && e.flag === 'tolpa_act7_farewell_heard',
+      ),
+    ).toBe(true);
+    const chk = STORY_NODES.chk_explore_mode;
+    const resume = chk.choices.find((c) => c.next === 'chk_act7_farewell');
+    expect(resume?.condition?.requiredAct).toBe(7);
+    expect(resume?.condition?.missingFlag).toBe('tolpa_act7_farewell_heard');
+  });
+
   it('factory zarya memory spans snow → storm → photo → restore', () => {
     expect(STORY_NODES.factory_zarya_snow).toBeTruthy();
     expect(STORY_NODES.factory_zarya_storm).toBeTruthy();
@@ -140,6 +207,32 @@ describe('Act 1–2 thin stub → multi-beat conversion', () => {
     const restore = STORY_NODES.factory_zarya_memory_restore;
     const effects = restore.choices[0]?.effects ?? [];
     expect(effects.some((e) => e.type === 'setFlag' && e.flag === 'factory_zarya_memory_done')).toBe(true);
+  });
+
+  it('factory_zarya mid-resume: leave on snow/storm/photo + hub split', () => {
+    expect(
+      STORY_NODES.factory_zarya_snow.choices.some((c) => c.next === 'factory_roof_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.factory_zarya_storm.choices.some((c) => c.next === 'basement_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.factory_zarya_photo.choices.some((c) => c.next === 'basement_explore_mode'),
+    ).toBe(true);
+    const roof = STORY_NODES.factory_roof_explore_mode;
+    const snow = roof.choices.find((c) => c.next === 'factory_zarya_snow');
+    expect(snow?.condition?.flag).toBe('factory_zarya_memory_active');
+    expect(snow?.condition?.missingFlag).toBe('factory_zarya_snow_done');
+    const basement = STORY_NODES.basement_explore_mode;
+    const storm = basement.choices.find((c) => c.next === 'factory_zarya_storm');
+    expect(storm?.condition?.flag).toBe('factory_zarya_snow_done');
+    expect(storm?.condition?.missingFlag).toBe('factory_zarya_storm_done');
+    const photo = basement.choices.find((c) => c.next === 'factory_zarya_photo');
+    expect(photo?.condition?.flag).toBe('factory_zarya_storm_done');
+    expect(photo?.condition?.missingFlag).toBe('factory_zarya_photo_done');
+    const restore = basement.choices.find((c) => c.next === 'factory_zarya_memory_restore');
+    expect(restore?.condition?.flag).toBe('factory_zarya_photo_done');
+    expect(restore?.condition?.missingFlag).toBe('factory_zarya_memory_done');
   });
 
   it('factory baba zina tea spans kettle → mint → hum → history → done', () => {
@@ -152,6 +245,41 @@ describe('Act 1–2 thin stub → multi-beat conversion', () => {
     const done = STORY_NODES.factory_baba_zina_tea_done;
     const effects = done.choices[0]?.effects ?? [];
     expect(effects.some((e) => e.type === 'setFlag' && e.flag === 'factory_baba_zina_tea_done')).toBe(true);
+  });
+
+  it('factory_baba_zina_tea mid-resume: leave on mid-beats + hub/dialogue split', () => {
+    expect(
+      STORY_NODES.factory_baba_zina_tea_kettle.choices.some((c) => c.next === 'factory_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.factory_baba_zina_tea_mint.choices.some((c) => c.next === 'factory_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.factory_baba_zina_tea_hum.choices.some((c) => c.next === 'factory_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.factory_baba_zina_tea_history.choices.some((c) => c.next === 'factory_explore_mode'),
+    ).toBe(true);
+    const factory = STORY_NODES.factory_explore_mode;
+    const kettle = factory.choices.find((c) => c.next === 'factory_baba_zina_tea_kettle');
+    expect(kettle?.condition?.flag).toBe('factory_baba_zina_tea_active');
+    expect(kettle?.condition?.missingFlag).toBe('factory_baba_zina_tea_kettle');
+    const mint = factory.choices.find((c) => c.next === 'factory_baba_zina_tea_mint');
+    expect(mint?.condition?.flag).toBe('factory_baba_zina_tea_kettle');
+    expect(mint?.condition?.missingFlag).toBe('factory_baba_zina_tea_mint');
+    const hum = factory.choices.find((c) => c.next === 'factory_baba_zina_tea_hum');
+    expect(hum?.condition?.flag).toBe('factory_baba_zina_tea_mint');
+    expect(hum?.condition?.missingFlag).toBe('factory_baba_zina_tea_hum');
+    const history = factory.choices.find((c) => c.next === 'factory_baba_zina_tea_history');
+    expect(history?.condition?.flag).toBe('factory_baba_zina_tea_hum');
+    expect(history?.condition?.missingFlag).toBe('factory_baba_zina_tea_done');
+    // Hub text/structure parity — Тишина must map to nadzor_dies (not Память).
+    expect(
+      factory.choices.find((c) => c.next === 'act7_nadzor_dies')?.text,
+    ).toContain('Тишина');
+    expect(
+      factory.choices.find((c) => c.next === 'quest_act5_factory_zarya_memory_restore_start')?.text,
+    ).toContain('Память');
   });
 
   it('phase5 park bloom / samizdat / zarya fragments / rooftop / evidence set completion flags', () => {
@@ -249,6 +377,45 @@ describe('Act 1–2 thin stub → multi-beat conversion', () => {
     }
   });
 
+  it('Act 4 samizdat + rooftop antenna leave to hubs + mid-resume', () => {
+    expect(
+      STORY_NODES.quest_act4_street_samizdat_pier.choices.some(
+        (c) => c.next === 'pier_evening_explore_mode',
+      ),
+    ).toBe(true);
+    expect(
+      STORY_NODES.quest_act4_street_samizdat_chk.choices.some((c) => c.next === 'chk_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.quest_act4_street_samizdat_library.choices.some(
+        (c) => c.next === 'library_explore_mode',
+      ),
+    ).toBe(true);
+    expect(
+      STORY_NODES.quest_act4_rooftop_broadcast_repair.choices.some(
+        (c) => c.next === 'rooftop_explore_mode' && !(c.effects ?? []).length,
+      ),
+    ).toBe(true);
+    expect(
+      STORY_NODES.pier_evening_explore_mode.choices.some(
+        (c) => c.next === 'quest_act4_street_samizdat_pier',
+      ),
+    ).toBe(true);
+    expect(
+      STORY_NODES.chk_explore_mode.choices.some((c) => c.next === 'quest_act4_street_samizdat_chk'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.library_explore_mode.choices.some(
+        (c) => c.next === 'quest_act4_street_samizdat_library',
+      ),
+    ).toBe(true);
+    expect(
+      STORY_NODES.rooftop_explore_mode.choices.some(
+        (c) => c.next === 'quest_act4_rooftop_broadcast_repair',
+      ),
+    ).toBe(true);
+  });
+
   it('resistance safehouse + defector rescue are multi-beat Act 6 cases', () => {
     for (const id of ['resistance_safehouse', 'resistance_defector_rescue'] as const) {
       const quest = QUEST_DEFINITIONS.find((q) => q.id === id);
@@ -326,6 +493,41 @@ describe('Act 1–2 thin stub → multi-beat conversion', () => {
     expect(STORY_NODES.act6_secret_archive_approach.choices.some((c) => c.next === 'act6_secret_archive_door')).toBe(
       true,
     );
+  });
+
+  it('act6_secret_archive mid-resume splits hatch→door→decode→extract→seal on hub/zones', () => {
+    const factory = STORY_NODES.factory_explore_mode;
+    const approach = factory.choices.find((c) => c.next === 'act6_secret_archive_approach');
+    expect(approach?.condition?.missingFlag).toBe('act6_secret_archive_active');
+    const door = factory.choices.find((c) => c.next === 'act6_secret_archive_door');
+    expect(door?.condition?.flag).toBe('act6_secret_archive_active');
+    expect(door?.condition?.missingFlag).toBe('act6_secret_archive_opened');
+    const decode = factory.choices.find((c) => c.next === 'act6_secret_archive_decode');
+    expect(decode?.condition?.flag).toBe('act6_secret_archive_opened');
+    expect(decode?.condition?.missingFlag).toBe('act6_secret_archive_decoded');
+    const extract = factory.choices.find((c) => c.next === 'act6_secret_archive_extract');
+    expect(extract?.condition?.flag).toBe('act6_secret_archive_decoded');
+    expect(extract?.condition?.missingFlag).toBe('act6_secret_archive_saved');
+    const seal = factory.choices.find((c) => c.next === 'act6_secret_archive_seal');
+    expect(seal?.condition?.flag).toBe('act6_secret_archive_saved');
+    expect(seal?.condition?.missingFlag).toBe('act6_secret_archive_sealed');
+    expect(TRIGGER_ZONES.find((z) => z.id === 'factory_act6_secret_archive_hatch')?.hiddenWhenFlag).toBe(
+      'act6_secret_archive_active',
+    );
+    expect(TRIGGER_ZONES.find((z) => z.id === 'factory_act6_secret_archive_door')?.linkedStoryNodeId).toBe(
+      'act6_secret_archive_door',
+    );
+    expect(TRIGGER_ZONES.find((z) => z.id === 'factory_act6_secret_archive_seal')?.hiddenWhenFlag).toBe(
+      'act6_secret_archive_sealed',
+    );
+    expect(
+      STORY_NODES.act6_secret_archive_door.choices.some(
+        (c) => c.next === 'act6_secret_archive_decode' && c.condition?.flag === 'act6_secret_archive_opened',
+      ),
+    ).toBe(true);
+    expect(
+      STORY_NODES.act6_secret_archive_decode.choices.some((c) => c.next === 'factory_explore_mode'),
+    ).toBe(true);
   });
 
   it('bank_transfer wires never-set trace/culprit/moral flags', () => {
@@ -757,7 +959,187 @@ describe('Act 1–2 thin stub → multi-beat conversion', () => {
     expect(nexts.has('quest_act7_poets_monument_inscription_start')).toBe(true);
     expect(nexts.has('quest_act7_poets_monument_plate')).toBe(true);
     expect(nexts.has('quest_act7_poets_monument_recall')).toBe(true);
+    expect(nexts.has('quest_act7_poets_monument_carve')).toBe(true);
+    expect(nexts.has('quest_act7_poets_monument_inscribe')).toBe(true);
     expect(nexts.has('epilogue_monument_start')).toBe(true);
+    expect(nexts.has('epilogue_monument_done')).toBe(true);
+    const monumentStart = hub.choices.find((c) => c.next === 'epilogue_monument_start');
+    expect(monumentStart?.condition?.flag).toBe('volodka_legacy_complete');
+    expect(monumentStart?.condition?.missingFlag).toBe('epilogue_monument_started');
+    const monumentMid = hub.choices.find((c) => c.next === 'epilogue_monument_done');
+    expect(monumentMid?.condition?.flag).toBe('epilogue_monument_started');
+    expect(monumentMid?.condition?.missingFlag).toBe('epilogue_monument_done');
+    const recall = hub.choices.find((c) => c.next === 'quest_act7_poets_monument_recall');
+    expect(recall?.condition?.flag).toBe('quest_act7_poets_monument_plate_cleared');
+    expect(recall?.condition?.missingFlag).toBe('quest_act7_poets_monument_names_recalled');
+    const carve = hub.choices.find((c) => c.next === 'quest_act7_poets_monument_carve');
+    expect(carve?.condition?.flag).toBe('quest_act7_poets_monument_names_recalled');
+    expect(carve?.condition?.missingFlag).toBe('quest_act7_poets_monument_carved');
+    const inscribe = hub.choices.find((c) => c.next === 'quest_act7_poets_monument_inscribe');
+    expect(inscribe?.condition?.flag).toBe('quest_act7_poets_monument_carved');
+    expect(inscribe?.condition?.missingFlag).toBe('quest_act7_poets_monument_inscription_done');
+    expect(TRIGGER_ZONES.find((z) => z.id === 'park_poets_monument_mid_recall')?.linkedStoryNodeId).toBe(
+      'quest_act7_poets_monument_recall',
+    );
+    expect(TRIGGER_ZONES.find((z) => z.id === 'park_poets_monument_mid_carve')?.linkedStoryNodeId).toBe(
+      'quest_act7_poets_monument_carve',
+    );
+    expect(TRIGGER_ZONES.find((z) => z.id === 'park_poets_monument_mid_inscribe')?.hiddenWhenFlag).toBe(
+      'quest_act7_poets_monument_inscription_done',
+    );
+  });
+
+  it('epilogue_letters / epilogue_monument mid-resume leave + hub/zone split', () => {
+    expect(
+      STORY_NODES.epilogue_letters_start.choices.some((c) => c.next === 'explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.epilogue_letters_done.choices.some((c) => c.next === 'explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.epilogue_monument_start.choices.some((c) => c.next === 'park_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.epilogue_monument_done.choices.some((c) => c.next === 'park_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.epilogue_letters_done.choices.every((c) => c.next !== 'epilogue_hub'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.epilogue_monument_done.choices.every((c) => c.next !== 'epilogue_hub'),
+    ).toBe(true);
+    expect(
+      (STORY_NODES.epilogue_letters_start.choices[0]?.effects ?? []).some(
+        (e) => e.type === 'setFlag' && e.flag === 'epilogue_letters_started',
+      ),
+    ).toBe(true);
+    expect(
+      (STORY_NODES.epilogue_monument_start.choices[0]?.effects ?? []).some(
+        (e) => e.type === 'setFlag' && e.flag === 'epilogue_monument_started',
+      ),
+    ).toBe(true);
+    const room = STORY_NODES.explore_mode;
+    const lettersStart = room.choices.find((c) => c.next === 'epilogue_letters_start');
+    expect(lettersStart?.condition?.flag).toBe('volodka_legacy_complete');
+    expect(lettersStart?.condition?.missingFlag).toBe('epilogue_letters_started');
+    const lettersMid = room.choices.find((c) => c.next === 'epilogue_letters_done');
+    expect(lettersMid?.condition?.flag).toBe('epilogue_letters_started');
+    expect(lettersMid?.condition?.missingFlag).toBe('epilogue_letters_done');
+    const hub = STORY_NODES.epilogue_hub;
+    expect(hub.choices.find((c) => c.next === 'epilogue_letters_start')?.condition?.missingFlag).toBe(
+      'epilogue_letters_started',
+    );
+    expect(hub.choices.find((c) => c.next === 'epilogue_letters_done')?.condition?.flag).toBe(
+      'epilogue_letters_started',
+    );
+    expect(hub.choices.find((c) => c.next === 'epilogue_monument_start')?.condition?.missingFlag).toBe(
+      'epilogue_monument_started',
+    );
+    expect(hub.choices.find((c) => c.next === 'epilogue_monument_done')?.condition?.flag).toBe(
+      'epilogue_monument_started',
+    );
+    expect(TRIGGER_ZONES.find((z) => z.id === 'room_epilogue_letters')?.hiddenWhenFlag).toBe(
+      'epilogue_letters_started',
+    );
+    expect(TRIGGER_ZONES.find((z) => z.id === 'room_epilogue_letters_mid')?.linkedStoryNodeId).toBe(
+      'epilogue_letters_done',
+    );
+    expect(TRIGGER_ZONES.find((z) => z.id === 'park_epilogue_monument')?.hiddenWhenFlag).toBe(
+      'epilogue_monument_started',
+    );
+    expect(TRIGGER_ZONES.find((z) => z.id === 'park_epilogue_monument_mid')?.linkedStoryNodeId).toBe(
+      'epilogue_monument_done',
+    );
+    const lettersQuest = QUEST_DEFINITIONS.find((q) => q.id === 'epilogue_letters');
+    expect(lettersQuest?.linkedStoryNodeIds).toEqual(
+      expect.arrayContaining(['epilogue_letters_start', 'epilogue_letters_done']),
+    );
+    const monumentQuest = QUEST_DEFINITIONS.find((q) => q.id === 'epilogue_monument');
+    expect(monumentQuest?.linkedStoryNodeIds).toEqual(
+      expect.arrayContaining(['epilogue_monument_start', 'epilogue_monument_done']),
+    );
+    expect(
+      EXPANDED_DIALOGUE_NODES.street_poet_greeting.choices.some(
+        (c) => c.next === 'epilogue_monument_start',
+      ),
+    ).toBe(true);
+    expect(
+      EXPANDED_DIALOGUE_NODES.street_poet_return.choices.some(
+        (c) => c.next === 'epilogue_monument_done',
+      ),
+    ).toBe(true);
+  });
+
+  it('volodka_legacy mid-resume splits goodbye→final_walk→maria_future on hubs/zones', () => {
+    const quest = QUEST_DEFINITIONS.find((q) => q.id === 'volodka_legacy');
+    expect(quest).toBeTruthy();
+    expect(quest!.linkedStoryNodeIds).toEqual(
+      expect.arrayContaining([
+        'act7_legacy_walk',
+        'act7_goodbye_zarema',
+        'act7_final_walk',
+        'act7_maria_future',
+      ]),
+    );
+    expect(
+      STORY_NODES.act7_legacy_walk.choices.some((c) => c.next === 'explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.act7_goodbye_zarema.choices.some((c) => c.next === 'home_evening_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.act7_final_walk.choices.some((c) => c.next === 'street_bench_view'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.act7_maria_future.choices.some((c) => c.next === 'street_bench_view'),
+    ).toBe(true);
+    const trueEnd = STORY_NODES.act7_true_end;
+    expect(trueEnd.choices.some((c) => c.next === 'explore_mode')).toBe(true);
+    expect(trueEnd.choices.some((c) => c.next === 'epilogue_hub')).toBe(true);
+    expect(trueEnd.choices.some((c) => c.next === 'start')).toBe(true);
+    expect(trueEnd.choices.every((c) => c.next !== null)).toBe(true);
+    const room = STORY_NODES.explore_mode;
+    const walk = room.choices.find((c) => c.next === 'act7_legacy_walk');
+    expect(walk?.condition?.flag).toBe('final_poem_published');
+    expect(walk?.condition?.missingFlag).toBe('act7_legacy_walk_done');
+    const home = STORY_NODES.home_evening_explore_mode;
+    const goodbye = home.choices.find((c) => c.next === 'act7_goodbye_zarema');
+    expect(goodbye?.condition?.flag).toBe('act7_legacy_walk_done');
+    expect(goodbye?.condition?.missingFlag).toBe('act7_goodbye_zarema_done');
+    const street = STORY_NODES.street_bench_view;
+    const finalWalk = street.choices.find((c) => c.next === 'act7_final_walk');
+    expect(finalWalk?.condition?.flag).toBe('act7_goodbye_zarema_done');
+    expect(finalWalk?.condition?.missingFlag).toBe('act7_final_walk_done');
+    const future = street.choices.find((c) => c.next === 'act7_maria_future');
+    expect(future?.condition?.flag).toBe('act7_final_walk_done');
+    expect(future?.condition?.missingFlag).toBe('volodka_future_chosen');
+    expect(
+      (STORY_NODES.act7_legacy_walk.choices[0]?.effects ?? []).some(
+        (e) => e.type === 'setFlag' && e.flag === 'act7_legacy_walk_done',
+      ),
+    ).toBe(true);
+    expect(
+      (STORY_NODES.act7_goodbye_zarema.choices[0]?.effects ?? []).some(
+        (e) => e.type === 'setFlag' && e.flag === 'act7_goodbye_zarema_done',
+      ),
+    ).toBe(true);
+    expect(
+      (STORY_NODES.act7_final_walk.choices[0]?.effects ?? []).some(
+        (e) => e.type === 'setFlag' && e.flag === 'act7_final_walk_done',
+      ),
+    ).toBe(true);
+    expect(TRIGGER_ZONES.find((z) => z.id === 'room_act7_legacy_walk')?.hiddenWhenFlag).toBe(
+      'act7_legacy_walk_done',
+    );
+    expect(TRIGGER_ZONES.find((z) => z.id === 'home_act7_goodbye_zarema')?.linkedStoryNodeId).toBe(
+      'act7_goodbye_zarema',
+    );
+    expect(TRIGGER_ZONES.find((z) => z.id === 'street_act7_final_walk')?.requiredFlag).toBe(
+      'act7_goodbye_zarema_done',
+    );
+    expect(TRIGGER_ZONES.find((z) => z.id === 'street_act7_maria_future')?.hiddenWhenFlag).toBe(
+      'volodka_future_chosen',
+    );
   });
 
   it('park_explore_mode gates Act 3 spine + cyber bloom mid-resume', () => {
@@ -768,12 +1150,56 @@ describe('Act 1–2 thin stub → multi-beat conversion', () => {
     expect(hub.choices.some((c) => c.next === 'quest_act3_park_cyber_bloom_alpha')).toBe(true);
     expect(hub.choices.some((c) => c.next === 'quest_act3_park_cyber_bloom_beta')).toBe(true);
     expect(hub.choices.some((c) => c.next === 'quest_act3_park_cyber_bloom_gamma')).toBe(true);
+    expect(
+      STORY_NODES.quest_act3_park_cyber_bloom_alpha.choices.some((c) => c.next === 'park_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.quest_act3_park_cyber_bloom_beta.choices.some((c) => c.next === 'park_explore_mode'),
+    ).toBe(true);
     const office = STORY_NODES.office_explore_mode;
     expect(office.choices.some((c) => c.next === 'act3_detention_infiltration')).toBe(true);
     expect(office.choices.some((c) => c.next === 'act3_zarema_cell')).toBe(true);
     const rescue = QUEST_DEFINITIONS.find((q) => q.id === 'zarema_rescue');
     expect(rescue?.linkedStoryNodeIds).toContain('act3_detention_infiltration');
     expect(rescue?.linkedStoryNodeIds).toContain('act3_zarema_cell');
+  });
+
+  it('Act 3 zarema evidence run leave on secure + library/basement hub mid-resume', () => {
+    expect(
+      STORY_NODES.quest_act3_zarema_evidence_secure.choices.some(
+        (c) =>
+          c.next === 'library_basement_explore_mode'
+          && !(c.effects ?? []).some(
+            (e) => e.type === 'setFlag' && e.flag === 'quest_act3_zarema_evidence_run_done',
+          ),
+      ),
+    ).toBe(true);
+    const library = STORY_NODES.library_explore_mode;
+    const basement = STORY_NODES.library_basement_explore_mode;
+    const start = library.choices.find((c) => c.next === 'quest_act3_zarema_evidence_run_start');
+    expect(start?.condition?.requiredAct).toBe(3);
+    expect(start?.condition?.missingFlag).toBe('quest_act3_zarema_evidence_run_active');
+    const resumeFromLibrary = library.choices.find(
+      (c) => c.next === 'quest_act3_zarema_evidence_secure',
+    );
+    expect(resumeFromLibrary?.condition?.flag).toBe('quest_act3_zarema_evidence_run_active');
+    expect(resumeFromLibrary?.condition?.missingFlag).toBe('quest_act3_zarema_evidence_run_done');
+    expect(
+      (resumeFromLibrary?.effects ?? []).some(
+        (e) => e.type === 'transitionScene' && e.sceneId === 'library_basement',
+      ),
+    ).toBe(true);
+    const resumeFromBasement = basement.choices.find(
+      (c) => c.next === 'quest_act3_zarema_evidence_secure',
+    );
+    expect(resumeFromBasement?.condition?.flag).toBe('quest_act3_zarema_evidence_run_active');
+    expect(resumeFromBasement?.condition?.missingFlag).toBe('quest_act3_zarema_evidence_run_done');
+    expect(TRIGGER_ZONES.find((z) => z.id === 'library_zarema_evidence_start')?.linkedStoryNodeId).toBe(
+      'quest_act3_zarema_evidence_run_start',
+    );
+    expect(
+      TRIGGER_ZONES.find((z) => z.id === 'library_basement_zarema_evidence_secure')?.hiddenWhenFlag,
+    ).toBe('quest_act3_zarema_evidence_run_done');
   });
 
   it('factory_explore_mode offers vault_defense mid-resume after rally', () => {
@@ -827,13 +1253,42 @@ describe('Act 1–2 thin stub → multi-beat conversion', () => {
     const quest = QUEST_DEFINITIONS.find((q) => q.id === 'machine_confession');
     expect(quest).toBeTruthy();
     expect(quest!.linkedStoryNodeId).toBe('machine_confession_scene');
-    expect(quest!.linkedStoryNodeIds).toContain('machine_confession_scene');
+    expect(quest!.linkedStoryNodeIds).toEqual(
+      expect.arrayContaining([
+        'machine_confession_approach',
+        'machine_confession_scene',
+        'machine_confession_scene_familiar',
+        'machine_confession_scene_thread',
+      ]),
+    );
     expect(STORY_NODES.machine_confession_scene).toBeTruthy();
+    expect(STORY_NODES.machine_confession_approach).toBeTruthy();
     expect(
       (STORY_NODES.machine_confession_scene.effects ?? []).some(
         (e) => e.type === 'setFlag' && e.flag === 'heard_machine_confession',
       ),
     ).toBe(true);
+    expect(
+      STORY_NODES.machine_confession_scene.choices.some(
+        (c) =>
+          c.next === 'basement_explore_mode'
+          && !(c.effects ?? []).some((e) => e.type === 'setFlag' && e.flag === 'machine_fate_decided'),
+      ),
+    ).toBe(true);
+    expect(
+      STORY_NODES.machine_confession_approach.choices.some(
+        (c) => c.next === 'machine_confession_scene_thread' && c.condition?.flag === 'thread_18_complete',
+      ),
+    ).toBe(true);
+    expect(
+      STORY_NODES.machine_confession_approach.choices.some(
+        (c) => c.next === 'machine_confession_scene' && c.condition?.missingFlag === 'machine_fate_decided',
+      ),
+    ).toBe(true);
+    const hub = STORY_NODES.basement_explore_mode;
+    const confession = hub.choices.find((c) => c.next === 'machine_confession_scene');
+    expect(confession?.condition?.flag).toBe('zarya_confession_requested');
+    expect(confession?.condition?.missingFlag).toBe('machine_fate_decided');
   });
 
   it('CHK/albert/office hubs resume portwine + guitar mid-beats', () => {
@@ -856,27 +1311,543 @@ describe('Act 1–2 thin stub → multi-beat conversion', () => {
     const cafe = STORY_NODES.cafe_explore_mode;
     const street = STORY_NODES.street_bench_view;
     const bunker = STORY_NODES.resistance_bunker_hub;
-    expect(factory.choices.some((c) => c.next === 'act6_factory_investigation')).toBe(true);
+    expect(factory.choices.some((c) => c.next === 'act6_traitor_approach')).toBe(true);
     expect(factory.choices.some((c) => c.next === 'act6_traitor_discovery')).toBe(true);
     expect(factory.choices.some((c) => c.next === 'act6_nadzor_revealed')).toBe(true);
     expect(office.choices.some((c) => c.next === 'act6_office_confrontation')).toBe(true);
+    expect(office.choices.some((c) => c.next === 'act6_alliance_formed')).toBe(true);
+    expect(office.choices.some((c) => c.next === 'act6_dmitry_exiled')).toBe(true);
     expect(office.choices.some((c) => c.next === 'act6_heist_execution')).toBe(true);
     expect(cafe.choices.some((c) => c.next === 'act6_data_heist_planning')).toBe(true);
     expect(street.choices.some((c) => c.next === 'act6_resistance_formed')).toBe(true);
     expect(street.choices.some((c) => c.next === 'act6_resistance_briefing')).toBe(true);
     expect(bunker.choices.some((c) => c.next === 'act6_resistance_formed')).toBe(true);
     expect(bunker.choices.some((c) => c.next === 'act6_data_heist_planning')).toBe(true);
+    expect(
+      STORY_NODES.act6_factory_investigation.choices.some((c) => c.next === 'factory_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.act6_traitor_discovery.choices.some((c) => c.next === 'factory_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.act6_traitor_revealed.choices.some((c) => c.next === 'factory_explore_mode'),
+    ).toBe(true);
+    expect(TRIGGER_ZONES.find((z) => z.id === 'factory_act6_investigation')?.linkedStoryNodeId).toBe(
+      'act6_traitor_approach',
+    );
+    expect(TRIGGER_ZONES.some((z) => z.id === 'factory_act6_traitor_mid_resume')).toBe(true);
+  });
+
+  it('Act 6 office traitor mid-resume: leave on confrontation→confession→alliance/exile + zeka', () => {
+    expect(
+      STORY_NODES.act6_office_confrontation.choices.some((c) => c.next === 'office_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.act6_dmitry_confession.choices.some((c) => c.next === 'office_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.act6_alliance_formed.choices.some((c) => c.next === 'office_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.act6_dmitry_exiled.choices.some((c) => c.next === 'office_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.act6_zeka_encounter.choices.some((c) => c.next === 'factory_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.act6_zeka_story.choices.some((c) => c.next === 'factory_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.act6_zeka_trust_test.choices.some((c) => c.next === 'factory_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.act6_zeka_nadzor_origin.choices.some((c) => c.next === 'factory_explore_mode'),
+    ).toBe(true);
+    const confessionForgive = STORY_NODES.act6_dmitry_confession.choices.find(
+      (c) => c.next === 'act6_alliance_formed',
+    );
+    expect(
+      (confessionForgive?.effects ?? []).some(
+        (e) => e.type === 'setFlag' && e.flag === 'act6_dmitry_judgment_pending',
+      ),
+    ).toBe(true);
+    expect(TRIGGER_ZONES.find((z) => z.id === 'office_act6_confrontation')?.hiddenWhenFlag).toBe(
+      'act6_dmitry_judgment_pending',
+    );
+    expect(TRIGGER_ZONES.find((z) => z.id === 'office_act6_alliance')?.linkedStoryNodeId).toBe(
+      'act6_alliance_formed',
+    );
+    expect(TRIGGER_ZONES.find((z) => z.id === 'office_act6_exile_chip')?.linkedStoryNodeId).toBe(
+      'act6_dmitry_exiled',
+    );
+  });
+
+  it('data_heist mid-resume: leave on plan/hack/run/chip + zone split', () => {
+    expect(
+      STORY_NODES.act6_data_heist_planning.choices.some((c) => c.next === 'cafe_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.act6_heist_execution.choices.some((c) => c.next === 'office_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.act6_heist_success.choices.some((c) => c.next === 'corridor_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.act6_escape_success.choices.some((c) => c.next === 'street_bench_view'),
+    ).toBe(true);
+    expect(STORY_NODES.office_explore_mode.choices.some((c) => c.next === 'act6_heist_success')).toBe(
+      true,
+    );
+    expect(STORY_NODES.corridor_explore_mode.choices.some((c) => c.next === 'act6_heist_success')).toBe(
+      true,
+    );
+    expect(STORY_NODES.street_bench_view.choices.some((c) => c.next === 'act6_escape_success')).toBe(
+      true,
+    );
+    expect(TRIGGER_ZONES.find((z) => z.id === 'office_act6_heist_terminal')?.hiddenWhenFlag).toBe(
+      'mainframe_hacked',
+    );
+    expect(TRIGGER_ZONES.find((z) => z.id === 'office_act6_heist_escape')?.linkedStoryNodeId).toBe(
+      'act6_heist_success',
+    );
+    expect(TRIGGER_ZONES.find((z) => z.id === 'factory_basement_act6_heist')?.hiddenWhenFlag).toBe(
+      'mainframe_hacked',
+    );
+    expect(TRIGGER_ZONES.find((z) => z.id === 'street_act6_heist_chip')?.linkedStoryNodeId).toBe(
+      'act6_escape_success',
+    );
+    expect(
+      STORY_NODES.resistance_safehouse_filters.choices.some((c) => c.next === 'resistance_bunker_hub'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.resistance_safehouse_radio.choices.some((c) => c.next === 'resistance_bunker_hub'),
+    ).toBe(true);
+  });
+
+  it('echo_of_vladimir mid-resume splits kate→room→unlock→read on hub/zones', () => {
+    const quest = QUEST_DEFINITIONS.find((q) => q.id === 'echo_of_vladimir');
+    expect(quest).toBeTruthy();
+    expect(quest!.linkedStoryNodeId).toBe('vladimir_secret_room');
+    expect(quest!.linkedStoryNodeIds).toEqual(
+      expect.arrayContaining([
+        'echo_of_vladimir_approach',
+        'echo_of_vladimir_kate',
+        'vladimir_secret_room',
+        'vladimir_secret_room_read',
+      ]),
+    );
+    expect(STORY_NODES.echo_of_vladimir_approach).toBeTruthy();
+    expect(STORY_NODES.echo_of_vladimir_kate).toBeTruthy();
+    expect(STORY_NODES.vladimir_secret_room_read).toBeTruthy();
+    expect(
+      (STORY_NODES.vladimir_secret_room.effects ?? []).some(
+        (e) => e.type === 'setFlag' && e.flag === 'echo_secret_room_reached',
+      ),
+    ).toBe(true);
+    expect(
+      STORY_NODES.vladimir_secret_room.choices.some((c) => c.next === 'library_explore_mode'),
+    ).toBe(true);
+    expect(
+      (STORY_NODES.vladimir_secret_room_read.choices[0]?.effects ?? []).some(
+        (e) => e.type === 'setFlag' && e.flag === 'final_poem_read',
+      ),
+    ).toBe(true);
+    const library = STORY_NODES.library_explore_mode;
+    const kate = library.choices.find((c) => c.next === 'echo_of_vladimir_kate');
+    expect(kate?.condition?.flag).toBe('vladimir_echo_started');
+    expect(kate?.condition?.missingFlag).toBe('kate_echo_clue_given');
+    const approach = library.choices.find((c) => c.next === 'echo_of_vladimir_approach');
+    expect(approach?.condition?.flag).toBe('kate_echo_clue_given');
+    expect(approach?.condition?.missingFlag).toBe('final_poem_read');
+    expect(TRIGGER_ZONES.find((z) => z.id === 'library_kate_echo')?.hiddenWhenFlag).toBe(
+      'kate_echo_clue_given',
+    );
+    expect(TRIGGER_ZONES.find((z) => z.id === 'library_vladimir_unlock')?.linkedMinigame).toBe(
+      'poetry',
+    );
+    expect(TRIGGER_ZONES.find((z) => z.id === 'library_vladimir_unlock')?.hiddenWhenFlag).toBe(
+      'final_poem_unlocked',
+    );
+    expect(TRIGGER_ZONES.find((z) => z.id === 'library_vladimir_read')?.linkedStoryNodeId).toBe(
+      'vladimir_secret_room_read',
+    );
+    expect(TRIGGER_ZONES.some((z) => z.id === 'library_vladimir_mid_resume')).toBe(true);
+  });
+
+  it('night_before_dawn mid-resume splits albert→zarema→maria→dmitry on hubs/zones', () => {
+    const quest = QUEST_DEFINITIONS.find((q) => q.id === 'night_before_dawn');
+    expect(quest).toBeTruthy();
+    expect(quest!.linkedStoryNodeId).toBe('night_before_dawn_approach');
+    expect(quest!.linkedStoryNodeIds).toEqual(
+      expect.arrayContaining([
+        'night_before_dawn_approach',
+        'night_before_dawn_albert',
+        'night_before_dawn_zarema',
+        'night_before_dawn_maria',
+        'night_before_dawn_dmitry',
+      ]),
+    );
+    expect(quest!.objectives.find((o) => o.id === 'talk_albert_final')?.type).toBe('flag_set');
+    expect(quest!.objectives.find((o) => o.id === 'talk_albert_final')?.target).toBe(
+      'albert_final_confirmed',
+    );
+    expect(STORY_NODES.night_before_dawn_approach).toBeTruthy();
+    expect(STORY_NODES.night_before_dawn_albert).toBeTruthy();
+    expect(STORY_NODES.night_before_dawn_zarema).toBeTruthy();
+    expect(STORY_NODES.night_before_dawn_maria).toBeTruthy();
+    expect(STORY_NODES.night_before_dawn_dmitry).toBeTruthy();
+    expect(
+      STORY_NODES.night_before_dawn_albert.choices.some(
+        (c) =>
+          (c.effects ?? []).some(
+            (e) => e.type === 'setFlag' && e.flag === 'albert_final_confirmed',
+          ),
+      ),
+    ).toBe(true);
+    expect(
+      STORY_NODES.night_before_dawn_approach.choices.some((c) => c.next === 'rooftop_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.act5_dawn.choices.some((c) => c.next === 'night_before_dawn_approach'),
+    ).toBe(true);
+    const dawnNight = STORY_NODES.act5_dawn.choices.find((c) => c.next === 'night_before_dawn_approach');
+    expect(dawnNight?.condition?.flag).toBe('final_code_completed');
+    expect(dawnNight?.condition?.missingFlag).toBe('all_allies_confirmed');
+    expect(
+      (STORY_NODES.act5_dawn.effects ?? []).some(
+        (e) => e.type === 'setFlag' && e.flag === 'night_before_dawn_started',
+      ),
+    ).toBe(false);
+    expect(
+      (STORY_NODES.act5_dawn.effects ?? []).some(
+        (e) => e.type === 'triggerQuest' && e.questId === 'night_before_dawn',
+      ),
+    ).toBe(false);
+    const albert = STORY_NODES.albert_backroom_explore_mode;
+    const zarema = STORY_NODES.zarema_room_explore_mode;
+    const cafe = STORY_NODES.cafe_explore_mode;
+    const office = STORY_NODES.office_explore_mode;
+    const roof = STORY_NODES.rooftop_explore_mode;
+    const albertChoice = albert.choices.find((c) => c.next === 'night_before_dawn_albert');
+    expect(albertChoice?.condition?.flag).toBe('night_before_dawn_started');
+    expect(albertChoice?.condition?.missingFlag).toBe('albert_final_confirmed');
+    const zaremaChoice = zarema.choices.find((c) => c.next === 'night_before_dawn_zarema');
+    expect(zaremaChoice?.condition?.flag).toBe('night_before_dawn_started');
+    expect(zaremaChoice?.condition?.missingFlag).toBe('zarema_final_confirmed');
+    const mariaChoice = cafe.choices.find((c) => c.next === 'night_before_dawn_maria');
+    expect(mariaChoice?.condition?.flag).toBe('night_before_dawn_started');
+    expect(mariaChoice?.condition?.missingFlag).toBe('maria_final_confirmed');
+    const dmitryChoice = office.choices.find((c) => c.next === 'night_before_dawn_dmitry');
+    expect(dmitryChoice?.condition?.flag).toBe('night_before_dawn_started');
+    expect(dmitryChoice?.condition?.missingFlag).toBe('dmitry_final_confirmed');
+    const approach = roof.choices.find((c) => c.next === 'night_before_dawn_approach');
+    expect(approach?.condition?.flag).toBe('final_code_completed');
+    expect(approach?.condition?.missingFlag).toBe('all_allies_confirmed');
+    expect(TRIGGER_ZONES.some((z) => z.id === 'rooftop_night_before_dawn_mid_resume')).toBe(true);
+    expect(TRIGGER_ZONES.find((z) => z.id === 'cafe_night_before_dawn_maria')?.linkedStoryNodeId).toBe(
+      'night_before_dawn_maria',
+    );
+    expect(TRIGGER_ZONES.find((z) => z.id === 'office_night_before_dawn_dmitry')?.hiddenWhenFlag).toBe(
+      'dmitry_final_confirmed',
+    );
+  });
+
+  it('final_code mid-resume splits rally→virus→core→deploy on hubs/zones', () => {
+    const quest = QUEST_DEFINITIONS.find((q) => q.id === 'final_code');
+    expect(quest).toBeTruthy();
+    expect(quest!.linkedStoryNodeId).toBe('final_code_approach');
+    expect(quest!.linkedStoryNodeIds).toEqual(
+      expect.arrayContaining([
+        'final_code_approach',
+        'final_code_rally',
+        'final_code_virus',
+        'final_code_core',
+        'final_code_deploy',
+      ]),
+    );
+    expect(quest!.objectives.find((o) => o.id === 'rally_allies')?.type).toBe('flag_set');
+    expect(quest!.objectives.find((o) => o.id === 'rally_allies')?.target).toBe(
+      'final_code_allies_rallied',
+    );
+    expect(quest!.objectives.find((o) => o.id === 'reach_core')?.type).toBe('flag_set');
+    expect(quest!.objectives.find((o) => o.id === 'reach_core')?.target).toBe(
+      'final_code_core_reached',
+    );
+    expect(STORY_NODES.final_code_approach).toBeTruthy();
+    expect(STORY_NODES.final_code_rally).toBeTruthy();
+    expect(STORY_NODES.final_code_virus).toBeTruthy();
+    expect(STORY_NODES.final_code_core).toBeTruthy();
+    expect(STORY_NODES.final_code_deploy).toBeTruthy();
+    expect(
+      STORY_NODES.final_code_rally.choices.some(
+        (c) =>
+          (c.effects ?? []).some(
+            (e) => e.type === 'setFlag' && e.flag === 'final_code_allies_rallied',
+          ),
+      ),
+    ).toBe(true);
+    expect(
+      STORY_NODES.final_code_core.choices.some(
+        (c) =>
+          (c.effects ?? []).some(
+            (e) => e.type === 'setFlag' && e.flag === 'final_code_core_reached',
+          ),
+      ),
+    ).toBe(true);
+    expect(
+      STORY_NODES.final_code_deploy.choices.some(
+        (c) =>
+          (c.effects ?? []).some(
+            (e) => e.type === 'setFlag' && e.flag === 'freedom_virus_deployed',
+          ) &&
+          (c.effects ?? []).some((e) => e.type === 'setFlag' && e.flag === 'survived_shutdown'),
+      ),
+    ).toBe(true);
+    expect(
+      STORY_NODES.final_code_approach.choices.some((c) => c.next === 'rooftop_explore_mode'),
+    ).toBe(true);
+    expect(STORY_NODES.act5_dawn.choices.some((c) => c.next === 'final_code_approach')).toBe(true);
+    expect(
+      (STORY_NODES.act5_dawn.effects ?? []).some(
+        (e) => e.type === 'setFlag' && e.flag === 'final_code_started',
+      ),
+    ).toBe(true);
+    const albert = STORY_NODES.albert_backroom_explore_mode;
+    const cafe = STORY_NODES.cafe_explore_mode;
+    const office = STORY_NODES.office_explore_mode;
+    const roof = STORY_NODES.rooftop_explore_mode;
+    const rally = albert.choices.find((c) => c.next === 'final_code_rally');
+    expect(rally?.condition?.flag).toBe('final_code_started');
+    expect(rally?.condition?.missingFlag).toBe('final_code_allies_rallied');
+    const virus = cafe.choices.find((c) => c.next === 'final_code_virus');
+    expect(virus?.condition?.flag).toBe('final_code_allies_rallied');
+    expect(virus?.condition?.missingFlag).toBe('freedom_virus_written');
+    const core = office.choices.find((c) => c.next === 'final_code_core');
+    expect(core?.condition?.flag).toBe('freedom_virus_written');
+    expect(core?.condition?.missingFlag).toBe('final_code_core_reached');
+    const deploy = office.choices.find((c) => c.next === 'final_code_deploy');
+    expect(deploy?.condition?.flag).toBe('final_code_core_reached');
+    expect(deploy?.condition?.missingFlag).toBe('freedom_virus_deployed');
+    const approach = roof.choices.find((c) => c.next === 'final_code_approach');
+    expect(approach?.condition?.flag).toBe('final_code_started');
+    expect(approach?.condition?.missingFlag).toBe('final_code_completed');
+    expect(TRIGGER_ZONES.some((z) => z.id === 'rooftop_final_code_mid_resume')).toBe(true);
+    expect(TRIGGER_ZONES.find((z) => z.id === 'cafe_final_code_virus')?.linkedMinigame).toBe(
+      'openstack_terminal',
+    );
+    expect(TRIGGER_ZONES.find((z) => z.id === 'cafe_final_code_virus')?.hiddenWhenFlag).toBe(
+      'freedom_virus_written',
+    );
+    expect(TRIGGER_ZONES.find((z) => z.id === 'office_final_code_deploy')?.linkedStoryNodeId).toBe(
+      'final_code_deploy',
+    );
+  });
+
+  it('quest_act5_factory_zarya_memory_restore mid-resume splits fragment 1→2→3 on hubs/zones', () => {
+    const quest = QUEST_DEFINITIONS.find((q) => q.id === 'quest_act5_factory_zarya_memory_restore');
+    expect(quest).toBeTruthy();
+    expect(quest!.linkedStoryNodeIds).toEqual(
+      expect.arrayContaining([
+        'quest_act5_factory_zarya_memory_restore_start',
+        'quest_act5_zarya_fragment_1',
+        'quest_act5_zarya_fragment_2',
+        'quest_act5_zarya_fragment_3',
+      ]),
+    );
+    expect(
+      STORY_NODES.quest_act5_zarya_fragment_1.choices.some((c) => c.next === 'factory_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.quest_act5_zarya_fragment_2.choices.some((c) => c.next === 'basement_explore_mode'),
+    ).toBe(true);
+    const factory = STORY_NODES.factory_explore_mode;
+    const basement = STORY_NODES.basement_explore_mode;
+    const start = factory.choices.find((c) => c.next === 'quest_act5_factory_zarya_memory_restore_start');
+    expect(start?.condition?.missingFlag).toBe('quest_act5_factory_zarya_memory_restore_active');
+    const frag1 = factory.choices.find((c) => c.next === 'quest_act5_zarya_fragment_1');
+    expect(frag1?.condition?.flag).toBe('quest_act5_factory_zarya_memory_restore_active');
+    expect(frag1?.condition?.missingFlag).toBe('zarya_memory_fragment_1_done');
+    const frag2 = basement.choices.find((c) => c.next === 'quest_act5_zarya_fragment_2');
+    expect(frag2?.condition?.flag).toBe('zarya_memory_fragment_1_done');
+    expect(frag2?.condition?.missingFlag).toBe('zarya_memory_fragment_2_done');
+    const frag3 = factory.choices.find((c) => c.next === 'quest_act5_zarya_fragment_3');
+    expect(frag3?.condition?.flag).toBe('zarya_memory_fragment_2_done');
+    expect(frag3?.condition?.missingFlag).toBe('zarya_memory_fragment_3_done');
+    expect(TRIGGER_ZONES.some((z) => z.id === 'factory_zarya_fragment_1')).toBe(true);
+    expect(TRIGGER_ZONES.find((z) => z.id === 'basement_zarya_fragment_2')?.linkedStoryNodeId).toBe(
+      'quest_act5_zarya_fragment_2',
+    );
+    expect(TRIGGER_ZONES.find((z) => z.id === 'factory_zarya_fragment_3')?.hiddenWhenFlag).toBe(
+      'zarya_memory_fragment_3_done',
+    );
+  });
+
+  it('quest_act5_bunker_code_poem_break mid-resume splits key→break on hubs/zones', () => {
+    const quest = QUEST_DEFINITIONS.find((q) => q.id === 'quest_act5_bunker_code_poem_break');
+    expect(quest).toBeTruthy();
+    expect(quest!.linkedStoryNodeIds).toEqual(
+      expect.arrayContaining([
+        'quest_act5_bunker_code_poem_break_start',
+        'quest_act5_bunker_poem_key',
+        'quest_act5_bunker_code_break',
+      ]),
+    );
+    expect(
+      STORY_NODES.quest_act5_bunker_poem_key.choices.some((c) => c.next === 'basement_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.quest_act5_bunker_code_break.choices.some(
+        (c) =>
+          c.next === 'bunker_explore_mode'
+          && !(c.effects ?? []).some(
+            (e) => e.type === 'setFlag' && e.flag === 'quest_act5_bunker_code_poem_break_done',
+          ),
+      ),
+    ).toBe(true);
+    const bunker = STORY_NODES.bunker_explore_mode;
+    const resistance = STORY_NODES.resistance_bunker_hub;
+    const basement = STORY_NODES.basement_explore_mode;
+    const start = bunker.choices.find((c) => c.next === 'quest_act5_bunker_code_poem_break_start');
+    expect(start?.condition?.missingFlag).toBe('quest_act5_bunker_code_poem_break_active');
+    const hubStart = resistance.choices.find((c) => c.next === 'quest_act5_bunker_code_poem_break_start');
+    expect(hubStart?.condition?.missingFlag).toBe('quest_act5_bunker_code_poem_break_active');
+    const key = basement.choices.find((c) => c.next === 'quest_act5_bunker_poem_key');
+    expect(key?.condition?.flag).toBe('quest_act5_bunker_code_poem_break_active');
+    expect(key?.condition?.missingFlag).toBe('bunker_poem_key_found');
+    const brk = bunker.choices.find((c) => c.next === 'quest_act5_bunker_code_break');
+    expect(brk?.condition?.flag).toBe('bunker_poem_key_found');
+    expect(brk?.condition?.missingFlag).toBe('quest_act5_bunker_code_poem_break_done');
+    expect(TRIGGER_ZONES.some((z) => z.id === 'bunker_code_poem_break_start')).toBe(true);
+    expect(TRIGGER_ZONES.find((z) => z.id === 'basement_bunker_poem_key')?.linkedStoryNodeId).toBe(
+      'quest_act5_bunker_poem_key',
+    );
+    expect(TRIGGER_ZONES.find((z) => z.id === 'bunker_code_poem_break')?.hiddenWhenFlag).toBe(
+      'quest_act5_bunker_code_poem_break_done',
+    );
+  });
+
+  it('quest_act6_defector_rescue_expanded mid-resume splits infiltrate→cell→sewers on hubs/zones', () => {
+    const quest = QUEST_DEFINITIONS.find((q) => q.id === 'quest_act6_defector_rescue_expanded');
+    expect(quest).toBeTruthy();
+    expect(quest!.linkedStoryNodeIds).toEqual(
+      expect.arrayContaining([
+        'quest_act6_defector_rescue_expanded_start',
+        'quest_act6_defector_infiltrate',
+        'quest_act6_defector_free_cell',
+        'quest_act6_defector_escape_sewers',
+      ]),
+    );
+    expect(
+      STORY_NODES.quest_act6_defector_infiltrate.choices.some((c) => c.next === 'bunker_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.quest_act6_defector_free_cell.choices.some((c) => c.next === 'bunker_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.quest_act6_defector_escape_sewers.choices.some(
+        (c) =>
+          c.next === 'bunker_explore_mode'
+          && !(c.effects ?? []).some(
+            (e) => e.type === 'setFlag' && e.flag === 'quest_act6_defector_rescue_expanded_done',
+          ),
+      ),
+    ).toBe(true);
+    const bunker = STORY_NODES.bunker_explore_mode;
+    const resistance = STORY_NODES.resistance_bunker_hub;
+    const start = bunker.choices.find((c) => c.next === 'quest_act6_defector_rescue_expanded_start');
+    expect(start?.condition?.flag).toBe('resistance_defector_rescue_done');
+    expect(start?.condition?.missingFlag).toBe('quest_act6_defector_rescue_expanded_active');
+    const hubStart = resistance.choices.find(
+      (c) => c.next === 'quest_act6_defector_rescue_expanded_start',
+    );
+    expect(hubStart?.condition?.missingFlag).toBe('quest_act6_defector_rescue_expanded_active');
+    const infil = bunker.choices.find((c) => c.next === 'quest_act6_defector_infiltrate');
+    expect(infil?.condition?.flag).toBe('quest_act6_defector_rescue_expanded_active');
+    expect(infil?.condition?.missingFlag).toBe('defector_infiltrate_done');
+    const cell = bunker.choices.find((c) => c.next === 'quest_act6_defector_free_cell');
+    expect(cell?.condition?.flag).toBe('defector_infiltrate_done');
+    expect(cell?.condition?.missingFlag).toBe('defector_freed_from_cell');
+    const sewers = bunker.choices.find((c) => c.next === 'quest_act6_defector_escape_sewers');
+    expect(sewers?.condition?.flag).toBe('defector_freed_from_cell');
+    expect(sewers?.condition?.missingFlag).toBe('quest_act6_defector_rescue_expanded_done');
+    expect(resistance.choices.some((c) => c.next === 'quest_act6_defector_infiltrate')).toBe(true);
+    expect(resistance.choices.some((c) => c.next === 'quest_act6_defector_free_cell')).toBe(true);
+    expect(resistance.choices.some((c) => c.next === 'quest_act6_defector_escape_sewers')).toBe(true);
+    expect(TRIGGER_ZONES.some((z) => z.id === 'bunker_defector_rescue_expanded_start')).toBe(true);
+    expect(TRIGGER_ZONES.find((z) => z.id === 'bunker_defector_infiltrate')?.linkedStoryNodeId).toBe(
+      'quest_act6_defector_infiltrate',
+    );
+    expect(TRIGGER_ZONES.find((z) => z.id === 'bunker_defector_free_cell')?.hiddenWhenFlag).toBe(
+      'defector_freed_from_cell',
+    );
+    expect(TRIGGER_ZONES.find((z) => z.id === 'bunker_defector_escape_sewers')?.requiredFlag).toBe(
+      'defector_freed_from_cell',
+    );
   });
 
   it('Act 6 infiltration/rooftop hubs resume core → showdown → final mid-beats', () => {
     const factory = STORY_NODES.factory_explore_mode;
     const roof = STORY_NODES.factory_roof_explore_mode;
     expect(factory.choices.some((c) => c.next === 'act6_infiltration_prep')).toBe(true);
+    expect(factory.choices.some((c) => c.next === 'act6_nadzor_battle')).toBe(true);
+    expect(factory.choices.some((c) => c.next === 'act6_battle_victory')).toBe(true);
     expect(factory.choices.some((c) => c.next === 'act6_core_choice')).toBe(true);
+    const prep = factory.choices.find((c) => c.next === 'act6_infiltration_prep');
+    expect(prep?.condition?.missingFlag).toBe('act6_nadzor_battle_open');
+    const battle = factory.choices.find((c) => c.next === 'act6_nadzor_battle');
+    expect(battle?.condition?.flag).toBe('act6_nadzor_battle_open');
+    expect(battle?.condition?.missingFlag).toBe('act6_nadzor_battle_resolved');
     expect(roof.choices.some((c) => c.next === 'act6_rooftop_showdown')).toBe(true);
     expect(roof.choices.some((c) => c.next === 'act6_final_confrontation')).toBe(true);
     const rooftopQuest = QUEST_DEFINITIONS.find((q) => q.id === 'rooftop_confrontation');
     expect(rooftopQuest?.linkedStoryNodeIds).toContain('act6_final_confrontation');
+  });
+
+  it('system_infiltration mid-resume: leave on nadzor→prep→core→showdown + registry', () => {
+    expect(
+      STORY_NODES.act6_nadzor_revealed.choices.some((c) => c.next === 'factory_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.act6_infiltration_prep.choices.some((c) => c.next === 'factory_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.act6_nadzor_battle.choices.some((c) => c.next === 'factory_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.act6_core_choice.choices.some((c) => c.next === 'factory_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.act6_rooftop_showdown.choices.some((c) => c.next === 'factory_roof_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.act6_final_confrontation.choices.some(
+        (c) => c.next === 'factory_roof_explore_mode',
+      ),
+    ).toBe(true);
+    expect(
+      STORY_NODES.act6_resistance_formed.choices.some((c) => c.next === 'street_bench_view'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.act6_resistance_briefing.choices.some((c) => c.next === 'street_bench_view'),
+    ).toBe(true);
+    expect(TRIGGER_ZONES.find((z) => z.id === 'factory_act6_nadzor_core')?.hiddenWhenFlag).toBe(
+      'nadzor_truth_revealed',
+    );
+    expect(TRIGGER_ZONES.find((z) => z.id === 'factory_act6_infiltration_prep')?.requiredFlag).toBe(
+      'nadzor_truth_revealed',
+    );
+    expect(TRIGGER_ZONES.find((z) => z.id === 'factory_act6_infiltration_prep')?.hiddenWhenFlag).toBe(
+      'act6_nadzor_battle_open',
+    );
+    expect(TRIGGER_ZONES.find((z) => z.id === 'factory_act6_nadzor_battle')?.linkedStoryNodeId).toBe(
+      'act6_nadzor_battle',
+    );
+    expect(TRIGGER_ZONES.find((z) => z.id === 'factory_act6_core_choice')?.linkedStoryNodeId).toBe(
+      'act6_core_choice',
+    );
+    expect(TRIGGER_ZONES.find((z) => z.id === 'factory_roof_act6_showdown')?.hiddenWhenFlag).toBe(
+      'rooftop_entity_met',
+    );
   });
 
   it('Act 7 hubs resume guild → archive → shutdown → poem → legacy mid-beats', () => {
@@ -886,15 +1857,24 @@ describe('Act 1–2 thin stub → multi-beat conversion', () => {
     const park = STORY_NODES.park_explore_mode;
     const rooftop = STORY_NODES.rooftop_explore_mode;
     const room = STORY_NODES.explore_mode;
+    const home = STORY_NODES.home_evening_explore_mode;
+    const street = STORY_NODES.street_bench_view;
     expect(cafe.choices.some((c) => c.next === 'act7_guild_rebuilding')).toBe(true);
+    expect(cafe.choices.some((c) => c.next === 'act7_charter_drafting')).toBe(true);
+    expect(cafe.choices.some((c) => c.next === 'act7_community_voice')).toBe(true);
     expect(cafe.choices.some((c) => c.next === 'act7_guild_restored')).toBe(true);
     expect(library.choices.some((c) => c.next === 'act7_library_archive')).toBe(true);
     expect(factory.choices.some((c) => c.next === 'act7_system_shutdown')).toBe(true);
     expect(factory.choices.some((c) => c.next === 'act7_core_battle')).toBe(true);
+    expect(factory.choices.some((c) => c.next === 'act7_nadzor_dies')).toBe(true);
     expect(park.choices.some((c) => c.next === 'act7_final_poem_creation')).toBe(true);
     expect(park.choices.some((c) => c.next === 'act7_poem_written')).toBe(true);
     expect(rooftop.choices.some((c) => c.next === 'act7_rooftop_recital')).toBe(true);
+    expect(rooftop.choices.some((c) => c.next === 'act7_poem_published')).toBe(true);
     expect(room.choices.some((c) => c.next === 'act7_legacy_walk')).toBe(true);
+    expect(home.choices.some((c) => c.next === 'act7_goodbye_zarema')).toBe(true);
+    expect(street.choices.some((c) => c.next === 'act7_final_walk')).toBe(true);
+    expect(street.choices.some((c) => c.next === 'act7_maria_future')).toBe(true);
     for (const id of [
       'rebuild_the_guild',
       'system_takedown',
@@ -904,6 +1884,103 @@ describe('Act 1–2 thin stub → multi-beat conversion', () => {
       const quest = QUEST_DEFINITIONS.find((q) => q.id === id);
       expect(quest?.linkedStoryNodeIds?.length, id).toBeGreaterThanOrEqual(2);
     }
+  });
+
+  it('rebuild_the_guild mid-resume splits charter→community→archive on hubs/zones', () => {
+    expect(
+      STORY_NODES.act7_guild_rebuilding.choices.some((c) => c.next === 'cafe_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.act7_charter_drafting.choices.some((c) => c.next === 'cafe_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.act7_library_archive.choices.some((c) => c.next === 'library_explore_mode'),
+    ).toBe(true);
+    expect(
+      (STORY_NODES.act7_guild_rebuilding.choices[0]?.effects ?? []).some(
+        (e) => e.type === 'setFlag' && e.flag === 'act7_guild_charter_path',
+      ),
+    ).toBe(true);
+    const cafe = STORY_NODES.cafe_explore_mode;
+    const rebuild = cafe.choices.find((c) => c.next === 'act7_guild_rebuilding');
+    expect(rebuild?.condition?.missingFlag).toBe('act7_guild_rebuild_started');
+    const charter = cafe.choices.find((c) => c.next === 'act7_charter_drafting');
+    expect(charter?.condition?.flag).toBe('act7_guild_charter_path');
+    expect(charter?.condition?.missingFlag).toBe('new_council_elected');
+    expect(TRIGGER_ZONES.find((z) => z.id === 'cafe_act7_guild_rebuild')?.hiddenWhenFlag).toBe(
+      'act7_guild_rebuild_started',
+    );
+    expect(TRIGGER_ZONES.find((z) => z.id === 'cafe_act7_charter_draft')?.linkedStoryNodeId).toBe(
+      'act7_charter_drafting',
+    );
+    expect(TRIGGER_ZONES.find((z) => z.id === 'library_act7_archive')?.hiddenWhenFlag).toBe(
+      'guild_restored',
+    );
+  });
+
+  it('system_takedown mid-resume splits shutdown→core→dies on hubs/zones', () => {
+    expect(
+      STORY_NODES.act7_system_shutdown.choices.some((c) => c.next === 'factory_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.act7_core_battle.choices.some((c) => c.next === 'factory_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.act7_nadzor_dies.choices.some((c) => c.next === 'factory_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.act7_guild_restored.choices.some((c) => c.next === 'cafe_explore_mode'),
+    ).toBe(true);
+    expect(TRIGGER_ZONES.find((z) => z.id === 'factory_act7_system_shutdown')?.hiddenWhenFlag).toBe(
+      'path_to_core_cleared',
+    );
+    expect(TRIGGER_ZONES.find((z) => z.id === 'factory_act7_core_battle')?.linkedStoryNodeId).toBe(
+      'act7_core_battle',
+    );
+    expect(TRIGGER_ZONES.find((z) => z.id === 'factory_act7_nadzor_dies')?.hiddenWhenFlag).toBe(
+      'nadzor_destroyed',
+    );
+    expect(TRIGGER_ZONES.find((z) => z.id === 'cafe_act7_strike_team')?.linkedStoryNodeId).toBe(
+      'act7_guild_restored',
+    );
+  });
+
+  it('final_poem mid-resume splits creation→written→recital→published on hubs/zones', () => {
+    expect(
+      STORY_NODES.act7_final_poem_creation.choices.some((c) => c.next === 'park_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.act7_poem_written.choices.some((c) => c.next === 'park_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.act7_rooftop_recital.choices.some((c) => c.next === 'rooftop_explore_mode'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.act7_poem_published.choices.some((c) => c.next === 'rooftop_explore_mode'),
+    ).toBe(true);
+    expect(TRIGGER_ZONES.find((z) => z.id === 'park_act7_final_poem')?.hiddenWhenFlag).toBe(
+      'journey_reflected',
+    );
+    expect(TRIGGER_ZONES.find((z) => z.id === 'park_act7_poem_written')?.linkedStoryNodeId).toBe(
+      'act7_poem_written',
+    );
+    expect(TRIGGER_ZONES.find((z) => z.id === 'rooftop_act7_poem_published')?.hiddenWhenFlag).toBe(
+      'act7_legacy_walk_done',
+    );
+  });
+
+  it('system_takedown / final_poem objectives match story flags (no orphan minigames)', () => {
+    const takedown = QUEST_DEFINITIONS.find((q) => q.id === 'system_takedown');
+    const execute = takedown?.objectives.find((o) => o.id === 'execute_shutdown');
+    const witness = takedown?.objectives.find((o) => o.id === 'witness_system_death');
+    expect(execute?.type).toBe('flag_set');
+    expect(execute?.target).toBe('nadzor_shutdown_complete');
+    expect(witness?.type).toBe('flag_set');
+    expect(witness?.target).toBe('nadzor_destroyed');
+    const poem = QUEST_DEFINITIONS.find((q) => q.id === 'final_poem');
+    const compose = poem?.objectives.find((o) => o.id === 'compose_masterpiece');
+    expect(compose?.type).toBe('flag_set');
+    expect(compose?.target).toBe('final_poem_written');
   });
 
   it('pier/library hubs resume Act 2–5 side mid-beats (fishing, strings, archive, Katya)', () => {
@@ -1020,8 +2097,32 @@ describe('Maxim/Anya resistance dialogue resume hooks', () => {
     expect(
       maximGreet.choices.some(
         (c) =>
+          c.next === 'quest_act6_defector_rescue_expanded_start' &&
+          c.condition?.flag === 'resistance_defector_rescue_done' &&
+          c.condition?.missingFlag === 'quest_act6_defector_rescue_expanded_active',
+      ),
+    ).toBe(true);
+    expect(
+      maximGreet.choices.some(
+        (c) =>
           c.next === 'quest_act6_defector_infiltrate' &&
           c.condition?.flag === 'quest_act6_defector_rescue_expanded_active',
+      ),
+    ).toBe(true);
+    expect(
+      maximGreet.choices.some(
+        (c) =>
+          c.next === 'quest_act6_defector_free_cell' &&
+          c.condition?.flag === 'defector_infiltrate_done' &&
+          c.condition?.missingFlag === 'defector_freed_from_cell',
+      ),
+    ).toBe(true);
+    expect(
+      maximGreet.choices.some(
+        (c) =>
+          c.next === 'quest_act6_defector_escape_sewers' &&
+          c.condition?.flag === 'defector_freed_from_cell' &&
+          c.condition?.missingFlag === 'quest_act6_defector_rescue_expanded_done',
       ),
     ).toBe(true);
     const anyaGreet = EXPANDED_DIALOGUE_NODES.anya_greeting;
@@ -1050,18 +2151,21 @@ describe('Maxim/Anya resistance dialogue resume hooks', () => {
       expect(nexts.has('act6_nadzor_revealed'), `${nodeId} nadzor`).toBe(true);
       expect(nexts.has('act6_core_choice'), `${nodeId} core`).toBe(true);
       expect(nexts.has('act7_system_shutdown'), `${nodeId} shutdown`).toBe(true);
+      expect(nexts.has('act7_core_battle'), `${nodeId} core battle`).toBe(true);
+      expect(nexts.has('act7_nadzor_dies'), `${nodeId} dies`).toBe(true);
     }
     for (const nodeId of ['anya_greeting', 'anya_return'] as const) {
       const nexts = new Set(EXPANDED_DIALOGUE_NODES[nodeId].choices.map((c) => c.next).filter(Boolean));
       expect(nexts.has('act6_resistance_briefing'), `${nodeId} briefing`).toBe(true);
       expect(nexts.has('act6_data_heist_planning'), `${nodeId} heist`).toBe(true);
       expect(nexts.has('act7_guild_rebuilding'), `${nodeId} guild`).toBe(true);
+      expect(nexts.has('act7_charter_drafting'), `${nodeId} charter`).toBe(true);
     }
   });
 });
 
 describe('Dmitry traitor confrontation dialogue resume', () => {
-  it('greeting/return visit act6_office_confrontation when traitor revealed', async () => {
+  it('greeting/return visit confrontation / alliance / exile mid-beats', async () => {
     const { DIALOGUE_PART1 } = await import('@/data/dialogue/part1-albert');
     const { DIALOGUE_PART2 } = await import('@/data/dialogue/part2-npcs');
     for (const [label, node] of [
@@ -1072,12 +2176,34 @@ describe('Dmitry traitor confrontation dialogue resume', () => {
         node.choices.some(
           (c) =>
             c.condition?.flag === 'traitor_revealed' &&
-            c.condition?.missingFlag === 'traitor_fate_decided' &&
+            c.condition?.missingFlag === 'act6_dmitry_judgment_pending' &&
             (c.effects ?? []).some(
               (e) => e.type === 'visitStoryNode' && e.nodeId === 'act6_office_confrontation',
             ),
         ),
-        label,
+        `${label} confrontation`,
+      ).toBe(true);
+      expect(
+        node.choices.some(
+          (c) =>
+            c.condition?.flag === 'dmitry_forgiven' &&
+            c.condition?.missingFlag === 'traitor_fate_decided' &&
+            (c.effects ?? []).some(
+              (e) => e.type === 'visitStoryNode' && e.nodeId === 'act6_alliance_formed',
+            ),
+        ),
+        `${label} alliance`,
+      ).toBe(true);
+      expect(
+        node.choices.some(
+          (c) =>
+            c.condition?.flag === 'dmitry_exiled' &&
+            c.condition?.missingFlag === 'traitor_fate_decided' &&
+            (c.effects ?? []).some(
+              (e) => e.type === 'visitStoryNode' && e.nodeId === 'act6_dmitry_exiled',
+            ),
+        ),
+        `${label} exile`,
       ).toBe(true);
     }
   });

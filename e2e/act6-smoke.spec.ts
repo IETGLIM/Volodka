@@ -5,6 +5,7 @@ import {
   settleAfterWake,
   skipStoryTypewriter,
   skipWakeCinematic,
+  startNewGameFromMenu,
   waitForMenuReady,
   waitForStoryDialog,
 } from './helpers';
@@ -55,8 +56,7 @@ async function interactChkDawnToCampfireBeat(page: import('@playwright/test').Pa
 test.describe('Act VI smoke', () => {
   test('bootstrap act6 chk hub → closed overlay + movement', async ({ page }) => {
     await waitForMenuReady(page);
-    await page.getByTestId('menu-new-game').click();
-    await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
+    await startNewGameFromMenu(page);
 
     await skipWakeCinematic(page);
     await settleAfterWake(page);
@@ -71,8 +71,7 @@ test.describe('Act VI smoke', () => {
 
   test('chk hub → chk_explore_dawn → chk_act5_campfire_dawn beat', async ({ page }) => {
     await waitForMenuReady(page);
-    await page.getByTestId('menu-new-game').click();
-    await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
+    await startNewGameFromMenu(page);
 
     await skipWakeCinematic(page);
     await settleAfterWake(page);

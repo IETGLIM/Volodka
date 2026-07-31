@@ -13,9 +13,24 @@ describe('assetOwnership', () => {
   });
 
   it('prevents authored shell scenes from also mounting generic interior shells', () => {
-    expect(isSceneAssetSystemAllowed('volodka_room', 'interior_shell', 'AuthoredInteriorShell')).toBe(true);
+    expect(isSceneAssetSystemAllowed('volodka_room', 'interior_shell', 'AuthoredInteriorShell')).toBe(false);
     expect(isSceneAssetSystemAllowed('volodka_room', 'interior_shell', 'SceneInteriorAssets')).toBe(false);
     expect(getSceneInteriorAssets('volodka_room')).toEqual([]);
+  });
+
+  it('keeps hero walkable interiors on procedural envelopes (not Kenney exterior GLBs)', () => {
+    for (const sceneId of [
+      'volodka_room',
+      'cafe_evening',
+      'office_day',
+      'library_day',
+      'albert_backroom',
+      'guild_mainframe',
+      'library_basement',
+    ] as const) {
+      expect(isSceneAssetSystemAllowed(sceneId, 'interior_shell', 'AuthoredInteriorShell')).toBe(false);
+      expect(getSceneSlotOwnership(sceneId, 'interior_shell')[0]?.owner).toBe('procedural');
+    }
   });
 
   it('keeps Kenney fallback shells owned by SceneInteriorAssets', () => {
@@ -32,13 +47,11 @@ describe('assetOwnership', () => {
     expect(getSceneInteriorAssets('river_pier')).toEqual([]);
   });
 
-  it('mounts industrial indoor shells from scene visuals via AuthoredInteriorShell', () => {
+  it('mounts industrial backdrop shells via SceneBackdropShell (not walkable envelopes)', () => {
     for (const sceneId of [
-      'guild_mainframe',
+      'abandoned_factory',
       'factory_basement',
       'underground_bunker',
-      'library_basement',
-      'albert_backroom',
     ] as const) {
       expect(isSceneAssetSystemAllowed(sceneId, 'interior_shell', 'AuthoredInteriorShell')).toBe(true);
       expect(isSceneAssetSystemAllowed(sceneId, 'interior_shell', 'SceneInteriorAssets')).toBe(false);

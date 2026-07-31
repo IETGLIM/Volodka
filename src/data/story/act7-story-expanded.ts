@@ -752,12 +752,35 @@ export const ACT7_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
     ].join('\n'),
     choices: [
       {
-        text: "Конец — и начало",
-        next: null,
+        text: "Конец — и начало: выйти на площадь",
+        next: "city_square_explore_mode",
+        goldenPath: true,
         effects: [
           { type: 'addKarma', value: 5 },
           { type: 'addXp', value: 100 },
           { type: 'setFlag', flag: 'game_complete', flagValue: true },
+          { type: 'setFlag', flag: 'game_completed', flagValue: true },
+        ],
+      },
+      {
+        text: "Свободное исследование города",
+        next: "explore_mode",
+        effects: [
+          { type: 'addKarma', value: 5 },
+          { type: 'addXp', value: 100 },
+          { type: 'setFlag', flag: 'game_complete', flagValue: true },
+          { type: 'setFlag', flag: 'game_completed', flagValue: true },
+        ],
+      },
+      {
+        text: "Письма и памятник — открыть эпилог",
+        next: "epilogue_hub",
+        condition: { flag: 'volodka_legacy_complete' },
+        effects: [
+          { type: 'addKarma', value: 5 },
+          { type: 'addXp', value: 100 },
+          { type: 'setFlag', flag: 'game_complete', flagValue: true },
+          { type: 'setFlag', flag: 'game_completed', flagValue: true },
         ],
       },
     ],

@@ -6,6 +6,7 @@ import { MOTION_EASE } from '@/shared/constants/transitionTimings';
 import { PipelineLoadingOverlay } from '../PipelineLoadingOverlay';
 import { loadingPipeline } from '@/engine/loading/LoadingPipeline';
 import { useLoadingPipelineMeta } from '@/hooks/useLoadingPipeline';
+import { CANVAS_COMPOSITE_MODES, CANVAS_GAMEPLAY_MODES } from '@/engine/canvas/canvasTransitionPolicy';
 import { IntroAutoSkip } from './IntroAutoSkip';
 import { RPGGameCanvas, LazyMenuScreen, LazyIntroScreen, LazyMatrixRainQuote } from './lazyPanels';
 import type { MatrixQuoteState } from './types';
@@ -126,11 +127,10 @@ export function OrchestratorCanvasLayer({
             position: 'fixed',
             inset: 0,
             zIndex: UI_LAYERS.CANVAS,
-            visibility:
-              mode === 'exploration' || mode === 'cutscene' || mode === 'combat' || mode === 'intro'
-                ? 'visible'
-                : 'hidden',
-            pointerEvents: mode === 'exploration' || mode === 'cutscene' || mode === 'combat' ? 'auto' : 'none',
+            // Menu keeps the warm WebGL canvas mounted but CSS-hidden so Playwright
+            // (and a11y) treat it as not visible until New Game confirms and phase leaves menu.
+            visibility: CANVAS_COMPOSITE_MODES.has(mode) ? 'visible' : 'hidden',
+            pointerEvents: CANVAS_GAMEPLAY_MODES.has(mode) ? 'auto' : 'none',
           }}
         >
           <Suspense fallback={<div className="fixed inset-0 bg-black" style={{ zIndex: UI_LAYERS.LOADING }} />}>

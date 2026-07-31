@@ -146,6 +146,9 @@ const authoredBenches = [
   { position: [-6, 0, 5] as [number, number, number], rotationY: Math.PI + 0.14, scale: 1.12 },
   { position: [6, 0, 5] as [number, number, number], rotationY: Math.PI - 0.08, scale: 1.12 },
   { position: [0, 0, 8] as [number, number, number], rotationY: Math.PI / 2, scale: 1.15 },
+  // Match full procedural ring — High previously dropped the ±9 side seats.
+  { position: [-9, 0, 1] as [number, number, number], rotationY: Math.PI / 2 + 0.12, scale: 1.1 },
+  { position: [9, 0, -1] as [number, number, number], rotationY: -Math.PI / 2 - 0.1, scale: 1.1 },
 ];
 
 const authoredProps = [

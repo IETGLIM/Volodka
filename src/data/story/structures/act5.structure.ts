@@ -471,7 +471,7 @@ export const ACT5_STRUCTURE: Record<string, StoryNodeStructure> = {
     "choices": [
       {
         "text": "",
-        "next": null,
+        "next": "cafe_explore_mode",
         "effects": [
           {
             "type": "collectPoem",
@@ -626,7 +626,7 @@ export const ACT5_STRUCTURE: Record<string, StoryNodeStructure> = {
     "choices": [
       {
         "text": "",
-        "next": null,
+        "next": "library_explore_mode",
         "effects": [
           {
             "type": "collectPoem",
@@ -766,7 +766,7 @@ export const ACT5_STRUCTURE: Record<string, StoryNodeStructure> = {
     "choices": [
       {
         "text": "",
-        "next": null,
+        "next": "street_bench_view",
         "effects": [
           {
             "type": "addKarma",
@@ -916,7 +916,7 @@ export const ACT5_STRUCTURE: Record<string, StoryNodeStructure> = {
     "choices": [
       {
         "text": "",
-        "next": null,
+        "next": "street_winter_explore_mode",
         "effects": [
           {
             "type": "addKarma",
@@ -1070,7 +1070,7 @@ export const ACT5_STRUCTURE: Record<string, StoryNodeStructure> = {
     "choices": [
       {
         "text": "",
-        "next": null,
+        "next": "dream_explore_mode",
         "effects": [
           {
             "type": "addKarma",
@@ -1231,7 +1231,7 @@ export const ACT5_STRUCTURE: Record<string, StoryNodeStructure> = {
     "choices": [
       {
         "text": "",
-        "next": null,
+        "next": "rooftop_explore_mode",
         "effects": [
           {
             "type": "addKarma",
@@ -1971,7 +1971,8 @@ export const ACT5_STRUCTURE: Record<string, StoryNodeStructure> = {
         "text": "",
         "next": "machine_confession_scene",
         "condition": {
-          "flag": "zarya_confession_requested"
+          "flag": "zarya_confession_requested",
+          "missingFlag": "machine_fate_decided"
         },
         "effects": [
           {
@@ -2014,7 +2015,8 @@ export const ACT5_STRUCTURE: Record<string, StoryNodeStructure> = {
         "text": "",
         "next": "machine_confession_scene_familiar",
         "condition": {
-          "flag": "zarya_confession_requested"
+          "flag": "zarya_confession_requested",
+          "missingFlag": "machine_fate_decided"
         },
         "effects": [
           {
@@ -2028,7 +2030,8 @@ export const ACT5_STRUCTURE: Record<string, StoryNodeStructure> = {
         "text": "",
         "next": "machine_confession_scene_thread",
         "condition": {
-          "flag": "thread_18_complete"
+          "flag": "thread_18_complete",
+          "missingFlag": "machine_fate_decided"
         },
         "effects": [
           {
@@ -2124,6 +2127,10 @@ export const ACT5_STRUCTURE: Record<string, StoryNodeStructure> = {
             "value": 10
           }
         ]
+      },
+      {
+        "text": "",
+        "next": "basement_explore_mode"
       }
     ]
   },
@@ -2206,6 +2213,10 @@ export const ACT5_STRUCTURE: Record<string, StoryNodeStructure> = {
             "value": 8
           }
         ]
+      },
+      {
+        "text": "",
+        "next": "basement_explore_mode"
       }
     ]
   },
@@ -2293,6 +2304,10 @@ export const ACT5_STRUCTURE: Record<string, StoryNodeStructure> = {
             "value": 10
           }
         ]
+      },
+      {
+        "text": "",
+        "next": "basement_explore_mode"
       }
     ]
   },
@@ -2737,12 +2752,48 @@ export const ACT5_STRUCTURE: Record<string, StoryNodeStructure> = {
         "next": "act6_secret_archive_approach",
         "condition": {
           "requiredAct": 6,
+          "missingFlag": "act6_secret_archive_active"
+        }
+      },
+      {
+        "text": "Дверь архива — «Голос Улиц»",
+        "next": "act6_secret_archive_door",
+        "condition": {
+          "requiredAct": 6,
+          "flag": "act6_secret_archive_active",
+          "missingFlag": "act6_secret_archive_opened"
+        }
+      },
+      {
+        "text": "Расшифровать уличные записи",
+        "next": "act6_secret_archive_decode",
+        "condition": {
+          "requiredAct": 6,
+          "flag": "act6_secret_archive_opened",
+          "missingFlag": "act6_secret_archive_decoded"
+        }
+      },
+      {
+        "text": "Вынести спасённые стихи",
+        "next": "act6_secret_archive_extract",
+        "condition": {
+          "requiredAct": 6,
+          "flag": "act6_secret_archive_decoded",
+          "missingFlag": "act6_secret_archive_saved"
+        }
+      },
+      {
+        "text": "Запечатать архив до зачистки",
+        "next": "act6_secret_archive_seal",
+        "condition": {
+          "requiredAct": 6,
+          "flag": "act6_secret_archive_saved",
           "missingFlag": "act6_secret_archive_sealed"
         }
       },
       {
         "text": "Тайник Александра — логи гильдии",
-        "next": "act6_factory_investigation",
+        "next": "act6_traitor_approach",
         "condition": {
           "requiredAct": 6,
           "missingFlag": "alexander_logs_decrypted"
@@ -2754,6 +2805,14 @@ export const ACT5_STRUCTURE: Record<string, StoryNodeStructure> = {
         "condition": {
           "flag": "alexander_logs_decrypted",
           "missingFlag": "traitor_revealed"
+        }
+      },
+      {
+        "text": "Крот найден — путь в офис к Дмитрию",
+        "next": "act6_traitor_approach",
+        "condition": {
+          "flag": "traitor_revealed",
+          "missingFlag": "traitor_fate_decided"
         }
       },
       {
@@ -2769,7 +2828,23 @@ export const ACT5_STRUCTURE: Record<string, StoryNodeStructure> = {
         "next": "act6_infiltration_prep",
         "condition": {
           "flag": "nadzor_truth_revealed",
-          "missingFlag": "nadzor_guardian_defeated"
+          "missingFlag": "act6_nadzor_battle_open"
+        }
+      },
+      {
+        "text": "Хранитель у ядра — бой или отступление",
+        "next": "act6_nadzor_battle",
+        "condition": {
+          "flag": "act6_nadzor_battle_open",
+          "missingFlag": "act6_nadzor_battle_resolved"
+        }
+      },
+      {
+        "text": "Хранитель пал — консоль ядра ждёт",
+        "next": "act6_battle_victory",
+        "condition": {
+          "flag": "act6_battle_victory_open",
+          "missingFlag": "act6_battle_victory_resolved"
         }
       },
       {
@@ -2794,6 +2869,76 @@ export const ACT5_STRUCTURE: Record<string, StoryNodeStructure> = {
         "condition": {
           "flag": "path_to_core_cleared",
           "missingFlag": "nadzor_shutdown_complete"
+        }
+      },
+      {
+        "text": "Тишина после «Надзора» — выйти на поверхность",
+        "next": "act7_nadzor_dies",
+        "condition": {
+          "flag": "nadzor_shutdown_complete",
+          "missingFlag": "nadzor_destroyed"
+        }
+      },
+      {
+        "text": "Память «Зари-М» — три образа в leaking",
+        "next": "quest_act5_factory_zarya_memory_restore_start",
+        "condition": {
+          "requiredAct": 5,
+          "missingFlag": "quest_act5_factory_zarya_memory_restore_active"
+        },
+        "effects": [
+          {
+            "type": "triggerQuest",
+            "questId": "quest_act5_factory_zarya_memory_restore"
+          }
+        ]
+      },
+      {
+        "text": "Первая тень у паяльной — вернуть образ",
+        "next": "quest_act5_zarya_fragment_1",
+        "condition": {
+          "flag": "quest_act5_factory_zarya_memory_restore_active",
+          "missingFlag": "zarya_memory_fragment_1_done"
+        }
+      },
+      {
+        "text": "Третий образ — к паяльной станции",
+        "next": "quest_act5_zarya_fragment_3",
+        "condition": {
+          "flag": "zarya_memory_fragment_2_done",
+          "missingFlag": "zarya_memory_fragment_3_done"
+        }
+      },
+      {
+        "text": "Чайник ещё свистит у паяльной",
+        "next": "factory_baba_zina_tea_kettle",
+        "condition": {
+          "flag": "factory_baba_zina_tea_active",
+          "missingFlag": "factory_baba_zina_tea_kettle"
+        }
+      },
+      {
+        "text": "Заварка — мята и полынь",
+        "next": "factory_baba_zina_tea_mint",
+        "condition": {
+          "flag": "factory_baba_zina_tea_kettle",
+          "missingFlag": "factory_baba_zina_tea_mint"
+        }
+      },
+      {
+        "text": "Слушать гул «Зари» с чаем",
+        "next": "factory_baba_zina_tea_hum",
+        "condition": {
+          "flag": "factory_baba_zina_tea_mint",
+          "missingFlag": "factory_baba_zina_tea_hum"
+        }
+      },
+      {
+        "text": "Допить — и про 1987-й",
+        "next": "factory_baba_zina_tea_history",
+        "condition": {
+          "flag": "factory_baba_zina_tea_hum",
+          "missingFlag": "factory_baba_zina_tea_done"
         }
       },
       {
@@ -2827,7 +2972,8 @@ export const ACT5_STRUCTURE: Record<string, StoryNodeStructure> = {
         "text": "",
         "next": "machine_confession_scene_thread",
         "condition": {
-          "flag": "thread_18_complete"
+          "flag": "thread_18_complete",
+          "missingFlag": "machine_fate_decided"
         },
         "effects": [
           {
@@ -2841,7 +2987,8 @@ export const ACT5_STRUCTURE: Record<string, StoryNodeStructure> = {
         "text": "",
         "next": "machine_confession_scene_familiar",
         "condition": {
-          "flag": "zarya_monolith_examined"
+          "flag": "zarya_monolith_examined",
+          "missingFlag": "machine_fate_decided"
         },
         "effects": [
           {
@@ -2856,7 +3003,8 @@ export const ACT5_STRUCTURE: Record<string, StoryNodeStructure> = {
         "next": "machine_confession_scene",
         "goldenPath": true,
         "condition": {
-          "flag": "zarya_confession_requested"
+          "flag": "zarya_confession_requested",
+          "missingFlag": "machine_fate_decided"
         }
       },
       {
@@ -2884,6 +3032,46 @@ export const ACT5_STRUCTURE: Record<string, StoryNodeStructure> = {
         "condition": {
           "flag": "read_factory_poem",
           "missingFlag": "dmitry_factory_protect"
+        }
+      },
+      {
+        "text": "Второй образ — leaking-поток в стойках",
+        "next": "quest_act5_zarya_fragment_2",
+        "condition": {
+          "flag": "zarya_memory_fragment_1_done",
+          "missingFlag": "zarya_memory_fragment_2_done"
+        }
+      },
+      {
+        "text": "Стих-ключ в leaking — к шифру «Солныш»",
+        "next": "quest_act5_bunker_poem_key",
+        "condition": {
+          "flag": "quest_act5_bunker_code_poem_break_active",
+          "missingFlag": "bunker_poem_key_found"
+        }
+      },
+      {
+        "text": "Кассета грозы — второй образ «Зари-М»",
+        "next": "factory_zarya_storm",
+        "condition": {
+          "flag": "factory_zarya_snow_done",
+          "missingFlag": "factory_zarya_storm_done"
+        }
+      },
+      {
+        "text": "Фото Солныш — третий образ у Зины",
+        "next": "factory_zarya_photo",
+        "condition": {
+          "flag": "factory_zarya_storm_done",
+          "missingFlag": "factory_zarya_photo_done"
+        }
+      },
+      {
+        "text": "Три образа на шине — вернуть память",
+        "next": "factory_zarya_memory_restore",
+        "condition": {
+          "flag": "factory_zarya_photo_done",
+          "missingFlag": "factory_zarya_memory_done"
         }
       },
       {

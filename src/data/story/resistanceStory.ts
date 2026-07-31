@@ -78,6 +78,39 @@ export const STORY_NODES_RESISTANCE: Record<string, StoryNode> = {
         },
       },
       {
+        text: 'Ночной рейд — коллектор под КПП',
+        next: 'quest_act6_defector_rescue_expanded_start',
+        condition: {
+          flag: 'resistance_defector_rescue_done',
+          missingFlag: 'quest_act6_defector_rescue_expanded_active',
+        },
+        effects: [{ type: 'triggerQuest', questId: 'quest_act6_defector_rescue_expanded' }],
+      },
+      {
+        text: 'Коллектор — камеры слепы, люк впереди',
+        next: 'quest_act6_defector_infiltrate',
+        condition: {
+          flag: 'quest_act6_defector_rescue_expanded_active',
+          missingFlag: 'defector_infiltrate_done',
+        },
+      },
+      {
+        text: 'Камера удержания — вытащить Олега',
+        next: 'quest_act6_defector_free_cell',
+        condition: {
+          flag: 'defector_infiltrate_done',
+          missingFlag: 'defector_freed_from_cell',
+        },
+      },
+      {
+        text: 'Сток к бункеру — патруль близко',
+        next: 'quest_act6_defector_escape_sewers',
+        condition: {
+          flag: 'defector_freed_from_cell',
+          missingFlag: 'quest_act6_defector_rescue_expanded_done',
+        },
+      },
+      {
         text: 'Собрать фронт — Максим у карты',
         next: 'act6_resistance_formed',
         condition: {
@@ -99,6 +132,23 @@ export const STORY_NODES_RESISTANCE: Record<string, StoryNode> = {
         condition: {
           flag: 'three_defectors_recruited',
           missingFlag: 'act6_heist_planned',
+        },
+      },
+      {
+        text: 'Шифр-стих — ключ в leaking-потоке',
+        next: 'quest_act5_bunker_code_poem_break_start',
+        condition: {
+          requiredAct: 5,
+          missingFlag: 'quest_act5_bunker_code_poem_break_active',
+        },
+        effects: [{ type: 'triggerQuest', questId: 'quest_act5_bunker_code_poem_break' }],
+      },
+      {
+        text: 'Ключ найден — пробить шифр «Солныш»',
+        next: 'quest_act5_bunker_code_break',
+        condition: {
+          flag: 'bunker_poem_key_found',
+          missingFlag: 'quest_act5_bunker_code_poem_break_done',
         },
       },
       { text: 'Вернуться на улицу', next: 'bunker_explore_mode' },
@@ -145,6 +195,7 @@ export const STORY_NODES_RESISTANCE: Record<string, StoryNode> = {
         next: 'resistance_safehouse_radio',
         effects: [{ type: 'setFlag', flag: 'resistance_safehouse_filters', flagValue: true }],
       },
+      { text: 'Отойти — вентиляция уже дышит', next: 'resistance_bunker_hub' },
     ],
   },
 
@@ -164,6 +215,7 @@ export const STORY_NODES_RESISTANCE: Record<string, StoryNode> = {
         next: 'resistance_safehouse_poem_mesh',
         effects: [{ type: 'setFlag', flag: 'resistance_safehouse_radio', flagValue: true }],
       },
+      { text: 'Отойти — 433 уже молчит', next: 'resistance_bunker_hub' },
     ],
   },
 
@@ -182,6 +234,7 @@ export const STORY_NODES_RESISTANCE: Record<string, StoryNode> = {
         next: 'resistance_safehouse_beds',
         effects: [{ type: 'setFlag', flag: 'resistance_safehouse_poem_mesh', flagValue: true }],
       },
+      { text: 'Отойти — стихи уже на стене', next: 'resistance_bunker_hub' },
     ],
   },
 
@@ -201,6 +254,7 @@ export const STORY_NODES_RESISTANCE: Record<string, StoryNode> = {
         next: 'resistance_safehouse_done',
         effects: [{ type: 'setFlag', flag: 'resistance_safehouse_beds', flagValue: true }],
       },
+      { text: 'Отойти — угол уже готов', next: 'resistance_bunker_hub' },
     ],
   },
 

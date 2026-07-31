@@ -154,6 +154,14 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
         next: 'sergey_blind_spot_logs',
         condition: { requiredAct: 4, missingFlag: 'mole_identified' },
       },
+      {
+        text: 'Устав гильдии — дописать на проекторе',
+        next: 'act7_charter_drafting',
+        condition: {
+          flag: 'act7_guild_charter_path',
+          missingFlag: 'new_council_elected',
+        },
+      },
     ],
   },
 
@@ -346,6 +354,31 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
       },
       { text: 'Покажи мне запрещённые книги.', next: 'kate_forbidden_books' },
       { text: 'Зачем ты рискуешь?', next: 'kate_why_risk' },
+      {
+        text: 'Катя — где тайник Владимира?',
+        next: 'echo_of_vladimir_kate',
+        condition: {
+          flag: 'vladimir_echo_started',
+          missingFlag: 'kate_echo_clue_given',
+        },
+        effects: [{ type: 'triggerQuest', questId: 'echo_of_vladimir' }],
+      },
+      {
+        text: 'Тайник — я ещё не дочитал.',
+        next: 'echo_of_vladimir_approach',
+        condition: {
+          flag: 'kate_echo_clue_given',
+          missingFlag: 'final_poem_read',
+        },
+      },
+      {
+        text: 'Публичный архив — консоль ждёт.',
+        next: 'act7_library_archive',
+        condition: {
+          flag: 'new_council_elected',
+          missingFlag: 'guild_restored',
+        },
+      },
       { text: 'Я вернусь позже.', next: null },
       {
         text: 'Виктория — это Хранилище. Что у тебя есть о ней?',
@@ -869,6 +902,15 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
         },
       },
       {
+        text: 'Ночной рейд — коллектор под КПП.',
+        next: 'quest_act6_defector_rescue_expanded_start',
+        condition: {
+          flag: 'resistance_defector_rescue_done',
+          missingFlag: 'quest_act6_defector_rescue_expanded_active',
+        },
+        effects: [{ type: 'triggerQuest', questId: 'quest_act6_defector_rescue_expanded' }],
+      },
+      {
         text: 'Ночной рейд через коллектор — продолжим.',
         next: 'quest_act6_defector_infiltrate',
         condition: {
@@ -877,10 +919,35 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
         },
       },
       {
+        text: 'Шифр-стих — ключ в leaking?',
+        next: 'quest_act5_bunker_code_poem_break_start',
+        condition: {
+          requiredAct: 5,
+          missingFlag: 'quest_act5_bunker_code_poem_break_active',
+        },
+        effects: [{ type: 'triggerQuest', questId: 'quest_act5_bunker_code_poem_break' }],
+      },
+      {
+        text: 'Ключ найден — пробить шифр.',
+        next: 'quest_act5_bunker_code_break',
+        condition: {
+          flag: 'bunker_poem_key_found',
+          missingFlag: 'quest_act5_bunker_code_poem_break_done',
+        },
+      },
+      {
         text: 'Камера удержания — Олег ещё там.',
         next: 'quest_act6_defector_free_cell',
         condition: {
           flag: 'defector_infiltrate_done',
+          missingFlag: 'defector_freed_from_cell',
+        },
+      },
+      {
+        text: 'Сток к бункеру — патруль близко.',
+        next: 'quest_act6_defector_escape_sewers',
+        condition: {
+          flag: 'defector_freed_from_cell',
           missingFlag: 'quest_act6_defector_rescue_expanded_done',
         },
       },
@@ -929,7 +996,7 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
         next: 'act7_guild_restored',
         condition: {
           flag: 'guild_restored',
-          missingFlag: 'path_to_core_cleared',
+          missingFlag: 'act7_strike_team_assembled',
         },
       },
       { text: 'Позже.', next: null },
@@ -983,6 +1050,22 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
           missingFlag: 'path_to_core_cleared',
         },
       },
+      {
+        text: 'Консоль ядра — стих для SHUTDOWN.',
+        next: 'act7_core_battle',
+        condition: {
+          flag: 'path_to_core_cleared',
+          missingFlag: 'nadzor_shutdown_complete',
+        },
+      },
+      {
+        text: 'Тишина после системы — выйти.',
+        next: 'act7_nadzor_dies',
+        condition: {
+          flag: 'nadzor_shutdown_complete',
+          missingFlag: 'nadzor_destroyed',
+        },
+      },
       { text: 'Спасибо. Пока.', next: null },
     ],
   },
@@ -1015,6 +1098,22 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
         next: 'act7_guild_rebuilding',
         condition: {
           flag: 'rooftop_confrontation_done',
+          missingFlag: 'act7_guild_rebuild_started',
+        },
+      },
+      {
+        text: 'Устав на проекторе — дописать.',
+        next: 'act7_charter_drafting',
+        condition: {
+          flag: 'act7_guild_charter_path',
+          missingFlag: 'new_council_elected',
+        },
+      },
+      {
+        text: 'Голос сообщества — к архиву.',
+        next: 'act7_community_voice',
+        condition: {
+          flag: 'act7_guild_community_path',
           missingFlag: 'new_council_elected',
         },
       },
@@ -1081,6 +1180,39 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
         condition: {
           flag: 'resistance_defector_poem_stun',
           missingFlag: 'resistance_defector_rescue_done',
+        },
+      },
+      {
+        text: 'Ночной рейд — коллектор под КПП.',
+        next: 'quest_act6_defector_rescue_expanded_start',
+        condition: {
+          flag: 'resistance_defector_rescue_done',
+          missingFlag: 'quest_act6_defector_rescue_expanded_active',
+        },
+        effects: [{ type: 'triggerQuest', questId: 'quest_act6_defector_rescue_expanded' }],
+      },
+      {
+        text: 'Коллектор — камеры слепы.',
+        next: 'quest_act6_defector_infiltrate',
+        condition: {
+          flag: 'quest_act6_defector_rescue_expanded_active',
+          missingFlag: 'defector_infiltrate_done',
+        },
+      },
+      {
+        text: 'Камера — вытащить Олега.',
+        next: 'quest_act6_defector_free_cell',
+        condition: {
+          flag: 'defector_infiltrate_done',
+          missingFlag: 'defector_freed_from_cell',
+        },
+      },
+      {
+        text: 'Сток — Аня у люка.',
+        next: 'quest_act6_defector_escape_sewers',
+        condition: {
+          flag: 'defector_freed_from_cell',
+          missingFlag: 'quest_act6_defector_rescue_expanded_done',
         },
       },
       { text: 'Понял. Увидимся.', next: null },
@@ -1310,6 +1442,31 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
         },
       },
       {
+        text: 'Три образа «Зари-М» — начать с паяльной.',
+        next: 'quest_act5_factory_zarya_memory_restore_start',
+        condition: {
+          requiredAct: 5,
+          missingFlag: 'quest_act5_factory_zarya_memory_restore_active',
+        },
+        effects: [{ type: 'triggerQuest', questId: 'quest_act5_factory_zarya_memory_restore' }],
+      },
+      {
+        text: 'Первая тень у паяльной — ещё не на шине.',
+        next: 'quest_act5_zarya_fragment_1',
+        condition: {
+          flag: 'quest_act5_factory_zarya_memory_restore_active',
+          missingFlag: 'zarya_memory_fragment_1_done',
+        },
+      },
+      {
+        text: 'Третий образ — верни на паяльную.',
+        next: 'quest_act5_zarya_fragment_3',
+        condition: {
+          flag: 'zarya_memory_fragment_2_done',
+          missingFlag: 'zarya_memory_fragment_3_done',
+        },
+      },
+      {
         text: 'Попросить чаю.',
         next: 'factory_baba_zina_tea_start',
         condition: { missingFlag: 'factory_baba_zina_tea_active' },
@@ -1321,6 +1478,22 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
         condition: {
           flag: 'factory_baba_zina_tea_active',
           missingFlag: 'factory_baba_zina_tea_kettle',
+        },
+      },
+      {
+        text: 'Заварка — мята и полынь.',
+        next: 'factory_baba_zina_tea_mint',
+        condition: {
+          flag: 'factory_baba_zina_tea_kettle',
+          missingFlag: 'factory_baba_zina_tea_mint',
+        },
+      },
+      {
+        text: 'Слушать гул «Зари» с чаем.',
+        next: 'factory_baba_zina_tea_hum',
+        condition: {
+          flag: 'factory_baba_zina_tea_mint',
+          missingFlag: 'factory_baba_zina_tea_hum',
         },
       },
       {
@@ -1375,11 +1548,44 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
         },
       },
       {
-        text: 'Имена — дорезать на обелиске.',
+        text: 'Имена — вспомнить из потока.',
         next: 'quest_act7_poets_monument_recall',
         condition: {
           flag: 'quest_act7_poets_monument_plate_cleared',
+          missingFlag: 'quest_act7_poets_monument_names_recalled',
+        },
+      },
+      {
+        text: 'Имена — вырезать на камне.',
+        next: 'quest_act7_poets_monument_carve',
+        condition: {
+          flag: 'quest_act7_poets_monument_names_recalled',
+          missingFlag: 'quest_act7_poets_monument_carved',
+        },
+      },
+      {
+        text: 'Последняя строка — дописать на обелиске.',
+        next: 'quest_act7_poets_monument_inscribe',
+        condition: {
+          flag: 'quest_act7_poets_monument_carved',
           missingFlag: 'quest_act7_poets_monument_inscription_done',
+        },
+      },
+      {
+        text: 'Памятник в парке — добавить своё имя.',
+        next: 'epilogue_monument_start',
+        condition: {
+          flag: 'volodka_legacy_complete',
+          missingFlag: 'epilogue_monument_started',
+        },
+        effects: [{ type: 'triggerQuest', questId: 'epilogue_monument' }],
+      },
+      {
+        text: 'У камня — одно имя ещё ждёт.',
+        next: 'epilogue_monument_done',
+        condition: {
+          flag: 'epilogue_monument_started',
+          missingFlag: 'epilogue_monument_done',
         },
       },
     ],
@@ -1531,6 +1737,14 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
         next: 'sergey_blind_spot_logs',
         condition: { flag: 'blind_spot_active', missingFlag: 'mole_identified' },
       },
+      {
+        text: 'Устав гильдии — дописать на проекторе',
+        next: 'act7_charter_drafting',
+        condition: {
+          flag: 'act7_guild_charter_path',
+          missingFlag: 'new_council_elected',
+        },
+      },
       { text: 'Ничего. Пока, Сергей.', next: null },
     ],
   },
@@ -1617,6 +1831,14 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
         next: 'kate_why_risk',
         effects: [{ type: 'addKarma', value: 1 }],
       },
+      {
+        text: 'Публичный архив — консоль ждёт.',
+        next: 'act7_library_archive',
+        condition: {
+          flag: 'new_council_elected',
+          missingFlag: 'guild_restored',
+        },
+      },
       { text: 'Я вернусь позже.', next: null },
     ],
   },
@@ -1689,6 +1911,15 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
         },
       },
       {
+        text: 'Ночной рейд — коллектор под КПП.',
+        next: 'quest_act6_defector_rescue_expanded_start',
+        condition: {
+          flag: 'resistance_defector_rescue_done',
+          missingFlag: 'quest_act6_defector_rescue_expanded_active',
+        },
+        effects: [{ type: 'triggerQuest', questId: 'quest_act6_defector_rescue_expanded' }],
+      },
+      {
         text: 'Коллектор под КПП — продолжим рейд.',
         next: 'quest_act6_defector_infiltrate',
         condition: {
@@ -1697,10 +1928,26 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
         },
       },
       {
-        text: 'Камера — вытащить и в сток.',
+        text: 'Ключ найден — пробить шифр «Солныш».',
+        next: 'quest_act5_bunker_code_break',
+        condition: {
+          flag: 'bunker_poem_key_found',
+          missingFlag: 'quest_act5_bunker_code_poem_break_done',
+        },
+      },
+      {
+        text: 'Камера — вытащить Олега.',
         next: 'quest_act6_defector_free_cell',
         condition: {
           flag: 'defector_infiltrate_done',
+          missingFlag: 'defector_freed_from_cell',
+        },
+      },
+      {
+        text: 'Сток к бункеру — патруль близко.',
+        next: 'quest_act6_defector_escape_sewers',
+        condition: {
+          flag: 'defector_freed_from_cell',
           missingFlag: 'quest_act6_defector_rescue_expanded_done',
         },
       },
@@ -1749,7 +1996,7 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
         next: 'act7_guild_restored',
         condition: {
           flag: 'guild_restored',
-          missingFlag: 'path_to_core_cleared',
+          missingFlag: 'act7_strike_team_assembled',
         },
       },
       { text: 'Позже, Максим.', next: null },
@@ -1815,6 +2062,22 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
         condition: {
           flag: 'guild_restored',
           missingFlag: 'path_to_core_cleared',
+        },
+      },
+      {
+        text: 'Консоль ядра — стих для SHUTDOWN.',
+        next: 'act7_core_battle',
+        condition: {
+          flag: 'path_to_core_cleared',
+          missingFlag: 'nadzor_shutdown_complete',
+        },
+      },
+      {
+        text: 'Тишина после системы — выйти.',
+        next: 'act7_nadzor_dies',
+        condition: {
+          flag: 'nadzor_shutdown_complete',
+          missingFlag: 'nadzor_destroyed',
         },
       },
       { text: 'Спасибо. Пока, Жека.', next: null },
@@ -1900,10 +2163,59 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
         },
       },
       {
+        text: 'Ночной рейд — коллектор под КПП.',
+        next: 'quest_act6_defector_rescue_expanded_start',
+        condition: {
+          flag: 'resistance_defector_rescue_done',
+          missingFlag: 'quest_act6_defector_rescue_expanded_active',
+        },
+        effects: [{ type: 'triggerQuest', questId: 'quest_act6_defector_rescue_expanded' }],
+      },
+      {
+        text: 'Коллектор — камеры слепы.',
+        next: 'quest_act6_defector_infiltrate',
+        condition: {
+          flag: 'quest_act6_defector_rescue_expanded_active',
+          missingFlag: 'defector_infiltrate_done',
+        },
+      },
+      {
+        text: 'Камера — вытащить Олега.',
+        next: 'quest_act6_defector_free_cell',
+        condition: {
+          flag: 'defector_infiltrate_done',
+          missingFlag: 'defector_freed_from_cell',
+        },
+      },
+      {
+        text: 'Сток — встречаю у люка.',
+        next: 'quest_act6_defector_escape_sewers',
+        condition: {
+          flag: 'defector_freed_from_cell',
+          missingFlag: 'quest_act6_defector_rescue_expanded_done',
+        },
+      },
+      {
         text: 'Уцелевшие в кафе — новый устав.',
         next: 'act7_guild_rebuilding',
         condition: {
           flag: 'rooftop_confrontation_done',
+          missingFlag: 'act7_guild_rebuild_started',
+        },
+      },
+      {
+        text: 'Устав на проекторе — дописать.',
+        next: 'act7_charter_drafting',
+        condition: {
+          flag: 'act7_guild_charter_path',
+          missingFlag: 'new_council_elected',
+        },
+      },
+      {
+        text: 'Голос сообщества — к архиву.',
+        next: 'act7_community_voice',
+        condition: {
+          flag: 'act7_guild_community_path',
           missingFlag: 'new_council_elected',
         },
       },
@@ -1979,6 +2291,22 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
         },
       },
       {
+        text: 'Первая тень у паяльной — продолжим.',
+        next: 'quest_act5_zarya_fragment_1',
+        condition: {
+          flag: 'quest_act5_factory_zarya_memory_restore_active',
+          missingFlag: 'zarya_memory_fragment_1_done',
+        },
+      },
+      {
+        text: 'Третий образ — к паяльной.',
+        next: 'quest_act5_zarya_fragment_3',
+        condition: {
+          flag: 'zarya_memory_fragment_2_done',
+          missingFlag: 'zarya_memory_fragment_3_done',
+        },
+      },
+      {
         text: 'Чайник ещё на горелке.',
         next: 'factory_baba_zina_tea_kettle',
         condition: {
@@ -1987,10 +2315,26 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
         },
       },
       {
-        text: 'Допить чай у паяльной.',
+        text: 'Заварка — мята у паяльной.',
         next: 'factory_baba_zina_tea_mint',
         condition: {
           flag: 'factory_baba_zina_tea_kettle',
+          missingFlag: 'factory_baba_zina_tea_mint',
+        },
+      },
+      {
+        text: 'Слушать гул с чаем.',
+        next: 'factory_baba_zina_tea_hum',
+        condition: {
+          flag: 'factory_baba_zina_tea_mint',
+          missingFlag: 'factory_baba_zina_tea_hum',
+        },
+      },
+      {
+        text: 'Допить — и про 1987-й.',
+        next: 'factory_baba_zina_tea_history',
+        condition: {
+          flag: 'factory_baba_zina_tea_hum',
           missingFlag: 'factory_baba_zina_tea_done',
         },
       },
@@ -2023,11 +2367,44 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
         },
       },
       {
-        text: 'Дорезать имена на камне.',
+        text: 'Имена — вспомнить у камня.',
         next: 'quest_act7_poets_monument_recall',
         condition: {
           flag: 'quest_act7_poets_monument_plate_cleared',
+          missingFlag: 'quest_act7_poets_monument_names_recalled',
+        },
+      },
+      {
+        text: 'Имена — вырезать на обелиске.',
+        next: 'quest_act7_poets_monument_carve',
+        condition: {
+          flag: 'quest_act7_poets_monument_names_recalled',
+          missingFlag: 'quest_act7_poets_monument_carved',
+        },
+      },
+      {
+        text: 'Последняя строка — дописать.',
+        next: 'quest_act7_poets_monument_inscribe',
+        condition: {
+          flag: 'quest_act7_poets_monument_carved',
           missingFlag: 'quest_act7_poets_monument_inscription_done',
+        },
+      },
+      {
+        text: 'Памятник в парке — добавить своё имя.',
+        next: 'epilogue_monument_start',
+        condition: {
+          flag: 'volodka_legacy_complete',
+          missingFlag: 'epilogue_monument_started',
+        },
+        effects: [{ type: 'triggerQuest', questId: 'epilogue_monument' }],
+      },
+      {
+        text: 'У камня — одно имя ещё ждёт.',
+        next: 'epilogue_monument_done',
+        condition: {
+          flag: 'epilogue_monument_started',
+          missingFlag: 'epilogue_monument_done',
         },
       },
       { text: 'Поблагодарить и уйти.', next: null },

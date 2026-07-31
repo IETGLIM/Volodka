@@ -196,13 +196,18 @@ export const CHK_STORY_NODES: Record<string, StoryNode> = {
     choices: [
       {
         text: 'ЧК своих не бросает. До новых строк.',
-        next: 'explore_mode',
+        next: 'chk_explore_mode',
         effects: [
           { type: 'setFlag', flag: 'tolpa_act7_farewell_heard', flagValue: true },
           { type: 'addKarma', value: 8 },
           { type: 'addStat', stat: 'stress', value: -12 },
           { type: 'npcChange', npcId: 'chk_ru', npcChange: { relation: 8 } },
         ],
+      },
+      {
+        text: 'Отойти — костёр ещё тлеет',
+        next: 'chk_explore_mode',
+        condition: { missingFlag: 'tolpa_act7_farewell_heard' },
       },
     ],
   },

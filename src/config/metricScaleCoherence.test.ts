@@ -55,4 +55,18 @@ describe('metricScaleCoherence', () => {
     expect(STREET_FACADE_SCALE.hero).toBeGreaterThan(2.0);
     expect(STREET_FACADE_SCALE.hero).toBeLessThan(2.6);
   });
+
+  it('marks interior shell exterior-impostor debt as fixed in the audit', () => {
+    const row = METRIC_SCALE_AUDIT.find((r) => r.id === 'volodka_room_envelope');
+    expect(row?.status).toBe('fixed');
+    expect(row?.targetM).toBe(3);
+  });
+
+  it('keeps player desk/chair metric band coherent with 1.75 m humanoid', () => {
+    expect(PLAYER_METRIC.deskHeightM).toBeGreaterThan(0.7);
+    expect(PLAYER_METRIC.deskHeightM).toBeLessThan(0.85);
+    expect(PLAYER_METRIC.chairSeatHeightM).toBeGreaterThan(0.4);
+    expect(PLAYER_METRIC.chairSeatHeightM).toBeLessThan(0.55);
+    expect(PLAYER_METRIC.residentialDoorHeightM).toBeGreaterThan(PLAYER_METRIC.heightM);
+  });
 });

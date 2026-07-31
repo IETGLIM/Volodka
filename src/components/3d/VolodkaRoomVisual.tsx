@@ -29,9 +29,17 @@ import { INTERIOR_SHELL_MODELS } from '../../config/interiorShellModels';
 import { AuthoredInteriorShell } from './AuthoredInteriorShell';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
+import {
+  allowsSelectiveMeshPhysicalWet,
+  getWetGlassPhysicalParams,
+} from '@/engine/graphics/wetStreetScenes';
+import { useIsMobileVisual } from '@/hooks/use-mobile';
 import { POLYHAVEN_MODELS } from '@/config/polyhavenAssets';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
-import { getInteriorShellScale } from '@/config/interiorShellScale';
+import {
+  getInteriorShellScale,
+  isWalkableInteriorShellAllowed,
+} from '@/config/interiorShellScale';
 // FIX-B1: DustParticles import removed — VolodkaRoomVisual no longer renders
 // its own dust system. AtmosphericEffects' DustMotes already covers
 // volodka_room (it's in DUST_SCENES), so the duplicate system is gone.
@@ -135,8 +143,7 @@ const bookSpineGeoCache = new Map<string, THREE.BoxGeometry>();
 const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeof useGLTF>[3]>;
 const KENNEY_TERMINAL_MODEL = '/models/props/terminal.glb';
 const AI3DGEN_SERVER_FRAGMENT_MODEL = '/models/props/server_fragment.glb';
-const AI3DGEN_POETIC_COMPILER_MODEL = '/models/props/poetic_compiler.glb';
-const AI3DGEN_NEURAL_FILTER_MODEL = '/models/props/neural_filter.glb';
+// poetic_compiler / neural_filter live in ScenePropDressing off-desk — do not preload here.
 
 // ISSUE #5: Pre-allocated color for emissive monitor screens (avoids per-render allocation)
 
@@ -396,33 +403,8 @@ function AuthoredVolodkaWorkstation({ castShadow }: { castShadow: boolean }) {
           castShadow={castShadow}
         />
       </Suspense>
-      <Suspense fallback={null}>
-        <AuthoredRoomProp
-          url={POLYHAVEN_MODELS.cassettePlayer}
-          position={[0.62, 0.82, -2.3]}
-          rotationY={-0.2}
-          scale={0.34}
-          castShadow={castShadow}
-        />
-      </Suspense>
-      <Suspense fallback={null}>
-        <AuthoredRoomProp
-          url={AI3DGEN_POETIC_COMPILER_MODEL}
-          position={[-0.18, 0.84, -2.22]}
-          rotationY={0.35}
-          scale={0.38}
-          castShadow={castShadow}
-        />
-      </Suspense>
-      <Suspense fallback={null}>
-        <AuthoredRoomProp
-          url={AI3DGEN_NEURAL_FILTER_MODEL}
-          position={[0.24, 0.86, -2.22]}
-          rotationY={-0.25}
-          scale={0.32}
-          castShadow={castShadow}
-        />
-      </Suspense>
+      {/* Cassette / poetic_compiler / neural_filter: RoomDressing + ScenePropDressing
+          (off-desk slots). Do not restack on monitor y≈0.82 — shell is exterior_building. */}
       <pointLight position={[0, 1.25, -2.25]} color="#33ddaa" intensity={2.4} distance={7} decay={2} />
     </group>
   );
@@ -435,9 +417,17 @@ function AuthoredVolodkaWorkstation({ castShadow }: { castShadow: boolean }) {
 // no internal useState and all its animation state lives in refs, so a
 // shallow props comparison is sufficient to prevent wasted renders.
 export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRef }: VolodkaRoomVisualProps) {
-  const { preset } = useGraphicsQuality();
+  const { preset, selectedPreset } = useGraphicsQuality();
+  const coarsePointer = useIsMobileVisual();
   const useGltfFurniture = allowsGlbAssetRendering(preset.environmentRenderMode);
-  const useAuthoredShell = !preset.visualLite;
+  // room_bedroom.glb is a Kenney exterior building — never replace the procedural
+  // 5×3×7 m envelope (occludes ThinMonitors, facade posts read as giant tripods).
+  const useAuthoredShell =
+    !preset.visualLite && isWalkableInteriorShellAllowed('volodkaBedroom');
+  const usePhysicalGlass = allowsSelectiveMeshPhysicalWet('volodka_room', selectedPreset, {
+    coarsePointer,
+  });
+  const nightWindowGlass = useMemo(() => getWetGlassPhysicalParams('roomNightWindow'), []);
   // Canvas textures created synchronously via useMemo
   const floorTexture = useCachedCanvasTexture('volodka_room:floor:v2', createFloorTexture);
   const wallTexture = useCachedCanvasTexture('volodka_room:wall:v2', createWallTexture);
@@ -631,30 +621,27 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
       {/* ── INTERACTIVE ANIMATED OBJECTS ── */}
       {/* ═══════════════════════════════════════════════ */}
 
-      {/* ── Room Door — authored GLTF dressing owns High/Ultra; primitive fallback only ── */}
-      {!useGltfFurniture ? (
-        <>
-          {/* Door frame — pushed further off the inset wall to avoid z-fight */}
-          <mesh position={[0, 1.1, D / 2 - 0.04]} rotation-y={Math.PI} geometry={geo_box_4} material={mat_1} />
-          {/* Door frame border */}
-          <mesh position={[-0.5, 1.1, D / 2 - 0.045]} rotation-y={Math.PI} geometry={geo_box_5} material={mat_2} />
-          <mesh position={[0.5, 1.1, D / 2 - 0.045]} rotation-y={Math.PI} geometry={geo_box_5} material={mat_2} />
-          <mesh position={[0, 2.2, D / 2 - 0.045]} rotation-y={Math.PI} geometry={geo_box_6} material={mat_2} />
-          {/* Animated door panel — pivot on left edge */}
-          <group position={[-0.45, 0, D / 2 - 0.06]} ref={roomDoorRef}>
-            <mesh position={[0.45, 1.1, 0]} geometry={geo_box_7} material={mat_3} />
-            {/* Door handle */}
-            <mesh position={[0.78, 1.05, 0.03]} rotation={[0, 0, Math.PI / 2]} geometry={geo_cyl_8} material={mat_4} />
-            {/* Door panel detail — inset rectangle */}
-            <mesh position={[0.45, 1.4, 0.025]} geometry={geo_box_9} material={mat_5} />
-            <mesh position={[0.45, 0.7, 0.025]} geometry={geo_box_9} material={mat_5} />
-          </group>
-        </>
-      ) : (
-        <group ref={roomDoorRef} visible={false} />
-      )}
+      {/* ── Room Door — always procedural (animated interaction). AuthoredVolodkaRoomDressing
+          has no door; ScenePropDressing kenney_door was deferred-only → empty doorway on High. ── */}
+      <>
+        {/* Door frame — pushed further off the inset wall to avoid z-fight */}
+        <mesh position={[0, 1.1, D / 2 - 0.04]} rotation-y={Math.PI} geometry={geo_box_4} material={mat_1} />
+        {/* Door frame border */}
+        <mesh position={[-0.5, 1.1, D / 2 - 0.045]} rotation-y={Math.PI} geometry={geo_box_5} material={mat_2} />
+        <mesh position={[0.5, 1.1, D / 2 - 0.045]} rotation-y={Math.PI} geometry={geo_box_5} material={mat_2} />
+        <mesh position={[0, 2.2, D / 2 - 0.045]} rotation-y={Math.PI} geometry={geo_box_6} material={mat_2} />
+        {/* Animated door panel — pivot on left edge */}
+        <group position={[-0.45, 0, D / 2 - 0.06]} ref={roomDoorRef}>
+          <mesh position={[0.45, 1.1, 0]} geometry={geo_box_7} material={mat_3} />
+          {/* Door handle */}
+          <mesh position={[0.78, 1.05, 0.03]} rotation={[0, 0, Math.PI / 2]} geometry={geo_cyl_8} material={mat_4} />
+          {/* Door panel detail — inset rectangle */}
+          <mesh position={[0.45, 1.4, 0.025]} geometry={geo_box_9} material={mat_5} />
+          <mesh position={[0.45, 0.7, 0.025]} geometry={geo_box_9} material={mat_5} />
+        </group>
+      </>
 
-      {/* ── Wardrobe — hidden on GLTF presets to avoid placeholder hero read ── */}
+      {/* ── Wardrobe — AuthoredVolodkaRoomDressing painted cabinet owns this corner on High ── */}
       {!useGltfFurniture ? (
       <group position={[-2.2, 0, 2.5]}>
         {/* Wardrobe body */}
@@ -680,7 +667,9 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
         <group ref={roomWardrobeDoorRef} visible={false} />
       )}
 
-      {/* ── Desk — GLTF kitbash on authored presets; procedural rig only on lite tiers ── */}
+      {/* ── Desk — ThinMonitors own the hero rig while bedroom shell is exterior_building
+          (useAuthoredShell always false). AuthoredVolodkaWorkstation stays for a future
+          walkable interior GLB; do not gate emissive screens on that dead path. ── */}
       {useAuthoredShell ? (
         <AuthoredVolodkaWorkstation castShadow={preset.shadows} />
       ) : (
@@ -811,35 +800,73 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
         <mesh position={[0, 0.52, 0.2]} geometry={geo_box_41} material={mat_32} />
       </group>
 
-      {!useGltfFurniture ? (
-        <>
-          {/* ── Window (right wall, emissive blue — nighttime city glow) ── */}
-          <group position={[W / 2 - 0.04, 1.5, -2.0]}>
+      {/* ── Windows — always procedural (city glow + spill). Authored dressing has none;
+          deferred kenney_window props left blank walls until staggered mount. ── */}
+      <>
+        {/* ── Window (right wall, emissive blue — nighttime city glow) ── */}
+        <group position={[W / 2 - 0.04, 1.5, -2.0]}>
+          {usePhysicalGlass ? (
+            <mesh renderOrder={1} rotation-y={-Math.PI / 2} geometry={geo_pln_42}>
+              <meshPhysicalMaterial
+                color="#0a0a30"
+                emissive="#4488ee"
+                emissiveIntensity={1.45}
+                toneMapped={false}
+                roughness={nightWindowGlass.roughness}
+                metalness={nightWindowGlass.metalness}
+                transmission={nightWindowGlass.transmission}
+                thickness={nightWindowGlass.thickness}
+                clearcoat={nightWindowGlass.clearcoat}
+                clearcoatRoughness={nightWindowGlass.clearcoatRoughness}
+                transparent
+                opacity={nightWindowGlass.opacity}
+              />
+            </mesh>
+          ) : (
             <mesh renderOrder={1} rotation-y={-Math.PI / 2} geometry={geo_pln_42} material={mat_33} />
-            {/* Window frame */}
-            <mesh renderOrder={2} rotation-y={-Math.PI / 2} position={[0.015, 0, 0]} geometry={geo_box_43} material={mat_26} />
-            {/* Window blue light spill into room */}
-            <pointLight position={[-0.8, 0, 0.5]} color="#4488ee" intensity={3.0} distance={5} />
-            {/* City building silhouettes through window */}
-            <mesh renderOrder={3} rotation-y={-Math.PI / 2} position={[-0.02, -0.15, -0.3]} geometry={geo_pln_75} material={mat_62} />
-            <mesh renderOrder={3} rotation-y={-Math.PI / 2} position={[-0.02, -0.1, 0.2]} geometry={geo_pln_76} material={mat_62} />
-            {/* Tiny window lights on buildings */}
-            <mesh renderOrder={4} rotation-y={-Math.PI / 2} position={[-0.028, -0.2, -0.3]} geometry={geo_pln_77} material={mat_63} />
-            <mesh renderOrder={4} rotation-y={-Math.PI / 2} position={[-0.028, -0.05, 0.2]} geometry={geo_pln_77} material={mat_63} />
-            <mesh renderOrder={4} rotation-y={-Math.PI / 2} position={[-0.028, -0.12, 0.22]} geometry={geo_pln_78} material={mat_64} />
-          </group>
+          )}
+          {/* Window frame */}
+          <mesh renderOrder={2} rotation-y={-Math.PI / 2} position={[0.015, 0, 0]} geometry={geo_box_43} material={mat_26} />
+          {/* Window blue light spill into room */}
+          <pointLight position={[-0.8, 0, 0.5]} color="#4488ee" intensity={3.0} distance={5} />
+          {/* City building silhouettes through window */}
+          <mesh renderOrder={3} rotation-y={-Math.PI / 2} position={[-0.02, -0.15, -0.3]} geometry={geo_pln_75} material={mat_62} />
+          <mesh renderOrder={3} rotation-y={-Math.PI / 2} position={[-0.02, -0.1, 0.2]} geometry={geo_pln_76} material={mat_62} />
+          {/* Tiny window lights on buildings */}
+          <mesh renderOrder={4} rotation-y={-Math.PI / 2} position={[-0.028, -0.2, -0.3]} geometry={geo_pln_77} material={mat_63} />
+          <mesh renderOrder={4} rotation-y={-Math.PI / 2} position={[-0.028, -0.05, 0.2]} geometry={geo_pln_77} material={mat_63} />
+          <mesh renderOrder={4} rotation-y={-Math.PI / 2} position={[-0.028, -0.12, 0.22]} geometry={geo_pln_78} material={mat_64} />
+        </group>
 
-          {/* ── Second Window (back wall, emissive blue — nighttime city) ── */}
-          <group position={[-1.0, 1.5, -D / 2 + 0.04]}>
+        {/* ── Second Window (back wall, emissive blue — nighttime city) ── */}
+        <group position={[-1.0, 1.5, -D / 2 + 0.04]}>
+          {usePhysicalGlass ? (
+            <mesh renderOrder={1} geometry={geo_pln_44}>
+              <meshPhysicalMaterial
+                color="#0a0a30"
+                emissive="#3366cc"
+                emissiveIntensity={1.25}
+                toneMapped={false}
+                roughness={nightWindowGlass.roughness}
+                metalness={nightWindowGlass.metalness}
+                transmission={nightWindowGlass.transmission}
+                thickness={nightWindowGlass.thickness}
+                clearcoat={nightWindowGlass.clearcoat}
+                clearcoatRoughness={nightWindowGlass.clearcoatRoughness}
+                transparent
+                opacity={nightWindowGlass.opacity}
+              />
+            </mesh>
+          ) : (
             <mesh renderOrder={1} geometry={geo_pln_44} material={mat_34} />
-            {/* Window frame */}
-            <mesh renderOrder={2} position={[0, 0, -0.015]} geometry={geo_box_45} material={mat_26} />
-            {/* ISSUE #7: Removed per-window pointLight — the right wall window light +
-                desk lamp + ambient pulse provide sufficient fill. The window material's
-                emissive (mat_34, emissiveIntensity=3.5) already creates a visible glow. */}
-          </group>
-        </>
-      ) : null}
+          )}
+          {/* Window frame */}
+          <mesh renderOrder={2} position={[0, 0, -0.015]} geometry={geo_box_45} material={mat_26} />
+          {/* ISSUE #7: Removed per-window pointLight — the right wall window light +
+              desk lamp + ambient pulse provide sufficient fill. The window material's
+              emissive (mat_34, emissiveIntensity=3.5) already creates a visible glow. */}
+        </group>
+      </>
 
       {/* ── ENVIRONMENTAL CLUTTER / STORYTELLING (lazy chunk) ── */}
       {!useGltfFurniture ? <VolodkaRoomClutter /> : null}
@@ -1155,5 +1182,3 @@ useGLTF.preload(POLYHAVEN_MODELS.deskLampArm, true, true, extendLoader);
 useGLTF.preload(POLYHAVEN_MODELS.cassettePlayer, true, true, extendLoader);
 useGLTF.preload(KENNEY_TERMINAL_MODEL, true, true, extendLoader);
 useGLTF.preload(AI3DGEN_SERVER_FRAGMENT_MODEL, true, true, extendLoader);
-useGLTF.preload(AI3DGEN_POETIC_COMPILER_MODEL, true, true, extendLoader);
-useGLTF.preload(AI3DGEN_NEURAL_FILTER_MODEL, true, true, extendLoader);

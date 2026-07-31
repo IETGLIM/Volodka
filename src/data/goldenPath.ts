@@ -209,6 +209,18 @@ export const STORY_NODE_TO_NPC_ID: Record<string, string> = {
   chk_act4_broadcast_watch: 'chk_based',
   chk_act5_campfire_dawn: 'chk_ru',
   chk_act7_farewell: 'chk_ru',
+  echo_of_vladimir_kate: 'kate',
+  final_code_rally: 'albert',
+  night_before_dawn_albert: 'albert',
+  night_before_dawn_zarema: 'zarema',
+  night_before_dawn_maria: 'maria',
+  night_before_dawn_dmitry: 'office_dmitry',
+  quest_act5_factory_zarya_memory_restore_start: 'baba_zina',
+  quest_act5_zarya_fragment_3: 'baba_zina',
+  quest_act5_bunker_code_poem_break_start: 'maxim',
+  quest_act5_bunker_code_break: 'maxim',
+  quest_act6_defector_rescue_expanded_start: 'maxim',
+  quest_act6_defector_escape_sewers: 'maxim',
   act6_office_confrontation: 'office_dmitry',
   act6_dmitry_confession: 'office_dmitry',
   act6_resistance_briefing: 'anya',
@@ -609,7 +621,7 @@ export const GOLDEN_PATH_BRANCH_HINTS: Record<string, string> = {
   act4_core_server: 'Отключи Протокол Забвения — спаси память.',
   act4_broadcast_prep: 'Начни вещание — пусть город услышит стихи.',
   act4_broadcast_execute: 'Добавь своё стихотворение — твой голос тоже важен.',
-  act5_dawn: 'Ночь перед рассветом — поговори с союзниками и реши, кто ты.',
+  act5_dawn: 'Последний Код — rally, вирус, ядро; потом союзники и выбор, кто ты.',
   act4_final_choice: 'Кто ты после всего? Создатель, Повстанец, Изгой, Машина или Поэт — выбирай осознанно.',
   // Act 5
   chk_act5_campfire_dawn: 'После рассвета — зайди к Ру у костра за финальное слово ЧК.',
@@ -652,7 +664,7 @@ export const GOLDEN_PATH_BRANCH_HINTS: Record<string, string> = {
   act7_poet_legacy_mirror: 'Перелистай книгу памяти — каждая страница из вашего пути.',
   act7_guardian_legacy_mirror: 'Вспомни, ради чего ты стал хранителем.',
   act7_wanderer_legacy_mirror: 'Разложи рюкзак — что ты унёс из города?',
-  act7_true_end: 'Финал — благодарность городу и всем, кого ты встретил на пути.',
+  act7_true_end: 'Остаться в городе для эпилога — или начать новую игру с сохранёнными достижениями.',
 };
 
 /**

@@ -471,6 +471,15 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
         next: 'banking_crash_verify',
         condition: { flag: 'bash_terminal_solved', missingFlag: 'banking_system_recovered' },
       },
+      {
+        text: 'Прощание — последний раз на этой кухне.',
+        next: null,
+        condition: {
+          flag: 'act7_legacy_walk_done',
+          missingFlag: 'act7_goodbye_zarema_done',
+        },
+        effects: [{ type: 'visitStoryNode', nodeId: 'act7_goodbye_zarema' }],
+      },
     ],
   },
 
@@ -1168,8 +1177,23 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
       {
         text: 'Логи Александра назвали тебя. Правда.',
         next: null,
-        condition: { flag: 'traitor_revealed', missingFlag: 'traitor_fate_decided' },
+        condition: {
+          flag: 'traitor_revealed',
+          missingFlag: 'act6_dmitry_judgment_pending',
+        },
         effects: [{ type: 'visitStoryNode', nodeId: 'act6_office_confrontation' }],
+      },
+      {
+        text: 'Союз с Максимом — ты ещё здесь?',
+        next: null,
+        condition: { flag: 'dmitry_forgiven', missingFlag: 'traitor_fate_decided' },
+        effects: [{ type: 'visitStoryNode', nodeId: 'act6_alliance_formed' }],
+      },
+      {
+        text: 'Чип на столе — ты уже ушёл?',
+        next: null,
+        condition: { flag: 'dmitry_exiled', missingFlag: 'traitor_fate_decided' },
+        effects: [{ type: 'visitStoryNode', nodeId: 'act6_dmitry_exiled' }],
       },
     ],
   },

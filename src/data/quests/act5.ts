@@ -20,8 +20,9 @@ export const QUESTS_ACT5: QuestDefinition[] = [
       {
         id: 'rally_allies',
         description: 'Собрать всех союзников для финальной операции',
-        type: 'npc_talked',
-        target: 'albert',
+        // flag_set mid-resume: leave after Albert plan → hub/zone re-entry
+        type: 'flag_set',
+        target: 'final_code_allies_rallied',
         completed: false,
       },
       {
@@ -36,8 +37,10 @@ export const QUESTS_ACT5: QuestDefinition[] = [
       {
         id: 'reach_core',
         description: 'Проникнуть в центральный сервер гильдии',
-        type: 'location_visited',
-        target: 'office_day',
+        // Not location_visited office_day — night_before_dawn / other office
+        // visits would auto-complete. Core story beat sets this flag.
+        type: 'flag_set',
+        target: 'final_code_core_reached',
         completed: false,
       },
       {
@@ -62,8 +65,15 @@ export const QUESTS_ACT5: QuestDefinition[] = [
       { type: 'setFlag', flag: 'final_code_completed', flagValue: true },
       { type: 'addXp', value: 500 },
     ],
-    linkedStoryNodeId: 'act4_core_server',
-    questGiverNpcId: 'office_alexander',
+    linkedStoryNodeId: 'final_code_approach',
+    linkedStoryNodeIds: [
+      'final_code_approach',
+      'final_code_rally',
+      'final_code_virus',
+      'final_code_core',
+      'final_code_deploy',
+    ],
+    questGiverNpcId: 'albert',
   },
 
   /* ─────────────── QUEST: Исповедь Машины ─────────────── */
@@ -110,6 +120,7 @@ export const QUESTS_ACT5: QuestDefinition[] = [
     linkedStoryNodeId: 'machine_confession_scene',
     linkedStoryNodeIds: [
       'factory_basement',
+      'machine_confession_approach',
       'machine_confession_scene',
       'machine_confession_scene_familiar',
       'machine_confession_scene_thread',
@@ -167,7 +178,13 @@ export const QUESTS_ACT5: QuestDefinition[] = [
       { type: 'setFlag', flag: 'echo_of_vladimir_completed', flagValue: true },
       { type: 'addXp', value: 400 },
     ],
-    linkedStoryNodeId: 'act5_ending_epilogue',
+    linkedStoryNodeId: 'vladimir_secret_room',
+    linkedStoryNodeIds: [
+      'echo_of_vladimir_approach',
+      'echo_of_vladimir_kate',
+      'vladimir_secret_room',
+      'vladimir_secret_room_read',
+    ],
     questGiverNpcId: 'kate',
   },
 
@@ -186,22 +203,22 @@ export const QUESTS_ACT5: QuestDefinition[] = [
       {
         id: 'talk_albert_final',
         description: 'Спросить Алберта: он с тобой до конца?',
-        type: 'npc_talked',
-        target: 'albert',
+        type: 'flag_set',
+        target: 'albert_final_confirmed',
         completed: false,
       },
       {
         id: 'talk_zarema_final',
         description: 'Спросить Зарему: она верит в тебя?',
-        type: 'npc_talked',
-        target: 'zarema',
+        type: 'flag_set',
+        target: 'zarema_final_confirmed',
         completed: false,
       },
       {
         id: 'talk_maria_final',
         description: 'Спросить Марию: она готова к финалу?',
-        type: 'npc_talked',
-        target: 'maria',
+        type: 'flag_set',
+        target: 'maria_final_confirmed',
         completed: false,
       },
       {
@@ -209,9 +226,9 @@ export const QUESTS_ACT5: QuestDefinition[] = [
         description: 'Спросить Дмитрия: он не отступит?',
         // Q-03: NOTE — if the betrayal path is implemented later (dmitry_betrayed
         // flag), this objective must be guarded. Currently the betrayal path is
-        // not wired in the story, so npc_talked is safe.
-        type: 'npc_talked',
-        target: 'office_dmitry',
+        // not wired in the story, so flag_set mid-resume is safe.
+        type: 'flag_set',
+        target: 'dmitry_final_confirmed',
         completed: false,
       },
     ],
@@ -222,7 +239,14 @@ export const QUESTS_ACT5: QuestDefinition[] = [
       { type: 'setFlag', flag: 'all_allies_confirmed', flagValue: true },
       { type: 'addXp', value: 300 },
     ],
-    linkedStoryNodeId: 'act5_dawn',
+    linkedStoryNodeId: 'night_before_dawn_approach',
+    linkedStoryNodeIds: [
+      'night_before_dawn_approach',
+      'night_before_dawn_albert',
+      'night_before_dawn_zarema',
+      'night_before_dawn_maria',
+      'night_before_dawn_dmitry',
+    ],
     questGiverNpcId: 'albert',
   },
 

@@ -54,6 +54,27 @@ export async function waitForMenuReady(page: Page) {
   await expect(page.getByTestId('menu-new-game')).toBeVisible({ timeout: 90_000 });
 }
 
+export type StartNewGameOptions = {
+  /** Default: prologue wake path. Use `skip` for skip-prologue narrative. */
+  path?: 'prologue' | 'skip';
+  canvasTimeoutMs?: number;
+};
+
+/**
+ * New Game opens a prologue confirm dialog while phase stays `menu`, so the
+ * canvas shell remains `visibility:hidden` until confirm. Confirm + wait for
+ * the WebGL canvas to become visible (gameplay/cutscene phase).
+ */
+export async function startNewGameFromMenu(page: Page, options: StartNewGameOptions = {}) {
+  const path = options.path ?? 'prologue';
+  const canvasTimeoutMs = options.canvasTimeoutMs ?? 90_000;
+  await page.getByTestId('menu-new-game').click();
+  const confirmTestId = path === 'skip' ? 'menu-skip-prologue' : 'menu-start-prologue';
+  await expect(page.getByTestId(confirmTestId)).toBeVisible({ timeout: 10_000 });
+  await page.getByTestId(confirmTestId).click();
+  await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: canvasTimeoutMs });
+}
+
 export async function skipWakeCinematic(page: Page) {
   await page.waitForTimeout(2500);
   await page.keyboard.press('Escape');

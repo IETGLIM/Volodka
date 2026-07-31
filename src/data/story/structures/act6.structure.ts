@@ -12,6 +12,13 @@ export const ACT6_STRUCTURE: Record<string, StoryNodeStructure> = {
     "speaker": "narrator",
     "sceneId": "volodka_room",
     "guidanceObjectiveType": "visit_location",
+    "effects": [
+      {
+        "type": "setFlag",
+        "flag": "act6_bridge_open",
+        "flagValue": true
+      }
+    ],
     "choices": [
       {
         "text": "",
@@ -21,6 +28,11 @@ export const ACT6_STRUCTURE: Record<string, StoryNodeStructure> = {
           {
             "type": "setFlag",
             "flag": "act5_complete_time",
+            "flagValue": true
+          },
+          {
+            "type": "setFlag",
+            "flag": "act6_bridge_resolved",
             "flagValue": true
           },
           {
@@ -37,8 +49,17 @@ export const ACT6_STRUCTURE: Record<string, StoryNodeStructure> = {
             "type": "addSkill",
             "skill": "intuition",
             "value": 1
+          },
+          {
+            "type": "setFlag",
+            "flag": "act6_bridge_resolved",
+            "flagValue": true
           }
         ]
+      },
+      {
+        "text": "Отойти — пакет подождёт на столе",
+        "next": "explore_mode"
       }
     ]
   },
@@ -50,6 +71,13 @@ export const ACT6_STRUCTURE: Record<string, StoryNodeStructure> = {
     "sceneId": "street_night",
     "guidanceNpcId": "npc_maria",
     "guidanceObjectiveType": "visit_location",
+    "effects": [
+      {
+        "type": "setFlag",
+        "flag": "act6_maria_warning_open",
+        "flagValue": true
+      }
+    ],
     "choices": [
       {
         "text": "",
@@ -61,10 +89,19 @@ export const ACT6_STRUCTURE: Record<string, StoryNodeStructure> = {
             "value": 2
           },
           {
+            "type": "setFlag",
+            "flag": "act6_maria_warning_resolved",
+            "flagValue": true
+          },
+          {
             "type": "triggerQuest",
             "questId": "traitor_in_the_guild"
           }
         ]
+      },
+      {
+        "text": "Отойти — фабрика подождёт",
+        "next": "street_bench_view"
       }
     ]
   },
@@ -109,6 +146,10 @@ export const ACT6_STRUCTURE: Record<string, StoryNodeStructure> = {
             "value": 2
           }
         ]
+      },
+      {
+        "text": "Отойти — логи подождут",
+        "next": "factory_explore_mode"
       }
     ]
   },
@@ -128,6 +169,10 @@ export const ACT6_STRUCTURE: Record<string, StoryNodeStructure> = {
       {
         "text": "",
         "next": "act6_zeka_trust_test"
+      },
+      {
+        "text": "Отойти — Жека останется в цехе",
+        "next": "factory_explore_mode"
       }
     ]
   },
@@ -159,6 +204,10 @@ export const ACT6_STRUCTURE: Record<string, StoryNodeStructure> = {
             "value": 2
           }
         ]
+      },
+      {
+        "text": "Отойти — имя крота подождёт",
+        "next": "factory_explore_mode"
       }
     ]
   },
@@ -190,6 +239,10 @@ export const ACT6_STRUCTURE: Record<string, StoryNodeStructure> = {
             }
           }
         ]
+      },
+      {
+        "text": "Отойти — доказательство подождёт",
+        "next": "factory_explore_mode"
       }
     ]
   },
@@ -209,6 +262,10 @@ export const ACT6_STRUCTURE: Record<string, StoryNodeStructure> = {
             "value": 2
           }
         ]
+      },
+      {
+        "text": "Отойти — история «Надзора» подождёт",
+        "next": "factory_explore_mode"
       }
     ]
   },
@@ -232,6 +289,14 @@ export const ACT6_STRUCTURE: Record<string, StoryNodeStructure> = {
             "flagValue": true
           }
         ]
+      },
+      {
+        "text": "Отойти — имя уже жжёт экран",
+        "next": "factory_explore_mode",
+        "condition": {
+          "flag": "alexander_logs_decrypted",
+          "missingFlag": "traitor_revealed"
+        }
       }
     ]
   },
@@ -289,6 +354,10 @@ export const ACT6_STRUCTURE: Record<string, StoryNodeStructure> = {
             "value": 5
           }
         ]
+      },
+      {
+        "text": "Позже — сначала офис физически",
+        "next": "factory_explore_mode"
       }
     ]
   },
@@ -350,6 +419,10 @@ export const ACT6_STRUCTURE: Record<string, StoryNodeStructure> = {
             "value": 8
           }
         ]
+      },
+      {
+        "text": "Отойти — стол Дмитрия подождёт",
+        "next": "office_explore_mode"
       }
     ]
   },
@@ -405,6 +478,11 @@ export const ACT6_STRUCTURE: Record<string, StoryNodeStructure> = {
             "npcChange": {
               "relation": 5
             }
+          },
+          {
+            "type": "setFlag",
+            "flag": "act6_dmitry_judgment_pending",
+            "flagValue": true
           }
         ]
       },
@@ -418,6 +496,11 @@ export const ACT6_STRUCTURE: Record<string, StoryNodeStructure> = {
             "flagValue": true
           },
           {
+            "type": "setFlag",
+            "flag": "act6_dmitry_judgment_pending",
+            "flagValue": true
+          },
+          {
             "type": "addKarma",
             "value": 2
           },
@@ -427,6 +510,10 @@ export const ACT6_STRUCTURE: Record<string, StoryNodeStructure> = {
             "value": 5
           }
         ]
+      },
+      {
+        "text": "Отойти — решение подождёт",
+        "next": "office_explore_mode"
       }
     ]
   },
@@ -454,6 +541,10 @@ export const ACT6_STRUCTURE: Record<string, StoryNodeStructure> = {
             "questId": "underground_resistance"
           }
         ]
+      },
+      {
+        "text": "Отойти — Максим подождёт на улице",
+        "next": "office_explore_mode"
       }
     ]
   },
@@ -489,6 +580,10 @@ export const ACT6_STRUCTURE: Record<string, StoryNodeStructure> = {
             "value": -3
           }
         ]
+      },
+      {
+        "text": "Отойти — чип на столе не сгорит",
+        "next": "office_explore_mode"
       }
     ]
   },
@@ -521,6 +616,10 @@ export const ACT6_STRUCTURE: Record<string, StoryNodeStructure> = {
             "value": 3
           }
         ]
+      },
+      {
+        "text": "Отойти — фонари ещё мигают",
+        "next": "street_bench_view"
       }
     ]
   },
@@ -587,6 +686,10 @@ export const ACT6_STRUCTURE: Record<string, StoryNodeStructure> = {
             "flagValue": true
           }
         ]
+      },
+      {
+        "text": "Отойти — план подождёт на улице",
+        "next": "street_bench_view"
       }
     ]
   },
@@ -633,6 +736,10 @@ export const ACT6_STRUCTURE: Record<string, StoryNodeStructure> = {
             "value": 1
           }
         ]
+      },
+      {
+        "text": "Отойти — схема подождёт",
+        "next": "cafe_explore_mode"
       }
     ]
   },
@@ -679,6 +786,10 @@ export const ACT6_STRUCTURE: Record<string, StoryNodeStructure> = {
             "value": -15
           }
         ]
+      },
+      {
+        "text": "Отойти — сервер не убежит",
+        "next": "office_explore_mode"
       }
     ]
   },
@@ -716,6 +827,10 @@ export const ACT6_STRUCTURE: Record<string, StoryNodeStructure> = {
             "value": -10
           }
         ]
+      },
+      {
+        "text": "Затаиться у двери — сирены ещё близко",
+        "next": "corridor_explore_mode"
       }
     ]
   },
@@ -738,6 +853,10 @@ export const ACT6_STRUCTURE: Record<string, StoryNodeStructure> = {
             "value": -5
           }
         ]
+      },
+      {
+        "text": "Спрятать чип — разбор позже",
+        "next": "street_bench_view"
       }
     ]
   },
@@ -764,6 +883,10 @@ export const ACT6_STRUCTURE: Record<string, StoryNodeStructure> = {
             "value": 3
           }
         ]
+      },
+      {
+        "text": "Отойти — правда уже в чипе",
+        "next": "factory_explore_mode"
       }
     ]
   },
@@ -799,6 +922,10 @@ export const ACT6_STRUCTURE: Record<string, StoryNodeStructure> = {
             "value": 8
           }
         ]
+      },
+      {
+        "text": "Отойти — люк подождёт",
+        "next": "factory_explore_mode"
       }
     ]
   },
@@ -811,6 +938,13 @@ export const ACT6_STRUCTURE: Record<string, StoryNodeStructure> = {
     "speaker": "Хранитель «Надзора»",
     "sceneId": "battle",
     "guidanceObjectiveType": "complete_quest",
+    "effects": [
+      {
+        "type": "setFlag",
+        "flag": "act6_nadzor_battle_open",
+        "flagValue": true
+      }
+    ],
     "choices": [
       {
         "text": "",
@@ -830,8 +964,17 @@ export const ACT6_STRUCTURE: Record<string, StoryNodeStructure> = {
             "type": "addStat",
             "stat": "energy",
             "value": -20
+          },
+          {
+            "type": "setFlag",
+            "flag": "act6_nadzor_battle_resolved",
+            "flagValue": true
           }
         ]
+      },
+      {
+        "text": "Отступить — Хранитель подождёт у ядра",
+        "next": "factory_explore_mode"
       }
     ]
   },
@@ -842,6 +985,13 @@ export const ACT6_STRUCTURE: Record<string, StoryNodeStructure> = {
     "speaker": "Система «Надзор»",
     "sceneId": "abandoned_factory",
     "guidanceObjectiveType": "make_choice",
+    "effects": [
+      {
+        "type": "setFlag",
+        "flag": "act6_battle_victory_open",
+        "flagValue": true
+      }
+    ],
     "choices": [
       {
         "text": "",
@@ -861,6 +1011,11 @@ export const ACT6_STRUCTURE: Record<string, StoryNodeStructure> = {
           {
             "type": "setFlag",
             "flag": "nadzor_guardian_defeated",
+            "flagValue": true
+          },
+          {
+            "type": "setFlag",
+            "flag": "act6_battle_victory_resolved",
             "flagValue": true
           }
         ]
@@ -882,8 +1037,17 @@ export const ACT6_STRUCTURE: Record<string, StoryNodeStructure> = {
           {
             "type": "addKarma",
             "value": 5
+          },
+          {
+            "type": "setFlag",
+            "flag": "act6_battle_victory_resolved",
+            "flagValue": true
           }
         ]
+      },
+      {
+        "text": "Отойти — консоль ядра подождёт",
+        "next": "factory_explore_mode"
       }
     ]
   },
@@ -922,6 +1086,10 @@ export const ACT6_STRUCTURE: Record<string, StoryNodeStructure> = {
             "value": -10
           }
         ]
+      },
+      {
+        "text": "Отойти — крыша подождёт",
+        "next": "factory_explore_mode"
       }
     ]
   },
@@ -994,6 +1162,10 @@ export const ACT6_STRUCTURE: Record<string, StoryNodeStructure> = {
             "value": -10
           }
         ]
+      },
+      {
+        "text": "Отойти — Тень не уйдёт с края",
+        "next": "factory_roof_explore_mode"
       }
     ]
   },
@@ -1101,6 +1273,10 @@ export const ACT6_STRUCTURE: Record<string, StoryNodeStructure> = {
         "condition": {
           "missingFlag": "act6_final_choice_made"
         }
+      },
+      {
+        "text": "Отойти — выбор подождёт на краю",
+        "next": "factory_roof_explore_mode"
       }
     ]
   }

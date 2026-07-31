@@ -16,12 +16,30 @@ export const STORY_NODES_EPILOGUE: Record<string, StoryNode> = {
       {
         text: 'Прочитать письма от всех',
         next: 'epilogue_letters_start',
+        condition: { missingFlag: 'epilogue_letters_started' },
         effects: [{ type: 'triggerQuest', questId: 'epilogue_letters' }],
+      },
+      {
+        text: 'Тетрадь с письмами — дочитать',
+        next: 'epilogue_letters_done',
+        condition: {
+          flag: 'epilogue_letters_started',
+          missingFlag: 'epilogue_letters_done',
+        },
       },
       {
         text: 'Пойти к памятнику поэтам',
         next: 'epilogue_monument_start',
+        condition: { missingFlag: 'epilogue_monument_started' },
         effects: [{ type: 'triggerQuest', questId: 'epilogue_monument' }],
+      },
+      {
+        text: 'У камня — одно имя ещё ждёт',
+        next: 'epilogue_monument_done',
+        condition: {
+          flag: 'epilogue_monument_started',
+          missingFlag: 'epilogue_monument_done',
+        },
       },
       { text: 'Остаться в комнате', next: 'explore_mode' },
     ],
@@ -37,6 +55,12 @@ export const STORY_NODES_EPILOGUE: Record<string, StoryNode> = {
       {
         text: 'Сложить письма в тетрадь',
         next: 'epilogue_letters_done',
+        effects: [{ type: 'setFlag', flag: 'epilogue_letters_started', flagValue: true }],
+      },
+      {
+        text: 'Отойти от стола',
+        next: 'explore_mode',
+        condition: { missingFlag: 'epilogue_letters_done' },
       },
     ],
   },
@@ -49,11 +73,16 @@ export const STORY_NODES_EPILOGUE: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Закрыть тетрадь',
-        next: 'epilogue_hub',
+        next: 'explore_mode',
         effects: [
           { type: 'setFlag', flag: 'epilogue_letters_done', flagValue: true },
           { type: 'addKarma', value: 5 },
         ],
+      },
+      {
+        text: 'Оставить тетрадь открытой',
+        next: 'explore_mode',
+        condition: { missingFlag: 'epilogue_letters_done' },
       },
     ],
   },
@@ -70,6 +99,12 @@ export const STORY_NODES_EPILOGUE: Record<string, StoryNode> = {
         text: 'Постоять в молчании',
         next: 'epilogue_monument_done',
         goldenPath: true,
+        effects: [{ type: 'setFlag', flag: 'epilogue_monument_started', flagValue: true }],
+      },
+      {
+        text: 'Отойти от обелиска',
+        next: 'park_explore_mode',
+        condition: { missingFlag: 'epilogue_monument_done' },
       },
     ],
   },
@@ -82,11 +117,16 @@ export const STORY_NODES_EPILOGUE: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Уйти',
-        next: 'epilogue_hub',
+        next: 'park_explore_mode',
         effects: [
           { type: 'setFlag', flag: 'epilogue_monument_done', flagValue: true },
           { type: 'collectPoem', poemId: 'poem_17' },
         ],
+      },
+      {
+        text: 'Постоять ещё',
+        next: 'park_explore_mode',
+        condition: { missingFlag: 'epilogue_monument_done' },
       },
     ],
   },

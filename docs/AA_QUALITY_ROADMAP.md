@@ -4,7 +4,7 @@
 
 > Honest plan to push this browser RPG toward **AA-studio visual + systems density** with **$0 spend**.
 
-> Companion to `AI_SESSION_CONTEXT.md` / `readme.md`. Last updated: 2026-07-31 (Tick 23 continuous).
+> Companion to `AI_SESSION_CONTEXT.md` / `readme.md`. Last updated: 2026-07-31 (Tick 44 continuous).
 
 
 
@@ -52,7 +52,7 @@ AA for Volodka does **not** mean Unreal Nanite / console exclusives. It means:
 
 | Rendering pipeline | **B+** | PostFX, N8AO, ACES, Poly Haven PBR, quality tiers — strong for web |
 
-| Scene parity | **B** | `street_night` / `city_square` / café / pier lead; pier selective wet glass this tick |
+| Scene parity | **B** | `street_night` / `city_square` / café / pier / rooftop selective wet lead |
 
 | Characters | **C+** | Quaternius/CC0 + Mixamo; readable, not AA hero meshes |
 
@@ -1134,17 +1134,43 @@ From `config/performanceBudgets.json` + build gate:
 
 
 
+## Tick 23 (this session)
+
+
+
+| Change | Why |
+
+|--------|-----|
+
+| `echo_of_vladimir` library hub kate→room→unlock→read mid-resume; zone quintet; poetry unlock flag; approach router | **Bug fix:** closed-overlay library had no 3D re-entry after `vladimir_echo_started`; leave mid-read stuck |
+
+| Kate greeting + registry entry nodes for echo chain | Closed-overlay / dialogue mid-resume parity |
+
+| `traitor_in_the_guild` leave choices on investigation/discovery/revealed; `act6_traitor_approach` mid-router; factory hub + mid-resume zone | Soft-lock hygiene — leave mid-logs stuck / forced office jump |
+
+| CHK forest / campfire selective MeshPhysical `campfireBottleGlass` on portwine bottles | Outdoor wet hygiene free-stack vs pier/rooftop |
+
+
+
+### Mixamo / retarget debt (unchanged)
+
+
+
+- Full Quaternius↔Mixamo bone remap still incomplete; hip filter + talk fallback from Tick 3 remain.
+
+
+
+---
+
+
+
 ## Next 3 actions
 
+1. `act6_secret_archive` door→decode→extract→seal — leave + hub/zone mid-resume if still next-only.
 
+2. `machine_confession` / `echo_of_vladimir` mid-beats — leave + hub mid-resume if still forced-overlay.
 
-1. Playtest `secrets_of_old_code`: cafe safehouse → find terminal → leave mid-decode → hub/zone resume → factory → Lena → Maria.
-
-2. Playtest OpenStack: office terminal → solve → confirm zone hidden; Alexander report still reachable.
-
-3. Highest-leverage mid-resume left: `machine_confession` / Act 5 thin stubs, or rooftop selective wet glass if pier playtest passes.
-
-
+3. Mixamo ↔ Quaternius full bone remap (hip filter + talk fallback still interim).
 
 ---
 
@@ -1162,7 +1188,344 @@ From `config/performanceBudgets.json` + build gate:
 
 - Procedural audio will never equal a composed score without free stems + mixing time.
 
-- Vercel asset size: keep Poly Haven downloads in prepare pipeline; prune unused before deploy.
+- Forest still places a nearby Kenney guitar beside the procedural lean spot — intentional density, not coplanar z-fight.
 
-- Foot-sliding / Mixamo retarget still a feel gap vs AA — Tick 3 mitigated root translation + talk fallback; full parity needs clip re-export / stride sync.
+
+
+---
+
+
+
+## Tick 44 (this session)
+
+| Change | Why |
+|--------|-----|
+| Act 3 park cyber bloom α/β leave → `park_explore_mode` (hub/zone mid-resume already existed) | **Bug fix:** mid-bloom forced overlay — leave stuck without 3D re-entry |
+| Act 3 `quest_act3_zarema_evidence_secure` leave → basement hub; library + basement hub mid-resume; day/basement zones | **Bug fix:** secure beat forced complete; no basement 3D re-entry |
+| Registry: park bloom α–γ + library evidence start/secure entry nodes | Closed-overlay mid-resume parity |
+| Test: bloom α/β leave + evidence secure leave/hub/zone | Regression guard |
+
+---
+
+## Tick 43 (this session)
+
+| Change | Why |
+|--------|-----|
+| Act 2 `quest_act2_server_poem_hunt` office→pier→CHK scan beats + leave + hub/zone mid-resume; objectives `flag_set` | **Bug fix:** start-only stub / location_visited soft-complete; leave mid-hunt stuck |
+| Act 2 `quest_act2_chk_neon_archive` leave on hack + cafe/CHK hub mid-resume + cafe zone | **Bug fix:** forced-overlay hack until archive taken |
+| Registry entry: office/pier/CHK/cafe for poem hunt + neon hack | Closed-overlay mid-resume parity |
+| `cafe_evening` espresso body/dome/portafilter/tray/cup MeshPhysical (high/ultra) | Counter machine AA sheen — cups alone left body Standard |
+| Test: Act 2 poem hunt + neon leave/mid-resume | Regression guard |
+
+---
+
+## Tick 42 (this session)
+
+| Change | Why |
+|--------|-----|
+| `factory_basement` selective MeshPhysical CRT (`crtTerminalGlass`) on Заря-М seam + desk terminal | Industrial CRT/glass parity vs albert/library/guild/bunker |
+| Act 6 `act6_bridge` / `act6_maria_warning` leave → room/street hubs + open/resolved flags + hub mid-resume | **Bug fix:** Act 6 open forced overlay only — no explore exit |
+| Act 7 ending + legacy mirrors leave → cafe/library/winter hubs; registry entry nodes; hub mid-resume | **Bug fix:** ending/mirror forced overlay until true_end |
+| Registry: room/street/cafe/library/winter entry nodes for bridge/maria/endings | Closed-overlay mid-resume parity |
+| Act 7 `act7_bridge` leave → `rooftop_explore_mode`; open/resolved flags; hub + zone mid-resume | **Bug fix:** Act 7 open forced overlay only — no explore exit (zone already expected flags) |
+| Act 6 `act6_battle_victory` leave → factory hub; open/resolved; hub/zone mid-split vs prep | **Bug fix:** leave mid-core-choice forced overlay; prep zone competed after victory open |
+| `factory_basement` selective MeshPhysical oil spill + puddle discs (`getWetPuddlePhysicalParams`) | Industrial wet parity free-stack vs CRT-only |
+| Act 6 `act6_nadzor_battle` leave → factory hub; open/resolved; hub/zone mid-resume; prep hides on battle open | **Bug fix:** last Act 6 single-choice combat forced overlay — retreat then re-enter |
+| **Live** factory hub (act5 pack): battle mid-choice + prep `missingFlag: act6_nadzor_battle_open`; removed dead auto-hub factory block | **Bug fix:** ACT_PACK_DEFINED meant sceneExploreHubs factory mid-resume never mounted |
+| `library_basement` selective MeshPhysical rain-spill oil disc | Archive wet parity free-stack vs CRT-only + factory oil |
+| `cafe_evening` table cup clearcoat MeshPhysical (high/ultra) | Clutter AA read free-stack |
+| Tests: act6 nadzor leave + act7 bridge leave + factory hub/zone wiring | Regression guard for overlay soft-locks |
+| Act 6 JSON leave labels for investigation / discovery / revealed | **Bug fix:** choice-count drift hid leave behind structure-only fallback |
+| `abandoned_factory` machine CRT glass + MeshPhysical oil puddles | Act 6 hero hub glass/oil parity vs basement |
+| `zarema_albert_room` selective MeshPhysical laptop CRT + warm window | Home hub glass accents free-stack |
+| `factory_zarya` snow/storm/photo leave + roof/basement hub mid-resume + registry entry | **Bug fix:** mid-image forced overlay; leave stuck without 3D re-entry |
+| `chk_act7_farewell` → `chk_explore_mode` (+ leave + hub mid-resume) | **Bug fix:** farewell dumped to room `explore_mode` (scene soft-teleport) |
+| Basement oil puddles: damp+rain intensity knobs (not hardcoded wet) | Coherent industrial sheen vs static 0.72 |
+| Act 4 `quest_act4_street_samizdat` leave on pier/CHK/library + hub mid-resume; registry entry nodes | **Bug fix:** mid-drop forced overlay — leave mid-route stuck |
+| Act 4 `quest_act4_rooftop_broadcast_repair` leave + rooftop hub mid-resume; registry entry | Soft-lock hygiene — leave mid-solder stuck |
+| `albert_backroom` / `guild_mainframe` selective MeshPhysical oil discs | Free-stack industrial sheen parity with basement/factory yard |
+| Test: Act 4 samizdat + rooftop antenna leave/mid-resume | Regression guard |
+
+---
+
+## Tick 41 (this session)
+
+| Change | Why |
+|--------|-----|
+| `albert_backroom` / `library_basement` selective MeshPhysical CRT faces (`crtTerminalGlass`) | Industrial CRT/glass accents free-stack vs guild/bunker |
+| Act 6 office traitor chain leave on confrontation/confession/alliance/exile → office hub | **Bug fix:** mid-Dmitry forced overlay only — no explore exit |
+| `act6_dmitry_judgment_pending` + hub/zone/dialogue mid-split for alliance/exile | Soft-lock hygiene — leave after judgment choice resumes correct beat |
+| Act 6 Жека mid-beats leave → factory hub; registry entry nodes | Soft-lock hygiene — leave mid-zeka stuck |
+| Verified Tick 36–40 clutter (Kenney café/library/office shells still blocked → procedural crates/shelves/desks live) | Still closed |
+
+---
+
+## Tick 40 (this session)
+
+| Change | Why |
+|--------|-----|
+| `act6_final_confrontation` leave → `factory_roof_explore_mode` (+ text) | **Bug fix:** mid-close forced overlay only — no explore exit (hub/zone already resume) |
+| `volodka_room` selective MeshPhysical night window panes (`roomNightWindow`) | Atmosphere parity — panes were Standard-only |
+| `guild_mainframe` / `underground_bunker` selective MeshPhysical CRT faces (`crtTerminalGlass`) | Console/terminal glass accents free-stack vs library/office |
+| Verified Tick 36–39 clutter (café espresso, pier/forest, room openings, plaza, neon, factory yard, office desks); ThinMonitors remain live desk path | Still closed — AuthoredVolodkaWorkstation stays dormant while shell blocked |
+
+---
+
+## Tick 39 (this session)
+
+| Change | Why |
+|--------|-----|
+| Act 6 `system_infiltration` leave on nadzor/prep/core; rooftop showdown → roof hub; resistance formed/briefing → street | **Bug fix:** mid-infiltration / mid-showdown forced overlay only — no explore exit |
+| Factory registry: `act6_nadzor_revealed` / `infiltration_prep` / `core_choice`; street: resistance formed/briefing | Closed-overlay mid-resume parity |
+| `abandoned_factory` selective MeshPhysical broken panes + shards (`factoryBrokenGlass`) | Atmosphere parity on Act 6 hero hub free-stack |
+| `factory_explore_mode` text/structure: insert missing «Тишина после Надзора» so Zarya/tea labels align | **Bug fix:** hub choice texts shifted — «Память» labeled nadzor_dies; tea/Zarya mislabeled |
+| `factory_baba_zina_tea` leave on kettle/mint/hum/history; hub + Baba Zina dialogue mid-split; registry entry | **Bug fix:** leave mid-tea stuck / dialogue skipped mint→hum |
+| `office_day` prop dressing: drop table+terminal near desk grid; chair → meeting sofa | **Bug fix:** High doubled procedural desks with GLB table/terminal |
+| `street_night`: always mount drip pipe + broken window (not `!useAuthoredDressing`) | **Bug fix:** same empty-facade gap as Tick 37 NeonSigns |
+| Drop dead poetic_compiler/neural_filter preloads from VolodkaRoomVisual | Desk gadgets owned by ScenePropDressing off-desk |
+| Verified Tick 36–38 clutter (café espresso, pier/forest seats, room openings, plaza benches, street neon, ThinMonitors desk path) | Still closed — no reopen |
+
+---
+
+## Tick 38 (this session)
+
+| Change | Why |
+|--------|-----|
+| `volodka_room` prop dressing: move ai3dgen compiler/filter off ThinMonitor desk → side table / shelf | **Bug fix:** bedroom shell blocked → workstation never mounts; deferred gadgets z-fought emissive monitors |
+| Strip AuthoredVolodkaWorkstation desk gadgets (cassette/compiler/filter) — RoomDressing + off-desk props own them | Prevent future doubles if walkable shell returns |
+| Comment: ThinMonitors are live desk path while shell is exterior_building | Lock intent from Tick 37 next-action #3 |
+| Act 6 `data_heist`: leave on plan/execution/success/escape; office zone split hack→run; basement hide on hacked; street chip zone; corridor/street hub mid | **Bug fix:** leave mid-heist forced overlay; terminal zone re-fought after `mainframe_hacked` |
+| `resistance_safehouse` leave on filters/radio/poem/beds | Soft-lock hygiene — mid-outfit forced hub |
+| `final_poem` `compose_masterpiece` → `final_poem_written` (was duplicate `journey_reflected`) | **Bug fix:** compose auto-completed with reflect; journal skipped write beat |
+| `library_day` selective MeshPhysical stained-glass panes (both walls) | Atmosphere parity on Act 7 hub free-stack |
+| `office_day` selective MeshPhysical meeting-room partitions (`officeCubicleGlass`) | Sterile glass ceiling free-stack vs cafe/library |
+| Registry entry: `act6_heist_success` / `act6_escape_success` | Closed-overlay mid-resume parity |
+
+---
+
+## Tick 37 (this session)
+
+| Change | Why |
+|--------|-----|
+| `volodka_room`: always keep procedural door + city-glow windows; wardrobe still yields to Authored cabinet on High | **Bug fix:** `!useGltfFurniture` hid openings while AuthoredVolodkaRoomDressing had no door/windows; deferred kenney openings left blank doorway/walls |
+| Removed volodka_room `kenney_door` / `kenney_window` from ScenePropDressing | Avoid z-fight with always-on procedural openings |
+| `city_square`: AuthoredPlazaDressing benches 5→7 (±9 side seats) | **Bug fix:** High hid full 7-bench procedural ring but authored only covered 5 |
+| `street_night`: always mount NeonSigns on High/Ultra | **Bug fix:** High hid café/КАФЕ/bar neon; authored facades have no tube replace |
+| `river_pier` / `chk_forest_zorge`: prune prop barrel/crate/table at exact procedural fire/wine/guitar anchors | Clear coplanar doubles from Tick 36 keep-procedural fix |
+| Regression tests: no kenney openings in room dressing; pier/forest no anchor stacks | Lock empty-opening / z-fight regressions |
+
+---
+
+## Tick 36 (this session)
+
+| Change | Why |
+|--------|-----|
+| `cafe_evening`: counter espresso gated on `hideProceduralFurniture` (shell+gltf), not bare `useGltfDressing` | **Bug fix:** Kenney shell blocked but High still hid bar espresso; steam rose from empty counter (prop coffee_machine is floor kitbash at [2.5,0,-1.2]) |
+| `river_pier`: always keep barrel+glow holes, crate seats, wine table, guitar | **Bug fix:** sparse prop dressing (1 bench) emptied fire ring / floated flame without barrel on High/Ultra |
+| `chk_forest_zorge`: always keep 5 log seats, wine crate, guitar | **Bug fix:** 5 seats → 1 bench sparsified the campfire ring on High/Ultra |
+| Regression: cafe shell blocked; prop coffee ≠ counter; pier/forest bench count sparse | Lock so empty-counter / sparse-seat regressions fail in unit tests |
+
+---
+
+## Tick 35 (this session)
+
+| Change | Why |
+|--------|-----|
+| `river_pier`: always keep railing/pilings/boat/rod/reeds (backdrop ≠ dock owner) | **Bug fix:** `hideDockClutter = useGltfDressing` emptied the walkable pier on High/Ultra — same pattern as factory |
+| `chk_forest_zorge`: always full hero trees + full instanced belt when backdrop mounts | **Bug fix:** backdrop sparsified to 4 trees + 24-tree ring; clearing read empty vs Lite |
+| Regression: pier/forest backdrop stay far-Z `backdrop_dressing` | Lock mount policy so empty-dock / sparse-belt regressions fail in unit tests |
+| Office monitor polish skipped | Kenney shell blocked → full procedural desks already have emissive monitors |
+
+---
+
+## Tick 34 (this session)
+
+| Change | Why |
+|--------|-----|
+| `abandoned_factory`: never hide conveyors/vats/catwalk/graffiti/debris for GLB dressing | **Bug fix:** factory GLB is far-yard `backdrop_dressing` + sparse props — High/Ultra emptied the walkable yard (same pattern as basement) |
+| `office_day`: full 12-desk procedural grid whenever Kenney shell is blocked; AuthoredOfficeDesk only if walkable shell mounts | **Bug fix:** High/Ultra sparsified to 6 table+terminal desks with no emissive monitors; cubicle dividers vanished |
+| Regression: factory backdrop stays far-Z; office remains `exterior_building` | Lock mount policy so empty-yard / sparse-desk regressions fail in unit tests |
+
+---
+
+## Tick 33 (this session)
+
+| Change | Why |
+|--------|-----|
+| `factory_basement` / `underground_bunker`: basement GLB → `SceneBackdropShell` only; always procedural walls + racks/sandbags | **Bug fix:** backdrop_dressing was mounted as walkable envelope and hid rack/sandbag density |
+| Albert / guild / library_basement / library_day / cafe: hide procedural clutter only when shell actually mounts | **Bug fix:** Kenney exteriors blocked but High/Ultra still emptied rooms for sparse prop dressing |
+| `albert_backroom` / `guild_mainframe` / `library_basement` ownership → procedural envelopes | Align ownership with exterior-shell block; Kenney facades stay prune-listed only |
+| Cafe coffee cups gated with tables | **Bug fix:** cups floated when tables were hidden |
+| Story `next: null` scan: **0** in `src/data/story` | Confirmed clean — no forced-overlay dump fix needed this tick |
+
+---
+
+## Tick 32 (this session)
+
+| Change | Why |
+|--------|-----|
+| `act7_exp_epilogue_vision`: `next: null` → `city_square_explore_mode` / `explore_mode` / `epilogue_hub` | **Bug fix:** expanded finale closed overlay with no explore exit |
+| Register `act3–7Expanded` satellites + full static↔runtime parity (drop `_exp_` skip) | **Bug fix:** expanded act packs existed in `buildStoryNodes` but never loaded at runtime |
+| `city_square_explore_mode` entry includes `act7_exp_epilogue_vision` | Closed-overlay free roam after expanded vision |
+| `factory` / `pier` / `forestClearing` / `basement` mount kind `backdrop_dressing`; AuthoredInteriorShell blocks only `exterior_building` | Safe guard — outdoor shells stay backdrop; Kenney facades stay blocked from hero interiors |
+| Soft-lock scan: **0** never-set `flag_set` on startable quests | Confirmed clean |
+
+---
+
+## Tick 31 (this session)
+
+| Change | Why |
+|--------|-----|
+| `act7_true_end`: `next: null` → roam (`explore_mode`) / `epilogue_hub` / real `start` new game | **Bug fix:** choice promised new game but only closed overlay; no post-end free roam / epilogue path |
+| `act7_true_end` + `sync_end` as room hub entry nodes | Soft-lock hygiene — closed-overlay free roam after finale / morning sync |
+| Act 5 path endings `next: null` → scene explore hubs; `sync_end` → `explore_mode` | **Bug fix:** forced-overlay “Конец” left player with no hub exit |
+
+---
+
+## Tick 30 (this session)
+
+| Change | Why |
+|--------|-----|
+| `epilogue_letters` / `epilogue_monument` mid-resume: leave on start/done; mid flags; room/park hubs + zone splits; street_poet dialogue; no forced `epilogue_hub` after complete | **Bug fix:** leave mid-epilogue → forced overlay / no hub re-entry; finish dumped to VN hub |
+| `epilogue_hub` gates start vs mid vs done choices | Soft-lock hygiene — hub no longer re-offers completed beats |
+| Quest `linkedStoryNodeIds` + live mid hints for letters/monument | Journal / continue + 3D cue parity |
+
+---
+
+## Tick 29 (this session)
+
+
+| Change | Why |
+|--------|-----|
+| `rebuild_the_guild` mid-resume: leave on rebuild/charter/community/archive; path flags; cafe/library hubs + zone quartet; Anya/Sergey/Kate dialogue | **Bug fix:** leave mid-charter → hub re-offered only start; no 3D archive zone |
+| `system_takedown` mid-resume: leave on assemble/shutdown/core/dies; factory hub + zone triad; Maxim/Zheka dialogue | **Bug fix:** leave mid-core → zone re-fought shutdown combat |
+| `final_poem` mid-resume: leave on create/write/recital/publish; park/rooftop hub+zone splits | **Bug fix:** park zone collapsed create→write; no leave on spine |
+| Library hub golden continue gated on `new_council_elected` | Soft-lock hygiene — early-act library no longer forces Act 7 archive |
+| `system_takedown` / `final_poem` objectives: orphan bash/poetry → story `flag_set` | **Bug fix:** quests never completed after spine |
+
+---
+
+## Tick 28 (this session)
+
+
+
+| Change | Why |
+
+|--------|-----|
+
+| `volodka_legacy` mid-resume: leave on walk/goodbye/final_walk/maria_future; mid flags; room/kitchen/street hubs + zone quartet; Zarema/Maria dialogue; registry entry | **Bug fix:** leave mid-legacy → hub only re-offered `act7_legacy_walk` |
+
+| `quest_act7_poets_monument_inscription` dialogue/hub/zone split recall→carve→inscribe; leave on plate/recall/carve/inscribe | **Bug fix:** post-plate collapsed into recall until done |
+
+
+
+---
+
+
+
+## Tick 27 (this session)
+
+
+
+| Change | Why |
+
+|--------|-----|
+
+| `quest_act6_defector_rescue_expanded` mid-resume: leave on infiltrate/cell/sewers; bunker + resistance hub splits; zone quartet; Maxim/Anya dialogue start+split; registry + STORY_NODE_TO_NPC | **Bug fix:** leave mid-raid → no 3D re-entry; dialogue collapsed cell+sewers; no hub start after thin rescue |
+
+
+
+---
+
+
+
+## Tick 26 (this session)
+
+
+
+| Change | Why |
+
+|--------|-----|
+
+| `quest_act5_factory_zarya_memory_restore` mid-resume: leave on fragments; factory/basement hub splits; zone quartet; Baba Zina dialogue; registry entry | **Bug fix:** leave mid-fragment → no 3D re-entry |
+
+| `quest_act5_bunker_code_poem_break` mid-resume: leave on key/break; bunker/resistance/basement hubs; zone triad; Maxim dialogue; registry entry | **Bug fix:** leave mid-cipher → stuck |
+
+| `act5_dawn` no longer sets `night_before_dawn_started` / triggers ally quest; dawn+roof gate ally circuit on `final_code_completed` | **Bug fix:** both Act 5 mains started at dawn → hub/zone conflict |
+
+
+
+---
+
+
+
+## Tick 25 (this session)
+
+
+
+| Change | Why |
+
+|--------|-----|
+
+| `final_code` mid-resume: approach + rally→virus→core→deploy nodes; flag_set rally/core; `freedom_virus_written` via QuestTracker | **Bug fix:** quest linked to Act 4 `act4_core_server` with no 3D circuit; leave mid-operation stuck |
+
+| act5_dawn → `final_code_approach` first; rooftop/cafe/albert/office hubs + zone sextet; registry entry nodes | Closed-overlay / Full 3D RPG mid-resume parity |
+
+| Cafe OpenStack virus zone gated on rally / hides on `freedom_virus_written` | Soft-lock hygiene — abort minigame must not soft-lock core |
+
+
+
+---
+
+
+
+## Tick 24 (prior session)
+
+
+
+| Change | Why |
+
+|--------|-----|
+
+| `act6_secret_archive` factory hub hatch→door→decode→extract→seal mid-resume; zone quintet; door/decode/extract leave + mid-routers | **Bug fix:** coarse hub/zone always → approach until sealed; leave mid-decode stuck |
+
+| Factory registry entry nodes for secret archive chain | Closed-overlay mid-resume parity |
+
+| `machine_confession` leave without fate; hub/basement gates `missingFlag: machine_fate_decided`; explore decide mid-choice | Soft-lock hygiene — hear then leave → sticky confess / no decide resume |
+
+| `machine_confession_approach` thread/familiar/base mid-router; explore zone → approach; registry entry | **Bug fix:** 3D re-entry always base scene; variants unreachable after leave |
+
+| Basement registry entry nodes for confession variants | Closed-overlay mid-resume |
+
+| `rooftop_edge` selective MeshPhysical wet list + `rooftopSkylightGlass` (door pane / HVAC gauge) | Wet parity free-stack vs plaza/café/pier |
+
+| `park_day` denser FogExp2 + canopy cool fill + N8AO; `factory_basement` Zarya practical + floor bounce | Uneven hub lighting/fog coherence |
+
+
+
+---
+
+
+
+## Tick 24 (this session)
+
+
+
+| Change | Why |
+
+|--------|-----|
+
+| `night_before_dawn` ally mid-resume: approach + Albert/Zarema/Maria/Dmitry nodes; flag_set objectives; act5_dawn leave→approach | **Bug fix:** quest triggered at dawn with no 3D ally circuit; leave/close stuck |
+
+| Rooftop/cafe/albert/zarema/office hubs + zone sextet; registry entry nodes; STORY_NODE_TO_NPC_ID | Closed-overlay / Full 3D RPG mid-resume parity |
+
+| `park_day` + `street_winter` selective MeshPhysical list; park dew puddles; `winterShopWindow` frost pane + ice puddle | Selective damp accents free-stack vs pier/rooftop/CHK |
+
+
+
+### Mixamo / retarget debt (unchanged)
+
+
+
+- Full Quaternius↔Mixamo bone remap still incomplete; hip filter + talk fallback from Tick 3 remain.
 

@@ -17,7 +17,13 @@ import { EnvironmentDetail, SceneClutterGate } from './lod/PropDistanceGate';
 import { scratchColor } from '@/engine/three/frameScratch';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { createParkHazySkyTexture } from '@/engine/graphics/proceduralSkyTextures';
-import { getIndustrialDampFloorSettings } from '@/engine/graphics/wetStreetScenes';
+import {
+  allowsSelectiveMeshPhysicalWet,
+  getIndustrialDampFloorSettings,
+  getWetPuddlePhysicalParams,
+} from '@/engine/graphics/wetStreetScenes';
+import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
+import { useIsMobileVisual } from '@/hooks/use-mobile';
 
 interface ParkDayVisualProps {
   livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
@@ -37,6 +43,10 @@ export function ParkDayVisual({ livePlayerPositionRef }: ParkDayVisualProps) {
   const groundTexture = useCachedCanvasTexture('park_day:ground', createParkGroundTexture);
   const envProfile = useMemo(() => getEnvironmentLodProfile('park_day'), []);
   const damp = useMemo(() => getIndustrialDampFloorSettings('park_day'), []);
+  const { selectedPreset } = useGraphicsQuality();
+  const coarsePointer = useIsMobileVisual();
+  const usePhysicalDew = allowsSelectiveMeshPhysicalWet('park_day', selectedPreset, { coarsePointer });
+  const dewPuddle = useMemo(() => getWetPuddlePhysicalParams(0.35), []);
 
   const W = 30;
   const D = 30;
@@ -310,19 +320,50 @@ export function ParkDayVisual({ livePlayerPositionRef }: ParkDayVisualProps) {
         <meshStandardMaterial color="#c8c0a0" roughness={0.95} side={THREE.DoubleSide} />
       </mesh>
 
-      {/* Legacy path puddle — driven by damp knobs when present */}
+      {/* Legacy path puddle — selective MeshPhysical dew when quality allows */}
       <mesh rotation-x={-Math.PI / 2} position={[-1, 0.03, 2]} geometry={getSharedCircleGeometry(0.5, 12)}>
-        <meshStandardMaterial
-          color="#1a3a3a"
-          metalness={damp?.oilMetalness ?? 0.5}
-          roughness={damp ? Math.max(0.12, damp.oilRoughness - 0.3) : 0.1}
-          transparent
-          opacity={0.6}
-          polygonOffset
-          polygonOffsetFactor={1}
-          polygonOffsetUnits={1}
-        />
+        {usePhysicalDew ? (
+          <meshPhysicalMaterial
+            color="#1a3a3a"
+            metalness={dewPuddle.metalness}
+            roughness={dewPuddle.roughness}
+            clearcoat={dewPuddle.clearcoat}
+            clearcoatRoughness={dewPuddle.clearcoatRoughness}
+            transparent
+            opacity={Math.min(0.62, dewPuddle.opacity)}
+            polygonOffset
+            polygonOffsetFactor={1}
+            polygonOffsetUnits={1}
+          />
+        ) : (
+          <meshStandardMaterial
+            color="#1a3a3a"
+            metalness={damp?.oilMetalness ?? 0.5}
+            roughness={damp ? Math.max(0.12, damp.oilRoughness - 0.3) : 0.1}
+            transparent
+            opacity={0.6}
+            polygonOffset
+            polygonOffsetFactor={1}
+            polygonOffsetUnits={1}
+          />
+        )}
       </mesh>
+      {usePhysicalDew && (
+        <mesh rotation-x={-Math.PI / 2} position={[1.4, 0.032, -2.2]} geometry={getSharedCircleGeometry(0.32, 10)}>
+          <meshPhysicalMaterial
+            color="#1a3230"
+            metalness={dewPuddle.metalness * 0.9}
+            roughness={dewPuddle.roughness + 0.04}
+            clearcoat={dewPuddle.clearcoat * 0.85}
+            clearcoatRoughness={dewPuddle.clearcoatRoughness}
+            transparent
+            opacity={Math.min(0.5, dewPuddle.opacity * 0.85)}
+            polygonOffset
+            polygonOffsetFactor={1}
+            polygonOffsetUnits={1}
+          />
+        </mesh>
+      )}
     </group>
   );
 }

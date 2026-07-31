@@ -8,6 +8,7 @@ import {
   settleAfterWake,
   skipStoryTypewriter,
   skipWakeCinematic,
+  startNewGameFromMenu,
   waitForMenuReady,
   waitForNarrativeText,
   waitForStoryChoices,
@@ -19,8 +20,7 @@ test.describe('Act II smoke', () => {
 
   test('bootstrap act2 → act2_transition → cafe golden branch', async ({ page }) => {
     await waitForMenuReady(page);
-    await page.getByTestId('menu-new-game').click();
-    await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
+    await startNewGameFromMenu(page);
 
     await skipWakeCinematic(page);
     await settleAfterWake(page);
@@ -47,8 +47,7 @@ test.describe('Act II smoke', () => {
 
   test('bootstrap act2 albert hint beat on cafe scene', async ({ page }) => {
     await waitForMenuReady(page);
-    await page.getByTestId('menu-new-game').click();
-    await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
+    await startNewGameFromMenu(page);
 
     await skipWakeCinematic(page);
     await settleAfterWake(page);
@@ -67,8 +66,7 @@ test.describe('Act II smoke', () => {
 
   test('bootstrap office hub → start_diagnosis golden branch', async ({ page }) => {
     await waitForMenuReady(page);
-    await page.getByTestId('menu-new-game').click();
-    await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
+    await startNewGameFromMenu(page);
 
     await skipWakeCinematic(page);
     await settleAfterWake(page);
@@ -97,8 +95,7 @@ test.describe('Act II smoke', () => {
 
   test('bootstrap start_diagnosis beat directly', async ({ page }) => {
     await waitForMenuReady(page);
-    await page.getByTestId('menu-new-game').click();
-    await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
+    await startNewGameFromMenu(page);
 
     await skipWakeCinematic(page);
     await settleAfterWake(page);
@@ -117,8 +114,7 @@ test.describe('Act II smoke', () => {
 
   test('bootstrap fix_success → poem revelation beat', async ({ page }) => {
     await waitForMenuReady(page);
-    await page.getByTestId('menu-new-game').click();
-    await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
+    await startNewGameFromMenu(page);
 
     await skipWakeCinematic(page);
     await settleAfterWake(page);
@@ -135,8 +131,7 @@ test.describe('Act II smoke', () => {
 
   test('bootstrap act2 maria meeting place with karma gate hint', async ({ page }) => {
     await waitForMenuReady(page);
-    await page.getByTestId('menu-new-game').click();
-    await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
+    await startNewGameFromMenu(page);
 
     await skipWakeCinematic(page);
     await settleAfterWake(page);
@@ -156,8 +151,7 @@ test.describe('Act II smoke', () => {
 
   test('bootstrap office hub → dmitry_defection physical beat', async ({ page }) => {
     await waitForMenuReady(page);
-    await page.getByTestId('menu-new-game').click();
-    await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
+    await startNewGameFromMenu(page);
 
     await skipWakeCinematic(page);
     await settleAfterWake(page);
@@ -198,8 +192,7 @@ test.describe('Act II smoke', () => {
 
   test('bootstrap cafe hub → cafe_safehouse barista trigger', async ({ page }) => {
     await waitForMenuReady(page);
-    await page.getByTestId('menu-new-game').click();
-    await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
+    await startNewGameFromMenu(page);
 
     await skipWakeCinematic(page);
     await settleAfterWake(page);
@@ -245,8 +238,7 @@ test.describe('Act II smoke', () => {
 
   test('bootstrap office hub → vault_key_fragments guild fragment', async ({ page }) => {
     await waitForMenuReady(page);
-    await page.getByTestId('menu-new-game').click();
-    await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
+    await startNewGameFromMenu(page);
 
     await skipWakeCinematic(page);
     await settleAfterWake(page);
@@ -286,8 +278,7 @@ test.describe('Act II smoke', () => {
 
   test('bootstrap library hub → poetry_smuggling stash trigger', async ({ page }) => {
     await waitForMenuReady(page);
-    await page.getByTestId('menu-new-game').click();
-    await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
+    await startNewGameFromMenu(page);
 
     await skipWakeCinematic(page);
     await settleAfterWake(page);
@@ -327,8 +318,7 @@ test.describe('Act II smoke', () => {
 
   test('bootstrap pier hub → trofim portwine physical beat', async ({ page }) => {
     await waitForMenuReady(page);
-    await page.getByTestId('menu-new-game').click();
-    await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
+    await startNewGameFromMenu(page);
 
     await skipWakeCinematic(page);
     await settleAfterWake(page);
@@ -368,8 +358,7 @@ test.describe('Act II smoke', () => {
 
   test('bootstrap street winter hub → act2 closing bridge trigger', async ({ page }) => {
     await waitForMenuReady(page);
-    await page.getByTestId('menu-new-game').click();
-    await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
+    await startNewGameFromMenu(page);
 
     await skipWakeCinematic(page);
     await settleAfterWake(page);

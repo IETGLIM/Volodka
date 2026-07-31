@@ -30,6 +30,21 @@ export const SELECTIVE_PHYSICAL_WET_SCENE_IDS = [
   'street_night',
   'river_pier',
   'pier_evening',
+  'rooftop_edge',
+  'chk_forest_zorge',
+  'chk_campfire_night',
+  'park_day',
+  'street_winter',
+  'library_day',
+  'office_day',
+  'abandoned_factory',
+  'volodka_room',
+  'guild_mainframe',
+  'underground_bunker',
+  'albert_backroom',
+  'library_basement',
+  'factory_basement',
+  'zarema_albert_room',
 ] as const satisfies readonly SceneId[];
 
 export type SelectivePhysicalWetSceneId = (typeof SELECTIVE_PHYSICAL_WET_SCENE_IDS)[number];
@@ -78,7 +93,15 @@ export type WetGlassPhysicalKind =
   | 'cafePane'
   | 'neonFascia'
   | 'streetShopWindow'
-  | 'pierLanternGlass';
+  | 'pierLanternGlass'
+  | 'rooftopSkylightGlass'
+  | 'campfireBottleGlass'
+  | 'winterShopWindow'
+  | 'libraryStainedGlass'
+  | 'officeCubicleGlass'
+  | 'factoryBrokenGlass'
+  | 'roomNightWindow'
+  | 'crtTerminalGlass';
 
 export type WetGlassPhysicalParams = {
   roughness: number;
@@ -136,6 +159,102 @@ export function getWetGlassPhysicalParams(kind: WetGlassPhysicalKind): WetGlassP
       clearcoat: 0.62,
       clearcoatRoughness: 0.2,
       opacity: 0.72,
+    };
+  }
+  if (kind === 'rooftopSkylightGlass') {
+    // Stairwell door pane / HVAC gauge — rain-streaked rooftop glass.
+    return {
+      roughness: 0.14,
+      metalness: 0.16,
+      transmission: 0.12,
+      thickness: 0.2,
+      clearcoat: 0.58,
+      clearcoatRoughness: 0.26,
+      opacity: 0.55,
+    };
+  }
+  if (kind === 'campfireBottleGlass') {
+    // Portwine «777» bottle — dew/ash sheen by campfire (no planar reflector).
+    return {
+      roughness: 0.16,
+      metalness: 0.08,
+      transmission: 0.1,
+      thickness: 0.18,
+      clearcoat: 0.52,
+      clearcoatRoughness: 0.28,
+      opacity: 0.78,
+    };
+  }
+  if (kind === 'winterShopWindow') {
+    // Frosted winter shopfront — colder, lower transmission than rain night glass.
+    return {
+      roughness: 0.22,
+      metalness: 0.14,
+      transmission: 0.08,
+      thickness: 0.24,
+      clearcoat: 0.48,
+      clearcoatRoughness: 0.34,
+      opacity: 0.7,
+    };
+  }
+  if (kind === 'libraryStainedGlass') {
+    // Dusty gothic panes — low transmission, warm clearcoat over emissive color wash.
+    return {
+      roughness: 0.18,
+      metalness: 0.06,
+      transmission: 0.12,
+      thickness: 0.35,
+      clearcoat: 0.55,
+      clearcoatRoughness: 0.3,
+      opacity: 0.82,
+    };
+  }
+  if (kind === 'officeCubicleGlass') {
+    // Sterile IT meeting-room partitions — cool clearcoat, low transmission.
+    return {
+      roughness: 0.06,
+      metalness: 0.12,
+      transmission: 0.22,
+      thickness: 0.18,
+      clearcoat: 0.62,
+      clearcoatRoughness: 0.18,
+      opacity: 0.32,
+    };
+  }
+  if (kind === 'factoryBrokenGlass') {
+    // Rain-streaked industrial panes / floor shards — oily clearcoat, low transmission.
+    return {
+      roughness: 0.16,
+      metalness: 0.22,
+      transmission: 0.1,
+      thickness: 0.14,
+      clearcoat: 0.48,
+      clearcoatRoughness: 0.32,
+      opacity: 0.42,
+    };
+  }
+  if (kind === 'roomNightWindow') {
+    // Apartment night panes — cool city glow with faint wet clearcoat (not outdoor rain).
+    return {
+      roughness: 0.12,
+      metalness: 0.08,
+      transmission: 0.16,
+      thickness: 0.22,
+      clearcoat: 0.55,
+      clearcoatRoughness: 0.24,
+      opacity: 0.78,
+    };
+  }
+  if (kind === 'crtTerminalGlass') {
+    // Guild/bunker CRT face — glossy phosphor glass over emissive screen.
+    return {
+      roughness: 0.1,
+      metalness: 0.18,
+      transmission: 0.08,
+      thickness: 0.12,
+      clearcoat: 0.72,
+      clearcoatRoughness: 0.16,
+      opacity: 0.88,
     };
   }
   // plazaFacade

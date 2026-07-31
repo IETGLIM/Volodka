@@ -13,6 +13,7 @@ import {
   skipStoryTypewriter,
   skipWakeCinematic,
   waitForExplorationInputReady,
+  startNewGameFromMenu,
   waitForMenuReady,
 } from './helpers';
 
@@ -213,8 +214,7 @@ async function enterCorridorViaPhysicalDoor(page: import('@playwright/test').Pag
 test.describe('Act I smoke', () => {
   test('new game → wake → first_reading rewards after prologue', async ({ page }) => {
     await waitForMenuReady(page);
-    await page.getByTestId('menu-new-game').click();
-    await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
+    await startNewGameFromMenu(page);
 
     await skipWakeCinematic(page);
     await advancePastAct1WakePrologue(page);
@@ -226,8 +226,7 @@ test.describe('Act I smoke', () => {
   test('new game → wake → movement + first_reading → corridor door', async ({ page }) => {
     test.setTimeout(180_000);
     await waitForMenuReady(page);
-    await page.getByTestId('menu-new-game').click();
-    await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
+    await startNewGameFromMenu(page);
 
     await skipWakeCinematic(page);
 
@@ -241,8 +240,7 @@ test.describe('Act I smoke', () => {
   test('corridor door → solnysh cutscene → corridor free exploration', async ({ page }) => {
     test.setTimeout(180_000);
     await waitForMenuReady(page);
-    await page.getByTestId('menu-new-game').click();
-    await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
+    await startNewGameFromMenu(page);
 
     await skipWakeCinematic(page);
     await expectAct1FreeExploration(page);
@@ -254,8 +252,7 @@ test.describe('Act I smoke', () => {
 
   test('physical room_door → corridor cutscene → corridor free exploration', async ({ page }) => {
     await waitForMenuReady(page);
-    await page.getByTestId('menu-new-game').click();
-    await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
+    await startNewGameFromMenu(page);
 
     await skipWakeCinematic(page);
     await expectAct1FreeExploration(page);
@@ -266,8 +263,7 @@ test.describe('Act I smoke', () => {
 
   test('corridor → kitchen door → home_evening free exploration', async ({ page }) => {
     await waitForMenuReady(page);
-    await page.getByTestId('menu-new-game').click();
-    await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
+    await startNewGameFromMenu(page);
 
     await skipWakeCinematic(page);
     await expectAct1FreeExploration(page);
@@ -331,8 +327,7 @@ test.describe('Act I smoke', () => {
   test('corridor → street door → street_bench_view free exploration', async ({ page }) => {
     test.setTimeout(180_000);
     await waitForMenuReady(page);
-    await page.getByTestId('menu-new-game').click();
-    await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
+    await startNewGameFromMenu(page);
 
     await skipWakeCinematic(page);
     await expectAct1FreeExploration(page);

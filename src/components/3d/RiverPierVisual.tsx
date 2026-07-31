@@ -54,8 +54,9 @@ export function RiverPierVisual({ sceneId = 'river_pier' }: RiverPierVisualProps
   const coarsePointer = useIsMobileVisual();
   const useGltfDressing = allowsGlbAssetRendering(preset.environmentRenderMode);
   const useAuthoredBackdrop = !preset.visualLite && useGltfDressing;
-  // Medium+ (hybrid/glb): prop dressing + backdrop own the dock; hide procedural edge clutter.
-  const hideDockClutter = useGltfDressing;
+  // Pier GLB is backdrop_dressing only (SceneBackdropShell far over water). Prop dressing is
+  // sparse overlay — never strip railing/pilings/boat/reeds OR barrel/crate seats/wine/guitar
+  // or the dock goes empty / flame floats on High/Ultra (same empty-space bug as factory).
   const usePhysicalWater = allowsHeavyGfxFeature(selectedPreset, 'meshPhysicalWet', {
     coarsePointer,
   });
@@ -192,41 +193,34 @@ export function RiverPierVisual({ sceneId = 'river_pier' }: RiverPierVisualProps
         </mesh>
       ))}
 
-      {/* ── Pier railing along the water edge ── */}
-      {!hideDockClutter ? <PierRailing /> : null}
+      {/* ── Pier railing along the water edge (procedural — backdrop GLB does not own the deck) ── */}
+      <PierRailing />
 
       {/* ── Pilings under the deck edge ── */}
-      {!hideDockClutter
-        ? [-10, -6, -2, 2, 6, 10].map((x) => (
+      {[-10, -6, -2, 2, 6, 10].map((x) => (
         <mesh key={`piling-${x}`} position={[x, -0.5, -9.2]} geometry={getSharedCylinderGeometry(0.14, 0.16, 1.6, 7)}>
           <meshStandardMaterial color="#2c2419" roughness={0.95} />
         </mesh>
-      ))
-        : null}
+      ))}
 
-      {/* ── Barrel fire — keep animated flame; barrel mesh owned by prop dressing ── */}
+      {/* ── Barrel fire — procedural barrel stays; prop dressing is sparse overlay ── */}
       <group position={[0, 0, -2]}>
-        {!useGltfDressing ? (
         <mesh position={[0, 0.5, 0]} castShadow geometry={getSharedCylinderGeometry(0.34, 0.32, 1.0, 12)}>
           <meshStandardMaterial color="#3a3026" metalness={0.55} roughness={0.6} />
         </mesh>
-        ) : null}
         {/* Glow holes punched in the barrel */}
-        {!useGltfDressing
-          ? [0.4, 1.6, 2.9, 4.2].map((a) => (
+        {[0.4, 1.6, 2.9, 4.2].map((a) => (
           <mesh key={`hole-${a}`} position={[Math.cos(a) * 0.33, 0.45, Math.sin(a) * 0.33]} rotation={[0, -a + Math.PI / 2, 0]} geometry={getSharedCircleGeometry(0.045, 8)}>
             <meshStandardMaterial color="#200a00" emissive="#ff7722" emissiveIntensity={2.2} toneMapped={false} />
           </mesh>
-        ))
-          : null}
+        ))}
         <mesh ref={fireRef} position={[0, 1.15, 0]} geometry={getSharedConeGeometry(0.22, 0.5, 8)}>
           <meshStandardMaterial color="#ff6622" emissive="#ff4400" emissiveIntensity={2.6} transparent opacity={0.85} />
         </mesh>
       </group>
 
-      {/* ── Crate seats around the fire ── */}
-      {!useGltfDressing
-        ? [
+      {/* ── Crate seats around the fire (prop dressing has 1 bench — keep the ring) ── */}
+      {[
         { pos: [-1.6, -1.2] as const, rot: 0.3 },
         { pos: [1.7, -1.4] as const, rot: -0.5 },
         { pos: [0.4, -3.6] as const, rot: 1.1 },
@@ -234,11 +228,9 @@ export function RiverPierVisual({ sceneId = 'river_pier' }: RiverPierVisualProps
         <mesh key={`crate-${i}`} position={[crate.pos[0], 0.25, crate.pos[1]]} rotation={[0, crate.rot, 0]} castShadow geometry={getSharedBoxGeometry(0.65, 0.5, 0.65)}>
           <meshStandardMaterial color="#54422c" roughness={0.9} />
         </mesh>
-      ))
-        : null}
+      ))}
 
       {/* ── Port wine: bottles + tin cups on a crate-table ── */}
-      {!useGltfDressing ? (
       <group position={[-0.7, 0, -2.9]}>
         <mesh position={[0, 0.2, 0]} castShadow geometry={getSharedBoxGeometry(0.55, 0.4, 0.45)}>
           <meshStandardMaterial color="#4a3a26" roughness={0.9} />
@@ -281,7 +273,6 @@ export function RiverPierVisual({ sceneId = 'river_pier' }: RiverPierVisualProps
           <meshStandardMaterial color="#8a8d90" metalness={0.8} roughness={0.35} />
         </mesh>
       </group>
-      ) : null}
 
       {/* Selective wet lantern glass — few panes on string-light poles (high/ultra). */}
       {useWetGlass
@@ -316,8 +307,7 @@ export function RiverPierVisual({ sceneId = 'river_pier' }: RiverPierVisualProps
         ))
         : null}
 
-      {/* ── Guitar against a crate — ScenePropDressing owns High/Ultra ── */}
-      {!useGltfDressing ? (
+      {/* ── Guitar against a crate (prop dressing places another at a different spot) ── */}
       <group position={[2.4, 0, -2.6]} rotation={[0, -0.7, 0]}>
         <mesh position={[0, 0.42, 0]} rotation={[0.18, 0, -0.3]} castShadow geometry={getSharedCylinderGeometry(0.26, 0.3, 0.09, 12)}>
           <meshStandardMaterial color="#7a4f24" roughness={0.55} />
@@ -326,30 +316,25 @@ export function RiverPierVisual({ sceneId = 'river_pier' }: RiverPierVisualProps
           <meshStandardMaterial color="#3c2a16" roughness={0.6} />
         </mesh>
       </group>
-      ) : null}
 
-      {/* ── Old overturned boat on the bank — prop dressing owns tyre/crate clutter ── */}
-      {!hideDockClutter ? (
+      {/* ── Old overturned boat on the bank — prop dressing owns tyre/crate overlay only ── */}
       <group position={[-6, 0, 3]} rotation={[0, 0.4, Math.PI]}>
         <mesh position={[0, -0.4, 0]} castShadow>
           <cylinderGeometry args={[0.5, 0.7, 2.8, 7, 1, false, 0, Math.PI]} />
           <meshStandardMaterial color="#3f4a50" roughness={0.85} side={THREE.DoubleSide} />
         </mesh>
       </group>
-      ) : null}
 
       {/* ── Fishing rod leaning on the railing ── */}
-      {!hideDockClutter ? (
       <mesh position={[4.5, 0.7, -8.2]} rotation={[0.5, 0, 0.15]} castShadow geometry={getSharedCylinderGeometry(0.012, 0.02, 2.4, 5)}>
         <meshStandardMaterial color="#5a4a34" roughness={0.8} />
       </mesh>
-      ) : null}
 
       {/* ── String lights between two poles ── */}
       <StringLights />
 
       {/* ── Reeds along the bank edges ── */}
-      {!hideDockClutter ? <Reeds /> : null}
+      <Reeds />
 
       {/* ── Scene-level ambient lighting ── */}
       {/* Moonlight — cold blue overhead illumination for the pier */}

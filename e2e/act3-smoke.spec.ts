@@ -9,6 +9,7 @@ import {
   settleAfterWake,
   skipWakeCinematic,
   waitForDialogue,
+  startNewGameFromMenu,
   waitForMenuReady,
   waitForNarrativeText,
   waitForStoryChoices,
@@ -76,8 +77,7 @@ async function interactParkInscriptionToZaremaWarning(page: import('@playwright/
 test.describe('Act III smoke', () => {
   test('bootstrap act3 park hub → closed overlay + movement', async ({ page }) => {
     await waitForMenuReady(page);
-    await page.getByTestId('menu-new-game').click();
-    await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
+    await startNewGameFromMenu(page);
 
     await skipWakeCinematic(page);
     await settleAfterWake(page);
@@ -90,8 +90,7 @@ test.describe('Act III smoke', () => {
 
   test('park hub → park_inscription_stone → act3_zarema_warning beat', async ({ page }) => {
     await waitForMenuReady(page);
-    await page.getByTestId('menu-new-game').click();
-    await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
+    await startNewGameFromMenu(page);
 
     await skipWakeCinematic(page);
     await settleAfterWake(page);
@@ -109,8 +108,7 @@ test.describe('Act III smoke', () => {
 
   test('bootstrap act3 library hub → closed overlay exploration', async ({ page }) => {
     await waitForMenuReady(page);
-    await page.getByTestId('menu-new-game').click();
-    await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
+    await startNewGameFromMenu(page);
 
     await skipWakeCinematic(page);
     await settleAfterWake(page);

@@ -19,13 +19,18 @@ describe('narrative registry parity (static vs runtime)', () => {
     await loadAllNarrativePacks();
 
     const runtimeIds = new Set(Object.keys(getStoryNodesCache()));
-    // Expanded story nodes (act*_exp_*) are optional satellite content not yet
-    // registered in the narrative pack registry — skip them in parity check.
-    const missing = Object.keys(STORY_NODES)
-      .filter((id) => !id.includes('_exp_'))
-      .filter((id) => !runtimeIds.has(id));
+    const missing = Object.keys(STORY_NODES).filter((id) => !runtimeIds.has(id));
 
     expect(missing, `runtime registry missing ${missing.length} static node(s)`).toEqual([]);
+  });
+
+  it('act expanded satellites resolve via ensureStoryNode (act3–7)', async () => {
+    const { ensureStoryNode, hasStoryNode, loadBootstrapNarrativePacks } = await import(
+      './narrativePackRegistry'
+    );
+    await loadBootstrapNarrativePacks();
+    await ensureStoryNode('act7_exp_epilogue_vision');
+    expect(hasStoryNode('act7_exp_epilogue_vision')).toBe(true);
   });
 
   it('resolves act1 satellite nodes referenced from act1 spine', async () => {

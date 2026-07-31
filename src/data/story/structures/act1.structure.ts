@@ -177,7 +177,7 @@ export const ACT1_STRUCTURE: Record<string, StoryNodeStructure> = {
         "next": "act7_legacy_walk",
         "condition": {
           "flag": "final_poem_published",
-          "missingFlag": "volodka_legacy_complete"
+          "missingFlag": "act7_legacy_walk_done"
         }
       },
       {
@@ -186,6 +186,36 @@ export const ACT1_STRUCTURE: Record<string, StoryNodeStructure> = {
         "condition": {
           "flag": "maria_truth_started",
           "missingFlag": "found_maria_records"
+        }
+      },
+      {
+        "text": "Письма на столе — от тех, кто остался",
+        "next": "epilogue_letters_start",
+        "condition": {
+          "flag": "volodka_legacy_complete",
+          "missingFlag": "epilogue_letters_started"
+        },
+        "effects": [
+          {
+            "type": "triggerQuest",
+            "questId": "epilogue_letters"
+          }
+        ]
+      },
+      {
+        "text": "Тетрадь с письмами — дочитать",
+        "next": "epilogue_letters_done",
+        "condition": {
+          "flag": "epilogue_letters_started",
+          "missingFlag": "epilogue_letters_done"
+        }
+      },
+      {
+        "text": "Пакет «Предатель» — Акт VI ещё на столе",
+        "next": "act6_bridge",
+        "condition": {
+          "flag": "act6_bridge_open",
+          "missingFlag": "act6_bridge_resolved"
         }
       }
     ]
@@ -437,6 +467,14 @@ export const ACT1_STRUCTURE: Record<string, StoryNodeStructure> = {
             "flagValue": true
           }
         ]
+      },
+      {
+        "text": "Сирены за спиной — бежать с компроматом",
+        "next": "act6_heist_success",
+        "condition": {
+          "flag": "mainframe_hacked",
+          "missingFlag": "data_heist_completed"
+        }
       }
     ]
   },
@@ -859,11 +897,43 @@ export const ACT1_STRUCTURE: Record<string, StoryNodeStructure> = {
         }
       },
       {
+        "text": "Чип с компроматом — слишком лёгкий побег",
+        "next": "act6_escape_success",
+        "condition": {
+          "flag": "data_heist_completed",
+          "missingFlag": "nadzor_truth_revealed"
+        }
+      },
+      {
         "text": "Люк в бункер сопротивления",
         "next": "resistance_story_intro",
         "condition": {
           "flag": "zeka_trusted",
           "missingFlag": "resistance_bunker_found"
+        }
+      },
+      {
+        "text": "Прощальная прогулка — ночная улица",
+        "next": "act7_final_walk",
+        "condition": {
+          "flag": "act7_goodbye_zarema_done",
+          "missingFlag": "act7_final_walk_done"
+        }
+      },
+      {
+        "text": "Виктория ждёт — кто ты теперь?",
+        "next": "act7_maria_future",
+        "condition": {
+          "flag": "act7_final_walk_done",
+          "missingFlag": "volodka_future_chosen"
+        }
+      },
+      {
+        "text": "Виктория в наушнике — предупреждение о фабрике",
+        "next": "act6_maria_warning",
+        "condition": {
+          "flag": "act6_maria_warning_open",
+          "missingFlag": "act6_maria_warning_resolved"
         }
       }
     ]
@@ -1750,7 +1820,7 @@ export const ACT1_STRUCTURE: Record<string, StoryNodeStructure> = {
     "choices": [
       {
         "text": "Хорошего дня, коллеги.",
-        "next": null,
+        "next": "explore_mode",
         "effects": [
           { "type": "setFlag", "flag": "sync_ended", "flagValue": true }
         ]

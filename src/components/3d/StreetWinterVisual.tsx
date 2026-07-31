@@ -7,7 +7,13 @@ import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
 import { EnvironmentDetail, PropDistanceGate } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { createStreetWinterColdSkyTexture } from '@/engine/graphics/proceduralSkyTextures';
-import { getWinterIceSheenSettings } from '@/engine/graphics/wetStreetScenes';
+import {
+  allowsSelectiveMeshPhysicalWet,
+  getWetGlassPhysicalParams,
+  getWinterIceSheenSettings,
+} from '@/engine/graphics/wetStreetScenes';
+import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
+import { useIsMobileVisual } from '@/hooks/use-mobile';
 import { WetStreetGround } from './WetStreetGround';
 
 interface StreetWinterVisualProps {
@@ -19,6 +25,12 @@ export function StreetWinterVisual({ livePlayerPositionRef }: StreetWinterVisual
   const groundTexture = useCachedCanvasTexture('street_winter:ground', createWinterGroundTexture);
   const envProfile = useMemo(() => getEnvironmentLodProfile('street_winter'), []);
   const iceSheen = useMemo(() => getWinterIceSheenSettings(), []);
+  const { selectedPreset } = useGraphicsQuality();
+  const coarsePointer = useIsMobileVisual();
+  const useFrostGlass = allowsSelectiveMeshPhysicalWet('street_winter', selectedPreset, {
+    coarsePointer,
+  });
+  const frostGlass = useMemo(() => getWetGlassPhysicalParams('winterShopWindow'), []);
   const sidewalkRoughness = Math.max(0.14, iceSheen.dryRoughness - iceSheen.sheenBoost);
   const sidewalkMetalness = Math.min(0.62, iceSheen.dryMetalness + iceSheen.sheenBoost);
   const snowOverlayRoughness = Math.min(0.72, iceSheen.dryRoughness + 0.12);
@@ -72,11 +84,11 @@ export function StreetWinterVisual({ livePlayerPositionRef }: StreetWinterVisual
       {/* ═══════════════════════════════════════════════ */}
 
       {/* Building 1 - left side */}
-      <WinterBuilding position={[-9, 0, -8]} width={6} height={12} depth={5} />
+      <WinterBuilding position={[-9, 0, -8]} width={6} height={12} depth={5} useFrostGlass={useFrostGlass} frostGlass={frostGlass} />
       {/* Building 2 - left far */}
       <WinterBuilding position={[-10, 0, 4]} width={5} height={10} depth={5} />
       {/* Building 3 - right side */}
-      <WinterBuilding position={[9, 0, -5]} width={7} height={14} depth={5} />
+      <WinterBuilding position={[9, 0, -5]} width={7} height={14} depth={5} useFrostGlass={useFrostGlass} frostGlass={frostGlass} />
       {/* Building 4 - right far */}
       <WinterBuilding position={[10, 0, 6]} width={6} height={11} depth={5} />
       {/* Building 5 - back */}
@@ -117,16 +129,31 @@ export function StreetWinterVisual({ livePlayerPositionRef }: StreetWinterVisual
       ].map((pos, i) => (
         <mesh key={i} rotation-x={-Math.PI / 2} position={pos as [number, number, number]}>
           <circleGeometry args={[0.5 + i * 0.15, 12]} />
-          <meshStandardMaterial
-            color="#8a9ab0"
-            metalness={icePuddleMetalness}
-            roughness={icePuddleRoughness}
-            transparent
-            opacity={0.5}
-            polygonOffset
-            polygonOffsetFactor={1}
-            polygonOffsetUnits={1}
-          />
+          {useFrostGlass && i === 0 ? (
+            <meshPhysicalMaterial
+              color="#8a9ab0"
+              metalness={icePuddleMetalness}
+              roughness={icePuddleRoughness}
+              clearcoat={0.55}
+              clearcoatRoughness={0.2}
+              transparent
+              opacity={0.55}
+              polygonOffset
+              polygonOffsetFactor={1}
+              polygonOffsetUnits={1}
+            />
+          ) : (
+            <meshStandardMaterial
+              color="#8a9ab0"
+              metalness={icePuddleMetalness}
+              roughness={icePuddleRoughness}
+              transparent
+              opacity={0.5}
+              polygonOffset
+              polygonOffsetFactor={1}
+              polygonOffsetUnits={1}
+            />
+          )}
         </mesh>
       ))}
 
@@ -314,11 +341,20 @@ function WinterClutterGate({
 }
 
 /** Snow-covered building */
-function WinterBuilding({ position, width, height, depth }: {
+function WinterBuilding({
+  position,
+  width,
+  height,
+  depth,
+  useFrostGlass = false,
+  frostGlass,
+}: {
   position: [number, number, number];
   width: number;
   height: number;
   depth: number;
+  useFrostGlass?: boolean;
+  frostGlass?: ReturnType<typeof getWetGlassPhysicalParams>;
 }) {
   return (
     <group position={position}>
@@ -337,20 +373,37 @@ function WinterBuilding({ position, width, height, depth }: {
         <boxGeometry args={[width + 0.1, 0.08, 0.15]} />
         <meshStandardMaterial color="#d8e0f0" roughness={0.95} />
       </mesh>
-      {/* Windows with warm glow */}
+      {/* Windows with warm glow — ground-floor frost glass when quality allows */}
       {Array.from({ length: Math.floor(height / 3) }).map((_, row) => {
         const windowCount = Math.floor(width / 2);
         return Array.from({ length: windowCount }).map((_, col) => {
           const wx = (col - (windowCount - 1) / 2) * 2;
           const wy = (row + 1) * 3;
+          const frostPane = useFrostGlass && frostGlass && row === 0 && col === 0;
           return (
             <mesh key={`${row}-${col}`} position={[wx, wy, depth / 2 + 0.01]}>
               <planeGeometry args={[0.8, 1.0]} />
-              <meshStandardMaterial
-                color="#000000"
-                emissive="#ffaa44"
-                emissiveIntensity={((row * 7 + col * 13) % 10) > 3 ? 0.8 : 0.1}
-              />
+              {frostPane ? (
+                <meshPhysicalMaterial
+                  color="#1a2030"
+                  emissive="#ffaa44"
+                  emissiveIntensity={0.35}
+                  roughness={frostGlass.roughness}
+                  metalness={frostGlass.metalness}
+                  transmission={frostGlass.transmission}
+                  thickness={frostGlass.thickness}
+                  clearcoat={frostGlass.clearcoat}
+                  clearcoatRoughness={frostGlass.clearcoatRoughness}
+                  transparent
+                  opacity={frostGlass.opacity}
+                />
+              ) : (
+                <meshStandardMaterial
+                  color="#000000"
+                  emissive="#ffaa44"
+                  emissiveIntensity={((row * 7 + col * 13) % 10) > 3 ? 0.8 : 0.1}
+                />
+              )}
             </mesh>
           );
         });

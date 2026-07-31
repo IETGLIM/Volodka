@@ -75,7 +75,13 @@ const PROFILES: Partial<Record<SceneId, SceneVisualProfile>> = {
   },
   cafe_evening: { ...HERO_PROFILE, enhancedAmbientOcclusion: true, bloomIntensityScale: 1.08 },
   office_day: { ...HERO_PROFILE, enhancedAmbientOcclusion: true, bloomIntensityScale: 1.04 },
-  park_day: { ...HERO_PROFILE, enhancedAmbientOcclusion: false, bloomIntensityScale: 1.06 },
+  park_day: {
+    ...HERO_PROFILE,
+    enhancedAmbientOcclusion: true,
+    aoIntensity: 2.2,
+    aoRadius: 0.55,
+    bloomIntensityScale: 1.08,
+  },
   library_day: { ...HERO_PROFILE, enhancedAmbientOcclusion: true, bloomIntensityScale: 1.06, aoIntensity: 2.5, aoRadius: 0.52 },
   rooftop_edge: {
     ...STANDARD_PROFILE,

@@ -1,6 +1,6 @@
 /* ─── Albert Backroom: café storage / hush room ───
  * Not CaféVisual — crates, warm desk lamp, magenta neon drip.
- * cafe GLB shell + prop dressing replace procedural crate clutter at high quality.
+ * Procedural envelope owns walkable space; Kenney cafe GLB is blocked exterior.
  */
 
 import { useMemo, useRef, type MutableRefObject } from 'react';
@@ -13,11 +13,17 @@ import {
   getSharedPlaneGeometry,
 } from '@/engine/three/moduleGeometryRegistry';
 import { getSharedStandardMaterial } from '@/engine/three/moduleMaterialRegistry';
-import { getIndustrialDampFloorSettings } from '@/engine/graphics/wetStreetScenes';
+import {
+  allowsSelectiveMeshPhysicalWet,
+  getIndustrialDampFloorSettings,
+  getWetGlassPhysicalParams,
+  getWetPuddlePhysicalParams,
+} from '@/engine/graphics/wetStreetScenes';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
+import { useIsMobileVisual } from '@/hooks/use-mobile';
 import { INTERIOR_SHELL_MODELS } from '@/config/interiorShellModels';
-import { getInteriorShellScale } from '@/config/interiorShellScale';
+import { getInteriorShellScale, isWalkableInteriorShellAllowed } from '@/config/interiorShellScale';
 import { AuthoredInteriorShell } from './AuthoredInteriorShell';
 
 interface AlbertBackroomVisualProps {
@@ -51,10 +57,18 @@ const matTerminal = getSharedStandardMaterial({
 });
 
 export function AlbertBackroomVisual(_props: AlbertBackroomVisualProps) {
-  const { preset } = useGraphicsQuality();
-  const useAuthoredShell = !preset.visualLite;
+  const { preset, selectedPreset } = useGraphicsQuality();
+  const coarsePointer = useIsMobileVisual();
+  const useAuthoredShell =
+    !preset.visualLite && isWalkableInteriorShellAllowed('cafe');
   const useGltfDressing = allowsGlbAssetRendering(preset.environmentRenderMode);
+  // Shell is Kenney exterior (blocked) — prop dressing overlays, does not replace crates/shelves.
   const hideProceduralClutter = useAuthoredShell && useGltfDressing;
+  const usePhysicalCrt = allowsSelectiveMeshPhysicalWet('albert_backroom', selectedPreset, {
+    coarsePointer,
+  });
+  const crtGlass = useMemo(() => getWetGlassPhysicalParams('crtTerminalGlass'), []);
+  const oilPuddle = useMemo(() => getWetPuddlePhysicalParams(0.4), []);
   const rootRef = useRef<THREE.Group>(null);
   const neonRef = useRef<THREE.Mesh>(null);
   const lampRef = useRef<THREE.Mesh>(null);
@@ -123,16 +137,31 @@ export function AlbertBackroomVisual(_props: AlbertBackroomVisualProps) {
       </mesh>
       {damp && (
         <mesh rotation-x={-Math.PI / 2} position={[0.8, 0.008, 1.2]} geometry={getSharedCircleGeometry(0.9, 16)}>
-          <meshStandardMaterial
-            color="#1a1420"
-            metalness={damp.oilMetalness}
-            roughness={damp.oilRoughness}
-            transparent
-            opacity={0.32}
-            polygonOffset
-            polygonOffsetFactor={1}
-            polygonOffsetUnits={1}
-          />
+          {usePhysicalCrt ? (
+            <meshPhysicalMaterial
+              color="#1a1420"
+              metalness={Math.max(damp.oilMetalness, oilPuddle.metalness + 0.08)}
+              roughness={Math.min(damp.oilRoughness, oilPuddle.roughness + 0.06)}
+              clearcoat={oilPuddle.clearcoat * 0.85}
+              clearcoatRoughness={oilPuddle.clearcoatRoughness}
+              transparent
+              opacity={Math.min(0.45, Math.max(0.32, oilPuddle.opacity * 0.55))}
+              polygonOffset
+              polygonOffsetFactor={1}
+              polygonOffsetUnits={1}
+            />
+          ) : (
+            <meshStandardMaterial
+              color="#1a1420"
+              metalness={damp.oilMetalness}
+              roughness={damp.oilRoughness}
+              transparent
+              opacity={0.32}
+              polygonOffset
+              polygonOffsetFactor={1}
+              polygonOffsetUnits={1}
+            />
+          )}
         </mesh>
       )}
 
@@ -164,12 +193,30 @@ export function AlbertBackroomVisual(_props: AlbertBackroomVisualProps) {
         geometry={getSharedCylinderGeometry(0.08, 0.12, 0.1, 12)}
         material={matLamp}
       />
-      <mesh
-        ref={termRef}
-        position={[-1.5, 1.05, -1.15]}
-        geometry={getSharedBoxGeometry(0.35, 0.22, 0.03)}
-        material={matTerminal}
-      />
+      {usePhysicalCrt ? (
+        <mesh ref={termRef} position={[-1.5, 1.05, -1.15]} geometry={getSharedBoxGeometry(0.35, 0.22, 0.03)}>
+          <meshPhysicalMaterial
+            color="#120818"
+            emissive="#aa66ff"
+            emissiveIntensity={0.9}
+            roughness={crtGlass.roughness}
+            metalness={crtGlass.metalness}
+            transmission={crtGlass.transmission}
+            thickness={crtGlass.thickness}
+            clearcoat={crtGlass.clearcoat}
+            clearcoatRoughness={crtGlass.clearcoatRoughness}
+            transparent
+            opacity={crtGlass.opacity}
+          />
+        </mesh>
+      ) : (
+        <mesh
+          ref={termRef}
+          position={[-1.5, 1.05, -1.15]}
+          geometry={getSharedBoxGeometry(0.35, 0.22, 0.03)}
+          material={matTerminal}
+        />
+      )}
 
       <mesh
         ref={neonRef}

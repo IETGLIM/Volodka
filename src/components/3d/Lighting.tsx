@@ -333,6 +333,7 @@ const SCENE_ACCENT_LIGHTS: Record<string, AccentLight[]> = {
     { position: [2, 4, -1], color: '#ffdd88', intensity: 1.6, distance: 14 },
     { position: [-3, 3.5, 2], color: '#ffcc77', intensity: 1.2, distance: 12 },
     { position: [0, 2.5, -4], color: '#eebb66', intensity: 0.9, distance: 10 },
+    { position: [-1.5, 1.8, 3], color: '#889988', intensity: 0.45, distance: 9, animated: 'cold_pulse' }, // canopy cool fill
   ],
   guild_mainframe: [
     { position: [-3, 2, -2], color: '#22aadd', intensity: 2.2, distance: 10, animated: 'cold_pulse' },
@@ -353,9 +354,10 @@ const SCENE_ACCENT_LIGHTS: Record<string, AccentLight[]> = {
     { position: [2.3, 0.2, 1.0], color: '#334488', intensity: 0.3, distance: 4 },    // floor-level cold bounce from window wall
   ],
   factory_basement: [
-    { position: [0, 2.4, -5], color: '#22ff88', intensity: 2.0, distance: 10 },
+    { position: [0, 2.4, -5], color: '#22ff88', intensity: 2.0, distance: 10, shadowCaster: true }, // Zarya-M practical
     { position: [2, 2, -2], color: '#44ffaa', intensity: 1.2, distance: 7 },
     { position: [-2.5, 2.1, -3.5], color: '#33cc88', intensity: 0.85, distance: 6, animated: 'cold_pulse' },
+    { position: [0, 0.4, -3.2], color: '#116644', intensity: 0.4, distance: 4 }, // floor bounce under monolith
   ],
   rooftop_edge: [
     { position: [-3, 3, 0], color: '#ff8844', intensity: 1.8, distance: 14, shadowCaster: true }, // sunset warm + ground contact

@@ -23,19 +23,20 @@ export interface SplitScenePropDressing {
 /** Authored GLTF props placed in scene visuals (see propModelRegistry). */
 export const SCENE_PROP_DRESSING: Partial<Record<SceneId, readonly ScenePropPlacement[]>> = {
   volodka_room: [
-    // Keep apartment-scale openings here. Poly Haven roller shutters have a
-    // storefront footprint and made the 1.75m player read like a dwarf.
-    { propModelId: 'kenney_door', position: [0.5, 0, 3.43], rotationY: Math.PI, loadTier: 'deferred' },
-    { propModelId: 'kenney_window', position: [2.43, 1.05, -2.0], rotationY: -Math.PI / 2, loadTier: 'deferred' },
-    { propModelId: 'kenney_window', position: [-1.5, 1.05, -3.37], loadTier: 'deferred' },
+    // Door + windows stay procedural in VolodkaRoomVisual (animated door + city-glow panes).
+    // Do not place kenney openings here — they z-fight the always-on procedural meshes and
+    // were deferred, so High briefly (or permanently under load) read as blank openings.
     { propModelId: 'polyhaven_industrial_lamp', position: [0.15, 2.55, -1.25], rotationY: 0.2, loadTier: 'deferred' },
     { propModelId: 'polyhaven_barrel', position: [2.12, 0, 2.12], rotationY: -0.2, loadTier: 'deferred' },
     { propModelId: 'polyhaven_cardboard_box', position: [-1.55, 0, 2.78], rotationY: -0.35, loadTier: 'deferred' },
     { propModelId: 'polyhaven_cardboard_box', position: [-2.0, 0.5, 2.84], rotationY: 0.25, loadTier: 'deferred' },
     { propModelId: 'polyhaven_metal_trash_can', position: [1.05, 0, -2.85], rotationY: 0.4, loadTier: 'deferred' },
     { propModelId: 'polyhaven_trashbag', position: [1.45, 0, -2.95], rotationY: -0.15, loadTier: 'deferred' },
-    { propModelId: 'ai3dgen_poetic_compiler', position: [-0.35, 0.82, -2.38], rotationY: 0.25, loadTier: 'deferred' },
-    { propModelId: 'ai3dgen_neural_filter', position: [0.95, 0.82, -2.55], rotationY: -0.35, loadTier: 'deferred' },
+    // Desk gadgets live on ThinMonitors / AuthoredVolodkaRoomDressing (cassette). Do NOT place
+    // ai3dgen_poetic_compiler / neural_filter at y≈0.82 z≈-2.4 — they z-fight the monitor trio
+    // (bedroom shell is exterior_building → AuthoredVolodkaWorkstation never mounts).
+    { propModelId: 'ai3dgen_poetic_compiler', position: [1.85, 0.52, 2.0], rotationY: -0.55, loadTier: 'deferred' },
+    { propModelId: 'ai3dgen_neural_filter', position: [-2.15, 1.05, -0.35], rotationY: Math.PI / 2, loadTier: 'deferred' },
     { propModelId: 'ai3dgen_digital_amulet', position: [-2.05, 1.55, 0.05], rotationY: Math.PI / 2, loadTier: 'deferred' },
   ],
   volodka_corridor: [
@@ -45,14 +46,14 @@ export const SCENE_PROP_DRESSING: Partial<Record<SceneId, readonly ScenePropPlac
     { propModelId: 'polyhaven_trashbag', position: [1.75, 0, 5.55], rotationY: -0.45, loadTier: 'deferred' },
   ],
   office_day: [
-    { propModelId: 'polyhaven_painted_wooden_table', position: [-2.0, 0, -1.5], rotationY: Math.PI / 2 },
-    { propModelId: 'kenney_terminal', position: [-1.2, 0.78, -1.2], offset: [0, -0.28, 0] },
+    // Desk grid owns tables/terminals (Kenney office shell blocked → full 12-desk procedural).
+    // Do not stack painted table + kenney_terminal near [-1.5,-1.0] — doubles emissive desks.
     { propModelId: 'polyhaven_wooden_bookshelf_worn', position: [3.5, 0, -2.0], rotationY: -Math.PI / 2 },
     { propModelId: 'ai3dgen_server_fragment', position: [-4.0, 0.15, -4.5] },
-    { propModelId: 'kenney_city_chair', position: [-2.0, 0, -0.5], rotationY: Math.PI },
+    { propModelId: 'kenney_city_chair', position: [5.4, 0, 3.4], rotationY: Math.PI * 0.75 },
     { propModelId: 'polyhaven_shutter_window', position: [-3.8, 1.25, -4.85], rotationY: Math.PI, loadTier: 'deferred' },
-    { propModelId: 'polyhaven_industrial_lamp', position: [-2.0, 2.55, -1.4], rotationY: -0.2, loadTier: 'deferred' },
-    { propModelId: 'polyhaven_desk_lamp_arm', position: [-2.45, 0.78, -1.35], rotationY: 0.45, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_industrial_lamp', position: [0.2, 2.55, 4.2], rotationY: -0.2, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_desk_lamp_arm', position: [5.0, 0.78, 4.0], rotationY: 0.45, loadTier: 'deferred' },
     { propModelId: 'polyhaven_painted_wooden_cabinet', position: [3.25, 0, 1.8], rotationY: -Math.PI / 2, loadTier: 'deferred' },
     { propModelId: 'polyhaven_metal_trash_can', position: [2.35, 0, -2.85], rotationY: 0.2, loadTier: 'deferred' },
     { propModelId: 'polyhaven_cardboard_box', position: [3.8, 0, -3.1], rotationY: -0.25, loadTier: 'deferred' },
@@ -107,12 +108,10 @@ export const SCENE_PROP_DRESSING: Partial<Record<SceneId, readonly ScenePropPlac
     { propModelId: 'kenney_city_guitar', position: [-1.2, 0.05, -2.0], rotationY: 0.6 },
   ],
   river_pier: [
+    // Overlay only — do not stack barrel/crate/table on procedural fire ring + wine crate.
     { propModelId: 'polyhaven_bench', position: [3.0, 0, -1.0], rotationY: -Math.PI / 3 },
     { propModelId: 'kenney_city_guitar', position: [-2.5, 0.05, 0.5], rotationY: -0.4 },
     { propModelId: 'kenney_city_bottle', position: [3.2, 0.45, -0.8] },
-    { propModelId: 'polyhaven_wooden_crate', position: [-0.7, 0, -2.9], rotationY: 0.25, loadTier: 'deferred' },
-    { propModelId: 'polyhaven_barrel', position: [0, 0, -2.0], rotationY: 0.12, loadTier: 'deferred' },
-    { propModelId: 'polyhaven_painted_wooden_table', position: [-0.65, 0, -2.85], rotationY: 0.15, loadTier: 'deferred' },
     { propModelId: 'polyhaven_street_lamp', position: [-8.5, 0, 1.5], rotationY: 0.18, loadTier: 'deferred' },
     { propModelId: 'polyhaven_street_lamp_alt', position: [8.2, 0, 0.8], rotationY: -0.22, loadTier: 'deferred' },
     { propModelId: 'polyhaven_manhole_cover', position: [2.0, 0.02, 1.2], rotationY: 0.35, loadTier: 'deferred' },
@@ -122,12 +121,11 @@ export const SCENE_PROP_DRESSING: Partial<Record<SceneId, readonly ScenePropPlac
     { propModelId: 'polyhaven_cassette_player', position: [2.6, 0.42, -0.6], rotationY: -0.5, loadTier: 'deferred' },
   ],
   chk_forest_zorge: [
+    // Overlay only — skip crate/barrel at exact procedural wine-crate + guitar lean spots.
     { propModelId: 'kenney_city_campfire', position: [0, 0, -2.0] },
     { propModelId: 'polyhaven_bench', position: [2.5, 0, -1.5], rotationY: -Math.PI / 2 },
     { propModelId: 'kenney_city_guitar', position: [-2.0, 0.05, -1.0], rotationY: 0.3 },
-    { propModelId: 'polyhaven_wooden_crate', position: [1.8, 0, 1.6], rotationY: -0.35 },
     { propModelId: 'kenney_city_bottle', position: [1.65, 0.48, 1.55] },
-    { propModelId: 'polyhaven_barrel', position: [-1.6, 0, -1.2], rotationY: 0.45, loadTier: 'deferred' },
     { propModelId: 'polyhaven_trashbag', position: [2.8, 0, 1.2], rotationY: 0.2, loadTier: 'deferred' },
   ],
   zarema_albert_room: [

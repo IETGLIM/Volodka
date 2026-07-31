@@ -17,8 +17,8 @@ export interface SceneInteriorPlacement {
 
 /** Kenney building shells (Poly Pizza TODO) — backdrop dressing via GltfAsset manifest. */
 export const SCENE_INTERIOR_ASSETS: Partial<Record<SceneId, readonly SceneInteriorPlacement[]>> = {
-  // volodka_room: removed — VolodkaRoomVisual provides full procedural geometry;
-  // the interior_room_bedroom GLB shell was overlapping with procedural walls/floor/ceiling.
+  // volodka_room: removed — procedural 5×3×7 m envelope + ThinMonitors; room_bedroom.glb
+  // is a Kenney exterior building and must not AABB-stretch into the walkable room.
   volodka_corridor: [
     {
       assetId: 'interior_corridor',
@@ -27,9 +27,10 @@ export const SCENE_INTERIOR_ASSETS: Partial<Record<SceneId, readonly SceneInteri
       rotation: [0, Math.PI / 2, 0],
     },
   ],
-  // cafe_evening, office_day, library_day, abandoned_factory, factory_basement,
-  // guild_mainframe, river_pier, and chk_forest_zorge backdrop shells are owned
-  // by their scene visuals via SceneBackdropShell / AuthoredInteriorShell.
+  // cafe_evening, office_day, library_day, albert_backroom, guild_mainframe,
+  // library_basement use procedural envelopes (Kenney exteriors blocked).
+  // abandoned_factory / factory_basement / underground_bunker / river_pier /
+  // chk_forest_zorge backdrop shells are owned via SceneBackdropShell.
   rooftop_edge: [
     { assetId: 'interior_rooftop', position: [4, 0, -6], scale: 1.8, rotation: [0, Math.PI / 3, 0] },
   ],

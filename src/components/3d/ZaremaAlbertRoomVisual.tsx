@@ -1,13 +1,19 @@
 
 /* ─── Volodka RPG – Zarema & Albert Room procedural 3D visual ─── */
 
-import type { MutableRefObject } from 'react';
+import { useMemo, type MutableRefObject } from 'react';
 import * as THREE from 'three';
 import { Desk, Chair, Laptop, Lamp, Radiator, Plant } from './lazyInteriorModels';
 import { EnvironmentDetail } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { createZaremaAlbertWarmSkyTexture } from '@/engine/graphics/proceduralSkyTextures';
 import { registerModuleGeometries } from '@/engine/three/moduleGeometryRegistry';
+import {
+  allowsSelectiveMeshPhysicalWet,
+  getWetGlassPhysicalParams,
+} from '@/engine/graphics/wetStreetScenes';
+import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
+import { useIsMobileVisual } from '@/hooks/use-mobile';
 
 interface ZaremaAlbertRoomVisualProps {
   livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
@@ -70,6 +76,13 @@ export function ZaremaAlbertRoomVisual({ livePlayerPositionRef: _livePlayerPosit
     'zarema_albert_room:warm-ceiling',
     createZaremaAlbertWarmSkyTexture,
   );
+  const { selectedPreset } = useGraphicsQuality();
+  const coarsePointer = useIsMobileVisual();
+  const usePhysicalGlass = allowsSelectiveMeshPhysicalWet('zarema_albert_room', selectedPreset, {
+    coarsePointer,
+  });
+  const crtGlass = useMemo(() => getWetGlassPhysicalParams('crtTerminalGlass'), []);
+  const windowGlass = useMemo(() => getWetGlassPhysicalParams('roomNightWindow'), []);
 
   const W = 8;
   const D = 8;
@@ -201,8 +214,23 @@ export function ZaremaAlbertRoomVisual({ livePlayerPositionRef: _livePlayerPosit
         </mesh>
         {/* Laptop screen */}
         <mesh position={[0, 1.0, -0.2]} rotation={[0.2, 0, 0]} geometry={geo_box_14}>
-
-          <meshStandardMaterial color="#001122" emissive="#4488cc" emissiveIntensity={0.4} />
+          {usePhysicalGlass ? (
+            <meshPhysicalMaterial
+              color="#001122"
+              emissive="#4488cc"
+              emissiveIntensity={0.4}
+              roughness={crtGlass.roughness}
+              metalness={crtGlass.metalness}
+              transmission={crtGlass.transmission}
+              thickness={crtGlass.thickness}
+              clearcoat={crtGlass.clearcoat}
+              clearcoatRoughness={crtGlass.clearcoatRoughness}
+              transparent
+              opacity={crtGlass.opacity}
+            />
+          ) : (
+            <meshStandardMaterial color="#001122" emissive="#4488cc" emissiveIntensity={0.4} />
+          )}
         </mesh>
         {/* Desk chair */}
         <group position={[0, 0, 0.6]}>
@@ -342,12 +370,27 @@ export function ZaremaAlbertRoomVisual({ livePlayerPositionRef: _livePlayerPosit
       {/* ═══════════════════════════════════════════════ */}
       <group position={[W / 2 - 0.01, 1.8, 0]}>
         <mesh rotation-y={-Math.PI / 2} geometry={geo_pln_33}>
-
-          <meshStandardMaterial
-            color="#0a0a10"
-            emissive="#ffaa44"
-            emissiveIntensity={1.0}
-          />
+          {usePhysicalGlass ? (
+            <meshPhysicalMaterial
+              color="#0a0a10"
+              emissive="#ffaa44"
+              emissiveIntensity={1.0}
+              roughness={windowGlass.roughness}
+              metalness={windowGlass.metalness}
+              transmission={windowGlass.transmission}
+              thickness={windowGlass.thickness}
+              clearcoat={windowGlass.clearcoat}
+              clearcoatRoughness={windowGlass.clearcoatRoughness}
+              transparent
+              opacity={Math.max(0.72, windowGlass.opacity)}
+            />
+          ) : (
+            <meshStandardMaterial
+              color="#0a0a10"
+              emissive="#ffaa44"
+              emissiveIntensity={1.0}
+            />
+          )}
         </mesh>
         {/* Window frame */}
         <mesh rotation-y={-Math.PI / 2} position={[0.01, 0, 0]} geometry={geo_box_34}>

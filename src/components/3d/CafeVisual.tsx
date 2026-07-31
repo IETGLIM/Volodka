@@ -28,7 +28,7 @@ import { seededRand } from '@/shared/utils/seededRand';
 import { PolyHavenStandardMaterial } from './PolyHavenStandardMaterial';
 import { INTERIOR_SHELL_MODELS } from '../../config/interiorShellModels';
 import { AuthoredInteriorShell } from './AuthoredInteriorShell';
-import { getInteriorShellScale } from '@/config/interiorShellScale';
+import { getInteriorShellScale, isWalkableInteriorShellAllowed } from '@/config/interiorShellScale';
 
 interface CafeVisualProps {
   livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
@@ -39,8 +39,10 @@ export function CafeVisual({ livePlayerPositionRef }: CafeVisualProps) {
   const { preset, selectedPreset } = useGraphicsQuality();
   const coarsePointer = useIsMobileVisual();
   const rainIntensity = useGameStore((s) => s.rainIntensity);
-  const useAuthoredShell = !preset.visualLite;
+  const useAuthoredShell =
+    !preset.visualLite && isWalkableInteriorShellAllowed('cafe');
   const useGltfDressing = allowsGlbAssetRendering(preset.environmentRenderMode);
+  // Shell blocked — keep procedural tables (prop dressing is sparse overlay, not a full replace).
   const hideProceduralFurniture = useAuthoredShell && useGltfDressing;
   const usePhysicalWet = allowsSelectiveMeshPhysicalWet('cafe_evening', selectedPreset, {
     coarsePointer,
@@ -369,58 +371,164 @@ export function CafeVisual({ livePlayerPositionRef }: CafeVisualProps) {
       {/* ═══════════════════════════════════════════════ */}
 
       {/* ── Coffee cups on Albert's table ── */}
+      {!hideProceduralFurniture ? (
+        <>
       <mesh position={[-3.2, 0.74, -2.0]}>
         <cylinderGeometry args={[0.035, 0.03, 0.08, 8]} />
-        <meshStandardMaterial color="#e8e0d8" roughness={0.5} />
+        {usePhysicalWet ? (
+          <meshPhysicalMaterial
+            color="#e8e0d8"
+            roughness={0.28}
+            metalness={0.05}
+            clearcoat={0.55}
+            clearcoatRoughness={0.35}
+          />
+        ) : (
+          <meshStandardMaterial color="#e8e0d8" roughness={0.5} />
+        )}
       </mesh>
       <mesh position={[-2.8, 0.74, -1.8]}>
         <cylinderGeometry args={[0.03, 0.025, 0.07, 8]} />
-        <meshStandardMaterial color="#c8b8a0" roughness={0.5} />
+        {usePhysicalWet ? (
+          <meshPhysicalMaterial
+            color="#c8b8a0"
+            roughness={0.3}
+            metalness={0.05}
+            clearcoat={0.5}
+            clearcoatRoughness={0.38}
+          />
+        ) : (
+          <meshStandardMaterial color="#c8b8a0" roughness={0.5} />
+        )}
       </mesh>
 
       {/* ── Coffee cups on center-right table ── */}
       <mesh position={[2.9, 0.74, 0.1]}>
         <cylinderGeometry args={[0.032, 0.028, 0.07, 8]} />
-        <meshStandardMaterial color="#e8e0d8" roughness={0.5} />
+        {usePhysicalWet ? (
+          <meshPhysicalMaterial
+            color="#e8e0d8"
+            roughness={0.28}
+            metalness={0.05}
+            clearcoat={0.55}
+            clearcoatRoughness={0.35}
+          />
+        ) : (
+          <meshStandardMaterial color="#e8e0d8" roughness={0.5} />
+        )}
       </mesh>
       <mesh position={[3.15, 0.74, -0.1]}>
         <cylinderGeometry args={[0.035, 0.03, 0.08, 8]} />
-        <meshStandardMaterial color="#f0e8e0" roughness={0.5} />
+        {usePhysicalWet ? (
+          <meshPhysicalMaterial
+            color="#f0e8e0"
+            roughness={0.26}
+            metalness={0.04}
+            clearcoat={0.58}
+            clearcoatRoughness={0.32}
+          />
+        ) : (
+          <meshStandardMaterial color="#f0e8e0" roughness={0.5} />
+        )}
       </mesh>
 
       {/* ── Coffee cup on table near entrance ── */}
       <mesh position={[-0.15, 0.74, 2.4]}>
         <cylinderGeometry args={[0.03, 0.025, 0.06, 8]} />
-        <meshStandardMaterial color="#e0d8d0" roughness={0.5} />
+        {usePhysicalWet ? (
+          <meshPhysicalMaterial
+            color="#e0d8d0"
+            roughness={0.3}
+            metalness={0.05}
+            clearcoat={0.5}
+            clearcoatRoughness={0.36}
+          />
+        ) : (
+          <meshStandardMaterial color="#e0d8d0" roughness={0.5} />
+        )}
       </mesh>
+        </>
+      ) : null}
 
-      {/* ── Espresso machine on counter — ScenePropDressing owns High/Ultra ── */}
-      {!useGltfDressing ? (
+      {/* ── Espresso on bar counter — keep when Kenney shell is blocked.
+          ScenePropDressing coffee_machine sits at floor kitbash [2.5,0,-1.2], not
+          this counter; gating on bare useGltfDressing left steam rising from air. ── */}
+      {!hideProceduralFurniture ? (
       <group position={[-0.5, 1.13, -3.9]}>
         {/* Machine body */}
         <mesh position={[0, 0.15, 0]} castShadow>
           <boxGeometry args={[0.3, 0.3, 0.25]} />
-          <meshStandardMaterial color="#2a2a2e" roughness={0.4} metalness={0.6} />
+          {usePhysicalWet ? (
+            <meshPhysicalMaterial
+              color="#2a2a2e"
+              roughness={0.28}
+              metalness={0.72}
+              clearcoat={0.45}
+              clearcoatRoughness={0.32}
+            />
+          ) : (
+            <meshStandardMaterial color="#2a2a2e" roughness={0.4} metalness={0.6} />
+          )}
         </mesh>
         {/* Top dome */}
         <mesh position={[0, 0.32, 0]}>
           <sphereGeometry args={[0.12, 6, 4, 0, Math.PI * 2, 0, Math.PI / 2]} />
-          <meshStandardMaterial color="#333" roughness={0.3} metalness={0.7} />
+          {usePhysicalWet ? (
+            <meshPhysicalMaterial
+              color="#333338"
+              roughness={0.18}
+              metalness={0.82}
+              clearcoat={0.62}
+              clearcoatRoughness={0.22}
+            />
+          ) : (
+            <meshStandardMaterial color="#333" roughness={0.3} metalness={0.7} />
+          )}
         </mesh>
         {/* Portafilter spout */}
         <mesh position={[0, 0.08, 0.14]}>
           <boxGeometry args={[0.08, 0.02, 0.04]} />
-          <meshStandardMaterial color="#555" metalness={0.8} roughness={0.3} />
+          {usePhysicalWet ? (
+            <meshPhysicalMaterial
+              color="#66666c"
+              roughness={0.16}
+              metalness={0.88}
+              clearcoat={0.55}
+              clearcoatRoughness={0.2}
+            />
+          ) : (
+            <meshStandardMaterial color="#555" metalness={0.8} roughness={0.3} />
+          )}
         </mesh>
         {/* Drip tray */}
         <mesh position={[0, 0.01, 0.14]}>
           <boxGeometry args={[0.15, 0.01, 0.08]} />
-          <meshStandardMaterial color="#444" metalness={0.5} roughness={0.5} />
+          {usePhysicalWet ? (
+            <meshPhysicalMaterial
+              color="#444448"
+              roughness={0.35}
+              metalness={0.65}
+              clearcoat={0.35}
+              clearcoatRoughness={0.4}
+            />
+          ) : (
+            <meshStandardMaterial color="#444" metalness={0.5} roughness={0.5} />
+          )}
         </mesh>
         {/* Cup under spout */}
         <mesh position={[0, 0.02, 0.14]}>
           <cylinderGeometry args={[0.025, 0.02, 0.04, 6]} />
-          <meshStandardMaterial color="#e8e0d8" roughness={0.5} />
+          {usePhysicalWet ? (
+            <meshPhysicalMaterial
+              color="#e8e0d8"
+              roughness={0.28}
+              metalness={0.05}
+              clearcoat={0.55}
+              clearcoatRoughness={0.34}
+            />
+          ) : (
+            <meshStandardMaterial color="#e8e0d8" roughness={0.5} />
+          )}
         </mesh>
         {/* Power indicator light */}
         <mesh position={[0.12, 0.2, 0.13]}>

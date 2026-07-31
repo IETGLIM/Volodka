@@ -37,7 +37,8 @@ import { STORY_NODES_ACT4_SIDE_QUESTS } from './act4SideQuestStory';
 
 /** Known pack overrides — later sources intentionally replace earlier spine nodes. */
 const INTENTIONAL_STORY_NODE_OVERRIDES: Record<string, readonly string[]> = {
-  act1OfficeAftermath: ['fix_success', 'office_colleague', 'balcony_thought', 'friday_arrives'],
+  act1OfficeAftermath: ['form_success', 'office_colleague', 'balcony_thought', 'friday_arrives'],
+  phase5Quests: ['vladimir_secret_room'],
 };
 
 /** Master story node registry with collision detection in dev. */

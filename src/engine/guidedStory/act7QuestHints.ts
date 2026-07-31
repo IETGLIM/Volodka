@@ -16,6 +16,14 @@ function objectiveDone(quest: QuestState, objectiveId: string): boolean {
   return quest.objectives[objectiveId] === true;
 }
 
+function playerHasFlag(flag: string): boolean {
+  try {
+    return getGameSnapshot().playerState.flags[flag] === true;
+  } catch {
+    return false;
+  }
+}
+
 /** Восстановление гильдии — cafe → charter → library → council → network. */
 export function getRebuildTheGuildHint(currentSceneId: string): string | null {
   const quest = findActiveQuest('rebuild_the_guild');
@@ -129,9 +137,12 @@ export function getEpilogueLettersHint(currentSceneId: string): string | null {
   const quest = findActiveQuest('epilogue_letters');
   if (!quest) return null;
   if (!objectiveDone(quest, 'read_letters')) {
-    return currentSceneId === 'volodka_room'
-      ? 'Письма ждут на столе — прочитай их'
-      : 'Вернись в комнату после финала — там письма';
+    if (currentSceneId === 'volodka_room') {
+      return playerHasFlag('epilogue_letters_started')
+        ? 'Тетрадь открыта на столе — закрой её'
+        : 'Письма ждут на столе — прочитай их';
+    }
+    return 'Вернись в комнату после финала — там письма';
   }
   return null;
 }
@@ -141,9 +152,12 @@ export function getEpilogueMonumentHint(currentSceneId: string): string | null {
   const quest = findActiveQuest('epilogue_monument');
   if (!quest) return null;
   if (!objectiveDone(quest, 'visit_monument')) {
-    return currentSceneId === 'park_day'
-      ? 'Обелиск без гильдейской таблички — добавь имя'
-      : 'Парк — у обелиска без гильдейской таблички';
+    if (currentSceneId === 'park_day') {
+      return playerHasFlag('epilogue_monument_started')
+        ? 'Камень ждёт одно имя — добавь его'
+        : 'Обелиск без гильдейской таблички — добавь имя';
+    }
+    return 'Парк — у обелиска без гильдейской таблички';
   }
   return null;
 }

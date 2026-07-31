@@ -36,27 +36,70 @@ describe('wetStreetScenes', () => {
     expect(isWetStreetScene('cafe_evening')).toBe(false);
   });
 
-  it('marks plaza, cafe, night street, and pier for selective MeshPhysical wet accents', () => {
+  it('marks plaza, cafe, night street, pier, rooftop, CHK, park, winter, library, room, guild, bunker for selective MeshPhysical wet accents', () => {
     expect(SELECTIVE_PHYSICAL_WET_SCENE_IDS).toEqual([
       'city_square',
       'cafe_evening',
       'street_night',
       'river_pier',
       'pier_evening',
+      'rooftop_edge',
+      'chk_forest_zorge',
+      'chk_campfire_night',
+      'park_day',
+      'street_winter',
+      'library_day',
+      'office_day',
+      'abandoned_factory',
+      'volodka_room',
+      'guild_mainframe',
+      'underground_bunker',
+      'albert_backroom',
+      'library_basement',
+      'factory_basement',
+      'zarema_albert_room',
     ]);
     expect(isSelectivePhysicalWetScene('city_square')).toBe(true);
     expect(isSelectivePhysicalWetScene('cafe_evening')).toBe(true);
     expect(isSelectivePhysicalWetScene('street_night')).toBe(true);
     expect(isSelectivePhysicalWetScene('river_pier')).toBe(true);
     expect(isSelectivePhysicalWetScene('pier_evening')).toBe(true);
+    expect(isSelectivePhysicalWetScene('rooftop_edge')).toBe(true);
+    expect(isSelectivePhysicalWetScene('chk_forest_zorge')).toBe(true);
+    expect(isSelectivePhysicalWetScene('chk_campfire_night')).toBe(true);
+    expect(isSelectivePhysicalWetScene('park_day')).toBe(true);
+    expect(isSelectivePhysicalWetScene('street_winter')).toBe(true);
+    expect(isSelectivePhysicalWetScene('library_day')).toBe(true);
+    expect(isSelectivePhysicalWetScene('office_day')).toBe(true);
+    expect(isSelectivePhysicalWetScene('abandoned_factory')).toBe(true);
+    expect(isSelectivePhysicalWetScene('volodka_room')).toBe(true);
+    expect(isSelectivePhysicalWetScene('guild_mainframe')).toBe(true);
+    expect(isSelectivePhysicalWetScene('underground_bunker')).toBe(true);
+    expect(isSelectivePhysicalWetScene('albert_backroom')).toBe(true);
+    expect(isSelectivePhysicalWetScene('library_basement')).toBe(true);
+    expect(isSelectivePhysicalWetScene('factory_basement')).toBe(true);
+    expect(isSelectivePhysicalWetScene('zarema_albert_room')).toBe(true);
     expect(allowsSelectiveMeshPhysicalWet('city_square', 'high')).toBe(true);
     expect(allowsSelectiveMeshPhysicalWet('cafe_evening', 'ultra')).toBe(true);
     expect(allowsSelectiveMeshPhysicalWet('street_night', 'high')).toBe(true);
     expect(allowsSelectiveMeshPhysicalWet('river_pier', 'ultra')).toBe(true);
     expect(allowsSelectiveMeshPhysicalWet('pier_evening', 'high')).toBe(true);
+    expect(allowsSelectiveMeshPhysicalWet('rooftop_edge', 'ultra')).toBe(true);
+    expect(allowsSelectiveMeshPhysicalWet('chk_forest_zorge', 'high')).toBe(true);
+    expect(allowsSelectiveMeshPhysicalWet('chk_campfire_night', 'ultra')).toBe(true);
+    expect(allowsSelectiveMeshPhysicalWet('park_day', 'high')).toBe(true);
+    expect(allowsSelectiveMeshPhysicalWet('street_winter', 'ultra')).toBe(true);
+    expect(allowsSelectiveMeshPhysicalWet('library_day', 'high')).toBe(true);
+    expect(allowsSelectiveMeshPhysicalWet('office_day', 'ultra')).toBe(true);
+    expect(allowsSelectiveMeshPhysicalWet('abandoned_factory', 'high')).toBe(true);
+    expect(allowsSelectiveMeshPhysicalWet('volodka_room', 'ultra')).toBe(true);
+    expect(allowsSelectiveMeshPhysicalWet('guild_mainframe', 'high')).toBe(true);
+    expect(allowsSelectiveMeshPhysicalWet('underground_bunker', 'ultra')).toBe(true);
+    expect(allowsSelectiveMeshPhysicalWet('albert_backroom', 'high')).toBe(true);
+    expect(allowsSelectiveMeshPhysicalWet('library_basement', 'ultra')).toBe(true);
+    expect(allowsSelectiveMeshPhysicalWet('factory_basement', 'high')).toBe(true);
     expect(allowsSelectiveMeshPhysicalWet('city_square', 'medium')).toBe(false);
     expect(allowsSelectiveMeshPhysicalWet('city_square', 'auto')).toBe(false);
-    expect(allowsSelectiveMeshPhysicalWet('rooftop_edge', 'ultra')).toBe(false);
     expect(
       allowsSelectiveMeshPhysicalWet('city_square', 'ultra', { coarsePointer: true }),
     ).toBe(false);
@@ -73,13 +116,36 @@ describe('wetStreetScenes', () => {
     const neon = getWetGlassPhysicalParams('neonFascia');
     const shop = getWetGlassPhysicalParams('streetShopWindow');
     const pier = getWetGlassPhysicalParams('pierLanternGlass');
+    const roof = getWetGlassPhysicalParams('rooftopSkylightGlass');
+    const camp = getWetGlassPhysicalParams('campfireBottleGlass');
+    const winter = getWetGlassPhysicalParams('winterShopWindow');
+    const library = getWetGlassPhysicalParams('libraryStainedGlass');
+    const office = getWetGlassPhysicalParams('officeCubicleGlass');
+    const factory = getWetGlassPhysicalParams('factoryBrokenGlass');
+    const room = getWetGlassPhysicalParams('roomNightWindow');
+    const crt = getWetGlassPhysicalParams('crtTerminalGlass');
     expect(cafe.transmission).toBeGreaterThan(plaza.transmission);
     expect(neon.metalness).toBeGreaterThan(cafe.metalness);
     expect(plaza.clearcoat).toBeGreaterThan(0.4);
     expect(shop.transmission).toBeLessThan(plaza.transmission);
     expect(shop.opacity).toBeGreaterThan(0.5);
+    expect(winter.transmission).toBeLessThan(shop.transmission);
+    expect(winter.roughness).toBeGreaterThan(shop.roughness);
     expect(pier.transmission).toBeGreaterThan(shop.transmission);
     expect(pier.clearcoat).toBeGreaterThan(0.5);
+    expect(roof.transmission).toBeLessThan(pier.transmission);
+    expect(roof.clearcoat).toBeGreaterThan(0.5);
+    expect(camp.opacity).toBeGreaterThan(roof.opacity);
+    expect(camp.clearcoat).toBeGreaterThan(0.4);
+    expect(library.clearcoat).toBeGreaterThan(0.4);
+    expect(library.opacity).toBeGreaterThan(office.opacity);
+    expect(office.transmission).toBeGreaterThan(library.transmission);
+    expect(factory.metalness).toBeGreaterThan(library.metalness);
+    expect(factory.opacity).toBeLessThan(library.opacity);
+    expect(room.transmission).toBeGreaterThan(factory.transmission);
+    expect(room.clearcoat).toBeGreaterThan(0.4);
+    expect(crt.clearcoat).toBeGreaterThan(room.clearcoat);
+    expect(crt.opacity).toBeGreaterThan(factory.opacity);
   });
 
   it('marks factory / campfire / basement for industrial damp sheen', () => {

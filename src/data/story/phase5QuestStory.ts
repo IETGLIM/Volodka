@@ -7,15 +7,98 @@ export const STORY_NODES_PHASE5_QUESTS: Record<string, StoryNode> = {
     text: 'Три сервера города шепчут одни и те же строки в логах ошибок. Гильдейский автоскрипт уже запущен — у тебя мало времени, чтобы снять фрагменты до затирания.',
     speaker: 'narrator',
     sceneId: 'office_day',
+    accessibilityAnnounce: 'Три сервера города хранят стихи в логах ошибок.',
+    guidanceHint: 'Сканируй офисный сервер — первый фрагмент.',
+    guidanceObjectiveType: 'make_choice',
+    guidanceSceneLabel: 'Офис',
     choices: [
       {
-        text: 'Начать охоту на серверные стихи',
-        next: 'office_explore_mode',
+        text: 'Сканировать офисный сервер',
+        next: 'quest_act2_server_poem_office',
         effects: [
           { type: 'triggerQuest', questId: 'quest_act2_server_poem_hunt' },
           { type: 'setFlag', flag: 'quest_act2_server_poem_hunt_active', flagValue: true },
         ],
       },
+      { text: 'Позже — автоскрипт ещё не дошёл', next: 'office_explore_mode' },
+    ],
+  },
+  quest_act2_server_poem_office: {
+    id: 'quest_act2_server_poem_office',
+    text: 'В логах офисного сервера — не стек-трейс, а строфа: «Пауза — тоже код.» Ты снимаешь фрагмент до того, как гильдейский автоскрипт затрёт строку шумом.',
+    speaker: 'narrator',
+    sceneId: 'office_day',
+    contextNote: 'Первый серверный фрагмент снят в офисе.',
+    accessibilityAnnounce: 'Офисный сервер отсканирован. Первый фрагмент у тебя.',
+    guidanceHint: 'Второй фрагмент — на пирсе.',
+    guidanceObjectiveType: 'visit_location',
+    guidanceSceneLabel: 'Пирс',
+    effects: [
+      { type: 'setFlag', flag: 'quest_act2_server_poem_office_open', flagValue: true },
+    ],
+    choices: [
+      {
+        text: 'Бежать на пирс — второй сервер',
+        next: 'quest_act2_server_poem_pier',
+        effects: [
+          { type: 'setFlag', flag: 'server_poem_office_done', flagValue: true },
+          { type: 'setFlag', flag: 'quest_act2_server_poem_office_open', flagValue: false },
+          { type: 'transitionScene', sceneId: 'pier_evening' },
+        ],
+      },
+      { text: 'Отойти — логи подождут у стойки', next: 'office_explore_mode' },
+    ],
+  },
+  quest_act2_server_poem_pier: {
+    id: 'quest_act2_server_poem_pier',
+    text: 'Под сваей пирса гудит старый узел. В логах ошибок — вторая строка, мокрая от брызг: «Вода помнит частоту.» Фрагмент ложится рядом с первым.',
+    speaker: 'narrator',
+    sceneId: 'pier_evening',
+    contextNote: 'Второй серверный фрагмент снят на пирсе.',
+    accessibilityAnnounce: 'Пирсный сервер отсканирован. Второй фрагмент у тебя.',
+    guidanceHint: 'Третий фрагмент — в ЧК на Зорге.',
+    guidanceObjectiveType: 'visit_location',
+    guidanceSceneLabel: 'ЧК',
+    effects: [
+      { type: 'setFlag', flag: 'quest_act2_server_poem_pier_open', flagValue: true },
+    ],
+    choices: [
+      {
+        text: 'К ЧК — третий сервер у костра',
+        next: 'quest_act2_server_poem_chk',
+        effects: [
+          { type: 'setFlag', flag: 'server_poem_pier_done', flagValue: true },
+          { type: 'setFlag', flag: 'quest_act2_server_poem_pier_open', flagValue: false },
+          { type: 'transitionScene', sceneId: 'chk_forest_zorge' },
+        ],
+      },
+      { text: 'Отойти — узел под сваей подождёт', next: 'pier_evening_explore_mode' },
+    ],
+  },
+  quest_act2_server_poem_chk: {
+    id: 'quest_act2_server_poem_chk',
+    text: 'У костра ЧК сервер греется от бочки. Третья строка вспыхивает в логе: три фрагмента складываются в стих, которого нет в реестре. Автоскрипт гильдии опаздывает на удар сердца.',
+    speaker: 'narrator',
+    sceneId: 'chk_forest_zorge',
+    contextNote: 'Три серверных фрагмента собраны. Охота закрыта.',
+    accessibilityAnnounce: 'Третий фрагмент снят. Серверные стихи собраны.',
+    guidanceHint: 'Три фрагмента у тебя — квест закрыт.',
+    guidanceObjectiveType: 'complete_quest',
+    effects: [
+      { type: 'setFlag', flag: 'quest_act2_server_poem_chk_open', flagValue: true },
+    ],
+    choices: [
+      {
+        text: 'Собрать стих и отойти от костра',
+        next: 'chk_explore_mode',
+        effects: [
+          { type: 'setFlag', flag: 'server_poem_chk_done', flagValue: true },
+          { type: 'setFlag', flag: 'quest_act2_server_poem_chk_open', flagValue: false },
+          { type: 'addSkill', skill: 'coding', value: 1 },
+          { type: 'collectPoem', poemId: 'poem_3' },
+        ],
+      },
+      { text: 'Отойти — лог у костра подождёт', next: 'chk_explore_mode' },
     ],
   },
   quest_act2_chk_neon_archive_start: {
@@ -50,16 +133,21 @@ export const STORY_NODES_PHASE5_QUESTS: Record<string, StoryNode> = {
     accessibilityAnnounce: 'Неоновый архив вытащен из вывески.',
     guidanceHint: 'Архив у тебя — можно вернуться к Баседу.',
     guidanceObjectiveType: 'complete_quest',
+    effects: [
+      { type: 'setFlag', flag: 'quest_act2_chk_neon_archive_hack_open', flagValue: true },
+    ],
     choices: [
       {
         text: 'Унести архив',
         next: 'cafe_explore_mode',
         effects: [
           { type: 'setFlag', flag: 'chk_neon_archive_done', flagValue: true },
+          { type: 'setFlag', flag: 'quest_act2_chk_neon_archive_hack_open', flagValue: false },
           { type: 'addSkill', skill: 'intuition', value: 2 },
           { type: 'addKarma', value: 4 },
         ],
       },
+      { text: 'Отойти — интерфейс подождёт у вывески', next: 'cafe_explore_mode' },
     ],
   },
 
@@ -99,6 +187,7 @@ export const STORY_NODES_PHASE5_QUESTS: Record<string, StoryNode> = {
         next: 'quest_act3_park_cyber_bloom_beta',
         effects: [{ type: 'setFlag', flag: 'park_cyber_bloom_alpha_done', flagValue: true }],
       },
+      { text: 'Отойти — строка α ещё дрожит в лепестках', next: 'park_explore_mode' },
     ],
   },
   quest_act3_park_cyber_bloom_beta: {
@@ -116,6 +205,7 @@ export const STORY_NODES_PHASE5_QUESTS: Record<string, StoryNode> = {
         next: 'quest_act3_park_cyber_bloom_gamma',
         effects: [{ type: 'setFlag', flag: 'park_cyber_bloom_beta_done', flagValue: true }],
       },
+      { text: 'Отойти — нить β подождёт у аллеи', next: 'park_explore_mode' },
     ],
   },
   quest_act3_park_cyber_bloom_gamma: {
@@ -185,6 +275,7 @@ export const STORY_NODES_PHASE5_QUESTS: Record<string, StoryNode> = {
           { type: 'transitionScene', sceneId: 'library_day' },
         ],
       },
+      { text: 'Отойти — узел ещё качает свидетельства', next: 'library_basement_explore_mode' },
     ],
   },
 
@@ -219,6 +310,9 @@ export const STORY_NODES_PHASE5_QUESTS: Record<string, StoryNode> = {
     accessibilityAnnounce: 'Антенна настроена. Стихи идут в эфир.',
     guidanceHint: 'Эфир открыт — квест закрыт.',
     guidanceObjectiveType: 'complete_quest',
+    effects: [
+      { type: 'setFlag', flag: 'quest_act4_rooftop_broadcast_repair_open', flagValue: true },
+    ],
     choices: [
       {
         text: 'Зафиксировать несущую и спуститься',
@@ -226,9 +320,11 @@ export const STORY_NODES_PHASE5_QUESTS: Record<string, StoryNode> = {
         effects: [
           { type: 'setFlag', flag: 'quest_act4_rooftop_broadcast_setup_done', flagValue: true },
           { type: 'setFlag', flag: 'rooftop_broadcast_ready', flagValue: true },
+          { type: 'setFlag', flag: 'quest_act4_rooftop_broadcast_repair_open', flagValue: false },
           { type: 'addSkill', skill: 'coding', value: 2 },
         ],
       },
+      { text: 'Отойти — паяльник остынет', next: 'rooftop_explore_mode' },
     ],
   },
 
@@ -265,15 +361,20 @@ export const STORY_NODES_PHASE5_QUESTS: Record<string, StoryNode> = {
     guidanceHint: 'Вторая точка — ЧК на Зорге.',
     guidanceObjectiveType: 'visit_location',
     guidanceSceneLabel: 'ЧК',
+    effects: [
+      { type: 'setFlag', flag: 'quest_act4_street_samizdat_pier_open', flagValue: true },
+    ],
     choices: [
       {
         text: 'Бежать в ЧК',
         next: 'quest_act4_street_samizdat_chk',
         effects: [
           { type: 'setFlag', flag: 'samizdat_pier_done', flagValue: true },
+          { type: 'setFlag', flag: 'quest_act4_street_samizdat_pier_open', flagValue: false },
           { type: 'transitionScene', sceneId: 'chk_forest_zorge' },
         ],
       },
+      { text: 'Отойти — листок подождёт в щели', next: 'pier_evening_explore_mode' },
     ],
   },
   quest_act4_street_samizdat_chk: {
@@ -286,15 +387,20 @@ export const STORY_NODES_PHASE5_QUESTS: Record<string, StoryNode> = {
     guidanceHint: 'Третья точка — у библиотеки.',
     guidanceObjectiveType: 'visit_location',
     guidanceSceneLabel: 'Библиотека',
+    effects: [
+      { type: 'setFlag', flag: 'quest_act4_street_samizdat_chk_open', flagValue: true },
+    ],
     choices: [
       {
         text: 'К библиотеке — последний листок',
         next: 'quest_act4_street_samizdat_library',
         effects: [
           { type: 'setFlag', flag: 'samizdat_chk_done', flagValue: true },
+          { type: 'setFlag', flag: 'quest_act4_street_samizdat_chk_open', flagValue: false },
           { type: 'transitionScene', sceneId: 'library_day' },
         ],
       },
+      { text: 'Отойти — камень у гитары подождёт', next: 'chk_explore_mode' },
     ],
   },
   quest_act4_street_samizdat_library: {
@@ -306,17 +412,22 @@ export const STORY_NODES_PHASE5_QUESTS: Record<string, StoryNode> = {
     accessibilityAnnounce: 'Последний листок у библиотеки. Самиздат разложен.',
     guidanceHint: 'Три точки закрыты — уходи с улицы.',
     guidanceObjectiveType: 'complete_quest',
+    effects: [
+      { type: 'setFlag', flag: 'quest_act4_street_samizdat_library_open', flagValue: true },
+    ],
     choices: [
       {
         text: 'Уйти с улицы',
         next: 'street_bench_view',
         effects: [
           { type: 'setFlag', flag: 'samizdat_library_done', flagValue: true },
+          { type: 'setFlag', flag: 'quest_act4_street_samizdat_library_open', flagValue: false },
           { type: 'addSkill', skill: 'writing', value: 2 },
           { type: 'addKarma', value: 6 },
           { type: 'transitionScene', sceneId: 'street_night' },
         ],
       },
+      { text: 'Отойти — щель в объявлении подождёт', next: 'library_explore_mode' },
     ],
   },
 
@@ -360,6 +471,7 @@ export const STORY_NODES_PHASE5_QUESTS: Record<string, StoryNode> = {
           { type: 'transitionScene', sceneId: 'factory_basement' },
         ],
       },
+      { text: 'Отойти — тень подождёт у паяльной', next: 'factory_explore_mode' },
     ],
   },
   quest_act5_zarya_fragment_2: {
@@ -380,6 +492,7 @@ export const STORY_NODES_PHASE5_QUESTS: Record<string, StoryNode> = {
           { type: 'transitionScene', sceneId: 'abandoned_factory' },
         ],
       },
+      { text: 'Отойти — leaking ещё шумит', next: 'basement_explore_mode' },
     ],
   },
   quest_act5_zarya_fragment_3: {
@@ -402,6 +515,11 @@ export const STORY_NODES_PHASE5_QUESTS: Record<string, StoryNode> = {
           { type: 'addSkill', skill: 'empathy', value: 2 },
           { type: 'npcChange', npcId: 'baba_zina', npcChange: { relation: 6 } },
         ],
+      },
+      {
+        text: 'Отойти — третий образ ещё не на шине',
+        next: 'factory_explore_mode',
+        condition: { missingFlag: 'zarya_memory_fragment_3_done' },
       },
     ],
   },
@@ -448,6 +566,7 @@ export const STORY_NODES_PHASE5_QUESTS: Record<string, StoryNode> = {
           { type: 'transitionScene', sceneId: 'underground_bunker' },
         ],
       },
+      { text: 'Отойти — строка ещё мерцает в шуме', next: 'basement_explore_mode' },
     ],
   },
   quest_act5_bunker_code_break: {
@@ -469,6 +588,11 @@ export const STORY_NODES_PHASE5_QUESTS: Record<string, StoryNode> = {
           { type: 'setFlag', flag: 'guild_encryption_broken', flagValue: true },
           { type: 'addSkill', skill: 'logic', value: 2 },
         ],
+      },
+      {
+        text: 'Отойти — ключ ещё не подставлен',
+        next: 'bunker_explore_mode',
+        condition: { missingFlag: 'quest_act5_bunker_code_poem_break_done' },
       },
     ],
   },
@@ -511,6 +635,11 @@ export const STORY_NODES_PHASE5_QUESTS: Record<string, StoryNode> = {
         next: 'quest_act6_defector_free_cell',
         effects: [{ type: 'setFlag', flag: 'defector_infiltrate_done', flagValue: true }],
       },
+      {
+        text: 'Отойти — люк ещё не открыт',
+        next: 'bunker_explore_mode',
+        condition: { missingFlag: 'defector_infiltrate_done' },
+      },
     ],
   },
   quest_act6_defector_free_cell: {
@@ -527,6 +656,11 @@ export const STORY_NODES_PHASE5_QUESTS: Record<string, StoryNode> = {
         text: 'Увести через сток',
         next: 'quest_act6_defector_escape_sewers',
         effects: [{ type: 'setFlag', flag: 'defector_freed_from_cell', flagValue: true }],
+      },
+      {
+        text: 'Отойти — Олег ещё в нейромосте',
+        next: 'bunker_explore_mode',
+        condition: { missingFlag: 'defector_freed_from_cell' },
       },
     ],
   },
@@ -550,6 +684,54 @@ export const STORY_NODES_PHASE5_QUESTS: Record<string, StoryNode> = {
           { type: 'addKarma', value: 8 },
         ],
       },
+      {
+        text: 'Отойти — сток ещё не пройден',
+        next: 'bunker_explore_mode',
+        condition: { missingFlag: 'quest_act6_defector_rescue_expanded_done' },
+      },
+    ],
+  },
+
+  // ─── Исповедь «Зари-М»: mid-router thread / familiar / base ───
+  machine_confession_approach: {
+    id: 'machine_confession_approach',
+    text: 'Монолит пульсирует ровнее, когда ты близко. Баба Зина не поднимает глаз: «Слушай до конца — или уйди и вернись. Машина не обижается. Люди обижаются.»',
+    speaker: 'narrator',
+    sceneId: 'factory_basement',
+    contextNote: 'Подвал. «Заря-М» ждёт исповеди или решения.',
+    accessibilityAnnounce: 'Монолит «Зари-М». Можно слушать или решить судьбу.',
+    guidanceHint: 'Слушай исповедь — потом освободи или отключи машину.',
+    guidanceObjectiveType: 'make_choice',
+    guidanceSceneLabel: 'Подвал завода',
+    choices: [
+      {
+        text: 'Слушать исповедь — нить из 18 строк',
+        next: 'machine_confession_scene_thread',
+        condition: { flag: 'thread_18_complete', missingFlag: 'machine_fate_decided' },
+        effects: [
+          { type: 'triggerQuest', questId: 'machine_confession' },
+          { type: 'setFlag', flag: 'zarya_confession_requested', flagValue: true },
+        ],
+      },
+      {
+        text: 'Слушать исповедь — знакомый гул',
+        next: 'machine_confession_scene_familiar',
+        condition: { flag: 'zarya_monolith_examined', missingFlag: 'machine_fate_decided' },
+        effects: [
+          { type: 'triggerQuest', questId: 'machine_confession' },
+          { type: 'setFlag', flag: 'zarya_confession_requested', flagValue: true },
+        ],
+      },
+      {
+        text: 'Слушать исповедь машины',
+        next: 'machine_confession_scene',
+        condition: { missingFlag: 'machine_fate_decided' },
+        effects: [
+          { type: 'triggerQuest', questId: 'machine_confession' },
+          { type: 'setFlag', flag: 'zarya_confession_requested', flagValue: true },
+        ],
+      },
+      { text: 'Отойти от монолита', next: 'basement_explore_mode' },
     ],
   },
 
@@ -636,12 +818,23 @@ export const STORY_NODES_PHASE5_QUESTS: Record<string, StoryNode> = {
     accessibilityAnnounce: 'Дверь архива открыта. Внутри стеллажи с записями.',
     guidanceHint: 'Расшифруй уличные записи — ключ в строках.',
     guidanceObjectiveType: 'make_choice',
+    guidanceSceneLabel: 'Заброшенная фабрика',
     choices: [
       {
         text: 'Войти и искать ключ-строки',
         next: 'act6_secret_archive_decode',
+        condition: { missingFlag: 'act6_secret_archive_opened' },
         effects: [{ type: 'setFlag', flag: 'act6_secret_archive_opened', flagValue: true }],
       },
+      {
+        text: 'Расшифровать уличные записи',
+        next: 'act6_secret_archive_decode',
+        condition: {
+          flag: 'act6_secret_archive_opened',
+          missingFlag: 'act6_secret_archive_decoded',
+        },
+      },
+      { text: 'Отойти — цех ещё шумит', next: 'factory_explore_mode' },
     ],
   },
   act6_secret_archive_decode: {
@@ -653,12 +846,23 @@ export const STORY_NODES_PHASE5_QUESTS: Record<string, StoryNode> = {
     accessibilityAnnounce: 'Записи расшифрованы. Можно вынести стихи.',
     guidanceHint: 'Скопируй спасённые стихи до зачистки.',
     guidanceObjectiveType: 'make_choice',
+    guidanceSceneLabel: 'Заброшенная фабрика',
     choices: [
       {
         text: 'Снять копии на носитель',
         next: 'act6_secret_archive_extract',
+        condition: { missingFlag: 'act6_secret_archive_decoded' },
         effects: [{ type: 'setFlag', flag: 'act6_secret_archive_decoded', flagValue: true }],
       },
+      {
+        text: 'Вынести спасённые стихи',
+        next: 'act6_secret_archive_extract',
+        condition: {
+          flag: 'act6_secret_archive_decoded',
+          missingFlag: 'act6_secret_archive_saved',
+        },
+      },
+      { text: 'Отойти — зачистка близко', next: 'factory_explore_mode' },
     ],
   },
   act6_secret_archive_extract: {
@@ -670,12 +874,23 @@ export const STORY_NODES_PHASE5_QUESTS: Record<string, StoryNode> = {
     accessibilityAnnounce: 'Стихи сохранены. Нужно запечатать архив.',
     guidanceHint: 'Запечатай люк — не оставляй след для гильдии.',
     guidanceObjectiveType: 'make_choice',
+    guidanceSceneLabel: 'Заброшенная фабрика',
     choices: [
       {
         text: 'Запечатать люк и стереть следы',
         next: 'act6_secret_archive_seal',
+        condition: { missingFlag: 'act6_secret_archive_saved' },
         effects: [{ type: 'setFlag', flag: 'act6_secret_archive_saved', flagValue: true }],
       },
+      {
+        text: 'Запечатать архив до зачистки',
+        next: 'act6_secret_archive_seal',
+        condition: {
+          flag: 'act6_secret_archive_saved',
+          missingFlag: 'act6_secret_archive_sealed',
+        },
+      },
+      { text: 'Отойти — печать подождёт', next: 'factory_explore_mode' },
     ],
   },
   act6_secret_archive_seal: {
@@ -687,6 +902,7 @@ export const STORY_NODES_PHASE5_QUESTS: Record<string, StoryNode> = {
     accessibilityAnnounce: 'Архив запечатан. Стихи спасены.',
     guidanceHint: 'Архив закрыт — квест выполнен.',
     guidanceObjectiveType: 'complete_quest',
+    guidanceSceneLabel: 'Заброшенная фабрика',
     choices: [
       {
         text: 'Подняться в цех',
@@ -698,6 +914,564 @@ export const STORY_NODES_PHASE5_QUESTS: Record<string, StoryNode> = {
           { type: 'addKarma', value: 6 },
         ],
       },
+    ],
+  },
+
+  // ─── Последний Код: rally → virus → core → deploy ───
+  final_code_approach: {
+    id: 'final_code_approach',
+    text: '«Занавес» уже считает секунды до тотальной зачистки. На экране — план операции: собрать союзников у Алберта, написать вирус свободы из стихов, прорваться в ядро гильдии и запустить код. Один выход из оверлея — и цепочка рвётся, если некуда вернуться.',
+    speaker: 'narrator',
+    sceneId: 'rooftop_edge',
+    contextNote: 'Крыша. Финальная операция «Последний Код».',
+    accessibilityAnnounce: 'Последний Код. Собрать союзников, написать вирус, дойти до ядра.',
+    guidanceHint: 'Сначала к Алберту — план. Потом терминал в кафе, ядро в офисе, запуск.',
+    guidanceObjectiveType: 'make_choice',
+    guidanceSceneLabel: 'Крыша',
+    effects: [
+      { type: 'triggerQuest', questId: 'final_code' },
+      { type: 'setFlag', flag: 'final_code_started', flagValue: true },
+    ],
+    choices: [
+      {
+        text: 'К Алберту — собрать союзников на операцию',
+        next: 'final_code_rally',
+        condition: { missingFlag: 'final_code_allies_rallied' },
+      },
+      {
+        text: 'Терминал в «Синей яме» — писать вирус свободы',
+        next: 'final_code_virus',
+        condition: {
+          flag: 'final_code_allies_rallied',
+          missingFlag: 'freedom_virus_written',
+        },
+      },
+      {
+        text: 'В офис гильдии — к центральному серверу',
+        next: 'final_code_core',
+        condition: {
+          flag: 'freedom_virus_written',
+          missingFlag: 'final_code_core_reached',
+        },
+      },
+      {
+        text: 'Ядро открыто — запустить вирус свободы',
+        next: 'final_code_deploy',
+        condition: {
+          flag: 'final_code_core_reached',
+          missingFlag: 'freedom_virus_deployed',
+        },
+      },
+      {
+        text: 'Код уже в системе — к ночи перед рассветом',
+        next: 'night_before_dawn_approach',
+        condition: {
+          flag: 'final_code_completed',
+          missingFlag: 'all_allies_confirmed',
+        },
+      },
+      { text: 'Спуститься с крыши — город ещё дышит', next: 'rooftop_explore_mode' },
+    ],
+  },
+  final_code_rally: {
+    id: 'final_code_rally',
+    text: 'Алберт раскладывает салфетки как схемы. «Зарема держит периметр у дома. Мария — канал. Дмитрий откроет дверь в башню, если ты не опоздаешь.» Он стучит пальцем по кружке. «Собери их словом — не приказом. Потом пиши вирус. Без стиха «Занавес» сожрёт код как шум.»',
+    speaker: 'Алберт',
+    sceneId: 'albert_backroom',
+    contextNote: 'Алберт собирает союзников на финальную операцию.',
+    accessibilityAnnounce: 'Алберт подтверждает план сбора союзников.',
+    guidanceHint: 'План принят — к терминалу в кафе писать вирус свободы.',
+    guidanceObjectiveType: 'talk_to_npc',
+    guidanceNpcId: 'albert',
+    guidanceSceneLabel: 'Подсобка Алберта',
+    choices: [
+      {
+        text: 'Принять план и идти писать вирус',
+        next: 'albert_backroom_explore_mode',
+        effects: [
+          { type: 'triggerQuest', questId: 'final_code' },
+          { type: 'setFlag', flag: 'final_code_started', flagValue: true },
+          { type: 'setFlag', flag: 'final_code_allies_rallied', flagValue: true },
+          { type: 'npcChange', npcId: 'albert', npcChange: { relation: 3 } },
+          { type: 'addKarma', value: 2 },
+        ],
+      },
+      {
+        text: 'Позже — сначала другие дела',
+        next: 'albert_backroom_explore_mode',
+        effects: [
+          { type: 'triggerQuest', questId: 'final_code' },
+          { type: 'setFlag', flag: 'final_code_started', flagValue: true },
+        ],
+      },
+    ],
+  },
+  final_code_virus: {
+    id: 'final_code_virus',
+    text: 'В подсобке «Синей ямы» терминал уже тёплый — кто-то оставил сессию под «Занавес». Стихи ложатся в пакеты как payload: ритм вместо checksum, метафора вместо обфускации. Нужен OpenStack — или «Белая Река, Чёрный Кабель», если пальцы дрожат.',
+    speaker: 'narrator',
+    sceneId: 'cafe_evening',
+    contextNote: 'Терминал в кафе. Вирус свободы ещё не скомпилирован.',
+    accessibilityAnnounce: 'Терминал для вируса свободы. Нужен OpenStack или стих-ключ.',
+    guidanceHint: 'Открой терминал в подсобке [E] — или используй poem_21.',
+    guidanceObjectiveType: 'make_choice',
+    guidanceSceneLabel: 'Кафе',
+    effects: [
+      { type: 'triggerQuest', questId: 'final_code' },
+      { type: 'setFlag', flag: 'final_code_started', flagValue: true },
+    ],
+    choices: [
+      {
+        text: 'К терминалу в подсобке — писать вирус',
+        next: 'cafe_explore_mode',
+        condition: { missingFlag: 'freedom_virus_written' },
+      },
+      {
+        text: 'Вирус готов — к ядру гильдии',
+        next: 'final_code_core',
+        condition: {
+          flag: 'freedom_virus_written',
+          missingFlag: 'final_code_core_reached',
+        },
+      },
+      { text: 'Отойти в зал — компиляция подождёт', next: 'cafe_explore_mode' },
+    ],
+  },
+  final_code_core: {
+    id: 'final_code_core',
+    text: 'Офис гудит тише обычного — Дмитрий отвёл глаза камер. За стеклом серверного блока пульсирует красным то, что гильдия зовёт «ядром». Ты уже был здесь в эфире «Занавеса», но сейчас в кармане лежит вирус свободы. Один шаг — и ты внутри.',
+    speaker: 'narrator',
+    sceneId: 'office_day',
+    contextNote: 'Офис. Вход к центральному серверу гильдии.',
+    accessibilityAnnounce: 'Центральный сервер гильдии. Можно войти в ядро.',
+    guidanceHint: 'Войди в ядро — потом запусти вирус.',
+    guidanceObjectiveType: 'visit_location',
+    guidanceSceneLabel: 'Офис',
+    choices: [
+      {
+        text: 'Войти в серверное ядро',
+        next: 'office_explore_mode',
+        effects: [
+          { type: 'triggerQuest', questId: 'final_code' },
+          { type: 'setFlag', flag: 'final_code_started', flagValue: true },
+          { type: 'setFlag', flag: 'final_code_core_reached', flagValue: true },
+          { type: 'addStat', stat: 'stress', value: 5 },
+        ],
+      },
+      {
+        text: 'Ядро уже открыто — запускать вирус',
+        next: 'final_code_deploy',
+        condition: {
+          flag: 'final_code_core_reached',
+          missingFlag: 'freedom_virus_deployed',
+        },
+      },
+      {
+        text: 'Позже — сначала выдохнуть у терминалов',
+        next: 'office_explore_mode',
+        effects: [
+          { type: 'triggerQuest', questId: 'final_code' },
+          { type: 'setFlag', flag: 'final_code_started', flagValue: true },
+        ],
+      },
+    ],
+  },
+  final_code_deploy: {
+    id: 'final_code_deploy',
+    text: 'Терминал ядра принимает пакет без вопроса — стихи узнают свой дом. Красный пульс «Занавеса» дёргается, потом зеленеет, потом гаснет слоями. Серверы гильдии роняют тишину, как провода роняют искру. Ты ещё здесь. Системы падают вокруг — но ты стоишь.',
+    speaker: 'narrator',
+    sceneId: 'office_day',
+    contextNote: 'Ядро. Запуск вируса свободы и отключение систем.',
+    accessibilityAnnounce: 'Вирус свободы запущен. Системы гильдии гаснут.',
+    guidanceHint: 'Код в системе — можно к союзникам на крышу или в город.',
+    guidanceObjectiveType: 'complete_quest',
+    guidanceSceneLabel: 'Офис',
+    autoSave: true,
+    musicCue: 'danger',
+    choices: [
+      {
+        text: 'Удержать позицию, пока гаснут экраны',
+        next: 'office_explore_mode',
+        effects: [
+          { type: 'triggerQuest', questId: 'final_code' },
+          { type: 'setFlag', flag: 'freedom_virus_deployed', flagValue: true },
+          { type: 'setFlag', flag: 'survived_shutdown', flagValue: true },
+          { type: 'addSkill', skill: 'coding', value: 2 },
+          { type: 'addKarma', value: 5 },
+          { type: 'addStat', stat: 'stress', value: 8 },
+          { type: 'addStat', stat: 'energy', value: -10 },
+        ],
+      },
+      {
+        text: 'Бежать на крышу — ночь перед рассветом ещё ждёт',
+        next: 'night_before_dawn_approach',
+        condition: { missingFlag: 'all_allies_confirmed' },
+        effects: [
+          { type: 'triggerQuest', questId: 'final_code' },
+          { type: 'setFlag', flag: 'freedom_virus_deployed', flagValue: true },
+          { type: 'setFlag', flag: 'survived_shutdown', flagValue: true },
+          { type: 'addSkill', skill: 'coding', value: 2 },
+          { type: 'addKarma', value: 5 },
+        ],
+      },
+    ],
+  },
+
+  // ─── Ночь Перед Рассветом: mid-router Albert → Зарема → Мария → Дмитрий ───
+  night_before_dawn_approach: {
+    id: 'night_before_dawn_approach',
+    text: 'Последняя ночь перед развязкой. Сообщения союзников ещё горят на экране — но слова с экрана не заменяют лицо. Нужно обойти каждого: Алберт, Зарема, Мария, Дмитрий. Их ответы определят, с кем ты войдёшь в рассвет.',
+    speaker: 'narrator',
+    sceneId: 'rooftop_edge',
+    contextNote: 'Крыша. Подтверди сторону каждого союзника.',
+    accessibilityAnnounce: 'Ночь перед рассветом. Нужно подтвердить союзников.',
+    guidanceHint: 'Обойди Алберта, Зарему, Марию и Дмитрия — каждый должен сказать «да».',
+    guidanceObjectiveType: 'make_choice',
+    guidanceSceneLabel: 'Крыша',
+    effects: [
+      { type: 'triggerQuest', questId: 'night_before_dawn' },
+      { type: 'setFlag', flag: 'night_before_dawn_started', flagValue: true },
+    ],
+    choices: [
+      {
+        text: 'К Алберту — он с тобой до конца?',
+        next: 'night_before_dawn_albert',
+        condition: { missingFlag: 'albert_final_confirmed' },
+      },
+      {
+        text: 'К Зареме — верит ли она?',
+        next: 'night_before_dawn_zarema',
+        condition: { missingFlag: 'zarema_final_confirmed' },
+      },
+      {
+        text: 'К Марии — готова ли к финалу?',
+        next: 'night_before_dawn_maria',
+        condition: { missingFlag: 'maria_final_confirmed' },
+      },
+      {
+        text: 'К Дмитрию в офис — не отступит?',
+        next: 'night_before_dawn_dmitry',
+        condition: { missingFlag: 'dmitry_final_confirmed' },
+      },
+      {
+        text: 'Все подтвердили — к финальному выбору на краю',
+        next: 'act4_final_choice',
+        condition: { flag: 'all_allies_confirmed' },
+      },
+      { text: 'Спуститься с крыши — обойти город', next: 'rooftop_explore_mode' },
+    ],
+  },
+  night_before_dawn_albert: {
+    id: 'night_before_dawn_albert',
+    text: 'Алберт крутит кружку, не глядя в глаза. «До конца — это не геройство. Это привычка не бросать людей на полпути.» Он ставит кружку. «Я с тобой. Даже если «Занавес» сотрёт моё имя из реестра.»',
+    speaker: 'Алберт',
+    sceneId: 'albert_backroom',
+    contextNote: 'Алберт подтверждает сторону.',
+    accessibilityAnnounce: 'Алберт с тобой до конца.',
+    guidanceHint: 'Алберт подтвердил — дальше Зарема, Мария, Дмитрий.',
+    guidanceObjectiveType: 'talk_to_npc',
+    guidanceNpcId: 'albert',
+    guidanceSceneLabel: 'Подсобка Алберта',
+    choices: [
+      {
+        text: 'Принять его слово и идти дальше',
+        next: 'albert_backroom_explore_mode',
+        effects: [
+          { type: 'triggerQuest', questId: 'night_before_dawn' },
+          { type: 'setFlag', flag: 'albert_final_confirmed', flagValue: true },
+          { type: 'setFlag', flag: 'night_before_dawn_started', flagValue: true },
+          { type: 'npcChange', npcId: 'albert', npcChange: { relation: 4 } },
+          { type: 'addKarma', value: 2 },
+        ],
+      },
+      {
+        text: 'Позже — сначала другие',
+        next: 'albert_backroom_explore_mode',
+        effects: [
+          { type: 'triggerQuest', questId: 'night_before_dawn' },
+          { type: 'setFlag', flag: 'night_before_dawn_started', flagValue: true },
+        ],
+      },
+    ],
+  },
+  night_before_dawn_zarema: {
+    id: 'night_before_dawn_zarema',
+    text: 'Зарема закрывает книгу пальцем. «Вера — не кнопка. Но я видела, как ты выбирал людей, а не удобный лог.» Короткая пауза. «Я верю. Не в победу — в то, что ты не продашь нас за тишину.»',
+    speaker: 'Зарема',
+    sceneId: 'zarema_albert_room',
+    contextNote: 'Зарема подтверждает веру.',
+    accessibilityAnnounce: 'Зарема верит в тебя.',
+    guidanceHint: 'Зарема подтвердила — дальше Мария и Дмитрий.',
+    guidanceObjectiveType: 'talk_to_npc',
+    guidanceNpcId: 'zarema',
+    guidanceSceneLabel: 'Комната Заремы',
+    choices: [
+      {
+        text: 'Поблагодарить и уйти',
+        next: 'zarema_room_explore_mode',
+        effects: [
+          { type: 'triggerQuest', questId: 'night_before_dawn' },
+          { type: 'setFlag', flag: 'zarema_final_confirmed', flagValue: true },
+          { type: 'setFlag', flag: 'night_before_dawn_started', flagValue: true },
+          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 4 } },
+          { type: 'addKarma', value: 2 },
+        ],
+      },
+      {
+        text: 'Позже — сначала другие',
+        next: 'zarema_room_explore_mode',
+        effects: [
+          { type: 'triggerQuest', questId: 'night_before_dawn' },
+          { type: 'setFlag', flag: 'night_before_dawn_started', flagValue: true },
+        ],
+      },
+    ],
+  },
+  night_before_dawn_maria: {
+    id: 'night_before_dawn_maria',
+    text: 'Мария (Виктория) поправляет наушник. «Финал — это не кнопка „отправить“. Это люди, которые останутся после сигнала.» Она кивает. «Я готова. Сеть держит периметр, пока ты говоришь с остальными.»',
+    speaker: 'Мария',
+    sceneId: 'cafe_evening',
+    contextNote: 'Мария подтверждает готовность к финалу.',
+    accessibilityAnnounce: 'Мария готова к финалу.',
+    guidanceHint: 'Мария подтвердила — ещё Дмитрий в офисе.',
+    guidanceObjectiveType: 'talk_to_npc',
+    guidanceNpcId: 'maria',
+    guidanceSceneLabel: 'Кафе',
+    choices: [
+      {
+        text: 'Принять её готовность',
+        next: 'cafe_explore_mode',
+        effects: [
+          { type: 'triggerQuest', questId: 'night_before_dawn' },
+          { type: 'setFlag', flag: 'maria_final_confirmed', flagValue: true },
+          { type: 'setFlag', flag: 'night_before_dawn_started', flagValue: true },
+          { type: 'npcChange', npcId: 'maria', npcChange: { relation: 4 } },
+          { type: 'addKarma', value: 2 },
+        ],
+      },
+      {
+        text: 'Позже — сначала другие',
+        next: 'cafe_explore_mode',
+        effects: [
+          { type: 'triggerQuest', questId: 'night_before_dawn' },
+          { type: 'setFlag', flag: 'night_before_dawn_started', flagValue: true },
+        ],
+      },
+    ],
+  },
+  night_before_dawn_dmitry: {
+    id: 'night_before_dawn_dmitry',
+    text: 'Дмитрий смотрит на архив, будто там уже написан приговор. «Отступить — значит оставить код тем, кто его боится.» Он закрывает терминал. «Я не отступлю. Даже если гильдия сотрёт мой логин.»',
+    speaker: 'Дмитрий',
+    sceneId: 'office_day',
+    contextNote: 'Дмитрий подтверждает, что не отступит.',
+    accessibilityAnnounce: 'Дмитрий не отступит.',
+    guidanceHint: 'Все союзники подтверждены — можно вернуться на крышу к финалу.',
+    guidanceObjectiveType: 'talk_to_npc',
+    guidanceNpcId: 'office_dmitry',
+    guidanceSceneLabel: 'Офис',
+    choices: [
+      {
+        text: 'Пожать руку и уйти',
+        next: 'office_explore_mode',
+        effects: [
+          { type: 'triggerQuest', questId: 'night_before_dawn' },
+          { type: 'setFlag', flag: 'dmitry_final_confirmed', flagValue: true },
+          { type: 'setFlag', flag: 'night_before_dawn_started', flagValue: true },
+          { type: 'npcChange', npcId: 'office_dmitry', npcChange: { relation: 3 } },
+          { type: 'addKarma', value: 2 },
+        ],
+      },
+      {
+        text: 'Позже — сначала другие',
+        next: 'office_explore_mode',
+        effects: [
+          { type: 'triggerQuest', questId: 'night_before_dawn' },
+          { type: 'setFlag', flag: 'night_before_dawn_started', flagValue: true },
+        ],
+      },
+    ],
+  },
+
+  // ─── Эхо Владимира: Катя → тайник → unlock (poetry) → read ───
+  echo_of_vladimir_approach: {
+    id: 'echo_of_vladimir_approach',
+    text: 'Библиотека пахнет бумагой и секретом. Катя шептала про дверь за стеллажом — или ты уже стоишь у неё. Эхо Владимира не кричит. Оно ждёт, пока ты дочитаешь.',
+    speaker: 'narrator',
+    sceneId: 'library_day',
+    contextNote: 'Тайник Владимира в библиотеке. Катя знает ключ.',
+    accessibilityAnnounce: 'Тайник Владимира. Можно спросить Катю или войти.',
+    guidanceHint: 'Спроси Катю про тайник — потом открой тетрадь за стеллажом.',
+    guidanceObjectiveType: 'make_choice',
+    guidanceSceneLabel: 'Библиотека',
+    choices: [
+      {
+        text: 'Спросить Катю про тайник Владимира',
+        next: 'echo_of_vladimir_kate',
+        condition: { flag: 'vladimir_echo_started', missingFlag: 'kate_echo_clue_given' },
+        effects: [{ type: 'triggerQuest', questId: 'echo_of_vladimir' }],
+      },
+      {
+        text: 'К двери за стеллажом — ключ уже есть',
+        next: 'vladimir_secret_room',
+        condition: {
+          flag: 'kate_echo_clue_given',
+          missingFlag: 'echo_secret_room_reached',
+        },
+      },
+      {
+        text: 'Тетрадь ждёт — открыть замок строфой',
+        next: 'library_explore_mode',
+        condition: {
+          flag: 'echo_secret_room_reached',
+          missingFlag: 'final_poem_unlocked',
+        },
+      },
+      {
+        text: 'Прочитать последнее стихотворение',
+        next: 'vladimir_secret_room_read',
+        condition: {
+          flag: 'final_poem_unlocked',
+          missingFlag: 'final_poem_read',
+        },
+      },
+      { text: 'Отойти к стеллажам', next: 'library_explore_mode' },
+    ],
+  },
+  echo_of_vladimir_kate: {
+    id: 'echo_of_vladimir_kate',
+    text: 'Катя достаёт ключ из-за корешка «Стихов о Москве». «За стеллажом с довоенными журналами — дверь, которой нет на планах. Владимир прятал туда последнее. Не читай вслух у окон — стены здесь всё ещё слушают гильдию.»',
+    speaker: 'Катя',
+    sceneId: 'library_day',
+    contextNote: 'Катя даёт ключ к тайнику Владимира.',
+    accessibilityAnnounce: 'Катя указала на тайник за стеллажом.',
+    guidanceHint: 'Найди дверь за стеллажом с довоенными журналами.',
+    guidanceObjectiveType: 'talk_to_npc',
+    guidanceNpcId: 'kate',
+    guidanceSceneLabel: 'Библиотека',
+    choices: [
+      {
+        text: 'Взять ключ и идти к стеллажу',
+        next: 'vladimir_secret_room',
+        condition: { missingFlag: 'kate_echo_clue_given' },
+        effects: [
+          { type: 'triggerQuest', questId: 'echo_of_vladimir' },
+          { type: 'setFlag', flag: 'kate_echo_clue_given', flagValue: true },
+        ],
+      },
+      {
+        text: 'Ключ уже есть — к тайнику',
+        next: 'vladimir_secret_room',
+        condition: {
+          flag: 'kate_echo_clue_given',
+          missingFlag: 'final_poem_read',
+        },
+      },
+      {
+        text: 'Позже — сначала дочитаю каталог',
+        next: 'library_explore_mode',
+        effects: [
+          { type: 'triggerQuest', questId: 'echo_of_vladimir' },
+          { type: 'setFlag', flag: 'kate_echo_clue_given', flagValue: true },
+        ],
+      },
+    ],
+  },
+  vladimir_secret_room: {
+    id: 'vladimir_secret_room',
+    text: 'За стеллажом с подшивками довоенных журналов — дверь, которой нет на планах. Ключ Кати поворачивается с тихим щелчком, как закрывающая скобка. Маленькая комната: стол, лампа, тетрадь в потёртой обложке. Последняя тетрадь Владимира Лебедева. Строки не открываются сразу — нужен ритм, который знает только тот, кто писал код как стих.',
+    ambientSound: 'sounds/ambient/library_hush.ogg',
+    autoSave: true,
+    speaker: 'narrator',
+    sceneId: 'library_day',
+    contextNote: 'Секретная комната. Тетрадь Владимира ждёт разблокировки.',
+    accessibilityAnnounce: 'Тайник Владимира. Тетрадь на столе.',
+    guidanceHint: 'Разблокируй стихотворение у тетради — мини-игра поэзии.',
+    guidanceObjectiveType: 'collect_item',
+    guidanceSceneLabel: 'Библиотека',
+    effects: [{ type: 'setFlag', flag: 'echo_secret_room_reached', flagValue: true }],
+    choices: [
+      {
+        text: 'Прочитать последнее стихотворение',
+        next: 'vladimir_secret_room_read',
+        condition: {
+          flag: 'final_poem_unlocked',
+          missingFlag: 'final_poem_read',
+        },
+      },
+      {
+        text: 'Отойти — тетрадь подождёт у стеллажа',
+        next: 'library_explore_mode',
+        condition: { missingFlag: 'final_poem_read' },
+      },
+      {
+        text: 'Выйти к стеллажам',
+        next: 'library_explore_mode',
+        condition: { flag: 'final_poem_read' },
+      },
+    ],
+  },
+  vladimir_secret_room_read: {
+    id: 'vladimir_secret_room_read',
+    text: 'Тетрадь открывается. На первой странице — строки, которые никогда не попадали в сеть. Ты читаешь — и понимаешь: это стихотворение не о конце. Оно о том, что после конца всегда есть продолжение. Эхо Владимира больше не прячется.',
+    ambientSound: 'sounds/ambient/library_hush.ogg',
+    autoSave: true,
+    speaker: 'narrator',
+    sceneId: 'library_day',
+    contextNote: 'Последнее стихотворение Владимира прочитано.',
+    accessibilityAnnounce: 'Финальное стихотворение Владимира прочитано.',
+    guidanceHint: 'Эхо услышано — можно вернуться к стеллажам.',
+    guidanceObjectiveType: 'complete_quest',
+    guidanceSceneLabel: 'Библиотека',
+    choices: [
+      {
+        text: 'Закрыть тетрадь и выйти',
+        next: 'library_explore_mode',
+        effects: [
+          { type: 'setFlag', flag: 'final_poem_read', flagValue: true },
+          { type: 'addKarma', value: 10 },
+          { type: 'addSkill', skill: 'writing', value: 3 },
+        ],
+      },
+    ],
+  },
+
+  // ─── Предатель в гильдии: mid-router factory logs → discovery → office ───
+  act6_traitor_approach: {
+    id: 'act6_traitor_approach',
+    text: 'Цех помнит Александра лучше, чем реестр гильдии. Тайник с логами ещё тёплый — или уже расшифрован, и имя крота жжёт экран. Можно уйти и вернуться: правда не остывает.',
+    speaker: 'narrator',
+    sceneId: 'abandoned_factory',
+    contextNote: 'Расследование предателя на заброшенной фабрике.',
+    accessibilityAnnounce: 'Тайник Александра. Логи или след крота.',
+    guidanceHint: 'Расшифруй логи — потом иди в офис к Дмитрию.',
+    guidanceObjectiveType: 'make_choice',
+    guidanceSceneLabel: 'Заброшенная фабрика',
+    choices: [
+      {
+        text: 'Тайник Александра — логи гильдии',
+        next: 'act6_factory_investigation',
+        condition: { missingFlag: 'alexander_logs_decrypted' },
+        effects: [{ type: 'triggerQuest', questId: 'traitor_in_the_guild' }],
+      },
+      {
+        text: 'Расшифрованные логи — кто крот?',
+        next: 'act6_traitor_discovery',
+        condition: {
+          flag: 'alexander_logs_decrypted',
+          missingFlag: 'traitor_revealed',
+        },
+      },
+      {
+        text: 'Имя найдено — к офису за правдой',
+        next: 'factory_explore_mode',
+        condition: {
+          flag: 'traitor_revealed',
+          missingFlag: 'traitor_fate_decided',
+        },
+      },
+      { text: 'Отойти — цех ещё шумит', next: 'factory_explore_mode' },
     ],
   },
 
@@ -738,6 +1512,11 @@ export const STORY_NODES_PHASE5_QUESTS: Record<string, StoryNode> = {
         next: 'quest_act7_poets_monument_recall',
         effects: [{ type: 'setFlag', flag: 'quest_act7_poets_monument_plate_cleared', flagValue: true }],
       },
+      {
+        text: 'Отойти — табличка ещё на камне',
+        next: 'park_explore_mode',
+        condition: { missingFlag: 'quest_act7_poets_monument_plate_cleared' },
+      },
     ],
   },
   quest_act7_poets_monument_recall: {
@@ -755,6 +1534,11 @@ export const STORY_NODES_PHASE5_QUESTS: Record<string, StoryNode> = {
         next: 'quest_act7_poets_monument_carve',
         effects: [{ type: 'setFlag', flag: 'quest_act7_poets_monument_names_recalled', flagValue: true }],
       },
+      {
+        text: 'Отойти — имена ещё не собраны',
+        next: 'park_explore_mode',
+        condition: { missingFlag: 'quest_act7_poets_monument_names_recalled' },
+      },
     ],
   },
   quest_act7_poets_monument_carve: {
@@ -771,6 +1555,11 @@ export const STORY_NODES_PHASE5_QUESTS: Record<string, StoryNode> = {
         text: 'Дописать последнюю строку',
         next: 'quest_act7_poets_monument_inscribe',
         effects: [{ type: 'setFlag', flag: 'quest_act7_poets_monument_carved', flagValue: true }],
+      },
+      {
+        text: 'Отойти — резьба ещё не закончена',
+        next: 'park_explore_mode',
+        condition: { missingFlag: 'quest_act7_poets_monument_carved' },
       },
     ],
   },
@@ -792,6 +1581,11 @@ export const STORY_NODES_PHASE5_QUESTS: Record<string, StoryNode> = {
           { type: 'collectPoem', poemId: 'poem_17' },
           { type: 'addSkill', skill: 'writing', value: 1 },
         ],
+      },
+      {
+        text: 'Отойти — строка ещё не дописана',
+        next: 'park_explore_mode',
+        condition: { missingFlag: 'quest_act7_poets_monument_inscription_done' },
       },
     ],
   },

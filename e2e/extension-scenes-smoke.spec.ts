@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import type { SceneId } from '../src/shared/types/game';
-import { e2eBridge, skipWakeCinematic, waitForMenuReady } from './helpers';
+import { e2eBridge, skipWakeCinematic, startNewGameFromMenu, waitForMenuReady } from './helpers';
 
 /** Extension districts — smoke via direct scene transition (no closed-overlay hub). */
 const EXTENSION_SCENE_IDS: SceneId[] = ['pier_evening', 'city_square'];
@@ -8,8 +8,7 @@ const EXTENSION_SCENE_IDS: SceneId[] = ['pier_evening', 'city_square'];
 test.describe('Extension scenes smoke', () => {
   test('bridge exposes bootstrapExtensionScene after new game', async ({ page }) => {
     await waitForMenuReady(page);
-    await page.getByTestId('menu-new-game').click();
-    await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
+    await startNewGameFromMenu(page);
     await skipWakeCinematic(page);
     await page.waitForFunction(
       () => typeof window.__volodka_e2e?.bootstrapExtensionScene === 'function',
@@ -22,8 +21,7 @@ test.describe('Extension scenes smoke', () => {
     test(`transitions to ${sceneId} without throwing`, async ({ page }) => {
       test.setTimeout(180_000);
       await waitForMenuReady(page);
-      await page.getByTestId('menu-new-game').click();
-      await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
+      await startNewGameFromMenu(page);
       await skipWakeCinematic(page);
       await e2eBridge.bootstrapExtensionScene(page, sceneId);
       await expect(page.locator('canvas[data-engine]')).toBeVisible();

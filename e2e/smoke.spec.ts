@@ -1,10 +1,5 @@
 import { test, expect } from '@playwright/test';
-
-async function waitForMenuReady(page: import('@playwright/test').Page) {
-  await page.goto('/');
-  await expect(page).toHaveTitle(/ВОЛОДЬКА/i, { timeout: 90_000 });
-  await expect(page.getByTestId('menu-new-game')).toBeVisible({ timeout: 90_000 });
-}
+import { startNewGameFromMenu, waitForMenuReady } from './helpers';
 
 test.describe('Volodka smoke', () => {
   test('boots to menu', async ({ page }) => {
@@ -13,15 +8,15 @@ test.describe('Volodka smoke', () => {
 
   test('starts new game and mounts WebGL canvas', async ({ page }) => {
     await waitForMenuReady(page);
-    await page.getByTestId('menu-new-game').click();
-    await expect(page.locator('canvas[data-engine]')).toHaveCount(1, { timeout: 90_000 });
+    await startNewGameFromMenu(page);
+    await expect(page.locator('canvas[data-engine]')).toHaveCount(1);
   });
 
   test('canvas emits first frame after new game', async ({ page }) => {
     await waitForMenuReady(page);
-    await page.getByTestId('menu-new-game').click();
+    await startNewGameFromMenu(page);
     const canvas = page.locator('canvas[data-engine]').first();
-    await expect(canvas).toBeVisible({ timeout: 90_000 });
+    await expect(canvas).toBeVisible();
     await expect
       .poll(async () => canvas.evaluate((el) => el.width > 0 && el.height > 0), {
         timeout: 60_000,

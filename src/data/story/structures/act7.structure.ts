@@ -14,6 +14,13 @@ export const ACT7_STRUCTURE: Record<string, StoryNodeStructure> = {
     "speaker": "narrator",
     "sceneId": "rooftop_edge",
     "guidanceObjectiveType": "visit_location",
+    "effects": [
+      {
+        "type": "setFlag",
+        "flag": "act7_bridge_open",
+        "flagValue": true
+      }
+    ],
     "choices": [
       {
         "text": "",
@@ -28,8 +35,17 @@ export const ACT7_STRUCTURE: Record<string, StoryNodeStructure> = {
             "type": "addStat",
             "stat": "stress",
             "value": -5
+          },
+          {
+            "type": "setFlag",
+            "flag": "act7_bridge_resolved",
+            "flagValue": true
           }
         ]
+      },
+      {
+        "text": "Отойти — город подождёт внизу",
+        "next": "rooftop_explore_mode"
       }
     ]
   },
@@ -48,6 +64,16 @@ export const ACT7_STRUCTURE: Record<string, StoryNodeStructure> = {
           {
             "type": "addKarma",
             "value": 5
+          },
+          {
+            "type": "setFlag",
+            "flag": "act7_guild_rebuild_started",
+            "flagValue": true
+          },
+          {
+            "type": "setFlag",
+            "flag": "act7_guild_charter_path",
+            "flagValue": true
           }
         ]
       },
@@ -66,8 +92,25 @@ export const ACT7_STRUCTURE: Record<string, StoryNodeStructure> = {
             "npcChange": {
               "relation": 3
             }
+          },
+          {
+            "type": "setFlag",
+            "flag": "act7_guild_rebuild_started",
+            "flagValue": true
+          },
+          {
+            "type": "setFlag",
+            "flag": "act7_guild_community_path",
+            "flagValue": true
           }
         ]
+      },
+      {
+        "text": "",
+        "next": "cafe_explore_mode",
+        "condition": {
+          "missingFlag": "act7_guild_rebuild_started"
+        }
       }
     ]
   },
@@ -100,6 +143,13 @@ export const ACT7_STRUCTURE: Record<string, StoryNodeStructure> = {
             }
           }
         ]
+      },
+      {
+        "text": "",
+        "next": "cafe_explore_mode",
+        "condition": {
+          "missingFlag": "new_council_elected"
+        }
       }
     ]
   },
@@ -127,6 +177,13 @@ export const ACT7_STRUCTURE: Record<string, StoryNodeStructure> = {
             }
           }
         ]
+      },
+      {
+        "text": "",
+        "next": "cafe_explore_mode",
+        "condition": {
+          "missingFlag": "new_council_elected"
+        }
       }
     ]
   },
@@ -164,6 +221,13 @@ export const ACT7_STRUCTURE: Record<string, StoryNodeStructure> = {
             "value": -5
           }
         ]
+      },
+      {
+        "text": "",
+        "next": "library_explore_mode",
+        "condition": {
+          "missingFlag": "guild_restored"
+        }
       }
     ]
   },
@@ -189,8 +253,20 @@ export const ACT7_STRUCTURE: Record<string, StoryNodeStructure> = {
             "npcChange": {
               "relation": 5
             }
+          },
+          {
+            "type": "setFlag",
+            "flag": "act7_strike_team_assembled",
+            "flagValue": true
           }
         ]
+      },
+      {
+        "text": "",
+        "next": "cafe_explore_mode",
+        "condition": {
+          "missingFlag": "act7_strike_team_assembled"
+        }
       }
     ]
   },
@@ -214,6 +290,11 @@ export const ACT7_STRUCTURE: Record<string, StoryNodeStructure> = {
             "flagValue": true
           },
           {
+            "type": "setFlag",
+            "flag": "act7_strike_team_assembled",
+            "flagValue": true
+          },
+          {
             "type": "combat",
             "enemyType": "nexus_guardian"
           },
@@ -228,6 +309,13 @@ export const ACT7_STRUCTURE: Record<string, StoryNodeStructure> = {
             "value": -15
           }
         ]
+      },
+      {
+        "text": "",
+        "next": "factory_explore_mode",
+        "condition": {
+          "missingFlag": "path_to_core_cleared"
+        }
       }
     ]
   },
@@ -263,6 +351,13 @@ export const ACT7_STRUCTURE: Record<string, StoryNodeStructure> = {
             "questId": "final_poem"
           }
         ]
+      },
+      {
+        "text": "",
+        "next": "factory_explore_mode",
+        "condition": {
+          "missingFlag": "nadzor_shutdown_complete"
+        }
       }
     ]
   },
@@ -300,6 +395,13 @@ export const ACT7_STRUCTURE: Record<string, StoryNodeStructure> = {
             "value": 10
           }
         ]
+      },
+      {
+        "text": "",
+        "next": "factory_explore_mode",
+        "condition": {
+          "missingFlag": "nadzor_destroyed"
+        }
       }
     ]
   },
@@ -335,6 +437,13 @@ export const ACT7_STRUCTURE: Record<string, StoryNodeStructure> = {
             "value": -10
           }
         ]
+      },
+      {
+        "text": "",
+        "next": "park_explore_mode",
+        "condition": {
+          "missingFlag": "journey_reflected"
+        }
       }
     ]
   },
@@ -355,6 +464,13 @@ export const ACT7_STRUCTURE: Record<string, StoryNodeStructure> = {
             "flagValue": true
           }
         ]
+      },
+      {
+        "text": "",
+        "next": "park_explore_mode",
+        "condition": {
+          "missingFlag": "final_poem_written"
+        }
       }
     ]
   },
@@ -390,6 +506,13 @@ export const ACT7_STRUCTURE: Record<string, StoryNodeStructure> = {
             "questId": "volodka_legacy"
           }
         ]
+      },
+      {
+        "text": "",
+        "next": "rooftop_explore_mode",
+        "condition": {
+          "missingFlag": "final_poem_published"
+        }
       }
     ]
   },
@@ -420,6 +543,14 @@ export const ACT7_STRUCTURE: Record<string, StoryNodeStructure> = {
             "value": -8
           }
         ]
+      },
+      {
+        "text": "",
+        "next": "rooftop_explore_mode",
+        "condition": {
+          "flag": "final_poem_published",
+          "missingFlag": "act7_legacy_walk_done"
+        }
       }
     ]
   },
@@ -444,8 +575,20 @@ export const ACT7_STRUCTURE: Record<string, StoryNodeStructure> = {
           {
             "type": "addKarma",
             "value": 3
+          },
+          {
+            "type": "setFlag",
+            "flag": "act7_legacy_walk_done",
+            "flagValue": true
           }
         ]
+      },
+      {
+        "text": "",
+        "next": "explore_mode",
+        "condition": {
+          "missingFlag": "act7_legacy_walk_done"
+        }
       }
     ]
   },
@@ -477,8 +620,20 @@ export const ACT7_STRUCTURE: Record<string, StoryNodeStructure> = {
             "type": "addStat",
             "stat": "stress",
             "value": -10
+          },
+          {
+            "type": "setFlag",
+            "flag": "act7_goodbye_zarema_done",
+            "flagValue": true
           }
         ]
+      },
+      {
+        "text": "",
+        "next": "home_evening_explore_mode",
+        "condition": {
+          "missingFlag": "act7_goodbye_zarema_done"
+        }
       }
     ]
   },
@@ -505,6 +660,11 @@ export const ACT7_STRUCTURE: Record<string, StoryNodeStructure> = {
             "npcChange": {
               "relation": 5
             }
+          },
+          {
+            "type": "setFlag",
+            "flag": "act7_final_walk_done",
+            "flagValue": true
           }
         ]
       },
@@ -523,8 +683,20 @@ export const ACT7_STRUCTURE: Record<string, StoryNodeStructure> = {
             "npcChange": {
               "relation": 8
             }
+          },
+          {
+            "type": "setFlag",
+            "flag": "act7_final_walk_done",
+            "flagValue": true
           }
         ]
+      },
+      {
+        "text": "",
+        "next": "street_bench_view",
+        "condition": {
+          "missingFlag": "act7_final_walk_done"
+        }
       }
     ]
   },
@@ -723,6 +895,13 @@ export const ACT7_STRUCTURE: Record<string, StoryNodeStructure> = {
             "flagValue": true
           }
         ]
+      },
+      {
+        "text": "",
+        "next": "street_bench_view",
+        "condition": {
+          "missingFlag": "volodka_future_chosen"
+        }
       }
     ]
   },
@@ -738,6 +917,13 @@ export const ACT7_STRUCTURE: Record<string, StoryNodeStructure> = {
     "speaker": "narrator",
     "sceneId": "cafe_evening",
     "guidanceObjectiveType": "make_choice",
+    "effects": [
+      {
+        "type": "setFlag",
+        "flag": "act7_poet_ending_open",
+        "flagValue": true
+      }
+    ],
     "choices": [
       {
         "text": "",
@@ -782,6 +968,17 @@ export const ACT7_STRUCTURE: Record<string, StoryNodeStructure> = {
           {
             "type": "addKarma",
             "value": 15
+          }
+        ]
+      },
+      {
+        "text": "Отойти — чистое стихотворение подождёт",
+        "next": "cafe_explore_mode",
+        "effects": [
+          {
+            "type": "setFlag",
+            "flag": "act7_poet_ending_open",
+            "flagValue": true
           }
         ]
       }
@@ -1021,6 +1218,17 @@ export const ACT7_STRUCTURE: Record<string, StoryNodeStructure> = {
       {
         "text": "",
         "next": "act7_true_end"
+      },
+      {
+        "text": "Отойти — книга памяти подождёт",
+        "next": "cafe_explore_mode",
+        "effects": [
+          {
+            "type": "setFlag",
+            "flag": "act7_poet_ending_open",
+            "flagValue": true
+          }
+        ]
       }
     ]
   },
@@ -1036,6 +1244,13 @@ export const ACT7_STRUCTURE: Record<string, StoryNodeStructure> = {
     "speaker": "narrator",
     "sceneId": "library_day",
     "guidanceObjectiveType": "make_choice",
+    "effects": [
+      {
+        "type": "setFlag",
+        "flag": "act7_guardian_ending_open",
+        "flagValue": true
+      }
+    ],
     "choices": [
       {
         "text": "",
@@ -1080,6 +1295,17 @@ export const ACT7_STRUCTURE: Record<string, StoryNodeStructure> = {
           {
             "type": "addKarma",
             "value": 15
+          }
+        ]
+      },
+      {
+        "text": "Отойти — архив подождёт у дверей",
+        "next": "library_explore_mode",
+        "effects": [
+          {
+            "type": "setFlag",
+            "flag": "act7_guardian_ending_open",
+            "flagValue": true
           }
         ]
       }
@@ -1193,6 +1419,17 @@ export const ACT7_STRUCTURE: Record<string, StoryNodeStructure> = {
       {
         "text": "",
         "next": "act7_true_end"
+      },
+      {
+        "text": "Отойти — ключ архива подождёт",
+        "next": "library_explore_mode",
+        "effects": [
+          {
+            "type": "setFlag",
+            "flag": "act7_guardian_ending_open",
+            "flagValue": true
+          }
+        ]
       }
     ]
   },
@@ -1208,6 +1445,13 @@ export const ACT7_STRUCTURE: Record<string, StoryNodeStructure> = {
     "speaker": "narrator",
     "sceneId": "street_winter",
     "guidanceObjectiveType": "make_choice",
+    "effects": [
+      {
+        "type": "setFlag",
+        "flag": "act7_wanderer_ending_open",
+        "flagValue": true
+      }
+    ],
     "choices": [
       {
         "text": "",
@@ -1252,6 +1496,17 @@ export const ACT7_STRUCTURE: Record<string, StoryNodeStructure> = {
           {
             "type": "addKarma",
             "value": 10
+          }
+        ]
+      },
+      {
+        "text": "Отойти — дорога подождёт на обочине",
+        "next": "street_winter_explore_mode",
+        "effects": [
+          {
+            "type": "setFlag",
+            "flag": "act7_wanderer_ending_open",
+            "flagValue": true
           }
         ]
       }
@@ -1337,6 +1592,17 @@ export const ACT7_STRUCTURE: Record<string, StoryNodeStructure> = {
       {
         "text": "",
         "next": "act7_true_end"
+      },
+      {
+        "text": "Отойти — рюкзак подождёт на обочине",
+        "next": "street_winter_explore_mode",
+        "effects": [
+          {
+            "type": "setFlag",
+            "flag": "act7_wanderer_ending_open",
+            "flagValue": true
+          }
+        ]
       }
     ]
   },
@@ -1361,7 +1627,51 @@ export const ACT7_STRUCTURE: Record<string, StoryNodeStructure> = {
     "choices": [
       {
         "text": "",
-        "next": null,
+        "next": "explore_mode",
+        "goldenPath": true,
+        "effects": [
+          {
+            "type": "addKarma",
+            "value": 10
+          },
+          {
+            "type": "setFlag",
+            "flag": "game_completed",
+            "flagValue": true
+          },
+          {
+            "type": "addStat",
+            "stat": "stress",
+            "value": -20
+          }
+        ]
+      },
+      {
+        "text": "",
+        "next": "epilogue_hub",
+        "condition": {
+          "flag": "volodka_legacy_complete"
+        },
+        "effects": [
+          {
+            "type": "addKarma",
+            "value": 10
+          },
+          {
+            "type": "setFlag",
+            "flag": "game_completed",
+            "flagValue": true
+          },
+          {
+            "type": "addStat",
+            "stat": "stress",
+            "value": -20
+          }
+        ]
+      },
+      {
+        "text": "",
+        "next": "start",
         "effects": [
           {
             "type": "addKarma",

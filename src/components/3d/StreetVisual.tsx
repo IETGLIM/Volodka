@@ -21,7 +21,6 @@ import { createStreetNightSynthwaveSkyTexture } from '@/engine/graphics/procedur
 import { AmbientParticles } from './AmbientParticles';
 import { WetStreetGround } from './WetStreetGround';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
-import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
 import { getCachedSurfaceDetailMaps } from '@/engine/graphics/proceduralSurfaceTextures';
 import { PBR_PRESETS } from '@/engine/graphics/materials/pbrPresets';
 import {
@@ -48,10 +47,9 @@ export function StreetVisual({ sceneId = 'street_night', livePlayerPositionRef }
   const isWinter = sceneId === 'street_winter';
   const rainIntensity = useGameStore((s) => s.rainIntensity);
   const envProfile = useMemo(() => getEnvironmentLodProfile(sceneId), [sceneId]);
-  const { preset, selectedPreset } = useGraphicsQuality();
+  const { selectedPreset } = useGraphicsQuality();
   const coarsePointer = useIsMobileVisual();
-  const useAuthoredDressing = allowsGlbAssetRendering(preset.environmentRenderMode);
-  const useHighUltraAuthored = !preset.visualLite;
+  // Authored GLTF dressing replaces benches/lamps — NeonSigns + drip/broken-window stay always.
   const usePhysicalPuddles =
     !isWinter
     && allowsHeavyGfxFeature(selectedPreset, 'meshPhysicalWet', { coarsePointer });
@@ -82,7 +80,9 @@ export function StreetVisual({ sceneId = 'street_night', livePlayerPositionRef }
       {/* ── Bevelled panel buildings + neon fascia (hero silhouette) ── */}
       <EnvironmentDetail minLod="standard" position={[0, 0, -10]}>
         <HeroStreetFacadesWithAssets />
-        {!useHighUltraAuthored ? <NeonSigns isWinter={isWinter} /> : null}
+        {/* Neon storytelling stays — authored facades/props have no café/КАФЕ/bar tubes.
+            High previously hid NeonSigns and left dead facade strips. */}
+        <NeonSigns isWinter={isWinter} />
       </EnvironmentDetail>
 
       {hybridAaa ? <ProceduralAaaHybridOverlay /> : null}
@@ -201,42 +201,40 @@ export function StreetVisual({ sceneId = 'street_night', livePlayerPositionRef }
         </EnvironmentDetail>
       ) : null}
 
-      {!useAuthoredDressing ? (
-        <>
-          <StreetClutterGate
-            livePlayerPositionRef={livePlayerPositionRef}
-            position={[-12, 0, -12]}
-            maxDistance={envProfile.decorativeDistance}
-          >
-            {/* Dripping pipe (thin cylinder from building) */}
-            <mesh position={[0, 3.5, 0]} rotation={[0, 0, Math.PI / 2]} geometry={getSharedCylinderGeometry(0.02, 0.02, 0.8, 6)}>
-              <meshStandardMaterial color="#5a5a5a" metalness={0.6} roughness={0.4} />
-            </mesh>
-            {/* Drip at end of pipe */}
-            <mesh position={[0, 3.1, 0]} geometry={getSharedSphereGeometry(0.02, 6, 6)}>
-              <meshStandardMaterial color="#4a6a8a" transparent opacity={0.7} />
-            </mesh>
-          </StreetClutterGate>
+      {/* Drip pipe + broken window stay — authored facades/props have no replacements.
+          High previously hid these with !useAuthoredDressing (same empty-facade gap as NeonSigns). */}
+      <StreetClutterGate
+        livePlayerPositionRef={livePlayerPositionRef}
+        position={[-12, 0, -12]}
+        maxDistance={envProfile.decorativeDistance}
+      >
+        {/* Dripping pipe (thin cylinder from building) */}
+        <mesh position={[0, 3.5, 0]} rotation={[0, 0, Math.PI / 2]} geometry={getSharedCylinderGeometry(0.02, 0.02, 0.8, 6)}>
+          <meshStandardMaterial color="#5a5a5a" metalness={0.6} roughness={0.4} />
+        </mesh>
+        {/* Drip at end of pipe */}
+        <mesh position={[0, 3.1, 0]} geometry={getSharedSphereGeometry(0.02, 6, 6)}>
+          <meshStandardMaterial color="#4a6a8a" transparent opacity={0.7} />
+        </mesh>
+      </StreetClutterGate>
 
-          <StreetClutterGate
-            livePlayerPositionRef={livePlayerPositionRef}
-            position={[12, 0, -18]}
-            maxDistance={envProfile.decorativeDistance}
-          >
-            {/* Broken window in building */}
-            <mesh position={[0, 8, 0]} geometry={getSharedPlaneGeometry(0.8, 1.0)}>
-              <meshStandardMaterial color="#0a0a12" roughness={0.95} />
-            </mesh>
-            {/* Broken glass shards */}
-            <mesh position={[0, 8.3, 0.01]} geometry={getSharedPlaneGeometry(0.25, 0.3)}>
-              <meshStandardMaterial color="#607080" transparent opacity={0.3} metalness={0.2} roughness={0.1} side={THREE.DoubleSide} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
-            </mesh>
-            <mesh position={[0.15, 7.7, 0.01]} geometry={getSharedPlaneGeometry(0.2, 0.35)}>
-              <meshStandardMaterial color="#607080" transparent opacity={0.2} metalness={0.2} roughness={0.1} side={THREE.DoubleSide} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
-            </mesh>
-          </StreetClutterGate>
-        </>
-      ) : null}
+      <StreetClutterGate
+        livePlayerPositionRef={livePlayerPositionRef}
+        position={[12, 0, -18]}
+        maxDistance={envProfile.decorativeDistance}
+      >
+        {/* Broken window in building */}
+        <mesh position={[0, 8, 0]} geometry={getSharedPlaneGeometry(0.8, 1.0)}>
+          <meshStandardMaterial color="#0a0a12" roughness={0.95} />
+        </mesh>
+        {/* Broken glass shards */}
+        <mesh position={[0, 8.3, 0.01]} geometry={getSharedPlaneGeometry(0.25, 0.3)}>
+          <meshStandardMaterial color="#607080" transparent opacity={0.3} metalness={0.2} roughness={0.1} side={THREE.DoubleSide} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+        </mesh>
+        <mesh position={[0.15, 7.7, 0.01]} geometry={getSharedPlaneGeometry(0.2, 0.35)}>
+          <meshStandardMaterial color="#607080" transparent opacity={0.2} metalness={0.2} roughness={0.1} side={THREE.DoubleSide} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+        </mesh>
+      </StreetClutterGate>
     </group>
   );
 }

@@ -705,6 +705,7 @@ export const QUESTS_SIDE: QuestDefinition[] = [
       { type: 'addXp', value: 40 },
     ],
     linkedStoryNodeId: 'epilogue_letters_start',
+    linkedStoryNodeIds: ['epilogue_letters_start', 'epilogue_letters_done'],
   },
   {
     id: 'epilogue_monument',
@@ -730,5 +731,6 @@ export const QUESTS_SIDE: QuestDefinition[] = [
       { type: 'addXp', value: 50 },
     ],
     linkedStoryNodeId: 'epilogue_monument_start',
+    linkedStoryNodeIds: ['epilogue_monument_start', 'epilogue_monument_done'],
   },
 ];

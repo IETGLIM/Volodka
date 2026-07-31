@@ -4,6 +4,7 @@ import {
   dismissFirstPlayTutorial,
   dismissFirstReadingBeats,
   skipStoryTypewriter,
+  startNewGameFromMenu,
   waitForMenuReady,
 } from './helpers';
 
@@ -12,11 +13,7 @@ test.describe('New game flow', () => {
     test.setTimeout(180_000);
 
     await waitForMenuReady(page);
-    await page.getByTestId('menu-new-game').click();
-    await expect(page.getByTestId('menu-skip-prologue')).toBeVisible({ timeout: 10_000 });
-    await page.getByTestId('menu-skip-prologue').click();
-
-    await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
+    await startNewGameFromMenu(page, { path: 'skip' });
 
     const skipIntroDialog = page.getByRole('dialog', { name: /Голос/i });
     await expect(skipIntroDialog).toBeVisible({ timeout: 30_000 });
@@ -41,9 +38,6 @@ test.describe('New game flow', () => {
 
   test('start with prologue still mounts canvas from dialog', async ({ page }) => {
     await waitForMenuReady(page);
-    await page.getByTestId('menu-new-game').click();
-    await expect(page.getByTestId('menu-start-prologue')).toBeVisible({ timeout: 10_000 });
-    await page.getByTestId('menu-start-prologue').click();
-    await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
+    await startNewGameFromMenu(page, { path: 'prologue' });
   });
 });

@@ -19,6 +19,19 @@ export const SCENE_BACKDROP_SHELLS: Partial<Record<SceneId, SceneBackdropShellPl
     scale: 0.8,
     rotationY: 0.35,
   },
+  /** Basement GLB is backdrop_dressing — never replace the walkable procedural envelope. */
+  factory_basement: {
+    url: INTERIOR_SHELL_MODELS.basement,
+    position: [0, 0.05, -7.5],
+    scale: 1.35,
+    rotationY: -Math.PI / 5,
+  },
+  underground_bunker: {
+    url: INTERIOR_SHELL_MODELS.basement,
+    position: [0, 0.05, -8.2],
+    scale: 1.45,
+    rotationY: Math.PI / 7,
+  },
   river_pier: {
     url: INTERIOR_SHELL_MODELS.pier,
     position: [0, 0, -5.5],

@@ -24,6 +24,25 @@ describe('Act 5 story presentation', () => {
     expect(epilogue?.effects).toContainEqual({ type: 'collectPoem', poemId: 'poem_23' });
   });
 
+  it('Act 5 path endings leave to scene explore hubs — not null soft-lock', () => {
+    const expected: Array<[keyof typeof STORY_NODES_ACT5, string]> = [
+      ['ending_reconciliation', 'cafe_explore_mode'],
+      ['ending_creator', 'library_explore_mode'],
+      ['ending_rebel', 'street_bench_view'],
+      ['ending_exile', 'street_winter_explore_mode'],
+      ['ending_machine', 'dream_explore_mode'],
+      ['ending_poet', 'rooftop_explore_mode'],
+    ];
+    for (const [id, hub] of expected) {
+      const node = STORY_NODES_ACT5[id];
+      expect(
+        node.choices.some((c) => c.next === hub),
+        `${id} → ${hub}`,
+      ).toBe(true);
+      expect(node.choices.every((c) => c.next !== null), id).toBe(true);
+    }
+  });
+
   it('act5_peaceful_path has jazz ambient and karma text', () => {
     const node = STORY_NODES_ACT5.act5_peaceful_path;
     expect(node.autoSave).toBe(true);

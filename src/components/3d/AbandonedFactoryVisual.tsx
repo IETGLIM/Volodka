@@ -16,9 +16,14 @@ import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
 import { EnvironmentDetail, PropDistanceGate } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { createAbandonedFactoryIndustrialSkyTexture } from '@/engine/graphics/proceduralSkyTextures';
-import { getIndustrialDampFloorSettings } from '@/engine/graphics/wetStreetScenes';
+import {
+  allowsSelectiveMeshPhysicalWet,
+  getIndustrialDampFloorSettings,
+  getWetGlassPhysicalParams,
+  getWetPuddlePhysicalParams,
+} from '@/engine/graphics/wetStreetScenes';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
-import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
+import { useIsMobileVisual } from '@/hooks/use-mobile';
 import { SceneBackdropShell } from './SceneBackdropShell';
 
 interface AbandonedFactoryVisualProps {
@@ -27,10 +32,9 @@ interface AbandonedFactoryVisualProps {
 
 /** Gothic/Industrial abandoned factory (20×18m) */
 export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFactoryVisualProps) {
-  const { preset } = useGraphicsQuality();
-  const useAuthoredShell = !preset.visualLite;
-  const useGltfDressing = allowsGlbAssetRendering(preset.environmentRenderMode);
-  const hideProceduralClutter = useAuthoredShell && useGltfDressing;
+  // Factory GLB is backdrop_dressing only (SceneBackdropShell at the far yard).
+  // Prop dressing is sparse overlay — never hide conveyors/vats/catwalk/debris or the
+  // walkable yard goes empty on High/Ultra (same empty-space bug as factory_basement).
   const floorTexture = useCachedCanvasTexture('abandoned_factory:floor', createFactoryFloorTexture);
   const wallTexture = useCachedCanvasTexture('abandoned_factory:wall', createFactoryWallTexture);
   const ceilingWashTexture = useCachedCanvasTexture(
@@ -39,6 +43,14 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
   );
   const envProfile = useMemo(() => getEnvironmentLodProfile('abandoned_factory'), []);
   const damp = useMemo(() => getIndustrialDampFloorSettings('abandoned_factory'), []);
+  const { selectedPreset } = useGraphicsQuality();
+  const coarsePointer = useIsMobileVisual();
+  const usePhysicalGlass = allowsSelectiveMeshPhysicalWet('abandoned_factory', selectedPreset, {
+    coarsePointer,
+  });
+  const wetGlass = useMemo(() => getWetGlassPhysicalParams('factoryBrokenGlass'), []);
+  const crtGlass = useMemo(() => getWetGlassPhysicalParams('crtTerminalGlass'), []);
+  const oilPuddle = useMemo(() => getWetPuddlePhysicalParams(0.65), []);
 
   const W = 20;
   const D = 18;
@@ -134,7 +146,23 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
             <meshStandardMaterial color="#8a4020" roughness={0.85} metalness={0.3} />
           </mesh>
           <mesh position={[0, 1.3, 0.51]} geometry={getSharedPlaneGeometry(0.5, 0.4)}>
-            <meshStandardMaterial color="#1a1a1a" emissive="#22aa44" emissiveIntensity={0.3} />
+            {usePhysicalGlass ? (
+              <meshPhysicalMaterial
+                color="#1a1a1a"
+                emissive="#22aa44"
+                emissiveIntensity={0.3}
+                roughness={crtGlass.roughness}
+                metalness={crtGlass.metalness}
+                transmission={crtGlass.transmission}
+                thickness={crtGlass.thickness}
+                clearcoat={crtGlass.clearcoat}
+                clearcoatRoughness={crtGlass.clearcoatRoughness}
+                transparent
+                opacity={crtGlass.opacity}
+              />
+            ) : (
+              <meshStandardMaterial color="#1a1a1a" emissive="#22aa44" emissiveIntensity={0.3} />
+            )}
           </mesh>
         </FactoryPropGate>
       </EnvironmentDetail>
@@ -144,35 +172,102 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
       {/* ═══════════════════════════════════════════════ */}
       <group position={[W / 2 - 0.01, 4, -4]}>
         <mesh rotation-y={-Math.PI / 2} geometry={getSharedPlaneGeometry(2.5, 2.0)}>
-          <meshStandardMaterial
-            color="#1a1a10"
-            emissive="#ffdd88"
-            emissiveIntensity={0.4}
-          />
+          {usePhysicalGlass ? (
+            <meshPhysicalMaterial
+              color="#1a1a10"
+              emissive="#ffdd88"
+              emissiveIntensity={0.4}
+              roughness={wetGlass.roughness}
+              metalness={wetGlass.metalness}
+              transmission={wetGlass.transmission}
+              thickness={wetGlass.thickness}
+              clearcoat={wetGlass.clearcoat}
+              clearcoatRoughness={wetGlass.clearcoatRoughness}
+              transparent
+              opacity={Math.max(0.55, wetGlass.opacity)}
+            />
+          ) : (
+            <meshStandardMaterial
+              color="#1a1a10"
+              emissive="#ffdd88"
+              emissiveIntensity={0.4}
+            />
+          )}
         </mesh>
         {/* Broken glass shards */}
         <mesh rotation-y={-Math.PI / 2} position={[0.02, 0.5, -0.8]} geometry={getSharedPlaneGeometry(0.3, 0.6)}>
-          <meshStandardMaterial color="#a0b0c0" transparent opacity={0.3} metalness={0.2} roughness={0.1} side={THREE.DoubleSide} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+          {usePhysicalGlass ? (
+            <meshPhysicalMaterial
+              color="#a0b0c0"
+              transparent
+              opacity={wetGlass.opacity}
+              roughness={wetGlass.roughness}
+              metalness={wetGlass.metalness}
+              transmission={wetGlass.transmission}
+              thickness={wetGlass.thickness}
+              clearcoat={wetGlass.clearcoat}
+              clearcoatRoughness={wetGlass.clearcoatRoughness}
+              side={THREE.DoubleSide}
+              polygonOffset
+              polygonOffsetFactor={1}
+              polygonOffsetUnits={1}
+            />
+          ) : (
+            <meshStandardMaterial color="#a0b0c0" transparent opacity={0.3} metalness={0.2} roughness={0.1} side={THREE.DoubleSide} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+          )}
         </mesh>
         <mesh rotation-y={-Math.PI / 2} position={[0.02, -0.3, 0.5]} geometry={getSharedPlaneGeometry(0.4, 0.5)}>
-          <meshStandardMaterial color="#a0b0c0" transparent opacity={0.2} metalness={0.2} roughness={0.1} side={THREE.DoubleSide} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+          {usePhysicalGlass ? (
+            <meshPhysicalMaterial
+              color="#a0b0c0"
+              transparent
+              opacity={Math.min(0.35, wetGlass.opacity)}
+              roughness={wetGlass.roughness}
+              metalness={wetGlass.metalness}
+              transmission={wetGlass.transmission}
+              thickness={wetGlass.thickness}
+              clearcoat={wetGlass.clearcoat}
+              clearcoatRoughness={wetGlass.clearcoatRoughness}
+              side={THREE.DoubleSide}
+              polygonOffset
+              polygonOffsetFactor={1}
+              polygonOffsetUnits={1}
+            />
+          ) : (
+            <meshStandardMaterial color="#a0b0c0" transparent opacity={0.2} metalness={0.2} roughness={0.1} side={THREE.DoubleSide} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+          )}
         </mesh>
       </group>
 
       <group position={[W / 2 - 0.01, 4, 3]}>
         <mesh rotation-y={-Math.PI / 2} geometry={getSharedPlaneGeometry(2.5, 2.0)}>
-          <meshStandardMaterial
-            color="#1a1a10"
-            emissive="#ffdd88"
-            emissiveIntensity={0.3}
-          />
+          {usePhysicalGlass ? (
+            <meshPhysicalMaterial
+              color="#1a1a10"
+              emissive="#ffdd88"
+              emissiveIntensity={0.3}
+              roughness={wetGlass.roughness}
+              metalness={wetGlass.metalness}
+              transmission={wetGlass.transmission}
+              thickness={wetGlass.thickness}
+              clearcoat={wetGlass.clearcoat}
+              clearcoatRoughness={wetGlass.clearcoatRoughness}
+              transparent
+              opacity={Math.max(0.5, wetGlass.opacity)}
+            />
+          ) : (
+            <meshStandardMaterial
+              color="#1a1a10"
+              emissive="#ffdd88"
+              emissiveIntensity={0.3}
+            />
+          )}
         </mesh>
       </group>
 
       {/* ═══════════════════════════════════════════════ */}
-      {/* ── CONVEYOR BELTS (hidden when GLB shell + props own the floor) ── */}
+      {/* ── CONVEYOR BELTS (procedural — backdrop GLB does not own the floor) ── */}
       {/* ═══════════════════════════════════════════════ */}
-      {!hideProceduralClutter ? (
       <EnvironmentDetail minLod="standard" position={[0, 0, 2]}>
       <group position={[0, 0, 2]}>
         {/* Belt surface */}
@@ -193,12 +288,10 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
         ))}
       </group>
       </EnvironmentDetail>
-      ) : null}
 
       {/* ═══════════════════════════════════════════════ */}
-      {/* ── CHEMICAL VATS (procedural clutter — GLB dressing replaces) ── */}
+      {/* ── CHEMICAL VATS (procedural yard density) ── */}
       {/* ═══════════════════════════════════════════════ */}
-      {!hideProceduralClutter ? (
       <EnvironmentDetail minLod="full" position={[-4, 0, 4]}>
       <FactoryPropGate livePlayerPositionRef={livePlayerPositionRef} position={[-4, 0, 4]} maxDistance={envProfile.clutterDistance}>
         <ChemicalVat position={[-1, 0, 1]} color="#22aa44" />
@@ -206,12 +299,10 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
         <ChemicalVat position={[0, 0, -1]} color="#44aa22" />
       </FactoryPropGate>
       </EnvironmentDetail>
-      ) : null}
 
       {/* ═══════════════════════════════════════════════ */}
       {/* ── CATWALK (elevated) ── */}
       {/* ═══════════════════════════════════════════════ */}
-      {!hideProceduralClutter ? (
       <EnvironmentDetail minLod="standard" position={[0, 3.5, -7]}>
       <group position={[0, 3.5, -7]}>
         {/* Walkway */}
@@ -230,12 +321,10 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
         </mesh>
       </group>
       </EnvironmentDetail>
-      ) : null}
 
       {/* ═══════════════════════════════════════════════ */}
       {/* ── GRAFFITI WALLS ── */}
       {/* ═══════════════════════════════════════════════ */}
-      {!hideProceduralClutter ? (
       <EnvironmentDetail minLod="full" position={[-7.5, 2.5, -2.5]}>
       <group position={[-W / 2 + 0.02, 2, 0]}>
         {/* Graffiti patch 1 */}
@@ -249,12 +338,10 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
         </mesh>
       </group>
       </EnvironmentDetail>
-      ) : null}
 
       {/* ═══════════════════════════════════════════════ */}
       {/* ── COLLAPSED CEILING SECTION ── */}
       {/* ═══════════════════════════════════════════════ */}
-      {!hideProceduralClutter ? (
       <EnvironmentDetail minLod="full" position={[5, 0, -5]}>
       <FactoryPropGate livePlayerPositionRef={livePlayerPositionRef} position={[5, 0, -5]} maxDistance={envProfile.decorativeDistance}>
       <group position={[0, 0, 0]}>
@@ -275,7 +362,6 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
       </group>
       </FactoryPropGate>
       </EnvironmentDetail>
-      ) : null}
 
       {/* ═══════════════════════════════════════════════ */}
       {/* ── LIGHTS ── */}
@@ -318,7 +404,26 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
         [2, 0.01, 4], [2.3, 0.01, 4.2], [1.8, 0.01, 4.5], [2.5, 0.01, 3.8],
       ].map((pos, i) => (
         <mesh key={`glass-${i}`} position={pos as [number, number, number]} rotation={[-Math.PI / 2, 0, 0.3 + i * 0.7]} geometry={getSharedPlaneGeometry(0.08, 0.05)}>
-          <meshStandardMaterial color="#a0b8c0" transparent opacity={0.4} metalness={0.2} roughness={0.1} side={THREE.DoubleSide} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+          {usePhysicalGlass ? (
+            <meshPhysicalMaterial
+              color="#a0b8c0"
+              roughness={wetGlass.roughness}
+              metalness={wetGlass.metalness}
+              transmission={wetGlass.transmission}
+              thickness={wetGlass.thickness}
+              clearcoat={wetGlass.clearcoat}
+              clearcoatRoughness={wetGlass.clearcoatRoughness}
+              transparent
+              opacity={wetGlass.opacity}
+              depthWrite={false}
+              side={THREE.DoubleSide}
+              polygonOffset
+              polygonOffsetFactor={1}
+              polygonOffsetUnits={1}
+            />
+          ) : (
+            <meshStandardMaterial color="#a0b8c0" transparent opacity={0.4} metalness={0.2} roughness={0.1} side={THREE.DoubleSide} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+          )}
         </mesh>
       ))}
 
@@ -342,28 +447,58 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
 
       {/* ── Oil puddle on floor — industrial damp sheen ── */}
       <mesh rotation-x={-Math.PI / 2} position={[-5, 0.008, 3]} geometry={getSharedCircleGeometry(0.6, 12)}>
-        <meshStandardMaterial
-          color="#0a0a05"
-          metalness={damp?.oilMetalness ?? 0.4}
-          roughness={damp?.oilRoughness ?? 0.3}
-          transparent
-          opacity={0.55}
-          polygonOffset
-          polygonOffsetFactor={1}
-          polygonOffsetUnits={1}
-        />
+        {usePhysicalGlass ? (
+          <meshPhysicalMaterial
+            color="#0a0a05"
+            metalness={Math.max(damp?.oilMetalness ?? 0.4, oilPuddle.metalness + 0.15)}
+            roughness={Math.min(damp?.oilRoughness ?? 0.3, oilPuddle.roughness)}
+            clearcoat={oilPuddle.clearcoat}
+            clearcoatRoughness={oilPuddle.clearcoatRoughness}
+            transparent
+            opacity={Math.min(0.72, Math.max(0.55, oilPuddle.opacity * 0.85))}
+            polygonOffset
+            polygonOffsetFactor={1}
+            polygonOffsetUnits={1}
+          />
+        ) : (
+          <meshStandardMaterial
+            color="#0a0a05"
+            metalness={damp?.oilMetalness ?? 0.4}
+            roughness={damp?.oilRoughness ?? 0.3}
+            transparent
+            opacity={0.55}
+            polygonOffset
+            polygonOffsetFactor={1}
+            polygonOffsetUnits={1}
+          />
+        )}
       </mesh>
       <mesh rotation-x={-Math.PI / 2} position={[2.2, 0.007, -4]} geometry={getSharedCircleGeometry(0.35, 10)}>
-        <meshStandardMaterial
-          color="#080810"
-          metalness={damp?.oilMetalness ?? 0.4}
-          roughness={(damp?.oilRoughness ?? 0.3) + 0.05}
-          transparent
-          opacity={0.4}
-          polygonOffset
-          polygonOffsetFactor={1}
-          polygonOffsetUnits={1}
-        />
+        {usePhysicalGlass ? (
+          <meshPhysicalMaterial
+            color="#080810"
+            metalness={Math.max(damp?.oilMetalness ?? 0.4, oilPuddle.metalness + 0.1)}
+            roughness={Math.min((damp?.oilRoughness ?? 0.3) + 0.05, oilPuddle.roughness + 0.04)}
+            clearcoat={oilPuddle.clearcoat * 0.9}
+            clearcoatRoughness={oilPuddle.clearcoatRoughness}
+            transparent
+            opacity={Math.min(0.58, Math.max(0.4, oilPuddle.opacity * 0.7))}
+            polygonOffset
+            polygonOffsetFactor={1}
+            polygonOffsetUnits={1}
+          />
+        ) : (
+          <meshStandardMaterial
+            color="#080810"
+            metalness={damp?.oilMetalness ?? 0.4}
+            roughness={(damp?.oilRoughness ?? 0.3) + 0.05}
+            transparent
+            opacity={0.4}
+            polygonOffset
+            polygonOffsetFactor={1}
+            polygonOffsetUnits={1}
+          />
+        )}
       </mesh>
     </group>
   );

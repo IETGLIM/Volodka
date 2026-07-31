@@ -15,6 +15,11 @@ export type StorySatellitePackId =
   | 'act1OfficeAftermath'
   | 'act1RoomExpanded'
   | 'act2Expanded'
+  | 'act3Expanded'
+  | 'act4Expanded'
+  | 'act5Expanded'
+  | 'act6Expanded'
+  | 'act7Expanded'
   | 'solnysh'
   | 'act4QuietHour'
   | 'act4SideQuests'
@@ -90,6 +95,16 @@ const storySatelliteLoaders: Record<
     import('../story/act1-room-expanded').then((m) => m.ACT1_ROOM_EXPANDED_NODES),
   act2Expanded: () =>
     import('../story/act2-story-expanded').then((m) => m.ACT2_STORY_EXPANDED_NODES),
+  act3Expanded: () =>
+    import('../story/act3-story-expanded').then((m) => m.ACT3_STORY_EXPANDED_NODES),
+  act4Expanded: () =>
+    import('../story/act4-story-expanded').then((m) => m.ACT4_STORY_EXPANDED_NODES),
+  act5Expanded: () =>
+    import('../story/act5-story-expanded').then((m) => m.ACT5_STORY_EXPANDED_NODES),
+  act6Expanded: () =>
+    import('../story/act6-story-expanded').then((m) => m.ACT6_STORY_EXPANDED_NODES),
+  act7Expanded: () =>
+    import('../story/act7-story-expanded').then((m) => m.ACT7_STORY_EXPANDED_NODES),
   solnysh: () => import('../story/solnyshStory').then((m) => m.STORY_NODES_SOLNYSH),
   act4QuietHour: () =>
     import('../story/act4QuietHour').then((m) => m.STORY_NODES_ACT4_QUIET_HOUR),
@@ -110,7 +125,11 @@ const storySatelliteLoaders: Record<
 const ACT_STORY_SATELLITES: Partial<Record<StoryPackId, readonly StorySatellitePackId[]>> = {
   act1: ['act1Extended', 'act1CafeOffice', 'act1OfficeAftermath', 'act1RoomExpanded', 'solnysh'],
   act2: ['act2Expanded'],
-  act4: ['act4QuietHour', 'act4SideQuests'],
+  act3: ['act3Expanded'],
+  act4: ['act4QuietHour', 'act4SideQuests', 'act4Expanded'],
+  act5: ['act5Expanded'],
+  act6: ['act6Expanded'],
+  act7: ['act7Expanded'],
   chk: ['chkExtended'],
 };
 

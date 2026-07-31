@@ -28,9 +28,25 @@ describe('Act 6 story presentation', () => {
     expect(node.autoSave).toBe(true);
     expect(node.musicCue).toBe('danger');
     expect(node.accessibilityAnnounce).toContain('Хранител');
-    const fight = node.choices[0];
+    const fight = node.choices.find((c) => c.next === 'act6_battle_victory');
     expect(fight?.effects).toContainEqual({ type: 'combat', enemyType: 'nexus_guardian' });
     expect(fight?.effects).toContainEqual({ type: 'addStat', stat: 'stress', value: 15 });
+  });
+
+  it('act6_nadzor_battle leaves to factory explore — not combat-forced overlay only', () => {
+    const node = STORY_NODES_ACT6.act6_nadzor_battle;
+    expect(node.effects).toContainEqual({
+      type: 'setFlag',
+      flag: 'act6_nadzor_battle_open',
+      flagValue: true,
+    });
+    expect(node.choices.some((c) => c.next === 'factory_explore_mode')).toBe(true);
+    const fight = node.choices.find((c) => c.next === 'act6_battle_victory');
+    expect(fight?.effects).toContainEqual({
+      type: 'setFlag',
+      flag: 'act6_nadzor_battle_resolved',
+      flagValue: true,
+    });
   });
 
   it('act6_core_choice collects poem_26 with autosave', () => {
@@ -49,6 +65,7 @@ describe('Act 6 story presentation', () => {
     expect(guardian?.next).toBe('act7_bridge');
     expect(liberator?.next).toBe('act7_bridge');
     expect(guardian?.effects).toContainEqual({ type: 'setFlag', flag: 'rooftop_confrontation_done', flagValue: true });
+    expect(node.choices.some((c) => c.next === 'factory_roof_explore_mode')).toBe(true);
   });
 
   it('act6_traitor_revealed sets traitor_revealed flag', () => {
@@ -117,6 +134,60 @@ describe('Act 6 story presentation', () => {
     expect(bridge.autoSave).toBe(true);
     expect(bridge.musicCue).toBe('mystery');
     expect(bridge.proceduralAmbientOverride).toBe('home');
+  });
+
+  it('act6_bridge / maria_warning leave to explore — not forced overlay only', () => {
+    expect(STORY_NODES_ACT6.act6_bridge.choices.some((c) => c.next === 'explore_mode')).toBe(true);
+    expect(
+      STORY_NODES_ACT6.act6_maria_warning.choices.some((c) => c.next === 'street_bench_view'),
+    ).toBe(true);
+    expect(STORY_NODES_ACT6.act6_bridge.effects).toContainEqual({
+      type: 'setFlag',
+      flag: 'act6_bridge_open',
+      flagValue: true,
+    });
+    expect(STORY_NODES_ACT6.act6_maria_warning.effects).toContainEqual({
+      type: 'setFlag',
+      flag: 'act6_maria_warning_open',
+      flagValue: true,
+    });
+  });
+
+  it('act6_battle_victory leave to factory hub — not forced overlay only', () => {
+    const victory = STORY_NODES_ACT6.act6_battle_victory;
+    expect(victory.choices.some((c) => c.next === 'factory_explore_mode')).toBe(true);
+    expect(victory.effects).toContainEqual({
+      type: 'setFlag',
+      flag: 'act6_battle_victory_open',
+      flagValue: true,
+    });
+    const progress = victory.choices.filter((c) => c.next === 'act6_core_choice');
+    expect(progress.length).toBe(2);
+    for (const choice of progress) {
+      expect(choice.effects).toContainEqual({
+        type: 'setFlag',
+        flag: 'act6_battle_victory_resolved',
+        flagValue: true,
+      });
+    }
+  });
+
+  it('investigation / traitor leave texts stay aligned with structure', () => {
+    const investigation = STORY_NODES_ACT6.act6_factory_investigation;
+    expect(investigation.choices.some((c) => c.next === 'factory_explore_mode')).toBe(true);
+    expect(
+      investigation.choices.find((c) => c.next === 'factory_explore_mode')?.text,
+    ).toContain('логи');
+    const discovery = STORY_NODES_ACT6.act6_traitor_discovery;
+    expect(discovery.choices.some((c) => c.next === 'factory_explore_mode')).toBe(true);
+    expect(discovery.choices.find((c) => c.next === 'factory_explore_mode')?.text).toContain(
+      'жжёт',
+    );
+    const revealed = STORY_NODES_ACT6.act6_traitor_revealed;
+    expect(revealed.choices.some((c) => c.next === 'factory_explore_mode')).toBe(true);
+    expect(revealed.choices.find((c) => c.next === 'factory_explore_mode')?.text).toContain(
+      'офис',
+    );
   });
 
   it('act6_nadzor_battle uses combat procedural bed', () => {

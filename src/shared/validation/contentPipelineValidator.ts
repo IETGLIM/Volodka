@@ -95,7 +95,7 @@ function buildSets() {
   const loreIds = new Set(INITIAL_LORE_ENTRIES.map((l) => l.id));
   const cutsceneIds = new Set(Object.keys(CUTSCENES));
   const enemyTypes = new Set(Object.keys(ENEMY_TEMPLATES));
-  const triggerMinigames = new Set(['codebreaker', 'openstack_terminal', 'bash_terminal']);
+  const triggerMinigames = new Set(['codebreaker', 'openstack_terminal', 'bash_terminal', 'poetry']);
 
   return {
     storyNodeIds,

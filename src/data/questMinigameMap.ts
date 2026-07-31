@@ -69,20 +69,4 @@ export const QUEST_MINIGAME_MAP: Record<string, QuestMinigameMapping> = {
     failureText: 'Стихотворение не открывается...',
     successText: 'Финальное стихотворение Владимира раскрыто!',
   },
-  system_takedown: {
-    questId: 'system_takedown',
-    objectiveId: 'execute_shutdown',
-    minigameType: 'bash_terminal',
-    difficulty: 4,
-    failureText: 'Процедура отключения прервана. Попробуй снова.',
-    successText: 'Процедура отключения «Надзора» запущена!',
-  },
-  final_poem: {
-    questId: 'final_poem',
-    objectiveId: 'compose_masterpiece',
-    minigameType: 'poetry',
-    difficulty: 3,
-    failureText: 'Стих не сложился... Попробуй снова.',
-    successText: 'Финальное стихотворение написано!',
-  },
 };

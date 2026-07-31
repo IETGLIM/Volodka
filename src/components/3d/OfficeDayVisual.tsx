@@ -21,7 +21,12 @@ import { INTERIOR_SHELL_MODELS } from '../../config/interiorShellModels';
 import { AuthoredInteriorShell } from './AuthoredInteriorShell';
 import { POLYHAVEN_MODELS } from '@/config/polyhavenAssets';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
-import { getInteriorShellScale } from '@/config/interiorShellScale';
+import { getInteriorShellScale, isWalkableInteriorShellAllowed } from '@/config/interiorShellScale';
+import {
+  allowsSelectiveMeshPhysicalWet,
+  getWetGlassPhysicalParams,
+} from '@/engine/graphics/wetStreetScenes';
+import { useIsMobileVisual } from '@/hooks/use-mobile';
 
 interface OfficeDayVisualProps {
   livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
@@ -101,7 +106,7 @@ const mat_light_tube = getSharedStandardMaterial({
 const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeof useGLTF>[3]>;
 const KENNEY_TERMINAL_MODEL = '/models/props/terminal.glb';
 
-/** Desk slots kept when authored shell + GLB dressing replace the full procedural grid. */
+/** Sparse desk slots — only when a walkable authored shell actually owns the room. */
 const OFFICE_HERO_DESK_POSITIONS: readonly [number, number, number][] = [
   [-4.5, 0, -3.5],
   [-1.5, 0, -1.0],
@@ -109,6 +114,22 @@ const OFFICE_HERO_DESK_POSITIONS: readonly [number, number, number][] = [
   [1.5, 0, -3.5],
   [1.5, 0, 1.5],
   [4.5, 0, -1.0],
+];
+
+/** Full IT-floor grid — procedural envelope owns the room (Kenney office shell blocked). */
+const OFFICE_FULL_DESK_POSITIONS: readonly [number, number, number][] = [
+  [-4.5, 0, -3.5],
+  [-4.5, 0, -1.0],
+  [-4.5, 0, 1.5],
+  [-1.5, 0, -3.5],
+  [-1.5, 0, -1.0],
+  [-1.5, 0, 1.5],
+  [1.5, 0, -3.5],
+  [1.5, 0, -1.0],
+  [1.5, 0, 1.5],
+  [4.5, 0, -3.5],
+  [4.5, 0, -1.0],
+  [4.5, 0, 1.5],
 ];
 
 function cloneOfficeAsset(source: THREE.Object3D, castShadow: boolean): THREE.Object3D {
@@ -189,28 +210,24 @@ function AuthoredOfficeDesk({ castShadow }: { castShadow: boolean }) {
 }
 
 export function OfficeDayVisual({ livePlayerPositionRef }: OfficeDayVisualProps) {
-  const { preset } = useGraphicsQuality();
+  const { preset, selectedPreset } = useGraphicsQuality();
+  const coarsePointer = useIsMobileVisual();
   const glbDressing = allowsGlbAssetRendering(preset.environmentRenderMode);
-  const useAuthoredShell = !preset.visualLite;
-  const useAuthoredDesks = !preset.visualLite && glbDressing;
-  const useSparseDeskGrid = (useAuthoredShell && useAuthoredDesks) || !glbDressing;
+  const useAuthoredShell =
+    !preset.visualLite && isWalkableInteriorShellAllowed('office');
+  // Kenney office shell is exterior_building (blocked). Sparse AuthoredOfficeDesk
+  // (table+terminal, no emissive monitor) only when a walkable shell actually mounts;
+  // otherwise keep the full 12-desk procedural grid for High/Ultra readability.
+  const useAuthoredDesks = useAuthoredShell && glbDressing;
+  const useSparseDeskGrid = useAuthoredDesks;
   const hideProceduralDeskGrid = useSparseDeskGrid;
   const deskPositions = useSparseDeskGrid
     ? OFFICE_HERO_DESK_POSITIONS
-    : ([
-        [-4.5, 0, -3.5],
-        [-4.5, 0, -1.0],
-        [-4.5, 0, 1.5],
-        [-1.5, 0, -3.5],
-        [-1.5, 0, -1.0],
-        [-1.5, 0, 1.5],
-        [1.5, 0, -3.5],
-        [1.5, 0, -1.0],
-        [1.5, 0, 1.5],
-        [4.5, 0, -3.5],
-        [4.5, 0, -1.0],
-        [4.5, 0, 1.5],
-      ] as const);
+    : OFFICE_FULL_DESK_POSITIONS;
+  const usePhysicalGlass = allowsSelectiveMeshPhysicalWet('office_day', selectedPreset, {
+    coarsePointer,
+  });
+  const wetGlass = useMemo(() => getWetGlassPhysicalParams('officeCubicleGlass'), []);
   const floorTexture = useCachedCanvasTexture('office_day:floor', createOfficeFloorTexture);
   const wallTexture = useCachedCanvasTexture('office_day:wall', createOfficeWallTexture);
   const ceilingWashTexture = useCachedCanvasTexture(
@@ -315,12 +332,46 @@ export function OfficeDayVisual({ livePlayerPositionRef }: OfficeDayVisualProps)
       {/* ═══════════════════════════════════════════════ */}
       <group position={[4.5, 0, 4.0]}>
         {/* Glass walls — renderOrder + depthWrite/polygonOffset to avoid z-fighting */}
-        <mesh position={[0, H / 2, -1.5]} renderOrder={2} material={glassMat}>
+        <mesh position={[0, H / 2, -1.5]} renderOrder={2} material={usePhysicalGlass ? undefined : glassMat}>
           <boxGeometry args={[3.0, H, 0.05]} />
+          {usePhysicalGlass ? (
+            <meshPhysicalMaterial
+              color="#b0c0d0"
+              roughness={wetGlass.roughness}
+              metalness={wetGlass.metalness}
+              transmission={wetGlass.transmission}
+              thickness={wetGlass.thickness}
+              clearcoat={wetGlass.clearcoat}
+              clearcoatRoughness={wetGlass.clearcoatRoughness}
+              transparent
+              opacity={wetGlass.opacity}
+              depthWrite={false}
+              polygonOffset
+              polygonOffsetFactor={1}
+              polygonOffsetUnits={1}
+            />
+          ) : null}
         </mesh>
         {/* Offset second glass wall slightly along shared edge to prevent corner z-fighting */}
-        <mesh position={[1.5, H / 2, -0.005]} renderOrder={2} material={glassMat}>
+        <mesh position={[1.5, H / 2, -0.005]} renderOrder={2} material={usePhysicalGlass ? undefined : glassMat}>
           <boxGeometry args={[0.05, H, 3.0]} />
+          {usePhysicalGlass ? (
+            <meshPhysicalMaterial
+              color="#b0c0d0"
+              roughness={wetGlass.roughness}
+              metalness={wetGlass.metalness}
+              transmission={wetGlass.transmission}
+              thickness={wetGlass.thickness}
+              clearcoat={wetGlass.clearcoat}
+              clearcoatRoughness={wetGlass.clearcoatRoughness}
+              transparent
+              opacity={wetGlass.opacity}
+              depthWrite={false}
+              polygonOffset
+              polygonOffsetFactor={1}
+              polygonOffsetUnits={1}
+            />
+          ) : null}
         </mesh>
         {/* Conference table */}
         <mesh position={[0, 0.4, 0]} castShadow material={mat_1}>

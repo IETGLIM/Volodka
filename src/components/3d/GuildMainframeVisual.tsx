@@ -1,6 +1,6 @@
 /* ─── Guild Mainframe: server rack vault under the IT guild ───
  * Dedicated cyber aesthetic — pulsing teal racks, cable trays, and a central
- * core column. Office GLB shell + prop dressing replace procedural rack clutter.
+ * core column. Procedural envelope owns walkable space; Kenney office GLB blocked.
  */
 
 import { useMemo, useRef, type MutableRefObject } from 'react';
@@ -13,11 +13,17 @@ import {
   getSharedPlaneGeometry,
 } from '@/engine/three/moduleGeometryRegistry';
 import { getSharedStandardMaterial } from '@/engine/three/moduleMaterialRegistry';
-import { getIndustrialDampFloorSettings } from '@/engine/graphics/wetStreetScenes';
+import {
+  allowsSelectiveMeshPhysicalWet,
+  getIndustrialDampFloorSettings,
+  getWetGlassPhysicalParams,
+  getWetPuddlePhysicalParams,
+} from '@/engine/graphics/wetStreetScenes';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
+import { useIsMobileVisual } from '@/hooks/use-mobile';
 import { INTERIOR_SHELL_MODELS } from '@/config/interiorShellModels';
-import { getInteriorShellScale } from '@/config/interiorShellScale';
+import { getInteriorShellScale, isWalkableInteriorShellAllowed } from '@/config/interiorShellScale';
 import { AuthoredInteriorShell } from './AuthoredInteriorShell';
 
 interface GuildMainframeVisualProps {
@@ -59,12 +65,21 @@ const matConsole = getSharedStandardMaterial({ color: '#1a2228', metalness: 0.45
 const matVent = getSharedStandardMaterial({ color: '#2a3038', metalness: 0.6, roughness: 0.35 });
 
 export function GuildMainframeVisual(_props: GuildMainframeVisualProps) {
-  const { preset } = useGraphicsQuality();
-  const useAuthoredShell = !preset.visualLite;
+  const { preset, selectedPreset } = useGraphicsQuality();
+  const coarsePointer = useIsMobileVisual();
+  const useAuthoredShell =
+    !preset.visualLite && isWalkableInteriorShellAllowed('office');
   const useGltfDressing = allowsGlbAssetRendering(preset.environmentRenderMode);
+  // Shell is Kenney exterior (blocked) — keep rack rows; prop dressing is sparse overlay.
   const hideProceduralClutter = useAuthoredShell && useGltfDressing;
+  const usePhysicalCrt = allowsSelectiveMeshPhysicalWet('guild_mainframe', selectedPreset, {
+    coarsePointer,
+  });
+  const crtGlass = useMemo(() => getWetGlassPhysicalParams('crtTerminalGlass'), []);
+  const oilPuddle = useMemo(() => getWetPuddlePhysicalParams(0.55), []);
   const rootRef = useRef<THREE.Group>(null);
   const coreRef = useRef<THREE.Mesh>(null);
+  const consoleScreenRef = useRef<THREE.Mesh>(null);
   const tRef = useRef(0);
   const damp = useMemo(() => getIndustrialDampFloorSettings('guild_mainframe'), []);
   const floorRoughness = damp?.roughness ?? 0.55;
@@ -89,6 +104,10 @@ export function GuildMainframeVisual(_props: GuildMainframeVisualProps) {
       const pulse = 0.85 + Math.sin(tRef.current * 2.1) * 0.35;
       if (coreRef.current) {
         (coreRef.current.material as THREE.MeshStandardMaterial).emissiveIntensity = 1.2 * pulse;
+      }
+      if (consoleScreenRef.current) {
+        const mat = consoleScreenRef.current.material as THREE.MeshStandardMaterial;
+        mat.emissiveIntensity = 0.75 + Math.sin(tRef.current * 3.2) * 0.2;
       }
     },
     { visibilityRef: rootRef },
@@ -129,16 +148,31 @@ export function GuildMainframeVisual(_props: GuildMainframeVisualProps) {
       </mesh>
       {damp && (
         <mesh rotation-x={-Math.PI / 2} position={[0, 0.01, -4.2]} geometry={getSharedCircleGeometry(1.6, 20)}>
-          <meshStandardMaterial
-            color="#0a1814"
-            metalness={damp.oilMetalness}
-            roughness={damp.oilRoughness}
-            transparent
-            opacity={0.42}
-            polygonOffset
-            polygonOffsetFactor={1}
-            polygonOffsetUnits={1}
-          />
+          {usePhysicalCrt ? (
+            <meshPhysicalMaterial
+              color="#0a1814"
+              metalness={Math.max(damp.oilMetalness, oilPuddle.metalness + 0.18)}
+              roughness={Math.min(damp.oilRoughness, oilPuddle.roughness)}
+              clearcoat={oilPuddle.clearcoat}
+              clearcoatRoughness={oilPuddle.clearcoatRoughness}
+              transparent
+              opacity={Math.min(0.62, Math.max(0.42, oilPuddle.opacity * 0.75))}
+              polygonOffset
+              polygonOffsetFactor={1}
+              polygonOffsetUnits={1}
+            />
+          ) : (
+            <meshStandardMaterial
+              color="#0a1814"
+              metalness={damp.oilMetalness}
+              roughness={damp.oilRoughness}
+              transparent
+              opacity={0.42}
+              polygonOffset
+              polygonOffsetFactor={1}
+              polygonOffsetUnits={1}
+            />
+          )}
         </mesh>
       )}
 
@@ -177,7 +211,25 @@ export function GuildMainframeVisual(_props: GuildMainframeVisualProps) {
           <mesh position={[5.2, 2.85, 0]} geometry={getSharedBoxGeometry(0.2, 0.08, 8)} material={matCable} />
 
           <mesh position={[-1.4, 0.55, 3.2]} castShadow geometry={getSharedBoxGeometry(1.6, 1.1, 0.7)} material={matConsole} />
-          <mesh position={[-1.4, 1.2, 3.45]} geometry={getSharedBoxGeometry(1.1, 0.45, 0.05)} material={matAccent} />
+          {usePhysicalCrt ? (
+            <mesh ref={consoleScreenRef} position={[-1.4, 1.2, 3.45]} geometry={getSharedBoxGeometry(1.1, 0.45, 0.05)}>
+              <meshPhysicalMaterial
+                color="#001133"
+                emissive="#4488ff"
+                emissiveIntensity={0.9}
+                roughness={crtGlass.roughness}
+                metalness={crtGlass.metalness}
+                transmission={crtGlass.transmission}
+                thickness={crtGlass.thickness}
+                clearcoat={crtGlass.clearcoat}
+                clearcoatRoughness={crtGlass.clearcoatRoughness}
+                transparent
+                opacity={crtGlass.opacity}
+              />
+            </mesh>
+          ) : (
+            <mesh position={[-1.4, 1.2, 3.45]} geometry={getSharedBoxGeometry(1.1, 0.45, 0.05)} material={matAccent} />
+          )}
           <mesh position={[1.6, 0.45, 3.0]} castShadow geometry={getSharedBoxGeometry(0.9, 0.9, 0.6)} material={matRack} />
         </>
       ) : null}

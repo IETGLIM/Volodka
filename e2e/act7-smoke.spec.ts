@@ -5,6 +5,7 @@ import {
   settleAfterWake,
   skipStoryTypewriter,
   skipWakeCinematic,
+  startNewGameFromMenu,
   waitForMenuReady,
   waitForStoryDialog,
 } from './helpers';
@@ -101,8 +102,7 @@ async function interactDreamPoemToEntrance(page: import('@playwright/test').Page
 test.describe('Act VII smoke', () => {
   test('bootstrap act7 library hub → closed overlay + movement', async ({ page }) => {
     await waitForMenuReady(page);
-    await page.getByTestId('menu-new-game').click();
-    await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
+    await startNewGameFromMenu(page);
 
     await skipWakeCinematic(page);
     await settleAfterWake(page);
@@ -117,8 +117,7 @@ test.describe('Act VII smoke', () => {
 
   test('library hub → library_archive_console → act7_library_archive beat', async ({ page }) => {
     await waitForMenuReady(page);
-    await page.getByTestId('menu-new-game').click();
-    await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
+    await startNewGameFromMenu(page);
 
     await skipWakeCinematic(page);
     await settleAfterWake(page);
@@ -146,8 +145,7 @@ test.describe('Act VII smoke', () => {
 
   test('bootstrap act7 dream hub → closed overlay + movement', async ({ page }) => {
     await waitForMenuReady(page);
-    await page.getByTestId('menu-new-game').click();
-    await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
+    await startNewGameFromMenu(page);
 
     await skipWakeCinematic(page);
     await settleAfterWake(page);
@@ -162,8 +160,7 @@ test.describe('Act VII smoke', () => {
 
   test('dream hub → sleep_dream_poem_core → sleep_dream_entrance beat', async ({ page }) => {
     await waitForMenuReady(page);
-    await page.getByTestId('menu-new-game').click();
-    await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
+    await startNewGameFromMenu(page);
 
     await skipWakeCinematic(page);
     await settleAfterWake(page);

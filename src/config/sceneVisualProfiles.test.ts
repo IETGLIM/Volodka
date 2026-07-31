@@ -6,9 +6,8 @@ describe('sceneVisualProfiles', () => {
     for (const sceneId of HERO_SCENE_IDS) {
       expect(isHeroScene(sceneId)).toBe(true);
       expect(getSceneVisualProfile(sceneId).forceFullPostFx).toBe(true);
-      // All hero scenes except park_day (outdoor) have AO enabled
-      const aoEnabled = sceneId !== 'park_day';
-      expect(getSceneVisualProfile(sceneId).enhancedAmbientOcclusion).toBe(aoEnabled);
+      // All hero scenes (including park canopy depth) have AO enabled
+      expect(getSceneVisualProfile(sceneId).enhancedAmbientOcclusion).toBe(true);
     }
   });
 
@@ -31,7 +30,10 @@ describe('sceneVisualProfiles', () => {
   });
 
   it('boosts park haze bloom on hero tier', () => {
-    expect(getSceneVisualProfile('park_day').bloomIntensityScale).toBe(1.06);
+    const park = getSceneVisualProfile('park_day');
+    expect(park.bloomIntensityScale).toBe(1.08);
+    expect(park.enhancedAmbientOcclusion).toBe(true);
+    expect(park.aoIntensity).toBe(2.2);
   });
 
   it('boosts interior mood bloom for home, library, office', () => {

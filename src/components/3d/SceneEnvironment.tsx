@@ -140,7 +140,7 @@ const DEFAULT_FOG_ANIM: FogAnimConfig = { pulseFreq: 0.05, nearAmplitude: 0.05, 
  *  obscure gameplay but adds atmospheric distance fade.
  *  Replaces the linear <fog> attach for these scenes only. */
 const OUTDOOR_EXP_FOG_DENSITY: Record<string, number> = {
-  park_day:           0.018,  // subtle forest mist
+  park_day:           0.021,  // denser alley mist for depth vs open plaza
   rooftop_edge:       0.020,  // city haze at sunset
   factory_roof:       0.022,  // denser industrial dusk than parent rooftop
   abandoned_factory:  0.021,  // bunker-approach exterior soot haze

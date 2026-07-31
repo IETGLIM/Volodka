@@ -9,14 +9,16 @@ import {
 } from './act7QuestHints';
 
 const quests: { questId: string; status: string; objectives: Record<string, boolean> }[] = [];
+const flags: Record<string, boolean> = {};
 
 vi.mock('@/engine/GameActionDispatcher', () => ({
-  getGameSnapshot: () => ({ quests }),
+  getGameSnapshot: () => ({ quests, playerState: { flags } }),
 }));
 
 describe('act7QuestHints', () => {
   beforeEach(() => {
     quests.length = 0;
+    for (const key of Object.keys(flags)) delete flags[key];
   });
 
   it('rebuild_the_guild — cafe first', () => {
@@ -43,11 +45,17 @@ describe('act7QuestHints', () => {
   it('epilogue_letters — room', () => {
     quests.push({ questId: 'epilogue_letters', status: 'active', objectives: {} });
     expect(getEpilogueLettersHint('park_day')).toContain('комнат');
+    expect(getEpilogueLettersHint('volodka_room')).toContain('Письма');
+    flags.epilogue_letters_started = true;
+    expect(getEpilogueLettersHint('volodka_room')).toContain('Тетрадь');
   });
 
   it('epilogue_monument — park', () => {
     quests.push({ questId: 'epilogue_monument', status: 'active', objectives: {} });
     expect(getEpilogueMonumentHint('volodka_room')).toContain('Парк');
+    expect(getEpilogueMonumentHint('park_day')).toContain('Обелиск');
+    flags.epilogue_monument_started = true;
+    expect(getEpilogueMonumentHint('park_day')).toContain('имя');
   });
 
   it('returns null when quest inactive', () => {

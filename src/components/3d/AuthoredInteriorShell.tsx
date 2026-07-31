@@ -3,6 +3,10 @@ import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { INTERIOR_SHELL_MODELS } from '@/config/interiorShellModels';
 import { isSceneAssetSystemAllowed } from '@/config/assetOwnership';
+import {
+  isExteriorBuildingShell,
+  type InteriorShellModelId,
+} from '@/config/interiorShellScale';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
 import type { SceneId } from '@/shared/types/game';
 
@@ -17,6 +21,18 @@ interface AuthoredInteriorShellProps {
   rotationY?: number;
   scale?: InteriorShellScale;
   castShadow?: boolean;
+  /** When set, exterior Kenney building impostors are refused even if ownership allows. */
+  shellModelId?: InteriorShellModelId;
+}
+
+function resolveShellModelId(
+  url: string,
+  shellModelId?: InteriorShellModelId,
+): InteriorShellModelId | null {
+  if (shellModelId) return shellModelId;
+  const entry = Object.entries(INTERIOR_SHELL_MODELS).find(([, path]) => path === url);
+  if (!entry) return null;
+  return entry[0] as InteriorShellModelId;
 }
 
 function cloneInteriorShell(source: THREE.Object3D, castShadow: boolean): THREE.Object3D {
@@ -79,6 +95,14 @@ export function AuthoredInteriorShell(props: AuthoredInteriorShellProps) {
     return null;
   }
 
+  const shellId = resolveShellModelId(props.url, props.shellModelId);
+  // Block Kenney facade impostors from walkable mounts; allow backdrop_dressing
+  // (factory/basement/pier/forest via SceneBackdropShell) and walkable_envelope
+  // (corridor) through. Never use backdrop shells as wall replacements.
+  if (shellId && isExteriorBuildingShell(shellId)) {
+    return null;
+  }
+
   return (
     <Suspense fallback={null}>
       <AuthoredInteriorShellModel {...props} />
@@ -86,10 +110,8 @@ export function AuthoredInteriorShell(props: AuthoredInteriorShellProps) {
   );
 }
 
-useGLTF.preload(INTERIOR_SHELL_MODELS.volodkaBedroom, true, true, extendLoader);
-useGLTF.preload(INTERIOR_SHELL_MODELS.cafe, true, true, extendLoader);
-useGLTF.preload(INTERIOR_SHELL_MODELS.office, true, true, extendLoader);
-useGLTF.preload(INTERIOR_SHELL_MODELS.library, true, true, extendLoader);
+// Exterior Kenney building impostors (bedroom/cafe/office/library) are blocked from
+// walkable mounts — do not preload them here. Backdrop shells below remain valid.
 useGLTF.preload(INTERIOR_SHELL_MODELS.factory, true, true, extendLoader);
 useGLTF.preload(INTERIOR_SHELL_MODELS.basement, true, true, extendLoader);
 useGLTF.preload(INTERIOR_SHELL_MODELS.pier, true, true, extendLoader);

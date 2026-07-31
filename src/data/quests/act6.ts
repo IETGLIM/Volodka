@@ -64,6 +64,7 @@ export const QUESTS_ACT6: QuestDefinition[] = [
     ],
     linkedStoryNodeId: 'act6_traitor_discovery',
     linkedStoryNodeIds: [
+      'act6_traitor_approach',
       'act6_factory_investigation',
       'act6_traitor_discovery',
       'act6_traitor_revealed',

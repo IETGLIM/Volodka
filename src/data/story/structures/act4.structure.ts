@@ -1312,15 +1312,31 @@ export const ACT4_STRUCTURE: Record<string, StoryNodeStructure> = {
         "flagValue": true
       },
       {
-        "type": "triggerQuest",
-        "questId": "final_code"
+        "type": "setFlag",
+        "flag": "final_code_started",
+        "flagValue": true
       },
       {
         "type": "triggerQuest",
-        "questId": "night_before_dawn"
+        "questId": "final_code"
       }
     ],
     "choices": [
+      {
+        "text": "",
+        "next": "final_code_approach",
+        "condition": {
+          "missingFlag": "final_code_completed"
+        }
+      },
+      {
+        "text": "",
+        "next": "night_before_dawn_approach",
+        "condition": {
+          "flag": "final_code_completed",
+          "missingFlag": "all_allies_confirmed"
+        }
+      },
       {
         "text": "",
         "next": "act4_final_choice",

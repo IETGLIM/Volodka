@@ -1,6 +1,6 @@
 /* ─── Library Basement: archive vault under the stacks ───
  * Not LibraryDay — low concrete, rusted shelves, amber terminal glow.
- * library GLB shell + prop dressing replace procedural shelf clutter at high quality.
+ * Procedural envelope owns walkable space; Kenney library GLB blocked exterior.
  */
 
 import { useMemo, useRef, type MutableRefObject } from 'react';
@@ -13,14 +13,18 @@ import {
 } from '@/engine/three/moduleGeometryRegistry';
 import { getSharedStandardMaterial } from '@/engine/three/moduleMaterialRegistry';
 import {
+  allowsSelectiveMeshPhysicalWet,
   getIndustrialDampFloorSettings,
   getRainSpillInFloorBoost,
+  getWetGlassPhysicalParams,
+  getWetPuddlePhysicalParams,
 } from '@/engine/graphics/wetStreetScenes';
 import { useGameStore } from '@/store/gameStore';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
+import { useIsMobileVisual } from '@/hooks/use-mobile';
 import { INTERIOR_SHELL_MODELS } from '@/config/interiorShellModels';
-import { getInteriorShellScale } from '@/config/interiorShellScale';
+import { getInteriorShellScale, isWalkableInteriorShellAllowed } from '@/config/interiorShellScale';
 import { AuthoredInteriorShell } from './AuthoredInteriorShell';
 
 interface LibraryBasementVisualProps {
@@ -58,10 +62,18 @@ const matAmberSpill = getSharedStandardMaterial({
 });
 
 export function LibraryBasementVisual(_props: LibraryBasementVisualProps) {
-  const { preset } = useGraphicsQuality();
-  const useAuthoredShell = !preset.visualLite;
+  const { preset, selectedPreset } = useGraphicsQuality();
+  const coarsePointer = useIsMobileVisual();
+  const useAuthoredShell =
+    !preset.visualLite && isWalkableInteriorShellAllowed('library');
   const useGltfDressing = allowsGlbAssetRendering(preset.environmentRenderMode);
+  // Shell is Kenney exterior (blocked) — keep archive shelves; prop dressing overlays.
   const hideProceduralClutter = useAuthoredShell && useGltfDressing;
+  const usePhysicalCrt = allowsSelectiveMeshPhysicalWet('library_basement', selectedPreset, {
+    coarsePointer,
+  });
+  const crtGlass = useMemo(() => getWetGlassPhysicalParams('crtTerminalGlass'), []);
+  const oilPuddle = useMemo(() => getWetPuddlePhysicalParams(0.48), []);
   const rootRef = useRef<THREE.Group>(null);
   const screenRef = useRef<THREE.Mesh>(null);
   const tRef = useRef(0);
@@ -138,16 +150,31 @@ export function LibraryBasementVisual(_props: LibraryBasementVisualProps) {
       </mesh>
       {spill && (
         <mesh rotation-x={-Math.PI / 2} position={[0, 0.008, D * 0.32]} geometry={getSharedCircleGeometry(2.1, 22)}>
-          <meshStandardMaterial
-            color="#1a2218"
-            metalness={damp?.oilMetalness ?? 0.48}
-            roughness={damp?.oilRoughness ?? 0.28}
-            transparent
-            opacity={spill.puddleOpacity}
-            polygonOffset
-            polygonOffsetFactor={1}
-            polygonOffsetUnits={1}
-          />
+          {usePhysicalCrt ? (
+            <meshPhysicalMaterial
+              color="#1a2218"
+              metalness={Math.max(damp?.oilMetalness ?? 0.48, oilPuddle.metalness + 0.12)}
+              roughness={Math.min(damp?.oilRoughness ?? 0.28, oilPuddle.roughness + 0.04)}
+              clearcoat={oilPuddle.clearcoat * 0.9}
+              clearcoatRoughness={oilPuddle.clearcoatRoughness}
+              transparent
+              opacity={Math.min(0.72, Math.max(spill.puddleOpacity, oilPuddle.opacity * 0.8))}
+              polygonOffset
+              polygonOffsetFactor={1}
+              polygonOffsetUnits={1}
+            />
+          ) : (
+            <meshStandardMaterial
+              color="#1a2218"
+              metalness={damp?.oilMetalness ?? 0.48}
+              roughness={damp?.oilRoughness ?? 0.28}
+              transparent
+              opacity={spill.puddleOpacity}
+              polygonOffset
+              polygonOffsetFactor={1}
+              polygonOffsetUnits={1}
+            />
+          )}
         </mesh>
       )}
 
@@ -182,12 +209,30 @@ export function LibraryBasementVisual(_props: LibraryBasementVisualProps) {
         </>
       ) : null}
 
-      <mesh
-        ref={screenRef}
-        position={[0, 0.95, -2.95]}
-        geometry={getSharedBoxGeometry(0.55, 0.35, 0.04)}
-        material={matTerminal}
-      />
+      {usePhysicalCrt ? (
+        <mesh ref={screenRef} position={[0, 0.95, -2.95]} geometry={getSharedBoxGeometry(0.55, 0.35, 0.04)}>
+          <meshPhysicalMaterial
+            color="#1a1000"
+            emissive="#ffcc66"
+            emissiveIntensity={1.35}
+            roughness={crtGlass.roughness}
+            metalness={crtGlass.metalness}
+            transmission={crtGlass.transmission}
+            thickness={crtGlass.thickness}
+            clearcoat={crtGlass.clearcoat}
+            clearcoatRoughness={crtGlass.clearcoatRoughness}
+            transparent
+            opacity={crtGlass.opacity}
+          />
+        </mesh>
+      ) : (
+        <mesh
+          ref={screenRef}
+          position={[0, 0.95, -2.95]}
+          geometry={getSharedBoxGeometry(0.55, 0.35, 0.04)}
+          material={matTerminal}
+        />
+      )}
 
       <mesh position={[0, 0.02, -2.6]} rotation-x={-Math.PI / 2} geometry={getSharedCircleGeometry(1.4, 18)} material={matAmberSpill} />
       <mesh position={[0, 1.4, 0]} rotation-x={-Math.PI / 2} geometry={getSharedCircleGeometry(3.2, 20)} material={matDust} />

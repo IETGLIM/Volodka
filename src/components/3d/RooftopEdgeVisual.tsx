@@ -24,7 +24,11 @@ import {
 } from '@/engine/graphics/proceduralSkyTextures';
 import { useGameStore } from '@/store/gameStore';
 import { WetStreetGround } from './WetStreetGround';
-import { getWetPuddlePhysicalParams } from '@/engine/graphics/wetStreetScenes';
+import {
+  allowsSelectiveMeshPhysicalWet,
+  getWetGlassPhysicalParams,
+  getWetPuddlePhysicalParams,
+} from '@/engine/graphics/wetStreetScenes';
 import { useIsMobileVisual } from '@/hooks/use-mobile';
 
 interface RooftopEdgeVisualProps {
@@ -50,12 +54,13 @@ export function RooftopEdgeVisual({ livePlayerPositionRef: _livePlayerPositionRe
   const { selectedPreset } = useGraphicsQuality();
   const coarsePointer = useIsMobileVisual();
   const usePhysicalWet =
-    allowsHeavyGfxFeature(selectedPreset, 'meshPhysicalWet', { coarsePointer })
+    allowsSelectiveMeshPhysicalWet('rooftop_edge', selectedPreset, { coarsePointer })
     && rainIntensity > 0.08;
   const puddleParams = useMemo(
     () => getWetPuddlePhysicalParams(rainIntensity),
     [rainIntensity],
   );
+  const wetSkylight = useMemo(() => getWetGlassPhysicalParams('rooftopSkylightGlass'), []);
 
   const W = 10;
   const D = 8;
@@ -202,9 +207,23 @@ export function RooftopEdgeVisual({ livePlayerPositionRef: _livePlayerPositionRe
         <mesh position={[0, 0.6, 0]} castShadow geometry={getSharedBoxGeometry(1.2, 1.2, 0.8)}>
           <meshStandardMaterial color="#4a4a4a" metalness={0.4} roughness={0.6} />
         </mesh>
-        {/* Vent grille */}
+        {/* Vent grille / wet gauge glass */}
         <mesh position={[0, 0.8, 0.41]} geometry={getSharedPlaneGeometry(0.8, 0.5)}>
-          <meshStandardMaterial color="#3a3a3a" metalness={0.3} roughness={0.5} />
+          {usePhysicalWet ? (
+            <meshPhysicalMaterial
+              color="#1a222c"
+              roughness={wetSkylight.roughness}
+              metalness={wetSkylight.metalness}
+              transmission={wetSkylight.transmission}
+              thickness={wetSkylight.thickness}
+              clearcoat={wetSkylight.clearcoat}
+              clearcoatRoughness={wetSkylight.clearcoatRoughness}
+              transparent
+              opacity={wetSkylight.opacity}
+            />
+          ) : (
+            <meshStandardMaterial color="#3a3a3a" metalness={0.3} roughness={0.5} />
+          )}
         </mesh>
         {/* Pipes */}
         <mesh position={[-0.5, 0.3, -0.3]} castShadow geometry={getSharedCylinderGeometry(0.04, 0.04, 0.6, 6)}>
@@ -292,6 +311,24 @@ export function RooftopEdgeVisual({ livePlayerPositionRef: _livePlayerPositionRe
         {/* Door */}
         <mesh position={[0, 1.1, 0.06]} geometry={getSharedBoxGeometry(0.8, 2.1, 0.05)}>
           <meshStandardMaterial color="#2a1a10" roughness={0.85} />
+        </mesh>
+        {/* Stairwell door pane — selective wet glass */}
+        <mesh position={[0, 1.55, 0.1]} geometry={getSharedPlaneGeometry(0.42, 0.55)}>
+          {usePhysicalWet ? (
+            <meshPhysicalMaterial
+              color="#15202a"
+              roughness={wetSkylight.roughness}
+              metalness={wetSkylight.metalness}
+              transmission={wetSkylight.transmission}
+              thickness={wetSkylight.thickness}
+              clearcoat={wetSkylight.clearcoat}
+              clearcoatRoughness={wetSkylight.clearcoatRoughness}
+              transparent
+              opacity={Math.min(0.7, wetSkylight.opacity + 0.1)}
+            />
+          ) : (
+            <meshStandardMaterial color="#1a2830" metalness={0.2} roughness={0.35} transparent opacity={0.55} />
+          )}
         </mesh>
         {/* Handle */}
         <mesh position={[0.3, 1.0, 0.1]} geometry={getSharedBoxGeometry(0.04, 0.12, 0.04)}>

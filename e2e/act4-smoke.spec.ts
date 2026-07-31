@@ -9,6 +9,7 @@ import {
   settleAfterWake,
   skipStoryTypewriter,
   skipWakeCinematic,
+  startNewGameFromMenu,
   waitForMenuReady,
   waitForStoryChoices,
   waitForStoryDialog,
@@ -72,8 +73,7 @@ async function interactMarchBannerToPeacefulMarch(page: import('@playwright/test
 test.describe('Act IV smoke', () => {
   test('bootstrap act4 street winter hub → closed overlay + movement', async ({ page }) => {
     await waitForMenuReady(page);
-    await page.getByTestId('menu-new-game').click();
-    await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
+    await startNewGameFromMenu(page);
 
     await skipWakeCinematic(page);
     await settleAfterWake(page);
@@ -90,8 +90,7 @@ test.describe('Act IV smoke', () => {
     page,
   }) => {
     await waitForMenuReady(page);
-    await page.getByTestId('menu-new-game').click();
-    await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
+    await startNewGameFromMenu(page);
 
     await skipWakeCinematic(page);
     await settleAfterWake(page);
@@ -121,8 +120,7 @@ test.describe('Act IV smoke', () => {
     page,
   }) => {
     await waitForMenuReady(page);
-    await page.getByTestId('menu-new-game').click();
-    await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
+    await startNewGameFromMenu(page);
 
     await skipWakeCinematic(page);
     await settleAfterWake(page);

@@ -110,15 +110,15 @@ export const QUESTS_ACT7: QuestDefinition[] = [
       {
         id: 'execute_shutdown',
         description: 'Запустить процедуру отключения «Надзора»',
-        type: 'minigame_completed',
-        target: 'bash_terminal',
+        type: 'flag_set',
+        target: 'nadzor_shutdown_complete',
         completed: false,
       },
       {
         id: 'witness_system_death',
         description: 'Стать свидетелем смерти системы',
         type: 'flag_set',
-        target: 'nadzor_shutdown_complete',
+        target: 'nadzor_destroyed',
         completed: false,
       },
     ],
@@ -169,8 +169,9 @@ export const QUESTS_ACT7: QuestDefinition[] = [
       {
         id: 'compose_masterpiece',
         description: 'Написать финальное стихотворение',
-        type: 'minigame_completed',
-        target: 'poetry',
+        type: 'flag_set',
+        // act7_poem_written sets final_poem_written — not journey_reflected (that is reflect_on_journey).
+        target: 'final_poem_written',
         completed: false,
       },
       {

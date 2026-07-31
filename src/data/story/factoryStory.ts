@@ -78,6 +78,7 @@ export const STORY_NODES_FACTORY: Record<string, StoryNode> = {
           { type: 'transitionScene', sceneId: 'factory_basement' },
         ],
       },
+      { text: 'Отойти — снежинка на периле подождёт', next: 'factory_roof_explore_mode' },
     ],
   },
 
@@ -97,6 +98,7 @@ export const STORY_NODES_FACTORY: Record<string, StoryNode> = {
         next: 'factory_zarya_photo',
         effects: [{ type: 'setFlag', flag: 'factory_zarya_storm_done', flagValue: true }],
       },
+      { text: 'Отойти — кассета в ящике подождёт', next: 'basement_explore_mode' },
     ],
   },
 
@@ -117,6 +119,7 @@ export const STORY_NODES_FACTORY: Record<string, StoryNode> = {
         next: 'factory_zarya_memory_restore',
         effects: [{ type: 'setFlag', flag: 'factory_zarya_photo_done', flagValue: true }],
       },
+      { text: 'Отойти — фото у Зины подождёт', next: 'basement_explore_mode' },
     ],
   },
 
@@ -184,6 +187,7 @@ export const STORY_NODES_FACTORY: Record<string, StoryNode> = {
         next: 'factory_baba_zina_tea_mint',
         effects: [{ type: 'setFlag', flag: 'factory_baba_zina_tea_kettle', flagValue: true }],
       },
+      { text: 'Отойти — чайник подождёт', next: 'factory_explore_mode' },
     ],
   },
 
@@ -205,6 +209,7 @@ export const STORY_NODES_FACTORY: Record<string, StoryNode> = {
           { type: 'addStat', stat: 'stress', value: -3 },
         ],
       },
+      { text: 'Отойти — кружка стынет у паяльной', next: 'factory_explore_mode' },
     ],
   },
 
@@ -225,6 +230,7 @@ export const STORY_NODES_FACTORY: Record<string, StoryNode> = {
         next: 'factory_baba_zina_tea_history',
         effects: [{ type: 'setFlag', flag: 'factory_baba_zina_tea_hum', flagValue: true }],
       },
+      { text: 'Отойти — гул останется', next: 'factory_explore_mode' },
     ],
   },
 
@@ -243,6 +249,7 @@ export const STORY_NODES_FACTORY: Record<string, StoryNode> = {
         next: 'factory_baba_zina_tea_done',
         effects: [{ type: 'setFlag', flag: 'factory_baba_zina_tea_history', flagValue: true }],
       },
+      { text: 'Отойти — допить позже', next: 'factory_explore_mode' },
     ],
   },
 

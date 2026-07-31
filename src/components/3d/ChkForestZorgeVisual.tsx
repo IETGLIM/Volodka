@@ -17,10 +17,11 @@ import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
 import { EnvironmentDetail, SceneClutterGate } from './lod/PropDistanceGate';
 import { scratchColor } from '@/engine/three/frameScratch';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
-import { getIndustrialDampFloorSettings } from '@/engine/graphics/wetStreetScenes';
+import { getIndustrialDampFloorSettings, allowsSelectiveMeshPhysicalWet, getWetGlassPhysicalParams } from '@/engine/graphics/wetStreetScenes';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
 import { SceneBackdropShell } from './SceneBackdropShell';
+import { useIsMobileVisual } from '@/hooks/use-mobile';
 import type { SceneId } from '@/shared/types/game';
 
 interface ChkForestZorgeVisualProps {
@@ -46,10 +47,13 @@ export function ChkForestZorgeVisual({
   livePlayerPositionRef,
   sceneId = 'chk_forest_zorge',
 }: ChkForestZorgeVisualProps) {
-  const { preset } = useGraphicsQuality();
+  const { preset, selectedPreset } = useGraphicsQuality();
+  const coarsePointer = useIsMobileVisual();
   const useGltfDressing = allowsGlbAssetRendering(preset.environmentRenderMode);
   const useAuthoredBackdrop = !preset.visualLite && useGltfDressing;
-  const hideProceduralForestBelt = useAuthoredBackdrop;
+  // Forest clearing GLB is backdrop_dressing only (far perimeter impostor). Prop dressing is
+  // sparse overlay (1 bench vs 5 log seats) — never sparsify the tree belt OR campfire
+  // seats/crate/guitar or the clearing reads empty on High/Ultra (same as river_pier).
   const backdropSceneId: SceneId = sceneId === 'chk_campfire_night' ? 'chk_forest_zorge' : sceneId;
   const groundTexture = useCachedCanvasTexture('chk_forest_zorge:ground', createForestGroundTexture);
   const envProfile = useMemo(
@@ -59,6 +63,8 @@ export function ChkForestZorgeVisual({
   const dampSceneId: SceneId =
     sceneId === 'chk_campfire_night' ? 'chk_campfire_night' : 'chk_forest_zorge';
   const damp = useMemo(() => getIndustrialDampFloorSettings(dampSceneId), [dampSceneId]);
+  const useWetBottle = allowsSelectiveMeshPhysicalWet(dampSceneId, selectedPreset, { coarsePointer });
+  const wetBottle = useMemo(() => getWetGlassPhysicalParams('campfireBottleGlass'), []);
   const fireLightRef = useRef<THREE.PointLight>(null);
   const fireMeshRef = useRef<THREE.Mesh>(null);
   const tRef = useRef(0);
@@ -167,10 +173,9 @@ export function ChkForestZorgeVisual({
         </>
       )}
 
-      {/* Forest perimeter — lightweight procedural trees (no ez-tree bundle) */}
-      {!hideProceduralForestBelt
-        ? treePlacements.map((t) => (
-          <EnvironmentDetail key={`tree-lod-${t.seed}`} minLod="standard" position={t.pos}>
+      {/* Forest perimeter — lightweight procedural trees (backdrop GLB does not own the ring) */}
+      {treePlacements.map((t) => (
+        <EnvironmentDetail key={`tree-lod-${t.seed}`} minLod="standard" position={t.pos}>
           <SceneClutterGate
             key={t.seed}
             livePlayerPositionRef={livePlayerPositionRef}
@@ -184,28 +189,11 @@ export function ChkForestZorgeVisual({
               rotation={t.rot}
             />
           </SceneClutterGate>
-          </EnvironmentDetail>
-        ))
-        : treePlacements.slice(0, 4).map((t) => (
-          <EnvironmentDetail key={`tree-lod-${t.seed}`} minLod="standard" position={t.pos}>
-            <SceneClutterGate
-              key={t.seed}
-              livePlayerPositionRef={livePlayerPositionRef}
-              position={t.pos}
-              maxDistance={envProfile.decorativeDistance}
-            >
-              <ForestTree
-                position={[0, 0, 0]}
-                preset={t.preset}
-                scale={t.scale}
-                rotation={t.rot}
-              />
-            </SceneClutterGate>
-          </EnvironmentDetail>
-        ))}
+        </EnvironmentDetail>
+      ))}
 
-      {/* Instanced belt — full ring at Lite/procedural; sparse ring when backdrop+GLB hide hero trees */}
-      <InstancedTreeBelt density={hideProceduralForestBelt ? 'sparse' : 'full'} />
+      {/* Instanced belt — full ring; backdrop is far impostor, not a density replace */}
+      <InstancedTreeBelt density="full" />
 
       {/* Night sky: moon disc + starfield (fog-exempt, skybox is disabled here) */}
       <NightSky />
@@ -246,9 +234,8 @@ export function ChkForestZorgeVisual({
         <pointLight ref={fireLightRef} color="#ff8833" intensity={3.2} distance={14} position={[0, 1.2, 0]} castShadow />
       </group>
 
-      {/* Log seats around fire — ScenePropDressing owns bench/crate seating on High/Ultra */}
-      {!useGltfDressing
-        ? [
+      {/* Log seats around fire — prop dressing has 1 bench; keep the full ring */}
+      {[
         [-2.2, 0, 0.8],
         [2.2, 0, 0.6],
         [0.5, 0, -2.0],
@@ -258,32 +245,55 @@ export function ChkForestZorgeVisual({
         <mesh key={`seat-${i}`} position={[x, y + 0.12, z]} rotation={[0, i * 0.7, 0]} castShadow geometry={getSharedCylinderGeometry(0.18, 0.2, 0.24, 8)}>
           <meshStandardMaterial color="#4a3520" roughness={0.85} />
         </mesh>
-      ))
-        : null}
+      ))}
 
-      {/* Port wine crate + bottles — ScenePropDressing owns High/Ultra */}
-      {!useGltfDressing ? (
+      {/* Port wine crate + bottles — procedural storytelling; prop dressing is overlay */}
       <group position={[1.8, 0, 1.6]}>
         <mesh position={[0, 0.2, 0]} castShadow geometry={getSharedBoxGeometry(0.7, 0.4, 0.5)}>
           <meshStandardMaterial color="#5a3020" roughness={0.8} />
         </mesh>
         <mesh position={[-0.15, 0.48, 0]} castShadow geometry={getSharedCylinderGeometry(0.04, 0.04, 0.28, 8)}>
-          <meshStandardMaterial color="#2a0818" roughness={0.4} metalness={0.3} />
+          {useWetBottle ? (
+            <meshPhysicalMaterial
+              color="#2a0818"
+              roughness={wetBottle.roughness}
+              metalness={wetBottle.metalness}
+              transmission={wetBottle.transmission}
+              thickness={wetBottle.thickness}
+              clearcoat={wetBottle.clearcoat}
+              clearcoatRoughness={wetBottle.clearcoatRoughness}
+              transparent
+              opacity={wetBottle.opacity}
+            />
+          ) : (
+            <meshStandardMaterial color="#2a0818" roughness={0.4} metalness={0.3} />
+          )}
         </mesh>
         <mesh position={[0.12, 0.46, 0.08]} castShadow geometry={getSharedCylinderGeometry(0.035, 0.035, 0.24, 8)}>
-          <meshStandardMaterial color="#1a0610" roughness={0.4} metalness={0.3} />
+          {useWetBottle ? (
+            <meshPhysicalMaterial
+              color="#1a0610"
+              roughness={wetBottle.roughness}
+              metalness={wetBottle.metalness}
+              transmission={wetBottle.transmission * 0.85}
+              thickness={wetBottle.thickness}
+              clearcoat={wetBottle.clearcoat}
+              clearcoatRoughness={wetBottle.clearcoatRoughness}
+              transparent
+              opacity={wetBottle.opacity}
+            />
+          ) : (
+            <meshStandardMaterial color="#1a0610" roughness={0.4} metalness={0.3} />
+          )}
         </mesh>
       </group>
-      ) : null}
 
-      {/* Guitar lean spot (Элис) — ScenePropDressing owns High/Ultra */}
-      {!useGltfDressing ? (
+      {/* Guitar lean spot (Элис) — keep procedural; prop dressing places another nearby */}
       <group position={[-1.6, 0, -1.2]} rotation={[0, 0.4, 0]}>
         <mesh position={[0, 0.55, 0]} rotation={[0.15, 0, -0.25]} castShadow geometry={getSharedBoxGeometry(0.35, 0.55, 0.06)}>
           <meshStandardMaterial color="#8B4513" roughness={0.7} />
         </mesh>
       </group>
-      ) : null}
 
       {/* Portable speaker (heavy music) */}
       <mesh position={[2.5, 0.25, -1.0]} castShadow geometry={getSharedBoxGeometry(0.35, 0.5, 0.25)}>
