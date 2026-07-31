@@ -142,6 +142,11 @@ export const STORY_NODES_ACT4_SIDE_QUESTS: Record<string, StoryNode> = {
           { type: 'addSkill', skill: 'coding', value: 1 },
         ],
       },
+      {
+        text: 'Отойти — daemon ещё зелёный, Зареме сказать позже',
+        next: 'home_evening_explore_mode',
+        condition: { missingFlag: 'banking_system_recovered' },
+      },
     ],
   },
 
@@ -676,6 +681,11 @@ export const STORY_NODES_ACT4_SIDE_QUESTS: Record<string, StoryNode> = {
           { type: 'setFlag', flag: 'poem_composed', flagValue: true },
           { type: 'addSkill', skill: 'writing', value: 3 },
         ],
+      },
+      {
+        text: 'Отойти от уступа — строки ещё в кармане',
+        next: 'rooftop_explore_mode',
+        condition: { missingFlag: 'poem_composed' },
       },
     ],
   },

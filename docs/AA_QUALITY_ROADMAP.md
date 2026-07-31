@@ -4,7 +4,7 @@
 
 > Honest plan to push this browser RPG toward **AA-studio visual + systems density** with **$0 spend**.
 
-> Companion to `ARCHITECTURE.md` / `AI_SESSION_CONTEXT.md` / `readme.md`. Last updated: 2026-07-31 (Tick 47 continuous).
+> Companion to `ARCHITECTURE.md` / `AI_SESSION_CONTEXT.md` / `readme.md`. Last updated: 2026-07-31 (Tick 48 continuous).
 
 
 
@@ -1166,11 +1166,11 @@ From `config/performanceBudgets.json` + build gate:
 
 ## Next 3 actions
 
-1. Act 4 quiet-hour leave-scan leftovers (`act4_quiet_*` hub loops) + expansionQuestStory next-only chains.
+1. MeshPhysical thin hub gap: `home_evening` window/glass accents (still off selective wet list; kitchen hub for banking leave).
 
 2. Mixamo ↔ Quaternius full bone remap (hip filter + talk fallback still interim).
 
-3. MeshPhysical thin hub gaps / `banking_crash_verify` → kitchen_table leave if still next-only.
+3. expansionQuestStory / act6–7 expanded next-only chains (leave-scan); quiet-hour hub↔vignette loops are intentional — do not “fix” into explore hubs.
 
 ---
 
@@ -1190,7 +1190,25 @@ From `config/performanceBudgets.json` + build gate:
 
 - Forest still places a nearby Kenney guitar beside the procedural lean spot — intentional density, not coplanar z-fight.
 
+- Parallel agent may be touching Vite preload / Vercel cache — do not edit `vercel.json` / `vite.config.*` / SW from AA leave ticks.
 
+
+
+---
+
+
+
+## Tick 48 (this session)
+
+| Change | Why |
+|--------|-----|
+| Leave-scan: Act 4 quiet-hour vignettes = intentional `→ act4_quiet_hour` hub loops — **not** soft-locks | Avoid hub↔vignette / explore-mode thrash |
+| `banking_crash_verify` leave → `home_evening_explore_mode` (`!banking_system_recovered`) | **Bug fix:** next-only forced confirm → kitchen |
+| `last_poem_compose` leave → `rooftop_explore_mode` (`!poem_composed`) | **Bug fix:** next-only forced recite mid-compose |
+| Rooftop registry `entryNodeIds` + `last_poem_compose` | Closed-overlay mid-resume after leave |
+| Hub/zone mid-resume already present (home verify + roof approach/ledge) | Re-entry after leave |
+| Test: banking verify / last poem compose leave + hub mid-resume | Regression guard |
+| `act4SideQuestStory` leave-scan = **0** next-only | Tick target clean |
 
 ---
 

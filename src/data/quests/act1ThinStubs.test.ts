@@ -3,6 +3,7 @@ import { QUEST_DEFINITIONS } from '@/data/quests';
 import { STORY_NODES } from '@/data/story';
 import { TRIGGER_ZONES } from '@/data/triggerZones';
 import { EXPANDED_DIALOGUE_NODES } from '@/data/expandedDialogueNodes';
+import { SCENE_EXPLORE_HUB_DEFS } from '@/shared/sceneExploreHubRegistry';
 
 const THICKENED = [
   'alberts_lesson',
@@ -251,6 +252,46 @@ describe('Act 1–2 thin stub → multi-beat conversion', () => {
     expect(office.choices.some((c) => c.next === 'digital_ghost_traces')).toBe(true);
     expect(office.choices.some((c) => c.next === 'digital_ghost_firewall')).toBe(true);
     expect(winter.choices.some((c) => c.next === 'night_watch_child')).toBe(true);
+  });
+
+  it('banking_crash_verify / last_poem_compose leave + hub mid-resume', () => {
+    expect(
+      STORY_NODES.banking_crash_verify.choices.some(
+        (c) =>
+          c.next === 'home_evening_explore_mode'
+          && c.condition?.missingFlag === 'banking_system_recovered',
+      ),
+    ).toBe(true);
+    expect(
+      STORY_NODES.banking_crash_verify.choices.some((c) => c.next === 'kitchen_table'),
+    ).toBe(true);
+    expect(
+      STORY_NODES.last_poem_compose.choices.some(
+        (c) =>
+          c.next === 'rooftop_explore_mode' && c.condition?.missingFlag === 'poem_composed',
+      ),
+    ).toBe(true);
+    expect(
+      STORY_NODES.last_poem_compose.choices.some((c) => c.next === 'last_poem_recite'),
+    ).toBe(true);
+
+    const home = STORY_NODES.home_evening_explore_mode;
+    const rooftop = STORY_NODES.rooftop_explore_mode;
+    const verify = home.choices.find((c) => c.next === 'banking_crash_verify');
+    expect(verify?.condition?.flag).toBe('bash_terminal_solved');
+    expect(verify?.condition?.missingFlag).toBe('banking_system_recovered');
+    const poem = rooftop.choices.find((c) => c.next === 'last_poem_approach');
+    expect(poem?.condition?.flag).toBe('all_poems_collected');
+    expect(poem?.condition?.missingFlag).toBe('poem_composed');
+    expect(TRIGGER_ZONES.find((z) => z.id === 'home_banking_verify')?.linkedStoryNodeId).toBe(
+      'banking_crash_verify',
+    );
+    expect(TRIGGER_ZONES.find((z) => z.id === 'rooftop_last_poem_ledge')?.linkedStoryNodeId).toBe(
+      'last_poem_approach',
+    );
+    expect(
+      SCENE_EXPLORE_HUB_DEFS.find((d) => d.hubId === 'rooftop_explore_mode')?.entryNodeIds,
+    ).toEqual(expect.arrayContaining(['last_poem_compose', 'last_poem_approach', 'last_poem_recite']));
   });
 
   it('chk portwine delivery spans albert → street → toast', () => {

@@ -170,7 +170,7 @@ export const SCENE_EXPLORE_HUB_DEFS: readonly SceneExploreHubDef[] = [
     hubText:
       'Край крыши — ветер, огни города внизу и ощущение, что один шаг отделяет тебя от неба. «Высотники» на соседних крышах молчат; белый флаг с словом «ЖИВЫ» трепещет. Здесь слова звучат громче, чем в любой переговорке гильдии.',
     hubTextRevisit: 'Крыша. Ветер. Город как схема данных.',
-    entryNodeIds: ['act4_transition', 'act4_rooftop_broadcast', 'quest_act4_rooftop_broadcast_setup_start', 'quest_act4_rooftop_broadcast_repair', 'rooftop_of_the_world', 'roof_of_the_world_approach', 'roof_of_the_world_ending', 'last_poem_approach', 'last_poem_recite', 'act6_rooftop_showdown', 'solnysh_roof_arrival', 'solnysh_roof_afterglow', 'final_code_approach', 'night_before_dawn_approach', 'act5_dawn', 'act7_bridge', 'act7_rooftop_recital', 'act7_poem_published'],
+    entryNodeIds: ['act4_transition', 'act4_rooftop_broadcast', 'quest_act4_rooftop_broadcast_setup_start', 'quest_act4_rooftop_broadcast_repair', 'rooftop_of_the_world', 'roof_of_the_world_approach', 'roof_of_the_world_ending', 'last_poem_approach', 'last_poem_compose', 'last_poem_recite', 'act6_rooftop_showdown', 'solnysh_roof_arrival', 'solnysh_roof_afterglow', 'final_code_approach', 'night_before_dawn_approach', 'act5_dawn', 'act7_bridge', 'act7_rooftop_recital', 'act7_poem_published'],
   },
   {
     hubId: 'factory_explore_mode',
