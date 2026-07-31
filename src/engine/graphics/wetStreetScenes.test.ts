@@ -142,7 +142,9 @@ describe('wetStreetScenes', () => {
     expect(office.transmission).toBeGreaterThan(library.transmission);
     expect(factory.metalness).toBeGreaterThan(library.metalness);
     expect(factory.opacity).toBeLessThan(library.opacity);
-    expect(room.transmission).toBeGreaterThan(factory.transmission);
+    // Wall-backed night impostors: clearcoat only — transmission against plaster flashes black.
+    expect(room.transmission).toBe(0);
+    expect(room.opacity).toBe(1);
     expect(room.clearcoat).toBeGreaterThan(0.4);
     expect(crt.clearcoat).toBeGreaterThan(room.clearcoat);
     expect(crt.opacity).toBeGreaterThan(factory.opacity);

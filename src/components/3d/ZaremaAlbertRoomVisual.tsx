@@ -381,8 +381,7 @@ export function ZaremaAlbertRoomVisual({ livePlayerPositionRef: _livePlayerPosit
               thickness={windowGlass.thickness}
               clearcoat={windowGlass.clearcoat}
               clearcoatRoughness={windowGlass.clearcoatRoughness}
-              transparent
-              opacity={Math.max(0.72, windowGlass.opacity)}
+              opacity={windowGlass.opacity}
             />
           ) : (
             <meshStandardMaterial

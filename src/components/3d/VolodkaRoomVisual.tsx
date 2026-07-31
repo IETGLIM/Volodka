@@ -801,10 +801,13 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
       </group>
 
       {/* ── Windows — always procedural (city glow + spill). Authored dressing has none;
-          deferred kenney_window props left blank walls until staggered mount. ── */}
+          deferred kenney_window props left blank walls until staggered mount.
+          Opaque emissive panes (no transmission) — wall is ~3 cm behind; MeshPhysical
+          transmission sampled plaster and flashed as black squares (esp. back pane
+          behind the left ThinMonitor). ── */}
       <>
         {/* ── Window (right wall, emissive blue — nighttime city glow) ── */}
-        <group position={[W / 2 - 0.04, 1.5, -2.0]}>
+        <group position={[W / 2 - 0.05, 1.5, -2.0]}>
           {usePhysicalGlass ? (
             <mesh renderOrder={1} rotation-y={-Math.PI / 2} geometry={geo_pln_42}>
               <meshPhysicalMaterial
@@ -818,28 +821,57 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
                 thickness={nightWindowGlass.thickness}
                 clearcoat={nightWindowGlass.clearcoat}
                 clearcoatRoughness={nightWindowGlass.clearcoatRoughness}
-                transparent
                 opacity={nightWindowGlass.opacity}
               />
             </mesh>
           ) : (
             <mesh renderOrder={1} rotation-y={-Math.PI / 2} geometry={geo_pln_42} material={mat_33} />
           )}
-          {/* Window frame */}
-          <mesh renderOrder={2} rotation-y={-Math.PI / 2} position={[0.015, 0, 0]} geometry={geo_box_43} material={mat_26} />
+          {/* Window frame — toward wall (+X) */}
+          <mesh renderOrder={2} rotation-y={-Math.PI / 2} position={[0.018, 0, 0]} geometry={geo_box_43} material={mat_26} />
           {/* Window blue light spill into room */}
           <pointLight position={[-0.8, 0, 0.5]} color="#4488ee" intensity={3.0} distance={5} />
-          {/* City building silhouettes through window */}
-          <mesh renderOrder={3} rotation-y={-Math.PI / 2} position={[-0.02, -0.15, -0.3]} geometry={geo_pln_75} material={mat_62} />
-          <mesh renderOrder={3} rotation-y={-Math.PI / 2} position={[-0.02, -0.1, 0.2]} geometry={geo_pln_76} material={mat_62} />
+          {/* City silhouettes — room-side decals on the glow pane (not transmission props) */}
+          <mesh
+            renderOrder={3}
+            rotation-y={-Math.PI / 2}
+            position={[-0.012, -0.15, -0.3]}
+            geometry={geo_pln_75}
+            material={mat_62}
+          />
+          <mesh
+            renderOrder={3}
+            rotation-y={-Math.PI / 2}
+            position={[-0.012, -0.1, 0.2]}
+            geometry={geo_pln_76}
+            material={mat_62}
+          />
           {/* Tiny window lights on buildings */}
-          <mesh renderOrder={4} rotation-y={-Math.PI / 2} position={[-0.028, -0.2, -0.3]} geometry={geo_pln_77} material={mat_63} />
-          <mesh renderOrder={4} rotation-y={-Math.PI / 2} position={[-0.028, -0.05, 0.2]} geometry={geo_pln_77} material={mat_63} />
-          <mesh renderOrder={4} rotation-y={-Math.PI / 2} position={[-0.028, -0.12, 0.22]} geometry={geo_pln_78} material={mat_64} />
+          <mesh
+            renderOrder={4}
+            rotation-y={-Math.PI / 2}
+            position={[-0.016, -0.2, -0.3]}
+            geometry={geo_pln_77}
+            material={mat_63}
+          />
+          <mesh
+            renderOrder={4}
+            rotation-y={-Math.PI / 2}
+            position={[-0.016, -0.05, 0.2]}
+            geometry={geo_pln_77}
+            material={mat_63}
+          />
+          <mesh
+            renderOrder={4}
+            rotation-y={-Math.PI / 2}
+            position={[-0.016, -0.12, 0.22]}
+            geometry={geo_pln_78}
+            material={mat_64}
+          />
         </group>
 
-        {/* ── Second Window (back wall, emissive blue — nighttime city) ── */}
-        <group position={[-1.0, 1.5, -D / 2 + 0.04]}>
+        {/* ── Second Window (back wall, behind left monitor — emissive blue city) ── */}
+        <group position={[-1.0, 1.5, -D / 2 + 0.05]}>
           {usePhysicalGlass ? (
             <mesh renderOrder={1} geometry={geo_pln_44}>
               <meshPhysicalMaterial
@@ -853,18 +885,17 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
                 thickness={nightWindowGlass.thickness}
                 clearcoat={nightWindowGlass.clearcoat}
                 clearcoatRoughness={nightWindowGlass.clearcoatRoughness}
-                transparent
                 opacity={nightWindowGlass.opacity}
               />
             </mesh>
           ) : (
             <mesh renderOrder={1} geometry={geo_pln_44} material={mat_34} />
           )}
-          {/* Window frame */}
-          <mesh renderOrder={2} position={[0, 0, -0.015]} geometry={geo_box_45} material={mat_26} />
+          {/* Window frame — toward wall (−Z) */}
+          <mesh renderOrder={2} position={[0, 0, -0.018]} geometry={geo_box_45} material={mat_26} />
           {/* ISSUE #7: Removed per-window pointLight — the right wall window light +
               desk lamp + ambient pulse provide sufficient fill. The window material's
-              emissive (mat_34, emissiveIntensity=3.5) already creates a visible glow. */}
+              emissive (mat_34) already creates a visible glow. */}
         </group>
       </>
 

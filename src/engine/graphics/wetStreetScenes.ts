@@ -234,15 +234,17 @@ export function getWetGlassPhysicalParams(kind: WetGlassPhysicalKind): WetGlassP
     };
   }
   if (kind === 'roomNightWindow') {
-    // Apartment night panes — cool city glow with faint wet clearcoat (not outdoor rain).
+    // Wall-backed night city-glow impostors (Volodka / Zarema rooms). No exterior
+    // volume exists behind the pane — MeshPhysical transmission samples the plaster
+    // 3 cm away and reads as black flashing squares. Keep clearcoat wet sheen only.
     return {
-      roughness: 0.12,
-      metalness: 0.08,
-      transmission: 0.16,
-      thickness: 0.22,
+      roughness: 0.14,
+      metalness: 0.06,
+      transmission: 0,
+      thickness: 0.18,
       clearcoat: 0.55,
       clearcoatRoughness: 0.24,
-      opacity: 0.78,
+      opacity: 1,
     };
   }
   if (kind === 'crtTerminalGlass') {
