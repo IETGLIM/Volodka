@@ -2,6 +2,10 @@
    Cutscenes that trigger between acts.
    Each cutscene defines camera waypoints, text overlay, and trigger conditions.
    Сцены между актами — кинематографические переходы.
+
+   Authoring schema only — convert to CinematicTimelineDef via
+   `cutsceneDefToTimeline` (`@/engine/cinematic/cutsceneToTimeline`) for the
+   canonical runtime timeline descriptor (same shape as interaction splashes).
 */
 
 import type { CameraWaypointData } from '@/engine/events';

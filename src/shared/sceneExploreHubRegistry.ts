@@ -12,6 +12,20 @@ export interface SceneExploreHubDef {
   entryNodeIds: readonly string[];
 }
 
+/**
+ * Explore hubs whose prose lives in act JSON / story packs — skip auto-generation
+ * and do not duplicate hubText in SCENE_EXPLORE_HUB_DEFS.
+ */
+export const STORY_DEFINED_EXPLORE_HUB_IDS = new Set([
+  'explore_mode',
+  'corridor_explore_mode',
+  'street_bench_view',
+  'pier_explore_mode',
+  'factory_explore_mode',
+  'basement_explore_mode',
+  'solnysh_explore_mode',
+]);
+
 /** Single source of truth for scene ↔ explore-hub mapping (topology; prose via contentTruthManifest). */
 export const SCENE_EXPLORE_HUB_DEFS: readonly SceneExploreHubDef[] = [
   {

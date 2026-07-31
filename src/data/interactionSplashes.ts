@@ -2,6 +2,9 @@
    Brief 3D cinematic beats (0.8–2.5 s) before dialogue / examine / prop use.
    Wire via splashProfile on trigger zones, npcSplashProfile on NPC defs, or defaults by interactionType.
 
+   Authoring schema for short interaction beats (replaces the former npcCutscenes registry).
+   Runtime path: resolveInteractionSplash → splashPresetToTimeline → CinematicTimelineDef.
+
    Adding a splash for a new interaction:
    1. Pick or add a preset in SPLASH_PRESETS (waypoints are offsets from anchor).
    2. Map zone id / npc id / interactionType in SPLASH_CATALOG below.

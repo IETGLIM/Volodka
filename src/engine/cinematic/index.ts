@@ -40,3 +40,8 @@ export {
   clearCinematicLightCue,
 } from './cinematicLightStaging';
 export { resolvedSplashToTimeline, splashPresetToTimeline } from './splashToTimeline';
+export {
+  cutsceneDefToTimeline,
+  estimateCutsceneDisplayDurationMs,
+} from './cutsceneToTimeline';
+export { waypointsToTimelinePhases } from './cinematicWaypointPhases';

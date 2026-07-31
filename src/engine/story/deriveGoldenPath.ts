@@ -1,4 +1,12 @@
-/* ─── Derive golden-path spine + guidance from story node graph ─── */
+/* ─── Derive golden-path spine + guidance from story node graph ───
+ *
+ * Spine sources (two max):
+ * 1. Walk `choice.goldenPath` edges from start.
+ * 2. Optional `fallbackStorySpine` when markers are incomplete (migration).
+ *
+ * `guidanceHint` on nodes is display annotation merged into branchHints —
+ * not a third spine walker. Manual tables in goldenPath.ts feed fallbacks only.
+ */
 
 import type { QuestDefinition, StoryNode } from '@/shared/types/game';
 import type { GuidedStoryObjectiveType } from '@/engine/guidedStory/guidedStoryTypes';

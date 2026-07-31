@@ -8,7 +8,7 @@ import {
   prepareFirstReadingCelebrationContent,
   type FirstReadingCelebrationContent,
 } from '@/engine/quest/firstReadingCelebrationContent';
-import { hasSeenPoemDiscoveryThisSession } from '@/engine/poemDiscovery/poemDiscoveryRevealOrchestrator';
+import { hasSeenPoemDiscoveryThisSession } from '@/engine/poemReveal/poemRevealOrchestrator';
 import { useTypewriter } from '@/hooks/useTypewriter';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';

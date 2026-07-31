@@ -26,6 +26,8 @@ import { usesCinematicQuestCelebration } from '@/engine/quest/questPresentation'
 import {
   setFirstReadingCelebrationInterstitialActive,
   setMatrixQuoteInterstitialActive,
+  setQuestChainUnlockInterstitialActive,
+  setQuestCompleteInterstitialActive,
 } from '@/engine/presentation/cinematicInterstitialPresentation';
 import type {
   MatrixQuoteState,
@@ -115,6 +117,7 @@ export function usePanelCoordinator({
 
   useEffect(() => {
     questCompleteActiveRef.current = questComplete !== null;
+    setQuestCompleteInterstitialActive(questComplete !== null);
   }, [questComplete]);
 
   useEffect(() => {
@@ -124,6 +127,10 @@ export function usePanelCoordinator({
   useEffect(() => {
     setFirstReadingCelebrationInterstitialActive(firstReadingCelebration);
   }, [firstReadingCelebration]);
+
+  useEffect(() => {
+    setQuestChainUnlockInterstitialActive(questChainUnlock !== null);
+  }, [questChainUnlock]);
 
   const isCompletionFlowBusy = useCallback((): boolean => {
     return isQuestCompletionFlowBusy({

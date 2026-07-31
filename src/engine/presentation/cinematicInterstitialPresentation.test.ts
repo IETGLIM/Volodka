@@ -6,6 +6,8 @@ import {
   setMatrixQuoteInterstitialActive,
   setPoemDiscoveryRevealInterstitialActive,
   setPoemRevealInterstitialActive,
+  setQuestChainUnlockInterstitialActive,
+  setQuestCompleteInterstitialActive,
 } from '@/engine/presentation/cinematicInterstitialPresentation';
 
 describe('cinematicInterstitialPresentation', () => {
@@ -13,6 +15,8 @@ describe('cinematicInterstitialPresentation', () => {
     setMatrixQuoteInterstitialActive(false);
     setFirstReadingCelebrationInterstitialActive(false);
     setPoemRevealInterstitialActive(false);
+    setQuestCompleteInterstitialActive(false);
+    setQuestChainUnlockInterstitialActive(false);
   });
 
   it('is inactive by default', () => {
@@ -36,6 +40,17 @@ describe('cinematicInterstitialPresentation', () => {
     setPoemRevealInterstitialActive(true);
     expect(isCinematicInterstitialActive()).toBe(true);
     expect(getActiveExclusiveInterstitialKinds()).toEqual(['poem_reveal']);
+  });
+
+  it('tracks quest complete and chain unlock as exclusive kinds', () => {
+    setQuestCompleteInterstitialActive(true);
+    expect(getActiveExclusiveInterstitialKinds()).toEqual(['quest_complete']);
+    setQuestChainUnlockInterstitialActive(true);
+    expect(getActiveExclusiveInterstitialKinds()).toEqual([
+      'quest_complete',
+      'quest_chain_unlock',
+    ]);
+    expect(isCinematicInterstitialActive()).toBe(true);
   });
 
   it('aliases legacy discovery setter onto poem reveal', () => {

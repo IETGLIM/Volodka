@@ -7,7 +7,9 @@ import {
   updateCinematicTimelineState,
 } from './cinematicTimelineController';
 import { splashPresetToTimeline } from './splashToTimeline';
+import { cutsceneDefToTimeline } from './cutsceneToTimeline';
 import { SPLASH_NPC_ORBIT } from '@/data/interactionSplashes';
+import { CUTSCENES } from '@/data/cutscenes';
 import { INTRO_WAKE_TIMELINE } from './introWakeTimeline';
 
 describe('cinematicTimelineController', () => {
@@ -40,6 +42,17 @@ describe('splashToTimeline', () => {
   it('creates one phase per camera segment', () => {
     const def = splashPresetToTimeline(SPLASH_NPC_ORBIT);
     expect(def.phases.length).toBe(SPLASH_NPC_ORBIT.waypoints.length - 1);
+    expect(def.phases.every((p) => p.actor.mode === 'none')).toBe(true);
+  });
+});
+
+describe('cutsceneToTimeline', () => {
+  it('maps story cutscene waypoints onto the same timeline descriptor shape', () => {
+    const cutscene = CUTSCENES.act1_prologue;
+    const def = cutsceneDefToTimeline(cutscene);
+    expect(def.id).toBe('cutscene_act1_prologue');
+    expect(def.phases.length).toBe(cutscene.waypoints.length - 1);
+    expect(def.phases.at(-1)?.overlay?.text).toBe(cutscene.textOverlay);
     expect(def.phases.every((p) => p.actor.mode === 'none')).toBe(true);
   });
 });

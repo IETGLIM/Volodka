@@ -40,9 +40,9 @@ config/        — scene/metric/shell policy tables
 |---------|----------------|--------|
 | Narrative open | `presentNarrativeBeat` | raw `openNarrativeOverlay` from interaction |
 | Poem discovery / ritual / read | `poemRevealOrchestrator` + `PoemRevealHost` (FIFO) | parallel discovery cutscene mounts |
-| Exclusive interstitial busy | `cinematicInterstitialPresentation` (`matrix_quote` \| `first_reading_celebration` \| `poem_reveal`) | second poem-discovery busy flag |
-| Dialogue / VN busy | store `showStoryOverlay` / `diegeticNarrative` (OR'd by presentation profile) | duplicate dialogue busy modules |
-| Explore hub topology | `sceneExploreHubRegistry` | prose in registry for story-defined hubs |
+| Exclusive interstitial busy | `cinematicInterstitialPresentation` (`matrix_quote` \| `first_reading_celebration` \| `poem_reveal` \| `quest_complete` \| `quest_chain_unlock`) | second poem-discovery busy flag; parallel quest busy modules |
+| Dialogue / VN busy | store `showStoryOverlay` / `diegeticNarrative` (OR'd by presentation profile; store-owned forever) | duplicate dialogue busy modules |
+| Explore hub topology | `sceneExploreHubRegistry` (+ `STORY_DEFINED_EXPLORE_HUB_IDS`) | prose in registry for story-defined hubs |
 | Explore hub prose | act JSON / story pack via `resolveExploreHubIntroText` | dual auto-hub vs act-pack toast copy |
 | Leave + mid-resume | leave choice → hub + hub mid-split + zones + `entryNodeIds` | next-only mid-beat soft-locks |
 | Heavy GPU features | `qualityFeatureGates.allowsHeavyGfxFeature` | ad-hoc `preset.id === 'ultra'` checks |
@@ -53,6 +53,7 @@ config/        — scene/metric/shell policy tables
 | Notification channels | `notificationChannelRegistry` + `useNotificationSlot` | unregistered popup components |
 | Scene GPU | `sceneGpuLifecycle` + `sceneGpuOwnership` claims | ad-hoc dispose outside unload path |
 | Content truth | `contentTruthManifest` resolvers | reading parallel registries when a resolver exists |
+| Cinematic runtime descriptor | `CinematicTimelineDef` via `splashPresetToTimeline` / `cutsceneDefToTimeline` | parallel NPC cutscene registry; ad-hoc waypoint players without converter |
 
 ### Exclusive UI sequencing (reference = poem reveal)
 
@@ -64,22 +65,28 @@ config/        — scene/metric/shell policy tables
 ### Deprecation rule
 
 Prefer **delete or re-export shim** over leaving zombie parallel components.
-Legacy names (`PoemDiscoveryReveal`, `setPoemDiscoveryRevealInterstitialActive`) alias the unified path — do not grow them.
+Legacy interstitial alias `setPoemDiscoveryRevealInterstitialActive` → `setPoemRevealInterstitialActive` — do not grow new aliases. `poemDiscovery/*` shim deleted.
 
 ### Migration status (honest)
 
 | Cluster | Status |
 |---------|--------|
 | Poem reveal FIFO + excerpt SoT | ✅ shipped |
-| Interstitial kinds (no parallel discovery flag) | ✅ this wave |
-| Dead quality preset knobs removed; heavy features via gates | ✅ this wave |
-| Poem discovery language (reveal owns UI; toast/float suppressed) | ✅ this wave |
-| Input write-path documented + enforced in code comments | ✅ this wave (code already unified) |
+| Interstitial kinds (no parallel discovery flag) | ✅ Wave 1 |
+| Dead quality preset knobs removed; heavy features via gates | ✅ Wave 1 |
+| Poem discovery language (reveal owns UI; toast/float suppressed) | ✅ Wave 1 |
+| Input write-path documented + enforced in code comments | ✅ Wave 1 |
+| Quest-complete / chain-unlock folded into interstitial kinds | ✅ Wave 2 |
+| Dialogue busy documented store-owned forever | ✅ Wave 2 |
+| Dead `npcCutscenes` deleted; splash + cutscene → `CinematicTimelineDef` | ✅ Wave 2 |
+| `poemDiscovery/*` shim deleted (imports → poemReveal) | ✅ Wave 2 |
 | Explore leave / hub mid-resume | ✅ pattern; residual next-only scanned per tick |
 | Scene GPU ownership | ✅ core; residual ad-hoc dispose audit remains |
-| Cinematic registries (cutscene / npc / splash) | ⚠️ three schemas — backlog |
-| Golden path triple source | ⚠️ backlog |
-| Full dialogue/quest busy folded into interstitial module | ⚠️ backlog (store-owned by design for now) |
+| `STORY_DEFINED_EXPLORE_HUB_IDS` single set (registry + auto-gen skip) | ✅ Wave 3 start |
+| Golden path: two spine sources + hint annotation (not triple walker) | ✅ Wave 3 start (docs/code comment) |
+| Expand story-defined hubs (cafe/office/home prose → act JSON) | ⚠️ backlog |
+| Story cutscene *playback* fully on timeline orchestrator | ⚠️ residual (converter shipped; controller still uses camera:cutscene_*) |
+| Full goldenPath.ts table retirement when markers complete | ⚠️ backlog |
 
 Full ordered backlog: [`docs/ARCHITECTURE_UNIFICATION.md`](./docs/ARCHITECTURE_UNIFICATION.md).
 
@@ -104,7 +111,7 @@ Full ordered backlog: [`docs/ARCHITECTURE_UNIFICATION.md`](./docs/ARCHITECTURE_U
 | Story history (journal) | `visitedNodes` → `buildJournalNotes` | — |
 | Dialogue transcript | `uiSlice.conversationLog` | runtime only |
 | Lore codex | `loreEntries.ts` | — |
-| Golden path | `deriveGoldenPath.ts` (+ `goldenPath.ts` fallback) | `buildGuidedStoryPath` |
+| Golden path | `deriveGoldenPath.ts` (+ `goldenPath.ts` fallback spine/tables) | `buildGuidedStoryPath`; `guidanceHint` = display annotation only |
 | HUD panels | `orchestrator/types.ts` `PANEL_IDS` | panel stack reducer |
 | Thought Cabinet definitions | `thoughtCabinet.ts` | `THOUGHT_CABINET_ITEMS` / `THOUGHT_CABINET_MAP` |
 | Thought Cabinet state | `playerSlice.thoughtCabinet` | selectors |
@@ -720,7 +727,7 @@ XSS: `sanitizePlainText` на основном пути рендера (`narrati
 | Область | Статус |
 |---------|--------|
 | Content truth dual registry (CI eager vs runtime lazy) | parity test есть; validator ещё на eager STORY_NODES |
-| Golden path triple source | derive + manual fallback + per-node guidanceHint |
+| Golden path sources | derive + fallback spine; guidanceHint = annotation (cafe/office hub prose expansion remains) |
 | NPC behavioral FSM → 3D | ✅ `useNpcVisualBehavior` (GLB + procedural parity) |
 | JSON narrative migration | тексты act1–7 есть; hubIntroText — постепенно для act 2–7 |
 | Pause Escape vs panels | ✅ `escapeDismissAction` + capture-phase `useKeyboardShortcutManager` |
@@ -730,7 +737,7 @@ XSS: `sanitizePlainText` на основном пути рендера (`narrati
 | Leave / mid-resume soft-locks | ✅ pattern shipped; residual next-only chains still scanned per tick |
 | Interior Kenney exteriors as rooms | ✅ blocked (`exterior_building`); procedural envelopes own walkables |
 | Selective MeshPhysical wet/CRT | ✅ quality-gated accents; not blanket Physical |
-| Exclusive interstitial kinds | ✅ one module; discovery aliases poem_reveal |
+| Exclusive interstitial kinds | ✅ Wave 2: + quest_complete / quest_chain_unlock; dialogue store-owned |
 | Poem discovery notification language | ✅ PoemRevealHost owns UI; toast/float mirrors suppressed |
 | Dead quality preset flags | ✅ removed (useInstancing / impostors / bakedLighting) |
 | Input locomotion write path | ✅ virtual ref + keyboard singleton documented |
@@ -739,8 +746,10 @@ XSS: `sanitizePlainText` на основном пути рендера (`narrati
 | npcRegistry baseline | устаревшие id в тестах |
 | Mixamo ↔ Quaternius bone remap | ⚠️ hip filter + talk fallback interim |
 | act7 mirror flags | только в structure JSON — сканер обновлён |
-| Cinematic registries | cutscenes / npcCutscenes / interactionSplashes — три схемы |
-| Dialogue/quest busy → interstitial fold | store-owned for now; presentation profile ORs them |
+| Cinematic registries | ✅ npcCutscenes deleted; splash + cutscene → timeline converters |
+| Dialogue/quest busy → interstitial fold | ✅ quest UI in interstitial; dialogue stays store-owned |
+| Explore hub ID set | ✅ one `STORY_DEFINED_EXPLORE_HUB_IDS` for prose + auto-gen skip |
+| Golden path sources | ✅ derive + fallback spine; guidanceHint = annotation only |
 
 AA visual/content waves и tick log — [`docs/AA_QUALITY_ROADMAP.md`](./docs/AA_QUALITY_ROADMAP.md).
 Агентный контекст сессий — [`AI_SESSION_CONTEXT.md`](./AI_SESSION_CONTEXT.md).

@@ -10,7 +10,12 @@ import type { NarrativeKind } from '@/shared/types/narrativeKind';
 import type { StoryNode } from '@/shared/types/game';
 import { STORY_NODES as STATIC_STORY_NODES } from '@/data/story';
 import { getStoryNodes } from '@/data/gameDataLoader';
-import { getExploreHubDef } from '@/shared/sceneExploreHubRegistry';
+import {
+  getExploreHubDef,
+  STORY_DEFINED_EXPLORE_HUB_IDS,
+} from '@/shared/sceneExploreHubRegistry';
+
+export { STORY_DEFINED_EXPLORE_HUB_IDS } from '@/shared/sceneExploreHubRegistry';
 
 function resolveStoryNodesForProse(
   storyNodes?: Readonly<Record<string, StoryNode>>,
@@ -63,16 +68,9 @@ export const CONTENT_TRUTH = {
 
 export type ContentTruthDomain = keyof typeof CONTENT_TRUTH;
 
-/** Story-defined explore hubs — prose lives in act*.json, not hub registry. */
-export const STORY_DEFINED_EXPLORE_HUB_IDS = new Set([
-  'explore_mode',
-  'corridor_explore_mode',
-  'street_bench_view',
-  'pier_explore_mode',
-  'factory_explore_mode',
-  'basement_explore_mode',
-  'solnysh_explore_mode',
-]);
+/** Story-defined explore hubs — prose lives in act*.json, not hub registry.
+ * Canonical set: `STORY_DEFINED_EXPLORE_HUB_IDS` in sceneExploreHubRegistry
+ * (re-exported above). */
 
 /**
  * First-visit location toast when entering a closed-overlay explore hub.

@@ -78,7 +78,6 @@ const DATA_DIALOGUE = new Set([
 const DATA_QUESTS = new Set([
   'quests',
   'cutscenes',
-  'npcCutscenes',
   'questItems',
   // Colocate with quests/questItems — avoids data-quests ↔ data-misc TDZ.
   'expansionQuestStubs',
