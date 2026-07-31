@@ -2,8 +2,8 @@
  * Convert story CutsceneDef (authoring schema) into CinematicTimelineDef
  * (canonical runtime descriptor). Same waypoint→phase path as interaction splashes.
  *
- * Story cutscene playback may still use camera:cutscene_start for overlay coupling;
- * this converter is the single descriptor shape for new/timeline consumers and tests.
+ * Story cutscene playback goes through `startCinematicTimeline(cutsceneDefToTimeline(...))`
+ * from `useCutsceneController` — one camera/overlay path with CinematicTimelineRunner.
  */
 
 import type { CutsceneDef } from '@/data/cutscenes';

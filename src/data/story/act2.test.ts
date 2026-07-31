@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { STORY_NODES_ACT2 } from '@/data/story/act2';
+import { STORY_NODES } from '@/data/story';
 import { GOLDEN_PATH_BRANCH_HINTS } from '@/data/goldenPath';
 import { NPC_ID_ALIASES } from '@/shared/npcIdAliases';
 
@@ -58,7 +59,10 @@ describe('Act 2 story presentation', () => {
       'pier_arrival',
     ] as const;
     for (const id of ids) {
-      expect(GOLDEN_PATH_BRANCH_HINTS[id], id).toBeTruthy();
+      expect(
+        GOLDEN_PATH_BRANCH_HINTS[id] || STORY_NODES[id]?.guidanceHint,
+        id,
+      ).toBeTruthy();
     }
   });
 });

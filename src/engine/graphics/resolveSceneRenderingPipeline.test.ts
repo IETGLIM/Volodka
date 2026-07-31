@@ -3,6 +3,29 @@ import { QUALITY_PRESETS } from '@/engine/graphics/qualityPresets';
 import { resolveSceneRenderingPipeline } from '@/engine/graphics/resolveSceneRenderingPipeline';
 
 describe('resolveSceneRenderingPipeline', () => {
+  it('uses lite post-FX on hero scenes at low preset (Wave 4 policy)', () => {
+    const pipe = resolveSceneRenderingPipeline(
+      'volodka_room',
+      QUALITY_PRESETS.low,
+      true,
+      'low',
+    );
+    expect(pipe.useLitePostFx).toBe(true);
+    expect(pipe.isHero).toBe(true);
+    expect(pipe.useAmbientOcclusion).toBe(false);
+  });
+
+  it('uses lite post-FX on standard scenes at low preset', () => {
+    const pipe = resolveSceneRenderingPipeline(
+      'battle',
+      QUALITY_PRESETS.low,
+      true,
+      'low',
+    );
+    expect(pipe.useLitePostFx).toBe(true);
+    expect(pipe.useAmbientOcclusion).toBe(false);
+  });
+
   it('keeps full post-FX on hero scenes even when visualLite (medium preset)', () => {
     const pipe = resolveSceneRenderingPipeline(
       'volodka_room',
@@ -11,6 +34,17 @@ describe('resolveSceneRenderingPipeline', () => {
     );
     expect(pipe.useLitePostFx).toBe(false);
     expect(pipe.isHero).toBe(true);
+  });
+
+  it('uses lite post-FX on hero scenes at low even when forceFullPostFx', () => {
+    const pipe = resolveSceneRenderingPipeline(
+      'street_night',
+      QUALITY_PRESETS.low,
+      true,
+      'low',
+    );
+    expect(pipe.useLitePostFx).toBe(true);
+    expect(pipe.useAmbientOcclusion).toBe(false);
   });
 
   it('keeps full post-FX on rooftop_edge when visualLite (cinematic profile)', () => {

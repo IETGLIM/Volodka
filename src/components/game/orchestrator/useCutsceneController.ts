@@ -27,9 +27,10 @@ import {
   skipCinematicTimeline,
   startCinematicTimeline,
 } from '@/engine/cinematic/cinematicTimelineOrchestrator';
+import { cutsceneDefToTimeline } from '@/engine/cinematic/cutsceneToTimeline';
 import { INTRO_WAKE_TIMELINE } from '@/engine/cinematic/introWakeTimeline';
 
-/** Watches story node changes and drives cutscene overlays + camera events. */
+/** Watches story node changes and drives cutscenes via the unified timeline orchestrator. */
 export function useCutsceneController() {
   const currentNodeId = useGamePrimitive((s) => s.currentNodeId);
   const currentSceneId = useGamePrimitive((s) => s.exploration?.currentSceneId);
@@ -69,8 +70,7 @@ export function useCutsceneController() {
       return true;
     }
 
-    // If a unified cinematic timeline is driving this cutscene, defer to the
-    // timeline orchestrator's skip path.
+    // Story cutscenes and splash timelines share one orchestrator skip path.
     if (isCinematicTimelineActive()) {
       skipCinematicTimeline();
       return true;
@@ -87,11 +87,7 @@ export function useCutsceneController() {
     setCinematicHoldActive(false);
     setCinematicPresentationMode('third_person');
     eventBus.emit('camera:recenter', {});
-    // Restore music volume to 100% over 1.0s — the normal finishCutsceneBeat
-    // path does this, but skipActiveCutscene bypasses that path (cancelCutsceneSession
-    // invalidates the generation, so finishCutsceneBeat's isCurrent() guard rejects
-    // the overlay_end callback). Without this, music would stay ducked at 30%
-    // until the next cutscene completes normally.
+    // Legacy skip (no active timeline) — restore duck the orchestrator would have.
     musicEngine.setMusicDuckFactor(1.0, 1.0);
 
     if (store.currentNodeId && store.narrativeKind) {
@@ -125,16 +121,13 @@ export function useCutsceneController() {
 
     // Guard against starting a story cutscene while a unified cinematic
     // timeline is still active (e.g., a splash timeline still running).
-    // Without this, overlays stack and music duck factor is applied twice.
     if (isCinematicTimelineActive()) return;
 
     // Scene transition race guard: if a story choice has both `transitionScene`
     // AND `next` pointing to a cutscene trigger node, executeStoryChoice sets
     // currentNodeId synchronously THEN fires requestSceneTransition. Without
     // this guard, the cutscene would start in the OLD scene with waypoints
-    // designed for the NEW scene, producing a broken camera. Defer until the
-    // target scene is loaded — the effect re-fires when currentSceneId
-    // changes (added as a dependency below).
+    // designed for the NEW scene. Defer until the target scene is loaded.
     if (isSceneTransitionInProgress()) return;
 
     const beatNodeId = currentNodeId;
@@ -153,40 +146,14 @@ export function useCutsceneController() {
 
     const playbackSceneId = store.exploration.currentSceneId as SceneId;
     const resolvedWaypoints = resolveCutsceneWaypoints(cutscene, playbackSceneId);
+    const timeline = cutsceneDefToTimeline({ ...cutscene, waypoints: resolvedWaypoints });
 
     store.setCutscene(cutscene.id, resolvedWaypoints);
 
-    eventBus.emit('camera:cutscene_start', {
-      cutsceneId: cutscene.id,
-      waypoints: resolvedWaypoints,
-    });
-
-    // Compute the total camera animation duration from waypoint durations (in
-    // seconds → ms). The overlay's auto-dismiss timer must NOT fire before the
-    // camera finishes its waypoint sequence, otherwise the camera is cut short
-    // and never reaches its final dramatic position. Add 800ms grace so the
-    // final frame holds briefly before the overlay fades.
-    const waypointSumMs = resolvedWaypoints.reduce(
-      (sum, w) => sum + Math.max(0, w.duration) * 1000,
-      0,
-    );
-    const displayDurationMs = Math.max(
-      cutscene.textDurationMs,
-      waypointSumMs + 800,
-    );
-
-    cutsceneSessionRef.current.schedule(() => {
-      eventBus.emit('cutscene:overlay', {
-        text: cutscene.textOverlay,
-        subtitle: cutscene.subtitle,
-        accentColor: cutscene.textAccentColor,
-        durationMs: displayDurationMs,
-        type: cutscene.type,
-        letterboxStyle: cutscene.letterboxStyle,
-        showEmbers: cutscene.showEmbers,
-        glitchIntensity: cutscene.glitchIntensity,
-      });
-    }, 800);
+    // Single playback path: timeline orchestrator + CinematicTimelineRunner
+    // (camera + overlay). Legacy camera:cutscene_* remains for skip fallback
+    // and any non-timeline consumers.
+    startCinematicTimeline({ def: timeline });
 
     if (cutscene.type === 'revelation') {
       audioEngine.playStinger('discovery');
@@ -196,18 +163,15 @@ export function useCutsceneController() {
       audioEngine.playStinger('mystery');
     }
 
-    // Duck music to 30% over 0.5s for cinematic focus (consistent with the
-    // unified timeline orchestrator's behaviour for intro_wakeup).
-    musicEngine.setMusicDuckFactor(0.3, 0.5);
-
-    const totalDuration = displayDurationMs + 2000;
     let finished = false;
     let unsubOverlayEnd: (() => void) | null = null;
+    let unsubTimelineComplete: (() => void) | null = null;
 
     const finishCutsceneBeat = () => {
       if (finished || !cutsceneSessionRef.current.isCurrent(generation)) return;
       finished = true;
       unsubOverlayEnd?.();
+      unsubTimelineComplete?.();
 
       const currentStore = useGameStore.getState();
       if (currentStore.activeCutsceneId) {
@@ -216,10 +180,9 @@ export function useCutsceneController() {
         clearGameplayPhaseFlags(currentStore);
         setCinematicHoldActive(false);
         setCinematicPresentationMode('third_person');
+        // Timeline orchestrator already restores music + emits overlay_end /
+        // camera:recenter; emit cutscene_end for any legacy camera listeners.
         eventBus.emit('camera:cutscene_end', {});
-        eventBus.emit('camera:recenter', {});
-        // Restore music volume to 100% over 1.0s.
-        musicEngine.setMusicDuckFactor(1.0, 1.0);
       }
       if (currentStore.currentNodeId) {
         const nodeId = currentStore.currentNodeId;
@@ -228,7 +191,6 @@ export function useCutsceneController() {
         if (hubId && hubId !== nodeId) {
           markEntryBeatHubPromoted();
         }
-        // Defer until cutscene store + overlay teardown completes (avoids race with VN).
         queueMicrotask(() => {
           if (!cutsceneSessionRef.current.isCurrent(generation)) return;
           openNarrativeAfterCutscene(nodeId, kind);
@@ -236,17 +198,24 @@ export function useCutsceneController() {
       }
     };
 
+    // Orchestrator emits overlay_end on complete/stop; also listen for
+    // timeline_complete so skipMotion / orphan-watchdog paths still finish.
     unsubOverlayEnd = eventBus.on('cutscene:overlay_end', finishCutsceneBeat);
+    unsubTimelineComplete = eventBus.on('cinematic:timeline_complete', ({ timelineId }) => {
+      if (timelineId === timeline.id) finishCutsceneBeat();
+    });
 
-    // Safety fallback if overlay_end never fires (stuck overlay).
-    cutsceneSessionRef.current.schedule(finishCutsceneBeat, totalDuration + 5000);
+    // Safety fallback if neither complete nor overlay_end fires.
+    cutsceneSessionRef.current.schedule(
+      finishCutsceneBeat,
+      (timeline.fallbackMs ?? cutscene.textDurationMs + 5000) + 5000,
+    );
 
-    // Capture the session ref so the cleanup uses the same instance that was
-    // scheduled, not whatever the ref points to by the time cleanup runs.
     const session = cutsceneSessionRef.current;
 
     return () => {
       unsubOverlayEnd?.();
+      unsubTimelineComplete?.();
       const hubId = SCENE_ENTRY_NODE_TO_HUB[beatNodeId];
       const nextNodeId = useGameStore.getState().currentNodeId;
       // Entry beat hub promotion (corridor_door → corridor_explore_mode) must not cancel in-flight cutscene.

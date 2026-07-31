@@ -18,8 +18,15 @@ describe('contentTruthManifest', () => {
     expect(CONTENT_TRUTH.achievements).toContain('achievements.ts');
   });
 
-  it('resolves Act I explore hub intro from story JSON, not registry duplicate', () => {
-    for (const hubId of ['explore_mode', 'corridor_explore_mode', 'street_bench_view']) {
+  it('resolves story-defined explore hub intros from act JSON, not registry', () => {
+    for (const hubId of [
+      'explore_mode',
+      'corridor_explore_mode',
+      'street_bench_view',
+      'cafe_explore_mode',
+      'office_explore_mode',
+      'home_evening_explore_mode',
+    ]) {
       expect(STORY_DEFINED_EXPLORE_HUB_IDS.has(hubId)).toBe(true);
       const intro = resolveExploreHubIntroText(hubId, STORY_NODES);
       expect(intro).toBeTruthy();

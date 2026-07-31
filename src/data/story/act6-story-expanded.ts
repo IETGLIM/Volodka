@@ -47,6 +47,7 @@ export const ACT6_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
           { type: 'setFlag', flag: 'act6_visited_chk_before_strike', flagValue: true },
         ],
       },
+      { text: 'Отойти в бункер — позже', next: 'bunker_explore_mode' },
     ],
   },
 
@@ -83,6 +84,7 @@ export const ACT6_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
           { type: 'addSkill', skill: 'intuition', value: 1 },
         ],
       },
+      { text: 'Отойти в бункер — позже', next: 'bunker_explore_mode' },
     ],
   },
 
@@ -119,6 +121,7 @@ export const ACT6_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
           { type: 'setFlag', flag: 'act6_seen_city_broadcast', flagValue: true },
         ],
       },
+      { text: 'Отойти в цех — позже', next: 'factory_explore_mode' },
     ],
   },
 
@@ -156,6 +159,7 @@ export const ACT6_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
           { type: 'addStat', stat: 'energy', value: -2 },
         ],
       },
+      { text: 'Отойти к костру — позже', next: 'chk_explore_mode' },
     ],
   },
 
@@ -192,6 +196,7 @@ export const ACT6_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
           { type: 'npcChange', npcId: 'npc_victoria', npcChange: { relation: 5 } },
         ],
       },
+      { text: 'Отойти в бункер — позже', next: 'bunker_explore_mode' },
     ],
   },
 
@@ -229,6 +234,7 @@ export const ACT6_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
           { type: 'npcChange', npcId: 'npc_alexander', npcChange: { relation: 5 } },
         ],
       },
+      { text: 'Отойти в бункер — позже', next: 'bunker_explore_mode' },
     ],
   },
 
@@ -265,6 +271,7 @@ export const ACT6_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
           { type: 'addSkill', skill: 'rhythm', value: 2 },
         ],
       },
+      { text: 'Отойти в бункер — позже', next: 'bunker_explore_mode' },
     ],
   },
 
@@ -301,6 +308,7 @@ export const ACT6_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
           { type: 'addStat', stat: 'stress', value: -3 },
         ],
       },
+      { text: 'Отойти на улицу — позже', next: 'street_bench_view' },
     ],
   },
 
@@ -338,6 +346,7 @@ export const ACT6_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
           { type: 'addStat', stat: 'stress', value: 2 },
         ],
       },
+      { text: 'Отойти в бункер — позже', next: 'bunker_explore_mode' },
     ],
   },
 
@@ -375,6 +384,7 @@ export const ACT6_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
           { type: 'addSkill', skill: 'persuasion', value: 1 },
         ],
       },
+      { text: 'Отойти в цех — позже', next: 'factory_explore_mode' },
     ],
   },
 
@@ -412,6 +422,7 @@ export const ACT6_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
           { type: 'addStat', stat: 'stress', value: 3 },
         ],
       },
+      { text: 'Отойти на улицу — позже', next: 'street_bench_view' },
     ],
   },
 
@@ -449,6 +460,7 @@ export const ACT6_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
           { type: 'addSkill', skill: 'rhythm', value: 1 },
         ],
       },
+      { text: 'Отойти в бункер — позже', next: 'bunker_explore_mode' },
     ],
   },
 
@@ -486,6 +498,7 @@ export const ACT6_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
           { type: 'addStat', stat: 'stress', value: 3 },
         ],
       },
+      { text: 'Отойти к костру — позже', next: 'chk_explore_mode' },
     ],
   },
 
@@ -522,6 +535,7 @@ export const ACT6_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
           { type: 'addStat', stat: 'stress', value: 2 },
         ],
       },
+      { text: 'Отойти — продолжить позже', next: 'mainframe_explore_mode' },
     ],
   },
 
@@ -559,6 +573,7 @@ export const ACT6_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
           { type: 'addStat', stat: 'stress', value: 4 },
         ],
       },
+      { text: 'Отойти в бункер — позже', next: 'bunker_explore_mode' },
     ],
   },
 
@@ -596,6 +611,7 @@ export const ACT6_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
           { type: 'addStat', stat: 'energy', value: -3 },
         ],
       },
+      { text: 'Отойти на улицу — позже', next: 'street_bench_view' },
     ],
   },
 
@@ -633,6 +649,7 @@ export const ACT6_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
           { type: 'addStat', stat: 'stress', value: -2 },
         ],
       },
+      { text: 'Отойти в бункер — позже', next: 'bunker_explore_mode' },
     ],
   },
 
@@ -670,6 +687,7 @@ export const ACT6_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
           { type: 'addSkill', skill: 'rhythm', value: 2 },
         ],
       },
+      { text: 'Отойти в цех — позже', next: 'factory_explore_mode' },
     ],
   },
 
@@ -707,6 +725,7 @@ export const ACT6_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
           { type: 'addStat', stat: 'stress', value: 2 },
         ],
       },
+      { text: 'Отойти в бункер — позже', next: 'bunker_explore_mode' },
     ],
   },
 
@@ -746,6 +765,7 @@ export const ACT6_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
           { type: 'addStat', stat: 'stress', value: -3 },
         ],
       },
+      { text: 'Отойти в бункер — позже', next: 'bunker_explore_mode' },
     ],
   },
 };

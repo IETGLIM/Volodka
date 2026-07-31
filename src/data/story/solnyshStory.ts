@@ -131,6 +131,11 @@ export const STORY_NODES_SOLNYSH: Record<string, StoryNode> = {
           { type: 'addStat', stat: 'stress', value: -15 },
         ],
       },
+      {
+        text: 'Отойти с края — тост подождёт',
+        next: 'rooftop_explore_mode',
+        condition: { missingFlag: 'solnysh_roof_toast_done' },
+      },
     ],
   },
 

@@ -13,10 +13,10 @@ export interface SceneExploreHubDef {
 }
 
 /**
- * Explore hubs whose prose lives in act JSON / story packs — skip auto-generation
- * and do not duplicate hubText in SCENE_EXPLORE_HUB_DEFS.
+ * Explore hubs whose full StoryNode structure lives in act packs / inline story
+ * (not auto-built by sceneExploreHubs). Prose for these also lives in act JSON.
  */
-export const STORY_DEFINED_EXPLORE_HUB_IDS = new Set([
+export const ACT_PACK_STRUCTURE_EXPLORE_HUB_IDS = new Set([
   'explore_mode',
   'corridor_explore_mode',
   'street_bench_view',
@@ -24,6 +24,18 @@ export const STORY_DEFINED_EXPLORE_HUB_IDS = new Set([
   'factory_explore_mode',
   'basement_explore_mode',
   'solnysh_explore_mode',
+]);
+
+/**
+ * Explore hubs whose prose lives in act JSON / story packs — do not duplicate
+ * hubText in SCENE_EXPLORE_HUB_DEFS. Structure may still be auto-generated when
+ * the hub is not in ACT_PACK_STRUCTURE_EXPLORE_HUB_IDS (cafe / office / kitchen).
+ */
+export const STORY_DEFINED_EXPLORE_HUB_IDS = new Set([
+  ...ACT_PACK_STRUCTURE_EXPLORE_HUB_IDS,
+  'cafe_explore_mode',
+  'office_explore_mode',
+  'home_evening_explore_mode',
 ]);
 
 /** Single source of truth for scene ↔ explore-hub mapping (topology; prose via contentTruthManifest). */
@@ -57,9 +69,6 @@ export const SCENE_EXPLORE_HUB_DEFS: readonly SceneExploreHubDef[] = [
   {
     hubId: 'home_evening_explore_mode',
     sceneId: 'home_evening',
-    hubText:
-      'Общая кухня пахнет чаем, вареньем и нафталином из шкафа. Радиоприёмник «Океан» шипит между станциями — Зарема называет это «голосом тех, кого Сеть не слышит». За окном — серые панели и неон; здесь, между плитой и столом, время идёт по часам, а не по NTP.',
-    hubTextRevisit: 'Кухня. Чайник свистит. Радио шипит.',
     entryNodeIds: [
       'kitchen_table',
       'kitchen_window',
@@ -71,9 +80,6 @@ export const SCENE_EXPLORE_HUB_DEFS: readonly SceneExploreHubDef[] = [
   {
     hubId: 'cafe_explore_mode',
     sceneId: 'cafe_evening',
-    hubText:
-      'Кафе «Синяя яма» — подвал с синими неоновыми трубками, запахом жжёного кофе и старым джазом из колонки без Bluetooth. Стены пропитаны поэтическим кодом: камеры слепнут, микрофоны глохнут. За стойкой — бариста с кибернетической рукой; в углу — Альберт, постукивающий пальцами в нервном ритме.',
-    hubTextRevisit: 'Синяя яма. Мёртвая зона. Кофе горячий.',
     entryNodeIds: [
       'go_to_cafe',
       'cafe_enter',
@@ -100,9 +106,6 @@ export const SCENE_EXPLORE_HUB_DEFS: readonly SceneExploreHubDef[] = [
   {
     hubId: 'office_explore_mode',
     sceneId: 'office_day',
-    hubText:
-      'Офис IT-гильдии — стекло, хром и тихий гул серверов за перегородкой. Терминалы мерцают, коллеги снуют между кабинками с глазами, уставшими от «НейроМоста». Где-то в глубине — кабинет Александра. Воздух пахнет озоном и страхом перед инцидентом #4729.',
-    hubTextRevisit: 'Офис. Гул серверов. Александр где-то там.',
     entryNodeIds: [
       'office_alexander',
       'digital_ghost_approach',

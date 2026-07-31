@@ -14,6 +14,7 @@ export const STORY_NODES_EXPANSION_QUESTS: Record<string, StoryNode> = {
         next: 'act1_albert_alliance_terms',
         effects: [{ type: 'setFlag', flag: 'act1_albert_alliance_active', flagValue: true }],
       },
+      { text: 'Отойти в зал — позже', next: 'cafe_explore_mode' },
     ],
   },
 
@@ -50,6 +51,7 @@ export const STORY_NODES_EXPANSION_QUESTS: Record<string, StoryNode> = {
         next: 'act1_albert_alliance_seal',
         effects: [{ type: 'addSkill', skill: 'intuition', value: 1 }],
       },
+      { text: 'Отойти на улицу — позже', next: 'street_bench_view' },
     ],
   },
 
@@ -109,6 +111,7 @@ export const STORY_NODES_EXPANSION_QUESTS: Record<string, StoryNode> = {
         next: 'act2_archive_seven_cafe_trace',
         effects: [{ type: 'setFlag', flag: 'archive7_chk_trace', flagValue: true }],
       },
+      { text: 'Отойти к костру — позже', next: 'chk_explore_mode' },
     ],
   },
 
@@ -253,6 +256,7 @@ export const STORY_NODES_EXPANSION_QUESTS: Record<string, StoryNode> = {
         next: 'act2_exp_street_rain',
         effects: [{ type: 'setFlag', flag: 'street_samizdat_patrol_evaded', flagValue: true }],
       },
+      { text: 'Отойти на улицу — позже', next: 'street_bench_view' },
     ],
   },
 
@@ -299,6 +303,7 @@ export const STORY_NODES_EXPANSION_QUESTS: Record<string, StoryNode> = {
           { type: 'npcChange', npcId: 'fisherman_trofim', npcChange: { relation: 3 } },
         ],
       },
+      { text: 'Отойти к пирсу — позже', next: 'pier_explore_mode' },
     ],
   },
 
@@ -313,6 +318,7 @@ export const STORY_NODES_EXPANSION_QUESTS: Record<string, StoryNode> = {
         next: 'act2_pier_cafe_frequency_match',
         effects: [{ type: 'addSkill', skill: 'rhythm', value: 1 }],
       },
+      { text: 'Отойти на улицу — позже', next: 'street_bench_view' },
     ],
   },
 

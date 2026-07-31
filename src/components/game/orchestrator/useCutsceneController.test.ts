@@ -35,7 +35,19 @@ describe('useCutsceneController entry beat contract', () => {
 });
 
 describe('useCutsceneController skipActiveCutscene', () => {
-  it('placeholder for hook integration — covered by entryBeatState + narrativeOpenHelpers', () => {
+  it('placeholder for hook integration — covered by entryBeatState + cutsceneDefToTimeline + narrativeOpenHelpers', () => {
     expect(true).toBe(true);
+  });
+});
+
+describe('useCutsceneController timeline wiring', () => {
+  it('cutsceneDefToTimeline ids match story cutscene playback contract', async () => {
+    const { cutsceneDefToTimeline } = await import('@/engine/cinematic/cutsceneToTimeline');
+    const { CUTSCENES } = await import('@/data/cutscenes');
+    const cutscene = CUTSCENES.act1_prologue;
+    const def = cutsceneDefToTimeline(cutscene);
+    expect(def.id).toBe(`cutscene_${cutscene.id}`);
+    expect(def.fallbackMs).toBeGreaterThan(cutscene.textDurationMs);
+    expect(def.phases.length).toBeGreaterThan(0);
   });
 });

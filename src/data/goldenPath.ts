@@ -4,9 +4,9 @@ import { TOTAL_MAIN_POEMS } from './poemCollectionMeta';
 import { NPC_ID_ALIASES as SHARED_NPC_ID_ALIASES, resolveCanonicalNpcId as resolveNpcAlias } from '@/shared/npcIdAliases';
 
 /**
- * GOLDEN_PATH_STORY_SPINE — the canonical story path from start through the
- * act-5 reconciliation ending and onward into acts 6–7, finishing at act7_true_end.
- * Players can deviate, but this is the "intended" narrative backbone.
+ * GOLDEN_PATH_STORY_SPINE — frozen parity snapshot of the derived spine.
+ * Live walk uses `choice.goldenPath` markers (`deriveGoldenPath.ts`); this table
+ * is fallback only if markers regress, plus CI length/order parity.
  * Poem unlock nodes are woven into the path at key emotional moments.
  *
  * Act 1 spine (strict chain, side quests branch off and rejoin):
@@ -515,12 +515,12 @@ export const ACT_CHAPTER_TITLES: Record<number, string> = Object.fromEntries(
 ) as Record<number, string>;
 
 /**
- * GOLDEN_PATH_BRANCH_HINTS — hints for key branch decisions.
- * Key = story node ID where a meaningful choice occurs.
- * Value = description of what the "golden" (high-karma) choice leads to.
+ * GOLDEN_PATH_BRANCH_HINTS — fallback hints where nodes lack `guidanceHint`.
+ * Prefer authoring `guidanceHint` on the story node; delete table rows when
+ * the node annotation matches (deriveBranchHints merges node hints over this).
  */
 export const GOLDEN_PATH_BRANCH_HINTS: Record<string, string> = {
-  // Act 1
+  // Act 1 (rows matching node.guidanceHint removed — see act JSON / packs)
   start: 'Проверь терминал — сообщение гильдии важнее, чем кажется.',
   terminal_boot_poem: 'Прочитай стих — кто-то оставил его на мониторе не случайно.',
   room_terminal_wake: 'Сохрани лог гильдии — инцидент #4729 начинается здесь.',
@@ -543,7 +543,6 @@ export const GOLDEN_PATH_BRANCH_HINTS: Record<string, string> = {
   office_vault_archive: 'В Хранилище спрятан стих — забери копию и уходи.',
   room_table: 'Осмотри стол — затем выйди в коридор к Солныш.',
   corridor_door: 'Поздоровайся с Солныш — она ждёт у зеркала.',
-  corridor_explore_mode: 'Поговори с Солныш или зайди к ней с Лёней — линия друга с детства.',
   solnysh_corridor_talk: 'Успокой Алину — ей нужна поддержка лучшего друга.',
   solnysh_door: 'Зайди в комнату с коврами — там кофе, мольберт и Умка.',
   solnysh_room_talk: 'Выслушай Солныш — или предложи вино на крыше, если нашёл бутылку.',
@@ -552,12 +551,10 @@ export const GOLDEN_PATH_BRANCH_HINTS: Record<string, string> = {
   kitchen_window: 'Иди в кафе — дорога начинается с первого шага.',
   go_to_cafe: 'Выйди на улицу и зайди в «Синюю яму» — город ещё не сказал всё.',
   street_bench: 'Огляди улицу — в переулке кто-то ждёт именно тебя.',
-  cafe_explore_mode: 'Осмотри «Синюю яму» — затем подойди к баристе.',
   cafe_barista: 'Закажи обычный кофе — эхо чипа откроет путь в гильдию.',
   cafe_chip_resonance: 'Бариста слышит эхо чипа — дождись пропуска на пене.',
   cafe_guild_clearance: 'Невидимый пропуск получен — иди в холл IT-гильдии.',
   office_lobby_arrival: 'Доска #4729 и тепло чипа — затем к Александру. Коллега следит.',
-  office_explore_mode: 'Сядь за терминал Александра — инцидент #4729 ждёт расшифровки.',
   street_bench_view: 'Подойди к незнакомке — Виктория знает правду.',
   maria_curious: 'Возьми чип данных — в нём скрыто стихотворение.',
   maria_chip_trust: 'Стих уже с тобой — зайди в «Синюю яму» или останься на улице.',
@@ -565,12 +562,9 @@ export const GOLDEN_PATH_BRANCH_HINTS: Record<string, string> = {
   cafe_barista_victoria_whisper: 'Выйди на улицу — силуэт у подъезда уже ждёт.',
   office_alexander: 'Помоги Александру — инцидент касается всех.',
   start_diagnosis: 'Расшифруй код — стихи скрыты в самой структуре.',
-  fix_success: 'Остановись и подумай — несправедливость мира заслуживает слова.',
   office_poem_aftermath: 'Стих уже на экране — почувствуй давление гильдии, затем к коллеге.',
-  office_colleague: 'Убеди коллегу рассказать — информация стоит усилий.',
   office_colleague_vault_whisper: 'Слушай шёпот о Хранилище — это не официоз.',
   colleague_persuasion_line: 'Попроси помочь с доступом к Хранилищу.',
-  balcony_thought: 'Взгляни на город сверху — каждый путь ведёт куда-то.',
   friday_arrives: 'Позволь тоске стать стихами — одиночество тоже говорит.',
   friday_spleen_night: 'Запиши сплин — потом к Альберту или сразу к Сети.',
   cafe_albert_friday_bridge: 'Альберт знает про живой код — слушай и выходи на улицу.',
@@ -578,8 +572,6 @@ export const GOLDEN_PATH_BRANCH_HINTS: Record<string, string> = {
   act2_transition: 'Ищи Викторию — она знает путь к Сети.',
   act2_albert_hint: 'Узнай о «живом коде» — это ключ ко всему.',
   maria_introduction: 'Прислушайся к её словам — поэзия — не то, чем кажется.',
-  act2_maria_meeting_place: 'Продекламируй стих — это твой пароль.',
-  act2_network_initiation: 'Принеси клятву — слово связывает сильнее кода.',
   act2_network_oath: 'Спроси о Хранилище — там спрятана память города.',
   reading_reaction: 'Не отворачивайся от чужой боли — крылатым всегда грустно.',
   volunteer_read: 'Если знаешь куда идти — иди до конца.',
@@ -595,10 +587,8 @@ export const GOLDEN_PATH_BRANCH_HINTS: Record<string, string> = {
   act3_zarema_warning: 'Спаси Зарему — люди важнее архивов.',
   act3_zarema_arrest: 'Взломай систему — твой код сильнее их замков.',
   act3_zarema_cell: 'Скажи ей правду — она — самое важное стихотворение.',
-  act3_zarema_rescue_choice: 'Спасти Зарему — карма измеряется добротой.',
   maria_warm: 'Поверь в тепло рядом — город отпустит, когда найдёшь свою дверь.',
   act3_maria_mystery: 'Поверь в её человечность — она больше, чем код.',
-  act3_maria_revelation: 'Она — стихотворение, которое научилось дышать.',
   act3_maria_truth_accepted: 'Используй союз с Викторией — защити Хранилище вместе с ней.',
   act3_albert_loyalty: 'Прости ему страх — слабость часть силы.',
   act3_albert_choice: 'Поддержи Альберта — верность возвращается.',
@@ -619,8 +609,6 @@ export const GOLDEN_PATH_BRANCH_HINTS: Record<string, string> = {
   chk_act4_stalker_briefing: 'Получи маршрут Сталкера — тихий путь к гильдии.',
   chk_act4_broadcast_watch: 'После вещания — загляни к чекистам у костра.',
   act4_core_server: 'Отключи Протокол Забвения — спаси память.',
-  act4_broadcast_prep: 'Начни вещание — пусть город услышит стихи.',
-  act4_broadcast_execute: 'Добавь своё стихотворение — твой голос тоже важен.',
   act5_dawn: 'Последний Код — rally, вирус, ядро; потом союзники и выбор, кто ты.',
   act4_final_choice: 'Кто ты после всего? Создатель, Повстанец, Изгой, Машина или Поэт — выбирай осознанно.',
   // Act 5
@@ -661,10 +649,10 @@ export const GOLDEN_PATH_BRANCH_HINTS: Record<string, string> = {
   act7_ending_poet_legacy: 'Останься в городе — пиши, учи, вдохновляй.',
   act7_ending_guardian: 'Стань хранителем архива — память сильнее забвения.',
   act7_ending_wanderer: 'Уйди с дорогой — твои стихи останутся с теми, кого ты спас.',
+  act7_true_end: 'Остаться в городе для эпилога — или начать новую игру с сохранёнными достижениями.',
   act7_poet_legacy_mirror: 'Перелистай книгу памяти — каждая страница из вашего пути.',
   act7_guardian_legacy_mirror: 'Вспомни, ради чего ты стал хранителем.',
   act7_wanderer_legacy_mirror: 'Разложи рюкзак — что ты унёс из города?',
-  act7_true_end: 'Остаться в городе для эпилога — или начать новую игру с сохранёнными достижениями.',
 };
 
 /**

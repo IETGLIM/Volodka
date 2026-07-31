@@ -22,7 +22,16 @@ const HERO_AO_RADIUS = 0.55;
 
 /**
  * Resolves post-FX / shadow tier for a scene + quality preset.
- * Hero scenes keep full grading on medium and gain AO from high upward.
+ *
+ * PostFX policy (single table):
+ * | tier / flag                         | useLitePostFx |
+ * |-------------------------------------|---------------|
+ * | selected/preset `low`               | true (always) |
+ * | visualLite + !forceFullPostFx       | true          |
+ * | visualLite + forceFullPostFx (hero) | false (full)  |
+ * | !visualLite                         | false (full)  |
+ *
+ * AO still requires high/ultra + profile + `allowsHeavyGfxFeature`.
  */
 export function resolveSceneRenderingPipeline(
   sceneId: SceneId,
@@ -34,8 +43,9 @@ export function resolveSceneRenderingPipeline(
   const profile = getSceneVisualProfile(sceneId);
   const isHero = isHeroScene(sceneId);
 
-  const useLitePostFx =
-    visualLite && !profile.forceFullPostFx;
+  const isLowTier = preset.id === 'low' || selectedPreset === 'low';
+  const forceFullPostFx = profile.forceFullPostFx && !isLowTier;
+  const useLitePostFx = visualLite && !forceFullPostFx;
 
   const highEnoughForAo =
     preset.id === 'ultra'

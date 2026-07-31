@@ -1,8 +1,12 @@
 import type { StoryChoice, StoryNode } from '@/shared/types/game';
 import {
+  ACT_PACK_STRUCTURE_EXPLORE_HUB_IDS,
   SCENE_EXPLORE_HUB_DEFS,
-  STORY_DEFINED_EXPLORE_HUB_IDS,
 } from '@/shared/sceneExploreHubRegistry';
+import act1Texts from './texts/act1.json';
+import type { ActStoryTexts } from '@/data/narrative/storyTextTypes';
+
+const ACT1_HUB_PROSE = act1Texts as ActStoryTexts;
 
 /** Golden-path continuation from auto-generated explore hubs (matches GOLDEN_PATH_STORY_SPINE). */
 const GOLDEN_PATH_HUB_CONTINUE: Partial<
@@ -1189,20 +1193,23 @@ function buildSceneExploreHubNode(def: (typeof SCENE_EXPLORE_HUB_DEFS)[number]):
 
   choices.push({ text: 'Свободно исследовать', next: def.hubId });
 
+  const prose = ACT1_HUB_PROSE[def.hubId];
   return {
     id: def.hubId,
-    text: def.hubText ?? '',
-    hubIntroText: def.hubText,
-    hubRevisitText: def.hubTextRevisit,
+    text: prose?.text ?? def.hubText ?? '',
+    hubIntroText: prose?.hubIntroText ?? def.hubText,
+    hubRevisitText: prose?.hubRevisitText ?? def.hubTextRevisit,
+    guidanceHint: prose?.guidanceHint,
+    guidanceSceneLabel: prose?.guidanceSceneLabel,
     speaker: 'narrator',
     sceneId: def.sceneId,
     choices,
   };
 }
 
-/** Explore-hub story nodes for scenes beyond story-defined hubs (prose in act packs). */
+/** Explore-hub story nodes for scenes beyond act-pack structure hubs. */
 export const STORY_NODES_SCENE_EXPLORE_HUBS: Record<string, StoryNode> = Object.fromEntries(
   SCENE_EXPLORE_HUB_DEFS
-    .filter((def) => !STORY_DEFINED_EXPLORE_HUB_IDS.has(def.hubId))
+    .filter((def) => !ACT_PACK_STRUCTURE_EXPLORE_HUB_IDS.has(def.hubId))
     .map((def) => [def.hubId, buildSceneExploreHubNode(def)]),
 );

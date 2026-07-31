@@ -42,7 +42,7 @@ config/        — scene/metric/shell policy tables
 | Poem discovery / ritual / read | `poemRevealOrchestrator` + `PoemRevealHost` (FIFO) | parallel discovery cutscene mounts |
 | Exclusive interstitial busy | `cinematicInterstitialPresentation` (`matrix_quote` \| `first_reading_celebration` \| `poem_reveal` \| `quest_complete` \| `quest_chain_unlock`) | second poem-discovery busy flag; parallel quest busy modules |
 | Dialogue / VN busy | store `showStoryOverlay` / `diegeticNarrative` (OR'd by presentation profile; store-owned forever) | duplicate dialogue busy modules |
-| Explore hub topology | `sceneExploreHubRegistry` (+ `STORY_DEFINED_EXPLORE_HUB_IDS`) | prose in registry for story-defined hubs |
+| Explore hub topology | `sceneExploreHubRegistry` (+ `STORY_DEFINED_EXPLORE_HUB_IDS` / `ACT_PACK_STRUCTURE_EXPLORE_HUB_IDS`) | prose in registry for story-defined hubs |
 | Explore hub prose | act JSON / story pack via `resolveExploreHubIntroText` | dual auto-hub vs act-pack toast copy |
 | Leave + mid-resume | leave choice → hub + hub mid-split + zones + `entryNodeIds` | next-only mid-beat soft-locks |
 | Heavy GPU features | `qualityFeatureGates.allowsHeavyGfxFeature` | ad-hoc `preset.id === 'ultra'` checks |
@@ -53,7 +53,7 @@ config/        — scene/metric/shell policy tables
 | Notification channels | `notificationChannelRegistry` + `useNotificationSlot` | unregistered popup components |
 | Scene GPU | `sceneGpuLifecycle` + `sceneGpuOwnership` claims | ad-hoc dispose outside unload path |
 | Content truth | `contentTruthManifest` resolvers | reading parallel registries when a resolver exists |
-| Cinematic runtime descriptor | `CinematicTimelineDef` via `splashPresetToTimeline` / `cutsceneDefToTimeline` | parallel NPC cutscene registry; ad-hoc waypoint players without converter |
+| Cinematic runtime descriptor | `CinematicTimelineDef` via `splashPresetToTimeline` / `cutsceneDefToTimeline` + timeline orchestrator playback | parallel NPC cutscene registry; ad-hoc waypoint players without converter |
 
 ### Exclusive UI sequencing (reference = poem reveal)
 
@@ -80,13 +80,14 @@ Legacy interstitial alias `setPoemDiscoveryRevealInterstitialActive` → `setPoe
 | Dialogue busy documented store-owned forever | ✅ Wave 2 |
 | Dead `npcCutscenes` deleted; splash + cutscene → `CinematicTimelineDef` | ✅ Wave 2 |
 | `poemDiscovery/*` shim deleted (imports → poemReveal) | ✅ Wave 2 |
-| Explore leave / hub mid-resume | ✅ pattern; residual next-only scanned per tick |
+| Explore leave / hub mid-resume | ✅ pattern; Acts 5–7 expanded + expansion leave shipped (quiet-hour intentional) |
 | Scene GPU ownership | ✅ core; residual ad-hoc dispose audit remains |
-| `STORY_DEFINED_EXPLORE_HUB_IDS` single set (registry + auto-gen skip) | ✅ Wave 3 start |
-| Golden path: two spine sources + hint annotation (not triple walker) | ✅ Wave 3 start (docs/code comment) |
-| Expand story-defined hubs (cafe/office/home prose → act JSON) | ⚠️ backlog |
-| Story cutscene *playback* fully on timeline orchestrator | ⚠️ residual (converter shipped; controller still uses camera:cutscene_*) |
-| Full goldenPath.ts table retirement when markers complete | ⚠️ backlog |
+| `STORY_DEFINED_EXPLORE_HUB_IDS` + structure split | ✅ Wave 3 (cafe/office/home prose in act1.json) |
+| Golden path: markers cover spine; table = parity fallback | ✅ Wave 3 |
+| Expand story-defined hubs (cafe/office/home prose → act JSON) | ✅ Wave 3 |
+| Story cutscene playback on timeline orchestrator | ✅ Wave 3 (`useCutsceneController` → `cutsceneDefToTimeline`) |
+| Full goldenPath.ts table retirement when markers complete | ✅ spine parity-only; BRANCH_HINTS/NPC maps remain guidance fallbacks |
+| Hero PostFX lite on low (forceFullPostFx ignored at low) | ✅ Wave 4 start |
 
 Full ordered backlog: [`docs/ARCHITECTURE_UNIFICATION.md`](./docs/ARCHITECTURE_UNIFICATION.md).
 
@@ -102,7 +103,7 @@ Full ordered backlog: [`docs/ARCHITECTURE_UNIFICATION.md`](./docs/ARCHITECTURE_U
 | Narrative UI open | **`presentNarrativeBeat`** | hub / diegetic / VN overlay |
 | Explore-hub topology | `sceneExploreHubRegistry.ts` | `hubId`, `sceneId`, `entryNodeIds` |
 | Explore-hub **проза** | `act*.json` / story pack (`hubIntroText`, `hubRevisitText`, `text`) | `resolveExploreHubIntroText` |
-| Auto-generated hubs | `SCENE_EXPLORE_HUB_DEFS.hubText` → `sceneExploreHubs.ts` | только хабы без act-pack node |
+| Auto-generated hubs | `sceneExploreHubs.ts` (choices/topology); prose overlay from act JSON when in `STORY_DEFINED` | только хабы вне `ACT_PACK_STRUCTURE_EXPLORE_HUB_IDS` |
 | Literary poem text | `src/data/poems.ts` (**не редактировать**) | — |
 | Poem display names | `unifiedPoemRegistry.ts` | `getUnifiedPoem`, `enrichPoemMechanicsDisplay` |
 | Poem world/combat mechanics | `PoemPowerSystem.ts` / `combat/actions.ts` | effect impl; display из registry |
@@ -111,12 +112,12 @@ Full ordered backlog: [`docs/ARCHITECTURE_UNIFICATION.md`](./docs/ARCHITECTURE_U
 | Story history (journal) | `visitedNodes` → `buildJournalNotes` | — |
 | Dialogue transcript | `uiSlice.conversationLog` | runtime only |
 | Lore codex | `loreEntries.ts` | — |
-| Golden path | `deriveGoldenPath.ts` (+ `goldenPath.ts` fallback spine/tables) | `buildGuidedStoryPath`; `guidanceHint` = display annotation only |
+| Golden path | `deriveGoldenPath.ts` (+ `goldenPath.ts` parity spine / guidance fallbacks) | `buildGuidedStoryPath`; `guidanceHint` = display annotation only |
 | HUD panels | `orchestrator/types.ts` `PANEL_IDS` | panel stack reducer |
 | Thought Cabinet definitions | `thoughtCabinet.ts` | `THOUGHT_CABINET_ITEMS` / `THOUGHT_CABINET_MAP` |
 | Thought Cabinet state | `playerSlice.thoughtCabinet` | selectors |
 
-**Правило explore-hub prose:** для `STORY_DEFINED_EXPLORE_HUB_IDS` (act1 trio, pier, factory, basement, solnysh) текст toast **не дублируется** в `sceneExploreHubRegistry` — только в story JSON / inline pack. Валидатор (`validateContentTruth` в `contentPipelineValidator`) падает, если `hubText` в registry дублирует story node.
+**Правило explore-hub prose:** для `STORY_DEFINED_EXPLORE_HUB_IDS` (act1 trio + cafe/office/kitchen, pier, factory, basement, solnysh) текст toast **не дублируется** в `sceneExploreHubRegistry` — только в story JSON / inline pack. Structure auto-gen skips only `ACT_PACK_STRUCTURE_EXPLORE_HUB_IDS`. Валидатор (`validateContentTruth` в `contentPipelineValidator`) падает, если `hubText` в registry дублирует story node.
 
 **Правило narrative open:** любой story/dialogue beat открывается через `presentNarrativeBeat(nodeId, kind)`, не через прямой `openNarrativeOverlay` из interaction path (кроме internal cleanup).
 
@@ -727,29 +728,29 @@ XSS: `sanitizePlainText` на основном пути рендера (`narrati
 | Область | Статус |
 |---------|--------|
 | Content truth dual registry (CI eager vs runtime lazy) | parity test есть; validator ещё на eager STORY_NODES |
-| Golden path sources | derive + fallback spine; guidanceHint = annotation (cafe/office hub prose expansion remains) |
+| Golden path sources | derive + frozen parity spine; markers complete; BRANCH_HINTS remain guidance fallback |
 | NPC behavioral FSM → 3D | ✅ `useNpcVisualBehavior` (GLB + procedural parity) |
-| JSON narrative migration | тексты act1–7 есть; hubIntroText — постепенно для act 2–7 |
+| JSON narrative migration | тексты act1–7; hubIntroText for story-defined hubs incl. cafe/office/kitchen |
 | Pause Escape vs panels | ✅ `escapeDismissAction` + capture-phase `useKeyboardShortcutManager` |
 | Inventory z-index vs examine | ✅ PANEL 60; toasts скрываются при открытых панелях |
 | NPC cutscene vs explore mode | ✅ toast «свободное исследование» после interaction Exit |
 | Combat Escape | ✅ noop в combat/cutscene; pause toggle только в exploration |
-| Leave / mid-resume soft-locks | ✅ pattern shipped; residual next-only chains still scanned per tick |
+| Leave / mid-resume soft-locks | ✅ Acts 5–7 expanded + expansion leave; quiet-hour intentional; mid-resume polish optional |
 | Interior Kenney exteriors as rooms | ✅ blocked (`exterior_building`); procedural envelopes own walkables |
 | Selective MeshPhysical wet/CRT | ✅ quality-gated accents; not blanket Physical |
 | Exclusive interstitial kinds | ✅ Wave 2: + quest_complete / quest_chain_unlock; dialogue store-owned |
 | Poem discovery notification language | ✅ PoemRevealHost owns UI; toast/float mirrors suppressed |
 | Dead quality preset flags | ✅ removed (useInstancing / impostors / bakedLighting) |
 | Input locomotion write path | ✅ virtual ref + keyboard singleton documented |
-| PostFX on low hero scenes | частично |
+| PostFX on low hero scenes | ✅ low always lite (`resolveSceneRenderingPipeline`) |
 | GameOrchestrator priorities | разнесены по файлам |
 | npcRegistry baseline | устаревшие id в тестах |
 | Mixamo ↔ Quaternius bone remap | ⚠️ hip filter + talk fallback interim |
 | act7 mirror flags | только в structure JSON — сканер обновлён |
-| Cinematic registries | ✅ npcCutscenes deleted; splash + cutscene → timeline converters |
+| Cinematic registries | ✅ converters + story cutscene playback via timeline orchestrator |
 | Dialogue/quest busy → interstitial fold | ✅ quest UI in interstitial; dialogue stays store-owned |
-| Explore hub ID set | ✅ one `STORY_DEFINED_EXPLORE_HUB_IDS` for prose + auto-gen skip |
-| Golden path sources | ✅ derive + fallback spine; guidanceHint = annotation only |
+| Explore hub ID set | ✅ `STORY_DEFINED` prose + `ACT_PACK_STRUCTURE` auto-gen skip |
+| Golden path sources | ✅ derive + parity fallback; guidanceHint annotation |
 
 AA visual/content waves и tick log — [`docs/AA_QUALITY_ROADMAP.md`](./docs/AA_QUALITY_ROADMAP.md).
 Агентный контекст сессий — [`AI_SESSION_CONTEXT.md`](./AI_SESSION_CONTEXT.md).

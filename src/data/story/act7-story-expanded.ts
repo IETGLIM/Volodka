@@ -45,6 +45,7 @@ export const ACT7_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
           { type: 'addStat', stat: 'stress', value: -5 },
         ],
       },
+      { text: 'Отойти на площадь — позже', next: 'city_square_explore_mode' },
     ],
   },
 
@@ -83,6 +84,7 @@ export const ACT7_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
           { type: 'npcChange', npcId: 'kate', npcChange: { relation: 5 } },
         ],
       },
+      { text: 'Отойти в читальный зал — позже', next: 'library_explore_mode' },
     ],
   },
 
@@ -120,6 +122,7 @@ export const ACT7_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
           { type: 'addSkill', skill: 'writing', value: 1 },
         ],
       },
+      { text: 'Отойти в читальный зал — позже', next: 'library_explore_mode' },
     ],
   },
 
@@ -156,6 +159,7 @@ export const ACT7_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
           { type: 'addStat', stat: 'energy', value: 5 },
         ],
       },
+      { text: 'Отойти в парк — позже', next: 'park_explore_mode' },
     ],
   },
 
@@ -193,6 +197,7 @@ export const ACT7_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
           { type: 'addKarma', value: 2 },
         ],
       },
+      { text: 'Отойти в зал — позже', next: 'cafe_explore_mode' },
     ],
   },
 
@@ -230,6 +235,7 @@ export const ACT7_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
           { type: 'addSkill', skill: 'logic', value: 1 },
         ],
       },
+      { text: 'Отойти на площадь — позже', next: 'city_square_explore_mode' },
     ],
   },
 
@@ -267,6 +273,7 @@ export const ACT7_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
           { type: 'addStat', stat: 'stress', value: -3 },
         ],
       },
+      { text: 'Отойти в читальный зал — позже', next: 'library_explore_mode' },
     ],
   },
 
@@ -304,6 +311,7 @@ export const ACT7_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
           { type: 'setFlag', flag: 'act7_checked_zarya', flagValue: true },
         ],
       },
+      { text: 'Отойти в цех — позже', next: 'factory_explore_mode' },
     ],
   },
 
@@ -341,6 +349,7 @@ export const ACT7_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
           { type: 'addStat', stat: 'energy', value: 5 },
         ],
       },
+      { text: 'Отойти в бункер — позже', next: 'bunker_explore_mode' },
     ],
   },
 
@@ -378,6 +387,7 @@ export const ACT7_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
           { type: 'addSkill', skill: 'rhythm', value: 2 },
         ],
       },
+      { text: 'Отойти в цех — позже', next: 'factory_explore_mode' },
     ],
   },
 
@@ -415,6 +425,7 @@ export const ACT7_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
           { type: 'addStat', stat: 'energy', value: 3 },
         ],
       },
+      { text: 'Отойти на улицу — позже', next: 'street_bench_view' },
     ],
   },
 
@@ -454,6 +465,7 @@ export const ACT7_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
           { type: 'addSkill', skill: 'empathy', value: 2 },
         ],
       },
+      { text: 'Отойти в читальный зал — позже', next: 'library_explore_mode' },
     ],
   },
 
@@ -491,6 +503,7 @@ export const ACT7_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
           { type: 'addSkill', skill: 'intuition', value: 2 },
         ],
       },
+      { text: 'Отойти к костру — позже', next: 'chk_explore_mode' },
     ],
   },
 
@@ -528,6 +541,7 @@ export const ACT7_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
           { type: 'addSkill', skill: 'rhythm', value: 1 },
         ],
       },
+      { text: 'Отойти к пирсу — позже', next: 'pier_explore_mode' },
     ],
   },
 
@@ -565,6 +579,7 @@ export const ACT7_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
           { type: 'addSkill', skill: 'writing', value: 1 },
         ],
       },
+      { text: 'Отойти к стойкам — позже', next: 'office_explore_mode' },
     ],
   },
 
@@ -603,6 +618,7 @@ export const ACT7_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
           { type: 'addStat', stat: 'stress', value: -6 },
         ],
       },
+      { text: 'Отойти в комнату — позже', next: 'explore_mode' },
     ],
   },
 
@@ -640,6 +656,7 @@ export const ACT7_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
           { type: 'addStat', stat: 'stress', value: 3 },
         ],
       },
+      { text: 'Отойти к стойкам — позже', next: 'office_explore_mode' },
     ],
   },
 
@@ -678,6 +695,7 @@ export const ACT7_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
           { type: 'setFlag', flag: 'act7_poem_from_fragments', flagValue: true },
         ],
       },
+      { text: 'Отойти в комнату — позже', next: 'explore_mode' },
     ],
   },
 
@@ -731,6 +749,7 @@ export const ACT7_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
           { type: 'setFlag', flag: 'act7_ending_organic', flagValue: true },
         ],
       },
+      { text: 'Отойти на площадь — позже', next: 'city_square_explore_mode' },
     ],
   },
 
