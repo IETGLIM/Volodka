@@ -30,13 +30,39 @@
       // When a deploy changes chunk hashes, the browser may try to load a
       // stale chunk from cache → 404 → vite:preloadError. This handler
       // reloads the page once so the browser fetches fresh chunks.
-      window.addEventListener('vite:preloadError', function (e) {
-        e.preventDefault();
-        if (!sessionStorage.getItem('volodka-chunk-reload-attempt')) {
-          sessionStorage.setItem('volodka-chunk-reload-attempt', '1');
+      // Key must match CHUNK_RELOAD_SESSION_KEY in chunkLoadRecovery.ts.
+      (function () {
+        var KEY = 'volodka-chunk-reload-attempt';
+        function reloadOnce() {
+          try {
+            if (sessionStorage.getItem(KEY)) return;
+            sessionStorage.setItem(KEY, '1');
+          } catch (_) {
+            /* private browsing — still attempt one reload */
+          }
           window.location.reload();
         }
-      });
+        window.addEventListener('vite:preloadError', function (e) {
+          e.preventDefault();
+          reloadOnce();
+        });
+        window.addEventListener('unhandledrejection', function (e) {
+          var msg = e && e.reason != null
+            ? (e.reason.message || String(e.reason))
+            : '';
+          if (
+            msg.indexOf('Failed to fetch dynamically imported module') === -1 &&
+            msg.indexOf('Importing a module script failed') === -1 &&
+            msg.indexOf('error loading dynamically imported module') === -1 &&
+            msg.indexOf('Failed to load module script') === -1 &&
+            msg.indexOf('vite:preloadError') === -1
+          ) {
+            return;
+          }
+          e.preventDefault();
+          reloadOnce();
+        });
+      })();
     </script>
     <!-- Google Fonts: Geist Sans + Geist Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />

@@ -19,7 +19,31 @@ describe('chunkLoadRecovery', () => {
         new Error('Failed to fetch dynamically imported module: https://example.com/assets/foo.js'),
       ),
     ).toBe(true);
+    expect(isChunkLoadError(new Error('vite:preloadError'))).toBe(true);
     expect(isChunkLoadError(new Error('network timeout'))).toBe(false);
+  });
+
+  it('reloads once on vite:preloadError synthetic error', () => {
+    const reload = vi.fn();
+    const storage = new Map<string, string>();
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    vi.stubGlobal('window', {
+      location: { reload },
+    });
+    vi.stubGlobal('sessionStorage', {
+      getItem: (key: string) => storage.get(key) ?? null,
+      setItem: (key: string, value: string) => {
+        storage.set(key, value);
+      },
+      removeItem: (key: string) => {
+        storage.delete(key);
+      },
+    });
+
+    recoverFromStaleChunk(new Error('vite:preloadError'));
+    expect(reload).toHaveBeenCalledTimes(1);
+    expect(storage.get(CHUNK_RELOAD_SESSION_KEY)).toBe('1');
   });
 
   it('reloads once on stale chunk, then rethrows on second call', () => {

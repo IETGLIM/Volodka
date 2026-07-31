@@ -23,6 +23,8 @@ export function isChunkLoadError(err: unknown): boolean {
   const name = err instanceof Error ? err.name : '';
   return (
     name === 'ChunkLoadError' ||
+    // Vite custom event payload / synthetic Error from installChunkLoadRecovery
+    message.includes('vite:preloadError') ||
     message.includes('Failed to fetch dynamically imported module') ||
     message.includes('Importing a module script failed') ||
     message.includes('error loading dynamically imported module') ||
@@ -111,13 +113,23 @@ export function installChunkLoadRecovery(): void {
   if (typeof window === 'undefined') return;
 
   window.addEventListener('vite:preloadError', (event) => {
+    // Prevent Vite's default uncaught throw so recovery can reload once.
     event.preventDefault();
-    recoverFromStaleChunk(new Error('vite:preloadError'));
+    try {
+      recoverFromStaleChunk(new Error('vite:preloadError'));
+    } catch {
+      // Reload already attempted this session — keep the error swallowed
+      // (preventDefault) so the tab does not crash-loop with Uncaught Error.
+    }
   });
 
   window.addEventListener('unhandledrejection', (event) => {
     if (!isChunkLoadError(event.reason)) return;
     event.preventDefault();
-    recoverFromStaleChunk(event.reason);
+    try {
+      recoverFromStaleChunk(event.reason);
+    } catch {
+      // Same one-shot guard as vite:preloadError — avoid rejection storms.
+    }
   });
 }

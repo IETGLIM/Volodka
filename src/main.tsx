@@ -7,14 +7,17 @@ import { markAppStart } from '@/engine/performance/LoadingTimeline';
 import { applyGameSettings } from '@/engine/settings/SettingsFacade';
 import { initAccessibilitySettings } from '@/engine/accessibility/accessibilitySettings';
 import { initVoiceLineRegistry } from '@/engine/audio/VoiceLineRegistry';
-import { installChunkLoadRecovery, clearChunkReloadFlag } from '@/shared/chunk/chunkLoadRecovery';
+import { installChunkLoadRecovery } from '@/shared/chunk/chunkLoadRecovery';
 import { installSceneLoadDebugTap } from '@/engine/core/sceneLoadDebug';
 
 // Install vite:preloadError handler BEFORE any lazy chunk can be loaded.
 // If this runs after createRoot().render(), Vite may have already attempted
 // to preload a lazy chunk (e.g. panel-rest) and fired vite:preloadError
 // before the handler was installed — causing an uncaught crash.
-clearChunkReloadFlag();
+//
+// Do NOT clearChunkReloadFlag() here: clearing on every module eval defeats
+// the sessionStorage one-shot while HTML/CDN is still briefly stale after
+// deploy. AppBootRoot clears the flag only after a successful boot.
 installChunkLoadRecovery();
 
 bindApplicationLayers();
