@@ -167,11 +167,8 @@ export class FloatingTextService {
       }),
     );
 
-    this.eventUnsubs.push(
-      eventBus.on('poem:collected', () => {
-        spawnFloatingText('Стих собран!', 'karma');
-      }),
-    );
+    // poem:collected — discovery language owns PoemRevealHost (+ optional store
+    // history). Do not spawn a parallel "Стих собран!" float here.
   }
 
   private resolvePosition(x?: number, y?: number): { x: number; y: number } {

@@ -21,6 +21,7 @@ import {
 import { resolveAchievementAnnounce } from '@/data/achievementHelpers';
 import { applyEffects } from '@/shared/utils/applyEffects';
 import { getPoemPowerCooldownMs } from '@/data/poemPowerCooldowns';
+import { buildPoemCollectedToastMessage } from '@/shared/notifications/poemCollectedMessage';
 import {
   resolveNpcRelationGainMultiplier,
   resolvePoemPowerCooldownReduction,
@@ -389,7 +390,8 @@ export const createWorldSlice: StateCreator<
 
     set({ collectedPoems: [...state.collectedPoems, poemId] });
     runAfterStoreCommit(() => emitPoemCollected(poemId));
-    pickWorldCrossActions().pushNotification('poem', `Стих собран: ${poem.title}`);
+    // History only — NotificationToasts suppress type=poem (PoemRevealHost owns discovery UI).
+    pickWorldCrossActions().pushNotification('poem', buildPoemCollectedToastMessage(poem.title));
   },
 
   setNpcRelation: (npcId, delta) =>

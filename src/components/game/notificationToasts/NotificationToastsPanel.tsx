@@ -10,13 +10,21 @@ import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
 function NotificationToastsPanelInner() {
   const reducedMotion = useEffectiveReducedMotion();
-  const { mode, transitionPhase, visibleToasts, dismissToast } = useNotificationToastController();
+  const {
+    mode,
+    transitionPhase,
+    exclusiveInterstitialActive,
+    visibleToasts,
+    dismissToast,
+  } = useNotificationToastController();
   const slotGranted = useNotificationSlot(
     'toast',
     NOTIFY_PRIORITY.toast,
     visibleToasts.length > 0,
   );
-  const hidden = shouldHideNotificationToastContainer(mode, transitionPhase, slotGranted);
+  const hidden = shouldHideNotificationToastContainer(mode, transitionPhase, slotGranted, {
+    exclusiveInterstitialActive,
+  });
 
   return (
     <div

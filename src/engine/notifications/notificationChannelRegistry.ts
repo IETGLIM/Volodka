@@ -21,10 +21,12 @@
  *
  * ── Event flow ──
  *   store action -> store.notifications  -> NotificationToasts (filtered)
- *                                            (karma/skill/energy/stress/poem only;
- *                                             quest filtered out — see useNotificationToastController)
+ *                                            (karma/skill/energy/stress only;
+ *                                             quest + poem filtered — dedicated UIs)
+ *   poem:collected -> PoemRevealHost (verse discovery) — NOT toast/float mirror
  *   eventBus     -> quest:* events       -> QuestNotificationSystem (useQuests + events)
  *   eventBus     -> game:notification    -> EventNotificationPopup
+ *   eventBus     -> ui:exploration_message -> EventNotificationPopup (diegetic explore)
  *   eventBus     -> ui:loot_notification -> LootNotification
  *   eventBus     -> achievement:unlocked -> AchievementNotification
  *   eventBus     -> lore:discovered      -> LoreDiscoveryToast
@@ -32,10 +34,12 @@
  *   eventBus     -> weather:changed      -> WeatherAlertNotification
  *   eventBus     -> crafting:discovered  -> CraftingDiscoveryToast
  *   eventBus     -> game:system_alert    -> GameSystemToast
+ *   FloatingText -> combat/stat FX only (xp/karma/damage) — never poem discovery copy
  *
  * ── Anti-patterns (DO NOT) ──
  *   X Push the same event into both store.notifications AND eventBus
  *     (causes duplicate toasts — quest events were doing this before fix)
+ *   X Mirror poem:collected as floating text + toast while PoemRevealHost plays
  *   X Create a new <XxxNotification /> component without registering here
  *   X Subscribe to events directly in OrchestratorGameplaySections —
  *     each channel owns its own subscriptions
@@ -69,6 +73,15 @@ export const NOTIFICATION_CHANNELS: readonly NotificationChannelDescriptor[] = [
     description: 'Quest accepted / objective complete / quest complete / quest failed',
   },
   {
+    id: 'poem_reveal',
+    priority: NOTIFY_PRIORITY.event,
+    position: 'center',
+    component: 'PoemRevealHost',
+    sources: ['poem:collected', 'requestPoemReveal', 'poemRevealOrchestrator FIFO'],
+    description:
+      'Poem discovery / power ritual / explicit read — exclusive interstitial; sole discovery language',
+  },
+  {
     id: 'event',
     priority: NOTIFY_PRIORITY.event,
     position: 'top-right',
@@ -81,8 +94,9 @@ export const NOTIFICATION_CHANNELS: readonly NotificationChannelDescriptor[] = [
     priority: NOTIFY_PRIORITY.toast,
     position: 'top-right',
     component: 'NotificationToasts',
-    sources: ['store.notifications (karma/skill/energy/stress/poem only)'],
-    description: 'Stat changes (karma, skill, energy, stress) and poem collected. Quest type filtered out.',
+    sources: ['store.notifications (karma/skill/energy/stress only)', 'toastManager'],
+    description:
+      'Stat changes (karma, skill, energy, stress). Quest + poem store types suppressed — dedicated channels.',
   },
   {
     id: 'achievement',

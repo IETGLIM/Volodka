@@ -2,12 +2,86 @@
 
 > Карта систем для инженеров. Актуально для **v4.2.42** (`package.json` / `APP_VERSION`).
 > AA visual/content density plan: [`docs/AA_QUALITY_ROADMAP.md`](./docs/AA_QUALITY_ROADMAP.md).
+> Sequential uniformity backlog: [`docs/ARCHITECTURE_UNIFICATION.md`](./docs/ARCHITECTURE_UNIFICATION.md).
 >
 > **Стек:** React 19 · Vite 6 · Three.js 0.172 · R3F 9 · Rapier Wasm (`@react-three/rapier` 2.2) ·
 > Zustand 5 · Zod 4 · Tailwind 4 · Vercel SPA.
 >
 > **Честный объём:** ~10–40 h плотного AA-прохождения сейчас; «120 h» — целевая фабрика контента,
 > не текущий shipped playtime.
+
+## Target Uniform Architecture (north star)
+
+**Goal:** one pattern per concern across the whole codebase — not feature-local inventiveness.
+Poem reveal FIFO is the **reference** for exclusive UI; other systems migrate toward it.
+
+### Layers (strict)
+
+```
+data/          — declarative content only (story, quests, poems, zones, defs)
+shared/        — types, bridges, contentTruth resolvers, zero store/engine imports
+engine/        — business logic, orchestrators, EventBus producers (no React, no store imports)
+store/         — Zustand slices + save (no engine imports; cross-slice via owners / bridges)
+components/    — React UI + R3F views; call engine entry points / store actions — no growing business rules
+hooks/         — thin React adapters over engine/store
+config/        — scene/metric/shell policy tables
+```
+
+| Direction | Allowed | Forbidden |
+|-----------|---------|-----------|
+| UI → engine / store | entry APIs, selectors | inventing parallel registries in components |
+| Engine → store | `dispatchStateAction` / snapshot only | `@/store/**` imports |
+| Store → engine | `emitAppEvent`, `storeEngineHost` callbacks | `@/engine/**` imports |
+| shared → | pure helpers | store or engine |
+
+### One pattern per concern
+
+| Concern | Canonical path | Do not |
+|---------|----------------|--------|
+| Narrative open | `presentNarrativeBeat` | raw `openNarrativeOverlay` from interaction |
+| Poem discovery / ritual / read | `poemRevealOrchestrator` + `PoemRevealHost` (FIFO) | parallel discovery cutscene mounts |
+| Exclusive interstitial busy | `cinematicInterstitialPresentation` (`matrix_quote` \| `first_reading_celebration` \| `poem_reveal`) | second poem-discovery busy flag |
+| Dialogue / VN busy | store `showStoryOverlay` / `diegeticNarrative` (OR'd by presentation profile) | duplicate dialogue busy modules |
+| Explore hub topology | `sceneExploreHubRegistry` | prose in registry for story-defined hubs |
+| Explore hub prose | act JSON / story pack via `resolveExploreHubIntroText` | dual auto-hub vs act-pack toast copy |
+| Leave + mid-resume | leave choice → hub + hub mid-split + zones + `entryNodeIds` | next-only mid-beat soft-locks |
+| Heavy GPU features | `qualityFeatureGates.allowsHeavyGfxFeature` | ad-hoc `preset.id === 'ultra'` checks |
+| Quality knobs | live fields on `QualityPreset` only (DPR, shadows, postFX, LOD, render modes, …) | dead preset flags with no consumers |
+| Locomotion input | touch/gamepad → `sharedVirtualControlsRef`; keyboard → `keyboardInputState`; merge in `usePlayerControls` | writing axes from panel shortcut managers |
+| Poem collect UX | `PoemRevealHost` (verse); store `poem` notif = history only | floating text + toast mirrors of the same beat |
+| Stat / FX floats | `floatingTextService` (xp/karma/damage/…) | discovery copy on `poem:collected` |
+| Notification channels | `notificationChannelRegistry` + `useNotificationSlot` | unregistered popup components |
+| Scene GPU | `sceneGpuLifecycle` + `sceneGpuOwnership` claims | ad-hoc dispose outside unload path |
+| Content truth | `contentTruthManifest` resolvers | reading parallel registries when a resolver exists |
+
+### Exclusive UI sequencing (reference = poem reveal)
+
+1. Request enters a **single orchestrator** (FIFO or explicit busy reject).
+2. Orchestrator sets **one interstitial flag** in `cinematicInterstitialPresentation`.
+3. Host UI mounts once; completion clears flag + drains queue.
+4. Sibling exclusive UIs wait on `isCinematicInterstitialActive()` / `isPoemRevealBusy()` — they do not stack.
+
+### Deprecation rule
+
+Prefer **delete or re-export shim** over leaving zombie parallel components.
+Legacy names (`PoemDiscoveryReveal`, `setPoemDiscoveryRevealInterstitialActive`) alias the unified path — do not grow them.
+
+### Migration status (honest)
+
+| Cluster | Status |
+|---------|--------|
+| Poem reveal FIFO + excerpt SoT | ✅ shipped |
+| Interstitial kinds (no parallel discovery flag) | ✅ this wave |
+| Dead quality preset knobs removed; heavy features via gates | ✅ this wave |
+| Poem discovery language (reveal owns UI; toast/float suppressed) | ✅ this wave |
+| Input write-path documented + enforced in code comments | ✅ this wave (code already unified) |
+| Explore leave / hub mid-resume | ✅ pattern; residual next-only scanned per tick |
+| Scene GPU ownership | ✅ core; residual ad-hoc dispose audit remains |
+| Cinematic registries (cutscene / npc / splash) | ⚠️ three schemas — backlog |
+| Golden path triple source | ⚠️ backlog |
+| Full dialogue/quest busy folded into interstitial module | ⚠️ backlog (store-owned by design for now) |
+
+Full ordered backlog: [`docs/ARCHITECTURE_UNIFICATION.md`](./docs/ARCHITECTURE_UNIFICATION.md).
 
 ## Content Truth — единая линия данных
 
@@ -373,8 +447,12 @@ formatDiceRollResult(result: DiceRollResult): string
   `useVisualSettings` (useSyncExternalStore).
 - `engine/audio/AudioSettings.ts` — громкости и глобальный mute.
 - `engine/graphics/qualityPresets.ts` — low/medium/high/ultra (+auto):
-  DPR, тени, postFX, LOD bias, Draco/Meshopt, `npcRenderMode`
-  (procedural-NPC на low), visualLite.
+  DPR, shadows, postFX, LOD bias, Draco/Meshopt, `npcRenderMode`,
+  `environmentRenderMode`, visualLite. **Live knobs only** — no unused
+  impostor/instancing/bakedLighting fields. Heavy GPU features
+  (`n8ao`, `reflector`, `godRays`, `galaxySky`, `meshPhysicalWet`) gate
+  exclusively through `qualityFeatureGates.allowsHeavyGfxFeature` (auto never
+  enables them).
 
 ### Сейвы (`store/slices/saveStorage.ts`)
 Zod-схема (SAVE_VERSION с миграциями в `saveMigrations.ts`), two-phase write + rollback, backup-ключ.
@@ -652,12 +730,17 @@ XSS: `sanitizePlainText` на основном пути рендера (`narrati
 | Leave / mid-resume soft-locks | ✅ pattern shipped; residual next-only chains still scanned per tick |
 | Interior Kenney exteriors as rooms | ✅ blocked (`exterior_building`); procedural envelopes own walkables |
 | Selective MeshPhysical wet/CRT | ✅ quality-gated accents; not blanket Physical |
+| Exclusive interstitial kinds | ✅ one module; discovery aliases poem_reveal |
+| Poem discovery notification language | ✅ PoemRevealHost owns UI; toast/float mirrors suppressed |
+| Dead quality preset flags | ✅ removed (useInstancing / impostors / bakedLighting) |
+| Input locomotion write path | ✅ virtual ref + keyboard singleton documented |
 | PostFX on low hero scenes | частично |
 | GameOrchestrator priorities | разнесены по файлам |
 | npcRegistry baseline | устаревшие id в тестах |
 | Mixamo ↔ Quaternius bone remap | ⚠️ hip filter + talk fallback interim |
 | act7 mirror flags | только в structure JSON — сканер обновлён |
 | Cinematic registries | cutscenes / npcCutscenes / interactionSplashes — три схемы |
+| Dialogue/quest busy → interstitial fold | store-owned for now; presentation profile ORs them |
 
 AA visual/content waves и tick log — [`docs/AA_QUALITY_ROADMAP.md`](./docs/AA_QUALITY_ROADMAP.md).
 Агентный контекст сессий — [`AI_SESSION_CONTEXT.md`](./AI_SESSION_CONTEXT.md).

@@ -8,6 +8,7 @@ import {
   formatToastDelta,
   mapNotificationTypeToToast,
   shouldHideNotificationToastContainer,
+  shouldSuppressStoreNotificationToast,
   trimIdSet,
 } from '@/engine/toast/notificationToastPresentation';
 
@@ -49,15 +50,29 @@ describe('notificationToastPresentation', () => {
     expect([...ids][0]).toBe('id-40');
   });
 
-  it('blocks acceptance during menu and scene loading', () => {
+  it('blocks acceptance during menu, scene loading, and exclusive interstitials', () => {
     expect(canAcceptNotificationToasts('menu', 'idle')).toBe(false);
     expect(canAcceptNotificationToasts('exploration', 'loading')).toBe(false);
     expect(canAcceptNotificationToasts('exploration', 'idle')).toBe(true);
+    expect(
+      canAcceptNotificationToasts('exploration', 'idle', { exclusiveInterstitialActive: true }),
+    ).toBe(false);
   });
 
-  it('hides container when slot is unavailable', () => {
+  it('hides container when slot is unavailable or exclusive interstitial is active', () => {
     expect(shouldHideNotificationToastContainer('exploration', 'idle', false)).toBe(true);
     expect(shouldHideNotificationToastContainer('exploration', 'idle', true)).toBe(false);
+    expect(
+      shouldHideNotificationToastContainer('exploration', 'idle', true, {
+        exclusiveInterstitialActive: true,
+      }),
+    ).toBe(true);
+  });
+
+  it('suppresses store toast mirrors for quest and poem discovery channels', () => {
+    expect(shouldSuppressStoreNotificationToast('quest')).toBe(true);
+    expect(shouldSuppressStoreNotificationToast('poem')).toBe(true);
+    expect(shouldSuppressStoreNotificationToast('karma')).toBe(false);
   });
 
   it('builds accessible labels and messages', () => {

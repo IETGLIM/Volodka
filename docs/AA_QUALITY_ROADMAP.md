@@ -4,7 +4,7 @@
 
 > Honest plan to push this browser RPG toward **AA-studio visual + systems density** with **$0 spend**.
 
-> Companion to `ARCHITECTURE.md` / `AI_SESSION_CONTEXT.md` / `readme.md`. Last updated: 2026-07-31 (Tick 48 continuous).
+> Companion to `ARCHITECTURE.md` / `AI_SESSION_CONTEXT.md` / `readme.md`. Last updated: 2026-07-31 (Tick 51 architecture uniformity Wave 1).
 
 
 
@@ -1193,6 +1193,21 @@ From `config/performanceBudgets.json` + build gate:
 - Parallel agent may be touching Vite preload / Vercel cache — do not edit `vercel.json` / `vite.config.*` / SW from AA leave ticks.
 
 
+
+---
+
+
+
+## Tick 51 (this session)
+
+| Change | Why |
+|--------|-----|
+| Target Uniform Architecture section + migration table in `ARCHITECTURE.md` | Whole-codebase uniformity north star (not poem-only) |
+| `docs/ARCHITECTURE_UNIFICATION.md` Wave 1 done + ordered backlog | Sequential remaining waves |
+| Interstitial: drop parallel discovery busy flag; `getActiveExclusiveInterstitialKinds` | One exclusive-UI gate (poem reveal reference) |
+| Remove dead `QualityPreset` knobs (instancing/impostors/bakedLighting) | Quality gates = live fields + `qualityFeatureGates` only |
+| Poem discovery language: suppress toast/float mirrors; registry + shared message helper | One discovery UX (`PoemRevealHost`) |
+| Document locomotion input write path on `VirtualControlsState` | One virtual-axis writer |
 
 ---
 

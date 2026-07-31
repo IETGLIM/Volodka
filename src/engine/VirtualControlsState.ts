@@ -1,5 +1,19 @@
 /* ─── Volodka RPG – Shared virtual controls via React Context ─── */
 
+/**
+ * ONE WRITE PATH for locomotion axes (touch / gamepad / mouse-both-buttons):
+ *
+ *   ExplorationMobileHud / useGamepadInput / usePlayerControls(mouse)
+ *        → sharedVirtualControlsRef.current  (VirtualControls)
+ *        → PhysicsPlayer / SimplePlayer merge with keyboardInputState
+ *
+ * Keyboard WASD lives in `keyboardInputState` (module singleton) — not this ref.
+ * Orchestrator shortcuts use `useKeyboardShortcutManager` (panels / Escape) —
+ * never write locomotion axes there.
+ *
+ * Clear path: `clearSharedVirtualControls()` on overlay lock / scene handoff.
+ */
+
 import { createContext, useContext } from 'react';
 import type { MutableRefObject } from 'react';
 import type { VirtualControls } from '@/hooks/useGamePhysics';
@@ -20,12 +34,11 @@ const defaultControls: VirtualControls = {
 
 /**
  * Module-level shared ref for virtual controls.
- * Both RPGGameCanvas and GameOrchestrator/ExplorationMobileHud
- * read/write the SAME object through this ref.
+ * Writers: ExplorationMobileHud (touch), useGamepadInput, mouse-both-buttons.
+ * Readers: PhysicsPlayer / SimplePlayer via usePlayerControls + useFrame.
  *
- * P0-2.7 FIX: Now also available via React Context for explicit dependency
- * injection. The module-level ref remains for backward compatibility and
- * for useFrame access inside R3F (which can't use hooks synchronously).
+ * Also available via React Context for explicit DI; module ref remains for
+ * useFrame (cannot use hooks synchronously inside R3F frame callbacks).
  */
 export const sharedVirtualControlsRef: MutableRefObject<VirtualControls> = {
   current: defaultControls,
@@ -45,11 +58,7 @@ export function clearSharedVirtualControls(): void {
 
 /**
  * React Context for virtual controls ref.
- * Provides the shared ref through React's dependency injection system,
- * making the relationship between writer (ExplorationMobileHud) and
- * reader (RPGGameCanvas/PhysicsPlayer) explicit.
- *
- * Provider: GameOrchestrator (renders above both Canvas and DOM layers)
+ * Provider: OrchestratorContent (above Canvas + DOM HUD)
  * Consumers: RPGGameCanvas, ExplorationMobileHud
  */
 export const VirtualControlsContext = createContext<MutableRefObject<VirtualControls>>(

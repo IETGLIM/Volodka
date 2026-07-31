@@ -8,6 +8,7 @@ import {
   buildCombatDefeatToastMessage,
   buildPoemPowerToastMessage,
   canAcceptNotificationToasts,
+  shouldSuppressStoreNotificationToast,
   storeNotificationToVisible,
   toastMessageToVisible,
   trimPrevStoreNotificationIds,
@@ -15,18 +16,22 @@ import {
 } from '@/engine/toast/notificationToastPresentation';
 import { NOTIFICATION_TOAST_MAX_VISIBLE } from '@/engine/toast/notificationToastConstants';
 import { useTransitionDirector } from '@/hooks/useTransitionDirector';
+import { useCinematicInterstitialActive } from '@/hooks/useCinematicInterstitialActive';
 import { useGamePhase, useNotifications } from '@/store/selectors';
 
 export function useNotificationToastController() {
   const mode = useGamePhase();
   const { phase: transitionPhase } = useTransitionDirector();
+  const exclusiveInterstitialActive = useCinematicInterstitialActive();
   const notifications = useNotifications();
   const [toasts, setToasts] = useState<VisibleNotificationToast[]>([]);
   const shownIdsRef = useRef(new Set<string>());
   const prevNotifIdsRef = useRef(new Set<string>());
   const acceptNewRef = useRef(true);
 
-  const acceptNew = canAcceptNotificationToasts(mode, transitionPhase);
+  const acceptNew = canAcceptNotificationToasts(mode, transitionPhase, {
+    exclusiveInterstitialActive,
+  });
   acceptNewRef.current = acceptNew;
 
   const dismissToast = useCallback((id: string) => {
@@ -71,14 +76,9 @@ export function useNotificationToastController() {
         if (prevNotifIdsRef.current.has(notification.id)) continue;
         prevNotifIdsRef.current.add(notification.id);
 
-        // Suppress quest notifications here — QuestNotificationSystem renders
-        // a richer card (icon, progress bar, rewards link) for the same events
-        // (quest accepted / objective complete / quest complete). Without this
-        // filter, the player saw duplicate toasts: NotificationToasts showed
-        // "Квест: Задание выполнено: X" + "Квест: Награда за X" at top-right,
-        // while QuestNotificationSystem showed "★ Квест выполнен! X" at
-        // bottom-right — three toasts for one quest completion.
-        if (notification.type === 'quest') continue;
+        // Quest → QuestNotificationSystem; poem collect → PoemRevealHost.
+        // Mirror toasts here duplicate the dedicated channel (see registry).
+        if (shouldSuppressStoreNotificationToast(notification.type)) continue;
 
         const updated = appendToastIfNew(
           next,
@@ -123,6 +123,7 @@ export function useNotificationToastController() {
   return {
     mode,
     transitionPhase,
+    exclusiveInterstitialActive,
     acceptNew,
     visibleToasts,
     dismissToast,

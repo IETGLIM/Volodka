@@ -43,19 +43,31 @@ export function trimIdSet(ids: Set<string>, cap: number): void {
 export function canAcceptNotificationToasts(
   mode: GamePhase,
   transitionPhase: TransitionDirectorPhase,
+  options?: { exclusiveInterstitialActive?: boolean },
 ): boolean {
   if (mode === 'menu' || mode === 'intro') return false;
   if (transitionPhase === 'loading') return false;
+  if (options?.exclusiveInterstitialActive) return false;
   return true;
+}
+
+/**
+ * Store notification types that own a richer exclusive UI / dedicated channel.
+ * NotificationToasts must not mirror them (same anti-pattern as quest cards).
+ */
+export function shouldSuppressStoreNotificationToast(type: NotificationType): boolean {
+  return type === 'quest' || type === 'poem';
 }
 
 export function shouldHideNotificationToastContainer(
   mode: GamePhase,
   transitionPhase: TransitionDirectorPhase,
   slotGranted: boolean,
+  options?: { exclusiveInterstitialActive?: boolean },
 ): boolean {
   if (mode === 'menu' || mode === 'intro') return true;
   if (transitionPhase === 'loading') return true;
+  if (options?.exclusiveInterstitialActive) return true;
   return !slotGranted;
 }
 
@@ -139,9 +151,7 @@ export function buildSkillToastMessage(skill: TrainablePlayerSkill, delta: numbe
   return `Навык: ${name} ${sign}${delta}`;
 }
 
-export function buildPoemCollectedToastMessage(title: string): string {
-  return `Стих собран: ${title}`;
-}
+export { buildPoemCollectedToastMessage } from '@/shared/notifications/poemCollectedMessage';
 
 export function getToastItemMotion(reducedMotion: boolean): {
   initial: false | { x: number; opacity: number; scale: number };

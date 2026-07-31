@@ -46,12 +46,6 @@ export interface QualityPreset {
   /** Texture mip bias for KTX2 / atlas selection */
   textureScale: 0.25 | 0.5 | 1;
   maxDrawDistance: number;
-  useInstancing: boolean;
-  useImpostors: boolean;
-  /** Camera distance at which impostor replaces mesh (meters) */
-  impostorDistance: number;
-  /** Prefer lightmaps / baked probes when asset provides them */
-  bakedLighting: boolean;
   compression: CompressionPreference;
   /** NPC: procedural silhouettes until unique RPM/AI3DGen mesh on disk. */
   npcRenderMode: AssetRenderMode;
@@ -73,10 +67,6 @@ export const QUALITY_PRESETS: Record<Exclude<QualityPresetId, 'auto'>, QualityPr
     lodBias: 0.6,
     textureScale: 0.25,
     maxDrawDistance: 40,
-    useInstancing: true,
-    useImpostors: true,
-    impostorDistance: 18,
-    bakedLighting: true,
     compression: 'draco',
     npcRenderMode: 'procedural',
     environmentRenderMode: 'procedural',
@@ -94,10 +84,6 @@ export const QUALITY_PRESETS: Record<Exclude<QualityPresetId, 'auto'>, QualityPr
     lodBias: 0.9,
     textureScale: 0.5,
     maxDrawDistance: 65,
-    useInstancing: true,
-    useImpostors: true,
-    impostorDistance: 30,
-    bakedLighting: true,
     compression: 'draco',
     npcRenderMode: 'hybrid',
     environmentRenderMode: 'hybrid',
@@ -115,10 +101,6 @@ export const QUALITY_PRESETS: Record<Exclude<QualityPresetId, 'auto'>, QualityPr
     lodBias: 1,
     textureScale: 1,
     maxDrawDistance: 90,
-    useInstancing: true,
-    useImpostors: false,
-    impostorDistance: 45,
-    bakedLighting: true,
     compression: 'draco',
     npcRenderMode: 'hybrid',
     environmentRenderMode: 'hybrid',
@@ -136,10 +118,6 @@ export const QUALITY_PRESETS: Record<Exclude<QualityPresetId, 'auto'>, QualityPr
     lodBias: 1.25,
     textureScale: 1,
     maxDrawDistance: 120,
-    useInstancing: true,
-    useImpostors: false,
-    impostorDistance: 60,
-    bakedLighting: true,
     compression: 'meshopt',
     npcRenderMode: 'glb',
     environmentRenderMode: 'glb',
