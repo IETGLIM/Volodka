@@ -737,8 +737,6 @@ XSS: `sanitizePlainText` на основном пути рендера (`narrati
 
 | Область | Статус |
 |---------|--------|
-| Content truth dual registry (CI eager vs runtime lazy) | ✅ parity + `getCiParityStoryNodes`; validators on manifest resolver |
-| Golden path sources | derive + frozen parity spine; BRANCH_HINTS = 31 fallbacks without node `guidanceHint` |
 | NPC behavioral FSM → 3D | ✅ `useNpcVisualBehavior` (GLB + procedural parity) |
 | JSON narrative migration | тексты act1–7; hubIntroText for story-defined hubs incl. cafe/office/kitchen |
 | Pause Escape vs panels | ✅ `escapeDismissAction` + capture-phase `useKeyboardShortcutManager` |
@@ -760,7 +758,8 @@ XSS: `sanitizePlainText` на основном пути рендера (`narrati
 | Cinematic registries | ✅ converters + story cutscene playback via timeline orchestrator |
 | Dialogue/quest busy → interstitial fold | ✅ quest UI in interstitial; dialogue stays store-owned |
 | Explore hub ID set | ✅ `STORY_DEFINED` prose + `ACT_PACK_STRUCTURE` auto-gen skip |
-| Golden path sources | ✅ derive + parity fallback; guidanceHint owns copy; BRANCH_HINTS shrunk (Wave 7) |
+| Golden path sources | ✅ derive + parity fallback; guidanceHint owns copy; BRANCH_HINTS = 31 fallbacks (Wave 7) |
+| Content truth dual registry (CI eager vs runtime lazy) | ✅ parity + `getCiParityStoryNodes`; validators on manifest resolver |
 
 AA visual/content waves и tick log — [`docs/AA_QUALITY_ROADMAP.md`](./docs/AA_QUALITY_ROADMAP.md).
 Агентный контекст сессий — [`AI_SESSION_CONTEXT.md`](./AI_SESSION_CONTEXT.md).
