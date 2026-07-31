@@ -77,10 +77,11 @@ describe('chunkLoadRecovery', () => {
       err,
     );
 
-    // Second call: reload was already attempted — rethrows the error
-    // so the caller (retryLazy) doesn't retry infinitely.
+    // Second call: reload was already attempted — rethrows without clearing
+    // the one-shot flag (index.html / concurrent handlers may own it).
     expect(() => recoverFromStaleChunk(err)).toThrow(err);
     expect(reload).toHaveBeenCalledTimes(1);
+    expect(storage.get(CHUNK_RELOAD_SESSION_KEY)).toBe('1');
     expect(errorSpy).not.toHaveBeenCalled();
   });
 });

@@ -2,18 +2,11 @@ export const CHUNK_RELOAD_SESSION_KEY = 'volodka-chunk-reload-attempt';
 
 /**
  * Module-level reload lock — prevents concurrent chunk-load errors from
- * toggling the sessionStorage flag back and forth (race condition).
+ * issuing multiple location.reload() calls in the same JS turn.
  *
- * Race scenario WITHOUT this lock:
- *   1. Error A: flag empty → set flag → reload → return never
- *   2. Error B (before reload completes): flag is '1' → remove flag → throw
- *   3. Error C: flag empty (just removed by B) → set flag → reload → return never
- *   4. Error D: flag is '1' → remove flag → throw
- * This causes multiple reloads and flag thrashing.
- *
- * WITH this lock: the first error sets both the module flag AND the
- * sessionStorage flag. Subsequent errors see the module flag and throw
- * immediately without touching sessionStorage.
+ * sessionStorage one-shot is shared with the inline index.html handler.
+ * We never clear that flag on failure (only AppBootRoot after healthy boot),
+ * so a sibling handler cannot wipe a reload that was just armed.
  */
 let isReloading = false;
 
@@ -85,9 +78,10 @@ export function recoverFromStaleChunk(err: unknown): never {
       // The `never` return type satisfies TypeScript; we never actually reach.
       return new Promise<never>(() => {}) as never;
     }
-    // Reload was already attempted — this is a genuine missing chunk, not a
-    // stale cache. Clear the flag so the next session can try again.
-    sessionStorage.removeItem(CHUNK_RELOAD_SESSION_KEY);
+    // Reload already attempted (possibly by the inline index.html handler).
+    // Do NOT clear the flag here — a sibling handler may have just set it and
+    // kicked off reload(); clearing would allow another concurrent error to
+    // reload again. AppBootRoot clears the flag only after a healthy boot.
   } catch {
     // sessionStorage might be unavailable (private browsing) — reload anyway.
     if (!isReloading) {

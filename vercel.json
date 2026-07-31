@@ -29,7 +29,7 @@
       ]
     },
     {
-      "source": "/((?!assets/|models/|draco/|basis/).*)",
+      "source": "/((?!assets/|models/|draco/|basis/)(?!.*\\.).*)",
       "headers": [
         { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" },
         { "key": "CDN-Cache-Control", "value": "no-store" },
