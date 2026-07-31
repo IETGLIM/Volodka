@@ -12,6 +12,12 @@ import { Radiator, Plant, Picture } from './lazyInteriorModels';
 import { EnvironmentDetail } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { createHomeEveningWarmSkyTexture } from '@/engine/graphics/proceduralSkyTextures';
+import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
+import {
+  allowsSelectiveMeshPhysicalWet,
+  getWetGlassPhysicalParams,
+} from '@/engine/graphics/wetStreetScenes';
+import { useIsMobileVisual } from '@/hooks/use-mobile';
 import { HomeEveningProps } from './sceneChunks/homeEvening';
 
 /** Home evening room (14×14m) – kitchen, living area, bedroom area */
@@ -163,6 +169,12 @@ const mat_56 = getSharedStandardMaterial({ color: '#1a1a1a', roughness: 0.9 });
 const mat_57 = getSharedStandardMaterial({ color: '#aa2222', emissive: '#aa2222', emissiveIntensity: 0.5 });
 
 export function HomeEveningVisual() {
+  const { selectedPreset } = useGraphicsQuality();
+  const coarsePointer = useIsMobileVisual();
+  const usePhysicalGlass = allowsSelectiveMeshPhysicalWet('home_evening', selectedPreset, {
+    coarsePointer,
+  });
+  const nightWindowGlass = useMemo(() => getWetGlassPhysicalParams('roomNightWindow'), []);
   const floorTexture = useCachedCanvasTexture('home_evening:floor', createHomeFloorTexture);
   const wallTexture = useCachedCanvasTexture('home_evening:wall', createHomeWallTexture);
   const ceilingWashTexture = useCachedCanvasTexture(
@@ -388,7 +400,25 @@ export function HomeEveningVisual() {
       {/* ── WINDOW (right wall, emissive night city glow) ── */}
       {/* ═══════════════════════════════════════════════ */}
       <group position={[W / 2 - 0.01, 1.5, -2.5]}>
-        <mesh rotation-y={-Math.PI / 2} geometry={geo_pln_31} material={mat_27} />
+        {usePhysicalGlass ? (
+          <mesh rotation-y={-Math.PI / 2} geometry={geo_pln_31}>
+            <meshPhysicalMaterial
+              color="#0a0a20"
+              emissive="#1a2a5a"
+              emissiveIntensity={1.2}
+              toneMapped={false}
+              roughness={nightWindowGlass.roughness}
+              metalness={nightWindowGlass.metalness}
+              transmission={nightWindowGlass.transmission}
+              thickness={nightWindowGlass.thickness}
+              clearcoat={nightWindowGlass.clearcoat}
+              clearcoatRoughness={nightWindowGlass.clearcoatRoughness}
+              opacity={nightWindowGlass.opacity}
+            />
+          </mesh>
+        ) : (
+          <mesh rotation-y={-Math.PI / 2} geometry={geo_pln_31} material={mat_27} />
+        )}
         {/* Window frame */}
         <mesh rotation-y={-Math.PI / 2} position={[0.01, 0, 0]} geometry={geo_box_32} material={mat_28} />
         {/* Cross bars */}

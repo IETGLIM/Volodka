@@ -24,8 +24,31 @@ import {
   resetGltfPreloadQueue,
   scheduleGltfPreload,
 } from '@/engine/assets/gltfPreloadScheduler';
+import { unloadSceneGpuResources } from '@/engine/three/unloadSceneGpuResources';
 
 const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeof useGLTF>[3]>;
+
+/**
+ * Derived variants (pier_evening ↔ river_pier) share GPU pools — do not unload mid-hop.
+ * Canonical guard for scene:unload GLTF eviction + module ownership release.
+ */
+export function shouldUnloadSceneGpuOnTransition(
+  sceneId: SceneId,
+  nextSceneId: SceneId,
+): boolean {
+  if (sceneId === nextSceneId) return false;
+  return resolveDerivedSceneId(sceneId) !== resolveDerivedSceneId(nextSceneId);
+}
+
+/**
+ * Single scene:unload teardown path: ownership claims + GLTF/THREE.Cache eviction.
+ * Prefer this over ad-hoc dispose of module-level shared resources.
+ */
+export function releaseSceneGpuOnUnload(sceneId: SceneId, nextSceneId: SceneId): void {
+  if (!shouldUnloadSceneGpuOnTransition(sceneId, nextSceneId)) return;
+  unloadSceneGpuResources(resolveDerivedSceneId(sceneId));
+  evictSceneGpuCache(sceneId, nextSceneId);
+}
 
 /** GLB assets warmed per scene — extend as interior props migrate off procedural meshes. */
 const SCENE_GLTF_ASSETS: Partial<Record<SceneId, readonly string[]>> = {
@@ -213,9 +236,7 @@ export function evictSceneGpuCache(fromSceneId: SceneId, keepSceneId?: SceneId):
 
 /** Evict old scene GPU cache, then preload the destination scene. */
 export function handleSceneGpuTransition(fromSceneId: SceneId, toSceneId: SceneId): void {
-  if (fromSceneId !== toSceneId) {
-    evictSceneGpuCache(fromSceneId, toSceneId);
-  }
+  releaseSceneGpuOnUnload(fromSceneId, toSceneId);
   preloadSceneGpuAssets(toSceneId);
   preloadSceneJsChunks(toSceneId);
 }

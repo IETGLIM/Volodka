@@ -2,7 +2,7 @@
 
 > Sequential waves toward **whole-codebase architectural uniformity**.
 > Companion to [`ARCHITECTURE.md`](../ARCHITECTURE.md) Target Uniform Architecture.
-> Last updated: 2026-07-31 (Wave 3 done + Wave 4 start).
+> Last updated: 2026-07-31 (Wave 4 done + Wave 5 toast/float hygiene).
 
 ## North star
 
@@ -27,7 +27,7 @@ Poem reveal FIFO is the reference exclusive-UI pattern — do not undo it.
 | **Cinematic schemas** | Deleted dead `npcCutscenes.ts`; shared `waypointsToTimelinePhases`; `cutsceneDefToTimeline` + splash converters → one `CinematicTimelineDef` shape |
 | **Shim purge** | Migrated `FirstReadingCelebration` off `poemDiscovery/*`; deleted shim + duplicate shim test |
 
-## Wave 3 — DONE (this session)
+## Wave 3 — DONE
 
 | Cluster | Action |
 |---------|--------|
@@ -36,20 +36,25 @@ Poem reveal FIFO is the reference exclusive-UI pattern — do not undo it.
 | **Leave-scan** | Acts 5–7 expanded meshes are finite climax chains (leave at act7 epilogue); solnysh roof mid-beat gained leave; no true soft-locks left in scan |
 | **Cutscene playback** | `useCutsceneController` → `startCinematicTimeline(cutsceneDefToTimeline(...))`; camera/overlay via `CinematicTimelineRunner` |
 
+## Wave 4 — DONE (this session)
+
+| Cluster | Action |
+|---------|--------|
+| **PostFX low policy** | `resolveSceneRenderingPipeline`: low always lite even when `forceFullPostFx` |
+| **GPU unload path** | `releaseSceneGpuOnUnload` = ownership + GLTF eviction behind `shouldUnloadSceneGpuOnTransition`; `bindSceneChunkGpuLifecycle` is the unload binder; Bridge = enter warm only; `disposeEphemeralGpuResources` for component clones; star/ground buffers → `useOwnedBufferGeometry` |
+| **Settings detail strings** | Dropped unused English `QualityPreset.label`; Settings buttons use `labelRu`; RU detail aligned to gates (reflector @ medium; MeshPhysical accents @ high/ultra) |
+| **MeshPhysical gates** | Hero street neon/glass + `home_evening` night window via `allowsSelectiveMeshPhysicalWet` / `roomNightWindow`; CRT/wet hubs already on gates |
+
+## Wave 5 — DONE (partial, this session)
+
+| Cluster | Action |
+|---------|--------|
+| **Toast API** | Deleted unused `showPoemToast` / `showQuestToast` |
+| **FloatingText** | Confirmed + tested: no `poem:collected` / `quest:completed` spawn mirrors |
+| **Hub toast** | Already single path (`ui:exploration_message` / first-visit `game:notification` → `EventNotificationPopup`); no further duplicate copy found |
+| **Expanded leave** | Acts 5–7 / expansion leave-scan clean; quiet-hour hub↔vignette loops intentional |
+
 ## Inventory of remaining inconsistencies (ordered)
-
-### Wave 4 — Graphics / GPU lifecycle (STARTED)
-
-1. ✅ Hero PostFX on low — `resolveSceneRenderingPipeline`: **low always lite** even when `forceFullPostFx` (policy table in code + tests).
-2. Audit ad-hoc `dispose()` outside `sceneGpuLifecycle` / ownership claims.
-3. Wire or delete any remaining unused preset/detail strings in settings UI.
-4. Ensure MeshPhysical / wet / CRT consumers never bypass `allowsHeavyGfxFeature`.
-
-### Wave 5 — Notifications / FX hygiene
-
-1. Sweep `ui:exploration_message` vs `EventNotificationPopup` vs diegetic HUD for duplicate hub toast copy.
-2. Confirm FloatingText never re-subscribes to discovery / quest complete events.
-3. Collapse unused `showPoemToast` API if no DevPanel caller remains (or route DevPanel through reveal request).
 
 ### Wave 6 — Input / a11y polish
 
@@ -62,6 +67,7 @@ Poem reveal FIFO is the reference exclusive-UI pattern — do not undo it.
 2. Keep `ARCHITECTURE.md` migration table in sync each wave; bump honest % below.
 3. Residual: CI eager `STORY_NODES` vs runtime lazy packs — keep parity test; move validators fully onto resolvers.
 4. Further `BRANCH_HINTS` shrinkage where `guidanceHint` differs but node should own copy.
+5. Optional expanded-pack mid-resume leftovers if leave-scan finds new soft-locks.
 
 ## Honest uniformity estimate
 
@@ -70,8 +76,8 @@ Poem reveal FIFO is the reference exclusive-UI pattern — do not undo it.
 | Poem reveal only (pre-wave) | ~35% |
 | Wave 1 | ~48% |
 | Wave 2 + Wave 3 start | ~62% |
-| **Wave 3 done + Wave 4 PostFX policy** | **~72%** |
-| Waves 4 remainder–5 | ~80% |
-| Full backlog | ~90%+ (never 100% — content/AI gen edges remain) |
+| Wave 3 done + Wave 4 PostFX policy | ~72% |
+| **Wave 4 + Wave 5 hygiene** | **~80%** |
+| Full backlog (Waves 6–7) | ~90%+ (never 100% — content/AI gen edges remain) |
 
 Estimate is architectural pattern coverage, not line-count rewrite.

@@ -58,6 +58,7 @@ describe('wetStreetScenes', () => {
       'library_basement',
       'factory_basement',
       'zarema_albert_room',
+      'home_evening',
     ]);
     expect(isSelectivePhysicalWetScene('city_square')).toBe(true);
     expect(isSelectivePhysicalWetScene('cafe_evening')).toBe(true);
@@ -79,6 +80,7 @@ describe('wetStreetScenes', () => {
     expect(isSelectivePhysicalWetScene('library_basement')).toBe(true);
     expect(isSelectivePhysicalWetScene('factory_basement')).toBe(true);
     expect(isSelectivePhysicalWetScene('zarema_albert_room')).toBe(true);
+    expect(isSelectivePhysicalWetScene('home_evening')).toBe(true);
     expect(allowsSelectiveMeshPhysicalWet('city_square', 'high')).toBe(true);
     expect(allowsSelectiveMeshPhysicalWet('cafe_evening', 'ultra')).toBe(true);
     expect(allowsSelectiveMeshPhysicalWet('street_night', 'high')).toBe(true);
@@ -98,6 +100,7 @@ describe('wetStreetScenes', () => {
     expect(allowsSelectiveMeshPhysicalWet('albert_backroom', 'high')).toBe(true);
     expect(allowsSelectiveMeshPhysicalWet('library_basement', 'ultra')).toBe(true);
     expect(allowsSelectiveMeshPhysicalWet('factory_basement', 'high')).toBe(true);
+    expect(allowsSelectiveMeshPhysicalWet('home_evening', 'ultra')).toBe(true);
     expect(allowsSelectiveMeshPhysicalWet('city_square', 'medium')).toBe(false);
     expect(allowsSelectiveMeshPhysicalWet('city_square', 'auto')).toBe(false);
     expect(

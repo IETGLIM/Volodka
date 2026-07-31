@@ -8,6 +8,7 @@ import { usePanelDialog } from '@/components/a11y/usePanelDialog';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import {
+  QUALITY_PRESETS,
   QUALITY_PRESET_ORDER,
   formatQualityPresetDetailRu,
   type QualityPresetId,
@@ -96,7 +97,7 @@ const QUALITY_OPTIONS: { id: QualityPresetId; label: string }[] = [
   { id: 'auto', label: 'Авто' },
   ...QUALITY_PRESET_ORDER.map((id) => ({
     id,
-    label: id === 'low' ? 'Низкое' : id === 'medium' ? 'Среднее' : id === 'high' ? 'Высокое' : 'Ультра',
+    label: QUALITY_PRESETS[id].labelRu,
   })),
 ];
 

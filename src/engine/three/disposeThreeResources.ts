@@ -362,3 +362,19 @@ export function disposeRendererShadowMaps(
 
   renderer.shadowMap.needsUpdate = true;
 }
+
+/**
+ * Component-owned (non-registry) GPU resources — clones, canvas atlases, etc.
+ * Module shared caches must use sceneGpuOwnership + releaseSceneGpuOnUnload instead.
+ */
+export function disposeEphemeralGpuResources(
+  ...resources: Array<{ dispose: () => void } | null | undefined>
+): void {
+  for (const resource of resources) {
+    try {
+      resource?.dispose();
+    } catch {
+      // Already freed or context lost — ignore.
+    }
+  }
+}

@@ -16,6 +16,7 @@ import {
   subscribeCinematicLightCue,
 } from '@/engine/cinematic/cinematicLightStaging';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
+import { disposeEphemeralGpuResources } from '@/engine/three/disposeThreeResources';
 
 function createWeatheringAtlas(seed: number): THREE.CanvasTexture {
   const size = 256;
@@ -112,10 +113,10 @@ function UniqueBuilding({ spec }: { spec: UniqueBuildingSpec }) {
     }
   });
 
-  useEffect(() => () => {
-    weather.dispose();
-    windows.dispose();
-  }, [weather, windows]);
+  useEffect(
+    () => () => disposeEphemeralGpuResources(weather, windows),
+    [weather, windows],
+  );
 
   const scale = spec.scale ?? 1;
   const frontZ = 3.4 * scale;

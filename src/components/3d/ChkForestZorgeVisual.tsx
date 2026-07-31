@@ -1,7 +1,7 @@
 
 /* ─── ЧК · Лес · Зорге — secret society clearing (procedural forest) ─── */
 
-import { useLayoutEffect, useMemo, useRef, useEffect, type MutableRefObject } from 'react';
+import { useLayoutEffect, useMemo, useRef, type MutableRefObject } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import {
@@ -17,6 +17,7 @@ import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
 import { EnvironmentDetail, SceneClutterGate } from './lod/PropDistanceGate';
 import { scratchColor } from '@/engine/three/frameScratch';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
+import { useOwnedBufferGeometry } from '@/hooks/useOwnedBufferGeometry';
 import { getIndustrialDampFloorSettings, allowsSelectiveMeshPhysicalWet, getWetGlassPhysicalParams } from '@/engine/graphics/wetStreetScenes';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
@@ -447,7 +448,7 @@ function InstancedTreeBelt({ density = 'full' }: { density?: 'full' | 'sparse' }
 
 /* ─── Moon + starfield — fog-exempt night sky (scene skybox is disabled) ─── */
 function NightSky() {
-  const starGeometry = useMemo(() => {
+  const starGeometry = useOwnedBufferGeometry(() => {
     const rng = seededRandom(424242);
     const COUNT = 180;
     const positions = new Float32Array(COUNT * 3);
@@ -464,15 +465,6 @@ function NightSky() {
     geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     return geo;
   }, []);
-
-  // R3F auto-disposes JSX <pointsMaterial> but NOT geometry passed via the
-  // `geometry` prop — dispose on unmount / when starGeometry changes.
-  useEffect(() => {
-    const geo = starGeometry;
-    return () => {
-      geo.dispose();
-    };
-  }, [starGeometry]);
 
   return (
     <group>
@@ -508,7 +500,7 @@ function Fireflies() {
   const materialRef = useRef<THREE.PointsMaterial>(null);
   const timeRef = useRef(0);
 
-  const { geometry, basePositions, phases } = useMemo(() => {
+  const { basePositions, phases } = useMemo(() => {
     const rng = seededRandom(99173);
     const base = new Float32Array(FIREFLY_COUNT * 3);
     const ph = new Float32Array(FIREFLY_COUNT);
@@ -520,19 +512,14 @@ function Fireflies() {
       base[i * 3 + 2] = Math.sin(angle) * radius;
       ph[i] = rng() * Math.PI * 2;
     }
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.BufferAttribute(base.slice(), 3));
-    return { geometry: geo, basePositions: base, phases: ph };
+    return { basePositions: base, phases: ph };
   }, []);
 
-  // R3F auto-disposes JSX <pointsMaterial> but NOT geometry passed via the
-  // `geometry` prop — dispose on unmount / when geometry changes.
-  useEffect(() => {
-    const geo = geometry;
-    return () => {
-      geo.dispose();
-    };
-  }, [geometry]);
+  const geometry = useOwnedBufferGeometry(() => {
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(basePositions.slice(), 3));
+    return geo;
+  }, [basePositions]);
 
   useFrameTick('misc', ({ delta }) => {
     timeRef.current += delta;

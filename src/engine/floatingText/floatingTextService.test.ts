@@ -102,4 +102,36 @@ describe('FloatingTextService', () => {
     expect(service.getSnapshot()).toEqual([]);
     expect(listener).toHaveBeenCalledTimes(1);
   });
+
+  it('does not spawn on poem:collected or quest:completed (discovery/quest UIs own those)', async () => {
+    const { eventBus } = await import('@/engine/EventBus');
+    const busService = new FloatingTextService(
+      {
+        rng: () => 0.5,
+        now: () => now,
+        scheduleFrame: (callback) => {
+          frameCallbacks.push(callback);
+          return frameCallbacks.length;
+        },
+        scheduleTimeout: (callback, delayMs) => {
+          timeoutCallbacks.push({ run: callback, at: now + delayMs });
+          return timeoutCallbacks.length as unknown as ReturnType<typeof setTimeout>;
+        },
+        clearScheduledTimeout: () => {},
+      },
+      true,
+    );
+
+    busService.subscribe(() => {});
+    busService.spawn('warmup', 'xp');
+    flushFrame();
+    const before = busService.getSnapshot().length;
+
+    eventBus.emit('poem:collected', { poemId: 'poem_x' });
+    eventBus.emit('quest:completed', { questId: 'q1' });
+    flushFrame();
+
+    expect(busService.getSnapshot()).toHaveLength(before);
+    busService.dispose();
+  });
 });

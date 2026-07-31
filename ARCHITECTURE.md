@@ -51,7 +51,7 @@ config/        — scene/metric/shell policy tables
 | Poem collect UX | `PoemRevealHost` (verse); store `poem` notif = history only | floating text + toast mirrors of the same beat |
 | Stat / FX floats | `floatingTextService` (xp/karma/damage/…) | discovery copy on `poem:collected` |
 | Notification channels | `notificationChannelRegistry` + `useNotificationSlot` | unregistered popup components |
-| Scene GPU | `sceneGpuLifecycle` + `sceneGpuOwnership` claims | ad-hoc dispose outside unload path |
+| Scene GPU | `releaseSceneGpuOnUnload` + `sceneGpuOwnership` + ephemeral dispose helper | ad-hoc dispose of module shared caches outside unload |
 | Content truth | `contentTruthManifest` resolvers | reading parallel registries when a resolver exists |
 | Cinematic runtime descriptor | `CinematicTimelineDef` via `splashPresetToTimeline` / `cutsceneDefToTimeline` + timeline orchestrator playback | parallel NPC cutscene registry; ad-hoc waypoint players without converter |
 
@@ -81,13 +81,16 @@ Legacy interstitial alias `setPoemDiscoveryRevealInterstitialActive` → `setPoe
 | Dead `npcCutscenes` deleted; splash + cutscene → `CinematicTimelineDef` | ✅ Wave 2 |
 | `poemDiscovery/*` shim deleted (imports → poemReveal) | ✅ Wave 2 |
 | Explore leave / hub mid-resume | ✅ pattern; Acts 5–7 expanded + expansion leave shipped (quiet-hour intentional) |
-| Scene GPU ownership | ✅ core; residual ad-hoc dispose audit remains |
+| Scene GPU ownership | ✅ Wave 4 (`releaseSceneGpuOnUnload` + ephemeral dispose helper) |
 | `STORY_DEFINED_EXPLORE_HUB_IDS` + structure split | ✅ Wave 3 (cafe/office/home prose in act1.json) |
 | Golden path: markers cover spine; table = parity fallback | ✅ Wave 3 |
 | Expand story-defined hubs (cafe/office/home prose → act JSON) | ✅ Wave 3 |
 | Story cutscene playback on timeline orchestrator | ✅ Wave 3 (`useCutsceneController` → `cutsceneDefToTimeline`) |
 | Full goldenPath.ts table retirement when markers complete | ✅ spine parity-only; BRANCH_HINTS/NPC maps remain guidance fallbacks |
-| Hero PostFX lite on low (forceFullPostFx ignored at low) | ✅ Wave 4 start |
+| Hero PostFX lite on low (forceFullPostFx ignored at low) | ✅ Wave 4 |
+| Settings preset detail strings ↔ qualityFeatureGates; drop English `label` | ✅ Wave 4 |
+| MeshPhysical / wet / CRT via `allowsHeavyGfxFeature` (+ home_evening / hero facades) | ✅ Wave 4 |
+| showPoemToast / showQuestToast removed; float hygiene | ✅ Wave 5 |
 
 Full ordered backlog: [`docs/ARCHITECTURE_UNIFICATION.md`](./docs/ARCHITECTURE_UNIFICATION.md).
 
@@ -593,7 +596,8 @@ Combat camera — отдельный `CombatCameraState` внутри cinematic 
 - **Runtime degrade** (`adaptiveQualityBridge`): sustained FPS fail → −1 tier.
 
 `ExplorationPostFX` заменил legacy `PostFXComposer` в exploration canvas.
-**Gap:** hero-сцены (`street_night`, `rooftop_edge`) могут всё ещё монтировать полный PostFX на low — сверять `resolveSceneRenderingPipeline`.
+**Policy:** low tier всегда lite PostFX — `forceFullPostFx` на hero-сценах игнорируется
+(`resolveSceneRenderingPipeline`).
 
 Пресеты: low = postFX off + Draco + procedural NPC; ultra = meshopt + full GLB.
 
@@ -700,10 +704,12 @@ XSS: `sanitizePlainText` на основном пути рендера (`narrati
   (не пересчитывается на каждый тик typewriter 30 ms).
 
 ### GPU и Three.js lifecycle (v4.1+)
-- `src/engine/scene/sceneGpuLifecycle.ts` + `SceneGpuLifecycleBridge.tsx` — preload/evict
-  (street dressing URLs, Poly Haven) на scene transition.
+- `src/engine/scene/sceneGpuLifecycle.ts` — `releaseSceneGpuOnUnload` (ownership + GLTF
+  eviction, derived-scene guarded); `SceneGpuLifecycleBridge` = enter warm only;
+  unload bound via `bindSceneChunkGpuLifecycle`.
 - `graphicsGpuCleanup.ts`, `unloadSceneGpuResources.ts`, `sceneGpuOwnership.ts` —
   централизованный teardown текстур/геометрий при смене сцены и quality preset.
+- `disposeEphemeralGpuResources` — component-owned clones (не module registries).
 - `moduleGeometryRegistry.ts` — учёт shared BufferGeometry между сценами.
 - `bufferGeometrySanitize.ts` — guard NaN/Inf в атрибутах (god-rays, процедурка).
 - `textureReuseMap` / `cachedCanvasTexture` / `objectPool` — ref-count + dispose

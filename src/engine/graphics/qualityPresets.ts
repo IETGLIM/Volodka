@@ -32,7 +32,6 @@ export type CompressionPreference = 'none' | 'draco' | 'meshopt';
 
 export interface QualityPreset {
   id: Exclude<QualityPresetId, 'auto'>;
-  label: string;
   labelRu: string;
   /** Canvas DPR range passed to useDynamicDPR */
   dpr: [number, number];
@@ -57,7 +56,6 @@ export interface QualityPreset {
 export const QUALITY_PRESETS: Record<Exclude<QualityPresetId, 'auto'>, QualityPreset> = {
   low: {
     id: 'low',
-    label: 'Low',
     labelRu: 'Низкое',
     dpr: [0.75, 1],
     shadows: false,
@@ -74,7 +72,6 @@ export const QUALITY_PRESETS: Record<Exclude<QualityPresetId, 'auto'>, QualityPr
   },
   medium: {
     id: 'medium',
-    label: 'Medium',
     labelRu: 'Среднее',
     dpr: [1, 1.35],
     shadows: true,
@@ -91,7 +88,6 @@ export const QUALITY_PRESETS: Record<Exclude<QualityPresetId, 'auto'>, QualityPr
   },
   high: {
     id: 'high',
-    label: 'High',
     labelRu: 'Высокое',
     dpr: [1, 1.75],
     shadows: true,
@@ -108,7 +104,6 @@ export const QUALITY_PRESETS: Record<Exclude<QualityPresetId, 'auto'>, QualityPr
   },
   ultra: {
     id: 'ultra',
-    label: 'Ultra',
     labelRu: 'Ультра',
     dpr: [1.25, 2],
     shadows: true,
@@ -400,13 +395,13 @@ export function formatQualityPresetDetailRu(
     allowsGlbAssetRendering(preset.npcRenderMode)
     || allowsGlbAssetRendering(preset.environmentRenderMode);
   if (glbCapable) {
-    hints.push('Уникальные аватары (RPM): от «Среднее»');
+    hints.push('Уникальные аватары (RPM)');
   }
-  if (
-    selectedPreset === 'ultra'
-    || selectedPreset === 'high'
-    || selectedPreset === 'medium'
-  ) {
+  // Reflector wet street: medium+; MeshPhysical glass/puddle accents: high/ultra only
+  // (mirrors qualityFeatureGates — never advertise heavy features on auto).
+  if (selectedPreset === 'ultra' || selectedPreset === 'high') {
+    hints.push('Мокрые отражения + MeshPhysical акценты');
+  } else if (selectedPreset === 'medium') {
     hints.push('Мокрые отражения на улице');
   } else if (
     selectedPreset === 'auto'

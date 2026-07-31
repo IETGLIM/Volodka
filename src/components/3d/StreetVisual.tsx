@@ -35,6 +35,7 @@ import { usesPhotographicHdriBackground } from '@/config/polyhavenAssets';
 import { isProceduralAaaFlagActive } from '@/proceduralAaa/params';
 import { ProceduralAaaHybridOverlay } from '@/proceduralAaa/ProceduralAaaHybridOverlay';
 import { allowsHeavyGfxFeature } from '@/engine/graphics/qualityFeatureGates';
+import { disposeEphemeralGpuResources } from '@/engine/three/disposeThreeResources';
 import { useIsMobileVisual } from '@/hooks/use-mobile';
 
 interface StreetVisualProps {
@@ -296,11 +297,10 @@ function StreetSidewalkProcedural({ isWinter, rainIntensity }: { isWinter: boole
     return t;
   }, [maps, map]);
 
-  useEffect(() => () => {
-    map.dispose();
-    normalMap.dispose();
-    roughnessMap.dispose();
-  }, [map, normalMap, roughnessMap]);
+  useEffect(
+    () => () => disposeEphemeralGpuResources(map, normalMap, roughnessMap),
+    [map, normalMap, roughnessMap],
+  );
 
   return (
     <mesh rotation-x={-Math.PI / 2} position={[0, 0.015, 0]} receiveShadow geometry={getSharedPlaneGeometry(6, 40)}>

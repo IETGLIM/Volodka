@@ -3,8 +3,6 @@ export { NotificationToastsPanel as NotificationToasts } from '@/components/game
 export {
   showEnergyToast,
   showKarmaToast,
-  showPoemToast,
-  showQuestToast,
   showSkillToast,
   showStressToast,
 } from '@/engine/toast/notificationToastApi';

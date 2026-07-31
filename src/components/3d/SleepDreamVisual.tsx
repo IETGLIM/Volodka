@@ -17,6 +17,7 @@ import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { allowsHeavyGfxFeature } from '@/engine/graphics/qualityFeatureGates';
 import { isEffectiveReducedMotion } from '@/engine/accessibility/accessibilitySettings';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
+import { useOwnedBufferGeometry } from '@/hooks/useOwnedBufferGeometry';
 import {
   createDreamGalaxySkyTexture,
   createDreamGalaxyStarGeometry,
@@ -27,15 +28,11 @@ export function SleepDreamVisual() {
   const W = 50;
   const D = 50;
 
-  const groundGeometry = useMemo(() => {
+  const groundGeometry = useOwnedBufferGeometry(() => {
     const geo = new THREE.PlaneGeometry(W, D, 64, 64);
     geo.rotateX(-Math.PI / 2);
     return geo;
   }, [W, D]);
-
-  // Dispose ground geometry on unmount — R3F does not auto-dispose
-  // geometries attached via the `geometry` prop (only JSX children).
-  useEffect(() => () => groundGeometry.dispose(), [groundGeometry]);
 
   const groundTexture = useCachedCanvasTexture('sleep_dream:ground', createDreamGroundTexture);
 
@@ -166,12 +163,8 @@ function GalaxySkyDome() {
     allowsHeavyGfxFeature(selectedPreset, 'galaxySky')
     && !isEffectiveReducedMotion();
   const skyTexture = useCachedCanvasTexture('sleep_dream:galaxy-sky', createDreamGalaxySkyTexture);
-  const starGeometry = useMemo(() => createDreamGalaxyStarGeometry(), []);
+  const starGeometry = useOwnedBufferGeometry(() => createDreamGalaxyStarGeometry(), []);
   const starsRef = useRef<THREE.Points>(null);
-
-  // Dispose star geometry on unmount — R3F does not auto-dispose
-  // geometries attached via the `geometry` prop.
-  useEffect(() => () => starGeometry.dispose(), [starGeometry]);
 
   useFrameTick('misc', ({ state }) => {
     if (!animateStars || !starsRef.current) return;

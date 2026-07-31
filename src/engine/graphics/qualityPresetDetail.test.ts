@@ -15,8 +15,10 @@ describe('formatQualityPresetDetailRu', () => {
   it('shows GLB hint from medium upward', () => {
     const detail = formatQualityPresetDetailRu('medium', QUALITY_PRESETS.medium);
     expect(detail).toContain('Уникальные аватары (RPM)');
+    expect(detail).not.toContain('от «Среднее»');
     expect(detail).toContain('Карты теней + мягкий blob');
     expect(detail).toContain('Мокрые отражения на улице');
+    expect(detail).not.toContain('MeshPhysical');
   });
 
   it('describes full shadow maps on high', () => {
@@ -25,12 +27,12 @@ describe('formatQualityPresetDetailRu', () => {
     );
   });
 
-  it('shows wet reflections on explicit high and ultra', () => {
+  it('shows wet reflections + MeshPhysical accents on explicit high and ultra', () => {
     expect(formatQualityPresetDetailRu('high', QUALITY_PRESETS.high)).toContain(
-      'Мокрые отражения на улице',
+      'Мокрые отражения + MeshPhysical акценты',
     );
     const ultra = formatQualityPresetDetailRu('ultra', QUALITY_PRESETS.ultra);
-    expect(ultra).toContain('Мокрые отражения на улице');
+    expect(ultra).toContain('Мокрые отражения + MeshPhysical акценты');
     expect(ultra).not.toContain('выберите');
   });
 

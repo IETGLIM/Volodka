@@ -1,15 +1,22 @@
 /**
  * Scene-chunk GPU lifecycle — scene:unload disposal + Vite HMR teardown.
  * Boot via bindSceneChunkGpuLifecycle() (reviveGameEngine), not import-time.
+ *
+ * Unload ownership + GLTF eviction live in `releaseSceneGpuOnUnload`
+ * (`sceneGpuLifecycle`) — this module only binds the EventBus + HMR hooks.
  */
 
 import { eventBus } from '@/engine/EventBus';
-import { registerHmrBeforeUpdate, registerHmrDispose } from '@/shared/dev/hmrDispose';
+import {
+  releaseSceneGpuOnUnload,
+  shouldUnloadSceneGpuOnTransition,
+} from '@/engine/scene/sceneGpuLifecycle';
 import { disposeAllModuleGeometries } from '@/engine/three/moduleGeometryRegistry';
 import { disposeAllModuleMaterials } from '@/engine/three/moduleMaterialRegistry';
-import { unloadSceneGpuResources } from '@/engine/three/unloadSceneGpuResources';
-import { resolveDerivedSceneId } from '@/config/sceneInheritance';
+import { registerHmrBeforeUpdate, registerHmrDispose } from '@/shared/dev/hmrDispose';
 import type { SceneId } from '@/shared/types/game';
+
+export { shouldUnloadSceneGpuOnTransition };
 
 let unsubSceneUnload: (() => void) | null = null;
 
@@ -18,18 +25,8 @@ function disposeAllSceneChunkGpuForHmr(): void {
   disposeAllModuleGeometries();
 }
 
-/** Pure guard — derived variants share parent GPU pools and must not unload mid-hop. */
-export function shouldUnloadSceneGpuOnTransition(
-  sceneId: SceneId,
-  nextSceneId: SceneId,
-): boolean {
-  if (sceneId === nextSceneId) return false;
-  return resolveDerivedSceneId(sceneId) !== resolveDerivedSceneId(nextSceneId);
-}
-
 function onSceneUnload({ sceneId, nextSceneId }: { sceneId: SceneId; nextSceneId: SceneId }): void {
-  if (!shouldUnloadSceneGpuOnTransition(sceneId, nextSceneId)) return;
-  unloadSceneGpuResources(resolveDerivedSceneId(sceneId));
+  releaseSceneGpuOnUnload(sceneId, nextSceneId);
 }
 
 /** Idempotent — subscribe to scene:unload for module-level GPU cache eviction. */

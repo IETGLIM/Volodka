@@ -34,12 +34,14 @@
  *   eventBus     -> weather:changed      -> WeatherAlertNotification
  *   eventBus     -> crafting:discovered  -> CraftingDiscoveryToast
  *   eventBus     -> game:system_alert    -> GameSystemToast
- *   FloatingText -> combat/stat FX only (xp/karma/damage) — never poem discovery copy
+ *   FloatingText -> combat/stat FX only (xp/karma/damage) — never poem discovery / quest complete copy
+ *   (showPoemToast / showQuestToast deleted — PoemRevealHost / QuestNotificationSystem own those beats)
  *
  * ── Anti-patterns (DO NOT) ──
  *   X Push the same event into both store.notifications AND eventBus
  *     (causes duplicate toasts — quest events were doing this before fix)
  *   X Mirror poem:collected as floating text + toast while PoemRevealHost plays
+ *   X Reintroduce showPoemToast / showQuestToast mirrors
  *   X Create a new <XxxNotification /> component without registering here
  *   X Subscribe to events directly in OrchestratorGameplaySections —
  *     each channel owns its own subscriptions

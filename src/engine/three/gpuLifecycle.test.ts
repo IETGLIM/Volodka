@@ -16,6 +16,8 @@ import {
   getSceneGltfAssetIds,
   getScheduleBackedNpcIdsForScene,
   evictSceneGpuCache,
+  releaseSceneGpuOnUnload,
+  shouldUnloadSceneGpuOnTransition,
 } from '@/engine/scene/sceneGpuLifecycle';
 
 describe('textureReuseMap', () => {
@@ -196,14 +198,33 @@ describe('sceneGpuLifecycle', () => {
     });
 
     it('keeps prop GLBs shared between from and keep scenes', () => {
-      // office_day and library_day share kenney_desk, kenney_bookshelf, kenney_city_chair
+      // office_day and library_day share several kenney/citykit props
       evictSceneGpuCache('office_day', 'library_day');
 
       // shared props are NOT evicted
       expect(useGLTF.clear).not.toHaveBeenCalledWith('/models/props/desk.glb');
       expect(useGLTF.clear).not.toHaveBeenCalledWith('/models/props/bookshelf.glb');
-      // office-only props ARE evicted
-      expect(useGLTF.clear).toHaveBeenCalledWith('/models/props/terminal.glb');
+      // office-only interior GLB IS evicted
+      expect(useGLTF.clear).toHaveBeenCalledWith('/models/interiors/office.glb');
+    });
+  });
+
+  describe('releaseSceneGpuOnUnload', () => {
+    beforeEach(() => {
+      vi.spyOn(useGLTF, 'clear').mockImplementation(() => {});
+      vi.spyOn(THREE.Cache, 'remove').mockImplementation(() => {});
+    });
+
+    it('skips derived-variant hops (same GPU pool family)', () => {
+      expect(shouldUnloadSceneGpuOnTransition('pier_evening', 'river_pier')).toBe(false);
+      releaseSceneGpuOnUnload('pier_evening', 'river_pier');
+      expect(useGLTF.clear).not.toHaveBeenCalled();
+    });
+
+    it('evicts when leaving a scene family', () => {
+      releaseSceneGpuOnUnload('cafe_evening', 'street_night');
+      expect(useGLTF.clear).toHaveBeenCalled();
+      expect(useGLTF.clear).toHaveBeenCalledWith('/models/interiors/cafe_interior.glb');
     });
   });
 });

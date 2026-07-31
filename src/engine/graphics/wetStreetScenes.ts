@@ -45,6 +45,7 @@ export const SELECTIVE_PHYSICAL_WET_SCENE_IDS = [
   'library_basement',
   'factory_basement',
   'zarema_albert_room',
+  'home_evening',
 ] as const satisfies readonly SceneId[];
 
 export type SelectivePhysicalWetSceneId = (typeof SELECTIVE_PHYSICAL_WET_SCENE_IDS)[number];

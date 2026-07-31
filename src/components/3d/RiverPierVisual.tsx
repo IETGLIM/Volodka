@@ -5,7 +5,7 @@
  *  Zorge has a sibling now.
  */
 
-import { useLayoutEffect, useMemo, useRef, useEffect, type MutableRefObject } from 'react';
+import { useLayoutEffect, useMemo, useRef, type MutableRefObject } from 'react';
 import * as THREE from 'three';
 import {
   getSharedBoxGeometry,
@@ -18,6 +18,7 @@ import {
 
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
+import { useOwnedBufferGeometry } from '@/hooks/useOwnedBufferGeometry';
 import { useGameStore } from '@/store/gameStore';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
@@ -348,7 +349,7 @@ export function RiverPierVisual({ sceneId = 'river_pier' }: RiverPierVisualProps
 
 /* ── Moon + sparse stars over the river ── */
 function PierNightSky() {
-  const starGeometry = useMemo(() => {
+  const starGeometry = useOwnedBufferGeometry(() => {
     const rng = pierSeededRandom(880011);
     const COUNT = 140;
     const positions = new Float32Array(COUNT * 3);
@@ -364,15 +365,6 @@ function PierNightSky() {
     geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     return geo;
   }, []);
-
-  // R3F auto-disposes JSX <pointsMaterial> but NOT geometry passed via the
-  // `geometry` prop — dispose on unmount / when starGeometry changes.
-  useEffect(() => {
-    const geo = starGeometry;
-    return () => {
-      geo.dispose();
-    };
-  }, [starGeometry]);
 
   return (
     <group>

@@ -1,7 +1,7 @@
 
 /* ─── Volodka RPG – Rooftop Edge procedural 3D visual ─── */
 
-import { useMemo, useRef, useEffect } from 'react';
+import { useMemo, useRef } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import {
@@ -17,6 +17,7 @@ import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { allowsHeavyGfxFeature } from '@/engine/graphics/qualityFeatureGates';
 import { isEffectiveReducedMotion } from '@/engine/accessibility/accessibilitySettings';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
+import { useOwnedBufferGeometry } from '@/hooks/useOwnedBufferGeometry';
 import { seededRand } from '@/shared/utils/seededRand';
 import {
   createRooftopHorizonStarGeometry,
@@ -483,12 +484,8 @@ function SunsetSkyDome() {
     allowsHeavyGfxFeature(selectedPreset, 'galaxySky')
     && !isEffectiveReducedMotion();
   const skyTexture = useCachedCanvasTexture('rooftop_edge:galaxy-sky', createRooftopSunsetGalaxySkyTexture);
-  const starGeometry = useMemo(() => createRooftopHorizonStarGeometry(), []);
+  const starGeometry = useOwnedBufferGeometry(() => createRooftopHorizonStarGeometry(), []);
   const starsRef = useRef<THREE.Points>(null);
-
-  // Dispose star geometry on unmount — R3F does not auto-dispose
-  // geometries attached via the `geometry` prop.
-  useEffect(() => () => starGeometry.dispose(), [starGeometry]);
 
   useFrameTick('misc', ({ state }) => {
     if (!animateStars || !starsRef.current) return;

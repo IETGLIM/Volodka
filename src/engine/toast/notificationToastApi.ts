@@ -2,7 +2,6 @@ import { toastManager } from '@/engine/ToastManager';
 import {
   buildEnergyToastMessage,
   buildKarmaToastMessage,
-  buildPoemCollectedToastMessage,
   buildSkillToastMessage,
   buildStressToastMessage,
 } from '@/engine/toast/notificationToastPresentation';
@@ -24,10 +23,5 @@ export function showSkillToast(skill: TrainablePlayerSkill, delta: number): void
   toastManager.addToast('skill', buildSkillToastMessage(skill, delta), delta);
 }
 
-export function showPoemToast(title: string): void {
-  toastManager.addToast('poem', buildPoemCollectedToastMessage(title));
-}
-
-export function showQuestToast(text: string): void {
-  toastManager.addToast('quest', text);
-}
+// showPoemToast / showQuestToast deleted — poem discovery owns PoemRevealHost;
+// quest copy owns QuestNotificationSystem. Do not reintroduce mirror APIs.
