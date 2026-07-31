@@ -155,7 +155,15 @@ patrol→chase→engaged→cooldown, конус зрения проецируе�
 Стихи Владимира Лебедева (**тексты неприкосновенны**, `src/data/poems.ts`):
 - **Display SoT:** `unifiedPoemRegistry.ts` — имена и blurbs для world/combat;
   `getPoemPower()` / `POEM_COMBAT_ABILITIES` берут display через `enrichPoemMechanicsDisplay`.
+- **Reveal SoT (единый пайплайн):** `src/engine/poemReveal/` + `PoemRevealHost` / `PoemRevealShell`
+  — один shell, режимы `discovery | power_ritual | explicit_read`, FIFO-очередь (без стека UI).
+  Excerpt: `src/shared/poem/poemExcerpt.ts` (`getPoemExcerpt` / combat preview / terminal frame).
+  Entry points: `poem:collected` → discovery; `requestPoemPowerActivation` (exploration) → power_ritual;
+  celebration `first_reading` ждёт `isPoemRevealBusy()` и берёт тот же excerpt (не параллельная типографика).
+  Legacy: `PoemDiscoveryReveal` / `PoemReadingCutscene` — re-export `PoemRevealHost`.
+  **Не** invent second poem timeline в `CinematicTimelineRunner` (camera dolly — optional hook из shell).
 - в бою — `POEM_COMBAT_ABILITIES` (кулдауны, баффы/дебаффы); pity в `combatRng.ts` / `buffSystem.ts`;
+  на кнопках способностей — 1–2 строки из `getPoemCombatExcerptLines` (тот же excerpt-path);
 - в исследовании — TTL-флаги в store (`activeTTLFlags`), монотонные часы `ttlClock.ts` (performance.now).
   Напр. `guiding_star_active` (poem_3) сжимает конусы зрения крипов до 45%;
   `child_gaze_active` (poem_7) раскрывает зоны с `hiddenUntilPoemFlag`;
@@ -164,6 +172,9 @@ patrol→chase→engaged→cooldown, конус зрения проецируе�
   (stress scale, combat opening bridge, HUD `PoemActiveEffectsHud`).
 Новые мировые эффекты стихов = чтение одного TTL-флага в кадровом цикле.
 `processExpiredTTLFlags()` — из game loop (`useGameLifecycleManager`).
+
+**Исключения (намеренно вне shell):** меню `MatrixPoemAssembly`; полный текст в poetry book typewriter
+(«открыть сборник» — destination после fragment beat).
 
 ### Thought Cabinet (Кабинет Мыслей)
 

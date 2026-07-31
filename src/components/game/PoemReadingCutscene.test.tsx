@@ -1,11 +1,15 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, render } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   getPendingPoemReadingId,
   requestPoemPowerActivation,
   resetPoemReadingSession,
 } from '@/engine/poemReading/poemReadingOrchestrator';
-import { PoemReadingCutscene } from './PoemReadingCutscene';
+import {
+  getActivePoemReveal,
+  resetPoemRevealSession,
+} from '@/engine/poemReveal/poemRevealOrchestrator';
+import { PoemRevealHost } from '@/components/game/poemReveal/PoemRevealHost';
 
 const activateSpy = vi.fn((_poemId: string) => true);
 
@@ -32,16 +36,20 @@ vi.mock('@/engine/PoemPowerSystem', () => ({
   }),
 }));
 
+vi.mock('@/engine/AudioEngine', () => ({
+  audioEngine: {
+    enableDialogueMuffle: vi.fn(),
+    disableDialogueMuffle: vi.fn(),
+    playSfx: vi.fn(),
+  },
+}));
+
 vi.mock('@/hooks/useEffectiveReducedMotion', () => ({
-  useEffectiveReducedMotion: () => false,
+  useEffectiveReducedMotion: () => true,
 }));
 
 vi.mock('@/hooks/useCinematicNarrativePresentation', () => ({
   useCinematicNarrativePresentation: vi.fn(),
-}));
-
-vi.mock('@/hooks/useAccessibilitySettings', () => ({
-  useAccessibilitySettings: () => ({ textSpeed: 1 }),
 }));
 
 vi.mock('@/data/gameDataLoader', () => ({
@@ -53,22 +61,35 @@ vi.mock('@/data/gameDataLoader', () => ({
   }),
 }));
 
-describe('PoemReadingCutscene', () => {
+vi.mock('@/store/gameStore', () => ({
+  useGameStore: (selector: (s: { showStoryOverlay: boolean }) => unknown) =>
+    selector({ showStoryOverlay: false }),
+}));
+
+/** Avoid framer-motion / typewriter hang in jsdom — host wiring only. */
+vi.mock('@/components/game/poemReveal/PoemRevealShell', () => ({
+  PoemRevealShell: ({ poemId, mode }: { poemId: string; mode: string }) =>
+    // eslint-disable-next-line react/react-in-jsx-scope -- vitest jsx runtime
+    (<div data-testid="poem-reading-cutscene" data-poem-id={poemId} data-mode={mode} />),
+}));
+
+describe('PoemRevealHost power_ritual', () => {
   beforeEach(() => {
     mockPendingPoemReadingId = null;
     resetPoemReadingSession();
+    resetPoemRevealSession();
     activateSpy.mockClear();
   });
 
   it('clears pending state on unmount without completing the ritual', () => {
-    const { unmount } = render(<PoemReadingCutscene />);
+    const { unmount } = render(<PoemRevealHost />);
 
     act(() => {
       const result = requestPoemPowerActivation('poem_1');
       expect(result.status).toBe('cutscene_pending');
     });
     expect(getPendingPoemReadingId()).toBe('poem_1');
-    expect(screen.getByTestId('poem-reading-cutscene')).toBeInTheDocument();
+    expect(getActivePoemReveal()?.mode).toBe('power_ritual');
 
     activateSpy.mockClear();
     act(() => {

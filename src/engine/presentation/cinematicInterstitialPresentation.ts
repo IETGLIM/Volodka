@@ -1,7 +1,7 @@
-import { isPoemReadingCutsceneUiActive } from '@/engine/poemReading/poemReadingOrchestrator';
-
 let matrixQuoteActive = false;
 let firstReadingCelebrationActive = false;
+let poemDiscoveryRevealActive = false;
+let poemRevealInterstitialActive = false;
 const listeners = new Set<() => void>();
 
 function notifyListeners(): void {
@@ -20,9 +20,27 @@ export function setFirstReadingCelebrationInterstitialActive(active: boolean): v
   notifyListeners();
 }
 
-/** Matrix quote, first-reading celebration, or poem-reading ritual UI. */
+export function setPoemDiscoveryRevealInterstitialActive(active: boolean): void {
+  if (poemDiscoveryRevealActive === active) return;
+  poemDiscoveryRevealActive = active;
+  notifyListeners();
+}
+
+/** Unified poem reveal (discovery / power_ritual / explicit_read) — flag only, no orchestrator import. */
+export function setPoemRevealInterstitialActive(active: boolean): void {
+  if (poemRevealInterstitialActive === active) return;
+  poemRevealInterstitialActive = active;
+  notifyListeners();
+}
+
+/** Matrix quote, first-reading celebration, or any poem reveal UI. */
 export function isCinematicInterstitialActive(): boolean {
-  return matrixQuoteActive || firstReadingCelebrationActive || isPoemReadingCutsceneUiActive();
+  return (
+    matrixQuoteActive ||
+    firstReadingCelebrationActive ||
+    poemDiscoveryRevealActive ||
+    poemRevealInterstitialActive
+  );
 }
 
 export function subscribeCinematicInterstitial(listener: () => void): () => void {
@@ -32,7 +50,7 @@ export function subscribeCinematicInterstitial(listener: () => void): () => void
   };
 }
 
-/** PoemReadingCutscene mount changes — refresh HUD profile subscribers. */
+/** PoemRevealHost mount changes — refresh HUD profile subscribers. */
 export function notifyPoemReadingInterstitialChanged(): void {
   notifyListeners();
 }

@@ -45,6 +45,10 @@ import {
 import { getGameSnapshot } from '@/engine/GameActionDispatcher';
 import { bindPoemResetListener } from '@/engine/PoemPowerSystem';
 import {
+  bindPoemRevealLifecycleListeners,
+  unbindPoemRevealLifecycleListeners,
+} from '@/engine/poemReveal/poemRevealOrchestrator';
+import {
   bindPoemReadingCutsceneLifecycleListeners,
   unbindPoemReadingCutsceneLifecycleListeners,
 } from '@/engine/poemReading/poemReadingOrchestrator';
@@ -152,6 +156,7 @@ export function disposeGameEngine(): void {
     unbindDeferredCombatStartListener();
     unbindSceneTransitionGuardListeners();
     unbindPoemReadingCutsceneLifecycleListeners();
+    unbindPoemRevealLifecycleListeners();
     cancelPendingSceneLoaded();
     disposeTransitionDirector();
     disposeCinematicTimelineOrchestrator();
@@ -184,6 +189,7 @@ export function reviveGameEngine(): void {
   bindDeferredCombatStartListener();
   bindPoemResetListener();
   bindPoemReadingCutsceneLifecycleListeners();
+  bindPoemRevealLifecycleListeners();
   bindPoemWorldEventBridge();
   bindAdaptiveQualityBridge();
   bindSoftWorkBudget();

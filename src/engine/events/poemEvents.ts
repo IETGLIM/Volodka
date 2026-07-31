@@ -1,4 +1,5 @@
 import type { PoemWorldEffectProfile } from '@/config/poemWorldEffects';
+import type { PoemRevealMode } from '@/engine/poemReveal/poemRevealTypes';
 
 /** Poem collection, cutscenes, and combat powers — PoemPowerSystem, worldSlice. */
 export interface PoemEvents {
@@ -20,7 +21,16 @@ export interface PoemEvents {
     reducedMotion: boolean;
   };
   'poem:collected': { poemId: string };
+  /** Unified reveal pipeline (discovery | power_ritual | explicit_read). */
+  'poem:show_reveal': { poemId: string; mode: PoemRevealMode };
+  'poem:reveal_end': { poemId?: string; mode?: PoemRevealMode };
+  /** @deprecated Prefer poem:show_reveal mode=power_ritual */
   'poem:show_cutscene': { poemId: string };
+  /** @deprecated Prefer poem:reveal_end */
   'poem:cutscene_end': Record<string, never>;
+  /** @deprecated Prefer poem:show_reveal mode=discovery */
+  'poem:show_discovery_reveal': { poemId: string };
+  /** @deprecated Prefer poem:reveal_end */
+  'poem:discovery_reveal_end': { poemId?: string };
   'poem:reset_all_effects': Record<string, never>;
 }

@@ -14,9 +14,13 @@ import {
   isPoemReadingCutsceneUiActive,
   requestPoemPowerActivation,
   resetPoemReadingSession,
-  setPoemReadingCutsceneUiActive,
   shouldSkipPoemReadingCutscene,
 } from '@/engine/poemReading/poemReadingOrchestrator';
+import {
+  completePoemReveal,
+  resetPoemRevealSession,
+  setPoemRevealUiActive,
+} from '@/engine/poemReveal/poemRevealOrchestrator';
 
 const lsStore: Record<string, string> = {};
 
@@ -51,6 +55,13 @@ vi.mock('@/engine/PoemPowerSystem', () => ({
   getPoemPower: (poemId: string) => getPowerSpy(poemId),
 }));
 
+vi.mock('@/data/gameDataLoader', () => ({
+  getPoemById: (poemId: string) =>
+    poemId.startsWith('poem_')
+      ? { id: poemId, title: 'T', author: 'A', lines: ['a', 'b', 'c', 'd'] }
+      : undefined,
+}));
+
 let mockPendingPoemReadingId: string | null = null;
 
 vi.mock('@/engine/GameActionDispatcher', () => ({
@@ -70,6 +81,7 @@ describe('poemReadingOrchestrator', () => {
     resetDefaultAccessibilityManager();
     initAccessibilitySettings();
     resetPoemReadingSession();
+    resetPoemRevealSession();
     activateSpy.mockClear();
     canUseSpy.mockReturnValue(true);
     getPowerSpy.mockImplementation((poemId: string) => ({
@@ -83,6 +95,7 @@ describe('poemReadingOrchestrator', () => {
 
   afterEach(() => {
     resetPoemReadingSession();
+    resetPoemRevealSession();
     resetDefaultAccessibilityManager();
     vi.unstubAllGlobals();
   });
@@ -108,6 +121,7 @@ describe('poemReadingOrchestrator', () => {
     expect(getPendingPoemReadingId()).toBe('poem_1');
 
     completePoemReadingCutscene('poem_1');
+    completePoemReveal('poem_1');
     expect(hasReadPoemThisSession('poem_1')).toBe(true);
     activateSpy.mockClear();
 
@@ -132,6 +146,7 @@ describe('poemReadingOrchestrator', () => {
 
     activateSpy.mockClear();
     expect(completePoemReadingCutscene('poem_3')).toBe(true);
+    completePoemReveal('poem_3');
     expect(activateSpy).toHaveBeenCalledWith('poem_3');
     expect(endEvents).toHaveLength(1);
 
@@ -158,9 +173,7 @@ describe('poemReadingOrchestrator', () => {
     expect(first.status).toBe('cutscene_pending');
     expect(getPendingPoemReadingId()).toBe('poem_1');
 
-    setPoemReadingCutsceneUiActive('poem_1');
-    setPoemReadingCutsceneUiActive(null);
-
+    // UI never mounted — treat as stale and allow retry after cancel.
     activateSpy.mockClear();
     const retry = requestPoemPowerActivation('poem_1');
     expect(retry.status).toBe('cutscene_pending');
@@ -171,7 +184,7 @@ describe('poemReadingOrchestrator', () => {
 
   it('returns cutscene_busy while cutscene UI is active', () => {
     requestPoemPowerActivation('poem_1');
-    setPoemReadingCutsceneUiActive('poem_1');
+    setPoemRevealUiActive('poem_1');
 
     const retry = requestPoemPowerActivation('poem_2');
     expect(retry.status).toBe('failed');
@@ -183,7 +196,7 @@ describe('poemReadingOrchestrator', () => {
 
   it('abortPoemReadingIfPending clears pending without activating power (closeAllPanels path)', () => {
     requestPoemPowerActivation('poem_1');
-    setPoemReadingCutsceneUiActive('poem_1');
+    setPoemRevealUiActive('poem_1');
 
     activateSpy.mockClear();
     abortPoemReadingIfPending();
@@ -196,7 +209,7 @@ describe('poemReadingOrchestrator', () => {
 
   it('scene transition clears pending poem reading state', () => {
     requestPoemPowerActivation('poem_1');
-    setPoemReadingCutsceneUiActive('poem_1');
+    setPoemRevealUiActive('poem_1');
     expect(getPendingPoemReadingId()).toBe('poem_1');
 
     eventBus.emit('scene:transition_start', {

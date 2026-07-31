@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Clock } from 'lucide-react';
+import { getPoemById } from '@/data/gameDataLoader';
+import { getPoemCombatExcerptLines } from '@/shared/poem/poemExcerpt';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { getAvailableCombatPowers } from '@/engine/CombatSystem';
 import { COMBAT_BUTTON_HINTS } from '@/engine/combat/combatGamepadMap';
@@ -34,6 +36,8 @@ function PoemPowerCard({
   const CategoryIcon = getPoemEffectIcon(category);
   const ability = POEM_COMBAT_ABILITIES[power.poemId];
   const totalCooldown = ability?.cooldown ?? 0;
+  const poem = getPoemById(power.poemId);
+  const excerptLines = poem ? getPoemCombatExcerptLines(poem) : [];
 
   return (
     <Tooltip>
@@ -75,6 +79,11 @@ function PoemPowerCard({
             </div>
           </div>
           <div className="text-[9px] text-slate-500 mt-0.5">{power.description}</div>
+          {excerptLines.length > 0 && !onCooldown ? (
+            <div className="mt-1 text-[8px] text-slate-500/90 italic font-serif leading-snug line-clamp-2">
+              {excerptLines.join(' · ')}
+            </div>
+          ) : null}
           {onCooldown && totalCooldown > 0 && (
             <div className="mt-1 w-full h-0.5 bg-slate-800/60 rounded overflow-hidden">
               <div
@@ -92,6 +101,13 @@ function PoemPowerCard({
       >
         <div className="font-semibold text-amber-300 mb-1">{power.name}</div>
         <div className="text-slate-400">{power.description}</div>
+        {excerptLines.length > 0 ? (
+          <div className="mt-1.5 text-slate-300/90 italic font-serif leading-snug">
+            {excerptLines.map((line) => (
+              <div key={line}>{line}</div>
+            ))}
+          </div>
+        ) : null}
         <div className="mt-1 text-slate-500">Кулдаун: {totalCooldown} х.</div>
         <div className="text-slate-500">Эффект: {categoryLabel}</div>
         {onCooldown && <div className="text-red-400 mt-1">Готовность через {power.cooldownRemaining} х.</div>}

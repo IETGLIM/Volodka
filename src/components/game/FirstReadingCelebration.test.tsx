@@ -38,7 +38,11 @@ describe('FirstReadingCelebration container', () => {
     const onDismiss = vi.fn();
     vi.mocked(prepareFirstReadingCelebrationContent).mockReturnValue({
       quoteText: 'Тестовая цитата',
-      poemData: { title: 'Стих', lines: ['Строка'] },
+      excerptText: 'Строка один\nСтрока два',
+      excerptLines: ['Строка один', 'Строка два'],
+      isFragment: true,
+      poemData: { title: 'Стих', author: 'Автор', lines: ['Строка один', 'Строка два'] },
+      combatCue: 'Бой · Тест',
       rewardSummary: 'Награда',
       bonusXp: 10,
       bonusCredits: 5,

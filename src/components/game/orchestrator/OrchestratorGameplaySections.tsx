@@ -63,7 +63,7 @@ import { CutsceneOverlay } from '@/components/game/CutsceneOverlay';
 import { PoetryPowerBar } from '@/components/game/PoetryPowerBar';
 import { PoemPowerEffect } from '@/components/game/PoemPowerEffect';
 import { PoemWorldEffect } from '@/components/game/poemWorldEffect/PoemWorldEffect';
-import { PoemReadingCutscene } from '@/components/game/PoemReadingCutscene';
+import { PoemRevealHost } from '@/components/game/poemReveal/PoemRevealHost';
 import { DirectionalDamageIndicator } from '@/components/game/DirectionalDamageIndicator';
 import { DamageNumberFloat } from '@/components/game/DamageNumberFloat';
 import { LevelUpSummary } from '../LevelUpSummary';
@@ -256,10 +256,15 @@ export const GameplaySceneTransitionFx = memo(function GameplaySceneTransitionFx
   );
 });
 
-/** Poem reading ritual — line-by-line cutscene before main poem powers fire. */
-export const GameplayPoemReadingCutscene = memo(function GameplayPoemReadingCutscene() {
-  return <PoemReadingCutscene />;
+/** Unified poem reveal — discovery | power_ritual | explicit_read (one shell, FIFO). */
+export const GameplayPoemReveal = memo(function GameplayPoemReveal() {
+  return <PoemRevealHost />;
 });
+
+/** @deprecated Prefer GameplayPoemReveal */
+export const GameplayPoemReadingCutscene = GameplayPoemReveal;
+/** @deprecated Prefer GameplayPoemReveal */
+export const GameplayPoemDiscoveryReveal = GameplayPoemReveal;
 
 /** Poem world-event ambient layer — tint, epigraph, letterbox (below power title FX). */
 export const GameplayPoemWorldFx = memo(function GameplayPoemWorldFx() {
@@ -302,7 +307,7 @@ export const GameplaySharedEffects = memo(function GameplaySharedEffects() {
           below already handles the intro_wakeup letterbox + skip + text. */}
       <EncounterBeatOverlay />
       <GameplayCutsceneOverlay />
-      <GameplayPoemReadingCutscene />
+      <GameplayPoemReveal />
       <GameplaySceneTransitionFx />
       <GameplayPoemWorldFx />
       <GameplayPoemPowerFx />

@@ -10,6 +10,7 @@ import { invalidateStoryGraphIndex } from '@/engine/story/storyGraphIndex';
 import { resetCameraShake } from '@/engine/camera/cameraShake';
 import { resetGlobalTimeScale } from '@/engine/camera/cinematicCamera';
 import { resetCinematicPresentation } from '@/engine/camera/cinematicPresentation';
+import { resetPoemRevealSession } from '@/engine/poemReveal/poemRevealOrchestrator';
 import { resetPoemReadingSession } from '@/engine/poemReading/poemReadingOrchestrator';
 import { cancelEncounterPresentation } from '@/engine/combat/encounterPresentation';
 import { resetGltfPreloadOverlayGateForTests } from '@/engine/assets/gltfPreloadOverlayGate';
@@ -24,6 +25,7 @@ export function resetEngineModuleRuntimeState(): void {
   resetGlobalTimeScale();
   resetCinematicPresentation();
   resetPoemReadingSession();
+  resetPoemRevealSession();
   resetSceneTransitionGuard();
   resetSceneTransitionDedupe();
   resetInteractionEndDedupState();

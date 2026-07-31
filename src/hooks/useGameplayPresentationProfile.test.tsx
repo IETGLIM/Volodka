@@ -13,8 +13,9 @@ import {
 import {
   setFirstReadingCelebrationInterstitialActive,
   setMatrixQuoteInterstitialActive,
+  setPoemRevealInterstitialActive,
 } from '@/engine/presentation/cinematicInterstitialPresentation';
-import { setPoemReadingCutsceneUiActive } from '@/engine/poemReading/poemReadingOrchestrator';
+import { resetPoemRevealSession } from '@/engine/poemReveal/poemRevealOrchestrator';
 import {
   isExplorationHudProfile,
   isMotionFxProfile,
@@ -50,7 +51,8 @@ function resetUiPhase(): void {
   ui.closeDiegeticNarrative();
   setMatrixQuoteInterstitialActive(false);
   setFirstReadingCelebrationInterstitialActive(false);
-  setPoemReadingCutsceneUiActive(null);
+  setPoemRevealInterstitialActive(false);
+  resetPoemRevealSession();
 }
 
 describe('useGameplayPresentationProfile', () => {
@@ -112,7 +114,7 @@ describe('useGameplayPresentationProfile', () => {
   });
 
   it('returns narrative during poem reading cutscene', () => {
-    setPoemReadingCutsceneUiActive('poem_1');
+    setPoemRevealInterstitialActive(true);
     const { result } = renderHook(() => useGameplayPresentationProfile());
     expect(result.current).toBe('narrative');
   });

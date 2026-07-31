@@ -9,6 +9,7 @@ import {
 import { useGameStore } from '@/store/gameStore';
 import { readGamePhase } from '@/shared/gamePhase';
 import { eventBus } from '@/engine/EventBus';
+import { isPoemRevealBusy } from '@/engine/poemReveal/poemRevealOrchestrator';
 import { abortPoemReadingIfPending } from '@/engine/poemReading/poemReadingOrchestrator';
 import { withHmrCleanup } from '@/shared/dev/hmrDispose';
 import { getActQuote } from '@/engine/GuidedStoryManager';
@@ -175,6 +176,8 @@ export function usePanelCoordinator({
     const pending = pendingQuestCompletionPresentationRef.current;
     if (!pending) return;
     if (isCompletionFlowBusy()) return;
+    // Wait for first-collect poem fragment reveal so celebration doesn't stack.
+    if (isPoemRevealBusy()) return;
 
     const state = useGameStore.getState();
     if (
@@ -338,6 +341,12 @@ export function usePanelCoordinator({
           flushPendingQuestCompletionPresentationStableRef.current();
         }
       }
+    });
+  }, []);
+
+  useEffect(() => {
+    return eventBus.on('poem:discovery_reveal_end', () => {
+      flushPendingQuestCompletionPresentationStableRef.current();
     });
   }, []);
 

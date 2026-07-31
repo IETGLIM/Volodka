@@ -1,12 +1,14 @@
 /* ─── Act I — «Первое чтение» AAA celebration (single overlay) ───
- * Replaces stacked matrix quote + quest-complete dialog for the wake poem beat. */
+ * Poem excerpt typewriter + rewards — matrix quote is a kicker only. */
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
+  FIRST_READING_POEM_ID,
   prepareFirstReadingCelebrationContent,
   type FirstReadingCelebrationContent,
 } from '@/engine/quest/firstReadingCelebrationContent';
+import { hasSeenPoemDiscoveryThisSession } from '@/engine/poemDiscovery/poemDiscoveryRevealOrchestrator';
 import { useTypewriter } from '@/hooks/useTypewriter';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
@@ -15,31 +17,39 @@ type Phase = 'quote' | 'complete';
 
 type ViewProps = FirstReadingCelebrationContent & {
   onDismiss: () => void;
+  /** Skip poem typewriter when discovery reveal already played this session. */
+  skipExcerptTypewriter?: boolean;
 };
 
 const EXIT_DURATION_S = 0.45;
-const TYPEWRITER_MS_PER_CHAR = 32;
-const AUTO_ADVANCE_PADDING_MS = 1500;
-const AUTO_ADVANCE_MAX_MS = 5000;
+const TYPEWRITER_MS_PER_CHAR = 28;
+const AUTO_ADVANCE_PADDING_MS = 1600;
+const AUTO_ADVANCE_MAX_MS = 6000;
 const THEME_COLOR = '#00ffee';
 
 export function FirstReadingCelebrationView({
   quoteText,
+  excerptText,
+  excerptLines,
+  isFragment,
   poemData,
+  combatCue,
   rewardSummary,
   bonusXp,
   bonusCredits,
   onDismiss,
+  skipExcerptTypewriter = false,
 }: ViewProps) {
   const reducedMotion = useEffectiveReducedMotion();
-  const [phase, setPhase] = useState<Phase>('quote');
+  const [phase, setPhase] = useState<Phase>(skipExcerptTypewriter ? 'complete' : 'quote');
   const [visible, setVisible] = useState(true);
   const continueRef = useRef<HTMLButtonElement>(null);
   const phaseRef = useRef(phase);
   phaseRef.current = phase;
 
-  const typeSpeed = reducedMotion ? 0 : TYPEWRITER_MS_PER_CHAR;
-  const { displayed, done, skip } = useTypewriter(quoteText, typeSpeed);
+  const typeSpeed = reducedMotion || skipExcerptTypewriter ? 0 : TYPEWRITER_MS_PER_CHAR;
+  const bodyText = excerptText || quoteText;
+  const { displayed, done, skip } = useTypewriter(bodyText, typeSpeed);
 
   const advanceFromQuote = useCallback(() => {
     if (phaseRef.current !== 'quote') return;
@@ -58,8 +68,8 @@ export function FirstReadingCelebrationView({
   }, [advanceFromQuote, finish]);
 
   useEffect(() => {
-    if (reducedMotion && quoteText) skip();
-  }, [reducedMotion, quoteText, skip]);
+    if ((reducedMotion || skipExcerptTypewriter) && bodyText) skip();
+  }, [reducedMotion, skipExcerptTypewriter, bodyText, skip]);
 
   useEffect(() => {
     if (phase !== 'quote' || !done || reducedMotion) return;
@@ -117,8 +127,8 @@ export function FirstReadingCelebrationView({
   }, [onDismiss]);
 
   const poemLines = useMemo(
-    () => poemData?.lines.slice(0, 3) ?? [],
-    [poemData],
+    () => (excerptLines.length > 0 ? excerptLines : poemData?.lines.slice(0, 4) ?? []),
+    [excerptLines, poemData],
   );
 
   const exitDuration = reducedMotion ? 0 : EXIT_DURATION_S;
@@ -160,26 +170,60 @@ export function FirstReadingCelebrationView({
                 aria-atomic="true"
               >
                 <p
-                  className="mb-3 text-xs font-mono tracking-[0.35em] uppercase"
+                  className="mb-2 text-xs font-mono tracking-[0.35em] uppercase"
                   style={{ color: `${THEME_COLOR}aa` }}
                 >
                   Акт I · Первое чтение
                 </p>
+                {poemData ? (
+                  <p className="mb-3 text-sm font-serif text-slate-200/90">{poemData.title}</p>
+                ) : null}
+                <div className="mb-4 flex flex-wrap items-center justify-center gap-2">
+                  <span
+                    className="text-[10px] font-mono tracking-widest uppercase px-2 py-0.5 rounded border"
+                    style={{
+                      color: isFragment ? '#fbbf24' : '#66ffaa',
+                      borderColor: isFragment
+                        ? 'rgba(251,191,36,0.35)'
+                        : 'rgba(102,255,170,0.35)',
+                      background: isFragment
+                        ? 'rgba(120,60,10,0.25)'
+                        : 'rgba(0,40,24,0.35)',
+                    }}
+                  >
+                    {isFragment ? 'Фрагмент' : 'Полный текст'}
+                  </span>
+                  {combatCue ? (
+                    <span className="text-[10px] font-mono tracking-wide px-2 py-0.5 rounded border border-cyan-500/30 text-cyan-200/90 bg-cyan-950/40">
+                      {combatCue}
+                    </span>
+                  ) : null}
+                </div>
                 <p
-                  className="text-xl md:text-2xl font-mono leading-relaxed"
+                  className="text-xl md:text-2xl font-serif leading-relaxed whitespace-pre-line"
                   style={{
                     color: THEME_COLOR,
                     textShadow: `0 0 24px ${THEME_COLOR}55`,
                   }}
+                  data-testid="first-reading-excerpt"
                 >
                   {displayed}
                   {!done && !reducedMotion ? (
-                    // Blink animation defined globally in enhancements.css
                     <span className="typewriter-cursor" aria-hidden>
                       |
                     </span>
                   ) : null}
                 </p>
+                {isFragment && done ? (
+                  <p className="mt-4 text-[10px] font-mono tracking-widest text-slate-500">
+                    Полный текст — в сборнике 📖
+                  </p>
+                ) : null}
+                {quoteText ? (
+                  <p className="mt-5 text-[11px] font-mono tracking-wide text-slate-500/90 italic">
+                    {quoteText}
+                  </p>
+                ) : null}
                 {done ? (
                   <p className="mt-6 text-[10px] font-mono tracking-widest text-slate-500">
                     нажмите, чтобы увидеть награды
@@ -229,15 +273,20 @@ export function FirstReadingCelebrationView({
                         📖
                       </span>
                       <span className="text-sm font-semibold text-amber-200">{poemData.title}</span>
-                      <span className="text-[10px] font-mono text-amber-400/70 ml-auto">в сборнике</span>
+                      <span className="text-[10px] font-mono text-amber-400/70 ml-auto">
+                        {isFragment ? 'фрагмент' : 'в сборнике'}
+                      </span>
                     </div>
                     <div className="space-y-1">
                       {poemLines.map((line) => (
-                        <p key={line} className="text-sm font-mono italic text-amber-100/90 leading-snug">
+                        <p key={line} className="text-sm font-serif italic text-amber-100/90 leading-snug">
                           {line}
                         </p>
                       ))}
                     </div>
+                    {combatCue ? (
+                      <p className="mt-2 text-[10px] font-mono text-cyan-300/80">{combatCue}</p>
+                    ) : null}
                   </div>
                 ) : (
                   <p className="mb-4 text-xs font-mono text-amber-200/90">
@@ -291,11 +340,19 @@ export function FirstReadingCelebration({ onDismiss }: ContainerProps) {
     }
   }, []);
 
+  const skipExcerptTypewriter = hasSeenPoemDiscoveryThisSession(FIRST_READING_POEM_ID);
+
   useEffect(() => {
     if (!content) onDismiss();
   }, [content, onDismiss]);
 
   if (!content) return null;
 
-  return <FirstReadingCelebrationView {...content} onDismiss={onDismiss} />;
+  return (
+    <FirstReadingCelebrationView
+      {...content}
+      skipExcerptTypewriter={skipExcerptTypewriter}
+      onDismiss={onDismiss}
+    />
+  );
 }

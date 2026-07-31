@@ -3,14 +3,16 @@ import {
   isCinematicInterstitialActive,
   setFirstReadingCelebrationInterstitialActive,
   setMatrixQuoteInterstitialActive,
+  setPoemDiscoveryRevealInterstitialActive,
+  setPoemRevealInterstitialActive,
 } from '@/engine/presentation/cinematicInterstitialPresentation';
-import { setPoemReadingCutsceneUiActive } from '@/engine/poemReading/poemReadingOrchestrator';
 
 describe('cinematicInterstitialPresentation', () => {
   beforeEach(() => {
     setMatrixQuoteInterstitialActive(false);
     setFirstReadingCelebrationInterstitialActive(false);
-    setPoemReadingCutsceneUiActive(null);
+    setPoemDiscoveryRevealInterstitialActive(false);
+    setPoemRevealInterstitialActive(false);
   });
 
   it('is inactive by default', () => {
@@ -27,8 +29,8 @@ describe('cinematicInterstitialPresentation', () => {
     expect(isCinematicInterstitialActive()).toBe(true);
   });
 
-  it('tracks poem reading cutscene UI', () => {
-    setPoemReadingCutsceneUiActive('poem_1');
+  it('tracks unified poem reveal interstitial', () => {
+    setPoemRevealInterstitialActive(true);
     expect(isCinematicInterstitialActive()).toBe(true);
   });
 });

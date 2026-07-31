@@ -1,4 +1,10 @@
 import type { StoryNode } from '@/shared/types/game';
+import { POEMS } from '@/data/poems';
+import { formatTerminalPoemFrame } from '@/shared/poem/poemExcerpt';
+
+const TERMINAL_BOOT_POEM_ID = 'poem_2' as const;
+const terminalBootPoem = POEMS.find((p) => p.id === TERMINAL_BOOT_POEM_ID);
+const terminalBootFrame = formatTerminalPoemFrame(terminalBootPoem?.lines ?? []);
 
 /**
  * Act 1 extended beats — morning prologue from wake through leaving home.
@@ -8,7 +14,8 @@ export const STORY_NODES_ACT1_EXTENDED: Record<string, StoryNode> = {
   /* ── Terminal boot poem — center monitor after desk examination ──
      Cyberpunk terminal boot sequence that reveals poem_2 ("Смерть есть
      лишь начало") on the monitor. Completes the first_reading quest
-     when the player chooses to read the poem. */
+     when the player chooses to read the poem.
+     Verse lines come from getPoemExcerpt via formatTerminalPoemFrame. */
   terminal_boot_poem: {
     id: 'terminal_boot_poem',
     text: [
@@ -19,14 +26,7 @@ export const STORY_NODES_ACT1_EXTENDED: Record<string, StoryNode> = {
       '> [WARN] Unauthorized process: /dev/poetry/fragment_002',
       '> [OK] Decrypting...',
       '',
-      '┌──────────────────────────────────────────────┐',
-      '│                                              │',
-      '│   Смерть есть лишь начало.                  │',
-      '│   Верить бы в это хотелось.                 │',
-      '│   Как же меня всё достало.                  │',
-      '│   А ведь многое делалось.                   │',
-      '│                                              │',
-      '└──────────────────────────────────────────────┘',
+      terminalBootFrame,
       '',
       'На среднем мониторе появляются строки — не лог, не код. Стихи. Четыре строки мерцают зелёным, будто кто-то набрал их в три часа ночи и ушёл, не нажав «сохранить». Скрипт называется «fragment_002.sh». Фрагмент. Чей-то обрывок, оставленный в системе, как тень в пустом коридоре.',
     ].join('\n'),

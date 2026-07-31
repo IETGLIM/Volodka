@@ -1198,6 +1198,35 @@ From `config/performanceBudgets.json` + build gate:
 
 
 
+## Tick 50 (this session)
+
+| Change | Why |
+|--------|-----|
+| Unified `poemRevealOrchestrator` + `PoemRevealHost`/`PoemRevealShell` (modes: discovery / power_ritual / explicit_read, FIFO) | One sequential poem UI — kill parallel discovery/cutscene mounts |
+| Legacy `PoemDiscoveryReveal` / `PoemReadingCutscene` → re-export host | Consolidate, don't add a 6th path |
+| `getPoemCombatExcerptLines` on combat ability cards/tooltips | Same excerpt SoT; keep combat pace |
+| `terminal_boot_poem` frame from `formatTerminalPoemFrame` | No hardcoded 4-line verse copy |
+| FirstReadingCelebration stays quest overlay; waits `isPoemRevealBusy`, uses `getPoemExcerpt` | Shared data + sequential gate without inventing 2nd typography |
+| ARCHITECTURE.md poem reveal section | Docs match pipeline |
+
+---
+
+
+
+## Tick 49 (this session)
+
+| Change | Why |
+|--------|-----|
+| Shared `getPoemExcerpt` / `formatPoemExcerptText` (4 non-empty lines + fragment flag) | Single source for discovery + first-reading |
+| `PoemDiscoveryReveal` + orchestrator on `poem:collected` (session gate, CinematicShell typewriter) | Discovery was toast-only — no verse |
+| FirstReadingCelebration typewrites 4 poem lines; matrix quote = kicker; fragment + combat cue | Was quote-only typewriter + 3 static lines |
+| Celebration waits for discovery end; skips re-typewriter if reveal already seen | Avoid stacked fragment beats on poem_2 |
+| Bookshelf / any `collectPoem` path shares the same reveal | Unify fragment beat |
+
+---
+
+
+
 ## Tick 48 (this session)
 
 | Change | Why |
