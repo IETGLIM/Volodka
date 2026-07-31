@@ -518,41 +518,9 @@ export const ACT_CHAPTER_TITLES: Record<number, string> = Object.fromEntries(
  * GOLDEN_PATH_BRANCH_HINTS — fallback hints where nodes lack `guidanceHint`.
  * Prefer authoring `guidanceHint` on the story node; delete table rows when
  * the node annotation exists (deriveBranchHints merges node hints over this).
- * Wave 7: rows removed wherever STORY_NODES[id].guidanceHint is set.
+ * Post Wave 7 follow-up: all former table-only rows authored onto nodes — table empty.
  */
-export const GOLDEN_PATH_BRANCH_HINTS: Record<string, string> = {
-  room_table: "Осмотри стол — затем выйди в коридор к Солныш.",
-  corridor_door: "Поздоровайся с Солныш — она ждёт у зеркала.",
-  solnysh_corridor_talk: "Успокой Алину — ей нужна поддержка лучшего друга.",
-  solnysh_door: "Зайди в комнату с коврами — там кофе, мольберт и Умка.",
-  solnysh_room_talk: "Выслушай Солныш — или предложи вино на крыше, если нашёл бутылку.",
-  solnysh_roof_arrival: "Побудь рядом — иногда молчание важнее слов.",
-  solnysh_relocation_talk: "Поддержи их решение о переезде — ты для неё якорь.",
-  kitchen_window: "Иди в кафе — дорога начинается с первого шага.",
-  go_to_cafe: "Выйди на улицу и зайди в «Синюю яму» — город ещё не сказал всё.",
-  street_bench: "Огляди улицу — в переулке кто-то ждёт именно тебя.",
-  cafe_barista: "Закажи обычный кофе — эхо чипа откроет путь в гильдию.",
-  street_bench_view: "Подойди к незнакомке — Виктория знает правду.",
-  maria_curious: "Возьми чип данных — в нём скрыто стихотворение.",
-  cafe_enter: "Поговори с баристой — он знает больше, чем говорит.",
-  office_alexander: "Помоги Александру — инцидент касается всех.",
-  start_diagnosis: "Расшифруй код — стихи скрыты в самой структуре.",
-  colleague_persuasion_line: "Попроси помочь с доступом к Хранилищу.",
-  maria_introduction: "Прислушайся к её словам — поэзия — не то, чем кажется.",
-  park_explore_mode: "Осторожно очисти надпись на камне — или ищи Зарему в парке.",
-  act3_maria_mystery: "Поверь в её человечность — она больше, чем код.",
-  act3_maria_truth_accepted: "Используй союз с Викторией — защити Хранилище вместе с ней.",
-  act3_albert_loyalty: "Прости ему страх — слабость часть силы.",
-  act3_albert_choice: "Поддержи Альберта — верность возвращается.",
-  act3_guild_counterattack: "Укрой членов Сети — спасай людей. (Чекистам: лес на Зорге.)",
-  act3_zarema_farewell: "Зарему увели — запомни её слова.",
-  chk_tolpa_poem: "Запиши «Портвейн у костра» — стих работает только у огня ЧК.",
-  chk_act3_sanctuary: "Договорись с Ру — лес примет беглецов Сети.",
-  vera_inspiration: "Вспомни детские мечты — звёзды ждут тех, кто дерзает.",
-  chk_act4_stalker_briefing: "Получи маршрут Сталкера — тихий путь к гильдии.",
-  chk_act4_broadcast_watch: "После вещания — загляни к чекистам у костра.",
-  chk_act5_campfire_dawn: "После рассвета — зайди к Ру у костра за финальное слово ЧК.",
-};
+export const GOLDEN_PATH_BRANCH_HINTS: Record<string, string> = {};
 
 /**
  * STORY_NODE_GUIDANCE — HUD objective text for StoryGuidanceHUD (ROADMAP §2 / Sprint 4).

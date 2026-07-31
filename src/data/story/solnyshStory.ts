@@ -5,6 +5,7 @@ export const STORY_NODES_SOLNYSH: Record<string, StoryNode> = {
   solnysh_door: {
     id: 'solnysh_door',
     text: 'Ты входишь в комнату Солныш и Лёни. Пахнет кофе, маслом и тёплыми коврами. На мольберте — недописанный макет, у окна — жаровня для зёрен. Умка сразу бросается к тебе, виляя хвостиком-пушком.',
+    guidanceHint: 'Зайди в комнату с коврами — там кофе, мольберт и Умка.',
     speaker: 'narrator',
     sceneId: 'solnysh_room',
     choices: [
@@ -33,6 +34,7 @@ export const STORY_NODES_SOLNYSH: Record<string, StoryNode> = {
   solnysh_room_talk: {
     id: 'solnysh_room_talk',
     text: 'Солныш откладывает кисть и смотрит на тебя голубыми глазами. «Володька… Ты знаешь, иногда мне кажется, что город съедает всех нас. Но когда ты рядом — легче дышать.»',
+    guidanceHint: 'Выслушай Солныш — или предложи вино на крыше, если нашёл бутылку.',
     speaker: 'Солныш',
     sceneId: 'solnysh_room',
     choices: [
@@ -118,6 +120,7 @@ export const STORY_NODES_SOLNYSH: Record<string, StoryNode> = {
   solnysh_roof_arrival: {
     id: 'solnysh_roof_arrival',
     text: 'Вы на крыше. Город внизу — море огней. Ветер, вино, и мгновение тишины между двумя людьми, которые знают друг друга с детства.',
+    guidanceHint: 'Побудь рядом — иногда молчание важнее слов.',
     speaker: 'Солныш',
     sceneId: 'rooftop_edge',
     choices: [
@@ -156,6 +159,7 @@ export const STORY_NODES_SOLNYSH: Record<string, StoryNode> = {
   solnysh_relocation_talk: {
     id: 'solnysh_relocation_talk',
     text: '«Лёня получил предложение — обжарщик в другой стране. Я боюсь. Но и хочу попробовать. Если ты скажешь, что мы не слабы — может, решимся.»',
+    guidanceHint: 'Поддержи их решение о переезде — ты для неё якорь.',
     speaker: 'Солныш',
     sceneId: 'solnysh_room',
     effects: [{ type: 'triggerQuest', questId: 'solnysh_relocation' }],

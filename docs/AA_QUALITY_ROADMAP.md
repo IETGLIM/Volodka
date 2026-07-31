@@ -1166,11 +1166,11 @@ From `config/performanceBudgets.json` + build gate:
 
 ## Next 3 actions
 
-1. MeshPhysical thin hub gap: `home_evening` window/glass accents (still off selective wet list; kitchen hub for banking leave).
+1. MeshPhysical thin hub gap: remaining selective wet accents if any hub still off the list.
 
-2. Mixamo ↔ Quaternius full bone remap (hip filter + talk fallback still interim).
+2. Mixamo finger / slot fidelity beyond alias remap (full retarget pipeline or per-character Mixamo downloads).
 
-3. expansionQuestStory / act6–7 expanded next-only chains (leave-scan); quiet-hour hub↔vignette loops are intentional — do not “fix” into explore hubs.
+3. Content/AI-gen prose volume — architecture waves are largely done; remaining gaps are content.
 
 ---
 
@@ -1630,4 +1630,24 @@ From `config/performanceBudgets.json` + build gate:
 
 
 - Full Quaternius↔Mixamo bone remap still incomplete; hip filter + talk fallback from Tick 3 remain.
+
+
+
+---
+
+
+
+## Tick 25 (architecture follow-up)
+
+
+
+| Change | Why |
+|--------|-----|
+| Authored `guidanceHint` on 31 former BRANCH_HINTS-only nodes; emptied `GOLDEN_PATH_BRANCH_HINTS` | guidanceHint owns HUD copy |
+| `remapClipTracksToSkeleton` + Mixamo/KayKit→Quaternius aliases; strip `Body` root translation; dotted-bone split | Incremental retarget step (hand.l / Rig_Medium / Mixamo classic) |
+| Leave-scan reconfirm | No new soft-locks; quiet-hour loops intentional |
+
+### Mixamo / retarget debt (updated)
+
+- Alias remap + Body/Hips root strip shipped; finger/slot fidelity and full Mixamo-download pipeline still interim.
 

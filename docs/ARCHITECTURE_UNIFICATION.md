@@ -2,7 +2,7 @@
 
 > Sequential waves toward **whole-codebase architectural uniformity**.
 > Companion to [`ARCHITECTURE.md`](../ARCHITECTURE.md) Target Uniform Architecture.
-> Last updated: 2026-07-31 (Waves 6–7 done).
+> Last updated: 2026-07-31 (BRANCH_HINTS emptied; Mixamo↔Quaternius remap step).
 
 ## North star
 
@@ -70,12 +70,19 @@ Poem reveal FIFO is the reference exclusive-UI pattern — do not undo it.
 | **CI story nodes** | Validator reads via `getCiParityStoryNodes()` from `contentTruthManifest` (eager parity; runtime stays lazy packs) |
 | **Docs** | `ARCHITECTURE.md` migration table + uniformity bumped |
 
-## Inventory of remaining inconsistencies (post Wave 7)
+## Follow-up (post Wave 7) — DONE this session
 
-1. Content/AI-gen edges and Mixamo↔Quaternius bone remap interim — not pattern unification.
-2. Optional: author `guidanceHint` onto the 31 remaining `BRANCH_HINTS`-only nodes, then delete those rows.
-3. Optional expanded-pack mid-resume polish if leave-scan finds new soft-locks.
-4. Dual registry (eager CI vs lazy runtime) stays by design — parity test + `getCiParityStoryNodes` are the bridge.
+| Cluster | Action |
+|---------|--------|
+| **BRANCH_HINTS → nodes** | Authored `guidanceHint` on all 31 former table-only nodes (act1/3/4 JSON, solnysh, CHK, park hub prose); `GOLDEN_PATH_BRANCH_HINTS` emptied |
+| **Mixamo↔Quaternius remap** | `remapClipTracksToSkeleton` + alias map (Mixamo classic + KayKit `hand.l` / `Rig_Medium`); strip Quaternius `Body` root translation; dotted-bone track split |
+| **Leave-scan** | Reconfirmed: no new true soft-locks; quiet-hour hub↔vignette loops intentional |
+
+## Inventory of remaining inconsistencies
+
+1. Content/AI-gen edges and remaining Mixamo finger/slot fidelity — not pattern unification.
+2. Dual registry (eager CI vs lazy runtime) stays by design — parity test + `getCiParityStoryNodes` are the bridge.
+3. MeshPhysical thin-hub polish / GLB mass re-export — asset/content debt, not architecture waves.
 
 ## Honest uniformity estimate
 
@@ -87,6 +94,7 @@ Poem reveal FIFO is the reference exclusive-UI pattern — do not undo it.
 | Wave 3 done + Wave 4 PostFX policy | ~72% |
 | Wave 4 + Wave 5 hygiene | ~80% |
 | **Waves 6–7 done** | **~90%** |
+| **Post Wave 7 follow-up (hints + remap step)** | **~92%** |
 | Theoretical ceiling | never 100% — content/AI gen edges remain |
 
 Estimate is architectural pattern coverage, not line-count rewrite.

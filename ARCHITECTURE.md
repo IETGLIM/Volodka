@@ -88,7 +88,7 @@ Prefer **delete or re-export shim** over leaving zombie parallel components.
 | Golden path: markers cover spine; table = parity fallback | ✅ Wave 3 |
 | Expand story-defined hubs (cafe/office/home prose → act JSON) | ✅ Wave 3 |
 | Story cutscene playback on timeline orchestrator | ✅ Wave 3 (`useCutsceneController` → `cutsceneDefToTimeline`) |
-| Full goldenPath.ts table retirement when markers complete | ✅ spine parity-only; BRANCH_HINTS = fallback-only (31 rows, Wave 7) |
+| Full goldenPath.ts table retirement when markers complete | ✅ spine parity-only; BRANCH_HINTS emptied (hints on nodes) |
 | Hero PostFX lite on low (forceFullPostFx ignored at low) | ✅ Wave 4 |
 | Settings preset detail strings ↔ qualityFeatureGates; drop English `label` | ✅ Wave 4 |
 | MeshPhysical / wet / CRT via `allowsHeavyGfxFeature` (+ home_evening / hero facades) | ✅ Wave 4 |
@@ -753,12 +753,12 @@ XSS: `sanitizePlainText` на основном пути рендера (`narrati
 | PostFX on low hero scenes | ✅ low always lite (`resolveSceneRenderingPipeline`) |
 | GameOrchestrator priorities | разнесены по файлам |
 | npcRegistry baseline | устаревшие id в тестах |
-| Mixamo ↔ Quaternius bone remap | ⚠️ hip filter + talk fallback interim |
+| Mixamo ↔ Quaternius bone remap | ⚠️ alias remap + Body/Hips root strip shipped; finger/slot fidelity still interim |
 | act7 mirror flags | только в structure JSON — сканер обновлён |
 | Cinematic registries | ✅ converters + story cutscene playback via timeline orchestrator |
 | Dialogue/quest busy → interstitial fold | ✅ quest UI in interstitial; dialogue stays store-owned |
 | Explore hub ID set | ✅ `STORY_DEFINED` prose + `ACT_PACK_STRUCTURE` auto-gen skip |
-| Golden path sources | ✅ derive + parity fallback; guidanceHint owns copy; BRANCH_HINTS = 31 fallbacks (Wave 7) |
+| Golden path sources | ✅ derive + parity fallback; guidanceHint owns copy; BRANCH_HINTS empty |
 | Content truth dual registry (CI eager vs runtime lazy) | ✅ parity + `getCiParityStoryNodes`; validators on manifest resolver |
 
 AA visual/content waves и tick log — [`docs/AA_QUALITY_ROADMAP.md`](./docs/AA_QUALITY_ROADMAP.md).

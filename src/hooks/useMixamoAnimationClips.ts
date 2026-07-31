@@ -12,7 +12,7 @@ import {
   GltfPreloadPriority,
   scheduleGltfPreload,
 } from '@/engine/assets/gltfPreloadScheduler';
-import { filterClipTracksToExistingNodes, stripRootTranslationTracks } from '@/engine/animation/filterClipTracks';
+import { filterClipTracksToExistingNodes, remapClipTracksToSkeleton, stripRootTranslationTracks } from '@/engine/animation/filterClipTracks';
 
 export interface MixamoClipBinding {
   clipId: MixamoClipId;
@@ -136,13 +136,13 @@ export function useMixamoAnimationClips(
           if (cancelled) return;
           const clip = gltf.animations[0];
           if (!clip) return;
-          // Filter out tracks targeting bones that don't exist in the
-          // destination rig (Mixamo clips reference handl/handr/handslotl/
-          // handslotr/Rig_Medium which don't exist in the Quaternius
-          // player skeleton). Silences THREE.PropertyBinding warnings and
-          // avoids wasted per-frame binding-resolution work.
+          // Remap Mixamo/KayKit bone names onto Quaternius, then drop orphans.
+          // Strip root translation so capsule/patrol owns locomotion (Body/Hips).
           const filtered = stripRootTranslationTracks(
-            filterClipTracksToExistingNodes(clip, root),
+            filterClipTracksToExistingNodes(
+              remapClipTracksToSkeleton(clip, root),
+              root,
+            ),
           );
           const renamed = filtered.clone();
           renamed.name = binding.canonicalName;
@@ -180,9 +180,12 @@ export function useMixamoAnimationClips(
                 loadDeferredAt(index + 1);
                 return;
               }
-              // Filter orphan tracks (see criticalBindings comment above).
+              // Remap Mixamo/KayKit → Quaternius, drop orphans, strip root translation.
               const filtered = stripRootTranslationTracks(
-            filterClipTracksToExistingNodes(clip, root),
+            filterClipTracksToExistingNodes(
+              remapClipTracksToSkeleton(clip, root),
+              root,
+            ),
           );
               const renamed = filtered.clone();
               renamed.name = binding.canonicalName;

@@ -1,6 +1,101 @@
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
-import { stripRootTranslationTracks } from './filterClipTracks';
+import {
+  filterClipTracksToExistingNodes,
+  remapClipTracksToSkeleton,
+  stripRootTranslationTracks,
+} from './filterClipTracks';
+import {
+  normalizeBoneAliasKey,
+  resolveDestinationBoneName,
+} from './mixamoQuaterniusBoneMap';
+
+function bone(name: string): THREE.Bone {
+  const b = new THREE.Bone();
+  b.name = name;
+  return b;
+}
+
+function quaterniusRoot(): THREE.Object3D {
+  const root = new THREE.Object3D();
+  root.name = 'Scene';
+  for (const name of [
+    'CharacterArmature',
+    'Hips',
+    'Body',
+    'Wrist.L',
+    'Wrist.R',
+    'UpperArm.L',
+    'UpperArm.R',
+  ]) {
+    root.add(bone(name));
+  }
+  return root;
+}
+
+describe('mixamoQuaterniusBoneMap', () => {
+  it('normalizes Mixamo prefixes', () => {
+    expect(normalizeBoneAliasKey('mixamorig:LeftArm')).toBe('leftarm');
+    expect(normalizeBoneAliasKey('mixamorigHips')).toBe('hips');
+    expect(normalizeBoneAliasKey('hand.l')).toBe('hand.l');
+  });
+
+  it('resolves Mixamo and KayKit aliases onto Quaternius bones', () => {
+    const dest = new Set(['Hips', 'UpperArm.L', 'Wrist.L', 'CharacterArmature']);
+    expect(resolveDestinationBoneName('mixamorig:LeftArm', dest)).toBe('UpperArm.L');
+    expect(resolveDestinationBoneName('hand.l', dest)).toBe('Wrist.L');
+    expect(resolveDestinationBoneName('Rig_Medium', dest)).toBe('CharacterArmature');
+    expect(resolveDestinationBoneName('UnknownBone', dest)).toBeNull();
+  });
+});
+
+describe('remapClipTracksToSkeleton', () => {
+  it('remaps KayKit hand.l onto Wrist.L when Wrist has no conflicting track', () => {
+    const root = quaterniusRoot();
+    const hand = new THREE.QuaternionKeyframeTrack(
+      'hand.l.quaternion',
+      [0, 1],
+      [0, 0, 0, 1, 0, 0, 0, 1],
+    );
+    const clip = new THREE.AnimationClip('sleeping', 1, [hand]);
+    const remapped = remapClipTracksToSkeleton(clip, root);
+    expect(remapped.tracks.map((t) => t.name)).toEqual(['Wrist.L.quaternion']);
+  });
+
+  it('does not overwrite an existing Wrist.L track', () => {
+    const root = quaterniusRoot();
+    const wrist = new THREE.QuaternionKeyframeTrack(
+      'Wrist.L.quaternion',
+      [0, 1],
+      [0, 0, 0, 1, 0, 0, 0, 1],
+    );
+    const hand = new THREE.QuaternionKeyframeTrack(
+      'hand.l.quaternion',
+      [0, 1],
+      [0, 0.1, 0, 0.9, 0, 0.1, 0, 0.9],
+    );
+    const clip = new THREE.AnimationClip('sleeping', 1, [wrist, hand]);
+    const remapped = remapClipTracksToSkeleton(clip, root);
+    expect(remapped.tracks.map((t) => t.name)).toEqual([
+      'Wrist.L.quaternion',
+      'hand.l.quaternion',
+    ]);
+    const filtered = filterClipTracksToExistingNodes(remapped, root);
+    expect(filtered.tracks.map((t) => t.name)).toEqual(['Wrist.L.quaternion']);
+  });
+
+  it('remaps classic Mixamo LeftArm onto UpperArm.L', () => {
+    const root = quaterniusRoot();
+    const arm = new THREE.QuaternionKeyframeTrack(
+      'mixamorig:LeftArm.quaternion',
+      [0, 1],
+      [0, 0, 0, 1, 0, 0, 0, 1],
+    );
+    const clip = new THREE.AnimationClip('talking', 1, [arm]);
+    const remapped = remapClipTracksToSkeleton(clip, root);
+    expect(remapped.tracks[0]?.name).toBe('UpperArm.L.quaternion');
+  });
+});
 
 describe('stripRootTranslationTracks', () => {
   it('removes Hips.position while keeping Hips.quaternion', () => {
@@ -21,6 +116,18 @@ describe('stripRootTranslationTracks', () => {
       'Hips.quaternion',
       'LeftArm.quaternion',
     ]);
+  });
+
+  it('strips Quaternius Body.position root translation', () => {
+    const pos = new THREE.VectorKeyframeTrack('Body.position', [0, 1], [0, 0, 0, 0.2, 0, 0]);
+    const quat = new THREE.QuaternionKeyframeTrack(
+      'Body.quaternion',
+      [0, 1],
+      [0, 0, 0, 1, 0, 0, 0, 1],
+    );
+    const clip = new THREE.AnimationClip('idle', 1, [pos, quat]);
+    const stripped = stripRootTranslationTracks(clip);
+    expect(stripped.tracks.map((t) => t.name)).toEqual(['Body.quaternion']);
   });
 
   it('returns same clip when no root translation present', () => {
