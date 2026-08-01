@@ -27,6 +27,10 @@ const NOTIFICATION_TYPE_TO_TOAST = {
   poem: 'poem',
   quest: 'quest',
   crafting: 'crafting',
+  achievement: 'achievement',
+  lore: 'lore',
+  system: 'system',
+  warning: 'warning',
 } as const satisfies Record<NotificationType, ToastType>;
 
 export function mapNotificationTypeToToast(type: NotificationType): ToastType {
@@ -149,6 +153,35 @@ export function buildSkillToastMessage(skill: TrainablePlayerSkill, delta: numbe
   const name = SKILL_DISPLAY_NAMES[skill] ?? skill;
   const sign = delta > 0 ? '+' : '';
   return `Навык: ${name} ${sign}${delta}`;
+}
+
+export function buildAchievementToastMessage(title: string, message?: string): string {
+  return message ? `★ ${title}: ${message}` : `★ ${title}`;
+}
+
+export function buildLoreToastMessage(loreTitle: string): string {
+  return `◆ Лор: ${loreTitle}`;
+}
+
+export function buildSystemToastMessage(message: string): string {
+  return message;
+}
+
+export function buildWarningToastMessage(message: string): string {
+  return `▲ ${message}`;
+}
+
+export function buildQuestUpdateToastMessage(title: string, message: string): string {
+  return `${title}: ${message}`;
+}
+
+export function buildPoemDiscoveredToastMessage(poemTitle: string): string {
+  return `✒ Стих найден: ${poemTitle}`;
+}
+
+export function buildKarmaChangeToastMessage(direction: 'up' | 'down', amount: number): string {
+  const sign = direction === 'up' ? '+' : '';
+  return `Карма ${sign}${direction === 'up' ? amount : -amount}`;
 }
 
 export { buildPoemCollectedToastMessage } from '@/shared/notifications/poemCollectedMessage';

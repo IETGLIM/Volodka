@@ -5,6 +5,19 @@ import type { ChoiceCondition } from '../common/conditions';
 import type { StoryEffect } from '../common/effects';
 import type { NarrativeTextVariants, KarmaThresholds } from './narrative';
 
+/** Visual facial expression for speaker portraits. Independent of voice emotion. */
+export type FacialExpression =
+  | 'neutral'
+  | 'happy'
+  | 'sad'
+  | 'angry'
+  | 'surprised'
+  | 'thinking'
+  | 'worried'
+  | 'smirk'
+  | 'determined'
+  | 'fearful';
+
 export interface DialogueChoice {
   readonly text: string;
   readonly next: string | null;
@@ -37,6 +50,8 @@ export interface DialogueNode {
   readonly sceneId?: SceneId;
   /** Directed performance — overrides regex emotion detection */
   readonly emotion?: 'calm' | 'angry' | 'sad' | 'happy' | 'whisper';
+  /** Facial expression shown on the speaker portrait (visual-only, independent of voice emotion). */
+  readonly facialExpression?: FacialExpression;
   readonly voiceLineId?: string;
   readonly cameraShot?: 'close' | 'medium' | 'wide';
   /** Thought IDs that should interject on this node (inner voice lines during dialogue). */

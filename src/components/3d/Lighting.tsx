@@ -13,13 +13,161 @@ import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { resolveSceneRenderingPipeline } from '@/engine/graphics/resolveSceneRenderingPipeline';
 import { SCENE_VISIBILITY } from '@/shared/constants/sceneVisibility';
 import type { SceneId } from '@/shared/types/game';
-import { useRef, useMemo } from 'react';
+import { useRef, useMemo, useCallback } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
+import { useTimeOfDay } from '@/store/selectors/explorationSelectors';
 import * as THREE from 'three';
 
 /** Shadow config constants — tuned to prevent z-fighting/shadow acne */
 const SHADOW_BIAS = -0.002;
 const SHADOW_NORMAL_BIAS = 0.04;
+
+/* ─── Time-of-day keyframe system for outdoor scenes ─── */
+
+interface TimeOfDayKeyframe {
+  hour: number;
+  sunColor: string;
+  sunIntensity: number;
+  sunPosition: [number, number, number];
+  ambientColor: string;
+  ambientIntensity: number;
+  hemiSkyColor: string;
+  hemiGroundColor: string;
+  hemiIntensity: number;
+}
+
+const TIME_OF_DAY_KEYFRAMES: TimeOfDayKeyframe[] = [
+  {
+    hour: 5,
+    sunColor: '#ff8844',
+    sunIntensity: 1.0,
+    sunPosition: [-10, 3, 2],
+    ambientColor: '#886655',
+    ambientIntensity: 0.7,
+    hemiSkyColor: '#ddaa77',
+    hemiGroundColor: '#443322',
+    hemiIntensity: 0.5,
+  },
+  {
+    hour: 8,
+    sunColor: '#ffe8cc',
+    sunIntensity: 1.8,
+    sunPosition: [8, 8, 4],
+    ambientColor: '#998877',
+    ambientIntensity: 1.0,
+    hemiSkyColor: '#aabbdd',
+    hemiGroundColor: '#556644',
+    hemiIntensity: 0.8,
+  },
+  {
+    hour: 12,
+    sunColor: '#ffffff',
+    sunIntensity: 2.5,
+    sunPosition: [0, 14, 2],
+    ambientColor: '#cccccc',
+    ambientIntensity: 1.2,
+    hemiSkyColor: '#88aadd',
+    hemiGroundColor: '#446633',
+    hemiIntensity: 1.0,
+  },
+  {
+    hour: 15,
+    sunColor: '#fff0dd',
+    sunIntensity: 2.0,
+    sunPosition: [-8, 10, 3],
+    ambientColor: '#aa9977',
+    ambientIntensity: 1.0,
+    hemiSkyColor: '#99aacc',
+    hemiGroundColor: '#555544',
+    hemiIntensity: 0.8,
+  },
+  {
+    hour: 19,
+    sunColor: '#ff6622',
+    sunIntensity: 1.4,
+    sunPosition: [-12, 3, -2],
+    ambientColor: '#774433',
+    ambientIntensity: 0.6,
+    hemiSkyColor: '#dd7744',
+    hemiGroundColor: '#332211',
+    hemiIntensity: 0.45,
+  },
+  {
+    hour: 22,
+    sunColor: '#4466aa',
+    sunIntensity: 0.5,
+    sunPosition: [6, 8, -4],
+    ambientColor: '#223344',
+    ambientIntensity: 0.3,
+    hemiSkyColor: '#223355',
+    hemiGroundColor: '#111111',
+    hemiIntensity: 0.3,
+  },
+];
+
+/** Pre-allocate Color objects for keyframe lookups to avoid GC in lerp */
+const KEYFRAME_COLORS = TIME_OF_DAY_KEYFRAMES.map((kf) => ({
+  sun: new THREE.Color(kf.sunColor),
+  ambient: new THREE.Color(kf.ambientColor),
+  hemiSky: new THREE.Color(kf.hemiSkyColor),
+  hemiGround: new THREE.Color(kf.hemiGroundColor),
+}));
+
+/** Scenes that should mute time-of-day sun by 60% (have their own atmospheric accents) */
+const MUTED_TOD_SCENES = new Set(['sleep_dream', 'battle']);
+
+function lerpKeyframes(hour: number) {
+  // Wrap hour into 0–24 range
+  const h = ((hour % 24) + 24) % 24;
+  const kfLen = TIME_OF_DAY_KEYFRAMES.length;
+
+  // Find the two bracketing keyframes
+  let prevIdx = 0;
+  for (let i = 0; i < kfLen; i++) {
+    if (TIME_OF_DAY_KEYFRAMES[i].hour >= h) {
+      prevIdx = (i - 1 + kfLen) % kfLen;
+      break;
+    }
+    prevIdx = i;
+  }
+
+  const a = TIME_OF_DAY_KEYFRAMES[prevIdx];
+  const b = TIME_OF_DAY_KEYFRAMES[(prevIdx + 1) % kfLen];
+  const colorsA = KEYFRAME_COLORS[prevIdx];
+  const colorsB = KEYFRAME_COLORS[(prevIdx + 1) % kfLen];
+
+  // Compute t in [0, 1] between the two keyframes
+  let span = b.hour - a.hour;
+  if (span <= 0) span += 24; // wrap midnight
+  let t = h - a.hour;
+  if (t < 0) t += 24;
+  t = t / span;
+  // Smoothstep for pleasant transitions
+  t = t * t * (3 - 2 * t);
+
+  return {
+    t,
+    sunColorA: colorsA.sun,
+    sunColorB: colorsB.sun,
+    sunIntensity: a.sunIntensity + (b.sunIntensity - a.sunIntensity) * t,
+    sunPosition: [
+      a.sunPosition[0] + (b.sunPosition[0] - a.sunPosition[0]) * t,
+      a.sunPosition[1] + (b.sunPosition[1] - a.sunPosition[1]) * t,
+      a.sunPosition[2] + (b.sunPosition[2] - a.sunPosition[2]) * t,
+    ] as [number, number, number],
+    ambientColorA: colorsA.ambient,
+    ambientColorB: colorsB.ambient,
+    ambientIntensity: a.ambientIntensity + (b.ambientIntensity - a.ambientIntensity) * t,
+    hemiSkyColorA: colorsA.hemiSky,
+    hemiSkyColorB: colorsB.hemiSky,
+    hemiGroundColorA: colorsA.hemiGround,
+    hemiGroundColorB: colorsB.hemiGround,
+    hemiIntensity: a.hemiIntensity + (b.hemiIntensity - a.hemiIntensity) * t,
+  };
+}
+
+/** Smooth interpolation speed factor (per second, exponential lerp) */
+const TOD_LERP_SPEED = 2.5;
 
 /** Per-scene indoor ambient overrides — noir rooms need very low ambient
  *  to let scene-specific lights (monitor, lamp, window) drive the atmosphere.
@@ -110,6 +258,140 @@ function ScenePointLights() {
   );
 }
 
+/* ─── Dynamic time-of-day lighting for outdoor scenes ─── */
+interface TimeOfDayLightingProps {
+  sceneId: string;
+  preset: import('@/engine/graphics/qualityPresets').QualityPreset;
+  shadowSize: number;
+  config: ReturnType<typeof getSceneConfig>;
+}
+
+export function TimeOfDayLighting({ sceneId, preset, shadowSize, config }: TimeOfDayLightingProps) {
+  const hour = useTimeOfDay();
+  const isMuted = MUTED_TOD_SCENES.has(sceneId);
+
+  // Pre-allocate refs to avoid GC in frame loop
+  const dirRef = useRef<THREE.DirectionalLight>(null!);
+  const hemiRef = useRef<THREE.HemisphereLight>(null!);
+  const ambRef = useRef<THREE.AmbientLight>(null!);
+  const sunColor = useRef(new THREE.Color());
+  const ambColor = useRef(new THREE.Color());
+  const hemiSkyColor = useRef(new THREE.Color());
+  const hemiGroundColor = useRef(new THREE.Color());
+
+  // Working scratch colors for lerp (avoid alloc per frame)
+  const scratchSun = useRef(new THREE.Color());
+  const scratchAmb = useRef(new THREE.Color());
+  const scratchHemiSky = useRef(new THREE.Color());
+  const scratchHemiGround = useRef(new THREE.Color());
+
+  // Current smoothed values (lerped toward target each frame)
+  const curSunIntensity = useRef(0);
+  const curAmbIntensity = useRef(0);
+  const curHemiIntensity = useRef(0);
+  const curSunPos = useRef<THREE.Vector3>(new THREE.Vector3());
+
+  // Shadow frustum from scene dimensions
+  const shadowHalfW = Math.max(15, (config.dimensions?.[0] ?? 15) * 0.6);
+  const shadowHalfD = Math.max(15, (config.dimensions?.[2] ?? 15) * 0.6);
+
+  const computeTarget = useCallback((h: number) => {
+    const target = lerpKeyframes(h);
+    const intensityMul = isMuted ? 0.4 : 1.0;
+
+    // Lerp colors into scratch buffers using the same t from keyframe interpolation
+    scratchSun.current.copy(target.sunColorA).lerp(target.sunColorB, target.t);
+    scratchAmb.current.copy(target.ambientColorA).lerp(target.ambientColorB, target.t);
+    scratchHemiSky.current.copy(target.hemiSkyColorA).lerp(target.hemiSkyColorB, target.t);
+    scratchHemiGround.current.copy(target.hemiGroundColorA).lerp(target.hemiGroundColorB, target.t);
+
+    return {
+      sunIntensity: target.sunIntensity * intensityMul,
+      sunPos: target.sunPosition,
+      ambIntensity: target.ambientIntensity,
+      hemiIntensity: target.hemiIntensity * SCENE_VISIBILITY.outdoorHemisphereMul,
+    };
+  }, [isMuted]);
+
+  useFrameTick('misc', ({ delta }) => {
+    const target = computeTarget(hour);
+    const lerpFactor = 1 - Math.exp(-TOD_LERP_SPEED * delta);
+
+    // Smooth interpolation of all values
+    curSunIntensity.current += (target.sunIntensity - curSunIntensity.current) * lerpFactor;
+    curAmbIntensity.current += (target.ambIntensity - curAmbIntensity.current) * lerpFactor;
+    curHemiIntensity.current += (target.hemiIntensity - curHemiIntensity.current) * lerpFactor;
+    curSunPos.current.set(target.sunPos[0], target.sunPos[1], target.sunPos[2]);
+
+    // Smooth color interpolation
+    sunColor.current.lerp(scratchSun.current, lerpFactor);
+    ambColor.current.lerp(scratchAmb.current, lerpFactor);
+    hemiSkyColor.current.lerp(scratchHemiSky.current, lerpFactor);
+    hemiGroundColor.current.lerp(scratchHemiGround.current, lerpFactor);
+
+    // Apply to light objects
+    const dir = dirRef.current;
+    if (dir) {
+      dir.intensity = curSunIntensity.current;
+      dir.color.copy(sunColor.current);
+      dir.position.copy(curSunPos.current);
+    }
+    const hemi = hemiRef.current;
+    if (hemi) {
+      hemi.intensity = curHemiIntensity.current;
+      hemi.color.copy(hemiSkyColor.current);
+      hemi.groundColor.copy(hemiGroundColor.current);
+    }
+    const amb = ambRef.current;
+    if (amb) {
+      amb.intensity = curAmbIntensity.current * SCENE_VISIBILITY.ambientScale;
+      amb.color.copy(ambColor.current);
+    }
+  });
+
+  return (
+    <>
+      {/* Directional sun/moon light with shadows */}
+      <directionalLight
+        ref={dirRef}
+        position={[5, 10, 5]}
+        intensity={0.5}
+        color="#ffffff"
+        castShadow={preset.shadows}
+        shadow-mapSize-width={preset.id === 'medium' ? 512 : shadowSize}
+        shadow-mapSize-height={preset.id === 'medium' ? 512 : shadowSize}
+        shadow-camera-near={0.1}
+        shadow-camera-far={50}
+        shadow-camera-left={-shadowHalfW}
+        shadow-camera-right={shadowHalfW}
+        shadow-camera-top={shadowHalfD}
+        shadow-camera-bottom={-shadowHalfD}
+        shadow-bias={SHADOW_BIAS}
+        shadow-normalBias={SHADOW_NORMAL_BIAS}
+      />
+
+      {/* Hemisphere sky/ground fill */}
+      <hemisphereLight
+        ref={hemiRef}
+        args={['#88aadd', '#446633', 0.5]}
+      />
+
+      {/* Time-of-day ambient fill */}
+      <ambientLight
+        ref={ambRef}
+        intensity={0.5}
+        color="#cccccc"
+      />
+
+      {/* Base readability ambient — prevents crushed blacks */}
+      <ambientLight
+        intensity={SCENE_VISIBILITY.baseAmbientIntensity}
+        color="#4a5060"
+      />
+    </>
+  );
+}
+
 /** Exploration lighting: directional + hemisphere + ambient + scene-specific lights */
 export function ExplorationLighting() {
   const sceneId = useGameStore((s) => s.exploration.currentSceneId) as SceneId;
@@ -129,45 +411,48 @@ export function ExplorationLighting() {
     2048,
     Math.round(baseShadow * rendering.shadowMapScale),
   );
+  const isIndoor = config.hasCeiling;
 
+  // ── Outdoor scenes: use dynamic time-of-day lighting ──
+  if (!isIndoor) {
+    return (
+      <>
+        <TimeOfDayLighting
+          sceneId={sceneId}
+          preset={preset}
+          shadowSize={shadowSize}
+          config={config}
+        />
+        <ScenePointLights />
+        <SceneAccentLights sceneId={sceneId} isMobile={isMobile} />
+      </>
+    );
+  }
+
+  // ── Indoor scenes: unchanged static lighting ──
   const ambientColor = config.ambientColor ?? '#1a1a2e';
   const ambientIntensity =
     (config.ambientIntensity ?? 1.2) * SCENE_VISIBILITY.ambientScale;
   const groundColor = config.groundColor ?? '#1a1a1a';
 
-  // Different light settings per scene type
-  const isIndoor = config.hasCeiling;
   const visualSceneId = resolveDerivedSceneId(sceneId);
   const isNight =
     sceneId === 'street_night'
     || sceneId === 'city_square'
     || sceneId === 'cafe_evening'
     || visualSceneId === 'river_pier';
-  const isStreet =
-    sceneId === 'street_night'
-    || sceneId === 'city_square'
-    || sceneId === 'street_winter';
-  const isChkForest = sceneId === 'chk_forest_zorge' || sceneId === 'chk_campfire_night';
-  const isDream = sceneId === 'sleep_dream';
-  const isPier = visualSceneId === 'river_pier';
 
   // Directional light — very dim indoors (barely-there ceiling bounce)
   // to let scene-specific point lights dominate the atmosphere
-  const dirIntensity = isIndoor ? 1.15 : isDream ? 1.2 : isStreet ? 1.85 : isNight ? 1.45 : 2.2;
-  const dirColor = isIndoor ? '#2a2540' : isStreet && sceneId === 'street_winter' ? '#d0d8e8' : isNight ? '#3a3a6a' : isDream ? '#2a1040' : '#ffffff';
-  const dirPosition: [number, number, number] = isIndoor
-    ? [2, 4, 2]
-    : [5, 10, 5];
+  const dirIntensity = 1.15;
+  const dirColor = '#2a2540';
+  const dirPosition: [number, number, number] = [2, 4, 2];
 
   // Indoor ambient — per-scene tuned (very low for noir rooms)
-  const indoorAmb = isIndoor ? (INDOOR_AMBIENT[sceneId] ?? DEFAULT_INDOOR_AMBIENT) : null;
+  const indoorAmb = INDOOR_AMBIENT[sceneId] ?? DEFAULT_INDOOR_AMBIENT;
 
   // Indoor fill — per-scene tuned or disabled
-  const indoorFill = isIndoor ? (INDOOR_FILL[sceneId] ?? DEFAULT_INDOOR_FILL) : null;
-  const outdoorReadability = !isIndoor
-    ? (OUTDOOR_READABILITY_AMBIENT[sceneId]
-      ?? OUTDOOR_READABILITY_AMBIENT[resolveDerivedSceneId(sceneId)])
-    : null;
+  const indoorFill = INDOOR_FILL[sceneId] ?? DEFAULT_INDOOR_FILL;
 
   // Scene-dimension-aware shadow camera frustum sizing
   const shadowHalfW = Math.max(15, (config.dimensions?.[0] ?? 15) * 0.6);
@@ -198,66 +483,27 @@ export function ExplorationLighting() {
         args={[
           ambientColor,
           groundColor,
-          isIndoor
-            ? ambientIntensity * SCENE_VISIBILITY.indoorHemisphereMul
-            : ambientIntensity * SCENE_VISIBILITY.outdoorHemisphereMul,
+          ambientIntensity * SCENE_VISIBILITY.indoorHemisphereMul,
         ]}
       />
 
       {/* Base readability fill — prevents crushed blacks in noir rooms */}
       <ambientLight
         intensity={SCENE_VISIBILITY.baseAmbientIntensity}
-        color={isIndoor ? '#3a3548' : '#4a5060'}
+        color="#3a3548"
       />
 
       {/* Indoor ambient — per-scene tuned (very low for noir rooms like volodka_room) */}
-      {indoorAmb && (
-        <ambientLight intensity={indoorAmb.intensity} color={indoorAmb.color} />
-      )}
+      <ambientLight intensity={indoorAmb.intensity} color={indoorAmb.color} />
 
-      {/* Extra ambient for very dark outdoor scenes */}
-      {isNight && !isIndoor && (
-        <ambientLight intensity={0.55} color="#5a5a88" />
-      )}
-
-      {sceneId === 'street_night' && (
-        <ambientLight intensity={0.45} color="#606088" />
-      )}
-
-      {sceneId === 'city_square' && (
-        <ambientLight intensity={0.4} color="#586878" />
-      )}
-
-      {isPier && (
-        <ambientLight intensity={0.38} color="#4a5870" />
-      )}
-
-      {sceneId === 'street_winter' && (
-        <ambientLight intensity={0.42} color="#c0ccd8" />
-      )}
-
-      {isChkForest && !isIndoor && (
-        <ambientLight intensity={0.4} color="#5a7058" />
-      )}
-
-      {isDream && (
-        <ambientLight intensity={0.62} color="#5a3888" />
-      )}
-
-      {/* Indoor fill light — per-scene tuned or disabled (null = no fill) */}
-      {indoorFill && (
-        <pointLight
-          position={indoorFill.position}
-          intensity={indoorFill.intensity}
-          color={indoorFill.color}
-          distance={indoorFill.distance}
-          decay={2}
-        />
-      )}
-
-      {outdoorReadability && (
-        <ambientLight intensity={outdoorReadability.intensity} color={outdoorReadability.color} />
-      )}
+      {/* Indoor fill light — per-scene tuned */}
+      <pointLight
+        position={indoorFill.position}
+        intensity={indoorFill.intensity}
+        color={indoorFill.color}
+        distance={indoorFill.distance}
+        decay={2}
+      />
 
       {/* Scene-specific point lights from config */}
       <ScenePointLights />

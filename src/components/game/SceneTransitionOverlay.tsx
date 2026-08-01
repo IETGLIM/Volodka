@@ -1,13 +1,16 @@
 
-/* ─── Volodka RPG – Scene Transition Overlay (Enhanced v2) ───
+/* ─── Volodka RPG – Scene Transition Overlay (Enhanced v3) ───
  *  Cyberpunk cinematic transition effect when the player moves between scenes.
- *  Supports multiple transition styles based on scene config:
+ *  Supports 8 transition styles:
  *
- *  - 'wipe'    (default): Glitch → Wipe-in → Hold → Wipe-out
- *  - 'flash'   (indoor→outdoor): Bright flash → Wipe
- *  - 'darken'  (outdoor→indoor): Slow darkening → Reveal
- *  - 'ripple'  (dream→reality): Circular ripple expansion
- *  - 'dissolve': Blur dissolve with noise overlay
+ *  - 'wipe'       (default): Glitch → Wipe-in → Hold → Wipe-out
+ *  - 'flash'      (indoor→outdoor): Bright flash → Wipe
+ *  - 'darken'     (outdoor→indoor): Slow darkening → Reveal
+ *  - 'ripple'     (dream→reality): Circular ripple expansion
+ *  - 'dissolve':   Blur dissolve with noise overlay
+ *  - 'film_burn':  Red-orange overlay with noise that burns in/out
+ *  - 'glitch_cut': Brief horizontal slice displacement + color channel split
+ *  - 'breathe':    Smooth scale from 0.98 to 1.02 with opacity fade
  *
  *  Each transition type uses the scene name display during hold phase.
  */
@@ -27,6 +30,9 @@ const FLASH_DURATION = SCENE_OVERLAY_MS.FLASH;
 const DARKEN_DURATION = SCENE_OVERLAY_MS.DARKEN;
 const RIPPLE_DURATION = SCENE_OVERLAY_MS.RIPPLE;
 const DISSOLVE_DURATION = SCENE_OVERLAY_MS.DISSOLVE;
+const FILM_BURN_DURATION = SCENE_OVERLAY_MS.FILM_BURN;
+const GLITCH_CUT_DURATION = SCENE_OVERLAY_MS.GLITCH_CUT;
+const BREATHE_DURATION = SCENE_OVERLAY_MS.BREATHE;
 const WIPE_IN_DURATION = SCENE_OVERLAY_MS.WIPE_IN;
 const WIPE_OUT_DURATION = SCENE_OVERLAY_MS.WIPE_OUT;
 const REVEAL_DURATION = SCENE_OVERLAY_MS.REVEAL;
@@ -261,6 +267,188 @@ export function SceneTransitionOverlay() {
           )}
 
           {/* ═══════════════════════════════════════════════════════════
+              FILM_BURN STYLE: Red-orange overlay with noise burn
+              ═══════════════════════════════════════════════════════════ */}
+          {phase === 'film-burn-in' && (
+            <div className="absolute inset-0">
+              {/* Base red-orange burn gradient that intensifies from bottom-right */}
+              <motion.div
+                className="absolute inset-0"
+                style={{
+                  background: `radial-gradient(ellipse at 85% 90%, rgba(255,80,0,0.85) 0%, rgba(200,50,0,0.6) 30%, rgba(100,20,0,0.8) 60%, rgba(0,0,0,0.95) 100%)`,
+                  filter: 'contrast(1.3) saturate(1.4)',
+                }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: [0, 0.6, 1] }}
+                transition={{ duration: FILM_BURN_DURATION / 1000, ease: 'easeIn' }}
+              />
+              {/* Film grain noise overlay — randomized horizontal bands */}
+              <motion.div
+                className="absolute inset-0"
+                style={{
+                  background: 'repeating-linear-gradient(0deg, transparent 0px, transparent 1px, rgba(255,120,40,0.04) 1px, rgba(255,120,40,0.04) 2px)',
+                  mixBlendMode: 'screen',
+                }}
+                animate={{ opacity: [0, 0.8, 0.5] }}
+                transition={{ duration: FILM_BURN_DURATION / 1000 }}
+              />
+              {/* Bright orange flash at burn origin */}
+              <motion.div
+                className="absolute inset-0"
+                style={{
+                  background: `radial-gradient(ellipse at 85% 90%, rgba(255,200,50,0.4) 0%, transparent 40%)`,
+                  filter: 'blur(10px)',
+                }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: [0, 0.9, 0.4] }}
+                transition={{ duration: FILM_BURN_DURATION / 1000 }}
+              />
+              {/* Slight warm color shift on edges */}
+              <motion.div
+                className="absolute inset-0"
+                style={{
+                  background: `radial-gradient(ellipse at 15% 10%, rgba(255,150,50,0.15) 0%, transparent 50%)`,
+                }}
+                animate={{ opacity: [0, 0.6, 0.2] }}
+                transition={{ duration: FILM_BURN_DURATION / 1000, delay: 0.05 }}
+              />
+            </div>
+          )}
+
+          {/* ═══════════════════════════════════════════════════════════
+              GLITCH_CUT STYLE: Horizontal slice displacement + RGB split
+              ═══════════════════════════════════════════════════════════ */}
+          {phase === 'glitch-cut-in' && (
+            <div className="absolute inset-0 overflow-hidden">
+              {/* Red channel slice — shifted up */}
+              <motion.div
+                className="absolute inset-0"
+                style={{
+                  background: 'rgba(255, 0, 50, 0.35)',
+                  mixBlendMode: 'screen',
+                  clipPath: 'inset(20% 0% 40% 0%)',
+                }}
+                initial={{ x: 0, opacity: 1 }}
+                animate={{ x: [0, 25, -15, 20, 0], opacity: [0, 1, 0.8, 1, 0] }}
+                transition={{ duration: GLITCH_CUT_DURATION / 1000, ease: 'easeOut' }}
+              />
+              {/* Blue channel slice — shifted down */}
+              <motion.div
+                className="absolute inset-0"
+                style={{
+                  background: 'rgba(0, 80, 255, 0.3)',
+                  mixBlendMode: 'screen',
+                  clipPath: 'inset(55% 0% 15% 0%)',
+                }}
+                initial={{ x: 0, opacity: 1 }}
+                animate={{ x: [0, -20, 30, -10, 0], opacity: [0, 1, 0.7, 1, 0] }}
+                transition={{ duration: GLITCH_CUT_DURATION / 1000, ease: 'easeOut' }}
+              />
+              {/* Green channel slice — middle band */}
+              <motion.div
+                className="absolute inset-0"
+                style={{
+                  background: 'rgba(0, 255, 80, 0.2)',
+                  mixBlendMode: 'screen',
+                  clipPath: 'inset(38% 0% 42% 0%)',
+                }}
+                initial={{ x: 0, opacity: 1 }}
+                animate={{ x: [0, 15, -25, 10, 0], opacity: [0, 0.8, 1, 0.6, 0] }}
+                transition={{ duration: GLITCH_CUT_DURATION / 1000, ease: 'easeOut' }}
+              />
+              {/* Thin white scan line that sweeps */}
+              <motion.div
+                className="absolute left-0 right-0"
+                style={{ height: '3px', background: accent, boxShadow: `0 0 20px 6px ${accent}80` }}
+                initial={{ y: '20%', opacity: 1 }}
+                animate={{ y: ['20%', '45%', '70%', '80%'], opacity: [1, 0.8, 0.6, 0] }}
+                transition={{ duration: GLITCH_CUT_DURATION / 1000, ease: 'linear' }}
+              />
+              {/* Quick full-screen flash */}
+              <motion.div
+                className="absolute inset-0 bg-white"
+                initial={{ opacity: 0.15 }}
+                animate={{ opacity: 0 }}
+                transition={{ duration: GLITCH_CUT_DURATION / 1000 * 0.4 }}
+              />
+              {/* Horizontal displacement bars */}
+              {[0.12, 0.35, 0.62, 0.78].map((y, i) => (
+                <motion.div
+                  key={i}
+                  className="absolute left-0 right-0"
+                  style={{
+                    top: `${y * 100}%`,
+                    height: `${2 + i}px`,
+                    background: i % 2 === 0 ? 'rgba(255,255,255,0.08)' : accent,
+                    transform: `translateX(${(i % 3 - 1) * 12}px)`,
+                  }}
+                  initial={{ opacity: 0, scaleX: 0 }}
+                  animate={{ opacity: [0, 0.6, 0], scaleX: [0, 1, 0.8] }}
+                  transition={{
+                    duration: GLITCH_CUT_DURATION / 1000,
+                    delay: i * 0.03,
+                    ease: 'easeOut',
+                  }}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* ═══════════════════════════════════════════════════════════
+              BREATHE STYLE: Smooth scale 0.98→1.02 with opacity fade
+              ═══════════════════════════════════════════════════════════ */}
+          {phase === 'breathe-in' && (
+            <div className="absolute inset-0 overflow-hidden">
+              {/* Full-screen overlay that scales + fades */}
+              <motion.div
+                className="absolute inset-0 bg-black"
+                style={{ transformOrigin: 'center center' }}
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: [0, 0.4, 0.8, 1], scale: [0.98, 1.0, 1.01, 1.02] }}
+                transition={{
+                  duration: BREATHE_DURATION / 1000,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+              >
+                {/* Soft radial vignette that pulses with the breathe */}
+                <motion.div
+                  className="absolute inset-0"
+                  style={{
+                    background: `radial-gradient(ellipse at center, ${accent}10 0%, transparent 60%, rgba(0,0,0,0.3) 100%)`,
+                  }}
+                  animate={{
+                    opacity: [0, 0.5, 0.8, 0.6],
+                    scale: [1.05, 1.0, 0.98, 0.97],
+                  }}
+                  transition={{
+                    duration: BREATHE_DURATION / 1000,
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
+                />
+                {/* Gentle light ring */}
+                <motion.div
+                  className="absolute inset-0 flex items-center justify-center"
+                >
+                  <motion.div
+                    className="rounded-full"
+                    style={{
+                      width: '60vw',
+                      height: '60vw',
+                      border: `1px solid ${accent}20`,
+                      boxShadow: `0 0 60px 20px ${accent}08`,
+                    }}
+                    animate={{
+                      scale: [0.8, 1.1, 1.3],
+                      opacity: [0, 0.4, 0],
+                    }}
+                    transition={{ duration: BREATHE_DURATION / 1000, ease: 'easeOut' }}
+                  />
+                </motion.div>
+              </motion.div>
+            </div>
+          )}
+
+          {/* ═══════════════════════════════════════════════════════════
               WIPE-IN Phase (original wipe style only)
               ═══════════════════════════════════════════════════════════ */}
           {phase === 'wipe-in' && (
@@ -332,7 +520,7 @@ export function SceneTransitionOverlay() {
           )}
 
           {/* ═══════════════════════════════════════════════════════════
-              REVEAL Phase (for flash/darken/ripple/dissolve styles)
+              REVEAL Phase (for flash/darken/ripple/dissolve/film_burn/glitch_cut/breathe)
               Smooth fade-out revealing the new scene
               ═══════════════════════════════════════════════════════════ */}
           {phase === 'reveal' && (

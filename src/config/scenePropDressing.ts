@@ -202,6 +202,128 @@ export const SCENE_PROP_DRESSING: Partial<Record<SceneId, readonly ScenePropPlac
     { propModelId: 'polyhaven_metal_trash_can', position: [-2.3, 0, 1.4], rotationY: 0.2, loadTier: 'deferred' },
     { propModelId: 'polyhaven_trashbag', position: [2.4, 0, 1.2], rotationY: 0.45, loadTier: 'deferred' },
   ],
+
+  /* ── Round 4 — 12 previously bare scenes ── */
+
+  home_evening: [
+    { propModelId: 'kenney_city_coffee_machine', position: [-2.8, 0, -1.5], rotationY: 0.3 },
+    { propModelId: 'polyhaven_painted_wooden_table', position: [-1.2, 0, 1.8], rotationY: 0.15 },
+    { propModelId: 'kenney_city_chair', position: [-1.8, 0, 2.4], rotationY: -0.4 },
+    { propModelId: 'kenney_city_chair', position: [-0.6, 0, 2.4], rotationY: 0.4 },
+    { propModelId: 'polyhaven_industrial_lamp', position: [-1.0, 2.45, 1.6], rotationY: 0.1, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_metal_trash_can', position: [2.5, 0, -2.0], rotationY: -0.2, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_cardboard_box', position: [2.8, 0, -1.5], rotationY: 0.35, loadTier: 'deferred' },
+  ],
+
+  street_winter: [
+    { propModelId: 'polyhaven_street_lamp', position: [-3.0, 0, -8.0], rotationY: 0.15 },
+    { propModelId: 'polyhaven_street_lamp_alt', position: [4.5, 0, -6.0], rotationY: -0.2 },
+    { propModelId: 'polyhaven_bench', position: [0.5, 0, -3.0], rotationY: Math.PI / 2, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_bench', position: [-5.5, 0, -4.5], rotationY: 0.3, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_metal_trash_can', position: [2.8, 0, -2.0], rotationY: 0.25, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_utility_box', position: [7.5, 0, -3.0], rotationY: Math.PI, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_old_tyre', position: [-6.5, 0, -2.5], rotationY: 0.55, loadTier: 'deferred' },
+  ],
+
+  park_day: [
+    { propModelId: 'polyhaven_bench', position: [-2.5, 0, -1.0], rotationY: 0.2 },
+    { propModelId: 'polyhaven_bench', position: [3.0, 0, -2.5], rotationY: -Math.PI / 3, loadTier: 'deferred' },
+    { propModelId: 'kenney_city_lamp_post', position: [0.5, 0, -4.5], rotationY: 0.1 },
+    { propModelId: 'kenney_city_lamp_post', position: [-4.0, 0, -3.5], rotationY: -0.15, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_metal_trash_can', position: [1.8, 0, -0.5], rotationY: 0.35, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_metal_trash_can', position: [-3.8, 0, 0.5], rotationY: -0.2, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_trashbag', position: [2.2, 0, -0.2], rotationY: 0.4, loadTier: 'deferred' },
+  ],
+
+  battle: [
+    { propModelId: 'polyhaven_road_barrier', position: [-2.0, 0, -3.5], rotationY: 0.4 },
+    { propModelId: 'polyhaven_road_barrier', position: [3.0, 0, -5.0], rotationY: -0.25, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_wooden_crate', position: [-4.5, 0, -2.0], rotationY: 0.6, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_cardboard_box', position: [1.5, 0, -1.5], rotationY: -0.3, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_barrel', position: [4.0, 0, -1.0], rotationY: 0.15, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_old_tyre', position: [-1.0, 0, 0.5], rotationY: 0.8, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_utility_box', position: [5.5, 0, -3.5], rotationY: Math.PI / 2, loadTier: 'deferred' },
+  ],
+
+  sleep_dream: [
+    { propModelId: 'ai3dgen_digital_amulet', position: [0, 1.5, -3.0], rotationY: 0.5 },
+    { propModelId: 'ai3dgen_poetic_compiler', position: [-2.0, 0.8, -1.5], rotationY: -0.7 },
+    { propModelId: 'polyhaven_gothic_statue', position: [3.0, 0, -5.0], rotationY: 0.3, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_cassette_player', position: [1.5, 0.4, -2.0], rotationY: 1.2, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_desk_lamp_arm', position: [-1.0, 0.78, -2.5], rotationY: -0.4, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_cardboard_box', position: [2.5, 0, -1.0], rotationY: 0.85, loadTier: 'deferred' },
+  ],
+
+  chk_campfire_night: [
+    { propModelId: 'kenney_city_campfire', position: [0, 0, -1.5] },
+    { propModelId: 'polyhaven_bench', position: [2.0, 0, -0.8], rotationY: -Math.PI / 2 },
+    { propModelId: 'polyhaven_wooden_crate', position: [-2.5, 0, 0.5], rotationY: 0.35, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_wooden_crate', position: [-2.0, 0.55, 0.8], rotationY: -0.2, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_barrel', position: [3.5, 0, 1.5], rotationY: -0.4, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_trashbag', position: [-1.5, 0, 2.5], rotationY: 0.25, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_cardboard_box', position: [3.0, 0, -2.5], rotationY: 0.55, loadTier: 'deferred' },
+  ],
+
+  pier_evening: [
+    { propModelId: 'polyhaven_wooden_crate', position: [-3.0, 0, 1.0], rotationY: 0.2 },
+    { propModelId: 'polyhaven_wooden_crate', position: [-2.5, 0.58, 1.2], rotationY: -0.35, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_barrel', position: [2.5, 0, -2.0], rotationY: 0.15, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_barrel', position: [3.2, 0, -2.5], rotationY: -0.5, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_street_lamp', position: [-5.0, 0, 0.5], rotationY: 0.1, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_bench', position: [1.0, 0, 1.5], rotationY: -Math.PI / 4, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_old_tyre', position: [4.0, 0, 0.5], rotationY: 0.65, loadTier: 'deferred' },
+  ],
+
+  factory_roof: [
+    { propModelId: 'polyhaven_industrial_lamp', position: [-2.0, 3.5, -4.0], rotationY: 0.1 },
+    { propModelId: 'polyhaven_industrial_lamp', position: [3.5, 3.5, -3.0], rotationY: -0.15, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_utility_box', position: [-4.5, 0, -2.0], rotationY: 0.3 },
+    { propModelId: 'polyhaven_power_box', position: [5.0, 0, -5.0], rotationY: -0.2, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_road_barrier', position: [0.5, 0, -6.0], rotationY: Math.PI / 2, loadTier: 'deferred' },
+    { propModelId: 'ai3dgen_server_fragment', position: [4.0, 0.25, 1.0], rotationY: 0.55, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_wooden_crate', position: [-3.5, 0, 2.5], rotationY: -0.4, loadTier: 'deferred' },
+  ],
+
+  city_square: [
+    { propModelId: 'polyhaven_bench', position: [-3.0, 0, -2.0], rotationY: Math.PI / 3 },
+    { propModelId: 'polyhaven_bench', position: [3.5, 0, -1.5], rotationY: -Math.PI / 4, loadTier: 'deferred' },
+    { propModelId: 'kenney_city_lamp_post', position: [-1.0, 0, -5.0], rotationY: 0.1 },
+    { propModelId: 'kenney_city_lamp_post', position: [5.0, 0, -4.0], rotationY: -0.15, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_metal_trash_can', position: [1.5, 0, -0.5], rotationY: 0.25, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_trashbag', position: [2.0, 0, -0.2], rotationY: 0.4, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_wooden_crate', position: [4.5, 0, 1.0], rotationY: -0.3, loadTier: 'deferred' },
+  ],
+
+  zarema_room: [
+    { propModelId: 'kenney_bed', position: [-1.0, 0, 1.5] },
+    { propModelId: 'polyhaven_painted_wooden_cabinet', position: [2.2, 0, 2.0], rotationY: -Math.PI / 2 },
+    { propModelId: 'polyhaven_wooden_bookshelf_worn', position: [2.5, 0, -1.2], rotationY: -Math.PI / 2, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_arm_chair', position: [-0.5, 0, -1.0], rotationY: 0.8, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_painted_wooden_table', position: [-2.0, 0, 1.2], rotationY: 0.2, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_desk_lamp_arm', position: [-2.15, 0.78, 1.1], rotationY: -0.15, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_industrial_lamp', position: [-1.2, 2.45, 1.6], rotationY: 0.1, loadTier: 'deferred' },
+  ],
+
+  solnysh_room: [
+    { propModelId: 'polyhaven_painted_wooden_table', position: [0, 0, -2.0], rotationY: 0.15 },
+    { propModelId: 'kenney_city_chair', position: [-0.8, 0, -1.4], rotationY: Math.PI * 0.6 },
+    { propModelId: 'kenney_city_chair', position: [0.8, 0, -1.4], rotationY: -Math.PI * 0.3 },
+    { propModelId: 'polyhaven_wooden_bookshelf_worn', position: [-2.5, 0, -3.5], rotationY: Math.PI / 2, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_industrial_lamp', position: [0, 2.55, -2.2], rotationY: 0.1, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_desk_lamp_arm', position: [-2.2, 0.78, -3.2], rotationY: 0.35, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_cardboard_box', position: [2.5, 0, -3.0], rotationY: -0.45, loadTier: 'deferred' },
+  ],
+
+  procedural_aaa: [
+    { propModelId: 'ai3dgen_poetic_compiler', position: [0, 0.52, -2.0], rotationY: 0.2 },
+    { propModelId: 'ai3dgen_neural_filter', position: [2.0, 0.55, -1.5], rotationY: -Math.PI / 3 },
+    { propModelId: 'ai3dgen_server_fragment', position: [-2.5, 0.25, -2.5], rotationY: 0.4 },
+    { propModelId: 'kenney_terminal', position: [1.5, 0.78, 0.5], offset: [0, -0.28, 0], loadTier: 'deferred' },
+    { propModelId: 'polyhaven_wooden_crate', position: [-1.5, 0, 1.0], rotationY: 0.3, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_cardboard_box', position: [2.8, 0, 1.5], rotationY: -0.25, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_industrial_lamp', position: [0, 2.8, -2.5], rotationY: 0.1, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_bench', position: [0, 0, 2.0], rotationY: Math.PI / 2, loadTier: 'deferred' },
+  ],
 };
 
 export function getScenePropDressing(sceneId: SceneId): readonly ScenePropPlacement[] {

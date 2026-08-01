@@ -34,14 +34,6 @@
 @import "../components/interactions/MicroInteractions.css";
 @import "../styles/atmospheric-polish.css";
 @import "../styles/cyberpunk-poem.css";
-@import "../styles/hud-round4.css";
-@import "../styles/hud-round5.css";
-@import "../styles/hud-round6.css";
-@import "../styles/hud-round7.css";
-@import "../styles/hud-round8.css";
-@import "../styles/hud-round9.css";
-@import "../styles/hud-round10.css";
-@import "../styles/hud-round11.css";
 
 /* ── User setting: scanlines off (SettingsPanel → engine/visualSettings) ── */
 html[data-scanlines="off"] .panel-scanlines::after,

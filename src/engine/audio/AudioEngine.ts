@@ -58,6 +58,7 @@ type FootstepVoice = {
 class AudioEngine {
   private ctx: AudioContext | null = null;
   private masterGain: GainNode | null = null;
+  private compressor: DynamicsCompressorNode | null = null;
   private volume = 0.7;
   private disposed = false;
   /** Bumped on dispose — stale setTimeout callbacks no-op after StrictMode unmount. */
@@ -186,7 +187,18 @@ class AudioEngine {
     if (this.ctx) {
       this.masterGain = this.ctx.createGain();
       this.masterGain.gain.value = this.volume;
-      this.masterGain.connect(this.ctx.destination);
+
+      // Master dynamics compressor — prevents clipping when multiple layers play simultaneously
+      this.compressor = this.ctx.createDynamicsCompressor();
+      this.compressor.threshold.value = -24;
+      this.compressor.knee.value = 12;
+      this.compressor.ratio.value = 4;
+      this.compressor.attack.value = 0.003;
+      this.compressor.release.value = 0.25;
+
+      this.masterGain.connect(this.compressor);
+      this.compressor.connect(this.ctx.destination);
+
       this.ensureSfxBus();
     }
   }
@@ -2149,6 +2161,11 @@ class AudioEngine {
     this.sfxMasterGain = null;
     // Shared AudioContext is closed by disposeSharedAudioContext()
     this.ctx = null;
+  }
+
+  /** Current compression ratio (0 if no compressor / audio not initialised). */
+  get compressorRatio(): number {
+    return this.compressor?.ratio.value ?? 0;
   }
 
   /** Re-arm after orchestrator remount (React StrictMode). Idempotent — generation stays bumped until new timers schedule. */

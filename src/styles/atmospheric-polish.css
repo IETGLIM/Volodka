@@ -1194,3 +1194,4958 @@
 .tooltip-slide-up {
   animation: tooltip-slide-up 0.2s ease-out both;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   MASSIVE EXPANSION — 48 new animation & utility classes
+   ══════════════════════════════════════════════════════════════ */
+
+
+/* ══════════════════════════════════════════════════════════════
+   SECTION 1 — Loading & Boot Animations (8 classes)
+   ══════════════════════════════════════════════════════════════ */
+
+/* ─── 1a. Glitch text — horizontal offset + color split ─── */
+@keyframes boot-glitch-text {
+  0%, 90%, 100% {
+    transform: translateX(0);
+    text-shadow: none;
+  }
+  91% {
+    transform: translateX(-3px);
+    text-shadow: 2px 0 oklch(0.7 0.18 200), -2px 0 oklch(0.75 0.15 0);
+  }
+  93% {
+    transform: translateX(2px);
+    text-shadow: -2px 0 oklch(0.7 0.18 200), 2px 0 oklch(0.75 0.15 0);
+  }
+  96% {
+    transform: translateX(-1px);
+    text-shadow: 1px 0 oklch(0.7 0.18 200), -1px 0 oklch(0.75 0.15 0);
+  }
+}
+
+.boot-glitch-text {
+  animation: boot-glitch-text 3s ease-in-out infinite;
+}
+
+/* ─── 1b. Blinking block cursor (terminal style) ─── */
+@keyframes boot-terminal-cursor-blink {
+  0%, 49% {
+    border-bottom-color: oklch(0.8 0.15 195);
+  }
+  50%, 100% {
+    border-bottom-color: transparent;
+  }
+}
+
+.boot-terminal-cursor {
+  display: inline-block;
+  border-bottom: 2px solid oklch(0.8 0.15 195);
+  padding-bottom: 1px;
+  animation: boot-terminal-cursor-blink 1s step-end infinite;
+}
+
+/* ─── 1c. Slim progress bar with cyan glow and animated fill ─── */
+@keyframes boot-progress-fill {
+  0% { width: 0%; }
+  100% { width: 100%; }
+}
+
+.boot-progress-bar {
+  position: relative;
+  height: 2px;
+  background: oklch(0.2 0.02 250);
+  border-radius: 1px;
+  overflow: hidden;
+  box-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.25);
+}
+
+.boot-progress-bar::after {
+  content: '';
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, oklch(0.6 0.18 200), oklch(0.8 0.15 195));
+  border-radius: 1px;
+  box-shadow: 0 0 6px oklch(0.7 0.15 195);
+  animation: boot-progress-fill 2s ease-in-out both;
+}
+
+/* ─── 1d. Fade in while sliding up 20px ─── */
+@keyframes boot-fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.boot-fade-in-up {
+  opacity: 0;
+  animation: boot-fade-in-up 0.6s ease-out both;
+}
+
+/* ─── 1e. Text reveals character by character via clip-path ─── */
+@keyframes boot-text-reveal {
+  0% {
+    clip-path: inset(0 100% 0 0);
+  }
+  100% {
+    clip-path: inset(0 0% 0 0);
+  }
+}
+
+.boot-text-reveal {
+  animation: boot-text-reveal 2s steps(30, end) both;
+}
+
+/* ─── 1f. Scan line overlay (CRT effect) ─── */
+.boot-scan-line-overlay {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    180deg,
+    transparent 0px,
+    transparent 2px,
+    rgba(0, 0, 0, 0.03) 2px,
+    rgba(0, 0, 0, 0.03) 4px
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ─── 1g. Subtle static noise texture ─── */
+@keyframes boot-static-noise-shift {
+  0% { background-position: 0 0; }
+  25% { background-position: -5px -5px; }
+  50% { background-position: 3px 2px; }
+  75% { background-position: -2px 4px; }
+  100% { background-position: 0 0; }
+}
+
+.boot-static-noise {
+  position: absolute;
+  inset: 0;
+  opacity: 0.02;
+  background-image:
+    linear-gradient(45deg, rgba(255,255,255,0.05) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(255,255,255,0.05) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(255,255,255,0.05) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(255,255,255,0.05) 75%);
+  background-size: 4px 4px;
+  pointer-events: none;
+  animation: boot-static-noise-shift 0.5s steps(4) infinite;
+}
+
+/* ─── 1h. Expanding pulse ring from center ─── */
+@keyframes boot-pulse-ring {
+  0% {
+    transform: scale(0.5);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+
+.boot-pulse-ring {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.6);
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  margin-top: -30px;
+  margin-left: -30px;
+  pointer-events: none;
+  animation: boot-pulse-ring 2s ease-out infinite;
+}
+
+
+/* ══════════════════════════════════════════════════════════════
+   SECTION 2 — Cyberpunk UI Elements (10 classes)
+   ══════════════════════════════════════════════════════════════ */
+
+/* ─── 2a. Dark input field with cyan bottom border ─── */
+.cyber-input-field {
+  background: oklch(0.15 0.02 250);
+  border: none;
+  border-bottom: 1px solid rgb(var(--cyber-cyan-rgb) / 0.3);
+  color: oklch(0.9 0.02 250);
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  padding: 8px 12px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.cyber-input-field:focus {
+  border-bottom-color: rgb(var(--cyber-cyan-rgb) / 0.8);
+  box-shadow: 0 2px 12px rgb(var(--cyber-cyan-rgb) / 0.15);
+}
+
+.cyber-input-field::placeholder {
+  color: oklch(0.5 0.03 250);
+}
+
+/* ─── 2b. Primary button — dark bg, cyan border, uppercase ─── */
+.cyber-button-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: oklch(0.15 0.02 250);
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.4);
+  color: oklch(0.8 0.12 195);
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  padding: 8px 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cyber-button-primary:hover {
+  background: oklch(0.2 0.04 250);
+  border-color: rgb(var(--cyber-cyan-rgb) / 0.7);
+  box-shadow: 0 0 16px rgb(var(--cyber-cyan-rgb) / 0.2), inset 0 0 16px rgb(var(--cyber-cyan-rgb) / 0.05);
+}
+
+.cyber-button-primary:active {
+  transform: scale(0.97);
+  background: oklch(0.18 0.05 250);
+}
+
+/* ─── 2c. Danger button — red accent variant ─── */
+.cyber-button-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: oklch(0.15 0.02 250);
+  border: 1px solid oklch(0.6 0.2 25);
+  color: oklch(0.75 0.18 25);
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  padding: 8px 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cyber-button-danger:hover {
+  background: oklch(0.2 0.05 25);
+  border-color: oklch(0.7 0.2 25);
+  box-shadow: 0 0 16px oklch(0.6 0.2 25 / 0.3), inset 0 0 16px oklch(0.6 0.2 25 / 0.05);
+}
+
+.cyber-button-danger:active {
+  transform: scale(0.97);
+}
+
+/* ─── 2d. Ghost button — transparent, border on hover ─── */
+.cyber-button-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid transparent;
+  color: oklch(0.8 0.12 195);
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  padding: 8px 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cyber-button-ghost:hover {
+  border-color: rgb(var(--cyber-cyan-rgb) / 0.4);
+  background: rgb(var(--cyber-cyan-rgb) / 0.05);
+}
+
+/* ─── 2e. Dark select dropdown with custom arrow ─── */
+.cyber-dropdown {
+  appearance: none;
+  -webkit-appearance: none;
+  background: oklch(0.15 0.02 250) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2300d4ff'/%3E%3C/svg%3E") no-repeat right 12px center;
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.2);
+  color: oklch(0.85 0.02 250);
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  padding: 8px 32px 8px 12px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.cyber-dropdown:focus {
+  border-color: rgb(var(--cyber-cyan-rgb) / 0.6);
+  box-shadow: 0 0 0 2px rgb(var(--cyber-cyan-rgb) / 0.15);
+}
+
+.cyber-dropdown option {
+  background: oklch(0.12 0.02 250);
+  color: oklch(0.85 0.02 250);
+}
+
+/* ─── 2f. Styled range slider with cyan track & thumb ─── */
+.cyber-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  background: oklch(0.25 0.02 250);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+
+.cyber-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  background: oklch(0.7 0.15 195);
+  border: none;
+  border-radius: 50%;
+  box-shadow: 0 0 8px oklch(0.7 0.15 195 / 0.5);
+  cursor: pointer;
+}
+
+.cyber-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  background: oklch(0.7 0.15 195);
+  border: none;
+  border-radius: 50%;
+  box-shadow: 0 0 8px oklch(0.7 0.15 195 / 0.5);
+  cursor: pointer;
+}
+
+.cyber-slider::-webkit-slider-runnable-track {
+  height: 4px;
+  background: linear-gradient(90deg, oklch(0.5 0.12 195), oklch(0.7 0.15 195));
+  border-radius: 2px;
+}
+
+/* ─── 2g. Toggle switch with cyan active state ─── */
+.cyber-toggle {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  background: oklch(0.2 0.02 250);
+  border: 1px solid oklch(0.3 0.02 250);
+  border-radius: 11px;
+  cursor: pointer;
+  transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
+}
+
+.cyber-toggle::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background: oklch(0.5 0.02 250);
+  border-radius: 50%;
+  transition: transform 0.3s ease, background 0.3s;
+}
+
+.cyber-toggle[aria-checked='true'],
+.cyber-toggle[data-active='true'] {
+  background: rgb(var(--cyber-cyan-rgb) / 0.2);
+  border-color: rgb(var(--cyber-cyan-rgb) / 0.5);
+  box-shadow: 0 0 12px rgb(var(--cyber-cyan-rgb) / 0.15);
+}
+
+.cyber-toggle[aria-checked='true']::after,
+.cyber-toggle[data-active='true']::after {
+  transform: translateX(18px);
+  background: oklch(0.75 0.15 195);
+  box-shadow: 0 0 6px oklch(0.75 0.15 195 / 0.5);
+}
+
+/* ─── 2h. Dark card with subtle border and hover lift ─── */
+.cyber-card {
+  background: oklch(0.15 0.015 250);
+  border: 1px solid oklch(0.25 0.02 250);
+  border-radius: 4px;
+  padding: 16px;
+  transition: all 0.3s ease;
+}
+
+.cyber-card:hover {
+  transform: translateY(-2px);
+  border-color: rgb(var(--cyber-cyan-rgb) / 0.25);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 0 0 1px rgb(var(--cyber-cyan-rgb) / 0.2);
+}
+
+/* ─── 2i. Active tab with bottom cyan border & bg glow ─── */
+.cyber-tab-active {
+  position: relative;
+  color: oklch(0.8 0.12 195);
+  padding-bottom: 8px;
+}
+
+.cyber-tab-active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: oklch(0.7 0.15 195);
+  box-shadow: 0 0 8px oklch(0.7 0.15 195 / 0.4), 0 2px 16px oklch(0.7 0.15 195 / 0.15);
+  border-radius: 1px;
+}
+
+/* ─── 2j. Small pill badge with accent color ─── */
+.cyber-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 18px;
+  padding: 0 6px;
+  background: rgb(var(--cyber-cyan-rgb) / 0.2);
+  color: oklch(0.8 0.12 195);
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 9999px;
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.3);
+}
+
+
+/* ══════════════════════════════════════════════════════════════
+   SECTION 3 — Narrative & Dialogue Enhancements (8 classes)
+   ══════════════════════════════════════════════════════════════ */
+
+/* ─── 3a. Narrator text with subtle glow (voice of the world) ─── */
+.narrator-text-glow {
+  text-shadow: 0 0 8px currentColor, 0 0 16px currentColor / 0.3;
+}
+
+/* ─── 3b. Speaker name label — uppercase, tracked, left border accent ─── */
+.dialogue-speaker-name {
+  display: inline-block;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  font-size: 11px;
+  opacity: 0.7;
+  padding-left: 10px;
+  border-left: 2px solid rgb(var(--cyber-cyan-rgb) / 0.5);
+  line-height: 1;
+}
+
+/* ─── 3c. Dialogue choice hover — left cyan border appears ─── */
+.dialogue-response-hover {
+  padding: 10px 12px 10px 16px;
+  border-left: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  background: transparent;
+}
+
+.dialogue-response-hover:hover {
+  border-left-color: rgb(var(--cyber-cyan-rgb) / 0.7);
+  background: rgb(var(--cyber-cyan-rgb) / 0.04);
+  padding-left: 20px;
+}
+
+/* ─── 3d. Dice indicator with rotation & conditional glow ─── */
+@keyframes dialogue-dice-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.dialogue-dice-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  border: 1px solid oklch(0.3 0.02 250);
+  font-size: 14px;
+  transition: box-shadow 0.3s, border-color 0.3s;
+}
+
+.dialogue-dice-indicator[data-rolling='true'] {
+  animation: dialogue-dice-spin 0.6s linear infinite;
+  border-color: oklch(0.6 0.12 195);
+}
+
+.dialogue-dice-indicator[data-result='success'] {
+  border-color: oklch(0.65 0.17 160);
+  box-shadow: 0 0 12px oklch(0.65 0.17 160 / 0.4);
+  animation: none;
+}
+
+.dialogue-dice-indicator[data-result='fail'] {
+  border-color: oklch(0.65 0.2 25);
+  box-shadow: 0 0 12px oklch(0.65 0.2 25 / 0.4);
+  animation: none;
+}
+
+/* ─── 3e. Thought cabinet card (Disco Elysium style) ─── */
+.thought-cabinet-card {
+  background: oklch(0.13 0.015 250);
+  border-left: 3px solid rgb(var(--cyber-cyan-rgb) / 0.4);
+  border-radius: 0 4px 4px 0;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.thought-cabinet-card .thought-title {
+  font-style: italic;
+  font-size: 14px;
+  color: oklch(0.8 0.05 250);
+  margin-bottom: 4px;
+}
+
+.thought-cabinet-card .thought-description {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  font-size: 12px;
+  color: oklch(0.6 0.03 250);
+  line-height: 1.5;
+  transition: max-height 0.4s ease, opacity 0.3s ease, margin-top 0.3s ease;
+  margin-top: 0;
+}
+
+.thought-cabinet-card:hover .thought-description {
+  max-height: 200px;
+  opacity: 1;
+  margin-top: 8px;
+}
+
+.thought-cabinet-card:hover {
+  border-left-color: rgb(var(--cyber-cyan-rgb) / 0.7);
+  background: oklch(0.16 0.02 250);
+}
+
+/* ─── 3f. Full-screen poem recitation overlay ─── */
+@keyframes poem-recitation-fade {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+.poem-recitation-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 55;
+  animation: poem-recitation-fade 1.5s ease both;
+}
+
+.poem-recitation-overlay .poem-text {
+  text-align: center;
+  max-width: 600px;
+  padding: 0 24px;
+  color: oklch(0.85 0.03 250);
+  font-size: 16px;
+  line-height: 1.8;
+}
+
+/* ─── 3g. Cinematic letterbox bars (top + bottom) ─── */
+.cutscene-letterbox-active {
+  position: fixed;
+  left: 0;
+  right: 0;
+  height: 12vh;
+  background: black;
+  z-index: 50;
+  pointer-events: none;
+}
+
+.cutscene-letterbox-active.top-bar {
+  top: 0;
+}
+
+.cutscene-letterbox-active.bottom-bar {
+  bottom: 0;
+}
+
+/* ─── 3h. Narrative typing indicator — three bouncing dots ─── */
+@keyframes narrative-typing-dot {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  30% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+
+.narrative-typing-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 0;
+}
+
+.narrative-typing-indicator span {
+  display: block;
+  width: 4px;
+  height: 4px;
+  background: rgb(var(--cyber-cyan-rgb) / 0.6);
+  border-radius: 50%;
+  animation: narrative-typing-dot 1.2s ease-in-out infinite;
+}
+
+.narrative-typing-indicator span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.narrative-typing-indicator span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+
+/* ══════════════════════════════════════════════════════════════
+   SECTION 4 — Combat & Gameplay UI (8 classes)
+   ══════════════════════════════════════════════════════════════ */
+
+/* ─── 4a. Health bar — red gradient with inner glow ─── */
+.combat-health-bar {
+  height: 6px;
+  background: linear-gradient(90deg, oklch(0.55 0.22 25), oklch(0.65 0.2 20));
+  border-radius: 2px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3), 0 0 6px oklch(0.6 0.2 25 / 0.3);
+  transition: width 0.5s ease;
+}
+
+/* ─── 4b. Shield bar — blue/cyan gradient variant ─── */
+.combat-shield-bar {
+  height: 6px;
+  background: linear-gradient(90deg, oklch(0.5 0.15 230), oklch(0.65 0.14 210));
+  border-radius: 2px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3), 0 0 6px oklch(0.55 0.14 220 / 0.3);
+  transition: width 0.5s ease;
+}
+
+/* ─── 4c. XP bar — amber gradient with shimmer ─── */
+@keyframes combat-xp-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.combat-xp-bar {
+  height: 6px;
+  background: linear-gradient(
+    90deg,
+    oklch(0.65 0.16 80) 0%,
+    oklch(0.75 0.14 85) 40%,
+    oklch(0.85 0.1 90) 50%,
+    oklch(0.75 0.14 85) 60%,
+    oklch(0.65 0.16 80) 100%
+  );
+  background-size: 200% 100%;
+  border-radius: 2px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3), 0 0 6px oklch(0.7 0.14 85 / 0.3);
+  transition: width 0.5s ease;
+  animation: combat-xp-shimmer 2.5s linear infinite;
+}
+
+/* ─── 4d. Circular cooldown ring using conic-gradient ─── */
+@keyframes combat-cooldown-tick {
+  0% {
+    background: conic-gradient(
+      rgb(var(--cyber-cyan-rgb) / 0.7) 0deg,
+      rgb(var(--cyber-cyan-rgb) / 0.7) 360deg,
+      oklch(0.2 0.02 250) 360deg
+    );
+  }
+  100% {
+    background: conic-gradient(
+      rgb(var(--cyber-cyan-rgb) / 0.7) 0deg,
+      rgb(var(--cyber-cyan-rgb) / 0.7) 0deg,
+      oklch(0.2 0.02 250) 0deg
+    );
+  }
+}
+
+.combat-cooldown-ring {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  animation: combat-cooldown-tick var(--cooldown-duration, 3s) linear forwards;
+  position: relative;
+}
+
+.combat-cooldown-ring::after {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  background: oklch(0.12 0.02 250);
+  border-radius: 50%;
+}
+
+/* ─── 4e. Floating damage number — rises and fades ─── */
+@keyframes combat-damage-float {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  60% {
+    opacity: 0.8;
+    transform: translateY(-30px) scale(1.1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-40px) scale(0.9);
+  }
+}
+
+.combat-damage-number {
+  position: absolute;
+  font-family: 'Courier New', monospace;
+  font-size: 18px;
+  font-weight: 700;
+  color: oklch(0.75 0.18 25);
+  text-shadow: 0 0 8px oklch(0.75 0.18 25 / 0.5), 0 1px 2px rgba(0,0,0,0.6);
+  pointer-events: none;
+  white-space: nowrap;
+  animation: combat-damage-float 1s ease-out both;
+}
+
+.combat-damage-number[data-type='critical'] {
+  font-size: 24px;
+  color: oklch(0.8 0.18 0);
+  text-shadow: 0 0 12px oklch(0.8 0.18 0 / 0.6), 0 1px 2px rgba(0,0,0,0.6);
+}
+
+.combat-damage-number[data-type='heal'] {
+  color: oklch(0.7 0.17 160);
+  text-shadow: 0 0 8px oklch(0.7 0.17 160 / 0.5), 0 1px 2px rgba(0,0,0,0.6);
+}
+
+/* ─── 4f. Status effect icon with pulse border ─── */
+@keyframes combat-status-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(var(--cyber-cyan-rgb) / 0.4); }
+  50% { box-shadow: 0 0 0 3px rgb(var(--cyber-cyan-rgb) / 0); }
+}
+
+.combat-status-effect {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.3);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  animation: combat-status-pulse 2s ease-in-out infinite;
+}
+
+/* ─── 4g. Turn indicator — pulsing highlight ring ─── */
+@keyframes combat-turn-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 2px rgb(var(--cyber-cyan-rgb) / 0.3),
+                0 0 12px rgb(var(--cyber-cyan-rgb) / 0.1);
+  }
+  50% {
+    box-shadow: 0 0 0 3px rgb(var(--cyber-cyan-rgb) / 0.6),
+                0 0 20px rgb(var(--cyber-cyan-rgb) / 0.25);
+  }
+}
+
+.combat-turn-indicator {
+  border-radius: 4px;
+  animation: combat-turn-pulse 1.5s ease-in-out infinite;
+}
+
+/* ─── 4h. Victory screen flash ─── */
+@keyframes combat-victory-flash {
+  0% { opacity: 0; }
+  30% { opacity: 0.3; }
+  100% { opacity: 0; }
+}
+
+.combat-victory-flash {
+  position: fixed;
+  inset: 0;
+  background: white;
+  z-index: 90;
+  pointer-events: none;
+  animation: combat-victory-flash 1.5s ease-in-out both;
+}
+
+
+/* ══════════════════════════════════════════════════════════════
+   SECTION 5 — Scene Transition & Atmospheric Effects (8 classes)
+   ══════════════════════════════════════════════════════════════ */
+
+/* ─── 5a. Full-screen wipe from left to right ─── */
+@keyframes transition-wipe-in {
+  0% { clip-path: inset(0 100% 0 0); }
+  100% { clip-path: inset(0 0% 0 0); }
+}
+
+@keyframes transition-wipe-out {
+  0% { clip-path: inset(0 0% 0 0); }
+  100% { clip-path: inset(0 100% 0 0); }
+}
+
+.transition-wipe-right {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: oklch(0.08 0.02 250);
+}
+
+.transition-wipe-right.entering {
+  animation: transition-wipe-in 0.8s ease-in-out both;
+}
+
+.transition-wipe-right.exiting {
+  animation: transition-wipe-out 0.8s ease-in-out both;
+}
+
+/* ─── 5b. Crossfade dissolve transition ─── */
+@keyframes transition-dissolve-in {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+.transition-dissolve {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  animation: transition-dissolve-in 1s ease both;
+}
+
+/* ─── 5c. Circular reveal from center ─── */
+@keyframes transition-circle-open {
+  0% { clip-path: circle(0% at 50% 50%); }
+  100% { clip-path: circle(75% at 50% 50%); }
+}
+
+.transition-circle-open {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  animation: transition-circle-open 0.8s ease-out both;
+}
+
+/* ─── 5d. Rain overlay — diagonal line pattern ─── */
+@keyframes atmosphere-rain-scroll {
+  0% { background-position: 0 0; }
+  100% { background-position: 40px 100px; }
+}
+
+.atmosphere-rain-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+  opacity: 0.15;
+  background: repeating-linear-gradient(
+    115deg,
+    transparent 0px,
+    transparent 8px,
+    rgba(180, 210, 230, 0.15) 8px,
+    rgba(180, 210, 230, 0.15) 9px
+  );
+  background-size: 40px 100px;
+  animation: atmosphere-rain-scroll 0.4s linear infinite;
+}
+
+/* ─── 5e. Frost vignette — icy edges ─── */
+.atmosphere-frost-vignette {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 4;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 50%,
+    rgba(200, 220, 240, 0.06) 70%,
+    rgba(200, 220, 240, 0.12) 85%,
+    rgba(200, 220, 240, 0.18) 100%
+  );
+}
+
+/* ─── 5f. Heat shimmer — subtle wavering distortion ─── */
+@keyframes atmosphere-heat-shimmer {
+  0%, 100% { transform: skewX(0deg); }
+  25% { transform: skewX(0.3deg); }
+  75% { transform: skewX(-0.3deg); }
+}
+
+.atmosphere-heat-shimmer {
+  animation: atmosphere-heat-shimmer 3s ease-in-out infinite;
+}
+
+/* ─── 5g. Floating dust motes via box-shadow animation ─── */
+@keyframes atmosphere-dust-float {
+  0% {
+    box-shadow:
+      10px 20px 1px rgba(255, 255, 255, 0.04),
+      50px 60px 0px rgba(255, 255, 255, 0.03),
+      90px 30px 1px rgba(255, 255, 255, 0.05),
+      130px 80px 0px rgba(255, 255, 255, 0.02),
+      170px 10px 1px rgba(255, 255, 255, 0.04),
+      210px 50px 0px rgba(255, 255, 255, 0.03);
+  }
+  100% {
+    box-shadow:
+      10px -60px 1px rgba(255, 255, 255, 0.04),
+      50px -20px 0px rgba(255, 255, 255, 0.03),
+      90px -70px 1px rgba(255, 255, 255, 0.05),
+      130px -10px 0px rgba(255, 255, 255, 0.02),
+      170px -50px 1px rgba(255, 255, 255, 0.04),
+      210px -30px 0px rgba(255, 255, 255, 0.03);
+  }
+}
+
+.atmosphere-dust-particles {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+  animation: atmosphere-dust-float 8s linear infinite;
+}
+
+/* ─── 5h. Puddle reflection — wet ground gradient ─── */
+.atmosphere-puddle-reflection {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 25%;
+  background: linear-gradient(
+    to top,
+    rgba(100, 140, 180, 0.06) 0%,
+    rgba(100, 140, 180, 0.02) 60%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+
+/* ══════════════════════════════════════════════════════════════
+   SECTION 6 — Utility & Accessibility (6 classes)
+   ══════════════════════════════════════════════════════════════ */
+
+/* ─── 6a. Visually hidden (screen reader only) ─── */
+.util-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ─── 6b. Focus-visible ring — cyan outline ─── */
+.util-focus-visible-ring:focus-visible {
+  outline: 2px solid rgb(var(--cyber-cyan-rgb) / 0.8);
+  outline-offset: 2px;
+}
+
+/* ─── 6c. Hide scrollbar ─── */
+.util-no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.util-no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* ─── 6d. Truncate to 2 lines ─── */
+.util-truncate-2-lines {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ─── 6e. Truncate to 3 lines ─── */
+.util-truncate-3-lines {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ─── 6f. Motion-safe — animations only when user allows motion ─── */
+@media (prefers-reduced-motion: no-preference) {
+  .util-motion-safe {
+    animation-play-state: running;
+    transition-duration: inherit;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .util-motion-safe {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+
+/* ══════════════════════════════════════════════════════════════
+   REDUCED MOTION — Kill all new animations for accessibility
+   ══════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  /* Section 1 — Loading & Boot */
+  .boot-glitch-text,
+  .boot-terminal-cursor,
+  .boot-progress-bar::after,
+  .boot-fade-in-up,
+  .boot-text-reveal,
+  .boot-static-noise,
+  .boot-pulse-ring {
+    animation: none !important;
+  opacity: 1 !important;
+    transform: none !important;
+    clip-path: none !important;
+  }
+
+  /* Section 3 — Narrative & Dialogue */
+  .dialogue-dice-indicator[data-rolling='true'],
+  .poem-recitation-overlay,
+  .narrative-typing-indicator span {
+    animation: none !important;
+  }
+
+  /* Section 4 — Combat & Gameplay */
+  .combat-xp-bar,
+  .combat-cooldown-ring,
+  .combat-damage-number,
+  .combat-status-effect,
+  .combat-turn-indicator,
+  .combat-victory-flash {
+    animation: none !important;
+  }
+
+  /* Section 5 — Scene Transitions & Atmosphere */
+  .transition-wipe-right.entering,
+  .transition-wipe-right.exiting,
+  .transition-dissolve,
+  .transition-circle-open,
+  .atmosphere-rain-overlay,
+  .atmosphere-heat-shimmer,
+  .atmosphere-dust-particles {
+    animation: none !important;
+  }
+}
+
+
+/* ─── Consolidated from hud-round4.css ─── */
+/* ══════════════════════════════════════════════════════════════
+   ROUND 4: HUD Deep Styling & New Feature Animations
+   ══════════════════════════════════════════════════════════════ */
+
+/* ─── Exploration Progress Badge: ring breathing glow ─── */
+@keyframes exploration-ring-breathe {
+  0%, 100% {
+    filter: drop-shadow(0 0 2px rgba(0, 255, 100, 0.2));
+  }
+  50% {
+    filter: drop-shadow(0 0 6px rgba(0, 255, 100, 0.4));
+  }
+}
+
+.exploration-ring-breathe {
+  animation: exploration-ring-breathe 3s ease-in-out infinite;
+}
+
+.exploration-progress-badge {
+  transition: opacity 0.3s ease;
+}
+
+/* ─── Quest tracker glow border animation ─── */
+@keyframes quest-tracker-glow {
+  0%, 100% {
+    box-shadow:
+      0 0 4px var(--quest-glow-color, rgb(var(--cyber-cyan-rgb) / 0.1)),
+      0 2px 8px rgba(0, 0, 0, 0.5);
+  }
+  50% {
+    box-shadow:
+      0 0 10px var(--quest-glow-color, rgb(var(--cyber-cyan-rgb) / 0.25)),
+      0 0 20px var(--quest-glow-color, rgb(var(--cyber-cyan-rgb) / 0.08)),
+      0 2px 12px rgba(0, 0, 0, 0.5);
+  }
+}
+
+.quest-tracker-glow {
+  animation: quest-tracker-glow 3s ease-in-out infinite;
+}
+
+/* ─── Quest tracker progress bar shimmer ─── */
+@keyframes quest-progress-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.quest-progress-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.15) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: quest-progress-shimmer 2.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* ─── Crosshair E-key prompt: soft pulse ring ─── */
+@keyframes e-key-ring-pulse {
+  0%, 100% {
+    box-shadow:
+      0 0 6px rgb(var(--cyber-cyan-rgb) / 0.15),
+      0 0 12px rgb(var(--cyber-cyan-rgb) / 0.05),
+      0 2px 6px rgba(0, 0, 0, 0.6);
+  }
+  50% {
+    box-shadow:
+      0 0 12px rgb(var(--cyber-cyan-rgb) / 0.3),
+      0 0 24px rgb(var(--cyber-cyan-rgb) / 0.1),
+      0 2px 10px rgba(0, 0, 0, 0.6);
+  }
+}
+
+.e-key-pulse-ring {
+  animation: e-key-ring-pulse 1.5s ease-in-out infinite;
+}
+
+/* ─── Scene discovery: slide-in ribbon ─── */
+@keyframes discovery-ribbon {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+.discovery-ribbon-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.discovery-ribbon-shine::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(52, 211, 153, 0.08) 40%,
+    rgba(52, 211, 153, 0.15) 50%,
+    rgba(52, 211, 153, 0.08) 60%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: discovery-ribbon 3s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* ─── HUD stat value change: brief background flash ─── */
+@keyframes stat-value-flash {
+  0% {
+    text-shadow: 0 0 12px currentColor;
+  }
+  100% {
+    text-shadow: 0 0 4px currentColor;
+  }
+}
+
+.stat-value-flash {
+  animation: stat-value-flash 0.6s ease-out;
+}
+
+/* ─── QuickAccess toolbar: corner bracket enhanced ─── */
+.corner-bracket-sm {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.corner-bracket-sm-tl {
+  top: 2px;
+  left: 2px;
+  border-top: 1px solid rgb(var(--cyber-cyan-rgb) / 0.3);
+  border-left: 1px solid rgb(var(--cyber-cyan-rgb) / 0.3);
+}
+
+.corner-bracket-sm-tr {
+  top: 2px;
+  right: 2px;
+  border-top: 1px solid rgb(var(--cyber-cyan-rgb) / 0.3);
+  border-right: 1px solid rgb(var(--cyber-cyan-rgb) / 0.3);
+}
+
+.corner-bracket-sm-bl {
+  bottom: 2px;
+  left: 2px;
+  border-bottom: 1px solid rgb(var(--cyber-cyan-rgb) / 0.3);
+  border-left: 1px solid rgb(var(--cyber-cyan-rgb) / 0.3);
+}
+
+.corner-bracket-sm-br {
+  bottom: 2px;
+  right: 2px;
+  border-bottom: 1px solid rgb(var(--cyber-cyan-rgb) / 0.3);
+  border-right: 1px solid rgb(var(--cyber-cyan-rgb) / 0.3);
+}
+
+/* ─── HUD scanline bar overlay ─── */
+@keyframes scanline-overlay {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+
+.hud-scanline-bar {
+  position: relative;
+  overflow: hidden;
+}
+
+.hud-scanline-bar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    transparent 3px,
+    rgba(0, 0, 0, 0.03) 3px,
+    rgba(0, 0, 0, 0.03) 4px
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ─── Panel corner accent: top-left decorative bracket ─── */
+@keyframes panel-corner-sweep {
+  0% { opacity: 0.3; }
+  50% { opacity: 0.7; }
+  100% { opacity: 0.3; }
+}
+
+.panel-corner-accent {
+  position: relative;
+}
+
+.panel-corner-accent::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 24px;
+  height: 24px;
+  border-top: 1px solid rgb(var(--cyber-cyan-rgb) / 0.4);
+  border-left: 1px solid rgb(var(--cyber-cyan-rgb) / 0.4);
+  border-top-left-radius: 6px;
+  pointer-events: none;
+  animation: panel-corner-sweep 4s ease-in-out infinite;
+}
+
+/* ─── Panel data-stream background ─── */
+.panel-data-stream {
+  position: relative;
+}
+
+.panel-data-stream::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent 0px,
+      transparent 6px,
+      rgb(var(--cyber-cyan-rgb) / 0.015) 6px,
+      rgb(var(--cyber-cyan-rgb) / 0.015) 7px
+    );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── Panel scanlines (subtle) ─── */
+.panel-scanlines::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    transparent 2px,
+    rgba(0, 0, 0, 0.02) 2px,
+    rgba(0, 0, 0, 0.02) 3px
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+.panel-scanlines-subtle::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    transparent 3px,
+    rgba(0, 0, 0, 0.015) 3px,
+    rgba(0, 0, 0, 0.015) 4px
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── Neon border breathing for panels ─── */
+@keyframes neon-border-breathe {
+  0%, 100% {
+    border-color: rgb(var(--cyber-cyan-rgb) / 0.15);
+    box-shadow: 0 0 12px rgb(var(--cyber-cyan-rgb) / 0.04), 0 8px 32px rgba(0, 0, 0, 0.5);
+  }
+  50% {
+    border-color: rgb(var(--cyber-cyan-rgb) / 0.25);
+    box-shadow: 0 0 20px rgb(var(--cyber-cyan-rgb) / 0.08), 0 0 40px rgb(var(--cyber-cyan-rgb) / 0.03), 0 8px 32px rgba(0, 0, 0, 0.5);
+  }
+}
+
+.neon-border-breathe {
+  animation: neon-border-breathe 4s ease-in-out infinite;
+}
+
+/* ─── Cyber badge dot: notification dot with pulse ─── */
+@keyframes cyber-badge-dot-pulse {
+  0%, 100% {
+    box-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.3);
+  }
+  50% {
+    box-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.5), 0 0 16px rgb(var(--cyber-cyan-rgb) / 0.2);
+  }
+}
+
+.cyber-badge-dot {
+  animation: cyber-badge-dot-pulse 2s ease-in-out infinite;
+}
+
+/* ─── Focus visible: cyber ring for keyboard navigation ─── */
+.focus-cyber:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgb(var(--cyber-cyan-rgb) / 0.5), 0 0 12px rgb(var(--cyber-cyan-rgb) / 0.2);
+}
+
+/* ─── Neon text effects ─── */
+.neon-text-cyan {
+  text-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.4);
+}
+
+.neon-text-rose {
+  text-shadow: 0 0 6px rgba(251, 113, 133, 0.4);
+}
+
+/* ─── Location name glow ─── */
+@keyframes location-name-glow {
+  0%, 100% {
+    text-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.3);
+  }
+  50% {
+    text-shadow: 0 0 10px rgb(var(--cyber-cyan-rgb) / 0.5), 0 0 20px rgb(var(--cyber-cyan-rgb) / 0.15);
+  }
+}
+
+.location-name-glow {
+  animation: location-name-glow 3s ease-in-out infinite;
+}
+
+/* ─── Low energy critical blink ─── */
+@keyframes energy-critical-blink {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
+}
+
+.energy-critical {
+  animation: energy-critical-blink 1.5s ease-in-out infinite;
+}
+
+/* ─── Stat bar shimmer (for CyberStatBar) ─── */
+@keyframes stat-bar-shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(300%); }
+}
+
+.stat-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+  animation: stat-bar-shimmer 2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* ─── Low bar pulse animations ─── */
+@keyframes low-bar-pulse {
+  0%, 100% {
+    box-shadow: inset 0 0 3px rgba(251, 113, 133, 0.15);
+  }
+  50% {
+    box-shadow: inset 0 0 8px rgba(251, 113, 133, 0.3), 0 0 6px rgba(251, 113, 133, 0.1);
+  }
+}
+
+.low-bar-pulse {
+  animation: low-bar-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes low-bar-pulse-amber {
+  0%, 100% {
+    box-shadow: inset 0 0 3px rgba(251, 191, 36, 0.15);
+  }
+  50% {
+    box-shadow: inset 0 0 8px rgba(251, 191, 36, 0.3), 0 0 6px rgba(251, 191, 36, 0.1);
+  }
+}
+
+.low-bar-pulse-amber {
+  animation: low-bar-pulse-amber 1.2s ease-in-out infinite;
+}
+
+/* ─── Cyber keyboard hint (for shortcut keys) ─── */
+.cyber-keyboard-hint {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-family: 'Geist Mono', monospace;
+  font-weight: 600;
+  line-height: 1;
+  color: rgb(var(--cyber-cyan-rgb) / 0.7);
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.9) 0%, rgba(2, 6, 23, 0.95) 100%);
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.25);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* ─── Cyber hover glow (for interactive HUD elements) ─── */
+.cyber-hover-glow {
+  transition: all 0.2s ease;
+}
+
+.cyber-hover-glow:hover {
+  box-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.15), 0 0 16px rgb(var(--cyber-cyan-rgb) / 0.05);
+}
+
+/* ─── Reduced motion: disable all Round 4 animations ─── */
+@media (prefers-reduced-motion: reduce) {
+  .exploration-ring-breathe,
+  .quest-tracker-glow,
+  .quest-progress-shimmer::after,
+  .e-key-pulse-ring,
+  .discovery-ribbon-shine::after,
+  .stat-value-flash,
+  .hud-scanline-bar::after,
+  .panel-corner-accent::before,
+  .neon-border-breathe,
+  .cyber-badge-dot,
+  .location-name-glow,
+  .energy-critical,
+  .stat-shimmer::after,
+  .low-bar-pulse,
+  .low-bar-pulse-amber {
+    animation: none !important;
+  }
+}
+
+/* ─── Consolidated from hud-round5.css ─── */
+/* ══════════════════════════════════════════════════════════════
+   ROUND 5: Ambient Vignette, Interaction Cooldown, Karma Tier,
+   Minimap Enhancement, Status Bar Polish, Compass POI Markers
+   ══════════════════════════════════════════════════════════════ */
+
+/* ─── Scene Ambient Vignette: time-of-day reactive edge glow ─── */
+@keyframes vignette-sunrise {
+  0%, 100% {
+    box-shadow:
+      inset 0 0 120px 30px rgba(255, 140, 50, 0.06),
+      inset 0 -60px 80px 20px rgba(255, 100, 50, 0.04);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 140px 40px rgba(255, 140, 50, 0.10),
+      inset 0 -80px 100px 30px rgba(255, 100, 50, 0.06);
+  }
+}
+
+@keyframes vignette-day {
+  0%, 100% {
+    box-shadow:
+      inset 0 0 80px 20px rgba(255, 255, 255, 0.02);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 100px 30px rgba(255, 255, 255, 0.03);
+  }
+}
+
+@keyframes vignette-evening {
+  0%, 100% {
+    box-shadow:
+      inset 0 0 120px 30px rgba(200, 80, 40, 0.08),
+      inset 0 -40px 80px 20px rgba(180, 60, 30, 0.05);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 150px 40px rgba(200, 80, 40, 0.12),
+      inset 0 -60px 100px 30px rgba(180, 60, 30, 0.07);
+  }
+}
+
+@keyframes vignette-night {
+  0%, 100% {
+    box-shadow:
+      inset 0 0 150px 50px rgba(10, 20, 60, 0.15),
+      inset 0 0 80px 20px rgba(30, 60, 120, 0.06);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 180px 60px rgba(10, 20, 60, 0.20),
+      inset 0 0 100px 30px rgba(30, 60, 120, 0.08);
+  }
+}
+
+@keyframes vignette-rain {
+  0%, 100% {
+    box-shadow:
+      inset 0 0 100px 30px rgba(60, 120, 200, 0.06),
+      inset 0 0 40px 10px rgba(100, 160, 255, 0.03);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 120px 40px rgba(60, 120, 200, 0.09),
+      inset 0 0 60px 15px rgba(100, 160, 255, 0.04);
+  }
+}
+
+@keyframes vignette-snow {
+  0%, 100% {
+    box-shadow:
+      inset 0 0 100px 30px rgba(180, 200, 240, 0.05);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 130px 40px rgba(180, 200, 240, 0.08);
+  }
+}
+
+.ambient-vignette-sunrise  { animation: vignette-sunrise 8s ease-in-out infinite; }
+.ambient-vignette-day      { animation: vignette-day 10s ease-in-out infinite; }
+.ambient-vignette-evening  { animation: vignette-evening 7s ease-in-out infinite; }
+.ambient-vignette-night    { animation: vignette-night 6s ease-in-out infinite; }
+.ambient-vignette-rain     { animation: vignette-rain 4s ease-in-out infinite; }
+.ambient-vignette-snow     { animation: vignette-snow 5s ease-in-out infinite; }
+
+/* ─── Interaction Cooldown Ring ─── */
+@keyframes cooldown-ring-shrink {
+  0% {
+    stroke-dashoffset: 0;
+    opacity: 0.8;
+  }
+  80% {
+    opacity: 0.6;
+  }
+  100% {
+    stroke-dashoffset: 100.53; /* 2 * PI * 16 */
+    opacity: 0;
+  }
+}
+
+.cooldown-ring-active {
+  animation: cooldown-ring-shrink 0.8s linear forwards;
+}
+
+/* ─── Karma Tier Badge glow ─── */
+@keyframes karma-tier-breathe {
+  0%, 100% {
+    box-shadow:
+      0 0 6px var(--karma-tier-color-alpha),
+      inset 0 0 3px var(--karma-tier-color-alpha);
+    border-color: var(--karma-tier-color);
+  }
+  50% {
+    box-shadow:
+      0 0 12px var(--karma-tier-color-alpha),
+      0 0 24px var(--karma-tier-color-alpha-dim),
+      inset 0 0 6px var(--karma-tier-color-alpha);
+    border-color: var(--karma-tier-color-bright);
+  }
+}
+
+.karma-tier-badge-glow {
+  animation: karma-tier-breathe 4s ease-in-out infinite;
+}
+
+/* ─── Status Effects Bar: border flow animation ─── */
+@keyframes status-bar-border-flow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.status-bar-border-flow {
+  background-image: linear-gradient(
+    90deg,
+    rgb(var(--cyber-cyan-rgb) / 0.2),
+    rgb(var(--cyber-cyan-rgb) / 0.4),
+    rgb(var(--cyber-cyan-rgb) / 0.2)
+  );
+  background-size: 200% 100%;
+  animation: status-bar-border-flow 3s ease-in-out infinite;
+}
+
+.status-bar-border-flow-debuff {
+  background-image: linear-gradient(
+    90deg,
+    rgba(251, 113, 133, 0.25),
+    rgba(251, 113, 133, 0.5),
+    rgba(251, 113, 133, 0.25)
+  );
+  background-size: 200% 100%;
+  animation: status-bar-border-flow 2s ease-in-out infinite;
+}
+
+/* ─── Minimap: enhanced scanline sweep ─── */
+@keyframes minimap-scanline-sweep {
+  0% {
+    top: 0;
+    opacity: 0.5;
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+.minimap-scanline-sweep::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgb(var(--cyber-cyan-rgb) / 0.15), transparent);
+  animation: minimap-scanline-sweep 4s linear infinite;
+  pointer-events: none;
+}
+
+/* ─── Minimap: ambient glow pulse for player ─── */
+@keyframes minimap-ambient-pulse {
+  0%, 100% {
+    box-shadow: 0 0 12px rgb(var(--cyber-cyan-rgb) / 0.06);
+  }
+  50% {
+    box-shadow: 0 0 20px rgb(var(--cyber-cyan-rgb) / 0.12), 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.15);
+  }
+}
+
+.minimap-ambient-pulse {
+  animation: minimap-ambient-pulse 5s ease-in-out infinite;
+}
+
+/* ─── Compass: quest POI marker pulse ─── */
+@keyframes compass-poi-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 0.6;
+  }
+}
+
+.compass-poi-marker {
+  animation: compass-poi-pulse 2s ease-in-out infinite;
+}
+
+/* ─── QuickAccessToolbar: stat tooltip fade-in ─── */
+@keyframes stat-tooltip-fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stat-tooltip-fade-in {
+  animation: stat-tooltip-fade-in 0.2s ease-out;
+}
+
+/* ─── Notification Feed slide-in ─── */
+@keyframes notification-feed-slide-in {
+  0% {
+    opacity: 0;
+    transform: translateX(20px);
+    max-height: 0;
+    margin-bottom: 0;
+  }
+  15% {
+    opacity: 1;
+    transform: translateX(0);
+    max-height: 60px;
+    margin-bottom: 4px;
+  }
+  85% {
+    opacity: 1;
+    max-height: 60px;
+    margin-bottom: 4px;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-10px);
+    max-height: 0;
+    margin-bottom: 0;
+  }
+}
+
+.notification-feed-item {
+  animation: notification-feed-slide-in 5s ease-in-out forwards;
+  overflow: hidden;
+}
+
+/* ─── HUD Panel Glass Enhancement: inner data stream ─── */
+@keyframes data-stream-flow {
+  0% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: 0% 200%;
+  }
+}
+
+.data-stream-bg {
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgb(var(--cyber-cyan-rgb) / 0.015) 3px,
+    rgb(var(--cyber-cyan-rgb) / 0.015) 4px
+  );
+  background-size: 100% 20px;
+  animation: data-stream-flow 8s linear infinite;
+}
+
+/* ─── Crosshair: interaction readiness glow ─── */
+@keyframes crosshair-ready-glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 2px rgb(var(--cyber-cyan-rgb) / 0.3));
+  }
+  50% {
+    filter: drop-shadow(0 0 6px rgb(var(--cyber-cyan-rgb) / 0.6));
+  }
+}
+
+.crosshair-ready-glow {
+  animation: crosshair-ready-glow 2s ease-in-out infinite;
+}
+
+/* ─── Reduced motion: disable all round 5 animations ─── */
+@media (prefers-reduced-motion: reduce) {
+  .ambient-vignette-sunrise,
+  .ambient-vignette-day,
+  .ambient-vignette-evening,
+  .ambient-vignette-night,
+  .ambient-vignette-rain,
+  .ambient-vignette-snow,
+  .cooldown-ring-active,
+  .karma-tier-badge-glow,
+  .status-bar-border-flow,
+  .status-bar-border-flow-debuff,
+  .minimap-scanline-sweep::after,
+  .minimap-ambient-pulse,
+  .compass-poi-marker,
+  .crosshair-ready-glow {
+    animation: none !important;
+  }
+
+  .notification-feed-item {
+    animation: none !important;
+    opacity: 1;
+    max-height: 60px;
+    margin-bottom: 4px;
+    transform: none;
+  }
+
+  .data-stream-bg {
+    animation: none !important;
+  }
+}
+
+/* ─── Consolidated from hud-round6.css ─── */
+/* ============================================================
+   HUD Animations — Round 6
+   Advanced micro-animations for HUD elements.
+   All animations respect prefers-reduced-motion.
+   ============================================================ */
+
+/* ----------------------------------------------------------
+   1. save-toast-progress — progress bar fill for quick-save
+   ---------------------------------------------------------- */
+@keyframes save-toast-progress {
+  0% {
+    width: 0%;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+/* ----------------------------------------------------------
+   2. save-toast-glow — pulsing border glow for save toast
+   ---------------------------------------------------------- */
+@keyframes save-toast-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.2);
+  }
+  50% {
+    box-shadow: 0 0 20px rgb(var(--cyber-cyan-rgb) / 0.5);
+  }
+}
+
+/* ----------------------------------------------------------
+   3. scene-name-fade-in — scene location name transition
+   ---------------------------------------------------------- */
+@keyframes scene-name-fade-in {
+  0% {
+    opacity: 0;
+    transform: translateX(-8px);
+    filter: blur(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+    filter: blur(0);
+  }
+}
+
+/* ----------------------------------------------------------
+   4. edge-warning-pulse — low-energy / high-stress edge glow
+   ---------------------------------------------------------- */
+@keyframes edge-warning-pulse {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* ----------------------------------------------------------
+   5. top-bar-border-flow — animated gradient border for top bar
+   ---------------------------------------------------------- */
+@keyframes top-bar-border-flow {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* ----------------------------------------------------------
+   6. xp-bar-shimmer-top — shimmer sweep for XP mini bar
+   ---------------------------------------------------------- */
+@keyframes xp-bar-shimmer-top {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(200%);
+  }
+}
+
+/* ----------------------------------------------------------
+   7. notification-feed-slide — slide-in for notification items
+   ---------------------------------------------------------- */
+@keyframes notification-feed-slide {
+  0% {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ----------------------------------------------------------
+   8. stat-bar-segment-glow — glow pulse for stat segments
+   ---------------------------------------------------------- */
+@keyframes stat-bar-segment-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.15);
+  }
+  50% {
+    box-shadow: 0 0 10px rgb(var(--cyber-cyan-rgb) / 0.45);
+  }
+}
+
+/* ----------------------------------------------------------
+   9. compass-needle-swing — subtle compass needle oscillation
+   ---------------------------------------------------------- */
+@keyframes compass-needle-swing {
+  0%,
+  100% {
+    transform: rotate(-2deg);
+  }
+  50% {
+    transform: rotate(2deg);
+  }
+}
+
+/* ----------------------------------------------------------
+   10. more-menu-item-stagger — staggered entrance for "Ещё" items
+   ---------------------------------------------------------- */
+@keyframes more-menu-item-stagger {
+  0% {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ----------------------------------------------------------
+   11. weather-badge-shimmer — subtle shimmer for weather badge
+   ---------------------------------------------------------- */
+@keyframes weather-badge-shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+/* ----------------------------------------------------------
+   12. hud-element-mount — generic mount animation
+   ---------------------------------------------------------- */
+@keyframes hud-element-mount {
+  0% {
+    opacity: 0;
+    scale: 0.95;
+  }
+  100% {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+/* ==========================================================
+   Utility Classes
+   ========================================================== */
+
+/* --- Edge warning vignettes (rose/red gradient) ---------- */
+
+.hud-edge-warning-left {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 80px;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9998;
+  background: linear-gradient(
+    to right,
+    rgba(255, 40, 80, 0.45) 0%,
+    transparent 100%
+  );
+  animation: edge-warning-pulse 2s ease-in-out infinite;
+}
+
+.hud-edge-warning-right {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 80px;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9998;
+  background: linear-gradient(
+    to left,
+    rgba(255, 40, 80, 0.45) 0%,
+    transparent 100%
+  );
+  animation: edge-warning-pulse 2s ease-in-out infinite;
+}
+
+.hud-edge-warning-top {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 60px;
+  pointer-events: none;
+  z-index: 9998;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 40, 80, 0.45) 0%,
+    transparent 100%
+  );
+  animation: edge-warning-pulse 2s ease-in-out infinite;
+}
+
+.hud-edge-warning-bottom {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 60px;
+  pointer-events: none;
+  z-index: 9998;
+  background: linear-gradient(
+    to top,
+    rgba(255, 40, 80, 0.45) 0%,
+    transparent 100%
+  );
+  animation: edge-warning-pulse 2s ease-in-out infinite;
+}
+
+/* --- Top bar animated gradient border --------------------- */
+
+.top-bar-gradient-border {
+  position: relative;
+  overflow: hidden;
+}
+
+.top-bar-gradient-border::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 60%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgb(var(--cyber-cyan-rgb) / 0.7) 30%,
+    rgb(var(--cyber-cyan-rgb)) 50%,
+    rgb(var(--cyber-cyan-rgb) / 0.7) 70%,
+    transparent 100%
+  );
+  animation: top-bar-border-flow 4s linear infinite;
+}
+
+/* --- XP bar shimmer overlay ------------------------------ */
+
+.xp-shimmer-overlay {
+  position: relative;
+  overflow: hidden;
+}
+
+.xp-shimmer-overlay::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.18) 50%,
+    transparent 100%
+  );
+  animation: xp-bar-shimmer-top 2.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* --- Save toast animated (glow + scanline) --------------- */
+
+.save-toast-animated {
+  animation: save-toast-glow 0.8s ease-in-out infinite;
+  position: relative;
+  overflow: hidden;
+}
+
+.save-toast-animated::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    transparent 2px,
+    rgba(var(--cyber-cyan-rgb) / 0.04) 2px,
+    rgba(var(--cyber-cyan-rgb) / 0.04) 4px
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* --- Scene name transition ------------------------------- */
+
+.scene-name-transition {
+  animation: scene-name-fade-in 0.6s ease-out both;
+}
+
+/* ==========================================================
+   prefers-reduced-motion — disable all animations from this file
+   ========================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  /* Keyframe 1 — save-toast-progress */
+  [style*="save-toast-progress"],
+  .save-toast-progress-bar {
+    animation: none !important;
+  }
+
+  /* Keyframe 2 — save-toast-glow */
+  .save-toast-animated {
+    animation: none !important;
+  }
+
+  /* Keyframe 3 — scene-name-fade-in */
+  .scene-name-transition {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+
+  /* Keyframe 4 — edge-warning-pulse */
+  .hud-edge-warning-left,
+  .hud-edge-warning-right,
+  .hud-edge-warning-top,
+  .hud-edge-warning-bottom {
+    animation: none !important;
+    opacity: 0.5 !important;
+  }
+
+  /* Keyframe 5 — top-bar-border-flow */
+  .top-bar-gradient-border::after {
+    animation: none !important;
+  }
+
+  /* Keyframe 6 — xp-bar-shimmer-top */
+  .xp-shimmer-overlay::after {
+    animation: none !important;
+  }
+
+  /* Keyframe 7 — notification-feed-slide */
+  [style*="notification-feed-slide"],
+  .notification-feed-item {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  /* Keyframe 8 — stat-bar-segment-glow */
+  [style*="stat-bar-segment-glow"],
+  .stat-bar-segment {
+    animation: none !important;
+    box-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.15) !important;
+  }
+
+  /* Keyframe 9 — compass-needle-swing */
+  [style*="compass-needle-swing"],
+  .compass-needle {
+    animation: none !important;
+    transform: none !important;
+  }
+
+  /* Keyframe 10 — more-menu-item-stagger */
+  [style*="more-menu-item-stagger"],
+  .more-menu-item {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  /* Keyframe 11 — weather-badge-shimmer */
+  [style*="weather-badge-shimmer"],
+  .weather-badge {
+    animation: none !important;
+  }
+
+  /* Keyframe 12 — hud-element-mount */
+  [style*="hud-element-mount"],
+  .hud-element-mounted {
+    animation: none !important;
+    opacity: 1 !important;
+    scale: 1 !important;
+  }
+}
+
+/* ─── Consolidated from hud-round7.css ─── */
+/* ─── Volodka RPG – HUD Round 7 Animations & Utilities ─── */
+/* 12+ new keyframes, utility classes for new HUD components.
+ * All animations respect prefers-reduced-motion. */
+
+/* ════════════════════════════════════════════
+   KEYFRAME ANIMATIONS
+   ════════════════════════════════════════════ */
+
+/* 1. Radar ping — expanding ring for interaction proximity detection */
+@keyframes radar-ping {
+  0% {
+    transform: scale(0.3);
+    opacity: 0.7;
+  }
+  70% {
+    transform: scale(1);
+    opacity: 0.15;
+  }
+  100% {
+    transform: scale(1.3);
+    opacity: 0;
+  }
+}
+
+/* 2. Radar sweep — rotating line like a radar screen */
+@keyframes radar-sweep {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 3. Breadcrumb fade — for minimap player trail dots */
+@keyframes breadcrumb-fade {
+  0% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.1); }
+  100% { opacity: 0.2; transform: scale(0.6); }
+}
+
+/* 4. Scene type badge glow — breathing glow for the scene context chip */
+@keyframes scene-type-badge-glow {
+  0%, 100% {
+    box-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.15), inset 0 0 3px rgb(var(--cyber-cyan-rgb) / 0.05);
+  }
+  50% {
+    box-shadow: 0 0 12px rgb(var(--cyber-cyan-rgb) / 0.3), inset 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.08);
+  }
+}
+
+/* 5. Session timer blink — blinking colon separator for playtime */
+@keyframes session-timer-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}
+
+/* 6. Coordinates flicker — subtle CRT-style flicker for coordinate display */
+@keyframes coordinates-flicker {
+  0%, 100% { opacity: 0.7; }
+  3% { opacity: 0.3; }
+  6% { opacity: 0.8; }
+  10% { opacity: 0.6; }
+}
+
+/* 7. Pedometer step — pop animation when step count increments */
+@keyframes pedometer-step {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+/* 8. POI marker bounce — gentle bounce for compass POI markers */
+@keyframes poi-marker-bounce {
+  0%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-3px); }
+  60% { transform: translateY(-1px); }
+}
+
+/* 9. Speed line streak — horizontal lines that appear during movement */
+@keyframes speed-line-streak {
+  0% { transform: translateX(100%) scaleX(0.3); opacity: 0; }
+  20% { opacity: 0.4; transform: translateX(60%) scaleX(1); }
+  100% { transform: translateX(-100%) scaleX(0.3); opacity: 0; }
+}
+
+/* 10. Data stream accent — vertical data stream for panel decorations */
+@keyframes data-stream-accent {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 40px; }
+}
+
+/* 11. Glitch micro — micro glitch effect for stat values */
+@keyframes glitch-micro {
+  0%, 100% { transform: translate(0); filter: none; }
+  20% { transform: translate(-1px, 1px); filter: hue-rotate(10deg); }
+  40% { transform: translate(1px, -1px); filter: hue-rotate(-10deg); }
+  60% { transform: translate(-0.5px, 0.5px); filter: none; }
+  80% { transform: translate(0.5px, -0.5px); }
+}
+
+/* 12. Corner bracket lg — animated corner brackets for larger panels */
+@keyframes corner-bracket-lg-draw {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+/* 13. Hex pattern rotate — subtle rotating hex pattern overlay */
+@keyframes hex-pattern-rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 14. NPC proximity pulse — pulse when NPC is within interaction range */
+@keyframes npc-proximity-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgb(var(--cyber-cyan-rgb) / 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgb(var(--cyber-cyan-rgb) / 0);
+  }
+}
+
+/* 15. Interactable glow ring — animated border for interactable objects indicator */
+@keyframes interactable-glow-ring {
+  0%, 100% { border-color: rgb(var(--cyber-cyan-rgb) / 0.3); }
+  50% { border-color: rgb(var(--cyber-cyan-rgb) / 0.6); }
+}
+
+/* ════════════════════════════════════════════
+   UTILITY CLASSES
+   ════════════════════════════════════════════ */
+
+/* Radar ping ring */
+.radar-ping {
+  animation: radar-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.radar-ping-delayed {
+  animation: radar-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite 1s;
+}
+
+/* Radar sweep line */
+.radar-sweep {
+  animation: radar-sweep 4s linear infinite;
+}
+
+/* Scene context chip */
+.scene-context-chip {
+  animation: scene-type-badge-glow 3s ease-in-out infinite;
+}
+
+/* Session timer blinking colon */
+.session-timer-blink {
+  animation: session-timer-blink 1s step-end infinite;
+}
+
+/* Coordinates display */
+.coordinates-flicker {
+  animation: coordinates-flicker 4s ease-in-out infinite;
+}
+
+/* Pedometer pop */
+.pedometer-step-pop {
+  animation: pedometer-step 0.3s ease-out;
+}
+
+/* POI marker */
+.poi-marker-bounce {
+  animation: poi-marker-bounce 1.5s ease-in-out infinite;
+}
+
+/* Speed lines container */
+.speed-line-streak {
+  animation: speed-line-streak 0.8s linear infinite;
+}
+
+.speed-line-streak-delayed {
+  animation: speed-line-streak 0.8s linear infinite 0.4s;
+}
+
+/* Data stream decoration */
+.data-stream-accent {
+  background-image: repeating-linear-gradient(
+    180deg,
+    transparent,
+    transparent 3px,
+    rgb(var(--cyber-cyan-rgb) / 0.06) 3px,
+    rgb(var(--cyber-cyan-rgb) / 0.06) 4px
+  );
+  background-size: 100% 40px;
+  animation: data-stream-accent 2s linear infinite;
+}
+
+/* Glitch effect for stats */
+.glitch-micro {
+  animation: glitch-micro 3s ease-in-out infinite;
+}
+
+/* Corner bracket large */
+.corner-bracket-lg {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  animation: corner-bracket-lg-draw 0.5s ease-out both;
+}
+
+.corner-bracket-lg-tl {
+  top: -1px;
+  left: -1px;
+  border-top: 2px solid rgb(var(--cyber-cyan-rgb) / 0.4);
+  border-left: 2px solid rgb(var(--cyber-cyan-rgb) / 0.4);
+}
+
+.corner-bracket-lg-tr {
+  top: -1px;
+  right: -1px;
+  border-top: 2px solid rgb(var(--cyber-cyan-rgb) / 0.4);
+  border-right: 2px solid rgb(var(--cyber-cyan-rgb) / 0.4);
+}
+
+.corner-bracket-lg-bl {
+  bottom: -1px;
+  left: -1px;
+  border-bottom: 2px solid rgb(var(--cyber-cyan-rgb) / 0.4);
+  border-left: 2px solid rgb(var(--cyber-cyan-rgb) / 0.4);
+}
+
+.corner-bracket-lg-br {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 2px solid rgb(var(--cyber-cyan-rgb) / 0.4);
+  border-right: 2px solid rgb(var(--cyber-cyan-rgb) / 0.4);
+}
+
+/* Hex pattern overlay */
+.hex-pattern-rotate {
+  animation: hex-pattern-rotate 60s linear infinite;
+}
+
+/* NPC proximity indicator */
+.npc-proximity-pulse {
+  animation: npc-proximity-pulse 2s ease-in-out infinite;
+}
+
+/* Interactable glow */
+.interactable-glow-ring {
+  animation: interactable-glow-ring 2s ease-in-out infinite;
+}
+
+/* ════════════════════════════════════════════
+   COMPONENT-SPECIFIC STYLES
+   ════════════════════════════════════════════ */
+
+/* Session play timer widget */
+.session-timer-widget {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.05em;
+}
+
+/* Player coordinates display */
+.player-coords {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.08em;
+  font-feature-settings: 'tnum';
+}
+
+/* Footstep pedometer badge */
+.footstep-pedometer {
+  transition: transform 0.15s ease-out;
+}
+
+.footstep-pedometer.bumped {
+  animation: pedometer-step 0.3s ease-out;
+}
+
+/* Scene context info panel */
+.scene-context-panel {
+  transition: all 0.3s ease;
+}
+
+.scene-context-panel:hover {
+  background: rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Radar pulse container for interaction proximity */
+.radar-proximity-container {
+  pointer-events: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Speed lines overlay for movement feel */
+.speed-lines-overlay {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+}
+
+/* Minimap breadcrumb trail styling */
+.minimap-breadcrumb {
+  mix-blend-mode: screen;
+}
+
+/* Compass POI markers */
+.compass-poi-marker {
+  text-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.5);
+}
+
+/* ════════════════════════════════════════════
+   REDUCED MOTION
+   ════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .radar-ping,
+  .radar-ping-delayed,
+  .radar-sweep,
+  .scene-context-chip,
+  .session-timer-blink,
+  .coordinates-flicker,
+  .pedometer-step-pop,
+  .poi-marker-bounce,
+  .speed-line-streak,
+  .speed-line-streak-delayed,
+  .data-stream-accent,
+  .glitch-micro,
+  .hex-pattern-rotate,
+  .npc-proximity-pulse,
+  .interactable-glow-ring {
+    animation: none !important;
+  }
+
+  .footstep-pedometer.bumped {
+    animation: none !important;
+  }
+}
+
+/* ─── Consolidated from hud-round8.css ─── */
+/* ─── Volodka RPG – HUD Round 8 CSS ───
+   18 keyframes + 25+ utility classes
+   All animations respect prefers-reduced-motion: reduce
+*/
+
+/* ── 1. Sprint drain vignette ── */
+@keyframes sprint-drain-breathe {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+@keyframes sprint-speed-line-top {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+@keyframes sprint-speed-line-bottom {
+  0% { transform: translateY(100%); }
+  100% { transform: translateY(-100vh); }
+}
+
+@keyframes sprint-edge-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+.sprint-drain-vignette {
+  animation: sprint-drain-breathe 0.8s ease-in-out infinite;
+}
+
+.sprint-speed-line-top {
+  background: repeating-linear-gradient(
+    180deg,
+    transparent 0px,
+    transparent 20px,
+    rgba(251, 146, 60, 0.04) 20px,
+    rgba(251, 146, 60, 0.04) 21px
+  );
+  animation: sprint-speed-line-top 0.6s linear infinite;
+}
+
+.sprint-speed-line-bottom {
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    transparent 20px,
+    rgba(251, 146, 60, 0.04) 20px,
+    rgba(251, 146, 60, 0.04) 21px
+  );
+  animation: sprint-speed-line-bottom 0.6s linear infinite;
+}
+
+.sprint-edge-pulse {
+  animation: sprint-edge-pulse 1.2s ease-in-out infinite;
+}
+
+/* ── 2. Quest direction arrow ── */
+@keyframes quest-arrow-ring-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+}
+
+@keyframes quest-arrow-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+.quest-arrow-ring-pulse {
+  animation: quest-arrow-ring-pulse 2s ease-in-out infinite;
+}
+
+.quest-arrow-label {
+  animation: quest-arrow-bob 2.5s ease-in-out infinite;
+}
+
+/* ── 3. Interaction distance ring ── */
+@keyframes distance-ring-breathe {
+  0%, 100% {
+    box-shadow: 0 0 12px rgb(var(--cyber-cyan-rgb) / 0.2), inset 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.05);
+  }
+  50% {
+    box-shadow: 0 0 20px rgb(var(--cyber-cyan-rgb) / 0.35), inset 0 0 10px rgb(var(--cyber-cyan-rgb) / 0.1);
+  }
+}
+
+@keyframes distance-ring-tick-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes distance-ring-fill-pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+.distance-ring-in-range {
+  animation: distance-ring-breathe 1.5s ease-in-out infinite;
+}
+
+.distance-ring-tick {
+  animation: distance-ring-tick-spin 8s linear infinite;
+  transform-origin: center center;
+}
+
+.distance-ring-fill {
+  animation: distance-ring-fill-pulse 2s ease-in-out infinite;
+}
+
+/* ── 4. Chromatic edge ── */
+@keyframes chromatic-red-shift {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(1px); }
+}
+
+@keyframes chromatic-blue-shift {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(-1px); }
+}
+
+.chromatic-edge-red {
+  animation: chromatic-red-shift 3s ease-in-out infinite;
+}
+
+.chromatic-edge-blue {
+  animation: chromatic-blue-shift 3s ease-in-out infinite;
+}
+
+/* ── 5. Floating action indicator ── */
+@keyframes floating-action-glow {
+  0% { filter: brightness(1); }
+  50% { filter: brightness(1.3); }
+  100% { filter: brightness(1); }
+}
+
+.floating-action-item {
+  animation: floating-action-glow 2s ease-in-out infinite;
+}
+
+/* ── 6. Dynamic crosshair ── */
+@keyframes crosshair-line-fade {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+.dynamic-crosshair-line {
+  animation: crosshair-line-fade 3s ease-in-out infinite;
+}
+
+/* ── 7. Enhanced glass panel for HUD ── */
+@keyframes glass-panel-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes glass-panel-border-glow {
+  0%, 100% {
+    border-color: rgb(var(--cyber-cyan-rgb) / 0.15);
+  }
+  50% {
+    border-color: rgb(var(--cyber-cyan-rgb) / 0.3);
+  }
+}
+
+.hud-glass-panel {
+  background: linear-gradient(
+    145deg,
+    rgba(2, 6, 23, 0.92) 0%,
+    rgba(15, 23, 42, 0.88) 50%,
+    rgba(4, 8, 18, 0.92) 100%
+  );
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.15);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  animation: glass-panel-border-glow 4s ease-in-out infinite;
+}
+
+.hud-glass-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.02) 45%,
+    rgba(255, 255, 255, 0.05) 50%,
+    rgba(255, 255, 255, 0.02) 55%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: glass-panel-shimmer 6s linear infinite;
+  pointer-events: none;
+}
+
+/* ── 8. HUD button enhanced hover ── */
+@keyframes hud-btn-glow-expand {
+  0% { box-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.1); }
+  100% { box-shadow: 0 0 16px rgb(var(--cyber-cyan-rgb) / 0.25); }
+}
+
+.hud-btn-enhanced:hover {
+  animation: hud-btn-glow-expand 0.3s ease-out forwards;
+}
+
+/* ── 9. Notification feed enhanced ── */
+@keyframes notification-icon-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+
+@keyframes notification-slide-glow {
+  0% {
+    box-shadow: 0 0 8px rgba(34, 211, 238, 0.1), 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(34, 211, 238, 0.2), 0 2px 12px rgba(0, 0, 0, 0.4);
+  }
+  100% {
+    box-shadow: 0 0 8px rgba(34, 211, 238, 0.1), 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* ── 10. Stats panel breathing ── */
+@keyframes stats-panel-alive {
+  0%, 100% {
+    box-shadow:
+      0 0 20px rgb(var(--cyber-cyan-rgb) / 0.06),
+      0 8px 32px rgba(0, 0, 0, 0.5),
+      inset 0 1px 0 rgb(var(--cyber-cyan-rgb) / 0.08);
+  }
+  50% {
+    box-shadow:
+      0 0 28px rgb(var(--cyber-cyan-rgb) / 0.1),
+      0 8px 40px rgba(0, 0, 0, 0.5),
+      inset 0 1px 0 rgb(var(--cyber-cyan-rgb) / 0.12);
+  }
+}
+
+.stats-panel-breathing {
+  animation: stats-panel-alive 5s ease-in-out infinite;
+}
+
+/* ── 11. MiniMap scanline overlay ── */
+@keyframes minimap-scanline-sweep {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+
+.minimap-scanline-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgb(var(--cyber-cyan-rgb) / 0.03) 50%,
+    transparent 100%
+  );
+  background-size: 100% 30%;
+  animation: minimap-scanline-sweep 3s linear infinite;
+  pointer-events: none;
+}
+
+/* ── 12. Compass POI marker pulse ── */
+@keyframes compass-poi-ping {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.4;
+  }
+  100% {
+    transform: scale(0.8);
+    opacity: 0.8;
+  }
+}
+
+.compass-poi-marker {
+  animation: compass-poi-ping 2s ease-in-out infinite;
+}
+
+/* ── 13. Top bar HUD mount animation ── */
+@keyframes hud-topbar-slide {
+  0% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hud-topbar-mount {
+  animation: hud-topbar-slide 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ── 14. Quest tracker card glow ── */
+@keyframes quest-tracker-border-flow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.quest-tracker-flow-border {
+  background: linear-gradient(
+    90deg,
+    rgb(var(--cyber-cyan-rgb) / 0.1),
+    rgb(var(--cyber-cyan-rgb) / 0.3),
+    rgb(var(--cyber-cyan-rgb) / 0.1)
+  );
+  background-size: 200% 100%;
+  animation: quest-tracker-border-flow 3s linear infinite;
+}
+
+/* ── 15. More menu enhanced ── */
+@keyframes more-menu-glow {
+  0%, 100% {
+    box-shadow:
+      0 0 20px rgb(var(--cyber-cyan-rgb) / 0.08),
+      0 8px 32px rgba(0, 0, 0, 0.5);
+  }
+  50% {
+    box-shadow:
+      0 0 30px rgb(var(--cyber-cyan-rgb) / 0.15),
+      0 12px 40px rgba(0, 0, 0, 0.6);
+  }
+}
+
+.more-menu-enhanced {
+  animation: more-menu-glow 3s ease-in-out infinite;
+}
+
+/* ── 16. Tooltip glass upgrade ── */
+@keyframes tooltip-shine {
+  0% {
+    background-position: -100% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.tooltip-glass-enhanced {
+  position: relative;
+  overflow: hidden;
+}
+
+.tooltip-glass-enhanced::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.03) 45%,
+    rgba(255, 255, 255, 0.06) 50%,
+    rgba(255, 255, 255, 0.03) 55%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: tooltip-shine 4s linear infinite;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* ── 17. Energy critical screen pulse ── */
+@keyframes energy-critical-screen {
+  0%, 100% {
+    box-shadow: inset 0 0 80px rgba(244, 63, 94, 0.04);
+  }
+  50% {
+    box-shadow: inset 0 0 120px rgba(244, 63, 94, 0.08);
+  }
+}
+
+.energy-critical-screen {
+  animation: energy-critical-screen 2s ease-in-out infinite;
+}
+
+/* ── 18. HUD data stream decoration ── */
+@keyframes data-stream-flow {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 0 20px;
+  }
+}
+
+.hud-data-stream-line {
+  background: repeating-linear-gradient(
+    0deg,
+    rgb(var(--cyber-cyan-rgb) / 0.05) 0px,
+    rgb(var(--cyber-cyan-rgb) / 0.05) 1px,
+    transparent 1px,
+    transparent 6px
+  );
+  background-size: 1px 20px;
+  animation: data-stream-flow 2s linear infinite;
+}
+
+/* ══════════════════════════════════════════
+   REDUCED MOTION — disable all animations
+   ══════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  .sprint-drain-vignette,
+  .sprint-speed-line-top,
+  .sprint-speed-line-bottom,
+  .sprint-edge-pulse,
+  .quest-arrow-ring-pulse,
+  .quest-arrow-label,
+  .distance-ring-in-range,
+  .distance-ring-tick,
+  .distance-ring-fill,
+  .chromatic-edge-red,
+  .chromatic-edge-blue,
+  .floating-action-item,
+  .dynamic-crosshair-line,
+  .hud-glass-panel,
+  .hud-glass-shimmer::after,
+  .hud-btn-enhanced:hover,
+  .stats-panel-breathing,
+  .minimap-scanline-overlay::after,
+  .compass-poi-marker,
+  .hud-topbar-mount,
+  .quest-tracker-flow-border,
+  .more-menu-enhanced,
+  .tooltip-glass-enhanced::before,
+  .energy-critical-screen,
+  .hud-data-stream-line {
+    animation: none !important;
+  }
+}
+
+/* ─── Consolidated from hud-round9.css ─── */
+/* ─── Volodka RPG – HUD Round 9 CSS ───
+   18 keyframes + 30 utility classes
+   All animations respect prefers-reduced-motion: reduce
+*/
+
+/* ════════════════════════════════════════════
+   KEYFRAME ANIMATIONS
+   ════════════════════════════════════════════ */
+
+/* 1. NPC proximity breathing glow */
+@keyframes npc-proximity-breathe {
+  0%, 100% {
+    box-shadow:
+      0 0 8px rgb(var(--cyber-cyan-rgb) / 0.15),
+      inset 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.05);
+  }
+  50% {
+    box-shadow:
+      0 0 18px rgb(var(--cyber-cyan-rgb) / 0.35),
+      inset 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.1);
+  }
+}
+
+/* 2. NPC name slide in from bottom */
+@keyframes npc-name-slide-in {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 3. Compass POI pulsing ring */
+@keyframes compass-poi-pulse-ring {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 0.2;
+  }
+  100% {
+    transform: scale(0.85);
+    opacity: 0.6;
+  }
+}
+
+/* 4. Compass POI arrow bobbing */
+@keyframes compass-poi-arrow-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+/* 5. Mood bar gradient shift */
+@keyframes mood-bar-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* 6. Mood icon slow rotation */
+@keyframes mood-icon-rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 7. Cooldown ring clockwise fill (stroke-dashoffset driven via JS, this is the base) */
+@keyframes cooldown-ring-fill {
+  0% {
+    stroke-dashoffset: 283;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* 8. Cooldown complete flash */
+@keyframes cooldown-flash {
+  0% {
+    opacity: 0.8;
+    filter: brightness(2.5);
+  }
+  100% {
+    opacity: 1;
+    filter: brightness(1);
+  }
+}
+
+/* 9. Data ticker continuous left scroll */
+@keyframes data-ticker-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+/* 10. Data ticker item fade in/out */
+@keyframes data-ticker-item-fade {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+/* 11. Proximity glow breathing aura */
+@keyframes proximity-glow-breathe {
+  0%, 100% {
+    box-shadow:
+      0 0 10px rgb(var(--cyber-cyan-rgb) / 0.2),
+      0 0 20px rgb(var(--cyber-cyan-rgb) / 0.08);
+  }
+  50% {
+    box-shadow:
+      0 0 18px rgb(var(--cyber-cyan-rgb) / 0.4),
+      0 0 36px rgb(var(--cyber-cyan-rgb) / 0.15);
+  }
+}
+
+/* 12. Proximity glow ring expanding from center */
+@keyframes proximity-glow-ring-expand {
+  0% {
+    transform: scale(0.4);
+    opacity: 0.7;
+  }
+  70% {
+    opacity: 0.1;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+/* 13. Dynamic crosshair center dot pulse */
+@keyframes dynamic-crosshair-dot-pulse {
+  0%, 100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.3);
+  }
+}
+
+/* 14. Dynamic crosshair acquire snap */
+@keyframes dynamic-crosshair-acquire {
+  0% {
+    transform: scale(1.4);
+    opacity: 0.5;
+  }
+  60% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* 15. Stat bar tooltip mount */
+@keyframes stat-bar-tooltip-mount {
+  0% {
+    opacity: 0;
+    transform: translateY(4px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* 16. Quest POI diamond spin on minimap */
+@keyframes quest-poi-diamond-spin {
+  0% { transform: rotate(45deg) scale(1); }
+  25% { transform: rotate(90deg) scale(1.1); }
+  50% { transform: rotate(135deg) scale(1); }
+  75% { transform: rotate(180deg) scale(1.1); }
+  100% { transform: rotate(225deg) scale(1); }
+}
+
+/* 17. Minimap player trail glow pulse */
+@keyframes minimap-player-trail-glow {
+  0%, 100% {
+    opacity: 0.25;
+    box-shadow: 0 0 3px rgb(var(--cyber-cyan-rgb) / 0.3);
+  }
+  50% {
+    opacity: 0.7;
+    box-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.6);
+  }
+}
+
+/* 18. HUD system boot sequence — staggered fade-in + slight upward slide */
+@keyframes hud-system-boot-sequence {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+    filter: blur(3px);
+  }
+  60% {
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+/* ════════════════════════════════════════════
+   UTILITY CLASSES
+   ════════════════════════════════════════════ */
+
+/* ── NPC Proximity ── */
+
+.npc-proximity-card {
+  position: relative;
+  background: linear-gradient(
+    160deg,
+    rgba(2, 6, 23, 0.92) 0%,
+    rgba(15, 23, 42, 0.86) 100%
+  );
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.18);
+  border-radius: 6px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  animation: npc-proximity-breathe 2s ease-in-out infinite;
+}
+
+.npc-proximity-name {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--cyber-cyan);
+  text-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.5);
+  animation: npc-name-slide-in 0.3s ease-out both;
+}
+
+.npc-proximity-relation {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 3px;
+  background: rgb(var(--cyber-cyan-rgb) / 0.08);
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.15);
+  color: rgb(var(--cyber-cyan-rgb) / 0.9);
+}
+
+.npc-proximity-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--cyber-cyan);
+  box-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.6);
+  animation: npc-proximity-breathe 2s ease-in-out infinite;
+}
+
+/* ── Compass POI ── */
+
+.compass-poi-marker {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--cyber-cyan);
+  box-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.5);
+}
+
+.compass-poi-marker::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.35);
+  animation: compass-poi-pulse-ring 1.5s ease-in-out infinite;
+}
+
+.compass-poi-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: compass-poi-arrow-bob 2s ease-in-out infinite;
+}
+
+.compass-poi-label {
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgb(var(--cyber-cyan-rgb) / 0.85);
+  text-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.3);
+  white-space: nowrap;
+}
+
+/* ── Mood Bar (настроение окружения) ── */
+
+.mood-bar-container {
+  position: relative;
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.1);
+}
+
+.mood-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(
+    90deg,
+    rgb(var(--cyber-cyan-rgb) / 0.6),
+    rgb(var(--cyber-cyan-rgb) / 1),
+    rgb(var(--cyber-cyan-rgb) / 0.6)
+  );
+  background-size: 200% 100%;
+  animation: mood-bar-shift 8s linear infinite;
+  transition: width 0.6s ease;
+}
+
+.mood-bar-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  animation: mood-icon-rotate 12s linear infinite;
+  color: rgb(var(--cyber-cyan-rgb) / 0.7);
+}
+
+.mood-bar-label {
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgb(var(--cyber-cyan-rgb) / 0.75);
+}
+
+/* ── Cooldown Ring ── */
+
+.cooldown-ring-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+  pointer-events: none;
+}
+
+.cooldown-ring-track {
+  fill: none;
+  stroke: rgb(var(--cyber-cyan-rgb) / 0.1);
+  stroke-width: 2.5;
+}
+
+.cooldown-ring-svg circle:last-child {
+  fill: none;
+  stroke: var(--cyber-cyan);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-dasharray: 283;
+  stroke-dashoffset: 283;
+  animation: cooldown-ring-fill 5s linear forwards;
+}
+
+.cooldown-complete-flash {
+  animation: cooldown-flash 0.3s ease-out forwards;
+}
+
+/* ── Data Ticker (лента данных) ── */
+
+.data-ticker-container {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    black 10%,
+    black 90%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    black 10%,
+    black 90%,
+    transparent 100%
+  );
+}
+
+.data-ticker-track {
+  display: flex;
+  gap: 0;
+  white-space: nowrap;
+  animation: data-ticker-scroll 20s linear infinite;
+}
+
+.data-ticker-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+  font-size: 0.6875rem;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  color: rgb(var(--cyber-cyan-rgb) / 0.7);
+  animation: data-ticker-item-fade 0.5s ease-in-out both;
+}
+
+.data-ticker-separator {
+  display: inline-block;
+  width: 1px;
+  height: 10px;
+  background: rgb(var(--cyber-cyan-rgb) / 0.2);
+  flex-shrink: 0;
+}
+
+/* ── Proximity Glow (аура взаимодействия) ── */
+
+.proximity-glow-aura {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: proximity-glow-breathe 2.5s ease-in-out infinite;
+}
+
+.proximity-glow-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.3);
+  animation: proximity-glow-ring-expand 1.5s ease-out infinite;
+  pointer-events: none;
+}
+
+.proximity-glow-inner {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgb(var(--cyber-cyan-rgb) / 0.8) 0%,
+    rgb(var(--cyber-cyan-rgb) / 0) 70%
+  );
+  box-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.5);
+}
+
+/* ── Dynamic Crosshair ── */
+
+.dynamic-crosshair-enhanced {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 100;
+}
+
+.dynamic-crosshair-enhanced .crosshair-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--cyber-cyan);
+  animation: dynamic-crosshair-dot-pulse 1.2s ease-in-out infinite;
+}
+
+.dynamic-crosshair-acquired {
+  animation: dynamic-crosshair-acquire 0.15s ease-out forwards;
+}
+
+.dynamic-crosshair-acquired .crosshair-dot {
+  background: #f43f5e;
+  box-shadow: 0 0 8px rgba(244, 63, 94, 0.6);
+  animation: none;
+}
+
+/* ── Quest POI & Minimap Trail ── */
+
+.quest-poi-minimap-diamond {
+  width: 6px;
+  height: 6px;
+  background: var(--cyber-cyan);
+  box-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.6);
+  animation: quest-poi-diamond-spin 3s linear infinite;
+}
+
+.minimap-trail-glow-dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: rgb(var(--cyber-cyan-rgb) / 0.6);
+  animation: minimap-player-trail-glow 2s ease-in-out infinite;
+}
+
+/* ── HUD Boot Sequence ── */
+
+.hud-boot-element {
+  opacity: 0;
+  animation: hud-system-boot-sequence 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.hud-boot-element:nth-child(1)  { animation-delay: 0.0s; }
+.hud-boot-element:nth-child(2)  { animation-delay: 0.1s; }
+.hud-boot-element:nth-child(3)  { animation-delay: 0.2s; }
+.hud-boot-element:nth-child(4)  { animation-delay: 0.3s; }
+.hud-boot-element:nth-child(5)  { animation-delay: 0.4s; }
+.hud-boot-element:nth-child(6)  { animation-delay: 0.5s; }
+.hud-boot-element:nth-child(7)  { animation-delay: 0.6s; }
+.hud-boot-element:nth-child(8)  { animation-delay: 0.7s; }
+.hud-boot-element:nth-child(9)  { animation-delay: 0.8s; }
+.hud-boot-element:nth-child(10) { animation-delay: 0.9s; }
+
+.hud-boot-skip,
+.hud-boot-skip .hud-boot-element {
+  animation: none !important;
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+/* ── Panel & Border Utilities ── */
+
+.panel-glass-dark-9 {
+  background: linear-gradient(
+    145deg,
+    rgba(0, 2, 12, 0.96) 0%,
+    rgba(4, 6, 16, 0.94) 50%,
+    rgba(0, 2, 10, 0.96) 100%
+  );
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.1);
+  border-radius: 8px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow:
+    0 0 20px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgb(var(--cyber-cyan-rgb) / 0.06);
+}
+
+.cyber-border-animated {
+  position: relative;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.cyber-border-animated::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: conic-gradient(
+    from 0deg,
+    rgb(var(--cyber-cyan-rgb) / 0.4),
+    transparent 25%,
+    rgb(var(--cyber-cyan-rgb) / 0.2) 50%,
+    transparent 75%,
+    rgb(var(--cyber-cyan-rgb) / 0.4)
+  );
+  animation: mood-icon-rotate 4s linear infinite;
+  z-index: -1;
+}
+
+.cyber-border-animated::after {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  background: rgba(0, 2, 12, 0.95);
+  z-index: -1;
+}
+
+/* ── Text Effects ── */
+
+.text-data-stream {
+  position: relative;
+  display: inline-block;
+  background-image: repeating-linear-gradient(
+    180deg,
+    rgb(var(--cyber-cyan-rgb) / 0.05) 0px,
+    rgb(var(--cyber-cyan-rgb) / 0.05) 1px,
+    transparent 1px,
+    transparent 4px
+  );
+  background-size: 100% 4px;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: mood-bar-shift 8s linear infinite;
+}
+
+/* ════════════════════════════════════════════
+   REDUCED MOTION — disable all animations
+   ════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  /* NPC proximity */
+  .npc-proximity-card,
+  .npc-proximity-name,
+  .npc-proximity-dot {
+    animation: none !important;
+  }
+
+  /* Compass POI */
+  .compass-poi-marker::after,
+  .compass-poi-arrow {
+    animation: none !important;
+  }
+
+  /* Mood bar */
+  .mood-bar-fill,
+  .mood-bar-icon {
+    animation: none !important;
+  }
+
+  /* Cooldown ring */
+  .cooldown-ring-svg circle:last-child,
+  .cooldown-complete-flash {
+    animation: none !important;
+  }
+
+  /* Data ticker */
+  .data-ticker-track,
+  .data-ticker-item {
+    animation: none !important;
+  }
+
+  /* Proximity glow */
+  .proximity-glow-aura,
+  .proximity-glow-ring {
+    animation: none !important;
+  }
+
+  /* Dynamic crosshair */
+  .dynamic-crosshair-enhanced .crosshair-dot,
+  .dynamic-crosshair-acquired {
+    animation: none !important;
+  }
+
+  /* Quest POI & minimap */
+  .quest-poi-minimap-diamond,
+  .minimap-trail-glow-dot {
+    animation: none !important;
+  }
+
+  /* Boot sequence */
+  .hud-boot-element {
+    animation: none !important;
+    opacity: 1 !important;
+    filter: none !important;
+    transform: none !important;
+  }
+
+  /* Panel & border */
+  .cyber-border-animated::before {
+    animation: none !important;
+  }
+
+  /* Text effects */
+  .text-data-stream {
+    animation: none !important;
+  }
+}
+
+/* ─── Consolidated from hud-round10.css ─── */
+/* ─── Volodka RPG – HUD Round 10 CSS ─── */
+/* New animations and utility classes for Round 10 components:
+   CombatPreEngagementWarning, HUDBootSequence, LootProximityIndicator,
+   CombatDamageTimeline, EnemyWeaknessDisplay, TurnPhaseIndicator,
+   DynamicCrosshair integration, and enhanced styling for existing components */
+
+/* ─────────────────────────────────────────────────────────────
+   1. COMBAT PRE-ENGAGEMENT WARNING
+   ───────────────────────────────────────────────────────────── */
+
+@keyframes combat-preengagement-pulse {
+  0%, 100% { opacity: 0.7; transform: translateX(-50%) scale(1); }
+  50% { opacity: 1; transform: translateX(-50%) scale(1.04); }
+}
+
+@keyframes combat-preengagement-bar-fill {
+  0% { width: 0%; }
+  100% { width: 100%; }
+}
+
+@keyframes combat-preengagement-scan {
+  0% { top: 0; opacity: 0.6; }
+  50% { opacity: 0.2; }
+  100% { top: 100%; opacity: 0; }
+}
+
+.combat-preengagement-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(to right, rgba(239, 68, 68, 0.12) 0%, transparent 15%, transparent 85%, rgba(239, 68, 68, 0.12) 100%),
+    linear-gradient(to bottom, rgba(239, 68, 68, 0.15) 0%, transparent 20%, transparent 80%, rgba(239, 68, 68, 0.1) 100%);
+  animation: combat-preengagement-pulse 0.8s ease-in-out infinite;
+}
+
+.combat-preengagement-pulse {
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: 0.3em;
+  color: #fca5a5;
+  text-shadow:
+    0 0 12px rgba(239, 68, 68, 0.6),
+    0 0 24px rgba(239, 68, 68, 0.3),
+    0 0 48px rgba(239, 68, 68, 0.15);
+  animation: combat-preengagement-pulse 0.6s ease-in-out infinite;
+}
+
+.combat-preengagement-bar {
+  width: 120px;
+  height: 2px;
+  background: rgba(239, 68, 68, 0.15);
+  border-radius: 1px;
+  overflow: hidden;
+  position: relative;
+}
+
+.combat-preengagement-bar::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, transparent, rgba(239, 68, 68, 0.7), transparent);
+  animation: combat-preengagement-bar-fill 1.2s ease-out forwards;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   2. HUD BOOT SEQUENCE
+   ───────────────────────────────────────────────────────────── */
+
+@keyframes hud-boot-cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.hud-boot-line {
+  text-shadow: 0 0 6px currentColor;
+}
+
+.hud-boot-cursor {
+  animation: hud-boot-cursor-blink 0.8s step-end infinite;
+}
+
+.hud-boot-text {
+  text-shadow: 0 0 4px rgba(6, 182, 212, 0.4);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   3. LOOT PROXIMITY INDICATOR
+   ───────────────────────────────────────────────────────────── */
+
+@keyframes loot-proximity-pulse {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.3); }
+}
+
+@keyframes loot-acquired-glow {
+  0% { text-shadow: 0 0 4px rgba(251, 191, 36, 0.4); }
+  50% { text-shadow: 0 0 12px rgba(251, 191, 36, 0.8), 0 0 24px rgba(251, 191, 36, 0.3); }
+  100% { text-shadow: 0 0 4px rgba(251, 191, 36, 0.4); }
+}
+
+@keyframes loot-acquired-float {
+  0% { opacity: 0; transform: translate(-50%, 20px) scale(0.9); }
+  30% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -20px) scale(0.95); }
+}
+
+.loot-proximity-card {
+  box-shadow:
+    0 0 8px rgba(251, 191, 36, 0.15),
+    0 2px 8px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+}
+
+.loot-proximity-pulse-dot {
+  animation: loot-proximity-pulse 1.2s ease-in-out infinite;
+}
+
+.loot-acquired-flash {
+  animation: loot-acquired-float 2s ease-out forwards;
+}
+
+.loot-acquired-text {
+  animation: loot-acquired-glow 1.5s ease-in-out infinite;
+  text-shadow: 0 0 8px rgba(251, 191, 36, 0.6);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   4. COMBAT DAMAGE TIMELINE
+   ───────────────────────────────────────────────────────────── */
+
+.combat-damage-timeline {
+  opacity: 0.8;
+  transition: opacity 0.3s;
+}
+
+.combat-damage-timeline:hover {
+  opacity: 1;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   5. ENEMY WEAKNESS DISPLAY
+   ───────────────────────────────────────────────────────────── */
+
+@keyframes enemy-weakness-glow {
+  0%, 100% { box-shadow: 0 0 8px rgba(239, 68, 68, 0.1); }
+  50% { box-shadow: 0 0 16px rgba(239, 68, 68, 0.25); }
+}
+
+.enemy-weakness-card {
+  animation: enemy-weakness-glow 3s ease-in-out infinite;
+}
+
+.enemy-weakness-hint-bar {
+  position: relative;
+}
+
+.enemy-weakness-hint-bar::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: -1px;
+  width: 3px;
+  height: calc(100% + 2px);
+  background: white;
+  border-radius: 1px;
+  animation: enemy-weakness-scan-line 1.5s ease-in-out infinite;
+}
+
+@keyframes enemy-weakness-scan-line {
+  0% { left: 0; opacity: 0.8; }
+  100% { left: 100%; opacity: 0; }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   6. TURN PHASE INDICATOR
+   ───────────────────────────────────────────────────────────── */
+
+@keyframes turn-phase-dot-glow-player {
+  0%, 100% { box-shadow: 0 0 6px rgba(6, 182, 212, 0.4); }
+  50% { box-shadow: 0 0 12px rgba(6, 182, 212, 0.8), 0 0 20px rgba(6, 182, 212, 0.3); }
+}
+
+@keyframes turn-phase-dot-glow-enemy {
+  0%, 100% { box-shadow: 0 0 6px rgba(239, 68, 68, 0.4); }
+  50% { box-shadow: 0 0 12px rgba(239, 68, 68, 0.8), 0 0 20px rgba(239, 68, 68, 0.3); }
+}
+
+.turn-phase-bar {
+  min-width: 160px;
+}
+
+.turn-phase-slider {
+  box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.4);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   7. DYNAMIC CROSSHAIR ENHANCEMENTS
+   ───────────────────────────────────────────────────────────── */
+
+@keyframes dynamic-crosshair-acquire-flash {
+  0% { filter: brightness(1); }
+  30% { filter: brightness(1.8); }
+  100% { filter: brightness(1); }
+}
+
+.dynamic-crosshair-acquired {
+  animation: dynamic-crosshair-acquire-flash 0.3s ease-out;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   8. ENHANCED EXISTING COMPONENT STYLES
+   ───────────────────────────────────────────────────────────── */
+
+/* Combat intro overlay enhancements */
+@keyframes combat-grid-scan {
+  0% { background-position: 0 0; }
+  100% { background-position: 40px 40px; }
+}
+
+.combat-grid-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.03;
+  background-image:
+    linear-gradient(rgba(6, 182, 212, 0.5) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(6, 182, 212, 0.5) 1px, transparent 1px);
+  background-size: 40px 40px;
+  animation: combat-grid-scan 3s linear infinite;
+}
+
+/* Combat action button enhanced hover */
+@keyframes combat-btn-hologram {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.combat-btn-enhanced:hover::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 25%, rgba(255, 255, 255, 0.04) 50%, transparent 75%);
+  background-size: 200% 100%;
+  animation: combat-btn-hologram 2s linear infinite;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+/* Victory particles enhancement */
+@keyframes victory-particle-rise {
+  0% { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(-80px) scale(0.3); opacity: 0; }
+}
+
+.victory-particle {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  animation: victory-particle-rise 1.5s ease-out forwards;
+}
+
+/* Defeat screen crack effect */
+@keyframes defeat-crack-spread {
+  0% { clip-path: polygon(50% 50%, 50% 50%, 50% 50%, 50% 50%); }
+  100% { clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%); }
+}
+
+.defeat-crack-overlay {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, rgba(127, 29, 29, 0.3) 0%, transparent 70%);
+  animation: defeat-crack-spread 0.8s ease-out forwards;
+  pointer-events: none;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   9. MINIMAP ENHANCEMENTS
+   ───────────────────────────────────────────────────────────── */
+
+@keyframes minimap-ping-expand {
+  0% { transform: scale(0.5); opacity: 0.8; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+.minimap-enemy-ping {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1px solid rgba(239, 68, 68, 0.6);
+  animation: minimap-ping-expand 2s ease-out infinite;
+  pointer-events: none;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   10. NOTIFICATION ENHANCEMENTS
+   ───────────────────────────────────────────────────────────── */
+
+@keyframes notification-stack-in {
+  0% { opacity: 0; transform: translateX(40px) scale(0.95); }
+  100% { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+@keyframes notification-stack-out {
+  0% { opacity: 1; transform: translateX(0) scale(1); }
+  100% { opacity: 0; transform: translateX(40px) scale(0.95); }
+}
+
+.notification-stack-enter {
+  animation: notification-stack-in 0.3s ease-out forwards;
+}
+
+.notification-stack-exit {
+  animation: notification-stack-out 0.25s ease-in forwards;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   11. PANEL GLASS ENHANCEMENTS
+   ───────────────────────────────────────────────────────────── */
+
+@keyframes glass-panel-data-flow {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 200% 200%; }
+}
+
+.glass-panel-data-pattern {
+  background-image:
+    radial-gradient(circle at 20% 80%, rgba(6, 182, 212, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(6, 182, 212, 0.02) 0%, transparent 50%);
+  background-size: 200% 200%;
+  animation: glass-panel-data-flow 8s linear infinite;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   12. STAT BAR ENHANCEMENTS
+   ───────────────────────────────────────────────────────────── */
+
+@keyframes stat-bar-shimmer-sweep {
+  0% { left: -100%; }
+  100% { left: 200%; }
+}
+
+.stat-bar-shimmer-effect::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+  animation: stat-bar-shimmer-sweep 3s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   13. QUEST TRACKER ENHANCEMENTS
+   ───────────────────────────────────────────────────────────── */
+
+@keyframes quest-objective-complete-flash {
+  0% { background-color: rgba(16, 185, 129, 0.3); }
+  100% { background-color: transparent; }
+}
+
+.quest-objective-complete {
+  animation: quest-objective-complete-flash 0.8s ease-out;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   14. AMBIENT SCREEN EFFECTS
+   ───────────────────────────────────────────────────────────── */
+
+@keyframes ambient-noise-shift {
+  0% { opacity: 0.015; }
+  25% { opacity: 0.025; }
+  50% { opacity: 0.01; }
+  75% { opacity: 0.02; }
+  100% { opacity: 0.015; }
+}
+
+.ambient-noise-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.015;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: ambient-noise-shift 8s ease-in-out infinite;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   15. XP LEVEL UP ENHANCEMENT
+   ───────────────────────────────────────────────────────────── */
+
+@keyframes levelup-ring-expand {
+  0% { transform: scale(0.3); opacity: 0.9; border-width: 3px; }
+  100% { transform: scale(2.5); opacity: 0; border-width: 1px; }
+}
+
+.levelup-ring-effect {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 80px;
+  height: 80px;
+  margin: -40px 0 0 -40px;
+  border-radius: 50%;
+  border: 3px solid rgba(6, 182, 212, 0.6);
+  pointer-events: none;
+  animation: levelup-ring-expand 1s ease-out forwards;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   16. RESPONSIVE & MOBILE
+   ───────────────────────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+  .combat-preengagement-pulse {
+    font-size: 0.85rem;
+    letter-spacing: 0.2em;
+  }
+
+  .enemy-weakness-card {
+    padding: 4px 8px !important;
+    gap: 4px !important;
+  }
+
+  .turn-phase-bar {
+    min-width: 120px;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   REDUCED MOTION
+   ───────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .combat-preengagement-vignette,
+  .combat-preengagement-pulse,
+  .combat-preengagement-bar::after,
+  .hud-boot-cursor,
+  .loot-proximity-pulse-dot,
+  .loot-acquired-flash,
+  .loot-acquired-text,
+  .enemy-weakness-card,
+  .enemy-weakness-hint-bar::after,
+  .combat-grid-overlay,
+  .victory-particle,
+  .minimap-enemy-ping,
+  .notification-stack-enter,
+  .notification-stack-exit,
+  .glass-panel-data-pattern,
+  .stat-bar-shimmer-effect::after,
+  .quest-objective-complete,
+  .ambient-noise-overlay,
+  .levelup-ring-effect {
+    animation: none !important;
+  }
+
+  .dynamic-crosshair-acquired {
+    animation: none !important;
+  }
+}
+
+/* ─── Consolidated from hud-round11.css ─── */
+/* ═══════════════════════════════════════════════════════════════
+   Volodka RPG – HUD Round 11: Enhanced Visual Polish v2.0
+   
+   Новые эффекты:
+   – Неоновые пульсации и breathing анимации
+   – Голографические border эффекты  
+   – Улучшенные scanline и glitch эффекты
+   – Киберпанк прогресс бары с glow trail
+   – Атмосферные particle overlay эффекты
+   – Улучшенная типографика с neon glow
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── Neon Pulse Keyframes ─── */
+@keyframes neonPulse {
+  0%, 100% {
+    box-shadow: 
+      0 0 4px var(--cyber-cyan),
+      0 0 8px var(--cyber-cyan),
+      0 0 16px rgba(var(--cyber-cyan-rgb), 0.4),
+      inset 0 0 4px rgba(var(--cyber-cyan-rgb), 0.1);
+  }
+  50% {
+    box-shadow: 
+      0 0 8px var(--cyber-cyan),
+      0 0 16px var(--cyber-cyan),
+      0 0 32px rgba(var(--cyber-cyan-rgb), 0.6),
+      inset 0 0 8px rgba(var(--cyber-cyan-rgb), 0.2);
+  }
+}
+
+@keyframes neonPulseAmber {
+  0%, 100% {
+    box-shadow: 
+      0 0 4px var(--cyber-amber),
+      0 0 12px rgba(var(--cyber-amber-rgb), 0.5);
+  }
+  50% {
+    box-shadow: 
+      0 0 8px var(--cyber-amber),
+      0 0 24px rgba(var(--cyber-amber-rgb), 0.7),
+      0 0 48px rgba(var(--cyber-amber-rgb), 0.3);
+  }
+}
+
+@keyframes neonPulseMatrix {
+  0%, 100% {
+    box-shadow: 
+      0 0 4px var(--cyber-matrix),
+      0 0 12px rgba(var(--cyber-matrix-rgb), 0.4);
+  }
+  50% {
+    box-shadow: 
+      0 0 10px var(--cyber-matrix),
+      0 0 24px rgba(var(--cyber-matrix-rgb), 0.6),
+      0 0 40px rgba(var(--cyber-matrix-rgb), 0.25);
+  }
+}
+
+@keyframes hologramFlicker {
+  0%, 100% { opacity: 1; }
+  92% { opacity: 1; }
+  93% { opacity: 0.8; }
+  94% { opacity: 1; }
+  96% { opacity: 0.9; }
+  97% { opacity: 1; }
+}
+
+/* ─── Border Flow Animation (для активных элементов) ─── */
+@keyframes borderFlowCyan {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+@keyframes borderFlowAmber {
+  0% { background-position: 200% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ─── Glow Trail для прогресс баров ─── */
+@keyframes glowTrailLeft {
+  0% { left: -20%; opacity: 0; }
+  50% { opacity: 1; }
+  100% { left: 120%; opacity: 0; }
+}
+
+/* ─── Data Stream Effect (поток данных) ─── */
+@keyframes dataStream {
+  0% { transform: translateY(-100%); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(100%); opacity: 0; }
+}
+
+/* ─── Cyber Grid Scan Effect ─── */
+@keyframes gridScan {
+  0% { transform: translateX(-100%) rotate(45deg); }
+  100% { transform: translateX(200%) rotate(45deg); }
+}
+
+/* ─── Energy Ring Rotate ─── */
+@keyframes energyRingRotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ─── Text Glitch (subtle) ─── */
+@keyframes textGlitchSubtle {
+  0%, 100% { 
+    text-shadow: 
+      0 0 2px currentColor,
+      0 0 4px rgba(var(--cyber-cyan-rgb), 0.3);
+    transform: translate(0);
+  }
+  95% { 
+    text-shadow: 
+      0 0 2px currentColor,
+      0 0 4px rgba(var(--cyber-cyan-rgb), 0.3);
+    transform: translate(0);
+  }
+  96% { 
+    text-shadow: 
+      2px 0 var(--cyber-rose),
+      -2px 0 var(--cyber-cyan);
+    transform: translate(-1px, 1px);
+  }
+  97% { 
+    text-shadow: 
+      -2px 0 var(--cyber-rose),
+      2px 0 var(--cyber-cyan);
+    transform: translate(1px, -1px);
+  }
+  98% {
+    text-shadow: 
+      0 0 2px currentColor,
+      0 0 4px rgba(var(--cyber-cyan-rgb), 0.3);
+    transform: translate(0);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   UTILITY CLASSES – Enhanced HUD Components
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── Neon Button Styles ─── */
+.neon-btn-cyan {
+  position: relative;
+  border: 1px solid var(--cyber-cyan);
+  background: linear-gradient(
+    135deg,
+    rgba(var(--cyber-cyan-rgb), 0.15) 0%,
+    rgba(var(--cyber-cyan-rgb), 0.05) 100%
+  );
+  color: var(--cyber-cyan);
+  animation: neonPulse 2s ease-in-out infinite;
+  transition: all 0.3s ease;
+}
+
+.neon-btn-cyan:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(var(--cyber-cyan-rgb), 0.25) 0%,
+    rgba(var(--cyber-cyan-rgb), 0.1) 100%
+  );
+  transform: scale(1.02);
+}
+
+.neon-btn-cyan:active {
+  transform: scale(0.98);
+  box-shadow: 
+    0 0 8px var(--cyber-cyan),
+    inset 0 0 12px rgba(var(--cyber-cyan-rgb), 0.3);
+}
+
+.neon-btn-amber {
+  position: relative;
+  border: 1px solid var(--cyber-amber);
+  background: linear-gradient(
+    135deg,
+    rgba(var(--cyber-amber-rgb), 0.15) 0%,
+    rgba(var(--cyber-amber-rgb), 0.05) 100%
+  );
+  color: var(--cyber-amber);
+  animation: neonPulseAmber 2.5s ease-in-out infinite;
+  transition: all 0.3s ease;
+}
+
+.neon-btn-amber:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(var(--cyber-amber-rgb), 0.25) 0%,
+    rgba(var(--cyber-amber-rgb), 0.1) 100%
+  );
+  transform: scale(1.02);
+}
+
+.neon-btn-matrix {
+  position: relative;
+  border: 1px solid var(--cyber-matrix);
+  background: linear-gradient(
+    135deg,
+    rgba(var(--cyber-matrix-rgb), 0.15) 0%,
+    rgba(var(--cyber-matrix-rgb), 0.05) 100%
+  );
+  color: var(--cyber-matrix);
+  animation: neonPulseMatrix 3s ease-in-out infinite;
+  transition: all 0.3s ease;
+}
+
+/* ─── Holographic Panel Effect ─── */
+.holo-panel {
+  position: relative;
+  background: linear-gradient(
+    135deg,
+    rgba(0, 6, 12, 0.95) 0%,
+    rgba(10, 20, 35, 0.92) 50%,
+    rgba(0, 6, 12, 0.95) 100%
+  );
+  border: 1px solid rgba(var(--cyber-cyan-rgb), 0.3);
+  overflow: hidden;
+}
+
+.holo-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--cyber-cyan) 50%,
+    transparent 100%
+  );
+  opacity: 0.6;
+}
+
+.holo-panel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(var(--cyber-cyan-rgb), 0.03) 2px,
+    rgba(var(--cyber-cyan-rgb), 0.03) 4px
+  );
+  animation: hologramFlicker 8s ease-in-out infinite;
+}
+
+/* ─── Animated Border (flowing gradient) ─── */
+.border-flow-cyan {
+  position: relative;
+  background: 
+    linear-gradient(rgba(0, 6, 12, 0.95), rgba(0, 6, 12, 0.95))
+    padding-box;
+  border: none;
+}
+
+.border-flow-cyan::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--cyber-cyan),
+    rgba(var(--cyber-amber-rgb), 0.7),
+    var(--cyber-cyan),
+    transparent
+  );
+  background-size: 200% 100%;
+  animation: borderFlowCyan 3s linear infinite;
+  mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
+}
+
+/* ─── Enhanced Progress Bar with Glow ─── */
+.progress-bar-glow {
+  position: relative;
+  height: 100%;
+  border-radius: inherit;
+  overflow: hidden;
+  background: linear-gradient(
+    90deg,
+    var(--cyber-cyan) 0%,
+    rgba(var(--cyber-cyan-rgb), 0.8) 50%,
+    var(--cyber-cyan) 100%
+  );
+  box-shadow: 
+    0 0 8px rgba(var(--cyber-cyan-rgb), 0.5),
+    inset 0 1px 0 rgba(255,255,255,0.2);
+}
+
+.progress-bar-glow::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  width: 30%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255,255,255,0.4),
+    transparent
+  );
+  animation: glowTrailLeft 2s ease-in-out infinite;
+}
+
+.progress-bar-glow.amber {
+  background: linear-gradient(
+    90deg,
+    var(--cyber-amber) 0%,
+    rgba(var(--cyber-amber-rgb), 0.8) 50%,
+    var(--cyber-amber) 100%
+  );
+  box-shadow: 
+    0 0 8px rgba(var(--cyber-amber-rgb), 0.5),
+    inset 0 1px 0 rgba(255,255,255,0.2);
+}
+
+.progress-bar-glow.matrix {
+  background: linear-gradient(
+    90deg,
+    var(--cyber-matrix) 0%,
+    rgba(var(--cyber-matrix-rgb), 0.8) 50%,
+    var(--cyber-matrix) 100%
+  );
+  box-shadow: 
+    0 0 8px rgba(var(--cyber-matrix-rgb), 0.5),
+    inset 0 1px 0 rgba(255,255,255,0.2);
+}
+
+.progress-bar-glow.danger {
+  background: linear-gradient(
+    90deg,
+    var(--cyber-rose) 0%,
+    rgba(255, 23, 68, 0.8) 50%,
+    var(--cyber-rose) 100%
+  );
+  box-shadow: 
+    0 0 12px rgba(255, 23, 68, 0.6),
+    inset 0 1px 0 rgba(255,255,255,0.2);
+  animation: neonPulseAmber 1s ease-in-out infinite;
+}
+
+/* ─── Stat Display with Icon Glow ─── */
+.stat-display-enhanced {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: linear-gradient(
+    135deg,
+    rgba(0, 10, 20, 0.8) 0%,
+    rgba(0, 14, 28, 0.7) 100%
+  );
+  border: 1px solid rgba(var(--cyber-cyan-rgb), 0.2);
+  border-radius: 0.5rem;
+  position: relative;
+}
+
+.stat-display-enhanced .stat-icon {
+  filter: drop-shadow(0 0 4px currentColor);
+}
+
+.stat-display-enhanced .stat-value {
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  color: var(--cyber-cyan);
+  text-shadow: 0 0 8px rgba(var(--cyber-cyan-rgb), 0.5);
+}
+
+/* ─── Notification Toast Enhanced ─── */
+.toast-enhanced {
+  position: relative;
+  background: linear-gradient(
+    135deg,
+    rgba(2, 6, 23, 0.97) 0%,
+    rgba(15, 23, 42, 0.94) 50%,
+    rgba(2, 6, 23, 0.97) 100%
+  );
+  border: 1px solid rgba(var(--cyber-cyan-rgb), 0.35);
+  border-left: 3px solid var(--cyber-cyan);
+  backdrop-filter: blur(16px);
+  overflow: hidden;
+}
+
+.toast-enhanced::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--cyber-cyan),
+    transparent
+  );
+}
+
+.toast-enhanced.success {
+  border-left-color: var(--cyber-matrix);
+}
+.toast-enhanced.success::before {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--cyber-matrix),
+    transparent
+  );
+}
+
+.toast-enhanced.warning {
+  border-left-color: var(--cyber-amber);
+}
+.toast-enhanced.warning::before {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--cyber-amber),
+    transparent
+  );
+}
+
+.toast-enhanced.error {
+  border-left-color: var(--cyber-rose);
+}
+.toast-enhanced.error::before {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--cyber-rose),
+    transparent
+  );
+}
+
+/* ─── Card/Item Slot Enhanced ─── */
+.item-slot-enhanced {
+  position: relative;
+  background: 
+    linear-gradient(135deg, rgba(0, 10, 20, 0.85), rgba(0, 14, 28, 0.75));
+  border: 1px solid rgba(var(--cyber-cyan-rgb), 0.25);
+  border-radius: 0.5rem;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.item-slot-enhanced:hover {
+  border-color: rgba(var(--cyber-cyan-rgb), 0.5);
+  transform: translateY(-2px);
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.4),
+    0 0 20px rgba(var(--cyber-cyan-rgb), 0.15);
+}
+
+.item-slot-enhanced.selected {
+  border-color: var(--cyber-cyan);
+  box-shadow: 
+    0 0 12px rgba(var(--cyber-cyan-rgb), 0.3),
+    inset 0 0 12px rgba(var(--cyber-cyan-rgb), 0.1);
+}
+
+.item-slot-enhanced.rare {
+  border-color: rgba(138, 43, 226, 0.4);
+}
+.item-slot-enhanced.rare:hover {
+  border-color: rgba(138, 43, 226, 0.7);
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.4),
+    0 0 20px rgba(138, 43, 226, 0.2);
+}
+
+.item-slot-enhanced.legendary {
+  border-color: rgba(var(--cyber-amber-rgb), 0.5);
+  background: 
+    linear-gradient(135deg, rgba(40, 30, 10, 0.85), rgba(30, 22, 8, 0.75));
+}
+.item-slot-enhanced.legendary:hover {
+  border-color: var(--cyber-amber);
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.4),
+    0 0 24px rgba(var(--cyber-amber-rgb), 0.3);
+}
+
+/* ─── Tooltip Enhanced ─── */
+.tooltip-enhanced {
+  position: relative;
+  background: linear-gradient(
+    145deg,
+    rgba(2, 6, 23, 0.98) 0%,
+    rgba(15, 23, 42, 0.96) 50%,
+    rgba(0, 0, 0, 0.98) 100%
+  );
+  border: 1px solid rgba(var(--cyber-cyan-rgb), 0.3);
+  box-shadow: 
+    0 0 20px rgba(var(--cyber-cyan-rgb), 0.12),
+    0 8px 32px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(20px);
+}
+
+.tooltip-enhanced::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(var(--cyber-cyan-rgb), 0.5),
+    transparent
+  );
+}
+
+/* ─── Energy Ring Decorator ─── */
+.energy-ring {
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.energy-ring::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 2px solid transparent;
+  border-top-color: var(--cyber-cyan);
+  animation: energyRingRotate 3s linear infinite;
+}
+
+.energy-ring::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border-radius: inherit;
+  border: 2px solid transparent;
+  border-bottom-color: rgba(var(--cyber-cyan-rgb), 0.5);
+  animation: energyRingRotate 4s linear infinite reverse;
+}
+
+/* ─── Text with Cyber Glow ─── */
+.text-neon-cyan {
+  color: var(--cyber-cyan);
+  text-shadow: 
+    0 0 4px var(--cyber-cyan),
+    0 0 8px rgba(var(--cyber-cyan-rgb), 0.5),
+    0 0 16px rgba(var(--cyber-cyan-rgb), 0.3);
+}
+
+.text-neon-amber {
+  color: var(--cyber-amber);
+  text-shadow: 
+    0 0 4px var(--cyber-amber),
+    0 0 8px rgba(var(--cyber-amber-rgb), 0.5),
+    0 0 16px rgba(var(--cyber-amber-rgb), 0.3);
+}
+
+.text-neon-matrix {
+  color: var(--cyber-matrix);
+  text-shadow: 
+    0 0 4px var(--cyber-matrix),
+    0 0 8px rgba(var(--cyber-matrix-rgb), 0.5),
+    0 0 16px rgba(var(--cyber-matrix-rgb), 0.3);
+}
+
+.text-glitch-subtle {
+  animation: textGlitchSubtle 5s ease-in-out infinite;
+}
+
+/* ─── Section Divider Enhanced ─── */
+.section-divider-cyber {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.section-divider-cyber::before,
+.section-divider-cyber::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(var(--cyber-cyan-rgb), 0.4),
+    transparent
+  );
+}
+
+.section-divider-cyber .divider-icon {
+  color: var(--cyber-cyan);
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
+/* ─── Interactive Element Hover Glow ─── */
+.interactive-glow {
+  transition: all 0.3s ease;
+}
+
+.interactive-glow:hover {
+  box-shadow: 
+    0 0 0 1px rgba(var(--cyber-cyan-rgb), 0.3),
+    0 0 16px rgba(var(--cyber-cyan-rgb), 0.15),
+    inset 0 0 8px rgba(var(--cyber-cyan-rgb), 0.05);
+}
+
+/* ─── Loading Skeleton Enhanced ─── */
+.skeleton-cyber {
+  background: linear-gradient(
+    90deg,
+    rgba(var(--cyber-cyan-rgb), 0.08) 0%,
+    rgba(var(--cyber-cyan-rgb), 0.15) 50%,
+    rgba(var(--cyber-cyan-rgb), 0.08) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ─── Responsive adjustments ─── */
+@media (max-width: 640px) {
+  .neon-btn-cyan,
+  .neon-btn-amber,
+  .neon-btn-matrix {
+    font-size: 0.75rem;
+    padding: 0.4rem 0.6rem;
+  }
+  
+  .holo-panel::after {
+    display: none;
+  }
+  
+  .stat-display-enhanced {
+    padding: 0.35rem 0.5rem;
+  }
+}
+
+/* ─── Reduced motion respect ─── */
+@media (prefers-reduced-motion: reduce) {
+  .neon-btn-cyan,
+  .neon-btn-amber,
+  .neon-btn-matrix,
+  .progress-bar-glow,
+  .progress-bar-glow.danger {
+    animation: none;
+  }
+  
+  .border-flow-cyan::before {
+    animation: none;
+  }
+  
+  .energy-ring::before,
+  .energy-ring::after {
+    animation: none;
+  }
+  
+  .text-glitch-subtle {
+    animation: none;
+  }
+  
+  .progress-bar-glow::after {
+    display: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Section — Scene Transition Enhancements (film_burn, glitch_cut, breathe)
+   ═══════════════════════════════════════════════════════════════════ */
+
+@keyframes film-burn-noise {
+  0% { opacity: 0; }
+  20% { opacity: 0.6; }
+  50% { opacity: 0.9; }
+  80% { opacity: 0.7; }
+  100% { opacity: 0.4; }
+}
+
+@keyframes film-burn-flicker {
+  0% { filter: brightness(1) contrast(1); }
+  15% { filter: brightness(1.4) contrast(1.2); }
+  30% { filter: brightness(0.8) contrast(1.5); }
+  50% { filter: brightness(1.6) contrast(1.1); }
+  70% { filter: brightness(0.9) contrast(1.3); }
+  100% { filter: brightness(1) contrast(1); }
+}
+
+@keyframes glitch-cut-slice-r {
+  0% { clip-path: inset(20% 0% 40% 0%); transform: translateX(0); }
+  20% { clip-path: inset(18% 0% 42% 0%); transform: translateX(25px); }
+  40% { clip-path: inset(22% 0% 38% 0%); transform: translateX(-15px); }
+  60% { clip-path: inset(19% 0% 41% 0%); transform: translateX(20px); }
+  80% { clip-path: inset(21% 0% 39% 0%); transform: translateX(5px); }
+  100% { clip-path: inset(20% 0% 40% 0%); transform: translateX(0); }
+}
+
+@keyframes glitch-cut-slice-b {
+  0% { clip-path: inset(55% 0% 15% 0%); transform: translateX(0); }
+  20% { clip-path: inset(57% 0% 13% 0%); transform: translateX(-20px); }
+  40% { clip-path: inset(53% 0% 17% 0%); transform: translateX(30px); }
+  60% { clip-path: inset(56% 0% 14% 0%); transform: translateX(-10px); }
+  80% { clip-path: inset(54% 0% 16% 0%); transform: translateX(3px); }
+  100% { clip-path: inset(55% 0% 15% 0%); transform: translateX(0); }
+}
+
+@keyframes breathe-scale {
+  0% { transform: scale(0.98); opacity: 0; }
+  30% { transform: scale(0.995); opacity: 0.4; }
+  60% { transform: scale(1.01); opacity: 0.8; }
+  100% { transform: scale(1.02); opacity: 1; }
+}
+
+@keyframes breathe-ring-expand {
+  0% { transform: scale(0.8); opacity: 0; }
+  40% { transform: scale(1.1); opacity: 0.4; }
+  100% { transform: scale(1.3); opacity: 0; }
+}
+
+/* Utility classes for transition effects outside SceneTransitionOverlay */
+.transition-film-burn-overlay {
+  background: radial-gradient(ellipse at 85% 90%,
+    rgba(255,80,0,0.85) 0%,
+    rgba(200,50,0,0.6) 30%,
+    rgba(100,20,0,0.8) 60%,
+    rgba(0,0,0,0.95) 100%);
+  filter: contrast(1.3) saturate(1.4);
+  animation: film-burn-flicker 0.35s ease-in-out;
+}
+
+.transition-film-burn-noise {
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px, transparent 1px,
+    rgba(255,120,40,0.04) 1px, rgba(255,120,40,0.04) 2px);
+  mix-blend-mode: screen;
+  animation: film-burn-noise 0.35s ease-in-out;
+}
+
+.transition-glitch-cut-r {
+  background: rgba(255, 0, 50, 0.35);
+  mix-blend-mode: screen;
+  animation: glitch-cut-slice-r 0.18s ease-out;
+}
+
+.transition-glitch-cut-b {
+  background: rgba(0, 80, 255, 0.3);
+  mix-blend-mode: screen;
+  animation: glitch-cut-slice-b 0.18s ease-out;
+}
+
+.transition-breathe-overlay {
+  animation: breathe-scale 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.transition-breathe-ring {
+  animation: breathe-ring-expand 0.5s ease-out forwards;
+}
+
+/* Reduced-motion: disable all new transition animations */
+@media (prefers-reduced-motion: reduce) {
+  .transition-film-burn-overlay,
+  .transition-film-burn-noise,
+  .transition-glitch-cut-r,
+  .transition-glitch-cut-b,
+  .transition-breathe-overlay,
+  .transition-breathe-ring {
+    animation: none;
+  }
+}
+

@@ -7,7 +7,7 @@ export interface InteractionHintVisual {
   bg: string;
 }
 
-export type SceneTransitionStyle = 'wipe' | 'flash' | 'darken' | 'ripple' | 'dissolve';
+export type SceneTransitionStyle = 'wipe' | 'flash' | 'darken' | 'ripple' | 'dissolve' | 'film_burn' | 'glitch_cut' | 'breathe';
 
 export interface TransitionProgressVisual {
   primary: string;
@@ -47,6 +47,9 @@ const TRANSITION_ACCENT: Record<SceneTransitionStyle, string> = {
   ripple: 'rgba(180, 100, 255, 1)',
   dissolve: 'rgba(200, 180, 255, 1)',
   wipe: 'rgba(0, 255, 255, 1)',
+  film_burn: 'rgba(255, 120, 40, 1)',
+  glitch_cut: 'rgba(0, 255, 100, 1)',
+  breathe: 'rgba(140, 200, 255, 1)',
 };
 
 const PROGRESS_ACTIVE: TransitionProgressVisual = {

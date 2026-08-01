@@ -12,7 +12,7 @@ export interface UiEvents {
   'game:notification': { title: string; subtitle?: string; type: 'combat' | 'scene' | 'achievement' | 'quest' | 'info' };
   /** Brief pulse on the HUD poem badge after a new poem is collected. */
   'ui:highlight_poem_badge': { poemId?: string };
-  'toast:add': { id: string; type: 'karma' | 'energy' | 'stress' | 'skill' | 'poem' | 'quest' | 'crafting'; message: string; delta?: number; timestamp: number };
+  'toast:add': { id: string; type: 'karma' | 'energy' | 'stress' | 'skill' | 'poem' | 'quest' | 'crafting' | 'achievement' | 'lore' | 'system' | 'warning'; message: string; delta?: number; timestamp: number };
   'ui:loot_notification': {
     type: 'item' | 'skill' | 'karma' | 'poem' | 'combat' | 'xp';
     label: string;
