@@ -7,8 +7,9 @@ import {
 
 describe('resolveAmbientNpcBudget', () => {
   it('boosts hero scene counts on higher tiers', () => {
-    expect(resolveAmbientNpcCount('street_night', 3, 'low')).toBe(3);
-    expect(resolveAmbientNpcCount('street_night', 3, 'medium')).toBeGreaterThan(3);
+    // street_night has ambientNpcCountBoost: 1 even on low (profile boost, not tier).
+    expect(resolveAmbientNpcCount('street_night', 3, 'low')).toBe(4);
+    expect(resolveAmbientNpcCount('street_night', 3, 'medium')).toBeGreaterThan(4);
     expect(resolveAmbientNpcCount('street_night', 3, 'ultra')).toBeGreaterThan(
       resolveAmbientNpcCount('street_night', 3, 'medium'),
     );

@@ -209,16 +209,12 @@ export function AmbientNPCs({ livePlayerPositionRef }: AmbientNPCsProps) {
     () => scaleNpcLodThresholds(DEFAULT_NPC_LOD, preset.lodBias).cullOut,
     [preset.lodBias],
   );
-  const skinnedNearDistance = useMemo(
-    () => scaleNpcLodThresholds(DEFAULT_NPC_LOD, preset.lodBias).impostorIn,
-    [preset.lodBias],
-  );
   const maxSkinned = preset.visualLite
     ? 0
     : preset.id === 'low'
-      ? 2
+      ? 3
       : preset.id === 'medium'
-        ? 3
+        ? 5
         : MAX_AMBIENT_SKINNED;
 
   const config = SCENE_CONFIGS[sceneId] ?? SCENE_CONFIGS[resolveDerivedSceneId(sceneId)] ?? null;
@@ -393,9 +389,8 @@ export function AmbientNPCs({ livePlayerPositionRef }: AmbientNPCsProps) {
         }
       }
 
-      // Y-billboard toward camera — far LOD only; near band uses skinned mid-LOD.
-      const useSkinnedNear =
-        i < maxSkinned && Math.hypot(s.px - playerX, s.pz - playerZ) <= skinnedNearDistance;
+      // Skinned mid-LOD owns slots 0..maxSkinned-1 until cull — no cardboard until overflow.
+      const useSkinned = i < maxSkinned;
 
       if (i < maxSkinned) {
         const slot = liveSlotsRef.current[i];
@@ -408,7 +403,7 @@ export function AmbientNPCs({ livePlayerPositionRef }: AmbientNPCsProps) {
         }
       }
 
-      if (useSkinnedNear) {
+      if (useSkinned) {
         dummy.position.set(0, -100, 0);
         dummy.scale.set(0, 0, 0);
         dummy.updateMatrix();

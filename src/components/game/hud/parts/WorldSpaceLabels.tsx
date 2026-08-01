@@ -103,12 +103,12 @@ const OCCLUSION_DIM_FACTOR = 0.35;
 const FADE_START_RATIO = 0.5;
 
 // ============================================================================
-// Type-Specific Styling Configuration (Cyberpunk Theme)
+// Type-Specific Styling Configuration (filmic noir — not candy neon chrome)
 // ============================================================================
 
 /**
  * Visual style presets for each label type.
- * Cyberpunk aesthetic with neon glow effects and semi-transparent backgrounds.
+ * Restrained filmic ink / stone; soft borders — no cyberpunk neon glow spam.
  */
 const TYPE_STYLES: Record<WorldLabelType, {
   color: string;
@@ -117,27 +117,27 @@ const TYPE_STYLES: Record<WorldLabelType, {
   icon: React.ReactNode;
 }> = {
   npc: {
-    color: '#22d3ee',
-    bgColor: 'rgba(6, 182, 212, 0.15)',
-    borderColor: 'rgba(34, 211, 238, 0.6)',
+    color: 'rgba(214, 211, 209, 0.92)',
+    bgColor: 'rgba(12, 10, 9, 0.55)',
+    borderColor: 'rgba(168, 162, 158, 0.35)',
     icon: <User size={12} />,
   },
   item: {
-    color: '#fbbf24',
-    bgColor: 'rgba(245, 158, 11, 0.15)',
-    borderColor: 'rgba(251, 191, 36, 0.6)',
+    color: 'rgba(231, 229, 228, 0.94)',
+    bgColor: 'rgba(12, 10, 9, 0.55)',
+    borderColor: 'rgba(180, 150, 100, 0.4)',
     icon: <Package size={12} />,
   },
   interaction: {
-    color: '#4ade80',
-    bgColor: 'rgba(34, 197, 94, 0.15)',
-    borderColor: 'rgba(74, 222, 128, 0.6)',
+    color: 'rgba(214, 211, 209, 0.95)',
+    bgColor: 'rgba(12, 10, 9, 0.58)',
+    borderColor: 'rgba(120, 160, 140, 0.38)',
     icon: <Hand size={12} />,
   },
   custom: {
-    color: '#a78bfa',
-    bgColor: 'rgba(167, 139, 250, 0.15)',
-    borderColor: 'rgba(167, 139, 250, 0.6)',
+    color: 'rgba(214, 211, 209, 0.9)',
+    bgColor: 'rgba(12, 10, 9, 0.5)',
+    borderColor: 'rgba(168, 162, 158, 0.32)',
     icon: <Star size={12} />,
   },
 };
@@ -287,7 +287,7 @@ const ConnectionLine = memo<ConnectionLineProps>(({ startX, startY, endX, endY, 
         className="w-full h-full"
         style={{
           background: `linear-gradient(90deg, ${color}00, ${color}, ${color}00)`,
-          boxShadow: `0 0 6px ${color}`,
+          boxShadow: 'none',
         }}
       />
     </div>
@@ -362,7 +362,7 @@ const SingleLabel = memo<SingleLabelProps>(({
         style={{
           backgroundColor: styleConfig.bgColor,
           borderColor: styleConfig.borderColor,
-          boxShadow: `0 0 10px ${styleConfig.color}33, 0 0 20px ${styleConfig.color}18, inset 0 1px 0 ${styleConfig.color}22`,
+          boxShadow: '0 1px 8px rgba(0,0,0,0.45)',
           ...(enableBobbing && !reducedMotion
             ? {
                 ['--world-label-bob-amp' as string]: `${BOBBING_AMPLITUDE}px`,
@@ -377,10 +377,10 @@ const SingleLabel = memo<SingleLabelProps>(({
           {label.customIcon ?? styleConfig.icon}
         </span>
 
-        {/* Label text with neon glow */}
+        {/* Label text — filmic ink, no neon text-shadow */}
         <span
-          className="text-xs font-medium whitespace-nowrap tracking-wide uppercase"
-          style={{ color: styleConfig.color, textShadow: `0 0 8px ${styleConfig.color}88` }}
+          className="text-xs font-medium whitespace-nowrap tracking-wide"
+          style={{ color: styleConfig.color, textShadow: '0 1px 2px rgba(0,0,0,0.65)' }}
         >
           {label.text}
         </span>

@@ -48,10 +48,10 @@ export function InteractionRippleEffect() {
   if (mode !== 'exploration') return null;
 
   const isMagenta = ripple?.accent === 'magenta';
-  const ringColor = isMagenta ? 'rgba(240, 171, 252, 0.65)' : 'rgba(34, 211, 238, 0.6)';
-  const glowColor = isMagenta ? 'rgba(240, 171, 252, 0.2)' : 'rgba(34, 211, 238, 0.15)';
-  const innerColor = isMagenta ? 'rgba(240, 171, 252, 0.4)' : 'rgba(34, 211, 238, 0.35)';
-  const dotColor = isMagenta ? 'rgba(240, 171, 252, 0.9)' : 'rgba(34, 211, 238, 0.8)';
+  const ringColor = isMagenta ? 'rgba(214, 180, 160, 0.55)' : 'rgba(214, 211, 209, 0.5)';
+  const glowColor = isMagenta ? 'rgba(0, 0, 0, 0.2)' : 'rgba(0, 0, 0, 0.18)';
+  const innerColor = isMagenta ? 'rgba(214, 180, 160, 0.35)' : 'rgba(214, 211, 209, 0.28)';
+  const dotColor = isMagenta ? 'rgba(231, 229, 228, 0.85)' : 'rgba(231, 229, 228, 0.8)';
 
   return (
     <AnimatePresence>

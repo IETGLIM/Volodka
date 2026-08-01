@@ -44,7 +44,7 @@ export function CyberStatBar({
     <div
       className={`relative h-2.5 bg-slate-800/80 rounded-full overflow-hidden ${lowClass} ${shimmer ? 'stat-shimmer' : ''} stat-bar-shimmer-effect`}
       style={{ 
-        boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.4), 0 0 8px rgba(0,0,0,0.3), 0 0 16px ' + glowColor + (isCritical ? '' : '15'),
+        boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.5), 0 1px 4px rgba(0,0,0,0.35)',
       }}
     >
       {showSegments && (
@@ -62,7 +62,7 @@ export function CyberStatBar({
         className="absolute inset-y-0 left-0 rounded-full"
         style={{
           background: gradientFill,
-          boxShadow: `0 0 12px ${glowColor}, 0 0 4px ${glowColor}, inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.3)`,
+          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgba(0,0,0,0.35)',
         }}
         initial={false}
         animate={{ width: `${pct}%` }}
@@ -94,7 +94,7 @@ export function CyberStatBar({
       <div
         className="absolute top-0 left-0 right-0 h-px rounded-t-full pointer-events-none"
         style={{
-          background: `linear-gradient(90deg, transparent 0%, ${glowColor}40 30%, rgba(255,255,255,0.15) 50%, ${glowColor}40 70%, transparent 100%)`,
+          background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.12) 50%, transparent 100%)',
         }}
       />
     </div>

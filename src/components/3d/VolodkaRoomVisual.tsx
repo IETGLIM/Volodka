@@ -608,6 +608,19 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
           <mesh position={[W / 2 - 0.03, H - 0.08, 0]} geometry={getSharedBoxGeometry(0.06, 0.1, D - 0.1)}>
             <PolyHavenStandardMaterial materialId="plastered_wall" repeatScale={1.05} color="#4a4658" roughness={0.84} metalness={0.04} />
           </mesh>
+          {/* Chair rail — mid-wall wood break so plaster planes read as architecture */}
+          <mesh position={[0, 0.92, -D / 2 + 0.025]} geometry={getSharedBoxGeometry(W - 0.12, 0.045, 0.035)}>
+            <PolyHavenStandardMaterial materialId="wood_floor" repeatScale={1.5} color="#3f3429" roughness={0.8} metalness={0.03} />
+          </mesh>
+          <mesh position={[0, 0.92, D / 2 - 0.025]} geometry={getSharedBoxGeometry(W - 0.12, 0.045, 0.035)}>
+            <PolyHavenStandardMaterial materialId="wood_floor" repeatScale={1.5} color="#3f3429" roughness={0.8} metalness={0.03} />
+          </mesh>
+          <mesh position={[-W / 2 + 0.025, 0.92, 0]} geometry={getSharedBoxGeometry(0.035, 0.045, D - 0.12)}>
+            <PolyHavenStandardMaterial materialId="wood_floor" repeatScale={1.55} color="#3f3429" roughness={0.8} metalness={0.03} />
+          </mesh>
+          <mesh position={[W / 2 - 0.025, 0.92, 0]} geometry={getSharedBoxGeometry(0.035, 0.045, D - 0.12)}>
+            <PolyHavenStandardMaterial materialId="wood_floor" repeatScale={1.55} color="#3f3429" roughness={0.8} metalness={0.03} />
+          </mesh>
         </>
       )}
 

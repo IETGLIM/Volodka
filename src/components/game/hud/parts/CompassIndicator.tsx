@@ -75,33 +75,33 @@ export function CompassIndicator() {
         ref={dialRef}
         className="w-full h-full rounded-full border backdrop-blur-sm will-change-transform"
         style={{
-          background: 'radial-gradient(circle, rgba(2,6,23,0.85) 0%, rgba(15,23,42,0.75) 70%, rgba(0,0,0,0.6) 100%)',
-          borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.25)',
-          boxShadow: '0 0 12px rgb(var(--cyber-cyan-rgb) / 0.15), inset 0 0 8px rgba(0,0,0,0.4), 0 0 24px rgb(var(--cyber-cyan-rgb) / 0.05)',
+          background: 'radial-gradient(circle, rgba(12,10,9,0.88) 0%, rgba(28,25,23,0.78) 70%, rgba(0,0,0,0.55) 100%)',
+          borderColor: 'rgba(168, 162, 158, 0.28)',
+          boxShadow: '0 1px 10px rgba(0,0,0,0.45), inset 0 0 8px rgba(0,0,0,0.35)',
         }}
       >
         {/* Cardinal direction labels — fixed visual up = North */}
         <span
-          className="absolute left-1/2 -translate-x-1/2 text-[8px] font-bold text-cyan-400"
-          style={{ top: 3, textShadow: '0 0 4px rgb(var(--cyber-cyan-rgb) / 0.5)' }}
+          className="absolute left-1/2 -translate-x-1/2 text-[8px] font-bold"
+          style={{ top: 3, color: 'rgba(231, 229, 228, 0.9)', textShadow: '0 1px 2px rgba(0,0,0,0.7)' }}
         >
           С
         </span>
         <span
-          className="absolute left-1/2 -translate-x-1/2 text-[8px] font-medium text-slate-500"
-          style={{ bottom: 3 }}
+          className="absolute left-1/2 -translate-x-1/2 text-[8px] font-medium"
+          style={{ bottom: 3, color: 'rgba(168, 162, 158, 0.75)' }}
         >
           Ю
         </span>
         <span
-          className="absolute top-1/2 -translate-y-1/2 text-[8px] font-medium text-slate-500"
-          style={{ left: 4 }}
+          className="absolute top-1/2 -translate-y-1/2 text-[8px] font-medium"
+          style={{ left: 4, color: 'rgba(168, 162, 158, 0.75)' }}
         >
           З
         </span>
         <span
-          className="absolute top-1/2 -translate-y-1/2 text-[8px] font-medium text-slate-500"
-          style={{ right: 4 }}
+          className="absolute top-1/2 -translate-y-1/2 text-[8px] font-medium"
+          style={{ right: 4, color: 'rgba(168, 162, 158, 0.75)' }}
         >
           В
         </span>
@@ -111,8 +111,8 @@ export function CompassIndicator() {
           <div
             className="w-0.5 h-full mx-auto rounded-t-full"
             style={{
-              background: 'linear-gradient(180deg, var(--cyber-cyan) 0%, transparent 100%)',
-              boxShadow: '0 0 6px rgb(var(--cyber-cyan-rgb) / 0.5)',
+              background: 'linear-gradient(180deg, rgba(231,229,228,0.95) 0%, transparent 100%)',
+              boxShadow: 'none',
             }}
           />
         </div>
@@ -121,7 +121,7 @@ export function CompassIndicator() {
           <div
             className="w-0.5 h-full mx-auto rounded-b-full"
             style={{
-              background: 'linear-gradient(180deg, transparent 0%, rgba(251,113,133,0.4) 100%)',
+              background: 'linear-gradient(180deg, transparent 0%, rgba(168,162,158,0.45) 100%)',
             }}
           />
         </div>
@@ -132,8 +132,8 @@ export function CompassIndicator() {
           style={{
             width: 5,
             height: 5,
-            background: 'var(--cyber-cyan)',
-            boxShadow: '0 0 6px var(--cyber-cyan), 0 0 12px rgb(var(--cyber-cyan-rgb) / 0.3)',
+            background: 'rgba(214, 211, 209, 0.9)',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.5)',
             animation: 'compass-needle-swing 5s ease-in-out infinite',
           }}
         />
@@ -141,19 +141,19 @@ export function CompassIndicator() {
 
       {/* Fixed North indicator (stays on top, doesn't rotate) */}
       <div
-        className="absolute left-1/2 -translate-x-1/2 text-[7px] font-bold text-cyan-400/80 pointer-events-none"
-        style={{ top: -2, textShadow: '0 0 4px rgb(var(--cyber-cyan-rgb) / 0.4)' }}
+        className="absolute left-1/2 -translate-x-1/2 text-[7px] font-bold pointer-events-none"
+        style={{ top: -2, color: 'rgba(231, 229, 228, 0.75)', textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}
         aria-hidden="true"
       >
         ▲
       </div>
 
-      {/* Numeric degree readout with subtle glow */}
+      {/* Numeric degree readout */}
       <span
         className="mt-0.5 text-[9px] font-mono tabular-nums select-none pointer-events-none"
         style={{
-          color: 'rgb(var(--cyber-cyan-rgb) / 0.7)',
-          textShadow: '0 0 4px rgb(var(--cyber-cyan-rgb) / 0.3)',
+          color: 'rgba(168, 162, 158, 0.8)',
+          textShadow: '0 1px 2px rgba(0,0,0,0.55)',
         }}
         aria-hidden="true"
       >

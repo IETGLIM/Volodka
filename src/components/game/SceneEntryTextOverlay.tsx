@@ -98,11 +98,11 @@ export function SceneEntryTextOverlay() {
             transition={motionFadeIn}
           />
 
-          {/* Subtle scanlines */}
+          {/* Soft film grain wash — no cyan scanlines */}
           <div
             className="absolute inset-0 pointer-events-none"
             style={{
-              background: 'repeating-linear-gradient(0deg, transparent 0px, transparent 2px, rgba(0,255,255,0.015) 2px, rgba(0,255,255,0.015) 4px)',
+              background: 'radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.35) 100%)',
             }}
           />
 
@@ -112,7 +112,7 @@ export function SceneEntryTextOverlay() {
             <motion.div
               className="w-24 sm:w-36 h-px origin-center"
               style={{
-                background: 'linear-gradient(90deg, transparent, rgba(0,255,255,0.5), transparent)',
+                background: 'linear-gradient(90deg, transparent, rgba(214,211,209,0.45), transparent)',
               }}
               initial={{ scaleX: 0 }}
               animate={{ scaleX: 1 }}
@@ -124,8 +124,8 @@ export function SceneEntryTextOverlay() {
               className="text-2xl sm:text-3xl md:text-4xl font-semibold tracking-[0.14em] text-center"
               style={{
                 fontFamily: '"Georgia", "Times New Roman", serif',
-                color: 'rgba(255,255,255,0.96)',
-                textShadow: '0 0 40px rgba(0,255,255,0.3), 0 2px 12px rgba(0,0,0,0.85)',
+                color: 'rgba(245,245,244,0.96)',
+                textShadow: '0 2px 14px rgba(0,0,0,0.85)',
               }}
               initial={{ opacity: 0, y: 16, filter: 'blur(10px)' }}
               animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
@@ -140,8 +140,8 @@ export function SceneEntryTextOverlay() {
               className="text-sm sm:text-base text-center tracking-wide italic"
               style={{
                 fontFamily: '"Georgia", "Times New Roman", serif',
-                color: 'rgba(200, 210, 230, 0.65)',
-                textShadow: '0 0 20px rgba(0,255,255,0.12)',
+                color: 'rgba(214, 211, 209, 0.72)',
+                textShadow: '0 1px 8px rgba(0,0,0,0.7)',
               }}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -155,7 +155,7 @@ export function SceneEntryTextOverlay() {
             <motion.div
               className="w-16 sm:w-24 h-px origin-center"
               style={{
-                background: 'linear-gradient(90deg, transparent, rgba(0,255,255,0.3), transparent)',
+                background: 'linear-gradient(90deg, transparent, rgba(168,162,158,0.4), transparent)',
               }}
               initial={{ scaleX: 0 }}
               animate={{ scaleX: 1 }}

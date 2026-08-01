@@ -28,11 +28,12 @@ interface FacadeSpec {
 }
 
 const FACADES: FacadeSpec[] = [
-  { pos: [-12, 0, -15], w: 8, h: 18, d: 6, seed: 42, neon: '#ff2288' },
-  { pos: [12, 0, -20], w: 10, h: 22, d: 6, seed: 137, neon: '#22ffdd' },
-  { pos: [-15, 0, 5], w: 7, h: 15, d: 5, seed: 256, neon: '#aa44ff' },
-  { pos: [14, 0, 8], w: 9, h: 20, d: 6, seed: 389, neon: '#4488ff' },
-  { pos: [0, 0, -25], w: 12, h: 25, d: 8, seed: 512, neon: '#ffaa33' },
+  // Filmic wet-night signage — muted practicals, not candy RGB toys.
+  { pos: [-12, 0, -15], w: 8, h: 18, d: 6, seed: 42, neon: '#c45a72' },
+  { pos: [12, 0, -20], w: 10, h: 22, d: 6, seed: 137, neon: '#6a9aaa' },
+  { pos: [-15, 0, 5], w: 7, h: 15, d: 5, seed: 256, neon: '#8a7a9a' },
+  { pos: [14, 0, 8], w: 9, h: 20, d: 6, seed: 389, neon: '#5a7aaa' },
+  { pos: [0, 0, -25], w: 12, h: 25, d: 8, seed: 512, neon: '#c4985a' },
 ];
 
 function createLitWindowAtlas(cols: number, rows: number, seed: number): THREE.CanvasTexture {
@@ -92,7 +93,7 @@ function BevelledFacade({ spec }: { spec: FacadeSpec }) {
   const wetNeonFascia = useMemo(() => getWetGlassPhysicalParams('neonFascia'), []);
   const wetShopGlass = useMemo(() => getWetGlassPhysicalParams('streetShopWindow'), []);
   const maps = useMemo(
-    () => getCachedSurfaceDetailMaps('concrete', preset.textureScale),
+    () => getCachedSurfaceDetailMaps('asphalt', preset.textureScale),
     [preset.textureScale],
   );
   const map = useMemo(() => {
@@ -163,7 +164,7 @@ function BevelledFacade({ spec }: { spec: FacadeSpec }) {
           map={windowTex}
           emissiveMap={windowTex}
           emissive="#8899aa"
-          emissiveIntensity={0.55}
+          emissiveIntensity={0.38}
           roughness={0.35}
           metalness={0.15}
           transparent
@@ -203,7 +204,7 @@ function BevelledFacade({ spec }: { spec: FacadeSpec }) {
           <meshPhysicalMaterial
             color="#101018"
             emissive={spec.neon}
-            emissiveIntensity={0.72}
+            emissiveIntensity={0.42}
             roughness={wetNeonFascia.roughness}
             metalness={wetNeonFascia.metalness}
             transmission={wetNeonFascia.transmission}
@@ -216,21 +217,21 @@ function BevelledFacade({ spec }: { spec: FacadeSpec }) {
           <meshStandardMaterial
             color="#101018"
             emissive={spec.neon}
-            emissiveIntensity={0.72}
+            emissiveIntensity={0.42}
             roughness={0.32}
             metalness={0.5}
           />
         )}
       </mesh>
-      <pointLight position={[0, neonY, spec.d * 0.7]} color={spec.neon} intensity={0.42} distance={8} />
+      <pointLight position={[0, neonY, spec.d * 0.7]} color={spec.neon} intensity={0.22} distance={7} />
 
       {/* Shop-front warm glass */}
       <mesh position={[0, 1.15, spec.d * 0.52]} geometry={getSharedPlaneGeometry(spec.w * 0.42, 1.8)}>
         {usePhysicalGlass ? (
           <meshPhysicalMaterial
             color="#1a1008"
-            emissive="#ff9944"
-            emissiveIntensity={0.65}
+            emissive="#cc8844"
+            emissiveIntensity={0.38}
             roughness={wetShopGlass.roughness}
             metalness={wetShopGlass.metalness}
             transmission={wetShopGlass.transmission}
@@ -246,8 +247,8 @@ function BevelledFacade({ spec }: { spec: FacadeSpec }) {
         ) : (
           <meshStandardMaterial
             color="#1a1008"
-            emissive="#ff9944"
-            emissiveIntensity={0.65}
+            emissive="#cc8844"
+            emissiveIntensity={0.38}
             roughness={0.15}
             metalness={0.05}
             transparent

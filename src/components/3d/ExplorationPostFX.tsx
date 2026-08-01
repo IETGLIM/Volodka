@@ -156,7 +156,7 @@ const SCENE_BLOOM: Record<string, { intensity: number; threshold: number; smooth
   pier_evening:       { intensity: 0.55, threshold: 0.52, smoothing: 0.44 }, // evening pier neon
   chk_campfire_night: { intensity: 0.62, threshold: 0.48, smoothing: 0.42 }, // fire bloom
   factory_roof:       { intensity: 0.4,  threshold: 0.62, smoothing: 0.5 },  // dusk skyline
-  city_square:        { intensity: 0.72, threshold: 0.48, smoothing: 0.44 }, // plaza neon spill
+  city_square:        { intensity: 0.58, threshold: 0.55, smoothing: 0.48 }, // plaza — wet filmic, not candy
   underground_bunker: { intensity: 0.48, threshold: 0.55, smoothing: 0.46 }, // resistance CRT glow
   guild_mainframe:    { intensity: 0.6,  threshold: 0.5,  smoothing: 0.42 }, // server rack bloom
 };

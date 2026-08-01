@@ -549,11 +549,11 @@ export function DialogueRenderer() {
         aria-busy="true"
         aria-label="Загрузка диалога"
       >
-        <div className="w-full max-w-2xl rounded-xl border border-cyan-800/35 bg-black/80 shadow-[0_0_32px_rgba(6,182,212,0.1)] overflow-hidden">
-          <div className="flex gap-3 p-4 border-b border-cyan-900/25">
+        <div className="w-full max-w-2xl rounded-xl border border-stone-700/40 bg-black/80 shadow-[0_8px_32px_rgba(0,0,0,0.45)] overflow-hidden">
+          <div className="flex gap-3 p-4 border-b border-stone-800/40">
             <div className="size-14 shrink-0 rounded-lg bg-slate-800/80 border border-slate-700/50 animate-pulse" />
             <div className="flex-1 space-y-2 pt-1">
-              <div className="h-3 w-28 rounded bg-cyan-900/40 animate-pulse" />
+              <div className="h-3 w-28 rounded bg-stone-800/50 animate-pulse" />
               <div className="h-2.5 w-full rounded bg-slate-800/70 animate-pulse" />
               <div className="h-2.5 w-5/6 rounded bg-slate-800/50 animate-pulse" />
             </div>
@@ -567,7 +567,7 @@ export function DialogueRenderer() {
             {[0, 1, 2].map((i) => (
               <div
                 key={i}
-                className="h-9 rounded border border-cyan-900/20 bg-cyan-950/20 animate-pulse"
+                className="h-9 rounded border border-stone-800/30 bg-stone-950/30 animate-pulse"
                 style={{ animationDelay: `${i * 120}ms` }}
               />
             ))}
@@ -588,7 +588,7 @@ export function DialogueRenderer() {
           <button
             type="button"
             onClick={handleRetry}
-            className="px-4 py-2 rounded border border-cyan-500/40 text-cyan-300 text-sm font-mono bg-black/40 hover:bg-cyan-950/40 hover:border-cyan-400/60 transition-colors"
+            className="px-4 py-2 rounded border border-stone-500/40 text-stone-200 text-sm font-mono bg-black/40 hover:bg-stone-900/50 hover:border-stone-400/50 transition-colors"
           >
             Повторить
           </button>

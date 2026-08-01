@@ -64,7 +64,12 @@ const PROFILES: Partial<Record<SceneId, SceneVisualProfile>> = {
   street_night: {
     ...HERO_PROFILE,
     enhancedAmbientOcclusion: true,
-    bloomIntensityScale: 1.08,
+    bloomIntensityScale: 1.06,
+    aoIntensity: 2.45,
+    aoRadius: 0.5,
+    shadowMapScale: 1.1,
+    ambientNpcCountBoost: 1,
+    npcLodDistanceScale: 1.12,
   },
   procedural_aaa: {
     ...HERO_PROFILE,
@@ -73,7 +78,7 @@ const PROFILES: Partial<Record<SceneId, SceneVisualProfile>> = {
     aoIntensity: 2.6,
     aoRadius: 0.55,
   },
-  cafe_evening: { ...HERO_PROFILE, enhancedAmbientOcclusion: true, bloomIntensityScale: 1.08 },
+  cafe_evening: { ...HERO_PROFILE, enhancedAmbientOcclusion: true, bloomIntensityScale: 1.1 },
   office_day: { ...HERO_PROFILE, enhancedAmbientOcclusion: true, bloomIntensityScale: 1.04 },
   park_day: {
     ...HERO_PROFILE,
@@ -154,11 +159,11 @@ const PROFILES: Partial<Record<SceneId, SceneVisualProfile>> = {
   city_square: {
     ...HERO_PROFILE,
     enhancedAmbientOcclusion: true,
-    bloomIntensityScale: 1.18,
+    bloomIntensityScale: 1.08,
     ambientNpcCountBoost: 2,
-    aoIntensity: 2.6,
+    aoIntensity: 2.5,
     aoRadius: 0.5,
-    shadowMapScale: 1.2,
+    shadowMapScale: 1.15,
     npcLodDistanceScale: 1.15,
   },
   // Extension indoor scenes — AO adds depth to enclosed spaces

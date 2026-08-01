@@ -19,7 +19,7 @@ import { disposeSkinnedClone } from '@/engine/three/disposeThreeResources';
 
 const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeof useGLTF>[3]>;
 
-export const MAX_AMBIENT_SKINNED = 5;
+export const MAX_AMBIENT_SKINNED = 8;
 
 /** Distinct staged rigs so near-band crowd is not N× the same mesh. */
 const AMBIENT_RIG_POOL: readonly QuaterniusRigRef[] = [
@@ -28,6 +28,9 @@ const AMBIENT_RIG_POOL: readonly QuaterniusRigRef[] = [
   'female_01',
   'male_04',
   'female_02',
+  'male_03',
+  'male_05',
+  'female_03',
 ];
 
 export interface AmbientCrowdLiveSlot {
@@ -184,7 +187,7 @@ function AmbientSkinnedMidLodInner({
 }: AmbientSkinnedMidLodProps) {
   const { preset } = useGraphicsQuality();
   const nearDistance = useMemo(
-    () => scaleNpcLodThresholds(DEFAULT_NPC_LOD, preset.lodBias).impostorIn,
+    () => scaleNpcLodThresholds(DEFAULT_NPC_LOD, preset.lodBias).cullOut,
     [preset.lodBias],
   );
   const rigs = AMBIENT_RIG_POOL.slice(0, Math.max(0, Math.min(MAX_AMBIENT_SKINNED, maxSkinned)));
