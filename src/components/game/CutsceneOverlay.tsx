@@ -26,6 +26,7 @@ import type { CutsceneDef } from '@/data/cutscenes';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { AriaLiveRegion } from '@/components/a11y/AriaLiveRegion';
 import { sanitizePlainText } from '@/shared/utils/sanitizePlainText';
+import { FilmGrain } from '@/components/game/cinematic/FilmGrain';
 
 function finishCutscenePresentation(): void {
   setCinematicPresentationMode('third_person');
@@ -458,6 +459,12 @@ export function CutsceneOverlay() {
 
           {/* Glitch overlay */}
           <GlitchOverlay intensity={glitchIntensity} />
+
+          {/* Film grain for the most cinematic cutscene types — gives act transitions
+              and revelations a filmic texture instead of a flat digital overlay. */}
+          {(cutsceneType === 'revelation' || cutsceneType === 'act_transition') && !reducedMotion && (
+            <FilmGrain opacity={0.045} zIndex={6} />
+          )}
 
           {/* Atmospheric glow behind text */}
           <motion.div
