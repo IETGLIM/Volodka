@@ -36,9 +36,39 @@ function migrateV1toV2(data: Record<string, unknown>): Record<string, unknown> {
   return next;
 }
 
+/**
+ * v2 → v3: Convert poem power cooldowns from real-time ms to in-game hours.
+ * Old saves have `cooldownMs` field and `lastUsed` as epoch timestamp.
+ * New saves have `cooldownHours` field and `lastUsed` as game hours (0–24 float).
+ */
+function migrateV2toV3(data: Record<string, unknown>): Record<string, unknown> {
+  const next: Record<string, unknown> = { ...data, saveVersion: 3 };
+
+  const MS_PER_GAME_HOUR = 240_000;
+  const poemPowers = next.poemPowers;
+  if (poemPowers && typeof poemPowers === 'object' && !Array.isArray(poemPowers)) {
+    const migrated: Record<string, Record<string, unknown>> = {};
+    for (const [poemId, entry] of Object.entries(poemPowers as Record<string, unknown>)) {
+      if (entry && typeof entry === 'object' && !Array.isArray(entry) && 'lastUsed' in entry) {
+        const e = entry as Record<string, unknown>;
+        const isOldSave = typeof e.lastUsed === 'number' && e.lastUsed > 100;
+        const cooldownMs = typeof e.cooldownMs === 'number' ? e.cooldownMs : 60_000;
+        migrated[poemId] = {
+          lastUsed: isOldSave ? 0 : (typeof e.lastUsed === 'number' ? e.lastUsed : 0),
+          cooldownHours: cooldownMs / MS_PER_GAME_HOUR,
+        };
+      }
+    }
+    next.poemPowers = migrated;
+  }
+
+  return next;
+}
+
 /** Migrators keyed by the version they upgrade FROM. */
 const MIGRATORS: Readonly<Record<number, SaveMigrator>> = {
   1: migrateV1toV2,
+  2: migrateV2toV3,
 };
 
 function readSaveVersion(data: Record<string, unknown>): number | null {

@@ -8,4 +8,8 @@ export interface FxEvents {
   'fx:xp_gain': { amount: number; source?: string };
   'fx:stat_change': { stat: string; delta: number; type: 'positive' | 'negative' };
   'fx:damage_vignette': { intensity: number; duration: number };
+  'fx:blur': { intensity: number; duration: number };
+  'fx:color_tint': { color: string; opacity: number; duration: number };
+  'fx:grain': { intensity: number; duration: number };
+  'fx:crt': { intensity: number; duration: number };
 }

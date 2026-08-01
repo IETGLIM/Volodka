@@ -16,7 +16,7 @@ import { migrateSave } from './saveMigrations';
  * Current save format version — bump when adding a migrator in saveMigrations.ts.
  * Load path: migrateSave → Zod validate (see validateSaveData).
  */
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
 
 /* ─── Primitive helpers ─── */
 
@@ -219,7 +219,7 @@ const NotificationHistoryEntrySchema = z.object({
 
 const PoemPowerSchema = z.object({
   lastUsed: z.number(),
-  cooldownMs: z.number().min(0),
+  cooldownHours: z.number().min(0),
 });
 
 const ActiveTTLFlagSchema = z.object({

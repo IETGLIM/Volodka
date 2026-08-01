@@ -34,6 +34,7 @@ import {
   scalePoemPowerDurationMs,
   scalePoemPowerSkillDelta,
 } from '@/engine/skills/passiveSkillModifiers';
+import { MS_PER_GAME_HOUR } from '@/engine/world/worldClockConstants';
 import { resolvePoemPowerDurationMultiplier } from '@/shared/perks/perkModifiers';
 import { clamp } from '@/shared/utils/math';
 import { enrichPoemMechanicsDisplay } from '@/data/unifiedPoemRegistry';
@@ -774,9 +775,11 @@ export function canUsePower(poemId: string): boolean {
   const powerState = state.poemPowers[poemId];
   if (!powerState) return true;
 
-  const now = Date.now();
-  const elapsed = now - powerState.lastUsed;
-  return elapsed >= powerState.cooldownMs;
+  const now = state.exploration.timeOfDay;
+  let elapsed = now - powerState.lastUsed;
+  // Handle day wrap-around (timeOfDay wraps at 24)
+  if (elapsed < 0) elapsed += 24;
+  return elapsed >= powerState.cooldownHours;
 }
 
 /** Get remaining cooldown in ms for a poem power. Returns 0 if ready. */
@@ -784,10 +787,13 @@ export function getCooldownRemaining(poemId: string): number {
   const powerState = snap().poemPowers[poemId];
   if (!powerState) return 0;
 
-  const now = Date.now();
-  const elapsed = now - powerState.lastUsed;
-  const remaining = powerState.cooldownMs - elapsed;
-  return Math.max(0, remaining);
+  const now = snap().exploration.timeOfDay;
+  let elapsed = now - powerState.lastUsed;
+  // Handle day wrap-around (timeOfDay wraps at 24)
+  if (elapsed < 0) elapsed += 24;
+  const remaining = powerState.cooldownHours - elapsed;
+  // Return real ms for backward compatibility with UI hooks that divide by 1000
+  return Math.max(0, remaining * MS_PER_GAME_HOUR);
 }
 
 /** Activate a poem power. Returns true if successful. Not a React hook — named to avoid ESLint confusion. */

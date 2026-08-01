@@ -32,7 +32,8 @@ export type KarmaPoemPanelInput = {
   karma: number;
   collectedPoems: readonly string[];
   notifications: ReadonlyArray<{ id: string; type: string; text: string; timestamp: number }>;
-  poemPowers: Record<string, { lastUsed: number; cooldownMs: number }>;
+  poemPowers: Record<string, { lastUsed: number; cooldownHours: number }>;
+  timeOfDay: number;
   skills: PlayerSkills;
   flags: Record<string, boolean>;
 };
@@ -93,14 +94,17 @@ export function buildPoemSlots(collectedPoems: readonly string[]): PoemSlotView[
 
 export function countReadyPoemPowers(
   collectedPoems: readonly string[],
-  poemPowers: Record<string, { lastUsed: number; cooldownMs: number }>,
-  now: number = Date.now(),
+  poemPowers: Record<string, { lastUsed: number; cooldownHours: number }>,
+ timeOfDay: number,
 ): number {
   return collectedPoems.filter((poemId) => {
     if (!getPoemPower(poemId)) return false;
     const powerState = poemPowers[poemId];
     if (!powerState) return true;
-    return now - powerState.lastUsed >= powerState.cooldownMs;
+    let elapsed = timeOfDay - powerState.lastUsed;
+    // Handle day wrap-around (timeOfDay wraps at 24)
+    if (elapsed < 0) elapsed += 24;
+    return elapsed >= powerState.cooldownHours;
   }).length;
 }
 
@@ -136,7 +140,7 @@ export function buildKarmaPoemPanelView(input: KarmaPoemPanelInput) {
     bonusCollectedCount,
     totalBonusPoems: TOTAL_UNIFIED_POEMS - TOTAL_MAIN_POEMS,
     totalUnifiedPoems: TOTAL_UNIFIED_POEMS,
-    readyPowerCount: countReadyPoemPowers(input.collectedPoems, input.poemPowers),
+    readyPowerCount: countReadyPoemPowers(input.collectedPoems, input.poemPowers, input.timeOfDay),
     powerPoemCount: countPoemsWithPowers(input.collectedPoems),
     poemBypassQuests: buildPoemBypassQuests(),
     getPoemTitle: (poemId: string) => getUnifiedPoem(poemId)?.poemTitle ?? poemId,

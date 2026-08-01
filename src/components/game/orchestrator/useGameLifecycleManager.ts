@@ -13,6 +13,7 @@ import { processExpiredTTLFlags } from '@/engine/PoemPowerSystem';
 import { preloadNarrativeGameData, ensureNarrativeNodeIds } from '@/data/gameDataLoader';
 import { devWarn } from '@/shared/utils/devLog';
 import { initWorldEventDirector } from '@/engine/world';
+import { initPoemGatedThoughtWatcher } from '@/engine/poemGatedThoughts';
 import { reconcileGuidedStory } from '@/engine/GuidedStoryManager';
 import { runGlobalCombatEnd } from '@/engine/core/GlobalCleanupService';
 import { resolveSceneThought, type ThoughtContext } from '@/data/sceneEntryThoughts';
@@ -63,6 +64,8 @@ export function useGameLifecycleManager(mode: string) {
   const initialThoughtFiredRef = useRef(false);
 
   useEffect(() => withHmrCleanup(initWorldEventDirector()), []);
+
+  useEffect(() => withHmrCleanup(initPoemGatedThoughtWatcher()), []);
 
   // Fire the scene-entry thought for the INITIAL scene when exploration mode
   // first begins. The scene:enter EventBus event only fires on scene TRANSITIONS,

@@ -20,7 +20,7 @@ import {
 } from '../storeEffects';
 import { resolveAchievementAnnounce } from '@/data/achievementHelpers';
 import { applyEffects } from '@/shared/utils/applyEffects';
-import { getPoemPowerCooldownMs } from '@/data/poemPowerCooldowns';
+import { getPoemPowerCooldownHours } from '@/data/poemPowerCooldowns';
 import { buildPoemCollectedToastMessage } from '@/shared/notifications/poemCollectedMessage';
 import {
   resolveNpcRelationGainMultiplier,
@@ -436,9 +436,9 @@ export const createWorldSlice: StateCreator<
     // Resolve the real per-poem cooldown from the data registry.
     // Previously this was hardcoded to 60_000ms for every poem, which silently
     // overrode the designer cooldowns (60s–200s) defined in PoemPowerSystem.
-    // canUsePower() in PoemPowerSystem reads powerState.cooldownMs back from
+    // canUsePower() in PoemPowerSystem reads powerState.cooldownHours back from
     // the store, so the hardcoded value made every power feel like a 60s spell.
-    let cooldownMs = getPoemPowerCooldownMs(poemId);
+    let cooldownHours = getPoemPowerCooldownHours(poemId);
     // Perk poem_power cooldown reduction (whisper_of_muses -25%).
     // Read from the player store directly so this works even when the world
     // slice's view of playerState is stale (e.g. during test setup).
@@ -448,20 +448,22 @@ export const createWorldSlice: StateCreator<
         playerState.progression.unlockedPerks,
       );
       if (cooldownReduction > 0) {
-        cooldownMs = Math.max(5000, Math.round(cooldownMs * (1 - cooldownReduction)));
+        cooldownHours = Math.max(0.1, cooldownHours * (1 - cooldownReduction));
       }
     }
-    const now = Date.now();
+    const now = state.exploration.timeOfDay;
 
     if (existing) {
-      const elapsed = now - existing.lastUsed;
-      if (elapsed < existing.cooldownMs) return false;
+      let elapsed = now - existing.lastUsed;
+      // Handle day wrap-around (timeOfDay wraps at 24)
+      if (elapsed < 0) elapsed += 24;
+      if (elapsed < existing.cooldownHours) return false;
     }
 
     set({
       poemPowers: {
         ...state.poemPowers,
-        [poemId]: { lastUsed: now, cooldownMs },
+        [poemId]: { lastUsed: now, cooldownHours },
       },
     });
 
@@ -470,11 +472,14 @@ export const createWorldSlice: StateCreator<
 
   getAvailablePowers: () => {
     const state = get();
-    const now = Date.now();
+    const now = state.exploration.timeOfDay;
     return state.collectedPoems.filter((poemId) => {
       const ps = state.poemPowers[poemId];
       if (!ps) return true;
-      return now - ps.lastUsed >= ps.cooldownMs;
+      let elapsed = now - ps.lastUsed;
+      // Handle day wrap-around (timeOfDay wraps at 24)
+      if (elapsed < 0) elapsed += 24;
+      return elapsed >= ps.cooldownHours;
     });
   },
 

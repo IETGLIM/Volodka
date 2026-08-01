@@ -19,6 +19,8 @@ import {
   triggerChromaticAberration,
   triggerDamageVignette,
 } from '@/engine/fx/screenFxTriggers';
+// Note: triggerBlur, triggerColorTint, triggerGrain, triggerCRT are also exported
+// from screenFxTriggers but only used externally by game logic scripts.
 
 /* ── Effect state types ── */
 interface FlashEffect {
@@ -34,6 +36,31 @@ interface ShakeEffect {
   duration: number;
 }
 
+interface BlurEffect {
+  intensity: number;
+  duration: number;
+  startTime: number;
+}
+
+interface ColorTintEffect {
+  color: string;
+  opacity: number;
+  duration: number;
+  startTime: number;
+}
+
+interface GrainEffect {
+  intensity: number;
+  duration: number;
+  startTime: number;
+}
+
+interface CRTEffect {
+  intensity: number;
+  duration: number;
+  startTime: number;
+}
+
 let nextEffectId = 0;
 
 /* ── Component ── */
@@ -44,6 +71,10 @@ export function ScreenEffects() {
   const [vignetteIntensity, setVignetteIntensity] = useState(0);
   const [chromaticIntensity, setChromaticIntensity] = useState(0);
   const [damageVignette, setDamageVignette] = useState<{ intensity: number; duration: number } | null>(null);
+  const [blurEffect, setBlurEffect] = useState<BlurEffect | null>(null);
+  const [colorTintEffect, setColorTintEffect] = useState<ColorTintEffect | null>(null);
+  const [grainEffect, setGrainEffect] = useState<GrainEffect | null>(null);
+  const [crtEffect, setCRTEffect] = useState<CRTEffect | null>(null);
 
   // ── Flash listener ──
   useEffect(() => {
@@ -113,6 +144,50 @@ export function ScreenEffects() {
     return unsub;
   }, [reducedMotion]);
 
+  // ── Blur listener ──
+  useEffect(() => {
+    const unsub = eventBus.on('fx:blur', (payload) => {
+      if (reducedMotion) return;
+      const now = performance.now();
+      setBlurEffect({ intensity: payload.intensity, duration: payload.duration, startTime: now });
+      setTimeout(() => setBlurEffect(null), payload.duration + 50);
+    });
+    return unsub;
+  }, [reducedMotion]);
+
+  // ── Color tint listener ──
+  useEffect(() => {
+    const unsub = eventBus.on('fx:color_tint', (payload) => {
+      if (reducedMotion) return;
+      const now = performance.now();
+      setColorTintEffect({ color: payload.color, opacity: payload.opacity, duration: payload.duration, startTime: now });
+      setTimeout(() => setColorTintEffect(null), payload.duration + 50);
+    });
+    return unsub;
+  }, [reducedMotion]);
+
+  // ── Film grain listener ──
+  useEffect(() => {
+    const unsub = eventBus.on('fx:grain', (payload) => {
+      if (reducedMotion) return;
+      const now = performance.now();
+      setGrainEffect({ intensity: payload.intensity, duration: payload.duration, startTime: now });
+      setTimeout(() => setGrainEffect(null), payload.duration + 50);
+    });
+    return unsub;
+  }, [reducedMotion]);
+
+  // ── CRT scanlines listener ──
+  useEffect(() => {
+    const unsub = eventBus.on('fx:crt', (payload) => {
+      if (reducedMotion) return;
+      const now = performance.now();
+      setCRTEffect({ intensity: payload.intensity, duration: payload.duration, startTime: now });
+      setTimeout(() => setCRTEffect(null), payload.duration + 50);
+    });
+    return unsub;
+  }, [reducedMotion]);
+
   // ── Auto-trigger from game events ──
   useEffect(() => {
     const unsubs: (() => void)[] = [];
@@ -163,6 +238,10 @@ export function ScreenEffects() {
       setVignetteIntensity(0);
       setChromaticIntensity(0);
       setDamageVignette(null);
+      setBlurEffect(null);
+      setColorTintEffect(null);
+      setGrainEffect(null);
+      setCRTEffect(null);
     }));
 
     return () => { for (const u of unsubs) u(); };
@@ -199,6 +278,19 @@ export function ScreenEffects() {
         @keyframes healthPulse {
           0%, 100% { opacity: 0.3; }
           50% { opacity: 0.7; }
+        }
+        @keyframes grainShift {
+          0% { transform: translate(0, 0); }
+          10% { transform: translate(-2%, -3%); }
+          20% { transform: translate(3%, 1%); }
+          30% { transform: translate(-1%, 3%); }
+          40% { transform: translate(2%, -2%); }
+          50% { transform: translate(-3%, 2%); }
+          60% { transform: translate(1%, -1%); }
+          70% { transform: translate(-2%, 3%); }
+          80% { transform: translate(3%, -3%); }
+          90% { transform: translate(-1%, 1%); }
+          100% { transform: translate(0, 0); }
         }
 
       `}} />
@@ -258,6 +350,26 @@ export function ScreenEffects() {
         )}
       </AnimatePresence>
 
+      {/* Blur overlay */}
+      <AnimatePresence>
+        {blurEffect && <BlurOverlay effect={blurEffect} />}
+      </AnimatePresence>
+
+      {/* Color tint overlay */}
+      <AnimatePresence>
+        {colorTintEffect && <ColorTintOverlay effect={colorTintEffect} />}
+      </AnimatePresence>
+
+      {/* Film grain overlay */}
+      <AnimatePresence>
+        {grainEffect && <GrainOverlay effect={grainEffect} />}
+      </AnimatePresence>
+
+      {/* CRT scanlines overlay */}
+      <AnimatePresence>
+        {crtEffect && <CRTOverlay effect={crtEffect} />}
+      </AnimatePresence>
+
       {/* Low health/stress persistent vignette */}
       <LowHealthVignette />
 
@@ -279,6 +391,128 @@ export function ScreenEffects() {
         )}
       </AnimatePresence>
     </>
+  );
+}
+
+/* ── Blur overlay ── */
+function BlurOverlay({ effect }: { effect: BlurEffect }) {
+  const [currentOpacity, setCurrentOpacity] = useState(1);
+
+  useEffect(() => {
+    const elapsed = performance.now() - effect.startTime;
+    const remaining = Math.max(0, 1 - elapsed / effect.duration);
+    setCurrentOpacity(remaining);
+
+    const raf = requestAnimationFrame(function tick() {
+      const el = performance.now() - effect.startTime;
+      const rem = Math.max(0, 1 - el / effect.duration);
+      setCurrentOpacity(rem);
+      if (rem > 0) requestAnimationFrame(tick);
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [effect.startTime, effect.duration]);
+
+  const blurPx = effect.intensity * 8;
+
+  return (
+    <motion.div
+      initial={{ opacity: 1 }}
+      animate={{ opacity: currentOpacity }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+      className="fixed inset-0 pointer-events-none"
+      style={{
+        zIndex: UI_LAYERS.NOIR_OVERLAY,
+        backdropFilter: `blur(${blurPx}px)`,
+        WebkitBackdropFilter: `blur(${blurPx}px)`,
+      }}
+    />
+  );
+}
+
+/* ── Color tint overlay ── */
+function ColorTintOverlay({ effect }: { effect: ColorTintEffect }) {
+  const [currentOpacity, setCurrentOpacity] = useState(effect.opacity);
+
+  useEffect(() => {
+    const elapsed = performance.now() - effect.startTime;
+    const remaining = Math.max(0, 1 - elapsed / effect.duration);
+    setCurrentOpacity(effect.opacity * remaining);
+
+    const raf = requestAnimationFrame(function tick() {
+      const el = performance.now() - effect.startTime;
+      const rem = Math.max(0, 1 - el / effect.duration);
+      setCurrentOpacity(effect.opacity * rem);
+      if (rem > 0) requestAnimationFrame(tick);
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [effect.startTime, effect.duration, effect.opacity]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: currentOpacity }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+      className="fixed inset-0 pointer-events-none"
+      style={{
+        zIndex: UI_LAYERS.NOIR_OVERLAY,
+        backgroundColor: effect.color,
+      }}
+    />
+  );
+}
+
+/* ── Film grain overlay ── */
+function GrainOverlay({ effect }: { effect: GrainEffect }) {
+  const opacityVal = effect.intensity * 0.35;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: opacityVal }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+      className="fixed inset-0 pointer-events-none overflow-hidden"
+      style={{ zIndex: UI_LAYERS.GLITCH + 2 }}
+    >
+      <svg
+        className="absolute w-full h-full"
+        style={{ animation: 'grainShift 0.5s steps(4) infinite', width: '150%', height: '150%', left: '-25%', top: '-25%' }}
+      >
+        <filter id="grain-filter">
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.75"
+            numOctaves="4"
+            stitchTiles="stitch"
+          />
+          <feColorMatrix type="saturate" values="0" />
+        </filter>
+        <rect width="100%" height="100%" filter="url(#grain-filter)" opacity="1" />
+      </svg>
+    </motion.div>
+  );
+}
+
+/* ── CRT scanlines overlay ── */
+function CRTOverlay({ effect }: { effect: CRTEffect }) {
+  const opacityVal = effect.intensity * 0.4;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: opacityVal }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+      className="fixed inset-0 pointer-events-none"
+      style={{
+        zIndex: UI_LAYERS.GLITCH + 2,
+        background: 'repeating-linear-gradient(0deg, transparent 0px, transparent 2px, rgba(0,0,0,0.3) 2px, rgba(0,0,0,0.3) 3px)',
+        borderRadius: '8px',
+        boxShadow: 'inset 0 0 60px rgba(0,0,0,0.3), inset 0 0 20px rgba(0,0,0,0.15)',
+      }}
+    />
   );
 }
 

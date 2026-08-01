@@ -61,6 +61,7 @@ import { CutsceneOverlay } from '@/components/game/CutsceneOverlay';
 // the intro_wakeup cutscene's letterbox + skip + per-phase text. The
 // standalone IntroWakeOverlay component was deleted as dead code.
 import { PoetryPowerBar } from '@/components/game/PoetryPowerBar';
+import { QuestTrackerHUD } from '@/components/game/QuestTrackerHUD';
 import { PoemPowerEffect } from '@/components/game/PoemPowerEffect';
 import { PoemWorldEffect } from '@/components/game/poemWorldEffect/PoemWorldEffect';
 import { PoemRevealHost } from '@/components/game/poemReveal/PoemRevealHost';
@@ -415,6 +416,7 @@ export const GameplayExplorationHud = memo(function GameplayExplorationHud({
       <TutorialOverlay />
       <FirstPlayTutorial />
       <PoetryPowerBar />
+      <QuestTrackerHUD />
     </>
   );
 });

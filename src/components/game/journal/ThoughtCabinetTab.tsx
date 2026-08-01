@@ -6,6 +6,7 @@ import { memo, useCallback, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   AlertTriangle,
+  BookOpen,
   ChevronLeft,
   Cpu,
   Eye,
@@ -60,6 +61,10 @@ interface ThoughtCardProps {
   index: number;
   onSelect: () => void;
   reducedMotion: boolean;
+  /** Whether this thought has a poem gate that is not yet met. */
+  isPoemGated: boolean;
+  /** Human-readable label for the poem gate requirement. */
+  poemGateLabel: string | null;
 }
 
 const ThoughtCard = memo(function ThoughtCard({
@@ -70,6 +75,8 @@ const ThoughtCard = memo(function ThoughtCard({
   index,
   onSelect,
   reducedMotion,
+  isPoemGated,
+  poemGateLabel,
 }: ThoughtCardProps) {
   const voice = VOICE_META[thought.voice];
   const VoiceIcon = voice.icon;
@@ -131,20 +138,24 @@ const ThoughtCard = memo(function ThoughtCard({
           >
             <VoiceIcon className="size-3" />
           </div>
+        ) : isPoemGated ? (
+          <div className="size-6 rounded-md flex items-center justify-center shrink-0 border border-amber-900/30 bg-amber-950/30">
+            <BookOpen className="size-3 text-amber-600/70" />
+          </div>
         ) : (
           <div className="size-6 rounded-md flex items-center justify-center shrink-0 border border-slate-800/30 bg-slate-900/30">
             <Lock className="size-3 text-slate-600" />
           </div>
         )}
         <span
-          className={`text-xs font-mono truncate flex-1 ${isAcquired ? 'text-slate-200' : 'text-slate-600'}`}
+          className={`text-xs font-mono truncate flex-1 ${isAcquired ? 'text-slate-200' : isPoemGated ? 'text-amber-600/60' : 'text-slate-600'}`}
           style={
             isEquipped
               ? { color: 'rgb(var(--cyber-cyan-rgb))', textShadow: '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.4)' }
               : undefined
           }
         >
-          {isAcquired ? thought.name : '???'}
+          {isAcquired ? thought.name : isPoemGated ? thought.name : '???'}
         </span>
         {isEquipped && (
           <span
@@ -161,6 +172,15 @@ const ThoughtCard = memo(function ThoughtCard({
           </span>
         )}
       </div>
+
+      {/* Poem gate requirement hint for unacquired poem-gated thoughts */}
+      {!isAcquired && isPoemGated && poemGateLabel && (
+        <div className="pl-8">
+          <p className="text-[9px] text-amber-600/50 leading-tight">
+            {poemGateLabel}
+          </p>
+        </div>
+      )}
 
       {/* Brief description / effects preview */}
       {isAcquired && (
@@ -204,6 +224,8 @@ export function ThoughtCabinetTab({ searchQuery }: ThoughtCabinetTabProps) {
   const equippedThoughtIds = useGameStore((s) => s.equippedThoughtIds);
   const equipThought = useGameStore((s) => s.equipThought);
   const unequipThought = useGameStore((s) => s.unequipThought);
+  const collectedPoems = useGameStore((s) => s.collectedPoems);
+  const collectedPoemsSet = useMemo(() => new Set(collectedPoems), [collectedPoems]);
   const maxEquipped = MAX_EQUIPPED_THOUGHTS;
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -256,6 +278,41 @@ export function ThoughtCabinetTab({ searchQuery }: ThoughtCabinetTabProps) {
     if (!selectedId) return;
     unequipThought(selectedId);
   }, [selectedId, unequipThought]);
+
+  /** Compute poem gate info for a thought. */
+  const getPoemGateInfo = useCallback((
+    thought: ThoughtCabinetItem,
+    acquired: boolean,
+  ): { isPoemGated: boolean; gateMet: boolean; label: string | null } => {
+    if (acquired) return { isPoemGated: false, gateMet: false, label: null };
+    if (thought.requiredPoem === undefined && thought.minCollectedPoems === undefined) {
+      return { isPoemGated: false, gateMet: false, label: null };
+    }
+    let gateMet = true;
+    let label: string | null = null;
+    if (thought.requiredPoem !== undefined) {
+      const met = collectedPoemsSet.has(thought.requiredPoem);
+      if (!met) {
+        gateMet = false;
+        const poemNum = thought.requiredPoem.replace('poem_', '');
+        label = `Требуется: Стих ${poemNum}`;
+      }
+    }
+    if (thought.minCollectedPoems !== undefined) {
+      const met = collectedPoems.length >= thought.minCollectedPoems;
+      if (!met) {
+        gateMet = false;
+        label = `Требуется: ${thought.minCollectedPoems} стихов (${collectedPoems.length}/${thought.minCollectedPoems})`;
+      }
+    }
+    return { isPoemGated: !gateMet, gateMet, label };
+  }, [collectedPoemsSet, collectedPoems.length]);
+
+  /** Poem gate info for the selected thought (detail panel). */
+  const selectedPoemGate = useMemo(() => {
+    if (!selectedThought) return null;
+    return getPoemGateInfo(selectedThought, isAcquired);
+  }, [selectedThought, isAcquired, getPoemGateInfo]);
 
   /* ── Detail panel render ── */
   const detailPanel = selectedThought ? (
@@ -321,7 +378,7 @@ export function ThoughtCabinetTab({ searchQuery }: ThoughtCabinetTabProps) {
           );
         })()}
 
-        {!isAcquired && (
+        {!isAcquired && !selectedPoemGate?.isPoemGated && (
           <div>
             <div className="flex items-center gap-2 mb-2">
               <div className="size-7 rounded-md flex items-center justify-center border border-slate-800/30 bg-slate-900/30">
@@ -332,6 +389,27 @@ export function ThoughtCabinetTab({ searchQuery }: ThoughtCabinetTabProps) {
               </span>
             </div>
             <h3 className="text-lg font-semibold font-mono text-slate-600">???</h3>
+          </div>
+        )}
+
+        {!isAcquired && selectedPoemGate?.isPoemGated && (
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="size-7 rounded-md flex items-center justify-center border border-amber-900/30 bg-amber-950/30">
+                <BookOpen className="size-4 text-amber-600/70" />
+              </div>
+              <span className="text-[10px] font-mono uppercase tracking-widest text-amber-600/70">
+                Стихотворная блокировка
+              </span>
+            </div>
+            <h3 className="text-lg font-semibold font-mono text-amber-600/60">
+              {selectedThought.name}
+            </h3>
+            {selectedPoemGate.label && (
+              <p className="text-xs text-amber-600/50 mt-1.5">
+                {selectedPoemGate.label}
+              </p>
+            )}
           </div>
         )}
 
@@ -552,18 +630,24 @@ export function ThoughtCabinetTab({ searchQuery }: ThoughtCabinetTabProps) {
           aria-label="Мысли кабинета"
         >
           <AnimatePresence mode="popLayout">
-            {filteredAll.map((thought, idx) => (
-              <ThoughtCard
-                key={thought.id}
-                thought={thought}
-                isAcquired={acquiredThoughts.some((a) => a.id === thought.id)}
-                isEquipped={equippedThoughtIds.includes(thought.id)}
-                isSelected={selectedId === thought.id}
-                index={idx}
-                onSelect={() => handleSelect(thought.id)}
-                reducedMotion={reducedMotion}
-              />
-            ))}
+            {filteredAll.map((thought, idx) => {
+              const acquired = acquiredThoughts.some((a) => a.id === thought.id);
+              const gateInfo = getPoemGateInfo(thought, acquired);
+              return (
+                <ThoughtCard
+                  key={thought.id}
+                  thought={thought}
+                  isAcquired={acquired}
+                  isEquipped={equippedThoughtIds.includes(thought.id)}
+                  isSelected={selectedId === thought.id}
+                  index={idx}
+                  onSelect={() => handleSelect(thought.id)}
+                  reducedMotion={reducedMotion}
+                  isPoemGated={gateInfo.isPoemGated}
+                  poemGateLabel={gateInfo.label}
+                />
+              );
+            })}
           </AnimatePresence>
         </div>
 

@@ -19,4 +19,8 @@ export interface ThoughtCabinetItem {
   readonly mutuallyExclusive?: readonly string[];
   readonly effects: readonly ThoughtCabinetEffect[];
   readonly hidden?: boolean;
+  /** Specific poem ID required to unlock this thought. */
+  readonly requiredPoem?: string;
+  /** Minimum total poems collected to unlock this thought. */
+  readonly minCollectedPoems?: number;
 }

@@ -68,6 +68,7 @@ function baseSnapshot(overrides: Partial<GameStoreSnapshot> = {}): GameStoreSnap
     pendingPoemReadingId: null,
     weatherEnabled: true,
     rainIntensity: 0,
+    acquiredThoughtIds: [],
     ...overrides,
   };
 }

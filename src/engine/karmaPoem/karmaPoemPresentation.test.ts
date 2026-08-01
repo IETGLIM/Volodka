@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
   buildPoemSlots,
   countReadyPoemPowers,
@@ -52,28 +52,17 @@ describe('buildPoemSlots', () => {
 });
 
 describe('countReadyPoemPowers', () => {
-  beforeEach(() => {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date('2026-06-15T12:00:00Z'));
-  });
-
-  afterEach(() => {
-    vi.useRealTimers();
-  });
-
   it('counts collected poems with powers that are off cooldown', () => {
-    const now = Date.now();
-    const count = countReadyPoemPowers(['poem_1'], {}, now);
+    const count = countReadyPoemPowers(['poem_1'], {}, 12);
     expect(count).toBeGreaterThanOrEqual(0);
   });
 
   it('excludes poems still on cooldown', () => {
-    const now = Date.now();
     if (!getPoemPower('poem_1')) return;
     const count = countReadyPoemPowers(
       ['poem_1'],
-      { poem_1: { lastUsed: now - 1000, cooldownMs: 60000 } },
-      now,
+      { poem_1: { lastUsed: 12, cooldownHours: 0.25 } },
+      12,
     );
     expect(count).toBe(0);
   });

@@ -37,3 +37,23 @@ export function triggerDamageVignette(intensity: number = 0.6, duration: number 
   eventBus.emit('fx:damage_vignette', { intensity, duration });
 }
 
+/** Apply a blur overlay (drunk, psychic visions, dreams) */
+export function triggerBlur(intensity: number = 0.5, duration: number = 2000) {
+  eventBus.emit('fx:blur', { intensity, duration });
+}
+
+/** Apply a full-screen color tint (night, danger, poison, warm) */
+export function triggerColorTint(color: string = 'blue', opacity: number = 0.2, duration: number = 2000) {
+  eventBus.emit('fx:color_tint', { color, opacity, duration });
+}
+
+/** Apply a film grain noise overlay (old film, degraded reality) */
+export function triggerGrain(intensity: number = 0.5, duration: number = 3000) {
+  eventBus.emit('fx:grain', { intensity, duration });
+}
+
+/** Apply CRT scanlines overlay (hacking, terminal, digital realm) */
+export function triggerCRT(intensity: number = 0.5, duration: number = 3000) {
+  eventBus.emit('fx:crt', { intensity, duration });
+}
+

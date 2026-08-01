@@ -69,7 +69,7 @@ export interface GameStoreSnapshot {
   collectedPoems: string[];
   quests: QuestState[];
   activeTTLFlags: ActiveTTLFlagMap;
-  poemPowers: Record<string, { lastUsed: number; cooldownMs: number }>;
+  poemPowers: Record<string, { lastUsed: number; cooldownHours: number }>;
   npcRelations: Array<{ npcId: string; value: number }>;
   unlockedAchievements: Array<{ id: string; unlockedAt: number }>;
   achievementProgress: AchievementProgressSnapshot;
@@ -82,6 +82,8 @@ export interface GameStoreSnapshot {
   /** World weather — locomotion / FX readers use snapshot, not store import. */
   weatherEnabled: boolean;
   rainIntensity: number;
+  /** Acquired thought cabinet IDs — used by engine for poem-gated thought checks. */
+  acquiredThoughtIds: string[];
 }
 
 /** Typed mutations engine may request from the store. */

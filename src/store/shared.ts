@@ -170,7 +170,7 @@ export interface TutorialFlags {
 
 export interface PoemPowerState {
   lastUsed: number;
-  cooldownMs: number;
+  cooldownHours: number;
 }
 
 /* ─── Default state factories ─── */

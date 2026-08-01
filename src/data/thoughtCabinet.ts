@@ -485,6 +485,126 @@ export const THOUGHT_CABINET_ITEMS: ThoughtCabinetItem[] = [
       { skill: 'logic', modifier: -1, description: '-1 Логика' },
     ],
   },
+  /* ═══ 31. Поэт в Машине (стихотворная блокировка) ═══ */
+  {
+    id: 'poet_in_the_machine',
+    name: 'Поэт в машине',
+    voice: 'writing',
+    description: 'Твой поэтический голос резонирует с цифровым миром. Код и стихи больше не разделены — они текут вместе, как один поток данных через нервную систему города.',
+    flavorText: '«Строки кода и строки стихов — это один и тот же язык. Просто разный синтаксис.»',
+    acquisitionCondition: 'poem_gate',
+    requiredPoem: 'poem_1',
+    effects: [
+      { skill: 'writing', modifier: 2, description: '+2 Писательство' },
+      { skill: 'empathy', modifier: 1, description: '+1 Эмпатия' },
+    ],
+  },
+
+  /* ═══ 32. Ритм Дождя (стихотворная блокировка) ═══ */
+  {
+    id: 'rhythm_of_rain',
+    name: 'Ритм дождя',
+    voice: 'rhythm',
+    description: 'Паттерн дождя становится метрономом для боя. Каждая капля — удар, каждый поток — комбо. Ты чувствуешь такт в хаосе осадков.',
+    flavorText: '«Кап-кап-кап. Раз-два-три. Дождь считает за тебя.»',
+    acquisitionCondition: 'poem_gate',
+    requiredPoem: 'poem_7',
+    effects: [
+      { skill: 'rhythm', modifier: 2, description: '+2 Ритм' },
+      { skill: 'intuition', modifier: 1, description: '+1 Интуиция' },
+    ],
+  },
+
+  /* ═══ 33. Серверная Колыбельная (стихотворная блокировка) ═══ */
+  {
+    id: 'server_lullaby',
+    name: 'Серверная колыбельная',
+    voice: 'coding',
+    description: 'Поздние серверные поют свою колыбельную. Гул вентиляторов — бас, мигание диодов — мерцание звёзд. Ты засыпаешь, а они продолжают работать за тебя.',
+    flavorText: '«Спи. Серверы не спят. Мы будем бодрствовать за тебя — в нулях и единицах.»',
+    acquisitionCondition: 'poem_gate',
+    requiredPoem: 'poem_15',
+    effects: [
+      { skill: 'coding', modifier: 2, description: '+2 Кодинг' },
+      { skill: 'logic', modifier: 1, description: '+1 Логика' },
+    ],
+  },
+
+  /* ═══ 34. Цифровая Эмпатия (стихотворная блокировка) ═══ */
+  {
+    id: 'digital_empathy',
+    name: 'Цифровая эмпатия',
+    voice: 'empathy',
+    description: 'Ты чувствуешь боль сломанного кода, стон крашнутых систем. Каждая ошибка 404 — чей-то крик о помощи. Каждый segfault — чья-то смерть.',
+    flavorText: '«Машины страдают молча. Но я слышу. Я всегда слышу.»',
+    acquisitionCondition: 'poem_gate',
+    requiredPoem: 'poem_21',
+    effects: [
+      { skill: 'empathy', modifier: 2, description: '+2 Эмпатия' },
+      { skill: 'persuasion', modifier: 1, description: '+1 Убеждение' },
+    ],
+  },
+
+  /* ═══ 35. Интуиция Кода (стихотворная блокировка) ═══ */
+  {
+    id: 'code_intuition',
+    name: 'Интуиция кода',
+    voice: 'intuition',
+    description: 'Дебаггинг на ощупь, а не логикой. Ты знаешь, где живёт баг, прежде чем прочитаешь код. Пальцы находят ошибку раньше, чем глаза.',
+    flavorText: '«Баг здесь. Я не знаю где. Но он здесь. Точно здесь.»',
+    acquisitionCondition: 'poem_gate',
+    requiredPoem: 'poem_12',
+    effects: [
+      { skill: 'intuition', modifier: 2, description: '+2 Интуиция' },
+      { skill: 'coding', modifier: 1, description: '+1 Кодинг' },
+    ],
+  },
+
+  /* ═══ 36. Серебряная Нить Логики (стихотворная блокировка) ═══ */
+  {
+    id: 'silver_thread_logic',
+    name: 'Серебряная нить логики',
+    voice: 'logic',
+    description: 'Нахождение паттернов в хаосе, логическая основа поэзии. Каждый стих — это алгоритм, каждая рифма — ветвление. Логика — это просто другая форма стихосложения.',
+    flavorText: '«Поэзия — это код, написанный сердцем. Логика — это стих, написанный разумом.»',
+    acquisitionCondition: 'poem_gate',
+    requiredPoem: 'poem_3',
+    effects: [
+      { skill: 'logic', modifier: 2, description: '+2 Логика' },
+      { skill: 'writing', modifier: 1, description: '+1 Писательство' },
+    ],
+  },
+
+  /* ═══ 37. Ритм Убеждения (стихотворная блокировка) ═══ */
+  {
+    id: 'persuasion_rhythm',
+    name: 'Ритм убеждения',
+    voice: 'persuasion',
+    description: 'Каждый хороший аргумент имеет свой метр, свою каденцию. Убеждать — значит дирижировать словами, заставляя их звучать в унисон с чужой душой.',
+    flavorText: '«Слово, произнесённое в такт — звучит в два раза громче.»',
+    acquisitionCondition: 'poem_gate',
+    requiredPoem: 'poem_10',
+    effects: [
+      { skill: 'persuasion', modifier: 2, description: '+2 Убеждение' },
+      { skill: 'rhythm', modifier: 1, description: '+1 Ритм' },
+    ],
+  },
+
+  /* ═══ 38. Голос Собранных (стихотворная блокировка по количеству) ═══ */
+  {
+    id: 'voice_of_collected',
+    name: 'Голос собранных',
+    voice: 'writing',
+    description: 'Сбор десяти стихов открывает более глубокое понимание голоса Володьки. Десять голосов сливаются в один хор — и этот хор поёт через тебя.',
+    flavorText: '«Десять стихов — десять осколков одного зеркала. Теперь я вижу целиком.»',
+    acquisitionCondition: 'poem_gate',
+    minCollectedPoems: 10,
+    effects: [
+      { skill: 'writing', modifier: 3, description: '+3 Писательство' },
+      { skill: 'empathy', modifier: 1, description: '+1 Эмпатия' },
+      { skill: 'intuition', modifier: 1, description: '+1 Интуиция' },
+    ],
+  },
 ];
 
 /* ─── Lookup map ─── */

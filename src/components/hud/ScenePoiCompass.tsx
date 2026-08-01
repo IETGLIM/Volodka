@@ -12,6 +12,8 @@ import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useHudQuietStyle } from '@/hooks/useHudQuiet';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { useGameplayPresentationProfile, isExplorationHudProfile } from '@/hooks/useGameplayPresentationProfile';
+import { getQuestDefinitions } from '@/data/gameDataLoader';
+import type { QuestDefinition } from '@/shared/types/definitions/quest';
 
 /* ── Constants ── */
 const COMPASS_SIZE = 120;
@@ -22,6 +24,10 @@ const LABEL_RING_INNER = 0.6; // show label only in outer 40%
 const MARKER_SIZE = 5;
 const PLAYER_DOT_SIZE = 6;
 const SCAN_PERIOD = 4; // seconds per full rotation
+const QUEST_MARKER_SIZE = 6;
+const QUEST_COLOR = '#d946ef'; // fuchsia-500
+const QUEST_GLOW = 'rgba(217, 70, 239, 0.6)';
+const QUEST_LABEL_MAX = 20;
 
 /* ── Color helpers ── */
 function markerColor(zone: TriggerZone): string {
@@ -50,6 +56,52 @@ function zoneLabel(zone: TriggerZone): string {
   return id.length > 8 ? id.slice(0, 8) + '…' : id;
 }
 
+/* ── Quest helpers ── */
+
+/** Compute a set of active quest IDs that have at least one uncompleted objective. */
+function computeActiveQuestIds(
+  quests: ReturnType<typeof useGameStore.getState>['quests'],
+  defs: QuestDefinition[],
+): Set<string> {
+  const activeIds = new Set<string>();
+  for (const q of quests) {
+    if (q.status !== 'active') continue;
+    const def = defs.find(d => d.id === q.questId);
+    if (!def) continue;
+    // Check if any objective is still uncompleted
+    for (const obj of def.objectives) {
+      if (!obj.completed && !q.objectives[obj.id]) {
+        activeIds.add(q.questId);
+        break;
+      }
+    }
+  }
+  return activeIds;
+}
+
+/** Build a map: questId → first uncompleted objective description. */
+function buildQuestObjectiveLabels(
+  quests: ReturnType<typeof useGameStore.getState>['quests'],
+  defs: QuestDefinition[],
+): Map<string, string> {
+  const labels = new Map<string, string>();
+  for (const q of quests) {
+    if (q.status !== 'active') continue;
+    const def = defs.find(d => d.id === q.questId);
+    if (!def) continue;
+    for (const obj of def.objectives) {
+      if (!obj.completed && !q.objectives[obj.id]) {
+        const desc = obj.description.length > QUEST_LABEL_MAX
+          ? obj.description.slice(0, QUEST_LABEL_MAX) + '…'
+          : obj.description;
+        labels.set(q.questId, desc);
+        break; // only first uncompleted objective
+      }
+    }
+  }
+  return labels;
+}
+
 /* ── Inline <style> for the radar sweep keyframe (avoid external CSS dep) ── */
 function RadarSweepStyle() {
   return (
@@ -61,8 +113,18 @@ function RadarSweepStyle() {
 .poi-compass-sweep {
   animation: poi-compass-sweep ${SCAN_PERIOD}s linear infinite;
 }
+@keyframes poi-quest-pulse {
+  0%, 100% { opacity: 1; transform: rotate(45deg) scale(1); }
+  50% { opacity: 0.5; transform: rotate(45deg) scale(0.7); }
+}
+.poi-quest-marker {
+  animation: poi-quest-pulse 1.5s ease-in-out infinite;
+}
 @media (prefers-reduced-motion: reduce) {
   .poi-compass-sweep {
+    animation: none;
+  }
+  .poi-quest-marker {
     animation: none;
   }
 }
@@ -99,12 +161,16 @@ const RadarInner = memo(function RadarInner({
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const markersRef = useRef<HTMLDivElement>(null);
+  const questMarkersRef = useRef<HTMLDivElement>(null);
   const rafId = useRef(0);
   // Store selector values that change infrequently — we snapshot these
   // on every animation frame from the store to avoid re-renders.
   const flagsRef = useRef(useGameStore.getState().playerState.flags);
   const actRef = useRef(useGameStore.getState().playerState.progression.currentAct ?? 1);
   const ttlFlagsRef = useRef(useGameStore.getState().activeTTLFlags);
+  // Quest data: recomputed when quests slice changes
+  const activeQuestIdsRef = useRef(new Set<string>());
+  const questObjectiveLabelsRef = useRef(new Map<string, string>());
 
   // Subscribe to store changes (rare — flag/act change) to update refs.
   // Scene + player position are read live each frame (facade can lag one rAF).
@@ -117,10 +183,31 @@ const RadarInner = memo(function RadarInner({
     return () => unsub();
   }, []);
 
+  // Subscribe to quest changes — recompute active quest IDs & labels.
+  useEffect(() => {
+    function refreshQuestData() {
+      const quests = useGameStore.getState().quests;
+      const defs = getQuestDefinitions();
+      activeQuestIdsRef.current = computeActiveQuestIds(quests, defs);
+      questObjectiveLabelsRef.current = buildQuestObjectiveLabels(quests, defs);
+    }
+    refreshQuestData();
+    const unsub = useGameStore.subscribe(
+      (s) => s.quests,
+      (quests) => {
+        const defs = getQuestDefinitions();
+        activeQuestIdsRef.current = computeActiveQuestIds(quests, defs);
+        questObjectiveLabelsRef.current = buildQuestObjectiveLabels(quests, defs);
+      },
+    );
+    return () => unsub();
+  }, []);
+
   // rAF loop — update marker DOM positions directly
   useEffect(() => {
     const mc: HTMLDivElement = markersRef.current!;
-    if (!mc) return;
+    const qmc: HTMLDivElement = questMarkersRef.current!;
+    if (!mc || !qmc) return;
 
     function tick() {
       const sceneId = getLiveCurrentSceneId();
@@ -183,6 +270,64 @@ const RadarInner = memo(function RadarInner({
       // Remove extra DOM nodes
       while (mc.childElementCount > count) {
         mc.removeChild(mc.lastChild!);
+      }
+
+      // ── Quest objective markers ──
+      const activeQuestIds = activeQuestIdsRef.current;
+      const questLabels = questObjectiveLabelsRef.current;
+      const questZones: TriggerZone[] = [];
+      for (let i = 0; i < visibleZones.length; i++) {
+        const z = visibleZones[i];
+        if (z.linkedQuestId && activeQuestIds.has(z.linkedQuestId)) {
+          questZones.push(z);
+        }
+      }
+
+      // Render quest markers (imperative DOM, same pattern as POI markers)
+      const qExisting = qmc.children;
+      const qCount = questZones.length;
+
+      for (let i = 0; i < qCount; i++) {
+        const zone = questZones[i];
+        const dx = zone.position[0] - px;
+        const dz = zone.position[2] - pz;
+        const dist = Math.sqrt(dx * dx + dz * dz);
+        if (dist < 0.1) continue; // skip zones on top of player
+
+        const angle = Math.atan2(dx, -dz);
+        const normDist = Math.min(dist / MAX_DISTANCE, 1);
+        const r = normDist * RADIUS;
+
+        const mx = CENTER + Math.sin(angle) * r - QUEST_MARKER_SIZE / 2;
+        const my = CENTER - Math.cos(angle) * r - QUEST_MARKER_SIZE / 2;
+
+        let el = qExisting[i] as HTMLElement | undefined;
+        if (!el) {
+          el = document.createElement('div');
+          el.className = 'poi-quest-marker';
+          qmc.appendChild(el);
+        }
+
+        el.style.left = `${mx}px`;
+        el.style.top = `${my}px`;
+        el.style.width = `${QUEST_MARKER_SIZE}px`;
+        el.style.height = `${QUEST_MARKER_SIZE}px`;
+        el.style.backgroundColor = QUEST_COLOR;
+        el.style.boxShadow = `0 0 6px ${QUEST_GLOW}`;
+
+        // Label — only in outer 40% ring, using quest objective description
+        const qLabel = normDist >= LABEL_RING_INNER && zone.linkedQuestId
+          ? (questLabels.get(zone.linkedQuestId) ?? '')
+          : '';
+        el.setAttribute('data-label', qLabel);
+        el.title = zone.linkedQuestId
+          ? (questLabels.get(zone.linkedQuestId) ?? zone.linkedQuestId)
+          : '';
+      }
+
+      // Remove extra quest marker DOM nodes
+      while (qmc.childElementCount > qCount) {
+        qmc.removeChild(qmc.lastChild!);
       }
 
       rafId.current = requestAnimationFrame(tick);
@@ -318,6 +463,13 @@ const RadarInner = memo(function RadarInner({
           style={{ pointerEvents: 'none' }}
         />
 
+        {/* Quest objective markers container (managed by rAF, above POI markers) */}
+        <div
+          ref={questMarkersRef}
+          className="absolute inset-0"
+          style={{ pointerEvents: 'none', zIndex: 3 }}
+        />
+
         {/* Marker label renderer — CSS-only ::after using data-label attr */}
         <style>{`
           .poi-compass-marker {
@@ -339,6 +491,27 @@ const RadarInner = memo(function RadarInner({
             text-shadow: 0 1px 3px rgba(0,0,0,0.8);
             pointer-events: none;
           }
+          .poi-quest-marker {
+            position: absolute;
+            border-radius: 1px;
+            z-index: 3;
+            pointer-events: none;
+            transform: rotate(45deg);
+          }
+          .poi-quest-marker::after {
+            content: attr(data-label);
+            position: absolute;
+            left: calc(100% + 5px);
+            top: 50%;
+            transform: rotate(-45deg) translateY(-50%);
+            font-size: 7px;
+            line-height: 1;
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            color: rgba(217, 70, 239, 0.85);
+            white-space: nowrap;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+            pointer-events: none;
+          }
         `}</style>
       </div>
 
@@ -358,6 +531,19 @@ const RadarInner = memo(function RadarInner({
         <span className="legend-dot" style={{ backgroundColor: '#34d399' }} />
         <span className="text-[7px] font-mono text-emerald-400/50 tracking-wider">
           Лут
+        </span>
+        <span
+          className="inline-block"
+          style={{
+            width: 5,
+            height: 5,
+            backgroundColor: QUEST_COLOR,
+            transform: 'rotate(45deg)',
+            borderRadius: 1,
+          }}
+        />
+        <span className="text-[7px] font-mono text-fuchsia-400/50 tracking-wider">
+          Задания
         </span>
       </div>
     </div>
