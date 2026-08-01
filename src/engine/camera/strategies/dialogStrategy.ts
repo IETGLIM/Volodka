@@ -12,7 +12,9 @@ import { getInteractionState, getInteractionTargetNPCId } from '@/components/3d/
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 import { getNPCGroup } from '@/engine/interaction/npcRegistry';
 import { applyDialogueCameraDrift } from '../dialogueCameraDrift';
+import { eventBus } from '@/engine/EventBus';
 import type { CameraModeStrategy } from '../types';
+import type { DialogueNode } from '@/shared/types/definitions/dialogue';
 
 function isInDialogueMode(): boolean {
   const state = getInteractionState();
@@ -26,6 +28,35 @@ function isInDialogueMode(): boolean {
 // Pre-allocated temps for dialogue camera drift (avoid per-frame allocation).
 const _driftedPos = new THREE.Vector3();
 const _driftedFov = { value: 75 };
+
+/* ── Directorial cameraShot FOV override (lerped) ── */
+
+/** FOV targets per cameraShot type */
+const CAMERA_SHOT_FOV: Record<NonNullable<DialogueNode['cameraShot']>, number> = {
+  close: 60,
+  medium: 52,
+  wide: 45,
+};
+
+/** Lerp speed for FOV transition (higher = snappier) */
+const CAMERA_SHOT_FOV_LERP_SPEED = 3.0;
+
+/** Module-level state for the FOV override */
+const _cameraShotState = {
+  /** Target FOV from the latest event, or null if no override */
+  targetFov: null as number | null,
+  /** Current lerped FOV override, or null if not active */
+  currentFov: null as number | null,
+};
+
+/** Subscribe once at module load — eventBus is a singleton */
+eventBus.on('camera:dialogue_shot', ({ shot }) => {
+  if (shot) {
+    _cameraShotState.targetFov = CAMERA_SHOT_FOV[shot];
+  } else {
+    _cameraShotState.targetFov = null;
+  }
+});
 
 /** Speaker-aware cinematic dialogue shots */
 export const dialogStrategy: CameraModeStrategy = {
@@ -65,6 +96,23 @@ export const dialogStrategy: CameraModeStrategy = {
       npcPos,
       npcGroup?.rotation.y,
     );
+
+    // ── Apply directorial cameraShot FOV override with lerp ──
+    const st = _cameraShotState;
+    if (st.targetFov !== null) {
+      // Lerp toward target FOV
+      if (st.currentFov === null) st.currentFov = shot.fov;
+      st.currentFov += (st.targetFov - st.currentFov) * (1 - Math.exp(-CAMERA_SHOT_FOV_LERP_SPEED * ctx.delta));
+      shot.fov = st.currentFov;
+    } else if (st.currentFov !== null) {
+      // Lerp back to the shot's natural FOV
+      st.currentFov += (shot.fov - st.currentFov) * (1 - Math.exp(-CAMERA_SHOT_FOV_LERP_SPEED * ctx.delta));
+      if (Math.abs(st.currentFov - shot.fov) < 0.1) {
+        st.currentFov = null;
+      } else {
+        shot.fov = st.currentFov;
+      }
+    }
 
     // Apply subtle dialogue camera drift (circular position drift + FOV
     // breathing + push-in on new dialogue beat). Disabled on reduced motion.

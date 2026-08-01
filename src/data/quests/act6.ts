@@ -154,8 +154,11 @@ export const QUESTS_ACT6: QuestDefinition[] = [
       {
         id: 'infiltrate_office_night',
         description: 'Проникнуть в офис гильдии ночью',
-        type: 'location_visited',
-        target: 'office_day',
+        // Q-03 FIX: Was location_visited→office_day which auto-completed
+        // on ANY office visit (even daytime). Changed to flag_set so it
+        // only completes when the story node actually triggers it.
+        type: 'flag_set',
+        target: 'office_night_infiltrated',
         completed: false,
       },
       {

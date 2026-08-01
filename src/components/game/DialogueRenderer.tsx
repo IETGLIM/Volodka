@@ -352,6 +352,9 @@ export function DialogueRenderer() {
         eventBus.emit('npc:talked', { npcId, dialogueNodeId: node.id });
       }
 
+      // Emit directorial camera shot override
+      eventBus.emit('camera:dialogue_shot', { shot: node.cameraShot ?? null });
+
       if (node.effects) {
         applyEffects(node.effects);
       }
@@ -364,10 +367,14 @@ export function DialogueRenderer() {
   useEffect(() => {
     if (!isOpen || !node?.id) {
       stopVoiceLinePlayback();
+      eventBus.emit('camera:dialogue_shot', { shot: null });
       return;
     }
     playVoiceLineForNode(node.id);
-    return () => stopVoiceLinePlayback();
+    return () => {
+      stopVoiceLinePlayback();
+      eventBus.emit('camera:dialogue_shot', { shot: null });
+    };
   }, [isOpen, node?.id]);
 
   // Cleanup skill-check banner timer on unmount

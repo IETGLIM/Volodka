@@ -224,9 +224,10 @@ export const QUESTS_ACT5: QuestDefinition[] = [
       {
         id: 'talk_dmitry_final',
         description: 'Спросить Дмитрия: он не отступит?',
-        // Q-03: NOTE — if the betrayal path is implemented later (dmitry_betrayed
-        // flag), this objective must be guarded. Currently the betrayal path is
-        // not wired in the story, so flag_set mid-resume is safe.
+        // SAFETY: If the betrayal path is ever implemented and sets
+        // dmitry_betrayed, the quest completion logic in worldSlice
+        // should skip this objective. Currently the betrayal path is
+        // a planned stub — no story node sets dmitry_betrayed.
         type: 'flag_set',
         target: 'dmitry_final_confirmed',
         completed: false,

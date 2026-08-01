@@ -757,6 +757,11 @@ export const ACT6_STRUCTURE: Record<string, StoryNodeStructure> = {
         "type": "setFlag",
         "flag": "act6_heist_planned",
         "flagValue": true
+      },
+      {
+        "type": "setFlag",
+        "flag": "office_night_infiltrated",
+        "flagValue": true
       }
     ],
     "choices": [

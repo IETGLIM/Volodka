@@ -22,4 +22,6 @@ export interface CameraEvents {
   'camera:intro_wake': Record<string, never>;
   'camera:poem_reading_start': Record<string, never>;
   'camera:poem_reading_end': Record<string, never>;
+  /** Directorial camera shot override during dialogue (close/medium/wide). */
+  'camera:dialogue_shot': { shot: 'close' | 'medium' | 'wide' | null };
 }

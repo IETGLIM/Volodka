@@ -166,12 +166,16 @@ export function DiegeticDialogueHud() {
   useEffect(() => {
     if (!isOpen || !nodeId) {
       stopVoiceLinePlayback();
+      eventBus.emit('camera:dialogue_shot', { shot: null });
       return;
     }
     if (kind === 'dialogue') {
       playVoiceLineForNode(nodeId);
     }
-    return () => stopVoiceLinePlayback();
+    return () => {
+      stopVoiceLinePlayback();
+      eventBus.emit('camera:dialogue_shot', { shot: null });
+    };
   }, [isOpen, nodeId, kind]);
 
   useEffect(() => {
@@ -201,6 +205,8 @@ export function DiegeticDialogueHud() {
       appliedRef.current = dialogueNode.id;
       applyDialogueNodeMountEffects(dialogueNode);
       recordExplorationStoryStep(dialogueNode.id);
+      // Emit directorial camera shot override
+      eventBus.emit('camera:dialogue_shot', { shot: dialogueNode.cameraShot ?? null });
       if (dialogueNode.speaker) {
         const npcId =
           resolveNpcIdFromSpeaker(dialogueNode.speaker, dialogueNode.speakerId)
