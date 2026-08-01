@@ -295,15 +295,6 @@ function AuthoredVolodkaRoomDressing({ castShadow }: { castShadow: boolean }) {
       </Suspense>
       <Suspense fallback={null}>
         <AuthoredRoomProp
-          url={POLYHAVEN_MODELS.sofa}
-          position={[0.35, 0, 2.55]}
-          rotationY={Math.PI * 0.55}
-          scale={0.62}
-          castShadow={castShadow}
-        />
-      </Suspense>
-      <Suspense fallback={null}>
-        <AuthoredRoomProp
           url={POLYHAVEN_MODELS.armChair}
           position={[-0.55, 0, -1.35]}
           rotationY={Math.PI}
@@ -869,8 +860,10 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
           ) : (
             <mesh renderOrder={1} rotation-y={-Math.PI / 2} geometry={geo_pln_42} material={mat_33} />
           )}
-          {/* Window frame — toward wall (+X) */}
-          <mesh renderOrder={2} rotation-y={-Math.PI / 2} position={[0.018, 0, 0]} geometry={geo_box_43} material={mat_26} />
+          {/* Window frame — Low only; Medium+ shutterWindow GLB owns the casing. */}
+          {!useGltfFurniture ? (
+            <mesh renderOrder={2} rotation-y={-Math.PI / 2} position={[0.018, 0, 0]} geometry={geo_box_43} material={mat_26} />
+          ) : null}
           {/* Window blue light spill into room */}
           <pointLight position={[-0.8, 0, 0.5]} color="#4488ee" intensity={3.0} distance={5} />
           {/* City silhouettes — room-side decals on the glow pane (not transmission props) */}
@@ -933,8 +926,10 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
           ) : (
             <mesh renderOrder={1} geometry={geo_pln_44} material={mat_34} />
           )}
-          {/* Window frame — toward wall (−Z) */}
-          <mesh renderOrder={2} position={[0, 0, -0.018]} geometry={geo_box_45} material={mat_26} />
+          {/* Window frame — Low only; Medium+ shutterWindowAlt owns the casing. */}
+          {!useGltfFurniture ? (
+            <mesh renderOrder={2} position={[0, 0, -0.018]} geometry={geo_box_45} material={mat_26} />
+          ) : null}
           {/* ISSUE #7: Removed per-window pointLight — the right wall window light +
               desk lamp + ambient pulse provide sufficient fill. The window material's
               emissive (mat_34) already creates a visible glow. */}
@@ -1227,7 +1222,6 @@ function createWallTexture(): THREE.CanvasTexture {
 }
 
 useGLTF.preload(POLYHAVEN_MODELS.gothicBed, true, true, extendLoader);
-useGLTF.preload(POLYHAVEN_MODELS.sofa, true, true, extendLoader);
 useGLTF.preload(POLYHAVEN_MODELS.hangingPictureFrame, true, true, extendLoader);
 useGLTF.preload(POLYHAVEN_MODELS.shutterWindow, true, true, extendLoader);
 useGLTF.preload(POLYHAVEN_MODELS.shutterWindowAlt, true, true, extendLoader);
