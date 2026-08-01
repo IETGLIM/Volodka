@@ -33,6 +33,7 @@ const DISSOLVE_DURATION = SCENE_OVERLAY_MS.DISSOLVE;
 const FILM_BURN_DURATION = SCENE_OVERLAY_MS.FILM_BURN;
 const GLITCH_CUT_DURATION = SCENE_OVERLAY_MS.GLITCH_CUT;
 const BREATHE_DURATION = SCENE_OVERLAY_MS.BREATHE;
+const CROSSFADE_DURATION = SCENE_OVERLAY_MS.CROSSFADE;
 const WIPE_IN_DURATION = SCENE_OVERLAY_MS.WIPE_IN;
 const WIPE_OUT_DURATION = SCENE_OVERLAY_MS.WIPE_OUT;
 const REVEAL_DURATION = SCENE_OVERLAY_MS.REVEAL;
@@ -446,6 +447,32 @@ export function SceneTransitionOverlay() {
                 </motion.div>
               </motion.div>
             </div>
+          )}
+
+          {/* ═══════════════════════════════════════════════════════════
+              CROSSFADE-IN Phase (smooth, no-cut transition — Session 9)
+              A luxurious fade-to-black with a soft accent vignette and gentle
+              blur lift. No glitch, no clip-path — the anti-abrupt-cut transition.
+              ═══════════════════════════════════════════════════════════ */}
+          {phase === 'crossfade-in' && (
+            <motion.div
+              className="absolute inset-0 bg-black"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: CROSSFADE_DURATION / 1000, ease: SMOOTH_EASE }}
+            >
+              {/* Soft accent-colored vignette glow — reads as a graded fade, not a flat cut. */}
+              <motion.div
+                className="absolute inset-0"
+                style={{
+                  background: `radial-gradient(ellipse at center, ${accent}14 0%, transparent 65%)`,
+                  filter: 'blur(2px)',
+                }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: [0, 0.8, 0.4] }}
+                transition={{ duration: CROSSFADE_DURATION / 1000, ease: 'easeInOut' }}
+              />
+            </motion.div>
           )}
 
           {/* ═══════════════════════════════════════════════════════════

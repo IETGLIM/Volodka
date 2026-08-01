@@ -75,6 +75,9 @@ export const SCENE_OVERLAY_MS = {
   FILM_BURN: 350,
   GLITCH_CUT: 180,
   BREATHE: 500,
+  // Session 9: crossfade — the smooth, luxurious "no-cut" transition.
+  // Intro fades to black with a gentle blur; the existing 'reveal' phase fades back out.
+  CROSSFADE: 620,
   WIPE_IN: Math.round(CINEMATIC_PHASES.FADE_OUT_DURATION * 1000) - 150,
   HOLD: Math.round(CINEMATIC_PHASES.HOLD_DURATION * 1000),
   WIPE_OUT: Math.round(CINEMATIC_PHASES.FADE_IN_DURATION * 1000),

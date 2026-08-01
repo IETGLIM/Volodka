@@ -16,6 +16,7 @@ export type TransitionOverlayPhase =
   | 'film-burn-in'
   | 'glitch-cut-in'
   | 'breathe-in'
+  | 'crossfade-in'
   | 'wipe-in'
   | 'hold'
   | 'wipe-out'
@@ -29,13 +30,18 @@ const DISSOLVE_DURATION = SCENE_OVERLAY_MS.DISSOLVE;
 const FILM_BURN_DURATION = SCENE_OVERLAY_MS.FILM_BURN;
 const GLITCH_CUT_DURATION = SCENE_OVERLAY_MS.GLITCH_CUT;
 const BREATHE_DURATION = SCENE_OVERLAY_MS.BREATHE;
+const CROSSFADE_DURATION = SCENE_OVERLAY_MS.CROSSFADE;
 const WIPE_IN_DURATION = SCENE_OVERLAY_MS.WIPE_IN;
 const WIPE_OUT_DURATION = SCENE_OVERLAY_MS.WIPE_OUT;
 const REVEAL_DURATION = SCENE_OVERLAY_MS.REVEAL;
 
 /* ─── Weighted random transition selection ─── */
-/** Original 5 styles at weight 3 each, new 3 at weight 1 each. Total weight = 18. */
+/** Original 5 styles at weight 3 each, new 3 at weight 1 each, crossfade at weight 5.
+ * Total weight = 23. Crossfade is the most common (≈22%) — it is the smooth, no-cut
+ * transition that addresses the "no abrupt transitions" bar. Wipe (glitch+clip) is kept
+ * at weight 3 for stylized variety but no longer dominates. */
 const WEIGHTED_TRANSITIONS: Array<{ style: SceneTransitionStyle; weight: number }> = [
+  { style: 'crossfade', weight: 5 },
   { style: 'wipe', weight: 3 },
   { style: 'flash', weight: 3 },
   { style: 'darken', weight: 3 },
@@ -79,6 +85,8 @@ function getInitialPhase(style: SceneConfig['transitionStyle']): TransitionOverl
       return 'glitch-cut-in';
     case 'breathe':
       return 'breathe-in';
+    case 'crossfade':
+      return 'crossfade-in';
     default:
       return 'glitch';
   }
@@ -100,6 +108,8 @@ function introDurationMs(style: SceneConfig['transitionStyle']): number {
       return GLITCH_CUT_DURATION;
     case 'breathe':
       return BREATHE_DURATION;
+    case 'crossfade':
+      return CROSSFADE_DURATION;
     default:
       return GLITCH_DURATION + WIPE_IN_DURATION;
   }

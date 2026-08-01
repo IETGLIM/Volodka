@@ -7,7 +7,7 @@ export interface InteractionHintVisual {
   bg: string;
 }
 
-export type SceneTransitionStyle = 'wipe' | 'flash' | 'darken' | 'ripple' | 'dissolve' | 'film_burn' | 'glitch_cut' | 'breathe';
+export type SceneTransitionStyle = 'wipe' | 'flash' | 'darken' | 'ripple' | 'dissolve' | 'film_burn' | 'glitch_cut' | 'breathe' | 'crossfade';
 
 export interface TransitionProgressVisual {
   primary: string;
@@ -50,6 +50,8 @@ const TRANSITION_ACCENT: Record<SceneTransitionStyle, string> = {
   film_burn: 'rgba(255, 120, 40, 1)',
   glitch_cut: 'rgba(0, 255, 100, 1)',
   breathe: 'rgba(140, 200, 255, 1)',
+  // Session 9: crossfade — the smooth, no-cut transition. Soft warm-neutral accent.
+  crossfade: 'rgba(180, 190, 210, 1)',
 };
 
 const PROGRESS_ACTIVE: TransitionProgressVisual = {

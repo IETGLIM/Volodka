@@ -444,12 +444,15 @@ function PostFXPipeline() {
   const stressFactor = stress / 100;
   const wantsScanlines = SCANLINE_SCENES.has(sceneId);
   const softOk = isSoftWorkAffordable();
-  // Session 8: Ultra skips film grain proactively (High keeps it). Soft gate also blocks under FPS fail.
+  // Film grain for cinematic texture. High keeps the classic 0.035 opacity; Ultra now gets a fainter
+  // 0.022 layer (Session 9 polish — Ultra previously skipped grain entirely, leaving the image too
+  // clean/"plastic". A subtle grain restores filmic tactility without the 60fps risk, soft-work gated).
   const wantsNoise =
     softOk
-    && preset.id !== 'ultra'
-    && NOISE_SCENES.has(sceneId)
-    && preset.id === 'high';
+    && (preset.id === 'high' || preset.id === 'ultra')
+    && (selectedPreset === 'high' || selectedPreset === 'ultra')
+    && NOISE_SCENES.has(sceneId);
+  const noiseOpacity = preset.id === 'ultra' ? 0.022 : 0.035;
   const activeTTLFlags = useGameStore((s) => s.activeTTLFlags ?? {});
   const reducedMotion = useEffectiveReducedMotion();
   const poemBoost = resolvePoemTTLPostFxBoost(activeTTLFlags, reducedMotion);
@@ -466,24 +469,31 @@ function PostFXPipeline() {
     0.1,
   );
 
-  // ── Part 4: Stress-driven chromatic aberration ──
-  // Activates when stress ≥ 70, scales linearly to max offset 0.002 at stress=100.
-  // Disabled on Ultra (proactive), mobile, medium, reduced-motion, and under FPS budget pressure.
-  const stressChromaticEligible =
+  // ── Part 4: Chromatic aberration (cinematic lens fringing) ──
+  // Two composed layers (desktop, non-reduced-motion, soft-work-budget OK):
+  //  (a) A constant, barely-perceptible BASE fringing on high/ultra — gives the image a filmic
+  //      lens character instead of the sterile "plastic clean" digital look. ~0.0004 offset.
+  //  (b) The existing stress ramp on high (stress ≥ 70 → max 0.002 offset at stress=100).
+  // Ultra intentionally keeps only the base layer (clean but not sterile).
+  const chromaticEligible =
     softOk
-    && preset.id !== 'ultra'
     && !reducedMotion
     && !visualLite
     && !coarsePointer
-    && preset.id === 'high'
-    && selectedPreset === 'high';
-  const stressChromaticAmount = stressChromaticEligible
+    && (preset.id === 'high' || preset.id === 'ultra')
+    && (selectedPreset === 'high' || selectedPreset === 'ultra');
+  // Stress ramp only on high preset (ultra stays composed/clean).
+  const stressRampEligible = chromaticEligible && preset.id === 'high';
+  const stressChromaticAmount = stressRampEligible
     ? Math.max(0, (stress - 70) / 30)  // 0 at stress≤70, 1 at stress=100
     : 0;
-  const showChromatic = stressChromaticAmount > 0;
+  // Base fringing = 0.2 of the stress scale → ≈0.0004 offset (all-subpixel, reads as filmic).
+  const baseChromaticAmount = chromaticEligible ? 0.2 : 0;
+  const totalChromaticAmount = baseChromaticAmount + stressChromaticAmount;
+  const showChromatic = totalChromaticAmount > 0;
   const chromaticOffset = useMemo(
-    () => new THREE.Vector2(stressChromaticAmount * 0.002, stressChromaticAmount * 0.0015),
-    [stressChromaticAmount],
+    () => new THREE.Vector2(totalChromaticAmount * 0.002, totalChromaticAmount * 0.0015),
+    [totalChromaticAmount],
   );
 
   // ── Part 3: Cinematic DOF for dialogue / cutscene moments ──
@@ -655,7 +665,7 @@ function PostFXPipeline() {
       <HueSaturation hue={colorGrade.hue} saturation={effectiveSaturation} blendFunction={BlendFunction.NORMAL} />
       <BrightnessContrast brightness={effectiveBrightness} contrast={effectiveContrast} blendFunction={BlendFunction.NORMAL} />
       {proceduralLut ? <LUT lut={proceduralLut} tetrahedralInterpolation blendFunction={BlendFunction.NORMAL} /> : null as any}
-      {wantsNoise ? <Noise premultiply blendFunction={BlendFunction.NORMAL} opacity={0.035} /> : null as any}
+      {wantsNoise ? <Noise premultiply blendFunction={BlendFunction.NORMAL} opacity={noiseOpacity} /> : null as any}
       <ToneMapping mode={ToneMappingMode.ACES_FILMIC} exposure={SCENE_VISIBILITY.toneExposure} />
       {wantsSmaa ? <SMAA preset={smaaPreset} /> : null as any}
     </ManagedEffectComposer>
