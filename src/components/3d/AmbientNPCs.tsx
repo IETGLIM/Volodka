@@ -1,8 +1,8 @@
 
 /* ─── Volodka RPG – Ambient / Background NPCs
      Lightweight, non-interactable background characters that make the world
-     feel populated. Humanoid billboard impostors (not capsules) + wander AI
-     in a single useFrame loop. ─── */
+     feel populated. Medium+: skinned Quaternius mid-LOD only. Low: optional
+     cardboard plane impostors for overflow budget. Single useFrame wander AI. ─── */
 
 import { useRef, useMemo, useEffect } from 'react';
 import { useThree } from '@react-three/fiber';
@@ -230,16 +230,27 @@ export function AmbientNPCs({ livePlayerPositionRef }: AmbientNPCsProps) {
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const shadowRef = useRef<THREE.InstancedMesh>(null);
   const rootRef = useRef<THREE.Group>(null);
-  const planeGeometry = useMemo(() => new THREE.PlaneGeometry(NPC_WIDTH, NPC_HEIGHT), []);
-  const shadowGeometry = useMemo(() => new THREE.CircleGeometry(0.22, 10), []);
-  const impostorMap = useMemo(() => getAmbientCrowdImpostorTexture(), []);
+  // Cardboard plane impostors are Low-only — never allocate them on hero hubs.
+  const showCardboardOverflow = preset.id === 'low';
+  const planeGeometry = useMemo(
+    () => (showCardboardOverflow ? new THREE.PlaneGeometry(NPC_WIDTH, NPC_HEIGHT) : null),
+    [showCardboardOverflow],
+  );
+  const shadowGeometry = useMemo(
+    () => (showCardboardOverflow ? new THREE.CircleGeometry(0.22, 10) : null),
+    [showCardboardOverflow],
+  );
+  const impostorMap = useMemo(
+    () => (showCardboardOverflow ? getAmbientCrowdImpostorTexture() : null),
+    [showCardboardOverflow],
+  );
 
   useEffect(() => {
     const plane = planeGeometry;
     const shadow = shadowGeometry;
     return () => {
-      plane.dispose();
-      shadow.dispose();
+      plane?.dispose();
+      shadow?.dispose();
     };
   }, [planeGeometry, shadowGeometry]);
 
@@ -469,9 +480,6 @@ export function AmbientNPCs({ livePlayerPositionRef }: AmbientNPCsProps) {
 
   if (!config || count === 0) return null;
 
-  // DataTexture cardboard people only on Low — hero hubs stay skinned.
-  const showCardboardOverflow = preset.id === 'low';
-
   return (
     <group ref={rootRef}>
       <AmbientSkinnedMidLod
@@ -480,7 +488,7 @@ export function AmbientNPCs({ livePlayerPositionRef }: AmbientNPCsProps) {
         tintHex={colors.body}
         maxSkinned={maxSkinned}
       />
-      {showCardboardOverflow ? (
+      {showCardboardOverflow && planeGeometry && shadowGeometry && impostorMap ? (
         <>
           <instancedMesh
             ref={meshRef}

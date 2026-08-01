@@ -172,11 +172,11 @@ export const ASSET_MANIFEST: Record<string, GltfAssetDefinition> = {
     instancing: true,
     shipped: true,
   },
-  /** CC0 interior shells — Kenney fallback; replace with Poly Pizza via assets:freekit-stage. */
+  /** Authored metre-scale apartment envelope for volodka_room (not Kenney exterior). */
   interior_room_bedroom: {
     id: 'interior_room_bedroom',
     category: 'environment',
-    lods: [{ url: `${MODELS}/interiors/room_bedroom.glb`, maxDistance: 0 }],
+    lods: [{ url: `${MODELS}/interiors/apartment_envelope.glb`, maxDistance: 0 }],
     receiveShadow: true,
     shipped: true,
   },

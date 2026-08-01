@@ -10,12 +10,16 @@ import {
 } from './interiorShellScale';
 
 describe('interiorShellScale', () => {
+  it('allows the authored apartment envelope as a walkable bedroom mount', () => {
+    expect(isWalkableInteriorShellAllowed('volodkaBedroom')).toBe(true);
+    expect(INTERIOR_SHELL_MOUNT_KIND.volodkaBedroom).toBe('walkable_envelope');
+    expect(isExteriorBuildingShell('volodkaBedroom')).toBe(false);
+  });
+
   it('blocks Kenney exterior building impostors from walkable room mounts', () => {
-    expect(isWalkableInteriorShellAllowed('volodkaBedroom')).toBe(false);
     expect(isWalkableInteriorShellAllowed('cafe')).toBe(false);
     expect(isWalkableInteriorShellAllowed('office')).toBe(false);
     expect(isWalkableInteriorShellAllowed('library')).toBe(false);
-    expect(INTERIOR_SHELL_MOUNT_KIND.volodkaBedroom).toBe('exterior_building');
     expect(isExteriorBuildingShell('cafe')).toBe(true);
     expect(isExteriorBuildingShell('office')).toBe(true);
   });
@@ -35,23 +39,18 @@ describe('interiorShellScale', () => {
     }
   });
 
-  it('documents bedroom native AABB used by the (blocked) shell fit', () => {
-    expect(INTERIOR_SHELL_SOURCE_BOUNDS_M.volodkaBedroom[0]).toBeCloseTo(1.3, 3);
-    expect(INTERIOR_SHELL_SOURCE_BOUNDS_M.volodkaBedroom[1]).toBeCloseTo(0.83354, 4);
-    expect(INTERIOR_SHELL_SOURCE_BOUNDS_M.volodkaBedroom[2]).toBeCloseTo(1.02814, 4);
+  it('documents bedroom native AABB as the metre-scale apartment envelope', () => {
+    expect(INTERIOR_SHELL_SOURCE_BOUNDS_M.volodkaBedroom[0]).toBeCloseTo(5, 3);
+    expect(INTERIOR_SHELL_SOURCE_BOUNDS_M.volodkaBedroom[1]).toBeCloseTo(3, 3);
+    expect(INTERIOR_SHELL_SOURCE_BOUNDS_M.volodkaBedroom[2]).toBeCloseTo(7.35, 2);
   });
 
-  it('shows bedroom AABB fit to 5×3×7 is highly anisotropic (why it warps props)', () => {
+  it('fits bedroom AABB to 5×3×7 with near-identity scale (no prop warping)', () => {
     const scale = getInteriorShellScale('volodkaBedroom', [5, 3, 7]);
-    expect(scale[0]).toBeCloseTo(5 / 1.3, 5);
-    expect(scale[1]).toBeCloseTo(3 / 0.83354, 5);
-    expect(scale[2]).toBeCloseTo(7 / 1.02814, 5);
-    // Before fix this non-uniform ~3.85×3.60×6.81 stretch put ~2.15 m facade posts at the desk.
-    expect(getInteriorShellScaleAnisotropy(scale)).toBeGreaterThan(1.5);
-    expect(scale[0]).toBeGreaterThan(3.5);
-    expect(scale[0]).toBeLessThan(4.0);
-    expect(scale[2]).toBeGreaterThan(6.5);
-    expect(scale[2]).toBeLessThan(7.0);
+    expect(scale[0]).toBeCloseTo(1, 5);
+    expect(scale[1]).toBeCloseTo(1, 5);
+    expect(scale[2]).toBeCloseTo(7 / 7.35, 3);
+    expect(getInteriorShellScaleAnisotropy(scale)).toBeLessThan(1.1);
   });
 
   it('keeps corridor policy as walkable envelope (SceneInteriorAssets path)', () => {

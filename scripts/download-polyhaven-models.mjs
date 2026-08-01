@@ -51,6 +51,9 @@ const ASSETS = [
   ['desk_lamp_arm_01', 'desk_lamp_arm_01_2k.gltf', '1k'],
   ['sofa_02', 'sofa_02_2k.gltf', '1k'],
   ['portable_cassette_player', 'portable_cassette_player_1k.gltf', '1k'],
+  // Wake-room hero furniture — replaces procedural box bed on Medium+.
+  ['GothicBed_01', 'GothicBed_01_1k.gltf', '1k'],
+  ['hanging_picture_frame_01', 'hanging_picture_frame_01_1k.gltf', '1k'],
 ];
 
 function requestJson(url) {

@@ -54,14 +54,14 @@ export const SCENE_ASSET_OWNERSHIP: readonly SceneAssetOwnershipEntry[] = [
   {
     sceneId: 'volodka_room',
     slot: 'interior_shell',
-    owner: 'procedural',
-    systems: ['prune-deploy-assets'],
+    owner: 'authored_shell',
+    systems: ['AuthoredInteriorShell', 'prune-deploy-assets'],
     quality: HIGH_ONLY,
     exclusive: true,
     assetIds: ['interior_room_bedroom'],
     publicUrls: [INTERIOR_SHELL_MODELS.volodkaBedroom],
     notes:
-      'Procedural 5×3×7 m envelope owns the walkable room. room_bedroom.glb is Kenney building-type-a (exterior) — AuthoredInteriorShell must not mount it.',
+      'Authored metre-scale apartment_envelope.glb owns walls/floor/ceiling on Medium+; ThinMonitors stay procedural desk path.',
   },
   {
     sceneId: 'cafe_evening',

@@ -133,7 +133,7 @@ export const METRIC_SCALE_AUDIT: readonly ScaleAuditRow[] = [
     targetM: 3,
     applied: 'procedural envelope; exterior Kenney shells blocked',
     status: 'fixed',
-    note: 'room_bedroom/cafe/office/library GLBs are exterior buildings — do not AABB-stretch into walkable rooms',
+    note: 'cafe/office/library GLBs remain exterior buildings — do not AABB-stretch into walkable rooms; bedroom uses apartment_envelope.glb',
   },
   {
     id: 'volodka_room_envelope',

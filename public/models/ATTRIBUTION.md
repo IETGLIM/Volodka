@@ -113,7 +113,7 @@ Scene-facing set under `models/polyhaven/`:
 
 - Urban shell: modular urban apartments facade, modular fire escape, roller shutter door/window, road barriers, manhole cover.
 - Street/industrial props: barrel, cardboard box, metal trash can, street lamp, trash bag, wet floor sign, exterior aircon unit, power box, security camera, utility box, old tyre.
-- Interior/cinematic props: arm chair, painted wooden bench/table/cabinet, worn wooden bookshelf, desk lamp arm, sofa, portable cassette player, wooden crate.
+- Interior/cinematic props: arm chair, painted wooden bench/table/cabinet, worn wooden bookshelf, desk lamp arm, sofa, gothic bed, hanging picture frame, portable cassette player, wooden crate.
 - Mood/landmark props: hanging industrial lamp, gothic statue.
 
 Each downloaded model keeps its source `.gltf`, `.bin`, and required texture maps together in its own folder. Do not delete these folders as "large junk" unless the manifest no longer references the asset and `npm run assets:validate` confirms it is unused.
@@ -122,7 +122,7 @@ Each downloaded model keeps its source `.gltf`, `.bin`, and required texture map
 
 | Manifest ID | File | Interim source | Target |
 |-------------|------|----------------|--------|
-| interior_room_bedroom | `interiors/room_bedroom.glb` | Kenney Suburban `building-type-a` | Poly Pizza bedroom |
+| interior_room_bedroom | `interiors/apartment_envelope.glb` | Authored metre-scale envelope (`scripts/generate-volodka-apartment-envelope.mjs`) | — |
 | interior_cafe | `interiors/cafe_interior.glb` | Kenney Commercial `building-c` | Poly Pizza café |
 | interior_office | `interiors/office.glb` | Kenney Commercial skyscraper | Poly Pizza office |
 | interior_library | `interiors/library.glb` | Kenney Commercial `building-b` | Poly Pizza library |

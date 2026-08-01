@@ -12,15 +12,15 @@ describe('assetOwnership', () => {
     expect(validateSceneAssetOwnershipConflicts()).toEqual([]);
   });
 
-  it('prevents authored shell scenes from also mounting generic interior shells', () => {
-    expect(isSceneAssetSystemAllowed('volodka_room', 'interior_shell', 'AuthoredInteriorShell')).toBe(false);
+  it('mounts authored apartment envelope on volodka_room via AuthoredInteriorShell', () => {
+    expect(isSceneAssetSystemAllowed('volodka_room', 'interior_shell', 'AuthoredInteriorShell')).toBe(true);
     expect(isSceneAssetSystemAllowed('volodka_room', 'interior_shell', 'SceneInteriorAssets')).toBe(false);
     expect(getSceneInteriorAssets('volodka_room')).toEqual([]);
+    expect(getSceneSlotOwnership('volodka_room', 'interior_shell')[0]?.owner).toBe('authored_shell');
   });
 
-  it('keeps hero walkable interiors on procedural envelopes (not Kenney exterior GLBs)', () => {
+  it('keeps remaining hero walkable interiors on procedural envelopes (not Kenney exterior GLBs)', () => {
     for (const sceneId of [
-      'volodka_room',
       'cafe_evening',
       'office_day',
       'library_day',
@@ -62,7 +62,7 @@ describe('assetOwnership', () => {
   it('publishes ownership-owned deploy keep-list urls', () => {
     expect(collectAssetOwnershipPublicUrls()).toEqual(
       expect.arrayContaining([
-        '/models/interiors/room_bedroom.glb',
+        '/models/interiors/apartment_envelope.glb',
         '/models/interiors/cafe_interior.glb',
         '/models/polyhaven/street_lamp_01/street_lamp_01_1k.gltf',
       ]),

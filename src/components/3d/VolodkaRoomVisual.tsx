@@ -142,8 +142,6 @@ const geo_photoFrame = new THREE.BoxGeometry(0.34, 0.44, 0.02);
 const geo_photoBack = new THREE.BoxGeometry(0.3, 0.4, 0.005);
 const bookSpineGeoCache = new Map<string, THREE.BoxGeometry>();
 const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeof useGLTF>[3]>;
-const KENNEY_TERMINAL_MODEL = '/models/props/terminal.glb';
-const AI3DGEN_SERVER_FRAGMENT_MODEL = '/models/props/server_fragment.glb';
 // poetic_compiler / neural_filter live in ScenePropDressing off-desk — do not preload here.
 
 // ISSUE #5: Pre-allocated color for emissive monitor screens (avoids per-render allocation)
@@ -171,9 +169,9 @@ const mat_8 = getSharedStandardMaterial({ color: '#3a2818', roughness: 0.85 });
 const mat_9 = getSharedStandardMaterial({ color: '#5a4530', roughness: 0.8 });
 const mat_10 = getSharedStandardMaterial({ color: '#4a3820', roughness: 0.85 });
 const mat_11 = getSharedStandardMaterial({ color: '#4a3a28', roughness: 0.7 });
-const mat_15 = getSharedStandardMaterial({ color: '#1a1a1a', emissive: '#00ff44', emissiveIntensity: 0.02 });
-const mat_16 = getSharedStandardMaterial({ color: '#00ff44', emissive: '#00ff44', emissiveIntensity: 1.2 });
-const mat_17 = getSharedStandardMaterial({ color: '#ffaa00', emissive: '#ffaa00', emissiveIntensity: 0.9 });
+const mat_15 = getSharedStandardMaterial({ color: '#1a1a1a', emissive: '#5a9a68', emissiveIntensity: 0.02 });
+const mat_16 = getSharedStandardMaterial({ color: '#3a6a52', emissive: '#5a9a68', emissiveIntensity: 0.55 });
+const mat_17 = getSharedStandardMaterial({ color: '#aa8844', emissive: '#cc9944', emissiveIntensity: 0.45 });
 const mat_18 = getSharedStandardMaterial({ color: '#1a1a2a', roughness: 0.95 });
 const mat_19 = getSharedStandardMaterial({ color: '#2a2a2a', roughness: 0.6 });
 const mat_20 = getSharedStandardMaterial({ color: '#6b3a1a', roughness: 0.7 });
@@ -225,16 +223,16 @@ const mat_65 = getSharedStandardMaterial({ color: '#2a3a2a', roughness: 0.9 });
 const mat_66 = getSharedStandardMaterial({ color: '#1a2a1a', roughness: 0.9 });
 const mat_67 = getSharedStandardMaterial({ color: '#888', metalness: 0.7, roughness: 0.3 });
 const mat_68 = getSharedStandardMaterial({ color: '#1a2a1a', roughness: 0.8 });
-const mat_69 = getSharedStandardMaterial({ color: '#002200', emissive: '#00ff44', emissiveIntensity: 0.8 });
+const mat_69 = getSharedStandardMaterial({ color: '#0a1a12', emissive: '#5a9a68', emissiveIntensity: 0.35 });
 const mat_led_power = getSharedStandardMaterial({
-  color: '#00ff00',
-  emissive: '#00ff00',
-  emissiveIntensity: 1.4,
+  color: '#3a6a52',
+  emissive: '#5a9a68',
+  emissiveIntensity: 0.65,
 });
 const mat_zabbix_led = getSharedStandardMaterial({
-  color: '#e8413a',
-  emissive: '#e8413a',
-  emissiveIntensity: 2.5,
+  color: '#c84840',
+  emissive: '#c84840',
+  emissiveIntensity: 1.2,
   toneMapped: false,
 });
 const mat_posterTeal = getSharedStandardMaterial({ color: '#0a3a3a', roughness: 0.7 });
@@ -280,9 +278,30 @@ function AuthoredRoomProp({
   );
 }
 
+const ROOM_DRESSING_D = 3.48;
+const ROOM_DRESSING_W = 5;
+
 function AuthoredVolodkaRoomDressing({ castShadow }: { castShadow: boolean }) {
   return (
     <group>
+      <Suspense fallback={null}>
+        <AuthoredRoomProp
+          url={POLYHAVEN_MODELS.gothicBed}
+          position={[1.78, 0, 2.05]}
+          rotationY={Math.PI}
+          scale={0.92}
+          castShadow={castShadow}
+        />
+      </Suspense>
+      <Suspense fallback={null}>
+        <AuthoredRoomProp
+          url={POLYHAVEN_MODELS.sofa}
+          position={[0.35, 0, 2.55]}
+          rotationY={Math.PI * 0.55}
+          scale={0.62}
+          castShadow={castShadow}
+        />
+      </Suspense>
       <Suspense fallback={null}>
         <AuthoredRoomProp
           url={POLYHAVEN_MODELS.armChair}
@@ -337,70 +356,51 @@ function AuthoredVolodkaRoomDressing({ castShadow }: { castShadow: boolean }) {
           castShadow={castShadow}
         />
       </Suspense>
-    </group>
-  );
-}
-
-function AuthoredVolodkaWorkstation({ castShadow }: { castShadow: boolean }) {
-  return (
-    <group>
       <Suspense fallback={null}>
         <AuthoredRoomProp
-          url={POLYHAVEN_MODELS.paintedWoodenTable}
-          position={[0, 0, -2.5]}
-          rotationY={Math.PI}
-          scale={0.78}
+          url={POLYHAVEN_MODELS.hangingPictureFrame}
+          position={[-1.0, 1.75, -ROOM_DRESSING_D]}
+          rotationY={0}
+          scale={0.55}
           castShadow={castShadow}
         />
       </Suspense>
       <Suspense fallback={null}>
         <AuthoredRoomProp
-          url={KENNEY_TERMINAL_MODEL}
-          position={[-0.48, 0.82, -2.72]}
-          rotationY={0.22}
-          scale={1.12}
+          url={POLYHAVEN_MODELS.hangingPictureFrame}
+          position={[1.35, 1.55, -ROOM_DRESSING_D]}
+          rotationY={0}
+          scale={0.48}
           castShadow={castShadow}
         />
       </Suspense>
       <Suspense fallback={null}>
         <AuthoredRoomProp
-          url={KENNEY_TERMINAL_MODEL}
-          position={[0.0, 0.82, -2.74]}
-          scale={1.18}
+          url={POLYHAVEN_MODELS.hangingPictureFrame}
+          position={[2.35, 1.5, 1.55]}
+          rotationY={-Math.PI / 2}
+          scale={0.42}
           castShadow={castShadow}
         />
       </Suspense>
       <Suspense fallback={null}>
         <AuthoredRoomProp
-          url={KENNEY_TERMINAL_MODEL}
-          position={[0.48, 0.82, -2.72]}
-          rotationY={-0.22}
-          scale={1.12}
+          url={POLYHAVEN_MODELS.shutterWindow}
+          position={[ROOM_DRESSING_W / 2 - 0.02, 1.15, -2.0]}
+          rotationY={-Math.PI / 2}
+          scale={0.42}
           castShadow={castShadow}
         />
       </Suspense>
       <Suspense fallback={null}>
         <AuthoredRoomProp
-          url={AI3DGEN_SERVER_FRAGMENT_MODEL}
-          position={[0.82, 0.12, -2.82]}
-          rotationY={-0.25}
-          scale={0.82}
+          url={POLYHAVEN_MODELS.shutterWindowAlt}
+          position={[0.15, 1.15, -ROOM_DRESSING_D + 0.02]}
+          rotationY={0}
+          scale={0.38}
           castShadow={castShadow}
         />
       </Suspense>
-      <Suspense fallback={null}>
-        <AuthoredRoomProp
-          url={POLYHAVEN_MODELS.deskLampArm}
-          position={[-0.72, 0.82, -2.3]}
-          rotationY={0.42}
-          scale={0.46}
-          castShadow={castShadow}
-        />
-      </Suspense>
-      {/* Cassette / poetic_compiler / neural_filter: RoomDressing + ScenePropDressing
-          (off-desk slots). Do not restack on monitor y≈0.82 — shell is exterior_building. */}
-      {/* Monitor spill — muted phosphor, not candy neon */}
-      <pointLight position={[0, 1.25, -2.25]} color="#5a9a88" intensity={1.65} distance={6.5} decay={2} />
     </group>
   );
 }
@@ -415,10 +415,9 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
   const { preset, selectedPreset } = useGraphicsQuality();
   const coarsePointer = useIsMobileVisual();
   const useGltfFurniture = allowsGlbAssetRendering(preset.environmentRenderMode);
-  // room_bedroom.glb is a Kenney exterior building — never replace the procedural
-  // 5×3×7 m envelope (occludes ThinMonitors, facade posts read as giant tripods).
+  // Metre-scale apartment_envelope.glb — Medium+ (hybrid/glb), not Kenney exterior.
   const useAuthoredShell =
-    !preset.visualLite && isWalkableInteriorShellAllowed('volodkaBedroom');
+    useGltfFurniture && isWalkableInteriorShellAllowed('volodkaBedroom');
   const usePhysicalGlass = allowsSelectiveMeshPhysicalWet('volodka_room', selectedPreset, {
     coarsePointer,
   });
@@ -532,6 +531,7 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
       {useAuthoredShell ? (
         <AuthoredInteriorShell
           sceneId="volodka_room"
+          shellModelId="volodkaBedroom"
           url={INTERIOR_SHELL_MODELS.volodkaBedroom}
           scale={getInteriorShellScale('volodkaBedroom', [W, H, D])}
           castShadow={preset.shadows}
@@ -642,21 +642,55 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
       {/* ── INTERACTIVE ANIMATED OBJECTS ── */}
       {/* ═══════════════════════════════════════════════ */}
 
-      {/* ── Room Door — always procedural (animated interaction). AuthoredVolodkaRoomDressing
-          has no door; ScenePropDressing kenney_door was deferred-only → empty doorway on High. ── */}
+      {/* ── Room Door — animated interaction; Poly Haven wood on Medium+ ── */}
       <>
-        {/* Door frame — pushed further off the inset wall to avoid z-fight */}
-        <mesh position={[0, 1.1, D / 2 - 0.04]} rotation-y={Math.PI} geometry={geo_box_4} material={mat_1} />
-        {/* Door frame border */}
-        <mesh position={[-0.5, 1.1, D / 2 - 0.045]} rotation-y={Math.PI} geometry={geo_box_5} material={mat_2} />
-        <mesh position={[0.5, 1.1, D / 2 - 0.045]} rotation-y={Math.PI} geometry={geo_box_5} material={mat_2} />
-        <mesh position={[0, 2.2, D / 2 - 0.045]} rotation-y={Math.PI} geometry={geo_box_6} material={mat_2} />
-        {/* Animated door panel — pivot on left edge */}
+        <mesh position={[0, 1.1, D / 2 - 0.04]} rotation-y={Math.PI} geometry={geo_box_4}>
+          {useGltfFurniture ? (
+            <Suspense fallback={<primitive object={mat_1} attach="material" />}>
+              <PolyHavenStandardMaterial materialId="wood_floor" repeatScale={1.8} color="#5a4030" roughness={0.78} metalness={0.04} />
+            </Suspense>
+          ) : (
+            <primitive object={mat_1} attach="material" />
+          )}
+        </mesh>
+        <mesh position={[-0.5, 1.1, D / 2 - 0.045]} rotation-y={Math.PI} geometry={geo_box_5}>
+          {useGltfFurniture ? (
+            <Suspense fallback={<primitive object={mat_2} attach="material" />}>
+              <PolyHavenStandardMaterial materialId="wood_floor" repeatScale={2.2} color="#4a3525" roughness={0.8} metalness={0.04} />
+            </Suspense>
+          ) : (
+            <primitive object={mat_2} attach="material" />
+          )}
+        </mesh>
+        <mesh position={[0.5, 1.1, D / 2 - 0.045]} rotation-y={Math.PI} geometry={geo_box_5}>
+          {useGltfFurniture ? (
+            <Suspense fallback={<primitive object={mat_2} attach="material" />}>
+              <PolyHavenStandardMaterial materialId="wood_floor" repeatScale={2.2} color="#4a3525" roughness={0.8} metalness={0.04} />
+            </Suspense>
+          ) : (
+            <primitive object={mat_2} attach="material" />
+          )}
+        </mesh>
+        <mesh position={[0, 2.2, D / 2 - 0.045]} rotation-y={Math.PI} geometry={geo_box_6}>
+          {useGltfFurniture ? (
+            <Suspense fallback={<primitive object={mat_2} attach="material" />}>
+              <PolyHavenStandardMaterial materialId="wood_floor" repeatScale={2.0} color="#4a3525" roughness={0.8} metalness={0.04} />
+            </Suspense>
+          ) : (
+            <primitive object={mat_2} attach="material" />
+          )}
+        </mesh>
         <group position={[-0.45, 0, D / 2 - 0.06]} ref={roomDoorRef}>
-          <mesh position={[0.45, 1.1, 0]} geometry={geo_box_7} material={mat_3} />
-          {/* Door handle */}
+          <mesh position={[0.45, 1.1, 0]} geometry={geo_box_7}>
+            {useGltfFurniture ? (
+              <Suspense fallback={<primitive object={mat_3} attach="material" />}>
+                <PolyHavenStandardMaterial materialId="wood_floor" repeatScale={1.4} color="#6a5040" roughness={0.76} metalness={0.05} />
+              </Suspense>
+            ) : (
+              <primitive object={mat_3} attach="material" />
+            )}
+          </mesh>
           <mesh position={[0.78, 1.05, 0.03]} rotation={[0, 0, Math.PI / 2]} geometry={geo_cyl_8} material={mat_4} />
-          {/* Door panel detail — inset rectangle */}
           <mesh position={[0.45, 1.4, 0.025]} geometry={geo_box_9} material={mat_5} />
           <mesh position={[0.45, 0.7, 0.025]} geometry={geo_box_9} material={mat_5} />
         </group>
@@ -688,47 +722,41 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
         <group ref={roomWardrobeDoorRef} visible={false} />
       )}
 
-      {/* ── Desk — ThinMonitors own the hero rig while bedroom shell is exterior_building
-          (useAuthoredShell always false). AuthoredVolodkaWorkstation stays for a future
-          walkable interior GLB; do not gate emissive screens on that dead path. ── */}
-      {useAuthoredShell ? (
-        <AuthoredVolodkaWorkstation castShadow={preset.shadows} />
-      ) : (
-        <group position={[0, 0, -2.5]}>
-          <CraftedDeskShell matFallback={mat_11} />
-          {([
-            { id: 'grafana', tex: grafanaTexture, x: -0.62, rotY: 0.24 },
-            { id: 'terminal', tex: terminalTexture, x: 0, rotY: 0 },
-            { id: 'zabbix', tex: zabbixTexture, x: 0.62, rotY: -0.24 },
-          ] as const).map(({ id, tex, x, rotY }) => (
-            <ThinMonitor
-              key={id}
-              id={id}
-              tex={tex}
-              x={x}
-              rotY={rotY}
-              groupRef={id === 'terminal' ? terminalMonitorGroupRef : undefined}
-              alertLed={id === 'zabbix' ? mat_zabbix_led : undefined}
-            />
-          ))}
+      {/* ── Desk — ThinMonitors always own the hero workstation. ── */}
+      <group position={[0, 0, -2.5]}>
+        <CraftedDeskShell matFallback={mat_11} />
+        {([
+          { id: 'grafana', tex: grafanaTexture, x: -0.62, rotY: 0.24 },
+          { id: 'terminal', tex: terminalTexture, x: 0, rotY: 0 },
+          { id: 'zabbix', tex: zabbixTexture, x: 0.62, rotY: -0.24 },
+        ] as const).map(({ id, tex, x, rotY }) => (
+          <ThinMonitor
+            key={id}
+            id={id}
+            tex={tex}
+            x={x}
+            rotY={rotY}
+            groupRef={id === 'terminal' ? terminalMonitorGroupRef : undefined}
+            alertLed={id === 'zabbix' ? mat_zabbix_led : undefined}
+          />
+        ))}
 
-          <pointLight position={[0, 1.25, 0.15]} color="#5a9a88" intensity={2.2} distance={10} decay={2} />
-          {/* Keyboard — flat slab not cube pile */}
-          <mesh position={[0, 0.785, 0.12]} geometry={getSharedBoxGeometry(0.42, 0.018, 0.14)} material={mat_15} />
-          <mesh position={[0.15, 0.8, 0.05]} geometry={getSharedBoxGeometry(0.012, 0.006, 0.012)} material={mat_16} />
-          <mesh position={[0.17, 0.8, 0.05]} geometry={getSharedBoxGeometry(0.012, 0.006, 0.012)} material={mat_17} />
-          <mesh position={[0.6, 0.78, 0.1]} rotation={[0, 0.1, 0]} geometry={getSharedBoxGeometry(0.18, 0.004, 0.2)} material={mat_18} />
-          <mesh position={[0.6, 0.79, 0.1]} rotation={[0, 0.1, 0]} geometry={getSharedBoxGeometry(0.06, 0.022, 0.1)} material={mat_19} />
-          <group position={[-0.55, 0.78, 0.25]}>
-            <mesh position={[0, 0.04, 0]} geometry={geo_cyl_27} material={mat_20} />
-            <mesh position={[0.04, 0.04, 0]} rotation={[0, 0, Math.PI / 2]} geometry={geo_tor_28} material={mat_20} />
-            <mesh position={[0, 0.075, 0]} geometry={geo_cyl_29} material={mat_21} />
-          </group>
-          <mesh position={[0.3, 0.78, 0.2]} rotation={[0, 0.4, 0]} geometry={geo_box_30} material={mat_22} />
-          <mesh position={[0.35, 0.785, 0.15]} rotation={[0, -0.2, 0.02]} geometry={geo_box_31} material={mat_23} />
-          <mesh position={[-0.2, 0.78, 0.3]} rotation={[0, 0.7, -0.01]} geometry={geo_box_32} material={mat_24} />
+        <pointLight position={[0, 1.25, 0.15]} color="#5a9a88" intensity={2.2} distance={10} decay={2} />
+        {/* Keyboard — flat slab not cube pile */}
+        <mesh position={[0, 0.785, 0.12]} geometry={getSharedBoxGeometry(0.42, 0.018, 0.14)} material={mat_15} />
+        <mesh position={[0.15, 0.8, 0.05]} geometry={getSharedBoxGeometry(0.012, 0.006, 0.012)} material={mat_16} />
+        <mesh position={[0.17, 0.8, 0.05]} geometry={getSharedBoxGeometry(0.012, 0.006, 0.012)} material={mat_17} />
+        <mesh position={[0.6, 0.78, 0.1]} rotation={[0, 0.1, 0]} geometry={getSharedBoxGeometry(0.18, 0.004, 0.2)} material={mat_18} />
+        <mesh position={[0.6, 0.79, 0.1]} rotation={[0, 0.1, 0]} geometry={getSharedBoxGeometry(0.06, 0.022, 0.1)} material={mat_19} />
+        <group position={[-0.55, 0.78, 0.25]}>
+          <mesh position={[0, 0.04, 0]} geometry={geo_cyl_27} material={mat_20} />
+          <mesh position={[0.04, 0.04, 0]} rotation={[0, 0, Math.PI / 2]} geometry={geo_tor_28} material={mat_20} />
+          <mesh position={[0, 0.075, 0]} geometry={geo_cyl_29} material={mat_21} />
         </group>
-      )}
+        <mesh position={[0.3, 0.78, 0.2]} rotation={[0, 0.4, 0]} geometry={geo_box_30} material={mat_22} />
+        <mesh position={[0.35, 0.785, 0.15]} rotation={[0, -0.2, 0.02]} geometry={geo_box_31} material={mat_23} />
+        <mesh position={[-0.2, 0.78, 0.3]} rotation={[0, 0.7, -0.01]} geometry={geo_box_32} material={mat_24} />
+      </group>
 
       {/* ── Chair — fallback only; no low-poly hero chair on GLTF presets ── */}
       {!useGltfFurniture ? (
@@ -789,37 +817,30 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
       </group>
       ) : null}
 
-      {!useAuthoredShell ? (
-        <group position={[1.8, 1.6, -3.45]}>
-          {/* Thin dark frame */}
-          <mesh geometry={geo_posterFrame} material={mat_49} />
-          {/* Poster surface — dark teal/emerald */}
-          <mesh position={[0, 0, 0.013]} geometry={geo_posterBack} material={mat_posterTeal} />
-          {/* Glowing logo rectangle (suggests a tech/concert poster) */}
-          <mesh position={[0, 0.12, 0.018]} geometry={geo_posterLogo} material={mat_posterLogo} />
-        </group>
+      {/* Box poster/photo — Low only; Medium+ uses Poly Haven hanging frames. */}
+      {!useGltfFurniture ? (
+        <>
+          <group position={[1.8, 1.6, -3.45]}>
+            <mesh geometry={geo_posterFrame} material={mat_49} />
+            <mesh position={[0, 0, 0.013]} geometry={geo_posterBack} material={mat_posterTeal} />
+            <mesh position={[0, 0.12, 0.018]} geometry={geo_posterLogo} material={mat_posterLogo} />
+          </group>
+          <group position={[2.35, 1.5, 1.5]} rotation-y={-Math.PI / 2}>
+            <mesh geometry={geo_photoFrame} material={mat_1} />
+            <mesh position={[0, 0, 0.013]} geometry={geo_photoBack} material={mat_photoWarm} />
+          </group>
+        </>
       ) : null}
 
-      {!useAuthoredShell ? (
-        <group position={[2.35, 1.5, 1.5]} rotation-y={-Math.PI / 2}>
-          {/* Wooden frame (brown) */}
-          <mesh geometry={geo_photoFrame} material={mat_1} />
-          {/* Warm photo print */}
-          <mesh position={[0, 0, 0.013]} geometry={geo_photoBack} material={mat_photoWarm} />
+      {/* ── Bed — box fallback on Low; Medium+ uses Poly Haven GothicBed in dressing ── */}
+      {!useGltfFurniture ? (
+        <group position={[1.8, 0, 2.0]}>
+          <mesh position={[0, 0.35, 0]} castShadow geometry={geo_box_38} material={mat_29} />
+          <mesh position={[0, 0.6, -0.95]} castShadow geometry={geo_box_39} material={mat_30} />
+          <mesh position={[0, 0.55, -0.7]} geometry={geo_box_40} material={mat_31} />
+          <mesh position={[0, 0.52, 0.2]} geometry={geo_box_41} material={mat_32} />
         </group>
       ) : null}
-
-      {/* ── Bed — fixed metre-scale bed on every preset (1×2m sleeping surface) ── */}
-      <group position={[1.8, 0, 2.0]}>
-        {/* Mattress */}
-        <mesh position={[0, 0.35, 0]} castShadow geometry={geo_box_38} material={mat_29} />
-        {/* Headboard */}
-        <mesh position={[0, 0.6, -0.95]} castShadow geometry={geo_box_39} material={mat_30} />
-        {/* Pillow */}
-        <mesh position={[0, 0.55, -0.7]} geometry={geo_box_40} material={mat_31} />
-        {/* Blanket */}
-        <mesh position={[0, 0.52, 0.2]} geometry={geo_box_41} material={mat_32} />
-      </group>
 
       {/* ── Windows — always procedural (city glow + spill). Authored dressing has none;
           deferred kenney_window props left blank walls until staggered mount.
@@ -928,38 +949,28 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
       {/* ── ANIMATED DESK ELEMENTS ── */}
       {/* ═══════════════════════════════════════════════ */}
 
-      {!useAuthoredShell ? (
-        <group position={[-0.7, 0.78, -2.3]}>
-          {/* Fan base */}
-          <mesh position={[0, 0.04, 0]} geometry={geo_cyl_46} material={mat_35} />
-          {/* Fan cage (static outer ring) */}
-          <mesh position={[0, 0.12, 0]} rotation={[Math.PI / 2, 0, 0]} geometry={geo_tor_47} material={mat_36} />
-          {/* Rotating fan blades */}
-          <group ref={fanGroupRef} position={[0, 0.12, 0.02]}>
-            {[0, 1, 2, 3].map((i) => (
-              <mesh key={i} rotation={[0, 0, (i * Math.PI) / 2]} geometry={geo_box_48} material={mat_37} />
-            ))}
-            {/* Fan hub */}
-            <mesh geometry={geo_cyl_49} material={mat_38} />
-          </group>
+      {/* ── ANIMATED DESK ELEMENTS ── */}
+      <group position={[-0.7, 0.78, -2.3]}>
+        <mesh position={[0, 0.04, 0]} geometry={geo_cyl_46} material={mat_35} />
+        <mesh position={[0, 0.12, 0]} rotation={[Math.PI / 2, 0, 0]} geometry={geo_tor_47} material={mat_36} />
+        <group ref={fanGroupRef} position={[0, 0.12, 0.02]}>
+          {[0, 1, 2, 3].map((i) => (
+            <mesh key={i} rotation={[0, 0, (i * Math.PI) / 2]} geometry={geo_box_48} material={mat_37} />
+          ))}
+          <mesh geometry={geo_cyl_49} material={mat_38} />
         </group>
-      ) : null}
+      </group>
 
       {/* ── PC case with blinking LED ── */}
-      {!useAuthoredShell ? <group position={[0.9, 0, -2.8]}>
-        {/* Case body */}
+      <group position={[0.9, 0, -2.8]}>
         <mesh position={[0, 0.25, 0]} castShadow geometry={geo_box_50} material={mat_39} />
-        {/* Front panel line */}
         <mesh position={[-0.1, 0.25, 0]} geometry={geo_box_51} material={mat_40} />
-        {/* Blinking power LED */}
         <mesh position={[-0.101, 0.42, 0.12]} geometry={geo_sph_52} material={mat_led_power} />
-        {/* HDD activity LED */}
         <mesh position={[-0.101, 0.42, 0.08]} geometry={geo_sph_53} material={mat_41} />
-        {/* Ventilation grill lines */}
         {[0.05, 0.1, 0.15, 0.2].map((y, i) => (
           <mesh key={`vent-${i}`} position={[-0.101, y, -0.05]} geometry={geo_box_54} material={mat_40} />
         ))}
-      </group> : null}
+      </group>
 
       {/* ── Desk lamp — warm practical with soft shadow on High/Ultra ── */}
       <pointLight
@@ -1012,48 +1023,39 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
       {/* ── ADDITIONAL ROOM DETAILS ── */}
       {/* ═══════════════════════════════════════════════ */}
 
-      {!useAuthoredShell ? (
+      {/* Posters — box fallback on Low; Medium+ uses Poly Haven hanging frames in dressing. */}
+      {!useGltfFurniture ? (
         <>
-          {/* ── Posters on back wall (renderOrder + offset to kill wall z-fight) ── */}
           <group position={[-1.0, 1.8, -D / 2 + 0.035]}>
-            {/* Poster 1 — dark with neon accent */}
             <mesh renderOrder={2} geometry={geo_box_56} material={mat_43} />
-            {/* Poster design — colored rectangles */}
             <mesh renderOrder={3} position={[0, 0.1, 0.012]} geometry={geo_box_57} material={mat_44} />
             <mesh renderOrder={3} position={[0, -0.1, 0.012]} geometry={geo_box_58} material={mat_45} />
           </group>
 
           <group position={[1.5, 1.6, -D / 2 + 0.035]}>
-            {/* Poster 2 — punk band poster */}
             <mesh renderOrder={2} geometry={geo_box_59} material={mat_46} />
             <mesh renderOrder={3} position={[0, 0.08, 0.012]} geometry={geo_box_60} material={mat_47} />
-            {/* Tape on corners */}
             <mesh renderOrder={4} position={[-0.2, 0.28, 0.018]} rotation={[0, 0, 0.3]} geometry={geo_box_61} material={mat_48} />
             <mesh renderOrder={4} position={[0.2, -0.28, 0.018]} rotation={[0, 0, -0.2]} geometry={geo_box_61} material={mat_48} />
           </group>
         </>
       ) : null}
 
-      {!useAuthoredShell ? <group position={[0.5, 0.78, -2.6]}>
-        {/* Headband */}
+      <group position={[0.5, 0.78, -2.6]}>
         <mesh rotation={[0, 0, 0]} geometry={geo_tor_62} material={mat_49} />
-        {/* Left ear cup */}
         <mesh position={[-0.06, -0.02, 0]} rotation={[0, Math.PI / 2, 0]} geometry={geo_cyl_63} material={mat_50} />
-        {/* Right ear cup */}
         <mesh position={[0.06, -0.02, 0]} rotation={[0, Math.PI / 2, 0]} geometry={geo_cyl_63} material={mat_50} />
-        {/* Cable */}
         <mesh position={[0, -0.04, 0.15]} rotation={[0.3, 0, 0]} geometry={geo_cyl_64} material={mat_51} />
-      </group> : null}
+      </group>
 
       {/* ── Laundry pile on floor near bed ── */}
-      {!useAuthoredShell ? <group position={[1.5, 0, 3.5]}>
-        {/* T-shirt shape */}
-        <mesh position={[0, 0.05, 0]} rotation={[0.2, 0.5, 0.1]} geometry={geo_box_65} material={mat_52} />
-        {/* Jeans */}
-        <mesh position={[0.15, 0.03, 0.1]} rotation={[0, -0.3, 0.15]} geometry={geo_box_66} material={mat_53} />
-        {/* Sock */}
-        <mesh position={[-0.1, 0.02, 0.15]} rotation={[0.5, 0.8, 0.2]} geometry={geo_cyl_67} material={mat_54} />
-      </group> : null}
+      {!useGltfFurniture ? (
+        <group position={[1.5, 0, 3.5]}>
+          <mesh position={[0, 0.05, 0]} rotation={[0.2, 0.5, 0.1]} geometry={geo_box_65} material={mat_52} />
+          <mesh position={[0.15, 0.03, 0.1]} rotation={[0, -0.3, 0.15]} geometry={geo_box_66} material={mat_53} />
+          <mesh position={[-0.1, 0.02, 0.15]} rotation={[0.5, 0.8, 0.2]} geometry={geo_cyl_67} material={mat_54} />
+        </group>
+      ) : null}
 
       {/* ── Nightstand beside bed — fallback only; GLTF presets use authored barrel/box dressing ── */}
       {!useGltfFurniture ? (
@@ -1074,7 +1076,7 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
         <mesh renderOrder={2} position={[-0.1, 0.565, -0.05]} geometry={geo_cyl_73} material={mat_60} />
       </group>
 
-      {!useAuthoredShell ? (
+      {!useGltfFurniture ? (
         <>
           {/* ── Slippers on floor near bed ── */}
           <mesh position={[1.3, 0.015, 3.0]} rotation={[0, 0.3, 0]} geometry={geo_box_74} material={mat_61} />
@@ -1094,12 +1096,10 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
       </group>
       ) : null}
 
-      {!useAuthoredShell ? (
-        <group position={[-W / 2 + 0.02, 1.6, -1.0]} rotation-y={Math.PI / 2}>
-          <mesh geometry={geo_box_82} material={mat_68} />
-          <mesh position={[0, 0.1, 0.004]} geometry={geo_box_83} material={mat_69} />
-        </group>
-      ) : null}
+      <group position={[-W / 2 + 0.02, 1.6, -1.0]} rotation-y={Math.PI / 2}>
+        <mesh geometry={geo_box_82} material={mat_68} />
+        <mesh position={[0, 0.1, 0.004]} geometry={geo_box_83} material={mat_69} />
+      </group>
 
       {/* ═══════════════════════════════════════════════ */}
       {/* ── INTERIOR MODELS (from InteriorModels.tsx) ── */}
@@ -1226,11 +1226,14 @@ function createWallTexture(): THREE.CanvasTexture {
   return tex;
 }
 
+useGLTF.preload(POLYHAVEN_MODELS.gothicBed, true, true, extendLoader);
+useGLTF.preload(POLYHAVEN_MODELS.sofa, true, true, extendLoader);
+useGLTF.preload(POLYHAVEN_MODELS.hangingPictureFrame, true, true, extendLoader);
+useGLTF.preload(POLYHAVEN_MODELS.shutterWindow, true, true, extendLoader);
+useGLTF.preload(POLYHAVEN_MODELS.shutterWindowAlt, true, true, extendLoader);
 useGLTF.preload(POLYHAVEN_MODELS.armChair, true, true, extendLoader);
 useGLTF.preload(POLYHAVEN_MODELS.woodenBookshelfWorn, true, true, extendLoader);
 useGLTF.preload(POLYHAVEN_MODELS.paintedWoodenCabinet, true, true, extendLoader);
 useGLTF.preload(POLYHAVEN_MODELS.paintedWoodenTable, true, true, extendLoader);
 useGLTF.preload(POLYHAVEN_MODELS.deskLampArm, true, true, extendLoader);
 useGLTF.preload(POLYHAVEN_MODELS.cassettePlayer, true, true, extendLoader);
-useGLTF.preload(KENNEY_TERMINAL_MODEL, true, true, extendLoader);
-useGLTF.preload(AI3DGEN_SERVER_FRAGMENT_MODEL, true, true, extendLoader);

@@ -1,5 +1,5 @@
 export const INTERIOR_SHELL_MODELS = {
-  volodkaBedroom: '/models/interiors/room_bedroom.glb',
+  volodkaBedroom: '/models/interiors/apartment_envelope.glb',
   cafe: '/models/interiors/cafe_interior.glb',
   office: '/models/interiors/office.glb',
   library: '/models/interiors/library.glb',

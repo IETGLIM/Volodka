@@ -54,7 +54,7 @@ export function releaseSceneGpuOnUnload(sceneId: SceneId, nextSceneId: SceneId):
 const SCENE_GLTF_ASSETS: Partial<Record<SceneId, readonly string[]>> = {
   cafe_evening: ['env_cafe_props', 'interior_cafe'],
   park_day: ['veg_tree_pine'],
-  volodka_room: ['player_volodka'], // room_bedroom GLB is Kenney exterior — procedural envelope + ThinMonitors own the room
+  volodka_room: ['player_volodka'], // apartment_envelope.glb + ThinMonitors own the wake room
   volodka_corridor: ['interior_corridor'],
   office_day: ['interior_office'],
   library_day: ['interior_library'],

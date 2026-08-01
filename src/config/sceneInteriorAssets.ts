@@ -17,8 +17,7 @@ export interface SceneInteriorPlacement {
 
 /** Kenney building shells (Poly Pizza TODO) — backdrop dressing via GltfAsset manifest. */
 export const SCENE_INTERIOR_ASSETS: Partial<Record<SceneId, readonly SceneInteriorPlacement[]>> = {
-  // volodka_room: removed — procedural 5×3×7 m envelope + ThinMonitors; room_bedroom.glb
-  // is a Kenney exterior building and must not AABB-stretch into the walkable room.
+  // volodka_room: AuthoredInteriorShell mounts apartment_envelope.glb (metre-scale walkable).
   volodka_corridor: [
     {
       assetId: 'interior_corridor',

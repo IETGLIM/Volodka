@@ -156,8 +156,9 @@ export function AuthoredInteriorShell(props: AuthoredInteriorShellProps) {
   );
 }
 
-// Exterior Kenney building impostors (bedroom/cafe/office/library) are blocked from
+// Exterior Kenney building impostors (cafe/office/library) are blocked from
 // walkable mounts — do not preload them here. Backdrop shells below remain valid.
+useGLTF.preload(INTERIOR_SHELL_MODELS.volodkaBedroom, true, true, extendLoader);
 useGLTF.preload(INTERIOR_SHELL_MODELS.factory, true, true, extendLoader);
 useGLTF.preload(INTERIOR_SHELL_MODELS.basement, true, true, extendLoader);
 useGLTF.preload(INTERIOR_SHELL_MODELS.pier, true, true, extendLoader);

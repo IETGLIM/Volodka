@@ -31,7 +31,8 @@ export const INTERIOR_SHELL_SOURCE_BOUNDS_M: Record<
   InteriorShellModelId,
   readonly [number, number, number]
 > = {
-  volodkaBedroom: [1.3, 0.83354, 1.02814],
+  /** Metre-scale authored apartment envelope (scripts/generate-volodka-apartment-envelope.mjs). */
+  volodkaBedroom: [5, 3, 7.35],
   cafe: [0.8836, 0.8931, 1.09],
   office: [1.36, 2.88, 1.36],
   library: [0.9701, 1.293, 0.94],
@@ -55,10 +56,8 @@ export type InteriorShellMountKind =
   | 'backdrop_dressing';
 
 export const INTERIOR_SHELL_MOUNT_KIND: Record<InteriorShellModelId, InteriorShellMountKind> = {
-  // Kenney Suburban building-type-a — exterior impostor, not a bedroom.
-  // BLOCKER: need a real walkable apartment envelope GLB before enabling
-  // AuthoredInteriorShell on High+ wake (VolodkaRoomVisual useAuthoredShell).
-  volodkaBedroom: 'exterior_building',
+  // Authored metre-scale apartment envelope (not Kenney exterior).
+  volodkaBedroom: 'walkable_envelope',
   // Kenney building-c — exterior impostor.
   cafe: 'exterior_building',
   // Kenney building-skyscraper-a — exterior impostor.
