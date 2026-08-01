@@ -5,7 +5,6 @@
 */
 
 import { useEffect, useRef, useState } from 'react';
-import { motion } from 'framer-motion';
 import { eventBus } from '@/engine/EventBus';
 
 /* ── Convert yaw (radians) to CSS rotation degrees ── */
@@ -17,10 +16,12 @@ function yawToDeg(yaw: number): number {
 }
 
 export function CompassIndicator() {
-  const [rotation, setRotation] = useState(0);
-  const rafRef = useRef<number>(0);
+  const [displayDeg, setDisplayDeg] = useState(0);
+  const rafRef = useRef(0);
   const targetYawRef = useRef(0);
   const currentRotRef = useRef(0);
+  const dialRef = useRef<HTMLDivElement>(null);
+  const lastShownDegRef = useRef(-1);
 
   // Subscribe to footstep yaw to track player facing direction
   useEffect(() => {
@@ -30,7 +31,7 @@ export function CompassIndicator() {
     return () => { unsub(); };
   }, []);
 
-  // Smooth interpolation via RAF
+  // Smooth interpolation via RAF — mutate DOM/CSS, React only when readout changes ≥1°
   useEffect(() => {
     let running = true;
     const tick = () => {
@@ -42,10 +43,18 @@ export function CompassIndicator() {
       let delta = target - current;
       if (delta > 180) delta -= 360;
       if (delta < -180) delta += 360;
-      current += delta * 0.12; // smooth factor
+      current += delta * 0.12;
 
       currentRotRef.current = ((current % 360) + 360) % 360;
-      setRotation(currentRotRef.current);
+      if (dialRef.current) {
+        dialRef.current.style.transform = `rotate(${-currentRotRef.current}deg)`;
+      }
+
+      const shown = Math.round(currentRotRef.current);
+      if (shown !== lastShownDegRef.current) {
+        lastShownDegRef.current = shown;
+        setDisplayDeg(shown);
+      }
       rafRef.current = requestAnimationFrame(tick);
     };
     rafRef.current = requestAnimationFrame(tick);
@@ -55,8 +64,6 @@ export function CompassIndicator() {
     };
   }, []);
 
-  const displayDeg = Math.round(rotation);
-
   return (
     <div
       className="relative shrink-0 pointer-events-none select-none flex flex-col items-center"
@@ -64,15 +71,14 @@ export function CompassIndicator() {
       aria-label="Компас"
       role="img"
     >
-      <motion.div
-        className="w-full h-full rounded-full border backdrop-blur-sm"
+      <div
+        ref={dialRef}
+        className="w-full h-full rounded-full border backdrop-blur-sm will-change-transform"
         style={{
           background: 'radial-gradient(circle, rgba(2,6,23,0.85) 0%, rgba(15,23,42,0.75) 70%, rgba(0,0,0,0.6) 100%)',
           borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.25)',
           boxShadow: '0 0 12px rgb(var(--cyber-cyan-rgb) / 0.15), inset 0 0 8px rgba(0,0,0,0.4), 0 0 24px rgb(var(--cyber-cyan-rgb) / 0.05)',
         }}
-        animate={{ rotate: -rotation }}
-        transition={{ duration: 0.15, ease: 'linear' }}
       >
         {/* Cardinal direction labels — fixed visual up = North */}
         <span
@@ -131,7 +137,7 @@ export function CompassIndicator() {
             animation: 'compass-needle-swing 5s ease-in-out infinite',
           }}
         />
-      </motion.div>
+      </div>
 
       {/* Fixed North indicator (stays on top, doesn't rotate) */}
       <div

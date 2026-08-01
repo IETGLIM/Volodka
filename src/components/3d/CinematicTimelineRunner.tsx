@@ -10,6 +10,7 @@ import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { eventBus } from '@/engine/EventBus';
 import { audioEngine } from '@/engine/AudioEngine';
 import { getGameStore } from '@/store/gameStore';
+import { useCutsceneStore } from '@/store/stores/cutsceneStore';
 import { prefetchStoryNodes } from '@/data/gameDataLoader';
 import { openDiegeticNarrative } from '@/engine/scene/narrativeOverlay';
 import { setCinematicHoldActive } from '@/engine/camera/cinematicPresentation';
@@ -439,14 +440,19 @@ export function CinematicTimelineRunner() {
     unsubs.push(eventBus.on('canvas:first-frame', startIntroWakeWhenReady));
     unsubs.push(eventBus.on('scene:loaded', startIntroWakeWhenReady));
 
-    // Also poll — the New Game flow sets activeCutsceneId via the store
-    // which may not trigger any event the component listens to.
-    const pollInterval = setInterval(() => {
-      if (!sequenceStartedRef.current && getGameStore().activeCutsceneId === 'intro_wakeup') {
-        startIntroWakeWhenReady();
-      }
-    }, 500);
-    unsubs.push(() => clearInterval(pollInterval));
+    // Subscribe instead of polling — New Game sets activeCutsceneId after mount.
+    unsubs.push(
+      useCutsceneStore.subscribe(
+        (s) => s.activeCutsceneId,
+        (id) => {
+          if (id === 'intro_wakeup') startIntroWakeWhenReady();
+        },
+      ),
+    );
+    // Catch already-set cutscene (hot reload / remount mid-flow).
+    if (getGameStore().activeCutsceneId === 'intro_wakeup') {
+      startIntroWakeWhenReady();
+    }
 
     return () => {
       unsubs.forEach((u) => u());

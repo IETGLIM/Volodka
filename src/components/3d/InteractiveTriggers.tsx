@@ -333,80 +333,94 @@ export function InteractiveTriggers({
       return;
     }
 
-    const exitTargets: ExitQueryTarget[] = [];
-    for (let idx = 0; idx < sceneExitsRef.current.length; idx++) {
-      if (overlappedExitIndicesRef.current.has(idx)) continue;
-      const exit = sceneExitsRef.current[idx];
+    // Full LOS/cone query is expensive — run at ~20Hz. Cheap proximity/indicator
+    // updates below still run every frame using the cached allowedIds set.
+    frameCountRef.current++;
+    const runFullQuery = frameCountRef.current % 3 === 0;
 
-      exitTargets.push({
-        id: `exit_${exit.targetScene}_${idx}`,
-        position: exit.position,
-        label: exit.label,
-        maxRange: EXIT_PROXIMITY_RANGE,
-      });
-    }
+    if (runFullQuery) {
+      const exitTargets: ExitQueryTarget[] = [];
+      for (let idx = 0; idx < sceneExitsRef.current.length; idx++) {
+        if (overlappedExitIndicesRef.current.has(idx)) continue;
+        const exit = sceneExitsRef.current[idx];
 
-    const hits = queryInteractionTargets({
-      playerPos,
-      playerYaw,
-      zones,
-      npcs: npcQueryTargetsRef.current,
-      exits: exitTargets,
-      checkLineOfSight: true,
-    });
-
-    const topHits = getTopPrompts(hits);
-    allowedIdsRef.current = new Set(topHits.map((h) => h.id));
-
-    const primaryHit = topHits[0];
-    if (primaryHit) {
-      if (lastHintIdRef.current !== primaryHit.id) {
-        lastHintIdRef.current = primaryHit.id;
-        const npcTarget =
-          primaryHit.kind === 'npc'
-            ? npcQueryTargetsRef.current.find((n) => n.id === primaryHit.id)
-            : undefined;
-        eventBus.emit('interaction:hint', {
-          label: primaryHit.label,
-          key: 'E',
-          description: formatNpcActivityHint(npcTarget?.activity),
-          type:
-            primaryHit.kind === 'npc'
-              ? 'npc'
-              : primaryHit.kind === 'exit'
-                ? 'exit'
-                : 'object',
-          distance: primaryHit.distance,
-          maxRange: primaryHit.maxRange,
+        exitTargets.push({
+          id: `exit_${exit.targetScene}_${idx}`,
+          position: exit.position,
+          label: exit.label,
+          maxRange: EXIT_PROXIMITY_RANGE,
         });
-        // Session 9: Subtle camera POI nudge toward NPC/object on first hint
-        if (primaryHit.kind === 'npc' && npcTarget) {
-          setCameraPOITarget(new THREE.Vector3(...npcTarget.position));
-          // Warm dialogue/story packs + NPC GLB before the player confirms [E].
-          prefetchNpcNarrativeOnApproach(npcTarget.npcId, sceneIdRef.current);
+      }
+
+      const hits = queryInteractionTargets({
+        playerPos,
+        playerYaw,
+        zones,
+        npcs: npcQueryTargetsRef.current,
+        exits: exitTargets,
+        checkLineOfSight: true,
+      });
+
+      const topHits = getTopPrompts(hits);
+      allowedIdsRef.current = new Set(topHits.map((h) => h.id));
+
+      const primaryHit = topHits[0];
+      if (primaryHit) {
+        if (lastHintIdRef.current !== primaryHit.id) {
+          lastHintIdRef.current = primaryHit.id;
+          const npcTarget =
+            primaryHit.kind === 'npc'
+              ? npcQueryTargetsRef.current.find((n) => n.id === primaryHit.id)
+              : undefined;
+          eventBus.emit('interaction:hint', {
+            label: primaryHit.label,
+            key: 'E',
+            description: formatNpcActivityHint(npcTarget?.activity),
+            type:
+              primaryHit.kind === 'npc'
+                ? 'npc'
+                : primaryHit.kind === 'exit'
+                  ? 'exit'
+                  : 'object',
+            distance: primaryHit.distance,
+            maxRange: primaryHit.maxRange,
+          });
+          // Session 9: Subtle camera POI nudge toward NPC/object on first hint
+          if (primaryHit.kind === 'npc' && npcTarget) {
+            setCameraPOITarget(new THREE.Vector3(...npcTarget.position));
+            // Warm packs off the frame tick — avoid stacking sync work on INP.
+            const npcId = npcTarget.npcId;
+            const scene = sceneIdRef.current;
+            queueMicrotask(() => {
+              prefetchNpcNarrativeOnApproach(npcId, scene);
+            });
+          }
+        }
+      } else if (lastHintIdRef.current !== null) {
+        lastHintIdRef.current = null;
+        eventBus.emit('interaction:end', {});
+      }
+
+      const activeExitIds = new Set<string>();
+      for (const hit of hits) {
+        if (hit.kind === 'exit') {
+          activeExitIds.add(hit.id);
+          promptsMapRef.current.set(hit.id, {
+            id: hit.id,
+            label: hit.label,
+            distance: hit.distance,
+            type: 'zone',
+          });
         }
       }
-    } else if (lastHintIdRef.current !== null) {
-      lastHintIdRef.current = null;
-      eventBus.emit('interaction:end', {});
-    }
+      for (const key of promptsMapRef.current.keys()) {
+        if (key.startsWith('exit_') && !activeExitIds.has(key)) {
+          promptsMapRef.current.delete(key);
+        }
+      }
 
-    const activeExitIds = new Set<string>();
-    for (const hit of hits) {
-      if (hit.kind === 'exit') {
-        activeExitIds.add(hit.id);
-        promptsMapRef.current.set(hit.id, {
-          id: hit.id,
-          label: hit.label,
-          distance: hit.distance,
-          type: 'zone',
-        });
-      }
-    }
-    for (const key of promptsMapRef.current.keys()) {
-      if (key.startsWith('exit_') && !activeExitIds.has(key)) {
-        promptsMapRef.current.delete(key);
-      }
+      const hasTarget = topHits.length > 0;
+      setInteractTargetActive((prev) => (prev === hasTarget ? prev : hasTarget));
     }
 
     // Read both flags and TTL from store in the same tick to avoid 1-frame desync
@@ -532,11 +546,6 @@ export function InteractiveTriggers({
       }
     }
 
-    frameCountRef.current++;
-    if (frameCountRef.current % 3 !== 0) return;
-
-    const hasTarget = topHits.length > 0;
-    setInteractTargetActive((prev) => (prev === hasTarget ? prev : hasTarget));
   });
 
   return (

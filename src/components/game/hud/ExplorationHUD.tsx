@@ -1,5 +1,6 @@
 /* ─── Volodka RPG – diegetic exploration HUD ───
  * Ultra-minimal overlay: no radar, coordinates, pedometer, boot spam, or icon farm.
+ * OTS aids: quest bearing arrow, ambient vignette, NPC proximity whisper.
  */
 
 import { AnimatePresence, motion } from 'framer-motion';
@@ -13,8 +14,11 @@ import { CombatPreEngagementWarning } from '@/components/game/hud/parts/CombatPr
 import { ContextualHint } from '@/components/game/hud/parts/ContextualHint';
 import { CrosshairInteractionPrompt } from '@/components/game/hud/parts/CrosshairInteractionPrompt';
 import { DynamicCrosshair } from '@/components/game/hud/parts/DynamicCrosshair';
+import { NPCProximityIndicator } from '@/components/game/hud/parts/NPCProximityIndicator';
 import { PhysicsDegradedDevBadge } from '@/components/game/hud/parts/PhysicsDegradedDevBadge';
+import { QuestDirectionArrow } from '@/components/game/hud/parts/QuestDirectionArrow';
 import { RainScreenEffect } from '@/components/game/hud/parts/RainScreenEffect';
+import { SceneAmbientVignette } from '@/components/game/hud/parts/SceneAmbientVignette';
 import { SprintDrainOverlay } from '@/components/game/hud/parts/SprintDrainOverlay';
 
 export type { HUDProps } from '@/components/game/hud/hudTypes';
@@ -83,6 +87,7 @@ export function ExplorationHUD(props: HUDProps) {
       className={`fixed inset-0 pointer-events-none transition-opacity duration-700 ease-out ${hudMounted ? 'opacity-100' : 'opacity-0'}`}
       style={{ zIndex: UI_LAYERS.HUD }}
     >
+      <SceneAmbientVignette />
       <RainScreenEffect />
       <SprintDrainOverlay />
       <CombatPreEngagementWarning />
@@ -118,6 +123,8 @@ export function ExplorationHUD(props: HUDProps) {
       </AnimatePresence>
 
       <ContextualHint hint={currentHint} onDismiss={dismissHint} />
+      <QuestDirectionArrow />
+      <NPCProximityIndicator />
       <PhysicsDegradedDevBadge />
 
       <AnimatePresence>

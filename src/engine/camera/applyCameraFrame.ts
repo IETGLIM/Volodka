@@ -13,6 +13,7 @@ import { resetDialogueCameraDrift } from './dialogueCameraDrift';
 import {
   AUTO_FOLLOW_MIN_YAW_DELTA,
   AUTO_FOLLOW_RETURN_SPEED,
+  EXPLORATION_SOFT_AUTO_FOLLOW,
   FIRST_PERSON_ENABLED,
 } from './cameraConstants';
 import type { CameraModeContext, CameraModeTarget, SpringOverride } from './types';
@@ -162,7 +163,13 @@ export function applyCameraFrame(
     spring.position.z,
   );
 
-  if (!isInDialogue && !isCutscene && !isDragging(frameState) && !FIRST_PERSON_ENABLED) {
+  if (
+    EXPLORATION_SOFT_AUTO_FOLLOW
+    && !isInDialogue
+    && !isCutscene
+    && !isDragging(frameState)
+    && !FIRST_PERSON_ENABLED
+  ) {
     const playerSpeed = playerVelocity.length();
     const targetYaw = ctx.playerRotation + Math.PI;
 
@@ -172,14 +179,7 @@ export function applyCameraFrame(
 
     // Detect backward movement: if the player's velocity is pointing toward
     // the camera (i.e., the player is backing up toward the camera), do NOT
-    // auto-follow the body rotation. The recent rotation fix makes the player
-    // turn 180° to face the camera when S is pressed — without this guard,
-    // `targetYaw = bodyYaw + π` would flip π and the camera would spin around
-    // to be behind the player's NEW facing, which is disorienting.
-    //
-    // We compute the dot product of playerVelocity with the camera's forward
-    // direction (toward where the camera looks). If the dot is negative, the
-    // player is moving toward the camera (backward) → skip auto-follow.
+    // auto-follow the body rotation.
     cam.getWorldDirection(_camFwd);
     _camFwd.y = 0;
     if (_camFwd.lengthSq() > 1e-6) _camFwd.normalize();
@@ -187,13 +187,8 @@ export function applyCameraFrame(
     const forwardVel = playerVelocity.dot(_camFwd);
     const isMovingBackward = forwardVel < -0.3;
 
-    // Auto-follow camera — continuous speed-weighted blend (no hard threshold).
-    // Previous versions used a hard threshold (playerSpeed > 0.5) which caused
-    // on/off flickering when speed oscillated around the boundary. Now we use
-    // a continuous followStrength that scales from 0 at rest to 1 at full speed,
-    // making auto-follow transitions smooth and gradual.
     if (!isMovingBackward) {
-      const followStrength = Math.min(playerSpeed / 1.0, 1.0); // 0→1 as speed 0→1 m/s
+      const followStrength = Math.min(playerSpeed / 1.0, 1.0);
       if (followStrength > 0.01 && Math.abs(yawDiff) > AUTO_FOLLOW_MIN_YAW_DELTA) {
         ctx.yaw += yawDiff * followStrength * (1 - Math.exp(-1.5 * delta));
       }
@@ -201,15 +196,20 @@ export function applyCameraFrame(
         frameState.playerMovingTimer = 0;
       }
     } else if (playerSpeed > 0.3) {
-      // Backward movement: still counts as "moving" for the idle timer reset
-      // (so the camera doesn't auto-rotate to POI while the player is backing
-      // up), but we don't update ctx.yaw — the camera stays put.
       frameState.playerMovingTimer = 0;
     } else if (!frameState.isDragging && !frameState.wasDragging) {
       frameState.playerMovingTimer += delta;
       if (frameState.playerMovingTimer > 2.0 && Math.abs(yawDiff) > 0.3) {
         ctx.yaw += yawDiff * (1 - Math.exp(-AUTO_FOLLOW_RETURN_SPEED * delta));
       }
+    }
+  } else if (!isInDialogue && !isCutscene && !FIRST_PERSON_ENABLED) {
+    // Max Payne OTS: no soft auto-follow — still track idle timer for POI.
+    const playerSpeed = playerVelocity.length();
+    if (playerSpeed > 0.1 || frameState.isDragging) {
+      frameState.playerMovingTimer = 0;
+    } else {
+      frameState.playerMovingTimer += delta;
     }
   }
 

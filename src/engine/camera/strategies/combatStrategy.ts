@@ -5,6 +5,7 @@ import {
   resolveCameraCollision,
 } from '../cinematicCamera';
 import { LOOK_HEIGHT, MIN_DISTANCE, WALL_MARGIN } from '../cameraConstants';
+import { applyShoulderOffset } from '../cameraShoulder';
 import type { CameraModeStrategy } from '../types';
 
 /** Wide FOV combat camera with impact zoom and shake */
@@ -34,6 +35,8 @@ export const combatStrategy: CameraModeStrategy = {
       playerPos.z + offset.z,
     );
     const targetLook = lookTarget.set(playerPos.x, playerPos.y + LOOK_HEIGHT, playerPos.z);
+
+    applyShoulderOffset(targetPos, targetLook, yaw);
 
     targetPos = resolveCameraCollision(
       ctx.raycaster,

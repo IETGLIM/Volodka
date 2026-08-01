@@ -3,12 +3,28 @@
 import type { SceneId } from '@/shared/types/game';
 import { getSceneConfig } from '@/config/scenes';
 
-/** Slightly tighter chase cam — reads more intimate / cyber-noir. */
-export const DEFAULT_DISTANCE = 2.78;
+/**
+ * Max Payne–style over-the-shoulder chase distance.
+ * Slightly tighter than classic orbit so the shoulder bias reads clearly.
+ */
+export const OTS_DEFAULT_DISTANCE = 2.35;
+export const DEFAULT_DISTANCE = OTS_DEFAULT_DISTANCE;
 export const MIN_DISTANCE = 1.1;
 export const MAX_DISTANCE = 12.0;
 
-/** First-person exploration — disabled; third-person orbit is the default. */
+/**
+ * Lateral shoulder bias (m) along camera-right before collision.
+ * Positive = over the character's right shoulder (OTS).
+ */
+export const SHOULDER_OFFSET_X = 0.45;
+
+/**
+ * Soft auto-follow (camera yaw lerps behind body while moving).
+ * Off for Max Payne OTS — mouse/stick own look; body faces camera instead.
+ */
+export const EXPLORATION_SOFT_AUTO_FOLLOW = false;
+
+/** First-person exploration — disabled; third-person OTS is the default. */
 export const FIRST_PERSON_ENABLED = false;
 export const FIRST_PERSON_EYE_HEIGHT = 1.62;
 export const FIRST_PERSON_FOV = 74;

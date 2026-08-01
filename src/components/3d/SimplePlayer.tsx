@@ -365,39 +365,20 @@ export function SimplePlayer({
         vel.z = THREE.MathUtils.damp(vel.z, targetVz, moveAccel, dt);
       }
 
-      // FIX 2.1 (CRITICAL): Gate rotation on forwardIntent so A/D strafe
-      // sideways WITHOUT spinning the model 360°. Mirrors the gating in
-      // playerMainMovement.ts:229-247 (the PhysicsPlayer path).
-      //
-      // Without this gate, pressing A alone sets moveDir = -camRight, then
-      // targetYaw = atan2(-camRight.x, -camRight.z) ≈ ±90°, the model
-      // rotates to face left, the auto-follow camera orbits to stay
-      // behind, next frame camRight is rotated, pressing A again produces
-      // a new world moveDir, model rotates again → continuous 360° spin.
-      //
-      // FIX 2.2: threshold raised from 0.01 to 0.1 to filter gamepad
-      // stick noise (typical 0.02-0.05) that leaked through the old
-      // 0.01 threshold and fired rotation during "strafe-only" intent.
-      const forwardIntent = fwd - bwd; // W = +1, S = -1, neither = 0
-      if (Math.abs(forwardIntent) > 0.1) {
-        const targetYaw = Math.atan2(moveDir.x, moveDir.z);
-        // GTA/Gothic-style: slower rotation for big direction reversals
-        // so the character physically turns around instead of snapping.
-        let yawDiff = targetYaw - livePlayerRotationRef.current;
-        while (yawDiff > Math.PI) yawDiff -= Math.PI * 2;
-        while (yawDiff < -Math.PI) yawDiff += Math.PI * 2;
-        const effectiveRotSpeed = Math.abs(yawDiff) > ROTATION_REVERSAL_THRESHOLD
-          ? ROTATION_SPEED_REVERSAL
-          : ROTATION_SPEED;
-        const rotT = 1 - Math.exp(-effectiveRotSpeed * dt);
-        livePlayerRotationRef.current = lerpAngle(
-          livePlayerRotationRef.current,
-          targetYaw,
-          rotT,
-        );
-      }
-      // Strafe-only movement (A/D without W/S) keeps current facing —
-      // the character steps sideways like in Gothic / Max Payne.
+      // Max Payne OTS: body faces camera look while moving (incl. strafe).
+      const targetYaw = Math.atan2(camFwd.x, camFwd.z);
+      let yawDiff = targetYaw - livePlayerRotationRef.current;
+      while (yawDiff > Math.PI) yawDiff -= Math.PI * 2;
+      while (yawDiff < -Math.PI) yawDiff += Math.PI * 2;
+      const effectiveRotSpeed = Math.abs(yawDiff) > ROTATION_REVERSAL_THRESHOLD
+        ? ROTATION_SPEED_REVERSAL
+        : ROTATION_SPEED;
+      const rotT = 1 - Math.exp(-effectiveRotSpeed * dt);
+      livePlayerRotationRef.current = lerpAngle(
+        livePlayerRotationRef.current,
+        targetYaw,
+        rotT,
+      );
 
       const newAnim = running ? 'run' : 'walk';
       if (currentAnimRef.current !== newAnim) {

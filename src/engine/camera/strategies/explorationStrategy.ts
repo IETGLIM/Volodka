@@ -11,6 +11,7 @@ import {
   FIRST_PERSON_ENABLED,
   FIRST_PERSON_EYE_HEIGHT,
 } from '../cameraConstants';
+import { applyShoulderOffset } from '../cameraShoulder';
 import {
   RUN_FOV_BOOST,
   RUN_FOV_SPEED_FULL,
@@ -141,6 +142,10 @@ export const explorationStrategy: CameraModeStrategy = {
       playerPos.y + LOOK_HEIGHT + heightOffset + ctx.lookAheadOffset.y * 0.3,
       playerPos.z + ctx.lookAheadOffset.z,
     );
+
+    // Max Payne OTS — lateral bias before wall collision so the spring arm
+    // still collapses cleanly in tight rooms.
+    applyShoulderOffset(targetPos, targetLook, yaw);
 
     // Breathing bob removed here — applyEnhancedBreathingIdle in applyCameraFrame
     // already adds a breathing oscillation (up to 2mm Y + 0.5mm X/Z after 3s

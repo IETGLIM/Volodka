@@ -3,7 +3,9 @@ import { setPhysicsStepMs, shouldTrackFrameTiming } from '@/engine/frame/FrameBu
 import { sampleHeldVirtualControls } from '@/engine/VirtualInputHold';
 import { getTouchLocomotionFactor } from '@/config/scenes';
 import { getGameSnapshot } from '@/engine/GameActionDispatcher';
+import { getGameStore } from '@/store/gameStore';
 import { resolveMovementSpeedMultiplier } from '@/shared/perks/perkModifiers';
+import { determineWeatherType, getWeatherEffect } from '@/data/weatherEffects';
 import {
   logKccRecreateAttempt,
   notifyControlsDegraded,
@@ -190,13 +192,32 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
     perkSnap.playerState.progression?.unlockedPerks ?? [],
     { timeOfDay: perkSnap.exploration?.timeOfDay },
   );
+  let weatherSpeedMult = 1;
+  if (isOutdoor) {
+    try {
+      const world = getGameStore();
+      if (world.weatherEnabled) {
+        const wt = determineWeatherType(
+          world.weatherEnabled,
+          world.rainIntensity ?? 0,
+          false,
+          world.exploration.currentSceneId,
+          world.exploration.timeOfDay ?? 12,
+        );
+        weatherSpeedMult = getWeatherEffect(wt).movementSpeed;
+      }
+    } catch {
+      /* store not ready */
+    }
+  }
   const speed = Math.min(
     (running ? RUN_SPEED : WALK_SPEED)
     * deps.locomotionScale
     * touchScale
     * a11yScale
     * analogSpeedScale
-    * perkSpeedMult,
+    * perkSpeedMult
+    * weatherSpeedMult,
     MAX_HORIZONTAL_SPEED,
   );
   const moveAccel = keyboardDrivesMove ? KEYBOARD_ACCEL : deps.movementTuning.accel;
@@ -223,35 +244,11 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
       vel.z = THREE.MathUtils.damp(vel.z, targetVz, moveAccel, dt);
     }
 
-    // Third-person rotation: character faces the MOVEMENT DIRECTION when
-    // moving forward/backward. Strafe (A/D) moves sideways WITHOUT rotating
-    // the body — the character keeps facing forward while stepping left/right.
-    //
-    // Previous logic used camYaw + π for both W and S, so the character never
-    // turned around when reversing direction (pressing S after W). The model
-    // would moonwalk backwards — no visible rotation, just sliding.
-    //
-    // New logic: targetYaw = atan2(moveDir.x, moveDir.z) — faces the actual
-    // movement direction. W (forward) faces away from camera (camYaw + π),
-    // S (backward) faces toward camera (camYaw). The character now turns 180°
-    // when reversing direction. Strafe (A/D) still doesn't rotate the body
-    // because forwardIntent ≈ 0 when only A/D are pressed.
-    //
-    // We compute from moveDir (which already incorporates camera direction)
-    // so the yaw matches the actual on-screen movement vector. This avoids
-    // the "spinning in circles" bug because strafe doesn't change moveDir's
-    // forward/backward component enough to flip the yaw.
-    const forwardIntent = fwd - bwd; // W = +1, S = -1, neither = 0
-    // FIX 2.2: threshold raised from 0.01 to 0.1 to filter gamepad stick
-    // noise (typical 0.02-0.05) that leaked through the old 0.01 threshold
-    // and fired rotation during "strafe-only" intent on the KCC path too.
-    if (Math.abs(forwardIntent) > 0.1) {
-      // Face the movement direction. moveDir is already normalized to the
-      // camera-relative horizontal movement vector.
-      const targetYaw = Math.atan2(moveDir.x, moveDir.z);
-      // GTA/Gothic-style rotation: use a slower speed for large direction
-      // changes (reversals) so the character physically turns around.
-      // Small directional adjustments use full ROTATION_SPEED for responsiveness.
+    // Max Payne OTS: while locomoting, body yaw follows camera look (aim),
+    // including strafe — backpedal / sidestep without spinning to face-move.
+    // Idle: leave facing alone so freelook doesn't fidget the model.
+    if (isMoving) {
+      const targetYaw = Math.atan2(camFwd.x, camFwd.z);
       let yawDiff = targetYaw - deps.livePlayerRotationRef.current;
       while (yawDiff > Math.PI) yawDiff -= Math.PI * 2;
       while (yawDiff < -Math.PI) yawDiff += Math.PI * 2;
@@ -263,8 +260,6 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
         deps.livePlayerRotationRef.current, targetYaw, rotT,
       );
     }
-    // Strafe-only movement (A/D without W/S) — do not rotate. Character
-    // keeps current facing and steps sideways.
   } else {
     vel.x = THREE.MathUtils.damp(vel.x, 0, stopDamping, dt);
     vel.z = THREE.MathUtils.damp(vel.z, 0, stopDamping, dt);

@@ -88,3 +88,8 @@ models-external-tree.txt
 src-tree.txt
 
 .vercel
+
+# Khronos glTF samples — bootstrap/reference only (~58MB).
+# Excluded from Vercel (.vercelignore) and stripped from dist/.
+# Keep out of git so clones stay lean; `npm run assets:bootstrap` re-downloads when needed.
+public/models/khronos/

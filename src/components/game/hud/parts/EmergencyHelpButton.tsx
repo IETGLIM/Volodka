@@ -30,7 +30,7 @@ export function EmergencyHelpButton() {
   useEffect(() => {
     const markActive = () => {
       lastInteractionRef.current = Date.now();
-      setIsIdle(false);
+      setIsIdle((prev) => (prev ? false : prev));
     };
 
     const unsubs = [
@@ -49,7 +49,8 @@ export function EmergencyHelpButton() {
 
     const interval = setInterval(() => {
       const elapsed = Date.now() - lastInteractionRef.current;
-      setIsIdle(elapsed >= IDLE_PULSE_THRESHOLD_MS);
+      const nextIdle = elapsed >= IDLE_PULSE_THRESHOLD_MS;
+      setIsIdle((prev) => (prev === nextIdle ? prev : nextIdle));
     }, 3000);
 
     return () => {

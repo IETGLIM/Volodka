@@ -16,6 +16,7 @@ import {
 } from '@/config/assetManifest';
 import { resolveNpcModelScale, resolveNpcModelUrl } from '@/config/npcModelRegistry';
 import { NPC_GLTF_TARGET_HEIGHT_M } from '@/config/metricScaleCoherence';
+import { NPC_MESH_FILE_SHARE } from '@/config/npcMeshShare';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
 import { useSkinnedGltfClone } from '@/hooks/useSkinnedGltfClone';
 import { useNpcAnimationController } from '@/engine/npc/useNpcAnimationController';
@@ -128,7 +129,15 @@ function GltfNPCModelInner({
   }, [scene, modelScale, targetHeightFactor]);
 
   // De-plastic Quaternius/GLB characters — raise roughness, tame metal, accept IBL.
+  // Shared-mesh aliases also get appearance tint so identical rigs read as distinct NPCs.
   useLayoutEffect(() => {
+    const appearance = definition.appearance;
+    const body = appearance?.bodyColor ? new THREE.Color(appearance.bodyColor) : null;
+    const accent = appearance?.accentColor ? new THREE.Color(appearance.accentColor) : null;
+    const glow = appearance?.glowColor ? new THREE.Color(appearance.glowColor) : null;
+    const shareTint = NPC_MESH_FILE_SHARE[definition.id] != null;
+    let matIndex = 0;
+
     scene.traverse((obj) => {
       const mesh = obj as THREE.Mesh;
       if (!mesh.isMesh) return;
@@ -142,9 +151,19 @@ function GltfNPCModelInner({
         if (std.emissiveIntensity > 0.6) {
           std.emissiveIntensity = Math.min(std.emissiveIntensity, 0.55);
         }
+
+        if (shareTint || body || accent) {
+          const tint = matIndex % 2 === 0 ? body ?? accent : accent ?? body;
+          if (tint) std.color.lerp(tint, shareTint ? 0.62 : 0.35);
+          if (glow) {
+            std.emissive.copy(glow);
+            std.emissiveIntensity = Math.max(std.emissiveIntensity, 0.12);
+          }
+        }
+        matIndex += 1;
       }
     });
-  }, [scene]);
+  }, [scene, definition.appearance, definition.id]);
 
   useRegisterNpcFrame(definition.id, 'mixer', ({ delta }) => {
     // Skip animation updates when the NPC is not at 'full' LOD level.

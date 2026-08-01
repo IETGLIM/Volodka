@@ -65,10 +65,16 @@ function onPointerMove(): void {
   }
 }
 
+/** Ignore key auto-repeat so WASD hold doesn't spam the quiet-HUD path. */
+function onKeyDown(e: KeyboardEvent): void {
+  if (e.repeat) return;
+  markHudActivity();
+}
+
 function attach(): void {
   window.addEventListener('pointermove', onPointerMove, { passive: true });
   window.addEventListener('pointerdown', markHudActivity, { passive: true });
-  window.addEventListener('keydown', markHudActivity);
+  window.addEventListener('keydown', onKeyDown);
   window.addEventListener('wheel', markHudActivity, { passive: true });
   busUnsubs = [
     eventBus.on('combat:hit', markHudActivity),
@@ -81,7 +87,7 @@ function attach(): void {
 function detach(): void {
   window.removeEventListener('pointermove', onPointerMove);
   window.removeEventListener('pointerdown', markHudActivity);
-  window.removeEventListener('keydown', markHudActivity);
+  window.removeEventListener('keydown', onKeyDown);
   window.removeEventListener('wheel', markHudActivity);
   for (const unsub of busUnsubs) unsub();
   busUnsubs = [];

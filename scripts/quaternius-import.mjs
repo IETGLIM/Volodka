@@ -83,12 +83,13 @@ export const NPC_QUATERNIUS_MAP = [
   { source: 'female_07.glb', npcId: 'anya', publicPaths: ['models/npcs/anya.glb'] },
   { source: 'female_08.glb', npcId: 'baba_zina', publicPaths: ['models/npcs/baba_zina.glb'] },
   { source: 'female_09.glb', npcId: 'kate', publicPaths: ['models/npcs/kate.glb'] },
-  { source: 'male_10.glb', npcId: 'boris', publicPaths: ['models/npcs/boris.glb'] },
-  { source: 'female_06.glb', npcId: 'kira', publicPaths: ['models/npcs/kira.glb'] },
-  { source: 'female_07.glb', npcId: 'tamara', publicPaths: ['models/npcs/tamara.glb'] },
-  { source: 'male_07.glb', npcId: 'office_colleague', publicPaths: ['models/npcs/office_colleague.glb'] },
-  { source: 'male_05.glb', npcId: 'grisha', publicPaths: ['models/npcs/grisha.glb'] },
-  { source: 'male_07.glb', npcId: 'viktor', publicPaths: ['models/npcs/viktor.glb'] },
+  // Shared-mesh aliases — no extra public copies (see src/config/npcMeshShare.ts)
+  { source: 'male_10.glb', npcId: 'boris', publicPaths: ['models/npcs/zeka.glb'] },
+  { source: 'female_06.glb', npcId: 'kira', publicPaths: ['models/npcs/chk_ritka.glb'] },
+  { source: 'female_07.glb', npcId: 'tamara', publicPaths: ['models/npcs/anya.glb'] },
+  { source: 'male_07.glb', npcId: 'office_colleague', publicPaths: ['models/npcs/chk_based.glb'] },
+  { source: 'male_05.glb', npcId: 'grisha', publicPaths: ['models/npcs/office_alexander.glb'] },
+  { source: 'male_07.glb', npcId: 'viktor', publicPaths: ['models/npcs/chk_based.glb'] },
 ];
 
 function parseArgs(argv) {

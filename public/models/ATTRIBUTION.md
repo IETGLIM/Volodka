@@ -49,14 +49,16 @@ Mapped NPCs (when staged): Володя, Альберт, Зарема, Дмит�
 | Зарема | `npcs/zarema.glb` | Khronos CesiumMan | CC0 |
 | Бариста | `npcs/cafe_barista.glb` | three.js Soldier | CC0 |
 | Александр | `npcs/office_alexander.glb` | three.js Xbot | CC0 |
-| Коллега | `npcs/office_colleague.glb` | Khronos RiggedSimple | CC0 |
+| Коллега | → `npcs/chk_based.glb` (shared) | Quaternius male_07 | CC0 |
 | Мария | `npcs/maria.glb` | three.js RobotExpressive | CC0 |
 | Дмитрий | `npcs/office_dmitry.glb` | three.js Xbot | CC0 |
-| Виктор | `npcs/viktor.glb` | Quaternius Punk (male_07) | CC0 |
-| Кира | `npcs/kira.glb` | Khronos RiggedFigure | CC0 |
-| Борис | `npcs/boris.glb` | Khronos RiggedSimple | CC0 |
-| Тамара | `npcs/tamara.glb` | Khronos CesiumMan | CC0 |
-| Гриша | `npcs/grisha.glb` | Quaternius Farmer (male_05) | CC0 |
+| Виктор | → `npcs/chk_based.glb` (shared) | Quaternius male_07 | CC0 |
+| Кира | → `npcs/chk_ritka.glb` (shared) | Quaternius female_06 | CC0 |
+| Борис | → `npcs/zeka.glb` (shared) | Quaternius male_10 | CC0 |
+| Тамара | → `npcs/anya.glb` (shared) | Quaternius female_07 | CC0 |
+| Гриша | → `npcs/office_alexander.glb` (shared) | Quaternius male_05 | CC0 |
+
+Shared-mesh aliases are defined in `src/config/npcMeshShare.ts`. Unique art replaces them via AI3DGen/RPM import; until then duplicates are pruned with `npm run assets:prune-shared-npcs`.
 
 - **Khronos source:** https://github.com/KhronosGroup/glTF-Sample-Models (CC0)
 - **three.js samples:** https://github.com/mrdoob/three.js/tree/dev/examples/models/gltf (CC0)

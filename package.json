@@ -30,6 +30,8 @@
     "assets:optimize-animations": "node scripts/optimize-animation-glbs.mjs",
     "assets:validate": "npx tsx --tsconfig tsconfig.json scripts/validate-gltf-assets.ts",
     "assets:validate-lod": "node scripts/validate-lod-effectiveness.mjs",
+    "assets:report-dupes": "node scripts/report-model-duplicates.mjs",
+    "assets:prune-shared-npcs": "node scripts/prune-shared-npc-meshes.mjs",
     "preview": "vite preview",
     "lint": "eslint src",
     "typecheck": "node scripts/tsc7.mjs --noEmit",

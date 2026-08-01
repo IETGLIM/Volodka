@@ -1,69 +1,89 @@
 /* ─── Volodka RPG – Quest Direction Arrow ───
- * Edge-of-screen indicator arrow that points toward the nearest
- * quest objective waypoint. Uses footstep yaw for direction.
- * Shows a subtle pulsing arrow at the screen edge.
+ * Edge-of-screen arrow pointing toward the active quest objective
+ * relative to camera look (Max Payne OTS-friendly).
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { eventBus } from '@/engine/EventBus';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { useActiveQuests, getQuestMarker } from '@/store/selectors/questSelectors';
+import { useCurrentSceneId, usePlayerPosition } from '@/store/selectors';
+import { sharedCameraYawRef } from '@/engine/PlayerRotationState';
+import { SCENE_CONFIG } from '@/config/scenes';
 
 const ARROW_SIZE = 28;
-const UPDATE_INTERVAL_MS = 800;
+const UPDATE_INTERVAL_MS = 200;
+const MIN_DISTANCE_M = 2.5;
 
 export function QuestDirectionArrow() {
+  const [rotationDeg, setRotationDeg] = useState(0);
   const [visible, setVisible] = useState(false);
-  const [_rotation, setRotation] = useState(0);
+  const [label, setLabel] = useState('');
   const reducedMotion = useEffectiveReducedMotion();
-  const yawRef = useRef(0);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const activeRef = useRef(false);
+  const activeQuests = useActiveQuests();
+  const playerPos = usePlayerPosition();
+  const sceneId = useCurrentSceneId();
+  const pulseBoostRef = useRef(false);
 
-  // Listen for player footstep to track yaw
+  const primary = useMemo(() => {
+    for (const quest of activeQuests) {
+      const m = getQuestMarker(quest.questId);
+      if (!m) continue;
+      return { questId: quest.questId, marker: m };
+    }
+    return null;
+  }, [activeQuests]);
+
   useEffect(() => {
-    const unsub = eventBus.on('exploration:footstep', (payload) => {
-      yawRef.current = payload.yaw;
+    const unsub = eventBus.on('quest:pulse_marker', () => {
+      pulseBoostRef.current = true;
+      window.setTimeout(() => {
+        pulseBoostRef.current = false;
+      }, 1600);
     });
-
-    // Show arrow when there's an active quest objective hint
-    const unsubHint = eventBus.on('interaction:hint', (payload) => {
-      if (payload?.type === 'exit') {
-        activeRef.current = true;
-        setVisible(true);
-      }
-    });
-
-    const unsubEnd = eventBus.on('interaction:end', () => {
-      activeRef.current = false;
-      // Don't immediately hide — fade after a bit
-      setTimeout(() => {
-        if (!activeRef.current) setVisible(false);
-      }, 2000);
-    });
-
-    return () => {
-      unsub();
-      unsubHint();
-      unsubEnd();
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
+    return unsub;
   }, []);
 
-  // Slowly rotate the arrow based on yaw changes
   useEffect(() => {
-    intervalRef.current = setInterval(() => {
-      if (!visible || !activeRef.current) return;
-      // Use yaw to slightly adjust arrow position
-      const deg = ((-yawRef.current * 180) / Math.PI + 360) % 360;
-      setRotation(deg);
-    }, UPDATE_INTERVAL_MS);
+    const tick = () => {
+      if (!primary) {
+        setVisible((v) => (v ? false : v));
+        return;
+      }
 
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
+      const { marker } = primary;
+      const inScene = marker.sceneId === sceneId;
+      const dx = marker.position[0] - playerPos[0];
+      const dz = marker.position[2] - playerPos[2];
+      const dist = Math.sqrt(dx * dx + dz * dz);
+
+      // Hide when standing on the objective in-scene.
+      if (inScene && dist < MIN_DISTANCE_M && !pulseBoostRef.current) {
+        setVisible((v) => (v ? false : v));
+        return;
+      }
+
+      const worldAngle = Math.atan2(dx, dz);
+      const camYaw = sharedCameraYawRef.current;
+      let relative = worldAngle - camYaw;
+      while (relative > Math.PI) relative -= Math.PI * 2;
+      while (relative < -Math.PI) relative += Math.PI * 2;
+
+      // Screen arrow: 0° = up (camera forward). CSS rotate clockwise positive.
+      const deg = (relative * 180) / Math.PI;
+      setRotationDeg((prev) => (Math.abs(prev - deg) < 1.5 ? prev : deg));
+
+      const sceneName = SCENE_CONFIG[marker.sceneId]?.name ?? marker.sceneId;
+      setLabel(inScene ? `${Math.round(dist)}м` : sceneName);
+      setVisible(true);
     };
-  }, [visible]);
+
+    tick();
+    const id = window.setInterval(tick, UPDATE_INTERVAL_MS);
+    return () => window.clearInterval(id);
+  }, [primary, playerPos, sceneId]);
 
   if (reducedMotion || !visible) return null;
 
@@ -75,23 +95,23 @@ export function QuestDirectionArrow() {
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.7 }}
           transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-          className="fixed pointer-events-none"
+          className="fixed pointer-events-none flex flex-col items-center gap-1"
           style={{
             bottom: 140,
             left: '50%',
             transform: 'translateX(-50%)',
-            width: ARROW_SIZE,
-            height: ARROW_SIZE,
             zIndex: UI_LAYERS.HUD,
           }}
           aria-hidden="true"
         >
-          <motion.div
-            animate={{ y: [0, -4, 0] }}
-            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-            className="relative w-full h-full flex items-center justify-center quest-arrow-bob"
+          <div
+            className="relative flex items-center justify-center quest-arrow-bob"
+            style={{
+              width: ARROW_SIZE,
+              height: ARROW_SIZE,
+              transform: `rotate(${rotationDeg}deg)`,
+            }}
           >
-            {/* Upward pointing arrow */}
             <div
               className="absolute"
               style={{
@@ -104,15 +124,23 @@ export function QuestDirectionArrow() {
                 transform: 'translateY(-3px)',
               }}
             />
-            {/* Glow ring behind arrow */}
             <div
               className="absolute inset-0 rounded-full quest-arrow-ring-pulse"
               style={{
                 border: '1px solid rgb(var(--cyber-cyan-rgb) / 0.25)',
-                background: 'radial-gradient(circle, rgb(var(--cyber-cyan-rgb) / 0.08) 0%, transparent 70%)',
+                background:
+                  'radial-gradient(circle, rgb(var(--cyber-cyan-rgb) / 0.08) 0%, transparent 70%)',
               }}
             />
-          </motion.div>
+          </div>
+          {label ? (
+            <span
+              className="font-mono text-[9px] tracking-wide uppercase"
+              style={{ color: 'rgb(var(--cyber-cyan-rgb) / 0.75)' }}
+            >
+              {label}
+            </span>
+          ) : null}
         </motion.div>
       )}
     </AnimatePresence>

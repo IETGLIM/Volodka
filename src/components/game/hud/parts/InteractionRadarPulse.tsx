@@ -27,7 +27,7 @@ export function InteractionRadarPulse() {
 
     const unsub = eventBus.on('exploration:footstep', () => {
       lastFootstepRef.current = Date.now();
-      setIsMoving(true);
+      setIsMoving((prev) => (prev ? prev : true));
 
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       timeoutRef.current = setTimeout(() => {

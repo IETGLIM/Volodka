@@ -234,7 +234,13 @@ export function FollowCamera({
     const delta = applyTimeScale(Math.min(rawDelta, SIM_DELTA_MAX));
     timeRef.current += delta;
 
-    applyPendingGamepadOrbit(yawRef, pitchRef, distanceRef, interactionDistanceRef, delta);
+    const gamepadManualLook = applyPendingGamepadOrbit(
+      yawRef,
+      pitchRef,
+      distanceRef,
+      interactionDistanceRef,
+      delta,
+    );
     sharedCameraYawRef.current = yawRef.current;
 
     const useFirstPerson =
@@ -349,7 +355,7 @@ export function FollowCamera({
     postFrame.isInDialogue = isInDialogue;
     postFrame.isCutscene = isCutscene;
     postFrame.isCombat = isCombat;
-    postFrame.isDragging = isDraggingRef.current;
+    postFrame.isDragging = isDraggingRef.current || gamepadManualLook;
 
     const springOverride = modeResult.kind === 'targets' ? modeResult.springOverride : undefined;
     applyCameraFrame(ctx, modeResult.targets, postFrame, springOverride);

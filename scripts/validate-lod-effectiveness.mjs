@@ -88,11 +88,10 @@ checkAsset('player_volodka', {
   lod2: path.join(PUBLIC, 'characters/volodka/volodka_lod2.glb'),
 });
 
-// NPCs
+// NPCs — unique on-disk file bases only (shared-mesh aliases → npcMeshShare.ts)
 const npcNames = [
-  'cafe_barista', 'office_colleague', 'albert', 'zarema', 'maria',
-  'office_alexander', 'office_dmitry', 'viktor', 'kira', 'boris',
-  'tamara', 'grisha', 'maxim', 'zeka', 'trofim', 'kate', 'anya',
+  'cafe_barista', 'albert', 'zarema', 'maria',
+  'office_alexander', 'office_dmitry', 'maxim', 'zeka', 'trofim', 'kate', 'anya',
   'baba_zina', 'solnysh', 'chk_ru', 'chk_based', 'chk_stalker',
   'chk_smert', 'chk_elis', 'chk_ritka',
 ];

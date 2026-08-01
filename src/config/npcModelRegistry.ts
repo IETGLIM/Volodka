@@ -19,6 +19,7 @@ import {
   isAssetEffectiveShipped,
   resolveCharacterManifestId,
 } from '@/config/assetManifest';
+import { resolveNpcMeshPublicUrl } from '@/config/npcMeshShare';
 
 export interface NpcModelAssetMeta {
   url: string;
@@ -47,19 +48,14 @@ const RPM_ON_DISK = new Set<string>(RPM_NPC_GLB_URLS_ON_DISK);
  * CC0 interim meshes on disk today (bootstrap / Quaternius import).
  * Pending RPM or Quaternius slots are omitted — runtime uses procedural fallback.
  */
+/** Distinct on-disk CC0 files only — shared-mesh aliases reuse these URLs. */
 const CC0_SHIPPED_NPC_GLB_URLS = new Set<string>([
   `${NPCS}/cafe_barista.glb`,
-  `${NPCS}/office_colleague.glb`,
   `${NPCS}/albert.glb`,
   `${NPCS}/zarema.glb`,
   `${NPCS}/maria.glb`,
   `${NPCS}/office_alexander.glb`,
   `${NPCS}/office_dmitry.glb`,
-  `${NPCS}/viktor.glb`,
-  `${NPCS}/kira.glb`,
-  `${NPCS}/boris.glb`,
-  `${NPCS}/tamara.glb`,
-  `${NPCS}/grisha.glb`,
   `${NPCS}/maxim.glb`,
   `${NPCS}/zeka.glb`,
   `${NPCS}/trofim.glb`,
@@ -101,7 +97,7 @@ const CC0_NPC_MODEL_ASSETS: Partial<Record<string, NpcModelAssetMeta>> = {
     sourceUrl: QUATERNIUS_URL,
   },
   office_colleague: {
-    url: `${NPCS}/office_colleague.glb`,
+    url: resolveNpcMeshPublicUrl('office_colleague'),
     license: 'CC0',
     source: QUATERNIUS,
     sourceUrl: QUATERNIUS_URL,
@@ -119,31 +115,31 @@ const CC0_NPC_MODEL_ASSETS: Partial<Record<string, NpcModelAssetMeta>> = {
     sourceUrl: QUATERNIUS_URL,
   },
   viktor: {
-    url: `${NPCS}/viktor.glb`,
+    url: resolveNpcMeshPublicUrl('viktor'),
     license: 'CC0',
     source: QUATERNIUS,
     sourceUrl: QUATERNIUS_URL,
   },
   kira: {
-    url: `${NPCS}/kira.glb`,
+    url: resolveNpcMeshPublicUrl('kira'),
     license: 'CC0',
     source: QUATERNIUS,
     sourceUrl: QUATERNIUS_URL,
   },
   boris: {
-    url: `${NPCS}/boris.glb`,
+    url: resolveNpcMeshPublicUrl('boris'),
     license: 'CC0',
     source: QUATERNIUS,
     sourceUrl: QUATERNIUS_URL,
   },
   tamara: {
-    url: `${NPCS}/tamara.glb`,
+    url: resolveNpcMeshPublicUrl('tamara'),
     license: 'CC0',
     source: QUATERNIUS,
     sourceUrl: QUATERNIUS_URL,
   },
   grisha: {
-    url: `${NPCS}/grisha.glb`,
+    url: resolveNpcMeshPublicUrl('grisha'),
     license: 'CC0',
     source: QUATERNIUS,
     sourceUrl: QUATERNIUS_URL,
@@ -292,12 +288,8 @@ export function resolveNpcModelUrl(npcId: string, modelPath?: string): string | 
 
   if (isCc0ShippedUrl(modelPath, npcId)) return modelPath;
 
-  const cc0Url = CC0_NPC_MODEL_ASSETS[npcId]?.url;
-  if (modelPath === cc0Url && isCc0ShippedUrl(modelPath, npcId)) {
-    return modelPath;
-  }
-
-  return undefined;
+  // Shared-mesh aliases / stale per-NPC filenames → canonical shipped URL.
+  return resolveCc0Url(npcId);
 }
 
 export function getNpcModelMeta(npcId: string): NpcModelAssetMeta | undefined {

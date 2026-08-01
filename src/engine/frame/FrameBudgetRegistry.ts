@@ -245,6 +245,11 @@ function runTicks(
   const trackTiming = shouldTrackFrameTiming();
   let skipped = 0;
 
+  // Soft-skip without profiler: phase wall clock (1 sample after each tick)
+  // instead of wrapping every callback in two performance.now() calls.
+  const phaseStartMs = softSkip && !trackTiming ? performance.now() : 0;
+  let phaseElapsedMs = 0;
+
   for (const tick of buffer) {
     if (softSkip && softSkipOverBudget && !tick.critical) {
       skipped += 1;
@@ -254,9 +259,7 @@ function runTicks(
       continue;
     }
 
-    // Soft-skip needs wall time even when profiler timing is off.
-    const needMeasure = softSkip || trackTiming;
-    if (needMeasure) {
+    if (trackTiming) {
       const t0 = performance.now();
       tick.callback(ctx);
       const elapsed = performance.now() - t0;
@@ -268,15 +271,23 @@ function runTicks(
         }
       }
 
-      if (trackTiming) {
-        if (trackSystemCpu) {
-          systemCpuMs[tick.system] += elapsed;
-        }
-        recordTickCpuMs(tickCpuKey(phase, tick), elapsed);
+      if (trackSystemCpu) {
+        systemCpuMs[tick.system] += elapsed;
       }
+      recordTickCpuMs(tickCpuKey(phase, tick), elapsed);
     } else {
       tick.callback(ctx);
+      if (softSkip) {
+        phaseElapsedMs = performance.now() - phaseStartMs;
+        if (frameSoftSkipCumulativeMs + phaseElapsedMs >= FRAME_BUDGET_MS) {
+          softSkipOverBudget = true;
+        }
+      }
     }
+  }
+
+  if (softSkip && !trackTiming) {
+    frameSoftSkipCumulativeMs += phaseElapsedMs;
   }
 
   if (softSkip) {

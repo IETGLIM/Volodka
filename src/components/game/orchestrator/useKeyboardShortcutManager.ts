@@ -142,6 +142,28 @@ export function useKeyboardShortcutManager({
         return;
       }
 
+      // Movement / look keys + Shift (run): 3D input owns these. Exit before the
+      // panel switchboard so WASD/arrow/Shift bursts don't walk dozens of checks.
+      // Shift+S still opens stats below.
+      if (
+        e.code === 'KeyW' ||
+        e.code === 'KeyA' ||
+        e.code === 'KeyD' ||
+        e.code === 'ArrowUp' ||
+        e.code === 'ArrowDown' ||
+        e.code === 'ArrowLeft' ||
+        e.code === 'ArrowRight' ||
+        e.code === 'Space' ||
+        e.code === 'ShiftLeft' ||
+        e.code === 'ShiftRight' ||
+        (e.code === 'KeyS' && !e.shiftKey)
+      ) {
+        return;
+      }
+
+      // Auto-repeat on letter keys shouldn't open panels / save.
+      if (e.repeat) return;
+
       const panelShortcutsBlocked = blocksPanelShortcuts(ps.mode);
 
       if (panelShortcutsBlocked) return;
@@ -202,23 +224,22 @@ export function useKeyboardShortcutManager({
         e.preventDefault();
         dispatchPanel('shortcuts');
       }
-      // Quick save — F5. The HUD button shows "Сохранить [F5]" but the key was
-      // never wired. This calls the same store action as the HUD's handleSave
-      // and shows a confirmation toast (the HUD's showSaveIndicator only fires
-      // on button click, so we give keyboard users the same feedback via toast).
+      // Quick save — F5. Defer serialize/localStorage off the keydown critical path.
       if (e.code === 'F5') {
         e.preventDefault();
-        try {
-          useGameStore.getState().saveGame({ source: 'manual' });
-          void import('sonner').then(({ toast }) => {
-            toast.success('Игра сохранена', {
-              description: 'Прогресс записан.',
-              duration: 2500,
+        queueMicrotask(() => {
+          try {
+            useGameStore.getState().saveGame({ source: 'manual' });
+            void import('sonner').then(({ toast }) => {
+              toast.success('Игра сохранена', {
+                description: 'Прогресс записан.',
+                duration: 2500,
+              });
             });
-          });
-        } catch {
-          /* store not ready — ignore */
-        }
+          } catch {
+            /* store not ready — ignore */
+          }
+        });
       }
     };
 

@@ -21,7 +21,7 @@ export function DynamicCrosshair() {
   useEffect(() => {
     const unsubFootstep = eventBus.on('exploration:footstep', () => {
       lastFootstepRef.current = Date.now();
-      setIsMoving(true);
+      setIsMoving((prev) => (prev ? prev : true));
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       timeoutRef.current = setTimeout(() => {
         if (Date.now() - lastFootstepRef.current >= STILL_TIMEOUT_MS) {

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, memo, useEffect, useRef } from 'react';
+import React, { useMemo, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, Package, Hand, AlertCircle, Star } from 'lucide-react';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
@@ -307,7 +307,6 @@ interface SingleLabelProps {
   showConnectionLine: boolean;
   enableBobbing: boolean;
   reducedMotion: boolean;
-  timestamp: number;
 }
 
 /**
@@ -317,22 +316,20 @@ interface SingleLabelProps {
  * - Cyberpunk-styled container with neon glow
  * - Occlusion indicator when entity hidden
  * - Edge-clamp pulse indicator when position adjusted
- * - Gentle bobbing animation with per-label phase offset
+ * - Gentle bobbing animation with per-label phase offset (CSS — no rAF React commits)
  */
 const SingleLabel = memo<SingleLabelProps>(({
   label, styleConfig, opacity, clampedPosition,
-  showConnectionLine, enableBobbing, reducedMotion, timestamp,
+  showConnectionLine, enableBobbing, reducedMotion,
 }) => {
-  // Calculate bobbing offset using label ID hash as phase offset for variety
-  const bobOffset = useMemo(() => {
-    if (!enableBobbing || reducedMotion) return 0;
-    const phaseOffset = simpleStringHash(label.id) * 0.001;
-    return Math.sin(timestamp * 0.001 * BOBBING_FREQUENCY + phaseOffset) * BOBBING_AMPLITUDE;
-  }, [enableBobbing, reducedMotion, timestamp, label.id]);
+  const phaseOffset = useMemo(
+    () => (simpleStringHash(label.id) % 1000) / 1000,
+    [label.id],
+  );
 
   // Final screen position with offsets applied
   const verticalOffset = label.verticalOffset ?? 40;
-  const finalY = clampedPosition.y - verticalOffset + bobOffset;
+  const finalY = clampedPosition.y - verticalOffset;
   const finalX = clampedPosition.x;
 
   // Early exit for effectively invisible labels
@@ -353,19 +350,26 @@ const SingleLabel = memo<SingleLabelProps>(({
       {/* Connection line to anchor point */}
       {showConnectionLine && (
         <ConnectionLine
-          startX={0} startY={verticalOffset - bobOffset}
-          endX={0} endY={verticalOffset - bobOffset}
+          startX={0} startY={verticalOffset}
+          endX={0} endY={verticalOffset}
           color={styleConfig.color} opacity={opacity}
         />
       )}
 
-      {/* Main cyberpunk-styled container */}
+      {/* Main cyberpunk-styled container — CSS bob avoids per-frame React commits */}
       <div
         className="relative flex items-center gap-1.5 px-2.5 py-1.5 rounded-md backdrop-blur-sm border"
         style={{
           backgroundColor: styleConfig.bgColor,
           borderColor: styleConfig.borderColor,
           boxShadow: `0 0 10px ${styleConfig.color}33, 0 0 20px ${styleConfig.color}18, inset 0 1px 0 ${styleConfig.color}22`,
+          ...(enableBobbing && !reducedMotion
+            ? {
+                ['--world-label-bob-amp' as string]: `${BOBBING_AMPLITUDE}px`,
+                animation: `world-label-bob ${1 / BOBBING_FREQUENCY}s ease-in-out infinite`,
+                animationDelay: `${-phaseOffset / BOBBING_FREQUENCY}s`,
+              }
+            : null),
         }}
       >
         {/* Type-specific icon */}
@@ -451,8 +455,6 @@ function WorldSpaceLabelsComponent({
   // State & Hooks
   // -----------------------------------------------------------------------
   
-  const [timestamp, setTimestamp] = useState<number>(Date.now());
-  const frameRef = useRef<number>(0);
   const reducedMotion = useEffectiveReducedMotion();
 
   // -----------------------------------------------------------------------
@@ -464,25 +466,6 @@ function WorldSpaceLabelsComponent({
     () => externalProjector ?? defaultProjectToWorld,
     [externalProjector]
   );
-
-  // -----------------------------------------------------------------------
-  // Animation Frame Loop (for bobbing effect)
-  // -----------------------------------------------------------------------
-  
-  useEffect(() => {
-    if (!reducedMotion && enableBobbing && visible) {
-      const tick = () => {
-        setTimestamp(Date.now());
-        frameRef.current = window.requestAnimationFrame(tick);
-      };
-      frameRef.current = window.requestAnimationFrame(tick);
-      
-      return () => {
-        if (frameRef.current) window.cancelAnimationFrame(frameRef.current);
-      };
-    }
-    return undefined;
-  }, [reducedMotion, enableBobbing, visible]);
 
   // -----------------------------------------------------------------------
   // Label Processing Pipeline
@@ -548,7 +531,6 @@ function WorldSpaceLabelsComponent({
             showConnectionLine={showConnectionLines}
             enableBobbing={enableBobbing}
             reducedMotion={reducedMotion}
-            timestamp={timestamp}
           />
         ))}
       </AnimatePresence>

@@ -26,7 +26,7 @@ export function SprintDrainOverlay() {
       // Sprint = footsteps closer than 350ms apart
       const gap = now - lastFootstepRef.current;
       if (gap < 350 && gap > 50) {
-        setIsSprinting(true);
+        setIsSprinting((prev) => (prev ? prev : true));
       }
       lastFootstepRef.current = now;
     });
@@ -34,7 +34,7 @@ export function SprintDrainOverlay() {
     // Check for sprint timeout
     intervalRef.current = setInterval(() => {
       if (Date.now() - lastFootstepRef.current > SPRINT_TIMEOUT_MS) {
-        setIsSprinting(false);
+        setIsSprinting((prev) => (prev ? false : prev));
       }
     }, 200);
 

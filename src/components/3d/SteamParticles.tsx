@@ -26,8 +26,8 @@ interface SteamConfig {
 const STEAM_CONFIGS: Record<string, SteamConfig> = {
   cafe_evening: {
     count: 40,
-    position: [2, 1.0, 1], // near the warm light
-    spread: 0.3,
+    position: [-0.5, 1.4, -3.9], // coffee machine (CafeVisual)
+    spread: 0.28,
     riseSpeed: 0.4,
     color: '#ffddbb',
     sizeRange: [0.03, 0.07],

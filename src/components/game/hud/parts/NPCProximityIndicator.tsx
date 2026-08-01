@@ -47,9 +47,13 @@ export function NPCProximityIndicator() {
   // eslint-disable-next-line react-hooks/exhaustive-deps -- npcStates is a proxy trigger for store reactivity
   const relations = useMemo(() => selectNpcRelations(), [npcStates]);
 
-  // Calculate nearest NPC in current scene
+  // Calculate nearest NPC — gate setState so we don't React-commit every frame
   useEffect(() => {
     let running = true;
+    let lastId: string | null = null;
+    let lastRelation = -1;
+    let lastDistBucket = -1;
+
     const check = () => {
       if (!running) return;
       const px = playerPos[0];
@@ -77,7 +81,15 @@ export function NPCProximityIndicator() {
         }
       }
 
-      setNearest(closest);
+      const nextId = closest?.id ?? null;
+      const nextRelation = closest?.relation ?? -1;
+      const nextBucket = closest ? Math.floor(closest.distance * 2) : -1;
+      if (nextId !== lastId || nextRelation !== lastRelation || nextBucket !== lastDistBucket) {
+        lastId = nextId;
+        lastRelation = nextRelation;
+        lastDistBucket = nextBucket;
+        setNearest(closest);
+      }
       rafRef.current = requestAnimationFrame(check);
     };
     rafRef.current = requestAnimationFrame(check);

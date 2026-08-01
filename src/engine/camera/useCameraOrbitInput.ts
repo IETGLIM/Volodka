@@ -55,6 +55,21 @@ function shouldBlockZoom(): boolean {
   return getInteractionState() === InteractionState.Dialogue;
 }
 
+function tryRequestPointerLock(canvasEl: HTMLCanvasElement | null): void {
+  if (!canvasEl) return;
+  const { pointerLockEnabled } = getVisualSettings();
+  if (!pointerLockEnabled) return;
+  if (document.pointerLockElement === canvasEl) return;
+  void canvasEl.requestPointerLock();
+}
+
+function exitPointerLockIfOurs(canvasEl: HTMLCanvasElement | null): void {
+  if (!canvasEl) return;
+  if (document.pointerLockElement === canvasEl) {
+    document.exitPointerLock();
+  }
+}
+
 /** Wire DOM listeners that mutate orbit refs (yaw, pitch, distance). */
 export function useCameraOrbitInput(
   gl: WebGLRenderer,
@@ -73,8 +88,15 @@ export function useCameraOrbitInput(
 
   useEffect(() => {
     let lmbDown = false;
+    let rmbDown = false;
+    let mmbDown = false;
     let lmbStart = { x: 0, y: 0 };
     let lmbLookActive = false;
+    const canvasEl = gl.domElement;
+
+    const syncDraggingFlag = () => {
+      isDraggingRef.current = lmbLookActive || rmbDown || mmbDown;
+    };
 
     const applyOrbitDelta = (dx: number, dy: number, sensScale = 1) => {
       const { mouseSensitivity, invertY } = getVisualSettings();
@@ -89,11 +111,7 @@ export function useCameraOrbitInput(
     const onMouseDown = (e: MouseEvent) => {
       if (shouldBlockOrbit()) return;
 
-      // LMB drag-to-orbit — works in BOTH first-person and third-person modes.
-      // Previously LMB only orbited in FP mode, which made third-person camera
-      // feel "broken" to users who intuitively try LMB drag. We use a drag
-      // threshold (LMB_LOOK_DRAG_THRESHOLD_PX) so a quick click still registers
-      // as an interaction click (not a camera orbit). (Task 5-A #3.)
+      // LMB drag-to-orbit — drag threshold preserves click-to-interact.
       if (e.button === 0 && isCanvasAreaTarget(e.target)) {
         lmbDown = true;
         lmbLookActive = false;
@@ -103,8 +121,14 @@ export function useCameraOrbitInput(
       }
 
       if (e.button === 2 || e.button === 1) {
+        if (e.button === 2) rmbDown = true;
+        if (e.button === 1) mmbDown = true;
         isDraggingRef.current = true;
         lastMouseRef.current = { x: e.clientX, y: e.clientY };
+        // Max Payne freelook: RMB + pointer lock when enabled (TP and FP).
+        if (e.button === 2 && isCanvasAreaTarget(e.target)) {
+          tryRequestPointerLock(canvasEl);
+        }
         e.preventDefault();
       }
     };
@@ -114,37 +138,52 @@ export function useCameraOrbitInput(
         lmbDown = false;
         lmbLookActive = false;
       }
+      if (e.button === 2) {
+        rmbDown = false;
+        exitPointerLockIfOurs(canvasEl);
+      }
+      if (e.button === 1) {
+        mmbDown = false;
+      }
+      syncDraggingFlag();
+    };
+
+    const onBlur = () => {
+      lmbDown = false;
+      rmbDown = false;
+      mmbDown = false;
+      lmbLookActive = false;
       isDraggingRef.current = false;
+      exitPointerLockIfOurs(canvasEl);
     };
 
     const onMouseMove = (e: MouseEvent) => {
+      // Pointer-lock freelook (RMB hold or FP) — movementX/Y owns look.
       if (
-        firstPersonRef?.current &&
-        canvasEl &&
-        document.pointerLockElement === canvasEl &&
-        (e.movementX !== 0 || e.movementY !== 0)
+        canvasEl
+        && document.pointerLockElement === canvasEl
+        && (e.movementX !== 0 || e.movementY !== 0)
       ) {
-        applyOrbitDelta(e.movementX, e.movementY);
-        return;
+        if (firstPersonRef?.current || rmbDown) {
+          applyOrbitDelta(e.movementX, e.movementY);
+          isDraggingRef.current = true;
+          return;
+        }
       }
 
       if (lmbDown) {
         if (!lmbLookActive) {
           const dx0 = e.clientX - lmbStart.x;
           const dy0 = e.clientY - lmbStart.y;
-          // Drag threshold — below this, treat as a click (don't orbit).
           if (dx0 * dx0 + dy0 * dy0 < LMB_LOOK_DRAG_THRESHOLD_PX * LMB_LOOK_DRAG_THRESHOLD_PX) {
             return;
           }
-          // In FP mode, request pointer lock for mouse-look. In TP mode,
-          // just start orbiting without pointer lock.
           if (firstPersonRef?.current) {
-            const { pointerLockEnabled } = getVisualSettings();
-            if (pointerLockEnabled && canvasEl && document.pointerLockElement !== canvasEl) {
-              void canvasEl.requestPointerLock();
-            }
+            tryRequestPointerLock(canvasEl);
           }
           lmbLookActive = true;
+          // Critical: suppress soft auto-follow while LMB-orbiting.
+          isDraggingRef.current = true;
           lastMouseRef.current = { x: e.clientX, y: e.clientY };
         }
         const dx = e.clientX - lastMouseRef.current.x;
@@ -174,8 +213,6 @@ export function useCameraOrbitInput(
         normalizedDelta *= ZOOM_PAGE_MULTIPLIER;
       }
 
-      // Multiplicative zoom: scroll up pulls the camera toward the character's back faster
-      // than linear deltas, especially when already close.
       if (firstPersonRef?.current && fovRef) {
         const fovDelta = -normalizedDelta * 0.035;
         fovRef.current = Math.max(
@@ -243,11 +280,10 @@ export function useCameraOrbitInput(
       }
     };
 
-    const canvasEl = gl.domElement;
-
     window.addEventListener('mousedown', onMouseDown);
     window.addEventListener('mouseup', onMouseUp);
     window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('blur', onBlur);
     if (canvasEl) {
       canvasEl.addEventListener('wheel', onWheel, { passive: false, capture: true });
     }
@@ -261,6 +297,7 @@ export function useCameraOrbitInput(
       window.removeEventListener('mousedown', onMouseDown);
       window.removeEventListener('mouseup', onMouseUp);
       window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('blur', onBlur);
       if (canvasEl) {
         canvasEl.removeEventListener('wheel', onWheel, { capture: true } as EventListenerOptions);
       }

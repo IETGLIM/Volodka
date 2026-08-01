@@ -120,7 +120,7 @@ function GltfLodBranches({
         lastUrl = activeUrlRef.current;
         setActiveUrl(lastUrl);
       }
-    }, 50); // 20Hz polling — LOD switches are not frame-critical
+    }, 200); // 5Hz — LOD switches are not latency-critical; fewer timers help INP
     return () => clearInterval(checkInterval);
   }, [activeUrlRef]);
 
