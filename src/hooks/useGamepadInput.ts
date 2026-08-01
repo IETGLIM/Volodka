@@ -1,7 +1,6 @@
 /* ─── Volodka RPG – gamepad input loop ─── */
 
 import { useEffect, useRef, type Dispatch, type MutableRefObject } from 'react';
-import { useGameStore } from '@/store/gameStore';
 import { getInteractionState } from '@/components/3d/InteractionSystemBridge';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 import {
@@ -15,13 +14,14 @@ import { fireInteractPress } from '@/engine/input/fireInteractPress';
 import { isNarrativeMovementLocked } from '@/shared/exploreHubNodes';
 import { isEncounterPresentationActive } from '@/engine/combat/encounterPresentation';
 import { isGameplayOverlayLocomotionLocked } from '@/engine/player/playerLocomotionGate';
-import { getGamePhase, type GamePhase } from '@/shared/gamePhase';
+import type { GamePhase } from '@/shared/gamePhase';
 import type { VirtualControls } from '@/hooks/useGamePhysics';
 import {
   areSharedVirtualControlsWritable,
   clearSharedVirtualControls,
 } from '@/engine/VirtualControlsState';
 import type { PanelType } from '@/components/game/orchestrator/types';
+import { getLiveGamePhase, getUIStoreState } from '@/store/stores/uiStore';
 
 export interface UseGamepadInputOptions {
   virtualControlsRef: MutableRefObject<VirtualControls>;
@@ -37,19 +37,13 @@ function dispatchKey(code: string, key: string): void {
   );
 }
 
-/** uiSlice.mode is always `'exploration'` — phase must come from getGamePhase(). */
+/** uiSlice.mode is always `'exploration'` — phase must come from live slice flags. */
 function readGamepadPhase(): GamePhase {
-  const s = useGameStore.getState();
-  return getGamePhase({
-    mainMenuOpen: s.mainMenuOpen,
-    introActive: s.introActive,
-    combatActive: s.combatActive,
-    activeCutsceneId: s.activeCutsceneId,
-  });
+  return getLiveGamePhase();
 }
 
 function shouldBlockMovement(mode: GamePhase, panelStackLength: number): boolean {
-  const { showStoryOverlay, currentNodeId } = useGameStore.getState();
+  const { showStoryOverlay, currentNodeId } = getUIStoreState();
   if (mode !== 'exploration' && mode !== 'combat') return true;
   if (isEncounterPresentationActive()) return true;
   if (isNarrativeMovementLocked(showStoryOverlay, currentNodeId)) return true;
@@ -60,13 +54,13 @@ function shouldBlockMovement(mode: GamePhase, panelStackLength: number): boolean
 }
 
 function shouldBlockOrbit(mode: GamePhase): boolean {
-  const { showStoryOverlay, currentNodeId } = useGameStore.getState();
+  const { showStoryOverlay, currentNodeId } = getUIStoreState();
   if (isNarrativeMovementLocked(showStoryOverlay, currentNodeId) || mode === 'cutscene') return true;
   return getInteractionState() === InteractionState.Dialogue;
 }
 
 function shouldBlockZoom(mode: GamePhase): boolean {
-  const { showStoryOverlay, currentNodeId } = useGameStore.getState();
+  const { showStoryOverlay, currentNodeId } = getUIStoreState();
   if (mode !== 'exploration' || isNarrativeMovementLocked(showStoryOverlay, currentNodeId)) return true;
   return getInteractionState() === InteractionState.Dialogue;
 }

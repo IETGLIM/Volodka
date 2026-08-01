@@ -36,7 +36,9 @@ import {
 import { useIsMobileVisual } from '@/hooks/use-mobile';
 import { weatherEnvironmentMaterials } from '@/engine/graphics/materials/weatherEnvironmentMaterials';
 import { POLYHAVEN_MODELS } from '@/config/polyhavenAssets';
+import { getPropModelDefinition } from '@/config/propModelRegistry';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
+import { useGltfPropPlacement } from '@/hooks/useGltfPropPlacement';
 import {
   getInteriorShellScale,
   isWalkableInteriorShellAllowed,
@@ -273,6 +275,24 @@ function AuthoredRoomProp({
   const scene = useMemo(() => cloneRoomAsset(gltf.scene, castShadow), [gltf.scene, castShadow]);
   return (
     <group position={position} rotation={[0, rotationY, 0]} scale={scale}>
+      <primitive object={scene} />
+    </group>
+  );
+}
+
+/** Kenney door.glb leaf under roomDoorRef hinge — Medium+ replaces box geo_box_7. */
+function AuthoredHingedDoorLeaf({ castShadow }: { castShadow: boolean }) {
+  const def = getPropModelDefinition('kenney_door');
+  const gltf = useGLTF(def!.url, true, true, extendLoader);
+  const scene = useMemo(() => cloneRoomAsset(gltf.scene, castShadow), [gltf.scene, castShadow]);
+  const { scale: fitScale, footY } = useGltfPropPlacement(scene, {
+    targetSizeM: def!.targetSizeM,
+    fitAxis: def!.fitAxis,
+  });
+  // Hinge at group origin (left edge): shift by half target width after fit.
+  const halfW = (def!.targetSizeM?.[0] ?? 1) * 0.5;
+  return (
+    <group position={[halfW, footY, 0]} scale={fitScale} rotation={[0, Math.PI, 0]}>
       <primitive object={scene} />
     </group>
   );
@@ -633,57 +653,45 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
       {/* ── INTERACTIVE ANIMATED OBJECTS ── */}
       {/* ═══════════════════════════════════════════════ */}
 
-      {/* ── Room Door — animated interaction; Poly Haven wood on Medium+ ── */}
+      {/* ── Room Door — animated leaf; frame only on Low (envelope owns Medium+ jambs). ── */}
       <>
+        {!useGltfFurniture ? (
+          <>
         <mesh position={[0, 1.1, D / 2 - 0.04]} rotation-y={Math.PI} geometry={geo_box_4}>
-          {useGltfFurniture ? (
-            <Suspense fallback={<primitive object={mat_1} attach="material" />}>
-              <PolyHavenStandardMaterial materialId="wood_floor" repeatScale={1.8} color="#5a4030" roughness={0.78} metalness={0.04} />
-            </Suspense>
-          ) : (
             <primitive object={mat_1} attach="material" />
-          )}
         </mesh>
         <mesh position={[-0.5, 1.1, D / 2 - 0.045]} rotation-y={Math.PI} geometry={geo_box_5}>
-          {useGltfFurniture ? (
-            <Suspense fallback={<primitive object={mat_2} attach="material" />}>
-              <PolyHavenStandardMaterial materialId="wood_floor" repeatScale={2.2} color="#4a3525" roughness={0.8} metalness={0.04} />
-            </Suspense>
-          ) : (
             <primitive object={mat_2} attach="material" />
-          )}
         </mesh>
         <mesh position={[0.5, 1.1, D / 2 - 0.045]} rotation-y={Math.PI} geometry={geo_box_5}>
-          {useGltfFurniture ? (
-            <Suspense fallback={<primitive object={mat_2} attach="material" />}>
-              <PolyHavenStandardMaterial materialId="wood_floor" repeatScale={2.2} color="#4a3525" roughness={0.8} metalness={0.04} />
-            </Suspense>
-          ) : (
             <primitive object={mat_2} attach="material" />
-          )}
         </mesh>
         <mesh position={[0, 2.2, D / 2 - 0.045]} rotation-y={Math.PI} geometry={geo_box_6}>
+            <primitive object={mat_2} attach="material" />
+        </mesh>
+          </>
+        ) : null}
+        <group position={[-0.45, 0, D / 2 - 0.06]} ref={roomDoorRef}>
           {useGltfFurniture ? (
-            <Suspense fallback={<primitive object={mat_2} attach="material" />}>
-              <PolyHavenStandardMaterial materialId="wood_floor" repeatScale={2.0} color="#4a3525" roughness={0.8} metalness={0.04} />
+            <Suspense
+              fallback={
+                <mesh position={[0.45, 1.1, 0]} geometry={geo_box_7}>
+                  <primitive object={mat_3} attach="material" />
+                </mesh>
+              }
+            >
+              <AuthoredHingedDoorLeaf castShadow={preset.shadows} />
             </Suspense>
           ) : (
-            <primitive object={mat_2} attach="material" />
+            <>
+              <mesh position={[0.45, 1.1, 0]} geometry={geo_box_7}>
+                <primitive object={mat_3} attach="material" />
+              </mesh>
+              <mesh position={[0.78, 1.05, 0.03]} rotation={[0, 0, Math.PI / 2]} geometry={geo_cyl_8} material={mat_4} />
+              <mesh position={[0.45, 1.4, 0.025]} geometry={geo_box_9} material={mat_5} />
+              <mesh position={[0.45, 0.7, 0.025]} geometry={geo_box_9} material={mat_5} />
+            </>
           )}
-        </mesh>
-        <group position={[-0.45, 0, D / 2 - 0.06]} ref={roomDoorRef}>
-          <mesh position={[0.45, 1.1, 0]} geometry={geo_box_7}>
-            {useGltfFurniture ? (
-              <Suspense fallback={<primitive object={mat_3} attach="material" />}>
-                <PolyHavenStandardMaterial materialId="wood_floor" repeatScale={1.4} color="#6a5040" roughness={0.76} metalness={0.05} />
-              </Suspense>
-            ) : (
-              <primitive object={mat_3} attach="material" />
-            )}
-          </mesh>
-          <mesh position={[0.78, 1.05, 0.03]} rotation={[0, 0, Math.PI / 2]} geometry={geo_cyl_8} material={mat_4} />
-          <mesh position={[0.45, 1.4, 0.025]} geometry={geo_box_9} material={mat_5} />
-          <mesh position={[0.45, 0.7, 0.025]} geometry={geo_box_9} material={mat_5} />
         </group>
       </>
 
@@ -713,9 +721,34 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
         <group ref={roomWardrobeDoorRef} visible={false} />
       )}
 
-      {/* ── Desk — ThinMonitors always own the hero workstation. ── */}
+      {/* ── Desk — ThinMonitors always own the hero workstation.
+          Medium+: Poly Haven painted table (same language as office hero desks).
+          Low: CraftedDeskShell cylinder-leg fallback. ── */}
       <group position={[0, 0, -2.5]}>
-        <CraftedDeskShell matFallback={mat_11} />
+        {useGltfFurniture ? (
+          <Suspense fallback={<CraftedDeskShell matFallback={mat_11} />}>
+            <AuthoredRoomProp
+              url={POLYHAVEN_MODELS.paintedWoodenTable}
+              position={[0, 0, 0.05]}
+              rotationY={Math.PI / 2}
+              scale={0.78}
+              castShadow={preset.shadows}
+            />
+          </Suspense>
+        ) : (
+          <CraftedDeskShell matFallback={mat_11} />
+        )}
+        {useGltfFurniture ? (
+          <Suspense fallback={null}>
+            <AuthoredRoomProp
+              url={POLYHAVEN_MODELS.deskLampArm}
+              position={[-0.72, 0.78, 0.12]}
+              rotationY={0.85}
+              scale={0.52}
+              castShadow={preset.shadows}
+            />
+          </Suspense>
+        ) : null}
         {([
           { id: 'grafana', tex: grafanaTexture, x: -0.62, rotY: 0.24 },
           { id: 'terminal', tex: terminalTexture, x: 0, rotY: 0 },
@@ -732,8 +765,11 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
           />
         ))}
 
-        <pointLight position={[0, 1.25, 0.15]} color="#5a9a88" intensity={2.2} distance={10} decay={2} />
-        {/* Keyboard — flat slab not cube pile */}
+        {/* Monitor wash — keep soft so desk lamp practical owns the pool */}
+        <pointLight position={[0, 1.2, 0.1]} color="#5a9a88" intensity={useGltfFurniture ? 0.85 : 2.2} distance={8} decay={2} />
+        {/* Keyboard / papers / mug — Low kit only; Medium+ relies on cassette + lamp GLBs */}
+        {!useGltfFurniture ? (
+          <>
         <mesh position={[0, 0.785, 0.12]} geometry={getSharedBoxGeometry(0.42, 0.018, 0.14)} material={mat_15} />
         <mesh position={[0.15, 0.8, 0.05]} geometry={getSharedBoxGeometry(0.012, 0.006, 0.012)} material={mat_16} />
         <mesh position={[0.17, 0.8, 0.05]} geometry={getSharedBoxGeometry(0.012, 0.006, 0.012)} material={mat_17} />
@@ -747,6 +783,8 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
         <mesh position={[0.3, 0.78, 0.2]} rotation={[0, 0.4, 0]} geometry={geo_box_30} material={mat_22} />
         <mesh position={[0.35, 0.785, 0.15]} rotation={[0, -0.2, 0.02]} geometry={geo_box_31} material={mat_23} />
         <mesh position={[-0.2, 0.78, 0.3]} rotation={[0, 0.7, -0.01]} geometry={geo_box_32} material={mat_24} />
+          </>
+        ) : null}
       </group>
 
       {/* ── Chair — fallback only; no low-poly hero chair on GLTF presets ── */}
@@ -944,7 +982,8 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
       {/* ── ANIMATED DESK ELEMENTS ── */}
       {/* ═══════════════════════════════════════════════ */}
 
-      {/* ── ANIMATED DESK ELEMENTS ── */}
+      {/* ── ANIMATED DESK ELEMENTS — Low kit only (Medium+ uses authored desk props) ── */}
+      {!useGltfFurniture ? (
       <group position={[-0.7, 0.78, -2.3]}>
         <mesh position={[0, 0.04, 0]} geometry={geo_cyl_46} material={mat_35} />
         <mesh position={[0, 0.12, 0]} rotation={[Math.PI / 2, 0, 0]} geometry={geo_tor_47} material={mat_36} />
@@ -955,8 +994,12 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
           <mesh geometry={geo_cyl_49} material={mat_38} />
         </group>
       </group>
+      ) : (
+        <group ref={fanGroupRef} visible={false} />
+      )}
 
-      {/* ── PC case with blinking LED ── */}
+      {/* ── PC case — Low only; box tower reads kit on Medium+ ── */}
+      {!useGltfFurniture ? (
       <group position={[0.9, 0, -2.8]}>
         <mesh position={[0, 0.25, 0]} castShadow geometry={geo_box_50} material={mat_39} />
         <mesh position={[-0.1, 0.25, 0]} geometry={geo_box_51} material={mat_40} />
@@ -966,12 +1009,13 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
           <mesh key={`vent-${i}`} position={[-0.101, y, -0.05]} geometry={geo_box_54} material={mat_40} />
         ))}
       </group>
+      ) : null}
 
-      {/* ── Desk lamp — warm practical with soft shadow on High/Ultra ── */}
+      {/* Desk lamp practical — bonded to Poly Haven arm on Medium+; legacy float on Low */}
       <pointLight
-        position={[0.3, 1.5, -2.3]}
+        position={useGltfFurniture ? [-0.72, 1.42, -2.38] : [0.3, 1.5, -2.3]}
         color="#ffcc88"
-        intensity={4.2}
+        intensity={useGltfFurniture ? 3.6 : 4.2}
         distance={10}
         decay={2}
         castShadow={preset.shadows}
@@ -1052,24 +1096,18 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
         </group>
       ) : null}
 
-      {/* ── Nightstand beside bed — fallback only; GLTF presets use authored barrel/box dressing ── */}
+      {/* ── Nightstand beside bed — Low kit only; Medium+ uses paintedWoodenTable dressing ── */}
       {!useGltfFurniture ? (
         <group position={[2.2, 0, 2.0]}>
-          {/* Nightstand body */}
           <mesh position={[0, 0.25, 0]} castShadow geometry={geo_box_68} material={mat_6} />
-          {/* Drawer */}
           <mesh position={[0, 0.3, 0.18]} geometry={geo_box_69} material={mat_55} />
-          {/* Drawer handle */}
           <mesh position={[0, 0.3, 0.2]} rotation={[0, 0, Math.PI / 2]} geometry={geo_cyl_70} material={mat_56} />
+          <mesh position={[0, 0.52, 0.05]} rotation={[0, 0.2, 0]} geometry={geo_box_71} material={mat_57} />
+          <mesh position={[0, 0.533, 0.05]} rotation={[0, 0.2, 0]} geometry={geo_box_72} material={mat_58} />
+          <mesh position={[0.05, 0.51, -0.05]} rotation={[0.8, 0.2, 0]} geometry={geo_cyl_64} material={mat_59} />
+          <mesh renderOrder={2} position={[-0.1, 0.565, -0.05]} geometry={geo_cyl_73} material={mat_60} />
         </group>
       ) : null}
-      <group position={[2.2, useGltfFurniture ? 0.08 : 0, 2.0]}>
-        {/* Phone / glass stay as narrative dressing on either table implementation. */}
-        <mesh position={[0, 0.52, 0.05]} rotation={[0, 0.2, 0]} geometry={geo_box_71} material={mat_57} />
-        <mesh position={[0, 0.533, 0.05]} rotation={[0, 0.2, 0]} geometry={geo_box_72} material={mat_58} />
-        <mesh position={[0.05, 0.51, -0.05]} rotation={[0.8, 0.2, 0]} geometry={geo_cyl_64} material={mat_59} />
-        <mesh renderOrder={2} position={[-0.1, 0.565, -0.05]} geometry={geo_cyl_73} material={mat_60} />
-      </group>
 
       {!useGltfFurniture ? (
         <>
@@ -1091,23 +1129,28 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
       </group>
       ) : null}
 
+      {/* Left-wall poster — Low only; Medium+ uses hangingPictureFrame dressing */}
+      {!useGltfFurniture ? (
       <group position={[-W / 2 + 0.02, 1.6, -1.0]} rotation-y={Math.PI / 2}>
         <mesh geometry={geo_box_82} material={mat_68} />
         <mesh position={[0, 0.1, 0.004]} geometry={geo_box_83} material={mat_69} />
       </group>
+      ) : null}
 
       {/* ═══════════════════════════════════════════════ */}
       {/* ── INTERIOR MODELS (from InteriorModels.tsx) ── */}
       {/* ═══════════════════════════════════════════════ */}
 
-      {/* ── Desk Lamp on nightstand ── */}
+      {/* Desk lamp / rug / radiator — Low kit; Medium+ lamp is Poly Haven deskLampArm */}
+      {!useGltfFurniture ? (
+        <>
       <Lamp position={[2.0, 0.5, 2.2]} scale={[0.6, 0.6, 0.6]} />
-
-      {/* ── Rug on floor near bed ── */}
       <Rug position={[1.8, 0.002, 2.0]} scale={[0.8, 1, 0.7]} color="#2a2840" />
-
-      {/* ── Radiator on left wall near bed ── */}
       <Radiator position={[-W / 2 + 0.06, 0.3, 1.5]} rotation={[0, Math.PI / 2, 0]} color="#a0a0a0" />
+        </>
+      ) : (
+        <Rug position={[1.8, 0.002, 2.0]} scale={[0.8, 1, 0.7]} color="#2a2840" />
+      )}
 
       {/* FIX-B1 (Phase 7.2 — Volodka Room duplicate-frame cleanup):
           Removed <DustParticles /> — it was a SECOND dust particle system
@@ -1231,3 +1274,4 @@ useGLTF.preload(POLYHAVEN_MODELS.paintedWoodenCabinet, true, true, extendLoader)
 useGLTF.preload(POLYHAVEN_MODELS.paintedWoodenTable, true, true, extendLoader);
 useGLTF.preload(POLYHAVEN_MODELS.deskLampArm, true, true, extendLoader);
 useGLTF.preload(POLYHAVEN_MODELS.cassettePlayer, true, true, extendLoader);
+useGLTF.preload(getPropModelDefinition('kenney_door')!.url, true, true, extendLoader);

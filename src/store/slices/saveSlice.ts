@@ -6,6 +6,7 @@ import {
   emitGameLoaded,
   emitGameSaved,
   emitGameSystemAlert,
+  emitPlaythroughReset,
 } from '../storeEffects';
 import { dispatchGameAction } from '@/shared/gameBridge/gameActionBridge';
 import { SAVE_VERSION } from '@/shared/validation/saveSchema';
@@ -47,10 +48,15 @@ function executeNewPlaythroughReset(options: NewPlaythroughResetOptions = {}): v
   resetPlayerXpBatch();
   dispatchGameAction({ type: 'poem/clearAllEffects' });
   clearAutoCloseTimers();
+  // Cancel any in-flight scene:loaded from the menu canvas stay-mounted path,
+  // then notify React gates (useSceneLoadedGate) so same-scene New Game does
+  // not keep loaded=true from the pre-menu preload through the wake cinematic.
+  resetSceneLoadedGateFromStore();
   applyCombinedPatch(createNewPlaythroughResetPatch(carry, options));
   invalidateCombinedGameStateCache();
   resetGuidedStoryFromStore();
   resetEngineRuntimeFromStore();
+  emitPlaythroughReset();
 }
 
 export const createSaveSlice: StateCreator<GameStoreState, [], [], SaveSlice> = () => ({

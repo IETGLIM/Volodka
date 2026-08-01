@@ -2,6 +2,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { ControllerSession } from '@/engine/controller/ControllerSession';
 import { useGameStore } from '@/store/gameStore';
 import { useGamePrimitive } from '@/store/selectors';
+import { getActiveCutsceneId } from '@/store/stores/cutsceneStore';
+import { getLiveCurrentSceneId } from '@/store/stores/explorationStore';
+import { getLiveGamePhase, getUIStoreState } from '@/store/stores/uiStore';
 import { eventBus } from '@/engine/EventBus';
 import { audioEngine } from '@/engine/AudioEngine';
 import { musicEngine } from '@/engine/MusicEngine';
@@ -9,7 +12,7 @@ import { getCutsceneForNode } from '@/data/cutscenes';
 import { resolveCutsceneWaypoints } from '@/engine/camera/resolveCutsceneWaypoints';
 import { closeNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
 import { openNarrativeAfterCutscene } from '@/engine/scene/postCutsceneNarrative';
-import { clearGameplayPhaseFlags, readGamePhase } from '@/shared/gamePhase';
+import { clearGameplayPhaseFlags } from '@/shared/gamePhase';
 import type { SceneId } from '@/shared/types/game';
 import {
   setCinematicHoldActive,
@@ -53,12 +56,14 @@ export function useCutsceneController() {
 
   const skipActiveCutscene = useCallback((): boolean => {
     const store = useGameStore.getState();
+    // Live cutscene slice — facade can lag one rAF after New Game setCutscene.
+    const activeId = getActiveCutsceneId();
 
     // Intro wake owns the unified timeline. Escape before the runner starts
     // (canvas:first-frame + poll gap) used to clear activeCutsceneId without
     // finishIntroWake — no woke_up, no quests, no prologue. Force skipMotion
     // start so finishIntroWake still runs.
-    if (store.activeCutsceneId === 'intro_wakeup') {
+    if (activeId === 'intro_wakeup') {
       if (isCinematicTimelineActive()) {
         skipCinematicTimeline();
       } else {
@@ -76,10 +81,10 @@ export function useCutsceneController() {
       return true;
     }
 
-    if (!store.activeCutsceneId) return false;
+    if (!activeId) return false;
 
     cancelCutsceneSession();
-    store.markCutsceneTriggered(store.activeCutsceneId!);
+    store.markCutsceneTriggered(activeId);
     store.setCutscene(null, []);
     clearGameplayPhaseFlags(store);
     eventBus.emit('cutscene:overlay_end', {});
@@ -90,8 +95,9 @@ export function useCutsceneController() {
     // Legacy skip (no active timeline) — restore duck the orchestrator would have.
     musicEngine.setMusicDuckFactor(1.0, 1.0);
 
-    if (store.currentNodeId && store.narrativeKind) {
-      openNarrativeAfterCutscene(store.currentNodeId, store.narrativeKind);
+    const ui = getUIStoreState();
+    if (ui.currentNodeId && ui.narrativeKind) {
+      openNarrativeAfterCutscene(ui.currentNodeId, ui.narrativeKind);
     }
     return true;
   }, [cancelCutsceneSession]);
@@ -106,7 +112,7 @@ export function useCutsceneController() {
   useEffect(() => {
     if (!currentNodeId) return;
 
-    const phase = readGamePhase(useGameStore.getState());
+    const phase = getLiveGamePhase();
     if (phase === 'intro' || phase === 'menu') return;
 
     const cutscene = getCutsceneForNode(currentNodeId);
@@ -117,7 +123,8 @@ export function useCutsceneController() {
 
     // Scene-id effect re-runs must not restart while a cutscene is already live
     // (same or different id, including intro wakeup) — otherwise overlays/waypoints double-fire.
-    if (store.activeCutsceneId) return;
+    // Live slice: New Game sets intro_wakeup before the facade catches up.
+    if (getActiveCutsceneId()) return;
 
     // Guard against starting a story cutscene while a unified cinematic
     // timeline is still active (e.g., a splash timeline still running).
@@ -144,7 +151,7 @@ export function useCutsceneController() {
     clearGameplayPhaseFlags(store);
     setCinematicPresentationMode('third_person');
 
-    const playbackSceneId = store.exploration.currentSceneId as SceneId;
+    const playbackSceneId = getLiveCurrentSceneId() as SceneId;
     const resolvedWaypoints = resolveCutsceneWaypoints(cutscene, playbackSceneId);
     const timeline = cutsceneDefToTimeline({ ...cutscene, waypoints: resolvedWaypoints });
 
@@ -174,7 +181,7 @@ export function useCutsceneController() {
       unsubTimelineComplete?.();
 
       const currentStore = useGameStore.getState();
-      if (currentStore.activeCutsceneId) {
+      if (getActiveCutsceneId()) {
         currentStore.markCutsceneTriggered(cutscene.id);
         currentStore.setCutscene(null, []);
         clearGameplayPhaseFlags(currentStore);
@@ -184,9 +191,10 @@ export function useCutsceneController() {
         // camera:recenter; emit cutscene_end for any legacy camera listeners.
         eventBus.emit('camera:cutscene_end', {});
       }
-      if (currentStore.currentNodeId) {
-        const nodeId = currentStore.currentNodeId;
-        const kind = currentStore.narrativeKind ?? 'story';
+      const ui = getUIStoreState();
+      if (ui.currentNodeId) {
+        const nodeId = ui.currentNodeId;
+        const kind = ui.narrativeKind ?? 'story';
         const hubId = SCENE_ENTRY_NODE_TO_HUB[nodeId];
         if (hubId && hubId !== nodeId) {
           markEntryBeatHubPromoted();
@@ -217,7 +225,7 @@ export function useCutsceneController() {
       unsubOverlayEnd?.();
       unsubTimelineComplete?.();
       const hubId = SCENE_ENTRY_NODE_TO_HUB[beatNodeId];
-      const nextNodeId = useGameStore.getState().currentNodeId;
+      const nextNodeId = getUIStoreState().currentNodeId;
       // Entry beat hub promotion (corridor_door → corridor_explore_mode) must not cancel in-flight cutscene.
       if (hubId && nextNodeId === hubId && isEntryBeatInFlight(beatNodeId)) {
         return;

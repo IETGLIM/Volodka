@@ -107,8 +107,8 @@ export function CinematicTimelineRunner() {
     // CRITICAL: Emit scene:loaded for the current scene. During "New Game",
     // there is no scene transition (we stay in volodka_room), so scene:loaded
     // never fires naturally. Without this, useSceneLoadedGate returns false
-    // forever, and ScenePropDressing, TriggerZoneProps, SceneInteriorAssets,
-    // and NPCSystemWrapper never mount — canvas stays black.
+    // forever, and TriggerZoneProps, SceneInteriorAssets, and pickup glow
+    // never mount after the wake (ScenePropDressing / NPCs are not gated).
     eventBus.emit('scene:loaded', {
       sceneId: 'volodka_room',
       fromSceneId: 'volodka_room',

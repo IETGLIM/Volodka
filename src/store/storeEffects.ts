@@ -201,6 +201,10 @@ export function emitGameLoaded(): void {
   emitAppEvent('game:loaded', {});
 }
 
+export function emitPlaythroughReset(): void {
+  emitAppEvent('game:playthrough_reset', {});
+}
+
 export function emitGameSystemAlert(payload: ApplicationEventMap['game:system_alert']): void {
   emitAppEvent('game:system_alert', payload);
 }

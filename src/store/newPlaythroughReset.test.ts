@@ -9,8 +9,9 @@ import {
   captureNewPlaythroughCarry,
   createNewPlaythroughResetPatch,
 } from './persistedState';
-import { resetGuidedStoryFromStore, resetEngineRuntimeFromStore } from './storeEngineHost';
+import { resetGuidedStoryFromStore, resetEngineRuntimeFromStore, resetSceneLoadedGateFromStore } from './storeEngineHost';
 import { resetSliceMutationSchedulerForTests } from './combinedState';
+import { emitPlaythroughReset } from './storeEffects';
 
 vi.mock('./storeEffects', async (importOriginal) => {
   const actual = await importOriginal<typeof import('./storeEffects')>();
@@ -19,12 +20,14 @@ vi.mock('./storeEffects', async (importOriginal) => {
     runAfterStoreCommit: (fn: () => void) => fn(),
     scheduleQuestObjectiveUpdated: vi.fn(),
     emitPoemResetAllEffects: vi.fn(),
+    emitPlaythroughReset: vi.fn(),
   };
 });
 
 vi.mock('./storeEngineHost', () => ({
   resetGuidedStoryFromStore: vi.fn(),
   resetEngineRuntimeFromStore: vi.fn(),
+  resetSceneLoadedGateFromStore: vi.fn(),
 }));
 
 function seedCompletedRunState(): void {
@@ -99,6 +102,8 @@ describe('new playthrough reset', () => {
     expect(state.introActive).toBe(false);
     expect(resetGuidedStoryFromStore).toHaveBeenCalled();
     expect(resetEngineRuntimeFromStore).toHaveBeenCalled();
+    expect(resetSceneLoadedGateFromStore).toHaveBeenCalled();
+    expect(emitPlaythroughReset).toHaveBeenCalled();
   });
 
   it('resetGame shares the new-playthrough reset path', () => {

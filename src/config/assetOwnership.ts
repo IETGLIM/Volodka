@@ -56,7 +56,9 @@ export const SCENE_ASSET_OWNERSHIP: readonly SceneAssetOwnershipEntry[] = [
     slot: 'interior_shell',
     owner: 'authored_shell',
     systems: ['AuthoredInteriorShell', 'prune-deploy-assets'],
-    quality: HIGH_ONLY,
+    // Documentary: runtime `isSceneAssetSystemAllowed` ignores quality today.
+    // ENABLED_ALL matches Medium+ shell mounts (not High-only).
+    quality: ENABLED_ALL,
     exclusive: true,
     assetIds: ['interior_room_bedroom'],
     publicUrls: [INTERIOR_SHELL_MODELS.volodkaBedroom],

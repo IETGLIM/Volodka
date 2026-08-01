@@ -7,7 +7,8 @@ import {
   type Dispatch,
 } from 'react';
 import { useGameStore } from '@/store/gameStore';
-import { readGamePhase } from '@/shared/gamePhase';
+import { getLiveGamePhase } from '@/store/stores/uiStore';
+import { getLiveCurrentSceneId } from '@/store/stores/explorationStore';
 import { eventBus } from '@/engine/EventBus';
 import { isPoemRevealBusy } from '@/engine/poemReveal/poemRevealOrchestrator';
 import { abortPoemReadingIfPending } from '@/engine/poemReading/poemReadingOrchestrator';
@@ -158,7 +159,7 @@ export function usePanelCoordinator({
     if (!pending) return;
     if (isCompletionFlowBusy()) return;
 
-    const sceneId = useGameStore.getState().exploration.currentSceneId;
+    const sceneId = getLiveCurrentSceneId();
     if (shouldDeferQuestAcceptDialog(pending.questId, sceneId)) return;
 
     pendingQuestAcceptRef.current = null;
@@ -186,13 +187,14 @@ export function usePanelCoordinator({
     // Wait for first-collect poem fragment reveal so celebration doesn't stack.
     if (isPoemRevealBusy()) return;
 
-    const state = useGameStore.getState();
+    const sceneId = getLiveCurrentSceneId();
+    const ui = useGameStore.getState();
     if (
-      shouldGateFirstReadingCelebration(pending.questId, state.exploration.currentSceneId) &&
+      shouldGateFirstReadingCelebration(pending.questId, sceneId) &&
       !shouldFlushGatedFirstReadingCelebration({
-        sceneId: state.exploration.currentSceneId,
-        showStoryOverlay: state.showStoryOverlay,
-        currentNodeId: state.currentNodeId,
+        sceneId,
+        showStoryOverlay: ui.showStoryOverlay,
+        currentNodeId: ui.currentNodeId,
       })
     ) {
       return;
@@ -218,7 +220,7 @@ export function usePanelCoordinator({
 
   const queueOrShowQuestAccept = useCallback(
     (payload: QuestAcceptPayload) => {
-      const sceneId = useGameStore.getState().exploration.currentSceneId;
+      const sceneId = getLiveCurrentSceneId();
       if (shouldDeferQuestAcceptDialog(payload.questId, sceneId) || isCompletionFlowBusy()) {
         pendingQuestAcceptRef.current = payload;
         return;
@@ -270,7 +272,7 @@ export function usePanelCoordinator({
     const scope = eventBus.createScope();
 
     scope.on('story:quest_available', (data) => {
-      const phase = readGamePhase(useGameStore.getState());
+      const phase = getLiveGamePhase();
       if (phase === 'intro' || phase === 'menu') return;
       queueOrShowQuestAcceptRef.current({ questId: data.questId, npcId: data.npcId });
     });
@@ -279,7 +281,7 @@ export function usePanelCoordinator({
         questId: data.questId,
         npcId: data.npcId,
       };
-      const sceneId = useGameStore.getState().exploration.currentSceneId;
+      const sceneId = getLiveCurrentSceneId();
       if (shouldGateFirstReadingCelebration(data.questId, sceneId)) {
         pendingQuestCompletionPresentationRef.current = payload;
         flushPendingQuestCompletionPresentationRef.current();
@@ -306,7 +308,7 @@ export function usePanelCoordinator({
     });
 
     scope.on('ui:open_panel', (payload) => {
-      const phase = readGamePhase(useGameStore.getState());
+      const phase = getLiveGamePhase();
       if (phase === 'intro' || phase === 'menu') return;
       if (!(PANEL_IDS as readonly string[]).includes(payload.panel)) return;
       const panel = payload.panel as NonNullPanelType;

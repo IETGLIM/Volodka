@@ -11,7 +11,8 @@ import {
 
 const MONITOR_EMISSIVE = new THREE.Color('#5a9a88');
 
-/** Extruded-feel desk: thick top slab + tapered cylinder legs (not four box posts). */
+/** Extruded-feel desk fallback (Low): thick top + tapered cylinder legs — not four box posts.
+ *  Medium+ wake room mounts Poly Haven paintedWoodenTable instead (VolodkaRoomVisual). */
 export function CraftedDeskShell({
   matFallback,
 }: {
@@ -52,16 +53,17 @@ interface ThinMonitorProps {
 /** Thin bezel + plane screen with photo-PBR metal housing (not a cube monitor). */
 export function ThinMonitor({ id, tex, x, rotY, groupRef, alertLed }: ThinMonitorProps) {
   return (
-    <group ref={groupRef} position={[x, 1.12, -0.18]} rotation={[0, rotY, 0]}>
-      <mesh castShadow geometry={getSharedBoxGeometry(0.48, 0.32, 0.022)}>
+    <group ref={groupRef} position={[x, 1.08, -0.12]} rotation={[0, rotY, 0]}>
+      {/* Housing: shallow slab + slightly larger rear plate (reads as thin display, not PC tower) */}
+      <mesh castShadow geometry={getSharedBoxGeometry(0.5, 0.3, 0.016)}>
         <Suspense fallback={<meshStandardMaterial color="#12141a" roughness={0.55} metalness={0.35} />}>
           <PolyHavenStandardMaterial materialId="metal_plate" repeatScale={2.4} color="#1a1e28" metalness={0.42} roughness={0.48} />
         </Suspense>
       </mesh>
-      <mesh position={[0, 0, -0.018]} castShadow geometry={getSharedBoxGeometry(0.44, 0.28, 0.02)}>
+      <mesh position={[0, 0, -0.014]} castShadow geometry={getSharedBoxGeometry(0.46, 0.26, 0.012)}>
         <meshStandardMaterial color="#0a0c10" roughness={0.7} metalness={0.25} />
       </mesh>
-      <mesh position={[0, 0, 0.014]} geometry={getSharedPlaneGeometry(0.44, 0.28)} renderOrder={2}>
+      <mesh position={[0, 0, 0.01]} geometry={getSharedPlaneGeometry(0.46, 0.26)} renderOrder={2}>
         <meshStandardMaterial
           map={tex}
           emissive={MONITOR_EMISSIVE}
@@ -74,14 +76,15 @@ export function ThinMonitor({ id, tex, x, rotY, groupRef, alertLed }: ThinMonito
         />
       </mesh>
       {alertLed ? (
-        <mesh position={[0.2, 0.13, 0.02]} geometry={new THREE.CircleGeometry(0.012, 8)} material={alertLed} />
+        <mesh position={[0.21, 0.12, 0.014]} geometry={new THREE.CircleGeometry(0.01, 8)} material={alertLed} />
       ) : null}
-      <mesh position={[0, -0.22, -0.01]} geometry={getSharedCylinderGeometry(0.02, 0.025, 0.18, 8)}>
+      {/* Neck + disc foot — cylinder language, not box stand */}
+      <mesh position={[0, -0.2, -0.01]} geometry={getSharedCylinderGeometry(0.016, 0.022, 0.16, 10)}>
         <Suspense fallback={<meshStandardMaterial color="#1a1c22" roughness={0.5} metalness={0.4} />}>
           <PolyHavenStandardMaterial materialId="metal_plate" repeatScale={3.2} color="#2a3038" metalness={0.5} roughness={0.42} />
         </Suspense>
       </mesh>
-      <mesh position={[0, -0.32, 0]} rotation={[-Math.PI / 2, 0, 0]} geometry={getSharedCylinderGeometry(0.12, 0.12, 0.02, 16)}>
+      <mesh position={[0, -0.29, 0]} rotation={[-Math.PI / 2, 0, 0]} geometry={getSharedCylinderGeometry(0.11, 0.11, 0.016, 20)}>
         <Suspense fallback={<meshStandardMaterial color="#1a1c22" roughness={0.55} metalness={0.35} />}>
           <PolyHavenStandardMaterial materialId="metal_plate" repeatScale={2.8} color="#222830" metalness={0.48} roughness={0.45} />
         </Suspense>

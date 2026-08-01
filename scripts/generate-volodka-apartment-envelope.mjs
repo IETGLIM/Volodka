@@ -177,6 +177,10 @@ function buildEnvelope() {
   root.add(box('wall_right_below', T, below, winW, W / 2 - T / 2, below / 2, winCz, 0x9a94a8));
   root.add(box('wall_right_above', T, above, winW, W / 2 - T / 2, winCy + winH / 2 + above / 2, winCz, 0x9a94a8));
   root.add(box('wall_window_sill', 0.14, 0.035, winW + 0.06, W / 2 - T - 0.03, below + 0.015, winCz, 0x7a7488));
+  // Interior window returns — shallow boxes inside the opening (stay within AABB).
+  root.add(box('wall_window_return_s', 0.08, winH - 0.04, 0.028, W / 2 - T - 0.05, winCy, winCz - winW / 2 + 0.02, 0x6a6478));
+  root.add(box('wall_window_return_n', 0.08, winH - 0.04, 0.028, W / 2 - T - 0.05, winCy, winCz + winW / 2 - 0.02, 0x6a6478));
+  root.add(box('wall_window_return_head', 0.08, 0.028, winW - 0.04, W / 2 - T - 0.05, winCy + winH / 2 - 0.02, winCz, 0x6a6478));
 
   // Door jambs — profile into room (−Z from front wall)
   const jl = molding('wall_door_jamb_left', jambShape(), doorH - 0.05, 0x5a4a38, 0.75);

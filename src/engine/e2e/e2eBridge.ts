@@ -15,6 +15,7 @@ import { enterSceneFreeExplorationHub } from '@/engine/scene/freeExplorationHub'
 import { resolveSceneSpawn, requestSceneTransition } from '@/engine/scene/sceneTransition';
 import { completeTutorial } from '@/store/actions/tutorialActions';
 import { getGameStore } from '@/store/gameStore';
+import { getLiveCurrentSceneId, getLivePlayerPosition } from '@/store/stores/explorationStore';
 import type { SceneId } from '@/shared/types/game';
 import { getCombatState, getRngState } from '@/engine/CombatSystem';
 import { getPlayerMovementMode } from '@/engine/player/playerMovementMode';
@@ -74,7 +75,7 @@ declare global {
 async function waitForScene(sceneId: SceneId): Promise<void> {
   const deadline = Date.now() + 45_000;
 
-  const sceneReady = () => getGameStore().exploration.currentSceneId === sceneId;
+  const sceneReady = () => getLiveCurrentSceneId() === sceneId;
 
   if (sceneReady()) return;
 
@@ -244,11 +245,11 @@ export function registerVolodkaE2EBridge(): void {
         const t = rb!.translation();
         return { x: t.x, y: t.y, z: t.z };
       }
-      const [px, py, pz] = getGameStore().exploration.playerPosition;
+      const [px, py, pz] = getLivePlayerPosition();
       return { x: px, y: py, z: pz };
     },
     interactTriggerZone(zoneId) {
-      const sceneId = getGameStore().exploration.currentSceneId as SceneId;
+      const sceneId = getLiveCurrentSceneId() as SceneId;
       eventBus.emit('object:interact', {
         objectId: zoneId,
         sceneId,

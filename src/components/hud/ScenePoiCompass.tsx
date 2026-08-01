@@ -5,6 +5,7 @@ import { memo, useEffect, useRef } from 'react';
 import { TRIGGER_ZONES, isTriggerZoneAvailable } from '@/data/triggerZones';
 import type { TriggerZone } from '@/data/triggerZones';
 import { useGameStore } from '@/store/gameStore';
+import { getLiveCurrentSceneId, getLivePlayerPosition } from '@/store/stores/explorationStore';
 import { usePanelStack } from '@/components/game/orchestrator/PanelStackContext';
 import { EXPLORATION_HUD_LAYOUT, explorationWeatherTopPx } from '@/shared/constants/hudLayout';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
@@ -101,24 +102,18 @@ const RadarInner = memo(function RadarInner({
   const rafId = useRef(0);
   // Store selector values that change infrequently — we snapshot these
   // on every animation frame from the store to avoid re-renders.
-  const currentSceneIdRef = useRef(useGameStore.getState().exploration.currentSceneId);
   const flagsRef = useRef(useGameStore.getState().playerState.flags);
   const actRef = useRef(useGameStore.getState().playerState.progression.currentAct ?? 1);
   const ttlFlagsRef = useRef(useGameStore.getState().activeTTLFlags);
-  const playerPosRef = useRef<[number, number, number]>(useGameStore.getState().exploration.playerPosition as [number, number, number]);
 
-  // Subscribe to store changes (rare — scene change, flag change) to update refs
-  const unsubscribeRef = useRef<(() => void) | null>(null);
-
+  // Subscribe to store changes (rare — flag/act change) to update refs.
+  // Scene + player position are read live each frame (facade can lag one rAF).
   useEffect(() => {
     const unsub = useGameStore.subscribe((state) => {
-      currentSceneIdRef.current = state.exploration.currentSceneId;
       flagsRef.current = state.playerState.flags;
       actRef.current = state.playerState.progression.currentAct ?? 1;
       ttlFlagsRef.current = state.activeTTLFlags;
-      playerPosRef.current = state.exploration.playerPosition as [number, number, number];
     });
-    unsubscribeRef.current = unsub;
     return () => unsub();
   }, []);
 
@@ -128,11 +123,11 @@ const RadarInner = memo(function RadarInner({
     if (!mc) return;
 
     function tick() {
-      const sceneId = currentSceneIdRef.current;
+      const sceneId = getLiveCurrentSceneId();
       const flags = flagsRef.current;
       const act = actRef.current;
       const ttlFlags = ttlFlagsRef.current;
-      const playerPos = playerPosRef.current;
+      const playerPos = getLivePlayerPosition();
 
       // Filter zones for current scene
       const visibleZones: TriggerZone[] = [];

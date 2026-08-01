@@ -1,7 +1,7 @@
 export { usePlayerStore, getPlayerStoreState } from './playerStore';
 export { useExplorationStore, getExplorationStoreState, getLivePlayerPosition, getLiveCurrentSceneId } from './explorationStore';
 export { useWorldStore, getWorldStoreState } from './worldStore';
-export { useUIStore, getUIStoreState } from './uiStore';
+export { useUIStore, getUIStoreState, getLiveGamePhase } from './uiStore';
 export { useCutsceneStore, getCutsceneStoreState, getActiveCutsceneId } from './cutsceneStore';
 export { useSaveStore, getSaveStoreState } from './saveStore';
 import { bindSliceStores } from '../storeBindings';

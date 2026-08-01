@@ -8,6 +8,7 @@ import type { SceneId, PlayerSkills } from '@/shared/types/game';
 export interface ApplicationEventMap {
   'game:saved': { timestamp: number; source: 'auto' | 'manual' };
   'game:loaded': Record<string, never>;
+  'game:playthrough_reset': Record<string, never>;
   'game:system_alert': {
     kind: 'save_failed' | 'load_failed' | 'load_recovered';
     message: string;
