@@ -487,20 +487,25 @@ function PostFXPipeline() {
   );
 
   // ── Part 3: Cinematic DOF for dialogue / cutscene moments ──
-  // High: mount DOF always (bokehScale animated 0↔target).
-  // Ultra: mount ONLY during active dialogue/cutscene (Session 8 60fps — no idle DOF cost).
+  // DOF is ALWAYS MOUNTED on high/ultra — its `bokehScale` is animated 0↔target via the
+  // `dofRef` imperative ref below (see useFrameTick). Mounting/unmounting the pass on
+  // dialogue open/close would force a full EffectComposer remount (pipelineKey change) →
+  // 8–10 shader recompiles = 250–2000ms main-thread stall per dialogue. That was the root
+  // cause of the 12s INP stalls on Ultra. Always-mounted + bokehScale=0 costs ~0.2ms/frame
+  // (the pass is a no-op when bokehScale=0) — far cheaper than recompiling shaders.
+  // Session 9 perf fix: decoupled from pipelineKey.
   const showStoryOverlay = useGameStore((s) => s.showStoryOverlay);
   const activeCutsceneId = useGameStore((s) => s.activeCutsceneId);
   const isInDialogue = showStoryOverlay;
   const isInCutscene = !!activeCutsceneId;
-  const dialogueOrCutscene = isInDialogue || isInCutscene;
   const wantsCinematicDOF =
-    softOk
-    && !reducedMotion && !visualLite && !coarsePointer
+    !reducedMotion && !visualLite && !coarsePointer
     && (
       (preset.id === 'high' && selectedPreset === 'high')
-      || (preset.id === 'ultra' && selectedPreset === 'ultra' && dialogueOrCutscene)
+      || (preset.id === 'ultra' && selectedPreset === 'ultra')
     );
+  // `isInDialogue` / `isInCutscene` are consumed by the useFrameTick below to drive bokehScale
+  // (0 when idle → DOF pass is a no-op; target bokeh when dialogue/cutscene active).
 
   // Refs + transition state for smooth DOF bokehScale animation.
   const dofRef = useRef<DepthOfFieldEffect | null>(null);
@@ -564,7 +569,7 @@ function PostFXPipeline() {
       ? SMAAPreset.MEDIUM
       : SMAAPreset.LOW;
 
-  const pipelineKey = `${sceneId}-${rendering.useLitePostFx ? 'lite' : rendering.useAmbientOcclusion ? 'ao' : 'full'}${wantsCinematicDOF ? '-dof' : ''}${wantsSmaa ? `-smaa${smaaPreset}` : ''}`;
+  const pipelineKey = `${sceneId}-${rendering.useLitePostFx ? 'lite' : rendering.useAmbientOcclusion ? 'ao' : 'full'}${wantsSmaa ? `-smaa${smaaPreset}` : ''}`;
   const lutKind = resolveProceduralLutKind(sceneId);
   const useAmbientOcclusion =
     rendering.useAmbientOcclusion
