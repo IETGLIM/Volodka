@@ -76,7 +76,7 @@ export function TurnPhaseIndicator() {
         key={isPlayerTurn ? 'player' : 'enemy'}
         initial={{ opacity: 0, y: -4 }}
         animate={{ opacity: 1, y: 0 }}
-        className={`text-[8px] font-mono tracking-wider ${isPlayerTurn ? 'text-cyan-500/70' : 'text-red-500/70'}`}
+        className={`text-[8px] font-mono tracking-wider combat-turn-banner ${isPlayerTurn ? 'text-cyan-500/70' : 'text-red-500/70'}`}
       >
         {isPlayerTurn ? '▸ ВАШ ХОД' : '▹ ХОД ПРОТИВНИКА'}
       </motion.div>

@@ -251,7 +251,7 @@ export function LoadingScreen({
 
         <MotionBox fx={fx} className="w-72 flex flex-col items-center gap-3" delay={0.5}>
           <div
-            className="w-full h-2 bg-slate-900/80 rounded-sm overflow-hidden relative border border-cyan-900/30 shadow-[inset_0_0_6px_rgb(var(--cyber-cyan-rgb)/0.1)]"
+            className="w-full h-2 bg-slate-900/80 rounded-sm overflow-hidden relative border border-cyan-900/30 shadow-[inset_0_0_6px_rgb(var(--cyber-cyan-rgb)/0.1)] boot-progress-bar"
             role="progressbar"
             aria-valuemin={0}
             aria-valuemax={100}

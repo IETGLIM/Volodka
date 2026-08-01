@@ -126,8 +126,8 @@ export function JournalPanel({
                         onClick={() => handleTabChange(tab.id)}
                         className={`flex flex-col items-center justify-center gap-1 py-2.5 sm:py-3 min-h-[44px] rounded-lg transition-all duration-200 ${
                           isActive
-                            ? 'bg-cyan-950/50 border border-cyan-800/40 shadow-[0_0_12px_rgb(var(--cyber-cyan-rgb) / 0.08)] cyber-tab-indicator cyber-underline-animated'
-                            : 'hover:bg-slate-800/30 border border-transparent cyber-underline-animated'
+                            ? 'bg-cyan-950/50 border border-cyan-800/40 shadow-[0_0_12px_rgb(var(--cyber-cyan-rgb) / 0.08)] cyber-tab-indicator cyber-underline-animated journal-tab-active'
+                            : 'hover:bg-slate-800/30 border border-transparent cyber-underline-animated journal-tab-inactive'
                         }`}
                         title={tab.label}
                       >

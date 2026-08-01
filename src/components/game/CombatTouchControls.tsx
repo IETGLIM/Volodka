@@ -37,7 +37,7 @@ function TouchActionButton({
       disabled={disabled}
       onClick={onPress}
       aria-label={label}
-      className="flex flex-col items-center justify-center gap-1 min-h-12 min-w-12 flex-1 rounded-xl border font-mono text-[10px] uppercase tracking-wider transition-transform active:scale-95 disabled:opacity-40 disabled:pointer-events-none"
+      className="flex flex-col items-center justify-center gap-1 min-h-12 min-w-12 flex-1 rounded-xl border font-mono text-[10px] uppercase tracking-wider transition-transform active:scale-95 disabled:opacity-40 disabled:pointer-events-none combat-action-button"
       style={{
         background: `color-mix(in srgb, ${accent} 18%, rgba(2,6,23,0.92))`,
         borderColor: `color-mix(in srgb, ${accent} 45%, transparent)`,

@@ -35,7 +35,7 @@ export function GlitchTitle({ text, animate }: GlitchTitleProps) {
     };
   }, [animate]);
 
-  const titleClassName = `relative text-6xl sm:text-8xl font-black tracking-[0.2em] ${glitching ? 'title-glitch' : ''}`;
+  const titleClassName = `relative text-6xl sm:text-8xl font-black tracking-[0.2em] boot-glitch-text ${glitching ? 'title-glitch' : ''}`;
   const titleStyle = {
     textShadow: glitching
       ? '-3px 0 #ff0000, 3px 0 #00ffff, 0 0 80px rgba(0,255,255,0.7)'

@@ -46,6 +46,7 @@ import { useNarrativeChoiceKeyboard } from '@/hooks/useNarrativeChoiceKeyboard';
 import { applyEffects } from '@/shared/utils/applyEffects';
 import { recordExplorationStoryStep } from '@/shared/explorationStoryBridge';
 import { DialogueRelationBar } from './dialogue/DialogueRelationBar';
+import { NpcRelationBadge } from './dialogue/NpcRelationBadge';
 import { DiceRollDisplay } from './dialogue/DiceRollDisplay';
 import { executeDialogueChoice } from '@/engine/narrative/narrativeChoiceExecutor';
 import {
@@ -633,6 +634,7 @@ export function DialogueRenderer() {
       ariaLabel="Диалог"
       speakerTitleId={speakerTitleId}
       speakerLabel={speakerLabel}
+      speakerExtra={npcId ? <NpcRelationBadge npcId={npcId} speakerName={node.speaker ?? ''} /> : undefined}
       displayedText={displayed}
       done={done}
       reducedMotion={reducedMotion}

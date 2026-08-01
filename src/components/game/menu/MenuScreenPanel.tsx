@@ -233,7 +233,7 @@ function MenuScreenPanelInner() {
         className="absolute bottom-8 left-6 z-30"
         aria-hidden="true"
       >
-        <span className="font-serif text-[10px] tracking-[0.15em] text-stone-500/45">v{APP_VERSION}</span>
+        <span className="font-serif text-[10px] tracking-[0.15em] text-stone-500/45 menu-version-badge">v{APP_VERSION}</span>
       </motion.div>
 
       <AnimatePresence>

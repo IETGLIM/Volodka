@@ -16,6 +16,8 @@ export interface CinematicNarrativeFrameProps {
   ariaLabel: string;
   speakerTitleId?: string;
   speakerLabel?: string;
+  /** Optional extra content rendered inline next to the speaker label */
+  speakerExtra?: ReactNode;
   displayedText: string;
   done: boolean;
   reducedMotion: boolean;
@@ -34,6 +36,7 @@ export function CinematicNarrativeFrame({
   ariaLabel,
   speakerTitleId,
   speakerLabel,
+  speakerExtra,
   displayedText,
   done,
   reducedMotion,
@@ -102,7 +105,7 @@ export function CinematicNarrativeFrame({
                   textShadow: `0 0 40px ${accentColor}50, 0 2px 12px rgba(0,0,0,0.85)`,
                 }}
               >
-                {speakerLabel}
+                {speakerLabel}{speakerExtra}
               </motion.h1>
             )}
 

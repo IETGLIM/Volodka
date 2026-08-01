@@ -1,7 +1,7 @@
 
 /* ─── Volodka RPG – Scene Entry Text Overlay ───
  *  Cinematic title card that appears briefly when entering a new scene.
- *  Shows the scene name and an atmospheric description (entryText).
+ *  Shows the scene name, location category, and an atmospheric description (entryText).
  *  Fades in slowly like a movie title card, stays 2.5s, then fades out.
  *  Only appears when the scene has an entryText configured in SCENE_CONFIG.
  *  DEFERS appearance until SceneTransitionOverlay has fully exited — no overlap.
@@ -10,25 +10,42 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SCENE_CONFIG } from '@/config/scenes';
+import { getSceneLocationCategory } from '@/config/sceneLocationCategories';
 import { eventBus } from '@/engine/EventBus';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { useSceneTransitionOverlayController } from '@/hooks/useSceneTransitionOverlayController';
 import type { SceneId } from '@/config/sceneIds';
+import type { LocationCategory } from '@/shared/types/locationCategory';
 
 /** How long the text stays visible (ms) before fading out. */
 const ENTRY_TEXT_HOLD_MS = 2500;
 /** Fade-in duration (seconds). */
 const FADE_IN_DURATION = 0.8;
 
+/** Russian labels for location categories — displayed as subtitle. */
+const LOCATION_CATEGORY_LABELS: Record<LocationCategory, string> = {
+  home: 'ПОМЕЩЕНИЕ',
+  cafe: 'ПОМЕЩЕНИЕ',
+  office: 'ПОМЕЩЕНИЕ',
+  library: 'ПОМЕЩЕНИЕ',
+  corridor: 'ПОМЕЩЕНИЕ',
+  street: 'УЛИЦА',
+  park: 'ПРИРОДА',
+  factory: 'ПОМЕЩЕНИЕ',
+  rooftop: 'УЛИЦА',
+  unknown: 'НЕИЗВЕСТНО',
+};
+
 export function SceneEntryTextOverlay() {
   const reducedMotion = useEffectiveReducedMotion();
   const [visible, setVisible] = useState(false);
   const [sceneName, setSceneName] = useState('');
   const [entryText, setEntryText] = useState('');
+  const [locationCategoryLabel, setLocationCategoryLabel] = useState('');
   const holdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const genRef = useRef(0);
-  const pendingRef = useRef<{ name: string; text: string; gen: number } | null>(null);
+  const pendingRef = useRef<{ name: string; text: string; categoryLabel: string; gen: number } | null>(null);
 
   const { isActive: transitionActive } = useSceneTransitionOverlayController();
 
@@ -37,12 +54,13 @@ export function SceneEntryTextOverlay() {
     if (transitionActive) return; // transition still running — wait
     if (!pendingRef.current) return; // no pending data
 
-    const { name, text, gen } = pendingRef.current;
+    const { name, text, categoryLabel, gen } = pendingRef.current;
     if (gen !== genRef.current) return; // stale generation
     pendingRef.current = null;
 
     setSceneName(name);
     setEntryText(text);
+    setLocationCategoryLabel(categoryLabel);
     setVisible(true);
 
     if (holdTimerRef.current) clearTimeout(holdTimerRef.current);
@@ -63,7 +81,9 @@ export function SceneEntryTextOverlay() {
       setVisible(false); // hide previous entry text immediately
 
       // Store pending — we'll show it once transition overlay finishes (or immediately if not active)
-      pendingRef.current = { name: config.name, text: config.entryText, gen: genRef.current };
+      const category = getSceneLocationCategory(sceneId as SceneId);
+      const categoryLabel = LOCATION_CATEGORY_LABELS[category] ?? LOCATION_CATEGORY_LABELS.unknown;
+      pendingRef.current = { name: config.name, text: config.entryText, categoryLabel, gen: genRef.current };
     });
 
     return () => {
@@ -119,13 +139,31 @@ export function SceneEntryTextOverlay() {
               transition={{ duration: reducedMotion ? 0 : 1.2, delay: 0.1, ease: 'easeOut' }}
             />
 
+            {/* Location category subtitle */}
+            {locationCategoryLabel && (
+              <motion.span
+                className="text-[10px] sm:text-[11px] font-mono font-medium tracking-[0.25em] uppercase text-center"
+                style={{
+                  color: 'rgba(0, 210, 235, 0.55)',
+                  textShadow: '0 0 8px rgba(0, 210, 235, 0.15)',
+                }}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.6, delay: 0.05, ease: 'easeOut' }}
+              >
+                {locationCategoryLabel}
+              </motion.span>
+            )}
+
             {/* Scene name */}
             <motion.h2
-              className="text-2xl sm:text-3xl md:text-4xl font-semibold tracking-[0.14em] text-center"
+              className="scene-name-banner text-2xl sm:text-3xl md:text-4xl font-semibold tracking-[0.14em] text-center"
               style={{
                 fontFamily: '"Georgia", "Times New Roman", serif',
                 color: 'rgba(245,245,244,0.96)',
                 textShadow: '0 2px 14px rgba(0,0,0,0.85)',
+                animation: 'none',
               }}
               initial={{ opacity: 0, y: 16, filter: 'blur(10px)' }}
               animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
@@ -134,6 +172,18 @@ export function SceneEntryTextOverlay() {
             >
               {sceneName}
             </motion.h2>
+
+            {/* Thin cyan accent line under scene name */}
+            <motion.div
+              className="w-32 sm:w-48 h-px origin-center"
+              style={{
+                background: 'linear-gradient(90deg, transparent, rgba(0, 210, 235, 0.5), transparent)',
+              }}
+              initial={{ scaleX: 0 }}
+              animate={{ scaleX: 1 }}
+              exit={{ scaleX: 0 }}
+              transition={{ duration: reducedMotion ? 0 : 0.8, delay: 0.4, ease: 'easeOut' }}
+            />
 
             {/* Atmospheric entry text */}
             <motion.p

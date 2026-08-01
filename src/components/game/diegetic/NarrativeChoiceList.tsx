@@ -104,7 +104,7 @@ export function NarrativeChoiceList({
           disabled={!choice.pass}
           aria-label={buildChoiceAriaLabel({ index: i, text: choice.text, cond: choice.cond })}
           aria-disabled={!choice.pass}
-          className={`group w-full text-left ${padding} hud-filmic-choice ${textSize} ${
+          className={`group w-full text-left ${padding} hud-filmic-choice dialogue-choice-card ${textSize} ${
             choice.pass ? 'cursor-pointer' : 'opacity-45 cursor-not-allowed'
           }`}
         >

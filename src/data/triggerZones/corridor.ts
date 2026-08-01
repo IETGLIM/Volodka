@@ -1,0 +1,190 @@
+/* ─── Volodka RPG – trigger zones (auto-split module) ─── */
+
+import type { TriggerZone } from './types';
+
+// CORRIDOR
+export const zones: TriggerZone[] = [
+  /* ─────────────── CORRIDOR ─────────────── */
+  {
+    id: 'corridor_kitchen_door',
+    sceneId: 'volodka_corridor',
+    position: [2.7, 0, -2.0],
+    size: [1.2, 2.2, 0.5],
+    enterToast: 'Из кухни пахнет чаем.',
+    linkedStoryNodeId: 'kitchen_table',
+    interactionType: 'open',
+    examineData: {
+      title: 'Дверь на кухню',
+      description: 'Из-за двери доносится аромат чая и домашней еды.',
+      detailText: 'Зарема, наверное, снова готовит. Тепло и свет пробиваются из щели под дверью.',
+      icon: '🚪',
+    },
+    effects: [
+      { type: 'showThought', thought: 'Запах плова... Зарема опять накрывает на стол. Если бы код пах так же, я бы ел его три раза в день.' },
+    ],
+  },
+  {
+    id: 'corridor_street_door',
+    sceneId: 'volodka_corridor',
+    position: [-2.7, 0, -2.0],
+    size: [1.2, 2.2, 0.5],
+    enterToast: 'Дверь на лестничную клетку — оттуда тянет холодом.',
+    linkedStoryNodeId: 'street_bench',
+    interactionType: 'open',
+    examineData: {
+      title: 'Входная дверь',
+      description: 'Металлическая дверь на лестничную клетку.',
+      detailText: 'Оттуда тянет холодом и пахнет сыростью. За этой дверью — подъезд, улица, весь этот серый город.',
+      icon: '🚪',
+    },
+    effects: [
+      { type: 'showThought', thought: 'Улица. Там свобода, но свобода без Wi-Fi — это просто холодный подъезд.' },
+    ],
+  },
+  {
+    id: 'corridor_room_door',
+    sceneId: 'volodka_corridor',
+    position: [0, 0, 7.3],
+    size: [1.2, 2.2, 0.5],
+    enterToast: 'Твоя комната.',
+    linkedStoryNodeId: 'go_home',
+    interactionType: 'open',
+    examineData: {
+      title: 'Дверь в комнату',
+      description: 'Твоя комната. Здесь всё как всегда.',
+      detailText: 'За этой дверью — твоя крепость. Мониторы, код, тишина. И остывший кофе на столе.',
+      icon: '🚪',
+    },
+  },
+  {
+    id: 'corridor_mailboxes',
+    sceneId: 'volodka_corridor',
+    position: [2.6, 1.0, 6.0],
+    size: [0.9, 1.4, 0.4],
+    enterToast: 'Почтовые ящики — четыре квартиры, четыре судьбы.',
+    interactionType: 'examine',
+    examineData: {
+      title: 'Почтовые ящики',
+      description: 'Ржавые ящики с потёртыми табличками. Твой — третий сверху.',
+      detailText: 'Внутри — счета, реклама и одно письмо без обратного адреса. Конверт пожелтел третий месяц. Ты ещё не решился его открыть. Почерк на обороте почти знаком.',
+      icon: '📬',
+    },
+    effects: [{ type: 'setFlag', flag: 'examined_corridor_mailboxes', flagValue: true }, { type: 'discoverLore', loreId: 'lore_corridor_letter' }],
+    linkedDialogueNodeId: 'explore_corridor_letter',
+  },
+  {
+    id: 'corridor_intercom',
+    sceneId: 'volodka_corridor',
+    position: [-2.85, 1.5, 6.0],
+    size: [0.4, 0.5, 0.3],
+    enterToast: 'Домофон — красная кнопка мигает.',
+    interactionType: 'examine',
+    examineData: {
+      title: 'Домофон',
+      description: 'Старый домофон с потрескавшимся динамиком и камерой, которая, кажется, давно не работает.',
+      detailText: 'Кто-то звонил вчера ночью. Ты не открыл. Сейчас в динамике только тихое электрическое жужжание.',
+      icon: '🔔',
+    },
+    effects: [{ type: 'setFlag', flag: 'examined_corridor_intercom', flagValue: true }],
+    linkedDialogueNodeId: 'explore_corridor_intercom',
+    // No coding gate — morning_ritual needs this interactable on Act 1 prologue
+    // before coding can reasonably reach 3.
+  },
+  {
+    id: 'corridor_mirror',
+    sceneId: 'volodka_corridor',
+    position: [2.85, 1.4, -5.5],
+    size: [0.5, 0.7, 0.3],
+    enterToast: 'Зеркало в потёртой раме.',
+    interactionType: 'examine',
+    examineData: {
+      title: 'Зеркало',
+      description: 'Узкое зеркало в деревянной раме. Отражение чуть запаздывает.',
+      detailText: 'Ты смотришь на себя — усталые глаза, худи, вечная тень под глазами. Зеркало знает все твои ночи.',
+      icon: '🪞',
+    },
+    effects: [{ type: 'setFlag', flag: 'examined_corridor_mirror', flagValue: true }],
+  },
+  {
+    id: 'corridor_graffiti',
+    sceneId: 'volodka_corridor',
+    position: [-2.85, 1.4, 0.5],
+    size: [1.3, 0.8, 0.3],
+    enterToast: 'На стене — кто-то оставил след.',
+    interactionType: 'read',
+    examineData: {
+      title: 'Граффити на стене',
+      description: 'Красные и синие теги на облупившейся штукатурке.',
+      detailText: '«ВОЛОДЬКА ЖИВЁТ ЗДЕСЬ» — написано не твоим почерком. Кто-то из соседей? Или ты сам в другой жизни?',
+      icon: '🎨',
+      relatedLoreIds: ['lore_vladimir'],
+    },
+    effects: [
+      { type: 'setFlag', flag: 'read_corridor_graffiti', flagValue: true },
+      { type: 'showThought', thought: '«ВОЛОДЬКА ЖИВЁТ ЗДЕСЬ»... Кто-то из соседей явно слишком хорошо меня знает. А может, это я пьяный в прошлую пятницу?' },
+    ],
+  },
+  {
+    id: 'corridor_bathroom_door',
+    sceneId: 'volodka_corridor',
+    position: [2.7, 0, 2.0],
+    size: [1.2, 2.2, 0.5],
+    enterToast: 'Дверь в санузел — сквозняк и тихое капанье.',
+    interactionType: 'open',
+    examineData: {
+      title: 'Дверь в санузел',
+      description: 'Узкая дверь, краска облупилась. Изнутри доносится монотонное капанье.',
+      detailText: 'Кран капает уже третий месяц. Починить — дело десяти минут, но руки не доходят. Как и до всего остального.',
+      icon: '🚪',
+    },
+    effects: [
+      { type: 'showThought', thought: 'Кап-кап-кап... Таймер утечки памяти. Каждый кап — ещё один бит, который утёк в никуда.' },
+    ],
+  },
+  {
+    id: 'corridor_zarema_door',
+    sceneId: 'volodka_corridor',
+    position: [-2.7, 0, 4.0],
+    size: [1.2, 2.2, 0.5],
+    enterToast: 'Из комнаты Заремы и Альберта тянет чаем и детскими голосами.',
+    interactionType: 'open',
+    examineData: {
+      title: 'Комната Заремы и Альберта',
+      description: 'За дверью — книги, игрушки и запах свежего чая.',
+      detailText: 'Соседи с самого детства. Зарема учит, Альберт чинит — и всегда найдётся место за их столом.',
+      icon: '🚪',
+    },
+  },
+  {
+    id: 'corridor_solnysh_door',
+    sceneId: 'volodka_corridor',
+    position: [2.7, 0, 4.0],
+    size: [1.2, 2.2, 0.5],
+    enterToast: 'Из комнаты Солныш и Лёни тянет кофе и краской.',
+    linkedStoryNodeId: 'solnysh_door',
+    interactionType: 'open',
+    examineData: {
+      title: 'Комната Солныш и Лёни',
+      description: 'За дверью — ковры, мольберт и запах обжаренного кофe.',
+      detailText: 'Ты знаешь эту комнату с детства — столько раз заходил сюда после школы. Солныш и Лёня.',
+      icon: '🚪',
+    },
+  },
+  {
+    id: 'corridor_solnysh',
+    sceneId: 'volodka_corridor',
+    position: [0, 0, 1.5],
+    size: [1.4, 2.0, 1.4],
+    enterToast: 'Солныш поправляет платок у зеркала. Умка крутится у ног.',
+    linkedNpcId: 'solnysh',
+    linkedDialogueNodeId: 'solnysh_corridor_greeting',
+    interactionType: 'talk',
+    examineData: {
+      title: 'Солныш (Алина)',
+      description: 'Блондинка с голубыми глазами — лучшая подруга с детства.',
+      detailText: 'Алина — её настоящее имя; Солныш — прозвище с гимназии. Одноклассница, дочь учительницы. Дизайнер и художник. Рядом — Умка.',
+      icon: '☀️',
+    },
+  },
+
+];

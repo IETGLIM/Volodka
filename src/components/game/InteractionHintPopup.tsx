@@ -115,7 +115,7 @@ export function InteractionHintPopup() {
           animate={{ y: isVisible ? 0 : 10, opacity: isVisible ? 1 : 0 }}
           exit={reducedMotion ? undefined : { y: 10, opacity: 0 }}
           transition={{ duration: reducedMotion ? 0 : 0.25, ease: 'easeOut' }}
-          className="interaction-hint-popup fixed left-1/2 -translate-x-1/2 pointer-events-none select-none"
+          className="interaction-hint-popup interact-prompt fixed left-1/2 -translate-x-1/2 pointer-events-none select-none"
           data-exploration-ui
           data-testid="interaction-hint"
           role="status"

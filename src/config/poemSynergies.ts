@@ -194,6 +194,127 @@ export const POEM_SYNERGIES: PoemSynergyDefinition[] = [
       worldHint: 'npc_shimmer',
     },
   },
+  /* ── Synergies for special/act poems + under-covered poems ── */
+  {
+    synergyId: 'urban_stop_frame_echo',
+    name: 'Городская Осознанность',
+    poemIds: ['poem_act6_01', 'poem_11'],
+    flagsToSet: [
+      { key: 'synergy_urban_awareness_loot_range', durationMs: 60000, reverseId: 'urban_awareness_loot_range' },
+    ],
+    immediateSkills: { intuition: 6 },
+    reverseOnExpiry: [{ type: 'skill', key: 'intuition', value: -6 }],
+    worldProfile: {
+      category: 'exploration',
+      visualPreset: 'god_rays_gold',
+      audioCue: 'discovery',
+      durationMs: 5000,
+      narrationLine: '«Стоп-кадр и эхо улиц — город раскрывает тайники, которые прятал от усталых глаз.»',
+      worldHint: 'exit_glow',
+    },
+  },
+  {
+    synergyId: 'night_break_defiance',
+    name: 'Ночной Дефис',
+    poemIds: ['poem_act6_04', 'poem_10'],
+    flagsToSet: [
+      { key: 'synergy_defiance_boost_defense', durationMs: 45000 },
+    ],
+    immediateSkills: { empathy: 5, coding: 4 },
+    reverseOnExpiry: [
+      { type: 'skill', key: 'empathy', value: -5 },
+      { type: 'skill', key: 'coding', value: -4 },
+    ],
+    worldProfile: {
+      category: 'defense',
+      visualPreset: 'shield_pulse',
+      audioCue: 'tension',
+      durationMs: 4200,
+      narrationLine: '«Ночной прорыв сквозь каменную кожу — когда HP на дне, ярость становится щитом.»',
+      worldHint: 'none',
+    },
+  },
+  {
+    synergyId: 'server_memory_deep',
+    name: 'Глубокая Память',
+    poemIds: ['poem_act6_05', 'poem_12'],
+    flagsToSet: [
+      { key: 'synergy_deep_memory_lore_reveal', durationMs: 90000, reverseId: 'deep_memory_lore_reveal' },
+    ],
+    immediateSkills: { intuition: 7, writing: 4 },
+    reverseOnExpiry: [
+      { type: 'skill', key: 'intuition', value: -7 },
+      { type: 'skill', key: 'writing', value: -4 },
+    ],
+    worldProfile: {
+      category: 'exploration',
+      visualPreset: 'god_rays_gold',
+      audioCue: 'mystery',
+      durationMs: 6000,
+      narrationLine: '«Память серверов и звёздный путь сливаются — скрытые истории сами выходят на свет.»',
+      worldHint: 'interaction_pulse',
+    },
+  },
+  {
+    synergyId: 'white_river_digital_poet',
+    name: 'Цифровая Поэзия',
+    poemIds: ['poem_21', 'poet_in_the_machine'],
+    flagsToSet: [
+      { key: 'synergy_digital_poetry_duration', durationMs: 75000 },
+    ],
+    immediateSkills: { writing: 6, rhythm: 3 },
+    reverseOnExpiry: [
+      { type: 'skill', key: 'writing', value: -6 },
+      { type: 'skill', key: 'rhythm', value: -3 },
+    ],
+    worldProfile: {
+      category: 'utility',
+      visualPreset: 'matrix_pulse',
+      audioCue: 'mystery',
+      durationMs: 4800,
+      narrationLine: '«Белая река течёт сквозь машину — код и стихотворение становятся одной рекой.»',
+      worldHint: 'interaction_pulse',
+    },
+  },
+  {
+    synergyId: 'logical_rhythm',
+    name: 'Логический Ритм',
+    poemIds: ['poem_7', 'poem_3'],
+    flagsToSet: [
+      { key: 'synergy_logical_rhythm_skill_check', durationMs: 60000, reverseId: 'logical_rhythm_skill_check' },
+    ],
+    immediateSkills: { logic: 5, rhythm: 5 },
+    reverseOnExpiry: [
+      { type: 'skill', key: 'logic', value: -5 },
+      { type: 'skill', key: 'rhythm', value: -5 },
+    ],
+    worldProfile: {
+      category: 'utility',
+      visualPreset: 'matrix_pulse',
+      audioCue: 'discovery',
+      durationMs: 4500,
+      narrationLine: '«Ритм дождя и серебряная нить логики — когда ритм ровный, проверка навыков идёт легче.»',
+      worldHint: 'interaction_pulse',
+    },
+  },
+  {
+    synergyId: 'server_lullaby_code_empathy',
+    name: 'Кодовая Эмпатия',
+    poemIds: ['poem_15', 'poem_12'],
+    flagsToSet: [
+      { key: 'synergy_code_empathy_ambient_duck', durationMs: 60000 },
+    ],
+    immediateSkills: { intuition: 5 },
+    reverseOnExpiry: [{ type: 'skill', key: 'intuition', value: -5 }],
+    worldProfile: {
+      category: 'social',
+      visualPreset: 'warm_echo',
+      audioCue: 'emotional',
+      durationMs: 5200,
+      narrationLine: '«Серверная колыбельная и интуиция кода — мир затихает, чтобы ты услышал машину.»',
+      worldHint: 'none',
+    },
+  },
 ];
 
 const SYNERGY_BY_PAIR = new Map<string, PoemSynergyDefinition>();

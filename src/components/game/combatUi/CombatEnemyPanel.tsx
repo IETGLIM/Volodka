@@ -4,6 +4,7 @@ import { BuffDebuffBar } from '@/components/game/combatUi/CombatStatusBadges';
 import { AnimatedHPBar } from '@/components/game/combatUi/CombatHpBars';
 import { ComboCounter } from '@/components/game/combatUi/CombatDamageFx';
 import { EnemyPortrait } from '@/components/game/combatUi/CombatEnemyPortrait';
+import { ENEMY_TEMPLATES } from '@/engine/combat/enemies';
 import type { CombatBuff, CombatState } from '@/shared/types/game';
 
 type CombatEnemyPanelProps = {
@@ -27,13 +28,18 @@ export function CombatEnemyPanel({
       transition={{ delay: introVisible ? 0 : 0.35, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
     >
       <motion.div
-        className="bg-black/60 backdrop-blur-sm border border-red-900/30 rounded-lg p-3 scan-line"
+        className="bg-black/60 backdrop-blur-sm border border-red-900/30 rounded-lg p-3 scan-line combat-enemy-card"
         style={{ boxShadow: '0 0 20px rgba(239,68,68,0.1)' }}
       >
         <div className="flex items-center gap-3 mb-2">
           <EnemyPortrait emoji={enemy.emoji} hp={enemy.hp} maxHp={enemy.maxHp} />
           <div className="flex-1">
             <div className="text-sm text-red-300 font-mono font-semibold">{enemy.name}</div>
+            {ENEMY_TEMPLATES[enemy.type]?.description && (
+              <div className="text-[8px] text-slate-500 font-mono leading-snug mt-0.5 line-clamp-1">
+                {ENEMY_TEMPLATES[enemy.type].description}
+              </div>
+            )}
             {combatState.enemyDefenseReduction > 0 && (
               <div className="text-[9px] text-amber-400 font-mono">
                 ⚠ ЗАЩИТА: -{Math.round(combatState.enemyDefenseReduction * 100)}%

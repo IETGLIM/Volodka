@@ -24,7 +24,7 @@ export function MenuTypewriterSubtitle({ text, delay = 0, enabled = true }: { te
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.5 }}
-      className={`mt-3 font-mono text-base md:text-lg tracking-[0.4em] uppercase ${done && started ? 'typing-cursor' : ''}`}
+      className={`mt-3 font-mono text-base md:text-lg tracking-[0.4em] uppercase menu-subtitle-flicker ${done && started ? 'typing-cursor' : ''}`}
       style={{
         background: 'linear-gradient(90deg, rgba(0,255,255,0.8), rgba(255,140,0,0.6), rgba(0,255,255,0.8))',
         WebkitBackgroundClip: 'text',

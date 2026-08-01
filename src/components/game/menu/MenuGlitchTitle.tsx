@@ -64,7 +64,7 @@ export function MenuGlitchTitle({ text, animate, parallax }: MenuGlitchTitleProp
     };
   }, [parallax]);
 
-  const titleClassName = `relative text-6xl md:text-8xl lg:text-9xl font-bold tracking-widest menu-glitch-title glitch-text-hover ${glitching ? 'title-glitch glitch-skew' : ''} ${glitching ? 'menu-glitch-color-shift' : ''}`;
+  const titleClassName = `relative text-6xl md:text-8xl lg:text-9xl font-bold tracking-widest menu-glitch-title glitch-text-hover menu-title-cyberglow ${glitching ? 'title-glitch glitch-skew' : ''} ${glitching ? 'menu-glitch-color-shift' : ''}`;
   const titleStyle = {
     textShadow: glitching
       ? '-2px 0 #ff0000, 2px 0 #00ffff, 0 0 80px rgba(0, 255, 255, 0.6)'
