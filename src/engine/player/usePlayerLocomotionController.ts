@@ -16,13 +16,13 @@ import {
 
 // ── Blend speeds for weight-based locomotion blending ──
 // Exponential damping: newWeight = prevWeight + (targetWeight - prevWeight) * (1 - exp(-blendSpeed * delta))
-const BLEND_ACCEL = 6;       // Idle→Walk: fast but smooth acceleration
-const BLEND_WALK_RUN = 4;    // Walk→Run: slightly slower for natural feel
-const BLEND_DECEL = 3;       // Walk→Idle / Run→Walk: natural deceleration
-const BLEND_CINEMATIC = 8;   // Cinematic entry/exit: fast (~0.35s equivalent)
+const BLEND_ACCEL = 5.2;     // Idle→Walk: slightly softer acceleration (less kit hitch)
+const BLEND_WALK_RUN = 3.6;  // Walk→Run: natural weight transfer
+const BLEND_DECEL = 2.8;     // Walk→Idle / Run→Walk: longer settle into idle
+const BLEND_CINEMATIC = 6.5; // Cinematic entry/exit: filmic hand-off
 
-const _CLIP_CROSSFADE_SEC = 0.2;
-const CINEMATIC_CROSSFADE_SEC = 0.35;
+const _CLIP_CROSSFADE_SEC = 0.28;
+const CINEMATIC_CROSSFADE_SEC = 0.48;
 
 /** Weight threshold — below this, clamp to 0 to allow the mixer to deactivate the action. */
 const WEIGHT_EPSILON = 0.001;

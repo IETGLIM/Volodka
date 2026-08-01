@@ -16,7 +16,7 @@ import {
 } from '@/config/assetManifest';
 import { resolveNpcModelScale, resolveNpcModelUrl } from '@/config/npcModelRegistry';
 import { NPC_GLTF_TARGET_HEIGHT_M } from '@/config/metricScaleCoherence';
-import { NPC_MESH_FILE_SHARE } from '@/config/npcMeshShare';
+import { NPC_UNIQUE_STAGED_RIG } from '@/config/npcMeshShare';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
 import { useSkinnedGltfClone } from '@/hooks/useSkinnedGltfClone';
 import { useNpcAnimationController } from '@/engine/npc/useNpcAnimationController';
@@ -28,6 +28,9 @@ import { ProceduralNPCModel } from '@/components/3d/ProceduralNPCModels';
 import { resolveNpcComposeRigRef } from '@/config/npcComposer';
 import { devWarn } from '@/shared/utils/devLog';
 import { fitCharacterGltf, measureCharacterGltfBounds } from '@/engine/assets/gltfScale';
+import { deplasticizeCharacterMaterials } from '@/engine/graphics/materials/deplasticizeCharacterMaterials';
+import { resolveNpcAppearance } from '@/engine/portrait/npcPortraitPresentation';
+import { composeNpcFitScale } from '@/engine/npc/npcSilhouetteVariance';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { useNpcProceduralLayers } from '@/hooks/useNpcProceduralLayers';
@@ -74,6 +77,14 @@ function GltfNPCModelInner({
   const fitRef = useRef<THREE.Group>(null);
   const { scene, mixer } = useSkinnedGltfClone(gltf.scene, gltf.animations, { castShadow: true });
   const [fit, setFit] = useState<Fit>({ scale: modelScale, rotX: 0, y: 0 });
+  const appearance = useMemo(
+    () => resolveNpcAppearance(definition.id, definition.appearance),
+    [definition.id, definition.appearance],
+  );
+  const fitScale3 = useMemo(
+    () => composeNpcFitScale(fit.scale, appearance),
+    [fit.scale, appearance],
+  );
   const onReadyRef = useRef(onReady);
   useEffect(() => {
     onReadyRef.current = onReady;
@@ -128,16 +139,23 @@ function GltfNPCModelInner({
     onReadyRef.current?.();
   }, [scene, modelScale, targetHeightFactor]);
 
-  // De-plastic Quaternius/GLB characters — raise roughness, tame metal, accept IBL.
-  // Shared-mesh aliases also get appearance tint so identical rigs read as distinct NPCs.
+  // De-plastic + seeded tints — silhouette/accessories handle residual twin reads.
   useLayoutEffect(() => {
-    const appearance = definition.appearance;
-    const body = appearance?.bodyColor ? new THREE.Color(appearance.bodyColor) : null;
-    const accent = appearance?.accentColor ? new THREE.Color(appearance.accentColor) : null;
-    const glow = appearance?.glowColor ? new THREE.Color(appearance.glowColor) : null;
-    const shareTint = NPC_MESH_FILE_SHARE[definition.id] != null;
-    let matIndex = 0;
+    deplasticizeCharacterMaterials(scene, {
+      envMapIntensity: 0.55,
+      minRoughness: 0.58,
+      roughnessMul: 1.3,
+      maxMetalness: 0.16,
+      maxEmissiveIntensity: 0.42,
+    });
 
+    const body = new THREE.Color(appearance.bodyColor);
+    const accent = new THREE.Color(appearance.accentColor);
+    const glow = new THREE.Color(appearance.glowColor);
+    const shareTint = NPC_UNIQUE_STAGED_RIG[definition.id] != null;
+    const tintStrength = shareTint ? 0.55 : 0.42;
+
+    let matIndex = 0;
     scene.traverse((obj) => {
       const mesh = obj as THREE.Mesh;
       if (!mesh.isMesh) return;
@@ -145,25 +163,16 @@ function GltfNPCModelInner({
       for (const m of mats) {
         if (!m || !(m as THREE.MeshStandardMaterial).isMeshStandardMaterial) continue;
         const std = m as THREE.MeshStandardMaterial;
-        std.envMapIntensity = 0.8;
-        std.roughness = Math.min(1, Math.max(0.48, (std.roughness ?? 0.55) * 1.18));
-        std.metalness = Math.min(0.28, std.metalness ?? 0);
-        if (std.emissiveIntensity > 0.6) {
-          std.emissiveIntensity = Math.min(std.emissiveIntensity, 0.55);
-        }
-
-        if (shareTint || body || accent) {
-          const tint = matIndex % 2 === 0 ? body ?? accent : accent ?? body;
-          if (tint) std.color.lerp(tint, shareTint ? 0.62 : 0.35);
-          if (glow) {
-            std.emissive.copy(glow);
-            std.emissiveIntensity = Math.max(std.emissiveIntensity, 0.12);
-          }
+        const tint = matIndex % 2 === 0 ? body : accent;
+        std.color.lerp(tint, tintStrength);
+        if (shareTint || appearance.glowColor) {
+          std.emissive.copy(glow);
+          std.emissiveIntensity = Math.max(std.emissiveIntensity, shareTint ? 0.08 : 0.05);
         }
         matIndex += 1;
       }
     });
-  }, [scene, definition.appearance, definition.id]);
+  }, [scene, appearance, definition.id]);
 
   useRegisterNpcFrame(definition.id, 'mixer', ({ delta }) => {
     // Skip animation updates when the NPC is not at 'full' LOD level.
@@ -196,7 +205,7 @@ function GltfNPCModelInner({
       ref={fitRef}
       rotation={[fit.rotX, 0, 0]}
       position={[0, fit.y, 0]}
-      scale={fit.scale}
+      scale={fitScale3}
       visible={visible}
       userData={{
         npcComposerRig: resolveNpcComposeRigRef(definition.id) ?? null,
@@ -421,12 +430,12 @@ export function GltfNPCModel({
   livePlayerPositionRef,
 }: GltfNPCModelProps) {
   const url = resolveNpcModelUrl(definition.id, definition.modelPath);
-  const appearance = definition.appearance;
+  const appearance = resolveNpcAppearance(definition.id, definition.appearance);
 
   const proceduralFallback = (
     <ProceduralNPCModel
       definitionId={definition.id}
-      appearance={appearance!}
+      appearance={appearance}
       interactionState={interactionState}
       isInteractionTarget={isInteractionTarget}
       activity={activity}
@@ -440,7 +449,7 @@ export function GltfNPCModel({
   }
 
   const scale = resolveNpcModelScale(definition.id, definition.scale);
-  const targetHeightFactor = appearance?.height ?? 1;
+  const targetHeightFactor = appearance.height ?? 1;
 
   return (
     <GltfLoadErrorBoundary

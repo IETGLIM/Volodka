@@ -8,6 +8,7 @@ import {
   type InteriorShellModelId,
 } from '@/config/interiorShellScale';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
+import { weatherEnvironmentMaterials } from '@/engine/graphics/materials/weatherEnvironmentMaterials';
 import type { SceneId } from '@/shared/types/game';
 
 const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeof useGLTF>[3]>;
@@ -48,17 +49,11 @@ function cloneInteriorShell(source: THREE.Object3D, castShadow: boolean): THREE.
       } else {
         mesh.material = mesh.material.clone();
       }
-
       const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
       for (const material of materials) {
-        if (material && 'envMapIntensity' in material) {
+        if (material && 'polygonOffset' in material) {
           const standard = material as THREE.MeshStandardMaterial;
-          standard.envMapIntensity = Math.max(standard.envMapIntensity ?? 0, 0.75);
-          if (typeof standard.roughness === 'number') {
-            standard.roughness = Math.min(1, Math.max(0.42, standard.roughness));
-          }
-          // Pull shell geometry slightly back in depth so procedural props,
-          // contact shadows, and inset trim planes win without coplanar flicker.
+          // Pull shell geometry slightly back so props/contact shadows win z-order.
           standard.polygonOffset = true;
           standard.polygonOffsetFactor = -1;
           standard.polygonOffsetUnits = -1;
@@ -67,6 +62,8 @@ function cloneInteriorShell(source: THREE.Object3D, castShadow: boolean): THREE.
       }
     }
   });
+  // Cafe / library / basement / office shells — wear maps on large surfaces.
+  weatherEnvironmentMaterials(clone, 'interior', { applyMaps: true });
   return clone;
 }
 

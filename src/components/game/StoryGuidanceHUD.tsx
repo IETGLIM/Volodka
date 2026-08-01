@@ -326,7 +326,15 @@ export function StoryGuidanceHUD() {
           }}
         >
           <div className="hud-filmic-caption px-4">
-            <p className="hud-filmic-body text-[12px] truncate" style={{ color: 'var(--hud-filmic-ink)' }}>
+            {directionHint ? (
+              <p
+                className="hud-filmic-kicker truncate text-center mb-0.5"
+                style={{ letterSpacing: '0.14em', color: 'var(--hud-filmic-ink-muted)' }}
+              >
+                {directionHint}
+              </p>
+            ) : null}
+            <p className="hud-filmic-body text-[12px] truncate text-center" style={{ color: 'var(--hud-filmic-ink)' }}>
               {displayText}
             </p>
           </div>

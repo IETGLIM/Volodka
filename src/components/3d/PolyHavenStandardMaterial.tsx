@@ -40,7 +40,7 @@ export function PolyHavenStandardMaterial({
       roughnessMap={maps.roughnessMap}
       aoMap={maps.aoMap}
       aoMapIntensity={0.95}
-      envMapIntensity={0.72}
+      envMapIntensity={0.48}
       metalness={metalness}
       roughness={roughness}
       polygonOffset={polygonOffset}

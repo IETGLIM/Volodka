@@ -26,14 +26,31 @@ export function neonGlowFromSeed(seed: number): string {
   return `hsl(${hue}, 85%, 58%)`;
 }
 
+const BODY_PALETTE = [
+  '#2a3142', '#3a2a28', '#243528', '#2c2840', '#353028',
+  '#1f2a38', '#402830', '#283640', '#322a22', '#2a3038',
+] as const;
+const ACCENT_PALETTE = [
+  '#4a5568', '#6a4a3a', '#3a6a58', '#5a4a78', '#7a6a48',
+  '#3a5a78', '#784858', '#486878', '#685848', '#587088',
+] as const;
+const SILHOUETTES: NPCAppearance['silhouette'][] = ['slim', 'average', 'heavy'];
+const ACCESSORIES: NPCAppearance['headAccessory'][] = ['none', 'glasses', 'hat', 'scarf', 'earring'];
+
 export function fallbackAppearance(seed: number): NPCAppearance {
+  const rand = mulberry32(seed);
+  const body = BODY_PALETTE[Math.floor(rand() * BODY_PALETTE.length)]!;
+  const accent = ACCENT_PALETTE[Math.floor(rand() * ACCENT_PALETTE.length)]!;
+  const height = 0.92 + rand() * 0.16;
+  const silhouette = SILHOUETTES[Math.floor(rand() * SILHOUETTES.length)]!;
+  const headAccessory = ACCESSORIES[Math.floor(rand() * ACCESSORIES.length)]!;
   return {
-    bodyColor: '#2a3142',
-    accentColor: '#4a5568',
-    headAccessory: 'none',
-    height: 1.0,
-    glowColor: neonGlowFromSeed(seed),
-    silhouette: 'average',
+    bodyColor: body,
+    accentColor: accent,
+    headAccessory,
+    height,
+    glowColor: neonGlowFromSeed(seed ^ 0x9e3779b9),
+    silhouette,
   };
 }
 

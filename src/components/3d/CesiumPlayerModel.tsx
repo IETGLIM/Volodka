@@ -6,6 +6,7 @@ import { getPlayerVolodkaModelUrl } from '@/config/playerModelUrl';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
 import { fitCharacterGltf, measureCharacterGltfBounds } from '@/engine/assets/gltfScale';
 import { usePlayerLocomotionController } from '@/engine/player/usePlayerLocomotionController';
+import { deplasticizeCharacterMaterials } from '@/engine/graphics/materials/deplasticizeCharacterMaterials';
 import { useMixamoAnimationClips } from '@/hooks/useMixamoAnimationClips';
 import { useSkinnedGltfClone } from '@/hooks/useSkinnedGltfClone';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
@@ -93,17 +94,11 @@ function CesiumPlayerModelInner({
   }, [scene, modelScale]);
 
   useLayoutEffect(() => {
-    scene.traverse((obj) => {
-      const mesh = obj as THREE.Mesh;
-      if (!mesh.isMesh) return;
-      const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-      for (const m of mats) {
-        if (!m || !(m as THREE.MeshStandardMaterial).isMeshStandardMaterial) continue;
-        const std = m as THREE.MeshStandardMaterial;
-        std.envMapIntensity = 0.85;
-        std.roughness = Math.min(1, Math.max(0.48, (std.roughness ?? 0.55) * 1.15));
-        std.metalness = Math.min(0.28, std.metalness ?? 0);
-      }
+    deplasticizeCharacterMaterials(scene, {
+      envMapIntensity: 0.58,
+      minRoughness: 0.6,
+      roughnessMul: 1.32,
+      maxMetalness: 0.16,
     });
   }, [scene]);
 

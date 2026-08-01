@@ -9,6 +9,7 @@ import * as THREE from 'three';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
 import { POLYHAVEN_MODELS } from '@/config/polyhavenAssets';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
+import { weatherEnvironmentMaterials } from '@/engine/graphics/materials/weatherEnvironmentMaterials';
 
 const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeof useGLTF>[3]>;
 
@@ -36,17 +37,26 @@ const STREET_HYBRID_LANDMARKS: LandmarkDef[] = [
   { url: POLYHAVEN_MODELS.streetLamp, position: [4.6, 0, -3.2], rotationY: Math.PI / 6, scale: 1.0 },
   { url: POLYHAVEN_MODELS.barrel, position: [-6.8, 0, 5.5], rotationY: 1.1, scale: 1.15 },
   { url: POLYHAVEN_MODELS.metalTrashCan, position: [7.4, 0, 2.8], rotationY: -0.3, scale: 1.25 },
+  { url: POLYHAVEN_MODELS.exteriorAirconUnit, position: [-10.4, 2.85, -6.2], rotationY: 0.08, scale: 1.05 },
+  { url: POLYHAVEN_MODELS.utilityBox, position: [9.1, 0, 6.4], rotationY: -0.4, scale: 1.1 },
+  { url: POLYHAVEN_MODELS.oldTyre, position: [2.8, 0, -8.6], rotationY: 0.9, scale: 1.2 },
+  { url: POLYHAVEN_MODELS.securityCamera, position: [10.6, 3.4, -12.2], rotationY: -Math.PI / 3, scale: 1.15 },
 ];
 
 function clonePreparedScene(source: THREE.Object3D, castShadow: boolean): THREE.Object3D {
   const clone = source.clone(true);
   clone.traverse((obj) => {
-    if ((obj as THREE.Mesh).isMesh) {
-      const mesh = obj as THREE.Mesh;
-      mesh.castShadow = castShadow;
-      mesh.receiveShadow = true;
+    if (!(obj as THREE.Mesh).isMesh) return;
+    const mesh = obj as THREE.Mesh;
+    mesh.castShadow = castShadow;
+    mesh.receiveShadow = true;
+    if (Array.isArray(mesh.material)) {
+      mesh.material = mesh.material.map((m) => m.clone());
+    } else if (mesh.material) {
+      mesh.material = mesh.material.clone();
     }
   });
+  weatherEnvironmentMaterials(clone, 'street');
   return clone;
 }
 

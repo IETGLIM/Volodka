@@ -19,7 +19,7 @@ import {
   isAssetEffectiveShipped,
   resolveCharacterManifestId,
 } from '@/config/assetManifest';
-import { resolveNpcMeshPublicUrl } from '@/config/npcMeshShare';
+import { resolveNpcMeshPublicUrl, resolveNpcUniqueStagedRigUrl } from '@/config/npcMeshShare';
 
 export interface NpcModelAssetMeta {
   url: string;
@@ -69,6 +69,13 @@ const CC0_SHIPPED_NPC_GLB_URLS = new Set<string>([
   `${NPCS}/chk_smert.glb`,
   `${NPCS}/chk_elis.glb`,
   `${NPCS}/chk_ritka.glb`,
+  // Exclusive modular hero meshes for former twin aliases
+  `${NPCS}/_rigs/male_01.glb`,
+  `${NPCS}/_rigs/male_02.glb`,
+  `${NPCS}/_rigs/male_04.glb`,
+  `${NPCS}/_rigs/male_06.glb`,
+  `${NPCS}/_rigs/female_01.glb`,
+  `${NPCS}/_rigs/female_02.glb`,
 ]);
 
 const CC0_NPC_MODEL_ASSETS: Partial<Record<string, NpcModelAssetMeta>> = {
@@ -99,7 +106,7 @@ const CC0_NPC_MODEL_ASSETS: Partial<Record<string, NpcModelAssetMeta>> = {
   office_colleague: {
     url: resolveNpcMeshPublicUrl('office_colleague'),
     license: 'CC0',
-    source: QUATERNIUS,
+    source: `${QUATERNIUS} (staged modular)`,
     sourceUrl: QUATERNIUS_URL,
   },
   maria: {
@@ -275,6 +282,10 @@ export function resolveNpcModelUrl(npcId: string, modelPath?: string): string | 
   if (rpmEntry && RPM_ON_DISK.has(rpmEntry.publicUrl)) {
     return rpmEntry.publicUrl;
   }
+
+  // Former twin aliases → exclusive modular `_rigs/` hero meshes (unique geometry).
+  const stagedUnique = resolveNpcUniqueStagedRigUrl(npcId);
+  if (stagedUnique) return stagedUnique;
 
   // Single shipped source: ASSET_MANIFEST before hardcoded CC0 table.
   const fromManifest = resolveManifestNpcUrl(npcId);

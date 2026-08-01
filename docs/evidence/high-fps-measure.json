@@ -1,0 +1,33 @@
+{
+  "measuredAt": "2026-08-01T07:11:42.074Z",
+  "baseUrl": "http://127.0.0.1:4173",
+  "preset": "high",
+  "targetFps": 60,
+  "environment": "playwright-chromium-headless-angle",
+  "samples": [
+    61,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60
+  ],
+  "averageFps": 60,
+  "p05Fps": 60,
+  "ok": true,
+  "canvasFound": true,
+  "notes": [
+    "Locked High budget in src/engine/performance/highPresetBudget.ts + qualityPresets.ts."
+  ],
+  "lockedBudget": {
+    "maxDpr": 1.5,
+    "effectsScale": 0.78,
+    "maxDrawDistanceM": 78,
+    "minEffectsScaleUnderPressure": 0.45,
+    "postFxKeptOnHighCritical": true,
+    "sourceMentionsTarget60": true
+  }
+}

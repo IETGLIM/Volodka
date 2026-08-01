@@ -63,10 +63,18 @@ describe('capQualityTierForGpuMemory', () => {
 });
 
 describe('applyGfxPressureToPreset', () => {
-  it('disables post-processing under critical pressure', () => {
+  it('keeps lite PostFX on desktop High under critical pressure', () => {
     const degraded = applyGfxPressureToPreset(QUALITY_PRESETS.high, 'critical');
-    expect(degraded.postProcessing).toBe(false);
+    expect(degraded.postProcessing).toBe(true);
+    expect(degraded.shadows).toBe(true);
     expect(degraded.effectsScale).toBeLessThan(QUALITY_PRESETS.high.effectsScale);
+    expect(degraded.effectsScale).toBeGreaterThanOrEqual(0.45);
+  });
+
+  it('disables post-processing under critical pressure on medium', () => {
+    const degraded = applyGfxPressureToPreset(QUALITY_PRESETS.medium, 'critical');
+    expect(degraded.postProcessing).toBe(false);
+    expect(degraded.effectsScale).toBeLessThan(QUALITY_PRESETS.medium.effectsScale);
   });
 
   it('reduces effects scale under memory pressure', () => {

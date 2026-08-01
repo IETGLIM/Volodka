@@ -65,8 +65,14 @@ export function StreetVisual({ sceneId = 'street_night', livePlayerPositionRef }
   const wetShopGlass = useMemo(() => getWetGlassPhysicalParams('streetShopWindow'), []);
   const wetNeonFascia = useMemo(() => getWetGlassPhysicalParams('neonFascia'), []);
 
-  // Ultra / ?proceduralAaa=1 — hybrid: keep Poly Haven grounds/facades, add procedural accents
-  const hybridAaa = !isWinter && sceneId === 'street_night' && isProceduralAaaFlagActive();
+  // High/ultra (or ?proceduralAaa=1) — hybrid: Poly Haven grounds/facades + procedural atmosphere/landmarks
+  const hybridAaa =
+    !isWinter
+    && sceneId === 'street_night'
+    && (
+      isProceduralAaaFlagActive()
+      || allowsHeavyGfxFeature(selectedPreset, 'meshPhysicalWet', { coarsePointer })
+    );
 
   return (
     <group>

@@ -27,6 +27,7 @@ import {
   getWetGlassPhysicalParams,
 } from '@/engine/graphics/wetStreetScenes';
 import { useIsMobileVisual } from '@/hooks/use-mobile';
+import { weatherEnvironmentMaterials } from '@/engine/graphics/materials/weatherEnvironmentMaterials';
 
 interface OfficeDayVisualProps {
   livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
@@ -139,18 +140,9 @@ function cloneOfficeAsset(source: THREE.Object3D, castShadow: boolean): THREE.Ob
       const mesh = node as THREE.Mesh;
       mesh.castShadow = castShadow;
       mesh.receiveShadow = true;
-      const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-      for (const material of mats) {
-        if (material && 'envMapIntensity' in material) {
-          const standard = material as THREE.MeshStandardMaterial;
-          standard.envMapIntensity = 0.72;
-          if (typeof standard.roughness === 'number') {
-            standard.roughness = Math.min(1, Math.max(0.42, standard.roughness));
-          }
-        }
-      }
     }
   });
+  weatherEnvironmentMaterials(clone, 'office');
   return clone;
 }
 

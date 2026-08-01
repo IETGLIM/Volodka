@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components -- co-located helpers and lazy exports */
-import { Suspense, useMemo, useState, useEffect } from 'react';
+import { Suspense, useMemo, useState, useEffect, useLayoutEffect } from 'react';
 import { useGLTF } from '@react-three/drei';
 import { getAssetDefinition, isAssetEffectiveShipped, resolveAssetUrl } from '@/config/assetManifest';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
@@ -8,6 +8,7 @@ import {
   scheduleGltfPreload,
 } from '@/engine/assets/gltfPreloadScheduler';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
+import { weatherEnvironmentMaterials } from '@/engine/graphics/materials/weatherEnvironmentMaterials';
 import { useSkinnedGltfClone } from '@/hooks/useSkinnedGltfClone';
 import { LodSwitcher } from './LodSwitcher';
 
@@ -38,6 +39,10 @@ function GltfAssetScene({ url, castShadow, receiveShadow, visible = true }: Gltf
   );
 
   const { scene } = useSkinnedGltfClone(gltf.scene, gltf.animations, cloneOptions);
+
+  useLayoutEffect(() => {
+    weatherEnvironmentMaterials(scene, 'prop');
+  }, [scene]);
 
   return <primitive object={scene} visible={visible} />;
 }

@@ -30,6 +30,30 @@ export const MIXAMO_TO_QUATERNIUS_BONE_ALIASES: Readonly<Record<string, string>>
   lefttoebase: 'PT.L',
   righttoebase: 'PT.R',
 
+  // Clavicle / finger stubs (common Mixamo export gaps on Quaternius)
+  leftclavicle: 'Shoulder.L',
+  rightclavicle: 'Shoulder.R',
+  lefthandthumb1: 'Wrist.L',
+  righthandthumb1: 'Wrist.R',
+  lefthandindex1: 'Wrist.L',
+  righthandindex1: 'Wrist.R',
+  lefthandmiddle1: 'Wrist.L',
+  righthandmiddle1: 'Wrist.R',
+
+  // Underscore Mixamo variants
+  left_arm: 'UpperArm.L',
+  right_arm: 'UpperArm.R',
+  left_forearm: 'LowerArm.L',
+  right_forearm: 'LowerArm.R',
+  left_hand: 'Wrist.L',
+  right_hand: 'Wrist.R',
+  left_up_leg: 'UpperLeg.L',
+  right_up_leg: 'UpperLeg.R',
+  left_leg: 'LowerLeg.L',
+  right_leg: 'LowerLeg.R',
+  left_foot: 'Foot.L',
+  right_foot: 'Foot.R',
+
   // KayKit / UAL slot leftovers on sleeping clip (dotted + flattened)
   'hand.l': 'Wrist.L',
   'hand.r': 'Wrist.R',

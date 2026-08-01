@@ -23,6 +23,7 @@ import {
   getWetPuddlePhysicalParams,
 } from '@/engine/graphics/wetStreetScenes';
 import { useIsMobileVisual } from '@/hooks/use-mobile';
+import { weatherEnvironmentMaterials } from '@/engine/graphics/materials/weatherEnvironmentMaterials';
 import {
   getSharedBoxGeometry,
   getSharedCircleGeometry,
@@ -85,17 +86,9 @@ function prepareAuthoredClone(source: THREE.Object3D, castShadow: boolean): THRE
       const mesh = node as THREE.Mesh;
       mesh.castShadow = castShadow;
       mesh.receiveShadow = true;
-      const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-      for (const material of mats) {
-        if (material && 'envMapIntensity' in material) {
-          const std = material as THREE.MeshStandardMaterial;
-          std.envMapIntensity = 0.82;
-          if (typeof std.roughness === 'number') std.roughness = Math.min(1, Math.max(0.48, std.roughness * 1.12));
-          if (typeof std.metalness === 'number') std.metalness = Math.min(0.85, std.metalness);
-        }
-      }
     }
   });
+  weatherEnvironmentMaterials(clone, 'plaza');
   return clone;
 }
 

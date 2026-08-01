@@ -60,11 +60,11 @@ import type { SceneId } from '@/shared/types/game';
 
 /** Per-scene color grading overrides for CyberPunk2077 / Noir / Gothic feel */
 const SCENE_COLOR_GRADE: Record<string, { hue: number; saturation: number; brightness: number; contrast: number }> = {
-  volodka_room:       { hue: -0.08, saturation: 0.15, brightness: 0.04, contrast: 0.28 }, // matrix monitor glow
-  volodka_corridor:   { hue: -0.05, saturation: -0.15, brightness: 0.01, contrast: 0.22 }, // oppressive noir
-  home_evening:       { hue: 0.06,  saturation: 0.16, brightness: 0.02, contrast: 0.14 }, // warm amber mood
-  street_night:       { hue: 0.08,  saturation: 0.22, brightness: 0.05, contrast: 0.35 }, // synthwave neon rain
-  procedural_aaa:     { hue: 0.06,  saturation: 0.18, brightness: 0.04, contrast: 0.32 },
+  volodka_room:       { hue: -0.05, saturation: 0.08, brightness: 0.01, contrast: 0.22 }, // CRT room — filmic, not candy
+  volodka_corridor:   { hue: -0.04, saturation: -0.18, brightness: 0.0, contrast: 0.24 }, // oppressive noir
+  home_evening:       { hue: 0.05,  saturation: 0.12, brightness: 0.015, contrast: 0.13 }, // warm amber mood
+  street_night:       { hue: 0.04,  saturation: 0.12, brightness: 0.02, contrast: 0.28 }, // wet noir — not candy neon
+  procedural_aaa:     { hue: 0.03,  saturation: 0.11, brightness: 0.02, contrast: 0.26 },
   street_winter:      { hue: -0.02, saturation: -0.12, brightness: 0.12, contrast: 0.08  },
   cafe_evening:       { hue: 0.06,  saturation: 0.20, brightness: 0.02, contrast: 0.16 }, // hazy blue-neon café
   office_day:         { hue: -0.02, saturation: -0.12, brightness: 0.04, contrast: 0.08 }, // sterile overcast

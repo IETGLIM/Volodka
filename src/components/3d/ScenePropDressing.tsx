@@ -18,6 +18,7 @@ import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
 import { useStaggeredMountCount } from '@/hooks/useStaggeredMountCount';
 import { disposeClonedScene, createSourceSkipSet } from '@/engine/three/disposeThreeResources';
+import { weatherEnvironmentMaterials } from '@/engine/graphics/materials/weatherEnvironmentMaterials';
 
 const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeof useGLTF>[3]>;
 
@@ -42,17 +43,10 @@ function buildPropClone(source: THREE.Object3D): THREE.Object3D {
     if (node instanceof THREE.Mesh) {
       node.castShadow = true;
       node.receiveShadow = true;
-      const materials = Array.isArray(node.material) ? node.material : [node.material];
-      for (const material of materials) {
-        if (!material || !('isMeshStandardMaterial' in material)) continue;
-        const standard = material as THREE.MeshStandardMaterial;
-        standard.envMapIntensity = 0.72;
-        standard.roughness = Math.min(1, Math.max(0.5, standard.roughness || 0.72));
-        standard.metalness = Math.min(0.82, Math.max(0, standard.metalness || 0));
-        standard.needsUpdate = true;
-      }
     }
   });
+  // Props: clamp-only — full wear maps reserved for large shell/floor surfaces (60fps).
+  weatherEnvironmentMaterials(root, 'prop', { applyMaps: false });
   return root;
 }
 

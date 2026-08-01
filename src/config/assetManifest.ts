@@ -75,6 +75,27 @@ function npcCharacterAsset(
   };
 }
 
+/** Unique modular Quaternius hero mesh from `_rigs/` (no fake LOD variants). */
+function npcStagedRigAsset(manifestId: string, rigRef: string): GltfAssetDefinition {
+  const url = `${MODELS}/npcs/_rigs/${rigRef}.glb`;
+  return {
+    id: manifestId,
+    category: 'character',
+    lods: [
+      { url, maxDistance: 0 },
+      { url, maxDistance: 15 },
+      { url, maxDistance: 35 },
+    ],
+    variants: {
+      none: url,
+      draco: url,
+      meshopt: url,
+    },
+    castShadow: true,
+    shipped: true,
+  };
+}
+
 /** Processed asset catalog — extend as art pipeline grows. */
 export const ASSET_MANIFEST: Record<string, GltfAssetDefinition> = {
   fps_arms: {
@@ -102,17 +123,17 @@ export const ASSET_MANIFEST: Record<string, GltfAssetDefinition> = {
   },
   npc_cafe_barista: npcCharacterAsset('npc_cafe_barista', 'cafe_barista'),
   // Shared Quaternius meshes — see npcMeshShare.ts (aliases → canonical fileBase)
-  npc_office_colleague: npcCharacterAsset('npc_office_colleague', 'chk_based'),
+  npc_office_colleague: npcStagedRigAsset('npc_office_colleague', 'male_01'),
   npc_albert: npcCharacterAsset('npc_albert', 'albert'),
   npc_zarema: npcCharacterAsset('npc_zarema', 'zarema'),
   npc_maria_ai3dgen: npcCharacterAsset('npc_maria_ai3dgen', 'maria'),
   npc_office_alexander: npcCharacterAsset('npc_office_alexander', 'office_alexander'),
   npc_office_dmitry: npcCharacterAsset('npc_office_dmitry', 'office_dmitry'),
-  npc_viktor: npcCharacterAsset('npc_viktor', 'chk_based'),
-  npc_kira: npcCharacterAsset('npc_kira', 'chk_ritka'),
-  npc_boris: npcCharacterAsset('npc_boris', 'zeka'),
-  npc_tamara: npcCharacterAsset('npc_tamara', 'anya'),
-  npc_grisha: npcCharacterAsset('npc_grisha', 'office_alexander'),
+  npc_viktor: npcStagedRigAsset('npc_viktor', 'male_02'),
+  npc_kira: npcStagedRigAsset('npc_kira', 'female_01'),
+  npc_boris: npcStagedRigAsset('npc_boris', 'male_04'),
+  npc_tamara: npcStagedRigAsset('npc_tamara', 'female_02'),
+  npc_grisha: npcStagedRigAsset('npc_grisha', 'male_06'),
   npc_maxim: npcCharacterAsset('npc_maxim', 'maxim'),
   npc_zeka: npcCharacterAsset('npc_zeka', 'zeka'),
   npc_trofim: npcCharacterAsset('npc_trofim', 'trofim'),

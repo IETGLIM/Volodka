@@ -37,13 +37,13 @@ const AUTHORED_STREET_FACADES: Array<{
   scale: number;
   variant: GltfMaterialVariant;
 }> = [
-  { position: [-12.4, 0, -16.0], rotationY: 0.06, scale: STREET_FACADE_SCALE.hero, variant: { tint: '#9aa0ad', envMapIntensity: 0.84, roughnessFloor: 0.48 } },
-  { position: [-12.8, 0, -5.4], rotationY: 0.18, scale: STREET_FACADE_SCALE.mid, variant: { tint: '#7f8b96', envMapIntensity: 0.72, roughnessFloor: 0.58 } },
-  { position: [-11.8, 0, 6.3], rotationY: Math.PI / 2 + 0.04, scale: STREET_FACADE_SCALE.side, variant: { tint: '#a28d7c', envMapIntensity: 0.78, roughnessFloor: 0.52 } },
-  { position: [12.8, 0, -18.8], rotationY: Math.PI - 0.11, scale: STREET_FACADE_SCALE.hero + 0.06, variant: { tint: '#7b8190', envMapIntensity: 0.92, roughnessFloor: 0.44 } },
-  { position: [14.0, 0, -7.0], rotationY: Math.PI + 0.14, scale: STREET_FACADE_SCALE.mid + 0.04, variant: { tint: '#8c7f72', envMapIntensity: 0.76, roughnessFloor: 0.62 } },
-  { position: [12.5, 0, 5.5], rotationY: -Math.PI / 2 - 0.09, scale: STREET_FACADE_SCALE.side + 0.04, variant: { tint: '#8fa0a5', envMapIntensity: 0.82, roughnessFloor: 0.5 } },
-  { position: [0.6, 0, -25.2], rotationY: 0.02, scale: STREET_FACADE_SCALE.hero + 0.1, variant: { tint: '#756f74', envMapIntensity: 0.7, roughnessFloor: 0.64 } },
+  { position: [-12.4, 0, -16.0], rotationY: 0.06, scale: STREET_FACADE_SCALE.hero, variant: { tint: '#9aa0ad', envMapIntensity: 0.58, roughnessFloor: 0.62 } },
+  { position: [-12.8, 0, -5.4], rotationY: 0.18, scale: STREET_FACADE_SCALE.mid, variant: { tint: '#7f8b96', envMapIntensity: 0.52, roughnessFloor: 0.68 } },
+  { position: [-11.8, 0, 6.3], rotationY: Math.PI / 2 + 0.04, scale: STREET_FACADE_SCALE.side, variant: { tint: '#a28d7c', envMapIntensity: 0.55, roughnessFloor: 0.64 } },
+  { position: [12.8, 0, -18.8], rotationY: Math.PI - 0.11, scale: STREET_FACADE_SCALE.hero + 0.06, variant: { tint: '#7b8190', envMapIntensity: 0.62, roughnessFloor: 0.58 } },
+  { position: [14.0, 0, -7.0], rotationY: Math.PI + 0.14, scale: STREET_FACADE_SCALE.mid + 0.04, variant: { tint: '#8c7f72', envMapIntensity: 0.54, roughnessFloor: 0.7 } },
+  { position: [12.5, 0, 5.5], rotationY: -Math.PI / 2 - 0.09, scale: STREET_FACADE_SCALE.side + 0.04, variant: { tint: '#8fa0a5', envMapIntensity: 0.56, roughnessFloor: 0.66 } },
+  { position: [0.6, 0, -25.2], rotationY: 0.02, scale: STREET_FACADE_SCALE.hero + 0.1, variant: { tint: '#756f74', envMapIntensity: 0.5, roughnessFloor: 0.72 } },
 ];
 
 function clonePreparedScene(
@@ -66,12 +66,15 @@ function clonePreparedScene(
       for (const m of mats) {
         if (m && 'envMapIntensity' in m) {
           const std = m as THREE.MeshStandardMaterial;
-          std.envMapIntensity = variant?.envMapIntensity ?? 0.9;
+          std.envMapIntensity = variant?.envMapIntensity ?? 0.55;
           if (variant?.tint && std.color) {
             std.color.multiply(new THREE.Color(variant.tint));
           }
           if (typeof std.roughness === 'number') {
-            std.roughness = Math.min(1, Math.max(variant?.roughnessFloor ?? 0.4, std.roughness * 1.1));
+            std.roughness = Math.min(1, Math.max(variant?.roughnessFloor ?? 0.58, std.roughness * 1.18));
+          }
+          if (typeof std.metalness === 'number') {
+            std.metalness = Math.min(std.metalness, 0.35);
           }
           std.polygonOffset = true;
           std.polygonOffsetFactor = 1;

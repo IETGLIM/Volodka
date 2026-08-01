@@ -140,6 +140,24 @@ dice checks, живые хабы). Вдохновение также: Gothic (р
 
 ## 📝 История сессий
 
+### Сессия: 2026-08-01 — "AAA loop: deplastic + hybrid street + soft cinema"
+**Контекст:** Динамический `/loop` на ошеломляющий AAA look/feel; независимый судья по `docs/AAA_JUDGE_CRITERIA.md` (LOCKED). Стихи/меню не трогали.
+
+**Что сделано:**
+- `deplasticizeCharacterMaterials` → Cesium player + GLB NPCs (меньше пластика)
+- `street_night` hybrid AAA atmosphere/landmarks на high/ultra (не только flag)
+- Плотнее street landmarks + deplastic на GLB props
+- Мягче locomotion blend / cinematic crossfade / scene transition fades
+- Filmic color grade (меньше candy neon); interiors/facades менее зеркальные
+- Desktop StoryGuidanceHUD показывает directionHint (show-don't-tell)
+- Unique `_rigs/` hero meshes for former twin aliases; wear maps on large shells
+- High budget + `docs/evidence/high-fps-measure.json` (headless ANGLE ~60 FPS)
+
+**Блокер сессии:** независимый `aaa-visual-judge` недоступен (Cursor usage limit). PASS не выставлять без судьи. Push отложен.
+
+**Следующий шаг:** восстановить usage → перезапуск судьи; при PASS — commit + push.
+
+---
 ### Сессия: 2026-07-31 — "AA docs + leave/mid-resume ticks 45–47"
 **Контекст:** Документация приведена к актуальной архитектуре (shell policy, MeshPhysical,
 GPU lifecycle, soft-lock pattern). Uncommitted leave/mid-resume для `pier_ritka`,

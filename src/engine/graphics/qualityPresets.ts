@@ -89,14 +89,15 @@ export const QUALITY_PRESETS: Record<Exclude<QualityPresetId, 'auto'>, QualityPr
   high: {
     id: 'high',
     labelRu: 'Высокое',
-    dpr: [1, 1.75],
+    // Locked mid-laptop 60fps envelope: keep atmosphere, cap pixel fill.
+    dpr: [1, 1.5],
     shadows: true,
     antialias: true,
     postProcessing: true,
-    effectsScale: 0.85,
+    effectsScale: 0.78,
     lodBias: 1,
     textureScale: 1,
-    maxDrawDistance: 90,
+    maxDrawDistance: 78,
     compression: 'draco',
     npcRenderMode: 'hybrid',
     environmentRenderMode: 'hybrid',
@@ -326,10 +327,28 @@ export function applyGfxPressureToPreset(
           effectsScale: Math.min(preset.effectsScale, 0.4),
         };
       }
+      // High/ultra keep PostFX alive — only thin effectsScale so atmosphere survives.
+      if (preset.id === 'high' || preset.id === 'ultra') {
+        return {
+          ...preset,
+          postProcessing: true,
+          effectsScale: Math.max(0.55, preset.effectsScale * 0.82),
+        };
+      }
       return preset.postProcessing
         ? { ...preset, effectsScale: preset.effectsScale * 0.75 }
         : preset;
     case 'critical':
+      // Desktop High: keep lite PostFX + contact shadows rather than gutting the look.
+      if (preset.id === 'high' && !hasCoarsePointer()) {
+        return {
+          ...preset,
+          postProcessing: true,
+          shadows: true,
+          effectsScale: Math.max(0.45, preset.effectsScale * 0.55),
+          antialias: true,
+        };
+      }
       return {
         ...preset,
         postProcessing: false,

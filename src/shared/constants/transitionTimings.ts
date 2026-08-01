@@ -6,11 +6,11 @@
 /** Cinematic transition phase durations (in seconds) */
 export const CINEMATIC_PHASES = {
   /** Glitch(0.15s) + wipe-in — longer fade for softer hero scene handoff */
-  FADE_OUT_DURATION: 0.65,
+  FADE_OUT_DURATION: 0.82,
   /** Hold/black phase — brief beat while camera rail settles */
-  HOLD_DURATION: 0.28,
+  HOLD_DURATION: 0.36,
   /** Wipe-out / fade-in phase — extended crossfade into the new scene */
-  FADE_IN_DURATION: 0.68,
+  FADE_IN_DURATION: 0.88,
 } as const;
 
 /** Scene transition handler timings (in milliseconds) */
@@ -44,9 +44,9 @@ export const CUTSCENE_TIMINGS = {
    *  resource-constrained devices and cold WASM initialisation. */
   CANVAS_TIMEOUT_MS: 6000,
   /** Black overlay fade after canvas is ready */
-  CANVAS_FADE_OUT_MS: 780,
+  CANVAS_FADE_OUT_MS: 920,
   /** Quick fade when canvas was already warm */
-  CANVAS_FADE_OUT_WARM_MS: 520,
+  CANVAS_FADE_OUT_WARM_MS: 640,
 } as const;
 
 /** Shared motion curves (Framer Motion cubic-bezier) */
