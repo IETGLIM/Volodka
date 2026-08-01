@@ -2,7 +2,7 @@ import * as THREE from 'three';
 
 const LUT_SIZE = 16;
 
-export type ProceduralLutKind = 'synthwave_neon' | 'warm_interior' | 'gothic_dust';
+export type ProceduralLutKind = 'synthwave_neon' | 'warm_interior' | 'gothic_dust' | 'cyber_noir';
 
 /** Scenes that receive a procedural 3D LUT pass (neon / mood grade). */
 export const PROCEDURAL_LUT_SCENES: Record<string, ProceduralLutKind> = {
@@ -18,6 +18,9 @@ export const PROCEDURAL_LUT_SCENES: Record<string, ProceduralLutKind> = {
   factory_basement: 'gothic_dust',
   zarema_albert_room: 'warm_interior',
   street_winter: 'gothic_dust',
+  // Session 9: city_square gets a restrained cyber-noir grade (teal shadows / warm highlights).
+  // Tasteful orange-teal, NOT candy — the plaza reads as wet filmic noir rather than flat neon.
+  city_square: 'cyber_noir',
 };
 
 export function resolveProceduralLutKind(sceneId: string): ProceduralLutKind | null {
@@ -61,6 +64,27 @@ function applyLutTransform(
       let ng = g * 0.94 + 0.04 * (1 - lum);
       const nb = b * 0.92 + 0.02 * lum;
       ng += 0.03 * (1 - lum);
+      return [clamp01(nr), clamp01(ng), clamp01(nb)];
+    }
+    case 'cyber_noir': {
+      // Restrained orange-teal: push shadows toward teal, lift highlights toward warm amber.
+      // Keeps skin/amber neon believable; avoids the candy cyan look.
+      const lum = r * 0.299 + g * 0.587 + b * 0.114;
+      const shadow = 1 - lum;       // 1 in darks, 0 in lights
+      const highlight = lum;        // 0 in darks, 1 in lights
+      // Teal into the shadows (cool the darks without crushing them).
+      let nr = r - 0.05 * shadow;
+      let ng = g + 0.02 * shadow;
+      let nb = b + 0.07 * shadow;
+      // Warm amber into the highlights (lift lights toward amber, keep saturation restrained).
+      nr += 0.05 * highlight;
+      ng += 0.01 * highlight;
+      nb -= 0.04 * highlight;
+      // Gentle contrast/saturation nudge so the grade reads as authored, not flat.
+      const sat = 1.08;
+      nr = lum + (nr - lum) * sat;
+      ng = lum + (ng - lum) * sat;
+      nb = lum + (nb - lum) * sat;
       return [clamp01(nr), clamp01(ng), clamp01(nb)];
     }
     default: {
