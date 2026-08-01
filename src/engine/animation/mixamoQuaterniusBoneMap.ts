@@ -75,6 +75,7 @@ export function normalizeBoneAliasKey(boneName: string): string {
 /**
  * Resolve a source track bone name to a destination skeleton bone, or null if none.
  * Prefers exact match on the destination, then alias map, then case-insensitive match.
+ * Quaternius modular `_rigs` use undotted sides (`ShoulderL`); classic packs use `Shoulder.L`.
  */
 export function resolveDestinationBoneName(
   sourceBone: string,
@@ -83,12 +84,17 @@ export function resolveDestinationBoneName(
   if (destinationBones.has(sourceBone)) return sourceBone;
 
   const alias = MIXAMO_TO_QUATERNIUS_BONE_ALIASES[normalizeBoneAliasKey(sourceBone)];
-  if (alias && destinationBones.has(alias)) return alias;
-
-  // hand.l style keys need the dotted form in the alias table — also try raw lower
   const dottedKey = sourceBone.trim().toLowerCase();
   const dottedAlias = MIXAMO_TO_QUATERNIUS_BONE_ALIASES[dottedKey];
-  if (dottedAlias && destinationBones.has(dottedAlias)) return dottedAlias;
+
+  for (const candidate of expandQuaterniusBoneCandidates(alias ?? dottedAlias ?? null)) {
+    if (destinationBones.has(candidate)) return candidate;
+  }
+
+  // Also try expanding the raw source name (already-Quaternius tracks on mixed clips).
+  for (const candidate of expandQuaterniusBoneCandidates(sourceBone)) {
+    if (destinationBones.has(candidate)) return candidate;
+  }
 
   const lower = sourceBone.toLowerCase();
   for (const dest of destinationBones) {
@@ -96,4 +102,19 @@ export function resolveDestinationBoneName(
   }
 
   return null;
+}
+
+/** `Shoulder.L` ↔ `ShoulderL`, `PT.L` ↔ `PTL` for modular vs classic Quaternius. */
+export function expandQuaterniusBoneCandidates(name: string | null): string[] {
+  if (!name) return [];
+  const out: string[] = [name];
+  if (name.includes('.')) {
+    out.push(name.replace(/\./g, ''));
+  } else {
+    const side = name.match(/^(.*?)([LR])$/);
+    if (side && side[1] && side[1].length > 0) {
+      out.push(`${side[1]}.${side[2]}`);
+    }
+  }
+  return out;
 }

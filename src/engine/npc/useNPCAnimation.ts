@@ -30,7 +30,7 @@ export function useNPCAnimation(
 ) {
   const currentAnimRef = useRef<NPCAnimationState>('idle');
   const previousActionRef = useRef<THREE.AnimationAction | null>(null);
-  const crossfadeDuration = 0.3;
+  const crossfadeDuration = 0.42;
 
   const findAction = useCallback(
     (state: NPCAnimationState): THREE.AnimationAction | null =>

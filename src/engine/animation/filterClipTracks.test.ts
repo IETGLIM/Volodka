@@ -47,7 +47,25 @@ describe('mixamoQuaterniusBoneMap', () => {
     expect(resolveDestinationBoneName('Rig_Medium', dest)).toBe('CharacterArmature');
     expect(resolveDestinationBoneName('UnknownBone', dest)).toBeNull();
   });
+
+  it('resolves Mixamo aliases onto undotted modular _rigs bones', () => {
+    const dest = new Set([
+      'Hips',
+      'UpperArmL',
+      'WristL',
+      'ShoulderL',
+      'FootL',
+      'PTL',
+      'CharacterArmature',
+    ]);
+    expect(resolveDestinationBoneName('mixamorig:LeftArm', dest)).toBe('UpperArmL');
+    expect(resolveDestinationBoneName('mixamorig:LeftShoulder', dest)).toBe('ShoulderL');
+    expect(resolveDestinationBoneName('hand.l', dest)).toBe('WristL');
+    expect(resolveDestinationBoneName('LeftFoot', dest)).toBe('FootL');
+    expect(resolveDestinationBoneName('LeftToeBase', dest)).toBe('PTL');
+  });
 });
+
 
 describe('remapClipTracksToSkeleton', () => {
   it('remaps KayKit hand.l onto Wrist.L when Wrist has no conflicting track', () => {
