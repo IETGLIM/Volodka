@@ -122,6 +122,25 @@ export function applyCameraFrame(
       const bobIntensity = 1 - Math.exp(-WALK_BOB_BLEND_SPEED * speedNorm);
       const bobOffset = Math.sin(_walkBobPhase) * WALK_BOB_AMPLITUDE * bobIntensity;
       targetPos.y += bobOffset;
+
+      // ── Lateral bob — camera-relative horizontal sway at HALF the vertical
+      //    frequency, producing the classic figure-8 camera gait. The body
+      //    sways once per stride while bobbing twice → reads as "walking",
+      //    not "floating". Camera-relative (uses view forward → right vector)
+      //    so the sway is always perpendicular to gaze, not world-space X.
+      //    Amplitude is half the Y bob (3mm) — subtle, below nausea threshold.
+      //    Session 9: "perfect movement animation" polish. ──
+      const fwdX = targetLook.x - targetPos.x;
+      const fwdZ = targetLook.z - targetPos.z;
+      const fwdLen = Math.hypot(fwdX, fwdZ);
+      if (fwdLen > 0.0001) {
+        // Right vector = forward × up(0,1,0) → (fwdZ, 0, -fwdX), normalized.
+        const rx = fwdZ / fwdLen;
+        const rz = -fwdX / fwdLen;
+        const lateralBob = Math.cos(_walkBobPhase * 0.5) * WALK_BOB_AMPLITUDE * 0.5 * bobIntensity;
+        targetPos.x += rx * lateralBob;
+        targetPos.z += rz * lateralBob;
+      }
     }
 
     // Breathing idle (only when standing still)
