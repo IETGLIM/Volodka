@@ -199,7 +199,7 @@ export function PanelWrapper({
             {...dialogProps}
             data-testid={testId}
             className={`
-              relative z-10 overflow-hidden panel-slide-in digital-noise edge-glow
+              relative z-10 overflow-hidden panel-slide-in digital-noise edge-glow glass-panel
               ${layout === 'sidebar'
                 ? 'fixed top-0 right-0 bottom-0 w-full sm:w-[34rem] h-full'
                 : `w-full ${maxWidth} mx-4 max-h-[90vh] flex flex-col`

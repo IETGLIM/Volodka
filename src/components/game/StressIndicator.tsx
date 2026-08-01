@@ -14,7 +14,7 @@ export function StressIndicator() {
   const intensity = (stress - 80) / 20; // 0-1 range for 80-100
 
   return (
-    <div className="fixed inset-0 pointer-events-none" data-exploration-ui style={{ zIndex: UI_LAYERS.HUD }}>
+    <div className="fixed inset-0 pointer-events-none stress-pulse-vignette" data-exploration-ui style={{ zIndex: UI_LAYERS.HUD }}>
       {/* Scanline glitch overlay */}
       <motion.div
         animate={{

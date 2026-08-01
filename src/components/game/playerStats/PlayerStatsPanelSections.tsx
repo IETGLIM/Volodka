@@ -76,11 +76,11 @@ export function StatBar({
       aria-valuemin={0}
       aria-valuemax={max}
       aria-label={label}
-      className="relative h-2 rounded-full overflow-hidden"
+      className="relative h-2 rounded-full overflow-hidden data-bar"
       style={{ background: 'rgba(255,255,255,0.06)' }}
     >
       <motion.div
-        className="h-full rounded-full relative stats-panel-bar-fill"
+        className="h-full rounded-full relative stats-panel-bar-fill data-bar-fill"
         style={{
           background: `linear-gradient(90deg, ${color}cc, ${color})`,
           boxShadow: `0 0 8px ${color}40`,
@@ -184,11 +184,11 @@ export function SkillMiniBar({
       aria-valuemin={0}
       aria-valuemax={50}
       aria-label={label}
-      className="h-1 rounded-full overflow-hidden flex-1"
+      className="h-1 rounded-full overflow-hidden flex-1 data-bar"
       style={{ background: 'rgba(255,255,255,0.06)' }}
     >
       <motion.div
-        className="h-full rounded-full"
+        className="h-full rounded-full data-bar-fill"
         style={{
           background: `linear-gradient(90deg, ${color}80, ${color})`,
           boxShadow: `0 0 4px ${color}30`,
@@ -271,11 +271,11 @@ export function XpProgressBar({
       aria-valuemin={0}
       aria-valuemax={100}
       aria-label="Прогресс опыта"
-      className="relative h-1.5 rounded-full overflow-hidden"
+      className="relative h-1.5 rounded-full overflow-hidden data-bar"
       style={{ background: 'rgba(255,255,255,0.06)' }}
     >
       <motion.div
-        className="h-full rounded-full stats-panel-bar-fill"
+        className="h-full rounded-full stats-panel-bar-fill data-bar-fill"
         style={{
           background: `linear-gradient(90deg, ${PLAYER_STATS_COLORS.amber}cc, ${PLAYER_STATS_COLORS.amber})`,
           boxShadow: `0 0 6px ${PLAYER_STATS_COLORS.amber}30`,

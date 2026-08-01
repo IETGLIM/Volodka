@@ -145,7 +145,7 @@ export const PoemRevealShell = memo(function PoemRevealShell({
         />
 
         <CinematicShell presentation={presentation} backdropVariant="revelation">
-          <div className="relative z-20 flex flex-col items-center w-full max-w-2xl px-6">
+          <div className="relative z-20 flex flex-col items-center w-full max-w-2xl px-6 glass-panel">
             {flags.showKicker ? (
               <p
                 className="mb-3 text-[10px] font-mono tracking-[0.35em] uppercase"
@@ -195,7 +195,8 @@ export const PoemRevealShell = memo(function PoemRevealShell({
             </div>
 
             <div
-              className="mt-6 w-full text-base sm:text-lg leading-relaxed px-2 min-h-[7.5rem]"
+              className="mt-6 w-full text-base sm:text-lg px-2 min-h-[7.5rem] poem-stanza-display"
+              style={{ lineHeight: '2.0' }}
               aria-live="polite"
               onClick={(e) => {
                 e.stopPropagation();
@@ -203,13 +204,20 @@ export const PoemRevealShell = memo(function PoemRevealShell({
               }}
             >
               {displayedLines.map((line, index) => (
-                <p
+                <motion.p
                   key={`${poem.id}-ex-${index}`}
+                  initial={reducedMotion ? false : { opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: 0.5,
+                    delay: reducedMotion ? 0 : index * 0.3,
+                    ease: 'easeOut',
+                  }}
                   className={`text-center ${line === '' ? 'h-4' : 'mb-1.5'}`}
                   style={{
-                    fontFamily: '"Georgia", "Times New Roman", serif',
+                    fontFamily: 'Georgia, "Times New Roman", serif',
                     color: 'rgba(225, 238, 248, 0.92)',
-                    textShadow: `0 0 18px ${presentation.accentColor}22`,
+                    textShadow: `0 0 10px ${presentation.accentColor}44, 0 0 25px ${presentation.accentColor}22, 0 0 40px ${presentation.accentColor}11`,
                     whiteSpace: 'pre-wrap',
                   }}
                 >
@@ -219,7 +227,7 @@ export const PoemRevealShell = memo(function PoemRevealShell({
                       |
                     </span>
                   ) : null}
-                </p>
+                </motion.p>
               ))}
             </div>
 

@@ -532,7 +532,7 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
     >
       <h2 {...titleProps} className="sr-only">Настройки</h2>
       <div
-        className="rounded-lg border overflow-hidden"
+        className="rounded-lg border overflow-hidden glass-panel"
         style={{
           background:
             'linear-gradient(180deg, rgba(8, 12, 18, 0.98) 0%, rgba(5, 8, 14, 0.99) 100%)',

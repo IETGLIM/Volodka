@@ -6944,3 +6944,515 @@
   }
 }
 
+
+/* ============================================================
+   Section G — Advanced Animations & Micro-interactions (12 classes)
+   ============================================================ */
+
+/* G1: cyber-hover-lift — subtle lift + shadow on hover, 0.2s ease */
+.cyber-hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.cyber-hover-lift:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 16px rgb(var(--cyber-cyan-rgb) / 0.12), 0 2px 4px oklch(0 0 0 / 0.2);
+}
+
+/* G2: cyber-hover-glow — text-shadow glow pulse on hover (cyan) */
+.cyber-hover-glow {
+  transition: text-shadow 0.3s ease;
+}
+.cyber-hover-glow:hover {
+  text-shadow:
+    0 0 4px rgb(var(--cyber-cyan-rgb) / 0.6),
+    0 0 12px rgb(var(--cyber-cyan-rgb) / 0.3),
+    0 0 24px rgb(var(--cyber-cyan-rgb) / 0.15);
+  animation: cyber-hover-glow-pulse 1.5s ease-in-out infinite;
+}
+@keyframes cyber-hover-glow-pulse {
+  0%, 100% {
+    text-shadow:
+      0 0 4px rgb(var(--cyber-cyan-rgb) / 0.6),
+      0 0 12px rgb(var(--cyber-cyan-rgb) / 0.3),
+      0 0 24px rgb(var(--cyber-cyan-rgb) / 0.15);
+  }
+  50% {
+    text-shadow:
+      0 0 8px rgb(var(--cyber-cyan-rgb) / 0.8),
+      0 0 20px rgb(var(--cyber-cyan-rgb) / 0.5),
+      0 0 40px rgb(var(--cyber-cyan-rgb) / 0.25);
+  }
+}
+
+/* G3: cyber-focus-ring — rotating dashed border on focus-visible (gradient trick) */
+.cyber-focus-ring {
+  position: relative;
+  outline: none;
+}
+.cyber-focus-ring::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: inherit;
+  padding: 2px;
+  background: conic-gradient(
+    from 0deg,
+    rgb(var(--cyber-cyan-rgb) / 0.8),
+    transparent 30%,
+    transparent 70%,
+    rgb(var(--cyber-cyan-rgb) / 0.8)
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+.cyber-focus-ring:focus-visible::after {
+  opacity: 1;
+  animation: cyber-focus-ring-spin 3s linear infinite;
+}
+@keyframes cyber-focus-ring-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* G4: cyber-shimmer — shimmer loading effect (45deg gradient sweep) */
+.cyber-shimmer {
+  position: relative;
+  overflow: hidden;
+  background: oklch(0.2 0.02 240);
+}
+.cyber-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    45deg,
+    transparent 25%,
+    rgb(var(--cyber-cyan-rgb) / 0.08) 37%,
+    rgb(var(--cyber-cyan-rgb) / 0.15) 50%,
+    rgb(var(--cyber-cyan-rgb) / 0.08) 63%,
+    transparent 75%
+  );
+  background-size: 300% 100%;
+  animation: cyber-shimmer-slide 1.8s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes cyber-shimmer-slide {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
+/* G5: cyber-text-glow-pulse — text-shadow pulse for important labels */
+.cyber-text-glow-pulse {
+  animation: cyber-text-glow-pulse-anim 2s ease-in-out infinite;
+}
+@keyframes cyber-text-glow-pulse-anim {
+  0%, 100% {
+    text-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.3);
+  }
+  50% {
+    text-shadow:
+      0 0 6px rgb(var(--cyber-cyan-rgb) / 0.6),
+      0 0 14px rgb(var(--cyber-cyan-rgb) / 0.25);
+  }
+}
+
+/* G6: cyber-border-pulse — border-color animates cyan ↔ transparent */
+.cyber-border-pulse {
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.3);
+  animation: cyber-border-pulse-anim 2.5s ease-in-out infinite;
+}
+@keyframes cyber-border-pulse-anim {
+  0%, 100% { border-color: rgb(var(--cyber-cyan-rgb) / 0.35); }
+  50% { border-color: transparent; }
+}
+
+/* G7: cyber-fade-in-up — fade + translateY(10px→0) entrance */
+.cyber-fade-in-up {
+  animation: cyber-fade-in-up-anim 0.4s ease-out both;
+}
+@keyframes cyber-fade-in-up-anim {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* G8: cyber-fade-out-down — fade + translateY(0→10px) exit */
+.cyber-fade-out-down {
+  animation: cyber-fade-out-down-anim 0.35s ease-in both;
+}
+@keyframes cyber-fade-out-down-anim {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+/* G9: cyber-scale-in — scale(0.95→1) + opacity(0→1) entrance */
+.cyber-scale-in {
+  animation: cyber-scale-in-anim 0.3s ease-out both;
+}
+@keyframes cyber-scale-in-anim {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* G10: cyber-slide-in-left — translateX(-20px→0) + opacity entrance */
+.cyber-slide-in-left {
+  animation: cyber-slide-in-left-anim 0.4s ease-out both;
+}
+@keyframes cyber-slide-in-left-anim {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* G11: cyber-slide-in-right — translateX(20px→0) + opacity entrance */
+.cyber-slide-in-right {
+  animation: cyber-slide-in-right-anim 0.4s ease-out both;
+}
+@keyframes cyber-slide-in-right-anim {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* G12: cyber-rotate-in — rotate(-5deg→0) + opacity entrance */
+.cyber-rotate-in {
+  animation: cyber-rotate-in-anim 0.35s ease-out both;
+}
+@keyframes cyber-rotate-in-anim {
+  from {
+    opacity: 0;
+    transform: rotate(-5deg);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(0deg);
+  }
+}
+
+/* ============================================================
+   Section H — Glass Morphism Utilities (8 classes)
+   ============================================================ */
+
+/* H1: glass-dark — base dark glass with subtle cyan border */
+.glass-dark {
+  background: rgba(8, 14, 24, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.15);
+}
+
+/* H2: glass-darker — heavier dark glass, more blur */
+.glass-darker {
+  background: rgba(4, 8, 16, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid oklch(0.15 0.02 240 / 0.6);
+}
+
+/* H3: glass-cyan — light cyan-tinted glass */
+.glass-cyan {
+  background: rgba(0, 210, 235, 0.05);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.25);
+}
+
+/* H4: glass-warm — amber-tinted warm glass */
+.glass-warm {
+  background: rgba(30, 20, 10, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid oklch(0.7 0.15 75 / 0.35);
+}
+
+/* H5: glass-danger — red-tinted danger glass */
+.glass-danger {
+  background: rgba(40, 10, 10, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid oklch(0.6 0.2 25 / 0.4);
+}
+
+/* H6: glass-success — emerald-tinted success glass */
+.glass-success {
+  background: rgba(10, 40, 20, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid oklch(0.65 0.18 155 / 0.4);
+}
+
+/* H7: glass-frost — frosted white glass for dream/psychic scenes */
+.glass-frost {
+  background: rgba(200, 220, 240, 0.08);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* H8: glass-panel — ready-to-use panel combining glass-dark + rounded + padding */
+.glass-panel {
+  background: rgba(8, 14, 24, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.15);
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+/* ============================================================
+   Section I — Data Visualization Styles (8 classes)
+   ============================================================ */
+
+/* I1: data-bar — base horizontal bar track with rounded ends */
+.data-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 9999px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* I2: data-bar-fill — fill portion with gradient, set width via inline style */
+.data-bar-fill {
+  height: 100%;
+  border-radius: 9999px;
+  background: linear-gradient(
+    90deg,
+    rgb(var(--cyber-cyan-rgb) / 0.7),
+    rgb(var(--cyber-cyan-rgb) / 1)
+  );
+  transition: width 0.4s ease;
+}
+
+/* I3: data-bar-label — small monospace label on/near bar */
+.data-bar-label {
+  font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+  font-size: 0.65rem;
+  color: oklch(0.7 0.02 240);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* I4: data-radial-progress — circular progress indicator (conic-gradient) */
+.data-radial-progress {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: conic-gradient(
+    rgb(var(--cyber-cyan-rgb) / 0.8) 0%,
+    rgb(var(--cyber-cyan-rgb) / 0.8) var(--progress, 0%),
+    rgba(255, 255, 255, 0.08) var(--progress, 0%),
+    rgba(255, 255, 255, 0.08) 100%
+  );
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.data-radial-progress::after {
+  content: '';
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: oklch(0.12 0.02 240);
+}
+
+/* I5: data-sparkline — inline mini decorative chart bar (4px height) */
+.data-sparkline {
+  display: inline-block;
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(
+    90deg,
+    rgb(var(--cyber-cyan-rgb) / 0.2),
+    rgb(var(--cyber-cyan-rgb) / 0.6),
+    rgb(var(--cyber-cyan-rgb) / 0.3),
+    rgb(var(--cyber-cyan-rgb) / 0.8)
+  );
+  vertical-align: middle;
+}
+
+/* I6: data-badge — small inline badge, monospace, rounded-full */
+.data-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.5rem;
+  font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+  font-size: 0.7rem;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: oklch(0.75 0.03 240);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  line-height: 1.4;
+}
+
+/* I7: data-badge-success — green variant */
+.data-badge-success {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.5rem;
+  font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+  font-size: 0.7rem;
+  border-radius: 9999px;
+  background: rgba(16, 185, 129, 0.12);
+  color: oklch(0.72 0.17 155);
+  border: 1px solid oklch(0.5 0.15 155 / 0.35);
+  line-height: 1.4;
+}
+
+/* I8: data-badge-danger — red variant */
+.data-badge-danger {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.5rem;
+  font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+  font-size: 0.7rem;
+  border-radius: 9999px;
+  background: rgba(239, 68, 68, 0.12);
+  color: oklch(0.7 0.19 25);
+  border: 1px solid oklch(0.5 0.15 25 / 0.35);
+  line-height: 1.4;
+}
+
+/* ============================================================
+   Section J — Responsive & Layout Utilities (8 classes)
+   ============================================================ */
+
+/* J1: safe-bottom-inset — iOS safe area bottom padding */
+.safe-bottom-inset {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* J2: safe-top-inset — iOS safe area top padding */
+.safe-top-inset {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* J3: scrollbar-cyber — thin cyan scrollbar */
+.scrollbar-cyber {
+  scrollbar-width: thin;
+  scrollbar-color: oklch(0.25 0.04 240) rgb(var(--cyber-cyan-rgb) / 0.1);
+}
+.scrollbar-cyber::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.scrollbar-cyber::-webkit-scrollbar-track {
+  background: rgb(var(--cyber-cyan-rgb) / 0.1);
+  border-radius: 3px;
+}
+.scrollbar-cyber::-webkit-scrollbar-thumb {
+  background: oklch(0.3 0.05 240);
+  border-radius: 3px;
+}
+.scrollbar-cyber::-webkit-scrollbar-thumb:hover {
+  background: oklch(0.4 0.06 240);
+}
+
+/* J4: scrollbar-hidden — hide scrollbar but keep scroll */
+.scrollbar-hidden {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+}
+
+/* J5: text-balance — balanced wrapping for headings */
+.text-balance {
+  text-wrap: balance;
+}
+
+/* J6: text-pretty — pretty wrapping for paragraphs */
+.text-pretty {
+  text-wrap: pretty;
+}
+
+/* J7: container-cyber — max-w-7xl centered with responsive px */
+.container-cyber {
+  max-width: 80rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+@media (min-width: 640px) {
+  .container-cyber {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+@media (min-width: 1024px) {
+  .container-cyber {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+/* J8: grid-auto-fit — responsive auto-fit card grid */
+.grid-auto-fit {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+/* ============================================================
+   Reduced-motion: disable all Batch 3 animations (Sections G–J)
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  .cyber-hover-glow:hover,
+  .cyber-text-glow-pulse,
+  .cyber-border-pulse,
+  .cyber-fade-in-up,
+  .cyber-fade-out-down,
+  .cyber-scale-in,
+  .cyber-slide-in-left,
+  .cyber-slide-in-right,
+  .cyber-rotate-in {
+    animation: none;
+  }
+  .cyber-focus-ring:focus-visible::after {
+    animation: none;
+    opacity: 1;
+  }
+  .cyber-shimmer::after {
+    animation: none;
+    background: none;
+  }
+  .data-bar-fill {
+    transition: none;
+  }
+}
+

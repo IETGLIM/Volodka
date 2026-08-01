@@ -37,9 +37,9 @@ export function XPGainBar({ currentXP, xpToNext, previousXP }: XPGainBarProps) {
 
   return (
     <div className="relative" role="group" aria-label="Полоса опыта">
-      <div className="h-2 bg-slate-800/80 rounded-full overflow-hidden relative">
+      <div className="h-2 bg-slate-800/80 rounded-full overflow-hidden relative data-bar">
         <motion.div
-          className="h-full rounded-full"
+          className="h-full rounded-full data-bar-fill"
           style={{
             background: 'linear-gradient(90deg, #0891b2, var(--cyber-cyan))',
             boxShadow: '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.3), inset 0 1px 0 rgba(255,255,255,0.15)',
@@ -84,8 +84,8 @@ export function XPGainBar({ currentXP, xpToNext, previousXP }: XPGainBarProps) {
       </AnimatePresence>
 
       <div className="flex justify-between mt-0.5">
-        <span className="text-[9px] text-slate-400 font-mono">{currentXP}</span>
-        <span className="text-[9px] text-slate-400 font-mono">{xpToNext} XP</span>
+        <span className="text-[9px] text-slate-400 font-mono data-bar-label">{currentXP}</span>
+        <span className="text-[9px] text-slate-400 font-mono data-bar-label">{xpToNext} XP</span>
       </div>
     </div>
   );

@@ -82,7 +82,7 @@ export function JournalPanel({
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={reducedMotion ? undefined : { scale: 0.92, opacity: 0, y: 20 }}
               transition={{ duration: motionDuration ?? 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="relative z-10 w-[95vw] max-w-4xl h-[85vh] max-h-[700px] flex overflow-hidden rounded-xl shadow-2xl shadow-black/50 glass-panel-dark"
+              className="relative z-10 w-[95vw] max-w-4xl h-[85vh] max-h-[700px] flex overflow-hidden rounded-xl shadow-2xl shadow-black/50 glass-panel-dark glass-panel"
               {...dialogProps}
               data-testid="journal-panel"
               style={{

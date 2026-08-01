@@ -246,7 +246,7 @@ export function DayNightCycleIndicator() {
       style={{ top: explorationDayNightTopPx(), right: EXPLORATION_HUD_LAYOUT.RIGHT_INSET, zIndex: UI_LAYERS.HUD + 1, ...quietStyle }}
     >
       <motion.div
-        className="pointer-events-auto rounded-lg border backdrop-blur-md overflow-hidden relative"
+        className="pointer-events-auto rounded-lg border backdrop-blur-md overflow-hidden relative glass-dark"
         style={{
           width: 160,
           background: 'linear-gradient(145deg, rgba(0,0,0,0.78) 0%, rgba(15,23,42,0.65) 50%, rgba(0,0,0,0.55) 100%)',
@@ -293,12 +293,25 @@ export function DayNightCycleIndicator() {
           </div>
           <AnimatePresence mode="wait" initial={false}>
             <motion.span
+              key={`daynight-icon-${timeOfDay >= 6 && timeOfDay < 18 ? 'day' : 'night'}`}
+              initial={{ opacity: 0, scale: 0.7 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.7 }}
+              transition={{ duration: 0.3 }}
+              className="text-sm leading-none"
+              aria-hidden="true"
+            >
+              {timeOfDay >= 6 && timeOfDay < 18 ? '☀' : '🌙'}
+            </motion.span>
+          </AnimatePresence>
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.span
               key={`time-${formatTime(timeOfDay)}`}
               initial={{ opacity: 0, x: 6 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -6 }}
               transition={{ duration: 0.2 }}
-              className="text-[11px] font-mono text-slate-300 tabular-nums"
+              className="text-[11px] font-mono text-slate-300 tabular-nums data-badge"
               style={{ textShadow: `0 0 6px ${config.celestialGlow}` }}
             >
               {formatTime(timeOfDay)}

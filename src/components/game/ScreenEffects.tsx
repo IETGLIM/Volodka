@@ -6,11 +6,11 @@
    Enhanced: damage vignette with red flash, low health pulse.
 */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { eventBus, EventBusPriority } from '@/engine/EventBus';
-import { useScreenEffectsVitals } from '@/store/selectors';
+import { useScreenEffectsVitals, useGamePrimitive } from '@/store/selectors';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import {
   triggerFlash,
@@ -187,6 +187,38 @@ export function ScreenEffects() {
     });
     return unsub;
   }, [reducedMotion]);
+
+  // ── Karma change flash ──
+  // Subscribe to karma as a primitive and diff against previous value.
+  // When karma increases: brief green/cyan flash (300ms).
+  // When karma decreases: brief red flash (300ms).
+  const karma = useGamePrimitive((s) => s.playerState.karma);
+  const prevKarmaRef = useRef(karma);
+  const karmaFlashHandler = useCallback((direction: 'up' | 'down') => {
+    if (reducedMotion) return;
+    if (direction === 'up') {
+      triggerFlash('rgba(34,211,238,0.18)', 0.18, 300);
+    } else {
+      triggerFlash('rgba(255,60,60,0.22)', 0.22, 300);
+    }
+  }, [reducedMotion]);
+  useEffect(() => {
+    const prev = prevKarmaRef.current;
+    if (karma !== prev) {
+      const diff = karma - prev;
+      if (diff > 0) karmaFlashHandler('up');
+      else if (diff < 0) karmaFlashHandler('down');
+      prevKarmaRef.current = karma;
+    }
+  }, [karma, karmaFlashHandler]);
+
+  // Reset karma ref on scene transition so loading a save doesn't re-trigger
+  useEffect(() => {
+    const unsub = eventBus.on('scene:transition_start', () => {
+      prevKarmaRef.current = karma;
+    });
+    return unsub;
+  }, [karma]);
 
   // ── Auto-trigger from game events ──
   useEffect(() => {
@@ -525,7 +557,7 @@ function LowHealthVignette() {
     ? Math.min(0.5, (energy < 25 ? (25 - energy) / 25 : 0) * 0.3 + (stress > 70 ? (stress - 70) / 30 : 0) * 0.2)
     : 0;
 
-  if (intensity <= 0) return null;
+  if (intensity <= 0 && stress <= 60) return null;
 
   // Color shifts: red for low health, orange for high stress, purple for both
   const isCritical = energy < 15;
@@ -542,17 +574,57 @@ function LowHealthVignette() {
   // Pulse rate increases with danger level
   const pulseRate = isCritical ? '0.8s' : isDanger ? '1.5s' : '2s';
 
+  // Stress > 80: separate intense red vignette pulsing at 1.5s
+  const stressHighIntensity = stress > 80 ? (stress - 80) / 20 : 0;
+
+  // Stress > 60: subtle orange tint at edges
+  const stressMediumIntensity = stress > 60 && stress <= 80 ? (stress - 60) / 20 : 0;
+
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 pointer-events-none"
-      style={{
-        zIndex: UI_LAYERS.NOIR_OVERLAY + 1,
-        background: `radial-gradient(ellipse at center, transparent 35%, ${pulseColor} 100%)`,
-        animation: `healthPulse ${pulseRate} ease-in-out infinite`,
-      }}
-    />
+    <>
+      {/* Base low-health/stress vignette (existing logic) */}
+      {intensity > 0 && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 pointer-events-none"
+          style={{
+            zIndex: UI_LAYERS.NOIR_OVERLAY + 1,
+            background: `radial-gradient(ellipse at center, transparent 35%, ${pulseColor} 100%)`,
+            animation: `healthPulse ${pulseRate} ease-in-out infinite`,
+          }}
+        />
+      )}
+
+      {/* Stress > 80: red vignette pulsing at 1.5s */}
+      {stressHighIntensity > 0 && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 pointer-events-none stress-pulse-vignette"
+          style={{
+            zIndex: UI_LAYERS.NOIR_OVERLAY + 2,
+            background: `radial-gradient(ellipse at center, transparent 40%, rgba(220, 38, 38, ${0.25 * stressHighIntensity}) 100%)`,
+            animation: `dangerPulse 1.5s ease-in-out infinite`,
+          }}
+        />
+      )}
+
+      {/* Stress > 60: subtle orange tint at edges */}
+      {stressMediumIntensity > 0 && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 pointer-events-none glass-danger"
+          style={{
+            zIndex: UI_LAYERS.NOIR_OVERLAY,
+            background: `radial-gradient(ellipse at center, transparent 55%, rgba(234, 138, 20, ${0.12 * stressMediumIntensity}) 100%)`,
+          }}
+        />
+      )}
+    </>
   );
 }

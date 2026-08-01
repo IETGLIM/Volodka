@@ -294,6 +294,136 @@ export const CRAFTING_RECIPES: CraftingRecipe[] = [
     craftingTime: 1500,
     outputRarity: 'rare',
   },
+  /* ════════════ CRAFTING EXPANSION (Task 7d) ════════════ */
+  {
+    id: 'recipe_coffee_energy',
+    name: 'Кофе с энергетиком',
+    description: 'Смертельная смесь чёрного кофе и энергетика «Код». Восстановление энергии +20.',
+    category: 'consumable',
+    inputs: [
+      { itemId: 'coffee', quantity: 1 },
+      { itemId: 'energy_drink', quantity: 1 },
+    ],
+    output: { itemId: 'restored_energy_boost', quantity: 1 },
+    skillRequirements: [],
+    craftingTime: 400,
+    outputRarity: 'uncommon',
+  },
+  {
+    id: 'recipe_signal_booster',
+    name: 'Самодельная антенна',
+    description: 'Антенна из металлолома и перепрошитого USB-накопителя. Усиливает сигнал в мёртвых зонах.',
+    category: 'quest',
+    inputs: [
+      { itemId: 'scraps', quantity: 3 },
+      { itemId: 'usb_drive', quantity: 1 },
+    ],
+    output: { itemId: 'signal_booster', quantity: 1 },
+    skillRequirements: [
+      { skill: 'coding', level: 3 },
+    ],
+    craftingTime: 1200,
+    outputRarity: 'uncommon',
+  },
+  {
+    id: 'recipe_cipher_notes',
+    name: 'Шифровальный блокнот',
+    description: 'Блокнот, исписанный шифрами и алгоритмами. +5 к coding при экипировке.',
+    category: 'equipment',
+    inputs: [
+      { itemId: 'paper', quantity: 1 },
+      { itemId: 'pen', quantity: 1 },
+    ],
+    output: { itemId: 'cipher_notes', quantity: 1 },
+    skillRequirements: [
+      { skill: 'coding', level: 2 },
+      { skill: 'logic', level: 2 },
+    ],
+    craftingTime: 800,
+    outputRarity: 'uncommon',
+  },
+  {
+    id: 'recipe_tech_amulet',
+    name: 'Цифровой талисман',
+    description: 'Слияние древнего амулета и микросхемы. +10 к intuition при экипировке.',
+    category: 'equipment',
+    inputs: [
+      { itemId: 'circuit_board', quantity: 1 },
+      { itemId: 'amulet', quantity: 1 },
+    ],
+    output: { itemId: 'tech_amulet', quantity: 1 },
+    skillRequirements: [
+      { skill: 'intuition', level: 4 },
+      { skill: 'coding', level: 2 },
+    ],
+    craftingTime: 1500,
+    outputRarity: 'rare',
+  },
+  {
+    id: 'recipe_repair_kit',
+    name: 'Ремонтный набор',
+    description: 'Набор из обрезков металла и синей изоленты. Восстанавливает 15 HP в бою.',
+    category: 'consumable',
+    inputs: [
+      { itemId: 'scraps', quantity: 5 },
+      { itemId: 'tape', quantity: 1 },
+    ],
+    output: { itemId: 'repair_kit', quantity: 1 },
+    skillRequirements: [
+      { skill: 'logic', level: 2 },
+    ],
+    craftingTime: 1000,
+    outputRarity: 'uncommon',
+  },
+  {
+    id: 'recipe_solnysh_record',
+    name: 'Записи Солнышка',
+    description: 'Расшифровка аудиокассеты с записями Солнышка. Тексты песен и загадочные координаты.',
+    category: 'quest',
+    inputs: [
+      { itemId: 'cassette', quantity: 1 },
+      { itemId: 'paper', quantity: 1 },
+    ],
+    output: { itemId: 'solnysh_record', quantity: 1 },
+    skillRequirements: [
+      { skill: 'intuition', level: 3 },
+    ],
+    craftingTime: 900,
+    outputRarity: 'rare',
+  },
+  {
+    id: 'recipe_fake_id_chip',
+    name: 'Псевдонимный чип',
+    description: 'Поддельный идентификационный чип. Требуется для проникновения в закрытые зоны (акт 2+).',
+    category: 'quest',
+    inputs: [
+      { itemId: 'usb_drive', quantity: 2 },
+      { itemId: 'circuit_board', quantity: 1 },
+    ],
+    output: { itemId: 'fake_id_chip', quantity: 1 },
+    skillRequirements: [
+      { skill: 'coding', level: 6 },
+      { skill: 'logic', level: 4 },
+    ],
+    craftingTime: 2000,
+    outputRarity: 'rare',
+  },
+  {
+    id: 'recipe_poetry_collection',
+    name: 'Поэтический сборник',
+    description: 'Самодельный сборник стихов, аккуратно переписанных от руки. Содержит неизвестные произведения.',
+    category: 'quest',
+    inputs: [
+      { itemId: 'paper', quantity: 3 },
+      { itemId: 'pen', quantity: 1 },
+    ],
+    output: { itemId: 'poetry_collection', quantity: 1 },
+    skillRequirements: [
+      { skill: 'writing', level: 4 },
+    ],
+    craftingTime: 1500,
+    outputRarity: 'rare',
+  },
 ];
 
 /* ─── Lookup helpers ─── */

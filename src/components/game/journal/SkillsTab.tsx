@@ -44,9 +44,9 @@ export function SkillsTab({ searchQuery }: SkillsTabProps) {
         </div>
 
         <div className="px-4">
-          <div className="h-2 bg-slate-800/80 rounded-full overflow-hidden shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)]">
+          <div className="h-2 bg-slate-800/80 rounded-full overflow-hidden shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)] data-bar">
             <div
-              className="h-full bg-gradient-to-r from-cyan-600 to-cyan-400 rounded-full transition-all duration-500 shadow-[0_0_8px_rgb(var(--cyber-cyan-rgb) / 0.3)]"
+              className="h-full bg-gradient-to-r from-cyan-600 to-cyan-400 rounded-full transition-all duration-500 shadow-[0_0_8px_rgb(var(--cyber-cyan-rgb) / 0.3)] data-bar-fill"
               style={{ width: `${(progression.xp / progression.xpToNextLevel) * 100}%` }}
             />
           </div>
@@ -66,11 +66,11 @@ export function SkillsTab({ searchQuery }: SkillsTabProps) {
                     <div className={`size-2.5 rounded-full bg-gradient-to-r ${info.color} shadow-[0_0_6px_currentColor]`} aria-hidden />
                     <span className="text-sm text-slate-200 font-medium">{info.name}</span>
                   </div>
-                  <span className="text-sm font-mono text-cyan-300">{value}</span>
+                  <span className="text-sm font-mono text-cyan-300 data-bar-label">{value}</span>
                 </div>
-                <div className="h-2 bg-slate-800/80 rounded-full overflow-hidden mb-2 shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)]">
+                <div className="h-2 bg-slate-800/80 rounded-full overflow-hidden mb-2 shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)] data-bar">
                   <div
-                    className={`h-full bg-gradient-to-r ${info.color} rounded-full transition-all duration-500 shadow-[0_0_6px_rgb(var(--cyber-cyan-rgb) / 0.2)]`}
+                    className={`h-full bg-gradient-to-r ${info.color} rounded-full transition-all duration-500 shadow-[0_0_6px_rgb(var(--cyber-cyan-rgb) / 0.2)] data-bar-fill`}
                     style={{ width: getJournalSkillBarWidth(value) }}
                   />
                 </div>

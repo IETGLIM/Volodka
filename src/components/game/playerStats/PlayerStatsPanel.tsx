@@ -173,7 +173,7 @@ function PlayerStatsPanelInner({ open, onClose }: PlayerStatsPanelProps) {
                           {PLAYER_STATS_PANEL_LABELS.energy}
                         </span>
                         <span
-                          className="text-[10px] font-mono font-bold"
+                          className="text-[10px] font-mono font-bold data-bar-label"
                           style={{
                             color: getEnergyColor(data.energy),
                             textShadow: `0 0 4px ${getEnergyColor(data.energy)}40`,
@@ -208,7 +208,7 @@ function PlayerStatsPanelInner({ open, onClose }: PlayerStatsPanelProps) {
                           {PLAYER_STATS_PANEL_LABELS.stress}
                         </span>
                         <span
-                          className="text-[10px] font-mono font-bold"
+                          className="text-[10px] font-mono font-bold data-bar-label"
                           style={{
                             color: getStressColor(data.stress),
                             textShadow: `0 0 4px ${getStressColor(data.stress)}40`,
@@ -308,7 +308,7 @@ function PlayerStatsPanelInner({ open, onClose }: PlayerStatsPanelProps) {
                                 {skillLabel}
                               </span>
                               <span
-                                className="text-[9px] font-mono font-bold ml-1"
+                                className="text-[9px] font-mono font-bold ml-1 data-bar-label"
                                 style={{ color, textShadow: `0 0 4px ${color}30` }}
                               >
                                 {skillVal}
