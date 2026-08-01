@@ -23,6 +23,7 @@ import { eventBus } from '@/engine/EventBus';
 import { closeNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
 import { requestSceneTransitionForStoryNode } from '@/engine/scene/sceneTransition';
 import { getGameStore } from '@/store/gameStore';
+import { getLiveCurrentSceneId } from '@/store/stores/explorationStore';
 import type {
   DialogueChoice,
   StoryEffect,
@@ -328,7 +329,7 @@ export function DialogueRenderer() {
       visitNode(node.id);
       recordExplorationStoryStep(node.id);
       if (node.sceneId) {
-        const currentSceneId = getGameStore().exploration.currentSceneId;
+        const currentSceneId = getLiveCurrentSceneId();
         if (currentSceneId !== node.sceneId) {
           requestSceneTransitionForStoryNode(node.id, node.sceneId);
         }

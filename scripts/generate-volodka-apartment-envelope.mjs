@@ -192,17 +192,9 @@ function buildEnvelope() {
   jh.position.set(0, doorH - 0.01, D / 2 - T - 0.01);
   root.add(jh);
 
-  // Baseboards — profile +X into room from each wall
+  // Baseboards — profile into room from each wall
   const bbBack = molding('floor_baseboard_back', baseboardShape(), W - 0.28, 0x4a3d30);
-  bbBack.rotation.y = Math.PI / 2;
-  bbBack.position.set(0, 0, -D / 2 + T + 0.002);
-  // After rotY=π/2, local +X → −Z? Wait rotY π/2: X→Z, Z→−X. Want profile into +Z (into room from back).
-  bbBack.rotation.set(0, 0, 0);
-  bbBack.rotation.y = 0;
-  // Extrusion along Z, profile in XY with +X into room: place at back wall facing +Z
-  bbBack.rotation.y = Math.PI; // +X profile → −X world… use rotY so +X → +Z
-  bbBack.rotation.set(0, -Math.PI / 2, 0); // local X → −Z? 
-  // Standard: rotY(-π/2): x' = -z, z' = x → local +X becomes world +Z. Good for back wall.
+  // rotY(-π/2): local +X → world +Z (into room from back wall)
   bbBack.rotation.set(0, -Math.PI / 2, 0);
   bbBack.position.set(0, 0, -D / 2 + T + 0.002);
   root.add(bbBack);

@@ -10,7 +10,7 @@ import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { eventBus } from '@/engine/EventBus';
 import { audioEngine } from '@/engine/AudioEngine';
 import { getGameStore } from '@/store/gameStore';
-import { useCutsceneStore, getCutsceneStoreState } from '@/store/stores/cutsceneStore';
+import { useCutsceneStore, getActiveCutsceneId } from '@/store/stores/cutsceneStore';
 import { prefetchStoryNodes } from '@/data/gameDataLoader';
 import { openDiegeticNarrative } from '@/engine/scene/narrativeOverlay';
 import { setCinematicHoldActive } from '@/engine/camera/cinematicPresentation';
@@ -421,14 +421,14 @@ export function CinematicTimelineRunner() {
       // Read cutscene slice directly — useGameStore facade can lag one rAF behind
       // setCutscene (menu New Game). Stale null here skipped the wake forever when
       // canvas:first-frame already fired under the kept-alive menu canvas.
-      if (getCutsceneStoreState().activeCutsceneId !== 'intro_wakeup') return;
+      if (getActiveCutsceneId() !== 'intro_wakeup') return;
       // Coalesce canvas:first-frame / scene:loaded / poll into one pending start.
       if (introWakeTimerRef.current) return;
       // Small delay after first-frame to let the KCC controller settle.
       introWakeTimerRef.current = setTimeout(() => {
         introWakeTimerRef.current = null;
         if (sequenceStartedRef.current) return;
-        if (getCutsceneStoreState().activeCutsceneId !== 'intro_wakeup') return;
+        if (getActiveCutsceneId() !== 'intro_wakeup') return;
         startCinematicTimeline({ def: INTRO_WAKE_TIMELINE, options: {} });
       }, 200);
     };
@@ -453,7 +453,7 @@ export function CinematicTimelineRunner() {
       ),
     );
     // Catch already-set cutscene (hot reload / remount mid-flow).
-    if (getCutsceneStoreState().activeCutsceneId === 'intro_wakeup') {
+    if (getActiveCutsceneId() === 'intro_wakeup') {
       startIntroWakeWhenReady();
     }
 

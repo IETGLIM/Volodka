@@ -9,7 +9,7 @@ import { useRef, useEffect, useMemo } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 
-import { getGameStore } from '@/store/gameStore';
+import { getLivePlayerPosition } from '@/store/stores/explorationStore';
 import { getGameSnapshot } from '@/engine/StateDispatcher';
 import { useCurrentSceneId, usePlayerKarma } from '@/store/selectors';
 import { createFrameGameSnapshot } from '@/engine/frame/frameGameSnapshot';
@@ -125,7 +125,7 @@ export function SimplePlayer({
     if (sceneId !== prevSceneIdRef.current) {
       prevSceneIdRef.current = sceneId;
       const newConfig = getSceneConfig(sceneId);
-      const storeSpawn = getGameStore().exploration.playerPosition;
+      const storeSpawn = getLivePlayerPosition();
       const spawn = storeSpawn ?? newConfig.spawnPoint;
       livePlayerPositionRef.current.set(spawn[0], spawn[1], spawn[2]);
       livePlayerRotationRef.current = newConfig.initialRotation ?? 0;
@@ -139,7 +139,7 @@ export function SimplePlayer({
   // Immediate teleport on scene:enter — before React re-renders sceneId
   useEffect(() => {
     const unsub = eventBus.on('scene:enter', ({ sceneId: enteredScene }) => {
-      const spawn = getGameStore().exploration.playerPosition;
+      const spawn = getLivePlayerPosition();
       prevSceneIdRef.current = enteredScene;
       velocityRef.current.set(0, 0, 0);
 
@@ -451,7 +451,7 @@ export function SimplePlayer({
     return '#888888';
   }, [karma]);
 
-  const initialSpawn = getGameStore().exploration.playerPosition ?? config.spawnPoint;
+  const initialSpawn = getLivePlayerPosition() ?? config.spawnPoint;
 
   return (
     <group

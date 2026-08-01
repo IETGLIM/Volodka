@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
-import { getGameStore } from '@/store/gameStore';
+import { getLiveCurrentSceneId } from '@/store/stores/explorationStore';
 import { eventBus } from '@/engine/EventBus';
 
 /** World item that can be picked up — bobs up and down */
@@ -41,7 +41,7 @@ export function WorldItem({
           onPickup?.(id);
           eventBus.emit('object:interact', {
             objectId: id,
-            sceneId: getGameStore().exploration.currentSceneId,
+            sceneId: getLiveCurrentSceneId(),
           });
         }}
       >

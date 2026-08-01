@@ -6,7 +6,7 @@ import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useRapier, type RapierRigidBody, type RapierCollider } from '@react-three/rapier';
 import * as THREE from 'three';
 
-import { getGameStore } from '@/store/gameStore';
+import { getLivePlayerPosition } from '@/store/stores/explorationStore';
 import { useCurrentSceneId } from '@/store/selectors';
 import { usePlayerControls, type VirtualControls } from '@/hooks/useGamePhysics';
 import {
@@ -249,7 +249,7 @@ export function usePhysicsPlayerMovement({
       // which receives the canonical spawn point. Avoiding a duplicate
       // setTranslation here prevents a visible physics snap on scene changes.
       // We only set the position if the EventBus hasn't fired yet (fallback).
-      const spawn = getGameStore().exploration.playerPosition ?? newConfig.spawnPoint;
+      const spawn = getLivePlayerPosition() ?? newConfig.spawnPoint;
       livePlayerPositionRef.current.set(spawn[0], spawn[1], spawn[2]);
       livePlayerRotationRef.current = newConfig.initialRotation ?? 0;
       isGroundedRef.current = true;
@@ -265,7 +265,7 @@ export function usePhysicsPlayerMovement({
   useEffect(() => {
     const unsub = eventBus.on('scene:enter', ({ sceneId: enteredScene }) => {
       movementEpochRef.current += 1;
-      const spawn = getGameStore().exploration.playerPosition;
+      const spawn = getLivePlayerPosition();
       prevSceneIdRef.current = enteredScene;
       jumpCooldownRef.current = 0;
       currentAnimRef.current = 'idle';

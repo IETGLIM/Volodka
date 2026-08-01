@@ -13,6 +13,7 @@ import { getStoryNodes, isNarrativeGameDataLoaded, ensureStoryNode, prefetchStor
 import { audioEngine } from '@/engine/AudioEngine';
 import { requestSceneTransitionForStoryNode } from '@/engine/scene/sceneTransition';
 import { getGameStore } from '@/store/gameStore';
+import { getLiveCurrentSceneId } from '@/store/stores/explorationStore';
 import { closeNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
 import type { StoryChoice, StoryEffect } from '@/shared/types/game';
 import { checkStoryCondition, buildStoryConditionContext } from '@/shared/storyConditions';
@@ -201,7 +202,7 @@ export function StoryRenderer() {
     }
 
     visitNode(node.id);
-    const currentSceneId = getGameStore().exploration.currentSceneId;
+    const currentSceneId = getLiveCurrentSceneId();
     if (node.sceneId && currentSceneId !== node.sceneId) {
       requestSceneTransitionForStoryNode(node.id, node.sceneId);
     }

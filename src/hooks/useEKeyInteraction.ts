@@ -7,6 +7,7 @@ import { consumeEKey, isEKeyConsumed } from '@/engine/input/eKeyConsumption';
 import { isInteractionLocked } from '@/engine/interaction/interactionSession';
 import { forceResetAllInteractionState } from '@/engine/interaction/emergencyInteractionReset';
 import { getGameStore } from '@/store/gameStore';
+import { getActiveCutsceneId } from '@/store/stores/cutsceneStore';
 import {
   queryInteractionTargets,
   type ExitQueryTarget,
@@ -56,7 +57,8 @@ export function useEKeyInteraction({
     // during the intro wake-up cinematic could slip through and trigger a
     // scene transition or dialogue before the overlay gate propagates.
     try {
-      if (getGameStore().activeCutsceneId) return false;
+      // Live cutscene slice — getGameStore() facade can lag one rAF after setCutscene.
+      if (getActiveCutsceneId()) return false;
       // Hard gate: block interactions during a cinematic timeline.
       // Cinematic timelines run independently of the cutscene overlay flag,
       // so this catches races where the ref-sync hasn't propagated yet.
