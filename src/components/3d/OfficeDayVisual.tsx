@@ -21,6 +21,7 @@ import { INTERIOR_SHELL_MODELS } from '../../config/interiorShellModels';
 import { AuthoredInteriorShell } from './AuthoredInteriorShell';
 import { POLYHAVEN_MODELS } from '@/config/polyhavenAssets';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
+import { scheduleGltfPreload, GltfPreloadPriority } from '@/engine/assets/gltfPreloadScheduler';
 import { getInteriorShellScale, isWalkableInteriorShellAllowed } from '@/config/interiorShellScale';
 import {
   allowsSelectiveMeshPhysicalWet,
@@ -867,6 +868,14 @@ function createOfficeWallTexture(): THREE.CanvasTexture {
   return tex;
 }
 
-useGLTF.preload(POLYHAVEN_MODELS.paintedWoodenTable, true, true, extendLoader);
-useGLTF.preload(POLYHAVEN_MODELS.armChair, true, true, extendLoader);
-useGLTF.preload(KENNEY_TERMINAL_MODEL, true, true, extendLoader);
+// Session 9 perf: routed through gltfPreloadScheduler to avoid sync parse-storm.
+const OFFICE_PRELOAD_URLS = [
+  POLYHAVEN_MODELS.paintedWoodenTable, POLYHAVEN_MODELS.armChair, KENNEY_TERMINAL_MODEL,
+];
+for (const url of OFFICE_PRELOAD_URLS) {
+  scheduleGltfPreload(
+    url,
+    () => useGLTF.preload(url, true, true, extendLoader),
+    GltfPreloadPriority.High,
+  );
+}

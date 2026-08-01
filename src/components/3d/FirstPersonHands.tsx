@@ -9,7 +9,8 @@ import { shouldUseFirstPersonHands } from '@/engine/camera/cinematicPresentation
 import { isEffectiveReducedMotion } from '@/engine/accessibility/accessibilitySettings';
 import { eventBus } from '@/engine/EventBus';
 import { FpsFingerEnhancement } from './fpsFingerEnhancement';
-import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
+import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
+import { scheduleGltfPreload, GltfPreloadPriority } from '@/engine/assets/gltfPreloadScheduler';
 import { useSkinnedGltfClone } from '@/hooks/useSkinnedGltfClone';
 import {
   pickPlayerClipAction,
@@ -21,7 +22,13 @@ import { resolveFpsArmsPresentation } from '@/engine/player/fpsArmsPresentation'
 
 const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeof useGLTF>[3]>;
 
-useGLTF.preload(FPS_ARMS_URL, true, true, extendLoader);
+// Session 9 perf: routed through gltfPreloadScheduler (Deferred priority — FPS arms
+// are only needed when first-person mode is toggled, which is currently disabled).
+scheduleGltfPreload(
+  FPS_ARMS_URL,
+  () => useGLTF.preload(FPS_ARMS_URL, true, true, extendLoader),
+  GltfPreloadPriority.Deferred,
+);
 
 interface FirstPersonHandsProps {
   moveBlendRef?: MutableRefObject<number>;
