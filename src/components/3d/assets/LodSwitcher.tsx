@@ -5,6 +5,7 @@ import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import { resolveAssetUrl, type GltfAssetDefinition } from '@/config/assetManifest';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
+import { scheduleGltfPreload, GltfPreloadPriority } from '@/engine/assets/gltfPreloadScheduler';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 
 const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeof useGLTF>[3]>;
@@ -47,8 +48,14 @@ export function LodSwitcher({ asset, children }: LodSwitcherProps) {
   }, [asset.lods, asset.variants]);
 
   useEffect(() => {
+    // Session 9 perf: route through gltfPreloadScheduler to avoid a sync parse-batch
+    // when several LOD assets mount at once (5 NPCs × 3 LODs = 15 parses).
     for (const url of urls) {
-      useGLTF.preload(url, true, true, extendLoader);
+      scheduleGltfPreload(
+        url,
+        () => useGLTF.preload(url, true, true, extendLoader),
+        GltfPreloadPriority.Low,
+      );
     }
     if (urls[0]) activeUrlRef.current = urls[0];
   }, [urls]);

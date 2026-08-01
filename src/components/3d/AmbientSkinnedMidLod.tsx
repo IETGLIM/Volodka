@@ -10,6 +10,7 @@ import type { QuaterniusRigRef } from '@/config/npcComposer/types';
 import { NPC_GLTF_TARGET_HEIGHT_M } from '@/config/metricScaleCoherence';
 import { resolveQuaterniusStagedRigUrl } from '@/config/quaterniusRigCatalog';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
+import { scheduleGltfPreload, GltfPreloadPriority } from '@/engine/assets/gltfPreloadScheduler';
 import { fitCharacterGltf, measureCharacterGltfBounds } from '@/engine/assets/gltfScale';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { deplasticizeCharacterMaterials } from '@/engine/graphics/materials/deplasticizeCharacterMaterials';
@@ -223,6 +224,12 @@ export function AmbientSkinnedMidLod(props: AmbientSkinnedMidLodProps) {
 // Preload only the first few rigs — loading all eight (~12MB+) at PhysicsScene
 // mount (still on the menu) competes with the bedroom / Cesium boot path and
 // has contributed to WebGL context loss → solid black after New Game.
+// Session 9 perf: routed through gltfPreloadScheduler to stagger the sync parses.
 for (const rig of AMBIENT_RIG_POOL.slice(0, 3)) {
-  useGLTF.preload(resolveQuaterniusStagedRigUrl(rig), true, true, extendLoader);
+  const url = resolveQuaterniusStagedRigUrl(rig);
+  scheduleGltfPreload(
+    url,
+    () => useGLTF.preload(url, true, true, extendLoader),
+    GltfPreloadPriority.Low,
+  );
 }

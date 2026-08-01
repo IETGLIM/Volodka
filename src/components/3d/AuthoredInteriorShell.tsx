@@ -8,6 +8,7 @@ import {
   type InteriorShellModelId,
 } from '@/config/interiorShellScale';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
+import { scheduleGltfPreload, GltfPreloadPriority } from '@/engine/assets/gltfPreloadScheduler';
 import {
   applyPhotoPbrMapSetToRoot,
   polyHavenIdsForMood,
@@ -158,8 +159,16 @@ export function AuthoredInteriorShell(props: AuthoredInteriorShellProps) {
 
 // Exterior Kenney building impostors (cafe/office/library) are blocked from
 // walkable mounts — do not preload them here. Backdrop shells below remain valid.
-useGLTF.preload(INTERIOR_SHELL_MODELS.volodkaBedroom, true, true, extendLoader);
-useGLTF.preload(INTERIOR_SHELL_MODELS.factory, true, true, extendLoader);
-useGLTF.preload(INTERIOR_SHELL_MODELS.basement, true, true, extendLoader);
-useGLTF.preload(INTERIOR_SHELL_MODELS.pier, true, true, extendLoader);
-useGLTF.preload(INTERIOR_SHELL_MODELS.forestClearing, true, true, extendLoader);
+// Session 9 perf: routed through gltfPreloadScheduler to avoid sync parse-storm.
+const SHELL_PRELOAD_URLS = [
+  INTERIOR_SHELL_MODELS.volodkaBedroom, INTERIOR_SHELL_MODELS.factory,
+  INTERIOR_SHELL_MODELS.basement, INTERIOR_SHELL_MODELS.pier,
+  INTERIOR_SHELL_MODELS.forestClearing,
+];
+for (const url of SHELL_PRELOAD_URLS) {
+  scheduleGltfPreload(
+    url,
+    () => useGLTF.preload(url, true, true, extendLoader),
+    GltfPreloadPriority.Normal,
+  );
+}
