@@ -62,6 +62,8 @@ import { CutsceneOverlay } from '@/components/game/CutsceneOverlay';
 // standalone IntroWakeOverlay component was deleted as dead code.
 import { PoetryPowerBar } from '@/components/game/PoetryPowerBar';
 import { QuestTrackerHUD } from '@/components/game/QuestTrackerHUD';
+import { PoemActiveEffectsHud } from '@/components/game/poemActiveEffects/PoemActiveEffectsHud';
+import { ItemGainedPopupLayer } from '@/components/game/microAnimations/ItemGainedPopupLayer';
 import { PoemPowerEffect } from '@/components/game/PoemPowerEffect';
 import { PoemWorldEffect } from '@/components/game/poemWorldEffect/PoemWorldEffect';
 import { PoemRevealHost } from '@/components/game/poemReveal/PoemRevealHost';
@@ -161,6 +163,8 @@ export const GameplayExplorationNotifications = memo(function GameplayExploratio
       <GameSystemToast />
       {/* MUST stay mounted during exploration: listens for ui:loot_notification on EventBus. */}
       <LootNotification />
+      {/* Session 9: item pickup popups (rarity-colored) — listens for showItemGained() calls. */}
+      <ItemGainedPopupLayer />
     </>
   );
 });
@@ -416,6 +420,10 @@ export const GameplayExplorationHud = memo(function GameplayExplorationHud({
       <TutorialOverlay />
       <FirstPlayTutorial />
       <PoetryPowerBar />
+      {/* Session 9: TTL chips for active poem powers — complements PoetryPowerBar slots
+          with live countdown timers so the player sees “this buff expires in 12s” without
+          opening the poetry book. */}
+      <PoemActiveEffectsHud />
       <QuestTrackerHUD />
     </>
   );
