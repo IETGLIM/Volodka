@@ -27,6 +27,7 @@ import {
 import type { GameStoreState } from '../types';
 import { pickPlayerQuestRewardsCrossActions } from '../crossSliceReads';
 import { getWorldStore } from '../storeBindings';
+import { dispatchGameAction } from '@/engine/GameActionDispatcher';
 import {
   batchAddCredits,
   batchAddEnergy,
@@ -168,6 +169,16 @@ export const createPlayerQuestRewardsSlice: StateCreator<
     const appliedRewards: string[] = [];
     const cross = pickPlayerQuestRewardsCrossActions();
 
+    // ── Deferred cross-slice reward effects ──
+    // These effect types require dispatching to other store slices
+    // (world, exploration, UI) and cannot be applied inside the
+    // Immer draft batch.  Collected during the reward loop and
+    // flushed after the batch commits.
+    const deferredNpcChanges: Array<{ npcId: string; relation: number }> = [];
+    const deferredQuestTriggers: string[] = [];
+    const deferredPoemCollects: string[] = [];
+    const deferredLoreDiscovers: string[] = [];
+
     get().applyPlayerRewardBatch((draft, sideEffects) => {
       const rewards = questDef.rewards ?? [];
       for (const reward of rewards) {
@@ -221,6 +232,35 @@ export const createPlayerQuestRewardsSlice: StateCreator<
               appliedRewards.push(`Флаг: ${reward.flag}`);
             }
             break;
+          case 'npcChange':
+            // Deferred — requires world store dispatch for NPC relations
+            if (reward.npcId && reward.npcChange?.relation) {
+              deferredNpcChanges.push({ npcId: reward.npcId, relation: reward.npcChange.relation });
+              appliedRewards.push(`Отношение ${reward.npcId} ${reward.npcChange.relation > 0 ? '+' : ''}${reward.npcChange.relation}`);
+            }
+            break;
+          case 'triggerQuest':
+            // Deferred — requires world store dispatch for quest activation
+            if (reward.questId) {
+              deferredQuestTriggers.push(reward.questId);
+              appliedRewards.push(`Задание: ${reward.questId}`);
+            }
+            break;
+          case 'collectPoem':
+            // Deferred — requires world store dispatch for poem collection
+            if (reward.poemId) {
+              deferredPoemCollects.push(reward.poemId);
+              appliedRewards.push(`Стих: ${reward.poemId}`);
+            }
+            break;
+          case 'discoverLore':
+            // Deferred — requires UI store dispatch for lore discovery
+            if (reward.loreId) {
+              const loreIds = reward.loreId.split(',').map((s) => s.trim()).filter(Boolean);
+              deferredLoreDiscovers.push(...loreIds);
+              appliedRewards.push(`Лор: ${reward.loreId}`);
+            }
+            break;
           default:
             break;
         }
@@ -232,6 +272,22 @@ export const createPlayerQuestRewardsSlice: StateCreator<
       batchAddCredits(draft, creditsGained);
       appliedRewards.push(`Кредиты за задание +${creditsGained}`);
     });
+
+    // ── Flush deferred cross-slice effects ──
+    const world = getWorldStore();
+    for (const { npcId, relation } of deferredNpcChanges) {
+      cross.setNpcRelation(npcId, relation);
+    }
+    for (const questId of deferredQuestTriggers) {
+      world.activateQuest(questId);
+    }
+    for (const poemId of deferredPoemCollects) {
+      world.collectPoem(poemId);
+    }
+    for (const loreId of deferredLoreDiscovers) {
+      // lore/discover dispatched through applyGameAction to reach UI store
+      dispatchGameAction({ type: 'lore/discover', entryId: loreId });
+    }
 
     cross.completeQuest(questId);
 

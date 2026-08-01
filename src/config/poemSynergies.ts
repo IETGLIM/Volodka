@@ -111,6 +111,89 @@ export const POEM_SYNERGIES: PoemSynergyDefinition[] = [
       narrationLine: '«Шторм ветра и глубокая мысль — логика и интуиция бурлят в унисон.»',
     },
   },
+  {
+    synergyId: 'second_breath_resurrection',
+    name: 'Второе Дыхание',
+    poemIds: ['poem_2', 'poem_18'],
+    flagsToSet: [
+      { key: 'synergy_second_breath_energy', durationMs: 60000 },
+      { key: 'synergy_second_breath_stress_relief', durationMs: 60000 },
+    ],
+    immediateSkills: { empathy: 5 },
+    reverseOnExpiry: [{ type: 'skill', key: 'empathy', value: -5 }],
+    worldProfile: {
+      category: 'dialogue',
+      visualPreset: 'letterbox_truth',
+      audioCue: 'emotional',
+      durationMs: 5500,
+      narrationLine: '«Смерть и возвращение правды — второе дыхание для измученной души.»',
+      worldHint: 'npc_shimmer',
+    },
+  },
+  {
+    synergyId: 'chip_resistance',
+    name: 'Сопротивление Контролю',
+    poemIds: ['poem_10', 'poem_20'],
+    flagsToSet: [
+      { key: 'synergy_chip_resistance_coding', durationMs: 75000 },
+      { key: 'synergy_chip_resistance_defense', durationMs: 75000 },
+    ],
+    immediateSkills: { coding: 8, empathy: 3 },
+    reverseOnExpiry: [
+      { type: 'skill', key: 'coding', value: -8 },
+      { type: 'skill', key: 'empathy', value: -3 },
+    ],
+    worldProfile: {
+      category: 'defense',
+      visualPreset: 'shield_pulse',
+      audioCue: 'tension',
+      durationMs: 4800,
+      narrationLine: '«Каменная кожа и чип в затылке — два щита от одной системы.»',
+      worldHint: 'none',
+    },
+  },
+  {
+    synergyId: 'memory_star',
+    name: 'Память и Путь',
+    poemIds: ['poem_7', 'poem_12'],
+    flagsToSet: [
+      { key: 'synergy_memory_star_exploration', durationMs: 90000, reverseId: 'memory_star_exploration' },
+    ],
+    immediateSkills: { intuition: 8, writing: 3 },
+    reverseOnExpiry: [
+      { type: 'skill', key: 'intuition', value: -8 },
+      { type: 'skill', key: 'writing', value: -3 },
+    ],
+    worldProfile: {
+      category: 'exploration',
+      visualPreset: 'god_rays_gold',
+      audioCue: 'discovery',
+      durationMs: 5800,
+      narrationLine: '«Детский взгляд и звёздный путь — ребёнок видит то, что упускает усталый.»',
+      worldHint: 'exit_glow',
+    },
+  },
+  {
+    synergyId: 'street_whisper_echo',
+    name: 'Эхо Городских Голосов',
+    poemIds: ['poem_9', 'poem_11'],
+    flagsToSet: [
+      { key: 'synergy_street_whisper_persuasion', durationMs: 50000 },
+    ],
+    immediateSkills: { persuasion: 7, intuition: 3 },
+    reverseOnExpiry: [
+      { type: 'skill', key: 'persuasion', value: -7 },
+      { type: 'skill', key: 'intuition', value: -3 },
+    ],
+    worldProfile: {
+      category: 'social',
+      visualPreset: 'warm_echo',
+      audioCue: 'emotional',
+      durationMs: 4500,
+      narrationLine: '«Шутовское слово и голос улиц — город сам становится собеседником.»',
+      worldHint: 'npc_shimmer',
+    },
+  },
 ];
 
 const SYNERGY_BY_PAIR = new Map<string, PoemSynergyDefinition>();

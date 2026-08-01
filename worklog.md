@@ -764,3 +764,278 @@ Stage Summary:
 - 1 race condition fixed (transitionSound untracked setTimeout)
 - All changes: 0 TS errors, 0 content validation issues, event map consistent (139 used, 150 defined, 0 undefined), all targeted tests pass
 - Poems and main menu untouched (per user request)
+
+---
+
+## Task 3: Deep Study — 3D Rendering Engine, Shaders, Postprocessing, Visual Systems
+
+### Scope
+Analyzed 40+ files covering: R3F Canvas setup, WebGL renderer config, postprocessing pipeline, lighting system, atmospheric effects, procedural AAA rendering, shader code, quality/LOD system, asset pipeline, and scene visual profiles.
+
+### 1. RENDERING PIPELINE (Full-Frame Order)
+
+**WebGL Renderer** (`src/components/3d/RPGGameCanvas.tsx:338-365`)
+- `THREE.WebGLRenderer` with: `stencil: true, alpha: false, powerPreference: 'high-performance'`
+- Shadow: `PCFSoftShadowMap` (noir/cinematic aesthetic)
+- Tone mapping: `ACESFilmicToneMapping` (renderer default), switched to `NoToneMapping` when EffectComposer is active (prevents double tone curve)
+- Output: `SRGBColorSpace`, clear color `#000000`
+- Renderer factory is cached per `antialias` boolean — prevents R3F from re-creating on re-render
+- Dynamic DPR: `useDynamicDPR` scales between `[minDpr, maxDpr]` based on measured FPS (target thresholds: 25 low, 45 high)
+- Frameloop: `'always'` during gameplay, `'demand'` during menu/intro/story overlay/tab hidden — CPU-saving
+
+**R3F Canvas** (`src/components/3d/RPGGameCanvas.tsx:547-562`)
+- Props: `flat` (flat shading for cyberpunk aesthetic), dynamic `dpr`, `shadows`, `antialias` from quality preset
+- Camera: FOV 55, near 0.2, far 200, initial position [0, 2.8, 2.5]
+- `<Canvas>` wrapped in error boundaries: `Canvas3DErrorBoundary` (3x auto-retry), `PhysicsErrorBoundary` (Rapier → SimplePlayer fallback), `PostFXErrorBoundary` (composer crash → no post-processing)
+
+**Scene Graph (render order):**
+1. `GltfPipelineInit` — configures Draco/Meshopt/KTX2 loaders
+2. `CanvasFrameloopController` — manages demand-mode invalidation
+3. `VisualizationLayers` — 5-layer depth system (Default/Background/Midground/Foreground/Overlay) with parallax
+4. `PhysicsSceneInner` (lazy-loaded) — Rapier physics, player, NPCs, scene geometry
+5. `FrameBudgetRunner` + `PostFrameBudgetRunner` — frame time budgeting
+6. `WeatherController` — rain/snow toggling
+7. `AtmosphericEffects` — fog, god rays, steam, dust, embers, neon reflections, mist, flickering lights
+8. `ExplorationPostFX` — full post-processing pipeline
+9. `CanvasGuardSystem` — tone mapping enforcement, first-frame emit, WebGL context-loss recovery
+
+**CSS Overlays (outside Canvas for performance):**
+- `MatrixRain` — CSS-animated cascading Cyrillic/code characters
+- `GlitchEffect` — screen-space glitch overlay
+- `NoirOverlay` — film grain + warm flicker (stress-reactive darkness)
+
+### 2. POSTPROCESSING CHAIN
+
+**File:** `src/components/3d/ExplorationPostFX.tsx` (663 lines)
+
+**Quality gating:**
+- PostFX disabled: `low` preset, `postfxEnabled=false`, menu phase, mobile `visualLite`
+- Lite pipeline: `medium` preset on mobile/visualLite (no scene config overrides)
+- Full pipeline: `high`/`ultra` presets
+
+**Full Pipeline (render order):**
+1. **Bloom** — `mipmapBlur`, `KernelSize.LARGE`, per-scene `intensity`/`threshold`/`smoothing` (25 scenes tuned)
+2. **ChromaticAberration** — stress-reactive only (stress ≥ 70, `high` preset, offset 0.002 max)
+3. **Scanline** — `guild_mainframe`, `office_day` only (CRT terminal aesthetic)
+4. **N8AO** — screen-space ambient occlusion, `halfRes=false` (avoids depth blit bug), per-scene `aoRadius`/`aoIntensity` (22 scenes with AO), quality-gated by `allowsHeavyGfxFeature` + `shouldUseDenseSceneAmbientOcclusion`
+5. **DepthOfField** — cinematic DOF, `high`: always mounted (bokehScale animated 0↔target), `ultra`: only during dialogue/cutscene, focus follows NPC via `dialogueFocusTarget` singleton, smooth 0.4s easeInOutCubic transition
+6. **Vignette** — per-scene `offset`/`darkness` (25 scenes), stress-reactive (darkness + 0.12, offset - 0.15)
+7. **HueSaturation** — per-scene hue/saturation shift (25 scenes), noir mode desaturates by -0.35
+8. **BrightnessContrast** — per-scene brightness/contrast (25 scenes), user brightness slider
+9. **LUT** — procedural 16³ 3D LUT, 3 kinds: `synthwave_neon`, `warm_interior`, `gothic_dust` (21 scenes mapped), tetrahedral interpolation
+10. **Noise** — film grain, `high` preset only, indoor scenes (13 scenes), `opacity=0.035`
+11. **ToneMapping** — `ACES_FILMIC` with per-pipeline exposure
+12. **SMAA** — `MEDIUM` on high/ultra, `LOW` on medium; anti-aliasing since native MSAA is disabled (`multisampling=0`)
+
+**Poem world effect boost:** `resolvePoemTTLPostFxBoost` adds temporary bloom intensity and vignette darkness when poem powers activate.
+
+**Lite Pipeline (mobile/low):** Bloom (simplified) → Vignette → BrightnessContrast → ToneMapping → SMAA (optional)
+
+**EffectComposer lifecycle:** `ManagedEffectComposer` uses `remountKey` (scene ID + pipeline config) to force composer dispose/recreate on scene transitions, preventing render target leaks. GL instance change also triggers remount.
+
+### 3. SHADER APPROACH
+
+**Custom GLSL Shaders (inline template literals):**
+
+1. **AaaSurfaceShader** (`src/proceduralAaa/AaaSurfaceShader.ts`)
+   - Full PBR surface shader with parallax occlusion mapping (POM), anisotropic highlights, Voronoi wear, dirt gradient, rain wash
+   - GLSL noise: `hash21`, `valueNoise`, `fbm` (4-octave), `worley` (cellular)
+   - POM: ray march height field in tangent space, up to 32 layers, linear refinement
+   - GGX specular with Kajiya-Kay anisotropy, Schlick Fresnel
+   - 5 texture inputs: albedo, normal, roughness, metalness, height
+   - Audio-visual sync via `uSpectrum` uniform (AnalyserNode)
+
+2. **RainSystem** (`src/components/3d/RainSystem.tsx`)
+   - GPU-driven rain: vertex shader computes position from `uTime` + `aVelocity` attribute (zero CPU per-particle updates)
+   - Wind gusts: layered sine waves at 0.12/0.31/0.73 Hz
+   - Splash system: pool of `aBirthTime`/`aBaseSize` attributes, shader expands/rings over lifetime
+   - Adaptive particle counts: mobile scaling via `getParticleCount`
+
+3. **SnowSystem** (`src/components/3d/SnowSystem.tsx`)
+   - GPU-driven snow: vertex shader drift via `aPhase` attribute + `uDriftStrength`
+   - Wobble: `sin(t * 1.5 + phase * 2.1)` for organic flutter
+
+4. **VolumetricLightShaft** (`src/components/3d/VolumetricLightShaft.tsx`)
+   - Custom cone shader: `SHAFT_FRAGMENT_SHADER` with procedural dust
+   - GLSL FBM (3-octave) for soft dust clouds inside light cone
+   - Radial + vertical falloff, view-distance fade, flicker modulation
+   - Dust motes: 30 animated Points per shaft, cone-clamped
+
+5. **Environmental animations** — steam rise, radiator steam, neon pulse, neon flicker, CRT monitor, fan spin, drip, lamp sway, curtain sway: all use simple JS animation (no custom shaders)
+
+**Standard Materials:** Most scene geometry uses `meshStandardMaterial` with PBR maps from Poly Haven (diffuse/normal/arm in 1k-2k JPEG). Procedural texture generator (`DynamicTextureGenerator`) creates DataTextures (albedo/normal/roughness/metalness/height) from CPU noise — 5 surface types: asphalt, concrete, metal_worn, brick, skin.
+
+### 4. LIGHTING STRATEGY
+
+**File:** `src/components/3d/Lighting.tsx` (543 lines)
+
+**Per-scene lighting:**
+- **Directional light:** intensity 1.15 (indoor) to 2.2 (outdoor), color varies (cold blue indoor `#2a2540`, moonlit night `#3a3a6a`, overcast outdoor `#ffffff`)
+- **Hemisphere light:** per-scene ambient/ground colors, reduced for indoor (`indoorHemisphereMul`)
+- **Base ambient:** readability fill at `baseAmbientIntensity`, extra ambient for dark outdoor scenes (street_night +0.55, city_square +0.4, etc.)
+- **Indoor-specific:** per-scene ambient override (14 rooms, e.g. volodka_room `#2a2538 @0.55`), per-scene fill light (14 rooms)
+- **Scene point lights:** from `config.lights` array, shadow-casting on hero scenes (max 2 per scene, 512 or 256 shadow maps)
+
+**Accent Lights** (20 scenes with 2-6 lights each):
+- 3 animation types: `neon_cycle` (slow hue shift + intensity pulse), `candle_flicker` (multi-frequency sine wave warmth), `cold_pulse` (slow blue-green data-flow)
+- Shadow casting: limited to specific `shadowCaster: true` lights, quality-gated
+- Mobile: capped at 2 accent lights per scene
+
+### 5. ATMOSPHERIC EFFECTS
+
+**File:** `src/components/3d/AtmosphericEffects.tsx`
+
+Scene-gated by `fxGovernor` + `qualityFeatureGates` + `softWorkBudget`:
+- **Volumetric Fog** (14 scenes): Layered semi-transparent planes with drift, vertical pulse, opacity breathing. Per-scene presets (color, opacity, spread, height, drift speed). Mobile-scaled via `getFogPlaneCount`.
+- **God Rays** (14 scenes): Cylinder/cone meshes with additive blending + dust mote Points. Per-scene presets. Lite mode reduces dust count.
+- **Steam** (cafe_evening, home_evening): Rising particle systems
+- **Matrix Fog** (battle): Combat-specific hazy fog
+- **Dust Motes** (7 scenes): Floating particles
+- **Ember Particles** (abandoned_factory, battle): Rising sparks
+- **Industrial Sparkles**: Scene-specific factory sparks
+- **Neon Rain Reflections** (street_night, city_square): 5-6 colored ground reflection pools with additive blending, pulsing
+- **Server Room Mist** (guild_mainframe): Mist particles
+- **Flickering Lights** (factory_basement, abandoned_factory): Light flicker effect
+- **Weather Particles**: Rain + Snow systems (GPU-driven shaders)
+
+### 6. SCENE VISUAL PROFILES
+
+**File:** `src/config/sceneVisualProfiles.ts` (207 lines)
+
+- **Hero scenes** (10): volodka_room, volodka_corridor, home_evening, street_night, city_square, cafe_evening, office_day, park_day, library_day, procedural_aaa
+- **Standard scenes** (15+): All extension scenes with `forceFullPostFx: true` (so they get full post-FX even on mid-tier GPUs)
+- Per-scene overrides: `bloomIntensityScale`, `aoIntensity`, `aoRadius`, `shadowMapScale`, `ambientNpcCountBoost`, `npcLodDistanceScale`, `envAnimationKeepAll`
+- **Dense industrial scenes** (guild_mainframe, factory_basement, abandoned_factory, factory_roof): N8AO drops under soft-work budget pressure
+
+### 7. ASSET PIPELINE
+
+**File:** `src/engine/assets/gltfPipeline.ts`
+- **Draco:** WASM decoder preferred (`/draco/gltf/`), JS fallback
+- **Meshopt:** Always available (pure JS, ~50KB)
+- **KTX2/Basis:** Lazy dynamic import — Basis transcoder (~571KB) only fetched when a GLB with KTX2 textures is loaded, keeping initial bundle small
+- **GLB variants:** 3 compression formats per NPC (raw `.glb`, `.draco.glb`, `.meshopt.glb`) + LOD variants (`_lod1`, `_lod2`)
+
+**NPC Models:** 20+ unique NPCs (AI3DGen), 12 base rigs (female/male mixamo), Mixamo animations (idle, walking, sitting, sleeping, talking, working)
+
+**Props:** Poly Haven PBR models (old_tyre, gothic_statue, rollershutter_door, desk_lamp, concrete_road_barrier, apartment facade, fire_escape, utility_box, portable_cassette_player, WetFloorSign, metal_trash_can, GothicBed), citykit props (coffee_machine, chair, lamp_post, terminal, bench, campfire, bottle, guitar, table_small, bookshelf), FPS arms
+
+**Interior Models:** AI3DGen interiors (office, library, rooftop, cafe_interior, room_bedroom, factory, corridor, pier, basement, forest_clearing) with colormap textures
+
+**Procedural AAA:** SDF world (buildings, arches, bridges, rocks, multi-level ruins) with surface-nets meshing, POM surface shader, dynamic texture generation (5 material types), procedural atmosphere (fog, volumetric rays, auto LUT)
+
+**Vite config:** `assetsInclude: ['**/*.glb', '**/*.gltf', '**/*.ktx2']`, manual chunk splitting, `esnext` target
+
+### 8. VISUAL QUALITY ASSESSMENT
+
+**What looks GOOD:**
+- Extremely sophisticated per-scene color grading (25 scenes with unique hue/sat/brightness/contrast + 3 LUT kinds)
+- Rich atmospheric effects stack (fog + god rays + volumetric light shafts + neon reflections + steam + dust + embers)
+- Smart quality system (4 tiers + auto + battery + GPU memory + pixel budget caps)
+- Stress-reactive post-processing (vignette + chromatic aberration respond to gameplay)
+- Poem world effects (6 visual presets: letterbox_truth, god_rays_gold, storm_break, shield_pulse, warm_echo, matrix_pulse)
+- Procedural AAA system is technically impressive (SDF world, POM, dynamic textures, atmosphere)
+- Excellent mobile degradation (particle count scaling, effect gating, lite post-FX pipeline)
+- Baked procedural env maps for hero scenes (neon_night, warm_apartment, cool_lobby)
+- Wet street ground with planar reflector (MeshReflectorMaterial) + PBR wetness
+- Robust error boundaries (3D canvas auto-retry, physics fallback, post-FX graceful degradation)
+- Cinematic DOF with NPC-tracking autofocus for dialogue
+- Noir overlay system with film grain + stress-reactive darkness
+
+**What's MISSING for AAA feel:**
+1. **No screen-space reflections (SSR)** — Only planar reflector on wet streets. SSR would add reflections on all wet/metallic surfaces.
+2. **No temporal anti-aliasing (TAA)** — SMAA is good but TAA would better handle temporal shimmer in fog/volumetric effects.
+3. **Volumetric fog is fake** — Layered planes, not raymarched volume. True volumetric fog (raymarching) would be a major upgrade.
+4. **God rays are mesh-based** — Cylinder/cone meshes with additive blending, not screen-space light scattering. Looks good but not physically-based.
+5. **No global illumination** — Baked env maps provide indirect lighting but no real-time GI bounce.
+6. **Shadow maps are small** — Max 2048x2048 on ultra, 512 on many point lights. Cascade shadow maps (CSM) for directional light would improve outdoor shadow quality.
+7. **No motion blur** — Neither object nor camera motion blur, common in AAA titles.
+8. **Particle systems lack variety** — All particles are simple GL_POINTS with round soft-circle frag shaders. No sprite sheets, no lit particles.
+9. **Procedural AAA not integrated into main scenes** — It's a separate mode (`procedural_aaa` scene). The SDF world + POM shader could enhance regular scenes.
+10. **No screen-space subsurface scattering** — Skin and wax materials lack SSS.
+11. **Env map quality** — Baked procedural env maps are low-complexity (5-6 point lights). Real HDRI or higher-fidelity bakes would improve metallic reflections.
+12. **No lens effects** — No anamorphic flare, no lens dirt, no aberration on bright lights (only stress-triggered chromatic aberration exists).
+
+### 9. CONCRETE IMPROVEMENT RECOMMENDATIONS
+
+**HIGH IMPACT (Visual Quality Leap):**
+
+1. **Add Cascade Shadow Maps (CSM) for directional light**
+   - File: `src/components/3d/Lighting.tsx:179-194`
+   - Replace single `directionalLight` shadow camera with `PCFSoftShadowMap` + 3-4 cascade splits
+   - Outdoor scenes (street_night, park_day, rooftop_edge) would benefit most
+   - Three.js has built-in `DirectionalLightShadow` with `camera` property supporting cascades via `@react-three/drei`
+
+2. **Screen-space reflections (SSR) for wet scenes**
+   - File: `src/components/3d/WetStreetGround.tsx`
+   - Complement planar reflector with screen-space raymarched reflections
+   - `@react-three/postprocessing` has `SSREffect` — would make ALL wet/metallic surfaces reflective
+
+3. **Temporal Anti-Aliasing (TAA)**
+   - File: `src/components/3d/ExplorationPostFX.tsx:558-565`
+   - Replace SMAA with TAA on ultra preset (SMAA on high as fallback)
+   - Would fix temporal flicker in fog planes, volumetric shafts, and rain
+
+4. **Sprite-sheet particle rendering**
+   - Files: `src/components/3d/RainSystem.tsx`, `src/components/3d/SnowSystem.tsx`, `src/components/3d/WeatherParticles.tsx`
+   - Replace round GL_POINTS with texture-atlas sprite sheets (rain streaks, snowflakes, embers, dust)
+   - Use `PointsMaterial.map` with an atlas — minimal code change, massive visual upgrade
+
+**MEDIUM IMPACT (Atmosphere & Polish):**
+
+5. **Volumetric fog raymarching**
+   - File: `src/components/3d/VolumetricFog.tsx`
+   - Replace layered plane approach with a fullscreen raymarched volume shader (read depth buffer + light positions)
+   - Would unify fog, god rays, and volumetric shafts into one system
+
+6. **Lens flare / anamorphic streaks on bright lights**
+   - New file or extend `src/components/3d/AtmosphericEffects.tsx`
+   - Add `@react-three/postprocessing` `LensflareEffect` or custom billboard streaks on neon accent lights
+   - 6+ accent lights per scene in street_night, city_square would benefit
+
+7. **Camera motion blur**
+   - File: `src/components/3d/ExplorationPostFX.tsx`
+   - Add motion vector pass + `@react-three/postprocessing` `MotionBlurEffect` on high/ultra
+   - Especially impactful during camera transitions and combat
+
+8. **Integrate POM surface shader into main scenes**
+   - File: `src/proceduralAaa/AaaSurfaceShader.ts`
+   - Apply parallax occlusion to floor/ground materials in hero indoor scenes (volodka_room, library_day, home_evening)
+   - Would add perceived depth to flat floor planes
+
+**LOW IMPACT (Details):**
+
+9. **Higher-fidelity env maps** — Replace baked procedural env maps with real HDRI from Poly Haven (`src/engine/graphics/proceduralEnvMaps.ts`)
+10. **Film grain improvement** — Move from simple CSS overlay (`NoirOverlay.tsx`) to shader-based grain that responds to scene luminance
+11. **Shadow map resolution boost** — Increase point light shadow maps from 512 to 1024 on high preset (`Lighting.tsx:457-458`)
+12. **Add `depthOfField` to more scenes** — Currently only high/ultra, but rooftop_edge and park_day would benefit from subtle DOF
+
+### 10. KEY FILES INDEX
+
+| File | Lines | Purpose |
+|------|-------|---------|
+| `src/components/3d/RPGGameCanvas.tsx` | 799 | Main 3D canvas, WebGL renderer, error boundaries, frameloop control |
+| `src/components/3d/ExplorationPostFX.tsx` | 663 | Full post-processing pipeline (bloom, AO, DOF, LUT, SMAA, etc.) |
+| `src/components/3d/Lighting.tsx` | 543 | Per-scene lighting (directional, hemisphere, ambient, accent, animated) |
+| `src/components/3d/SceneEnvironment.tsx` | 409 | Fog (linear + exp2), background, env maps, volumetric light shafts |
+| `src/components/3d/AtmosphericEffects.tsx` | 126 | Atmospheric effect controller (fog, god rays, particles, reflections) |
+| `src/components/3d/VolumetricFog.tsx` | 383 | Layered plane volumetric fog (14 scene presets) |
+| `src/components/3d/GodRays.tsx` | 675 | Mesh-based god rays with dust motes (14 scene presets) |
+| `src/components/3d/VolumetricLightShaft.tsx` | 603 | Cone shader volumetric shafts (4 scene presets) |
+| `src/components/3d/RainSystem.tsx` | 372 | GPU-driven rain particles + splash system |
+| `src/components/3d/SnowSystem.tsx` | 253 | GPU-driven snow particles |
+| `src/components/3d/WetStreetGround.tsx` | 226 | Planar reflector wet ground with PBR |
+| `src/components/3d/VisualizationLayers.tsx` | 388 | 5-layer depth/parallax system |
+| `src/proceduralAaa/AaaSurfaceShader.ts` | 256 | PBR POM shader (parallax, anisotropy, Voronoi wear) |
+| `src/proceduralAaa/ProceduralSdfWorld.ts` | 639 | SDF world generation + surface-nets meshing |
+| `src/proceduralAaa/DynamicTextureGenerator.ts` | 222 | CPU texture gen (albedo/normal/rough/metal/height) |
+| `src/proceduralAaa/ProceduralAtmosphere.ts` | 94 | Atmosphere (fog, volumetric rays, auto LUT) |
+| `src/engine/graphics/qualityPresets.ts` | 434 | Quality tier system (low/medium/high/ultra/auto) |
+| `src/engine/graphics/resolveSceneRenderingPipeline.ts` | 70 | Per-scene rendering pipeline resolution |
+| `src/config/sceneVisualProfiles.ts` | 207 | Scene visual profiles (hero/standard, AO, bloom, shadow) |
+| `src/engine/graphics/proceduralLutTextures.ts` | 122 | Procedural 16³ 3D LUT (synthwave/warm/gothic) |
+| `src/engine/graphics/proceduralEnvMaps.ts` | 146 | Baked procedural env maps (neon/warm/cool) |
+| `src/engine/graphics/wetStreetScenes.ts` | — | Wet street scene detection + reflector settings |
+| `src/engine/assets/gltfPipeline.ts` | 122 | GLTF loader (Draco/Meshopt/KTX2) |
+| `src/components/game/poemWorldEffect/usePoemWorldEffectController.ts` | 86 | Poem world visual effect controller |
+| `src/config/poemWorldEffects.ts` | 186 | Poem world effect profiles (6 visual presets) |
+| `vite.config.ts` | 115 | Vite build config (GLB/KTX2 assets, manual chunks) |

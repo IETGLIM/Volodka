@@ -151,10 +151,74 @@ export const POEM_WORLD_EFFECT_OVERRIDES: Partial<Record<string, Partial<PoemWor
     narrationLine: '«Эхо детства отзывается в воздухе — память согревает мир.»',
     worldHint: 'npc_shimmer',
   },
+  poem_8: {
+    category: 'utility',
+    visualPreset: 'matrix_pulse',
+    audioCue: 'discovery',
+    durationMs: 5000,
+    worldTint: 'rgba(0, 255, 180, 0.12)',
+    narrationLine: '«Прорыв — когда код становится стихом, а стена становится дверью.»',
+    worldHint: 'interaction_pulse',
+  },
+  poem_9: {
+    category: 'dialogue',
+    visualPreset: 'letterbox_truth',
+    audioCue: 'mystery',
+    durationMs: 4200,
+    worldTint: 'rgba(255, 100, 200, 0.10)',
+    narrationLine: '«Шутовское слово бьёт точнее меча — правда звучит как смех.»',
+    worldHint: 'npc_shimmer',
+  },
+  poem_11: {
+    category: 'exploration',
+    visualPreset: 'god_rays_gold',
+    audioCue: 'discovery',
+    durationMs: 5200,
+    worldTint: 'rgba(200, 255, 180, 0.12)',
+    narrationLine: '«Голос улиц шепчет названия тех, кого ты ещё не встретил.»',
+    worldHint: 'exit_glow',
+  },
+  poem_12: {
+    category: 'exploration',
+    visualPreset: 'god_rays_gold',
+    audioCue: 'mystery',
+    durationMs: 6000,
+    worldTint: 'rgba(180, 140, 255, 0.14)',
+    narrationLine: '«Звёздный путь — не линия, а ритм. Каждый шаг — новая строфа.»',
+    worldHint: 'exit_glow',
+  },
+  poem_2: {
+    category: 'social',
+    visualPreset: 'warm_echo',
+    audioCue: 'emotional',
+    durationMs: 5500,
+    worldTint: 'rgba(255, 160, 160, 0.12)',
+    narrationLine: '«Второе дыхание — когда смерть становится началом нового стиха.»',
+    worldHint: 'npc_shimmer',
+  },
+  poem_18: {
+    category: 'dialogue',
+    visualPreset: 'letterbox_truth',
+    audioCue: 'discovery',
+    durationMs: 4800,
+    worldTint: 'rgba(220, 220, 255, 0.14)',
+    narrationLine: '«Возвращение правды — мир перестраивается вокруг одного слова.»',
+    worldHint: 'npc_shimmer',
+  },
+  poem_4: {
+    category: 'social',
+    visualPreset: 'warm_echo',
+    audioCue: 'emotional',
+    durationMs: 5000,
+    worldTint: 'rgba(255, 200, 200, 0.14)',
+    narrationLine: '«Связь сердец — невидимый кабель между тем, кто рядом и тем, кого нет.»',
+    worldHint: 'npc_shimmer',
+  },
 };
 
 /** Default category per poem id — covers all PoemPowerSystem entries. */
 export const POEM_WORLD_CATEGORIES: Record<string, PoemWorldCategory> = {
+  // ── Main corpus (poem_1–21) ──
   poem_1: 'dialogue',
   poem_2: 'social',
   poem_3: 'exploration',
@@ -176,10 +240,33 @@ export const POEM_WORLD_CATEGORIES: Record<string, PoemWorldCategory> = {
   poem_19: 'social',
   poem_20: 'utility',
   poem_21: 'utility',
+  // ── Numbered bonus poems (poem_22–35) ──
+  poem_22: 'exploration',  // Коридор — liminal discovery
+  poem_23: 'utility',      // Высотники — urban observation
+  poem_24: 'utility',      // Ночная Смена — work/tech
+  poem_25: 'social',       // Переработка — human cost
+  poem_26: 'combat',       // Сообщения — connection/rage
+  poem_27: 'dialogue',     // Метро — crowd voices
+  poem_28: 'exploration',  // return void — code as poetry
+  poem_29: 'dialogue',     // Комментарий — inner voice
+  poem_30: 'social',       // Мёртвый телефон — analog nostalgia
+  poem_31: 'exploration',  // До башен — urban exploration
+  poem_32: 'utility',      // (if exists)
+  poem_33: 'utility',      // (if exists)
+  poem_34: 'exploration',  // (if exists)
+  poem_35: 'defense',      // (if exists)
+  // ── Special bonus poems ──
   poem_tolpa: 'social',
+  poem_act6_01: 'exploration',
+  poem_act6_02: 'dialogue',
+  poem_act6_03: 'combat',
   poem_act6_04: 'combat',
   poem_act6_05: 'dialogue',
+  poem_act6_06: 'defense',
   poem_act6_07: 'utility',
+  poem_act6_08: 'social',
+  poem_act7_01: 'dialogue',
+  poem_act7_ending: 'dialogue',
 };
 
 export const POEM_WORLD_FALLBACK_CATEGORY: PoemWorldCategory = 'utility';
