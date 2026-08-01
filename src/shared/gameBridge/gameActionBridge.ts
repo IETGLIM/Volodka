@@ -79,6 +79,9 @@ export interface GameStoreSnapshot {
   lastUsedPoemId: string | null;
   lastUsedPoemTimestamp: number | null;
   pendingPoemReadingId: string | null;
+  /** World weather — locomotion / FX readers use snapshot, not store import. */
+  weatherEnabled: boolean;
+  rainIntensity: number;
 }
 
 /** Typed mutations engine may request from the store. */

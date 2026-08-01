@@ -66,6 +66,8 @@ function baseSnapshot(overrides: Partial<GameStoreSnapshot> = {}): GameStoreSnap
     lastUsedPoemId: null,
     lastUsedPoemTimestamp: null,
     pendingPoemReadingId: null,
+    weatherEnabled: true,
+    rainIntensity: 0,
     ...overrides,
   };
 }

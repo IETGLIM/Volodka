@@ -100,7 +100,6 @@ export function usePlayerControls(
         applyMouseBothButtonsForward(0, true);
       }
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
   }, []);
 
   return {

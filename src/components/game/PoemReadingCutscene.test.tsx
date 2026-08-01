@@ -1,3 +1,4 @@
+import React from 'react';
 import { act, render } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
@@ -69,8 +70,11 @@ vi.mock('@/store/gameStore', () => ({
 /** Avoid framer-motion / typewriter hang in jsdom — host wiring only. */
 vi.mock('@/components/game/poemReveal/PoemRevealShell', () => ({
   PoemRevealShell: ({ poemId, mode }: { poemId: string; mode: string }) =>
-    // eslint-disable-next-line react/react-in-jsx-scope -- vitest jsx runtime
-    (<div data-testid="poem-reading-cutscene" data-poem-id={poemId} data-mode={mode} />),
+    React.createElement('div', {
+      'data-testid': 'poem-reading-cutscene',
+      'data-poem-id': poemId,
+      'data-mode': mode,
+    }),
 }));
 
 describe('PoemRevealHost power_ritual', () => {

@@ -3,7 +3,6 @@ import { setPhysicsStepMs, shouldTrackFrameTiming } from '@/engine/frame/FrameBu
 import { sampleHeldVirtualControls } from '@/engine/VirtualInputHold';
 import { getTouchLocomotionFactor } from '@/config/scenes';
 import { getGameSnapshot } from '@/engine/GameActionDispatcher';
-import { getGameStore } from '@/store/gameStore';
 import { resolveMovementSpeedMultiplier } from '@/shared/perks/perkModifiers';
 import { determineWeatherType, getWeatherEffect } from '@/data/weatherEffects';
 import {
@@ -195,7 +194,7 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
   let weatherSpeedMult = 1;
   if (isOutdoor) {
     try {
-      const world = getGameStore();
+      const world = getGameSnapshot();
       if (world.weatherEnabled) {
         const wt = determineWeatherType(
           world.weatherEnabled,

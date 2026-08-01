@@ -83,6 +83,8 @@ function buildSnapshot(state: GameStoreState): GameStoreSnapshot {
     lastUsedPoemId: state.lastUsedPoemId,
     lastUsedPoemTimestamp: state.lastUsedPoemTimestamp,
     pendingPoemReadingId: state.pendingPoemReadingId,
+    weatherEnabled: state.weatherEnabled ?? true,
+    rainIntensity: state.rainIntensity ?? 0,
   };
 }
 

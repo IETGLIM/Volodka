@@ -83,7 +83,6 @@ import {
   reviveTransitionDirector,
 } from '@/engine/scene/TransitionDirector';
 import { disposeCinematicTimelineOrchestrator } from '@/engine/cinematic/cinematicTimelineOrchestrator';
-import { bindCombatGamepadListeners } from '@/engine/CombatSystem';
 import {
   bindGpuContextRestoreListener,
   unbindGpuContextRestoreListener,

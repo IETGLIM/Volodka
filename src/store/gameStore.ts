@@ -93,6 +93,8 @@ function buildGameSnapshot(state: GameStoreState): GameStoreSnapshot {
     lastUsedPoemId: state.lastUsedPoemId ?? null,
     lastUsedPoemTimestamp: state.lastUsedPoemTimestamp ?? null,
     pendingPoemReadingId: state.pendingPoemReadingId ?? null,
+    weatherEnabled: state.weatherEnabled ?? true,
+    rainIntensity: state.rainIntensity ?? 0,
   };
 }
 function toGameSnapshot(state: GameStoreState): GameStoreSnapshot {

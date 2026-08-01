@@ -16,7 +16,7 @@ export function CyberStatBar({
   max = 100,
   color,
   gradient: explicitGradient,
-  glowColor,
+  glowColor: _glowColor,
   showSegments = true,
   shimmer = false,
 }: CyberStatBarProps) {

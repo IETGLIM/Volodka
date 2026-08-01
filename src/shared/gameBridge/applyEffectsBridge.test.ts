@@ -63,6 +63,8 @@ describe('applyEffects via bridges', () => {
         lastUsedPoemId: null,
         lastUsedPoemTimestamp: null,
         pendingPoemReadingId: null,
+        weatherEnabled: true,
+        rainIntensity: 0,
       }),
       subscribe: () => () => undefined,
       tryAddItem: () => true,
