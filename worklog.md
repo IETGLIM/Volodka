@@ -1039,3 +1039,98 @@ Scene-gated by `fxGovernor` + `qualityFeatureGates` + `softWorkBudget`:
 | `src/components/game/poemWorldEffect/usePoemWorldEffectController.ts` | 86 | Poem world visual effect controller |
 | `src/config/poemWorldEffects.ts` | 186 | Poem world effect profiles (6 visual presets) |
 | `vite.config.ts` | 115 | Vite build config (GLB/KTX2 assets, manual chunks) |
+
+---
+
+## Session: 2025-08-01 — "AAA-визуал, плавные переходы, походка, HUD-виджеты"
+
+### Контекст
+Автор попросил довести проект до AAA-уровня: «ошеломляющая визуально», «роскошные катсцены»,
+«плавно, без резких переходов», «идеальная анимация движений», «главное — геймплей».
+Стек уже зрелый (12-pass postprocessing, 8 стилей переходов, weight-based locomotion blend,
+head bob + FOV kick + turn tilt). Цель сессии — поднять планку на уже работающем фундаменте,
+не ломая инварианты (Rapier interpolate={false}, KCC ownership, postprocessing depth-blit patch).
+
+### Подход
+4 параллельные разведки (Explore-агенты) замапили: графику/рендер, катсцены/переходы,
+HUD/UI, движение/анимацию. По каждой — конкретные safe improvement opportunities с файлами
+и строками. Правки — только аддитивные, типобезопасные, с typecheck-гейтом (tsc7 --noEmit exit 0
+после каждого батча). Сервер/тесты не запускались — только код + push в main (по запросу автора).
+
+### Commit 1: `0d2ff48` — AAA-визуал + плавный crossfade-переход
+
+**Графика (`ExplorationPostFX.tsx`, `proceduralLutTextures.ts`)**
+- Film grain теперь и на Ultra (opacity 0.022 вместо полного отключения) — убирает
+  «пластиковый» стерильный вид, возвращает filmic-фактуру (Session 8 намеренно отключал
+  зерно на Ultra ради 60fps; softer 0.022 + soft-work-gate — риск нулевой)
+- Базовая едва заметная хроматическая аберрация на high/ultra (~0.0004 offset) —
+  киношный характер линзы вместо цифровой стерильности. Stress-ramp на high сохранён
+- Новый LUT-вид `cyber_noir` для city_square: сдержанный orange-teal (тёплые блики /
+  холодные тени), НЕ candy — площадь читается как мокрый нуар, а не плоский неон
+
+**Переходы (плавность, без резких cut-ов)**
+- Новый стиль `crossfade` — роскошный fade-to-black с мягким акцентным vignette-glow,
+  без glitch/clip-path. Самый частый стиль (вес 5/23 ≈ 22%) — прямой ответ на «без резких
+  переходов». Wipe (glitch+clip) сохранён как стилизованная разновидность (вес 3)
+- `SceneTransitionStyle` + литеральные union-ы `SceneConfig` обновлены в 3 файлах типов
+- `SCENE_OVERLAY_MS.CROSSFADE = 620мс`; фаза `crossfade-in` в контроллере + рендер в оверлее
+
+### Commit 2: `d220742` — Киношное зерно в катсценах + HUD-виджеты
+
+**Катсцены (`CutsceneOverlay.tsx`)**
+- Film grain для `revelation` / `act_transition` типов — киношная фактура вместо плоского
+  цифрового оверлея (opacity 0.045, respect reduced-motion). «Роскошные катсцены»
+
+**HUD (`OrchestratorGameplaySections.tsx`)**
+- `PoemActiveEffectsHud` смонтирован в `GameplayExplorationHud` — TTL-чипы активных
+  стихов-способностей с обратным отсчётом, дополняют `PoetryPowerBar` (ранее игрок не видел,
+  когда бафф стиха истечёт, без открытия книги стихов)
+- `ItemGainedPopupLayer` смонтирован в `GameplayExplorationNotifications` — попапы подбора
+  предметов с цветом редкости (ранее только `LootNotification` для контейнеров)
+- Оба виджета были полностью построены, но не подключены к живому дереву оркестратора
+
+### Commit 3: `75fdc31` — Lateral camera bob — figure-8 походка
+
+**Движение (`applyCameraFrame.ts`)**
+- Camera-relative горизонтальный sway камеры на ПОЛОВИНЕ частоты вертикального bob-а —
+  классическая figure-8 походка. Тело качается раз за шаг, пока bob-ит дважды → читается
+  как «идёт», а не «плывёт». Camera-relative (через forward→right вектор), amplitude 3мм
+  (половина Y-bob), под тем же bobIntensity + reduced-motion гейтом
+- «Идеальная анимация движений»: убирает «плавающий» вид. Безопасно — чисто аддитивно к
+  `targetPos`, НЕ трогает KCC / Rapier / `interpolate={false}`
+
+### Аудит: что уже было сделано (не требовало правок)
+- **Combat feel (IMPROVEMENT_PLAN §2.1)** — уже полностью реализован: дифференцированный
+  screen shake (crit 0.8 / super 0.55 / normal 0.3), hit-pause для combo≥3 (0.5, 0.15s),
+  player-damage stagger (timeScale 0.6, 0.1s, reason `player_stagger`), poem-power bullet-time
+- **Movement system** — weight-based idle/walk/run blend, head bob, FOV kick on sprint
+  (RUN_FOV_BOOST=4°), turn tilt, landing shake, look-ahead, breathing idle — всё на месте
+- **Skip-prologue (§4.1)** — уже решён через story-node `skip_prologue_intro` с полным
+  нарративным контекстом (имя, возраст, роль, тикет, кофе, дождь)
+
+### Что НЕ тронуто (намеренно — риск/нет тестирования)
+- GodRays postprocessing pass (нужен sun-mesh ref, medium risk без браузер-теста)
+- SSR на мокрых улицах (ultra-only, ~3-5ms, нужен A/B)
+- Continuous walk↔run blend by speed (P2) — ломает тесты `playerLocomotionPresentation.test.ts`
+  и caller-логику `clipState.runWeight >= 1`; требует test-aware рефакторинга
+- Speed-linked walk timeScale (P1) — требует проброса `playerSpeedRef` prop через хук
+- Стихи — не трогались (авторское произведение Владимира Лебедева)
+
+### Статистика
+- 4 коммита в main, 11 файлов изменено, ~все правки аддитивные
+- typecheck: exit 0 после каждого батча (tsc7 --noEmit)
+- 0 строк стихов изменено
+
+### Ключевые файлы сессии
+| Файл | Правка |
+|------|--------|
+| `src/components/3d/ExplorationPostFX.tsx` | film grain Ultra + base chromatic aberration |
+| `src/engine/graphics/proceduralLutTextures.ts` | cyber_noir LUT kind + city_square |
+| `src/hooks/useSceneTransitionOverlayController.ts` | crossfade phase/weight/intro |
+| `src/components/game/SceneTransitionOverlay.tsx` | crossfade-in render |
+| `src/engine/exploration/explorationUxPresentation.ts` | SceneTransitionStyle + accent |
+| `src/shared/constants/transitionTimings.ts` | CROSSFADE duration |
+| `src/shared/types/definitions/scene.ts`, `sceneDefinition.ts` | union + 'crossfade' |
+| `src/components/game/CutsceneOverlay.tsx` | FilmGrain for revelation/act_transition |
+| `src/components/game/orchestrator/OrchestratorGameplaySections.tsx` | PoemActiveEffectsHud + ItemGainedPopupLayer |
+| `src/engine/camera/applyCameraFrame.ts` | lateral bob (figure-8 gait) |
