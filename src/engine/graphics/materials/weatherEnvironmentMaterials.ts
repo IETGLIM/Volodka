@@ -28,42 +28,42 @@ const MOOD: Record<
   }
 > = {
   interior: {
-    envMapIntensity: 0.48,
-    minRoughness: 0.62,
-    roughnessMul: 1.14,
-    maxMetalness: 0.28,
+    envMapIntensity: 0.42,
+    minRoughness: 0.68,
+    roughnessMul: 1.22,
+    maxMetalness: 0.22,
     surface: 'plaster',
-    repeatScale: 1.35,
+    repeatScale: 1.45,
   },
   plaza: {
-    envMapIntensity: 0.52,
-    minRoughness: 0.58,
-    roughnessMul: 1.16,
-    maxMetalness: 0.45,
+    envMapIntensity: 0.48,
+    minRoughness: 0.62,
+    roughnessMul: 1.2,
+    maxMetalness: 0.4,
     surface: 'concrete',
-    repeatScale: 1.1,
+    repeatScale: 1.15,
   },
   street: {
-    envMapIntensity: 0.55,
-    minRoughness: 0.55,
-    roughnessMul: 1.18,
-    maxMetalness: 0.4,
-    surface: 'asphalt',
-    repeatScale: 1.2,
-  },
-  office: {
-    envMapIntensity: 0.5,
-    minRoughness: 0.6,
-    roughnessMul: 1.12,
-    maxMetalness: 0.32,
-    surface: 'plaster',
-    repeatScale: 1.5,
-  },
-  prop: {
     envMapIntensity: 0.5,
     minRoughness: 0.58,
-    roughnessMul: 1.15,
-    maxMetalness: 0.55,
+    roughnessMul: 1.22,
+    maxMetalness: 0.38,
+    surface: 'asphalt',
+    repeatScale: 1.25,
+  },
+  office: {
+    envMapIntensity: 0.44,
+    minRoughness: 0.64,
+    roughnessMul: 1.18,
+    maxMetalness: 0.28,
+    surface: 'plaster',
+    repeatScale: 1.55,
+  },
+  prop: {
+    envMapIntensity: 0.48,
+    minRoughness: 0.6,
+    roughnessMul: 1.18,
+    maxMetalness: 0.5,
     surface: 'wood',
     repeatScale: 0.85,
   },
@@ -123,7 +123,8 @@ export function weatherEnvironmentMaterials(
       if (applyMaps && !hasPhotoMaps) {
         applySurfaceDetailMaps(std, cfg.surface, 1, cfg.repeatScale);
         if (std.color) {
-          std.color.multiplyScalar(0.92);
+          // Lived-in kit shells: pull albedo off candy Kenney whites.
+          std.color.multiplyScalar(mood === 'interior' || mood === 'office' ? 0.86 : 0.9);
         }
       }
 

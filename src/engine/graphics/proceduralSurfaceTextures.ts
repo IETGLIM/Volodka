@@ -167,24 +167,50 @@ function buildPlaster(size: number): SurfaceDetailMaps {
   const albedo = alloc(size);
   const height = alloc(size);
   const rough = alloc(size);
-  writeNoise(height, size, 82001, 48, 128);
-  writeNoise(rough, size, 83001, 28, 210);
+  writeNoise(height, size, 82001, 58, 128);
+  writeNoise(rough, size, 83001, 42, 195);
 
   for (let y = 0; y < size; y++) {
     for (let x = 0; x < size; x++) {
       const i = (y * size + x) * 4;
       const n = height[i]! - 128;
-      albedo[i] = Math.max(90, Math.min(150, 118 + n * 0.22));
-      albedo[i + 1] = Math.max(86, Math.min(145, 112 + n * 0.2));
-      albedo[i + 2] = Math.max(78, Math.min(135, 100 + n * 0.18));
+      // Cooler, dirtier plaster — less candy Kenney beige.
+      albedo[i] = Math.max(72, Math.min(132, 102 + n * 0.24));
+      albedo[i + 1] = Math.max(70, Math.min(128, 98 + n * 0.22));
+      albedo[i + 2] = Math.max(66, Math.min(120, 92 + n * 0.2));
       albedo[i + 3] = 255;
+
+      // Water stains / nicotine bloom along soft vertical bands
+      if (seededRand(84000 + i) > 0.965) {
+        albedo[i] = Math.max(40, albedo[i]! - 28);
+        albedo[i + 1] = Math.max(38, albedo[i + 1]! - 26);
+        albedo[i + 2] = Math.max(36, albedo[i + 2]! - 18);
+        rough[i] = Math.min(255, rough[i]! + 35);
+      }
+
+      rough[i + 1] = rough[i]!;
+      rough[i + 2] = rough[i]!;
       rough[i + 3] = 255;
+    }
+  }
+
+  // Hairline wall cracks
+  for (let c = 0; c < 5; c++) {
+    let x = Math.floor(seededRand(85000 + c) * size);
+    let y = Math.floor(seededRand(85100 + c) * size);
+    for (let s = 0; s < 28; s++) {
+      x = (x + Math.floor((seededRand(85200 + c * 40 + s) - 0.5) * 5) + size) % size;
+      y = (y + Math.floor((seededRand(85300 + c * 40 + s) - 0.5) * 5) + size) % size;
+      const i = (y * size + x) * 4;
+      albedo[i] = 48;
+      albedo[i + 1] = 46;
+      albedo[i + 2] = 52;
     }
   }
 
   return {
     map: makeDataTexture(albedo, size, THREE.SRGBColorSpace),
-    normalMap: makeDataTexture(heightToNormal(height, size, 0.28), size, THREE.NoColorSpace),
+    normalMap: makeDataTexture(heightToNormal(height, size, 0.36), size, THREE.NoColorSpace),
     roughnessMap: makeDataTexture(rough, size, THREE.NoColorSpace),
     repeat: 4,
   };

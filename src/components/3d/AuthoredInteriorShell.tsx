@@ -8,7 +8,16 @@ import {
   type InteriorShellModelId,
 } from '@/config/interiorShellScale';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
-import { weatherEnvironmentMaterials } from '@/engine/graphics/materials/weatherEnvironmentMaterials';
+import {
+  applyPhotoPbrMapSetToRoot,
+  polyHavenIdsForMood,
+  type PhotoPbrMapSet,
+} from '@/engine/graphics/materials/applyPhotoPbrMaps';
+import {
+  weatherEnvironmentMaterials,
+  type EnvironmentMaterialMood,
+} from '@/engine/graphics/materials/weatherEnvironmentMaterials';
+import { usePolyHavenPbr } from '@/hooks/usePolyHavenPbr';
 import type { SceneId } from '@/shared/types/game';
 
 const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeof useGLTF>[3]>;
@@ -24,6 +33,8 @@ interface AuthoredInteriorShellProps {
   castShadow?: boolean;
   /** When set, exterior Kenney building impostors are refused even if ownership allows. */
   shellModelId?: InteriorShellModelId;
+  /** Outdoor backdrops should use street/plaza wear, not plaster interiors. */
+  materialMood?: EnvironmentMaterialMood;
 }
 
 function resolveShellModelId(
@@ -36,7 +47,12 @@ function resolveShellModelId(
   return entry[0] as InteriorShellModelId;
 }
 
-function cloneInteriorShell(source: THREE.Object3D, castShadow: boolean): THREE.Object3D {
+function cloneInteriorShell(
+  source: THREE.Object3D,
+  castShadow: boolean,
+  materialMood: EnvironmentMaterialMood,
+  photoMapSet: PhotoPbrMapSet | null,
+): THREE.Object3D {
   const clone = source.clone(true);
   clone.traverse((node) => {
     if ((node as THREE.Mesh).isMesh) {
@@ -62,8 +78,11 @@ function cloneInteriorShell(source: THREE.Object3D, castShadow: boolean): THREE.
       }
     }
   });
-  // Cafe / library / basement / office shells — wear maps on large surfaces.
-  weatherEnvironmentMaterials(clone, 'interior', { applyMaps: true });
+  // Clamp plastic IBL first; multi-role photo PBR replaces procedural noise on large surfaces.
+  weatherEnvironmentMaterials(clone, materialMood, { applyMaps: photoMapSet ? false : true });
+  if (photoMapSet) {
+    applyPhotoPbrMapSetToRoot(clone, photoMapSet, 1);
+  }
   return clone;
 }
 
@@ -73,9 +92,21 @@ function AuthoredInteriorShellModel({
   rotationY = 0,
   scale = 1,
   castShadow = true,
+  materialMood = 'interior',
 }: AuthoredInteriorShellProps) {
   const gltf = useGLTF(url, true, true, extendLoader);
-  const scene = useMemo(() => cloneInteriorShell(gltf.scene, castShadow), [gltf.scene, castShadow]);
+  const ids = polyHavenIdsForMood(materialMood);
+  const floorMaps = usePolyHavenPbr(ids.floor, materialMood === 'street' ? 1.2 : 1.05);
+  const wallMaps = usePolyHavenPbr(ids.wall, 1);
+  const ceilingMaps = usePolyHavenPbr(ids.ceiling, 0.9);
+  const photoMapSet = useMemo<PhotoPbrMapSet>(
+    () => ({ floor: floorMaps, wall: wallMaps, ceiling: ceilingMaps }),
+    [floorMaps, wallMaps, ceilingMaps],
+  );
+  const scene = useMemo(
+    () => cloneInteriorShell(gltf.scene, castShadow, materialMood, photoMapSet),
+    [gltf.scene, castShadow, materialMood, photoMapSet],
+  );
 
   return (
     <group position={position} rotation={[0, rotationY, 0]} scale={scale}>

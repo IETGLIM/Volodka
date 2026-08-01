@@ -13,6 +13,7 @@ import {
 import { useRegisterNpcFrame } from '@/engine/npc/npcFrameBatch';
 import * as THREE from 'three';
 import type { NPCDefinition, NPCAppearance } from '@/shared/types/game';
+import { getAmbientCrowdImpostorTexture } from '@/engine/graphics/ambientCrowdImpostorTexture';
 
 import { useGameStore } from '@/store/gameStore';
 import { useQuests, useCurrentSceneId } from '@/store/selectors';
@@ -543,18 +544,33 @@ export function advanceBarkRelationFrame(): void {
   }
 }
 
-/** Far LOD: simple capsule impostor tinted with NPC body color — brighter emissive for dark scenes */
+/** Far LOD: humanoid silhouette billboard (not capsule kitbash). */
 function CapsuleImpostorNPC({ appearance }: { appearance: NPCAppearance }) {
+  const map = useMemo(() => getAmbientCrowdImpostorTexture(), []);
   return (
-    <mesh position={[0, 0.9, 0]}>
-      <capsuleGeometry args={[0.25, 1.0, 4, 8]} />
-      <meshStandardMaterial
-        color={appearance.bodyColor}
-        emissive={appearance.glowColor}
-        emissiveIntensity={0.3}
-        roughness={0.8}
-      />
-    </mesh>
+    <group>
+      <mesh position={[0, 0.86, 0]}>
+        <planeGeometry args={[0.72, 1.72]} />
+        <meshStandardMaterial
+          map={map}
+          alphaMap={map}
+          color={appearance.bodyColor}
+          emissive={appearance.glowColor}
+          emissiveIntensity={0.22}
+          transparent
+          opacity={0.92}
+          roughness={0.9}
+          metalness={0.05}
+          alphaTest={0.35}
+          depthWrite={false}
+          side={THREE.DoubleSide}
+        />
+      </mesh>
+      <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <circleGeometry args={[0.22, 10]} />
+        <meshBasicMaterial color="#000000" transparent opacity={0.28} depthWrite={false} />
+      </mesh>
+    </group>
   );
 }
 

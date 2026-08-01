@@ -14,11 +14,11 @@ export interface DeplasticizeCharacterOptions {
 }
 
 const DEFAULTS: Required<DeplasticizeCharacterOptions> = {
-  envMapIntensity: 0.62,
-  minRoughness: 0.58,
-  roughnessMul: 1.28,
-  maxMetalness: 0.18,
-  maxEmissiveIntensity: 0.42,
+  envMapIntensity: 0.55,
+  minRoughness: 0.62,
+  roughnessMul: 1.34,
+  maxMetalness: 0.15,
+  maxEmissiveIntensity: 0.38,
 };
 
 /**

@@ -17,9 +17,9 @@ describe('weatherEnvironmentMaterials', () => {
 
     weatherEnvironmentMaterials(root, 'plaza', { applyMaps: true });
     const mat = mesh.material as THREE.MeshStandardMaterial;
-    expect(mat.envMapIntensity).toBeLessThanOrEqual(0.55);
-    expect(mat.roughness).toBeGreaterThanOrEqual(0.58);
-    expect(mat.metalness).toBeLessThanOrEqual(0.45);
+    expect(mat.envMapIntensity).toBeLessThanOrEqual(0.52);
+    expect(mat.roughness).toBeGreaterThanOrEqual(0.62);
+    expect(mat.metalness).toBeLessThanOrEqual(0.4);
     expect(mat.map).toBeTruthy();
     expect(mat.normalMap).toBeTruthy();
     expect(mat.roughnessMap).toBeTruthy();
@@ -35,7 +35,7 @@ describe('weatherEnvironmentMaterials', () => {
     weatherEnvironmentMaterials(root, 'prop', { applyMaps: false });
     const mat = mesh.material as THREE.MeshStandardMaterial;
     expect(mat.map).toBeNull();
-    expect(mat.envMapIntensity).toBeLessThanOrEqual(0.55);
+    expect(mat.envMapIntensity).toBeLessThanOrEqual(0.5);
   });
 });
 

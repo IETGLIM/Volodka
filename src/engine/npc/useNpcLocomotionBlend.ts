@@ -10,8 +10,8 @@ import {
   type NpcAnimationClipOverrides,
 } from '@/engine/npc/npcClipResolution';
 
-const BLEND_ACCEL = 6;
-const BLEND_DECEL = 3;
+const BLEND_ACCEL = 5.2;
+const BLEND_DECEL = 2.8;
 const WEIGHT_EPSILON = 0.001;
 
 /** States driven by simultaneous idle/walk weights instead of crossfade. */

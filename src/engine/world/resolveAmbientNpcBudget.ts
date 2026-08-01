@@ -2,7 +2,7 @@ import { getSceneVisualProfile, isHeroScene } from '@/config/sceneVisualProfiles
 import { tierFromPresetId } from '@/engine/graphics/fxGovernor';
 import type { SceneId } from '@/shared/types/game';
 
-export const MAX_AMBIENT_NPC_INSTANCES = 6;
+export const MAX_AMBIENT_NPC_INSTANCES = 8;
 
 /** Scale background NPC count by hero scene and graphics tier. */
 export function resolveAmbientNpcCount(
@@ -25,5 +25,5 @@ export function resolveAmbientNpcCount(
 /** Hero districts feel more populated — slightly less ghostly silhouettes. */
 export function resolveAmbientNpcOpacity(sceneId: SceneId, baseOpacity: number): number {
   if (!isHeroScene(sceneId)) return baseOpacity;
-  return Math.min(0.78, baseOpacity + 0.12);
+  return Math.min(0.85, baseOpacity + 0.16);
 }
