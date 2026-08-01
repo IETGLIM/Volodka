@@ -14,6 +14,7 @@ import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
 import { disposeClonedScene, createSourceSkipSet } from '@/engine/three/disposeThreeResources';
 import { UniqueStreetFacades } from './UniqueStreetFacades';
+import { scheduleGltfPreload, GltfPreloadPriority } from '@/engine/assets/gltfPreloadScheduler';
 
 const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeof useGLTF>[3]>;
 
@@ -297,26 +298,27 @@ export function HeroStreetFacadesWithAssets() {
   );
 }
 
-useGLTF.preload(POLYHAVEN_MODELS.bench, true, true, extendLoader);
-useGLTF.preload(POLYHAVEN_MODELS.fireEscape, true, true, extendLoader);
-useGLTF.preload(POLYHAVEN_MODELS.urbanFacade, true, true, extendLoader);
-useGLTF.preload(POLYHAVEN_MODELS.shutterDoor, true, true, extendLoader);
-useGLTF.preload(POLYHAVEN_MODELS.shutterWindow, true, true, extendLoader);
-useGLTF.preload(POLYHAVEN_MODELS.shutterWindowAlt, true, true, extendLoader);
-useGLTF.preload(POLYHAVEN_MODELS.streetLamp, true, true, extendLoader);
-useGLTF.preload(POLYHAVEN_MODELS.streetLampAlt, true, true, extendLoader);
-useGLTF.preload(POLYHAVEN_MODELS.industrialLamp, true, true, extendLoader);
-useGLTF.preload(POLYHAVEN_MODELS.metalTrashCan, true, true, extendLoader);
-useGLTF.preload(POLYHAVEN_MODELS.trashbag, true, true, extendLoader);
-useGLTF.preload(POLYHAVEN_MODELS.roadBarrier, true, true, extendLoader);
-useGLTF.preload(POLYHAVEN_MODELS.roadBarrierAlt, true, true, extendLoader);
-useGLTF.preload(POLYHAVEN_MODELS.wetFloorSign, true, true, extendLoader);
-useGLTF.preload(POLYHAVEN_MODELS.barrel, true, true, extendLoader);
-useGLTF.preload(POLYHAVEN_MODELS.cardboardBox, true, true, extendLoader);
-useGLTF.preload(POLYHAVEN_MODELS.woodenCrate, true, true, extendLoader);
-useGLTF.preload(POLYHAVEN_MODELS.oldTyre, true, true, extendLoader);
-useGLTF.preload(POLYHAVEN_MODELS.manholeCover, true, true, extendLoader);
-useGLTF.preload(POLYHAVEN_MODELS.exteriorAirconUnit, true, true, extendLoader);
-useGLTF.preload(POLYHAVEN_MODELS.powerBox, true, true, extendLoader);
-useGLTF.preload(POLYHAVEN_MODELS.securityCamera, true, true, extendLoader);
-useGLTF.preload(POLYHAVEN_MODELS.utilityBox, true, true, extendLoader);
+// Session 9 perf: route module-scope preloads through gltfPreloadScheduler instead of
+// firing 23 simultaneous useGLTF.preload() calls. The old pattern started 23 HTTP fetches
+// at import time; when they resolved (~simultaneously, HTTP/2-multiplexed) their .then()
+// callbacks queued 23 synchronous GLTFLoader.parse() calls (Draco/Meshopt WASM decode)
+// back-to-back without yielding — 1.8–11.5s of main-thread stall on scene enter. This
+// was a root cause of the 12–17s INP stalls. The scheduler uses requestIdleCallback with
+// BATCH_SIZE=1 so parses run one-per-idle-slice, yielding between each.
+const STREET_PRELOAD_URLS = [
+  POLYHAVEN_MODELS.bench, POLYHAVEN_MODELS.fireEscape, POLYHAVEN_MODELS.urbanFacade,
+  POLYHAVEN_MODELS.shutterDoor, POLYHAVEN_MODELS.shutterWindow, POLYHAVEN_MODELS.shutterWindowAlt,
+  POLYHAVEN_MODELS.streetLamp, POLYHAVEN_MODELS.streetLampAlt, POLYHAVEN_MODELS.industrialLamp,
+  POLYHAVEN_MODELS.metalTrashCan, POLYHAVEN_MODELS.trashbag, POLYHAVEN_MODELS.roadBarrier,
+  POLYHAVEN_MODELS.roadBarrierAlt, POLYHAVEN_MODELS.wetFloorSign, POLYHAVEN_MODELS.barrel,
+  POLYHAVEN_MODELS.cardboardBox, POLYHAVEN_MODELS.woodenCrate, POLYHAVEN_MODELS.oldTyre,
+  POLYHAVEN_MODELS.manholeCover, POLYHAVEN_MODELS.exteriorAirconUnit, POLYHAVEN_MODELS.powerBox,
+  POLYHAVEN_MODELS.securityCamera, POLYHAVEN_MODELS.utilityBox,
+];
+for (const url of STREET_PRELOAD_URLS) {
+  scheduleGltfPreload(
+    url,
+    () => useGLTF.preload(url, true, true, extendLoader),
+    GltfPreloadPriority.High,
+  );
+}

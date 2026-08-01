@@ -38,6 +38,7 @@ import { weatherEnvironmentMaterials } from '@/engine/graphics/materials/weather
 import { POLYHAVEN_MODELS } from '@/config/polyhavenAssets';
 import { getPropModelDefinition } from '@/config/propModelRegistry';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
+import { scheduleGltfPreload, GltfPreloadPriority } from '@/engine/assets/gltfPreloadScheduler';
 import { useGltfPropPlacement } from '@/hooks/useGltfPropPlacement';
 import {
   getInteriorShellScale,
@@ -1264,14 +1265,21 @@ function createWallTexture(): THREE.CanvasTexture {
   return tex;
 }
 
-useGLTF.preload(POLYHAVEN_MODELS.gothicBed, true, true, extendLoader);
-useGLTF.preload(POLYHAVEN_MODELS.hangingPictureFrame, true, true, extendLoader);
-useGLTF.preload(POLYHAVEN_MODELS.shutterWindow, true, true, extendLoader);
-useGLTF.preload(POLYHAVEN_MODELS.shutterWindowAlt, true, true, extendLoader);
-useGLTF.preload(POLYHAVEN_MODELS.armChair, true, true, extendLoader);
-useGLTF.preload(POLYHAVEN_MODELS.woodenBookshelfWorn, true, true, extendLoader);
-useGLTF.preload(POLYHAVEN_MODELS.paintedWoodenCabinet, true, true, extendLoader);
-useGLTF.preload(POLYHAVEN_MODELS.paintedWoodenTable, true, true, extendLoader);
-useGLTF.preload(POLYHAVEN_MODELS.deskLampArm, true, true, extendLoader);
-useGLTF.preload(POLYHAVEN_MODELS.cassettePlayer, true, true, extendLoader);
-useGLTF.preload(getPropModelDefinition('kenney_door')!.url, true, true, extendLoader);
+// Session 9 perf: route module-scope preloads through gltfPreloadScheduler (was 11
+// simultaneous useGLTF.preload() → 11 sync GLTFLoader.parse() back-to-back on resolve,
+// ~0.9–4.4s main-thread stall on scene enter — root cause of the 12–17s INP stalls).
+const ROOM_PRELOAD_URLS = [
+  POLYHAVEN_MODELS.gothicBed, POLYHAVEN_MODELS.hangingPictureFrame,
+  POLYHAVEN_MODELS.shutterWindow, POLYHAVEN_MODELS.shutterWindowAlt,
+  POLYHAVEN_MODELS.armChair, POLYHAVEN_MODELS.woodenBookshelfWorn,
+  POLYHAVEN_MODELS.paintedWoodenCabinet, POLYHAVEN_MODELS.paintedWoodenTable,
+  POLYHAVEN_MODELS.deskLampArm, POLYHAVEN_MODELS.cassettePlayer,
+  getPropModelDefinition('kenney_door')!.url,
+];
+for (const url of ROOM_PRELOAD_URLS) {
+  scheduleGltfPreload(
+    url,
+    () => useGLTF.preload(url, true, true, extendLoader),
+    GltfPreloadPriority.High,
+  );
+}
