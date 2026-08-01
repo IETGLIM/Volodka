@@ -55,11 +55,12 @@ function executeNewPlaythroughReset(options: NewPlaythroughResetOptions = {}): v
 
 export const createSaveSlice: StateCreator<GameStoreState, [], [], SaveSlice> = () => ({
   resetGame: () => {
-    executeNewPlaythroughReset();
+    // Always skip cold-boot matrix intro — New Game is chosen from the menu.
+    executeNewPlaythroughReset({ skipIntro: true });
   },
 
   resetForNewPlaythrough: (options) => {
-    executeNewPlaythroughReset(options);
+    executeNewPlaythroughReset({ skipIntro: true, ...options });
   },
 
   saveGame: (options) => {

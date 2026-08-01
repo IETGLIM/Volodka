@@ -2,41 +2,20 @@ import type { QualityPresetId } from './qualityPresets';
 
 type ConcreteQualityPresetId = Exclude<QualityPresetId, 'auto'>;
 
-const AUTO_QUALITY_SESSION_TIER_KEY = 'volodka_auto_quality_session_tier';
+/**
+ * Session-only adaptive quality caps.
+ * Must NOT persist to localStorage — permanent degrade violates AAA criteria
+ * (“adaptive quality must not permanently gut the look”).
+ */
 
-const VALID_TIERS = new Set<ConcreteQualityPresetId>(['low', 'medium', 'high', 'ultra']);
+/** When user selected `auto`, runtime concrete tier (session memory only). */
+let sessionAutoResolvedTier: ConcreteQualityPresetId | null = null;
 
-/** Runtime tier cap when user selected `auto` — persisted across sessions. */
-let sessionAutoResolvedTier: ConcreteQualityPresetId | null = readPersistedAutoTier();
-
-function getAutoTierStorage(): Storage | null {
-  if (typeof window === 'undefined') return null;
-  try {
-    return typeof localStorage !== 'undefined' ? localStorage : null;
-  } catch {
-    return null;
-  }
-}
-
-function readPersistedAutoTier(): ConcreteQualityPresetId | null {
-  const storage = getAutoTierStorage();
-  if (!storage) return null;
-  const raw = storage.getItem(AUTO_QUALITY_SESSION_TIER_KEY);
-  if (raw && VALID_TIERS.has(raw as ConcreteQualityPresetId)) {
-    return raw as ConcreteQualityPresetId;
-  }
-  return null;
-}
-
-function writePersistedAutoTier(tier: ConcreteQualityPresetId | null): void {
-  const storage = getAutoTierStorage();
-  if (!storage) return;
-  if (tier === null) {
-    storage.removeItem(AUTO_QUALITY_SESSION_TIER_KEY);
-    return;
-  }
-  storage.setItem(AUTO_QUALITY_SESSION_TIER_KEY, tier);
-}
+/**
+ * When user selected a concrete preset (high/ultra/…), FPS adaptive may force
+ * a lower tier for this tab session without rewriting their saved preference.
+ */
+let sessionForcedPreset: ConcreteQualityPresetId | null = null;
 
 export function getSessionAutoResolvedTier(): ConcreteQualityPresetId | null {
   return sessionAutoResolvedTier;
@@ -44,10 +23,26 @@ export function getSessionAutoResolvedTier(): ConcreteQualityPresetId | null {
 
 export function setSessionAutoResolvedTier(tier: ConcreteQualityPresetId): void {
   sessionAutoResolvedTier = tier;
-  writePersistedAutoTier(tier);
 }
 
 export function clearSessionAutoResolvedTier(): void {
   sessionAutoResolvedTier = null;
-  writePersistedAutoTier(null);
+}
+
+export function getSessionForcedPreset(): ConcreteQualityPresetId | null {
+  return sessionForcedPreset;
+}
+
+export function setSessionForcedPreset(tier: ConcreteQualityPresetId): void {
+  sessionForcedPreset = tier;
+}
+
+export function clearSessionForcedPreset(): void {
+  sessionForcedPreset = null;
+}
+
+/** Clear all session adaptive overrides (manual preset pick / new game). */
+export function clearAllSessionQualityOverrides(): void {
+  sessionAutoResolvedTier = null;
+  sessionForcedPreset = null;
 }

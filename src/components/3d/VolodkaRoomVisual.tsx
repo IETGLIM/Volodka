@@ -399,7 +399,8 @@ function AuthoredVolodkaWorkstation({ castShadow }: { castShadow: boolean }) {
       </Suspense>
       {/* Cassette / poetic_compiler / neural_filter: RoomDressing + ScenePropDressing
           (off-desk slots). Do not restack on monitor y≈0.82 — shell is exterior_building. */}
-      <pointLight position={[0, 1.25, -2.25]} color="#33ddaa" intensity={2.4} distance={7} decay={2} />
+      {/* Monitor spill — muted phosphor, not candy neon */}
+      <pointLight position={[0, 1.25, -2.25]} color="#5a9a88" intensity={1.65} distance={6.5} decay={2} />
     </group>
   );
 }
@@ -583,44 +584,57 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
             </mesh>
           </Suspense>
 
-          {/* Architectural trim — baseboards + crown (breaks flat-plane room read) */}
-          <mesh position={[0, 0.06, -D / 2 + 0.02]} geometry={getSharedBoxGeometry(W - 0.08, 0.12, 0.04)}>
-            <PolyHavenStandardMaterial materialId="wood_floor" repeatScale={1.3} color="#4a3d30" roughness={0.82} metalness={0.04} />
-          </mesh>
-          <mesh position={[0, 0.06, D / 2 - 0.02]} geometry={getSharedBoxGeometry(W - 0.08, 0.12, 0.04)}>
-            <PolyHavenStandardMaterial materialId="wood_floor" repeatScale={1.3} color="#4a3d30" roughness={0.82} metalness={0.04} />
-          </mesh>
-          <mesh position={[-W / 2 + 0.02, 0.06, 0]} geometry={getSharedBoxGeometry(0.04, 0.12, D - 0.08)}>
-            <PolyHavenStandardMaterial materialId="wood_floor" repeatScale={1.4} color="#4a3d30" roughness={0.82} metalness={0.04} />
-          </mesh>
-          <mesh position={[W / 2 - 0.02, 0.06, 0]} geometry={getSharedBoxGeometry(0.04, 0.12, D - 0.08)}>
-            <PolyHavenStandardMaterial materialId="wood_floor" repeatScale={1.4} color="#4a3d30" roughness={0.82} metalness={0.04} />
-          </mesh>
-          <mesh position={[0, H - 0.08, -D / 2 + 0.03]} geometry={getSharedBoxGeometry(W - 0.1, 0.1, 0.06)}>
-            <PolyHavenStandardMaterial materialId="plastered_wall" repeatScale={1.0} color="#4a4658" roughness={0.84} metalness={0.04} />
-          </mesh>
-          <mesh position={[0, H - 0.08, D / 2 - 0.03]} geometry={getSharedBoxGeometry(W - 0.1, 0.1, 0.06)}>
-            <PolyHavenStandardMaterial materialId="plastered_wall" repeatScale={1.0} color="#4a4658" roughness={0.84} metalness={0.04} />
-          </mesh>
-          <mesh position={[-W / 2 + 0.03, H - 0.08, 0]} geometry={getSharedBoxGeometry(0.06, 0.1, D - 0.1)}>
-            <PolyHavenStandardMaterial materialId="plastered_wall" repeatScale={1.05} color="#4a4658" roughness={0.84} metalness={0.04} />
-          </mesh>
-          <mesh position={[W / 2 - 0.03, H - 0.08, 0]} geometry={getSharedBoxGeometry(0.06, 0.1, D - 0.1)}>
-            <PolyHavenStandardMaterial materialId="plastered_wall" repeatScale={1.05} color="#4a4658" roughness={0.84} metalness={0.04} />
-          </mesh>
-          {/* Chair rail — mid-wall wood break so plaster planes read as architecture */}
-          <mesh position={[0, 0.92, -D / 2 + 0.025]} geometry={getSharedBoxGeometry(W - 0.12, 0.045, 0.035)}>
-            <PolyHavenStandardMaterial materialId="wood_floor" repeatScale={1.5} color="#3f3429" roughness={0.8} metalness={0.03} />
-          </mesh>
-          <mesh position={[0, 0.92, D / 2 - 0.025]} geometry={getSharedBoxGeometry(W - 0.12, 0.045, 0.035)}>
-            <PolyHavenStandardMaterial materialId="wood_floor" repeatScale={1.5} color="#3f3429" roughness={0.8} metalness={0.03} />
-          </mesh>
-          <mesh position={[-W / 2 + 0.025, 0.92, 0]} geometry={getSharedBoxGeometry(0.035, 0.045, D - 0.12)}>
-            <PolyHavenStandardMaterial materialId="wood_floor" repeatScale={1.55} color="#3f3429" roughness={0.8} metalness={0.03} />
-          </mesh>
-          <mesh position={[W / 2 - 0.025, 0.92, 0]} geometry={getSharedBoxGeometry(0.035, 0.045, D - 0.12)}>
-            <PolyHavenStandardMaterial materialId="wood_floor" repeatScale={1.55} color="#3f3429" roughness={0.8} metalness={0.03} />
-          </mesh>
+          {/* Architectural trim — baseboards + crown (breaks flat-plane room read).
+              Must stay inside Suspense: PolyHavenStandardMaterial uses useTexture and
+              would otherwise suspend the whole MIDGROUND tree past greybox. */}
+          <Suspense
+            fallback={
+              <>
+                <mesh position={[0, 0.06, -D / 2 + 0.02]} geometry={getSharedBoxGeometry(W - 0.08, 0.12, 0.04)} material={mat_floor} />
+                <mesh position={[0, 0.06, D / 2 - 0.02]} geometry={getSharedBoxGeometry(W - 0.08, 0.12, 0.04)} material={mat_floor} />
+                <mesh position={[-W / 2 + 0.02, 0.06, 0]} geometry={getSharedBoxGeometry(0.04, 0.12, D - 0.08)} material={mat_floor} />
+                <mesh position={[W / 2 - 0.02, 0.06, 0]} geometry={getSharedBoxGeometry(0.04, 0.12, D - 0.08)} material={mat_floor} />
+              </>
+            }
+          >
+            <mesh position={[0, 0.06, -D / 2 + 0.02]} geometry={getSharedBoxGeometry(W - 0.08, 0.12, 0.04)}>
+              <PolyHavenStandardMaterial materialId="wood_floor" repeatScale={1.3} color="#4a3d30" roughness={0.82} metalness={0.04} />
+            </mesh>
+            <mesh position={[0, 0.06, D / 2 - 0.02]} geometry={getSharedBoxGeometry(W - 0.08, 0.12, 0.04)}>
+              <PolyHavenStandardMaterial materialId="wood_floor" repeatScale={1.3} color="#4a3d30" roughness={0.82} metalness={0.04} />
+            </mesh>
+            <mesh position={[-W / 2 + 0.02, 0.06, 0]} geometry={getSharedBoxGeometry(0.04, 0.12, D - 0.08)}>
+              <PolyHavenStandardMaterial materialId="wood_floor" repeatScale={1.4} color="#4a3d30" roughness={0.82} metalness={0.04} />
+            </mesh>
+            <mesh position={[W / 2 - 0.02, 0.06, 0]} geometry={getSharedBoxGeometry(0.04, 0.12, D - 0.08)}>
+              <PolyHavenStandardMaterial materialId="wood_floor" repeatScale={1.4} color="#4a3d30" roughness={0.82} metalness={0.04} />
+            </mesh>
+            <mesh position={[0, H - 0.08, -D / 2 + 0.03]} geometry={getSharedBoxGeometry(W - 0.1, 0.1, 0.06)}>
+              <PolyHavenStandardMaterial materialId="plastered_wall" repeatScale={1.0} color="#4a4658" roughness={0.84} metalness={0.04} />
+            </mesh>
+            <mesh position={[0, H - 0.08, D / 2 - 0.03]} geometry={getSharedBoxGeometry(W - 0.1, 0.1, 0.06)}>
+              <PolyHavenStandardMaterial materialId="plastered_wall" repeatScale={1.0} color="#4a4658" roughness={0.84} metalness={0.04} />
+            </mesh>
+            <mesh position={[-W / 2 + 0.03, H - 0.08, 0]} geometry={getSharedBoxGeometry(0.06, 0.1, D - 0.1)}>
+              <PolyHavenStandardMaterial materialId="plastered_wall" repeatScale={1.05} color="#4a4658" roughness={0.84} metalness={0.04} />
+            </mesh>
+            <mesh position={[W / 2 - 0.03, H - 0.08, 0]} geometry={getSharedBoxGeometry(0.06, 0.1, D - 0.1)}>
+              <PolyHavenStandardMaterial materialId="plastered_wall" repeatScale={1.05} color="#4a4658" roughness={0.84} metalness={0.04} />
+            </mesh>
+            {/* Chair rail — mid-wall wood break so plaster planes read as architecture */}
+            <mesh position={[0, 0.92, -D / 2 + 0.025]} geometry={getSharedBoxGeometry(W - 0.12, 0.045, 0.035)}>
+              <PolyHavenStandardMaterial materialId="wood_floor" repeatScale={1.5} color="#3f3429" roughness={0.8} metalness={0.03} />
+            </mesh>
+            <mesh position={[0, 0.92, D / 2 - 0.025]} geometry={getSharedBoxGeometry(W - 0.12, 0.045, 0.035)}>
+              <PolyHavenStandardMaterial materialId="wood_floor" repeatScale={1.5} color="#3f3429" roughness={0.8} metalness={0.03} />
+            </mesh>
+            <mesh position={[-W / 2 + 0.025, 0.92, 0]} geometry={getSharedBoxGeometry(0.035, 0.045, D - 0.12)}>
+              <PolyHavenStandardMaterial materialId="wood_floor" repeatScale={1.55} color="#3f3429" roughness={0.8} metalness={0.03} />
+            </mesh>
+            <mesh position={[W / 2 - 0.025, 0.92, 0]} geometry={getSharedBoxGeometry(0.035, 0.045, D - 0.12)}>
+              <PolyHavenStandardMaterial materialId="wood_floor" repeatScale={1.55} color="#3f3429" roughness={0.8} metalness={0.03} />
+            </mesh>
+          </Suspense>
         </>
       )}
 
@@ -698,7 +712,7 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
             />
           ))}
 
-          <pointLight position={[0, 1.25, 0.15]} color="#33ddaa" intensity={3.5} distance={12} decay={2} />
+          <pointLight position={[0, 1.25, 0.15]} color="#5a9a88" intensity={2.2} distance={10} decay={2} />
           {/* Keyboard — flat slab not cube pile */}
           <mesh position={[0, 0.785, 0.12]} geometry={getSharedBoxGeometry(0.42, 0.018, 0.14)} material={mat_15} />
           <mesh position={[0.15, 0.8, 0.05]} geometry={getSharedBoxGeometry(0.012, 0.006, 0.012)} material={mat_16} />

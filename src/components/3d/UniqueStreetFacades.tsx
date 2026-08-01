@@ -164,13 +164,13 @@ function UniqueBuilding({ spec }: { spec: UniqueBuildingSpec }) {
             <meshStandardMaterial
               color="#080810"
               emissive={spec.neon}
-              emissiveIntensity={1.05 * getCinematicNeonIntensityScale()}
+              emissiveIntensity={0.62 * getCinematicNeonIntensityScale()}
               roughness={0.55}
               metalness={0.15}
               toneMapped={false}
             />
           </mesh>
-          <pointLight ref={lightRef} position={[0, -0.2, 0.6]} color={spec.neon} intensity={0.75} distance={11} decay={2} />
+          <pointLight ref={lightRef} position={[0, -0.2, 0.6]} color={spec.neon} intensity={0.42} distance={10} decay={2} />
         </group>
       </Suspense>
     </group>

@@ -209,23 +209,27 @@ export function AmbientNPCs({ livePlayerPositionRef }: AmbientNPCsProps) {
     () => scaleNpcLodThresholds(DEFAULT_NPC_LOD, preset.lodBias).cullOut,
     [preset.lodBias],
   );
-  const maxSkinned = preset.visualLite
-    ? 0
-    : preset.id === 'low'
-      ? 3
+  // Skinned ambient is independent of visualLite (Medium is visualLite but still needs people).
+  const maxSkinned =
+    preset.id === 'low'
+      ? 2
       : preset.id === 'medium'
         ? 5
         : MAX_AMBIENT_SKINNED;
 
   const config = SCENE_CONFIGS[sceneId] ?? SCENE_CONFIGS[resolveDerivedSceneId(sceneId)] ?? null;
   const baseCount = config?.count ?? 0;
-  const count = resolveAmbientNpcCount(sceneId, baseCount, preset.id);
+  const resolvedCount = resolveAmbientNpcCount(sceneId, baseCount, preset.id);
+  // Medium+: skinned only — never spawn DataTexture silhouette overflow.
+  const count =
+    preset.id === 'low' ? resolvedCount : Math.min(resolvedCount, maxSkinned);
   const bodyOpacity = resolveAmbientNpcOpacity(sceneId, BODY_OPACITY);
 
   const colors = config ? TYPE_COLORS[config.type] : TYPE_COLORS.office_worker;
 
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const shadowRef = useRef<THREE.InstancedMesh>(null);
+  const rootRef = useRef<THREE.Group>(null);
   const planeGeometry = useMemo(() => new THREE.PlaneGeometry(NPC_WIDTH, NPC_HEIGHT), []);
   const shadowGeometry = useMemo(() => new THREE.CircleGeometry(0.22, 10), []);
   const impostorMap = useMemo(() => getAmbientCrowdImpostorTexture(), []);
@@ -314,7 +318,6 @@ export function AmbientNPCs({ livePlayerPositionRef }: AmbientNPCsProps) {
   useFrameTick('npc', ({ delta }) => {
     const mesh = meshRef.current;
     const shadows = shadowRef.current;
-    if (!mesh) return;
     if (!config || count === 0) return;
 
     const states = instanceStates.current;
@@ -324,17 +327,24 @@ export function AmbientNPCs({ livePlayerPositionRef }: AmbientNPCsProps) {
     const playerX = livePlayerPositionRef.current.x;
     const playerZ = livePlayerPositionRef.current.z;
     camera.getWorldPosition(camPos);
+    const hasBillboards = Boolean(mesh);
 
     for (let i = 0; i < count && i < states.length; i++) {
       const s = states[i]!;
 
       const npcDist = Math.hypot(s.px - playerX, s.pz - playerZ);
       if (npcDist > cullDistance) {
-        dummy.position.set(0, -100, 0);
-        dummy.scale.set(0, 0, 0);
-        dummy.updateMatrix();
-        mesh.setMatrixAt(i, dummy.matrix);
-        shadows?.setMatrixAt(i, dummy.matrix);
+        if (i < maxSkinned) {
+          const slot = liveSlotsRef.current[i];
+          if (slot) slot.active = false;
+        }
+        if (hasBillboards && mesh) {
+          dummy.position.set(0, -100, 0);
+          dummy.scale.set(0, 0, 0);
+          dummy.updateMatrix();
+          mesh.setMatrixAt(i, dummy.matrix);
+          shadows?.setMatrixAt(i, dummy.matrix);
+        }
         continue;
       }
 
@@ -404,19 +414,23 @@ export function AmbientNPCs({ livePlayerPositionRef }: AmbientNPCsProps) {
       }
 
       if (useSkinned) {
-        dummy.position.set(0, -100, 0);
-        dummy.scale.set(0, 0, 0);
-        dummy.updateMatrix();
-        mesh.setMatrixAt(i, dummy.matrix);
-        if (shadows) {
-          dummy.position.set(s.px, 0.02, s.pz);
-          dummy.rotation.set(-Math.PI / 2, 0, 0);
-          dummy.scale.set(1, 1, 1);
+        if (hasBillboards && mesh) {
+          dummy.position.set(0, -100, 0);
+          dummy.scale.set(0, 0, 0);
           dummy.updateMatrix();
-          shadows.setMatrixAt(i, dummy.matrix);
+          mesh.setMatrixAt(i, dummy.matrix);
+          if (shadows) {
+            dummy.position.set(s.px, 0.02, s.pz);
+            dummy.rotation.set(-Math.PI / 2, 0, 0);
+            dummy.scale.set(1, 1, 1);
+            dummy.updateMatrix();
+            shadows.setMatrixAt(i, dummy.matrix);
+          }
         }
         continue;
       }
+
+      if (!hasBillboards || !mesh) continue;
 
       const faceY = Math.atan2(camPos.x - s.px, camPos.z - s.pz);
       dummy.position.set(s.px, s.py, s.pz);
@@ -439,60 +453,69 @@ export function AmbientNPCs({ livePlayerPositionRef }: AmbientNPCsProps) {
       if (slot) slot.active = false;
     }
 
-    for (let i = count; i < MAX_INSTANCES; i++) {
-      dummy.position.set(0, -100, 0);
-      dummy.scale.set(0, 0, 0);
-      dummy.updateMatrix();
-      mesh.setMatrixAt(i, dummy.matrix);
-      shadows?.setMatrixAt(i, dummy.matrix);
-    }
+    if (hasBillboards && mesh) {
+      for (let i = count; i < MAX_INSTANCES; i++) {
+        dummy.position.set(0, -100, 0);
+        dummy.scale.set(0, 0, 0);
+        dummy.updateMatrix();
+        mesh.setMatrixAt(i, dummy.matrix);
+        shadows?.setMatrixAt(i, dummy.matrix);
+      }
 
-    mesh.instanceMatrix.needsUpdate = true;
-    if (shadows) shadows.instanceMatrix.needsUpdate = true;
-  }, { label: 'AmbientNPCs', visibilityRef: meshRef });
+      mesh.instanceMatrix.needsUpdate = true;
+      if (shadows) shadows.instanceMatrix.needsUpdate = true;
+    }
+  }, { label: 'AmbientNPCs', visibilityRef: rootRef });
 
   if (!config || count === 0) return null;
 
+  // DataTexture cardboard people only on Low — hero hubs stay skinned.
+  const showCardboardOverflow = preset.id === 'low';
+
   return (
-    <group>
+    <group ref={rootRef}>
       <AmbientSkinnedMidLod
         slotsRef={liveSlotsRef}
         livePlayerPositionRef={livePlayerPositionRef}
         tintHex={colors.body}
         maxSkinned={maxSkinned}
       />
-      <instancedMesh
-        ref={meshRef}
-        args={[planeGeometry, undefined, MAX_INSTANCES]}
-        frustumCulled={false}
-      >
-        <meshStandardMaterial
-          map={impostorMap}
-          alphaMap={impostorMap}
-          color={colors.body}
-          emissive={colors.emissive}
-          emissiveIntensity={0.06}
-          transparent
-          opacity={bodyOpacity}
-          roughness={0.92}
-          metalness={0.05}
-          alphaTest={0.35}
-          depthWrite={false}
-          side={THREE.DoubleSide}
-        />
-      </instancedMesh>
-      <instancedMesh
-        ref={shadowRef}
-        args={[shadowGeometry, undefined, MAX_INSTANCES]}
-        frustumCulled={false}
-      >
-        <meshBasicMaterial
-          color="#000000"
-          transparent
-          opacity={Math.min(0.35, bodyOpacity * 0.4)}
-          depthWrite={false}
-        />
-      </instancedMesh>
+      {showCardboardOverflow ? (
+        <>
+          <instancedMesh
+            ref={meshRef}
+            args={[planeGeometry, undefined, MAX_INSTANCES]}
+            frustumCulled={false}
+          >
+            <meshStandardMaterial
+              map={impostorMap}
+              alphaMap={impostorMap}
+              color={colors.body}
+              emissive={colors.emissive}
+              emissiveIntensity={0.06}
+              transparent
+              opacity={bodyOpacity}
+              roughness={0.92}
+              metalness={0.05}
+              alphaTest={0.35}
+              depthWrite={false}
+              side={THREE.DoubleSide}
+            />
+          </instancedMesh>
+          <instancedMesh
+            ref={shadowRef}
+            args={[shadowGeometry, undefined, MAX_INSTANCES]}
+            frustumCulled={false}
+          >
+            <meshBasicMaterial
+              color="#000000"
+              transparent
+              opacity={Math.min(0.35, bodyOpacity * 0.4)}
+              depthWrite={false}
+            />
+          </instancedMesh>
+        </>
+      ) : null}
     </group>
   );
 }

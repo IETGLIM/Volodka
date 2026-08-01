@@ -29,7 +29,7 @@ const CircuitGridLines = memo(function CircuitGridLines() {
             y1={`${(i + 1) * 8}%`}
             x2="100%"
             y2={`${(i + 1) * 8}%`}
-            stroke="rgb(var(--cyber-cyan-rgb) / 0.6)"
+            stroke="rgba(168, 162, 158, 0.45)"
             strokeWidth="0.5"
             style={{ animation: `menu-circuit-grid ${3 + i * 0.5}s ease-in-out infinite`, animationDelay: `${i * 0.4}s` }}
           />
@@ -41,7 +41,7 @@ const CircuitGridLines = memo(function CircuitGridLines() {
             y1="0"
             x2={`${(i + 1) * 6}%`}
             y2="100%"
-            stroke="rgb(var(--cyber-cyan-rgb) / 0.4)"
+            stroke="rgba(168, 162, 158, 0.28)"
             strokeWidth="0.5"
             style={{ animation: `menu-circuit-grid ${4 + i * 0.3}s ease-in-out infinite`, animationDelay: `${i * 0.3}s` }}
           />
@@ -58,8 +58,8 @@ const FullScreenScanLine = memo(function FullScreenScanLine() {
         className="absolute left-0 right-0 h-px menu-fullscan-line"
         style={{
           background:
-            'linear-gradient(90deg, transparent 0%, rgb(var(--cyber-cyan-rgb) / 0.08) 20%, rgb(var(--cyber-cyan-rgb) / 0.12) 50%, rgb(var(--cyber-cyan-rgb) / 0.08) 80%, transparent 100%)',
-          boxShadow: '0 0 6px rgb(var(--cyber-cyan-rgb) / 0.05)',
+            'linear-gradient(90deg, transparent 0%, rgba(214, 211, 209, 0.08) 20%, rgba(214, 211, 209, 0.14) 50%, rgba(214, 211, 209, 0.08) 80%, transparent 100%)',
+          boxShadow: '0 0 6px rgba(120, 113, 108, 0.06)',
         }}
       />
     </div>
@@ -74,7 +74,7 @@ const MenuParticleSystem = memo(function MenuParticleSystem({ emberCount, sparkl
       const duration = (4 + seededRand(i + 120) * 6).toFixed(2);
       const size = (1 + seededRand(i + 180) * 3).toFixed(1);
       const glow = (parseFloat(size) * 3).toFixed(1);
-      const color = i % 3 === 0 ? 'rgba(255, 0, 128, 0.5)' : i % 3 === 1 ? 'rgba(255, 140, 0, 0.4)' : 'rgba(0, 255, 255, 0.5)';
+      const color = i % 3 === 0 ? 'rgba(196, 140, 110, 0.45)' : i % 3 === 1 ? 'rgba(214, 180, 120, 0.4)' : 'rgba(168, 162, 158, 0.4)';
       return { id: `e${i}`, x, delay, duration, size, glow, color, type: 'ember' as const };
     });
     const sparkles = Array.from({ length: sparkleCount }, (_, i) => {
@@ -142,11 +142,11 @@ const TerminalCorners = memo(function TerminalCorners() {
   return (
     <>
       {corners.map((c, i) => (
-        <div key={c.pos} className={`absolute ${c.pos} w-5 h-5 border-cyan-400/20 ${c.bracket} z-30 pointer-events-none`}>
+        <div key={c.pos} className={`absolute ${c.pos} w-5 h-5 border-stone-400/25 ${c.bracket} z-30 pointer-events-none`}>
           <div
-            className={`absolute ${c.dotPos} w-1 h-1 rounded-full bg-cyan-400/60`}
+            className={`absolute ${c.dotPos} w-1 h-1 rounded-full bg-stone-300/55`}
             style={{
-              boxShadow: '0 0 4px rgb(var(--cyber-cyan-rgb) / 0.4)',
+              boxShadow: '0 0 4px rgba(168, 162, 158, 0.35)',
               animation: `menu-corner-dot-blink ${2 + i * 0.3}s ease-in-out infinite`,
               animationDelay: `${i * 0.5}s`,
             }}
@@ -166,7 +166,7 @@ const AsciiDecoration = memo(function AsciiDecoration() {
       className="absolute top-1/2 right-4 md:right-8 -translate-y-1/2 z-20 pointer-events-none hidden md:block"
       aria-hidden="true"
     >
-      <pre className="font-mono text-[6px] md:text-[8px] leading-tight text-cyan-400">{`  ╔═══════════╗
+      <pre className="font-mono text-[6px] md:text-[8px] leading-tight text-stone-400/80">{`  ╔═══════════╗
   ║  ▓▓▓▓▓▓  ║
   ║  ▓  ◈  ▓  ║
   ║  ▓▓▓▓▓▓  ║

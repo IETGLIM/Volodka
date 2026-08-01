@@ -114,9 +114,8 @@ export function OrchestratorCanvasLayer({
           <LazyIntroScreen />
         </Suspense>
       )}
-      {mode === 'intro' && introSeen && (
-        <div className="fixed inset-0 bg-black" style={{ zIndex: UI_LAYERS.LOADING }} />
-      )}
+      {/* Returning visitors: IntroAutoSkip opens the menu. Do NOT paint a full-screen
+          black LOADING shell here — if menu open races, that shell stuck as «чёрный экран». */}
       <IntroAutoSkip />
 
       {canvasMounted && (

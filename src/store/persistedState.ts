@@ -126,11 +126,18 @@ export function createDefaultSessionState(): Partial<GameStoreState> {
   };
 }
 
-/** Full store patch for resetGame — persisted + session defaults. */
+/** Full store patch for resetGame — persisted + session defaults.
+ *  Unlike cold boot (`BOOT_PHASE_FLAGS` / uiSlice init), a new playthrough
+ *  must NOT re-enter the matrix-poem intro: that flashes IntroScreen and the
+ *  `intro && introSeen` black shell in OrchestratorCanvasLayer. */
 export function createDefaultResetState(): Partial<GameStoreState> {
   return {
     ...createDefaultPersistedState(),
     ...createDefaultSessionState(),
+    mainMenuOpen: false,
+    introActive: false,
+    combatActive: false,
+    introSeen: true,
   };
 }
 

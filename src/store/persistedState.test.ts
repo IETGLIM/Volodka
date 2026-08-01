@@ -63,6 +63,13 @@ describe('createNewPlaythroughResetPatch', () => {
     expect(patch.introSeen).toBe(true);
     expect(patch.introActive).toBe(false);
   });
+
+  it('skips cold-boot matrix intro even without skipIntro option', () => {
+    const patch = createNewPlaythroughResetPatch(null);
+    expect(patch.introActive).toBe(false);
+    expect(patch.introSeen).toBe(true);
+    expect(patch.mainMenuOpen).toBe(false);
+  });
 });
 
 describe('storePatchFromSave playTimeSeconds', () => {

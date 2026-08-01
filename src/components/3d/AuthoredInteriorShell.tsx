@@ -99,9 +99,27 @@ function AuthoredInteriorShellModel({
   const floorMaps = usePolyHavenPbr(ids.floor, materialMood === 'street' ? 1.2 : 1.05);
   const wallMaps = usePolyHavenPbr(ids.wall, 1);
   const ceilingMaps = usePolyHavenPbr(ids.ceiling, 0.9);
+  // usePolyHavenPbr returns a fresh object each render — depend on texture
+  // identities so we do not clone/dispose the shell every frame (black flash).
   const photoMapSet = useMemo<PhotoPbrMapSet>(
     () => ({ floor: floorMaps, wall: wallMaps, ceiling: ceilingMaps }),
-    [floorMaps, wallMaps, ceilingMaps],
+    [
+      floorMaps.map,
+      floorMaps.normalMap,
+      floorMaps.roughnessMap,
+      floorMaps.aoMap,
+      floorMaps.repeat,
+      wallMaps.map,
+      wallMaps.normalMap,
+      wallMaps.roughnessMap,
+      wallMaps.aoMap,
+      wallMaps.repeat,
+      ceilingMaps.map,
+      ceilingMaps.normalMap,
+      ceilingMaps.roughnessMap,
+      ceilingMaps.aoMap,
+      ceilingMaps.repeat,
+    ],
   );
   const scene = useMemo(
     () => cloneInteriorShell(gltf.scene, castShadow, materialMood, photoMapSet),

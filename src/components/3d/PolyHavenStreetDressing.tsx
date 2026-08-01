@@ -273,10 +273,11 @@ function AuthoredStreetArchitecture() {
   );
 }
 
-/** Procedural facades on lite tiers; authored GLTF architecture on high/ultra. */
+/** Procedural facades on low only; authored GLTF architecture on medium+. */
 export function HeroStreetFacadesWithAssets() {
   const { preset } = useGraphicsQuality();
-  const glbProps = !preset.visualLite && allowsGlbAssetRendering(preset.environmentRenderMode);
+  const glbProps =
+    preset.id !== 'low' && allowsGlbAssetRendering(preset.environmentRenderMode);
 
   return (
     <group>

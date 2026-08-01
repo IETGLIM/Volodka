@@ -57,7 +57,7 @@ import {
   unbindAdaptiveQualityBridge,
 } from '@/engine/graphics/adaptiveQualityBridge';
 import { bindSoftWorkBudget } from '@/engine/graphics/softWorkBudget';
-import { clearSessionAutoResolvedTier } from '@/engine/graphics/autoQualitySession';
+import { clearAllSessionQualityOverrides } from '@/engine/graphics/autoQualitySession';
 import {
   bindPoemWorldEventBridge,
   unbindPoemWorldEventBridge,
@@ -145,7 +145,7 @@ export function disposeGameEngine(): void {
     resetGlobalCleanupRegistry();
 
     unbindAdaptiveQualityBridge();
-    clearSessionAutoResolvedTier();
+    clearAllSessionQualityOverrides();
     unbindPoemWorldEventBridge();
     unbindGpuResourceBaselineBridge();
     unbindSceneChunkGpuLifecycle();

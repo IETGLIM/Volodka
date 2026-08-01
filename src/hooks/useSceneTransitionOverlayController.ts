@@ -192,7 +192,7 @@ export function useSceneTransitionOverlayController() {
 
   useEffect(() => {
     if (directorPhase !== 'idle') return;
-    if (overlayPhase === 'idle' || isRevealPhase(overlayPhase)) return;
+    if (overlayPhase === 'idle') return;
     clearTimers();
     setOverlayPhase('idle');
     activeTargetRef.current = null;

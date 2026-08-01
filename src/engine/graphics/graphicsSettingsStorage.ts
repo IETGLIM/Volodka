@@ -31,11 +31,13 @@ export interface QualityPresetChangedDetail {
   id: QualityPresetId;
   /** Session runtime tier when `id` is `auto` (adaptive degrade). */
   autoRuntimeTier?: Exclude<QualityPresetId, 'auto'>;
+  /** Session forced concrete tier without rewriting saved preference. */
+  sessionForcedTier?: Exclude<QualityPresetId, 'auto'>;
 }
 
 export function dispatchQualityPresetChanged(
   id: QualityPresetId,
-  extra?: Pick<QualityPresetChangedDetail, 'autoRuntimeTier'>,
+  extra?: Pick<QualityPresetChangedDetail, 'autoRuntimeTier' | 'sessionForcedTier'>,
 ): void {
   window.dispatchEvent(
     new CustomEvent<QualityPresetChangedDetail>(QUALITY_PRESET_CHANGED, {

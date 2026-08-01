@@ -19,6 +19,8 @@ import { resetSceneTransitionGuard } from '@/engine/core/sceneTransitionGuard';
 import { resetInteractionEndDedupState } from '@/engine/interaction/interactionEndDedup';
 import { resetPendingEntryBeatFromZoneInteraction } from '@/engine/interaction/narrativeOpenHelpers';
 import { resetSceneTransitionDedupe } from '@/engine/scene/sceneTransition';
+import { resetTransitionDirector } from '@/engine/scene/TransitionDirector';
+import { clearAllSessionQualityOverrides } from '@/engine/graphics/autoQualitySession';
 
 /** Idempotent — safe to call from disposeGameEngine and resetGame. */
 export function resetEngineModuleRuntimeState(): void {
@@ -29,6 +31,9 @@ export function resetEngineModuleRuntimeState(): void {
   resetPoemRevealSession();
   resetSceneTransitionGuard();
   resetSceneTransitionDedupe();
+  // Silent abort of wipe/hold black overlay — do not emit transition_failed
+  // (that surfaces the «Не удалось загрузить сцену» banner on New Game).
+  resetTransitionDirector();
   resetInteractionEndDedupState();
   resetPendingEntryBeatFromZoneInteraction();
   cancelEncounterPresentation();
@@ -38,4 +43,5 @@ export function resetEngineModuleRuntimeState(): void {
   resetKeyboardInputState();
   resetSharedVirtualControlsState();
   resetLoadingTimelineForSession();
+  clearAllSessionQualityOverrides();
 }

@@ -56,6 +56,8 @@ export type InteriorShellMountKind =
 
 export const INTERIOR_SHELL_MOUNT_KIND: Record<InteriorShellModelId, InteriorShellMountKind> = {
   // Kenney Suburban building-type-a — exterior impostor, not a bedroom.
+  // BLOCKER: need a real walkable apartment envelope GLB before enabling
+  // AuthoredInteriorShell on High+ wake (VolodkaRoomVisual useAuthoredShell).
   volodkaBedroom: 'exterior_building',
   // Kenney building-c — exterior impostor.
   cafe: 'exterior_building',

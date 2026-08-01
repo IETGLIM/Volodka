@@ -209,10 +209,9 @@ function AmbientSkinnedMidLodInner({
   );
 }
 
-/** Near-band skinned ambient people; far band stays on billboard impostors. */
+/** Near-band skinned ambient people; far/low may still use billboard overflow. */
 export function AmbientSkinnedMidLod(props: AmbientSkinnedMidLodProps) {
-  const { preset } = useGraphicsQuality();
-  if (preset.visualLite || props.maxSkinned === 0) return null;
+  if (props.maxSkinned === 0) return null;
 
   return (
     <Suspense fallback={null}>
@@ -221,6 +220,9 @@ export function AmbientSkinnedMidLod(props: AmbientSkinnedMidLodProps) {
   );
 }
 
-for (const rig of AMBIENT_RIG_POOL) {
+// Preload only the first few rigs — loading all eight (~12MB+) at PhysicsScene
+// mount (still on the menu) competes with the bedroom / Cesium boot path and
+// has contributed to WebGL context loss → solid black after New Game.
+for (const rig of AMBIENT_RIG_POOL.slice(0, 3)) {
   useGLTF.preload(resolveQuaterniusStagedRigUrl(rig), true, true, extendLoader);
 }

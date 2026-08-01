@@ -1,7 +1,7 @@
 
 /* ─── Volodka RPG – Quest journal panel (AAA+ Overhaul v2) ───
    Grouped by status, difficulty indicators, progress bars, hints, rewards.
-   Dark glass morphism with cyberpunk accents.
+   Filmic dark glass — stone accents, not neon chrome.
 */
 
 import { useMemo, useState, useEffect, useRef, useCallback } from 'react';
@@ -63,7 +63,7 @@ interface QuestsPanelProps {
 
 const QUEST_TYPE_LABELS: Record<QuestType, { label: string; icon: typeof Trophy; color: string }> = {
   main: { label: 'Основные', icon: Trophy, color: 'text-amber-400' },
-  side: { label: 'Побочные', icon: BookOpen, color: 'text-cyan-400' },
+  side: { label: 'Побочные', icon: BookOpen, color: 'text-stone-300' },
   hidden: { label: 'Скрытые', icon: EyeOff, color: 'text-purple-400' },
   daily: { label: 'Ежедневные', icon: Clock, color: 'text-emerald-400' },
 };
@@ -89,7 +89,7 @@ function DifficultyBadge({ difficulty }: { difficulty?: QuestDifficulty }) {
 /* ── Objective type icon helper ── */
 function getObjectiveTypeIcon(type: string) {
   switch (type) {
-    case 'npc_talked': return <MessageCircle className="size-3 text-cyan-400/70" />;
+    case 'npc_talked': return <MessageCircle className="size-3 text-stone-300/70" />;
     case 'location_visited': return <MapPin className="size-3 text-emerald-400/70" />;
     case 'item_collected': return <Package className="size-3 text-amber-400/70" />;
     case 'poem_collected': return <BookOpen className="size-3 text-purple-400/70" />;
@@ -125,7 +125,7 @@ function ObjectiveGroupProgress({ objectives, questState, label, icon }: {
       <div className="h-1.5 bg-slate-800/80 rounded-full overflow-hidden">
         <motion.div
           className="h-full rounded-full"
-          style={{ background: completed === total ? 'linear-gradient(90deg, #059669, #34d399)' : 'linear-gradient(90deg, #0e7490, #22d3ee)' }}
+          style={{ background: completed === total ? 'linear-gradient(90deg, #059669, #34d399)' : 'linear-gradient(90deg, #57534e, #a8a29e)' }}
           initial={false}
           animate={{ width: `${pct}%` }}
           transition={{ duration: 0.4, ease: 'easeOut' }}
@@ -180,7 +180,7 @@ function RewardBadge({ reward, index }: { reward: StoryEffect; index: number }) 
 
   const getIcon = () => {
     if (reward.type === 'addSkill') return <Star className="size-2.5 text-amber-400/60" />;
-    if (reward.type === 'addKarma') return <Zap className="size-2.5 text-cyan-400/60" />;
+    if (reward.type === 'addKarma') return <Zap className="size-2.5 text-stone-300/60" />;
     if (reward.type === 'addCredits') return <Sparkles className="size-2.5 text-yellow-400/60" />;
     if (reward.type === 'addItem') return <Trophy className="size-2.5 text-emerald-400/60" />;
     return <Sparkles className="size-2.5 text-purple-400/60" />;
@@ -201,13 +201,13 @@ function ShowOnMapButton({ questId, currentSceneId }: { questId: string; current
   return (
     <button
       type="button"
-      className="inline-flex items-center gap-1 mt-2 px-2 py-1 rounded-md text-[10px] font-mono tracking-wide text-cyan-300/90 border border-cyan-700/40 bg-cyan-950/30 hover:bg-cyan-900/40 hover:border-cyan-500/50 transition-colors"
+      className="inline-flex items-center gap-1 mt-2 px-2 py-1 rounded-md text-[10px] font-mono tracking-wide text-stone-300/90 border border-stone-600/40 bg-stone-950/30 hover:bg-stone-900/40 hover:border-stone-500/50 transition-colors"
       onClick={(e) => {
         e.stopPropagation();
         eventBus.emit('ui:open_panel', { panel: 'worldMap', sceneId: marker.sceneId });
       }}
     >
-      <MapPin className="size-3 text-cyan-400" />
+      <MapPin className="size-3 text-stone-300" />
       На карте
     </button>
   );
@@ -369,9 +369,9 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
       onClose={onClose}
       title="Задания"
       urlPath="volodka://quests"
-      accentColor="cyan"
+      accentColor="amber"
       layout="sidebar"
-      icon={<Trophy className="size-5 text-cyan-400" />}
+      icon={<Trophy className="size-5 text-stone-300" />}
       shortcutLabel="Q"
       headerExtra={(
         <div className="flex items-center gap-2">
@@ -422,20 +422,20 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                   : 100;
                 return (
                   <div
-                    className="mb-4 p-3 rounded-xl border border-cyan-900/20 flex items-center gap-3"
+                    className="mb-4 p-3 rounded-xl border border-stone-800/20 flex items-center gap-3"
                     style={{ background: 'linear-gradient(135deg, rgba(0,255,238,0.04) 0%, rgba(8,12,28,0.5) 100%)' }}
                     data-testid="quest-overview-bar"
                   >
                     <div className="flex items-center gap-1.5 shrink-0">
-                      <BookOpen className="size-4 text-cyan-400/70" />
-                      <span className="text-[10px] font-mono uppercase tracking-wider text-cyan-300/60">Журнал</span>
+                      <BookOpen className="size-4 text-stone-300/70" />
+                      <span className="text-[10px] font-mono uppercase tracking-wider text-stone-300/60">Журнал</span>
                     </div>
                     <div className="flex-1 flex items-center gap-2">
                       <Progress value={avgProgress} className="h-1.5 bg-slate-800/60" />
-                      <span className="text-[10px] font-mono text-cyan-300/80 shrink-0">{avgProgress}%</span>
+                      <span className="text-[10px] font-mono text-stone-300/80 shrink-0">{avgProgress}%</span>
                     </div>
                     <div className="flex items-center gap-2 shrink-0 text-[10px] font-mono">
-                      <span className="text-cyan-400/80" title="Активные">{activeQuests.length}</span>
+                      <span className="text-stone-300/80" title="Активные">{activeQuests.length}</span>
                       <span className="text-slate-600">/</span>
                       <span className="text-emerald-400/60" title="Завершённые">{completedQuests.length}</span>
                       {failedQuests.length > 0 && (
@@ -458,7 +458,7 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                   const TypeIcon = config.icon;
                   return (
                     <div key={type} className="mb-5">
-                      {typeIdx > 0 && <div className="neon-divider cyber-glow-line mb-3" aria-hidden="true" />}
+                      {typeIdx > 0 && <div className="h-px mb-3 bg-gradient-to-r from-transparent via-stone-600/40 to-transparent" aria-hidden="true" />}
                       <h3 className={`text-xs font-medium uppercase tracking-wider mb-2 flex items-center gap-1.5 ${config.color}`}>
                         <TypeIcon className="size-3.5" />
                         {config.label}
@@ -482,18 +482,18 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                               data-quest-id={qs.questId}
                               className={`rounded-xl border overflow-hidden ${
                                 isGoldenPathFocus
-                                  ? 'border-cyan-500/40 ring-1 ring-cyan-400/25'
-                                  : 'border-cyan-900/15'
+                                  ? 'border-stone-500/40 ring-1 ring-stone-400/25'
+                                  : 'border-stone-800/15'
                               }`}
                               style={{
                                 background: 'linear-gradient(135deg, rgba(15,23,42,0.6) 0%, rgba(8,12,28,0.7) 100%)',
-                                boxShadow: 'inset 0 1px 0 rgb(var(--cyber-cyan-rgb) / 0.04)',
+                                boxShadow: 'inset 0 1px 0 rgba(168,162,158,0.06)',
                               }}
                               animate={isFlashing && !reducedMotion ? {
                                 boxShadow: [
-                                  'inset 0 1px 0 rgb(var(--cyber-cyan-rgb) / 0.04)',
-                                  '0 0 20px rgba(0,255,238,0.3), inset 0 1px 0 rgb(var(--cyber-cyan-rgb) / 0.04)',
-                                  'inset 0 1px 0 rgb(var(--cyber-cyan-rgb) / 0.04)',
+                                  'inset 0 1px 0 rgba(168,162,158,0.06)',
+                                  '0 1px 12px rgba(0,0,0,0.35), inset 0 1px 0 rgba(168,162,158,0.06)',
+                                  'inset 0 1px 0 rgba(168,162,158,0.06)',
                                 ],
                               } : undefined}
                               transition={{ duration: 0.6 }}
@@ -519,7 +519,7 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                                     )}
                                     {GOLDEN_PATH_QUEST_SPINE.includes(qs.questId)
                                       && !ACT1_SOLNYSH_QUEST_SPINE.includes(qs.questId) && (
-                                      <Badge variant="outline" className="text-[10px] border-cyan-600/40 text-cyan-300/80">
+                                      <Badge variant="outline" className="text-[10px] border-stone-600/40 text-stone-300/80">
                                         сюжет
                                       </Badge>
                                     )}
@@ -536,7 +536,7 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                                         {Math.ceil(remainingQuestHours(qs.hoursElapsed ?? 0, def.timeLimitHours))}ч
                                       </span>
                                     )}
-                                    <Badge variant="outline" className="text-[10px] border-cyan-700/40 text-cyan-400">
+                                    <Badge variant="outline" className="text-[10px] border-stone-600/40 text-stone-300">
                                       {progress}%
                                     </Badge>
                                   </div>
@@ -547,7 +547,7 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                                   const npc = findNpcById(def.questGiverNpcId);
                                   return npc ? (
                                     <div className="flex items-center gap-1 mt-1">
-                                      <span className="text-[10px] text-cyan-400/50">
+                                      <span className="text-[10px] text-stone-300/50">
                                         от {npc.name}
                                       </span>
                                     </div>
@@ -588,8 +588,8 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                                           }
                                         }}
                                       >
-                                        <MapPin className="size-3 text-cyan-400/60 shrink-0 group-hover:text-cyan-300" />
-                                        <p className="text-[10px] text-cyan-300/65 font-mono tracking-wide group-hover:text-cyan-200 underline-offset-2 group-hover:underline">
+                                        <MapPin className="size-3 text-stone-300/60 shrink-0 group-hover:text-stone-300" />
+                                        <p className="text-[10px] text-stone-300/65 font-mono tracking-wide group-hover:text-stone-200 underline-offset-2 group-hover:underline">
                                           {routeCta} · на карте
                                         </p>
                                       </button>
@@ -614,13 +614,13 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                                   animate={{ height: 'auto', opacity: 1 }}
                                   exit={reducedMotion ? undefined : { height: 0, opacity: 0 }}
                                   transition={{ duration: reducedMotion ? 0 : 0.2 }}
-                                  className="px-4 pb-3 border-t border-cyan-900/15 pt-3"
+                                  className="px-4 pb-3 border-t border-stone-800/15 pt-3"
                                 >                                  <p className="text-xs text-slate-400 mb-3">
                                     {def.description}
                                     {def.questGiverNpcId && (() => {
                                       const npc = findNpcById(def.questGiverNpcId);
                                       return npc ? (
-                                        <span className="text-[10px] text-cyan-400/60 block mt-1">
+                                        <span className="text-[10px] text-stone-300/60 block mt-1">
                                           Задание от: {npc.name}
                                         </span>
                                       ) : null;
@@ -636,16 +636,16 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                                     <div className="mb-3 p-2.5 rounded-lg bg-amber-950/20 border border-amber-800/25 space-y-2">
                                       {contextual && (
                                         <div>
-                                          <div className="text-[10px] text-cyan-400 mb-1 flex items-center gap-1">
+                                          <div className="text-[10px] text-stone-300 mb-1 flex items-center gap-1">
                                             <MapPin className="size-3" />
                                             Сейчас
                                           </div>
-                                          <p className="text-[11px] text-cyan-200/70 leading-relaxed">{contextual}</p>
+                                          <p className="text-[11px] text-stone-200/70 leading-relaxed">{contextual}</p>
                                         </div>
                                       )}
                                       {routeCta && (
-                                        <div className="text-[11px] text-cyan-300/80 font-mono flex items-center gap-1.5">
-                                          <MapPin className="size-3 text-cyan-400" />
+                                        <div className="text-[11px] text-stone-300/80 font-mono flex items-center gap-1.5">
+                                          <MapPin className="size-3 text-stone-300" />
                                           {routeCta}
                                         </div>
                                       )}
@@ -722,8 +722,8 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                                     return (
                                       <div className="flex items-center gap-2 mb-2 px-1 py-1 rounded"
                                         style={{ background: 'rgba(0, 255, 238, 0.06)', border: '1px solid rgba(0, 255, 238, 0.12)' }}>
-                                        <BookOpen className="size-3 text-cyan-400/60 shrink-0" />
-                                        <span className="text-[10px] font-mono text-cyan-300/80">
+                                        <BookOpen className="size-3 text-stone-300/60 shrink-0" />
+                                        <span className="text-[10px] font-mono text-stone-300/80">
                                           Собрано {poemWord}: {completedObjs} из {totalObjs}
                                         </span>
                                       </div>
@@ -757,7 +757,7 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                                           className={`flex items-start gap-2 text-xs text-left w-full rounded-md px-1 py-0.5 -mx-1 transition-colors ${
                                             completed
                                               ? 'text-emerald-400/70 cursor-default'
-                                              : 'text-slate-300 hover:bg-cyan-950/30 hover:text-cyan-100'
+                                              : 'text-slate-300 hover:bg-stone-950/30 hover:text-stone-100'
                                           }`}
                                           onClick={(e) => {
                                             e.stopPropagation();
@@ -826,7 +826,7 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
 
                                   {/* Rewards */}
                                   {def.rewards && def.rewards.length > 0 && (
-                                    <div className="pt-2 border-t border-cyan-900/15">
+                                    <div className="pt-2 border-t border-stone-800/15">
                                       <div className="text-[10px] text-slate-500 mb-1.5 flex items-center gap-1">
                                         <Trophy className="size-2.5" />
                                         Награда за выполнение:
@@ -852,7 +852,7 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
               {/* Failed quests */}
               {showFailed && failedQuests.length > 0 && (
                 <div className="mb-5">
-                  <div className="neon-divider mb-3" aria-hidden="true" />
+                  <div className="h-px mb-3 bg-gradient-to-r from-transparent via-stone-600/35 to-transparent" aria-hidden="true" />
                   <h3 className="text-xs font-medium text-red-500/70 uppercase tracking-wider mb-2 flex items-center gap-1.5">
                     <AlertTriangle className="size-3.5" />
                     Провалено
@@ -910,7 +910,7 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
               {/* Completed quests */}
               {showCompleted && completedQuests.length > 0 && (
                 <div className="mb-5">
-                  <div className="neon-divider mb-3" aria-hidden="true" />
+                  <div className="h-px mb-3 bg-gradient-to-r from-transparent via-stone-600/35 to-transparent" aria-hidden="true" />
                   <h3 className="text-xs font-medium text-emerald-500/70 uppercase tracking-wider mb-2 flex items-center gap-1.5">
                     <CheckCircle2 className="size-3.5" />
                     Завершено
@@ -923,7 +923,7 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                       return (
                         <div
                           key={qs.questId}
-                          className="px-3 py-2 rounded-xl bg-slate-900/20 border border-cyan-900/10 text-sm text-slate-500 flex items-center gap-2"
+                          className="px-3 py-2 rounded-xl bg-slate-900/20 border border-stone-800/10 text-sm text-slate-500 flex items-center gap-2"
                         >
                           <CheckCircle2 className="size-4 text-emerald-600/50" />
                           <span className="line-through">{def.title}</span>
@@ -937,14 +937,14 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
               {activeQuests.length === 0 && (
                 <div className="text-center py-16 px-4">
                   <div className="relative inline-block mb-4">
-                    <BookOpen className="size-10 text-cyan-500/25 mx-auto" />
+                    <BookOpen className="size-10 text-stone-500/25 mx-auto" />
                     <Sparkles className="size-3 text-amber-400/40 absolute -top-1 -right-1" />
                   </div>
                   <p className="text-slate-400 text-sm font-medium">Нет активных квестов</p>
                   <p className="text-slate-600 text-[10px] mt-1.5 leading-relaxed max-w-[220px] mx-auto">
                     Исследуйте мир, говорите с людьми и осматривайте предметы — задания найдут вас сами.
                   </p>
-                  <div className="mt-4 flex items-center justify-center gap-1.5 text-[9px] text-cyan-500/40 font-mono uppercase tracking-wider">
+                  <div className="mt-4 flex items-center justify-center gap-1.5 text-[9px] text-stone-500/40 font-mono uppercase tracking-wider">
                     <MapPin className="size-2.5" />
                     <span>Поиск доступен</span>
                   </div>

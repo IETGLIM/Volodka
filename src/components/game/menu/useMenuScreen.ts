@@ -30,6 +30,7 @@ export function useMenuScreen({ loadGame, resetGame, musicEnabled, toggleMusic }
 
     window.setTimeout(() => {
       try {
+        // resetGame already leaves introActive=false / introSeen=true (no matrix poem).
         resetGame();
       } catch (error) {
         console.error('[MenuScreen] resetGame failed:', error);
@@ -39,8 +40,6 @@ export function useMenuScreen({ loadGame, resetGame, musicEnabled, toggleMusic }
 
       const store = useGameStore.getState();
       store.setMainMenuOpen(false);
-      store.setIntroActive(false);
-      store.setIntroSeen(true);
 
       if (!skipPrologue) {
         // Prologue path: spawn in bed, play cinematic, then open 'start' node

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { clearSessionAutoResolvedTier } from './autoQualitySession';
+import { clearAllSessionQualityOverrides } from './autoQualitySession';
 import { degradeQualityPresetOneTier, upgradeQualityPresetOneTier } from './adaptiveQualityDegrade';
 import { GRAPHICS_SETTINGS_KEY } from './qualityPresets';
 
@@ -19,10 +19,11 @@ describe('degradeQualityPresetOneTier', () => {
     vi.stubGlobal('window', {
       dispatchEvent: vi.fn(),
     });
+    clearAllSessionQualityOverrides();
   });
 
   afterEach(() => {
-    clearSessionAutoResolvedTier();
+    clearAllSessionQualityOverrides();
     vi.unstubAllGlobals();
   });
 
@@ -37,9 +38,10 @@ describe('degradeQualityPresetOneTier', () => {
     expect(localStorage.getItem(GRAPHICS_SETTINGS_KEY)).toBe('auto');
   });
 
-  it('steps ultra down to high', () => {
+  it('steps ultra down to high without rewriting saved preference', () => {
     localStorage.setItem(GRAPHICS_SETTINGS_KEY, 'ultra');
     expect(degradeQualityPresetOneTier()).toBe('high');
+    expect(localStorage.getItem(GRAPHICS_SETTINGS_KEY)).toBe('ultra');
   });
 
   it('returns null at low floor', () => {
@@ -54,10 +56,11 @@ describe('upgradeQualityPresetOneTier', () => {
     vi.stubGlobal('window', {
       dispatchEvent: vi.fn(),
     });
+    clearAllSessionQualityOverrides();
   });
 
   afterEach(() => {
-    clearSessionAutoResolvedTier();
+    clearAllSessionQualityOverrides();
     vi.unstubAllGlobals();
   });
 
