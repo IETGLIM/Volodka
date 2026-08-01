@@ -580,6 +580,182 @@ const POEM_POWERS: Record<string, PoemPower> = {
     flagsToSet: [{ key: 'epilogue_line_zero', durationMs: 60000 }],
     reverseOnExpiry: [{ type: 'skill', key: 'writing', value: -8 }],
   },
+  /* ─── Bonus poems 22–35: slightly weaker than main corpus ─── */
+  poem_22: {
+    poemId: 'poem_22',
+    name: 'Свет в Коридоре',
+    description: 'Коридор ведёт куда-то. +4 к интуиции, подсветка скрытых объектов на 30 секунд.',
+    cooldownMs: 120000,
+    effect: () => {
+      addSkill('intuition', 4);
+      eventBus.emit('ui:exploration_message', { text: 'Свет в Коридоре. Стены расступаются.' });
+    },
+    flagsToSet: [{ key: 'corridor_light_active', durationMs: 30000 }],
+    reverseOnExpiry: [{ type: 'skill', key: 'intuition', value: -4 }],
+  },
+  poem_23: {
+    poemId: 'poem_23',
+    name: 'Высотные Сигналы',
+    description: 'Вышки посылают сигналы. +3 к кодингу и +4 к логике от понимания структуры города.',
+    cooldownMs: 120000,
+    effect: () => {
+      addSkill('coding', 3);
+      addSkill('logic', 4);
+    },
+    flagsToSet: [{ key: 'tower_signals_active', durationMs: 30000 }],
+    reverseOnExpiry: [{ type: 'skill', key: 'coding', value: -3 }, { type: 'skill', key: 'logic', value: -4 }],
+  },
+  poem_24: {
+    poemId: 'poem_24',
+    name: 'Тихая Смена',
+    description: 'Ночная тишина лечит. Восстанавливает 20 энергии и снимает 15 стресса.',
+    cooldownMs: 120000,
+    effect: () => {
+      addEnergy(20);
+      addStress(-15);
+      eventBus.emit('ui:exploration_message', { text: 'Тихая Смена. Ночь — лучшее лекарство.' });
+    },
+    flagsToSet: [{ key: 'night_shift_rest_active', durationMs: 30000 }],
+  },
+  poem_25: {
+    poemId: 'poem_25',
+    name: 'Между Строк',
+    description: 'Пауза между словами. +3 к эмпатии и +2 к интуиции — мгновение ясности между сменами.',
+    cooldownMs: 100000,
+    effect: () => {
+      addSkill('empathy', 3);
+      addSkill('intuition', 2);
+    },
+    flagsToSet: [{ key: 'between_shifts_clarity_active', durationMs: 30000 }],
+    reverseOnExpiry: [{ type: 'skill', key: 'empathy', value: -3 }, { type: 'skill', key: 'intuition', value: -2 }],
+  },
+  poem_26: {
+    poemId: 'poem_26',
+    name: 'Перегрузка',
+    description: 'Труд до износа. +5 к кодингу и +3 к логике, но +8 стресса от переработки.',
+    cooldownMs: 120000,
+    effect: () => {
+      addSkill('coding', 5);
+      addSkill('logic', 3);
+      addStress(8);
+      eventBus.emit('ui:exploration_message', { text: 'Перегрузка. Код течёт, но мозг горит.' });
+    },
+    flagsToSet: [{ key: 'overtime_overload_active', durationMs: 30000 }],
+    reverseOnExpiry: [{ type: 'skill', key: 'coding', value: -5 }, { type: 'skill', key: 'logic', value: -3 }, { type: 'stress', value: -8 }],
+  },
+  poem_27: {
+    poemId: 'poem_27',
+    name: 'Шёпот Сообщений',
+    description: 'Непрочитанные сообщения хранят правду. +5 к убеждению и +4 к эмпатии.',
+    cooldownMs: 100000,
+    effect: () => {
+      addSkill('persuasion', 5);
+      addSkill('empathy', 4);
+    },
+    flagsToSet: [{ key: 'messages_whisper_active', durationMs: 30000 }],
+    reverseOnExpiry: [{ type: 'skill', key: 'persuasion', value: -5 }, { type: 'skill', key: 'empathy', value: -4 }],
+  },
+  poem_28: {
+    poemId: 'poem_28',
+    name: 'Потерянный Сигнал',
+    description: 'Обрывается — и в разрыве видишь истину. +6 к кодингу, +2 к логике.',
+    cooldownMs: 120000,
+    effect: () => {
+      addSkill('coding', 6);
+      addSkill('logic', 2);
+      eventBus.emit('ui:exploration_message', { text: 'Потерянный Сигнал. В тише провода говорят громче.' });
+    },
+    flagsToSet: [{ key: 'lost_packet_signal_active', durationMs: 30000 }],
+    reverseOnExpiry: [{ type: 'skill', key: 'coding', value: -6 }, { type: 'skill', key: 'logic', value: -2 }],
+  },
+  poem_29: {
+    poemId: 'poem_29',
+    name: 'Невысказанное',
+    description: 'Слова, которые не отправились, живут внутри. +4 к письму и +3 к убеждению.',
+    cooldownMs: 100000,
+    effect: () => {
+      addSkill('writing', 4);
+      addSkill('persuasion', 3);
+    },
+    flagsToSet: [{ key: 'unsent_words_active', durationMs: 30000 }],
+    reverseOnExpiry: [{ type: 'skill', key: 'writing', value: -4 }, { type: 'skill', key: 'persuasion', value: -3 }],
+  },
+  poem_30: {
+    poemId: 'poem_30',
+    name: 'Подземный Путь',
+    description: 'Метро ведёт глубже. +5 к интуиции, скрытые переходы подсвечены на 35 секунд.',
+    cooldownMs: 120000,
+    effect: () => {
+      addSkill('intuition', 5);
+      eventBus.emit('ui:exploration_message', { text: 'Подземный Путь. Поезда несут к тайнам.' });
+    },
+    flagsToSet: [{ key: 'metro_path_active', durationMs: 35000 }],
+    reverseOnExpiry: [{ type: 'skill', key: 'intuition', value: -5 }],
+  },
+  poem_31: {
+    poemId: 'poem_31',
+    name: 'Дождевой Сигнал',
+    description: 'Дождь на вышках — ритм города. +4 к интуиции и +2 к письму от созерцания.',
+    cooldownMs: 110000,
+    effect: () => {
+      addSkill('intuition', 4);
+      addSkill('writing', 2);
+      eventBus.emit('ui:exploration_message', { text: 'Дождевой Сигнал. Капли стучат кодом.' });
+    },
+    flagsToSet: [{ key: 'rain_tower_signal_active', durationMs: 30000 }],
+    reverseOnExpiry: [{ type: 'skill', key: 'intuition', value: -4 }, { type: 'skill', key: 'writing', value: -2 }],
+  },
+  poem_32: {
+    poemId: 'poem_32',
+    name: 'Пустой Возврат',
+    description: 'Функция вернула void — но побочный эффект остался. +7 к кодингу, +2 к логике.',
+    cooldownMs: 130000,
+    effect: () => {
+      addSkill('coding', 7);
+      addSkill('logic', 2);
+      eventBus.emit('ui:exploration_message', { text: 'Пустой Возврат. Ничто — тоже ответ.' });
+    },
+    flagsToSet: [{ key: 'return_void_active', durationMs: 30000 }],
+    reverseOnExpiry: [{ type: 'skill', key: 'coding', value: -7 }, { type: 'skill', key: 'logic', value: -2 }],
+  },
+  poem_33: {
+    poemId: 'poem_33',
+    name: 'Строка в Комменте',
+    description: 'Комментарий в коде — стих, скрытый от компилятора. +4 к письму и +3 к кодингу.',
+    cooldownMs: 100000,
+    effect: () => {
+      addSkill('writing', 4);
+      addSkill('coding', 3);
+      eventBus.emit('ui:exploration_message', { text: 'Строка в Комменте. Скрытый смысл в каждой строке.' });
+    },
+    flagsToSet: [{ key: 'comment_line_active', durationMs: 30000 }],
+    reverseOnExpiry: [{ type: 'skill', key: 'writing', value: -4 }, { type: 'skill', key: 'coding', value: -3 }],
+  },
+  poem_34: {
+    poemId: 'poem_34',
+    name: 'Тишина Линии',
+    description: 'Мёртвый телефон — пауза между сигналами. +4 к интуиции, NPC-подсказки подсвечены на 35 секунд.',
+    cooldownMs: 130000,
+    effect: () => {
+      addSkill('intuition', 4);
+      eventBus.emit('ui:exploration_message', { text: 'Тишина Линии. В молчании — больше правды.' });
+    },
+    flagsToSet: [{ key: 'dead_phone_silence_active', durationMs: 35000 }],
+    reverseOnExpiry: [{ type: 'skill', key: 'intuition', value: -4 }],
+  },
+  poem_35: {
+    poemId: 'poem_35',
+    name: 'Путь к Башням',
+    description: 'Дорога к башням длинна. +5 к интуиции и +3 к письму — путевые заметки о городе.',
+    cooldownMs: 130000,
+    effect: () => {
+      addSkill('intuition', 5);
+      addSkill('writing', 3);
+      eventBus.emit('ui:exploration_message', { text: 'Путь к Башням. Каждый шаг — строка.' });
+    },
+    flagsToSet: [{ key: 'path_to_towers_active', durationMs: 35000 }],
+    reverseOnExpiry: [{ type: 'skill', key: 'intuition', value: -5 }, { type: 'skill', key: 'writing', value: -3 }],
+  },
 };
 
 /* ─── Public API ─── */

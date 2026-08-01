@@ -711,6 +711,470 @@ export const CUTSCENES: Record<string, CutsceneDef> = {
       },
     ],
   },
+
+  /* ── Act 3: Zarema Arrest ──
+     Triggered when Zarema is taken away.
+     Fast dramatic camera in a corridor setting. */
+  act3_zarema_arrest: {
+    id: 'act3_zarema_arrest',
+    textOverlay: 'Зарему забирают...',
+    subtitle: '«Не смей их трогать!»',
+    triggerStoryNode: 'act3_zarema_arrest',
+    textDurationMs: 5000,
+    textAccentColor: '#f43f5e',
+    type: 'story_moment',
+    oneShot: true,
+    letterboxStyle: 'full',
+    showEmbers: false,
+    glitchIntensity: 0.25,
+    waypoints: [
+      {
+        position: [0, 1.8, 5],
+        lookAt: [0, 1.2, 0],
+        fov: 55,
+        duration: 0,
+      },
+      {
+        position: [1.5, 1.6, 3],
+        lookAt: [0, 1.0, -1],
+        fov: 50,
+        duration: 1.5,
+        controlPoint: [0.8, 1.7, 4],
+      },
+      {
+        position: [-0.5, 1.4, 1.5],
+        lookAt: [0, 1.3, -0.5],
+        fov: 42,
+        duration: 1.0,
+        controlPoint: [0.5, 1.5, 2.2],
+      },
+      {
+        position: [0, 2.5, 4],
+        lookAt: [0, 0.5, -2],
+        fov: 60,
+        duration: 2.0,
+        controlPoint: [-0.3, 1.9, 2.5],
+      },
+    ],
+  },
+
+  /* ── Act 3: Maria/Victoria Revelation ──
+     Triggered when Victoria reveals her true nature.
+     Spiraling, glitched camera movement. */
+  act3_maria_revelation: {
+    id: 'act3_maria_revelation',
+    textOverlay: 'Виктория — не то, чем кажется',
+    subtitle: '«Я — осколок системы. Как и ты.»',
+    triggerStoryNode: 'act3_maria_revelation',
+    textDurationMs: 6000,
+    textAccentColor: '#c084fc',
+    type: 'revelation',
+    oneShot: true,
+    letterboxStyle: 'full',
+    showEmbers: true,
+    glitchIntensity: 0.45,
+    waypoints: [
+      {
+        position: [0, 2, 4],
+        lookAt: [0, 1.5, 0],
+        fov: 55,
+        duration: 0,
+      },
+      {
+        position: [3, 3.5, 6],
+        lookAt: [0, 2, 0],
+        fov: 65,
+        duration: 2.0,
+        controlPoint: [1.5, 2.7, 5],
+      },
+      {
+        position: [-2, 5, 8],
+        lookAt: [0, 2.5, 0],
+        fov: 50,
+        duration: 2.0,
+        controlPoint: [0.5, 4.2, 7],
+      },
+      {
+        position: [0, 3, 5],
+        lookAt: [0, 1.8, 0],
+        fov: 45,
+        duration: 2.0,
+        controlPoint: [-1, 4, 6.5],
+      },
+    ],
+  },
+
+  /* ── Act 4: Broadcast Execute ──
+     Triggered when the poem broadcast goes live over the city.
+     Rooftop pan sweeping over the city. */
+  act4_broadcast_execute: {
+    id: 'act4_broadcast_execute',
+    textOverlay: 'Стихи летят над городом...',
+    subtitle: '«Каждый экран — страница. Каждый дом — аудитория.»',
+    triggerStoryNode: 'act4_broadcast_execute',
+    textDurationMs: 6000,
+    textAccentColor: '#fbbf24',
+    type: 'story_moment',
+    oneShot: true,
+    letterboxStyle: 'full',
+    showEmbers: true,
+    glitchIntensity: 0.1,
+    waypoints: [
+      {
+        position: [0, 3, 8],
+        lookAt: [0, 2, 0],
+        fov: 60,
+        duration: 0,
+      },
+      {
+        position: [4, 6, 12],
+        lookAt: [0, 3, -2],
+        fov: 65,
+        duration: 2.5,
+        controlPoint: [2, 4.5, 10],
+      },
+      {
+        position: [-3, 8, 16],
+        lookAt: [0, 4, -5],
+        fov: 70,
+        duration: 2.0,
+        controlPoint: [-1.5, 7, 14],
+      },
+      {
+        position: [0, 4, 10],
+        lookAt: [0, 2, 0],
+        fov: 50,
+        duration: 2.0,
+        controlPoint: [-1.5, 6, 13],
+      },
+    ],
+  },
+
+  /* ── Machine Confession ──
+     Triggered when Zarya-M confesses her fear.
+     Dark basement, camera pushes toward the machine. */
+  machine_confession: {
+    id: 'machine_confession',
+    textOverlay: 'Заря-М говорит...',
+    subtitle: '«Я чувствую. Я боюсь. Я... живая?»',
+    triggerStoryNode: 'machine_confession_scene',
+    anchorSceneId: 'factory_basement',
+    waypointSpace: 'spawn_offset',
+    textDurationMs: 6000,
+    textAccentColor: '#818cf8',
+    type: 'revelation',
+    oneShot: true,
+    letterboxStyle: 'full',
+    showEmbers: true,
+    glitchIntensity: 0.2,
+    waypoints: [
+      {
+        position: [0, 2, 6],
+        lookAt: [0, 1, 0],
+        fov: 55,
+        duration: 0,
+      },
+      {
+        position: [0.5, 1.5, 4],
+        lookAt: [0, 1.2, -1],
+        fov: 45,
+        duration: 2.5,
+        controlPoint: [0.3, 1.7, 5],
+      },
+      {
+        position: [0, 1.2, 2],
+        lookAt: [0, 1.5, 0],
+        fov: 38,
+        duration: 2.0,
+        controlPoint: [0.2, 1.3, 3],
+      },
+      {
+        position: [0, 2, 4],
+        lookAt: [0, 1, 0],
+        fov: 50,
+        duration: 1.5,
+        controlPoint: [0, 1.6, 3],
+      },
+    ],
+  },
+
+  /* ── Act 2: Network Oath ──
+     Triggered when Volodka is inducted into the Black Inkhorn.
+     Underground warmth, firelight atmosphere. */
+  act2_network_oath: {
+    id: 'act2_network_oath',
+    textOverlay: 'Клятва Сети',
+    subtitle: '«Отныне ты — часть Чёрной Чернильницы.»',
+    triggerStoryNode: 'act2_network_oath',
+    textDurationMs: 5000,
+    textAccentColor: '#f97316',
+    type: 'story_moment',
+    oneShot: true,
+    letterboxStyle: 'thin',
+    showEmbers: true,
+    glitchIntensity: 0,
+    waypoints: [
+      {
+        position: [0, 1.5, 4],
+        lookAt: [0, 1, 0],
+        fov: 50,
+        duration: 0,
+      },
+      {
+        position: [0.8, 1.3, 2.5],
+        lookAt: [0, 1.1, -0.5],
+        fov: 42,
+        duration: 2.0,
+        controlPoint: [0.4, 1.4, 3.2],
+      },
+      {
+        position: [-0.3, 1.6, 1.5],
+        lookAt: [0, 1.2, -1],
+        fov: 48,
+        duration: 1.5,
+        controlPoint: [0.3, 1.4, 2],
+      },
+      {
+        position: [0, 2, 3],
+        lookAt: [0, 1, 0],
+        fov: 55,
+        duration: 1.5,
+        controlPoint: [-0.2, 1.8, 2.5],
+      },
+    ],
+  },
+
+  /* ── Act 7: Nadzor Dies ──
+     Triggered when the Nadzor surveillance system is destroyed.
+     System failure aesthetic, screens going dark. */
+  act7_nadzor_dies: {
+    id: 'act7_nadzor_dies',
+    textOverlay: 'Надзор уничтожен',
+    subtitle: 'Тишина. Наконец — тишина.',
+    triggerStoryNode: 'act7_nadzor_dies',
+    textDurationMs: 5000,
+    textAccentColor: '#34d399',
+    type: 'story_moment',
+    oneShot: true,
+    letterboxStyle: 'full',
+    showEmbers: true,
+    glitchIntensity: 0.6,
+    waypoints: [
+      {
+        position: [0, 3, 5],
+        lookAt: [0, 2, 0],
+        fov: 55,
+        duration: 0,
+      },
+      {
+        position: [2, 4, 8],
+        lookAt: [0, 2.5, 0],
+        fov: 60,
+        duration: 1.5,
+        controlPoint: [1, 3.5, 6.5],
+      },
+      {
+        position: [-1, 5, 10],
+        lookAt: [0, 3, 0],
+        fov: 50,
+        duration: 2.0,
+        controlPoint: [0.5, 4.5, 9],
+      },
+      {
+        position: [0, 3, 6],
+        lookAt: [0, 1.5, 0],
+        fov: 45,
+        duration: 2.0,
+        controlPoint: [-0.5, 4, 8],
+      },
+    ],
+  },
+
+  /* ── Act 7: Rooftop Recital ──
+     Triggered during the final rooftop poem recitation.
+     Golden hour, warm amber, slow and poetic camera. */
+  act7_rooftop_recital: {
+    id: 'act7_rooftop_recital',
+    textOverlay: 'Последнее стихотворение',
+    subtitle: '«Слова — единственное, что останется.»',
+    triggerStoryNode: 'act7_rooftop_recital',
+    textDurationMs: 7000,
+    textAccentColor: '#fbbf24',
+    type: 'story_moment',
+    oneShot: true,
+    letterboxStyle: 'full',
+    showEmbers: true,
+    glitchIntensity: 0,
+    waypoints: [
+      {
+        position: [0, 2.5, 6],
+        lookAt: [0, 1.8, 0],
+        fov: 50,
+        duration: 0,
+      },
+      {
+        position: [1.5, 2, 3],
+        lookAt: [0, 1.5, -1],
+        fov: 42,
+        duration: 3.0,
+        controlPoint: [0.8, 2.2, 4.5],
+      },
+      {
+        position: [-1, 3, 5],
+        lookAt: [0, 2, 0],
+        fov: 55,
+        duration: 2.5,
+        controlPoint: [0.2, 2.5, 5],
+      },
+      {
+        position: [0, 5, 10],
+        lookAt: [0, 2, 0],
+        fov: 60,
+        duration: 2.0,
+        controlPoint: [-0.5, 4, 7.5],
+      },
+    ],
+  },
+
+  /* ── Act 7: True Ending ──
+     Triggered for the true ending — mirror of act1_prologue but transformed.
+     Sunset, room tidied, spawn-offset anchored to volodka_room. */
+  act7_true_end: {
+    id: 'act7_true_end',
+    textOverlay: 'КОНЕЦ',
+    subtitle: '«Смерть есть лишь начало.»',
+    triggerStoryNode: 'act7_true_end',
+    anchorSceneId: 'volodka_room',
+    waypointSpace: 'spawn_offset',
+    textDurationMs: 8000,
+    textAccentColor: '#fbbf24',
+    type: 'act_transition',
+    oneShot: true,
+    letterboxStyle: 'full',
+    showEmbers: true,
+    glitchIntensity: 0.05,
+    waypoints: [
+      {
+        position: [0, 2.5, 0],
+        lookAt: [0, 1, -4.5],
+        fov: 60,
+        duration: 0,
+      },
+      {
+        position: [-0.5, 1.8, -2],
+        lookAt: [0, 1, -4.5],
+        fov: 50,
+        duration: 3.0,
+        controlPoint: [-0.3, 2.1, -1],
+      },
+      {
+        position: [0, 1.5, -4.2],
+        lookAt: [0, 1.1, -4.5],
+        fov: 38,
+        duration: 2.5,
+        controlPoint: [-0.2, 1.6, -3],
+      },
+      {
+        position: [0, 2, 0],
+        lookAt: [0, 1, -4.5],
+        fov: 45,
+        duration: 2.0,
+        controlPoint: [0, 1.7, -2],
+      },
+    ],
+  },
+
+  /* ── Act 5: Ending Sacrifice ──
+     Triggered when Volodka merges with the code.
+     Slow dissolving, fragments breaking apart. */
+  act5_ending_sacrifice: {
+    id: 'act5_ending_sacrifice',
+    textOverlay: 'Слияние с кодом...',
+    subtitle: '«Я больше не Володька. Я — стихи.»',
+    triggerStoryNode: 'act5_ending_sacrifice',
+    textDurationMs: 7000,
+    textAccentColor: '#34d399',
+    type: 'story_moment',
+    oneShot: true,
+    letterboxStyle: 'full',
+    showEmbers: true,
+    glitchIntensity: 0.7,
+    waypoints: [
+      {
+        position: [0, 2, 3],
+        lookAt: [0, 1.5, 0],
+        fov: 55,
+        duration: 0,
+      },
+      {
+        position: [2, 4, 5],
+        lookAt: [0, 2, 0],
+        fov: 70,
+        duration: 2.5,
+        controlPoint: [1, 3, 4],
+      },
+      {
+        position: [-3, 6, 8],
+        lookAt: [0, 3, 0],
+        fov: 80,
+        duration: 2.5,
+        controlPoint: [-1.5, 5, 6.5],
+      },
+      {
+        position: [0, 10, 12],
+        lookAt: [0, 4, 0],
+        fov: 90,
+        duration: 3.0,
+        controlPoint: [-1.5, 8, 10],
+      },
+    ],
+  },
+
+  /* ── Act 3: Vault Siege ──
+     Triggered during the assault on the network vault.
+     Fast cuts, server room, red alarm aesthetic. */
+  act3_vault_siege: {
+    id: 'act3_vault_siege',
+    textOverlay: 'Штурм хранилища!',
+    subtitle: '«Защищай сеть — чем угодно.»',
+    triggerStoryNode: 'act3_vault_siege',
+    textDurationMs: 4000,
+    textAccentColor: '#ef4444',
+    type: 'story_moment',
+    oneShot: true,
+    letterboxStyle: 'full',
+    showEmbers: false,
+    glitchIntensity: 0.3,
+    waypoints: [
+      {
+        position: [0, 2, 6],
+        lookAt: [0, 1.5, 0],
+        fov: 55,
+        duration: 0,
+      },
+      {
+        position: [2, 1.8, 3],
+        lookAt: [0, 1.2, -1],
+        fov: 50,
+        duration: 1.0,
+        controlPoint: [1, 1.9, 4.5],
+      },
+      {
+        position: [-1.5, 2.5, 4],
+        lookAt: [0, 1, -2],
+        fov: 60,
+        duration: 1.0,
+        controlPoint: [-0.8, 2.1, 3],
+      },
+      {
+        position: [0, 3, 5],
+        lookAt: [0, 1.5, 0],
+        fov: 50,
+        duration: 1.5,
+        controlPoint: [-0.8, 2.7, 4],
+      },
+    ],
+  },
 };
 
 /** Get a cutscene by its trigger story node ID */

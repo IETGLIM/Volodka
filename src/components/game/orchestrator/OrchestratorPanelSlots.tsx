@@ -139,9 +139,11 @@ export const OrchestratorPanelLayer = memo(function OrchestratorPanelLayer({
       )}
       <OrchestratorMenuLayerPanels onClose={onClose} />
       <OrchestratorDevPanel devToolsArmed={devToolsArmed} devPanelStartOpen={devPanelStartOpen} />
-      <Suspense fallback={null}>
-        <LazyProceduralAaaTweakPanel startOpen={false} />
-      </Suspense>
+      {devToolsArmed && (
+        <Suspense fallback={null}>
+          <LazyProceduralAaaTweakPanel startOpen={false} />
+        </Suspense>
+      )}
     </>
   );
 });
