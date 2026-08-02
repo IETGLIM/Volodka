@@ -355,25 +355,16 @@ function AuthoredVolodkaRoomDressing({ castShadow }: { castShadow: boolean }) {
           castShadow={castShadow}
         />
       </Suspense>
-      {/* Nightstand table + lamp by bed */}
-      <Suspense fallback={null}>
-        <AuthoredRoomProp
-          url={POLYHAVEN_MODELS.paintedWoodenTable}
-          position={[2.08, 0, 2.1]}
-          rotationY={0.2}
-          scale={0.66}
-          castShadow={castShadow}
-        />
-      </Suspense>
-      <Suspense fallback={null}>
-        <AuthoredRoomProp
-          url={POLYHAVEN_MODELS.deskLampArm}
-          position={[1.98, 0.52, 2.16]}
-          rotationY={-0.45}
-          scale={0.48}
-          castShadow={castShadow}
-        />
-      </Suspense>
+      {/* FIX S13-5: Nightstand + lamp removed — was at [2.08, 0, 2.1] which is
+          INSIDE the gothicBed (bed center [1.78, 0, 2.05], half-width ~0.74 →
+          bed spans x=[1.04, 2.52]). The nightstand (same paintedWoodenTable
+          model, scale 0.66) rendered inside the bed mesh → looked like a
+          "third table on the bed" with the lamp appearing as a "red barrel"
+          and the lampshade as a "helmet". No room to relocate (bed fills the
+          right wall to x=2.52, room edge at x=2.5) — removed entirely.
+          Bedside lighting is now handled by the accent light at [1.98, 1.6, 2.16]
+          (fixed in S12-C6) + the window spill. */}
+      {/* Nightstand + desk lamp removed — was overlapping the bed geometry. */}
       <Suspense fallback={null}>
         <AuthoredRoomProp
           url={POLYHAVEN_MODELS.hangingPictureFrame}
@@ -433,6 +424,12 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
   const { preset, selectedPreset } = useGraphicsQuality();
   const coarsePointer = useIsMobileVisual();
   const useGltfFurniture = allowsGlbAssetRendering(preset.environmentRenderMode);
+  // FIX S13-6: desk surface height. Poly Haven paintedWoodenTable GLB has its
+  // tabletop at Y=0.958 (verified from the .gltf accessor max). At scale 1.02
+  // → 0.977m. CraftedDeskShell (Low fallback) top is at 0.78. Previously all
+  // presets used surfaceY=0.75 → on GLB presets monitors/keyboard/lamp were
+  // 0.22m BELOW the tabletop → "sunk into the desk".
+  const deskSurfaceY = useGltfFurniture ? 0.98 : 0.78;
   // Metre-scale apartment_envelope.glb — Medium+ (hybrid/glb), not Kenney exterior.
   const useAuthoredShell =
     useGltfFurniture && isWalkableInteriorShellAllowed('volodkaBedroom');
@@ -705,7 +702,7 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
 
       {/* ── Wardrobe — Low kit mirrors Medium desk-left yellow cabinet position ── */}
       {!useGltfFurniture ? (
-      <group position={[-1.7, 0, -2.45]}>
+      <group position={[-1.9, 0, -2.45]}>
         {/* Wardrobe body */}
         <mesh position={[0, 1.0, 0]} castShadow geometry={geo_box_10} material={mat_6} />
         {/* Wardrobe top */}
@@ -733,6 +730,7 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
           Left: yellow wardrobe + top cabinet. Right: book shelf. Behind: curtain. ── */}
       <group position={[0, 0, -2.5]}>
         {/* PH table long axis along X (rotationY=0). Prior PI/2 + scale 0.78 made a narrow short top → floating side monitors. */}
+        {/* deskSurfaceY (0.98 GLB / 0.78 fallback) is declared in the component body. */}
         {useGltfFurniture ? (
           <Suspense fallback={<CraftedDeskShell matFallback={mat_11} />}>
             <AuthoredRoomProp
@@ -750,7 +748,7 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
           <Suspense fallback={null}>
             <AuthoredRoomProp
               url={POLYHAVEN_MODELS.deskLampArm}
-              position={[-0.55, 0.75, 0.18]}
+              position={[-0.55, deskSurfaceY, 0.18]}
               rotationY={0.65}
               scale={0.55}
               castShadow={preset.shadows}
@@ -768,20 +766,20 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
             tex={tex}
             x={x}
             rotY={rotY}
-            surfaceY={0.75}
+            surfaceY={deskSurfaceY}
             groupRef={id === 'terminal' ? terminalMonitorGroupRef : undefined}
             alertLed={id === 'zabbix' ? mat_zabbix_led : undefined}
           />
         ))}
 
-        <DeskRgbKeyboard position={[0, 0.76, 0.22]} />
-        <DeskMouse position={[0.28, 0.76, 0.2]} rotationY={0.25} />
+        <DeskRgbKeyboard position={[0, deskSurfaceY + 0.01, 0.22]} />
+        <DeskMouse position={[0.28, deskSurfaceY + 0.01, 0.2]} rotationY={0.25} />
 
         {useGltfFurniture ? (
           <Suspense fallback={null}>
             <AuthoredRoomProp
               url={POLYHAVEN_MODELS.cassettePlayer}
-              position={[0.55, 0.76, 0.05]}
+              position={[0.55, deskSurfaceY + 0.01, 0.05]}
               rotationY={0.2}
               scale={0.32}
               castShadow={preset.shadows}
@@ -792,8 +790,8 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
         <pointLight position={[0, 1.15, 0.1]} color="#5a9a88" intensity={useGltfFurniture ? 0.7 : 2.0} distance={8} decay={2} />
         {!useGltfFurniture ? (
           <>
-            <mesh position={[0.6, 0.78, 0.1]} rotation={[0, 0.1, 0]} geometry={getSharedBoxGeometry(0.18, 0.004, 0.2)} material={mat_18} />
-            <group position={[-0.55, 0.78, 0.25]}>
+            <mesh position={[0.6, deskSurfaceY + 0.02, 0.1]} rotation={[0, 0.1, 0]} geometry={getSharedBoxGeometry(0.18, 0.004, 0.2)} material={mat_18} />
+            <group position={[-0.55, deskSurfaceY + 0.02, 0.25]}>
               <mesh position={[0, 0.04, 0]} geometry={geo_cyl_27} material={mat_20} />
               <mesh position={[0.04, 0.04, 0]} rotation={[0, 0, Math.PI / 2]} geometry={geo_tor_28} material={mat_20} />
               <mesh position={[0, 0.075, 0]} geometry={geo_cyl_29} material={mat_21} />
@@ -818,13 +816,17 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
         </Suspense>
       ) : null}
 
-      {/* Yellow two-door wardrobe left of left monitor + small two-door cabinet on top */}
+      {/* Yellow two-door wardrobe left of left monitor + small two-door cabinet on top.
+          FIX S13-7: wardrobe was at [-1.7, 0, -2.45] scale 0.95 → X span [-2.27, -1.13].
+          Desk table GLB spans X=[-1.22, 1.22] → 0.09m overlap (wardrobe edge -1.13
+          vs desk edge -1.22). Shifted to [-1.9, 0, -2.45] → X span [-2.47, -1.33],
+          clear of the desk by 0.11m. Top cabinet moved to match. */}
       {useGltfFurniture ? (
         <>
           <Suspense fallback={null}>
             <AuthoredRoomProp
               url={POLYHAVEN_MODELS.paintedWoodenCabinet}
-              position={[-1.7, 0, -2.45]}
+              position={[-1.9, 0, -2.45]}
               rotationY={Math.PI / 2}
               scale={0.95}
               castShadow={preset.shadows}
@@ -834,7 +836,7 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
           <Suspense fallback={null}>
             <AuthoredRoomProp
               url={POLYHAVEN_MODELS.paintedWoodenCabinet}
-              position={[-1.7, 1.55, -2.45]}
+              position={[-1.9, 1.55, -2.45]}
               rotationY={Math.PI / 2}
               scale={0.55}
               castShadow={preset.shadows}
