@@ -241,9 +241,12 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
 
   useFrameTick('misc', ({ state, delta }) => {
     if (flickerLightRef.current) {
-      // Broken light flicker — occasional drops
+      // FIX AUDIT-C16: was binary strobe (Math.sin(t*8) > 0.9 ? 0.2 : 1.0) — intensity
+      // jumped instantly between 0.5 and 2.5. Replaced with smooth multi-sine flicker
+      // (base 0.75 + two sines) for an organic broken-bulb feel, with occasional dips.
       const t = state.clock.elapsedTime;
-      const flicker = Math.sin(t * 8) > 0.9 ? 0.2 : 1.0;
+      const dip = Math.sin(t * 8) > 0.92 ? 0.35 : 1.0;
+      const flicker = (0.75 + 0.18 * Math.sin(t * 7.3) + 0.07 * Math.sin(t * 23.1)) * dip;
       flickerLightRef.current.intensity = flicker * 2.5;
     }
 
@@ -318,8 +321,10 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
     <group ref={rootGroupRef}>
       {/* ── Floor (linoleum) ── */}
       <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.002} renderOrder={0} geometry={geo_pln_1} material={mat_floor} />
+      {/* FIX AUDIT-C7: puddle was at X=0 (inside opaque carpet runner X=±0.7) →
+          hidden under the carpet. Moved to X=1.5 (bare floor, right of carpet). */}
       {spill && (
-        <mesh rotation-x={-Math.PI / 2} position={[0, 0.006, 6.2]} renderOrder={2} geometry={getSharedCircleGeometry(1.35, 18)}>
+        <mesh rotation-x={-Math.PI / 2} position={[1.5, 0.006, 6.2]} renderOrder={2} geometry={getSharedCircleGeometry(1.35, 18)}>
           <meshStandardMaterial
             color="#2a3038"
             metalness={0.45}
@@ -337,19 +342,20 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
       <mesh rotation-x={-Math.PI / 2} position-y={0.004} renderOrder={1} geometry={geo_pln_2} material={mat_carpet} />
 
       {/* ── Ceiling — dim rainy HDR wash ── */}
-      <mesh position={[0, H, 0]} rotation-x={Math.PI / 2} geometry={geo_pln_1} material={mat_ceiling} />
+      {/* FIX AUDIT-C10: added receiveShadow so the ceiling lamp casts shadow pooling on ceiling. */}
+      <mesh position={[0, H, 0]} rotation-x={Math.PI / 2} receiveShadow geometry={geo_pln_1} material={mat_ceiling} />
 
       {/* ── Left Wall ── */}
-      <mesh position={[-W / 2 + 0.01, H / 2, 0]} rotation-y={Math.PI / 2} geometry={geo_pln_3} material={mat_wall} />
+      <mesh position={[-W / 2 + 0.01, H / 2, 0]} rotation-y={Math.PI / 2} receiveShadow geometry={geo_pln_3} material={mat_wall} />
 
       {/* ── Right Wall ── */}
-      <mesh position={[W / 2 - 0.01, H / 2, 0]} rotation-y={-Math.PI / 2} geometry={geo_pln_3} material={mat_wall} />
+      <mesh position={[W / 2 - 0.01, H / 2, 0]} rotation-y={-Math.PI / 2} receiveShadow geometry={geo_pln_3} material={mat_wall} />
 
       {/* ── Back Wall ── */}
-      <mesh position={[0, H / 2, -D / 2 + 0.01]} geometry={geo_pln_4} material={mat_wall} />
+      <mesh position={[0, H / 2, -D / 2 + 0.01]} receiveShadow geometry={geo_pln_4} material={mat_wall} />
 
       {/* ── Front Wall ── */}
-      <mesh position={[0, H / 2, D / 2 - 0.01]} rotation-y={Math.PI} geometry={geo_pln_4} material={mat_wall} />
+      <mesh position={[0, H / 2, D / 2 - 0.01]} rotation-y={Math.PI} receiveShadow geometry={geo_pln_4} material={mat_wall} />
 
       {/* ── Decorative props (LOD: standard+) ── */}
       <EnvironmentDetail minLod="standard" position={[-2.15, 0, 5.5]}>
@@ -362,8 +368,11 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
         ))}
       </group>
 
-      {/* ── Radiator (right wall, middle) ── */}
-      <group position={[W / 2 - 0.12, 0, -2.0]}>
+      {/* ── Radiator (right wall) ── */}
+      {/* FIX AUDIT-C1: was at Z=-2.0, same as kitchen door group (line ~405) → radiator
+          blocked the kitchen door. Moved to Z=-5.5 (between kitchen door Z=-2 and
+          front wall Z=-8), clear of all doorways. */}
+      <group position={[W / 2 - 0.12, 0, -5.5]}>
         <mesh position={[0, 0.4, 0]} castShadow geometry={geo_box_7} material={mat_3} />
         {/* Ribs */}
         {Array.from({ length: 6 }).map((_, i) => (
@@ -392,6 +401,8 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
       {/* ── Second ceiling lamp (flickering) ── */}
       <group position={[0, H - 0.02, 4.0]}>
         <mesh geometry={geo_box_9} material={mat_5} />
+        {/* FIX AUDIT-C12: missing lamp shade (first lamp at Z=-4 has one, this didn't). */}
+        <mesh position={[0, -0.1, 0]} geometry={geo_cyl_10} material={mat_6} />
         <pointLight
           ref={flickerLightRef}
           position={[0, -0.2, 0]}
@@ -479,8 +490,12 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
       <mesh position={[0.6, H - 0.05, 1.5]} rotation={[0.4, 0.2, 0.5]} geometry={geo_cyl_27} material={mat_21} />
 
       {/* ── Wet boot prints on floor ── */}
+      {/* FIX AUDIT-C6: prints were at X=[-0.05..0.2] inside the carpet runner (X=±0.7)
+          which is opaque and at Y=0.004 with polygonOffsetFactor=-1 — prints at Y=0.003
+          with factor +1 were hidden UNDER the carpet. Moved prints outside the carpet
+          strip (X > 0.7) so they're visible on the bare floor. */}
       {[
-        [0, 0.003, 2.0], [0.15, 0.003, 1.5], [-0.05, 0.003, 1.0], [0.2, 0.003, 0.5],
+        [0.9, 0.003, 2.0], [1.05, 0.003, 1.5], [0.85, 0.003, 1.0], [1.1, 0.003, 0.5],
       ].map((pos, i) => (
         <mesh key={`boot-${i}`} rotation-x={-Math.PI / 2} position={pos as [number, number, number]} geometry={geo_pln_28} material={mat_22} />
       ))}
@@ -503,8 +518,11 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
         </group>
       ))}
 
-      {/* ── Mailboxes near entrance ── */}
-      <group position={[W / 2 - 0.15, 0, 4.5]} rotation-y={-Math.PI / 2}>
+      {/* ── Mailboxes ── */}
+      {/* FIX AUDIT-C2: was at Z=4.5, overlapping solnysh door at Z=4.0 (mailbox Z-span
+          4.1–4.9 after rotation, door indent Z-span 3.55–4.45 → 35cm overlap, mailbox
+          blocked the door). Moved to Z=6.0 (between solnysh door Z=4 and front wall Z=8). */}
+      <group position={[W / 2 - 0.15, 0, 6.0]} rotation-y={-Math.PI / 2}>
         {/* Mailbox panel */}
         <mesh position={[0, 1.0, 0]} castShadow geometry={geo_box_31} material={mat_25} />
         {/* Individual mailbox slots */}
@@ -520,8 +538,9 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
         ))}
       </group>
 
-      {/* ── Intercom panel near entrance ── */}
-      <group position={[-W / 2 + 0.02, 1.5, 4.5]} rotation-y={Math.PI / 2}>
+      {/* ── Intercom panel ── */}
+      {/* Moved to Z=6.0 to stay next to the mailboxes (which moved clear of solnysh door). */}
+      <group position={[-W / 2 + 0.02, 1.5, 6.0]} rotation-y={Math.PI / 2}>
         <mesh geometry={geo_box_35} material={mat_29} />
         {/* Speaker grille */}
         <mesh position={[0, 0.06, 0.016]} geometry={geo_box_36} material={mat_30} />
@@ -545,8 +564,8 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
       <group position={[W / 2 - 0.02, 1.4, -4.0]} rotation-y={-Math.PI / 2}>
         {/* Frame */}
         <mesh geometry={geo_box_43} material={mat_36} />
-        {/* Mirror surface */}
-        <mesh position={[0, 0, 0.011]} geometry={geo_pln_44} material={mat_37} />
+        {/* Mirror surface — 10mm in front of frame (was 1mm → z-fight at >5m). */}
+        <mesh position={[0, 0, 0.02]} geometry={geo_pln_44} material={mat_37} />
       </group>
 
       {/* ── Coat hooks on right wall ── */}

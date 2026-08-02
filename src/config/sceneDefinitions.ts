@@ -50,11 +50,21 @@ export const volodka_room_def: SceneDefinition = {
     { type: 'cuboidObstacle', size: [3.5, 1.5, 0.1], position: [2.5, 1.5, 0], rotation: Math.PI / 2, footstepMaterial: 'wood' },
   ],
   obstacles: [
-    { type: 'cuboidObstacle', size: [1.8, 0.75, 0.8], position: [0, 0.375, -2.5], footstepMaterial: 'wood' },
-    { type: 'cuboidObstacle', size: [0.45, 2.0, 0.35], position: [-2.2, 1.0, 0], footstepMaterial: 'wood' },
-    { type: 'cuboidObstacle', size: [0.84, 2.0, 0.58], position: [-2.2, 1.0, 2.5], footstepMaterial: 'wood' },
+    // FIX AUDIT-R1..R4: obstacles were authored with FULL dimensions but Rapier
+    // treats `size` as HALF-EXTENTS (documented in shared/types/sceneDefinition.ts:73-89).
+    // This made every obstacle 2× too big → invisible walls around desk/bookshelf/
+    // wardrobe/nightstand. Converted to true half-extents (matching visual geometry).
+    // Bed (line 56) was already correct — mixed authoring convention was the root cause.
+    // Desk: visual CraftedDeskShell ~1.85×0.75×0.82 → half [0.925, 0.375, 0.41], center Y=0.375
+    { type: 'cuboidObstacle', size: [0.925, 0.375, 0.41], position: [0, 0.375, -2.5], footstepMaterial: 'wood' },
+    // Bookshelf: visual geo_box_36 Box(0.8, 2, 0.35) → half [0.4, 1.0, 0.175], center Y=1.0
+    { type: 'cuboidObstacle', size: [0.4, 1.0, 0.175], position: [-2.2, 1.0, 0], footstepMaterial: 'wood' },
+    // Wardrobe: visual geo_box_10 Box(0.8, 2, 0.55) → half [0.4, 1.0, 0.275], center Y=1.0
+    { type: 'cuboidObstacle', size: [0.4, 1.0, 0.275], position: [-2.2, 1.0, 2.5], footstepMaterial: 'wood' },
+    // Bed — already correct (half-extents). Untouched.
     { type: 'cuboidObstacle', size: [0.5, 0.175, 1.0], position: [1.8, 0.175, 2.0], footstepMaterial: 'wood' },
-    { type: 'cuboidObstacle', size: [0.4, 0.5, 0.35], position: [2.2, 0.25, 2.0], footstepMaterial: 'wood' },
+    // Nightstand: visual geo_box_68 Box(0.4, 0.5, 0.35) → half [0.2, 0.25, 0.175], center Y=0.25
+    { type: 'cuboidObstacle', size: [0.2, 0.25, 0.175], position: [2.2, 0.25, 2.0], footstepMaterial: 'wood' },
   ],
   ceilings: [
     { type: 'cuboid', size: [2.5, 0.1, 3.5], position: [0, 3.1, 0] },
@@ -337,8 +347,12 @@ export const volodka_corridor_def: SceneDefinition = {
     { type: 'cuboidObstacle', size: [8, 1.5, 0.1], position: [3, 1.5, 0], rotation: Math.PI / 2, footstepMaterial: 'wood' },
   ],
   obstacles: [
-    { type: 'cuboidObstacle', size: [0.6, 0.7, 0.45], position: [-2.4, 0.35, 4.8], footstepMaterial: 'wood' },
-    { type: 'cuboidObstacle', size: [0.08, 0.8, 0.6], position: [2.92, 0.4, -2.0], footstepMaterial: 'wood' },
+    // FIX AUDIT-C4/C5: obstacles were authored with FULL dimensions but Rapier treats
+    // `size` as HALF-EXTENTS. Converted to true half-extents matching visual geometry.
+    // Shoe rack: visual geo_box_5 Box(0.5, 0.7, 0.4) → half [0.25, 0.35, 0.2], center Y=0.35
+    { type: 'cuboidObstacle', size: [0.25, 0.35, 0.2], position: [-2.4, 0.35, 4.8], footstepMaterial: 'wood' },
+    // Radiator: visual geo_box_7 Box(0.08, 0.8, 0.6) → half [0.04, 0.4, 0.3], center Y=0.4
+    { type: 'cuboidObstacle', size: [0.04, 0.4, 0.3], position: [2.92, 0.4, -2.0], footstepMaterial: 'wood' },
   ],
   ceilings: [
     { type: 'cuboid', size: [3, 0.1, 8], position: [0, 3.1, 0] },

@@ -570,29 +570,30 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
           </Suspense>
 
           {/* ── Ceiling — matrix monitor HDR wash ── */}
-          <mesh position={[0, H, 0]} rotation-x={Math.PI / 2} geometry={geo_pln_1} material={mat_ceiling} />
+          {/* FIX AUDIT-R7: added receiveShadow so desk-lamp + ceiling lamp cast shadow pooling on ceiling. */}
+          <mesh position={[0, H, 0]} rotation-x={Math.PI / 2} receiveShadow geometry={geo_pln_1} material={mat_ceiling} />
 
           {/* ── Walls — inset slightly to avoid coplanar z-fight at corners/door ── */}
           <Suspense
             fallback={
               <>
-                <mesh position={[0, H / 2, -D / 2 + 0.01]} geometry={geo_pln_2} material={mat_wall} />
-                <mesh position={[0, H / 2, D / 2 - 0.01]} rotation-y={Math.PI} geometry={geo_pln_2} material={mat_wall} />
-                <mesh position={[-W / 2 + 0.01, H / 2, 0]} rotation-y={Math.PI / 2} geometry={geo_pln_3} material={mat_wall} />
-                <mesh position={[W / 2 - 0.01, H / 2, 0]} rotation-y={-Math.PI / 2} geometry={geo_pln_3} material={mat_wall} />
+                <mesh position={[0, H / 2, -D / 2 + 0.01]} receiveShadow geometry={geo_pln_2} material={mat_wall} />
+                <mesh position={[0, H / 2, D / 2 - 0.01]} rotation-y={Math.PI} receiveShadow geometry={geo_pln_2} material={mat_wall} />
+                <mesh position={[-W / 2 + 0.01, H / 2, 0]} rotation-y={Math.PI / 2} receiveShadow geometry={geo_pln_3} material={mat_wall} />
+                <mesh position={[W / 2 - 0.01, H / 2, 0]} rotation-y={-Math.PI / 2} receiveShadow geometry={geo_pln_3} material={mat_wall} />
               </>
             }
           >
-            <mesh position={[0, H / 2, -D / 2 + 0.01]} geometry={geo_pln_2}>
+            <mesh position={[0, H / 2, -D / 2 + 0.01]} receiveShadow geometry={geo_pln_2}>
               <PolyHavenStandardMaterial materialId="plastered_wall" repeatScale={0.7} color="#9a94a8" roughness={0.92} />
             </mesh>
-            <mesh position={[0, H / 2, D / 2 - 0.01]} rotation-y={Math.PI} geometry={geo_pln_2}>
+            <mesh position={[0, H / 2, D / 2 - 0.01]} rotation-y={Math.PI} receiveShadow geometry={geo_pln_2}>
               <PolyHavenStandardMaterial materialId="plastered_wall" repeatScale={0.7} color="#9a94a8" roughness={0.92} />
             </mesh>
-            <mesh position={[-W / 2 + 0.01, H / 2, 0]} rotation-y={Math.PI / 2} geometry={geo_pln_3}>
+            <mesh position={[-W / 2 + 0.01, H / 2, 0]} rotation-y={Math.PI / 2} receiveShadow geometry={geo_pln_3}>
               <PolyHavenStandardMaterial materialId="plastered_wall" repeatScale={0.75} color="#9a94a8" roughness={0.92} />
             </mesh>
-            <mesh position={[W / 2 - 0.01, H / 2, 0]} rotation-y={-Math.PI / 2} geometry={geo_pln_3}>
+            <mesh position={[W / 2 - 0.01, H / 2, 0]} rotation-y={-Math.PI / 2} receiveShadow geometry={geo_pln_3}>
               <PolyHavenStandardMaterial materialId="plastered_wall" repeatScale={0.75} color="#9a94a8" roughness={0.92} />
             </mesh>
           </Suspense>
@@ -904,8 +905,10 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
           {!useGltfFurniture ? (
             <mesh renderOrder={2} rotation-y={-Math.PI / 2} position={[0.018, 0, 0]} geometry={geo_box_43} material={mat_26} />
           ) : null}
-          {/* Window blue light spill into room */}
-          <pointLight position={[-0.8, 0, 0.5]} color="#4488ee" intensity={3.0} distance={5} />
+          {/* Window blue light spill into room — FIX AUDIT-R9: added decay={2} (was defaulting
+              to 2 but unclear) and raised intensity 3.0→6.0 + distance 5→8 so the spill
+              actually reaches the bed (was ~0.2 intensity at bed distance, barely visible). */}
+          <pointLight position={[-0.8, 0, 0.5]} color="#4488ee" intensity={6.0} distance={8} decay={2} />
           {/* City silhouettes — room-side decals on the glow pane (not transmission props) */}
           <mesh
             renderOrder={3}
@@ -1025,6 +1028,17 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
         shadow-mapSize-height={512}
         shadow-bias={CANONICAL_SHADOW_BIAS}
         shadow-normalBias={CANONICAL_SHADOW_NORMAL_BIAS}
+      />
+
+      {/* FIX AUDIT-R11: bedside deskLampArm GLB (at [1.98, 0.52, 2.16]) had no practical
+          light — appeared unlit/dark while the desk lamp (above) lit the desk area.
+          Added a low-intensity warm bedside light so the lamp reads as a real light source. */}
+      <pointLight
+        position={[1.98, 0.7, 2.16]}
+        color="#ffcc88"
+        intensity={1.5}
+        distance={4}
+        decay={2}
       />
 
       {/* ── Subtle warm fill near bed area — brightened so bed/bookshelf are visible ── */}
