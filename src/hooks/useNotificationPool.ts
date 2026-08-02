@@ -16,13 +16,30 @@ export type PoolPushOptions = {
   cleanupIntervalMs: number;
 };
 
+// Stable empty array for getServerSnapshot — returning `[]` inline creates a new
+// reference each call, which breaks useSyncExternalStore's Object.is check (same
+// infinite-loop bug as getSnapshot returning pool.slice()).
+const EMPTY_READONLY: readonly never[] = Object.freeze([]) as readonly never[];
+
 export function createNotificationPoolStore<T extends PoolEntryBase>(): NotificationPoolStore<T> {
   let nextId = 0;
   const pool: T[] = [];
   const listeners = new Set<() => void>();
   let cleanupTimer: ReturnType<typeof setInterval> | null = null;
 
+  // Cached snapshot — useSyncExternalStore compares snapshots with Object.is.
+  // Returning pool.slice() every call creates a new array reference each time →
+  // Object.is(prev, next) is always false → React re-renders → getSnapshot again
+  // → infinite loop (React error #185 "Maximum update depth exceeded").
+  // Fix: cache the sliced array and invalidate (set to null) on every mutation
+  // (push/prune). getSnapshot re-slices only when invalidated.
+  let cachedSnapshot: readonly T[] | null = null;
+  const invalidateSnapshot = () => {
+    cachedSnapshot = null;
+  };
+
   const notify = () => {
+    invalidateSnapshot();
     for (const listener of listeners) listener();
   };
 
@@ -59,10 +76,15 @@ export function createNotificationPoolStore<T extends PoolEntryBase>(): Notifica
       return () => listeners.delete(listener);
     },
     getSnapshot() {
-      return pool.slice();
+      // Re-slice only when invalidated by a mutation; otherwise return the
+      // stable cached reference so useSyncExternalStore's Object.is check passes.
+      if (cachedSnapshot === null) {
+        cachedSnapshot = pool.slice();
+      }
+      return cachedSnapshot;
     },
     getServerSnapshot() {
-      return [];
+      return EMPTY_READONLY;
     },
     push(entry, options) {
       const full = {
