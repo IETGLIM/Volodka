@@ -146,11 +146,17 @@ export function resolveLockedLocomotionPresentation(
 /**
  * Resolve the locomotion clip presentation for a given anim state + hSpeed.
  *
- * `runWeight` is now CONTINUOUS: a smoothstep over [WALK_SPEED*0.7, RUN_SPEED*0.85]
- * driven by the actual horizontal speed. The blend band starts slightly below
- * walk-speed and tops out slightly below run-speed, so the visual crossfade
- * reads as a natural acceleration rather than a snap on the binary `running`
- * input flag. Animation-side only — KCC physics velocity stays binary.
+ * `runWeight` is now CONTINUOUS: a smoothstep over [WALK_SPEED, RUN_SPEED]
+ * driven by the actual horizontal speed. The blend band starts AT walk-speed
+ * and tops out AT run-speed, so:
+ *   - hSpeed ≤ WALK_SPEED (4) → runWeight = 0 (pure walk, no run contamination)
+ *   - hSpeed ≥ RUN_SPEED (7) → runWeight = 1 (pure run)
+ *   - WALK_SPEED < hSpeed < RUN_SPEED → smooth crossfade (only during accel)
+ *
+ * This ensures normal walking at WALK_SPEED is 100% walk clip (the previous
+ * band `smoothstep(WALK*0.7, RUN*0.85, hSpeed)` started at 2.8 — below walk
+ * speed — so walking was contaminated with ~32% run clip). Animation-side
+ * only — KCC physics velocity stays binary.
  *
  * The hSpeed defaults to 0 so non-locomotion callers (cinematic rebinds,
  * procedural-lite fallback) get a safe walk-only weight without breaking.
@@ -167,7 +173,7 @@ export function resolveLocomotionClipState(
       runWeight: 0,
     };
   }
-  const runWeight = smoothstep(WALK_SPEED * 0.7, RUN_SPEED * 0.85, hSpeed);
+  const runWeight = smoothstep(WALK_SPEED, RUN_SPEED, hSpeed);
   return {
     locomotionActive: true,
     walkTimeScale: WALK_CLIP_TIME_SCALE,

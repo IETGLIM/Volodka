@@ -816,3 +816,67 @@ npm run validate:content # Валидация контента
 - MotionBlur для катсцен.
 - Больше контента Acts 3–4.
 - Ещё orphaned HUD mounts: CyberpunkMinimap (Ctrl+M toggle), QuickTimeEventOverlay, QuestObjectiveCard.
+
+---
+
+## 🔄 Сессия 12 — пролог/комната/коридор: first-impression perfection
+
+**Дата:** 2025-08
+**Агент:** внешний orchestrator (по запросу правообладателя)
+**Фокус:** довести до идеала начало игры — пролог, комнату Володьки, коридор. Управление, анимация, визуал, текстуры, масштабы, сцены, взаимодействие. Проверка пересечений логик, наслоений, мешей, утечек памяти, зон, гонок. Фоновая музыка.
+**Коммит:** см. `git log` (1 коммит, 29 файлов, +708/-150 строк)
+**Typecheck:** `node scripts/tsc7.mjs --noEmit` → exit 0
+
+### Методология
+5 параллельных Explore-агентов (scenes/controls-anim-camera/visual-textures/audio/bug-hunter) → синтез → 4 параллельных исполнителя (S12-A/B/C/D, файлы НЕ пересекались).
+
+### КРИТИЧЕСКИЕ баги первого впечатления — найдены и исправлены
+1. **Аватар просыпался на полу в 1.3м от кровати.** `BED_POSITION=[0.5,0.01,2.4]`, а видимая gothicBed в `[1.78,0,2.05]`. Первый кадр игры — персонаж на голом полу рядом с пустой кроватью. → `BED_POSITION=[1.78,0.35,2.05]` (на кровати, y=0.35 на матрасе) + spawn + rise-phase camera lookAt обновлён.
+2. **4 trigger-зоны в пустом месте.** room_bookshelf/wardrobe/bed/wardrobe_stash на левой стене, а мебель на правой/задней. Игрок подходит к кровати → нет промпта; идёт в пустое место → «Осмотреть кровать» в воздухе. → Все 4 зоны + deep-zones перемещены на визуальную мебель.
+3. **Walk↔run contamination (regression от session 11).** `smoothstep(WALK*0.7, RUN*0.85, hSpeed)` = `smoothstep(2.8, 5.95, 4)` = 0.325 → 32% run-клипа постоянно в ходьбе. → `smoothstep(WALK_SPEED, RUN_SPEED, hSpeed)` = `smoothstep(4, 7, hSpeed)`. Ходьба теперь 100% walk-клип.
+4. **Camera ease-back был NO-OP (regression от session 11).** `applyExplorationSnap` хард-снапал spring синхронно до capture'а pre-pose → lerp из snapped в snapped = ничего. И на natural completion `easeMs` вообще не передавался. → FULL FIX: `preserveSpring` param + module-level `easeBackPending` flag + FollowCamera capture'ит `_easePrePos` синхронно в event handler (до recenter) + `easeMs:600` добавлен в completeCinematicTimeline/stopCinematicTimeline/finishIntroWake.
+5. **Nature HDRI (lebombo — саванна) для интерьера квартиры.** Зелёный tint на всех PBR поверхностях. `warm_apartment` baked PMREM был dead code. → 5 apartment сцен dropped из lebombo → warm_apartment PMREM.
+6. **Коридор на canvas-текстурах 512×512.** Единственный indoor hero без PBR. "Plastic/low-res". → Poly Haven concrete_floor_painted + plastered_wall PBR.
+7. **Мониторы комнаты без CRT.** Плоские emissive плоскости. → CRT scanlines (SCANLINE_SCENES) + crtTerminalGlass MeshPhysical на ThinMonitor.
+8. **MeshReflectorMaterial leak 16MB GPU** на каждой смене wet-street сцены. → Best-effort FBO disposal (текстуры диспозятся; framebuffers всё ещё текут — нужен fork drei для полного fix).
+
+### HIGH/MEDIUM баги — исправлены
+- corridor_mirror зона на 1.5м от зеркала → Z -5.5 → -4.0
+- VIKTOR_SCHEDULE спавнил NPC сквозь стену (x=-3.0 при half-width 2.5) → [-1.5, 0, 2.5]
+- bathroom_door без doorway → стена solid, игрок упирался в невидимую стену → doorway cut + obstacles
+- corridor obstacles отсутствовали для mailboxes/intercom/mirror/bathroom door → добавлены
+- 11+ дублирующих света в комнате (3 sceneDefinition + 8 visual) → 3 sceneDefinition lights removed
+- Duplicate AmbientParticles(150) в corridor (дублировал DustMotes) → removed
+- Corridor metals (mirror/mailboxes/pipe/coathooks) без envMapIntensity clamp → 0.4
+- Accent light "bedside lamp" в 2.5м от actual bedside → moved to [1.98, 1.6, 2.16]
+- Corridor music в Bb major для noir_street mood → natural_minor (D3, matches street_night)
+- Room ambient без rain/fridge (narration говорит "За окном моросит дождь") → rain noise + 50Hz fridge hum
+- Corridor ambient без fluorescent buzz/voices → 120Hz buzz + muffled voices randomSound
+- Corridor reverb 0.65s/10.5% wet (мёртвый) → 1.04s/14% wet (audible echo)
+- Music crossfade 100ms silence gap → startDelay 1100→900 (NOTE: pre-existing stopMusic bug может лимитировать эффект)
+- ACT_MOOD_OVERRIDES без act-1 entry → 'volodka_room:1' (cozy_indoor, 600Hz, 0.3 reverb — теплее/суше для утра)
+- scene:enter не emit на New Game → useAudioOrchestrator mount effect вызывает onSceneEnter once
+- Orbit input НЕ заблокирован во время 'intro' фазы → gated on mode==='intro' + isCinematicTimelineActive()
+- First footstep silent 0.4s после W → immediate на idle→walk edge
+- Cinematic→locomotion exit: weight dip (BLEND_DECEL 2.8 vs fadeOut 0.48s) → BLEND_CINEMATIC 6.5
+- Dead setListenerPosition call в FollowCamera → removed (applyCameraFrame handles it)
+- 3 orphaned intro events (0 subscribers) → removed emits + type declarations
+
+### Invariants (всё сохранено)
+- Стихи (`src/data/poems.ts`) — НЕ тронуты.
+- `<Physics interpolate={false}>` — НЕ тронут.
+- KCC ownership / `runMainPlayerMovement` — НЕ тронуты (физическая скорость осталась BINARY).
+- Postprocessing depth-blit patch — НЕ тронут.
+- Тесты не запускались (только typecheck-гейт per запросу).
+
+### Risks / TODO для авторского QA на Vercel
+- **Standing-phase camera waypoint НЕ re-tuned** — аватар off-center в standing shot (~2s cinematic-only). MINIMAL fix: обновлён только rise-phase lookAt.
+- **introWakeTimeline.ts y-discontinuity** на rise→standing (rise ends y=0.01, standing starts y=0.35) — pre-existing pattern, но больше с новым BED_POSITION.y.
+- **MeshReflector framebuffer leak PARTIAL** — текстуры диспозятся, но ~2-4MB framebuffers всё ещё текут per wet-scene exit (нужен fork drei).
+- **D5 music crossfade** — startDelay change может быть ограничен pre-existing bug в `playSceneMusic→stopMusic` handoff (`stopMusic` nulls `currentScene` до `!== null` check → `startDelay` всегда 0).
+- **D4 corridor reverb preset shared** 5 сценами (office_day/cafe_evening/library_day/abandoned_factory/battle) — net improvement, но split если что-то washy.
+
+### Ключевые сцены для QA на Vercel
+- **volodka_room** (New Game full prologue): avatar на кровати → rise → stand → walk → sit → desk. Мониторы с CRT scanlines + glass. Walk чистый (без run contamination). Camera ease-back на handoff. Rain ambient + fridge hum. Warm_apartment IBL.
+- **volodka_corridor** (room→corridor): PBR floor/walls. Music в minor. Reverb echo. Fluorescent buzz + voices. Mirror/mailboxes/bathroom door с colliders.
+- **street_night** (corridor→street, ultra): SSR wet streets + GodRays + AgX (session 11). MeshReflector FBO disposal на exit.

@@ -18,8 +18,13 @@ const ZERO_EXPLORATION_CAMERA_MOTION = {
 } as const;
 
 // Blend band edges (must mirror resolveLocomotionClipState).
-const BLEND_EDGE0 = WALK_SPEED * 0.7; // 2.8
-const BLEND_EDGE1 = RUN_SPEED * 0.85; // 5.95
+// Session 12-B fix: the band now starts AT WALK_SPEED (4) and tops out AT
+// RUN_SPEED (7) — so walking at WALK_SPEED is 100% walk clip (no run
+// contamination). Previously the band was smoothstep(WALK*0.7, RUN*0.85)
+// = smoothstep(2.8, 5.95) which started below walk speed and contaminated
+// normal walking with ~32% run clip.
+const BLEND_EDGE0 = WALK_SPEED; // 4
+const BLEND_EDGE1 = RUN_SPEED; // 7
 
 describe('playerLocomotionPresentation', () => {
   it('resolveLocomotionClipState maps walk/run/idle', () => {
@@ -176,23 +181,35 @@ describe('resolveLocomotionClipState — continuous walk↔run blend', () => {
     expect(clip.runWeight).toBe(0);
   });
 
+  it('walk at exactly WALK_SPEED yields runWeight 0 (pure walk, no run contamination)', () => {
+    // Session 12-B: the blend band starts AT WALK_SPEED, so normal walking
+    // (hSpeed == WALK_SPEED) is 100% walk clip. This is the key regression
+    // fix — previously the band started at WALK*0.7 = 2.8, so walking at 4
+    // m/s was contaminated with ~32% run clip.
+    const clip = resolveLocomotionClipState('walk', WALK_SPEED);
+    expect(clip.locomotionActive).toBe(true);
+    expect(clip.runWeight).toBe(0);
+  });
+
   it('walk at hSpeed inside the blend band yields a strictly-positive runWeight', () => {
-    // 3.0 m/s sits just above BLEND_EDGE0 (2.8) — the run clip should begin
-    // contributing a small (but non-zero) weight. This is the key new behavior:
-    // the blend is no longer binary on the `running` flag.
-    const clip = resolveLocomotionClipState('walk', 3.0);
+    // 5.0 m/s sits inside the band [4, 7] — smoothstep(4, 7, 5.0) ≈ 0.26.
+    // The run clip should begin contributing a small (but non-zero) weight.
+    // This is the key new behavior: the blend is no longer binary on the
+    // `running` flag.
+    const clip = resolveLocomotionClipState('walk', 5.0);
     expect(clip.locomotionActive).toBe(true);
     expect(clip.runWeight).toBeGreaterThan(0);
     expect(clip.runWeight).toBeLessThan(0.5);
   });
 
   it('walk at hSpeed near the middle of the band yields a mid-blend runWeight', () => {
-    // 5.0 m/s sits well inside the band — the blend should be past the midpoint
-    // (run dominates walk) but not yet saturated.
-    const clip = resolveLocomotionClipState('walk', 5.0);
+    // smoothstep(4, 7, 5.5): t = 0.5 → 0.5 * 0.5 * (3 - 1) = 0.5. The blend
+    // is exactly at the midpoint. Use a range assertion since exact values
+    // are fiddly to read at a glance.
+    const clip = resolveLocomotionClipState('walk', 5.5);
     expect(clip.locomotionActive).toBe(true);
-    expect(clip.runWeight).toBeGreaterThan(0.5);
-    expect(clip.runWeight).toBeLessThan(1);
+    expect(clip.runWeight).toBeGreaterThan(0.4);
+    expect(clip.runWeight).toBeLessThan(0.6);
   });
 
   it('walk at full sprint saturates the blend to runWeight 1', () => {
@@ -203,6 +220,13 @@ describe('resolveLocomotionClipState — continuous walk↔run blend', () => {
 
   it('run anim with full sprint yields runWeight 1', () => {
     const clip = resolveLocomotionClipState('run', RUN_SPEED);
+    expect(clip.locomotionActive).toBe(true);
+    expect(clip.runWeight).toBe(1);
+  });
+
+  it('run anim above RUN_SPEED clamps runWeight to 1', () => {
+    // hSpeed > RUN_SPEED saturates the blend (no overshoot).
+    const clip = resolveLocomotionClipState('run', RUN_SPEED + 1);
     expect(clip.locomotionActive).toBe(true);
     expect(clip.runWeight).toBe(1);
   });
@@ -218,7 +242,7 @@ describe('resolveLocomotionClipState — continuous walk↔run blend', () => {
   });
 
   it('runWeight is monotonically non-decreasing with hSpeed', () => {
-    const speeds = [0, 1, 2, BLEND_EDGE0, 3, 4, 5, BLEND_EDGE1, 6, RUN_SPEED, 10];
+    const speeds = [0, 1, 2, 3, BLEND_EDGE0, 4.5, 5, 6, BLEND_EDGE1, RUN_SPEED, 10];
     let prev = -Infinity;
     for (const s of speeds) {
       const rw = resolveLocomotionClipState('walk', s).runWeight;

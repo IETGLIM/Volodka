@@ -27,6 +27,15 @@ const CINEMATIC_TIMELINE_DUCK_FACTOR = 0.3;
 const CINEMATIC_TIMELINE_DUCK_RAMP_S = 0.5;
 /** Slower restore ramp on timeline stop/complete (seconds). */
 const CINEMATIC_TIMELINE_RESTORE_RAMP_S = 1.0;
+/**
+ * Session 12-B: ease-back duration (ms) for the cinematic→exploration camera
+ * hand-off. setCinematicPresentationMode emits `camera:ease_back` with this
+ * duration; FollowCamera lerps the spring from the cinematic handoff pose to
+ * the exploration strategy target over this window using cubic-bezier
+ * (0.4, 0, 0.2, 1). 600ms matches the cutscene-skip path's value for visual
+ * consistency. Interruptible — a new strategy (cutscene/dialogue) clears it.
+ */
+const CINEMATIC_TIMELINE_EASE_BACK_MS = 600;
 
 let activeTimelineId: string | null = null;
 const listeners = new Set<() => void>();
@@ -149,7 +158,15 @@ export function stopCinematicTimeline(timelineId?: string): void {
   const id = activeTimelineId;
   activeTimelineId = null;
   setCinematicHoldActive(false);
-  setCinematicPresentationMode('third_person');
+  // Session 12-B: ease the camera from the cinematic handoff pose back to the
+  // exploration target over 600ms (cubic-bezier). Previously this call passed
+  // no easeMs, so the `camera:ease_back` event was never emitted on the
+  // natural-completion / stop path — only the skip path (useCutsceneController)
+  // emitted it. The `camera:recenter` event below still fires; the recenter
+  // handler in cameraStateMachine checks the easeBackPending flag (set by the
+  // `camera:ease_back` subscription) and preserves the spring so the lerp has
+  // a real start pose.
+  setCinematicPresentationMode('third_person', { easeMs: CINEMATIC_TIMELINE_EASE_BACK_MS });
   notifyTimelineListeners();
 
   // Part 2D: Restore music volume over 1.0s for a smooth handoff back to gameplay.
@@ -165,7 +182,13 @@ export function completeCinematicTimeline(timelineId: string, skipped = false): 
   clearOrphanWatchdog();
   activeTimelineId = null;
   setCinematicHoldActive(false);
-  setCinematicPresentationMode('third_person');
+  // Session 12-B: ease the camera from the cinematic handoff pose back to the
+  // exploration target over 600ms (cubic-bezier). Previously this call passed
+  // no easeMs — only the skip path (useCutsceneController) emitted ease_back,
+  // so natural timeline completion produced a hard camera snap. Now both
+  // paths emit ease_back; the recenter handler preserves the spring via the
+  // easeBackPending flag so the lerp has a real start pose.
+  setCinematicPresentationMode('third_person', { easeMs: CINEMATIC_TIMELINE_EASE_BACK_MS });
   notifyTimelineListeners();
 
   // Part 2D: Restore music volume over 1.0s for a smooth handoff back to gameplay.

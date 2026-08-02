@@ -69,21 +69,16 @@ export const volodka_room_def: SceneDefinition = {
     { type: 'cuboid', size: [2.5, 0.1, 3.5], position: [0, 3.1, 0] },
   ],
   visualComponent: 'VolodkaRoomVisual',
-  lights: [
-    // Desk monitor glow — slightly more cyan for a data-flow feel
-    { position: [1.5, 1.3, -3.0], intensity: 2.0, color: '#20ee90', distance: 8 },
-    // Warm ceiling lamp — boosted so the player can actually see the room
-    { position: [0, 2.5, 0], intensity: 2.2, color: '#ffaa55', distance: 9 },
-    // FIX-B5 (Phase 7.2 — Volodka Room duplicate-frame cleanup):
-    // Removed the bedside accent at [-1.5, 2.0, 2.0] — VolodkaRoomVisual
-    // already renders a bed fill light at [-1.5, 1.8, 2.5] (0.5m apart),
-    // making these two lights visually redundant. Removing the scene-def
-    // duplicate cuts ~1 point light from the per-frame forward-render
-    // loop without losing the bed-area illumination (VolodkaRoomVisual's
-    // bed fill covers it).
-    // Cold blue "moonlight through curtain" rim light — cold-warm contrast
-    { position: [2.3, 2.2, 1.5], intensity: 0.6, color: '#4466aa', distance: 7 },
-  ],
+  // FIX S12-A6: removed 3 duplicate scene-definition lights — VolodkaRoomVisual
+  // already provides richer + animated lighting at similar positions (monitor
+  // glow [0,1.15,0.1], FlickeringCeilingLight [0,2.85,-1], window spill, desk
+  // lamp, bedside, etc. — 8+ inline lights incl. 1 shadow-caster on the desk
+  // lamp). Removed: desk monitor glow [1.5,1.3,-3.0], warm ceiling [0,2.5,0],
+  // cold moonlight [2.3,2.2,1.5]. Lighting.tsx handles lights.length===0 by
+  // returning null (line 99); sceneDefinitionGenerator just maps an empty
+  // array. Net effect: ~3 fewer point lights + 2 fewer shadow-casters in the
+  // per-frame forward-render loop. S12-C owns VolodkaRoomVisual accent lights.
+  lights: [],
   // Slightly reduced ambient to let point lights dominate more
   ambientColor: '#4a4565',
   ambientIntensity: 1.05,
@@ -288,6 +283,13 @@ export const volodka_corridor_def: SceneDefinition = {
     { id: 'corridor_to_street', position: [-2.7, 0.5, -2.0], width: 1.0, height: 2.2 },
     { id: 'corridor_to_solnysh_room', position: [2.7, 0.5, 4.0], width: 0.9, height: 2.0 },
     { id: 'corridor_to_zarema_room', position: [-2.7, 0.5, 4.0], width: 0.9, height: 2.0 },
+    // FIX S12-A5: bathroom doorway — cuts a hole in the right wall so the player
+    // can approach the visible bathroom door (VolodkaCorridorVisual.tsx line 632
+    // at [W/2-0.02, 0, 2.0]). No matching exit (no bathroom scene exists) — the
+    // doorway is just a niche; the corridor_bathroom_door trigger shows a locked-
+    // door flavor examine panel. Without this doorway, the structural wall at
+    // X=3 was solid → player hit an invisible wall at the visible door.
+    { id: 'corridor_to_bathroom', position: [2.7, 0.5, 2.0], width: 0.9, height: 2.0 },
   ],
   exits: [
     {
@@ -352,6 +354,19 @@ export const volodka_corridor_def: SceneDefinition = {
     { type: 'cuboidObstacle', size: [0.25, 0.35, 0.2], position: [-2.4, 0.35, 4.8], footstepMaterial: 'wood' },
     // Radiator: visual geo_box_7 Box(0.08, 0.8, 0.6) → half [0.04, 0.4, 0.3], center Y=0.4
     { type: 'cuboidObstacle', size: [0.04, 0.4, 0.3], position: [2.92, 0.4, -2.0], footstepMaterial: 'wood' },
+    // FIX S12-A5: visible props with no colliders — player walked through them.
+    // Mailboxes: visual group at [W/2-0.15, 0, 6.0]=[2.85, 0, 6.0], panel + 4 slots
+    // span Y=[0.6, 1.35], Z=[~5.4, 6.6] after -90° Y rotation. Generous half-extents.
+    { type: 'cuboidObstacle', size: [0.15, 0.6, 0.2], position: [2.85, 1.0, 6.0], footstepMaterial: 'wood' },
+    // Intercom: visual group at [-W/2+0.02, 1.5, 6.0]=[-2.98, 1.5, 6.0], small panel.
+    { type: 'cuboidObstacle', size: [0.05, 0.25, 0.15], position: [-2.95, 1.5, 6.0], footstepMaterial: 'wood' },
+    // Mirror: visual group at [W/2-0.02, 1.4, -4.0]=[2.98, 1.4, -4.0] (corrected Z
+    // per S12-A3 — was -5.5 in triggerZones). Narrow vertical frame.
+    { type: 'cuboidObstacle', size: [0.05, 0.35, 0.2], position: [2.95, 1.4, -4.0], footstepMaterial: 'wood' },
+    // Bathroom door panel (closed): visual group at [W/2-0.02, 0, 2.0]=[2.98, 0, 2.0],
+    // door pivot at [0.02, 0, 0.35], panel mesh at [0, 1.0, -0.35] → world ~[3.0, 1.0, 2.0].
+    // Thin tall collider for the closed door.
+    { type: 'cuboidObstacle', size: [0.05, 0.95, 0.4], position: [2.95, 1.0, 2.0], footstepMaterial: 'wood' },
   ],
   ceilings: [
     { type: 'cuboid', size: [3, 0.1, 8], position: [0, 3.1, 0] },

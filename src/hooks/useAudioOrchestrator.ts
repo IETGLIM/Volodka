@@ -52,6 +52,11 @@ function syncAudioFromStore(ctrl: ReturnType<typeof getSceneAudioController>): v
 export function useAudioOrchestrator() {
   const controllerRef = useRef(getSceneAudioController());
   const disposedRef = useRef(false);
+  // D7 (S12-D): guards against double-firing the initial scene:enter in
+  // React StrictMode (mount → unmount → remount). Refs persist across the
+  // StrictMode remount cycle, so the enter stinger + act-mood override are
+  // applied exactly once per real app session.
+  const initialSceneEnteredRef = useRef(false);
 
   useEffect(() => {
     disposedRef.current = false;
@@ -59,6 +64,25 @@ export function useAudioOrchestrator() {
     ctrl.init();
 
     syncAudioFromStore(ctrl);
+
+    // D7 (S12-D): Emit scene:enter for the initial scene so the audio
+    // controller applies reverb preset + act-mood override + enter stinger.
+    // On New Game, the wake-up cinematic runs in volodka_room (the initial
+    // scene) without a scene TRANSITION, so SceneTransitionManager never
+    // emits scene:enter. Without this, the act-1 mood override (D6) would
+    // be silently skipped on New Game. Safe to call after syncAudioFromStore
+    // — onSceneEnter is idempotent for an already-playing same-scene bed
+    // (playSceneMusic early-returns when currentScene === sceneId), and the
+    // reverb/act-mood layers are designed to re-ramp harmlessly.
+    if (!initialSceneEnteredRef.current) {
+      initialSceneEnteredRef.current = true;
+      const state = useGameStore.getState();
+      const sceneId = state.exploration.currentSceneId as SceneId | undefined;
+      if (sceneId) {
+        const ambientContext = buildAmbientContext(state);
+        ctrl.onSceneEnter(sceneId, state.exploration.timeOfDay, ambientContext);
+      }
+    }
 
     return () => {
       disposedRef.current = true;

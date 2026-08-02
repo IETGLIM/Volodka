@@ -28,7 +28,6 @@ import {
 } from '@/engine/camera/cameraConstants';
 import { shouldUseFirstPersonExploration } from '@/engine/camera/cinematicPresentation';
 import { eventBus } from '@/engine/EventBus';
-import * as sharedAudioContext from '@/engine/SharedAudioContext';
 import { sharedCameraYawRef } from '@/engine/PlayerRotationState';
 import { SIM_DELTA_MAX } from '@/engine/player/playerOwnership';
 import { resolveCameraMode } from '@/engine/camera/strategies';
@@ -159,8 +158,6 @@ export function FollowCamera({
   // so the eased lerp goes from the pre-update position toward the target.
   const _easePrePos = useRef(new THREE.Vector3());
   const _easePreLook = useRef(new THREE.Vector3());
-  // Frame counter for throttling the Web Audio listener position update (every 3rd frame).
-  const audioListenerFrameRef = useRef(0);
 
   const runtimeRef = useRef<CameraRuntimeRefs>({
     orbit: {
@@ -230,12 +227,33 @@ export function FollowCamera({
   }, [sceneId, gameMode, activeCutsceneId, cutsceneWaypoints]);
 
   // Subscribe to `camera:ease_back` — emitted by setCinematicPresentationMode
-  // when a cutscene skip wants a smooth 0.6s cubic-bezier blend from the
-  // cutscene-end camera pose back to the exploration strategy target.
+  // when a cutscene skip (or natural completion, per Session 12-B) wants a
+  // smooth 0.6s cubic-bezier blend from the cutscene-end camera pose back to
+  // the exploration strategy target.
+  //
+  // Session 12-B fix: capture the pre-pose SYNCHRONOUSLY in this event handler
+  // (NOT in useFrameTick). The `camera:recenter` event fires immediately after
+  // `camera:ease_back` in setCinematicPresentationMode → completeCinematicTimeline
+  // / stopCinematicTimeline / useCutsceneController — and the recenter handler
+  // in cameraStateMachine consumes the easeBackPending flag (also set by this
+  // listener's emit chain) to call applyExplorationSnap with preserveSpring=true.
+  // Even so, capturing the pre-pose HERE (before the recenter even runs) is the
+  // robust belt-and-braces approach: the captured _easePrePos is the cinematic
+  // handoff pose regardless of whether preserveSpring was wired correctly. The
+  // useFrameTick then lerps from this captured pose to the exploration target.
   useEffect(() => {
     const unsub = eventBus.on('camera:ease_back', (payload) => {
       const durationMs = Math.max(0, payload?.durationMs ?? 0);
       if (durationMs <= 0) return;
+      const spring = springRef.current;
+      if (spring) {
+        // Synchronous capture — this runs BEFORE the `camera:recenter` event
+        // (which fires next in the same emit chain). If we captured in
+        // useFrameTick instead, the spring would already be snapped (or moved
+        // by physics) and the ease lerp would interpolate from the wrong pose.
+        _easePrePos.current.copy(spring.position);
+        _easePreLook.current.copy(spring.lookAt);
+      }
       easeBackStateRef.current = {
         active: true,
         startMs: performance.now(),
@@ -276,7 +294,18 @@ export function FollowCamera({
     const playerPos = livePlayerPositionRef.current;
     if (!playerPos) return;
 
-    if (!canFollowCameraDriveFrame()) return;
+    if (!canFollowCameraDriveFrame()) {
+      // Session 12-B: if a new owner grabbed the camera mid-blend (cutscene,
+      // timeline, dialogue, etc.), clear the ease state so it doesn't resume
+      // from a stale pre-pose next time follow re-acquires the camera. Without
+      // this, a cutscene starting mid-blend would leave easeBackState.active
+      // set; when the cutscene ends and follow resumes, the ease would lerp
+      // from a pre-pose captured before the cutscene — visually wrong.
+      if (easeBackStateRef.current.active) {
+        easeBackStateRef.current = { active: false, startMs: 0, durationMs: 0 };
+      }
+      return;
+    }
 
     const owner = getCameraOwner();
     if (owner === 'followCamera' && !acquireCameraOwnership('followCamera')) return;
@@ -410,26 +439,28 @@ export function FollowCamera({
 
     const springOverride = modeResult.kind === 'targets' ? modeResult.springOverride : undefined;
 
-    // Save pre-frame spring pose for the ease-back blend (if active). applyCameraFrame
-    // updates the spring via physics + target convergence; the ease-back override below
-    // then snaps it onto the cubic-bezier curve.
+    // Session 12-B: ease-back pre-pose is now captured SYNCHRONOUSLY in the
+    // `camera:ease_back` listener (above), NOT here in useFrameTick. The
+    // listener runs before `camera:recenter` snaps the spring, so _easePrePos
+    // holds the cinematic handoff pose. Re-capturing here each frame would
+    // overwrite the cinematic pre-pose with the (already-eased) current spring
+    // pose — collapsing the cubic-bezier lerp into a recursive one-step lerp
+    // and defeating the smooth ease. Just read the captured value below.
     const easeBack = easeBackStateRef.current;
     const easeBackActive = easeBack.active && modeResult.kind === 'targets';
-    if (easeBackActive) {
-      _easePrePos.current.copy(spring.position);
-      _easePreLook.current.copy(spring.lookAt);
-    }
 
     applyCameraFrame(ctx, modeResult.targets, postFrame, springOverride);
 
-    // Ease-back override: when active, lerp the spring + camera from the pre-frame
-    // pose toward the exploration strategy target with cubic-bezier (0.4, 0, 0.2, 1).
-    // Bypasses the spring's natural damping for durationMs (~600ms). Interruptible:
-    // any new strategy that updates the spring (new cutscene / dialogue / etc.)
-    // continues from the eased position next frame — the alpha is recomputed each
-    // tick from elapsed time, so the override naturally hands back to the spring
-    // once t >= 1. As an extra safety, clear the ease if a new cutscene starts
-    // mid-blend (cinematic:timeline_complete watchdog / new timeline takeover).
+    // Ease-back override: when active, lerp the spring + camera from the
+    // listener-captured cinematic pre-pose toward the exploration strategy
+    // target with cubic-bezier (0.4, 0, 0.2, 1). Bypasses the spring's natural
+    // damping for durationMs (~600ms). Interruptible: any new strategy that
+    // updates the spring (new cutscene / dialogue / etc.) continues from the
+    // eased position next frame — the alpha is recomputed each tick from
+    // elapsed time, so the override naturally hands back to the spring once
+    // t >= 1. As an extra safety, clear the ease if a new cutscene starts
+    // mid-blend (the canFollowCameraDriveFrame() early-return above also
+    // clears the ease if a non-follow owner grabbed the camera).
     if (easeBackActive && modeResult.kind === 'targets') {
       if (cutsceneActiveRef.current || npcCutsceneActiveRef.current) {
         // New cutscene grabbed the camera mid-blend — hand off immediately.
@@ -462,26 +493,14 @@ export function FollowCamera({
     wasDraggingRef.current = postFrame.wasDragging;
     wasInDialogueRef.current = isInDialogue;
 
-    // Web Audio listener position hook — throttled to every 3rd frame to avoid
-    // main-thread overhead. Calls sharedAudioContext.setListenerPosition(x,y,z)
-    // if/when the audio agent (9d) wires it; today this is a no-op (optional chain)
-    // so spatial audio stays dormant until that hook lands. The camera's world
-    // position is the canonical listener origin for positional SFX / spatial music.
-    audioListenerFrameRef.current += 1;
-    if (audioListenerFrameRef.current % 3 === 0) {
-      try {
-        // Cast to a structurally-typed alias so TS allows the optional method
-        // access without complaining that `setListenerPosition` isn't (yet) on
-        // the SharedAudioContext module. When audio agent 9d adds the export,
-        // this call starts working automatically.
-        const audioCtx = sharedAudioContext as unknown as {
-          setListenerPosition?: (x: number, y: number, z: number) => void;
-        };
-        audioCtx?.setListenerPosition?.(cam.position.x, cam.position.y, cam.position.z);
-      } catch {
-        // No-op until SharedAudioContext exports setListenerPosition.
-      }
-    }
+    // Session 12-B: removed the dead `audioListenerFrameRef` block that called
+    // `sharedAudioContext?.setListenerPosition?.()` every 3rd frame. The cast
+    // made it look like a method on the SharedAudioContext module, but
+    // `setListenerPosition` is a NAMED EXPORT (not a method on the module
+    // object), so the optional chain always short-circuited to undefined →
+    // no-op. The live audio-listener-position tracking is wired correctly in
+    // `applyCameraFrame.ts` (calls the named export directly every 3rd frame,
+    // per session 11 audio agent 9d). This block was dead + misleading.
 
     if (!initializedRef.current) initializedRef.current = true;
   }, { label: 'FollowCamera' });

@@ -28,8 +28,21 @@ export const WAKEUP_TOTAL =
 
 export const WAKEUP_FALLBACK_MS = (WAKEUP_TOTAL + 2) * 1000;
 
-export const BED_POSITION = new THREE.Vector3(0.5, 0.01, 2.4);
-export const STAND_POSITION = new THREE.Vector3(0.3, 0.01, 1.5);
+// FIX S12-A1: BED_POSITION now lies ON the visible gothicBed GLB
+// (Medium+ preset: AuthoredRoomProp at [1.78, 0, 2.05], scale 0.92, rotationY π).
+// The Low-preset procedural bed is at [1.8, 0, 2.0] with mattress surface at
+// y=0.35 (geo_box_38 mesh). y=0.35 places the avatar on the mattress surface
+// for both presets. Previous [0.5, 0.01, 2.4] was 1.3m LEFT of the bed →
+// avatar rose from bare floor during the wake-up cinematic.
+export const BED_POSITION = new THREE.Vector3(1.78, 0.35, 2.05);
+// STAND_POSITION: foot of the bed (just past the bed obstacle Z-span [1.0, 3.0],
+// on the floor y=0.01). The task spec example [1.78, 0, 2.7] would place the
+// avatar INSIDE the bed obstacle Z-span — shifted to Z=3.2 to put the avatar
+// clearly at the foot, on the floor, clear of the bed collider. KCC is off
+// during the cinematic (kinematicPosition), and finishIntroWake teleports to
+// CHAIR_POSITION [0, 0.01, -1.3] before the KCC re-engages, so the tight
+// clearance to the Z=3.5 wall (0.3m, matches PLAYER_RADIUS) is cinematic-only.
+export const STAND_POSITION = new THREE.Vector3(1.78, 0.01, 3.2);
 export const DESK_POSITION = new THREE.Vector3(0.0, 0.01, -1.0);
 export const CHAIR_POSITION = new THREE.Vector3(0.0, 0.01, -1.3);
 /** Third-person handoff behind the desk — matches exploration orbit framing. */
@@ -59,7 +72,11 @@ export const WAKEUP_CAMERA_WAYPOINTS: WakeCameraWaypoint[] = [
   },
   {
     position: new THREE.Vector3(1.42, 1.22, 2.72),
-    lookAt: new THREE.Vector3(0.48, 0.78, 2.32),
+    // FIX S12-A1: rise-phase lookAt now frames the new BED_POSITION [1.78, 0.35, 2.05]
+    // (was [0.48, 0.78, 2.32] which framed the OLD bed at [0.5, 0.01, 2.4]).
+    // y=0.55 looks slightly above the mattress surface so the avatar's torso
+    // is centered in frame as it rises.
+    lookAt: new THREE.Vector3(1.78, 0.55, 2.05),
     fov: 46,
     duration: WAKEUP_PHASE.rise,
     controlPoint: new THREE.Vector3(1.05, 1.58, 0.85),

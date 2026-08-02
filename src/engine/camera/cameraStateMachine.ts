@@ -77,6 +77,25 @@ export interface ExplorationParams {
   pitchOverride?: number;
 }
 
+/* ── Session 12-B: ease-back pending flag ──────────────────────────
+   Module-level one-shot flag set by the `camera:ease_back` event handler
+   (emitted by setCinematicPresentationMode('third_person', { easeMs }))
+   and consumed clear-on-read by the `camera:recenter` handler. When set,
+   the recenter's applyExplorationSnap preserves the spring's cinematic
+   handoff pose so the FollowCamera ease-back lerp can interpolate from
+   it instead of from the (already-snapped) exploration pose. The flag
+   is one-shot so subsequent recenter events behave normally (e.g. a
+   later manual recenter without an ease snaps the spring as before). */
+let easeBackPending = false;
+function setEaseBackPending(): void { easeBackPending = true; }
+function consumeEaseBackPending(): boolean {
+  const wasPending = easeBackPending;
+  easeBackPending = false;
+  return wasPending;
+}
+/** Test-only — reset module state. */
+export function _resetEaseBackPendingForTests(): void { easeBackPending = false; }
+
 export type CameraState =
   | { mode: 'exploration'; params: ExplorationParams }
   | { mode: 'dialogue'; speaker: DialogueSpeaker }
@@ -268,6 +287,7 @@ export function applyExplorationSnap(
   pitchOverride?: number,
   forceThirdPerson = false,
   resetInitialized = false,
+  preserveSpring = false,
 ): void {
   const snap = computeExplorationCameraSnap(
     runtime.livePlayerPosition.current,
@@ -286,7 +306,14 @@ export function applyExplorationSnap(
   orbit.currentSceneFov.current = snap.fov;
   if (resetInitialized) orbit.initialized.current = false;
 
-  if (subsystems.spring.current) {
+  if (!preserveSpring && subsystems.spring.current) {
+    // Hard-snap the spring to the exploration pose. This is the default — but
+    // when a camera:ease_back blend is pending (set by the `camera:ease_back`
+    // event handler below), we MUST skip this so the spring stays at its
+    // cinematic handoff pose. The FollowCamera's ease-back lerp then
+    // interpolates from that pose to the exploration target over `easeMs`.
+    // Snapping here would defeat the ease (the lerp would go from the
+    // exploration pose to the exploration pose = no-op).
     subsystems.spring.current.position.copy(snap.position);
     subsystems.spring.current.velocity.set(0, 0, 0);
     subsystems.spring.current.lookAt.copy(snap.lookAt);
@@ -670,8 +697,26 @@ export function subscribeCameraEventHub(options: CameraEventHubOptions): () => v
 
   unsubs.push(eventBus.on('camera:recenter', () => {
     cancelInFlightSceneTransition(runtime, sceneId);
-    applyExplorationSnap(runtime, sceneId, undefined, false, true);
+    // Session 12-B: when a `camera:ease_back` is pending (emitted by
+    // setCinematicPresentationMode('third_person', { easeMs }) just before
+    // this recenter), preserve the spring's cinematic handoff pose so the
+    // FollowCamera ease-back lerp can interpolate from it. The ease flag is
+    // set by the `camera:ease_back` subscription below — we consume it here
+    // (clear-on-read) so subsequent recenter events behave normally.
+    const preserveSpring = consumeEaseBackPending();
+    applyExplorationSnap(runtime, sceneId, undefined, false, true, preserveSpring);
     dispatchCameraState(runtime, { type: 'recenter' }, sceneId);
+  }));
+
+  unsubs.push(eventBus.on('camera:ease_back', () => {
+    // Session 12-B: mark that the next `camera:recenter` (which fires
+    // immediately after this event in setCinematicPresentationMode →
+    // completeCinematicTimeline / stopCinematicTimeline / useCutsceneController)
+    // must preserve the spring's current (cinematic handoff) pose. Without
+    // this, the recenter's applyExplorationSnap hard-snaps the spring to the
+    // exploration pose, defeating the ease-back lerp (it would interpolate
+    // from exploration-pose to exploration-pose = no-op).
+    setEaseBackPending();
   }));
 
   unsubs.push(eventBus.on('camera:look_toward', ({ x, z }) => {

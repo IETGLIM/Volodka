@@ -9,9 +9,11 @@ export const NARRATIVE_EXPANSION_TRIGGER_ZONES: TriggerZone[] = [
   /* ─── Act 1 — volodka_room deep examination (after initial explore) ─── */
 
   {
+    // FIX S12-A2: was [-1.8, 0.4, 1.2] (old room_bed position). Moved to
+    // [1.78, 0.4, 2.05] to match the updated room_bed trigger (visible bed).
     id: 'room_bed_deep',
     sceneId: 'volodka_room',
-    position: [-1.8, 0.4, 1.2],
+    position: [1.78, 0.4, 2.05],
     size: [1.6, 1.0, 2.2],
     enterToast: 'Кровать — место, где ты перестаёшь сопротивляться.',
     linkedStoryNodeId: 'examine_bed',

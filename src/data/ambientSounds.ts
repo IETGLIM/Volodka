@@ -296,10 +296,27 @@ function ambientMeta(
     oscillators: ['sine', 'triangle'],
     lfoRate: 0.08,
     lfoDepth: 2,
+    // D2 (S12-D): rain against the window — the opening narration explicitly
+    // mentions "За окном моросит дождь". Same bandpass noise pattern as the
+    // street rain bed (3000Hz center, 0.08Hz LFO swell) so the sonic texture
+    // is consistent when the player eventually steps outside.
+    noise: {
+      filterType: 'bandpass',
+      filterFreq: 3000,
+      filterQ: 0.5,
+      gain: 0.02,
+      lfoFreq: 0.08,
+      lfoDepth: 500,
+    },
+    // D2 (S12-D): fridge hum — 50Hz mains fundamental (was 200Hz triangle
+    // warmth). The 100Hz 2nd harmonic is already present from the base
+    // oscillators (baseFrequency 100), giving the classic 50+100Hz mains
+    // pair. Total continuous gain: 0.03 (osc) + 0.015 (fridge) + 0.02 (rain)
+    // = 0.065, well under 1.0.
     harmonic: {
-      type: 'triangle',
-      freqMultiplier: 2.0,
-      gain: 0.01,
+      type: 'sine',
+      freqMultiplier: 0.5, // 100 × 0.5 = 50Hz mains hum
+      gain: 0.015,
     },
     randomSounds: [
       { type: 'sine', frequency: 1500, duration: 0.02, gain: 0.02, minInterval: 4, maxInterval: 10 },
@@ -389,14 +406,25 @@ function ambientMeta(
     oscillators: ['sawtooth', 'square'],
     lfoRate: 0.04,
     lfoDepth: 4,
+    // D3 (S12-D): fluorescent buzz — 120Hz square wave (was 130Hz sine warmth).
+    // 120Hz is the distinctive fluorescent-fixture buzz frequency; the 65Hz
+    // sawtooth drone already covers the mains hum fundamental. freqMultiplier
+    // 120/65 ≈ 1.8462 produces exactly 120Hz from the 65Hz base. Gain 0.008
+    // keeps the buzz subtle — audible as a signature corridor texture without
+    // drawing attention.
     harmonic: {
-      type: 'sine',
-      freqMultiplier: 2.0,
-      gain: 0.012,
+      type: 'square',
+      freqMultiplier: 1.8462, // 65 × 1.8462 ≈ 120Hz fluorescent buzz
+      gain: 0.008,
     },
     randomSounds: [
       { type: 'sine', frequency: 80, duration: 0.15, gain: 0.035, minInterval: 6, maxInterval: 14 },
       { type: 'sine', frequency: 1800, duration: 0.06, gain: 0.015, minInterval: 10, maxInterval: 20 },
+      // D3 (S12-D): muffled voices through apartment walls — a communal
+      // hallway at 6 AM has distant neighbors. Mid-range sawtooth wobble
+      // (500→700Hz) approximates syllabic inflection; very low gain (0.01)
+      // and 15-30s spacing keep it subliminal.
+      { type: 'sawtooth', frequency: 500, duration: 1.2, gain: 0.01, minInterval: 15, maxInterval: 30, frequencyRamp: 700 },
     ] as AmbientSoundDef['randomSounds'],
   },
 

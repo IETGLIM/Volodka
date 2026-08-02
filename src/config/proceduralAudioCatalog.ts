@@ -280,9 +280,16 @@ export function findEmotionalTransition(
  *  Key: `${sceneId}:${actNumber}` → overrides for that scene in that act.
  *  Missing entries fall back to the base SCENE_AUDIO_PROFILES mood.
  *
- *  Act 1 = base profile (no override needed). Acts 2–5 progressively darken. */
+ *  Act 1 typically falls back to the base profile, except volodka_room which
+ *  has an explicit act-1 nudge (D6: slightly warmer/drier for the opening
+ *  morning). Acts 2–5 progressively darken. */
 export const ACT_MOOD_OVERRIDES: Record<string, ActMoodOverride> = {
   // ── volodka_room ──
+  // D6 (S12-D): Act 1 — the opening morning. Slightly brighter (filterCutoff
+  // 600 vs MusicEngine base padFilterFreq 500) and drier (reverbMix 0.3 vs
+  // base padReverbMix 0.4) so the room feels intimate and safe before the
+  // story darkens. Acts 2-5 progressively darken as before.
+  'volodka_room:1': { mood: 'cozy_indoor', filterCutoff: 600, reverbMix: 0.3 },
   // Act 2: Growing unease
   'volodka_room:2': { mood: 'cozy_indoor', filterCutoff: 1500, reverbMix: 0.2 },
   // Act 3: Betrayal, tension

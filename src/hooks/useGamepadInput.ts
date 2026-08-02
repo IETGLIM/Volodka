@@ -22,6 +22,7 @@ import {
 } from '@/engine/VirtualControlsState';
 import type { PanelType } from '@/components/game/orchestrator/types';
 import { getLiveGamePhase, getUIStoreState } from '@/store/stores/uiStore';
+import { isCinematicTimelineActive } from '@/engine/cinematic/cinematicTimelineOrchestrator';
 
 export interface UseGamepadInputOptions {
   virtualControlsRef: MutableRefObject<VirtualControls>;
@@ -55,13 +56,33 @@ function shouldBlockMovement(mode: GamePhase, panelStackLength: number): boolean
 
 function shouldBlockOrbit(mode: GamePhase): boolean {
   const { showStoryOverlay, currentNodeId } = getUIStoreState();
-  if (isNarrativeMovementLocked(showStoryOverlay, currentNodeId) || mode === 'cutscene') return true;
+  // Session 12-B: block during 'intro' phase AND any active cinematic
+  // timeline. The timeline owns the camera during these windows, so any
+  // gamepad right-stick orbit input would silently mutate the yaw/pitch
+  // refs (which then carry into the post-cinematic exploration pose).
+  // `isCinematicTimelineActive()` is the robust gate — catches any active
+  // timeline regardless of phase. The explicit `mode === 'intro'` check
+  // covers the brief window where the timeline hasn't started yet but the
+  // intro phase is already set.
+  if (
+    isNarrativeMovementLocked(showStoryOverlay, currentNodeId)
+    || mode === 'cutscene'
+    || mode === 'intro'
+    || isCinematicTimelineActive()
+  ) return true;
   return getInteractionState() === InteractionState.Dialogue;
 }
 
 function shouldBlockZoom(mode: GamePhase): boolean {
   const { showStoryOverlay, currentNodeId } = getUIStoreState();
-  if (mode !== 'exploration' || isNarrativeMovementLocked(showStoryOverlay, currentNodeId)) return true;
+  // Session 12-B: block zoom during any active cinematic timeline. The
+  // `mode !== 'exploration'` check already covers 'intro' (intro is a
+  // distinct phase), so we only add isCinematicTimelineActive() here.
+  if (
+    mode !== 'exploration'
+    || isNarrativeMovementLocked(showStoryOverlay, currentNodeId)
+    || isCinematicTimelineActive()
+  ) return true;
   return getInteractionState() === InteractionState.Dialogue;
 }
 

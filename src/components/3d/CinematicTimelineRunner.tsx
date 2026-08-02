@@ -101,8 +101,20 @@ export function CinematicTimelineRunner() {
     // examine the bookshelf (which collects poem_2) to complete the
     // first_reading quest. This restores meaningful player agency — see
     // act1.ts first_reading objectives.
-    setCinematicPresentationMode('third_person');
-    eventBus.emit('intro:wakeup_complete', {});
+    // Session 12-B: ease the camera from the cinematic handoff pose back to
+    // the exploration target over 600ms (cubic-bezier). The completeCinematicTimeline
+    // call below ALSO emits ease_back via setCinematicPresentationMode, but
+    // the orchestrator's call only fires if `getActiveCinematicTimelineId() ===
+    // 'intro_wakeup'` (last line of this function). Setting it here first
+    // guarantees the ease fires on the intro→exploration hand-off regardless
+    // of the orchestrator guard. The recenter handler preserves the spring
+    // via the easeBackPending flag.
+    setCinematicPresentationMode('third_person', { easeMs: 600 });
+    // Session 12-B: removed the orphaned `intro:wakeup_complete` emit —
+    // grep confirmed zero subscribers across the codebase (only the type
+    // declaration in introEvents.ts existed). The cutscene:overlay_end +
+    // cinematic:timeline_complete events cover the same hand-off semantic
+    // for any downstream consumer.
 
     // CRITICAL: Emit scene:loaded for the current scene. During "New Game",
     // there is no scene transition (we stay in volodka_room), so scene:loaded
@@ -554,8 +566,12 @@ export function CinematicTimelineRunner() {
 
     if (result.isHandoff && timelineIdRef.current === 'intro_wakeup' && !handoffEmittedRef.current) {
       handoffEmittedRef.current = true;
-      eventBus.emit('intro:wakeup_handoff', {});
-      eventBus.emit('cinematic:intro_handoff', { timelineId: 'intro_wakeup' });
+      // Session 12-B: removed the orphaned `intro:wakeup_handoff` +
+      // `cinematic:intro_handoff` emits — grep confirmed zero subscribers
+      // across the codebase (only the type declarations in introEvents.ts
+      // and cinematicTimelineEvents.ts existed). The handoff semantic is
+      // already covered by `cinematic:timeline_phase` (emitted above with
+      // the phaseId), which downstream consumers use for phase-based logic.
     }
 
     if (result.actor && playerGroupRef.current) {

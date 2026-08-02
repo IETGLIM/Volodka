@@ -317,7 +317,13 @@ const VIKTOR_SCHEDULE: NPCSchedule = {
   npcId: 'viktor',
   entries: [
     { startHour: 0, endHour: 4, sceneId: 'abandoned_factory', position: [-4.0, 0, 2.0], activity: 'work' },
-    { startHour: 4, endHour: 8, sceneId: 'volodka_room', position: [-3.0, 0, 3.0], activity: 'sleep' },
+    // FIX S12-A4: was [-3.0, 0, 3.0] — room half-width is 2.5, so X=-3.0 was
+    // 0.5m THROUGH the left wall (NPC spawned invisible/stuck outside the room).
+    // Moved to [-1.5, 0, 2.5] — inside the room (X∈[-2.5, 2.5], Z∈[-3.5, 3.5]),
+    // clear of the player spawn [1.78, 0.35, 2.05] (~3.3m away), clear of the
+    // visual wardrobe at [-1.7, 0, -2.45] (~5m away in Z), clear of the
+    // armchair at [0.35, 0.4, 2.55] (X-gap >1.5m).
+    { startHour: 4, endHour: 8, sceneId: 'volodka_room', position: [-1.5, 0, 2.5], activity: 'sleep' },
     { startHour: 8, endHour: 16, sceneId: 'abandoned_factory', position: [-4.0, 0, 2.0], activity: 'work' },
     { startHour: 16, endHour: 20, sceneId: 'street_night', position: [-2.0, 0, -1.0], activity: 'walk' },
     { startHour: 20, endHour: 22, sceneId: 'cafe_evening', position: [-1.0, 0, 2.0], activity: 'talk' },

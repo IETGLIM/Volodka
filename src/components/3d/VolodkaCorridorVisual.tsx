@@ -1,7 +1,7 @@
 
 /* ─── Volodka RPG – Corridor procedural 3D visual ─── */
 
-import { useRef, useEffect, useMemo, type MutableRefObject } from 'react';
+import { Suspense, useRef, useEffect, useMemo, type MutableRefObject } from 'react';
 import { CANONICAL_SHADOW_BIAS, CANONICAL_SHADOW_NORMAL_BIAS } from '@/components/3d/Lighting';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
@@ -13,6 +13,7 @@ import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { createVolodkaCorridorRainySkyTexture } from '@/engine/graphics/proceduralSkyTextures';
 import { registerModuleGeometries } from '@/engine/three/moduleGeometryRegistry';
 import { AmbientParticles } from './AmbientParticles';
+import { PolyHavenStandardMaterial } from './PolyHavenStandardMaterial';
 import {
   getRainSpillInFloorBoost,
 } from '@/engine/graphics/wetStreetScenes';
@@ -114,7 +115,11 @@ const mat_23 = getSharedStandardMaterial({ color: '#5a4a40', roughness: 0.95 });
 const mat_24 = getSharedStandardMaterial({ color: '#3a3540', roughness: 0.9, side: THREE.DoubleSide });
 const mat_25 = getSharedStandardMaterial({ color: '#4a4a4a', metalness: 0.4, roughness: 0.5 });
 const mat_26 = getSharedStandardMaterial({ color: '#333', metalness: 0.3, roughness: 0.6 });
-const mat_27 = getSharedStandardMaterial({ color: '#8a7a50', metalness: 0.3, roughness: 0.5 });
+// Deplasticize: clamp envMapIntensity on metal-heavy props so they don't
+// over-sample the warm_apartment env map (reads as shiny/plastic without
+// the clamp). 0.4 matches the interior deplasticize pass in volodka_room.
+const mat_27 = getSharedStandardMaterial({ color: '#8a7a50', metalness: 0.3, roughness: 0.5 }); // mailboxes nameplate (brass)
+mat_27.envMapIntensity = 0.4;
 const mat_28 = getSharedStandardMaterial({ color: '#1a1a1a' });
 const mat_29 = getSharedStandardMaterial({ color: '#3a3a3a', metalness: 0.5, roughness: 0.5 });
 const mat_30 = getSharedStandardMaterial({ color: '#1a1a1a', roughness: 0.9 });
@@ -124,11 +129,14 @@ const mat_33 = getSharedStandardMaterial({ color: '#1a1a1a', metalness: 0.7, rou
 const mat_34 = getSharedStandardMaterial({ color: '#4a3a30', roughness: 0.9, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 });
 const mat_35 = getSharedStandardMaterial({ color: '#2a2018', roughness: 0.9, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 });
 const mat_36 = getSharedStandardMaterial({ color: '#5a4530', roughness: 0.7 });
-const mat_37 = getSharedStandardMaterial({ color: '#607080', metalness: 0.8, roughness: 0.1 });
-const mat_38 = getSharedStandardMaterial({ color: '#555', metalness: 0.6, roughness: 0.4 });
+const mat_37 = getSharedStandardMaterial({ color: '#607080', metalness: 0.8, roughness: 0.1 }); // mirror (steel)
+mat_37.envMapIntensity = 0.4;
+const mat_38 = getSharedStandardMaterial({ color: '#555', metalness: 0.6, roughness: 0.4 }); // coat hooks
+mat_38.envMapIntensity = 0.4;
 const mat_39 = getSharedStandardMaterial({ color: '#6a3a3a', roughness: 0.9 });
 const mat_40 = getSharedStandardMaterial({ color: '#4a4030', roughness: 0.95, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 });
-const mat_41 = getSharedStandardMaterial({ color: '#5a5a5a', metalness: 0.6, roughness: 0.4 });
+const mat_41 = getSharedStandardMaterial({ color: '#5a5a5a', metalness: 0.6, roughness: 0.4 }); // pipe
+mat_41.envMapIntensity = 0.4;
 const mat_42 = getSharedStandardMaterial({ color: '#4a4a4a', metalness: 0.5, roughness: 0.5 });
 const mat_43 = getSharedStandardMaterial({ color: '#8b2020', metalness: 0.5, roughness: 0.4 });
 const mat_44 = getSharedStandardMaterial({ color: '#8b2020', metalness: 0.4, roughness: 0.5 });
@@ -319,8 +327,23 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
 
   return (
     <group ref={rootGroupRef}>
-      {/* ── Floor (linoleum) ── */}
-      <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.002} renderOrder={0} geometry={geo_pln_1} material={mat_floor} />
+      {/* ── Floor (linoleum) — Poly Haven concrete_floor_painted tinted Soviet-brown ── */}
+      <Suspense
+        fallback={
+          <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.002} renderOrder={0} geometry={geo_pln_1} material={mat_floor} />
+        }
+      >
+        <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.002} renderOrder={0} geometry={geo_pln_1}>
+          <PolyHavenStandardMaterial
+            materialId="concrete_floor_painted"
+            repeatScale={1.2}
+            color="#5a4a40"
+            roughness={floorRoughness}
+            metalness={floorMetalness}
+            polygonOffset
+          />
+        </mesh>
+      </Suspense>
       {/* FIX AUDIT-C7: puddle was at X=0 (inside opaque carpet runner X=±0.7) →
           hidden under the carpet. Moved to X=1.5 (bare floor, right of carpet). */}
       {spill && (
@@ -345,17 +368,37 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
       {/* FIX AUDIT-C10: added receiveShadow so the ceiling lamp casts shadow pooling on ceiling. */}
       <mesh position={[0, H, 0]} rotation-x={Math.PI / 2} receiveShadow geometry={geo_pln_1} material={mat_ceiling} />
 
-      {/* ── Left Wall ── */}
-      <mesh position={[-W / 2 + 0.01, H / 2, 0]} rotation-y={Math.PI / 2} receiveShadow geometry={geo_pln_3} material={mat_wall} />
+      {/* ── Walls — Poly Haven plastered_wall for visual continuity with volodka_room ── */}
+      <Suspense
+        fallback={
+          <>
+            <mesh position={[-W / 2 + 0.01, H / 2, 0]} rotation-y={Math.PI / 2} receiveShadow geometry={geo_pln_3} material={mat_wall} />
+            <mesh position={[W / 2 - 0.01, H / 2, 0]} rotation-y={-Math.PI / 2} receiveShadow geometry={geo_pln_3} material={mat_wall} />
+            <mesh position={[0, H / 2, -D / 2 + 0.01]} receiveShadow geometry={geo_pln_4} material={mat_wall} />
+            <mesh position={[0, H / 2, D / 2 - 0.01]} rotation-y={Math.PI} receiveShadow geometry={geo_pln_4} material={mat_wall} />
+          </>
+        }
+      >
+        {/* ── Left Wall ── */}
+        <mesh position={[-W / 2 + 0.01, H / 2, 0]} rotation-y={Math.PI / 2} receiveShadow geometry={geo_pln_3}>
+          <PolyHavenStandardMaterial materialId="plastered_wall" repeatScale={0.9} color="#3a3540" roughness={0.9} polygonOffset />
+        </mesh>
 
-      {/* ── Right Wall ── */}
-      <mesh position={[W / 2 - 0.01, H / 2, 0]} rotation-y={-Math.PI / 2} receiveShadow geometry={geo_pln_3} material={mat_wall} />
+        {/* ── Right Wall ── */}
+        <mesh position={[W / 2 - 0.01, H / 2, 0]} rotation-y={-Math.PI / 2} receiveShadow geometry={geo_pln_3}>
+          <PolyHavenStandardMaterial materialId="plastered_wall" repeatScale={0.9} color="#3a3540" roughness={0.9} polygonOffset />
+        </mesh>
 
-      {/* ── Back Wall ── */}
-      <mesh position={[0, H / 2, -D / 2 + 0.01]} receiveShadow geometry={geo_pln_4} material={mat_wall} />
+        {/* ── Back Wall ── */}
+        <mesh position={[0, H / 2, -D / 2 + 0.01]} receiveShadow geometry={geo_pln_4}>
+          <PolyHavenStandardMaterial materialId="plastered_wall" repeatScale={0.9} color="#3a3540" roughness={0.9} polygonOffset />
+        </mesh>
 
-      {/* ── Front Wall ── */}
-      <mesh position={[0, H / 2, D / 2 - 0.01]} rotation-y={Math.PI} receiveShadow geometry={geo_pln_4} material={mat_wall} />
+        {/* ── Front Wall ── */}
+        <mesh position={[0, H / 2, D / 2 - 0.01]} rotation-y={Math.PI} receiveShadow geometry={geo_pln_4}>
+          <PolyHavenStandardMaterial materialId="plastered_wall" repeatScale={0.9} color="#3a3540" roughness={0.9} polygonOffset />
+        </mesh>
+      </Suspense>
 
       {/* ── Decorative props (LOD: standard+) ── */}
       <EnvironmentDetail minLod="standard" position={[-2.15, 0, 5.5]}>
@@ -649,8 +692,11 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
       {/* ── Dim ambient fill ── */}
       <pointLight position={[0, 1.5, 0]} color="#4a4050" intensity={1.2} distance={10} />
 
-      {/* ── Corridor dust particles (dingy gray) ── */}
-      <AmbientParticles count={150} boundsX={[-2, 2]} boundsY={[0, 3]} boundsZ={[-6, 6]} color="#94a3b8" opacity={0.2} sizeMax={0.04} />
+      {/* ── Dust particles ── REMOVED: AtmosphericEffects.DustMotes already
+          covers volodka_corridor (DUST_SCENES set), so this inline
+          <AmbientParticles> was a duplicate — wasted GPU on a second dust
+          system + double-density motes. Same FIX-B1 pattern that was caught
+          in volodka_room. DustMotes has player-wake response so it wins. */}
     </group>
   );
 }

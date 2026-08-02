@@ -137,9 +137,13 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     propOffset: [0.42, 0.1, 0.12],
   },
   {
+    // FIX S12-A2: was [-2.2, 1.0, 0] (left wall mid-room, no visual bookshelf
+    // there). Moved to [1.65, 1.0, -2.55] to match the visual bookshelf
+    // (Medium+ AuthoredRoomProp woodenBookshelfWorn + Low procedural kit both
+    // at [1.65, 0, -2.55]) and the sceneDefinitions obstacle at [1.65, 1.0, -2.55].
     id: 'room_bookshelf',
     sceneId: 'volodka_room',
-    position: [-2.2, 1.0, 0],
+    position: [1.65, 1.0, -2.55],
     size: [0.5, 2.0, 0.6],
     requiredFlag: 'interacted_desk',
     enterToast: 'Книжная полка — стихи рядом с руководствами.',
@@ -225,9 +229,13 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     },
   },
   {
+    // FIX S12-A2: was [-2.2, 1.0, 2.5] (near bed area, no visual wardrobe
+    // there). Moved to [-1.7, 1.0, -2.45] to match the visual wardrobe
+    // (Medium+ AuthoredRoomProp paintedWoodenCabinet + Low procedural kit both
+    // at [-1.7, 0, -2.45]) and the sceneDefinitions obstacle at [-1.7, 1.05, -2.45].
     id: 'room_wardrobe',
     sceneId: 'volodka_room',
-    position: [-2.2, 1.0, 2.5],
+    position: [-1.7, 1.0, -2.45],
     size: [0.8, 2.0, 0.6],
     enterToast: 'Старый платяной шкаф — двери скрипят.',
     interactionType: 'open',
@@ -322,9 +330,13 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     ],
   },
   {
+    // FIX S12-A2: was [-1.8, 0.4, 1.2] (left side, no visual bed there).
+    // Moved to [1.78, 0.4, 2.05] to match the visible bed (Medium+ gothicBed
+    // GLB at [1.78, 0, 2.05] + Low procedural bed at [1.8, 0, 2.0]) and the
+    // sceneDefinitions obstacle at [1.8, 0.175, 2.0].
     id: 'room_bed',
     sceneId: 'volodka_room',
-    position: [-1.8, 0.4, 1.2],
+    position: [1.78, 0.4, 2.05],
     size: [1.6, 1.0, 2.2],
     interactionType: 'examine',
     examineData: {
@@ -462,9 +474,12 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     // before coding can reasonably reach 3.
   },
   {
+    // FIX S12-A3: Z was -5.5 but the visual mirror (VolodkaCorridorVisual.tsx
+    // line 564) is at Z=-4.0 — 1.5m apart, examine prompt fired in empty space.
+    // X=2.85 matches visual X=W/2-0.02=2.98 (within trigger half-width 0.25).
     id: 'corridor_mirror',
     sceneId: 'volodka_corridor',
-    position: [2.85, 1.4, -5.5],
+    position: [2.85, 1.4, -4.0],
     size: [0.5, 0.7, 0.3],
     enterToast: 'Зеркало в потёртой раме.',
     interactionType: 'examine',
@@ -4125,9 +4140,12 @@ export const TRIGGER_ZONES: TriggerZone[] = [
 
   /* ── Room wardrobe — hidden stash (unlocked, act 1+) ── */
   {
+    // FIX S12-A2: was [2.2, 0.5, 0] (right side mid-room, no wardrobe there).
+    // Moved to [-1.7, 0.5, -2.45] to match the visual wardrobe at [-1.7, 0, -2.45]
+    // (same as room_wardrobe — stash is inside the wardrobe).
     id: 'room_wardrobe_stash',
     sceneId: 'volodka_room',
-    position: [2.2, 0.5, 0],
+    position: [-1.7, 0.5, -2.45],
     size: [0.6, 2.0, 0.4],
     interactionType: 'open',
     interactionLabel: 'Обыскать шкаф',

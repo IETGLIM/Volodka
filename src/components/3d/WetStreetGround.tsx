@@ -105,6 +105,43 @@ function WetStreetGroundPbr({
     return () => unregisterFrameTick(tickId);
   }, [usePlanarReflector, wetActive, dryRoughness, dryMetalness, effectiveRain]);
 
+  // FIX S12-A7: MeshReflectorMaterial (drei) creates 2 WebGLRenderTargets
+  // (fbo1 + fbo2) + a BlurPass in React.useMemo with NO cleanup useEffect.
+  // On scene exit, ~16MB GPU memory leaks on ultra. Best-effort disposal on
+  // unmount: try drei's internal fbo1/fbo2/blurpass fields (not in the public
+  // type — wrapped in try/catch), AND dispose the material's texture uniforms
+  // (tDiffuse=fbo1.texture, tDiffuseBlur=fbo2.texture, tDepth=fbo1.depthTexture)
+  // which ARE accessible via the material's getters — this releases the GPU
+  // textures even though the render-target framebuffers themselves are local
+  // to drei's component and not directly reachable. Texture disposal is the
+  // primary cleanup path; fbo1/fbo2/blurpass disposal is a defensive no-op
+  // that becomes effective if drei ever exposes those fields.
+  useLayoutEffect(() => {
+    const mat = reflectorMatRef.current;
+    if (!mat) return;
+    return () => {
+      try {
+        const anyMat = mat as unknown as {
+          fbo1?: { dispose?: () => void };
+          fbo2?: { dispose?: () => void };
+          blurpass?: { dispose?: () => void };
+          reflectionHash?: unknown;
+          tDiffuse?: { dispose?: () => void };
+          tDiffuseBlur?: { dispose?: () => void };
+          tDepth?: { dispose?: () => void };
+        };
+        anyMat.fbo1?.dispose?.();
+        anyMat.fbo2?.dispose?.();
+        anyMat.blurpass?.dispose?.();
+        anyMat.tDiffuse?.dispose?.();
+        anyMat.tDiffuseBlur?.dispose?.();
+        anyMat.tDepth?.dispose?.();
+      } catch {
+        // best-effort — ignore disposal errors
+      }
+    };
+  }, []);
+
   return (
     <mesh
       rotation-x={-Math.PI / 2}
@@ -230,6 +267,35 @@ function WetStreetGroundProceduralFallback({
     });
     return () => unregisterFrameTick(tickId);
   }, [usePlanarReflector, wetActive, dryRoughness, dryMetalness, effectiveRain, preset.textureScale, size]);
+
+  // FIX S12-A7: see WetStreetGroundPbr for the full rationale. Same best-effort
+  // FBO + texture disposal on unmount — duplicated here because this fallback
+  // mounts its own MeshReflectorMaterial instance while PBR maps stream in.
+  useLayoutEffect(() => {
+    const mat = reflectorMatRef.current;
+    if (!mat) return;
+    return () => {
+      try {
+        const anyMat = mat as unknown as {
+          fbo1?: { dispose?: () => void };
+          fbo2?: { dispose?: () => void };
+          blurpass?: { dispose?: () => void };
+          reflectionHash?: unknown;
+          tDiffuse?: { dispose?: () => void };
+          tDiffuseBlur?: { dispose?: () => void };
+          tDepth?: { dispose?: () => void };
+        };
+        anyMat.fbo1?.dispose?.();
+        anyMat.fbo2?.dispose?.();
+        anyMat.blurpass?.dispose?.();
+        anyMat.tDiffuse?.dispose?.();
+        anyMat.tDiffuseBlur?.dispose?.();
+        anyMat.tDepth?.dispose?.();
+      } catch {
+        // best-effort — ignore disposal errors
+      }
+    };
+  }, []);
 
   return (
     <mesh

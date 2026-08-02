@@ -48,8 +48,11 @@ export function useMenuScreen({ loadGame, resetGame, musicEnabled, toggleMusic }
 
       if (!skipPrologue) {
         // Prologue path: spawn in bed, play cinematic, then open 'start' node
+        // FIX S12-A1: spawn on the visible bed — matches BED_POSITION in
+        // wakeUpCinematic.ts (was [0.5, 0.01, 2.4] which was 1.3m LEFT of the
+        // visible gothicBed at [1.78, 0, 2.05]).
         store.setCurrentNodeId('start');
-        store.setPlayerPosition([0.5, 0.01, 2.4]);
+        store.setPlayerPosition([1.78, 0.35, 2.05]);
         store.setPlayerRotation(Math.PI);
         store.setCutscene('intro_wakeup', []);
         // Canvas stays mounted under the menu (CSS-hidden). CinematicTimelineRunner

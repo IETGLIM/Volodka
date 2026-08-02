@@ -841,7 +841,16 @@ const AMBIENT_MUSIC_CONFIGS: Partial<Record<SceneId, AmbientMusicConfig>> = {
 
 const REVERB_PRESETS: Record<string, ReverbPresetConfig> = {
   small_room: { decay: 0.5, wetMix: 0.15 },
-  corridor: { decay: 1.0, wetMix: 0.3 },
+  // D4 (S12-D): bumped from { decay: 1.0, wetMix: 0.3 } so the SFX bus
+  // (applySfxReverbPreset multiplies decay × 0.65, wetMix × 0.35) lands at
+  // 1.04s decay @ 14% wet — audible corridor tail on footsteps/door slams
+  // for the 16m volodka_corridor hallway. Was 0.65s @ 10.5% (acoustically
+  // dead). Other scenes sharing this preset (office_day, cafe_evening,
+  // library_day, abandoned_factory, battle) also benefit — factories and
+  // libraries naturally have longer tails than the previous 0.65s, and
+  // combat SFX remain punchy because the 0.35× wetMix multiplier keeps the
+  // wet bed subtle.
+  corridor: { decay: 1.6, wetMix: 0.4 },
   nature: { decay: 1.4, wetMix: 0.28 },
   large_space: { decay: 2.0, wetMix: 0.45 },
   dream: { decay: 3.0, wetMix: 0.6 },

@@ -18,6 +18,7 @@ import { InteractionState } from '@/engine/interaction/interactionMachine';
 import { isNarrativeMovementLocked } from '@/shared/exploreHubNodes';
 import { getVisualSettings } from '@/engine/visualSettings';
 import { isCanvasAreaTarget } from '@/engine/input/domUtils';
+import { isCinematicTimelineActive } from '@/engine/cinematic/cinematicTimelineOrchestrator';
 
 const PITCH_MIN = -0.5;
 const PITCH_MAX = 1.3;
@@ -43,7 +44,22 @@ export interface CameraOrbitInputRefs {
 
 function shouldBlockOrbit(): boolean {
   const { showStoryOverlay, currentNodeId, mode } = getGameSnapshot();
-  if (isNarrativeMovementLocked(showStoryOverlay, currentNodeId ?? '') || mode === 'cutscene' || mode === 'combat') {
+  // Session 12-B: also block during the 'intro' phase (intro wake cinematic).
+  // The timeline owns the camera during intro, so any user drag/touch/gamepad
+  // orbit input would silently mutate the yaw/pitch refs — confusing because
+  // the camera doesn't visibly move (timeline overrides), and the mutated refs
+  // would carry into the post-cinematic exploration pose. `isCinematicTimelineActive()`
+  // is the robust gate (catches ANY active timeline, not just intro) — but we
+  // also keep the explicit `mode === 'intro'` check for the brief window where
+  // the timeline hasn't started yet but the intro phase is already set (e.g.
+  // the 200ms settle delay before startCinematicTimeline).
+  if (
+    isNarrativeMovementLocked(showStoryOverlay, currentNodeId ?? '')
+    || mode === 'cutscene'
+    || mode === 'combat'
+    || mode === 'intro'
+    || isCinematicTimelineActive()
+  ) {
     return true;
   }
   return getInteractionState() === InteractionState.Dialogue;
@@ -51,7 +67,16 @@ function shouldBlockOrbit(): boolean {
 
 function shouldBlockZoom(): boolean {
   const { showStoryOverlay, currentNodeId, mode } = getGameSnapshot();
-  if (mode !== 'exploration' || isNarrativeMovementLocked(showStoryOverlay, currentNodeId ?? '')) return true;
+  // Session 12-B: block zoom during any active cinematic timeline. The
+  // `mode !== 'exploration'` check already covers the 'intro' phase (since
+  // intro is a distinct phase from exploration), so we only add the
+  // isCinematicTimelineActive() gate here for the timeline-active-but-mode-
+  // not-yet-cutscene race window.
+  if (
+    mode !== 'exploration'
+    || isNarrativeMovementLocked(showStoryOverlay, currentNodeId ?? '')
+    || isCinematicTimelineActive()
+  ) return true;
   return getInteractionState() === InteractionState.Dialogue;
 }
 

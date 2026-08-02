@@ -104,6 +104,18 @@ export function usePlayerLocomotionController({
   const cinematicActionRef = useRef<THREE.AnimationAction | null>(null);
   const prevCinematicClipRef = useRef<string | null>(null);
 
+  // Session 12-B: one-shot flag set when the blend tree transitions OUT of a
+  // cinematic clip (sitting/sleeping/talking/working) back to locomotion
+  // (idle/walk/run). While true, the locomotion weight ramp uses
+  // BLEND_CINEMATIC (6.5) instead of BLEND_DECEL (2.8) so it reaches ~95%
+  // in ~0.46s — matching the cinematic fadeOut (0.48s). Without this, the
+  // locomotion weights ramp at BLEND_DECEL=2.8 (0.8s to 95%), which is
+  // SLOWER than the cinematic fadeOut, creating a ~0.3s window where the
+  // total weight dips to ~0.55 → pose dip / T-pose bleed. Cleared once the
+  // locomotion total weight reaches ~0.95 (ramp essentially complete) or
+  // when a new cinematic clip starts (the entry branch below resets it).
+  const justExitedCinematicRef = useRef(false);
+
   // ── Weight tracking refs for blend tree ──
   const currentIdleWeightRef = useRef(1);
   const currentWalkWeightRef = useRef(0);
@@ -310,6 +322,11 @@ export function usePlayerLocomotionController({
         currentIdleWeightRef.current = 0;
         currentWalkWeightRef.current = 0;
         currentRunWeightRef.current = 0;
+        // Session 12-B: arm the fast-exit blend flag so the locomotion weight
+        // ramp uses BLEND_CINEMATIC (6.5) — matches the 0.48s cinematic
+        // fadeOut. Without this, the ramp uses BLEND_DECEL=2.8 (0.8s to 95%),
+        // leaving a ~0.3s window where total weight dips to ~0.55 → pose dip.
+        justExitedCinematicRef.current = true;
       }
 
       // ── Weight-based locomotion blend tree (idle / walk / run) ──
@@ -352,7 +369,16 @@ export function usePlayerLocomotionController({
       const targetIntensity = targetWalkWeight + targetRunWeight;
 
       let blendSpeed: number;
-      if (currentIntensity < targetIntensity - 0.01) {
+      if (justExitedCinematicRef.current) {
+        // Session 12-B: cinematic→locomotion exit. Use the fast cinematic
+        // blend speed so the locomotion weight ramp matches the 0.48s
+        // cinematic fadeOut (reaches ~95% in ~0.46s). Otherwise the ramp
+        // runs at BLEND_DECEL=2.8 (0.8s to 95%) — slower than the fadeOut —
+        // creating a ~0.3s total-weight dip (T-pose bleed risk). This branch
+        // takes priority over the accel/decel/walk↔run branches below; the
+        // flag is cleared once the ramp is essentially complete.
+        blendSpeed = BLEND_CINEMATIC;
+      } else if (currentIntensity < targetIntensity - 0.01) {
         // Accelerating (idle→walk or idle→run)
         blendSpeed = targetRunWeight > 0.5 ? BLEND_WALK_RUN : BLEND_ACCEL;
       } else if (currentIntensity > targetIntensity + 0.01) {
@@ -367,6 +393,24 @@ export function usePlayerLocomotionController({
         } else {
           // No significant change — maintain current weights with gentle blend
           blendSpeed = BLEND_DECEL;
+        }
+      }
+
+      // Session 12-B: clear the cinematic-exit flag once the locomotion total
+      // weight is essentially at target (≥0.95). This hands back to the normal
+      // accel/decel/walk↔run blend speeds for subsequent movement. The check
+      // is on the post-damp weights (computed below) — but reading the pre-damp
+      // values here is fine because once the ramp reaches 0.95 it stays there
+      // (the target is normalized to 1.0). Using a max-time fallback would also
+      // work, but the threshold check is tighter and matches the actual ramp
+      // completion regardless of frame rate.
+      if (justExitedCinematicRef.current) {
+        const totalLocomotionWeight =
+          currentIdleWeightRef.current +
+          currentWalkWeightRef.current +
+          currentRunWeightRef.current;
+        if (totalLocomotionWeight >= 0.95) {
+          justExitedCinematicRef.current = false;
         }
       }
 

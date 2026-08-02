@@ -21,6 +21,8 @@ export interface CinematicTimelineEvents {
     phaseIndex: number;
     lightCue?: 'neon_surge' | 'dim_hold' | 'warm_practical';
   };
-  /** Intro wake — emitted when handoff phase begins. */
-  'cinematic:intro_handoff': { timelineId: string };
+  // Session 12-B: removed the orphaned `cinematic:intro_handoff` event
+  // declaration — grep confirmed zero subscribers across the codebase. The
+  // emit in CinematicTimelineRunner was also removed. The handoff semantic
+  // is covered by `cinematic:timeline_phase` (phaseId) emitted above.
 }

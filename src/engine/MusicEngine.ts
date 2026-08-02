@@ -503,8 +503,14 @@ const SCENE_MUSIC_CONFIGS: Partial<Record<SceneId, SceneMusicConfig>> = {
     masterGain: 0.035,
   },
   volodka_corridor: {
-    scale: SCALES.major,
-    rootMidi: 58, // Bb3
+    // D1 (S12-D): natural_minor + D3 root matches street_night — the corridor
+    // is the sonic bridge between volodka_room (C-minor pentatonic) and the
+    // noir street bed (D natural minor). Was SCALES.major (Bb) which created
+    // mood whiplash against the noir_street musicMood label + brighter than
+    // either neighbor. masterGain nudged 0.025→0.022 so the transitional
+    // corridor bed never outweighs the destination room/street beds.
+    scale: SCALES.natural_minor,
+    rootMidi: 50, // D3 — same key as street_night
     padType: 'triangle',
     padFilterFreq: 450,
     padFilterQ: 1.0,
@@ -522,7 +528,7 @@ const SCENE_MUSIC_CONFIGS: Partial<Record<SceneId, SceneMusicConfig>> = {
     melodyGain: 0.004,
     melodyChance: 0.03,
     tempo: 65,
-    masterGain: 0.025,
+    masterGain: 0.022,
   },
   chk_forest_zorge: {
     scale: SCALES.g_minor_exotic,
@@ -842,8 +848,12 @@ class MusicEngine {
     // Stop current music (with fade out)
     this.stopMusic(1);
 
-    // Small delay to let fade-out complete, then start new
-    const startDelay = this.currentScene !== null ? 1100 : 0;
+    // Small delay to let fade-out complete, then start new.
+    // D5 (S12-D): startDelay = fadeOutMs - 100 = 1000 - 100 = 900ms. The new
+    // bed starts fading in 100ms BEFORE the old bed's 1s fade-out reaches zero,
+    // creating a true 100ms crossfade overlap instead of a 100ms silence gap
+    // (previous value was 1100ms = 100ms AFTER fade-out completed).
+    const startDelay = this.currentScene !== null ? 900 : 0;
 
     setTimeout(() => {
       // Guard: if another scene change happened since we started, abort

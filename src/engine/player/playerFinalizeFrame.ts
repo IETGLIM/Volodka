@@ -28,6 +28,25 @@ const ANIM_UPPER_THRESHOLD = 0.6;
  *  the boundary during rapid acceleration/deceleration cycles. */
 const ANIM_LOWER_THRESHOLD = 0.15;
 
+/**
+ * Session 12-B: module-level ref tracking the previous frame's
+ * `currentAnimRef.current` value, used to detect the idle→walk/run edge
+ * and fire an immediate first footstep on that transition. Without this,
+ * the first footstep after the player starts moving (e.g. after the intro
+ * wake cinematic ends) waits the full `BASE_FOOTSTEP_INTERVAL` (0.4s) —
+ * creating a "silent first step" where the walk animation starts immediately
+ * but the audio lags by 0.4s. Pre-saturating `footstepTimerRef` to
+ * `BASE_FOOTSTEP_INTERVAL` on the edge causes the next frame's `>=` check
+ * to fire immediately (regardless of the actual `stepInterval`, which is
+ * always ≤ `BASE_FOOTSTEP_INTERVAL`).
+ *
+ * Module-level is safe here — there is only one player instance, and the
+ * ref correctly tracks the edge across scene transitions (the player's
+ * `currentAnimRef` resets to 'idle' on remount, so the next walk start
+ * still fires the edge).
+ */
+let prevAnimForFootstep: string = 'idle';
+
 /** Animations, footsteps, position sync, ground enforce, DEV timing. */
 export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
   const scratch = deps.frameScratchRef.current;
@@ -102,6 +121,23 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
   }
 
   if ((isMoving || horizontalSpeed > 0.5) && deps.isGroundedRef.current) {
+    // Session 12-B: detect the idle→walk/run edge. When the player starts
+    // moving after being idle (e.g. after the intro wake cinematic ends +
+    // the player presses W), pre-saturate the footstep timer so the next
+    // frame's `>=` check fires a footstep immediately. Without this, the
+    // first step waits the full BASE_FOOTSTEP_INTERVAL (0.4s) while the
+    // walk animation starts immediately — creating a "silent first step".
+    // BASE_FOOTSTEP_INTERVAL is the maximum possible stepInterval (easedSpeed=0),
+    // so pre-saturating to it guarantees the `>=` check fires regardless of
+    // the actual easedSpeed-based stepInterval this frame.
+    const currentAnim = deps.currentAnimRef.current;
+    const wasIdle = prevAnimForFootstep === 'idle';
+    const isNowWalkOrRun = currentAnim === 'walk' || currentAnim === 'run';
+    if (wasIdle && isNowWalkOrRun) {
+      deps.footstepTimerRef.current = BASE_FOOTSTEP_INTERVAL;
+    }
+    prevAnimForFootstep = currentAnim;
+
     deps.footstepTimerRef.current += dt;
 
     // ── Session 9: Smooth speed-linked footstep frequency ──
@@ -136,6 +172,12 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
     }
   } else {
     deps.footstepTimerRef.current = 0;
+    // Session 12-B: keep prevAnimForFootstep in sync with currentAnimRef even
+    // when not moving, so the next idle→walk edge fires correctly. Without
+    // this, prevAnimForFootstep would stay 'walk' from the last moving frame
+    // and the next walk-start wouldn't be detected as an edge (no immediate
+    // first footstep).
+    prevAnimForFootstep = deps.currentAnimRef.current;
   }
 
   let finalPos = rb.translation();

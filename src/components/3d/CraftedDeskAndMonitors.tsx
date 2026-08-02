@@ -1,6 +1,6 @@
 /* Non-box desk / thin monitor slabs for Volodka room — kills cube kitbash interactables. */
 
-import { Suspense, type MutableRefObject } from 'react';
+import { Suspense, useMemo, type MutableRefObject } from 'react';
 import * as THREE from 'three';
 import { PolyHavenStandardMaterial } from './PolyHavenStandardMaterial';
 import {
@@ -8,6 +8,12 @@ import {
   getSharedCylinderGeometry,
   getSharedPlaneGeometry,
 } from '@/engine/three/moduleGeometryRegistry';
+import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
+import { useIsMobileVisual } from '@/hooks/use-mobile';
+import {
+  allowsSelectiveMeshPhysicalWet,
+  getWetGlassPhysicalParams,
+} from '@/engine/graphics/wetStreetScenes';
 
 const MONITOR_EMISSIVE = new THREE.Color('#5a9a88');
 
@@ -62,6 +68,16 @@ export function ThinMonitor({
   groupRef,
   alertLed,
 }: ThinMonitorProps) {
+  // Compute CRT wet-glass gate internally — keeps the change self-contained in
+  // this file (VolodkaRoomVisual.tsx is owned by another agent for the light
+  // dedupe). volodka_room is already in SELECTIVE_PHYSICAL_WET_SCENE_IDS.
+  const { selectedPreset } = useGraphicsQuality();
+  const coarsePointer = useIsMobileVisual();
+  const usePhysicalGlass = allowsSelectiveMeshPhysicalWet('volodka_room', selectedPreset, {
+    coarsePointer,
+  });
+  const crtGlass = useMemo(() => getWetGlassPhysicalParams('crtTerminalGlass'), []);
+
   // Stand foot at -0.29 relative → group.y = surfaceY + 0.29 keeps the disc on the desk.
   const groupY = surfaceY + 0.29;
   return (
@@ -76,16 +92,35 @@ export function ThinMonitor({
         <meshStandardMaterial color="#0a0c10" roughness={0.7} metalness={0.25} />
       </mesh>
       <mesh position={[0, 0, 0.01]} geometry={getSharedPlaneGeometry(0.46, 0.26)} renderOrder={2}>
-        <meshStandardMaterial
-          map={tex}
-          emissive={MONITOR_EMISSIVE}
-          emissiveMap={tex}
-          emissiveIntensity={0.85}
-          toneMapped
-          depthWrite={false}
-          roughness={0.35}
-          metalness={0.05}
-        />
+        {usePhysicalGlass ? (
+          <meshPhysicalMaterial
+            map={tex}
+            emissive={MONITOR_EMISSIVE}
+            emissiveMap={tex}
+            emissiveIntensity={0.85}
+            toneMapped
+            depthWrite={false}
+            transparent
+            roughness={crtGlass.roughness}
+            metalness={crtGlass.metalness}
+            transmission={crtGlass.transmission}
+            thickness={crtGlass.thickness}
+            clearcoat={crtGlass.clearcoat}
+            clearcoatRoughness={crtGlass.clearcoatRoughness}
+            opacity={crtGlass.opacity}
+          />
+        ) : (
+          <meshStandardMaterial
+            map={tex}
+            emissive={MONITOR_EMISSIVE}
+            emissiveMap={tex}
+            emissiveIntensity={0.85}
+            toneMapped
+            depthWrite={false}
+            roughness={0.35}
+            metalness={0.05}
+          />
+        )}
       </mesh>
       {alertLed ? (
         <mesh position={[0.21, 0.12, 0.014]} geometry={new THREE.CircleGeometry(0.01, 8)} material={alertLed} />

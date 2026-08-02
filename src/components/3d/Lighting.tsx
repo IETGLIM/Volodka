@@ -358,7 +358,7 @@ const SCENE_ACCENT_LIGHTS: Record<string, AccentLight[]> = {
   ],
   volodka_room: [
     { position: [1.2, 1.4, -2.5], color: '#5a9a88', intensity: 0.75, distance: 5.5, animated: 'cold_pulse' },  // monitor phosphor (filmic, not candy)
-    { position: [-0.5, 1.8, 0.5], color: '#ffcc88', intensity: 0.72, distance: 4.5, animated: 'candle_flicker', shadowCaster: true }, // bedside lamp
+    { position: [1.98, 1.6, 2.16], color: '#ffcc88', intensity: 0.72, distance: 4.5, animated: 'candle_flicker', shadowCaster: true }, // bedside lamp (above the bedside nightstand GLB at [1.98, 0.52, 2.16])
     { position: [0, 0.3, -2.5], color: '#ff9944', intensity: 0.35, distance: 3 },     // under-desk warm glow
     { position: [2.3, 0.2, 1.0], color: '#334488', intensity: 0.3, distance: 4 },    // floor-level cold bounce from window wall
   ],

@@ -86,11 +86,13 @@ export function resolveHeroHdriPath(sceneId: string): string | null {
     case 'rooftop_edge':
     case 'abandoned_factory':
       return POLYHAVEN_HDRI.abandoned_parking_1k;
-    case 'volodka_room':
-    case 'volodka_corridor':
-    case 'home_evening':
-    case 'solnysh_room':
-    case 'zarema_albert_room':
+    // Apartment / interior scenes intentionally return null here. Poly Haven's
+    // LEBOMBO is a South African nature grassland HDRI — sampling it as IBL
+    // tinted every apartment surface with green-grass light. Returning null
+    // falls through to BakedOrPresetFallback → resolveHeroEnvKind → the
+    // authored `warm_apartment` PMREM bake (warm amber lamp + monitor glow).
+    // Library/office scenes keep lebombo as a cooler neutral env (their
+    // resolveHeroEnvKind default 'cool_lobby' would otherwise dominate).
     case 'library_day':
     case 'office_day':
       return POLYHAVEN_HDRI.lebombo_1k;
