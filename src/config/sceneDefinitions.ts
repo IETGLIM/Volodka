@@ -1173,15 +1173,14 @@ export const river_pier_def: SceneDefinition = {
     { type: 'cuboidObstacle', size: [0.35, 0.25, 0.35], position: [0.4, 0.25, -3.6], footstepMaterial: 'wood' },
     // Old boat hull on the bank
     { type: 'cuboidObstacle', size: [1.4, 0.4, 0.5], position: [-6, 0.4, 3], footstepMaterial: 'wood' },
-    // Pier railing posts (south edge over water)
-    { type: 'cuboidObstacle', size: [6.5, 0.5, 0.1], position: [0, 0.5, -8.5], footstepMaterial: 'metal' },
+    // Pier railing leaves a 2 m opening at the authored fishing spot (x 3.5..5.5).
+    { type: 'cuboidObstacle', size: [5.0, 0.5, 0.1], position: [-1.5, 0.5, -8.5], footstepMaterial: 'metal' },
+    { type: 'cuboidObstacle', size: [0.5, 0.5, 0.1], position: [6.0, 0.5, -8.5], footstepMaterial: 'metal' },
   ],
   ceilings: [],
   visualComponent: 'RiverPierVisual',
   lights: [
-    { position: [0, 1.4, -2], intensity: 2.8, color: '#ff8833', distance: 12 },
-    { position: [-4, 2.6, -4], intensity: 0.8, color: '#ffd966', distance: 8 },
-    { position: [4, 2.6, -4], intensity: 0.8, color: '#ffd966', distance: 8 },
+    // Cold river key only; warm practicals are owned by SceneAccentLights.
     { position: [0, 6, -14], intensity: 0.9, color: '#8a9ab0', distance: 30 },
   ],
   ambientColor: '#2a3448',

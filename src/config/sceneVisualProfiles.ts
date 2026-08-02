@@ -119,11 +119,13 @@ const PROFILES: Partial<Record<SceneId, SceneVisualProfile>> = {
   river_pier: {
     ...STANDARD_PROFILE,
     forceFullPostFx: true,
-    bloomIntensityScale: 1.14,
+    // Fire/string bulbs remain focal without washing the moonlit water in bloom.
+    bloomIntensityScale: 0.96,
     enhancedAmbientOcclusion: true,
     aoIntensity: 2.4,
     aoRadius: 0.48,
     shadowMapScale: 1.15,
+    detailDistanceScale: 1.08,
     ambientNpcCountBoost: 1,
     npcLodDistanceScale: 1.1,
   },

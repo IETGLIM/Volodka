@@ -424,20 +424,10 @@ const SCENE_ENV_ANIMATIONS: Partial<Record<SceneId, EnvAnimation[]>> = {
     },
   ],
 
-  river_pier: [
-    {
-      id: 'barrel_fire_flicker',
-      type: 'light_flicker',
-      position: [0, 1.4, -2],
-      config: { minIntensity: 1.8, maxIntensity: 3.2, flickerRate: 0.14 },
-    },
-    {
-      id: 'string_lights_sway',
-      type: 'curtain_sway',
-      position: [0, 2.6, -4],
-      config: { amplitude: 0.05, frequency: 0.3, axis: 0 },
-    },
-  ],
+  // RiverPierVisual owns the visible fire/string/reed motion. SceneAccentLights owns
+  // the single shadow-casting fire practical; avoid a second point light and a no-op
+  // invisible sway anchor in EnvironmentalAnimator.
+  river_pier: [],
 };
 
 // ─── Public API ───
