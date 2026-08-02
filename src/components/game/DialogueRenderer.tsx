@@ -3,6 +3,7 @@
 */
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import * as THREE from 'three';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FastForward, History } from 'lucide-react';
@@ -24,6 +25,8 @@ import { closeNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
 import { requestSceneTransitionForStoryNode } from '@/engine/scene/sceneTransition';
 import { getGameStore as _getGameStore } from '@/store/gameStore';
 import { getLiveCurrentSceneId } from '@/store/stores/explorationStore';
+import { getNPCGroup } from '@/engine/interaction/npcRegistry';
+import { getGameSnapshot } from '@/engine/GameActionDispatcher';
 import type {
   DialogueChoice,
   StoryEffect,
@@ -111,6 +114,73 @@ function getChoiceImpact(effects: StoryEffect[] | undefined, npcId?: string): Ch
     }
   }
   return { karma, energy, stress, npcRelation, skills };
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Spatial bark — positional procedural voice for NPCs
+   ══════════════════════════════════════════════════════════════ */
+
+/** Pre-allocated temp for NPC world position reads (avoid alloc per bark). */
+const _barkNpcPos = new THREE.Vector3();
+
+/** Per-speaker debounce: skip barks within 1.5s of the last bark from the
+ *  same speaker. Prevents spamming during rapid line transitions (e.g.
+ *  typewriter skip + advance). Keyed by npcId (or speaker string fallback). */
+const SPATIAL_BARK_DEBOUNCE_MS = 1500;
+const _barkLastSpokenAt = new Map<string, number>();
+
+/**
+ * Resolve the 3D world position of the current speaker for spatial bark.
+ * Falls back to the player's position when the NPC group isn't registered
+ * (e.g. mid-scene-transition, cutscene-only speakers); falls back to world
+ * origin only when the player position is also unavailable.
+ *
+ * Returns null only when both lookups fail catastrophically — the caller
+ * should treat null as "skip the bark" rather than play at origin.
+ */
+function getCurrentSpeakerPosition(npcId: string | null): [number, number, number] | null {
+  if (npcId) {
+    const group = getNPCGroup(npcId);
+    if (group) {
+      group.getWorldPosition(_barkNpcPos);
+      return [_barkNpcPos.x, _barkNpcPos.y, _barkNpcPos.z];
+    }
+  }
+  try {
+    const pp = getGameSnapshot().exploration.playerPosition;
+    if (pp && Number.isFinite(pp[0]) && Number.isFinite(pp[1]) && Number.isFinite(pp[2])) {
+      return [pp[0], pp[1], pp[2]];
+    }
+  } catch {
+    /* snapshot unavailable during early boot */
+  }
+  return null;
+}
+
+/**
+ * Emit a spatial bark for the current speaker, with debounce + safe fallback.
+ * Caller passes the resolved dialogue text (used by AudioEngine to vary the
+ * bark's formant frequency per line). Missing position is non-fatal — the
+ * bark is simply skipped (no positional anchor → silent rather than origin).
+ */
+function playSpatialBarkForSpeaker(
+  npcId: string | null,
+  speakerLabel: string | null,
+  text: string,
+): void {
+  const debounceKey = npcId ?? speakerLabel ?? '_unknown';
+  const now = Date.now();
+  const last = _barkLastSpokenAt.get(debounceKey);
+  if (last !== undefined && now - last < SPATIAL_BARK_DEBOUNCE_MS) return;
+  _barkLastSpokenAt.set(debounceKey, now);
+
+  try {
+    const pos = getCurrentSpeakerPosition(npcId);
+    if (!pos) return; // No positional anchor — skip rather than play at origin.
+    audioEngine.playSpatialBark(text ?? '', pos);
+  } catch {
+    /* Missing position must never crash dialogue. */
+  }
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -379,8 +449,21 @@ export function DialogueRenderer() {
       return;
     }
     playVoiceLineForNode(node.id);
+    // Spatial bark — gives NPCs a positional procedural voice. Replaces the
+    // silent 404 fallback (public/audio/vo/*.ogg doesn't exist) with a
+    // formant-filtered tone anchored at the NPC's world position. PannerNode
+    // in AudioEngine handles distance + cone attenuation; AudioListener (wired
+    // in applyCameraFrame) tracks the camera so the bark pans as the player
+    // turns. Debounced per-speaker (1.5s) inside playSpatialBarkForSpeaker.
+    // playVoiceLineForNode above is kept as a fallback for when real VO ships.
+    const speakerNpcId = node.speakerId
+      ?? (node.speaker
+        ? (resolveNpcIdFromSpeaker(node.speaker, node.speakerId)
+          ?? node.speaker.toLowerCase().replace(/\s+/g, '_'))
+        : null);
+    playSpatialBarkForSpeaker(speakerNpcId, node.speaker ?? null, resolvedText);
     return () => stopVoiceLinePlayback();
-  }, [isOpen, node?.id]);
+  }, [isOpen, node?.id, node?.speaker, node?.speakerId, resolvedText]);
 
   // Cleanup skill-check banner timer on unmount
   useEffect(() => () => {

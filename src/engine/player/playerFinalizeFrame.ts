@@ -95,6 +95,10 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
       deps.currentAnimRef.current = 'idle';
     }
     // Between thresholds while locomoting: keep current state unchanged
+
+    // Publish the actual horizontal speed for the continuous walk↔run blend.
+    // Animation-side only — KCC physics speed itself stays binary per invariants.
+    deps.currentHSpeedRef.current = horizontalSpeed;
   }
 
   if ((isMoving || horizontalSpeed > 0.5) && deps.isGroundedRef.current) {

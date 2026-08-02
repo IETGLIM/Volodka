@@ -60,6 +60,13 @@ export interface PlayerMovementDeps {
   jumpCooldownRef: React.MutableRefObject<number>;
   footstepTimerRef: React.MutableRefObject<number>;
   currentAnimRef: React.MutableRefObject<string>;
+  /**
+   * Latest player horizontal speed (m/s), written by `finalizePlayerFrame`
+   * each post-physics tick. Read by `usePlayerLocomotionController` to drive
+   * the continuous walk↔run AnimationAction blend via smoothstep.
+   * Animation-side only — does NOT influence KCC physics velocity.
+   */
+  currentHSpeedRef: React.MutableRefObject<number>;
   stuckLockTimerRef: React.MutableRefObject<number>;
   prevLocomotionLockedRef: React.MutableRefObject<boolean>;
   warmupTimerRef: React.MutableRefObject<number>;

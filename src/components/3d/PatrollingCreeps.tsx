@@ -340,7 +340,12 @@ function Creep({
         chaseFootstepTimerRef.current -= delta;
         if (chaseFootstepTimerRef.current <= 0) {
           chaseFootstepTimerRef.current = CREEP_CHASE_FOOTSTEP_S;
-          audioEngine.playFootstep('metal', { sourceId: `creep_${def.id}` });
+          // Spatial chase footstep — anchor at the creep's current position so
+          // the player hears directional pursuit. Replaces the previous
+          // non-spatial playFootstep('metal') call. Cadence throttle
+          // (CREEP_CHASE_FOOTSTEP_S = 0.48s) prevents voice spam; the old
+          // sourceId-based overlap prevention is no longer needed.
+          audioEngine.playSpatialSfx('metal', [pos.x, pos.y, pos.z]);
         }
 
         if (playerDist > LOSE_AGGRO_DISTANCE) {

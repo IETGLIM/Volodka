@@ -56,7 +56,7 @@ export function HUDBootSequence() {
           initial={{ opacity: 1 }}
           animate={{ opacity: phase === 'fading' ? 0 : 1 }}
           transition={{ duration: FADE_OUT_DURATION }}
-          className="absolute inset-0 z-[100] flex items-end justify-start p-6 sm:p-10 pointer-events-none"
+          className="absolute inset-0 z-[100] flex items-end justify-start p-6 sm:p-10 pointer-events-none hud-filmic-scanline"
           style={{ background: 'radial-gradient(ellipse at 0% 100%, rgba(0,20,30,0.6) 0%, transparent 60%)' }}
         >
           <div className="flex flex-col gap-1.5 hud-filmic-boot-stagger">

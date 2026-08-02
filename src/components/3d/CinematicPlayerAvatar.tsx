@@ -12,6 +12,8 @@ import { CesiumPlayerModel } from './CesiumPlayerModel';
 interface CinematicPlayerAvatarProps {
   groupRef?: RefObject<THREE.Group | null>;
   currentAnimRef: MutableRefObject<string>;
+  /** Drives the continuous walk↔run blend. Optional for non-physics mounts. */
+  currentHSpeedRef?: MutableRefObject<number>;
   rotationRef: MutableRefObject<number>;
 }
 
@@ -24,6 +26,7 @@ function karmaGlowFromValue(karma: number): string {
 export function CinematicPlayerAvatar({
   groupRef,
   currentAnimRef,
+  currentHSpeedRef,
   rotationRef,
 }: CinematicPlayerAvatarProps) {
   const sceneId = useCurrentSceneId();
@@ -36,6 +39,7 @@ export function CinematicPlayerAvatar({
         modelScale={modelScale}
         karmaGlow={karmaGlowFromValue(karma)}
         currentAnimRef={currentAnimRef}
+        currentHSpeedRef={currentHSpeedRef}
         rotationRef={rotationRef}
       />
     </group>

@@ -21,6 +21,7 @@ import {
   type MusicIntensityLayer,
 } from './audio/musicIntensityLayers';
 import { getGameSnapshot } from '@/engine/GameActionDispatcher';
+import type { ActMoodOverride } from '@/config/proceduralAudioCatalog';
 
 /* ──────────────────── Helpers ──────────────────── */
 
@@ -653,6 +654,16 @@ class MusicEngine {
   private intensityLayer: MusicIntensityLayer = 'exploration';
   private disposed = false;
   private sceneGeneration = 0;
+  /** Most recently applied ActMoodOverride mood (or null when no override is layered). */
+  private actMoodOverrideActive: string | null = null;
+  /**
+   * Most recently requested act-mood override. Stored so it can be re-applied
+   * when the next scene bed finishes starting (playSceneMusic defers bed start
+   * by ~1.1s for crossfade — applyActMoodOverride may fire on the dying bed).
+   * Cleared in stopMusic so a new scene starts with a clean slate unless the
+   * controller re-applies an override on enter.
+   */
+  private pendingActMoodOverride: ActMoodOverride | null = null;
 
   // Current state
   private currentScene: string | null = null;
@@ -746,6 +757,60 @@ class MusicEngine {
     if (this.currentConfig) {
       this.rescheduleChordChange(this.currentConfig);
     }
+  }
+
+  /**
+   * Apply a per-act mood override on top of the currently playing scene bed.
+   * Smoothly ramps the pad low-pass filter cutoff and reverb wet/dry mix over
+   * ~1.5s so the same scene sounds subtly different as the story darkens.
+   *
+   * Stores the override on `pendingActMoodOverride` so it can be re-applied
+   * when the next scene bed finishes starting (playSceneMusic defers bed start
+   * by ~1.1s for crossfade — this call may land on the dying previous bed).
+   *
+   * No-op when the AudioContext is unavailable. Safe to call repeatedly.
+   */
+  applyActMoodOverride(override: ActMoodOverride): void {
+    if (this.disposed) return;
+    // Always remember the latest override so the next bed start re-applies it.
+    this.pendingActMoodOverride = override;
+    this.actMoodOverrideActive = override.mood ?? null;
+
+    const ctx = this.ctx;
+    const filter = this.padFilter;
+    const convolverGain = this.padConvolverGain;
+    const dryGain = this.padDryGain;
+    if (!ctx || !filter || !convolverGain || !dryGain) return;
+
+    const now = ctx.currentTime;
+    // setTargetAtTime reaches ~63% of the delta in one timeConstant.
+    // 0.5s timeConstant ≈ 1.5s to settle within ~5% of target — matches the
+    // 1.5s ramp duration used by other mood transitions in this engine.
+    const RAMP_TAU = 0.5;
+
+    try {
+      // Clamp to a safe positive cutoff (BiquadFilter frequency must be > 0).
+      const targetCutoff = Number.isFinite(override.filterCutoff) && override.filterCutoff > 0
+        ? override.filterCutoff
+        : filter.frequency.value;
+      filter.frequency.setTargetAtTime(targetCutoff, now, RAMP_TAU);
+    } catch {
+      /* AudioParam may be invalidated mid-stop */
+    }
+
+    const clampedMix = Math.max(0, Math.min(1,
+      Number.isFinite(override.reverbMix) ? override.reverbMix : convolverGain.gain.value));
+    try {
+      convolverGain.gain.setTargetAtTime(clampedMix, now, RAMP_TAU);
+    } catch { /* ignore */ }
+    try {
+      dryGain.gain.setTargetAtTime(1 - clampedMix, now, RAMP_TAU);
+    } catch { /* ignore */ }
+  }
+
+  /** Returns the most recently applied act-mood override mood, if any. */
+  getActMoodOverrideMood(): string | null {
+    return this.actMoodOverrideActive;
   }
 
   /* ═══════════════════ PUBLIC API ═══════════════════ */
@@ -868,6 +933,10 @@ class MusicEngine {
     this.currentScene = null;
     this.currentConfig = null;
     this.currentChordDegree = 0;
+    // Clear any act-mood override so the next scene bed starts un-tinted.
+    // SceneAudioController.onSceneEnter re-applies the appropriate override.
+    this.actMoodOverrideActive = null;
+    this.pendingActMoodOverride = null;
   }
 
   /**
@@ -943,6 +1012,27 @@ class MusicEngine {
     this.padFilter.type = 'lowpass';
     this.padFilter.frequency.value = config.padFilterFreq;
     this.padFilter.Q.value = config.padFilterQ;
+
+    // ── Re-apply any pending act-mood override on the fresh nodes ──
+    // (SceneAudioController.onSceneEnter calls applyActMoodOverride immediately
+    // after playSceneMusic, but playSceneMusic defers bed start by ~1.1s for
+    // crossfade. The override is stored on `pendingActMoodOverride` and applied
+    // here once the new bed's filter + gains exist. Initial config values
+    // become the from-value of the 1.5s setTargetAtTime ramp — inaudible
+    // because the master gain is simultaneously fading in from 0.)
+    if (this.pendingActMoodOverride) {
+      const o = this.pendingActMoodOverride;
+      try {
+        const cutoff = Number.isFinite(o.filterCutoff) && o.filterCutoff > 0
+          ? o.filterCutoff
+          : config.padFilterFreq;
+        this.padFilter.frequency.setTargetAtTime(cutoff, now, 0.5);
+      } catch { /* ignore */ }
+      const mix = Math.max(0, Math.min(1,
+        Number.isFinite(o.reverbMix) ? o.reverbMix : config.padReverbMix));
+      try { this.padConvolverGain.gain.setTargetAtTime(mix, now, 0.5); } catch { /* ignore */ }
+      try { this.padDryGain.gain.setTargetAtTime(1 - mix, now, 0.5); } catch { /* ignore */ }
+    }
 
     // ── Pad LFO on filter ──
     this.padLfo = ctx.createOscillator();

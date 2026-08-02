@@ -56,6 +56,8 @@ export interface PhysicsPlayerMovementRefs {
   rigidBodyRef: React.MutableRefObject<RapierRigidBody | null>;
   capsuleColliderRef: React.MutableRefObject<RapierCollider | null>;
   currentAnimRef: React.MutableRefObject<string>;
+  /** Latest horizontal speed (m/s). Drives the continuous walk↔run blend. */
+  currentHSpeedRef: React.MutableRefObject<number>;
 }
 
 export function usePhysicsPlayerMovement({
@@ -78,6 +80,10 @@ export function usePhysicsPlayerMovement({
   const jumpCooldownRef = useRef(0);
   const footstepTimerRef = useRef(0);
   const currentAnimRef = useRef<string>('idle');
+  // Horizontal speed scratch for the continuous walk↔run animation blend.
+  // Written by finalizePlayerFrame each post-physics tick; read by
+  // usePlayerLocomotionController via the avatar prop chain.
+  const currentHSpeedRef = useRef(0);
   const prevSceneIdRef = useRef(sceneId);
   const currentFloorMaterialRef = useRef<string>('default');
   const stuckLockTimerRef = useRef(0);
@@ -204,6 +210,7 @@ export function usePhysicsPlayerMovement({
     jumpCooldownRef,
     footstepTimerRef,
     currentAnimRef,
+    currentHSpeedRef,
     stuckLockTimerRef,
     prevLocomotionLockedRef,
     warmupTimerRef,
@@ -238,6 +245,7 @@ export function usePhysicsPlayerMovement({
       noMovementFramesRef.current = 0;
       kccHealthyFramesRef.current = 0;
       currentAnimRef.current = 'idle';
+      currentHSpeedRef.current = 0;
       if (moveBlendRef) moveBlendRef.current = 0;
 
       // Reset idle monologue accumulator so a long load doesn't trigger an
@@ -269,6 +277,7 @@ export function usePhysicsPlayerMovement({
       prevSceneIdRef.current = enteredScene;
       jumpCooldownRef.current = 0;
       currentAnimRef.current = 'idle';
+      currentHSpeedRef.current = 0;
       if (moveBlendRef) moveBlendRef.current = 0;
       noMovementFramesRef.current = 0;
       velocityRef.current.set(0, 0, 0);
@@ -396,5 +405,5 @@ export function usePhysicsPlayerMovement({
     idleMonologueThresholdRef.current = sampleIdleMonologueThreshold();
   }, { label: 'PhysicsPlayerFinalize', phase: 'post_physics', enabled: !physicsPaused });
 
-  return { rigidBodyRef, capsuleColliderRef, currentAnimRef };
+  return { rigidBodyRef, capsuleColliderRef, currentAnimRef, currentHSpeedRef };
 }

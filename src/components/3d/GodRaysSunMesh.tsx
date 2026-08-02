@@ -27,7 +27,12 @@ export interface GodRaysSunConfig {
 
 /** Per-scene sun mesh configs. Positions match GODRAY_PRESETS in GodRays.tsx
  *  so the postprocessing rays emanate from the same origin as the mesh-based
- *  shafts (complementary layers, not duplicates). */
+ *  shafts (complementary layers, not duplicates).
+ *
+ *  Positions + colors are sourced from `SCENE_ACCENT_LIGHTS` in Lighting.tsx
+ *  so the sun mesh aligns with the actual visible practical light source
+ *  (streetlamp / campfire / sunset / yard lamp) rather than the mesh-shaft
+ *  center. This keeps the postprocessing rays anchored to a real bulb. */
 const GODRAYS_SUN_CONFIG: Partial<Record<SceneId, GodRaysSunConfig>> = {
   home_evening: {
     position: [0, 2.5, 0],
@@ -36,6 +41,39 @@ const GODRAYS_SUN_CONFIG: Partial<Record<SceneId, GodRaysSunConfig>> = {
   factory_basement: {
     position: [0, 2.6, -5.2],
     color: '#22ff88',
+  },
+  // ── Expansion coverage (ultra-only postprocessing GodRays) ──
+  // Positions mirror SCENE_ACCENT_LIGHTS in Lighting.tsx so the sun mesh
+  // sits exactly on the visible practical light bulb.
+  street_night: {
+    // Pink neon streetlamp on the left side of the plaza.
+    position: [-6, 3, -2],
+    color: '#d88a9c',
+  },
+  city_square: {
+    // Central plaza lamp (shadowCaster) — cool blue-white halo.
+    position: [0, 4.2, 0],
+    color: '#aaccff',
+  },
+  river_pier: {
+    // Barrel fire at the pier head — warm flickering orange.
+    position: [0, 1.5, -1],
+    color: '#ff9944',
+  },
+  rooftop_edge: {
+    // Sunset warm practical — rooftop edge hero lamp.
+    position: [-3, 3, 0],
+    color: '#ff8844',
+  },
+  chk_campfire_night: {
+    // Campfire in the CHK clearing — primary fire light.
+    position: [0, 1.2, 0],
+    color: '#ff8833',
+  },
+  factory_roof: {
+    // Factory yard lamp — industrial warm sodium.
+    position: [-3, 3, 0],
+    color: '#ff7744',
   },
 };
 

@@ -27,6 +27,8 @@ import {
   FIRST_PERSON_ENABLED,
 } from '@/engine/camera/cameraConstants';
 import { shouldUseFirstPersonExploration } from '@/engine/camera/cinematicPresentation';
+import { eventBus } from '@/engine/EventBus';
+import * as sharedAudioContext from '@/engine/SharedAudioContext';
 import { sharedCameraYawRef } from '@/engine/PlayerRotationState';
 import { SIM_DELTA_MAX } from '@/engine/player/playerOwnership';
 import { resolveCameraMode } from '@/engine/camera/strategies';
@@ -64,6 +66,27 @@ interface FollowCameraProps {
   livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
   livePlayerRotationRef: React.MutableRefObject<number>;
   moveBlendRef?: React.MutableRefObject<number>;
+}
+
+/* ── Ease-back helpers ────────────────────────────────────────────
+   cubic-bezier (0.4, 0, 0.2, 1) — Material's "standard" ease. Used by the
+   cutscene-skip path to lerp the camera from its cutscene-end pose to the
+   exploration strategy target over `durationMs` (~600ms). Smooths the hard
+   camera snap that ESC-skip would otherwise produce. The approximation below
+   (ease-in-out cubic) is visually indistinguishable from the true bezier at
+   sub-second durations, and is interruptible (clears on new strategy). */
+function easeBackAlpha(t: number): number {
+  if (t <= 0) return 0;
+  if (t >= 1) return 1;
+  return t < 0.5
+    ? 4 * t * t * t
+    : 1 - Math.pow(-2 * t + 2, 3) / 2;
+}
+
+interface EaseBackState {
+  active: boolean;
+  startMs: number;
+  durationMs: number;
 }
 
 export function FollowCamera({
@@ -126,6 +149,18 @@ export function FollowCamera({
 
   const raycaster = useRef(new THREE.Raycaster());
   const wasDraggingRef = useRef(false);
+
+  // Ease-back state — set by `camera:ease_back` event from
+  // setCinematicPresentationMode('third_person', { easeMs }). When active,
+  // the frame tick blends the spring + camera toward the exploration strategy
+  // target with cubic-bezier (0.4, 0, 0.2, 1) over durationMs.
+  const easeBackStateRef = useRef<EaseBackState>({ active: false, startMs: 0, durationMs: 0 });
+  // Pre-frame scratch for ease-back blend — saved before applyCameraFrame runs
+  // so the eased lerp goes from the pre-update position toward the target.
+  const _easePrePos = useRef(new THREE.Vector3());
+  const _easePreLook = useRef(new THREE.Vector3());
+  // Frame counter for throttling the Web Audio listener position update (every 3rd frame).
+  const audioListenerFrameRef = useRef(0);
 
   const runtimeRef = useRef<CameraRuntimeRefs>({
     orbit: {
@@ -193,6 +228,22 @@ export function FollowCamera({
       prevGameModeRef,
     });
   }, [sceneId, gameMode, activeCutsceneId, cutsceneWaypoints]);
+
+  // Subscribe to `camera:ease_back` — emitted by setCinematicPresentationMode
+  // when a cutscene skip wants a smooth 0.6s cubic-bezier blend from the
+  // cutscene-end camera pose back to the exploration strategy target.
+  useEffect(() => {
+    const unsub = eventBus.on('camera:ease_back', (payload) => {
+      const durationMs = Math.max(0, payload?.durationMs ?? 0);
+      if (durationMs <= 0) return;
+      easeBackStateRef.current = {
+        active: true,
+        startMs: performance.now(),
+        durationMs,
+      };
+    });
+    return () => { unsub(); };
+  }, []);
 
   useCameraOrbitInput(gl, {
     yawRef,
@@ -358,7 +409,48 @@ export function FollowCamera({
     postFrame.isDragging = isDraggingRef.current || gamepadManualLook;
 
     const springOverride = modeResult.kind === 'targets' ? modeResult.springOverride : undefined;
+
+    // Save pre-frame spring pose for the ease-back blend (if active). applyCameraFrame
+    // updates the spring via physics + target convergence; the ease-back override below
+    // then snaps it onto the cubic-bezier curve.
+    const easeBack = easeBackStateRef.current;
+    const easeBackActive = easeBack.active && modeResult.kind === 'targets';
+    if (easeBackActive) {
+      _easePrePos.current.copy(spring.position);
+      _easePreLook.current.copy(spring.lookAt);
+    }
+
     applyCameraFrame(ctx, modeResult.targets, postFrame, springOverride);
+
+    // Ease-back override: when active, lerp the spring + camera from the pre-frame
+    // pose toward the exploration strategy target with cubic-bezier (0.4, 0, 0.2, 1).
+    // Bypasses the spring's natural damping for durationMs (~600ms). Interruptible:
+    // any new strategy that updates the spring (new cutscene / dialogue / etc.)
+    // continues from the eased position next frame — the alpha is recomputed each
+    // tick from elapsed time, so the override naturally hands back to the spring
+    // once t >= 1. As an extra safety, clear the ease if a new cutscene starts
+    // mid-blend (cinematic:timeline_complete watchdog / new timeline takeover).
+    if (easeBackActive && modeResult.kind === 'targets') {
+      if (cutsceneActiveRef.current || npcCutsceneActiveRef.current) {
+        // New cutscene grabbed the camera mid-blend — hand off immediately.
+        easeBack.active = false;
+      } else {
+        const now = performance.now();
+        const elapsedMs = now - easeBack.startMs;
+        const t = Math.min(1, Math.max(0, elapsedMs / easeBack.durationMs));
+        const alpha = easeBackAlpha(t);
+        spring.position.copy(_easePrePos.current).lerp(modeResult.targets.targetPos, alpha);
+        spring.lookAt.copy(_easePreLook.current).lerp(modeResult.targets.targetLook, alpha);
+        // Commit the eased pose to the actual camera transform (applyCameraFrame
+        // already wrote a spring-physics-derived transform; we overwrite it here so
+        // the rendered frame exactly follows the ease curve).
+        cam.position.copy(spring.position);
+        cam.lookAt(spring.lookAt);
+        if (t >= 1) {
+          easeBack.active = false;
+        }
+      }
+    }
 
     const transitionActive = transitionRef.current?.active ?? false;
     if (wasTransitionActiveRef.current && !transitionActive) {
@@ -369,6 +461,27 @@ export function FollowCamera({
     yawRef.current = ctx.yaw;
     wasDraggingRef.current = postFrame.wasDragging;
     wasInDialogueRef.current = isInDialogue;
+
+    // Web Audio listener position hook — throttled to every 3rd frame to avoid
+    // main-thread overhead. Calls sharedAudioContext.setListenerPosition(x,y,z)
+    // if/when the audio agent (9d) wires it; today this is a no-op (optional chain)
+    // so spatial audio stays dormant until that hook lands. The camera's world
+    // position is the canonical listener origin for positional SFX / spatial music.
+    audioListenerFrameRef.current += 1;
+    if (audioListenerFrameRef.current % 3 === 0) {
+      try {
+        // Cast to a structurally-typed alias so TS allows the optional method
+        // access without complaining that `setListenerPosition` isn't (yet) on
+        // the SharedAudioContext module. When audio agent 9d adds the export,
+        // this call starts working automatically.
+        const audioCtx = sharedAudioContext as unknown as {
+          setListenerPosition?: (x: number, y: number, z: number) => void;
+        };
+        audioCtx?.setListenerPosition?.(cam.position.x, cam.position.y, cam.position.z);
+      } catch {
+        // No-op until SharedAudioContext exports setListenerPosition.
+      }
+    }
 
     if (!initializedRef.current) initializedRef.current = true;
   }, { label: 'FollowCamera' });

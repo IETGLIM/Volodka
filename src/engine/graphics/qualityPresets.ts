@@ -416,12 +416,18 @@ export function formatQualityPresetDetailRu(
   if (glbCapable) {
     hints.push('Уникальные аватары (RPM)');
   }
-  // Reflector wet street: medium+; MeshPhysical glass/puddle accents: high/ultra only
-  // (mirrors qualityFeatureGates — never advertise heavy features on auto).
-  if (selectedPreset === 'ultra' || selectedPreset === 'high') {
-    hints.push('Мокрые отражения + MeshPhysical акценты');
+  // Reflector wet street: medium+; MeshPhysical glass/puddle accents: high/ultra only.
+  // Ultra gets the SSR tier (1024-res planar reflector + anisotropic streak blur);
+  // high stays on the basic 384-res planar path; medium on 256-res basic.
+  // (Mirrors qualityFeatureGates — never advertise heavy features on auto.)
+  if (selectedPreset === 'ultra') {
+    hints.push('SSR-отражения мокрых улиц (1024)');
+    hints.push('MeshPhysical акценты');
+  } else if (selectedPreset === 'high') {
+    hints.push('Планарные отражения');
+    hints.push('MeshPhysical акценты');
   } else if (selectedPreset === 'medium') {
-    hints.push('Мокрые отражения на улице');
+    hints.push('Базовые мокрые отражения');
   } else if (
     selectedPreset === 'auto'
     && (preset.id === 'ultra' || preset.id === 'high' || preset.id === 'medium')

@@ -4,7 +4,9 @@ import * as THREE from 'three';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import {
   resolveLocomotionClipState,
+  WALK_CLIP_TIME_SCALE,
 } from '@/engine/player/playerLocomotionPresentation';
+import { WALK_SPEED } from '@/engine/player/playerConstants';
 import {
   bindPlayerClipActions,
 } from '@/engine/player/playerLocomotionClips';
@@ -72,6 +74,12 @@ export interface UsePlayerLocomotionControllerOptions {
   /** Merged embedded + optional Mixamo clip actions. */
   actions: Record<string, THREE.AnimationAction> | null;
   currentAnimRef: MutableRefObject<string>;
+  /**
+   * Latest player horizontal speed (m/s). Drives the continuous walk↔run
+   * AnimationAction blend via smoothstep. Optional — defaults to 0 when
+   * omitted (e.g. SimplePlayer fallback, cinematic-only mounts).
+   */
+  currentHSpeedRef?: MutableRefObject<number>;
 }
 
 /**
@@ -88,6 +96,7 @@ export function usePlayerLocomotionController({
   animations,
   actions,
   currentAnimRef,
+  currentHSpeedRef,
 }: UsePlayerLocomotionControllerOptions): void {
   const idleActionRef = useRef<THREE.AnimationAction | null>(null);
   const walkActionRef = useRef<THREE.AnimationAction | null>(null);
@@ -171,15 +180,21 @@ export function usePlayerLocomotionController({
 
     // ── Initialize blend weights based on current locomotion state ──
     // This preserves the locomotion state across re-binds, so the blend
-    // tree doesn't restart from idle when a Mixamo clip loads.
-    const clipState = resolveLocomotionClipState(currentAnimRef.current);
+    // tree doesn't restart from idle when a Mixamo clip loads. Uses the
+    // continuous runWeight (smoothstep over hSpeed) so a re-bind mid-sprint
+    // doesn't snap back to walk-only.
+    const clipState = resolveLocomotionClipState(
+      currentAnimRef.current,
+      currentHSpeedRef?.current ?? 0,
+    );
     const locomotionActive = clipState.locomotionActive && !!walkActionRef.current;
 
     if (locomotionActive) {
-      if (clipState.runWeight >= 1 && runActionRef.current) {
+      if (runActionRef.current) {
+        const rw = clipState.runWeight;
         currentIdleWeightRef.current = 0;
-        currentWalkWeightRef.current = 0;
-        currentRunWeightRef.current = 1;
+        currentWalkWeightRef.current = 1 - rw;
+        currentRunWeightRef.current = rw;
       } else {
         currentIdleWeightRef.current = 0;
         currentWalkWeightRef.current = 1;
@@ -298,10 +313,16 @@ export function usePlayerLocomotionController({
       }
 
       // ── Weight-based locomotion blend tree (idle / walk / run) ──
-      const clipState = resolveLocomotionClipState(animName);
+      const clipState = resolveLocomotionClipState(
+        animName,
+        currentHSpeedRef?.current ?? 0,
+      );
       const locomotionActive = clipState.locomotionActive && !!walkAction;
 
-      // Compute target weights based on locomotion state
+      // Compute target weights based on locomotion state.
+      // runWeight is CONTINUOUS (smoothstep over actual hSpeed) so the
+      // walk↔run crossfade ramps naturally with acceleration instead of
+      // snapping 0/1 on the binary `running` input flag.
       let targetIdleWeight: number;
       let targetWalkWeight: number;
       let targetRunWeight: number;
@@ -310,11 +331,14 @@ export function usePlayerLocomotionController({
         targetIdleWeight = 1;
         targetWalkWeight = 0;
         targetRunWeight = 0;
-      } else if (clipState.runWeight >= 1 && runAction) {
+      } else if (runAction) {
+        // Both walk + run clips present — continuous smoothstep blend.
+        const rw = clipState.runWeight; // 0..1 continuous
         targetIdleWeight = 0;
-        targetWalkWeight = 0;
-        targetRunWeight = 1;
+        targetWalkWeight = 1 - rw;
+        targetRunWeight = rw;
       } else {
+        // No run clip — walk carries full locomotion weight regardless of hSpeed.
         targetIdleWeight = 0;
         targetWalkWeight = 1;
         targetRunWeight = 0;
@@ -362,7 +386,14 @@ export function usePlayerLocomotionController({
       if (idleAction) idleAction.setEffectiveWeight(currentIdleWeightRef.current);
       if (walkAction) {
         walkAction.setEffectiveWeight(currentWalkWeightRef.current);
-        walkAction.timeScale = locomotionActive ? clipState.walkTimeScale : 1;
+        // Scale walk timeScale with hSpeed so the walk cycle doesn't moonwalk
+        // at low speed (feet would otherwise slide faster than the body).
+        // 0.4× at rest in the band → 1.0× at WALK_SPEED, clamped.
+        const hSpeed = currentHSpeedRef?.current ?? 0;
+        const walkSpeedScale = Math.min(1, hSpeed / WALK_SPEED);
+        walkAction.timeScale = locomotionActive
+          ? WALK_CLIP_TIME_SCALE * (0.4 + 0.6 * walkSpeedScale)
+          : 1;
       }
       if (runAction) {
         runAction.setEffectiveWeight(currentRunWeightRef.current);

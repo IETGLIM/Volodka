@@ -7,7 +7,9 @@ import {
   resolveLockedLocomotionPresentation,
   resolveMovementIntent,
   resolveRunWalkCrossfadeTarget,
+  smoothstep,
 } from '@/engine/player/playerLocomotionPresentation';
+import { WALK_SPEED, RUN_SPEED } from '@/engine/player/playerConstants';
 
 const ZERO_EXPLORATION_CAMERA_MOTION = {
   breathingScale: 0,
@@ -15,11 +17,19 @@ const ZERO_EXPLORATION_CAMERA_MOTION = {
   bobScale: 0,
 } as const;
 
+// Blend band edges (must mirror resolveLocomotionClipState).
+const BLEND_EDGE0 = WALK_SPEED * 0.7; // 2.8
+const BLEND_EDGE1 = RUN_SPEED * 0.85; // 5.95
+
 describe('playerLocomotionPresentation', () => {
   it('resolveLocomotionClipState maps walk/run/idle', () => {
+    // hSpeed defaults to 0 — below the blend band — so both walk and run
+    // start at runWeight=0. The 'run' state with full sprint speed (RUN_SPEED)
+    // saturates the blend to runWeight=1.
     expect(resolveLocomotionClipState('idle').locomotionActive).toBe(false);
     expect(resolveLocomotionClipState('walk').runWeight).toBe(0);
-    expect(resolveLocomotionClipState('run').runWeight).toBe(1);
+    expect(resolveLocomotionClipState('run').runWeight).toBe(0);
+    expect(resolveLocomotionClipState('run', RUN_SPEED).runWeight).toBe(1);
   });
 
   it('resolveMovementIntent prefers keyboard over virtual', () => {
@@ -110,5 +120,124 @@ describe('playerLocomotionPresentation', () => {
       vz: 0,
       gamePhase: 'combat',
     })).toMatchObject({ anim: 'combat', moveBlendTarget: 0 });
+  });
+});
+
+describe('smoothstep', () => {
+  it('clamps to 0 below edge0 and at edge0', () => {
+    expect(smoothstep(2, 5, -10)).toBe(0);
+    expect(smoothstep(2, 5, 0)).toBe(0);
+    expect(smoothstep(2, 5, 2)).toBe(0);
+  });
+
+  it('clamps to 1 above edge1 and at edge1', () => {
+    expect(smoothstep(2, 5, 5)).toBe(1);
+    expect(smoothstep(2, 5, 7)).toBe(1);
+    expect(smoothstep(2, 5, 9999)).toBe(1);
+  });
+
+  it('returns 0.5 at the midpoint (symmetric)', () => {
+    // smoothstep(2, 5, 3.5): t = 0.5 → 0.25 * (3 - 1) = 0.5
+    expect(smoothstep(2, 5, 3.5)).toBeCloseTo(0.5, 5);
+  });
+
+  it('is monotonically increasing across the band', () => {
+    const xs = [2, 2.5, 3, 3.5, 4, 4.5, 5];
+    const ys = xs.map((x) => smoothstep(2, 5, x));
+    for (let i = 1; i < ys.length; i++) {
+      expect(ys[i]).toBeGreaterThanOrEqual(ys[i - 1]);
+    }
+  });
+
+  it('handles edge0 === edge1 without dividing by zero (clamped to 0/1 for x≠edge)', () => {
+    // Degenerate edge — (x - edge0) / 0 → ±Infinity, which the clamp coerces
+    // to 1 (above) or 0 (below). We do not exercise x === edge0 here, since
+    // 0/0 → NaN is an undefined input the helper does not defend against
+    // (the blend band is always non-degenerate at the call sites).
+    expect(smoothstep(3, 3, 4)).toBe(1);
+    expect(smoothstep(3, 3, 2)).toBe(0);
+  });
+});
+
+describe('resolveLocomotionClipState — continuous walk↔run blend', () => {
+  it('idle (regardless of hSpeed) is not locomotion and yields runWeight 0', () => {
+    const idle0 = resolveLocomotionClipState('idle', 0);
+    expect(idle0.locomotionActive).toBe(false);
+    expect(idle0.runWeight).toBe(0);
+    // Even at sprint speed, 'idle' anim is not locomotion — blend stays 0.
+    const idleSprint = resolveLocomotionClipState('idle', RUN_SPEED);
+    expect(idleSprint.locomotionActive).toBe(false);
+    expect(idleSprint.runWeight).toBe(0);
+  });
+
+  it('walk at hSpeed below the blend band yields runWeight 0 and stays active', () => {
+    const clip = resolveLocomotionClipState('walk', 0.5);
+    expect(clip.locomotionActive).toBe(true);
+    expect(clip.runWeight).toBe(0);
+  });
+
+  it('walk at hSpeed inside the blend band yields a strictly-positive runWeight', () => {
+    // 3.0 m/s sits just above BLEND_EDGE0 (2.8) — the run clip should begin
+    // contributing a small (but non-zero) weight. This is the key new behavior:
+    // the blend is no longer binary on the `running` flag.
+    const clip = resolveLocomotionClipState('walk', 3.0);
+    expect(clip.locomotionActive).toBe(true);
+    expect(clip.runWeight).toBeGreaterThan(0);
+    expect(clip.runWeight).toBeLessThan(0.5);
+  });
+
+  it('walk at hSpeed near the middle of the band yields a mid-blend runWeight', () => {
+    // 5.0 m/s sits well inside the band — the blend should be past the midpoint
+    // (run dominates walk) but not yet saturated.
+    const clip = resolveLocomotionClipState('walk', 5.0);
+    expect(clip.locomotionActive).toBe(true);
+    expect(clip.runWeight).toBeGreaterThan(0.5);
+    expect(clip.runWeight).toBeLessThan(1);
+  });
+
+  it('walk at full sprint saturates the blend to runWeight 1', () => {
+    const clip = resolveLocomotionClipState('walk', RUN_SPEED);
+    expect(clip.locomotionActive).toBe(true);
+    expect(clip.runWeight).toBe(1);
+  });
+
+  it('run anim with full sprint yields runWeight 1', () => {
+    const clip = resolveLocomotionClipState('run', RUN_SPEED);
+    expect(clip.locomotionActive).toBe(true);
+    expect(clip.runWeight).toBe(1);
+  });
+
+  it('runWeight is driven by hSpeed, not by the walk/run anim string', () => {
+    // Same hSpeed → same runWeight, regardless of whether the hysteresis state
+    // resolved to 'walk' or 'run'. This is the core invariant of the continuous
+    // blend: it tracks actual speed, not the binary input flag.
+    for (const hSpeed of [0, 1, 3, 4, 5, 7, 10]) {
+      expect(resolveLocomotionClipState('walk', hSpeed).runWeight)
+        .toBeCloseTo(resolveLocomotionClipState('run', hSpeed).runWeight, 5);
+    }
+  });
+
+  it('runWeight is monotonically non-decreasing with hSpeed', () => {
+    const speeds = [0, 1, 2, BLEND_EDGE0, 3, 4, 5, BLEND_EDGE1, 6, RUN_SPEED, 10];
+    let prev = -Infinity;
+    for (const s of speeds) {
+      const rw = resolveLocomotionClipState('walk', s).runWeight;
+      expect(rw).toBeGreaterThanOrEqual(prev);
+      prev = rw;
+    }
+    expect(prev).toBe(1);
+  });
+
+  it('timeScales stay constant across hSpeed (blend is weight-only)', () => {
+    // The continuous blend only changes runWeight; the per-clip time scales
+    // are constant properties of the locomotion state. (The walk timeScale is
+    // scaled with hSpeed separately inside usePlayerLocomotionController, not
+    // here.)
+    const walkSlow = resolveLocomotionClipState('walk', 0.5);
+    const walkFast = resolveLocomotionClipState('walk', RUN_SPEED);
+    expect(walkSlow.walkTimeScale).toBe(walkFast.walkTimeScale);
+    expect(walkSlow.runTimeScale).toBe(walkFast.runTimeScale);
+    expect(walkSlow.walkTimeScale).toBeGreaterThan(0);
+    expect(walkSlow.runTimeScale).toBeGreaterThan(walkSlow.walkTimeScale);
   });
 });

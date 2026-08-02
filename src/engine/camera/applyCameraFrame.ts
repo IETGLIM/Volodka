@@ -20,14 +20,25 @@ import type { CameraModeContext, CameraModeTarget, SpringOverride } from './type
 import { getInteractionState } from '@/components/3d/InteractionSystemBridge';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 import { isEffectiveReducedMotion } from '@/engine/accessibility/accessibilitySettings';
+import {
+  setListenerPosition,
+  setListenerOrientation,
+} from '@/engine/SharedAudioContext';
 
 /** Pre-allocated temps for camera roll (avoid 4× Vector3 alloc per frame). */
 const _rollUp = new THREE.Vector3(0, 1, 0);
 const _rollForward = new THREE.Vector3();
 const _rollRight = new THREE.Vector3();
 const _rollRolledUp = new THREE.Vector3();
-/** Pre-allocated temp for camera forward direction (backward-movement detection). */
+/** Pre-allocated temp for camera forward direction (backward-movement detection + listener orientation). */
 const _camFwd = new THREE.Vector3();
+
+/* ── AudioListener frame throttle ──
+ * Module-level counter so the listener update fires every 3rd frame
+ * (~20 Hz at 60fps). Per-frame updates are wasteful — the listener's
+ * perceptual resolution is ~50ms, and SharedAudioContext further
+ * sub-throttles by 0.1m delta. */
+let _listenerFrameCounter = 0;
 
 /* ── Walking head bob state ── */
 let _walkBobPhase = 0;
@@ -269,6 +280,29 @@ export function applyCameraFrame(
   }
 
   cam.updateProjectionMatrix();
+
+  // ── AudioListener tracks the camera (spatial audio prerequisite) ──
+  // PannerNode sources (NPC barks, spatial SFX, spatial ambients) are mixed
+  // relative to the AudioListener's position + orientation. Without this,
+  // every spatial source renders at world-origin with no sense of player
+  // motion. Throttled to every 3rd frame (~20 Hz at 60fps) — well above the
+  // perceptual threshold for spatial motion. SharedAudioContext also
+  // sub-throttles by 0.1m delta, so the effective update rate is lower still.
+  // NOTE: agent 9c may also wire this in FollowCamera.tsx — both calls are
+  // idempotent (last-write-wins on AudioParam), so the redundancy is harmless.
+  _listenerFrameCounter = (_listenerFrameCounter + 1) % 3;
+  if (_listenerFrameCounter === 0) {
+    try {
+      setListenerPosition(cam.position.x, cam.position.y, cam.position.z);
+      cam.getWorldDirection(_camFwd);
+      setListenerOrientation(
+        _camFwd.x, _camFwd.y, _camFwd.z,
+        0, 1, 0, // Y-up world (matches cam.up.set(0,1,0) above)
+      );
+    } catch {
+      /* listener may be unavailable during early boot / context teardown */
+    }
+  }
 
   frameState.wasDragging = frameState.isDragging;
 }

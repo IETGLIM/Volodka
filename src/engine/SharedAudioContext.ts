@@ -167,6 +167,7 @@ export function disposeSharedAudioContext(): void {
   clearReverbImpulseCache();
   _pendingQueue = [];
   _userInteracted = false;
+  resetListenerCache();
   registerGestureResumeHandlers();
 }
 
@@ -174,6 +175,133 @@ export function disposeSharedAudioContext(): void {
 export function reviveSharedAudioContext(): void {
   registerGestureResumeHandlers();
   registerTabVisibilityHandlers();
+}
+
+/* ─── AudioListener spatial tracking ───
+ * The Web Audio AudioListener is the "ears" of the scene — PannerNode sources
+ * are mixed relative to its position + orientation. Default position is
+ * [0,0,0] facing -Z, which means every spatial source in the world renders
+ * without any sense of player movement. The camera frame tick calls these
+ * setters so the listener tracks the player's head.
+ *
+ * Throttled internally: skips updates where the listener moved < 0.1m since
+ * the last applied position (sub-threshold motion is inaudible at game scale).
+ */
+
+/** Last applied listener position (NaN before first call). */
+let _listenerLastX = NaN;
+let _listenerLastY = NaN;
+let _listenerLastZ = NaN;
+/** Squared threshold (0.1m)² — below this, skip the AudioParam write. */
+const LISTENER_MIN_DELTA_SQ = 0.1 * 0.1;
+/** setTargetAtTime time constant — ~50ms smoothing to avoid zipper noise. */
+const LISTENER_RAMP_TAU = 0.05;
+
+/**
+ * Set the AudioListener's world position. Safe to call when the context is
+ * not yet created (no-op). Uses the modern `positionX/Y/Z` AudioParams when
+ * available, falling back to the deprecated `setPosition(x,y,z)` for older
+ * browsers (Safari < 14, legacy Edge).
+ */
+export function setListenerPosition(x: number, y: number, z: number): void {
+  const ctx = sharedCtx;
+  if (!ctx) return;
+  const listener = ctx.listener;
+  if (!listener) return;
+
+  // Throttle: skip sub-threshold motion to reduce AudioParam write overhead.
+  if (Number.isFinite(_listenerLastX)) {
+    const dx = x - _listenerLastX;
+    const dy = y - _listenerLastY;
+    const dz = z - _listenerLastZ;
+    if (dx * dx + dy * dy + dz * dz < LISTENER_MIN_DELTA_SQ) return;
+  }
+  _listenerLastX = x;
+  _listenerLastY = y;
+  _listenerLastZ = z;
+
+  const now = ctx.currentTime;
+  // Modern API (AudioParam) — preferred, supports smoothing.
+  // The deprecated setPosition is gone from modern TS lib.dom.d.ts, so cast
+  // through a minimal local interface to avoid `any`.
+  const modern = listener as AudioListener & {
+    positionX?: AudioParam;
+    positionY?: AudioParam;
+    positionZ?: AudioParam;
+  };
+  if (modern.positionX && modern.positionY && modern.positionZ) {
+    try {
+      modern.positionX.setTargetAtTime(x, now, LISTENER_RAMP_TAU);
+      modern.positionY.setTargetAtTime(y, now, LISTENER_RAMP_TAU);
+      modern.positionZ.setTargetAtTime(z, now, LISTENER_RAMP_TAU);
+    } catch {
+      /* AudioParam may be invalidated mid-stop */
+    }
+    return;
+  }
+  const legacy = listener as unknown as {
+    setPosition?: (x: number, y: number, z: number) => void;
+  };
+  try {
+    legacy.setPosition?.(x, y, z);
+  } catch {
+    /* legacy listener may not support setPosition */
+  }
+}
+
+/**
+ * Set the AudioListener's orientation (forward + up vectors). The camera
+ * frame tick derives forward from `camera.getWorldDirection()` and uses the
+ * world-up [0,1,0] (matching the renderer's Y-up convention).
+ */
+export function setListenerOrientation(
+  forwardX: number, forwardY: number, forwardZ: number,
+  upX: number, upY: number, upZ: number,
+): void {
+  const ctx = sharedCtx;
+  if (!ctx) return;
+  const listener = ctx.listener;
+  if (!listener) return;
+
+  const now = ctx.currentTime;
+  const modern = listener as AudioListener & {
+    forwardX?: AudioParam;
+    forwardY?: AudioParam;
+    forwardZ?: AudioParam;
+    upX?: AudioParam;
+    upY?: AudioParam;
+    upZ?: AudioParam;
+  };
+  if (modern.forwardX && modern.forwardY && modern.forwardZ
+      && modern.upX && modern.upY && modern.upZ) {
+    try {
+      modern.forwardX.setTargetAtTime(forwardX, now, LISTENER_RAMP_TAU);
+      modern.forwardY.setTargetAtTime(forwardY, now, LISTENER_RAMP_TAU);
+      modern.forwardZ.setTargetAtTime(forwardZ, now, LISTENER_RAMP_TAU);
+      modern.upX.setTargetAtTime(upX, now, LISTENER_RAMP_TAU);
+      modern.upY.setTargetAtTime(upY, now, LISTENER_RAMP_TAU);
+      modern.upZ.setTargetAtTime(upZ, now, LISTENER_RAMP_TAU);
+    } catch {
+      /* AudioParam may be invalidated mid-stop */
+    }
+    return;
+  }
+  const legacy = listener as unknown as {
+    setOrientation?: (fx: number, fy: number, fz: number, ux: number, uy: number, uz: number) => void;
+  };
+  try {
+    legacy.setOrientation?.(forwardX, forwardY, forwardZ, upX, upY, upZ);
+  } catch {
+    /* legacy listener may not support setOrientation */
+  }
+}
+
+/** Reset cached listener position (called from dispose so a fresh context
+ *  doesn't inherit the previous throttle gate). */
+function resetListenerCache(): void {
+  _listenerLastX = NaN;
+  _listenerLastY = NaN;
+  _listenerLastZ = NaN;
 }
 
 registerHmrDispose(disposeSharedAudioContext);

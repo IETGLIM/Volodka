@@ -14,6 +14,7 @@ import {
   getCharacterMotif,
   getPoemMotif,
   findEmotionalTransition,
+  resolveActMoodOverride,
   type MusicMood,
 } from '../../config/proceduralAudioCatalog';
 import {
@@ -29,6 +30,7 @@ import type { GamePhase } from '@/shared/gamePhase';
 import type { NarrativeKind } from '@/shared/types/narrativeKind';
 import { ControllerSession } from '@/engine/controller/ControllerSession';
 import { registerHmrDispose } from '@/shared/dev/hmrDispose';
+import { getGameSnapshot } from '@/engine/GameActionDispatcher';
 
 export interface AmbientPlayContext {
   proceduralOverride?: AmbientSoundType | null;
@@ -116,7 +118,27 @@ export class SceneAudioController {
     }
 
     musicEngine.playSceneMusic(sceneId);
+    // Per-act mood override — revives the dead `resolveActMoodOverride` feature
+    // (20 entries: 5 key scenes × acts 2-5). The same scene now sounds subtly
+    // different as the story darkens. Applied AFTER playSceneMusic so the bed
+    // exists for the ramp to land on; the ramp itself is a 1.5s setTargetAtTime
+    // on padFilter.frequency + padConvolverGain + padDryGain.
+    // When no override exists for this scene+act, falls back to the base bed.
+    const actOverride = resolveActMoodOverride(sceneId, this.getCurrentAct());
+    if (actOverride) {
+      musicEngine.applyActMoodOverride(actOverride);
+    }
     this.playSceneAmbient(sceneId, timeOfDay);
+  }
+
+  /** Read the current story act via the imperative store getter.
+   *  Returns 1 when the snapshot is unavailable (early boot / tests). */
+  private getCurrentAct(): number {
+    try {
+      return getGameSnapshot().playerState.progression.currentAct ?? 1;
+    } catch {
+      return 1;
+    }
   }
 
   /** Duck scene layers before crossfade on scene:unload (EventBus-driven transitions). */

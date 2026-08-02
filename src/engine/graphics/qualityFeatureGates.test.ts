@@ -41,14 +41,25 @@ describe('allowsHeavyGfxFeature', () => {
     expect(allowsHeavyGfxFeature('ultra', 'galaxySky')).toBe(true);
     expect(allowsHeavyGfxFeature('ultra', 'godRays')).toBe(true);
     expect(allowsHeavyGfxFeature('ultra', 'meshPhysicalWet')).toBe(true);
+    expect(allowsHeavyGfxFeature('ultra', 'ssrWetStreets')).toBe(true);
   });
 
-  it('disables reflector/godRays/meshPhysicalWet on coarse pointer', () => {
+  it('gates ssrWetStreets to ultra only (never on medium/high)', () => {
+    expect(allowsHeavyGfxFeature('auto', 'ssrWetStreets')).toBe(false);
+    expect(allowsHeavyGfxFeature('low', 'ssrWetStreets')).toBe(false);
+    expect(allowsHeavyGfxFeature('medium', 'ssrWetStreets')).toBe(false);
+    expect(allowsHeavyGfxFeature('high', 'ssrWetStreets')).toBe(false);
+    expect(allowsHeavyGfxFeature('ultra', 'ssrWetStreets')).toBe(true);
+    expect(allowsHeavyGfxFeature('ultra', 'ssrWetStreets', { coarsePointer: true })).toBe(false);
+  });
+
+  it('disables reflector/godRays/meshPhysicalWet/ssrWetStreets on coarse pointer', () => {
     expect(allowsHeavyGfxFeature('ultra', 'reflector', { coarsePointer: true })).toBe(false);
     expect(allowsHeavyGfxFeature('high', 'reflector', { coarsePointer: true })).toBe(false);
     expect(allowsHeavyGfxFeature('medium', 'reflector', { coarsePointer: true })).toBe(false);
     expect(allowsHeavyGfxFeature('ultra', 'godRays', { coarsePointer: true })).toBe(false);
     expect(allowsHeavyGfxFeature('ultra', 'meshPhysicalWet', { coarsePointer: true })).toBe(false);
+    expect(allowsHeavyGfxFeature('ultra', 'ssrWetStreets', { coarsePointer: true })).toBe(false);
     expect(allowsHeavyGfxFeature('ultra', 'n8ao', { coarsePointer: true })).toBe(true);
   });
 });

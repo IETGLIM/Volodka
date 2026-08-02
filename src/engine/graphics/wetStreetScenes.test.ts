@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
   allowsSelectiveMeshPhysicalWet,
+  allowsUltraSsrWetStreet,
   getIndustrialDampFloorSettings,
   getRainSpillInFloorBoost,
   getReflectorMaterialSettings,
+  getUltraSsrWetStreetMirrorAmount,
   getWetGlassPhysicalParams,
   getWetPuddlePhysicalParams,
   getWinterIceSheenSettings,
@@ -12,6 +14,7 @@ import {
   isIndustrialDampSheenScene,
   isRainSpillInScene,
   isSelectivePhysicalWetScene,
+  isWinterScene,
   isWetStreetScene,
   scaleReflectorMixStrength,
   SELECTIVE_PHYSICAL_WET_SCENE_IDS,
@@ -231,6 +234,50 @@ describe('wetStreetScenes', () => {
     expect(medium.resolution).toBe(256);
     expect(medium.resolution).toBeLessThan(high.resolution);
     expect(medium.mixStrength).toBeLessThan(high.mixStrength);
+  });
+
+  it('upgrades ultra reflector tier to 1024 SSR with anisotropic streak blur', () => {
+    const ultra = getReflectorMaterialSettings('ultra');
+    expect(ultra.resolution).toBe(1024);
+    expect(ultra.mixStrength).toBe(0.85);
+    expect(ultra.mirrorBoost).toBe(0.25);
+    expect(ultra.streakBlur).toEqual([1024, 32]);
+    expect(ultra.mixShowThreshold).toBe(0.6);
+    // High/medium stay on the legacy basic path (no SSR-only fields).
+    expect(getReflectorMaterialSettings('high').mirrorBoost).toBeUndefined();
+    expect(getReflectorMaterialSettings('high').streakBlur).toBeUndefined();
+    expect(getReflectorMaterialSettings('high').mixShowThreshold).toBeUndefined();
+    expect(getReflectorMaterialSettings('medium').mirrorBoost).toBeUndefined();
+  });
+
+  it('gates ultra-only SSR wet street to ultra preset + wet scene + non-winter', () => {
+    expect(allowsUltraSsrWetStreet('street_night', 'ultra')).toBe(true);
+    expect(allowsUltraSsrWetStreet('city_square', 'ultra')).toBe(true);
+    expect(allowsUltraSsrWetStreet('river_pier', 'ultra')).toBe(true);
+    expect(allowsUltraSsrWetStreet('pier_evening', 'ultra')).toBe(true);
+    expect(allowsUltraSsrWetStreet('rooftop_edge', 'ultra')).toBe(true);
+    // High/medium never mount the SSR tier — they use the basic reflector path.
+    expect(allowsUltraSsrWetStreet('street_night', 'high')).toBe(false);
+    expect(allowsUltraSsrWetStreet('street_night', 'medium')).toBe(false);
+    expect(allowsUltraSsrWetStreet('street_night', 'auto')).toBe(false);
+    expect(allowsUltraSsrWetStreet('street_night', 'low')).toBe(false);
+    // Coarse pointer (touch) disables the SSR tier — ultra falls through to MeshStandard.
+    expect(allowsUltraSsrWetStreet('street_night', 'ultra', { coarsePointer: true })).toBe(false);
+    // Winter scenes never get the SSR tier even on ultra — planar reflectors on snow look wrong.
+    expect(isWinterScene('street_winter')).toBe(true);
+    expect(allowsUltraSsrWetStreet('street_winter', 'ultra')).toBe(false);
+    // Non-wet-street scenes never get the SSR tier.
+    expect(allowsUltraSsrWetStreet('home_evening', 'ultra')).toBe(false);
+  });
+
+  it('scales ultra SSR mirror amount with rain intensity (0.55 dry → 0.92 storm)', () => {
+    expect(getUltraSsrWetStreetMirrorAmount(0)).toBeCloseTo(0.55);
+    expect(getUltraSsrWetStreetMirrorAmount(1)).toBeCloseTo(0.92);
+    expect(getUltraSsrWetStreetMirrorAmount(0.5)).toBeGreaterThan(0.55);
+    expect(getUltraSsrWetStreetMirrorAmount(0.5)).toBeLessThan(0.92);
+    // Clamps out-of-range inputs.
+    expect(getUltraSsrWetStreetMirrorAmount(-0.5)).toBeCloseTo(0.55);
+    expect(getUltraSsrWetStreetMirrorAmount(2)).toBeCloseTo(0.92);
   });
 
   it('scales reflector mix with rain intensity', () => {

@@ -29,7 +29,10 @@ import { sanitizePlainText } from '@/shared/utils/sanitizePlainText';
 import { FilmGrain } from '@/components/game/cinematic/FilmGrain';
 
 function finishCutscenePresentation(): void {
-  setCinematicPresentationMode('third_person');
+  // easeMs: 600 — smooth the hard camera snap that ESC-skip would otherwise
+  // produce when the camera hands back from the timeline to the exploration
+  // strategy. FollowCamera lerps over 600ms with cubic-bezier(0.4, 0, 0.2, 1).
+  setCinematicPresentationMode('third_person', { easeMs: 600 });
   eventBus.emit('camera:recenter', {});
 }
 

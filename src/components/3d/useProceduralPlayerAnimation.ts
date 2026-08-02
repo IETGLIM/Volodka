@@ -21,6 +21,13 @@ export type ProceduralPlayerModelProps = {
   karmaGlow: string;
   currentAnimRef: MutableRefObject<string>;
   rotationRef: MutableRefObject<number>;
+  /**
+   * Latest player horizontal speed (m/s). Consumed by the authored GLB
+   * `usePlayerLocomotionController` to drive the continuous walk↔run
+   * AnimationAction blend. Optional — procedural-lite / SimplePlayer
+   * fallbacks simply ignore it.
+   */
+  currentHSpeedRef?: MutableRefObject<number>;
 };
 
 export function useProceduralPlayerAnimation(

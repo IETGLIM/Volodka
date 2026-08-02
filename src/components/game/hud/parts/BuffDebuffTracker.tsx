@@ -236,7 +236,7 @@ const EffectIcon = memo(function EffectIcon({ effect, size, showTimer }: EffectI
 
   return (
     <motion.div
-      className="relative flex-shrink-0 cursor-pointer"
+      className="relative flex-shrink-0 cursor-pointer hud-filmic-status-segment"
       style={{ width: size, height: size }}
       initial={{ scale: 0, opacity: 0, rotate: -180 }}
       animate={{ scale: 1, opacity: 1, rotate: 0 }}

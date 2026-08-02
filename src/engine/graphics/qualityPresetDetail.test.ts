@@ -17,7 +17,7 @@ describe('formatQualityPresetDetailRu', () => {
     expect(detail).toContain('Уникальные аватары (RPM)');
     expect(detail).not.toContain('от «Среднее»');
     expect(detail).toContain('Карты теней + мягкий blob');
-    expect(detail).toContain('Мокрые отражения на улице');
+    expect(detail).toContain('Базовые мокрые отражения');
     expect(detail).not.toContain('MeshPhysical');
   });
 
@@ -27,12 +27,19 @@ describe('formatQualityPresetDetailRu', () => {
     );
   });
 
-  it('shows wet reflections + MeshPhysical accents on explicit high and ultra', () => {
-    expect(formatQualityPresetDetailRu('high', QUALITY_PRESETS.high)).toContain(
-      'Мокрые отражения + MeshPhysical акценты',
-    );
+  it('shows basic planar reflections + MeshPhysical accents on explicit high', () => {
+    const high = formatQualityPresetDetailRu('high', QUALITY_PRESETS.high);
+    expect(high).toContain('Планарные отражения');
+    expect(high).toContain('MeshPhysical акценты');
+    expect(high).not.toContain('SSR');
+    expect(high).not.toContain('выберите');
+  });
+
+  it('advertises the ultra-only SSR wet-street tier (1024) on ultra', () => {
     const ultra = formatQualityPresetDetailRu('ultra', QUALITY_PRESETS.ultra);
-    expect(ultra).toContain('Мокрые отражения + MeshPhysical акценты');
+    expect(ultra).toContain('SSR-отражения мокрых улиц (1024)');
+    expect(ultra).toContain('MeshPhysical акценты');
+    expect(ultra).not.toContain('Базовые мокрые');
     expect(ultra).not.toContain('выберите');
   });
 

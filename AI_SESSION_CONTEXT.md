@@ -767,3 +767,52 @@ npm run validate:content # Валидация контента
 - **Атмосфера:** Neon + бетон, серверы + стихи, усталость + надежда
 - **Проверки навыков:** DC 10 (лёгко), DC 12 (средне), DC 14 (трудно), DC 16 (очень трудно)
 - **Флаги:** Использовать `thought_available_*` для триггеров Thought Cabinet
+---
+
+## 🔄 Сессия 11 — внешний коллаборатор (AAA visual/animation/audio/hud push)
+
+**Дата:** 2025-08
+**Агент:** внешний orchestrator (по запросу правообладателя)
+**Коммит:** см. `git log` (1 коммит, 44 файла, ~+1600/-30 строк)
+**Typecheck:** `node scripts/tsc7.mjs --noEmit` → exit 0
+
+### Что сделано (4 параллельных work-stream, файлы НЕ пересекались)
+
+**Визуал (ultra-only, graceful degrade):**
+- **SSR wet streets** — новый `ssrWetStreets` HeavyGfxFeature (ultra-exclusive). Ultra tier: 1024-res planar reflector + anisotropic streak blur [1024,32] + rain-gated strong mirror (`getUltraSsrWetStreetMirrorAmount`, до 0.92 при шторме). Three-state gate в `WetStreetGround.tsx` (ultra SSR → basic reflector → MeshStandard). **Medium/high basic reflector path математически идентичен старому поведению.**
+- **AgX tone mapping** — ultra-only, toggleable (`volodka_agx`, default ON), +0.15 exposure lift. ACES_FILMIC путь полностью сохранён.
+- **+6 GodRays сцен** — street_night, city_square, river_pier, rooftop_edge, chk_campfire_night, factory_roof (позиции из SCENE_ACCENT_LIGHTS).
+
+**Анимация (KCC НЕ тронут):**
+- **Continuous walk↔run blend** — `resolveLocomotionClipState` теперь возвращает `runWeight = smoothstep(hSpeed, WALK*0.7, RUN*0.85)`. `currentHSpeedRef` продёрнут через playerFrameTypes → usePhysicsPlayerMovement → playerFinalizeFrame → usePlayerLocomotionController → CesiumPlayerModel/CinematicPlayerAvatar/PhysicsPlayer. Walk timeScale scales с hSpeed (0.4×→1.0×) — нет больше moonwalk на низкой скорости. **Физическая скорость KCC осталась BINARY** (`running ? RUN_SPEED : WALK_SPEED`) — continuous только анимационный blend. `interpolate={false}` + KCC ownership + `runMainPlayerMovement` НЕ тронуты.
+
+**HUD/UX/Cutscenes:**
+- Wired 8 unwired filmic CSS классов (compass-glow, crt-scanlines+crt-overlay на 4 CRT-сценах, menu, scanline, stat-bar-sheen, status-segment, tooltip-ink).
+- Mounted KarmaRing + LevelBadge + CompassIndicator в SceneTopBarHud (hidden sm:flex).
+- New `SkipPrologueOverlay.tsx` — 3-page Disco Elysium inner-monologue typewriter (IMPROVEMENT_PLAN 4.1).
+- Camera ease-back на cutscene skip (0.6s eased cubic, новый `camera:ease_back` event, interruptible) — нет больше hard snap.
+
+**Аудио (revived dead code + spatial):**
+- **`resolveActMoodOverride` WIRED** — был МЁРТВЫМ КОДОМ (tick-9 "feature" без consumers). Теперь `SceneAudioController.onSceneEnter` вызывает его, `MusicEngine.applyActMoodOverride` рампит padFilter+reverb за 1.5s. **20 entries × 5 сцен × 4 актов теперь звучат.**
+- **AudioListener tracking** — `SharedAudioContext.setListenerPosition/Orientation` + `applyCameraFrame` каждые 3 кадра.
+- **`playSpatialBark` в DialogueRenderer** — NPC позиционный голос (1.5s debounce, player-pos fallback). Раньше все диалоги были безмолвны.
+- +stone +dream footstep presets. `playSpatialSfx` для DynamicProps + PatrollingCreeps.
+
+### Invariants (всё сохранено)
+- Стихи (`src/data/poems.ts`) — НЕ тронуты.
+- `<Physics interpolate={false}>` — НЕ тронут.
+- KCC ownership / `runMainPlayerMovement` — НЕ тронуты.
+- Postprocessing depth-blit patch — НЕ тронут.
+- Тесты не запускались (только typecheck-гейт per запросу пользователя).
+
+### Risks / TODO для авторского QA на Vercel
+- AgX mode swap может потребовать смены сцены для применения (toggle UX quirk, не breakage).
+- Ultra SSR reflections скрыты ниже 60% rain (intentional, tunable в `getReflectorMaterialSettings`).
+- Runtime QA НЕ проводился locally (по запросу). Ключевые сцены для проверки: street_night (SSR+GodRays+AgX stack на ultra), city_square, river_pier, chk_campfire_night, home_evening.
+
+### Нерешённые приоритеты следующей фазы
+- Mixamo↔Quaternius real-clip remap (нужен Adobe login + asset pipeline).
+- CSM (cascaded shadow maps) для outdoor hero-сцен.
+- MotionBlur для катсцен.
+- Больше контента Acts 3–4.
+- Ещё orphaned HUD mounts: CyberpunkMinimap (Ctrl+M toggle), QuickTimeEventOverlay, QuestObjectiveCard.

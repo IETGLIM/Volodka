@@ -20,6 +20,11 @@ export function useMenuScreen({ loadGame, resetGame, musicEnabled, toggleMusic }
   const [showSettings, setShowSettings] = useState(false);
   const [isFadingOut, setIsFadingOut] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  // SkipPrologueOverlay mount flag — set when the player picks "Пропустить пролог".
+  // The overlay runs a 3-page typewriter intro BEFORE the existing
+  // skip_prologue_intro story node is opened (the story node remains the spawn
+  // authority and is preserved as a fallback).
+  const [showSkipPrologueOverlay, setShowSkipPrologueOverlay] = useState(false);
 
   const menuItems = useMemo(() => buildMenuItems(hasSave), [hasSave]);
 
@@ -50,11 +55,21 @@ export function useMenuScreen({ loadGame, resetGame, musicEnabled, toggleMusic }
         // Canvas stays mounted under the menu (CSS-hidden). CinematicTimelineRunner
         // watches the live cutscene slice + canvas:first-frame / scene:loaded.
       } else {
-        // Skip-prologue path: spawn at room center, show narrative intro
-        store.openNarrativeOverlay('skip_prologue_intro', 'story');
+        // Skip-prologue path: mount the 3-page SkipPrologueOverlay first.
+        // The overlay's onComplete handler (handleSkipPrologueComplete) opens
+        // the existing skip_prologue_intro story node — preserves spawn logic.
+        setShowSkipPrologueOverlay(true);
       }
     }, NEW_GAME_FADE_MS);
   }, [isFadingOut, resetGame]);
+
+  const handleSkipPrologueComplete = useCallback(() => {
+    setShowSkipPrologueOverlay(false);
+    // Defer to the existing story node — it owns the spawn (sceneId=volodka_room)
+    // and its choice effects set woke_up / skip_prologue_seen / morning_ritual.
+    const store = useGameStore.getState();
+    store.openNarrativeOverlay('skip_prologue_intro', 'story');
+  }, []);
 
   const handleContinue = useCallback(() => {
     if (!hasSave) return;
@@ -104,7 +119,7 @@ export function useMenuScreen({ loadGame, resetGame, musicEnabled, toggleMusic }
     safePlayMenuSfx(audioEngine.playSfx.bind(audioEngine), 'ui_close');
   }, []);
 
-  const navigationEnabled = !showAbout && !showSettings && !isFadingOut;
+  const navigationEnabled = !showAbout && !showSettings && !isFadingOut && !showSkipPrologueOverlay;
 
   return {
     hasSave,
@@ -121,5 +136,7 @@ export function useMenuScreen({ loadGame, resetGame, musicEnabled, toggleMusic }
     closeAbout,
     closeSettings,
     navigationEnabled,
+    showSkipPrologueOverlay,
+    handleSkipPrologueComplete,
   };
 }

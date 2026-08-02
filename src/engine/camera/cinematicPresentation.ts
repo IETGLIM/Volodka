@@ -5,8 +5,20 @@
 
 import { useSyncExternalStore } from 'react';
 import type { GamePhase } from '@/shared/gamePhase';
+import { eventBus } from '@/engine/EventBus';
 
 export type CinematicPresentationMode = 'first_person' | 'third_person';
+
+export interface SetCinematicPresentationOptions {
+  /**
+   * When set on a `'third_person'` mode change, emits `camera:ease_back`
+   * with `{ durationMs }` so the FollowCamera can lerp from its current
+   * pose to the exploration strategy target over `easeMs` milliseconds
+   * using a cubic-bezier (0.4, 0, 0.2, 1) curve. Smooths the hard cut
+   * produced by ESC-skip on cutscenes. No-op for `'first_person'`.
+   */
+  easeMs?: number;
+}
 
 let presentationMode: CinematicPresentationMode = 'third_person';
 let cinematicHoldActive = false;
@@ -23,7 +35,18 @@ function subscribe(onStoreChange: () => void): () => void {
   return () => listeners.delete(onStoreChange);
 }
 
-export function setCinematicPresentationMode(mode: CinematicPresentationMode): void {
+export function setCinematicPresentationMode(
+  mode: CinematicPresentationMode,
+  options?: SetCinematicPresentationOptions,
+): void {
+  // Emit the ease-back event BEFORE the early-return so a skip path that calls
+  // `setCinematicPresentationMode('third_person', { easeMs: 600 })` still
+  // triggers the camera blend even when the presentation mode was already
+  // 'third_person' (the timeline may have flipped it via an earlier step).
+  const easeMs = options?.easeMs;
+  if (easeMs && easeMs > 0 && mode === 'third_person') {
+    eventBus.emit('camera:ease_back', { durationMs: easeMs });
+  }
   if (presentationMode === mode) return;
   presentationMode = mode;
   notify();

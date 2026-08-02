@@ -25,6 +25,13 @@ export interface VisualSettingsSnapshot {
   invertY: boolean;
   /** Desktop FP: lock pointer on canvas click instead of drag-to-look */
   pointerLockEnabled: boolean;
+  /**
+   * AgX tone mapping on ultra (replaces ACES_FILMIC). AgX renders darker
+   * overall, so ExplorationPostFX applies a +0.15 exposure lift to compensate.
+   * Default true — only effective when preset.id === 'ultra'; non-ultra
+   * presets always use ACES_FILMIC regardless of this flag.
+   */
+  agxToneMapping: boolean;
 }
 
 const LS_POSTFX = 'volodka_postfx';
@@ -35,6 +42,7 @@ const LS_BRIGHTNESS = 'volodka_brightness';
 const LS_MOUSE_SENS = 'volodka_mouse_sens';
 const LS_INVERT_Y = 'volodka_invert_y';
 const LS_POINTER_LOCK = 'volodka_pointer_lock';
+const LS_AGX = 'volodka_agx';
 
 function lsGetBool(key: string, fallback: boolean): boolean {
   try {
@@ -68,6 +76,9 @@ export function readVisualSettings(): VisualSettingsSnapshot {
     mouseSensitivity: Math.max(1, Math.min(10, lsGetNumber(LS_MOUSE_SENS, 5))) / 5,
     invertY: lsGetBool(LS_INVERT_Y, false),
     pointerLockEnabled: lsGetBool(LS_POINTER_LOCK, false),
+    // Default ON: AgX is the modern filmic tone mapper; user can opt out.
+    // Effective only when preset.id === 'ultra' (see ExplorationPostFX).
+    agxToneMapping: lsGetBool(LS_AGX, true),
   };
 }
 

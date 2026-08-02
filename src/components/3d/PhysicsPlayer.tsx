@@ -49,7 +49,7 @@ export function PhysicsPlayer({
   const showThirdPersonBody =
     shouldShowThirdPersonAvatar(gameMode, activeCutsceneId) && !hideForCinematicAvatar;
 
-  const { rigidBodyRef, capsuleColliderRef, currentAnimRef } = usePhysicsPlayerMovement({
+  const { rigidBodyRef, capsuleColliderRef, currentAnimRef, currentHSpeedRef } = usePhysicsPlayerMovement({
     livePlayerPositionRef,
     livePlayerRotationRef,
     virtualControlsRef,
@@ -91,6 +91,7 @@ export function PhysicsPlayer({
       {showThirdPersonBody && (
         <CinematicPlayerAvatar
           currentAnimRef={currentAnimRef}
+          currentHSpeedRef={currentHSpeedRef}
           rotationRef={livePlayerRotationRef}
         />
       )}

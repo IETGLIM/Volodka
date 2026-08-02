@@ -8,6 +8,7 @@ import { MenuGlitchTitle } from '@/components/game/menu/MenuGlitchTitle';
 import { MenuNavigationList } from '@/components/game/menu/MenuNavigationList';
 import { MenuSettingsPanel } from '@/components/game/menu/MenuSettingsPanel';
 import { MenuTypewriterSubtitle } from '@/components/game/menu/MenuTypewriterSubtitle';
+import { SkipPrologueOverlay } from '@/components/game/menu/SkipPrologueOverlay';
 import { useMenuSavePreview } from '@/components/game/menu/useMenuSavePreview';
 import { useMenuScreen } from '@/components/game/menu/useMenuScreen';
 import {
@@ -183,7 +184,7 @@ function MenuScreenPanelInner() {
           transition={{ duration: 0.6, delay: d(1.8, visited) }}
           className="mt-8 w-full max-w-xs"
         >
-          <div className="relative overflow-hidden cinematic-menu-panel cinematic-menu-primary-nav">
+          <div className="relative overflow-hidden cinematic-menu-panel cinematic-menu-primary-nav hud-filmic-menu">
             <MenuNavigationList
               items={menu.menuItems}
               selectedIndex={menu.selectedIndex}
@@ -275,7 +276,7 @@ function MenuScreenPanelInner() {
               transition={{ duration: 0.28 }}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="relative overflow-hidden cinematic-menu-panel px-5 py-5 text-center">
+              <div className="relative overflow-hidden cinematic-menu-panel hud-filmic-menu px-5 py-5 text-center">
                 <p className="font-serif text-[11px] tracking-[0.3em] uppercase mb-2" style={{ color: 'var(--hud-filmic-ink-meta)' }}>
                   Начало
                 </p>
@@ -329,6 +330,15 @@ function MenuScreenPanelInner() {
             transition={{ duration: 0.8 }}
             aria-hidden="true"
           />
+        ) : null}
+      </AnimatePresence>
+
+      {/* SkipPrologueOverlay — 3-page typewriter intro shown when the player
+          picks "Пропустить пролог". onComplete opens the existing
+          skip_prologue_intro story node (preserved spawn logic). */}
+      <AnimatePresence>
+        {menu.showSkipPrologueOverlay ? (
+          <SkipPrologueOverlay onComplete={menu.handleSkipPrologueComplete} />
         ) : null}
       </AnimatePresence>
     </div>

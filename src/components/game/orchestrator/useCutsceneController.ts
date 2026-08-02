@@ -90,7 +90,9 @@ export function useCutsceneController() {
     eventBus.emit('cutscene:overlay_end', {});
     eventBus.emit('camera:cutscene_end', {});
     setCinematicHoldActive(false);
-    setCinematicPresentationMode('third_person');
+    // easeMs: 600 — smooth the camera hand-back to exploration strategy with a
+    // 0.6s cubic-bezier (0.4, 0, 0.2, 1) blend. Interruptible by a new strategy.
+    setCinematicPresentationMode('third_person', { easeMs: 600 });
     eventBus.emit('camera:recenter', {});
     // Legacy skip (no active timeline) — restore duck the orchestrator would have.
     musicEngine.setMusicDuckFactor(1.0, 1.0);

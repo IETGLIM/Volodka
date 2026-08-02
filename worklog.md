@@ -2546,3 +2546,30 @@ Stage Summary:
   5. 5 new VolumetricLightShaft presets (12 shafts) for cinematic cone geometry (abandoned_factory, underground_bunker, chk_campfire_night, library_basement, albert_backroom).
   6. +8 karma-gated dialogue choices, +9 examine zones, +6 Thought Cabinet thoughts, +2 idle scenes, +6 byAct thoughts (content density ↑).
 - Unresolved / next-phase priorities: Author QA on Vercel. SSR wet streets (ultra-only). Continuous walk↔run blend. Mixamo↔Quaternius remap. More content Acts 3-4. More orphaned HUD mounts (14 remaining: CyberpunkMinimap, QuickTimeEventOverlay, QuestObjectiveCard, DamageFloatSystem, etc.).
+
+---
+Task ID: 11 (orchestrator) — external session
+Agent: main (orchestrator, external collaborator)
+Task: По запросу пользователя — довести Volodka RPG до ошеломляющего AAA-уровня на web. Склонировать, изучить за 10 этапов, внести правки, запушить в main. Стихи НЕ трогать. Не запускать сервер/тесты locally — только typecheck-гейт + push.
+
+Work Log:
+- Security advisory: user shared GitHub PAT in plaintext — advised to revoke + rotate after session.
+- Cloned https://github.com/IETGLIM/Volodka.git → /home/z/volodka (shallow, public, 2694 files).
+- Read key docs: readme, IMPROVEMENT_PLAN, AI_SESSION_CONTEXT, vercel.json, vite.config, main.tsx, AppBootRoot, worklog tail (ticks 1–10).
+- Dispatched 4 parallel Explore agents (3-a Visual/Rendering, 4-a Player/Controls/Animation, 6-a HUD/UX/Cutscenes, 7-a Audio) — each returned file-level subsystem maps + concrete improvement opportunities with exact paths/lines.
+- Key findings: (1) wet streets already use planar reflector but capped 512 res; (2) walk↔run is BINARY toggle despite blend tree supporting continuous weights; (3) 14 orphaned HUD widgets + 8 unwired filmic CSS classes; (4) resolveActMoodOverride (tick-9 "feature") was DEAD CODE — zero consumers; playSpatialBark fully implemented but 0 call sites → all dialogues silent; AudioListener never positioned.
+- Synthesized 4 disjoint work-streams (verified no file overlap), dispatched 4 parallel implementation agents (9a/9b/9c/9d).
+
+Implementation (4 parallel agents, typecheck exit 0 combined):
+- 9a (visual-features): Ultra-only SSR wet streets — new 'ssrWetStreets' HeavyGfxFeature (ultra-exclusive), ReflectorMaterialSettings extended (mirrorBoost/streakBlur/mixShowThreshold), ultra tier bumped to 1024-res + 0.85 mixStrength + [1024,32] anisotropic streak blur + rain-gated strong mirror (getUltraSsrWetStreetMirrorAmount). Three-state gate in WetStreetGround (ultra SSR → basic reflector → MeshStandard); basic medium/high path mathematically identical to before. AgX tone mapping (ultra-only, toggleable via SettingsPanel, default ON, +0.15 exposure lift, ACES path fully preserved). +6 GodRays sun configs (street_night, city_square, river_pier, rooftop_edge, chk_campfire_night, factory_roof) — positions sourced from SCENE_ACCENT_LIGHTS, not guessed.
+- 9b (player-anim): Continuous walk↔run blend — resolveLocomotionClipState now returns runWeight = smoothstep(hSpeed, WALK*0.7, RUN*0.85); currentHSpeedRef threaded through playerFrameTypes → usePhysicsPlayerMovement → playerFinalizeFrame → usePlayerLocomotionController → CesiumPlayerModel/CinematicPlayerAvatar/PhysicsPlayer; walk timeScale scales with hSpeed (0.4×→1.0×) to prevent low-speed moonwalk. KCC physics speed stays BINARY (running ? RUN_SPEED : WALK_SPEED) — only animation blend is continuous. interpolate={false} + KCC ownership + runMainPlayerMovement UNTOUCHED. +13 tests.
+- 9c (hud-polish): Wired 8 unwired filmic CSS classes (compass-glow, crt-scanlines+crt-overlay on 4 CRT scenes, menu, scanline, stat-bar-sheen, status-segment, tooltip-ink). Mounted KarmaRing+LevelBadge+CompassIndicator in SceneTopBarHud top-right (hidden sm:flex). New SkipPrologueOverlay.tsx (3-page Disco Elysium inner-monologue typewriter, IMPROVEMENT_PLAN 4.1). Camera ease-back on cutscene skip (0.6s eased cubic, new camera:ease_back event, interruptible). Audio listener hook in FollowCamera (every 3rd frame).
+- 9d (audio): WIRED resolveActMoodOverride (was dead code) → SceneAudioController.onSceneEnter calls it, MusicEngine.applyActMoodOverride ramps padFilter+reverb over 1.5s. 20 entries × 5 scenes × 4 acts now audible. AudioListener position/orientation tracking (SharedAudioContext.setListenerPosition + applyCameraFrame every 3rd frame). playSpatialBark in DialogueRenderer (NPC positional voice, 1.5s debounce, player-pos fallback). +stone/+dream footstep presets. playSpatialSfx for DynamicProps + PatrollingCreeps.
+
+Stage Summary:
+- 44 files changed (43 modified + 1 new SkipPrologueOverlay.tsx), ~+1600/-30 lines across 1 commit.
+- Typecheck: `node scripts/tsc7.mjs --noEmit` → exit 0 (combined).
+- Invariants preserved: poems untouched, <Physics interpolate={false}> untouched, KCC ownership untouched, postprocessing depth-blit patch untouched, no dev server/vitest/build runs.
+- Headline wins: (1) ultra-only SSR wet streets 1024-res mirror puddles; (2) continuous walk↔run blend (no more Shift pop); (3) act-mood audio now actually plays (was dead code); (4) NPC positional dialogue voice (was silent); (5) 8 filmic CSS classes activated; (6) cutscene skip camera ease-back (no more hard snap); (7) AgX tone mapping option; (8) +6 GodRays scenes.
+- Risks/TODOs for author QA on Vercel: AgX mode swap may need scene-change to apply (toggle UX quirk, not breakage); ultra SSR reflections hidden below 60% rain (intentional, tunable in getReflectorMaterialSettings); no runtime QA performed locally per user request — visual verification on Vercel is next step. Key scenes to check: street_night (SSR+GodRays+AgX stack on ultra), city_square, river_pier, chk_campfire_night (GodRays campfire), home_evening (existing GodRays unchanged).
+- Unresolved next-phase priorities (unchanged from tick 10): Mixamo↔Quaternius real-clip remap (needs Adobe login + asset pipeline), CSM for outdoor shadows, MotionBlur for cutscenes, more Acts 3–4 content, more orphaned HUD mounts (CyberpunkMinimap, QuickTimeEventOverlay, QuestObjectiveCard still unmounted).

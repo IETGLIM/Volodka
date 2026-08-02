@@ -16,6 +16,13 @@ export const SFX_PRESETS: Record<string, SfxConfig> = {
   ui_close: { type: 'sine', frequency: 330, duration: 0.05, gain: 0.1 },
   item_use: { type: 'sine', frequency: 520, duration: 0.06, gain: 0.14 },
   screenshot: { type: 'square', frequency: 1200, duration: 0.04, gain: 0.1 },
+  // ─── Spatial impact SFX (used by playSpatialSfx for diegetic world objects) ──
+  // These mirror the FOOTSTEP_PRESETS material names so DynamicProps / PatrollingCreeps
+  // can switch from non-spatial playFootstep(material) to spatial playSpatialSfx(material, pos)
+  // without losing per-material timbre. Short transients — match the footstep character.
+  metal: { type: 'square', frequency: 400, duration: 0.08, gain: 0.14 },
+  tile: { type: 'sine', frequency: 250, duration: 0.06, gain: 0.12 },
+  wood: { type: 'triangle', frequency: 180, duration: 0.07, gain: 0.13 },
 };
 
 export const FOOTSTEP_PRESETS: Record<string, FootstepConfig> = {
@@ -30,4 +37,10 @@ export const FOOTSTEP_PRESETS: Record<string, FootstepConfig> = {
   gravel: { baseFreq: 120, noiseDuration: 0.1, gain: 0.13, filterQ: 0.7, filterType: 'bandpass', clickFreq: 600, clickGain: 0.02 },
   grass: { baseFreq: 70, noiseDuration: 0.14, gain: 0.05, filterQ: 0.5, filterType: 'lowpass', clickFreq: 0, clickGain: 0 },
   metal_grate: { baseFreq: 500, noiseDuration: 0.12, gain: 0.09, filterQ: 3.0, filterType: 'bandpass', clickFreq: 2000, clickGain: 0.06 },
+  // ─── FloorMaterial union closers (sceneDefinition.ts already lists these) ──
+  // stone: concrete/stone step — bandpass ~180Hz Q=1.2, short ~0.08s decay, click ~700Hz
+  stone: { baseFreq: 180, noiseDuration: 0.08, gain: 0.11, filterQ: 1.2, filterType: 'bandpass', clickFreq: 700, clickGain: 0.04 },
+  // dream: ethereal dream step — lowpass ~200Hz Q=0.4, longer ~0.18s decay, no click
+  // (subtle vibrato is shaped by the music engine's pad LFO bed; the step itself stays clean)
+  dream: { baseFreq: 200, noiseDuration: 0.18, gain: 0.07, filterQ: 0.4, filterType: 'lowpass', clickFreq: 0, clickGain: 0 },
 };

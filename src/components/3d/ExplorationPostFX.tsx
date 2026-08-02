@@ -462,7 +462,7 @@ function PostFXPipeline() {
     selectedPreset,
     coarsePointer,
   );
-  const { brightness: userBrightness } = useVisualSettings();
+  const { brightness: userBrightness, agxToneMapping } = useVisualSettings();
   const userBrightnessOffset = (userBrightness - 1) * 0.3;
 
   const colorGrade = SCENE_COLOR_GRADE[sceneId]
@@ -482,6 +482,14 @@ function PostFXPipeline() {
   const toneExposure = SCENE_TONE_EXPOSURE[sceneId]
     ?? SCENE_TONE_EXPOSURE[resolveDerivedSceneId(sceneId as SceneId)]
     ?? SCENE_VISIBILITY.toneExposure;
+  // AgX tone mapping (ultra-only, user-toggleable via SettingsPanel →
+  // volodka_agx). AgX renders darker overall than ACES_FILMIC — apply a
+  // +0.15 exposure lift to keep authored scene brightness parity. The lift
+  // is applied to the ToneMapping `exposure` prop only (never to the
+  // SCENE_TONE_EXPOSURE table) so non-ultra / AgX-off paths are unaffected.
+  const useAgx = agxToneMapping && preset.id === 'ultra' && selectedPreset === 'ultra';
+  const toneMappingMode = useAgx ? ToneMappingMode.AGX : ToneMappingMode.ACES_FILMIC;
+  const agxExposureLift = useAgx ? 0.15 : 0;
   // Ultra-only refinements: HUGE bloom kernel (softer filmic falloff), eskil
   // vignette (photographic falloff) on hero scenes, higher DOF CoC resolution.
   const bloomKernelSize = preset.id === 'ultra' ? KernelSize.HUGE : KernelSize.LARGE;
@@ -741,8 +749,8 @@ function PostFXPipeline() {
           blendFunction={BlendFunction.NORMAL}
         />
         <ToneMapping
-          mode={ToneMappingMode.ACES_FILMIC}
-          exposure={SCENE_VISIBILITY.toneExposure}
+          mode={toneMappingMode}
+          exposure={SCENE_VISIBILITY.toneExposure + agxExposureLift}
         />
         {wantsSmaa ? <SMAA preset={smaaPreset} /> : null as any}
       </ManagedEffectComposer>
@@ -830,7 +838,7 @@ function PostFXPipeline() {
       <BrightnessContrast brightness={effectiveBrightness} contrast={effectiveContrast} blendFunction={BlendFunction.NORMAL} />
       {proceduralLut ? <LUT lut={proceduralLut} tetrahedralInterpolation blendFunction={BlendFunction.NORMAL} /> : null as any}
       {wantsNoise ? <Noise premultiply blendFunction={BlendFunction.NORMAL} opacity={noiseOpacity} /> : null as any}
-      <ToneMapping mode={ToneMappingMode.ACES_FILMIC} exposure={toneExposure} />
+      <ToneMapping mode={toneMappingMode} exposure={toneExposure + agxExposureLift} />
       {wantsSmaa ? <SMAA preset={smaaPreset} /> : null as any}
     </ManagedEffectComposer>
   );

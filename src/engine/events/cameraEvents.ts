@@ -22,4 +22,11 @@ export interface CameraEvents {
   'camera:intro_wake': Record<string, never>;
   'camera:poem_reading_start': Record<string, never>;
   'camera:poem_reading_end': Record<string, never>;
+  /**
+   * Emitted by `setCinematicPresentationMode('third_person', { easeMs })` when a
+   * cutscene skip wants a smooth cubic-bezier (0.4, 0, 0.2, 1) blend from the
+   * cutscene-end camera pose back to the exploration strategy target over
+   * `durationMs` (~600ms). Consumed by FollowCamera's frame tick.
+   */
+  'camera:ease_back': { durationMs: number };
 }

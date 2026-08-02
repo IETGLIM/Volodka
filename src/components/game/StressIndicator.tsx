@@ -15,7 +15,9 @@ export function StressIndicator() {
 
   return (
     <div className="fixed inset-0 pointer-events-none" data-exploration-ui style={{ zIndex: UI_LAYERS.HUD }}>
-      {/* Scanline glitch overlay */}
+      {/* Scanline glitch overlay — hud-filmic-stat-bar-sheen adds a one-shot
+          highlight sweep (CSS-gated on prefers-reduced-motion) so the bar
+          visibly reacts when the stress value crosses the activation threshold. */}
       <motion.div
         animate={{
           opacity: [0.02 * intensity, 0.06 * intensity, 0.02 * intensity],
@@ -25,7 +27,7 @@ export function StressIndicator() {
           repeat: Infinity,
           repeatType: 'reverse',
         }}
-        className="absolute inset-0"
+        className="absolute inset-0 hud-filmic-stat-bar-sheen"
         style={{
           backgroundImage:
             'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.03) 2px, rgba(255,255,255,0.03) 4px)',

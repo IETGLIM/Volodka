@@ -418,6 +418,25 @@ export interface ReflectorMaterialSettings {
   resolution: number;
   blur: [number, number];
   mixStrength: number;
+  /**
+   * Ultra-tier extra: scalar added to the base mirror amount. Replaces the
+   * legacy `preset.id === 'ultra' ? 0.1 : 0` boost in WetStreetGround.
+   * Undefined on medium/high (basic reflector path).
+   */
+  mirrorBoost?: number;
+  /**
+   * Ultra-tier extra: anisotropic streak blur tuple (heavy horizontal,
+   * light vertical) — mimics screen-space SSR streak blur on wet asphalt.
+   * When present, ultra uses this instead of `blur` for the MeshReflectorMaterial.
+   */
+  streakBlur?: [number, number];
+  /**
+   * Ultra-tier extra: rain-intensity threshold below which the SSR mirror
+   * is hidden entirely (0 → faint sheen only on bone-dry streets looks
+   * wrong; better to fall back to the wet MeshStandard look until rain
+   * actually puddles). Range 0–1.
+   */
+  mixShowThreshold?: number;
 }
 
 /** Tiered reflector cost — medium is lightest; high lighter than ultra. */
@@ -425,13 +444,58 @@ export function getReflectorMaterialSettings(
   presetId: Exclude<QualityPresetId, 'auto'>,
 ): ReflectorMaterialSettings {
   if (presetId === 'ultra') {
-    return { resolution: 512, blur: [256, 128], mixStrength: 0.65 };
+    // Ultra-only SSR-style tier: 1024 RT, anisotropic streak blur, strong
+    // mirror + mixStrength. Only mounted when allowsUltraSsrWetStreet()
+    // resolves true (ultra preset, non-winter, non-coarse-pointer, wet scene).
+    return {
+      resolution: 1024,
+      blur: [400, 200],
+      mixStrength: 0.85,
+      mirrorBoost: 0.25,
+      streakBlur: [1024, 32],
+      mixShowThreshold: 0.6,
+    };
   }
   if (presetId === 'high') {
     return { resolution: 384, blur: [192, 96], mixStrength: 0.55 };
   }
   // medium (and low fallback if ever gated)
   return { resolution: 256, blur: [128, 64], mixStrength: 0.4 };
+}
+
+/**
+ * Whether this scene + preset may mount the ultra-only SSR wet-street tier.
+ * Combines the `ssrWetStreets` heavy-feature gate (ultra-only, coarse-pointer
+ * disabled) with the wet-street scene + winter guards. Winter (street_winter)
+ * always falls through to the ice-sheen path — planar reflectors on snow look
+ * wrong.
+ */
+export function allowsUltraSsrWetStreet(
+  sceneId: SceneId,
+  selectedPreset: QualityPresetId,
+  options?: HeavyGfxFeatureOptions,
+): boolean {
+  return (
+    isWetStreetScene(sceneId)
+    && allowsHeavyGfxFeature(selectedPreset, 'ssrWetStreets', options)
+    && !isWinterScene(sceneId)
+  );
+}
+
+/** Winter sidewalk ice sheen scenes — planar reflector is wrong on snow. */
+export function isWinterScene(sceneId: SceneId): boolean {
+  return sceneId === 'street_winter';
+}
+
+/**
+ * Ultra-only SSR mirror amount — stronger than the basic reflector path
+ * (0.55 at dry → 0.92 at full storm). Combines with the `mixShowThreshold`
+ * rain gate in WetStreetGround so reflections only manifest once rain
+ * actually puddles the asphalt.
+ */
+export function getUltraSsrWetStreetMirrorAmount(rainIntensity: number): number {
+  const t = Math.min(1, Math.max(0, rainIntensity));
+  return Math.min(0.92, 0.55 + t * 0.37);
 }
 
 /**

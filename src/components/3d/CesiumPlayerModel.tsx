@@ -64,6 +64,7 @@ interface CesiumPlayerModelInnerProps extends ProceduralPlayerModelProps {
 function CesiumPlayerModelInner({
   modelScale,
   currentAnimRef,
+  currentHSpeedRef,
   rotationRef,
   onReadyChange,
 }: CesiumPlayerModelInnerProps) {
@@ -130,6 +131,7 @@ function CesiumPlayerModelInner({
     animations: gltf.animations,
     actions,
     currentAnimRef,
+    currentHSpeedRef,
   });
 
   useFrameTick('player', () => {

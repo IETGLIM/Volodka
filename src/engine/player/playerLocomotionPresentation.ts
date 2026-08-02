@@ -3,6 +3,22 @@ import {
   getAccessibilityLocomotionSpeed,
   isEffectiveReducedMotion,
 } from '@/engine/accessibility/accessibilitySettings';
+import { WALK_SPEED, RUN_SPEED } from '@/engine/player/playerConstants';
+
+/**
+ * Hermite smoothstep — clamped linear remap with C1 continuity at both edges.
+ * Used to drive the continuous walk↔run blend weight from actual hSpeed so
+ * the AnimationAction weights ramp smoothly across the walk→run speed band
+ * instead of snapping 0/1 on the binary `running` input flag.
+ *
+ * NOTE: animation-side only. The KCC physics speed itself stays binary
+ * (WALK_SPEED / RUN_SPEED) per the project invariants — only the visual
+ * blend between the walk and run AnimationActions becomes continuous.
+ */
+export function smoothstep(edge0: number, edge1: number, x: number): number {
+  const t = Math.max(0, Math.min(1, (x - edge0) / (edge1 - edge0)));
+  return t * t * (3 - 2 * t);
+}
 
 export type LocomotionAnimState = 'idle' | 'walk' | 'run' | 'jump' | 'fall' | 'combat';
 
@@ -54,8 +70,8 @@ export interface ExplorationCameraMotionScale {
   bobScale: number;
 }
 
-const WALK_CLIP_TIME_SCALE = 1.05;
-const RUN_CLIP_TIME_SCALE = 1.45;
+export const WALK_CLIP_TIME_SCALE = 1.05;
+export const RUN_CLIP_TIME_SCALE = 1.45;
 const MOVE_BLEND_DAMP = 4;
 
 export function dampMoveBlend(
@@ -127,7 +143,22 @@ export function resolveLockedLocomotionPresentation(
   };
 }
 
-export function resolveLocomotionClipState(anim: string): LocomotionClipPresentation {
+/**
+ * Resolve the locomotion clip presentation for a given anim state + hSpeed.
+ *
+ * `runWeight` is now CONTINUOUS: a smoothstep over [WALK_SPEED*0.7, RUN_SPEED*0.85]
+ * driven by the actual horizontal speed. The blend band starts slightly below
+ * walk-speed and tops out slightly below run-speed, so the visual crossfade
+ * reads as a natural acceleration rather than a snap on the binary `running`
+ * input flag. Animation-side only — KCC physics velocity stays binary.
+ *
+ * The hSpeed defaults to 0 so non-locomotion callers (cinematic rebinds,
+ * procedural-lite fallback) get a safe walk-only weight without breaking.
+ */
+export function resolveLocomotionClipState(
+  anim: string,
+  hSpeed: number = 0,
+): LocomotionClipPresentation {
   if (anim !== 'walk' && anim !== 'run') {
     return {
       locomotionActive: false,
@@ -136,11 +167,12 @@ export function resolveLocomotionClipState(anim: string): LocomotionClipPresenta
       runWeight: 0,
     };
   }
+  const runWeight = smoothstep(WALK_SPEED * 0.7, RUN_SPEED * 0.85, hSpeed);
   return {
     locomotionActive: true,
     walkTimeScale: WALK_CLIP_TIME_SCALE,
     runTimeScale: RUN_CLIP_TIME_SCALE,
-    runWeight: anim === 'run' ? 1 : 0,
+    runWeight,
   };
 }
 

@@ -91,6 +91,7 @@ const DEFAULTS: Record<string, number | boolean> = {
   volodka_mouse_sens: 5,
   volodka_invert_y: false,
   volodka_pointer_lock: false,
+  volodka_agx: true,
 };
 
 const QUALITY_OPTIONS: { id: QualityPresetId; label: string }[] = [
@@ -114,6 +115,8 @@ function VisualSettingsTab({
   setParticles,
   camShake,
   setCamShake,
+  agx,
+  setAgx,
   brightness,
   setBrightness,
   a11y,
@@ -127,6 +130,8 @@ function VisualSettingsTab({
   setParticles: (v: boolean) => void;
   camShake: boolean;
   setCamShake: (v: boolean) => void;
+  agx: boolean;
+  setAgx: (v: boolean) => void;
   brightness: number;
   setBrightness: (v: number) => void;
   a11y: AccessibilitySettingsSnapshot;
@@ -192,6 +197,14 @@ function VisualSettingsTab({
         checked={camShake}
         onChange={(v) => { setCamShake(v); persist('volodka_cam_shake', v); applyVisualSettings(); }}
       />
+      <CyberToggle
+        label="AgX тонмаппинг (ultra)"
+        checked={agx}
+        onChange={(v) => { setAgx(v); persist('volodka_agx', v); applyVisualSettings(); }}
+      />
+      <p className="font-mono text-[10px] text-slate-500/80 leading-relaxed -mt-2">
+        Современный кинематографичный тонмаппинг на пресете «Ультра». AgX темнее ACES — экспозиция автокомпенсируется (+0.15).
+      </p>
       <SectionDivider />
       <CyberSlider
         label="Яркость"
@@ -320,6 +333,7 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
   const [scanlines, setScanlines] = useState(() => lsGetBool('volodka_scanlines', true));
   const [particles, setParticles] = useState(() => lsGetBool('volodka_particles', true));
   const [camShake, setCamShake] = useState(() => lsGetBool('volodka_cam_shake', true));
+  const [agx, setAgx] = useState(() => lsGetBool('volodka_agx', true));
   const [brightness, setBrightness] = useState(() => lsGetNumber('volodka_brightness', 100));
 
   // ── Controls state ──
@@ -346,6 +360,7 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
     setScanlines(DEFAULTS.volodka_scanlines as boolean);
     setParticles(DEFAULTS.volodka_particles as boolean);
     setCamShake(DEFAULTS.volodka_cam_shake as boolean);
+    setAgx(DEFAULTS.volodka_agx as boolean);
     setBrightness(DEFAULTS.volodka_brightness as number);
     setMouseSens(DEFAULTS.volodka_mouse_sens as number);
     setInvertY(DEFAULTS.volodka_invert_y as boolean);
@@ -412,6 +427,8 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
             setParticles={setParticles}
             camShake={camShake}
             setCamShake={setCamShake}
+            agx={agx}
+            setAgx={setAgx}
             brightness={brightness}
             setBrightness={setBrightness}
             a11y={a11y}

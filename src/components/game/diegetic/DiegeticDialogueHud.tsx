@@ -8,6 +8,7 @@ import {
   useDiegeticNarrativeState,
   useStoryContext,
 } from '@/store/selectors';
+import { useGameStore } from '@/store/gameStore';
 import { useDialogueHistoryStore } from '@/store/stores/dialogueHistoryStore';
 import {
   getDialogueNodes,
@@ -66,6 +67,14 @@ export function DiegeticDialogueHud() {
   const diegetic = useDiegeticNarrativeState();
   const storyCtx = useStoryContext();
   const dialogueCtx = useDialogueContext();
+  // CRT-monitor scenes: dialogue plate gets the scanline + CRT overlay treatment
+  // (terminal/mainframe/basement/office — places where the diegetic frame is a screen).
+  const currentSceneId = useGameStore((s) => s.exploration.currentSceneId);
+  const isCrtScene =
+    currentSceneId === 'volodka_room'
+    || currentSceneId === 'guild_mainframe'
+    || currentSceneId === 'library_basement'
+    || currentSceneId === 'office_day';
 
   const isOpen = diegetic != null;
   const nodeId = diegetic?.nodeId ?? '';
@@ -343,7 +352,7 @@ export function DiegeticDialogueHud() {
       >
         <FocusTrap>
         <div
-          className="mx-auto max-w-3xl hud-filmic-dialogue-plate hud-filmic-dialogue-breath hud-filmic-depth-shimmer overflow-hidden flex flex-col"
+          className={`mx-auto max-w-3xl hud-filmic-dialogue-plate hud-filmic-dialogue-breath hud-filmic-depth-shimmer overflow-hidden flex flex-col${isCrtScene ? ' hud-filmic-crt-scanlines hud-filmic-crt-overlay' : ''}`}
           style={{ maxHeight: 'calc(100dvh - 32px - env(safe-area-inset-bottom, 0px))' }}
         >
           <div className="px-4 pt-3 pb-1 flex items-center justify-between gap-2">

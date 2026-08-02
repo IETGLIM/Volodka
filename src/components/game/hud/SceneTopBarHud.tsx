@@ -23,12 +23,16 @@ import { FootstepPedometer } from '@/components/game/hud/parts/FootstepPedometer
 import { SessionPlayTimer } from '@/components/game/hud/parts/SessionPlayTimer';
 import { PlayerCoordinatesDisplay } from '@/components/game/hud/parts/PlayerCoordinatesDisplay';
 import { KarmaTierBadge } from '@/components/game/hud/parts/KarmaTierBadge';
+import { KarmaRing } from '@/components/game/hud/parts/KarmaRing';
+import { LevelBadge } from '@/components/game/hud/parts/LevelBadge';
+import { CompassIndicator } from '@/components/game/hud/parts/CompassIndicator';
 import { StatPulse } from '@/components/game/hud/parts/StatPulse';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useHudQuietStyle } from '@/hooks/useHudQuiet';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { usePlayerKarma } from '@/store/selectors/playerSelectors';
 import { usePlayerEnergy, usePlayerStress } from '@/store/selectors/playerSelectors';
+import { useHUDControllerState } from '@/store/selectors';
 
 export const SceneTopBarHud = memo(function SceneTopBarHud() {
   const quietStyle = useHudQuietStyle();
@@ -38,6 +42,11 @@ export const SceneTopBarHud = memo(function SceneTopBarHud() {
   const stress = usePlayerStress();
   const isLowEnergy = energy <= 30;
   const isHighStress = stress >= 70;
+  // Compact-widget data: level + XP + perk count from the shared HUD controller state.
+  // (justLeveled is left false here — the LevelBadge internally animates the XP bar
+  //  width on every prop change, so the pulse is purely a bonus, not a correctness gap.)
+  const { level, xp, xpToNextLevel: xpToNext, unlockedPerks } = useHUDControllerState();
+  const perkCount = unlockedPerks?.length ?? 0;
 
   return (
     <div
@@ -67,7 +76,11 @@ export const SceneTopBarHud = memo(function SceneTopBarHud() {
         <TopBarDataTicker />
       </motion.div>
 
-      {/* Top-right: karma tier badge + exploration progress ring + environment mood bar */}
+      {/* Top-right: karma tier badge + karma ring + level badge + compass indicator +
+          exploration progress ring + environment mood bar.
+          Compact widgets (KarmaRing / LevelBadge / CompassIndicator) are wrapped in
+          `hidden sm:flex` so they only appear on wider viewports — keeps mobile top-bar
+          uncluttered and avoids overlap with the CompassHUD strip (top: ~58px). */}
       <motion.div
         initial={reducedMotion ? false : { opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
@@ -75,6 +88,17 @@ export const SceneTopBarHud = memo(function SceneTopBarHud() {
         className="absolute top-2 right-2 flex items-start gap-2"
       >
         <KarmaTierBadge karma={karma} />
+        <div className="hidden sm:flex items-center gap-2">
+          <KarmaRing karma={karma} />
+          <LevelBadge
+            level={level}
+            perkCount={perkCount}
+            xp={xp}
+            xpToNext={xpToNext}
+            justLeveled={false}
+          />
+          <CompassIndicator />
+        </div>
         <div className="relative">
           <EnvironmentMoodIndicator />
           <StatPulse active={isLowEnergy || isHighStress} color={isHighStress ? 'rose' : 'amber'} />

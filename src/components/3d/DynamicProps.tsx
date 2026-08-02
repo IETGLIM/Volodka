@@ -37,7 +37,16 @@ function PropBody({ def }: { def: DynamicPropDef }) {
     const now = performance.now() / 1000;
     if (now - lastImpactRef.current < IMPACT_COOLDOWN_S) return;
     lastImpactRef.current = now;
-    audioEngine.playFootstep(IMPACT_MATERIAL[def.kind]);
+    // Spatial impact — anchor the clatter at the prop's rest position so the
+    // player hears directional clutter when kicking cans/bottles/boxes.
+    // IMPACT_MATERIAL keys ('metal', 'tile', 'wood') resolve to SFX_PRESETS
+    // entries added in sfxPresets.ts (short transient per material). The prop
+    // may have shifted a few cm from physics; the rest position is within
+    // spatial audio resolution tolerance.
+    const px = def.position[0];
+    const py = def.position[1] + restHeight(def.kind);
+    const pz = def.position[2];
+    audioEngine.playSpatialSfx(IMPACT_MATERIAL[def.kind], [px, py, pz]);
   };
 
   const common = {

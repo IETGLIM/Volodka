@@ -80,7 +80,8 @@ function CompassMarker({
         bottom: 0,
       }}
     >
-      {/* Direction label */}
+      {/* Direction label — hud-filmic-compass-glow adds a warm glow pulse on the
+          active cardinal (С/В/Ю/З) so the player's facing direction reads at a glance. */}
       <span
         className={`font-mono tracking-wider transition-all duration-150 ${
           isActive
@@ -88,7 +89,7 @@ function CompassMarker({
             : isCardinal
               ? 'text-slate-400 text-xs font-medium'
               : 'text-slate-500 text-[10px] font-normal'
-        }`}
+        }${isActive && isCardinal ? ' hud-filmic-compass-glow' : ''}`}
         style={
           isActive
             ? {

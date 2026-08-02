@@ -8,7 +8,9 @@ import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { useIsMobileVisual } from '@/hooks/use-mobile';
 import { allowsHeavyGfxFeature } from '@/engine/graphics/qualityFeatureGates';
 import {
+  allowsUltraSsrWetStreet,
   getReflectorMaterialSettings,
+  getUltraSsrWetStreetMirrorAmount,
   getWinterIceSheenSettings,
   isWetStreetScene,
   scaleReflectorMixStrength,
@@ -41,11 +43,24 @@ function WetStreetGroundPbr({
   const reducedMotion = useEffectiveReducedMotion();
   const reflectorSettings = getReflectorMaterialSettings(preset.id);
   const winterSheen = isWinter ? getWinterIceSheenSettings() : null;
-  const usePlanarReflector =
-    isWetStreetScene(sceneId)
+  // Three-state wet-street gate:
+  //  (1) Ultra SSR tier — 1024-res planar reflector + anisotropic streak blur
+  //      + rain-gated strong mirror (only on ultra + non-winter + non-coarse
+  //      + non-reduced-motion + wet-street scene). The user explicitly asked
+  //      for ultra-only SSR wet streets — medium/high keep the basic reflector.
+  //  (2) Basic reflector tier — legacy 256/384-res path (medium/high).
+  //  (3) Plain wet MeshStandard — low/auto/winter/coarse/reduced-motion.
+  const useUltraSsr =
+    !isWinter
+    && !reducedMotion
+    && allowsUltraSsrWetStreet(sceneId, selectedPreset, { coarsePointer });
+  const useBasicReflector =
+    !useUltraSsr
     && !isWinter
     && !reducedMotion
+    && isWetStreetScene(sceneId)
     && allowsHeavyGfxFeature(selectedPreset, 'reflector', { coarsePointer });
+  const usePlanarReflector = useUltraSsr || useBasicReflector;
   const groundColor = groundColorOverride ?? (winterSheen?.groundColor ?? '#ffffff');
   const dryRoughness = winterSheen
     ? Math.max(0.12, winterSheen.dryRoughness - winterSheen.sheenBoost * 0.5)
@@ -56,10 +71,20 @@ function WetStreetGroundPbr({
   const effectiveRain = isWinter ? 0 : rainIntensity;
   const mixStrength = scaleReflectorMixStrength(reflectorSettings.mixStrength, effectiveRain);
   const maps = usePolyHavenPbr(isWinter ? 'concrete_floor_painted' : 'asphalt_02', size / 60);
-  // Ultra gets a slightly stronger wet-street mirror — neon signs read as genuinely puddled
-  // rather than merely damp. Reflector render-target resolution is unchanged (no VRAM cost).
-  const mirrorBoost = preset.id === 'ultra' ? 0.1 : 0;
-  const mirrorAmount = (0.5 + mirrorBoost) * Math.min(1, 0.4 + effectiveRain * 0.6);
+  // Ultra SSR tier uses the rain-gated strong mirror formula; basic reflector
+  // keeps the legacy 0.5 + 0.1 ultra mirror boost (ultra never reaches the
+  // basic path now — useUltraSsr takes precedence when allowed).
+  const basicMirrorBoost = useBasicReflector && preset.id === 'ultra' ? 0.1 : 0;
+  const mirrorAmount = useUltraSsr
+    ? effectiveRain >= (reflectorSettings.mixShowThreshold ?? 0)
+      ? getUltraSsrWetStreetMirrorAmount(effectiveRain)
+      : 0
+    : (0.5 + basicMirrorBoost) * Math.min(1, 0.4 + effectiveRain * 0.6);
+  // Ultra SSR tier swaps the uniform blur for an anisotropic streak tuple
+  // (heavy horizontal, light vertical) — mimics screen-space SSR streak blur.
+  const reflectorBlur: [number, number] = useUltraSsr
+    ? (reflectorSettings.streakBlur ?? reflectorSettings.blur)
+    : reflectorSettings.blur;
 
   const reflectorMatRef = useRef<ComponentRef<typeof MeshReflectorMaterial>>(null);
   const wetActive = effectiveRain > 0;
@@ -98,7 +123,7 @@ function WetStreetGroundPbr({
           aoMap={maps.aoMap}
           roughness={dryRoughness}
           metalness={dryMetalness}
-          blur={reflectorSettings.blur}
+          blur={reflectorBlur}
           resolution={reflectorSettings.resolution}
           mixBlur={0.85}
           mixStrength={mixStrength}
@@ -142,11 +167,20 @@ function WetStreetGroundProceduralFallback({
   const reducedMotion = useEffectiveReducedMotion();
   const reflectorSettings = getReflectorMaterialSettings(preset.id);
   const winterSheen = isWinter ? getWinterIceSheenSettings() : null;
-  const usePlanarReflector =
-    isWetStreetScene(sceneId)
+  // Parity with the PBR variant: three-state wet-street gate so the
+  // procedural fallback (loaded while PBR maps stream in) matches the PBR
+  // component's ultra SSR / basic reflector / MeshStandard split.
+  const useUltraSsr =
+    !isWinter
+    && !reducedMotion
+    && allowsUltraSsrWetStreet(sceneId, selectedPreset, { coarsePointer });
+  const useBasicReflector =
+    !useUltraSsr
     && !isWinter
     && !reducedMotion
+    && isWetStreetScene(sceneId)
     && allowsHeavyGfxFeature(selectedPreset, 'reflector', { coarsePointer });
+  const usePlanarReflector = useUltraSsr || useBasicReflector;
   const groundColor = groundColorOverride ?? (winterSheen?.groundColor ?? '#3a3a52');
   const dryRoughness = winterSheen
     ? Math.max(0.12, winterSheen.dryRoughness - winterSheen.sheenBoost * 0.5)
@@ -161,9 +195,16 @@ function WetStreetGroundProceduralFallback({
     dryMetalness,
     rainIntensity: effectiveRain,
   });
-  // Parity with the PBR variant: Ultra mirror boost keeps the two code paths in sync.
-  const mirrorBoost = preset.id === 'ultra' ? 0.1 : 0;
-  const mirrorAmount = (0.5 + mirrorBoost) * Math.min(1, 0.4 + effectiveRain * 0.6);
+  // Parity with the PBR variant: Ultra SSR mirror formula + anisotropic streak blur.
+  const basicMirrorBoost = useBasicReflector && preset.id === 'ultra' ? 0.1 : 0;
+  const mirrorAmount = useUltraSsr
+    ? effectiveRain >= (reflectorSettings.mixShowThreshold ?? 0)
+      ? getUltraSsrWetStreetMirrorAmount(effectiveRain)
+      : 0
+    : (0.5 + basicMirrorBoost) * Math.min(1, 0.4 + effectiveRain * 0.6);
+  const reflectorBlur: [number, number] = useUltraSsr
+    ? (reflectorSettings.streakBlur ?? reflectorSettings.blur)
+    : reflectorSettings.blur;
 
   useLayoutEffect(() => {
     if (usePlanarReflector) return;
@@ -203,7 +244,7 @@ function WetStreetGroundProceduralFallback({
           color={groundColor}
           roughness={dryRoughness}
           metalness={dryMetalness}
-          blur={reflectorSettings.blur}
+          blur={reflectorBlur}
           resolution={reflectorSettings.resolution}
           mixBlur={0.85}
           mixStrength={mixStrength}
