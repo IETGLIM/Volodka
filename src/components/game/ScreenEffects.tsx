@@ -249,7 +249,7 @@ export function ScreenEffects() {
             animate={{ opacity: 0 }}
             exit={{ opacity: 0 }}
             transition={{ duration: damageVignette.duration / 1000, ease: 'easeOut' }}
-            className="fixed inset-0 pointer-events-none"
+            className="fixed inset-0 pointer-events-none damage-flash-overlay"
             style={{
               zIndex: UI_LAYERS.DAMAGE_FLASH,
               background: `radial-gradient(ellipse at center, rgba(255,30,30,${damageVignette.intensity * 0.3}) 20%, rgba(180,0,0,${damageVignette.intensity * 0.6}) 60%, rgba(0,0,0,${damageVignette.intensity * 0.4}) 100%)`,

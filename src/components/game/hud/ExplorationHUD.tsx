@@ -55,7 +55,7 @@ function CriticalStatusWhisper({
     >
       <div className="hud-filmic-caption px-4">
         <div className="hud-filmic-rule hud-filmic-rule--wide" aria-hidden />
-        <p className="hud-filmic-body text-[12px]" style={{ color: 'var(--hud-filmic-danger)' }}>
+        <p className="hud-filmic-body text-[12px] text-neon-amber" style={{ color: 'var(--hud-filmic-danger)' }}>
           {line}
         </p>
       </div>
@@ -84,7 +84,7 @@ export function ExplorationHUD(props: HUDProps) {
     <div
       data-exploration-ui
       data-testid="game-hud"
-      className={`fixed inset-0 pointer-events-none transition-opacity duration-700 ease-out ${hudMounted ? 'opacity-100' : 'opacity-0'}`}
+      className={`fixed inset-0 pointer-events-none transition-opacity duration-700 ease-out hud-element-mounted ${hudMounted ? 'opacity-100' : 'opacity-0'}`}
       style={{ zIndex: UI_LAYERS.HUD }}
     >
       <SceneAmbientVignette />
@@ -111,7 +111,7 @@ export function ExplorationHUD(props: HUDProps) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute right-4 top-4 hud-filmic-toast rounded-sm flex items-center gap-2 px-3 py-2"
+            className="absolute right-4 top-4 hud-filmic-toast autosave-indicator rounded-sm flex items-center gap-2 px-3 py-2"
             style={{ zIndex: UI_LAYERS.HUD + 2 }}
             role="status"
             aria-live="polite"

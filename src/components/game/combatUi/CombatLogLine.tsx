@@ -40,12 +40,14 @@ export function CombatLogLine({ entry, className }: { entry: CombatLogEntry; cla
   const style = TYPE_STYLES[entry.type] || 'text-slate-400';
   const icon = TYPE_ICONS[entry.type] || '●';
 
+  const isOutcome = entry.type === 'victory' || entry.type === 'defeat';
+
   return (
     <motion.div
       initial={{ opacity: 0, x: -8 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.15 }}
-      className={`text-[10px] sm:text-xs leading-relaxed font-mono ${style} ${className || ''}`}
+      className={`text-[10px] sm:text-xs leading-relaxed font-mono ${style} ${isOutcome ? 'text-glow-pulse ' : ''}${className || ''}`}
     >
       <span className="opacity-30 mr-1 text-[8px]">Т{entry.turn}</span>
       <span className="mr-0.5">{icon}</span>

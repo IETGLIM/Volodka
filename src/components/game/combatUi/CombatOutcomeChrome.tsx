@@ -21,7 +21,7 @@ export function CombatOutcomeChrome({
       animate={{ scale: 1, opacity: 1 }}
       className={`rounded-lg mb-2 border overflow-hidden ${
         status === 'victory'
-          ? 'bg-emerald-950/70 border-emerald-700/40'
+          ? 'border-breathe bg-emerald-950/70 border-emerald-700/40'
           : status === 'defeat'
             ? 'bg-red-950/70 border-red-700/40'
             : 'bg-amber-950/70 border-amber-700/40'

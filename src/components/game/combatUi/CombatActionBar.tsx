@@ -59,7 +59,7 @@ export function CombatActionBar({
       )}
 
       {!isTouchDevice && (
-        <div className="flex gap-1.5 mb-2">
+        <div className="glass-panel flex gap-1.5 mb-2">
           <TerminalButton
             onClick={onAttack}
             disabled={actionsDisabled}

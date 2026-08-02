@@ -129,7 +129,7 @@ export function CinematicNarrativeFrame({
               {displayedText}
               {!done && (
                 <span
-                  className="inline-block w-0.5 h-[1.1em] ml-1 align-middle"
+                  className="inline-block w-0.5 h-[1.1em] ml-1 align-middle dialogue-text-cursor"
                   style={{
                     background: accentColor,
                     boxShadow: `0 0 8px ${accentColor}`,

@@ -645,3 +645,215 @@ for (const a of ACHIEVEMENTS) {
 
 /** Total achievement count */
 export const TOTAL_ACHIEVEMENTS = ACHIEVEMENTS.length;
+
+/* ═══════════════════════════════════════════════════════════════════
+   Trophy Achievement System — condition-based, auto-checked via snapshot
+   ═══════════════════════════════════════════════════════════════════ */
+
+export type TrophyCategory = 'story' | 'combat' | 'exploration' | 'poetry' | 'social';
+
+/** Declarative condition evaluated against a GameStoreSnapshot. */
+export type TrophyCondition =
+  | { type: 'poems_collected'; min: number }
+  | { type: 'combats_won'; min: number }
+  | { type: 'scenes_visited'; min: number }
+  | { type: 'skill_level'; skill: string; min: number }
+  | { type: 'karma'; min?: number; max?: number }
+  | { type: 'items_owned'; min: number }
+  | { type: 'npcs_friendly'; min: number }
+  | { type: 'poem_powers_used'; min: number }
+  | { type: 'thoughts_acquired'; min: number }
+  | { type: 'equipment_slots_filled'; min: number }
+  | { type: 'time_of_day_range'; min: number; max: number }
+  | { type: 'stress_win'; min: number }
+  | { type: 'flag_set'; flag: string }
+  | { type: 'craft_count'; min: number }
+  | { type: 'act_reached'; min: number };
+
+export interface TrophyAchievement {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  category: TrophyCategory;
+  condition: TrophyCondition;
+}
+
+/** 20 trophy achievements — checked automatically by AchievementWatcher. */
+export const TROPHY_ACHIEVEMENTS: TrophyAchievement[] = [
+  /* ═══ STORY ═══ */
+  {
+    id: 'trophy_first_reading',
+    name: 'Первое чтение',
+    description: 'Собрать первое стихотворение',
+    icon: '📖',
+    category: 'story',
+    condition: { type: 'poems_collected', min: 1 },
+  },
+  {
+    id: 'trophy_poet',
+    name: 'Поэт',
+    description: 'Собрать все основные стихи',
+    icon: '✨',
+    category: 'poetry',
+    condition: { type: 'poems_collected', min: TOTAL_MAIN_POEMS },
+  },
+  {
+    id: 'trophy_rebel',
+    name: 'Бунтарь',
+    description: 'Достичь Акта 5',
+    icon: '✊',
+    category: 'story',
+    condition: { type: 'act_reached', min: 5 },
+  },
+  {
+    id: 'trophy_true_ending',
+    name: 'Истинный конец',
+    description: 'Триггер «истинная» концовка',
+    icon: '🌅',
+    category: 'story',
+    condition: { type: 'flag_set', flag: 'ending_true_poet' },
+  },
+  {
+    id: 'trophy_machine_ending',
+    name: 'Машина',
+    description: 'Триггер «машина» концовка',
+    icon: '🤖',
+    category: 'story',
+    condition: { type: 'flag_set', flag: 'ending_machine' },
+  },
+
+  /* ═══ COMBAT ═══ */
+  {
+    id: 'trophy_victory',
+    name: 'Победа',
+    description: 'Выиграть первый бой',
+    icon: '⚔️',
+    category: 'combat',
+    condition: { type: 'combats_won', min: 1 },
+  },
+  {
+    id: 'trophy_coder',
+    name: 'Кодер',
+    description: 'Достичь 20+ в coding',
+    icon: '💻',
+    category: 'combat',
+    condition: { type: 'skill_level', skill: 'coding', min: 20 },
+  },
+  {
+    id: 'trophy_logician',
+    name: 'Логик',
+    description: 'Достичь 20+ в logic',
+    icon: '🧠',
+    category: 'combat',
+    condition: { type: 'skill_level', skill: 'logic', min: 20 },
+  },
+  {
+    id: 'trophy_survivor',
+    name: 'Выживший',
+    description: 'Победить бой при стрессе > 80',
+    icon: '💀',
+    category: 'combat',
+    condition: { type: 'stress_win', min: 80 },
+  },
+
+  /* ═══ EXPLORATION ═══ */
+  {
+    id: 'trophy_explorer',
+    name: 'Исследователь',
+    description: 'Посетить 10 разных локаций',
+    icon: '🧭',
+    category: 'exploration',
+    condition: { type: 'scenes_visited', min: 10 },
+  },
+  {
+    id: 'trophy_crafter',
+    name: 'Мастер крафта',
+    description: 'Скрафтить первый предмет',
+    icon: '🔧',
+    category: 'exploration',
+    condition: { type: 'craft_count', min: 1 },
+  },
+  {
+    id: 'trophy_collector',
+    name: 'Коллекционер',
+    description: 'Иметь 15+ предметов в инвентаре',
+    icon: '🎒',
+    category: 'exploration',
+    condition: { type: 'items_owned', min: 15 },
+  },
+  {
+    id: 'trophy_night_wolf',
+    name: 'Ночной волк',
+    description: 'Бодрствовать в час 00:00–04:00',
+    icon: '🐺',
+    category: 'exploration',
+    condition: { type: 'time_of_day_range', min: 0, max: 4 },
+  },
+  {
+    id: 'trophy_cyber_thinker',
+    name: 'Кибер-мыслитель',
+    description: 'Приобрести 3+ мыслей',
+    icon: '💡',
+    category: 'exploration',
+    condition: { type: 'thoughts_acquired', min: 3 },
+  },
+  {
+    id: 'trophy_full_equip',
+    name: 'Полный комплект',
+    description: 'Заполнить все 6 слотов экипировки',
+    icon: '🛡️',
+    category: 'exploration',
+    condition: { type: 'equipment_slots_filled', min: 6 },
+  },
+
+  /* ═══ POETRY ═══ */
+  {
+    id: 'trophy_poem_power',
+    name: 'Стихотворная мощь',
+    description: 'Использовать 10+ стихотворных способностей',
+    icon: '⚡',
+    category: 'poetry',
+    condition: { type: 'poem_powers_used', min: 10 },
+  },
+
+  /* ═══ SOCIAL ═══ */
+  {
+    id: 'trophy_diplomat',
+    name: 'Дипломат',
+    description: 'Пройти все проверки кубика за один диалог',
+    icon: '🎭',
+    category: 'social',
+    condition: { type: 'flag_set', flag: 'dialogue_all_dice_passed' },
+  },
+  {
+    id: 'trophy_empath',
+    name: 'Эмпат',
+    description: 'Позитивные отношения с 5+ NPC',
+    icon: '🤝',
+    category: 'social',
+    condition: { type: 'npcs_friendly', min: 5 },
+  },
+  {
+    id: 'trophy_dark_karma',
+    name: 'Тёмная карма',
+    description: 'Карма ниже -30',
+    icon: '🖤',
+    category: 'social',
+    condition: { type: 'karma', max: -30 },
+  },
+  {
+    id: 'trophy_light_karma',
+    name: 'Светлая карма',
+    description: 'Карма выше +80',
+    icon: '🕊️',
+    category: 'social',
+    condition: { type: 'karma', min: 80 },
+  },
+];
+
+/** Quick lookup by id */
+export const TROPHY_ACHIEVEMENT_MAP: Record<string, TrophyAchievement> = {};
+for (const t of TROPHY_ACHIEVEMENTS) {
+  TROPHY_ACHIEVEMENT_MAP[t.id] = t;
+}

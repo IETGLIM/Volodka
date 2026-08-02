@@ -34,7 +34,7 @@ export const DamageNumber = React.memo(function DamageNumber({
       animate={{ opacity: 0, y: -68, scale: isCritical ? 1.95 : 1.1, rotate: 0 }}
       exit={{ opacity: 0 }}
       transition={{ duration: isCritical ? 1.85 : 1.2, ease: [0.2, 0, 0.3, 1] }}
-      className={`absolute ${size} font-bold ${color} pointer-events-none select-none ${isCritical ? 'glitch-skew' : ''}`}
+      className={`absolute ${size} font-bold ${color} pointer-events-none select-none text-glow-pulse ${isCritical ? 'glitch-skew' : ''}`}
       style={{
         zIndex: UI_LAYERS.COMBAT,
         textShadow: `0 0 ${isCritical ? 18 : 8}px currentColor, 0 2px 4px rgba(0,0,0,0.8)`,

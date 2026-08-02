@@ -27,7 +27,7 @@ export function CombatEnemyPanel({
       transition={{ delay: introVisible ? 0 : 0.35, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
     >
       <motion.div
-        className="bg-black/60 backdrop-blur-sm border border-red-900/30 rounded-lg p-3 scan-line"
+        className="glass-panel-dark bg-black/60 backdrop-blur-sm border border-red-900/30 rounded-lg p-3 scan-line combat-enemy-card"
         style={{ boxShadow: '0 0 20px rgba(239,68,68,0.1)' }}
       >
         <div className="flex items-center gap-3 mb-2">

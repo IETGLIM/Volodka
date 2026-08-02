@@ -153,7 +153,7 @@ export function PoemPowersSubmenu({
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: positionAbove ? 10 : -10, scale: 0.95 }}
         transition={{ duration: 0.15 }}
-        className={`absolute left-0 right-0 bg-black/95 border border-amber-700/30 rounded-lg backdrop-blur-md overflow-hidden max-h-72 overflow-y-auto overscroll-contain touch-pan-y ${
+        className={`glass-panel-warm absolute left-0 right-0 bg-black/95 border border-amber-700/30 rounded-lg backdrop-blur-md overflow-hidden max-h-72 overflow-y-auto overscroll-contain touch-pan-y ${
           positionAbove ? 'bottom-full mb-2' : 'top-full mt-2'
         }`}
         style={{ zIndex: UI_LAYERS.COMBAT, scrollbarWidth: 'thin', scrollbarColor: '#78716c transparent' }}

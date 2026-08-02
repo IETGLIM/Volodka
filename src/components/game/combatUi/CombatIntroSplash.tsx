@@ -29,7 +29,7 @@ export function CombatIntroSplash({
       <div className="combat-intro-card">
         <div className="combat-intro-slash" aria-hidden />
         <div className="combat-intro-emoji mb-2 enemy-hologram">{emoji}</div>
-        <div className="combat-intro-title mb-2">БОЙ</div>
+        <div className="gradient-text-rose combat-intro-title mb-2">БОЙ</div>
         <div className="text-sm text-red-200/90 font-mono tracking-widest uppercase">{name}</div>
         <div className="text-[10px] text-slate-500 font-mono mt-3 tracking-wide">
           1 атака · 2 защита · 3 стих · 4 побег

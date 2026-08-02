@@ -83,7 +83,7 @@ export function DialogueRelationBar({
       onMouseLeave={() => setHovered(false)}
     >
       <div className="flex items-center justify-between mb-1">
-        <span className="text-[10px] uppercase tracking-wider text-white/50">
+        <span className="data-bar-label text-[10px] uppercase tracking-wider text-white/50">
           {NPC_RELATIONSHIP_LABELS.relation}
         </span>
         <div className="flex items-center gap-2">
@@ -106,7 +106,7 @@ export function DialogueRelationBar({
         </div>
       </div>
 
-      <div className="relative h-1.5 overflow-hidden rounded-full bg-white/10 shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)]">
+      <div className="data-bar relative h-1.5 overflow-hidden rounded-full bg-white/10 shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)]">
         {/* Threshold markers */}
         <div
           className="absolute bottom-0 top-0 w-px bg-white/15 z-10"
@@ -121,7 +121,7 @@ export function DialogueRelationBar({
 
         {/* Fill bar with animated transitions */}
         <motion.div
-          className={`h-full rounded-full ${barColor}`}
+          className={`data-bar-fill h-full rounded-full ${barColor}`}
           initial={reducedMotion ? false : { width: 0 }}
           animate={{ width: `${relationValue}%` }}
           transition={reducedMotion
@@ -139,7 +139,7 @@ export function DialogueRelationBar({
 
       {/* Accent line beneath the bar */}
       <div
-        className="mt-1 h-px w-full"
+        className="glow-line-bottom mt-1 h-px w-full"
         style={{
           background: `linear-gradient(90deg, transparent, ${accentColor}40, transparent)`,
         }}

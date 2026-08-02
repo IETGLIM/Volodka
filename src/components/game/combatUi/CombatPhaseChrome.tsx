@@ -20,7 +20,7 @@ export function CombatPhaseChrome({
             <span className="text-red-400">🔇 СПОСОБНОСТИ ЗАБЛОКИРОВАНЫ</span>
           )}
           {fleeAttempts > 0 && (
-            <span className="text-amber-400/60">
+            <span className="text-neon-amber text-amber-400/60">
               <Zap className="inline size-2.5" /> Побег: +{fleeAttempts * 15}%
             </span>
           )}

@@ -90,12 +90,20 @@ import { EncounterBeatOverlay } from '../EncounterBeatOverlay';
 import { ProximityWhisperOverlay } from '@/components/game/ProximityWhisperOverlay';
 import { QuickInventoryBar } from '@/components/hud/QuickInventoryBar';
 import { ScenePoiCompass } from '@/components/hud/ScenePoiCompass';
+import { AchievementPopup } from '@/components/game/hud/parts/AchievementPopup';
+import { useTrophyAchievementWatcher } from '@/engine/achievements/achievementWatcher';
 import { OrchestratorStatsPanel } from './OrchestratorPanelSlots';
 import { useMobileDetection } from './useMobileDetection';
 import { useGameStore } from '@/store/gameStore';
 import { isAct1DiegeticScene } from '@/engine/narrative/narrativePresentationPolicy';
 import type { PanelCloseHandlers } from './useStablePanelClosers';
 import type { HudSecondaryPanelOpeners } from './useStableHudPanelOpeners';
+
+/** Trophy achievement layer: mounts the watcher hook + popup. */
+function TrophyAchievementLayer() {
+  useTrophyAchievementWatcher();
+  return <AchievementPopup />;
+}
 
 export type GameplayHudPanelOpeners = {
   onOpenQuests: () => void;
@@ -423,6 +431,7 @@ export const GameplayExplorationHud = memo(function GameplayExplorationHud({
           with live countdown timers so the player sees “this buff expires in 12s” without
           opening the poetry book. */}
       <PoemActiveEffectsHud />
+      <TrophyAchievementLayer />
     </>
   );
 });

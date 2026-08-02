@@ -12,6 +12,16 @@ export interface ItemEffect {
   value: number;
 }
 
+/** A single combat bonus entry on an equipment item. */
+export interface CombatBonusEntry {
+  /** Which skill gets the bonus (omit for generic combat bonus). */
+  skill?: TrainablePlayerSkill;
+  /** Numeric value of the bonus. */
+  value: number;
+  /** Whether the value is added flat or multiplied as a percentage. */
+  type: 'flat' | 'percent';
+}
+
 export interface ItemDefinition {
   id: string;
   name: string;
@@ -27,6 +37,8 @@ export interface ItemDefinition {
   questRelated?: boolean; // cannot be dropped if true
   linkedContent?: LinkedContent; // for books that open poems/lore
   equipmentSlot?: string; // slot name for equipment items
+  /** Combat bonuses applied during turn-based combat. */
+  combatBonus?: CombatBonusEntry[];
 }
 
 /* ─── Item Definitions ─── */
@@ -405,6 +417,7 @@ const ITEMS: ItemDefinition[] = [
     maxStack: 1,
     effects: [{ skill: 'coding', value: 2 }],
     equipmentSlot: 'accessory',
+    combatBonus: [{ skill: 'coding', value: 2, type: 'flat' }],
   },
   {
     id: 'code_fragment',
@@ -428,6 +441,7 @@ const ITEMS: ItemDefinition[] = [
     maxStack: 1,
     effects: [{ skill: 'persuasion', value: 2 }],
     equipmentSlot: 'accessory',
+    combatBonus: [{ skill: 'persuasion', value: 2, type: 'flat' }],
   },
   {
     id: 'encrypted_usb',
@@ -452,6 +466,7 @@ const ITEMS: ItemDefinition[] = [
     maxStack: 1,
     effects: [{ skill: 'intuition', value: 3 }],
     equipmentSlot: 'body',
+    combatBonus: [{ skill: 'intuition', value: 2, type: 'flat' }],
   },
   {
     id: 'poem_fragment',
@@ -480,6 +495,7 @@ const ITEMS: ItemDefinition[] = [
       { stat: 'energy', value: 5 },
     ],
     equipmentSlot: 'body',
+    combatBonus: [{ skill: 'empathy', value: 2, type: 'flat' }],
   },
   {
     id: 'network_badge',
@@ -493,6 +509,7 @@ const ITEMS: ItemDefinition[] = [
     effects: [{ skill: 'persuasion', value: 3 }],
     questRelated: true,
     equipmentSlot: 'accessory',
+    combatBonus: [{ skill: 'persuasion', value: 2, type: 'flat' }],
   },
   {
     id: 'archive7_key',
@@ -517,6 +534,7 @@ const ITEMS: ItemDefinition[] = [
     maxStack: 1,
     effects: [{ skill: 'coding', value: 3 }],
     equipmentSlot: 'accessory',
+    combatBonus: [{ skill: 'coding', value: 2, type: 'flat' }],
   },
 
   /* ── Consumables (Combat) ── */
@@ -756,6 +774,7 @@ const ITEMS: ItemDefinition[] = [
       { stat: 'karma', value: 3 },
     ],
     equipmentSlot: 'accessory',
+    combatBonus: [{ skill: 'coding', value: 2, type: 'flat' }],
   },
   {
     id: 'poetic_compiler',
@@ -771,6 +790,7 @@ const ITEMS: ItemDefinition[] = [
       { skill: 'coding', value: 2 },
     ],
     equipmentSlot: 'accessory',
+    combatBonus: [{ skill: 'writing', value: 2, type: 'flat' }, { skill: 'coding', value: 1, type: 'flat' }],
   },
   {
     id: 'neural_filter',
@@ -786,6 +806,7 @@ const ITEMS: ItemDefinition[] = [
       { stat: 'stress', value: -5 },
     ],
     equipmentSlot: 'accessory',
+    combatBonus: [{ skill: 'logic', value: 3, type: 'flat' }],
   },
   {
     id: 'turing_stethoscope',
@@ -801,6 +822,7 @@ const ITEMS: ItemDefinition[] = [
       { skill: 'logic', value: 2 },
     ],
     equipmentSlot: 'accessory',
+    combatBonus: [{ skill: 'logic', value: 2, type: 'flat' }],
   },
   {
     id: 'ghost_key',
@@ -842,6 +864,7 @@ const ITEMS: ItemDefinition[] = [
       { stat: 'stress', value: -8 },
     ],
     equipmentSlot: 'body',
+    combatBonus: [{ skill: 'empathy', value: 3, type: 'flat' }],
   },
   {
     id: 'philosopher_stone',
@@ -858,6 +881,11 @@ const ITEMS: ItemDefinition[] = [
       { stat: 'karma', value: 5 },
     ],
     equipmentSlot: 'accessory',
+    combatBonus: [
+      { skill: 'logic', value: 2, type: 'flat' },
+      { skill: 'intuition', value: 2, type: 'flat' },
+      { value: 5, type: 'percent' },
+    ],
   },
 
   /* ── Head Equipment ── */
@@ -875,6 +903,7 @@ const ITEMS: ItemDefinition[] = [
       { skill: 'intuition', value: 2 },
     ],
     equipmentSlot: 'head',
+    combatBonus: [{ skill: 'logic', value: 3, type: 'flat' }],
   },
   {
     id: 'poet_beret',
@@ -890,6 +919,7 @@ const ITEMS: ItemDefinition[] = [
       { skill: 'rhythm', value: 3 },
     ],
     equipmentSlot: 'head',
+    combatBonus: [{ skill: 'writing', value: 3, type: 'flat' }],
   },
   {
     id: 'echo_headband',
@@ -905,6 +935,7 @@ const ITEMS: ItemDefinition[] = [
       { skill: 'persuasion', value: 2 },
     ],
     equipmentSlot: 'head',
+    combatBonus: [{ skill: 'empathy', value: 3, type: 'flat' }],
   },
   {
     id: 'resistance_helmet',
@@ -920,6 +951,7 @@ const ITEMS: ItemDefinition[] = [
       { stat: 'stress', value: -10 },
     ],
     equipmentSlot: 'head',
+    combatBonus: [{ skill: 'coding', value: 3, type: 'flat' }],
   },
   {
     id: 'crown_of_verses',
@@ -941,6 +973,11 @@ const ITEMS: ItemDefinition[] = [
       { stat: 'karma', value: 5 },
     ],
     equipmentSlot: 'head',
+    combatBonus: [
+      { skill: 'logic', value: 2, type: 'flat' },
+      { skill: 'coding', value: 2, type: 'flat' },
+      { skill: 'writing', value: 2, type: 'flat' },
+    ],
   },
 
   {
@@ -969,6 +1006,7 @@ const ITEMS: ItemDefinition[] = [
       { skill: 'persuasion', value: 3 },
     ],
     equipmentSlot: 'accessory',
+    combatBonus: [{ skill: 'writing', value: 3, type: 'flat' }, { skill: 'persuasion', value: 2, type: 'flat' }],
   },
   /* ── NPC Shop Items (Trading-exclusive) ── */
   {
@@ -1114,6 +1152,7 @@ const ITEMS: ItemDefinition[] = [
     maxStack: 1,
     effects: [{ skill: 'intuition', value: 3 }],
     equipmentSlot: 'accessory',
+    combatBonus: [{ skill: 'intuition', value: 2, type: 'flat' }],
   },
   {
     id: 'maria_decryption_key',
@@ -1126,6 +1165,7 @@ const ITEMS: ItemDefinition[] = [
     maxStack: 1,
     effects: [{ skill: 'logic', value: 2 }],
     equipmentSlot: 'accessory',
+    combatBonus: [{ skill: 'logic', value: 2, type: 'flat' }],
   },
   {
     id: 'encrypted_data_module',
@@ -1149,6 +1189,7 @@ const ITEMS: ItemDefinition[] = [
     maxStack: 1,
     effects: [{ skill: 'persuasion', value: 2 }],
     equipmentSlot: 'accessory',
+    combatBonus: [{ skill: 'persuasion', value: 1, type: 'flat' }],
   },
   /* ════════════ NEW ITEMS for Extended Crafting ════════════ */
   {
@@ -1177,6 +1218,10 @@ const ITEMS: ItemDefinition[] = [
       { skill: 'writing', value: 2 },
     ],
     equipmentSlot: 'head',
+    combatBonus: [
+      { skill: 'logic', value: 2, type: 'flat' },
+      { skill: 'coding', value: 2, type: 'flat' },
+    ],
   },
   {
     id: 'shadow_cloak_mod',
@@ -1189,6 +1234,7 @@ const ITEMS: ItemDefinition[] = [
     maxStack: 1,
     effects: [],
     equipmentSlot: 'body',
+    combatBonus: [{ skill: 'intuition', value: 5, type: 'flat' }],
   },
   {
     id: 'memory_crystal',
@@ -1225,6 +1271,163 @@ const ITEMS: ItemDefinition[] = [
     stackable: false,
     maxStack: 1,
     effects: [],
+  },
+
+  /* ── Crafting Materials (new) ── */
+  {
+    id: 'paper',
+    name: 'Бумага',
+    description: 'Листы помятой бумаги из старого принтера. Подходят для записей и чертежей.',
+    category: 'misc',
+    rarity: 'common',
+    icon: 'FileText',
+    stackable: true,
+    maxStack: 20,
+    effects: [],
+  },
+  {
+    id: 'pen',
+    name: 'Ручка',
+    description: 'Обычная шариковая ручка. Пишет, пока не закончится чернила.',
+    category: 'misc',
+    rarity: 'common',
+    icon: 'Pen',
+    stackable: true,
+    maxStack: 10,
+    effects: [],
+  },
+  {
+    id: 'amulet',
+    name: 'Амулет',
+    description: 'Старинный медный амулет с выцветшими символами. Тёплый на ощупь.',
+    category: 'misc',
+    rarity: 'uncommon',
+    icon: 'Gem',
+    stackable: false,
+    maxStack: 1,
+    effects: [],
+  },
+  {
+    id: 'tape',
+    name: 'Изолента',
+    description: 'Синяя изолента — универсальный ремонтный материал в киберпанк-мире.',
+    category: 'misc',
+    rarity: 'common',
+    icon: 'Wrench',
+    stackable: true,
+    maxStack: 15,
+    effects: [],
+  },
+  {
+    id: 'cassette',
+    name: 'Кассета',
+    description: 'Старая аудиокассета. На этикетке рукой написано «Солнышко».',
+    category: 'misc',
+    rarity: 'uncommon',
+    icon: 'Disc',
+    stackable: false,
+    maxStack: 1,
+    effects: [],
+  },
+
+  /* ── Crafted Outputs (new) ── */
+  {
+    id: 'restored_energy_boost',
+    name: 'Кофе с энергетиком',
+    description: 'Смертельная смесь кофе и энергетика «Код». Восстанавливает +20 энергии.',
+    category: 'consumable',
+    rarity: 'uncommon',
+    icon: 'Zap',
+    stackable: true,
+    maxStack: 5,
+    effects: [{ stat: 'energy', value: 20 }],
+    useMessage: 'Кофе с энергетиком: энергия +20!',
+  },
+  {
+    id: 'signal_booster',
+    name: 'Самодельная антенна',
+    description: 'Антенна из металлолома и USB-накопителя. Усиливает сигнал в мёртвых зонах.',
+    category: 'quest_item',
+    rarity: 'uncommon',
+    icon: 'Radio',
+    stackable: false,
+    maxStack: 1,
+    effects: [],
+    questRelated: true,
+  },
+  {
+    id: 'cipher_notes',
+    name: 'Шифровальный блокнот',
+    description: 'Блокнот с систематизированными шифрами. Помогает в кодировании (+5 coding).',
+    category: 'equipment',
+    rarity: 'uncommon',
+    icon: 'BookOpen',
+    stackable: false,
+    maxStack: 1,
+    effects: [{ skill: 'coding', value: 5 }],
+    equipmentSlot: 'accessory',
+    combatBonus: [{ skill: 'coding', value: 4, type: 'flat' }],
+  },
+  {
+    id: 'tech_amulet',
+    name: 'Цифровой талисман',
+    description: 'Слияние древнего амулета и микросхемы. Усиливает интуицию (+10 intuition).',
+    category: 'equipment',
+    rarity: 'rare',
+    icon: 'Sparkles',
+    stackable: false,
+    maxStack: 1,
+    effects: [{ skill: 'intuition', value: 10 }],
+    equipmentSlot: 'accessory',
+    combatBonus: [{ skill: 'intuition', value: 5, type: 'flat' }, { value: 5, type: 'percent' }],
+  },
+  {
+    id: 'repair_kit',
+    name: 'Ремонтный набор',
+    description: 'Набор из обрезков и изоленты. Восстанавливает 15 HP в бою.',
+    category: 'consumable',
+    rarity: 'uncommon',
+    icon: 'Package',
+    stackable: true,
+    maxStack: 5,
+    effects: [],
+    useMessage: 'Ремонтный набор: HP +15!',
+  },
+  {
+    id: 'solnysh_record',
+    name: 'Записи Солнышка',
+    description: 'Расшифровка аудиокассеты. На бумаге — тексты песен и странные координаты.',
+    category: 'quest_item',
+    rarity: 'rare',
+    icon: 'FileAudio',
+    stackable: false,
+    maxStack: 1,
+    effects: [],
+    questRelated: true,
+  },
+  {
+    id: 'fake_id_chip',
+    name: 'Псевдонимный чип',
+    description: 'Поддельный идентификационный чип. Открывает доступ к закрытым зонам города.',
+    category: 'quest_item',
+    rarity: 'rare',
+    icon: 'Cpu',
+    stackable: false,
+    maxStack: 1,
+    effects: [],
+    questRelated: true,
+  },
+  {
+    id: 'poetry_collection',
+    name: 'Поэтический сборник',
+    description: 'Самодельный сборник стихов, переписанных от руки. Содержит неизвестные произведения.',
+    category: 'quest_item',
+    rarity: 'rare',
+    icon: 'BookHeart',
+    stackable: false,
+    maxStack: 1,
+    effects: [],
+    questRelated: true,
   },
 
 ];

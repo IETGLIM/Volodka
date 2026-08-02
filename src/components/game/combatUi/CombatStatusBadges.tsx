@@ -45,7 +45,7 @@ export function StatusBadge({ buff }: { buff: CombatBuff }) {
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0, opacity: 0 }}
           transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-          className={`relative inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[8px] font-mono border ${borderColor} ${bgColor} cursor-default select-none`}
+          className={`relative inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[8px] font-mono border ${borderColor} ${bgColor} ${isPositive ? 'data-badge-success' : 'data-badge-danger'} cursor-default select-none`}
           style={{ boxShadow: glowStyle }}
         >
           <span>{icon}</span>

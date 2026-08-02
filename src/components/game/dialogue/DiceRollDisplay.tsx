@@ -77,7 +77,7 @@ function DieCube({ value, rolling, revealed, color }: {
   const dots = dotPatterns[displayValue] ?? [];
 
   return (
-    <div className="relative" style={{ width: 56, height: 56, perspective: 200 }}>
+    <div className="relative cyber-scale-in" style={{ width: 56, height: 56, perspective: 200 }}>
       <motion.div
         animate={{
           rotateX,
@@ -283,7 +283,7 @@ export function DiceRollDisplay({
           }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.3 }}
-          className="relative w-full max-w-md mx-auto rounded-xl border px-5 py-4 backdrop-blur-md"
+          className="relative w-full max-w-md mx-auto rounded-xl border px-5 py-4 backdrop-blur-md glass-panel"
           style={{
             borderColor: phase === 'result' ? `${resultColor}60` : 'rgba(0,255,255,0.15)',
             background: 'rgba(0,0,0,0.85)',
@@ -294,7 +294,7 @@ export function DiceRollDisplay({
         >
           {/* Title */}
           <div className="text-center mb-3">
-            <span className="text-xs font-mono tracking-widest text-cyan-400/70 uppercase">
+            <span className="text-xs font-mono tracking-widest text-cyan-400/70 uppercase data-badge">
               {phase === 'rolling' ? 'Бросок кубиков...' : `Проверка: ${skillLabel}`}
             </span>
           </div>
@@ -323,7 +323,7 @@ export function DiceRollDisplay({
               animate={{ opacity: 1 }}
               className="text-center mb-2"
             >
-              <span className="text-sm font-mono text-white/60">
+              <span className="text-sm font-mono text-white/60 data-badge">
                 2d6 = <span className="text-cyan-300 text-base">{total}</span>
               </span>
             </motion.div>
@@ -334,7 +334,7 @@ export function DiceRollDisplay({
             <motion.div
               initial={{ opacity: 0, x: -8 }}
               animate={{ opacity: 1, x: 0 }}
-              className="text-center mb-2 px-4 py-1.5 rounded-md bg-black/40 border border-white/5"
+              className="text-center mb-2 px-4 py-1.5 rounded-md bg-black/40 border border-white/5 glass-panel-dark"
             >
               <TypedText
                 text={`+ ${modifierText} = +${modifier}`}
@@ -356,7 +356,7 @@ export function DiceRollDisplay({
                 <span className="text-cyan-400/70"> + {modifier}</span>
                 <span className="text-white/50"> = </span>
                 <span
-                  className="text-lg font-bold"
+                  className={`text-lg font-bold ${success ? 'data-badge-success' : 'data-badge-danger'}`}
                   style={{ color: phase === 'result' ? resultColor : '#e2e8f0' }}
                 >
                   {finalTotal}
@@ -364,7 +364,7 @@ export function DiceRollDisplay({
                 <span className="text-white/40 mx-1.5">
                   {finalTotal >= dc ? '≥' : '<'}
                 </span>
-                <span className="text-white/70">{dc}</span>
+                <span className="text-white/70 data-badge">{dc}</span>
               </span>
             </motion.div>
           )}
@@ -380,10 +380,10 @@ export function DiceRollDisplay({
                   y: [0, criticalSuccess || criticalFailure ? -4 : 0, 0],
                 }}
                 transition={{ duration: 0.4 }}
-                className="text-center pt-1 pb-0.5"
+                className="text-center pt-1 pb-0.5 dice-result-flash"
               >
                 <span
-                  className="text-sm font-mono font-bold tracking-wider uppercase"
+                  className={`text-sm font-mono font-bold tracking-wider uppercase ${success ? 'gradient-text-emerald' : 'neon-text-rose'}`}
                   style={{
                     color: resultColor,
                     textShadow: `0 0 12px ${resultColor}80`,
@@ -410,7 +410,7 @@ export function DiceRollDisplay({
                   </div>
                 )}
                 {/* Probability hint */}
-                <div className="text-[10px] font-mono text-white/25 mt-1">
+                <div className="text-[10px] font-mono text-white/25 mt-1 text-glow-pulse">
                   вероятность: {probPercent}%
                 </div>
               </motion.div>
@@ -419,7 +419,7 @@ export function DiceRollDisplay({
 
           {/* Scanline overlay for cyberpunk feel */}
           <div
-            className="pointer-events-none absolute inset-0 rounded-xl opacity-[0.03]"
+            className="pointer-events-none absolute inset-0 rounded-xl opacity-[0.03] panel-scanlines-subtle"
             style={{
               background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,255,0.1) 2px, rgba(0,255,255,0.1) 4px)',
             }}

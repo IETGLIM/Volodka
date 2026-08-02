@@ -9,6 +9,7 @@ import { getWorldStoreState } from './stores/worldStore';
 import { getUIStoreState } from './stores/uiStore';
 import { getCutsceneStoreState } from './stores/cutsceneStore';
 import { getSaveStoreState } from './stores/saveStore';
+import { getAchievementStoreState } from './stores/achievementStore';
 /**
  * Apply a game action by routing to the appropriate independent slice store.
  *
@@ -126,6 +127,10 @@ export function applyGameAction(_state: GameStoreState, action: GameAction): voi
     case 'thoughtCabinet/acquire': player.acquireThought(action.thoughtId); break;
     case 'thoughtCabinet/equip': player.equipThought(action.thoughtId); break;
     case 'thoughtCabinet/unequip': player.unequipThought(action.thoughtId); break;
+    case 'trophy/trackCraft': getAchievementStoreState().trackCraft(); break;
+    case 'trophy/trackPoemPowerUse': getAchievementStoreState().trackPoemPowerUse(); break;
+    case 'trophy/trackHighStressWin': getAchievementStoreState().trackHighStressWin(); break;
+    case 'trophy/dismissNotification': getAchievementStoreState().dismissTrophyNotification(action.id); break;
     default: { const _exhaustive: never = action; return; }
   }
 }

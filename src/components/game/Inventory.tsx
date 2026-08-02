@@ -1,12 +1,13 @@
 /* ─── Volodka RPG – Inventory panel ─── */
 
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronDown, Package, Search, X } from 'lucide-react';
 import { PanelWrapper } from '@/components/game/PanelWrapper';
 import { EquipmentPanel } from '@/components/game/inventory/EquipmentPanel';
 import { InventoryDetailPanel } from '@/components/game/inventory/InventoryDetailPanel';
 import { InventoryGrid } from '@/components/game/inventory/InventoryGrid';
+import { InventoryCraftingPanel } from '@/components/game/inventory/CraftingPanel';
 import {
   INVENTORY_CATEGORY_FILTER_OPTIONS,
   INVENTORY_SORT_OPTIONS,
@@ -21,8 +22,11 @@ interface InventoryProps {
   onOpenPoetryBook?: () => void;
 }
 
+type InventoryTab = 'items' | 'craft';
+
 export function Inventory({ open, onClose, onOpenPoetryBook }: InventoryProps) {
   const reducedMotion = useEffectiveReducedMotion();
+  const [activeTab, setActiveTab] = useState<InventoryTab>('items');
   const {
     resetPanelState,
     inventory,
@@ -147,9 +151,11 @@ export function Inventory({ open, onClose, onOpenPoetryBook }: InventoryProps) {
         <div className="flex items-center justify-between">
           <span className="text-[10px] text-slate-600 font-mono">volodka://inventory</span>
           <span className="text-[10px] text-slate-600 font-mono">
-            {isFiltered
-              ? `${filteredCount} из ${totalCount} предметов`
-              : `Все предметы (${totalCount})`}
+            {activeTab === 'craft'
+              ? 'Крафт'
+              : isFiltered
+                ? `${filteredCount} из ${totalCount} предметов`
+                : `Все предметы (${totalCount})`}
           </span>
         </div>
       )}
@@ -168,10 +174,10 @@ export function Inventory({ open, onClose, onOpenPoetryBook }: InventoryProps) {
                   key={option.value}
                   type="button"
                   aria-pressed={isActive}
-                  onClick={() => setCategoryFilter(option.value as InventoryFilterCategory)}
+                  onClick={() => { setCategoryFilter(option.value as InventoryFilterCategory); setActiveTab('items'); }}
                   className={`
                     inv-cat-tab px-3 py-1.5 rounded-md text-[11px] font-mono border transition-all duration-200 relative
-                    ${isActive
+                    ${isActive && activeTab === 'items'
                       ? 'inv-cat-tab-active border-cyan-500/50 bg-cyan-950/50 text-cyan-300 shadow-[0_0_10px_rgb(var(--cyber-cyan-rgb) / 0.15)]'
                       : 'border-slate-700/30 bg-slate-900/30 text-slate-500 hover:text-slate-300 hover:border-slate-600/40 hover:bg-slate-800/30'
                     }
@@ -179,8 +185,8 @@ export function Inventory({ open, onClose, onOpenPoetryBook }: InventoryProps) {
                 >
                   <span className="mr-1" aria-hidden>{option.icon}</span>
                   {option.label}
-                  <span className={`ml-1.5 ${isActive ? 'text-cyan-400' : 'text-slate-600'}`}>{count}</span>
-                  {isActive && !reducedMotion && (
+                  <span className={`ml-1.5 ${isActive && activeTab === 'items' ? 'text-cyan-400' : 'text-slate-600'}`}>{count}</span>
+                  {isActive && activeTab === 'items' && !reducedMotion && (
                     <motion.div
                       layoutId="inv-tab-indicator"
                       className="absolute bottom-0 left-1 right-1 h-[2px] bg-cyan-400/60 rounded-full"
@@ -191,6 +197,31 @@ export function Inventory({ open, onClose, onOpenPoetryBook }: InventoryProps) {
                 </button>
               );
             })}
+
+            {/* Крафт tab */}
+            <button
+              type="button"
+              aria-pressed={activeTab === 'craft'}
+              onClick={() => setActiveTab('craft')}
+              className={`
+                px-3 py-1.5 rounded-md text-[11px] font-mono border transition-all duration-200 relative
+                ${activeTab === 'craft'
+                  ? 'border-amber-500/50 bg-amber-950/50 text-amber-300 shadow-[0_0_10px_rgba(251,191,36,0.15)]'
+                  : 'border-slate-700/30 bg-slate-900/30 text-slate-500 hover:text-slate-300 hover:border-slate-600/40 hover:bg-slate-800/30'
+                }
+              `}
+            >
+              <span className="mr-1" aria-hidden>🔧</span>
+              Крафт
+              {activeTab === 'craft' && !reducedMotion && (
+                <motion.div
+                  layoutId="inv-tab-indicator"
+                  className="absolute bottom-0 left-1 right-1 h-[2px] bg-amber-400/60 rounded-full"
+                  style={{ boxShadow: '0 0 6px rgba(251,191,36,0.4)' }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                />
+              )}
+            </button>
 
             <div className="relative ml-auto">
               <button
@@ -239,52 +270,60 @@ export function Inventory({ open, onClose, onOpenPoetryBook }: InventoryProps) {
             </div>
           </div>
 
-          <EquipmentPanel
-            equippedItems={equippedItems}
-            selectedSlot={selectedSlot}
-            onSelectSlot={selectEquippedSlot}
-          />
-
-          <div className="flex gap-4">
-            <div className={`flex-1 min-w-0 ${selectedItem ? 'hidden sm:block' : ''}`}>
-              <InventoryGrid
-                open={open}
-                views={filteredViews}
-                selectedItemId={selectedItemId}
-                focusedIndex={focusedIndex}
-                setFocusedIndex={setFocusedIndex}
-                reducedMotion={reducedMotion}
-                searchQuery={searchQuery}
-                maxSlots={maxSlots}
-                gridContainerRef={gridContainerRef}
+          {activeTab === 'items' && (
+            <>
+              <EquipmentPanel
                 equippedItems={equippedItems}
-                onSelectItem={selectItemById}
-                onConfirmItem={handleConfirmItem}
-                onCloseDetail={clearSelection}
+                selectedSlot={selectedSlot}
+                onSelectSlot={selectEquippedSlot}
               />
-            </div>
 
-            <AnimatePresence>
-              {selectedItem && selectedView && (
-                <InventoryDetailPanel
-                  view={selectedView}
-                  isEquipped={isEquippedSelection}
-                  equippedSlot={selectedSlot}
-                  feedback={useFeedback}
-                  pendingActionKey={pendingActionKey}
-                  canUse={canUseItem}
-                  canEquip={canEquipItem}
-                  canDrop={canDropItem}
-                  reducedMotion={reducedMotion}
-                  onUse={() => handleUseItem(selectedItem)}
-                  onEquip={() => handleEquipItem(selectedItem)}
-                  onUnequip={() => selectedSlot && handleUnequipItem(selectedSlot)}
-                  onDrop={() => handleDropItem(selectedItem)}
-                  onClose={clearSelection}
-                />
-              )}
-            </AnimatePresence>
-          </div>
+              <div className="flex gap-4">
+                <div className={`flex-1 min-w-0 ${selectedItem ? 'hidden sm:block' : ''}`}>
+                  <InventoryGrid
+                    open={open}
+                    views={filteredViews}
+                    selectedItemId={selectedItemId}
+                    focusedIndex={focusedIndex}
+                    setFocusedIndex={setFocusedIndex}
+                    reducedMotion={reducedMotion}
+                    searchQuery={searchQuery}
+                    maxSlots={maxSlots}
+                    gridContainerRef={gridContainerRef}
+                    equippedItems={equippedItems}
+                    onSelectItem={selectItemById}
+                    onConfirmItem={handleConfirmItem}
+                    onCloseDetail={clearSelection}
+                  />
+                </div>
+
+                <AnimatePresence>
+                  {selectedItem && selectedView && (
+                    <InventoryDetailPanel
+                      view={selectedView}
+                      isEquipped={isEquippedSelection}
+                      equippedSlot={selectedSlot}
+                      feedback={useFeedback}
+                      pendingActionKey={pendingActionKey}
+                      canUse={canUseItem}
+                      canEquip={canEquipItem}
+                      canDrop={canDropItem}
+                      reducedMotion={reducedMotion}
+                      onUse={() => handleUseItem(selectedItem)}
+                      onEquip={() => handleEquipItem(selectedItem)}
+                      onUnequip={() => selectedSlot && handleUnequipItem(selectedSlot)}
+                      onDrop={() => handleDropItem(selectedItem)}
+                      onClose={clearSelection}
+                    />
+                  )}
+                </AnimatePresence>
+              </div>
+            </>
+          )}
+
+          {activeTab === 'craft' && (
+            <InventoryCraftingPanel />
+          )}
 
           <AnimatePresence>
             {useFeedback && (

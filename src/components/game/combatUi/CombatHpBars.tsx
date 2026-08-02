@@ -53,17 +53,17 @@ export const AnimatedHPBar = React.memo(function AnimatedHPBar({
 
   return (
     <div className={`flex flex-col ${isPlayer ? 'items-start' : 'items-end'} w-full`}>
-      <div className="text-[10px] text-slate-400 mb-0.5 font-mono uppercase tracking-wider">{label}</div>
+      <div className="data-bar-label text-[10px] text-slate-400 mb-0.5 font-mono uppercase tracking-wider">{label}</div>
       <div
         role="progressbar"
         aria-valuenow={Math.max(0, current)}
         aria-valuemin={0}
         aria-valuemax={max}
         aria-label={ariaLabel || (isPlayer ? 'Здоровье игрока' : 'Здоровье противника')}
-        className="w-full h-3.5 bg-black/80 border border-slate-700/40 rounded-sm overflow-hidden relative"
+        className="data-bar w-full h-3.5 bg-black/80 border border-slate-700/40 rounded-sm overflow-hidden relative"
       >
         <motion.div
-          className={`h-full bg-gradient-to-r ${color} ${glowColor} shadow-sm rounded-sm`}
+          className={`data-bar-fill h-full bg-gradient-to-r ${color} ${glowColor} shadow-sm rounded-sm`}
           style={{ boxShadow: `0 0 8px ${glowHex}40` }}
           initial={false}
           animate={{ width: `${pct}%` }}

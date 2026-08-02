@@ -17,7 +17,7 @@ export function CombatLogPanel({
     <div
       aria-live={isActive ? 'off' : 'polite'}
       aria-label="Combat log"
-      className="max-h-28 overflow-y-auto bg-black/70 border border-slate-800/30 rounded-lg p-2 font-mono"
+      className="glass-panel-dark scrollbar-cyber max-h-28 overflow-y-auto bg-black/70 border border-slate-800/30 rounded-lg p-2 font-mono"
       style={{ scrollbarWidth: 'thin', scrollbarColor: '#334155 transparent' }}
     >
       {log.map((entry, i) => (

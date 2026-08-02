@@ -105,7 +105,7 @@ export function NPCProximityIndicator() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 4 }}
           transition={{ duration: 0.2 }}
-          className="pointer-events-none"
+          className="pointer-events-none cyber-fade-in-up"
           style={{
             position: 'fixed',
             top: `calc(50% - ${DISPLAY_Y_OFFSET}px)`,
@@ -116,7 +116,7 @@ export function NPCProximityIndicator() {
           aria-label={`${nearest.name}, ${relationLabel(nearest.relation)}`}
           role="status"
         >
-          <div className="npc-proximity-card flex items-center gap-2.5 px-3 py-1.5">
+          <div className="npc-proximity-card npc-proximity-pulse flex items-center gap-2.5 px-3 py-1.5">
             <div className="npc-proximity-dot" style={{ background: relationColor(nearest.relation) }} />
             <div className="flex flex-col gap-0.5">
               <span className="npc-proximity-name" style={{ color: relationColor(nearest.relation) }}>

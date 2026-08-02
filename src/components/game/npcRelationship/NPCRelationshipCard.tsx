@@ -73,7 +73,7 @@ export const NPCRelationshipCard = memo(function NPCRelationshipCard({
       initial={reducedMotion ? false : { opacity: 0, x: -12 }}
       animate={{ opacity: 1, x: 0 }}
       transition={cardMotion}
-      className="overflow-hidden rounded-xl border"
+      className="glass-panel overflow-hidden rounded-xl border"
       aria-labelledby={`npc-rel-${relation.npcId}-name`}
       style={{
         borderColor: `${portraitPrimary}30`,
@@ -127,9 +127,9 @@ export const NPCRelationshipCard = memo(function NPCRelationshipCard({
                 </span>
                 <span className={`font-mono text-xs font-medium ${colors.text}`}>{relation.value}</span>
               </div>
-              <div className="h-2 overflow-hidden rounded-full bg-slate-800/80 shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)]">
+              <div className="data-bar h-2 overflow-hidden rounded-full bg-slate-800/80 shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)]">
                 <motion.div
-                  className={`h-full rounded-full ${colors.bar}`}
+                  className={`data-bar-fill h-full rounded-full ${colors.bar}`}
                   initial={reducedMotion ? false : { width: 0 }}
                   animate={{ width: `${relation.value}%` }}
                   transition={getBarFillTransition(index, reducedMotion)}
@@ -152,10 +152,10 @@ export const NPCRelationshipCard = memo(function NPCRelationshipCard({
                   {formatAffinityValue(affinity)}
                 </span>
               </div>
-              <div className="relative h-1.5 overflow-hidden rounded-full bg-slate-800/80 shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)]">
+              <div className="data-bar relative h-1.5 overflow-hidden rounded-full bg-slate-800/80 shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)]">
                 <div className="absolute bottom-0 left-1/2 top-0 z-10 w-px bg-slate-600/30" aria-hidden="true" />
                 <motion.div
-                  className={`h-full rounded-full ${affinityVisual.bar}`}
+                  className={`data-bar-fill h-full rounded-full ${affinityVisual.bar}`}
                   initial={reducedMotion ? false : { width: '50%' }}
                   animate={{ width: `${getAffinityBarPercent(affinity)}%` }}
                   transition={getAffinityBarTransition(index, reducedMotion)}
@@ -175,7 +175,7 @@ export const NPCRelationshipCard = memo(function NPCRelationshipCard({
                   event.stopPropagation();
                   onOpenGift(relation.npcId);
                 }}
-                className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-md border border-cyan-500/20 bg-cyan-600/20 px-3 py-1.5 text-[11px] font-medium text-cyan-400 transition-all duration-150 hover:border-cyan-500/30 hover:bg-cyan-600/40 hover:text-cyan-300 active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400/70"
+                className="cyber-hover-lift mt-2 flex w-full items-center justify-center gap-1.5 rounded-md border border-cyan-500/20 bg-cyan-600/20 px-3 py-1.5 text-[11px] font-medium text-cyan-400 transition-all duration-150 hover:border-cyan-500/30 hover:bg-cyan-600/40 hover:text-cyan-300 active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400/70"
                 aria-label={NPC_RELATIONSHIP_LABELS.giftAria(npcDef.name)}
               >
                 <Gift className="size-3.5" aria-hidden="true" />

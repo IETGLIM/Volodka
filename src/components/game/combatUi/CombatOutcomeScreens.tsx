@@ -23,7 +23,7 @@ export function VictoryScreen({
       >
         🏆
       </motion.div>
-      <div className="text-xl font-bold text-emerald-400 font-mono" style={{ textShadow: '0 0 12px #10b98180' }}>
+      <div className="gradient-text-emerald text-xl font-bold text-emerald-400 font-mono" style={{ textShadow: '0 0 12px #10b98180' }}>
         ПОБЕДА!
       </div>
       <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs font-mono">
@@ -71,7 +71,7 @@ export function DefeatScreen() {
       >
         💀
       </motion.div>
-      <div className="text-xl font-bold text-red-400 font-mono" style={{ textShadow: '0 0 12px #ef444480' }}>
+      <div className="neon-text-rose text-xl font-bold text-red-400 font-mono" style={{ textShadow: '0 0 12px #ef444480' }}>
         ПОРАЖЕНИЕ
       </div>
       <div className="text-xs text-slate-400 font-mono text-center">

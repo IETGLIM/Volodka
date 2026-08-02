@@ -22,7 +22,7 @@ import { consumePoemSkillCheckFlag } from '@/engine/poemPower/poemSkillCheckModi
 import { eventBus } from '@/engine/EventBus';
 import { closeNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
 import { requestSceneTransitionForStoryNode } from '@/engine/scene/sceneTransition';
-import { getGameStore } from '@/store/gameStore';
+import { getGameStore as _getGameStore } from '@/store/gameStore';
 import { getLiveCurrentSceneId } from '@/store/stores/explorationStore';
 import type {
   DialogueChoice,
@@ -47,6 +47,9 @@ import { applyEffects } from '@/shared/utils/applyEffects';
 import { recordExplorationStoryStep } from '@/shared/explorationStoryBridge';
 import { DialogueRelationBar } from './dialogue/DialogueRelationBar';
 import { DiceRollDisplay } from './dialogue/DiceRollDisplay';
+import { DialogueHistoryPanel } from './dialogue/DialogueHistoryPanel';
+import { useDialogueHistoryStore } from '@/store/stores/dialogueHistoryStore';
+import type { DialogueHistoryEntry as _DialogueHistoryEntry } from '@/store/slices/dialogueHistorySlice';
 import { executeDialogueChoice } from '@/engine/narrative/narrativeChoiceExecutor';
 import {
   performDiceRoll,
@@ -196,9 +199,13 @@ export function DialogueRenderer() {
   const pendingDiceChoiceRef = useRef<{ choice: DialogueChoice; index: number } | null>(null);
   const diceRollActiveRef = useRef(false);
 
-  // ── Dialogue history ──
+  // ── Dialogue history (local for in-session scrollback) ──
   const [history, setHistory] = useState<HistoryLine[]>([]);
-  const [showHistory, setShowHistory] = useState(false);
+  const [showHistory, _setShowHistory] = useState(false);
+  // ── Persistent dialogue history overlay (from slice store) ──
+  const dialogueHistoryEntries = useDialogueHistoryStore((s) => s.dialogueHistory);
+  const [showFullHistory, setShowFullHistory] = useState(false);
+  const addDialogueEntry = useDialogueHistoryStore((s) => s.addDialogueEntry);
 
   // ── Auto-advance mode ──
   const [autoAdvance, setAutoAdvance] = useState(false);
@@ -339,8 +346,12 @@ export function DialogueRenderer() {
       if (node.text) {
         const speaker = node.speaker;
         const text = resolvedText;
+        const sceneId = getLiveCurrentSceneId();
         const historyTimer = setTimeout(() => {
           setHistory((prev) => [...prev, { speaker, text, timestamp: Date.now() }]);
+          // Also persist to the global dialogue history slice
+          const isPlayerChoice = false;
+          addDialogueEntry({ speaker: speaker ?? '', text, timestamp: Date.now(), sceneId, isPlayerChoice });
         }, 0);
         pendingTimers.push(historyTimer);
       }
@@ -359,6 +370,7 @@ export function DialogueRenderer() {
     return () => {
       for (const t of pendingTimers) clearTimeout(t);
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [node, visitNode, conditionCtx, resolvedText]);
 
   useEffect(() => {
@@ -480,9 +492,18 @@ export function DialogueRenderer() {
         consumePoemSkillCheckFlag(cond.consumedFlag, { critical: cond.skillCheckResult?.critical });
       }
 
+      // Log player choice to persistent dialogue history
+      addDialogueEntry({
+        speaker: 'Володька',
+        text: choice.text,
+        timestamp: Date.now(),
+        sceneId: getLiveCurrentSceneId(),
+        isPlayerChoice: true,
+      });
+
       handleChoice(choice);
     },
-    [node, done, conditionCtx, handleChoice, skills, thoughtModifiers, clothingDialogueMod],
+    [node, done, conditionCtx, handleChoice, skills, thoughtModifiers, clothingDialogueMod, addDialogueEntry],
   );
 
   useNarrativeChoiceKeyboard({
@@ -550,7 +571,7 @@ export function DialogueRenderer() {
         aria-busy="true"
         aria-label="Загрузка диалога"
       >
-        <div className="w-full max-w-2xl rounded-xl border border-stone-700/40 bg-black/80 shadow-[0_8px_32px_rgba(0,0,0,0.45)] overflow-hidden">
+        <div className="w-full max-w-2xl rounded-xl border border-stone-700/40 bg-black/80 shadow-[0_8px_32px_rgba(0,0,0,0.45)] overflow-hidden glass-panel">
           <div className="flex gap-3 p-4 border-b border-stone-800/40">
             <div className="size-14 shrink-0 rounded-lg bg-slate-800/80 border border-slate-700/50 animate-pulse" />
             <div className="flex-1 space-y-2 pt-1">
@@ -589,7 +610,7 @@ export function DialogueRenderer() {
           <button
             type="button"
             onClick={handleRetry}
-            className="px-4 py-2 rounded border border-stone-500/40 text-stone-200 text-sm font-mono bg-black/40 hover:bg-stone-900/50 hover:border-stone-400/50 transition-colors"
+            className="px-4 py-2 rounded border border-stone-500/40 text-stone-200 text-sm font-mono bg-black/40 hover:bg-stone-900/50 hover:border-stone-400/50 transition-colors cyber-hover-lift"
           >
             Повторить
           </button>
@@ -620,6 +641,7 @@ export function DialogueRenderer() {
   );
 
   return (
+    <>
     <CinematicNarrativeFrame
       nodeKey={`dialogue-${currentNodeId}`}
       presentation={presentation}
@@ -637,7 +659,7 @@ export function DialogueRenderer() {
           <button
             type="button"
             onClick={() => setAutoAdvance(!autoAdvance)}
-            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs backdrop-blur-sm border transition-colors ${
+            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs backdrop-blur-sm border transition-colors cyber-hover-lift ${
               autoAdvance
                 ? 'bg-black/55 text-cyan-200 border-cyan-500/30'
                 : 'bg-black/40 text-white/60 border-white/10 hover:text-white'
@@ -649,13 +671,8 @@ export function DialogueRenderer() {
           </button>
           <button
             type="button"
-            onClick={() => setShowHistory(!showHistory)}
-            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs backdrop-blur-sm border transition-colors ${
-              showHistory
-                ? 'bg-black/55 text-amber-200 border-amber-500/30'
-                : 'bg-black/40 text-white/60 border-white/10 hover:text-white'
-            }`}
-            aria-pressed={showHistory}
+            onClick={() => setShowFullHistory(true)}
+            className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs backdrop-blur-sm border transition-colors cyber-hover-lift bg-black/40 text-white/60 border-white/10 hover:text-white"
           >
             <History className="size-3" />
             История
@@ -679,7 +696,7 @@ export function DialogueRenderer() {
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
-                className="w-full max-w-2xl max-h-36 overflow-y-auto rounded-lg border border-white/10 bg-black/45 backdrop-blur-md p-3 mb-2"
+                className="w-full max-w-2xl max-h-36 overflow-y-auto rounded-lg border border-white/10 bg-black/45 backdrop-blur-md p-3 mb-2 glass-panel"
               >
                 {history.slice(-8).map((line) => (
                   <div key={`${line.speaker}-${line.text.slice(0, 20)}`} className="mb-1.5 last:mb-0 text-sm text-slate-300/85">
@@ -730,7 +747,7 @@ export function DialogueRenderer() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className={`mb-2 px-3 py-2 rounded-lg text-sm text-center border ${
+                className={`mb-2 px-3 py-2 rounded-lg text-sm text-center border dialogue-skill-check ${
                   skillCheckBanner.success
                     ? 'border-emerald-500/40 text-emerald-200 bg-emerald-950/35'
                     : 'border-rose-500/40 text-rose-200 bg-rose-950/35'
@@ -780,7 +797,7 @@ export function DialogueRenderer() {
                 isDiceCheck && cond.skillCheckResult ? (
                   <span className="flex items-center gap-1 text-xs shrink-0">
                     <span>🎲</span>
-                    <span className={isRedCheck ? 'text-red-300' : 'text-cyan-300'}>
+                    <span className={isRedCheck ? 'text-red-300 neon-text-rose' : 'text-cyan-300 text-neon-cyan'}>
                       {DICE_SKILL_LABELS[cond.skillCheckResult.skill]} {cond.skillCheckResult.difficulty}
                     </span>
                     {hasFailedBefore && (
@@ -801,5 +818,11 @@ export function DialogueRenderer() {
         />
       )}
     </CinematicNarrativeFrame>
-  );
+    {/* Full dialogue history overlay */}
+    <DialogueHistoryPanel
+      open={showFullHistory}
+      onClose={() => setShowFullHistory(false)}
+      entries={dialogueHistoryEntries}
+    />
+    </>);
 }

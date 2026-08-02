@@ -7,6 +7,7 @@ import type {
   QuestState,
   TrainablePlayerSkill,
   InventoryItem,
+  EquipmentSlot,
 } from '@/shared/types/game';
 import type { GamePhase } from '@/shared/gamePhase';
 import type { NotificationType } from '@/shared/types/notifications';
@@ -82,6 +83,25 @@ export interface GameStoreSnapshot {
   /** World weather — locomotion / FX readers use snapshot, not store import. */
   weatherEnabled: boolean;
   rainIntensity: number;
+  /** Acquired thought cabinet IDs — used by engine for poem-gated thought checks. */
+  acquiredThoughtIds: string[];
+  /** Currently equipped items (one per slot, null if empty). */
+  equippedItems?: Partial<Record<EquipmentSlot, { id: string } | null>>;
+  /** Persistent dialogue history log (max 100, FIFO). */
+  dialogueHistory?: Array<{
+    id: string;
+    speaker: string;
+    text: string;
+    timestamp: number;
+    sceneId: string;
+    isPlayerChoice?: boolean;
+  }>;
+  /** Trophy achievement tracking counters (from AchievementSlice). */
+  trophyTracking?: {
+    craftCount: number;
+    poemPowersUsedCount: number;
+    highStressWin: boolean;
+  };
 }
 
 /** Typed mutations engine may request from the store. */
@@ -163,7 +183,11 @@ export type GameAction =
   | { type: 'journal/addThought'; text: string; sceneId: string }
   | { type: 'thoughtCabinet/acquire'; thoughtId: string }
   | { type: 'thoughtCabinet/equip'; thoughtId: string }
-  | { type: 'thoughtCabinet/unequip'; thoughtId: string };
+  | { type: 'thoughtCabinet/unequip'; thoughtId: string }
+  | { type: 'trophy/trackCraft' }
+  | { type: 'trophy/trackPoemPowerUse' }
+  | { type: 'trophy/trackHighStressWin' }
+  | { type: 'trophy/dismissNotification'; id: string };
 
 export interface GameSnapshotSubscribeOptions<T> {
   selector: (snapshot: GameStoreSnapshot) => T;

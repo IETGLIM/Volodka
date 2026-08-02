@@ -13,7 +13,7 @@ export function EnemyPortrait({
 }) {
   const hurt = hp / maxHp < 0.3;
   return (
-    <div className="relative flex items-center justify-center enemy-hologram">
+    <div className="ambient-glow-sm relative flex items-center justify-center enemy-hologram">
       <motion.div
         className="text-5xl sm:text-6xl select-none"
         animate={hurt ? { x: [0, -2, 2, -1, 1, 0] } : { y: [0, -4, 0] }}

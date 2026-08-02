@@ -78,7 +78,7 @@ function NPCRelationshipPanelInner({ open, onClose }: NPCRelationshipPanelProps)
               animate={{ x: 0 }}
               exit={reducedMotion ? { opacity: 0 } : { x: '100%' }}
               transition={panelTransition}
-              className="fixed bottom-0 right-0 top-0 w-full sm:w-[30rem]"
+              className="glass-panel fixed bottom-0 right-0 top-0 w-full sm:w-[30rem]"
               {...dialogProps}
               style={{
                 zIndex: UI_LAYERS.PANEL,

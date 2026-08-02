@@ -37,7 +37,7 @@ export function ThoughtCombatBadges() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0, opacity: 0 }}
               transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-              className="relative inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[8px] font-mono border border-amber-600/40 bg-amber-950/40 text-amber-300 cursor-default select-none"
+              className="data-badge relative inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[8px] font-mono border border-amber-600/40 bg-amber-950/40 text-amber-300 cursor-default select-none"
               style={{ boxShadow: '0 0 6px rgba(245,158,11,0.15)' }}
             >
               <span className="text-amber-400/70 font-semibold">[{c.thoughtName}]</span>

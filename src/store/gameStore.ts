@@ -95,6 +95,17 @@ function buildGameSnapshot(state: GameStoreState): GameStoreSnapshot {
     pendingPoemReadingId: state.pendingPoemReadingId ?? null,
     weatherEnabled: state.weatherEnabled ?? true,
     rainIntensity: state.rainIntensity ?? 0,
+    acquiredThoughtIds: state.acquiredThoughtIds ?? [],
+    equippedItems: (state.playerState.equippedItems
+      ? Object.fromEntries(
+          Object.entries(state.playerState.equippedItems).map(([slot, item]) => [
+            slot,
+            item ? { id: item.id } : null,
+          ]),
+        )
+      : {}) as GameStoreSnapshot['equippedItems'],
+    dialogueHistory: state.dialogueHistory,
+    trophyTracking: state.trophyTracking,
   };
 }
 function toGameSnapshot(state: GameStoreState): GameStoreSnapshot {

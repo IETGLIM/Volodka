@@ -85,6 +85,7 @@ function buildSnapshot(state: GameStoreState): GameStoreSnapshot {
     pendingPoemReadingId: state.pendingPoemReadingId,
     weatherEnabled: state.weatherEnabled ?? true,
     rainIntensity: state.rainIntensity ?? 0,
+    acquiredThoughtIds: (state as any).acquiredThoughtIds ?? [],
   };
 }
 

@@ -23,6 +23,8 @@ const MARKER_SIZE = 5;
 const PLAYER_DOT_SIZE = 6;
 const SCAN_PERIOD = 4; // seconds per full rotation
 
+const QUEST_COLOR = '#d946ef'; // fuchsia-500 — quest objectives
+
 /* ── Color helpers ── */
 function markerColor(zone: TriggerZone): string {
   if (zone.containerContents) return '#34d399'; // emerald-400 — containers/loot
@@ -207,7 +209,7 @@ const RadarInner = memo(function RadarInner({
       }}
     >
       <div
-        className="pointer-events-auto rounded-full hud-frame-corner"
+        className="pointer-events-auto rounded-full hud-frame-corner glass-dark"
         style={{
           width: COMPASS_SIZE,
           height: COMPASS_SIZE,
@@ -348,16 +350,29 @@ const RadarInner = memo(function RadarInner({
         style={{ pointerEvents: 'none' }}
       >
         <span className="legend-dot" style={{ backgroundColor: '#22d3ee' }} />
-        <span className="text-[7px] font-mono text-cyan-400/50 tracking-wider">
+        <span className="text-[7px] font-mono text-cyan-400/50 tracking-wider data-badge">
           Объекты
         </span>
         <span className="legend-dot" style={{ backgroundColor: '#fbbf24' }} />
-        <span className="text-[7px] font-mono text-amber-400/50 tracking-wider">
+        <span className="text-[7px] font-mono text-amber-400/50 tracking-wider data-badge">
           NPC
         </span>
         <span className="legend-dot" style={{ backgroundColor: '#34d399' }} />
-        <span className="text-[7px] font-mono text-emerald-400/50 tracking-wider">
+        <span className="text-[7px] font-mono text-emerald-400/50 tracking-wider data-badge">
           Лут
+        </span>
+        <span
+          className="inline-block"
+          style={{
+            width: 5,
+            height: 5,
+            backgroundColor: QUEST_COLOR,
+            transform: 'rotate(45deg)',
+            borderRadius: 1,
+          }}
+        />
+        <span className="text-[7px] font-mono text-fuchsia-400/50 tracking-wider data-badge">
+          Задания
         </span>
       </div>
     </div>

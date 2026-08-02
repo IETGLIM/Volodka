@@ -70,7 +70,7 @@ export function TerminalButton({
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`relative flex-1 py-2.5 rounded border ${c.border} ${c.bg} ${c.text} ${c.hoverBg} disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-150 text-xs font-mono font-semibold flex items-center justify-center gap-1.5 overflow-hidden group combat-btn-enhanced active:scale-[0.97] active:brightness-110`}
+      className={`cyber-hover-lift relative flex-1 py-2.5 rounded border ${c.border} ${c.bg} ${c.text} ${c.hoverBg} disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-150 text-xs font-mono font-semibold flex items-center justify-center gap-1.5 overflow-hidden group combat-btn-enhanced combat-action-button active:scale-[0.97] active:brightness-110`}
       style={!disabled ? { boxShadow: `0 0 10px ${c.glow}28, inset 0 0 10px ${c.glow}14` } : {}}
     >
       <div
