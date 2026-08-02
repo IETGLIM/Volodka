@@ -196,8 +196,8 @@ const mat_29 = getSharedStandardMaterial({ color: '#2a3040', roughness: 0.9 });
 const mat_30 = getSharedStandardMaterial({ color: '#3a2a20', roughness: 0.8 });
 const mat_31 = getSharedStandardMaterial({ color: '#aaaacc', roughness: 0.95 });
 const mat_32 = getSharedStandardMaterial({ color: '#303050', roughness: 0.95 });
-const mat_33 = getSharedStandardMaterial({ color: '#0a0a30', emissive: '#4488ee', emissiveIntensity: 1.45, toneMapped: false });
-const mat_34 = getSharedStandardMaterial({ color: '#0a0a30', emissive: '#3366cc', emissiveIntensity: 1.25, toneMapped: false });
+const mat_33 = getSharedStandardMaterial({ color: '#0a0a30', emissive: '#4488ee', emissiveIntensity: 0.9, toneMapped: false });
+const mat_34 = getSharedStandardMaterial({ color: '#0a0a30', emissive: '#3366cc', emissiveIntensity: 0.8, toneMapped: false });
 const mat_35 = getSharedStandardMaterial({ color: '#333333', metalness: 0.5, roughness: 0.4 });
 const mat_36 = getSharedStandardMaterial({ color: '#555555', metalness: 0.6, roughness: 0.3 });
 const mat_37 = getSharedStandardMaterial({ color: '#666666', metalness: 0.3, roughness: 0.5, side: THREE.DoubleSide });
@@ -941,7 +941,7 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
               <meshPhysicalMaterial
                 color="#0a0a30"
                 emissive="#4488ee"
-                emissiveIntensity={1.45}
+                emissiveIntensity={0.9}
                 toneMapped={false}
                 roughness={nightWindowGlass.roughness}
                 metalness={nightWindowGlass.metalness}
@@ -959,10 +959,8 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
           {!useGltfFurniture ? (
             <mesh renderOrder={2} rotation-y={-Math.PI / 2} position={[0.018, 0, 0]} geometry={geo_box_43} material={mat_26} />
           ) : null}
-          {/* Window blue light spill into room — FIX AUDIT-R9: added decay={2} (was defaulting
-              to 2 but unclear) and raised intensity 3.0→6.0 + distance 5→8 so the spill
-              actually reaches the bed (was ~0.2 intensity at bed distance, barely visible). */}
-          <pointLight position={[-0.8, 0, 0.5]} color="#4488ee" intensity={6.0} distance={8} decay={2} />
+          {/* Restrained blue spill keeps the window readable without bleaching the bed. */}
+          <pointLight position={[-0.8, 0, 0.5]} color="#4488ee" intensity={3.2} distance={7} decay={2} />
           {/* City silhouettes — room-side decals on the glow pane (not transmission props) */}
           <mesh
             renderOrder={3}
@@ -1009,7 +1007,7 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
               <meshPhysicalMaterial
                 color="#0a0a30"
                 emissive="#3366cc"
-                emissiveIntensity={1.25}
+                emissiveIntensity={0.8}
                 toneMapped={false}
                 roughness={nightWindowGlass.roughness}
                 metalness={nightWindowGlass.metalness}
@@ -1074,8 +1072,8 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
       <pointLight
         position={useGltfFurniture ? [-0.55, 1.35, -2.32] : [0.3, 1.5, -2.3]}
         color="#ffcc88"
-        intensity={useGltfFurniture ? 3.6 : 4.2}
-        distance={10}
+        intensity={useGltfFurniture ? 2.8 : 3.2}
+        distance={8}
         decay={2}
         castShadow={preset.shadows}
         shadow-mapSize-width={512}
@@ -1090,16 +1088,16 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
       <pointLight
         position={[1.98, 0.7, 2.16]}
         color="#ffcc88"
-        intensity={1.5}
+        intensity={1.1}
         distance={4}
         decay={2}
       />
 
-      {/* ── Subtle warm fill near bed area — brightened so bed/bookshelf are visible ── */}
+      {/* ── Subtle neutral fill near bed area — enough for silhouette and fabric detail ── */}
       <pointLight
         position={[-1.5, 1.8, 2.5]}
         color="#c8b8d0"
-        intensity={1.85}
+        intensity={1.3}
         distance={6}
         decay={2}
       />
@@ -1108,7 +1106,7 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
       <pointLight
         position={[-1.8, 2.0, 1.2]}
         color="#ffe0c0"
-        intensity={1.1}
+        intensity={0.8}
         distance={5}
         decay={2}
       />
@@ -1123,7 +1121,7 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
         ref={ambientPulseLightRef}
         position={[0, 2.2, -1.5]}
         color="#ffe8cc"
-        intensity={1.8}
+        intensity={1.2}
         distance={7}
         decay={2}
       />

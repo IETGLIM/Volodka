@@ -36,6 +36,7 @@ import {
   useGameplayPresentationProfile,
 } from '@/hooks/useGameplayPresentationProfile';
 import { useTouchDevice } from '@/hooks/useTouchDevice';
+import { useIsInitialHudFocus } from '@/store/selectors/hudMountSelectors';
 import {
   computeObjectiveProgressPercent,
   formatQuestObjectiveProgress,
@@ -65,6 +66,7 @@ export function StoryGuidanceHUD() {
   const quests = useQuests();
   const profile = useGameplayPresentationProfile();
   const isTouchDevice = useTouchDevice();
+  const initialHudFocus = useIsInitialHudFocus();
   const { showStoryOverlay, narrativeKind, diegeticNarrative } = useOrchestratorNarrativeOverlay();
   const currentSceneId = useCurrentSceneId();
   const timeOfDay = useTimeOfDay();
@@ -304,7 +306,9 @@ export function StoryGuidanceHUD() {
   if (!shouldShow) return null;
 
   const isDismissed = Boolean(dismissedSig && dismissedSig === objectiveSig);
-  const topPx = explorationObjectiveTopPx();
+  const topPx = initialHudFocus && !isTouchDevice
+    ? EXPLORATION_HUD_LAYOUT.TOP_BAR_HEIGHT + EXPLORATION_HUD_LAYOUT.SLOT_GAP
+    : explorationObjectiveTopPx();
 
   if (!isTouchDevice) {
     return (
@@ -322,10 +326,15 @@ export function StoryGuidanceHUD() {
           style={{
             top: topPx,
             zIndex: UI_LAYERS.HUD + 2,
-            width: 'min(84vw, 420px)',
+            width: initialHudFocus ? 'min(88vw, 460px)' : 'min(84vw, 420px)',
           }}
         >
-          <div className="hud-filmic-caption px-4">
+          <div
+            className="hud-filmic-caption px-4 py-1"
+            style={initialHudFocus ? {
+              background: 'linear-gradient(90deg, transparent, rgba(4, 5, 10, 0.56) 18%, rgba(4, 5, 10, 0.56) 82%, transparent)',
+            } : undefined}
+          >
             {directionHint ? (
               <p
                 className="hud-filmic-kicker truncate text-center mb-0.5"
@@ -334,7 +343,10 @@ export function StoryGuidanceHUD() {
                 {directionHint}
               </p>
             ) : null}
-            <p className="hud-filmic-body text-[12px] truncate text-center" style={{ color: 'var(--hud-filmic-ink)' }}>
+            <p
+              className={`hud-filmic-body truncate text-center ${initialHudFocus ? 'text-[14px]' : 'text-[12px]'}`}
+              style={{ color: initialHudFocus ? 'var(--hud-filmic-ink-hero)' : 'var(--hud-filmic-ink)' }}
+            >
               {displayText}
             </p>
           </div>

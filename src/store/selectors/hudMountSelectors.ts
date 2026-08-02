@@ -15,6 +15,22 @@ import type { ActiveEffect } from '@/components/game/hud/parts/BuffDebuffTracker
 import type { SkillSlot } from '@/components/game/hud/parts/SkillRechargeHUD';
 import { useGameSelector, useGamePrimitive } from './hooks';
 
+/* ─── Progressive HUD disclosure ─── */
+
+/**
+ * Keep the first room focused on objective, interaction, and core controls.
+ * Existing progression signals unlock the secondary HUD: completing/skipping
+ * onboarding in-place, or discovering any scene after the starting room.
+ */
+export function useIsInitialHudFocus(): boolean {
+  return useGamePrimitive((s) => (
+    s.exploration.currentSceneId === 'volodka_room'
+    && s.discoveredScenes.length <= 1
+    && !s.tutorialFlags.tutorialsCompleted
+    && !s.tutorialFlags.tutorialsDisabled
+  ));
+}
+
 /* ─── EnvironmentalEffectsOverlay selectors ─── */
 
 /** Map store WeatherType → overlay WeatherType (overlay is a superset). */

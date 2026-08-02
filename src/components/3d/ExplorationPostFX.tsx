@@ -136,7 +136,7 @@ const DEFAULT_VIGNETTE = { offset: 0.4, darkness: 0.32 };
 
 /** Dynamic bloom intensity per scene — neon scenes bloom brighter */
 const SCENE_BLOOM: Record<string, { intensity: number; threshold: number; smoothing: number }> = {
-  volodka_room:       { intensity: 0.78, threshold: 0.45, smoothing: 0.45 }, // monitor glow bloom
+  volodka_room:       { intensity: 0.5, threshold: 0.66, smoothing: 0.5 }, // preserve monitor glow without blooming white room surfaces
   volodka_corridor:   { intensity: 0.35, threshold: 0.72, smoothing: 0.55 }, // dim corridor haze
   home_evening:       { intensity: 0.48, threshold: 0.66, smoothing: 0.48 },  // warm lamp bloom
   street_night:       { intensity: 0.62, threshold: 0.52, smoothing: 0.48 }, // wet neon — restrained
@@ -191,6 +191,7 @@ const SCENE_AO_COLOR: Record<string, string> = {
  *  is a flat 1.22 — this table unlocks authored per-scene exposure keys so a
  *  battle reads darker/more contrasty than a sunset dream. Falls back to global. */
 const SCENE_TONE_EXPOSURE: Record<string, number> = {
+  volodka_room:       1.12, // recover pale surface detail under clustered practicals
   battle:             1.05, // darker, more contrast for combat
   sleep_dream:        1.35, // lifted ethereal
   rooftop_edge:       1.30, // sunset glow

@@ -58,7 +58,7 @@ const STANDARD_PROFILE: SceneVisualProfile = {
 };
 
 const PROFILES: Partial<Record<SceneId, SceneVisualProfile>> = {
-  volodka_room: { ...HERO_PROFILE, enhancedAmbientOcclusion: true, bloomIntensityScale: 1.07 },
+  volodka_room: { ...HERO_PROFILE, enhancedAmbientOcclusion: true, bloomIntensityScale: 0.94 },
   volodka_corridor: { ...HERO_PROFILE, enhancedAmbientOcclusion: true, aoIntensity: 2.8, aoRadius: 0.55, bloomIntensityScale: 1.05 },
   home_evening: { ...HERO_PROFILE, enhancedAmbientOcclusion: true, bloomIntensityScale: 1.08 },
   street_night: {

@@ -55,7 +55,7 @@ const DEFAULT_INDOOR_AMBIENT = { color: '#2a2a3a', intensity: 0.52 };
  *  completely black corners while preserving noir shadows.
  *  Format: { position, intensity, color, distance } or null to disable */
 const INDOOR_FILL: Record<string, { position: [number, number, number]; intensity: number; color: string; distance: number } | null> = {
-  volodka_room:       { position: [0, 2.2, -0.5], intensity: 1.35, color: '#6a5a78', distance: 10 },
+  volodka_room:       { position: [0, 2.2, -0.5], intensity: 1.05, color: '#62566f', distance: 9 },
   volodka_corridor:   { position: [0, 2.2, 0], intensity: 1.4, color: '#998877', distance: 12 },
   home_evening:       { position: [0, 2.2, 0], intensity: 2.2, color: '#ddaa77', distance: 12 },
   cafe_evening:       { position: [0, 2.5, -1], intensity: 1.75, color: '#aa99cc', distance: 13 },
@@ -357,8 +357,8 @@ const SCENE_ACCENT_LIGHTS: Record<string, AccentLight[]> = {
     { position: [-2, 1.8, -3.5], color: '#22aa66', intensity: 0.9, distance: 6, animated: 'cold_pulse' },
   ],
   volodka_room: [
-    { position: [1.2, 1.4, -2.5], color: '#5a9a88', intensity: 0.95, distance: 5.5, animated: 'cold_pulse' },  // monitor phosphor (filmic, not candy)
-    { position: [-0.5, 1.8, 0.5], color: '#ffcc88', intensity: 1.0, distance: 5, animated: 'candle_flicker', shadowCaster: true }, // bedside lamp
+    { position: [1.2, 1.4, -2.5], color: '#5a9a88', intensity: 0.75, distance: 5.5, animated: 'cold_pulse' },  // monitor phosphor (filmic, not candy)
+    { position: [-0.5, 1.8, 0.5], color: '#ffcc88', intensity: 0.72, distance: 4.5, animated: 'candle_flicker', shadowCaster: true }, // bedside lamp
     { position: [0, 0.3, -2.5], color: '#ff9944', intensity: 0.35, distance: 3 },     // under-desk warm glow
     { position: [2.3, 0.2, 1.0], color: '#334488', intensity: 0.3, distance: 4 },    // floor-level cold bounce from window wall
   ],

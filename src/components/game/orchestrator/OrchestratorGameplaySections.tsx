@@ -107,6 +107,7 @@ import { useGameStore } from '@/store/gameStore';
 import {
   useEnvironmentalEffectsOverlayProps,
   useActiveEffects,
+  useIsInitialHudFocus,
   useSkillSlots,
 } from '@/store/selectors/hudMountSelectors';
 import { isAct1DiegeticScene } from '@/engine/narrative/narrativePresentationPolicy';
@@ -412,25 +413,25 @@ export const GameplaySceneBanner = memo(function GameplaySceneBanner({
 /** Stress, compass, quick-use — exploration only (widgets no-op in cutscene). */
 export const GameplayAmbientExplorationHud = memo(function GameplayAmbientExplorationHud() {
   const profile = useGameplayPresentationProfile();
+  const initialHudFocus = useIsInitialHudFocus();
   if (!isExplorationHudProfile(profile)) return null;
 
   return (
     <>
-      <StressIndicator />
-      <QuickUseBar />
-      <QuickInventoryBar />
       <AutoSaveIndicator />
-      <CompassHUD />
       {/* Proximity whispers */}
       <ProximityWhisperOverlay />
-      {/* Cohesive top-bar cluster: scene context · data ticker · exploration progress · mood.
-          All widgets were built but orphaned — this wrapper only positions them and shares
-          the quiet-HUD fade. Pure additive: no state writes, no new data. */}
-      <SceneTopBarHud />
-      {/* Skill cooldown display — mounted near QuickUseBar so the player sees
-          skill recharge states alongside consumable slots. Reads poem powers via
-          useSkillSlots() hook; renders nothing when no skills are active. */}
-      <MountedSkillRechargeHUD />
+      {!initialHudFocus ? (
+        <>
+          <StressIndicator />
+          <QuickUseBar />
+          <QuickInventoryBar />
+          <CompassHUD />
+          {/* Cohesive top-bar cluster: scene context · data ticker · exploration progress · mood. */}
+          <SceneTopBarHud />
+          <MountedSkillRechargeHUD />
+        </>
+      ) : null}
     </>
   );
 });
@@ -446,6 +447,7 @@ export const GameplayExplorationHud = memo(function GameplayExplorationHud({
   hudSecondaryOpeners: HudSecondaryPanelOpeners;
 }) {
   const profile = useGameplayPresentationProfile();
+  const initialHudFocus = useIsInitialHudFocus();
   if (!isExplorationHudProfile(profile) || !gameDataReady) return null;
 
   return (
@@ -462,25 +464,12 @@ export const GameplayExplorationHud = memo(function GameplayExplorationHud({
           {...hudSecondaryOpeners}
         />
       </Suspense>
-      <MoralCompassHUD />
-      {/* Disco Elysium-style "☯ +N Свет / Тень / Тьма" floating pip that appears
-          next to the moral compass on every karma change. Pool-based, TTL-bounded.
-          Complements the compass's own pulse animation with a discrete numeric label. */}
-      <KarmaShiftLayer />
       <InteractionHintPopup />
       <NpcNoDialogueBark />
-      <WeatherIndicator />
-      <ScenePoiCompass />
       <AmbientAtmosphereCaption />
       <SceneDiscoveryToast />
-      <DayNightCycleIndicator />
       <TutorialOverlay />
       <FirstPlayTutorial />
-      <PoetryPowerBar />
-      {/* Session 9: TTL chips for active poem powers — complements PoetryPowerBar slots
-          with live countdown timers so the player sees “this buff expires in 12s” without
-          opening the poetry book. */}
-      <PoemActiveEffectsHud />
       <TrophyAchievementLayer />
       {/* Emergency help button — self-contained popover with current objective +
           nearby zones + reset-interaction. Idle-pulses after 15s of no input to
@@ -492,15 +481,19 @@ export const GameplayExplorationHud = memo(function GameplayExplorationHud({
           devices, giving mobile players a pinnable quest tracker with cycle /
           expand / show-on-map actions that desktop gets via StoryGuidanceHUD. */}
       <ActiveQuestMiniTracker />
-      {/* Atmospheric overlay system — weather, time-of-day, location effects.
-          Reads from store selectors (weatherEnabled, rainIntensity, timeOfDay, etc.)
-          and maps to the overlay's WeatherType/LocationType props. Respects
-          reduced motion. Pure additive — no state writes. */}
-      <MountedEnvironmentalEffectsOverlay />
-      {/* Cyberpunk-themed status effect tracker — shows active buffs/debuffs
-          with neon glow icons, timers, and stacking indicators. Reads poem
-          powers via useActiveEffects() hook; renders null when empty. */}
-      <MountedBuffDebuffTracker />
+      {!initialHudFocus ? (
+        <>
+          <MoralCompassHUD />
+          <KarmaShiftLayer />
+          <WeatherIndicator />
+          <ScenePoiCompass />
+          <DayNightCycleIndicator />
+          <PoetryPowerBar />
+          <PoemActiveEffectsHud />
+          <MountedEnvironmentalEffectsOverlay />
+          <MountedBuffDebuffTracker />
+        </>
+      ) : null}
     </>
   );
 });
