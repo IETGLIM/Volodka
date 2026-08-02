@@ -60,8 +60,12 @@ dice checks, живые хабы). Вдохновение также: Gothic (р
 - PostFX on low for some hero scenes — partial gap
 - SSR on wet streets (ultra-only, needs A/B)
 - Continuous walk↔run blend (locomotion blend tree partial)
-- Procedural act mood audio tables (per-act themes)
 - More content density Acts 3-4 (ongoing)
+
+### ✅ Недавно закрыто (cron-tick 9, 2026-08-02)
+- Procedural act mood audio tables — ACTIVATED (ACT_MOOD_OVERRIDES in proceduralAudioCatalog.ts, 20 entries covering 5 key scenes across acts 2-5, resolveActMoodOverride helper)
+- Atmospheric effects for 6 bare scenes — ACTIVATED (solnysh_room/chk_campfire_night/library_basement/underground_bunker/albert_backroom/zarema_room now have dust/embers/mist/flicker)
+- Fog + godray presets for 7 extension scenes — ACTIVATED (FOG_PRESETS + GODRAY_PRESETS extended)
 
 ### ✅ Недавно закрыто (cron-tick 6, 2026-08-02)
 - VolumetricLightShafts for home_evening/factory_basement — ACTIVATED (presets added to SCENE_VOLUMETRIC_LIGHTS; mesh cones complement GodRays postprocessing)
@@ -148,6 +152,28 @@ dice checks, живые хабы). Вдохновение также: Gothic (р
 ---
 
 ## 📝 История сессий
+
+### Сессия: 2026-08-02 (cron-tick 9) — "Atmospheric effects for bare scenes + filmic CSS depth/scanline/mood + per-act audio + content"
+**Контекст:** Cron-triggered продолжение AAA-polish. QA via agent-browser на https://volodka.vercel.app/ подтвердила стабильность (0 ошибок, exploration HUD + examine panel + filmic CSS confirmed live). Tick-8 filmic CSS (npc-name-plate, dialogue-reveal, scene-title) confirmed live. 3 параллельных work-stream'а: (me) atmospheric effects + filmic CSS wiring + new CSS micro-animations; (5-a) karma-gated dialogue + examine zones + Thought Cabinet + idle/byAct; (5-b) fog/godray presets + per-act mood audio overrides.
+
+**Что сделано (20 файлов, ~+1000/-14 строк, 1 коммит a96868c):**
+1. **Atmospheric effects for 6 bare scenes (AtmosphericEffects.tsx):** Added dust motes to `solnysh_room`, `library_basement`, `albert_backroom`, `zarema_room`; embers to `chk_campfire_night`; mist to `underground_bunker`; flickering lights to `underground_bunker`, `library_basement`. These 6 scenes previously had ZERO atmospheric effects.
+2. **Fog presets for 7 extension scenes (VolumetricFog.tsx, +78 строк):** `solnysh_room`, `chk_campfire_night`, `factory_roof`, `library_basement`, `underground_bunker`, `albert_backroom`, `zarema_room` — all now have authored fog presets matching their scene mood.
+3. **Godray presets for 6 extension scenes (GodRays.tsx, +111 строк):** `solnysh_room` (warm pendant lamp), `chk_campfire_night` (campfire glow), `factory_roof` (distant neon), `library_basement` (dusty lamp), `underground_bunker` (green CRT), `albert_backroom` (desk lamp).
+4. **6 new filmic CSS micro-animations (hud-filmic.css, +226 строк):** `.hud-filmic-depth-shimmer` (atmospheric depth-of-field shimmer on HUD plates), `.hud-filmic-crt-overlay` (CRT scanline overlay with green sweep), `.hud-filmic-mood-vignette` (scene-type-dependent vignette tint), `.hud-filmic-choice-badge` (choice number badge animation), `.hud-filmic-thought-new` (Thought Cabinet entry glow), `.hud-filmic-dice-flash-success/fail` (dice roll result flash). All gated on prefers-reduced-motion.
+5. **Wired 6 filmic CSS classes onto components:** CyberStatBar (+stat-fill), NarrativeChoiceList (+hover-lift +choice-badge), DialogueRenderer (+interjection glow), DiegeticDialogueHud (+depth-shimmer), ExplorationHUD (+mood-vignette), ThoughtCabinetTab (+thought-new glow), DiceRollDisplay (+dice-flash).
+6. **Per-act mood audio overrides NEW FEATURE (proceduralAudioCatalog.ts, +81 строк):** `ActMoodOverride` type + `ACT_MOOD_OVERRIDES` map (20 entries covering 5 key scenes across acts 2-5) + `resolveActMoodOverride()` helper. The same scene now sounds subtly different as the story darkens — volodka_room shifts from cozy_indoor (act 1) to tension (act 3) to noir_street (act 5).
+7. **+8 karma-gated dialogue choices (5-a, 4 dialogue files):** albert_philosophy (minKarma 40 + maxKarma 15), albert_personal_story (minKarma 55), cafe_barista_frequency_match (minKarma 30 + maxKarma 20), maria_hub_network (minKarma 45), alexander_redemption (minKarma 60), barista_philosophy (minKarma 35), zarema_father_revelation (minKarma 50 + maxKarma 25), alexander_system_crash (minKarma 35).
+8. **+8 examine TriggerZones (5-a, triggerZones.ts, +194 строк):** chk_campfire_night (2), library_basement (2), albert_backroom (2), forest_clearing (2).
+9. **+6 Thought Cabinet thoughts (5-a, thoughtCabinet.ts, +92 строки):** items 49-54: Архитектор Разрушения, Эхо Завода, Протокол Сопротивления, Тень Кода (hidden), Голос Подземелья, Строка Без Конца.
+10. **+2 idle monologue scenes (5-a, idleMonologues.ts, +46 строк):** city_square, albert_backroom (10 lines each).
+11. **+6 byAct revisit thoughts (5-a, sceneEntryThoughts.ts, +6 строк):** solnysh_room +acts{2,3,5}, park_day +acts{2,6,7}.
+
+**TypeScript:** 0 ошибок. **Стихи:** не тронуты. **Инварианты:** сохранены.
+
+**Следующий шаг:** Author QA на Vercel — проверить atmospheric effects в solnysh_room/chk_campfire_night/underground_bunker (dust/embers/mist/flicker), depth shimmer на dialogue plate, mood vignette tint, CRT scanline overlay, per-act audio shifts. Дальше — SSR wet streets, walk↔run blend, Mixamo remap, ещё контент Acts 3-4.
+
+---
 
 ### Сессия: 2026-08-02 (cron-tick 8) — "Filmic dialogue CSS + NPC name plate + karma dialogue + examine zones + Thought Cabinet + content"
 **Контекст:** Cron-triggered продолжение AAA-polish. QA via agent-browser подтвердила стабильность (0 ошибок, tick-6 filmic CSS confirmed live). Tick-7 HUD elements (KarmaTierBadge, fade-edge, text-glow, pulse-ring) hidden на headless browser viewport — NOT a bug (responsive `hidden sm:*`). 3 параллельных work-stream'а: (me) filmic CSS для dialogue experience; (4-a) karma-gated dialogue + examine zones; (4-b) Thought Cabinet + idle + byAct.

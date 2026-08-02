@@ -2405,3 +2405,31 @@ Stage Summary:
   5. +3 idle monologue scenes (chk_forest_zorge, factory_roof, zarema_albert_room — living-world interiority ↑).
   6. +12 byAct revisit thoughts across 4 scenes (scene memory ↑).
 - Unresolved / next-phase priorities: Author QA on Vercel. SSR wet streets (ultra-only). Continuous walk↔run blend. Mixamo↔Quaternius remap. Procedural act mood audio. More content Acts 3-4.
+
+---
+Task ID: 1 (orchestrator) — cron-tick 9
+Agent: main (orchestrator)
+Task: Volodka RPG cron-tick 9 — QA + atmospheric effects for bare scenes + filmic CSS depth/scanline/mood + per-act audio + content
+
+Work Log:
+- Reviewed worklogs. Repo at /home/z/volodka, clean on main at f6dcd43 (tick-8), v4.2.42.
+- QA via agent-browser on https://volodka.vercel.app/: loaded save → exploration → examine panel (E). Tick-8 filmic CSS confirmed LIVE (examine-fade, corner-bracket, plate-glass on ExaminePanel). 0 console errors. STABLE.
+- Explored codebase for remaining improvement opportunities: 29 orphaned HUD parts, ~55 unused filmic CSS classes, 6 scenes with zero atmospheric effects, 11 extension scenes missing fog/godray presets, no per-act audio overrides.
+- Implemented atmospheric effects for 6 bare scenes (AtmosphericEffects.tsx): +4 dust scenes (solnysh_room, library_basement, albert_backroom, zarema_room), +1 ember scene (chk_campfire_night), +1 mist scene (underground_bunker), +2 flickering scenes (underground_bunker, library_basement).
+- Implemented 6 new filmic CSS micro-animations (hud-filmic.css, +226 lines): depth-shimmer, CRT-overlay, mood-vignette, choice-badge, thought-new glow, dice-flash success/fail. All gated on prefers-reduced-motion.
+- Wired 6 filmic CSS classes onto components: CyberStatBar (+stat-fill), NarrativeChoiceList (+hover-lift +choice-badge), DialogueRenderer (+interjection), DiegeticDialogueHud (+depth-shimmer), ExplorationHUD (+mood-vignette), ThoughtCabinetTab (+thought-new), DiceRollDisplay (+dice-flash).
+- Launched 2 parallel subagents (5-a/5-b), both typecheck exit 0:
+  - 5-a: +8 karma-gated dialogue choices (4 files), +8 examine TriggerZones (4 scenes), +6 Thought Cabinet thoughts (49-54), +2 idle monologue scenes (city_square, albert_backroom), +6 byAct revisit thoughts.
+  - 5-b: +7 fog presets for extension scenes (VolumetricFog.tsx), +6 godray presets for extension scenes (GodRays.tsx), per-act mood audio overrides NEW FEATURE (proceduralAudioCatalog.ts, 20 entries + resolveActMoodOverride helper).
+- Final typecheck: exit 0. Committing + pushing to main.
+
+Stage Summary:
+- 20 source files modified + docs. ~+1000/-14 lines across 1 commit (a96868c).
+- Key wins this round:
+  1. 6 scenes with ZERO atmospheric effects now have dust/embers/mist/flicker (living world ↑).
+  2. 7 fog + 6 godray presets for extension scenes (visual depth ↑).
+  3. 6 new filmic CSS micro-animations + 6 classes wired onto components (UI polish ↑).
+  4. Per-act mood audio overrides NEW FEATURE (same scene sounds different as story darkens).
+  5. +8 karma-gated dialogue choices, +8 examine zones, +6 Thought Cabinet thoughts, +2 idle scenes, +6 byAct thoughts (content density ↑).
+- typecheck exit 0. Poems untouched. All invariants preserved.
+- Unresolved / next-phase priorities: Author QA on Vercel. SSR wet streets (ultra-only). Continuous walk↔run blend. Mixamo↔Quaternius remap. More content Acts 3-4.
