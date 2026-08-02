@@ -72,6 +72,19 @@ function BakedOrPresetFallback({
     return <Environment map={map} background={false} environmentIntensity={intensity} />;
   }
 
+  // FIX S13-9: if a bake `kind` exists (e.g. 'warm_apartment' for volodka_room),
+  // render NOTHING while the bake completes (~1 frame via requestAnimationFrame).
+  // Previously this fell through to `<Environment preset={fallbackPreset}>` which
+  // fetched an EXTERNAL HDRI (drei 'apartment' preset = lebombo_1k.hdr) from
+  // raw.githack.com/pmndrs/drei-assets — a nature grassland HDRI that tinted every
+  // apartment surface green + added a 1.4MB external dependency + CSP violation.
+  // The bake is fast (PMREM on CPU, ~1 frame); rendering null for one frame is
+  // invisible. Only scenes WITHOUT a bake kind (kind === null) fall through to
+  // the stock preset fallback.
+  if (kind) {
+    return null;
+  }
+
   return (
     <Environment
       preset={fallbackPreset}
