@@ -241,10 +241,12 @@ export function DayNightCycleIndicator() {
   const PhaseIcon = config.icon;
 
   return (
-    <div
-      className="fixed pointer-events-none hidden lg:block"
-      style={{ top: explorationDayNightTopPx(), right: EXPLORATION_HUD_LAYOUT.RIGHT_INSET, zIndex: UI_LAYERS.HUD + 1, ...quietStyle }}
-    >
+    <>
+      {/* Desktop: Full SVG arc widget */}
+      <div
+        className="fixed pointer-events-none hidden lg:block"
+        style={{ top: explorationDayNightTopPx(), right: EXPLORATION_HUD_LAYOUT.RIGHT_INSET, zIndex: UI_LAYERS.HUD + 1, ...quietStyle }}
+      >
       <motion.div
         className="pointer-events-auto rounded-lg border backdrop-blur-md overflow-hidden relative"
         style={{
@@ -532,10 +534,31 @@ export function DayNightCycleIndicator() {
         />
 
         {/* ── Footer ── */}
-        <div className="flex items-center justify-center px-2.5 py-1">
+        <div className="flex items-center justify-center px-2.5 py-1 glow-line-bottom">
           <span className="text-[8px] text-slate-600 font-mono text-data-stream">volodka://cycle</span>
         </div>
       </motion.div>
     </div>
+
+      {/* Mobile: Compact pill with icon + time */}
+      <div
+        className="fixed pointer-events-none lg:hidden"
+        style={{ top: explorationDayNightTopPx(), right: EXPLORATION_HUD_LAYOUT.RIGHT_INSET, zIndex: UI_LAYERS.HUD + 1, ...quietStyle }}
+      >
+        <motion.div
+          className="daynight-mobile-compact pointer-events-auto"
+          initial={{ opacity: 0, x: 12 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <span className="daynight-icon" style={{ color: config.celestialFill }}>
+            <PhaseIcon className="size-4" />
+          </span>
+          <span className="daynight-time text-shadow-neon-cyan" style={{ color: config.celestialFill }}>
+            {formatTime(timeOfDay)}
+          </span>
+        </motion.div>
+      </div>
+    </>
   );
 }

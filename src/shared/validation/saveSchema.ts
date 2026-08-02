@@ -275,7 +275,7 @@ const LegacyGameModeSchema = z.enum([
 
 const GameModeSchema = z.literal('exploration');
 
-const JournalTabSchema = z.enum(['notes', 'skills', 'poems', 'lore', 'thoughts', 'cabinet', 'clothing']);
+const JournalTabSchema = z.enum(['notes', 'skills', 'poems', 'lore', 'thoughts', 'cabinet', 'clothing', 'statistics']);
 
 /* ─── Full save payload schema ─── */
 /* When adding a persisted field: extend this schema, then add its default in

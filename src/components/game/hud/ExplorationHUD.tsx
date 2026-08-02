@@ -8,6 +8,7 @@ import { Save } from 'lucide-react';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useContextualHints } from '@/hooks/useContextualHints';
 import { useHudProximityFxActive } from '@/hooks/useHudProximityFxActive';
+import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { useHUDController } from '@/components/game/hud/useHUDController';
 import type { HUDProps } from '@/components/game/hud/hudTypes';
 import { CombatPreEngagementWarning } from '@/components/game/hud/parts/CombatPreEngagementWarning';
@@ -53,9 +54,9 @@ function CriticalStatusWhisper({
       role="status"
       aria-live="polite"
     >
-      <div className="hud-filmic-caption px-4">
+      <div className="hud-filmic-caption px-4 glow-line-bottom">
         <div className="hud-filmic-rule hud-filmic-rule--wide" aria-hidden />
-        <p className="hud-filmic-body text-[12px] text-neon-amber" style={{ color: 'var(--hud-filmic-danger)' }}>
+        <p className="hud-filmic-body text-[12px] stat-label" style={{ color: 'var(--hud-filmic-danger)' }}>
           {line}
         </p>
       </div>
@@ -67,6 +68,7 @@ export function ExplorationHUD(props: HUDProps) {
   const state = useHUDController(props);
   const proximityFxActive = useHudProximityFxActive();
   const { currentHint, dismissHint } = useContextualHints();
+  const reducedMotion = useEffectiveReducedMotion();
 
   const {
     photoModeOn,
@@ -87,6 +89,16 @@ export function ExplorationHUD(props: HUDProps) {
       className={`fixed inset-0 pointer-events-none transition-opacity duration-700 ease-out hud-element-mounted ${hudMounted ? 'opacity-100' : 'opacity-0'}`}
       style={{ zIndex: UI_LAYERS.HUD }}
     >
+      {/* Atmospheric scan line — subtle living feel */}
+      {!reducedMotion && (
+        <div className="hud-atmosphere-scan" aria-hidden="true" />
+      )}
+      {/* Corner accents for diegetic HUD frame */}
+      <div className="hud-corner-accent hud-corner-accent-tl" aria-hidden="true" />
+      <div className="hud-corner-accent hud-corner-accent-tr" aria-hidden="true" />
+      <div className="hud-corner-accent hud-corner-accent-bl" aria-hidden="true" />
+      <div className="hud-corner-accent hud-corner-accent-br" aria-hidden="true" />
+
       <SceneAmbientVignette />
       <RainScreenEffect />
       <SprintDrainOverlay />
@@ -136,7 +148,7 @@ export function ExplorationHUD(props: HUDProps) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.8 }}
-              className="hud-edge-warning-left"
+              className="hud-warning-flash-left"
               aria-hidden="true"
             />
             <motion.div
@@ -145,7 +157,7 @@ export function ExplorationHUD(props: HUDProps) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.8 }}
-              className="hud-edge-warning-right"
+              className="hud-warning-flash-right"
               aria-hidden="true"
             />
           </>

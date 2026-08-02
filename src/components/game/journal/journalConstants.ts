@@ -8,6 +8,7 @@ import {
   BrainCircuit,
   Brain,
   Shirt,
+  BarChart3,
 } from 'lucide-react';
 
 export const JOURNAL_TABS: { id: JournalTab; label: string; icon: typeof FileText }[] = [
@@ -18,6 +19,7 @@ export const JOURNAL_TABS: { id: JournalTab; label: string; icon: typeof FileTex
   { id: 'thoughts', label: 'Мысли', icon: BrainCircuit },
   { id: 'cabinet', label: 'Кабинет Мыслей', icon: Brain },
   { id: 'clothing', label: 'Одежда', icon: Shirt },
+  { id: 'statistics', label: 'Статистика', icon: BarChart3 },
 ];
 
 /** Skill bar fill uses this as 100% reference in the skills tab. */

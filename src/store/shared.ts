@@ -100,7 +100,7 @@ export function pushNotification(
 
 /* ─── Journal system ─── */
 
-export type JournalTab = 'notes' | 'skills' | 'poems' | 'lore' | 'thoughts' | 'cabinet' | 'clothing';
+export type JournalTab = 'notes' | 'skills' | 'poems' | 'lore' | 'thoughts' | 'cabinet' | 'clothing' | 'statistics';
 
 /** Single entry in Volodka's thought history (FIFO, max 50). */
 export interface ThoughtHistoryEntry {

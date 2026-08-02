@@ -26,6 +26,7 @@ let generationCounter = 0;
 const regenerateListeners = new Set<(key: number) => void>();
 
 /** Public API — one action to (re)generate the full procedural hero scene. */
+// eslint-disable-next-line react-refresh/only-export-components
 export function generateProceduralAaaScene(
   patch?: Partial<ProceduralAaaParams>,
 ): number {
@@ -55,6 +56,7 @@ export function generateProceduralAaaScene(
   return generationCounter;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function onProceduralAaaRegenerate(fn: (key: number) => void): () => void {
   regenerateListeners.add(fn);
   return () => {
@@ -62,6 +64,7 @@ export function onProceduralAaaRegenerate(fn: (key: number) => void): () => void
   };
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function getProceduralAaaGenerationKey(): number {
   return generationCounter;
 }

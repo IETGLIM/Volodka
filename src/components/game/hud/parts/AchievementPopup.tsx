@@ -107,7 +107,7 @@ function TrophyToast({
         onClick={onDismiss}
       >
         <div
-          className="flex items-center gap-3 px-5 py-3 rounded-xl border backdrop-blur-md glass-panel-warm"
+          className="flex items-center gap-3 px-5 py-3 rounded-xl border backdrop-blur-md glass-panel-warm toast-scanline border-breathe trophy-celebration"
           style={{
             background:
               'linear-gradient(135deg, rgba(251,191,36,0.15) 0%, rgba(15,23,42,0.92) 50%, rgba(0,0,0,0.85) 100%)',
@@ -117,7 +117,7 @@ function TrophyToast({
           }}
         >
           <div
-            className="size-10 rounded-lg flex items-center justify-center text-xl glass-panel-warm"
+            className="size-10 rounded-lg flex items-center justify-center text-xl"
             style={{
               background: 'rgba(251,191,36,0.15)',
               boxShadow: '0 0 12px rgba(251,191,36,0.2)',
@@ -162,7 +162,7 @@ function LegacyToast({ achievement }: { achievement: SkillAchievementNotice }) {
           aria-live="polite"
         >
           <div
-            className="flex items-center gap-3 px-5 py-3 rounded-xl border backdrop-blur-md glass-panel-warm"
+            className="flex items-center gap-3 px-5 py-3 rounded-xl border backdrop-blur-md glass-panel-warm toast-scanline"
             style={{
               background:
                 'linear-gradient(135deg, rgba(251,191,36,0.15) 0%, rgba(15,23,42,0.92) 50%, rgba(0,0,0,0.85) 100%)',

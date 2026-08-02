@@ -313,6 +313,9 @@ export function PanelWrapper({
               </div>
             </div>
 
+            {/* Neon divider between header and content */}
+            <div className="neon-divider" aria-hidden="true" />
+
             {/* Content area */}
             <div className={`flex-1 overflow-hidden ${layout === 'sidebar' ? 'overflow-y-auto custom-scrollbar' : ''}`}>
               {children}

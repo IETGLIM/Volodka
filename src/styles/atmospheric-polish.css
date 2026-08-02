@@ -573,3 +573,229 @@
   animation: glow-line-bottom-pulse 3s ease-in-out infinite;
   border-bottom: 1px solid rgb(var(--cyber-cyan-rgb) / 0.2);
 }
+
+/* ══════════════════════════════════════════════════════════════
+   Round 9 — HUD Atmosphere, Notification FX, Warning Effects
+   ══════════════════════════════════════════════════════════════ */
+
+/* ─── 6. HUD Atmosphere Scan (subtle, behind HUD elements) ─── */
+@keyframes hud-atmosphere-scan {
+  0% { top: -2px; opacity: 0; }
+  3% { opacity: 0.6; }
+  97% { opacity: 0.6; }
+  100% { top: 100%; opacity: 0; }
+}
+
+.hud-atmosphere-scan {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgb(var(--cyber-cyan-rgb) / 0.08) 15%,
+    rgb(var(--cyber-cyan-rgb) / 0.12) 50%,
+    rgb(var(--cyber-cyan-rgb) / 0.08) 85%,
+    transparent 100%
+  );
+  box-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.06);
+  animation: hud-atmosphere-scan 12s linear infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── 7. Warning Border Flash (replaces plain edge gradients) ─── */
+@keyframes warning-border-flash-left {
+  0%, 100% { box-shadow: inset 4px 0 12px rgba(239, 68, 68, 0.15); }
+  50% { box-shadow: inset 4px 0 20px rgba(239, 68, 68, 0.35), inset 8px 0 40px rgba(239, 68, 68, 0.1); }
+}
+
+@keyframes warning-border-flash-right {
+  0%, 100% { box-shadow: inset -4px 0 12px rgba(239, 68, 68, 0.15); }
+  50% { box-shadow: inset -4px 0 20px rgba(239, 68, 68, 0.35), inset -8px 0 40px rgba(239, 68, 68, 0.1); }
+}
+
+.hud-warning-flash-left {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 48px;
+  height: 100%;
+  animation: warning-border-flash-left 2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.hud-warning-flash-right {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 48px;
+  height: 100%;
+  animation: warning-border-flash-right 2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* ─── 8. Trophy Celebration Particles ─── */
+@keyframes trophy-particle-rise {
+  0% { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(-40px) scale(0.3); opacity: 0; }
+}
+
+.trophy-celebration {
+  position: relative;
+  overflow: visible;
+}
+
+.trophy-celebration::before,
+.trophy-celebration::after {
+  content: '';
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #fbbf24;
+  box-shadow: 0 0 6px rgba(251, 191, 36, 0.6);
+  pointer-events: none;
+  animation: trophy-particle-rise 1.5s ease-out infinite;
+}
+
+.trophy-celebration::before {
+  left: 12px;
+  bottom: 0;
+  animation-delay: 0s;
+}
+
+.trophy-celebration::after {
+  right: 12px;
+  bottom: 0;
+  animation-delay: 0.5s;
+}
+
+/* ─── 9. Neon Divider for Panel Sections ─── */
+.neon-divider {
+  height: 1px;
+  border: none;
+  margin: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgb(var(--cyber-cyan-rgb) / 0.15) 20%,
+    rgb(var(--cyber-cyan-rgb) / 0.35) 50%,
+    rgb(var(--cyber-cyan-rgb) / 0.15) 80%,
+    transparent 100%
+  );
+  box-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.1);
+}
+
+/* ─── 10. Toast Scanline Overlay ─── */
+.toast-scanline {
+  position: relative;
+  overflow: hidden;
+}
+
+.toast-scanline::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    transparent 2px,
+    rgba(255, 255, 255, 0.02) 2px,
+    rgba(255, 255, 255, 0.02) 4px
+  );
+  pointer-events: none;
+  z-index: 1;
+  border-radius: inherit;
+}
+
+/* ─── 11. HUD Vignette Corner Accents ─── */
+.hud-corner-accent {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  pointer-events: none;
+  opacity: 0.25;
+}
+
+.hud-corner-accent-tl {
+  top: 8px;
+  left: 8px;
+  border-top: 1px solid rgb(var(--cyber-cyan-rgb) / 0.5);
+  border-left: 1px solid rgb(var(--cyber-cyan-rgb) / 0.5);
+}
+
+.hud-corner-accent-tr {
+  top: 8px;
+  right: 8px;
+  border-top: 1px solid rgb(var(--cyber-cyan-rgb) / 0.5);
+  border-right: 1px solid rgb(var(--cyber-cyan-rgb) / 0.5);
+}
+
+.hud-corner-accent-bl {
+  bottom: 8px;
+  left: 8px;
+  border-bottom: 1px solid rgb(var(--cyber-cyan-rgb) / 0.5);
+  border-left: 1px solid rgb(var(--cyber-cyan-rgb) / 0.5);
+}
+
+.hud-corner-accent-br {
+  bottom: 8px;
+  right: 8px;
+  border-bottom: 1px solid rgb(var(--cyber-cyan-rgb) / 0.5);
+  border-right: 1px solid rgb(var(--cyber-cyan-rgb) / 0.5);
+}
+
+/* ─── 12. Stat Card for Statistics Panel ─── */
+.stat-card {
+  background: rgba(8, 12, 28, 0.8);
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.12);
+  border-radius: 6px;
+  padding: 12px 16px;
+  transition: border-color 0.3s ease;
+}
+
+.stat-card:hover {
+  border-color: rgb(var(--cyber-cyan-rgb) / 0.3);
+}
+
+/* ─── 13. Mobile DayNight Simplified ─── */
+.daynight-mobile-compact {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.15);
+  font-family: 'Geist Mono', monospace;
+}
+
+.daynight-mobile-compact .daynight-time {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.daynight-mobile-compact .daynight-icon {
+  font-size: 16px;
+  animation: text-glow-pulse 4s ease-in-out infinite;
+}
+
+/* ─── Reduced Motion: disable all Round 9 animations ─── */
+@media (prefers-reduced-motion: reduce) {
+  .hud-atmosphere-scan,
+  .hud-warning-flash-left,
+  .hud-warning-flash-right,
+  .trophy-celebration::before,
+  .trophy-celebration::after {
+    animation: none;
+  }
+  .hud-warning-flash-left,
+  .hud-warning-flash-right {
+    box-shadow: inset 4px 0 16px rgba(239, 68, 68, 0.25);
+    width: 32px;
+  }
+}

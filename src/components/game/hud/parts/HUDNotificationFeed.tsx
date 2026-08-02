@@ -44,6 +44,10 @@ export function HUDNotificationFeed() {
       addItem('⬆', `+${payload.amount} XP`, 'rgb(var(--cyber-cyan-rgb))');
     });
 
+    const unsubLevelUp = eventBus.on('skill:level_up', (payload) => {
+      addItem('⭐', `${payload.skill} → ур. ${payload.level}`, '#fbbf24');
+    });
+
     const unsubQuestAccepted = eventBus.on('quest:accepted', (payload) => {
       addItem('📜', `Задание: ${payload.questTitle ?? 'Новое'}`, '#00d4e0');
     });
@@ -63,18 +67,32 @@ export function HUDNotificationFeed() {
       }
     });
 
+    const unsubPoem = eventBus.on('poem:collected', (payload) => {
+      addItem('📖', `Стих: ${payload.poemId ?? 'Новый'}`, '#a78bfa');
+    });
+
+    // thought:acquired is not a typed event — skip
+
     const unsubToast = eventBus.on('toast:add', (payload) => {
       if (payload.type === 'karma' || payload.type === 'poem' || payload.type === 'quest') {
         addItem('📋', payload.message, '#fbbf24');
       }
     });
 
+    const unsubLore = eventBus.on('lore:discovered', (payload) => {
+      addItem('📜', `Лор: ${payload.title ?? 'Запись'}`, '#2dd4bf');
+    });
+
     return () => {
       unsubXp();
+      unsubLevelUp();
       unsubQuestAccepted();
       unsubQuestCompleted();
       unsubChoice();
+      unsubPoem();
+      // no unsubThought — event removed
       unsubToast();
+      unsubLore();
     };
   }, [addItem]);
 
@@ -115,7 +133,7 @@ export function HUDNotificationFeed() {
             className="overflow-hidden mb-1.5 notification-feed-slide"
           >
             <div
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border backdrop-blur-md tooltip-glass-enhanced"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border backdrop-blur-md tooltip-glass-enhanced toast-scanline"
               style={{
                 background: 'linear-gradient(135deg, rgba(2, 6, 23, 0.9) 0%, rgba(15, 23, 42, 0.85) 100%)',
                 borderColor: `${item.color}40`,

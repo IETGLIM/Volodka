@@ -17,6 +17,7 @@ import { SkillsTab } from '@/components/game/journal/SkillsTab';
 import { ThoughtsTab } from '@/components/game/journal/ThoughtsTab';
 import { ThoughtCabinetTab } from '@/components/game/journal/ThoughtCabinetTab';
 import { ClothingTab } from '@/components/game/journal/ClothingTab';
+import { StatisticsTab } from '@/components/game/journal/StatisticsTab';
 import { useJournalPanel } from '@/components/game/journal/useJournalPanel';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
@@ -219,6 +220,7 @@ export function JournalPanel({
                       {journalTab === 'thoughts' && <ThoughtsTab searchQuery={searchQuery} />}
                       {journalTab === 'cabinet' && <ThoughtCabinetTab searchQuery={searchQuery} />}
                       {journalTab === 'clothing' && <ClothingTab searchQuery={searchQuery} />}
+                      {journalTab === 'statistics' && <StatisticsTab searchQuery={searchQuery} />}
                     </motion.div>
                   </AnimatePresence>
                 </div>

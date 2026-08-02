@@ -104,6 +104,7 @@ function AuthoredInteriorShellModel({
   // identities so we do not clone/dispose the shell every frame (black flash).
   const photoMapSet = useMemo<PhotoPbrMapSet>(
     () => ({ floor: floorMaps, wall: wallMaps, ceiling: ceilingMaps }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       floorMaps.map,
       floorMaps.normalMap,

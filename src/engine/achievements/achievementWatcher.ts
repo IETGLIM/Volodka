@@ -6,7 +6,6 @@
 
 import { useEffect, useRef } from 'react';
 import { getGameSnapshot, subscribeGameSnapshot } from '@/shared/gameBridge/gameActionBridge';
-import type { GameStoreSnapshot } from '@/shared/gameBridge/gameActionBridge';
 
 /**
  * Mount this hook once (e.g. in GamePage) to enable automatic trophy checking.
