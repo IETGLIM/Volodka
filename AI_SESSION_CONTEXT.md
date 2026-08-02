@@ -144,6 +144,24 @@ dice checks, живые хабы). Вдохновение также: Gothic (р
 
 ## 📝 История сессий
 
+### Сессия: 2026-08-02 (cron-tick 5) — "Thought Cabinet bugfix + orphan HUD mounts + filmic CSS activation + karma-gated dialogue + examine/idle/byAct content"
+**Контекст:** Cron-triggered продолжение AAA-polish. QA via agent-browser на https://volodka.vercel.app/ подтвердила стабильность (0 ошибок, HUD widgets из предыдущих сессий подтверждены live: SessionPlayTimer, FootstepPedometer, SceneContextChip, interaction prompt). 3 параллельные разведки нашли: (1) 6 genuinely-orphaned HUD widgets (3 named candidates оказались false alarms), (2) 10 orphan filmic CSS classes (~250 lines dead CSS) + 5 new additions + token-swap opportunities, (3) CRITICAL BUG: commit 43a16b0 добавил MUTUALLY_EXCLUSIVE_PAIRS но не 6 ThoughtCabinetItem entries → 4 dangling IDs.
+
+**Что сделано (21 файлов, ~+903/-23 строк, коммит 381d0bf после rebase поверх 448e253, push в main):**
+1. **BUGFIX Thought Cabinet**: добавлены 6 missing ThoughtCabinetItem entries (31-36): Цифровой Зов, Призрак Кодекса, Ночной Дозор, Поэтическая Матрица, Холодный Расчёт, Уличный Шёпот. Discovery: `endurance`/`authority` НЕ валидные TrainablePlayerSkills (claim из Task 3-c ложный). Substituted rhythm/persuasion, aligned descriptions.
+2. **Orphan HUD mounts (6)**: PlayerCoordinatesDisplay → SceneTopBarHud; AmbientParticles (HUD) → ExplorationHUD; HUDBootSequence → GameplayExplorationHud (sessionStorage once-per-session guard); InteractionDistanceRing → ExplorationHUD (crosshair cluster); SceneDiscoveryCelebration REPLACES SceneDiscoveryToast (filmic); HUDNotificationFeed → GameplayExplorationHud (verified disjoint events vs NotificationToasts).
+3. **Filmic CSS activation (~250 lines dead CSS wired)**: .hud-filmic-dialogue-breath → DiegeticDialogueHud plate; .hud-ambient-particles+.hud-ambient-pulse → ExplorationHUD root; .hud-filmic-letterbox-gradient → CinematicShell bars; .hud-filmic-status-pulse → CyberStatBar. + 5 NEW classes: .hud-filmic-plate-glass, .hud-filmic-ink-bleed, .hud-filmic-status-segment, .hud-filmic-vignette-pulse, .hud-filmic-boot-cursor. + 2 a11y blocks: @media (prefers-contrast: more), @media (forced-colors: active).
+4. **Token swaps (WCAG-AA)**: LoadingScreen (cyan/slate→filmic), MenuScreenPanel (text-stone-400/55→ink-meta, contrast fix), ExaminePanel (+plate-glass+ink-hero), DiegeticDialogueHud (+icon-btn).
+5. **Content (pure data)**: 8 karma-gated dialogue choices (minKarma 25-70 / maxKarma 10-20) across part1-5; 10 new examine TriggerZones (forest_clearing 0→4, albert_backroom +2, chk_forest_zorge +2, factory_roof +2); 1 new IDLE_MONOLOGUES scene (factory_basement) + 8 neutral lines; 6 byAct revisit thoughts across 4 scenes.
+
+**Rebase conflict resolution:** remote имел 5 новых коммитов (448e253, visual/mobile fixes). 2 конфликта: DiegeticDialogueHud (combined remote flex+maxHeight with my dialogue-breath); OrchestratorGameplaySections (remote перенёс MoralCompassHUD/KarmaShiftLayer/DayNightCycleIndicator INSIDE <LazyHUD> progressive-reveal — сохранено, мои HUDNotificationFeed+SceneDiscoveryCelebration оставлены снаружи, удалён duplicate DayNightCycleIndicator).
+
+**TypeScript:** 0 ошибок. **Стихи:** не тронуты. **Инварианты:** сохранены.
+
+**Следующий шаг:** Author QA на Vercel (новые HUD widgets, filmic CSS, karma lock icons, examine zones). Дальше — SSR wet streets, walk↔run blend, Mixamo remap, ещё контент Acts 3-4.
+
+---
+
 ### Сессия: 2026-08-02 (cron-tick 4) — "Orphaned HUD mounts + filmic CSS polish + new Thought Cabinet thoughts + NPC emotion indicator"
 **Контекст:** Cron-triggered продолжение AAA-polish. QA via agent-browser на https://volodka.vercel.app/ подтвердила стабильность (0 ошибок, 0 console errors). 3 параллельные разведки замапили: (1) 6 orphaned HUD widgets для монтажа, (2) 7+ filmic CSS classes + 12+ tokens, (3) 6 новых Thought Cabinet мыслей + NPC emotion indicator + scene atmosphere profile. Решение: багов нет, продолжить аддитивные AAA-улучшения.
 

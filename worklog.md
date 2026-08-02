@@ -1761,3 +1761,106 @@ Stage Summary:
 - Typecheck passes: `node scripts/tsc7.mjs --noEmit` → exit 0.
 - Files modified (9): src/data/dialogue/part1-albert-expanded.ts, src/data/dialogue/part2-npcs.ts, src/data/dialogue/part3-mid.ts, src/data/dialogue/part3-mid-expanded.ts, src/data/dialogue/part4-late-expanded.ts, src/data/dialogue/part5-final.ts, src/data/triggerZones.ts, src/data/idleMonologues.ts, src/data/sceneEntryThoughts.ts.
 - Purely additive change — 0 deletions, 0 modifications to existing data. No commit / push performed — orchestrator handles the commit.
+
+---
+
+## Сессия: 2026-08-02 (cron-tick 5) — "Thought Cabinet bugfix + orphan HUD mounts + filmic CSS activation + karma-gated dialogue + examine/idle/byAct content"
+
+**Контекст:** Cron-triggered продолжение AAA-polish. QA via agent-browser на https://volodka.vercel.app/ подтвердила стабильность (0 ошибок, 0 console errors, HUD widgets из предыдущих сессий подтверждены live: SessionPlayTimer, FootstepPedometer, SceneContextChip, interaction prompt). 3 параллельные разведки нашли: (1) 6 genuinely-orphaned HUD widgets (3 named candidates оказались false alarms — уже смонтированы через parent widgets), (2) 10 orphan filmic CSS classes (defined but never mounted — ~250 lines dead CSS) + 5 new CSS additions + token-swap opportunities, (3) CRITICAL BUG: commit 43a16b0 добавил MUTUALLY_EXCLUSIVE_PAIRS но не добавил сами 6 ThoughtCabinetItem entries → 4 dangling IDs. Решение: багов кроме Thought Cabinet нет, продолжить аддитивные AAA-улучшения + фикс критического бага.
+
+### QA via agent-browser (tick 5)
+- Главное меню: чисто, кинематографично, 0 console errors.
+- New Game flow (skip prologue): narrative → choice → exploration HUD рендерится корректно.
+- HUD widgets подтверждены live: SessionPlayTimer (00:11:50), FootstepPedometer (ШАГИ 0), SceneContextChip, weather, [E] interaction prompt, quest tracker (2), poem counter (0/21), exploration progress (1/18).
+- Interaction (E key) работает — inspection panel открывается.
+- 0 ошибок в browser console. 3D canvas не рендерится в headless (SwiftShader limitation, не баг).
+
+### Реализованные аддитивные улучшения (21 файл, ~+903/-23 строк)
+
+**1. BUGFIX: Thought Cabinet dangling IDs (thoughtCabinet.ts)**
+- Commit 43a16b0 добавил MUTUALLY_EXCLUSIVE_PAIRS с ссылками на 4 thought IDs (digital_call, street_whisper, cold_calculation, poetic_matrix), но сами ThoughtCabinetItem entries не были написаны.
+- Добавлены 6 missing thought entries (31-36): Цифровой Зов, Призрак Кодекса, Ночной Дозор, Поэтическая Матрица, Холодный Расчёт, Уличный Шёпот.
+- Discovery: endurance/authority НЕ являются валидными TrainablePlayerSkills (claim из Task 3-c оказался ложным — verified via rg). Substituted rhythm/persuasion. Aligned effect descriptions (+2 Убеждение, +2 Ритм, -1 Ритм).
+
+**2. Orphaned HUD widget mounts (6 виджетов)**
+- PlayerCoordinatesDisplay → SceneTopBarHud (bottom-left cluster)
+- AmbientParticles (HUD) → ExplorationHUD (ambient layer)
+- HUDBootSequence → GameplayExplorationHud (sessionStorage once-per-session guard — не реплеит на combat exit)
+- InteractionDistanceRing → ExplorationHUD (crosshair cluster, между ProximityGlow и CooldownRing)
+- SceneDiscoveryCelebration → REPLACES SceneDiscoveryToast (более filmic, {count}/{total} kicker, hud-filmic-caption styling)
+- HUDNotificationFeed → GameplayExplorationHud (verified disjoint events vs NotificationToasts — chip subscribes fx:xp_gain/skill:level_up/quest:accepted/quest:completed/choice:made/poem:collected/toast:add/lore:discovered; toast subscribes poem:power_used/combat:defeat — no overlap)
+
+**3. Filmic CSS wiring (activates ~250 lines of orphan CSS) + 5 new classes**
+- .hud-filmic-dialogue-breath → DiegeticDialogueHud plate (breathing border glow)
+- .hud-ambient-particles + .hud-ambient-pulse → ExplorationHUD root (CSS-only dust motes + slow border pulse)
+- .hud-filmic-letterbox-gradient → CinematicShell letterbox bars (gradient fade into darkness)
+- .hud-filmic-status-pulse → CyberStatBar value fill (opacity pulse on changes)
+- NEW classes: .hud-filmic-plate-glass (plate-glass reflection/depth), .hud-filmic-ink-bleed (character-by-character text reveal), .hud-filmic-status-segment (segmented tick overlay), .hud-filmic-vignette-pulse (low-health radial vignette pulse), .hud-filmic-boot-cursor (filmic blink reusing existing keyframes)
+- NEW a11y blocks: @media (prefers-contrast: more) + @media (forced-colors: active) — covers .hud-filmic-plate/dialogue-plate/choice/toast/menu
+
+**4. Token swaps (deplasticize, WCAG-AA contrast)**
+- LoadingScreen.tsx: text-cyan-500/70 → var(--hud-filmic-ink-meta), text-slate-400/60 → -ink-muted, text-slate-500/50 → -ink-dim
+- MenuScreenPanel.tsx: text-stone-400/55 → var(--hud-filmic-ink-meta) (4 места, WCAG AA 4.5:1 fix), text-stone-500/45 → -ink-dim
+- ExaminePanel.tsx: + hud-filmic-plate hud-filmic-plate-glass, text-cyan-300 → -ink-hero, text-slate-100 → -ink, + hud-filmic-kicker
+- DiegeticDialogueHud.tsx: + hud-filmic-icon-btn на History/Esc buttons, removed redundant Tailwind hovers
+
+**5. Content (pure data, zero schema changes)**
+- 8 karma-gated dialogue choices across acts 1-5:
+  - albert_deep_revelation: +minKarma:25 (noble rewrite path, +8 karma) + maxKarma:10 (cold path, +3 stress)
+  - alexander_final_confrontation: +minKarma:50 (spare+redeem, +10 karma, alexander_spared flag)
+  - zarema_traitor_reveal: +maxKarma:20 (betray her, -15 karma, zarema_betrayed flag)
+  - alexander_final_decision: +minKarma:60 (mercy, +12 karma, alexander_mercy flag)
+  - cafe_barista_deep_trust: +minKarma:30 (generous tip, +5 karma, barista_generous_tip flag)
+  - zarema_before_arrest: +maxKarma:15 (accusatory, +2 stress, -10 zarema relation)
+  - barista_broadcast_ready: +minKarma:70 (redemption, +15 karma, volodka_redeemed flag)
+- 10 new examine TriggerZones:
+  - forest_clearing (0→4): mossy_stone, old_campfire, birch_sign, hidden_path
+  - albert_backroom (+2): shelves, espresso_machine
+  - chk_forest_zorge (+2): path_sign, abandoned_campfire
+  - factory_roof (+2): skyline_vista, weather_station
+- 1 new IDLE_MONOLOGUES scene (factory_basement — was missing) + 8 new neutral lines across 4 existing scenes (volodka_room, street_night, cafe_evening, river_pier)
+- 6 new byAct revisit thoughts across 4 scenes (cafe_evening +acts 3,4; office_day +acts 4,5; street_night +act 4; volodka_room +act 4)
+
+### Аудит: что НЕ тронуто (намеренно)
+- Стихи — не трогались (авторское произведение Владимира Лебедева)
+- Все инварианты сохранены: <Physics interpolate={false}>, KCC ownership, postprocessing depth-blit patch, test contracts
+- Все правки аддитивные (903 insertions, 23 deletions — deletions только removal redundant Tailwind hover classes + replacement SceneDiscoveryToast→SceneDiscoveryCelebration)
+
+### Rebase conflict resolution
+- Remote имел 5 новых коммитов (448e253) от другой сессии: visual/mobile fixes (river pier, opening room, mobile canvas recovery, animation retarget, room layout).
+- 2 конфликта разрешены:
+  - DiegeticDialogueHud.tsx: remote добавил flex flex-col + mobile maxHeight style; я добавил hud-filmic-dialogue-breath. Combined both.
+  - OrchestratorGameplaySections.tsx: remote commit 3c92c50 перенёс MoralCompassHUD/KarmaShiftLayer/DayNightCycleIndicator INSIDE <LazyHUD> (progressive-reveal refactor). Сохранён remote restructure + мои additions (HUDNotificationFeed, SceneDiscoveryCelebration) оставлены снаружи. Удалён duplicate DayNightCycleIndicator mount.
+
+### Статистика
+- 1 коммит в main (381d0bf, после rebase поверх 448e253), 21 файлов, ~+903/-23 строк
+- typecheck: `node scripts/tsc7.mjs --noEmit` → exit 0
+- 0 строк стихов изменено
+
+### Ключевые файлы сессии
+| Файл | Правка |
+|------|--------|
+| `src/data/thoughtCabinet.ts` | + 6 ThoughtCabinetItem entries (31-36) — BUGFIX dangling IDs |
+| `src/components/game/hud/SceneTopBarHud.tsx` | + PlayerCoordinatesDisplay mount |
+| `src/components/game/hud/ExplorationHUD.tsx` | + AmbientParticles + InteractionDistanceRing mounts + hud-ambient-pulse/particles classes |
+| `src/components/game/orchestrator/OrchestratorGameplaySections.tsx` | + HUDBootSequence (sessionStorage guard) + HUDNotificationFeed + SceneDiscoveryCelebration (replaces SceneDiscoveryToast) |
+| `src/components/game/diegetic/DiegeticDialogueHud.tsx` | + hud-filmic-dialogue-breath + hud-filmic-icon-btn on header buttons |
+| `src/components/game/cinematic/CinematicShell.tsx` | + hud-filmic-letterbox-gradient |
+| `src/components/game/hud/parts/CyberStatBar.tsx` | + hud-filmic-status-pulse |
+| `src/styles/hud-filmic.css` | + 5 new classes + 2 a11y media-query blocks |
+| `src/components/game/loading/LoadingScreen.tsx` | token swaps (cyan/slate → filmic) |
+| `src/components/game/menu/MenuScreenPanel.tsx` | token swaps (WCAG-AA contrast fix) |
+| `src/components/game/ExaminePanel.tsx` | + hud-filmic-plate-glass + token swaps |
+| `src/data/dialogue/part{1-5}-*.ts` (6 files) | + 8 karma-gated dialogue choices |
+| `src/data/triggerZones.ts` | + 10 examine TriggerZones |
+| `src/data/idleMonologues.ts` | + factory_basement scene + 8 neutral lines |
+| `src/data/sceneEntryThoughts.ts` | + 6 byAct revisit thoughts |
+
+### Нерешённое / next-phase priorities
+- Author QA on Vercel: verify new HUD widgets (PlayerCoordinatesDisplay, AmbientParticles, HUDBootSequence once-per-session, InteractionDistanceRing, SceneDiscoveryCelebration, HUDNotificationFeed), filmic CSS effects (dialogue-breath, ambient-particles, letterbox-gradient, status-pulse, vignette-pulse), karma-gated choice lock icons, new examine zones in forest_clearing/albert_backroom/chk_forest_zorge/factory_roof, new idle monologues + byAct thoughts.
+- SSR on wet streets (ultra-only, needs A/B for depth-blit patch interaction).
+- Continuous walk↔run blend by speed (test-aware refactor).
+- Mixamo↔Quaternius full bone remap.
+- More content for Acts 3-4 (this round added 8 choices + 10 examines + idle/byAct; could add more dialogue nodes).
+- VolumetricLightShafts for home_evening/factory_basement (GodRays postprocessing already added session 3).
+- More orphan widget mounts (remaining: WorldSpaceLabels — needs 3D camera wrapper; CompassIndicator/CompassPOIMarkers — redundant with existing CompassHUD/ScenePoiCompass).
