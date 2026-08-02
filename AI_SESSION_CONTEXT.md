@@ -140,6 +140,43 @@ dice checks, живые хабы). Вдохновение также: Gothic (р
 
 ## 📝 История сессий
 
+### Сессия: 2026-08-02 (cron-tick 3) — "GodRays postprocessing + orphan HUD mounts + accessibility pass + filmic styling polish"
+**Контекст:** Cron-triggered продолжение AAA-polish. QA via agent-browser подтвердила стабильность (0 ошибок). 3 параллельные разведки (Explore-агенты) замапили: (1) GodRays postprocessing feasibility — SAFE, (2) remaining orphan HUD widgets — 5 Tier-1 candidates, (3) accessibility + styling gaps — 5 a11y + 5 styling opportunities. Решение: багов нет, продолжить аддитивные AAA-улучшения.
+
+**Что сделано (7 modified + 1 new file, ~+232/-9 строк):**
+
+*Filmic visuals — GodRays postprocessing (ultra-only, hero-interior-scenes-only):*
+- `GodRaysSunMesh.tsx` (NEW) — dedicated emissive sphere mesh (0.1m, additive blending, depthWrite=false, toneMapped=false) как sun source для GodRaysEffect. Positions mirror GODRAY_PRESETS: home_evening [0,2.5,0] #ffaa44, factory_basement [0,2.6,-5.2] #22ff88.
+- `ExplorationPostFX.tsx` — added GodRays effect between DOF and Vignette. Always mounted when gates pass (ultra + reduced-motion-gated + soft-work-budget + GODRAYS_POST_SCENES). Opacity animated 0↔0.55 via godRaysRef (0.5s easeInOutCubic), decays to 0 during dialogue/cutscene. 60 samples, density 0.96, decay 0.92, blur, KernelSize.SMALL, SCREEN blend. Complements existing mesh-based GodRays.tsx shafts.
+- Depth-blit patch invariant preserved: GodRaysEffect allocates independent DepthTexture (no collision).
+
+*Show-don't-tell HUD — 5 orphan widget mounts:*
+- `HUDChromaticEdge` в ExplorationHUD — stress-reactive chromatic edge fringing (selector-driven).
+- `InteractionCooldownRing` в ExplorationHUD — cooldown sweep over crosshair (EventBus interaction:start/end).
+- `InteractionRadarPulse` в ExplorationHUD — radar pulse while moving (EventBus exploration:footstep).
+- `EmergencyHelpButton` в GameplayExplorationHud — self-contained popover с objective + nearby zones + reset-interaction. Idle-pulse after 15s.
+- `ActiveQuestMiniTracker` в GameplayExplorationHud — self-gating (touch-only, renders nothing on desktop).
+
+*Accessibility (WCAG 2.4.7 + ARIA):*
+- `DiegeticDialogueHud` — + `aria-modal="true"` + `<FocusTrap>` wrapper (keyboard Tab stays inside dialogue).
+- `DialogueHistoryPanel` — + `role="dialog"` + `aria-modal="true"` + `aria-label` on search input + `<FocusTrap>`.
+- `CinematicShell` — + reducedMotion gate на CinematicLetterboxBars (duration 0.7→0) + CinematicAmbientGlow (duration 1.6→0). Was missing.
+
+*Styling polish (filmic CSS — additive):*
+- `hud-filmic.css` — +6 CSS tokens: `--hud-filmic-ink-meta`, `--hud-filmic-focus`, `--hud-filmic-focus-glow`, `--hud-filmic-grain-opacity`, `--hud-filmic-scan-accent`, `--hud-filmic-transition-fast/base`.
+- + bottom-edge hairline `::after` на dialogue plate (frames plate consistently with top rule).
+- + film grain texture `::before` overlay (SVG fractalNoise, opacity 0.08, mix-blend-mode overlay). Gated `@media (prefers-reduced-motion: no-preference)`. Reduced-motion users get static grain at 60% opacity.
+- Fixed WCAG 2.4.7 fail: `.hud-filmic-choice:focus-visible` was `outline: none` → now 2px filmic focus ring + 4px glow halo.
+- + `.hud-filmic-icon-btn:focus-visible` (was missing, inherited neon cyan).
+- + `.cinematic-menu-item:focus-visible` (was missing, inherited neon cyan).
+- + `[data-exploration-ui] .hud-corner-accent { border-color: var(--hud-filmic-rule-soft) }` — softens neon cyan corner brackets to filmic rule color.
+
+**Безопасность:** все правки аддитивны; инварианты сохранены. typecheck `node scripts/tsc7.mjs --noEmit` → exit 0. Стихи не трогались.
+
+**Следующий шаг:** Author QA на Vercel — проверить GodRays в home_evening/factory_basement (Ultra), HUDChromaticEdge, InteractionCooldownRing/RadarPulse, EmergencyHelpButton, FocusTrap в диалогах. Дальше — SSR, content factory Acts 3-4, Mixamo remap, procedural act mood tables.
+
+---
+
 ### Сессия: 2026-08-02 (cron-tick 2) — "Mount orphaned HUD widgets + dialogue history + cross-scene exit bearing"
 **Контекст:** Cron-triggered продолжение AAA-polish сессии. Сначала review worklog'ов (sandbox `/home/z/my-project/worklog.md` + project `worklog.md` + `AI_SESSION_CONTEXT.md`), затем QA via `agent-browser` на https://volodka.vercel.app/. Принято решение: багов нет (главное меню и HUD рендерятся чисто, 3D canvas не рендерится в headless browser — известное ограничение SwiftShader, НЕ баг кода), продолжить аддитивные AAA-улучшения из списка кандидатных orphan-виджетов.
 

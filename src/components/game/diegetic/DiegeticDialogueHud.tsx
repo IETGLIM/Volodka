@@ -32,6 +32,7 @@ import { useNarrativeChoiceKeyboard } from '@/hooks/useNarrativeChoiceKeyboard';
 import { NarrativeChoiceList } from './NarrativeChoiceList';
 import { DialogueRelationBar } from '../dialogue/DialogueRelationBar';
 import { DialogueHistoryPanel } from '../dialogue/DialogueHistoryPanel';
+import { FocusTrap } from '@/components/a11y/FocusTrap';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { diegeticDialogueBottomPadCss, EXPLORATION_HUD_LAYOUT } from '@/shared/constants/hudLayout';
 import { useTouchDevice } from '@/hooks/useTouchDevice';
@@ -327,6 +328,7 @@ export function DiegeticDialogueHud() {
         id="diegetic-dialogue-hud"
         data-testid="diegetic-dialogue-hud"
         role="dialog"
+        aria-modal="true"
         aria-label={speaker}
         initial={reducedMotion ? false : { opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
@@ -338,6 +340,7 @@ export function DiegeticDialogueHud() {
           paddingBottom: diegeticDialogueBottomPadCss(isTouchDevice, !suppressBottomHud),
         }}
       >
+        <FocusTrap>
         <div className="mx-auto max-w-3xl hud-filmic-dialogue-plate overflow-hidden">
           <div className="px-4 pt-3 pb-1 flex items-center justify-between gap-2">
             <div className="flex items-center gap-2.5 min-w-0">
@@ -428,6 +431,7 @@ export function DiegeticDialogueHud() {
             </div>
           )}
         </div>
+        </FocusTrap>
         <AriaLiveRegion message={liveMessage} priority="polite" />
       </motion.div>
       {/* Full dialogue history overlay — opened via the "История" button in the header.

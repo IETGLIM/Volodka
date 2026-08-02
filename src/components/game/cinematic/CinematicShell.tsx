@@ -1,6 +1,7 @@
 import { memo, useMemo, type ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import type { CinematicNarrativePresentation } from './cinematicNarrativeStyles';
+import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 
 const LETTERBOX_GRADIENT =
   'linear-gradient(180deg, #000 0%, #050810 70%, #0a1420 100%)';
@@ -60,6 +61,7 @@ export const CinematicLetterboxBars = memo(function CinematicLetterboxBars({
 }: {
   style: CinematicNarrativePresentation['letterboxStyle'];
 }) {
+  const reducedMotion = useEffectiveReducedMotion();
   if (style === 'none') return null;
   const h = style === 'full' ? 'h-[8dvh] min-h-[32px]' : 'h-[4dvh] min-h-[16px]';
   const barStyle: React.CSSProperties = {
@@ -67,14 +69,17 @@ export const CinematicLetterboxBars = memo(function CinematicLetterboxBars({
     background: LETTERBOX_GRADIENT,
     boxShadow: 'inset 0 -1px 0 rgba(0, 255, 200, 0.06)',
   };
+  // Reduced motion: snap bars to final state instantly (no scaleY animation).
+  const duration = reducedMotion ? 0 : 0.7;
+  const initial = reducedMotion ? { scaleY: 1 } : { scaleY: 0 };
   return (
     <>
       <motion.div
         className={`absolute top-0 left-0 right-0 ${h} pointer-events-none`}
-        style={barStyle}
-        initial={{ scaleY: 0, transformOrigin: 'top' }}
+        style={{ ...barStyle, transformOrigin: 'top' }}
+        initial={initial}
         animate={{ scaleY: 1 }}
-        transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
+        transition={{ duration, ease: [0.25, 0.46, 0.45, 0.94] }}
       />
       <motion.div
         className={`absolute bottom-0 left-0 right-0 ${h} pointer-events-none`}
@@ -82,10 +87,11 @@ export const CinematicLetterboxBars = memo(function CinematicLetterboxBars({
           ...barStyle,
           background: 'linear-gradient(0deg, #000 0%, #050810 70%, #0a1420 100%)',
           boxShadow: 'inset 0 1px 0 rgba(0, 255, 200, 0.06)',
+          transformOrigin: 'bottom',
         }}
-        initial={{ scaleY: 0, transformOrigin: 'bottom' }}
+        initial={initial}
         animate={{ scaleY: 1 }}
-        transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
+        transition={{ duration, ease: [0.25, 0.46, 0.45, 0.94] }}
       />
     </>
   );
@@ -107,6 +113,7 @@ export function CinematicBackdrop({
 }
 
 export function CinematicAmbientGlow({ accentColor }: { accentColor: string }) {
+  const reducedMotion = useEffectiveReducedMotion();
   return (
     <motion.div
       className="absolute pointer-events-none"
@@ -117,9 +124,9 @@ export function CinematicAmbientGlow({ accentColor }: { accentColor: string }) {
         background: `radial-gradient(ellipse at center, ${accentColor}18 0%, transparent 70%)`,
         filter: 'blur(60px)',
       }}
-      initial={{ opacity: 0, scale: 0.6 }}
+      initial={reducedMotion ? { opacity: 1, scale: 1.2 } : { opacity: 0, scale: 0.6 }}
       animate={{ opacity: 1, scale: 1.2 }}
-      transition={{ duration: 1.6, ease: 'easeOut' }}
+      transition={{ duration: reducedMotion ? 0 : 1.6, ease: 'easeOut' }}
     />
   );
 }

@@ -15,7 +15,10 @@ import { CombatPreEngagementWarning } from '@/components/game/hud/parts/CombatPr
 import { ContextualHint } from '@/components/game/hud/parts/ContextualHint';
 import { CrosshairInteractionPrompt } from '@/components/game/hud/parts/CrosshairInteractionPrompt';
 import { DynamicCrosshair } from '@/components/game/hud/parts/DynamicCrosshair';
+import { HUDChromaticEdge } from '@/components/game/hud/parts/HUDChromaticEdge';
+import { InteractionCooldownRing } from '@/components/game/hud/parts/InteractionCooldownRing';
 import { InteractionProximityGlow } from '@/components/game/hud/parts/InteractionProximityGlow';
+import { InteractionRadarPulse } from '@/components/game/hud/parts/InteractionRadarPulse';
 import { NPCProximityIndicator } from '@/components/game/hud/parts/NPCProximityIndicator';
 import { PhysicsDegradedDevBadge } from '@/components/game/hud/parts/PhysicsDegradedDevBadge';
 import { QuestDirectionArrow } from '@/components/game/hud/parts/QuestDirectionArrow';
@@ -105,10 +108,23 @@ export function ExplorationHUD(props: HUDProps) {
       <SprintDrainOverlay />
       <CombatPreEngagementWarning />
 
+      {/* Stress-reactive chromatic edge fringing — wraps the screen edges with
+          subtle color separation when energy is low or stress is high. Pure
+          selector-driven (energy/stress), reduced-motion-gated. */}
+      <HUDChromaticEdge />
+
       <DynamicCrosshair />
       {/* Breathing crosshair aura + interaction-activate edge glow. Show-don't-tell
           affordance: the player senses interactables before reading any prompt. */}
       <InteractionProximityGlow />
+      {/* Cooldown sweep over the crosshair after each interaction — visual
+          feedback for the interaction cooldown so the player knows when they
+          can interact again. EventBus-driven (interaction:start/end). */}
+      <InteractionCooldownRing />
+      {/* Radar pulse emanating from the crosshair while moving — sonar-like
+          feedback that interactables are nearby. EventBus-driven
+          (exploration:footstep). Decays between steps. */}
+      <InteractionRadarPulse />
       {proximityFxActive ? <CrosshairInteractionPrompt /> : null}
 
       <AnimatePresence>

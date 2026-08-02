@@ -66,6 +66,8 @@ import { ItemGainedPopupLayer } from '@/components/game/microAnimations/ItemGain
 import { StatChangeLayer } from '@/components/game/microAnimations/StatChangeLayer';
 import { KarmaShiftLayer } from '@/components/game/microAnimations/KarmaShiftLayer';
 import { FloatingActionIndicator } from '@/components/game/hud/parts/FloatingActionIndicator';
+import { EmergencyHelpButton } from '@/components/game/hud/parts/EmergencyHelpButton';
+import { ActiveQuestMiniTracker } from '@/components/game/hud/parts/ActiveQuestMiniTracker';
 import { SceneTopBarHud } from '@/components/game/hud/SceneTopBarHud';
 import { PoemPowerEffect } from '@/components/game/PoemPowerEffect';
 import { PoemWorldEffect } from '@/components/game/poemWorldEffect/PoemWorldEffect';
@@ -450,6 +452,16 @@ export const GameplayExplorationHud = memo(function GameplayExplorationHud({
           opening the poetry book. */}
       <PoemActiveEffectsHud />
       <TrophyAchievementLayer />
+      {/* Emergency help button — self-contained popover with current objective +
+          nearby zones + reset-interaction. Idle-pulses after 15s of no input to
+          draw attention. Show-don't-tell guidance: no tutorial popups, just a
+          discrete '?' button bottom-right that the player can ignore or tap. */}
+      <EmergencyHelpButton />
+      {/* Active quest mini-tracker — self-gating: renders nothing on desktop
+          (line 204: `if (!isTouchDevice) return null;`). Only activates on touch
+          devices, giving mobile players a pinnable quest tracker with cycle /
+          expand / show-on-map actions that desktop gets via StoryGuidanceHUD. */}
+      <ActiveQuestMiniTracker />
     </>
   );
 });

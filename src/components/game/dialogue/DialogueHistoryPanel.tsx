@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X, Clock, MessageCircle, User, ScrollText } from 'lucide-react';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { NPC_PORTRAIT_COLORS } from '../shared/NPCPortrait';
+import { FocusTrap } from '@/components/a11y/FocusTrap';
 import type { DialogueHistoryEntry } from '@/store/slices/dialogueHistorySlice';
 
 /* ══════════════════════════════════════════════════════════════
@@ -180,8 +181,12 @@ export function DialogueHistoryPanel({ open, onClose, entries }: DialogueHistory
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.2, delay: 0.05 }}
             className="w-full max-w-lg max-h-[70vh] flex flex-col rounded-xl border border-white/10 bg-black/85 backdrop-blur-xl shadow-2xl glass-panel cyber-fade-in-up"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Лог диалогов"
             onClick={(e) => e.stopPropagation()}
           >
+            <FocusTrap>
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
               <div className="flex items-center gap-2">
@@ -213,6 +218,7 @@ export function DialogueHistoryPanel({ open, onClose, entries }: DialogueHistory
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Поиск по тексту или имени..."
                   className="flex-1 bg-transparent text-xs text-slate-300 placeholder-slate-600 outline-none"
+                  aria-label="Поиск по логу диалогов"
                   autoFocus
                 />
               </div>
@@ -236,6 +242,7 @@ export function DialogueHistoryPanel({ open, onClose, entries }: DialogueHistory
                 </div>
               )}
             </div>
+            </FocusTrap>
           </motion.div>
         </motion.div>
       )}

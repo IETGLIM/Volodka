@@ -1348,3 +1348,111 @@ safe-additive proposals. Правки — только аддитивные, т�
 - Content factory Acts 3-4 dialogue density + Thought Cabinet arcs.
 - Mixamo↔Quaternius full bone remap.
 - Procedural act mood tables (Phase 12 without paid stems).
+
+---
+
+## Сессия: 2026-08-02 (cron-tick 3) — "GodRays postprocessing + orphan HUD mounts + accessibility pass + filmic styling polish"
+
+**Контекст:** Cron-triggered продолжение AAA-polish. Сначала review worklog'ов, затем QA via agent-browser
+на https://volodka.vercel.app/ (главное меню рендерится чисто, 0 ошибок). 3 параллельные разведки (Explore-агенты)
+замапили: (1) feasibility GodRays postprocessing для home_evening/factory_basement, (2) remaining orphan HUD
+widgets, (3) accessibility + styling gaps. Решение: багов нет, продолжить аддитивные AAA-улучшения.
+
+### QA via agent-browser (tick 3)
+- Главное меню: чисто, кинематографично, 0 console errors / page errors.
+- New Game flow работает: prompt → narrative → exploration.
+- 3D canvas не рендерится в headless browser (SwiftShader limitation) — не баг.
+- Подтверждено: tick 2 changes не вызвали регрессий в main menu rendering.
+
+### Реализованные аддитивные улучшения (7 modified + 1 new file, ~+232/-9 строк)
+
+**1. GodRays postprocessing (filmic visuals) — ultra-only, hero-interior-scenes-only**
+- `src/components/3d/GodRaysSunMesh.tsx` — NEW. Dedicated emissive sphere mesh (0.1m radius,
+  additive blending, depthWrite=false, toneMapped=false) that acts as the sun source for
+  GodRaysEffect. Positions mirror GODRAY_PRESETS in GodRays.tsx: home_evening [0,2.5,0] #ffaa44,
+  factory_basement [0,2.6,-5.2] #22ff88. Exports `GODRAYS_POST_SCENES` set + `getGodRaysSunConfig`.
+- `src/components/3d/ExplorationPostFX.tsx` — Added GodRays import + GodRaysEffect type import.
+  Added `wantsGodRaysPost` gate (ultra-only, reduced-motion-gated, soft-work-budget-gated,
+  GODRAYS_POST_SCENES). Added `godRaysSunRef` + `godRaysRef` + `godRaysTransitionRef` (0.5s
+  easeInOutCubic opacity envelope). Added `useFrameTick('postfx', ...)` that animates
+  `effect.blendMode.opacity.value` 0↔0.55 (decays to 0 during dialogue/cutscene). Mounted
+  `<GodRaysSunMesh>` + `<GodRays>` between DOF and Vignette. Effect uses SCREEN blend, 60 samples,
+  density 0.96, decay 0.92, blur, KernelSize.SMALL, resolutionScale 0.5.
+
+**2. Tier-1 orphan HUD widget mounts (5 widgets)**
+- `src/components/game/hud/ExplorationHUD.tsx` — Mounted:
+  - `HUDChromaticEdge` — stress-reactive chromatic edge fringing (selector-driven, reduced-motion-gated).
+  - `InteractionCooldownRing` — cooldown sweep over crosshair after each interaction (EventBus-driven).
+  - `InteractionRadarPulse` — radar pulse emanating from crosshair while moving (EventBus-driven,
+    exploration:footstep).
+- `src/components/game/orchestrator/OrchestratorGameplaySections.tsx` — Mounted in `GameplayExplorationHud`:
+  - `EmergencyHelpButton` — self-contained popover with current objective + nearby zones + reset-interaction.
+    Idle-pulses after 15s. Show-don't-tell guidance: discrete '?' button bottom-right.
+  - `ActiveQuestMiniTracker` — self-gating (renders nothing on desktop, only activates on touch devices).
+    Gives mobile players a pinnable quest tracker with cycle/expand/show-on-map actions.
+
+**3. Accessibility fixes (FocusTrap + ARIA + focus-visible)**
+- `src/components/game/diegetic/DiegeticDialogueHud.tsx` — Added `aria-modal="true"` to the dialog
+  wrapper. Wrapped inner plate in `<FocusTrap>` so keyboard Tab stays inside the dialogue (was leaking
+  to canvas). FocusTrap is conditional via `usePanelFocusTrapActive` (respects user settings).
+- `src/components/game/dialogue/DialogueHistoryPanel.tsx` — Added `role="dialog"` + `aria-modal="true"`
+  + `aria-label="Лог диалогов"` to the panel. Added `aria-label="Поиск по логу диалогов"` to the
+  search input. Wrapped inner content in `<FocusTrap>`.
+- `src/components/game/cinematic/CinematicShell.tsx` — Added `useEffectiveReducedMotion` gate to
+  `CinematicLetterboxBars` (duration 0.7→0 on reduced motion, initial scaleY 0→1) and
+  `CinematicAmbientGlow` (duration 1.6→0, initial snap to final state). Was missing reduced-motion gate.
+
+**4. Styling polish (filmic CSS — additive)**
+- `src/styles/hud-filmic.css` — Added 6 new CSS tokens: `--hud-filmic-ink-meta` (higher-contrast small
+  text, WCAG AA 4.5:1), `--hud-filmic-focus` + `--hud-filmic-focus-glow` (filmic-palette focus ring,
+  not neon cyan), `--hud-filmic-grain-opacity` (tunable grain), `--hud-filmic-scan-accent` (hairline
+  accent), `--hud-filmic-transition-fast/base` (consistent motion cadence).
+- Added bottom-edge hairline `::after` on `.hud-filmic-dialogue-plate` — frames the plate consistently
+  with the top `::before` rule, mirroring cinematic letterbox bar language.
+- Added film grain texture `::before` overlay on `.hud-filmic-dialogue-plate` — subtle SVG fractalNoise
+  (opacity 0.08, mix-blend-mode overlay). Gated on `@media (prefers-reduced-motion: no-preference)`.
+  Reduced-motion users get a static grain at 60% opacity (no animation).
+- Fixed WCAG 2.4.7 fail: `.hud-filmic-choice:focus-visible` was `outline: none` — now has
+  `outline: 2px solid var(--hud-filmic-focus); outline-offset: 2px; box-shadow: 0 0 0 4px var(--hud-filmic-focus-glow)`.
+- Added `.hud-filmic-icon-btn:focus-visible` rule (was missing, inherited neon cyan).
+- Added `.cinematic-menu-item:focus-visible` rule (was missing, inherited neon cyan).
+- Added `[data-exploration-ui] .hud-corner-accent { border-color: var(--hud-filmic-rule-soft) !important; }`
+  — softens neon cyan corner brackets to filmic rule color inside exploration HUD.
+
+### Аудит: что НЕ тронуто (намеренно)
+- Стихи — не трогались (авторское произведение Владимира Лебедева).
+- Все инварианты сохранены: `<Physics interpolate={false}>`, KCC ownership, postprocessing depth-blit
+  patch (GodRaysEffect allocates independent DepthTexture — no collision), test contracts
+  (playerLocomotionPresentation / explorationStrategy / cinematicCamera / cameraShake),
+  reduced-motion gates, quality-tier gates.
+- Все правки аддитивные — не удалял существующий код, только добавлял new modules, mount points,
+  CSS pseudo-elements, and optional props.
+
+### Статистика
+- 1 коммит в main (запланирован), 7 файлов изменено + 1 новый (GodRaysSunMesh.tsx), ~+232/-9 строк
+- typecheck: `node scripts/tsc7.mjs --noEmit` → exit 0
+- 0 строк стихов изменено
+
+### Ключевые файлы сессии
+| Файл | Правка |
+|------|--------|
+| `src/components/3d/GodRaysSunMesh.tsx` | NEW — dedicated sun mesh for GodRays postprocessing |
+| `src/components/3d/ExplorationPostFX.tsx` | + GodRays effect + opacity envelope + sun mesh mount |
+| `src/components/game/hud/ExplorationHUD.tsx` | mount HUDChromaticEdge + InteractionCooldownRing + InteractionRadarPulse |
+| `src/components/game/orchestrator/OrchestratorGameplaySections.tsx` | mount EmergencyHelpButton + ActiveQuestMiniTracker |
+| `src/components/game/diegetic/DiegeticDialogueHud.tsx` | + aria-modal + FocusTrap |
+| `src/components/game/dialogue/DialogueHistoryPanel.tsx` | + role=dialog + aria-modal + aria-label + FocusTrap |
+| `src/components/game/cinematic/CinematicShell.tsx` | + reducedMotion gate on LetterboxBars + AmbientGlow |
+| `src/styles/hud-filmic.css` | + 6 CSS tokens + film grain + bottom hairline + focus-visible fixes + corner accent softening |
+
+### Нерешённое / next-phase priorities
+- Author QA on Vercel: verify GodRays postprocessing in home_evening/factory_basement (Ultra only),
+  HUDChromaticEdge stress reactivity, InteractionCooldownRing/InteractionRadarPulse near crosshair,
+  EmergencyHelpButton popover, FocusTrap behavior in dialogues.
+- SSR on wet streets (ultra-only, needs A/B for depth-blit patch interaction).
+- Continuous walk↔run blend by speed (test-aware refactor).
+- Content factory Acts 3-4 dialogue density + Thought Cabinet arcs.
+- Mixamo↔Quaternius full bone remap.
+- Procedural act mood tables (Phase 12 without paid stems).
+- More orphan widget mounts: FootstepPedometer/PlayerCoordinatesDisplay/SessionPlayTimer (need a
+  positioning wrapper cluster).

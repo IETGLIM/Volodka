@@ -31,10 +31,11 @@ import {
   Scanline,
   Noise,
   DepthOfField,
+  GodRays,
   SMAA,
 } from '@react-three/postprocessing';
 import { BlendFunction, KernelSize, ToneMappingMode, SMAAPreset } from 'postprocessing';
-import type { EffectComposer as EffectComposerImpl, DepthOfFieldEffect } from 'postprocessing';
+import type { EffectComposer as EffectComposerImpl, DepthOfFieldEffect, GodRaysEffect } from 'postprocessing';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { dialogueFocusTarget } from '@/engine/graphics/dialogueFocusTarget';
 import { isSoftWorkAffordable } from '@/engine/graphics/softWorkBudget';
@@ -56,6 +57,7 @@ import {
 } from '@/engine/graphics/proceduralLutTextures';
 import { resolveDerivedSceneId } from '@/config/sceneInheritance';
 import { shouldUseDenseSceneAmbientOcclusion } from '@/config/sceneVisualProfiles';
+import { GodRaysSunMesh, GODRAYS_POST_SCENES } from '@/components/3d/GodRaysSunMesh';
 import type { SceneId } from '@/shared/types/game';
 
 /** Per-scene color grading overrides for CyberPunk2077 / Noir / Gothic feel */
@@ -618,6 +620,67 @@ function PostFXPipeline() {
     effect.bokehScale = t.current;
   });
 
+  // ── Part 5: GodRays postprocessing (screen-space volumetric light shafts) ──
+  // Ultra-only, reduced-motion-gated, hero-interior-scenes-only. Complements
+  // the existing mesh-based GodRays.tsx (which renders cylinder/cone shafts
+  // with dust motes) by adding screen-space god-ray scattering from the same
+  // light origin. The two layers read as a single volumetric shaft.
+  //
+  // ALWAYS MOUNTED when gates pass — opacity is animated 0↔target via
+  // godRaysRef imperative ref (same pattern as DOF). Mounting/unmounting on
+  // dialogue open/close would force a full EffectComposer remount (pipelineKey
+  // change) → 8-10 shader recompiles = 250-2000ms main-thread stall.
+  const wantsGodRaysPost =
+    !reducedMotion && !visualLite && !coarsePointer
+    && softOk
+    && preset.id === 'ultra'
+    && selectedPreset === 'ultra'
+    && GODRAYS_POST_SCENES.has(sceneId as SceneId);
+
+  const godRaysSunRef = useRef<THREE.Mesh | null>(null);
+  const godRaysRef = useRef<GodRaysEffect | null>(null);
+  const godRaysTransitionRef = useRef({
+    current: 0,
+    target: 0,
+    start: 0,
+    elapsed: 0,
+    duration: 0.5,
+  });
+  const GODRAYS_TARGET_OPACITY = 0.55;
+
+  useFrameTick('postfx', ({ delta }) => {
+    const effect = godRaysRef.current;
+    if (!effect) return;
+
+    // Target opacity: 0 during dialogue/cutscene (rays distract from text),
+    // full when exploring. Reduced-motion fade-out is handled by the mount
+    // gate — if reducedMotion toggles true after mount, this hook still runs
+    // but the EffectComposer will be remounted on the next render without
+    // GodRays (wantsGodRaysPost → false), so we just decay gracefully.
+    const dialogueActive = dialogueFocusTarget.isActive() || isInDialogue;
+    const targetOpacity = (isInCutscene || dialogueActive) ? 0 : GODRAYS_TARGET_OPACITY;
+
+    const t = godRaysTransitionRef.current;
+    if (t.target !== targetOpacity) {
+      t.start = t.current;
+      t.target = targetOpacity;
+      t.elapsed = 0;
+    }
+
+    if (t.current !== t.target) {
+      t.elapsed += delta;
+      const progress = Math.min(t.elapsed / t.duration, 1);
+      // easeInOutCubic
+      const eased = progress < 0.5
+        ? 4 * progress * progress * progress
+        : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+      t.current = t.start + (t.target - t.start) * eased;
+    }
+
+    // Apply animated opacity imperatively (avoids effect re-creation).
+    effect.blendMode.opacity.value = t.current;
+  });
+
   // SMAA: Medium=LOW, High=MEDIUM, Ultra=MEDIUM (Session 8 — Ultra no longer uses SMAA HIGH by default).
   const wantsSmaa =
     !visualLite
@@ -723,6 +786,31 @@ function PostFXPipeline() {
           bokehScale={0}
           height={dofHeight}
         />
+      ) : null as any}
+      {/* Part 5: GodRays postprocessing — screen-space volumetric light shafts.
+          Ultra-only, hero-interior-scenes-only. Complements the mesh-based
+          GodRays.tsx shafts. Always mounted when gates pass; opacity animated
+          0↔0.55 via godRaysRef (decays to 0 during dialogue/cutscene). The
+          GodRaysSunMesh is a tiny emissive sphere that acts as the sun source
+          for the effect — positioned at the scene's practical light origin. */}
+      {wantsGodRaysPost ? (
+        <>
+          <GodRaysSunMesh ref={godRaysSunRef} sceneId={sceneId as SceneId} />
+          <GodRays
+            ref={godRaysRef as any}
+            sun={godRaysSunRef as any}
+            samples={60}
+            density={0.96}
+            decay={0.92}
+            weight={0.4}
+            exposure={0.6}
+            clampMax={1}
+            blur
+            kernelSize={KernelSize.SMALL}
+            resolutionScale={0.5}
+            blendFunction={BlendFunction.SCREEN}
+          />
+        </>
       ) : null as any}
       <Vignette offset={stressVignetteOffset} darkness={stressVignetteDarkness} eskil={vignetteEskil} blendFunction={BlendFunction.NORMAL} />
       <HueSaturation hue={colorGrade.hue} saturation={effectiveSaturation} blendFunction={BlendFunction.NORMAL} />

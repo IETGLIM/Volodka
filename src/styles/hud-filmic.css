@@ -9,6 +9,7 @@
   --hud-filmic-ink: rgba(214, 211, 209, 0.9);
   --hud-filmic-ink-muted: rgba(168, 162, 158, 0.75);
   --hud-filmic-ink-dim: rgba(120, 113, 108, 0.65);
+  --hud-filmic-ink-meta: rgba(168, 162, 158, 0.85);
   --hud-filmic-rule: rgba(220, 230, 240, 0.42);
   --hud-filmic-rule-soft: rgba(220, 230, 240, 0.22);
   --hud-filmic-plate: rgba(6, 8, 14, 0.62);
@@ -18,6 +19,16 @@
   --hud-filmic-warn: rgba(252, 211, 165, 0.72);
   --hud-filmic-danger: rgba(252, 165, 165, 0.75);
   --hud-filmic-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+  /* Focus-visible tokens — filmic palette (not neon cyan). WCAG 2.4.7 compliant. */
+  --hud-filmic-focus: rgba(214, 211, 209, 0.55);
+  --hud-filmic-focus-glow: rgba(214, 211, 209, 0.12);
+  /* Film grain tunable — single opacity across all filmic surfaces. */
+  --hud-filmic-grain-opacity: 0.08;
+  /* Hairline accent for letterbox edges / plate frames. */
+  --hud-filmic-scan-accent: rgba(196, 181, 160, 0.3);
+  /* Consistent motion cadence (replaces per-component 0.22s/0.32s/0.45s). */
+  --hud-filmic-transition-fast: 0.2s;
+  --hud-filmic-transition-base: 0.35s;
 }
 
 /* Thin film hairline — caption punctuation */
@@ -241,6 +252,7 @@
   backdrop-filter: blur(14px);
   box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.5);
   overflow: hidden;
+  position: relative;
 }
 
 .hud-filmic-dialogue::before,
@@ -250,6 +262,38 @@
   height: 1px;
   margin: 0 12%;
   background: linear-gradient(90deg, transparent, var(--hud-filmic-rule-soft), transparent);
+}
+
+/* Bottom-edge hairline — frames the plate consistently with the top rule,
+   mirroring cinematic letterbox bar language. Additive ::after pseudo-element. */
+.hud-filmic-dialogue::after,
+.hud-filmic-dialogue-plate::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 12%;
+  right: 12%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--hud-filmic-scan-accent), transparent);
+  pointer-events: none;
+}
+
+/* Film grain texture — subtle SVG fractalNoise overlay on the dialogue plate.
+   Adds filmic tactility without the "plastic clean" digital look.
+   Gated on prefers-reduced-motion: no-preference so reduced-motion users
+   get a static plate (grain animation can cause vestibular discomfort). */
+@media (prefers-reduced-motion: no-preference) {
+  .hud-filmic-dialogue-plate::before {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+    background-size: 120px 120px;
+    opacity: var(--hud-filmic-grain-opacity);
+    mix-blend-mode: overlay;
+    height: 100%;
+    margin: 0;
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
 }
 
 .hud-filmic-dialogue__speaker {
@@ -302,12 +346,27 @@
   color: var(--hud-filmic-ink);
   background: rgba(255, 255, 255, 0.03);
   border-color: var(--hud-filmic-border);
-  outline: none;
+}
+
+/* WCAG 2.4.7 — visible focus ring on dialogue choices. The previous rule
+   set `outline: none` which fails keyboard accessibility. Now we add a
+   filmic-palette focus ring (not neon cyan) that complements the plate. */
+.hud-filmic-choice:focus-visible {
+  outline: 2px solid var(--hud-filmic-focus);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px var(--hud-filmic-focus-glow);
 }
 
 .hud-filmic-choice:disabled {
   opacity: 0.45;
   cursor: not-allowed;
+}
+
+/* Focus-visible for filmic icon buttons — was missing, inherited neon cyan. */
+.hud-filmic-icon-btn:focus-visible {
+  outline: 2px solid var(--hud-filmic-focus);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px var(--hud-filmic-focus-glow);
 }
 
 @media (min-width: 640px) {
@@ -346,10 +405,40 @@
   animation: none !important;
 }
 
+/* Soften HUD corner accents inside exploration filmic surfaces — the default
+   neon cyan corner brackets clash with the filmic stone/serif palette.
+   This override tints them to the filmic rule color, matching the dialogue
+   plate hairlines. Additive — only applies inside [data-exploration-ui]. */
+[data-exploration-ui] .hud-corner-accent {
+  border-color: var(--hud-filmic-rule-soft) !important;
+}
+
+/* Cinematic menu item focus-visible — was missing, inherited neon cyan
+   from the global accessibility.css rule. This scopes a filmic-palette
+   focus ring to cinematic menu panels so keyboard navigation matches
+   the visual identity. */
+.cinematic-menu-item:focus-visible {
+  outline: 2px solid var(--hud-filmic-focus);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px var(--hud-filmic-focus-glow);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hud-filmic-toolbar::before,
   .hud-filmic-dialogue::before,
   .hud-filmic-plate::before {
     animation: none;
+  }
+  /* Static film grain for reduced-motion users (no animation, just texture). */
+  .hud-filmic-dialogue-plate::before {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+    background-size: 120px 120px;
+    opacity: calc(var(--hud-filmic-grain-opacity) * 0.6);
+    mix-blend-mode: overlay;
+    height: 100%;
+    margin: 0;
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
   }
 }
