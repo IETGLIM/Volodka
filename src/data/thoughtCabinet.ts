@@ -762,6 +762,98 @@ export const THOUGHT_CABINET_ITEMS: ThoughtCabinetItem[] = [
       { skill: 'rhythm', modifier: -1, description: '-1 Ритм' },
     ],
   },
+
+  /* ═══ 49. Архитектор Разрушения ═══ */
+  {
+    id: 'architect_of_ruin',
+    name: 'Архитектор Разрушения',
+    voice: 'logic',
+    description: 'Ты видишь, как рушатся системы. Не потому что хочешь — потому что видишь. Каждая структура — хрупкая. Каждая стена — условная. Ты — не разрушитель. Ты — тот, кто замечает трещины раньше, чем они становятся обвалом. Это — не дар. Это — диагноз.',
+    flavorText: '«if (building.stability < threshold) { demolish(); } // Я — не виноват. Я — вычислил.»',
+    acquisitionCondition: 'flag_thought_architect_ruin',
+    effects: [
+      { skill: 'logic', modifier: 3, description: '+3 Логика' },
+      { skill: 'coding', modifier: 1, description: '+1 Кодинг' },
+      { skill: 'empathy', modifier: -2, description: '-2 Эмпатия' },
+    ],
+  },
+
+  /* ═══ 50. Эхо Завода ═══ */
+  {
+    id: 'factory_echo',
+    name: 'Эхо Завода',
+    voice: 'rhythm',
+    description: 'Завод — давно мёртв. Но его ритм — жив. Стук конвейера, гудок смены, скрип пресса — всё это стучит в тебе, как метроном, который никто не заводил. Ты — наследник ритма, который пережил своих создателей. Ритм — не спрашивает разрешения. Ритм — просто — продолжается.',
+    flavorText: '«bum-bum-bum. Конвейер — остановлен. Ритм — нет. Ритм — вечнее стали.»',
+    acquisitionCondition: 'flag_thought_factory_echo',
+    effects: [
+      { skill: 'rhythm', modifier: 3, description: '+3 Ритм' },
+      { skill: 'intuition', modifier: 1, description: '+1 Интуиция' },
+      { skill: 'persuasion', modifier: -1, description: '-1 Убеждение' },
+    ],
+  },
+
+  /* ═══ 51. Протокол Сопротивления ═══ */
+  {
+    id: 'resistance_protocol',
+    name: 'Протокол Сопротивления',
+    voice: 'persuasion',
+    description: 'Сопротивление — не чувство. Сопротивление — протокол. Когда система давит — ты не bend. Ты — пересылаешь. Ты — маршрутизируешь давление через себя — и отдаёшь обратно. Не как удар — как сигнал. Сигнал — сильнее удара. Сигнал — распространяется. Удар — затухает.',
+    flavorText: '«while (system.oppresses) { resist(); relay(); repeat(); } // Протокол — не эмоция. Протокол — метод.»',
+    acquisitionCondition: 'flag_thought_resistance_protocol',
+    effects: [
+      { skill: 'persuasion', modifier: 3, description: '+3 Убеждение' },
+      { skill: 'writing', modifier: 1, description: '+1 Писательство' },
+      { skill: 'coding', modifier: -1, description: '-1 Кодинг' },
+    ],
+  },
+
+  /* ═══ 52. Тень Кода ═══ */
+  {
+    id: 'code_shadow',
+    name: 'Тень Кода',
+    voice: 'coding',
+    description: 'За каждым кодом — тень. Тень — это то, что код делает, но не говорил. Тень — это side effects, зависимости, последствия. Ты — видишь тени. Не потому что умнее — потому что сам — тень. Ты — side effect системы, которую никто не предусмотрел. И это — сила.',
+    flavorText: '«// TODO: document side effects. Но — тень — не документируется. Тень — существует.»',
+    acquisitionCondition: 'flag_thought_code_shadow',
+    hidden: true,
+    effects: [
+      { skill: 'coding', modifier: 3, description: '+3 Кодинг' },
+      { skill: 'intuition', modifier: 2, description: '+2 Интуиция' },
+      { skill: 'empathy', modifier: -2, description: '-2 Эмпатия' },
+    ],
+  },
+
+  /* ═══ 53. Голос Подземелья ═══ */
+  {
+    id: 'dungeon_voice',
+    name: 'Голос Подземелья',
+    voice: 'intuition',
+    description: 'Под землёй — другой голос. Не тише — глубже. В подвалах и бункерах говорят иначе: не словами — давлением, не звуками — вибрациями. Ты научился слышать. Не потому что хотел — потому что пришлось. Подземелье — не тюрьма. Подземелье — школа. Школа — молчания и — слышания.',
+    flavorText: '«frequency: 7.83Hz. Резонанс Шумана. Земля — дышит. Я — слышу. Я — не — один.»',
+    acquisitionCondition: 'flag_thought_dungeon_voice',
+    effects: [
+      { skill: 'intuition', modifier: 3, description: '+3 Интуиция' },
+      { skill: 'logic', modifier: 1, description: '+1 Логика' },
+      { skill: 'persuasion', modifier: -1, description: '-1 Убеждение' },
+      { skill: 'writing', modifier: -1, description: '-1 Писательство' },
+    ],
+  },
+
+  /* ═══ 54. Строка Без Конца ═══ */
+  {
+    id: 'endless_line',
+    name: 'Строка Без Конца',
+    voice: 'writing',
+    description: 'Есть строка, которая не заканчивается. Ты — пишешь её каждый день — и каждый день — она — длиннее. Это не стих. Это не код. Это — ты. Ты — строка без конца. Без точки с запятой. Без закрывающей скобки. Ты — открытый файл. Ты — процесс. Ты — не завершён. И — не завершится. Пока — дышится.',
+    flavorText: '«while (alive) { write(); } // Нет — закрывающей. Нет — конца. Я — — строка. Я — — продолжаюсь.»',
+    acquisitionCondition: 'flag_thought_endless_line',
+    effects: [
+      { skill: 'writing', modifier: 3, description: '+3 Писательство' },
+      { skill: 'rhythm', modifier: 1, description: '+1 Ритм' },
+      { skill: 'logic', modifier: -1, description: '-1 Логика' },
+    ],
+  },
 ];
 
 /* ─── Lookup map ─── */

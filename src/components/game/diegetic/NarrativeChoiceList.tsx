@@ -104,13 +104,13 @@ export function NarrativeChoiceList({
           disabled={!choice.pass}
           aria-label={buildChoiceAriaLabel({ index: i, text: choice.text, cond: choice.cond })}
           aria-disabled={!choice.pass}
-          className={`group w-full text-left ${padding} hud-filmic-choice ${textSize} ${
+          className={`group w-full text-left ${padding} hud-filmic-choice hud-filmic-hover-lift ${textSize} ${
             choice.pass ? 'cursor-pointer' : 'opacity-45 cursor-not-allowed'
           }`}
         >
           <div className="flex items-start gap-2">
             <span
-              className="hud-filmic-kicker w-4 shrink-0 text-center mt-0.5"
+              className="hud-filmic-kicker hud-filmic-choice-badge w-4 shrink-0 text-center mt-0.5"
               style={{ color: choice.pass ? accentColor : undefined, letterSpacing: '0.08em' }}
             >
               {i + 1}

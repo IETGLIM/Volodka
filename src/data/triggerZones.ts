@@ -4879,6 +4879,200 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     ],
   },
 
+  /* ── Tick 5-a: +8 examine TriggerZones for thin-coverage scenes ── */
+
+  // chk_campfire_night (0 existing zones → 2 new)
+  {
+    id: 'campfire_ash_circle',
+    sceneId: 'chk_campfire_night',
+    position: [12, 0.3, 11],
+    size: [1.5, 0.5, 1.5],
+    interactionType: 'examine',
+    examineData: {
+      title: 'Круг из пепла',
+      description: 'Костёр давно погас, но пепел сложен в идеальный круг. ЧК — порядок даже в огне.',
+      detailText: 'Кто-то тщательно собрал пепел и выложил кольцо. Внутри — угли, сложенные в форме буквы «Ч». Не ритуал — протокол. ЧК не оставляет следов. Кроме тех, что — intentional.',
+      icon: '⭕',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_campfire_ash_circle', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+      {
+        type: 'showThought',
+        thought: 'Пепел — не смерть. Пепел — память огня. Круг — не конец. Круг — обещание вернуться. ЧК — не сдаются. Даже — когда костёр — погас.',
+        thoughtDuration: 6000,
+      },
+    ],
+  },
+  {
+    id: 'campfire_carved_bench',
+    sceneId: 'chk_campfire_night',
+    position: [8, 0.5, 14],
+    size: [1.2, 0.8, 0.6],
+    interactionType: 'examine',
+    examineData: {
+      title: 'Резная скамья',
+      description: 'Старое бревно у кострища. На коре — вырезаны имена и даты. Кто-то вёл историю.',
+      detailText: 'Имена — настоящие, не позывные. Даты — от 2024 до прошлого месяца. Некоторые — перечёркнуты. Перечёркнутые — не мёртвые. Перечёркнутые — ушли. Ушли — страшнее мёртвых. Мёртвые — не предают.',
+      icon: '🪵',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_campfire_carved_bench', flagValue: true },
+      { type: 'addKarma', value: 4 },
+      { type: 'addSkill', skill: 'empathy', value: 1 },
+      {
+        type: 'showThought',
+        thought: 'Двадцать три имени. Шесть — перечёркнуты. Остальные — здесь. Или — где-то. Здесь — те, кто — не ушёл. Не потому что — верные. Потому что — не умеют. Как — я.',
+        thoughtDuration: 6500,
+      },
+    ],
+  },
+
+  // library_basement (6 existing zones → 2 new)
+  {
+    id: 'library_basement_faded_poster',
+    sceneId: 'library_basement',
+    position: [-5, 1.8, -3],
+    size: [1.2, 1.5, 0.1],
+    interactionType: 'examine',
+    examineData: {
+      title: 'Выцветший плакат',
+      description: 'На стене — остатки плаката. Буквы стёрты, но контур — узнаваем. «ЧИТАЙТЕ».',
+      detailText: 'Когда-то плакат призывал к чтению. Гильдия заклеила его приказом о цензуре. Приказ — отклеился. «ЧИТАЙТЕ» — осталось. Бумага — упрямая. Бумага — не подчиняется приказам.',
+      icon: '📜',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_basement_faded_poster', flagValue: true },
+      { type: 'addKarma', value: 4 },
+      { type: 'addSkill', skill: 'writing', value: 1 },
+      {
+        type: 'showThought',
+        thought: 'Приказ сгнил. Слово — осталось. Гильдия пишет приказами. Люди — пишут стихами. Стихи — дольше. Стихи — честнее. Даже — когда — выцветшие.',
+        thoughtDuration: 6000,
+      },
+    ],
+  },
+  {
+    id: 'library_basement_hidden_shelf',
+    sceneId: 'library_basement',
+    position: [4, 1.0, 5],
+    size: [0.8, 1.8, 0.5],
+    interactionType: 'examine',
+    examineData: {
+      title: 'Тайная полка',
+      description: 'Книжная полка, отодвинутая от стены. За ней — щель. В щели — не книги.',
+      detailText: 'Между полкой и стеной — узкая ниша. Внутри — стопка самиздата, перевязанная бечёвкой. На обёртке — дата: три недели назад. Здесь — библиотека внутри библиотеки. Библиотека — для тех, кто — знает.',
+      icon: '📚',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_basement_hidden_shelf', flagValue: true },
+      { type: 'addKarma', value: 5 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+      {
+        type: 'showThought',
+        thought: 'Самиздат — не контрабанда. Самиздат — это память, которая отказалась быть удалённой. Каждый лист — акт сопротивления. Каждая страница — «Я — существую».',
+        thoughtDuration: 6500,
+      },
+    ],
+  },
+
+  // albert_backroom (6 existing zones → 2 new)
+  {
+    id: 'albert_backroom_coffee_stain',
+    sceneId: 'albert_backroom',
+    position: [1.5, 0.7, 0.5],
+    size: [0.6, 0.4, 0.6],
+    interactionType: 'examine',
+    examineData: {
+      title: 'Кофейное пятно',
+      description: 'На столе — пятно от кофе. Но не случайное. Кому-то было не жалко стола — было жалко слов.',
+      detailText: 'Пятно — в форме полуострова. Рядом — надпись шариковой ручкой: «Стихи — это код, который не компилируется, но — работает». Альберт. Его почерк. Его — кофе. Его — стол.',
+      icon: '☕',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_backroom_coffee_stain', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'writing', value: 1 },
+      {
+        type: 'showThought',
+        thought: 'Альберт пишет на столе, когда бумага — кончается. Или — когда слова — слишком важные для бумаги. Стол — не archival. Стол — живой. Как — он. Как — его кофе.',
+        thoughtDuration: 6000,
+      },
+    ],
+  },
+  {
+    id: 'albert_backroom_old_modem',
+    sceneId: 'albert_backroom',
+    position: [-2.5, 0.4, -1.5],
+    size: [0.5, 0.3, 0.4],
+    interactionType: 'examine',
+    examineData: {
+      title: 'Старый модем',
+      description: 'Модем эпохи до Краха. Ещё работает. Индикатор — мигает: кто-то — на линии.',
+      detailText: 'Модем «Заря-М» — 2400 бод. Древний. Но — подключён к телефонной линии, которая не проходит через гильдийские фильтры. Альтернативная сеть. Голосовая — через модем. Альберт — не так прост, как притворяется.',
+      icon: '📞',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_backroom_old_modem', flagValue: true },
+      { type: 'addKarma', value: 5 },
+      { type: 'addSkill', skill: 'coding', value: 1 },
+      {
+        type: 'showThought',
+        thought: '2400 бод. Две тысячи четыресто бит в секунду. Достаточно — для стиха. Достаточно — для свободы. Альберт — не философ. Альберт — инженер. Инженер — строит мосты. Даже — через 2400 бод.',
+        thoughtDuration: 6500,
+      },
+    ],
+  },
+
+  // forest_clearing (4 existing zones → 2 new)
+  {
+    id: 'forest_clearing_moss_stone',
+    sceneId: 'forest_clearing',
+    position: [-6, 0.3, 8],
+    size: [1.0, 0.5, 1.0],
+    interactionType: 'examine',
+    examineData: {
+      title: 'Моховой камень',
+      description: 'Камень, покрытый мхом. Мох — аккуратный, как стриженный газон. Кто-то — ухаживает.',
+      detailText: 'На камне — мох, выложенный в форме спирали. Спираль — не природная. Кто-то — подстригал мох. Зачем? Может — знак. Может — медитация. Может — и то, и другое. Лес — не спрашивает «зачем». Лес — просто — принимает.',
+      icon: '🪨',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_clearing_moss_stone', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'rhythm', value: 1 },
+      {
+        type: 'showThought',
+        thought: 'Спираль — не украшение. Спираль — направление. Кто-то — знает, куда — идти. Я — нет. Но — мох — подскажет. Мох — не врёт. Мох — растёт — только — туда, где — свет.',
+        thoughtDuration: 6000,
+      },
+    ],
+  },
+  {
+    id: 'forest_clearing_carved_oak',
+    sceneId: 'forest_clearing',
+    position: [5, 1.2, -4],
+    size: [0.8, 2.0, 0.8],
+    interactionType: 'examine',
+    examineData: {
+      title: 'Резной дуб',
+      description: 'Дуб с вырезанным на коре символом. Не гильдийский — старше. Глубже.',
+      detailText: 'На коре — символ: круг, внутри — точка. Глаз? Солнце? Зерно? Вырезано давно — кора уже наросла вокруг. Кто-то — до гильдии — знал, что этот дуб — важный. Дуб — помнит. Дуб — не забывает. Дуб — не прощает. Дуб — стоит.',
+      icon: '🌳',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_clearing_carved_oak', flagValue: true },
+      { type: 'addKarma', value: 4 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+      {
+        type: 'showThought',
+        thought: 'Круг и точка. «Я — здесь». Самый древний символ. Самый — честный. Дуб — не говорит. Дуб — показывает. Круг — это — всё. Точка — это — я. Я — здесь. Наконец — здесь.',
+        thoughtDuration: 6500,
+      },
+    ],
+  },
+
   /* ═══════════════════════════════════════════════════════════════════
      COMBAT ENCOUNTERS — replaced by visible patrolling creeps
      (src/data/creepPatrols.ts + PatrollingCreeps.tsx). The old invisible

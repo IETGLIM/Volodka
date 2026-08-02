@@ -336,6 +336,29 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
           { type: 'npcChange', npcId: 'albert', npcChange: { relation: 5 } },
         ],
       },
+      {
+        text: 'Я напишу этот код, Альберт. Код, который станет стихом. Для тех, кто придёт после нас.',
+        next: null,
+        condition: { minKarma: 40 },
+        effects: [
+          { type: 'addKarma', value: 8 },
+          { type: 'addSkill', skill: 'writing', value: 2 },
+          { type: 'npcChange', npcId: 'albert', npcChange: { relation: 12 } },
+          { type: 'setFlag', flag: 'albert_poetry_pledge', flagValue: true },
+          { type: 'showThought', thought: 'Альберт посмотрел так, будто услышал то, что ждал три года. Его глаза — два монитора, на которых наконец-то скомпилировалось что-то настоящее.', thoughtDuration: 6500 },
+        ],
+      },
+      {
+        text: 'Красивый вопрос. Но мне платят за код, а не за философию.',
+        next: null,
+        condition: { maxKarma: 15 },
+        effects: [
+          { type: 'addStat', stat: 'stress', value: 4 },
+          { type: 'addKarma', value: -5 },
+          { type: 'npcChange', npcId: 'albert', npcChange: { relation: -8 } },
+          { type: 'showThought', thought: 'Философия — роскошь. Роскошь — не для меня. Или — я — не для роскоши. Альберт отвернулся. Кофе остыл. Мы оба — остыли.', thoughtDuration: 6000 },
+        ],
+      },
     ],
   },
 
@@ -373,6 +396,19 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
         condition: { minSkillCheck: { skill: 'intuition', difficulty: 7 }, minNpcRelation: 65, minTimeOfDay: 16 },
         effects: [
           { type: 'addSkill', skill: 'intuition', value: 2 },
+        ],
+      },
+      {
+        text: 'DELETE — это не команда. Это — приговор. Я не позволю им стирать живое.',
+        next: null,
+        condition: { minKarma: 55 },
+        effects: [
+          { type: 'addKarma', value: 10 },
+          { type: 'addSkill', skill: 'empathy', value: 2 },
+          { type: 'npcChange', npcId: 'albert', npcChange: { relation: 18 } },
+          { type: 'setFlag', flag: 'albert_archive_vow', flagValue: true },
+          { type: 'addStat', stat: 'stress', value: -5 },
+          { type: 'showThought', thought: 'Архив-7 — это не данные. Это — голоса. Тысячи голосов, которые гильдия хотела замолчать. Но молчание — не删除. Молчание — пауза. Пауза — перед словом.', thoughtDuration: 7000 },
         ],
       },
     ],

@@ -380,7 +380,7 @@ export function DiceRollDisplay({
                   y: [0, criticalSuccess || criticalFailure ? -4 : 0, 0],
                 }}
                 transition={{ duration: 0.4 }}
-                className="text-center pt-1 pb-0.5 dice-result-flash"
+                className={`text-center pt-1 pb-0.5 dice-result-flash ${success ? 'hud-filmic-dice-flash-success' : 'hud-filmic-dice-flash-fail'}`}
               >
                 <span
                   className={`text-sm font-mono font-bold tracking-wider uppercase ${success ? 'gradient-text-emerald' : 'neon-text-rose'}`}

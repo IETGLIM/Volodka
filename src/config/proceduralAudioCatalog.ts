@@ -53,6 +53,18 @@ export interface EmotionalTransition {
   stinger?: 'tension' | 'discovery' | 'danger' | 'emotional' | 'mystery';
 }
 
+/** Per-act mood override — the same scene sounds subtly different as the story darkens.
+ *  Key format: `${sceneId}:${actNumber}`. Missing entries fall back to the base
+ *  SCENE_AUDIO_PROFILES mood. */
+export interface ActMoodOverride {
+  /** Overridden mood for this scene in this act */
+  mood: MusicMood;
+  /** Low-pass filter cutoff (Hz) — lower = darker, muffled */
+  filterCutoff: number;
+  /** Wet/dry reverb mix (0–1) — higher = more distant, hollow */
+  reverbMix: number;
+}
+
 /** Scene → reverb + mood (extends inline map from useAudioOrchestrator) */
 export const SCENE_AUDIO_PROFILES: Partial<Record<SceneId, SceneAudioProfile>> = {
   solnysh_room: { sceneId: 'solnysh_room', reverbPreset: 'small_room', musicMood: 'cozy_indoor' },
@@ -260,4 +272,73 @@ export function findEmotionalTransition(
   to: MusicMood,
 ): EmotionalTransition | undefined {
   return EMOTIONAL_TRANSITIONS.find((t) => t.from === from && t.to === to);
+}
+
+/* ── Per-act mood overrides ── */
+
+/** Per-act mood overrides — the same scene sounds subtly different as the story darkens.
+ *  Key: `${sceneId}:${actNumber}` → overrides for that scene in that act.
+ *  Missing entries fall back to the base SCENE_AUDIO_PROFILES mood.
+ *
+ *  Act 1 = base profile (no override needed). Acts 2–5 progressively darken. */
+export const ACT_MOOD_OVERRIDES: Record<string, ActMoodOverride> = {
+  // ── volodka_room ──
+  // Act 2: Growing unease
+  'volodka_room:2': { mood: 'cozy_indoor', filterCutoff: 1500, reverbMix: 0.2 },
+  // Act 3: Betrayal, tension
+  'volodka_room:3': { mood: 'tension', filterCutoff: 1200, reverbMix: 0.25 },
+  // Act 4: Dark revelations
+  'volodka_room:4': { mood: 'tension', filterCutoff: 1000, reverbMix: 0.3 },
+  // Act 5: Climax
+  'volodka_room:5': { mood: 'noir_street', filterCutoff: 900, reverbMix: 0.35 },
+
+  // ── street_night ──
+  // Act 2: Unsettling
+  'street_night:2': { mood: 'noir_street', filterCutoff: 1800, reverbMix: 0.2 },
+  // Act 3: Danger
+  'street_night:3': { mood: 'tension', filterCutoff: 1400, reverbMix: 0.25 },
+  // Act 4: Hostile
+  'street_night:4': { mood: 'tension', filterCutoff: 1100, reverbMix: 0.3 },
+  // Act 5: Desperate
+  'street_night:5': { mood: 'tension', filterCutoff: 850, reverbMix: 0.35 },
+
+  // ── home_evening ──
+  // Act 2: Comfort fading
+  'home_evening:2': { mood: 'cozy_indoor', filterCutoff: 1600, reverbMix: 0.18 },
+  // Act 3: Unease at home
+  'home_evening:3': { mood: 'cozy_indoor', filterCutoff: 1200, reverbMix: 0.25 },
+  // Act 4: Home no longer safe
+  'home_evening:4': { mood: 'tension', filterCutoff: 1000, reverbMix: 0.3 },
+  // Act 5: Cold comfort
+  'home_evening:5': { mood: 'noir_street', filterCutoff: 900, reverbMix: 0.35 },
+
+  // ── factory_basement ──
+  // Act 2: Industrial hum
+  'factory_basement:2': { mood: 'tension', filterCutoff: 1400, reverbMix: 0.2 },
+  // Act 3: Ominous
+  'factory_basement:3': { mood: 'tension', filterCutoff: 1100, reverbMix: 0.28 },
+  // Act 4: Dread
+  'factory_basement:4': { mood: 'tension', filterCutoff: 850, reverbMix: 0.35 },
+  // Act 5: Confrontation
+  'factory_basement:5': { mood: 'combat', filterCutoff: 700, reverbMix: 0.4 },
+
+  // ── library_day ──
+  // Act 2: Quiet knowledge
+  'library_day:2': { mood: 'cozy_indoor', filterCutoff: 1800, reverbMix: 0.15 },
+  // Act 3: Unsettling truths
+  'library_day:3': { mood: 'cozy_indoor', filterCutoff: 1400, reverbMix: 0.22 },
+  // Act 4: Forbidden archives
+  'library_day:4': { mood: 'tension', filterCutoff: 1100, reverbMix: 0.3 },
+  // Act 5: Final revelation
+  'library_day:5': { mood: 'tension', filterCutoff: 900, reverbMix: 0.38 },
+};
+
+/** Resolve the per-act mood override for a given scene + act.
+ *  Returns `null` when no override exists (caller should fall back to base profile). */
+export function resolveActMoodOverride(
+  sceneId: string,
+  act: number,
+): ActMoodOverride | null {
+  const key = `${sceneId}:${act}`;
+  return ACT_MOOD_OVERRIDES[key] ?? null;
 }

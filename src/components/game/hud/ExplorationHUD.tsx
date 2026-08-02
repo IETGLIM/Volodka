@@ -93,8 +93,8 @@ export function ExplorationHUD(props: HUDProps) {
     <div
       data-exploration-ui
       data-testid="game-hud"
-      className={`fixed inset-0 pointer-events-none transition-opacity duration-700 ease-out hud-element-mounted hud-ambient-pulse ${hudMounted ? 'opacity-100' : 'opacity-0'}`}
-      style={{ zIndex: UI_LAYERS.HUD }}
+      className={`fixed inset-0 pointer-events-none transition-opacity duration-700 ease-out hud-element-mounted hud-ambient-pulse hud-filmic-mood-vignette ${hudMounted ? 'opacity-100' : 'opacity-0'}`}
+      style={{ zIndex: UI_LAYERS.HUD, '--hud-filmic-mood-tint': 'var(--hud-filmic-glow-cool)' } as React.CSSProperties}
     >
       {/* Atmospheric scan line — subtle living feel */}
       {!reducedMotion && (

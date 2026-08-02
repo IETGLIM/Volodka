@@ -1363,3 +1363,229 @@
     0 0 6px var(--hud-filmic-glow-warm, rgba(255, 170, 68, 0.3)),
     0 0 16px var(--hud-filmic-rule-soft, rgba(255, 170, 68, 0.08));
 }
+
+/* ═════════════════════════════════════════════════════════════════════
+   TICK 9 — Filmic CSS for atmospheric depth + scanline overlay + mood vignette
+   All gated on prefers-reduced-motion with static fallbacks.
+   ═════════════════════════════════════════════════════════════════════ */
+
+/* ── 1. Atmospheric depth shimmer ──
+   Subtle depth-of-field shimmer on the outer edges of the HUD plate.
+   Creates a sense of depth — the plate feels like it's sitting in 3D space,
+   not flat on the screen. Apply via className="hud-filmic-depth-shimmer"
+   on any plate/dialogue container. */
+@media (prefers-reduced-motion: no-preference) {
+  .hud-filmic-depth-shimmer {
+    animation: hud-filmic-depth-shimmer-pulse 4s ease-in-out infinite;
+  }
+
+  @keyframes hud-filmic-depth-shimmer-pulse {
+    0%, 100% {
+      box-shadow:
+        0 0 0 1px var(--hud-filmic-border),
+        0 8px 28px rgba(0, 0, 0, 0.45);
+    }
+    50% {
+      box-shadow:
+        0 0 0 1px var(--hud-filmic-border),
+        0 8px 28px rgba(0, 0, 0, 0.45),
+        0 0 20px var(--hud-filmic-glow-warm, rgba(255, 170, 68, 0.06));
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-depth-shimmer {
+    animation: none;
+  }
+}
+
+/* ── 2. Scanline overlay for CRT scenes ──
+   Subtle scanline overlay for terminal/CRT panels (guild_mainframe, office_day).
+   Apply via className="hud-filmic-crt-overlay" on the panel container.
+   Uses repeating-linear-gradient for authentic CRT scanlines. */
+.hud-filmic-crt-overlay {
+  position: relative;
+}
+
+.hud-filmic-crt-overlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    transparent 1px,
+    rgba(0, 0, 0, 0.03) 1px,
+    rgba(0, 0, 0, 0.03) 2px
+  );
+  pointer-events: none;
+  z-index: 1;
+  mix-blend-mode: multiply;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hud-filmic-crt-overlay::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      rgba(0, 255, 100, 0.015) 50%,
+      transparent 100%
+    );
+    height: 30%;
+    animation: hud-filmic-crt-sweep 6s linear infinite;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  @keyframes hud-filmic-crt-sweep {
+    0%   { transform: translateY(-100%); }
+    100% { transform: translateY(400%); }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-crt-overlay::after {
+    display: none;
+  }
+}
+
+/* ── 3. Mood vignette tint ──
+   Scene-type-dependent vignette overlay. Adds a subtle color tint
+   that matches the scene mood (warm amber for indoor, cool steel for outdoor,
+   green for digital, red for combat). Apply via
+   className="hud-filmic-mood-vignette" on the root HUD container.
+   The actual tint color is set via CSS custom property --hud-filmic-mood-tint. */
+.hud-filmic-mood-vignette {
+  position: relative;
+}
+
+.hud-filmic-mood-vignette::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 40%,
+    var(--hud-filmic-mood-tint, rgba(0, 0, 0, 0)) 100%
+  );
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.6;
+}
+
+/* ── 4. Choice number badge frame ──
+   Filmic frame around the choice number badge. Adds a subtle warm
+   border that animates in when the choice appears. Apply via
+   className="hud-filmic-choice-badge" on the choice number span. */
+.hud-filmic-choice-badge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.1em;
+  padding: 0 0.15em;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hud-filmic-choice-badge {
+    animation: hud-filmic-choice-badge-in 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+
+  @keyframes hud-filmic-choice-badge-in {
+    from {
+      opacity: 0;
+      transform: scale(0.7);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-choice-badge {
+    animation: none;
+  }
+}
+
+/* ── 5. Thought Cabinet entry glow ──
+   Glow effect for newly acquired Thought Cabinet entries.
+   The entry "breathes" with a warm amber glow for a few seconds
+   after being acquired, then fades to static. Apply via
+   className="hud-filmic-thought-new" on the thought entry. */
+@media (prefers-reduced-motion: no-preference) {
+  .hud-filmic-thought-new {
+    animation: hud-filmic-thought-new-glow 3s ease-out both;
+  }
+
+  @keyframes hud-filmic-thought-new-glow {
+    0% {
+      box-shadow: 0 0 0 0 var(--hud-filmic-glow-warm, rgba(255, 170, 68, 0.4));
+      border-color: var(--hud-filmic-accent, rgba(196, 181, 160, 0.75));
+    }
+    30% {
+      box-shadow: 0 0 12px 2px var(--hud-filmic-glow-warm, rgba(255, 170, 68, 0.2));
+    }
+    100% {
+      box-shadow: none;
+      border-color: var(--hud-filmic-border, rgba(168, 162, 158, 0.14));
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-thought-new {
+    animation: none;
+    box-shadow: none;
+  }
+}
+
+/* ── 6. Dice roll result flash ──
+   Brief flash effect for dice roll results in the skill check system.
+   Green flash for success, red flash for failure. Apply via
+   className="hud-filmic-dice-flash-success" or "hud-filmic-dice-flash-fail"
+   on the result element. */
+@media (prefers-reduced-motion: no-preference) {
+  .hud-filmic-dice-flash-success {
+    animation: hud-filmic-dice-flash-green 0.6s ease-out both;
+  }
+
+  .hud-filmic-dice-flash-fail {
+    animation: hud-filmic-dice-flash-red 0.6s ease-out both;
+  }
+
+  @keyframes hud-filmic-dice-flash-green {
+    0% {
+      box-shadow: 0 0 16px 4px rgba(52, 211, 153, 0.5);
+      border-color: rgba(52, 211, 153, 0.6);
+    }
+    100% {
+      box-shadow: none;
+      border-color: var(--hud-filmic-border, rgba(168, 162, 158, 0.14));
+    }
+  }
+
+  @keyframes hud-filmic-dice-flash-red {
+    0% {
+      box-shadow: 0 0 16px 4px rgba(252, 165, 165, 0.5);
+      border-color: rgba(252, 165, 165, 0.6);
+    }
+    100% {
+      box-shadow: none;
+      border-color: var(--hud-filmic-border, rgba(168, 162, 158, 0.14));
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-dice-flash-success,
+  .hud-filmic-dice-flash-fail {
+    animation: none;
+    box-shadow: none;
+  }
+}

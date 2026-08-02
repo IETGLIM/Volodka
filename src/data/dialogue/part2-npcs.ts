@@ -1120,6 +1120,30 @@ export const DIALOGUE_PART2: Record<string, DialogueNode> = {
         next: null,
         effects: [{ type: 'visitStoryNode', nodeId: 'act2_pier_cafe_frequency_match' }],
       },
+      {
+        text: 'Я слышу ритм, бариста. Город — не машина. Город — сердце. И оно — бьётся.',
+        next: null,
+        condition: { minKarma: 30 },
+        effects: [
+          { type: 'addKarma', value: 6 },
+          { type: 'addSkill', skill: 'rhythm', value: 2 },
+          { type: 'npcChange', npcId: 'cafe_barista', npcChange: { relation: 10 } },
+          { type: 'setFlag', flag: 'barista_rhythm_awakening', flagValue: true },
+          { type: 'showThought', thought: 'Jukebox молчит, но город — нет. Город — не в проводах. Город — в паузах между ними. В тех паузах — мы. Я — пауза. Я — ритм.', thoughtDuration: 6500 },
+        ],
+      },
+      {
+        text: 'Ритм? Это просто шум серверов. Не приукрашивай.',
+        next: null,
+        condition: { maxKarma: 20 },
+        effects: [
+          { type: 'addKarma', value: -4 },
+          { type: 'addStat', stat: 'stress', value: 3 },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'npcChange', npcId: 'cafe_barista', npcChange: { relation: -6 } },
+          { type: 'showThought', thought: 'Бариста отвернулся. Его плечи опустились — как сервер при shutdown. Я — убил момент. Опять. Может, моменты — не для меня.', thoughtDuration: 6000 },
+        ],
+      },
     ],
   },
 
@@ -1144,6 +1168,18 @@ export const DIALOGUE_PART2: Record<string, DialogueNode> = {
         effects: [
           { type: 'visitStoryNode', nodeId: 'act2_archive_seven_resolve' },
           { type: 'discoverLore', loreId: 'lore_archive_seven_truth' },
+        ],
+      },
+      {
+        text: 'Mesh — это не технология. Это — доверие. Я — звено. Я не подведу.',
+        next: null,
+        condition: { minKarma: 45 },
+        effects: [
+          { type: 'addKarma', value: 8 },
+          { type: 'addSkill', skill: 'persuasion', value: 2 },
+          { type: 'npcChange', npcId: 'maria', npcChange: { relation: 15 } },
+          { type: 'setFlag', flag: 'maria_mesh_vow', flagValue: true },
+          { type: 'showThought', thought: 'Виктория кивнула — медленно, как будто ставила подпись под невидимым контрактом. Mesh — не сеть проводов. Mesh — это люди, которые не бросают. Я — один из них.', thoughtDuration: 7000 },
         ],
       },
     ],

@@ -33,11 +33,28 @@ function sceneHasGodRays(sceneId: string): boolean {
 
 const STEAM_SCENES = new Set(['cafe_evening', 'home_evening']);
 const MATRIX_FOG_SCENES = new Set(['battle']);
-const DUST_SCENES = new Set(['volodka_room', 'volodka_corridor', 'library_day', 'park_day', 'home_evening', 'battle', 'abandoned_factory']);
-const EMBER_SCENES = new Set(['abandoned_factory', 'battle']);
+const DUST_SCENES = new Set([
+  'volodka_room', 'volodka_corridor', 'library_day', 'park_day', 'home_evening', 'battle',
+  'abandoned_factory',
+  // Cron-tick 9: extension scenes — cozy rooms and dusty basements get atmospheric dust motes
+  'solnysh_room', 'library_basement', 'albert_backroom', 'zarema_room',
+]);
+const EMBER_SCENES = new Set([
+  'abandoned_factory', 'battle',
+  // Cron-tick 9: campfire night gets glowing embers
+  'chk_campfire_night',
+]);
 const NEON_REFLECTION_SCENES = new Set(['street_night', 'city_square', 'river_pier', 'pier_evening']);
-const MIST_SCENES = new Set(['guild_mainframe']);
-const FLICKERING_LIGHT_SCENES = new Set(['factory_basement', 'abandoned_factory']);
+const MIST_SCENES = new Set([
+  'guild_mainframe',
+  // Cron-tick 9: resistance bunker gets CRT mist
+  'underground_bunker',
+]);
+const FLICKERING_LIGHT_SCENES = new Set([
+  'factory_basement', 'abandoned_factory',
+  // Cron-tick 9: resistance bunker and dusty basement get flickering
+  'underground_bunker', 'library_basement',
+]);
 
 /** Main controller: renders appropriate atmospheric effects per scene */
 export function AtmosphericEffects() {

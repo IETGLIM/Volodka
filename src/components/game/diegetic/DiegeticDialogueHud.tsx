@@ -343,7 +343,7 @@ export function DiegeticDialogueHud() {
       >
         <FocusTrap>
         <div
-          className="mx-auto max-w-3xl hud-filmic-dialogue-plate hud-filmic-dialogue-breath overflow-hidden flex flex-col"
+          className="mx-auto max-w-3xl hud-filmic-dialogue-plate hud-filmic-dialogue-breath hud-filmic-depth-shimmer overflow-hidden flex flex-col"
           style={{ maxHeight: 'calc(100dvh - 32px - env(safe-area-inset-bottom, 0px))' }}
         >
           <div className="px-4 pt-3 pb-1 flex items-center justify-between gap-2">

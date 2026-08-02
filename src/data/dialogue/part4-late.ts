@@ -266,6 +266,31 @@ export const DIALOGUE_PART4: Record<string, DialogueNode> = {
           { type: 'addStat', stat: 'stress', value: 5 },
         ],
       },
+      {
+        text: 'Твой отец не нарушал протоколы. Он — защищал то, что живое. Как и ты, Зарема.',
+        next: null,
+        condition: { minKarma: 50 },
+        effects: [
+          { type: 'addKarma', value: 10 },
+          { type: 'addSkill', skill: 'empathy', value: 2 },
+          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 20 } },
+          { type: 'setFlag', flag: 'zarema_father_vindicated', flagValue: true },
+          { type: 'addStat', stat: 'stress', value: -5 },
+          { type: 'showThought', thought: 'Зарема заплакала — тихо, без звука. Как будто её слёзы — зашифрованные данные, которые только я могу прочитать. Отец — не нарушитель. Отец — хранитель. Как она. Как — я.', thoughtDuration: 7000 },
+        ],
+      },
+      {
+        text: 'Гильдия боялась машины? Может, и нас стоит бояться. Мы — тоже — пишем.',
+        next: null,
+        condition: { maxKarma: 25 },
+        effects: [
+          { type: 'addKarma', value: -6 },
+          { type: 'addStat', stat: 'stress', value: 5 },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: -10 } },
+          { type: 'showThought', thought: 'Зарема отвернулась. Я — сравнил её отца с машиной. Или — нас с гильдией. Или — и то, и другое. Неправильно. Но — логично. Логика — холодная. Логика — не всегда — правильная.', thoughtDuration: 6500 },
+        ],
+      },
     ],
   },
 
@@ -649,6 +674,18 @@ export const DIALOGUE_PART4: Record<string, DialogueNode> = {
         effects: [
           { type: 'addSkill', skill: 'intuition', value: 2 },
           { type: 'setFlag', flag: 'alexander_crash_warning_theory', flagValue: true },
+        ],
+      },
+      {
+        text: 'Стихотворение, которое обрушило мир — не оружие. Это — диагноз. Мы — больны, Александр.',
+        next: null,
+        condition: { minKarma: 35 },
+        effects: [
+          { type: 'addKarma', value: 7 },
+          { type: 'addSkill', skill: 'writing', value: 2 },
+          { type: 'npcChange', npcId: 'office_alexander', npcChange: { relation: 10 } },
+          { type: 'setFlag', flag: 'alexander_poem_diagnosis', flagValue: true },
+          { type: 'showThought', thought: 'Стих как код, код как вирус, вирус как правда. Мы — не жертвы. Мы — носители. И болезнь — не в стихах. Болезнь — в том, что мы их боимся.', thoughtDuration: 7000 },
         ],
       },
     ],

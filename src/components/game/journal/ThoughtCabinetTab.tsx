@@ -89,9 +89,9 @@ const ThoughtCard = memo(function ThoughtCard({
       className={`
         cyber-fade-in-stagger text-left p-3 rounded-xl border transition-all duration-200 min-h-[44px] relative
         ${isAcquired && isEquipped
-          ? 'border-cyan-500/50 bg-cyan-950/20 shadow-[0_0_16px_rgb(var(--cyber-cyan-rgb) / 0.15),inset_0_0_8px_rgb(var(--cyber-cyan-rgb) / 0.05)]'
+          ? 'border-cyan-500/50 bg-cyan-950/20 shadow-[0_0_16px_rgb(var(--cyber-cyan-rgb) / 0.15),inset_0_0_8px_rgb(var(--cyber-cyan-rgb) / 0.05)] hud-filmic-thought-new'
           : isAcquired
-            ? 'border-cyan-900/20 bg-slate-900/20 hover:bg-purple-950/15 hover:border-purple-800/25 cursor-pointer'
+            ? 'border-cyan-900/20 bg-slate-900/20 hover:bg-purple-950/15 hover:border-purple-800/25 cursor-pointer hud-filmic-thought-new'
             : 'border-slate-800/15 bg-slate-900/10 opacity-40 cursor-not-allowed'}
         ${isSelected ? 'ring-1 ring-purple-500/40' : ''}
       `}

@@ -134,7 +134,7 @@ function ThoughtInterjectionLine({ interjection, accentColor }: {
       initial={{ opacity: 0, y: 4 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: 0.15 }}
-      className={`my-1.5 px-3 py-1.5 rounded-md border border-amber-500/20 bg-amber-950/15 backdrop-blur-sm ${colorClass} italic text-sm font-light`}
+      className={`my-1.5 px-3 py-1.5 rounded-md border border-amber-500/20 bg-amber-950/15 backdrop-blur-sm hud-filmic-interjection ${colorClass} italic text-sm font-light`}
       style={{ boxShadow: `0 0 8px ${accentColor}15` }}
     >
       <span className="font-mono text-xs text-amber-400/70 not-italic mr-1">

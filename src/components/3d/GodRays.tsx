@@ -460,6 +460,117 @@ export const GODRAY_PRESETS: Record<string, GodRayConfig[]> = {
       initialRotation: 0,
     },
   ],
+  /* ── Extension scene god ray presets ── */
+  solnysh_room: [
+    {
+      // Warm amber pendant lamp
+      ...DEFAULT_RAY,
+      position: [0, 2.5, 0],
+      topRadius: 0.08,
+      bottomRadius: 0.35,
+      height: 2.5,
+      color: '#ffaa55',
+      opacity: 0.03,
+      pulseSpeed: 0.1,
+      rotationSpeed: 0.01,
+      dustMotes: true,
+      dustCount: 12,
+      dustColor: '#ffcc88',
+      initialRotation: 0,
+    },
+  ],
+  chk_campfire_night: [
+    {
+      // Campfire glow
+      ...DEFAULT_RAY,
+      position: [0, 1.5, -1],
+      topRadius: 0.1,
+      bottomRadius: 0.5,
+      height: 1.5,
+      color: '#ff8833',
+      opacity: 0.05,
+      pulseSpeed: 0.3,
+      pulseAmp: 0.5,
+      rotationSpeed: 0.008,
+      dustMotes: true,
+      dustCount: 20,
+      dustColor: '#ffaa55',
+      initialRotation: 0,
+    },
+  ],
+  factory_roof: [
+    {
+      // Distant neon
+      ...DEFAULT_RAY,
+      position: [3, 6, -4],
+      topRadius: 0.12,
+      bottomRadius: 0.7,
+      height: 6,
+      color: '#4488aa',
+      opacity: 0.04,
+      pulseSpeed: 0.12,
+      rotationSpeed: 0.015,
+      dustMotes: true,
+      dustCount: 15,
+      dustColor: '#88aacc',
+      initialRotation: 0,
+    },
+  ],
+  library_basement: [
+    {
+      // Dusty lamp
+      ...DEFAULT_RAY,
+      position: [-2, 2.5, 0],
+      topRadius: 0.08,
+      bottomRadius: 0.4,
+      height: 2.5,
+      color: '#ffcc88',
+      opacity: 0.04,
+      pulseSpeed: 0.1,
+      rotationSpeed: 0.008,
+      dustMotes: true,
+      dustCount: 20,
+      dustColor: '#ffddaa',
+      initialRotation: 0,
+      tiltX: -0.1,
+    },
+  ],
+  underground_bunker: [
+    {
+      // Green CRT glow
+      ...DEFAULT_RAY,
+      position: [0, 2.5, -3],
+      topRadius: 0.08,
+      bottomRadius: 0.4,
+      height: 2.5,
+      color: '#22ff88',
+      opacity: 0.04,
+      pulseSpeed: 0.2,
+      rotationSpeed: 0.005,
+      dustMotes: true,
+      dustCount: 15,
+      dustColor: '#55ffaa',
+      initialRotation: 0,
+    },
+  ],
+  albert_backroom: [
+    {
+      // Desk lamp
+      ...DEFAULT_RAY,
+      position: [1, 2.0, 0],
+      topRadius: 0.06,
+      bottomRadius: 0.3,
+      height: 2.0,
+      color: '#ffbb66',
+      opacity: 0.03,
+      pulseSpeed: 0.08,
+      rotationSpeed: 0.01,
+      dustMotes: true,
+      dustCount: 10,
+      dustColor: '#ffcc88',
+      initialRotation: 0,
+    },
+  ],
 };
 
 /* ── Component ── */
