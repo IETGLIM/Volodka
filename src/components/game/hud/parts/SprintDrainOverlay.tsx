@@ -58,9 +58,9 @@ export function SprintDrainOverlay() {
           style={{ zIndex: UI_LAYERS.HUD }}
           aria-hidden="true"
         >
-          {/* Amber-rose vignette tint for energy drain */}
+          {/* Amber-rose vignette tint for energy drain — with filmic vignette pulse */}
           <div
-            className="absolute inset-0 sprint-drain-vignette"
+            className="absolute inset-0 sprint-drain-vignette hud-filmic-vignette-pulse"
             style={{
               background: 'radial-gradient(ellipse at center, transparent 50%, rgba(251, 146, 60, 0.04) 70%, rgba(244, 63, 94, 0.06) 100%)',
             }}

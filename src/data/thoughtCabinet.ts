@@ -854,6 +854,98 @@ export const THOUGHT_CABINET_ITEMS: ThoughtCabinetItem[] = [
       { skill: 'logic', modifier: -1, description: '-1 Логика' },
     ],
   },
+
+  /* ═══ 55. Пепельный Ритм ═══ */
+  {
+    id: 'ash_rhythm',
+    name: 'Пепельный Ритм',
+    voice: 'rhythm',
+    description: 'Кострище остыло, но ритм — остался. Ты чувствуешь пульс там, где другие видят только пепел. Угли — не мертвы. Угли — — ждут. Каждое обугленное полено — — нота. Каждая горстка золы — — пауза. Ты — — слышишь музыку — — после — — тишины. Это — — не — — безумие. Это — — слух — — другого — — порядка.',
+    flavorText: '«Пепел — — не — — конец. Пепел — — чистый — — лист. Без — — строк. Без — — границ. Только — — ритм.»',
+    acquisitionCondition: 'flag_thought_ash_rhythm',
+    mutuallyExclusive: ['factory_echo'],
+    effects: [
+      { skill: 'rhythm', modifier: 2, description: '+2 Ритм' },
+      { skill: 'intuition', modifier: 2, description: '+2 Интуиция' },
+      { skill: 'logic', modifier: -1, description: '-1 Логика' },
+    ],
+  },
+
+  /* ═══ 56. Протокол Эмпатии ═══ */
+  {
+    id: 'empathy_protocol',
+    name: 'Протокол Эмпатии',
+    voice: 'empathy',
+    description: 'Эмпатия — это не чувство. Это — протокол обмена. Ты принимаешь пакет чужой боли, декодируешь его, и возвращаешь — — не боль, а — — понимание. Это не слабость. Это — — самая сложная операция в мире. Декодировать — — чужое — — молчание — — и — — вернуть — — ответ.',
+    flavorText: '«recv(pain); decode(); send(understanding); // Протокол — — не — — уязвимость. Протокол — — мост.»',
+    acquisitionCondition: 'flag_thought_empathy_protocol',
+    effects: [
+      { skill: 'empathy', modifier: 3, description: '+3 Эмпатия' },
+      { skill: 'persuasion', modifier: 1, description: '+1 Убеждение' },
+      { skill: 'coding', modifier: -1, description: '-1 Кодинг' },
+    ],
+  },
+
+  /* ═══ 57. Тишина Кабеля ═══ */
+  {
+    id: 'cable_silence',
+    name: 'Тишина Кабеля',
+    voice: 'coding',
+    description: 'В каждом кабеле — — тишина. Не отсутствие сигнала — — присутствие — — ожидания. Кабель — — готов. Кабель — — ждёт. Когда данные пойдут — — он — — донесёт. Но — — пока — — тихо — — он — — помнит — — каждый — — бит, который — — через — — него — — прошёл. Кабель — — с — — памятью. Кабель — — с — — совестью.',
+    flavorText: '«cable.silence = true; cable.memory = ∞; // Тишина — — не — — пустота. Тишина — — — — архив.»',
+    acquisitionCondition: 'flag_thought_cable_silence',
+    effects: [
+      { skill: 'coding', modifier: 2, description: '+2 Кодинг' },
+      { skill: 'writing', modifier: 2, description: '+2 Писательство' },
+      { skill: 'empathy', modifier: -1, description: '-1 Эмпатия' },
+    ],
+  },
+
+  /* ═══ 58. Часовой Механизм ═══ */
+  {
+    id: 'clockwork_mind',
+    name: 'Часовой Механизм',
+    voice: 'logic',
+    description: 'Время — — остановилось — — на — — 03:47. Но — — внутри — — тебя — — часы — — идут. Ты — — ходячий — — хронометр, — — который — — никто — — не — — заводил. Тик-так. Тик-так. Каждая — — секунда — — после — — Краха — — — — подарок. Каждая — — секунда — — — — вызов. Ты — — не — — сломан. Ты — — единственные — — часы, — — которые — — ещё — — идут.',
+    flavorText: '«tick(); tock(); repeat(); // 03:47 — — не — — конец. 03:47 — — — — начало — — отсчёта.»',
+    acquisitionCondition: 'flag_thought_clockwork_mind',
+    effects: [
+      { skill: 'logic', modifier: 3, description: '+3 Логика' },
+      { skill: 'rhythm', modifier: 1, description: '+1 Ритм' },
+      { skill: 'empathy', modifier: -2, description: '-2 Эмпатия' },
+    ],
+  },
+
+  /* ═══ 59. Голос Татарский ═══ */
+  {
+    id: 'tatar_voice',
+    name: 'Голос Татарский',
+    voice: 'writing',
+    description: 'Зарема — — научила — — тебя — — слушать. Не — — язык — — а — — музыку — — языка. «Көзге җилләр өзгә алып китә» — — осенние — — ветры — — уносят. Но — — в — — татарском — — «китә» — — звучит — — мягче, — — чем — — «уносят». В — — каждом — — языке — — — — своя — — правда. В — — каждом — — слове — — — — своя — — мелодия. Ты — — слышишь — — мелодию — — сквозь — — перевод.',
+    flavorText: '«Көзге җилләр өзгә алып китә. Но — — не — — нас. Мы — — остаёмся. Мы — — — — перевод.»',
+    acquisitionCondition: 'flag_thought_tatar_voice',
+    effects: [
+      { skill: 'writing', modifier: 2, description: '+2 Писательство' },
+      { skill: 'empathy', modifier: 2, description: '+2 Эмпатия' },
+      { skill: 'logic', modifier: -1, description: '-1 Логика' },
+    ],
+  },
+
+  /* ═══ 60. Протокол Сожаления ═══ */
+  {
+    id: 'regret_protocol',
+    name: 'Протокол Сожаления',
+    voice: 'intuition',
+    description: 'Сожаление — — это — — не — — ошибка. Сожаление — — это — — откат — — транзакции, — — которая — — не — — завершилась. Ты — — чувствуешь — — каждый — — откат — — как — — физическую — — боль. Но — — боль — — — — не — — слабость. Боль — — — — сигнал. Сигнал — — о — — том, — — что — — можно — — — — лучше. Сожаление — — — — компилятор — — совести.',
+    flavorText: '«try { act(); } catch (regret) { learn(); retry(); } // Сожаление — — не — — баг. Сожаление — — — — тест.»',
+    acquisitionCondition: 'flag_thought_regret_protocol',
+    mutuallyExclusive: ['cold_calculus'],
+    effects: [
+      { skill: 'intuition', modifier: 3, description: '+3 Интуиция' },
+      { skill: 'empathy', modifier: 1, description: '+1 Эмпатия' },
+      { skill: 'persuasion', modifier: -2, description: '-2 Убеждение' },
+    ],
+  },
 ];
 
 /* ─── Lookup map ─── */

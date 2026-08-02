@@ -46,7 +46,7 @@ export const ToastItem = memo(function ToastItem({
       tabIndex={0}
       data-toast-type={toast.type}
       data-hovered={hovered ? 'true' : 'false'}
-      className="notification-toast-card pointer-events-auto w-full max-w-[320px] cursor-pointer"
+      className="notification-toast-card hud-filmic-notification-slide pointer-events-auto w-full max-w-[320px] cursor-pointer"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onFocus={() => setHovered(true)}

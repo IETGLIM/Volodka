@@ -2433,3 +2433,56 @@ Stage Summary:
   5. +8 karma-gated dialogue choices, +8 examine zones, +6 Thought Cabinet thoughts, +2 idle scenes, +6 byAct thoughts (content density ↑).
 - typecheck exit 0. Poems untouched. All invariants preserved.
 - Unresolved / next-phase priorities: Author QA on Vercel. SSR wet streets (ultra-only). Continuous walk↔run blend. Mixamo↔Quaternius remap. More content Acts 3-4.
+---
+Task ID: 10-b
+Agent: visual-features
+Task: Add 5 VolumetricLightShaft presets for high-priority scenes
+
+Work Log:
+- Read VolumetricLightShaft.tsx to understand VolumetricShaftConfig interface and existing 6 presets
+- Selected 5 scenes with strongest cinematic value: abandoned_factory, underground_bunker, chk_campfire_night, library_basement, albert_backroom
+- Added 5 presets (12 total shafts) following the existing spread DEFAULT_SHAFT pattern
+- Ensured all opacities in 0.14–0.22 range for cinematic subtlety
+- Matched dust density to scene mood (factory=0.85/0.8/0.75 high, bunker=0.5/0.45 medium, campfire=0.35/0.3 low, library_basement=0.8/0.75 high, albert_backroom=0.35/0.3 low)
+- Matched flicker speed to light source (CRT=0.3Hz, campfire=0.4–0.45Hz, bulb=0.12Hz, emergency=0.5Hz)
+- Campfire shafts positioned at ground level (y=0.3) per scene type
+- Indoor shafts positioned at ceiling height (y=2.5–3.2) per scene type
+- Mobile limited to 2 shafts (handled by existing component)
+- Ran typecheck gate: `node scripts/tsc7.mjs --noEmit` — exit 0
+
+Stage Summary:
+- Added 5 new scene presets to SCENE_VOLUMETRIC_LIGHTS in src/components/3d/VolumetricLightShaft.tsx
+- Total shafts added: 12 (abandoned_factory=3, underground_bunker=2, chk_campfire_night=2, library_basement=2, albert_backroom=2)
+- Typecheck passes cleanly
+- No poems edited, no existing code modified
+
+
+---
+Task ID: 10-a
+Agent: content-expansion
+Task: Add 8 karma-gated dialogue choices, 9 examine TriggerZones, 6 Thought Cabinet items, 2 idle monologue scenes, 6 byAct revisit thoughts
+
+Work Log:
+- Added 8 karma-gated dialogue choices across 4 dialogue files (2 per file):
+  - part1-albert.ts: zarema_daily_life (minKarma:50, maxKarma:20), maria_dialogue (minKarma:60, maxKarma:15)
+  - part2-npcs.ts: cafe_barista_night_pulse (minKarma:45, maxKarma:20), colleague_suspects (minKarma:55, maxKarma:15)
+  - part3-mid.ts: barista_maria (minKarma:65, maxKarma:20), alexander_past (minKarma:40, maxKarma:10)
+  - part4-late.ts: dmitry_factory_impossible (minKarma:55, maxKarma:25), alexander_about_system (minKarma:50, maxKarma:15)
+- Added 9 examine TriggerZones for thin-coverage scenes:
+  - zarema_room: photo_album, window_view
+  - library_basement: broken_typewriter, wall_writing
+  - chk_campfire_night: moon_log, sentry_mark
+  - guild_mainframe: cooling_pipe, cable_poem
+  - city_square: broken_clock
+- Added 6 Thought Cabinet items (55-60): ash_rhythm, empathy_protocol, cable_silence, clockwork_mind, tatar_voice, regret_protocol
+- Added 2 idle monologue scenes: zarema_room (10 lines), forest_clearing (10 lines)
+- Added 6 byAct revisit thoughts across 3 scenes: factory_roof (acts 6,7), library_basement (acts 6,7), river_pier (acts 3,4)
+- TypeScript typecheck passed (exit 0)
+
+Stage Summary:
+- 8 karma-gated dialogue choices added (mix of minKarma 35-65 and maxKarma 10-25)
+- 9 new examine TriggerZones added (5 scenes: zarema_room, library_basement, chk_campfire_night, guild_mainframe, city_square)
+- 6 Thought Cabinet items added (items 55-60)
+- 2 idle monologue scenes added (zarema_room, forest_clearing)
+- 6 byAct revisit thoughts added (factory_roof, library_basement, river_pier)
+- All changes type-safe, typecheck exit 0

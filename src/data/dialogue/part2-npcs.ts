@@ -360,6 +360,30 @@ export const DIALOGUE_PART2: Record<string, DialogueNode> = {
           { type: 'npcChange', npcId: 'office_colleague', npcChange: { relation: 5 } },
         ],
       },
+      {
+        text: 'Коллега, я знаю, что ты боишься. Но я прикрою тебя — если ты поможешь мне.',
+        next: null,
+        condition: { minKarma: 55 },
+        effects: [
+          { type: 'addKarma', value: 3 },
+          { type: 'npcChange', npcId: 'office_colleague', npcChange: { relation: 15 } },
+          { type: 'setFlag', flag: 'colleague_pact_made', flagValue: true },
+          { type: 'addSkill', skill: 'persuasion', value: 2 },
+          { type: 'showThought', thought: 'Коллега посмотрел на меня — и впервые за вечер его руки перестали дрожать. Он поверил. Теперь я несу ответственность.', thoughtDuration: 7000 },
+        ],
+      },
+      {
+        text: 'Страх — это нормально. Но если ты не будешь действовать — ты уже мёртв.',
+        next: null,
+        condition: { maxKarma: 15 },
+        effects: [
+          { type: 'addStat', stat: 'stress', value: 8 },
+          { type: 'npcChange', npcId: 'office_colleague', npcChange: { relation: -10 } },
+          { type: 'addKarma', value: -3 },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'showThought', thought: 'Коллега съёжился. Я сказал правду — но правда без сострадания — это просто нож. Я не уверен, что это было правильно.', thoughtDuration: 6500 },
+        ],
+      },
     ],
   },
 
@@ -596,6 +620,29 @@ export const DIALOGUE_PART2: Record<string, DialogueNode> = {
         effects: [
           { type: 'setFlag', flag: 'barista_night_pulse_hint', flagValue: true },
           { type: 'addStat', stat: 'energy', value: 5 },
+        ],
+      },
+      {
+        text: 'Бариста, я слышу то, что ты слышишь. Город поёт нам.',
+        next: null,
+        condition: { minKarma: 45 },
+        effects: [
+          { type: 'addKarma', value: 5 },
+          { type: 'npcChange', npcId: 'cafe_barista', npcChange: { relation: 10 } },
+          { type: 'setFlag', flag: 'barista_city_song', flagValue: true },
+          { type: 'addSkill', skill: 'intuition', value: 2 },
+          { type: 'showThought', thought: 'Бариста кивнул медленно, будто я произнёс пароль. Мы оба слышим — но раньше я думал, что это только я.', thoughtDuration: 6500 },
+        ],
+      },
+      {
+        text: 'Пульс? Мне всё равно. Я здесь за кофе, не за мистику.',
+        next: null,
+        condition: { maxKarma: 20 },
+        effects: [
+          { type: 'addStat', stat: 'stress', value: 3 },
+          { type: 'npcChange', npcId: 'cafe_barista', npcChange: { relation: -5 } },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'showThought', thought: 'Бариста отвернулся к кофемашине. Я почувствовал, как между нами выросла стена. Он знает что-то, что я отказываюсь слышать.', thoughtDuration: 6000 },
         ],
       },
     ],

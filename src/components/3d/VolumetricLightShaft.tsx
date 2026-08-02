@@ -344,6 +344,209 @@ export const SCENE_VOLUMETRIC_LIGHTS: Partial<Record<string, VolumetricShaftConf
       dustSpeed: 0.25,
     },
   ],
+  // ── Abandoned factory (заброшенный цех) — broken skylight shafts piercing
+  //    through a collapsed roof. 2–3 warm amber beams from above, heavy dust
+  //    suspended in stale industrial air. Ceiling at y≈3.4. ──
+  abandoned_factory: [
+    {
+      ...DEFAULT_SHAFT,
+      position: [-1.5, 3.2, 0.8],    // main skylight beam — centre-left
+      topRadius: 0.18,
+      bottomRadius: 1.3,
+      height: 3.0,
+      color: '#e8a840',              // warm amber from broken skylight
+      opacity: 0.2,
+      flickerSpeed: 0.12,            // slow thermal convection flicker
+      flickerAmp: 0.18,
+      rotationSpeed: 0.006,
+      initialRotation: 0.15,
+      tiltX: -0.28,                  // slant through the gap in the roof
+      tiltZ: 0.08,
+      dustDensity: 0.85,            // high dust — decades of disuse
+      dustSpeed: 0.2,
+    },
+    {
+      ...DEFAULT_SHAFT,
+      position: [2.8, 3.1, -2.4],   // second skylight — right side
+      topRadius: 0.14,
+      bottomRadius: 0.95,
+      height: 2.8,
+      color: '#d4963a',              // slightly deeper amber
+      opacity: 0.18,
+      flickerSpeed: 0.1,
+      flickerAmp: 0.16,
+      rotationSpeed: 0.008,
+      initialRotation: 0.6,
+      tiltX: -0.22,
+      tiltZ: -0.06,
+      dustDensity: 0.8,
+      dustSpeed: 0.22,
+    },
+    {
+      ...DEFAULT_SHAFT,
+      position: [0.5, 3.0, 3.5],    // third beam — far side, cracked panel
+      topRadius: 0.1,
+      bottomRadius: 0.7,
+      height: 2.6,
+      color: '#c89030',              // dimmer amber, partial obstruction
+      opacity: 0.15,
+      flickerSpeed: 0.14,
+      flickerAmp: 0.2,
+      rotationSpeed: 0.005,
+      initialRotation: 1.1,
+      tiltX: -0.18,
+      dustDensity: 0.75,
+      dustSpeed: 0.18,
+    },
+  ],
+  // ── Underground bunker (подземный бункер) — emergency lighting.
+  //    Green CRT glow from a monitoring station + red emergency strip.
+  //    Ceiling at y≈2.8. Stale, claustrophobic atmosphere. ──
+  underground_bunker: [
+    {
+      ...DEFAULT_SHAFT,
+      position: [1.2, 2.5, -1.8],   // CRT monitor station glow
+      topRadius: 0.12,
+      bottomRadius: 0.85,
+      height: 2.3,
+      color: '#33ff88',              // green CRT phosphor glow
+      opacity: 0.18,
+      flickerSpeed: 0.3,             // CRT refresh flicker
+      flickerAmp: 0.3,
+      rotationSpeed: 0.004,
+      initialRotation: 0,
+      tiltX: -0.1,
+      dustDensity: 0.5,             // medium dust — filtered air
+      dustSpeed: 0.15,
+    },
+    {
+      ...DEFAULT_SHAFT,
+      position: [-2.5, 2.6, 1.5],   // red emergency strip light
+      topRadius: 0.1,
+      bottomRadius: 0.75,
+      height: 2.4,
+      color: '#ff2828',              // alarm red emergency light
+      opacity: 0.2,
+      flickerSpeed: 0.5,             // erratic emergency flicker
+      flickerAmp: 0.38,
+      rotationSpeed: 0.003,
+      initialRotation: 0.4,
+      tiltX: -0.12,
+      dustDensity: 0.45,
+      dustSpeed: 0.18,
+    },
+  ],
+  // ── CHK campfire night (костёр ЧК, ночь) — campfire glow cone rising
+  //    from ground level. 2 shafts: primary upward cone + secondary warm
+  //    spill. Open sky, no ceiling constraint. ──
+  chk_campfire_night: [
+    {
+      ...DEFAULT_SHAFT,
+      position: [0, 0.3, 0],        // campfire at ground level
+      topRadius: 0.2,
+      bottomRadius: 1.6,             // wide base — fire illuminates a circle
+      height: 3.0,                   // rises upward into the night
+      color: '#ff8830',              // warm orange campfire glow
+      opacity: 0.2,
+      flickerSpeed: 0.4,             // campfire flicker — active flames
+      flickerAmp: 0.3,
+      rotationSpeed: 0.012,
+      initialRotation: 0,
+      tiltX: 0,
+      dustDensity: 0.35,            // low dust — outdoor, breeze disperses
+      dustSpeed: 0.45,
+    },
+    {
+      ...DEFAULT_SHAFT,
+      position: [0.8, 0.25, -0.6],  // secondary ember glow — offset
+      topRadius: 0.12,
+      bottomRadius: 0.9,
+      height: 2.5,
+      color: '#ff6622',              // deeper orange ember
+      opacity: 0.16,
+      flickerSpeed: 0.45,
+      flickerAmp: 0.35,
+      rotationSpeed: 0.015,
+      initialRotation: 0.7,
+      tiltX: 0.08,
+      dustDensity: 0.3,
+      dustSpeed: 0.5,
+    },
+  ],
+  // ── Library basement (подвал библиотеки) — bare bulb shafts from
+  //    overhead fixtures. 2 bulbs: warm amber, high dust in stale air.
+  //    Ceiling at y≈2.8. ──
+  library_basement: [
+    {
+      ...DEFAULT_SHAFT,
+      position: [0, 2.7, 0],        // main bare bulb — centre of room
+      topRadius: 0.1,
+      bottomRadius: 1.0,
+      height: 2.5,
+      color: '#ffcc66',              // warm amber bare bulb
+      opacity: 0.2,
+      flickerSpeed: 0.12,            // old bulb subtle flicker
+      flickerAmp: 0.2,
+      rotationSpeed: 0.005,
+      initialRotation: 0,
+      tiltX: 0,
+      dustDensity: 0.8,             // high dust — old basement, no ventilation
+      dustSpeed: 0.15,
+    },
+    {
+      ...DEFAULT_SHAFT,
+      position: [-2.5, 2.6, 2.0],   // second bulb — back corner
+      topRadius: 0.08,
+      bottomRadius: 0.7,
+      height: 2.3,
+      color: '#e8b850',              // slightly dimmer amber
+      opacity: 0.17,
+      flickerSpeed: 0.14,
+      flickerAmp: 0.22,
+      rotationSpeed: 0.007,
+      initialRotation: 0.5,
+      tiltX: -0.08,
+      dustDensity: 0.75,
+      dustSpeed: 0.18,
+    },
+  ],
+  // ── Albert's backroom (каморка Альберта) — dim single desk lamp.
+  //    2 shafts: main desk lamp + faint window spill. Low dust, intimate.
+  //    Ceiling at y≈2.6. ──
+  albert_backroom: [
+    {
+      ...DEFAULT_SHAFT,
+      position: [-1.2, 2.0, -0.5],  // desk lamp — warm pool over the desk
+      topRadius: 0.1,
+      bottomRadius: 0.75,
+      height: 1.8,
+      color: '#e8a040',              // warm amber desk lamp
+      opacity: 0.18,
+      flickerSpeed: 0.12,            // gentle old bulb flicker
+      flickerAmp: 0.16,
+      rotationSpeed: 0.004,
+      initialRotation: 0,
+      tiltX: -0.15,
+      dustDensity: 0.35,            // low dust — small room, kept tidy
+      dustSpeed: 0.2,
+    },
+    {
+      ...DEFAULT_SHAFT,
+      position: [2.0, 2.4, -1.5],   // faint window spill — side wall
+      topRadius: 0.08,
+      bottomRadius: 0.55,
+      height: 2.2,
+      color: '#c8a860',              // muted warm window light
+      opacity: 0.14,
+      flickerSpeed: 0.08,
+      flickerAmp: 0.12,
+      rotationSpeed: 0.006,
+      initialRotation: 0.8,
+      tiltX: -0.25,
+      dustDensity: 0.3,
+      dustSpeed: 0.22,
+    },
+  ],
 };
 
 function normalizeShaftConfig(config: VolumetricShaftConfig): VolumetricShaftConfig {

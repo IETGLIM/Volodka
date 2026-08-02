@@ -111,7 +111,7 @@ export function ExaminePanel({
           role="dialog"
           aria-label={`Осмотр: ${data.title}`}
         >
-          <div className="mx-auto max-w-xl rounded-lg border border-white/10 bg-black/60 backdrop-blur-md p-4 glass-panel-dark hud-filmic-plate hud-filmic-plate-glass hud-filmic-corner-bracket">
+          <div className="mx-auto max-w-xl rounded-lg border border-white/10 bg-black/60 backdrop-blur-md p-4 glass-panel-dark hud-filmic-plate hud-filmic-plate-glass hud-filmic-corner-bracket hud-filmic-panel-sweep">
             {/* hud-filmic-corner-bracket — 4 animated L-shaped corner brackets (decorative, additive) */}
             <span className="hud-filmic-corner-bracket__corner hud-filmic-corner-bracket__tl" aria-hidden />
             <span className="hud-filmic-corner-bracket__corner hud-filmic-corner-bracket__tr" aria-hidden />

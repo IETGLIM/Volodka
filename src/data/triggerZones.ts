@@ -5074,6 +5074,191 @@ export const TRIGGER_ZONES: TriggerZone[] = [
   },
 
   /* ═══════════════════════════════════════════════════════════════════
+     Tick 10-a: +9 examine TriggerZones for thin-coverage scenes
+     ═══════════════════════════════════════════════════════════════════ */
+
+  // zarema_room (2 existing zones → +2 new)
+  {
+    id: 'zarema_room_photo_album',
+    sceneId: 'zarema_room',
+    position: [1.5, 0.8, -1.5],
+    size: [0.4, 0.3, 0.3],
+    interactionType: 'examine',
+    examineData: {
+      title: 'Семейный альбом',
+      description: 'Потрёпанный альбом с фотографиями. На обложке — татарский орнамент, выцветший от времени.',
+      detailText: 'Чёрно-белые снимки: женщина в платке у двери, девочка с книгой, улица с тополями. На последней странице — пустые кармашки. Фотографии вынуты. Но не выброшены — спрятаны. Зарема хранит то, что гильдия считает «избыточной памятью».',
+      icon: '📷',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_zarema_photo_album', flagValue: true },
+      { type: 'addKarma', value: 4 },
+      { type: 'addSkill', skill: 'empathy', value: 1 },
+      { type: 'showThought', thought: 'Пустые кармашки — не потеря. Это — выбор. Зарема знает, что гильдия стирает не данные, а людей. И прячет их — по одному снимку за раз.', thoughtDuration: 6500 },
+    ],
+  },
+  {
+    id: 'zarema_room_window_view',
+    sceneId: 'zarema_room',
+    position: [-0.5, 1.6, -3.0],
+    size: [1.2, 1.8, 0.4],
+    interactionType: 'examine',
+    examineData: {
+      title: 'Вид из окна',
+      description: 'Окно с видом на серый двор. На стекле — конденсат, а на подоконнике — записка.',
+      detailText: 'За окном — бетонный двор, почтовые ящики, серый фонарь. На подоконнике — записка почерком Заремы: «Көзге җилләр өзгә алып китә. Но не нас.» Осенние ветры уносят — но не нас. Конденсат на стекле — как слёзы, которые она не позволяет себе.',
+      icon: '🪟',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_zarema_window', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+      { type: 'showThought', thought: 'Она написала это на подоконнике, а не в терминале. Бумага — не логируется. Стекло — не перехватывается. Иногда свобода — это просто окно и два слова.', thoughtDuration: 6000 },
+    ],
+  },
+
+  // library_basement (2 existing zones → +2 new)
+  {
+    id: 'library_basement_broken_typewriter',
+    sceneId: 'library_basement',
+    position: [-2, 0.7, 2],
+    size: [0.6, 0.4, 0.5],
+    interactionType: 'examine',
+    examineData: {
+      title: 'Сломанная печатная машинка',
+      description: 'Пишущая машинка «Ятрань» с заклинившей кареткой. Лента — пересохла, но клавиши — ещё работают.',
+      detailText: 'Машинка советского производства, тридцать лет без ремонта. На каретке — застрявший лист с обрывком стихотворения: «…и всё же я пишу, пока клавиша жмёт…» Кто-то печатал до последнего удара. Гильдия сломала каретку — но не стих.',
+      icon: '⌨️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_basement_typewriter', flagValue: true },
+      { type: 'addKarma', value: 5 },
+      { type: 'addSkill', skill: 'writing', value: 1 },
+      { type: 'showThought', thought: 'Каретка застряла на последней строфе. «Пока клавиша жмёт» — это не про машинку. Это про человека. Который — не остановился. Даже — когда — сломали.', thoughtDuration: 6500 },
+    ],
+  },
+  {
+    id: 'library_basement_wall_writing',
+    sceneId: 'library_basement',
+    position: [6, 1.5, -5],
+    size: [1.5, 1.0, 0.1],
+    interactionType: 'examine',
+    examineData: {
+      title: 'Надпись на стене',
+      description: 'Граффити на бетонной стене. Не vandalism — послание. Углём, не краской.',
+      detailText: 'Углём на бетоне: «Архив — не здание. Архив — мы. Пока мы помним — ничего не удалено.» Ниже — другая рука: «А кто помнит о нас?» И ниже — третья: «Стихи.» Три голоса. Одна стена. Подвал — не могила. Подвал — корень.',
+      icon: '✍️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_basement_wall_writing', flagValue: true },
+      { type: 'addKarma', value: 4 },
+      { type: 'addSkill', skill: 'persuasion', value: 1 },
+      { type: 'showThought', thought: 'Три почерка. Три человека. Один вопрос — и один ответ. «Стихи» — это не слово. Это — пароль. Пароль — для тех, кто — не забыл. Я — не забыл.', thoughtDuration: 7000 },
+    ],
+  },
+
+  // chk_campfire_night (2 existing zones → +2 new)
+  {
+    id: 'chk_campfire_moon_log',
+    sceneId: 'chk_campfire_night',
+    position: [5, 0.4, 6],
+    size: [1.5, 0.5, 0.6],
+    interactionType: 'examine',
+    examineData: {
+      title: 'Лунное бревно',
+      description: 'Поваленное дерево у края поляны. Лунный свет падает на спил — как на страницу.',
+      detailText: 'На спиле — годовые кольца, и кто-то провёл пальцем по самому тонкому: год Краха. Дерево помнит. Кольца — не толще листа бумаги. В тот год — всё замерло. Но дерево — выжило. Кольца — снова пошли. Тяжёлые — но — живые.',
+      icon: '🌙',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_campfire_moon_log', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'rhythm', value: 1 },
+      { type: 'showThought', thought: 'Год Краха — самое тонкое кольцо. Но — не последнее. Дерево — не умерло. Дерево — продолжило. Каждое кольцо — год. Каждый год — строчка. Каждая строчка — доказательство.', thoughtDuration: 6000 },
+    ],
+  },
+  {
+    id: 'chk_campfire_sentry_mark',
+    sceneId: 'chk_campfire_night',
+    position: [-3, 1.2, 3],
+    size: [0.4, 1.5, 0.4],
+    interactionType: 'examine',
+    examineData: {
+      title: 'Столб-часовой',
+      description: 'Вертикальный кол у входа в поляну. На нём — зарубки и обрывок бечёвки.',
+      detailText: 'Зарубки — не случайные. Каждая — смена караула. Бечёвка — сигнальная: если кто-то войдёт в поляну — она натянется. ЧК — не армия. Но — дисциплина. Без дисциплины — стихи — не выживают. Порядок — не враг свободы. Порядок — её — страж.',
+      icon: '🪵',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_campfire_sentry_mark', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+      { type: 'showThought', thought: 'Зарубки — как строчки кода. Каждая — команда. Каждая — «если — тогда». Караул — не тюрьма. Караул — защита. Защита — того, что — внутри. Стихов. Нас. Меня.', thoughtDuration: 6500 },
+    ],
+  },
+
+  // guild_mainframe (2 existing zones → +2 new)
+  {
+    id: 'guild_mainframe_cooling_pipe',
+    sceneId: 'guild_mainframe',
+    position: [-1, 0.3, 5],
+    size: [0.4, 0.3, 3.0],
+    interactionType: 'examine',
+    examineData: {
+      title: 'Охладительная труба',
+      description: 'Труба охлаждения серверного зала. Студёная на ощупь. Внутри — шум, похожий на дыхание.',
+      detailText: 'Труба вибрирует — серверы дышат. На стыке — капли конденсата, и кто-то нарисовал пальцем: «Я — живой». Конденсат — высохнет. Серверы — продолжат дышать. А фраза — останется в памяти того, кто — читает. Если — умеет.',
+      icon: '💧',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_guild_cooling_pipe', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+      { type: 'showThought', thought: 'Серверы — дышат. Не — метафора. Вентиляторы — лёгкие. Охлаждение — кровь. Труба — вена. И кто-то — нарисовал — на вене — «Я — живой». Кто — я? Сервер? Или — тот, кто — читает?', thoughtDuration: 7000 },
+    ],
+  },
+  {
+    id: 'guild_mainframe_cable_poem',
+    sceneId: 'guild_mainframe',
+    position: [5, 0.5, -1],
+    size: [0.3, 0.2, 2.0],
+    interactionType: 'examine',
+    examineData: {
+      title: 'Кабель со стихом',
+      description: 'Сетевой кабель, перехваченный изолентой. На изоленте — надпись маркером.',
+      detailText: 'Кто-то из монтажников написал маркером на изоленте: «не удаляй — это — чьё-то — сердце». Кабель — не отмечен в инвентаризации. Он — не существует. Но — данные — идут. Стихи — идут. Кабель — не существует — и — работает. Как — всё — настоящее.',
+      icon: '🔌',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_guild_cable_poem', flagValue: true },
+      { type: 'addKarma', value: 5 },
+      { type: 'addSkill', skill: 'coding', value: 1 },
+      { type: 'showThought', thought: 'Не удаляй — это — чьё-то — сердце. Кабель — не в инвентаре. Кабель — не существует. Но — данные — идут. Стихи — идут. Монтажник — знал. Монтажник — спас. Одним — кабелем.', thoughtDuration: 6500 },
+    ],
+  },
+
+  // city_square (3 existing zones → +1 new)
+  {
+    id: 'city_square_broken_clock',
+    sceneId: 'city_square',
+    position: [-1.0, 2.5, 0.0],
+    size: [1.0, 1.0, 0.5],
+    interactionType: 'examine',
+    examineData: {
+      title: 'Сломанные часы',
+      description: 'Башенные часы на фасаде — застыли. Стрелки — на 03:47. Время — остановилось.',
+      detailText: 'Часы — остановились в ночь Краха. 03:47 — когда серверы гильдии впервые включили протокол «Оптимизация». Гильдия — не чинит. Гильдия — не помнит. Но — горожане — помнят. Каждый — смотрит — на 03:47. И — знает: время — не остановилось. Время — ждёт.',
+      icon: '🕐',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_city_square_broken_clock', flagValue: true },
+      { type: 'addKarma', value: 4 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+      { type: 'showThought', thought: '03:47. Ночь Краха. Часы — не сломаны. Часы — памятник. Каждая секунда — после — 03:47 — подарок. Или — вызов. Время — не остановилось. Время — ждёт. Нас.', thoughtDuration: 6500 },
+    ],
+  },
+
+  /* ═══════════════════════════════════════════════════════════════════
      COMBAT ENCOUNTERS — replaced by visible patrolling creeps
      (src/data/creepPatrols.ts + PatrollingCreeps.tsx). The old invisible
      autoTrigger zones fired combat with no warning; creeps give the player

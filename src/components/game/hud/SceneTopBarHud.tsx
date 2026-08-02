@@ -23,15 +23,21 @@ import { FootstepPedometer } from '@/components/game/hud/parts/FootstepPedometer
 import { SessionPlayTimer } from '@/components/game/hud/parts/SessionPlayTimer';
 import { PlayerCoordinatesDisplay } from '@/components/game/hud/parts/PlayerCoordinatesDisplay';
 import { KarmaTierBadge } from '@/components/game/hud/parts/KarmaTierBadge';
+import { StatPulse } from '@/components/game/hud/parts/StatPulse';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useHudQuietStyle } from '@/hooks/useHudQuiet';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { usePlayerKarma } from '@/store/selectors/playerSelectors';
+import { usePlayerEnergy, usePlayerStress } from '@/store/selectors/playerSelectors';
 
 export const SceneTopBarHud = memo(function SceneTopBarHud() {
   const quietStyle = useHudQuietStyle();
   const reducedMotion = useEffectiveReducedMotion();
   const karma = usePlayerKarma();
+  const energy = usePlayerEnergy();
+  const stress = usePlayerStress();
+  const isLowEnergy = energy <= 30;
+  const isHighStress = stress >= 70;
 
   return (
     <div
@@ -69,7 +75,10 @@ export const SceneTopBarHud = memo(function SceneTopBarHud() {
         className="absolute top-2 right-2 flex items-start gap-2"
       >
         <KarmaTierBadge karma={karma} />
-        <EnvironmentMoodIndicator />
+        <div className="relative">
+          <EnvironmentMoodIndicator />
+          <StatPulse active={isLowEnergy || isHighStress} color={isHighStress ? 'rose' : 'amber'} />
+        </div>
         <ExplorationProgressBadge />
       </motion.div>
 

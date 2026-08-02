@@ -38,6 +38,8 @@ const DUST_SCENES = new Set([
   'abandoned_factory',
   // Cron-tick 9: extension scenes — cozy rooms and dusty basements get atmospheric dust motes
   'solnysh_room', 'library_basement', 'albert_backroom', 'zarema_room',
+  // Cron-tick 10: more rooms and industrial scenes
+  'zarema_albert_room', 'factory_roof',
 ]);
 const EMBER_SCENES = new Set([
   'abandoned_factory', 'battle',
@@ -49,11 +51,15 @@ const MIST_SCENES = new Set([
   'guild_mainframe',
   // Cron-tick 9: resistance bunker gets CRT mist
   'underground_bunker',
+  // Cron-tick 10: forest scenes get atmospheric mist
+  'chk_forest_zorge', 'forest_clearing',
 ]);
 const FLICKERING_LIGHT_SCENES = new Set([
   'factory_basement', 'abandoned_factory',
   // Cron-tick 9: resistance bunker and dusty basement get flickering
   'underground_bunker', 'library_basement',
+  // Cron-tick 10: office fluorescent hum
+  'office_day',
 ]);
 
 /** Main controller: renders appropriate atmospheric effects per scene */

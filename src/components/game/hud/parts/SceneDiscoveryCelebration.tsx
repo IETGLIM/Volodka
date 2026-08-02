@@ -81,7 +81,7 @@ export function SceneDiscoveryCelebration() {
           >
             <div className="hud-filmic-rule hud-filmic-rule--wide" aria-hidden />
             <span className="hud-filmic-kicker">Новая локация · {discoveredCount}/{totalScenes}</span>
-            <span className="hud-filmic-body text-[14px] sm:text-[15px]">
+            <span className="hud-filmic-body hud-filmic-ink-bleed text-[14px] sm:text-[15px]">
               {discovery.sceneName}
             </span>
             <div className="hud-filmic-rule hud-filmic-rule--soft" aria-hidden />

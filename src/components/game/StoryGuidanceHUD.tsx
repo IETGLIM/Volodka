@@ -430,7 +430,7 @@ export function StoryGuidanceHUD() {
               ) : null}
             </div>
             <p
-              className={`hud-filmic-body quest-objective-text ${expanded ? '' : 'line-clamp-2'}`}
+              className={`hud-filmic-body hud-filmic-quest-tracker-shimmer quest-objective-text ${expanded ? '' : 'line-clamp-2'}`}
               style={{ maxWidth: '100%' }}
             >
               {displayText}

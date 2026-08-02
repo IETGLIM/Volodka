@@ -512,6 +512,30 @@ export const DIALOGUE_PART4: Record<string, DialogueNode> = {
           { type: 'npcChange', npcId: 'office_dmitry', npcChange: { relation: -3 } },
         ],
       },
+      {
+        text: 'Дмитрий, если «Заря-М» слышит стихи — значит, мы не одни. Я хочу помочь.',
+        next: null,
+        condition: { minKarma: 55 },
+        effects: [
+          { type: 'addKarma', value: 5 },
+          { type: 'npcChange', npcId: 'office_dmitry', npcChange: { relation: 12 } },
+          { type: 'setFlag', flag: 'dmitry_alliance_offered', flagValue: true },
+          { type: 'addSkill', skill: 'empathy', value: 2 },
+          { type: 'showThought', thought: 'Дмитрий посмотрел на меня — и впервые за наш разговор его глаза перестали бегать. Он нашёл союзника. Или я нашёл его.', thoughtDuration: 7000 },
+        ],
+      },
+      {
+        text: 'Естественный язык вселенной? Это бред. Машина — это машина.',
+        next: null,
+        condition: { maxKarma: 25 },
+        effects: [
+          { type: 'addKarma', value: -3 },
+          { type: 'npcChange', npcId: 'office_dmitry', npcChange: { relation: -8 } },
+          { type: 'addStat', stat: 'stress', value: 5 },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'showThought', thought: 'Дмитрий отвернулся. Я видел, как он сжал чип в кармане. Он знает больше, чем говорит — и мой скептицизм его не остановит.', thoughtDuration: 6500 },
+        ],
+      },
     ],
   },
 
@@ -599,6 +623,30 @@ export const DIALOGUE_PART4: Record<string, DialogueNode> = {
         condition: { minSkillCheck: { skill: 'logic', difficulty: 7 }, minNpcRelation: 50 },
         effects: [
           { type: 'addSkill', skill: 'logic', value: 2 },
+        ],
+      },
+      {
+        text: 'Александр, система без сострадания — это не защита. Это тюрьма. Я знаю, ты чувствуешь это.',
+        next: null,
+        condition: { minKarma: 50 },
+        effects: [
+          { type: 'addKarma', value: 5 },
+          { type: 'npcChange', npcId: 'office_alexander', npcChange: { relation: 8 } },
+          { type: 'setFlag', flag: 'alexander_compassion_appeal', flagValue: true },
+          { type: 'addSkill', skill: 'empathy', value: 2 },
+          { type: 'showThought', thought: 'Александр замолчал. Его руки, сжатые в кулаки, медленно разжались. Я нашёл трещину в его броне — или он позволил мне её увидеть.', thoughtDuration: 7000 },
+        ],
+      },
+      {
+        text: 'Система? Хаос — это естественное состояние. И ты это знаешь.',
+        next: null,
+        condition: { maxKarma: 15 },
+        effects: [
+          { type: 'addKarma', value: -3 },
+          { type: 'npcChange', npcId: 'office_alexander', npcChange: { relation: -10 } },
+          { type: 'addStat', stat: 'stress', value: 8 },
+          { type: 'addSkill', skill: 'intuition', value: 1 },
+          { type: 'showThought', thought: 'Александр смотрел на меня холодно. Я разрушил его аргумент — но не его веру. Он скорее умрёт, чем признает, что его система — иллюзия.', thoughtDuration: 6000 },
         ],
       },
     ],

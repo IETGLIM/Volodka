@@ -62,7 +62,7 @@ export function DynamicCrosshair() {
           height: spread * 2 + 4,
         }}
         transition={{ duration: reducedMotion ? 0 : 0.28, ease: 'easeOut' }}
-        className="relative"
+        className={nearInteractive ? 'relative hud-filmic-crosshair-ring' : 'relative'}
       >
         <div
           className="dynamic-crosshair-line absolute left-1/2 -translate-x-1/2 bottom-1/2 mb-[3px]"

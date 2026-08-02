@@ -1589,3 +1589,210 @@
     box-shadow: none;
   }
 }
+
+/* ═════════════════════════════════════════════════════════════════════
+   TICK 10 — Filmic CSS micro-animations (compass glow, panel sweep,
+   tooltip ink, stat bar sheen, notification slide, quest shimmer)
+   All gated on prefers-reduced-motion with static fallbacks.
+   ═════════════════════════════════════════════════════════════════════ */
+
+/* ── 1. Compass glow ──
+   Warm glow on the compass cardinal direction labels when the player
+   faces exactly that direction. Apply via className="hud-filmic-compass-glow"
+   on the active compass marker. */
+@media (prefers-reduced-motion: no-preference) {
+  .hud-filmic-compass-glow {
+    animation: hud-filmic-compass-glow-cycle 3.2s ease-in-out infinite;
+  }
+
+  @keyframes hud-filmic-compass-glow-cycle {
+    0%, 100% {
+      text-shadow: 0 0 4px var(--hud-filmic-glow-warm, rgba(255, 170, 68, 0.2));
+    }
+    50% {
+      text-shadow: 0 0 8px var(--hud-filmic-glow-warm, rgba(255, 170, 68, 0.4)),
+                   0 0 16px var(--hud-filmic-rule-soft, rgba(255, 170, 68, 0.1));
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-compass-glow {
+    animation: none;
+  }
+}
+
+/* ── 2. Panel sweep ──
+   Horizontal light sweep on panel open. A translucent highlight bar
+   slides from left to right across the panel, giving a "waking up"
+   feel. Apply via className="hud-filmic-panel-sweep" on the panel container. */
+.hud-filmic-panel-sweep {
+  position: relative;
+  overflow: hidden;
+}
+
+.hud-filmic-panel-sweep::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.04) 40%,
+    rgba(255, 255, 255, 0.06) 50%,
+    rgba(255, 255, 255, 0.04) 60%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hud-filmic-panel-sweep::after {
+    animation: hud-filmic-panel-sweep-slide 0.8s ease-out both;
+  }
+
+  @keyframes hud-filmic-panel-sweep-slide {
+    from { left: -100%; }
+    to   { left: 200%; }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-panel-sweep::after {
+    display: none;
+  }
+}
+
+/* ── 3. Tooltip ink reveal ──
+   Ink-bleed reveal for tooltip / popup text. Apply via
+   className="hud-filmic-tooltip-ink" on the tooltip container. */
+@media (prefers-reduced-motion: no-preference) {
+  .hud-filmic-tooltip-ink {
+    animation: hud-filmic-tooltip-ink-reveal 0.35s ease-out both;
+  }
+
+  @keyframes hud-filmic-tooltip-ink-reveal {
+    0% {
+      opacity: 0;
+      filter: blur(1.5px);
+      transform: translateY(2px);
+    }
+    70% {
+      opacity: 0.9;
+      filter: blur(0.3px);
+    }
+    100% {
+      opacity: 1;
+      filter: blur(0);
+      transform: translateY(0);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-tooltip-ink {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* ── 4. Stat bar sheen ──
+   A one-shot highlight sweep on a stat bar when its value changes.
+   Apply via className="hud-filmic-stat-bar-sheen" on the stat bar fill element.
+   The sheen plays once on mount (or re-trigger via re-adding the class). */
+.hud-filmic-stat-bar-sheen {
+  position: relative;
+  overflow: hidden;
+}
+
+.hud-filmic-stat-bar-sheen::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -50%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.15) 50%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hud-filmic-stat-bar-sheen::after {
+    animation: hud-filmic-stat-bar-sheen-sweep 0.6s ease-out both;
+  }
+
+  @keyframes hud-filmic-stat-bar-sheen-sweep {
+    from { left: -50%; }
+    to   { left: 150%; }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-stat-bar-sheen::after {
+    display: none;
+  }
+}
+
+/* ── 5. Notification slide-in ──
+   Filmic slide-in animation for notification toasts. Enters from
+   the right with a subtle horizontal slide + fade. Apply via
+   className="hud-filmic-notification-slide" on the notification element. */
+@media (prefers-reduced-motion: no-preference) {
+  .hud-filmic-notification-slide {
+    animation: hud-filmic-notification-slide-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  @keyframes hud-filmic-notification-slide-in {
+    from {
+      opacity: 0;
+      transform: translateX(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-notification-slide {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* ── 6. Quest tracker shimmer ──
+   Subtle shimmer on the active quest text in the quest tracker.
+   A warm highlight that pulses gently to draw attention to the
+   current objective. Apply via className="hud-filmic-quest-tracker-shimmer"
+   on the quest text element. */
+@media (prefers-reduced-motion: no-preference) {
+  .hud-filmic-quest-tracker-shimmer {
+    animation: hud-filmic-quest-shimmer 4s ease-in-out infinite;
+  }
+
+  @keyframes hud-filmic-quest-shimmer {
+    0%, 100% {
+      text-shadow: 0 0 0 transparent;
+    }
+    50% {
+      text-shadow: 0 0 6px var(--hud-filmic-glow-warm, rgba(255, 170, 68, 0.15)),
+                   0 0 12px var(--hud-filmic-rule-soft, rgba(255, 170, 68, 0.05));
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-quest-tracker-shimmer {
+    animation: none;
+  }
+}

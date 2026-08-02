@@ -14,6 +14,7 @@ import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { sharedPlayerRotationRef } from '@/engine/PlayerRotationState';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { explorationCompassTopPx } from '@/shared/constants/hudLayout';
+import { CompassPOIMarkers } from '@/components/game/hud/parts/CompassPOIMarkers';
 
 /* ── Cyrillic cardinal directions ── */
 interface CompassDir {
@@ -327,6 +328,9 @@ export function CompassHUD() {
           <div className="absolute top-0 right-0 w-2.5 h-2.5 border-t border-r border-cyan-500/20 pointer-events-none" />
           <div className="absolute bottom-0 left-0 w-2.5 h-2.5 border-b border-l border-cyan-500/20 pointer-events-none" />
           <div className="absolute bottom-0 right-0 w-2.5 h-2.5 border-b border-r border-cyan-500/20 pointer-events-none" />
+
+          {/* Quest POI markers — directional markers around the compass for active quest objectives */}
+          <CompassPOIMarkers />
         </motion.div>
       )}
     </AnimatePresence>

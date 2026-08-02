@@ -59,7 +59,7 @@ export function HUDBootSequence() {
           className="absolute inset-0 z-[100] flex items-end justify-start p-6 sm:p-10 pointer-events-none"
           style={{ background: 'radial-gradient(ellipse at 0% 100%, rgba(0,20,30,0.6) 0%, transparent 60%)' }}
         >
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-1.5 hud-filmic-boot-stagger">
             {BOOT_LINES.map((line, i) => (
               <motion.div
                 key={i}
@@ -72,7 +72,7 @@ export function HUDBootSequence() {
                   {line}
                 </span>
                 {i < visibleLines && (
-                  <span className="hud-boot-cursor inline-block w-2 h-4 ml-0.5 align-middle bg-cyan-400/70" />
+                  <span className="hud-filmic-boot-cursor inline-block w-2 h-4 ml-0.5 align-middle" />
                 )}
               </motion.div>
             ))}
