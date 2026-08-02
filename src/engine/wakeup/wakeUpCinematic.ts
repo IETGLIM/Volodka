@@ -35,14 +35,13 @@ export const WAKEUP_FALLBACK_MS = (WAKEUP_TOTAL + 2) * 1000;
 // for both presets. Previous [0.5, 0.01, 2.4] was 1.3m LEFT of the bed →
 // avatar rose from bare floor during the wake-up cinematic.
 export const BED_POSITION = new THREE.Vector3(1.78, 0.35, 2.05);
-// STAND_POSITION: foot of the bed (just past the bed obstacle Z-span [1.0, 3.0],
-// on the floor y=0.01). The task spec example [1.78, 0, 2.7] would place the
-// avatar INSIDE the bed obstacle Z-span — shifted to Z=3.2 to put the avatar
-// clearly at the foot, on the floor, clear of the bed collider. KCC is off
-// during the cinematic (kinematicPosition), and finishIntroWake teleports to
-// CHAIR_POSITION [0, 0.01, -1.3] before the KCC re-engages, so the tight
-// clearance to the Z=3.5 wall (0.3m, matches PLAYER_RADIUS) is cinematic-only.
-export const STAND_POSITION = new THREE.Vector3(1.78, 0.01, 3.2);
+// FIX S13-2: STAND_POSITION moved from [1.78, 0.01, 3.2] (0.3m from the door
+// at z=3.5 — avatar was standing practically IN the doorway) to the LEFT side
+// of the bed, in open floor. The bed obstacle spans x=[0.88, 2.68], so x=0.5
+// is 0.38m clear of the bed edge. z=2.0 is beside the bed midpoint, 1.5m from
+// the door. This is where a person would naturally stand after getting out of
+// bed — not wedged against the exit.
+export const STAND_POSITION = new THREE.Vector3(0.5, 0.01, 2.0);
 export const DESK_POSITION = new THREE.Vector3(0.0, 0.01, -1.0);
 export const CHAIR_POSITION = new THREE.Vector3(0.0, 0.01, -1.3);
 /** Third-person handoff behind the desk — matches exploration orbit framing. */
@@ -83,7 +82,11 @@ export const WAKEUP_CAMERA_WAYPOINTS: WakeCameraWaypoint[] = [
   },
   {
     position: new THREE.Vector3(-1.42, 1.48, 1.68),
-    lookAt: new THREE.Vector3(0.34, PLAYER_METRIC.eyeHeightM - 0.08, 1.52),
+    // FIX S13-2: standing-phase lookAt now frames the new STAND_POSITION
+    // [0.5, 0.01, 2.0] (was [0.34, eye-0.08, 1.52] which targeted mid-room —
+    // the avatar at z=3.2 was out of frame). Camera at [-1.42, 1.48, 1.68]
+    // looks right toward the bed area; avatar stands beside the bed.
+    lookAt: new THREE.Vector3(0.5, PLAYER_METRIC.eyeHeightM - 0.08, 2.0),
     fov: 50,
     duration: WAKEUP_PHASE.standing,
     controlPoint: new THREE.Vector3(-0.25, 1.72, 2.18),

@@ -23,19 +23,34 @@ let _pendingQueue: Array<() => void> = [];
 
 /**
  * Get the shared AudioContext, creating it lazily if needed.
- * The context is created in suspended state — it will be resumed
- * on the first user gesture (click/keydown/touchstart).
+ *
+ * FIX S13-3: Previously this created the AudioContext on first call regardless
+ * of whether the user had gestured. Chrome's autoplay policy blocks context
+ * creation/resumption without a user gesture → the context was created in
+ * 'suspended' state and the console flooded with "AudioContext was not allowed
+ * to start" warnings. Worse, safeResume() (called from the gesture handler)
+ * ran BEFORE any audio engine had called getSharedAudioContext() → sharedCtx
+ * was null → safeResume() was a no-op → the context created later (by the first
+ * audio call) stayed suspended forever → no music, no SFX.
+ *
+ * Now: returns null until _userInteracted is true. The gesture handler
+ * (resumeOnce) sets _userInteracted, then calls getSharedAudioContext() —
+ * which NOW creates the context in the gesture call stack (Chrome allows it)
+ * — then resumes it + flushes the pending queue. Subsequent audio engine calls
+ * get the already-running context.
  */
 export function getSharedAudioContext(): AudioContext | null {
   if (typeof window === 'undefined') return null;
+  if (!_userInteracted) return null;
 
   if (!sharedCtx) {
     try {
       sharedCtx = new AudioContext({ latencyHint: 'interactive' });
       probeAudioCapabilities(sharedCtx);
-      // Immediately suspend to satisfy browser policy, then attempt resume
-      if (sharedCtx.state === 'running') {
-        sharedCtx.suspend().catch(() => {});
+      // Context was created within a user gesture call stack — should be
+      // 'running'. If still suspended (rare), resume immediately.
+      if (sharedCtx.state === 'suspended') {
+        sharedCtx.resume().catch(() => {});
       }
     } catch {
       return null;
@@ -74,9 +89,13 @@ function flushPendingAudioQueue(): void {
 }
 
 export function safeResume(): Promise<void> {
-  if (!sharedCtx) return Promise.resolve();
-  if (sharedCtx.state === 'suspended') {
-    return sharedCtx.resume().then(() => {
+  // FIX S13-3: if the user hasn't gestured yet, the context doesn't exist —
+  // nothing to resume. The gesture handler (resumeOnce) handles creation.
+  if (!_userInteracted) return Promise.resolve();
+  const ctx = getSharedAudioContext();
+  if (!ctx) return Promise.resolve();
+  if (ctx.state === 'suspended') {
+    return ctx.resume().then(() => {
       flushPendingAudioQueue();
     }).catch(() => {});
   }
@@ -86,7 +105,22 @@ export function safeResume(): Promise<void> {
 
 const resumeOnce = () => {
   _userInteracted = true;
-  void safeResume();
+  // FIX S13-3: Create the context HERE (inside the gesture call stack) so
+  // Chrome's autoplay policy allows it. Previously safeResume() ran before
+  // the context existed → no-op → context created later in suspended state.
+  const ctx = getSharedAudioContext();
+  if (ctx) {
+    if (ctx.state === 'suspended') {
+      ctx.resume().then(() => {
+        flushPendingAudioQueue();
+      }).catch(() => {});
+    } else {
+      flushPendingAudioQueue();
+    }
+  } else {
+    // Context creation failed — flush queue anyway so callbacks don't pile up.
+    flushPendingAudioQueue();
+  }
 };
 
 function registerGestureResumeHandlers(): void {

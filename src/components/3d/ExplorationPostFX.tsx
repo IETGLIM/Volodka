@@ -99,7 +99,10 @@ const NOISE_SCENES = new Set([
 ]);
 
 /** Scenes that get CRT scanline overlay for cyberpunk terminal aesthetic */
-const SCANLINE_SCENES = new Set(['guild_mainframe', 'office_day', 'volodka_room']);
+// FIX S13-1: 'volodka_room' removed — scanlines caused unreadable flashing
+// horizontal lines on the 3 desk monitors. guild_mainframe + office_day keep
+// the treatment (they have dedicated CRT terminals, not desktop LCDs).
+const SCANLINE_SCENES = new Set(['guild_mainframe', 'office_day']);
 
 /** Scene-specific vignette darkness — noir scenes get heavier vignette */
 const SCENE_VIGNETTE: Record<string, { offset: number; darkness: number }> = {

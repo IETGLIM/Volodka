@@ -289,7 +289,11 @@ export const volodka_corridor_def: SceneDefinition = {
     // doorway is just a niche; the corridor_bathroom_door trigger shows a locked-
     // door flavor examine panel. Without this doorway, the structural wall at
     // X=3 was solid → player hit an invisible wall at the visible door.
-    { id: 'corridor_to_bathroom', position: [2.7, 0.5, 2.0], width: 0.9, height: 2.0 },
+    // FIX S13-4: y 0.5 → 1.0 (half of height 2.0). The y=0.5 convention on
+    // corridor_to_kitchen/street is pre-existing and likely wrong (opening cut
+    // half below floor if generator uses y=center). Using y=1.0 matches the
+    // room_to_corridor / corridor_to_room convention (y ≈ height/2).
+    { id: 'corridor_to_bathroom', position: [2.7, 1.0, 2.0], width: 0.9, height: 2.0 },
   ],
   exits: [
     {
