@@ -131,21 +131,48 @@ const ROOT_BONE_NAMES = new Set([
 ]);
 
 /**
- * Drop root-bone *translation* tracks so locomotion is driven by the capsule /
- * patrol mover — not by Mixamo in-place→with-root double motion (cheap foot-slide).
- * Rotation/scale on the root bone are kept for hip sway.
+ * Make root-bone translation in-place so locomotion is driven by the capsule /
+ * patrol mover rather than doubled by the clip. Horizontal values stay fixed
+ * at the first frame, while vertical hip motion is preserved for gait bounce,
+ * sitting, kneeling and sleeping poses.
  */
 export function stripRootTranslationTracks(clip: THREE.AnimationClip): THREE.AnimationClip {
-  const kept = clip.tracks.filter((track) => {
+  let changed = false;
+  const tracks = clip.tracks.map((track) => {
     const parts = splitTrackName(track.name);
-    if (!parts) return true;
+    if (!parts) return track;
     const nodeName = parts.nodeName.replace(/\s+/g, '').toLowerCase();
     const prop = parts.property.toLowerCase();
-    if (!ROOT_BONE_NAMES.has(nodeName)) return true;
-    return !prop.startsWith('position');
+    if (
+      !ROOT_BONE_NAMES.has(nodeName) ||
+      !prop.startsWith('position') ||
+      track.getValueSize() !== 3 ||
+      track.values.length < 3
+    ) {
+      return track;
+    }
+
+    const firstX = track.values[0];
+    const firstZ = track.values[2];
+    let hasHorizontalMotion = false;
+    for (let index = 0; index < track.values.length; index += 3) {
+      if (track.values[index] !== firstX || track.values[index + 2] !== firstZ) {
+        hasHorizontalMotion = true;
+        break;
+      }
+    }
+    if (!hasHorizontalMotion) return track;
+
+    const next = track.clone();
+    for (let index = 0; index < next.values.length; index += 3) {
+      next.values[index] = firstX;
+      next.values[index + 2] = firstZ;
+    }
+    changed = true;
+    return next;
   });
 
-  if (kept.length === clip.tracks.length) return clip;
+  if (!changed) return clip;
 
-  return new THREE.AnimationClip(clip.name, clip.duration, kept, clip.blendMode);
+  return new THREE.AnimationClip(clip.name, clip.duration, tracks, clip.blendMode);
 }

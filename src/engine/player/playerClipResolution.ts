@@ -2,15 +2,17 @@ import type * as THREE from 'three';
 
 /** Quaternius / Mixamo humanoid clip names on the hero GLB (priority order). */
 export const PLAYER_IDLE_CLIP_NAMES = [
+  // Canonical staged clip first: useMixamoAnimationClips registers optional
+  // retargeted overrides under this name; embedded clips remain fallbacks.
+  'idle',
   'Idle_Neutral',
   'Idle',
-  'idle',
   'IDLE',
 ] as const;
 
 export const PLAYER_WALK_CLIP_NAMES = [
-  'Walk',
   'walking',
+  'Walk',
   'Walking',
   'walk',
 ] as const;

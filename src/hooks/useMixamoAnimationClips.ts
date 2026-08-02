@@ -1,6 +1,6 @@
 /* ─── Volodka RPG – optional Mixamo GLB clips merged into a skinned mixer ─── */
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import type { MixamoClipId } from '@/config/mixamoAnimationCatalog';
@@ -18,6 +18,7 @@ export interface MixamoClipBinding {
   clipId: MixamoClipId;
   url: string;
   canonicalName: string;
+  aliases: readonly string[];
 }
 
 function getOnDiskMixamoBindings(): MixamoClipBinding[] {
@@ -26,7 +27,22 @@ function getOnDiskMixamoBindings(): MixamoClipBinding[] {
     clipId: spec.id,
     url: spec.publicUrl,
     canonicalName: spec.canonicalClipName,
+    aliases: spec.clipAliases,
   }));
+}
+
+function resolveSourceClip(
+  clips: readonly THREE.AnimationClip[],
+  binding: MixamoClipBinding,
+): THREE.AnimationClip | null {
+  const names = [binding.canonicalName, binding.clipId, ...binding.aliases];
+  for (const name of names) {
+    const exact = clips.find((clip) => clip.name.toLowerCase() === name.toLowerCase());
+    if (exact) return exact;
+  }
+  // Import scripts normally strip files to one clip. Never pick an arbitrary
+  // first animation from an unstripped multi-clip GLB.
+  return clips.length === 1 ? clips[0] ?? null : null;
 }
 
 function scheduleIdleSlice(callback: () => void): () => void {
@@ -65,8 +81,6 @@ export function useMixamoAnimationClips(
 ): Record<string, THREE.AnimationAction> | null {
   const bindings = getOnDiskMixamoBindings();
   const [mixamoActions, setMixamoActions] = useState<Record<string, THREE.AnimationAction>>({});
-  const mixamoActionsRef = useRef(mixamoActions);
-  mixamoActionsRef.current = mixamoActions;
 
   useEffect(() => {
     if (!mixer || !root || bindings.length === 0) {
@@ -75,16 +89,13 @@ export function useMixamoAnimationClips(
 
     let cancelled = false;
     const cancelSchedules: Array<() => void> = [];
+    const createdActions = new Set<THREE.AnimationAction>();
     const loader = new GLTFLoader();
     extendGltfLoader(loader);
 
-    // FIX 1.4: Coalesce per-clip setMixamoActions calls into a single batched
-    // flush. Previously, each of the 6 critical clips called setMixamoActions
-    // individually as it loaded (~1-2ms apart), triggering 6 React re-renders
-    // of CesiumPlayerModelInner during the first ~1-2s of gameplay. If the
-    // user started moving during this window, they saw model hitches. Now we
-    // accumulate loaded actions in a pending map and flush them via a single
-    // microtask queue, so all concurrent clip loads coalesce into 1 setState.
+    // Coalesce actions that become ready in the same turn. The locomotion pair
+    // below is deliberately published together; deferred cinematic arrivals
+    // remain independent and do not trigger locomotion re-binding.
     const pendingActions: Record<string, THREE.AnimationAction> = {};
     let flushScheduled = false;
     const scheduleFlush = (): void => {
@@ -94,43 +105,92 @@ export function useMixamoAnimationClips(
         flushScheduled = false;
         if (cancelled) return;
         if (Object.keys(pendingActions).length === 0) return;
-        setMixamoActions((prev) => ({ ...prev, ...pendingActions }));
-        // Move pending into the flushed map (so it's not re-flushed)
+        // Snapshot before clearing: React may invoke the state updater after
+        // this microtask returns.
+        const flushedActions = { ...pendingActions };
         for (const key of Object.keys(pendingActions)) {
           delete pendingActions[key];
         }
+        setMixamoActions((prev) => ({ ...prev, ...flushedActions }));
       });
+    };
+
+    const loadBindingAction = async (
+      binding: MixamoClipBinding,
+    ): Promise<THREE.AnimationAction | null> => {
+      try {
+        const gltf = await loader.loadAsync(binding.url);
+        if (cancelled) return null;
+        const clip = resolveSourceClip(gltf.animations, binding);
+        if (!clip || !Number.isFinite(clip.duration) || clip.duration <= 0) return null;
+
+        const filtered = stripRootTranslationTracks(
+          filterClipTracksToExistingNodes(
+            remapClipTracksToSkeleton(clip, root),
+            root,
+          ),
+        );
+        // A clip with no compatible destination tracks would override a valid
+        // embedded action with a static bind pose. Keep the fallback instead.
+        if (filtered.tracks.length === 0) return null;
+
+        const renamed = filtered.clone();
+        renamed.name = binding.canonicalName;
+        const action = mixer.clipAction(renamed, root);
+        action.enabled = true;
+        createdActions.add(action);
+        return action;
+      } catch {
+        // Missing/malformed staged clip: preserve the embedded fallback.
+        return null;
+      }
     };
 
     // ── Critical clips: load immediately in parallel (no gate, no scheduler) ──
     // These are needed for the core idle↔walk locomotion blend tree. Without
     // them the avatar has no walk cycle and slides in a static pose.
     const criticalBindings = bindings.filter((b) => CRITICAL_CLIP_IDS.has(b.clipId));
-    for (const binding of criticalBindings) {
-      void (async () => {
-        try {
-          const gltf = await loader.loadAsync(binding.url);
-          if (cancelled) return;
-          const clip = gltf.animations[0];
-          if (!clip) return;
-          // Remap Mixamo/KayKit bone names onto Quaternius, then drop orphans.
-          // Strip root translation so capsule/patrol owns locomotion (Body/Hips).
-          const filtered = stripRootTranslationTracks(
-            filterClipTracksToExistingNodes(
-              remapClipTracksToSkeleton(clip, root),
-              root,
-            ),
-          );
-          const renamed = filtered.clone();
-          renamed.name = binding.canonicalName;
-          const action = mixer.clipAction(renamed, root);
-          action.enabled = true;
+    const locomotionBindings = criticalBindings.filter(
+      (binding) => binding.clipId === 'idle' || binding.clipId === 'walking',
+    );
+    const cinematicCriticalBindings = criticalBindings.filter(
+      (binding) => binding.clipId !== 'idle' && binding.clipId !== 'walking',
+    );
+
+    // Publish idle + walk atomically. Mixing one newly retargeted action with
+    // one embedded action can briefly produce incompatible poses and a hitch.
+    void Promise.all(
+      locomotionBindings.map(async (binding) => ({
+        binding,
+        action: await loadBindingAction(binding),
+      })),
+    ).then((loaded) => {
+      if (cancelled) return;
+      const completePair =
+        locomotionBindings.length === 2 &&
+        loaded.every(({ action }) => action !== null);
+      if (completePair) {
+        for (const { binding, action } of loaded) {
+          if (action) pendingActions[binding.canonicalName] = action;
+        }
+        scheduleFlush();
+      } else {
+        for (const { action } of loaded) {
+          if (!action) continue;
+          action.stop();
+          mixer.uncacheClip(action.getClip());
+          createdActions.delete(action);
+        }
+      }
+    });
+
+    for (const binding of cinematicCriticalBindings) {
+      void loadBindingAction(binding).then((action) => {
+        if (!cancelled && action) {
           pendingActions[binding.canonicalName] = action;
           scheduleFlush();
-        } catch {
-          // Clip missing on disk despite on-disk registry — skip.
         }
-      })();
+      });
     }
 
     // ── Deferred clips: load sequentially through scheduler (gated by overlay) ──
@@ -149,29 +209,10 @@ export function useMixamoAnimationClips(
         binding.url,
         () => {
           void (async () => {
-            try {
-              const gltf = await loader.loadAsync(binding.url);
-              if (cancelled) return;
-              const clip = gltf.animations[0];
-              if (!clip) {
-                loadDeferredAt(index + 1);
-                return;
-              }
-              // Remap Mixamo/KayKit → Quaternius, drop orphans, strip root translation.
-              const filtered = stripRootTranslationTracks(
-            filterClipTracksToExistingNodes(
-              remapClipTracksToSkeleton(clip, root),
-              root,
-            ),
-          );
-              const renamed = filtered.clone();
-              renamed.name = binding.canonicalName;
-              const action = mixer.clipAction(renamed, root);
-              action.enabled = true;
+            const action = await loadBindingAction(binding);
+            if (!cancelled && action) {
               pendingActions[binding.canonicalName] = action;
               scheduleFlush();
-            } catch {
-              // Clip missing on disk despite on-disk registry — skip until re-import.
             }
             loadDeferredAt(index + 1);
           })();
@@ -185,7 +226,7 @@ export function useMixamoAnimationClips(
     return () => {
       cancelled = true;
       for (const cancel of cancelSchedules) cancel();
-      for (const action of Object.values(mixamoActionsRef.current)) {
+      for (const action of createdActions) {
         action.stop();
         mixer.uncacheClip(action.getClip());
       }

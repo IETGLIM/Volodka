@@ -60,8 +60,9 @@ function computeLocomotionBindKey(
   const locomotionKeys = Object.keys(actions)
     .filter((k) => LOCOMOTION_CLIP_NAMES.has(k))
     .sort()
+    .map((key) => `${key}:${actions[key]?.getClip().uuid ?? 'missing'}`)
     .join(',');
-  return `${animations.length}:${locomotionKeys}`;
+  return `${animations.map((clip) => clip.uuid).join(',')}:${locomotionKeys}`;
 }
 
 export interface UsePlayerLocomotionControllerOptions {
@@ -105,23 +106,17 @@ export function usePlayerLocomotionController({
   // each time a new Mixamo clip loads.
   const actionsRef = useRef<Record<string, THREE.AnimationAction> | null>(actions);
   actionsRef.current = actions;
+  const locomotionBindKey = actions
+    ? computeLocomotionBindKey(animations, actions)
+    : null;
 
   useLayoutEffect(() => {
-    // Read the latest actions from the ref — NOT from the `actions` prop.
-    // The `actions` object is recreated (via useMemo in useMixamoAnimationClips)
-    // every time a Mixamo clip loads. If `actions` were in the dep array,
-    // this effect would re-run 6 times during initial load (once per clip),
-    // each time stopping + re-binding idle/walk/run. The re-bind calls
-    // `idleAction.reset()` which restarts the idle animation from time 0,
-    // causing a visible hitch 6 times in ~2 seconds.
-    //
-    // By reading `actionsRef.current` and excluding `actions` from deps,
-    // the effect only re-runs when mixer/root/animations change (rare events
-    // that genuinely require re-binding). The frame tick reads
-    // `actionsRef.current` for cinematic clip lookups, so newly loaded
-    // Mixamo clips are picked up without re-binding locomotion.
+    // The full actions object changes when any deferred cinematic clip loads.
+    // locomotionBindKey changes only when an idle/walk/run action (or its clip)
+    // changes, so staged locomotion overrides bind without restarting for
+    // unrelated sitting/talking/working arrivals.
     const currentActions = actionsRef.current;
-    if (!mixer || !currentActions || animations.length === 0) {
+    if (!mixer || !currentActions || !locomotionBindKey) {
       idleActionRef.current = null;
       walkActionRef.current = null;
       runActionRef.current = null;
@@ -133,9 +128,8 @@ export function usePlayerLocomotionController({
 
     // Only re-bind when the LOCOMOTION-relevant actions change, not when
     // non-locomotion Mixamo clips (sitting, sleeping, etc.) load.
-    const bindKey = computeLocomotionBindKey(animations, currentActions);
-    if (boundKeyRef.current === bindKey) return;
-    boundKeyRef.current = bindKey;
+    if (boundKeyRef.current === locomotionBindKey) return;
+    boundKeyRef.current = locomotionBindKey;
 
     for (const action of [idleActionRef.current, walkActionRef.current, runActionRef.current]) {
       action?.stop();
@@ -213,8 +207,8 @@ export function usePlayerLocomotionController({
       runActionRef.current = null;
       boundKeyRef.current = null;
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- currentAnimRef is a stable ref; actions read via actionsRef to avoid re-binding on every Mixamo clip load
-  }, [mixer, root, animations]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- currentAnimRef is stable; actions are represented by locomotionBindKey
+  }, [mixer, root, animations, locomotionBindKey]);
 
   useFrameTick(
     'player',
@@ -237,28 +231,32 @@ export function usePlayerLocomotionController({
 
       const animName = currentAnimRef.current;
       const isCinematic = CINEMATIC_CLIP_NAMES.has(animName);
+      const targetCinematicAction = isCinematic
+        ? currentActions?.[animName] ?? null
+        : null;
 
       // ── Cinematic clip handling (sitting, sleeping, talking, working) ──
       // These states require the Mixamo clip to be loaded. If not yet
       // available, fall through to idle/locomotion as a graceful fallback.
-      if (isCinematic) {
-        const targetAction = currentActions?.[animName] ?? null;
-
-        if (targetAction && prevCinematicClipRef.current !== animName) {
+      if (targetCinematicAction) {
+        if (prevCinematicClipRef.current !== animName) {
           // Transitioning into a new cinematic clip: fade out previous
           // cinematic, fade in the target. Locomotion weights will be
           // damped to 0 by the blend tree below.
-          if (cinematicActionRef.current && cinematicActionRef.current !== targetAction) {
+          if (
+            cinematicActionRef.current &&
+            cinematicActionRef.current !== targetCinematicAction
+          ) {
             cinematicActionRef.current.fadeOut(CINEMATIC_CROSSFADE_SEC);
           }
 
-          targetAction.setLoop(THREE.LoopRepeat, Infinity);
-          targetAction.reset();
-          targetAction.setEffectiveWeight(0);
-          targetAction.play();
-          targetAction.fadeIn(CINEMATIC_CROSSFADE_SEC);
+          targetCinematicAction.setLoop(THREE.LoopRepeat, Infinity);
+          targetCinematicAction.reset();
+          targetCinematicAction.setEffectiveWeight(0);
+          targetCinematicAction.play();
+          targetCinematicAction.fadeIn(CINEMATIC_CROSSFADE_SEC);
 
-          cinematicActionRef.current = targetAction;
+          cinematicActionRef.current = targetCinematicAction;
           prevCinematicClipRef.current = animName;
         }
 

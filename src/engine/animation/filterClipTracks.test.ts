@@ -64,6 +64,12 @@ describe('mixamoQuaterniusBoneMap', () => {
     expect(resolveDestinationBoneName('LeftFoot', dest)).toBe('FootL');
     expect(resolveDestinationBoneName('LeftToeBase', dest)).toBe('PTL');
   });
+
+  it('maps Mixamo finger chains to matching Quaternius fingers, not wrists', () => {
+    const dest = new Set(['Wrist.L', 'Index1.L', 'Thumb3R']);
+    expect(resolveDestinationBoneName('mixamorig:LeftHandIndex1', dest)).toBe('Index1.L');
+    expect(resolveDestinationBoneName('mixamorig:RightHandThumb3', dest)).toBe('Thumb3R');
+  });
 });
 
 
@@ -116,8 +122,8 @@ describe('remapClipTracksToSkeleton', () => {
 });
 
 describe('stripRootTranslationTracks', () => {
-  it('removes Hips.position while keeping Hips.quaternion', () => {
-    const pos = new THREE.VectorKeyframeTrack('Hips.position', [0, 1], [0, 0, 0, 0.1, 0, 0]);
+  it('removes horizontal Hips motion while preserving vertical pose motion', () => {
+    const pos = new THREE.VectorKeyframeTrack('Hips.position', [0, 1], [0, 1, 0, 0.1, 0.8, 0.2]);
     const quat = new THREE.QuaternionKeyframeTrack(
       'Hips.quaternion',
       [0, 1],
@@ -131,12 +137,14 @@ describe('stripRootTranslationTracks', () => {
     const clip = new THREE.AnimationClip('walking', 1, [pos, quat, arm]);
     const stripped = stripRootTranslationTracks(clip);
     expect(stripped.tracks.map((t) => t.name)).toEqual([
+      'Hips.position',
       'Hips.quaternion',
       'LeftArm.quaternion',
     ]);
+    expect(Array.from(stripped.tracks[0]?.values ?? [])).toEqual([0, 1, 0, 0, 0.8, 0]);
   });
 
-  it('strips Quaternius Body.position root translation', () => {
+  it('makes Quaternius Body.position root translation in-place', () => {
     const pos = new THREE.VectorKeyframeTrack('Body.position', [0, 1], [0, 0, 0, 0.2, 0, 0]);
     const quat = new THREE.QuaternionKeyframeTrack(
       'Body.quaternion',
@@ -145,7 +153,11 @@ describe('stripRootTranslationTracks', () => {
     );
     const clip = new THREE.AnimationClip('idle', 1, [pos, quat]);
     const stripped = stripRootTranslationTracks(clip);
-    expect(stripped.tracks.map((t) => t.name)).toEqual(['Body.quaternion']);
+    expect(stripped.tracks.map((t) => t.name)).toEqual([
+      'Body.position',
+      'Body.quaternion',
+    ]);
+    expect(Array.from(stripped.tracks[0]?.values ?? [])).toEqual([0, 0, 0, 0, 0, 0]);
   });
 
   it('returns same clip when no root translation present', () => {
