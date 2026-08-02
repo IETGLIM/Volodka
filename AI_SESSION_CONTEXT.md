@@ -140,6 +140,44 @@ dice checks, живые хабы). Вдохновение также: Gothic (р
 
 ## 📝 История сессий
 
+### Сессия: 2026-08-02 — "AAA: filmic post-FX deplasticize + locomotion feel + diegetic HUD wiring"
+**Контекст:** Автор попросил продолжить доводку до AAA: «ошеломляющая визуально», «роскошные катсцены», «плавно, без резких переходов», «идеальная анимация движений», «главное — геймплей», «показывай, не рассказывай». 3 параллельные разведки (Explore-агенты) замапили графику/рендер, движение/камеру, HUD/diegetic. Правки — только аддитивные, типобезопасные. Гейт: `node scripts/tsc7.mjs --noEmit` → 0 ошибок. Сервер/тесты не запускались — только код + push в main (по запросу автора). Стихи НЕ трогались.
+
+**Что сделано (17 файлов + 1 новый, ~+244/-31 строк, коммит 20ea763, push в main):**
+
+*Графика — deplasticize + киношный муд (ExplorationPostFX + LUT + reflections):*
+- Bloom `KernelSize.HUGE` на Ultra — мягче filmic falloff неона
+- N8AO per-scene tinted color — оттенённый ambient occlusion (физически поглощённый свет, не плоско-чёрный SSAO); главный «deplasticizer»
+- ChromaticAberration `radialModulation` — фрингинг концентрируется по краям (настоящая линза)
+- Vignette `eskil` mode на Ultra hero-сценах — фотографическое заваривание
+- Per-scene ACES tone-mapping exposure — бой темнее, сон/закат светлее
+- DOF `height=720` на Ultra — круглее боке в диалогах/катсценах
+- `cold_noir` LUT для `underground_bunker` + `guild_mainframe` — green-teal CRT грейд
+- NeonRainReflections для `river_pier` + `pier_evening` — тёплый отблеск огня/гирлянд
+- WetStreetGround `mirror` 0.5→0.6 на Ultra — лужи, а не просто влажность
+
+*Движение/камера — multi-channel impact + momentum:*
+- `landingImpact.ts` (новый) — landing FOV dip (краткий внутренний пинч, ~0.4s восстановление), использует ранее мёртвое поле `scratch.landingImpactVel`
+- Sprint-start FOV «kick» (+0.6° затухающий) — ощущение ускорения
+- Sprint look-ahead cap boost — камера ведёт дальше на спринте (momentum)
+- Синхронизирована частота дыхания камеры (2.0 Hz) с procedural body idle — убран 5s beat-воббл
+- Dialogue time-scale ease — плавный вход/выход из замедления диалога (вместо жёсткого «click»)
+- Wall-bump shake масштабирован по `slideRatio` — лоб в стену vs касание угла
+- Footstep dust масштабируется по скорости (walk ~3, sprint ~6 + сильнее вверх)
+
+*HUD / diegetic / show-don't-tell — монтирование уже построенных orphan-виджетов:*
+- `InteractionProximityGlow` в ExplorationHUD — дышащая аура прицела + edge-flash на активации
+- `StatChangeLayer` в оркестраторе + `showStatChange()` подключён к karma/energy/stress/XP (цвет = направление)
+- `DialogueRelationBar` в шапке DiegeticDialogueHud — Disco Elysium-бар отношений
+- `SceneDiscoveryToast` — отложенный счётчик «Открыто N/M» для сцен с title-card (оба бита видны)
+- `AmbientAtmosphereCaption` скрыт во время diegetic-диалога (без наложения на плату)
+
+**Безопасность:** все правки аддитивны; инварианты сохранены (`<Physics interpolate={false}>`, KCC ownership, postprocessing depth-blit patch, test contracts `playerLocomotionPresentation`/`explorationStrategy`/`cinematicCamera`/`cameraShake`). Все новые эффекты гейтятся на `isEffectiveReducedMotion()` и quality-tier. Стихи не трогались.
+
+**Следующий шаг:** QA автора на https://volodka.vercel.app/ — визуальная проверка Ultra-режима в hero-сценах (street_night, city_square, volodka_room), чувство приземления/спринта, relation bar в диалогах. Дальше — VolumetricLightShafts для home_evening/factory_basement (отложено: требует проверки геометрии сцены), SSR на мокрых улицах (нужен A/B), content factory Acts 3–4, Mixamo↔Quaternius full bone remap.
+
+---
+
 ### Сессия: 2026-08-01 — "AAA loop: deplastic + hybrid street + soft cinema"
 **Контекст:** Динамический `/loop` на ошеломляющий AAA look/feel; независимый судья по `docs/AAA_JUDGE_CRITERIA.md` (LOCKED). Стихи/меню не трогали.
 

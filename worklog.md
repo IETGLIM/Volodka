@@ -1134,3 +1134,109 @@ HUD/UI, движение/анимацию. По каждой — конкрет�
 | `src/components/game/CutsceneOverlay.tsx` | FilmGrain for revelation/act_transition |
 | `src/components/game/orchestrator/OrchestratorGameplaySections.tsx` | PoemActiveEffectsHud + ItemGainedPopupLayer |
 | `src/engine/camera/applyCameraFrame.ts` | lateral bob (figure-8 gait) |
+
+---
+
+## Session: 2026-08-02 — "AAA: filmic post-FX deplasticize + locomotion feel + diegetic HUD wiring"
+
+### Контекст
+Автор попросил продолжить доводку до AAA-уровня: «ошеломляющая визуально», «роскошные катсцены»,
+«плавно, без резких переходов», «идеальная анимация движений», «главное — геймплей»,
+«показывай, не рассказывай». 3 параллельные разведки (Explore-агенты, Task IDs 5/6/7) замапили
+графику/рендер, движение/камеру, HUD/diegetic — каждая вернулась с конкретными file:line
+safe-additive proposals. Правки — только аддитивные, типобезопасные. Гейт: `node scripts/tsc7.mjs
+--noEmit` → 0 ошибок после каждого батча. Сервер/тесты не запускались — только код + push в main
+(по запросу автора). Стихи НЕ трогались.
+
+### Коммит: `20ea763` — push в main (002fd14..20ea763)
+
+**Графика — deplasticize + киношный муд (`ExplorationPostFX.tsx`, `proceduralLutTextures.ts`, `NeonRainReflections.tsx`, `AtmosphericEffects.tsx`, `WetStreetGround.tsx`)**
+- Bloom `KernelSize.HUGE` на Ultra — мягче filmic falloff неона (вместо LARGE)
+- N8AO per-scene tinted color (`SCENE_AO_COLOR`) — оттенённый ambient occlusion (физически
+  поглощённый свет, не плоско-чёрный SSAO). Главный «deplasticizer»: 10 сцен с hue-matched тенью
+- ChromaticAberration `radialModulation` + `modulationOffset=0.4` — фрингинг концентрируется по
+  краям кадра (настоящая линза), а не равномерный subpixel
+- Vignette `eskil` mode на Ultra hero-сценах (`HERO_POSTFX_SCENES`) — фотографическое заваривание
+- Per-scene ACES tone-mapping exposure (`SCENE_TONE_EXPOSURE`) — бой темнее/контрастнее, сон/закат
+  светлее; ранее плоская global exposure 1.22
+- DOF `height=720` на Ultra — круглее боке в диалогах/катсценах (480 на high)
+- `cold_noir` LUT для `underground_bunker` + `guild_mainframe` — green-teal CRT phosphor грейд
+  (расширен `ProceduralLutKind` union + `applyLutTransform` case + `PROCEDURAL_LUT_SCENES`)
+- NeonRainReflections configs для `river_pier` + `pier_evening` — тёплый отблеск костра/гирлянд +
+  холодный отблеск воды; `NEON_REFLECTION_SCENES` расширен
+- WetStreetGround `mirror` 0.5→0.6 на Ultra (оба варианта: PBR + procedural fallback) — лужи,
+  а не просто влажность; resolution unchanged (0 VRAM cost)
+
+**Движение/камера — multi-channel impact + momentum**
+- `src/engine/camera/landingImpact.ts` (НОВЫЙ) — `triggerLandingFovDip(impactStrength)` +
+  `consumeLandingFovDip(delta)`: краткий внутренний FOV пинч (max 1.5°), восстановление ~0.4s,
+  reduced-motion gate. Использует ранее мёртвое поле `scratch.landingImpactVel`. Emit в
+  `playerMainMovement.ts` (где уже считается `impactStrength`), consume в `explorationStrategy.ts`
+  (`targetFov: baseFov + fovBoost - consumeLandingFovDip(ctx.delta)`)
+- Sprint-start FOV «kick» (`explorationStrategy.ts`) — envelope +0.6° затухающий за ~0.25s при
+  переходе walk→run (threshold 5.5 m/s). One-shot per sprint entry
+- Sprint look-ahead cap boost (`explorationStrategy.ts`) — cap растёт с 0.3 (walk) до 0.45 (sprint)
+  — камера ведёт дальше на спринте (momentum/intent)
+- Синхронизирована частота дыхания камеры (`cinematicCamera.ts:applyEnhancedBreathingIdle`) —
+  1.8 Hz → 2.0 Hz (matches procedural body idle `idleTorsoPosY`); sway harmonics 0.6/0.8 → 0.5/1.0
+  (¼ / ½ от breath fundamental). Убран 5s beat-воббл между камерой и телом
+- Dialogue time-scale ease (`cinematicCamera.ts`) — `targetTimeScale` + exponential ease в
+  `applyTimeScale` (speed 8, ~0.375s to 95%). Заменяет жёсткий `setGlobalTimeScale` snap на
+  dialogue enter/exit. Bullet time entry/exit сохранён как hard-snap (punch желателен)
+- Wall-bump shake масштабирован по `slideRatio` (`playerMainMovement.ts`) —
+  `Math.max(0.3, 1.15 - slideRatio)`: лоб в стену = полный shake, касание угла = ~0.3×
+- Footstep dust gait-scaled (`FootstepDust.tsx` + `playerFinalizeFrame.ts` + `explorationEvents.ts`):
+  payload `exploration:footstep` расширен опциональными `speed`/`easedSpeed`; dust burst
+  масштабируется (walk ~3 частицы, sprint ~6 + сильнее upward vel). Pool cap (30) сохранён
+
+**HUD / diegetic / show-don't-tell — монтирование уже построенных orphan-виджетов**
+- `InteractionProximityGlow` смонтирован в `ExplorationHUD.tsx` — дышащая аура прицела +
+  edge-flash на активации взаимодействия (EventBus-driven, pointer-events-none, reduced-motion)
+- `StatChangeLayer` смонтирован в `OrchestratorGameplaySections.GameplayExplorationNotifications` +
+  `showStatChange()` подключён в `useHUDController.ts` к karma/energy/stress/XP (цвет = направление:
+  cyan/green = gain, rose = loss; stress инвертирован). Pool-based, TTL-bounded, ErrorBoundary-wrapped
+- `DialogueRelationBar` смонтирован в шапке `DiegeticDialogueHud.tsx` (под именем спикера) —
+  Disco Elysium-бар отношений с color-coded thresholds + hover-reveal numeric. Только для dialogue kind
+- `SceneDiscoveryToast` — отложенный счётчик «Открыто N/M» для сцен с entry-text (ранее
+  suppressed целиком): reveal через 3.2s после title-card, оба бита видны
+- `AmbientAtmosphereCaption` скрыт во время diegetic-диалога (`diegeticNarrative != null`) —
+  без наложения на dialogue plate (pure visibility guard)
+
+### Аудит: что НЕ тронуто (намеренно)
+- VolumetricLightShafts для home_evening/factory_basement — отложено: требует проверки геометрии
+  сцены без браузер-теста (позиции shaft могут не совпасть с practical lights)
+- SSR на мокрых улицах (ultra-only) — нужен A/B (depth-blit patch interaction uncertain)
+- Continuous walk↔run blend by speed — ломает `playerLocomotionPresentation.test.ts` + caller logic
+- Speed-linked walk timeScale — требует проброса `playerSpeedRef` prop
+- GodRays postprocessing pass — нужен sun-mesh ref
+- Стихи — не трогались (авторское произведение Владимира Лебедева)
+
+### Статистика
+- 1 коммит в main (20ea763), 17 файлов изменено + 1 новый (`landingImpact.ts`), ~+244/-31 строк
+- typecheck: `node scripts/tsc7.mjs --noEmit` → exit 0 после каждого батча (graphics / feel / HUD)
+- 0 строк стихов изменено
+- Все правки аддитивные; инварианты сохранены: `<Physics interpolate={false}>`, KCC ownership,
+  postprocessing depth-blit patch, test contracts (playerLocomotionPresentation / explorationStrategy
+  / cinematicCamera / cameraShake), reduced-motion gates, quality-tier gates
+
+### Ключевые файлы сессии
+| Файл | Правка |
+|------|--------|
+| `src/components/3d/ExplorationPostFX.tsx` | 6 post-FX: bloom HUGE / N8AO tint / CA radial / vignette eskil / per-scene exposure / DOF height |
+| `src/engine/graphics/proceduralLutTextures.ts` | cold_noir LUT kind + 2 scenes |
+| `src/components/3d/NeonRainReflections.tsx` | river_pier + pier_evening configs |
+| `src/components/3d/AtmosphericEffects.tsx` | NEON_REFLECTION_SCENES += pier scenes |
+| `src/components/3d/WetStreetGround.tsx` | mirror 0.5→0.6 on Ultra (PBR + fallback) |
+| `src/engine/camera/landingImpact.ts` | NEW — landing FOV dip module |
+| `src/engine/camera/cinematicCamera.ts` | breathing freq sync + dialogue time-scale ease |
+| `src/engine/camera/strategies/explorationStrategy.ts` | sprint FOV kick + look-ahead cap + landing dip consume |
+| `src/engine/player/playerMainMovement.ts` | landing FOV dip emit + wall-bump shake scaling |
+| `src/engine/player/playerFinalizeFrame.ts` | footstep emit + speed/easedSpeed |
+| `src/components/3d/FootstepDust.tsx` | gait-scaled dust burst |
+| `src/engine/events/explorationEvents.ts` | footstep payload type extended |
+| `src/components/game/hud/ExplorationHUD.tsx` | mount InteractionProximityGlow |
+| `src/components/game/orchestrator/OrchestratorGameplaySections.tsx` | mount StatChangeLayer |
+| `src/components/game/hud/useHUDController.ts` | wire showStatChange to karma/energy/stress/XP |
+| `src/components/game/diegetic/DiegeticDialogueHud.tsx` | mount DialogueRelationBar |
+| `src/components/game/SceneDiscoveryToast.tsx` | deferred discovery counter for entry-text scenes |
+| `src/components/game/AmbientAtmosphereCaption.tsx` | gate on diegeticNarrative |
