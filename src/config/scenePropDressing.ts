@@ -23,30 +23,16 @@ export interface SplitScenePropDressing {
 /** Authored GLTF props placed in scene visuals (see propModelRegistry). */
 export const SCENE_PROP_DRESSING: Partial<Record<SceneId, readonly ScenePropPlacement[]>> = {
   volodka_room: [
-    // Door + windows stay procedural in VolodkaRoomVisual (animated door + city-glow panes).
-    // Do not place kenney openings here — they z-fight the always-on procedural meshes and
-    // were deferred, so High briefly (or permanently under load) read as blank openings.
-    { propModelId: 'polyhaven_industrial_lamp', position: [0.15, 2.55, -1.25], rotationY: 0.2, loadTier: 'deferred' },
-    // FIX S13-8: polyhaven_barrel REMOVED — was at [2.12, 0, 2.12] which is INSIDE the
-    // gothicBed (bed center [1.78, 0, 2.05], spans x=[1.04, 2.52] z=[1.05, 3.05]).
-    // An explosive Barrel_01 (red hazard barrel) rendered on the mattress — looked
-    // absurd in a bedroom and broke first-impression. Barrel is a street prop, not
-    // an apartment prop. Removed entirely.
-    { propModelId: 'polyhaven_cardboard_box', position: [-1.55, 0, 2.78], rotationY: -0.35, loadTier: 'deferred' },
-    { propModelId: 'polyhaven_cardboard_box', position: [-2.0, 0.5, 2.84], rotationY: 0.25, loadTier: 'deferred' },
-    // Trash moved off the desk strip — was z-fighting workstation props at z≈-2.85.
-    { propModelId: 'polyhaven_metal_trash_can', position: [2.15, 0, 0.85], rotationY: 0.4, loadTier: 'deferred' },
-    // FIX S13-8: trashbag moved from [2.35, 0, 1.15] (on bed edge) to [2.35, 0, 0.4]
-    // (off bed, beside trash can — reads as a cluttered corner).
-    { propModelId: 'polyhaven_trashbag', position: [2.35, 0, 0.4], rotationY: -0.15, loadTier: 'deferred' },
-    // Desk gadgets live on ThinMonitors / desk workstation. Do NOT place
-    // ai3dgen_poetic_compiler / neural_filter at y≈0.82 z≈-2.4 — they z-fight the monitor trio.
-    // FIX S13-8: poetic_compiler moved from [1.85, 0.52, 2.0] (ON the bed, floating
-    // 0.52m above the mattress) to [-1.5, 0, 1.2] (left-wall floor, open area
-    // between wardrobe and door — reads as a cyberpunk artifact on the floor).
-    { propModelId: 'ai3dgen_poetic_compiler', position: [-1.5, 0, 1.2], rotationY: -0.55, loadTier: 'deferred' },
-    { propModelId: 'ai3dgen_neural_filter', position: [1.85, 1.15, -2.55], rotationY: -Math.PI / 2, loadTier: 'deferred' },
-    { propModelId: 'ai3dgen_digital_amulet', position: [1.75, 1.55, -2.4], rotationY: -Math.PI / 2, loadTier: 'deferred' },
+    // FIX S13-10: stripped ALL clutter props from volodka_room. The room was
+    // overloaded with street props (trash cans, barrels, boxes, industrial lamps,
+    // ai3dgen artifacts) that don't belong in a bedroom and visually clashed with
+    // the GLB furniture (bed, desk, bookshelf, wardrobe). The room now has ONLY
+    // the authored GLB furniture from AuthoredVolodkaRoomDressing (bed, armchair,
+    // desk, deskLamp, bookshelf, cabinet, picture frames, shutter windows) +
+    // the CraftedDeskAndMonitors (monitors, keyboard, mouse, cassette player).
+    // No prop dressing clutter — the room reads as a lived-in apartment, not a
+    // junk pile. If the author wants to re-add specific props later, they should
+    // be placed with verified non-overlapping coordinates.
   ],
   volodka_corridor: [
     { propModelId: 'kenney_door', position: [0, 0, 7.3] },

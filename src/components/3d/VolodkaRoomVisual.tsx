@@ -345,12 +345,16 @@ function AuthoredVolodkaRoomDressing({ castShadow }: { castShadow: boolean }) {
           castShadow={castShadow}
         />
       </Suspense>
-      {/* Armchair near bed (not under the desk — was colliding with workstation). */}
+      {/* FIX S13-12: armChair moved from [0.35, 0, 2.55] (near bed/door — looked
+          like "a chair at the door") to [0, 0, -1.5] (at the desk, facing the
+          monitors). The bedroom doesn't need a lounge armchair by the bed;
+          Volodka's chair belongs at his workstation where he works. Faces -Z
+          (rotationY=π) toward the desk at z=-2.5. */}
       <Suspense fallback={null}>
         <AuthoredRoomProp
           url={POLYHAVEN_MODELS.armChair}
-          position={[0.35, 0, 2.55]}
-          rotationY={Math.PI * 0.85}
+          position={[0, 0, -1.5]}
+          rotationY={Math.PI}
           scale={0.7}
           castShadow={castShadow}
         />
@@ -846,7 +850,7 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
         </>
       ) : null}
 
-      {/* ── Chair — fallback only; no low-poly hero chair on GLTF presets ── */}
+      {/* ── Chair — Low-fallback box chair at desk; GLB presets use armChair above ── */}
       {!useGltfFurniture ? (
       <group position={[0, 0, -1.5]}>
         {/* Seat */}
