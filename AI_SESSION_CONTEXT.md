@@ -140,6 +140,34 @@ dice checks, живые хабы). Вдохновение также: Gothic (р
 
 ## 📝 История сессий
 
+### Сессия: 2026-08-02 (cron-tick 2) — "Mount orphaned HUD widgets + dialogue history + cross-scene exit bearing"
+**Контекст:** Cron-triggered продолжение AAA-polish сессии. Сначала review worklog'ов (sandbox `/home/z/my-project/worklog.md` + project `worklog.md` + `AI_SESSION_CONTEXT.md`), затем QA via `agent-browser` на https://volodka.vercel.app/. Принято решение: багов нет (главное меню и HUD рендерятся чисто, 3D canvas не рендерится в headless browser — известное ограничение SwiftShader, НЕ баг кода), продолжить аддитивные AAA-улучшения из списка кандидатных orphan-виджетов.
+
+**QA findings:**
+- Главное меню: чисто, кинематографично, bloom/glow на cyan заголовке, типографика polished.
+- New Game flow работает: prompt → narrative text → exploration mode.
+- HUD рендерится: interaction prompt, location chip «ДОМ», status panel, narrative caption.
+- 0 ошибок в browser console / page errors.
+- 3D canvas не рендерится в headless browser (SwiftShader limitation) — не баг.
+
+**Что сделано (7 modified + 3 new files, ~+155/-11 строк):**
+
+*Show-don't-tell HUD — монтирование ещё 6 orphan-виджетов + 1 новый слой:*
+- `KarmaShiftLayer` (NEW) — Disco Elysium-style «☯ +N Свет / Тень / Тьма» floating pip над MoralCompassHUD при каждой смене кармы. Pool-based, TTL 2200ms. Подписан на `usePlayerKarma()` через useRef delta-detection.
+- `SceneTopBarHud` (NEW) — cohesive top-bar wrapper: SceneContextChip (top-left) + TopBarDataTicker (top-center) + EnvironmentMoodIndicator + ExplorationProgressBadge (top-right). Все 4 виджета были построены но orphaned. Shared `useHudQuietStyle` fade.
+- `FloatingActionIndicator` — EventBus-driven XP/quest/karma acknowledgement chips над QuickUseBar. Слушает `fx:xp_gain`, `quest:completed`, `choice:made`.
+- `DialogueHistoryPanel` button в DiegeticDialogueHud header (иконка History lucide). Local state toggle. Entries from `useDialogueHistoryStore`.
+- `QuickUseCooldownOverlay` mounted over QuickUseBar slots. SVG ring с depletion по `cooldownMs`. Расширил `sound:play` payload: +`slotIndex`/`itemId`/`cooldownMs` (optional fields, backward-compatible).
+
+*Navigation show-don't-tell:*
+- `QuestDirectionArrow` — cross-scene exit bearing sub-label «↑ → {exitLabel}». Когда quest marker в другой сцене, вычисляет bearing к ближайшему exit trigger zone в текущей сцене через `SCENE_CONFIG.exits`. Read-only lookup, no state writes. Sub-arrow вращается с camera yaw.
+
+**Безопасность:** все правки аддитивны; инварианты сохранены. typecheck `node scripts/tsc7.mjs --noEmit` → exit 0. Стихи не трогались.
+
+**Следующий шаг:** Author QA на Vercel — проверить karma-shift pip, top-bar cluster, dialogue history button, exit bearing sub-label. Дальше — VolumetricLightShafts, SSR, content factory Acts 3-4.
+
+---
+
 ### Сессия: 2026-08-02 — "AAA: filmic post-FX deplasticize + locomotion feel + diegetic HUD wiring"
 **Контекст:** Автор попросил продолжить доводку до AAA: «ошеломляющая визуально», «роскошные катсцены», «плавно, без резких переходов», «идеальная анимация движений», «главное — геймплей», «показывай, не рассказывай». 3 параллельные разведки (Explore-агенты) замапили графику/рендер, движение/камеру, HUD/diegetic. Правки — только аддитивные, типобезопасные. Гейт: `node scripts/tsc7.mjs --noEmit` → 0 ошибок. Сервер/тесты не запускались — только код + push в main (по запросу автора). Стихи НЕ трогались.
 

@@ -7,6 +7,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ItemIcon } from './shared/ItemIcon';
+import { QuickUseCooldownOverlay } from './hud/parts/QuickUseCooldownOverlay';
 import { useConsumableActions, useGameMode, useInventory } from '@/store/selectors';
 import { usePlayerLevel } from '@/store/selectors/playerSelectors';
 import { useCollectedPoems } from '@/store/selectors/worldSelectors';
@@ -260,8 +261,16 @@ export function QuickUseBar() {
         .filter(Boolean)
         .join(', ');
 
-      // Emit sound feedback
-      eventBus.emit('sound:play', { type: 'item_use' });
+      // Emit sound feedback — include slotIndex + cooldownMs so the
+      // QuickUseCooldownOverlay (if mounted over slots) can render a per-slot
+      // cooldown ring. Pure additive payload extension; existing listeners
+      // that only check `type === 'item_use'` are unaffected.
+      eventBus.emit('sound:play', {
+        type: 'item_use',
+        slotIndex,
+        itemId: slot.def?.id,
+        cooldownMs: COOLDOWN_MS,
+      });
 
       // Show toast
       setToast(`${item.name}: ${effectText || 'Использовано'}`);
@@ -452,6 +461,18 @@ export function QuickUseBar() {
                           {slot.item!.quantity}
                         </span>
                       )}
+
+                      {/* Cooldown ring overlay — listens to sound:play item_use
+                          events emitted by handleUseItemAtSlot. Renders an SVG
+                          ring that depletes over cooldownMs. Pointer-events-none,
+                          reduced-motion aware (snaps to full ring). */}
+                      {isOnCooldown ? (
+                        <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+                          <div className="absolute inset-0">
+                            <QuickUseCooldownOverlay />
+                          </div>
+                        </div>
+                      ) : null}
                     </>
                   ) : null}
                 </button>

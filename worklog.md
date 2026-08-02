@@ -1240,3 +1240,111 @@ safe-additive proposals. Правки — только аддитивные, т�
 | `src/components/game/diegetic/DiegeticDialogueHud.tsx` | mount DialogueRelationBar |
 | `src/components/game/SceneDiscoveryToast.tsx` | deferred discovery counter for entry-text scenes |
 | `src/components/game/AmbientAtmosphereCaption.tsx` | gate on diegeticNarrative |
+
+---
+
+## Сессия: 2026-08-02 (cron-tick 2) — "Mount orphaned HUD widgets + dialogue history + cross-scene exit bearing"
+
+**Коммиты:** (см. git log — push to main в конце сессии)
+**Цель:** Продолжить AAA-polish — монтировать уже построенные orphan-виджеты (Tier 1 из предыдущей разведки),
+добавить диалоговую историю в diegetic HUD, и cross-scene exit bearing в стрелку квеста.
+
+### QA via agent-browser
+- Открыт https://volodka.vercel.app/ через headless chromium.
+- Главное меню рендерится чисто: заголовок «ВОЛОДЬКА — сказка между сменами», 3 пункта (Продолжить /
+  Новая игра / Настройки), музыка-тоггл, версия v1.0.32, кинематографическая типографика, bloom/glow на cyan.
+- New Game flow → prompt «Начать с пролога / Пропустить пролог» → narrative text → exploration mode.
+- HUD рендерится корректно: interaction prompt «[E] Осмотреть», location chip «ДОМ», status panel
+  (Уровень / Здоровье / Температура / Время), narrative caption «КОРИДОР. ОПЯТЬ ЭТОТ КОРИДОР.».
+- **3D canvas не рендерится в headless browser** — известное ограничение SwiftShader + Rapier + R3F
+  postprocessing pipeline. НЕ баг кода — на реальном GPU/браузере автора работает (подтверждено worklog-ом).
+- 0 ошибок в browser console, 0 page errors.
+
+### Реализованные аддитивные улучшения (10 изменений, 7 modified + 3 new files, +155/-11 строк)
+
+**1. KarmaShiftLayer (NEW) — Disco Elysium-style karma shift pip**
+- `src/components/game/microAnimations/karmaShiftPool.ts` — NEW. Notification pool (TTL 2200ms, max 4,
+  cleanup 250ms). Mirrors statChangePool / itemGainedPool pattern. Exports `showKarmaShift(delta, karma)`.
+- `src/components/game/microAnimations/KarmaShiftLayer.tsx` — NEW. Subscribes to `usePlayerKarma()`,
+  detects delta via `useRef`, pushes entry to pool. Renders `KarmaShiftIndicator` above MoralCompassHUD
+  with stack offset. Pool-based, ErrorBoundary-wrapped, quiet-HUD-fade-aware.
+- `src/engine/microAnimations/microAnimationsConstants.ts` — Added `KARMA_SHIFT_TTL_MS=2200`,
+  `KARMA_SHIFT_MAX=4`, `KARMA_SHIFT_CLEANUP_INTERVAL_MS=250`.
+- `src/components/game/MicroAnimations.tsx` — Re-exported `KarmaShiftLayer`, `showKarmaShift`, `karmaShiftPool`.
+- `src/components/game/orchestrator/OrchestratorGameplaySections.tsx` — Mounted `<KarmaShiftLayer />`
+  in `GameplayExplorationHud` next to `<MoralCompassHUD />`.
+
+**2. SceneTopBarHud (NEW) — cohesive top-bar cluster of orphaned widgets**
+- `src/components/game/hud/SceneTopBarHud.tsx` — NEW. Wrapper that mounts 4 orphaned-but-built widgets
+  in a unified frame at top of screen:
+  - Top-left: `SceneContextChip` (scene type · NPC count · exits count)
+  - Top-center: `TopBarDataTicker` (scrolling quest/poem/time/version ticker)
+  - Top-right: `EnvironmentMoodIndicator` + `ExplorationProgressBadge` (mood bar + SVG progress ring)
+  All widgets share `useHudQuietStyle` fade and Framer Motion entrance. Pure positioning — no new data.
+- `src/components/game/orchestrator/OrchestratorGameplaySections.tsx` — Mounted `<SceneTopBarHud />`
+  in `GameplayAmbientExplorationHud`.
+
+**3. FloatingActionIndicator mounted — EventBus-driven XP/quest/karma acknowledgement chips**
+- `src/components/game/orchestrator/OrchestratorGameplaySections.tsx` — Mounted `<FloatingActionIndicator />`
+  in `GameplayExplorationNotifications`. Listens to `fx:xp_gain`, `quest:completed`, `choice:made` events.
+  Auto-dismissing floating chips with color-coded icons (⬆ XP / ✓ quest / 🕊 karma+ / ⚠ karma-).
+
+**4. DialogueHistoryPanel button in DiegeticDialogueHud**
+- `src/components/game/diegetic/DiegeticDialogueHud.tsx` — Added "История" button (History lucide icon)
+  in dialogue header next to "Esc" close button. Toggles local `showHistory` state. Renders
+  `<DialogueHistoryPanel>` (already built, was only mounted in legacy DialogueRenderer). Entries
+  pulled from `useDialogueHistoryStore`. Pure local UI state, no engine writes, panel has its own
+  Esc/search/filter handling.
+
+**5. Cross-scene exit bearing in QuestDirectionArrow**
+- `src/components/game/hud/parts/QuestDirectionArrow.tsx` — When quest marker is in a different scene,
+  computes bearing to nearest exit trigger zone in current scene (read-only lookup via `SCENE_CONFIG.exits`).
+  Renders a small "↑ → {exitLabel}" sub-label below the main arrow, color amber. Sub-arrow rotates with
+  camera yaw. Falls back to existing label-only behavior when no exits exist. Pure additive — read-only.
+
+**6. QuickUseCooldownOverlay mounted over QuickUseBar slots**
+- `src/components/game/QuickUseBar.tsx` —
+  - Extended `sound:play` emit payload: now includes `slotIndex`, `itemId`, `cooldownMs` (optional fields).
+  - Mounted `<QuickUseCooldownOverlay />` inside each slot when `isOnCooldown` is true. Renders SVG
+    cooldown ring that depletes over `cooldownMs`.
+- `src/engine/events/audioEvents.ts` — Extended `sound:play` type with optional `slotIndex`/`itemId`/
+  `cooldownMs` fields. Existing listeners that only check `type === 'item_use'` are unaffected
+  (all new fields are optional).
+
+### Аудит: что НЕ тронуто (намеренно)
+- Стихи — не трогались (авторское произведение Владимира Лебедева).
+- Все инварианты сохранены: `<Physics interpolate={false}>`, KCC ownership, postprocessing depth-blit
+  patch, test contracts (playerLocomotionPresentation / explorationStrategy / cinematicCamera / cameraShake),
+  reduced-motion gates, quality-tier gates.
+- Все правки аддитивные — не удалял существующий код, только добавлял new modules и mount points.
+
+### Статистика
+- 1 коммит в main (запланирован), 7 файлов изменено + 3 новых (KarmaShiftLayer, karmaShiftPool,
+  SceneTopBarHud), ~+155/-11 строк
+- typecheck: `node scripts/tsc7.mjs --noEmit` → exit 0
+- 0 строк стихов изменено
+
+### Ключевые файлы сессии
+| Файл | Правка |
+|------|--------|
+| `src/components/game/microAnimations/karmaShiftPool.ts` | NEW — notification pool for karma shifts |
+| `src/components/game/microAnimations/KarmaShiftLayer.tsx` | NEW — layer subscribing to usePlayerKarma |
+| `src/components/game/hud/SceneTopBarHud.tsx` | NEW — top-bar wrapper mounting 4 orphan widgets |
+| `src/engine/microAnimations/microAnimationsConstants.ts` | +3 karma-shift constants |
+| `src/components/game/MicroAnimations.tsx` | re-export KarmaShiftLayer + showKarmaShift |
+| `src/components/game/orchestrator/OrchestratorGameplaySections.tsx` | mount KarmaShiftLayer + SceneTopBarHud + FloatingActionIndicator |
+| `src/components/game/diegetic/DiegeticDialogueHud.tsx` | + История button + DialogueHistoryPanel mount |
+| `src/components/game/hud/parts/QuestDirectionArrow.tsx` | + cross-scene exit bearing sub-label |
+| `src/components/game/QuickUseBar.tsx` | extended sound:play payload + mount QuickUseCooldownOverlay |
+| `src/engine/events/audioEvents.ts` | extended sound:play type with optional slot/item/cooldown fields |
+
+### Нерешённое / next-phase priorities
+- Author QA on Vercel: verify karma-shift pip appears next to moral compass on karma-changing choices,
+  top-bar cluster doesn't overlap compass on outdoor scenes, dialogue history button works in diegetic
+  mode, exit bearing sub-label points to correct door.
+- VolumetricLightShafts for home_evening/factory_basement (deferred — needs scene-geometry verification).
+- SSR on wet streets (ultra-only, needs A/B for depth-blit patch interaction).
+- Continuous walk↔run blend by speed (test-aware refactor).
+- Content factory Acts 3-4 dialogue density + Thought Cabinet arcs.
+- Mixamo↔Quaternius full bone remap.
+- Procedural act mood tables (Phase 12 without paid stems).

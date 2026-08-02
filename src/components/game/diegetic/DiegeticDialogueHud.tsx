@@ -2,11 +2,13 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { History } from 'lucide-react';
 import {
   useDialogueContext,
   useDiegeticNarrativeState,
   useStoryContext,
 } from '@/store/selectors';
+import { useDialogueHistoryStore } from '@/store/stores/dialogueHistoryStore';
 import {
   getDialogueNodes,
   getStoryNodes,
@@ -29,6 +31,7 @@ import { useNarrativeTypewriter } from '@/hooks/useNarrativeTypewriter';
 import { useNarrativeChoiceKeyboard } from '@/hooks/useNarrativeChoiceKeyboard';
 import { NarrativeChoiceList } from './NarrativeChoiceList';
 import { DialogueRelationBar } from '../dialogue/DialogueRelationBar';
+import { DialogueHistoryPanel } from '../dialogue/DialogueHistoryPanel';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { diegeticDialogueBottomPadCss, EXPLORATION_HUD_LAYOUT } from '@/shared/constants/hudLayout';
 import { useTouchDevice } from '@/hooks/useTouchDevice';
@@ -73,6 +76,8 @@ export function DiegeticDialogueHud() {
     skill: string;
     success: boolean;
   } | null>(null);
+  const [showHistory, setShowHistory] = useState(false);
+  const dialogueHistoryEntries = useDialogueHistoryStore((s) => s.dialogueHistory);
 
   useEffect(() => {
     if (!nodeId || !isNarrativeGameDataLoaded()) return;
@@ -347,14 +352,26 @@ export function DiegeticDialogueHud() {
                 {speaker}
               </p>
             </div>
-            <button
-              type="button"
-              onClick={handleClose}
-              className="hud-filmic-kicker px-2 py-1 shrink-0 hover:text-stone-200"
-              aria-label="Закрыть"
-            >
-              Esc
-            </button>
+            <div className="flex items-center gap-1 shrink-0">
+              <button
+                type="button"
+                onClick={() => setShowHistory(true)}
+                className="hud-filmic-kicker px-2 py-1 rounded-sm hover:text-stone-200 hover:bg-white/[0.04] transition-colors flex items-center gap-1"
+                aria-label="История диалога"
+                title="История диалога"
+              >
+                <History className="size-3" aria-hidden="true" />
+                <span className="hidden sm:inline">История</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleClose}
+                className="hud-filmic-kicker px-2 py-1 shrink-0 hover:text-stone-200"
+                aria-label="Закрыть"
+              >
+                Esc
+              </button>
+            </div>
           </div>
 
           {npcId && speakerRelationValue !== undefined ? (
@@ -413,6 +430,13 @@ export function DiegeticDialogueHud() {
         </div>
         <AriaLiveRegion message={liveMessage} priority="polite" />
       </motion.div>
+      {/* Full dialogue history overlay — opened via the "История" button in the header.
+          Entries are persisted in dialogueHistoryStore (FIFO capped at 100). */}
+      <DialogueHistoryPanel
+        open={showHistory}
+        onClose={() => setShowHistory(false)}
+        entries={dialogueHistoryEntries}
+      />
     </AnimatePresence>
   );
 }

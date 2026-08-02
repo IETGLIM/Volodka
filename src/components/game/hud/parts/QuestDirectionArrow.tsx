@@ -21,6 +21,7 @@ export function QuestDirectionArrow() {
   const [rotationDeg, setRotationDeg] = useState(0);
   const [visible, setVisible] = useState(false);
   const [label, setLabel] = useState('');
+  const [exitHint, setExitHint] = useState<{ deg: number; label: string } | null>(null);
   const reducedMotion = useEffectiveReducedMotion();
   const activeQuests = useActiveQuests();
   const playerPos = usePlayerPosition();
@@ -50,6 +51,7 @@ export function QuestDirectionArrow() {
     const tick = () => {
       if (!primary) {
         setVisible((v) => (v ? false : v));
+        setExitHint((prev) => (prev ? null : prev));
         return;
       }
 
@@ -62,6 +64,7 @@ export function QuestDirectionArrow() {
       // Hide when standing on the objective in-scene.
       if (inScene && dist < MIN_DISTANCE_M && !pulseBoostRef.current) {
         setVisible((v) => (v ? false : v));
+        setExitHint((prev) => (prev ? null : prev));
         return;
       }
 
@@ -78,6 +81,46 @@ export function QuestDirectionArrow() {
       const sceneName = SCENE_CONFIG[marker.sceneId]?.name ?? marker.sceneId;
       setLabel(inScene ? `${Math.round(dist)}м` : sceneName);
       setVisible(true);
+
+      // Cross-scene exit bearing: when the quest marker is in a different scene,
+      // find the nearest exit trigger zone in the current scene and compute its
+      // bearing. This gives the player a "→ выход" sub-label pointing toward the
+      // door they need to take, instead of just showing the target scene name.
+      if (!inScene) {
+        const exits = SCENE_CONFIG[sceneId]?.exits;
+        if (exits && exits.length > 0) {
+          // Pick the exit whose target scene is on the shortest path (heuristic:
+          // nearest by world distance to the player). This is a safe read-only
+          // lookup — no state writes, no scene-graph mutation.
+          let bestExit = exits[0]!;
+          let bestDist = Infinity;
+          for (const exit of exits) {
+            const ex = exit.position[0] - playerPos[0];
+            const ez = exit.position[2] - playerPos[2];
+            const ed = Math.sqrt(ex * ex + ez * ez);
+            if (ed < bestDist) {
+              bestDist = ed;
+              bestExit = exit;
+            }
+          }
+          const exitDx = bestExit.position[0] - playerPos[0];
+          const exitDz = bestExit.position[2] - playerPos[2];
+          const exitAngle = Math.atan2(exitDx, exitDz);
+          let exitRel = exitAngle - camYaw;
+          while (exitRel > Math.PI) exitRel -= Math.PI * 2;
+          while (exitRel < -Math.PI) exitRel += Math.PI * 2;
+          const exitDeg = (exitRel * 180) / Math.PI;
+          const exitLabel = bestExit.label || 'выход';
+          setExitHint((prev) => {
+            if (prev && Math.abs(prev.deg - exitDeg) < 2 && prev.label === exitLabel) return prev;
+            return { deg: exitDeg, label: exitLabel };
+          });
+        } else {
+          setExitHint((prev) => (prev ? null : prev));
+        }
+      } else {
+        setExitHint((prev) => (prev ? null : prev));
+      }
     };
 
     tick();
@@ -139,6 +182,24 @@ export function QuestDirectionArrow() {
               style={{ color: 'rgb(var(--cyber-cyan-rgb) / 0.75)' }}
             >
               {label}
+            </span>
+          ) : null}
+          {exitHint ? (
+            <span
+              className="flex items-center gap-1 font-mono text-[8px] tracking-wide uppercase whitespace-nowrap"
+              style={{ color: 'rgba(251, 191, 36, 0.8)' }}
+            >
+              <span
+                aria-hidden="true"
+                style={{
+                  display: 'inline-block',
+                  transform: `rotate(${exitHint.deg}deg)`,
+                  transition: 'transform 0.2s linear',
+                }}
+              >
+                ↑
+              </span>
+              <span>→ {exitHint.label}</span>
             </span>
           ) : null}
         </motion.div>

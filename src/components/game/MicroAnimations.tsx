@@ -4,4 +4,6 @@ export { StatChangeLayer, showStatChange } from '@/components/game/microAnimatio
 export { ItemGainedPopupLayer, showItemGained } from '@/components/game/microAnimations/ItemGainedPopupLayer';
 export { XPGainBar } from '@/components/game/microAnimations/XPGainBar';
 export { KarmaShiftIndicator } from '@/components/game/microAnimations/KarmaShiftIndicator';
+export { KarmaShiftLayer } from '@/components/game/microAnimations/KarmaShiftLayer';
+export { showKarmaShift, karmaShiftPool } from '@/components/game/microAnimations/karmaShiftPool';
 export { LevelUpBanner } from '@/components/game/microAnimations/LevelUpBanner';

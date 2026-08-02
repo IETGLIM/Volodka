@@ -64,6 +64,9 @@ import { PoetryPowerBar } from '@/components/game/PoetryPowerBar';
 import { PoemActiveEffectsHud } from '@/components/game/poemActiveEffects/PoemActiveEffectsHud';
 import { ItemGainedPopupLayer } from '@/components/game/microAnimations/ItemGainedPopupLayer';
 import { StatChangeLayer } from '@/components/game/microAnimations/StatChangeLayer';
+import { KarmaShiftLayer } from '@/components/game/microAnimations/KarmaShiftLayer';
+import { FloatingActionIndicator } from '@/components/game/hud/parts/FloatingActionIndicator';
+import { SceneTopBarHud } from '@/components/game/hud/SceneTopBarHud';
 import { PoemPowerEffect } from '@/components/game/PoemPowerEffect';
 import { PoemWorldEffect } from '@/components/game/poemWorldEffect/PoemWorldEffect';
 import { PoemRevealHost } from '@/components/game/poemReveal/PoemRevealHost';
@@ -176,6 +179,9 @@ export const GameplayExplorationNotifications = memo(function GameplayExploratio
       {/* Localized stat-change pips (karma/energy/stress/XP) — pool-based, TTL-bounded.
           Complements the FloatingText layer with anchor-positioned, color-coded feedback. */}
       <StatChangeLayer />
+      {/* Floating XP/quest/karma acknowledgement chips — EventBus-driven, auto-dismissing.
+          Pure show-don't-tell feedback: the player senses progression without opening a journal. */}
+      <FloatingActionIndicator />
     </>
   );
 });
@@ -389,6 +395,10 @@ export const GameplayAmbientExplorationHud = memo(function GameplayAmbientExplor
       <CompassHUD />
       {/* Proximity whispers */}
       <ProximityWhisperOverlay />
+      {/* Cohesive top-bar cluster: scene context · data ticker · exploration progress · mood.
+          All widgets were built but orphaned — this wrapper only positions them and shares
+          the quiet-HUD fade. Pure additive: no state writes, no new data. */}
+      <SceneTopBarHud />
     </>
   );
 });
@@ -421,6 +431,10 @@ export const GameplayExplorationHud = memo(function GameplayExplorationHud({
         />
       </Suspense>
       <MoralCompassHUD />
+      {/* Disco Elysium-style "☯ +N Свет / Тень / Тьма" floating pip that appears
+          next to the moral compass on every karma change. Pool-based, TTL-bounded.
+          Complements the compass's own pulse animation with a discrete numeric label. */}
+      <KarmaShiftLayer />
       <InteractionHintPopup />
       <NpcNoDialogueBark />
       <WeatherIndicator />

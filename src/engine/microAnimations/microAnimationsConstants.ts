@@ -27,3 +27,11 @@ export const LEVEL_UP_PARTICLE_COUNTS = {
 export const ITEM_GAINED_LABEL = 'получено';
 export const LEVEL_UP_SUBTITLE = 'Новый уровень';
 export const LEVEL_UP_FOOTER = 'УРОВЕНЬ ДОСТИГНУТ';
+
+/* Karma-shift popups — Disco Elysium-style "☯ +N Свет" floating text that
+ * appears next to the MoralCompassHUD when karma changes. Slightly longer
+ * TTL than stat-change pips because the label (Свет/Тень/Тьма) needs to
+ * be readable. */
+export const KARMA_SHIFT_TTL_MS = 2200;
+export const KARMA_SHIFT_MAX = 4;
+export const KARMA_SHIFT_CLEANUP_INTERVAL_MS = 250;
