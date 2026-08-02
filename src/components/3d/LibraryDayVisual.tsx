@@ -3,6 +3,7 @@
 
 import { useMemo } from 'react';
 import * as THREE from 'three';
+import { CANONICAL_SHADOW_BIAS, CANONICAL_SHADOW_NORMAL_BIAS } from '@/components/3d/Lighting';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { createLibraryDayWarmSkyTexture } from '@/engine/graphics/proceduralSkyTextures';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
@@ -267,7 +268,7 @@ export function LibraryDayVisual() {
       {/* ═══════════════════════════════════════════════ */}
 
       {/* Warm green banker lamps (at reading tables) */}
-      <pointLight position={[0, 1.8, -3]} color="#44aa66" intensity={2.0} distance={7} castShadow shadow-mapSize-width={256} shadow-bias={-0.003} />
+      <pointLight position={[0, 1.8, -3]} color="#44aa66" intensity={2.0} distance={7} castShadow shadow-mapSize-width={256} shadow-bias={CANONICAL_SHADOW_BIAS} shadow-normalBias={CANONICAL_SHADOW_NORMAL_BIAS} />
       <pointLight position={[0, 1.8, 0]} color="#44aa66" intensity={1.8} distance={7} />
       <pointLight position={[0, 1.8, 3]} color="#44aa66" intensity={1.8} distance={7} />
 

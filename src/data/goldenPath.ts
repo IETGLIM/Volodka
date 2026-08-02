@@ -105,6 +105,10 @@ export const GOLDEN_PATH_STORY_SPINE: string[] = [
   'act4_broadcast_execute',
   'act4_broadcast_aftermath',
   'act5_dawn',
+  'final_code_approach',
+  'night_before_dawn_approach',
+  'echo_of_vladimir_approach',
+  'vladimir_secret_room',
   'act4_final_choice',
   // Act 5 — Финал. Golden path проходит через peaceful_path → reconciliation.
   // Остальные entry-варианты (revolution/exile/poet/sacrifice) mutually exclusive

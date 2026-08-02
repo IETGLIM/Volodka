@@ -21,6 +21,15 @@ import * as THREE from 'three';
 const SHADOW_BIAS = -0.002;
 const SHADOW_NORMAL_BIAS = 0.04;
 
+/**
+ * Canonical shadow bias constants — exported so per-scene visual components
+ * can apply the SAME tuned values to their own castShadow lights. Using ad-hoc
+ * values (or omitting shadow-normalBias → defaults to 0) produces shadow acne
+ * or peter-panning. See AUDIT-VISUAL H1.
+ */
+export const CANONICAL_SHADOW_BIAS = SHADOW_BIAS;
+export const CANONICAL_SHADOW_NORMAL_BIAS = SHADOW_NORMAL_BIAS;
+
 /** Per-scene indoor ambient overrides — noir rooms need very low ambient
  *  to let scene-specific lights (monitor, lamp, window) drive the atmosphere.
  *  Format: { color, intensity } */

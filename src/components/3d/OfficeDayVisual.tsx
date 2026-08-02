@@ -4,6 +4,7 @@
 import { Suspense, useMemo, type MutableRefObject } from 'react';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
+import { CANONICAL_SHADOW_BIAS, CANONICAL_SHADOW_NORMAL_BIAS } from '@/components/3d/Lighting';
 import { seededRand } from '@/shared/utils/seededRand';
 import { getSharedStandardMaterial, mat } from '@/engine/three/moduleMaterialRegistry';
 import { Plant, Radiator, Clock } from './lazyInteriorModels';
@@ -444,7 +445,7 @@ export function OfficeDayVisual({ livePlayerPositionRef }: OfficeDayVisualProps)
       {/* ═══════════════════════════════════════════════ */}
 
       {/* Harsh white overhead */}
-      <pointLight position={[0, 2.8, 0]} color="#e0e8f0" intensity={3.5} distance={16} castShadow shadow-mapSize-width={256} shadow-bias={-0.003} shadow-normalBias={0.04} />
+      <pointLight position={[0, 2.8, 0]} color="#e0e8f0" intensity={3.5} distance={16} castShadow shadow-mapSize-width={256} shadow-bias={CANONICAL_SHADOW_BIAS} shadow-normalBias={CANONICAL_SHADOW_NORMAL_BIAS} />
 
       {/* Blue monitor glow */}
       <pointLight position={[-3, 1.2, -1.0]} color="#4488ff" intensity={2.0} distance={8} />

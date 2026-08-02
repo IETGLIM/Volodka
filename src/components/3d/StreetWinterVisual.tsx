@@ -3,6 +3,7 @@
 
 import { useMemo } from 'react';
 import * as THREE from 'three';
+import { CANONICAL_SHADOW_BIAS, CANONICAL_SHADOW_NORMAL_BIAS } from '@/components/3d/Lighting';
 import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
 import { EnvironmentDetail, PropDistanceGate } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
@@ -222,7 +223,7 @@ export function StreetWinterVisual({ livePlayerPositionRef }: StreetWinterVisual
       <pointLight position={[-10, 4, 4]} color="#ffaa44" intensity={1.5} distance={8} />
 
       {/* Blue moonlight */}
-      <pointLight position={[0, 15, 0]} color="#8a9ab0" intensity={2.0} distance={35} castShadow shadow-mapSize-width={256} shadow-bias={-0.003} />
+      <pointLight position={[0, 15, 0]} color="#8a9ab0" intensity={2.0} distance={35} castShadow shadow-mapSize-width={256} shadow-bias={CANONICAL_SHADOW_BIAS} shadow-normalBias={CANONICAL_SHADOW_NORMAL_BIAS} />
 
       {/* Street lamp warm glow */}
       <pointLight position={[-2.5, 4.5, -6]} color="#ffdd80" intensity={2.5} distance={12} />

@@ -16,7 +16,7 @@ import { migrateSave } from './saveMigrations';
  * Current save format version — bump when adding a migrator in saveMigrations.ts.
  * Load path: migrateSave → Zod validate (see validateSaveData).
  */
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
 
 /* ─── Primitive helpers ─── */
 
@@ -303,6 +303,12 @@ export const SavePayloadSchema = z.object({
   conversationLog: z.record(z.string(), z.array(ConversationLogEntrySchema)),
   /** Volodka's inner monologue history (journal → thoughts tab) — persisted. */
   thoughtHistory: z.array(ThoughtHistoryEntrySchema).optional().default([]),
+  /** Thought Cabinet: acquired thought ids (Disco Elysium internal-voices). Persisted —
+   *  was previously dropped on save/load (CRITICAL data loss: equipped thought bonuses
+   *  vanished after reload, breaking combat balance + narrative choices). */
+  acquiredThoughtIds: z.array(z.string()).optional().default([]),
+  /** Thought Cabinet: currently equipped thought ids (max MAX_EQUIPPED_THOUGHTS). Persisted. */
+  equippedThoughtIds: z.array(z.string()).optional().default([]),
   /** Notification log history — persisted for journal continuity. */
   notificationHistory: z.array(NotificationHistoryEntrySchema).optional().default([]),
   poemPowers: z.record(z.string(), PoemPowerSchema),

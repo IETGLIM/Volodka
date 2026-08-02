@@ -406,7 +406,10 @@ function SceneLoadGreybox({ sceneId }: { sceneId: SceneId }) {
     <group>
       <mesh rotation-x={-Math.PI / 2} position-y={config.floorY}>
         <boxGeometry args={[w, 0.05, d]} />
-        <meshStandardMaterial color="#3a3a3a" roughness={0.95} />
+        {/* polygonOffset pushes the greybox floor BACK so real scene floors (mounted
+            at floorY+0.001..0.0025 during Suspense swap) win z-order. Without this,
+            the 1-2 frame overlap window during scene enter causes a z-fight flash. */}
+        <meshStandardMaterial color="#3a3a3a" roughness={0.95} polygonOffset polygonOffsetFactor={2} polygonOffsetUnits={2} />
       </mesh>
       <mesh position={[0, 1.5, 0]}>
         <boxGeometry args={[w * 0.6, 3, d * 0.6]} />

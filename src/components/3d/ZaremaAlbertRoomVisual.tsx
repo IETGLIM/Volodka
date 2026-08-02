@@ -5,6 +5,7 @@ import { useMemo, type MutableRefObject } from 'react';
 import * as THREE from 'three';
 import { Desk, Chair, Laptop, Lamp, Radiator, Plant } from './lazyInteriorModels';
 import { EnvironmentDetail } from './lod/PropDistanceGate';
+import { CANONICAL_SHADOW_BIAS, CANONICAL_SHADOW_NORMAL_BIAS } from '@/components/3d/Lighting';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { createZaremaAlbertWarmSkyTexture } from '@/engine/graphics/proceduralSkyTextures';
 import { registerModuleGeometries } from '@/engine/three/moduleGeometryRegistry';
@@ -412,10 +413,10 @@ export function ZaremaAlbertRoomVisual({ livePlayerPositionRef: _livePlayerPosit
       {/* ═══════════════════════════════════════════════ */}
 
       {/* Warm desk lamp */}
-      <pointLight position={[2.5, 1.5, -2.5]} color="#cc8844" intensity={3.0} distance={7} castShadow shadow-mapSize-width={256} shadow-bias={-0.003} />
+      <pointLight position={[2.5, 1.5, -2.5]} color="#cc8844" intensity={3.0} distance={7} castShadow shadow-mapSize-width={256} shadow-bias={CANONICAL_SHADOW_BIAS} shadow-normalBias={CANONICAL_SHADOW_NORMAL_BIAS} />
 
       {/* Soft ceiling light */}
-      <pointLight position={[0, 2.8, 0]} color="#ffeedd" intensity={2.5} distance={10} castShadow shadow-mapSize-width={256} shadow-bias={-0.003} />
+      <pointLight position={[0, 2.8, 0]} color="#ffeedd" intensity={2.5} distance={10} castShadow shadow-mapSize-width={256} shadow-bias={CANONICAL_SHADOW_BIAS} shadow-normalBias={CANONICAL_SHADOW_NORMAL_BIAS} />
 
       {/* Window warm spill */}
       <pointLight position={[3.5, 1.8, 0]} color="#ffaa44" intensity={1.2} distance={6} />

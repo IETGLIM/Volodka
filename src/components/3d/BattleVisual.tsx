@@ -11,6 +11,7 @@ import {
   getSharedSphereGeometry,
 } from '@/engine/three/moduleGeometryRegistry';
 
+import { CANONICAL_SHADOW_BIAS, CANONICAL_SHADOW_NORMAL_BIAS } from '@/components/3d/Lighting';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { eventBus } from '@/engine/EventBus';
 import { EnvironmentDetail } from './lod/PropDistanceGate';
@@ -151,8 +152,8 @@ export function BattleVisual({ livePlayerPositionRef: _livePlayerPositionRef }: 
         castShadow
         shadow-mapSize-width={512}
         shadow-mapSize-height={512}
-        shadow-bias={-0.003}
-        shadow-normalBias={0.02}
+        shadow-bias={CANONICAL_SHADOW_BIAS}
+        shadow-normalBias={CANONICAL_SHADOW_NORMAL_BIAS}
       />
 
       {/* Opposite neon strips */}

@@ -36,9 +36,23 @@ function migrateV1toV2(data: Record<string, unknown>): Record<string, unknown> {
   return next;
 }
 
+/**
+ * v2 → v3: persist Thought Cabinet state (acquiredThoughtIds / equippedThoughtIds).
+ * Previously these lived only in the live player store and were silently dropped on
+ * save/load — equipped thought bonuses vanished after reload (CRITICAL data loss).
+ * v2 saves get empty arrays (matching the previous lossy behavior) so nothing breaks.
+ */
+function migrateV2toV3(data: Record<string, unknown>): Record<string, unknown> {
+  const next: Record<string, unknown> = { ...data, saveVersion: 3 };
+  if (!Array.isArray(next.acquiredThoughtIds)) next.acquiredThoughtIds = [];
+  if (!Array.isArray(next.equippedThoughtIds)) next.equippedThoughtIds = [];
+  return next;
+}
+
 /** Migrators keyed by the version they upgrade FROM. */
 const MIGRATORS: Readonly<Record<number, SaveMigrator>> = {
   1: migrateV1toV2,
+  2: migrateV2toV3,
 };
 
 function readSaveVersion(data: Record<string, unknown>): number | null {

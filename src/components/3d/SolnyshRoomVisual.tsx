@@ -57,8 +57,10 @@ export function SolnyshRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
 
         <meshBasicMaterial map={carpetTexture} color="#8a4050" polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
       </mesh>
-      {/* Smaller carpet 2 raised to y=0.0035 so it layers above carpet 1 (y=0.003) in their overlap region without renderOrder */}
-      <mesh rotation-x={-Math.PI / 2} position={[-2.2, 0.0035, 1.8]} geometry={geo_pln_3}>
+      {/* Smaller carpet 2 raised to y=0.006 so it layers above carpet 1 (y=0.003) in their overlap region.
+          Prior 0.0035 was only 0.0005m separation — below depth-buffer precision at >3m camera distance,
+          causing shimmer. 0.003m gap is safe for all camera angles in this small room. */}
+      <mesh rotation-x={-Math.PI / 2} position={[-2.2, 0.006, 1.8]} geometry={geo_pln_3}>
 
         <meshBasicMaterial map={carpetTexture} color="#6a3548" polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
       </mesh>

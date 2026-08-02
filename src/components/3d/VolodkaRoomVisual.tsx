@@ -4,6 +4,7 @@
 import { memo, useMemo, useRef, useEffect, Suspense, type MutableRefObject } from 'react';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
+import { CANONICAL_SHADOW_BIAS, CANONICAL_SHADOW_NORMAL_BIAS } from '@/components/3d/Lighting';
 import { getSharedStandardMaterial, mat } from '@/engine/three/moduleMaterialRegistry';
 import {
   registerModuleGeometries,
@@ -1022,8 +1023,8 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
         castShadow={preset.shadows}
         shadow-mapSize-width={512}
         shadow-mapSize-height={512}
-        shadow-bias={-0.003}
-        shadow-normalBias={0.04}
+        shadow-bias={CANONICAL_SHADOW_BIAS}
+        shadow-normalBias={CANONICAL_SHADOW_NORMAL_BIAS}
       />
 
       {/* ── Subtle warm fill near bed area — brightened so bed/bookshelf are visible ── */}

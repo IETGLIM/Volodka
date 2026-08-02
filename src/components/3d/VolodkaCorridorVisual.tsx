@@ -2,6 +2,7 @@
 /* ─── Volodka RPG – Corridor procedural 3D visual ─── */
 
 import { useRef, useEffect, useMemo, type MutableRefObject } from 'react';
+import { CANONICAL_SHADOW_BIAS, CANONICAL_SHADOW_NORMAL_BIAS } from '@/components/3d/Lighting';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import { getSharedStandardMaterial } from '@/engine/three/moduleMaterialRegistry';
@@ -384,7 +385,7 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
           distance={12}
           castShadow
           shadow-mapSize-width={256}
-          shadow-bias={-0.001}
+          shadow-bias={CANONICAL_SHADOW_BIAS} shadow-normalBias={CANONICAL_SHADOW_NORMAL_BIAS}
         />
       </group>
 
@@ -538,7 +539,7 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
       <mesh rotation-x={-Math.PI / 2} position={[0.8, 0.004, -2.0]} geometry={geo_pln_40} material={mat_34} />
       {/* Crack line */}
       <mesh rotation-x={-Math.PI / 2} position={[0.8, 0.005, -2.0]} geometry={geo_pln_41} material={mat_35} />
-      <mesh rotation-x={-Math.PI / 2} position={[0.75, 0.005, -2.05]} rotation={[0, 0.5, 0]} geometry={geo_pln_42} material={mat_35} />
+      <mesh rotation-x={-Math.PI / 2} position={[0.75, 0.006, -2.05]} rotation={[0, 0.5, 0]} geometry={geo_pln_42} material={mat_35} />
 
       {/* ── Mirror on right wall ── */}
       <group position={[W / 2 - 0.02, 1.4, -4.0]} rotation-y={-Math.PI / 2}>

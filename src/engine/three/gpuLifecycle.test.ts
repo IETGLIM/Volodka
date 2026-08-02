@@ -178,8 +178,8 @@ describe('sceneGpuLifecycle', () => {
       expect(useGLTF.clear).toHaveBeenCalledWith('/models/props/poetic_compiler.glb');
       expect(useGLTF.clear).toHaveBeenCalledWith('/models/props/neural_filter.glb');
       expect(useGLTF.clear).toHaveBeenCalledWith('/models/props/digital_amulet.glb');
-      // viktor is scheduled in volodka_room and has a shipped CC0 GLB
-      expect(useGLTF.clear).toHaveBeenCalledWith('/models/npcs/viktor.glb');
+      // viktor shares the male_02 Quaternius rig (npcMeshShare) — eviction clears the shared URL
+      expect(useGLTF.clear).toHaveBeenCalledWith('/models/npcs/_rigs/male_02.glb');
     });
 
     it('evicts NPC GLBs for the scene being left', () => {

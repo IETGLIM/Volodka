@@ -12,6 +12,7 @@ import {
   getSharedSphereGeometry,
 } from '@/engine/three/moduleGeometryRegistry';
 
+import { CANONICAL_SHADOW_BIAS, CANONICAL_SHADOW_NORMAL_BIAS } from '@/components/3d/Lighting';
 import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
 import { EnvironmentDetail, SceneClutterGate } from './lod/PropDistanceGate';
 import { scratchColor } from '@/engine/three/frameScratch';
@@ -272,7 +273,7 @@ export function ParkDayVisual({ livePlayerPositionRef }: ParkDayVisualProps) {
       {/* ═══════════════════════════════════════════════ */}
 
       {/* Warm amber lamp near obelisk */}
-      <pointLight position={[0, 3.5, -2]} color="#ffaa44" intensity={2.5} distance={14} castShadow shadow-mapSize-width={256} shadow-bias={-0.003} />
+      <pointLight position={[0, 3.5, -2]} color="#ffaa44" intensity={2.5} distance={14} castShadow shadow-mapSize-width={256} shadow-bias={CANONICAL_SHADOW_BIAS} shadow-normalBias={CANONICAL_SHADOW_NORMAL_BIAS} />
 
       {/* Second amber lamp along path */}
       <pointLight position={[5, 3.5, 3]} color="#ffaa44" intensity={2.0} distance={12} />

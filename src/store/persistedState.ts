@@ -72,6 +72,8 @@ export function createDefaultPersistedState(): Pick<GameStoreState, PersistedSto
     conversationLog: {},
     thoughtHistory: [],
     notificationHistory: [],
+    acquiredThoughtIds: [],
+    equippedThoughtIds: [],
     poemPowers: {},
     activeTTLFlags: createEmptyActiveTTLFlagMap(),
     journalTab: 'notes',

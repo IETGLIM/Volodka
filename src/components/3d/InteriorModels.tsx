@@ -457,11 +457,13 @@ export function Rug({ position = [0, 0, 0], rotation = [0, 0, 0], scale = [1, 1,
   return (
     <group position={position} rotation={rotation} scale={scale}>
       <mesh rotation-x={-Math.PI / 2} receiveShadow geometry={geo_pln_48}>
-                <meshStandardMaterial color={color} roughness={0.95} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+                <meshStandardMaterial color={color} roughness={0.95} polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
       </mesh>
-      {/* Border — use stronger offset to prevent z-fighting with rug body at oblique angles */}
+      {/* Border — pull FORWARD of the body (negative factor = closer to camera) so it
+          always wins z-order at grazing angles. Prior +2 pushed it BACKWARD into the
+          body, causing the border edge to dip behind the rug at oblique camera views. */}
       <mesh rotation-x={-Math.PI / 2} position={[0, 0.001, 0]} geometry={geo_pln_49}>
-                <meshStandardMaterial color={color} roughness={0.95} polygonOffset polygonOffsetFactor={2} polygonOffsetUnits={2} emissive={color} emissiveIntensity={0.1} />
+                <meshStandardMaterial color={color} roughness={0.95} polygonOffset polygonOffsetFactor={-2} polygonOffsetUnits={-2} emissive={color} emissiveIntensity={0.1} />
       </mesh>
     </group>
   );
