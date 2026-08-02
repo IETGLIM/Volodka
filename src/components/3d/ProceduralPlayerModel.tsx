@@ -26,6 +26,7 @@ import {
   useProceduralPlayerAnimation,
   type ProceduralPlayerModelProps,
 } from './useProceduralPlayerAnimation';
+import { ProceduralAviatorGlasses } from './sceneVisuals/volodkaRoom/AviatorGlasses';
 
 export const ProceduralPlayerModel = memo(function ProceduralPlayerModel({
   modelScale,
@@ -247,6 +248,8 @@ export const ProceduralPlayerModel = memo(function ProceduralPlayerModel({
             <mesh position={[0, 0, 0.012]} geometry={sharedGeo.irisSphere} material={sharedMat.iris} />
             <mesh position={[0, 0, 0.016]} geometry={sharedGeo.eyeGlowSphere} material={sharedMat.eyeGlow} />
           </mesh>
+
+          <ProceduralAviatorGlasses />
 
           {/* Left eyebrow */}
           <mesh position={[-0.038, 0.035, 0.095]} rotation={[0, 0, 0.1]} geometry={sharedGeo.browBox} material={sharedMat.brow} />

@@ -122,10 +122,13 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
       });
       // Subtle pitch rise with gait — faster steps sound slightly more urgent.
       const pitchOffset = easedSpeed * STEP_PITCH_RANGE;
-      audioEngine.playFootstep(deps.currentFloorMaterialRef.current, {
-        sourceId: 'player-footstep',
-        pitchOffset,
-      });
+      // Skip audio when tab is hidden — prevents backlog hitch on focus return.
+      if (typeof document === 'undefined' || document.visibilityState === 'visible') {
+        audioEngine.playFootstep(deps.currentFloorMaterialRef.current, {
+          sourceId: 'player-footstep',
+          pitchOffset,
+        });
+      }
     }
   } else {
     deps.footstepTimerRef.current = 0;

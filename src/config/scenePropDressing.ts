@@ -30,14 +30,14 @@ export const SCENE_PROP_DRESSING: Partial<Record<SceneId, readonly ScenePropPlac
     { propModelId: 'polyhaven_barrel', position: [2.12, 0, 2.12], rotationY: -0.2, loadTier: 'deferred' },
     { propModelId: 'polyhaven_cardboard_box', position: [-1.55, 0, 2.78], rotationY: -0.35, loadTier: 'deferred' },
     { propModelId: 'polyhaven_cardboard_box', position: [-2.0, 0.5, 2.84], rotationY: 0.25, loadTier: 'deferred' },
-    { propModelId: 'polyhaven_metal_trash_can', position: [1.05, 0, -2.85], rotationY: 0.4, loadTier: 'deferred' },
-    { propModelId: 'polyhaven_trashbag', position: [1.45, 0, -2.95], rotationY: -0.15, loadTier: 'deferred' },
-    // Desk gadgets live on ThinMonitors / AuthoredVolodkaRoomDressing (cassette). Do NOT place
-    // ai3dgen_poetic_compiler / neural_filter at y≈0.82 z≈-2.4 — they z-fight the monitor trio
-    // (bedroom shell is exterior_building → AuthoredVolodkaWorkstation never mounts).
+    // Trash moved off the desk strip — was z-fighting workstation props at z≈-2.85.
+    { propModelId: 'polyhaven_metal_trash_can', position: [2.15, 0, 0.85], rotationY: 0.4, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_trashbag', position: [2.35, 0, 1.15], rotationY: -0.15, loadTier: 'deferred' },
+    // Desk gadgets live on ThinMonitors / desk workstation. Do NOT place
+    // ai3dgen_poetic_compiler / neural_filter at y≈0.82 z≈-2.4 — they z-fight the monitor trio.
     { propModelId: 'ai3dgen_poetic_compiler', position: [1.85, 0.52, 2.0], rotationY: -0.55, loadTier: 'deferred' },
-    { propModelId: 'ai3dgen_neural_filter', position: [-2.15, 1.05, -0.35], rotationY: Math.PI / 2, loadTier: 'deferred' },
-    { propModelId: 'ai3dgen_digital_amulet', position: [-2.05, 1.55, 0.05], rotationY: Math.PI / 2, loadTier: 'deferred' },
+    { propModelId: 'ai3dgen_neural_filter', position: [1.85, 1.15, -2.55], rotationY: -Math.PI / 2, loadTier: 'deferred' },
+    { propModelId: 'ai3dgen_digital_amulet', position: [1.75, 1.55, -2.4], rotationY: -Math.PI / 2, loadTier: 'deferred' },
   ],
   volodka_corridor: [
     { propModelId: 'kenney_door', position: [0, 0, 7.3] },

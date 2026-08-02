@@ -7,6 +7,7 @@ import {
   useProceduralPlayerAnimation,
   type ProceduralPlayerModelProps,
 } from './useProceduralPlayerAnimation';
+import { ProceduralAviatorGlasses } from './sceneVisuals/volodkaRoom/AviatorGlasses';
 
 export const ProceduralPlayerModelLite = memo(function ProceduralPlayerModelLite({
   modelScale,
@@ -97,6 +98,7 @@ export const ProceduralPlayerModelLite = memo(function ProceduralPlayerModelLite
         <group name="head" position={[0, 0.47, 0.02]}>
           <mesh castShadow geometry={geo.head} material={mat.skin} />
           <mesh castShadow position={[0, 0.06, -0.02]} geometry={geo.hair} material={mat.hair} />
+          <ProceduralAviatorGlasses />
         </group>
 
         <group name="leftArm" position={[0.24, 0.18, 0]} rotation={[0, 0, 0.12]}>

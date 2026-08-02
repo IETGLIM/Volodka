@@ -26,6 +26,11 @@ import { useMonitorGlitch } from './sceneVisuals/volodkaRoom/useMonitorGlitch';
 import { useZabbixAlertPulse } from './sceneVisuals/volodkaRoom/useZabbixAlertPulse';
 import { PolyHavenStandardMaterial } from './PolyHavenStandardMaterial';
 import { CraftedDeskShell, ThinMonitor } from './CraftedDeskAndMonitors';
+import {
+  DeskRgbKeyboard,
+  DeskMouse,
+  DeskWallCurtain,
+} from './sceneVisuals/volodkaRoom/DeskWorkstationProps';
 import { INTERIOR_SHELL_MODELS } from '../../config/interiorShellModels';
 import { AuthoredInteriorShell } from './AuthoredInteriorShell';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
@@ -266,15 +271,40 @@ function AuthoredRoomProp({
   rotationY = 0,
   scale = 1,
   castShadow,
+  colorTint,
 }: {
   url: string;
   position: [number, number, number];
   rotationY?: number;
   scale?: number;
   castShadow: boolean;
+  /** Optional albedo multiply for painted furniture (e.g. yellow wardrobe). */
+  colorTint?: string;
 }) {
   const gltf = useGLTF(url, true, true, extendLoader);
-  const scene = useMemo(() => cloneRoomAsset(gltf.scene, castShadow), [gltf.scene, castShadow]);
+  const scene = useMemo(() => {
+    const clone = cloneRoomAsset(gltf.scene, castShadow);
+    if (colorTint) {
+      const tint = new THREE.Color(colorTint);
+      clone.traverse((node) => {
+        if (!(node as THREE.Mesh).isMesh) return;
+        const mesh = node as THREE.Mesh;
+        const apply = (mat: THREE.Material) => {
+          const next = mat.clone();
+          if ('color' in next && (next as THREE.MeshStandardMaterial).color) {
+            (next as THREE.MeshStandardMaterial).color.multiply(tint);
+          }
+          return next;
+        };
+        if (Array.isArray(mesh.material)) {
+          mesh.material = mesh.material.map(apply);
+        } else if (mesh.material) {
+          mesh.material = apply(mesh.material);
+        }
+      });
+    }
+    return clone;
+  }, [gltf.scene, castShadow, colorTint]);
   return (
     <group position={position} rotation={[0, rotationY, 0]} scale={scale}>
       <primitive object={scene} />
@@ -315,33 +345,17 @@ function AuthoredVolodkaRoomDressing({ castShadow }: { castShadow: boolean }) {
           castShadow={castShadow}
         />
       </Suspense>
+      {/* Armchair near bed (not under the desk — was colliding with workstation). */}
       <Suspense fallback={null}>
         <AuthoredRoomProp
           url={POLYHAVEN_MODELS.armChair}
-          position={[-0.55, 0, -1.35]}
-          rotationY={Math.PI}
-          scale={0.74}
+          position={[0.35, 0, 2.55]}
+          rotationY={Math.PI * 0.85}
+          scale={0.7}
           castShadow={castShadow}
         />
       </Suspense>
-      <Suspense fallback={null}>
-        <AuthoredRoomProp
-          url={POLYHAVEN_MODELS.woodenBookshelfWorn}
-          position={[-2.28, 0, -0.1]}
-          rotationY={Math.PI / 2}
-          scale={0.92}
-          castShadow={castShadow}
-        />
-      </Suspense>
-      <Suspense fallback={null}>
-        <AuthoredRoomProp
-          url={POLYHAVEN_MODELS.paintedWoodenCabinet}
-          position={[-2.25, 0, 2.35]}
-          rotationY={Math.PI / 2}
-          scale={0.88}
-          castShadow={castShadow}
-        />
-      </Suspense>
+      {/* Nightstand table + lamp by bed */}
       <Suspense fallback={null}>
         <AuthoredRoomProp
           url={POLYHAVEN_MODELS.paintedWoodenTable}
@@ -357,15 +371,6 @@ function AuthoredVolodkaRoomDressing({ castShadow }: { castShadow: boolean }) {
           position={[1.98, 0.52, 2.16]}
           rotationY={-0.45}
           scale={0.48}
-          castShadow={castShadow}
-        />
-      </Suspense>
-      <Suspense fallback={null}>
-        <AuthoredRoomProp
-          url={POLYHAVEN_MODELS.cassettePlayer}
-          position={[0.52, 0.79, -2.35]}
-          rotationY={0.28}
-          scale={0.36}
           castShadow={castShadow}
         />
       </Suspense>
@@ -698,9 +703,9 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
         </group>
       </>
 
-      {/* ── Wardrobe — AuthoredVolodkaRoomDressing painted cabinet owns this corner on High ── */}
+      {/* ── Wardrobe — Low kit mirrors Medium desk-left yellow cabinet position ── */}
       {!useGltfFurniture ? (
-      <group position={[-2.2, 0, 2.5]}>
+      <group position={[-1.7, 0, -2.45]}>
         {/* Wardrobe body */}
         <mesh position={[0, 1.0, 0]} castShadow geometry={geo_box_10} material={mat_6} />
         {/* Wardrobe top */}
@@ -724,17 +729,17 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
         <group ref={roomWardrobeDoorRef} visible={false} />
       )}
 
-      {/* ── Desk — ThinMonitors always own the hero workstation.
-          Medium+: Poly Haven painted table (same language as office hero desks).
-          Low: CraftedDeskShell cylinder-leg fallback. ── */}
+      {/* ── Desk workstation — table long axis along X (боком), monitors on surface.
+          Left: yellow wardrobe + top cabinet. Right: book shelf. Behind: curtain. ── */}
       <group position={[0, 0, -2.5]}>
+        {/* PH table long axis along X (rotationY=0). Prior PI/2 + scale 0.78 made a narrow short top → floating side monitors. */}
         {useGltfFurniture ? (
           <Suspense fallback={<CraftedDeskShell matFallback={mat_11} />}>
             <AuthoredRoomProp
               url={POLYHAVEN_MODELS.paintedWoodenTable}
-              position={[0, 0, 0.05]}
-              rotationY={Math.PI / 2}
-              scale={0.78}
+              position={[0, 0, 0]}
+              rotationY={0}
+              scale={1.02}
               castShadow={preset.shadows}
             />
           </Suspense>
@@ -745,17 +750,17 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
           <Suspense fallback={null}>
             <AuthoredRoomProp
               url={POLYHAVEN_MODELS.deskLampArm}
-              position={[-0.72, 0.78, 0.12]}
-              rotationY={0.85}
-              scale={0.52}
+              position={[-0.55, 0.75, 0.18]}
+              rotationY={0.65}
+              scale={0.55}
               castShadow={preset.shadows}
             />
           </Suspense>
         ) : null}
         {([
-          { id: 'grafana', tex: grafanaTexture, x: -0.62, rotY: 0.24 },
+          { id: 'grafana', tex: grafanaTexture, x: -0.48, rotY: 0.18 },
           { id: 'terminal', tex: terminalTexture, x: 0, rotY: 0 },
-          { id: 'zabbix', tex: zabbixTexture, x: 0.62, rotY: -0.24 },
+          { id: 'zabbix', tex: zabbixTexture, x: 0.48, rotY: -0.18 },
         ] as const).map(({ id, tex, x, rotY }) => (
           <ThinMonitor
             key={id}
@@ -763,32 +768,81 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
             tex={tex}
             x={x}
             rotY={rotY}
+            surfaceY={0.75}
             groupRef={id === 'terminal' ? terminalMonitorGroupRef : undefined}
             alertLed={id === 'zabbix' ? mat_zabbix_led : undefined}
           />
         ))}
 
-        {/* Monitor wash — keep soft so desk lamp practical owns the pool */}
-        <pointLight position={[0, 1.2, 0.1]} color="#5a9a88" intensity={useGltfFurniture ? 0.85 : 2.2} distance={8} decay={2} />
-        {/* Keyboard / papers / mug — Low kit only; Medium+ relies on cassette + lamp GLBs */}
+        <DeskRgbKeyboard position={[0, 0.76, 0.22]} />
+        <DeskMouse position={[0.28, 0.76, 0.2]} rotationY={0.25} />
+
+        {useGltfFurniture ? (
+          <Suspense fallback={null}>
+            <AuthoredRoomProp
+              url={POLYHAVEN_MODELS.cassettePlayer}
+              position={[0.55, 0.76, 0.05]}
+              rotationY={0.2}
+              scale={0.32}
+              castShadow={preset.shadows}
+            />
+          </Suspense>
+        ) : null}
+
+        <pointLight position={[0, 1.15, 0.1]} color="#5a9a88" intensity={useGltfFurniture ? 0.7 : 2.0} distance={8} decay={2} />
         {!useGltfFurniture ? (
           <>
-        <mesh position={[0, 0.785, 0.12]} geometry={getSharedBoxGeometry(0.42, 0.018, 0.14)} material={mat_15} />
-        <mesh position={[0.15, 0.8, 0.05]} geometry={getSharedBoxGeometry(0.012, 0.006, 0.012)} material={mat_16} />
-        <mesh position={[0.17, 0.8, 0.05]} geometry={getSharedBoxGeometry(0.012, 0.006, 0.012)} material={mat_17} />
-        <mesh position={[0.6, 0.78, 0.1]} rotation={[0, 0.1, 0]} geometry={getSharedBoxGeometry(0.18, 0.004, 0.2)} material={mat_18} />
-        <mesh position={[0.6, 0.79, 0.1]} rotation={[0, 0.1, 0]} geometry={getSharedBoxGeometry(0.06, 0.022, 0.1)} material={mat_19} />
-        <group position={[-0.55, 0.78, 0.25]}>
-          <mesh position={[0, 0.04, 0]} geometry={geo_cyl_27} material={mat_20} />
-          <mesh position={[0.04, 0.04, 0]} rotation={[0, 0, Math.PI / 2]} geometry={geo_tor_28} material={mat_20} />
-          <mesh position={[0, 0.075, 0]} geometry={geo_cyl_29} material={mat_21} />
-        </group>
-        <mesh position={[0.3, 0.78, 0.2]} rotation={[0, 0.4, 0]} geometry={geo_box_30} material={mat_22} />
-        <mesh position={[0.35, 0.785, 0.15]} rotation={[0, -0.2, 0.02]} geometry={geo_box_31} material={mat_23} />
-        <mesh position={[-0.2, 0.78, 0.3]} rotation={[0, 0.7, -0.01]} geometry={geo_box_32} material={mat_24} />
+            <mesh position={[0.6, 0.78, 0.1]} rotation={[0, 0.1, 0]} geometry={getSharedBoxGeometry(0.18, 0.004, 0.2)} material={mat_18} />
+            <group position={[-0.55, 0.78, 0.25]}>
+              <mesh position={[0, 0.04, 0]} geometry={geo_cyl_27} material={mat_20} />
+              <mesh position={[0.04, 0.04, 0]} rotation={[0, 0, Math.PI / 2]} geometry={geo_tor_28} material={mat_20} />
+              <mesh position={[0, 0.075, 0]} geometry={geo_cyl_29} material={mat_21} />
+            </group>
           </>
         ) : null}
       </group>
+
+      {/* Curtain on the back wall behind the desk monitors */}
+      <DeskWallCurtain position={[0, 0.15, -3.35]} width={2.6} height={2.15} />
+
+      {/* Bookshelf — right of right monitor */}
+      {useGltfFurniture ? (
+        <Suspense fallback={null}>
+          <AuthoredRoomProp
+            url={POLYHAVEN_MODELS.woodenBookshelfWorn}
+            position={[1.65, 0, -2.55]}
+            rotationY={-Math.PI / 2}
+            scale={0.88}
+            castShadow={preset.shadows}
+          />
+        </Suspense>
+      ) : null}
+
+      {/* Yellow two-door wardrobe left of left monitor + small two-door cabinet on top */}
+      {useGltfFurniture ? (
+        <>
+          <Suspense fallback={null}>
+            <AuthoredRoomProp
+              url={POLYHAVEN_MODELS.paintedWoodenCabinet}
+              position={[-1.7, 0, -2.45]}
+              rotationY={Math.PI / 2}
+              scale={0.95}
+              castShadow={preset.shadows}
+              colorTint="#e8c84a"
+            />
+          </Suspense>
+          <Suspense fallback={null}>
+            <AuthoredRoomProp
+              url={POLYHAVEN_MODELS.paintedWoodenCabinet}
+              position={[-1.7, 1.55, -2.45]}
+              rotationY={Math.PI / 2}
+              scale={0.55}
+              castShadow={preset.shadows}
+              colorTint="#d4b43a"
+            />
+          </Suspense>
+        </>
+      ) : null}
 
       {/* ── Chair — fallback only; no low-poly hero chair on GLTF presets ── */}
       {!useGltfFurniture ? (
@@ -804,9 +858,9 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
       </group>
       ) : null}
 
-      {/* ── Bookshelf — fallback only; GLTF presets use authored wall dressing ── */}
+      {/* ── Bookshelf — Low kit at desk-right (matches Medium PH shelf) ── */}
       {!useGltfFurniture ? (
-      <group position={[-2.2, 0, 0]}>
+      <group position={[1.65, 0, -2.55]}>
         <mesh position={[0, 1.0, 0]} castShadow geometry={geo_box_36} material={mat_27} />
         {/* Shelf dividers */}
         {[0.5, 1.0, 1.5].map((y, i) => (
@@ -1018,7 +1072,7 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
 
       {/* Desk lamp practical — bonded to Poly Haven arm on Medium+; legacy float on Low */}
       <pointLight
-        position={useGltfFurniture ? [-0.72, 1.42, -2.38] : [0.3, 1.5, -2.3]}
+        position={useGltfFurniture ? [-0.55, 1.35, -2.32] : [0.3, 1.5, -2.3]}
         color="#ffcc88"
         intensity={useGltfFurniture ? 3.6 : 4.2}
         distance={10}

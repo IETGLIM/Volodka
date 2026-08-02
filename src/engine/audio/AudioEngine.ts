@@ -57,6 +57,8 @@ type FootstepVoice = {
  */
 class AudioEngine {
   private ctx: AudioContext | null = null;
+  /** Reused noise buffers — avoid alloc+fill on every WASD step (main-thread hitch). */
+  private footstepNoiseBuffers = new Map<string, AudioBuffer>();
   private masterGain: GainNode | null = null;
   private volume = 0.7;
   private disposed = false;
@@ -349,16 +351,20 @@ class AudioEngine {
 
     const now = ctx.currentTime;
 
-    // Create a short burst of filtered noise for the footstep "thud"
-    const bufferSize = Math.ceil(ctx.sampleRate * preset.noiseDuration);
-    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-
-    // Fill with random noise shaped by a decay envelope
-    for (let i = 0; i < bufferSize; i++) {
-      const t = i / bufferSize;
-      const envelope = Math.exp(-t * 12);
-      data[i] = (Math.random() * 2 - 1) * envelope;
+    // Cached noise buffer per material+rate — recreating + filling every step
+    // caused GC/ frezes while holding WASD.
+    const cacheKey = `${material ?? 'default'}:${ctx.sampleRate}:${preset.noiseDuration}`;
+    let buffer = this.footstepNoiseBuffers.get(cacheKey);
+    if (!buffer) {
+      const bufferSize = Math.ceil(ctx.sampleRate * preset.noiseDuration);
+      buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        const t = i / bufferSize;
+        const envelope = Math.exp(-t * 12);
+        data[i] = (Math.random() * 2 - 1) * envelope;
+      }
+      this.footstepNoiseBuffers.set(cacheKey, buffer);
     }
 
     const noiseSource = ctx.createBufferSource();
@@ -2118,6 +2124,7 @@ class AudioEngine {
     this.disposed = true;
     this.cancelPendingEngineTimers();
     this.clearFootstepVoices();
+    this.footstepNoiseBuffers.clear();
     this.flushPendingAmbientCleanup();
     this.flushPendingMusicCleanup();
     this.stopAmbient();

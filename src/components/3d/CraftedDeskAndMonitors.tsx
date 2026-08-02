@@ -46,14 +46,26 @@ interface ThinMonitorProps {
   tex: THREE.Texture;
   x: number;
   rotY: number;
+  /** Desk surface height — monitor stand foot rests just above this. */
+  surfaceY?: number;
   groupRef?: MutableRefObject<THREE.Group | null>;
   alertLed?: THREE.Material;
 }
 
 /** Thin bezel + plane screen with photo-PBR metal housing (not a cube monitor). */
-export function ThinMonitor({ id, tex, x, rotY, groupRef, alertLed }: ThinMonitorProps) {
+export function ThinMonitor({
+  id,
+  tex,
+  x,
+  rotY,
+  surfaceY = 0.75,
+  groupRef,
+  alertLed,
+}: ThinMonitorProps) {
+  // Stand foot at -0.29 relative → group.y = surfaceY + 0.29 keeps the disc on the desk.
+  const groupY = surfaceY + 0.29;
   return (
-    <group ref={groupRef} position={[x, 1.08, -0.12]} rotation={[0, rotY, 0]}>
+    <group ref={groupRef} position={[x, groupY, -0.06]} rotation={[0, rotY, 0]}>
       {/* Housing: shallow slab + slightly larger rear plate (reads as thin display, not PC tower) */}
       <mesh castShadow geometry={getSharedBoxGeometry(0.5, 0.3, 0.016)}>
         <Suspense fallback={<meshStandardMaterial color="#12141a" roughness={0.55} metalness={0.35} />}>

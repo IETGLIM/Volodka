@@ -12,24 +12,34 @@ import { useSkinnedGltfClone } from '@/hooks/useSkinnedGltfClone';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import type { ProceduralPlayerModelProps } from './useProceduralPlayerAnimation';
 import { ProceduralPlayerModelLite } from './ProceduralPlayerModelLite';
+import { ProceduralAviatorGlasses } from './sceneVisuals/volodkaRoom/AviatorGlasses';
 
 const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeof useGLTF>[3]>;
 const PLAYER_MODEL_URL = getPlayerVolodkaModelUrl();
 useGLTF.preload(PLAYER_MODEL_URL, true, true, extendLoader);
 
 const ANIMATIONS_BASE = '/models/animations';
+/** Critical clips only — talking/working deferred to cut load hitch on New Game wake. */
 const PLAYER_CRITICAL_ANIM_URLS = [
   `${ANIMATIONS_BASE}/idle.glb`,
   `${ANIMATIONS_BASE}/walking.glb`,
-  `${ANIMATIONS_BASE}/talking.glb`,
   `${ANIMATIONS_BASE}/sitting.glb`,
   `${ANIMATIONS_BASE}/sleeping.glb`,
+];
+const PLAYER_DEFERRED_ANIM_URLS = [
+  `${ANIMATIONS_BASE}/talking.glb`,
   `${ANIMATIONS_BASE}/working.glb`,
 ];
 if (typeof window !== 'undefined') {
   for (const url of PLAYER_CRITICAL_ANIM_URLS) {
     useGLTF.preload(url, true, true, extendLoader);
   }
+  // Defer secondary clips off the first wake frame.
+  queueMicrotask(() => {
+    for (const url of PLAYER_DEFERRED_ANIM_URLS) {
+      useGLTF.preload(url, true, true, extendLoader);
+    }
+  });
 }
 
 /**
@@ -138,6 +148,10 @@ function CesiumPlayerModelInner({
         scale={[fit.scale, fit.scale, fit.scale]}
       >
         <primitive object={scene} />
+        {/* Approx head height in character metres — GLB may lack a Head bone name. */}
+        <group position={[0, 1.62, 0.08]} scale={1 / Math.max(fit.scale, 0.001)}>
+          <ProceduralAviatorGlasses />
+        </group>
       </group>
     </group>
   );

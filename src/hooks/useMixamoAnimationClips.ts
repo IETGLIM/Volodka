@@ -39,47 +39,24 @@ function scheduleIdleSlice(callback: () => void): () => void {
 }
 
 /**
- * Clip ids that are CRITICAL — must be available immediately, before any
- * cutscene or gameplay movement begins.
+ * Clip ids that are CRITICAL — must be available immediately for wake + locomotion.
  *
- * The embedded Quaternius player/NPC GLBs ship 24 properly-named clips
- * (Idle, Idle_Neutral, Walk, Run, Wave, Interact, …) that already cover
- * idle/walk/run locomotion. The Mixamo catalog adds 6 supplementary clips
- * for states the embedded GLB does NOT provide: idle, walking, talking,
- * sitting, sleeping, working. Of these, idle/walking are aliases for the
- * embedded clips (loaded as canonical-name overrides), while talking/
- * sitting/sleeping/working are the ONLY source for those states.
- *
- * The deferred loader (below) is gated by `isUiOverlayBlockingDeferredAssets()`
- * which PAUSES during story overlays / examine panels. The wake-up cutscene
- * needs the 'sleeping' clip in phase 1 (lying in bed) and 'sitting' in
- * phases 5-8 (at desk) — if these are deferred, the avatar falls back to
- * the embedded 'idle' clip and slides in a standing pose while the
- * cutscene claims the character is lying/sitting.
- *
- * Marking all 6 clips as CRITICAL bypasses BOTH the scheduler and the
- * overlay gate, loading them in parallel immediately when the mixer is
- * ready. They are small (~56KB each, ~340KB total) and already preloaded
- * into the browser HTTP cache by `useGLTF.preload` calls at module load
- * in CesiumPlayerModel.tsx, so `loader.loadAsync` hits the cache and
- * resolves in ~1-2ms per clip.
+ * Wake needs sleeping (bed) and sitting (desk). Idle/walking cover locomotion.
+ * Talking/working stay deferred to cut New Game parse hitch.
  */
 const CRITICAL_CLIP_IDS: ReadonlySet<MixamoClipId> = new Set<MixamoClipId>([
   'idle',
   'walking',
-  'talking',
   'sitting',
   'sleeping',
-  'working',
 ]);
 
 /**
  * Loads on-disk Mixamo animation GLBs and registers clip actions on an existing mixer.
  * Returns merged action map (embedded clips + Mixamo overrides by canonical name).
  *
- * Critical clips (idle, walking) load IMMEDIATELY, bypassing the overlay gate
- * and the preload scheduler. Deferred clips (talking, sitting, sleeping, working)
- * load sequentially through the scheduler, paused while UI overlays are open.
+ * Critical clips load IMMEDIATELY (bypass overlay gate + scheduler).
+ * Deferred clips (talking, working, …) load sequentially through the scheduler.
  */
 export function useMixamoAnimationClips(
   mixer: THREE.AnimationMixer | null,

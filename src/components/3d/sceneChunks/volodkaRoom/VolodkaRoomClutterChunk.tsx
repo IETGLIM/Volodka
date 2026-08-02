@@ -132,7 +132,8 @@ export function VolodkaRoomClutterChunk() {
 
   return (
     <>
-      <group position={[1.2, 0, -2.8]}>
+      {/* Keep off the desk/bookshelf strip (z≈-2.5) — was colliding with workstation props. */}
+      <group position={[2.05, 0, 0.55]}>
         <EnvironmentDetail minLod="standard">
           <mesh position={[0, 0.15, 0]} geometry={geo_cyl_1} material={mat_cyl_1} />
           <mesh position={[0, 0.3, 0]} geometry={geo_tor_2} material={mat_tor_2} />
