@@ -272,6 +272,23 @@ export const DIALOGUE_PART5: Record<string, DialogueNode> = {
         ],
         condition: { minKarma: 70, flag: 'vowed_protect_maria' },
       },
+      {
+        text: 'Виктория, ты не обязана жертвовать собой, чтобы доказать, что живая. Живые — выбирают себя.',
+        next: null,
+        condition: { minKarma: 60 },
+        effects: [
+          { type: 'addKarma', value: 15 },
+          { type: 'addSkill', skill: 'empathy', value: 3 },
+          { type: 'addStat', stat: 'stress', value: -5 },
+          { type: 'npcChange', npcId: 'maria', npcChange: { relation: 18 } },
+          { type: 'setFlag', flag: 'victoria_mercy_pledge', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Живые выбирают себя. Ты произнёс это — и понял, что говоришь не только о Виктории. О себе. О всех, кто решает остаться, когда мир просит исчезнуть.',
+            thoughtDuration: 7000,
+          },
+        ],
+      },
     ],
   },
 
@@ -297,6 +314,22 @@ export const DIALOGUE_PART5: Record<string, DialogueNode> = {
         next: 'albert_resistance_action',
         effects: [
           { type: 'addSkill', skill: 'logic', value: 1 },
+        ],
+      },
+      {
+        text: 'Сопротивление — это самообман. Мы — мухи на стекле. Лучше приспособиться, чем разбиться.',
+        next: null,
+        condition: { maxKarma: 10 },
+        effects: [
+          { type: 'addKarma', value: -10 },
+          { type: 'addStat', stat: 'stress', value: 8 },
+          { type: 'npcChange', npcId: 'albert', npcChange: { relation: -12 } },
+          { type: 'setFlag', flag: 'albert_rebel_signal', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Ты сказал то, что думал. Или — то, что устал думать? Граница стёрлась. Муха на стекле. А может — муха, которая решила, что стекло — это небо.',
+            thoughtDuration: 6000,
+          },
         ],
       },
     ],

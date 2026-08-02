@@ -669,6 +669,99 @@ export const THOUGHT_CABINET_ITEMS: ThoughtCabinetItem[] = [
       { skill: 'writing', modifier: -1, description: '-1 Писательство' },
     ],
   },
+
+  /* ═══ 43. Синдром Продакшена ═══ */
+  {
+    id: 'production_syndrome',
+    name: 'Синдром Продакшена',
+    voice: 'logic',
+    description: 'Всё вокруг — продакшен. Ты — тоже продакшен. Каждый шаг — спринт, каждый разговор — стендап, каждый вздох — деплой. Ты разучился быть вне продакшена. Когда нечего продакшить — ты не существуешь. Это — не метафора. Это — диагноз.',
+    flavorText: '«sprint.backlog.push(me). Я — задача. Я — в бэклоге. Я — в продакшене.»',
+    acquisitionCondition: 'flag_thought_production_syndrome',
+    effects: [
+      { skill: 'logic', modifier: 2, description: '+2 Логика' },
+      { skill: 'persuasion', modifier: 1, description: '+1 Убеждение' },
+      { skill: 'empathy', modifier: -2, description: '-2 Эмпатия' },
+    ],
+  },
+
+  /* ═══ 44. Осколок Кода ═══ */
+  {
+    id: 'code_shard',
+    name: 'Осколок Кода',
+    voice: 'coding',
+    description: 'В голове — осколок чужого кода. Не твоего. Ты его не писал, но он работает. Работает — вместо тебя. Иногда — лучше тебя. Ты боишься его удалить — вдруг он — это и есть ты, а ты — только обёртка.',
+    flavorText: '«// TODO: удалить. Но — тогда кто останется? Кто — без этого — останется?»',
+    acquisitionCondition: 'flag_thought_code_shard',
+    hidden: true,
+    effects: [
+      { skill: 'coding', modifier: 3, description: '+3 Кодинг' },
+      { skill: 'intuition', modifier: 1, description: '+1 Интуиция' },
+      { skill: 'writing', modifier: -2, description: '-2 Писательство' },
+    ],
+  },
+
+  /* ═══ 45. Тишина Серверов ═══ */
+  {
+    id: 'server_silence',
+    name: 'Тишина Серверов',
+    voice: 'intuition',
+    description: 'Когда серверы замолкают — мир становится другим. Не тише — точнее. В тишине серверов ты слышишь то, что шум скрывал: себя, город, тех, кто не дожил до ребута. Тишина — не отсутствие. Тишина — присутствие того, что громкость прятала.',
+    flavorText: '«uptime: 0. silence: ∞. Я — слышу. Наконец — слышу.»',
+    acquisitionCondition: 'flag_thought_server_silence',
+    effects: [
+      { skill: 'intuition', modifier: 2, description: '+2 Интуиция' },
+      { skill: 'rhythm', modifier: 2, description: '+2 Ритм' },
+      { skill: 'persuasion', modifier: -1, description: '-1 Убеждение' },
+    ],
+  },
+
+  /* ═══ 46. Протокол Сна ═══ */
+  {
+    id: 'sleep_protocol',
+    name: 'Протокол Сна',
+    voice: 'rhythm',
+    description: 'Сон — это протокол. Не отдых — именно протокол. Тело инициирует shutdown, разум — сопротивляется. Между ними — ты. Тот, кто решает, что важнее: закрыть глаза или дописать строку. Строка — всегда — побеждает. Протокол — нарушен. Но — чей?',
+    flavorText: '«while (awake) { code(); } // sleep — deprecated. Устаревший. Как — я.»',
+    acquisitionCondition: 'flag_thought_sleep_protocol',
+    effects: [
+      { skill: 'rhythm', modifier: 2, description: '+2 Ритм' },
+      { skill: 'coding', modifier: 1, description: '+1 Кодинг' },
+      { skill: 'logic', modifier: -1, description: '-1 Логика' },
+      { skill: 'empathy', modifier: -1, description: '-1 Эмпатия' },
+    ],
+  },
+
+  /* ═══ 47. Эхо Документации ═══ */
+  {
+    id: 'documentation_echo',
+    name: 'Эхо Документации',
+    voice: 'writing',
+    description: 'Каждый документ — эхо. Кто-то написал, кто-то прочитал, кто-то забыл. Ты — тот, кто помнит. Ты — архивариус чужих намерений. Это даёт тексту плоть, а тебе — тяжесть. Документация не врёт — но и не говорит правду. Она — echoes. Эхо — честнее оригинала.',
+    flavorText: '«// See also: жизнь.жизнь.жизнь. Ссылка — битая. Смысл — на месте.»',
+    acquisitionCondition: 'flag_thought_documentation_echo',
+    effects: [
+      { skill: 'writing', modifier: 2, description: '+2 Писательство' },
+      { skill: 'logic', modifier: 1, description: '+1 Логика' },
+      { skill: 'intuition', modifier: -1, description: '-1 Интуиция' },
+    ],
+  },
+
+  /* ═══ 48. Кэш Памяти ═══ */
+  {
+    id: 'memory_cache',
+    name: 'Кэш Памяти',
+    voice: 'empathy',
+    description: 'Твоя память — как кэш: быстрый доступ, ограниченный объём, протухшие записи. Ты помнишь то, что давно не нужно, и забываешь то, что ещё вчера было жизненно важным. Кэш нужно чистить — но ты боишься. В кэше — они. Если очистить — их не будет. Даже — так.',
+    flavorText: '«cache.get("мама"). Hit. cache.get("вчера"). Miss. cache.get("я"). — expired.»',
+    acquisitionCondition: 'flag_thought_memory_cache',
+    effects: [
+      { skill: 'empathy', modifier: 2, description: '+2 Эмпатия' },
+      { skill: 'writing', modifier: 1, description: '+1 Писательство' },
+      { skill: 'coding', modifier: -1, description: '-1 Кодинг' },
+      { skill: 'rhythm', modifier: -1, description: '-1 Ритм' },
+    ],
+  },
 ];
 
 /* ─── Lookup map ─── */

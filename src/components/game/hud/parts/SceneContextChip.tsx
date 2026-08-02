@@ -69,7 +69,7 @@ export function SceneContextChip() {
         style={{ color: 'rgb(var(--cyber-cyan-rgb) / 0.7)', flexShrink: 0 }}
       />
       <span
-        className="font-mono text-[9px] tracking-wide uppercase hud-filmic-text-glow"
+        className="font-mono text-[9px] tracking-wide uppercase hud-filmic-text-glow hud-filmic-scene-title"
         style={{ color: 'rgb(var(--cyber-cyan-rgb) / 0.8)' }}
       >
         {sceneLabel}

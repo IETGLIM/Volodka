@@ -51,6 +51,21 @@ export const ALBERT_EXPANDED_DIALOGUE: Record<string, DialogueNode> = {
           { type: 'setFlag', flag: 'albert_deep_started', flagValue: true },
         ],
       },
+      {
+        text: 'Я доверяю тебе, Альберт. Без оговорок. Ты — единственный, перед кем не нужно притворяться.',
+        next: null,
+        condition: { minKarma: 35 },
+        effects: [
+          { type: 'addKarma', value: 10 },
+          { type: 'npcChange', npcId: 'albert', npcChange: { relation: 15 } },
+          { type: 'setFlag', flag: 'albert_deep_trust_pledge', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Ты сказал это прежде, чем успел испугаться. Без оговорок — потому что их и нет. Альберт — единственный человек в этом городе, который знает тебя настоящего. И не отворачивается.',
+            thoughtDuration: 6500,
+          },
+        ],
+      },
     ],
   },
 
@@ -828,6 +843,23 @@ export const ALBERT_EXPANDED_DIALOGUE: Record<string, DialogueNode> = {
         next: 'albert_deep_farewell',
         effects: [
           { type: 'npcChange', npcId: 'albert', npcChange: { relation: 3 } },
+        ],
+      },
+      {
+        text: 'Сжечь мосты? Зачем ждать. Если Гильдия стирает людей — я сотру Гильдию. Сначала — изнутри.',
+        next: null,
+        condition: { maxKarma: 15 },
+        effects: [
+          { type: 'addKarma', value: -8 },
+          { type: 'addStat', stat: 'stress', value: 5 },
+          { type: 'addSkill', skill: 'coding', value: 1 },
+          { type: 'npcChange', npcId: 'albert', npcChange: { relation: -5 } },
+          { type: 'setFlag', flag: 'albert_burn_notice', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Альберт смотрит на тебя — и ты видишь страх. Не за себя — за тебя. Месть изнутри — это не план. Это приговор. Но ты слишком устал, чтобы слушать разум.',
+            thoughtDuration: 6000,
+          },
         ],
       },
     ],

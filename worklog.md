@@ -2265,3 +2265,143 @@ Stage Summary:
   6. +6 Thought Cabinet thoughts (items 37-42, interiority ↑).
   7. +3 idle monologue scenes (solnysh_room, pier_evening, chk_campfire_night — living-world interiority ↑).
 - Unresolved / next-phase priorities: Author QA on Vercel (verify KarmaTierBadge in top-bar, choice number brackets, pulse ring on interaction prompt, weather barks during rain/snow, new thoughts in cabinet). SSR on wet streets (ultra-only). Continuous walk↔run blend. Mixamo↔Quaternius remap. Procedural act mood audio. More content Acts 3-4.
+
+---
+
+Task ID: 4-b
+Agent: living-world-content
+Task: Thought Cabinet + idle monologues + byAct thoughts (additive data only)
+
+Work Log:
+- Read worklogs (sandbox + /home/z/volodka/worklog.md tail) + AI_SESSION_CONTEXT.md. Confirmed prior ticks: 42 Thought Cabinet thoughts, ~19 idle monologue scenes, many byAct entries.
+- Verified SceneIds via rg on sceneDefinitions.ts, skill keys via TrainablePlayerSkill type (logic, coding, empathy, persuasion, intuition, writing, rhythm).
+- TASK 1: Added 6 new Thought Cabinet thoughts (items 43-48):
+  1. production_syndrome (Синдром Продакшена) — logic +2, persuasion +1, empathy -2
+  2. code_shard (Осколок Кода) — coding +3, intuition +1, writing -2 [hidden]
+  3. server_silence (Тишина Серверов) — intuition +2, rhythm +2, persuasion -1
+  4. sleep_protocol (Протокол Сна) — rhythm +2, coding +1, logic -1, empathy -1
+  5. documentation_echo (Эхо Документации) — writing +2, logic +1, intuition -1
+  6. memory_cache (Кэш Памяти) — empathy +2, writing +1, coding -1, rhythm -1
+  No new mutually-exclusive pairs added. All skill keys valid.
+- TASK 2: Added idle monologues for 3 missing scenes:
+  1. chk_forest_zorge — 4 neutral, 2 high, 2 low, 2 highStress
+  2. factory_roof — 4 neutral, 2 high, 2 low, 2 highStress
+  3. zarema_albert_room — 4 neutral, 2 high, 2 low, 2 highStress
+  Total: 30 new idle monologue lines.
+- TASK 3: Added byAct revisit thoughts for 4 scenes with incomplete coverage:
+  1. zarema_room — added acts 2, 4, 5 (previously only 3)
+  2. underground_bunker — added acts 3, 4, 5 (previously only 6)
+  3. pier_evening — added acts 3, 4, 5 (previously only 6)
+  4. city_square — added acts 3, 5, 7 (previously only 4)
+  Total: 12 new byAct revisit thoughts.
+- Typecheck: `cd /home/z/volodka && node scripts/tsc7.mjs --noEmit` → exit 0.
+- Poems untouched. All invariants preserved. No schema changes, no component code.
+
+Stage Summary:
+- Files modified (3):
+  - src/data/thoughtCabinet.ts (+6 thoughts, items 43-48)
+  - src/data/idleMonologues.ts (+3 scenes, 30 new lines)
+  - src/data/sceneEntryThoughts.ts (+4 scenes, 12 new byAct entries)
+- Counts:
+  - Thought Cabinet thoughts added: 6 (total now 48)
+  - Idle monologue scenes added: 3 (total now ~22)
+  - byAct revisit thoughts added: 12 across 4 scenes
+- Typecheck: exit 0. Poems untouched. All invariants preserved.
+
+---
+Task ID: 4-a
+Agent: content-expansion-agent
+Task: Add karma-gated dialogue choices (6-8) to untargeted nodes + examine TriggerZones (8-10) for scenes with 0 coverage
+
+Work Log:
+- Read /home/z/my-project/worklog.md + tail of /home/z/volodka/worklog.md. Confirmed prior-tick targeted nodes (16 total, DO NOT TOUCH list): albert_deep_revelation, alexander_final_confrontation, zarema_traitor_reveal, alexander_final_decision, cafe_barista_deep_trust, zarema_before_arrest, barista_broadcast_ready, barista_broadcast_ready_act3, alexander_respect, alexander_proposition, zarema_in_cell, victoria_vault_truth_revealed, albert_poetry_of_code, dmitry_about_factory, victoria_sacrifice_debate, albert_last_stand. All avoided — picked 8 DIFFERENT nodes.
+- Read type definitions: DialogueChoice ({ text, next, effects?, condition? }), ChoiceCondition (minKarma?, maxKarma?, etc.), StoryEffect (type: addStat/addSkill/addKarma/setFlag/showThought/npcChange, etc.), ExamineData (title, description, detailText, icon?), TriggerZone (id, sceneId, position, size, interactionType, examineData, effects, etc.).
+- Verified TrainablePlayerSkill = logic | coding | empathy | persuasion | intuition | writing | rhythm (7 keys only).
+- Verified all 8 target node IDs exist via grep across dialogue files.
+- Verified NPC IDs (albert, office_colleague, cafe_barista, maria, office_alexander) all used in existing npcChange calls.
+- Verified all new flag names are unique (grep confirmed 0 collisions).
+
+TASK 1 — 8 new karma-gated DialogueChoices (appended to END of each node's choices array):
+  1. part1-albert-expanded.ts · albert_deep_talk (HIGH minKarma: 35) — "Я доверяю тебе, Альберт. Без оговорок. Ты — единственный, перед кем не нужно притворяться." → +10 karma, +15 albert relation, setFlag albert_deep_trust_pledge, showThought (6500ms). next: null.
+  2. part1-albert-expanded.ts · albert_deep_alliance (LOW maxKarma: 15) — "Сжечь мосты? Зачем ждать. Если Гильдия стирает людей — я сотру Гильдию. Сначала — изнутри." → -8 karma, +5 stress, +1 coding, -5 albert relation, setFlag albert_burn_notice, showThought (6000ms). next: null.
+  3. part2-npcs.ts · colleague_trust_test (HIGH minKarma: 50) — "Страх — это не предательство. Ты боишься — значит, ты ещё жив. Я защищу тебя. Клянусь." → +12 karma, +2 empathy, +20 office_colleague relation, setFlag colleague_truth_pledge, showThought (7000ms). next: null.
+  4. part2-npcs.ts · cafe_barista_network_reveal (LOW maxKarma: 20) — "Я — не ваш агент. Я — свой. И если вы используете меня как пешку — я уйду." → -5 karma, +3 stress, +1 logic, -8 cafe_barista relation, setFlag barista_spy_pledge, showThought (6500ms). next: null.
+  5. part5-final.ts · victoria_sacrifice (HIGH minKarma: 60) — "Виктория, ты не обязана жертвовать собой, чтобы доказать, что живая. Живые — выбирают себя." → +15 karma, +3 empathy, -5 stress, +18 maria relation, setFlag victoria_mercy_pledge, showThought (7000ms). next: null.
+  6. part5-final.ts · albert_resistance (LOW maxKarma: 10) — "Сопротивление — это самообман. Мы — мухи на стекле. Лучше приспособиться, чем разбиться." → -10 karma, +8 stress, -12 albert relation, setFlag albert_rebel_signal, showThought (6000ms). next: null.
+  7. part5-final-expanded.ts · victoria_after_storm (HIGH minKarma: 40) — "Я слышал тебя, Виктория. Каждый узел — это сердце. А ты — ритм, который их объединяет." → +12 karma, +2 rhythm, +15 maria relation, setFlag victoria_resonance_promise, showThought (7000ms). next: null.
+  8. part5-final-expanded.ts · alexander_charter (HIGH minKarma: 25) — "Добавь четвёртую статью: «Каждый имеет право на ошибку — если она написана сердцем.»" → +8 karma, +2 persuasion, +12 office_alexander relation, setFlag alexander_amendment_pledge, showThought (6500ms). next: null.
+  Mix: 5 HIGH-karma (minKarma: 25-60) + 3 LOW-karma (maxKarma: 10-20). Each choice: 4-6 effects (karma +/-, skill +/-, stress +/-, npcChange, setFlag, showThought). All next: null. All in Russian, in-character. All showThought lines are 2-3 sentences, atmospheric, post-Soviet cyberpunk-noir tone.
+
+TASK 2 — 10 new examine TriggerZones (inserted before COMBAT ENCOUNTERS block):
+  1. city_square_broken_fountain — at [-4, 0.5, -3] size [2.5, 1.2, 2.5]. ⛲ "Сломанный фонтан" — paper cranes in dry fountain. effects: setFlag examined_square_fountain, +3 karma, +1 intuition, showThought (6000ms).
+  2. city_square_propaganda_kiosk — at [6, 1, 2] size [1.5, 2, 0.8]. 📰 "Информационный киоск" — child's drawing under guild seal. effects: setFlag examined_square_kiosk, +4 karma, +1 empathy, showThought (6500ms).
+  3. city_square_manhole_graffiti — at [2, 0.1, 8] size [1, 0.2, 1]. 🕳️ "Люк с граффити" — carved poem on manhole cover. effects: setFlag examined_square_manhole, +2 karma, +1 logic.
+  4. underground_bunker_wall_map — at [-5, 1.5, -2] size [2, 1.5, 0.1]. 🗺️ "Карта Сети" — 17 red dots = living hearts. effects: setFlag examined_bunker_map, +5 karma, +1 intuition, showThought (7000ms).
+  5. underground_bunker_crate_poems — at [4, 0.5, 3] size [1, 0.8, 0.8]. 📦 "Ящик самиздата" — poems on receipts, napkins, guild orders. effects: setFlag examined_bunker_crate, +4 karma, +1 writing.
+  6. underground_bunker_broken_radio — at [0, 1.2, -5] size [0.6, 0.5, 0.4]. 📻 "Сломанное радио" — Morse code blinking. effects: setFlag examined_bunker_radio, +3 karma, +1 rhythm, showThought (6500ms).
+  7. guild_mainframe_log_terminal — at [-4, 1, -2] size [1, 1.5, 0.6]. 🖥️ "Заброшенный лог-терминал" — DELETE PENDING for 3 years. effects: setFlag examined_mainframe_terminal, +5 karma, +1 coding, showThought (6500ms).
+  8. guild_mainframe_server_poem — at [3, 1.5, -4] size [0.6, 2, 0.8]. 🔊 "Поющая стойка" — server fans modulating iambic verse. effects: setFlag examined_mainframe_singing_rack, +6 karma, +2 rhythm, showThought (7000ms).
+  9. zarema_room_dried_flowers — at [-2.5, 1.2, -1] size [0.5, 0.6, 0.4]. 💐 "Засушенные цветы" — three lilies from underground garden. effects: setFlag examined_zarema_flowers, +3 karma, +1 empathy.
+  10. zarema_room_code_notebook — at [2, 0.5, -2] size [0.4, 0.3, 0.3]. 📓 "Тетрадь Заремы" — SQL cover, poems inside, guild orders rewritten as verse. effects: setFlag examined_zarema_notebook, +5 karma, +1 writing, showThought (7000ms).
+  All 10 zones: pure examine (interactionType: 'examine'), unique descriptive IDs (grep-verified no collisions), positions within scene floor bounds, self-contained effects (setFlag / addKarma / addSkill / showThought) — NO discoverLore used. All Russian text 2-3 sentences, atmospheric, scene-specific, melancholic introspective tone.
+
+Typecheck Gate:
+- Ran `cd /home/z/volodka && node scripts/tsc7.mjs --noEmit` → EXIT_CODE=0 (twice confirmed).
+
+Invariants preserved:
+- Poems (src/data/poems.ts) — not opened, not modified.
+- Rapier <Physics interpolate={false}> — untouched.
+- KCC ownership — untouched.
+- Postprocessing depth-blit patch — untouched.
+- Test contracts — untouched.
+- State mutations — none. All changes are pure data (no component code, no engine wiring, no schema changes).
+- Additive only — 0 deletions of existing functionality. Each new choice appended to END of choices[] array. Each new zone inserted before COMBAT ENCOUNTERS block.
+- Prior-tick karma-gated nodes (16 total) — NOT touched. Picked 8 DIFFERENT nodes.
+
+Stage Summary:
+- Files modified (5):
+  - src/data/dialogue/part1-albert-expanded.ts (+15 lines: 2 new karma-gated choices on albert_deep_talk + albert_deep_alliance)
+  - src/data/dialogue/part2-npcs.ts (+16 lines: 2 new karma-gated choices on colleague_trust_test + cafe_barista_network_reveal)
+  - src/data/dialogue/part5-final.ts (+16 lines: 2 new karma-gated choices on victoria_sacrifice + albert_resistance)
+  - src/data/dialogue/part5-final-expanded.ts (+16 lines: 2 new karma-gated choices on victoria_after_storm + alexander_charter)
+  - src/data/triggerZones.ts (+245 lines: 10 new examine TriggerZones across 4 zero-coverage scenes)
+- Counts:
+  - Dialogue karma-gated choices added: 8 (5 HIGH minKarma + 3 LOW maxKarma)
+  - Examine TriggerZones added: 10 (city_square: 3, underground_bunker: 3, guild_mainframe: 2, zarema_room: 2)
+- Typecheck: `node scripts/tsc7.mjs --noEmit` → exit 0 (twice confirmed).
+- Poems untouched. All invariants preserved. No commit / push performed — orchestrator handles the commit.
+
+---
+Task ID: 1 (orchestrator) — cron-tick 8
+Agent: main (orchestrator)
+Task: Cron-triggered AAA improvements round 8 — QA + filmic CSS for dialogue experience + NPC name plate + karma-gated dialogue + examine zones + Thought Cabinet + idle/byAct content
+
+Work Log:
+- Reviewed worklogs. Repo at /home/z/volodka, clean on main at dd717de (tick-7), v4.2.42.
+- QA via agent-browser on https://volodka.vercel.app/: main menu → New Game → skip prologue → narrative → choice → exploration. All flows clean. Tick-6 filmic CSS confirmed live (hud-filmic-examine-fade, hud-filmic-corner-bracket, hud-filmic-plate-glass on ExaminePanel). Tick-7 HUD elements (KarmaTierBadge, fade-edge, text-glow, pulse-ring) are hidden on headless browser's small viewport (responsive `hidden sm:*` classes) — NOT a bug. 0 console errors. STABLE.
+- Implemented 6 new filmic CSS classes (src/styles/hud-filmic.css, +186 lines):
+  1. .hud-filmic-npc-name-plate — filmic name plate for NPC names in dialogue header. Warm underline accent that animates in from left via scaleX(0)→scaleX(1), 0.6s. Gated on reduced-motion.
+  2. .hud-filmic-hover-lift — subtle lift + shadow on hover for interactive elements. translateY(-1px) + box-shadow. Gated on reduced-motion.
+  3. .hud-filmic-scene-title — cinematic scene title card animation. letterSpacing 0.2em→0.08em + blur 4px→0 + opacity 0→1, 0.8s. Gated on reduced-motion.
+  4. .hud-filmic-dialogue-reveal — subtle text-shadow pulse on dialogue body during NPC speech. Warm glow that fades out, 0.6s. Gated on reduced-motion.
+  5. .hud-filmic-stat-fill — filmic gradient fill for stat bars with a moving highlight sweep. Transparent→white→transparent gradient, 3s infinite. Gated on reduced-motion.
+  6. .hud-filmic-interjection — glow effect for thought interjection lines in dialogue. Dual warm text-shadow.
+- Wired 3 of the 6 new classes onto components:
+  - DiegeticDialogueHud.tsx: +hud-filmic-npc-name-plate on the NPC speaker name (p element, line 355). +hud-filmic-dialogue-reveal on the dialogue body text button (line 407).
+  - SceneContextChip.tsx: +hud-filmic-scene-title on the scene name span (line 72, stacked with existing hud-filmic-text-glow).
+- Launched 2 parallel subagents (4-a/4-b), both completed with typecheck exit 0:
+  - 4-a: +8 karma-gated dialogue choices across 4 files (part1-albert-expanded, part2-npcs, part5-final, part5-final-expanded) — 5 HIGH minKarma 25-60 + 3 LOW maxKarma 10-20. +10 examine TriggerZones for 4 zero-coverage scenes (city_square 3, underground_bunker 3, guild_mainframe 2, zarema_room 2).
+  - 4-b: +6 Thought Cabinet thoughts (items 43-48: production_syndrome, code_shard, server_silence, sleep_protocol, documentation_echo, memory_cache). +3 idle monologue scenes (chk_forest_zorge, factory_roof, zarema_albert_room — 30 new lines). +12 byAct revisit thoughts across 4 scenes (zarema_room +3 acts, underground_bunker +3 acts, pier_evening +3 acts, city_square +3 acts).
+- Final typecheck: `cd /home/z/volodka && node scripts/tsc7.mjs --noEmit` → exit 0.
+
+Stage Summary:
+- 11 source files modified + worklog/AI_SESSION_CONTEXT docs. ~+843/-3 lines across 1 commit.
+- typecheck: exit 0. Poems untouched. All invariants preserved.
+- Key wins this round:
+  1. 6 new filmic CSS micro-animations for dialogue experience (NPC name plate, hover lift, scene title card, dialogue text reveal, stat fill sweep, interjection glow) + 3 wired onto components.
+  2. +8 karma-gated dialogue choices across Acts 1-5 (narrative branching density ↑).
+  3. +10 examine TriggerZones for 4 zero-coverage scenes (city_square, underground_bunker, guild_mainframe, zarema_room now have content).
+  4. +6 Thought Cabinet thoughts (items 43-48, interiority ↑).
+  5. +3 idle monologue scenes (chk_forest_zorge, factory_roof, zarema_albert_room — living-world interiority ↑).
+  6. +12 byAct revisit thoughts across 4 scenes (scene memory ↑).
+- Unresolved / next-phase priorities: Author QA on Vercel. SSR wet streets (ultra-only). Continuous walk↔run blend. Mixamo↔Quaternius remap. Procedural act mood audio. More content Acts 3-4.

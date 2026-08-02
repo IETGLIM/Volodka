@@ -161,6 +161,22 @@ export const DIALOGUE_PART5_EXPANDED: Record<string, DialogueNode> = {
           { type: 'addSkill', skill: 'writing', value: 1 },
         ],
       },
+      {
+        text: 'Я слышал тебя, Виктория. Каждый узел — это сердце. А ты — ритм, который их объединяет. Мы — не стены. Мы — пульс.',
+        next: null,
+        condition: { minKarma: 40 },
+        effects: [
+          { type: 'addKarma', value: 12 },
+          { type: 'addSkill', skill: 'rhythm', value: 2 },
+          { type: 'npcChange', npcId: 'maria', npcChange: { relation: 15 } },
+          { type: 'setFlag', flag: 'victoria_resonance_promise', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Ритм. Ты никогда не думал о себе так — но это точное слово. Не лидер, не герой, не программист. Ритм. Тот, кто задаёт такт, чтобы остальные не сбились. Это — больше, чем ты думал.',
+            thoughtDuration: 7000,
+          },
+        ],
+      },
     ],
   },
 
@@ -489,6 +505,22 @@ export const DIALOGUE_PART5_EXPANDED: Record<string, DialogueNode> = {
         effects: [
           { type: 'addSkill', skill: 'coding', value: 1 },
           { type: 'addSkill', skill: 'writing', value: 1 },
+        ],
+      },
+      {
+        text: 'Добавь четвёртую статью: «Каждый имеет право на ошибку — если она написана сердцем.» Это — наш amend-man.',
+        next: null,
+        condition: { minKarma: 25 },
+        effects: [
+          { type: 'addKarma', value: 8 },
+          { type: 'addSkill', skill: 'persuasion', value: 2 },
+          { type: 'npcChange', npcId: 'office_alexander', npcChange: { relation: 12 } },
+          { type: 'setFlag', flag: 'alexander_amendment_pledge', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Четвёртая статья. Ты не юрист — но знаешь: лучшие законы пишутся не в кабинетах. Они пишутся там, где боль становится словом. Ошибка, написанная сердцем — не баг. Это — фича.',
+            thoughtDuration: 6500,
+          },
         ],
       },
     ],

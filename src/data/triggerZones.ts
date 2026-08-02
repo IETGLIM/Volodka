@@ -4635,6 +4635,251 @@ export const TRIGGER_ZONES: TriggerZone[] = [
   },
 
   /* ═══════════════════════════════════════════════════════════════════
+     CITY SQUARE — Central Square examine zones (0 existing → 3 new)
+     Scene: 28×4×28, outdoor, defaultSpawn [0, 0.01, 0]
+     ═══════════════════════════════════════════════════════════════════ */
+  {
+    id: 'city_square_broken_fountain',
+    sceneId: 'city_square',
+    position: [-4.0, 0.5, -3.0],
+    size: [2.5, 1.2, 2.5],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть сломанный фонтан',
+    examineData: {
+      title: 'Сломанный фонтан',
+      description: 'Бетонный фонтан без воды. Чаша треснула, на дне — ржавые монеты и бумажные цветы.',
+      detailText: 'Кто-то положил в чашу бумажные журавлики — оригами из старых распечаток. На крыльях одного — полу стёршаяся строка: «...и вода вернётся, когда...» Остальное размокло. Ты почти слышишь плеск — но это ветер в пустой трубе.',
+      icon: '⛲',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_square_fountain', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+      {
+        type: 'showThought',
+        thought: 'Бумажные журавлики в сухом фонтане. Кто-то всё ещё верит, что вода вернётся. Или — что журавли полетят. Может, это одно и то же.',
+        thoughtDuration: 6000,
+      },
+    ],
+  },
+  {
+    id: 'city_square_propaganda_kiosk',
+    sceneId: 'city_square',
+    position: [6.0, 1.0, 2.0],
+    size: [1.5, 2.0, 0.8],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть информационный киоск',
+    examineData: {
+      title: 'Информационный киоск',
+      description: 'Стеклянный стенд гильдии. Экран мёртв, под стеклом — засохшие объявления и чей-то рисунок.',
+      detailText: 'Под официальными уведомлениями — детский рисунок: дом, солнце, дерево. Подпись корявым почерком: «Мама говорит, стихи — не преступление.» Гильдийская печать поверх — «ОПЕРАТИВНО УСТРАНЕНО». Но рисунок — не устранён. Они не заметили. Или — не смогли.',
+      icon: '📰',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_square_kiosk', flagValue: true },
+      { type: 'addKarma', value: 4 },
+      { type: 'addSkill', skill: 'empathy', value: 1 },
+      {
+        type: 'showThought',
+        thought: 'Ребёнок нарисовал солнце, а гильдия поставила печать. Но солнце — не стирается печатями. Оно — выше. Дети это знают. Мы — забыли.',
+        thoughtDuration: 6500,
+      },
+    ],
+  },
+  {
+    id: 'city_square_manhole_graffiti',
+    sceneId: 'city_square',
+    position: [2.0, 0.1, 8.0],
+    size: [1.0, 0.2, 1.0],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть люк с граффити',
+    examineData: {
+      title: 'Люк с граффити',
+      description: 'Чугунный канализационный люк. На крышке — краской, давно выцветшей — строка.',
+      detailText: '«Кто спускается — поднимается.» Краска почти стёрлась, но буквы вырезаны шилом — не сотрёшь. Это не просто граффити. Это — пароль. Или — приглашение. Под люком — темнота и гул. Город дышит снизу.',
+      icon: '🕳️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_square_manhole', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+    ],
+  },
+
+  /* ═══════════════════════════════════════════════════════════════════
+     UNDERGROUND BUNKER — Resistance Bunker examine zones (0 existing → 3 new)
+     Scene: 18×4×16, underground, defaultSpawn [0, 0.01, 6]
+     ═══════════════════════════════════════════════════════════════════ */
+  {
+    id: 'underground_bunker_wall_map',
+    sceneId: 'underground_bunker',
+    position: [-5.0, 1.5, -2.0],
+    size: [2.0, 1.5, 0.1],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть карту на стене',
+    examineData: {
+      title: 'Карта Сети',
+      description: 'Грязная бумажная карта, приколотая к бетонной стене. Красные точки, линии, пометки от руки.',
+      detailText: 'Семнадцать красных точек. Семнадцать узлов. Линии между ними — не провода, не тропы — стихи. Каждая пометка — дата и одно слово. «Кофе.» «Библиотека.» «Автобус.» «Больница.» Это не карта инфраструктуры. Это — карта живых сердец.',
+      icon: '🗺️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_bunker_map', flagValue: true },
+      { type: 'addKarma', value: 5 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+      {
+        type: 'showThought',
+        thought: 'Карта сердец. Не серверов — сердец. Ты стоишь в бункере, построенном из страха, и смотришь на карту, нарисованную из надежды. Страх — бетон. Надежда — чернила. Чернила переживут бетон.',
+        thoughtDuration: 7000,
+      },
+    ],
+  },
+  {
+    id: 'underground_bunker_crate_poems',
+    sceneId: 'underground_bunker',
+    position: [4.0, 0.5, 3.0],
+    size: [1.0, 0.8, 0.8],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть ящик со стихами',
+    examineData: {
+      title: 'Ящик самиздата',
+      description: 'Деревянный ящик, доверху набитый тетрадями и распечатками. Запах бумаги и сырости.',
+      detailText: 'Стихи на чековой ленте, на салфетках, на оборотах приказов гильдии. «Стихи пишутся не на бумаге — на том, что под рукой.» Здесь — сотни строк. Кто-то собирал их месяцами. Каждая — чья-то жизнь, спасённая от удаления.',
+      icon: '📦',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_bunker_crate', flagValue: true },
+      { type: 'addKarma', value: 4 },
+      { type: 'addSkill', skill: 'writing', value: 1 },
+    ],
+  },
+  {
+    id: 'underground_bunker_broken_radio',
+    sceneId: 'underground_bunker',
+    position: [0.0, 1.2, -5.0],
+    size: [0.6, 0.5, 0.4],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть сломанное радио',
+    examineData: {
+      title: 'Сломанное радио',
+      description: 'Старое армейское радио. Антенна погнута, но индикатор питания мигает.',
+      detailText: 'Радио не работает — но индикатор мигает. Это не питание. Это — чей-то сигнал. Азбука Морзе. Точка-тире-точка. «П.» Точка-точка-тире. «Д.» Точка-точка. «И.» Тише. Кто-то внизу — передаёт. Кто-то — слушает. Ты — слушаешь.',
+      icon: '📻',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_bunker_radio', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'rhythm', value: 1 },
+      {
+        type: 'showThought',
+        thought: 'П. Д. И. «Пока дети живы»? «Поэзия — это»? Ты не знаешь расшифровку. Но ритм — точный. Как пульс. Как код. Как строчка, которая не обрывается.',
+        thoughtDuration: 6500,
+      },
+    ],
+  },
+
+  /* ═══════════════════════════════════════════════════════════════════
+     GUILD MAINFRAME — Server Room examine zones (0 existing → 2 new)
+     Scene: 16×4×14, indoor, defaultSpawn [0, 0.01, 5]
+     ═══════════════════════════════════════════════════════════════════ */
+  {
+    id: 'guild_mainframe_log_terminal',
+    sceneId: 'guild_mainframe',
+    position: [-4.0, 1.0, -2.0],
+    size: [1.0, 1.5, 0.6],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть лог-терминал',
+    examineData: {
+      title: 'Заброшенный лог-терминал',
+      description: 'Терминал мониторинга. Экран мерцает. Последняя запись — трёхлетней давности.',
+      detailText: '«DELETE poesis_v7//arch42 — COMPLETED. DELETE poesis_v7//arch43 — COMPLETED. DELETE poesis_v7//arch44 — PENDING...» Операция зависла на три года. Стихотворение — не удалено. Оно — ждёт. В очереди на смерть — уже три года. Как пациент в коридоре, которого забыли выписать.',
+      icon: '🖥️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_mainframe_terminal', flagValue: true },
+      { type: 'addKarma', value: 5 },
+      { type: 'addSkill', skill: 'coding', value: 1 },
+      {
+        type: 'showThought',
+        thought: 'PENDING. Три года — в ожидании удаления. Стихотворение висит в очереди, как приговор без исполнения. Ты — не хакер. Ты — амнистия.',
+        thoughtDuration: 6500,
+      },
+    ],
+  },
+  {
+    id: 'guild_mainframe_server_poem',
+    sceneId: 'guild_mainframe',
+    position: [3.0, 1.5, -4.0],
+    size: [0.6, 2.0, 0.8],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть серверную стойку',
+    examineData: {
+      title: 'Поющая стойка',
+      description: 'Серверная стойка. Вентиляторы гудят. Но гул — не ровный. Он — ритмичный.',
+      detailText: 'Вентиляторы меняют обороты в такт. Не случайно — ритмично. Три секунды — тише. Одна — громче. Три — тише. Одна — громче. Это — ямб. Четыре стопы. Кто-то — или что-то — модулирует обороты вентиляторов по законам стихосложения. Сервер — читает стихи. Или — пишет. Ты не знаешь, кто автор. Но ты — слышишь.',
+      icon: '🔊',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_mainframe_singing_rack', flagValue: true },
+      { type: 'addKarma', value: 6 },
+      { type: 'addSkill', skill: 'rhythm', value: 2 },
+      {
+        type: 'showThought',
+        thought: 'Ямб в вентиляторах. Серверная стойка читает стихи. Может, это Виктория. Может — кто-то другой. Может — сам город. Ты стоишь посреди цитадели цензуры — и слышишь поэзию. Они не смогли удалить её даже здесь.',
+        thoughtDuration: 7000,
+      },
+    ],
+  },
+
+  /* ═══════════════════════════════════════════════════════════════════
+     ZAREMA ROOM — Zarema's Room examine zones (0 existing → 2 new)
+     Scene: 8×3×7, indoor, defaultSpawn [0, 0.01, 2]
+     ═══════════════════════════════════════════════════════════════════ */
+  {
+    id: 'zarema_room_dried_flowers',
+    sceneId: 'zarema_room',
+    position: [-2.5, 1.2, -1.0],
+    size: [0.5, 0.6, 0.4],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть засушенные цветы',
+    examineData: {
+      title: 'Засушенные цветы',
+      description: 'Стакан на подоконнике. В нём — три засушенных цветка. Лилии. Лепестки — как бумага.',
+      detailText: 'Лилии. Она сохранила их — может, из подвала «Зари-М». Там, где не бывает солнца, что-то цветёт — она говорила. Три цветка. Три года. Каждый — как дата. Как страница. Как строчка, которую не удалили.',
+      icon: '💐',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_zarema_flowers', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'empathy', value: 1 },
+    ],
+  },
+  {
+    id: 'zarema_room_code_notebook',
+    sceneId: 'zarema_room',
+    position: [2.0, 0.5, -2.0],
+    size: [0.4, 0.3, 0.3],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть тетрадь с кодом',
+    examineData: {
+      title: 'Тетрадь Заремы',
+      description: 'Толстая тетрадь в клетку. На обложке — «SQL-запросы». Внутри — не SQL.',
+      detailText: 'Страницы заполнены стихами. Почерк аккуратный, учительский. На полях — комментарии: «удалить», «заменить», «оптимизировать» — гильдийские термины, но рядом — приписка красной ручкой: «НЕ СДАВАТЬСЯ». Зарема переписывала приказы гильдии — и превращала их в стихи. Каждый приказ — новая строка. Каждая строка — акт сопротивления.',
+      icon: '📓',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_zarema_notebook', flagValue: true },
+      { type: 'addKarma', value: 5 },
+      { type: 'addSkill', skill: 'writing', value: 1 },
+      {
+        type: 'showThought',
+        thought: 'Зарема не просто прятала стихи. Она — переписывала ненависть в поэзию. Каждый приказ об удалении — в строку о памяти. Это не перевод — это трансформация. Как будто она — компилятор, который превращает боль в код, а код — в свободу.',
+        thoughtDuration: 7000,
+      },
+    ],
+  },
+
+  /* ═══════════════════════════════════════════════════════════════════
      COMBAT ENCOUNTERS — replaced by visible patrolling creeps
      (src/data/creepPatrols.ts + PatrollingCreeps.tsx). The old invisible
      autoTrigger zones fired combat with no warning; creeps give the player

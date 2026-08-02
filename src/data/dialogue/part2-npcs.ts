@@ -437,6 +437,22 @@ export const DIALOGUE_PART2: Record<string, DialogueNode> = {
           { type: 'setFlag', flag: 'alexander_wants_dmitry_stopped', flagValue: true },
         ],
       },
+      {
+        text: 'Страх — это не предательство. Ты боишься — значит, ты ещё жив. Я защищу тебя. Клянусь.',
+        next: null,
+        condition: { minKarma: 50 },
+        effects: [
+          { type: 'addKarma', value: 12 },
+          { type: 'addSkill', skill: 'empathy', value: 2 },
+          { type: 'npcChange', npcId: 'office_colleague', npcChange: { relation: 20 } },
+          { type: 'setFlag', flag: 'colleague_truth_pledge', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Коллега смотрит на тебя — и ты видишь, как дрожь в его руках унимается. Не сразу. Медленно. Как будто твои слова — не звук, а тепло. Ты не знал, что умеешь так. Или — забыл.',
+            thoughtDuration: 7000,
+          },
+        ],
+      },
     ],
   },
 
@@ -688,6 +704,23 @@ export const DIALOGUE_PART2: Record<string, DialogueNode> = {
           { type: 'addStat', stat: 'stress', value: 3 },
           { type: 'setFlag', flag: 'network_contact', flagValue: true },
           { type: 'npcChange', npcId: 'cafe_barista', npcChange: { relation: 5 } },
+        ],
+      },
+      {
+        text: 'Я — не ваш агент. Я — свой. И если вы используете меня как пешку — я уйду.',
+        next: null,
+        condition: { maxKarma: 20 },
+        effects: [
+          { type: 'addKarma', value: -5 },
+          { type: 'addStat', stat: 'stress', value: 3 },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'npcChange', npcId: 'cafe_barista', npcChange: { relation: -8 } },
+          { type: 'setFlag', flag: 'barista_spy_pledge', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Бариста не отвёл взгляд. Он понял. Ты — не пешка, не инструмент, не ресурс. Ты — Володька. И если Сеть не уважает это — ты найдёшь другой путь. Один. Как всегда.',
+            thoughtDuration: 6500,
+          },
         ],
       },
     ],

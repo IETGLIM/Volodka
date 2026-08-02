@@ -352,7 +352,7 @@ export function DiegeticDialogueHud() {
                 <NPCPortrait npcId={npcId} size="mini" className="!w-8 !h-8 !rounded-sm" />
               )}
               <p
-                className="hud-filmic-kicker truncate"
+                className="hud-filmic-kicker hud-filmic-npc-name-plate truncate"
                 style={{ color: accentColor, letterSpacing: '0.18em' }}
                 id={`diegetic-speaker-${nodeId}`}
               >
@@ -404,7 +404,7 @@ export function DiegeticDialogueHud() {
           <button
             type="button"
             onClick={handleTextAdvance}
-            className="w-full text-left px-4 pb-2 font-serif text-sm sm:text-base leading-relaxed hover:bg-white/[0.03] transition-colors overflow-y-auto"
+            className="w-full text-left px-4 pb-2 font-serif text-sm sm:text-base leading-relaxed hover:bg-white/[0.03] transition-colors overflow-y-auto hud-filmic-dialogue-reveal"
             style={{
               maxHeight: `min(${EXPLORATION_HUD_LAYOUT.DIEGETIC_DIALOGUE_TEXT_MAX_HEIGHT}px, 35dvh)`,
               color: 'var(--hud-filmic-ink)',

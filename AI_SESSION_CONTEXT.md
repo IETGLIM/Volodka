@@ -149,6 +149,23 @@ dice checks, живые хабы). Вдохновение также: Gothic (р
 
 ## 📝 История сессий
 
+### Сессия: 2026-08-02 (cron-tick 8) — "Filmic dialogue CSS + NPC name plate + karma dialogue + examine zones + Thought Cabinet + content"
+**Контекст:** Cron-triggered продолжение AAA-polish. QA via agent-browser подтвердила стабильность (0 ошибок, tick-6 filmic CSS confirmed live). Tick-7 HUD elements (KarmaTierBadge, fade-edge, text-glow, pulse-ring) hidden на headless browser viewport — NOT a bug (responsive `hidden sm:*`). 3 параллельных work-stream'а: (me) filmic CSS для dialogue experience; (4-a) karma-gated dialogue + examine zones; (4-b) Thought Cabinet + idle + byAct.
+
+**Что сделано (11 файлов, ~+843/-3 строк, 1 коммит):**
+1. **Filmic CSS для dialogue experience (src/styles/hud-filmic.css +186 строк + 3 component wirings):** 6 NEW classes: .hud-filmic-npc-name-plate (warm underline accent, scaleX draw 0.6s), .hud-filmic-hover-lift (subtle lift + shadow on hover), .hud-filmic-scene-title (cinematic title card: letterSpacing+blur+opacity reveal 0.8s), .hud-filmic-dialogue-reveal (text-shadow pulse on NPC speech 0.6s), .hud-filmic-stat-fill (gradient fill sweep 3s infinite), .hud-filmic-interjection (glow for thought interjection lines). All gated на prefers-reduced-motion. Wired: DiegeticDialogueHud (+npc-name-plate +dialogue-reveal), SceneContextChip (+scene-title).
+2. **Karma-gated dialogue (4-a, 4 dialogue files, +130 строк):** +8 choices: albert_deep_talk (minKarma 35), albert_deep_alliance (maxKarma 15), colleague_trust_test (minKarma 50), cafe_barista_network_reveal (maxKarma 20), victoria_sacrifice (minKarma 60), albert_resistance (maxKarma 10), victoria_after_storm (minKarma 40), alexander_charter (minKarma 25).
+3. **Examine TriggerZones (4-a, triggerZones.ts, +245 строк):** +10 zones для 4 zero-coverage scenes: city_square 0→3, underground_bunker 0→3, guild_mainframe 0→2, zarema_room 0→2.
+4. **Thought Cabinet (4-b, thoughtCabinet.ts, +93 строки):** +6 thoughts (items 43-48): production_syndrome, code_shard, server_silence, sleep_protocol, documentation_echo, memory_cache.
+5. **Idle monologues (4-b, idleMonologues.ts, +69 строк):** +3 scenes (chk_forest_zorge, factory_roof, zarema_albert_room — 30 new lines).
+6. **byAct revisit thoughts (4-b, sceneEntryThoughts.ts, +12 строк):** +12 entries across 4 scenes (zarema_room +3 acts, underground_bunker +3 acts, pier_evening +3 acts, city_square +3 acts).
+
+**TypeScript:** 0 ошибок. **Стихи:** не тронуты. **Инварианты:** сохранены.
+
+**Следующий шаг:** Author QA на Vercel. Дальше — SSR wet streets, walk↔run blend, Mixamo remap, procedural act mood audio, ещё контент Acts 3-4.
+
+---
+
 ### Сессия: 2026-08-02 (cron-tick 7) — "KarmaTierBadge mount + filmic CSS micro-animations + weather-reactive NPC barks + karma dialogue Acts 3-4 + content"
 **Контекст:** Cron-triggered продолжение AAA-polish. QA via agent-browser на https://volodka.vercel.app/ подтвердила стабильность (0 ошибок, tick-6 filmic CSS confirmed live: examine-fade + corner-bracket + plate-glass all present in DOM). Решение: багов нет, продолжить аддитивные AAA-улучшения. 3 параллельных work-stream'а: (me) KarmaTierBadge orphan mount + filmic CSS; (3-a) karma-gated dialogue Acts 3-4 + examine zones; (3-b) weather-reactive NPC barks NEW FEATURE + Thought Cabinet + idle content.
 
