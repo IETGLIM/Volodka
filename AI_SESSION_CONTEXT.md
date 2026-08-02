@@ -62,6 +62,14 @@ dice checks, живые хабы). Вдохновение также: Gothic (р
 - Continuous walk↔run blend (locomotion blend tree partial)
 - More content density Acts 3-4 (ongoing)
 
+### ✅ Недавно закрыто (cron-tick 10, 2026-08-02)
+- 5 unwired filmic CSS classes now active on components (ink-bleed, boot-stagger, boot-cursor, crosshair-ring, vignette-pulse)
+- 6 new filmic CSS micro-animations (compass-glow, panel-sweep, tooltip-ink, stat-bar-sheen, notification-slide, quest-tracker-shimmer) + 3 wired onto components
+- CompassPOIMarkers orphan mounted in CompassHUD (quest POI directional markers)
+- StatPulse orphan mounted in SceneTopBarHud (stat change pulse)
+- Atmospheric effects for 5 bare scenes (chk_forest_zorge, forest_clearing, zarema_albert_room, factory_roof, office_day)
+- 5 VolumetricLightShaft presets (12 shafts: abandoned_factory, underground_bunker, chk_campfire_night, library_basement, albert_backroom)
+
 ### ✅ Недавно закрыто (cron-tick 9, 2026-08-02)
 - Procedural act mood audio tables — ACTIVATED (ACT_MOOD_OVERRIDES in proceduralAudioCatalog.ts, 20 entries covering 5 key scenes across acts 2-5, resolveActMoodOverride helper)
 - Atmospheric effects for 6 bare scenes — ACTIVATED (solnysh_room/chk_campfire_night/library_basement/underground_bunker/albert_backroom/zarema_room now have dust/embers/mist/flicker)
@@ -152,6 +160,29 @@ dice checks, живые хабы). Вдохновение также: Gothic (р
 ---
 
 ## 📝 История сессий
+
+### Сессия: 2026-08-02 (cron-tick 10) — "Filmic CSS wiring + orphan HUD mounts + atmospheric effects + volumetric shafts + content"
+**Контекст:** Cron-triggered продолжение AAA-polish. QA via agent-browser на https://volodka.vercel.app/ подтвердила стабильность (0 ошибок, tick-6 filmic CSS confirmed live: examine-fade + corner-bracket + plate-glass). 3 параллельных work-stream'а: (me) filmic CSS wiring + orphan HUD mounts + atmospheric effects; (10-a) karma-gated dialogue + examine zones + Thought Cabinet + idle/byAct; (10-b) VolumetricLightShaft presets.
+
+**Что сделано (21 файлов, ~+1008/-10 строк, 1 коммит 20afe8e):**
+1. **Wire 5 unwired filmic CSS classes onto components:** hud-filmic-ink-bleed → SceneDiscoveryCelebration (blur-to-clarity text reveal), hud-filmic-boot-stagger → HUDBootSequence (staggered fade-in), hud-filmic-boot-cursor → HUDBootSequence (warm amber cursor), hud-filmic-crosshair-ring → DynamicCrosshair (expanding ring on interaction), hud-filmic-vignette-pulse → SprintDrainOverlay (red pulse for critical sprint).
+2. **6 NEW filmic CSS micro-animations (hud-filmic.css +207 строк):** hud-filmic-compass-glow (warm glow on compass cardinal), hud-filmic-panel-sweep (horizontal light sweep on panel open), hud-filmic-tooltip-ink (ink-bleed tooltip reveal), hud-filmic-stat-bar-sheen (one-shot highlight on stat bar change), hud-filmic-notification-slide (filmic slide-in for toasts), hud-filmic-quest-tracker-shimmer (warm shimmer on quest text). All gated on prefers-reduced-motion.
+3. **Wire 3 new classes onto components:** StoryGuidanceHUD (+quest-tracker-shimmer), ExaminePanel (+panel-sweep), ToastItem (+notification-slide).
+4. **Mount CompassPOIMarkers orphan widget in CompassHUD:** quest POI directional markers around the compass — shows glowing dots at the correct angle relative to player facing for active quest objectives. Was orphaned (0 imports) — now live.
+5. **Mount StatPulse orphan widget in SceneTopBarHud:** stat change pulse animation on the mood indicator — color-coded pulse (rose for high stress, amber for low energy). Was orphaned — now live.
+6. **Atmospheric effects for 5 bare scenes (AtmosphericEffects.tsx):** chk_forest_zorge (mist), forest_clearing (mist), zarema_albert_room (dust), factory_roof (dust), office_day (fluorescent flicker). These 5 scenes previously had ZERO atmospheric effects.
+7. **5 VolumetricLightShaft presets (10-b, VolumetricLightShaft.tsx, +203 строк):** abandoned_factory (3 shafts: broken skylight beams, warm amber, high dust), underground_bunker (2 shafts: green CRT glow + red emergency), chk_campfire_night (2 shafts: ground-level campfire cones, warm orange), library_basement (2 shafts: bare bulb overhead, warm amber, high dust), albert_backroom (2 shafts: dim desk lamp + faint window spill, warm amber).
+8. **+8 karma-gated dialogue choices (10-a, 4 dialogue files):** zarema_daily_life (minKarma:50, maxKarma:20), maria_dialogue (minKarma:60, maxKarma:15), cafe_barista_night_pulse (minKarma:45, maxKarma:20), colleague_suspects (minKarma:55, maxKarma:15), barista_maria (minKarma:65, maxKarma:20), alexander_past (minKarma:40, maxKarma:10), dmitry_factory_impossible (minKarma:55, maxKarma:25), alexander_about_system (minKarma:50, maxKarma:15).
+9. **+9 examine TriggerZones (10-a, triggerZones.ts, +185 строк):** zarema_room (2), library_basement (2), chk_campfire_night (2), guild_mainframe (2), city_square (1).
+10. **+6 Thought Cabinet thoughts (10-a, thoughtCabinet.ts, +92 строки):** items 55-60: Пепельный Ритм, Протокол Эмпатии, Тишина Кабеля, Часовой Механизм, Голос Татарский, Протокол Сожаления.
+11. **+2 idle monologue scenes (10-a, idleMonologues.ts, +44 строки):** zarema_room, forest_clearing (10 lines each).
+12. **+6 byAct revisit thoughts (10-a, sceneEntryThoughts.ts, +6 строк):** factory_roof +acts{6,7}, library_basement +acts{6,7}, river_pier +acts{3,4}.
+
+**TypeScript:** 0 ошибок. **Стихи:** не тронуты. **Инварианты:** сохранены.
+
+**Следующий шаг:** Author QA на Vercel — проверить CompassPOIMarkers в compass, panel-sweep на ExaminePanel, notification-slide на toasts, atmospheric effects в chk_forest_zorge/forest_clearing/office_day, VolumetricLightShafts в abandoned_factory/underground_bunker/chk_campfire_night. Дальше — SSR wet streets, walk↔run blend, Mixamo remap, ещё контент Acts 3-4, ещё orphaned HUD mounts (14 remaining: CyberpunkMinimap, QuickTimeEventOverlay, QuestObjectiveCard, DamageFloatSystem, etc.).
+
+---
 
 ### Сессия: 2026-08-02 (cron-tick 9) — "Atmospheric effects for bare scenes + filmic CSS depth/scanline/mood + per-act audio + content"
 **Контекст:** Cron-triggered продолжение AAA-polish. QA via agent-browser на https://volodka.vercel.app/ подтвердила стабильность (0 ошибок, exploration HUD + examine panel + filmic CSS confirmed live). Tick-8 filmic CSS (npc-name-plate, dialogue-reveal, scene-title) confirmed live. 3 параллельных work-stream'а: (me) atmospheric effects + filmic CSS wiring + new CSS micro-animations; (5-a) karma-gated dialogue + examine zones + Thought Cabinet + idle/byAct; (5-b) fog/godray presets + per-act mood audio overrides.

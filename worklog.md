@@ -2486,3 +2486,63 @@ Stage Summary:
 - 2 idle monologue scenes added (zarema_room, forest_clearing)
 - 6 byAct revisit thoughts added (factory_roof, library_basement, river_pier)
 - All changes type-safe, typecheck exit 0
+
+---
+Task ID: 1 (orchestrator) — cron-tick 10
+Agent: main (orchestrator)
+Task: Cron-triggered AAA improvements round 10 — QA + filmic CSS wiring + orphan HUD mounts + atmospheric effects + volumetric shafts + content
+
+Work Log:
+- Reviewed worklogs (sandbox + /home/z/volodka/worklog.md tail) + AI_SESSION_CONTEXT.md. Repo at /home/z/volodka, clean on main at a372c00 (tick-9), v4.2.42.
+- QA via agent-browser on https://volodka.vercel.app/:
+  - Main menu → New Game → skip prologue → narrative → close dialogue → exploration. All flows clean.
+  - ExaminePanel (E key) — tick-6 filmic CSS confirmed live: hud-filmic-plate, hud-filmic-plate-glass, hud-filmic-corner-bracket, hud-filmic-examine-fade, hud-filmic-kicker.
+  - 0 console errors / page errors. Project STABLE — no bugs to fix.
+- Explored codebase for remaining improvement opportunities (Explore agent):
+  - 17 orphaned HUD widgets (~5000+ lines dead code)
+  - 12 unwired filmic CSS classes
+  - 9 scenes with zero atmospheric effects
+  - 23 scenes missing VolumetricLightShaft presets
+- Decision: no bugs → continue additive AAA improvements. 3 parallel work-streams:
+  - (me) Filmic CSS wiring + orphan HUD mounts + atmospheric effects + new CSS micro-animations
+  - (10-a) Karma-gated dialogue + examine zones + Thought Cabinet + idle/byAct
+  - (10-b) VolumetricLightShaft presets for 5 high-priority scenes
+- Wired 5 unwired filmic CSS classes onto components:
+  1. hud-filmic-ink-bleed → SceneDiscoveryCelebration (blur-to-clarity text reveal)
+  2. hud-filmic-boot-stagger → HUDBootSequence (staggered fade-in for boot lines)
+  3. hud-filmic-boot-cursor → HUDBootSequence (warm amber cursor instead of neon cyan)
+  4. hud-filmic-crosshair-ring → DynamicCrosshair (expanding ring on interaction)
+  5. hud-filmic-vignette-pulse → SprintDrainOverlay (red pulse for critical sprint)
+- Added 6 new filmic CSS micro-animations (hud-filmic.css +207 lines):
+  1. hud-filmic-compass-glow (warm glow on compass cardinal)
+  2. hud-filmic-panel-sweep (horizontal light sweep on panel open)
+  3. hud-filmic-tooltip-ink (ink-bleed tooltip reveal)
+  4. hud-filmic-stat-bar-sheen (one-shot highlight on stat bar change)
+  5. hud-filmic-notification-slide (filmic slide-in for toasts)
+  6. hud-filmic-quest-tracker-shimmer (warm shimmer on quest text)
+- Wired 3 new classes onto components: StoryGuidanceHUD (+quest-tracker-shimmer), ExaminePanel (+panel-sweep), ToastItem (+notification-slide)
+- Mounted 2 orphaned HUD widgets:
+  1. CompassPOIMarkers → CompassHUD (quest POI directional markers around compass)
+  2. StatPulse → SceneTopBarHud (stat change pulse on mood indicator)
+- Added atmospheric effects for 5 bare scenes:
+  1. chk_forest_zorge (mist)
+  2. forest_clearing (mist)
+  3. zarema_albert_room (dust)
+  4. factory_roof (dust)
+  5. office_day (fluorescent flicker)
+- Launched 2 parallel subagents (10-a/10-b), both completed with typecheck exit 0:
+  - 10-a: +8 karma-gated dialogue choices (4 files), +9 examine TriggerZones (5 scenes), +6 Thought Cabinet thoughts (items 55-60), +2 idle monologue scenes (zarema_room, forest_clearing), +6 byAct revisit thoughts
+  - 10-b: +5 VolumetricLightShaft presets (12 shafts: abandoned_factory 3, underground_bunker 2, chk_campfire_night 2, library_basement 2, albert_backroom 2)
+- Final typecheck: `cd /home/z/volodka && node scripts/tsc7.mjs --noEmit` → exit 0.
+
+Stage Summary:
+- 21 source files modified + worklog/AI_SESSION_CONTEXT docs. ~+1008/-10 lines across 1 commit (20afe8e).
+- typecheck: exit 0. Poems untouched. All invariants preserved.
+- Key wins this round:
+  1. 5 unwired filmic CSS classes now active on components (ink-bleed, boot-stagger, boot-cursor, crosshair-ring, vignette-pulse).
+  2. 6 new filmic CSS micro-animations + 3 wired onto components (quest-tracker-shimmer, panel-sweep, notification-slide).
+  3. 2 orphaned HUD widgets mounted: CompassPOIMarkers (quest POI markers in compass), StatPulse (stat change pulse).
+  4. 5 scenes with ZERO atmospheric effects now have dust/mist/flicker (living world ↑).
+  5. 5 new VolumetricLightShaft presets (12 shafts) for cinematic cone geometry (abandoned_factory, underground_bunker, chk_campfire_night, library_basement, albert_backroom).
+  6. +8 karma-gated dialogue choices, +9 examine zones, +6 Thought Cabinet thoughts, +2 idle scenes, +6 byAct thoughts (content density ↑).
+- Unresolved / next-phase priorities: Author QA on Vercel. SSR wet streets (ultra-only). Continuous walk↔run blend. Mixamo↔Quaternius remap. More content Acts 3-4. More orphaned HUD mounts (14 remaining: CyberpunkMinimap, QuickTimeEventOverlay, QuestObjectiveCard, DamageFloatSystem, etc.).
