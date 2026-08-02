@@ -317,7 +317,7 @@ export function LoadingScreen({
           </div>
 
           <div className="w-full flex items-center justify-between">
-            <p id={LOADING_MESSAGE_ID} className="text-[11px] text-cyan-500/70 tracking-wider font-mono">
+            <p id={LOADING_MESSAGE_ID} className="text-[11px] tracking-wider font-mono" style={{ color: 'var(--hud-filmic-ink-meta)' }}>
               {message}<span className="loading-dots" />
             </p>
             {clampedProgress !== undefined && (
@@ -344,7 +344,8 @@ export function LoadingScreen({
             <div className="h-px w-8 bg-[linear-gradient(90deg,rgb(var(--cyber-cyan-rgb)/0.4),transparent)]" />
           </div>
           <p
-            className="text-sm text-slate-400/60 italic leading-relaxed font-serif shadow-[0_0_15px_rgb(var(--cyber-cyan-rgb)/0.08)]"
+            className="text-sm italic leading-relaxed font-serif shadow-[0_0_15px_rgb(var(--cyber-cyan-rgb)/0.08)]"
+            style={{ color: 'var(--hud-filmic-ink-muted)' }}
             aria-live="polite"
             aria-atomic="true"
           >
@@ -370,14 +371,14 @@ export function LoadingScreen({
                     <span className="text-[10px] text-amber-500/50 uppercase tracking-[0.2em] font-mono">Совет</span>
                     <div className="h-px w-6 bg-[linear-gradient(90deg,rgba(251,191,36,0.4),transparent)]" />
                   </div>
-                  <p className="text-xs text-slate-500/50 leading-relaxed">{currentTip}</p>
+                  <p className="text-xs leading-relaxed" style={{ color: 'var(--hud-filmic-ink-dim)' }}>{currentTip}</p>
                 </motion.div>
               ) : (
                 <div key={tipIndex} aria-live="polite" aria-atomic="true">
                   <div className="flex items-center justify-center gap-3 mb-1">
                     <span className="text-[10px] text-amber-500/50 uppercase tracking-[0.2em] font-mono">Совет</span>
                   </div>
-                  <p className="text-xs text-slate-500/50 leading-relaxed">{currentTip}</p>
+                  <p className="text-xs leading-relaxed" style={{ color: 'var(--hud-filmic-ink-dim)' }}>{currentTip}</p>
                 </div>
               )
             )}

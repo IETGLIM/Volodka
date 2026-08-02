@@ -343,7 +343,7 @@ export function DiegeticDialogueHud() {
       >
         <FocusTrap>
         <div
-          className="mx-auto max-w-3xl hud-filmic-dialogue-plate overflow-hidden flex flex-col"
+          className="mx-auto max-w-3xl hud-filmic-dialogue-plate hud-filmic-dialogue-breath overflow-hidden flex flex-col"
           style={{ maxHeight: 'calc(100dvh - 32px - env(safe-area-inset-bottom, 0px))' }}
         >
           <div className="px-4 pt-3 pb-1 flex items-center justify-between gap-2">
@@ -363,7 +363,7 @@ export function DiegeticDialogueHud() {
               <button
                 type="button"
                 onClick={() => setShowHistory(true)}
-                className="hud-filmic-kicker px-2 py-1 rounded-sm hover:text-stone-200 hover:bg-white/[0.04] transition-colors flex items-center gap-1"
+                className="hud-filmic-kicker hud-filmic-icon-btn px-2 py-1 rounded-sm transition-colors flex items-center gap-1"
                 aria-label="История диалога"
                 title="История диалога"
               >
@@ -373,7 +373,7 @@ export function DiegeticDialogueHud() {
               <button
                 type="button"
                 onClick={handleClose}
-                className="hud-filmic-kicker px-2 py-1 shrink-0 hover:text-stone-200"
+                className="hud-filmic-kicker hud-filmic-icon-btn px-2 py-1 shrink-0"
                 aria-label="Закрыть"
               >
                 Esc

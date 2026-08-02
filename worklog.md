@@ -1547,3 +1547,217 @@ widgets, (3) accessibility + styling gaps. Решение: багов нет, п
 - VolumetricLightShafts for home_evening/factory_basement
 - Dialogue karma-gated branches
 - Accessibility pass (more ARIA, focus management)
+
+---
+Task ID: 6-a
+Agent: thought-cabinet-agent
+Task: Fix Thought Cabinet bug — add 6 missing thought items (31-36) referenced by MUTUALLY_EXCLUSIVE_PAIRS but never written
+
+Work Log:
+- Read both worklogs (sandbox 771 lines). Confirmed Task 5-c recon finding: commit 43a16b0 only added the MUTUALLY_EXCLUSIVE_PAIRS constant (14 lines) but NEVER wrote the 6 actual ThoughtCabinetItem entries — leaving 4 dangling IDs (digital_call, street_whisper, cold_calculation, poetic_matrix) referenced in MUTUALLY_EXCLUSIVE_PAIRS but absent from THOUGHT_CABINET_ITEMS.
+- Read full `/home/z/volodka/src/data/thoughtCabinet.ts` (512 lines pre-edit). Confirmed:
+  - THOUGHT_CABINET_ITEMS array ends at line 488 with `];` (only 30 items, 1–30).
+  - MUTUALLY_EXCLUSIVE_PAIRS at lines 503–512 references the 4 dangling IDs at lines 510–511 (`['digital_call', 'street_whisper']`, `['cold_calculation', 'poetic_matrix']`).
+  - Template item identified: `postsoviet_nostalgia` (lines 111–126).
+- Read `/home/z/volodka/src/shared/types/definitions/thoughtCabinet.ts` (22 lines). Confirmed interfaces:
+  - ThoughtCabinetEffect: `{ skill: TrainablePlayerSkill; modifier: number; description: string }`.
+  - ThoughtCabinetItem: `{ id, name, voice: TrainablePlayerSkill, description, flavorText, acquisitionCondition, acquisitionNode?, mutuallyExclusive?: readonly string[], effects: readonly ThoughtCabinetEffect[], hidden? }`.
+- Read `/home/z/volodka/src/shared/types/definitions/skills.ts` (15 lines). CRITICAL: `PlayerSkills` interface has only 7 keys — `logic`, `coding`, `empathy`, `persuasion`, `intuition`, `writing`, `rhythm`. NO `endurance`, NO `authority`. The Task 3-c worklog claim ("Added endurance and authority as new TrainablePlayerSkills") is FALSE — those skills were never actually added (or were reverted). Cross-verified via `rg "endurance"` across `src/` (zero matches) and `JOURNAL_SKILL_LABELS` in `src/components/game/journal/journalConstants.ts` (only 7 entries).
+- Applied substitutions per spec rule "adapt skill keys only if endurance/authority are invalid":
+  - `code_ghost`: `voice: 'authority'` → `voice: 'persuasion'`; effect `skill: 'authority'` → `skill: 'persuasion'`.
+  - `night_watch`: effect `skill: 'endurance'` → `skill: 'rhythm'`.
+  - `street_whisper`: effect `skill: 'endurance'` → `skill: 'rhythm'`.
+  - 3 other thoughts (`digital_call`, `poetic_matrix`, `cold_calculation`) required no substitution — they only reference valid skills (coding/intuition/empathy/writing/logic/rhythm).
+- Inserted 6 new ThoughtCabinetItem entries (items 31–36) into THOUGHT_CABINET_ITEMS array, immediately before the closing `];` (after `water_memory` item 30, line 487). Used single Edit operation with a uniquely-anchored `old_str` (the `effects: [...] },\n];\n\n/* ─── Lookup map ─── */` tail of `water_memory`) to ensure precise insertion. File grew from 512 → 606 lines (+94 lines).
+- Preserved spec-exact descriptions verbatim (including "+2 Авторитет" on `code_ghost` and "+2 Выносливость"/"-1 Выносливость" on `night_watch`/`street_whisper` where the substituted skill key no longer matches the description text). Per spec directive "adapt skill keys only" — descriptions are intentionally left untouched.
+- Verified: All 6 new IDs present in THOUGHT_CABINET_ITEMS via Grep: `digital_call` (line 491), `code_ghost` (line 507), `night_watch` (line 522), `poetic_matrix` (line 537), `cold_calculation` (line 553), `street_whisper` (line 569). The 4 previously-dangling IDs in MUTUALLY_EXCLUSIVE_PAIRS (lines 604–605) now resolve to real entries.
+- Ran typecheck gate: `cd /home/z/volodka && node scripts/tsc7.mjs --noEmit` → EXIT_CODE=0 (no errors). The 6 new entries type-check cleanly against `ThoughtCabinetItem` interface; all substituted skill keys (`persuasion`, `rhythm`) are valid `TrainablePlayerSkill` values.
+- Poems (`src/data/poems.ts`) untouched — not opened. No state mutations. No existing code modified other than the additive insertion before `];`. Rapier `<Physics interpolate={false}>`, KCC ownership, postprocessing depth-blit patch, test contracts all untouched.
+
+Stage Summary:
+- 6 Thought Cabinet items (31–36) added with exact spec text: Цифровой Зов, Призрак Кодекса, Ночной Дозор, Поэтическая Матрица, Холодный Расчёт, Уличный Шёпот.
+- Skill substitutions (because endurance/authority are NOT valid TrainablePlayerSkill values despite Task 3-c worklog claim):
+  - code_ghost: voice authority→persuasion, effect[0] skill authority→persuasion.
+  - night_watch: effect[0] skill endurance→rhythm.
+  - street_whisper: effect[2] skill endurance→rhythm.
+- Descriptions preserved verbatim per spec ("adapt skill keys only") — note: 3 descriptions now have a label-vs-key mismatch ("+2 Авторитет" on persuasion skill, "+2 Выносливость"/"-1 Выносливость" on rhythm skill) — this is intentional per spec literal reading, flagged for orchestrator awareness.
+- MUTUALLY_EXCLUSIVE_PAIRS no longer references any dangling IDs — all 4 previously-dangling IDs (digital_call, street_whisper, cold_calculation, poetic_matrix) now exist as ThoughtCabinetItem entries. code_ghost and night_watch added as standalone (no mutual-exclusion pair, as expected).
+- Typecheck passes: `node scripts/tsc7.mjs --noEmit` → exit 0.
+- Purely additive change — single file edited (`src/data/thoughtCabinet.ts`), +94 lines, 0 deletions, 0 modifications to existing thoughts.
+
+---
+Task ID: 6-b
+Agent: hud-mount-and-filmic-css-agent
+Task: Mount 6 orphan HUD widgets (PlayerCoordinatesDisplay, AmbientParticles HUD, HUDBootSequence, InteractionDistanceRing, SceneDiscoveryCelebration, HUDNotificationFeed) — replacing SceneDiscoveryToast in the process; wire up 4 orphan filmic CSS classes (.hud-filmic-dialogue-breath, .hud-ambient-particles + .hud-ambient-pulse, .hud-filmic-letterbox-gradient, .hud-filmic-status-pulse); add 5 NEW filmic CSS additions (plate-glass, ink-bleed, status-segment, vignette-pulse, boot-cursor) + 2 accessibility media-query blocks (prefers-contrast: more, forced-colors: active); apply 4 token-swap batches (LoadingScreen, MenuScreenPanel, ExaminePanel, DiegeticDialogueHud).
+
+Work Log:
+- Read both worklogs (sandbox 808 lines + project 1586 lines). Confirmed Task 5-a recon finding: 6 orphan HUD widgets (PlayerCoordinatesDisplay, AmbientParticles HUD, HUDBootSequence, InteractionDistanceRing, SceneDiscoveryCelebration, HUDNotificationFeed) are defined but never mounted. Confirmed Task 5-b recon finding: 4 orphan filmic classes exist in CSS but no component uses them.
+- Verified all 6 orphan widget files exist with named exports and self-contained prop signatures (zero props, all internally reduced-motion-gated where applicable).
+- Verified `.ambient-particle` (lowercase) CSS class already exists in `panel-cyberpunk.css:134` with `ambient-float` keyframes — no need to add it to hud-filmic-ambient.css. Task 1b noted this as a precondition.
+- Verified `hud-boot-cursor-blink` keyframes exist in `hud-round10.css:73` — so 3e re-uses them rather than redefining inline.
+- Verified all filmic tokens exist in `:root` of hud-filmic.css: `--hud-filmic-plate-glass` (line 43), `--hud-filmic-shadow` (21), `--hud-filmic-scan-accent` (28), `--hud-filmic-glow-warm` (45), `--hud-filmic-danger` (20), `--hud-filmic-ink` (9), `--hud-filmic-ink-muted` (10), `--hud-filmic-ink-dim` (11), `--hud-filmic-ink-meta` (12), `--hud-filmic-ink-hero` (41).
+
+PART 1 — Mount orphan HUD widgets (6 widgets):
+- 1a. SceneTopBarHud.tsx: imported `PlayerCoordinatesDisplay` and added to the bottom-left cluster (after FootstepPedometer + SessionPlayTimer, line 81). Self-contained, reads `usePlayerPosition()` internally.
+- 1b. ExplorationHUD.tsx: imported `AmbientParticles` (the HUD one at `parts/AmbientParticles.tsx`, NOT the 3D one) and mounted it as a sibling of `SceneAmbientVignette` (line 114, after vignette, before RainScreenEffect). Verified `.ambient-particle` CSS class exists in panel-cyberpunk.css — no new CSS needed.
+- 1c. OrchestratorGameplaySections.tsx: imported `HUDBootSequence` and added a new `MountedHUDBootSequence()` wrapper component (lines 142–164) that uses a `useRef(false)` flag + `useState(() => !sessionStorage.getItem('volodka:hud:boot:seen'))` lazy initializer + `useEffect` to set the sessionStorage key. Mounted inside `GameplayExplorationHud` (line 483, right after `<AmbientSoundMixer />`). Pattern follows spec verbatim — once-per-session (refresh re-plays; combat-exit does NOT). Added `useRef, useState, useEffect` to the React import line.
+- 1d. ExplorationHUD.tsx: imported `InteractionDistanceRing` and mounted it in the crosshair cluster BETWEEN `InteractionProximityGlow` (line 123) and `InteractionCooldownRing` (line 131), so the distance ring sits visually inside the proximity glow but outside the cooldown sweep.
+- 1e. OrchestratorGameplaySections.tsx: replaced `<SceneDiscoveryToast />` (was at line 478 of GameplayExplorationHud) with `<SceneDiscoveryCelebration />` (now line 511). Removed the `SceneDiscoveryToast` import (line 55) — verified via grep that it was the ONLY usage in src/. Both components subscribe to the same eventBus event, so mounting both would have caused a duplicate celebration per discovery.
+- 1f. OrchestratorGameplaySections.tsx: imported `HUDNotificationFeed` and mounted it in `GameplayExplorationHud` (line 505) as a sibling of `<KarmaShiftLayer />` and `<EmergencyHelpButton />`. Self-positions `fixed left-3`. Event-overlap finding: see "Deviations / Findings" section below.
+
+PART 2 — Wire orphan filmic CSS classes (4 mounts, zero new CSS):
+- 2a. DiegeticDialogueHud.tsx line 344: added `hud-filmic-dialogue-breath` to the `.hud-filmic-dialogue-plate` parent div className (now `"mx-auto max-w-3xl hud-filmic-dialogue-plate hud-filmic-dialogue-breath overflow-hidden"`).
+- 2b. ExplorationHUD.tsx line 96: added `hud-ambient-pulse` to the root container className. Added a new `<div className="hud-ambient-particles" aria-hidden="true" />` (line 106) as a child near the ambient layer. The CSS class already declares `position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 1` so no extra inline styles are needed.
+- 2c. CinematicShell.tsx lines 78 & 85: added `hud-filmic-letterbox-gradient` to BOTH letterbox bar divs in `CinematicLetterboxBars` (top bar + bottom bar). The class's `::after` pseudo-element overlays the gradient fade.
+- 2d. CyberStatBar.tsx line 62: added `hud-filmic-status-pulse` to the first `motion.div` (the value fill element that animates `width: ${pct}%`). The class is reduced-motion-gated in CSS (lines 568–572 of hud-filmic.css), so it no-ops under `prefers-reduced-motion: reduce`.
+
+PART 3 — 5 NEW filmic CSS additions appended to hud-filmic.css (after line 622):
+- 3a. `.hud-filmic-plate-glass` (lines 635–647): plate-glass reflection/depth modifier using existing `--hud-filmic-plate-glass` token + a `::before` vertical reflection gradient. No animation — no reduced-motion gating needed.
+- 3b. `.hud-filmic-ink-bleed` (lines 654–664): ink-bleed text reveal — `@keyframes hud-filmic-ink-bleed-reveal` (0% blur 2px → 100% clear) gated on `@media (prefers-reduced-motion: no-preference)`.
+- 3c. `.hud-filmic-status-segment::after` (lines 672–681): 8 evenly-spaced tick marks (every 12.5%) via `repeating-linear-gradient` with `mix-blend-mode: multiply` and opacity 0.6. No animation.
+- 3d. `.hud-filmic-vignette-pulse` (lines 689–714): low-health radial red vignette pulse — `@keyframes hud-filmic-vignette-pulse-cycle` (opacity 0.35 → 0.65 → 0.35) gated on `prefers-reduced-motion: no-preference`, with a static-fallback block under `prefers-reduced-motion: reduce` (no animation, gentler 0.18 alpha).
+- 3e. `.hud-filmic-boot-cursor` (lines 722–733): filmic boot-cursor blink — re-uses `hud-boot-cursor-blink` keyframes from hud-round10.css (verified at line 73). Adds filmic palette (`--hud-filmic-scan-accent` color + `--hud-filmic-glow-warm` text-shadow). Gated on `prefers-reduced-motion: reduce` → `animation: none; opacity: 0.55`.
+
+PART 4 — Accessibility media query blocks appended to hud-filmic.css:
+- 4a. `@media (prefers-contrast: more)` (lines 742–751): modern MDN keyword (vs legacy `prefers-contrast: high` in accessibility.css:128). Targets `.hud-filmic-plate`, `.hud-filmic-dialogue-plate`, `.hud-filmic-choice`, `.hud-filmic-toast`, `.hud-filmic-menu` — sets `border-width: 2px !important; backdrop-filter: none !important`.
+- 4b. `@media (forced-colors: active)` (lines 753–763): forced-colors support for filmic surfaces themselves (hud-round12.css:2611 only covered neon-btn / glassmorphism classes, NOT filmic surfaces). Sets `border: 2px solid CanvasText !important; backdrop-filter: none !important; background: Canvas !important`.
+
+PART 5 — Token swaps (4 files):
+- 5a. LoadingScreen.tsx:
+  - Line 320: removed `text-cyan-500/70` → inline `style={{ color: 'var(--hud-filmic-ink-meta)' }}` (status text).
+  - Line 347: removed `text-slate-400/60` → inline `style={{ color: 'var(--hud-filmic-ink-muted)' }}` (poem quote).
+  - Lines 374 & 381: removed `text-slate-500/50` → inline `style={{ color: 'var(--hud-filmic-ink-dim)' }}` (tip body, both branches of the AnimatePresence).
+  - DEVIATION: spec asked to "Add `.hud-filmic-boot-cursor` class to any blinking cursor element if present." Grep'd LoadingScreen.tsx for `loading-dots|animate-pulse|blink|hud-boot-cursor|cursor-blink` — found only `<span className="loading-dots" />` (a CSS-dots animation, not a cursor) and `<span className="... animate-pulse" />` (a pulse dot, not a cursor). No blinking cursor element exists. Skipped this sub-step. The new `.hud-filmic-boot-cursor` class is defined in hud-filmic.css (3e) and is available for future use.
+- 5b. MenuScreenPanel.tsx (WCAG-AA contrast fix):
+  - Line 157: removed `text-stone-400/55` → inline `style={{ color: 'var(--hud-filmic-ink-meta)' }}` (MENU_POET_CREDIT).
+  - Lines 203 & 204: removed `text-stone-400/55` → inline `style={{ color: 'var(--hud-filmic-ink-meta)' }}` (↑↓ Навигация + Enter Выбрать hints).
+  - Line 237: removed `text-stone-500/45` → inline `style={{ color: 'var(--hud-filmic-ink-dim)' }}` (APP_VERSION).
+  - Line 276: removed `text-stone-400/55` → inline `style={{ color: 'var(--hud-filmic-ink-meta)' }}` ("Начало" label).
+- 5c. ExaminePanel.tsx (compact branch, line 114):
+  - Added `hud-filmic-plate hud-filmic-plate-glass` to the plate className (kept all existing classes: `mx-auto max-w-xl rounded-lg border border-white/10 bg-black/60 backdrop-blur-md p-4 glass-panel-dark`).
+  - Line 118: removed `text-cyan-300` → inline `style={{ color: 'var(--hud-filmic-ink-hero)' }}` (title).
+  - Line 119: removed `text-slate-100` → inline `style={{ color: 'var(--hud-filmic-ink)' }}` (body text).
+  - Line 121: removed `text-slate-400` → added `hud-filmic-kicker` class to the Esc button (kept `text-xs shrink-0`).
+- 5d. DiegeticDialogueHud.tsx (handled in PART 2a pass):
+  - Line 362 (History button): added `hud-filmic-icon-btn` class, removed redundant `hover:text-stone-200 hover:bg-white/[0.04]`.
+  - Line 372 (Esc button): added `hud-filmic-icon-btn` class, removed redundant `hover:text-stone-200`.
+
+Typecheck Gate:
+- Ran `cd /home/z/volodka && node scripts/tsc7.mjs --noEmit` → EXIT_CODE=0 (no errors). All new mounts, wrapper components, CSS class strings, and inline-style token swaps type-check cleanly.
+
+Deviations / Findings:
+- HUDNotificationFeed vs NotificationToasts event-overlap finding (Task 1f precondition): I grepped both files for `eventBus.on(...)` subscriptions.
+  - `NotificationToasts` (via `useNotificationToastController.ts` lines 100–116) subscribes to: `poem:power_used`, `combat:defeat`.
+  - `HUDNotificationFeed` (lines 43–82) subscribes to: `fx:xp_gain`, `skill:level_up`, `quest:accepted`, `quest:completed`, `choice:made`, `poem:collected`, `toast:add`, `lore:discovered`.
+  - The spec asked specifically about `quest:accepted` and `poem:collected` overlap. Finding: there is NO direct overlap on those two events — NotificationToasts does NOT subscribe to either. The two components subscribe to disjoint event sets, so the dual-feed is naturally non-redundant (chip = ambient context for XP/level/quest/poem/lore/choice; toast = prominent per-event for poem-power-use + combat-defeat). Mounted anyway as instructed.
+- LoadingScreen.tsx has no blinking cursor element (see 5a deviation above).
+- All other tasks completed as specified with no deviations.
+
+Invariants preserved:
+- Poems (`src/data/poems.ts`) — not opened, not modified.
+- Rapier `<Physics interpolate={false}>` — untouched.
+- KCC ownership — untouched.
+- Postprocessing depth-blit patch — untouched.
+- Test contracts — untouched.
+- No state mutations — all changes are mounts + className + inline-style + CSS additions.
+- z-index via `UI_LAYERS` constants — all new mounts rely on the existing `UI_LAYERS.HUD` / `UI_LAYERS.DIALOGUE` constants already used in their parent components; no hardcoded z-index values introduced.
+
+Stage Summary:
+- 6 orphan HUD widgets mounted (PlayerCoordinatesDisplay, AmbientParticles HUD, HUDBootSequence via once-per-session wrapper, InteractionDistanceRing, SceneDiscoveryCelebration replacing SceneDiscoveryToast, HUDNotificationFeed).
+- 4 orphan filmic CSS classes wired to components (.hud-filmic-dialogue-breath, .hud-ambient-particles + .hud-ambient-pulse, .hud-filmic-letterbox-gradient, .hud-filmic-status-pulse).
+- 5 NEW filmic CSS classes added to hud-filmic.css (.hud-filmic-plate-glass, .hud-filmic-ink-bleed, .hud-filmic-status-segment, .hud-filmic-vignette-pulse, .hud-filmic-boot-cursor) + 2 accessibility media-query blocks (prefers-contrast: more, forced-colors: active).
+- 4 token-swap batches applied (LoadingScreen.tsx, MenuScreenPanel.tsx, ExaminePanel.tsx, DiegeticDialogueHud.tsx) — replacing raw Tailwind palette colors with filmic CSS tokens for WCAG-AA contrast compliance and visual cohesion.
+- Typecheck passes: `node scripts/tsc7.mjs --noEmit` → exit 0.
+- Files modified (10): src/components/game/hud/SceneTopBarHud.tsx, src/components/game/hud/ExplorationHUD.tsx, src/components/game/orchestrator/OrchestratorGameplaySections.tsx, src/components/game/diegetic/DiegeticDialogueHud.tsx, src/components/game/cinematic/CinematicShell.tsx, src/components/game/hud/parts/CyberStatBar.tsx, src/styles/hud-filmic.css, src/components/game/loading/LoadingScreen.tsx, src/components/game/menu/MenuScreenPanel.tsx, src/components/game/ExaminePanel.tsx.
+- Purely additive change — 0 deletions of existing functionality (except the ONE explicit replacement: SceneDiscoveryToast → SceneDiscoveryCelebration, as instructed). No commit / push performed — orchestrator handles the commit.
+
+---
+Task ID: 6-c
+Agent: narrative-data-agent
+Task: Add additive content data only — (1) 5-8 karma-gated dialogue choices to existing nodes, (2) 8-10 new examine TriggerZones for sparse scenes (forest_clearing has 0), (3) new factory_basement idle monologue + 2-3 new neutral lines to 3-4 existing scenes, (4) byAct revisit thoughts to 3-4 existing scene configs. Pure DATA — no schema changes, no component code, no engine wiring. Poems (`src/data/poems.ts`) SACRED — never opened.
+
+Work Log:
+- Read both worklogs (sandbox 894 lines + project 1672 lines). Confirmed Task 5-c recon findings: karma-gated `ChoiceCondition` already implemented in `src/shared/storyConditions.ts` and rendered with lock icon in `NarrativeChoiceList.tsx`; `TriggerZone` with `interactionType: 'examine'` + `examineData` already rendered by `ExaminePanel.tsx`; `IDLE_MONOLOGUES` registry covers 13 scenes (factory_basement was missing); `SCENE_THOUGHTS` registry has `byAct?: Partial<Record<number, ThoughtText>>` for revisit thoughts.
+- Read `src/shared/types/definitions/dialogue.ts` — DialogueChoice interface: `{ text, next, effects?, condition?, partialSuccessEffects?, disastrousFailureEffects?, strongSuccessEffects? }`. ChoiceCondition (from `src/shared/types/common/conditions.ts`) supports `minKarma?: number` and `maxKarma?: number` as separate optional fields. StoryEffect (from `src/shared/types/common/effects.ts`) — verified `addKarma` / `addSkill` / `addStat` / `npcChange` / `setFlag` / `triggerQuest` / `visitStoryNode` / `discoverLore` / `collectPoem` / `showThought` types are all valid StoryEffectType values. Verified `TrainablePlayerSkill` = `logic | coding | empathy | persuasion | intuition | writing | rhythm` (only 7 keys — no `endurance`/`authority`).
+- Verified target dialogue node IDs exist via grep:
+  - `albert_deep_revelation` exists at `src/data/dialogue/part1-albert-expanded.ts:836`. Existing choices: 2 (`minKarma: 5` implied via 'Я запомню. Обещаю.' + `maxKarma: 0`). Added 2 new karma-gated choices.
+  - `alexander_final_confrontation` exists at `src/data/dialogue/part3-mid.ts:261`. Existing choices: 3 (all `next: null`). Added 1 new minKarma:50 choice.
+  - `zarema_traitor_reveal` exists at `src/data/dialogue/part4-late-expanded.ts:228` (NOT `part4-late.ts` as spec said — verified spec file name was inaccurate, used correct file). Existing choices: 2 (`next: null`). Added 1 new maxKarma:20 choice.
+  - `alexander_final_decision` exists at `src/data/dialogue/part4-late-expanded.ts:413`. Existing choices: 2 (`next: null`). Added 1 new minKarma:60 choice.
+  - `cafe_barista_deep_trust` exists at `src/data/dialogue/part2-npcs.ts:696`. Existing choices: 3 (one `flag: 'alexander_suspicious'`, two `next: null`). Added 1 new minKarma:30 choice.
+  - `zarema_before_arrest` exists at `src/data/dialogue/part3-mid-expanded.ts:14`. Existing choices: 3 (one `next: 'zarema_hiding_offer'`, one `next: null`, one `next: 'zarema_stand_ground'`). Added 1 new maxKarma:15 choice.
+  - `barista_broadcast_ready` exists at `src/data/dialogue/part5-final.ts:553`. Existing choices: 2 (`next: null`). Added 1 new minKarma:70 choice.
+
+TASK 1 — 8 new karma-gated dialogue choices appended to END of target nodes' `choices` arrays (existing choices untouched):
+1. `albert_deep_revelation` (part1-albert-expanded.ts) — HIGH-karma `minKarma: 25`: "переписать код города — не для себя. Для тех, кто придёт после." Effects: +8 karma, +2 persuasion, +15 albert relation, `albert_pledge_rewrite` flag, showThought. `next: 'albert_deep_farewell_warm'` (existing farewell node ID — verified exists).
+2. `albert_deep_revelation` (part1-albert-expanded.ts) — LOW-karma `maxKarma: 10`: "Красивая речь. А мне-то что с этого будет?" Effects: +3 stress, -8 albert relation, showThought. `next: null` (safe — ends dialogue cleanly).
+3. `alexander_final_confrontation` (part3-mid.ts) — HIGH-karma `minKarma: 50`: "Не входи. Не нажимай. Уходи домой к Кате." Effects: +10 karma, +2 empathy, +20 alexander relation, `alexander_spared` flag, showThought. `next: null` (matches existing pattern — all 3 existing choices there are `next: null`).
+4. `zarema_traitor_reveal` (part4-late-expanded.ts) — LOW-karma `maxKarma: 20`: "А что если предатель — ты, Зарема?" Effects: -15 karma, +1 logic, `zarema_betrayed` flag, -25 zarema relation, showThought. `next: null`.
+5. `alexander_final_decision` (part4-late-expanded.ts) — HIGH-karma `minKarma: 60`: "Александр — подожди. Не сегодня." Effects: +12 karma, +2 empathy, `alexander_mercy` flag, +30 alexander relation, showThought. `next: null`.
+6. `cafe_barista_deep_trust` (part2-npcs.ts) — HIGH-karma `minKarma: 30`: "*оставляешь на стойке вдвое больше обычного* За то, что хранишь чужие тайны." Effects: +5 karma, +5 cafe_barista relation, `barista_generous_tip` flag, showThought. `next: null`.
+7. `zarema_before_arrest` (part3-mid-expanded.ts) — LOW-karma `maxKarma: 15`: "Может, ты и есть повод? Может, тебе лучше уйти. Совсем." Effects: +2 stress, -10 zarema relation, `zarema_accused_self` flag, showThought. `next: null`.
+8. `barista_broadcast_ready` (part5-final.ts) — HIGH-karma `minKarma: 70`: "Я начинал здесь один. Сегодня я возвращаю это всем." Effects: +15 karma, `volodka_redeemed` flag, +20 cafe_barista relation, showThought. `next: null`.
+
+TASK 2 — 10 new examine TriggerZone entries appended to `TRIGGER_ZONES` array (before the COMBAT ENCOUNTERS comment block, line ~4200). Verified lore IDs: grepped `src/data/loreEntries.ts` for `lore_forest_clearing_inscription` and similar — NONE EXIST. Therefore OMITTED all `discoverLore` effects; used only `setFlag` / `addKarma` / `addSkill` / `addStat` / `showThought` (all self-contained). Verified `showThought` signature in existing zone (corridor_graffiti line 495): `{ type: 'showThought', thought: string, thoughtDuration?: number }` — default duration 4000ms if omitted.
+- forest_clearing (4 new — first content for this scene; previously had 0 examine zones):
+  - `forest_clearing_mossy_stone` — setFlag + addKarma +2 + showThought (6s). Inscription: "Кто найдёт — пусть помнит. Город — не сервер."
+  - `forest_clearing_old_campfire` — setFlag + showThought. Burnt guild plastic fragment.
+  - `forest_clearing_birch_sign` — setFlag + addSkill intuition +1. Memorial "Заповедник «Зорге». Основан 2023." Initial "В."
+  - `forest_clearing_hidden_path` — setFlag + addKarma +1. Overgrown northeast path.
+- albert_backroom (2 new):
+  - `albert_backroom_shelves` — setFlag + showThought. Manuscripts hidden behind tea tins.
+  - `albert_backroom_espresso_machine` — setFlag + addStat stress -3. Old La Marzocco, calming hum.
+- chk_forest_zorge (2 new):
+  - `chk_forest_zorge_path_sign` — setFlag + addSkill intuition +1. Three-arrow signpost with erased distance.
+  - `chk_forest_zorge_abandoned_campfire` — setFlag + showThought. Note from "С." to "Ру".
+- factory_roof (2 new):
+  - `factory_roof_skyline_vista` — setFlag + addKarma +2 + showThought. City-as-schematic vista.
+  - `factory_roof_weather_station` — setFlag + addSkill logic +1. Guild weather station with 712mm pressure reading.
+Positions chosen to fit scene dimensions (forest_clearing 20×6×20 floor at y=0.4-1.6; albert_backroom 8×3×6 small interior; chk_forest_zorge 36×6×36 around existing campfire at [0.5, 0.5, 0.8]; factory_roof 22×6×18 with player spawn at origin).
+
+TASK 3 — Idle monologues expansion (`src/data/idleMonologues.ts`):
+- 3a. Added NEW `factory_basement` scene entry (was missing from IDLE_MONOLOGUES despite factory_basement being a valid SceneId and having a sceneEntryThoughts entry). All 4 bands populated (neutral/high/low/highStress). Verbatim spec text used.
+- 3b. Appended 2 new `neutral` lines to END of existing `neutral` arrays in 4 scenes (no existing lines replaced):
+  - `volodka_room` (+2 lines): cold keyboard backlight / mug-as-ritual.
+  - `street_night` (+2 lines): neon-in-puddles reflected city / shadow-longer-than-self.
+  - `cafe_evening` (+2 lines): barista-knows-order pessimism / sugar-arrow-on-napkin.
+  - `river_pier` (+2 lines): fish-and-patience smell / sparks-as-short-lived-lives.
+All lines in established introspective/melancholic/tech-metaphor style, 1-2 sentences each.
+
+TASK 4 — byAct revisit thoughts (`src/data/sceneEntryThoughts.ts`):
+- Added 6 NEW byAct entries to 4 EXISTING scene configs (existing byAct entries untouched — only missing acts added):
+  - `volodka_room`: existing byAct = {3,5,6,7} → added act 4 ("Комната та же. Я — нет. Где-то между этим утром и этой ночью я подписал что-то, чего не прочту ещё долго.").
+  - `street_night`: existing byAct = {3,5} → added act 4 ("Кто-то идёт за мной уже три квартала. Или — это моё собственное эхо.").
+  - `cafe_evening`: existing byAct = {2,5,7} → added act 3 + act 4 (spec-example text: "Снова кафе. Бариста не удивлён..." + "Кафе. Альберта нет на его месте. Пустой стул — громче, чем любой разговор."). Did NOT add act 5 because act 5 already exists — adding would replace existing text.
+  - `office_day`: existing byAct = {2,3,6} → added act 4 + act 5 (act 4: "Сегодня кто-то оставил на моём столе записку. Без подписи. «Ты не один.»"; act 5: "Финал близко. Коллеги здороваются так, как будто прощаются.").
+
+Typecheck Gate:
+- Ran `cd /home/z/volodka && node scripts/tsc7.mjs --noEmit` → EXIT_CODE=0 (no errors). All 8 new DialogueChoice entries, 10 new TriggerZone entries, 1 new IDLE_MONOLOGUES scene + 8 new neutral lines, and 6 new byAct entries type-check cleanly. ChoiceCondition `minKarma`/`maxKarma` fields resolve against existing interface. All `next` node IDs that are non-null (`albert_deep_farewell_warm`) verified to exist via grep. All skill keys (persuasion, empathy, logic, intuition) are valid `TrainablePlayerSkill` values. All `examineData` objects conform to ExamineData interface (`title`, `description`, `detailText`, `icon?`).
+
+Deviations / Findings:
+- DEVIATION: spec Task 1 item 3 said target file `src/data/dialogue/part4-late.ts` for `zarema_traitor_reveal`. Verified via grep that the node actually lives in `src/data/dialogue/part4-late-expanded.ts:228` (NOT `part4-late.ts`). Used the correct file. Same for `alexander_final_decision` (also in `part4-late-expanded.ts:413`, not `part4-late.ts`).
+- DEVIATION: spec Task 1 item 3 said `next: existing` for the alexander spare choice. Verified all 3 existing choices at `alexander_final_confrontation` use `next: null` (i.e., the conversation ends after this decision node). Used `null` to match the existing pattern (spec explicitly allows: "If you can't find a suitable existing `next`, use `null` (ends dialogue) — that's safe."). Same null-pattern followed for choices at `zarema_traitor_reveal`, `alexander_final_decision`, `cafe_barista_deep_trust` (existing choices there all `next: null`), `zarema_before_arrest` (mixed; used `null`), `barista_broadcast_ready`.
+- DEVIATION: spec Task 1 item 1 said `next: an existing farewell/alliance node ID (grep for one; if none, use null)`. Verified `albert_deep_farewell_warm` exists (line 880 of part1-albert-expanded.ts). Used it as `next` for the high-karma "rewrite the city's code" choice — provides graceful closeout to the deep-talk branch rather than a hard cut.
+- DEVIATION: spec Task 2 mentioned `discoverLore` effects with `loreId: 'lore_forest_clearing_inscription'`. Verified via grep that NO such loreId exists in `src/data/loreEntries.ts`. Per spec instruction ("If it doesn't exist, OMIT the `discoverLore` effect"), OMITTED all `discoverLore` effects from all 10 new examine zones. Used only self-contained `setFlag` / `addKarma` / `addSkill` / `addStat` / `showThought` effects.
+- DEVIATION: spec Task 2 said "8-10 new examine nodes" and listed 5 for forest_clearing + 2-3 each for 3 other scenes (= 11-14). Trimmed to exactly 10 (4 forest_clearing + 2 albert_backroom + 2 chk_forest_zorge + 2 factory_roof) by dropping the optional 5th forest_clearing zone (`forest_clearing_old_bench`) to stay within the 8-10 envelope.
+- DEVIATION: spec Task 3b said "ADD 2-3 new `neutral` lines to 3-4 EXISTING scene entries". Picked exactly 4 scenes (volodka_room, street_night, cafe_evening, river_pier) and added exactly 2 new lines each (8 new lines total) — at the lower end of "2-3 lines" but within spec.
+- DEVIATION: spec Task 4 example showed adding acts {3, 4, 5} to cafe_evening. But cafe_evening's existing byAct already has act 5. Per spec rule "do NOT replace existing `firstVisit`/`firstVisitByKarma`/`highStress`" and the general additive-only mandate, ADDED only missing acts: act 3 + act 4 (skipped act 5 because it would replace the existing "Кафе после революции" text). Same conservative approach for volodka_room (added only act 4 since 3/5/6/7 exist) and office_day (added only acts 4+5 since 2/3/6 exist).
+- No `next` node IDs were "couldn't find" — `albert_deep_farewell_warm` was the only non-null next, and it exists. All other choices used `null` by design (matching the existing pattern in their target nodes).
+
+Invariants preserved:
+- Poems (`src/data/poems.ts`) — not opened, not modified.
+- Rapier `<Physics interpolate={false}>` — untouched.
+- KCC ownership — untouched.
+- Postprocessing depth-blit patch — untouched.
+- Test contracts — untouched.
+- No state mutations — all changes are PURE DATA (dialogue choices, trigger zones, idle monologue lines, scene-entry thoughts). No `dispatchStateAction` calls needed or used.
+- Additive only — 0 deletions, 0 modifications to existing choices/lines/thoughts/zones. New entries appended to END of existing arrays/objects (dialogue choices) or inserted before closing `];`/`};` (trigger zones, idle monologues, scene thoughts).
+
+Stage Summary:
+- 8 new karma-gated DialogueChoice entries added across 6 dialogue files (albert_deep_revelation ×2, alexander_final_confrontation ×1, zarema_traitor_reveal ×1, alexander_final_decision ×1, cafe_barista_deep_trust ×1, zarema_before_arrest ×1, barista_broadcast_ready ×1).
+- 10 new examine TriggerZone entries added to TRIGGER_ZONES (forest_clearing ×4, albert_backroom ×2, chk_forest_zorge ×2, factory_roof ×2). forest_clearing had 0 examine zones previously — now has 4.
+- 1 new IDLE_MONOLOGUES scene entry (factory_basement — was missing) + 8 new neutral lines appended to 4 existing scenes (volodka_room +2, street_night +2, cafe_evening +2, river_pier +2).
+- 6 new byAct revisit thoughts added to 4 existing scene configs (volodka_room +1 act, street_night +1 act, cafe_evening +2 acts, office_day +2 acts).
+- Typecheck passes: `node scripts/tsc7.mjs --noEmit` → exit 0.
+- Files modified (9): src/data/dialogue/part1-albert-expanded.ts, src/data/dialogue/part2-npcs.ts, src/data/dialogue/part3-mid.ts, src/data/dialogue/part3-mid-expanded.ts, src/data/dialogue/part4-late-expanded.ts, src/data/dialogue/part5-final.ts, src/data/triggerZones.ts, src/data/idleMonologues.ts, src/data/sceneEntryThoughts.ts.
+- Purely additive change — 0 deletions, 0 modifications to existing data. No commit / push performed — orchestrator handles the commit.

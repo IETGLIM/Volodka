@@ -298,6 +298,22 @@ export const DIALOGUE_PART3: Record<string, DialogueNode> = {
           { type: 'setFlag', flag: 'alexander_redemption_path', flagValue: true },
         ],
       },
+      {
+        text: 'Александр. Не входи. Не нажимай. Уходи домой к Кате — я возьму это на себя. Ты уже искупил достаточно.',
+        next: null,
+        condition: { minKarma: 50 },
+        effects: [
+          { type: 'addKarma', value: 10 },
+          { type: 'addSkill', skill: 'empathy', value: 2 },
+          { type: 'npcChange', npcId: 'office_alexander', npcChange: { relation: 20 } },
+          { type: 'setFlag', flag: 'alexander_spared', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Ты видишь, как уходит из него всё — должность, приказ, страх. Остаётся только отец, который через пятнадцать лет впервые выберет дочь, а не систему. Это и есть искупление. Не твоё — его. Ты просто — повод.',
+            thoughtDuration: 7000,
+          },
+        ],
+      },
     ],
   },
 

@@ -485,6 +485,100 @@ export const THOUGHT_CABINET_ITEMS: ThoughtCabinetItem[] = [
       { skill: 'logic', modifier: -1, description: '-1 Логика' },
     ],
   },
+
+  /* ═══ 31. Цифровой Зов ═══ */
+  {
+    id: 'digital_call',
+    name: 'Цифровой Зов',
+    voice: 'coding',
+    description: 'Город зовёт тебя через каждую линию, каждый пинг, каждый потерянный пакет. Серверы шепчут твоё имя в логах, и ты отвечаешь — строкой кода, нажатием клавиши, бессонной ночью. Цифра — твой родной язык.',
+    flavorText: '«Город — это сеть. А я — её узел. А узел — не выбирает, быть или не быть.»',
+    acquisitionCondition: 'flag_thought_digital_call',
+    mutuallyExclusive: ['street_whisper'],
+    effects: [
+      { skill: 'coding', modifier: 2, description: '+2 Кодинг' },
+      { skill: 'intuition', modifier: 1, description: '+1 Интуиция' },
+      { skill: 'empathy', modifier: -1, description: '-1 Эмпатия' },
+    ],
+  },
+
+  /* ═══ 32. Призрак Кодекса ═══ */
+  {
+    id: 'code_ghost',
+    name: 'Призрак Кодекса',
+    voice: 'persuasion',
+    description: 'Ты помнишь правила, которых никто не писал. Протоколы, которые нигде не задокументированы. Ты — хранитель негласного кодекса, и это даёт тебе власть — но изолирует.',
+    flavorText: '«Не написанное — важнее написанного. Я — тот, кто помнит.»',
+    acquisitionCondition: 'flag_thought_code_ghost',
+    effects: [
+      { skill: 'persuasion', modifier: 2, description: '+2 Убеждение' },
+      { skill: 'logic', modifier: 1, description: '+1 Логика' },
+      { skill: 'rhythm', modifier: -1, description: '-1 Ритм' },
+    ],
+  },
+
+  /* ═══ 33. Ночной Дозор ═══ */
+  {
+    id: 'night_watch',
+    name: 'Ночной Дозор',
+    voice: 'intuition',
+    description: 'Когда город засыпает, ты — начеку. Ночь — твоё время. Ты видишь то, что прячется при свете: тени, движения, правду. Глаза устают, но инстинкт — нет.',
+    flavorText: '«Спят все. Кроме — дозорного. Кроме — меня.»',
+    acquisitionCondition: 'flag_thought_night_watch',
+    effects: [
+      { skill: 'rhythm', modifier: 2, description: '+2 Ритм' },
+      { skill: 'intuition', modifier: 1, description: '+1 Интуиция' },
+      { skill: 'persuasion', modifier: -1, description: '-1 Убеждение' },
+    ],
+  },
+
+  /* ═══ 34. Поэтическая Матрица ═══ */
+  {
+    id: 'poetic_matrix',
+    name: 'Поэтическая Матрица',
+    voice: 'writing',
+    description: 'Между строк кода — строки стихов. Между нулями и единицами — ритм. Ты видишь поэзию в алгоритмах и алгоритм в поэзии. Это — твоя суперсила и твоя тюрьма.',
+    flavorText: '«for (line in poem) { soul.compile(line); }»',
+    acquisitionCondition: 'flag_thought_poetic_matrix',
+    mutuallyExclusive: ['cold_calculation'],
+    effects: [
+      { skill: 'writing', modifier: 2, description: '+2 Писательство' },
+      { skill: 'coding', modifier: 1, description: '+1 Кодинг' },
+      { skill: 'logic', modifier: -1, description: '-1 Логика' },
+    ],
+  },
+
+  /* ═══ 35. Холодный Расчёт ═══ */
+  {
+    id: 'cold_calculation',
+    name: 'Холодный Расчёт',
+    voice: 'logic',
+    description: 'Чувства — помеха. Эмпатия — шум. Только цифры, только вероятности, только исходы. Ты считаешь людей как переменные. Это эффективно. Это — одиноко.',
+    flavorText: '«P(сочувствие) = 0. Я — rounding down.»',
+    acquisitionCondition: 'flag_thought_cold_calculation',
+    mutuallyExclusive: ['poetic_matrix'],
+    effects: [
+      { skill: 'logic', modifier: 3, description: '+3 Логика' },
+      { skill: 'empathy', modifier: -2, description: '-2 Эмпатия' },
+      { skill: 'rhythm', modifier: -1, description: '-1 Ритм' },
+    ],
+  },
+
+  /* ═══ 36. Уличный Шёпот ═══ */
+  {
+    id: 'street_whisper',
+    name: 'Уличный Шёпот',
+    voice: 'intuition',
+    description: 'Улица говорит с тобой — через граффити, через обрывки фраз, через молчание между ними. Ты научился слушать город так, как никто другой. Это знание — не из книг.',
+    flavorText: '«Улица не кричит. Улица — шепчет. Слышишь?»',
+    acquisitionCondition: 'flag_thought_street_whisper',
+    mutuallyExclusive: ['digital_call'],
+    effects: [
+      { skill: 'intuition', modifier: 2, description: '+2 Интуиция' },
+      { skill: 'persuasion', modifier: 1, description: '+1 Убеждение' },
+      { skill: 'rhythm', modifier: -1, description: '-1 Ритм' },
+    ],
+  },
 ];
 
 /* ─── Lookup map ─── */

@@ -21,6 +21,7 @@ import { ExplorationProgressBadge } from '@/components/game/hud/parts/Exploratio
 import { EnvironmentMoodIndicator } from '@/components/game/hud/parts/EnvironmentMoodIndicator';
 import { FootstepPedometer } from '@/components/game/hud/parts/FootstepPedometer';
 import { SessionPlayTimer } from '@/components/game/hud/parts/SessionPlayTimer';
+import { PlayerCoordinatesDisplay } from '@/components/game/hud/parts/PlayerCoordinatesDisplay';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useHudQuietStyle } from '@/hooks/useHudQuiet';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
@@ -77,6 +78,7 @@ export const SceneTopBarHud = memo(function SceneTopBarHud() {
       >
         <FootstepPedometer />
         <SessionPlayTimer />
+        <PlayerCoordinatesDisplay />
       </motion.div>
     </div>
   );

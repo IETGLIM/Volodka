@@ -75,14 +75,14 @@ export const CinematicLetterboxBars = memo(function CinematicLetterboxBars({
   return (
     <>
       <motion.div
-        className={`absolute top-0 left-0 right-0 ${h} pointer-events-none`}
+        className={`absolute top-0 left-0 right-0 ${h} pointer-events-none hud-filmic-letterbox-gradient`}
         style={{ ...barStyle, transformOrigin: 'top' }}
         initial={initial}
         animate={{ scaleY: 1 }}
         transition={{ duration, ease: [0.25, 0.46, 0.45, 0.94] }}
       />
       <motion.div
-        className={`absolute bottom-0 left-0 right-0 ${h} pointer-events-none`}
+        className={`absolute bottom-0 left-0 right-0 ${h} pointer-events-none hud-filmic-letterbox-gradient`}
         style={{
           ...barStyle,
           background: 'linear-gradient(0deg, #000 0%, #050810 70%, #0a1420 100%)',

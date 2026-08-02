@@ -620,3 +620,144 @@
   );
   pointer-events: none;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   Task 6-b — NEW filmic CSS additions
+   All animating classes are gated on prefers-reduced-motion: no-preference.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── 3a. Plate-glass reflection / depth modifier ──────────────
+   A lighter plate variant for overlays that should feel transparent.
+   Uses --hud-filmic-plate-glass token (defined in :root above).
+   The ::before pseudo adds a subtle vertical reflection gradient
+   that gives the plate a sense of depth without plastic gloss. */
+
+.hud-filmic-plate-glass {
+  background: linear-gradient(180deg, var(--hud-filmic-plate-glass) 0%, rgba(4, 5, 10, 0.78) 100%);
+  box-shadow: var(--hud-filmic-shadow), inset 0 1px 0 rgba(231, 229, 228, 0.06), inset 0 -1px 0 rgba(0, 0, 0, 0.4);
+}
+
+.hud-filmic-plate-glass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(214, 211, 209, 0.04) 0%, transparent 18%, transparent 82%, rgba(0, 0, 0, 0.18) 100%);
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* ── 3b. Ink-bleed text reveal ────────────────────────────────
+   For narrative captions / poem lines / location cards.
+   Adds a soft blur-to-clarity fade-in that feels like ink
+   bleeding onto paper. One-shot animation on mount. */
+
+@keyframes hud-filmic-ink-bleed-reveal {
+  0%   { opacity: 0; filter: blur(2px); transform: translateY(0.04em); }
+  60%  { opacity: 0.85; filter: blur(0.5px); }
+  100% { opacity: 1; filter: blur(0); transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hud-filmic-ink-bleed {
+    animation: hud-filmic-ink-bleed-reveal 0.5s ease-out both;
+  }
+}
+
+/* ── 3c. Segmented tick overlay for stat bars ─────────────────
+   Adds 8 evenly-spaced tick marks (every 12.5%) over a stat
+   bar's value fill. Uses repeating-linear-gradient with
+   mix-blend-mode: multiply so it darkens the fill colour
+   rather than overlaying a fixed hue. */
+
+.hud-filmic-status-segment::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(90deg, transparent 0, transparent calc(12.5% - 1px), rgba(0, 0, 0, 0.35) calc(12.5% - 1px), rgba(0, 0, 0, 0.35) 12.5%);
+  background-size: 100% 100%;
+  mix-blend-mode: multiply;
+  opacity: 0.6;
+}
+
+/* ── 3d. Low-health vignette pulse ────────────────────────────
+   A radial red vignette that pulses opacity to signal critical
+   health state. Mix-blend-mode: multiply darkens the screen
+   edges only — never the centre. Falls back to a static
+   low-opacity vignette under prefers-reduced-motion: reduce. */
+
+@keyframes hud-filmic-vignette-pulse-cycle {
+  0%, 100% { opacity: 0.35; }
+  50%      { opacity: 0.65; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hud-filmic-vignette-pulse {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(ellipse at center, transparent 35%, rgba(127, 29, 29, 0.0) 55%, var(--hud-filmic-danger) 100%);
+    mix-blend-mode: multiply;
+    animation: hud-filmic-vignette-pulse-cycle 2.4s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-vignette-pulse {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(ellipse at center, transparent 50%, rgba(127, 29, 29, 0.18) 100%);
+    mix-blend-mode: multiply;
+    animation: none;
+  }
+}
+
+/* ── 3e. Filmic boot-cursor blink ─────────────────────────────
+   Re-uses the existing hud-boot-cursor-blink keyframes from
+   hud-round10.css (verified at line 73). Adds the filmic
+   palette (warm amber glow, sand-coloured cursor) instead of
+   the neon cyan of the original .hud-boot-cursor. */
+
+.hud-filmic-boot-cursor {
+  color: var(--hud-filmic-scan-accent);
+  text-shadow: 0 0 6px var(--hud-filmic-glow-warm);
+  animation: hud-boot-cursor-blink 0.8s step-end infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-boot-cursor {
+    animation: none;
+    opacity: 0.55;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Task 6-b — Accessibility media query blocks
+   Modern MDN keyword `prefers-contrast: more` (vs legacy `high`
+   in accessibility.css) + forced-colors for the filmic surfaces
+   themselves (hud-round12.css:2611 covers only neon-btn classes).
+   ══════════════════════════════════════════════════════════════ */
+
+@media (prefers-contrast: more) {
+  .hud-filmic-plate,
+  .hud-filmic-dialogue-plate,
+  .hud-filmic-choice,
+  .hud-filmic-toast,
+  .hud-filmic-menu {
+    border-width: 2px !important;
+    backdrop-filter: none !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .hud-filmic-plate,
+  .hud-filmic-dialogue-plate,
+  .hud-filmic-choice,
+  .hud-filmic-toast,
+  .hud-filmic-menu {
+    border: 2px solid CanvasText !important;
+    backdrop-filter: none !important;
+    background: Canvas !important;
+  }
+}

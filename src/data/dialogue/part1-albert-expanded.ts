@@ -861,6 +861,35 @@ export const ALBERT_EXPANDED_DIALOGUE: Record<string, DialogueNode> = {
           { type: 'npcChange', npcId: 'albert', npcChange: { relation: 3 } },
         ],
       },
+      {
+        text: 'Тогда я перепишу код города — не для себя. Для тех, кто придёт после. Пусть у них будет выбор, которого не было у нас.',
+        next: 'albert_deep_farewell_warm',
+        condition: { minKarma: 25 },
+        effects: [
+          { type: 'addKarma', value: 8 },
+          { type: 'addSkill', skill: 'persuasion', value: 2 },
+          { type: 'npcChange', npcId: 'albert', npcChange: { relation: 15 } },
+          { type: 'setFlag', flag: 'albert_pledge_rewrite', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Впервые за долгое время ты говоришь не из страха и не из усталости. Ты говоришь из того места, которое ещё помнит, что код — это не приказ. Это обещание. Альберт слышит. Альберт — верит.',
+            thoughtDuration: 6000,
+          },
+        ],
+      },
+      {
+        text: 'Красивая речь. А мне-то что с этого будет? Карьера? Стихи? Я не подписывал хартию мучеников.',
+        next: null,
+        condition: { maxKarma: 10 },
+        effects: [
+          { type: 'addStat', stat: 'stress', value: 3 },
+          { type: 'npcChange', npcId: 'albert', npcChange: { relation: -8 } },
+          {
+            type: 'showThought',
+            thought: 'Слова выходят холоднее, чем ты хотел. Альберт не спорит — он просто замолкает. Молчание — худший его ответ. Хуже крика.',
+          },
+        ],
+      },
     ],
   },
 

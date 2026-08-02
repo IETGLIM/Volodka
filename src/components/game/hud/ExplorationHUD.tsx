@@ -17,6 +17,7 @@ import { CrosshairInteractionPrompt } from '@/components/game/hud/parts/Crosshai
 import { DynamicCrosshair } from '@/components/game/hud/parts/DynamicCrosshair';
 import { HUDChromaticEdge } from '@/components/game/hud/parts/HUDChromaticEdge';
 import { InteractionCooldownRing } from '@/components/game/hud/parts/InteractionCooldownRing';
+import { InteractionDistanceRing } from '@/components/game/hud/parts/InteractionDistanceRing';
 import { InteractionProximityGlow } from '@/components/game/hud/parts/InteractionProximityGlow';
 import { InteractionRadarPulse } from '@/components/game/hud/parts/InteractionRadarPulse';
 import { NPCProximityIndicator } from '@/components/game/hud/parts/NPCProximityIndicator';
@@ -25,6 +26,7 @@ import { PhysicsDegradedDevBadge } from '@/components/game/hud/parts/PhysicsDegr
 import { QuestDirectionArrow } from '@/components/game/hud/parts/QuestDirectionArrow';
 import { RainScreenEffect } from '@/components/game/hud/parts/RainScreenEffect';
 import { SceneAmbientVignette } from '@/components/game/hud/parts/SceneAmbientVignette';
+import { AmbientParticles } from '@/components/game/hud/parts/AmbientParticles';
 import { SprintDrainOverlay } from '@/components/game/hud/parts/SprintDrainOverlay';
 
 export type { HUDProps } from '@/components/game/hud/hudTypes';
@@ -91,13 +93,17 @@ export function ExplorationHUD(props: HUDProps) {
     <div
       data-exploration-ui
       data-testid="game-hud"
-      className={`fixed inset-0 pointer-events-none transition-opacity duration-700 ease-out hud-element-mounted ${hudMounted ? 'opacity-100' : 'opacity-0'}`}
+      className={`fixed inset-0 pointer-events-none transition-opacity duration-700 ease-out hud-element-mounted hud-ambient-pulse ${hudMounted ? 'opacity-100' : 'opacity-0'}`}
       style={{ zIndex: UI_LAYERS.HUD }}
     >
       {/* Atmospheric scan line — subtle living feel */}
       {!reducedMotion && (
         <div className="hud-atmosphere-scan" aria-hidden="true" />
       )}
+      {/* CSS-only ambient dust motes — activates the .hud-ambient-particles
+          pseudo-elements in hud-filmic-ambient.css. Reduced-motion-gated
+          in CSS (no animation under prefers-reduced-motion: reduce). */}
+      <div className="hud-ambient-particles" aria-hidden="true" />
       {/* Corner accents for diegetic HUD frame */}
       <div className="hud-corner-accent hud-corner-accent-tl" aria-hidden="true" />
       <div className="hud-corner-accent hud-corner-accent-tr" aria-hidden="true" />
@@ -105,6 +111,7 @@ export function ExplorationHUD(props: HUDProps) {
       <div className="hud-corner-accent hud-corner-accent-br" aria-hidden="true" />
 
       <SceneAmbientVignette />
+      <AmbientParticles />
       <RainScreenEffect />
       <SprintDrainOverlay />
       <CombatPreEngagementWarning />
@@ -118,6 +125,10 @@ export function ExplorationHUD(props: HUDProps) {
       {/* Breathing crosshair aura + interaction-activate edge glow. Show-don't-tell
           affordance: the player senses interactables before reading any prompt. */}
       <InteractionProximityGlow />
+      {/* Distance ring — sits visually inside the proximity glow but outside the
+          cooldown sweep. Scales based on proximity to interactive objects; tick
+          marks appear when within interaction range. EventBus-driven. */}
+      <InteractionDistanceRing />
       {/* Cooldown sweep over the crosshair after each interaction — visual
           feedback for the interaction cooldown so the player knows when they
           can interact again. EventBus-driven (interaction:start/end). */}

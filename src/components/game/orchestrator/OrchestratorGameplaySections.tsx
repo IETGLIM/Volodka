@@ -1,4 +1,4 @@
-import { memo, Suspense, useCallback } from 'react';
+import { memo, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
@@ -52,7 +52,9 @@ import { SceneEntryTextOverlay } from '../SceneEntryTextOverlay';
 import '@/engine/audio/transitionSound';
 import { WeatherIndicator } from '../WeatherIndicator';
 import { AmbientAtmosphereCaption } from '../AmbientAtmosphereCaption';
-import { SceneDiscoveryToast } from '../SceneDiscoveryToast';
+import { SceneDiscoveryCelebration } from '@/components/game/hud/parts/SceneDiscoveryCelebration';
+import { HUDBootSequence } from '@/components/game/hud/parts/HUDBootSequence';
+import { HUDNotificationFeed } from '@/components/game/hud/parts/HUDNotificationFeed';
 import { DayNightCycleIndicator } from '../DayNightCycleIndicator';
 import { FloatingTextLayer } from '../FloatingText';
 import { ScreenEffects } from '../ScreenEffects';
@@ -136,6 +138,30 @@ function MountedBuffDebuffTracker() {
 function MountedSkillRechargeHUD() {
   const skills = useSkillSlots();
   return <SkillRechargeHUD skills={skills} orientation="horizontal" compact />;
+}
+
+/** HUD boot sequence — once-per-session guard so the boot animation only plays
+ *  on the first exploration-HUD mount and does NOT replay on every combat-exit.
+ *  Uses sessionStorage so a refresh re-runs it (intentional — a fresh session
+ *  should feel like a fresh boot), but in-app navigations between combat and
+ *  exploration do not. */
+function MountedHUDBootSequence() {
+  const [show, setShow] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return !sessionStorage.getItem('volodka:hud:boot:seen');
+  });
+  const seen = useRef(false);
+  useEffect(() => {
+    if (seen.current) return;
+    seen.current = true;
+    if (sessionStorage.getItem('volodka:hud:boot:seen')) {
+      setShow(false);
+      return;
+    }
+    sessionStorage.setItem('volodka:hud:boot:seen', '1');
+  }, []);
+  if (!show) return null;
+  return <HUDBootSequence />;
 }
 
 export type GameplayHudPanelOpeners = {
@@ -453,6 +479,10 @@ export const GameplayExplorationHud = memo(function GameplayExplorationHud({
   return (
     <>
       <AmbientSoundMixer />
+      {/* HUD boot sequence — once-per-session intro animation. Wrapper gates on
+          sessionStorage so it only plays on the very first exploration-HUD
+          mount of a session (refresh re-plays; combat-exit does NOT). */}
+      <MountedHUDBootSequence />
       <Suspense fallback={null}>
         <LazyHUD
           onOpenQuests={panelOpeners.onOpenQuests}
@@ -464,10 +494,22 @@ export const GameplayExplorationHud = memo(function GameplayExplorationHud({
           {...hudSecondaryOpeners}
         />
       </Suspense>
+      {/* Ambient slide-in feed (left side) — recent XP gains, quest updates, karma
+          shifts, poems collected, lore discovered. Self-positions `fixed left-3`.
+          Complements NotificationToasts (which shows poem:power_used + combat:defeat);
+          the two subscribe to disjoint event sets — no overlap. MoralCompassHUD and
+          KarmaShiftLayer were moved inside <LazyHUD> by the progressive-reveal
+          refactor (commit 3c92c50); HUDNotificationFeed stays outside so it remains
+          always-visible ambient context. */}
+      <HUDNotificationFeed />
       <InteractionHintPopup />
       <NpcNoDialogueBark />
       <AmbientAtmosphereCaption />
-      <SceneDiscoveryToast />
+      {/* Filmic scene-discovery celebration — replaces the older neon SceneDiscoveryToast.
+          Subscribes to exploration:scene_discovered, renders a {count}/{total} kicker
+          with hud-filmic-caption styling. DayNightCycleIndicator was moved inside
+          <LazyHUD> by the progressive-reveal refactor (commit 3c92c50). */}
+      <SceneDiscoveryCelebration />
       <TutorialOverlay />
       <FirstPlayTutorial />
       <TrophyAchievementLayer />

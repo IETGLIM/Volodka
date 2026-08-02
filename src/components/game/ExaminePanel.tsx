@@ -111,14 +111,14 @@ export function ExaminePanel({
           role="dialog"
           aria-label={`Осмотр: ${data.title}`}
         >
-          <div className="mx-auto max-w-xl rounded-lg border border-white/10 bg-black/60 backdrop-blur-md p-4 glass-panel-dark">
+          <div className="mx-auto max-w-xl rounded-lg border border-white/10 bg-black/60 backdrop-blur-md p-4 glass-panel-dark hud-filmic-plate hud-filmic-plate-glass">
             <div className="flex items-start gap-3">
               <span className="text-2xl" aria-hidden>{icon}</span>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-cyan-300 mb-1">{data.title}</p>
-                <p className="text-sm text-slate-100 font-serif whitespace-pre-line">{displayed}</p>
+                <p className="text-sm font-semibold mb-1" style={{ color: 'var(--hud-filmic-ink-hero)' }}>{data.title}</p>
+                <p className="text-sm font-serif whitespace-pre-line" style={{ color: 'var(--hud-filmic-ink)' }}>{displayed}</p>
               </div>
-              <button type="button" onClick={onClose} className="text-xs text-slate-400 shrink-0">Esc</button>
+              <button type="button" onClick={onClose} className="text-xs shrink-0 hud-filmic-kicker">Esc</button>
             </div>
             {done && visibleChips.length > 0 && (
               <motion.div

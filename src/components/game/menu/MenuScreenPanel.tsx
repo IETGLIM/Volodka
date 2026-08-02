@@ -154,7 +154,8 @@ function MenuScreenPanelInner() {
             initial={contentMotion ? { opacity: 0, y: 5 } : false}
             animate={{ opacity: 0.52, y: 0 }}
             transition={{ delay: d(2.5, visited), duration: 1.2 }}
-            className="mt-2 font-serif text-xs md:text-sm tracking-[0.2em] italic text-stone-400/55"
+            className="mt-2 font-serif text-xs md:text-sm tracking-[0.2em] italic"
+            style={{ color: 'var(--hud-filmic-ink-meta)' }}
           >
             {MENU_POET_CREDIT}
           </motion.p>
@@ -199,8 +200,8 @@ function MenuScreenPanelInner() {
           className="mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5"
           aria-hidden="true"
         >
-          <span className="font-serif text-[10px] tracking-[0.18em] text-stone-400/55">↑↓ Навигация</span>
-          <span className="font-serif text-[10px] tracking-[0.18em] text-stone-400/55">Enter Выбрать</span>
+          <span className="font-serif text-[10px] tracking-[0.18em]" style={{ color: 'var(--hud-filmic-ink-meta)' }}>↑↓ Навигация</span>
+          <span className="font-serif text-[10px] tracking-[0.18em]" style={{ color: 'var(--hud-filmic-ink-meta)' }}>Enter Выбрать</span>
         </motion.div>
       </div>
 
@@ -233,7 +234,7 @@ function MenuScreenPanelInner() {
         className="absolute bottom-8 left-6 z-30"
         aria-hidden="true"
       >
-        <span className="font-serif text-[10px] tracking-[0.15em] text-stone-500/45">v{APP_VERSION}</span>
+        <span className="font-serif text-[10px] tracking-[0.15em]" style={{ color: 'var(--hud-filmic-ink-dim)' }}>v{APP_VERSION}</span>
       </motion.div>
 
       <AnimatePresence>
@@ -272,7 +273,7 @@ function MenuScreenPanelInner() {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="relative overflow-hidden cinematic-menu-panel px-5 py-5 text-center">
-                <p className="font-serif text-[11px] tracking-[0.3em] uppercase text-stone-400/55 mb-2">
+                <p className="font-serif text-[11px] tracking-[0.3em] uppercase mb-2" style={{ color: 'var(--hud-filmic-ink-meta)' }}>
                   Начало
                 </p>
                 <p className="font-serif text-xl tracking-[0.12em] text-stone-100/90 mb-2">

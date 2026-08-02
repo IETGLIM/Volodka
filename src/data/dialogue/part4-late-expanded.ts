@@ -247,6 +247,22 @@ export const DIALOGUE_PART4_EXPANDED: Record<string, DialogueNode> = {
           { type: 'addKarma', value: 3 },
         ],
       },
+      {
+        text: 'А что если предатель — ты, Зарема? Слишком много ты знаешь. Слишком удобно подставляешься.',
+        next: null,
+        condition: { maxKarma: 20 },
+        effects: [
+          { type: 'addKarma', value: -15 },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'setFlag', flag: 'zarema_betrayed', flagValue: true },
+          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: -25 } },
+          {
+            type: 'showThought',
+            thought: 'Ты сказал это, не подумав. Или — подумав слишком хорошо. Зарема не защищается. Она смотрит — и в её взгляде нет ни обиды, ни гнева. Только узнавание. Как будто она всегда знала, что ты это скажешь. Это хуже, чем крик.',
+            thoughtDuration: 6000,
+          },
+        ],
+      },
     ],
   },
 
@@ -431,6 +447,22 @@ export const DIALOGUE_PART4_EXPANDED: Record<string, DialogueNode> = {
         effects: [
           { type: 'addSkill', skill: 'coding', value: 2 },
           { type: 'addKarma', value: 5 },
+        ],
+      },
+      {
+        text: 'Александр — подожди. Не сегодня. У Кати будет отец и завтра, и послезавтра. Не надо платить за это своей жизнью.',
+        next: null,
+        condition: { minKarma: 60 },
+        effects: [
+          { type: 'addKarma', value: 12 },
+          { type: 'addSkill', skill: 'empathy', value: 2 },
+          { type: 'setFlag', flag: 'alexander_mercy', flagValue: true },
+          { type: 'npcChange', npcId: 'office_alexander', npcChange: { relation: 30 } },
+          {
+            type: 'showThought',
+            thought: 'Александр не отвечает сразу. Потом — медленно, как будто сбрасывает груз, который нёс пятнадцать лет — кивает. Милосердие — это не слабость. Это самая дорогая инженерия: починить человека так, чтобы он мог продолжать.',
+            thoughtDuration: 7000,
+          },
         ],
       },
     ],

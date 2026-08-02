@@ -572,6 +572,21 @@ export const DIALOGUE_PART5: Record<string, DialogueNode> = {
           { type: 'npcChange', npcId: 'cafe_barista', npcChange: { relation: 8 } },
         ],
       },
+      {
+        text: 'Бариста — я начинал здесь один. С остывшим кофе и страхом. Сегодня я возвращаю это всем. Не как месть — как второй шанс. Для всех. И для себя тоже.',
+        next: null,
+        condition: { minKarma: 70 },
+        effects: [
+          { type: 'addKarma', value: 15 },
+          { type: 'setFlag', flag: 'volodka_redeemed', flagValue: true },
+          { type: 'npcChange', npcId: 'cafe_barista', npcChange: { relation: 20 } },
+          {
+            type: 'showThought',
+            thought: 'Бариста отворачивается к кофемашине — якобы протереть. Но ты видишь: он плачет. Тихо, по-стариковски. Не от горя — от того, что дождался. Эфир начнётся через минуту. Ты — готов. Наконец-то — готов.',
+            thoughtDuration: 7000,
+          },
+        ],
+      },
     ],
   },
 };

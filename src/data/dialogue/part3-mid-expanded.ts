@@ -41,6 +41,20 @@ export const DIALOGUE_PART3_EXPANDED: Record<string, DialogueNode> = {
           { type: 'addSkill', skill: 'persuasion', value: 1 },
         ],
       },
+      {
+        text: 'Может, ты и есть повод? За тобой следят — а заодно и за всеми, кто рядом. Может, тебе лучше уйти. Совсем.',
+        next: null,
+        condition: { maxKarma: 15 },
+        effects: [
+          { type: 'addStat', stat: 'stress', value: 2 },
+          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: -10 } },
+          { type: 'setFlag', flag: 'zarema_accused_self', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Зарема молчит. Не обиженно — задумчиво. Как будто примеряет твою мысль на себя. И не находит, чем возразить. Это пугает. Молчание Заремы — всегда правдивее её слов.',
+          },
+        ],
+      },
     ],
   },
 

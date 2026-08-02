@@ -4199,6 +4199,233 @@ export const TRIGGER_ZONES: TriggerZone[] = [
   },
 
   /* ═══════════════════════════════════════════════════════════════════
+     EXAMINE EXPANSION — environmental storytelling for sparse scenes
+     (forest_clearing had 0 examine nodes; albert_backroom, chk_forest_zorge,
+     factory_roof were sparse. Purely additive — no schema changes.)
+     ═══════════════════════════════════════════════════════════════════ */
+
+  /* ── forest_clearing (4 new examine nodes — first content for this scene) ── */
+  {
+    id: 'forest_clearing_mossy_stone',
+    sceneId: 'forest_clearing',
+    position: [-2.6, 0.4, -1.8],
+    size: [0.8, 0.8, 0.8],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть замшелый камень',
+    examineData: {
+      title: 'Замшелый камень',
+      description: 'Гранитный валун, покрытый мхом. На верхней грани — выбитая надпись.',
+      detailText: '«Кто найдёт — пусть помнит. Город — не сервер. Его нельзя перезагрузить.» Буквы старые, но глубокие. Кто-то очень хотел, чтобы это дошло.',
+      icon: '🪨',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_forest_stone', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      {
+        type: 'showThought',
+        thought: 'Холодный камень. Тёплые слова. Ты чувствуешь: тот, кто выбивал — знал, что прочитают поздно. Может, слишком поздно. Может — нет.',
+        thoughtDuration: 6000,
+      },
+    ],
+  },
+  {
+    id: 'forest_clearing_old_campfire',
+    sceneId: 'forest_clearing',
+    position: [1.8, 0.4, -2.4],
+    size: [1.0, 0.4, 1.0],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть старый костёр',
+    examineData: {
+      title: 'Старый костёр',
+      description: 'Круг из камней, внутри — чёрная зола и обугленный фрагмент чего-то рукотворного.',
+      detailText: 'Среди золы — оплавленный кусок пластика с остатками гильдийской маркировки. Кто-то жёг здесь записи. Или — улики. Давно. Дождей смыло всё, кроме этого кусочка.',
+      icon: '🔥',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_forest_campfire', flagValue: true },
+      {
+        type: 'showThought',
+        thought: 'Огонь давно погас. Но пахнет горелым — то ли пластиком, то ли чужой panic-ошибкой. Кто-то приходил сюда прятать. Или — уничтожать. Грань тонкая.',
+        thoughtDuration: 5000,
+      },
+    ],
+  },
+  {
+    id: 'forest_clearing_birch_sign',
+    sceneId: 'forest_clearing',
+    position: [3.0, 1.6, 1.0],
+    size: [0.4, 0.8, 0.1],
+    interactionType: 'examine',
+    interactionLabel: 'Прочитать берёзовый указатель',
+    examineData: {
+      title: 'Берёзовый указатель',
+      description: 'Столб из берёзы, на нём — табличка. Дерево потемнело, но текст читается.',
+      detailText: '«Заповедник «Зорге». Основан 2023. Охрана: гильдия памяти. Вход свободный. Выход — по совести.» Подпись снизу стёрлась. Только инициал — «В.»',
+      icon: '🪧',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_forest_sign', flagValue: true },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+      {
+        type: 'showThought',
+        thought: '«В.» — может, Владимир. Может, Виктория. Может, ещё кто-то, чьё имя не дожило до таблички. Совпадение — или нет. Ты не знаешь. Пока — не знаешь.',
+      },
+    ],
+  },
+  {
+    id: 'forest_clearing_hidden_path',
+    sceneId: 'forest_clearing',
+    position: [-3.4, 0.4, 2.6],
+    size: [1.0, 0.4, 1.0],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть заросшую тропу',
+    examineData: {
+      title: 'Заросшая тропа',
+      description: 'Узкая просека в подлеске. Старая — но кто-то по ней ходил. Сравнительно недавно.',
+      detailText: 'Ветки обломаны на высоте пояса. Не зверь — человек. И не один раз. Тропа уходит на северо-восток, в сторону, где на картах — ничего.',
+      icon: '🌿',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_forest_hidden_path', flagValue: true },
+      { type: 'addKarma', value: 1 },
+      {
+        type: 'showThought',
+        thought: 'Куда ведёт — непонятно. Но ведёт. Иногда самая важная дорога — та, которую не нанесли на карту. Особенно — та.',
+      },
+    ],
+  },
+
+  /* ── albert_backroom (2 new examine nodes — interior props) ── */
+  {
+    id: 'albert_backroom_shelves',
+    sceneId: 'albert_backroom',
+    position: [-2.4, 1.2, -1.5],
+    size: [0.6, 1.8, 0.4],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть полки подсобки',
+    examineData: {
+      title: 'Полки подсобки',
+      description: 'Деревянные стеллажи до потолка. Банки с зерном, коробки с чаем, и — между ними — не то, что должно быть.',
+      detailText: 'За жестянкой с японским зелёным чаем — стопка рукописей. Альберт прячет стихи там, где гильдия не полезет: в инвентаре кафе. «Списание продукции» — лучшая маскировка.',
+      icon: '🗄️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_backroom_shelves', flagValue: true },
+      {
+        type: 'showThought',
+        thought: 'Двести тридцать стихов — у Заремы в голове. Здесь — ещё двадцать, в рукописях. Город полон стихов, спрятанных как обычные вещи. Может, поэтому гильдия их и ненавидит. Стихи умеют притворяться обыденностью.',
+        thoughtDuration: 6000,
+      },
+    ],
+  },
+  {
+    id: 'albert_backroom_espresso_machine',
+    sceneId: 'albert_backroom',
+    position: [1.6, 1.0, -1.2],
+    size: [0.9, 1.2, 0.7],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть эспрессо-машину',
+    examineData: {
+      title: 'Эспрессо-машина',
+      description: 'Старая итальянская «La Marzocco» — медь, латунь, облупленная эмаль. Работает.',
+      detailText: 'Бариста сказал однажды: эта машина пережила три смены режима и две гильдии. Жужжит на частоте, которая успокаивает. Может, поэтому в кафе тихо. Может, поэтому — возвращаешься.',
+      icon: '☕',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_backroom_espresso', flagValue: true },
+      { type: 'addStat', stat: 'stress', value: -3 },
+    ],
+  },
+
+  /* ── chk_forest_zorge (2 new examine nodes — campsite environment) ── */
+  {
+    id: 'chk_forest_zorge_path_sign',
+    sceneId: 'chk_forest_zorge',
+    position: [-3.2, 1.6, -4.0],
+    size: [0.4, 0.8, 0.1],
+    interactionType: 'examine',
+    interactionLabel: 'Прочитать указатель на тропе',
+    examineData: {
+      title: 'Указатель на тропе',
+      description: 'Столб, вросший в мох. Три стрелки — три направления. Надписи почти стёрлись.',
+      detailText: '«← Парк · 0.4 км», «→ ЧК · костёр · 0.1 км», «↑ Поляна · ???». Последняя стрелка — без расстояния. Кто-то намеренно стёр цифры. Или — никогда не писал.',
+      icon: '🪧',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_chk_path_sign', flagValue: true },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+      {
+        type: 'showThought',
+        thought: 'Стрелка без расстояния — самая честная. До поляны можно идти минуту, а можно — год. Зависит не от ног. От того, что ты готов там найти.',
+      },
+    ],
+  },
+  {
+    id: 'chk_forest_zorge_abandoned_campfire',
+    sceneId: 'chk_forest_zorge',
+    position: [2.8, 0.4, 1.6],
+    size: [1.0, 0.4, 1.0],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть заброшенный костёр',
+    examineData: {
+      title: 'Заброшенный костёр',
+      description: 'Кольцо из камней. Внутри — холодная зола. Никто не разводил огонь здесь неделю, не меньше.',
+      detailText: 'На камне у костра — обугленная спичка и записка, заткнутая под камень. «Ру, если придёшь раньше — жди. У меня дежурство. — С.» Записка старая, но сухая.',
+      icon: '🏕️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_chk_campfire', flagValue: true },
+      {
+        type: 'showThought',
+        thought: 'Костёр чужой. Но — тёплый. Не от углей — от того, что кто-то оставил записку для того, кого ждёт. Дождаться — большая редкость в этом городе. Заслуживает уважения.',
+      },
+    ],
+  },
+
+  /* ── factory_roof (2 new examine nodes — rooftop environment) ── */
+  {
+    id: 'factory_roof_skyline_vista',
+    sceneId: 'factory_roof',
+    position: [0, 1.2, -6.0],
+    size: [1.4, 1.4, 0.4],
+    interactionType: 'examine',
+    interactionLabel: 'Посмотреть на город с края',
+    examineData: {
+      title: 'Город с края крыши',
+      description: 'Парапет. Далеко внизу — мерцающий город. Неон течёт по лужам, как кровь по венам.',
+      detailText: 'Отсюда видно, что город — это схема. Каждый огонёк — узел. Каждая улица — шина. Ты — стоишь на одном из серверов. И этот сервер — выключается.',
+      icon: '🌆',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_roof_vista', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      {
+        type: 'showThought',
+        thought: 'Город красив с высоты. Это — обман. Красота — функция расстояния. Спустишься — и снова запах, лужи, усталость. Но запомни этот вид. Иногда — единственное, что держит.',
+        thoughtDuration: 6000,
+      },
+    ],
+  },
+  {
+    id: 'factory_roof_weather_station',
+    sceneId: 'factory_roof',
+    position: [4.0, 2.2, -3.5],
+    size: [0.8, 1.0, 0.8],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть метеостанцию',
+    examineData: {
+      title: 'Метеостанция',
+      description: 'Анемометр, термометр, датчик давления. Ржавые, но крутятся. На корпусе — печать гильдии.',
+      detailText: 'Гильдия собирала погоду в реальном времени. Зачем — никто не объяснял. Может, для дронов. Может — для чего-то ещё. Датчик давления показывает 712 мм. Дождь — через два часа. Точно.',
+      icon: '📡',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_roof_weather_station', flagValue: true },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+    ],
+  },
+
+  /* ═══════════════════════════════════════════════════════════════════
      COMBAT ENCOUNTERS — replaced by visible patrolling creeps
      (src/data/creepPatrols.ts + PatrollingCreeps.tsx). The old invisible
      autoTrigger zones fired combat with no warning; creeps give the player

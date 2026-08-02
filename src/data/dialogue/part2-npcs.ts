@@ -730,6 +730,20 @@ export const DIALOGUE_PART2: Record<string, DialogueNode> = {
           { type: 'setFlag', flag: 'network_contact', flagValue: true },
         ],
       },
+      {
+        text: '*оставляешь на стойке вдвое больше обычного* Держи. За то, что хранишь чужие тайны, когда мог бы просто молчать.',
+        next: null,
+        condition: { minKarma: 30 },
+        effects: [
+          { type: 'addKarma', value: 5 },
+          { type: 'npcChange', npcId: 'cafe_barista', npcChange: { relation: 5 } },
+          { type: 'setFlag', flag: 'barista_generous_tip', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Бариста не считает. Он вообще не смотрит на деньги. Только на тебя — коротко, через плечо. Кивает. Ты понял: чаевые здесь — не про деньги. Про знак. Знак получен.',
+          },
+        ],
+      },
     ],
   },
 
