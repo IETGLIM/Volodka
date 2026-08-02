@@ -173,6 +173,9 @@ function MenuScreenPanelInner() {
           </p>
         </motion.div>
 
+        {/* hud-filmic-divider — section break between dedication and primary nav */}
+        <div className="hud-filmic-divider" aria-hidden style={{ margin: '6px 0', width: '16rem' }} />
+
         <motion.div
           ref={menuRef}
           initial={contentMotion ? { opacity: 0, y: 20 } : false}

@@ -97,6 +97,7 @@ export function Inventory({ open, onClose, onOpenPoetryBook }: InventoryProps) {
       maxWidth="max-w-4xl"
       icon={<Package className="size-5 text-cyan-400" aria-hidden />}
       shortcutLabel="I"
+      closeAriaLabel="Закрыть инвентарь"
       headerExtra={(
         <div className="flex items-center gap-2.5">
           <div className="relative">

@@ -396,6 +396,7 @@ export function CodexPanel({ open, onClose }: CodexPanelProps) {
       icon={<BookMarked className="size-5 text-amber-400" />}
       shortcutLabel="K"
       urlPath="volodka://codex"
+      closeAriaLabel="Закрыть кодекс"
       footer={footer}
     >
       <div className="flex flex-col h-full" data-testid="codex-panel">

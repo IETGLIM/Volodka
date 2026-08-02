@@ -761,3 +761,235 @@
     background: Canvas !important;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   Task 2-a — MORE filmic CSS detail classes (6 new)
+   All animating classes are gated on prefers-reduced-motion: no-preference.
+   Each class has an explicit reduced-motion fallback block.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── 1. hud-filmic-choice-accent ──────────────────────────────
+   Left-edge accent bar on dialogue choices that grows on hover/focus.
+   Implemented as a ::before pseudo-element on the EXISTING .hud-filmic-choice
+   class (additive — no className change needed in NarrativeChoiceList;
+   .hud-filmic-choice is already present on all choice buttons).
+   Bar: 2px wide, warm amber, scaleY(0) → scaleY(1) on hover/focus,
+   transform-origin bottom, 240ms cubic-bezier(0.2,0.8,0.2,1). */
+
+.hud-filmic-choice {
+  position: relative;
+}
+
+.hud-filmic-choice::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--hud-filmic-glow-warm, #ffaa44);
+  transform: scaleY(0);
+  transform-origin: bottom;
+  transition: transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.hud-filmic-choice:hover:not(:disabled)::before,
+.hud-filmic-choice:focus-visible::before {
+  transform: scaleY(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-choice::before {
+    transform: scaleY(1);
+    transition: none;
+  }
+}
+
+/* ── 2. hud-filmic-examine-fade ───────────────────────────────
+   Staggered fade-in for ExaminePanel content wrapper. Children
+   animate with 90ms stagger (title 0ms, description 90ms, detail 180ms),
+   480ms duration, cubic-bezier(0.2,0.8,0.2,1). Opacity 0→1 + translateY(8px)→0. */
+
+@keyframes hud-filmic-examine-fade-in {
+  0%   { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hud-filmic-examine-fade > *:nth-child(1) {
+    animation: hud-filmic-examine-fade-in 480ms cubic-bezier(0.2, 0.8, 0.2, 1) 0ms both;
+  }
+  .hud-filmic-examine-fade > *:nth-child(2) {
+    animation: hud-filmic-examine-fade-in 480ms cubic-bezier(0.2, 0.8, 0.2, 1) 90ms both;
+  }
+  .hud-filmic-examine-fade > *:nth-child(3) {
+    animation: hud-filmic-examine-fade-in 480ms cubic-bezier(0.2, 0.8, 0.2, 1) 180ms both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-examine-fade,
+  .hud-filmic-examine-fade > * {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ── 3. hud-filmic-divider ────────────────────────────────────
+   Filmic horizontal divider: 1px gradient line (transparent → rule-soft
+   → transparent) with a centered diamond glyph (4px rotated square, warm
+   amber) via ::after. Use on section breaks in MenuScreenPanel + ExaminePanel. */
+
+.hud-filmic-divider {
+  position: relative;
+  height: 1px;
+  margin: 12px 0;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    var(--hud-filmic-rule-soft, rgba(255, 170, 68, 0.25)) 50%,
+    transparent 100%
+  );
+  pointer-events: none;
+  border: 0;
+}
+
+.hud-filmic-divider::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 4px;
+  height: 4px;
+  background: var(--hud-filmic-glow-warm, #ffaa44);
+  transform: translate(-50%, -50%) rotate(45deg);
+  pointer-events: none;
+}
+
+/* ── 4. hud-filmic-quote ──────────────────────────────────────
+   Decorative large quotation marks on narrative/cinematic text.
+   ::before is a left double quote (") positioned absolute top-left,
+   3em font-size, warm amber, opacity 0.18, pointer-events: none. */
+
+.hud-filmic-quote {
+  position: relative;
+}
+
+.hud-filmic-quote::before {
+  content: "\201C";
+  position: absolute;
+  top: 0;
+  left: 0;
+  font-size: 3em;
+  color: var(--hud-filmic-glow-warm, #ffaa44);
+  opacity: 0.18;
+  line-height: 1;
+  pointer-events: none;
+}
+
+/* ── 5. hud-filmic-corner-bracket ─────────────────────────────
+   Four animated L-shaped corner brackets (12×12px) that draw in on mount
+   with 60ms stagger (360ms duration each). Implemented via 4 child <span>
+   elements with positional classes (__tl, __tr, __bl, __br). Each span
+   uses border-top/border-left (etc.) to form the L; width/height animate
+   0→12px. Brackets inset 8px from plate edges. */
+
+.hud-filmic-corner-bracket {
+  position: relative;
+}
+
+.hud-filmic-corner-bracket > .hud-filmic-corner-bracket__corner {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  pointer-events: none;
+  border-style: solid;
+  border-width: 0;
+  border-color: var(--hud-filmic-rule, rgba(255, 170, 68, 0.4));
+  z-index: 1;
+}
+
+.hud-filmic-corner-bracket__tl {
+  top: 8px;
+  left: 8px;
+  border-top-width: 1px;
+  border-left-width: 1px;
+}
+
+.hud-filmic-corner-bracket__tr {
+  top: 8px;
+  right: 8px;
+  border-top-width: 1px;
+  border-right-width: 1px;
+}
+
+.hud-filmic-corner-bracket__bl {
+  bottom: 8px;
+  left: 8px;
+  border-bottom-width: 1px;
+  border-left-width: 1px;
+}
+
+.hud-filmic-corner-bracket__br {
+  bottom: 8px;
+  right: 8px;
+  border-bottom-width: 1px;
+  border-right-width: 1px;
+}
+
+@keyframes hud-filmic-corner-bracket-draw {
+  0%   { width: 0; height: 0; opacity: 0; }
+  100% { width: 12px; height: 12px; opacity: 1; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hud-filmic-corner-bracket__tl {
+    animation: hud-filmic-corner-bracket-draw 360ms cubic-bezier(0.2, 0.8, 0.2, 1) 0ms both;
+  }
+  .hud-filmic-corner-bracket__tr {
+    animation: hud-filmic-corner-bracket-draw 360ms cubic-bezier(0.2, 0.8, 0.2, 1) 60ms both;
+  }
+  .hud-filmic-corner-bracket__bl {
+    animation: hud-filmic-corner-bracket-draw 360ms cubic-bezier(0.2, 0.8, 0.2, 1) 120ms both;
+  }
+  .hud-filmic-corner-bracket__br {
+    animation: hud-filmic-corner-bracket-draw 360ms cubic-bezier(0.2, 0.8, 0.2, 1) 180ms both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-corner-bracket > .hud-filmic-corner-bracket__corner {
+    width: 12px;
+    height: 12px;
+    opacity: 1;
+    animation: none;
+  }
+}
+
+/* ── 6. hud-filmic-boot-flicker ───────────────────────────────
+   Boot text flicker for LoadingScreen title. One-shot 1.2s animation
+   with a CRT-style flicker pattern in the first 18% (0→0.8→0.2→1),
+   then steady opacity 1 until 100%. forwards fill-mode holds end state. */
+
+@keyframes hud-filmic-boot-flicker-cycle {
+  0%   { opacity: 0; }
+  8%   { opacity: 0.8; }
+  12%  { opacity: 0.2; }
+  18%  { opacity: 1; }
+  100% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hud-filmic-boot-flicker {
+    animation: hud-filmic-boot-flicker-cycle 1.2s forwards;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-boot-flicker {
+    animation: none;
+    opacity: 1;
+  }
+}

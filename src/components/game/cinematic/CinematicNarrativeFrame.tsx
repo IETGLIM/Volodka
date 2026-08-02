@@ -115,7 +115,7 @@ export function CinematicNarrativeFrame({
                 delay: speakerLabel ? typeStyles.bodyDelay : typeStyles.titleDelay,
                 ease: 'easeOut',
               }}
-              className={`${typeStyles.bodySize} text-center max-w-3xl mt-4 sm:mt-5 leading-relaxed ${!done ? 'typewriter-active-glow' : ''}`}
+              className={`${typeStyles.bodySize} text-center max-w-3xl mt-4 sm:mt-5 leading-relaxed hud-filmic-quote ${!done ? 'typewriter-active-glow' : ''}`}
               style={{
                 fontFamily: '"Georgia", "Times New Roman", serif',
                 color:

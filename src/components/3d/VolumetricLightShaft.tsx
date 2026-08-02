@@ -219,6 +219,131 @@ export const SCENE_VOLUMETRIC_LIGHTS: Partial<Record<string, VolumetricShaftConf
       dustSpeed: 0.34,
     },
   ],
+  // ── Home evening (кухня, вечер) — warm pendant over the kitchen table +
+  //    amber corner lamp + soft warm fill. Positions mirror the GodRays sun
+  //    mesh at [0,2.5,0] #ffaa44 so the volumetric cones emanate from the
+  //    same origin as the postprocessing rays (complementary layers).
+  //    Ceiling at y=3.1 clips the top of each cone naturally. ──
+  home_evening: [
+    {
+      ...DEFAULT_SHAFT,
+      position: [0, 2.5, 0],     // ceiling pendant — matches GodRays sun origin
+      topRadius: 0.14,
+      bottomRadius: 1.4,         // wide warm pool on the table/counter
+      height: 2.4,
+      color: '#ffaa44',          // warm amber pendant
+      opacity: 0.22,
+      flickerSpeed: 0.14,        // gentle thermal flicker of an old bulb
+      flickerAmp: 0.16,
+      rotationSpeed: 0.006,
+      initialRotation: 0,
+      tiltX: 0,
+      dustDensity: 0.5,          // kitchen dust — cooking steam motes
+      dustSpeed: 0.22,
+    },
+    {
+      ...DEFAULT_SHAFT,
+      position: [-1.5, 1.5, -1], // warm corner lamp
+      topRadius: 0.1,
+      bottomRadius: 0.7,
+      height: 1.4,
+      color: '#ff9933',          // hotter amber corner spill
+      opacity: 0.18,
+      flickerSpeed: 0.22,
+      flickerAmp: 0.2,
+      rotationSpeed: 0.008,
+      initialRotation: 0.3,
+      tiltX: -0.2,
+      dustDensity: 0.45,
+      dustSpeed: 0.28,
+    },
+    {
+      ...DEFAULT_SHAFT,
+      position: [1, 1.8, 2],     // soft warm fill light
+      topRadius: 0.08,
+      bottomRadius: 0.55,
+      height: 1.6,
+      color: '#ffcc88',          // mellow warm wash
+      opacity: 0.15,
+      flickerSpeed: 0.18,
+      flickerAmp: 0.14,
+      rotationSpeed: 0.005,
+      initialRotation: 0.7,
+      tiltX: -0.12,
+      dustDensity: 0.35,
+      dustSpeed: 0.3,
+    },
+  ],
+  // ── Factory basement (подвал завода) — «Заря-М» monolith green glow +
+  //    red emergency lights + cold aisle spill. The hero green shaft
+  //    matches the GodRays sun at [0,2.6,-5.2] #22ff88. Ceiling at y=3.4
+  //    clips the cone tops. Dust is denser (old basement, stale air). ──
+  factory_basement: [
+    {
+      ...DEFAULT_SHAFT,
+      position: [0, 2.6, -5.2],  // «Заря-М» monolith glow — matches GodRays sun
+      topRadius: 0.16,
+      bottomRadius: 1.2,         // green pool washing the monolith base
+      height: 2.4,
+      color: '#22ff88',          // guild terminal green
+      opacity: 0.24,             // hero element — slightly stronger
+      flickerSpeed: 0.35,        // CRT-style flicker of a live terminal
+      flickerAmp: 0.32,
+      rotationSpeed: 0.004,
+      initialRotation: 0,
+      tiltX: 0,
+      dustDensity: 0.7,          // stale basement air — heavy dust
+      dustSpeed: 0.18,
+    },
+    {
+      ...DEFAULT_SHAFT,
+      position: [-4, 2.8, 2],    // left red emergency light
+      topRadius: 0.12,
+      bottomRadius: 0.9,
+      height: 2.6,
+      color: '#ff3322',          // alarm red spill
+      opacity: 0.2,
+      flickerSpeed: 0.5,         // erratic emergency flicker
+      flickerAmp: 0.4,
+      rotationSpeed: 0.003,
+      initialRotation: 0.2,
+      tiltX: -0.15,
+      dustDensity: 0.6,
+      dustSpeed: 0.2,
+    },
+    {
+      ...DEFAULT_SHAFT,
+      position: [4, 2.8, 2],     // right red emergency light (mirrored)
+      topRadius: 0.12,
+      bottomRadius: 0.9,
+      height: 2.6,
+      color: '#ff3322',
+      opacity: 0.2,
+      flickerSpeed: 0.5,
+      flickerAmp: 0.4,
+      rotationSpeed: 0.003,
+      initialRotation: 0.8,
+      tiltX: -0.15,
+      dustDensity: 0.6,
+      dustSpeed: 0.2,
+    },
+    {
+      ...DEFAULT_SHAFT,
+      position: [0, 2.5, 5],     // cold aisle spill near entrance
+      topRadius: 0.1,
+      bottomRadius: 0.8,
+      height: 2.3,
+      color: '#8899aa',          // cold fluorescent wash
+      opacity: 0.16,
+      flickerSpeed: 0.28,
+      flickerAmp: 0.22,
+      rotationSpeed: 0.005,
+      initialRotation: 0,
+      tiltX: 0,
+      dustDensity: 0.5,
+      dustSpeed: 0.25,
+    },
+  ],
 };
 
 function normalizeShaftConfig(config: VolumetricShaftConfig): VolumetricShaftConfig {

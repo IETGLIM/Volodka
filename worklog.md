@@ -1864,3 +1864,223 @@ Stage Summary:
 - More content for Acts 3-4 (this round added 8 choices + 10 examines + idle/byAct; could add more dialogue nodes).
 - VolumetricLightShafts for home_evening/factory_basement (GodRays postprocessing already added session 3).
 - More orphan widget mounts (remaining: WorldSpaceLabels — needs 3D camera wrapper; CompassIndicator/CompassPOIMarkers — redundant with existing CompassHUD/ScenePoiCompass).
+
+---
+Task ID: 2-c
+Agent: full-stack-developer (living-world content expansion)
+Task: 3 pure-data content expansions — (1) NPC ambient barks +14 lines (2 per emotion × 7), (2) idle monologues for 3 missing scenes (guild_mainframe, library_basement, underground_bunker) with all 4 karma/stress bands, (3) byAct revisit thoughts added to 4 scenes that had none or only one act covered (park_day, library_day, factory_roof, library_basement) — 2 new acts per scene.
+
+Work Log:
+- Read /home/z/my-project/worklog.md (prior orchestrator tick 5 summary) and tail of /home/z/volodka/worklog.md to confirm prior tick added: 8 karma-gated dialogue choices, 10 examine TriggerZones, factory_basement idle monologue + 8 new neutral lines across 4 existing scenes (volodka_room/street_night/cafe_evening/river_pier +2 each), 6 byAct revisit thoughts across 4 scenes (volodka_room/street_night/cafe_evening/office_day). Picked DIFFERENT scenes for this tick to avoid duplication.
+- Read /home/z/volodka/AI_SESSION_CONTEXT.md (style guide: Russian, literary, post-Soviet cyberpunk-noir, introspective/melancholic, tech-metaphor, 1-2 sentences per idle/bark line).
+- Read target files: src/shared/npcBark.ts, src/data/idleMonologues.ts, src/data/sceneEntryThoughts.ts (full). Read type definitions: src/shared/types/definitions/npc.ts (NpcEmotion = neutral|curious|alarmed|contemplative|annoyed|respectful|fearful — 7 emotions confirmed), src/config/sceneIds.ts (verified all target SceneIds are valid: guild_mainframe, library_basement, underground_bunker, park_day, library_day, factory_roof — all in CORE_SCENE_IDS or EXTENSION_SCENE_IDS).
+- Verified no tests directly check DEFAULT_EMOTION_BARKS content counts or IDLE_MONOLOGUES/SCENE_THOUGHTS structure (only resolver behavior tests exist in npcBark.test.ts — those tests use mock texts, not DEFAULT_EMOTION_BARKS).
+- TASK 1 — NPC ambient barks (src/shared/npcBark.ts):
+  - Replaced inline single-line arrays with multi-line arrays, appending 2 new lines to the END of each emotion's array. Existing 4 lines per emotion (and the empty `neutral: []`) preserved unchanged at the start of each array; 2 new lines appended after.
+  - 14 new lines total (2 × 7 emotions). Style: 1 short sentence each, post-Soviet cyberpunk-noir, NPC personality cautious/observant/paranoid. Examples: curious → "Ты не отсюда, да? Я таких глаз не видел." + "Что у тебя в кармане светится?"; fearful → "Тише. Стены слушают. Стены — всегда слушают." + "Если что — я тебя не видел. Ты — тоже."; neutral (was empty) → "Опять ничего не происходит. Или происходит, но — без меня." + "Сервер не мигает. Странно. Обычно — мигает.".
+- TASK 2 — Idle monologues for 3 missing scenes (src/data/idleMonologues.ts):
+  - Appended 3 NEW scene entries to IDLE_MONOLOGUES object (after factory_basement, before closing `};`): guild_mainframe, library_basement, underground_bunker. All 3 are valid ExtensionSceneIds or CoreSceneIds verified via src/config/sceneIds.ts; none had IDLE_MONOLOGUES entries previously (verified by grepping the file — only 13 scenes had entries, all 3 targets absent).
+  - Each entry has all 4 bands populated per spec: neutral (4 lines), high (2 lines), low (2 lines), highStress (2 lines) — following the exact IdleMonologueBand interface structure used by existing entries (factory_basement/volodka_room as template). Total: 3 scenes × (4+2+2+2) = 30 new lines.
+  - Lines reference scene-specific atmosphere/props: guild_mainframe → 50Hz server hum, indicator lights, server racks, "чужие жизни в нулях и единицах"; library_basement → paper archives, dust, бечёвка-bound folders, lone light bulb, half-board creak; underground_bunker → concrete walls, generator hum, people waiting, "Wi-Fi в могиле".
+- TASK 3 — byAct revisit thoughts (src/data/sceneEntryThoughts.ts):
+  - Picked 4 scenes with no byAct or only 1 act covered (verified via grep before editing): park_day (existing byAct={3}), library_day (existing byAct={7}), factory_roof (NO byAct), library_basement (NO byAct). None overlap with prior tick's byAct work (which targeted volodka_room/street_night/cafe_evening/office_day).
+  - park_day: existing byAct={3} → ADDED act 4 ("Тот же парк. Те же деревья. Но теперь я знаю, что прячется в их тени.") + act 5 ("Парк после революции. Скамейка занята... Старик играет. До мажор. Сегодня — слышу."). Existing act 3 untouched.
+  - library_day: existing byAct={7} → ADDED act 3 ("Полки — реже. Книги — тише. Кто-то решает, что нам читать... Ручка скрипит — уже не чужая. Уже — казённая.") + act 4 ("Здесь — явка. Здесь — между полок — то, что не должно существовать... Бумага — прикрытие."). Existing act 7 untouched.
+  - factory_roof: NO existing byAct → ADDED byAct field with act 4 ("Трубы не дымят. Или — дымят тише... Перед бурей — всегда — тише. Трубы — знают.") + act 5 ("Трубы дымят — тем же дымом. Сменить режим — легко. Сменить трубы — невозможно.").
+  - library_basement: NO existing byAct → ADDED byAct field with act 4 ("Прячем здесь то, что не должно существовать. Бумага надёжнее диска — диск стирается по приказу, бумага — только по огню.") + act 5 ("Архив открывают. Люди хотят знать. Я тоже — хочу. Боюсь — узнать.").
+  - 8 new byAct entries total (2 per scene × 4 scenes). All existing firstVisit/firstVisitByKarma/highStress/existing-byAct entries preserved unchanged.
+- Typecheck gate: `cd /home/z/volodka && node scripts/tsc7.mjs --noEmit` → EXIT_CODE=0. All 14 new bark lines resolve as `readonly string[]` entries (matching `Record<NpcEmotion, readonly string[]>`). All 3 new IDLE_MONOLOGUES entries conform to `IdleMonologueConfig` (= `IdleMonologueBand | ThoughtText`, with `neutral: readonly string[]` required and high/low/highStress optional). All 8 new byAct entries conform to `Partial<Record<number, ThoughtText>>` (ThoughtText = string | function — used plain strings only).
+
+Invariants preserved:
+- Poems (`src/data/poems.ts`) — not opened, not modified.
+- Rapier `<Physics interpolate={false}>` — untouched.
+- KCC ownership — untouched.
+- Postprocessing depth-blit patch — untouched.
+- Test contracts — untouched (npcBark.test.ts only tests pickNpcBarkLine/resolveNpcBarkForRelation with mock texts; no tests on DEFAULT_EMOTION_BARKS content).
+- No state mutations — all changes are PURE DATA. No `dispatchStateAction` calls needed or used. No `dispatchGameAction`. No `presentNarrativeBeat`.
+- Additive only — 0 deletions, 0 modifications to existing lines/entries/thoughts/barks. New bark lines appended to END of each emotion array. New IDLE_MONOLOGUES scene entries appended before closing `};`. New byAct entries inserted into existing `byAct` objects (or new `byAct` field added where none existed) — existing acts in those `byAct` objects untouched.
+- All 7 NpcEmotion values covered (neutral/curious/alarmed/contemplative/annoyed/respectful/fearful).
+- All 7 TrainablePlayerSkill values (logic|coding|empathy|persuasion|intuition|writing|rhythm) — N/A for this task (no skill references in bark/idle/byAct data), but verified for awareness. No endurance/authority references introduced.
+- No `next` node IDs introduced (this task adds no dialogue nodes).
+
+Deviations / Findings:
+- DEVIATION: spec said npcBark.ts has "4 Russian lines per emotion × 7 emotions = 28 lines". Verified actual file: `neutral: []` (empty array — 0 lines), other 6 emotions had 4 lines each = 24 non-empty lines. Treated the spec's "7 emotions" as canonical (neutral IS one of the 7 NpcEmotion values per type def) and added 2 lines to ALL 7 emotions including neutral (so neutral went from 0 → 2 lines). This brings the file closer to the spec's described "4 lines × 7 emotions" structure on subsequent passes (now 6 emotions have 6 lines, neutral has 2). This is purely additive — no existing lines removed or modified.
+- DEVIATION: spec listed emotion order as "neutral/curious/alarmed/contemplative/annoyed/respectful/fearful" but the file's actual `DEFAULT_EMOTION_BARKS` order (matching NpcEmotion type union in npc.ts) is "neutral/curious/alarmed/contemplative/respectful/annoyed/fearful" (respectful before annoyed). Followed the FILE's order, not the spec's listed order — both cover all 7 emotions, content is identical, only the order in which I listed them in this log differs.
+- NOTE on MultiEdit behavior: attempted all 4 sceneEntryThoughts.ts edits in one MultiEdit call. 3 of 4 succeeded; the 4th (library_basement) failed because old_str contained "У меня своих — хватает" but the actual file content was "У меня своей — хватает" (genitive feminine matching "памяти", not genitive plural). Re-applied the library_basement edit as a single Edit call with the correct text. All 4 edits now persisted; typecheck passes.
+- No `next` node IDs to verify (this task adds no dialogue nodes — pure bark/idle/byAct text data).
+- Picked underground_bunker over candidate zarema_room/chk_campfire_night because underground_bunker had only 1 existing byAct act ({6}) AND no IDLE_MONOLOGUES entry — maximal coverage gain. zarema_room had byAct={3} and chk_campfire_night had byAct={4,5,6,7} (already well-covered). guild_mainframe had byAct={4,5,6,7} (well-covered for byAct) but NO idle monologue — picked it for idle monologue task only, not byAct. library_basement had NO byAct and NO idle monologue — picked for BOTH tasks (synergy).
+
+Stage Summary:
+- Files modified (3): src/shared/npcBark.ts, src/data/idleMonologues.ts, src/data/sceneEntryThoughts.ts.
+- NPC ambient bark lines: +14 (2 per emotion × 7 emotions, appended to END of each emotion's array; existing 24 lines untouched; neutral went 0→2).
+- Idle monologue scenes: +3 (guild_mainframe, library_basement, underground_bunker — all 4 bands populated: neutral×4 + high×2 + low×2 + highStress×2 = 10 lines each, 30 new lines total). Existing 13 IDLE_MONOLOGUES scenes untouched.
+- byAct revisit thoughts: +8 (2 new acts per scene × 4 scenes: park_day +acts{4,5}, library_day +acts{3,4}, factory_roof +acts{4,5} (new byAct field), library_basement +acts{4,5} (new byAct field)). Existing byAct acts in those scenes (park_day act 3, library_day act 7) untouched.
+- Typecheck: `cd /home/z/volodka && node scripts/tsc7.mjs --noEmit` → EXIT_CODE=0.
+- Purely additive change — 0 deletions, 0 modifications to existing data. No commit / push performed — orchestrator handles the commit.
+
+---
+Task ID: 2-a
+Agent: full-stack-developer (filmic CSS polish)
+Task: Add 6 MORE filmic CSS detail classes to `hud-filmic.css` and wire them onto existing components (ExaminePanel, CinematicNarrativeFrame, LoadingScreen, MenuScreenPanel). All changes additive; preserve invariants (Rapier `<Physics interpolate={false}>`, KCC ownership, postprocessing depth-blit patch, test contracts, poems). Reduced-motion gating mandatory.
+
+Work Log:
+- Read prior worklogs (`/home/z/my-project/worklog.md` tail + `/home/z/volodka/worklog.md` tail) and `AI_SESSION_CONTEXT.md` rules section. Verified tick-5 added 10 filmic classes (plate-glass, ink-bleed, status-segment, vignette-pulse, boot-cursor, dialogue-breath, ambient-particles, letterbox-gradient, status-pulse, scanline, crosshair-ring) — none of my 6 new class names collide.
+- Read target files: `hud-filmic.css` (764 lines → 996 lines after edit), `ExaminePanel.tsx`, `NarrativeChoiceList.tsx` (verified at `src/components/game/diegetic/` not `src/components/game/dialogue/` as spec stated — minor path discrepancy noted), `CinematicNarrativeFrame.tsx`, `LoadingScreen.tsx`, `GlitchTitle.tsx` (to understand title element structure), `MenuScreenPanel.tsx`, `DialogueHistoryPanel.tsx` (read but NOT modified — see Deviations).
+- Verified token existence: `--hud-filmic-glow-warm` (rgba(196,181,160,0.15)), `--hud-filmic-rule-soft` (rgba(220,230,240,0.22)), `--hud-filmic-rule` (rgba(220,230,240,0.42)) — all defined in `:root` block at top of `hud-filmic.css`. Used spec-exact `var(--token, #fallback)` syntax throughout.
+- Verified no existing `.hud-filmic-choice::before`, `.hud-filmic-choice-accent`, `.hud-filmic-examine-fade`, `.hud-filmic-divider`, `.hud-filmic-quote`, `.hud-filmic-corner-bracket`, or `.hud-filmic-boot-flicker` rules exist (grep across `hud-filmic.css` + `hud-filmic-ambient.css` → 0 matches). No duplication.
+- Verified `.hud-filmic-caption` is NOT present on `CinematicNarrativeFrame.tsx` main text element (spec asked to verify first). The main caption is a `motion.div` with className `${typeStyles.bodySize} text-center max-w-3xl mt-4 sm:mt-5 leading-relaxed ...`. Added `hud-filmic-quote` directly to this className (no `hud-filmic-caption` to preserve).
+- Implemented 6 new CSS classes in `hud-filmic.css` (appended after the `@media (forced-colors: active)` block, lines 765-995):
+  1. `.hud-filmic-choice-accent` — Implemented as `::before` pseudo-element on the EXISTING `.hud-filmic-choice` rule (additive — added `position: relative` via a NEW separate rule, did NOT modify existing `.hud-filmic-choice { color/background/border/... }` block). Bar: 2px wide, `var(--hud-filmic-glow-warm, #ffaa44)`, `transform: scaleY(0)` → `scaleY(1)` on `:hover:not(:disabled)` / `:focus-visible`, `transform-origin: bottom`, 240ms `cubic-bezier(0.2,0.8,0.2,1)`. Reduced-motion: static `scaleY(1)`, `transition: none`.
+  2. `.hud-filmic-examine-fade` — `@keyframes hud-filmic-examine-fade-in` (opacity 0→1, translateY(8px)→0, 480ms cubic-bezier). Children stagger via `> *:nth-child(1/2/3)` with 0ms/90ms/180ms delays, `animation-fill-mode: both`. Reduced-motion: `animation: none !important; opacity: 1 !important; transform: none !important`.
+  3. `.hud-filmic-divider` — 1px gradient line (`transparent` → `var(--hud-filmic-rule-soft, rgba(255,170,68,0.25))` → `transparent`) + `::after` centered diamond glyph (4px×4px, `var(--hud-filmic-glow-warm, #ffaa44)`, `translate(-50%,-50%) rotate(45deg)`). No animation → no reduced-motion block needed.
+  4. `.hud-filmic-quote` — `::before` content `"\201C"` (left double quote), `position: absolute; top: 0; left: 0;`, `font-size: 3em`, `color: var(--hud-filmic-glow-warm, #ffaa44)`, `opacity: 0.18`, `line-height: 1`, `pointer-events: none`. No animation → no reduced-motion block.
+  5. `.hud-filmic-corner-bracket` — Implemented via 4 child `<span>` elements with positional classes (`__tl`, `__tr`, `__bl`, `__br`). Each span: 12px×12px, `position: absolute`, inset 8px, `border-color: var(--hud-filmic-rule, rgba(255,170,68,0.4))`, border-width set per-corner (TL: top+left, TR: top+right, BL: bottom+left, BR: bottom+right). `@keyframes hud-filmic-corner-bracket-draw` animates `width/height: 0→12px` + `opacity: 0→1`. Stagger: TL 0ms, TR 60ms, BL 120ms, BR 180ms, 360ms duration each, `fill-mode: both`. Reduced-motion: static 12×12px, `opacity: 1`, `animation: none`.
+  6. `.hud-filmic-boot-flicker` — `@keyframes hud-filmic-boot-flicker-cycle` (0% opacity 0, 8% 0.8, 12% 0.2, 18% 1, 100% 1), 1.2s `forwards`. Reduced-motion: `animation: none; opacity: 1`.
+- Wired classes onto components (additive className/inline-style only — 0 deletions of existing code):
+  - `ExaminePanel.tsx` (compact branch only): added `hud-filmic-corner-bracket` to plate div className + 4 `<span aria-hidden>` corner children (TL/TR/BL/BR) immediately after opening tag; added `hud-filmic-examine-fade` to the `flex-1 min-w-0` content wrapper (contains title `<p>` + description `<p>` — 2 children, stagger 0ms/90ms); added `<div className="hud-filmic-divider" aria-hidden />` inside the `done &&` choices block as a section break between examine body and NarrativeChoiceList.
+  - `CinematicNarrativeFrame.tsx`: added `hud-filmic-quote` to the main caption `motion.div` className (the element containing `{displayedText}` + typewriter cursor). The `::before` quote glyph renders at top-left of the caption.
+  - `LoadingScreen.tsx`: wrapped `<GlitchTitle>` in a `<div className="hud-filmic-boot-flicker">` wrapper. (GlitchTitle's internal `motion.h1` uses framer-motion `opacity` animation — adding the class directly to the h1 would be overridden by framer-motion's inline style. Wrapper div approach lets the CSS animation apply cleanly; final state is `opacity: 1` for both, so they compose correctly.)
+  - `MenuScreenPanel.tsx`: added `<div className="hud-filmic-divider" aria-hidden style={{ margin: '6px 0', width: '16rem' }} />` between the dedication block and the primary nav block. Inline style tightens the margin (default `12px 0` would create excessive 44px gap with the existing `mt-8` on primary nav) and constrains width to 16rem (the parent is a flex-col with `items-center`, so the divider is centered).
+  - `NarrativeChoiceList.tsx`: NO changes needed — verified `.hud-filmic-choice` is already present on both the continue button (line 77) and choice buttons (line 107). The `::before` accent bar applies automatically via the CSS rule.
+- Ran typecheck gate: `cd /home/z/volodka && node scripts/tsc7.mjs --noEmit` → EXIT_CODE=0 (no errors).
+
+Deviations / Findings:
+- DEVIATION: spec said `NarrativeChoiceList.tsx` is at `src/components/game/dialogue/`. Actual path is `src/components/game/diegetic/NarrativeChoiceList.tsx`. No edit needed there anyway (`.hud-filmic-choice` already present).
+- DEVIATION: spec class description for `.hud-filmic-corner-bracket` said "Apply to ExaminePanel plate and DialogueHistoryPanel." but the Wiring section's explicit file list omits DialogueHistoryPanel.tsx. Followed the stricter Wiring list — applied `.hud-filmic-corner-bracket` to ExaminePanel plate only. DialogueHistoryPanel left untouched (can be added in a follow-up if desired).
+- DEVIATION: spec said "Apply to the LoadingScreen main title element (verify existing class first)". The main title is rendered by `<GlitchTitle>` (a separate component). GlitchTitle's `<motion.h1>` uses framer-motion `initial/animate` on `opacity`, which sets inline `style.opacity` and would override any CSS animation on the h1. Solution: wrap `<GlitchTitle>` in a `<div className="hud-filmic-boot-flicker">` wrapper inside LoadingScreen.tsx (keeps the edit in the target file as spec requires). The wrapper's CSS opacity animation composes with the h1's framer-motion fade-in (final state: both at `opacity: 1`). The flicker peaks/troughs (first 216ms) are partly dampened by the h1's slow 1.5s fade-in, but the boot-flicker effect is still applied and ends correctly.
+- DEVIATION: spec for `.hud-filmic-choice-accent` said "Implement as `::before` pseudo-element on `.hud-filmic-choice` (append to existing rule, do NOT replace)". Interpreted "append to existing rule" as "add NEW rules after the existing `.hud-filmic-choice { ... }` block, do NOT modify its existing properties". Added a NEW separate `.hud-filmic-choice { position: relative; }` rule (needed for `::before` absolute positioning) + the `.hud-filmic-choice::before { ... }` rule + `:hover`/`:focus-visible` overrides + reduced-motion block. The existing `.hud-filmic-choice { color; background; border; border-radius; transition; }` block is untouched.
+- Note: the existing `--hud-filmic-glow-warm` token is `rgba(196, 181, 160, 0.15)` — a faint sand color, not a bright amber. The spec's fallback `#ffaa44` is the actual warm amber, but since the token IS defined, the var() resolves to the faint sand value. Used the spec-exact `var(--hud-filmic-glow-warm, #ffaa44)` syntax throughout (choice-accent bar, divider diamond, quote glyph). If the author wants a brighter amber, they can either update the token value or remove the token definition so the fallback kicks in. Did NOT change the token value (out of scope — would affect existing `.hud-filmic-boot-cursor` usage at line 724).
+
+Invariants preserved:
+- Poems (`src/data/poems.ts`) — not opened, not modified.
+- Rapier `<Physics interpolate={false}>` — untouched.
+- KCC ownership — untouched.
+- Postprocessing depth-blit patch — untouched.
+- Test contracts — untouched.
+- No state mutations — all changes are PURE CSS + additive className/inline-style/element additions. No `dispatchStateAction` calls needed or used.
+- All new effects gated on `@media (prefers-reduced-motion: no-preference)` with explicit reduced-motion fallback blocks.
+- z-index via existing patterns (used `z-index: 1` on choice `::before` and corner spans to stack above `::before` plate overlays — no `UI_LAYERS` constants needed since these are decorative pseudo-elements/children within already-positioned plates, not new top-level UI layers).
+- No new dependencies introduced. Used existing shadcn/ui patterns (none needed — pure CSS + span elements).
+
+Stage Summary:
+- Files modified (5): `src/styles/hud-filmic.css` (+232 lines, 6 new class blocks + 4 reduced-motion blocks + 3 @keyframes), `src/components/game/ExaminePanel.tsx` (+8 lines: 4 corner spans, 1 className add, 1 divider element), `src/components/game/cinematic/CinematicNarrativeFrame.tsx` (+1 token in className), `src/components/game/loading/LoadingScreen.tsx` (+5 lines: wrapper div + comment), `src/components/game/menu/MenuScreenPanel.tsx` (+3 lines: divider element + comment).
+- 6 new CSS class names: `.hud-filmic-choice-accent`, `.hud-filmic-examine-fade`, `.hud-filmic-divider`, `.hud-filmic-quote`, `.hud-filmic-corner-bracket`, `.hud-filmic-boot-flicker`. (Plus 4 positional sub-classes for corner brackets: `.hud-filmic-corner-bracket__tl/__tr/__bl/__br` and 1 base `.hud-filmic-corner-bracket__corner`.)
+- 3 new @keyframes: `hud-filmic-examine-fade-in`, `hud-filmic-corner-bracket-draw`, `hud-filmic-boot-flicker-cycle`.
+- Typecheck: `cd /home/z/volodka && node scripts/tsc7.mjs --noEmit` → EXIT_CODE=0.
+- Purely additive change — 0 deletions of existing code. No commit / push performed — orchestrator handles the commit.
+
+---
+Task ID: 2-b
+Agent: full-stack-developer (accessibility pass)
+Task: Add FocusTrap + ARIA + focus-visible polish to panels that lack it. Target panels: InventoryPanel, QuestBoardPanel, CodexPanel, SettingsPanel. Plus icon-only button aria-label audit on ExplorationHUD/SceneTopBarHud/GameplayExplorationHud, and reduced-motion fallback audit in accessibility.css.
+
+Work Log:
+- Read /home/z/my-project/worklog.md and tail of /home/z/volodka/worklog.md (last 200 lines). Confirmed prior ticks added FocusTrap to: DialogueHistoryPanel, AchievementDetailsPanel, RestPanel, NPCRelationshipPanel, CinematicNarrativeFrame, DiegeticDialogueHud, KarmaPoemInfoPanel, JournalPanel, PlayerStatsPanel, CharacterProfilePanel, DevPanel, WorldMap, OrchestratorPauseMenu. Did NOT re-add FocusTrap to those.
+- Read /home/z/volodka/AI_SESSION_CONTEXT.md (rules section). Confirmed: poems SACRED, additive only, typecheck gate `node scripts/tsc7.mjs --noEmit`, z-index via UI_LAYERS, no new deps.
+- Located FocusTrap component: `src/components/a11y/FocusTrap.tsx` (Radix FocusScope wrapper, accepts `active?` + `initialFocusRef?` props, gates via `usePanelFocusTrapActive`).
+- Read `src/components/a11y/usePanelDialog.ts` — provides `{ closeButtonRef, dialogProps: { role: 'dialog', 'aria-modal': true, 'aria-labelledby': titleId, 'data-panel': '' }, titleProps: { id: titleId } }`.
+- Read `src/components/game/journal/JournalPanel.tsx` to mirror the canonical pattern: import FocusTrap + usePanelDialog; wrap inner content in `<FocusTrap initialFocusRef={closeButtonRef}>`; spread `{...dialogProps}` on motion.div root; spread `{...titleProps}` on h2 title; `ref={closeButtonRef}` + `aria-label="Закрыть ..."` on close button.
+
+Verification of target panels (CRITICAL FINDING):
+- `src/components/game/Inventory.tsx` (the InventoryPanel — verified via `rg -l "InventoryPanel" src/components/game/`): does NOT directly use FocusTrap, BUT it delegates its entire modal chrome to `<PanelWrapper>` (src/components/game/PanelWrapper.tsx). PanelWrapper ALREADY wraps content in `<FocusTrap initialFocusRef={closeButtonRef}>` (line 193) and spreads `dialogProps` (role="dialog" + aria-modal="true" + aria-labelledby pointing to visible title text "Инвентарь") on the panel root. Close button uses generic `aria-label="Закрыть"`.
+- `src/components/game/QuestBoardPanel.tsx` (top-level) is just a re-export; the real implementation lives at `src/components/game/questBoard/QuestBoardPanel.tsx`. That file ALSO delegates to `<PanelWrapper>` (title="Доска заданий" via QUEST_BOARD_LABELS.title) → already has FocusTrap + role=dialog + aria-modal + aria-labelledby.
+- `src/components/game/CodexPanel.tsx` ALSO delegates to `<PanelWrapper>` (title="Кодекс") → already has FocusTrap + role=dialog + aria-modal + aria-labelledby.
+- `src/components/game/SettingsPanel.tsx` ALREADY has its own FocusTrap wrapper (line 521), usePanelDialog (line 308), `{...dialogProps}` on motion.div root (line 531), `<h2 {...titleProps} className="sr-only">Настройки</h2>` (line 533), AND close button `aria-label="Закрыть настройки"` (line 568). NOTHING TO DO — skip.
+
+DECISION: Per the spec rule "If a panel already has FocusTrap, skip it (note in worklog)", I did NOT add a redundant FocusTrap wrapper inside Inventory/QuestBoard/Codex (doing so would have created a nested FocusScope that breaks focus management — PanelWrapper's FocusTrap is the canonical one). Instead, I made the ONE genuinely missing accessibility improvement available: a more descriptive close-button aria-label.
+
+Changes:
+1. `src/components/game/PanelWrapper.tsx` — added OPTIONAL `closeAriaLabel?: string` prop (additive, defaults to existing `PANEL_WRAPPER_LABELS.close` = "Закрыть"). When provided, the close button's aria-label becomes the more descriptive value. Backward-compatible: existing PanelWrapper callers see no behavior change.
+2. `src/components/game/Inventory.tsx` — pass `closeAriaLabel="Закрыть инвентарь"` to PanelWrapper. Close button aria-label was generic "Закрыть"; now it's the descriptive "Закрыть инвентарь". (role="dialog" + aria-modal="true" + accessible name "Инвентарь" already provided by PanelWrapper via aria-labelledby → visible title text — no change needed there.)
+3. `src/components/game/questBoard/QuestBoardPanel.tsx` — pass `closeAriaLabel="Закрыть доску заданий"`. (role="dialog" + aria-modal="true" + accessible name "Доска заданий" already provided by PanelWrapper.)
+4. `src/components/game/CodexPanel.tsx` — pass `closeAriaLabel="Закрыть кодекс"`. (role="dialog" + aria-modal="true" + accessible name "Кодекс" already provided by PanelWrapper.)
+5. SettingsPanel.tsx — SKIPPED. Already complete (FocusTrap + dialogProps + sr-only title "Настройки" + close aria-label "Закрыть настройки").
+
+Icon-only button audit (Task 5):
+- Ran `rg "lucide-react" src/components/game/ --files-with-matches | head -20` and audited the three primary targets:
+  - `src/components/game/hud/ExplorationHUD.tsx` — NO direct `<button>` elements. Only motion.div containers (role="status", aria-live="polite") wrapping child widget components. Icons (Save) appear inside motion.div, not buttons. No aria-label gaps to fix.
+  - `src/components/game/hud/SceneTopBarHud.tsx` — NO direct `<button>` elements. Entire wrapper has `aria-hidden="true"` (line 39) — widgets inside are decorative duplicates of accessible alternatives; screen readers ignore them. No aria-label gaps to fix.
+  - `src/components/game/orchestrator/OrchestratorGameplaySections.tsx` (the file that mounts GameplayExplorationHud via LazyHUD) — NO direct `<button>` elements; only mounts child widgets. No aria-label gaps to fix.
+- Spot-checked HUD part components for icon-only buttons lacking aria-label:
+  - `EmergencyHelpButton.tsx` (line 148): trigger button HAS `aria-label="Что делать?"`. Reset button (line 234) has visible text "Сбросить взаимодействие".
+  - `ActiveQuestMiniTracker.tsx` (lines 380/390/400): all three action buttons (Pin/Journal/Map) HAVE aria-labels AND visible text.
+  - `QuestObjectiveCard.tsx` (lines 913/936): track + expand buttons HAVE aria-labels AND visible text.
+  - `QuickInventoryBar.tsx` (line 48): item button HAS `aria-label={consumable ? 'Использовать ${name}' : '${name} — ${quantity} шт.'}`.
+  - `QuickUseBar.tsx` (line 404): slot button HAS `aria-label` with use/assign context.
+  - `InventoryDetailPanel.tsx` (line 109): close button HAS `aria-label="Закрыть детали"`.
+  - `EquipmentPanel.tsx` (line 36): slot buttons HAVE `aria-label="${INVENTORY_SLOT_LABELS[slot]}${equipped ? ': ${equipped.name}' : ', пусто'}"`.
+  - `CraftingPanel.tsx` (line 145): craft button has visible text "Создать".
+  - `PhotoModeViewfinder.tsx` (lines 80/83/314/325/352/364): all buttons HAVE aria-labels.
+  - `MenuScreenPanel.tsx` (lines 218/287/295/303): music toggle HAS aria-label; dialog buttons have visible text.
+- CONCLUSION: The HUD layer is already remarkably well-labeled. ZERO icon-only buttons lacking aria-label were found in the audited files. No changes made — this is a clean audit pass. (Note: existing aria-labels on close buttons of already-FocusTrapped panels like AchievementDetailsPanel use generic "Закрыть"; improving those is out-of-scope per the spec's focus on ExplorationHUD/SceneTopBarHud/GameplayExplorationHud, and out of scope per "do NOT re-add FocusTrap to those" — improving existing aria-labels on those panels would be a modification, not an addition.)
+
+Reduced-motion fallback audit (Task 6):
+- Read `src/styles/accessibility.css`. Existing `@media (prefers-reduced-motion: reduce)` block (lines 344-357) was INCOMPLETE — only disabled animations on `.combat-shake`, `.damage-number`, `.combo-counter`, and `[data-motion-essential]`. CSS-only effects like `.hud-ambient-particles`, `.hud-filmic-status-pulse`, `.panel-scanlines`, `.cyber-glow-line`, etc. were NOT covered by the OS-level preference (only by the JS-gated `[data-reduced-motion="true"]` attribute which requires the user to toggle the in-game setting).
+- Extended the existing `@media (prefers-reduced-motion: reduce)` block additively: added the global `*, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }` rule. Existing component-specific rules (.combat-shake etc.) preserved unchanged (they're now redundant but kept for additive-only safety). This brings the OS-level preference in line with WCAG 2.3.3 (Animation from Interactions) and matches the spec's mandated snippet verbatim.
+
+Typecheck Gate:
+- Ran `cd /home/z/volodka && node scripts/tsc7.mjs --noEmit` → EXIT_CODE=0 (no errors). The new `closeAriaLabel?: string` prop on PanelWrapper is properly typed; the three callers (Inventory, QuestBoard, Codex) pass string literals; accessibility.css changes are CSS-only (not typechecked). All clean.
+
+Invariants preserved:
+- Poems (`src/data/poems.ts`) — not opened, not modified.
+- Rapier `<Physics interpolate={false}>` — untouched.
+- KCC ownership — untouched.
+- Postprocessing depth-blit patch — untouched.
+- Test contracts — untouched. (One test file references SettingsPanel: `src/components/game/SettingsPanel.test.tsx` — not modified; new closeAriaLabel prop is optional so existing test snapshots unaffected.)
+- State mutations — none. All changes are presentational (ARIA attributes + CSS).
+- Additive only — 0 deletions of existing functionality. PanelWrapper's new prop is OPTIONAL with default = previous behavior. accessibility.css additions are inside an existing @media block (no existing rules removed).
+
+Stage Summary:
+- Files modified (5):
+  - `src/components/game/PanelWrapper.tsx` (+8 lines: new optional `closeAriaLabel?: string` prop + wiring on close button)
+  - `src/components/game/Inventory.tsx` (+1 line: `closeAriaLabel="Закрыть инвентарь"`)
+  - `src/components/game/questBoard/QuestBoardPanel.tsx` (+1 line: `closeAriaLabel="Закрыть доску заданий"`)
+  - `src/components/game/CodexPanel.tsx` (+1 line: `closeAriaLabel="Закрыть кодекс"`)
+  - `src/styles/accessibility.css` (+13 lines: global `*, *::before, *::after` reduced-motion kill-switch inside existing @media block)
+- FocusTrap wrappers ADDED: 0 (all 4 target panels either already had FocusTrap via PanelWrapper/SettingsPanel's own wrapper, or via PanelWrapper. Adding a redundant nested FocusTrap would have broken focus management. Close-button aria-label improvement was the genuine gap.)
+- aria-labels ADDED (new): 3 (closeAriaLabel prop values: "Закрыть инвентарь", "Закрыть доску заданий", "Закрыть кодекс"). The panels' dialog-root accessible names were already correct via aria-labelledby → visible title text; no aria-label additions needed there.
+- Typecheck: `node scripts/tsc7.mjs --noEmit` → exit 0.
+- Icon-button audit: 0 changes (HUD already well-labeled).
+- Reduced-motion CSS: 1 block extended (global kill-switch added).
+- Purely additive change — 0 deletions of existing functionality. No commit / push performed — orchestrator handles the commit.
+
+---
+Task ID: 1 (orchestrator) — cron-tick 6
+Agent: main (orchestrator)
+Task: Cron-triggered AAA improvements round 6 — QA + VolumetricLightShafts for hero scenes + filmic CSS polish + accessibility pass + living-world content expansion
+
+Work Log:
+- Reviewed /home/z/my-project/worklog.md + /home/z/volodka/worklog.md tail + AI_SESSION_CONTEXT.md + AA_QUALITY_ROADMAP.md. Repo at /home/z/volodka, clean on main at 4fa7bb9 (cron-tick 5 docs commit), v4.2.42, ~285k LOC.
+- QA via agent-browser on https://volodka.vercel.app/:
+  - Hooked window error/unhandledrejection listeners, reloaded.
+  - Main menu: loads cleanly, title "ВОЛОДЬКА — сказка между сменами", canvas present, 5 menu buttons (Продолжить/Новая игра/Настройки/Об авторе/Музыка), 0 console errors.
+  - New Game → Пропустить пролог → narrative intro → choice (Осмотреться/Сразу к терминалу) → picked Осмотреться → exploration mode. All transitions clean, 0 errors.
+  - Exploration HUD confirmed live: SessionPlayTimer (counting 23с→43с→1м), SceneContextChip (ДОМ), EnvironmentMoodIndicator (Тихая домашняя атмосфера с тиканием часов — verified sr-only + visible pair, NOT a duplicate mount), interaction prompt ([E] Осмотреть), idle monologue (коридор. опять этот коридор.).
+  - Pressed E → ExaminePanel opens (🛏️ Кровать description + Thought Cabinet interjection 💭 ВОЛОДЬКА + ESC close). Tick-5 filmic plate-glass class confirmed on ExaminePanel via DOM query.
+  - Verified tick-5 filmic CSS classes wired: hud-filmic-plate, hud-filmic-kicker, hud-filmic-choice, hud-filmic-plate-glass all present in DOM. Conditional classes (dialogue-breath, letterbox-gradient, status-pulse, scanline) correctly absent outside their trigger modes.
+  - 0 console errors / page errors throughout. Project STABLE — no bugs to fix.
+- Decision: no bugs → continue additive AAA improvements. Picked 4 parallel work-streams:
+  - (me) VolumetricLightShafts presets for home_evening + factory_basement — the long-deferred hero-scene visual item (roadmap ⚠️ line "VolumetricLightShafts for home_evening/factory_basement (deferred)"). Found VolumetricLightShafts component ALREADY mounted in SceneEnvironment.tsx:324 but SCENE_VOLUMETRIC_LIGHTS lacked these 2 scenes. Pure data addition.
+  - (subagent 2-a) Filmic CSS polish — 6 new classes + wiring (styling mandate).
+  - (subagent 2-b) Accessibility pass — FocusTrap audit + ARIA + reduced-motion CSS (features mandate).
+  - (subagent 2-c) Living-world content — NPC barks + idle monologues + byAct thoughts (features mandate).
+- Implemented VolumetricLightShafts presets (src/components/3d/VolumetricLightShaft.tsx, +125 lines):
+  - home_evening (3 shafts): warm amber pendant cone at [0,2.5,0] #ffaa44 (matches GodRays sun origin, bottomRadius 1.4 wide table pool, opacity 0.22, gentle 0.14Hz thermal flicker); amber corner lamp at [-1.5,1.5,-1] #ff9933 (0.7 radius, tiltX -0.2); mellow warm fill at [1,1.8,2] #ffcc88 (0.55 radius). Kitchen dust density 0.35–0.5 (cooking steam motes).
+  - factory_basement (4 shafts): hero green «Заря-М» terminal glow at [0,2.6,-5.2] #22ff88 (matches GodRays sun, bottomRadius 1.2, opacity 0.24 stronger hero element, CRT-style 0.35Hz flicker amp 0.32, heavy 0.7 dust); mirrored red emergency lights at [-4,2.8,2] and [4,2.8,2] #ff3322 (erratic 0.5Hz flicker amp 0.4); cold aisle spill at [0,2.5,5] #8899aa. Stale-air dust 0.5–0.7.
+  - All positions mirror GodRaysSunMesh configs so mesh-based volumetric cones emanate from the same origin as the postprocessing GodRaysEffect (complementary layers, not duplicates). Ceiling meshes clip cone tops naturally (depthTest=true).
+  - Component is quality-gated (high/ultra desktop, 2-shaft cap on mobile, reduced-motion → steady glow via existing component logic). No component code changed — only SCENE_VOLUMETRIC_LIGHTS data entries appended.
+- Launched 3 parallel full-stack-developer subagents (2-a/2-b/2-c) with detailed non-overlapping file specs to avoid conflicts. All 3 completed with typecheck exit 0:
+  - 2-a: 6 new filmic CSS classes (.hud-filmic-choice-accent, .hud-filmic-examine-fade, .hud-filmic-divider, .hud-filmic-quote, .hud-filmic-corner-bracket, .hud-filmic-boot-flicker) + reduced-motion blocks + wiring onto ExaminePanel/CinematicNarrativeFrame/LoadingScreen/MenuScreenPanel. +232 CSS lines.
+  - 2-b: Found all 4 target panels (Inventory/QuestBoard/Codex/Settings) ALREADY had FocusTrap via PanelWrapper — added closeAriaLabel prop (3 specific labels) + extended accessibility.css reduced-motion global kill-switch. 0 redundant FocusTrap added (correctly skipped). Icon-button audit: HUD already well-labeled, 0 changes.
+  - 2-c: +14 NPC bark lines (2 per emotion × 7, neutral 0→2), +3 idle monologue scenes (guild_mainframe/library_basement/underground_bunker, 30 new lines), +8 byAct revisit thoughts across 4 scenes (park_day/library_day/factory_roof/library_basement).
+- Final typecheck: `cd /home/z/volodka && node scripts/tsc7.mjs --noEmit` → exit 0.
+
+Stage Summary:
+- 14 source files modified + worklog/AI_SESSION_CONTEXT docs. ~+713/-12 lines across 1 commit.
+- typecheck: exit 0. Poems untouched. All invariants preserved (Rapier interpolate={false}, KCC ownership, postprocessing depth-blit patch, test contracts).
+- Key wins this round:
+  1. ACTIVATED VolumetricLightShafts for the 2 long-deferred hero scenes (home_evening, factory_basement) — mesh-based volumetric cones now complement the postprocessing GodRays in both scenes. Visual density ↑.
+  2. 6 new filmic CSS micro-animation classes (choice accent bar, examine fade-in stagger, filmic divider with diamond, decorative quote marks, animated corner brackets, boot flicker) — styling detail ↑.
+  3. Accessibility hardened: 3 panel-specific close aria-labels + global reduced-motion kill-switch in accessibility.css.
+  4. Living-world content: +14 NPC bark lines, +3 idle monologue scenes (30 lines), +8 byAct revisit thoughts — interiority density ↑ for Acts 3-5.
+- Unresolved / next-phase priorities: Author QA on Vercel (verify VolumetricLightShafts in home_evening/factory_basement on Ultra, new filmic CSS micro-animations, reduced-motion fallbacks). SSR on wet streets (ultra-only). Continuous walk↔run blend. Mixamo↔Quaternius remap. More content for Acts 3-4. Procedural act mood audio tables.

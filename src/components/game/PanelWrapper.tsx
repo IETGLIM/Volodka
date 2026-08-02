@@ -94,6 +94,11 @@ interface PanelWrapperProps {
   footer?: ReactNode;
   /** Playwright / e2e hook */
   testId?: string;
+  /** Optional descriptive aria-label for the close button.
+   *  Defaults to a generic "Закрыть". Pass a more specific label
+   *  (e.g. "Закрыть инвентарь") so screen-reader users can
+   *  distinguish close buttons when multiple panels could be open. */
+  closeAriaLabel?: string;
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -113,6 +118,7 @@ export function PanelWrapper({
   headerExtra,
   footer,
   testId,
+  closeAriaLabel,
 }: PanelWrapperProps) {
   const reducedMotion = useEffectiveReducedMotion();
   const { phase: transitionPhase } = useTransitionDirector();
@@ -306,7 +312,7 @@ export function PanelWrapper({
                   type="button"
                   onClick={handleClose}
                   className="close-btn-glow w-7 h-7 rounded-md flex items-center justify-center text-slate-400 hover:text-white transition-all duration-150 hover:rotate-90"
-                  aria-label={PANEL_WRAPPER_LABELS.close}
+                  aria-label={closeAriaLabel ?? PANEL_WRAPPER_LABELS.close}
                 >
                   <X className="size-4" aria-hidden="true" />
                 </button>

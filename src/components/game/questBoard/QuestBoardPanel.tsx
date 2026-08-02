@@ -37,6 +37,7 @@ function QuestBoardPanelInner({ open, onClose }: QuestBoardPanelProps) {
       maxWidth="max-w-3xl"
       icon={<ScrollText className="size-4 text-emerald-400/60" aria-hidden="true" />}
       shortcutLabel={QUEST_BOARD_LABELS.shortcut}
+      closeAriaLabel="Закрыть доску заданий"
       headerExtra={
         <div
           className={`quest-board-header-badge flex items-center gap-1.5 px-2.5 py-1 rounded-md border${

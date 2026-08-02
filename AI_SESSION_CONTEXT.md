@@ -58,10 +58,15 @@ dice checks, живые хабы). Вдохновение также: Gothic (р
 - Content factory toward 120 h (authoring, not engine)
 - GLB mass re-export / AI3DGen hero meshes (asset pipeline debt)
 - PostFX on low for some hero scenes — partial gap
-- VolumetricLightShafts for home_evening/factory_basement (deferred)
 - SSR on wet streets (ultra-only, needs A/B)
-- Dialogue karma-gated branches
-- Accessibility pass (more ARIA, focus management)
+- Continuous walk↔run blend (locomotion blend tree partial)
+- Procedural act mood audio tables (per-act themes)
+- More content density Acts 3-4 (ongoing)
+
+### ✅ Недавно закрыто (cron-tick 6, 2026-08-02)
+- VolumetricLightShafts for home_evening/factory_basement — ACTIVATED (presets added to SCENE_VOLUMETRIC_LIGHTS; mesh cones complement GodRays postprocessing)
+- Dialogue karma-gated branches — implemented (cron-tick 5: 8 karma-gated choices via ChoiceCondition.minKarma/maxKarma)
+- Accessibility pass — extended (cron-tick 6: global reduced-motion kill-switch in accessibility.css + panel-specific close aria-labels; FocusTrap already wide via PanelWrapper)
 
 ### Новые системы (исторически v4.3–4.4; всё ещё в дереве)
 - Thought Cabinet, dice-roll checks, Act 1–7 expanded dialogue packs
@@ -143,6 +148,21 @@ dice checks, живые хабы). Вдохновение также: Gothic (р
 ---
 
 ## 📝 История сессий
+
+### Сессия: 2026-08-02 (cron-tick 6) — "VolumetricLightShafts hero scenes + filmic CSS micro-animations + accessibility hardening + living-world content"
+**Контекст:** Cron-triggered продолжение AAA-polish. QA via agent-browser на https://volodka.vercel.app/ подтвердила стабильность (0 ошибок, HUD widgets/live, tick-5 filmic CSS confirmed in DOM). Решение: багов нет, продолжить аддитивные AAA-улучшения. 4 параллельных work-stream'а: (me) VolumetricLightShafts для home_evening/factory_basement — долгосрочный отложенный item; (2-a) filmic CSS polish; (2-b) accessibility pass; (2-c) living-world content.
+
+**Что сделано (14 файлов, ~+713/-12 строк, 1 коммит):**
+1. **VolumetricLightShafts для hero-сцен (src/components/3d/VolumetricLightShaft.tsx, +125 строк):** добавлены presets для home_evening (3 shafts: warm amber pendant [0,2.5,0] #ffaa44 + amber corner lamp + mellow warm fill) и factory_basement (4 shafts: hero green «Заря-М» glow [0,2.6,-5.2] #22ff88 + 2 mirrored red emergency + cold aisle spill). Positions mirror GodRaysSunMesh configs — mesh-cones emanate from same origin as postprocessing GodRaysEffect (complementary layers). Component уже mounted в SceneEnvironment.tsx:324 — только data добавлена. Quality-gated (high/ultra desktop, 2-shaft cap mobile, reduced-motion → steady glow).
+2. **Filmic CSS polish (2-a, src/styles/hud-filmic.css +232 строк + 4 component wiring):** 6 NEW classes: .hud-filmic-choice-accent (left-edge amber bar grows on hover/focus via ::before scaleY), .hud-filmic-examine-fade (staggered fade-in 0/90/180ms via nth-child), .hud-filmic-divider (gradient line + centered diamond glyph), .hud-filmic-quote (decorative 3em quotation mark ::before on cinematic captions), .hud-filmic-corner-bracket (4 animated L-brackets draw in 360ms stagger 60ms), .hud-filmic-boot-flicker (boot title flicker 1.2s). All gated на prefers-reduced-motion с static fallbacks. Wired: ExaminePanel (corner-bracket + examine-fade + divider), CinematicNarrativeFrame (quote), LoadingScreen (boot-flicker), MenuScreenPanel (divider).
+3. **Accessibility hardening (2-b, 5 files):** Found all 4 target panels (Inventory/QuestBoard/Codex/Settings) ALREADY had FocusTrap via PanelWrapper. Added closeAriaLabel prop (3 specific labels: Закрыть инвентарь/доску заданий/кодекс). Extended accessibility.css @media (prefers-reduced-motion: reduce) с global kill-switch (*, *::before, *::after { animation-duration: 0.01ms !important; ... }). Icon-button audit: HUD already well-labeled, 0 changes.
+4. **Living-world content (2-c, 3 data files):** +14 NPC bark lines (2 per emotion × 7, neutral 0→2); +3 idle monologue scenes (guild_mainframe, library_basement, underground_bunker — все 4 bands: neutral×4 + high×2 + low×2 + highStress×2 = 30 new lines); +8 byAct revisit thoughts (park_day +acts{4,5}, library_day +acts{3,4}, factory_roof +acts{4,5} new field, library_basement +acts{4,5} new field).
+
+**TypeScript:** 0 ошибок. **Стихи:** не тронуты. **Инварианты:** сохранены (Rapier interpolate={false}, KCC ownership, postprocessing depth-blit patch, test contracts).
+
+**Следующий шаг:** Author QA на Vercel — проверить VolumetricLightShafts в home_evening/factory_basement (Ultra), filmic micro-animations (choice accent, examine fade, corner brackets, boot flicker), reduced-motion fallbacks. Дальше — SSR wet streets, walk↔run blend, Mixamo remap, procedural act mood audio, ещё контент Acts 3-4.
+
+---
 
 ### Сессия: 2026-08-02 (cron-tick 5) — "Thought Cabinet bugfix + orphan HUD mounts + filmic CSS activation + karma-gated dialogue + examine/idle/byAct content"
 **Контекст:** Cron-triggered продолжение AAA-polish. QA via agent-browser на https://volodka.vercel.app/ подтвердила стабильность (0 ошибок, HUD widgets из предыдущих сессий подтверждены live: SessionPlayTimer, FootstepPedometer, SceneContextChip, interaction prompt). 3 параллельные разведки нашли: (1) 6 genuinely-orphaned HUD widgets (3 named candidates оказались false alarms), (2) 10 orphan filmic CSS classes (~250 lines dead CSS) + 5 new additions + token-swap opportunities, (3) CRITICAL BUG: commit 43a16b0 добавил MUTUALLY_EXCLUSIVE_PAIRS но не 6 ThoughtCabinetItem entries → 4 dangling IDs.

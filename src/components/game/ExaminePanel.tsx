@@ -111,10 +111,15 @@ export function ExaminePanel({
           role="dialog"
           aria-label={`Осмотр: ${data.title}`}
         >
-          <div className="mx-auto max-w-xl rounded-lg border border-white/10 bg-black/60 backdrop-blur-md p-4 glass-panel-dark hud-filmic-plate hud-filmic-plate-glass">
+          <div className="mx-auto max-w-xl rounded-lg border border-white/10 bg-black/60 backdrop-blur-md p-4 glass-panel-dark hud-filmic-plate hud-filmic-plate-glass hud-filmic-corner-bracket">
+            {/* hud-filmic-corner-bracket — 4 animated L-shaped corner brackets (decorative, additive) */}
+            <span className="hud-filmic-corner-bracket__corner hud-filmic-corner-bracket__tl" aria-hidden />
+            <span className="hud-filmic-corner-bracket__corner hud-filmic-corner-bracket__tr" aria-hidden />
+            <span className="hud-filmic-corner-bracket__corner hud-filmic-corner-bracket__bl" aria-hidden />
+            <span className="hud-filmic-corner-bracket__corner hud-filmic-corner-bracket__br" aria-hidden />
             <div className="flex items-start gap-3">
               <span className="text-2xl" aria-hidden>{icon}</span>
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 hud-filmic-examine-fade">
                 <p className="text-sm font-semibold mb-1" style={{ color: 'var(--hud-filmic-ink-hero)' }}>{data.title}</p>
                 <p className="text-sm font-serif whitespace-pre-line" style={{ color: 'var(--hud-filmic-ink)' }}>{displayed}</p>
               </div>
@@ -151,6 +156,8 @@ export function ExaminePanel({
             )}
             {done && (
               <div className="mt-2">
+                {/* hud-filmic-divider — section break between examine body and choices */}
+                <div className="hud-filmic-divider" aria-hidden />
                 <NarrativeChoiceList
                   choices={[]}
                   accentColor={presentation.accentColor}

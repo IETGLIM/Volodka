@@ -236,7 +236,12 @@ export function LoadingScreen({
 
       <div className="relative flex flex-col items-center gap-5" style={{ zIndex: UI_LAYERS.LOADING }}>
         {showTitle && (
-          <GlitchTitle text={LOADING_TITLE_TEXT} animate={fx.glitchTitle} />
+          /* hud-filmic-boot-flicker — wrapper applies CRT-style boot flicker
+             to the title. GlitchTitle's motion.h1 still fades in via framer-motion;
+             the wrapper opacity multiplies, ending at 1 (forwards). */
+          <div className="hud-filmic-boot-flicker">
+            <GlitchTitle text={LOADING_TITLE_TEXT} animate={fx.glitchTitle} />
+          </div>
         )}
 
         {showTitle && (
