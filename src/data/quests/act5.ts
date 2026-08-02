@@ -67,6 +67,10 @@ export const QUESTS_ACT5: QuestDefinition[] = [
     ],
     linkedStoryNodeId: 'final_code_approach',
     linkedStoryNodeIds: [
+      // act5_dawn is the main-spine anchor (on GOLDEN_PATH_STORY_SPINE) — the detailed
+      // final_code_* nodes live in a satellite pack. Including the spine node satisfies
+      // the golden-path quest integrity invariant without polluting the story spine.
+      'act5_dawn',
       'final_code_approach',
       'final_code_rally',
       'final_code_virus',
@@ -180,6 +184,7 @@ export const QUESTS_ACT5: QuestDefinition[] = [
     ],
     linkedStoryNodeId: 'vladimir_secret_room',
     linkedStoryNodeIds: [
+      'act5_dawn',
       'echo_of_vladimir_approach',
       'echo_of_vladimir_kate',
       'vladimir_secret_room',
@@ -241,6 +246,7 @@ export const QUESTS_ACT5: QuestDefinition[] = [
     ],
     linkedStoryNodeId: 'night_before_dawn_approach',
     linkedStoryNodeIds: [
+      'act5_dawn',
       'night_before_dawn_approach',
       'night_before_dawn_albert',
       'night_before_dawn_zarema',
