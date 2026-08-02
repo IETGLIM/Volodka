@@ -43,6 +43,7 @@ import {
 } from '@/engine/player/playerConstants';
 import { lerpAngle, enforceFloor, clampHorizontalDisplacement } from '@/engine/player/playerMath';
 import { triggerCameraShake } from '@/engine/camera/cameraShake';
+import { triggerLandingFovDip } from '@/engine/camera/landingImpact';
 import { computeKccMovementSubstepped } from '@/engine/player/physicsSubstep';
 import {
   computeSlopeLocomotionScale,
@@ -387,6 +388,9 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
         LANDING_SHAKE_INTENSITY * impactStrength,
         LANDING_SHAKE_DECAY,
       );
+      // Landing FOV dip — brief inward FOV pinch that recovers in ~0.4s. Pairs
+      // with the shake + footstep audio for a multi-channel impact cue.
+      triggerLandingFovDip(impactStrength);
       scratch.justLanded = true;
       scratch.landingImpactVel = prevVelY;
     }
@@ -427,7 +431,11 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
 
     // Wall bump feedback — subtle camera shake with cooldown.
     if (deps.wallBumpCooldownRef.current <= 0) {
-      triggerCameraShake(WALL_BUMP_SHAKE_INTENSITY, WALL_BUMP_SHAKE_DECAY);
+      // slideRatio: 0.15 = hard stop (full block), 1.0 = free slide. Scale the
+      // shake so a head-on wall thud registers strongly while a corner brush
+      // barely does — encodes impact severity, not just occurrence.
+      const wallImpactScale = Math.max(0.3, 1.15 - slideRatio);
+      triggerCameraShake(WALL_BUMP_SHAKE_INTENSITY * wallImpactScale, WALL_BUMP_SHAKE_DECAY);
       deps.wallBumpCooldownRef.current = WALL_BUMP_COOLDOWN;
     }
   }

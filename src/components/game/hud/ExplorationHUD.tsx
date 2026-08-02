@@ -15,6 +15,7 @@ import { CombatPreEngagementWarning } from '@/components/game/hud/parts/CombatPr
 import { ContextualHint } from '@/components/game/hud/parts/ContextualHint';
 import { CrosshairInteractionPrompt } from '@/components/game/hud/parts/CrosshairInteractionPrompt';
 import { DynamicCrosshair } from '@/components/game/hud/parts/DynamicCrosshair';
+import { InteractionProximityGlow } from '@/components/game/hud/parts/InteractionProximityGlow';
 import { NPCProximityIndicator } from '@/components/game/hud/parts/NPCProximityIndicator';
 import { PhysicsDegradedDevBadge } from '@/components/game/hud/parts/PhysicsDegradedDevBadge';
 import { QuestDirectionArrow } from '@/components/game/hud/parts/QuestDirectionArrow';
@@ -105,6 +106,9 @@ export function ExplorationHUD(props: HUDProps) {
       <CombatPreEngagementWarning />
 
       <DynamicCrosshair />
+      {/* Breathing crosshair aura + interaction-activate edge glow. Show-don't-tell
+          affordance: the player senses interactables before reading any prompt. */}
+      <InteractionProximityGlow />
       {proximityFxActive ? <CrosshairInteractionPrompt /> : null}
 
       <AnimatePresence>

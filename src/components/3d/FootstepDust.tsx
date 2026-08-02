@@ -68,6 +68,7 @@ function spawnBurst(
   footZ: number,
   yaw: number,
   count: number,
+  upwardVel: number = PARTICLE_UPWARD_VEL,
 ): void {
   // Spread outward in a cone pointing away from the player's facing.
   // Player forward (world) for yaw convention matching livePlayerRotationRef
@@ -84,7 +85,7 @@ function spawnBurst(
     const bias = 0.6;
     p.vx = (Math.cos(angle) * outward) * (1 - bias) + fwdX * outward * bias;
     p.vz = (Math.sin(angle) * outward) * (1 - bias) + fwdZ * outward * bias;
-    p.vy = PARTICLE_UPWARD_VEL * (0.5 + Math.random() * 0.8);
+    p.vy = upwardVel * (0.5 + Math.random() * 0.8);
     // Slight horizontal jitter so the burst isn't perfectly centered.
     p.x = footX + (Math.random() - 0.5) * 0.08;
     p.y = footY + 0.02; // tiny lift off the floor to avoid z-fighting
@@ -143,11 +144,14 @@ export function FootstepDust() {
   // playerFinalizeFrame.ts ONLY when the player is grounded and moving,
   // so we can trust the payload without re-checking isGroundedRef.
   useEffect(() => {
-    const unsub = eventBus.on('exploration:footstep', ({ position, yaw }) => {
+    const unsub = eventBus.on('exploration:footstep', ({ position, yaw, speed }) => {
       if (reducedMotionRef.current) return;
-      const count = PARTICLES_PER_STEP_MIN
-        + Math.floor(Math.random() * (PARTICLES_PER_STEP_MAX - PARTICLES_PER_STEP_MIN + 1));
-      spawnBurst(poolRef.current, position[0], position[1], position[2], yaw, count);
+      // Scale dust burst with gait: walk kicks ~3 particles, sprint kicks up to 6
+      // with stronger upward velocity — the visual rhythm matches the audio cadence.
+      const speedNorm = Math.min((speed ?? 0) / 7.0, 1);
+      const count = Math.round(PARTICLES_PER_STEP_MIN + speedNorm * 3);
+      const upwardVel = PARTICLE_UPWARD_VEL + speedNorm * 0.3;
+      spawnBurst(poolRef.current, position[0], position[1], position[2], yaw, count, upwardVel);
     });
     return unsub;
   }, []);

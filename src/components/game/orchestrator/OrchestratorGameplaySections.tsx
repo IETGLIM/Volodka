@@ -63,6 +63,7 @@ import { CutsceneOverlay } from '@/components/game/CutsceneOverlay';
 import { PoetryPowerBar } from '@/components/game/PoetryPowerBar';
 import { PoemActiveEffectsHud } from '@/components/game/poemActiveEffects/PoemActiveEffectsHud';
 import { ItemGainedPopupLayer } from '@/components/game/microAnimations/ItemGainedPopupLayer';
+import { StatChangeLayer } from '@/components/game/microAnimations/StatChangeLayer';
 import { PoemPowerEffect } from '@/components/game/PoemPowerEffect';
 import { PoemWorldEffect } from '@/components/game/poemWorldEffect/PoemWorldEffect';
 import { PoemRevealHost } from '@/components/game/poemReveal/PoemRevealHost';
@@ -172,6 +173,9 @@ export const GameplayExplorationNotifications = memo(function GameplayExploratio
       <LootNotification />
       {/* Session 9: item pickup popups (rarity-colored) — listens for showItemGained() calls. */}
       <ItemGainedPopupLayer />
+      {/* Localized stat-change pips (karma/energy/stress/XP) — pool-based, TTL-bounded.
+          Complements the FloatingText layer with anchor-positioned, color-coded feedback. */}
+      <StatChangeLayer />
     </>
   );
 });

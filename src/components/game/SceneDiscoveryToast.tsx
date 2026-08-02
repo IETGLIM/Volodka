@@ -64,18 +64,27 @@ export function SceneDiscoveryToast() {
 
     const sceneName = getSceneDisplayName(sceneId) ?? sceneId;
     const hasEntryText = Boolean(SCENE_CONFIG[sceneId]?.entryText);
-    if (hasEntryText) return;
 
-    // Clear any existing timer
+    // Clear any existing timer (cancels a pending reveal or hide).
     if (timerRef.current) {
       clearTimeout(timerRef.current);
     }
 
-    setDiscovery({ sceneId, sceneName, count: visitedCount, show: true });
+    const reveal = () => {
+      setDiscovery({ sceneId, sceneName, count: visitedCount, show: true });
+      timerRef.current = setTimeout(() => {
+        setDiscovery((prev) => prev ? { ...prev, show: false } : null);
+      }, DISPLAY_DURATION);
+    };
 
-    timerRef.current = setTimeout(() => {
-      setDiscovery((prev) => prev ? { ...prev, show: false } : null);
-    }, DISPLAY_DURATION);
+    // Scenes with a cinematic title card: defer the discovery counter until the
+    // title card fades (~3.2s) so both beats land — previously the counter was
+    // suppressed entirely for entry-text scenes, hiding the "Открыто N / M" progress.
+    if (hasEntryText) {
+      timerRef.current = setTimeout(reveal, 3200);
+    } else {
+      reveal();
+    }
   }, []);
 
   useEffect(() => {

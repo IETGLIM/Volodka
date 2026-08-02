@@ -117,6 +117,8 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
       eventBus.emit('exploration:footstep', {
         position: [pos.x, pos.y, pos.z],
         yaw: deps.livePlayerRotationRef.current,
+        speed: horizontalSpeed,
+        easedSpeed,
       });
       // Subtle pitch rise with gait — faster steps sound slightly more urgent.
       const pitchOffset = easedSpeed * STEP_PITCH_RANGE;

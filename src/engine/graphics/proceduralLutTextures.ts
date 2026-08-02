@@ -2,7 +2,7 @@ import * as THREE from 'three';
 
 const LUT_SIZE = 16;
 
-export type ProceduralLutKind = 'synthwave_neon' | 'warm_interior' | 'gothic_dust' | 'cyber_noir';
+export type ProceduralLutKind = 'synthwave_neon' | 'warm_interior' | 'gothic_dust' | 'cyber_noir' | 'cold_noir';
 
 /** Scenes that receive a procedural 3D LUT pass (neon / mood grade). */
 export const PROCEDURAL_LUT_SCENES: Record<string, ProceduralLutKind> = {
@@ -21,6 +21,10 @@ export const PROCEDURAL_LUT_SCENES: Record<string, ProceduralLutKind> = {
   // Session 9: city_square gets a restrained cyber-noir grade (teal shadows / warm highlights).
   // Tasteful orange-teal, NOT candy — the plaza reads as wet filmic noir rather than flat neon.
   city_square: 'cyber_noir',
+  // Resistance CRT scenes: green-teal phosphor shadows + warm amber CRT bloom.
+  // Unifies the green CRT mood into a single authored grade.
+  underground_bunker: 'cold_noir',
+  guild_mainframe: 'cold_noir',
 };
 
 export function resolveProceduralLutKind(sceneId: string): ProceduralLutKind | null {
@@ -82,6 +86,26 @@ function applyLutTransform(
       nb -= 0.04 * highlight;
       // Gentle contrast/saturation nudge so the grade reads as authored, not flat.
       const sat = 1.08;
+      nr = lum + (nr - lum) * sat;
+      ng = lum + (ng - lum) * sat;
+      nb = lum + (nb - lum) * sat;
+      return [clamp01(nr), clamp01(ng), clamp01(nb)];
+    }
+    case 'cold_noir': {
+      // Green-teal CRT phosphor: push shadows toward green-teal (resistance terminal glow),
+      // lift highlights toward warm amber (CRT phosphor bloom). Cooler than cyber_noir,
+      // greener shadows — reads as a CRT-lit bunker rather than a neon plaza.
+      const lum = r * 0.299 + g * 0.587 + b * 0.114;
+      const shadow = 1 - lum;
+      const highlight = lum;
+      let nr = r - 0.03 * shadow;
+      let ng = g + 0.04 * shadow;
+      let nb = b + 0.02 * shadow;
+      // Warm amber phosphor bloom on highlights.
+      nr += 0.04 * highlight;
+      ng += 0.02 * highlight;
+      nb -= 0.05 * highlight;
+      const sat = 1.06;
       nr = lum + (nr - lum) * sat;
       ng = lum + (ng - lum) * sat;
       nb = lum + (nb - lum) * sat;

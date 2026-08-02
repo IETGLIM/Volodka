@@ -5,6 +5,7 @@ import { useActiveQuests } from '@/store/questStore';
 import { eventBus } from '@/engine/EventBus';
 import { PHOTO_EVENTS } from '@/engine/events';
 import { floatKarma, floatEnergy, floatStress, floatXP, floatLevelUp } from '@/components/game/FloatingText';
+import { showStatChange } from '@/components/game/microAnimations/statChangePool';
 import type { SkillAchievementNotice } from '@/components/game/hud/parts/AchievementPopup';
 import { determineWeatherType, type WeatherType } from '@/data/weatherEffects';
 import {
@@ -175,6 +176,8 @@ export function useHUDController(props: HUDProps) {
       const delta = karma - prevKarma.current;
       prevKarma.current = karma;
       if (delta !== 0) floatKarma(delta);
+      // Localized stat-change pip — color encodes direction (cyan = gain, rose = loss).
+      if (delta !== 0) showStatChange('Карма', delta, delta > 0 ? 'var(--cyber-cyan)' : '#fb7185');
       scheduleTimeout(() => {
         if (delta > 0) setKarmaDirection('up');
         else if (delta < 0) setKarmaDirection('down');
@@ -190,6 +193,7 @@ export function useHUDController(props: HUDProps) {
       const delta = energy - prevEnergy.current;
       prevEnergy.current = energy;
       if (delta !== 0) floatEnergy(delta);
+      if (delta !== 0) showStatChange('Энергия', delta, delta > 0 ? '#34d399' : '#fb7185');
       scheduleTimeout(() => setEnergyPulse(true), 0);
       scheduleTimeout(() => setEnergyPulse(false), 600);
     }
@@ -200,6 +204,8 @@ export function useHUDController(props: HUDProps) {
       const delta = stress - prevStress.current;
       prevStress.current = stress;
       if (delta !== 0) floatStress(delta);
+      // Stress: increase is bad (rose), decrease is good (green).
+      if (delta !== 0) showStatChange('Стресс', delta, delta > 0 ? '#fb7185' : '#34d399');
       scheduleTimeout(() => setStressPulse(true), 0);
       scheduleTimeout(() => setStressPulse(false), 600);
     }
@@ -211,6 +217,7 @@ export function useHUDController(props: HUDProps) {
       prevXp.current = xp;
       if (delta > 0) {
         floatXP(delta);
+        showStatChange('XP', delta, '#22d3ee');
         setLastXpDelta(delta);
         scheduleTimeout(() => setXpPulse(true), 0);
         scheduleTimeout(() => setXpPulse(false), 700);

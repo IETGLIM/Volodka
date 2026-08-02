@@ -19,6 +19,16 @@ import {
 } from '@/engine/player/playerConstants';
 import { shouldKeepFirstPersonExplorationCamera } from '@/engine/interaction/interactionSession';
 import type { CameraModeStrategy } from '../types';
+import { consumeLandingFovDip } from '../landingImpact';
+
+// ── Sprint-start FOV kick (envelope decays after the walk→run transition) ──
+// A brief extra 0.6° on top of the steady RUN_FOV_BOOST when the runner crosses
+// into sprint, decaying over ~0.25s. Reads as acceleration / camera lurch.
+let _sprintKickEnvelope = 0;
+let _prevSprintActive = false;
+const SPRINT_KICK_FOV_DEG = 0.6;
+const SPRINT_KICK_SPEED_THRESHOLD = 5.5; // m/s, just below RUN_FOV_SPEED_FULL
+const SPRINT_KICK_DECAY = 4; // 1/s
 
 /** Default spring-based exploration camera with look-ahead and breathing bob */
 export const explorationStrategy: CameraModeStrategy = {
@@ -98,6 +108,13 @@ export const explorationStrategy: CameraModeStrategy = {
       const t = Math.min(1, (speedMs - RUN_FOV_SPEED_MIN) / (RUN_FOV_SPEED_FULL - RUN_FOV_SPEED_MIN));
       fovBoost = t * RUN_FOV_BOOST;
     }
+    // Sprint-start FOV "kick" — a brief extra punch on top of the steady boost when
+    // the runner crosses into sprint, decaying over ~0.25s. One-shot per sprint entry.
+    const sprintActive = speedMs >= SPRINT_KICK_SPEED_THRESHOLD;
+    if (sprintActive && !_prevSprintActive) _sprintKickEnvelope = 1;
+    _prevSprintActive = sprintActive;
+    _sprintKickEnvelope = Math.max(0, _sprintKickEnvelope - ctx.delta * SPRINT_KICK_DECAY);
+    fovBoost += _sprintKickEnvelope * SPRINT_KICK_FOV_DEG;
     const baseFov = ctx.currentSceneFov;
 
     const exploration = ctx.exploration;
@@ -124,7 +141,12 @@ export const explorationStrategy: CameraModeStrategy = {
     const speed = ctx.prevVelocitySmooth.length();
     // Boost look-ahead by 15% during fast movement (>3 m/s) for smoother fast turns
     const fastBoost = speed > 3 ? 1.15 : 1.0;
-    const lookAheadAmount = Math.min(speed * LOOK_AHEAD_STRENGTH * fastBoost, 0.3 * fastBoost);
+    // Sprint look-ahead cap boost: cap grows from 0.3 at walk (≤4 m/s) to 0.45 at
+    // full sprint (≥7 m/s) so the camera leads further ahead at speed — reads as
+    // momentum/intent. At walk the cap is unchanged (0.3 × 1.15 = 0.345).
+    const speedCapBoost = Math.max(0, Math.min(1, (speed - 4) / 3)) * 0.15;
+    const lookAheadCap = (0.3 + speedCapBoost) * fastBoost;
+    const lookAheadAmount = Math.min(speed * LOOK_AHEAD_STRENGTH * fastBoost, lookAheadCap);
     if (speed > 0.01) {
       ctx.lookAheadOffset.copy(ctx.prevVelocitySmooth).normalize().multiplyScalar(lookAheadAmount);
     } else {
@@ -167,7 +189,7 @@ export const explorationStrategy: CameraModeStrategy = {
       targets: {
         targetPos,
         targetLook,
-        targetFov: baseFov + fovBoost,
+        targetFov: baseFov + fovBoost - consumeLandingFovDip(ctx.delta),
         targetRoll,
       },
     };

@@ -56,6 +56,10 @@ function WetStreetGroundPbr({
   const effectiveRain = isWinter ? 0 : rainIntensity;
   const mixStrength = scaleReflectorMixStrength(reflectorSettings.mixStrength, effectiveRain);
   const maps = usePolyHavenPbr(isWinter ? 'concrete_floor_painted' : 'asphalt_02', size / 60);
+  // Ultra gets a slightly stronger wet-street mirror — neon signs read as genuinely puddled
+  // rather than merely damp. Reflector render-target resolution is unchanged (no VRAM cost).
+  const mirrorBoost = preset.id === 'ultra' ? 0.1 : 0;
+  const mirrorAmount = (0.5 + mirrorBoost) * Math.min(1, 0.4 + effectiveRain * 0.6);
 
   const reflectorMatRef = useRef<ComponentRef<typeof MeshReflectorMaterial>>(null);
   const wetActive = effectiveRain > 0;
@@ -98,7 +102,7 @@ function WetStreetGroundPbr({
           resolution={reflectorSettings.resolution}
           mixBlur={0.85}
           mixStrength={mixStrength}
-          mirror={0.5 * Math.min(1, 0.4 + effectiveRain * 0.6)}
+          mirror={mirrorAmount}
           depthScale={1.15}
           minDepthThreshold={0.45}
           maxDepthThreshold={1.5}
@@ -157,6 +161,9 @@ function WetStreetGroundProceduralFallback({
     dryMetalness,
     rainIntensity: effectiveRain,
   });
+  // Parity with the PBR variant: Ultra mirror boost keeps the two code paths in sync.
+  const mirrorBoost = preset.id === 'ultra' ? 0.1 : 0;
+  const mirrorAmount = (0.5 + mirrorBoost) * Math.min(1, 0.4 + effectiveRain * 0.6);
 
   useLayoutEffect(() => {
     if (usePlanarReflector) return;
@@ -200,7 +207,7 @@ function WetStreetGroundProceduralFallback({
           resolution={reflectorSettings.resolution}
           mixBlur={0.85}
           mixStrength={mixStrength}
-          mirror={0.5 * Math.min(1, 0.4 + effectiveRain * 0.6)}
+          mirror={mirrorAmount}
           depthScale={1.15}
           minDepthThreshold={0.45}
           maxDepthThreshold={1.5}

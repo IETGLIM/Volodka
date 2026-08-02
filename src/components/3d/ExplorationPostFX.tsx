@@ -162,6 +162,42 @@ const SCENE_BLOOM: Record<string, { intensity: number; threshold: number; smooth
 };
 const DEFAULT_BLOOM = { intensity: 0.5, threshold: 0.7, smoothing: 0.5 };
 
+/** Hero mood scenes — get the most authored post-FX treatment (eskil vignette, etc.).
+ *  These are the 6 strongest practical-light / hero IBL scenes where the extra
+ *  photographic falloff reads as a real lens rather than a game-engine overlay. */
+const HERO_POSTFX_SCENES = new Set<SceneId>([
+  'volodka_room', 'street_night', 'city_square', 'cafe_evening', 'library_day', 'home_evening',
+]);
+
+/** Tinted ambient-occlusion color per scene. Black AO reads as game-engine SSAO;
+ *  a hue-matched AO reads as physically absorbed light — the single biggest
+ *  "deplasticizer" lever. Default falls back to black (stock behaviour). */
+const SCENE_AO_COLOR: Record<string, string> = {
+  street_night:       '#0a0a14', // cool blue-black neon shadow
+  city_square:        '#0c0e16', // cool plaza shadow
+  home_evening:       '#140d08', // warm amber lamp shadow
+  volodka_room:       '#0c0a14', // monitor-lit blue-black
+  cafe_evening:       '#0a0c14', // blue neon shadow
+  factory_basement:   '#08120c', // green Zarya-M shadow
+  chk_campfire_night: '#100804', // warm fire shadow
+  underground_bunker: '#08120c', // resistance green CRT shadow
+  library_day:        '#100c06', // dusty amber reading shadow
+  river_pier:         '#100a04', // warm fire-on-water shadow
+};
+
+/** Per-scene ACES tone-mapping exposure. The global `SCENE_VISIBILITY.toneExposure`
+ *  is a flat 1.22 — this table unlocks authored per-scene exposure keys so a
+ *  battle reads darker/more contrasty than a sunset dream. Falls back to global. */
+const SCENE_TONE_EXPOSURE: Record<string, number> = {
+  battle:             1.05, // darker, more contrast for combat
+  sleep_dream:        1.35, // lifted ethereal
+  rooftop_edge:       1.30, // sunset glow
+  factory_roof:       1.28,
+  street_winter:      1.30, // bright snow
+  volodka_corridor:   1.12, // crushed noir corridor
+  underground_bunker: 1.10, // CRT-dark
+};
+
 /** DOF — third-person dialogue focuses via world-space NPC target (autofocus).
  *  Fallback focusDistance used only when no dialogueFocusTarget is resolved yet. */
 const DOF_DIALOGUE_FOCUS = 0.02;
@@ -424,6 +460,19 @@ function PostFXPipeline() {
     ?? SCENE_BLOOM[resolveDerivedSceneId(sceneId as SceneId)]
     ?? DEFAULT_BLOOM;
 
+  // Authored per-scene post-FX keys (deplasticize + cinematic mood).
+  const aoColor = SCENE_AO_COLOR[sceneId]
+    ?? SCENE_AO_COLOR[resolveDerivedSceneId(sceneId as SceneId)]
+    ?? 'black';
+  const toneExposure = SCENE_TONE_EXPOSURE[sceneId]
+    ?? SCENE_TONE_EXPOSURE[resolveDerivedSceneId(sceneId as SceneId)]
+    ?? SCENE_VISIBILITY.toneExposure;
+  // Ultra-only refinements: HUGE bloom kernel (softer filmic falloff), eskil
+  // vignette (photographic falloff) on hero scenes, higher DOF CoC resolution.
+  const bloomKernelSize = preset.id === 'ultra' ? KernelSize.HUGE : KernelSize.LARGE;
+  const vignetteEskil = preset.id === 'ultra' && HERO_POSTFX_SCENES.has(sceneId as SceneId);
+  const dofHeight = preset.id === 'ultra' ? 720 : 480;
+
   const effectiveSaturation = noirMode
     ? Math.min(colorGrade.saturation - 0.35, 0)
     : colorGrade.saturation;
@@ -637,10 +686,19 @@ function PostFXPipeline() {
         luminanceThreshold={bloomParams.threshold}
         luminanceSmoothing={bloomParams.smoothing}
         mipmapBlur
-        kernelSize={KernelSize.LARGE}
+        kernelSize={bloomKernelSize}
       />
       {/* TS-1: React 19 stricter children types — null cast to any */}
-      {showChromatic ? <ChromaticAberration offset={chromaticOffset} blendFunction={BlendFunction.NORMAL} /> : null as any}
+      {/* radialModulation: fringing concentrates at screen edges (true lens behaviour)
+          instead of uniform subpixel fringing across the whole frame. */}
+      {showChromatic ? (
+        <ChromaticAberration
+          offset={chromaticOffset}
+          radialModulation
+          modulationOffset={0.4}
+          blendFunction={BlendFunction.NORMAL}
+        />
+      ) : null as any}
       {wantsScanlines ? <Scanline blendFunction={BlendFunction.OVERLAY} density={1.2} /> : null as any}
       {/* halfRes=false: N8AO half-res MRT can share depth with composer input and
           trigger the same glBlitFramebuffer identical-attachment error (n8ao#53). */}
@@ -650,7 +708,7 @@ function PostFXPipeline() {
           intensity={rendering.aoIntensity}
           distanceFalloff={0.5}
           halfRes={false}
-          color="black"
+          color={aoColor}
         />
       ) : null as any}
       {/* Part 3: Cinematic DOF — always mounted on high/ultra, bokehScale animated 0↔target via ref.
@@ -663,15 +721,15 @@ function PostFXPipeline() {
           focusDistance={DOF_DIALOGUE_FOCUS}
           focalLength={0.05}
           bokehScale={0}
-          height={480}
+          height={dofHeight}
         />
       ) : null as any}
-      <Vignette offset={stressVignetteOffset} darkness={stressVignetteDarkness} blendFunction={BlendFunction.NORMAL} />
+      <Vignette offset={stressVignetteOffset} darkness={stressVignetteDarkness} eskil={vignetteEskil} blendFunction={BlendFunction.NORMAL} />
       <HueSaturation hue={colorGrade.hue} saturation={effectiveSaturation} blendFunction={BlendFunction.NORMAL} />
       <BrightnessContrast brightness={effectiveBrightness} contrast={effectiveContrast} blendFunction={BlendFunction.NORMAL} />
       {proceduralLut ? <LUT lut={proceduralLut} tetrahedralInterpolation blendFunction={BlendFunction.NORMAL} /> : null as any}
       {wantsNoise ? <Noise premultiply blendFunction={BlendFunction.NORMAL} opacity={noiseOpacity} /> : null as any}
-      <ToneMapping mode={ToneMappingMode.ACES_FILMIC} exposure={SCENE_VISIBILITY.toneExposure} />
+      <ToneMapping mode={ToneMappingMode.ACES_FILMIC} exposure={toneExposure} />
       {wantsSmaa ? <SMAA preset={smaaPreset} /> : null as any}
     </ManagedEffectComposer>
   );

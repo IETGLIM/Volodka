@@ -28,6 +28,7 @@ import { consumePoemSkillCheckFlag } from '@/engine/poemPower/poemSkillCheckModi
 import { useNarrativeTypewriter } from '@/hooks/useNarrativeTypewriter';
 import { useNarrativeChoiceKeyboard } from '@/hooks/useNarrativeChoiceKeyboard';
 import { NarrativeChoiceList } from './NarrativeChoiceList';
+import { DialogueRelationBar } from '../dialogue/DialogueRelationBar';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { diegeticDialogueBottomPadCss, EXPLORATION_HUD_LAYOUT } from '@/shared/constants/hudLayout';
 import { useTouchDevice } from '@/hooks/useTouchDevice';
@@ -289,6 +290,11 @@ export function DiegeticDialogueHud() {
   const accentColor = npcId
     ? (NPC_PORTRAIT_COLORS[npcId]?.primary ?? ACCENT)
     : ACCENT;
+  // Relation with the current speaker (dialogue kind only). Shown as a color-coded
+  // bar in the dialogue header — Disco Elysium-style relationship feedback.
+  const speakerRelationValue = kind === 'dialogue' && dialogueNode?.speakerId
+    ? dialogueCtx.npcRelations.find((r) => r.npcId === dialogueNode.speakerId)?.value
+    : undefined;
 
   const hasContinueOnly = done && choices.length === 0;
 
@@ -350,6 +356,17 @@ export function DiegeticDialogueHud() {
               Esc
             </button>
           </div>
+
+          {npcId && speakerRelationValue !== undefined ? (
+            <div className="px-4">
+              <DialogueRelationBar
+                npcId={npcId}
+                relationValue={speakerRelationValue}
+                reducedMotion={reducedMotion}
+                accentColor={accentColor}
+              />
+            </div>
+          ) : null}
 
           {skillCheckBanner && (
             <p

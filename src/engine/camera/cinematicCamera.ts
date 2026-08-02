@@ -645,11 +645,15 @@ export function applyEnhancedBreathingIdle(
 ): void {
   if (intensity < 0.001) return;
 
-  // Breathing: subtle Y oscillation (1-2mm at full intensity)
-  const breathY = Math.sin(time * 1.8) * 0.002 * intensity;
-  // Gentle sway: XZ drift (0.5mm)
-  const swayX = Math.sin(time * 0.6) * 0.0005 * intensity;
-  const swayZ = Math.cos(time * 0.8) * 0.0005 * intensity;
+  // Breathing: subtle Y oscillation (1-2mm at full intensity).
+  // Frequency (2.0 Hz) matches the procedural body idle torso oscillation
+  // (useProceduralPlayerAnimation idleTorsoPosY) so camera + body breathe in
+  // unison — previously 1.8 Hz beat against 2.0 Hz every 5s, a subtle wobble.
+  const breathY = Math.sin(time * 2.0) * 0.002 * intensity;
+  // Gentle sway: XZ drift (0.5mm) on harmonics of the breath fundamental (¼ / ½)
+  // so the sway resolves against the breath instead of drifting independently.
+  const swayX = Math.sin(time * 0.5) * 0.0005 * intensity;
+  const swayZ = Math.cos(time * 1.0) * 0.0005 * intensity;
 
   position.x += swayX;
   position.y += breathY;
@@ -1067,13 +1071,19 @@ export function updateSceneTransition(
  * ════════════════════════════════════════════════════ */
 
 let globalTimeScale = 1.0;
+/** Eased target for globalTimeScale — setGlobalTimeScale writes this; applyTimeScale
+ *  eases the current value toward it. Removes the hard "click" on dialogue enter/exit. */
+let targetTimeScale = 1.0;
 
 /** Pre-globalTimeScale value before bullet time — restored after duration expires. */
 let preBulletTimeScale = 1.0;
+let preBulletTimeTarget = 1.0;
 let bulletTimeTimer = 0;
+/** Ease speed (1/s) for globalTimeScale → targetTimeScale. ~0.125s to 63%, ~0.375s to 95%. */
+const TIME_SCALE_EASE_SPEED = 8;
 
 export function setGlobalTimeScale(scale: number): void {
-  globalTimeScale = scale;
+  targetTimeScale = scale;
 }
 
 export function getGlobalTimeScale(): number {
@@ -1088,15 +1098,24 @@ export function applyTimeScale(delta: number): number {
     if (bulletTimeTimer <= 0) {
       bulletTimeTimer = 0;
       globalTimeScale = preBulletTimeScale;
+      targetTimeScale = preBulletTimeTarget;
     }
   }
+  // Ease current toward target — replaces the hard snap on dialogue enter/exit.
+  // During bullet time target===current (both set to intensity by enterBulletTime),
+  // so this is a no-op and the slow-mo holds steady until the timer restores it.
+  const dt = Math.min(Math.max(delta, 0), 0.1);
+  const k = 1 - Math.exp(-TIME_SCALE_EASE_SPEED * dt);
+  globalTimeScale += (targetTimeScale - globalTimeScale) * k;
   return delta * globalTimeScale;
 }
 
 export function resetGlobalTimeScale(): void {
   globalTimeScale = 1.0;
+  targetTimeScale = 1.0;
   bulletTimeTimer = 0;
   preBulletTimeScale = 1.0;
+  preBulletTimeTarget = 1.0;
 }
 
 /* ── Phase 11: Bullet Time (Max Payne-style slow motion) ──
@@ -1107,6 +1126,8 @@ export function resetGlobalTimeScale(): void {
  *  After the duration expires, timeScale smoothly recovers to its previous value. */
 export function enterBulletTime(duration: number, intensity: number): void {
   preBulletTimeScale = globalTimeScale;
+  preBulletTimeTarget = targetTimeScale;
   globalTimeScale = intensity;
+  targetTimeScale = intensity;
   bulletTimeTimer = duration;
 }

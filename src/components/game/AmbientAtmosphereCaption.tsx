@@ -23,8 +23,12 @@ export function AmbientAtmosphereCaption() {
     () => resolveAmbientPresentation(sceneId, timeOfDay, showStoryOverlay, currentNodeId),
     [sceneId, timeOfDay, showStoryOverlay, currentNodeId],
   );
+  // Hide the ambient caption while a diegetic dialogue plate is open — it sits at
+  // bottom-left and would overlap the dialogue plate. Pure visibility guard.
+  const diegeticNarrative = useGameStore((s) => s.diegeticNarrative);
 
   if (!isExplorationHudProfile(profile) || !presentation.resolved) return null;
+  if (diegeticNarrative != null) return null;
 
   return (
     <div

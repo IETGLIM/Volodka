@@ -51,6 +51,28 @@ const NEON_CONFIGS: Record<string, NeonReflectionConfig> = {
       { position: [-5, 0.02, 5], color: '#9b86bc', radius: 3.0, intensity: 0.22, pulseSpeed: 0.33, pulsePhase: 0.9 },
     ],
   },
+  // Pier scenes — wet boards already reflect via MeshReflectorMaterial; these colored
+  // additive pools add warm fire / string-light shimmer + a cold distant water reflection.
+  river_pier: {
+    count: 48,
+    pools: [
+      // Barrel fire — warm orange
+      { position: [0, 0.02, -2],  color: '#ff8833', radius: 3.0, intensity: 0.32, pulseSpeed: 0.4,  pulsePhase: 0 },
+      // String lights — warm amber
+      { position: [3, 0.02, 0],   color: '#ffbb55', radius: 2.4, intensity: 0.22, pulseSpeed: 0.5,  pulsePhase: 1.2 },
+      { position: [-2, 0.02, 1],  color: '#ffcc66', radius: 2.0, intensity: 0.18, pulseSpeed: 0.45, pulsePhase: 2.4 },
+      // Distant cold water reflection
+      { position: [5, 0.02, -8],  color: '#8aa0c0', radius: 3.6, intensity: 0.15, pulseSpeed: 0.25, pulsePhase: 0.8 },
+    ],
+  },
+  pier_evening: {
+    count: 48,
+    pools: [
+      { position: [0, 0.02, -1],  color: '#ff9944', radius: 2.8, intensity: 0.30, pulseSpeed: 0.4,  pulsePhase: 0 },
+      { position: [-4, 0.02, -3], color: '#ffaa66', radius: 2.6, intensity: 0.22, pulseSpeed: 0.5,  pulsePhase: 1.4 },
+      { position: [4, 0.02, 2],   color: '#aabbcc', radius: 3.2, intensity: 0.14, pulseSpeed: 0.3,  pulsePhase: 2.0 },
+    ],
+  },
 };
 
 export function NeonRainReflections({ sceneId }: { sceneId: string }) {
