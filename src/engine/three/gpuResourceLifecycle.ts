@@ -20,7 +20,6 @@ import { disposeAllModuleGeometries } from '@/engine/three/moduleGeometryRegistr
 import { disposeAllModuleMaterials } from '@/engine/three/moduleMaterialRegistry';
 import { disposeProceduralLutCache } from '@/engine/graphics/proceduralLutTextures';
 import { resetGpuResourceBudgetTracker } from '@/engine/performance/GpuResourceBudgetTracker';
-import { eventBus } from '@/engine/EventBus';
 
 export type GpuDisposeReason = 'engine' | 'hmr';
 
@@ -90,34 +89,17 @@ registerHmrBeforeUpdate(disposeGpuResourcesForHmr);
 registerHmrDispose(disposeGpuResourcesForHmr);
 
 /**
- * On WebGL context restore, force-dispose orphaned GL resources so the next
- * render pass rebuilds textures/geometries from scratch instead of referencing
- * now-invalid GL objects. This is a lighter touch than full engine dispose —
- * module-level registries keep their scene ownership, but stale GL handles are
- * dropped so R3F can re-upload them on the next frame.
- *
- * IMPORTANT: Do NOT call THREE.Cache.clear() here. Cache stores all loaded
- * GLB URLs for dedup via useGLTF. Clearing it forces a full re-fetch + re-parse
- * of every GLB in the scene — multi-second stall on Vercel. Three.js re-uploads
- * textures/buffers automatically on context restore; only GL handles need
- * disposal, which forceDisposeOrphanedWebGLResources handles safely.
+ * Compatibility lifecycle hooks retained for engine init/dispose callers.
+ * A restored context still belongs to the live R3F root: Three.js recreates its
+ * GL handles, so teardown here would dispose the active renderer and scene.
  */
-let contextRestoreUnsub: (() => void) | null = null;
-
 export function bindGpuContextRestoreListener(): void {
-  unbindGpuContextRestoreListener();
-  contextRestoreUnsub = eventBus.on('canvas:context-restored', () => {
-    try {
-      forceDisposeOrphanedWebGLResources('gpu-lifecycle:context-restored');
-    } catch (err) {
-      console.warn('[gpuResourceLifecycle] context-restored cleanup failed:', err);
-    }
-  });
+  // Recovery is owned by CanvasGuardSystem. Destructive disposal remains
+  // reserved for full engine teardown and error-boundary orphan cleanup.
 }
 
 export function unbindGpuContextRestoreListener(): void {
-  contextRestoreUnsub?.();
-  contextRestoreUnsub = null;
+  // No global listener is installed.
 }
 
 bindGpuContextRestoreListener();

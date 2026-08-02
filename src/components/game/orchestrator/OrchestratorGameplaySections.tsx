@@ -527,7 +527,8 @@ export const GameplayMobileExplorationHud = memo(function GameplayMobileExplorat
 }) {
   const profile = useGameplayPresentationProfile();
   const isMobile = useMobileDetection();
-  if (!isMobile || !isExplorationHudProfile(profile)) return null;
+  const { diegeticNarrative } = useOrchestratorNarrativeOverlay();
+  if (!isMobile || !isExplorationHudProfile(profile) || diegeticNarrative != null) return null;
 
   return <ExplorationMobileHud onOpenInventory={onOpenInventory} onOpenJournal={onOpenJournal} />;
 });

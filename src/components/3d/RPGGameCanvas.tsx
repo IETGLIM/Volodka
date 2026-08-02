@@ -577,6 +577,7 @@ function RPGGameCanvasScene({
     <>
       <GltfPipelineInit />
       <CanvasFrameloopController idle={idle} />
+      <CanvasViewportSync />
       <VisualizationLayers livePlayerPositionRef={livePlayerPositionRef}>
         <Suspense
           fallback={
@@ -705,14 +706,70 @@ function CanvasFrameloopController({ idle }: { idle: boolean }) {
   return null;
 }
 
+/**
+ * R3F's ResizeObserver remains the primary size owner. Mobile browsers can,
+ * however, update the visual viewport without promptly notifying the observed
+ * container. Re-read the canvas box on those signals and only call setSize when
+ * R3F's state is actually stale; demand mode is explicitly invalidated.
+ */
+function CanvasViewportSync() {
+  const gl = useThree((state) => state.gl);
+  const get = useThree((state) => state.get);
+  const setSize = useThree((state) => state.setSize);
+  const invalidate = useThree((state) => state.invalidate);
+
+  useEffect(() => {
+    let rafId: number | null = null;
+
+    const sync = () => {
+      rafId = null;
+      const rect = gl.domElement.getBoundingClientRect();
+      const width = Math.max(1, Math.round(rect.width));
+      const height = Math.max(1, Math.round(rect.height));
+      const current = get().size;
+
+      if (
+        Math.abs(current.width - width) >= 1
+        || Math.abs(current.height - height) >= 1
+        || Math.abs(current.top - rect.top) >= 1
+        || Math.abs(current.left - rect.left) >= 1
+      ) {
+        setSize(width, height, rect.top, rect.left);
+      }
+      invalidate();
+    };
+
+    const scheduleSync = () => {
+      if (rafId !== null) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(sync);
+    };
+
+    scheduleSync();
+    window.addEventListener('resize', scheduleSync);
+    window.addEventListener('orientationchange', scheduleSync);
+    window.visualViewport?.addEventListener('resize', scheduleSync);
+
+    return () => {
+      if (rafId !== null) cancelAnimationFrame(rafId);
+      window.removeEventListener('resize', scheduleSync);
+      window.removeEventListener('orientationchange', scheduleSync);
+      window.visualViewport?.removeEventListener('resize', scheduleSync);
+    };
+  }, [get, gl, invalidate, setSize]);
+
+  return null;
+}
+
 /** Post-render guards: NoToneMapping enforcement + canvas:first-frame emit. */
 function CanvasGuardSystem() {
   const gl = useThree((state) => state.gl);
+  const invalidate = useThree((state) => state.invalidate);
   const toneMappingEnforced = useRef(false);
 
   useEffect(() => {
     const canvas = gl.domElement;
     if (!canvas) return;
+    let restoreRafId: number | null = null;
 
     registerCanvasForFirstFrame(canvas);
 
@@ -726,30 +783,40 @@ function CanvasGuardSystem() {
 
     const handleContextRestored = () => {
       devLog('[CanvasGuard] WebGL context RESTORED');
-      
-      // Force disposal of any orphaned GPU resources before rebuild
+
+      // This renderer is still owned by the live R3F root. Three.js restores
+      // its internal GL state automatically; disposing it here destroys the
+      // active scene and singleton renderer instead of recovering it.
       try {
-        forceDisposeOrphanedWebGLResources('context-restored');
+        gl.resetState();
+        gl.outputColorSpace = THREE.SRGBColorSpace;
+        gl.toneMapping = isPostfxActive()
+          ? THREE.NoToneMapping
+          : THREE.ACESFilmicToneMapping;
       } catch (e) {
-        devWarn('[CanvasGuard] Error disposing orphaned resources:', e);
+        devWarn('[CanvasGuard] Error resetting restored renderer state:', e);
       }
-      
-      // Notify engine systems so module-level GPU resource caches (materials,
-      // geometries, textures) can rebuild. R3F re-renders the scene tree
-      // automatically, but module-level singletons need a nudge to drop
-      // references to now-invalid GL objects.
+
+      toneMappingEnforced.current = false;
       eventBus.emit('canvas:context-restored', {});
+      invalidate();
+      if (restoreRafId !== null) cancelAnimationFrame(restoreRafId);
+      restoreRafId = requestAnimationFrame(() => {
+        restoreRafId = null;
+        invalidate();
+      });
     };
 
     canvas.addEventListener('webglcontextlost', handleContextLost);
     canvas.addEventListener('webglcontextrestored', handleContextRestored);
 
     return () => {
+      if (restoreRafId !== null) cancelAnimationFrame(restoreRafId);
       unregisterCanvasForFirstFrame(canvas);
       canvas.removeEventListener('webglcontextlost', handleContextLost);
       canvas.removeEventListener('webglcontextrestored', handleContextRestored);
     };
-  }, [gl]);
+  }, [gl, invalidate]);
 
   usePostFrameTick(
     'postfx',

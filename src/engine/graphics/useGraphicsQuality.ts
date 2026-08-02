@@ -38,15 +38,33 @@ export function useGraphicsQuality(): GraphicsQualityState {
   const [viewport, setViewport] = useState({ width: 1920, dpr: 1 });
 
   useEffect(() => {
+    let rafId: number | null = null;
+
     const sync = () => {
-      setViewport({
-        width: window.innerWidth,
-        dpr: window.devicePixelRatio ?? 1,
+      rafId = null;
+      const width = Math.round(window.visualViewport?.width ?? window.innerWidth);
+      const dpr = window.devicePixelRatio ?? 1;
+      setViewport((current) => {
+        if (current.width === width && current.dpr === dpr) return current;
+        return { width, dpr };
       });
     };
-    sync();
-    window.addEventListener('resize', sync);
-    return () => window.removeEventListener('resize', sync);
+
+    const scheduleSync = () => {
+      if (rafId !== null) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(sync);
+    };
+
+    scheduleSync();
+    window.addEventListener('resize', scheduleSync);
+    window.addEventListener('orientationchange', scheduleSync);
+    window.visualViewport?.addEventListener('resize', scheduleSync);
+    return () => {
+      if (rafId !== null) cancelAnimationFrame(rafId);
+      window.removeEventListener('resize', scheduleSync);
+      window.removeEventListener('orientationchange', scheduleSync);
+      window.visualViewport?.removeEventListener('resize', scheduleSync);
+    };
   }, []);
 
   useEffect(() => {

@@ -338,10 +338,14 @@ export function DiegeticDialogueHud() {
         style={{
           zIndex: UI_LAYERS.DIALOGUE,
           paddingBottom: diegeticDialogueBottomPadCss(isTouchDevice, !suppressBottomHud),
+          maxHeight: '100dvh',
         }}
       >
         <FocusTrap>
-        <div className="mx-auto max-w-3xl hud-filmic-dialogue-plate overflow-hidden">
+        <div
+          className="mx-auto max-w-3xl hud-filmic-dialogue-plate overflow-hidden flex flex-col"
+          style={{ maxHeight: 'calc(100dvh - 32px - env(safe-area-inset-bottom, 0px))' }}
+        >
           <div className="px-4 pt-3 pb-1 flex items-center justify-between gap-2">
             <div className="flex items-center gap-2.5 min-w-0">
               {npcId && (
@@ -402,7 +406,7 @@ export function DiegeticDialogueHud() {
             onClick={handleTextAdvance}
             className="w-full text-left px-4 pb-2 font-serif text-sm sm:text-base leading-relaxed hover:bg-white/[0.03] transition-colors overflow-y-auto"
             style={{
-              maxHeight: EXPLORATION_HUD_LAYOUT.DIEGETIC_DIALOGUE_TEXT_MAX_HEIGHT,
+              maxHeight: `min(${EXPLORATION_HUD_LAYOUT.DIEGETIC_DIALOGUE_TEXT_MAX_HEIGHT}px, 35dvh)`,
               color: 'var(--hud-filmic-ink)',
               textShadow: 'var(--hud-filmic-shadow)',
             }}
@@ -419,7 +423,7 @@ export function DiegeticDialogueHud() {
           ) : null}
 
           {done && (
-            <div className="px-3 pb-3 flex flex-col gap-1 max-h-48 overflow-y-auto">
+            <div className="px-3 pb-3 flex min-h-0 flex-col gap-1 overflow-y-auto" style={{ maxHeight: 'min(12rem, 40dvh)' }}>
               <NarrativeChoiceList
                 choices={choiceItems.filter((c) => c.text.trim().length > 0)}
                 accentColor={accentColor}

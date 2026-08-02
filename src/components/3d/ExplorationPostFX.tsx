@@ -327,6 +327,7 @@ export function ExplorationPostFX() {
   // EffectComposer. This catches the race condition where gl changes
   // but ready hasn't been reset yet.
   const gl = useThree((state) => state.gl);
+  const invalidate = useThree((state) => state.invalidate);
 
   // Determine whether the EffectComposer will actually mount this render.
   // postfxActive alone is not sufficient — renderer readiness, menu phase,
@@ -346,14 +347,14 @@ export function ExplorationPostFX() {
     }
   }
 
-  useEffect(() => {
-    setPostfxActive(willMount);
-    return () => {
-      // Only clear if we were the one that set it. This prevents a remount
-      // race where the new mount sets true, then the old unmount clears it.
-      if (willMount) setPostfxActive(false);
-    };
-  }, [willMount]);
+  useLayoutEffect(() => {
+    // Clear synchronously when the readiness/preset/viewport gate closes.
+    // The committed pipeline below owns the active=true lifetime.
+    if (!willMount) {
+      setPostfxActive(false);
+      invalidate();
+    }
+  }, [invalidate, willMount]);
 
   if (!willMount) return null;
 
@@ -438,10 +439,21 @@ function EffectComposerInstance({
 
 /** Inner component — all hooks called unconditionally (Rules of Hooks compliant) */
 function PostFXPipeline() {
+  const invalidate = useThree((state) => state.invalidate);
   const { sceneId, noirMode } = usePostFxSceneState();
   const { visualLite } = useMobileVisualPerf();
   const coarsePointer = useIsMobileVisual();
   const { preset, selectedPreset } = useGraphicsQuality();
+
+  useLayoutEffect(() => {
+    setPostfxActive(true);
+    invalidate();
+    return () => {
+      setPostfxActive(false);
+      invalidate();
+    };
+  }, [invalidate]);
+
   const rendering = resolveSceneRenderingPipeline(
     sceneId,
     preset,

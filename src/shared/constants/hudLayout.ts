@@ -40,7 +40,7 @@ export const EXPLORATION_HUD_LAYOUT = {
   BOTTOM_QUEST_TOAST: 76,
   RIGHT_INSET_COMPACT: 16,
   /** Reserve above ExplorationMobileHud column (portrait controls). */
-  MOBILE_BOTTOM_CONTROLS_RESERVE: 108,
+  MOBILE_BOTTOM_CONTROLS_RESERVE: 168,
   /** Approximate height of the DayNightCycleIndicator widget */
   DAY_NIGHT_HEIGHT: 145,
 } as const;
@@ -155,7 +155,9 @@ export function bottomInteractPromptPx(isMobile = false): number {
 /** Diegetic dialogue panel — lift above mobile D-pad / action column + home indicator. */
 export function diegeticDialogueBottomPadCss(isMobile = false, stackVisible = true): string {
   const stackPx = stackVisible ? explorationBottomStackHeightPx(isMobile) : 0;
-  const basePx = (isMobile ? mobileBottomReserve(true) : 0) + 16 + stackPx;
+  // explorationBottomStackHeightPx already includes the mobile controls
+  // reserve. When the stack is suppressed, the controls are suppressed too.
+  const basePx = 16 + stackPx;
   return `calc(${basePx}px + env(safe-area-inset-bottom, 0px))`;
 }
 

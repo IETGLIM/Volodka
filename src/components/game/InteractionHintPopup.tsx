@@ -13,6 +13,7 @@ import {
 } from '@/hooks/useGameplayPresentationProfile';
 import { useHudProximityFxActive } from '@/hooks/useHudProximityFxActive';
 import { useTouchDevice } from '@/hooks/useTouchDevice';
+import { useMobileDetection } from '@/components/game/orchestrator/useMobileDetection';
 import { useDiegeticNarrativeState } from '@/store/selectors';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Package, DoorOpen, Hand, MessageCircle, Eye } from 'lucide-react';
@@ -56,6 +57,7 @@ export function InteractionHintPopup() {
   const explorationHudActive = isExplorationHudProfile(profile);
   const reducedMotion = useEffectiveReducedMotion();
   const isTouchDevice = useTouchDevice();
+  const isMobileViewport = useMobileDetection();
   const crosshairPromptActive = useHudProximityFxActive();
   const gamepadConnected = useGamepadConnected();
   const diegeticNarrative = useDiegeticNarrativeState();
@@ -105,6 +107,7 @@ export function InteractionHintPopup() {
     ? formatInteractionHintKey(hint.key, hintInputOptions)
     : 'E';
   const showTouchHint = hintKey === 'touch';
+  const reserveMobileControls = isTouchDevice || isMobileViewport;
 
   return (
     <AnimatePresence>
@@ -121,7 +124,12 @@ export function InteractionHintPopup() {
           role="status"
           aria-live="polite"
           aria-label={hint ? formatInteractionHintAria(hint.label, hint.key, hint.description, hintInputOptions) : undefined}
-          style={{ zIndex: UI_LAYERS.HUD + 1, bottom: bottomInteractPromptPx(isTouchDevice) }}
+          style={{
+            zIndex: UI_LAYERS.HUD + 1,
+            bottom: `calc(${bottomInteractPromptPx(reserveMobileControls)}px + env(safe-area-inset-bottom, 0px))`,
+            width: 'max-content',
+            maxWidth: 'calc(100vw - 24px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px))',
+          }}
         >
           <div
             className="interaction-hint-card interaction-hint-glow"
