@@ -29,6 +29,21 @@
   /* Consistent motion cadence (replaces per-component 0.22s/0.32s/0.45s). */
   --hud-filmic-transition-fast: 0.2s;
   --hud-filmic-transition-base: 0.35s;
+  --hud-filmic-transition-slow: 0.6s;
+  /* Scanline cycle duration. */
+  --hud-filmic-scan-speed: 8s;
+  /* Per-scene vignette intensity — consumed by SceneAmbientVignette. */
+  --hud-filmic-vignette-indoor: 0.42;
+  --hud-filmic-vignette-outdoor: 0.28;
+  --hud-filmic-vignette-digital: 0.55;
+  --hud-filmic-vignette-combat: 0.65;
+  /* Higher-contrast hero text — for scene titles / quest banners. */
+  --hud-filmic-ink-hero: rgba(250, 248, 245, 0.95);
+  /* Lighter glass plate — for overlays that should feel transparent. */
+  --hud-filmic-plate-glass: rgba(6, 8, 14, 0.45);
+  /* Accent glows — warm (amber) and cool (steel blue) for scene mood. */
+  --hud-filmic-glow-warm: rgba(196, 181, 160, 0.15);
+  --hud-filmic-glow-cool: rgba(120, 160, 200, 0.12);
 }
 
 /* Thin film hairline — caption punctuation */
@@ -441,4 +456,167 @@
     inset: 0;
     pointer-events: none;
   }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Filmic additive classes — scanline, dialogue breath, toast
+   transitions, status pulse, crosshair ring, letterbox gradient.
+   All gated on prefers-reduced-motion: no-preference.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── CRT scanline sweep ──────────────────────────────────────
+   A subtle horizontal line that slowly sweeps top→bottom,
+   giving the HUD a CRT monitor feel. Very low opacity (0.03–0.05)
+   so it adds atmosphere without distracting from gameplay. */
+
+@keyframes hud-filmic-scanline-sweep {
+  0% {
+    top: -2px;
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.05;
+  }
+  90% {
+    opacity: 0.03;
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hud-filmic-scanline {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(180deg,
+      transparent 0%,
+      var(--hud-filmic-scan-accent) 40%,
+      var(--hud-filmic-scan-accent) 60%,
+      transparent 100%
+    );
+    box-shadow: 0 0 6px 0 var(--hud-filmic-glow-cool);
+    pointer-events: none;
+    animation: hud-filmic-scanline-sweep var(--hud-filmic-scan-speed) linear infinite;
+    z-index: 1;
+  }
+}
+
+/* ── Dialogue plate breathing glow ───────────────────────────
+   Subtle border-color breathing cycle on the dialogue plate.
+   Adds organic life to the static plate border. */
+
+@keyframes hud-filmic-dialogue-breath-cycle {
+  0%, 100% {
+    border-color: rgba(168, 162, 158, 0.14);
+  }
+  50% {
+    border-color: rgba(168, 162, 158, 0.22);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hud-filmic-dialogue-breath {
+    animation: hud-filmic-dialogue-breath-cycle 4s ease-in-out infinite;
+  }
+}
+
+/* ── Toast enter / exit transitions ──────────────────────────
+   Standardized slide+fade for toast notifications. Replaces
+   per-component 0.22s/0.32s/0.45s with consistent cadence. */
+
+.hud-filmic-toast-enter {
+  transition: opacity var(--hud-filmic-transition-base) ease-out,
+              transform var(--hud-filmic-transition-base) ease-out;
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.hud-filmic-toast-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.hud-filmic-toast-exit {
+  transition: opacity var(--hud-filmic-transition-fast) ease-in,
+              transform var(--hud-filmic-transition-fast) ease-in;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.hud-filmic-toast-exit-active {
+  opacity: 0;
+  transform: translateY(4px);
+}
+
+/* ── Status bar pulse ────────────────────────────────────────
+   Opacity pulse on status bars when values change.
+   Triggered by adding this class, removed after 2s. */
+
+@keyframes hud-filmic-status-pulse-cycle {
+  0%, 100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hud-filmic-status-pulse {
+    animation: hud-filmic-status-pulse-cycle 2s ease-in-out;
+  }
+}
+
+/* ── Crosshair interaction ring ──────────────────────────────
+   A thin expanding ring that emanates from the crosshair when
+   an interaction starts. Decays to transparent over 0.6s. */
+
+@keyframes hud-filmic-crosshair-ring-expand {
+  0% {
+    width: 0;
+    height: 0;
+    opacity: 0.6;
+    border-width: 1px;
+  }
+  100% {
+    width: 48px;
+    height: 48px;
+    opacity: 0;
+    border-width: 0.5px;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hud-filmic-crosshair-ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    border: 1px solid var(--hud-filmic-accent);
+    pointer-events: none;
+    animation: hud-filmic-crosshair-ring-expand 0.6s ease-out forwards;
+  }
+}
+
+/* ── Letterbox bar gradient ──────────────────────────────────
+   A subtle gradient on the inner edge of letterbox bars that
+   creates a more cinematic "fade into darkness" feel. Applied
+   via ::after pseudo-element on the letterbox container. */
+
+.hud-filmic-letterbox-gradient::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg,
+    rgba(0, 0, 0, 0.15) 0%,
+    transparent 40%,
+    transparent 60%,
+    rgba(0, 0, 0, 0.15) 100%
+  );
+  pointer-events: none;
 }

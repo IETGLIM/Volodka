@@ -1,0 +1,146 @@
+/* ══════════════════════════════════════════════════════════════
+   Filmic Ambient Effects — CSS-only atmospheric layer
+   Complements hud-filmic.css with ambient dust, light flicker,
+   and exploration pulse. All animations gated on
+   prefers-reduced-motion: no-preference.
+   Class prefix: hud-ambient-*
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Ambient particles ──────────────────────────────────────
+   CSS-only particle effect using multiple box-shadows for
+   ambient dust motes. Creates a subtle floating dust
+   atmosphere without JavaScript or canvas. */
+
+@keyframes hud-ambient-particles-drift {
+  0% {
+    transform: translateY(0) translateX(0);
+  }
+  25% {
+    transform: translateY(-8px) translateX(3px);
+  }
+  50% {
+    transform: translateY(-4px) translateX(-2px);
+  }
+  75% {
+    transform: translateY(-12px) translateX(4px);
+  }
+  100% {
+    transform: translateY(0) translateX(0);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hud-ambient-particles {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 1;
+  }
+
+  .hud-ambient-particles::before {
+    content: '';
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    border-radius: 50%;
+    background: rgba(196, 181, 160, 0.12);
+    box-shadow:
+      18vw 12vh 0 0 rgba(196, 181, 160, 0.08),
+      45vw 28vh 0 0 rgba(196, 181, 160, 0.06),
+      72vw 8vh 0 0 rgba(196, 181, 160, 0.10),
+      30vw 55vh 0 0 rgba(196, 181, 160, 0.07),
+      60vw 42vh 0 0 rgba(196, 181, 160, 0.09),
+      85vw 22vh 0 0 rgba(196, 181, 160, 0.05),
+      12vw 72vh 0 0 rgba(196, 181, 160, 0.08),
+      55vw 65vh 0 0 rgba(196, 181, 160, 0.06),
+      78vw 58vh 0 0 rgba(196, 181, 160, 0.10),
+      38vw 82vh 0 0 rgba(196, 181, 160, 0.07),
+      92vw 38vh 0 0 rgba(196, 181, 160, 0.05),
+      22vw 45vh 0 0 rgba(196, 181, 160, 0.09),
+      68vw 75vh 0 0 rgba(196, 181, 160, 0.06),
+      5vw 35vh 0 0 rgba(196, 181, 160, 0.08),
+      48vw 18vh 0 0 rgba(196, 181, 160, 0.07);
+    animation: hud-ambient-particles-drift 12s ease-in-out infinite;
+    opacity: 0.7;
+  }
+
+  .hud-ambient-particles::after {
+    content: '';
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    border-radius: 50%;
+    background: rgba(214, 211, 209, 0.06);
+    box-shadow:
+      25vw 20vh 0 0 rgba(214, 211, 209, 0.05),
+      52vw 35vh 0 0 rgba(214, 211, 209, 0.04),
+      80vw 15vh 0 0 rgba(214, 211, 209, 0.06),
+      35vw 62vh 0 0 rgba(214, 211, 209, 0.03),
+      65vw 48vh 0 0 rgba(214, 211, 209, 0.05),
+      90vw 30vh 0 0 rgba(214, 211, 209, 0.04),
+      15vw 80vh 0 0 rgba(214, 211, 209, 0.05),
+      42vw 70vh 0 0 rgba(214, 211, 209, 0.03),
+      75vw 62vh 0 0 rgba(214, 211, 209, 0.06),
+      8vw 50vh 0 0 rgba(214, 211, 209, 0.04);
+    animation: hud-ambient-particles-drift 16s ease-in-out infinite reverse;
+    opacity: 0.5;
+  }
+}
+
+/* ── Ambient flicker ────────────────────────────────────────
+   A subtle light flicker effect for indoor scenes.
+   Opacity 0.95 → 1.0 → 0.97 cycle — barely perceptible,
+   adds organic imperfection to static lighting. */
+
+@keyframes hud-ambient-flicker-cycle {
+  0% {
+    opacity: 0.95;
+  }
+  15% {
+    opacity: 1;
+  }
+  30% {
+    opacity: 0.97;
+  }
+  50% {
+    opacity: 0.99;
+  }
+  65% {
+    opacity: 0.96;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.95;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hud-ambient-flicker {
+    animation: hud-ambient-flicker-cycle 6s ease-in-out infinite;
+  }
+}
+
+/* ── Ambient pulse ──────────────────────────────────────────
+   A slow ambient pulse for the exploration HUD.
+   Border opacity cycle — subtle breathing that keeps the
+   exploration interface feeling alive without being
+   distracting. */
+
+@keyframes hud-ambient-pulse-cycle {
+  0%,
+  100% {
+    border-color: rgba(168, 162, 158, 0.10);
+  }
+  50% {
+    border-color: rgba(168, 162, 158, 0.18);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hud-ambient-pulse {
+    animation: hud-ambient-pulse-cycle 5s ease-in-out infinite;
+  }
+}

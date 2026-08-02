@@ -31,4 +31,11 @@ export interface NpcEvents {
    * expires). The NPC component restores default animation and behavior.
    */
   'npc:emotion_decayed': { npcId: string; previousEmotion: NpcEmotion };
+  /**
+   * Emitted when an NPC transitions to a new emotion (replaces the previous
+   * one). Used by the world-space NpcEmotionIndicator to show a brief
+   * floating label above the NPC's head. Unlike `npc:emotion_triggered`,
+   * this event fires on any transition — including decay → neutral.
+   */
+  'npc:emotion_change': { npcId: string; emotion: NpcEmotion; previousEmotion: NpcEmotion };
 }

@@ -32,6 +32,7 @@ export const SCENE_LOCATION_CATEGORIES = {
   zarema_room: 'home',
   albert_backroom: 'cafe',
   procedural_aaa: 'street',
+  forest_clearing: 'park',
 } as const satisfies Record<SceneId, LocationCategory>;
 
 export const DEFAULT_SCENE_LOCATION_CATEGORY: LocationCategory = 'unknown';

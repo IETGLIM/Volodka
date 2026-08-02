@@ -20,6 +20,7 @@ import { InteractionCooldownRing } from '@/components/game/hud/parts/Interaction
 import { InteractionProximityGlow } from '@/components/game/hud/parts/InteractionProximityGlow';
 import { InteractionRadarPulse } from '@/components/game/hud/parts/InteractionRadarPulse';
 import { NPCProximityIndicator } from '@/components/game/hud/parts/NPCProximityIndicator';
+import { LootProximityIndicator } from '@/components/game/hud/parts/LootProximityIndicator';
 import { PhysicsDegradedDevBadge } from '@/components/game/hud/parts/PhysicsDegradedDevBadge';
 import { QuestDirectionArrow } from '@/components/game/hud/parts/QuestDirectionArrow';
 import { RainScreenEffect } from '@/components/game/hud/parts/RainScreenEffect';
@@ -157,6 +158,7 @@ export function ExplorationHUD(props: HUDProps) {
       <ContextualHint hint={currentHint} onDismiss={dismissHint} />
       <QuestDirectionArrow />
       <NPCProximityIndicator />
+      <LootProximityIndicator />
       <PhysicsDegradedDevBadge />
 
       <AnimatePresence>

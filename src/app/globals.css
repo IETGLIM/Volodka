@@ -25,6 +25,7 @@
 @import "../styles/micro-animations.css";
 @import "../styles/menu-session8.css";
 @import "../styles/hud-filmic.css";
+@import "../styles/hud-filmic-ambient.css";
 @import "../styles/weather-alerts.css";
 @import "../styles/enhancements.css";
 @import "../styles/toasts-loading.css";
@@ -42,6 +43,7 @@
 @import "../styles/hud-round9.css";
 @import "../styles/hud-round10.css";
 @import "../styles/hud-round11.css";
+@import "../styles/hud-round12.css";
 
 /* ── User setting: scanlines off (SettingsPanel → engine/visualSettings) ── */
 html[data-scanlines="off"] .panel-scanlines::after,

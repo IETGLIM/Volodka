@@ -17,3 +17,4 @@ export * from './saveSelectors';
 export * from './tutorialSelectors';
 export * from './thoughtCabinetSelectors';
 export * from './clothingSelectors';
+export * from './hudMountSelectors';

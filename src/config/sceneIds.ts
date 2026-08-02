@@ -32,6 +32,7 @@ export const EXTENSION_SCENE_IDS = [
   'zarema_room',
   'albert_backroom',
   'procedural_aaa',
+  'forest_clearing',
 ] as const;
 
 export type CoreSceneId = (typeof CORE_SCENE_IDS)[number];

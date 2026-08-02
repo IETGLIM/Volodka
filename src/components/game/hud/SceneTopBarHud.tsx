@@ -19,6 +19,8 @@ import { SceneContextChip } from '@/components/game/hud/parts/SceneContextChip';
 import { TopBarDataTicker } from '@/components/game/hud/parts/TopBarDataTicker';
 import { ExplorationProgressBadge } from '@/components/game/hud/parts/ExplorationProgressBadge';
 import { EnvironmentMoodIndicator } from '@/components/game/hud/parts/EnvironmentMoodIndicator';
+import { FootstepPedometer } from '@/components/game/hud/parts/FootstepPedometer';
+import { SessionPlayTimer } from '@/components/game/hud/parts/SessionPlayTimer';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useHudQuietStyle } from '@/hooks/useHudQuiet';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
@@ -64,6 +66,17 @@ export const SceneTopBarHud = memo(function SceneTopBarHud() {
       >
         <EnvironmentMoodIndicator />
         <ExplorationProgressBadge />
+      </motion.div>
+
+      {/* Bottom-left: session pedometer + play timer */}
+      <motion.div
+        initial={reducedMotion ? false : { opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+        className="absolute bottom-2 left-2.5 flex items-end gap-3"
+      >
+        <FootstepPedometer />
+        <SessionPlayTimer />
       </motion.div>
     </div>
   );

@@ -427,4 +427,48 @@ export const EXTENSION_SCENE_DEFINITIONS = {
     fog: { near: 6, far: 40, fogColor: '#2a3048' },
     ambience: { daySound: 'street', nightSound: 'street', transitionDuration: 2000 },
   },
+
+  /** Forest clearing — natural, peaceful, mystical glade deep in the woods */
+  forest_clearing: {
+    id: 'forest_clearing',
+    name: 'Лесная Поляна',
+    dimensions: [20, 6, 20],
+    type: 'outdoor',
+    hasCeiling: false,
+    defaultSpawn: [0, 0.01, 3],
+    defaultSpawnRotation: 0,
+    characterModelScale: 1.0,
+    locomotionScale: 1.0,
+    doorways: [{ id: 'clearing_to_forest', position: [0, 1, 9], width: 2.0, height: 2.5 }],
+    exits: [
+      {
+        id: 'clearing_to_forest',
+        targetScene: 'chk_forest_zorge',
+        position: [0, 1, 9],
+        spawnPosition: [0, 0.01, -4],
+        spawnRotation: Math.PI,
+        label: '→ Лес Зорге',
+        doorwayId: 'clearing_to_forest',
+      },
+    ],
+    floors: [{ type: 'cuboid', size: [10, 0.05, 10], position: [0, -0.05, 0], footstepMaterial: 'grass' }],
+    walls: [],
+    obstacles: [
+      { type: 'cuboidObstacle', size: [0.6, 1.2, 0.6], position: [-3, 0.6, -2], footstepMaterial: 'wood' },
+      { type: 'cuboidObstacle', size: [0.4, 0.8, 0.4], position: [2, 0.4, -3], footstepMaterial: 'wood' },
+    ],
+    ceilings: [],
+    visualComponent: 'ChkForestVisual',
+    lights: [
+      { position: [0, 5, 0], intensity: 2.8, color: '#c8e8a0', distance: 20 },
+      { position: [-4, 3, 3], intensity: 0.6, color: '#88aa66', distance: 12 },
+      { position: [3, 2, -4], intensity: 0.4, color: '#aacc88', distance: 10 },
+    ],
+    ambientColor: '#2a3a20',
+    ambientIntensity: 0.55,
+    groundColor: '#1e2a1a',
+    fogEnabled: true,
+    fog: { near: 6, far: 28, fogColor: '#2a3a20' },
+    ambience: { daySound: 'park', nightSound: 'corridor', transitionDuration: 3000 },
+  },
 } as const satisfies Record<ExtensionSceneId, SceneDefinition>;

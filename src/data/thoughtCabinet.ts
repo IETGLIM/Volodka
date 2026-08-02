@@ -498,3 +498,15 @@ for (const thought of THOUGHT_CABINET_ITEMS) {
 
 /** Maximum number of thoughts that can be equipped simultaneously. */
 export const MAX_EQUIPPED_THOUGHTS = 3;
+
+/** Mutually exclusive thought pairs — equipping one locks out the other. */
+export const MUTUALLY_EXCLUSIVE_PAIRS: readonly (readonly [string, string])[] = [
+  ['postsoviet_nostalgia', 'cyberpunk_future'],
+  ['resist_the_system', 'adapt_to_system'],
+  ['loneliness_shield', 'bonds_that_save'],
+  ['resonator_awakening', 'silent_observer'],
+  ['virus_of_freedom', 'quarantine_protocol'],
+  ['hive_mind', 'lone_wolf_protocol'],
+  ['digital_call', 'street_whisper'],
+  ['cold_calculation', 'poetic_matrix'],
+];

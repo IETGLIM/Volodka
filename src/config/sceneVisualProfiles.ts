@@ -179,6 +179,17 @@ const PROFILES: Partial<Record<SceneId, SceneVisualProfile>> = {
     aoRadius: 0.55,
     bloomIntensityScale: 1.1,
   },
+  forest_clearing: {
+    ...STANDARD_PROFILE,
+    forceFullPostFx: true,
+    enhancedAmbientOcclusion: true,
+    aoIntensity: 2.0,
+    aoRadius: 0.6,
+    bloomIntensityScale: 1.12,
+    shadowMapScale: 1.15,
+    detailDistanceScale: 1.2,
+    envAnimationKeepAll: true,
+  },
 };
 
 export function getSceneVisualProfile(sceneId: SceneId): SceneVisualProfile {
