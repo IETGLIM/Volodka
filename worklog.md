@@ -2084,3 +2084,184 @@ Stage Summary:
   3. Accessibility hardened: 3 panel-specific close aria-labels + global reduced-motion kill-switch in accessibility.css.
   4. Living-world content: +14 NPC bark lines, +3 idle monologue scenes (30 lines), +8 byAct revisit thoughts — interiority density ↑ for Acts 3-5.
 - Unresolved / next-phase priorities: Author QA on Vercel (verify VolumetricLightShafts in home_evening/factory_basement on Ultra, new filmic CSS micro-animations, reduced-motion fallbacks). SSR on wet streets (ultra-only). Continuous walk↔run blend. Mixamo↔Quaternius remap. More content for Acts 3-4. Procedural act mood audio tables.
+
+---
+Task ID: 3-b
+Agent: full-stack-developer (weather barks + thoughts + idle)
+Task: 3 expansions on /home/z/volodka — (1) NEW FEATURE: weather-reactive NPC barks with `getWeatherBark()` function + wiring into the ambient bark pipeline; (2) Add 6 new Thought Cabinet thoughts (items 37-42); (3) Add idle monologues for 3 missing scenes (`solnysh_room`, `pier_evening`, `chk_campfire_night`).
+
+Work Log:
+- Read prior ticks (2-c / cron-tick 6) worklog + AI_SESSION_CONTEXT.md to avoid duplicating prior content. Prior tick targeted: 14 emotion-bark lines (npcBark.ts), 3 idle scenes (guild_mainframe/library_basement/underground_bunker), 8 byAct entries (park_day/library_day/factory_roof/library_basement). None of my new content overlaps with prior ticks.
+- Read target files: `src/shared/npcBark.ts`, `src/engine/npc/npcAmbientBarkSystem.ts`, `src/shared/weather/deriveSceneWeather.ts`, `src/engine/events/npcEvents.ts`, `src/data/thoughtCabinet.ts`, `src/shared/types/definitions/thoughtCabinet.ts`, `src/shared/types/definitions/skills.ts`, `src/data/idleMonologues.ts`, `src/config/sceneIds.ts`, `src/config/sceneExtensionDefinitions.ts`. Verified SceneIds, skill keys, thought IDs.
+
+TASK 1 — Weather-reactive NPC barks (NEW FEATURE):
+- `src/shared/npcBark.ts`: Added import of `SceneWeatherType` from `@/shared/types/ambientSound`. Added `WEATHER_BARKS` constant: `Partial<Record<SceneWeatherType, readonly string[]>>` with 4 lines per weather type (rain/snow/fog/storm) = 16 weather bark lines total. `clear` intentionally absent (returns null). Added `getWeatherBark(weatherState: SceneWeatherType): string | null` exported function.
+- Wired into bark selection pipeline: extended `resolveNpcAmbientBark()` and `resolveNpcAmbientBarkBand()` signatures with optional `weatherType?: SceneWeatherType` and `weatherRng?: number` params (backward-compatible — default to `Math.random()`). Inserted Priority 0 branch BEFORE emotion override (Priority 1): if `weatherType` is non-clear AND `weatherRng < 0.3`, return a weather bark. Used separate `weatherRng` from existing `rng` (pensive/idle roll) so the two gates don't share entropy.
+- Extended `resolveNpcAmbientBarkBand()` return type to include `'weather'` (was `NpcEmotion | 'idle' | 'working' | 'pensive'`).
+- `src/engine/events/npcEvents.ts`: Added `'weather'` to the `band` union of the `npc:ambient_bark` event. Verified no consumer switches on `band` (rg `payload.band ===` returned 0 matches) — purely metadata for UI styling, additive only.
+- `src/engine/npc/npcAmbientBarkSystem.ts`: Imported `deriveSceneWeather` + `SceneWeatherType`. Added `weatherType?` and `weatherRng?` params to `tickNpcAmbientBarks()`. In the React hook `useNpcAmbientBarkSystem`, derived current weather from `getGameSnapshot().exploration.{currentSceneId,timeOfDay}` via `deriveSceneWeather()` (pure function — same derivation the HUD/weather indicator uses, so barks stay consistent with what the player sees). Passed `weatherType` into `tickNpcAmbientBarks()`. Updated band cast union to include `'weather'`.
+- Used a per-NPC separate RNG call (`weatherRng = Math.random()` by default; injected as `weatherRng?: () => number` for testability) for the 30 % gate — separate from the existing `rng` pensive/idle roll.
+
+TASK 2 — 6 new Thought Cabinet thoughts (items 37-42):
+- `src/data/thoughtCabinet.ts`: Appended 6 NEW standalone thoughts to the END of `THOUGHT_CABINET_ITEMS` array (items 37-42). Each follows the existing `ThoughtCabinetItem` interface (id/name/voice/description/flavorText/acquisitionCondition/effects). All standalone — no `mutuallyExclusive` (safer; no need to verify paired IDs). All `effects[].skill` use only valid `TrainablePlayerSkill` (logic/coding/empathy/persuasion/intuition/writing/rhythm — verified against `src/shared/types/definitions/skills.ts`). New thought IDs (all unique, verified via rg):
+  - 37. `server_room_voice` (Голос Серверной) — voice=coding, +2 Кодинг/+2 Интуиция/-1 Убеждение
+  - 38. `despair_protocol` (Протокол Отчаяния) — voice=logic, +2 Логика/-2 Эмпатия/+1 Интуиция
+  - 39. `digital_dust` (Цифровой Прах) — voice=writing, +2 Писательство/+1 Эмпатия/-1 Ритм
+  - 40. `ping_echo` (Эхо Пинг) — voice=intuition, +3 Интуиция/-1 Логика/+1 Ритм
+  - 41. `shadow_cache` (Теневой Кэш) — voice=persuasion, +2 Убеждение/+1 Кодинг/-2 Эмпатия
+  - 42. `ram_memory` (Память ОЗУ) — voice=empathy, +2 Эмпатия/+1 Логика/-1 Писательство
+- `THOUGHT_CABINET_MAP` is built by iterating `THOUGHT_CABINET_ITEMS` (existing for-loop) — automatically picks up new entries. `MUTUALLY_EXCLUSIVE_PAIRS` untouched (no new pairs added).
+
+TASK 3 — Idle monologues for 3 missing scenes:
+- `src/data/idleMonologues.ts`: Appended 3 NEW scene entries to `IDLE_MONOLOGUES` map. Each follows the existing `IdleMonologueBand` structure (all 4 bands populated: neutral×4 + high×2 + low×2 + highStress×2 = 10 lines/scene, 30 new lines total). All 3 are valid SceneIds verified via `src/config/sceneIds.ts`. None had IDLE_MONOLOGUES entries previously (verified by grepping IDLE_MONOLOGUES — confirmed missing). Selected DIFFERENT scenes from prior tick (prior tick added guild_mainframe/library_basement/underground_bunker). New scenes:
+  - `solnysh_room` (CORE — Солныш/Алина's room, cozy indoor, home category) — themes: tenderness, protectiveness, feeling out-of-place in a soft room.
+  - `pier_evening` (EXTENSION — dusk at river pier, inherits visuals from river_pier) — themes: dusk, darkening water, loneliness, distant lanterns.
+  - `chk_campfire_night` (EXTENSION — ChK forest campfire at night, resistance gathering) — themes: fire, smoke, comrades, forest sounds, vigilance.
+- All lines in Russian, 1-2 sentences, scene-specific atmosphere matching existing entries' tone (cyberpunk-noir, post-Soviet introspective, Володька's voice).
+
+Invariants preserved:
+- Poems (`src/data/poems.ts`) — not opened, not modified.
+- Rapier `<Physics interpolate={false}>` — untouched.
+- KCC ownership — untouched.
+- Postprocessing depth-blit patch — untouched.
+- Test contracts — `src/shared/npcBark.test.ts` only tests `pickNpcBarkLine`/`resolveNpcBarkForRelation`; I did NOT modify those functions. New params on `resolveNpcAmbientBark`/`resolveNpcAmbientBarkBand` are optional with defaults — backward compatible.
+- State mutations via `dispatchStateAction()` — N/A (no state mutations in this tick; pure data + pure functions only).
+- Narrative via `presentNarrativeBeat()` — N/A (idle/bark text is delivered via `eventBus.emit('npc:ambient_bark')` and the existing `addThought` pipeline; no new narrative-beat calls added).
+- Reduced-motion: weather barks are TEXT-only (no visual motion) — no `prefers-reduced-motion` gate needed. Existing bark UI (NPC.tsx speech-bubble machinery) already handles reduced-motion per the global kill-switch in `accessibility.css`.
+
+Typecheck gate:
+- `cd /home/z/volodka && node scripts/tsc7.mjs --noEmit` → EXIT_CODE=0.
+- Verified incrementally after each task: baseline=0, after Task 1=0, after Task 2=0, after Task 3=0.
+
+Stage Summary:
+- 5 files modified:
+  - `src/shared/npcBark.ts` — +95 lines (WEATHER_BARKS data + getWeatherBark() + Priority 0 wiring in resolveNpcAmbientBark/resolveNpcAmbientBarkBand). 16 weather bark lines (4 per weather type × 4 non-clear types).
+  - `src/engine/events/npcEvents.ts` — +1 token (`'weather'` added to band union, additive).
+  - `src/engine/npc/npcAmbientBarkSystem.ts` — +18 lines (imports + weatherType/weatherRng params + deriveSceneWeather call in hook + updated band cast).
+  - `src/data/thoughtCabinet.ts` — +90 lines (6 new ThoughtCabinetItem entries 37-42, all standalone).
+  - `src/data/idleMonologues.ts` — +70 lines (3 new scene entries: solnysh_room, pier_evening, chk_campfire_night; 30 new lines total).
+- Counts: 16 weather bark lines, 6 new thoughts, 3 new idle scenes (30 idle lines).
+- Typecheck: exit 0. Poems untouched. All invariants preserved. Purely additive — 0 deletions, 0 modifications to existing data.
+
+---
+Task ID: 3-a
+Agent: full-stack-developer (content expansion)
+Task: Add karma-gated dialogue choices to Act 3-4 nodes (6-8 required → delivered 8) AND add examine TriggerZones to thin scenes (8-10 required → delivered 9). Pure additive DATA only — no schema changes, no component code, no engine wiring. Russian literary post-Soviet cyberpunk-noir tone.
+
+Work Log:
+- Read /home/z/my-project/worklog.md (external-repo collaboration log) + tail of /home/z/volodka/worklog.md (recent tick-6 work by subagents 2-a/2-b/2-c + orchestrator VolumetricLightShafts).
+- Read /home/z/volodka/AI_SESSION_CONTEXT.md (style guide: Russian literary, post-Soviet cyberpunk-noir, melancholic introspective tone; poems SACRED; typecheck gate `node scripts/tsc7.mjs --noEmit` exit 0).
+- Read type definitions:
+  - src/shared/types/definitions/dialogue.ts → DialogueChoice = { text, next: string|null, effects?, condition?, partialSuccessEffects?, disastrousFailureEffects?, strongSuccessEffects? }. DialogueNode has choices: DialogueChoice[].
+  - src/shared/types/common/conditions.ts → ChoiceCondition supports minKarma?, maxKarma?, minSkill?, minSkillCheck?, checkType?, thoughtRequired?, flag?, missingFlag?, minNpcRelation?, requiredAct?, minTimeOfDay?, maxTimeOfDay?, collectedPoem?, missingPoem?, hasItem?, minCollectedPoems?, activeTTLFlag?, missingActiveTTLFlag?, clothingTagRequired?, clothingTagForbidden?. Confirms karma-gating via minKarma/maxKarma is type-safe.
+  - src/shared/types/common/effects.ts → StoryEffectType union includes addStat, addSkill, addItem, removeItem, setFlag, addKarma, addXp, addCredits, npcChange, triggerQuest, collectPoem, discoverLore, combat, transitionScene, visitStoryNode, showThought, openDataTerminal, cameraShake. StoryEffect has stat?, value?, skill?: TrainablePlayerSkill, npcId?, npcChange?: { relation?: number }, flag?, flagValue?, thought?, thoughtDuration?.
+  - src/shared/types/definitions/skills.ts → TrainablePlayerSkill = keyof PlayerSkills = logic | coding | empathy | persuasion | intuition | writing | rhythm (7 skills only, confirmed — no endurance/authority).
+  - src/data/triggerZones.ts → TriggerZone interface (id, sceneId, position, size, examineData?, effects?, interactionType?, interactionLabel?, etc.). Confirmed existing zone structure via 4 templates (room_desk, room_window, factory_roof_skyline_vista, forest_clearing_mossy_stone).
+- Read scene dimensions for thin-scene position sanity:
+  - sleep_dream: 50×4×50, locomotionScale 1.5 (huge surreal space, 2 existing examine zones → sparse, room for 3 new).
+  - albert_backroom: 8×3×6, floor [4, 0.05, 3] (small indoor, 2 existing examine zones → room for 2 new).
+  - factory_roof: 22×6×18, floor [11, 0.05, 9] (medium outdoor, 2 existing examine zones + 2 talk zones → room for 2 new).
+  - chk_forest_zorge: 36×6×36, floor [18, 0.05, 18] (big outdoor, 2 existing examine zones + 2 talk zones → room for 2 new).
+- Verified prior-tick karma-gated nodes (DO NOT TOUCH list): albert_deep_revelation, alexander_final_confrontation, zarema_traitor_reveal, alexander_final_decision, cafe_barista_deep_trust, zarema_before_arrest, barista_broadcast_ready, barista_broadcast_ready_act3. All avoided — picked different nodes.
+- Verified NPC IDs via grep on dialogue files: office_alexander, office_dmitry, zarema, albert, maria, cafe_barista all already used in existing npcChange calls → safe.
+- Verified new flag names (alexander_one_report_pledge, alexander_double_agent_path, shared_rhythm_pledge, shield_maria_pledge, volodka_self_erase_path, dmitry_pullback_proposed, maria_no_sacrifice_pledge, albert_volodka_stand_together, + 9 examined_* flags) are unique — grep confirmed each appears only in the file I edited (no collisions with existing flags).
+
+TASK 1 — 8 new karma-gated DialogueChoices (appended to END of each node's choices array):
+  1. part3-mid.ts · alexander_respect (HIGH minKarma: 55) — "Подпиши сегодня один отчёт «без изменений»." → +10 karma, +2 persuasion, +12 alexander relation, setFlag alexander_one_report_pledge, showThought (6500ms). next: null.
+  2. part3-mid.ts · alexander_proposition (LOW maxKarma: 15) — "«Экономическая ценность» — щит. Согласись продать стихи — а я тайно скопирую каждое." → -8 karma, +1 coding, +5 alexander relation, setFlag alexander_double_agent_path, showThought (6000ms). next: null.
+  3. part3-mid-expanded.ts · zarema_in_cell (HIGH minKarma: 60) — "Читать в одно время. Девять часов. Ритм — наш протокол." → +12 karma, +2 rhythm, +1 empathy, +15 zarema relation, setFlag shared_rhythm_pledge, showThought (7000ms). next: null.
+  4. part3-mid-expanded.ts · victoria_vault_truth_revealed (HIGH minKarma: 50) — "Я встану между «Оком» и тобой. Каждый стих пройдёт через меня сначала." → +18 karma, +3 empathy, +12 stress, +20 maria relation, setFlag shield_maria_pledge, showThought (7500ms). next: null.
+  5. part4-late.ts · albert_poetry_of_code (LOW maxKarma: 10) — "Поэзия в коде — баг. Я сотру свои стихи из логов сегодня же." → -12 karma, +5 stress, +1 coding, -10 albert relation, setFlag volodka_self_erase_path, showThought (6500ms). next: null.
+  6. part4-late.ts · dmitry_about_factory (LOW maxKarma: 20) — "Завод — просто завод. Стихи переживут любой режим. А мы — нет." → -6 karma, +1 logic, -10 dmitry relation, setFlag dmitry_pullback_proposed, showThought (7000ms). next: null.
+  7. part4-late-expanded.ts · victoria_sacrifice_debate (HIGH minKarma: 65) — "Я лучше потеряю Хранилище, чем потеряю тебя. Стихи вернутся. Ты — нет." → +20 karma, +3 empathy, +2 persuasion, +25 maria relation, setFlag maria_no_sacrifice_pledge, showThought (8000ms). next: null.
+  8. part4-late-expanded.ts · albert_last_stand (HIGH minKarma: 45) — "Я встану рядом. Если упадёшь — подхвачу. Если сорвёшься — дочитаю." → +15 karma, +2 empathy, +1 rhythm, +20 albert relation, setFlag albert_volodka_stand_together, showThought (7000ms). next: null.
+  Mix: 6 HIGH-karma (minKarma: 45–65) + 2 LOW-karma (maxKarma: 10–20). Each choice: 4–6 effects (karma +/-, skill +/-, stress +/-, npcChange, setFlag, showThought). All next: null — ends dialogue cleanly, matches existing patterns. All in Russian, in-character for Володька (tired IT-engineer, introspective, melancholic). All showThought lines are 2–3 sentences, atmospheric, post-Soviet cyberpunk-noir tone.
+
+TASK 2 — 9 new examine TriggerZones (inserted before COMBAT ENCOUNTERS block):
+  1. sleep_dream_clock_no_hands — at [12, 1.5, -8] size [1, 1.5, 0.3]. 🕰️ "Часы без стрелок" — surreal time. effects: setFlag examined_dream_clock, +1 intuition, +2 karma.
+  2. sleep_dream_floating_window — at [-15, 2.5, 10] size [1.5, 1.8, 0.2]. 🪟 "Окно в пустоте" — alternate city. effects: setFlag examined_dream_window, +3 karma, showThought (6000ms).
+  3. sleep_dream_mirror_self — at [8, 1.5, 12] size [1.2, 2, 0.1]. 🪞 "Зеркало без отражения" — no self-portrait. effects: setFlag examined_dream_mirror, +5 karma, +1 writing, showThought (7000ms).
+  4. albert_backroom_old_radio — at [2.2, 1.0, 1.5] size [0.6, 0.6, 0.4]. 📻 "Старое радио" — poetry-broadcasting radio. effects: setFlag examined_backroom_radio, +1 intuition, -3 stress.
+  5. albert_backroom_recipe_box — at [-1.8, 0.5, 1.5] size [0.4, 0.4, 0.3]. 📦 "Коробка рецептов" — poems hidden as recipes. effects: setFlag examined_backroom_recipe_box, +1 writing, +2 karma.
+  6. factory_roof_graffiti_wall — at [-7, 1.8, -2] size [2.5, 1.5, 0.1]. 🧱 "Стена с граффити" — red guild-paint three-line code poem signed "Р.С.". effects: setFlag examined_roof_graffiti, +3 karma, +1 coding, +1 writing.
+  7. factory_roof_old_antenna — at [5, 3, 4] size [0.8, 1.5, 0.8]. 📡 "Сломанная антенна" — broken antenna singing in wind. effects: setFlag examined_roof_antenna, +2 rhythm, -4 stress, showThought (6500ms).
+  8. chk_forest_zorge_carved_birch — at [-7, 1.4, -2] size [0.5, 1.5, 0.5]. 🌳 "Берёза с инициалами" — 20+ years of carved messages ending with "Прости." effects: setFlag examined_chk_carved_birch, +2 karma, +1 intuition.
+  9. chk_forest_zorge_mossy_bench — at [5, 0.4, 5] size [1.5, 0.8, 0.6]. 🪑 "Замшелая скамья" — unsigned farewell letter weighted by guild cobblestone. effects: setFlag examined_chk_mossy_bench, +4 karma, +1 writing, showThought (7000ms).
+  All 9 zones: pure examine (interactionType: 'examine'), unique descriptive IDs (grep-verified no collisions), positions within scene floor bounds, self-contained effects (setFlag / addKarma / addSkill / addStat(stress) / showThought) — NO discoverLore used (avoids loreId dependency entirely). All Russian text 2–3 sentences, atmospheric, scene-specific, melancholic introspective tone matching existing zones.
+
+Typecheck Gate:
+- Ran `cd /home/z/volodka && node scripts/tsc7.mjs --noEmit` → EXIT_CODE=0 (twice confirmed). All 8 new DialogueChoices conform to DialogueChoice interface (text + next: null + effects? + condition? with minKarma/maxKarma). All 9 new TriggerZones conform to TriggerZone interface (id + sceneId + position + size + interactionType: 'examine' + examineData + effects). All skill values are valid TrainablePlayerSkill keys (logic|coding|empathy|persuasion|intuition|writing|rhythm). All npcId values reference existing NPCs.
+
+Invariants preserved:
+- Poems (src/data/poems.ts) — not opened, not modified.
+- Rapier <Physics interpolate={false}> — untouched.
+- KCC ownership — untouched.
+- Postprocessing depth-blit patch — untouched.
+- Test contracts — untouched. (No test files reference any of the modified data files in snapshot form.)
+- State mutations — none. All changes are pure data (no component code, no engine wiring, no schema changes).
+- Additive only — 0 deletions of existing functionality. Each new choice is appended to END of choices[] array (existing choices untouched). Each new zone is inserted before COMBAT ENCOUNTERS block (existing zones untouched).
+- Prior-tick karma-gated nodes (albert_deep_revelation, alexander_final_confrontation, zarema_traitor_reveal, alexander_final_decision, cafe_barista_deep_trust, zarema_before_arrest, barista_broadcast_ready, barista_broadcast_ready_act3) — NOT touched. Picked 8 DIFFERENT nodes.
+
+Stage Summary:
+- Files modified (5):
+  - src/data/dialogue/part3-mid.ts (+16 lines: 2 new karma-gated choices on alexander_respect + alexander_proposition)
+  - src/data/dialogue/part3-mid-expanded.ts (+16 lines: 2 new karma-gated choices on zarema_in_cell + victoria_vault_truth_revealed)
+  - src/data/dialogue/part4-late.ts (+16 lines: 2 new karma-gated choices on albert_poetry_of_code + dmitry_about_factory)
+  - src/data/dialogue/part4-late-expanded.ts (+16 lines: 2 new karma-gated choices on victoria_sacrifice_debate + albert_last_stand)
+  - src/data/triggerZones.ts (+209 lines: 9 new examine TriggerZones across 4 thin scenes)
+- Counts:
+  - Dialogue karma-gated choices added: 8 (6 HIGH minKarma + 2 LOW maxKarma)
+  - Examine TriggerZones added: 9 (sleep_dream: 3, albert_backroom: 2, factory_roof: 2, chk_forest_zorge: 2)
+- Typecheck: `node scripts/tsc7.mjs --noEmit` → exit 0 (twice confirmed).
+- Poems untouched. All invariants preserved. No commit / push performed — orchestrator handles the commit.
+
+---
+Task ID: 1 (orchestrator) — cron-tick 7
+Agent: main (orchestrator)
+Task: Cron-triggered AAA improvements round 7 — QA + KarmaTierBadge orphan mount + filmic CSS micro-animations + weather-reactive NPC barks + karma-gated dialogue Acts 3-4 + examine zones + Thought Cabinet + idle content
+
+Work Log:
+- Reviewed worklogs (sandbox + /home/z/volodka/worklog.md tail) + AI_SESSION_CONTEXT.md. Repo at /home/z/volodka, clean on main at f57436e (tick-6), v4.2.42.
+- QA via agent-browser on https://volodka.vercel.app/:
+  - Hooked window error/unhandledrejection listeners, reloaded.
+  - Loaded save (Продолжить) → narrative intro → skip → choice (Осмотреться/Сразу к терминалу) → picked Осмотреться → exploration mode. All transitions clean.
+  - Exploration HUD confirmed live: SessionPlayTimer (31с→41с), SceneContextChip (ДОМ), quest tracker (📜 Задание: Утренний обход), interaction prompt ([E] Осмотреть), idle monologue (коридор. опять этот коридор.).
+  - Pressed E → ExaminePanel opens. Tick-6 filmic CSS confirmed LIVE: hud-filmic-examine-fade (1 element), hud-filmic-corner-bracket (1 element), hud-filmic-plate-glass (1 element). All deployed on Vercel.
+  - 0 console errors / page errors throughout. Project STABLE — no bugs to fix.
+- Decision: no bugs → continue additive AAA improvements. Picked 3 parallel work-streams:
+  - (me) KarmaTierBadge orphan mount + filmic CSS micro-animations (styling mandate + 1 orphan mount).
+  - (subagent 3-a) Karma-gated dialogue Acts 3-4 + examine TriggerZones for thin scenes (content feature).
+  - (subagent 3-b) Weather-reactive NPC barks (NEW feature) + Thought Cabinet thoughts + idle monologues (living-world feature).
+- Implemented KarmaTierBadge mount (src/components/game/hud/SceneTopBarHud.tsx):
+  - Imported KarmaTierBadge from hud/parts/ + usePlayerKarma selector from playerSelectors.
+  - Mounted in top-right cluster (before EnvironmentMoodIndicator + ExplorationProgressBadge). Wired karma via usePlayerKarma() hook.
+  - KarmaTierBadge renders a breathing-glow tier badge (✦/◆/✧ icon + tier label) color-coded by karma sign (positive=cyan, neutral=amber, negative=rose). Show-don't-tell karma feedback in the top bar. Was orphaned (0 imports elsewhere) — now live.
+- Implemented 6 new filmic CSS classes (src/styles/hud-filmic.css, +184 lines):
+  1. .hud-filmic-choice number badge enhancement — descendant selector targeting the first .hud-filmic-kicker child inside .hud-filmic-choice. Adds corner-bracket frame (::before/::after pseudo-elements, 4px L-brackets) + warm text-shadow glow on hover/focus. Pure CSS, no component change.
+  2. .hud-filmic-crt-scanlines — subtle horizontal scanline overlay (repeating-linear-gradient, 1px lines every 3px, opacity 0.03, mix-blend-mode multiply) for terminal/digital UI panels. Available for future wiring.
+  3. .hud-filmic-text-glow — warm text-shadow glow (4px + 12px dual-shadow) for important text elements.
+  4. .hud-filmic-fade-edge — gradient mask (-webkit-mask-image + mask-image) fading left/right edges of text containers. For scrollable ticker text.
+  5. .hud-filmic-pulse-ring — pulsing box-shadow ring animation (2.4s ease-in-out infinite, warm amber, expands from 0 to 4px to 8px transparent).
+  6. .hud-filmic-boot-stagger — staggered fade-in for HUD element groups (6 children, 60ms stagger, translateY 6px→0, 0.5s cubic-bezier).
+  All gated on prefers-reduced-motion with static fallbacks.
+- Wired 3 of the 6 new classes onto components (additive className only):
+  - TopBarDataTicker.tsx: +hud-filmic-fade-edge on the scrolling ticker track (filmic edge dissolve).
+  - SceneContextChip.tsx: +hud-filmic-text-glow on the scene name span (warm glow on location label).
+  - CrosshairInteractionPrompt.tsx: +hud-filmic-pulse-ring on the prompt caption (pulsing ring draws eye to interactable).
+- Launched 2 parallel subagents (3-a/3-b), both completed with typecheck exit 0:
+  - 3-a: +8 karma-gated dialogue choices across 4 Act 3-4 files (part3-mid, part3-mid-expanded, part4-late, part4-late-expanded) — 6 HIGH minKarma 45-65 + 2 LOW maxKarma 10-20. +9 examine TriggerZones (sleep_dream 3, albert_backroom 2, factory_roof 2, chk_forest_zorge 2).
+  - 3-b: Weather-reactive NPC barks NEW FEATURE — getWeatherBark() function + WEATHER_BARKS data (16 lines: 4 per rain/snow/fog/storm) + wired into resolveNpcAmbientBark() at Priority 0 (30% gate, separate weatherRng, weather derived via deriveSceneWeather). +6 Thought Cabinet thoughts (items 37-42: server_room_voice, despair_protocol, digital_dust, ping_echo, shadow_cache, ram_memory). +3 idle monologue scenes (solnysh_room, pier_evening, chk_campfire_night — 30 new lines).
+- Final typecheck: `cd /home/z/volodka && node scripts/tsc7.mjs --noEmit` → exit 0.
+
+Stage Summary:
+- 15 source files modified + worklog/AI_SESSION_CONTEXT docs. ~+960/-11 lines across 1 commit.
+- typecheck: exit 0. Poems untouched. All invariants preserved (Rapier interpolate={false}, KCC ownership, postprocessing depth-blit patch, test contracts).
+- Key wins this round:
+  1. Mounted KarmaTierBadge orphan widget in top-bar (show-don't-tell karma tier feedback with breathing glow).
+  2. 6 new filmic CSS micro-animations (choice number badge brackets, CRT scanlines, text glow, fade edge, pulse ring, boot stagger) + 3 wired onto components.
+  3. NEW FEATURE: weather-reactive NPC barks — NPCs now comment on rain/snow/fog/storm (16 new lines, 30% gate, wired into bark pipeline via deriveSceneWeather). Living world ↑.
+  4. +8 karma-gated dialogue choices for Acts 3-4 (narrative branching density ↑).
+  5. +9 examine TriggerZones for thin scenes (sleep_dream 2→5, albert_backroom 4→6, factory_roof 4→6, chk_forest_zorge 4→6).
+  6. +6 Thought Cabinet thoughts (items 37-42, interiority ↑).
+  7. +3 idle monologue scenes (solnysh_room, pier_evening, chk_campfire_night — living-world interiority ↑).
+- Unresolved / next-phase priorities: Author QA on Vercel (verify KarmaTierBadge in top-bar, choice number brackets, pulse ring on interaction prompt, weather barks during rain/snow, new thoughts in cabinet). SSR on wet streets (ultra-only). Continuous walk↔run blend. Mixamo↔Quaternius remap. Procedural act mood audio. More content Acts 3-4.

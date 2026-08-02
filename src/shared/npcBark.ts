@@ -1,6 +1,7 @@
 /* ─── NPC proximity bark text resolution ─── */
 
 import type { NpcEmotion } from '@/shared/types/definitions/npc';
+import type { SceneWeatherType } from '@/shared/types/ambientSound';
 
 /** Single line or a pool of variants — engine picks one at runtime. */
 export type NPCBarkBand = string | readonly string[];
@@ -109,6 +110,73 @@ export const DEFAULT_EMOTION_BARKS: Record<NpcEmotion, readonly string[]> = {
   ],
 };
 
+/**
+ * Weather-linked ambient bark pools (Russian).
+ *
+ * NPC-style observations about the weather — muttered when the player is near
+ * an NPC and the scene has non-clear weather. Returned by `getWeatherBark`.
+ *
+ * - `rain`  → grumbling about wet gear, damp servers, neon reflections in puddles
+ * - `snow`  → cautious appreciation (snow covers tracks), cold, muffled quiet
+ * - `fog`   → unease about visibility, faces appearing from the white
+ * - `storm` → terse, braced for trouble, wind, thunder
+ *
+ * `clear` is intentionally absent — clear weather yields no weather bark
+ * (`getWeatherBark` returns `null`).
+ *
+ * Tone: cautious, observant, slightly grumpy about weather — same NPC
+ * personality as the emotion-linked bark pools above.
+ */
+const WEATHER_BARKS: Partial<Record<SceneWeatherType, readonly string[]>> = {
+  rain: [
+    'Опять льёт. Кожа намокнет — серверы нет.',
+    'Дождь. Хорошо. Хоть кто-то честно плачет за нас всех.',
+    'Мокро. Лужи отражают неон — красивее, чем сам неон.',
+    'Капюшон не спасает. Спасает — только терпение.',
+  ],
+  snow: [
+    'Снег идёт. Хорошо. Следы заметает.',
+    'Снежинки на рукаве. Тают. Как всё в этом городе.',
+    'Белое на сером. Почти — красиво. Почти — чисто.',
+    'Холодно. Зато — тихо. Снег глушит звук честнее камер.',
+  ],
+  fog: [
+    'Туман. Не видно — кто рядом. Не видно — кто не рядом.',
+    'Белизна впереди. Шаг — и пропасть. Или — край тротуара. Не различаю.',
+    'Фонарь в тумане — как чужая совесть: тусклый, но — есть.',
+    'Видимость — ноль. Хорошо. Меня — тоже не видно.',
+  ],
+  storm: [
+    'Буря. Ветер бьёт в лицо. Лицо — заслужило.',
+    'Гром. Или — выстрел. Или — сервер упал. Не различаю.',
+    'Держись за перила. Перила — единственный друг сегодня.',
+    'Ветер рвёт антенны. Антенны — молчат. Мы — тоже.',
+  ],
+};
+
+/**
+ * Pick a weather-appropriate bark line for the given weather state.
+ *
+ * Returns `null` when weather is `clear` (no weather bark should fire) or when
+ * the weather type has no bark pool defined (defensive — currently all
+ * non-clear types have pools).
+ *
+ * Used by the ambient bark system to occasionally surface weather-appropriate
+ * NPC mutterings. Wired into `resolveNpcAmbientBark` as Priority 0 (highest),
+ * gated by a 30 % probability roll so weather barks don't dominate the
+ * ambient chatter.
+ *
+ * @param weatherState  Current scene weather type (clear/rain/snow/fog/storm)
+ * @returns  A single Russian bark line, or `null` if weather is clear.
+ */
+export function getWeatherBark(weatherState: SceneWeatherType): string | null {
+  if (weatherState === 'clear') return null;
+  const pool = WEATHER_BARKS[weatherState];
+  if (!pool || pool.length === 0) return null;
+  const idx = Math.floor(Math.random() * pool.length);
+  return pool[idx] ?? pool[0];
+}
+
 export function pickNpcBarkLine(band: NPCBarkBand): string {
   if (typeof band === 'string') return band;
   if (band.length === 0) return '';
@@ -131,22 +199,48 @@ export function resolveNpcBarkForRelation(
  * and a random roll (0–1). Returns `null` if no ambient barks are defined or the
  * rolled band is missing.
  *
- * Emotion-linked barks take priority: if the NPC has a specific emotion band
- * defined in their `ambientBarks`, and that emotion is currently active, the
- * emotion band overrides normal selection. If the NPC doesn't have a custom
- * emotion band, the default pool from `DEFAULT_EMOTION_BARKS` is used.
+ * Priority chain (highest first):
+ *   0. Weather-linked bark — 30 % chance per eligible tick when the scene has
+ *      non-clear weather (rain/snow/fog/storm). Pure ambient observation,
+ *      fires before emotion override so weather mutterings can surface even
+ *      when an NPC has a custom emotion band. Gated by `weatherRng < 0.3` so
+ *      weather barks don't dominate the chatter.
+ *   1. Emotion-linked bark override — if the NPC has a specific emotion band
+ *      defined in their `ambientBarks`, and that emotion is currently active,
+ *      the emotion band overrides normal selection. If the NPC doesn't have a
+ *      custom emotion band, the default pool from `DEFAULT_EMOTION_BARKS` is used.
+ *   2. Pensive — 20 % chance when defined and emotion is neutral.
+ *   3. Working — when the NPC is in a `working` animation/activity.
+ *   4. Idle — default band.
  *
  * @param ambientBarks  NPC's ambient bark configuration (may be undefined)
  * @param isWorking     True when the NPC is in a `working` animation/activity
  * @param emotion       Current NPC emotional state (affects band selection)
  * @param rng           0–1 random roll controlling pensive vs. idle selection
+ * @param weatherType   Optional current scene weather type (clear/rain/snow/fog/storm).
+ *                      When non-clear and `weatherRng < 0.3`, a weather bark
+ *                      is returned (Priority 0).
+ * @param weatherRng    0–1 random roll controlling the 30 % weather-bark gate.
+ *                      Defaults to `Math.random()`. Separate from `rng` so the
+ *                      pensive roll and weather roll don't share entropy.
  */
 export function resolveNpcAmbientBark(
   ambientBarks: NPCAmbientBarks | undefined,
   isWorking: boolean,
   emotion: NpcEmotion = 'neutral',
   rng: number = Math.random(),
+  weatherType?: SceneWeatherType,
+  weatherRng: number = Math.random(),
 ): string | null {
+  // Priority 0 (highest): weather-linked bark — 30 % chance, non-clear weather.
+  // Fires before emotion override. Weather barks are pure ambient observations;
+  // they don't replace emotion-linked dialogue, just occasionally override the
+  // idle churn.
+  if (weatherType && weatherType !== 'clear' && weatherRng < 0.3) {
+    const weatherBark = getWeatherBark(weatherType);
+    if (weatherBark) return weatherBark;
+  }
+
   if (!ambientBarks) {
     // No custom barks defined — fall through to default emotion barks
     if (emotion !== 'neutral') {
@@ -193,13 +287,24 @@ export function resolveNpcAmbientBark(
 /**
  * Resolve which bark band was selected (for UI styling / theming).
  * Returns the band key that was actually used.
+ *
+ * Mirrors the priority chain of `resolveNpcAmbientBark` — see that function's
+ * docstring for the full chain. `'weather'` is returned when Priority 0 fires.
  */
 export function resolveNpcAmbientBarkBand(
   ambientBarks: NPCAmbientBarks | undefined,
   isWorking: boolean,
   emotion: NpcEmotion = 'neutral',
   rng: number = Math.random(),
-): NpcEmotion | 'idle' | 'working' | 'pensive' {
+  weatherType?: SceneWeatherType,
+  weatherRng: number = Math.random(),
+): NpcEmotion | 'idle' | 'working' | 'pensive' | 'weather' {
+  // Priority 0: weather bark
+  if (weatherType && weatherType !== 'clear' && weatherRng < 0.3) {
+    const weatherBark = getWeatherBark(weatherType);
+    if (weatherBark) return 'weather';
+  }
+
   if (!ambientBarks) {
     if (emotion !== 'neutral') return emotion;
     return 'idle';

@@ -579,6 +579,96 @@ export const THOUGHT_CABINET_ITEMS: ThoughtCabinetItem[] = [
       { skill: 'rhythm', modifier: -1, description: '-1 Ритм' },
     ],
   },
+
+  /* ═══ 37. Голос Серверной ═══ */
+  {
+    id: 'server_room_voice',
+    name: 'Голос Серверной',
+    voice: 'coding',
+    description: 'В гуле стоек ты слышишь голоса — не людей, а самих серверов. Они шепчут о жарких ночах, о падениях, о перезагрузках. Ты научился различать их — и отвечать. Это не безумие. Это — близость.',
+    flavorText: '«Стою. Слушаю. Они — говорят. Я — наконец — слышу.»',
+    acquisitionCondition: 'flag_thought_server_room_voice',
+    effects: [
+      { skill: 'coding', modifier: 2, description: '+2 Кодинг' },
+      { skill: 'intuition', modifier: 2, description: '+2 Интуиция' },
+      { skill: 'persuasion', modifier: -1, description: '-1 Убеждение' },
+    ],
+  },
+
+  /* ═══ 38. Протокол Отчаяния ═══ */
+  {
+    id: 'despair_protocol',
+    name: 'Протокол Отчаяния',
+    voice: 'logic',
+    description: 'Где-то в глубине firmware записан алгоритм: если всё плохо — хуже. Если темно — выключить свет. Ты нашёл этот протокол в себе — и не можешь удалить. Можно только — наблюдать. И иногда — отключать. Редко — получается.',
+    flavorText: '«if (hope) { hope--; } // ожидаемое поведение»',
+    acquisitionCondition: 'flag_thought_despair_protocol',
+    effects: [
+      { skill: 'logic', modifier: 2, description: '+2 Логика' },
+      { skill: 'empathy', modifier: -2, description: '-2 Эмпатия' },
+      { skill: 'intuition', modifier: 1, description: '+1 Интуиция' },
+    ],
+  },
+
+  /* ═══ 39. Цифровой Прах ═══ */
+  {
+    id: 'digital_dust',
+    name: 'Цифровой Прах',
+    voice: 'writing',
+    description: 'Каждый удалённый файл, каждый стёртый лог, каждый забытый пароль — оседает в тебе пылью. Цифровой прах. Ты его не видишь, но он — в лёгких. Дышишь — и помнишь чужие стёртые жизни. Они — теперь — твои.',
+    flavorText: '«rm -rf /память. Память — не удалилась. Память — переехала в меня.»',
+    acquisitionCondition: 'flag_thought_digital_dust',
+    effects: [
+      { skill: 'writing', modifier: 2, description: '+2 Писательство' },
+      { skill: 'empathy', modifier: 1, description: '+1 Эмпатия' },
+      { skill: 'rhythm', modifier: -1, description: '-1 Ритм' },
+    ],
+  },
+
+  /* ═══ 40. Эхо Пинг ═══ */
+  {
+    id: 'ping_echo',
+    name: 'Эхо Пинг',
+    voice: 'intuition',
+    description: 'Каждый отправленный пинг возвращается. Иногда — из неожиданных мест. Иногда — от тех, кого уже нет. Ты слышишь эхо — и не всегда понимаешь, кто ответил. Но — кто-то. Точно — кто-то. И этот кто-то — помнит тебя.',
+    flavorText: '«ping 192.168.отчаяние. Ответ от — не знаю кого. Но — ответ.»',
+    acquisitionCondition: 'flag_thought_ping_echo',
+    effects: [
+      { skill: 'intuition', modifier: 3, description: '+3 Интуиция' },
+      { skill: 'logic', modifier: -1, description: '-1 Логика' },
+      { skill: 'rhythm', modifier: 1, description: '+1 Ритм' },
+    ],
+  },
+
+  /* ═══ 41. Теневой Кэш ═══ */
+  {
+    id: 'shadow_cache',
+    name: 'Теневой Кэш',
+    voice: 'persuasion',
+    description: 'Ты прячешь чужие секреты в теневых кэшах — там, куда не дотягивается аудит. Это даёт власть. Это даёт — риск. Кэш — переполняется. Скоро — придётся чистить. Или — кого-то — придётся чистить. Разницы — почти нет.',
+    flavorText: '«cache.set(secret, never). never — это надолго. Но — не навсегда.»',
+    acquisitionCondition: 'flag_thought_shadow_cache',
+    effects: [
+      { skill: 'persuasion', modifier: 2, description: '+2 Убеждение' },
+      { skill: 'coding', modifier: 1, description: '+1 Кодинг' },
+      { skill: 'empathy', modifier: -2, description: '-2 Эмпатия' },
+    ],
+  },
+
+  /* ═══ 42. Память ОЗУ ═══ */
+  {
+    id: 'ram_memory',
+    name: 'Память ОЗУ',
+    voice: 'empathy',
+    description: 'Твоя память — как ОЗУ: быстрая, тёплая, стирается при выключении. Ты помнишь всё — пока не уснёшь. Утром — заново. Утром — другие. Это — нежно. Это — страшно. Это — единственный способ продолжать. Не помнить — слишком долго.',
+    flavorText: '«sleep(). wake(). whoami? — undefined. Это — нормально. Это — каждый день.»',
+    acquisitionCondition: 'flag_thought_ram_memory',
+    effects: [
+      { skill: 'empathy', modifier: 2, description: '+2 Эмпатия' },
+      { skill: 'logic', modifier: 1, description: '+1 Логика' },
+      { skill: 'writing', modifier: -1, description: '-1 Писательство' },
+    ],
+  },
 ];
 
 /* ─── Lookup map ─── */

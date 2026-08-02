@@ -39,6 +39,8 @@ import { getGameSnapshot } from '@/engine/StateDispatcher';
 import { resolveNpcAmbientBark, resolveNpcAmbientBarkBand } from '@/shared/npcBark';
 import { findNpcById } from '@/data/allNpcDefinitions';
 import type { NPCDefinition } from '@/shared/types/game';
+import { deriveSceneWeather } from '@/shared/weather/deriveSceneWeather';
+import type { SceneWeatherType } from '@/shared/types/ambientSound';
 
 import { getNpcEmotion } from '@/engine/npc/npcEmotionalReactions';
 import { resolveEmotionBehavior } from '@/engine/npc/npcEmotionalReactions';
@@ -112,6 +114,10 @@ export function tickNpcAmbientBarks(params: {
   registeredNpcIds?: readonly string[];
   interactionLocked?: boolean;
   interactionTargetNpcId?: string | null;
+  /** Optional current scene weather — when non-clear, enables Priority-0 weather barks. */
+  weatherType?: SceneWeatherType;
+  /** Optional RNG override for the 30 % weather-bark gate (test-injectable). */
+  weatherRng?: () => number;
 }): void {
   const {
     playerPosition,
@@ -123,6 +129,8 @@ export function tickNpcAmbientBarks(params: {
     registeredNpcIds: registeredIds = getRegisteredNPCIds(),
     interactionLocked = getInteractionState() !== InteractionState.Idle,
     interactionTargetNpcId: interactionTargetNpcIdParam = getInteractionTargetNPCId(),
+    weatherType,
+    weatherRng = Math.random,
   } = params;
 
   // Hard gate: never emit ambient barks during active interaction (cutscene,
@@ -165,11 +173,16 @@ export function tickNpcAmbientBarks(params: {
 
     // Eligible: pick a band and a line (emotion-aware).
     const roll = rng();
+    // Per-NPC weather-bark roll — separate RNG from `roll` so the pensive/idle
+    // gate and the weather gate don't share entropy.
+    const weatherRoll = weatherRng();
     const text = resolveNpcAmbientBark(
       def.ambientBarks,
       npcIsWorking(def),
       emotion,
       roll,
+      weatherType,
+      weatherRoll,
     );
     if (!text) continue;
 
@@ -179,12 +192,14 @@ export function tickNpcAmbientBarks(params: {
       npcIsWorking(def),
       emotion,
       roll,
+      weatherType,
+      weatherRoll,
     );
 
     cooldowns.set(npcId, now);
 
     // Emit with band type compatible with NpcEvents
-    const bandStr = band as 'idle' | 'working' | 'pensive' | 'curious' | 'alarmed' | 'contemplative' | 'annoyed' | 'respectful' | 'fearful';
+    const bandStr = band as 'idle' | 'working' | 'pensive' | 'curious' | 'alarmed' | 'contemplative' | 'annoyed' | 'respectful' | 'fearful' | 'weather';
     eventBus.emit('npc:ambient_bark', { npcId, text, band: bandStr });
   }
 }
@@ -227,11 +242,21 @@ export function useNpcAmbientBarkSystem(
       const snap = getGameSnapshot();
       if (snap.mode !== 'exploration') return;
 
+      // Derive current scene weather from the live snapshot so weather-linked
+      // ambient barks (Priority 0) can fire when conditions warrant (rain /
+      // snow / fog / storm). `deriveSceneWeather` is a pure function over the
+      // scene id + time of day — same derivation used by the HUD/weather
+      // indicator, so barks stay consistent with what the player sees.
+      const sceneId = snap.exploration.currentSceneId;
+      const timeOfDay = snap.exploration.timeOfDay;
+      const weatherType: SceneWeatherType = deriveSceneWeather(sceneId, timeOfDay).type;
+
       tickNpcAmbientBarks({
         playerPosition: livePlayerPositionRef.current,
         now: typeof performance !== 'undefined' ? performance.now() : Date.now(),
         interactionLocked: false,
         interactionTargetNpcId: getInteractionTargetNPCId(),
+        weatherType,
       });
     },
     { label: 'NpcAmbientBarkSystem', phase: 'pre_render', enabled },

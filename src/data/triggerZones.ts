@@ -4426,6 +4426,215 @@ export const TRIGGER_ZONES: TriggerZone[] = [
   },
 
   /* ═══════════════════════════════════════════════════════════════════
+     EXAMINE EXPANSION — TASK 3-a (cron-tick 7)
+     Adds 9 new examine TriggerZones across 4 thin scenes:
+       sleep_dream (3), albert_backroom (2), factory_roof (2),
+       chk_forest_zorge (2).
+     Purely additive — no schema changes, no existing entries modified.
+     All effects are self-contained (setFlag / addKarma / addSkill /
+     addStat(stress) / showThought) — no discoverLore (no loreId deps).
+     ═══════════════════════════════════════════════════════════════════ */
+
+  /* ── sleep_dream (3 new examine nodes — surreal dream props) ── */
+  {
+    id: 'sleep_dream_clock_no_hands',
+    sceneId: 'sleep_dream',
+    position: [12.0, 1.5, -8.0],
+    size: [1.0, 1.5, 0.3],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть часы без стрелок',
+    examineData: {
+      title: 'Часы без стрелок',
+      description: 'Большие настенные часы. Циферблат есть, стрелок — нет. Слышно тиканье.',
+      detailText: 'Время здесь не идёт — оно стоит и ждёт. Ты помнишь, что во сне всегда так: часы показывают то, во что ты готов поверить. Сейчас они показывают ничего. Может, это самое честное время в твоей жизни.',
+      icon: '🕰️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_dream_clock', flagValue: true },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+      { type: 'addKarma', value: 2 },
+    ],
+  },
+  {
+    id: 'sleep_dream_floating_window',
+    sceneId: 'sleep_dream',
+    position: [-15.0, 2.5, 10.0],
+    size: [1.5, 1.8, 0.2],
+    interactionType: 'examine',
+    interactionLabel: 'Посмотреть в парящее окно',
+    examineData: {
+      title: 'Окно в пустоте',
+      description: 'Оконная рама висит в воздухе. За ней — другой город. Неон не мигает.',
+      detailText: 'Город за окном — твой, но не твой. Улицы те же, вывески те же, но людей нет. Только свет горит ровно — будто никто никогда не уходил с работы. Ты узнаёшь перекрёсток у дома. Ты не помнишь, был ли он таким — или стал.',
+      icon: '🪟',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_dream_window', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      {
+        type: 'showThought',
+        thought: 'Город без людей — не обязательно мёртвый. Может, он наконец-то отдохнул. Может, поэтому ты его видишь только во сне — наяву он слишком занят, чтобы быть собой.',
+        thoughtDuration: 6000,
+      },
+    ],
+  },
+  {
+    id: 'sleep_dream_mirror_self',
+    sceneId: 'sleep_dream',
+    position: [8.0, 1.5, 12.0],
+    size: [1.2, 2.0, 0.1],
+    interactionType: 'examine',
+    interactionLabel: 'Посмотреть в зеркало без отражения',
+    examineData: {
+      title: 'Зеркало без отражения',
+      description: 'Овальное зеркало в золочёной раме. Стекло чистое. Отражения — нет.',
+      detailText: 'Ты стоишь перед зеркалом — и не видишь себя. Видишь комнату, в которой стоишь. Стул, который не двигался. Кружку, которой нет. Зеркало отражает не то, что есть — а то, что было бы, если бы тебя не существовало. Самый честный портрет, который тебе когда-либо показывали.',
+      icon: '🪞',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_dream_mirror', flagValue: true },
+      { type: 'addKarma', value: 5 },
+      { type: 'addSkill', skill: 'writing', value: 1 },
+      {
+        type: 'showThought',
+        thought: 'Ты не исчез. Ты просто — не центр этой комнаты. Странное облегчение. Странная грусть. Может, именно так видят тебя стихи, когда ты их не пишешь: всё есть — кроме тебя. И от этого всё держится.',
+        thoughtDuration: 7000,
+      },
+    ],
+  },
+
+  /* ── albert_backroom (2 new examine nodes — quiet café props) ── */
+  {
+    id: 'albert_backroom_old_radio',
+    sceneId: 'albert_backroom',
+    position: [2.2, 1.0, 1.5],
+    size: [0.6, 0.6, 0.4],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть старое радио',
+    examineData: {
+      title: 'Старое радио',
+      description: 'Ламповый приёмник «Океан». Стекло шкалы мутное, ручка настройки — на скотче. Работает.',
+      detailText: 'Альберт ловит на нём одну станцию — без названия, без позывных. Только голос, читающий стихи. Тихо. Гильдия не глушит эту частоту — то ли не знает, то ли не верит, что кто-то слушает. Частоту Альберт не записывает нигде. «Некоторые вещи нельзя фиксировать — они от этого умирают.»',
+      icon: '📻',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_backroom_radio', flagValue: true },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+      { type: 'addStat', stat: 'stress', value: -3 },
+    ],
+  },
+  {
+    id: 'albert_backroom_recipe_box',
+    sceneId: 'albert_backroom',
+    position: [-1.8, 0.5, 1.5],
+    size: [0.4, 0.4, 0.3],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть коробку рецептов',
+    examineData: {
+      title: 'Коробка рецептов',
+      description: 'Жестяная коробка из-под печенья. На крышке — «Рецепты». Внутри — не только рецепты.',
+      detailText: 'Между карточками с пирогами и сиропом от кашля — четверостишия. Альберт прячет так уже лет пятнадцать. Каждое стихотворение подписано псевдонимом «А.Б.». Он не считает это поэзией. Он считает это описанием процессов. «Реакция Майяра — это и есть метафора поджаренного хлеба», — говорит он.',
+      icon: '📦',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_backroom_recipe_box', flagValue: true },
+      { type: 'addSkill', skill: 'writing', value: 1 },
+      { type: 'addKarma', value: 2 },
+    ],
+  },
+
+  /* ── factory_roof (2 new examine nodes — industrial texture) ── */
+  {
+    id: 'factory_roof_graffiti_wall',
+    sceneId: 'factory_roof',
+    position: [-7.0, 1.8, -2.0],
+    size: [2.5, 1.5, 0.1],
+    interactionType: 'examine',
+    interactionLabel: 'Прочитать граффити на стене',
+    examineData: {
+      title: 'Стена с граффити',
+      description: 'Бетонная стена шахты лифта. Кто-то баллончиком вывел три строки. Краска — красная, фирменная гильдийская.',
+      detailText: '«код — это эхо. / эхо — это память. / память — это код.» Подпись: «Р.С.» — три буквы, которые ты не помнишь в чьём-то имени. Гильдия не закрашивает граффити — думают, это «маргинальный артефакт». Не понимают, что это компилируемая программа, ожидающая запуска.',
+      icon: '🧱',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_roof_graffiti', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'coding', value: 1 },
+      { type: 'addSkill', skill: 'writing', value: 1 },
+    ],
+  },
+  {
+    id: 'factory_roof_old_antenna',
+    sceneId: 'factory_roof',
+    position: [5.0, 3.0, 4.0],
+    size: [0.8, 1.5, 0.8],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть сломанную антенну',
+    examineData: {
+      title: 'Сломанная антенна',
+      description: 'Алюминиевая мачта, погнутая у основания. Один кабель оборван. Второй натянут, как струна.',
+      detailText: 'Ветер задувает в оборванный кабель — и тот поёт. Низкий гул, переходящий в обертон. Если прислушаться — звучит как прелюдия. Басист из «Синей ямы» говорил: «Это не ветер. Это город дышит через свою антенну. Каждая сломанная — открытый рот.» Ты слушаешь минуту. Больше не получается — внутри что-то начинает резонировать.',
+      icon: '📡',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_roof_antenna', flagValue: true },
+      { type: 'addSkill', skill: 'rhythm', value: 2 },
+      { type: 'addStat', stat: 'stress', value: -4 },
+      {
+        type: 'showThought',
+        thought: 'Ты уходишь, но гул остаётся в груди — ещё минуту, ещё две. Может, поэтому на крышу возвращаются. Не за видом. За тем, что умеет звучать только сломанное. Целое — слишком занято собой, чтобы петь.',
+        thoughtDuration: 6500,
+      },
+    ],
+  },
+
+  /* ── chk_forest_zorge (2 new examine nodes — quiet forest marks) ── */
+  {
+    id: 'chk_forest_zorge_carved_birch',
+    sceneId: 'chk_forest_zorge',
+    position: [-7.0, 1.4, -2.0],
+    size: [0.5, 1.5, 0.5],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть берёзу с надписями',
+    examineData: {
+      title: 'Берёза с инициалами',
+      description: 'Ствол берёзы. На коре вырезаны буквы. Старые, уже затянутые — кроме последней строки.',
+      detailText: '«Р. + А. 1998». «ЧК — 2003». «Прости.» Без даты. Кто-то приходил сюда больше двадцати лет и оставлял короткие сообщения дереву. Дерево не отвечает — но и не выбалтывает. Может, поэтому сюда возвращались. Может, поэтому здесь — ЧК.',
+      icon: '🌳',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_chk_carved_birch', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+  {
+    id: 'chk_forest_zorge_mossy_bench',
+    sceneId: 'chk_forest_zorge',
+    position: [5.0, 0.4, 5.0],
+    size: [1.5, 0.8, 0.6],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть замшелую скамью',
+    examineData: {
+      title: 'Замшелая скамья',
+      description: 'Деревянная скамья без спинки. Ножки по колено в мху. На сиденье — лист бумаги, придавленный камнем.',
+      detailText: 'Лист выцвел от росы, но строки ещё читаются. «Если меня найдут — не ищите. Если не найдут — помните. Я ушёл туда, где стихи не нужно прятать.» Подпись срезана. Камень, придавивший лист, — гильдийский номерной булыжник. Кто-то взял его с фабрики и принёс сюда, в заповедник. Может, как памятник. Может, как вес.',
+      icon: '🪑',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_chk_mossy_bench', flagValue: true },
+      { type: 'addKarma', value: 4 },
+      { type: 'addSkill', skill: 'writing', value: 1 },
+      {
+        type: 'showThought',
+        thought: 'Ты не знаешь, кто написал. И никогда не узнаешь — подпись срезана намеренно. Может, это и есть главное правило ЧК: не искать автора. Искать — стих. Автор — точка. Стих — линия. Линия — длиннее.',
+        thoughtDuration: 7000,
+      },
+    ],
+  },
+
+  /* ═══════════════════════════════════════════════════════════════════
      COMBAT ENCOUNTERS — replaced by visible patrolling creeps
      (src/data/creepPatrols.ts + PatrollingCreeps.tsx). The old invisible
      autoTrigger zones fired combat with no warning; creeps give the player

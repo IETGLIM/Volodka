@@ -133,6 +133,23 @@ export const DIALOGUE_PART3_EXPANDED: Record<string, DialogueNode> = {
           { type: 'addSkill', skill: 'empathy', value: 2 },
         ],
       },
+      {
+        text: 'Зарема, если нас посадят в разные камеры — давай читать в одно время. Каждый вечер, девять часов. Ритм — наш протокол. Стена между камерами не задержит ритм.',
+        next: null,
+        condition: { minKarma: 60 },
+        effects: [
+          { type: 'addKarma', value: 12 },
+          { type: 'addSkill', skill: 'rhythm', value: 2 },
+          { type: 'addSkill', skill: 'empathy', value: 1 },
+          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 15 } },
+          { type: 'setFlag', flag: 'shared_rhythm_pledge', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Зарема улыбнулась так, как улыбаются только услышав, что они не одни. Не слезами — светом. «Девять часов», — повторила она. И ты понял: это не план. Это клятва. Тихая, ритмичная, неубиваемая.',
+            thoughtDuration: 7000,
+          },
+        ],
+      },
     ],
   },
 
@@ -580,6 +597,23 @@ export const DIALOGUE_PART3_EXPANDED: Record<string, DialogueNode> = {
         next: 'victoria_lost_memories',
         effects: [
           { type: 'addSkill', skill: 'intuition', value: 1 },
+        ],
+      },
+      {
+        text: 'Тогда я встану между «Оком» и тобой. Каждый стих, который они захотят удалить, пройдёт через меня сначала. Пусть удаляют меня — я не база данных.',
+        next: null,
+        condition: { minKarma: 50 },
+        effects: [
+          { type: 'addKarma', value: 18 },
+          { type: 'addStat', stat: 'stress', value: 12 },
+          { type: 'addSkill', skill: 'empathy', value: 3 },
+          { type: 'npcChange', npcId: 'maria', npcChange: { relation: 20 } },
+          { type: 'setFlag', flag: 'shield_maria_pledge', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Виктория долго молчит. Потом в её голосе — впервые — звучит что-то, чего ты не слышал от машины: дрожь. «Ты понимаешь, что это значит?» — спрашивает она. Ты понимаешь. И всё равно повторяешь про себя клятву. До последней строки.',
+            thoughtDuration: 7500,
+          },
         ],
       },
     ],

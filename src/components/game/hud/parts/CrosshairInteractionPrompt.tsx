@@ -62,7 +62,7 @@ export function CrosshairInteractionPrompt() {
             animate={{ opacity: 1, y: 0 }}
             exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 4 }}
             transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
-            className="hud-filmic-caption min-w-[7rem]"
+            className="hud-filmic-caption hud-filmic-pulse-ring min-w-[7rem]"
           >
             <div className="hud-filmic-rule" aria-hidden />
             <div className="flex items-baseline gap-2 px-1">

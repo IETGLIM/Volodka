@@ -149,6 +149,24 @@ dice checks, живые хабы). Вдохновение также: Gothic (р
 
 ## 📝 История сессий
 
+### Сессия: 2026-08-02 (cron-tick 7) — "KarmaTierBadge mount + filmic CSS micro-animations + weather-reactive NPC barks + karma dialogue Acts 3-4 + content"
+**Контекст:** Cron-triggered продолжение AAA-polish. QA via agent-browser на https://volodka.vercel.app/ подтвердила стабильность (0 ошибок, tick-6 filmic CSS confirmed live: examine-fade + corner-bracket + plate-glass all present in DOM). Решение: багов нет, продолжить аддитивные AAA-улучшения. 3 параллельных work-stream'а: (me) KarmaTierBadge orphan mount + filmic CSS; (3-a) karma-gated dialogue Acts 3-4 + examine zones; (3-b) weather-reactive NPC barks NEW FEATURE + Thought Cabinet + idle content.
+
+**Что сделано (15 файлов, ~+960/-11 строк, 1 коммит):**
+1. **KarmaTierBadge orphan mount (src/components/game/hud/SceneTopBarHud.tsx):** импортирован KarmaTierBadge (был orphaned — 0 imports) + usePlayerKarma selector. Mounted в top-right cluster (перед EnvironmentMoodIndicator + ExplorationProgressBadge). Badge показывает tier label (✦/◆/✧) с breathing-glow анимацией, color-coded по знаку кармы (cyan/amber/rose). Show-don't-tell feedback кармы в top-bar.
+2. **Filmic CSS micro-animations (src/styles/hud-filmic.css +184 строк + 3 component wiring):** 6 NEW classes: .hud-filmic-choice number badge enhancement (descendant selector — corner-bracket frame ::before/::after + warm glow on hover, pure CSS no component change), .hud-filmic-crt-scanlines (subtle scanline overlay для terminal panels), .hud-filmic-text-glow (dual warm text-shadow), .hud-filmic-fade-edge (gradient mask для ticker edge dissolve), .hud-filmic-pulse-ring (pulsing box-shadow 2.4s), .hud-filmic-boot-stagger (staggered fade-in 6 children 60ms). All gated на prefers-reduced-motion. Wired: TopBarDataTicker (+fade-edge), SceneContextChip (+text-glow), CrosshairInteractionPrompt (+pulse-ring).
+3. **Weather-reactive NPC barks NEW FEATURE (3-b, src/shared/npcBark.ts + npcAmbientBarkSystem.ts + npcEvents.ts, +115 строк):** getWeatherBark() function + WEATHER_BARKS data (16 lines: 4 per rain/snow/fog/storm). Wired в resolveNpcAmbientBark() Priority 0 (30% gate, separate weatherRng, weather derived via deriveSceneWeather). NPC теперь комментируют погоду — living world ↑. Backward-compatible (optional params).
+4. **Karma-gated dialogue Acts 3-4 (3-a, 4 dialogue files, +133 строк):** +8 karma-gated choices: alexander_respect (minKarma 55), alexander_proposition (maxKarma 15), zarema_in_cell (minKarma 60), victoria_vault_truth_revealed (minKarma 50), albert_poetry_of_code (maxKarma 10), dmitry_about_factory (maxKarma 20), victoria_sacrifice_debate (minKarma 65), albert_last_stand (minKarma 45).
+5. **Examine TriggerZones (3-a, src/data/triggerZones.ts, +209 строк):** +9 zones: sleep_dream 2→5 (clock_no_hands, floating_window, mirror_self), albert_backroom 4→6 (old_radio, recipe_box), factory_roof 4→6 (graffiti_wall, old_antenna), chk_forest_zorge 4→6 (carved_birch, mossy_bench).
+6. **Thought Cabinet thoughts (3-b, src/data/thoughtCabinet.ts, +90 строк):** +6 thoughts (items 37-42): server_room_voice, despair_protocol, digital_dust, ping_echo, shadow_cache, ram_memory. Standalone (no new mutually-exclusive pairs).
+7. **Idle monologues (3-b, src/data/idleMonologues.ts, +70 строк):** +3 scenes (solnysh_room, pier_evening, chk_campfire_night) — all 4 bands: neutral×4 + high×2 + low×2 + highStress×2 = 30 new lines.
+
+**TypeScript:** 0 ошибок. **Стихи:** не тронуты. **Инварианты:** сохранены.
+
+**Следующий шаг:** Author QA на Vercel — проверить KarmaTierBadge в top-bar (breathing glow), choice number brackets, pulse ring на interaction prompt, weather barks (rain/snow/fog/storm), new thoughts в Cabinet. Дальше — SSR wet streets, walk↔run blend, Mixamo remap, procedural act mood audio, ещё контент Acts 3-4.
+
+---
+
 ### Сессия: 2026-08-02 (cron-tick 6) — "VolumetricLightShafts hero scenes + filmic CSS micro-animations + accessibility hardening + living-world content"
 **Контекст:** Cron-triggered продолжение AAA-polish. QA via agent-browser на https://volodka.vercel.app/ подтвердила стабильность (0 ошибок, HUD widgets/live, tick-5 filmic CSS confirmed in DOM). Решение: багов нет, продолжить аддитивные AAA-улучшения. 4 параллельных work-stream'а: (me) VolumetricLightShafts для home_evening/factory_basement — долгосрочный отложенный item; (2-a) filmic CSS polish; (2-b) accessibility pass; (2-c) living-world content.
 

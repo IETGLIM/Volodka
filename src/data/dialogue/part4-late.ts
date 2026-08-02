@@ -82,6 +82,23 @@ export const DIALOGUE_PART4: Record<string, DialogueNode> = {
           { type: 'setFlag', flag: 'saw_albert_code_poem', flagValue: true },
         ],
       },
+      {
+        text: 'Альберт, поэзия в коде — это баг. Хороший инженер не оставляет следов. Я сотру свои стихи из логов сегодня же. Ничего не было.',
+        next: null,
+        condition: { maxKarma: 10 },
+        effects: [
+          { type: 'addKarma', value: -12 },
+          { type: 'addStat', stat: 'stress', value: 5 },
+          { type: 'addSkill', skill: 'coding', value: 1 },
+          { type: 'npcChange', npcId: 'albert', npcChange: { relation: -10 } },
+          { type: 'setFlag', flag: 'volodka_self_erase_path', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Альберт откладывает чашку. Тишина такая, что слышно, как остывает кофе. «Ты не сотрёшь, — наконец говорит он. — Ты просто перестанешь помнить, что писал.» Это не упрёк. Это диагноз. И ты его заслужил.',
+            thoughtDuration: 6500,
+          },
+        ],
+      },
     ],
   },
 
@@ -425,6 +442,22 @@ export const DIALOGUE_PART4: Record<string, DialogueNode> = {
         next: 'dmitry_factory_why_now',
         effects: [
           { type: 'addSkill', skill: 'empathy', value: 1 },
+        ],
+      },
+      {
+        text: 'Дмитрий, может, не лезть? Завод — это просто завод. Стихи переживут любой режим. А мы — нет. Кому нужен архив, если нас не будет?',
+        next: null,
+        condition: { maxKarma: 20 },
+        effects: [
+          { type: 'addKarma', value: -6 },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'npcChange', npcId: 'office_dmitry', npcChange: { relation: -10 } },
+          { type: 'setFlag', flag: 'dmitry_pullback_proposed', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Дмитрий долго смотрит на тебя — и отворачивается к окну. «Знаешь, — говорит он в стекло, — так говорил и тот, кто не вернулся с завода. Перед тем, как всё-таки пойти.» Ты промолчал. Потому что возразить нечего.',
+            thoughtDuration: 7000,
+          },
         ],
       },
     ],

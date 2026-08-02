@@ -17,7 +17,7 @@ export interface NpcEvents {
   'npc:ambient_bark': {
     npcId: string;
     text: string;
-    band: 'idle' | 'working' | 'pensive' | 'curious' | 'alarmed' | 'contemplative' | 'annoyed' | 'respectful' | 'fearful';
+    band: 'idle' | 'working' | 'pensive' | 'curious' | 'alarmed' | 'contemplative' | 'annoyed' | 'respectful' | 'fearful' | 'weather';
   };
   /**
    * Emitted when an NPC's emotional state changes (triggered by game events

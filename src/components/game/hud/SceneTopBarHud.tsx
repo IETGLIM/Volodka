@@ -22,13 +22,16 @@ import { EnvironmentMoodIndicator } from '@/components/game/hud/parts/Environmen
 import { FootstepPedometer } from '@/components/game/hud/parts/FootstepPedometer';
 import { SessionPlayTimer } from '@/components/game/hud/parts/SessionPlayTimer';
 import { PlayerCoordinatesDisplay } from '@/components/game/hud/parts/PlayerCoordinatesDisplay';
+import { KarmaTierBadge } from '@/components/game/hud/parts/KarmaTierBadge';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useHudQuietStyle } from '@/hooks/useHudQuiet';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { usePlayerKarma } from '@/store/selectors/playerSelectors';
 
 export const SceneTopBarHud = memo(function SceneTopBarHud() {
   const quietStyle = useHudQuietStyle();
   const reducedMotion = useEffectiveReducedMotion();
+  const karma = usePlayerKarma();
 
   return (
     <div
@@ -58,13 +61,14 @@ export const SceneTopBarHud = memo(function SceneTopBarHud() {
         <TopBarDataTicker />
       </motion.div>
 
-      {/* Top-right: exploration progress ring + environment mood bar */}
+      {/* Top-right: karma tier badge + exploration progress ring + environment mood bar */}
       <motion.div
         initial={reducedMotion ? false : { opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
         className="absolute top-2 right-2 flex items-start gap-2"
       >
+        <KarmaTierBadge karma={karma} />
         <EnvironmentMoodIndicator />
         <ExplorationProgressBadge />
       </motion.div>

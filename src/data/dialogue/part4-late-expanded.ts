@@ -503,6 +503,23 @@ export const DIALOGUE_PART4_EXPANDED: Record<string, DialogueNode> = {
           { type: 'addSkill', skill: 'coding', value: 2 },
         ],
       },
+      {
+        text: 'Виктория, послушай меня. Я лучше потеряю Хранилище целиком, чем потеряю тебя. Стихи вернутся — их будут писать снова. А ты — не вернёшься. Это не торг. Это условие.',
+        next: null,
+        condition: { minKarma: 65 },
+        effects: [
+          { type: 'addKarma', value: 20 },
+          { type: 'addSkill', skill: 'empathy', value: 3 },
+          { type: 'addSkill', skill: 'persuasion', value: 2 },
+          { type: 'npcChange', npcId: 'maria', npcChange: { relation: 25 } },
+          { type: 'setFlag', flag: 'maria_no_sacrifice_pledge', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Виктория замолкает. Индикаторы её панели гаснут на секунду — и загораются снова. «Ты понимаешь, — говорит она тихо, — что только что решил за всю Сеть?» Да. И впервые за долгие ночи — засыпаешь без седины в висках.',
+            thoughtDuration: 8000,
+          },
+        ],
+      },
     ],
   },
 
@@ -610,6 +627,23 @@ export const DIALOGUE_PART4_EXPANDED: Record<string, DialogueNode> = {
         condition: { minSkillCheck: { skill: 'coding', difficulty: 10 } },
         effects: [
           { type: 'addSkill', skill: 'coding', value: 2 },
+        ],
+      },
+      {
+        text: 'Альберт, ты не один держишь фронт. Я встану рядом. Если упадёшь — подхвачу. Если сорвёшься — дочитаю. Две тетради. Два голоса. Один ритм.',
+        next: null,
+        condition: { minKarma: 45 },
+        effects: [
+          { type: 'addKarma', value: 15 },
+          { type: 'addSkill', skill: 'empathy', value: 2 },
+          { type: 'addSkill', skill: 'rhythm', value: 1 },
+          { type: 'npcChange', npcId: 'albert', npcChange: { relation: 20 } },
+          { type: 'setFlag', flag: 'albert_volodka_stand_together', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Альберт откладывает томик Мандельштама. «Шестьдесят три года, — говорит он, — я ждал, когда кто-нибудь скажет это вслух.» Ты молчишь. Иногда промолчать рядом — единственная правильная реплика. Стена держит, пока держишься за неё двое.',
+            thoughtDuration: 7000,
+          },
         ],
       },
     ],

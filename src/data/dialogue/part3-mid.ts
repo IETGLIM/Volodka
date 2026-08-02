@@ -140,6 +140,22 @@ export const DIALOGUE_PART3: Record<string, DialogueNode> = {
           { type: 'addSkill', skill: 'persuasion', value: 2 },
         ],
       },
+      {
+        text: 'Александр, ты уважаешь меня — но уважение без поступка тоже соучастие. Подпиши сегодня один отчёт «без изменений». Один. Посмотрим, что скажет совесть.',
+        next: null,
+        condition: { minKarma: 55 },
+        effects: [
+          { type: 'addKarma', value: 10 },
+          { type: 'addSkill', skill: 'persuasion', value: 2 },
+          { type: 'npcChange', npcId: 'office_alexander', npcChange: { relation: 12 } },
+          { type: 'setFlag', flag: 'alexander_one_report_pledge', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Ты произнёс это тихо. Так тихо, что Александр побледнел. Он понял: ты не просишь подвига — ты просишь первой царапины на лояльности. Этого достаточно. Этого всегда достаточно.',
+            thoughtDuration: 6500,
+          },
+        ],
+      },
     ],
   },
 
@@ -176,6 +192,22 @@ export const DIALOGUE_PART3: Record<string, DialogueNode> = {
           { type: 'addStat', stat: 'stress', value: 10 },
           { type: 'addSkill', skill: 'logic', value: 1 },
           { type: 'setFlag', flag: 'archive7_race', flagValue: true },
+        ],
+      },
+      {
+        text: '«Экономическая ценность» — это щит. Согласись продать стихи гильдии — а я тайно скопирую каждое. Они получат копию. Мы — оригинал.',
+        next: null,
+        condition: { maxKarma: 15 },
+        effects: [
+          { type: 'addKarma', value: -8 },
+          { type: 'addSkill', skill: 'coding', value: 1 },
+          { type: 'npcChange', npcId: 'office_alexander', npcChange: { relation: 5 } },
+          { type: 'setFlag', flag: 'alexander_double_agent_path', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Александр смотрит на тебя — и впервые не скрывает облегчения. Ему нужен был кто-то, кто скажет вслух то, о чём он думал сам. Подлый план. Удобный. Ты только что стал его соучастником — даже не успев войти в серверную.',
+            thoughtDuration: 6000,
+          },
         ],
       },
     ],
