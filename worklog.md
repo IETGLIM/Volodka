@@ -1456,3 +1456,94 @@ widgets, (3) accessibility + styling gaps. Решение: багов нет, п
 - Procedural act mood tables (Phase 12 without paid stems).
 - More orphan widget mounts: FootstepPedometer/PlayerCoordinatesDisplay/SessionPlayTimer (need a
   positioning wrapper cluster).
+
+## Сессия: 2026-08-02 (cron-tick 4) — "Orphaned HUD mounts + filmic CSS polish + new Thought Cabinet thoughts + NPC emotion indicator"
+
+**Контекст:** Cron-triggered продолжение AAA-polish. QA via agent-browser на https://volodka.vercel.app/ подтвердила стабильность (0 ошибок, 0 console errors). 3 параллельные разведки замапили: (1) 6 orphaned HUD widgets для монтажа, (2) 7+ filmic CSS classes + 12+ tokens для добавления, (3) 6 новых Thought Cabinet мыслей + NPC emotion indicator + scene atmosphere profile. Решение: багов нет, продолжить аддитивные AAA-улучшения.
+
+### QA via agent-browser (tick 4)
+- Главное меню: чисто, кинематографично, 0 console errors / page errors.
+- New Game flow работает: prompt → narrative → exploration.
+- HUD рендерится корректно: interaction prompt, location chip, status panel.
+- 3D canvas не рендерится в headless browser (SwiftShader limitation) — не баг.
+- 0 ошибок в browser console / page errors.
+
+### Реализованные аддитивные улучшения (16 файлов, ~+807/-52 строк)
+
+**1. Orphaned HUD widget mounts (6 виджетов)**
+- `FootstepPedometer` + `SessionPlayTimer` → `SceneTopBarHud.tsx` — bottom-left cluster с motion entrance
+- `LootProximityIndicator` → `ExplorationHUD.tsx` — after NPCProximityIndicator
+- `EnvironmentalEffectsOverlay` → `OrchestratorGameplaySections.tsx` → `GameplayExplorationHud` — wired via `useEnvironmentalEffectsOverlayProps()` hook (weather, timeOfDay, locationType, healthPercent)
+- `BuffDebuffTracker` → `OrchestratorGameplaySections.tsx` → `GameplayExplorationHud` — wired via `useActiveEffects()` hook (reads poemPowers from store)
+- `SkillRechargeHUD` → `OrchestratorGameplaySections.tsx` → `GameplayAmbientExplorationHud` — wired via `useSkillSlots()` hook (reads poemPowers from store)
+- New file: `src/store/selectors/hudMountSelectors.ts` — 3 hooks for wiring store data to widget props
+
+**2. Filmic CSS styling (7 new classes + 12 new tokens + 1 new CSS file)**
+- `.hud-filmic-scanline` — CRT sweep line (8s cycle, opacity 0.03–0.05, reduced-motion gated)
+- `.hud-filmic-dialogue-breath` — border breathing glow (4s cycle, 0.14→0.22)
+- `.hud-filmic-toast-enter/exit` — standardized slide+fade transitions
+- `.hud-filmic-status-pulse` — opacity pulse on status bar changes (2s)
+- `.hud-filmic-crosshair-ring` — expanding ring on interaction start (0.6s)
+- `.hud-filmic-letterbox-gradient` — gradient fade into darkness for letterbox bars
+- 12 new CSS tokens: `--hud-filmic-vignette-indoor/outdoor/digital/combat`, `--hud-filmic-ink-hero`, `--hud-filmic-plate-glass`, `--hud-filmic-glow-warm/cool`, `--hud-filmic-transition-slow`, `--hud-filmic-scan-speed`
+- New file: `src/styles/hud-filmic-ambient.css` — CSS-only dust particles (25 motes), light flicker (6s), exploration pulse (5s)
+
+**3. New Thought Cabinet thoughts (6 мыслей, items 31–36)**
+- Цифровой Зов (coding) — +2 Кодинг, +1 Интуиция, -1 Эмпатия
+- Призрак Кодекса (authority) — +2 Авторитет, +1 Логика, -1 Ритм
+- Ночной Дозор (endurance) — +2 Выносливость, +1 Интуиция, -1 Убеждение
+- Поэтическая Матрица (writing) — +2 Писательство, +1 Кодинг, -1 Логика
+- Холодный Расчёт (logic) — +3 Логика, -2 Эмпатия, -1 Ритм
+- Уличный Шёпот (intuition) — +2 Интуиция, +1 Убеждение, -1 Выносливость
+- 2 mutually exclusive pairs: digital_call↔street_whisper, cold_calculation↔poetic_matrix
+
+**4. NPC emotion indicator (enhanced)**
+- `NpcEmotionIndicator.tsx` — EventBus-driven `npc:emotion_change` subscription
+- AnimatePresence with 1.5s visible → 0.5s fade-out
+- Color-coded: neutral=gray, curious=amber, alarmed=rose, contemplative=blue, annoyed=orange, respectful=emerald, fearful=red
+- `npcEvents.ts` — added `npc:emotion_change` event type
+
+**5. Scene atmosphere profile**
+- `forest_clearing` — natural, peaceful, mystical visual profile
+- Added scene definition, scene ID, location category, and extension definition
+
+### Аудит: что НЕ тронуто (намеренно)
+- Стихи — не трогались (авторское произведение Владимира Лебедева)
+- Все инварианты сохранены: `<Physics interpolate={false}>`, KCC ownership, postprocessing depth-blit patch, test contracts
+- Все правки аддитивные — не удалял существующий код, только добавлял
+
+### Статистика
+- 1 коммит в main (43a16b0), 16 файлов, ~+807/-52 строк
+- typecheck: `node scripts/tsc7.mjs --noEmit` → exit 0
+- 0 строк стихов изменено
+
+### Ключевые файлы сессии
+| Файл | Правка |
+|------|--------|
+| `src/components/game/hud/SceneTopBarHud.tsx` | + FootstepPedometer + SessionPlayTimer mount |
+| `src/components/game/hud/ExplorationHUD.tsx` | + LootProximityIndicator mount |
+| `src/components/game/orchestrator/OrchestratorGameplaySections.tsx` | + EnvironmentalEffectsOverlay + BuffDebuffTracker + SkillRechargeHUD mounts |
+| `src/store/selectors/hudMountSelectors.ts` | NEW — 3 store wiring hooks |
+| `src/styles/hud-filmic.css` | + 7 classes + 12 tokens |
+| `src/styles/hud-filmic-ambient.css` | NEW — ambient CSS effects |
+| `src/data/thoughtCabinet.ts` | + 6 thoughts + 2 mutually exclusive pairs |
+| `src/components/3d/NpcEmotionIndicator.tsx` | enhanced EventBus-driven |
+| `src/engine/events/npcEvents.ts` | + npc:emotion_change event |
+| `src/config/sceneVisualProfiles.ts` | + forest_clearing profile |
+| `src/config/sceneIds.ts` | + forest_clearing scene ID |
+| `src/config/sceneDefinitions.ts` | + forest_clearing definition |
+| `src/config/sceneExtensionDefinitions.ts` | + forest_clearing extension |
+| `src/config/sceneLocationCategories.ts` | + forest_clearing category |
+| `src/app/globals.css` | + hud-filmic-ambient.css + hud-round12.css imports |
+
+### Нерешённое / next-phase priorities
+- Author QA on Vercel: verify new HUD widgets, filmic CSS effects, new Thought Cabinet thoughts
+- SSR on wet streets (ultra-only, needs A/B for depth-blit patch interaction)
+- Continuous walk↔run blend by speed (test-aware refactor)
+- Content factory Acts 3-4 dialogue density + Thought Cabinet arcs
+- Mixamo↔Quaternius full bone remap
+- Procedural act mood tables
+- More orphan widget mounts: PlayerCoordinatesDisplay, HUDBootSequence, CombatDamageTimeline
+- VolumetricLightShafts for home_evening/factory_basement
+- Dialogue karma-gated branches
+- Accessibility pass (more ARIA, focus management)

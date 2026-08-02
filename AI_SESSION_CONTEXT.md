@@ -58,6 +58,10 @@ dice checks, живые хабы). Вдохновение также: Gothic (р
 - Content factory toward 120 h (authoring, not engine)
 - GLB mass re-export / AI3DGen hero meshes (asset pipeline debt)
 - PostFX on low for some hero scenes — partial gap
+- VolumetricLightShafts for home_evening/factory_basement (deferred)
+- SSR on wet streets (ultra-only, needs A/B)
+- Dialogue karma-gated branches
+- Accessibility pass (more ARIA, focus management)
 
 ### Новые системы (исторически v4.3–4.4; всё ещё в дереве)
 - Thought Cabinet, dice-roll checks, Act 1–7 expanded dialogue packs
@@ -139,6 +143,43 @@ dice checks, живые хабы). Вдохновение также: Gothic (р
 ---
 
 ## 📝 История сессий
+
+### Сессия: 2026-08-02 (cron-tick 4) — "Orphaned HUD mounts + filmic CSS polish + new Thought Cabinet thoughts + NPC emotion indicator"
+**Контекст:** Cron-triggered продолжение AAA-polish. QA via agent-browser на https://volodka.vercel.app/ подтвердила стабильность (0 ошибок, 0 console errors). 3 параллельные разведки замапили: (1) 6 orphaned HUD widgets для монтажа, (2) 7+ filmic CSS classes + 12+ tokens, (3) 6 новых Thought Cabinet мыслей + NPC emotion indicator + scene atmosphere profile. Решение: багов нет, продолжить аддитивные AAA-улучшения.
+
+**Что сделано (16 файлов, ~+807/-52 строк, коммит 43a16b0, push в main):**
+
+*Orphaned HUD widget mounts (6 виджетов):*
+- `FootstepPedometer` + `SessionPlayTimer` → `SceneTopBarHud.tsx` — bottom-left cluster с motion entrance
+- `LootProximityIndicator` → `ExplorationHUD.tsx` — after NPCProximityIndicator
+- `EnvironmentalEffectsOverlay` → `GameplayExplorationHud` — wired via `useEnvironmentalEffectsOverlayProps()` (weather, timeOfDay, locationType, healthPercent)
+- `BuffDebuffTracker` → `GameplayExplorationHud` — wired via `useActiveEffects()` (reads poemPowers)
+- `SkillRechargeHUD` → `GameplayAmbientExplorationHud` — wired via `useSkillSlots()` (reads poemPowers)
+- `hudMountSelectors.ts` (NEW) — 3 store wiring hooks
+
+*Filmic CSS styling (7 new classes + 12 new tokens + 1 new CSS file):*
+- `.hud-filmic-scanline` — CRT sweep line (8s, reduced-motion gated)
+- `.hud-filmic-dialogue-breath` — border breathing glow (4s)
+- `.hud-filmic-toast-enter/exit` — standardized slide+fade transitions
+- `.hud-filmic-status-pulse` — opacity pulse on status bar changes
+- `.hud-filmic-crosshair-ring` — expanding ring on interaction start
+- `.hud-filmic-letterbox-gradient` — gradient fade into darkness
+- 12 new CSS tokens: vignette-indoor/outdoor/digital/combat, ink-hero, plate-glass, glow-warm/cool, transition-slow, scan-speed
+- `hud-filmic-ambient.css` (NEW) — CSS-only dust particles, light flicker, exploration pulse
+
+*New Thought Cabinet thoughts (6 мыслей, items 31–36):*
+- Цифровой Зов, Призрак Кодекса, Ночной Дозор, Поэтическая Матрица, Холодный Расчёт, Уличный Шёпот
+- 2 mutually exclusive pairs: digital_call↔street_whisper, cold_calculation↔poetic_matrix
+
+*NPC emotion indicator + scene atmosphere:*
+- `NpcEmotionIndicator.tsx` — enhanced with EventBus-driven `npc:emotion_change` events
+- `forest_clearing` — natural, peaceful, mystical visual profile + scene definition
+
+**Безопасность:** все правки аддитивны; инварианты сохранены. typecheck `node scripts/tsc7.mjs --noEmit` → exit 0. Стихи не трогались.
+
+**Следующий шаг:** Author QA на Vercel — проверить HUD widgets, filmic CSS, new thoughts. Дальше — VolumetricLightShafts, content factory Acts 3-4, Mixamo remap, dialogue karma-gated branches.
+
+---
 
 ### Сессия: 2026-08-02 (cron-tick 3) — "GodRays postprocessing + orphan HUD mounts + accessibility pass + filmic styling polish"
 **Контекст:** Cron-triggered продолжение AAA-polish. QA via agent-browser подтвердила стабильность (0 ошибок). 3 параллельные разведки (Explore-агенты) замапили: (1) GodRays postprocessing feasibility — SAFE, (2) remaining orphan HUD widgets — 5 Tier-1 candidates, (3) accessibility + styling gaps — 5 a11y + 5 styling opportunities. Решение: багов нет, продолжить аддитивные AAA-улучшения.
