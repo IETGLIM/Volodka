@@ -298,27 +298,11 @@ export function HeroStreetFacadesWithAssets() {
   );
 }
 
-// Session 9 perf: route module-scope preloads through gltfPreloadScheduler instead of
-// firing 23 simultaneous useGLTF.preload() calls. The old pattern started 23 HTTP fetches
-// at import time; when they resolved (~simultaneously, HTTP/2-multiplexed) their .then()
-// callbacks queued 23 synchronous GLTFLoader.parse() calls (Draco/Meshopt WASM decode)
-// back-to-back without yielding — 1.8–11.5s of main-thread stall on scene enter. This
-// was a root cause of the 12–17s INP stalls. The scheduler uses requestIdleCallback with
-// BATCH_SIZE=1 so parses run one-per-idle-slice, yielding between each.
-const STREET_PRELOAD_URLS = [
-  POLYHAVEN_MODELS.bench, POLYHAVEN_MODELS.fireEscape, POLYHAVEN_MODELS.urbanFacade,
-  POLYHAVEN_MODELS.shutterDoor, POLYHAVEN_MODELS.shutterWindow, POLYHAVEN_MODELS.shutterWindowAlt,
-  POLYHAVEN_MODELS.streetLamp, POLYHAVEN_MODELS.streetLampAlt, POLYHAVEN_MODELS.industrialLamp,
-  POLYHAVEN_MODELS.metalTrashCan, POLYHAVEN_MODELS.trashbag, POLYHAVEN_MODELS.roadBarrier,
-  POLYHAVEN_MODELS.roadBarrierAlt, POLYHAVEN_MODELS.wetFloorSign, POLYHAVEN_MODELS.barrel,
-  POLYHAVEN_MODELS.cardboardBox, POLYHAVEN_MODELS.woodenCrate, POLYHAVEN_MODELS.oldTyre,
-  POLYHAVEN_MODELS.manholeCover, POLYHAVEN_MODELS.exteriorAirconUnit, POLYHAVEN_MODELS.powerBox,
-  POLYHAVEN_MODELS.securityCamera, POLYHAVEN_MODELS.utilityBox,
-];
-for (const url of STREET_PRELOAD_URLS) {
-  scheduleGltfPreload(
-    url,
-    () => useGLTF.preload(url, true, true, extendLoader),
-    GltfPreloadPriority.High,
-  );
-}
+// FIX S13-13: module-level preload loop REMOVED. This was a DUPLICATE of
+// sceneGpuLifecycle.ts:preloadSceneStreetDressing which already preloads the
+// same 23 URLs via STREET_NIGHT_DRESSING_URLS (streetDressingGpuUrls.ts) when
+// street_night enters. The module-level loop fired whenever this chunk loaded
+// (even during volodka_room if the street chunk was previously imported),
+// queuing 23 preloads in the scheduler that drained via requestIdleCallback
+// during the WRONG scene — causing the 3.8s frame freeze. Scene-gated preload
+// in sceneGpuLifecycle is the single source of truth.

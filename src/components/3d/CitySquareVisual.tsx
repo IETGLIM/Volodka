@@ -565,23 +565,6 @@ export function CitySquareVisual(_props: CitySquareVisualProps) {
   );
 }
 
-// Session 9 perf: route module-scope preloads through gltfPreloadScheduler (was 21
-// simultaneous useGLTF.preload() → 21 sync GLTFLoader.parse() back-to-back on resolve,
-// 1.6–8.4s main-thread stall on scene enter — root cause of the 12–17s INP stalls).
-const CITY_SQUARE_PRELOAD_URLS = [
-  POLYHAVEN_MODELS.urbanFacade, POLYHAVEN_MODELS.fireEscape, POLYHAVEN_MODELS.bench,
-  POLYHAVEN_MODELS.roadBarrier, POLYHAVEN_MODELS.roadBarrierAlt, POLYHAVEN_MODELS.shutterDoor,
-  POLYHAVEN_MODELS.streetLamp, POLYHAVEN_MODELS.streetLampAlt, POLYHAVEN_MODELS.metalTrashCan,
-  POLYHAVEN_MODELS.trashbag, POLYHAVEN_MODELS.cardboardBox, POLYHAVEN_MODELS.wetFloorSign,
-  POLYHAVEN_MODELS.barrel, POLYHAVEN_MODELS.utilityBox, POLYHAVEN_MODELS.powerBox,
-  POLYHAVEN_MODELS.oldTyre, POLYHAVEN_MODELS.manholeCover, POLYHAVEN_MODELS.woodenCrate,
-  POLYHAVEN_MODELS.exteriorAirconUnit, POLYHAVEN_MODELS.securityCamera,
-  POLYHAVEN_MODELS.gothicStatue,
-];
-for (const url of CITY_SQUARE_PRELOAD_URLS) {
-  scheduleGltfPreload(
-    url,
-    () => useGLTF.preload(url, true, true, extendLoader),
-    GltfPreloadPriority.High,
-  );
-}
+// FIX S13-13: module-level preload loop REMOVED — duplicate of
+// sceneGpuLifecycle.ts:preloadSceneStreetDressing (CITY_SQUARE_DRESSING_URLS
+// in streetDressingGpuUrls.ts). Scene-gated preload is the single source of truth.

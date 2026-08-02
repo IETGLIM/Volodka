@@ -1338,21 +1338,9 @@ function createWallTexture(): THREE.CanvasTexture {
   return tex;
 }
 
-// Session 9 perf: route module-scope preloads through gltfPreloadScheduler (was 11
-// simultaneous useGLTF.preload() → 11 sync GLTFLoader.parse() back-to-back on resolve,
-// ~0.9–4.4s main-thread stall on scene enter — root cause of the 12–17s INP stalls).
-const ROOM_PRELOAD_URLS = [
-  POLYHAVEN_MODELS.gothicBed, POLYHAVEN_MODELS.hangingPictureFrame,
-  POLYHAVEN_MODELS.shutterWindow, POLYHAVEN_MODELS.shutterWindowAlt,
-  POLYHAVEN_MODELS.armChair, POLYHAVEN_MODELS.woodenBookshelfWorn,
-  POLYHAVEN_MODELS.paintedWoodenCabinet, POLYHAVEN_MODELS.paintedWoodenTable,
-  POLYHAVEN_MODELS.deskLampArm, POLYHAVEN_MODELS.cassettePlayer,
-  getPropModelDefinition('kenney_door')!.url,
-];
-for (const url of ROOM_PRELOAD_URLS) {
-  scheduleGltfPreload(
-    url,
-    () => useGLTF.preload(url, true, true, extendLoader),
-    GltfPreloadPriority.High,
-  );
-}
+// FIX S13-13: module-level preload loop REMOVED. Was queuing 11 GLB preloads
+// at module load time (whenever the volodka_room chunk imported), draining via
+// requestIdleCallback during potentially the WRONG scene. Room furniture GLBs
+// now load on-demand via Suspense when VolodkaRoomVisual renders (with
+// CraftedDeskShell fallback for the desk, null for others). Scene-gated preload
+// via preloadSceneGpuAssets is the single source of truth.

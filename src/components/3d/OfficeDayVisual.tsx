@@ -869,14 +869,6 @@ function createOfficeWallTexture(): THREE.CanvasTexture {
   return tex;
 }
 
-// Session 9 perf: routed through gltfPreloadScheduler to avoid sync parse-storm.
-const OFFICE_PRELOAD_URLS = [
-  POLYHAVEN_MODELS.paintedWoodenTable, POLYHAVEN_MODELS.armChair, KENNEY_TERMINAL_MODEL,
-];
-for (const url of OFFICE_PRELOAD_URLS) {
-  scheduleGltfPreload(
-    url,
-    () => useGLTF.preload(url, true, true, extendLoader),
-    GltfPreloadPriority.High,
-  );
-}
+// FIX S13-13: module-level preload loop REMOVED. Office props (paintedWoodenTable,
+// armChair, kenney_terminal) are preloaded scene-gated via preloadScenePropModels
+// + preloadTriggerZoneProps in sceneGpuLifecycle.ts when office_day enters.
