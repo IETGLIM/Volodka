@@ -60,7 +60,10 @@ export function readAudioSettings(): AudioSettingsSnapshot {
 export function applyAudioSettings(snapshot?: AudioSettingsSnapshot): AudioSettingsSnapshot {
   const s = snapshot ?? readAudioSettings();
   const muteMul = s.muted ? 0 : 1;
-  musicEngine.setVolume(s.musicVolume * muteMul);
+  // FIX S13-22: respect musicEnabled toggle — when false, music volume is 0
+  // (was ignoring musicEnabled, so the "Музыка/Тишина" toggle in the menu did nothing).
+  const musicMul = s.musicEnabled ? 1 : 0;
+  musicEngine.setVolume(s.musicVolume * muteMul * musicMul);
   audioEngine.setVolume(s.sfxVolume * muteMul);
   ambientEngine.setVolume(s.ambientVolume * muteMul);
   if (typeof window !== 'undefined') {

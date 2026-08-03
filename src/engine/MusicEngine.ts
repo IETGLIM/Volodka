@@ -12,7 +12,7 @@
 
 import type { SceneId } from '@/shared/types/game';
 import { resolveDerivedSceneId } from '@/config/sceneInheritance';
-import { getSharedAudioContext, safeResume } from './SharedAudioContext';
+import { getSharedAudioContext, safeResume, whenAudioReady } from './SharedAudioContext';
 import { registerHmrDispose } from '@/shared/dev/hmrDispose';
 import { releaseConvolver } from './audio/AudioEngineCore';
 import { tryCreateConvolver } from './audio/audioCapabilities';
@@ -600,6 +600,37 @@ const SCENE_MUSIC_CONFIGS: Partial<Record<SceneId, SceneMusicConfig>> = {
   },
 };
 
+/* ──────────────────── Menu Music ──────────────────── */
+
+// FIX S13-21: Menu music config. Melancholic C-minor pentatonic, slower tempo
+// (52 BPM), warmer pad, sparser melody — sets the noir-cyberpunk tone before
+// the player starts the game. Same root as volodka_room (C3) for continuity
+// when transitioning menu → New Game → volodka_room.
+const MENU_MUSIC_CONFIG: SceneMusicConfig = {
+  scale: SCALES.minor_pentatonic,
+  rootMidi: 48, // C3 — matches volodka_room for seamless menu→game transition
+  padType: 'triangle',
+  padFilterFreq: 420, // slightly darker than volodka_room (500) — more intimate
+  padFilterQ: 0.9,
+  padLfoFreq: 0.06, // slower LFO — dreamier
+  padLfoDepth: 35,
+  padReverbMix: 0.45, // more reverb — spacious, empty-city feel
+  padReverbDecay: 4,
+  chordChangeInterval: 10, // slower chord changes — contemplative
+  chordVoices: 3,
+  useSeventhChords: false,
+  useOpenFifths: true, // open fifths — unresolved, longing
+  bassType: 'sine',
+  bassGain: 0.012,
+  melodyType: 'triangle',
+  melodyGain: 0.006,
+  melodyChance: 0.03, // sparser melody — almost silent, occasional notes
+  tempo: 52,
+  masterGain: 0.035,
+};
+
+const MENU_MUSIC_SCENE_ID = '__menu__';
+
 /* ──────────────────── Chord Generation ──────────────────── */
 
 /**
@@ -859,6 +890,47 @@ class MusicEngine {
       // Guard: if another scene change happened since we started, abort
       if (this.disposed || this.sceneGeneration !== myGeneration) return;
       this.startMusicForScene(sceneId, applyActMusicTint(config));
+    }, startDelay);
+  }
+
+  /**
+   * FIX S13-21: Play menu music. Uses a dedicated MENU_MUSIC_CONFIG (melancholic
+   * C-minor pentatonic, slow tempo). Deferred via whenAudioReady so it starts
+   * after the first user gesture (Chrome autoplay policy: AudioContext can't
+   * start without a gesture). When the user clicks anywhere on the menu, the
+   * gesture handler in SharedAudioContext creates + resumes the context, then
+   * flushes the pending queue — this callback fires and music starts.
+   */
+  playMenuMusic(): void {
+    if (this.disposed) return;
+    this.initContext();
+    this.resume();
+
+    // Already playing menu music — no change
+    if (this.currentScene === MENU_MUSIC_SCENE_ID) return;
+
+    // If AudioContext isn't ready yet (no user gesture), defer via whenAudioReady.
+    // The queue flushes on the first click/keydown/touchstart (resumeOnce handler).
+    if (!this.ctx) {
+      whenAudioReady(() => {
+        if (this.disposed) return;
+        // Re-check: user may have started a game before the gesture fired
+        if (this.currentScene === MENU_MUSIC_SCENE_ID) return;
+        this.playMenuMusic();
+      });
+      return;
+    }
+
+    const myGeneration = ++this.sceneGeneration;
+
+    // Stop current music (with fade out)
+    this.stopMusic(1);
+
+    const startDelay = this.currentScene !== null ? 900 : 0;
+
+    setTimeout(() => {
+      if (this.disposed || this.sceneGeneration !== myGeneration) return;
+      this.startMusicForScene(MENU_MUSIC_SCENE_ID, MENU_MUSIC_CONFIG);
     }, startDelay);
   }
 

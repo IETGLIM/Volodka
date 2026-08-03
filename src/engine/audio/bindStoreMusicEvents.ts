@@ -5,6 +5,7 @@
 
 import { eventBus } from '@/engine/EventBus';
 import { musicEngine } from '@/engine/MusicEngine';
+import { applyAudioSettings } from './AudioSettings';
 import { registerHmrDispose } from '@/shared/dev/hmrDispose';
 
 let bound = false;
@@ -16,17 +17,26 @@ export function bindStoreMusicEvents(): void {
 
   unsubs.push(
     eventBus.on('ui:music_volume', ({ volume }) => {
-      musicEngine.setVolume(volume);
+      // applyAudioSettings re-reads all settings (including musicEnabled) and
+      // applies the correct volume to all engines. Simpler than computing the
+      // multiplier here.
+      applyAudioSettings();
     }),
   );
 
   unsubs.push(
-    eventBus.on('ui:music_enabled', ({ enabled, sceneId }) => {
+    eventBus.on('ui:music_enabled', ({ enabled }) => {
+      // FIX S13-22: delegate to applyAudioSettings — it respects musicEnabled
+      // (volume=0 when disabled, normal volume when enabled). Previously this
+      // called stopMusic/playSceneMusic(sceneId) which broke menu music: when
+      // toggling music ON in the menu, it played volodka_room music instead of
+      // menu music (sceneId was volodka_room, not __menu__).
       if (!enabled) {
         musicEngine.stopMusic(1);
-        return;
       }
-      musicEngine.playSceneMusic(sceneId);
+      applyAudioSettings();
+      // If enabled + music was stopped, the SceneAudioController.onModeChange
+      // will re-trigger playMenuMusic/playSceneMusic on the next phase sync.
     }),
   );
 }

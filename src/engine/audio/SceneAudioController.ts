@@ -76,10 +76,21 @@ export class SceneAudioController {
       this.ambientContext = ambientContext;
     }
 
-    if (phase === 'menu' || phase === 'intro') {
-      musicEngine.stopMusic(1);
+    if (phase === 'menu') {
+      // FIX S13-21: play menu music instead of stopping all music.
+      // playMenuMusic defers via whenAudioReady until the first user gesture
+      // (Chrome autoplay policy), so it silently queues on boot and starts
+      // when the user clicks anywhere on the menu.
       ambientEngine.stopAll();
       musicEngine.setPresentationDucked(false);
+      musicEngine.playMenuMusic();
+      return;
+    }
+
+    if (phase === 'intro') {
+      // Intro wake cinematic — music ducks (cinematic timeline controls duck factor)
+      musicEngine.setPresentationDucked(false);
+      ambientEngine.stopAll();
       return;
     }
 
