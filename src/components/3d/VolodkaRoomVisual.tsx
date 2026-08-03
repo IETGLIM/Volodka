@@ -939,8 +939,10 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
           transmission sampled plaster and flashed as black squares (esp. back pane
           behind the left ThinMonitor). ── */}
       <>
-        {/* ── Window (right wall, emissive blue — nighttime city glow) ── */}
-        <group position={[W / 2 - 0.05, 1.5, -2.0]}>
+        {/* ── Window (right wall, emissive blue — nighttime city glow) ──
+            FIX S13-18: y 1.5 → 1.15 to align with shutterWindow GLB center
+            (was sticking out ABOVE the shutter frame — “непонятно что это окно”). */}
+        <group position={[W / 2 - 0.05, 1.15, -2.0]}>
           {usePhysicalGlass ? (
             <mesh renderOrder={1} rotation-y={-Math.PI / 2} geometry={geo_pln_42}>
               <meshPhysicalMaterial
@@ -1005,8 +1007,9 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
           />
         </group>
 
-        {/* ── Second Window (back wall, behind left monitor — emissive blue city) ── */}
-        <group position={[-1.0, 1.5, -D / 2 + 0.05]}>
+        {/* ── Second Window (back wall, behind left monitor — emissive blue city) ──
+            FIX S13-18: y 1.5 → 1.15 to align with shutterWindowAlt GLB. */}
+        <group position={[-1.0, 1.15, -D / 2 + 0.05]}>
           {usePhysicalGlass ? (
             <mesh renderOrder={1} geometry={geo_pln_44}>
               <meshPhysicalMaterial

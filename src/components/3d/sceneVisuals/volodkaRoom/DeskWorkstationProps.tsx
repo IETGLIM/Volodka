@@ -132,7 +132,10 @@ export function DeskWallCurtain({
           geometry={getSharedBoxGeometry(f.w, height, 0.02)}
         >
           <meshStandardMaterial
-            color={i % 2 === 0 ? '#2a2438' : '#322a42'}
+            // FIX S13-19: brightened curtain colors (was #2a2438/#322a42 — too dark
+            // to see against the wall, user reported "штора отсутствует"). Now warm
+            // burgundy/mauve reads as a visible fabric behind the monitors.
+            color={i % 2 === 0 ? '#4a3a52' : '#5a4a62'}
             roughness={0.92}
             metalness={0.02}
             side={THREE.DoubleSide}
