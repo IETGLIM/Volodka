@@ -148,7 +148,7 @@ export const WORLD_CELLS: Record<WorldCellId, WorldCell> = {
       { x: 2, z: 1 },
       { x: 3, z: 1 },
     ],
-    locationSceneIds: ['chk_forest_zorge', 'chk_campfire_night'],
+    locationSceneIds: ['chk_forest_zorge', 'chk_campfire_night', 'forest_clearing'],
   },
 };
 
@@ -299,6 +299,16 @@ export const WORLD_LOCATIONS: Partial<Record<SceneId, WorldLocation>> = {
     cellId: 'chk_tolpa:forest',
     anchorSceneId: 'chk_forest_zorge',
   },
+  // FIX S13-17: forest_clearing added to WORLD_LOCATIONS — was missing, causing
+  // 3 test failures (sceneIdInvariants + worldRegistry). Mirrors chk_campfire_night
+  // pattern: derived from chk_forest_zorge, same cell.
+  forest_clearing: {
+    sceneId: 'forest_clearing',
+    kind: 'district',
+    regionId: 'chk_tolpa',
+    cellId: 'chk_tolpa:forest',
+    anchorSceneId: 'chk_forest_zorge',
+  },
   pier_evening: {
     sceneId: 'pier_evening',
     kind: 'district',
@@ -440,6 +450,7 @@ export const SCENE_CHUNK_COORD: Partial<Record<SceneId, WorldChunkCoord>> = {
   river_pier: { x: 2, z: 2 },
   pier_evening: { x: 2, z: 3 },
   chk_campfire_night: { x: 3, z: 1 },
+  forest_clearing: { x: 3, z: 2 },
   factory_roof: { x: -1, z: -2 },
   library_basement: { x: -1, z: 2 },
   city_square: { x: 1, z: -3 },
