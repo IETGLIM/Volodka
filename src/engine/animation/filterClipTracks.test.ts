@@ -141,7 +141,16 @@ describe('stripRootTranslationTracks', () => {
       'Hips.quaternion',
       'LeftArm.quaternion',
     ]);
-    expect(Array.from(stripped.tracks[0]?.values ?? [])).toEqual([0, 1, 0, 0, 0.8, 0]);
+    // FIX S13-15: use toBeCloseTo per-element — GLB float32 buffer gives
+    // 0.800000011920929 instead of exact 0.8. Strict toEqual fails on float32 precision.
+    const vals = Array.from(stripped.tracks[0]?.values ?? []);
+    expect(vals.length).toBe(6);
+    expect(vals[0]).toBeCloseTo(0, 5);
+    expect(vals[1]).toBeCloseTo(1, 5);
+    expect(vals[2]).toBeCloseTo(0, 5);
+    expect(vals[3]).toBeCloseTo(0, 5);
+    expect(vals[4]).toBeCloseTo(0.8, 5);
+    expect(vals[5]).toBeCloseTo(0, 5);
   });
 
   it('makes Quaternius Body.position root translation in-place', () => {

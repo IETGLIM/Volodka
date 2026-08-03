@@ -15,7 +15,6 @@ import {
 } from '@/config/metricScaleCoherence';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
 import { disposeClonedScene, createSourceSkipSet } from '@/engine/three/disposeThreeResources';
-import { scheduleGltfPreload, GltfPreloadPriority } from '@/engine/assets/gltfPreloadScheduler';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
 import {

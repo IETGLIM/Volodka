@@ -13,6 +13,12 @@ import type { SceneId } from '@/config/sceneDefinitions';
  */
 export const SCENE_DERIVED_FROM: Partial<Record<SceneId, SceneId>> = {
   chk_campfire_night: 'chk_forest_zorge',
+  // FIX S13-14: forest_clearing is a standalone extension scene (own dimensions,
+  // spawn, doorways) but shares ChkForestVisual + audio/weather registries with
+  // chk_forest_zorge. Without this entry, resolveDerivedSceneId('forest_clearing')
+  // returned 'forest_clearing' (no parent) → missing from VISUAL_SCENE_ROOTS,
+  // WORLD_LOCATIONS, SCENE_AUDIO_PROFILES → 7 invariant/registry test failures.
+  forest_clearing: 'chk_forest_zorge',
   pier_evening: 'river_pier',
   factory_roof: 'rooftop_edge',
   zarema_room: 'zarema_albert_room',

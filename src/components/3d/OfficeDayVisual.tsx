@@ -22,7 +22,6 @@ import { INTERIOR_SHELL_MODELS } from '../../config/interiorShellModels';
 import { AuthoredInteriorShell } from './AuthoredInteriorShell';
 import { POLYHAVEN_MODELS } from '@/config/polyhavenAssets';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
-import { scheduleGltfPreload, GltfPreloadPriority } from '@/engine/assets/gltfPreloadScheduler';
 import { getInteriorShellScale, isWalkableInteriorShellAllowed } from '@/config/interiorShellScale';
 import {
   allowsSelectiveMeshPhysicalWet,

@@ -38,7 +38,9 @@ describe('proceduralAudioCatalog', () => {
   });
 
   it('every shipped scene has a catalog entry or documented inherit rule', () => {
-    expect(SCENE_IDS.length).toBe(28);
+    // FIX S13-14: forest_clearing added as 29th scene — derives audio profile
+    // from chk_forest_zorge via SCENE_DERIVED_FROM (sceneInheritance.ts).
+    expect(SCENE_IDS.length).toBe(29);
 
     for (const sceneId of SCENE_IDS) {
       const direct = SCENE_AUDIO_PROFILES[sceneId];

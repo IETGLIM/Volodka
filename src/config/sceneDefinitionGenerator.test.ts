@@ -50,13 +50,15 @@ describe('generateBoundaryWallSegments', () => {
     }
   });
 
-  it('cuts side openings for corridor kitchen/street doors (volodka_corridor)', () => {
+  it('cuts side openings for corridor kitchen/street/bathroom doors (volodka_corridor)', () => {
     const segments = generateBoundaryWallSegments(SCENE_DEFINITIONS.volodka_corridor);
     // Doors at x=±2.7 with halfW=3 sit on the left/right planes
     expect(segmentsOnSide(segments, 'left').length).toBeGreaterThanOrEqual(2);
     expect(segmentsOnSide(segments, 'right').length).toBeGreaterThanOrEqual(2);
     expect(backstopsOnSide(segments, 'left')).toHaveLength(2);
-    expect(backstopsOnSide(segments, 'right')).toHaveLength(2);
+    // FIX S13-4: right wall now has 3 doorways (kitchen z=-2, bathroom z=2,
+    // solnysh z=4) → 3 backstops. Was 2 before bathroom doorway was added.
+    expect(backstopsOnSide(segments, 'right')).toHaveLength(3);
   });
 
   it('derives narrow walkable bounds from floor colliders (volodka_corridor)', () => {

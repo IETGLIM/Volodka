@@ -62,7 +62,9 @@ describe('migrateSave', () => {
     const result = migrateSave(raw, SAVE_VERSION);
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.data.saveVersion).toBe(2);
+      // FIX S13-16: SAVE_VERSION is 3 (was 2 when test was written).
+      // Migration runs v1→v2→v3; result.saveVersion should be SAVE_VERSION.
+      expect(result.data.saveVersion).toBe(SAVE_VERSION);
       expect(result.data.activeTTLFlags).toEqual({
         truth_voice_active: {
           key: 'truth_voice_active',

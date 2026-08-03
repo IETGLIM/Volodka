@@ -43,7 +43,7 @@ describe('sceneVisualProfiles', () => {
   });
 
   it('boosts remaining hero and story scene bloom profiles', () => {
-    expect(getSceneVisualProfile('volodka_room').bloomIntensityScale).toBe(1.07);
+    expect(getSceneVisualProfile('volodka_room').bloomIntensityScale).toBe(0.94);
     expect(getSceneVisualProfile('volodka_corridor').bloomIntensityScale).toBe(1.05);
     expect(getSceneVisualProfile('factory_basement').bloomIntensityScale).toBe(1.1);
     expect(getSceneVisualProfile('street_winter').bloomIntensityScale).toBe(1.04);

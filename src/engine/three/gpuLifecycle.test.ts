@@ -174,10 +174,12 @@ describe('sceneGpuLifecycle', () => {
       // player_volodka GLTF asset (multiple LOD/variant URLs)
       expect(useGLTF.clear).toHaveBeenCalledWith('/models/characters/volodka/volodka_lod0.glb');
       expect(THREE.Cache.remove).toHaveBeenCalledWith('/models/characters/volodka/volodka_lod0.glb');
-      // ai3dgen deferred props shipped in volodka_room
-      expect(useGLTF.clear).toHaveBeenCalledWith('/models/props/poetic_compiler.glb');
-      expect(useGLTF.clear).toHaveBeenCalledWith('/models/props/neural_filter.glb');
-      expect(useGLTF.clear).toHaveBeenCalledWith('/models/props/digital_amulet.glb');
+      // FIX S13-10: ai3dgen deferred props (poetic_compiler/neural_filter/
+      // digital_amulet) were removed from volodka_room prop dressing — they
+      // overlapped the bed. No longer expected in eviction. Room furniture GLBs
+      // (gothicBed, paintedWoodenTable, etc.) are loaded via AuthoredRoomProp
+      // Suspense, not the prop-dressing preload path, so they aren't in the
+      // eviction spy list either.
       // viktor shares the male_02 Quaternius rig (npcMeshShare) — eviction clears the shared URL
       expect(useGLTF.clear).toHaveBeenCalledWith('/models/npcs/_rigs/male_02.glb');
     });

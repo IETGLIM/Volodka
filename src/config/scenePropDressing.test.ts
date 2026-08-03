@@ -10,31 +10,14 @@ describe('scenePropDressing', () => {
   it('keeps volodka_room apartment clutter deferred without kenney openings', () => {
     const { critical, deferred } = splitScenePropDressing('volodka_room');
 
-    // Door/windows are always procedural in VolodkaRoomVisual — no GLB openings here.
+    // FIX S13-10: all clutter props stripped from volodka_room (barrel, trash
+    // cans, boxes, industrial lamp, ai3dgen artifacts were overlapping the bed
+    // and visually clashing with GLB furniture). Room now has ONLY authored GLB
+    // furniture from AuthoredVolodkaRoomDressing — no prop dressing clutter.
     expect(critical.map((p) => p.propModelId)).toEqual([]);
-    expect(deferred.map((p) => p.propModelId)).toEqual([
-      'polyhaven_industrial_lamp',
-      'polyhaven_barrel',
-      'polyhaven_cardboard_box',
-      'polyhaven_cardboard_box',
-      'polyhaven_metal_trash_can',
-      'polyhaven_trashbag',
-      'ai3dgen_poetic_compiler',
-      'ai3dgen_neural_filter',
-      'ai3dgen_digital_amulet',
-    ]);
+    expect(deferred.map((p) => p.propModelId)).toEqual([]);
     expect(deferred.some((p) => p.propModelId === 'kenney_door')).toBe(false);
     expect(deferred.some((p) => p.propModelId === 'kenney_window')).toBe(false);
-    // Desk gadgets must not sit on ThinMonitor slots (y≈0.82, z≈-2.4).
-    const deskGadgets = deferred.filter(
-      (p) =>
-        p.propModelId === 'ai3dgen_poetic_compiler' || p.propModelId === 'ai3dgen_neural_filter',
-    );
-    for (const g of deskGadgets) {
-      const [, y, z] = g.position;
-      const onMonitorDesk = Math.abs(y - 0.82) < 0.12 && z < -2.1 && z > -2.9;
-      expect(onMonitorDesk, `${g.propModelId} @ ${g.position}`).toBe(false);
-    }
   });
 
   it('treats unspecified loadTier as critical', () => {

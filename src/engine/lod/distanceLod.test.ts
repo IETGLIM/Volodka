@@ -81,7 +81,9 @@ describe('extension scene env LOD profiles', () => {
     // city_square is hero-tier — detailDistanceScale 1.15 expands base clutter 15 → 17.25
     expect(getEnvironmentLodProfile('city_square').clutterDistance).toBe(17.25);
     expect(getEnvironmentLodProfile('pier_evening').clutterDistance).toBe(11);
-    expect(getEnvironmentLodProfile('river_pier').clutterDistance).toBe(11);
+    // FIX S13-15: river_pier is hero-tier with detailDistanceScale 1.08 → 11 * 1.08 = 11.88.
+    // Test was expecting the base value (11) but getEnvironmentLodProfile returns the scaled value.
+    expect(getEnvironmentLodProfile('river_pier').clutterDistance).toBeCloseTo(11.88, 1);
     expect(getEnvironmentLodProfile('factory_basement').clutterDistance).toBe(8);
     expect(getEnvironmentLodProfile('library_basement').clutterDistance).toBeLessThan(12);
     expect(getEnvironmentLodProfile('volodka_corridor').clutterDistance).toBeLessThan(12);

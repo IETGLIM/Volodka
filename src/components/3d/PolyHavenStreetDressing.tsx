@@ -14,7 +14,6 @@ import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
 import { disposeClonedScene, createSourceSkipSet } from '@/engine/three/disposeThreeResources';
 import { UniqueStreetFacades } from './UniqueStreetFacades';
-import { scheduleGltfPreload, GltfPreloadPriority } from '@/engine/assets/gltfPreloadScheduler';
 
 const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeof useGLTF>[3]>;
 

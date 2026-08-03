@@ -44,7 +44,6 @@ import { weatherEnvironmentMaterials } from '@/engine/graphics/materials/weather
 import { POLYHAVEN_MODELS } from '@/config/polyhavenAssets';
 import { getPropModelDefinition } from '@/config/propModelRegistry';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
-import { scheduleGltfPreload, GltfPreloadPriority } from '@/engine/assets/gltfPreloadScheduler';
 import { useGltfPropPlacement } from '@/hooks/useGltfPropPlacement';
 import {
   getInteriorShellScale,
