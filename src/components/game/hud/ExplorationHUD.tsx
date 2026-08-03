@@ -26,6 +26,7 @@ import { PhysicsDegradedDevBadge } from '@/components/game/hud/parts/PhysicsDegr
 import { QuestDirectionArrow } from '@/components/game/hud/parts/QuestDirectionArrow';
 import { RainScreenEffect } from '@/components/game/hud/parts/RainScreenEffect';
 import { SceneAmbientVignette } from '@/components/game/hud/parts/SceneAmbientVignette';
+import { SceneTopBarHud } from '@/components/game/hud/SceneTopBarHud';
 import { AmbientParticles } from '@/components/game/hud/parts/AmbientParticles';
 import { SprintDrainOverlay } from '@/components/game/hud/parts/SprintDrainOverlay';
 
@@ -111,6 +112,7 @@ export function ExplorationHUD(props: HUDProps) {
       <div className="hud-corner-accent hud-corner-accent-br" aria-hidden="true" />
 
       <SceneAmbientVignette />
+      <SceneTopBarHud />
       <AmbientParticles />
       <RainScreenEffect />
       <SprintDrainOverlay />

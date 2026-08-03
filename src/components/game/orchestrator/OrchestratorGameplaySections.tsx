@@ -70,7 +70,6 @@ import { KarmaShiftLayer } from '@/components/game/microAnimations/KarmaShiftLay
 import { FloatingActionIndicator } from '@/components/game/hud/parts/FloatingActionIndicator';
 import { EmergencyHelpButton } from '@/components/game/hud/parts/EmergencyHelpButton';
 import { ActiveQuestMiniTracker } from '@/components/game/hud/parts/ActiveQuestMiniTracker';
-import { SceneTopBarHud } from '@/components/game/hud/SceneTopBarHud';
 import { PoemPowerEffect } from '@/components/game/PoemPowerEffect';
 import { PoemWorldEffect } from '@/components/game/poemWorldEffect/PoemWorldEffect';
 import { PoemRevealHost } from '@/components/game/poemReveal/PoemRevealHost';
@@ -453,8 +452,9 @@ export const GameplayAmbientExplorationHud = memo(function GameplayAmbientExplor
           <QuickUseBar />
           <QuickInventoryBar />
           <CompassHUD />
-          {/* Cohesive top-bar cluster: scene context · data ticker · exploration progress · mood. */}
-          <SceneTopBarHud />
+          {/* FIX S13-23: SceneTopBarHud moved INTO ExplorationHUD (inside game-hud div)
+              so E2E tests can find the scene name via getByTestId('game-hud').toContainText().
+              Was a sibling in GameplayAmbientExplorationHud — game-hud had empty textContent. */}
           <MountedSkillRechargeHUD />
         </>
       ) : null}
