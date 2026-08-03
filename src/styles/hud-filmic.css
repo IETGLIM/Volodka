@@ -1459,10 +1459,13 @@
    green for digital, red for combat). Apply via
    className="hud-filmic-mood-vignette" on the root HUD container.
    The actual tint color is set via CSS custom property --hud-filmic-mood-tint. */
-.hud-filmic-mood-vignette {
-  position: relative;
-}
-
+/* FIX S13-20: removed `position: relative` — was overriding the Tailwind `fixed`
+   class on the game-hud element (same specificity, CSS loads after Tailwind).
+   This collapsed the HUD's bounding box to zero (parent fragment has no height),
+   causing Playwright E2E `toBeVisible()` to fail ("hidden" despite opacity-100).
+   The ::before pseudo-element still works because `position: fixed` (from the
+   Tailwind class) also establishes a positioning context for absolutely-positioned
+   descendants. */
 .hud-filmic-mood-vignette::before {
   content: '';
   position: absolute;
