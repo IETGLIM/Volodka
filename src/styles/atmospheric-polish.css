@@ -163,10 +163,6 @@
 }
 
 /* ─── Neon text glow utilities ─── */
-.neon-text-cyan { text-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.5); }
-.neon-text-amber { text-shadow: 0 0 6px rgba(251, 191, 36, 0.5); }
-.neon-text-emerald { text-shadow: 0 0 6px rgba(52, 211, 153, 0.5); }
-.neon-text-rose { text-shadow: 0 0 6px rgba(251, 113, 133, 0.5); }
 
 /* ── Inner Monologue ── */
 .thought-overlay {

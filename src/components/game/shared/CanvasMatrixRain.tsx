@@ -55,15 +55,55 @@ export const CanvasMatrixRain = memo(function CanvasMatrixRain({
       drops = Array(columns).fill(1).map(() => Math.random() * -50);
     };
 
-    const scheduleResize = () => {
+    const clearResizeTimer = () => {
       if (resizeTimer) clearTimeout(resizeTimer);
+      resizeTimer = undefined;
+    };
+
+    applyResize();
+
+    // Preserve the visual motif without starting an animation loop for users
+    // who ask the operating system to reduce motion.
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reducedMotion) {
+      const paintStatic = () => {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.font = `${fontSize}px monospace`;
+        ctx.fillStyle = color;
+        ctx.globalAlpha = charOpacity;
+        for (let i = 0; i < columns; i++) {
+          const char = chars[Math.floor(Math.random() * chars.length)];
+          ctx.fillText(char, i * fontSize, (drops[i] * fontSize) % canvas.height);
+        }
+        ctx.globalAlpha = 1;
+      };
+      paintStatic();
+      const onResizeStatic = () => {
+        clearResizeTimer();
+        resizeTimer = setTimeout(() => {
+          resizeTimer = undefined;
+          applyResize();
+          paintStatic();
+        }, 120);
+      };
+      window.addEventListener('resize', onResizeStatic);
+      window.visualViewport?.addEventListener('resize', onResizeStatic);
+      return () => {
+        clearResizeTimer();
+        window.removeEventListener('resize', onResizeStatic);
+        window.visualViewport?.removeEventListener('resize', onResizeStatic);
+      };
+    }
+
+    const scheduleResize = () => {
+      clearResizeTimer();
       resizeTimer = setTimeout(() => {
         resizeTimer = undefined;
         applyResize();
       }, 120);
     };
 
-    applyResize();
     const resize = () => scheduleResize();
     window.addEventListener('resize', resize);
     window.visualViewport?.addEventListener('resize', resize);
@@ -94,7 +134,7 @@ export const CanvasMatrixRain = memo(function CanvasMatrixRain({
     animationId = requestAnimationFrame(draw);
     return () => {
       cancelAnimationFrame(animationId);
-      if (resizeTimer) clearTimeout(resizeTimer);
+      clearResizeTimer();
       window.removeEventListener('resize', resize);
       window.visualViewport?.removeEventListener('resize', resize);
     };

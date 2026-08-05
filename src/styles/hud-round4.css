@@ -302,14 +302,6 @@
 }
 
 /* ─── Neon text effects ─── */
-.neon-text-cyan {
-  text-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.4);
-}
-
-.neon-text-rose {
-  text-shadow: 0 0 6px rgba(251, 113, 133, 0.4);
-}
-
 /* ─── Location name glow ─── */
 @keyframes location-name-glow {
   0%, 100% {
@@ -397,14 +389,6 @@
 }
 
 /* ─── Cyber hover glow (for interactive HUD elements) ─── */
-.cyber-hover-glow {
-  transition: all 0.2s ease;
-}
-
-.cyber-hover-glow:hover {
-  box-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.15), 0 0 16px rgb(var(--cyber-cyan-rgb) / 0.05);
-}
-
 /* ─── Reduced motion: disable all Round 4 animations ─── */
 @media (prefers-reduced-motion: reduce) {
   .exploration-ring-breathe,
