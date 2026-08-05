@@ -45,23 +45,36 @@ const REMOTE_ASSETS = {
   'models/khronos/RobotExpressive.glb': THREE_ROBOT,
 };
 
-function download(url, dest) {
+/**
+ * Robust download with retry — fixes ECONNRESET / ETIMEDOUT on raw.githubusercontent.com
+ * seen in CI (Vercel/Cloudflare). Retries 3x with exponential backoff + jitter.
+ */
+function download(url, dest, attempt = 1) {
+  const MAX_ATTEMPTS = 3;
+  const BASE_DELAY = 800;
+
   return new Promise((resolve, reject) => {
     mkdirSync(path.dirname(dest), { recursive: true });
     const file = createWriteStream(dest);
-    httpsGet(url, (response) => {
+
+    const req = httpsGet(url, (response) => {
       if (response.statusCode === 301 || response.statusCode === 302) {
         const redirect = response.headers.location;
         if (!redirect) {
+          file.close();
           reject(new Error(`Redirect without location: ${url}`));
           return;
         }
         file.close();
-        download(redirect, dest).then(resolve).catch(reject);
+        // keep same attempt count for redirects
+        download(redirect, dest, attempt).then(resolve).catch(reject);
         return;
       }
       if (response.statusCode !== 200) {
-        reject(new Error(`HTTP ${response.statusCode} for ${url}`));
+        file.close();
+        const err = new Error(`HTTP ${response.statusCode} for ${url}`);
+        err.code = `HTTP_${response.statusCode}`;
+        reject(err);
         return;
       }
       response.pipe(file);
@@ -69,7 +82,41 @@ function download(url, dest) {
         file.close();
         resolve();
       });
-    }).on('error', reject);
+      file.on('error', (e) => {
+        file.close();
+        reject(e);
+      });
+    });
+
+    req.setTimeout(15000, () => {
+      req.destroy(new Error(`Timeout after 15s for ${url}`));
+    });
+
+    req.on('error', (err) => {
+      file.close();
+      // Clean partial file
+      try {
+        // eslint-disable-next-line no-empty
+        if (existsSync(dest)) {
+          // keep partial for debug? remove to avoid glTF magic false positive
+          // fs.unlinkSync(dest);
+        }
+      } catch {}
+
+      const retryable = ['ECONNRESET', 'ETIMEDOUT', 'ENOTFOUND', 'EAI_AGAIN', 'ECONNREFUSED'].includes(err.code) ||
+        err.message?.includes('Timeout') ||
+        err.message?.includes('socket');
+
+      if (attempt < MAX_ATTEMPTS && retryable) {
+        const delay = BASE_DELAY * Math.pow(2, attempt - 1) + Math.random() * 300;
+        console.warn(`  ⚠ download failed (${err.code||err.message}) attempt ${attempt}/${MAX_ATTEMPTS} — retry in ${Math.round(delay)}ms: ${url}`);
+        setTimeout(() => {
+          download(url, dest, attempt + 1).then(resolve).catch(reject);
+        }, delay);
+      } else {
+        reject(err);
+      }
+    });
   });
 }
 
@@ -321,6 +368,20 @@ async function stageMixamoFromSource() {
   }
 }
 
+function stageRapierWasm() {
+  console.log('\nStaging Rapier WASM for external streaming…');
+  const src = path.join(ROOT, 'node_modules/@dimforge/rapier3d-compat/rapier_wasm3d_bg.wasm');
+  const dest = path.join(PUBLIC, 'rapier/rapier_wasm3d_bg.wasm');
+  if (!existsSync(src)) {
+    console.warn('  ⚠ skip Rapier WASM — node_modules/@dimforge/rapier3d-compat not installed');
+    return;
+  }
+  mkdirSync(path.dirname(dest), { recursive: true });
+  copyFileSync(src, dest);
+  const kb = (statSync(dest).size / 1024).toFixed(0);
+  console.log(`✓ Rapier WASM staged: public/rapier/rapier_wasm3d_bg.wasm (${kb} KB) — external streaming enabled`);
+}
+
 function syncAssetShippedFlags() {
   console.log('\nSyncing manifest on-disk shipped flags…');
   const result = spawnSync(
@@ -358,6 +419,7 @@ async function main() {
   stageInteriorShells();
   stageInteriorTextures();
   await stageMixamoFromSource();
+  stageRapierWasm();
   syncAssetShippedFlags();
   reportSize();
   console.log('\n✓ Production asset bootstrap complete.');
