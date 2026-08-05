@@ -15,6 +15,7 @@ import { CinematicTitleCard } from '@/components/game/cinematic/CinematicTitleCa
 import { CinematicBars } from '@/components/game/cinematic/CinematicBars';
 import { PrologueAudioDirector } from './PrologueAudioDirector';
 import { PrologueVolumetric } from './PrologueVolumetric';
+import { PrologueFirstWakeHint } from './PrologueFirstWakeHint';
 
 interface Props {
   onComplete: () => void;
@@ -164,7 +165,19 @@ export function ProloguePerfectionOverlay({ onComplete }: Props) {
         )}
 
         {phase === 'handoff' && (
-          <motion.div key="handoff" initial={{ opacity: 1 }} animate={{ opacity: 0, filter: 'blur(18px)', scale: 1.08 }} transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }} className="absolute inset-0 bg-black" aria-hidden />
+          <motion.div
+            key="handoff"
+            initial={{ opacity: 1 }}
+            animate={{ opacity: 0, filter: 'blur(18px)', scale: 1.08 }}
+            transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+            className="absolute inset-0 bg-black flex items-center justify-center"
+            aria-hidden
+          >
+            {/* Финальный хинт перед передачей в кинематик кровати */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <PrologueFirstWakeHint />
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
 
