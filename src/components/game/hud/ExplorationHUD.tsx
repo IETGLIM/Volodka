@@ -30,6 +30,7 @@ import { SceneTopBarHud } from '@/components/game/hud/SceneTopBarHud';
 import { AmbientParticles } from '@/components/game/hud/parts/AmbientParticles';
 import { SprintDrainOverlay } from '@/components/game/hud/parts/SprintDrainOverlay';
 import { AaaImmersiveGuide } from '@/components/game/hud/parts/AaaImmersiveGuide';
+import { AaaWorldMarkerSystem } from '@/components/game/hud/parts/AaaWorldMarkerSystem';
 
 export type { HUDProps } from '@/components/game/hud/hudTypes';
 
@@ -171,6 +172,7 @@ export function ExplorationHUD(props: HUDProps) {
 
       <ContextualHint hint={currentHint} onDismiss={dismissHint} />
       <AaaImmersiveGuide />
+      <AaaWorldMarkerSystem />
       <QuestDirectionArrow />
       <NPCProximityIndicator />
       <LootProximityIndicator />

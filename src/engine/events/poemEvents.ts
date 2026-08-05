@@ -24,6 +24,16 @@ export interface PoemEvents {
   /** Unified reveal pipeline (discovery | power_ritual | explicit_read). */
   'poem:show_reveal': { poemId: string; mode: PoemRevealMode };
   'poem:reveal_end': { poemId?: string; mode?: PoemRevealMode };
+  /** AAA cinematic VFX — per-poem bloom, tint, particle, camera dolly */
+  'poem:cinematic_vfx': {
+    poemId: string;
+    mode: 'discovery' | 'power_ritual' | 'combat';
+    tint: string;
+    particle: 'embers' | 'petals' | 'dust' | 'ink' | 'frost' | 'code';
+    bloomBoost: number;
+    vignetteBoost: number;
+    durationMs: number;
+  };
   /** @deprecated Prefer poem:show_reveal mode=power_ritual */
   'poem:show_cutscene': { poemId: string };
   /** @deprecated Prefer poem:reveal_end */
