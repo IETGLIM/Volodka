@@ -1,7 +1,8 @@
-/* ─── Unified poem reveal shell — one typography / stage pipeline ───
+/* ─── Unified poem reveal shell — AAA luxury — one typography / stage pipeline ───
  * Modes: discovery | power_ritual | explicit_read
  * Stages: kicker → typewriter excerpt → badge → combat cue → dismiss
  * Full poem text stays in the poetry book.
+ * AAA: paper texture, Cormorant Garamond, ink bleed, filmi shadows, no plastic.
  */
 
 import { useCallback, useEffect, useMemo, useRef, memo } from 'react';
@@ -124,7 +125,7 @@ export const PoemRevealShell = memo(function PoemRevealShell({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        transition={{ duration: reducedMotion ? 0 : 0.45 }}
+        transition={{ duration: reducedMotion ? 0 : 0.55, ease: [0.16, 1, 0.3, 1] }}
         data-testid={flags.testId}
         data-poem-reveal-mode={mode}
         role="dialog"
@@ -140,19 +141,22 @@ export const PoemRevealShell = memo(function PoemRevealShell({
           style={{
             zIndex: UI_LAYERS.POEM_VIGNETTE,
             background:
-              'radial-gradient(ellipse at center, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.55) 45%, rgba(0,0,0,0.9) 100%)',
+              'radial-gradient(ellipse at center, rgba(0,0,0,0.10) 0%, rgba(0,0,0,0.52) 44%, rgba(0,0,0,0.88) 100%)',
           }}
         />
 
         <CinematicShell presentation={presentation} backdropVariant="revelation">
-          <div className="relative z-20 flex flex-col items-center w-full max-w-2xl px-6">
+          <div className="relative z-20 flex flex-col items-center w-full max-w-[42rem] px-7">
             {flags.showKicker ? (
-              <p
-                className="mb-3 text-[10px] font-mono tracking-[0.35em] uppercase"
-                style={{ color: `${presentation.accentColor}99` }}
+              <motion.p
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15, duration: 0.6 }}
+                className="mb-3.5 text-[10px] font-mono tracking-[0.38em] uppercase"
+                style={{ color: `${presentation.accentColor}aa` }}
               >
                 {flags.kickerLabel}
-              </p>
+              </motion.p>
             ) : null}
 
             {flags.showTitleCard ? (
@@ -166,18 +170,19 @@ export const PoemRevealShell = memo(function PoemRevealShell({
               />
             ) : null}
 
-            <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+            <div className="mt-3.5 flex flex-wrap items-center justify-center gap-2">
               {flags.showCompletenessBadge ? (
                 <span
-                  className="text-[10px] font-mono tracking-widest uppercase px-2 py-0.5 rounded border"
+                  className="text-[10px] font-mono tracking-widest uppercase px-2.5 py-1 rounded-full border backdrop-blur-md"
                   style={{
-                    color: excerpt.isFragment ? '#fbbf24' : '#66ffaa',
+                    color: excerpt.isFragment ? '#fde68a' : '#86efac',
                     borderColor: excerpt.isFragment
-                      ? 'rgba(251,191,36,0.35)'
-                      : 'rgba(102,255,170,0.35)',
+                      ? 'rgba(253, 230, 138, 0.32)'
+                      : 'rgba(134, 239, 172, 0.32)',
                     background: excerpt.isFragment
-                      ? 'rgba(120,60,10,0.25)'
-                      : 'rgba(0,40,24,0.35)',
+                      ? 'rgba(120,60,10,0.22)'
+                      : 'rgba(0,40,24,0.32)',
+                    boxShadow: `0 0 12px ${presentation.accentColor}18`,
                   }}
                   data-testid="poem-reveal-completeness"
                 >
@@ -186,7 +191,12 @@ export const PoemRevealShell = memo(function PoemRevealShell({
               ) : null}
               {flags.showCombatCue && power && combatCategory ? (
                 <span
-                  className="text-[10px] font-mono tracking-wide px-2 py-0.5 rounded border border-cyan-500/30 text-cyan-200/90 bg-cyan-950/40"
+                  className="text-[10px] font-mono tracking-wide px-2.5 py-1 rounded-full border backdrop-blur-md"
+                  style={{
+                    borderColor: 'rgba(165, 243, 252, 0.28)',
+                    color: 'rgba(165, 243, 252, 0.88)',
+                    background: 'rgba(8, 40, 48, 0.42)',
+                  }}
                   data-testid="poem-reveal-combat-cue"
                 >
                   Бой · {power.name} · {getPoemEffectLabel(combatCategory)}
@@ -195,42 +205,62 @@ export const PoemRevealShell = memo(function PoemRevealShell({
             </div>
 
             <div
-              className="mt-6 w-full text-base sm:text-lg leading-relaxed px-2 min-h-[7.5rem]"
+              className="mt-7 w-full text-base sm:text-[17px] leading-[1.9] px-5 py-6 min-h-[9rem] relative rounded-[14px] overflow-hidden"
+              style={{
+                background: 'linear-gradient(180deg, rgba(18,16,12,0.42) 0%, rgba(10,8,6,0.58) 100%)',
+                border: '1px solid rgba(220,215,210,0.10)',
+                boxShadow: '0 12px 40px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.06)',
+                backdropFilter: 'blur(14px)',
+              }}
               aria-live="polite"
               onClick={(e) => {
                 e.stopPropagation();
                 finish();
               }}
             >
-              {displayedLines.map((line, index) => (
-                <p
-                  key={`${poem.id}-ex-${index}`}
-                  className={`text-center ${line === '' ? 'h-4' : 'mb-1.5'}`}
-                  style={{
-                    fontFamily: '"Georgia", "Times New Roman", serif',
-                    color: 'rgba(225, 238, 248, 0.92)',
-                    textShadow: `0 0 18px ${presentation.accentColor}22`,
-                    whiteSpace: 'pre-wrap',
-                  }}
-                >
-                  {line}
-                  {index === displayedLines.length - 1 && !done && line !== '' ? (
-                    <span className="typewriter-cursor" aria-hidden>
-                      |
-                    </span>
-                  ) : null}
-                </p>
-              ))}
+              <div
+                className="absolute inset-0 pointer-events-none opacity-[0.05] mix-blend-soft-light"
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)'/%3E%3C/svg%3E")`,
+                }}
+                aria-hidden
+              />
+              <div className="relative">
+                {displayedLines.map((line, index) => (
+                  <p
+                    key={`${poem.id}-ex-${index}`}
+                    className={`text-center ${line === '' ? 'h-5' : 'mb-2.5'} tracking-[0.012em]`}
+                    style={{
+                      fontFamily: '"Cormorant Garamond", "Georgia", serif',
+                      fontWeight: line.trim().length < 22 ? 300 : 400,
+                      fontSize: line.trim().length < 16 ? '1.20em' : '1em',
+                      fontStyle: line.trim().length < 12 || line.startsWith(' ') ? 'italic' : 'normal',
+                      color: 'rgba(244, 238, 230, 0.96)',
+                      textShadow: `0 1px 18px rgba(0,0,0,0.62), 0 0 26px ${presentation.accentColor}32`,
+                      whiteSpace: 'pre-wrap',
+                      letterSpacing: '0.014em',
+                      lineHeight: line.trim().length < 12 ? '1.5' : '1.92',
+                    }}
+                  >
+                    {line}
+                    {index === displayedLines.length - 1 && !done && line !== '' ? (
+                      <span className="typewriter-cursor ml-[3px] opacity-80" aria-hidden>
+                        ▌
+                      </span>
+                    ) : null}
+                  </p>
+                ))}
+              </div>
             </div>
 
             {flags.showBookHint ? (
-              <p className="mt-4 text-[10px] font-mono tracking-widest text-slate-500 text-center">
+              <p className="mt-4 text-[10px] font-mono tracking-widest text-stone-500/70 text-center">
                 {completenessHint}
               </p>
             ) : null}
 
             {flags.showPowerDescription && power ? (
-              <p className="mt-2 text-[11px] font-mono text-cyan-300/70 text-center max-w-md leading-relaxed">
+              <p className="mt-3 text-[11px] font-mono text-cyan-200/65 text-center max-w-md leading-relaxed italic">
                 {power.description}
               </p>
             ) : null}
@@ -240,18 +270,20 @@ export const PoemRevealShell = memo(function PoemRevealShell({
                 <motion.button
                   ref={continueRef}
                   type="button"
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  initial={{ opacity: 0, y: 8, filter: 'blur(4px)' }}
+                  animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                   exit={{ opacity: 0 }}
+                  transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                   onClick={(e) => {
                     e.stopPropagation();
                     finish();
                   }}
-                  className="mt-7 px-6 py-2 rounded border font-mono text-xs sm:text-sm tracking-[0.15em] uppercase transition-colors cursor-pointer pointer-events-auto"
+                  className="mt-8 px-7 py-2.5 rounded-full border font-mono text-xs sm:text-sm tracking-[0.16em] uppercase transition-all duration-300 cursor-pointer pointer-events-auto backdrop-blur-md hover:scale-[1.02] active:scale-[0.98]"
                   style={{
-                    color: `${presentation.accentColor}cc`,
+                    color: `${presentation.accentColor}dd`,
                     borderColor: `${presentation.accentColor}44`,
-                    background: `${presentation.accentColor}0a`,
+                    background: `linear-gradient(180deg, ${presentation.accentColor}14 0%, ${presentation.accentColor}08 100%)`,
+                    boxShadow: `0 0 24px ${presentation.accentColor}22, inset 0 1px 0 rgba(255,255,255,0.07)`,
                   }}
                   data-testid="poem-reveal-continue"
                   aria-label="Продолжить"
@@ -259,9 +291,7 @@ export const PoemRevealShell = memo(function PoemRevealShell({
                   Продолжить
                 </motion.button>
               ) : (
-                <p className="mt-7 text-[10px] font-mono tracking-widest text-slate-600">
-                  нажмите, чтобы пропустить
-                </p>
+                <p className="mt-8 text-[10px] font-mono tracking-widest text-stone-600/70">нажмите, чтобы пропустить</p>
               )}
             </AnimatePresence>
           </div>
