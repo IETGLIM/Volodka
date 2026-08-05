@@ -74,14 +74,37 @@ export interface ExplorationMovementTuning {
   damping: number;
 }
 
-const DEFAULT_MOVEMENT_TUNING: ExplorationMovementTuning = { accel: 20, damping: 10 };
+const DEFAULT_MOVEMENT_TUNING: ExplorationMovementTuning = { accel: 22, damping: 11 };
 
 const SCENE_MOVEMENT_TUNING: Partial<Record<SceneId, ExplorationMovementTuning>> = {
-  volodka_room: { accel: 26, damping: 11 },
-  volodka_corridor: { accel: 22, damping: 10 },
+  volodka_room: { accel: 28, damping: 13 },
+  volodka_corridor: { accel: 26, damping: 12 },
+  home_evening: { accel: 24, damping: 12 },
+  cafe_evening: { accel: 24, damping: 11.5 },
+  office_day: { accel: 25, damping: 12 },
+  library_day: { accel: 24, damping: 12 },
+  library_basement: { accel: 27, damping: 13 },
+  guild_mainframe: { accel: 23, damping: 11 },
+  albert_backroom: { accel: 26, damping: 13 },
+  underground_bunker: { accel: 25, damping: 12 },
+  factory_basement: { accel: 24, damping: 11 },
+  abandoned_factory: { accel: 20, damping: 10 },
+  zarema_albert_room: { accel: 26, damping: 12.5 },
+  solnysh_room: { accel: 25, damping: 12 },
+  street_night: { accel: 18, damping: 9 },
+  city_square: { accel: 18, damping: 9 },
+  street_winter: { accel: 19, damping: 9.5 },
+  park_day: { accel: 17, damping: 8.5 },
+  river_pier: { accel: 19, damping: 9 },
+  pier_evening: { accel: 19, damping: 9 },
+  rooftop_edge: { accel: 20, damping: 9.5 },
+  factory_roof: { accel: 20, damping: 9.5 },
+  chk_forest_zorge: { accel: 18, damping: 9 },
+  chk_campfire_night: { accel: 20, damping: 10 },
+  sleep_dream: { accel: 16, damping: 8 },
 };
 
-/** Tighter accel/damping in cramped interiors — less ice-skating between furniture. */
+/** Tighter accel/damping in cramped interiors — less ice-skating, more AAA weight */
 export function getExplorationMovementTuning(sceneId: SceneId): ExplorationMovementTuning {
   return SCENE_MOVEMENT_TUNING[sceneId] ?? DEFAULT_MOVEMENT_TUNING;
 }

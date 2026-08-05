@@ -22,13 +22,15 @@ import type { CameraModeStrategy } from '../types';
 import { consumeLandingFovDip } from '../landingImpact';
 
 // ── Sprint-start FOV kick (envelope decays after the walk→run transition) ──
-// A brief extra 0.6° on top of the steady RUN_FOV_BOOST when the runner crosses
-// into sprint, decaying over ~0.25s. Reads as acceleration / camera lurch.
 let _sprintKickEnvelope = 0;
 let _prevSprintActive = false;
 const SPRINT_KICK_FOV_DEG = 0.6;
-const SPRINT_KICK_SPEED_THRESHOLD = 5.5; // m/s, just below RUN_FOV_SPEED_FULL
-const SPRINT_KICK_DECAY = 4; // 1/s
+const SPRINT_KICK_SPEED_THRESHOLD = 5.5;
+const SPRINT_KICK_DECAY = 4;
+// ── AAA handheld: subtle idle micro-sway even when still (filmi operator breathing) ──
+let _handheldPhase = 0;
+const HANDHELD_FREQ = 0.22;
+const HANDHELD_AMP = 0.0009;
 
 /** Default spring-based exploration camera with look-ahead and breathing bob */
 export const explorationStrategy: CameraModeStrategy = {
@@ -132,6 +134,15 @@ export const explorationStrategy: CameraModeStrategy = {
       );
       targetRoll = expResult.targetRoll;
       heightOffset = expResult.targetHeight - playerPos.y;
+    }
+
+    // ── AAA handheld micro-sway — operator breathing, only when almost still ──
+    _handheldPhase += ctx.delta * HANDHELD_FREQ;
+    if (playerSpeed < 0.15) {
+      const swayX = Math.sin(_handheldPhase * 1.31) * HANDHELD_AMP;
+      const swayY = Math.cos(_handheldPhase * 0.83) * HANDHELD_AMP * 0.6;
+      heightOffset += swayY;
+      targetRoll += swayX;
     }
 
     ctx.prevVelocitySmooth.lerp(

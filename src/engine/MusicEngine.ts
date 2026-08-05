@@ -152,7 +152,9 @@ interface SceneMusicConfig {
   masterGain: number;
 }
 
-/** Per-act harmonic/tempo identity layered on top of scene beds. */
+/** Per-act harmonic/tempo identity — AAA mood tables (free, no paid stems) */
+import { AAA_ACT_MOODS, SCENE_MOOD_OVERRIDE } from './audio/aaaProceduralMood';
+
 const ACT_MUSIC_TINT: Record<number, { rootMidiDelta: number; tempoMult: number }> = {
   1: { rootMidiDelta: 0, tempoMult: 1 },
   2: { rootMidiDelta: 2, tempoMult: 1.02 },
@@ -163,18 +165,30 @@ const ACT_MUSIC_TINT: Record<number, { rootMidiDelta: number; tempoMult: number 
   7: { rootMidiDelta: 1, tempoMult: 0.9 },
 };
 
-function applyActMusicTint(config: SceneMusicConfig): SceneMusicConfig {
+function applyActMusicTint(config: SceneMusicConfig, sceneId?: SceneId): SceneMusicConfig {
   let act = 1;
   try {
     act = getGameSnapshot().playerState.progression.currentAct ?? 1;
-  } catch {
-    /* snapshot may be unavailable during early boot */
-  }
-  const tint = ACT_MUSIC_TINT[act] ?? ACT_MUSIC_TINT[1];
+  } catch { /* snapshot may be unavailable during early boot */ }
+  const legacyTint = ACT_MUSIC_TINT[act] ?? ACT_MUSIC_TINT[1];
+  const mood = AAA_ACT_MOODS[act] ?? AAA_ACT_MOODS[1];
+  const sceneOverride = sceneId ? SCENE_MOOD_OVERRIDE[sceneId] : undefined;
+
+  const rootDelta = sceneOverride?.rootSemitoneDelta ?? mood.rootSemitoneDelta ?? legacyTint.rootMidiDelta;
+  const tempoM = (sceneOverride?.tempoMult ?? mood.tempoMult ?? legacyTint.tempoMult);
+  const filterM = sceneOverride?.padFilterMult ?? mood.padFilterMult ?? 1;
+  const reverbM = sceneOverride?.reverbMult ?? mood.reverbMult ?? 1;
+  const lfoM = sceneOverride?.lfoMult ?? mood.lfoMult ?? 1;
+
   return {
     ...config,
-    rootMidi: config.rootMidi + tint.rootMidiDelta,
-    tempo: Math.max(30, Math.round(config.tempo * tint.tempoMult)),
+    rootMidi: config.rootMidi + rootDelta,
+    tempo: Math.max(28, Math.round(config.tempo * tempoM)),
+    padFilterFreq: Math.max(180, Math.round(config.padFilterFreq * filterM)),
+    padReverbMix: Math.min(0.92, Math.max(0.15, config.padReverbMix * reverbM)),
+    padReverbDecay: Math.max(1.2, config.padReverbDecay * reverbM),
+    padLfoFreq: Math.max(0.02, config.padLfoFreq * lfoM),
+    padLfoDepth: Math.max(18, Math.round(config.padLfoDepth * lfoM)),
   };
 }
 
@@ -889,7 +903,7 @@ class MusicEngine {
     setTimeout(() => {
       // Guard: if another scene change happened since we started, abort
       if (this.disposed || this.sceneGeneration !== myGeneration) return;
-      this.startMusicForScene(sceneId, applyActMusicTint(config));
+      this.startMusicForScene(sceneId, applyActMusicTint(config, sceneId));
     }, startDelay);
   }
 
