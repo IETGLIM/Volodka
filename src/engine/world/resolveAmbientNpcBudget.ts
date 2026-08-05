@@ -2,9 +2,9 @@ import { getSceneVisualProfile, isHeroScene } from '@/config/sceneVisualProfiles
 import { tierFromPresetId } from '@/engine/graphics/fxGovernor';
 import type { SceneId } from '@/shared/types/game';
 
-export const MAX_AMBIENT_NPC_INSTANCES = 8;
+export const MAX_AMBIENT_NPC_INSTANCES = 16;
 
-/** Scale background NPC count by hero scene and graphics tier. */
+/** Scale background NPC count by hero scene and graphics tier — AAA density */
 export function resolveAmbientNpcCount(
   sceneId: SceneId,
   baseCount: number,
@@ -12,11 +12,14 @@ export function resolveAmbientNpcCount(
 ): number {
   if (baseCount <= 0) return 0;
 
-  let boost = 0;
+  let boost = 2; // base AAA lift
   if (isHeroScene(sceneId)) {
     const tier = tierFromPresetId(presetId);
-    boost = tier === 'high' ? 2 : tier === 'medium' ? 1 : 0;
+    boost += tier === 'ultra' ? 6 : tier === 'high' ? 4 : tier === 'medium' ? 2 : 1;
     boost += getSceneVisualProfile(sceneId).ambientNpcCountBoost ?? 0;
+  } else {
+    const tier = tierFromPresetId(presetId);
+    boost += tier === 'ultra' ? 3 : tier === 'high' ? 2 : 0;
   }
 
   return Math.min(baseCount + boost, MAX_AMBIENT_NPC_INSTANCES);

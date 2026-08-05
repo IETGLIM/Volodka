@@ -68,17 +68,56 @@ export function disposeRegisteredModuleMaterial(material: THREE.Material): void 
   }
 }
 
+/**
+ * AAA Pass: auto de-plasticize any procedural shared material.
+ * Clamp envMapIntensity, enforce roughness floor, reduce metalness for organic names.
+ */
+function aaaDeplasticizeParams(params: THREE.MeshStandardMaterialParameters): THREE.MeshStandardMaterialParameters {
+  const nameHint = `${params.name ?? ''} ${params.color ?? ''}`.toLowerCase();
+  const isOrganic =
+    /skin|cloth|wood|fabric|plaster|wall|concrete|brick|paper|book|cotton|denim|leather/.test(nameHint) ||
+    typeof params.color === 'string';
+
+  const out = { ...params };
+
+  // Always lower env response — plastic shine = high envMapIntensity on Standard
+  if (out.envMapIntensity === undefined) {
+    out.envMapIntensity = isOrganic ? 0.22 : 0.32;
+  } else {
+    out.envMapIntensity = Math.min(out.envMapIntensity, isOrganic ? 0.32 : 0.45);
+  }
+
+  // Roughness floor — never go below 0.55 for organic tissue
+  const ro = out.roughness ?? 0.8;
+  out.roughness = Math.max(isOrganic ? 0.62 : 0.45, ro);
+
+  // Metalness ceiling — cloth/wood should not be metallic
+  if (out.metalness !== undefined) {
+    out.metalness = Math.min(out.metalness, isOrganic ? 0.12 : 0.45);
+  } else {
+    out.metalness = isOrganic ? 0.03 : 0.08;
+  }
+
+  // Emissive too bright = neon plastic
+  if (out.emissiveIntensity !== undefined && out.emissiveIntensity > 0.6) {
+    out.emissiveIntensity = Math.min(out.emissiveIntensity, 0.45);
+  }
+
+  return out;
+}
+
 export function getSharedStandardMaterial(
   params: THREE.MeshStandardMaterialParameters,
 ): THREE.MeshStandardMaterial {
-  const key = serializeStandardMaterialParams(params);
+  const aaaParams = aaaDeplasticizeParams(params);
+  const key = serializeStandardMaterialParams(aaaParams);
   const cached = sharedStandardMaterialCache.get(key);
   if (cached && moduleMaterials.has(cached)) {
     claimMaterialForActiveScene(cached);
     return cached;
   }
 
-  const material = registerModuleMaterial(new THREE.MeshStandardMaterial(params));
+  const material = registerModuleMaterial(new THREE.MeshStandardMaterial(aaaParams));
   sharedStandardMaterialCache.set(key, material);
   return material;
 }

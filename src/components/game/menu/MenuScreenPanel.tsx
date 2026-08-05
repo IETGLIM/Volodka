@@ -4,11 +4,11 @@ import { Volume2, VolumeX } from 'lucide-react';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { MenuAboutPanel } from '@/components/game/menu/MenuAboutPanel';
 import { MenuBackgroundEffects } from '@/components/game/menu/MenuBackgroundEffects';
-import { MenuGlitchTitle } from '@/components/game/menu/MenuGlitchTitle';
 import { MenuNavigationList } from '@/components/game/menu/MenuNavigationList';
 import { MenuSettingsPanel } from '@/components/game/menu/MenuSettingsPanel';
 import { MenuTypewriterSubtitle } from '@/components/game/menu/MenuTypewriterSubtitle';
 import { SkipPrologueOverlay } from '@/components/game/menu/SkipPrologueOverlay';
+import { MenuAaaPoemSpotlight } from '@/components/game/menu/MenuAaaPoemSpotlight';
 import { useMenuSavePreview } from '@/components/game/menu/useMenuSavePreview';
 import { useMenuScreen } from '@/components/game/menu/useMenuScreen';
 import {
@@ -45,6 +45,69 @@ function d(baseDelay: number, visited: boolean): number {
   return visited ? baseDelay * 0.4 : baseDelay;
 }
 
+/* ── AAA Lux Title — filmi serif with light bleed, volumetric glow ── */
+function AaaLuxTitle({ text, animate, visited }: { text: string; animate: boolean; visited: boolean }) {
+  const reducedMotion = useEffectiveReducedMotion();
+  const [parallax, setParallax] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    if (reducedMotion) return;
+    const onMove = (e: MouseEvent) => {
+      const cx = window.innerWidth / 2;
+      const cy = window.innerHeight / 2;
+      setParallax({
+        x: ((e.clientX - cx) / cx) * 10,
+        y: ((e.clientY - cy) / cy) * 6,
+      });
+    };
+    window.addEventListener('mousemove', onMove, { passive: true });
+    return () => window.removeEventListener('mousemove', onMove);
+  }, [reducedMotion]);
+
+  return (
+    <div className="relative">
+      <div
+        className="absolute inset-0 blur-[52px] pointer-events-none opacity-70"
+        style={{
+          background: 'radial-gradient(ellipse at center, rgba(0,255,255,0.16) 0%, rgba(255,180,80,0.08) 38%, transparent 72%)',
+          transform: `translate(${parallax.x * 0.35}px, ${parallax.y * 0.35}px)`,
+        }}
+        aria-hidden
+      />
+      <motion.h1
+        initial={animate && !reducedMotion ? { opacity: 0, y: 22, filter: 'blur(14px)', letterSpacing: '0.3em' } : { opacity: 1 }}
+        animate={{ opacity: 1, y: 0, filter: 'blur(0px)', letterSpacing: '0.18em' }}
+        transition={{ duration: 2.4, delay: d(0.15, visited), ease: [0.16, 1, 0.3, 1] }}
+        className="relative font-serif text-[3.2rem] md:text-[5.6rem] lg:text-[7.2rem] font-[280] tracking-[0.18em] leading-none select-none"
+        style={{
+          transform: `translate(${parallax.x}px, ${parallax.y}px)`,
+          textShadow: '0 0 44px rgba(0,255,255,0.26), 0 0 140px rgba(255,200,100,0.14), 0 2px 0 rgba(0,0,0,0.75), 0 12px 28px rgba(0,0,0,0.55)',
+          color: 'rgb(236, 239, 237)',
+        }}
+      >
+        <span className="relative inline-block">
+          {text}
+          <span
+            className="absolute inset-0 bg-gradient-to-b from-white/14 via-transparent to-transparent bg-clip-text text-transparent pointer-events-none"
+            aria-hidden
+          >
+            {text}
+          </span>
+        </span>
+      </motion.h1>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 0.11 }}
+        transition={{ delay: d(1.5, visited), duration: 1.4 }}
+        className="pointer-events-none select-none font-serif text-[3.2rem] md:text-[5.6rem] lg:text-[7.2rem] font-[280] tracking-[0.18em] leading-none scale-y-[-0.58] -mt-4 blur-[0.7px] [mask-image:linear-gradient(to_bottom,rgba(0,0,0,0.42)_0%,transparent_58%)]"
+        aria-hidden
+      >
+        {text}
+      </motion.div>
+    </div>
+  );
+}
+
 function MenuScreenPanelInner() {
   const actions = useMenuScreenActions();
   const { matrixRainEnabled } = useMenuVisualToggles();
@@ -53,13 +116,9 @@ function MenuScreenPanelInner() {
   const fx = getMenuScreenFx(deviceTier, reducedMotion);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // Track repeat visits to reduce animation delays
   const [visited] = useState(checkHasVisitedBefore);
-
-  // New Game confirmation dialog
   const [showNewGameDialog, setShowNewGameDialog] = useState(false);
 
-  // Mark this visit on mount
   useEffect(() => {
     markMenuVisited();
   }, []);
@@ -88,7 +147,6 @@ function MenuScreenPanelInner() {
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps
   }, [menu.showAbout, menu.showSettings, menu.closeAbout, menu.closeSettings, showNewGameDialog]);
 
   const contentMotion = fx.contentMotion && !reducedMotion;
@@ -103,20 +161,17 @@ function MenuScreenPanelInner() {
       }
       menu.handleMenuAction(id);
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- method refs already in deps
     [showNewGameDialog, menu.handleMenuAction],
   );
 
   const handleDialogStartPrologue = useCallback(() => {
     setShowNewGameDialog(false);
     menu.handleNewGame(false);
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- method refs already in deps
   }, [menu.handleNewGame]);
 
   const handleDialogSkipPrologue = useCallback(() => {
     setShowNewGameDialog(false);
     menu.handleNewGame(true);
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- method refs already in deps
   }, [menu.handleNewGame]);
 
   const handleDialogClose = useCallback(() => {
@@ -130,32 +185,31 @@ function MenuScreenPanelInner() {
       style={{ zIndex: UI_LAYERS.LOADING }}
       data-testid="menu-screen"
     >
-      <MenuBackgroundEffects
-        fx={fx}
-        tier={deviceTier}
-        matrixRainEnabled={matrixRainEnabled}
-        contentMotion={contentMotion}
-      />
+      <MenuBackgroundEffects fx={fx} tier={deviceTier} matrixRainEnabled={matrixRainEnabled} contentMotion={contentMotion} />
+
+      {/* AAA layered vignette + film grain */}
+      <div className="absolute inset-0 pointer-events-none z-[5] opacity-[0.06] mix-blend-soft-light" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")` }} aria-hidden />
+      <div className="absolute inset-0 pointer-events-none z-[6] bg-[radial-gradient(ellipse_at_center,transparent_42%,rgba(0,0,0,0.55)_100%)]" aria-hidden />
 
       <div className="relative z-10 flex min-h-[100dvh] w-full flex-col items-center justify-center p-4">
         <div className="cinematic-menu-brand-stage flex flex-col items-center px-4">
-          <MenuGlitchTitle text={MENU_TITLE} animate={fx.titleGlitch} parallax={fx.titleParallax} />
+          <AaaLuxTitle text={MENU_TITLE} animate={contentMotion} visited={visited} />
           <MenuTypewriterSubtitle text={MENU_SUBTITLE} delay={d(1, visited)} enabled={contentMotion} />
 
           <motion.p
-            initial={contentMotion ? { opacity: 0, y: 5 } : false}
-            animate={{ opacity: 0.68, y: 0 }}
-            transition={{ delay: d(1.8, visited), duration: 1.2 }}
-            className="mt-1 max-w-md text-center font-serif text-sm md:text-base tracking-[0.18em] text-stone-300/70"
+            initial={contentMotion ? { opacity: 0, y: 6 } : false}
+            animate={{ opacity: 0.76, y: 0 }}
+            transition={{ delay: d(1.9, visited), duration: 1.3, ease: [0.16, 1, 0.3, 1] }}
+            className="mt-3 max-w-[32rem] text-center font-serif text-sm md:text-[15px] tracking-[0.22em] text-stone-300/70 leading-relaxed"
           >
             {MENU_TAGLINE}
           </motion.p>
 
           <motion.p
-            initial={contentMotion ? { opacity: 0, y: 5 } : false}
-            animate={{ opacity: 0.52, y: 0 }}
-            transition={{ delay: d(2.5, visited), duration: 1.2 }}
-            className="mt-2 font-serif text-xs md:text-sm tracking-[0.2em] italic"
+            initial={contentMotion ? { opacity: 0, y: 6 } : false}
+            animate={{ opacity: 0.62, y: 0 }}
+            transition={{ delay: d(2.6, visited), duration: 1.2 }}
+            className="mt-3 font-serif text-xs md:text-[13px] tracking-[0.24em] italic"
             style={{ color: 'var(--hud-filmic-ink-meta)' }}
           >
             {MENU_POET_CREDIT}
@@ -163,28 +217,30 @@ function MenuScreenPanelInner() {
         </div>
 
         <motion.div
-          initial={contentMotion ? { opacity: 0, y: 8 } : false}
+          initial={contentMotion ? { opacity: 0, y: 10 } : false}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: d(3, visited), duration: 1.8 }}
-          className="mt-4 flex flex-col items-center gap-2"
+          transition={{ delay: d(3, visited), duration: 1.7, ease: [0.16, 1, 0.3, 1] }}
+          className="mt-7 flex flex-col items-center gap-2"
         >
-          <div className="w-16 h-px bg-gradient-to-r from-transparent via-stone-400/30 to-transparent" />
-          <p className="font-serif text-xs sm:text-sm md:text-base tracking-[0.15em] italic dedication-glow text-stone-300/75">
+          <div className="w-24 h-px bg-gradient-to-r from-transparent via-amber-200/30 to-transparent" />
+          <p className="font-serif text-xs sm:text-sm md:text-[15px] tracking-[0.18em] italic dedication-glow text-stone-200/85 text-center max-w-[30rem] leading-relaxed px-4">
             {MENU_DEDICATION}
           </p>
+          <div className="w-24 h-px bg-gradient-to-r from-transparent via-cyan-200/22 to-transparent" />
         </motion.div>
 
-        {/* hud-filmic-divider — section break between dedication and primary nav */}
-        <div className="hud-filmic-divider" aria-hidden style={{ margin: '6px 0', width: '16rem' }} />
+        <div className="hud-filmic-divider mt-3" aria-hidden style={{ width: '20rem', opacity: 0.7 }} />
 
         <motion.div
           ref={menuRef}
-          initial={contentMotion ? { opacity: 0, y: 20 } : false}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: d(1.8, visited) }}
-          className="mt-8 w-full max-w-xs"
+          initial={contentMotion ? { opacity: 0, y: 22, filter: 'blur(6px)' } : false}
+          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+          transition={{ duration: 0.8, delay: d(2.0, visited), ease: [0.16, 1, 0.3, 1] }}
+          className="mt-9 w-full max-w-[24rem]"
         >
-          <div className="relative overflow-hidden cinematic-menu-panel cinematic-menu-primary-nav hud-filmic-menu">
+          <div className="relative overflow-hidden cinematic-menu-panel cinematic-menu-primary-nav hud-filmic-menu backdrop-blur-[20px] bg-gradient-to-b from-black/45 to-black/60 border border-stone-600/20 shadow-[0_12px_48px_rgba(0,0,0,0.7),inset_0_1px_0_rgba(255,255,255,0.08),inset_0_-1px_0_rgba(0,0,0,0.6)] rounded-[14px]">
+            <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-white/[0.05] via-transparent to-transparent" aria-hidden />
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" aria-hidden />
             <MenuNavigationList
               items={menu.menuItems}
               selectedIndex={menu.selectedIndex}
@@ -200,33 +256,34 @@ function MenuScreenPanelInner() {
         <motion.div
           initial={contentMotion ? { opacity: 0 } : false}
           animate={{ opacity: 1 }}
-          transition={{ delay: d(3.5, visited), duration: 1 }}
-          className="mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5"
+          transition={{ delay: d(3.8, visited), duration: 1 }}
+          className="mt-7 flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5"
           aria-hidden="true"
         >
-          <span className="font-serif text-[10px] tracking-[0.18em]" style={{ color: 'var(--hud-filmic-ink-meta)' }}>↑↓ Навигация</span>
-          <span className="font-serif text-[10px] tracking-[0.18em]" style={{ color: 'var(--hud-filmic-ink-meta)' }}>Enter Выбрать</span>
+          <span className="font-serif text-[10px] tracking-[0.24em] text-stone-500/70">↑↓ Навигация</span>
+          <span className="w-px h-3 bg-stone-700/30" />
+          <span className="font-serif text-[10px] tracking-[0.24em] text-stone-500/70">Enter Выбрать</span>
+          <span className="w-px h-3 bg-stone-700/30 hidden md:block" />
+          <span className="font-serif text-[10px] tracking-[0.24em] text-stone-500/50 hidden md:block">Esc Назад</span>
         </motion.div>
       </div>
+
+      <MenuAaaPoemSpotlight enabled={contentMotion} />
 
       <motion.button
         type="button"
         initial={contentMotion ? { opacity: 0 } : false}
         animate={{ opacity: 1 }}
-        transition={{ delay: d(2, visited) }}
+        transition={{ delay: d(2.2, visited) }}
         onClick={() => {
           menu.toggleMusic();
           safePlayMenuSfx(audioEngine.playSfx.bind(audioEngine), 'click');
         }}
-        className="absolute bottom-8 right-6 z-50 flex items-center gap-1.5 px-2 py-1.5 text-stone-400/60 hover:text-stone-200/80 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-stone-300/50"
+        className="absolute bottom-8 right-6 z-50 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/30 backdrop-blur-md border border-stone-700/20 text-stone-400/70 hover:text-stone-100/90 hover:bg-black/50 hover:border-stone-600/30 transition-all duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-stone-300/50"
         aria-label={menu.musicEnabled ? 'Выключить музыку' : 'Включить музыку'}
       >
-        {menu.musicEnabled ? (
-          <Volume2 className="w-3.5 h-3.5" />
-        ) : (
-          <VolumeX className="w-3.5 h-3.5" />
-        )}
-        <span className="font-serif text-[9px] tracking-[0.2em] uppercase">
+        {menu.musicEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
+        <span className="font-serif text-[10px] tracking-[0.2em] uppercase">
           {menu.musicEnabled ? 'Музыка' : 'Тишина'}
         </span>
       </motion.button>
@@ -234,24 +291,17 @@ function MenuScreenPanelInner() {
       <motion.div
         initial={contentMotion ? { opacity: 0 } : false}
         animate={{ opacity: 1 }}
-        transition={{ delay: d(2.5, visited) }}
-        className="absolute bottom-8 left-6 z-30"
+        transition={{ delay: d(2.6, visited) }}
+        className="absolute bottom-8 left-6 z-30 px-2.5 py-1 rounded-full bg-black/25 backdrop-blur-md border border-stone-800/30"
         aria-hidden="true"
       >
-        <span className="font-serif text-[10px] tracking-[0.15em]" style={{ color: 'var(--hud-filmic-ink-dim)' }}>v{APP_VERSION}</span>
+        <span className="font-serif text-[10px] tracking-[0.18em] text-stone-500/70">v{APP_VERSION}</span>
       </motion.div>
 
-      <AnimatePresence>
-        {menu.showAbout ? <MenuAboutPanel onClose={menu.closeAbout} /> : null}
-      </AnimatePresence>
-
+      <AnimatePresence>{menu.showAbout ? <MenuAboutPanel onClose={menu.closeAbout} /> : null}</AnimatePresence>
       <AnimatePresence>
         {menu.showSettings ? (
-          <MenuSettingsPanel
-            musicEnabled={menu.musicEnabled}
-            onToggleMusic={menu.toggleMusic}
-            onClose={menu.closeSettings}
-          />
+          <MenuSettingsPanel musicEnabled={menu.musicEnabled} onToggleMusic={menu.toggleMusic} onClose={menu.closeSettings} />
         ) : null}
       </AnimatePresence>
 
@@ -259,56 +309,38 @@ function MenuScreenPanelInner() {
         {showNewGameDialog ? (
           <motion.div
             key="new-game-dialog-backdrop"
-            className="fixed inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+            className="fixed inset-0 flex items-center justify-center bg-black/75 backdrop-blur-[12px]"
             style={{ zIndex: UI_LAYERS.MENU }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.25 }}
+            transition={{ duration: 0.3 }}
             onClick={handleDialogClose}
           >
             <motion.div
               key="new-game-dialog"
-              className="w-full max-w-xs mx-4"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 8 }}
-              transition={{ duration: 0.28 }}
+              className="w-full max-w-[22rem] mx-4"
+              initial={{ opacity: 0, y: 14, scale: 0.98, filter: 'blur(8px)' }}
+              animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+              exit={{ opacity: 0, y: 10, scale: 0.98, filter: 'blur(6px)' }}
+              transition={{ duration: 0.38, ease: [0.16, 1, 0.3, 1] }}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="relative overflow-hidden cinematic-menu-panel hud-filmic-menu px-5 py-5 text-center">
-                <p className="font-serif text-[11px] tracking-[0.3em] uppercase mb-2" style={{ color: 'var(--hud-filmic-ink-meta)' }}>
-                  Начало
-                </p>
-                <p className="font-serif text-xl tracking-[0.12em] text-stone-100/90 mb-2">
-                  Новая игра
-                </p>
-                <p className="font-serif text-sm text-stone-400/70 leading-relaxed mb-5">
-                  Пройти вступление с пробуждением и первыми шагами или сразу выйти в город?
-                </p>
-
-                <div className="flex flex-col gap-1">
-                  <button
-                    type="button"
-                    data-testid="menu-start-prologue"
-                    onClick={handleDialogStartPrologue}
-                    className="cinematic-menu-item cinematic-menu-item--selected"
-                  >
+              <div className="relative overflow-hidden rounded-[16px] border border-stone-600/20 bg-gradient-to-b from-zinc-900/90 to-black/90 backdrop-blur-[24px] shadow-[0_20px_60px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.07)] px-6 py-6 text-center">
+                <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top,_rgba(255,255,255,0.06)_0%,transparent_60%)]" aria-hidden />
+                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" aria-hidden />
+                <p className="font-serif text-[11px] tracking-[0.34em] uppercase mb-3 text-stone-500/80">Начало</p>
+                <p className="font-serif text-2xl tracking-[0.14em] text-stone-100/90 mb-3">Новая игра</p>
+                <p className="font-serif text-sm text-stone-400/70 leading-relaxed mb-6">Пройти вступление с пробуждением и первыми шагами или сразу выйти в город?</p>
+                <div className="flex flex-col gap-2">
+                  <button type="button" data-testid="menu-start-prologue" onClick={handleDialogStartPrologue} className="group relative overflow-hidden rounded-[10px] bg-white/[0.06] hover:bg-white/[0.10] border border-white/10 hover:border-white/15 py-3 px-4 text-stone-100/90 font-serif text-[13px] tracking-[0.12em] transition-all duration-300">
+                    <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.08] to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" aria-hidden />
                     Начать с пролога
                   </button>
-                  <button
-                    type="button"
-                    data-testid="menu-skip-prologue"
-                    onClick={handleDialogSkipPrologue}
-                    className="cinematic-menu-item"
-                  >
+                  <button type="button" data-testid="menu-skip-prologue" onClick={handleDialogSkipPrologue} className="rounded-[10px] bg-black/30 hover:bg-white/[0.04] border border-stone-700/30 hover:border-stone-600/40 py-3 px-4 text-stone-300/80 font-serif text-[13px] tracking-[0.12em] transition-all duration-300">
                     Пропустить пролог
                   </button>
-                  <button
-                    type="button"
-                    onClick={handleDialogClose}
-                    className="cinematic-menu-item cinematic-menu-item--muted mt-1"
-                  >
+                  <button type="button" onClick={handleDialogClose} className="rounded-[10px] bg-transparent hover:bg-white/[0.03] border border-transparent hover:border-stone-800/40 py-2.5 px-4 text-stone-500/70 hover:text-stone-400/80 font-serif text-[12px] tracking-[0.16em] transition-all duration-300 mt-1">
                     Отмена
                   </button>
                 </div>
@@ -320,27 +352,11 @@ function MenuScreenPanelInner() {
 
       <AnimatePresence mode="wait">
         {menu.isFadingOut ? (
-          <motion.div
-            key="menu-fadeout"
-            className="fixed inset-0 bg-black"
-            style={{ zIndex: UI_LAYERS.PANEL }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.8 }}
-            aria-hidden="true"
-          />
+          <motion.div key="menu-fadeout" className="fixed inset-0 bg-black" style={{ zIndex: UI_LAYERS.PANEL }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }} aria-hidden="true" />
         ) : null}
       </AnimatePresence>
 
-      {/* SkipPrologueOverlay — 3-page typewriter intro shown when the player
-          picks "Пропустить пролог". onComplete opens the existing
-          skip_prologue_intro story node (preserved spawn logic). */}
-      <AnimatePresence>
-        {menu.showSkipPrologueOverlay ? (
-          <SkipPrologueOverlay onComplete={menu.handleSkipPrologueComplete} />
-        ) : null}
-      </AnimatePresence>
+      <AnimatePresence>{menu.showSkipPrologueOverlay ? <SkipPrologueOverlay onComplete={menu.handleSkipPrologueComplete} /> : null}</AnimatePresence>
     </div>
   );
 }

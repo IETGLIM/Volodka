@@ -14,11 +14,11 @@ export interface DeplasticizeCharacterOptions {
 }
 
 const DEFAULTS: Required<DeplasticizeCharacterOptions> = {
-  envMapIntensity: 0.55,
-  minRoughness: 0.62,
-  roughnessMul: 1.34,
-  maxMetalness: 0.15,
-  maxEmissiveIntensity: 0.38,
+  envMapIntensity: 0.38,
+  minRoughness: 0.68,
+  roughnessMul: 1.42,
+  maxMetalness: 0.12,
+  maxEmissiveIntensity: 0.32,
 };
 
 /**
@@ -49,12 +49,12 @@ export function deplasticizeCharacterMaterials(
         /metal|steel|iron|chrome|weapon|gun|blade|buckle/.test(name);
 
       std.envMapIntensity = isSkin
-        ? Math.min(opts.envMapIntensity, 0.48)
+        ? Math.min(opts.envMapIntensity, 0.32)
         : isCloth
-          ? Math.min(opts.envMapIntensity, 0.55)
-          : opts.envMapIntensity;
+          ? Math.min(opts.envMapIntensity, 0.35)
+          : Math.min(opts.envMapIntensity, 0.38);
 
-      const roughFloor = isSkin ? 0.62 : isCloth ? 0.72 : opts.minRoughness;
+      const roughFloor = isSkin ? 0.68 : isCloth ? 0.82 : opts.minRoughness;
       std.roughness = Math.min(
         1,
         Math.max(roughFloor, (std.roughness ?? 0.55) * opts.roughnessMul),
@@ -63,8 +63,8 @@ export function deplasticizeCharacterMaterials(
       if (!isMetalKit) {
         std.metalness = Math.min(opts.maxMetalness, std.metalness ?? 0);
       } else {
-        std.metalness = Math.min(0.72, Math.max(0.35, std.metalness ?? 0.5));
-        std.roughness = Math.min(std.roughness, 0.55);
+        std.metalness = Math.min(0.62, Math.max(0.32, std.metalness ?? 0.45));
+        std.roughness = Math.min(std.roughness, 0.52);
       }
 
       if (std.emissiveIntensity > opts.maxEmissiveIntensity) {
@@ -75,6 +75,23 @@ export function deplasticizeCharacterMaterials(
       if (std.flatShading) {
         std.flatShading = false;
         std.needsUpdate = true;
+      }
+
+      // AAA: add subtle sheen for cloth/skin when using Physical (graceful on Standard)
+      const physical = std as unknown as THREE.MeshPhysicalMaterial;
+      if (isCloth && 'sheen' in physical) {
+        try {
+          (physical as any).sheen = Math.max((physical as any).sheen ?? 0, 0.4);
+          (physical as any).sheenRoughness = 0.72;
+          (physical as any).sheenColor = new THREE.Color('#5a5a6a');
+        } catch { /* ignore */ }
+      }
+      if (isSkin && 'sheen' in physical) {
+        try {
+          (physical as any).sheen = Math.max((physical as any).sheen ?? 0, 0.25);
+          (physical as any).sheenRoughness = 0.62;
+          (physical as any).sheenColor = new THREE.Color('#ffdfc4');
+        } catch { /* ignore */ }
       }
     }
   });

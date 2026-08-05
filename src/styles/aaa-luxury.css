@@ -1,0 +1,307 @@
+/* ─── Volodka RPG – AAA Luxury Polish — filmi, tactile, no plastic ───
+ * Global luxury layer that makes the whole game feel like a high-end
+ * cinematic experience. Low-cost CSS, no extra JS.
+ * Mounted after hud-filmic to override with more depth.
+ */
+
+:root {
+  /* Softer, warmer grain */
+  --aaa-grain-opacity: 0.035;
+  --aaa-grain-size: 180px;
+  /* Filmi spotlight */
+  --aaa-spot-warm: rgba(255, 220, 160, 0.07);
+  --aaa-spot-cool: rgba(140, 190, 230, 0.06);
+  /* Glass luxe */
+  --aaa-glass-bg: rgba(8, 10, 16, 0.42);
+  --aaa-glass-border: rgba(220, 215, 210, 0.12);
+  --aaa-glass-highlight: rgba(255, 255, 255, 0.06);
+}
+
+/* ── Global film grain — ultra-subtle, always on, luxury texture ── */
+html::after {
+  content: '';
+  position: fixed;
+  inset: -50%;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: var(--aaa-grain-opacity);
+  mix-blend-mode: soft-light;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.92' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: aaa-grain-shift 8s steps(10) infinite;
+}
+
+@keyframes aaa-grain-shift {
+  0% { transform: translate(0, 0); }
+  10% { transform: translate(-2%, -3%); }
+  20% { transform: translate(1%, 2%); }
+  30% { transform: translate(-1%, 1%); }
+  40% { transform: translate(2%, -2%); }
+  50% { transform: translate(-2%, 2%); }
+  60% { transform: translate(1%, -1%); }
+  70% { transform: translate(-1%, -2%); }
+  80% { transform: translate(2%, 1%); }
+  90% { transform: translate(-2%, -1%); }
+  100% { transform: translate(0, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html::after { animation: none; opacity: calc(var(--aaa-grain-opacity) * 0.5); }
+}
+
+/* ── Cinematic vignette — softer, deeper, filmi ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9998;
+  background:
+    radial-gradient(ellipse 85% 72% at 50% 46%, transparent 48%, rgba(0,0,0,0.18) 78%, rgba(0,0,0,0.48) 100%),
+    radial-gradient(ellipse 140% 90% at 50% -10%, rgba(255,220,160,0.04) 0%, transparent 42%),
+    radial-gradient(ellipse 120% 70% at 80% 120%, rgba(120,160,210,0.05) 0%, transparent 55%);
+}
+
+/* ── Lux glass panels — replace flat black with depth ── */
+.cinematic-menu-panel,
+.hud-filmic-menu,
+.hud-filmic-plate,
+.hud-filmic-dialogue-plate {
+  background: linear-gradient(180deg, rgba(12,14,20,0.72) 0%, rgba(6,8,12,0.88) 100%) !important;
+  backdrop-filter: blur(18px) saturate(1.12) !important;
+  border: 1px solid var(--aaa-glass-border) !important;
+  box-shadow:
+    0 12px 40px rgba(0,0,0,0.55),
+    0 1px 0 var(--aaa-glass-highlight) inset,
+    0 -1px 0 rgba(0,0,0,0.6) inset !important;
+  position: relative;
+}
+
+.cinematic-menu-panel::before,
+.hud-filmic-menu::before,
+.hud-filmic-plate::before,
+.hud-filmic-dialogue-plate::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, transparent 18%, transparent 82%, rgba(0,0,0,0.22) 100%);
+  border-radius: inherit;
+}
+
+.cinematic-menu-panel::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.14), transparent);
+  pointer-events: none;
+}
+
+/* ── Lux menu items — light sweep on hover ── */
+.cinematic-menu-item,
+.hud-filmic-choice,
+.hud-filmic-menu button {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.32s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.cinematic-menu-item::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.07) 50%, transparent 100%);
+  transform: translateX(-120%);
+  transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+
+.cinematic-menu-item:hover::before,
+.cinematic-menu-item--selected::before {
+  transform: translateX(120%);
+}
+
+.cinematic-menu-item--selected {
+  background: linear-gradient(90deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.03) 100%) !important;
+  border-left: 2px solid rgba(255,220,160,0.55) !important;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04), 0 0 20px rgba(255,220,160,0.08) !important;
+}
+
+.cinematic-menu-item:hover {
+  background: rgba(255,255,255,0.04) !important;
+  border-left: 2px solid rgba(180,200,220,0.35) !important;
+  transform: translateX(2px);
+}
+
+/* ── Filmi captions — more ink bleed, less UI ── */
+.hud-filmic-caption,
+.hud-filmic-body {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  font-variant-ligatures: common-ligatures;
+}
+
+/* ── Poem text — luxurious serif, generous leading ── */
+.hud-filmic-body,
+.font-serif {
+  letter-spacing: 0.02em;
+}
+
+/* ── Buttons — tactile, not plastic ── */
+button, [role="button"] {
+  cursor: pointer;
+}
+button:active {
+  transform: scale(0.98);
+}
+
+/* ── Cinematic letterbox — softer edges ── */
+.hud-filmic-letterbox-gradient,
+.menu-vignette-overlay {
+  background: linear-gradient(180deg, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.78) 24%, transparent 100%) !important;
+}
+
+/* ── Crosshair — more filmi, less tech ── */
+.dynamic-crosshair-line {
+  background: linear-gradient(180deg, transparent, currentColor, transparent) !important;
+  opacity: 0.55;
+}
+
+/* ── Interaction prompt — luxury caption style ── */
+.hud-filmic-caption {
+  backdrop-filter: blur(14px) saturate(1.08);
+  border: 1px solid rgba(220,215,210,0.10);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.06);
+}
+
+/* ── Scrollbars — invisible luxury ── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+::-webkit-scrollbar-thumb { background: rgba(220,215,210,0.18); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(220,215,210,0.28); }
+
+/* ── Selection — warm paper, not neon ── */
+::selection {
+  background: rgba(255,220,160,0.22);
+  color: rgba(255,250,240,0.95);
+}
+
+/* ── Dialogue — more breathing room ── */
+.hud-filmic-dialogue-plate {
+  line-height: 1.7 !important;
+  letter-spacing: 0.015em !important;
+}
+
+/* ── Inventory / journal — depth layers ── */
+.hud-filmic-plate-glass {
+  background: linear-gradient(180deg, var(--aaa-glass-bg) 0%, rgba(4,5,10,0.78) 100%) !important;
+}
+
+/* ── Loading — filmi shimmer ── */
+@keyframes aaa-shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+
+.hud-filmic-rule {
+  position: relative;
+  overflow: hidden;
+}
+.hud-filmic-rule::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+  transform: translateX(-100%);
+  animation: aaa-shimmer 3.2s ease-in-out infinite;
+}
+
+/* ── Body background — deep ink, not pure black ── */
+html, body {
+  background: radial-gradient(ellipse at 50% 0%, #0e1018 0%, #07080f 42%, #020205 100%) !important;
+}
+
+/* ── Reduce plastic shine on any remaining StandardMaterial meshes via CSS filter on canvas container? No, keep 3D pure. ── */
+
+/* ── AAA: menu poem spotlight — extra luxury ── */
+.menu-poem-line {
+  text-shadow: 0 1px 12px rgba(0,0,0,0.65), 0 0 20px rgba(255,220,160,0.12);
+}
+
+/* ── Combat UI — more filmi, less gamey ── */
+.combat-ui-panel {
+  backdrop-filter: blur(20px) saturate(1.15) !important;
+  background: linear-gradient(180deg, rgba(10,12,18,0.78) 0%, rgba(4,6,10,0.92) 100%) !important;
+  border: 1px solid rgba(220,215,210,0.13) !important;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.07) !important;
+}
+
+/* ── Journal — kill neon cyan plastic, bring filmi paper + ink ── */
+.glass-panel-dark {
+  background: linear-gradient(135deg, rgba(12,14,22,0.94) 0%, rgba(6,8,14,0.97) 100%) !important;
+  border: 1px solid rgba(220,215,210,0.11) !important;
+  box-shadow: 0 0 40px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.06), 0 24px 64px rgba(0,0,0,0.55) !important;
+  backdrop-filter: blur(22px) saturate(1.08) !important;
+}
+.glass-panel-dark .border-cyan-900\/20 { border-color: rgba(220,215,210,0.10) !important; }
+.glass-panel-dark .border-cyan-500\/40 { border-color: rgba(220,215,210,0.14) !important; }
+.glass-panel-dark .text-cyan-400\/70,
+.glass-panel-dark .text-cyan-400,
+.glass-panel-dark .text-cyan-400\/50 { color: rgba(220,215,210,0.68) !important; }
+.glass-panel-dark .bg-cyan-950\/50 { background: rgba(255,255,255,0.05) !important; }
+.glass-panel-dark .bg-slate-950\/60 { background: rgba(0,0,0,0.22) !important; }
+.glass-panel-dark .hover\:bg-slate-800\/30:hover { background: rgba(255,255,255,0.04) !important; }
+.glass-panel-dark .text-slate-500 { color: rgba(180,175,170,0.62) !important; }
+.glass-panel-dark .text-slate-300 { color: rgba(235,230,225,0.86) !important; }
+
+/* ── Inventory — same luxury ── */
+.inventory-panel, .journal-tabpanel {
+  background: linear-gradient(180deg, rgba(14,16,24,0.82) 0%, rgba(8,10,14,0.94) 100%);
+}
+
+/* ── HUD — warm ink, not cyan ── */
+.hud-filmic-kicker { color: rgba(220,215,210,0.55) !important; }
+.hud-corner-accent { border-color: rgba(220,215,210,0.12) !important; }
+.proximity-glow-aura { filter: saturate(0.7) brightness(1.1); }
+
+/* ── World labels — filmi distance fade ── */
+.world-space-label {
+  backdrop-filter: blur(12px);
+  background: rgba(8,10,14,0.58) !important;
+  border: 1px solid rgba(220,215,210,0.12) !important;
+}
+
+/* ── Poetry book — paper texture luxury ── */
+.poetry-book-page {
+  background: linear-gradient(180deg, #f6f1e6 0%, #ebe3d2 100%) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.8), inset 0 -1px 0 rgba(0,0,0,0.08) !important;
+}
+
+/* ── Skip prologue overlay — more cinematic ── */
+.skip-prologue-overlay {
+  backdrop-filter: blur(24px) saturate(1.1) !important;
+  background: radial-gradient(ellipse at 50% 38%, rgba(16,18,28,0.92) 0%, rgba(4,6,10,0.96) 72%, rgba(0,0,0,0.98) 100%) !important;
+}
+
+/* ── Interaction prompt — no neon, just ink ── */
+.hud-filmic-caption .hud-filmic-kicker {
+  background: rgba(0,0,0,0.22);
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(220,215,210,0.14);
+}
+
+/* ── Performance HUD badges — subtle ── */
+.physics-degraded-badge {
+  background: rgba(180,40,40,0.12) !important;
+  border: 1px solid rgba(220,80,80,0.22) !important;
+  backdrop-filter: blur(8px);
+}
+
+/* ── AAA: make all toasts filmi ── */
+.hud-filmic-toast {
+  backdrop-filter: blur(16px) saturate(1.08) !important;
+  background: linear-gradient(180deg, rgba(14,16,22,0.86) 0%, rgba(8,10,14,0.94) 100%) !important;
+  border: 1px solid rgba(220,215,210,0.13) !important;
+  box-shadow: 0 10px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.06) !important;
+}
