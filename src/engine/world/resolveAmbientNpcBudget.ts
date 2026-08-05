@@ -13,13 +13,16 @@ export function resolveAmbientNpcCount(
   if (baseCount <= 0) return 0;
 
   let boost = 2; // base AAA lift
+  const isUltra = presetId === 'ultra';
   if (isHeroScene(sceneId)) {
     const tier = tierFromPresetId(presetId);
-    boost += tier === 'ultra' ? 6 : tier === 'high' ? 4 : tier === 'medium' ? 2 : 1;
+    if (isUltra) boost += 6;
+    else boost += tier === 'high' ? 4 : tier === 'medium' ? 2 : 1;
     boost += getSceneVisualProfile(sceneId).ambientNpcCountBoost ?? 0;
   } else {
     const tier = tierFromPresetId(presetId);
-    boost += tier === 'ultra' ? 3 : tier === 'high' ? 2 : 0;
+    if (isUltra) boost += 3;
+    else boost += tier === 'high' ? 2 : 0;
   }
 
   return Math.min(baseCount + boost, MAX_AMBIENT_NPC_INSTANCES);
