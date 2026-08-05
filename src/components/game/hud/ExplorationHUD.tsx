@@ -29,6 +29,7 @@ import { SceneAmbientVignette } from '@/components/game/hud/parts/SceneAmbientVi
 import { SceneTopBarHud } from '@/components/game/hud/SceneTopBarHud';
 import { AmbientParticles } from '@/components/game/hud/parts/AmbientParticles';
 import { SprintDrainOverlay } from '@/components/game/hud/parts/SprintDrainOverlay';
+import { AaaImmersiveGuide } from '@/components/game/hud/parts/AaaImmersiveGuide';
 
 export type { HUDProps } from '@/components/game/hud/hudTypes';
 
@@ -169,6 +170,7 @@ export function ExplorationHUD(props: HUDProps) {
       </AnimatePresence>
 
       <ContextualHint hint={currentHint} onDismiss={dismissHint} />
+      <AaaImmersiveGuide />
       <QuestDirectionArrow />
       <NPCProximityIndicator />
       <LootProximityIndicator />

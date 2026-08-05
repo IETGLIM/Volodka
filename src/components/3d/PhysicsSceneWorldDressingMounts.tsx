@@ -9,6 +9,7 @@ import { WorldItemPickupGlows } from './WorldItemPickupGlow';
 import { ScenePropDressing } from './ScenePropDressing';
 import { SceneManifestAssets } from './SceneManifestAssets';
 import { SceneInteriorAssets } from './SceneInteriorAssets';
+import { AaaCinematicAtmosphere } from './AaaCinematicAtmosphere';
 
 export function PhysicsSceneWorldDressingMounts() {
   return (
@@ -18,6 +19,7 @@ export function PhysicsSceneWorldDressingMounts() {
       <ScenePropDressing />
       <SceneManifestAssets />
       <SceneInteriorAssets />
+      <AaaCinematicAtmosphere />
     </>
   );
 }
