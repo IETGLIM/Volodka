@@ -5407,6 +5407,44 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     ],
   },
 
+  /* ─────────────── factory_roof, city_square & zarema_room — ambient lore ─────────────── */
+  {
+    id: 'factory_roof_smoke_stack', sceneId: 'factory_roof', position: [6.5, 1.8, 1.5], size: [0.9, 2.0, 0.9],
+    enterToast: 'Дымовая труба. На кожухе — мелом: «дым — это стихи, которые не успели».', isOneTime: true, interactionType: 'examine',
+    examineData: { title: 'Дымовая труба', description: 'Высокая труба на краю крыши. Из неё тянется слабый серый дым.', detailText: 'Кто-то написал мелом: «дым — это стихи, которые не успели». Дым идёт — значит, внутри ещё горит. Гильдия гасит печи, но что-то тлеет. Тлеет — и ждёт, пока поднесут бумагу. Стихи, которые не успели — самое честное. Им не нужно быть красивыми. Им нужно — успеть.', icon: '🏭' },
+    effects: [{ type: 'setFlag', flag: 'examined_factory_roof_smoke_stack', flagValue: true }, { type: 'addKarma', value: 3 }, { type: 'addSkill', skill: 'writing', value: 1 }, { type: 'showThought', thought: 'Дым — стихи, которые не успели. Я — почти дым. Почти — ушёл — в трубу. Но — внутри — ещё тлеет. Стихи, которые не успели — те, что — должны — успеть. Я — должен — успеть.', thoughtDuration: 6500 }],
+  },
+  {
+    id: 'factory_roof_dry_gutter', sceneId: 'factory_roof', position: [-6.0, 1.0, -1.0], size: [2.0, 0.3, 0.3],
+    enterToast: 'Сухой водосток. На дне — горсть листьев и полустёртый адрес.', isOneTime: true, interactionType: 'examine',
+    examineData: { title: 'Сухой водосток', description: 'Ржавый водосток у парапета. Дождей давно не было — он сухой и шуршит от ветра.', detailText: 'На дне — листья, снесённые ещё прошлой осенью, и клочок бумаги с адресом, полустёртым дождём. Кто-то хотел отправить письмо с крыши — не доверял почте «Паноптикума». Адрес почти читается: «…кая, д. 7, чердак». Чердак. Там — старые вещи. Там — старые голоса. Там — кто-то — тоже — пишет.', icon: '🍂' },
+    effects: [{ type: 'setFlag', flag: 'examined_factory_roof_dry_gutter', flagValue: true }, { type: 'addKarma', value: 2 }, { type: 'addSkill', skill: 'intuition', value: 1 }, { type: 'showThought', thought: 'Письмо — с крыши. Не через сеть. Через — ветер. Чердак — адрес — почти стёрт. Как — всё, что — по-настоящему — важно. Стирается — само. Пока — кто-то — не — запишет. Пока — кто-то — не — донесёт.', thoughtDuration: 6000 }],
+  },
+  {
+    id: 'city_square_tram_stop', sceneId: 'city_square', position: [4.2, 1.0, -2.0], size: [1.6, 2.2, 0.6],
+    enterToast: 'Остановка трамвая. На табло — один маршрут, и тот — «отменён».', isOneTime: true, interactionType: 'examine',
+    examineData: { title: 'Трамвайная остановка', description: 'Металлический навес с побитым табло. Расписание выцвело. Скажи кто-нибудь — куда идут трамваи теперь.', detailText: 'На стекле табло — следы пальцев и наклейка поверх расписания: «движение приостановлено». Кто-то подрисовал фломастером: «как будто оно когда-то было». Трамваи не ходят с Краха. Но остановка — стоит. Люди — ждут. Привычка ждать — сильнее, чем приказ не ждать. Остановка — храм терпения этого города.', icon: '🚋' },
+    effects: [{ type: 'setFlag', flag: 'examined_city_square_tram_stop', flagValue: true }, { type: 'addKarma', value: 3 }, { type: 'addSkill', skill: 'empathy', value: 1 }, { type: 'showThought', thought: 'Люди ждут трамвая, которого — нет. Ждут — по привычке. По привычке — хранят. По привычке — помнят маршруты, которых — нет. Привычка — не слабость. Привычка — память. Память — сопротивление.', thoughtDuration: 6000 }],
+  },
+  {
+    id: 'city_square_street_piano', sceneId: 'city_square', position: [-4.5, 0.4, 2.5], size: [1.4, 1.0, 1.2],
+    enterToast: 'Уличное пианино. Крышка приоткрыта, на струнах — пыль и мелодия.', isOneTime: true, interactionType: 'examine',
+    examineData: { title: 'Уличное пианино', description: 'Расстроенное пианино, вынесенное на площадь. Кто-то оставил листок: «сыграй, если помнишь».', detailText: 'Клавиши жёлтые от солнца, на струнах — пыль. Но на подставке — свежий листок: «сыграй, если помнишь». Гильдия не забирает инструмент — у площади свои законы. Здесь кто-то играл, когда город ещё пел. Пианино не подключено к сети. Поэтому оно — помнит. Поэтому оно — настоящее.', icon: '🎹' },
+    effects: [{ type: 'setFlag', flag: 'examined_city_square_street_piano', flagValue: true }, { type: 'addKarma', value: 4 }, { type: 'addSkill', skill: 'rhythm', value: 1 }, { type: 'showThought', thought: '«Сыграй, если помнишь». Пианино — не в сети. Значит — помнит. Всё — настоящее — не в сети. Пыль — на струнах. Мелодия — в голове. У того, кто — помнит. Я — помню. Почти. Может — сыграю.', thoughtDuration: 6500 }],
+  },
+  {
+    id: 'zarema_room_sewing_machine', sceneId: 'zarema_room', position: [-4.2, 0.7, 2.0], size: [1.0, 0.9, 0.6],
+    enterToast: 'Швейная машинка. В катушке — нить, которой не хватило бы на знамя.', isOneTime: true, interactionType: 'examine',
+    examineData: { title: 'Швейная машинка', description: 'Старая ножная машинка. На столике — напёрсток и обрезки ткани с узорами.', detailText: 'Зарема штопает. Не из нужды — из упрямства. На ткани — узоры, которых нет в каталогах гильдии. «То, что я шью руками, — не сможет занять кто-то чужой». Машинка — ножная, без электроники. Гильдии не за что зацепиться. Руки помнят стежки. Узоры — живут.', icon: '🧵' },
+    effects: [{ type: 'setFlag', flag: 'examined_zarema_room_sewing_machine', flagValue: true }, { type: 'addKarma', value: 3 }, { type: 'addSkill', skill: 'rhythm', value: 1 }, { type: 'showThought', thought: 'Стежок — за стежком. Как — рифма — за — рифмой. Узор — руками. Не — машинно. Не — в — каталоге. Не — занять. Руки — помнят — стежки. Я — должен — помнить — строки. Строки — тоже — стежки. Штопают — порванное — время.', thoughtDuration: 6000 }],
+  },
+  {
+    id: 'zarema_room_kitchen_herbs', sceneId: 'zarema_room', position: [3.8, 0.6, -2.4], size: [0.8, 0.5, 0.5],
+    enterToast: 'Связки сушёных трав у окна. Запах — как маленькая страна без границ.', isOneTime: true, interactionType: 'examine',
+    examineData: { title: 'Сушёные травы', description: 'Пучки трав, подвешенные у окна. Кто-то заботливо завязал их бечёвкой.', detailText: 'Травы — не из аптеки, из далёких мест, где люди ещё помнят названия. На одной бирке — детским почерком: «от страха». На другой: «от тревоги». На третьей — пусто. Пустая бирка — от того, что не имеет имени. От того, о чём не говорят. Но сушат. И — вешают. И — верят.', icon: '🌿' },
+    effects: [{ type: 'setFlag', flag: 'examined_zarema_room_kitchen_herbs', flagValue: true }, { type: 'addKarma', value: 4 }, { type: 'addSkill', skill: 'empathy', value: 1 }, { type: 'showThought', thought: 'От страха. От тревоги. Пустая — от того, что — без — имени. Она — верит. Хотя — бирка — пуста. Иногда — не — нужно — имя. Иногда — достаточно — завязать — бечёвку. И — повесить. И — верить.', thoughtDuration: 6000 }],
+  },
+
   /* ═══════════════════════════════════════════════════════════════════
      COMBAT ENCOUNTERS — replaced by visible patrolling creeps
      (src/data/creepPatrols.ts + PatrollingCreeps.tsx). The old invisible
