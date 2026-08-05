@@ -5276,6 +5276,137 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     ],
   },
 
+  /* ─────────────── solnysh_room — ambient lore (2 new zones) ─────────────── */
+  {
+    id: 'solnysh_palette_box',
+    sceneId: 'solnysh_room',
+    position: [-2.2, 0.4, -1.6],
+    size: [0.6, 0.4, 0.4],
+    enterToast: 'Деревянный ящик с красками — цвета выдавлены не экономно.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Ящик с красками',
+      description: 'Настоящие пигменты, не цифровые. Солныш смешивает их руками.',
+      detailText: 'Следы пальцев на тюбиках — «Кобальт», «Лазурь», «Охра». Солныш не прощает себе «мёртвый» цвет. На крышке выцарапано: «цвет — это когда код не нужен». Дизайнер против «Паноптикума» — кистью.',
+      icon: '🎨',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_solnysh_palette_box', flagValue: true },
+      { type: 'addSkill', skill: 'writing', value: 1 },
+      { type: 'showThought', thought: 'Пигменты — как буквы. Смешал — получил смысл. Цифровой цвет — всегда — формула. Живой — всегда — смесь. Солныш — не «дизайнер». Солныш — переводчик. С того — на этот.', thoughtDuration: 6000 },
+    ],
+  },
+  {
+    id: 'solnysh_frame_photo',
+    sceneId: 'solnysh_room',
+    position: [-2.6, 1.5, 0.8],
+    size: [0.5, 0.6, 0.1],
+    enterToast: 'Фотография в простой раме — на обороте чья-то строчка.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Фотография в раме',
+      description: 'Стол, на нём — эскизы города, и рука, держащая карандаш. На обороте — строчка карандашом.',
+      detailText: 'Почерк Солныш: «город без вышки смотрит на нас — мы и есть его свет». Фотография — не глянцевая. Фото плёночное, с царапинкой. Такие не оцифровывают. Такие — хранят в руках.',
+      icon: '🖼️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_solnysh_frame_photo', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+      { type: 'showThought', thought: 'Плёночная фотография. Царапинка — на стекле. Оцифровать — нельзя. Исчезнуть — не может. Солныш — хранит. Так хранят — то, что — нельзя — сжать. То, что — должно — дышать.', thoughtDuration: 6000 },
+    ],
+  },
+
+  /* ─────────────── zarema_albert_room — ambient lore (2 new zones) ─────────────── */
+  {
+    id: 'zarema_shared_table',
+    sceneId: 'zarema_albert_room',
+    position: [2.2, 0.7, -1.2],
+    size: [1.2, 0.5, 0.8],
+    enterToast: 'Общий стол — детский рисунок под стеклом.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Семейный стол',
+      description: 'Кружки, тетрадь Заремы, отвёртка Альберта и детский рисунок — на одной плоскости.',
+      detailText: 'Рисунок: домик с тремя окнами и солнце с улыбкой. Под ним — крупно, детским почерком: «когда папа починит всё». Альберт чинит вещи, Зарема — людей. На столе — их война и их мир: починка, счёт, надежда.',
+      icon: '🪑',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_zarema_shared_table', flagValue: true },
+      { type: 'addKarma', value: 4 },
+      { type: 'addSkill', skill: 'empathy', value: 1 },
+      { type: 'showThought', thought: 'Домик. Три окна. Солнце — с улыбкой. «Когда папа починит всё». Дети — не знают — о «Паноптикуме». Дети — знают — что папа — чинит. Всё. Когда-нибудь. Папа — починит. И всё.', thoughtDuration: 6500 },
+    ],
+  },
+  {
+    id: 'albert_radio_desk',
+    sceneId: 'zarema_albert_room',
+    position: [2.6, 0.8, -2.4],
+    size: [0.6, 0.5, 0.4],
+    enterToast: 'Радиола с отвинченной крышкой — Альберт снова паяет.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Радиола Альберта',
+      description: 'Старая радиола, паяльник, олово. Схема от руки на обрывке газеты.',
+      detailText: 'Альберт говорит: «то, что можно починить руками, не даст тебя прослушать». На схеме — подпись: «частота свободы — 103.5». Радиола не подключена к сети — ей нечего передавать «Паноптикуму». Только людям — в эфир.',
+      icon: '📻',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_albert_radio_desk', flagValue: true },
+      { type: 'addSkill', skill: 'coding', value: 1 },
+      { type: 'addKarma', value: 3 },
+      { type: 'showThought', thought: 'Частота свободы — 103.5. Не в диапазоне «Паноптикума». Радиола — не подключена к сети. Она — не — провод. Она — окно. Альберт — чинит — окна. В стенах — из — проводов.', thoughtDuration: 6000 },
+    ],
+  },
+
+  /* ─────────────── pier_evening — ambient lore (2 new zones) ─────────────── */
+  {
+    id: 'pier_moored_boat',
+    sceneId: 'pier_evening',
+    position: [2.6, 0.4, -3.4],
+    size: [1.8, 0.8, 3.0],
+    enterToast: 'Пришвартованная лодка — борт залатан жестью от консервов.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Лодка у сваи',
+      description: 'Старая лодка, залатанная жестью. Весла — не парные: одно самодельное.',
+      detailText: 'Кто-то переплыл на ней реку в ночь Краха — и оставил. На скамье — свёрнутая в трубочку бумага, пожелтевшая, но сухая: «если ты читаешь это — река ещё никому не принадлежит». Вёсла — чужого, не здешнего дерева.',
+      icon: '🛶',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_pier_moored_boat', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'rhythm', value: 1 },
+      { type: 'showThought', thought: 'Лодка — из ночи Краха. Переплыли — и оставили. Как улику — или как — спасение. Река — ещё никому — не принадлежит. Река — помнит — всех. И меня — тоже — вспомнит.', thoughtDuration: 6000 },
+    ],
+  },
+  {
+    id: 'pier_coastal_post',
+    sceneId: 'pier_evening',
+    position: [-2.4, 1.2, -2.0],
+    size: [0.3, 1.6, 0.3],
+    enterToast: 'Ржавый фонарный столб у края пирса — скрипит на ветру.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Фонарный столб',
+      description: 'Столб у края пирса. Лампу разбили — но кто-то закрепил фонарик на скотч.',
+      detailText: 'Лампа разбита давно — «Паноптикум» не меняет фонари у воды. Но на столбе — светодиодный фонарик, примотанный синей изолентой. Светит. Кто-то — не просил разрешения. Кто-то — просто — чинит. Свет — это тоже форма неподчинения.',
+      icon: '💡',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_pier_coastal_post', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+      { type: 'showThought', thought: 'Фонарик — на изоленте. Не в реестре. Не в сети. Просто — светит. Кто-то — не ждал разрешения. Кто-то — взял — и починил. Свет — у воды. Свет — у тех, кто — не попросил. А я — попрошу?', thoughtDuration: 6000 },
+    ],
+  },
+
   /* ═══════════════════════════════════════════════════════════════════
      COMBAT ENCOUNTERS — replaced by visible patrolling creeps
      (src/data/creepPatrols.ts + PatrollingCreeps.tsx). The old invisible
