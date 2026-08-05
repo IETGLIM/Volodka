@@ -9,6 +9,7 @@ import { MenuSettingsPanel } from '@/components/game/menu/MenuSettingsPanel';
 import { MenuTypewriterSubtitle } from '@/components/game/menu/MenuTypewriterSubtitle';
 import { SkipPrologueOverlay } from '@/components/game/menu/SkipPrologueOverlay';
 import { MenuAaaPoemSpotlight } from '@/components/game/menu/MenuAaaPoemSpotlight';
+import { ProloguePerfectionOverlay } from '@/components/game/prologue/ProloguePerfectionOverlay';
 import { useMenuSavePreview } from '@/components/game/menu/useMenuSavePreview';
 import { useMenuScreen } from '@/components/game/menu/useMenuScreen';
 import {
@@ -357,6 +358,11 @@ function MenuScreenPanelInner() {
       </AnimatePresence>
 
       <AnimatePresence>{menu.showSkipPrologueOverlay ? <SkipPrologueOverlay onComplete={menu.handleSkipPrologueComplete} /> : null}</AnimatePresence>
+      <AnimatePresence>
+        {menu.showProloguePerfection ? (
+          <ProloguePerfectionOverlay onComplete={menu.handleProloguePerfectionComplete} />
+        ) : null}
+      </AnimatePresence>
     </div>
   );
 }
