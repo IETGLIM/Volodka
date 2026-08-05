@@ -27,7 +27,8 @@ export function MenuAaaPoemSpotlight({ enabled }: { enabled: boolean }) {
   if (!enabled || poems.length === 0) return null;
 
   const poem = poems[index];
-  const excerpt = extractExcerpt(poem.text);
+  const fullText = poem.lines.join('\n');
+  const excerpt = extractExcerpt(fullText);
 
   return (
     <motion.div

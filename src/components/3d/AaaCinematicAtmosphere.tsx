@@ -68,7 +68,7 @@ function DustMoteCloud({ sceneId, count }: { sceneId: string; count: number }) {
   const groupRef = useRef<THREE.Group>(null);
   const timeRef = useRef(0);
 
-  useFrameTick('dust', ({ delta }) => {
+  useFrameTick('misc', ({ delta }) => {
     const g = groupRef.current;
     if (!g) return;
     timeRef.current += delta;

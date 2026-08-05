@@ -165,14 +165,15 @@ const ACT_MUSIC_TINT: Record<number, { rootMidiDelta: number; tempoMult: number 
   7: { rootMidiDelta: 1, tempoMult: 0.9 },
 };
 
-function applyActMusicTint(config: SceneMusicConfig, sceneId?: SceneId): SceneMusicConfig {
+function applyActMusicTint(config: SceneMusicConfig, sceneId?: string | SceneId): SceneMusicConfig {
   let act = 1;
   try {
     act = getGameSnapshot().playerState.progression.currentAct ?? 1;
   } catch { /* snapshot may be unavailable during early boot */ }
   const legacyTint = ACT_MUSIC_TINT[act] ?? ACT_MUSIC_TINT[1];
   const mood = AAA_ACT_MOODS[act] ?? AAA_ACT_MOODS[1];
-  const sceneOverride = sceneId ? SCENE_MOOD_OVERRIDE[sceneId] : undefined;
+  const sid = sceneId as SceneId | undefined;
+  const sceneOverride = sid ? SCENE_MOOD_OVERRIDE[sid] : undefined;
 
   const rootDelta = sceneOverride?.rootSemitoneDelta ?? mood.rootSemitoneDelta ?? legacyTint.rootMidiDelta;
   const tempoM = (sceneOverride?.tempoMult ?? mood.tempoMult ?? legacyTint.tempoMult);

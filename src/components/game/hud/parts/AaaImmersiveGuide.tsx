@@ -74,8 +74,11 @@ export function AaaImmersiveGuide() {
       eventBus.on('quest:accepted', () => {
         show(`quest_${Date.now()}`, INNER_VOICE_LINES.quest_new, 'thought', 3500);
       }),
-      eventBus.on('combat:proximity', () => {
+      eventBus.on('encounter:presentation_start', () => {
         show(`combat_${Date.now()}`, INNER_VOICE_LINES.combat_near, 'whisper', 3200);
+      }),
+      eventBus.on('combat:start', () => {
+        show(`combat_battle_${Date.now()}`, INNER_VOICE_LINES.combat_near, 'whisper', 2800);
       }),
       eventBus.on('scene:enter', ({ sceneId }) => {
         const key = `scene_${sceneId}`;
