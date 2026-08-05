@@ -47,12 +47,17 @@ export const DEFAULT_POEM_VFX: PoemCinematicVfxProfile = {
   durationMs: 3600,
 };
 
+const lastTriggerAt = new Map<string, number>();
+
 export function getPoemVfxProfile(poemId: string): PoemCinematicVfxProfile {
   return POEM_VFX[poemId] ?? { ...DEFAULT_POEM_VFX, id: poemId };
 }
 
 export function triggerPoemCinematicVfx(poemId: string, mode: 'discovery' | 'power_ritual' | 'combat' = 'discovery'): void {
-  const profile = getPoemVfxProfile(poemId);
+  const now = Date.now();
+  const last = lastTriggerAt.get(poemId);
+  if (last && now - last < 900) return; // debounce 0.9s — avoid spam during rapid ritual triggers
+  lastTriggerAt.set(poemId, now);
   // EventBus for other systems to listen (postfx, camera, particles)
   eventBus.emit('poem:cinematic_vfx', {
     poemId: poemId as any,
