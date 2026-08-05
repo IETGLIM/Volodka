@@ -7,16 +7,27 @@ import {
 
 describe('resolveAmbientNpcBudget', () => {
   it('boosts hero scene counts on higher tiers', () => {
-    // street_night has ambientNpcCountBoost: 1 even on low (profile boost, not tier).
-    expect(resolveAmbientNpcCount('street_night', 3, 'low')).toBe(4);
-    expect(resolveAmbientNpcCount('street_night', 3, 'medium')).toBeGreaterThan(4);
+    // AAA density: base lift 2 + tier boost + profile boost (street_night has 1)
+    // low: 2+1+1=4 => 3+4=7, medium: 2+2+1=5 => 8, high: 2+4+1=7 =>10, ultra:2+6+1=9 =>12
+    expect(resolveAmbientNpcCount('street_night', 3, 'low')).toBe(7);
+    expect(resolveAmbientNpcCount('street_night', 3, 'medium')).toBe(8);
+    expect(resolveAmbientNpcCount('street_night', 3, 'high')).toBe(10);
+    expect(resolveAmbientNpcCount('street_night', 3, 'ultra')).toBe(12);
     expect(resolveAmbientNpcCount('street_night', 3, 'ultra')).toBeGreaterThan(
       resolveAmbientNpcCount('street_night', 3, 'medium'),
     );
   });
 
-  it('does not boost non-hero scenes', () => {
-    expect(resolveAmbientNpcCount('factory_basement', 2, 'ultra')).toBe(2);
+  it('boosts non-hero scenes with AAA base lift', () => {
+    // factory_basement is standard: base lift 2 + tier boost (low/med 0, high 2, ultra 3)
+    expect(resolveAmbientNpcCount('factory_basement', 2, 'low')).toBe(4);
+    expect(resolveAmbientNpcCount('factory_basement', 2, 'medium')).toBe(4);
+    expect(resolveAmbientNpcCount('factory_basement', 2, 'high')).toBe(6);
+    expect(resolveAmbientNpcCount('factory_basement', 2, 'ultra')).toBe(7);
+    // hero districts still more populated than non-hero at same tier
+    expect(resolveAmbientNpcCount('street_night', 2, 'ultra')).toBeGreaterThan(
+      resolveAmbientNpcCount('factory_basement', 2, 'ultra'),
+    );
   });
 
   it('caps at MAX_AMBIENT_NPC_INSTANCES', () => {
