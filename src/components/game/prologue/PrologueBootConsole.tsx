@@ -61,6 +61,16 @@ export function PrologueBootConsole({ onComplete, loadingProgress }: Props) {
     };
   }, [visibleCount, charIndex, reducedMotion, onComplete]);
 
+  // Device info для immersion — реальные данные браузера
+  const deviceInfo = useMemo(() => {
+    if (typeof window === 'undefined') return null;
+    const gpu = (navigator as any).gpu ? 'WebGPU' : 'WebGL2';
+    const cores = navigator.hardwareConcurrency ?? 4;
+    const mem = (navigator as any).deviceMemory ? `${(navigator as any).deviceMemory}GB` : 'unknown';
+    const dpr = window.devicePixelRatio?.toFixed(2) ?? '1';
+    return { gpu, cores, mem, dpr };
+  }, []);
+
   // Автоскролл вниз
   useEffect(() => {
     containerRef.current?.scrollTo({ top: containerRef.current.scrollHeight, behavior: 'smooth' });
@@ -131,7 +141,7 @@ export function PrologueBootConsole({ onComplete, loadingProgress }: Props) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6 }}
-          className="mt-6 max-w-4xl mx-auto"
+          className="mt-6 max-w-4xl mx-auto space-y-3"
         >
           <div className="flex items-center gap-3 text-[10px] tracking-[0.18em] uppercase text-stone-500/60">
             <span>volodka://physics init</span>
@@ -145,13 +155,22 @@ export function PrologueBootConsole({ onComplete, loadingProgress }: Props) {
             </div>
             <span>{Math.round(loadingProgress * 100)}%</span>
           </div>
-          <div className="mt-2 text-[10px] text-stone-600/50 tracking-[0.16em]">
+          <div className="text-[10px] text-stone-600/50 tracking-[0.16em]">
             {loadingProgress < 0.3
-              ? 'DECODING WASM... STREAMING COMPILE'
+              ? 'DECODING WASM... STREAMING COMPILE (external /rapier/ + immutable)'
               : loadingProgress < 0.7
-                ? 'WORLD CHUNKS + STORY NODES PREFETCH'
+                ? 'WORLD CHUNKS + STORY NODES PREFETCH (start, explore_mode)'
                 : 'VOLUMETRIC LIGHT + DUST PARTICLES READY'}
           </div>
+          {deviceInfo && (
+            <div className="text-[9px] text-stone-700/40 tracking-[0.14em] font-mono flex flex-wrap gap-x-3 gap-y-1">
+              <span>GPU: {deviceInfo.gpu}</span>
+              <span>CORES: {deviceInfo.cores}</span>
+              <span>MEM: {deviceInfo.mem}</span>
+              <span>DPR: {deviceInfo.dpr}</span>
+              <span className="text-emerald-600/40">WASM: streaming + cache-immutable</span>
+            </div>
+          )}
         </motion.div>
       </div>
 
