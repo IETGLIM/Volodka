@@ -1,15 +1,7 @@
 /**
  * ProloguePerfectionOverlay — АБСОЛЮТНЫЙ ИДЕАЛ после "Начать с пролога".
- *
- * V2 — ошеломительно x2:
- * - Добавлен PrologueAudioDirector — HDD spin, heartbeat, mystery stinger
- * - Добавлен PrologueVolumetric — volumetric cone cyan + warm amber lamp + dust particles CSS
- * - CinematicBars intro letterbox 7dvh во время title -> handoff
- * - FilmGrain + Vignette + Scanlines уже были, теперь еще chromatic edge
- * - Mouse parallax на title, breathing vignette
- * - Real device info в boot консоли (GPU, cores, mem)
- * - Skip не просто Esc, а typewriter skip + progress сохранен в sessionStorage
- * - Финальный handoff с scale 1.05 blur 12px -> 0, как в AAA трейлере
+ * ИСПРАВЛЕНО: единый источник истины — outer phase boot->breath->title->handoff
+ * eyeOpen теперь subPhase внутри breath, глаза показывают строки.
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -33,7 +25,6 @@ export function ProloguePerfectionOverlay({ onComplete }: Props) {
   const { phase, progress, innerText, goNext, skipAll } = useProloguePerfection(onComplete);
   const [parallax, setParallax] = useState({ x: 0, y: 0 });
 
-  // Mouse parallax для title — дешево, но ощущение глубины
   useEffect(() => {
     if (reducedMotion || phase !== 'title') return;
     const onMove = (e: MouseEvent) => {
@@ -63,7 +54,6 @@ export function ProloguePerfectionOverlay({ onComplete }: Props) {
     return () => window.removeEventListener('keydown', handleKey);
   }, [handleKey]);
 
-  // Сохранение фазы для resilience (если вкладка крашнется на boot)
   useEffect(() => {
     try {
       sessionStorage.setItem('volodka_prologue_phase', phase);
@@ -91,7 +81,6 @@ export function ProloguePerfectionOverlay({ onComplete }: Props) {
       <PrologueAudioDirector phase={phase} reducedMotion={reducedMotion} />
       <PrologueVolumetric phase={phase} />
 
-      {/* Film grain уже в boot, но общий легкий по всему */}
       <div className="absolute inset-0 pointer-events-none z-[5] opacity-[0.03] mix-blend-soft-light" aria-hidden>
         <div
           className="absolute inset-0"
@@ -101,7 +90,6 @@ export function ProloguePerfectionOverlay({ onComplete }: Props) {
         />
       </div>
 
-      {/* Cinematic letterbox — только на title/handoff, как в кино */}
       {(phase === 'title' || phase === 'handoff') && <CinematicBars variant="intro" />}
 
       <AnimatePresence mode="wait">
@@ -131,16 +119,19 @@ export function ProloguePerfectionOverlay({ onComplete }: Props) {
           </motion.div>
         )}
 
+        {/* legacy eyeOpen — не используется в идеальном пути, но оставлен для resilience */}
         {phase === 'eyeOpen' && (
           <motion.div
-            key="eyeOpen"
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 1.02 }}
-            transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+            key="eyeOpen-legacy"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             className="absolute inset-0 bg-black flex items-center justify-center"
           >
-            <PrologueBreathVoid onComplete={goNext} innerText={innerText} />
+            <div className="text-center px-8">
+              <p className="font-serif text-base text-stone-200/80">{innerText}</p>
+              <p className="font-mono text-[9px] tracking-[0.32em] uppercase text-cyan-200/40 mt-4">legacy eyeOpen → title</p>
+            </div>
           </motion.div>
         )}
 
@@ -155,126 +146,49 @@ export function ProloguePerfectionOverlay({ onComplete }: Props) {
             style={{ transform: `translate(${parallax.x}px, ${parallax.y}px)` }}
           >
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(0,255,255,0.09)_0%,rgba(0,0,0,1)_72%)]" aria-hidden />
-
-            {/* Reflection */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div
-                className="w-full max-w-3xl h-[40vh] mt-[34vh] opacity-[0.07] blur-[0.8px] scale-y-[-0.52] [mask-image:linear-gradient(to_bottom,rgba(0,0,0,0.45)_0%,transparent_58%)]"
-                aria-hidden
-              >
-                <CinematicTitleCard
-                  title="ПРОБУЖДЕНИЕ"
-                  subtitle={titleSubtitle}
-                  accentColor="#44ffcc"
-                  type="act_transition"
-                  reducedMotion={true}
-                />
+              <div className="w-full max-w-3xl h-[40vh] mt-[34vh] opacity-[0.07] blur-[0.8px] scale-y-[-0.52] [mask-image:linear-gradient(to_bottom,rgba(0,0,0,0.45)_0%,transparent_58%)]" aria-hidden>
+                <CinematicTitleCard title="ПРОБУЖДЕНИЕ" subtitle={titleSubtitle} accentColor="#44ffcc" type="act_transition" reducedMotion={true} />
               </div>
             </div>
-
             <div className="relative z-10">
-              <CinematicTitleCard
-                title="ПРОБУЖДЕНИЕ"
-                subtitle={titleSubtitle}
-                accentColor="#44ffcc"
-                type="act_transition"
-                reducedMotion={reducedMotion}
-              />
-
-              {/* Micro-copy под тайтлом — immersion */}
-              <motion.div
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 0.52, y: 0 }}
-                transition={{ delay: 0.9, duration: 0.9 }}
-                className="mt-8 text-center font-mono text-[10px] tracking-[0.24em] uppercase text-stone-500/50"
-              >
-                <span className="inline-block px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.06] backdrop-blur-sm">
-                  volodka://wake --mode=prologue --soul=0
-                </span>
+              <CinematicTitleCard title="ПРОБУЖДЕНИЕ" subtitle={titleSubtitle} accentColor="#44ffcc" type="act_transition" reducedMotion={reducedMotion} />
+              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 0.52, y: 0 }} transition={{ delay: 0.9, duration: 0.9 }} className="mt-8 text-center font-mono text-[10px] tracking-[0.24em] uppercase text-stone-500/50">
+                <span className="inline-block px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.06] backdrop-blur-sm">volodka://wake --mode=prologue --soul=0</span>
               </motion.div>
             </div>
-
-            {/* System stats line — как в настоящем кинотитре */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.28 }}
-              transition={{ delay: 1.4, duration: 1 }}
-              className="absolute bottom-[14vh] left-1/2 -translate-x-1/2 font-mono text-[9px] tracking-[0.18em] text-stone-500/40 whitespace-nowrap hidden md:block"
-              aria-hidden
-            >
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.28 }} transition={{ delay: 1.4, duration: 1 }} className="absolute bottom-[14vh] left-1/2 -translate-x-1/2 font-mono text-[9px] tracking-[0.18em] text-stone-500/40 whitespace-nowrap hidden md:block" aria-hidden>
               MEM 37% FRAG • PHYSICS WASM STREAMED • WORLD CHUNKS READY • 13 POEMS IN L2 CACHE
             </motion.div>
           </motion.div>
         )}
 
         {phase === 'handoff' && (
-          <motion.div
-            key="handoff"
-            initial={{ opacity: 1 }}
-            animate={{ opacity: 0, filter: 'blur(18px)', scale: 1.08 }}
-            transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute inset-0 bg-black"
-            aria-hidden
-          />
+          <motion.div key="handoff" initial={{ opacity: 1 }} animate={{ opacity: 0, filter: 'blur(18px)', scale: 1.08 }} transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }} className="absolute inset-0 bg-black" aria-hidden />
         )}
       </AnimatePresence>
 
-      {/* Skip */}
-      <motion.button
-        type="button"
-        onClick={skipAll}
-        initial={{ opacity: 0, y: 6 }}
-        animate={{ opacity: 0.58, y: 0 }}
-        whileHover={{ opacity: 1, scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-        transition={{ delay: 1.4, duration: 0.6 }}
-        className="absolute bottom-7 left-1/2 -translate-x-1/2 z-30 px-5 py-2.5 rounded-full bg-white/[0.06] hover:bg-white/[0.10] border border-white/10 hover:border-white/15 text-[11px] tracking-[0.18em] uppercase text-stone-300/75 hover:text-stone-100 backdrop-blur-[16px] shadow-[0_8px_24px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.06)] transition-all"
-      >
-        <span className="flex items-center gap-2">
-          Пропустить
-          <span className="px-[6px] py-[2px] rounded bg-white/10 text-[9px] tracking-[0.1em] border border-white/10">Esc</span>
-        </span>
+      <motion.button type="button" onClick={skipAll} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 0.58, y: 0 }} whileHover={{ opacity: 1, scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ delay: 1.4, duration: 0.6 }} className="absolute bottom-7 left-1/2 -translate-x-1/2 z-30 px-5 py-2.5 rounded-full bg-white/[0.06] hover:bg-white/[0.10] border border-white/10 hover:border-white/15 text-[11px] tracking-[0.18em] uppercase text-stone-300/75 hover:text-stone-100 backdrop-blur-[16px] shadow-[0_8px_24px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.06)] transition-all">
+        <span className="flex items-center gap-2">Пропустить<span className="px-[6px] py-[2px] rounded bg-white/10 text-[9px] tracking-[0.1em] border border-white/10">Esc</span></span>
       </motion.button>
 
-      {/* Progress dots — теперь с glow */}
       <div className="absolute top-7 left-1/2 -translate-x-1/2 z-30 flex items-center gap-[10px]">
-        {(['boot', 'breath', 'eyeOpen', 'title', 'handoff'] as const).map((p) => {
-          const phases = ['boot', 'breath', 'eyeOpen', 'title', 'handoff'] as const;
-          const curIdx = phases.indexOf(phase);
-          const thisIdx = phases.indexOf(p);
+        {(['boot', 'breath', 'title'] as const).map((p) => {
+          const phases = ['boot', 'breath', 'title', 'handoff'] as const;
+          const curIdx = phases.indexOf(phase as any);
+          const thisIdx = phases.indexOf(p as any);
           const active = thisIdx === curIdx;
           const done = thisIdx < curIdx;
           return (
             <div key={p} className="relative">
-              <div
-                className="h-[3px] rounded-full transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
-                style={{
-                  width: active ? 32 : done ? 16 : 10,
-                  background: done
-                    ? 'rgba(255,255,255,0.55)'
-                    : active
-                      ? 'rgba(0,255,200,0.95)'
-                      : 'rgba(255,255,255,0.14)',
-                  boxShadow: active ? '0 0 10px rgba(0,255,200,0.6), 0 0 22px rgba(0,255,200,0.18)' : undefined,
-                }}
-                aria-hidden
-              />
-              {active && (
-                <motion.div
-                  layoutId="prologue-active-dot-glow"
-                  className="absolute inset-0 rounded-full bg-cyan-200/20 blur-[3px] -z-10"
-                  transition={{ type: 'spring', stiffness: 420, damping: 28 }}
-                />
-              )}
+              <div className="h-[3px] rounded-full transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]" style={{ width: active ? 32 : done ? 16 : 10, background: done ? 'rgba(255,255,255,0.55)' : active ? 'rgba(0,255,200,0.95)' : 'rgba(255,255,255,0.14)', boxShadow: active ? '0 0 10px rgba(0,255,200,0.6), 0 0 22px rgba(0,255,200,0.18)' : undefined }} aria-hidden />
+              {active && <motion.div layoutId="prologue-active-dot-glow" className="absolute inset-0 rounded-full bg-cyan-200/20 blur-[3px] -z-10" transition={{ type: 'spring', stiffness: 420, damping: 28 }} />}
             </div>
           );
         })}
       </div>
 
-      {/* Screen reader live */}
-      <div className="sr-only" aria-live="polite" aria-atomic="true">
-        Фаза пролога: {phase}, прогресс {Math.round(progress * 100)}%
-      </div>
+      <div className="sr-only" aria-live="polite" aria-atomic="true">Фаза пролога: {phase}, прогресс {Math.round(progress * 100)}%</div>
     </motion.div>
   );
 }
