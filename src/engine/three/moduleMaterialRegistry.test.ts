@@ -19,6 +19,29 @@ describe('moduleMaterialRegistry', () => {
   });
 
   it('getSharedStandardMaterial dedupes emissive params', () => {
+    // emissiveIntensity >0.6 is clamped to 0.45 by AAA de-plasticize,
+    // so we must use values below the clamp threshold to test distinct keys.
+    const a = getSharedStandardMaterial({
+      color: '#00ff44',
+      emissive: '#00ff44',
+      emissiveIntensity: 0.3,
+    });
+    const b = getSharedStandardMaterial({
+      color: '#00ff44',
+      emissive: '#00ff44',
+      emissiveIntensity: 0.3,
+    });
+    const c = getSharedStandardMaterial({
+      color: '#00ff44',
+      emissive: '#00ff44',
+      emissiveIntensity: 0.5,
+    });
+
+    expect(a).toBe(b);
+    expect(a).not.toBe(c);
+  });
+
+  it('getSharedStandardMaterial clamps high emissiveIntensity via AAA de-plasticize', () => {
     const a = getSharedStandardMaterial({
       color: '#00ff44',
       emissive: '#00ff44',
@@ -27,16 +50,11 @@ describe('moduleMaterialRegistry', () => {
     const b = getSharedStandardMaterial({
       color: '#00ff44',
       emissive: '#00ff44',
-      emissiveIntensity: 3.0,
-    });
-    const c = getSharedStandardMaterial({
-      color: '#00ff44',
-      emissive: '#00ff44',
       emissiveIntensity: 2.0,
     });
 
     expect(a).toBe(b);
-    expect(a).not.toBe(c);
+    expect(a.emissiveIntensity).toBeLessThanOrEqual(0.45);
   });
 
   it('mat() shorthand delegates to getSharedStandardMaterial', () => {
