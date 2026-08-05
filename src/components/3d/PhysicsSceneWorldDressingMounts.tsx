@@ -10,6 +10,8 @@ import { ScenePropDressing } from './ScenePropDressing';
 import { SceneManifestAssets } from './SceneManifestAssets';
 import { SceneInteriorAssets } from './SceneInteriorAssets';
 import { AaaCinematicAtmosphere } from './AaaCinematicAtmosphere';
+import { AaaInteractionRich } from './AaaInteractionRich';
+import { AaaLivingWorldActivities } from './AaaLivingWorldActivities';
 
 export function PhysicsSceneWorldDressingMounts() {
   return (
@@ -20,6 +22,8 @@ export function PhysicsSceneWorldDressingMounts() {
       <SceneManifestAssets />
       <SceneInteriorAssets />
       <AaaCinematicAtmosphere />
+      <AaaInteractionRich />
+      <AaaLivingWorldActivities />
     </>
   );
 }

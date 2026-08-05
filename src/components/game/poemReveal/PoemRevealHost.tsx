@@ -16,6 +16,7 @@ import {
   cancelPoemReadingCutscene,
   completePoemReadingCutscene,
 } from '@/engine/poemReading/poemReadingOrchestrator';
+import { triggerPoemCinematicVfx } from '@/engine/poemWorld/aaaPoemCinematicVfx';
 import { PoemRevealShell } from './PoemRevealShell';
 
 type ActiveReveal = { poemId: string; mode: PoemRevealMode };
@@ -50,6 +51,7 @@ export function PoemRevealHost() {
 
   useEffect(() => {
     const show = (poemId: string, mode: PoemRevealMode) => {
+      triggerPoemCinematicVfx(poemId, mode as any);
       setActive({ poemId, mode });
     };
 

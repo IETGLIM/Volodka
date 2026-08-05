@@ -6,6 +6,7 @@
 
 import { CinematicTimelineRunner } from './CinematicTimelineRunner';
 import { InteractiveTriggers } from './InteractiveTriggers';
+import { AaaCombatCinematic } from './AaaCombatCinematic';
 import type * as THREE from 'three';
 
 export interface PhysicsSceneCinematicMountsProps {
@@ -24,6 +25,7 @@ export function PhysicsSceneCinematicMounts({
         livePlayerPositionRef={livePlayerPositionRef}
         livePlayerRotationRef={livePlayerRotationRef}
       />
+      <AaaCombatCinematic />
     </>
   );
 }
