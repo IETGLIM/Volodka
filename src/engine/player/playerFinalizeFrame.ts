@@ -73,21 +73,27 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
   let finalPos = rb.translation();
 
   // ── Landing impact footstep + cinematic dust ──
-  if (justLanded) {
-    deps.footstepTimerRef.current = 0;
-    audioEngine.playFootstep(deps.currentFloorMaterialRef.current, {
-      sourceId: 'player-landing',
-    });
+    if (justLanded) {
+      deps.footstepTimerRef.current = 0;
 
-    // AAA: rich landing dust burst (visual weight + living world)
-    const impact = Math.min(1, Math.abs(scratch.landingImpactVel || 0) / 12);
-    eventBus.emit('player:landed', {
-      position: [finalPos.x, finalPos.y, finalPos.z],
-      impact,
-      yaw: deps.livePlayerRotationRef.current,
-      sceneId: deps.sceneId,
-    });
-  }
+      // AAA Phase B: cinematic landing thud — deeper + heavier on hard impacts
+      const impact = Math.min(1, Math.abs(scratch.landingImpactVel || 0) / 12);
+      const landingPitch = -0.18 * impact; // lower pitch on hard landings (satisfying thud)
+      const landingVol = 1.0 + impact * 0.35;
+      audioEngine.playFootstep(deps.currentFloorMaterialRef.current, {
+        sourceId: 'player-landing',
+        pitchOffset: landingPitch,
+        volume: landingVol,
+      });
+
+      // AAA: rich landing dust burst (visual weight + living world)
+      eventBus.emit('player:landed', {
+        position: [finalPos.x, finalPos.y, finalPos.z],
+        impact,
+        yaw: deps.livePlayerRotationRef.current,
+        sceneId: deps.sceneId,
+      });
+    }
 
   const horizontalSpeed = Math.sqrt(vel.x * vel.x + vel.z * vel.z);
   const animPos = rb.translation();
@@ -173,7 +179,10 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
       try {
         const { triggerCameraShake } = require('@/engine/camera/cameraShake');
         triggerCameraShake(0.045, 11); // stronger cinematic thump
-      } catch {}
+      } catch {} 
+
+      // Also emit a brake-ready state for future decel detection (used by camera)
+      (window as any).__lastSprintSpeed = horizontalSpeed;
     }
 
     prevAnimForFootstep = currentAnim;

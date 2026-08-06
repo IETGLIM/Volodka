@@ -291,6 +291,16 @@ export function applyCameraFrame(
     targetPos.addScaledVector(fwd, thrust * 0.035);
     // Also slightly pull the look target for forward commitment feel
     targetLook.addScaledVector(fwd, thrust * 0.018);
+
+    // Cinematic "air rush" breathing on camera — subtle rhythmic FOV + position float
+    // Feels like wind in your face. Perfectly synced with body bob.
+    const rushPhase = (ctx.time * 3.8) % (Math.PI * 2);
+    const rush = Math.sin(rushPhase) * 0.012 * Math.min(1, thrust * 1.4);
+    targetPos.addScaledVector(fwd, rush * 0.6); // tiny forward float
+    // Very subtle FOV breathing (adds life without nausea)
+    const fovBreath = rush * 0.7;
+    (targets as any).targetFov = (targets as any).targetFov || targetFov;
+    (targets as any).targetFov += fovBreath;
   }
 
   _rollForward.subVectors(spring.lookAt, cam.position);
