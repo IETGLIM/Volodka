@@ -247,6 +247,39 @@ export function FootstepDust() {
     return unsub;
   }, []);
 
+  // AAA Phase B: hard brake dust explosion + slide trail
+  // Massive satisfying stop puff + sliding dust — feels like real physics.
+  useEffect(() => {
+    const unsub = eventBus.on('player:hard_brake', ({ position, yaw, sceneId }: any) => {
+      if (reducedMotionRef.current) return;
+      // Big forward + lateral explosion
+      const count = 14;
+      const upward = PARTICLE_UPWARD_VEL * 1.9;
+      spawnBurst(poolRef.current, (position?.[0] ?? 0), (position?.[1] ?? 0.02), (position?.[2] ?? 0), yaw ?? 0, count, upward);
+
+      // Extra sliding trail dust (forward cone)
+      const fwdX = Math.sin(yaw);
+      const fwdZ = Math.cos(yaw);
+      for (let i = 0; i < 5; i++) {
+        const t = i * 0.22;
+        spawnBurst(poolRef.current,
+          (position?.[0] ?? 0) + fwdX * (t * 0.6),
+          (position?.[1] ?? 0.02) + 0.01,
+          (position?.[2] ?? 0) + fwdZ * (t * 0.6),
+          yaw + (Math.random() - 0.5) * 0.6,
+          3 + i,
+          0.25 + i * 0.1
+        );
+      }
+
+      try {
+        const col = getSceneDustColor(sceneId || '');
+        if (materialRef.current) materialRef.current.color.copy(col);
+      } catch {}
+    });
+    return unsub;
+  }, []);
+
   // AAA Phase B: sustained sprint "wind trail" — beautiful forward dust cone while running fast.
   // Gives the feeling of real momentum and air displacement. High-class filmic detail.
   let sprintTrailTimer = 0;

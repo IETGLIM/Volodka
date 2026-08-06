@@ -230,6 +230,34 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
     }
   } else {
     deps.footstepTimerRef.current = 0;
+
+    // AAA Phase B: cinematic hard brake / stop detection
+    // When player was sprinting and suddenly stops, emit a powerful brake event
+    // for dust explosion, camera yank, body recovery, and audio.
+    const wasFast = (window as any).__lastSprintSpeed > 5.0;
+    if (wasFast && horizontalSpeed < 1.2 && deps.isGroundedRef.current) {
+      eventBus.emit('player:hard_brake', {
+        position: [finalPos.x, finalPos.y, finalPos.z],
+        speed: horizontalSpeed,
+        yaw: deps.livePlayerRotationRef.current,
+        sceneId: deps.sceneId,
+      });
+
+      // AAA Phase B: heavy cinematic brake camera effects
+      try {
+        const { triggerCameraShake } = require('@/engine/camera/cameraShake');
+        triggerCameraShake(0.065, 6.5); // strong forward yank shake
+      } catch {}
+
+      // Audio brake thud + gritty slide
+      try {
+        audioEngine.playSfx('brake');
+        audioEngine.playSfx('brake_thud');
+      } catch {}
+
+      (window as any).__lastSprintSpeed = 0;
+    }
+
     // Session 12-B: keep prevAnimForFootstep in sync with currentAnimRef even
     // when not moving, so the next idle→walk edge fires correctly. Without
     // this, prevAnimForFootstep would stay 'walk' from the last moving frame

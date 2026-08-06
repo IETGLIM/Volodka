@@ -18,6 +18,9 @@ export const SFX_PRESETS: Record<string, SfxConfig> = {
   screenshot: { type: 'square', frequency: 1200, duration: 0.04, gain: 0.1 },
   // AAA Phase B cinematic sprint launch whoosh (procedural air rush)
   sprint_whoosh: { type: 'sawtooth', frequency: 180, duration: 0.38, gain: 0.09 },
+  // AAA Phase B: hard brake / stop — gritty slide + heavy thud (cinematic weight)
+  brake: { type: 'sawtooth', frequency: 95, duration: 0.22, gain: 0.18 },
+  brake_thud: { type: 'sine', frequency: 48, duration: 0.28, gain: 0.22 },
   // ─── Spatial impact SFX (used by playSpatialSfx for diegetic world objects) ──
   // These mirror the FOOTSTEP_PRESETS material names so DynamicProps / PatrollingCreeps
   // can switch from non-spatial playFootstep(material) to spatial playSpatialSfx(material, pos)

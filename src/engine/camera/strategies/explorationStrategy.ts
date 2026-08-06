@@ -222,7 +222,7 @@ export const explorationStrategy: CameraModeStrategy = {
       }
     }
 
-    // AAA Phase B: cinematic deceleration settle lean + micro bob settle
+    // AAA Phase B: cinematic deceleration settle lean + micro bob settle + "brake" pull
     // Feels like body weight shifting forward then settling back — rich, filmic.
     const prevSpeed = ctx.prevVelocitySmooth.length();
     const decel = Math.max(0, prevSpeed - speedMs);
@@ -234,6 +234,11 @@ export const explorationStrategy: CameraModeStrategy = {
         lookDir2.applyAxisAngle(right2, decelLean);
         targetLook.copy(targetPos).add(lookDir2.multiplyScalar(10));
       }
+
+      // Strong cinematic "brake" camera pull-back on hard stop (opposite of thrust)
+      const brakeT = Math.min(1, decel / 3.5);
+      const brakeBack = fwd.clone().negate().multiplyScalar(brakeT * 0.09);
+      targetPos.add(brakeBack);
     }
 
     // Max Payne OTS — lateral bias before wall collision so the spring arm
