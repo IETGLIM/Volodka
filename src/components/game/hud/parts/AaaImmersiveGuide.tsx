@@ -38,6 +38,18 @@ const INNER_VOICE_LINES: Record<string, string> = {
   karma_low: 'Тяжесть в груди. Мир отвечает тем же.',
   poem_power: 'Стихи шевелятся внутри. Можно выпустить их наружу.',
   night_city: 'Неон мигает. Город не спит, только притворяется.',
+  // AAA Phase A/C: more poetic whispers for the densest living world scenes (dream, rooftops, campfires, battle aftermath, cozy rooms)
+  sleep_dream: 'Звёзды шепчут. Это не просто сон — это память.',
+  dream_memory: 'Старый предмет плывёт. Он помнит тебя.',
+  rooftop_sky: 'Ветер сильный. Здесь можно оставить всё позади.',
+  chk_campfire: 'Огонь трещит. Истории в нём старше нас.',
+  battle_after: 'Тишина после. Обломки помнят.',
+  library_basement: 'Пыль тяжёлая. Секреты не любят свет.',
+  albert_room: 'Тёплый свет. Здесь можно остаться навсегда.',
+  solnysh_room: 'Солнце в окне. Даже в темноте светит.',
+  zarema_room: 'Цветы и зеркала. Кто-то любил это место.',
+  city_plaza: 'Неон в лужах. Город дышит неоном.',
+  forest_night: 'Деревья помнят. Шепчут то, что ты забыл.',
 };
 
 function toneStyle(tone: GuideEntry['tone']) {
@@ -101,6 +113,17 @@ export function AaaImmersiveGuide() {
           else if (sceneId.includes('bunker')) line = INNER_VOICE_LINES.scene_bunker;
           else if (sceneId.includes('park')) line = INNER_VOICE_LINES.scene_park;
           else if (sceneId.includes('street') || sceneId.includes('city')) line = INNER_VOICE_LINES.night_city;
+          // AAA Phase A/C dense living world scenes
+          else if (sceneId.includes('sleep_dream') || sceneId.includes('dream')) line = INNER_VOICE_LINES.sleep_dream || INNER_VOICE_LINES.dream_memory;
+          else if (sceneId.includes('rooftop') || sceneId.includes('roof')) line = INNER_VOICE_LINES.rooftop_sky;
+          else if (sceneId.includes('chk_campfire')) line = INNER_VOICE_LINES.chk_campfire;
+          else if (sceneId.includes('battle')) line = INNER_VOICE_LINES.battle_after;
+          else if (sceneId.includes('library_basement')) line = INNER_VOICE_LINES.library_basement;
+          else if (sceneId.includes('albert_backroom')) line = INNER_VOICE_LINES.albert_room;
+          else if (sceneId.includes('solnysh_room')) line = INNER_VOICE_LINES.solnysh_room;
+          else if (sceneId.includes('zarema')) line = INNER_VOICE_LINES.zarema_room;
+          else if (sceneId.includes('city_square')) line = INNER_VOICE_LINES.city_plaza;
+          else if (sceneId.includes('chk_forest') || sceneId.includes('park_day')) line = INNER_VOICE_LINES.forest_night;
         }
         if (line && !shownRef.current.has(key)) {
           show(key, line, 'memory', 3800);
