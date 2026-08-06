@@ -787,6 +787,58 @@ export const SCENE_VOLUMETRIC_LIGHTS: Partial<Record<string, VolumetricShaftConf
       dustSpeed: 0.32,
     },
   ],
+  // AAA Phase A: ethereal galaxy dream — luxurious purple/blue volumetric pillars with dense floating star-dust motes
+  // Slow drift, high density, soft flicker for otherworldly cinematic feel. Pairs with existing GodRays + mist/embers.
+  sleep_dream: [
+    {
+      ...DEFAULT_SHAFT,
+      position: [0, 5.5, 0],          // central cosmic pillar
+      topRadius: 0.28,
+      bottomRadius: 1.8,
+      height: 5.8,
+      color: '#aa77ff',
+      opacity: 0.18,
+      flickerSpeed: 0.04,
+      flickerAmp: 0.22,
+      rotationSpeed: 0.002,
+      initialRotation: 0,
+      tiltX: -0.08,
+      dustDensity: 0.95,              // thick star-dust / dream motes
+      dustSpeed: 0.08,
+    },
+    {
+      ...DEFAULT_SHAFT,
+      position: [-2.8, 4.8, 3.2],    // side nebula spill
+      topRadius: 0.16,
+      bottomRadius: 1.25,
+      height: 4.9,
+      color: '#7766ff',
+      opacity: 0.14,
+      flickerSpeed: 0.03,
+      flickerAmp: 0.18,
+      rotationSpeed: 0.004,
+      initialRotation: 1.6,
+      tiltX: 0.12,
+      dustDensity: 0.88,
+      dustSpeed: 0.11,
+    },
+    {
+      ...DEFAULT_SHAFT,
+      position: [3.1, 5.2, -2.5],
+      topRadius: 0.19,
+      bottomRadius: 1.4,
+      height: 5.2,
+      color: '#cc99ff',
+      opacity: 0.12,
+      flickerSpeed: 0.05,
+      flickerAmp: 0.25,
+      rotationSpeed: 0.003,
+      initialRotation: -0.9,
+      tiltX: -0.15,
+      dustDensity: 0.82,
+      dustSpeed: 0.09,
+    },
+  ],
 };
 
 function normalizeShaftConfig(config: VolumetricShaftConfig): VolumetricShaftConfig {
