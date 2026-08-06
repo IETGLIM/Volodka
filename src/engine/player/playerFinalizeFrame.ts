@@ -76,10 +76,10 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
     if (justLanded) {
       deps.footstepTimerRef.current = 0;
 
-      // AAA Phase B: cinematic landing thud — deeper + heavier on hard impacts
+      // AAA Phase B "ебашь": cinematic landing thud — deeper + heavier on hard impacts
       const impact = Math.min(1, Math.abs(scratch.landingImpactVel || 0) / 12);
-      const landingPitch = -0.18 * impact; // lower pitch on hard landings (satisfying thud)
-      const landingVol = 1.0 + impact * 0.35;
+      const landingPitch = -0.22 * impact;
+      const landingVol = 1.0 + impact * 0.55;
       audioEngine.playFootstep(deps.currentFloorMaterialRef.current, {
         sourceId: 'player-landing',
         pitchOffset: landingPitch,
@@ -93,6 +93,19 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
         yaw: deps.livePlayerRotationRef.current,
         sceneId: deps.sceneId,
       });
+
+      // Nuclear camera reaction on hard landing
+      try {
+        const { triggerCameraShake } = require('@/engine/camera/cameraShake');
+        const shake = 0.055 + impact * 0.09;
+        triggerCameraShake(shake, 7.5);
+        triggerCameraShake(shake * 0.7, 5); // extra vertical thump
+      } catch {}
+
+      try {
+        const { triggerLandingFovDip } = require('@/engine/camera/landingImpact');
+        triggerLandingFovDip(1.1 + impact * 1.6); // strong cinematic inward pinch
+      } catch {}
     }
 
   const horizontalSpeed = Math.sqrt(vel.x * vel.x + vel.z * vel.z);
