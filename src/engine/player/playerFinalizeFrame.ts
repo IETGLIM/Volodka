@@ -229,20 +229,22 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
         runWeight,
       });
 
-      // AAA Phase B "ебашь": PURE NUCLEAR DESTRUCTION on every sprint footstep
-      // The camera is getting absolutely pounded. This is what power feels like.
+      // AAA Phase B "ебашь": ABSOLUTE FUCKING APOCALYPSE on every sprint footstep
+      // The camera is getting completely annihilated. Feels like the player is a goddamn tank god.
       if (isSprinting) {
         try {
           const { triggerCameraShake } = require('@/engine/camera/cameraShake');
-          const kick = 0.065 + (runWeight * 0.095); // fucking ridiculous rhythmic pounding
-          triggerCameraShake(kick, 12);
-          triggerCameraShake(kick * 0.75, 16); // extra vertical thump
-          triggerCameraShake(kick * 0.45, 9);  // lateral rock
+          const kick = 0.19 + (runWeight * 0.28); // brain-melting, earth-shattering rhythmic pounding
+          triggerCameraShake(kick, 5.5);
+          triggerCameraShake(kick * 1.15, 8);   // nuclear vertical earth-crack slam
+          triggerCameraShake(kick * 0.95, 5);   // violent tilting rock
+          triggerCameraShake(kick * 0.7, 3.5);  // pure chaotic destruction
+          triggerCameraShake(kick * 0.4, 2);    // micro aftershocks
         } catch {}
 
         try {
           const { triggerLandingFovDip } = require('@/engine/camera/landingImpact');
-          triggerLandingFovDip(0.55 + runWeight * 0.65); // strong cinematic inward smash every step
+          triggerLandingFovDip(1.8 + runWeight * 2.1); // full nuclear inward smash every single heavy stride
         } catch {}
       }
 
