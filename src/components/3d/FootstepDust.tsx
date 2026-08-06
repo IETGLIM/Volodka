@@ -174,9 +174,22 @@ export function FootstepDust() {
 
       spawnBurst(poolRef.current, position[0], position[1], position[2], yaw, count, upwardVel);
 
-      // Extra "left + right foot" double burst when sprinting hard — feels like two feet slamming the ground
-      if (rw > 0.7) {
-        spawnBurst(poolRef.current, position[0] + 0.12, position[1] + 0.01, position[2] + 0.04, yaw, Math.round(count * 0.6), upwardVel * 0.85);
+      // AAA Phase B "ебашь": quadruple foot + side + forward shockwave when sprinting hard
+      // The ground fucking detonates. Maximum possible drama and volume.
+      if (rw > 0.55) {
+        spawnBurst(poolRef.current, position[0] + 0.19, position[1] + 0.02, position[2] + 0.08, yaw, Math.round(count * 0.7), upwardVel * 0.92);
+        spawnBurst(poolRef.current, position[0] - 0.17, position[1] + 0.015, position[2] - 0.06, yaw, Math.round(count * 0.6), upwardVel * 0.85);
+        const s = (Math.random() - 0.5) * 2.4;
+        spawnBurst(poolRef.current, position[0] + s * 0.45, position[1] + 0.055, position[2] + s * 0.3, yaw + s * 0.7, Math.round(count * 0.45), upwardVel * 0.72);
+      }
+
+      // Forward shockwave cones on very hard sprint
+      if (rw > 0.75) {
+        const fx = Math.sin(yaw);
+        const fz = Math.cos(yaw);
+        for (let i = 0; i < 4; i++) {
+          spawnBurst(poolRef.current, position[0] + fx * (0.3 + i * 0.22), position[1] + 0.04, position[2] + fz * (0.3 + i * 0.22), yaw, Math.round(5 + rw * 8), upwardVel * 0.6);
+        }
       }
 
       // Live scale the material size for sprint weight (cinematic punch)
