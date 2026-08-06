@@ -30,6 +30,23 @@ const PARTICLE_GRAVITY = -0.6;
 
 const DUST_COLOR = new THREE.Color('#c8b89a');
 
+// AAA cinematic dust — scene-aware tint for richer feel (warm indoors, cooler outdoors)
+function getSceneDustColor(sceneId: string): THREE.Color {
+  if (sceneId.includes('volodka') || sceneId.includes('home') || sceneId.includes('library') || sceneId.includes('albert')) {
+    return new THREE.Color('#d4c3a0'); // warm beige indoor
+  }
+  if (sceneId.includes('factory') || sceneId.includes('bunker') || sceneId.includes('abandoned')) {
+    return new THREE.Color('#a89f88'); // industrial dust
+  }
+  if (sceneId.includes('pier') || sceneId.includes('river') || sceneId.includes('chk')) {
+    return new THREE.Color('#b8a88a'); // earthy / wooden pier
+  }
+  if (sceneId.includes('park') || sceneId.includes('forest')) {
+    return new THREE.Color('#a8b090'); // mossy green-brown
+  }
+  return new THREE.Color('#c8b89a'); // default
+}
+
 interface Particle {
   x: number;
   y: number;
@@ -144,7 +161,7 @@ export function FootstepDust() {
   // playerFinalizeFrame.ts ONLY when the player is grounded and moving,
   // so we can trust the payload without re-checking isGroundedRef.
   useEffect(() => {
-    const unsub = eventBus.on('exploration:footstep', ({ position, yaw, speed }) => {
+    const unsub = eventBus.on('exploration:footstep', ({ position, yaw, speed, sceneId }: any) => {
       if (reducedMotionRef.current) return;
       // Scale dust burst with gait: walk kicks ~3 particles, sprint kicks up to 6
       // with stronger upward velocity — the visual rhythm matches the audio cadence.
@@ -152,6 +169,15 @@ export function FootstepDust() {
       const count = Math.round(PARTICLES_PER_STEP_MIN + speedNorm * 3);
       const upwardVel = PARTICLE_UPWARD_VEL + speedNorm * 0.3;
       spawnBurst(poolRef.current, position[0], position[1], position[2], yaw, count, upwardVel);
+
+      // AAA: scene-aware dust tint (subtle but powerful for living world)
+      try {
+        const col = getSceneDustColor(sceneId || '');
+        // mutate the material live (cheap) so next particles pick up the tint
+        if (materialRef.current) {
+          materialRef.current.color.copy(col);
+        }
+      } catch {}
     });
     return unsub;
   }, []);
