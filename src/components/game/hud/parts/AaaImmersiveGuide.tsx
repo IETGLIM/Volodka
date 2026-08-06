@@ -28,6 +28,16 @@ const INNER_VOICE_LINES: Record<string, string> = {
   scene_chka: 'ЧК. Запах дешевого кофе и старых историй.',
   scene_office: 'Офис. Гул машин и чужие разговоры за стеной.',
   scene_library: 'Пыль, книги, тихий шепот страниц.',
+  scene_factory: 'Металл и пар. Здесь что-то большое дышит.',
+  scene_pier: 'Вода тихо плещет. Можно бросить мысли в реку.',
+  scene_roof: 'Ветер сильный. Город выглядит меньше сверху.',
+  scene_bunker: 'Зелёный свет. Машины помнят имена.',
+  scene_park: 'Листья шепчут. Здесь когда-то было тихо.',
+  first_explore_hub: 'Можно просто ходить. Мир сам расскажет, если послушать.',
+  karma_high: 'Ты стал чуть светлее. Люди это чувствуют.',
+  karma_low: 'Тяжесть в груди. Мир отвечает тем же.',
+  poem_power: 'Стихи шевелятся внутри. Можно выпустить их наружу.',
+  night_city: 'Неон мигает. Город не спит, только притворяется.',
 };
 
 function toneStyle(tone: GuideEntry['tone']) {
@@ -82,9 +92,30 @@ export function AaaImmersiveGuide() {
       }),
       eventBus.on('scene:enter', ({ sceneId }) => {
         const key = `scene_${sceneId}`;
-        const line = (INNER_VOICE_LINES as any)[key] || (INNER_VOICE_LINES as any)[`scene_${sceneId.split('_')[0]}`];
+        let line = (INNER_VOICE_LINES as any)[key] || (INNER_VOICE_LINES as any)[`scene_${sceneId.split('_')[0]}`];
+        if (!line) {
+          // Fallback poetic atmosphere lines for all hubs
+          if (sceneId.includes('factory') || sceneId.includes('basement')) line = INNER_VOICE_LINES.scene_factory;
+          else if (sceneId.includes('pier') || sceneId.includes('river')) line = INNER_VOICE_LINES.scene_pier;
+          else if (sceneId.includes('roof')) line = INNER_VOICE_LINES.scene_roof;
+          else if (sceneId.includes('bunker')) line = INNER_VOICE_LINES.scene_bunker;
+          else if (sceneId.includes('park')) line = INNER_VOICE_LINES.scene_park;
+          else if (sceneId.includes('street') || sceneId.includes('city')) line = INNER_VOICE_LINES.night_city;
+        }
         if (line && !shownRef.current.has(key)) {
           show(key, line, 'memory', 3800);
+        }
+      }),
+      // Extra living-world triggers (show, don't tell)
+      eventBus.on('poem:power_used', () => {
+        if (!shownRef.current.has('poem_power')) {
+          show('poem_power', INNER_VOICE_LINES.poem_power, 'poetic', 4600);
+        }
+      }),
+      eventBus.on('player:karma_change', ({ delta }: any) => {
+        if (Math.abs(delta || 0) > 8) {
+          const line = (delta || 0) > 0 ? INNER_VOICE_LINES.karma_high : INNER_VOICE_LINES.karma_low;
+          show(`karma_${Date.now()}`, line, 'thought', 3200);
         }
       }),
     ];
