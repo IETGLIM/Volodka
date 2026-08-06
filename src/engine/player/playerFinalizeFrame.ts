@@ -235,21 +235,21 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
       if (isSprinting) {
         try {
           const { triggerCameraShake } = require('@/engine/camera/cameraShake');
-          const kick = 0.75 + (runWeight * 1.22); // ABSOLUTE PLANETARY ANNIHILATION GOD — хм, и: every sprint step is absolute earth-shattering cataclysm + extra barrage + micro quakes
-          triggerCameraShake(kick, 8.2);
-          triggerCameraShake(kick * 2.18, 19.8);   // god-crushing vertical slam
-          triggerCameraShake(kick * 1.88, 15.2);   // apocalyptic lateral annihilation
-          triggerCameraShake(kick * 1.62, 10.8);  // pure chaotic world-shatter
-          triggerCameraShake(kick * 1.28, 7.4);   // aftershock barrage
-          triggerCameraShake(kick * 0.85, 4.9);   // death rattle
-          triggerCameraShake(kick * 0.55, 3.1);
-          triggerCameraShake(kick * 0.38, 1.8); // extra micro
-          triggerCameraShake(kick * 0.22, 0.9); // final quake
+          const kick = 0.85 + (runWeight * 1.38); // ULTIMATE PLANETARY ANNIHILATION GOD x2 — хм, и: every sprint step is absolute earth-shattering cataclysm + extra barrage + micro quakes
+          triggerCameraShake(kick, 9.2);
+          triggerCameraShake(kick * 2.35, 22.5);   // god-crushing vertical slam
+          triggerCameraShake(kick * 2.05, 17.8);   // apocalyptic lateral annihilation
+          triggerCameraShake(kick * 1.78, 12.5);  // pure chaotic world-shatter
+          triggerCameraShake(kick * 1.42, 8.8);   // aftershock barrage
+          triggerCameraShake(kick * 0.95, 5.8);   // death rattle
+          triggerCameraShake(kick * 0.65, 3.8);
+          triggerCameraShake(kick * 0.45, 2.2); // extra micro
+          triggerCameraShake(kick * 0.28, 1.2); // final quake
         } catch {}
 
         try {
           const { triggerLandingFovDip } = require('@/engine/camera/landingImpact');
-          triggerLandingFovDip(6.4 + runWeight * 9.2); // full nuclear inward smash every single heavy stride — HARDER хм, и:
+          triggerLandingFovDip(7.2 + runWeight * 10.5); // full nuclear inward smash every single heavy stride — HARDER хм, и:
         } catch {}
       }
 
