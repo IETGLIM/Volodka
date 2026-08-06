@@ -164,14 +164,13 @@ export function FootstepDust() {
     const unsub = eventBus.on('exploration:footstep', ({ position, yaw, speed, sceneId, isSprinting, runWeight }: any) => {
       if (reducedMotionRef.current) return;
 
-      // AAA Phase B: rich cinematic footstep dust — fully synced with locomotion triad
-      // (camera bob freq + anim timescale + body lean + audio volume/pitch).
-      // runWeight (continuous 0-1 walk→run) drives count + intensity.
+      // AAA Phase B "ебашь": ultra-aggressive cinematic footstep dust
+      // Fully synced with locomotion triad. When sprinting it looks like the ground is exploding under your feet.
       const speedNorm = Math.min((speed ?? 0) / 7.0, 1);
       const rw = Math.max(0, Math.min(1, runWeight ?? (isSprinting ? 1 : speedNorm)));
-      const count = Math.round(PARTICLES_PER_STEP_MIN + rw * 7.5); // up to ~12-13 on full sprint — more aggressive
-      const upwardVel = PARTICLE_UPWARD_VEL + rw * 0.85;
-      const sizeMul = 1.0 + rw * 0.85; // much bigger, heavier puffs on sprint
+      const count = Math.round(PARTICLES_PER_STEP_MIN + rw * 16); // up to ~22-23 on full sprint — fucking insane
+      const upwardVel = PARTICLE_UPWARD_VEL + rw * 1.55;
+      const sizeMul = 1.35 + rw * 1.45; // absolutely enormous heavy puffs
 
       spawnBurst(poolRef.current, position[0], position[1], position[2], yaw, count, upwardVel);
 

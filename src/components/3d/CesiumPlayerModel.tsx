@@ -200,6 +200,24 @@ function CesiumPlayerModelInner({
           hip.rotation.x = THREE.MathUtils.lerp(hip.rotation.x || 0, hipDrive, 0.3);
         }
 
+        // AAA Phase B: hard brake recovery — torso pitches forward on stop, then settles
+        // Feels like the character is fighting momentum. Very satisfying.
+        if ((window as any).__brakeRecovery && (window as any).__brakeRecovery > 0) {
+          const brakePitch = (window as any).__brakeRecovery * 0.28;
+          bodyGroup.rotation.x = THREE.MathUtils.lerp(bodyGroup.rotation.x || 0, brakePitch, 0.45);
+          (window as any).__brakeRecovery = Math.max(0, (window as any).__brakeRecovery - delta * 3.2);
+        }
+
+        // Listen for hard brake to trigger torso pitch recovery
+      });
+
+      useEffect(() => {
+        const unsub = eventBus.on('player:hard_brake', () => {
+          (window as any).__brakeRecovery = 1.0;
+        });
+        return unsub;
+      }, []);
+
         // AAA Phase B: landing squash + recovery (body "compresses" on hard impact)
         // Triggered by player:landed event — gives massive physical satisfaction.
         // We use a module-level quick decay for simplicity (one avatar instance).

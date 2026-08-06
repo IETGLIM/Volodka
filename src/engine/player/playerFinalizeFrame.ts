@@ -216,6 +216,15 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
         runWeight,
       });
 
+      // AAA Phase B "ебашь": micro camera kick on sprint footsteps — the world reacts to every heavy step
+      if (isSprinting) {
+        try {
+          const { triggerCameraShake } = require('@/engine/camera/cameraShake');
+          const kick = 0.008 + (runWeight * 0.011);
+          triggerCameraShake(kick, 22); // very short, punchy micro-shake per step
+        } catch {}
+      }
+
       // AAA cinematic footstep audio — stronger pitch + volume on sprint
       const pitchOffset = easedSpeed * STEP_PITCH_RANGE + (isSprinting ? 0.08 : 0);
       const volumeScale = isSprinting ? 1.15 : 1.0;
