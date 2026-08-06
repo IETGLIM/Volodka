@@ -83,6 +83,12 @@ const ACTIVITY_LINES: Record<string, string> = {
 
   // AAA Phase A: dream memory fragments — poetic remnants of the past (ethereal, floating)
   dream_memory: 'Старый предмет. Он помнит то, что ты уже забыл.',
+
+  // AAA: rooftops, city, forest — more poetic living world density
+  rooftop_sky: 'Небо над крышами. Холодное, но зовёт.',
+  city_neon: 'Неон в лужах. Город не спит.',
+  forest_wind: 'Ветер в кронах. Шепчет то, что было.',
+  campfire_story: 'Огонь рассказывает. Слушай внимательно.',
 };
 
 const COZY_ACTIVITIES = new Set(['coffee_machine', 'bench', 'plant', 'window', 'fridge', 'lamp_library']);
@@ -146,6 +152,11 @@ export function AaaLivingWorldActivities() {
         else if ((lower.includes('mirror') || lower.includes('зеркало')) && sceneId.includes('zarema')) key = 'zarema_mirror';
         // AAA dream memory fragments — poetic, ethereal inner voice (show-don't-tell the past)
         else if ((lower.includes('memory') || lower.includes('sd_') || lower.includes('dream')) && sceneId.includes('sleep_dream')) key = 'dream_memory';
+        // AAA extra living world on rooftops/city/forest/campfire
+        else if ((lower.includes('rooftop') || lower.includes('sky') || lower.includes('edge')) && sceneId.includes('rooftop')) key = 'rooftop_sky';
+        else if ((lower.includes('neon') || lower.includes('city') || lower.includes('square')) && sceneId.includes('city_square')) key = 'city_neon';
+        else if ((lower.includes('forest') || lower.includes('tree') || lower.includes('wind')) && (sceneId.includes('chk') || sceneId.includes('park'))) key = 'forest_wind';
+        else if ((lower.includes('camp') || lower.includes('fire') || lower.includes('chk')) && sceneId.includes('chk_campfire')) key = 'campfire_story';
 
         if (key && ACTIVITY_LINES[key]) {
           const line = ACTIVITY_LINES[key];

@@ -155,4 +155,11 @@ export const DYNAMIC_PROPS: Partial<Record<SceneId, DynamicPropDef[]>> = {
     { id: 'sd_memory_box', kind: 'box', position: [0.4, 0.8, -3.1], rotation: 0.9 },
     { id: 'sd_faded_can', kind: 'can', position: [-3.1, 3.4, 0.7], rotation: 1.8 },
   ],
+  // AAA: tactile campsite around the CHK fire — cans, bottles, crates near warmth (living world + props + shafts already rich)
+  chk_campfire_night: [
+    { id: 'chkc_can_1', kind: 'can', position: [1.4, 0, 1.1], rotation: 0.8 },
+    { id: 'chkc_bottle_1', kind: 'bottle', position: [-1.2, 0, -0.9], rotation: -0.6 },
+    { id: 'chkc_crate', kind: 'box', position: [2.8, 0, -2.1], rotation: 0.3 },
+    { id: 'chkc_can_2', kind: 'can', position: [-0.7, 0, 2.5], rotation: 1.5 },
+  ],
 };
