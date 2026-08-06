@@ -105,8 +105,7 @@ export function CinematicTimelineRunner() {
       });
       import('@/engine/audio/SceneAudioController').then(({ getSceneAudioController }) => {
         const ctrl = getSceneAudioController();
-        // @ts-expect-error — onSceneEnter доступен в рантайме, но типы узкие
-        ctrl.onSceneEnter?.('volodka_room' as any, 0);
+        (ctrl as unknown as { onSceneEnter?: (id: unknown, n: number) => void }).onSceneEnter?.('volodka_room' as any, 0);
       });
     } catch {}
     store.setCutscene(null, []);
