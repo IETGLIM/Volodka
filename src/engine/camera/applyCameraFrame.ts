@@ -49,7 +49,7 @@ let _walkBobPhase = 0;
 // delta so the phase advances uniformly regardless of frame rate variance.
 let _smoothedDelta = 1 / 60;
 const WALK_BOB_AMPLITUDE = 0.006; // 6mm vertical displacement (halved from 0.012 to reduce micro-jitter)
-const WALK_BOB_SPEED = 10;       // rad/s — matches walking pace
+const WALK_BOB_BASE_SPEED = 10;       // rad/s — matches walking pace (AAA filmic gait)
 const WALK_BOB_SPEED_THRESHOLD = 0.5; // minimum player speed to activate
 const WALK_BOB_SPEED_FULL = 3.0;     // speed at which bob is at full intensity
 const WALK_BOB_BLEND_SPEED = 4;       // how fast bob intensity transitions
@@ -57,6 +57,12 @@ const WALK_BOB_BLEND_SPEED = 4;       // how fast bob intensity transitions
 // 0.15 means ~7 frames of history — enough to absorb frame drops without
 // making the bob lag visibly behind player movement.
 const WALK_BOB_DELTA_SMOOTH = 0.15;
+
+// AAA Phase B refinement: bob frequency scales continuously with speed
+// so vertical + lateral bob perfectly tracks the walk/run animation cycle
+// (no plastic float, cinematic weight transfer). Uses same band as smoothstep locomotion.
+const WALK_BOB_SPEED_MIN = 8.5;   // at walk threshold
+const WALK_BOB_SPEED_MAX = 14.5;  // at full sprint — matches ~1.45x anim timeScale energy
 
 export interface PostModeFrameState {
   isInDialogue: boolean;
@@ -107,6 +113,8 @@ export function applyCameraFrame(
   const isFpExploration =
     FIRST_PERSON_ENABLED && !isInDialogue && !isCutscene && !isCombat;
 
+  let bobLeanRoll = 0;
+
   // ── Walking head bob (third-person exploration only) ──
   // Skip bob + breathing under reduced motion (matches FPS arms / shake gates).
   if (!isInDialogue && !isCutscene && !isCombat && !isFpExploration && !isEffectiveReducedMotion()) {
@@ -121,15 +129,20 @@ export function applyCameraFrame(
     // fix the uneven phase, so the jitter was reduced but not eliminated.
     _smoothedDelta += (delta - _smoothedDelta) * WALK_BOB_DELTA_SMOOTH;
 
+    // AAA Phase B: continuous speed-linked bob frequency — perfectly syncs
+    // camera gait with locomotion blend tree (walk/run timeScales 1.05→1.45)
+    // + footstep cadence. No plastic float. Film-grade weight transfer.
+    const speedNormForBob = playerSpeed > WALK_BOB_SPEED_THRESHOLD
+      ? Math.min(1, (playerSpeed - WALK_BOB_SPEED_THRESHOLD) / (WALK_BOB_SPEED_FULL - WALK_BOB_SPEED_THRESHOLD))
+      : 0;
+    const dynamicBobSpeed = WALK_BOB_BASE_SPEED + (WALK_BOB_SPEED_MAX - WALK_BOB_SPEED_MIN) * speedNormForBob;
+
     // Accumulate bob phase based on smoothed time (always ticks so it stays in sync)
-    _walkBobPhase += WALK_BOB_SPEED * _smoothedDelta;
+    _walkBobPhase += dynamicBobSpeed * _smoothedDelta;
 
     if (playerSpeed > WALK_BOB_SPEED_THRESHOLD) {
       // Smooth intensity ramp: 0 at threshold, 1.0 at full running speed
-      const speedNorm = Math.min(
-        (playerSpeed - WALK_BOB_SPEED_THRESHOLD) / (WALK_BOB_SPEED_FULL - WALK_BOB_SPEED_THRESHOLD),
-        1.0,
-      );
+      const speedNorm = speedNormForBob;
       const bobIntensity = 1 - Math.exp(-WALK_BOB_BLEND_SPEED * speedNorm);
       const bobOffset = Math.sin(_walkBobPhase) * WALK_BOB_AMPLITUDE * bobIntensity;
       targetPos.y += bobOffset;
@@ -151,6 +164,13 @@ export function applyCameraFrame(
         const lateralBob = Math.cos(_walkBobPhase * 0.5) * WALK_BOB_AMPLITUDE * 0.5 * bobIntensity;
         targetPos.x += rx * lateralBob;
         targetPos.z += rz * lateralBob;
+
+        // AAA Phase B: tiny cinematic roll lean during fast movement (subtle momentum feel)
+        // Adds ~0.8° lean into the stride direction at full sprint — feels weighty, not floaty.
+        // Uses same phase as vertical for perfect stride sync.
+        if (bobIntensity > 0.2) {
+          bobLeanRoll = Math.sin(_walkBobPhase * 0.5) * 0.014 * bobIntensity * speedNorm; // ~0.8° max
+        }
       }
     }
 
@@ -170,15 +190,17 @@ export function applyCameraFrame(
     _smoothedDelta = 1 / 60;
   }
 
+  const effectiveRoll = targetRoll + bobLeanRoll;
+
   if (isFpExploration) {
     spring.position.copy(targetPos);
     spring.velocity.set(0, 0, 0);
     spring.lookAt.copy(targetLook);
-    spring.roll = targetRoll;
+    spring.roll = effectiveRoll;
     spring.fov = THREE.MathUtils.lerp(spring.fov, targetFov, 1 - Math.exp(-3 * delta));
   } else {
     updateSpringCamera(
-      spring, targetPos, targetLook, targetFov, delta, targetRoll,
+      spring, targetPos, targetLook, targetFov, delta, effectiveRoll,
       springOverride?.stiffness,
       springOverride?.damping,
     );

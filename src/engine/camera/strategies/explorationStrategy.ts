@@ -2,6 +2,7 @@ import {
   updateExplorationState,
   resolveCameraCollision,
 } from '../cinematicCamera';
+import * as THREE from 'three';
 import {
   LOOK_HEIGHT,
   MIN_DISTANCE,
@@ -117,6 +118,14 @@ export const explorationStrategy: CameraModeStrategy = {
     _prevSprintActive = sprintActive;
     _sprintKickEnvelope = Math.max(0, _sprintKickEnvelope - ctx.delta * SPRINT_KICK_DECAY);
     fovBoost += _sprintKickEnvelope * SPRINT_KICK_FOV_DEG;
+
+    // AAA Phase B: subtle cinematic forward lean (pitch) when sprinting — feels like
+    // momentum / weight transfer. ~1.2° max, instant decay on stop. No nausea.
+    let sprintLeanPitch = 0;
+    if (sprintActive) {
+      const leanT = Math.min(1, (speedMs - SPRINT_KICK_SPEED_THRESHOLD) / 2.0);
+      sprintLeanPitch = -0.021 * leanT; // negative = nose-down cinematic lean, ~1.2°
+    }
     const baseFov = ctx.currentSceneFov;
 
     const exploration = ctx.exploration;
@@ -175,6 +184,17 @@ export const explorationStrategy: CameraModeStrategy = {
       playerPos.y + LOOK_HEIGHT + heightOffset + ctx.lookAheadOffset.y * 0.3,
       playerPos.z + ctx.lookAheadOffset.z,
     );
+
+    // AAA Phase B: apply sprint forward lean (pitch down) to look target for cinematic momentum
+    if (sprintLeanPitch !== 0) {
+      const lookDir = targetLook.clone().sub(targetPos).normalize();
+      // Apply small pitch rotation around right axis
+      const right = new THREE.Vector3().crossVectors(lookDir, new THREE.Vector3(0,1,0)).normalize();
+      if (right.lengthSq() > 0.001) {
+        lookDir.applyAxisAngle(right, sprintLeanPitch);
+        targetLook.copy(targetPos).add(lookDir.multiplyScalar(12)); // keep reasonable distance
+      }
+    }
 
     // Max Payne OTS — lateral bias before wall collision so the spring arm
     // still collapses cleanly in tight rooms.
