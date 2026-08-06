@@ -54,6 +54,10 @@ export const DYNAMIC_PROPS: Partial<Record<SceneId, DynamicPropDef[]>> = {
   rooftop_edge: [
     { id: 're_can_1', kind: 'can', position: [-1.8, 0, 1.4], rotation: 0.6 },
     { id: 're_can_2', kind: 'can', position: [2.6, 0, 0.8], rotation: 1.9 },
+    // AAA: skyline litter + industrial clutter — kickables on the edge for living rooftop feel
+    { id: 're_bottle_edge', kind: 'bottle', position: [0.9, 0, -2.1], rotation: 0.8 },
+    { id: 're_can_edge', kind: 'can', position: [-3.4, 0, 2.8], rotation: -1.5 },
+    { id: 're_box_roof', kind: 'box', position: [4.1, 0, -1.6], rotation: 0.3 },
   ],
   river_pier: [
     { id: 'rp_bottle_1', kind: 'bottle', position: [1.1, 0, -3.2], rotation: 0.4 },
