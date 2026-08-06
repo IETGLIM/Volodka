@@ -137,18 +137,19 @@ export const explorationStrategy: CameraModeStrategy = {
     let launchFovExtra = 0;
     let launchLeanExtra = 0;
     if (_sprintLaunchBoost > 0) {
-      launchFovExtra = _sprintLaunchBoost * 1.75;
-      launchLeanExtra = _sprintLaunchBoost * 0.032;
-      _sprintLaunchBoost = Math.max(0, _sprintLaunchBoost - ctx.delta * 8.5);
+      launchFovExtra = _sprintLaunchBoost * 2.9; // HARDER APOCALYPTIC launch
+      launchLeanExtra = _sprintLaunchBoost * 0.052;
+      _sprintLaunchBoost = Math.max(0, _sprintLaunchBoost - ctx.delta * 7.2);
     }
     fovBoost += launchFovExtra;
 
     // AAA Phase B: subtle cinematic forward lean (pitch) when sprinting — feels like
     // momentum / weight transfer. ~1.2° max + powerful launch extra. No nausea.
+    // HARDER APOCALYPTIC — nuclear forward commitment every sprint stride.
     let sprintLeanPitch = 0;
     if (sprintActive) {
       const leanT = Math.min(1, (speedMs - SPRINT_KICK_SPEED_THRESHOLD) / 2.0);
-      sprintLeanPitch = -0.021 * leanT; // negative = nose-down cinematic lean, ~1.2°
+      sprintLeanPitch = -0.032 * leanT; // negative = nose-down cinematic lean — HARDER ~1.8°
     }
     sprintLeanPitch -= launchLeanExtra;
 

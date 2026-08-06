@@ -235,18 +235,19 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
       if (isSprinting) {
         try {
           const { triggerCameraShake } = require('@/engine/camera/cameraShake');
-          const kick = 0.28 + (runWeight * 0.42); // brain-melting, earth-shattering rhythmic pounding — HARDER
-          triggerCameraShake(kick, 4.8);
-          triggerCameraShake(kick * 1.32, 9.5);   // nuclear vertical earth-crack slam
-          triggerCameraShake(kick * 1.05, 6.2);   // violent tilting rock + lateral annihilation
-          triggerCameraShake(kick * 0.88, 4.1);  // pure chaotic destruction
-          triggerCameraShake(kick * 0.55, 2.8);   // micro aftershocks
-          triggerCameraShake(kick * 0.32, 1.6);   // final death rattle
+          const kick = 0.36 + (runWeight * 0.55); // brain-melting, earth-shattering rhythmic pounding — HARDER APOCALYPTIC
+          triggerCameraShake(kick, 4.1);
+          triggerCameraShake(kick * 1.48, 10.5);   // nuclear vertical earth-crack slam
+          triggerCameraShake(kick * 1.22, 7.1);   // violent tilting rock + lateral annihilation
+          triggerCameraShake(kick * 0.95, 4.8);  // pure chaotic destruction
+          triggerCameraShake(kick * 0.68, 3.1);   // micro aftershocks
+          triggerCameraShake(kick * 0.41, 1.9);   // final death rattle
+          triggerCameraShake(kick * 0.22, 0.9);
         } catch {}
 
         try {
           const { triggerLandingFovDip } = require('@/engine/camera/landingImpact');
-          triggerLandingFovDip(2.6 + runWeight * 3.4); // full nuclear inward smash every single heavy stride — HARDER
+          triggerLandingFovDip(3.4 + runWeight * 4.2); // full nuclear inward smash every single heavy stride — HARDER APOCALYPTIC
         } catch {}
       }
 

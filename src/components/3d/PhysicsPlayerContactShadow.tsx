@@ -100,7 +100,7 @@ export function PhysicsPlayerContactShadow({
     stepPulse = Math.max(0, stepPulse - dt * 11);
     landingSquash = Math.max(0, landingSquash - dt * 7.5);
 
-    const totalWeight = Math.min(1.95, sprintIntensity * 0.9 + stepPulse * 0.65 + landingSquash * 0.8);
+    const totalWeight = Math.min(2.85, sprintIntensity * 1.42 + stepPulse * 1.05 + landingSquash * 1.28); // HARDER APOCALYPTIC nuclear
 
     // Scale the shadow (bigger = more weight pressing down)
     const scaleX = baseRadiusX * (1 + totalWeight * 0.95);
