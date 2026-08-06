@@ -137,9 +137,9 @@ export const explorationStrategy: CameraModeStrategy = {
     let launchFovExtra = 0;
     let launchLeanExtra = 0;
     if (_sprintLaunchBoost > 0) {
-      launchFovExtra = _sprintLaunchBoost * 6.5; // PLANETARY NUCLEAR launch GOD x∞ for хм, и: full god-mode even harder
-      launchLeanExtra = _sprintLaunchBoost * 0.125;
-      _sprintLaunchBoost = Math.max(0, _sprintLaunchBoost - ctx.delta * 14.5);
+      launchFovExtra = _sprintLaunchBoost * 8.8; // PLANETARY NUCLEAR launch GOD x∞ x3 for хм, и: full god-mode apocalyptic
+      launchLeanExtra = _sprintLaunchBoost * 0.165;
+      _sprintLaunchBoost = Math.max(0, _sprintLaunchBoost - ctx.delta * 18.5);
     }
     fovBoost += launchFovExtra;
 

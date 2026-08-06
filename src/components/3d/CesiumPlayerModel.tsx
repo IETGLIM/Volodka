@@ -145,7 +145,7 @@ function CesiumPlayerModelInner({
     // HARDER NUCLEAR for хм, и: more extreme lean/sway/squash/arm/hip
     const hSpeed = currentHSpeedRef?.current ?? 0;
     const leanT = Math.min(1, Math.max(0, (hSpeed - 4) / 3));
-    const bodyLean = -0.125 * leanT; // PLANETARY GOD lean ~7.2°+ — EVEN HARDER хм, и: full cinematic devastation x∞
+    const bodyLean = -0.185 * leanT; // PLANETARY GOD lean ~10.6°+ — GOD x∞ x3 for хм, и: full cinematic devastation + planetary commitment + world-shattering lean
     const bodyGroup = yawRef.current?.children?.[0] as THREE.Group | undefined;
     if (bodyGroup) {
       const targetLean = leanT > 0.05 ? bodyLean : 0;

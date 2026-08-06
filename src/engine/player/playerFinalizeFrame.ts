@@ -236,22 +236,24 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
       if (isSprinting) {
         try {
           const { triggerCameraShake } = require('@/engine/camera/cameraShake');
-          const kick = 1.05 + (runWeight * 1.65); // ULTIMATE PLANETARY ANNIHILATION GOD x∞ — хм, и: every sprint step is absolute earth-shattering cataclysm + EXTRA BARRAGE + micro quakes + final death rattles. The planet is FUCKING BREAKING
-          triggerCameraShake(kick, 11.5);
-          triggerCameraShake(kick * 2.85, 26.5);   // god-crushing vertical slam HARDER
-          triggerCameraShake(kick * 2.55, 21.2);   // apocalyptic lateral annihilation HARDER
-          triggerCameraShake(kick * 2.18, 15.8);  // pure chaotic world-shatter HARDER
-          triggerCameraShake(kick * 1.85, 11.5);   // aftershock barrage HARDER
-          triggerCameraShake(kick * 1.35, 7.5);   // death rattle HARDER
-          triggerCameraShake(kick * 0.95, 5.2);
-          triggerCameraShake(kick * 0.68, 3.5); // extra micro HARDER
-          triggerCameraShake(kick * 0.42, 2.1); // final quake HARDER
-          triggerCameraShake(kick * 0.25, 1.05); // ultra micro after
+          const kick = 1.65 + (runWeight * 2.75); // ULTIMATE PLANETARY ANNIHILATION GOD x∞ x3 — хм, и: every sprint step is absolute earth-shattering cataclysm + EXTRA BARRAGE + micro quakes + final death rattles + planetary fracture + world-ending aftershocks. The planet is FUCKING SHATTERED under the god
+          triggerCameraShake(kick, 18.5);
+          triggerCameraShake(kick * 4.25, 39.5);   // god-crushing vertical slam GOD x3
+          triggerCameraShake(kick * 3.95, 34.5);   // apocalyptic lateral annihilation GOD x3
+          triggerCameraShake(kick * 3.55, 26.5);  // pure chaotic world-shatter GOD x3
+          triggerCameraShake(kick * 3.05, 19.5);   // aftershock barrage GOD x3
+          triggerCameraShake(kick * 2.45, 13.8);   // death rattle GOD x3
+          triggerCameraShake(kick * 1.95, 10.5);
+          triggerCameraShake(kick * 1.55, 7.8); // extra micro GOD x3
+          triggerCameraShake(kick * 1.15, 5.2); // final quake GOD x3
+          triggerCameraShake(kick * 0.85, 3.5); // ultra micro after GOD x3
+          triggerCameraShake(kick * 0.55, 2.1); // final death rattle GOD x3
+          triggerCameraShake(kick * 0.32, 1.15); // planetary fracture echo
         } catch {}
 
         try {
           const { triggerLandingFovDip } = require('@/engine/camera/landingImpact');
-          triggerLandingFovDip(9.5 + runWeight * 13.5); // full nuclear inward smash every single heavy stride — EVEN HARDER хм, и: full apocalyptic FOV crush
+          triggerLandingFovDip(15.8 + runWeight * 22.5); // full nuclear inward smash every single heavy stride — GOD x∞ x3 хм, и: full apocalyptic FOV crush + lingering planetary fracture + world collapse
         } catch {}
       }
 
@@ -282,12 +284,13 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
         sceneId: deps.sceneId,
       });
 
-      // AAA Phase B: heavy cinematic brake camera effects — APOCALYPTIC STOP
+      // AAA Phase B: heavy cinematic brake camera effects — APOCALYPTIC STOP GOD x3
       try {
         const { triggerCameraShake } = require('@/engine/camera/cameraShake');
-        triggerCameraShake(0.14, 5.8); // strong forward yank shake
-        triggerCameraShake(0.09, 7.2);
-        triggerCameraShake(0.055, 3.4);
+        triggerCameraShake(0.22, 7.8); // strong forward yank shake GOD
+        triggerCameraShake(0.16, 10.5);
+        triggerCameraShake(0.11, 6.2);
+        triggerCameraShake(0.065, 4.1);
       } catch {}
 
       // Audio brake thud + gritty slide

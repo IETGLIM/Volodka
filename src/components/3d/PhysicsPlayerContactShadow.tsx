@@ -100,22 +100,22 @@ export function PhysicsPlayerContactShadow({
     stepPulse = Math.max(0, stepPulse - dt * 11);
     landingSquash = Math.max(0, landingSquash - dt * 7.5);
 
-    const totalWeight = Math.min(88, sprintIntensity * 46 + stepPulse * 45 + landingSquash * 52); // ULTIMATE PLANETARY APOCALYPSE GOD x∞ — 88+ totalWeight for хм, и: the planet is fucking SHATTERING under the god. EVERY sprint footstep is full apocalyptic crater + nuclear collapse. MAXIMUM cinematic nuclear weight, EVEN HARDER, living world destruction
+    const totalWeight = Math.min(135, sprintIntensity * 72 + stepPulse * 71 + landingSquash * 82); // ULTIMATE PLANETARY APOCALYPSE GOD x∞ x3 — 135+ totalWeight for хм, и: the planet is fucking ANNIHILATED + FRACTURED under the god. EVERY sprint footstep is full apocalyptic crater + nuclear collapse + god-level earth fracture + world-ending weight. MAXIMUM cinematic nuclear weight, EVEN HARDER, living world destruction
 
-    // Scale the shadow (bigger = more weight pressing down) — 80+ now full nuclear crater 95+
-    const scaleX = baseRadiusX * (1 + totalWeight * 15.5);
-    const scaleZ = baseRadiusZ * (1 + totalWeight * 18.8);
+    // Scale the shadow (bigger = more weight pressing down) — 125+ now full nuclear crater 150+
+    const scaleX = baseRadiusX * (1 + totalWeight * 22.5);
+    const scaleZ = baseRadiusZ * (1 + totalWeight * 27.5);
     m.scale.set(scaleX / 0.42, 1, scaleZ / 0.42);
 
     // Opacity boost on heavy movement (darker, more "grounded" look)
     const mat = m.material as THREE.MeshBasicMaterial;
     if (mat) {
-      const targetOpacity = baseOpacity + totalWeight * 10.5;
+      const targetOpacity = baseOpacity + totalWeight * 16.5;
       mat.opacity = THREE.MathUtils.lerp(mat.opacity, Math.min(1.0, targetOpacity), 0.99);
     }
 
     // Slight vertical squash on hard landing (shadow flattens) — more dramatic yOffset
-    const yOffset = landingSquash > 0.1 ? -0.98 * landingSquash : -0.078;
+    const yOffset = landingSquash > 0.1 ? -1.38 * landingSquash : -0.115;
     m.position.y = yOffset;
   }, { label: 'ContactShadowReactive', phase: 'pre_render' });
 
