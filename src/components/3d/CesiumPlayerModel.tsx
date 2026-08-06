@@ -13,6 +13,7 @@ import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import type { ProceduralPlayerModelProps } from './useProceduralPlayerAnimation';
 import { ProceduralPlayerModelLite } from './ProceduralPlayerModelLite';
 import { ProceduralAviatorGlasses } from './sceneVisuals/volodkaRoom/AviatorGlasses';
+import { eventBus } from '@/engine/EventBus';
 
 const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeof useGLTF>[3]>;
 const PLAYER_MODEL_URL = getPlayerVolodkaModelUrl();
@@ -190,7 +191,63 @@ function CesiumPlayerModelInner({
           const headBob = Math.sin(swingPhase * 1.8) * 0.035 * leanT;
           head.rotation.x = THREE.MathUtils.lerp(head.rotation.x || 0, headLean + headBob, 0.32);
         }
+
+        // AAA Phase B: landing squash + recovery (body "compresses" on hard impact)
+        // Triggered by player:landed event — gives massive physical satisfaction.
+        // We use a module-level quick decay for simplicity (one avatar instance).
       }
+
+      // Listen for landing impact once (outside the tick for efficiency)
+      // We store a squash amount that decays every frame.
+    });
+
+    // Landing squash state (module level for the single player avatar)
+    let landingSquash = 0;
+    let landingSquashDecay = 0;
+
+    useEffect(() => {
+      const unsub = eventBus.on('player:landed', ({ impact }: any) => {
+        const str = Math.min(1, Math.max(0.3, (impact || 0.7)));
+        landingSquash = str * 0.11;   // up to ~11% vertical squash
+        landingSquashDecay = 9.5;     // fast cinematic recovery
+      });
+      return unsub;
+    }, []);
+
+    // AAA Phase B: per-footstep micro impact squash (gives delicious rhythmic "thud" feeling while running)
+    useEffect(() => {
+      const unsub = eventBus.on('exploration:footstep', ({ speed, runWeight }: any) => {
+        const rw = Math.max(0, Math.min(1, runWeight ?? (speed > 5.5 ? 1 : 0.4)));
+        // Small rhythmic squash per step — stronger on sprint
+        const stepSquash = rw * 0.028;
+        landingSquash = Math.max(landingSquash, stepSquash);
+        landingSquashDecay = 18; // quick recovery between steps
+      });
+      return unsub;
+    }, []);
+
+    useFrameTick('player', () => {
+      if (!ready || !bodyGroup) return;
+
+      // Apply decaying landing squash (adds delicious physical "thud" to the body)
+      if (landingSquash > 0.001) {
+        const currentY = bodyGroup.scale.y || 1;
+        const targetY = 1 - landingSquash;
+        bodyGroup.scale.y = THREE.MathUtils.lerp(currentY, targetY, 0.55);
+
+        // slight X/Z expansion on impact for volume preservation
+        const expand = 1 + landingSquash * 0.6;
+        bodyGroup.scale.x = THREE.MathUtils.lerp(bodyGroup.scale.x || 1, expand, 0.4);
+        bodyGroup.scale.z = bodyGroup.scale.x;
+
+        landingSquash *= Math.exp(-landingSquashDecay * 0.016); // ~60fps decay
+        if (landingSquash < 0.002) {
+          landingSquash = 0;
+          // gently restore scale
+          bodyGroup.scale.set(1, 1, 1);
+        }
+      }
+    }, { label: 'PlayerAvatarLandingSquash', phase: 'pre_render' });
   }, { label: 'PlayerAvatarYaw', phase: 'pre_render' });
 
   // Stay mounted (invisible) while mixer warms — parent keeps lite silhouette.
