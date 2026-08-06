@@ -145,7 +145,7 @@ function CesiumPlayerModelInner({
     // HARDER NUCLEAR for хм, и: more extreme lean/sway/squash/arm/hip
     const hSpeed = currentHSpeedRef?.current ?? 0;
     const leanT = Math.min(1, Math.max(0, (hSpeed - 4) / 3));
-    const bodyLean = -0.085 * leanT; // NUCLEAR APOCALYPTIC lean ~4.9°+ — HARDER for хм, и:
+    const bodyLean = -0.098 * leanT; // PLANETARY GOD lean ~5.6°+ — HARDER хм, и: full cinematic devastation
     const bodyGroup = yawRef.current?.children?.[0] as THREE.Group | undefined;
     if (bodyGroup) {
       const targetLean = leanT > 0.05 ? bodyLean : 0;
@@ -153,43 +153,43 @@ function CesiumPlayerModelInner({
 
       // Rhythmic side sway (figure-8 gait) — matches camera lateral bob phase
       const swayPhase = (performance.now() / 180) % (Math.PI * 2); // ~same frequency as bob
-      const sideSway = Math.sin(swayPhase) * 0.042 * leanT;
+      const sideSway = Math.sin(swayPhase) * 0.048 * leanT;
       bodyGroup.rotation.z = THREE.MathUtils.lerp(bodyGroup.rotation.z || 0, sideSway, 0.26);
 
       // AAA Phase B: micro vertical compression on heavy sprint steps (weight pressing down)
       // Gives delicious "grounded" feel — the body squats slightly into each stride.
-      const compression = 1 - (leanT * 0.085); // max ~8.5% squash — HARDER NUCLEAR
+      const compression = 1 - (leanT * 0.098); // max ~9.8% squash — HARDER NUCLEAR хм, и:
       bodyGroup.scale.y = THREE.MathUtils.lerp(bodyGroup.scale.y || 1, compression, 0.42);
       // Slight forward squash compensation so feet don't sink
-      bodyGroup.scale.x = THREE.MathUtils.lerp(bodyGroup.scale.x || 1, 1 + leanT * 0.028, 0.36);
+      bodyGroup.scale.x = THREE.MathUtils.lerp(bodyGroup.scale.x || 1, 1 + leanT * 0.032, 0.36);
       bodyGroup.scale.z = bodyGroup.scale.x;
 
       // Subtle torso breathing / head bob on the upper body (idle + sprint)
-      const breath = Math.sin(performance.now() / 420) * 0.011 * (1 + leanT * 0.8);
+      const breath = Math.sin(performance.now() / 420) * 0.013 * (1 + leanT * 0.9);
       bodyGroup.position.y = THREE.MathUtils.lerp(bodyGroup.position.y || 0, breath, 0.4);
 
       // AAA Phase B: dynamic arm swing + shoulder roll + head lean (very visible cinematic weight)
       // Scales perfectly with speed + matches footstep cadence. HARDER
       const swingPhase = (performance.now() / 165) % (Math.PI * 2);
-      const swingAmp = leanT * 0.92;
+      const swingAmp = leanT * 1.08;
       const armSwing = Math.sin(swingPhase) * swingAmp;
-      const shoulderRoll = Math.cos(swingPhase * 0.5) * swingAmp * 0.95;
+      const shoulderRoll = Math.cos(swingPhase * 0.5) * swingAmp * 1.1;
 
       // Apply to left/right shoulders (common Mixamo bone names)
       const leftShoulder = bodyGroup.getObjectByName?.('mixamorigLeftShoulder') || bodyGroup.getObjectByName?.('LeftShoulder');
       const rightShoulder = bodyGroup.getObjectByName?.('mixamorigRightShoulder') || bodyGroup.getObjectByName?.('RightShoulder');
 
-      if (leftShoulder) leftShoulder.rotation.z = THREE.MathUtils.lerp(leftShoulder.rotation.z || 0, armSwing * 1.38, 0.28);
-      if (rightShoulder) rightShoulder.rotation.z = THREE.MathUtils.lerp(rightShoulder.rotation.z || 0, -armSwing * 1.38, 0.28);
+      if (leftShoulder) leftShoulder.rotation.z = THREE.MathUtils.lerp(leftShoulder.rotation.z || 0, armSwing * 1.55, 0.28);
+      if (rightShoulder) rightShoulder.rotation.z = THREE.MathUtils.lerp(rightShoulder.rotation.z || 0, -armSwing * 1.55, 0.28);
 
       // Overall shoulder roll for torso twist feeling
-      bodyGroup.rotation.y = THREE.MathUtils.lerp(bodyGroup.rotation.y || 0, shoulderRoll * 0.58, 0.25);
+      bodyGroup.rotation.y = THREE.MathUtils.lerp(bodyGroup.rotation.y || 0, shoulderRoll * 0.68, 0.25);
 
       // Head lean forward + slight bob on sprint (very filmic "looking into the run")
       const head = bodyGroup.getObjectByName?.('mixamorigHead') || bodyGroup.getObjectByName?.('Head') || bodyGroup.children.find(c => c.name.toLowerCase().includes('head'));
       if (head) {
-        const headLean = -0.26 * leanT;
-        const headBob = Math.sin(swingPhase * 1.8) * 0.048 * leanT;
+        const headLean = -0.31 * leanT;
+        const headBob = Math.sin(swingPhase * 1.8) * 0.055 * leanT;
         head.rotation.x = THREE.MathUtils.lerp(head.rotation.x || 0, headLean + headBob, 0.32);
       }
 
@@ -197,16 +197,16 @@ function CesiumPlayerModelInner({
       // Very visible weight transfer and power. HARDER
       const hip = bodyGroup.getObjectByName?.('mixamorigHips') || bodyGroup.getObjectByName?.('Hips');
       if (hip) {
-        const hipDrive = Math.sin(swingPhase * 1.3) * 0.092 * leanT;
+        const hipDrive = Math.sin(swingPhase * 1.3) * 0.105 * leanT;
         hip.rotation.x = THREE.MathUtils.lerp(hip.rotation.x || 0, hipDrive, 0.3);
       }
 
       // AAA Phase B: hard brake recovery — torso pitches forward on stop, then settles
       // Feels like the character is fighting momentum. Very satisfying.
       if ((window as any).__brakeRecovery && (window as any).__brakeRecovery > 0) {
-        const brakePitch = (window as any).__brakeRecovery * 0.42;
+        const brakePitch = (window as any).__brakeRecovery * 0.48;
         bodyGroup.rotation.x = THREE.MathUtils.lerp(bodyGroup.rotation.x || 0, brakePitch, 0.45);
-        (window as any).__brakeRecovery = Math.max(0, (window as any).__brakeRecovery - (1/60) * 3.6);
+        (window as any).__brakeRecovery = Math.max(0, (window as any).__brakeRecovery - (1/60) * 4.1);
       }
     }
   }, { label: 'PlayerAvatarYaw', phase: 'pre_render' });
