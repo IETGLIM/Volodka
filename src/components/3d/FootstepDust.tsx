@@ -168,9 +168,9 @@ export function FootstepDust() {
       // When sprinting the ground fucking explodes under your feet. Maximum volume and drama.
       const speedNorm = Math.min((speed ?? 0) / 7.0, 1);
       const rw = Math.max(0, Math.min(1, runWeight ?? (isSprinting ? 1 : speedNorm)));
-      const count = Math.round(PARTICLES_PER_STEP_MIN + rw * 920); // up to ~923 particles per step — GOD x∞ x∞ APOCALYPSE RAMP м? хм, и: the ground is literally OBLITERATED + full nuclear detonation + planetary dust cloud + world-ending shockwave + core fracture + BLACK HOLE SINGULARITY + TIME RUPTURE + DIMENSIONAL FRACTURE + GRAVITY WELL + CONTINENTAL DRIFT + OCEAN VAPORIZATION. PURE FUCKING UNIVERSAL APOCALYPSE
-      const upwardVel = PARTICLE_UPWARD_VEL + rw * 58.5;
-      const sizeMul = 48 + rw * 62; // god-tier enormous heavy puffs — bigger, apocalyptic nuclear even more, ground detonation GOD x∞ x∞ HARDER
+      const count = Math.round(PARTICLES_PER_STEP_MIN + rw * 1350); // up to ~1353 particles per step — GOD x∞ x∞ x∞ x∞ APOCALYPSE RAMP "Продолжим" — the ground + planet + universe + multiverse + infinite dimensions is literally OBLITERATED + full nuclear detonation + planetary dust cloud + world-ending shockwave + core fracture + BLACK HOLE SINGULARITY + TIME RUPTURE + DIMENSIONAL FRACTURE + GRAVITY WELL + CONTINENTAL DRIFT + OCEAN VAPORIZATION + EVENT HORIZON + QUANTUM DECOHERENCE + INFINITE VOID + MULTIVERSAL ANNIHILATION. PURE FUCKING MULTIVERSAL APOCALYPSE x∞
+      const upwardVel = PARTICLE_UPWARD_VEL + rw * 82.5;
+      const sizeMul = 78 + rw * 92; // god-tier enormous heavy puffs — bigger, apocalyptic nuclear even more, ground detonation GOD x∞ x∞ x∞ x∞ HARDER
 
       spawnBurst(poolRef.current, position[0], position[1], position[2], yaw, count, upwardVel);
 
@@ -190,20 +190,22 @@ export function FootstepDust() {
         spawnBurst(poolRef.current, position[0] - 0.29, position[1] + 0.038, position[2] + 0.27, yaw - 1.9, Math.round(count * 0.51), upwardVel * 0.85);
       }
 
-      // Forward shockwave cones on very hard sprint — ALWAYS for rw>0.52 + more cones HARDER
+      // Forward shockwave cones on very hard sprint — ALWAYS for rw>0.52 + more cones HARDER x∞ x∞ x∞
       if (rw > 0.52) {
         const fx = Math.sin(yaw);
         const fz = Math.cos(yaw);
-        for (let i = 0; i < 11; i++) {
-          spawnBurst(poolRef.current, position[0] + fx * (0.42 + i * 0.21), position[1] + 0.045, position[2] + fz * (0.42 + i * 0.21), yaw, Math.round(12 + rw * 19), upwardVel * 0.68);
+        for (let i = 0; i < 14; i++) {
+          spawnBurst(poolRef.current, position[0] + fx * (0.42 + i * 0.21), position[1] + 0.045, position[2] + fz * (0.42 + i * 0.21), yaw, Math.round(15 + rw * 24), upwardVel * 0.68);
         }
-        // two more diagonal shock cones for full destruction + extra + more for м?
-        spawnBurst(poolRef.current, position[0] + fx * 0.62 + 0.22, position[1] + 0.065, position[2] + fz * 0.62 - 0.19, yaw + 0.7, Math.round(7 + rw * 11), upwardVel * 0.58);
-        spawnBurst(poolRef.current, position[0] + fx * 0.55 - 0.19, position[1] + 0.06, position[2] + fz * 0.55 + 0.24, yaw - 0.8, Math.round(7 + rw * 11), upwardVel * 0.61);
-        spawnBurst(poolRef.current, position[0] + fx * 0.35 + 0.11, position[1] + 0.05, position[2] + fz * 0.35 - 0.14, yaw + 1.3, Math.round(5 + rw * 8), upwardVel * 0.52);
-        // extra mega cones for universal destruction
-        spawnBurst(poolRef.current, position[0] + fx * 0.81 + 0.35, position[1] + 0.072, position[2] + fz * 0.79 - 0.27, yaw + 1.4, Math.round(4 + rw * 7), upwardVel * 0.49);
-        spawnBurst(poolRef.current, position[0] + fx * 0.71 - 0.29, position[1] + 0.068, position[2] + fz * 0.73 + 0.31, yaw - 1.6, Math.round(4 + rw * 7), upwardVel * 0.53);
+        // two more diagonal shock cones for full destruction + extra + more for м? продолжение
+        spawnBurst(poolRef.current, position[0] + fx * 0.62 + 0.22, position[1] + 0.065, position[2] + fz * 0.62 - 0.19, yaw + 0.7, Math.round(9 + rw * 14), upwardVel * 0.58);
+        spawnBurst(poolRef.current, position[0] + fx * 0.55 - 0.19, position[1] + 0.06, position[2] + fz * 0.55 + 0.24, yaw - 0.8, Math.round(9 + rw * 14), upwardVel * 0.61);
+        spawnBurst(poolRef.current, position[0] + fx * 0.35 + 0.11, position[1] + 0.05, position[2] + fz * 0.35 - 0.14, yaw + 1.3, Math.round(7 + rw * 11), upwardVel * 0.52);
+        // extra mega cones for universal destruction + multiversal
+        spawnBurst(poolRef.current, position[0] + fx * 0.81 + 0.35, position[1] + 0.072, position[2] + fz * 0.79 - 0.27, yaw + 1.4, Math.round(6 + rw * 10), upwardVel * 0.49);
+        spawnBurst(poolRef.current, position[0] + fx * 0.71 - 0.29, position[1] + 0.068, position[2] + fz * 0.73 + 0.31, yaw - 1.6, Math.round(6 + rw * 10), upwardVel * 0.53);
+        spawnBurst(poolRef.current, position[0] + fx * 0.95 + 0.48, position[1] + 0.082, position[2] + fz * 0.91 - 0.38, yaw + 2.1, Math.round(4 + rw * 8), upwardVel * 0.44);
+        spawnBurst(poolRef.current, position[0] + fx * 0.88 - 0.42, position[1] + 0.078, position[2] + fz * 0.85 + 0.44, yaw - 2.3, Math.round(4 + rw * 8), upwardVel * 0.47);
       }
 
       // Live scale the material size for sprint weight (cinematic punch)

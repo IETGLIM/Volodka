@@ -100,22 +100,22 @@ export function PhysicsPlayerContactShadow({
     stepPulse = Math.max(0, stepPulse - dt * 11);
     landingSquash = Math.max(0, landingSquash - dt * 7.5);
 
-    const totalWeight = Math.min(850, sprintIntensity * 420 + stepPulse * 410 + landingSquash * 490); // GOD x∞ x∞ APOCALYPSE RAMP м? — 850+ totalWeight: the planet is fucking OBLITERATED + FRACTURED + CRUSHED + CORE RUPTURED + SEISMIC APOCALYPSE + GLOBAL EXTINCTION + MANTLE BREACH + ATMOSPHERIC COLLAPSE + SKY FALLING + REALITY SHATTER + UNIVERSE CRACK + BLACK HOLE SINGULARITY + TIME RUPTURE + DIMENSIONAL FRACTURE + GRAVITY WELL + CONTINENTAL DRIFT + OCEAN VAPORIZATION under the god. EVERY sprint footstep is full universal cataclysm + nuclear collapse + god-level earth fracture + world-ending weight + planetary core rupture + seismic wave + global extinction event + mantle breach + sky falling + reality shattering + black hole event horizon + time dilation collapse. MAXIMUM cinematic nuclear weight x∞, EVEN HARDER, living world destruction + cosmic annihilation
+    const totalWeight = Math.min(1650, sprintIntensity * 780 + stepPulse * 775 + landingSquash * 890); // GOD x∞ x∞ x∞ x∞ x∞ APOCALYPSE RAMP "Продолжим" — 1650+ totalWeight: the planet + universe + multiverse + all realities + infinite dimensions is fucking OBLITERATED + FRACTURED + CRUSHED + CORE RUPTURED + SEISMIC APOCALYPSE + GLOBAL EXTINCTION + MANTLE BREACH + ATMOSPHERIC COLLAPSE + SKY FALLING + REALITY SHATTER + UNIVERSE CRACK + BLACK HOLE SINGULARITY + TIME RUPTURE + DIMENSIONAL FRACTURE + GRAVITY WELL + CONTINENTAL DRIFT + OCEAN VAPORIZATION + EVENT HORIZON + QUANTUM DECOHERENCE + REALITY COLLAPSE + INFINITE SINGULARITY + MULTIVERSAL ANNIHILATION under the god. EVERY sprint footstep is full universal + cosmic + multiversal + infinite cataclysm + nuclear collapse + god-level earth fracture + world-ending weight + planetary core rupture + seismic wave + global extinction event + mantle breach + sky falling + reality shattering + black hole event horizon + time dilation collapse + quantum annihilation + infinite collapse + eternal void. MAXIMUM cinematic nuclear weight x∞ x∞ x∞ x∞, EVEN HARDER, living world destruction + cosmic + multiversal + infinite annihilation
 
-    // Scale the shadow (bigger = more weight pressing down) — 850+ now full nuclear crater + continental crater
-    const scaleX = baseRadiusX * (1 + totalWeight * 112.5);
-    const scaleZ = baseRadiusZ * (1 + totalWeight * 138.5);
+    // Scale the shadow (bigger = more weight pressing down) — 1650+ now full nuclear crater + continental + planetary + multiversal + event horizon crater
+    const scaleX = baseRadiusX * (1 + totalWeight * 245);
+    const scaleZ = baseRadiusZ * (1 + totalWeight * 285);
     m.scale.set(scaleX / 0.42, 1, scaleZ / 0.42);
 
     // Opacity boost on heavy movement (darker, more "grounded" look)
     const mat = m.material as THREE.MeshBasicMaterial;
     if (mat) {
-      const targetOpacity = baseOpacity + totalWeight * 82.5;
+      const targetOpacity = baseOpacity + totalWeight * 165;
       mat.opacity = THREE.MathUtils.lerp(mat.opacity, Math.min(1.0, targetOpacity), 0.99);
     }
 
-    // Slight vertical squash on hard landing (shadow flattens) — more dramatic yOffset — apocalyptic flattening
-    const yOffset = landingSquash > 0.1 ? -5.85 * landingSquash : -0.225;
+    // Slight vertical squash on hard landing (shadow flattens) — more dramatic yOffset — apocalyptic flattening + event horizon + infinite collapse + black hole crush
+    const yOffset = landingSquash > 0.1 ? -12.5 * landingSquash : -0.385;
     m.position.y = yOffset;
   }, { label: 'ContactShadowReactive', phase: 'pre_render' });
 

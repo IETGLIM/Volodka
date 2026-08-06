@@ -137,9 +137,9 @@ export const explorationStrategy: CameraModeStrategy = {
     let launchFovExtra = 0;
     let launchLeanExtra = 0;
     if (_sprintLaunchBoost > 0) {
-      launchFovExtra = _sprintLaunchBoost * 12.5; // GOD x∞ x∞ APOCALYPSE RAMP м? хм, и: full god-mode apocalyptic + black hole launch
-      launchLeanExtra = _sprintLaunchBoost * 0.225;
-      _sprintLaunchBoost = Math.max(0, _sprintLaunchBoost - ctx.delta * 24.5);
+      launchFovExtra = _sprintLaunchBoost * 19.5; // GOD x∞ x∞ x∞ x∞ APOCALYPSE RAMP "Продолжим" — full god-mode apocalyptic + black hole + multiverse launch + infinite singularity + eternal void + multiversal annihilation
+      launchLeanExtra = _sprintLaunchBoost * 0.355;
+      _sprintLaunchBoost = Math.max(0, _sprintLaunchBoost - ctx.delta * 38.5);
     }
     fovBoost += launchFovExtra;
 
@@ -149,7 +149,7 @@ export const explorationStrategy: CameraModeStrategy = {
     let sprintLeanPitch = 0;
     if (sprintActive) {
       const leanT = Math.min(1, (speedMs - SPRINT_KICK_SPEED_THRESHOLD) / 1.28);
-      sprintLeanPitch = -0.095 * leanT; // negative = nose-down cinematic lean — NUCLEAR GOD ~5.4°+ EVEN HARDER for хм, и: full apocalyptic forward commitment
+      sprintLeanPitch = -0.135 * leanT; // GOD x∞ x∞ x∞ x∞ APOCALYPSE RAMP продолжение — negative = nose-down cinematic lean — ~7.7°+ + infinite singularity forward commitment + black hole pull + multiversal collapse
     }
     sprintLeanPitch -= launchLeanExtra;
 

@@ -145,7 +145,7 @@ function CesiumPlayerModelInner({
     // HARDER NUCLEAR for хм, и: more extreme lean/sway/squash/arm/hip
     const hSpeed = currentHSpeedRef?.current ?? 0;
     const leanT = Math.min(1, Math.max(0, (hSpeed - 4) / 3));
-    const bodyLean = -0.245 * leanT; // GOD x∞ x∞ APOCALYPSE RAMP м? — ~14°+ lean — full cinematic devastation + planetary + cosmic commitment + world-shattering lean + black hole pull
+    const bodyLean = -0.385 * leanT; // GOD x∞ x∞ x∞ x∞ APOCALYPSE RAMP "Продолжим" — ~22°+ lean — full cinematic + multiversal + infinite singularity devastation + planetary + cosmic + black hole commitment + world-shattering lean + event horizon pull + eternal void
     const bodyGroup = yawRef.current?.children?.[0] as THREE.Group | undefined;
     if (bodyGroup) {
       const targetLean = leanT > 0.05 ? bodyLean : 0;
@@ -153,12 +153,12 @@ function CesiumPlayerModelInner({
 
       // Rhythmic side sway (figure-8 gait) — matches camera lateral bob phase
       const swayPhase = (performance.now() / 180) % (Math.PI * 2); // ~same frequency as bob
-      const sideSway = Math.sin(swayPhase) * 0.065 * leanT;
+      const sideSway = Math.sin(swayPhase) * 0.085 * leanT;
       bodyGroup.rotation.z = THREE.MathUtils.lerp(bodyGroup.rotation.z || 0, sideSway, 0.26);
 
       // AAA Phase B: micro vertical compression on heavy sprint steps (weight pressing down)
       // Gives delicious "grounded" feel — the body squats slightly into each stride.
-      const compression = 1 - (leanT * 0.185); // GOD x∞ x∞ APOCALYPSE RAMP м? — max ~18.5% squash — EVEN HARDER NUCLEAR + cosmic crush хм, и:
+      const compression = 1 - (leanT * 0.275); // GOD x∞ x∞ x∞ x∞ APOCALYPSE RAMP "Продолжим" — max ~27.5% squash — EVEN HARDER NUCLEAR + cosmic + multiversal + infinite crush + event horizon squash + black hole squash
       bodyGroup.scale.y = THREE.MathUtils.lerp(bodyGroup.scale.y || 1, compression, 0.42);
       // Slight forward squash compensation so feet don't sink
       bodyGroup.scale.x = THREE.MathUtils.lerp(bodyGroup.scale.x || 1, 1 + leanT * 0.032, 0.36);

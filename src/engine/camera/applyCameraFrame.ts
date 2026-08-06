@@ -149,8 +149,8 @@ export function applyCameraFrame(
       const bobIntensity = 1 - Math.exp(-WALK_BOB_BLEND_SPEED * speedNorm);
       // AAA Phase B: amplitude also scales with speed for satisfying cinematic weight
       // at sprint (heavier footfalls read in camera) — NUCLEAR APOCALYPTIC GOD x∞ x3 (max ~45mm pounding) EVEN HARDER for хм, и:
-      const ampScale = 2.85 + 7.25 * speedNorm; // GOD x∞ x∞ APOCALYPSE RAMP м? — 2.85x → 10.1x at sprint — DEVASTATING PLANETARY POUNDING x∞ x∞ — world shaking bob + cosmic quake
-      const bobOffset = Math.sin(_walkBobPhase) * WALK_BOB_AMPLITUDE * bobIntensity * ampScale;
+    const ampScale = 5.85 + 13.5 * speedNorm; // GOD x∞ x∞ x∞ x∞ APOCALYPSE RAMP "Продолжим" — 5.85x → 19.35x at sprint — DEVASTATING PLANETARY + MULTIVERSAL + INFINITE POUNDING x∞ x∞ x∞ x∞ — world shaking bob + cosmic quake + event horizon rumble + black hole crush
+    const bobOffset = Math.sin(_walkBobPhase) * WALK_BOB_AMPLITUDE * bobIntensity * ampScale;
       targetPos.y += bobOffset;
 
       // ── Lateral bob — camera-relative horizontal sway at HALF the vertical
@@ -285,7 +285,7 @@ export function applyCameraFrame(
   // When sprinting hard, camera feels like it's being carried forward — delicious weight.
   const speed = playerVelocity.length();
   if (speed > 5.2 && !isInDialogue && !isCutscene && !isFpExploration) {
-    const thrust = (speed - 5.2) / 1.42; // 0..1.0+ at full sprint — PLANETARY GOD x∞ for хм, и: stronger pull, more momentum
+    const thrust = (speed - 5.2) / 1.42; // 0..1.0+ at full sprint — GOD x∞ x∞ x∞ APOCALYPSE RAMP продолжение — stronger pull, more momentum, multiversal pull + event horizon
     const fwd = new THREE.Vector3().subVectors(targetLook, targetPos).normalize();
     // Strong forward push on position (feels like being PULLED into the run) — FULL APOCALYPTIC
     targetPos.addScaledVector(fwd, thrust * 0.145);

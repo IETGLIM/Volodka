@@ -236,28 +236,32 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
       if (isSprinting) {
         try {
           const { triggerCameraShake } = require('@/engine/camera/cameraShake');
-          const kick = 3.85 + (runWeight * 5.85); // GOD x∞ x∞ APOCALYPSE RAMP м? хм, и: every sprint step is absolute earth-shattering cataclysm + EXTRA BARRAGE + micro quakes + final death rattles + planetary fracture + world-ending aftershocks + core rupture + mantle breach + extinction quake + BLACK HOLE SINGULARITY + TIME RUPTURE + DIMENSIONAL FRACTURE + GRAVITY WELL + CONTINENTAL DRIFT + OCEAN VAPORIZATION. The planet + universe is FUCKING OBLITERATED under the god. MAXIMUM cinematic nuclear weight x∞
-          triggerCameraShake(kick, 38.5);
-          triggerCameraShake(kick * 7.85, 72.5);   // god-crushing vertical slam GOD x∞
-          triggerCameraShake(kick * 7.35, 65.5);   // apocalyptic lateral annihilation GOD x∞
-          triggerCameraShake(kick * 6.85, 58.5);  // pure chaotic world-shatter GOD x∞
-          triggerCameraShake(kick * 6.25, 49.5);   // aftershock barrage GOD x∞
-          triggerCameraShake(kick * 5.65, 41.5);   // death rattle GOD x∞
-          triggerCameraShake(kick * 5.05, 32.5);
-          triggerCameraShake(kick * 4.45, 24.5); // extra micro GOD x∞
-          triggerCameraShake(kick * 3.85, 18.5); // final quake GOD x∞
-          triggerCameraShake(kick * 3.25, 13.5); // ultra micro after GOD x∞
-          triggerCameraShake(kick * 2.65, 9.5); // final death rattle GOD x∞
-          triggerCameraShake(kick * 2.05, 6.5); // planetary fracture echo GOD x∞
-          triggerCameraShake(kick * 1.55, 4.5); // core rupture rumble GOD x∞
-          triggerCameraShake(kick * 1.15, 2.85); // mantle breach shock GOD x∞
-          triggerCameraShake(kick * 0.85, 1.95); // dimensional fracture GOD x∞
-          triggerCameraShake(kick * 0.55, 1.35); // gravity well pull GOD x∞
+          const kick = 6.85 + (runWeight * 9.85); // GOD x∞ x∞ x∞ x∞ APOCALYPSE RAMP "Продолжим" — every sprint step is absolute earth-shattering + multiversal cataclysm + EXTRA BARRAGE + micro quakes + final death rattles + planetary fracture + world-ending aftershocks + core rupture + mantle breach + extinction quake + BLACK HOLE SINGULARITY + TIME RUPTURE + DIMENSIONAL FRACTURE + GRAVITY WELL + CONTINENTAL DRIFT + OCEAN VAPORIZATION + EVENT HORIZON + QUANTUM DECOHERENCE + REALITY COLLAPSE + INFINITE VOID + MULTIVERSAL ANNIHILATION. The planet + universe + multiverse is FUCKING OBLITERATED under the god. MAXIMUM cinematic nuclear weight x∞ x∞ x∞
+          triggerCameraShake(kick, 62.5);
+          triggerCameraShake(kick * 11.25, 115.5);   // god-crushing vertical slam GOD x∞ x∞ x∞
+          triggerCameraShake(kick * 10.75, 108.5);   // apocalyptic lateral annihilation GOD x∞ x∞ x∞
+          triggerCameraShake(kick * 10.25, 99.5);  // pure chaotic world-shatter GOD x∞ x∞ x∞
+          triggerCameraShake(kick * 9.65, 88.5);   // aftershock barrage GOD x∞ x∞ x∞
+          triggerCameraShake(kick * 9.05, 77.5);   // death rattle GOD x∞ x∞ x∞
+          triggerCameraShake(kick * 8.45, 67.5);
+          triggerCameraShake(kick * 7.85, 58.5); // extra micro GOD x∞ x∞ x∞
+          triggerCameraShake(kick * 7.25, 49.5); // final quake GOD x∞ x∞ x∞
+          triggerCameraShake(kick * 6.65, 41.5); // ultra micro after GOD x∞ x∞ x∞
+          triggerCameraShake(kick * 6.05, 35.5); // final death rattle GOD x∞ x∞ x∞
+          triggerCameraShake(kick * 5.45, 28.5); // planetary fracture echo GOD x∞ x∞ x∞
+          triggerCameraShake(kick * 4.85, 22.5); // core rupture rumble GOD x∞ x∞ x∞
+          triggerCameraShake(kick * 4.25, 17.85); // mantle breach shock GOD x∞ x∞ x∞
+          triggerCameraShake(kick * 3.85, 13.25); // dimensional fracture GOD x∞ x∞ x∞
+          triggerCameraShake(kick * 3.45, 9.15); // gravity well pull GOD x∞ x∞ x∞
+          triggerCameraShake(kick * 2.85, 6.35); // event horizon GOD x∞ x∞ x∞
+          triggerCameraShake(kick * 2.25, 4.65); // quantum decoherence GOD x∞ x∞ x∞
+          triggerCameraShake(kick * 1.65, 3.25); // infinite singularity GOD x∞ x∞ x∞
+          triggerCameraShake(kick * 1.05, 2.15); // eternal void GOD x∞ x∞ x∞
         } catch {}
 
         try {
           const { triggerLandingFovDip } = require('@/engine/camera/landingImpact');
-          triggerLandingFovDip(32.5 + runWeight * 48.5); // full nuclear inward smash every single heavy stride — GOD x∞ x∞ м? хм, и: full apocalyptic FOV crush + lingering planetary fracture + world collapse + core implosion + mantle breach + black hole singularity + time rupture
+          triggerLandingFovDip(42.5 + runWeight * 62.5); // full nuclear inward smash every single heavy stride — GOD x∞ x∞ x∞ продолжение м? хм, и: full apocalyptic FOV crush + lingering planetary fracture + world collapse + core implosion + mantle breach + black hole singularity + time rupture + quantum annihilation
         } catch {}
       }
 
@@ -288,13 +292,15 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
         sceneId: deps.sceneId,
       });
 
-      // AAA Phase B: heavy cinematic brake camera effects — APOCALYPTIC STOP GOD x3
+      // AAA Phase B: heavy cinematic brake camera effects — APOCALYPTIC STOP GOD x∞ x∞ x∞ продолжение
       try {
         const { triggerCameraShake } = require('@/engine/camera/cameraShake');
-        triggerCameraShake(0.22, 7.8); // strong forward yank shake GOD
-        triggerCameraShake(0.16, 10.5);
-        triggerCameraShake(0.11, 6.2);
-        triggerCameraShake(0.065, 4.1);
+        triggerCameraShake(0.38, 11.5); // strong forward yank shake GOD x∞ x∞ x∞
+        triggerCameraShake(0.29, 15.5);
+        triggerCameraShake(0.22, 9.8);
+        triggerCameraShake(0.16, 7.2);
+        triggerCameraShake(0.11, 5.5);
+        triggerCameraShake(0.075, 3.8);
       } catch {}
 
       // Audio brake thud + gritty slide
