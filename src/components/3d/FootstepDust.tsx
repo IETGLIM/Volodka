@@ -300,7 +300,7 @@ export function FootstepDust() {
     if (!pointsRef.current || lastRunWeight < 0.65) return; // only when really sprinting
 
     sprintTrailTimer += delta;
-    const interval = 0.068; // dense luxurious wind trail
+    const interval = 0.058; // ultra dense luxurious wind trail
     if (sprintTrailTimer > interval) {
       sprintTrailTimer = 0;
 
@@ -308,31 +308,31 @@ export function FootstepDust() {
       const fwdZ = Math.cos(lastKnownYaw);
       const intensity = lastRunWeight;
 
-      // Dense cinematic forward trail + nice lateral spread (wind kick)
-      const trailCount = Math.round(2.5 + intensity * 3.2);
+      // Ultra dense cinematic forward trail + nice lateral spread (real air kick)
+      const trailCount = Math.round(3.2 + intensity * 4.2);
 
       // Main trailing cloud slightly behind feet
       spawnBurst(
         poolRef.current,
-        lastKnownPos[0] - fwdX * 0.28,
-        (lastKnownPos[1] || 0.02) + 0.018,
-        lastKnownPos[2] - fwdZ * 0.28,
+        lastKnownPos[0] - fwdX * 0.32,
+        (lastKnownPos[1] || 0.02) + 0.022,
+        lastKnownPos[2] - fwdZ * 0.32,
         lastKnownYaw,
         trailCount,
-        0.28 + intensity * 0.48
+        0.32 + intensity * 0.55
       );
 
-      // Extra light side wisps for beautiful air displacement
-      if (intensity > 0.68) {
-        for (let i = 0; i < 2; i++) {
+      // Extra light side wisps + forward cone for beautiful air displacement
+      if (intensity > 0.6) {
+        for (let i = 0; i < 3; i++) {
           spawnBurst(
             poolRef.current,
-            lastKnownPos[0] - fwdX * 0.11 + (Math.random() - 0.5) * 0.65,
-            (lastKnownPos[1] || 0.02) + 0.045,
-            lastKnownPos[2] - fwdZ * 0.11 + (Math.random() - 0.5) * 0.65,
-            lastKnownYaw + (Math.random() - 0.5) * 1.25,
-            1 + Math.random() * 1.2,
-            0.48 + intensity * 0.3
+            lastKnownPos[0] - fwdX * (0.08 + i * 0.07) + (Math.random() - 0.5) * 0.8,
+            (lastKnownPos[1] || 0.02) + 0.05 + i * 0.01,
+            lastKnownPos[2] - fwdZ * (0.08 + i * 0.07) + (Math.random() - 0.5) * 0.8,
+            lastKnownYaw + (Math.random() - 0.5) * 1.6,
+            1.5 + Math.random() * 1.5,
+            0.55 + intensity * 0.35
           );
         }
       }
