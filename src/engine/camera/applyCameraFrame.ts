@@ -285,12 +285,12 @@ export function applyCameraFrame(
   // When sprinting hard, camera feels like it's being carried forward — delicious weight.
   const speed = playerVelocity.length();
   if (speed > 5.2 && !isInDialogue && !isCutscene && !isFpExploration) {
-    const thrust = (speed - 5.2) / 2.5; // 0..0.8 at full sprint
+    const thrust = (speed - 5.2) / 2.2; // 0..1.0+ at full sprint — stronger
     const fwd = new THREE.Vector3().subVectors(targetLook, targetPos).normalize();
-    // Gentle forward push on position (feels like being pulled into the run)
-    targetPos.addScaledVector(fwd, thrust * 0.035);
-    // Also slightly pull the look target for forward commitment feel
-    targetLook.addScaledVector(fwd, thrust * 0.018);
+    // Strong forward push on position (feels like being PULLED into the run) — APOCALYPTIC
+    targetPos.addScaledVector(fwd, thrust * 0.065);
+    // Also pull the look target harder for forward commitment
+    targetLook.addScaledVector(fwd, thrust * 0.028);
 
     // Cinematic "air rush" breathing on camera — subtle rhythmic FOV + position float
     // Feels like wind in your face. Perfectly synced with body bob.

@@ -144,7 +144,7 @@ function CesiumPlayerModelInner({
       // Perfectly synced to locomotion timescale, camera bob, and footstep cadence.
       const hSpeed = currentHSpeedRef?.current ?? 0;
       const leanT = Math.min(1, Math.max(0, (hSpeed - 4) / 3));
-      const bodyLean = -0.035 * leanT;
+      const bodyLean = -0.058 * leanT; // HARDER APOCALYPTIC lean
       const bodyGroup = yawRef.current?.children?.[0] as THREE.Group | undefined;
       if (bodyGroup) {
         const targetLean = leanT > 0.05 ? bodyLean : 0;
@@ -152,15 +152,15 @@ function CesiumPlayerModelInner({
 
         // Rhythmic side sway (figure-8 gait) — matches camera lateral bob phase
         const swayPhase = (performance.now() / 180) % (Math.PI * 2); // ~same frequency as bob
-        const sideSway = Math.sin(swayPhase) * 0.018 * leanT;
-        bodyGroup.rotation.z = THREE.MathUtils.lerp(bodyGroup.rotation.z || 0, sideSway, 0.22);
+        const sideSway = Math.sin(swayPhase) * 0.028 * leanT;
+        bodyGroup.rotation.z = THREE.MathUtils.lerp(bodyGroup.rotation.z || 0, sideSway, 0.26);
 
         // AAA Phase B: micro vertical compression on heavy sprint steps (weight pressing down)
         // Gives delicious "grounded" feel — the body squats slightly into each stride.
-        const compression = 1 - (leanT * 0.035); // max ~3.5% squash
-        bodyGroup.scale.y = THREE.MathUtils.lerp(bodyGroup.scale.y || 1, compression, 0.35);
+        const compression = 1 - (leanT * 0.058); // max ~5.8% squash — HARDER APOCALYPTIC
+        bodyGroup.scale.y = THREE.MathUtils.lerp(bodyGroup.scale.y || 1, compression, 0.42);
         // Slight forward squash compensation so feet don't sink
-        bodyGroup.scale.x = THREE.MathUtils.lerp(bodyGroup.scale.x || 1, 1 + leanT * 0.012, 0.3);
+        bodyGroup.scale.x = THREE.MathUtils.lerp(bodyGroup.scale.x || 1, 1 + leanT * 0.018, 0.36);
         bodyGroup.scale.z = bodyGroup.scale.x;
 
         // Subtle torso breathing / head bob on the upper body (idle + sprint)

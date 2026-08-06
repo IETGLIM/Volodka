@@ -94,17 +94,18 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
         sceneId: deps.sceneId,
       });
 
-      // Nuclear camera reaction on hard landing
+      // Nuclear camera reaction on hard landing — HARDER APOCALYPTIC
       try {
         const { triggerCameraShake } = require('@/engine/camera/cameraShake');
-        const shake = 0.055 + impact * 0.09;
-        triggerCameraShake(shake, 7.5);
-        triggerCameraShake(shake * 0.7, 5); // extra vertical thump
+        const shake = 0.085 + impact * 0.16;
+        triggerCameraShake(shake, 6.2);
+        triggerCameraShake(shake * 1.1, 8.5); // extra vertical thump
+        triggerCameraShake(shake * 0.75, 4.2);
       } catch {}
 
       try {
         const { triggerLandingFovDip } = require('@/engine/camera/landingImpact');
-        triggerLandingFovDip(1.1 + impact * 1.6); // strong cinematic inward pinch
+        triggerLandingFovDip(1.9 + impact * 3.2); // strong cinematic inward pinch — HARDER
       } catch {}
     }
 
@@ -234,17 +235,18 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
       if (isSprinting) {
         try {
           const { triggerCameraShake } = require('@/engine/camera/cameraShake');
-          const kick = 0.19 + (runWeight * 0.28); // brain-melting, earth-shattering rhythmic pounding
-          triggerCameraShake(kick, 5.5);
-          triggerCameraShake(kick * 1.15, 8);   // nuclear vertical earth-crack slam
-          triggerCameraShake(kick * 0.95, 5);   // violent tilting rock
-          triggerCameraShake(kick * 0.7, 3.5);  // pure chaotic destruction
-          triggerCameraShake(kick * 0.4, 2);    // micro aftershocks
+          const kick = 0.28 + (runWeight * 0.42); // brain-melting, earth-shattering rhythmic pounding — HARDER
+          triggerCameraShake(kick, 4.8);
+          triggerCameraShake(kick * 1.32, 9.5);   // nuclear vertical earth-crack slam
+          triggerCameraShake(kick * 1.05, 6.2);   // violent tilting rock + lateral annihilation
+          triggerCameraShake(kick * 0.88, 4.1);  // pure chaotic destruction
+          triggerCameraShake(kick * 0.55, 2.8);   // micro aftershocks
+          triggerCameraShake(kick * 0.32, 1.6);   // final death rattle
         } catch {}
 
         try {
           const { triggerLandingFovDip } = require('@/engine/camera/landingImpact');
-          triggerLandingFovDip(1.8 + runWeight * 2.1); // full nuclear inward smash every single heavy stride
+          triggerLandingFovDip(2.6 + runWeight * 3.4); // full nuclear inward smash every single heavy stride — HARDER
         } catch {}
       }
 
@@ -275,10 +277,12 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
         sceneId: deps.sceneId,
       });
 
-      // AAA Phase B: heavy cinematic brake camera effects
+      // AAA Phase B: heavy cinematic brake camera effects — APOCALYPTIC STOP
       try {
         const { triggerCameraShake } = require('@/engine/camera/cameraShake');
-        triggerCameraShake(0.065, 6.5); // strong forward yank shake
+        triggerCameraShake(0.14, 5.8); // strong forward yank shake
+        triggerCameraShake(0.09, 7.2);
+        triggerCameraShake(0.055, 3.4);
       } catch {}
 
       // Audio brake thud + gritty slide
