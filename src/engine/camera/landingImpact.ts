@@ -14,9 +14,9 @@
 import { isEffectiveReducedMotion } from '@/engine/accessibility/accessibilitySettings';
 
 /** Max FOV dip (degrees) at full landing impact (|vel.y| = 12 m/s). */
-const LANDING_FOV_DIP_DEG = 1.5;
+const LANDING_FOV_DIP_DEG = 2.1; // NUCLEAR HARDER for хм, и: bigger cinematic inward smash
 /** Exponential recovery speed (1/s). ~0.25s to 37%, ~0.5s to 14%. */
-const LANDING_FOV_RECOVER_SPEED = 4;
+const LANDING_FOV_RECOVER_SPEED = 3.6; // slightly slower recovery for heavier feel
 
 let landingFovDip = 0;
 
