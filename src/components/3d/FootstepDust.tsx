@@ -169,15 +169,17 @@ export function FootstepDust() {
       // runWeight (continuous 0-1 walk→run) drives count + intensity.
       const speedNorm = Math.min((speed ?? 0) / 7.0, 1);
       const rw = Math.max(0, Math.min(1, runWeight ?? (isSprinting ? 1 : speedNorm)));
-      const count = Math.round(PARTICLES_PER_STEP_MIN + rw * 4.5); // up to ~8-9 on full sprint
-      const upwardVel = PARTICLE_UPWARD_VEL + rw * 0.55;
-      const sizeMul = 0.9 + rw * 0.55; // bigger, heavier puffs on sprint
+      const count = Math.round(PARTICLES_PER_STEP_MIN + rw * 7.5); // up to ~12-13 on full sprint — more aggressive
+      const upwardVel = PARTICLE_UPWARD_VEL + rw * 0.85;
+      const sizeMul = 1.0 + rw * 0.85; // much bigger, heavier puffs on sprint
 
       spawnBurst(poolRef.current, position[0], position[1], position[2], yaw, count, upwardVel);
 
       // Live scale the material size for sprint weight (cinematic punch)
       if (materialRef.current) {
         materialRef.current.size = PARTICLE_BASE_SIZE * sizeMul;
+        // Extra opacity on sprint for denser look
+        materialRef.current.opacity = 0.35 + rw * 0.22;
       }
 
       // AAA: scene-aware dust tint (subtle but powerful for living world)
