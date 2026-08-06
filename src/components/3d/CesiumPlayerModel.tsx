@@ -145,7 +145,7 @@ function CesiumPlayerModelInner({
     // HARDER NUCLEAR for хм, и: more extreme lean/sway/squash/arm/hip
     const hSpeed = currentHSpeedRef?.current ?? 0;
     const leanT = Math.min(1, Math.max(0, (hSpeed - 4) / 3));
-    const bodyLean = -0.185 * leanT; // PLANETARY GOD lean ~10.6°+ — GOD x∞ x3 for хм, и: full cinematic devastation + planetary commitment + world-shattering lean
+    const bodyLean = -0.245 * leanT; // GOD x∞ x∞ APOCALYPSE RAMP м? — ~14°+ lean — full cinematic devastation + planetary + cosmic commitment + world-shattering lean + black hole pull
     const bodyGroup = yawRef.current?.children?.[0] as THREE.Group | undefined;
     if (bodyGroup) {
       const targetLean = leanT > 0.05 ? bodyLean : 0;
@@ -158,7 +158,7 @@ function CesiumPlayerModelInner({
 
       // AAA Phase B: micro vertical compression on heavy sprint steps (weight pressing down)
       // Gives delicious "grounded" feel — the body squats slightly into each stride.
-      const compression = 1 - (leanT * 0.125); // max ~12.5% squash — EVEN HARDER NUCLEAR хм, и:
+      const compression = 1 - (leanT * 0.185); // GOD x∞ x∞ APOCALYPSE RAMP м? — max ~18.5% squash — EVEN HARDER NUCLEAR + cosmic crush хм, и:
       bodyGroup.scale.y = THREE.MathUtils.lerp(bodyGroup.scale.y || 1, compression, 0.42);
       // Slight forward squash compensation so feet don't sink
       bodyGroup.scale.x = THREE.MathUtils.lerp(bodyGroup.scale.x || 1, 1 + leanT * 0.032, 0.36);
@@ -226,7 +226,7 @@ function CesiumPlayerModelInner({
   useEffect(() => {
     const unsub = eventBus.on('player:landed', ({ impact }: any) => {
       const str = Math.min(1, Math.max(0.3, (impact || 0.7)));
-      landingSquash = str * 0.22;   // up to ~22% vertical squash — GOD x∞ HARDER for хм, и:
+      landingSquash = str * 0.32;   // GOD x∞ x∞ APOCALYPSE RAMP м? — up to ~32% vertical squash — GOD x∞ HARDER for хм, и: + black hole impact squash
       landingSquashDecay = 9.5;     // fast cinematic recovery
     });
     return unsub;

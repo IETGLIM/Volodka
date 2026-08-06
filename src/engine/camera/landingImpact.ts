@@ -14,9 +14,9 @@
 import { isEffectiveReducedMotion } from '@/engine/accessibility/accessibilitySettings';
 
 /** Max FOV dip (degrees) at full landing impact (|vel.y| = 12 m/s). */
-const LANDING_FOV_DIP_DEG = 3.8; // NUCLEAR GOD x∞ HARDER for хм, и: bigger cinematic inward smash, apocalyptic weight
+const LANDING_FOV_DIP_DEG = 5.85; // GOD x∞ x∞ APOCALYPSE RAMP м? хм, и: bigger cinematic inward smash, apocalyptic weight + black hole crush
 /** Exponential recovery speed (1/s). ~0.25s to 37%, ~0.5s to 14%. */
-const LANDING_FOV_RECOVER_SPEED = 2.85; // slower recovery for even heavier cinematic feel, lingering god-crush
+const LANDING_FOV_RECOVER_SPEED = 2.25; // slower recovery for even heavier cinematic feel, lingering god-crush + time dilation
 
 let landingFovDip = 0;
 

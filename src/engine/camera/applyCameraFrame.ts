@@ -149,7 +149,7 @@ export function applyCameraFrame(
       const bobIntensity = 1 - Math.exp(-WALK_BOB_BLEND_SPEED * speedNorm);
       // AAA Phase B: amplitude also scales with speed for satisfying cinematic weight
       // at sprint (heavier footfalls read in camera) — NUCLEAR APOCALYPTIC GOD x∞ x3 (max ~45mm pounding) EVEN HARDER for хм, и:
-      const ampScale = 1.75 + 4.65 * speedNorm; // 1.75x at walk → 6.4x at sprint — DEVASTATING PLANETARY POUNDING x∞ x3 — world shaking bob
+      const ampScale = 2.85 + 7.25 * speedNorm; // GOD x∞ x∞ APOCALYPSE RAMP м? — 2.85x → 10.1x at sprint — DEVASTATING PLANETARY POUNDING x∞ x∞ — world shaking bob + cosmic quake
       const bobOffset = Math.sin(_walkBobPhase) * WALK_BOB_AMPLITUDE * bobIntensity * ampScale;
       targetPos.y += bobOffset;
 
