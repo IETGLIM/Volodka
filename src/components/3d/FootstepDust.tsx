@@ -161,19 +161,28 @@ export function FootstepDust() {
   // playerFinalizeFrame.ts ONLY when the player is grounded and moving,
   // so we can trust the payload without re-checking isGroundedRef.
   useEffect(() => {
-    const unsub = eventBus.on('exploration:footstep', ({ position, yaw, speed, sceneId }: any) => {
+    const unsub = eventBus.on('exploration:footstep', ({ position, yaw, speed, sceneId, isSprinting, runWeight }: any) => {
       if (reducedMotionRef.current) return;
-      // Scale dust burst with gait: walk kicks ~3 particles, sprint kicks up to 6
-      // with stronger upward velocity — the visual rhythm matches the audio cadence.
+
+      // AAA Phase B: rich cinematic footstep dust — fully synced with locomotion triad
+      // (camera bob freq + anim timescale + body lean + audio volume/pitch).
+      // runWeight (continuous 0-1 walk→run) drives count + intensity.
       const speedNorm = Math.min((speed ?? 0) / 7.0, 1);
-      const count = Math.round(PARTICLES_PER_STEP_MIN + speedNorm * 3);
-      const upwardVel = PARTICLE_UPWARD_VEL + speedNorm * 0.3;
+      const rw = Math.max(0, Math.min(1, runWeight ?? (isSprinting ? 1 : speedNorm)));
+      const count = Math.round(PARTICLES_PER_STEP_MIN + rw * 4.5); // up to ~8-9 on full sprint
+      const upwardVel = PARTICLE_UPWARD_VEL + rw * 0.55;
+      const sizeMul = 0.9 + rw * 0.55; // bigger, heavier puffs on sprint
+
       spawnBurst(poolRef.current, position[0], position[1], position[2], yaw, count, upwardVel);
+
+      // Live scale the material size for sprint weight (cinematic punch)
+      if (materialRef.current) {
+        materialRef.current.size = PARTICLE_BASE_SIZE * sizeMul;
+      }
 
       // AAA: scene-aware dust tint (subtle but powerful for living world)
       try {
         const col = getSceneDustColor(sceneId || '');
-        // mutate the material live (cheap) so next particles pick up the tint
         if (materialRef.current) {
           materialRef.current.color.copy(col);
         }
@@ -209,6 +218,17 @@ export function FootstepDust() {
     const posArray = posAttr.array as Float32Array;
     const colorAttr = pointsRef.current.geometry.getAttribute('color') as THREE.BufferAttribute;
     const colorArray = colorAttr.array as Float32Array;
+
+    // AAA Phase B: smooth cinematic size reset — sprint puffs stay big & heavy for a moment,
+    // then gently return to normal so every step feels weighty but never stuck.
+    if (materialRef.current) {
+      const targetSize = PARTICLE_BASE_SIZE * (0.92 + 0.08); // base + tiny breathing
+      materialRef.current.size = THREE.MathUtils.lerp(
+        materialRef.current.size,
+        targetSize,
+        1 - Math.exp(-6 * dt)
+      );
+    }
 
     for (let i = 0; i < MAX_PARTICLES; i++) {
       const p = pool[i];

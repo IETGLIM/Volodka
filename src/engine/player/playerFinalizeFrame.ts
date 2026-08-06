@@ -165,20 +165,29 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
     if (deps.footstepTimerRef.current >= stepInterval) {
       deps.footstepTimerRef.current = 0;
       const pos = rb.translation();
+      const isSprinting = horizontalSpeed > 5.5;
+      const runWeight = Math.min(1, Math.max(0, (horizontalSpeed - 4) / 3)); // continuous 0-1 walk→run
+
       // Emit for future subscribers (NPC hearing, particle dust, etc.).
+      // Now carries rich continuous locomotion data for AAA tactile sync.
       eventBus.emit('exploration:footstep', {
         position: [pos.x, pos.y, pos.z],
         yaw: deps.livePlayerRotationRef.current,
         speed: horizontalSpeed,
         easedSpeed,
+        isSprinting,
+        runWeight,
       });
-      // Subtle pitch rise with gait — faster steps sound slightly more urgent.
-      const pitchOffset = easedSpeed * STEP_PITCH_RANGE;
+
+      // AAA cinematic footstep audio — stronger pitch + volume on sprint
+      const pitchOffset = easedSpeed * STEP_PITCH_RANGE + (isSprinting ? 0.08 : 0);
+      const volumeScale = isSprinting ? 1.15 : 1.0;
       // Skip audio when tab is hidden — prevents backlog hitch on focus return.
       if (typeof document === 'undefined' || document.visibilityState === 'visible') {
         audioEngine.playFootstep(deps.currentFloorMaterialRef.current, {
           sourceId: 'player-footstep',
           pitchOffset,
+          volume: volumeScale,
         });
       }
     }
