@@ -40,11 +40,16 @@ const DUST_SCENES = new Set([
   'solnysh_room', 'library_basement', 'albert_backroom', 'zarema_room',
   // Cron-tick 10: more rooms and industrial scenes
   'zarema_albert_room', 'factory_roof',
+  // AAA continuation: more living atmosphere in key hubs (pier, office, guild, dream, CHK)
+  'river_pier', 'pier_evening', 'office_day', 'guild_mainframe', 'sleep_dream',
+  'chk_forest_zorge', 'chk_campfire_night', 'factory_basement', 'underground_bunker',
 ]);
 const EMBER_SCENES = new Set([
   'abandoned_factory', 'battle',
   // Cron-tick 9: campfire night gets glowing embers
   'chk_campfire_night',
+  // AAA: more warm industrial/fire scenes
+  'factory_roof', 'river_pier', 'pier_evening', 'home_evening',
 ]);
 const NEON_REFLECTION_SCENES = new Set(['street_night', 'city_square', 'river_pier', 'pier_evening']);
 const MIST_SCENES = new Set([
@@ -53,6 +58,8 @@ const MIST_SCENES = new Set([
   'underground_bunker',
   // Cron-tick 10: forest scenes get atmospheric mist
   'chk_forest_zorge', 'forest_clearing',
+  // AAA: more moody mist for industrial, pier, dream, library
+  'factory_basement', 'river_pier', 'pier_evening', 'sleep_dream', 'library_basement', 'office_day',
 ]);
 const FLICKERING_LIGHT_SCENES = new Set([
   'factory_basement', 'abandoned_factory',
