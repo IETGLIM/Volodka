@@ -59,4 +59,35 @@ export const DYNAMIC_PROPS: Partial<Record<SceneId, DynamicPropDef[]>> = {
     { id: 'fb_can_1', kind: 'can', position: [-1.8, 0, 2.6], rotation: 1.3 },
     { id: 'fb_bottle_1', kind: 'bottle', position: [-3.4, 0, 5.2], rotation: 2.2 },
   ],
+  // AAA: more physical play in key hubs — cans, bottles, boxes everywhere
+  cafe_evening: [
+    { id: 'ce_can_1', kind: 'can', position: [-2.8, 0, 1.2], rotation: 0.8 },
+    { id: 'ce_bottle_1', kind: 'bottle', position: [1.9, 0, -2.1], rotation: 1.4 },
+    { id: 'ce_can_2', kind: 'can', position: [3.1, 0, 2.8], rotation: 2.9 },
+  ],
+  office_day: [
+    { id: 'od_box_1', kind: 'box', position: [1.4, 0, -3.2], rotation: 0.4 },
+    { id: 'od_can_1', kind: 'can', position: [-2.1, 0, 1.8], rotation: 1.1 },
+    { id: 'od_bottle_1', kind: 'bottle', position: [4.2, 0, -1.6], rotation: 0.6 },
+  ],
+  library_day: [
+    { id: 'ld_box_1', kind: 'box', position: [-1.6, 0, 2.9], rotation: 1.8 },
+    { id: 'ld_can_1', kind: 'can', position: [3.3, 0, -2.4], rotation: 0.2 },
+  ],
+  factory_roof: [
+    { id: 'fr_can_1', kind: 'can', position: [-3.1, 0, 1.8], rotation: 2.3 },
+    { id: 'fr_barrel_1', kind: 'barrel', position: [2.4, 0, -2.9], rotation: 0.9 },
+  ],
+  home_evening: [
+    { id: 'he_can_1', kind: 'can', position: [0.8, 0, -1.9], rotation: 0.5 },
+    { id: 'he_bottle_1', kind: 'bottle', position: [-1.3, 0, 1.4], rotation: 1.7 },
+  ],
+  underground_bunker: [
+    { id: 'ub_box_1', kind: 'box', position: [1.1, 0, 3.8], rotation: 0.3 },
+    { id: 'ub_can_1', kind: 'can', position: [-2.9, 0, -1.2], rotation: 2.1 },
+  ],
+  guild_mainframe: [
+    { id: 'gm_can_1', kind: 'can', position: [-1.7, 0, 2.3], rotation: 1.5 },
+    { id: 'gm_bottle_1', kind: 'bottle', position: [2.6, 0, -3.1], rotation: 0.7 },
+  ],
 };
