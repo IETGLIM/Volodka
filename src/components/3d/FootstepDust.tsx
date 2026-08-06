@@ -168,9 +168,9 @@ export function FootstepDust() {
       // When sprinting the ground fucking explodes under your feet. Maximum volume and drama.
       const speedNorm = Math.min((speed ?? 0) / 7.0, 1);
       const rw = Math.max(0, Math.min(1, runWeight ?? (isSprinting ? 1 : speedNorm)));
-      const count = Math.round(PARTICLES_PER_STEP_MIN + rw * 192); // up to ~195 particles per step — PURE FUCKING PLANETARY APOCALYPSE — HARDER NUCLEAR for хм, и: the ground is literally exploding into oblivion
-      const upwardVel = PARTICLE_UPWARD_VEL + rw * 12.8;
-      const sizeMul = 9.8 + rw * 14.2; // god-tier enormous heavy puffs — bigger, apocalyptic nuclear even more, ground detonation
+      const count = Math.round(PARTICLES_PER_STEP_MIN + rw * 215); // up to ~218 particles per step — PURE FUCKING PLANETARY APOCALYPSE — HARDER NUCLEAR for хм, и: the ground is literally exploding into oblivion + extra shock
+      const upwardVel = PARTICLE_UPWARD_VEL + rw * 14.5;
+      const sizeMul = 11.2 + rw * 15.8; // god-tier enormous heavy puffs — bigger, apocalyptic nuclear even more, ground detonation
 
       spawnBurst(poolRef.current, position[0], position[1], position[2], yaw, count, upwardVel);
 
