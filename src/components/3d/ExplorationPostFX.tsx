@@ -172,6 +172,8 @@ const DEFAULT_BLOOM = { intensity: 0.5, threshold: 0.7, smoothing: 0.5 };
  *  photographic falloff reads as a real lens rather than a game-engine overlay. */
 const HERO_POSTFX_SCENES = new Set<SceneId>([
   'volodka_room', 'street_night', 'city_square', 'cafe_evening', 'library_day', 'home_evening',
+  // AAA Phase A: piers now hero cinematic — fire + water + dusk get full eskil vignette + ultra polish
+  'river_pier', 'pier_evening',
 ]);
 
 /** Tinted ambient-occlusion color per scene. Black AO reads as game-engine SSAO;
