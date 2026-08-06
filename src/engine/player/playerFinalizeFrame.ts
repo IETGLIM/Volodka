@@ -235,20 +235,20 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
       if (isSprinting) {
         try {
           const { triggerCameraShake } = require('@/engine/camera/cameraShake');
-          const kick = 0.62 + (runWeight * 0.95); // ABSOLUTE PLANETARY ANNIHILATION — хм, и: every sprint step is full earth-shattering cataclysm + extra aftershocks
-          triggerCameraShake(kick, 6.8);
-          triggerCameraShake(kick * 1.92, 16.5);   // god-crushing vertical slam
-          triggerCameraShake(kick * 1.62, 12.2);   // apocalyptic lateral annihilation
-          triggerCameraShake(kick * 1.35, 8.4);  // pure chaotic world-shatter
-          triggerCameraShake(kick * 1.05, 5.8);   // aftershock barrage
-          triggerCameraShake(kick * 0.68, 3.8);   // death rattle
-          triggerCameraShake(kick * 0.42, 2.1);
-          triggerCameraShake(kick * 0.28, 1.2); // extra micro
+          const kick = 0.68 + (runWeight * 1.08); // ULTIMATE PLANETARY ANNIHILATION — хм, и: every sprint step is absolute earth-shattering cataclysm + extra barrage
+          triggerCameraShake(kick, 7.5);
+          triggerCameraShake(kick * 2.05, 18.2);   // god-crushing vertical slam
+          triggerCameraShake(kick * 1.75, 13.8);   // apocalyptic lateral annihilation
+          triggerCameraShake(kick * 1.48, 9.6);  // pure chaotic world-shatter
+          triggerCameraShake(kick * 1.15, 6.5);   // aftershock barrage
+          triggerCameraShake(kick * 0.75, 4.2);   // death rattle
+          triggerCameraShake(kick * 0.48, 2.5);
+          triggerCameraShake(kick * 0.32, 1.4); // extra micro
         } catch {}
 
         try {
           const { triggerLandingFovDip } = require('@/engine/camera/landingImpact');
-          triggerLandingFovDip(5.4 + runWeight * 7.2); // full nuclear inward smash every single heavy stride — HARDER хм, и:
+          triggerLandingFovDip(5.9 + runWeight * 8.1); // full nuclear inward smash every single heavy stride — HARDER хм, и:
         } catch {}
       }
 
