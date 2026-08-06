@@ -100,22 +100,22 @@ export function PhysicsPlayerContactShadow({
     stepPulse = Math.max(0, stepPulse - dt * 11);
     landingSquash = Math.max(0, landingSquash - dt * 7.5);
 
-    const totalWeight = Math.min(8.9, sprintIntensity * 4.85 + stepPulse * 4.65 + landingSquash * 5.25); // NUCLEAR GOD-CRUSH — 8.9+ totalWeight, every sprint footstep caves the earth, full apocalyptic cinematic devastation. HARDER for хм, и:
+    const totalWeight = Math.min(9.8, sprintIntensity * 5.35 + stepPulse * 5.15 + landingSquash * 5.85); // PLANETARY GOD-CRUSH x2 — 9.8+ totalWeight, every sprint footstep is full apocalyptic earth collapse. HARDER for хм, и:
 
-    // Scale the shadow (bigger = more weight pressing down) — 5.1–6.2+ target now 6.5–7.8 nuclear at sprint
-    const scaleX = baseRadiusX * (1 + totalWeight * 1.25);
-    const scaleZ = baseRadiusZ * (1 + totalWeight * 1.52);
+    // Scale the shadow (bigger = more weight pressing down) — 6.5–7.8+ now full nuclear 8+
+    const scaleX = baseRadiusX * (1 + totalWeight * 1.38);
+    const scaleZ = baseRadiusZ * (1 + totalWeight * 1.68);
     m.scale.set(scaleX / 0.42, 1, scaleZ / 0.42);
 
     // Opacity boost on heavy movement (darker, more "grounded" look)
     const mat = m.material as THREE.MeshBasicMaterial;
     if (mat) {
-      const targetOpacity = baseOpacity + totalWeight * 0.65;
-      mat.opacity = THREE.MathUtils.lerp(mat.opacity, Math.min(0.98, targetOpacity), 0.52);
+      const targetOpacity = baseOpacity + totalWeight * 0.72;
+      mat.opacity = THREE.MathUtils.lerp(mat.opacity, Math.min(0.99, targetOpacity), 0.55);
     }
 
     // Slight vertical squash on hard landing (shadow flattens) — more dramatic yOffset
-    const yOffset = landingSquash > 0.1 ? -0.041 * landingSquash : 0.002;
+    const yOffset = landingSquash > 0.1 ? -0.048 * landingSquash : 0.001;
     m.position.y = yOffset;
   }, { label: 'ContactShadowReactive', phase: 'pre_render' });
 
