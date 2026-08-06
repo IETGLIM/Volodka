@@ -174,6 +174,8 @@ const HERO_POSTFX_SCENES = new Set<SceneId>([
   'volodka_room', 'street_night', 'city_square', 'cafe_evening', 'library_day', 'home_evening',
   // AAA Phase A: piers now hero cinematic — fire + water + dusk get full eskil vignette + ultra polish
   'river_pier', 'pier_evening',
+  // AAA Phase A: sleep_dream is the ultimate cinematic moment — full hero postFX (eskil vignette, dense DOF, ultra bloom) for ethereal galaxy feel
+  'sleep_dream',
 ]);
 
 /** Tinted ambient-occlusion color per scene. Black AO reads as game-engine SSAO;
