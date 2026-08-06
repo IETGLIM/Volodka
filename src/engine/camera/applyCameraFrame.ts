@@ -285,20 +285,20 @@ export function applyCameraFrame(
   // When sprinting hard, camera feels like it's being carried forward — delicious weight.
   const speed = playerVelocity.length();
   if (speed > 5.2 && !isInDialogue && !isCutscene && !isFpExploration) {
-    const thrust = (speed - 5.2) / 1.65; // 0..1.0+ at full sprint — NUCLEAR HARDER for хм, и:
+    const thrust = (speed - 5.2) / 1.48; // 0..1.0+ at full sprint — PLANETARY GOD for хм, и:
     const fwd = new THREE.Vector3().subVectors(targetLook, targetPos).normalize();
-    // Strong forward push on position (feels like being PULLED into the run) — PLANETARY APOCALYPTIC
-    targetPos.addScaledVector(fwd, thrust * 0.095);
+    // Strong forward push on position (feels like being PULLED into the run) — FULL APOCALYPTIC
+    targetPos.addScaledVector(fwd, thrust * 0.112);
     // Also pull the look target harder for forward commitment
-    targetLook.addScaledVector(fwd, thrust * 0.045);
+    targetLook.addScaledVector(fwd, thrust * 0.055);
 
     // Cinematic "air rush" breathing on camera — subtle rhythmic FOV + position float
     // Feels like wind in your face. Perfectly synced with body bob.
-    const rushPhase = (ctx.time * 4.6) % (Math.PI * 2);
-    const rush = Math.sin(rushPhase) * 0.018 * Math.min(1, thrust * 1.85);
-    targetPos.addScaledVector(fwd, rush * 0.85); // tiny forward float — stronger
+    const rushPhase = (ctx.time * 5.1) % (Math.PI * 2);
+    const rush = Math.sin(rushPhase) * 0.022 * Math.min(1, thrust * 2.1);
+    targetPos.addScaledVector(fwd, rush * 1.0); // tiny forward float — stronger
     // Very subtle FOV breathing (adds life without nausea)
-    const fovBreath = rush * 0.95;
+    const fovBreath = rush * 1.05;
     (targets as any).targetFov = (targets as any).targetFov || targetFov;
     (targets as any).targetFov += fovBreath;
   }
