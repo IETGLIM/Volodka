@@ -137,6 +137,19 @@ function CesiumPlayerModelInner({
   useFrameTick('player', () => {
     if (!ready) return;
     if (yawRef.current) yawRef.current.rotation.y = rotationRef.current + FORWARD_OFFSET;
+
+    // AAA Phase B: cinematic body lean / weight transfer when sprinting
+    // Subtle forward pitch on the model root (separate from camera lean) for rich animation feel.
+    // Matches locomotion timeScale + camera bob. Purely visual, no physics impact.
+    const hSpeed = currentHSpeedRef?.current ?? 0;
+    const leanT = Math.min(1, Math.max(0, (hSpeed - 4) / 3)); // band ~walk to sprint
+    const bodyLean = -0.035 * leanT; // ~2° max nose-down cinematic lean
+    const bodyGroup = yawRef.current?.children?.[0] as THREE.Group | undefined;
+    if (bodyGroup) {
+      // Smoothly return to 0 when not sprinting (prevents drift accumulation)
+      const targetLean = leanT > 0.05 ? bodyLean : 0;
+      bodyGroup.rotation.x = THREE.MathUtils.lerp(bodyGroup.rotation.x || 0, targetLean, 0.18);
+    }
   }, { label: 'PlayerAvatarYaw', phase: 'pre_render' });
 
   // Stay mounted (invisible) while mixer warms — parent keeps lite silhouette.

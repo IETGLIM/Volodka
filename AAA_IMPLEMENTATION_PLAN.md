@@ -60,8 +60,8 @@
 - Perfect shadows (CSM where gated), motion blur lite in cutscenes.
 
 **Фаза B (после 2,4,6): Идеальное Управление, Анимации, Плавность**
-- Continuous walk<->run blend tree (full weight + timescale).
-- Landing impact, sprint FOV kick, wall bump, perfect bob sync.
+- Continuous walk<->run blend tree (full weight + timescale) — **DONE** (smoothstep runWeight, dynamic timeScale 0.42-1.04x, blend speeds tuned).
+- Landing impact, sprint FOV kick, wall bump, perfect bob sync — **IN PROGRESS** (speed-scaled bob freq/amp/lean + sprint pitch lean + body lean on avatar; camera+anim+footstep now perfectly synced).
 - Cinematic crossfades, eased scene transitions (no snaps).
 - Cutscene polish: luxurious camera paths, rich timelines.
 - Player/NPC animations: better Mixamo/Quaternius fidelity (no T-pose, talk gestures).
