@@ -43,6 +43,8 @@ const DUST_SCENES = new Set([
   // AAA continuation: more living atmosphere in key hubs (pier, office, guild, dream, CHK)
   'river_pier', 'pier_evening', 'office_day', 'guild_mainframe', 'sleep_dream',
   'chk_forest_zorge', 'chk_campfire_night', 'factory_basement', 'underground_bunker',
+  // AAA Phase A: post-battle dust + library basement (we just added pushable debris/clutter)
+  'battle', 'library_basement',
 ]);
 const EMBER_SCENES = new Set([
   'abandoned_factory', 'battle',

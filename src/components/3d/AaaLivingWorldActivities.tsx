@@ -70,6 +70,10 @@ const ACTIVITY_LINES: Record<string, string> = {
   old_book: 'Страницы шуршат. Слова, которые уже нельзя изменить.',
   lamp_library: 'Абажур греет. Здесь можно остаться навсегда.',
   window_library: 'Дождь по стеклу. Мир за окном кажется далёким.',
+
+  // AAA Phase A: battle debris + library basement (post-fight / dusty tactile living world)
+  battle_debris: 'Обломки ещё тёплые. Битва оставила след.',
+  library_basement_clutter: 'Пыльные ящики. Кто-то прятал здесь тайны.',
 };
 
 const COZY_ACTIVITIES = new Set(['coffee_machine', 'bench', 'plant', 'window', 'fridge', 'lamp_library']);
@@ -123,6 +127,9 @@ export function AaaLivingWorldActivities() {
         else if (lower.includes('water') || lower.includes('edge') || lower.includes('вода')) key = 'water_edge';
         else if (lower.includes('crate') && (sceneId.includes('pier') || sceneId.includes('river'))) key = 'pier_crate';
         else if (lower.includes('lamp') && (sceneId.includes('pier') || sceneId.includes('river'))) key = 'pier_lamp';
+        // AAA: battle debris + library basement clutter (post-fight / dusty tactile)
+        else if (lower.includes('battle') || lower.includes('debris') || lower.includes('shell') || lower.includes('баррель')) key = 'battle_debris';
+        else if ((lower.includes('book') || lower.includes('книга') || lower.includes('crate') || lower.includes('can')) && sceneId.includes('library_basement')) key = 'library_basement_clutter';
 
         if (key && ACTIVITY_LINES[key]) {
           const line = ACTIVITY_LINES[key];

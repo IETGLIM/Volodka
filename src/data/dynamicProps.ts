@@ -112,4 +112,18 @@ export const DYNAMIC_PROPS: Partial<Record<SceneId, DynamicPropDef[]>> = {
     { id: 'pe_can_2', kind: 'can', position: [2.1, 0, -0.9], rotation: -1.2 },
     { id: 'pe_barrel', kind: 'barrel', position: [-0.6, 0, -0.4], rotation: 0.3 },
   ],
+  // AAA: dusty library basement tactile props — kickable cans + crates in stale air (pairs with volumetric shafts)
+  library_basement: [
+    { id: 'lb_can_1', kind: 'can', position: [1.8, 0, 2.4], rotation: 0.8 },
+    { id: 'lb_can_2', kind: 'can', position: [-2.1, 0, -1.9], rotation: -1.3 },
+    { id: 'lb_box_books', kind: 'box', position: [3.4, 0, 0.7], rotation: 0.2 },
+    { id: 'lb_barrel_old', kind: 'barrel', position: [-0.7, 0, 3.6], rotation: 1.1 },
+  ],
+  // AAA: post-combat tactile world — debris cans/boxes/barrel after battle (makes combat hub feel lived-in)
+  battle: [
+    { id: 'bt_can_1', kind: 'can', position: [-2.8, 0, 3.1], rotation: 0.7 },
+    { id: 'bt_can_2', kind: 'can', position: [3.4, 0, -2.6], rotation: -1.1 },
+    { id: 'bt_box_shell', kind: 'box', position: [-1.2, 0, -4.2], rotation: 0.4 },
+    { id: 'bt_barrel_debris', kind: 'barrel', position: [4.1, 0, 1.8], rotation: 1.6 },
+  ],
 };
