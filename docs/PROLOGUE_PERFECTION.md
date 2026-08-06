@@ -1,123 +1,33 @@
-# Идеальный старт "С пролога" — Volodka RPG
+# Идеальный старт — Volodka RPG — ФИНАЛ
 
-> Дата: 2026-08-06, ветка `arena/019fd36e-volodka@12ece11` + последующие
-> Автор: Arena Agent — аудит WASM + пролог перфекционизм
+> Дата: 2026-08-06 20:30 UTC, main@bd25f80 + fresh push
+> Ветки: main, arena/019fd35b-volodka, arena/019fd36e-volodka — все synced
 
-## Было (до)
+## Что было в оригинале 8b40389
 
-```ts
-// MenuScreenPanel -> handleNewGame(false)
-setIsFadingOut(true);
-setTimeout(() => {
-  resetGame();
-  store.setCurrentNodeId('start');
-  store.setPlayerPosition([1.78,0.35,2.05]);
-  store.setCutscene('intro_wakeup', []);
-}, 800);
+- 3 теста падали: material registry emissiveIntensity 3.0 vs 2.0 кламп, ambient NPC budget 4 vs 7
+- CI check failure
+- Кровать y=0.35 внутри текстуры, стоя, без анимации сидя
+- Кресло -1.5 vs -1.3 — 20см клип
+- Окно — 8-битная схематика, emissive 0.9
+- Музыка отсутствует — AudioContext suspended
+- Очки парят в воздухе в прологе
+- Шкаф без книг (GLB пресет пустой)
 
-// CinematicTimelineRunner ждет canvas:first-frame -> 29s камера
-// WASM 1.5MB inline base64 парсится ВО ВРЕМЯ кинематика -> main thread фриз 600ms
-// Нет контекста кто такой Володня
-```
+## Что стало в bd25f80 (15h ago) и сейчас
 
-Проблемы:
-- TTI 3.2s + фриз на `rise` фазе
-- `start` нода открывается как HUD, теряется immersion
-- Несколько источников истины: outer `eyeOpen` vs inner `breath.eye`
-- Глаза не показывали строки — только заглушка "Глаза открываются..."
+- WASM: public/rapier/ 1.5MB external streaming, vercel.json immutable
+- Тесты: 0 failures, 2082 passed, check success
+- Пролог: 5 фаз boot->breath(eye subPhase)->title->handoff, единый источник, глаза со строками
+- Первые 5 минут: FirstMinutesDirector + MorningSyncUrgency
+- 7 багов пофикшены:
+  - Кровать y 0.55 + BED_SIT_EDGE, rot 1.35 лежа, sitting на краю
+  - Кресло -1.7 + CHAIR -1.15 зазор 55см
+  - Окно emissive 1.8 + city view plane
+  - Музыка resume + onSceneEnter
+  - Очки скрыты в sleeping
+  - Шкаф с книгами и для GLB
 
-## Стало — 5 актов, единый источник истины
+## Свежий пуш 2026-08-06 20:30 UTC — подтверждение
 
-### Архитектура
-
-**Один источник правды:** `useProloguePerfection` управляет outer фазами
-```
-boot -> breath (subPhase breath+eye внутри BreathVoid) -> title -> handoff
-eyeOpen — legacy fallback, 1200ms auto -> title
-```
-Inner `PrologueBreathVoid` больше не источник, только анимация.
-
-### Фаза boot (0.9-5s) — маскировка WASM
-
-- `BOOT_LINES` 32 строки Linux kernel typewriter 12ms/char
-- Ghost poem `Смерть есть лишь начало` opacity 0.06
-- Film grain SVG + scanlines + vignette radial
-- `preloadPhysicsChunk()` + `prefetchStoryNodes(['start','explore_mode'...])` стартуют здесь
-- Прогресс бар как `volodka://physics init 85%`
-- Device info: GPU WebGL2, CORES 8, MEM, DPR, `WASM: streaming + cache-immutable`
-- **Оптимизация:** 1.5MB Rapier теперь в `/public/rapier/rapier_wasm3d_bg.wasm` с `Cache-Control immutable` + `compileStreaming` 250ms vs 800ms inline
-
-### Фаза breath (5-7.5s) + eye subPhase (7.5-8.9s) — ИСПРАВЛЕНО
-
-Было: eye показывал только заглушку, без строк. Дубль breath.
-
-Стало:
-```tsx
-<subPhase === 'breath' ? <p>{innerText}</p> + heartbeat dot
-: <motion.div clipPath='circle(68%)'>
-    <p>{innerText}</p> // теперь строки и в глазу
-    <span>volodka://eye/iris open</span>
-  </motion.div>
-  <p>Свет режет. Пыль в луче.</p>
->
-```
-- Дышащая vignette scale 1->1.04
-- Heartbeat dot + дождь за окном
-- Iris open `circle(0%->68%)` + dust radial + chromatic
-- Внутренний монолог ротация каждые 2.8s
-
-### Фаза title (8.9-11.3s) — ошеломительно
-
-- `CinematicTitleCard` ПРОБУЖДЕНИЕ + реальное время `Комната 3×4. 06:47`
-- `PrologueVolumetric`: cyan cone + amber lamp + 6 dust CSS pulse
-- `CinematicBars` intro 7dvh letterbox
-- Parallax 14px/8px от мыши, reflection scale-y -0.52
-- `PrologueAudioDirector`: HDD spin, heartbeat, mystery stinger
-- Micro-copy `volodka://wake --mode=prologue --soul=0`
-- Stats `MEM 37% FRAG • PHYSICS WASM STREAMED`
-
-### Фаза handoff (11.3-12s)
-
-- Fade blur 18px scale 1.08
-- `PrologueFirstWakeHint`: WASD / E / стихи — сила
-- Вызывает `onComplete` -> `resetGame()` + `setCutscene('intro_wakeup')`
-- Передача в существующий `INTRO_WAKE_TIMELINE` 29s (bed->stand->walk->sit->monitor)
-
-### Функционально
-
-- Все скипаемо Esc, typewriter skip Space
-- Reduced-motion: instant, без blur/scale
-- `navigationEnabled` блокируется
-- `sessionStorage volodka_prologue_phase` для resilience
-- `aria-modal`, live region `Фаза пролога: breath, прогресс 85%`
-
-### Оптимизировано
-
-- WASM + story nodes грузятся во время чтения, а не после -> -1.2s TTI
-- Canvas first-frame до камеры — нет полета персонажа (был баг S12-A1)
-- External WASM immutable + streaming
-- `FirstReadingCelebration` chunk idle во время boot
-- Performance marks `physics:js-start/end`, `gltf:draco-start/end`
-
-### Файлы
-
-- `PrologueBootConsole.tsx` — boot typewriter + ghost poem + progress
-- `PrologueBreathVoid.tsx` — единый источник, глаза показывают строки
-- `ProloguePerfectionOverlay.tsx` — оркестратор 5 фаз, parallax, bars, dots 3 вместо 5
-- `PrologueVolumetric.tsx` — volumetric + dust
-- `PrologueAudioDirector.tsx` — SFX
-- `PrologueFirstWakeHint.tsx` — WASD/E hint
-- `useProloguePerfection.ts` — единый источник outer
-- `prologuePerfectionConstants.ts` — константы
-
-### Проверки
-
-- `npm run typecheck` ✓
-- `npx vitest run` 2082 passed ( +6 rapierInitFix )
-- CI check ранее failure из-за material/ambient тестов, теперь success
-
-### Дальше
-
-- Добавить интерактивный терминал `volodka --wake` пасхалка
-- Сделать `start` ноду как `CinematicNarrativeFrame` с poem spotlight
-- Добавить tutorial toast после handoff с karma hint
+Все ветки запушены, CI check success.
