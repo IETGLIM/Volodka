@@ -167,6 +167,13 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
       try {
         audioEngine.playSfx('sprint_whoosh');
       } catch {}
+
+      // AAA Phase B: satisfying cinematic launch shake — the "thump" of acceleration
+      // Short, punchy, not nauseating. Pairs with FOV kick + dust explosion + lean.
+      try {
+        const { triggerCameraShake } = require('@/engine/camera/cameraShake');
+        triggerCameraShake(0.045, 11); // stronger cinematic thump
+      } catch {}
     }
 
     prevAnimForFootstep = currentAnim;

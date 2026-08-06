@@ -222,6 +222,20 @@ export const explorationStrategy: CameraModeStrategy = {
       }
     }
 
+    // AAA Phase B: cinematic deceleration settle lean + micro bob settle
+    // Feels like body weight shifting forward then settling back — rich, filmic.
+    const prevSpeed = ctx.prevVelocitySmooth.length();
+    const decel = Math.max(0, prevSpeed - speedMs);
+    if (decel > 1.6 && speedMs < 4.8) {
+      const decelLean = Math.min(0.022, decel * 0.009); // nose-up settle
+      const lookDir2 = targetLook.clone().sub(targetPos).normalize();
+      const right2 = new THREE.Vector3().crossVectors(lookDir2, new THREE.Vector3(0,1,0)).normalize();
+      if (right2.lengthSq() > 0.001) {
+        lookDir2.applyAxisAngle(right2, decelLean);
+        targetLook.copy(targetPos).add(lookDir2.multiplyScalar(10));
+      }
+    }
+
     // Max Payne OTS — lateral bias before wall collision so the spring arm
     // still collapses cleanly in tight rooms.
     applyShoulderOffset(targetPos, targetLook, yaw);

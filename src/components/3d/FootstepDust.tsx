@@ -247,6 +247,51 @@ export function FootstepDust() {
     return unsub;
   }, []);
 
+  // AAA Phase B: sustained sprint "wind trail" — beautiful forward dust cone while running fast.
+  // Gives the feeling of real momentum and air displacement. High-class filmic detail.
+  let sprintTrailTimer = 0;
+  let lastKnownYaw = 0;
+  let lastKnownPos: [number, number, number] = [0, 0, 0];
+  let lastRunWeight = 0;
+
+  useEffect(() => {
+    const unsub = eventBus.on('exploration:footstep', (p: any) => {
+      if (p.yaw !== undefined) lastKnownYaw = p.yaw;
+      if (p.position) lastKnownPos = p.position;
+      lastRunWeight = Math.max(0, Math.min(1, p.runWeight ?? (p.isSprinting ? 1 : 0)));
+    });
+    return unsub;
+  }, []);
+
+  useFrameTick('weather', ({ delta }) => {
+    if (!pointsRef.current || lastRunWeight < 0.65) return; // only when really sprinting
+
+    sprintTrailTimer += delta;
+    const interval = 0.095; // fast but cheap trail
+    if (sprintTrailTimer > interval) {
+      sprintTrailTimer = 0;
+
+      const fwdX = Math.sin(lastKnownYaw);
+      const fwdZ = Math.cos(lastKnownYaw);
+      const intensity = lastRunWeight;
+
+      // Small elegant forward-biased trail puffs (lighter than main steps)
+      const trailCount = Math.round(1 + intensity * 1.8);
+      const trailUp = 0.18 + intensity * 0.22;
+
+      // Spawn a few particles slightly behind the current foot for "trailing" feel
+      spawnBurst(
+        poolRef.current,
+        lastKnownPos[0] - fwdX * 0.18,
+        (lastKnownPos[1] || 0.02) + 0.01,
+        lastKnownPos[2] - fwdZ * 0.18,
+        lastKnownYaw,
+        trailCount,
+        trailUp
+      );
+    }
+  });
+
   useFrameTick('weather', ({ delta }) => {
     if (!pointsRef.current) return;
     const dt = Math.min(delta, 0.05);
