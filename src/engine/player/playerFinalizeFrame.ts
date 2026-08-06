@@ -216,12 +216,17 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
         runWeight,
       });
 
-      // AAA Phase B "ебашь": micro camera kick on sprint footsteps — the world reacts to every heavy step
+      // AAA Phase B "ебашь": NUCLEAR cinematic camera kick + micro FOV pulse on every sprint footstep
+      // The entire world shakes with power on every stride. Feels like a war machine.
       if (isSprinting) {
         try {
           const { triggerCameraShake } = require('@/engine/camera/cameraShake');
-          const kick = 0.008 + (runWeight * 0.011);
-          triggerCameraShake(kick, 22); // very short, punchy micro-shake per step
+          const kick = 0.028 + (runWeight * 0.048); // strong, very noticeable rhythmic camera punch
+          triggerCameraShake(kick, 16);
+
+          // Tiny rhythmic FOV pulse synced to footsteps (cinematic "breathing" weight)
+          const { triggerLandingFovDip } = require('@/engine/camera/landingImpact');
+          triggerLandingFovDip(0.18 + runWeight * 0.22); // very subtle inward pulse
         } catch {}
       }
 
