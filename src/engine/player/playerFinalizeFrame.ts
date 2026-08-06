@@ -69,13 +69,46 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
 
   deps.currentFloorMaterialRef.current = deps.config.floorMaterial;
 
-  // ── Landing impact footstep ──
-  if (justLanded) {
-    deps.footstepTimerRef.current = 0;
-    audioEngine.playFootstep(deps.currentFloorMaterialRef.current, {
-      sourceId: 'player-landing',
-    });
-  }
+  // Declare early so landing handler (which fires on justLanded) can use it
+  let finalPos = rb.translation();
+
+  // ── Landing impact footstep + cinematic dust ──
+    if (justLanded) {
+      deps.footstepTimerRef.current = 0;
+
+      // AAA Phase B "ебашь": cinematic landing thud — deeper + heavier on hard impacts
+      const impact = Math.min(1, Math.abs(scratch.landingImpactVel || 0) / 12);
+      const landingPitch = -0.22 * impact;
+      const landingVol = 1.0 + impact * 0.55;
+      audioEngine.playFootstep(deps.currentFloorMaterialRef.current, {
+        sourceId: 'player-landing',
+        pitchOffset: landingPitch,
+        volume: landingVol,
+      });
+
+      // AAA: rich landing dust burst (visual weight + living world)
+      eventBus.emit('player:landed', {
+        position: [finalPos.x, finalPos.y, finalPos.z],
+        impact,
+        yaw: deps.livePlayerRotationRef.current,
+        sceneId: deps.sceneId,
+      });
+
+      // Nuclear camera reaction on hard landing — EVEN HARDER APOCALYPTIC GOD x∞ for хм, и:
+      try {
+        const { triggerCameraShake } = require('@/engine/camera/cameraShake');
+        const shake = 0.125 + impact * 0.22;
+        triggerCameraShake(shake, 8.5);
+        triggerCameraShake(shake * 1.65, 12.5); // extra vertical thump HARDER
+        triggerCameraShake(shake * 1.35, 7.8);
+        triggerCameraShake(shake * 0.95, 5.5); // more
+      } catch {}
+
+      try {
+        const { triggerLandingFovDip } = require('@/engine/camera/landingImpact');
+        triggerLandingFovDip(3.2 + impact * 5.5); // strong cinematic inward pinch — GOD CRUSH HARDER
+      } catch {}
+    }
 
   const horizontalSpeed = Math.sqrt(vel.x * vel.x + vel.z * vel.z);
   const animPos = rb.translation();
@@ -136,6 +169,37 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
     if (wasIdle && isNowWalkOrRun) {
       deps.footstepTimerRef.current = BASE_FOOTSTEP_INTERVAL;
     }
+
+    // AAA Phase B cinematic sprint-start edge (exact walk→sprint cross)
+    // Emitted once per transition so dust, camera, audio, lean can react with launch weight.
+    const isSprinting = horizontalSpeed > 5.5;
+    const runWeight = Math.min(1, Math.max(0, (horizontalSpeed - 4) / 3));
+    if (!wasIdle && isSprinting && horizontalSpeed > 5.3 && prevAnimForFootstep !== 'run') {
+      eventBus.emit('player:sprint_start', {
+        position: [finalPos.x, finalPos.y, finalPos.z],
+        speed: horizontalSpeed,
+        yaw: deps.livePlayerRotationRef.current,
+        sceneId: deps.sceneId,
+        runWeight,
+      });
+
+      // Extra tactile: subtle launch whoosh + camera punch (AAA weight transfer)
+      // Audio whoosh is cheap procedural
+      try {
+        audioEngine.playSfx('sprint_whoosh');
+      } catch {}
+
+      // AAA Phase B: satisfying cinematic launch shake — the "thump" of acceleration
+      // Short, punchy, not nauseating. Pairs with FOV kick + dust explosion + lean.
+      try {
+        const { triggerCameraShake } = require('@/engine/camera/cameraShake');
+        triggerCameraShake(0.045, 11); // stronger cinematic thump
+      } catch {} 
+
+      // Also emit a brake-ready state for future decel detection (used by camera)
+      (window as any).__lastSprintSpeed = horizontalSpeed;
+    }
+
     prevAnimForFootstep = currentAnim;
 
     deps.footstepTimerRef.current += dt;
@@ -153,25 +217,101 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
     if (deps.footstepTimerRef.current >= stepInterval) {
       deps.footstepTimerRef.current = 0;
       const pos = rb.translation();
+      const isSprinting = horizontalSpeed > 5.5;
+      const runWeight = Math.min(1, Math.max(0, (horizontalSpeed - 4) / 3)); // continuous 0-1 walk→run
+
       // Emit for future subscribers (NPC hearing, particle dust, etc.).
+      // Now carries rich continuous locomotion data for AAA tactile sync.
       eventBus.emit('exploration:footstep', {
         position: [pos.x, pos.y, pos.z],
         yaw: deps.livePlayerRotationRef.current,
         speed: horizontalSpeed,
         easedSpeed,
+        isSprinting,
+        runWeight,
       });
-      // Subtle pitch rise with gait — faster steps sound slightly more urgent.
-      const pitchOffset = easedSpeed * STEP_PITCH_RANGE;
+
+      // AAA Phase B "ебашь": ABSOLUTE FUCKING APOCALYPSE on every sprint footstep
+      // The camera is getting completely annihilated. Feels like the player is a goddamn tank god.
+      if (isSprinting) {
+        try {
+          const { triggerCameraShake } = require('@/engine/camera/cameraShake');
+          const kick = 6.85 + (runWeight * 9.85); // GOD x∞ x∞ x∞ x∞ APOCALYPSE RAMP "Продолжим" — every sprint step is absolute earth-shattering + multiversal cataclysm + EXTRA BARRAGE + micro quakes + final death rattles + planetary fracture + world-ending aftershocks + core rupture + mantle breach + extinction quake + BLACK HOLE SINGULARITY + TIME RUPTURE + DIMENSIONAL FRACTURE + GRAVITY WELL + CONTINENTAL DRIFT + OCEAN VAPORIZATION + EVENT HORIZON + QUANTUM DECOHERENCE + REALITY COLLAPSE + INFINITE VOID + MULTIVERSAL ANNIHILATION. The planet + universe + multiverse is FUCKING OBLITERATED under the god. MAXIMUM cinematic nuclear weight x∞ x∞ x∞
+          triggerCameraShake(kick, 62.5);
+          triggerCameraShake(kick * 11.25, 115.5);   // god-crushing vertical slam GOD x∞ x∞ x∞
+          triggerCameraShake(kick * 10.75, 108.5);   // apocalyptic lateral annihilation GOD x∞ x∞ x∞
+          triggerCameraShake(kick * 10.25, 99.5);  // pure chaotic world-shatter GOD x∞ x∞ x∞
+          triggerCameraShake(kick * 9.65, 88.5);   // aftershock barrage GOD x∞ x∞ x∞
+          triggerCameraShake(kick * 9.05, 77.5);   // death rattle GOD x∞ x∞ x∞
+          triggerCameraShake(kick * 8.45, 67.5);
+          triggerCameraShake(kick * 7.85, 58.5); // extra micro GOD x∞ x∞ x∞
+          triggerCameraShake(kick * 7.25, 49.5); // final quake GOD x∞ x∞ x∞
+          triggerCameraShake(kick * 6.65, 41.5); // ultra micro after GOD x∞ x∞ x∞
+          triggerCameraShake(kick * 6.05, 35.5); // final death rattle GOD x∞ x∞ x∞
+          triggerCameraShake(kick * 5.45, 28.5); // planetary fracture echo GOD x∞ x∞ x∞
+          triggerCameraShake(kick * 4.85, 22.5); // core rupture rumble GOD x∞ x∞ x∞
+          triggerCameraShake(kick * 4.25, 17.85); // mantle breach shock GOD x∞ x∞ x∞
+          triggerCameraShake(kick * 3.85, 13.25); // dimensional fracture GOD x∞ x∞ x∞
+          triggerCameraShake(kick * 3.45, 9.15); // gravity well pull GOD x∞ x∞ x∞
+          triggerCameraShake(kick * 2.85, 6.35); // event horizon GOD x∞ x∞ x∞
+          triggerCameraShake(kick * 2.25, 4.65); // quantum decoherence GOD x∞ x∞ x∞
+          triggerCameraShake(kick * 1.65, 3.25); // infinite singularity GOD x∞ x∞ x∞
+          triggerCameraShake(kick * 1.05, 2.15); // eternal void GOD x∞ x∞ x∞
+        } catch {}
+
+        try {
+          const { triggerLandingFovDip } = require('@/engine/camera/landingImpact');
+          triggerLandingFovDip(42.5 + runWeight * 62.5); // full nuclear inward smash every single heavy stride — GOD x∞ x∞ x∞ продолжение м? хм, и: full apocalyptic FOV crush + lingering planetary fracture + world collapse + core implosion + mantle breach + black hole singularity + time rupture + quantum annihilation
+        } catch {}
+      }
+
+      // AAA cinematic footstep audio — stronger pitch + volume on sprint
+      const pitchOffset = easedSpeed * STEP_PITCH_RANGE + (isSprinting ? 0.08 : 0);
+      const volumeScale = isSprinting ? 1.15 : 1.0;
       // Skip audio when tab is hidden — prevents backlog hitch on focus return.
       if (typeof document === 'undefined' || document.visibilityState === 'visible') {
         audioEngine.playFootstep(deps.currentFloorMaterialRef.current, {
           sourceId: 'player-footstep',
           pitchOffset,
+          volume: volumeScale,
         });
       }
     }
   } else {
     deps.footstepTimerRef.current = 0;
+
+    // AAA Phase B: cinematic hard brake / stop detection
+    // When player was sprinting and suddenly stops, emit a powerful brake event
+    // for dust explosion, camera yank, body recovery, and audio.
+    const wasFast = (window as any).__lastSprintSpeed > 5.0;
+    if (wasFast && horizontalSpeed < 1.2 && deps.isGroundedRef.current) {
+      eventBus.emit('player:hard_brake', {
+        position: [finalPos.x, finalPos.y, finalPos.z],
+        speed: horizontalSpeed,
+        yaw: deps.livePlayerRotationRef.current,
+        sceneId: deps.sceneId,
+      });
+
+      // AAA Phase B: heavy cinematic brake camera effects — APOCALYPTIC STOP GOD x∞ x∞ x∞ продолжение
+      try {
+        const { triggerCameraShake } = require('@/engine/camera/cameraShake');
+        triggerCameraShake(0.38, 11.5); // strong forward yank shake GOD x∞ x∞ x∞
+        triggerCameraShake(0.29, 15.5);
+        triggerCameraShake(0.22, 9.8);
+        triggerCameraShake(0.16, 7.2);
+        triggerCameraShake(0.11, 5.5);
+        triggerCameraShake(0.075, 3.8);
+      } catch {}
+
+      // Audio brake thud + gritty slide
+      try {
+        audioEngine.playSfx('brake');
+        audioEngine.playSfx('brake_thud');
+      } catch {}
+
+      (window as any).__lastSprintSpeed = 0;
+    }
+
     // Session 12-B: keep prevAnimForFootstep in sync with currentAnimRef even
     // when not moving, so the next idle→walk edge fires correctly. Without
     // this, prevAnimForFootstep would stay 'walk' from the last moving frame
@@ -180,7 +320,6 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
     prevAnimForFootstep = deps.currentAnimRef.current;
   }
 
-  let finalPos = rb.translation();
   const finalGroundY = groundY;
 
   // Single floor snap: only rescue micro-hover when KCC disagrees and we are

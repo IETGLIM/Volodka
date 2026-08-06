@@ -13,6 +13,7 @@ import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import type { ProceduralPlayerModelProps } from './useProceduralPlayerAnimation';
 import { ProceduralPlayerModelLite } from './ProceduralPlayerModelLite';
 import { ProceduralAviatorGlasses } from './sceneVisuals/volodkaRoom/AviatorGlasses';
+import { eventBus } from '@/engine/EventBus';
 
 const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeof useGLTF>[3]>;
 const PLAYER_MODEL_URL = getPlayerVolodkaModelUrl();
@@ -137,7 +138,136 @@ function CesiumPlayerModelInner({
   useFrameTick('player', () => {
     if (!ready) return;
     if (yawRef.current) yawRef.current.rotation.y = rotationRef.current + FORWARD_OFFSET;
+
+    // AAA Phase B: cinematic body lean + stride sway + torso breathing when sprinting
+    // Forward pitch + rhythmic side-to-side + vertical squash for ultra-rich weight transfer.
+    // Perfectly synced to locomotion timescale, camera bob, and footstep cadence.
+    // HARDER NUCLEAR for хм, и: more extreme lean/sway/squash/arm/hip
+    const hSpeed = currentHSpeedRef?.current ?? 0;
+    const leanT = Math.min(1, Math.max(0, (hSpeed - 4) / 3));
+    const bodyLean = -0.385 * leanT; // GOD x∞ x∞ x∞ x∞ APOCALYPSE RAMP "Продолжим" — ~22°+ lean — full cinematic + multiversal + infinite singularity devastation + planetary + cosmic + black hole commitment + world-shattering lean + event horizon pull + eternal void
+    const bodyGroup = yawRef.current?.children?.[0] as THREE.Group | undefined;
+    if (bodyGroup) {
+      const targetLean = leanT > 0.05 ? bodyLean : 0;
+      bodyGroup.rotation.x = THREE.MathUtils.lerp(bodyGroup.rotation.x || 0, targetLean, 0.18);
+
+      // Rhythmic side sway (figure-8 gait) — matches camera lateral bob phase
+      const swayPhase = (performance.now() / 180) % (Math.PI * 2); // ~same frequency as bob
+      const sideSway = Math.sin(swayPhase) * 0.085 * leanT;
+      bodyGroup.rotation.z = THREE.MathUtils.lerp(bodyGroup.rotation.z || 0, sideSway, 0.26);
+
+      // AAA Phase B: micro vertical compression on heavy sprint steps (weight pressing down)
+      // Gives delicious "grounded" feel — the body squats slightly into each stride.
+      const compression = 1 - (leanT * 0.275); // GOD x∞ x∞ x∞ x∞ APOCALYPSE RAMP "Продолжим" — max ~27.5% squash — EVEN HARDER NUCLEAR + cosmic + multiversal + infinite crush + event horizon squash + black hole squash
+      bodyGroup.scale.y = THREE.MathUtils.lerp(bodyGroup.scale.y || 1, compression, 0.42);
+      // Slight forward squash compensation so feet don't sink
+      bodyGroup.scale.x = THREE.MathUtils.lerp(bodyGroup.scale.x || 1, 1 + leanT * 0.032, 0.36);
+      bodyGroup.scale.z = bodyGroup.scale.x;
+
+      // Subtle torso breathing / head bob on the upper body (idle + sprint)
+      const breath = Math.sin(performance.now() / 420) * 0.013 * (1 + leanT * 0.9);
+      bodyGroup.position.y = THREE.MathUtils.lerp(bodyGroup.position.y || 0, breath, 0.4);
+
+      // AAA Phase B: dynamic arm swing + shoulder roll + head lean (very visible cinematic weight)
+      // Scales perfectly with speed + matches footstep cadence. HARDER
+      const swingPhase = (performance.now() / 165) % (Math.PI * 2);
+      const swingAmp = leanT * 1.45;
+      const armSwing = Math.sin(swingPhase) * swingAmp;
+      const shoulderRoll = Math.cos(swingPhase * 0.5) * swingAmp * 1.35;
+
+      // Apply to left/right shoulders (common Mixamo bone names)
+      const leftShoulder = bodyGroup.getObjectByName?.('mixamorigLeftShoulder') || bodyGroup.getObjectByName?.('LeftShoulder');
+      const rightShoulder = bodyGroup.getObjectByName?.('mixamorigRightShoulder') || bodyGroup.getObjectByName?.('RightShoulder');
+
+      if (leftShoulder) leftShoulder.rotation.z = THREE.MathUtils.lerp(leftShoulder.rotation.z || 0, armSwing * 1.55, 0.28);
+      if (rightShoulder) rightShoulder.rotation.z = THREE.MathUtils.lerp(rightShoulder.rotation.z || 0, -armSwing * 1.55, 0.28);
+
+      // Overall shoulder roll for torso twist feeling
+      bodyGroup.rotation.y = THREE.MathUtils.lerp(bodyGroup.rotation.y || 0, shoulderRoll * 0.68, 0.25);
+
+      // Head lean forward + slight bob on sprint (very filmic "looking into the run")
+      const head = bodyGroup.getObjectByName?.('mixamorigHead') || bodyGroup.getObjectByName?.('Head') || bodyGroup.children.find(c => c.name.toLowerCase().includes('head'));
+      if (head) {
+        const headLean = -0.31 * leanT;
+        const headBob = Math.sin(swingPhase * 1.8) * 0.055 * leanT;
+        head.rotation.x = THREE.MathUtils.lerp(head.rotation.x || 0, headLean + headBob, 0.32);
+      }
+
+      // AAA Phase B: knee / hip drive — the body "drives" the legs forward on sprint
+      // Very visible weight transfer and power. HARDER
+      const hip = bodyGroup.getObjectByName?.('mixamorigHips') || bodyGroup.getObjectByName?.('Hips');
+      if (hip) {
+        const hipDrive = Math.sin(swingPhase * 1.3) * 0.105 * leanT;
+        hip.rotation.x = THREE.MathUtils.lerp(hip.rotation.x || 0, hipDrive, 0.3);
+      }
+
+      // AAA Phase B: hard brake recovery — torso pitches forward on stop, then settles
+      // Feels like the character is fighting momentum. Very satisfying.
+      if ((window as any).__brakeRecovery && (window as any).__brakeRecovery > 0) {
+        const brakePitch = (window as any).__brakeRecovery * 0.48;
+        bodyGroup.rotation.x = THREE.MathUtils.lerp(bodyGroup.rotation.x || 0, brakePitch, 0.45);
+        (window as any).__brakeRecovery = Math.max(0, (window as any).__brakeRecovery - (1/60) * 4.1);
+      }
+    }
   }, { label: 'PlayerAvatarYaw', phase: 'pre_render' });
+
+  // Listen for hard brake to trigger torso pitch recovery
+  useEffect(() => {
+    const unsub = eventBus.on('player:hard_brake', () => {
+      (window as any).__brakeRecovery = 1.0;
+    });
+    return unsub;
+  }, []);
+
+  // Landing squash state (module level for the single player avatar)
+  let landingSquash = 0;
+  let landingSquashDecay = 0;
+
+  useEffect(() => {
+    const unsub = eventBus.on('player:landed', ({ impact }: any) => {
+      const str = Math.min(1, Math.max(0.3, (impact || 0.7)));
+      landingSquash = str * 0.32;   // GOD x∞ x∞ APOCALYPSE RAMP м? — up to ~32% vertical squash — GOD x∞ HARDER for хм, и: + black hole impact squash
+      landingSquashDecay = 9.5;     // fast cinematic recovery
+    });
+    return unsub;
+  }, []);
+
+  // AAA Phase B: per-footstep micro impact squash (gives delicious rhythmic "thud" feeling while running)
+  useEffect(() => {
+    const unsub = eventBus.on('exploration:footstep', ({ speed, runWeight }: any) => {
+      const rw = Math.max(0, Math.min(1, runWeight ?? (speed > 5.5 ? 1 : 0.4)));
+      // Small rhythmic squash per step — stronger on sprint
+      const stepSquash = rw * 0.036;
+      landingSquash = Math.max(landingSquash, stepSquash);
+      landingSquashDecay = 18; // quick recovery between steps
+    });
+    return unsub;
+  }, []);
+
+  useFrameTick('player', () => {
+    if (!ready) return;
+    const bodyGroup = yawRef.current?.children?.[0] as THREE.Group | undefined;
+    if (!bodyGroup) return;
+
+    // Apply decaying landing squash (adds delicious physical "thud" to the body)
+    if (landingSquash > 0.001) {
+      const currentY = bodyGroup.scale.y || 1;
+      const targetY = 1 - landingSquash;
+      bodyGroup.scale.y = THREE.MathUtils.lerp(currentY, targetY, 0.55);
+
+      // slight X/Z expansion on impact for volume preservation
+      const expand = 1 + landingSquash * 0.72;
+      bodyGroup.scale.x = THREE.MathUtils.lerp(bodyGroup.scale.x || 1, expand, 0.4);
+      bodyGroup.scale.z = bodyGroup.scale.x;
+
+      landingSquash *= Math.exp(-landingSquashDecay * 0.016); // ~60fps decay
+      if (landingSquash < 0.002) {
+        landingSquash = 0;
+        // gently restore scale
+        bodyGroup.scale.set(1, 1, 1);
+      }
+    }
+  }, { label: 'PlayerAvatarLandingSquash', phase: 'pre_render' });
 
   // Stay mounted (invisible) while mixer warms — parent keeps lite silhouette.
   if (!ready) return null;

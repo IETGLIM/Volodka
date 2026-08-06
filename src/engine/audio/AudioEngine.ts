@@ -43,6 +43,8 @@ export type PlayFootstepOptions = {
   allowOverlap?: boolean;
   /** Additive playback-rate offset (e.g. 0.05 ≈ +5% pitch for faster gait). */
   pitchOffset?: number;
+  /** Multiplicative volume scale (e.g. 1.15 for sprint weight). */
+  volume?: number;
 };
 
 type FootstepVoice = {
@@ -372,15 +374,25 @@ class AudioEngine {
     const pitchRate = Math.max(0.7, Math.min(1.4, 1 + (options?.pitchOffset ?? 0)));
     noiseSource.playbackRate.setValueAtTime(pitchRate, now);
 
+    // AAA Phase B: stronger cinematic weight on sprint (volume + slight timbre boost)
+    const volScale = Math.max(0.6, Math.min(1.6, options?.volume ?? 1.0));
+    const sprintBoost = (options?.volume ?? 1) > 1.05 ? 1.08 : 1; // tiny extra bite
+
     // Band-pass filter to shape the sound for the material
     const filter = ctx.createBiquadFilter();
     filter.type = preset.filterType;
-    filter.frequency.value = preset.baseFreq;
+    filter.frequency.value = preset.baseFreq * (sprintBoost > 1 ? 1.03 : 1);
     filter.Q.value = preset.filterQ;
 
     const envGain = ctx.createGain();
-    envGain.gain.setValueAtTime(preset.gain, now);
+    envGain.gain.setValueAtTime(preset.gain * volScale, now);
     envGain.gain.exponentialRampToValueAtTime(0.001, now + preset.noiseDuration);
+
+    // AAA Phase B cinematic: slight filter sweep on sprint for richer "weight"
+    if (volScale > 1.05) {
+      filter.frequency.setValueAtTime(filter.frequency.value, now);
+      filter.frequency.linearRampToValueAtTime(filter.frequency.value * 1.18, now + 0.04);
+    }
 
     noiseSource.connect(filter);
     filter.connect(envGain);

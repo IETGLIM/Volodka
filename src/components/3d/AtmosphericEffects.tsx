@@ -40,11 +40,20 @@ const DUST_SCENES = new Set([
   'solnysh_room', 'library_basement', 'albert_backroom', 'zarema_room',
   // Cron-tick 10: more rooms and industrial scenes
   'zarema_albert_room', 'factory_roof',
+  // AAA continuation: more living atmosphere in key hubs (pier, office, guild, dream, CHK)
+  'river_pier', 'pier_evening', 'office_day', 'guild_mainframe', 'sleep_dream',
+  'chk_forest_zorge', 'chk_campfire_night', 'factory_basement', 'underground_bunker',
+  // AAA Phase A: post-battle dust + library basement (we just added pushable debris/clutter)
+  'battle', 'library_basement',
 ]);
 const EMBER_SCENES = new Set([
   'abandoned_factory', 'battle',
   // Cron-tick 9: campfire night gets glowing embers
   'chk_campfire_night',
+  // AAA: more warm industrial/fire scenes
+  'factory_roof', 'river_pier', 'pier_evening', 'home_evening',
+  // AAA Phase A: pier fire embers + river reflections
+  'river_pier', 'pier_evening',
 ]);
 const NEON_REFLECTION_SCENES = new Set(['street_night', 'city_square', 'river_pier', 'pier_evening']);
 const MIST_SCENES = new Set([
@@ -53,6 +62,8 @@ const MIST_SCENES = new Set([
   'underground_bunker',
   // Cron-tick 10: forest scenes get atmospheric mist
   'chk_forest_zorge', 'forest_clearing',
+  // AAA: more moody mist for industrial, pier, dream, library
+  'factory_basement', 'river_pier', 'pier_evening', 'sleep_dream', 'library_basement', 'office_day',
 ]);
 const FLICKERING_LIGHT_SCENES = new Set([
   'factory_basement', 'abandoned_factory',
@@ -123,19 +134,34 @@ export function AtmosphericEffects() {
   const showMist = particlesEnabled && MIST_SCENES.has(sceneId);
   const showFlickeringLights = FLICKERING_LIGHT_SCENES.has(sceneId);
 
+  // AAA: cinematic atmosphere boost from cutscenes (dense god rays + dust during luxurious scenes)
+  const [cinematicBoost, setCinematicBoost] = useState(0);
+  useEffect(() => {
+    const unsub = eventBus.on('cinematic:atmosphere_boost', ({ intensity }: any) => {
+      setCinematicBoost(Math.min(1.2, intensity || 0.7));
+    });
+    return unsub;
+  }, []);
+
+  const effectiveDust = showDust || cinematicBoost > 0.2;
+  const effectiveGodRays = showGodRays || cinematicBoost > 0.3;
+  const effectiveEmbers = showEmbers || cinematicBoost > 0.5;
+
   return (
     <>
       {showFog && <VolumetricFog sceneId={sceneId} config={fogConfig} />}
 
-      {showGodRays && <GodRays sceneId={sceneId} liteMode={heavyEffects} />}
+      {(effectiveGodRays || cinematicBoost > 0) && (
+        <GodRays sceneId={sceneId} liteMode={heavyEffects} />
+      )}
 
       {showSteam && <SteamParticles sceneId={sceneId} />}
 
       {showMatrixFog && <MatrixFogParticles />}
 
-      {showDust && <DustMotes sceneId={sceneId} />}
+      {effectiveDust && <DustMotes sceneId={sceneId} />}
 
-      {showEmbers && <EmberParticles sceneId={sceneId} />}
+      {effectiveEmbers && <EmberParticles sceneId={sceneId} />}
 
       {particlesEnabled && <IndustrialSparkles sceneId={sceneId} />}
 
@@ -143,6 +169,23 @@ export function AtmosphericEffects() {
       {showNeonReflections && <NeonRainReflections sceneId={sceneId} />}
       {showMist && <ServerRoomMist sceneId={sceneId} />}
       {showFlickeringLights && <FlickeringLightEffect sceneId={sceneId} />}
+
+      {/* Extra cinematic density during cutscenes (god-ray dust + thick air) */}
+      {cinematicBoost > 0.15 && (
+        <group>
+          {/* Subtle extra dust layer for luxurious cutscenes */}
+          <mesh position={[0, 2.2, 0]} rotation-x={-Math.PI / 2}>
+            <planeGeometry args={[28, 28]} />
+            <meshBasicMaterial
+              color="#d4c8a8"
+              transparent
+              opacity={0.035 * cinematicBoost}
+              depthWrite={false}
+              toneMapped={false}
+            />
+          </mesh>
+        </group>
+      )}
     </>
   );
 }

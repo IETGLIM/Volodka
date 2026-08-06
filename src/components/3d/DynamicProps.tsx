@@ -59,6 +59,8 @@ function PropBody({ def }: { def: DynamicPropDef }) {
     linearDamping: 0.6,
     angularDamping: 0.9,
     onCollisionEnter: onImpact,
+    // AAA: make props feel heavier and more satisfying to kick (more momentum transfer)
+    mass: PROP_MASS[def.kind] * 1.15,
   };
 
   switch (def.kind) {

@@ -53,12 +53,19 @@ export function AaaCinematicAtmosphere() {
   if (isLow || reducedMotion) return null;
 
   const isHero = isHeroScene(sceneId);
-  const count = isHero ? (preset.id === 'ultra' ? 64 : preset.id === 'high' ? 42 : 22) : (preset.id === 'ultra' ? 36 : 18);
+  // AAA boost: much denser, luxurious dust for hero scenes (feels like real air + light)
+  const count = isHero 
+    ? (preset.id === 'ultra' ? 92 : preset.id === 'high' ? 68 : 38) 
+    : (preset.id === 'ultra' ? 52 : 28);
 
   return (
     <group key={`aaa-atmo-${sceneId}`}>
       <DustMoteCloud sceneId={sceneId} count={count} />
       <SoftVolumetricGlow sceneId={sceneId} />
+      {/* Extra subtle god-ray dust layer on hero interiors for maximum cinematic depth */}
+      {isHero && (preset.id === 'high' || preset.id === 'ultra') && (
+        <HeroGodRayDust sceneId={sceneId} />
+      )}
     </group>
   );
 }
@@ -121,6 +128,57 @@ function SoftVolumetricGlow({ sceneId }: { sceneId: string }) {
         <circleGeometry args={[9, 24]} />
         <meshBasicMaterial color={sceneId === 'volodka_room' ? '#1a1420' : '#0c0c18'} transparent opacity={0.06} depthWrite={false} toneMapped={false} />
       </mesh>
+    </group>
+  );
+}
+
+/** Extra god-ray dust for hero interiors — makes light shafts feel alive and thick (AAA) */
+function HeroGodRayDust({ sceneId }: { sceneId: string }) {
+  const count = 18;
+  const motes = useMemo(() => {
+    return Array.from({ length: count }, (_, i) => ({
+      x: (Math.sin(i * 1.7) * 2.2),
+      y: 0.8 + (i % 3) * 0.7,
+      z: (Math.cos(i * 2.1) * 1.8),
+      size: 0.018 + (i % 5) * 0.004,
+      phase: i * 1.3,
+    }));
+  }, []);
+
+  const groupRef = useRef<THREE.Group>(null);
+  const timeRef = useRef(0);
+
+  useFrameTick('misc', ({ delta }) => {
+    const g = groupRef.current;
+    if (!g) return;
+    timeRef.current += delta;
+    const t = timeRef.current;
+
+    g.children.forEach((child, i) => {
+      const m = motes[i];
+      if (!m) return;
+      const mesh = child as THREE.Mesh;
+      mesh.position.y = m.y + Math.sin(t * 0.7 + m.phase) * 0.25;
+      mesh.position.x = m.x + Math.sin(t * 0.4 + m.phase * 1.6) * 0.1;
+      const mat = mesh.material as THREE.MeshBasicMaterial;
+      if (mat) mat.opacity = 0.22 + Math.sin(t * 1.1 + m.phase) * 0.12;
+    });
+  });
+
+  return (
+    <group ref={groupRef}>
+      {motes.map((m, i) => (
+        <mesh key={i} position={[m.x, m.y, m.z]}>
+          <sphereGeometry args={[m.size, 3, 3]} />
+          <meshBasicMaterial
+            color="#e8d8b0"
+            transparent
+            opacity={0.22}
+            depthWrite={false}
+            toneMapped={false}
+          />
+        </mesh>
+      ))}
     </group>
   );
 }

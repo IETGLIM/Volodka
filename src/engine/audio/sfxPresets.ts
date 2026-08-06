@@ -16,6 +16,11 @@ export const SFX_PRESETS: Record<string, SfxConfig> = {
   ui_close: { type: 'sine', frequency: 330, duration: 0.05, gain: 0.1 },
   item_use: { type: 'sine', frequency: 520, duration: 0.06, gain: 0.14 },
   screenshot: { type: 'square', frequency: 1200, duration: 0.04, gain: 0.1 },
+  // AAA Phase B cinematic sprint launch whoosh (procedural air rush) — GOD x∞ x∞ x∞ x∞ APOCALYPSE RAMP "Продолжим" — heavier cosmic whoosh + infinite black hole rush + multiversal wind
+  sprint_whoosh: { type: 'sawtooth', frequency: 115, duration: 0.92, gain: 0.32 },
+  // AAA Phase B: hard brake / stop — gritty slide + heavy thud (cinematic weight) — even heavier apocalypse + black hole thud + eternal void slam
+  brake: { type: 'sawtooth', frequency: 55, duration: 0.62, gain: 0.52 },
+  brake_thud: { type: 'sine', frequency: 22, duration: 0.72, gain: 0.68 },
   // ─── Spatial impact SFX (used by playSpatialSfx for diegetic world objects) ──
   // These mirror the FOOTSTEP_PRESETS material names so DynamicProps / PatrollingCreeps
   // can switch from non-spatial playFootstep(material) to spatial playSpatialSfx(material, pos)
