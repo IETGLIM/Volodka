@@ -100,22 +100,22 @@ export function PhysicsPlayerContactShadow({
     stepPulse = Math.max(0, stepPulse - dt * 11);
     landingSquash = Math.max(0, landingSquash - dt * 7.5);
 
-    const totalWeight = Math.min(15.5, sprintIntensity * 8.95 + stepPulse * 8.75 + landingSquash * 9.75); // ULTIMATE PLANETARY APOCALYPSE x6 — 15.5+ totalWeight, every sprint footstep is full god-level earth collapse + crater. HARDER for хм, и: the planet is fucking breaking under the god
+    const totalWeight = Math.min(16.8, sprintIntensity * 9.85 + stepPulse * 9.65 + landingSquash * 10.75); // ULTIMATE PLANETARY APOCALYPSE x7 — 16.8+ totalWeight, every sprint footstep is full god-level earth collapse + crater. HARDER for хм, и: the planet is fucking breaking under the god
 
-    // Scale the shadow (bigger = more weight pressing down) — 12+ now full nuclear crater 13+
-    const scaleX = baseRadiusX * (1 + totalWeight * 2.25);
-    const scaleZ = baseRadiusZ * (1 + totalWeight * 2.78);
+    // Scale the shadow (bigger = more weight pressing down) — 13+ now full nuclear crater 14+
+    const scaleX = baseRadiusX * (1 + totalWeight * 2.48);
+    const scaleZ = baseRadiusZ * (1 + totalWeight * 3.05);
     m.scale.set(scaleX / 0.42, 1, scaleZ / 0.42);
 
     // Opacity boost on heavy movement (darker, more "grounded" look)
     const mat = m.material as THREE.MeshBasicMaterial;
     if (mat) {
-      const targetOpacity = baseOpacity + totalWeight * 1.12;
-      mat.opacity = THREE.MathUtils.lerp(mat.opacity, Math.min(1.0, targetOpacity), 0.72);
+      const targetOpacity = baseOpacity + totalWeight * 1.22;
+      mat.opacity = THREE.MathUtils.lerp(mat.opacity, Math.min(1.0, targetOpacity), 0.75);
     }
 
     // Slight vertical squash on hard landing (shadow flattens) — more dramatic yOffset
-    const yOffset = landingSquash > 0.1 ? -0.092 * landingSquash : -0.002;
+    const yOffset = landingSquash > 0.1 ? -0.105 * landingSquash : -0.003;
     m.position.y = yOffset;
   }, { label: 'ContactShadowReactive', phase: 'pre_render' });
 
