@@ -148,8 +148,8 @@ export function applyCameraFrame(
       const speedNorm = speedNormForBob;
       const bobIntensity = 1 - Math.exp(-WALK_BOB_BLEND_SPEED * speedNorm);
       // AAA Phase B: amplitude also scales with speed for satisfying cinematic weight
-      // at sprint (heavier footfalls read in camera) — still micro (max ~7.2mm)
-      const ampScale = 0.8 + 0.4 * speedNorm; // 0.8x at walk → 1.2x at sprint
+      // at sprint (heavier footfalls read in camera) — NUCLEAR APOCALYPTIC (max ~12mm pounding)
+      const ampScale = 1.1 + 1.35 * speedNorm; // 1.1x at walk → 2.45x at sprint — HARDER
       const bobOffset = Math.sin(_walkBobPhase) * WALK_BOB_AMPLITUDE * bobIntensity * ampScale;
       targetPos.y += bobOffset;
 
