@@ -281,6 +281,18 @@ export function applyCameraFrame(
     ctx.yaw += yawDiff * (1 - Math.exp(-1.0 * delta));
   }
 
+  // AAA Phase B: cinematic sprint forward "thrust" / momentum push on camera
+  // When sprinting hard, camera feels like it's being carried forward — delicious weight.
+  const speed = playerVelocity.length();
+  if (speed > 5.2 && !isInDialogue && !isCutscene && !isFpExploration) {
+    const thrust = (speed - 5.2) / 2.5; // 0..0.8 at full sprint
+    const fwd = new THREE.Vector3().subVectors(targetLook, targetPos).normalize();
+    // Gentle forward push on position (feels like being pulled into the run)
+    targetPos.addScaledVector(fwd, thrust * 0.035);
+    // Also slightly pull the look target for forward commitment feel
+    targetLook.addScaledVector(fwd, thrust * 0.018);
+  }
+
   _rollForward.subVectors(spring.lookAt, cam.position);
   const hasLookDirection = _rollForward.lengthSq() > LOOK_AT_MIN_DIST_SQ;
 
