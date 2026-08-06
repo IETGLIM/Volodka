@@ -60,6 +60,11 @@ const ACTIVITY_LINES: Record<string, string> = {
   fire_barrel: 'Огонь трещит. Тепло в холодном мире.',
   fishing_rod: 'Удочка заброшена. Можно подождать вместе.',
   guitar_pier: 'Гитара у костра. Песня про тех, кто ушёл.',
+  // AAA Phase A: richer pier/river living world (fire + water + mist reactivity)
+  pier_fire: 'Огонь шепчет. Можно согреться и послушать.',
+  water_edge: 'Вода плещется. Холодная, но живая.',
+  pier_crate: 'Ящик на пирсе. Пахнет солью и прошлым.',
+  pier_lamp: 'Фонарь мигает над водой. Свет ловит туман.',
 
   // Library / Dream
   old_book: 'Страницы шуршат. Слова, которые уже нельзя изменить.',
@@ -111,6 +116,13 @@ export function AaaLivingWorldActivities() {
         else if (lower.includes('barrel') || lower.includes('бочка')) key = 'fire_barrel';
         else if (lower.includes('fishing') || lower.includes('удочка')) key = 'fishing_rod';
         else if (lower.includes('old_book') || lower.includes('книга')) key = 'old_book';
+        else if (lower.includes('barrel') || lower.includes('fire') || lower.includes('костёр')) key = 'fire_barrel';
+        else if (lower.includes('boat') || lower.includes('лодка')) key = 'boat';
+        else if (lower.includes('fishing') || lower.includes('удочка')) key = 'fishing_rod';
+        else if (lower.includes('pier') && (lower.includes('fire') || lower.includes('barrel'))) key = 'pier_fire';
+        else if (lower.includes('water') || lower.includes('edge') || lower.includes('вода')) key = 'water_edge';
+        else if (lower.includes('crate') && (sceneId.includes('pier') || sceneId.includes('river'))) key = 'pier_crate';
+        else if (lower.includes('lamp') && (sceneId.includes('pier') || sceneId.includes('river'))) key = 'pier_lamp';
 
         if (key && ACTIVITY_LINES[key]) {
           const line = ACTIVITY_LINES[key];

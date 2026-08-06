@@ -547,6 +547,73 @@ export const SCENE_VOLUMETRIC_LIGHTS: Partial<Record<string, VolumetricShaftConf
       dustSpeed: 0.22,
     },
   ],
+  // AAA Phase A: rich cinematic volumetric shafts on river/pier (fire + water mist + dusk light catching dust)
+  river_pier: [
+    {
+      ...DEFAULT_SHAFT,
+      position: [0, 1.6, -1.2],     // barrel fire primary shaft
+      topRadius: 0.18,
+      bottomRadius: 1.35,
+      height: 3.2,
+      color: '#ff9944',
+      opacity: 0.23,
+      flickerSpeed: 0.45,
+      flickerAmp: 0.38,
+      rotationSpeed: 0.012,
+      initialRotation: 0.1,
+      dustDensity: 0.75,            // water mist + smoke
+      dustSpeed: 0.42,
+    },
+    {
+      ...DEFAULT_SHAFT,
+      position: [1.8, 2.8, -3.5],   // side warm pier light
+      topRadius: 0.12,
+      bottomRadius: 0.95,
+      height: 2.9,
+      color: '#ffbb66',
+      opacity: 0.18,
+      flickerSpeed: 0.22,
+      flickerAmp: 0.26,
+      rotationSpeed: 0.009,
+      initialRotation: 0.7,
+      tiltX: -0.18,
+      dustDensity: 0.65,
+      dustSpeed: 0.35,
+    },
+  ],
+  pier_evening: [
+    {
+      ...DEFAULT_SHAFT,
+      position: [0, 1.8, -1.5],
+      topRadius: 0.16,
+      bottomRadius: 1.25,
+      height: 3.0,
+      color: '#ff8833',
+      opacity: 0.21,
+      flickerSpeed: 0.38,
+      flickerAmp: 0.32,
+      rotationSpeed: 0.01,
+      initialRotation: 0,
+      dustDensity: 0.72,
+      dustSpeed: 0.4,
+    },
+    {
+      ...DEFAULT_SHAFT,
+      position: [-2.2, 2.6, -2.8],
+      topRadius: 0.11,
+      bottomRadius: 0.85,
+      height: 2.7,
+      color: '#ffaa55',
+      opacity: 0.17,
+      flickerSpeed: 0.18,
+      flickerAmp: 0.22,
+      rotationSpeed: 0.007,
+      initialRotation: -0.6,
+      tiltX: -0.12,
+      dustDensity: 0.6,
+      dustSpeed: 0.32,
+    },
+  ],
 };
 
 function normalizeShaftConfig(config: VolumetricShaftConfig): VolumetricShaftConfig {

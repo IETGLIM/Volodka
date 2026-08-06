@@ -50,6 +50,8 @@ const EMBER_SCENES = new Set([
   'chk_campfire_night',
   // AAA: more warm industrial/fire scenes
   'factory_roof', 'river_pier', 'pier_evening', 'home_evening',
+  // AAA Phase A: pier fire embers + river reflections
+  'river_pier', 'pier_evening',
 ]);
 const NEON_REFLECTION_SCENES = new Set(['street_night', 'city_square', 'river_pier', 'pier_evening']);
 const MIST_SCENES = new Set([

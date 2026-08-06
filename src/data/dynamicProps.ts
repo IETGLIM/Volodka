@@ -53,6 +53,10 @@ export const DYNAMIC_PROPS: Partial<Record<SceneId, DynamicPropDef[]>> = {
     { id: 'rp_bottle_2', kind: 'bottle', position: [-2.3, 0, -1.8], rotation: 1.8 },
     { id: 'rp_can_1', kind: 'can', position: [3.2, 0, -4.4], rotation: 2.5 },
     { id: 'rp_box_1', kind: 'box', position: [-4.2, 0, -0.6], rotation: 0.9 },
+    // AAA: more tactile clutter near fire + water — kickable cans + barrel for living pier feel
+    { id: 'rp_barrel_fire', kind: 'barrel', position: [0.8, 0, -1.4], rotation: 0.6 },
+    { id: 'rp_can_fire1', kind: 'can', position: [-0.9, 0, -1.1], rotation: 1.1 },
+    { id: 'rp_can_fire2', kind: 'can', position: [1.6, 0, -0.7], rotation: -0.9 },
   ],
   factory_basement: [
     { id: 'fb_box_1', kind: 'box', position: [2.2, 0, 4.4], rotation: 0.7 },
@@ -89,5 +93,12 @@ export const DYNAMIC_PROPS: Partial<Record<SceneId, DynamicPropDef[]>> = {
   guild_mainframe: [
     { id: 'gm_can_1', kind: 'can', position: [-1.7, 0, 2.3], rotation: 1.5 },
     { id: 'gm_bottle_1', kind: 'bottle', position: [2.6, 0, -3.1], rotation: 0.7 },
+  ],
+  // AAA: tactile living pier — pushable clutter near water + fire (evening variant)
+  pier_evening: [
+    { id: 'pe_bottle_1', kind: 'bottle', position: [1.4, 0, -2.9], rotation: 0.5 },
+    { id: 'pe_can_1', kind: 'can', position: [-1.1, 0, -1.6], rotation: 1.8 },
+    { id: 'pe_can_2', kind: 'can', position: [2.1, 0, -0.9], rotation: -1.2 },
+    { id: 'pe_barrel', kind: 'barrel', position: [-0.6, 0, -0.4], rotation: 0.3 },
   ],
 };
