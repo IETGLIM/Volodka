@@ -132,10 +132,13 @@ export function applyCameraFrame(
     // AAA Phase B: continuous speed-linked bob frequency — perfectly syncs
     // camera gait with locomotion blend tree (walk/run timeScales 1.05→1.45)
     // + footstep cadence. No plastic float. Film-grade weight transfer.
+    // Also blend with moveBlend for ultra-smooth accel feel (0 when idle).
+    const moveBlend = ctx.moveBlend ?? 0;
     const speedNormForBob = playerSpeed > WALK_BOB_SPEED_THRESHOLD
       ? Math.min(1, (playerSpeed - WALK_BOB_SPEED_THRESHOLD) / (WALK_BOB_SPEED_FULL - WALK_BOB_SPEED_THRESHOLD))
       : 0;
-    const dynamicBobSpeed = WALK_BOB_BASE_SPEED + (WALK_BOB_SPEED_MAX - WALK_BOB_SPEED_MIN) * speedNormForBob;
+    const blendedSpeedNorm = Math.max(speedNormForBob, moveBlend * 0.6); // gentle floor from blend
+    const dynamicBobSpeed = WALK_BOB_BASE_SPEED + (WALK_BOB_SPEED_MAX - WALK_BOB_SPEED_MIN) * blendedSpeedNorm;
 
     // Accumulate bob phase based on smoothed time (always ticks so it stays in sync)
     _walkBobPhase += dynamicBobSpeed * _smoothedDelta;
@@ -144,7 +147,10 @@ export function applyCameraFrame(
       // Smooth intensity ramp: 0 at threshold, 1.0 at full running speed
       const speedNorm = speedNormForBob;
       const bobIntensity = 1 - Math.exp(-WALK_BOB_BLEND_SPEED * speedNorm);
-      const bobOffset = Math.sin(_walkBobPhase) * WALK_BOB_AMPLITUDE * bobIntensity;
+      // AAA Phase B: amplitude also scales with speed for satisfying cinematic weight
+      // at sprint (heavier footfalls read in camera) — still micro (max ~7.2mm)
+      const ampScale = 0.8 + 0.4 * speedNorm; // 0.8x at walk → 1.2x at sprint
+      const bobOffset = Math.sin(_walkBobPhase) * WALK_BOB_AMPLITUDE * bobIntensity * ampScale;
       targetPos.y += bobOffset;
 
       // ── Lateral bob — camera-relative horizontal sway at HALF the vertical
