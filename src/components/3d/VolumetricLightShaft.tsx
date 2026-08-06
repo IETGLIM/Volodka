@@ -616,6 +616,41 @@ export const SCENE_VOLUMETRIC_LIGHTS: Partial<Record<string, VolumetricShaftConf
       dustSpeed: 0.25,
     },
   ],
+  // AAA Phase A: cool neon plaza shafts for city_square — wet reflective haze catching blue/pink neon + street lamps
+  city_square: [
+    {
+      ...DEFAULT_SHAFT,
+      position: [0, 4.4, -1.5],      // central plaza lamp cool blue-white
+      topRadius: 0.12,
+      bottomRadius: 1.4,
+      height: 4.2,
+      color: '#aaccff',
+      opacity: 0.16,
+      flickerSpeed: 0.28,
+      flickerAmp: 0.32,              // neon hum flicker
+      rotationSpeed: 0.004,
+      initialRotation: 0,
+      tiltX: -0.1,
+      dustDensity: 0.55,             // wet night haze + reflections
+      dustSpeed: 0.32,
+    },
+    {
+      ...DEFAULT_SHAFT,
+      position: [-5.5, 3.2, 2.8],    // side pink neon spill
+      topRadius: 0.1,
+      bottomRadius: 0.95,
+      height: 3.1,
+      color: '#ff99cc',
+      opacity: 0.14,
+      flickerSpeed: 0.18,
+      flickerAmp: 0.24,
+      rotationSpeed: 0.007,
+      initialRotation: 0.8,
+      tiltX: -0.22,
+      dustDensity: 0.48,
+      dustSpeed: 0.38,
+    },
+  ],
   // AAA Phase A: rich cinematic volumetric shafts on river/pier (fire + water mist + dusk light catching dust)
   river_pier: [
     {
