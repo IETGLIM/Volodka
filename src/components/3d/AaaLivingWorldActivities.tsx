@@ -80,6 +80,9 @@ const ACTIVITY_LINES: Record<string, string> = {
   solnysh_window: 'Окно в солнышке. Свет мягкий, как воспоминание.',
   zarema_plant: 'Цветок Заремы. Кто-то поливал его с любовью.',
   zarema_mirror: 'Зеркало Заремы. В нём видно больше, чем кажется.',
+
+  // AAA Phase A: dream memory fragments — poetic remnants of the past (ethereal, floating)
+  dream_memory: 'Старый предмет. Он помнит то, что ты уже забыл.',
 };
 
 const COZY_ACTIVITIES = new Set(['coffee_machine', 'bench', 'plant', 'window', 'fridge', 'lamp_library']);
@@ -141,6 +144,8 @@ export function AaaLivingWorldActivities() {
         else if ((lower.includes('window') || lower.includes('окно') || lower.includes('solnysh')) && sceneId.includes('solnysh_room')) key = 'solnysh_window';
         else if ((lower.includes('plant') || lower.includes('цветок') || lower.includes('zarema')) && sceneId.includes('zarema')) key = 'zarema_plant';
         else if ((lower.includes('mirror') || lower.includes('зеркало')) && sceneId.includes('zarema')) key = 'zarema_mirror';
+        // AAA dream memory fragments — poetic, ethereal inner voice (show-don't-tell the past)
+        else if ((lower.includes('memory') || lower.includes('sd_') || lower.includes('dream')) && sceneId.includes('sleep_dream')) key = 'dream_memory';
 
         if (key && ACTIVITY_LINES[key]) {
           const line = ACTIVITY_LINES[key];

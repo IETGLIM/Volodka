@@ -147,4 +147,12 @@ export const DYNAMIC_PROPS: Partial<Record<SceneId, DynamicPropDef[]>> = {
     { id: 'zr_bottle_1', kind: 'bottle', position: [-2.4, 0, 1.6], rotation: 0.7 },
     { id: 'zr_can_2', kind: 'can', position: [0.6, 0, -2.0], rotation: 1.4 },
   ],
+  // AAA Phase A: ethereal "memory fragments" in the dream — kickable cans/bottles/boxes as poetic remnants of the past.
+  // They float in the galaxy dream and give tactile "show-don't-tell" storytelling when interacted with.
+  sleep_dream: [
+    { id: 'sd_memory_can', kind: 'can', position: [-1.8, 1.2, 2.4], rotation: 0.5 },
+    { id: 'sd_memory_bottle', kind: 'bottle', position: [2.3, 2.1, -1.6], rotation: -1.2 },
+    { id: 'sd_memory_box', kind: 'box', position: [0.4, 0.8, -3.1], rotation: 0.9 },
+    { id: 'sd_faded_can', kind: 'can', position: [-3.1, 3.4, 0.7], rotation: 1.8 },
+  ],
 };
