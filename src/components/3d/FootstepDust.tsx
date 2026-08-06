@@ -182,6 +182,24 @@ export function FootstepDust() {
     return unsub;
   }, []);
 
+  // AAA cinematic landing dust burst — triggered from player movement on hard landings
+  useEffect(() => {
+    const unsub = eventBus.on('player:landed', ({ position, impact, yaw, sceneId }: any) => {
+      if (reducedMotionRef.current) return;
+      const strength = Math.min(1, Math.max(0.4, impact || 0.6));
+      const count = Math.round(6 + strength * 7); // strong visible puff
+      const upward = PARTICLE_UPWARD_VEL * (1.1 + strength * 0.6);
+      spawnBurst(poolRef.current, position?.[0] ?? 0, position?.[1] ?? 0.02, position?.[2] ?? 0, yaw ?? 0, count, upward);
+
+      // tint for landing too
+      try {
+        const col = getSceneDustColor(sceneId || '');
+        if (materialRef.current) materialRef.current.color.copy(col);
+      } catch {}
+    });
+    return unsub;
+  }, []);
+
   useFrameTick('weather', ({ delta }) => {
     if (!pointsRef.current) return;
     const dt = Math.min(delta, 0.05);

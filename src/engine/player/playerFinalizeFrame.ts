@@ -69,11 +69,20 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
 
   deps.currentFloorMaterialRef.current = deps.config.floorMaterial;
 
-  // ── Landing impact footstep ──
+  // ── Landing impact footstep + cinematic dust ──
   if (justLanded) {
     deps.footstepTimerRef.current = 0;
     audioEngine.playFootstep(deps.currentFloorMaterialRef.current, {
       sourceId: 'player-landing',
+    });
+
+    // AAA: rich landing dust burst (visual weight + living world)
+    const impact = Math.min(1, Math.abs(scratch.landingImpactVel || 0) / 12);
+    eventBus.emit('player:landed', {
+      position: [finalPos.x, finalPos.y, finalPos.z],
+      impact,
+      yaw: deps.livePlayerRotationRef.current,
+      sceneId: deps.sceneId,
     });
   }
 
