@@ -235,19 +235,19 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
       if (isSprinting) {
         try {
           const { triggerCameraShake } = require('@/engine/camera/cameraShake');
-          const kick = 0.42 + (runWeight * 0.62); // BRAIN-MELTING APOCALYPTIC — even harder for хм, и: nuclear pounding every stride
-          triggerCameraShake(kick, 4.8);
-          triggerCameraShake(kick * 1.55, 11.8);   // nuclear vertical earth-crack slam
-          triggerCameraShake(kick * 1.28, 8.2);   // violent tilting rock + lateral annihilation
-          triggerCameraShake(kick * 1.02, 5.4);  // pure chaotic destruction
-          triggerCameraShake(kick * 0.72, 3.6);   // micro aftershocks
-          triggerCameraShake(kick * 0.44, 2.1);   // final death rattle
-          triggerCameraShake(kick * 0.25, 1.1);
+          const kick = 0.48 + (runWeight * 0.72); // ABSOLUTE BRAIN-ANNIHILATING NUCLEAR — even harder for хм, и: every stride is planetary impact
+          triggerCameraShake(kick, 5.4);
+          triggerCameraShake(kick * 1.65, 13.2);   // god-crushing vertical slam
+          triggerCameraShake(kick * 1.38, 9.4);   // apocalyptic lateral annihilation
+          triggerCameraShake(kick * 1.12, 6.1);  // pure chaotic world-shatter
+          triggerCameraShake(kick * 0.82, 4.2);   // aftershock barrage
+          triggerCameraShake(kick * 0.52, 2.6);   // death rattle
+          triggerCameraShake(kick * 0.31, 1.3);
         } catch {}
 
         try {
           const { triggerLandingFovDip } = require('@/engine/camera/landingImpact');
-          triggerLandingFovDip(3.8 + runWeight * 4.8); // full nuclear inward smash every single heavy stride — EVEN HARDER
+          triggerLandingFovDip(4.2 + runWeight * 5.5); // full nuclear inward smash every single heavy stride — HARDER хм, и:
         } catch {}
       }
 

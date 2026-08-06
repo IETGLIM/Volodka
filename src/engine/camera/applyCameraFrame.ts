@@ -148,8 +148,8 @@ export function applyCameraFrame(
       const speedNorm = speedNormForBob;
       const bobIntensity = 1 - Math.exp(-WALK_BOB_BLEND_SPEED * speedNorm);
       // AAA Phase B: amplitude also scales with speed for satisfying cinematic weight
-      // at sprint (heavier footfalls read in camera) — NUCLEAR APOCALYPTIC (max ~12mm pounding)
-      const ampScale = 1.1 + 1.35 * speedNorm; // 1.1x at walk → 2.45x at sprint — HARDER
+      // at sprint (heavier footfalls read in camera) — NUCLEAR APOCALYPTIC (max ~18mm pounding) HARDER for хм, и:
+      const ampScale = 1.15 + 1.65 * speedNorm; // 1.15x at walk → 2.8x at sprint — DEVASTATING
       const bobOffset = Math.sin(_walkBobPhase) * WALK_BOB_AMPLITUDE * bobIntensity * ampScale;
       targetPos.y += bobOffset;
 
@@ -285,20 +285,20 @@ export function applyCameraFrame(
   // When sprinting hard, camera feels like it's being carried forward — delicious weight.
   const speed = playerVelocity.length();
   if (speed > 5.2 && !isInDialogue && !isCutscene && !isFpExploration) {
-    const thrust = (speed - 5.2) / 1.85; // 0..1.0+ at full sprint — EVEN STRONGER for хм, и:
+    const thrust = (speed - 5.2) / 1.65; // 0..1.0+ at full sprint — NUCLEAR HARDER for хм, и:
     const fwd = new THREE.Vector3().subVectors(targetLook, targetPos).normalize();
-    // Strong forward push on position (feels like being PULLED into the run) — NUCLEAR APOCALYPTIC
-    targetPos.addScaledVector(fwd, thrust * 0.082);
+    // Strong forward push on position (feels like being PULLED into the run) — PLANETARY APOCALYPTIC
+    targetPos.addScaledVector(fwd, thrust * 0.095);
     // Also pull the look target harder for forward commitment
-    targetLook.addScaledVector(fwd, thrust * 0.036);
+    targetLook.addScaledVector(fwd, thrust * 0.045);
 
     // Cinematic "air rush" breathing on camera — subtle rhythmic FOV + position float
     // Feels like wind in your face. Perfectly synced with body bob.
-    const rushPhase = (ctx.time * 4.2) % (Math.PI * 2);
-    const rush = Math.sin(rushPhase) * 0.015 * Math.min(1, thrust * 1.65);
-    targetPos.addScaledVector(fwd, rush * 0.72); // tiny forward float — stronger
+    const rushPhase = (ctx.time * 4.6) % (Math.PI * 2);
+    const rush = Math.sin(rushPhase) * 0.018 * Math.min(1, thrust * 1.85);
+    targetPos.addScaledVector(fwd, rush * 0.85); // tiny forward float — stronger
     // Very subtle FOV breathing (adds life without nausea)
-    const fovBreath = rush * 0.85;
+    const fovBreath = rush * 0.95;
     (targets as any).targetFov = (targets as any).targetFov || targetFov;
     (targets as any).targetFov += fovBreath;
   }

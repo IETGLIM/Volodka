@@ -137,9 +137,9 @@ export const explorationStrategy: CameraModeStrategy = {
     let launchFovExtra = 0;
     let launchLeanExtra = 0;
     if (_sprintLaunchBoost > 0) {
-      launchFovExtra = _sprintLaunchBoost * 3.4; // EVEN HARDER NUCLEAR launch for хм, и:
-      launchLeanExtra = _sprintLaunchBoost * 0.065;
-      _sprintLaunchBoost = Math.max(0, _sprintLaunchBoost - ctx.delta * 8.5);
+      launchFovExtra = _sprintLaunchBoost * 4.1; // PLANETARY NUCLEAR launch for хм, и: even harder
+      launchLeanExtra = _sprintLaunchBoost * 0.078;
+      _sprintLaunchBoost = Math.max(0, _sprintLaunchBoost - ctx.delta * 9.8);
     }
     fovBoost += launchFovExtra;
 
@@ -148,8 +148,8 @@ export const explorationStrategy: CameraModeStrategy = {
     // HARDER APOCALYPTIC — nuclear forward commitment every sprint stride. Devastating.
     let sprintLeanPitch = 0;
     if (sprintActive) {
-      const leanT = Math.min(1, (speedMs - SPRINT_KICK_SPEED_THRESHOLD) / 1.65);
-      sprintLeanPitch = -0.055 * leanT; // negative = nose-down cinematic lean — NUCLEAR ~3.1°+ even harder
+      const leanT = Math.min(1, (speedMs - SPRINT_KICK_SPEED_THRESHOLD) / 1.5);
+      sprintLeanPitch = -0.062 * leanT; // negative = nose-down cinematic lean — NUCLEAR ~3.7°+ even harder for хм, и:
     }
     sprintLeanPitch -= launchLeanExtra;
 
