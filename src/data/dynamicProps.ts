@@ -39,10 +39,17 @@ export const DYNAMIC_PROPS: Partial<Record<SceneId, DynamicPropDef[]>> = {
   park_day: [
     { id: 'pd_can_1', kind: 'can', position: [3.6, 0, -2.4], rotation: 1.1 },
     { id: 'pd_bottle_1', kind: 'bottle', position: [7.5, 0, 3.6], rotation: 0.2 },
+    // AAA: kickable litter in the park — makes nature hub feel lived-in and tactile
+    { id: 'pd_can_2', kind: 'can', position: [-2.8, 0, 4.1], rotation: 0.9 },
+    { id: 'pd_bottle_2', kind: 'bottle', position: [5.2, 0, -5.8], rotation: -1.4 },
+    { id: 'pd_box_park', kind: 'box', position: [-4.1, 0, 1.9], rotation: 0.4 },
   ],
   chk_forest_zorge: [
     { id: 'chk_bottle_1', kind: 'bottle', position: [2.6, 0, 2.2], rotation: 0.9 },
     { id: 'chk_bottle_2', kind: 'bottle', position: [-2.4, 0, 1.6], rotation: 2.3 },
+    // AAA: forest campsite tactile props — cans + crate near fire for living CHK world
+    { id: 'chk_can_camp', kind: 'can', position: [0.9, 0, -0.8], rotation: 1.3 },
+    { id: 'chk_crate', kind: 'box', position: [-1.8, 0, 3.1], rotation: -0.7 },
   ],
   rooftop_edge: [
     { id: 're_can_1', kind: 'can', position: [-1.8, 0, 1.4], rotation: 0.6 },
