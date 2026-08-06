@@ -69,6 +69,9 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
 
   deps.currentFloorMaterialRef.current = deps.config.floorMaterial;
 
+  // Declare early so landing handler (which fires on justLanded) can use it
+  let finalPos = rb.translation();
+
   // ── Landing impact footstep + cinematic dust ──
   if (justLanded) {
     deps.footstepTimerRef.current = 0;
@@ -189,7 +192,6 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
     prevAnimForFootstep = deps.currentAnimRef.current;
   }
 
-  let finalPos = rb.translation();
   const finalGroundY = groundY;
 
   // Single floor snap: only rescue micro-hover when KCC disagrees and we are

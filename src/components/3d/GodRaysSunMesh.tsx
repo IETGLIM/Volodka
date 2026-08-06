@@ -75,6 +75,22 @@ const GODRAYS_SUN_CONFIG: Partial<Record<SceneId, GodRaysSunConfig>> = {
     position: [-3, 3, 0],
     color: '#ff7744',
   },
+  // AAA Phase A: expand ultra post godrays to more hero interiors for luxurious volumetric shafts
+  cafe_evening: {
+    // Neon bar glow + window spill
+    position: [-3, 2.5, 0],
+    color: '#4488ff',
+  },
+  library_day: {
+    // Banker lamp / reading light shafts
+    position: [5, 3, 0],
+    color: '#ffdd99',
+  },
+  pier_evening: {
+    // Pier fire + dusk light
+    position: [0, 2.2, -2],
+    color: '#ff9944',
+  },
 };
 
 export function getGodRaysSunConfig(sceneId: SceneId): GodRaysSunConfig | null {
