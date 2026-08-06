@@ -26,6 +26,7 @@ import { getNPCGroup } from '@/engine/interaction/npcRegistry';
 import { isEffectiveReducedMotion } from '@/engine/accessibility/accessibilitySettings';
 import {
   BED_POSITION,
+  CHAIR_POSITION,
   WAKEUP_CAMERA_START,
 } from '@/engine/wakeup/wakeUpCinematic';
 import { shouldOpenAct1PrologueStory } from '@/engine/wakeup/shouldOpenAct1PrologueStory';
@@ -92,8 +93,22 @@ export function CinematicTimelineRunner() {
     const store = getGameStore();
     // Face the desk (monitors at Z=-2.35) instead of the door (Z=+3.5).
     // Rotation 0 = facing -Z in Three.js.
-    store.setPlayerPosition([0, 0.01, -1.3]);
+    // FIX S15-CHAIR-CLIP: используем CHAIR_POSITION -1.15, а не -1.3 чтобы не клиповать сквозь кресло
+    store.setPlayerPosition([CHAIR_POSITION.x, CHAIR_POSITION.y, CHAIR_POSITION.z]);
     store.setPlayerRotation(0);
+
+    // FIX S15-MUSIC: явно резюмим аудио и запускаем ambient после пробуждения
+    // иначе музыка отсутствует после пролога из-за suspended AudioContext
+    try {
+      import('@/engine/SharedAudioContext').then(({ getSharedAudioContext }) => {
+        getSharedAudioContext()?.resume?.();
+      });
+      import('@/engine/audio/SceneAudioController').then(({ getSceneAudioController }) => {
+        const ctrl = getSceneAudioController();
+        // @ts-ignore — onSceneEnter доступен
+        ctrl.onSceneEnter?.('volodka_room' as any, 0);
+      });
+    } catch {}
     store.setCutscene(null, []);
     store.setFlag('woke_up', true);
     // NOTE: poem_2 and read_poem_2 are NO LONGER auto-granted on wake-up.

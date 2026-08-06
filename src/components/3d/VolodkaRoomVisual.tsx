@@ -195,8 +195,10 @@ const mat_29 = getSharedStandardMaterial({ color: '#2a3040', roughness: 0.9 });
 const mat_30 = getSharedStandardMaterial({ color: '#3a2a20', roughness: 0.8 });
 const mat_31 = getSharedStandardMaterial({ color: '#aaaacc', roughness: 0.95 });
 const mat_32 = getSharedStandardMaterial({ color: '#303050', roughness: 0.95 });
-const mat_33 = getSharedStandardMaterial({ color: '#0a0a30', emissive: '#4488ee', emissiveIntensity: 0.9, toneMapped: false });
-const mat_34 = getSharedStandardMaterial({ color: '#0a0a30', emissive: '#3366cc', emissiveIntensity: 0.8, toneMapped: false });
+const mat_33 = getSharedStandardMaterial({ color: '#0a0a30', emissive: '#4488ee', emissiveIntensity: 1.8, toneMapped: false });
+const mat_34 = getSharedStandardMaterial({ color: '#0a0a30', emissive: '#3366cc', emissiveIntensity: 1.5, toneMapped: false });
+// City view — emissive city lights behind window, не 8-битная схематика
+const mat_city_view = getSharedStandardMaterial({ color: '#0a0a18', emissive: '#1a2a5a', emissiveIntensity: 0.9, roughness: 0.95 });
 const mat_35 = getSharedStandardMaterial({ color: '#333333', metalness: 0.5, roughness: 0.4 });
 const mat_36 = getSharedStandardMaterial({ color: '#555555', metalness: 0.6, roughness: 0.3 });
 const mat_37 = getSharedStandardMaterial({ color: '#666666', metalness: 0.3, roughness: 0.5, side: THREE.DoubleSide });
@@ -344,15 +346,13 @@ function AuthoredVolodkaRoomDressing({ castShadow }: { castShadow: boolean }) {
           castShadow={castShadow}
         />
       </Suspense>
-      {/* FIX S13-12: armChair moved from [0.35, 0, 2.55] (near bed/door — looked
-          like "a chair at the door") to [0, 0, -1.5] (at the desk, facing the
-          monitors). The bedroom doesn't need a lounge armchair by the bed;
-          Volodka's chair belongs at his workstation where he works. Faces -Z
-          (rotationY=π) toward the desk at z=-2.5. */}
+      {/* FIX S13-12 + S15-CHAIR-CLIP: armChair moved from [0.35,0,2.55] to [0,0,-1.7]
+          -1.7 дает 55см зазора от CHAIR_POSITION -1.15, чтобы не проходить сквозь
+          спинку кресла. Ранее -1.5 было слишком близко (20см) -> клип. */}
       <Suspense fallback={null}>
         <AuthoredRoomProp
           url={POLYHAVEN_MODELS.armChair}
-          position={[0, 0, -1.5]}
+          position={[0, 0, -1.7]}
           rotationY={Math.PI}
           scale={0.7}
           castShadow={castShadow}
@@ -806,17 +806,49 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
       {/* Curtain on the back wall behind the desk monitors */}
       <DeskWallCurtain position={[0, 0.15, -3.35]} width={2.6} height={2.15} />
 
-      {/* Bookshelf — right of right monitor */}
+      {/* Bookshelf — right of right monitor — FIX S15-BOOKS: добавляем книги и для GLB пресета */}
       {useGltfFurniture ? (
-        <Suspense fallback={null}>
-          <AuthoredRoomProp
-            url={POLYHAVEN_MODELS.woodenBookshelfWorn}
-            position={[1.65, 0, -2.55]}
-            rotationY={-Math.PI / 2}
-            scale={0.88}
-            castShadow={preset.shadows}
-          />
-        </Suspense>
+        <>
+          <Suspense fallback={null}>
+            <AuthoredRoomProp
+              url={POLYHAVEN_MODELS.woodenBookshelfWorn}
+              position={[1.65, 0, -2.55]}
+              rotationY={-Math.PI / 2}
+              scale={0.88}
+              castShadow={preset.shadows}
+            />
+          </Suspense>
+          {/* Книги на полках — даже в GLB пресете полка была пустая, теперь с книгами */}
+          <group position={[1.65, 0, -2.55]}>
+            {/* Нижняя полка */}
+            {[
+              { x: -0.22, y: 0.27, w: 0.04, c: '#8b2020' },
+              { x: -0.15, y: 0.27, w: 0.05, c: '#204080' },
+              { x: -0.07, y: 0.27, w: 0.03, c: '#208020' },
+              { x: 0.02, y: 0.27, w: 0.06, c: '#806020' },
+              { x: 0.12, y: 0.27, w: 0.04, c: '#602080' },
+            ].map((b, i) => (
+              <mesh key={`glb-s1-${i}`} position={[b.x, b.y, 0.12]} rotation={[0, -Math.PI / 2, 0]} geometry={bookSpineGeo(b.w, 0.2)} material={bookSpineMaterial(b.c)} />
+            ))}
+            {/* Средняя полка */}
+            {[
+              { x: -0.18, y: 0.77, w: 0.05, c: '#a03020' },
+              { x: -0.08, y: 0.77, w: 0.04, c: '#304090' },
+              { x: 0.02, y: 0.77, w: 0.06, c: '#307030' },
+              { x: 0.12, y: 0.77, w: 0.03, c: '#907030' },
+            ].map((b, i) => (
+              <mesh key={`glb-s2-${i}`} position={[b.x, b.y, 0.12]} rotation={[0, -Math.PI / 2, 0]} geometry={bookSpineGeo(b.w, 0.18)} material={bookSpineMaterial(b.c)} />
+            ))}
+            {/* Верхняя полка */}
+            {[
+              { x: -0.15, y: 1.27, w: 0.04, c: '#b04030' },
+              { x: -0.05, y: 1.27, w: 0.06, c: '#2050a0' },
+              { x: 0.08, y: 1.27, w: 0.04, c: '#8040a0' },
+            ].map((b, i) => (
+              <mesh key={`glb-s3-${i}`} position={[b.x, b.y, 0.12]} rotation={[0, -Math.PI / 2, 0]} geometry={bookSpineGeo(b.w, 0.2)} material={bookSpineMaterial(b.c)} />
+            ))}
+          </group>
+        </>
       ) : null}
 
       {/* Yellow two-door wardrobe left of left monitor + small two-door cabinet on top.
@@ -851,7 +883,7 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
 
       {/* ── Chair — Low-fallback box chair at desk; GLB presets use armChair above ── */}
       {!useGltfFurniture ? (
-      <group position={[0, 0, -1.5]}>
+      <group position={[0, 0, -1.7]}>
         {/* Seat */}
         <mesh position={[0, 0.45, 0]} castShadow geometry={geo_box_33} material={mat_25} />
         {/* Backrest */}
@@ -1004,6 +1036,14 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
             position={[-0.016, -0.12, 0.22]}
             geometry={geo_pln_78}
             material={mat_64}
+          />
+          {/* City view outside — not 8-bit schematic, real city skyline with depth */}
+          <mesh
+            renderOrder={2}
+            rotation-y={-Math.PI / 2}
+            position={[-0.35, 0, 0]}
+            geometry={geo_pln_2}
+            material={mat_city_view}
           />
         </group>
 

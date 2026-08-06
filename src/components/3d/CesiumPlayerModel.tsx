@@ -142,6 +142,19 @@ function CesiumPlayerModelInner({
   // Stay mounted (invisible) while mixer warms — parent keeps lite silhouette.
   if (!ready) return null;
 
+  // FIX S15-GLASSES-FLOAT: очки появлялись вися в воздухе перед лицом во время пролога,
+  // потому что они были приаттачены к фиксированной позиции головы, а не к кости головы,
+  // и во время sleeping анимации голова двигалась, а очки оставались.
+  // Теперь скрываем очки во время sleeping/sitting в кровати, показываем только в idle/walk.
+  const showGlasses = (() => {
+    const clip = currentAnimRef.current?.toLowerCase() ?? '';
+    // Скрываем во время сна и вставания с кровати
+    if (clip.includes('sleep')) return false;
+    // В сидячем положении за столом очки тоже не нужны — Володька без них за компом
+    // Но оставляем в idle/walk
+    return clip === 'idle' || clip === 'walk' || clip === 'run' || clip === 'talking';
+  })();
+
   return (
     <group ref={yawRef}>
       <group
@@ -151,9 +164,11 @@ function CesiumPlayerModelInner({
       >
         <primitive object={scene} />
         {/* Approx head height in character metres — GLB may lack a Head bone name. */}
-        <group position={[0, 1.62, 0.08]} scale={1 / Math.max(fit.scale, 0.001)}>
-          <ProceduralAviatorGlasses />
-        </group>
+        {showGlasses && (
+          <group position={[0, 1.62, 0.08]} scale={1 / Math.max(fit.scale, 0.001)}>
+            <ProceduralAviatorGlasses />
+          </group>
+        )}
       </group>
     </group>
   );

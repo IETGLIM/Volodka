@@ -50,18 +50,34 @@ export function useMenuScreen({ loadGame, resetGame, musicEnabled, toggleMusic }
     (skipPrologue = false) => {
       if (isFadingOut) return;
       setIsFadingOut(true);
+      // FIX S15-MUSIC: явно резюмим AudioContext на user gesture — Chrome требует
+      // иначе ambientEngine и AudioEngine остаются suspended и музыка отсутствует
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const mod = (window as any).__VOLODKA_AUDIO_CTX__ as { resume?: () => void } | undefined;
+        mod?.resume?.();
+      } catch {}
+      try {
+        // Динамический импорт чтобы не тянуть AudioEngine в меню чанк
+        import('@/engine/SharedAudioContext').then(({ getSharedAudioContext, whenAudioReady }) => {
+          const ctx = getSharedAudioContext();
+          ctx?.resume?.();
+          whenAudioReady(() => {
+            // Предзагрузка аудио — чтобы не было тишины
+            import('@/engine/audio/AudioEngine').then(({ audioEngine }) => {
+              audioEngine.playSfx('confirm');
+            });
+          });
+        });
+      } catch {}
       safePlayMenuSfx(audioEngine.playSfx.bind(audioEngine), 'confirm');
 
       window.setTimeout(() => {
         setIsFadingOut(false);
 
         if (!skipPrologue) {
-          // Идеальный путь: показываем ProloguePerfectionOverlay
-          // Он сам прелоадит WASM + story nodes за время boot-линий,
-          // потом вызовет handleProloguePerfectionComplete
           setShowProloguePerfection(true);
         } else {
-          // Skip-prologue path: mount the 3-page SkipPrologueOverlay first.
           setShowSkipPrologueOverlay(true);
         }
       }, NEW_GAME_FADE_MS);
