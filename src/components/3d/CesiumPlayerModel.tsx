@@ -139,142 +139,135 @@ function CesiumPlayerModelInner({
     if (!ready) return;
     if (yawRef.current) yawRef.current.rotation.y = rotationRef.current + FORWARD_OFFSET;
 
-      // AAA Phase B: cinematic body lean + stride sway + torso breathing when sprinting
-      // Forward pitch + rhythmic side-to-side + vertical squash for ultra-rich weight transfer.
-      // Perfectly synced to locomotion timescale, camera bob, and footstep cadence.
-      const hSpeed = currentHSpeedRef?.current ?? 0;
-      const leanT = Math.min(1, Math.max(0, (hSpeed - 4) / 3));
-      const bodyLean = -0.058 * leanT; // HARDER APOCALYPTIC lean
-      const bodyGroup = yawRef.current?.children?.[0] as THREE.Group | undefined;
-      if (bodyGroup) {
-        const targetLean = leanT > 0.05 ? bodyLean : 0;
-        bodyGroup.rotation.x = THREE.MathUtils.lerp(bodyGroup.rotation.x || 0, targetLean, 0.18);
+    // AAA Phase B: cinematic body lean + stride sway + torso breathing when sprinting
+    // Forward pitch + rhythmic side-to-side + vertical squash for ultra-rich weight transfer.
+    // Perfectly synced to locomotion timescale, camera bob, and footstep cadence.
+    // HARDER NUCLEAR for хм, и: more extreme lean/sway/squash/arm/hip
+    const hSpeed = currentHSpeedRef?.current ?? 0;
+    const leanT = Math.min(1, Math.max(0, (hSpeed - 4) / 3));
+    const bodyLean = -0.072 * leanT; // HARDER APOCALYPTIC lean ~4.1°+
+    const bodyGroup = yawRef.current?.children?.[0] as THREE.Group | undefined;
+    if (bodyGroup) {
+      const targetLean = leanT > 0.05 ? bodyLean : 0;
+      bodyGroup.rotation.x = THREE.MathUtils.lerp(bodyGroup.rotation.x || 0, targetLean, 0.18);
 
-        // Rhythmic side sway (figure-8 gait) — matches camera lateral bob phase
-        const swayPhase = (performance.now() / 180) % (Math.PI * 2); // ~same frequency as bob
-        const sideSway = Math.sin(swayPhase) * 0.028 * leanT;
-        bodyGroup.rotation.z = THREE.MathUtils.lerp(bodyGroup.rotation.z || 0, sideSway, 0.26);
+      // Rhythmic side sway (figure-8 gait) — matches camera lateral bob phase
+      const swayPhase = (performance.now() / 180) % (Math.PI * 2); // ~same frequency as bob
+      const sideSway = Math.sin(swayPhase) * 0.034 * leanT;
+      bodyGroup.rotation.z = THREE.MathUtils.lerp(bodyGroup.rotation.z || 0, sideSway, 0.26);
 
-        // AAA Phase B: micro vertical compression on heavy sprint steps (weight pressing down)
-        // Gives delicious "grounded" feel — the body squats slightly into each stride.
-        const compression = 1 - (leanT * 0.058); // max ~5.8% squash — HARDER APOCALYPTIC
-        bodyGroup.scale.y = THREE.MathUtils.lerp(bodyGroup.scale.y || 1, compression, 0.42);
-        // Slight forward squash compensation so feet don't sink
-        bodyGroup.scale.x = THREE.MathUtils.lerp(bodyGroup.scale.x || 1, 1 + leanT * 0.018, 0.36);
-        bodyGroup.scale.z = bodyGroup.scale.x;
+      // AAA Phase B: micro vertical compression on heavy sprint steps (weight pressing down)
+      // Gives delicious "grounded" feel — the body squats slightly into each stride.
+      const compression = 1 - (leanT * 0.072); // max ~7.2% squash — HARDER APOCALYPTIC
+      bodyGroup.scale.y = THREE.MathUtils.lerp(bodyGroup.scale.y || 1, compression, 0.42);
+      // Slight forward squash compensation so feet don't sink
+      bodyGroup.scale.x = THREE.MathUtils.lerp(bodyGroup.scale.x || 1, 1 + leanT * 0.024, 0.36);
+      bodyGroup.scale.z = bodyGroup.scale.x;
 
-        // Subtle torso breathing / head bob on the upper body (idle + sprint)
-        const breath = Math.sin(performance.now() / 420) * 0.008 * (1 + leanT * 0.6);
-        bodyGroup.position.y = THREE.MathUtils.lerp(bodyGroup.position.y || 0, breath, 0.4);
+      // Subtle torso breathing / head bob on the upper body (idle + sprint)
+      const breath = Math.sin(performance.now() / 420) * 0.009 * (1 + leanT * 0.7);
+      bodyGroup.position.y = THREE.MathUtils.lerp(bodyGroup.position.y || 0, breath, 0.4);
 
-        // AAA Phase B: dynamic arm swing + shoulder roll + head lean (very visible cinematic weight)
-        // Scales perfectly with speed + matches footstep cadence.
-        const swingPhase = (performance.now() / 165) % (Math.PI * 2);
-        const swingAmp = leanT * 0.55;
-        const armSwing = Math.sin(swingPhase) * swingAmp;
-        const shoulderRoll = Math.cos(swingPhase * 0.5) * swingAmp * 0.7;
+      // AAA Phase B: dynamic arm swing + shoulder roll + head lean (very visible cinematic weight)
+      // Scales perfectly with speed + matches footstep cadence. HARDER
+      const swingPhase = (performance.now() / 165) % (Math.PI * 2);
+      const swingAmp = leanT * 0.78;
+      const armSwing = Math.sin(swingPhase) * swingAmp;
+      const shoulderRoll = Math.cos(swingPhase * 0.5) * swingAmp * 0.85;
 
-        // Apply to left/right shoulders (common Mixamo bone names)
-        const leftShoulder = bodyGroup.getObjectByName?.('mixamorigLeftShoulder') || bodyGroup.getObjectByName?.('LeftShoulder');
-        const rightShoulder = bodyGroup.getObjectByName?.('mixamorigRightShoulder') || bodyGroup.getObjectByName?.('RightShoulder');
+      // Apply to left/right shoulders (common Mixamo bone names)
+      const leftShoulder = bodyGroup.getObjectByName?.('mixamorigLeftShoulder') || bodyGroup.getObjectByName?.('LeftShoulder');
+      const rightShoulder = bodyGroup.getObjectByName?.('mixamorigRightShoulder') || bodyGroup.getObjectByName?.('RightShoulder');
 
-        if (leftShoulder) leftShoulder.rotation.z = THREE.MathUtils.lerp(leftShoulder.rotation.z || 0, armSwing * 1.1, 0.28);
-        if (rightShoulder) rightShoulder.rotation.z = THREE.MathUtils.lerp(rightShoulder.rotation.z || 0, -armSwing * 1.1, 0.28);
+      if (leftShoulder) leftShoulder.rotation.z = THREE.MathUtils.lerp(leftShoulder.rotation.z || 0, armSwing * 1.25, 0.28);
+      if (rightShoulder) rightShoulder.rotation.z = THREE.MathUtils.lerp(rightShoulder.rotation.z || 0, -armSwing * 1.25, 0.28);
 
-        // Overall shoulder roll for torso twist feeling
-        bodyGroup.rotation.y = THREE.MathUtils.lerp(bodyGroup.rotation.y || 0, shoulderRoll * 0.4, 0.25);
+      // Overall shoulder roll for torso twist feeling
+      bodyGroup.rotation.y = THREE.MathUtils.lerp(bodyGroup.rotation.y || 0, shoulderRoll * 0.5, 0.25);
 
-        // Head lean forward + slight bob on sprint (very filmic "looking into the run")
-        const head = bodyGroup.getObjectByName?.('mixamorigHead') || bodyGroup.getObjectByName?.('Head') || bodyGroup.children.find(c => c.name.toLowerCase().includes('head'));
-        if (head) {
-          const headLean = -0.18 * leanT;
-          const headBob = Math.sin(swingPhase * 1.8) * 0.035 * leanT;
-          head.rotation.x = THREE.MathUtils.lerp(head.rotation.x || 0, headLean + headBob, 0.32);
-        }
-
-        // AAA Phase B: knee / hip drive — the body "drives" the legs forward on sprint
-        // Very visible weight transfer and power.
-        const hip = bodyGroup.getObjectByName?.('mixamorigHips') || bodyGroup.getObjectByName?.('Hips');
-        if (hip) {
-          const hipDrive = Math.sin(swingPhase * 1.3) * 0.06 * leanT;
-          hip.rotation.x = THREE.MathUtils.lerp(hip.rotation.x || 0, hipDrive, 0.3);
-        }
-
-        // AAA Phase B: hard brake recovery — torso pitches forward on stop, then settles
-        // Feels like the character is fighting momentum. Very satisfying.
-        if ((window as any).__brakeRecovery && (window as any).__brakeRecovery > 0) {
-          const brakePitch = (window as any).__brakeRecovery * 0.28;
-          bodyGroup.rotation.x = THREE.MathUtils.lerp(bodyGroup.rotation.x || 0, brakePitch, 0.45);
-          (window as any).__brakeRecovery = Math.max(0, (window as any).__brakeRecovery - delta * 3.2);
-        }
-
-        // Listen for hard brake to trigger torso pitch recovery
-      });
-
-      useEffect(() => {
-        const unsub = eventBus.on('player:hard_brake', () => {
-          (window as any).__brakeRecovery = 1.0;
-        });
-        return unsub;
-      }, []);
-
-        // AAA Phase B: landing squash + recovery (body "compresses" on hard impact)
-        // Triggered by player:landed event — gives massive physical satisfaction.
-        // We use a module-level quick decay for simplicity (one avatar instance).
+      // Head lean forward + slight bob on sprint (very filmic "looking into the run")
+      const head = bodyGroup.getObjectByName?.('mixamorigHead') || bodyGroup.getObjectByName?.('Head') || bodyGroup.children.find(c => c.name.toLowerCase().includes('head'));
+      if (head) {
+        const headLean = -0.22 * leanT;
+        const headBob = Math.sin(swingPhase * 1.8) * 0.042 * leanT;
+        head.rotation.x = THREE.MathUtils.lerp(head.rotation.x || 0, headLean + headBob, 0.32);
       }
 
-      // Listen for landing impact once (outside the tick for efficiency)
-      // We store a squash amount that decays every frame.
-    });
-
-    // Landing squash state (module level for the single player avatar)
-    let landingSquash = 0;
-    let landingSquashDecay = 0;
-
-    useEffect(() => {
-      const unsub = eventBus.on('player:landed', ({ impact }: any) => {
-        const str = Math.min(1, Math.max(0.3, (impact || 0.7)));
-        landingSquash = str * 0.11;   // up to ~11% vertical squash
-        landingSquashDecay = 9.5;     // fast cinematic recovery
-      });
-      return unsub;
-    }, []);
-
-    // AAA Phase B: per-footstep micro impact squash (gives delicious rhythmic "thud" feeling while running)
-    useEffect(() => {
-      const unsub = eventBus.on('exploration:footstep', ({ speed, runWeight }: any) => {
-        const rw = Math.max(0, Math.min(1, runWeight ?? (speed > 5.5 ? 1 : 0.4)));
-        // Small rhythmic squash per step — stronger on sprint
-        const stepSquash = rw * 0.028;
-        landingSquash = Math.max(landingSquash, stepSquash);
-        landingSquashDecay = 18; // quick recovery between steps
-      });
-      return unsub;
-    }, []);
-
-    useFrameTick('player', () => {
-      if (!ready || !bodyGroup) return;
-
-      // Apply decaying landing squash (adds delicious physical "thud" to the body)
-      if (landingSquash > 0.001) {
-        const currentY = bodyGroup.scale.y || 1;
-        const targetY = 1 - landingSquash;
-        bodyGroup.scale.y = THREE.MathUtils.lerp(currentY, targetY, 0.55);
-
-        // slight X/Z expansion on impact for volume preservation
-        const expand = 1 + landingSquash * 0.6;
-        bodyGroup.scale.x = THREE.MathUtils.lerp(bodyGroup.scale.x || 1, expand, 0.4);
-        bodyGroup.scale.z = bodyGroup.scale.x;
-
-        landingSquash *= Math.exp(-landingSquashDecay * 0.016); // ~60fps decay
-        if (landingSquash < 0.002) {
-          landingSquash = 0;
-          // gently restore scale
-          bodyGroup.scale.set(1, 1, 1);
-        }
+      // AAA Phase B: knee / hip drive — the body "drives" the legs forward on sprint
+      // Very visible weight transfer and power. HARDER
+      const hip = bodyGroup.getObjectByName?.('mixamorigHips') || bodyGroup.getObjectByName?.('Hips');
+      if (hip) {
+        const hipDrive = Math.sin(swingPhase * 1.3) * 0.078 * leanT;
+        hip.rotation.x = THREE.MathUtils.lerp(hip.rotation.x || 0, hipDrive, 0.3);
       }
-    }, { label: 'PlayerAvatarLandingSquash', phase: 'pre_render' });
+
+      // AAA Phase B: hard brake recovery — torso pitches forward on stop, then settles
+      // Feels like the character is fighting momentum. Very satisfying.
+      if ((window as any).__brakeRecovery && (window as any).__brakeRecovery > 0) {
+        const brakePitch = (window as any).__brakeRecovery * 0.34;
+        bodyGroup.rotation.x = THREE.MathUtils.lerp(bodyGroup.rotation.x || 0, brakePitch, 0.45);
+        (window as any).__brakeRecovery = Math.max(0, (window as any).__brakeRecovery - (1/60) * 3.2);
+      }
+    }
   }, { label: 'PlayerAvatarYaw', phase: 'pre_render' });
+
+  // Listen for hard brake to trigger torso pitch recovery
+  useEffect(() => {
+    const unsub = eventBus.on('player:hard_brake', () => {
+      (window as any).__brakeRecovery = 1.0;
+    });
+    return unsub;
+  }, []);
+
+  // Landing squash state (module level for the single player avatar)
+  let landingSquash = 0;
+  let landingSquashDecay = 0;
+
+  useEffect(() => {
+    const unsub = eventBus.on('player:landed', ({ impact }: any) => {
+      const str = Math.min(1, Math.max(0.3, (impact || 0.7)));
+      landingSquash = str * 0.14;   // up to ~14% vertical squash — HARDER
+      landingSquashDecay = 9.5;     // fast cinematic recovery
+    });
+    return unsub;
+  }, []);
+
+  // AAA Phase B: per-footstep micro impact squash (gives delicious rhythmic "thud" feeling while running)
+  useEffect(() => {
+    const unsub = eventBus.on('exploration:footstep', ({ speed, runWeight }: any) => {
+      const rw = Math.max(0, Math.min(1, runWeight ?? (speed > 5.5 ? 1 : 0.4)));
+      // Small rhythmic squash per step — stronger on sprint
+      const stepSquash = rw * 0.036;
+      landingSquash = Math.max(landingSquash, stepSquash);
+      landingSquashDecay = 18; // quick recovery between steps
+    });
+    return unsub;
+  }, []);
+
+  useFrameTick('player', () => {
+    if (!ready) return;
+    const bodyGroup = yawRef.current?.children?.[0] as THREE.Group | undefined;
+    if (!bodyGroup) return;
+
+    // Apply decaying landing squash (adds delicious physical "thud" to the body)
+    if (landingSquash > 0.001) {
+      const currentY = bodyGroup.scale.y || 1;
+      const targetY = 1 - landingSquash;
+      bodyGroup.scale.y = THREE.MathUtils.lerp(currentY, targetY, 0.55);
+
+      // slight X/Z expansion on impact for volume preservation
+      const expand = 1 + landingSquash * 0.72;
+      bodyGroup.scale.x = THREE.MathUtils.lerp(bodyGroup.scale.x || 1, expand, 0.4);
+      bodyGroup.scale.z = bodyGroup.scale.x;
+
+      landingSquash *= Math.exp(-landingSquashDecay * 0.016); // ~60fps decay
+      if (landingSquash < 0.002) {
+        landingSquash = 0;
+        // gently restore scale
+        bodyGroup.scale.set(1, 1, 1);
+      }
+    }
+  }, { label: 'PlayerAvatarLandingSquash', phase: 'pre_render' });
 
   // Stay mounted (invisible) while mixer warms — parent keeps lite silhouette.
   if (!ready) return null;

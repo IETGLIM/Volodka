@@ -281,24 +281,24 @@ export function applyCameraFrame(
     ctx.yaw += yawDiff * (1 - Math.exp(-1.0 * delta));
   }
 
-  // AAA Phase B: cinematic sprint forward "thrust" / momentum push on camera
+    // AAA Phase B: cinematic sprint forward "thrust" / momentum push on camera
   // When sprinting hard, camera feels like it's being carried forward — delicious weight.
   const speed = playerVelocity.length();
   if (speed > 5.2 && !isInDialogue && !isCutscene && !isFpExploration) {
-    const thrust = (speed - 5.2) / 2.2; // 0..1.0+ at full sprint — stronger
+    const thrust = (speed - 5.2) / 1.85; // 0..1.0+ at full sprint — EVEN STRONGER for хм, и:
     const fwd = new THREE.Vector3().subVectors(targetLook, targetPos).normalize();
-    // Strong forward push on position (feels like being PULLED into the run) — APOCALYPTIC
-    targetPos.addScaledVector(fwd, thrust * 0.065);
+    // Strong forward push on position (feels like being PULLED into the run) — NUCLEAR APOCALYPTIC
+    targetPos.addScaledVector(fwd, thrust * 0.082);
     // Also pull the look target harder for forward commitment
-    targetLook.addScaledVector(fwd, thrust * 0.028);
+    targetLook.addScaledVector(fwd, thrust * 0.036);
 
     // Cinematic "air rush" breathing on camera — subtle rhythmic FOV + position float
     // Feels like wind in your face. Perfectly synced with body bob.
-    const rushPhase = (ctx.time * 3.8) % (Math.PI * 2);
-    const rush = Math.sin(rushPhase) * 0.012 * Math.min(1, thrust * 1.4);
-    targetPos.addScaledVector(fwd, rush * 0.6); // tiny forward float
+    const rushPhase = (ctx.time * 4.2) % (Math.PI * 2);
+    const rush = Math.sin(rushPhase) * 0.015 * Math.min(1, thrust * 1.65);
+    targetPos.addScaledVector(fwd, rush * 0.72); // tiny forward float — stronger
     // Very subtle FOV breathing (adds life without nausea)
-    const fovBreath = rush * 0.7;
+    const fovBreath = rush * 0.85;
     (targets as any).targetFov = (targets as any).targetFov || targetFov;
     (targets as any).targetFov += fovBreath;
   }
