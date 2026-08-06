@@ -209,6 +209,44 @@ export function FootstepDust() {
     return unsub;
   }, []);
 
+  // AAA Phase B: extra cinematic sprint-start dust kick (when player crosses into sprint)
+  // This gives satisfying "launch" visual weight, synced with the locomotion system.
+  let lastSprintState = false;
+  useEffect(() => {
+    const unsub = eventBus.on('exploration:footstep', ({ position, yaw, isSprinting, runWeight, sceneId }: any) => {
+      if (reducedMotionRef.current) return;
+      const nowSprinting = !!isSprinting || (runWeight ?? 0) > 0.85;
+      if (nowSprinting && !lastSprintState) {
+        // Big satisfying launch puff on sprint entry
+        const count = 7;
+        const upward = PARTICLE_UPWARD_VEL * 1.35;
+        spawnBurst(poolRef.current, position[0], position[1] + 0.01, position[2], yaw, count, upward);
+        try {
+          const col = getSceneDustColor(sceneId || '');
+          if (materialRef.current) materialRef.current.color.copy(col);
+        } catch {}
+      }
+      lastSprintState = nowSprinting;
+    });
+    return unsub;
+  }, []);
+
+  // Direct 'player:sprint_start' listener — powerful cinematic launch burst
+  // (more reliable on exact transition, even if footstep timing is slightly off).
+  useEffect(() => {
+    const unsub = eventBus.on('player:sprint_start', ({ position, yaw, sceneId }: any) => {
+      if (reducedMotionRef.current) return;
+      const count = 9;
+      const upward = PARTICLE_UPWARD_VEL * 1.55;
+      spawnBurst(poolRef.current, (position?.[0] ?? 0), (position?.[1] ?? 0.03), (position?.[2] ?? 0), yaw ?? 0, count, upward);
+      try {
+        const col = getSceneDustColor(sceneId || '');
+        if (materialRef.current) materialRef.current.color.copy(col);
+      } catch {}
+    });
+    return unsub;
+  }, []);
+
   useFrameTick('weather', ({ delta }) => {
     if (!pointsRef.current) return;
     const dt = Math.min(delta, 0.05);

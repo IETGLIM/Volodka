@@ -21,6 +21,7 @@ import {
 import { shouldKeepFirstPersonExplorationCamera } from '@/engine/interaction/interactionSession';
 import type { CameraModeStrategy } from '../types';
 import { consumeLandingFovDip } from '../landingImpact';
+import { eventBus } from '@/engine/EventBus';
 
 // ── Sprint-start FOV kick (envelope decays after the walk→run transition) ──
 let _sprintKickEnvelope = 0;
@@ -32,6 +33,16 @@ const SPRINT_KICK_DECAY = 4;
 let _handheldPhase = 0;
 const HANDHELD_FREQ = 0.22;
 const HANDHELD_AMP = 0.0009;
+
+// AAA Phase B: sprint launch boost flag (armed by player:sprint_start event)
+let _sprintLaunchBoost = 0;
+
+// Arm cinematic sprint launch boost from the exact edge event
+if (typeof window !== 'undefined') {
+  eventBus.on('player:sprint_start', () => {
+    _sprintLaunchBoost = 1.0; // full punch
+  });
+}
 
 /** Default spring-based exploration camera with look-ahead and breathing bob */
 export const explorationStrategy: CameraModeStrategy = {
@@ -119,13 +130,28 @@ export const explorationStrategy: CameraModeStrategy = {
     _sprintKickEnvelope = Math.max(0, _sprintKickEnvelope - ctx.delta * SPRINT_KICK_DECAY);
     fovBoost += _sprintKickEnvelope * SPRINT_KICK_FOV_DEG;
 
+    // AAA Phase B: cinematic sprint launch punch — direct, powerful reaction to
+    // the exact 'player:sprint_start' edge from playerFinalizeFrame.
+    // Delivers an instant luxurious "weight transfer" FOV + lean kick on the very first sprint frame.
+    // Perfectly locked with footstep dust launch, audio volume/filter, body lean.
+    let launchFovExtra = 0;
+    let launchLeanExtra = 0;
+    if (_sprintLaunchBoost > 0) {
+      launchFovExtra = _sprintLaunchBoost * 1.75;
+      launchLeanExtra = _sprintLaunchBoost * 0.032;
+      _sprintLaunchBoost = Math.max(0, _sprintLaunchBoost - ctx.delta * 8.5);
+    }
+    fovBoost += launchFovExtra;
+
     // AAA Phase B: subtle cinematic forward lean (pitch) when sprinting — feels like
-    // momentum / weight transfer. ~1.2° max, instant decay on stop. No nausea.
+    // momentum / weight transfer. ~1.2° max + powerful launch extra. No nausea.
     let sprintLeanPitch = 0;
     if (sprintActive) {
       const leanT = Math.min(1, (speedMs - SPRINT_KICK_SPEED_THRESHOLD) / 2.0);
       sprintLeanPitch = -0.021 * leanT; // negative = nose-down cinematic lean, ~1.2°
     }
+    sprintLeanPitch -= launchLeanExtra;
+
     const baseFov = ctx.currentSceneFov;
 
     const exploration = ctx.exploration;

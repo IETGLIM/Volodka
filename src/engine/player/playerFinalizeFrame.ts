@@ -148,6 +148,27 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
     if (wasIdle && isNowWalkOrRun) {
       deps.footstepTimerRef.current = BASE_FOOTSTEP_INTERVAL;
     }
+
+    // AAA Phase B cinematic sprint-start edge (exact walk→sprint cross)
+    // Emitted once per transition so dust, camera, audio, lean can react with launch weight.
+    const isSprinting = horizontalSpeed > 5.5;
+    const runWeight = Math.min(1, Math.max(0, (horizontalSpeed - 4) / 3));
+    if (!wasIdle && isSprinting && horizontalSpeed > 5.3 && prevAnimForFootstep !== 'run') {
+      eventBus.emit('player:sprint_start', {
+        position: [finalPos.x, finalPos.y, finalPos.z],
+        speed: horizontalSpeed,
+        yaw: deps.livePlayerRotationRef.current,
+        sceneId: deps.sceneId,
+        runWeight,
+      });
+
+      // Extra tactile: subtle launch whoosh + camera punch (AAA weight transfer)
+      // Audio whoosh is cheap procedural
+      try {
+        audioEngine.playSfx('sprint_whoosh');
+      } catch {}
+    }
+
     prevAnimForFootstep = currentAnim;
 
     deps.footstepTimerRef.current += dt;
