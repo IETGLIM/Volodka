@@ -74,6 +74,12 @@ const ACTIVITY_LINES: Record<string, string> = {
   // AAA Phase A: battle debris + library basement (post-fight / dusty tactile living world)
   battle_debris: 'Обломки ещё тёплые. Битва оставила след.',
   library_basement_clutter: 'Пыльные ящики. Кто-то прятал здесь тайны.',
+
+  // AAA Phase A/C: intimate domestic rooms (Albert, Solnysh, Zarema) — lived-in, show-don't-tell
+  albert_desk: 'Стол Альберта. Бумаги, пепел, следы долгой ночи.',
+  solnysh_window: 'Окно в солнышке. Свет мягкий, как воспоминание.',
+  zarema_plant: 'Цветок Заремы. Кто-то поливал его с любовью.',
+  zarema_mirror: 'Зеркало Заремы. В нём видно больше, чем кажется.',
 };
 
 const COZY_ACTIVITIES = new Set(['coffee_machine', 'bench', 'plant', 'window', 'fridge', 'lamp_library']);
@@ -130,6 +136,11 @@ export function AaaLivingWorldActivities() {
         // AAA: battle debris + library basement clutter (post-fight / dusty tactile)
         else if (lower.includes('battle') || lower.includes('debris') || lower.includes('shell') || lower.includes('баррель')) key = 'battle_debris';
         else if ((lower.includes('book') || lower.includes('книга') || lower.includes('crate') || lower.includes('can')) && sceneId.includes('library_basement')) key = 'library_basement_clutter';
+        // AAA cozy intimate rooms
+        else if ((lower.includes('desk') || lower.includes('стол') || lower.includes('albert')) && sceneId.includes('albert_backroom')) key = 'albert_desk';
+        else if ((lower.includes('window') || lower.includes('окно') || lower.includes('solnysh')) && sceneId.includes('solnysh_room')) key = 'solnysh_window';
+        else if ((lower.includes('plant') || lower.includes('цветок') || lower.includes('zarema')) && sceneId.includes('zarema')) key = 'zarema_plant';
+        else if ((lower.includes('mirror') || lower.includes('зеркало')) && sceneId.includes('zarema')) key = 'zarema_mirror';
 
         if (key && ACTIVITY_LINES[key]) {
           const line = ACTIVITY_LINES[key];

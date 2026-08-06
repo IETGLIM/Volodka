@@ -126,4 +126,25 @@ export const DYNAMIC_PROPS: Partial<Record<SceneId, DynamicPropDef[]>> = {
     { id: 'bt_box_shell', kind: 'box', position: [-1.2, 0, -4.2], rotation: 0.4 },
     { id: 'bt_barrel_debris', kind: 'barrel', position: [4.1, 0, 1.8], rotation: 1.6 },
   ],
+  // AAA Phase A/C: intimate lived-in clutter for cozy domestic rooms (kickable cans/bottles/boxes — makes them feel inhabited, show-don't-tell)
+  albert_backroom: [
+    { id: 'ab_can_1', kind: 'can', position: [1.4, 0, -0.8], rotation: 0.6 },
+    { id: 'ab_bottle_1', kind: 'bottle', position: [-0.9, 0, 1.2], rotation: -0.8 },
+    { id: 'ab_box_1', kind: 'box', position: [0.7, 0, 2.1], rotation: 0.3 },
+  ],
+  solnysh_room: [
+    { id: 'sr_can_1', kind: 'can', position: [-1.6, 0, 1.8], rotation: 1.2 },
+    { id: 'sr_bottle_1', kind: 'bottle', position: [2.1, 0, -1.4], rotation: -0.5 },
+    { id: 'sr_can_2', kind: 'can', position: [0.4, 0, -2.3], rotation: 0.9 },
+  ],
+  zarema_albert_room: [
+    { id: 'zar_can_1', kind: 'can', position: [-0.8, 0, 1.5], rotation: 0.4 },
+    { id: 'zar_bottle_1', kind: 'bottle', position: [1.9, 0, -0.7], rotation: 1.7 },
+    { id: 'zar_box_1', kind: 'box', position: [-1.3, 0, -1.9], rotation: -0.6 },
+  ],
+  zarema_room: [
+    { id: 'zr_can_1', kind: 'can', position: [1.1, 0, 0.9], rotation: -1.1 },
+    { id: 'zr_bottle_1', kind: 'bottle', position: [-2.4, 0, 1.6], rotation: 0.7 },
+    { id: 'zr_can_2', kind: 'can', position: [0.6, 0, -2.0], rotation: 1.4 },
+  ],
 };
