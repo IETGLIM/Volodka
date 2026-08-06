@@ -547,6 +547,75 @@ export const SCENE_VOLUMETRIC_LIGHTS: Partial<Record<string, VolumetricShaftConf
       dustSpeed: 0.22,
     },
   ],
+  // AAA Phase A: skyline sunset + industrial rooftop shafts (warm dusk light catching haze + embers)
+  rooftop_edge: [
+    {
+      ...DEFAULT_SHAFT,
+      position: [-3.2, 3.4, -0.8],   // main sunset hero light
+      topRadius: 0.22,
+      bottomRadius: 1.55,
+      height: 3.8,
+      color: '#ffcc88',
+      opacity: 0.19,
+      flickerSpeed: 0.09,
+      flickerAmp: 0.18,
+      rotationSpeed: 0.005,
+      initialRotation: 0.25,
+      tiltX: -0.32,
+      dustDensity: 0.65,             // city haze + sunset dust
+      dustSpeed: 0.18,
+    },
+    {
+      ...DEFAULT_SHAFT,
+      position: [2.5, 3.6, 1.2],
+      topRadius: 0.15,
+      bottomRadius: 1.1,
+      height: 3.4,
+      color: '#ffaa66',
+      opacity: 0.15,
+      flickerSpeed: 0.07,
+      flickerAmp: 0.14,
+      rotationSpeed: 0.008,
+      initialRotation: -0.4,
+      tiltX: -0.18,
+      dustDensity: 0.55,
+      dustSpeed: 0.22,
+    },
+  ],
+  factory_roof: [
+    {
+      ...DEFAULT_SHAFT,
+      position: [-2.8, 3.8, -3.2],   // distant industrial sodium + dusk
+      topRadius: 0.18,
+      bottomRadius: 1.35,
+      height: 4.0,
+      color: '#ffbb55',
+      opacity: 0.17,
+      flickerSpeed: 0.11,
+      flickerAmp: 0.2,
+      rotationSpeed: 0.006,
+      initialRotation: 0.5,
+      tiltX: -0.25,
+      dustDensity: 0.7,              // industrial dust + wind
+      dustSpeed: 0.28,
+    },
+    {
+      ...DEFAULT_SHAFT,
+      position: [3.1, 3.5, 0.6],
+      topRadius: 0.13,
+      bottomRadius: 1.0,
+      height: 3.2,
+      color: '#ff9944',
+      opacity: 0.14,
+      flickerSpeed: 0.14,
+      flickerAmp: 0.22,
+      rotationSpeed: 0.009,
+      initialRotation: 1.1,
+      tiltX: -0.15,
+      dustDensity: 0.6,
+      dustSpeed: 0.25,
+    },
+  ],
   // AAA Phase A: rich cinematic volumetric shafts on river/pier (fire + water mist + dusk light catching dust)
   river_pier: [
     {
