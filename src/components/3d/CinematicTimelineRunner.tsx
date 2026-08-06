@@ -578,6 +578,14 @@ export function CinematicTimelineRunner() {
       setCinematicLightCue(phase.lightCue, Math.max(1.2, phase.duration));
     }
 
+    // AAA cinematic atmosphere boost during cutscenes — makes light shafts + dust feel luxurious
+    if (result.phaseLocalT > 0.1 && result.phaseLocalT < 0.9) {
+      eventBus.emit('cinematic:atmosphere_boost', {
+        intensity: 0.6 + (result.phaseLocalT * 0.4),
+        sceneId: getGameStore().exploration.currentSceneId,
+      });
+    }
+
     if (result.isHandoff && timelineIdRef.current === 'intro_wakeup' && !handoffEmittedRef.current) {
       handoffEmittedRef.current = true;
       // Session 12-B: removed the orphaned `intro:wakeup_handoff` +
