@@ -237,22 +237,22 @@ export function FootstepDust() {
     const unsub = eventBus.on('player:sprint_start', ({ position, yaw, sceneId }: any) => {
       if (reducedMotionRef.current) return;
       // Massive satisfying launch explosion — feels like the world reacts to your power
-      const count = 13;
-      const upward = PARTICLE_UPWARD_VEL * 2.1;
+      const count = 15;
+      const upward = PARTICLE_UPWARD_VEL * 2.35;
       spawnBurst(poolRef.current, (position?.[0] ?? 0), (position?.[1] ?? 0.03), (position?.[2] ?? 0), yaw ?? 0, count, upward);
 
       // Extra forward cone for "taking off" feel
       const fwdX = Math.sin(yaw);
       const fwdZ = Math.cos(yaw);
-      for (let i = 0; i < 4; i++) {
+      for (let i = 0; i < 5; i++) {
         spawnBurst(
           poolRef.current,
-          (position?.[0] ?? 0) + fwdX * (0.15 + i * 0.12),
-          (position?.[1] ?? 0.03) + 0.01,
-          (position?.[2] ?? 0) + fwdZ * (0.15 + i * 0.12),
+          (position?.[0] ?? 0) + fwdX * (0.18 + i * 0.13),
+          (position?.[1] ?? 0.03) + 0.012,
+          (position?.[2] ?? 0) + fwdZ * (0.18 + i * 0.13),
           yaw,
           2 + i,
-          0.6 + i * 0.25
+          0.7 + i * 0.28
         );
       }
 

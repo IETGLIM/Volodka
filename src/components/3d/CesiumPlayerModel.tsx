@@ -192,6 +192,14 @@ function CesiumPlayerModelInner({
           head.rotation.x = THREE.MathUtils.lerp(head.rotation.x || 0, headLean + headBob, 0.32);
         }
 
+        // AAA Phase B: knee / hip drive — the body "drives" the legs forward on sprint
+        // Very visible weight transfer and power.
+        const hip = bodyGroup.getObjectByName?.('mixamorigHips') || bodyGroup.getObjectByName?.('Hips');
+        if (hip) {
+          const hipDrive = Math.sin(swingPhase * 1.3) * 0.06 * leanT;
+          hip.rotation.x = THREE.MathUtils.lerp(hip.rotation.x || 0, hipDrive, 0.3);
+        }
+
         // AAA Phase B: landing squash + recovery (body "compresses" on hard impact)
         // Triggered by player:landed event — gives massive physical satisfaction.
         // We use a module-level quick decay for simplicity (one avatar instance).
