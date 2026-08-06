@@ -20,6 +20,7 @@ import {
 import { ContainerLootPanel } from '@/components/game/ContainerLootPanel';
 import { InteractionRippleEffect } from '@/components/game/InteractionRippleEffect';
 import { SkillCheckDisplay } from '@/components/game/SkillCheckDisplay';
+import { FirstMinutesDirector } from '@/components/game/firstMinutes/FirstMinutesDirector';
 
 type Props = {
   gameDataReady: boolean;
@@ -78,6 +79,7 @@ export function OrchestratorGameplayLayer({
     <>
       <GameplayExplorationNotifications />
       <GameplaySharedEffects />
+      <FirstMinutesDirector />
       <GameplaySceneBanner sceneBanner={sceneBanner} />
       <GameplayAmbientExplorationHud />
       <GameplayExplorationHud
