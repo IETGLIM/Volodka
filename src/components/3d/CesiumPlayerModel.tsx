@@ -145,7 +145,7 @@ function CesiumPlayerModelInner({
     // HARDER NUCLEAR for хм, и: more extreme lean/sway/squash/arm/hip
     const hSpeed = currentHSpeedRef?.current ?? 0;
     const leanT = Math.min(1, Math.max(0, (hSpeed - 4) / 3));
-    const bodyLean = -0.098 * leanT; // PLANETARY GOD lean ~5.6°+ — HARDER хм, и: full cinematic devastation
+    const bodyLean = -0.125 * leanT; // PLANETARY GOD lean ~7.2°+ — EVEN HARDER хм, и: full cinematic devastation x∞
     const bodyGroup = yawRef.current?.children?.[0] as THREE.Group | undefined;
     if (bodyGroup) {
       const targetLean = leanT > 0.05 ? bodyLean : 0;
@@ -153,12 +153,12 @@ function CesiumPlayerModelInner({
 
       // Rhythmic side sway (figure-8 gait) — matches camera lateral bob phase
       const swayPhase = (performance.now() / 180) % (Math.PI * 2); // ~same frequency as bob
-      const sideSway = Math.sin(swayPhase) * 0.048 * leanT;
+      const sideSway = Math.sin(swayPhase) * 0.065 * leanT;
       bodyGroup.rotation.z = THREE.MathUtils.lerp(bodyGroup.rotation.z || 0, sideSway, 0.26);
 
       // AAA Phase B: micro vertical compression on heavy sprint steps (weight pressing down)
       // Gives delicious "grounded" feel — the body squats slightly into each stride.
-      const compression = 1 - (leanT * 0.098); // max ~9.8% squash — HARDER NUCLEAR хм, и:
+      const compression = 1 - (leanT * 0.125); // max ~12.5% squash — EVEN HARDER NUCLEAR хм, и:
       bodyGroup.scale.y = THREE.MathUtils.lerp(bodyGroup.scale.y || 1, compression, 0.42);
       // Slight forward squash compensation so feet don't sink
       bodyGroup.scale.x = THREE.MathUtils.lerp(bodyGroup.scale.x || 1, 1 + leanT * 0.032, 0.36);
@@ -171,9 +171,9 @@ function CesiumPlayerModelInner({
       // AAA Phase B: dynamic arm swing + shoulder roll + head lean (very visible cinematic weight)
       // Scales perfectly with speed + matches footstep cadence. HARDER
       const swingPhase = (performance.now() / 165) % (Math.PI * 2);
-      const swingAmp = leanT * 1.08;
+      const swingAmp = leanT * 1.45;
       const armSwing = Math.sin(swingPhase) * swingAmp;
-      const shoulderRoll = Math.cos(swingPhase * 0.5) * swingAmp * 1.1;
+      const shoulderRoll = Math.cos(swingPhase * 0.5) * swingAmp * 1.35;
 
       // Apply to left/right shoulders (common Mixamo bone names)
       const leftShoulder = bodyGroup.getObjectByName?.('mixamorigLeftShoulder') || bodyGroup.getObjectByName?.('LeftShoulder');
@@ -226,7 +226,7 @@ function CesiumPlayerModelInner({
   useEffect(() => {
     const unsub = eventBus.on('player:landed', ({ impact }: any) => {
       const str = Math.min(1, Math.max(0.3, (impact || 0.7)));
-      landingSquash = str * 0.14;   // up to ~14% vertical squash — HARDER
+      landingSquash = str * 0.22;   // up to ~22% vertical squash — GOD x∞ HARDER for хм, и:
       landingSquashDecay = 9.5;     // fast cinematic recovery
     });
     return unsub;

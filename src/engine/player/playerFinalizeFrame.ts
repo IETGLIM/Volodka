@@ -94,18 +94,19 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
         sceneId: deps.sceneId,
       });
 
-      // Nuclear camera reaction on hard landing — HARDER APOCALYPTIC
+      // Nuclear camera reaction on hard landing — EVEN HARDER APOCALYPTIC GOD x∞ for хм, и:
       try {
         const { triggerCameraShake } = require('@/engine/camera/cameraShake');
-        const shake = 0.085 + impact * 0.16;
-        triggerCameraShake(shake, 6.2);
-        triggerCameraShake(shake * 1.1, 8.5); // extra vertical thump
-        triggerCameraShake(shake * 0.75, 4.2);
+        const shake = 0.125 + impact * 0.22;
+        triggerCameraShake(shake, 8.5);
+        triggerCameraShake(shake * 1.65, 12.5); // extra vertical thump HARDER
+        triggerCameraShake(shake * 1.35, 7.8);
+        triggerCameraShake(shake * 0.95, 5.5); // more
       } catch {}
 
       try {
         const { triggerLandingFovDip } = require('@/engine/camera/landingImpact');
-        triggerLandingFovDip(1.9 + impact * 3.2); // strong cinematic inward pinch — HARDER
+        triggerLandingFovDip(3.2 + impact * 5.5); // strong cinematic inward pinch — GOD CRUSH HARDER
       } catch {}
     }
 
@@ -235,21 +236,22 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
       if (isSprinting) {
         try {
           const { triggerCameraShake } = require('@/engine/camera/cameraShake');
-          const kick = 0.85 + (runWeight * 1.38); // ULTIMATE PLANETARY ANNIHILATION GOD x2 — хм, и: every sprint step is absolute earth-shattering cataclysm + extra barrage + micro quakes
-          triggerCameraShake(kick, 9.2);
-          triggerCameraShake(kick * 2.35, 22.5);   // god-crushing vertical slam
-          triggerCameraShake(kick * 2.05, 17.8);   // apocalyptic lateral annihilation
-          triggerCameraShake(kick * 1.78, 12.5);  // pure chaotic world-shatter
-          triggerCameraShake(kick * 1.42, 8.8);   // aftershock barrage
-          triggerCameraShake(kick * 0.95, 5.8);   // death rattle
-          triggerCameraShake(kick * 0.65, 3.8);
-          triggerCameraShake(kick * 0.45, 2.2); // extra micro
-          triggerCameraShake(kick * 0.28, 1.2); // final quake
+          const kick = 1.05 + (runWeight * 1.65); // ULTIMATE PLANETARY ANNIHILATION GOD x∞ — хм, и: every sprint step is absolute earth-shattering cataclysm + EXTRA BARRAGE + micro quakes + final death rattles. The planet is FUCKING BREAKING
+          triggerCameraShake(kick, 11.5);
+          triggerCameraShake(kick * 2.85, 26.5);   // god-crushing vertical slam HARDER
+          triggerCameraShake(kick * 2.55, 21.2);   // apocalyptic lateral annihilation HARDER
+          triggerCameraShake(kick * 2.18, 15.8);  // pure chaotic world-shatter HARDER
+          triggerCameraShake(kick * 1.85, 11.5);   // aftershock barrage HARDER
+          triggerCameraShake(kick * 1.35, 7.5);   // death rattle HARDER
+          triggerCameraShake(kick * 0.95, 5.2);
+          triggerCameraShake(kick * 0.68, 3.5); // extra micro HARDER
+          triggerCameraShake(kick * 0.42, 2.1); // final quake HARDER
+          triggerCameraShake(kick * 0.25, 1.05); // ultra micro after
         } catch {}
 
         try {
           const { triggerLandingFovDip } = require('@/engine/camera/landingImpact');
-          triggerLandingFovDip(7.2 + runWeight * 10.5); // full nuclear inward smash every single heavy stride — HARDER хм, и:
+          triggerLandingFovDip(9.5 + runWeight * 13.5); // full nuclear inward smash every single heavy stride — EVEN HARDER хм, и: full apocalyptic FOV crush
         } catch {}
       }
 
