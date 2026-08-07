@@ -21,7 +21,7 @@ export function LevelBadge({
     <div className="flex flex-col gap-0.5 relative">
       <div className="flex items-center gap-1.5">
         <motion.div
-          className={`flex items-center justify-center w-7 h-7 rounded border text-[11px] font-bold font-mono ${justLeveled ? 'level-pulse-anim' : ''}`}
+          className={`flex items-center justify-center w-7 h-7 rounded border text-[11px] font-bold font-mono hud-filmic-badge-shimmer ${justLeveled ? 'level-pulse-anim' : ''}`}
           animate={justLeveled ? { scale: [1, 1.3, 1], borderColor: ['rgba(251,191,36,0.6)', 'rgba(251,191,36,0.8)', 'rgb(var(--cyber-cyan-rgb) / 0.3)'] } : {}}
           transition={{ duration: 0.6 }}
           style={{

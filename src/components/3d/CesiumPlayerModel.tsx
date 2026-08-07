@@ -226,18 +226,21 @@ function CesiumPlayerModelInner({
     return unsub;
   }, []);
 
-  // Landing squash state (module level for the single player avatar)
-  let landingSquash = 0;
-  let landingSquashDecay = 0;
+  // Session 14 (closure-fix): landing squash state in refs so useEffect event
+  // handlers and useFrameTick share the same mutable values across renders.
+  // Previously `let` in component body — reset to 0 every render, so the frame
+  // tick always read 0 (reactive landing squash was dead code). Now alive at
+  // the sane Session 13 values (8% max squash).
+  const landingSquashRef = useRef(0);
+  const landingSquashDecayRef = useRef(0);
 
   useEffect(() => {
     const unsub = eventBus.on('player:landed' as any, ({ impact }: any) => {
       const str = Math.min(1, Math.max(0.3, (impact || 0.7)));
       // Session 13 (ramp-tame): landing squash 8% max (was 32% — extreme).
-      // (Note: this state is closure-scoped and currently dead across re-renders;
-      // value tamed for hygiene / safety if the closure is fixed later.)
-      landingSquash = str * 0.08;
-      landingSquashDecay = 9.5;     // fast cinematic recovery
+      // Session 14 (closure-fix): now stored in refs — this reactive squash is ALIVE.
+      landingSquashRef.current = str * 0.08;
+      landingSquashDecayRef.current = 9.5;     // fast cinematic recovery
     });
     return unsub;
   }, []);
@@ -248,8 +251,8 @@ function CesiumPlayerModelInner({
       const rw = Math.max(0, Math.min(1, runWeight ?? (speed > 5.5 ? 1 : 0.4)));
       // Small rhythmic squash per step — stronger on sprint
       const stepSquash = rw * 0.036;
-      landingSquash = Math.max(landingSquash, stepSquash);
-      landingSquashDecay = 18; // quick recovery between steps
+      landingSquashRef.current = Math.max(landingSquashRef.current, stepSquash);
+      landingSquashDecayRef.current = 18; // quick recovery between steps
     });
     return unsub;
   }, []);
@@ -260,6 +263,8 @@ function CesiumPlayerModelInner({
     if (!bodyGroup) return;
 
     // Apply decaying landing squash (adds delicious physical "thud" to the body)
+    const landingSquash = landingSquashRef.current;
+    const landingSquashDecay = landingSquashDecayRef.current;
     if (landingSquash > 0.001) {
       const currentY = bodyGroup.scale.y || 1;
       const targetY = 1 - landingSquash;
@@ -270,9 +275,9 @@ function CesiumPlayerModelInner({
       bodyGroup.scale.x = THREE.MathUtils.lerp(bodyGroup.scale.x || 1, expand, 0.4);
       bodyGroup.scale.z = bodyGroup.scale.x;
 
-      landingSquash *= Math.exp(-landingSquashDecay * 0.016); // ~60fps decay
-      if (landingSquash < 0.002) {
-        landingSquash = 0;
+      landingSquashRef.current = landingSquash * Math.exp(-landingSquashDecay * 0.016); // ~60fps decay
+      if (landingSquashRef.current < 0.002) {
+        landingSquashRef.current = 0;
         // gently restore scale
         bodyGroup.scale.set(1, 1, 1);
       }

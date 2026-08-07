@@ -751,7 +751,7 @@ export const QuestObjectiveCard = memo(function QuestObjectiveCard({
 
         {/* Название / Title */}
         <h3
-          className="text-base font-bold mb-1"
+          className={`text-base font-bold mb-1 ${isActive ? 'hud-filmic-objective-pulse' : ''}`}
           style={{
             color: isFailed ? '#ff6666' : typeConfig.color,
             textShadow: `0 0 12px ${typeConfig.glow}`,

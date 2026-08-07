@@ -798,6 +798,40 @@ export const DIALOGUE_PART5_EXPANDED: Record<string, DialogueNode> = {
           { type: 'addSkill', skill: 'empathy', value: 2 },
         ],
       },
+      {
+        text: 'Я допишу концовку. Не за себя — за нас. «Две части одного стихотворения» — пусть это и будет последняя строка в общем архиве. Чтобы те, кто придёт, знали: нас было двое.',
+        next: null,
+        condition: { minKarma: 65 },
+        effects: [
+          { type: 'addKarma', value: 16 },
+          { type: 'addSkill', skill: 'writing', value: 3 },
+          { type: 'addSkill', skill: 'empathy', value: 2 },
+          { type: 'npcChange', npcId: 'office_colleague', npcChange: { relation: 20 } },
+          { type: 'setFlag', flag: 'epilogue_couplet_pledge', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Коллега поднимает голову. В глазах — не слёзы. Что-то тише. Что-то твёрже. «Две части одного стихотворения». Ты сказал это — и теперь концовка не твоя и не его. Теперь — общая. Архив — не помнит авторов. Архив — помнит строки. Строки — помнят — нас.',
+            thoughtDuration: 7000,
+          },
+        ],
+      },
+      {
+        text: 'Не «наша». Моя. Я — вытащил. Я — нажал. Ты — просто стоял рядом. Не приписывай себе чужое мужество.',
+        next: null,
+        condition: { maxKarma: 10 },
+        effects: [
+          { type: 'addKarma', value: -10 },
+          { type: 'addStat', stat: 'stress', value: 6 },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'npcChange', npcId: 'office_colleague', npcChange: { relation: -15 } },
+          { type: 'setFlag', flag: 'epilogue_silence_pledge', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Коллега кивает. Молча. Ты сказал «моё» — и забрал у него единственное, что он себе приписывал. Теперь — мужество твоё. И тяжесть — тоже твоя. И тишина после — тоже — твоя. Один. Как и хотел. Неудобно — один.',
+            thoughtDuration: 6500,
+          },
+        ],
+      },
     ],
   },
 };

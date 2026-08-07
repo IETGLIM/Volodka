@@ -749,6 +749,40 @@ export const DIALOGUE_PART4_EXPANDED: Record<string, DialogueNode> = {
           { type: 'npcChange', npcId: 'albert', npcChange: { relation: 10 } },
         ],
       },
+      {
+        text: 'Я запишу это стихотворение в главный фрейм. Пусть оно живёт в коде, который переживёт нас обоих. Это — моё наследство. Не мне — городу.',
+        next: null,
+        condition: { minKarma: 60 },
+        effects: [
+          { type: 'addKarma', value: 15 },
+          { type: 'addSkill', skill: 'writing', value: 3 },
+          { type: 'addSkill', skill: 'coding', value: 2 },
+          { type: 'npcChange', npcId: 'albert', npcChange: { relation: 20 } },
+          { type: 'setFlag', flag: 'poem_inheritance_pledge', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Альберт молчит. Потом — улыбается. Усталой, тёплой улыбкой. «Запиши в главный фрейм». Ты сказал это — и теперь стихотворение перестаёт быть его. Перестаёт быть твоим. Становится — города. Код, который переживёт автора. Это и есть бессмертие инженера: не помнить — а быть прочитанным.',
+            thoughtDuration: 7000,
+          },
+        ],
+      },
+      {
+        text: 'Красиво. Но я не смогу это прочитать вслух. Стихи — для тех, кто умеет молчать после. Я не умею. Я — инженер. Мы — без последней строфы.',
+        next: null,
+        condition: { maxKarma: 25 },
+        effects: [
+          { type: 'addKarma', value: -8 },
+          { type: 'addStat', stat: 'stress', value: 5 },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'npcChange', npcId: 'albert', npcChange: { relation: -8 } },
+          { type: 'setFlag', flag: 'poem_decline_pledge', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Альберт опускает глаза. Ты отказался от стиха — не от него, от стиха. Но он не различает. Для него — это одно и то же. Ты сказал «инженер». Как будто это — оправдание. Как будто это — приговор. Может — и то, и другое.',
+            thoughtDuration: 6500,
+          },
+        ],
+      },
     ],
   },
 };

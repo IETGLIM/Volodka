@@ -905,6 +905,40 @@ export const DIALOGUE_PART2_EXPANDED: Record<string, DialogueNode> = {
           { type: 'setFlag', flag: 'thermos_smuggling_known', flagValue: true },
         ],
       },
+      {
+        text: 'Я хочу, чтобы ты учил других. Не только термос — всю сеть. Ты — не один контрабандист, ты — узел. Узел должен расти.',
+        next: null,
+        condition: { minKarma: 50 },
+        effects: [
+          { type: 'addKarma', value: 12 },
+          { type: 'addSkill', skill: 'persuasion', value: 2 },
+          { type: 'addSkill', skill: 'empathy', value: 1 },
+          { type: 'npcChange', npcId: 'office_colleague', npcChange: { relation: 18 } },
+          { type: 'setFlag', flag: 'colleague_smuggling_pact', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Коллега смотрит на тебя — и впервые не как на начальника, не как на угрозу, а как на равного. «Узел должен расти». Ты сказал это вслух. Теперь сеть — не его тайна. Теперь сеть — общая. Тяжесть — на двоих. Тяжесть — переносимая.',
+            thoughtDuration: 6500,
+          },
+        ],
+      },
+      {
+        text: 'Дай мне копию всего. Я решу, что пускать в Сеть, а что — придержать. Контроль важнее скорости.',
+        next: null,
+        condition: { maxKarma: 15 },
+        effects: [
+          { type: 'addKarma', value: -6 },
+          { type: 'addStat', stat: 'stress', value: 4 },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'npcChange', npcId: 'office_colleague', npcChange: { relation: -10 } },
+          { type: 'setFlag', flag: 'colleague_smuggler_oath', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Коллега кивает медленно. Слишком медленно. Ты только что превратил его канал в свой. Революция через контроль — тоже революция. Только — чья? Уже не его. Уже — не ваша.',
+            thoughtDuration: 6000,
+          },
+        ],
+      },
     ],
   },
 };

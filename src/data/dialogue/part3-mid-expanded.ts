@@ -852,6 +852,40 @@ export const DIALOGUE_PART3_EXPANDED: Record<string, DialogueNode> = {
           { type: 'addStat', stat: 'stress', value: 5 },
         ],
       },
+      {
+        text: 'Я буду на крыше, когда ты дашь сигнал. Не как командир — как свидетель. Город должен знать, что его видят.',
+        next: null,
+        condition: { minKarma: 55 },
+        effects: [
+          { type: 'addKarma', value: 14 },
+          { type: 'addSkill', skill: 'empathy', value: 2 },
+          { type: 'addSkill', skill: 'persuasion', value: 1 },
+          { type: 'npcChange', npcId: 'cafe_barista', npcChange: { relation: 16 } },
+          { type: 'setFlag', flag: 'broadcast_roof_vow', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Бариста выдыхает — и ты впервые видишь, как у него дрожат руки. Не от страха — от облегчения. «Свидетель». Не герой, не лидер — свидетель. Ты сказал именно то, что ему нужно было услышать. Город — это не те, кто командует. Это — те, кто видит.',
+            thoughtDuration: 7000,
+          },
+        ],
+      },
+      {
+        text: 'Три минуты — мало. Жирно надо пускать диффузно — по строке в час, чтобы гильдия не смогла отследить источник. Эффект — тот же. Риск — ноль.',
+        next: null,
+        condition: { maxKarma: 20 },
+        effects: [
+          { type: 'addKarma', value: -5 },
+          { type: 'addStat', stat: 'stress', value: 3 },
+          { type: 'addSkill', skill: 'logic', value: 2 },
+          { type: 'npcChange', npcId: 'cafe_barista', npcChange: { relation: -8 } },
+          { type: 'setFlag', flag: 'broadcast_restraint_plan', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Бариста молчит. Ты говоришь «эффект — тот же». Вы оба знаете — нет, не тот же. Поэзия в три минуты — крик. Поэзия по строке в час — шёпот. Кричат — потому что не могут иначе. Ты только что предложил ему променять крик на расчёт. Он не простит. Не сейчас.',
+            thoughtDuration: 6500,
+          },
+        ],
+      },
     ],
   },
 };

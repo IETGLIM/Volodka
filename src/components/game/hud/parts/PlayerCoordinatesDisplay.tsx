@@ -29,15 +29,18 @@ export function PlayerCoordinatesDisplay() {
       {/* Crosshair label icon */}
       <Crosshair
         size={8}
-        style={{ color: 'rgba(100, 116, 139, 0.5)', flexShrink: 0 }}
+        style={{ color: 'rgba(148, 163, 184, 0.8)', flexShrink: 0 }}
       />
 
       {/* Coordinate text with CRT flicker */}
       <span
         className="coordinates-flicker font-mono text-[9px] tabular-nums"
         style={{
-          color: 'rgba(100, 116, 139, 0.65)',
+          /* WS14-A contrast fix: 0.65 → 0.9 so coords read clearly against
+             the dim plate. Warm-cool shadow anchors the digits. */
+          color: 'rgba(203, 213, 225, 0.9)',
           letterSpacing: '0.05em',
+          textShadow: '0 1px 3px rgba(0, 0, 0, 0.65)',
         }}
       >
         X:{x} Z:{z}

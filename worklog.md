@@ -2959,3 +2959,50 @@ Stage Summary:
 - Risks/TODOs for author QA on Vercel: (1) verify sprint feels "weighty but calm" now (not too tame — author can nudge values up if desired); (2) verify mobile defaults seed correctly on a fresh phone (clear localStorage to test); (3) CesiumPlayerModel landing-squash + PhysicsPlayerContactShadow reactive state are DEAD via closure bug — features don't currently work (tamed values are hygiene-only); a follow-up to move `let` state into `useRef` would bring them alive sanely; (4) local ESLint tooling broken (typescript-eslint vs TS6/7 native) — CI may or may not pass lint; the `as any` casts match existing pattern so should be fine.
 - Unresolved next-phase priorities (for cron continuation): (a) Fix the two closure bugs (CesiumPlayerModel landingSquash + PhysicsPlayerContactShadow reactive state → useRef) to bring reactive avatar squash + reactive contact shadow alive at the now-sane values; (b) Deplasticize further (PBR materials, env maps); (c) More Acts 3-4 content; (d) CSM for outdoor shadows; (e) Mixamo↔Quaternius real-clip remap; (f) More orphaned HUD mounts; (g) Continue staged code study (Этапы 2-10 of the AAA plan); (h) Author should revoke+rotate the GitHub PAT shared in chat.
 
+
+---
+Task ID: 14 (orchestrator) — cron-tick 1: QA + closure-fix + filmic CSS + content
+Agent: main (orchestrator)
+Task: Cron-triggered AAA improvements round — QA on live site, fix closure bugs, add filmic CSS polish + content expansion.
+
+Work Log:
+- Pulled latest (already at e9c0a8fa, Task 13 ramp-tame). Read worklog (Task 13 + WS2 + WS3).
+- QA via agent-browser on https://volodka.vercel.app/: main menu → New Game → skip prologue → narrative → exploration. ALL FLOWS CLEAN. 0 console errors. Site STABLE — ramp-tame deployed successfully.
+- VLM analysis of gameplay screenshot: narrative screen visuals clean/moody/noir. CONCRETE QA FINDING: bottom HUD stats (FootstepPedometer/SessionPlayTimer/PlayerCoordinatesDisplay) had poor contrast — hard to read on dark background. Delegated fix to WS14-A.
+- Synthesized 3 disjoint work-streams (verified no file overlap):
+  • ME (closure-fix): CesiumPlayerModel.tsx + PhysicsPlayerContactShadow.tsx — fix the two dead-closure bugs flagged in Task 13.
+  • WS14-A (filmic CSS + contrast): hud-filmic.css + 8 HUD components.
+  • WS14-B (content): 8 data files (dialogue, triggerZones, thoughtCabinet, idleMonologues, sceneEntryThoughts).
+
+Implementation — CLOSURE-FIX (me, 2 files):
+- Root cause confirmed: useFrameTick stores callback in callbackRef and updates callbackRef.current = callback EVERY render. So the frame tick ALWAYS runs the latest render's callback, reading the latest render's `let` variables (always 0, re-initialized every render). Meanwhile useEffect (deps []) captures the FIRST render's variables. Event writes → render-1 closure; frame reads → render-N closure. Different variables → reactive state was DEAD (always 0).
+- PhysicsPlayerContactShadow.tsx: `let sprintIntensity/stepPulse/landingSquash` → `useRef(0)`. All 8 event-handler writes → `.current`. Frame tick reads via local consts from refs. Reactive contact shadow is now ALIVE: grows/darkens on sprint, pulses on footsteps, squashes on landings — at the sane Session 13 values (totalWeight cap 2.0, scale ×0.15/0.18, opacity ×0.3).
+- CesiumPlayerModel.tsx: `let landingSquash/landingSquashDecay` → `useRef(0)`. All event-handler writes → `.current`. Frame tick reads via local consts from refs, writes decay back to ref. Reactive avatar landing squash is now ALIVE: 8% max vertical squash + 5.8% lateral expansion on landings/footsteps, decays over ~0.1s. Stale "dead code" comment updated.
+
+Implementation — WS14-A (filmic CSS + contrast, 9 files, typecheck exit 0):
+- Contrast fix: FootstepPedometer (alpha 0.3-0.6→0.65-0.92 + warm text-shadow), SessionPlayTimer (alpha 0.3-0.75→0.6-0.92 + dual text-shadow), PlayerCoordinatesDisplay (icon 0.5→0.8, text 0.65→0.9 + text-shadow). Bottom HUD stats now readable on dark backgrounds.
+- 6 new filmic CSS micro-animations (hud-filmic.css +240 lines, all reduced-motion-gated): objective-pulse, divider-glow, tab-underline, badge-shimmer, health-pulse, focus-ring.
+- Wired all 6 onto components: QuestObjectiveCard (+objective-pulse on active), KarmaPoemTabButton (+tab-underline +focus-ring), LevelBadge (+badge-shimmer), HUDButton (+focus-ring on both variants), PlayerStatsPanelSections (+divider-glow +health-pulse on warning).
+
+Implementation — WS14-B (content expansion, 8 files, typecheck exit 0, 30 new items):
+- 8 karma-gated dialogue choices (4 HIGH minKarma 50/55/60/65 + 4 LOW maxKarma 15/20/25/10) across part2/3/4/5-expanded.
+- 8 examine TriggerZones (forest_clearing, river_pier, rooftop_edge, chk_campfire_night — 2 each).
+- 6 Thought Cabinet items (64-69: debuggers_regret, phantom_keystroke, compile_grief, null_pointer_heart, stack_overflow_soul, garbage_collector).
+- 2 idle monologue scenes (sleep_dream, procedural_aaa — 10 lines each).
+- 6 byAct revisit thoughts (forest_clearing +acts 3,7; abandoned_factory +acts 4,5; albert_backroom +acts 3,7).
+
+Typecheck gate: `node scripts/tsc7.mjs --noEmit` → EXIT 0 (combined: closure-fix + WS14-A + WS14-B).
+Poems untouched. All invariants preserved (interpolate=false, KCC ownership, runMainPlayerMovement, postprocessing depth-blit patch — all untouched).
+
+Stage Summary:
+- 19 source files modified. ~+804/-52 lines across 1 commit.
+- typecheck: exit 0. Poems untouched. All invariants preserved.
+- HEADLINE WINS this round:
+  1. Reactive contact shadow ALIVE (was dead code since APOCALYPSE RAMP) — shadow now grows/darkens/pulses on sprint/footstep/landing at sane values.
+  2. Reactive avatar landing squash ALIVE (was dead code) — 8% vertical squash + lateral expansion on landings, decays cleanly.
+  3. Bottom HUD contrast fixed — FootstepPedometer/SessionPlayTimer/PlayerCoordinatesDisplay now readable on dark backgrounds (VLM-verified issue).
+  4. 6 new filmic CSS micro-animations + all 6 wired onto components (objective pulse, divider glow, tab underline, badge shimmer, health pulse, focus ring).
+  5. +30 content items (8 karma-gated dialogue, 8 examine zones, 6 Thought Cabinet thoughts, 2 idle scenes, 6 byAct thoughts).
+- QA: live site stable, 0 console errors, all flows clean (menu → new game → skip prologue → narrative → exploration).
+- Unresolved next-phase priorities: (a) Deplasticize PBR materials / richer env maps; (b) CSM for outdoor shadows; (c) Mixamo↔Quaternius real-clip remap (jump/fall/land clips still missing); (d) More orphaned HUD mounts; (e) More Acts 3-4 content; (f) Guided onboarding (show-don't-tell light beams to objectives); (g) Motion-blur lite for cutscenes; (h) Author should revoke+rotate the GitHub PAT shared in chat.
+

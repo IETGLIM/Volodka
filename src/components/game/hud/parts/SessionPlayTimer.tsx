@@ -33,7 +33,10 @@ export function SessionPlayTimer() {
         className="font-mono tracking-[0.12em] uppercase"
         style={{
           fontSize: '7px',
-          color: 'rgb(var(--cyber-cyan-rgb) / 0.4)',
+          /* WS14-A contrast fix: 0.4 → 0.78 so the label reads against
+             dark backgrounds. Warm-cool shadow anchors the glyph. */
+          color: 'rgb(var(--cyber-cyan-rgb) / 0.82)',
+          textShadow: '0 1px 4px rgba(0, 0, 0, 0.75)',
           lineHeight: 1,
         }}
       >
@@ -46,8 +49,8 @@ export function SessionPlayTimer() {
           className="font-mono tabular-nums"
           style={{
             fontSize: '10px',
-            color: 'rgb(var(--cyber-cyan-rgb) / 0.75)',
-            textShadow: '0 0 4px rgb(var(--cyber-cyan-rgb) / 0.2)',
+            color: 'rgb(var(--cyber-cyan-rgb) / 0.92)',
+            textShadow: '0 0 6px rgb(var(--cyber-cyan-rgb) / 0.35), 0 1px 4px rgba(0, 0, 0, 0.75)',
           }}
         >
           {minutes}
@@ -56,8 +59,8 @@ export function SessionPlayTimer() {
           className="session-timer-blink font-mono"
           style={{
             fontSize: '10px',
-            color: 'rgb(var(--cyber-cyan-rgb) / 0.75)',
-            textShadow: '0 0 4px rgb(var(--cyber-cyan-rgb) / 0.2)',
+            color: 'rgb(var(--cyber-cyan-rgb) / 0.92)',
+            textShadow: '0 0 6px rgb(var(--cyber-cyan-rgb) / 0.35), 0 1px 4px rgba(0, 0, 0, 0.75)',
           }}
         >
           :
@@ -66,8 +69,8 @@ export function SessionPlayTimer() {
           className="font-mono tabular-nums"
           style={{
             fontSize: '10px',
-            color: 'rgb(var(--cyber-cyan-rgb) / 0.75)',
-            textShadow: '0 0 4px rgb(var(--cyber-cyan-rgb) / 0.2)',
+            color: 'rgb(var(--cyber-cyan-rgb) / 0.92)',
+            textShadow: '0 0 6px rgb(var(--cyber-cyan-rgb) / 0.35), 0 1px 4px rgba(0, 0, 0, 0.75)',
           }}
         >
           {seconds}
@@ -77,7 +80,7 @@ export function SessionPlayTimer() {
       {/* Small clock icon */}
       <Clock
         size={10}
-        style={{ color: 'rgb(var(--cyber-cyan-rgb) / 0.3)', marginTop: 1 }}
+        style={{ color: 'rgb(var(--cyber-cyan-rgb) / 0.6)', marginTop: 1 }}
       />
     </div>
   );

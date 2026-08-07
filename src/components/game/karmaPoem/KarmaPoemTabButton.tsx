@@ -23,9 +23,9 @@ export function KarmaPoemTabButton({
       aria-selected={active}
       aria-controls={panelId}
       onClick={() => onClick(tab)}
-      className={`flex-1 py-3 text-sm font-mono tracking-wider transition-colors outline-none focus-visible:ring-1 focus-visible:ring-cyan-500/40 ${
+      className={`flex-1 py-3 text-sm font-mono tracking-wider transition-colors outline-none focus-visible:ring-1 focus-visible:ring-cyan-500/40 hud-filmic-focus-ring ${
         active
-          ? 'text-cyan-300 bg-cyan-950/30 border-b-2 border-cyan-400 shadow-[0_0_8px_rgb(var(--cyber-cyan-rgb)/0.15)]'
+          ? 'text-cyan-300 bg-cyan-950/30 border-b-2 border-cyan-400 shadow-[0_0_8px_rgb(var(--cyber-cyan-rgb)/0.15)] hud-filmic-tab-underline'
           : 'text-slate-500 border-b-2 border-transparent hover:text-slate-300'
       }`}
     >

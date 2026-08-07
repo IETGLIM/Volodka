@@ -1799,3 +1799,243 @@
     animation: none;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   WS14-A — 6 NEW filmic micro-animations (all reduced-motion-gated)
+   Subtle / cinematic. Apply additively to existing HUD elements.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── 7. Objective pulse ──
+   Subtle warm opacity pulse on the active quest objective text.
+   3s cycle, opacity 0.85 → 1 → 0.85. Apply via
+   className="hud-filmic-objective-pulse" on active objective text. */
+@media (prefers-reduced-motion: no-preference) {
+  .hud-filmic-objective-pulse {
+    animation: hud-filmic-objective-pulse-cycle 3s ease-in-out infinite;
+  }
+
+  @keyframes hud-filmic-objective-pulse-cycle {
+    0%, 100% {
+      opacity: 0.85;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-objective-pulse {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* ── 8. Divider glow ──
+   Warm gradient glow on section dividers inside panels.
+   Pseudo-element sweeps a soft amber band across the divider line.
+   Apply via className="hud-filmic-divider-glow" on a divider
+   element (e.g. <div className="h-px hud-filmic-divider-glow" />). */
+.hud-filmic-divider-glow {
+  position: relative;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--hud-filmic-rule-soft, rgba(220, 230, 240, 0.22)) 50%,
+    transparent 100%
+  );
+}
+
+.hud-filmic-divider-glow::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--hud-filmic-glow-warm, rgba(196, 181, 160, 0.15)) 50%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hud-filmic-divider-glow::after {
+    animation: hud-filmic-divider-glow-sweep 6s ease-in-out infinite;
+    background-size: 60% 100%;
+    background-repeat: no-repeat;
+  }
+
+  @keyframes hud-filmic-divider-glow-sweep {
+    0%, 100% {
+      background-position: -30% 0;
+      opacity: 0.55;
+    }
+    50% {
+      background-position: 130% 0;
+      opacity: 1;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-divider-glow::after {
+    animation: none;
+    opacity: 0.7;
+  }
+}
+
+/* ── 9. Tab underline ──
+   Animated underline that scales in from left when a tab becomes
+   active. scaleX 0 → 1, 0.3s ease-out. Apply via
+   className="hud-filmic-tab-underline" on the active tab element
+   (uses ::after pseudo so existing border-b styles are untouched). */
+.hud-filmic-tab-underline {
+  position: relative;
+}
+
+.hud-filmic-tab-underline::after {
+  content: '';
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  bottom: -1px;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--hud-filmic-accent, rgba(196, 181, 160, 0.75)) 50%,
+    transparent 100%
+  );
+  transform: scaleX(0);
+  transform-origin: left center;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hud-filmic-tab-underline::after {
+    animation: hud-filmic-tab-underline-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  @keyframes hud-filmic-tab-underline-in {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-tab-underline::after {
+    transform: scaleX(1);
+    animation: none;
+  }
+}
+
+/* ── 10. Badge shimmer ──
+   Diagonal light shimmer sweep across badge elements. A faint
+   warm-white band translates -100% → 100% over 4s, infinite.
+   Apply via className="hud-filmic-badge-shimmer" on badge root.
+   Uses ::before so existing badge ::after decorations are preserved. */
+.hud-filmic-badge-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.hud-filmic-badge-shimmer::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -75%;
+  width: 50%;
+  height: 200%;
+  background: linear-gradient(
+    105deg,
+    transparent 0%,
+    rgba(255, 248, 230, 0.18) 45%,
+    rgba(255, 248, 230, 0.28) 50%,
+    rgba(255, 248, 230, 0.18) 55%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 0;
+  transform: translateX(-100%) rotate(0deg);
+}
+
+.hud-filmic-badge-shimmer > * {
+  position: relative;
+  z-index: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hud-filmic-badge-shimmer::before {
+    animation: hud-filmic-badge-shimmer-sweep 4s ease-in-out infinite;
+  }
+
+  @keyframes hud-filmic-badge-shimmer-sweep {
+    0% {
+      transform: translateX(-100%);
+    }
+    60%, 100% {
+      transform: translateX(300%);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-badge-shimmer::before {
+    display: none;
+  }
+}
+
+/* ── 11. Health pulse ──
+   Gentle red box-shadow pulse on low-health indicators.
+   1.2s cycle. Apply via className="hud-filmic-health-pulse"
+   on a low-energy / low-health element (e.g. StatBar container
+   when warning threshold is crossed). */
+@media (prefers-reduced-motion: no-preference) {
+  .hud-filmic-health-pulse {
+    animation: hud-filmic-health-pulse-cycle 1.2s ease-in-out infinite;
+  }
+
+  @keyframes hud-filmic-health-pulse-cycle {
+    0%, 100% {
+      box-shadow: 0 0 0 0 rgba(244, 63, 94, 0);
+    }
+    50% {
+      box-shadow: 0 0 8px 1px rgba(244, 63, 94, 0.28);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-health-pulse {
+    animation: none;
+    box-shadow: 0 0 4px 0 rgba(244, 63, 94, 0.2);
+  }
+}
+
+/* ── 12. Focus ring ──
+   Warm focus ring on keyboard-navigable HUD elements.
+   Visible only on :focus-visible (mouse users see no ring).
+   Apply via className="hud-filmic-focus-ring" on buttons / tabs. */
+.hud-filmic-focus-ring:focus {
+  outline: none;
+}
+
+.hud-filmic-focus-ring:focus-visible {
+  outline: 1px solid var(--hud-filmic-focus, rgba(214, 211, 209, 0.55));
+  outline-offset: 2px;
+  box-shadow:
+    0 0 0 2px var(--hud-filmic-focus-glow, rgba(214, 211, 209, 0.12)),
+    0 0 8px 1px var(--hud-filmic-focus-glow, rgba(214, 211, 209, 0.12));
+  border-radius: inherit;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-focus-ring:focus-visible {
+    transition: none;
+  }
+}
