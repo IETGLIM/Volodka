@@ -2267,3 +2267,181 @@
     opacity: 0;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   WS16-B — 6 NEW filmic micro-animations (all reduced-motion-gated)
+   Cinematic polish: achievement burst, notification slide-in,
+   hint attention, combo ramp, compass needle settle, mood wave.
+   Palette: cyan #00d4e0, amber #FFB347, warm orange #ff6644.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── 19. Achievement burst ──
+   Quick scale + amber glow burst for AchievementPopup on appearance.
+   1s one-shot. Scale 0.92 → 1.06 → 1 with drop-shadow pulse.
+   Apply via className="hud-filmic-achievement-burst" on the
+   achievement popup container (outer motion.div). */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-achievement-burst-cycle {
+    0% {
+      transform: scale(0.92);
+      filter: drop-shadow(0 0 0 rgba(255, 179, 71, 0));
+    }
+    35% {
+      transform: scale(1.06);
+      filter: drop-shadow(0 0 16px rgba(255, 179, 71, 0.55));
+    }
+    100% {
+      transform: scale(1);
+      filter: drop-shadow(0 0 0 rgba(255, 179, 71, 0));
+    }
+  }
+
+  .hud-filmic-achievement-burst {
+    animation: hud-filmic-achievement-burst-cycle 1s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-achievement-burst {
+    animation: none;
+  }
+}
+
+/* ── 20. Notification slide-in ──
+   Eased slide-in + fade for new HUDNotificationFeed items.
+   0.4s one-shot. translateX(-14px) → 0, opacity 0 → 1.
+   Apply via className="hud-filmic-notification-slide-in" on each
+   notification item container. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-notification-slide-in-cycle {
+    0% {
+      transform: translateX(-14px);
+      opacity: 0;
+    }
+    100% {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  .hud-filmic-notification-slide-in {
+    animation: hud-filmic-notification-slide-in-cycle 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-notification-slide-in {
+    animation: none;
+  }
+}
+
+/* ── 21. Hint attention ──
+   Subtle amber hue shift + scale breathe for fresh ContextualHint.
+   2.5s infinite loop. Filter drop-shadow 4px → 8px, scale 1 → 1.02 → 1.
+   Apply via className="hud-filmic-hint-attention" on the hint
+   caption container. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-hint-attention {
+    0%, 100% {
+      filter: drop-shadow(0 0 4px rgba(255, 179, 71, 0.12));
+      transform: scale(1);
+    }
+    50% {
+      filter: drop-shadow(0 0 8px rgba(255, 179, 71, 0.28));
+      transform: scale(1.02);
+    }
+  }
+
+  .hud-filmic-hint-attention {
+    animation: hud-filmic-hint-attention 2.5s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-hint-attention {
+    animation: none;
+  }
+}
+
+/* ── 22. Combo ramp ──
+   Graduated color shift + slight scale-up when ComboCounter grows.
+   0.6s one-shot. Filter brightness 1 → 1.12 → 1, saturate 1 → 1.15 → 1,
+   scale 1 → 1.04 → 1. Apply via className="hud-filmic-combo-ramp"
+   on the combo count span (re-mounts per combo tick). */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-combo-ramp {
+    0% {
+      filter: brightness(1) saturate(1);
+      transform: scale(1);
+    }
+    40% {
+      filter: brightness(1.12) saturate(1.15);
+      transform: scale(1.04);
+    }
+    100% {
+      filter: brightness(1) saturate(1);
+      transform: scale(1);
+    }
+  }
+
+  .hud-filmic-combo-ramp {
+    animation: hud-filmic-combo-ramp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-combo-ramp {
+    animation: none;
+  }
+}
+
+/* ── 23. Compass needle settle ──
+   Damped oscillation for CompassIndicator needle on direction change.
+   0.5s one-shot. Scale 1 → 1.06 → 0.98 → 1.02 → 1.
+   Apply via className="hud-filmic-compass-needle-settle" on the
+   needle's inner gradient bar (which has no inline transform). */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-compass-needle-settle {
+    0% { transform: scale(1); }
+    25% { transform: scale(1.06); }
+    50% { transform: scale(0.98); }
+    75% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+  }
+
+  .hud-filmic-compass-needle-settle {
+    animation: hud-filmic-compass-needle-settle 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-compass-needle-settle {
+    animation: none;
+  }
+}
+
+/* ── 24. Mood wave ──
+   Slow gradient hue wave for EnvironmentMoodIndicator background.
+   4s infinite loop. Animate background-position 0% → 100% → 0%.
+   Apply via className="hud-filmic-mood-wave" on the mood-bar-fill
+   element (which has background-size: 200% 100%). Selector
+   .mood-bar-fill.hud-filmic-mood-wave has higher specificity (0,2,0)
+   than .mood-bar-fill (0,1,0) so it overrides the pre-existing
+   mood-bar-shift 8s animation declared in hud-round9.css. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-mood-wave {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  .mood-bar-fill.hud-filmic-mood-wave {
+    animation: hud-filmic-mood-wave 4s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mood-bar-fill.hud-filmic-mood-wave {
+    animation: none;
+  }
+}

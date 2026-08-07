@@ -5906,6 +5906,262 @@ export const TRIGGER_ZONES: TriggerZone[] = [
   },
 
   /* ═══════════════════════════════════════════════════════════════════
+     WS16-C — +12 examine TriggerZones for thin-coverage scenes
+     (pier_evening +2, underground_bunker +3, library_basement +3,
+      guild_mainframe +2, city_square +2). Russian cyberpunk noir flavor.
+     ═══════════════════════════════════════════════════════════════════ */
+
+  // pier_evening — +2 new examine zones
+  {
+    id: 'pier_barnacle_pile',
+    sceneId: 'pier_evening',
+    position: [3.5, 0.2, -2.0],
+    size: [1.2, 0.3, 1.0],
+    enterToast: 'Куча ракушек на свае — на трёх — царапины, как счёт.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Куча ракушек',
+      description: 'Груда ракушек на старой свае пирса. На нескольких — мелкие царапины.',
+      detailText: 'Раковины приросли к почерневшей от времени свае. На трёх из них — царапины: «13», «7», «4». Кто-то считал приливы. Или — дни. Или — стихи. Раковины помнят больше, чем бумага. Раковины не боятся воды. Бумага — боится.',
+      icon: '🐚',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_pier_barnacle_pile', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+  {
+    id: 'pier_lighthouse_lens',
+    sceneId: 'pier_evening',
+    position: [-4.0, 1.0, -3.5],
+    size: [0.6, 0.6, 0.6],
+    enterToast: 'Осколок линзы маяка — покрыт солью, но всё ещё преломляет свет.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Линза маяка',
+      description: 'Осколок линзы старого маяка. Принесён на пирс и положен на парапет.',
+      detailText: 'Линза маяка, который не горит с Краха. Кто-то принёс осколок сюда — на пирс. Через него видно противоположный берег — перевёрнутый. Берег — вверх ногами. Может — так и нужно смотреть. Может — наоборот — виднее. Может — это и есть правда: не тот — берег, а его отражение. Не та — сторона, а её тень.',
+      icon: '🔭',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_pier_lighthouse_lens', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+
+  // underground_bunker — +3 new examine zones
+  {
+    id: 'bunker_switch_box',
+    sceneId: 'underground_bunker',
+    position: [-3.5, 1.4, -3.5],
+    size: [0.5, 0.7, 0.3],
+    enterToast: 'Ржавый электрощит — рычаги заклинило в среднем положении.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Ржавый электрощит',
+      description: 'Старый довоенный электрощит на стене бункера. Рычаги — в среднем положении.',
+      detailText: 'Щит ещё довоенный. Кто-то красной краской подписал над каждым рычагом: «Тишина», «Стихи», «Дыхание», «Сон». Все четыре — в среднем положении. Не включено. Не выключено. Зависло. Как и мы. Как и весь этот город. Среднее положение — это не нейтралитет. Это — ожидание. Чего-то — такого — что — заставит — сдвинуться.',
+      icon: '⚡',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_bunker_switch_box', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+    ],
+  },
+  {
+    id: 'bunker_propaganda_poster',
+    sceneId: 'underground_bunker',
+    position: [5.5, 1.6, 1.5],
+    size: [1.0, 1.4, 0.05],
+    enterToast: 'Выцветший плакат гильдии — «защищает» зачёркнуто, дописано «боится».',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Выцветший плакат',
+      description: 'Пропагандистский плакат гильдии на стене бункера. Бумага пожелтела.',
+      detailText: '«Паноптикум видит — Паноптикум знает — Паноптикум защищает». Кто-то гильдийский карандаш не стёр — просто дописал поверх. «Защищает» — зачёркнуто. «Боится» — дописано. Тонко. Тихо. Точно. Страх — главный экспонат гильдии. Не сила — страх. Сила — у тех, кто — не боится — расписаться — поверх — приказа.',
+      icon: '🪧',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_bunker_propaganda_poster', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'persuasion', value: 1 },
+    ],
+  },
+  {
+    id: 'bunker_sealed_locker',
+    sceneId: 'underground_bunker',
+    position: [3.5, 1.0, 4.5],
+    size: [0.8, 1.8, 0.6],
+    enterToast: 'Опечатанный шкафчик — свинцовая печать гильдии цела.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Опечатанный шкафчик',
+      description: 'Металлический шкафчик с неповреждённой свинцовой печатью гильдии.',
+      detailText: 'Шкафчик опечатан с момента эвакуации. Печать — гильдийская, свинцовая, с клеймом «ОПТИМИЗАЦИЯ — НЕ ВСКРЫВАТЬ». Кто-то из своих оставил его — не тронул. Содержимое — неизвестно. Может — ничего. Может — всё. Печать цела — значит, кто-то хранил дисциплину. Дисциплина — не всегда подчинение. Иногда — это форма уважения. К тому, что — внутри.',
+      icon: '🔒',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_bunker_sealed_locker', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+    ],
+  },
+
+  // library_basement — +3 new examine zones
+  {
+    id: 'library_dust_terminal',
+    sceneId: 'library_basement',
+    position: [3.5, 0.9, -4.0],
+    size: [0.7, 0.9, 0.5],
+    enterToast: 'Пыльный терминал под брезентом — экран мерцает.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Пыльный терминал',
+      description: 'Старый ЭЛТ-терминал, накрытый брезентом. Под брезентом — экран мерцает.',
+      detailText: 'Терминал довоенной сборки — толстый ЭЛТ, зелёный фосфор. На экране — бегущая строка: «ARCHIVE STATE: PENDING. RETRY? y/n». Курсор мигает. Кто-то оставил запрос незавершённым — и ушёл. Может — спал. Может — больше не вернулся. Терминал — ждёт ответа. Уже — три года. «Y» — означает — попробовать снова. «N» — означает — сдаться. Курсор — мигает. Я — здесь.',
+      icon: '🖥️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_library_dust_terminal', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'coding', value: 1 },
+    ],
+  },
+  {
+    id: 'library_water_stain',
+    sceneId: 'library_basement',
+    position: [0.0, 2.7, 1.0],
+    size: [1.4, 0.1, 1.2],
+    enterToast: 'Пятно от протечки на потолке — в форме крыла птицы.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Пятно на потолке',
+      description: 'Бетонный потолок подвала. Высохшее пятно от протечки — в форме крыла.',
+      detailText: 'Пятно от старой протечки — давно высохшей, но бетон запомнил форму. Пятно — в форме распростёртого крыла. Кто-то снизу дорисовал фломастером — тело птицы. Получился журавль. Серый журавль — на сером потолке — в сером подвале. Птицы — повсюду в этом городе. Бумажные — в сухом фонтане. Нарисованные — на потолке. Настоящие — где-то — над — бетонными — небесами. Птицы — помнят. Птицы — летают там, где нас — нет.',
+      icon: '💧',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_library_water_stain', flagValue: true },
+      { type: 'addKarma', value: 1 },
+      { type: 'addSkill', skill: 'empathy', value: 1 },
+    ],
+  },
+  {
+    id: 'library_index_card',
+    sceneId: 'library_basement',
+    position: [-1.0, 1.0, 3.5],
+    size: [0.3, 0.2, 0.2],
+    enterToast: 'Между полками — каталожная карточка. Только название.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Забытая каталожная карточка',
+      description: 'Каталожная карточка, застрявшая между полками. Выцветшая.',
+      detailText: 'Шифр: «8С.21.7». Название: «Стихи, которые нельзя забыть». Автор — пустое. Год — пустой. Издательство — пустое. Только — название. Кто-то заполнил одну карточку — без автора, без года. Только — что нельзя — забыть. Карточка — между полок. Между книг. Между строк. Как — само — то — что нельзя забыть. Никакого — автора. Никакого — года. Только — невозможность — забыть.',
+      icon: '🗂️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_library_index_card', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'writing', value: 1 },
+    ],
+  },
+
+  // guild_mainframe — +2 new examine zones
+  {
+    id: 'guild_fan_grill',
+    sceneId: 'guild_mainframe',
+    position: [2.5, 2.0, 3.0],
+    size: [0.4, 0.4, 0.4],
+    enterToast: 'Решётка кулера — на лопастях — пылью написано «вдох-выдох».',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Решётка кулера',
+      description: 'Решётка вентилятора под потолком. Сквозь прутья — лопасти в пыли.',
+      detailText: 'Вентилятор под потолком — гудит ровно. Лопасти покрыты пылью — серым ворсом. На одной лопасти — пальцем в пыли кто-то написал: «вдох-выдох». Вентилятор крутится — и с каждым оборотом — фраза — снова — и снова — и снова. Серверы — дышат. Вентиляторы — повторяют. Гильдия не стирает пыль. Гильдия не замечает. Гильдия не читает — то, что — на лопастях. А я — читаю. И — дышу — в такт.',
+      icon: '🌀',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_guild_fan_grill', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+  {
+    id: 'guild_calibration_tablet',
+    sceneId: 'guild_mainframe',
+    position: [-2.5, 0.9, 2.5],
+    size: [0.5, 0.4, 0.35],
+    enterToast: 'Планшет калибровки — POESIS_INDEX: 0.0000. STATUS: OPTIMAL.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Планшет калибровки',
+      description: 'Закреплённый на стойке планшет. Экран тусклый, но активный. Лог калибровки.',
+      detailText: 'Планшет с логами калибровки — последняя запись трёхлетней давности. «CALIBRATION COMPLETE. POESIS_INDEX: 0.0000. EXPECTED: 0.0000. STATUS: OPTIMAL». Гильдия откалибровала систему на ноль. На — отсутствие. На — пустоту. И — признала — оптимальной. Они не боролись со стихами. Они — откалибровали мир так, чтобы стихов — не было. И — успокоились. Ноль — их идеал. Ноль — их — победа. Ноль — их — поражение.',
+      icon: '📟',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_guild_calibration_tablet', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+    ],
+  },
+
+  // city_square — +2 new examine zones
+  {
+    id: 'city_square_memorial_plaque',
+    sceneId: 'city_square',
+    position: [-7.0, 1.5, 5.0],
+    size: [0.8, 0.6, 0.1],
+    enterToast: 'Треснувшая мемориальная доска — имя рассечено надвое.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Треснувшая мемориальная доска',
+      description: 'Бронзовая доска на стене дома у площади. Тёмная от времени. С трещиной.',
+      detailText: 'Доска старая, дореволюционная. «Здесь — жил — поэт...» Дальше — трещина. Имя — рассечено надвое. Ниже — гильдийская приписка, уже краской: «ПЕРЕУТВЕРЖДЕНО». Они не сняли доску. Они — переутвердили. Сохранили форму — убрали содержание. Так — всегда. Трещина делает имя наполовину — прочитанным. Наполовину — угаданным. Угаданное — сильнее прочитанного. Угаданное — нельзя — «переутвердить».',
+      icon: '🏛️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_square_memorial_plaque', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'empathy', value: 1 },
+    ],
+  },
+  {
+    id: 'city_square_tram_schedule',
+    sceneId: 'city_square',
+    position: [7.5, 1.6, -5.0],
+    size: [1.4, 0.8, 0.1],
+    enterToast: 'Деревянное расписание трамвая — три почерка, три поколения.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Расписание трамвая',
+      description: 'Деревянная доска с расписанием на остановке. Старая — не цифровая.',
+      detailText: 'Три маршрута, восемнадцать остановок. Под каждым маршрутом — пометка мелом: «не ходит». Но рядом — другая рука, тоньше: «но помним». И третья рука, детская: «и ждём». Три почерка. Три поколения. Расписание — не расписание. Расписание — списки тех, кто — помнит. Кто — ждёт. Кто — верит, что — трамвай — пойдёт. Трамвай пойдёт, если — кто-то — будет — ждать. Я — подожду.',
+      icon: '🗒️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_square_tram_schedule', flagValue: true },
+      { type: 'addKarma', value: 1 },
+      { type: 'addSkill', skill: 'empathy', value: 1 },
+    ],
+  },
+
+  /* ═══════════════════════════════════════════════════════════════════
      COMBAT ENCOUNTERS — replaced by visible patrolling creeps
      (src/data/creepPatrols.ts + PatrollingCreeps.tsx). The old invisible
      autoTrigger zones fired combat with no warning; creeps give the player

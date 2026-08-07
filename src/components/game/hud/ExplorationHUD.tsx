@@ -41,6 +41,9 @@ import { InteractableSparkle } from '@/components/game/hud/parts/InteractableSpa
 import { SceneEntryNudge } from '@/components/game/hud/parts/SceneEntryNudge';
 import { CyberpunkMinimap } from '@/components/game/hud/parts/CyberpunkMinimap';
 import type { MinimapMarker } from '@/components/game/hud/parts/CyberpunkMinimap';
+import { QuestObjectiveCard } from '@/components/game/hud/parts/QuestObjectiveCard';
+import { useActiveQuestCardData } from '@/components/game/hud/parts/questObjectiveCardAdapter';
+import { useGamePhase } from '@/store/selectors/uiSelectors';
 
 export type { HUDProps } from '@/components/game/hud/hudTypes';
 
@@ -90,6 +93,17 @@ export function ExplorationHUD(props: HUDProps) {
   const { currentHint, dismissHint } = useContextualHints();
   const reducedMotion = useEffectiveReducedMotion();
   const isMobile = useIsMobileVisual();
+  const gamePhase = useGamePhase();
+
+  /* ── QuestObjectiveCard data ──
+     Adapts the active quest (lowest spineOrder wins) into the rich
+     QuestData shape needed by QuestObjectiveCard. Hidden on mobile,
+     in combat, in cutscenes, or when there is no active quest. */
+  const activeQuestCardData = useActiveQuestCardData();
+  const showQuestObjectiveCard =
+    !isMobile
+    && gamePhase === 'exploration'
+    && activeQuestCardData !== null;
 
   /* ── CyberpunkMinimap data ──
      Derives player position, rotation, location name, and quest markers
@@ -241,6 +255,31 @@ export function ExplorationHUD(props: HUDProps) {
           />
         </div>
       )}
+
+      {/* QuestObjectiveCard — orphan HUD mount. Surfaces the active quest
+          (lowest spineOrder wins) with a compact objective checklist and
+          progress bar. Desktop-only, hidden in combat/cutscene/photo mode
+          and when no active quest is available. AnimatePresence handles
+          the smooth fade + slide enter/exit. */}
+      <AnimatePresence>
+        {showQuestObjectiveCard && activeQuestCardData && (
+          <motion.div
+            key={`quest-objective-card-${activeQuestCardData.id}`}
+            initial={{ opacity: 0, x: 24 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 18 }}
+            transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+            className="absolute right-4 pointer-events-auto hud-filmic-glow-breathe"
+            style={{ top: 'clamp(168px, 18vh, 196px)', zIndex: UI_LAYERS.HUD + 1, maxWidth: 300 }}
+          >
+            <QuestObjectiveCard
+              quest={activeQuestCardData}
+              compact={true}
+              showRewards={false}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {(isLowEnergy || isHighStress) && (

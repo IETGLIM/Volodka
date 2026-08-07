@@ -168,7 +168,9 @@ function Creep({
   frameCtxRef: React.MutableRefObject<CreepFrameContext>;
 }) {
   const groupRef = useRef<THREE.Group>(null);
-  const bodyMatRef = useRef<THREE.MeshStandardMaterial | null>(null);
+  // WS16-A: ref type upgraded to MeshPhysicalMaterial (enemy bodies now use sheen for organic look).
+  // MeshPhysicalMaterial extends MeshStandardMaterial, so the .emissiveIntensity writes below still work.
+  const bodyMatRef = useRef<THREE.MeshPhysicalMaterial | null>(null);
   const bodyAnimRef = useRef<CreepBodyAnimState>('idle');
   const lightRef = useRef<THREE.PointLight>(null);
   const coneMatRef = useRef<THREE.MeshBasicMaterial>(null);

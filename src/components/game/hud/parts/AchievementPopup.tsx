@@ -95,7 +95,7 @@ function TrophyToast({
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: -20, scale: 0.9 }}
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-        className="fixed pointer-events-auto cursor-pointer cyber-fade-in-up"
+        className="fixed pointer-events-auto cursor-pointer cyber-fade-in-up hud-filmic-achievement-burst"
         style={{
           zIndex: UI_LAYERS.TOASTS + 2,
           bottom: `calc(7rem + ${notification.id.charCodeAt(5) % 3} * 5rem)`,
@@ -156,7 +156,7 @@ function LegacyToast({ achievement }: { achievement: SkillAchievementNotice }) {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -20, scale: 0.9 }}
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-          className="fixed bottom-28 left-1/2 -translate-x-1/2 pointer-events-none toast-enhanced cyber-fade-in-up"
+          className="fixed bottom-28 left-1/2 -translate-x-1/2 pointer-events-none toast-enhanced cyber-fade-in-up hud-filmic-achievement-burst"
           style={{ zIndex: UI_LAYERS.TOASTS + 2 }}
           role="status"
           aria-live="polite"
