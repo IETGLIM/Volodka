@@ -305,3 +305,69 @@ html, body {
   border: 1px solid rgba(220,215,210,0.13) !important;
   box-shadow: 0 10px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.06) !important;
 }
+
+/* ── AAA volodka — NEW LUXURY: seamless world guidance, not popups ── */
+/* Light pool near interactables — show don't tell: floor glows near door/exit */
+.world-guidance-pool {
+  position: absolute;
+  width: 220px;
+  height: 90px;
+  background: radial-gradient(ellipse 60% 45% at 50% 50%, rgba(255,210,140,0.09) 0%, rgba(255,190,110,0.04) 42%, transparent 72%);
+  filter: blur(8px);
+  pointer-events: none;
+  mix-blend-mode: screen;
+  animation: aaa-pool-breathe 4s ease-in-out infinite;
+}
+@keyframes aaa-pool-breathe {
+  0%, 100% { opacity: 0.65; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.04); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .world-guidance-pool { animation: none; opacity: 0.6; }
+}
+
+/* Ink-wash transition for panels — роскошная смена, не резкий cut */
+.panel-ink-wash-enter {
+  animation: aaa-ink-wash-in 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes aaa-ink-wash-in {
+  from { opacity: 0; filter: blur(6px); transform: translateY(6px) scale(0.98); }
+  to   { opacity: 1; filter: blur(0);  transform: translateY(0)  scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .panel-ink-wash-enter { animation: none; opacity: 1; }
+}
+
+/* Volumetric light rim on exploration HUD — ties 3D shafts to 2D chrome */
+.hud-volumetric-rim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 70% 22% at 50% 0%, rgba(255,210,150,0.045) 0%, transparent 58%),
+    radial-gradient(ellipse 55% 18% at 50% 100%, rgba(110,160,255,0.035) 0%, transparent 58%);
+  mix-blend-mode: screen;
+}
+
+/* Deplasticize helper — any lingering cyan plastic instantly warped to warm ink */
+.bg-cyan-500, .text-cyan-400, .border-cyan-500 { filter: saturate(0.55) hue-rotate(-18deg) brightness(1.05); }
+
+/* Smooth focus ring — not neon, filmi paper */
+*:focus-visible {
+  outline-color: rgba(220,215,210,0.55) !important;
+  box-shadow: 0 0 0 3px rgba(220,215,210,0.12) !important;
+}
+
+/* Exploration HUD — subtle film border, not tech frame */
+[data-exploration-ui] {
+  border: 1px solid rgba(220,215,210,0.04);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
+}
+
+/* Menu poem shimmer — luxurious, slow */
+@keyframes aaa-poem-shimmer {
+  0%, 100% { opacity: 0.92; text-shadow: 0 1px 12px rgba(0,0,0,0.65), 0 0 20px rgba(255,220,160,0.10); }
+  50%      { opacity: 1;    text-shadow: 0 1px 12px rgba(0,0,0,0.65), 0 0 28px rgba(255,220,160,0.18); }
+}
+.menu-poem-line { animation: aaa-poem-shimmer 6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .menu-poem-line { animation: none; } }

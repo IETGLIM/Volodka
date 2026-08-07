@@ -616,6 +616,60 @@ export const SCENE_VOLUMETRIC_LIGHTS: Partial<Record<string, VolumetricShaftConf
       dustSpeed: 0.25,
     },
   ],
+  // ── Street night — мокрый неон * hero улица * дождь отражает вывески ──
+  // Роскошный wet-noir: 3 луча сквозь дождь — тёплый янтарь витрины + холодный неон + фарный пробив
+  // Пыль = дождь/mist взвесь, haze отражает неон в лужах
+  street_night: [
+    {
+      ...DEFAULT_SHAFT,
+      position: [-4.2, 3.2, -1.4], // тёплая витрина слева — янтарный пролив через дождь
+      topRadius: 0.14,
+      bottomRadius: 1.15,
+      height: 3.1,
+      color: '#ffbb55',
+      opacity: 0.19,
+      flickerSpeed: 0.16,
+      flickerAmp: 0.22,
+      rotationSpeed: 0.007,
+      initialRotation: 0.35,
+      tiltX: -0.28,
+      tiltZ: 0.06,
+      dustDensity: 0.78, // дождь + неоновый haze
+      dustSpeed: 0.32,
+    },
+    {
+      ...DEFAULT_SHAFT,
+      position: [3.8, 3.6, 0.8], // холодный неон справа — голубой разлив
+      topRadius: 0.12,
+      bottomRadius: 0.95,
+      height: 3.4,
+      color: '#6ea8ff',
+      opacity: 0.16,
+      flickerSpeed: 0.22,
+      flickerAmp: 0.28,
+      rotationSpeed: 0.005,
+      initialRotation: -0.6,
+      tiltX: -0.22,
+      dustDensity: 0.65,
+      dustSpeed: 0.36,
+    },
+    {
+      ...DEFAULT_SHAFT,
+      position: [0, 4.2, -5.5], // дальний фарный пробив/фонарь улицы — глубину даёт
+      topRadius: 0.18,
+      bottomRadius: 1.4,
+      height: 4.0,
+      color: '#ffe8b0',
+      opacity: 0.13,
+      flickerSpeed: 0.09,
+      flickerAmp: 0.14,
+      rotationSpeed: 0.004,
+      initialRotation: 0,
+      tiltX: -0.18,
+      dustDensity: 0.6,
+      dustSpeed: 0.28,
+    },
+  ],
   // AAA Phase A: cool neon plaza shafts for city_square — wet reflective haze catching blue/pink neon + street lamps
   city_square: [
     {
@@ -785,6 +839,41 @@ export const SCENE_VOLUMETRIC_LIGHTS: Partial<Record<string, VolumetricShaftConf
       tiltX: -0.12,
       dustDensity: 0.6,
       dustSpeed: 0.32,
+    },
+  ],
+  // ── Guild mainframe — холодный серверный зал, зелёный CRT + синий standby ──
+  guild_mainframe: [
+    {
+      ...DEFAULT_SHAFT,
+      position: [0, 2.8, -3.2], // главный CRT зелёный столб
+      topRadius: 0.13,
+      bottomRadius: 1.05,
+      height: 2.7,
+      color: '#33ff88',
+      opacity: 0.20,
+      flickerSpeed: 0.32,
+      flickerAmp: 0.30,
+      rotationSpeed: 0.005,
+      initialRotation: 0,
+      tiltX: -0.1,
+      dustDensity: 0.55,
+      dustSpeed: 0.18,
+    },
+    {
+      ...DEFAULT_SHAFT,
+      position: [-2.8, 2.6, 1.2], // синий standby луч
+      topRadius: 0.10,
+      bottomRadius: 0.75,
+      height: 2.4,
+      color: '#6ea8ff',
+      opacity: 0.15,
+      flickerSpeed: 0.18,
+      flickerAmp: 0.20,
+      rotationSpeed: 0.006,
+      initialRotation: 0.9,
+      tiltX: -0.12,
+      dustDensity: 0.45,
+      dustSpeed: 0.22,
     },
   ],
   // AAA Phase A: ethereal galaxy dream — luxurious purple/blue volumetric pillars with dense floating star-dust motes

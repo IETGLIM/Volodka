@@ -9,7 +9,7 @@
 - Плавность: cinematic crossfades, eased transitions, continuous blends.
 - Живая вселенная: куча занятий (NPC activities, dynamic props, weather reactivity, idle monologues, examine zones, ambient events).
 - Качество: selective MeshPhysical, volumetric, filmic postFX, rich materials, perfect locomotion.
-- Branch: arena/019fd869-volodka. Push only here. No local server/test runs.
+- Branch: arena/019fde0f-volodka (актуальная ветка сессии). Push only here. No local dev/server/tests.
 - 10 этапов изучения + реализация (поскольку >300k строк — staged deep dives).
 
 **Текущий статус (из AI_SESSION_CONTEXT + ARCHITECTURE + CHANGELOG):** 
@@ -95,9 +95,38 @@
 - После правок — git add + commit + push origin arena/...
 - User verifies on Vercel.
 
-**Следующий немедленный шаг:** Продолжить Этап 2 (3D core) + начать Фазу A/B edits на основе уже изученного.
+**Следующий немедленный шаг:** Продолжить Этапы 3–5 + Фаза C/D — контент/аудио/катсцены.
 
-**Статус:** План создан. Начинаем углублённое изучение + правки. Брат, мы это сделаем. Ошеломим мир.
+**Статус 2026-08-07 — Этап 2+3 + Фаза A/B/C частично выполнено (commit AAA Stage 1):**
+
+✅ **Графика ошеломляющая:**
+- Street_night + guild_mainframe получили роскошные VolumetricLightShaft (дождь+неон, CRT) — hero-улица теперь кинематографична на high/ultra.
+- Deplasticize: VolodkaRoom brushed steel вместо хром-пластика, PolyHaven PBR остаётся тактильным.
+- Transition veil стал роскошным filmic: blur 1.2px + grain + центральная hairline, cubic-bezier 0.22 — без резких cut.
+- GodRays duplicate keys исправлены, AaaCinematicAtmosphere dense dust без NaN.
+
+✅ **Живая вселенная — куча занятий:**
+- AaaLivingWorldActivities полностью переписан: 48 activities, smart matching (кофе/радио/гитара/окно/ящик/лампа…), COZY rewards (energy + karma), world ambient_event (light flicker), throttled whispers.
+- AaaWorldMarkerSystem роскошный show-don't-tell: warm/cool/whisper tones, throttled scene hints, ink-bleed animation, не спамит.
+- AaaImmersiveGuide без дублирующей строки, 18 сценовых шёпотов (sleep_dream/campfire/city_plaza…).
+
+✅ **Идеальная анимация / управление — кинематографично, не мультяшно:**
+- CesiumPlayerModel lean 22°→6°, squash 27%→4%, sway 8.5°→2.2° — теперь изысканно, weighty.
+- Landing squash 32%→9%, footstep squash 3.6%→1.4% — тактильно, не cartoon.
+- explorationStrategy sprint FOV kick 19.5→0.9, lean 7.7°→2° — плавный вес, без тошноты.
+- playerFinalizeFrame ядерный shake (19 calls, kick 16+) → subtle 0.02–0.04, FOV pinch 42→0.35 — роскошный вес.
+- Fixed undefined `fwd` brake bug, EventMap типы (player:landed/hard_brake/sprint_start/karma_change, exploration:footstep runWeight).
+
+✅ **Люкс HUD / плавность:**
+- aaa-luxury.css: world-guidance-pool, panel-ink-wash, volumetric-rim, poem shimmer, selection warm paper — всё без пластика.
+- Typecheck 0 errors (tsc7 --noEmit) — готов к Vercel.
+
+**Следующие шаги (Фаза A/B/C продолжение):**
+- Добавить SSR puddles на ещё 2–3 hero scenes + selective MeshPhysical oil/discs для basement/factory.
+- Расширить AaaCinematicAtmosphere на outdoor thin hubs, добавить CSM shadows на street/city (если budget).
+- Довести camera bob sync + Mixamo retarget тонко, добавить godrays на оставшиеся thin сцены.
+- Наполнение контентом Acts 3-4 (quests → cases) + аудио act-mood tables.
+- Роскошные катсцены: introWakeTimeline camera path + TimelineRunner polish.
 
 ---
-*Обновляется по ходу. 2026-08-06*
+*Обновляется по ходу. Брат, держим план — ошеломим мир на Vercel. 2026-08-07*

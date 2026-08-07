@@ -310,7 +310,9 @@ function SceneTransitionVeil() {
         ? SCENE_OVERLAY_MS.HOLD
         : SCENE_OVERLAY_MS.WIPE_IN;
 
-  // AAA cinematic veil — softer, more luxurious filmic radial + subtle vignette for smooth no-cut feeling
+  // AAA cinematic veil — роскошный filmic: медленный, мягкий, без резких переходов.
+  // Двухслойный: глубокий ink radial + тёплый amber edge + виньетка. Плавность уровня кино.
+  const isReveal = phase === 'reveal';
   return (
     <div
       aria-hidden="true"
@@ -319,19 +321,44 @@ function SceneTransitionVeil() {
         inset: 0,
         pointerEvents: 'none',
         background: `
-          radial-gradient(
-            circle at 50% 42%,
-            rgba(16,18,28,0.96) 0%,
-            rgba(6,8,14,0.985) 58%,
-            rgba(0,0,0,0.995) 78%,
-            #000000 100%
-          )
+          radial-gradient(ellipse 92% 78% at 50% 44%, rgba(12,14,22,0.88) 0%, rgba(6,8,14,0.96) 52%, rgba(0,0,0,0.992) 74%, #000 100%),
+          radial-gradient(ellipse 135% 55% at 50% 0%, rgba(255,210,150,0.035) 0%, transparent 48%)
         `,
         opacity,
-        transition: `opacity ${duration}ms cubic-bezier(0.16, 1, 0.3, 1)`,
+        // Более медленная, роскошная кривая — как дорогая камера, не резкий cut
+        transition: `opacity ${duration}ms cubic-bezier(0.22, 1, 0.36, 1), backdrop-filter ${duration}ms ease`,
+        backdropFilter: isReveal ? 'blur(0px)' : 'blur(1.2px)',
         zIndex: 5,
       }}
-    />
+    >
+      {/* Центральный мягкий grain во время hold — filmic texture */}
+      <div
+        aria-hidden
+        style={{
+          position: 'absolute',
+          inset: 0,
+          opacity: phase === 'hold' ? 0.04 : 0,
+          transition: `opacity ${duration * 0.6}ms ease`,
+          backgroundImage:
+            "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
+          mixBlendMode: 'soft-light' as any,
+        }}
+      />
+      {/* Тонкий бар в центре при hold — ощущение люка/занавеса */}
+      <div
+        aria-hidden
+        style={{
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          top: '50%',
+          height: '1px',
+          background: 'linear-gradient(90deg, transparent, rgba(220,215,210,0.07), transparent)',
+          opacity: phase === 'hold' ? 1 : 0,
+          transition: `opacity ${duration * 0.5}ms ease`,
+        }}
+      />
+    </div>
   );
 }
 

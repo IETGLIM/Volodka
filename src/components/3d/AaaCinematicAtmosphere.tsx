@@ -53,11 +53,10 @@ export function AaaCinematicAtmosphere() {
   if (isLow || reducedMotion) return null;
 
   const isHero = isHeroScene(sceneId);
-  const count = isHero ? (preset.id === 'ultra' ? 64 : preset.id === 'high' ? 42 : 22) : (preset.id === 'ultra' ? 36 : 18);
-  // AAA boost: much denser, luxurious dust for hero scenes (feels like real air + light)
+  // AAA boost: dense luxurious dust — feels like real air + light
   const count = isHero 
-    ? (preset.id === 'ultra' ? 92 : preset.id === 'high' ? 68 : 38) 
-    : (preset.id === 'ultra' ? 52 : 28);
+    ? (preset.id === 'ultra' ? 72 : preset.id === 'high' ? 52 : 30) 
+    : (preset.id === 'ultra' ? 36 : 20);
 
   return (
     <group key={`aaa-atmo-${sceneId}`}>

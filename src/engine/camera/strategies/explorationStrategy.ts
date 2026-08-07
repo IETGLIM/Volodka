@@ -137,9 +137,9 @@ export const explorationStrategy: CameraModeStrategy = {
     let launchFovExtra = 0;
     let launchLeanExtra = 0;
     if (_sprintLaunchBoost > 0) {
-      launchFovExtra = _sprintLaunchBoost * 19.5; // GOD x∞ x∞ x∞ x∞ APOCALYPSE RAMP "Продолжим" — full god-mode apocalyptic + black hole + multiverse launch + infinite singularity + eternal void + multiversal annihilation
-      launchLeanExtra = _sprintLaunchBoost * 0.355;
-      _sprintLaunchBoost = Math.max(0, _sprintLaunchBoost - ctx.delta * 38.5);
+      launchFovExtra = _sprintLaunchBoost * 0.9; // subtle launch FOV punch — luxurious weight transfer
+      launchLeanExtra = _sprintLaunchBoost * 0.045;
+      _sprintLaunchBoost = Math.max(0, _sprintLaunchBoost - ctx.delta * 4.5);
     }
     fovBoost += launchFovExtra;
 
@@ -149,7 +149,7 @@ export const explorationStrategy: CameraModeStrategy = {
     let sprintLeanPitch = 0;
     if (sprintActive) {
       const leanT = Math.min(1, (speedMs - SPRINT_KICK_SPEED_THRESHOLD) / 1.28);
-      sprintLeanPitch = -0.135 * leanT; // GOD x∞ x∞ x∞ x∞ APOCALYPSE RAMP продолжение — negative = nose-down cinematic lean — ~7.7°+ + infinite singularity forward commitment + black hole pull + multiversal collapse
+      sprintLeanPitch = -0.035 * leanT; // subtle nose-down lean — filmic momentum
     }
     sprintLeanPitch -= launchLeanExtra;
 
@@ -238,7 +238,8 @@ export const explorationStrategy: CameraModeStrategy = {
 
       // Strong cinematic "brake" camera pull-back on hard stop (opposite of thrust)
       const brakeT = Math.min(1, decel / 3.5);
-      const brakeBack = fwd.clone().negate().multiplyScalar(brakeT * 0.09);
+      const fwd = new THREE.Vector3(Math.sin(yaw), 0, Math.cos(yaw));
+      const brakeBack = fwd.clone().negate().multiplyScalar(brakeT * 0.045);
       targetPos.add(brakeBack);
     }
 

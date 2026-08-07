@@ -1,7 +1,6 @@
 /* ─── Volodka RPG – AAA Immersive Guide ───
- * Show-don't-tell guidance system: no tutorial popups, only diegetic whispers,
- * environmental nudges, and inner monologue as Volodka thinks.
- * Luxurious, filmi, minimal — appears as ink bleed near bottom, not centered popup.
+ * Show-don't-tell: без туториалов, только шёпот мира, лёгкий сюжетный ветер.
+ * Роскошный, фильмичный, минимальный — ink-bleed внизу, не центрированный попап.
  */
 
 import { useState, useEffect, useRef } from 'react';
@@ -38,7 +37,7 @@ const INNER_VOICE_LINES: Record<string, string> = {
   karma_low: 'Тяжесть в груди. Мир отвечает тем же.',
   poem_power: 'Стихи шевелятся внутри. Можно выпустить их наружу.',
   night_city: 'Неон мигает. Город не спит, только притворяется.',
-  // AAA Phase A/C: more poetic whispers for the densest living world scenes (dream, rooftops, campfires, battle aftermath, cozy rooms)
+  // dense living world — поэтичные шёпоты для самых атмосферных сцен
   sleep_dream: 'Звёзды шепчут. Это не просто сон — это память.',
   dream_memory: 'Старый предмет плывёт. Он помнит тебя.',
   rooftop_sky: 'Ветер сильный. Здесь можно оставить всё позади.',
@@ -54,10 +53,14 @@ const INNER_VOICE_LINES: Record<string, string> = {
 
 function toneStyle(tone: GuideEntry['tone']) {
   switch (tone) {
-    case 'whisper': return { color: 'var(--hud-filmic-ink-dim)', fontStyle: 'italic', tracking: '0.08em' };
-    case 'thought': return { color: 'var(--hud-filmic-ink)', fontStyle: 'normal', tracking: '0.06em' };
-    case 'memory': return { color: 'var(--hud-filmic-ink-meta)', fontStyle: 'italic', tracking: '0.12em' };
-    case 'poetic': return { color: 'var(--hud-filmic-glow-warm)', fontStyle: 'italic', tracking: '0.10em' };
+    case 'whisper':
+      return { color: 'var(--hud-filmic-ink-dim)', fontStyle: 'italic', letterSpacing: '0.08em' };
+    case 'thought':
+      return { color: 'var(--hud-filmic-ink)', fontStyle: 'normal', letterSpacing: '0.06em' };
+    case 'memory':
+      return { color: 'var(--hud-filmic-ink-meta)', fontStyle: 'italic', letterSpacing: '0.12em' };
+    case 'poetic':
+      return { color: 'var(--hud-filmic-glow-warm)', fontStyle: 'italic', letterSpacing: '0.10em' };
   }
 }
 
@@ -79,16 +82,14 @@ export function AaaImmersiveGuide() {
     };
 
     const unsubs = [
-      eventBus.on('interaction:hint', ({ label }) => {
+      eventBus.on('interaction:hint', ({ label }: any) => {
         if (!label) return;
         if (label.toLowerCase().includes('осмотр')) {
           show(`guide_first_interact_${Date.now()}`, INNER_VOICE_LINES.first_interact, 'whisper', 3600);
         }
       }),
       eventBus.on('npc:talked', () => {
-        if (!shownRef.current.has('first_npc')) {
-          show('first_npc', INNER_VOICE_LINES.first_npc, 'thought', 4000);
-        }
+        if (!shownRef.current.has('first_npc')) show('first_npc', INNER_VOICE_LINES.first_npc, 'thought', 4000);
       }),
       eventBus.on('poem:collected', () => {
         show(`poem_${Date.now()}`, INNER_VOICE_LINES.first_poem, 'poetic', 5000);
@@ -102,39 +103,34 @@ export function AaaImmersiveGuide() {
       eventBus.on('combat:start', () => {
         show(`combat_battle_${Date.now()}`, INNER_VOICE_LINES.combat_near, 'whisper', 2800);
       }),
-      eventBus.on('scene:enter', ({ sceneId }) => {
-        const key = `scene_${sceneId}`;
-        const line = (INNER_VOICE_LINES as any)[key] || (INNER_VOICE_LINES as any)[`scene_${sceneId.split('_')[0]}`];
-        let line = (INNER_VOICE_LINES as any)[key] || (INNER_VOICE_LINES as any)[`scene_${sceneId.split('_')[0]}`];
+      eventBus.on('scene:enter', ({ sceneId }: any) => {
+        const sid = String(sceneId);
+        const key = `scene_${sid}`;
+        // Direct lookup first
+        let line: string | undefined = (INNER_VOICE_LINES as any)[key] || (INNER_VOICE_LINES as any)[`scene_${sid.split('_')[0]}`];
+
         if (!line) {
-          // Fallback poetic atmosphere lines for all hubs
-          if (sceneId.includes('factory') || sceneId.includes('basement')) line = INNER_VOICE_LINES.scene_factory;
-          else if (sceneId.includes('pier') || sceneId.includes('river')) line = INNER_VOICE_LINES.scene_pier;
-          else if (sceneId.includes('roof')) line = INNER_VOICE_LINES.scene_roof;
-          else if (sceneId.includes('bunker')) line = INNER_VOICE_LINES.scene_bunker;
-          else if (sceneId.includes('park')) line = INNER_VOICE_LINES.scene_park;
-          else if (sceneId.includes('street') || sceneId.includes('city')) line = INNER_VOICE_LINES.night_city;
-          // AAA Phase A/C dense living world scenes
-          else if (sceneId.includes('sleep_dream') || sceneId.includes('dream')) line = INNER_VOICE_LINES.sleep_dream || INNER_VOICE_LINES.dream_memory;
-          else if (sceneId.includes('rooftop') || sceneId.includes('roof')) line = INNER_VOICE_LINES.rooftop_sky;
-          else if (sceneId.includes('chk_campfire')) line = INNER_VOICE_LINES.chk_campfire;
-          else if (sceneId.includes('battle')) line = INNER_VOICE_LINES.battle_after;
-          else if (sceneId.includes('library_basement')) line = INNER_VOICE_LINES.library_basement;
-          else if (sceneId.includes('albert_backroom')) line = INNER_VOICE_LINES.albert_room;
-          else if (sceneId.includes('solnysh_room')) line = INNER_VOICE_LINES.solnysh_room;
-          else if (sceneId.includes('zarema')) line = INNER_VOICE_LINES.zarema_room;
-          else if (sceneId.includes('city_square')) line = INNER_VOICE_LINES.city_plaza;
-          else if (sceneId.includes('chk_forest') || sceneId.includes('park_day')) line = INNER_VOICE_LINES.forest_night;
+          if (sid.includes('factory') || sid.includes('basement')) line = INNER_VOICE_LINES.scene_factory;
+          else if (sid.includes('pier') || sid.includes('river')) line = INNER_VOICE_LINES.scene_pier;
+          else if (sid.includes('roof')) line = INNER_VOICE_LINES.scene_roof;
+          else if (sid.includes('bunker')) line = INNER_VOICE_LINES.scene_bunker;
+          else if (sid.includes('park')) line = INNER_VOICE_LINES.scene_park;
+          else if (sid.includes('street') || sid.includes('city')) line = INNER_VOICE_LINES.night_city;
+          else if (sid.includes('sleep_dream') || sid.includes('dream')) line = INNER_VOICE_LINES.sleep_dream;
+          else if (sid.includes('rooftop') || sid.includes('roof')) line = INNER_VOICE_LINES.rooftop_sky;
+          else if (sid.includes('chk_campfire')) line = INNER_VOICE_LINES.chk_campfire;
+          else if (sid.includes('battle')) line = INNER_VOICE_LINES.battle_after;
+          else if (sid.includes('library_basement')) line = INNER_VOICE_LINES.library_basement;
+          else if (sid.includes('albert_backroom')) line = INNER_VOICE_LINES.albert_room;
+          else if (sid.includes('solnysh_room')) line = INNER_VOICE_LINES.solnysh_room;
+          else if (sid.includes('zarema')) line = INNER_VOICE_LINES.zarema_room;
+          else if (sid.includes('city_square')) line = INNER_VOICE_LINES.city_plaza;
+          else if (sid.includes('chk_forest') || sid.includes('park_day')) line = INNER_VOICE_LINES.forest_night;
         }
-        if (line && !shownRef.current.has(key)) {
-          show(key, line, 'memory', 3800);
-        }
+        if (line && !shownRef.current.has(key)) show(key, line, 'memory', 3800);
       }),
-      // Extra living-world triggers (show, don't tell)
       eventBus.on('poem:power_used', () => {
-        if (!shownRef.current.has('poem_power')) {
-          show('poem_power', INNER_VOICE_LINES.poem_power, 'poetic', 4600);
-        }
+        if (!shownRef.current.has('poem_power')) show('poem_power', INNER_VOICE_LINES.poem_power, 'poetic', 4600);
       }),
       eventBus.on('player:karma_change', ({ delta }: any) => {
         if (Math.abs(delta || 0) > 8) {
@@ -145,7 +141,7 @@ export function AaaImmersiveGuide() {
     ];
 
     return () => {
-      unsubs.forEach(u => u());
+      unsubs.forEach((u) => u());
       if (timerRef.current) clearTimeout(timerRef.current);
     };
   }, []);
@@ -167,10 +163,7 @@ export function AaaImmersiveGuide() {
             className="hud-filmic-caption hud-filmic-ink-bleed px-5 py-2.5 text-center"
           >
             <div className="hud-filmic-rule hud-filmic-rule--wide opacity-40" aria-hidden />
-            <p
-              className="hud-filmic-body text-[12px] leading-relaxed"
-              style={toneStyle(entry.tone) as any}
-            >
+            <p className="hud-filmic-body text-[12px] leading-relaxed" style={toneStyle(entry.tone) as any}>
               {entry.text}
             </p>
             <div className="hud-filmic-rule hud-filmic-rule--soft opacity-30 mt-1" aria-hidden />

@@ -21,8 +21,6 @@ export interface CinematicTimelineEvents {
     phaseIndex: number;
     lightCue?: 'neon_surge' | 'dim_hold' | 'warm_practical';
   };
-  // Session 12-B: removed the orphaned `cinematic:intro_handoff` event
-  // declaration — grep confirmed zero subscribers across the codebase. The
-  // emit in CinematicTimelineRunner was also removed. The handoff semantic
-  // is covered by `cinematic:timeline_phase` (phaseId) emitted above.
+  /** Lux atmospheric boost during cinematic beats — mist + shafts denser */
+  'cinematic:atmosphere_boost': { intensity: number; sceneId?: string };
 }
