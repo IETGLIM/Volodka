@@ -238,6 +238,7 @@ export const explorationStrategy: CameraModeStrategy = {
 
       // Strong cinematic "brake" camera pull-back on hard stop (opposite of thrust)
       const brakeT = Math.min(1, decel / 3.5);
+      const fwd = targetLook.clone().sub(targetPos).normalize();
       const brakeBack = fwd.clone().negate().multiplyScalar(brakeT * 0.09);
       targetPos.add(brakeBack);
     }

@@ -26,7 +26,7 @@ export function CompassIndicator() {
   // Subscribe to footstep yaw to track player facing direction
   useEffect(() => {
     const unsub = eventBus.on('exploration:footstep', (payload) => {
-      targetYawRef.current = payload.yaw;
+      targetYawRef.current = payload.yaw ?? 0;
     });
     return () => { unsub(); };
   }, []);

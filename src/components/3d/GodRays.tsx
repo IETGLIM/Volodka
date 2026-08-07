@@ -572,41 +572,6 @@ export const GODRAY_PRESETS: Record<string, GodRayConfig[]> = {
     },
   ],
   // AAA Phase A: richer volumetric shafts on more hero scenes (complements ultra post godrays)
-  cafe_evening: [
-    {
-      ...DEFAULT_RAY,
-      position: [-3, 2.5, 0],
-      topRadius: 0.08,
-      bottomRadius: 0.35,
-      height: 2.5,
-      color: '#4488ff',
-      opacity: 0.04,
-      pulseSpeed: 0.12,
-      rotationSpeed: 0.01,
-      dustMotes: true,
-      dustCount: 14,
-      dustColor: '#88aaff',
-      initialRotation: 0,
-    },
-  ],
-  library_day: [
-    {
-      ...DEFAULT_RAY,
-      position: [5, 3, 0],
-      topRadius: 0.12,
-      bottomRadius: 0.6,
-      height: 3,
-      color: '#ffffcc',
-      opacity: 0.05,
-      pulseSpeed: 0.06,
-      rotationSpeed: 0.008,
-      dustMotes: true,
-      dustCount: 28,
-      dustColor: '#ffeeaa',
-      initialRotation: 0,
-      tiltX: -0.15,
-    },
-  ],
   pier_evening: [
     {
       // Warm column over the pier barrel fire + dusk

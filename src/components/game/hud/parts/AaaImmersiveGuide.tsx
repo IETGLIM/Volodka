@@ -104,7 +104,6 @@ export function AaaImmersiveGuide() {
       }),
       eventBus.on('scene:enter', ({ sceneId }) => {
         const key = `scene_${sceneId}`;
-        const line = (INNER_VOICE_LINES as any)[key] || (INNER_VOICE_LINES as any)[`scene_${sceneId.split('_')[0]}`];
         let line = (INNER_VOICE_LINES as any)[key] || (INNER_VOICE_LINES as any)[`scene_${sceneId.split('_')[0]}`];
         if (!line) {
           // Fallback poetic atmosphere lines for all hubs

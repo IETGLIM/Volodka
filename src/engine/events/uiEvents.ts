@@ -20,7 +20,7 @@ export interface UiEvents {
     rarity?: 'common' | 'uncommon' | 'rare' | 'legendary';
   };
   /** Volodka's inner monologue / thought bubble overlay. */
-  'volodka:thought': { text: string; duration?: number };
+  'volodka:thought': { text: string; duration?: number; source?: string; scene?: string };
   /** Skill check result — shown by SkillCheckDisplay component. */
   'ui:skill_check': {
     skill: TrainablePlayerSkill;

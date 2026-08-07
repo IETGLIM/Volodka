@@ -28,4 +28,30 @@ export interface PlayerEvents {
   'choice:made': { karmaChange: number; npcId?: string; relationChange?: number };
   /** Fired when a perk is acquired via the perks panel. */
   'perk:unlocked': { perkId: string; perkName: string; category: string };
+  'player:landed': {
+    position?: [number, number, number];
+    impact?: number;
+    yaw?: number;
+    sceneId?: string;
+  };
+  'player:hard_brake': {
+    position?: [number, number, number];
+    yaw?: number;
+    sceneId?: string;
+    speed?: number;
+  };
+  'player:sprint_start': {
+    position?: [number, number, number];
+    yaw?: number;
+    sceneId?: string;
+    speed?: number;
+    runWeight?: number;
+  };
+  'player:karma_change': {
+    delta: number;
+    source?: string;
+  };
+  'player:rest': {
+    amount: number;
+  };
 }

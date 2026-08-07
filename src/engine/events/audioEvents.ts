@@ -15,4 +15,7 @@ export interface AudioEvents {
     /** Cooldown duration in milliseconds (QuickUseBar item use). */
     cooldownMs?: number;
   };
+  'audio:ambient_stinger': {
+    cue: string;
+  };
 }
