@@ -12,7 +12,7 @@ export function KarmaRing({ karma }: KarmaRingProps) {
   const color = karmaStroke(karma);
 
   return (
-    <div className="relative breathe-glow karma-ring-outer" aria-hidden="true">
+    <div className="relative breathe-glow karma-ring-outer hud-filmic-karma-ring-rotate" aria-hidden="true">
       <motion.svg
         width="36"
         height="36"

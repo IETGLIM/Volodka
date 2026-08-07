@@ -237,7 +237,7 @@ export function ActiveQuestMiniTracker() {
               toggleExpand();
             }
           }}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-sm cursor-pointer hud-filmic-plate"
+          className="flex items-center gap-2 px-3 py-1.5 rounded-sm cursor-pointer hud-filmic-plate hud-filmic-quest-pulse"
           style={{
             borderColor: `${typeColor}33`,
           }}

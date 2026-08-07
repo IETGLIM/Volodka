@@ -63,7 +63,7 @@ export function FloatingActionIndicator() {
 
   return (
     <div
-      className="fixed bottom-28 left-1/2 -translate-x-1/2 pointer-events-none flex flex-col-reverse items-center gap-2"
+      className="fixed bottom-28 left-1/2 -translate-x-1/2 pointer-events-none flex flex-col-reverse items-center gap-2 hud-filmic-float-bob"
       style={{ zIndex: UI_LAYERS.HUD + 3 }}
       aria-hidden="true"
     >

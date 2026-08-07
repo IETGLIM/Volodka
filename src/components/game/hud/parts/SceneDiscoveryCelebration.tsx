@@ -77,7 +77,7 @@ export function SceneDiscoveryCelebration() {
               duration: reducedMotion ? 0.15 : 0.4,
               ease: [0.16, 1, 0.3, 1],
             }}
-            className="hud-filmic-caption px-4"
+            className="hud-filmic-caption hud-filmic-discovery-burst px-4"
           >
             <div className="hud-filmic-rule hud-filmic-rule--wide" aria-hidden />
             <span className="hud-filmic-kicker">Новая локация · {discoveredCount}/{totalScenes}</span>

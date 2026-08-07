@@ -236,10 +236,10 @@ export function StreetVisual({ sceneId = 'street_night', livePlayerPositionRef }
         </mesh>
         {/* Broken glass shards */}
         <mesh position={[0, 8.3, 0.01]} geometry={getSharedPlaneGeometry(0.25, 0.3)}>
-          <meshStandardMaterial color="#607080" transparent opacity={0.3} metalness={0.2} roughness={0.1} side={THREE.DoubleSide} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+          <meshPhysicalMaterial color="#607080" transparent opacity={0.3} metalness={0.2} roughness={0.1} clearcoat={1.0} clearcoatRoughness={0.1} side={THREE.DoubleSide} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
         </mesh>
         <mesh position={[0.15, 7.7, 0.01]} geometry={getSharedPlaneGeometry(0.2, 0.35)}>
-          <meshStandardMaterial color="#607080" transparent opacity={0.2} metalness={0.2} roughness={0.1} side={THREE.DoubleSide} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+          <meshPhysicalMaterial color="#607080" transparent opacity={0.2} metalness={0.2} roughness={0.1} clearcoat={1.0} clearcoatRoughness={0.1} side={THREE.DoubleSide} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
         </mesh>
       </StreetClutterGate>
     </group>
@@ -310,7 +310,7 @@ function StreetSidewalkProcedural({ isWinter, rainIntensity }: { isWinter: boole
 
   return (
     <mesh rotation-x={-Math.PI / 2} position={[0, 0.015, 0]} receiveShadow geometry={getSharedPlaneGeometry(6, 40)}>
-      <meshStandardMaterial
+      <meshPhysicalMaterial
         color={isWinter ? '#b0b8c8' : PBR_PRESETS.sidewalk.color}
         map={isWinter ? undefined : map}
         normalMap={normalMap}
@@ -318,6 +318,8 @@ function StreetSidewalkProcedural({ isWinter, rainIntensity }: { isWinter: boole
         roughnessMap={roughnessMap}
         roughness={isWinter ? 0.72 : (wet?.roughness ?? PBR_PRESETS.sidewalk.roughness)}
         metalness={wet?.metalness ?? PBR_PRESETS.sidewalk.metalness}
+        clearcoat={wet ? 0.6 : 0.08}
+        clearcoatRoughness={wet ? 0.25 : 0.85}
         polygonOffset
         polygonOffsetFactor={1}
         polygonOffsetUnits={1}

@@ -88,22 +88,37 @@ export const DYNAMIC_PROPS: Partial<Record<SceneId, DynamicPropDef[]>> = {
   library_day: [
     { id: 'ld_box_1', kind: 'box', position: [-1.6, 0, 2.9], rotation: 1.8 },
     { id: 'ld_can_1', kind: 'can', position: [3.3, 0, -2.4], rotation: 0.2 },
+    // WS17-B: +2 props for thin-coverage scene (was 2)
+    { id: 'ld_bottle_1', kind: 'bottle', position: [-2.8, 0, -1.5], rotation: 0.7 },
+    { id: 'ld_can_2', kind: 'can', position: [0.5, 0, 4.1], rotation: -1.3 },
   ],
   factory_roof: [
     { id: 'fr_can_1', kind: 'can', position: [-3.1, 0, 1.8], rotation: 2.3 },
     { id: 'fr_barrel_1', kind: 'barrel', position: [2.4, 0, -2.9], rotation: 0.9 },
+    // WS17-B: +2 props for thin-coverage scene (was 2)
+    { id: 'fr_bottle_1', kind: 'bottle', position: [1.0, 0, 3.5], rotation: 1.4 },
+    { id: 'fr_box_1', kind: 'box', position: [-4.5, 0, -1.2], rotation: 0.6 },
   ],
   home_evening: [
     { id: 'he_can_1', kind: 'can', position: [0.8, 0, -1.9], rotation: 0.5 },
     { id: 'he_bottle_1', kind: 'bottle', position: [-1.3, 0, 1.4], rotation: 1.7 },
+    // WS17-B: +2 props for thin-coverage scene (was 2)
+    { id: 'he_box_1', kind: 'box', position: [2.2, 0, -0.6], rotation: 0.9 },
+    { id: 'he_can_2', kind: 'can', position: [-0.4, 0, -3.1], rotation: -1.1 },
   ],
   underground_bunker: [
     { id: 'ub_box_1', kind: 'box', position: [1.1, 0, 3.8], rotation: 0.3 },
     { id: 'ub_can_1', kind: 'can', position: [-2.9, 0, -1.2], rotation: 2.1 },
+    // WS17-B: +2 props for thin-coverage scene (was 2)
+    { id: 'ub_barrel_1', kind: 'barrel', position: [-4.2, 0, 2.5], rotation: 0.8 },
+    { id: 'ub_bottle_1', kind: 'bottle', position: [3.0, 0, -3.4], rotation: -0.6 },
   ],
   guild_mainframe: [
     { id: 'gm_can_1', kind: 'can', position: [-1.7, 0, 2.3], rotation: 1.5 },
     { id: 'gm_bottle_1', kind: 'bottle', position: [2.6, 0, -3.1], rotation: 0.7 },
+    // WS17-B: +2 props for thin-coverage scene (was 2)
+    { id: 'gm_box_1', kind: 'box', position: [0.8, 0, 1.5], rotation: 1.2 },
+    { id: 'gm_can_2', kind: 'can', position: [-3.4, 0, -2.0], rotation: 0.3 },
   ],
   // AAA: tactile living pier — pushable clutter near water + fire (evening variant)
   pier_evening: [
@@ -183,5 +198,8 @@ export const DYNAMIC_PROPS: Partial<Record<SceneId, DynamicPropDef[]>> = {
   forest_clearing: [
     { id: 'fc_bottle_1', kind: 'bottle', position: [-2.4, 0, 1.8], rotation: 1.2 },
     { id: 'fc_can_1', kind: 'can', position: [1.6, 0, -3.2], rotation: -0.9 },
+    // WS17-B: +2 props for thin-coverage scene (was 2)
+    { id: 'fc_box_1', kind: 'box', position: [3.8, 0, 2.2], rotation: 0.5 },
+    { id: 'fc_can_2', kind: 'can', position: [-0.6, 0, -1.5], rotation: 1.7 },
   ],
 };

@@ -2445,3 +2445,202 @@
     animation: none;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   WS17-A — Six new filmic micro-animations for HUD parts polish
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── 31. Quest pulse ──
+   2s subtle cyan border-pulse for ActiveQuestMiniTracker when quest is active.
+   Infinite loop. Box-shadow: 0 0 0px → 0 0 4px → 0 0 0px (cyan #00d4e0).
+   Apply via className="hud-filmic-quest-pulse" on the quest tracker's
+   collapsed row div. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-quest-pulse {
+    0%, 100% {
+      box-shadow: 0 0 0px rgba(0, 212, 224, 0);
+    }
+    50% {
+      box-shadow: 0 0 4px rgba(0, 212, 224, 0.35);
+    }
+  }
+
+  .hud-filmic-quest-pulse {
+    animation: hud-filmic-quest-pulse 2s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-quest-pulse {
+    animation: none;
+  }
+}
+
+/* ── 32. Badge fill glow ──
+   1.5s amber fill glow for ExplorationProgressBadge when progress changes.
+   One-shot. Filter drop-shadow: 0 0 0px → 0 0 5px → 0 0 0px (amber #FFB347).
+   Apply via className="hud-filmic-badge-fill-glow" on the badge wrapper div.
+   Re-apply the class (key change or re-mount) to replay. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-badge-fill-glow {
+    0% {
+      filter: drop-shadow(0 0 0px rgba(255, 179, 71, 0));
+    }
+    40% {
+      filter: drop-shadow(0 0 5px rgba(255, 179, 71, 0.4));
+    }
+    100% {
+      filter: drop-shadow(0 0 0px rgba(255, 179, 71, 0));
+    }
+  }
+
+  .hud-filmic-badge-fill-glow {
+    animation: hud-filmic-badge-fill-glow 1.5s ease-out both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-badge-fill-glow {
+    animation: none;
+  }
+}
+
+/* ── 33. Karma ring rotate ──
+   3s slow rotation hint for KarmaRing. Very subtle: rotate 0deg → 2deg → 0deg.
+   Infinite loop. Apply via className="hud-filmic-karma-ring-rotate" on the
+   karma-ring-outer wrapper div. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-karma-ring-rotate {
+    0%, 100% {
+      transform: rotate(0deg);
+    }
+    50% {
+      transform: rotate(2deg);
+    }
+  }
+
+  .hud-filmic-karma-ring-rotate {
+    animation: hud-filmic-karma-ring-rotate 3s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-karma-ring-rotate {
+    animation: none;
+  }
+}
+
+/* ── 34. Chip slide-in ──
+   0.35s eased slide-from-right for SceneContextChip on scene change.
+   One-shot. translateX(8px) → translateX(0), opacity 0.6 → 1.
+   Apply via className="hud-filmic-chip-slide-in" on the chip wrapper div.
+   Re-mount or key change to replay on scene change. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-chip-slide-in {
+    0% {
+      transform: translateX(8px);
+      opacity: 0.6;
+    }
+    100% {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  .hud-filmic-chip-slide-in {
+    animation: hud-filmic-chip-slide-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-chip-slide-in {
+    animation: none;
+  }
+}
+
+/* ── 35. Discovery burst ──
+   1.2s scale + brightness burst for SceneDiscoveryCelebration on discovery.
+   One-shot. scale(0.96) → scale(1.05) → scale(1), brightness 1 → 1.1 → 1.
+   Apply via className="hud-filmic-discovery-burst" on the motion.div
+   caption container. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-discovery-burst {
+    0% {
+      transform: scale(0.96);
+      filter: brightness(1);
+    }
+    30% {
+      transform: scale(1.05);
+      filter: brightness(1.1);
+    }
+    100% {
+      transform: scale(1);
+      filter: brightness(1);
+    }
+  }
+
+  .hud-filmic-discovery-burst {
+    animation: hud-filmic-discovery-burst 1.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-discovery-burst {
+    animation: none;
+  }
+}
+
+/* ── 36. Float bob ──
+   2.5s gentle vertical bob for FloatingActionIndicator.
+   Infinite loop. translateY(0) → translateY(-3px) → translateY(0).
+   Apply via className="hud-filmic-float-bob" on the outer fixed-position
+   wrapper div. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-float-bob {
+    0%, 100% {
+      transform: translateX(-50%) translateY(0);
+    }
+    50% {
+      transform: translateX(-50%) translateY(-3px);
+    }
+  }
+
+  .hud-filmic-float-bob {
+    animation: hud-filmic-float-bob 2.5s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-float-bob {
+    animation: none;
+  }
+}
+
+/* ── 25. Scene transition dissolve ──
+   Filmic dissolve-breathing for scene container transitions.
+   0.6s ease-in-out. Opacity 1 → 0.85 → 1 with subtle scale
+   1 → 0.998 → 1 (very gentle breathing). Apply via
+   className="hud-filmic-scene-dissolve" on scene wrapper elements
+   for smooth dissolves between scenes. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-scene-dissolve {
+    0%, 100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.85;
+      transform: scale(0.998);
+    }
+  }
+
+  .hud-filmic-scene-dissolve {
+    animation: hud-filmic-scene-dissolve 0.6s ease-in-out both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-scene-dissolve {
+    animation: none;
+  }
+}

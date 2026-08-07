@@ -31,7 +31,8 @@ export function ExplorationProgressBadge() {
   return (
     <div className="exploration-progress-badge flex flex-col items-center gap-0.5 select-none" aria-label={`Исследовано ${discoveredCount} из ${totalScenes} локаций`}>
       <div
-        className="relative"
+        key={`badge-glow-${pct}`}
+        className="relative hud-filmic-badge-fill-glow"
         style={{
           width: size,
           height: size,
