@@ -15,25 +15,7 @@
 import { useEffect } from 'react';
 import { eventBus } from '@/engine/EventBus';
 import { getGameSnapshot } from '@/engine/GameActionDispatcher';
-
-const ACTIVITY_LINES: Record<string, string> = {
-  coffee_machine: 'Кофе шипит. Пар поднимается, как мысли — медленно, но верно.',
-  radio: 'Шипение, обрывки голоса. Город говорит, даже когда молчит.',
-  guitar: 'Струна дрожит под пальцами. Не идеально, но честно.',
-  bookshelf: 'Пыль на корешках. Кто-то здесь искал ответы до тебя.',
-  window: 'За окном — город. Дождь или нет, он всё равно ждёт.',
-  bench: 'Скамейка помнит многих. Можно присесть, послушать тишину.',
-  terminal: 'Терминал гудит. Код ждёт, когда его прочитают.',
-};
-
-export function AaaLivingWorldActivities() {
-  useEffect(() => {
-    const unsubs = [
-      eventBus.on('interaction:start', ({ propId }: any) => {
-        const id = (propId ?? '') as string;
-        const lower = id.toLowerCase();
-        let key: keyof typeof ACTIVITY_LINES | null = null;
-import { dispatchGameAction } from '@/store/gameStore';
+import { dispatchGameAction } from '@/shared/gameBridge/gameActionBridge';
 
 const ACTIVITY_LINES: Record<string, string> = {
   // Room / Home
@@ -135,22 +117,6 @@ export function AaaLivingWorldActivities() {
         else if (lower.includes('bench')) key = 'bench';
         else if (lower.includes('terminal')) key = 'terminal';
 
-        if (key) {
-          const line = ACTIVITY_LINES[key];
-          if (line) {
-            // Emit as inner monologue, not notification spam
-            eventBus.emit('volodka:thought' as any, { text: line, source: key } as any);
-            // Tiny energy restore for cozy activities
-            if (key === 'coffee_machine' || key === 'bench') {
-              try {
-                const snap = getGameSnapshot();
-                if (snap.playerState.energy < 85) {
-                  // dispatch via existing action if available
-                  eventBus.emit('player:rest' as any, { amount: 3 } as any);
-                }
-              } catch {}
-            }
-          }
         else if (lower.includes('terminal') || lower.includes('server')) key = 'terminal';
         else if (lower.includes('mirror')) key = 'mirror';
         // Scene-specific lamp variations (must come before general desk_lamp)
@@ -215,15 +181,15 @@ export function AaaLivingWorldActivities() {
               const snap = getGameSnapshot();
               if (snap.playerState.energy < 92) {
                 dispatchGameAction({ 
-                  type: 'player/energy', 
-                  delta: 2 + Math.floor(Math.random() * 2) 
+                  type: 'player/addEnergy',
+                  amount: 2 + Math.floor(Math.random() * 2)
                 });
               }
               // Gentle karma nudge for contemplative acts
               if (['window', 'bench', 'plant', 'old_book'].includes(key)) {
                 dispatchGameAction({ 
-                  type: 'player/karma', 
-                  delta: 1 
+                  type: 'player/addKarma',
+                  amount: 1
                 });
               }
             } catch {}
@@ -231,14 +197,14 @@ export function AaaLivingWorldActivities() {
 
           // Dynamic world feedback — lights flicker, props react
           if (key.includes('lamp') || key === 'terminal' || key === 'control_panel') {
-            eventBus.emit('world:ambient_event', { 
+            eventBus.emit('world:ambient_event' as any, { 
               type: 'light_flicker', 
               intensity: 0.6 + Math.random() * 0.3,
               duration: 800 
             });
           }
           if (key === 'radio' || key === 'jukebox') {
-            eventBus.emit('audio:ambient_stinger', { cue: 'static' });
+            eventBus.emit('audio:ambient_stinger' as any, { cue: 'static' } as any);
           }
         }
       }),

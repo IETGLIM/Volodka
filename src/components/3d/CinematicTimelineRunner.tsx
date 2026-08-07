@@ -580,7 +580,7 @@ export function CinematicTimelineRunner() {
 
     // AAA cinematic atmosphere boost during cutscenes — makes light shafts + dust feel luxurious
     if (result.phaseLocalT > 0.1 && result.phaseLocalT < 0.9) {
-      eventBus.emit('cinematic:atmosphere_boost', {
+      eventBus.emit('cinematic:atmosphere_boost' as any, {
         intensity: 0.6 + (result.phaseLocalT * 0.4),
         sceneId: getGameStore().exploration.currentSceneId,
       });

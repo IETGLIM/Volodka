@@ -6,6 +6,8 @@
  * Mirrors the AudioSettings pattern (engine/audio/AudioSettings.ts).
  */
 
+import { detectAutoQualityPreset } from '@/engine/graphics/qualityPresets';
+
 export const VISUAL_SETTINGS_CHANGED = 'volodka:visual-settings-changed';
 
 export interface VisualSettingsSnapshot {
@@ -65,8 +67,123 @@ function lsGetNumber(key: string, fallback: number): number {
   }
 }
 
+// ─── Motion-friendly default detection (mobile/low-end/touch) ─────────────
+//
+// On a fresh install (no visual settings in localStorage), mobile/low-end/touch
+// devices should start with camera shake + decorative particles OFF to avoid
+// nausea and perf issues out of the box. The user can still toggle these ON
+// via the Settings panel — this only affects the out-of-box default.
+//
+// Detection reuses the EXISTING quality-tier + coarse-pointer + viewport
+// heuristics (no new mobile-detection hook). Conditions (any one):
+//   (a) auto-detected quality tier resolves to 'low' or 'medium'
+//   (b) a coarse-pointer (touch) device is detected via matchMedia
+//   (c) the viewport is mobile-narrow (< 768 CSS px)
+//
+// All probes are SSR-safe (return false when window/navigator unavailable)
+// and wrapped in try/catch so a broken matchMedia/visualViewport never
+// blocks settings load.
+
+function hasCoarsePointerForDefaults(): boolean {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+    return false;
+  }
+  try {
+    return window.matchMedia('(pointer: coarse)').matches;
+  } catch {
+    return false;
+  }
+}
+
+function readViewportWidthForDefaults(): number {
+  if (typeof window === 'undefined') return 1920;
+  try {
+    const w = window.visualViewport?.width ?? window.innerWidth;
+    return typeof w === 'number' && w > 0 ? Math.round(w) : 1920;
+  } catch {
+    return 1920;
+  }
+}
+
+function readDevicePixelRatioForDefaults(): number {
+  if (typeof window === 'undefined' || typeof window.devicePixelRatio !== 'number') {
+    return 1;
+  }
+  return window.devicePixelRatio ?? 1;
+}
+
+function isLowOrMediumAutoTier(): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    const tier = detectAutoQualityPreset(
+      readViewportWidthForDefaults(),
+      readDevicePixelRatioForDefaults(),
+    );
+    return tier === 'low' || tier === 'medium';
+  } catch {
+    return false;
+  }
+}
+
+function isNarrowMobileViewport(): boolean {
+  const w = readViewportWidthForDefaults();
+  return w > 0 && w < 768;
+}
+
+/**
+ * True when the current device should start with motion-friendly visual
+ * defaults (camera shake + decorative particles OFF). Used ONLY to pick the
+ * out-of-box defaults on a fresh install — explicit user choices always win.
+ *
+ * Reuses the existing auto-quality + coarse-pointer detection so there is a
+ * single source of truth for "is this a motion-sensitive device".
+ */
+export function shouldUseMotionFriendlyDefaults(): boolean {
+  if (typeof window === 'undefined') return false;
+  if (hasCoarsePointerForDefaults()) return true;
+  if (isNarrowMobileViewport()) return true;
+  if (isLowOrMediumAutoTier()) return true;
+  return false;
+}
+
+/**
+ * On a fresh install (when BOTH cameraShake and particles settings are absent
+ * from localStorage), pre-seed motion-friendly defaults if the current device
+ * is mobile/low-end/touch. After this runs, subsequent reads return the
+ * device-appropriate default — same as if the user had explicitly chosen it.
+ *
+ * Idempotent: once either key has been written (by this seeder, by the user
+ * via the Settings panel, or by the adaptive-quality bridge), this function
+ * becomes a no-op for those keys — explicit choices are NEVER overridden.
+ *
+ * Safe to call from any context (skips when localStorage unavailable).
+ */
+export function seedMotionFriendlyVisualDefaultsIfNeeded(): void {
+  if (typeof localStorage === 'undefined') return;
+  try {
+    const shakeSet = localStorage.getItem(LS_CAM_SHAKE) !== null;
+    const particlesSet = localStorage.getItem(LS_PARTICLES) !== null;
+    // Only seed on a TRUE fresh install for these two motion keys: neither
+    // has ever been written. If either is present, the user (or a prior boot
+    // seed, or the adaptive-quality bridge) has already made a choice —
+    // respect it.
+    if (shakeSet || particlesSet) return;
+    if (!shouldUseMotionFriendlyDefaults()) return;
+    localStorage.setItem(LS_CAM_SHAKE, String(false));
+    localStorage.setItem(LS_PARTICLES, String(false));
+  } catch {
+    // localStorage access can throw (private mode, quota, SSR). No-op.
+  }
+}
+
 /** Read persisted settings from localStorage (normalised to multipliers). */
 export function readVisualSettings(): VisualSettingsSnapshot {
+  // Fresh-install seeding: if neither cameraShake nor particles has ever been
+  // saved AND the device is mobile/low-end/touch, pre-seed motion-friendly
+  // defaults so the user doesn't get nausea/perf issues out of the box. No-op
+  // once either key has been explicitly set.
+  seedMotionFriendlyVisualDefaultsIfNeeded();
+
   return {
     postfxEnabled: lsGetBool(LS_POSTFX, true),
     scanlinesEnabled: lsGetBool(LS_SCANLINES, true),

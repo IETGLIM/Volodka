@@ -428,13 +428,13 @@ export function CutsceneOverlay() {
   return (
     <>
       <AriaLiveRegion message={ariaAnnouncement} priority="assertive" />
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode="sync">
       {active && (
         <motion.div
           key={`cutscene-overlay-${overlayKey}`}
           initial={reducedMotion ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
-          exit={reducedMotion ? undefined : { opacity: 0, transition: { duration: fadeOutMs / 1000, ease: 'easeInOut' } }}
+          exit={reducedMotion ? undefined : { opacity: 0, transition: { duration: Math.min(fadeOutMs / 1000, 0.2), ease: 'easeInOut' } }}
           transition={{
             duration: reducedMotion ? 0 : fadeInMs / 1000,
             ease: 'easeInOut',

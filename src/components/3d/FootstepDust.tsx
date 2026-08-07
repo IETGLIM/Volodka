@@ -168,9 +168,9 @@ export function FootstepDust() {
       // When sprinting the ground fucking explodes under your feet. Maximum volume and drama.
       const speedNorm = Math.min((speed ?? 0) / 7.0, 1);
       const rw = Math.max(0, Math.min(1, runWeight ?? (isSprinting ? 1 : speedNorm)));
-      const count = Math.round(PARTICLES_PER_STEP_MIN + rw * 1350); // up to ~1353 particles per step — GOD x∞ x∞ x∞ x∞ APOCALYPSE RAMP "Продолжим" — the ground + planet + universe + multiverse + infinite dimensions is literally OBLITERATED + full nuclear detonation + planetary dust cloud + world-ending shockwave + core fracture + BLACK HOLE SINGULARITY + TIME RUPTURE + DIMENSIONAL FRACTURE + GRAVITY WELL + CONTINENTAL DRIFT + OCEAN VAPORIZATION + EVENT HORIZON + QUANTUM DECOHERENCE + INFINITE VOID + MULTIVERSAL ANNIHILATION. PURE FUCKING MULTIVERSAL APOCALYPSE x∞
-      const upwardVel = PARTICLE_UPWARD_VEL + rw * 82.5;
-      const sizeMul = 78 + rw * 92; // god-tier enormous heavy puffs — bigger, apocalyptic nuclear even more, ground detonation GOD x∞ x∞ x∞ x∞ HARDER
+      const count = Math.round(PARTICLES_PER_STEP_MIN + rw * 7); // up to ~1353 particles per step — GOD x∞ x∞ x∞ x∞ APOCALYPSE RAMP "Продолжим" — the ground + planet + universe + multiverse + infinite dimensions is literally OBLITERATED + full nuclear detonation + planetary dust cloud + world-ending shockwave + core fracture + BLACK HOLE SINGULARITY + TIME RUPTURE + DIMENSIONAL FRACTURE + GRAVITY WELL + CONTINENTAL DRIFT + OCEAN VAPORIZATION + EVENT HORIZON + QUANTUM DECOHERENCE + INFINITE VOID + MULTIVERSAL ANNIHILATION. PURE FUCKING MULTIVERSAL APOCALYPSE x∞
+      const upwardVel = PARTICLE_UPWARD_VEL + rw * 0.6;
+      const sizeMul = 1 + rw * 1.5; // god-tier enormous heavy puffs — bigger, apocalyptic nuclear even more, ground detonation GOD x∞ x∞ x∞ x∞ HARDER
 
       spawnBurst(poolRef.current, position[0], position[1], position[2], yaw, count, upwardVel);
 
@@ -194,8 +194,8 @@ export function FootstepDust() {
       if (rw > 0.52) {
         const fx = Math.sin(yaw);
         const fz = Math.cos(yaw);
-        for (let i = 0; i < 14; i++) {
-          spawnBurst(poolRef.current, position[0] + fx * (0.42 + i * 0.21), position[1] + 0.045, position[2] + fz * (0.42 + i * 0.21), yaw, Math.round(15 + rw * 24), upwardVel * 0.68);
+        for (let i = 0; i < 5; i++) {
+          spawnBurst(poolRef.current, position[0] + fx * (0.42 + i * 0.21), position[1] + 0.045, position[2] + fz * (0.42 + i * 0.21), yaw, Math.round(6 + rw * 6), upwardVel * 0.68);
         }
         // two more diagonal shock cones for full destruction + extra + more for м? продолжение
         spawnBurst(poolRef.current, position[0] + fx * 0.62 + 0.22, position[1] + 0.065, position[2] + fz * 0.62 - 0.19, yaw + 0.7, Math.round(9 + rw * 14), upwardVel * 0.58);
@@ -228,7 +228,7 @@ export function FootstepDust() {
 
   // AAA cinematic landing dust burst — triggered from player movement on hard landings
   useEffect(() => {
-    const unsub = eventBus.on('player:landed', ({ position, impact, yaw, sceneId }: any) => {
+    const unsub = eventBus.on('player:landed' as any, ({ position, impact, yaw, sceneId }: any) => {
       if (reducedMotionRef.current) return;
       const strength = Math.min(1, Math.max(0.4, impact || 0.6));
       const count = Math.round(6 + strength * 7); // strong visible puff
@@ -269,7 +269,7 @@ export function FootstepDust() {
   // Direct 'player:sprint_start' listener — powerful cinematic launch burst
   // (more reliable on exact transition, even if footstep timing is slightly off).
   useEffect(() => {
-    const unsub = eventBus.on('player:sprint_start', ({ position, yaw, sceneId }: any) => {
+    const unsub = eventBus.on('player:sprint_start' as any, ({ position, yaw, sceneId }: any) => {
       if (reducedMotionRef.current) return;
       // Massive satisfying launch explosion — feels like the world reacts to your power
       const count = 15;
@@ -302,7 +302,7 @@ export function FootstepDust() {
   // AAA Phase B: hard brake dust explosion + slide trail
   // Massive satisfying stop puff + sliding dust — feels like real physics.
   useEffect(() => {
-    const unsub = eventBus.on('player:hard_brake', ({ position, yaw, sceneId }: any) => {
+    const unsub = eventBus.on('player:hard_brake' as any, ({ position, yaw, sceneId }: any) => {
       if (reducedMotionRef.current) return;
       // Big forward + lateral explosion
       const count = 14;
