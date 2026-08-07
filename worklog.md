@@ -3006,3 +3006,21 @@ Stage Summary:
 - QA: live site stable, 0 console errors, all flows clean (menu → new game → skip prologue → narrative → exploration).
 - Unresolved next-phase priorities: (a) Deplasticize PBR materials / richer env maps; (b) CSM for outdoor shadows; (c) Mixamo↔Quaternius real-clip remap (jump/fall/land clips still missing); (d) More orphaned HUD mounts; (e) More Acts 3-4 content; (f) Guided onboarding (show-don't-tell light beams to objectives); (g) Motion-blur lite for cutscenes; (h) Author should revoke+rotate the GitHub PAT shared in chat.
 
+
+---
+Task ID: 15 (orchestrator) — QA + deplasticize + filmic CSS + content + guided onboarding
+Agent: main (orchestrator)
+Task: Cron-triggered AAA improvements — deplasticize PBR, filmic CSS polish, content expansion, guided onboarding.
+
+Work Log:
+- QA on https://volodka.vercel.app/: all flows clean, 0 console errors, mobile clean. Site stable.
+- WS15-A: Deplasticized 4 player materials + 9 NPC materials (MeshStandard→MeshPhysical with sheen). Added mouth to skin regex.
+- WS15-B: 6 new filmic CSS animations. Wired CyberberpunkMinimap into ExplorationHUD.
+- WS15-C: ~70 ambient bark lines for 14 NPCs. 12 examine zones. 13 dynamic props. 25 quest barks. Battle idle monologues.
+- WS15-D: 3 guided onboarding components (ObjectiveBeacon, InteractableSparkle, SceneEntryNudge) + 4 CSS animations.
+- Combined typecheck: exit 0. Committed +1343/-15. Pushed 1d01ab72.
+
+Stage Summary:
+- 13 files changed, +1343/-15 lines. Typecheck clean. Poems untouched. All invariants preserved.
+- Key wins: deplasticized player/NPC materials, 38+ filmic CSS keyframes, minimap wired, 70+ ambient barks, 12 examine zones, 13 dynamic props, 3 guided onboarding components.
+- Next: CSM shadows, Mixamo clip remap, more scene enrichment, QuestObjectiveCard adapter, 3D menu background.
