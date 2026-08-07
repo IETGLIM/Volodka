@@ -110,6 +110,8 @@ export function AaaLivingWorldActivities() {
         else if (lower.includes('bench')) key = 'bench';
         else if (lower.includes('terminal') || lower.includes('server')) key = 'terminal';
         else if (lower.includes('mirror')) key = 'mirror';
+        // Scene-specific lamp variations (must come before general desk_lamp)
+        else if (lower.includes('lamp') && (sceneId.includes('pier') || sceneId.includes('river'))) key = 'pier_lamp';
         else if (lower.includes('lamp') || lower.includes('light')) key = 'desk_lamp';
         else if (lower.includes('plant') || lower.includes('flower')) key = 'plant';
         else if (lower.includes('fridge') || lower.includes('холодильник')) key = 'fridge';
@@ -129,25 +131,22 @@ export function AaaLivingWorldActivities() {
         else if (lower.includes('statue') || lower.includes('памятник')) key = 'statue';
         else if (lower.includes('conveyor') || lower.includes('лента')) key = 'conveyor';
         else if (lower.includes('valve') || lower.includes('вентиль')) key = 'valve';
+        // Scene-specific crate/crate variations (must come before general 'crate' to allow scene context)
+        else if (lower.includes('crate') && (sceneId.includes('pier') || sceneId.includes('river'))) key = 'pier_crate';
+        else if (lower.includes('crate') && sceneId.includes('library_basement')) key = 'library_basement_clutter';
         else if (lower.includes('crate') || lower.includes('ящик')) key = 'crate';
         else if (lower.includes('panel') || lower.includes('панель')) key = 'control_panel';
         else if (lower.includes('boat') || lower.includes('лодка')) key = 'boat';
         else if (lower.includes('barrel') || lower.includes('бочка')) key = 'fire_barrel';
         else if (lower.includes('fishing') || lower.includes('удочка')) key = 'fishing_rod';
-        else if (lower.includes('old_book') || lower.includes('книга')) key = 'old_book';
-        else if (lower.includes('barrel') || lower.includes('fire') || lower.includes('костёр')) key = 'fire_barrel';
-        else if (lower.includes('boat') || lower.includes('лодка')) key = 'boat';
-        else if (lower.includes('fishing') || lower.includes('удочка')) key = 'fishing_rod';
+        else if (lower.includes('old_book')) key = 'old_book';
         else if (lower.includes('pier') && (lower.includes('fire') || lower.includes('barrel'))) key = 'pier_fire';
-        else if (lower.includes('water') || lower.includes('edge') || lower.includes('вода')) key = 'water_edge';
-        else if (lower.includes('crate') && (sceneId.includes('pier') || sceneId.includes('river'))) key = 'pier_crate';
-        else if (lower.includes('lamp') && (sceneId.includes('pier') || sceneId.includes('river'))) key = 'pier_lamp';
+        else if (lower.includes('water') || lower.includes('вода')) key = 'water_edge';
         // AAA: battle debris + library basement clutter (post-fight / dusty tactile)
         else if (lower.includes('battle') || lower.includes('debris') || lower.includes('shell') || lower.includes('баррель')) key = 'battle_debris';
-        else if ((lower.includes('book') || lower.includes('книга') || lower.includes('crate') || lower.includes('can')) && sceneId.includes('library_basement')) key = 'library_basement_clutter';
         // AAA cozy intimate rooms
         else if ((lower.includes('desk') || lower.includes('стол') || lower.includes('albert')) && sceneId.includes('albert_backroom')) key = 'albert_desk';
-        else if ((lower.includes('window') || lower.includes('окно') || lower.includes('solnysh')) && sceneId.includes('solnysh_room')) key = 'solnysh_window';
+        else if (lower.includes('solnysh') && sceneId.includes('solnysh_room')) key = 'solnysh_window';
         else if ((lower.includes('plant') || lower.includes('цветок') || lower.includes('zarema')) && sceneId.includes('zarema')) key = 'zarema_plant';
         else if ((lower.includes('mirror') || lower.includes('зеркало')) && sceneId.includes('zarema')) key = 'zarema_mirror';
         // AAA dream memory fragments — poetic, ethereal inner voice (show-don't-tell the past)
@@ -155,7 +154,7 @@ export function AaaLivingWorldActivities() {
         // AAA extra living world on rooftops/city/forest/campfire
         else if ((lower.includes('rooftop') || lower.includes('sky') || lower.includes('edge')) && sceneId.includes('rooftop')) key = 'rooftop_sky';
         else if ((lower.includes('neon') || lower.includes('city') || lower.includes('square')) && sceneId.includes('city_square')) key = 'city_neon';
-        else if ((lower.includes('forest') || lower.includes('tree') || lower.includes('wind')) && (sceneId.includes('chk') || sceneId.includes('park'))) key = 'forest_wind';
+        else if ((lower.includes('forest') || lower.includes('wind')) && (sceneId.includes('chk') || sceneId.includes('park'))) key = 'forest_wind';
         else if ((lower.includes('camp') || lower.includes('fire') || lower.includes('chk')) && sceneId.includes('chk_campfire')) key = 'campfire_story';
 
         if (key && ACTIVITY_LINES[key]) {

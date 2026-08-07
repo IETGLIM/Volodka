@@ -1,6 +1,8 @@
 import { eventBus } from '@/engine/EventBus';
 import { audioEngine } from '@/engine/AudioEngine';
 import { KCC_STUCK_FRAMES_BEFORE_RECREATE } from '@/engine/player/playerConstants';
+import { triggerCameraShake } from '@/engine/camera/cameraShake';
+import { triggerLandingFovDip } from '@/engine/camera/landingImpact';
 import {
   logKccRecreateAttempt,
   notifyKccUnstuck,
@@ -96,7 +98,6 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
 
       // Nuclear camera reaction on hard landing — EVEN HARDER APOCALYPTIC GOD x∞ for хм, и:
       try {
-        const { triggerCameraShake } = require('@/engine/camera/cameraShake');
         const shake = 0.125 + impact * 0.22;
         triggerCameraShake(shake, 8.5);
         triggerCameraShake(shake * 1.65, 12.5); // extra vertical thump HARDER
@@ -105,7 +106,6 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
       } catch {}
 
       try {
-        const { triggerLandingFovDip } = require('@/engine/camera/landingImpact');
         triggerLandingFovDip(3.2 + impact * 5.5); // strong cinematic inward pinch — GOD CRUSH HARDER
       } catch {}
     }
@@ -192,7 +192,6 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
       // AAA Phase B: satisfying cinematic launch shake — the "thump" of acceleration
       // Short, punchy, not nauseating. Pairs with FOV kick + dust explosion + lean.
       try {
-        const { triggerCameraShake } = require('@/engine/camera/cameraShake');
         triggerCameraShake(0.045, 11); // stronger cinematic thump
       } catch {} 
 
@@ -235,7 +234,6 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
       // The camera is getting completely annihilated. Feels like the player is a goddamn tank god.
       if (isSprinting) {
         try {
-          const { triggerCameraShake } = require('@/engine/camera/cameraShake');
           const kick = 6.85 + (runWeight * 9.85); // GOD x∞ x∞ x∞ x∞ APOCALYPSE RAMP "Продолжим" — every sprint step is absolute earth-shattering + multiversal cataclysm + EXTRA BARRAGE + micro quakes + final death rattles + planetary fracture + world-ending aftershocks + core rupture + mantle breach + extinction quake + BLACK HOLE SINGULARITY + TIME RUPTURE + DIMENSIONAL FRACTURE + GRAVITY WELL + CONTINENTAL DRIFT + OCEAN VAPORIZATION + EVENT HORIZON + QUANTUM DECOHERENCE + REALITY COLLAPSE + INFINITE VOID + MULTIVERSAL ANNIHILATION. The planet + universe + multiverse is FUCKING OBLITERATED under the god. MAXIMUM cinematic nuclear weight x∞ x∞ x∞
           triggerCameraShake(kick, 62.5);
           triggerCameraShake(kick * 11.25, 115.5);   // god-crushing vertical slam GOD x∞ x∞ x∞
@@ -260,7 +258,6 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
         } catch {}
 
         try {
-          const { triggerLandingFovDip } = require('@/engine/camera/landingImpact');
           triggerLandingFovDip(42.5 + runWeight * 62.5); // full nuclear inward smash every single heavy stride — GOD x∞ x∞ x∞ продолжение м? хм, и: full apocalyptic FOV crush + lingering planetary fracture + world collapse + core implosion + mantle breach + black hole singularity + time rupture + quantum annihilation
         } catch {}
       }
@@ -294,7 +291,6 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
 
       // AAA Phase B: heavy cinematic brake camera effects — APOCALYPTIC STOP GOD x∞ x∞ x∞ продолжение
       try {
-        const { triggerCameraShake } = require('@/engine/camera/cameraShake');
         triggerCameraShake(0.38, 11.5); // strong forward yank shake GOD x∞ x∞ x∞
         triggerCameraShake(0.29, 15.5);
         triggerCameraShake(0.22, 9.8);

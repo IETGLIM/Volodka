@@ -1,4 +1,5 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
+import { eventBus } from '@/engine/EventBus';
 import { useGameStore } from '@/store/gameStore';
 import { useGameMode } from '@/store/selectors';
 import { useIsMobileVisual, useMobileVisualPerf } from '@/hooks/use-mobile';
@@ -119,6 +120,16 @@ export function AtmosphericEffects() {
     }
   }, [sceneId, heavyEffects]);
 
+  // AAA: cinematic atmosphere boost from cutscenes (dense god rays + dust during luxurious scenes)
+  // Note: hooks must be called before any early returns
+  const [cinematicBoost, setCinematicBoost] = useState(0);
+  useEffect(() => {
+    const unsub = eventBus.on('cinematic:atmosphere_boost', ({ intensity }: any) => {
+      setCinematicBoost(Math.min(1.2, intensity || 0.7));
+    });
+    return unsub;
+  }, []);
+
   if (!effectsEnabled) return null;
 
   const showFog = heavyFx.fog;
@@ -133,15 +144,6 @@ export function AtmosphericEffects() {
   const showNeonReflections = particlesEnabled && NEON_REFLECTION_SCENES.has(sceneId) && weatherEnabled;
   const showMist = particlesEnabled && MIST_SCENES.has(sceneId);
   const showFlickeringLights = FLICKERING_LIGHT_SCENES.has(sceneId);
-
-  // AAA: cinematic atmosphere boost from cutscenes (dense god rays + dust during luxurious scenes)
-  const [cinematicBoost, setCinematicBoost] = useState(0);
-  useEffect(() => {
-    const unsub = eventBus.on('cinematic:atmosphere_boost', ({ intensity }: any) => {
-      setCinematicBoost(Math.min(1.2, intensity || 0.7));
-    });
-    return unsub;
-  }, []);
 
   const effectiveDust = showDust || cinematicBoost > 0.2;
   const effectiveGodRays = showGodRays || cinematicBoost > 0.3;
