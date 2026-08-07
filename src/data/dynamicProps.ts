@@ -162,4 +162,26 @@ export const DYNAMIC_PROPS: Partial<Record<SceneId, DynamicPropDef[]>> = {
     { id: 'chkc_crate', kind: 'box', position: [2.8, 0, -2.1], rotation: 0.3 },
     { id: 'chkc_can_2', kind: 'can', position: [-0.7, 0, 2.5], rotation: 1.5 },
   ],
+  // WS15-C: dynamic props for thin-coverage scenes
+  volodka_corridor: [
+    { id: 'vc_can_1', kind: 'can', position: [1.2, 0, -3.5], rotation: 0.4 },
+    { id: 'vc_box_1', kind: 'box', position: [-0.8, 0, -1.2], rotation: 1.1 },
+    { id: 'vc_bottle_1', kind: 'bottle', position: [2.4, 0, -5.0], rotation: -0.7 },
+  ],
+  street_winter: [
+    { id: 'sw_can_1', kind: 'can', position: [1.8, 0, 2.4], rotation: 0.6 },
+    { id: 'sw_bottle_1', kind: 'bottle', position: [-2.5, 0, -1.8], rotation: 1.3 },
+    { id: 'sw_barrel_1', kind: 'barrel', position: [3.6, 0, -3.2], rotation: 0 },
+    { id: 'sw_box_1', kind: 'box', position: [-1.4, 0, 4.1], rotation: 0.9 },
+  ],
+  city_square: [
+    { id: 'cs_barrel_1', kind: 'barrel', position: [-3.8, 0, 1.6], rotation: 0.2 },
+    { id: 'cs_box_1', kind: 'box', position: [2.1, 0, -2.8], rotation: 1.4 },
+    { id: 'cs_can_1', kind: 'can', position: [4.5, 0, 3.2], rotation: -0.5 },
+    { id: 'cs_bottle_1', kind: 'bottle', position: [-1.6, 0, -4.4], rotation: 0.8 },
+  ],
+  forest_clearing: [
+    { id: 'fc_bottle_1', kind: 'bottle', position: [-2.4, 0, 1.8], rotation: 1.2 },
+    { id: 'fc_can_1', kind: 'can', position: [1.6, 0, -3.2], rotation: -0.9 },
+  ],
 };

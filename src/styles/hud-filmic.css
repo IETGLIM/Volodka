@@ -2039,3 +2039,231 @@
     transition: none;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   WS15-B — 6 NEW filmic micro-animations (all reduced-motion-gated)
+   Cinematic polish: breathing glows, circuit traces, data flicker,
+   edge decay, scale breathe, text-shadow pulse.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── 13. Glow breathe cycle ──
+   Slow breathing glow effect for important HUD elements (quest
+   indicators, key markers). 3s cycle, brightness 1→1.08→1 with
+   a subtle cyan drop-shadow pulse. Apply via
+   className="hud-filmic-glow-breathe" on important indicators. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-glow-breathe-cycle {
+    0%, 100% { filter: brightness(1) drop-shadow(0 0 2px rgba(0, 229, 255, 0.15)); }
+    50% { filter: brightness(1.08) drop-shadow(0 0 6px rgba(0, 229, 255, 0.35)); }
+  }
+
+  .hud-filmic-glow-breathe {
+    animation: hud-filmic-glow-breathe-cycle 3s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-glow-breathe {
+    animation: none;
+  }
+}
+
+/* ── 14. Circuit trace ──
+   Horizontal trace line that sweeps across tech panels like a
+   scanning circuit. 4s linear infinite, background-position
+   -200% → 200%. Apply via className="hud-filmic-circuit-trace"
+   on tech panel containers. Requires the element to have
+   background-size: 200% 100% (set in the class). */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-circuit-trace {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+
+  .hud-filmic-circuit-trace {
+    background: linear-gradient(90deg, transparent 0%, rgba(0, 229, 255, 0.08) 45%, rgba(0, 229, 255, 0.2) 50%, rgba(0, 229, 255, 0.08) 55%, transparent 100%);
+    background-size: 200% 100%;
+    animation: hud-filmic-circuit-trace 4s linear infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-circuit-trace {
+    animation: none;
+    background: none;
+  }
+}
+
+/* ── 15. Data stream flicker ──
+   Subtle opacity flicker simulating data stream interference.
+   2.5s cycle with irregular opacity dips (0.92, 0.88, 0.95).
+   Apply via className="hud-filmic-data-stream-flicker" on
+   data readout or telemetry elements. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-data-stream-flicker {
+    0%, 100% { opacity: 1; }
+    10% { opacity: 0.92; }
+    20% { opacity: 1; }
+    35% { opacity: 0.88; }
+    40% { opacity: 1; }
+    65% { opacity: 0.95; }
+    80% { opacity: 1; }
+  }
+
+  .hud-filmic-data-stream-flicker {
+    animation: hud-filmic-data-stream-flicker 2.5s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-data-stream-flicker {
+    animation: none;
+  }
+}
+
+/* ── 16. Edge decay ──
+   Subtle border-color decay effect — edge glow fading in and out.
+   2.8s cycle, border-color rgba(0,229,255, 0.15) → 0.4 → 0.15.
+   Apply via className="hud-filmic-edge-decay" on bordered panels
+   that should pulse their edge glow. Element must have a border
+   for this to be visible. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-edge-decay {
+    0%, 100% { border-color: rgba(0, 229, 255, 0.15); }
+    50% { border-color: rgba(0, 229, 255, 0.4); }
+  }
+
+  .hud-filmic-edge-decay {
+    animation: hud-filmic-edge-decay 2.8s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-edge-decay {
+    animation: none;
+    border-color: rgba(0, 229, 255, 0.25);
+  }
+}
+
+/* ── 17. Scale breathe ──
+   Very subtle scale breathing for emphasis elements (quest markers,
+   important icons). 2s cycle, scale 1 → 1.03 → 1. Barely
+   perceptible but adds life. Apply via
+   className="hud-filmic-scale-breathe" on emphasis elements. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-scale-breathe {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.03); }
+  }
+
+  .hud-filmic-scale-breathe {
+    animation: hud-filmic-scale-breathe 2s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-scale-breathe {
+    animation: none;
+  }
+}
+
+/* ── 18. Text shadow pulse ──
+   Text-shadow pulse for important text labels. 2.2s cycle,
+   subtle cyan glow 4px → 8px+12px. Apply via
+   className="hud-filmic-text-shadow-pulse" on key text labels. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-text-shadow-pulse {
+    0%, 100% { text-shadow: 0 0 4px rgba(0, 229, 255, 0.1); }
+    50% { text-shadow: 0 0 8px rgba(0, 229, 255, 0.3), 0 0 12px rgba(0, 229, 255, 0.1); }
+  }
+
+  .hud-filmic-text-shadow-pulse {
+    animation: hud-filmic-text-shadow-pulse 2.2s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-text-shadow-pulse {
+    animation: none;
+  }
+}
+
+/* ── 6. Objective Beacon — breathing amber glow ──
+   Subtle pulsing glow for the screen-edge objective chevron.
+   Only active under prefers-reduced-motion: no-preference. */
+@media (prefers-reduced-motion: no-preference) {
+  .objective-beacon-breathe {
+    animation: objective-beacon-breathe 3s ease-in-out infinite;
+  }
+
+  @keyframes objective-beacon-breathe {
+    0%, 100% {
+      filter: drop-shadow(0 0 3px rgba(255, 179, 71, 0.12));
+    }
+    50% {
+      filter: drop-shadow(0 0 8px rgba(255, 179, 71, 0.25));
+    }
+  }
+
+  .objective-beacon-ring-pulse {
+    animation: objective-beacon-ring-pulse 3s ease-in-out infinite;
+  }
+
+  @keyframes objective-beacon-ring-pulse {
+    0%, 100% {
+      box-shadow: 0 0 0 0 rgba(255, 179, 71, 0.12);
+    }
+    50% {
+      box-shadow: 0 0 0 3px rgba(255, 179, 71, 0.08), 0 0 0 6px transparent;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .objective-beacon-breathe,
+  .objective-beacon-ring-pulse {
+    animation: none;
+  }
+}
+
+/* ── 7. Interactable Sparkle — CSS-only rotating star/cross ──
+   Subtle 4-pointed star rotation on nearby interactables.
+   Only active under prefers-reduced-motion: no-preference. */
+@media (prefers-reduced-motion: no-preference) {
+  .interactable-sparkle {
+    animation: interactable-sparkle-rotate 4s linear infinite;
+  }
+
+  @keyframes interactable-sparkle-rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .interactable-sparkle {
+    animation: none;
+  }
+}
+
+/* ── 8. Scene Entry Nudge — amber vignette overlay ──
+   A directional vignette that briefly highlights the edge
+   nearest the POI when entering a scene for the first time. */
+@media (prefers-reduced-motion: no-preference) {
+  .scene-entry-nudge-vignette {
+    animation: scene-entry-nudge-fade 1.5s ease-out forwards;
+  }
+
+  @keyframes scene-entry-nudge-fade {
+    0% { opacity: 0; }
+    15% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scene-entry-nudge-vignette {
+    animation: none;
+    opacity: 0;
+  }
+}

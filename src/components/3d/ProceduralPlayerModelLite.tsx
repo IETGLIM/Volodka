@@ -21,18 +21,22 @@ export const ProceduralPlayerModelLite = memo(function ProceduralPlayerModelLite
 
   const mat = useMemo(
     () => ({
-      hoodie: new THREE.MeshStandardMaterial({
+      hoodie: new THREE.MeshPhysicalMaterial({
         color: '#2a2a3a',
         roughness: 0.85,
         metalness: 0.05,
+        sheen: 0.65,
+        sheenRoughness: 0.3,
       }),
-      skin: new THREE.MeshStandardMaterial({
+      skin: new THREE.MeshPhysicalMaterial({
         color: '#c4a882',
         roughness: 0.7,
         metalness: 0.05,
+        sheen: 0.35,
+        sheenRoughness: 0.5,
       }),
-      hair: new THREE.MeshStandardMaterial({ color: '#2a1e12', roughness: 0.9 }),
-      jeans: new THREE.MeshStandardMaterial({ color: '#3a4050', roughness: 0.85 }),
+      hair: new THREE.MeshPhysicalMaterial({ color: '#2a1e12', roughness: 0.9, sheen: 0.15, sheenRoughness: 0.4 }),
+      jeans: new THREE.MeshPhysicalMaterial({ color: '#3a4050', roughness: 0.85, sheen: 0.45, sheenRoughness: 0.35 }),
       sneaker: new THREE.MeshStandardMaterial({ color: '#1a1a1a', roughness: 0.9 }),
     }),
     [],

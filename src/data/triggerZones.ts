@@ -5655,6 +5655,256 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     ],
   },
 
+  /* ── WS15-C: examine zones for thin-coverage scenes ── */
+
+  // library_day — 4 new examine zones
+  {
+    id: 'library_day_old_card_catalog',
+    sceneId: 'library_day',
+    position: [-3.5, 1.0, 2.0],
+    size: [1.8, 1.6, 0.8],
+    enterToast: 'Каталожный шкаф — ещё вручную индексированный. Пыль — как память.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Старый каталожный шкаф',
+      description: 'Дубовый шкаф с выдвижными ящиками. Карточки — рукописные, почерк — аккуратный, старомодный.',
+      detailText: 'Каждая карточка — рукой. Ни одного штрих-кода. Индекс — по фамилиям, по годам, по настроениям. Кто-то вёл этот каталог десятилетиями — когда гильдия ещё не решила, что поиск — это запрос к серверу. Здесь — другое время. Другая скорость. Карточки — не удаляются. Карточки — не — «устаревают». Карточки — просто — есть.',
+      icon: '🗃️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_library_day_old_card_catalog', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+    ],
+  },
+  {
+    id: 'library_day_banned_books_section',
+    sceneId: 'library_day',
+    position: [2.0, 1.2, -3.0],
+    size: [1.5, 1.8, 0.6],
+    enterToast: 'Полка цензурированных стихов. Корешки — стёрты. Но — книги — на месте.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Полка запрещённых стихов',
+      description: 'Стеллаж за стойкой выдачи. Корешки — без названий. Книги — без обложек. Но — текст — цел.',
+      detailText: 'Гильдия требует стереть заголовки. Гильдия не требует сжигать. Потому что сжигание — это свидетельство. А безымянная полка — это — просто — полка. Но — текст — помнит. Текст — всегда — помнит. Мандельштам. Бродский. Цветаева. Имена — стёрты. Стихи — нет. Стихи — переживут — цензуру. Стихи — переживут — гильдию. Стихи — переживут — нас — всех.',
+      icon: '📕',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_library_day_banned_books_section', flagValue: true },
+      { type: 'addKarma', value: 5 },
+      { type: 'addSkill', skill: 'writing', value: 1 },
+    ],
+  },
+  {
+    id: 'library_day_reading_room_stain',
+    sceneId: 'library_day',
+    position: [0.5, 0.75, 1.5],
+    size: [1.2, 0.4, 1.2],
+    enterToast: 'Кофейное пятно на первом издании. Чьё-то — невнимание. Или — предательство.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Кофейное пятно на первом издании',
+      description: 'Стол в читальном зале. Открытая книга — и на ней — тёмное пятно, въевшееся в страницу.',
+      detailText: 'Первое издание. Бумага — желтоватая, хрупкая. Пятно — старое, уже не ототрёшь. Кто-то — читал. Кто-то — пил. Кто-то — разлил. Или — кто-то — разлил — нарочно. Пятно — на странице — с — стихом — про — свободу. Совпадение? Цензура — бывает — разной. Иногда — кофе. Иногда — пятно — громче — слов. Иногда — пятно — и — есть — слово.',
+      icon: '☕',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_library_day_reading_room_stain', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+  {
+    id: 'library_day_window_crack',
+    sceneId: 'library_day',
+    position: [4.0, 1.8, 0.0],
+    size: [0.2, 1.5, 1.5],
+    enterToast: 'Трещина в окне — от пули. Или — от камня. Или — от слова.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Пулевая трещина в стекле',
+      description: 'Окно на втором ярусе. В стекле — звёздная трещина. Центр — маленький, сквозной.',
+      detailText: 'Центр — сквозной. Калибр — 9 мм. Или — камень. Или — кулак. Звёздная паутина расходится от центра — как схема, как карта, как судьба. Кто — стрелял? В — кого? В — что? В — окно? В — библиотеку? В — знание? Пуля — не — убивает — книгу. Пуля — не — убивает — стих. Пуля — делает — дыру. Дыра — это — тоже — окно. Окно — в — другое — понимание.',
+      icon: '💥',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_library_day_window_crack', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+
+  // abandoned_factory — 4 new examine zones
+  {
+    id: 'abandoned_factory_graffiti_wall',
+    sceneId: 'abandoned_factory',
+    position: [-5.0, 1.4, -2.0],
+    size: [2.5, 1.2, 0.1],
+    enterToast: 'Граффити на стене — лозунги сопротивления, закрашенные гильдией. И — проступающие — снова.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Стена с граффити',
+      description: 'Бетонная стена цеха. Под слоем серой краски — проступают буквы. Гильдия закрашивала трижды.',
+      detailText: 'Серая — краска — гильдии. Под — ней — красная. Под — красной — белая. Под — белой — чёрная. Четыре — слоя. Четыре — попытки — стереть. Но — краска — проступает. Как — кровь — сквозь — бинты. Буквы: «ЗАВОД — ПОМНИТ». И — ниже: «МЫ — ТОЖЕ». И — ещё — ниже, — детским — почерком: «простите». Четыре — шрифта. Четыре — поколения. Четыре — слоя — сопротивления.',
+      icon: '🎨',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_abandoned_factory_graffiti_wall', flagValue: true },
+      { type: 'addKarma', value: 4 },
+      { type: 'addSkill', skill: 'writing', value: 1 },
+    ],
+  },
+  {
+    id: 'abandoned_factory_broken_lathe',
+    sceneId: 'abandoned_factory',
+    position: [3.0, 0.8, -1.5],
+    size: [1.5, 1.2, 1.0],
+    enterToast: 'Сломанный токарный станок. Последняя деталь — секретна.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Сломанный токарный станок',
+      description: 'Старый токарный станок у стены. Патрон — заклинен. Суппорт — ржавый. Но — на патроне — следы.',
+      detailText: 'Следы — от последней детали. Резец — не сменён. Значит — работал — до — конца. До — последнего — прохода. Что — он — точил? Не — гайку. Не — болт. Форма — сложная. Форма — с — гранями. Форма — с — допусками — в — микрон. Это — не — серийная — деталь. Это — единственная. Это — ключ. Или — замок. Или — то — и — другое. Станок — точил — секрет. Потом — сломался. Или — его — сломали. Секреты — не — бывают — бесконечными. Точность — требует — платы.',
+      icon: '⚙️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_abandoned_factory_broken_lathe', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+    ],
+  },
+  {
+    id: 'abandoned_factory_fuse_box',
+    sceneId: 'abandoned_factory',
+    position: [-2.0, 1.5, 4.0],
+    size: [0.6, 1.0, 0.3],
+    enterToast: 'Разветвительная коробка — кустарная, но — гудит. Кто-то — запитал — завод — нелегально.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Кустарная разветвительная коробка',
+      description: 'Стальная коробка на стене. Провода — разноцветные, скрученные вручную. Гудит.',
+      detailText: 'Гудит — значит — ток — есть. Завод — официально — обесточен. Но — коробка — говорит — другое. Провода — не — по — ГОСТу. Изолента — вместо — клемм. Но — работает. Кто-то — рискнул. Кто-то — подключил — завод — к — городской — сети — нелегально. Кто-то — даёт — цеху — электричество. Зачем? Не — для — станков. Станки — мертвы. Для — света. Для — «Зари-М». Для — машины — в — подвале. Кому-то — нужен — ток — в — мёртвом — заводе. Кто-то — даёт. Кто-то — платит. Кто-то — гудит.',
+      icon: '🔌',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_abandoned_factory_fuse_box', flagValue: true },
+      { type: 'addKarma', value: 4 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+    ],
+  },
+  {
+    id: 'abandoned_factory_oil_stain_map',
+    sceneId: 'abandoned_factory',
+    position: [1.0, 0.0, 2.5],
+    size: [2.0, 0.1, 2.0],
+    enterToast: 'Масляные пятна на полу. Если смотреть сверху — похоже на карту города.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Масляная карта на полу',
+      description: 'Пятна машинного масла на бетонном полу. Разлиты давно — въелись. Форма — странная.',
+      detailText: 'Сверху — видно. Линии — как улицы. Пятна — как площади. Тонкая — линия — как — река. Крупное — пятно — как — башня — гильдии. Совпадение? Нет. Слишком — точное. Кто-то — разлил — масло — по — карте — города. Зачем? Может — маршрут. Может — план. Может — послание — тем, — кто — умеет — смотреть — вниз. Кто — смотрит — на — пол? Никто. Кроме — тех, — кто — упал. Или — тех, — кто — ищет. Ищущие — смотрят — вниз. И — видят — карту. И — идут.',
+      icon: '🗺️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_abandoned_factory_oil_stain_map', flagValue: true },
+      { type: 'addKarma', value: 5 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+
+  // cafe_evening — 2 new examine zones
+  {
+    id: 'cafe_evening_jukebox',
+    sceneId: 'cafe_evening',
+    position: [-3.0, 1.0, -2.5],
+    size: [0.8, 1.6, 0.6],
+    enterToast: 'Музыкальный автомат — застрял на одной песне. Три — года.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Музыкальный автомат',
+      description: 'Ретро-джукбокс у стены. Неоновая подсветка — половина ламп сгорела. Кнопки — не работают.',
+      detailText: 'Три — года — одна — песня. Кассету — не — сменить. Механизм — заклинило. Или — кто-то — заклинил. Песня — «Подмосковные вечера». Ирония — в — том, — что — вечера — здесь — не — подмосковные. Вечера — здесь — киберпанковые. Но — мелодия — пробивается — сквозь — неон. Мелодия — старше — гильдии. Мелодия — не — нуждается — в — обновлении. Мелодия — застряла. Как — мы — все. Застрявшие — в — одном — аккорде. Но — аккорд — красивый. Может — и — не — надо — менять.',
+      icon: '🎵',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_cafe_evening_jukebox', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'rhythm', value: 1 },
+    ],
+  },
+  {
+    id: 'cafe_evening_tipped_chair',
+    sceneId: 'cafe_evening',
+    position: [1.5, 0.5, 1.0],
+    size: [0.5, 0.8, 0.5],
+    enterToast: 'Опрокинутый стул. Со — вчерашнего — спора. Или — ещё — раньше.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Опрокинутый стул',
+      description: 'Деревянный стул на боку. Никто не поднял. Ножка — сколотая. На полу — царапина.',
+      detailText: 'Вчера — спор. Голоса — громкие. Имена — назывались. Потом — стул. Потом — тишина. Потом — все — ушли. Стул — остался. Стул — свидетель. Стул — не — умеет — лгать. Стул — просто — лежит. Как — упавшая — истина. Кто-то — пообещал — поднять. Не — поднял. Обещания — в — этом — городе — не — держатся. Стул — держится. За — царапину. За — пол. За — вчера. Вчера — не — вытереть. Вчера — не — поднять. Вчера — можно — только — запомнить.',
+      icon: '🪑',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_cafe_evening_tipped_chair', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'empathy', value: 1 },
+    ],
+  },
+
+  // office_day — 2 new examine zones
+  {
+    id: 'office_day_server_log_printout',
+    sceneId: 'office_day',
+    position: [2.5, 0.85, -2.0],
+    size: [0.8, 0.3, 0.6],
+    enterToast: 'Распечатка серверных логов. Никто — не — читал. Кроме — одного — человека.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Распечатка серверных логов',
+      description: 'Стопка бумаги на краю стола. Бумага — желтоватая. Шрифт — моноширинный. Страниц — много.',
+      detailText: 'Логи — за — три — месяца. Никто — не — смотрел. Зачем — печатать — то, — что — не — читаешь? Или — читал — кто-то. Кто-то — один. Кто-то — подчеркнул — строки. Карандашом. Тихо. Без — следа — в — цифровом — логе. Подчёркнуты — ошибки — 432 — герца. Все — ошибки — на — одной — частоте. Все — ошибки — в — одно — время. 03:14. Кто-то — знал. Кто-то — печатал. Кто-то — подчёркивал. Кто-то — ждал. Ждал — того, — кто — найдёт — распечатку. Это — ты.',
+      icon: '📄',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_office_day_server_log_printout', flagValue: true },
+      { type: 'addKarma', value: 4 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+    ],
+  },
+  {
+    id: 'office_day_whiteboard_equation',
+    sceneId: 'office_day',
+    position: [-1.0, 1.4, -4.0],
+    size: [2.0, 1.2, 0.1],
+    enterToast: 'Уравнение на доске. Никто — не — помнит, — кто — написал. И — что — оно — значит.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Уравнение на белой доске',
+      description: 'Маркерная доска у стены. Одно уравнение — крупным синим маркером. Всё остальное — стёрто.',
+      detailText: 'Уравнение — длинное. Переменные — не — стандартные. Не — x — и — y. Буквы — кириллица. «П», «С», «К», «В». Поэт? Стих? Код? Время? Или — всё — сразу. Кто — написал? Не — помнит — никто. Когда? Маркер — свежий. Стереть — не — успели. Или — не — решились. Уравнение — выглядит — как — шифр. Или — как — стих — в — математической — записи. Или — как — код — в — поэтической. Граница — размыта. Как — всегда — в — этом — городе. Где — код — и — стих — одно — и — то — же.',
+      icon: '📝',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_office_day_whiteboard_equation', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'writing', value: 1 },
+    ],
+  },
+
   /* ═══════════════════════════════════════════════════════════════════
      COMBAT ENCOUNTERS — replaced by visible patrolling creeps
      (src/data/creepPatrols.ts + PatrollingCreeps.tsx). The old invisible
