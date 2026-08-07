@@ -3024,3 +3024,55 @@ Stage Summary:
 - 13 files changed, +1343/-15 lines. Typecheck clean. Poems untouched. All invariants preserved.
 - Key wins: deplasticized player/NPC materials, 38+ filmic CSS keyframes, minimap wired, 70+ ambient barks, 12 examine zones, 13 dynamic props, 3 guided onboarding components.
 - Next: CSM shadows, Mixamo clip remap, more scene enrichment, QuestObjectiveCard adapter, 3D menu background.
+
+---
+Task ID: 16 (orchestrator) — cron-tick: QA + deplasticize-enemies + filmic CSS + content + QuestObjectiveCard
+Agent: main (orchestrator)
+Task: Cron-triggered AAA improvements round — QA on live site, deplasticize enemy materials, add filmic CSS polish, expand content, wire QuestObjectiveCard orphan HUD mount.
+
+Work Log:
+- Pulled latest (already at 1d01ab72, Task 15). Committed prior unstaged worklog entry first.
+- Baseline typecheck: exit 0.
+- QA via agent-browser on https://volodka.vercel.app/ (PRE-push): full flow menu → new game → skip prologue → advance 8 narrative beats → enter exploration → WASD move → E interact. 0 console errors. Site STABLE. No bugs to fix — proceeding to feature development.
+- Dispatched 4 parallel work-streams with disjoint file scopes:
+  • WS16-A (deplasticize enemies): enemyArchetypes.tsx, PatrollingCreeps.tsx, AmbientSkinnedMidLod.tsx — SUBAGENT RETURNED EMPTY RESPONSE. Orchestrator took over directly and completed the task.
+  • WS16-B (filmic CSS + HUD polish): hud-filmic.css + 6 HUD part components — SUCCESS, exit 0.
+  • WS16-C (content expansion): triggerZones.ts, part3-mid-expanded.ts, part4-late-expanded.ts, idleMonologues.ts, chkTolpa/npcs.ts — SUCCESS, exit 0.
+  • WS16-D (QuestObjectiveCard adapter + wiring): NEW questObjectiveCardAdapter.ts + ExplorationHUD.tsx — SUCCESS, exit 0.
+
+Implementation — WS16-A (orchestrator-direct, 3 files):
+- enemyArchetypes.tsx: 4 enemy body materials (Ethereal/Golem/Agent/Censor) upgraded from MeshStandardMaterial to MeshPhysicalMaterial with sheen (0.2-0.4) + sheenRoughness (0.4-0.6). All existing color/roughness/metalness/emissive preserved. CreepBodyProps.bodyMatRef type updated to MeshPhysicalMaterial.
+- PatrollingCreeps.tsx: bodyMatRef type updated to MeshPhysicalMaterial. .emissiveIntensity writes still work (MeshPhysicalMaterial extends MeshStandardMaterial).
+- AmbientSkinnedMidLod.tsx: post-clone organic-surface upgrade path. When cloning glTF materials, if material name matches /skin|face|body|head|hand|arm|leg|flesh|beard|stubble|mouth|hair|cloth|fabric|hoodie|jeans|shirt/, upgrade to MeshPhysicalMaterial with sheen 0.35/sheenRoughness 0.5.
+
+Implementation — WS16-B (subagent, 7 files, exit 0):
+- 6 new filmic CSS micro-animations (hud-filmic.css +178 lines): achievement-burst, notification-slide-in, hint-attention, combo-ramp, compass-needle-settle, mood-wave. All reduced-motion gated.
+- Wired onto 6 HUD components (AchievementPopup, HUDNotificationFeed, ContextualHint, ComboCounter, CompassIndicator, EnvironmentMoodIndicator).
+
+Implementation — WS16-C (subagent, 5 files, exit 0):
+- 12 new examine zones across 5 under-served scenes (pier_evening +2, underground_bunker +3, library_basement +3, guild_mainframe +2, city_square +2).
+- 8 new karma-gated dialogue choices (4 in part3-mid-expanded + 4 in part4-late-expanded). 4 HIGH (minKarma 50-70) + 4 LOW (maxKarma 10-25).
+- 13 new idle monologue lines for 3 under-served scenes (factory_basement +5, pier_evening +4, library_basement +4).
+- 21 new ambient bark lines for 3 previously-silent CHK NPCs (chk_smert, chk_stalker, chk_ritka) — added in chkTolpa/npcs.ts (file list deviation flagged as low merge-conflict risk).
+
+Implementation — WS16-D (subagent, 2 files, exit 0):
+- NEW questObjectiveCardAdapter.ts (272 lines): pure QuestState+QuestDefinition→QuestData adapter. adaptQuestToCardData() + useActiveQuestCardData() hook.
+- ExplorationHUD.tsx (+37 lines): QuestObjectiveCard mounted in framer-motion AnimatePresence, gated on !isMobile && gamePhase==='exploration' && activeQuestCardData !== null. Wrapped with hud-filmic-glow-breathe. compact=true, showRewards=false.
+
+QA — POST-push (commit b61ac583):
+- Full flow on https://volodka.vercel.app/: menu → new game → skip prologue → advance 8 narrative beats → enter exploration → WASD move → E interact. 0 console errors. All WS16 changes deployed stable.
+
+Stage Summary:
+- 17 source files modified (1 new). +982/-14 lines across 1 commit (b61ac583).
+- Typecheck: exit 0. Poems untouched. All invariants preserved (interpolate=false, KCC ownership, runMainPlayerMovement, postprocessing depth-blit patch — all untouched).
+- HEADLINE WINS this round:
+  1. Deplasticized enemy bodies: 4 enemy archetypes now use MeshPhysicalMaterial with sheen.
+  2. Deplasticized LOD NPCs: AmbientSkinnedMidLod clone path auto-upgrades organic-named glTF materials to MeshPhysicalMaterial with sheen.
+  3. 6 new filmic CSS micro-animations wired onto 6 more HUD components (total now 44+ keyframes).
+  4. QuestObjectiveCard orphan HUD mount ALIVE: pure adapter bridges QuestState+QuestDefinition→QuestData. Active quest card visible top-right of ExplorationHUD.
+  5. 12 new examine zones across 5 under-served scenes.
+  6. 8 new karma-gated dialogue choices in Acts 3-4.
+  7. 13 new idle monologue lines for 3 under-served scenes.
+  8. 21 new ambient bark lines for 3 CHK NPCs.
+- QA: live site stable pre-push AND post-push, 0 console errors, all flows clean.
+- Unresolved next-phase priorities: (a) CSM for outdoor shadows; (b) Mixamo↔Quaternius real-clip remap (jump/fall/land clips); (c) WorldSpaceLabels wiring (needs 3D camera projection); (d) More Acts 3-4 content/story nodes; (e) Motion-blur lite for cutscenes; (f) Deplasticize scene-specific emissive surfaces (low priority — they're correct as standard); (g) 3D background scene for main menu (AAA feel); (h) Ambient barks for remaining 3 CHK NPCs (chk_elis, chk_guest_devops, chk_guest_analyst); (i) QuestObjectiveCard visual QA on live site (verify positioning vs CriticalStatusWhisper on short viewports); (j) Author should revoke+rotate the GitHub PAT shared in chat.
