@@ -43,7 +43,7 @@ export default defineConfig({
         test: {
           name: 'unit',
           environment: 'node',
-          include: ['src/**/*.test.ts'],
+          include: ['src/**/*.test.ts', 'vite/**/*.test.ts'],
           exclude: ['src/**/*.integration.test.ts'],
           setupFiles: ['./vitest/setupUnitTests.ts'],
         },

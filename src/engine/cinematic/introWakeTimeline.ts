@@ -5,6 +5,7 @@
 
 import {
   BED_POSITION,
+  BED_SIT_EDGE,
   CHAIR_POSITION,
   DESK_EXPLORATION_CAM,
   DESK_POSITION,
@@ -49,12 +50,11 @@ export const INTRO_WAKE_TIMELINE: CinematicTimelineDef = {
       duration: WAKEUP_PHASE.terminal,
       actor: {
         mode: 'in_place',
-        // Player is lying in bed — play the Mixamo 'sleeping' clip (Lie_Idle).
-        // The embedded Quaternius GLB has no lying-down animation.
+        // Лежа на спине — глаза открываются, видим потолок
         clip: 'sleeping',
         keyframes: [
-          { t: 0, position: vec3(BED_POSITION), rotation: [0.55, 0, 0.35], facingY: 0 },
-          { t: 1, position: vec3(BED_POSITION), rotation: [0.55, 0, 0.35], facingY: 0 },
+          { t: 0, position: vec3(BED_POSITION), rotation: [1.35, 0, 0.35], facingY: 0 },
+          { t: 1, position: vec3(BED_POSITION), rotation: [1.25, 0, 0.25], facingY: 0 },
         ],
       },
       camera: {
@@ -74,12 +74,12 @@ export const INTRO_WAKE_TIMELINE: CinematicTimelineDef = {
       duration: WAKEUP_PHASE.rise,
       actor: {
         mode: 'in_place',
-        // Still in bed but rising — keep 'sleeping' clip until standing phase.
-        // The keyframe position/rotation lerps the model upward.
-        clip: 'sleeping',
+        // Поднимается с лежачего в сидячее на краю кровати — а не стоя внутри текстуры
+        clip: 'sitting',
         keyframes: [
-          { t: 0, position: [BED_POSITION.x, 0.42, BED_POSITION.z], rotation: [0.55, 0, 0.35], facingY: 0 },
-          { t: 1, position: [BED_POSITION.x, 0.01, BED_POSITION.z], rotation: [0, 0, 0], facingY: 0 },
+          { t: 0, position: [BED_POSITION.x, 0.55, BED_POSITION.z], rotation: [1.2, 0, 0.3], facingY: 0 },
+          { t: 0.6, position: [BED_SIT_EDGE.x, 0.55, BED_SIT_EDGE.z], rotation: [0.25, 0, 0], facingY: Math.PI * 0.6 },
+          { t: 1, position: vec3(BED_SIT_EDGE), rotation: [0, Math.PI * 0.15, 0], facingY: Math.PI * 0.5 },
         ],
       },
       camera: { mode: 'waypoint', to: wpToData(WAKEUP_CAMERA_WAYPOINTS[1]) },
@@ -91,7 +91,8 @@ export const INTRO_WAKE_TIMELINE: CinematicTimelineDef = {
         mode: 'in_place',
         clip: 'idle',
         keyframes: [
-          { t: 0, position: vec3(BED_POSITION), facingY: Math.PI * 0.85 },
+          { t: 0, position: vec3(BED_SIT_EDGE), facingY: Math.PI * 0.5 },
+          { t: 0.4, position: [(BED_SIT_EDGE.x + STAND_POSITION.x) / 2, 0.01, (BED_SIT_EDGE.z + STAND_POSITION.z) / 2], facingY: walkFacing * 0.5 },
           { t: 1, position: vec3(STAND_POSITION), facingY: walkFacing },
         ],
       },

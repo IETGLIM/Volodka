@@ -20,59 +20,91 @@ export function useMenuScreen({ loadGame, resetGame, musicEnabled, toggleMusic }
   const [showSettings, setShowSettings] = useState(false);
   const [isFadingOut, setIsFadingOut] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
-  // SkipPrologueOverlay mount flag — set when the player picks "Пропустить пролог".
-  // The overlay runs a 3-page typewriter intro BEFORE the existing
-  // skip_prologue_intro story node is opened (the story node remains the spawn
-  // authority and is preserved as a fallback).
+  // SkipPrologueOverlay — 3-page typewriter before skip_prologue_intro node
   const [showSkipPrologueOverlay, setShowSkipPrologueOverlay] = useState(false);
+  // ProloguePerfection — идеальный старт "С пролога": boot console + breath + eye + title + handoff
+  const [showProloguePerfection, setShowProloguePerfection] = useState(false);
 
   const menuItems = useMemo(() => buildMenuItems(hasSave), [hasSave]);
 
-  const handleNewGame = useCallback((skipPrologue = false) => {
-    if (isFadingOut) return;
-    setIsFadingOut(true);
-    safePlayMenuSfx(audioEngine.playSfx.bind(audioEngine), 'confirm');
+  // Внутренний хелпер — финальный спавн кровати + intro_wakeup cutscene
+  const spawnPrologueCinematic = useCallback(() => {
+    try {
+      resetGame();
+    } catch (error) {
+      console.error('[MenuScreen] resetGame failed:', error);
+      setIsFadingOut(false);
+      setShowProloguePerfection(false);
+      return;
+    }
 
-    window.setTimeout(() => {
+    const store = useGameStore.getState();
+    store.setMainMenuOpen(false);
+    store.setCurrentNodeId('start');
+    store.setPlayerPosition([1.78, 0.35, 2.05]);
+    store.setPlayerRotation(Math.PI);
+    store.setCutscene('intro_wakeup', []);
+  }, [resetGame]);
+
+  const handleNewGame = useCallback(
+    (skipPrologue = false) => {
+      if (isFadingOut) return;
+      setIsFadingOut(true);
+      // FIX S15-MUSIC: явно резюмим AudioContext на user gesture — Chrome требует
+      // иначе ambientEngine и AudioEngine остаются suspended и музыка отсутствует
       try {
-        // resetGame already leaves introActive=false / introSeen=true (no matrix poem).
-        resetGame();
-      } catch (error) {
-        console.error('[MenuScreen] resetGame failed:', error);
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const mod = (window as any).__VOLODKA_AUDIO_CTX__ as { resume?: () => void } | undefined;
+        mod?.resume?.();
+      } catch {}
+      try {
+        // Динамический импорт чтобы не тянуть AudioEngine в меню чанк
+        import('@/engine/SharedAudioContext').then(({ getSharedAudioContext, whenAudioReady }) => {
+          const ctx = getSharedAudioContext();
+          ctx?.resume?.();
+          whenAudioReady(() => {
+            // Предзагрузка аудио — чтобы не было тишины
+            import('@/engine/audio/AudioEngine').then(({ audioEngine }) => {
+              audioEngine.playSfx('confirm');
+            });
+          });
+        });
+      } catch {}
+      safePlayMenuSfx(audioEngine.playSfx.bind(audioEngine), 'confirm');
+
+      window.setTimeout(() => {
         setIsFadingOut(false);
-        return;
-      }
 
-      const store = useGameStore.getState();
-      store.setMainMenuOpen(false);
+        if (!skipPrologue) {
+          setShowProloguePerfection(true);
+        } else {
+          setShowSkipPrologueOverlay(true);
+        }
+      }, NEW_GAME_FADE_MS);
+    },
+    [isFadingOut],
+  );
 
-      if (!skipPrologue) {
-        // Prologue path: spawn in bed, play cinematic, then open 'start' node
-        // FIX S12-A1: spawn on the visible bed — matches BED_POSITION in
-        // wakeUpCinematic.ts (was [0.5, 0.01, 2.4] which was 1.3m LEFT of the
-        // visible gothicBed at [1.78, 0, 2.05]).
-        store.setCurrentNodeId('start');
-        store.setPlayerPosition([1.78, 0.35, 2.05]);
-        store.setPlayerRotation(Math.PI);
-        store.setCutscene('intro_wakeup', []);
-        // Canvas stays mounted under the menu (CSS-hidden). CinematicTimelineRunner
-        // watches the live cutscene slice + canvas:first-frame / scene:loaded.
-      } else {
-        // Skip-prologue path: mount the 3-page SkipPrologueOverlay first.
-        // The overlay's onComplete handler (handleSkipPrologueComplete) opens
-        // the existing skip_prologue_intro story node — preserves spawn logic.
-        setShowSkipPrologueOverlay(true);
-      }
-    }, NEW_GAME_FADE_MS);
-  }, [isFadingOut, resetGame]);
+  const handleProloguePerfectionComplete = useCallback(() => {
+    setShowProloguePerfection(false);
+    // Небольшая пауза для красивого fade в cinematic — 180ms
+    window.setTimeout(() => {
+      spawnPrologueCinematic();
+    }, 180);
+  }, [spawnPrologueCinematic]);
 
   const handleSkipPrologueComplete = useCallback(() => {
     setShowSkipPrologueOverlay(false);
-    // Defer to the existing story node — it owns the spawn (sceneId=volodka_room)
-    // and its choice effects set woke_up / skip_prologue_seen / morning_ritual.
+    try {
+      resetGame();
+    } catch (e) {
+      console.error('[MenuScreen] resetGame failed on skip:', e);
+      return;
+    }
     const store = useGameStore.getState();
+    store.setMainMenuOpen(false);
     store.openNarrativeOverlay('skip_prologue_intro', 'story');
-  }, []);
+  }, [resetGame]);
 
   const handleContinue = useCallback(() => {
     if (!hasSave) return;
@@ -122,7 +154,8 @@ export function useMenuScreen({ loadGame, resetGame, musicEnabled, toggleMusic }
     safePlayMenuSfx(audioEngine.playSfx.bind(audioEngine), 'ui_close');
   }, []);
 
-  const navigationEnabled = !showAbout && !showSettings && !isFadingOut && !showSkipPrologueOverlay;
+  const navigationEnabled =
+    !showAbout && !showSettings && !isFadingOut && !showSkipPrologueOverlay && !showProloguePerfection;
 
   return {
     hasSave,
@@ -141,5 +174,7 @@ export function useMenuScreen({ loadGame, resetGame, musicEnabled, toggleMusic }
     navigationEnabled,
     showSkipPrologueOverlay,
     handleSkipPrologueComplete,
+    showProloguePerfection,
+    handleProloguePerfectionComplete,
   };
 }

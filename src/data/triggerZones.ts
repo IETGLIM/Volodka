@@ -5276,6 +5276,175 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     ],
   },
 
+  /* ─────────────── solnysh_room — ambient lore (2 new zones) ─────────────── */
+  {
+    id: 'solnysh_palette_box',
+    sceneId: 'solnysh_room',
+    position: [-2.2, 0.4, -1.6],
+    size: [0.6, 0.4, 0.4],
+    enterToast: 'Деревянный ящик с красками — цвета выдавлены не экономно.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Ящик с красками',
+      description: 'Настоящие пигменты, не цифровые. Солныш смешивает их руками.',
+      detailText: 'Следы пальцев на тюбиках — «Кобальт», «Лазурь», «Охра». Солныш не прощает себе «мёртвый» цвет. На крышке выцарапано: «цвет — это когда код не нужен». Дизайнер против «Паноптикума» — кистью.',
+      icon: '🎨',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_solnysh_palette_box', flagValue: true },
+      { type: 'addSkill', skill: 'writing', value: 1 },
+      { type: 'showThought', thought: 'Пигменты — как буквы. Смешал — получил смысл. Цифровой цвет — всегда — формула. Живой — всегда — смесь. Солныш — не «дизайнер». Солныш — переводчик. С того — на этот.', thoughtDuration: 6000 },
+    ],
+  },
+  {
+    id: 'solnysh_frame_photo',
+    sceneId: 'solnysh_room',
+    position: [-2.6, 1.5, 0.8],
+    size: [0.5, 0.6, 0.1],
+    enterToast: 'Фотография в простой раме — на обороте чья-то строчка.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Фотография в раме',
+      description: 'Стол, на нём — эскизы города, и рука, держащая карандаш. На обороте — строчка карандашом.',
+      detailText: 'Почерк Солныш: «город без вышки смотрит на нас — мы и есть его свет». Фотография — не глянцевая. Фото плёночное, с царапинкой. Такие не оцифровывают. Такие — хранят в руках.',
+      icon: '🖼️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_solnysh_frame_photo', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+      { type: 'showThought', thought: 'Плёночная фотография. Царапинка — на стекле. Оцифровать — нельзя. Исчезнуть — не может. Солныш — хранит. Так хранят — то, что — нельзя — сжать. То, что — должно — дышать.', thoughtDuration: 6000 },
+    ],
+  },
+
+  /* ─────────────── zarema_albert_room — ambient lore (2 new zones) ─────────────── */
+  {
+    id: 'zarema_shared_table',
+    sceneId: 'zarema_albert_room',
+    position: [2.2, 0.7, -1.2],
+    size: [1.2, 0.5, 0.8],
+    enterToast: 'Общий стол — детский рисунок под стеклом.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Семейный стол',
+      description: 'Кружки, тетрадь Заремы, отвёртка Альберта и детский рисунок — на одной плоскости.',
+      detailText: 'Рисунок: домик с тремя окнами и солнце с улыбкой. Под ним — крупно, детским почерком: «когда папа починит всё». Альберт чинит вещи, Зарема — людей. На столе — их война и их мир: починка, счёт, надежда.',
+      icon: '🪑',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_zarema_shared_table', flagValue: true },
+      { type: 'addKarma', value: 4 },
+      { type: 'addSkill', skill: 'empathy', value: 1 },
+      { type: 'showThought', thought: 'Домик. Три окна. Солнце — с улыбкой. «Когда папа починит всё». Дети — не знают — о «Паноптикуме». Дети — знают — что папа — чинит. Всё. Когда-нибудь. Папа — починит. И всё.', thoughtDuration: 6500 },
+    ],
+  },
+  {
+    id: 'albert_radio_desk',
+    sceneId: 'zarema_albert_room',
+    position: [2.6, 0.8, -2.4],
+    size: [0.6, 0.5, 0.4],
+    enterToast: 'Радиола с отвинченной крышкой — Альберт снова паяет.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Радиола Альберта',
+      description: 'Старая радиола, паяльник, олово. Схема от руки на обрывке газеты.',
+      detailText: 'Альберт говорит: «то, что можно починить руками, не даст тебя прослушать». На схеме — подпись: «частота свободы — 103.5». Радиола не подключена к сети — ей нечего передавать «Паноптикуму». Только людям — в эфир.',
+      icon: '📻',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_albert_radio_desk', flagValue: true },
+      { type: 'addSkill', skill: 'coding', value: 1 },
+      { type: 'addKarma', value: 3 },
+      { type: 'showThought', thought: 'Частота свободы — 103.5. Не в диапазоне «Паноптикума». Радиола — не подключена к сети. Она — не — провод. Она — окно. Альберт — чинит — окна. В стенах — из — проводов.', thoughtDuration: 6000 },
+    ],
+  },
+
+  /* ─────────────── pier_evening — ambient lore (2 new zones) ─────────────── */
+  {
+    id: 'pier_moored_boat',
+    sceneId: 'pier_evening',
+    position: [2.6, 0.4, -3.4],
+    size: [1.8, 0.8, 3.0],
+    enterToast: 'Пришвартованная лодка — борт залатан жестью от консервов.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Лодка у сваи',
+      description: 'Старая лодка, залатанная жестью. Весла — не парные: одно самодельное.',
+      detailText: 'Кто-то переплыл на ней реку в ночь Краха — и оставил. На скамье — свёрнутая в трубочку бумага, пожелтевшая, но сухая: «если ты читаешь это — река ещё никому не принадлежит». Вёсла — чужого, не здешнего дерева.',
+      icon: '🛶',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_pier_moored_boat', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'rhythm', value: 1 },
+      { type: 'showThought', thought: 'Лодка — из ночи Краха. Переплыли — и оставили. Как улику — или как — спасение. Река — ещё никому — не принадлежит. Река — помнит — всех. И меня — тоже — вспомнит.', thoughtDuration: 6000 },
+    ],
+  },
+  {
+    id: 'pier_coastal_post',
+    sceneId: 'pier_evening',
+    position: [-2.4, 1.2, -2.0],
+    size: [0.3, 1.6, 0.3],
+    enterToast: 'Ржавый фонарный столб у края пирса — скрипит на ветру.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Фонарный столб',
+      description: 'Столб у края пирса. Лампу разбили — но кто-то закрепил фонарик на скотч.',
+      detailText: 'Лампа разбита давно — «Паноптикум» не меняет фонари у воды. Но на столбе — светодиодный фонарик, примотанный синей изолентой. Светит. Кто-то — не просил разрешения. Кто-то — просто — чинит. Свет — это тоже форма неподчинения.',
+      icon: '💡',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_pier_coastal_post', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+      { type: 'showThought', thought: 'Фонарик — на изоленте. Не в реестре. Не в сети. Просто — светит. Кто-то — не ждал разрешения. Кто-то — взял — и починил. Свет — у воды. Свет — у тех, кто — не попросил. А я — попрошу?', thoughtDuration: 6000 },
+    ],
+  },
+
+  /* ─────────────── factory_roof, city_square & zarema_room — ambient lore ─────────────── */
+  {
+    id: 'factory_roof_smoke_stack', sceneId: 'factory_roof', position: [6.5, 1.8, 1.5], size: [0.9, 2.0, 0.9],
+    enterToast: 'Дымовая труба. На кожухе — мелом: «дым — это стихи, которые не успели».', isOneTime: true, interactionType: 'examine',
+    examineData: { title: 'Дымовая труба', description: 'Высокая труба на краю крыши. Из неё тянется слабый серый дым.', detailText: 'Кто-то написал мелом: «дым — это стихи, которые не успели». Дым идёт — значит, внутри ещё горит. Гильдия гасит печи, но что-то тлеет. Тлеет — и ждёт, пока поднесут бумагу. Стихи, которые не успели — самое честное. Им не нужно быть красивыми. Им нужно — успеть.', icon: '🏭' },
+    effects: [{ type: 'setFlag', flag: 'examined_factory_roof_smoke_stack', flagValue: true }, { type: 'addKarma', value: 3 }, { type: 'addSkill', skill: 'writing', value: 1 }, { type: 'showThought', thought: 'Дым — стихи, которые не успели. Я — почти дым. Почти — ушёл — в трубу. Но — внутри — ещё тлеет. Стихи, которые не успели — те, что — должны — успеть. Я — должен — успеть.', thoughtDuration: 6500 }],
+  },
+  {
+    id: 'factory_roof_dry_gutter', sceneId: 'factory_roof', position: [-6.0, 1.0, -1.0], size: [2.0, 0.3, 0.3],
+    enterToast: 'Сухой водосток. На дне — горсть листьев и полустёртый адрес.', isOneTime: true, interactionType: 'examine',
+    examineData: { title: 'Сухой водосток', description: 'Ржавый водосток у парапета. Дождей давно не было — он сухой и шуршит от ветра.', detailText: 'На дне — листья, снесённые ещё прошлой осенью, и клочок бумаги с адресом, полустёртым дождём. Кто-то хотел отправить письмо с крыши — не доверял почте «Паноптикума». Адрес почти читается: «…кая, д. 7, чердак». Чердак. Там — старые вещи. Там — старые голоса. Там — кто-то — тоже — пишет.', icon: '🍂' },
+    effects: [{ type: 'setFlag', flag: 'examined_factory_roof_dry_gutter', flagValue: true }, { type: 'addKarma', value: 2 }, { type: 'addSkill', skill: 'intuition', value: 1 }, { type: 'showThought', thought: 'Письмо — с крыши. Не через сеть. Через — ветер. Чердак — адрес — почти стёрт. Как — всё, что — по-настоящему — важно. Стирается — само. Пока — кто-то — не — запишет. Пока — кто-то — не — донесёт.', thoughtDuration: 6000 }],
+  },
+  {
+    id: 'city_square_tram_stop', sceneId: 'city_square', position: [4.2, 1.0, -2.0], size: [1.6, 2.2, 0.6],
+    enterToast: 'Остановка трамвая. На табло — один маршрут, и тот — «отменён».', isOneTime: true, interactionType: 'examine',
+    examineData: { title: 'Трамвайная остановка', description: 'Металлический навес с побитым табло. Расписание выцвело. Скажи кто-нибудь — куда идут трамваи теперь.', detailText: 'На стекле табло — следы пальцев и наклейка поверх расписания: «движение приостановлено». Кто-то подрисовал фломастером: «как будто оно когда-то было». Трамваи не ходят с Краха. Но остановка — стоит. Люди — ждут. Привычка ждать — сильнее, чем приказ не ждать. Остановка — храм терпения этого города.', icon: '🚋' },
+    effects: [{ type: 'setFlag', flag: 'examined_city_square_tram_stop', flagValue: true }, { type: 'addKarma', value: 3 }, { type: 'addSkill', skill: 'empathy', value: 1 }, { type: 'showThought', thought: 'Люди ждут трамвая, которого — нет. Ждут — по привычке. По привычке — хранят. По привычке — помнят маршруты, которых — нет. Привычка — не слабость. Привычка — память. Память — сопротивление.', thoughtDuration: 6000 }],
+  },
+  {
+    id: 'city_square_street_piano', sceneId: 'city_square', position: [-4.5, 0.4, 2.5], size: [1.4, 1.0, 1.2],
+    enterToast: 'Уличное пианино. Крышка приоткрыта, на струнах — пыль и мелодия.', isOneTime: true, interactionType: 'examine',
+    examineData: { title: 'Уличное пианино', description: 'Расстроенное пианино, вынесенное на площадь. Кто-то оставил листок: «сыграй, если помнишь».', detailText: 'Клавиши жёлтые от солнца, на струнах — пыль. Но на подставке — свежий листок: «сыграй, если помнишь». Гильдия не забирает инструмент — у площади свои законы. Здесь кто-то играл, когда город ещё пел. Пианино не подключено к сети. Поэтому оно — помнит. Поэтому оно — настоящее.', icon: '🎹' },
+    effects: [{ type: 'setFlag', flag: 'examined_city_square_street_piano', flagValue: true }, { type: 'addKarma', value: 4 }, { type: 'addSkill', skill: 'rhythm', value: 1 }, { type: 'showThought', thought: '«Сыграй, если помнишь». Пианино — не в сети. Значит — помнит. Всё — настоящее — не в сети. Пыль — на струнах. Мелодия — в голове. У того, кто — помнит. Я — помню. Почти. Может — сыграю.', thoughtDuration: 6500 }],
+  },
+  {
+    id: 'zarema_room_sewing_machine', sceneId: 'zarema_room', position: [-4.2, 0.7, 2.0], size: [1.0, 0.9, 0.6],
+    enterToast: 'Швейная машинка. В катушке — нить, которой не хватило бы на знамя.', isOneTime: true, interactionType: 'examine',
+    examineData: { title: 'Швейная машинка', description: 'Старая ножная машинка. На столике — напёрсток и обрезки ткани с узорами.', detailText: 'Зарема штопает. Не из нужды — из упрямства. На ткани — узоры, которых нет в каталогах гильдии. «То, что я шью руками, — не сможет занять кто-то чужой». Машинка — ножная, без электроники. Гильдии не за что зацепиться. Руки помнят стежки. Узоры — живут.', icon: '🧵' },
+    effects: [{ type: 'setFlag', flag: 'examined_zarema_room_sewing_machine', flagValue: true }, { type: 'addKarma', value: 3 }, { type: 'addSkill', skill: 'rhythm', value: 1 }, { type: 'showThought', thought: 'Стежок — за стежком. Как — рифма — за — рифмой. Узор — руками. Не — машинно. Не — в — каталоге. Не — занять. Руки — помнят — стежки. Я — должен — помнить — строки. Строки — тоже — стежки. Штопают — порванное — время.', thoughtDuration: 6000 }],
+  },
+  {
+    id: 'zarema_room_kitchen_herbs', sceneId: 'zarema_room', position: [3.8, 0.6, -2.4], size: [0.8, 0.5, 0.5],
+    enterToast: 'Связки сушёных трав у окна. Запах — как маленькая страна без границ.', isOneTime: true, interactionType: 'examine',
+    examineData: { title: 'Сушёные травы', description: 'Пучки трав, подвешенные у окна. Кто-то заботливо завязал их бечёвкой.', detailText: 'Травы — не из аптеки, из далёких мест, где люди ещё помнят названия. На одной бирке — детским почерком: «от страха». На другой: «от тревоги». На третьей — пусто. Пустая бирка — от того, что не имеет имени. От того, о чём не говорят. Но сушат. И — вешают. И — верят.', icon: '🌿' },
+    effects: [{ type: 'setFlag', flag: 'examined_zarema_room_kitchen_herbs', flagValue: true }, { type: 'addKarma', value: 4 }, { type: 'addSkill', skill: 'empathy', value: 1 }, { type: 'showThought', thought: 'От страха. От тревоги. Пустая — от того, что — без — имени. Она — верит. Хотя — бирка — пуста. Иногда — не — нужно — имя. Иногда — достаточно — завязать — бечёвку. И — повесить. И — верить.', thoughtDuration: 6000 }],
+  },
+
   /* ═══════════════════════════════════════════════════════════════════
      COMBAT ENCOUNTERS — replaced by visible patrolling creeps
      (src/data/creepPatrols.ts + PatrollingCreeps.tsx). The old invisible

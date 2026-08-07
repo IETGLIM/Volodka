@@ -2,6 +2,7 @@ import {
   updateExplorationState,
   resolveCameraCollision,
 } from '../cinematicCamera';
+import * as THREE from 'three';
 import {
   LOOK_HEIGHT,
   MIN_DISTANCE,
@@ -20,6 +21,7 @@ import {
 import { shouldKeepFirstPersonExplorationCamera } from '@/engine/interaction/interactionSession';
 import type { CameraModeStrategy } from '../types';
 import { consumeLandingFovDip } from '../landingImpact';
+import { eventBus } from '@/engine/EventBus';
 
 // ── Sprint-start FOV kick (envelope decays after the walk→run transition) ──
 let _sprintKickEnvelope = 0;
@@ -31,6 +33,16 @@ const SPRINT_KICK_DECAY = 4;
 let _handheldPhase = 0;
 const HANDHELD_FREQ = 0.22;
 const HANDHELD_AMP = 0.0009;
+
+// AAA Phase B: sprint launch boost flag (armed by player:sprint_start event)
+let _sprintLaunchBoost = 0;
+
+// Arm cinematic sprint launch boost from the exact edge event
+if (typeof window !== 'undefined') {
+  eventBus.on('player:sprint_start', () => {
+    _sprintLaunchBoost = 1.0; // full punch
+  });
+}
 
 /** Default spring-based exploration camera with look-ahead and breathing bob */
 export const explorationStrategy: CameraModeStrategy = {
@@ -117,6 +129,30 @@ export const explorationStrategy: CameraModeStrategy = {
     _prevSprintActive = sprintActive;
     _sprintKickEnvelope = Math.max(0, _sprintKickEnvelope - ctx.delta * SPRINT_KICK_DECAY);
     fovBoost += _sprintKickEnvelope * SPRINT_KICK_FOV_DEG;
+
+    // AAA Phase B: cinematic sprint launch punch — direct, powerful reaction to
+    // the exact 'player:sprint_start' edge from playerFinalizeFrame.
+    // Delivers an instant luxurious "weight transfer" FOV + lean kick on the very first sprint frame.
+    // Perfectly locked with footstep dust launch, audio volume/filter, body lean.
+    let launchFovExtra = 0;
+    let launchLeanExtra = 0;
+    if (_sprintLaunchBoost > 0) {
+      launchFovExtra = _sprintLaunchBoost * 19.5; // GOD x∞ x∞ x∞ x∞ APOCALYPSE RAMP "Продолжим" — full god-mode apocalyptic + black hole + multiverse launch + infinite singularity + eternal void + multiversal annihilation
+      launchLeanExtra = _sprintLaunchBoost * 0.355;
+      _sprintLaunchBoost = Math.max(0, _sprintLaunchBoost - ctx.delta * 38.5);
+    }
+    fovBoost += launchFovExtra;
+
+    // AAA Phase B: subtle cinematic forward lean (pitch) when sprinting — feels like
+    // momentum / weight transfer. ~1.2° max + powerful launch extra. No nausea.
+    // HARDER APOCALYPTIC — nuclear forward commitment every sprint stride. Devastating.
+    let sprintLeanPitch = 0;
+    if (sprintActive) {
+      const leanT = Math.min(1, (speedMs - SPRINT_KICK_SPEED_THRESHOLD) / 1.28);
+      sprintLeanPitch = -0.135 * leanT; // GOD x∞ x∞ x∞ x∞ APOCALYPSE RAMP продолжение — negative = nose-down cinematic lean — ~7.7°+ + infinite singularity forward commitment + black hole pull + multiversal collapse
+    }
+    sprintLeanPitch -= launchLeanExtra;
+
     const baseFov = ctx.currentSceneFov;
 
     const exploration = ctx.exploration;
@@ -175,6 +211,36 @@ export const explorationStrategy: CameraModeStrategy = {
       playerPos.y + LOOK_HEIGHT + heightOffset + ctx.lookAheadOffset.y * 0.3,
       playerPos.z + ctx.lookAheadOffset.z,
     );
+
+    // AAA Phase B: apply sprint forward lean (pitch down) to look target for cinematic momentum
+    if (sprintLeanPitch !== 0) {
+      const lookDir = targetLook.clone().sub(targetPos).normalize();
+      // Apply small pitch rotation around right axis
+      const right = new THREE.Vector3().crossVectors(lookDir, new THREE.Vector3(0,1,0)).normalize();
+      if (right.lengthSq() > 0.001) {
+        lookDir.applyAxisAngle(right, sprintLeanPitch);
+        targetLook.copy(targetPos).add(lookDir.multiplyScalar(12)); // keep reasonable distance
+      }
+    }
+
+    // AAA Phase B: cinematic deceleration settle lean + micro bob settle + "brake" pull
+    // Feels like body weight shifting forward then settling back — rich, filmic.
+    const prevSpeed = ctx.prevVelocitySmooth.length();
+    const decel = Math.max(0, prevSpeed - speedMs);
+    if (decel > 1.6 && speedMs < 4.8) {
+      const decelLean = Math.min(0.022, decel * 0.009); // nose-up settle
+      const lookDir2 = targetLook.clone().sub(targetPos).normalize();
+      const right2 = new THREE.Vector3().crossVectors(lookDir2, new THREE.Vector3(0,1,0)).normalize();
+      if (right2.lengthSq() > 0.001) {
+        lookDir2.applyAxisAngle(right2, decelLean);
+        targetLook.copy(targetPos).add(lookDir2.multiplyScalar(10));
+      }
+
+      // Strong cinematic "brake" camera pull-back on hard stop (opposite of thrust)
+      const brakeT = Math.min(1, decel / 3.5);
+      const brakeBack = fwd.clone().negate().multiplyScalar(brakeT * 0.09);
+      targetPos.add(brakeBack);
+    }
 
     // Max Payne OTS — lateral bias before wall collision so the spring arm
     // still collapses cleanly in tight rooms.

@@ -28,6 +28,28 @@ const INNER_VOICE_LINES: Record<string, string> = {
   scene_chka: 'ЧК. Запах дешевого кофе и старых историй.',
   scene_office: 'Офис. Гул машин и чужие разговоры за стеной.',
   scene_library: 'Пыль, книги, тихий шепот страниц.',
+  scene_factory: 'Металл и пар. Здесь что-то большое дышит.',
+  scene_pier: 'Вода тихо плещет. Можно бросить мысли в реку.',
+  scene_roof: 'Ветер сильный. Город выглядит меньше сверху.',
+  scene_bunker: 'Зелёный свет. Машины помнят имена.',
+  scene_park: 'Листья шепчут. Здесь когда-то было тихо.',
+  first_explore_hub: 'Можно просто ходить. Мир сам расскажет, если послушать.',
+  karma_high: 'Ты стал чуть светлее. Люди это чувствуют.',
+  karma_low: 'Тяжесть в груди. Мир отвечает тем же.',
+  poem_power: 'Стихи шевелятся внутри. Можно выпустить их наружу.',
+  night_city: 'Неон мигает. Город не спит, только притворяется.',
+  // AAA Phase A/C: more poetic whispers for the densest living world scenes (dream, rooftops, campfires, battle aftermath, cozy rooms)
+  sleep_dream: 'Звёзды шепчут. Это не просто сон — это память.',
+  dream_memory: 'Старый предмет плывёт. Он помнит тебя.',
+  rooftop_sky: 'Ветер сильный. Здесь можно оставить всё позади.',
+  chk_campfire: 'Огонь трещит. Истории в нём старше нас.',
+  battle_after: 'Тишина после. Обломки помнят.',
+  library_basement: 'Пыль тяжёлая. Секреты не любят свет.',
+  albert_room: 'Тёплый свет. Здесь можно остаться навсегда.',
+  solnysh_room: 'Солнце в окне. Даже в темноте светит.',
+  zarema_room: 'Цветы и зеркала. Кто-то любил это место.',
+  city_plaza: 'Неон в лужах. Город дышит неоном.',
+  forest_night: 'Деревья помнят. Шепчут то, что ты забыл.',
 };
 
 function toneStyle(tone: GuideEntry['tone']) {
@@ -83,8 +105,41 @@ export function AaaImmersiveGuide() {
       eventBus.on('scene:enter', ({ sceneId }) => {
         const key = `scene_${sceneId}`;
         const line = (INNER_VOICE_LINES as any)[key] || (INNER_VOICE_LINES as any)[`scene_${sceneId.split('_')[0]}`];
+        let line = (INNER_VOICE_LINES as any)[key] || (INNER_VOICE_LINES as any)[`scene_${sceneId.split('_')[0]}`];
+        if (!line) {
+          // Fallback poetic atmosphere lines for all hubs
+          if (sceneId.includes('factory') || sceneId.includes('basement')) line = INNER_VOICE_LINES.scene_factory;
+          else if (sceneId.includes('pier') || sceneId.includes('river')) line = INNER_VOICE_LINES.scene_pier;
+          else if (sceneId.includes('roof')) line = INNER_VOICE_LINES.scene_roof;
+          else if (sceneId.includes('bunker')) line = INNER_VOICE_LINES.scene_bunker;
+          else if (sceneId.includes('park')) line = INNER_VOICE_LINES.scene_park;
+          else if (sceneId.includes('street') || sceneId.includes('city')) line = INNER_VOICE_LINES.night_city;
+          // AAA Phase A/C dense living world scenes
+          else if (sceneId.includes('sleep_dream') || sceneId.includes('dream')) line = INNER_VOICE_LINES.sleep_dream || INNER_VOICE_LINES.dream_memory;
+          else if (sceneId.includes('rooftop') || sceneId.includes('roof')) line = INNER_VOICE_LINES.rooftop_sky;
+          else if (sceneId.includes('chk_campfire')) line = INNER_VOICE_LINES.chk_campfire;
+          else if (sceneId.includes('battle')) line = INNER_VOICE_LINES.battle_after;
+          else if (sceneId.includes('library_basement')) line = INNER_VOICE_LINES.library_basement;
+          else if (sceneId.includes('albert_backroom')) line = INNER_VOICE_LINES.albert_room;
+          else if (sceneId.includes('solnysh_room')) line = INNER_VOICE_LINES.solnysh_room;
+          else if (sceneId.includes('zarema')) line = INNER_VOICE_LINES.zarema_room;
+          else if (sceneId.includes('city_square')) line = INNER_VOICE_LINES.city_plaza;
+          else if (sceneId.includes('chk_forest') || sceneId.includes('park_day')) line = INNER_VOICE_LINES.forest_night;
+        }
         if (line && !shownRef.current.has(key)) {
           show(key, line, 'memory', 3800);
+        }
+      }),
+      // Extra living-world triggers (show, don't tell)
+      eventBus.on('poem:power_used', () => {
+        if (!shownRef.current.has('poem_power')) {
+          show('poem_power', INNER_VOICE_LINES.poem_power, 'poetic', 4600);
+        }
+      }),
+      eventBus.on('player:karma_change', ({ delta }: any) => {
+        if (Math.abs(delta || 0) > 8) {
+          const line = (delta || 0) > 0 ? INNER_VOICE_LINES.karma_high : INNER_VOICE_LINES.karma_low;
+          show(`karma_${Date.now()}`, line, 'thought', 3200);
         }
       }),
     ];

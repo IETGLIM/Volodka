@@ -5,8 +5,9 @@ import { useFrameTick } from '@/engine/frame/useFrameTick';
 import {
   resolveLocomotionClipState,
   WALK_CLIP_TIME_SCALE,
+  smoothstep,
 } from '@/engine/player/playerLocomotionPresentation';
-import { WALK_SPEED } from '@/engine/player/playerConstants';
+import { WALK_SPEED, RUN_SPEED } from '@/engine/player/playerConstants';
 import {
   bindPlayerClipActions,
 } from '@/engine/player/playerLocomotionClips';
@@ -430,18 +431,24 @@ export function usePlayerLocomotionController({
       if (idleAction) idleAction.setEffectiveWeight(currentIdleWeightRef.current);
       if (walkAction) {
         walkAction.setEffectiveWeight(currentWalkWeightRef.current);
-        // Scale walk timeScale with hSpeed so the walk cycle doesn't moonwalk
-        // at low speed (feet would otherwise slide faster than the body).
-        // 0.4× at rest in the band → 1.0× at WALK_SPEED, clamped.
+        // AAA Phase B: continuous speed-scaled timeScale across full walk→run band
+        // (uses same smoothstep band as camera bob + blend weights).
+        // Prevents moonwalk at low speed; gives rich cinematic stride acceleration.
         const hSpeed = currentHSpeedRef?.current ?? 0;
-        const walkSpeedScale = Math.min(1, hSpeed / WALK_SPEED);
+        const speedT = Math.min(1, Math.max(0, (hSpeed - WALK_SPEED * 0.25) / (RUN_SPEED - WALK_SPEED * 0.25)));
+        const walkTimeScaleCont = WALK_CLIP_TIME_SCALE * (0.42 + 0.58 * speedT);
         walkAction.timeScale = locomotionActive
-          ? WALK_CLIP_TIME_SCALE * (0.4 + 0.6 * walkSpeedScale)
+          ? walkTimeScaleCont
           : 1;
       }
       if (runAction) {
         runAction.setEffectiveWeight(currentRunWeightRef.current);
-        runAction.timeScale = locomotionActive ? clipState.runTimeScale : 1;
+        // Continuous run timeScale already good, but add tiny speed-modulated boost for weight
+        const hSpeed = currentHSpeedRef?.current ?? 0;
+        const runSpeedT = smoothstep(WALK_SPEED, RUN_SPEED, hSpeed);
+        runAction.timeScale = locomotionActive
+          ? clipState.runTimeScale * (0.96 + 0.08 * runSpeedT)
+          : 1;
       }
 
       // When no walk clip is available, adjust idle timeScale as a

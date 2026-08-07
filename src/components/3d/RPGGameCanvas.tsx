@@ -310,6 +310,7 @@ function SceneTransitionVeil() {
         ? SCENE_OVERLAY_MS.HOLD
         : SCENE_OVERLAY_MS.WIPE_IN;
 
+  // AAA cinematic veil — softer, more luxurious filmic radial + subtle vignette for smooth no-cut feeling
   return (
     <div
       aria-hidden="true"
@@ -317,8 +318,15 @@ function SceneTransitionVeil() {
         position: 'absolute',
         inset: 0,
         pointerEvents: 'none',
-        background:
-          'radial-gradient(circle at 50% 42%, rgba(20,24,34,0.92), rgba(0,0,0,0.98) 62%, #000 100%)',
+        background: `
+          radial-gradient(
+            circle at 50% 42%,
+            rgba(16,18,28,0.96) 0%,
+            rgba(6,8,14,0.985) 58%,
+            rgba(0,0,0,0.995) 78%,
+            #000000 100%
+          )
+        `,
         opacity,
         transition: `opacity ${duration}ms cubic-bezier(0.16, 1, 0.3, 1)`,
         zIndex: 5,

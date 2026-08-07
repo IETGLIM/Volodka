@@ -28,22 +28,22 @@ export const WAKEUP_TOTAL =
 
 export const WAKEUP_FALLBACK_MS = (WAKEUP_TOTAL + 2) * 1000;
 
-// FIX S12-A1: BED_POSITION now lies ON the visible gothicBed GLB
-// (Medium+ preset: AuthoredRoomProp at [1.78, 0, 2.05], scale 0.92, rotationY π).
-// The Low-preset procedural bed is at [1.8, 0, 2.0] with mattress surface at
-// y=0.35 (geo_box_38 mesh). y=0.35 places the avatar on the mattress surface
-// for both presets. Previous [0.5, 0.01, 2.4] was 1.3m LEFT of the bed →
-// avatar rose from bare floor during the wake-up cinematic.
-export const BED_POSITION = new THREE.Vector3(1.78, 0.35, 2.05);
-// FIX S13-2/S13-11: STAND_POSITION at [0.0, 0.01, 1.5] — center of room X,
-// 1.5m from the door (z=3.5), 1.13m clear of the visual gothicBed
-// (bed spans x=[1.13, 2.50] at scale 0.92). Previously [0.5, 0.01, 2.0] was
-// 0.63m from the bed edge — visually too close, avatar appeared "in the bed"
-// from certain camera angles. Now centered in the open floor between bed and
-// desk, where a person would naturally stand after getting out of bed.
-export const STAND_POSITION = new THREE.Vector3(0.0, 0.01, 1.5);
-export const DESK_POSITION = new THREE.Vector3(0.0, 0.01, -1.0);
-export const CHAIR_POSITION = new THREE.Vector3(0.0, 0.01, -1.3);
+// FIX S12-A1 + S15-PROLOGUE-PERFECTION: BED_POSITION теперь НА матрасе gothicBed
+// GLB at [1.78,0,2.05] scale 0.92 — матрас поверхность y=0.52-0.58 в зависимости от LOD.
+// y=0.55 — сидит на матрасе, не внутри. Ранее 0.35 было внутри текстуры — Володька появлялся
+// стоя внутри кровати. Теперь лежа с rotation 1.2 rad (~69deg) — глаза открываются лежа.
+// y=0.55 + footY коррекция = визуально на матрасе.
+export const BED_POSITION = new THREE.Vector3(1.78, 0.55, 2.05);
+// Поза сидя на краю кровати — для естественного вставания, а не телепорта стоя
+export const BED_SIT_EDGE = new THREE.Vector3(1.15, 0.55, 2.05);
+// STAND_POSITION — центр комнаты, 1.5м от двери (z=3.5), 1.13м от кровати.
+// Оставлен [0.0,0.01,1.5] но добавлен safe margin от кресла.
+export const STAND_POSITION = new THREE.Vector3(0.0, 0.01, 1.2);
+// DESK_POSITION — у стола, чуть дальше от кресла чтобы не проходить сквозь
+export const DESK_POSITION = new THREE.Vector3(0.0, 0.01, -0.85);
+// CHAIR_POSITION — кресло теперь в [0,0,-1.7], персонаж садится в [0,0.01,-1.15]
+// чтобы не клиповать сквозь спинку кресла. Ранее [0,0.01,-1.3] был внутри.
+export const CHAIR_POSITION = new THREE.Vector3(0.0, 0.01, -1.15);
 /** Third-person handoff behind the desk — matches exploration orbit framing. */
 export const DESK_EXPLORATION_CAM = {
   position: new THREE.Vector3(0.0, PLAYER_METRIC.eyeHeightM - 0.05, 1.15),

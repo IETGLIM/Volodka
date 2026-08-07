@@ -58,6 +58,8 @@ export function triggerPoemCinematicVfx(poemId: string, mode: 'discovery' | 'pow
   const last = lastTriggerAt.get(poemId);
   if (last && now - last < 900) return; // debounce 0.9s — avoid spam during rapid ritual triggers
   lastTriggerAt.set(poemId, now);
+  // Resolve the per-poem cinematic profile (soul of the poem's VFX)
+  const profile = getPoemVfxProfile(poemId);
   // EventBus for other systems to listen (postfx, camera, particles)
   eventBus.emit('poem:cinematic_vfx', {
     poemId: poemId as any,

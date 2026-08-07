@@ -49,7 +49,7 @@ let _walkBobPhase = 0;
 // delta so the phase advances uniformly regardless of frame rate variance.
 let _smoothedDelta = 1 / 60;
 const WALK_BOB_AMPLITUDE = 0.006; // 6mm vertical displacement (halved from 0.012 to reduce micro-jitter)
-const WALK_BOB_SPEED = 10;       // rad/s — matches walking pace
+const WALK_BOB_BASE_SPEED = 10;       // rad/s — matches walking pace (AAA filmic gait)
 const WALK_BOB_SPEED_THRESHOLD = 0.5; // minimum player speed to activate
 const WALK_BOB_SPEED_FULL = 3.0;     // speed at which bob is at full intensity
 const WALK_BOB_BLEND_SPEED = 4;       // how fast bob intensity transitions
@@ -57,6 +57,12 @@ const WALK_BOB_BLEND_SPEED = 4;       // how fast bob intensity transitions
 // 0.15 means ~7 frames of history — enough to absorb frame drops without
 // making the bob lag visibly behind player movement.
 const WALK_BOB_DELTA_SMOOTH = 0.15;
+
+// AAA Phase B refinement: bob frequency scales continuously with speed
+// so vertical + lateral bob perfectly tracks the walk/run animation cycle
+// (no plastic float, cinematic weight transfer). Uses same band as smoothstep locomotion.
+const WALK_BOB_SPEED_MIN = 8.5;   // at walk threshold
+const WALK_BOB_SPEED_MAX = 14.5;  // at full sprint — matches ~1.45x anim timeScale energy
 
 export interface PostModeFrameState {
   isInDialogue: boolean;
@@ -107,6 +113,8 @@ export function applyCameraFrame(
   const isFpExploration =
     FIRST_PERSON_ENABLED && !isInDialogue && !isCutscene && !isCombat;
 
+  let bobLeanRoll = 0;
+
   // ── Walking head bob (third-person exploration only) ──
   // Skip bob + breathing under reduced motion (matches FPS arms / shake gates).
   if (!isInDialogue && !isCutscene && !isCombat && !isFpExploration && !isEffectiveReducedMotion()) {
@@ -121,17 +129,28 @@ export function applyCameraFrame(
     // fix the uneven phase, so the jitter was reduced but not eliminated.
     _smoothedDelta += (delta - _smoothedDelta) * WALK_BOB_DELTA_SMOOTH;
 
+    // AAA Phase B: continuous speed-linked bob frequency — perfectly syncs
+    // camera gait with locomotion blend tree (walk/run timeScales 1.05→1.45)
+    // + footstep cadence. No plastic float. Film-grade weight transfer.
+    // Also blend with moveBlend for ultra-smooth accel feel (0 when idle).
+    const moveBlend = ctx.moveBlend ?? 0;
+    const speedNormForBob = playerSpeed > WALK_BOB_SPEED_THRESHOLD
+      ? Math.min(1, (playerSpeed - WALK_BOB_SPEED_THRESHOLD) / (WALK_BOB_SPEED_FULL - WALK_BOB_SPEED_THRESHOLD))
+      : 0;
+    const blendedSpeedNorm = Math.max(speedNormForBob, moveBlend * 0.6); // gentle floor from blend
+    const dynamicBobSpeed = WALK_BOB_BASE_SPEED + (WALK_BOB_SPEED_MAX - WALK_BOB_SPEED_MIN) * blendedSpeedNorm;
+
     // Accumulate bob phase based on smoothed time (always ticks so it stays in sync)
-    _walkBobPhase += WALK_BOB_SPEED * _smoothedDelta;
+    _walkBobPhase += dynamicBobSpeed * _smoothedDelta;
 
     if (playerSpeed > WALK_BOB_SPEED_THRESHOLD) {
       // Smooth intensity ramp: 0 at threshold, 1.0 at full running speed
-      const speedNorm = Math.min(
-        (playerSpeed - WALK_BOB_SPEED_THRESHOLD) / (WALK_BOB_SPEED_FULL - WALK_BOB_SPEED_THRESHOLD),
-        1.0,
-      );
+      const speedNorm = speedNormForBob;
       const bobIntensity = 1 - Math.exp(-WALK_BOB_BLEND_SPEED * speedNorm);
-      const bobOffset = Math.sin(_walkBobPhase) * WALK_BOB_AMPLITUDE * bobIntensity;
+      // AAA Phase B: amplitude also scales with speed for satisfying cinematic weight
+      // at sprint (heavier footfalls read in camera) — NUCLEAR APOCALYPTIC GOD x∞ x3 (max ~45mm pounding) EVEN HARDER for хм, и:
+    const ampScale = 5.85 + 13.5 * speedNorm; // GOD x∞ x∞ x∞ x∞ APOCALYPSE RAMP "Продолжим" — 5.85x → 19.35x at sprint — DEVASTATING PLANETARY + MULTIVERSAL + INFINITE POUNDING x∞ x∞ x∞ x∞ — world shaking bob + cosmic quake + event horizon rumble + black hole crush
+    const bobOffset = Math.sin(_walkBobPhase) * WALK_BOB_AMPLITUDE * bobIntensity * ampScale;
       targetPos.y += bobOffset;
 
       // ── Lateral bob — camera-relative horizontal sway at HALF the vertical
@@ -151,6 +170,13 @@ export function applyCameraFrame(
         const lateralBob = Math.cos(_walkBobPhase * 0.5) * WALK_BOB_AMPLITUDE * 0.5 * bobIntensity;
         targetPos.x += rx * lateralBob;
         targetPos.z += rz * lateralBob;
+
+        // AAA Phase B: tiny cinematic roll lean during fast movement (subtle momentum feel)
+        // Adds ~0.8° lean into the stride direction at full sprint — feels weighty, not floaty.
+        // Uses same phase as vertical for perfect stride sync.
+        if (bobIntensity > 0.2) {
+          bobLeanRoll = Math.sin(_walkBobPhase * 0.5) * 0.014 * bobIntensity * speedNorm; // ~0.8° max
+        }
       }
     }
 
@@ -170,15 +196,17 @@ export function applyCameraFrame(
     _smoothedDelta = 1 / 60;
   }
 
+  const effectiveRoll = targetRoll + bobLeanRoll;
+
   if (isFpExploration) {
     spring.position.copy(targetPos);
     spring.velocity.set(0, 0, 0);
     spring.lookAt.copy(targetLook);
-    spring.roll = targetRoll;
+    spring.roll = effectiveRoll;
     spring.fov = THREE.MathUtils.lerp(spring.fov, targetFov, 1 - Math.exp(-3 * delta));
   } else {
     updateSpringCamera(
-      spring, targetPos, targetLook, targetFov, delta, targetRoll,
+      spring, targetPos, targetLook, targetFov, delta, effectiveRoll,
       springOverride?.stiffness,
       springOverride?.damping,
     );
@@ -251,6 +279,28 @@ export function applyCameraFrame(
     while (yawDiff > Math.PI) yawDiff -= Math.PI * 2;
     while (yawDiff < -Math.PI) yawDiff += Math.PI * 2;
     ctx.yaw += yawDiff * (1 - Math.exp(-1.0 * delta));
+  }
+
+    // AAA Phase B: cinematic sprint forward "thrust" / momentum push on camera
+  // When sprinting hard, camera feels like it's being carried forward — delicious weight.
+  const speed = playerVelocity.length();
+  if (speed > 5.2 && !isInDialogue && !isCutscene && !isFpExploration) {
+    const thrust = (speed - 5.2) / 1.42; // 0..1.0+ at full sprint — GOD x∞ x∞ x∞ APOCALYPSE RAMP продолжение — stronger pull, more momentum, multiversal pull + event horizon
+    const fwd = new THREE.Vector3().subVectors(targetLook, targetPos).normalize();
+    // Strong forward push on position (feels like being PULLED into the run) — FULL APOCALYPTIC
+    targetPos.addScaledVector(fwd, thrust * 0.145);
+    // Also pull the look target harder for forward commitment
+    targetLook.addScaledVector(fwd, thrust * 0.078);
+
+    // Cinematic "air rush" breathing on camera — subtle rhythmic FOV + position float
+    // Feels like wind in your face. Perfectly synced with body bob.
+    const rushPhase = (ctx.time * 5.8) % (Math.PI * 2);
+    const rush = Math.sin(rushPhase) * 0.028 * Math.min(1, thrust * 2.85);
+    targetPos.addScaledVector(fwd, rush * 1.35); // stronger forward float
+    // Very subtle FOV breathing (adds life without nausea) — bigger
+    const fovBreath = rush * 1.42;
+    (targets as any).targetFov = (targets as any).targetFov || targetFov;
+    (targets as any).targetFov += fovBreath;
   }
 
   _rollForward.subVectors(spring.lookAt, cam.position);

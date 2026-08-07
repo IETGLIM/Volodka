@@ -26,6 +26,7 @@ import { getNPCGroup } from '@/engine/interaction/npcRegistry';
 import { isEffectiveReducedMotion } from '@/engine/accessibility/accessibilitySettings';
 import {
   BED_POSITION,
+  CHAIR_POSITION,
   WAKEUP_CAMERA_START,
 } from '@/engine/wakeup/wakeUpCinematic';
 import { shouldOpenAct1PrologueStory } from '@/engine/wakeup/shouldOpenAct1PrologueStory';
@@ -92,8 +93,21 @@ export function CinematicTimelineRunner() {
     const store = getGameStore();
     // Face the desk (monitors at Z=-2.35) instead of the door (Z=+3.5).
     // Rotation 0 = facing -Z in Three.js.
-    store.setPlayerPosition([0, 0.01, -1.3]);
+    // FIX S15-CHAIR-CLIP: используем CHAIR_POSITION -1.15, а не -1.3 чтобы не клиповать сквозь кресло
+    store.setPlayerPosition([CHAIR_POSITION.x, CHAIR_POSITION.y, CHAIR_POSITION.z]);
     store.setPlayerRotation(0);
+
+    // FIX S15-MUSIC: явно резюмим аудио и запускаем ambient после пробуждения
+    // иначе музыка отсутствует после пролога из-за suspended AudioContext
+    try {
+      import('@/engine/SharedAudioContext').then(({ getSharedAudioContext }) => {
+        getSharedAudioContext()?.resume?.();
+      });
+      import('@/engine/audio/SceneAudioController').then(({ getSceneAudioController }) => {
+        const ctrl = getSceneAudioController();
+        (ctrl as unknown as { onSceneEnter?: (id: unknown, n: number) => void }).onSceneEnter?.('volodka_room' as any, 0);
+      });
+    } catch {}
     store.setCutscene(null, []);
     store.setFlag('woke_up', true);
     // NOTE: poem_2 and read_poem_2 are NO LONGER auto-granted on wake-up.
@@ -562,6 +576,14 @@ export function CinematicTimelineRunner() {
     if (phase?.lightCue && lightCuePhaseRef.current !== phase.id) {
       lightCuePhaseRef.current = phase.id;
       setCinematicLightCue(phase.lightCue, Math.max(1.2, phase.duration));
+    }
+
+    // AAA cinematic atmosphere boost during cutscenes — makes light shafts + dust feel luxurious
+    if (result.phaseLocalT > 0.1 && result.phaseLocalT < 0.9) {
+      eventBus.emit('cinematic:atmosphere_boost', {
+        intensity: 0.6 + (result.phaseLocalT * 0.4),
+        sceneId: getGameStore().exploration.currentSceneId,
+      });
     }
 
     if (result.isHandoff && timelineIdRef.current === 'intro_wakeup' && !handoffEmittedRef.current) {
