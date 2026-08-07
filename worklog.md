@@ -3076,3 +3076,24 @@ Stage Summary:
   8. 21 new ambient bark lines for 3 CHK NPCs.
 - QA: live site stable pre-push AND post-push, 0 console errors, all flows clean.
 - Unresolved next-phase priorities: (a) CSM for outdoor shadows; (b) Mixamo↔Quaternius real-clip remap (jump/fall/land clips); (c) WorldSpaceLabels wiring (needs 3D camera projection); (d) More Acts 3-4 content/story nodes; (e) Motion-blur lite for cutscenes; (f) Deplasticize scene-specific emissive surfaces (low priority — they're correct as standard); (g) 3D background scene for main menu (AAA feel); (h) Ambient barks for remaining 3 CHK NPCs (chk_elis, chk_guest_devops, chk_guest_analyst); (i) QuestObjectiveCard visual QA on live site (verify positioning vs CriticalStatusWhisper on short viewports); (j) Author should revoke+rotate the GitHub PAT shared in chat.
+
+---
+Task ID: 17 (orchestrator) — cron-tick: QA + filmic CSS + living-world content + Thought Cabinet + wet-surface PBR
+Agent: main (orchestrator)
+Task: Cron-triggered AAA improvements round — QA on live site, add filmic CSS animations, expand living-world content, expand Thought Cabinet + quest barks, add wet-surface PBR clearcoat.
+
+Work Log:
+- Pulled latest (already at 33674d1b). Baseline typecheck: exit 0.
+- QA via agent-browser on https://volodka.vercel.app/ (PRE-push): full flow 0 errors. Site STABLE. No bugs — feature development.
+- Dispatched 4 parallel work-streams:
+  • WS17-A (filmic CSS + HUD polish): 6 new animations + 6 HUD component wirings — exit 0.
+  • WS17-B (living-world content): 3 CHK NPC barks + 11 examine zones + 8 dialogue + 12 monologues + 12 dynamic props — exit 0.
+  • WS17-C (Thought Cabinet + quest barks): 6 thoughts (id 70-75) + 16 quest barks — exit 0.
+  • WS17-D (wet-surface PBR): StreetVisual clearcoat (sidewalk + glass shards) + scene-dissolve CSS — exit 0.
+- Combined typecheck: exit 0. Commit 083bb9b7 (16 files, +841/-9). Push: origin main.
+- QA POST-push: full flow 0 errors. All WS17 changes deployed stable.
+
+Stage Summary:
+- 16 files modified, +841/-9 lines. Typecheck: exit 0. Poems untouched. All invariants preserved.
+- Key wins: wet-surface PBR clearcoat (Blade Runner rain effect), 54+ filmic CSS keyframes, all CHK NPCs have ambientBarks, 11 more examine zones, 8 more karma-gated choices, 6 new Thought Cabinet items, 16 quest barks, scene-transition dissolve.
+- Next: CSM shadows, Mixamo clip remap, WorldSpaceLabels, more Acts 3-4 story, motion-blur lite, 3D menu background, more PBR upgrades, guided onboarding expansion.
