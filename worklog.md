@@ -4228,3 +4228,27 @@ Stage Summary:
 - Tests: 22/22 passing in modules touching the modified data (chunksConfig, questBoardPresentation).
 - Russian content throughout: cyberpunk/post-Soviet atmosphere, Matrix references (Архитектор, красная/синяя таблетка, дежавю, симулякр, эхо Избранного), philosophical depth matching existing WS18-D through WS23-D entries. Recurring project numerology (47, 4729, 4 712, B-12, 03:47, −30°C) woven into lore for continuity.
 - No edits to src/data/poems.ts (SACRED). No physics invariants or APOCALYPSE RAMP values touched. All new IDs use `ws26_` prefix per task instructions (deviates from existing `wsNNd_` pattern but complies with explicit task spec).
+
+---
+Task ID: 26 (orchestrator) — WS26: filmic CSS + living-world + PBR tuning + content expansion + syntax fix
+Agent: main (orchestrator)
+Task: Push improvements to origin main — 4 parallel work-streams + fix cron-task syntax breakage.
+
+Work Log:
+- QA via agent-browser: site STABLE (0 errors), but Vercel deployment still stale (15 commits not deployed, auto-deploy stopped after 9a6b9e36).
+- Dispatched 4 parallel work-streams (disjoint file scopes):
+  • WS26-A: 6 filmic CSS keyframes (particle-drift, poi-ping, minimap-scan, chromatic-shift, distance-ring-expand, time-tick) + 6 HUD wirings (AmbientParticles, CompassPOIMarkers, CyberpunkMinimap, HUDChromaticEdge, InteractionDistanceRing, TimeIcon). 97 total keyframes.
+  • WS26-B: 10 examine zones + 6 karma-gated dialogue (part5) + 15 monologues (3 scenes) + 8 dynamic props. 39 new entries.
+  • WS26-C: 6 PBR surface value tuning (FactoryBasement, Battle, StreetWinter, AlbertBackroom, ChkForest, LibraryDay). Fixed sane-bound violations (clearcoat 0.7/0.9 → 0.3/0.5). Added sheen for frost sparkle.
+  • WS26-D: 6 creep patrols + 4 lore + 8 matrix quotes + 4 daily missions + 6 thought cabinet items (IDs 100-105, 2 mutually exclusive pairs) + 8 ambient barks. 36 new entries.
+- After rebase on cron-task commit (354725a0), found 25 syntax errors in 2 files caused by the cron's "expert audit" commit:
+  • AaaLivingWorldActivities.tsx: duplicate imports + 3 duplicated code blocks with broken syntax
+  • explorationStrategy.ts: duplicate fwd/brakeBack const declarations
+- Fixed all duplicates, kept ramp-tame values (0.025 not 0.09). Typecheck: 0 errors.
+- Commits: 048c9042 (WS26 features, 24 files +1268/-14) + add181da (syntax fix, 2 files +2/-16). Push: origin main.
+
+Stage Summary:
+- 26 files changed total, +1270/-30. Typecheck: 0 errors, exit 0. Build: 61 modules, 19.8s.
+- 97 filmic CSS keyframes. ~70 examine zones. ~105 thought cabinet items (IDs to 105). ~107 lore entries. ~77 matrix quotes. ~87 daily missions. ~67 creep patrols.
+- Poems untouched. Physics invariants preserved. APOCALYPSE RAMP values sane.
+- Vercel deployment still stale — user needs to check Vercel dashboard / webhook.
