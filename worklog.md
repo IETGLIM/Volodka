@@ -3118,3 +3118,21 @@ Stage Summary:
 - 19 files modified, +1110/-5 lines. Typecheck: exit 0. Poems untouched. All invariants preserved.
 - Key wins: wet-surface PBR now across 4 scene visuals (cohesive Blade Runner rain aesthetic), 61 filmic CSS keyframes, 8 more karma-gated dialogue (Acts 1-2 + 5), 10 more examine zones, 15 more monologues, 6 more dynamic props, 6 new lore entries, 6 ambient catalog entries, 11 matrix quotes, 7 interaction splash presets.
 - Next: CSM shadows, Mixamo clip remap, WorldSpaceLabels, more Acts 3-4 story, motion-blur lite, 3D menu background, wire WS18-D catalogs into runtime, guided onboarding expansion.
+
+---
+Task ID: 19 (orchestrator) — filmic CSS + living-world content + interior floor PBR + creep/lore expansion
+Agent: main (orchestrator)
+Task: AAA improvements — filmic CSS, living-world content, interior floor clearcoat on 4 scenes, creep/lore/mission expansion.
+
+Work Log:
+- QA: full flow 0 errors. Site STABLE.
+- WS19-A: 6 new filmic CSS animations + 6 HUD wirings — exit 0.
+- WS19-B: 12 examine zones + 8 dialogue + 15 monologues + 8 dynamic props — exit 0.
+- WS19-C: 4 interior floor MeshPhysicalMaterial clearcoat upgrades — exit 0.
+- WS19-D: 6 creep patrols + 4 lore entries + 8 matrix quotes + 4 daily missions — exit 0.
+- Commit 331582b0 (20 files, +881/-10). Push: origin main. QA: 0 errors.
+
+Stage Summary:
+- 20 files, +881/-10. Typecheck: exit 0. Poems untouched. All invariants preserved.
+- Key wins: interior floor PBR complete (8+ scenes total), 67 keyframes, 12 examine zones, 8 dialogue choices, 15 monologues, 8 props, 6 creep patrols, 4 lore, 8 quotes, 4 missions.
+- Next: CSM shadows, Mixamo clip remap, WorldSpaceLabels, runtime wiring for catalogs, more onboarding.
