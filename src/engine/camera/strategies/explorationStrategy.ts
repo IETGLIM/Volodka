@@ -244,6 +244,8 @@ export const explorationStrategy: CameraModeStrategy = {
 
       // Strong cinematic "brake" camera pull-back on hard stop (opposite of thrust)
       const brakeT = Math.min(1, decel / 3.5);
+      const fwd = targetLook.clone().sub(targetPos).normalize();
+      const brakeBack = fwd.clone().negate().multiplyScalar(brakeT * 0.09);
       // WS2 (gate-fix): fwd was referenced but never defined in this scope —
       // would throw ReferenceError at runtime on hard brake after sprint.
       // Define it as the camera forward direction (same pattern as lookDir2 above).

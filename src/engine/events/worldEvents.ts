@@ -34,4 +34,9 @@ export interface WorldEvents {
     spawn: [number, number, number];
     kind: WorldLocationKind;
   };
+  'world:ambient_event': {
+    type: string;
+    intensity?: number;
+    duration?: number;
+  };
 }

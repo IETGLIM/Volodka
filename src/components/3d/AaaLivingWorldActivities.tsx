@@ -5,6 +5,7 @@
  * - guitar (play)
  * - bookshelf (read random poem line)
  * - window (look out)
+ * - bench (sit)
  * Each emits inner voice and subtle rewards.
  * Rich emergent interactions across hubs. Show-don't-tell guidance.
  * Every major scene has 8–12 ambient activities (push, read, listen, observe).
@@ -14,6 +15,7 @@
 
 import { useEffect } from 'react';
 import { eventBus } from '@/engine/EventBus';
+import { getGameSnapshot, dispatchGameAction } from '@/engine/GameActionDispatcher';
 import { getGameSnapshot } from '@/engine/GameActionDispatcher';
 import { dispatchGameAction } from '@/shared/gameBridge/gameActionBridge';
 
@@ -106,33 +108,45 @@ export function AaaLivingWorldActivities() {
       eventBus.on('interaction:start', ({ propId, sceneId }: any) => {
         const id = (propId ?? '') as string;
         const lower = id.toLowerCase();
+        const sId = (sceneId ?? '') as string;
         let key: keyof typeof ACTIVITY_LINES | null = null;
 
-        // Smart matching — robust across scenes
-        if (lower.includes('coffee')) key = 'coffee_machine';
+        // --- Scene-specific high priority (must come before general) ---
+        if (lower.includes('lamp') && (sId.includes('pier') || sId.includes('river'))) key = 'pier_lamp';
+        else if (lower.includes('crate') && (sId.includes('pier') || sId.includes('river'))) key = 'pier_crate';
+        else if (lower.includes('crate') && sId.includes('library_basement')) key = 'library_basement_clutter';
+        else if (lower.includes('pier') && (lower.includes('fire') || lower.includes('barrel'))) key = 'pier_fire';
+        else if ((lower.includes('desk') || lower.includes('стол') || lower.includes('albert')) && sId.includes('albert_backroom')) key = 'albert_desk';
+        else if (lower.includes('solnysh') && sId.includes('solnysh_room')) key = 'solnysh_window';
+        else if ((lower.includes('plant') || lower.includes('цветок') || lower.includes('zarema')) && sId.includes('zarema')) key = 'zarema_plant';
+        else if ((lower.includes('mirror') || lower.includes('зеркало')) && sId.includes('zarema')) key = 'zarema_mirror';
+        else if ((lower.includes('memory') || lower.includes('sd_') || lower.includes('dream')) && sId.includes('sleep_dream')) key = 'dream_memory';
+        else if ((lower.includes('rooftop') || lower.includes('sky') || lower.includes('edge')) && sId.includes('rooftop')) key = 'rooftop_sky';
+        else if ((lower.includes('neon') || lower.includes('city') || lower.includes('square')) && sId.includes('city_square')) key = 'city_neon';
+        else if ((lower.includes('forest') || lower.includes('wind')) && (sId.includes('chk') || sId.includes('park'))) key = 'forest_wind';
+        else if ((lower.includes('camp') || lower.includes('fire') || lower.includes('chk')) && sId.includes('chk_campfire')) key = 'campfire_story';
+        // --- General smart matching ---
+        else if (lower.includes('coffee')) key = 'coffee_machine';
         else if (lower.includes('radio')) key = 'radio';
         else if (lower.includes('guitar')) key = 'guitar';
         else if (lower.includes('bookshelf') || lower.includes('book')) key = 'bookshelf';
-        else if (lower.includes('window')) key = 'window';
         else if (lower.includes('bench')) key = 'bench';
         else if (lower.includes('terminal')) key = 'terminal';
 
         else if (lower.includes('terminal') || lower.includes('server')) key = 'terminal';
         else if (lower.includes('mirror')) key = 'mirror';
-        // Scene-specific lamp variations (must come before general desk_lamp)
-        else if (lower.includes('lamp') && (sceneId.includes('pier') || sceneId.includes('river'))) key = 'pier_lamp';
         else if (lower.includes('lamp') || lower.includes('light')) key = 'desk_lamp';
         else if (lower.includes('plant') || lower.includes('flower')) key = 'plant';
         else if (lower.includes('fridge') || lower.includes('холодильник')) key = 'fridge';
         else if (lower.includes('bed') || lower.includes('кровать')) key = 'bed';
         else if (lower.includes('poster') || lower.includes('плакат')) key = 'poster';
-        else if (lower.includes('mail') || lower.includes('ящик')) key = 'mailbox';
+        else if (lower.includes('mail')) key = 'mailbox';
         else if (lower.includes('intercom') || lower.includes('домофон')) key = 'intercom';
         else if (lower.includes('vent') || lower.includes('вентиляц')) key = 'vent';
         else if (lower.includes('jukebox') || lower.includes('музыка')) key = 'jukebox';
-        else if (lower.includes('counter') || lower.includes('стойка')) key = 'barista_counter';
+        else if (lower.includes('counter')) key = 'barista_counter';
         else if (lower.includes('ashtray') || lower.includes('пепельниц')) key = 'ashtray';
-        else if (lower.includes('rack') || lower.includes('стойка')) key = 'server_rack';
+        else if (lower.includes('rack')) key = 'server_rack';
         else if (lower.includes('monitor') || lower.includes('экран')) key = 'monitor';
         else if (lower.includes('chair')) key = 'chair_office';
         else if (lower.includes('tree') || lower.includes('дерево')) key = 'tree';
@@ -140,39 +154,22 @@ export function AaaLivingWorldActivities() {
         else if (lower.includes('statue') || lower.includes('памятник')) key = 'statue';
         else if (lower.includes('conveyor') || lower.includes('лента')) key = 'conveyor';
         else if (lower.includes('valve') || lower.includes('вентиль')) key = 'valve';
-        // Scene-specific crate/crate variations (must come before general 'crate' to allow scene context)
-        else if (lower.includes('crate') && (sceneId.includes('pier') || sceneId.includes('river'))) key = 'pier_crate';
-        else if (lower.includes('crate') && sceneId.includes('library_basement')) key = 'library_basement_clutter';
         else if (lower.includes('crate') || lower.includes('ящик')) key = 'crate';
         else if (lower.includes('panel') || lower.includes('панель')) key = 'control_panel';
         else if (lower.includes('boat') || lower.includes('лодка')) key = 'boat';
         else if (lower.includes('barrel') || lower.includes('бочка')) key = 'fire_barrel';
         else if (lower.includes('fishing') || lower.includes('удочка')) key = 'fishing_rod';
-        else if (lower.includes('old_book')) key = 'old_book';
-        else if (lower.includes('pier') && (lower.includes('fire') || lower.includes('barrel'))) key = 'pier_fire';
         else if (lower.includes('water') || lower.includes('вода')) key = 'water_edge';
-        // AAA: battle debris + library basement clutter (post-fight / dusty tactile)
-        else if (lower.includes('battle') || lower.includes('debris') || lower.includes('shell') || lower.includes('баррель')) key = 'battle_debris';
-        // AAA cozy intimate rooms
-        else if ((lower.includes('desk') || lower.includes('стол') || lower.includes('albert')) && sceneId.includes('albert_backroom')) key = 'albert_desk';
-        else if (lower.includes('solnysh') && sceneId.includes('solnysh_room')) key = 'solnysh_window';
-        else if ((lower.includes('plant') || lower.includes('цветок') || lower.includes('zarema')) && sceneId.includes('zarema')) key = 'zarema_plant';
-        else if ((lower.includes('mirror') || lower.includes('зеркало')) && sceneId.includes('zarema')) key = 'zarema_mirror';
-        // AAA dream memory fragments — poetic, ethereal inner voice (show-don't-tell the past)
-        else if ((lower.includes('memory') || lower.includes('sd_') || lower.includes('dream')) && sceneId.includes('sleep_dream')) key = 'dream_memory';
-        // AAA extra living world on rooftops/city/forest/campfire
-        else if ((lower.includes('rooftop') || lower.includes('sky') || lower.includes('edge')) && sceneId.includes('rooftop')) key = 'rooftop_sky';
-        else if ((lower.includes('neon') || lower.includes('city') || lower.includes('square')) && sceneId.includes('city_square')) key = 'city_neon';
-        else if ((lower.includes('forest') || lower.includes('wind')) && (sceneId.includes('chk') || sceneId.includes('park'))) key = 'forest_wind';
-        else if ((lower.includes('camp') || lower.includes('fire') || lower.includes('chk')) && sceneId.includes('chk_campfire')) key = 'campfire_story';
+        else if (lower.includes('battle') || lower.includes('debris') || lower.includes('shell')) key = 'battle_debris';
+        else if (lower.includes('window')) key = 'window';
 
         if (key && ACTIVITY_LINES[key]) {
           const line = ACTIVITY_LINES[key];
           // Rich inner monologue — show, don't tell
-          eventBus.emit('volodka:thought' as any, { 
-            text: line, 
+          eventBus.emit('volodka:thought' as any, {
+            text: line,
             source: key,
-            scene: sceneId 
+            scene: sId,
           } as any);
 
           // Subtle world reactivity + tiny rewards for cozy moments
@@ -180,6 +177,9 @@ export function AaaLivingWorldActivities() {
             try {
               const snap = getGameSnapshot();
               if (snap.playerState.energy < 92) {
+                dispatchGameAction({
+                  type: 'player/addEnergy',
+                  amount: 2 + Math.floor(Math.random() * 2),
                 dispatchGameAction({ 
                   type: 'player/addEnergy',
                   amount: 2 + Math.floor(Math.random() * 2)
@@ -187,6 +187,9 @@ export function AaaLivingWorldActivities() {
               }
               // Gentle karma nudge for contemplative acts
               if (['window', 'bench', 'plant', 'old_book'].includes(key)) {
+                dispatchGameAction({
+                  type: 'player/addKarma',
+                  amount: 1,
                 dispatchGameAction({ 
                   type: 'player/addKarma',
                   amount: 1
@@ -197,10 +200,12 @@ export function AaaLivingWorldActivities() {
 
           // Dynamic world feedback — lights flicker, props react
           if (key.includes('lamp') || key === 'terminal' || key === 'control_panel') {
+            eventBus.emit('world:ambient_event', {
+              type: 'light_flicker',
             eventBus.emit('world:ambient_event' as any, { 
               type: 'light_flicker', 
               intensity: 0.6 + Math.random() * 0.3,
-              duration: 800 
+              duration: 800,
             });
           }
           if (key === 'radio' || key === 'jukebox') {
@@ -213,17 +218,13 @@ export function AaaLivingWorldActivities() {
       eventBus.on('exploration:footstep', () => {
         // Occasional living world whispers on movement (very rare, atmospheric)
         if (Math.random() < 0.018) {
-          const whispers = [
-            'Город шепчет.',
-            'Кто-то прошёл здесь недавно.',
-            'Ветер несёт запахи прошлого.',
-          ];
+          const whispers = ['Город шепчет.', 'Кто-то прошёл здесь недавно.', 'Ветер несёт запахи прошлого.'];
           const w = whispers[Math.floor(Math.random() * whispers.length)];
           eventBus.emit('volodka:thought' as any, { text: w, source: 'ambient' } as any);
         }
       }),
     ];
-    return () => unsubs.forEach(u => u());
+    return () => unsubs.forEach((u) => u());
   }, []);
 
   return null;
