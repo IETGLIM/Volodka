@@ -61,6 +61,7 @@ import '@/engine/audio/transitionSound';
 import { WeatherIndicator } from '../WeatherIndicator';
 import { AmbientAtmosphereCaption } from '../AmbientAtmosphereCaption';
 import { SceneDiscoveryCelebration } from '@/components/game/hud/parts/SceneDiscoveryCelebration';
+import { SceneDiscoveryToast } from '@/components/game/SceneDiscoveryToast';
 import { HUDBootSequence } from '@/components/game/hud/parts/HUDBootSequence';
 import { HUDNotificationFeed } from '@/components/game/hud/parts/HUDNotificationFeed';
 import { DayNightCycleIndicator } from '../DayNightCycleIndicator';
@@ -525,6 +526,7 @@ export const GameplayExplorationHud = memo(function GameplayExplorationHud({
           with hud-filmic-caption styling. DayNightCycleIndicator was moved inside
           <LazyHUD> by the progressive-reveal refactor (commit 3c92c50). */}
       <SceneDiscoveryCelebration />
+      <SceneDiscoveryToast />
       <TutorialOverlay />
       <FirstPlayTutorial />
       <TrophyAchievementLayer />

@@ -1,5 +1,5 @@
 
-/* ─── Volodka RPG – Canvas-based World Map Panel ───
+/* ─── Volodka RPG – Canvas-based World Map Panel (Enhanced) ───
  * Full-screen canvas map showing discovered game scenes.
  * Scenes organized by area, with connections, quest markers, fast travel.
  * Keyboard: Tab to toggle, Escape to close.
@@ -9,14 +9,16 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FocusTrap } from '@/components/a11y/FocusTrap';
 import { usePanelDialog } from '@/components/a11y/usePanelDialog';
-import { X, Compass, Clock, MapPin } from 'lucide-react';
+import { X, Compass, Clock, MapPin, Lock, Zap, Users, ShieldAlert } from 'lucide-react';
 import { useGameStore } from '@/store/gameStore';
 import { useFastTravelState, useActiveQuests } from '@/store/selectors';
 import { SCENE_DEFINITIONS, type SceneId } from '@/config/sceneDefinitions';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
-import { isSceneGateOpen } from '@/shared/sceneGates';
+import { isSceneGateOpen, SCENE_FLAG_GATES } from '@/shared/sceneGates';
 import { hapticMedium, hapticError } from '@/shared/utils/hapticFeedback';
 import { getQuestDefinitions } from '@/data/gameDataLoader';
+import { NPC_SCHEDULES_MAP } from '@/data/npcSchedules';
+import '../styles/world-map.css';
 
 /* ─── Area/region definitions ─── */
 type MapRegion = 'home' | 'city' | 'cultural' | 'industrial' | 'special';
@@ -36,6 +38,21 @@ const REGION_LABELS: Record<MapRegion, string> = {
   industrial: 'ПРОМЗОНА',
   special: 'ОСОБЫЕ',
 };
+
+/* ─── Connection types ─── */
+type ConnectionType = 'road' | 'path' | 'secret';
+
+const CONNECTION_STYLES: Record<ConnectionType, { label: string; dash: number[]; color: string; width: number }> = {
+  road:   { label: 'Дорога',  dash: [6, 4],  color: 'rgba(0, 229, 255, 0.25)',  width: 1.5 },
+  path:   { label: 'Тропа',  dash: [4, 4],  color: 'rgba(0, 229, 255, 0.18)',  width: 1.0 },
+  secret: { label: 'Секрет', dash: [2, 6],  color: 'rgba(167, 139, 250, 0.2)', width: 0.8 },
+};
+
+interface TypedConnection {
+  from: SceneId;
+  to: SceneId;
+  type: ConnectionType;
+}
 
 /* ─── Canvas map node positions (percentage-based) ─── */
 interface MapNode {
@@ -85,36 +102,59 @@ const MAP_NODES: MapNode[] = [
   { id: 'forest_clearing',    x: 86, y: 34, region: 'special' },
 ];
 
-/* ─── Connections ─── */
-const CONNECTIONS: [SceneId, SceneId][] = [
-  ['volodka_room', 'volodka_corridor'],
-  ['volodka_corridor', 'home_evening'],
-  ['volodka_corridor', 'zarema_albert_room'],
-  ['volodka_corridor', 'solnysh_room'],
-  ['zarema_albert_room', 'zarema_room'],
-  ['volodka_corridor', 'street_night'],
-  ['street_night', 'cafe_evening'],
-  ['street_night', 'office_day'],
-  ['street_night', 'city_square'],
-  ['street_night', 'street_winter'],
-  ['cafe_evening', 'albert_backroom'],
-  ['office_day', 'guild_mainframe'],
-  ['street_night', 'park_day'],
-  ['park_day', 'library_day'],
-  ['library_day', 'library_basement'],
-  ['street_night', 'rooftop_edge'],
-  ['street_night', 'abandoned_factory'],
-  ['park_day', 'chk_forest_zorge'],
-  ['chk_forest_zorge', 'chk_campfire_night'],
-  ['chk_forest_zorge', 'forest_clearing'],
-  ['abandoned_factory', 'factory_basement'],
-  ['abandoned_factory', 'factory_roof'],
-  ['factory_basement', 'underground_bunker'],
-  ['abandoned_factory', 'river_pier'],
-  ['river_pier', 'pier_evening'],
-  ['pier_evening', 'park_day'],
-  ['volodka_room', 'sleep_dream'],
+/* ─── Typed connections ─── */
+const TYPED_CONNECTIONS: TypedConnection[] = [
+  // Home cluster — roads
+  { from: 'volodka_room', to: 'volodka_corridor', type: 'road' },
+  { from: 'volodka_corridor', to: 'home_evening', type: 'road' },
+  { from: 'volodka_corridor', to: 'zarema_albert_room', type: 'road' },
+  { from: 'volodka_corridor', to: 'solnysh_room', type: 'road' },
+  { from: 'zarema_albert_room', to: 'zarema_room', type: 'path' },
+  // Home → City
+  { from: 'volodka_corridor', to: 'street_night', type: 'road' },
+  // City cluster — roads
+  { from: 'street_night', to: 'cafe_evening', type: 'road' },
+  { from: 'street_night', to: 'office_day', type: 'road' },
+  { from: 'street_night', to: 'city_square', type: 'road' },
+  { from: 'street_night', to: 'street_winter', type: 'path' },
+  { from: 'cafe_evening', to: 'albert_backroom', type: 'secret' },
+  { from: 'office_day', to: 'guild_mainframe', type: 'secret' },
+  // City → Cultural
+  { from: 'street_night', to: 'park_day', type: 'path' },
+  { from: 'park_day', to: 'library_day', type: 'road' },
+  { from: 'library_day', to: 'library_basement', type: 'secret' },
+  // City → Special
+  { from: 'street_night', to: 'rooftop_edge', type: 'secret' },
+  // City → Industrial
+  { from: 'street_night', to: 'abandoned_factory', type: 'path' },
+  // Cultural → Special
+  { from: 'park_day', to: 'chk_forest_zorge', type: 'path' },
+  { from: 'chk_forest_zorge', to: 'chk_campfire_night', type: 'path' },
+  { from: 'chk_forest_zorge', to: 'forest_clearing', type: 'secret' },
+  // Industrial internal
+  { from: 'abandoned_factory', to: 'factory_basement', type: 'secret' },
+  { from: 'abandoned_factory', to: 'factory_roof', type: 'path' },
+  { from: 'factory_basement', to: 'underground_bunker', type: 'secret' },
+  { from: 'abandoned_factory', to: 'river_pier', type: 'road' },
+  { from: 'river_pier', to: 'pier_evening', type: 'road' },
+  { from: 'pier_evening', to: 'park_day', type: 'path' },
+  // Dream
+  { from: 'volodka_room', to: 'sleep_dream', type: 'secret' },
 ];
+
+/* ─── Energy cost per scene for fast travel ─── */
+const TRAVEL_ENERGY_COST: Partial<Record<SceneId, number>> = {
+  volodka_room: 0, volodka_corridor: 0, home_evening: 0,
+  zarema_albert_room: 0, solnysh_room: 0, zarema_room: 0,
+  street_night: 5, street_winter: 5, cafe_evening: 5,
+  office_day: 5, city_square: 5, guild_mainframe: 5,
+  park_day: 10, library_day: 10, library_basement: 10,
+  rooftop_edge: 15, abandoned_factory: 15, factory_basement: 15,
+  factory_roof: 15, river_pier: 15, chk_forest_zorge: 20,
+  chk_campfire_night: 20, pier_evening: 15,
+  underground_bunker: 25, albert_backroom: 5,
+  forest_clearing: 20, battle: 0, sleep_dream: 0,
+};
 
 /* ─── Travel time ─── */
 const TRAVEL_TIME: Partial<Record<SceneId, number>> = {
@@ -128,6 +168,37 @@ const TRAVEL_TIME: Partial<Record<SceneId, number>> = {
   chk_campfire_night: 1.0, pier_evening: 1.0,
   underground_bunker: 1.0, albert_backroom: 0.5,
   forest_clearing: 1.0, battle: 0, sleep_dream: 0,
+};
+
+/* ─── Danger levels ─── */
+type DangerLevel = 'safe' | 'moderate' | 'dangerous';
+
+const SCENE_DANGER: Partial<Record<SceneId, DangerLevel>> = {
+  volodka_room: 'safe', volodka_corridor: 'safe', home_evening: 'safe',
+  zarema_albert_room: 'safe', zarema_room: 'safe', solnysh_room: 'safe',
+  street_night: 'moderate', street_winter: 'moderate', cafe_evening: 'safe',
+  office_day: 'safe', city_square: 'safe', guild_mainframe: 'moderate',
+  park_day: 'safe', library_day: 'safe', library_basement: 'moderate',
+  rooftop_edge: 'dangerous', abandoned_factory: 'dangerous',
+  factory_basement: 'dangerous', factory_roof: 'dangerous',
+  underground_bunker: 'dangerous', river_pier: 'moderate',
+  chk_forest_zorge: 'dangerous', chk_campfire_night: 'moderate',
+  pier_evening: 'moderate', albert_backroom: 'safe',
+  forest_clearing: 'moderate', battle: 'dangerous', sleep_dream: 'safe',
+};
+
+const DANGER_LABELS: Record<DangerLevel, string> = {
+  safe: 'Безопасно',
+  moderate: 'Осторожно',
+  dangerous: 'Опасно',
+};
+
+/* ─── Scene type labels (Russian) ─── */
+const SCENE_TYPE_LABELS: Record<string, string> = {
+  indoor: 'Помещение',
+  outdoor: 'Улица',
+  underground: 'Подземелье',
+  dream: 'Сон',
 };
 
 /* ─── Region label positions ─── */
@@ -145,6 +216,38 @@ function timePeriodLabel(hour: number): string {
   if (hour >= 10 && hour < 18) return 'День';
   if (hour >= 18 && hour < 21) return 'Вечер';
   return 'Ночь';
+}
+
+/** Get NPCs currently at a scene */
+function getNpcsAtScene(sceneId: SceneId, timeOfDay: number): string[] {
+  const npcNames: string[] = [];
+  for (const schedule of Object.values(NPC_SCHEDULES_MAP)) {
+    for (const entry of schedule.entries) {
+      if (entry.sceneId === sceneId) {
+        const hour = timeOfDay;
+        const wrap = entry.startHour < entry.endHour
+          ? hour >= entry.startHour && hour < entry.endHour
+          : hour >= entry.startHour || hour < entry.endHour;
+        if (wrap && !npcNames.includes(schedule.npcId)) {
+          npcNames.push(schedule.npcId);
+        }
+      }
+    }
+  }
+  return npcNames;
+}
+
+/** Get the unlock condition text for a gated scene */
+function getUnlockConditionText(sceneId: SceneId): string | null {
+  const gate = SCENE_FLAG_GATES[sceneId];
+  if (!gate) return null;
+  const LABELS: Record<string, string> = {
+    rooftop_unlocked: 'Доберитесь до крыши через сюжет',
+    factory_unlocked: 'Исследуйте заброшенный завод',
+    visited_river_pier: 'Посетите набережную',
+    entered_factory_basement: 'Спуститесь в подвал завода',
+  };
+  return LABELS[gate] ?? 'Выполните условие сюжета';
 }
 
 /* ─── Canvas drawing ─── */
@@ -174,6 +277,13 @@ function drawWorldMap(
   const nodeMap = new Map<SceneId, MapNode>();
   for (const n of MAP_NODES) nodeMap.set(n.id, n);
 
+  // Connection type lookup
+  const connTypeMap = new Map<string, ConnectionType>();
+  for (const tc of TYPED_CONNECTIONS) {
+    connTypeMap.set(`${tc.from}->${tc.to}`, tc.type);
+    connTypeMap.set(`${tc.to}->${tc.from}`, tc.type);
+  }
+
   // Background grid
   ctx.strokeStyle = 'rgba(0, 229, 255, 0.04)';
   ctx.lineWidth = 0.5;
@@ -199,26 +309,42 @@ function drawWorldMap(
     ctx.fillText(REGION_LABELS[rc.region], toX(rc.x), toY(rc.y));
   }
 
-  // Connection lines
-  for (const [fromId, toId] of CONNECTIONS) {
-    const from = nodeMap.get(fromId);
-    const to = nodeMap.get(toId);
+  // Typed connection lines
+  for (const conn of TYPED_CONNECTIONS) {
+    const from = nodeMap.get(conn.from);
+    const to = nodeMap.get(conn.to);
     if (!from || !to) continue;
 
-    const fromDisc = discoveredScenes.includes(fromId);
-    const toDisc = discoveredScenes.includes(toId);
+    const fromDisc = discoveredScenes.includes(conn.from);
+    const toDisc = discoveredScenes.includes(conn.to);
     const bothDisc = fromDisc && toDisc;
+    const style = CONNECTION_STYLES[conn.type];
 
     ctx.beginPath();
     ctx.moveTo(toX(from.x), toY(from.y));
     ctx.lineTo(toX(to.x), toY(to.y));
-    ctx.strokeStyle = bothDisc
-      ? 'rgba(0, 229, 255, 0.25)'
-      : 'rgba(71, 85, 105, 0.12)';
-    ctx.lineWidth = bothDisc ? 1.5 : 0.8;
-    ctx.setLineDash(bothDisc ? [6, 4] : [3, 6]);
+
+    if (bothDisc) {
+      ctx.strokeStyle = style.color;
+      ctx.lineWidth = style.width;
+      ctx.setLineDash(style.dash);
+    } else {
+      ctx.strokeStyle = 'rgba(71, 85, 105, 0.12)';
+      ctx.lineWidth = 0.8;
+      ctx.setLineDash([3, 6]);
+    }
     ctx.stroke();
     ctx.setLineDash([]);
+
+    // Draw connection type indicator for discovered connections on hover
+    if (bothDisc && hoveredNode && (hoveredNode === conn.from || hoveredNode === conn.to)) {
+      const mx = (toX(from.x) + toX(to.x)) / 2;
+      const my = (toY(from.y) + toY(to.y)) / 2;
+      ctx.font = '400 8px "Geist Mono", ui-monospace, monospace';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = conn.type === 'secret' ? 'rgba(167, 139, 250, 0.5)' : 'rgba(148, 163, 184, 0.5)';
+      ctx.fillText(style.label, mx, my - 5);
+    }
   }
 
   // Nodes
@@ -229,11 +355,12 @@ function drawWorldMap(
     const isCurrent = node.id === currentSceneId;
     const gateOpen = isSceneGateOpen(node.id, playerFlags);
     const isRumored = !isDisc && gateOpen;
+    const isLocked = !isDisc && !gateOpen;
     const hasQuest = questSceneIds.has(node.id);
     const isHovered = hoveredNode === node.id;
     const def = SCENE_DEFINITIONS[node.id];
 
-    // Current scene pulsing glow
+    // Current scene — pulsing cyan dot
     if (isCurrent) {
       const pulse = 0.5 + 0.5 * Math.sin(time * 3);
       const glowRadius = NODE_RADIUS_CURRENT + 8 + pulse * 6;
@@ -276,6 +403,11 @@ function drawWorldMap(
         ? REGION_COLORS[node.region]
         : `${REGION_COLORS[node.region]}80`;
       ctx.lineWidth = isHovered ? 2 : 1.5;
+    } else if (isLocked) {
+      // Locked location — red-tinted circle
+      ctx.fillStyle = 'rgba(239, 68, 68, 0.06)';
+      ctx.strokeStyle = 'rgba(239, 68, 68, 0.2)';
+      ctx.lineWidth = 1;
     } else if (isRumored) {
       ctx.fillStyle = 'rgba(255, 171, 0, 0.08)';
       ctx.strokeStyle = 'rgba(255, 171, 0, 0.3)';
@@ -294,6 +426,14 @@ function drawWorldMap(
       ctx.arc(x, y, 3, 0, Math.PI * 2);
       ctx.fillStyle = REGION_COLORS[node.region];
       ctx.fill();
+    }
+
+    // Lock icon for locked locations
+    if (isLocked) {
+      ctx.font = '600 9px "Geist Mono", ui-monospace, monospace';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = 'rgba(239, 68, 68, 0.6)';
+      ctx.fillText('🔒', x, y + 3);
     }
 
     // Quest diamond marker
@@ -316,15 +456,19 @@ function drawWorldMap(
       ? def.name
       : isRumored && def
         ? def.name
-        : '???';
+        : isLocked && def
+          ? def.name
+          : '???';
 
     ctx.fillStyle = isCurrent
       ? 'rgba(0, 229, 255, 0.9)'
       : isDisc
         ? 'rgba(203, 213, 225, 0.8)'
-        : isRumored
-          ? 'rgba(255, 171, 0, 0.5)'
-          : 'rgba(100, 116, 139, 0.4)';
+        : isLocked
+          ? 'rgba(239, 68, 68, 0.4)'
+          : isRumored
+            ? 'rgba(255, 171, 0, 0.5)'
+            : 'rgba(100, 116, 139, 0.4)';
 
     // Text shadow for readability
     ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
@@ -342,6 +486,25 @@ function drawWorldMap(
   }
 }
 
+/* ─── Tooltip data ─── */
+interface TooltipData {
+  id: SceneId;
+  name: string;
+  x: number;
+  y: number;
+  isDisc: boolean;
+  isCurrent: boolean;
+  isLocked: boolean;
+  accessible: boolean;
+  travelHours: number;
+  energyCost: number;
+  hasQuest: boolean;
+  sceneType: string;
+  dangerLevel: DangerLevel | undefined;
+  npcNames: string[];
+  unlockCondition: string | null;
+}
+
 /* ─── Props ─── */
 interface WorldMapPanelProps {
   open: boolean;
@@ -354,6 +517,7 @@ export function WorldMapPanel({ open, onClose }: WorldMapPanelProps) {
   const { currentSceneId, timeOfDay, discoveredScenes, playerFlags } = useFastTravelState();
   const activeQuests = useActiveQuests();
   const fastTravelTo = useGameStore((s) => s.fastTravelTo);
+  const playerEnergy = useGameStore((s) => s.playerState.energy);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animFrameRef = useRef<number>(0);
@@ -361,17 +525,7 @@ export function WorldMapPanel({ open, onClose }: WorldMapPanelProps) {
   const [hoveredNode, setHoveredNode] = useState<SceneId | null>(null);
   const [isTraveling, setIsTraveling] = useState(false);
   const [canvasSize, setCanvasSize] = useState({ w: 800, h: 500 });
-  const [tooltipData, setTooltipData] = useState<{
-    id: SceneId;
-    name: string;
-    x: number;
-    y: number;
-    isDisc: boolean;
-    isCurrent: boolean;
-    accessible: boolean;
-    travelHours: number;
-    hasQuest: boolean;
-  } | null>(null);
+  const [tooltipData, setTooltipData] = useState<TooltipData | null>(null);
 
   // Scenes with active quests
   const questSceneIds = useMemo(() => {
@@ -457,7 +611,7 @@ export function WorldMapPanel({ open, onClose }: WorldMapPanelProps) {
       const mapH = rect.height - PADDING * 2;
 
       let found: SceneId | null = null;
-      let tooltip: typeof tooltipData = null;
+      let tooltip: TooltipData | null = null;
 
       for (const node of MAP_NODES) {
         const nx = PADDING + (node.x / 100) * mapW;
@@ -468,19 +622,27 @@ export function WorldMapPanel({ open, onClose }: WorldMapPanelProps) {
           const isDisc = discoveredScenes.includes(node.id);
           const isCurrent = node.id === currentSceneId;
           const gateOpen = isSceneGateOpen(node.id, playerFlags);
+          const isLocked = !isDisc && !gateOpen;
           const hasQuest = questSceneIds.has(node.id);
           const def = SCENE_DEFINITIONS[node.id];
+          const npcNames = isDisc ? getNpcsAtScene(node.id, timeOfDay) : [];
 
           tooltip = {
             id: node.id,
-            name: isDisc && def ? def.name : '???',
+            name: isDisc && def ? def.name : isLocked && def ? def.name : '???',
             x: e.clientX - rect.left,
             y: e.clientY - rect.top,
             isDisc,
             isCurrent,
+            isLocked,
             accessible: isDisc && gateOpen && !isCurrent,
             travelHours: TRAVEL_TIME[node.id] ?? 0.5,
+            energyCost: TRAVEL_ENERGY_COST[node.id] ?? 5,
             hasQuest,
+            sceneType: def?.type ?? 'unknown',
+            dangerLevel: SCENE_DANGER[node.id],
+            npcNames,
+            unlockCondition: isLocked ? getUnlockConditionText(node.id) : null,
           };
           break;
         }
@@ -488,9 +650,9 @@ export function WorldMapPanel({ open, onClose }: WorldMapPanelProps) {
 
       setHoveredNode(found);
       setTooltipData(tooltip);
-      canvas.style.cursor = found && tooltipData?.accessible !== false ? 'pointer' : 'default';
+      canvas.style.cursor = found && tooltip?.accessible !== false ? 'pointer' : 'default';
     },
-    [discoveredScenes, currentSceneId, playerFlags, questSceneIds, tooltipData],
+    [discoveredScenes, currentSceneId, playerFlags, questSceneIds, tooltipData, timeOfDay],
   );
 
   const handleCanvasClick = useCallback(
@@ -501,8 +663,15 @@ export function WorldMapPanel({ open, onClose }: WorldMapPanelProps) {
       const isDisc = discoveredScenes.includes(hoveredNode);
       const isCurrent = hoveredNode === currentSceneId;
       const gateOpen = isSceneGateOpen(hoveredNode, playerFlags);
+      const energyCost = TRAVEL_ENERGY_COST[hoveredNode] ?? 5;
 
       if (!isDisc || isCurrent || !gateOpen) {
+        hapticError();
+        return;
+      }
+
+      // Check energy cost
+      if (energyCost > 0 && playerEnergy < energyCost) {
         hapticError();
         return;
       }
@@ -518,7 +687,7 @@ export function WorldMapPanel({ open, onClose }: WorldMapPanelProps) {
         }, 400);
       }, 300);
     },
-    [hoveredNode, discoveredScenes, currentSceneId, playerFlags, fastTravelTo, isTraveling, onClose],
+    [hoveredNode, discoveredScenes, currentSceneId, playerFlags, fastTravelTo, isTraveling, onClose, playerEnergy],
   );
 
   const handleCanvasMouseLeave = useCallback(() => {
@@ -623,6 +792,13 @@ export function WorldMapPanel({ open, onClose }: WorldMapPanelProps) {
                     </span>
                   </div>
                   <div className="flex items-center gap-3">
+                    {/* Energy display */}
+                    <div className="flex items-center gap-1.5 px-2 py-1 rounded border border-amber-500/15 bg-amber-950/20">
+                      <Zap className="size-3 text-amber-400/70" />
+                      <span className="text-amber-400/80 text-[11px] font-mono">
+                        {playerEnergy}
+                      </span>
+                    </div>
                     <div className="flex items-center gap-1.5 px-2 py-1 rounded border border-cyan-500/15 bg-cyan-950/20">
                       <Clock className="size-3 text-cyan-400/60" />
                       <span className="text-cyan-400/80 text-[11px] font-mono">
@@ -681,11 +857,21 @@ export function WorldMapPanel({ open, onClose }: WorldMapPanelProps) {
                         <span
                           className="w-2.5 h-2.5 rounded-full inline-block"
                           style={{
+                            border: '1px solid rgba(239,68,68,0.3)',
+                            background: 'rgba(239,68,68,0.06)',
+                          }}
+                        />
+                        <span className="text-slate-400">Закрыто</span>
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <span
+                          className="w-2.5 h-2.5 rounded-full inline-block"
+                          style={{
                             border: '1px solid rgba(255,171,0,0.3)',
                             background: 'rgba(255,171,0,0.08)',
                           }}
                         />
-                        <span className="text-slate-400">Закрыто</span>
+                        <span className="text-slate-400">Слухи</span>
                       </span>
                       <span className="flex items-center gap-1.5">
                         <span
@@ -696,6 +882,21 @@ export function WorldMapPanel({ open, onClose }: WorldMapPanelProps) {
                       </span>
                     </div>
                     <div className="flex items-center gap-3">
+                      {/* Connection type legend */}
+                      <div className="flex items-center gap-2 text-[9px] text-slate-500">
+                        <span className="flex items-center gap-1">
+                          <span className="inline-block w-4 border-t border-dashed" style={{ borderColor: 'rgba(0,229,255,0.4)', borderWidth: '1.5px' }} />
+                          <span>Дорога</span>
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <span className="inline-block w-3 border-t border-dashed" style={{ borderColor: 'rgba(0,229,255,0.25)' }} />
+                          <span>Тропа</span>
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <span className="inline-block w-3 border-t border-dashed" style={{ borderColor: 'rgba(167,139,250,0.3)', borderStyle: 'dotted' }} />
+                          <span>Секрет</span>
+                        </span>
+                      </div>
                       <span className="text-[10px] text-slate-500/50 font-mono tracking-wider">
                         volodka://world-map
                       </span>
@@ -712,50 +913,115 @@ export function WorldMapPanel({ open, onClose }: WorldMapPanelProps) {
                   </div>
                 </div>
 
-                {/* Tooltip */}
+                {/* Enhanced Tooltip */}
                 {tooltipData && (
                   <div
-                    className="absolute z-20 pointer-events-none px-3 py-2 rounded-md border backdrop-blur-md"
+                    className="absolute z-20 pointer-events-none world-map-tooltip px-3 py-2.5"
                     style={{
-                      left: `${Math.min(tooltipData.x + 16, canvasSize.w - 200)}px`,
-                      top: `${tooltipData.y > canvasSize.h / 2 ? tooltipData.y - 80 : tooltipData.y + 16}px`,
-                      background: 'rgba(6, 10, 20, 0.94)',
-                      borderColor: tooltipData.isCurrent
-                        ? 'rgba(0, 229, 255, 0.4)'
-                        : tooltipData.isDisc
-                          ? 'rgba(0, 229, 255, 0.25)'
-                          : 'rgba(71, 85, 105, 0.3)',
-                      boxShadow: `0 0 20px ${tooltipData.isCurrent ? 'rgba(0,229,255,0.12)' : 'rgba(0,0,0,0.4)'}`,
-                      minWidth: 160,
-                      maxWidth: 220,
+                      left: `${Math.min(tooltipData.x + 16, canvasSize.w - 240)}px`,
+                      top: `${tooltipData.y > canvasSize.h / 2 ? tooltipData.y - 140 : tooltipData.y + 16}px`,
+                      minWidth: 200,
+                      maxWidth: 240,
                     }}
                   >
-                    <div className="text-xs font-semibold text-slate-200 mb-0.5">
-                      {tooltipData.name}
+                    {/* Header */}
+                    <div className="world-map-tooltip__header">
+                      <span className="world-map-tooltip__name">
+                        {tooltipData.name}
+                      </span>
+                      {tooltipData.isDisc && tooltipData.sceneType !== 'unknown' && (
+                        <span
+                          className="world-map-tooltip__type-badge"
+                          style={{
+                            background: tooltipData.sceneType === 'underground'
+                              ? 'rgba(251,146,60,0.15)'
+                              : tooltipData.sceneType === 'dream'
+                                ? 'rgba(167,139,250,0.15)'
+                                : tooltipData.sceneType === 'outdoor'
+                                  ? 'rgba(34,197,94,0.15)'
+                                  : 'rgba(0,229,255,0.12)',
+                            color: tooltipData.sceneType === 'underground'
+                              ? 'rgba(251,146,60,0.9)'
+                              : tooltipData.sceneType === 'dream'
+                                ? 'rgba(167,139,250,0.9)'
+                                : tooltipData.sceneType === 'outdoor'
+                                  ? 'rgba(34,197,94,0.9)'
+                                  : 'rgba(0,229,255,0.8)',
+                          }}
+                        >
+                          {SCENE_TYPE_LABELS[tooltipData.sceneType] ?? tooltipData.sceneType}
+                        </span>
+                      )}
                     </div>
+
+                    {/* Current location indicator */}
                     {tooltipData.isCurrent ? (
-                      <div className="flex items-center gap-1 text-[9px] text-cyan-400/70 font-mono">
+                      <div className="world-map-tooltip__row world-map-tooltip__row--cyan">
                         <MapPin className="size-2.5" /> Вы здесь
                       </div>
                     ) : tooltipData.isDisc ? (
-                      <div className="flex items-center gap-2 text-[9px] font-mono">
-                        <span className="text-cyan-400/60 flex items-center gap-1">
+                      <>
+                        {/* Travel info for discovered */}
+                        <div className="world-map-tooltip__row world-map-tooltip__row--cyan">
                           <Clock className="size-2.5" />
                           {tooltipData.travelHours > 0
-                            ? `${tooltipData.travelHours} ч.`
+                            ? `${tooltipData.travelHours} ч. пути`
                             : 'Мгновенно'}
-                        </span>
+                          {tooltipData.energyCost > 0 && (
+                            <span className="world-map-tooltip__cost ml-1">
+                              <Zap className="size-2" />
+                              {tooltipData.energyCost}
+                              {playerEnergy < tooltipData.energyCost && ' (мало)'}
+                            </span>
+                          )}
+                        </div>
                         {tooltipData.hasQuest && (
-                          <span className="text-amber-400/70">◆ Квест</span>
+                          <div className="world-map-tooltip__row world-map-tooltip__row--amber">
+                            ◆ Активный квест
+                          </div>
                         )}
+                      </>
+                    ) : null}
+
+                    {/* Danger level */}
+                    {tooltipData.isDisc && tooltipData.dangerLevel && (
+                      <div className={`world-map-tooltip__row mt-0.5`}>
+                        <ShieldAlert className="size-2.5" style={{
+                          color: tooltipData.dangerLevel === 'dangerous'
+                            ? 'rgba(239,68,68,0.8)'
+                            : tooltipData.dangerLevel === 'moderate'
+                              ? 'rgba(251,191,36,0.8)'
+                              : 'rgba(34,197,94,0.8)',
+                        }} />
+                        <span className={`world-map-tooltip__danger world-map-tooltip__danger--${tooltipData.dangerLevel}`}>
+                          {DANGER_LABELS[tooltipData.dangerLevel]}
+                        </span>
                       </div>
-                    ) : (
-                      <span className="text-[9px] text-slate-500 italic">
-                        Не исследовано
-                      </span>
                     )}
-                    {!tooltipData.accessible && !tooltipData.isCurrent && tooltipData.isDisc && (
-                      <span className="text-[9px] text-amber-400/60 font-mono">
+
+                    {/* NPCs at this location */}
+                    {tooltipData.isDisc && tooltipData.npcNames.length > 0 && (
+                      <div className="world-map-tooltip__npcs">
+                        <Users className="size-2.5 text-cyan-400/50" style={{ flexShrink: 0, marginTop: 2 }} />
+                        {tooltipData.npcNames.map((npcId) => (
+                          <span key={npcId} className="world-map-tooltip__npc-tag">
+                            {npcId}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Locked condition */}
+                    {tooltipData.isLocked && tooltipData.unlockCondition && (
+                      <div className="world-map-tooltip__lock">
+                        <Lock className="size-2.5" />
+                        {tooltipData.unlockCondition}
+                      </div>
+                    )}
+
+                    {/* Inaccessible discovered (gated) */}
+                    {!tooltipData.isCurrent && tooltipData.isDisc && !tooltipData.accessible && (
+                      <span className="text-[9px] text-amber-400/60 font-mono mt-1 block">
                         ◆ Закрыто
                       </span>
                     )}

@@ -5,7 +5,7 @@
    Cyberpunk dark glass morphism with amber accent.
 */
 
-import { useEffect, useMemo, useState, useCallback } from 'react';
+import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FocusTrap } from '@/components/a11y/FocusTrap';
 import { usePanelDialog } from '@/components/a11y/usePanelDialog';
@@ -40,6 +40,22 @@ interface DetailPopupData {
   unlockedAt?: number;
 }
 
+/* ─── Rarity → CSS tier class mapping ─── */
+const RARITY_TIER_CLASS: Record<string, string> = {
+  common: 'gp-tier-common',
+  rare: 'gp-tier-rare',
+  epic: 'gp-tier-epic',
+  legendary: 'gp-tier-legendary',
+};
+
+/* Rarity → unlock burst animation class */
+const RARITY_BURST_CLASS: Record<string, string> = {
+  common: 'gp-unlock-burst--common',
+  rare: 'gp-unlock-burst--rare',
+  epic: 'gp-unlock-burst--epic',
+  legendary: 'gp-unlock-burst',
+};
+
 /* ─── Single Achievement Card ─── */
 
 function AchievementCard({
@@ -47,14 +63,20 @@ function AchievementCard({
   unlocked,
   unlockedAt,
   progress,
+  recentlyUnlocked,
   onClick }: {
   achievement: AchievementDefinition;
   unlocked: boolean;
   unlockedAt?: number;
   progress?: { current: number; target: number } | null;
+  recentlyUnlocked?: boolean;
   onClick: () => void;
 }) {
   const isHidden = achievement.hidden && !unlocked;
+  const tierClass = RARITY_TIER_CLASS[achievement.rarity] ?? '';
+  const burstClass = recentlyUnlocked ? (RARITY_BURST_CLASS[achievement.rarity] ?? 'gp-unlock-burst') : '';
+  const tierIconClass = `gp-tier-icon-${achievement.rarity}`;
+  const meta = RARITY_META[achievement.rarity];
 
   return (
     <motion.button
@@ -62,17 +84,21 @@ function AchievementCard({
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
-      className={`
-        relative rounded-xl border overflow-hidden transition-all duration-300 w-full text-left
-        ${unlocked
-          ? 'border-amber-500/30 bg-amber-950/10 hover:border-amber-500/50 cursor-pointer'
-          : 'border-slate-800/30 bg-slate-900/20 hover:border-slate-700/40 cursor-pointer'
-        }
-      `}
+      className={[
+        'relative rounded-xl border overflow-hidden transition-all duration-300 w-full text-left',
+        tierClass,
+        burstClass,
+        isHidden ? 'gp-shimmer-hidden' : '',
+        unlocked
+          ? 'hover:border-opacity-60 cursor-pointer'
+          : 'border-slate-800/30 bg-slate-900/20 hover:border-slate-700/40 cursor-pointer',
+      ].filter(Boolean).join(' ')}
       style={{
-        boxShadow: unlocked
-          ? '0 0 16px rgba(251,191,36,0.1), inset 0 1px 0 rgba(251,191,36,0.06)'
-          : 'none' }}
+        borderColor: unlocked ? `${meta.color}40` : undefined,
+        background: unlocked
+          ? `linear-gradient(135deg, ${meta.color}08 0%, rgba(15,23,42,0.6) 100%)`
+          : undefined,
+      }}
       onClick={onClick}
     >
       {/* Glow border for unlocked */}
@@ -83,23 +109,23 @@ function AchievementCard({
             boxShadow: 'inset 0 0 20px rgba(251,191,36,0.05)' }}
         />
       )}
+      {/* Unlock particle burst animation */}
+      {recentlyUnlocked && (
+        <div className="gp-unlock-particles pointer-events-none" />
+      )}
 
       <div className="flex items-center gap-3 p-3">
         {/* Icon */}
         <div
-          className={`
-            flex items-center justify-center shrink-0 rounded-lg
-            ${unlocked
-              ? 'bg-amber-500/10'
-              : 'bg-slate-800/40'
-            }
-          `}
+          className={`flex items-center justify-center shrink-0 rounded-lg ${
+            unlocked ? tierIconClass : 'bg-slate-800/40'
+          }`}
           style={{
             width: 44,
             height: 44,
             fontSize: 22,
             boxShadow: unlocked
-              ? '0 0 12px rgba(251,191,36,0.15)'
+              ? `0 0 12px ${meta.color}30`
               : 'none',
             filter: unlocked ? 'none' : 'grayscale(1) brightness(0.4)' }}
         >
@@ -110,14 +136,14 @@ function AchievementCard({
         <div className="flex flex-col min-w-0 flex-1">
           <span
             className={`text-sm font-semibold leading-tight truncate ${
-              unlocked ? 'text-amber-200' : 'text-slate-500'
+              unlocked ? 'gp-tier-label-' + achievement.rarity : 'text-slate-500'
             }`}
           >
             {isHidden ? '???' : achievement.title}
           </span>
           <span
             className={`text-xs leading-tight mt-0.5 truncate ${
-              unlocked ? 'text-amber-400/60' : 'text-slate-600'
+              unlocked ? 'text-slate-400/80' : 'text-slate-600'
             }`}
           >
             {isHidden ? 'Секретное достижение' : achievement.description}
@@ -129,11 +155,14 @@ function AchievementCard({
             </span>
           )}
           {!unlocked && progress && progress.target > 1 && (
-            <div className="mt-1.5 h-1 rounded-full bg-slate-800/80 overflow-hidden">
-              <div
-                className="h-full rounded-full bg-amber-500/60"
-                style={{ width: `${Math.round((progress.current / progress.target) * 100)}%` }}
+            <div className="mt-1.5 h-1.5 rounded-full bg-slate-800/80 overflow-hidden">
+              <motion.div
+                className="h-full rounded-full gp-progress gp-progress--amber"
+                initial={false}
+                animate={{ width: `${Math.round((progress.current / progress.target) * 100)}%` }}
+                transition={{ duration: 0.4, ease: 'easeOut' }}
               />
+              <span className="text-[9px] text-amber-400/50 font-mono mt-0.5 block">{progress.current} / {progress.target}</span>
             </div>
           )}
           {/* Timestamp for unlocked */}
@@ -152,7 +181,7 @@ function AchievementCard({
         {/* Status icon */}
         <div className="shrink-0">
           {unlocked ? (
-            <CheckCircle2 className="size-5 text-amber-400" style={{ filter: 'drop-shadow(0 0 4px rgba(251,191,36,0.4))' }} />
+            <CheckCircle2 className="size-5" style={{ color: meta.color, filter: `drop-shadow(0 0 4px ${meta.color}60)` }} />
           ) : (
             <Lock className="size-4 text-slate-600" />
           )}
@@ -225,10 +254,9 @@ function AchievementDetailPopup({
             </h3>
             <div className="flex items-center gap-2 mt-1">
               <span
-                className="text-[10px] font-mono px-2 py-0.5 rounded-full"
+                className={`text-[10px] font-mono px-2 py-0.5 rounded-full gp-tier-label-${achievement.rarity}`}
                 style={{
                   background: `${RARITY_META[achievement.rarity].color}15`,
-                  color: RARITY_META[achievement.rarity].color,
                   border: `1px solid ${RARITY_META[achievement.rarity].color}30` }}
               >
                 {RARITY_META[achievement.rarity].label}
@@ -355,9 +383,36 @@ export function AchievementDetailsPanel({ open, onClose }: AchievementDetailsPan
     return map;
   }, [unlockedAchievements]);
 
+  /* ── Enhanced: Recently unlocked achievement ID (for particle animation) ── */
+  const [recentlyUnlockedId, setRecentlyUnlockedId] = useState<string | null>(null);
+  const prevUnlockedRef = useRef<string[]>([]);
+  useEffect(() => {
+    const currentIds = unlockedAchievements.map(a => a.id);
+    const prevIds = prevUnlockedRef.current;
+    for (const id of currentIds) {
+      if (!prevIds.includes(id)) {
+        setRecentlyUnlockedId(id);
+        const tid = setTimeout(() => setRecentlyUnlockedId(null), 1500);
+        return () => clearTimeout(tid);
+      }
+    }
+    prevUnlockedRef.current = currentIds;
+  }, [unlockedAchievements]);
+
   /* ── Compute stats ── */
   const unlockedCount = unlockedMap.size;
   const progressPct = TOTAL_ACHIEVEMENTS > 0 ? (unlockedCount / TOTAL_ACHIEVEMENTS) * 100 : 0;
+
+  /* ── Enhanced: Rarest unlocked achievement ── */
+  const rarestUnlocked = useMemo(() => {
+    const rarityOrder = ['legendary', 'epic', 'rare', 'common'];
+    const unlockedAchs = ACHIEVEMENTS.filter(a => unlockedMap.has(a.id) && !a.hidden);
+    for (const rarity of rarityOrder) {
+      const found = unlockedAchs.find(a => a.rarity === rarity);
+      if (found) return found;
+    }
+    return null;
+  }, [unlockedMap]);
 
   /* ── Category stats ── */
   const categoryStats = useMemo(() => {
@@ -544,6 +599,7 @@ export function AchievementDetailsPanel({ open, onClose }: AchievementDetailsPan
                             unlocked={unlockedMap.has(ach.id)}
                             unlockedAt={unlockedMap.get(ach.id)}
                             progress={unlockedMap.has(ach.id) ? null : getProgress(ach)}
+                            recentlyUnlocked={recentlyUnlockedId === ach.id}
                             onClick={() => handleAchievementClick(ach)}
                           />
                         ))}
@@ -561,6 +617,7 @@ export function AchievementDetailsPanel({ open, onClose }: AchievementDetailsPan
                       unlocked={unlockedMap.has(ach.id)}
                       unlockedAt={unlockedMap.get(ach.id)}
                       progress={unlockedMap.has(ach.id) ? null : getProgress(ach)}
+                      recentlyUnlocked={recentlyUnlockedId === ach.id}
                       onClick={() => handleAchievementClick(ach)}
                     />
                   ))}
@@ -578,6 +635,18 @@ export function AchievementDetailsPanel({ open, onClose }: AchievementDetailsPan
                   {unlockedCount}/{TOTAL_ACHIEVEMENTS}
                 </span>
               </div>
+              {/* Enhanced: Rarest achievement stat */}
+              {rarestUnlocked && (
+                <div className="mt-2 flex items-center gap-1.5 text-[10px] font-mono">
+                  <span className="text-slate-500">Самое редкое:</span>
+                  <span className="text-amber-300/70">{rarestUnlocked.icon} {rarestUnlocked.title}</span>
+                  <span
+                    className="gp-badge gp-badge--amber text-[9px]"
+                  >
+                    {RARITY_META[rarestUnlocked.rarity].label}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 

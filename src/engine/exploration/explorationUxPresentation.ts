@@ -7,7 +7,7 @@ export interface InteractionHintVisual {
   bg: string;
 }
 
-export type SceneTransitionStyle = 'wipe' | 'flash' | 'darken' | 'ripple' | 'dissolve' | 'film_burn' | 'glitch_cut' | 'breathe' | 'crossfade' | 'breathe_zoom' | 'data_stream';
+export type SceneTransitionStyle = 'wipe' | 'flash' | 'darken' | 'ripple' | 'dissolve' | 'film_burn' | 'glitch_cut' | 'breathe' | 'crossfade' | 'breathe_zoom' | 'data_stream' | 'glitch_reveal' | 'poem_dissolve';
 
 export interface TransitionProgressVisual {
   primary: string;
@@ -56,6 +56,10 @@ const TRANSITION_ACCENT: Record<SceneTransitionStyle, string> = {
   breathe_zoom: 'rgba(120, 200, 255, 1)',
   // Data stream — matrix cascade. Bright cyan.
   data_stream: 'rgba(0, 229, 255, 1)',
+  // Glitch reveal — cyberpunk digital corruption. Neon magenta.
+  glitch_reveal: 'rgba(255, 0, 170, 1)',
+  // Poem dissolve — ethereal text fade. Soft lavender.
+  poem_dissolve: 'rgba(200, 180, 255, 1)',
 };
 
 const PROGRESS_ACTIVE: TransitionProgressVisual = {

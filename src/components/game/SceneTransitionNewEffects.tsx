@@ -8,12 +8,14 @@
 
 import { memo, useMemo } from 'react';
 import { motion } from 'framer-motion';
+import { GlitchRevealTransition } from './SceneTransitionGlitchReveal';
+import { PoemDissolveTransition } from './SceneTransitionPoemDissolve';
 
 /* ══════════════════════════════════════════════════════════════
    TYPES
    ══════════════════════════════════════════════════════════════ */
 
-export type NewTransitionType = 'breathe_zoom' | 'data_stream';
+export type NewTransitionType = 'breathe_zoom' | 'data_stream' | 'glitch_reveal' | 'poem_dissolve';
 
 export interface TransitionEffectProps {
   /** Accent color matching the scene transition palette */
@@ -46,6 +48,12 @@ export const NEW_TRANSITION_DURATIONS = {
   DATA_STREAM_IN: 600,
   DATA_STREAM_HOLD: 500,
   DATA_STREAM_OUT: 800,
+  GLITCH_REVEAL_IN: 750,
+  GLITCH_REVEAL_HOLD: 400,
+  GLITCH_REVEAL_OUT: 600,
+  POEM_DISSOLVE_IN: 900,
+  POEM_DISSOLVE_HOLD: 400,
+  POEM_DISSOLVE_OUT: 700,
 } as const;
 
 /** Breathing easing — slow, organic feel */
@@ -349,6 +357,10 @@ export const NewTransitionEffect = memo(function NewTransitionEffect({
       return <BreatheZoomTransition {...props} />;
     case 'data_stream':
       return <DataStreamTransition {...props} />;
+    case 'glitch_reveal':
+      return <GlitchRevealTransition {...props} />;
+    case 'poem_dissolve':
+      return <PoemDissolveTransition {...props} />;
     default:
       return null;
   }

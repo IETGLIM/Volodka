@@ -82,6 +82,10 @@ export const SCENE_OVERLAY_MS = {
   BREATHE_ZOOM: 700,
   // Data stream: Matrix-style data cascade effect
   DATA_STREAM: 650,
+  // Glitch reveal: Cyberpunk digital glitch with RGB split
+  GLITCH_REVEAL: 750,
+  // Poem dissolve: Ethereal text dissolve with poem lines
+  POEM_DISSOLVE: 900,
   WIPE_IN: Math.round(CINEMATIC_PHASES.FADE_OUT_DURATION * 1000) - 150,
   HOLD: Math.round(CINEMATIC_PHASES.HOLD_DURATION * 1000),
   WIPE_OUT: Math.round(CINEMATIC_PHASES.FADE_IN_DURATION * 1000),

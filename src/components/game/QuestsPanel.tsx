@@ -4,12 +4,13 @@
    Filmic dark glass — stone accents, not neon chrome.
 */
 
-import { useMemo, useState, useEffect, useRef, useCallback } from 'react';
+import { useMemo, useState, useEffect, useRef, useCallback, Fragment } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   CheckCircle2, Circle, Trophy, BookOpen, EyeOff,
   Clock, AlertTriangle, RotateCcw, ChevronRight, Sparkles,
   Lightbulb, Shield, Swords, Zap, Star, Package, MapPin, MessageCircle, Gamepad2,
+  ListChecks,
 } from 'lucide-react';
 import { QUEST_DEFINITIONS } from '@/data/quests';
 import type {
@@ -135,6 +136,15 @@ function ObjectiveGroupProgress({ objectives, questState, label, icon }: {
   );
 }
 
+/* ── Quest category tab type ── */
+type QuestCategoryTab = 'active' | 'completed' | 'failed';
+
+const QUEST_TAB_LABELS: Record<QuestCategoryTab, { label: string; icon: typeof Trophy }> = {
+  active: { label: 'Задания', icon: Trophy },
+  completed: { label: 'Завершённые', icon: CheckCircle2 },
+  failed: { label: 'Проваленные', icon: AlertTriangle },
+};
+
 /* ── Animated checkmark for objective completion ── */
 function ObjectiveCheckmark({ justCompleted }: { justCompleted: boolean }) {
   return (
@@ -224,6 +234,14 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
   const prevOpenRef = useRef(false);
   const flashTimeoutsRef = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
 
+  /* ── Enhanced: category tab filter ── */
+  const [categoryTab, setCategoryTab] = useState<QuestCategoryTab>('active');
+  /* ── Enhanced: location filter toggle ── */
+  const [locationFilter, setLocationFilter] = useState(false);
+  /* ── Enhanced: quest breadcrumb trail (recent objective completions) ── */
+  const [questBreadcrumbs, setQuestBreadcrumbs] = useState<Array<{ questId: string; questTitle: string; objectiveDesc: string; timestamp: number }>>([]);
+  const breadcrumbMaxAge = 60_000; // 60s
+
   /* ── Flash effect when an objective updates ── */
   const prevObjectivesRef = useRef<Record<string, Record<string, boolean>>>({});
   useEffect(() => {
@@ -281,6 +299,109 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
   const failedQuests = useFailedQuests();
   const completedQuests = quests.filter((q) => q.status === 'completed');
 
+  /* ── Enhanced: Track recent objective completions for breadcrumb trail ── */
+  useEffect(() => {
+    const currentMap: Record<string, Record<string, boolean>> = {};
+    for (const qs of quests) {
+      if (qs.status === 'active') {
+        currentMap[qs.questId] = { ...qs.objectives };
+      }
+    }
+    const prevMap = prevObjectivesRef.current;
+    const newCrumbs: Array<{ questId: string; questTitle: string; objectiveDesc: string; timestamp: number }> = [];
+    for (const [questId, objectives] of Object.entries(currentMap)) {
+      const prev = prevMap[questId];
+      if (prev) {
+        for (const [objId, completed] of Object.entries(objectives)) {
+          if (completed && prev[objId] !== completed) {
+            const def = QUEST_DEF_MAP.get(questId);
+            const objDef = def?.objectives.find(o => o.id === objId);
+            if (def && objDef) {
+              newCrumbs.push({
+                questId,
+                questTitle: def.title,
+                objectiveDesc: objDef.description,
+                timestamp: Date.now(),
+              });
+            }
+          }
+        }
+      }
+    }
+    if (newCrumbs.length > 0) {
+      setQuestBreadcrumbs(prev => {
+        const updated = [...prev, ...newCrumbs].sort((a, b) => b.timestamp - a.timestamp);
+        return updated.slice(0, 10); // keep max 10 crumbs
+      });
+    }
+  }, [quests]);
+
+  /* Prune old breadcrumbs */
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setQuestBreadcrumbs(prev => {
+        const now = Date.now();
+        const pruned = prev.filter(c => now - c.timestamp < breadcrumbMaxAge);
+        return pruned.length === prev.length ? prev : pruned;
+      });
+    }, 15_000);
+    return () => clearInterval(interval);
+  }, [breadcrumbMaxAge]);
+
+  /* ── Enhanced: Sort active quests — completable first, then by golden path order ── */
+  const sortedActiveQuests = useMemo(() => {
+    const withProgress = activeQuests.map(qs => ({
+      questState: qs,
+      def: QUEST_DEF_MAP.get(qs.questId),
+      progress: getQuestProgress(qs.questId),
+    })).filter(q => q.def);
+
+    return withProgress.sort((a, b) => {
+      // Completable (100%) first
+      if (a.progress === 100 && b.progress !== 100) return -1;
+      if (b.progress === 100 && a.progress !== 100) return 1;
+      // Golden path quests before side quests
+      const aIsGold = GOLDEN_PATH_QUEST_SPINE.includes(a.questState.questId) ? 0 : 1;
+      const bIsGold = GOLDEN_PATH_QUEST_SPINE.includes(b.questState.questId) ? 0 : 1;
+      if (aIsGold !== bIsGold) return aIsGold - bIsGold;
+      // Higher progress first
+      return b.progress - a.progress;
+    });
+  }, [activeQuests]);
+
+  /* ── Enhanced: Filter quests by current location (returns IDs set or null) ── */
+  const locationFilteredQuestIds = useMemo(() => {
+    if (!locationFilter) return null; // null = show all
+    return new Set(sortedActiveQuests.filter(q => {
+      const marker = getQuestMarker(q.questState.questId);
+      return marker?.sceneId === currentSceneId;
+    }).map(q => q.questState.questId));
+  }, [sortedActiveQuests, locationFilter, currentSceneId]);
+
+  /* ── Enhanced: quest type sub-filter (main/side) within active tab ── */
+  const [questTypeFilter, setQuestTypeFilter] = useState<'all' | QuestType>('all');
+
+  /* Group active quests by quest type */
+  const activeByType = useMemo(() => {
+    const groups: Record<QuestType, QuestState[]> = {
+      main: [],
+      side: [],
+      hidden: [],
+      daily: [],
+    };
+    for (const qs of activeQuests) {
+      // Location filter: skip quests not in current scene
+      if (locationFilteredQuestIds && !locationFilteredQuestIds.has(qs.questId)) continue;
+      const def = QUEST_DEF_MAP.get(qs.questId);
+      if (def) {
+        groups[def.questType].push(qs);
+      } else {
+        groups.side.push(qs);
+      }
+    }
+    return groups;
+  }, [activeQuests, locationFilteredQuestIds]);
+
   const goldenPathFocusId = useMemo(() => {
     for (const questId of GOLDEN_PATH_QUEST_SPINE) {
       if (activeQuests.some((q) => q.questId === questId)) {
@@ -327,24 +448,6 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
     });
     return unsub;
   }, [open, expandQuest]);
-  // Group active quests by quest type
-  const activeByType = useMemo(() => {
-    const groups: Record<QuestType, QuestState[]> = {
-      main: [],
-      side: [],
-      hidden: [],
-      daily: [],
-    };
-    for (const qs of activeQuests) {
-      const def = QUEST_DEF_MAP.get(qs.questId);
-      if (def) {
-        groups[def.questType].push(qs);
-      } else {
-        groups.side.push(qs);
-      }
-    }
-    return groups;
-  }, [activeQuests]);
 
   const toggleExpand = (questId: string) => {
     setExpandedQuests((prev) => {
@@ -449,11 +552,101 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                 );
               })()}
 
-              {/* Active quests by type */}
+              {/* ── Enhanced: Quest breadcrumb trail ── */}
+              {questBreadcrumbs.length > 0 && (
+                <div className="mb-3">
+                  <div className="text-[10px] text-slate-500 font-mono uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                    <ListChecks className="size-3" />
+                    Последний прогресс
+                  </div>
+                  <div className="gp-breadcrumb">
+                    {questBreadcrumbs.map((crumb, i) => (
+                      <Fragment key={`${crumb.questId}-${crumb.timestamp}`}>
+                        {i > 0 && <span className="gp-breadcrumb-dot gp-breadcrumb-dot--done" />}
+                        <span className="text-stone-300/70 truncate max-w-[140px]" title={crumb.questTitle}>
+                          {crumb.questTitle}
+                        </span>
+                        <span className="text-slate-600">›</span>
+                        <span className="text-emerald-400/60 truncate max-w-[120px]" title={crumb.objectiveDesc}>
+                          {crumb.objectiveDesc}
+                        </span>
+                      </Fragment>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ── Quest type sub-filter tabs (when active) ── */}
+              {categoryTab === 'active' && (
+                <div className="mb-2 flex items-center gap-1 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={() => setQuestTypeFilter('all')}
+                    className={`gp-badge ${questTypeFilter === 'all' ? 'gp-badge--glow-cyan' : 'gp-badge--slate'} transition-all text-[9px]`}
+                  >
+                    Все
+                  </button>
+                  {(Object.entries(QUEST_TYPE_LABELS) as [QuestType, typeof QUEST_TYPE_LABELS.main][]).map(([type, cfg]) => {
+                    const count = activeByType[type].length;
+                    if (count === 0) return null;
+                    const TypeIcon = cfg.icon;
+                    return (
+                      <button
+                        key={type}
+                        type="button"
+                        onClick={() => setQuestTypeFilter(type)}
+                        className={`gp-badge ${questTypeFilter === type ? 'gp-badge--glow-cyan' : 'gp-badge--slate'} transition-all text-[9px]`}
+                      >
+                        <TypeIcon className="size-2.5" />
+                        {cfg.label}
+                        <span className="opacity-50">{count}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* ── Enhanced: Category tabs ── */}
+              <div className="mb-3 flex items-center gap-1.5 flex-wrap">
+                {(Object.entries(QUEST_TAB_LABELS) as [QuestCategoryTab, typeof QUEST_TAB_LABELS.active][]).map(
+                  ([tab, cfg]) => {
+                    const TabIcon = cfg.icon;
+                    const count = tab === 'active' ? activeQuests.length : tab === 'completed' ? completedQuests.length : failedQuests.length;
+                    const isActive = categoryTab === tab;
+                    return (
+                      <button
+                        key={tab}
+                        type="button"
+                        onClick={() => { setCategoryTab(tab); if (tab !== 'active') setQuestTypeFilter('all'); }}
+                        className={`gp-badge ${isActive ? 'gp-badge--glow-cyan' : 'gp-badge--slate'} transition-all`}
+                      >
+                        <TabIcon className="size-3" />
+                        {cfg.label}
+                        <span className="opacity-50">{count}</span>
+                      </button>
+                    );
+                  },
+                )}
+                {/* Location filter toggle */}
+                <button
+                  type="button"
+                  onClick={() => setLocationFilter(!locationFilter)}
+                  className={`gp-badge ${locationFilter ? 'gp-badge--amber' : 'gp-badge--slate'} transition-all ml-auto`}
+                  title="Показать задания текущей локации"
+                >
+                  <MapPin className="size-3" />
+                  <span className="hidden sm:inline">Локация</span>
+                </button>
+              </div>
+
+              {/* Show active tab content or completed/failed based on categoryTab */}
+              {categoryTab === 'active' && (
+              <>
               {(Object.entries(QUEST_TYPE_LABELS) as [QuestType, typeof QUEST_TYPE_LABELS.main][]).map(
                 ([type, config], typeIdx) => {
                   const typeQuests = activeByType[type];
                   if (typeQuests.length === 0) return null;
+                  if (questTypeFilter !== 'all' && questTypeFilter !== type) return null;
 
                   const TypeIcon = config.icon;
                   return (
@@ -475,16 +668,17 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
 
                           const isGoldenPathFocus = qs.questId === goldenPathFocusId;
                           const isFlashing = qs.questId === flashingQuestId;
+                          const isTimeLimited = def.timeLimitHours != null && def.timeLimitHours > 0;
 
                           return (
                             <motion.div
                               key={qs.questId}
                               data-quest-id={qs.questId}
-                              className={`rounded-xl border overflow-hidden ${
+                              className={`rounded-xl border overflow-hidden gp-quest-type-${def.questType} ${
                                 isGoldenPathFocus
                                   ? 'border-stone-500/40 ring-1 ring-stone-400/25'
                                   : 'border-stone-800/15'
-                              }`}
+                              } ${isTimeLimited && !reducedMotion ? 'gp-time-pulse' : ''} ${progress === 100 && !reducedMotion ? 'gp-quest-completable' : ''}`}
                               style={{
                                 background: 'linear-gradient(135deg, rgba(15,23,42,0.6) 0%, rgba(8,12,28,0.7) 100%)',
                                 boxShadow: 'inset 0 1px 0 rgba(168,162,158,0.06)',
@@ -529,10 +723,10 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                                     )}
                                     {def.timeLimitHours && (
                                       <span
-                                        className="text-[10px] text-amber-400/80 flex items-center gap-0.5"
+                                        className={`text-[10px] flex items-center gap-0.5 ${isTimeLimited ? 'text-amber-400/90 font-semibold' : 'text-amber-400/80'}`}
                                         title="Оставшееся время"
                                       >
-                                        <Clock className="size-3.5 text-amber-400" />
+                                        <Clock className={`size-3.5 text-amber-400 ${isTimeLimited && !reducedMotion ? 'animate-pulse' : ''}`} />
                                         {Math.ceil(remainingQuestHours(qs.hoursElapsed ?? 0, def.timeLimitHours))}ч
                                       </span>
                                     )}
@@ -554,9 +748,16 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                                   ) : null;
                                 })()}
 
-                                {/* Progress bar */}
+                                {/* Progress bar with type-specific color */}
                                 <div className="mb-1">
-                                  <Progress value={progress} className="h-1.5 bg-slate-800/80 shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)]" />
+                                  <div className="h-1.5 bg-slate-800/80 rounded-full overflow-hidden shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)]">
+                                    <motion.div
+                                      className={`h-full rounded-full gp-quest-progress--${def.questType}`}
+                                      initial={false}
+                                      animate={{ width: `${progress}%` }}
+                                      transition={{ duration: 0.4, ease: 'easeOut' }}
+                                    />
+                                  </div>
                                 </div>
 
                                 {/* Hint section */}
@@ -849,8 +1050,92 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                 },
               )}
 
+              </>
+              )}
+
+              {/* ── Enhanced: Completed quests tab ── */}
+              {categoryTab === 'completed' && (
+                <div className="mb-5">
+                  {completedQuests.length > 0 ? (
+                    <div className="flex flex-col gap-2">
+                      {completedQuests.map((qs) => {
+                        const def = QUEST_DEF_MAP.get(qs.questId);
+                        if (!def) return null;
+                        return (
+                          <div
+                            key={qs.questId}
+                            className="px-3 py-2 rounded-xl bg-slate-900/20 border border-stone-800/10 text-sm text-slate-500 flex items-center gap-2"
+                          >
+                            <CheckCircle2 className="size-4 text-emerald-600/50" />
+                            <span className="line-through">{def.title}</span>
+                            <span className="gp-badge gp-badge--emerald ml-auto text-[9px]">
+                              {QUEST_TYPE_LABELS[def.questType].label}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12 px-4">
+                      <CheckCircle2 className="size-8 text-emerald-600/20 mx-auto mb-3" />
+                      <p className="text-slate-500 text-sm">Завершённых заданий пока нет</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ── Enhanced: Failed quests tab ── */}
+              {categoryTab === 'failed' && (
+                <div className="mb-5">
+                  {failedQuests.length > 0 ? (
+                    <div className="flex flex-col gap-2">
+                      {failedQuests.map((qs) => {
+                        const def = QUEST_DEF_MAP.get(qs.questId);
+                        if (!def) return null;
+                        const canRetry = questCanRetry(def);
+                        const playerFlags = useGameStore.getState().playerState.flags;
+                        const canBypass = canBypassRetryLock(def, playerFlags);
+                        const showRetryButton = canRetry || canBypass;
+                        return (
+                          <div
+                            key={qs.questId}
+                            className="px-3 py-2.5 rounded-xl bg-red-950/15 border border-red-900/25"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <AlertTriangle className="size-4 text-red-500/60" />
+                                <span className="text-sm text-red-300/70 line-through">{def.title}</span>
+                              </div>
+                              {showRetryButton && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-[10px] text-red-400 hover:text-red-300 h-6 px-2"
+                                  onClick={() => {
+                                    dispatchGameAction({ type: 'quest/retry', questId: qs.questId });
+                                  }}
+                                >
+                                  <RotateCcw className="size-3 mr-1" />
+                                  {canRetry ? 'Повторить' : 'Второй шанс'}
+                                </Button>
+                              )}
+                            </div>
+                            <p className="text-[10px] text-red-400/50 mt-1">{def.description}</p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12 px-4">
+                      <AlertTriangle className="size-8 text-red-500/20 mx-auto mb-3" />
+                      <p className="text-slate-500 text-sm">Проваленных заданий нет</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Failed quests */}
-              {showFailed && failedQuests.length > 0 && (
+              {categoryTab === 'active' && showFailed && failedQuests.length > 0 && (
                 <div className="mb-5">
                   <div className="h-px mb-3 bg-gradient-to-r from-transparent via-stone-600/35 to-transparent" aria-hidden="true" />
                   <h3 className="text-xs font-medium text-red-500/70 uppercase tracking-wider mb-2 flex items-center gap-1.5">
@@ -907,8 +1192,8 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                 </div>
               )}
 
-              {/* Completed quests */}
-              {showCompleted && completedQuests.length > 0 && (
+              {/* Completed quests (only show in active tab when toggle is on) */}
+              {categoryTab === 'active' && showCompleted && completedQuests.length > 0 && (
                 <div className="mb-5">
                   <div className="h-px mb-3 bg-gradient-to-r from-transparent via-stone-600/35 to-transparent" aria-hidden="true" />
                   <h3 className="text-xs font-medium text-emerald-500/70 uppercase tracking-wider mb-2 flex items-center gap-1.5">

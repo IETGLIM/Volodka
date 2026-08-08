@@ -50,7 +50,7 @@ export interface SceneConfig {
     readonly color: string;
     readonly distance: number;
   }>;
-  readonly transitionStyle?: 'wipe' | 'flash' | 'darken' | 'ripple' | 'dissolve' | 'film_burn' | 'glitch_cut' | 'breathe' | 'crossfade' | 'breathe_zoom' | 'data_stream';
+  readonly transitionStyle?: 'wipe' | 'flash' | 'darken' | 'ripple' | 'dissolve' | 'film_burn' | 'glitch_cut' | 'breathe' | 'crossfade' | 'breathe_zoom' | 'data_stream' | 'glitch_reveal' | 'poem_dissolve';
   /** Schedule timeline color category — explicit, not derived from scene id strings. */
   readonly locationCategory: LocationCategory;
   /** Procedural ambient bed for exploration (day/night profiles). */

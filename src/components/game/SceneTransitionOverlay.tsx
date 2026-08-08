@@ -1,18 +1,20 @@
 
-/* ─── Volodka RPG – Scene Transition Overlay (Enhanced v3) ───
+/* ─── Volodka RPG – Scene Transition Overlay (Enhanced v4) ───
  *  Cyberpunk cinematic transition effect when the player moves between scenes.
- *  Supports 10 transition styles:
+ *  Supports 12 transition styles:
  *
- *  - 'wipe'         (default): Glitch → Wipe-in → Hold → Wipe-out
- *  - 'flash'        (indoor→outdoor): Bright flash → Wipe
- *  - 'darken'       (outdoor→indoor): Slow darkening → Reveal
- *  - 'ripple'       (dream→reality): Circular ripple expansion
- *  - 'dissolve':     Blur dissolve with noise overlay
- *  - 'film_burn':    Red-orange overlay with noise that burns in/out
- *  - 'glitch_cut':   Brief horizontal slice displacement + color channel split
- *  - 'breathe':      Smooth scale from 0.98 to 1.02 with opacity fade
- *  - 'breathe_zoom': Slow zoom with breathing opacity pulse (NewTransitionEffect)
- *  - 'data_stream':  Matrix-style data cascade effect (NewTransitionEffect)
+ *  - 'wipe'          (default): Glitch → Wipe-in → Hold → Wipe-out
+ *  - 'flash'         (indoor→outdoor): Bright flash → Wipe
+ *  - 'darken'        (outdoor→indoor): Slow darkening → Reveal
+ *  - 'ripple'        (dream→reality): Circular ripple expansion
+ *  - 'dissolve':      Blur dissolve with noise overlay
+ *  - 'film_burn':     Red-orange overlay with noise that burns in/out
+ *  - 'glitch_cut':    Brief horizontal slice displacement + color channel split
+ *  - 'breathe':       Smooth scale from 0.98 to 1.02 with opacity fade
+ *  - 'breathe_zoom':  Slow zoom with breathing opacity pulse (NewTransitionEffect)
+ *  - 'data_stream':   Matrix-style data cascade effect (NewTransitionEffect)
+ *  - 'glitch_reveal': Cyberpunk digital glitch with RGB split (NewTransitionEffect)
+ *  - 'poem_dissolve': Ethereal text dissolve with poem lines (NewTransitionEffect)
  *
  *  Each transition type uses the scene name display during hold phase.
  */
@@ -38,6 +40,8 @@ const GLITCH_CUT_DURATION = SCENE_OVERLAY_MS.GLITCH_CUT;
 const BREATHE_DURATION = SCENE_OVERLAY_MS.BREATHE;
 const BREATHE_ZOOM_DURATION = SCENE_OVERLAY_MS.BREATHE_ZOOM;
 const DATA_STREAM_DURATION = SCENE_OVERLAY_MS.DATA_STREAM;
+const GLITCH_REVEAL_DURATION = SCENE_OVERLAY_MS.GLITCH_REVEAL;
+const POEM_DISSOLVE_DURATION = SCENE_OVERLAY_MS.POEM_DISSOLVE;
 const CROSSFADE_DURATION = SCENE_OVERLAY_MS.CROSSFADE;
 const WIPE_IN_DURATION = SCENE_OVERLAY_MS.WIPE_IN;
 const WIPE_OUT_DURATION = SCENE_OVERLAY_MS.WIPE_OUT;
@@ -536,6 +540,32 @@ export function SceneTransitionOverlay() {
               type="data_stream"
               accentColor={accent}
               duration={DATA_STREAM_DURATION / 1000}
+              reducedMotion={reducedMotion}
+            />
+          )}
+
+          {/* ═══════════════════════════════════════════════════════════
+              GLITCH-REVEAL — Cyberpunk digital glitch with RGB split
+              Delegates to SceneTransitionGlitchReveal component.
+              ═══════════════════════════════════════════════════════════ */}
+          {phase === 'glitch-reveal-in' && (
+            <NewTransitionEffect
+              type="glitch_reveal"
+              accentColor={accent}
+              duration={GLITCH_REVEAL_DURATION / 1000}
+              reducedMotion={reducedMotion}
+            />
+          )}
+
+          {/* ═══════════════════════════════════════════════════════════
+              POEM-DISSOLVE — Ethereal text dissolve with poem lines
+              Delegates to SceneTransitionPoemDissolve component.
+              ═══════════════════════════════════════════════════════════ */}
+          {phase === 'poem-dissolve-in' && (
+            <NewTransitionEffect
+              type="poem_dissolve"
+              accentColor={accent}
+              duration={POEM_DISSOLVE_DURATION / 1000}
               reducedMotion={reducedMotion}
             />
           )}

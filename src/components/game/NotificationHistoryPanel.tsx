@@ -10,8 +10,6 @@ import { usePanelDialog } from '@/components/a11y/usePanelDialog';
 import { usePanelExitComplete } from '@/components/game/orchestrator/PanelExitContext';
 import {
   X, Bell, Search, Trash2,
-  Flame, Zap, Brain, Cpu, Feather, Scroll,
-  Hammer, Package, Swords, ArrowUpCircle, Monitor, BookOpen, Award,
 } from 'lucide-react';
 import { useUIStore } from '@/store/stores/uiStore';
 import type { NotificationHistoryEntry } from '@/store/slices/uiSlice';
@@ -30,39 +28,20 @@ const TYPE_COLORS: Record<string, { border: string; bg: string; text: string }> 
   stress:      { border: 'border-l-red-500',      bg: 'bg-red-500/10',      text: 'text-red-400' },
   skill:       { border: 'border-l-cyan-500',     bg: 'bg-cyan-500/10',     text: 'text-cyan-400' },
   poem:        { border: 'border-l-amber-500',    bg: 'bg-amber-500/10',    text: 'text-amber-400' },
-  quest:       { border: 'border-l-blue-500',     bg: 'bg-blue-500/10',     text: 'text-blue-400' },
+  quest:       { border: 'border-l-amber-500',    bg: 'bg-amber-500/8',     text: 'text-amber-400' },
   crafting:    { border: 'border-l-emerald-500/50',  bg: 'bg-emerald-500/5',  text: 'text-emerald-400' },
   loot:        { border: 'border-l-amber-500/50',   bg: 'bg-amber-500/5',   text: 'text-amber-400' },
-  combat:      { border: 'border-l-rose-500/50',    bg: 'bg-rose-500/5',     text: 'text-rose-400' },
+  combat:      { border: 'border-l-cyan-400',      bg: 'bg-cyan-400/5',      text: 'text-cyan-400' },
   levelup:     { border: 'border-l-yellow-400/50',   bg: 'bg-yellow-400/5',   text: 'text-yellow-300' },
-  system:      { border: 'border-l-slate-400/50',    bg: 'bg-slate-400/5',    text: 'text-slate-300' },
-  lore:        { border: 'border-l-violet-400/50',   bg: 'bg-violet-400/5',   text: 'text-violet-400' },
-  achievement: { border: 'border-l-amber-300/50',   bg: 'bg-amber-300/5',   text: 'text-amber-200' },
+  system:      { border: 'border-l-slate-400/50',    bg: 'bg-slate-400/5',    text: 'text-slate-400' },
+  lore:        { border: 'border-l-purple-400/50',   bg: 'bg-purple-400/5',   text: 'text-purple-400' },
+  achievement: { border: 'border-l-emerald-400/50',  bg: 'bg-emerald-400/5',  text: 'text-emerald-300' },
 };
 
 const DEFAULT_COLORS = { border: 'border-l-slate-500', bg: 'bg-slate-500/10', text: 'text-slate-400' };
 
 function getTypeColors(type: string) {
   return TYPE_COLORS[type] ?? DEFAULT_COLORS;
-}
-
-function getTypeIcon(type: string, className: string) {
-  switch (type) {
-    case 'karma':       return <Flame className={className} />;
-    case 'energy':      return <Zap className={className} />;
-    case 'stress':      return <Brain className={className} />;
-    case 'skill':       return <Cpu className={className} />;
-    case 'poem':        return <Feather className={className} />;
-    case 'quest':       return <Scroll className={className} />;
-    case 'crafting':    return <Hammer className={className} />;
-    case 'loot':        return <Package className={className} />;
-    case 'combat':      return <Swords className={className} />;
-    case 'levelup':     return <ArrowUpCircle className={className} />;
-    case 'system':      return <Monitor className={className} />;
-    case 'lore':        return <BookOpen className={className} />;
-    case 'achievement': return <Award className={className} />;
-    default:            return <Bell className={className} />;
-  }
 }
 
 function formatRelativeTime(ts: number): string {
@@ -77,6 +56,13 @@ function formatRelativeTime(ts: number): string {
   if (diffMin < 60) return `${diffMin} мин назад`;
   if (diffHr < 24) return `${diffHr} ч назад`;
   return `${Math.floor(diffHr / 24)} д назад`;
+}
+
+/* ── Timestamp grouping threshold (5 minutes = recent, else earlier) ── */
+const RECENT_THRESHOLD_MS = 5 * 60 * 1000;
+
+function isRecent(ts: number): boolean {
+  return Date.now() - ts < RECENT_THRESHOLD_MS;
 }
 
 function formatDelta(delta: number): string {
@@ -95,6 +81,7 @@ function HistoryEntryRow({
   index: number;
 }) {
   const colors = getTypeColors(entry.type);
+  const recent = isRecent(entry.timestamp);
 
   return (
     <motion.div
@@ -103,18 +90,18 @@ function HistoryEntryRow({
       transition={{ delay: Math.min(index * 0.02, 0.5), duration: 0.2 }}
       className={`flex items-start gap-2.5 px-3 py-2 rounded-r-lg border-l-2 ${colors.border} ${colors.bg} transition-colors`}
     >
-      {/* Type icon */}
-      <div className="shrink-0 pt-0.5">
-        {getTypeIcon(entry.type, `size-3.5 ${colors.text}`)}
+      {/* Type color dot */}
+      <div className="shrink-0 pt-1">
+        <div className={`gp-notify-type-dot--${entry.type} gp-notify-type-dot`} />
       </div>
 
       {/* Message + meta */}
       <div className="flex-1 min-w-0">
-        <p className="text-xs text-slate-300/90 leading-relaxed break-words">
+        <p className={`text-xs leading-relaxed break-words ${recent ? 'text-slate-200' : 'text-slate-300/80'}`}>
           {entry.message}
         </p>
         <div className="flex items-center gap-2 mt-0.5">
-          <span className="text-[10px] text-slate-500 font-mono">
+          <span className={`text-[10px] font-mono ${recent ? 'text-cyan-500/70' : 'text-slate-500'}`}>
             {formatRelativeTime(entry.timestamp)}
           </span>
         </div>
@@ -149,16 +136,30 @@ export function NotificationHistoryPanel({ open, onClose }: NotificationHistoryP
   const notificationHistory = useUIStore((s) => s.notificationHistory);
   const clearNotificationHistory = useUIStore((s) => s.clearNotificationHistory);
   const [searchQuery, setSearchQuery] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
+
+  /* ── Category filter definitions ── */
+  const NOTIFY_CATEGORIES = useMemo(() => [
+    { id: null, label: 'Все', dotClass: '' },
+    { id: 'quest', label: 'Задания', dotClass: 'gp-notify-type-dot--quest' },
+    { id: 'combat', label: 'Бой', dotClass: 'gp-notify-type-dot--combat' },
+    { id: 'lore', label: 'Лор', dotClass: 'gp-notify-type-dot--lore' },
+    { id: 'system', label: 'Система', dotClass: 'gp-notify-type-dot--system' },
+    { id: 'achievement', label: 'Достижения', dotClass: 'gp-notify-type-dot--achievement' },
+  ], []);
 
   // Filtered & reversed entries (newest first)
   const displayEntries = useMemo(() => {
     let entries = [...notificationHistory].reverse();
+    if (categoryFilter) {
+      entries = entries.filter((e) => e.type === categoryFilter);
+    }
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       entries = entries.filter((e) => e.message.toLowerCase().includes(q));
     }
     return entries.slice(0, MAX_DISPLAY);
-  }, [notificationHistory, searchQuery]);
+  }, [notificationHistory, searchQuery, categoryFilter]);
 
   const hasEntries = displayEntries.length > 0;
 
@@ -166,6 +167,7 @@ export function NotificationHistoryPanel({ open, onClose }: NotificationHistoryP
   useEffect(() => {
     if (!open) {
       setSearchQuery('');
+      setCategoryFilter(null);
     }
   }, [open]);
 
@@ -254,17 +256,69 @@ export function NotificationHistoryPanel({ open, onClose }: NotificationHistoryP
                 )}
               </div>
 
+              {/* Category filter tabs */}
+              <div className="px-4 py-1.5 border-b border-slate-800/20 flex items-center gap-1.5 flex-wrap">
+                {NOTIFY_CATEGORIES.map((cat) => (
+                  <button
+                    key={cat.id ?? 'all'}
+                    type="button"
+                    onClick={() => setCategoryFilter(cat.id)}
+                    className={`gp-badge ${categoryFilter === cat.id ? 'gp-badge--glow-cyan' : 'gp-badge--slate'} transition-all text-[9px]`}
+                  >
+                    {cat.dotClass && <span className={`${cat.dotClass} gp-notify-type-dot`} />}
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+
               {/* Content */}
               {hasEntries ? (
                 <ScrollArea className="flex-1">
                   <div className="p-3 flex flex-col gap-1.5">
-                    {displayEntries.map((entry, i) => (
-                      <HistoryEntryRow
-                        key={entry.id}
-                        entry={entry}
-                        index={i}
-                      />
-                    ))}
+                    {(() => {
+                      /* ── Timestamp grouping: 'Только что' (recent) / 'Ранее' (older) ── */
+                      const recentEntries: typeof displayEntries = [];
+                      const olderEntries: typeof displayEntries = [];
+                      for (const entry of displayEntries) {
+                        if (isRecent(entry.timestamp)) {
+                          recentEntries.push(entry);
+                        } else {
+                          olderEntries.push(entry);
+                        }
+                      }
+                      const showGroupLabels = !searchQuery && recentEntries.length > 0 && olderEntries.length > 0;
+
+                      return (
+                        <>
+                          {/* Recent group label */}
+                          {showGroupLabels && recentEntries.length > 0 && (
+                            <div className="gp-notify-group-label gp-notify-group-label--recent">
+                              Только что
+                            </div>
+                          )}
+                          {(showGroupLabels ? recentEntries : displayEntries).map((entry, i) => (
+                            <HistoryEntryRow
+                              key={entry.id}
+                              entry={entry}
+                              index={i}
+                            />
+                          ))}
+                          {/* Older group label */}
+                          {showGroupLabels && olderEntries.length > 0 && (
+                            <div className="gp-notify-group-label mt-1">
+                              Ранее
+                            </div>
+                          )}
+                          {showGroupLabels && olderEntries.map((entry, i) => (
+                            <HistoryEntryRow
+                              key={entry.id}
+                              entry={entry}
+                              index={recentEntries.length + i}
+                            />
+                          ))}
+                        </>
+                      );
+                    })()}
                     {notificationHistory.length > MAX_DISPLAY && !searchQuery && (
                       <p className="text-center text-[10px] text-slate-600 py-2">
                         Показаны последние {MAX_DISPLAY} из {notificationHistory.length}

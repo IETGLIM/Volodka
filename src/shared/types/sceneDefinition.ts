@@ -229,7 +229,7 @@ export interface SceneDefinition {
   fog?: FogConfig;
   /** Transition style used when entering this scene from another.
    *  Defaults to 'wipe' if not specified. */
-  transitionStyle?: 'wipe' | 'flash' | 'darken' | 'ripple' | 'dissolve' | 'film_burn' | 'glitch_cut' | 'breathe' | 'crossfade' | 'breathe_zoom' | 'data_stream';
+  transitionStyle?: 'wipe' | 'flash' | 'darken' | 'ripple' | 'dissolve' | 'film_burn' | 'glitch_cut' | 'breathe' | 'crossfade' | 'breathe_zoom' | 'data_stream' | 'glitch_reveal' | 'poem_dissolve';
   /** Optional override for schedule timeline location coloring. */
   locationCategory?: LocationCategory;
   /** Procedural ambient sound profile for this scene (day/night). */

@@ -62,6 +62,8 @@
 @import "../styles/skill-check-animation.css";
 @import "../styles/cyberpunk-glow-effects.css";
 @import "../styles/enhanced-interaction-prompt.css";
+@import "../styles/game-polish.css";
+@import "../styles/world-map.css";
 
 /* ── User setting: scanlines off (SettingsPanel → engine/visualSettings) ── */
 html[data-scanlines="off"] .panel-scanlines::after,

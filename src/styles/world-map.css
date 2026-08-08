@@ -1,0 +1,205 @@
+/* ─── Volodka RPG – World Map Panel Styles ─── */
+
+/* Glassmorphism tooltip on the world map */
+.world-map-tooltip {
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  background: rgba(6, 12, 24, 0.82);
+  border: 1px solid rgba(0, 229, 255, 0.18);
+  box-shadow:
+    0 0 24px rgba(0, 229, 255, 0.06),
+    0 8px 32px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.world-map-tooltip__header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(0, 229, 255, 0.1);
+  margin-bottom: 6px;
+}
+
+.world-map-tooltip__name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #e2e8f0;
+  letter-spacing: 0.02em;
+}
+
+.world-map-tooltip__type-badge {
+  font-size: 9px;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  padding: 1px 5px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.world-map-tooltip__row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  color: #94a3b8;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  line-height: 1.6;
+}
+
+.world-map-tooltip__row--cyan {
+  color: rgba(0, 229, 255, 0.7);
+}
+
+.world-map-tooltip__row--amber {
+  color: rgba(255, 171, 0, 0.7);
+}
+
+.world-map-tooltip__row--red {
+  color: rgba(248, 113, 113, 0.7);
+}
+
+.world-map-tooltip__lock {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9px;
+  color: rgba(248, 113, 113, 0.8);
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  padding-top: 4px;
+  margin-top: 4px;
+  border-top: 1px solid rgba(248, 113, 113, 0.15);
+}
+
+.world-map-tooltip__npcs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid rgba(0, 229, 255, 0.08);
+}
+
+.world-map-tooltip__npc-tag {
+  font-size: 9px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: rgba(0, 229, 255, 0.08);
+  border: 1px solid rgba(0, 229, 255, 0.15);
+  color: rgba(0, 229, 255, 0.7);
+  font-family: 'Geist Mono', ui-monospace, monospace;
+}
+
+/* Energy cost display */
+.world-map-tooltip__cost {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.2);
+  font-size: 9px;
+  color: rgba(251, 191, 36, 0.9);
+  font-family: 'Geist Mono', ui-monospace, monospace;
+}
+
+/* Danger level indicator */
+.world-map-tooltip__danger {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+}
+
+.world-map-tooltip__danger--safe {
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  color: rgba(34, 197, 94, 0.8);
+}
+
+.world-map-tooltip__danger--moderate {
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.2);
+  color: rgba(251, 191, 36, 0.8);
+}
+
+.world-map-tooltip__danger--dangerous {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: rgba(239, 68, 68, 0.8);
+}
+
+/* Location discovered toast — glassmorphism */
+.location-discovered-toast {
+  backdrop-filter: blur(20px) saturate(1.6);
+  -webkit-backdrop-filter: blur(20px) saturate(1.6);
+  background: rgba(6, 12, 24, 0.75);
+  border: 1px solid rgba(0, 229, 255, 0.2);
+  box-shadow:
+    0 0 30px rgba(0, 229, 255, 0.08),
+    0 12px 40px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.location-discovered-toast__accent-bar {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #00e5ff, transparent);
+  opacity: 0.6;
+}
+
+.location-discovered-toast__content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+}
+
+.location-discovered-toast__icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(0, 229, 255, 0.1);
+  border: 1px solid rgba(0, 229, 255, 0.2);
+  flex-shrink: 0;
+}
+
+.location-discovered-toast__info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.location-discovered-toast__label {
+  font-size: 10px;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  color: rgba(0, 229, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.location-discovered-toast__name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #e2e8f0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.location-discovered-toast__progress {
+  font-size: 10px;
+  color: #64748b;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+}
