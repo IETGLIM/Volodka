@@ -15,6 +15,7 @@ import { MatrixRain } from './MatrixRain';
 import { GlitchEffect } from './GlitchEffect';
 import { NoirOverlay } from './NoirOverlay';
 import { WeatherController } from './WeatherController';
+import { RainEffect } from './RainEffect';
 import { AtmosphericEffects } from './AtmosphericEffects';
 import { VisualizationLayers } from './VisualizationLayers';
 import { FrameBudgetRunner } from './FrameBudgetRunner';
@@ -619,6 +620,7 @@ function RPGGameCanvasScene({
       <PostFrameBudgetRunner />
 
       <WeatherController />
+      <QualityGatedRainEffect />
 
       {!physicsPaused && <AtmosphericEffects />}
 
@@ -637,6 +639,18 @@ function RPGGameCanvasScene({
       <CanvasGuardSystem />
     </>
   );
+}
+
+/** GPU-efficient 3D rain (Points/ShaderMaterial) — quality-gated to medium+.
+ *  Complements the existing RainSystem with a denser, more atmospheric layer.
+ *  Reads weather state from explorationStore (fade in/out based on rainIntensity). */
+function QualityGatedRainEffect() {
+  const { preset } = useGraphicsQuality();
+  // Skip on low quality — the basic RainSystem sprite rain is already sufficient
+  if (preset.id === 'low') return null;
+  // Scale density with quality tier
+  const density = preset.id === 'ultra' ? 4500 : preset.id === 'high' ? 3000 : 2000;
+  return <RainEffect density={density} />;
 }
 
 /** Kick the render loop on mount, when leaving idle mode, or when the tab becomes visible.

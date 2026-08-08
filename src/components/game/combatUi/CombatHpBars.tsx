@@ -17,6 +17,7 @@ export const AnimatedHPBar = React.memo(function AnimatedHPBar({
   ariaLabel?: string;
 }) {
   const pct = max > 0 ? Math.max(0, (current / max) * 100) : 0;
+  const isCritical = pct <= 30;
   const color = isPlayer
     ? pct > 60
       ? 'from-emerald-500 to-cyan-400'
@@ -60,10 +61,10 @@ export const AnimatedHPBar = React.memo(function AnimatedHPBar({
         aria-valuemin={0}
         aria-valuemax={max}
         aria-label={ariaLabel || (isPlayer ? 'Здоровье игрока' : 'Здоровье противника')}
-        className="data-bar w-full h-3.5 bg-black/80 border border-slate-700/40 rounded-sm overflow-hidden relative"
+        className={`data-bar w-full h-3.5 bg-black/80 border border-slate-700/40 rounded-sm overflow-hidden relative ${isCritical && isPlayer ? 'combat-hp-critical-pulse' : ''}`}
       >
         <motion.div
-          className={`data-bar-fill h-full bg-gradient-to-r ${color} ${glowColor} shadow-sm rounded-sm`}
+          className={`data-bar-fill h-full bg-gradient-to-r ${color} ${glowColor} shadow-sm rounded-sm combat-hp-bar-shimmer`}
           style={{ boxShadow: `0 0 8px ${glowHex}40` }}
           initial={false}
           animate={{ width: `${pct}%` }}

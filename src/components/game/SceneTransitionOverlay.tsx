@@ -1,16 +1,18 @@
 
 /* ─── Volodka RPG – Scene Transition Overlay (Enhanced v3) ───
  *  Cyberpunk cinematic transition effect when the player moves between scenes.
- *  Supports 8 transition styles:
+ *  Supports 10 transition styles:
  *
- *  - 'wipe'       (default): Glitch → Wipe-in → Hold → Wipe-out
- *  - 'flash'      (indoor→outdoor): Bright flash → Wipe
- *  - 'darken'     (outdoor→indoor): Slow darkening → Reveal
- *  - 'ripple'     (dream→reality): Circular ripple expansion
- *  - 'dissolve':   Blur dissolve with noise overlay
- *  - 'film_burn':  Red-orange overlay with noise that burns in/out
- *  - 'glitch_cut': Brief horizontal slice displacement + color channel split
- *  - 'breathe':    Smooth scale from 0.98 to 1.02 with opacity fade
+ *  - 'wipe'         (default): Glitch → Wipe-in → Hold → Wipe-out
+ *  - 'flash'        (indoor→outdoor): Bright flash → Wipe
+ *  - 'darken'       (outdoor→indoor): Slow darkening → Reveal
+ *  - 'ripple'       (dream→reality): Circular ripple expansion
+ *  - 'dissolve':     Blur dissolve with noise overlay
+ *  - 'film_burn':    Red-orange overlay with noise that burns in/out
+ *  - 'glitch_cut':   Brief horizontal slice displacement + color channel split
+ *  - 'breathe':      Smooth scale from 0.98 to 1.02 with opacity fade
+ *  - 'breathe_zoom': Slow zoom with breathing opacity pulse (NewTransitionEffect)
+ *  - 'data_stream':  Matrix-style data cascade effect (NewTransitionEffect)
  *
  *  Each transition type uses the scene name display during hold phase.
  */
@@ -24,6 +26,7 @@ import { useSceneTransitionOverlayController } from '@/hooks/useSceneTransitionO
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { getSceneTransitionAccent } from '@/engine/exploration/explorationUxPresentation';
 import { CinematicShell, CinematicTitleCard } from '@/components/game/cinematic';
+import { NewTransitionEffect } from './SceneTransitionNewEffects';
 
 const GLITCH_DURATION = SCENE_OVERLAY_MS.GLITCH;
 const FLASH_DURATION = SCENE_OVERLAY_MS.FLASH;
@@ -33,6 +36,8 @@ const DISSOLVE_DURATION = SCENE_OVERLAY_MS.DISSOLVE;
 const FILM_BURN_DURATION = SCENE_OVERLAY_MS.FILM_BURN;
 const GLITCH_CUT_DURATION = SCENE_OVERLAY_MS.GLITCH_CUT;
 const BREATHE_DURATION = SCENE_OVERLAY_MS.BREATHE;
+const BREATHE_ZOOM_DURATION = SCENE_OVERLAY_MS.BREATHE_ZOOM;
+const DATA_STREAM_DURATION = SCENE_OVERLAY_MS.DATA_STREAM;
 const CROSSFADE_DURATION = SCENE_OVERLAY_MS.CROSSFADE;
 const WIPE_IN_DURATION = SCENE_OVERLAY_MS.WIPE_IN;
 const WIPE_OUT_DURATION = SCENE_OVERLAY_MS.WIPE_OUT;
@@ -507,6 +512,32 @@ export function SceneTransitionOverlay() {
                 transition={{ duration: CROSSFADE_DURATION / 1000, ease: 'easeInOut' }}
               />
             </motion.div>
+          )}
+
+          {/* ═══════════════════════════════════════════════════════════
+              BREATHE-ZOOM — Slow zoom with breathing opacity pulse
+              Delegates to SceneTransitionNewEffects component.
+              ═══════════════════════════════════════════════════════════ */}
+          {phase === 'breathe-zoom-in' && (
+            <NewTransitionEffect
+              type="breathe_zoom"
+              accentColor={accent}
+              duration={BREATHE_ZOOM_DURATION / 1000}
+              reducedMotion={reducedMotion}
+            />
+          )}
+
+          {/* ═══════════════════════════════════════════════════════════
+              DATA-STREAM — Matrix-style data cascade effect
+              Delegates to SceneTransitionNewEffects component.
+              ═══════════════════════════════════════════════════════════ */}
+          {phase === 'data-stream-in' && (
+            <NewTransitionEffect
+              type="data_stream"
+              accentColor={accent}
+              duration={DATA_STREAM_DURATION / 1000}
+              reducedMotion={reducedMotion}
+            />
           )}
 
           {/* ═══════════════════════════════════════════════════════════

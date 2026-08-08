@@ -9,6 +9,7 @@ import { useLoadingPipelineMeta } from '@/hooks/useLoadingPipeline';
 import { CANVAS_COMPOSITE_MODES, CANVAS_GAMEPLAY_MODES } from '@/engine/canvas/canvasTransitionPolicy';
 import { IntroAutoSkip } from './IntroAutoSkip';
 import { RPGGameCanvas, LazyMenuScreen, LazyIntroScreen, LazyMatrixRainQuote } from './lazyPanels';
+import { MenuMouseTracker } from '../MenuMouseTracker';
 import type { MatrixQuoteState } from './types';
 import type { GamePhase } from '@/shared/gamePhase';
 
@@ -100,6 +101,9 @@ export function OrchestratorCanvasLayer({
           <LazyMenuScreen />
         </Suspense>
       )}
+
+      {/* Mouse parallax tracking for menu cinematic effects */}
+      {mode === 'menu' && <MenuMouseTracker />}
 
       {mode === 'menu' && canvasMounted && !menuLoadingDismissed && !bootOverlayComplete && (
         <PipelineLoadingOverlay

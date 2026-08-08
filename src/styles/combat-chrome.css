@@ -343,7 +343,9 @@
   .combat-btn-poem::after,
   .combat-turn-chevron,
   .combat-log-cursor::after,
-  .combat-player-card::before {
+  .combat-player-card::before,
+  .combat-hp-critical-pulse::after,
+  .combat-affinity-border-glow::before {
     animation: none !important;
   }
 
@@ -367,4 +369,181 @@
     animation: none !important;
     opacity: 1;
   }
+
+  .combat-edge-damage-glow {
+    display: none !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   R6-4b: Additional Combat Polish
+   ══════════════════════════════════════════════════════════════ */
+
+/* ─── HP Bar critical pulse (applied when HP < 30%) ─── */
+@keyframes combat-hp-critical-pulse {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.5), 0 0 16px rgba(239, 68, 68, 0.2);
+    filter: brightness(1);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(239, 68, 68, 0.8), 0 0 32px rgba(239, 68, 68, 0.4), 0 0 48px rgba(239, 68, 68, 0.15);
+    filter: brightness(1.15);
+  }
+}
+
+.combat-hp-critical-pulse {
+  animation: combat-hp-critical-pulse 1.2s ease-in-out infinite;
+}
+
+.combat-hp-critical-pulse::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  animation: combat-critical-border-pulse 1.2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes combat-critical-border-pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.8; }
+}
+
+/* ─── HP Bar animated gradient shimmer (always-on for health bars) ─── */
+@keyframes combat-hp-gradient-shimmer {
+  0% { background-position: -100% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.combat-hp-bar-shimmer {
+  background-size: 200% 100%;
+  animation: combat-hp-gradient-shimmer 3s linear infinite;
+}
+
+/* ─── Screen-edge red glow when player takes damage ─── */
+.combat-edge-damage-glow {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9990;
+  /* Red vignette from all edges */
+  background:
+    /* Left edge */
+    linear-gradient(to right, rgba(239, 68, 68, 0.35) 0%, transparent 15%),
+    /* Right edge */
+    linear-gradient(to left, rgba(239, 68, 68, 0.35) 0%, transparent 15%),
+    /* Top edge */
+    linear-gradient(to bottom, rgba(239, 68, 68, 0.2) 0%, transparent 10%),
+    /* Bottom edge */
+    linear-gradient(to top, rgba(239, 68, 68, 0.2) 0%, transparent 10%);
+  mix-blend-mode: screen;
+}
+
+/* ─── Element affinity border glow (damage channel color) ─── */
+.combat-affinity-border-glow {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9980;
+  border: 1px solid rgba(0, 229, 255, 0.08);
+  box-shadow:
+    inset 0 0 30px rgba(0, 229, 255, 0.04),
+    inset 0 0 60px rgba(0, 229, 255, 0.02);
+}
+
+.combat-affinity-border-glow::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 0;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(0, 229, 255, 0.06) 25%,
+    rgba(0, 229, 255, 0.12) 50%,
+    rgba(0, 229, 255, 0.06) 75%,
+    transparent 100%);
+  background-size: 200% 100%;
+  animation: combat-bar-border-sweep 6s linear infinite;
+  pointer-events: none;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  padding: 1px;
+}
+
+/* ─── Action button enhanced glow (applied alongside existing combat-btn-* classes) ─── */
+.combat-action-button {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Inner glow line at bottom of each button */
+.combat-action-button::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, currentColor, transparent);
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+/* Scanning line on hover */
+.combat-action-button::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.04) 50%,
+    transparent 100%);
+  background-size: 100% 200%;
+  animation: combat-btn-scan 2s ease-in-out infinite;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+}
+
+.combat-action-button:hover::after {
+  opacity: 1;
+}
+
+@keyframes combat-btn-scan {
+  0%, 100% { background-position: 0 -100%; }
+  50% { background-position: 0 100%; }
+}
+
+/* ─── Enemy affinity color-coded borders ─── */
+.combat-enemy-affinity-code {
+  border-color: rgba(57, 255, 20, 0.4) !important;
+  box-shadow: 0 0 12px rgba(57, 255, 20, 0.08), inset 0 0 8px rgba(57, 255, 20, 0.03) !important;
+}
+
+.combat-enemy-affinity-logic {
+  border-color: rgba(0, 229, 255, 0.4) !important;
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.08), inset 0 0 8px rgba(0, 229, 255, 0.03) !important;
+}
+
+.combat-enemy-affinity-empathy {
+  border-color: rgba(255, 107, 157, 0.4) !important;
+  box-shadow: 0 0 12px rgba(255, 107, 157, 0.08), inset 0 0 8px rgba(255, 107, 157, 0.03) !important;
+}
+
+.combat-enemy-affinity-intuition {
+  border-color: rgba(167, 139, 250, 0.4) !important;
+  box-shadow: 0 0 12px rgba(167, 139, 250, 0.08), inset 0 0 8px rgba(167, 139, 250, 0.03) !important;
+}
+
+.combat-enemy-affinity-writing {
+  border-color: rgba(212, 146, 10, 0.4) !important;
+  box-shadow: 0 0 12px rgba(212, 146, 10, 0.08), inset 0 0 8px rgba(212, 146, 10, 0.03) !important;
+}
+
+.combat-enemy-affinity-physical {
+  border-color: rgba(255, 171, 0, 0.4) !important;
+  box-shadow: 0 0 12px rgba(255, 171, 0, 0.08), inset 0 0 8px rgba(255, 171, 0, 0.03) !important;
 }

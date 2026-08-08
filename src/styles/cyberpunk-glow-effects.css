@@ -1,0 +1,170 @@
+/* ══════════════════════════════════════════════════════════════
+   R6-4c: Cyberpunk Ambient Glow Effects — CSS-only
+   Neon edge glow, stress response, location signature, combat intensity
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Neon edge glow — subtle cyan along viewport edges ── */
+@keyframes cpglow-edge-pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.7; }
+}
+
+.cpglow-neon-edge {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9000;
+}
+
+.cpglow-neon-edge::before,
+.cpglow-neon-edge::after {
+  content: '';
+  position: absolute;
+}
+
+/* Top + bottom edges */
+.cpglow-neon-edge::before {
+  inset: 0 0 auto 0;
+  height: 2px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(0, 229, 255, var(--cpglow-edge-intensity, 0.08)) 15%,
+    rgba(0, 229, 255, var(--cpglow-edge-intensity, 0.15)) 50%,
+    rgba(0, 229, 255, var(--cpglow-edge-intensity, 0.08)) 85%,
+    transparent 100%);
+  box-shadow: 0 2px 20px rgba(0, 229, 255, calc(var(--cpglow-edge-intensity, 0.08) * 0.5)),
+              0 1px 6px rgba(0, 229, 255, calc(var(--cpglow-edge-intensity, 0.08) * 0.3));
+  animation: cpglow-edge-pulse var(--cpglow-pulse-speed, 4s) ease-in-out infinite;
+}
+
+/* Left + right edges */
+.cpglow-neon-edge::after {
+  inset: 0 0 0 0;
+  width: 2px;
+  background: linear-gradient(180deg,
+    transparent 0%,
+    rgba(0, 229, 255, calc(var(--cpglow-edge-intensity, 0.08) * 0.6)) 15%,
+    rgba(0, 229, 255, calc(var(--cpglow-edge-intensity, 0.08) * 1.0)) 50%,
+    rgba(0, 229, 255, calc(var(--cpglow-edge-intensity, 0.08) * 0.6)) 85%,
+    transparent 100%);
+  box-shadow: 2px 0 20px rgba(0, 229, 255, calc(var(--cpglow-edge-intensity, 0.08) * 0.4)),
+              1px 0 6px rgba(0, 229, 255, calc(var(--cpglow-edge-intensity, 0.08) * 0.2));
+  animation: cpglow-edge-pulse var(--cpglow-pulse-speed, 4s) ease-in-out infinite;
+  animation-delay: calc(var(--cpglow-pulse-speed, 4s) * 0.25);
+}
+
+/* ── Stress response glow — red ambient overlay ── */
+.cpglow-stress-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 8999;
+  background: radial-gradient(ellipse at center,
+    transparent 40%,
+    rgba(239, 68, 68, var(--cpglow-stress-intensity, 0)) 100%);
+  transition: opacity 0.8s ease, background 1.2s ease;
+  opacity: 1;
+}
+
+@keyframes cpglow-stress-beat {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+.cpglow-stress-overlay.cpglow-stress-beating {
+  animation: cpglow-stress-beat 1.2s ease-in-out infinite;
+}
+
+/* ── Location signature glow — unique edge color per scene ── */
+.cpglow-location-cyan::before,
+.cpglow-location-cyan::after {
+  --cpglow-location-color: rgba(0, 229, 255, var(--cpglow-edge-intensity, 0.12));
+}
+
+.cpglow-location-purple::before,
+.cpglow-location-purple::after {
+  --cpglow-location-color: rgba(168, 85, 247, var(--cpglow-edge-intensity, 0.12));
+}
+
+.cpglow-location-magenta::before,
+.cpglow-location-magenta::after {
+  --cpglow-location-color: rgba(217, 70, 239, var(--cpglow-edge-intensity, 0.12));
+}
+
+.cpglow-location-emerald::before,
+.cpglow-location-emerald::after {
+  --cpglow-location-color: rgba(16, 185, 129, var(--cpglow-edge-intensity, 0.12));
+}
+
+/* Override for location-specific colors */
+.cpglow-location-purple::before {
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(168, 85, 247, var(--cpglow-edge-intensity, 0.08)) 15%,
+    rgba(168, 85, 247, var(--cpglow-edge-intensity, 0.15)) 50%,
+    rgba(168, 85, 247, var(--cpglow-edge-intensity, 0.08)) 85%,
+    transparent 100%) !important;
+  box-shadow: 0 2px 20px rgba(168, 85, 247, calc(var(--cpglow-edge-intensity, 0.08) * 0.5)) !important;
+}
+
+.cpglow-location-purple::after {
+  background: linear-gradient(180deg,
+    transparent 0%,
+    rgba(168, 85, 247, calc(var(--cpglow-edge-intensity, 0.08) * 0.6)) 15%,
+    rgba(168, 85, 247, calc(var(--cpglow-edge-intensity, 0.08) * 1.0)) 50%,
+    rgba(168, 85, 247, calc(var(--cpglow-edge-intensity, 0.08) * 0.6)) 85%,
+    transparent 100%) !important;
+  box-shadow: 2px 0 20px rgba(168, 85, 247, calc(var(--cpglow-edge-intensity, 0.08) * 0.4)) !important;
+}
+
+.cpglow-location-magenta::before {
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(217, 70, 239, var(--cpglow-edge-intensity, 0.08)) 15%,
+    rgba(217, 70, 239, var(--cpglow-edge-intensity, 0.15)) 50%,
+    rgba(217, 70, 239, var(--cpglow-edge-intensity, 0.08)) 85%,
+    transparent 100%) !important;
+  box-shadow: 0 2px 20px rgba(217, 70, 239, calc(var(--cpglow-edge-intensity, 0.08) * 0.5)) !important;
+}
+
+.cpglow-location-magenta::after {
+  background: linear-gradient(180deg,
+    transparent 0%,
+    rgba(217, 70, 239, calc(var(--cpglow-edge-intensity, 0.08) * 0.6)) 15%,
+    rgba(217, 70, 239, calc(var(--cpglow-edge-intensity, 0.08) * 1.0)) 50%,
+    rgba(217, 70, 239, calc(var(--cpglow-edge-intensity, 0.08) * 0.6)) 85%,
+    transparent 100%) !important;
+  box-shadow: 2px 0 20px rgba(217, 70, 239, calc(var(--cpglow-edge-intensity, 0.08) * 0.4)) !important;
+}
+
+.cpglow-location-emerald::before {
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(16, 185, 129, var(--cpglow-edge-intensity, 0.08)) 15%,
+    rgba(16, 185, 129, var(--cpglow-edge-intensity, 0.15)) 50%,
+    rgba(16, 185, 129, var(--cpglow-edge-intensity, 0.08)) 85%,
+    transparent 100%) !important;
+  box-shadow: 0 2px 20px rgba(16, 185, 129, calc(var(--cpglow-edge-intensity, 0.08) * 0.5)) !important;
+}
+
+.cpglow-location-emerald::after {
+  background: linear-gradient(180deg,
+    transparent 0%,
+    rgba(16, 185, 129, calc(var(--cpglow-edge-intensity, 0.08) * 0.6)) 15%,
+    rgba(16, 185, 129, calc(var(--cpglow-edge-intensity, 0.08) * 1.0)) 50%,
+    rgba(16, 185, 129, calc(var(--cpglow-edge-intensity, 0.08) * 0.6)) 85%,
+    transparent 100%) !important;
+  box-shadow: 2px 0 20px rgba(16, 185, 129, calc(var(--cpglow-edge-intensity, 0.08) * 0.4)) !important;
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .cpglow-neon-edge::before,
+  .cpglow-neon-edge::after {
+    animation: none !important;
+    opacity: 0.5;
+  }
+  .cpglow-stress-overlay.cpglow-stress-beating {
+    animation: none !important;
+  }
+}

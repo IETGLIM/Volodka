@@ -21,10 +21,12 @@ import type {
   CinematicTimelineUpdateResult,
   CinematicOverlayConfig,
 } from './cinematicTimelineTypes';
+import { getCinematicCameraPreset } from './cinematicCameraPresets';
 
 const _lookTarget = new THREE.Vector3();
 const _actorPos = new THREE.Vector3();
 const _actorRot = new THREE.Euler();
+const _zeroAnchor = new THREE.Vector3();
 const _handoffFrom = {
   position: new THREE.Vector3(),
   lookAt: new THREE.Vector3(),
@@ -86,6 +88,22 @@ function resolvePhaseCamera(
           })()
         : prevEnd;
       return { from, to, handoffTarget: null };
+    }
+    case 'preset': {
+      // Preset waypoints are in absolute world space — use zero anchor to avoid double-offset
+      const preset = getCinematicCameraPreset(phase.camera.presetId);
+      if (!preset) {
+        // Fallback: treat as hold at origin
+        const at = waypointFromData({ position: [0, 1.6, 3], lookAt: [0, 1, 0], fov: 54, duration: 1 }, anchor);
+        return { from: { position: at.position, lookAt: at.lookAt, fov: at.fov }, to: null, handoffTarget: null };
+      }
+      const wp = preset.toWaypoint(phase.camera.subjectPos, phase.camera.subjectFacing);
+      const at = waypointFromData(wp, _zeroAnchor);
+      return {
+        from: { position: at.position, lookAt: at.lookAt, fov: at.fov },
+        to: null,
+        handoffTarget: null,
+      };
     }
     default: {
       const _exhaustive: never = phase.camera;

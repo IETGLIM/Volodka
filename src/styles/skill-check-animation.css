@@ -1,0 +1,29 @@
+/* ══════════════════════════════════════════════════════════════
+   R6-4c: Skill Check Animation — glow, flash, threshold effects
+   ══════════════════════════════════════════════════════════════ */
+
+/* Success flash — emerald pulse across the roll card */
+@keyframes skill-check-flash-success {
+  0% { box-shadow: inset 0 0 40px rgba(16, 185, 129, 0.25), 0 0 20px rgba(16, 185, 129, 0.15); }
+  100% { box-shadow: inset 0 0 0px transparent, 0 0 0px transparent; }
+}
+
+/* Fail flash — red pulse across the roll card */
+@keyframes skill-check-flash-fail {
+  0% { box-shadow: inset 0 0 40px rgba(239, 68, 68, 0.3), 0 0 20px rgba(239, 68, 68, 0.2); }
+  100% { box-shadow: inset 0 0 0px transparent, 0 0 0px transparent; }
+}
+
+/* Dice glow burst on landing */
+@keyframes skill-check-glow-burst {
+  0% { opacity: 0.9; transform: scale(0.6); }
+  50% { opacity: 0.4; transform: scale(1.6); }
+  100% { opacity: 0; transform: scale(2.4); }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  @keyframes skill-check-flash-success { 0%, 100% { box-shadow: none; } }
+  @keyframes skill-check-flash-fail { 0%, 100% { box-shadow: none; } }
+  @keyframes skill-check-glow-burst { 0%, 100% { opacity: 0; } }
+}

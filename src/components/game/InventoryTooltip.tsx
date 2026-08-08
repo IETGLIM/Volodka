@@ -51,10 +51,10 @@ function ComparisonDelta({ delta }: { delta: TooltipComparisonDelta }) {
 
   const arrow = isPositive ? '↑' : '↓';
   const sign = isPositive ? '+' : '';
-  const colorClass = isBeneficial ? 'text-emerald-400' : 'text-rose-400';
+  const colorClass = isBeneficial ? 'text-emerald-400 inv-stat-comparison-positive' : 'text-rose-400 inv-stat-comparison-negative';
 
   return (
-    <p className={`font-mono text-xs ${colorClass} flex items-center gap-1 break-words`}>
+    <p className={`font-mono text-xs ${colorClass} inv-stat-comparison-row flex items-center gap-1 break-words`}>
       <span className={isBeneficial ? 'text-emerald-500' : 'text-rose-500'} aria-hidden>▸</span>
       <span aria-hidden>{arrow}</span>
       <span>{delta.label} {sign}{delta.delta}</span>

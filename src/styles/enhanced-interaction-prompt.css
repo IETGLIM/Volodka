@@ -1,0 +1,121 @@
+/* ══════════════════════════════════════════════════════════════
+   R6-4c: Enhanced Interaction Prompt — glowing ring, context icons
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Glowing ring animation around the prompt ── */
+@keyframes eip-ring-rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes eip-ring-pulse {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.08); }
+}
+
+@keyframes eip-ring-sweep {
+  0% { transform: rotate(0deg); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: rotate(360deg); opacity: 0; }
+}
+
+.eip-glow-ring {
+  position: absolute;
+  inset: -6px;
+  border-radius: 14px;
+  pointer-events: none;
+}
+
+/* Static glow ring */
+.eip-glow-ring::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1px solid rgba(0, 229, 255, 0.15);
+  animation: eip-ring-pulse 2.5s ease-in-out infinite;
+}
+
+/* Rotating sweep arc */
+.eip-glow-ring::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  border: 2px solid transparent;
+  border-top-color: rgba(0, 229, 255, 0.6);
+  border-right-color: rgba(0, 229, 255, 0.2);
+  animation: eip-ring-rotate 3s linear infinite;
+  filter: blur(0.5px);
+}
+
+/* Sweep highlight */
+.eip-glow-ring-sweep {
+  position: absolute;
+  inset: -2px;
+  border-radius: 16px;
+  pointer-events: none;
+  background: conic-gradient(from 0deg, transparent 0%, rgba(0, 229, 255, 0.12) 10%, transparent 20%);
+  animation: eip-ring-sweep 4s linear infinite;
+}
+
+/* ── Context icon styling ── */
+.eip-context-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: rgba(0, 229, 255, 0.08);
+  border: 1px solid rgba(0, 229, 255, 0.2);
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.eip-context-icon.eip-icon-npc {
+  background: rgba(0, 229, 255, 0.1);
+  border-color: rgba(0, 229, 255, 0.25);
+}
+
+.eip-context-icon.eip-icon-item {
+  background: rgba(251, 191, 36, 0.1);
+  border-color: rgba(251, 191, 36, 0.25);
+}
+
+.eip-context-icon.eip-icon-door {
+  background: rgba(168, 85, 247, 0.1);
+  border-color: rgba(168, 85, 247, 0.25);
+}
+
+.eip-context-icon.eip-icon-examine {
+  background: rgba(52, 211, 153, 0.1);
+  border-color: rgba(52, 211, 153, 0.25);
+}
+
+/* ── Distance-based fade ── */
+.eip-distance-fade {
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+/* ── Mobile touch version — larger, centered ── */
+.eip-mobile-touch {
+  min-width: 200px;
+  padding: 12px 20px !important;
+  font-size: 14px !important;
+  border-radius: 16px !important;
+}
+
+.eip-mobile-touch .eip-glow-ring {
+  inset: -8px;
+  border-radius: 20px;
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .eip-glow-ring::before { animation: none; opacity: 0.3; }
+  .eip-glow-ring::after { animation: none; opacity: 0; }
+  .eip-glow-ring-sweep { animation: none; opacity: 0; }
+  .eip-distance-fade { transition: none; }
+}

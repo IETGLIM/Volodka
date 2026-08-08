@@ -42,6 +42,17 @@ export type CinematicCameraMotion =
       mode: 'handoff';
       /** Blend from current camera into third-person exploration framing. */
       target: CameraWaypointData;
+    }
+  | {
+      /** Reference a cinematic camera preset by ID. Resolved to waypoint/hold at timeline start.
+       *  @see cinematicCameraPresets.ts for available presets. */
+      mode: 'preset';
+      /** Preset identifier (e.g. 'establishing_wide', 'over_shoulder'). */
+      presetId: string;
+      /** World position of the subject the preset is anchored to. */
+      subjectPos: [number, number, number];
+      /** Y-axis rotation the subject faces (radians). */
+      subjectFacing?: number;
     };
 
 export interface CinematicOverlayConfig {

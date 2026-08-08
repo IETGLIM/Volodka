@@ -19,7 +19,7 @@ import { useActiveQuests, getQuestMarker } from '@/store/questStore';
 import { SCENE_CONFIG } from '@/config/scenes';
 import { CombatPreEngagementWarning } from '@/components/game/hud/parts/CombatPreEngagementWarning';
 import { ContextualHint } from '@/components/game/hud/parts/ContextualHint';
-import { CrosshairInteractionPrompt } from '@/components/game/hud/parts/CrosshairInteractionPrompt';
+import { EnhancedCrosshairPrompt } from '@/components/game/EnhancedCrosshairPrompt';
 import { DynamicCrosshair } from '@/components/game/hud/parts/DynamicCrosshair';
 import { HUDChromaticEdge } from '@/components/game/hud/parts/HUDChromaticEdge';
 import { InteractionCooldownRing } from '@/components/game/hud/parts/InteractionCooldownRing';
@@ -199,7 +199,7 @@ export function ExplorationHUD(props: HUDProps) {
       {/* Subtle sparkle on nearby interactables — show-don't-tell
           affordance that draws the eye without a text prompt. */}
       <InteractableSparkle />
-      {proximityFxActive ? <CrosshairInteractionPrompt /> : null}
+      {proximityFxActive ? <EnhancedCrosshairPrompt /> : null}
 
       <AnimatePresence>
         <CriticalStatusWhisper

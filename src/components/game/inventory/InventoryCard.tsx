@@ -58,6 +58,7 @@ export const InventoryCard = memo(function InventoryCard({
         aria-describedby={showTooltip ? tooltipId : undefined}
         data-item-id={item.id}
         data-rarity={rarity !== 'common' ? rarity : undefined}
+        data-focused={isFocused ? 'true' : undefined}
         tabIndex={isFocused ? 0 : -1}
         onClick={() => onSelect(item.id, index)}
         onMouseEnter={() => setHovered(true)}
@@ -96,7 +97,7 @@ export const InventoryCard = memo(function InventoryCard({
               <Shield className="size-2.5 text-amber-400 drop-shadow-[0_0_3px_rgba(251,191,36,0.5)]" aria-hidden />
             )}
             {item.quantity > 1 && (
-              <span className="inv-count-badge-cyber">{item.quantity}</span>
+              <span key={`count-${item.quantity}`} className="inv-count-badge-cyber inv-count-badge-animated inv-count-pop">{item.quantity}</span>
             )}
           </div>
         </div>

@@ -59,6 +59,9 @@
 @import "../styles/combat-effects.css";
 @import "../styles/audio-visualizer.css";
 @import "../styles/npc-codex.css";
+@import "../styles/skill-check-animation.css";
+@import "../styles/cyberpunk-glow-effects.css";
+@import "../styles/enhanced-interaction-prompt.css";
 
 /* ── User setting: scanlines off (SettingsPanel → engine/visualSettings) ── */
 html[data-scanlines="off"] .panel-scanlines::after,

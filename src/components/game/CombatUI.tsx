@@ -5,6 +5,7 @@ import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { CombatIntroSplash } from '@/components/game/combatUi/CombatIntroSplash';
 import { CombatScreenFlash, DamageNumber } from '@/components/game/combatUi/CombatDamageFx';
+import { CombatDamageNumbers } from '@/components/game/CombatDamageNumbers';
 import { CombatEnemyPanel } from '@/components/game/combatUi/CombatEnemyPanel';
 import { CombatActionBar } from '@/components/game/combatUi/CombatActionBar';
 import { CombatPlayerCard } from '@/components/game/combatUi/CombatPlayerCard';
@@ -47,6 +48,9 @@ export function CombatUI() {
 
         <CombatScreenFlash flashColor={ui.flashColor} />
 
+        {/* Rich typed damage numbers (poison/burn/freeze/stun/heal/miss) */}
+        <CombatDamageNumbers events={ui.richDamageEvents} />
+
         <CombatEnemyPanel
           combatState={combatState}
           enemyBuffs={ui.enemyBuffs}
@@ -65,6 +69,19 @@ export function CombatUI() {
             ))}
           </AnimatePresence>
         </div>
+
+        {/* Screen-edge red glow when player takes damage */}
+        <AnimatePresence>
+          {ui.flashColor && ui.flashColor.includes('68,68') && (
+            <motion.div
+              className="combat-edge-damage-glow"
+              initial={{ opacity: 1 }}
+              animate={{ opacity: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
+            />
+          )}
+        </AnimatePresence>
 
         <motion.div
           className="pointer-events-auto px-3 pb-3"
@@ -126,6 +143,8 @@ export function CombatUI() {
           }}
         />
         <div className="combat-grid-overlay" />
+        {/* Element affinity indicator border — color from last damage channel */}
+        {isActive && <div className="combat-affinity-border-glow" />}
       </div>
     </TooltipProvider>
   );

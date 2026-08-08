@@ -122,6 +122,7 @@ import {
 import { isAct1DiegeticScene } from '@/engine/narrative/narrativePresentationPolicy';
 import { AudioVisualizer } from '../AudioVisualizer';
 import { LocationAtmosphereOverlay } from '../LocationAtmosphereOverlay';
+import { CyberpunkGlowEffects } from '../CyberpunkGlowEffects';
 import type { PanelCloseHandlers } from './useStablePanelClosers';
 import type { HudSecondaryPanelOpeners } from './useStableHudPanelOpeners';
 
@@ -400,6 +401,7 @@ export const GameplaySharedEffects = memo(function GameplaySharedEffects() {
       <GameplayPhotoMode />
       <GameplayAudioVisualizer />
       <GameplayLocationAtmosphere />
+      <GameplayCyberpunkGlow />
     </>
   );
 });
@@ -736,4 +738,9 @@ export const GameplayAudioVisualizer = memo(function GameplayAudioVisualizer() {
 /** Location atmosphere overlay — color wash based on scene type + time. */
 export const GameplayLocationAtmosphere = memo(function GameplayLocationAtmosphere() {
   return <LocationAtmosphereOverlay />;
+});
+
+/** Cyberpunk ambient glow effects — neon edge, stress, location, combat. */
+export const GameplayCyberpunkGlow = memo(function GameplayCyberpunkGlow() {
+  return <CyberpunkGlowEffects />;
 });

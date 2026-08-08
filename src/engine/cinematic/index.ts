@@ -45,3 +45,16 @@ export {
   estimateCutsceneDisplayDurationMs,
 } from './cutsceneToTimeline';
 export { waypointsToTimelinePhases } from './cinematicWaypointPhases';
+export {
+  getCinematicCameraPreset,
+  getPresetEase,
+  CINEMATIC_CAMERA_PRESETS,
+  ESTABLISHING_WIDE,
+  OVER_SHOULDER,
+  CLOSE_UP_EMOTIONAL,
+  LOW_ANGLE_POWER,
+  DUTCH_ANGLE,
+  TRACKING_LATERAL,
+  CRANE_RISING,
+} from './cinematicCameraPresets';
+export type { CinematicCameraPreset } from './cinematicCameraPresets';

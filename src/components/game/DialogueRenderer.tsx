@@ -50,7 +50,7 @@ import { useNarrativeChoiceKeyboard } from '@/hooks/useNarrativeChoiceKeyboard';
 import { applyEffects } from '@/shared/utils/applyEffects';
 import { recordExplorationStoryStep } from '@/shared/explorationStoryBridge';
 import { DialogueRelationBar } from './dialogue/DialogueRelationBar';
-import { DiceRollDisplay } from './dialogue/DiceRollDisplay';
+import { SkillCheckAnimation } from './SkillCheckAnimation';
 import { DialogueHistoryPanel } from './dialogue/DialogueHistoryPanel';
 import { useDialogueHistoryStore } from '@/store/stores/dialogueHistoryStore';
 import type { DialogueHistoryEntry as _DialogueHistoryEntry } from '@/store/slices/dialogueHistorySlice';
@@ -656,6 +656,7 @@ export function DialogueRenderer() {
         aria-live="polite"
         aria-busy="true"
         aria-label="Загрузка диалога"
+        {...(isMobile ? { 'data-mobile-dialogue': 'true' as const } : {})}
       >
         <div className="w-full max-w-2xl rounded-xl border border-stone-700/40 bg-black/80 shadow-[0_8px_32px_rgba(0,0,0,0.45)] overflow-hidden glass-panel">
           <div className="flex gap-3 p-4 border-b border-stone-800/40">
@@ -690,7 +691,9 @@ export function DialogueRenderer() {
   // Error state: dialogue node fetch failed
   if (errorRef.current && !node) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm" style={{ zIndex: UI_LAYERS.DIALOGUE }}>
+      <div className="fixed inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm" style={{ zIndex: UI_LAYERS.DIALOGUE }}
+        {...(isMobile ? { 'data-mobile-dialogue': 'true' as const } : {})}
+      >
         <div className="flex flex-col items-center gap-4">
           <p className="text-red-400 text-lg font-mono">Не удалось загрузить диалог</p>
           <button
@@ -802,7 +805,7 @@ export function DialogueRenderer() {
                 exit={{ opacity: 0 }}
                 className="mb-2"
               >
-                <DiceRollDisplay
+                <SkillCheckAnimation
                   result={diceRollState.result}
                   skill={diceRollState.skill}
                   skillLevel={diceRollState.skillLevel}

@@ -191,7 +191,7 @@ export function Inventory({ open, onClose, onOpenPoetryBook }: InventoryProps) {
                   {isActive && activeTab === 'items' && !reducedMotion && (
                     <motion.div
                       layoutId="inv-tab-indicator"
-                      className="absolute bottom-0 left-1 right-1 h-[2px] bg-cyan-400/60 rounded-full"
+                      className="absolute bottom-0 left-1 right-1 h-[2px] bg-cyan-400/60 rounded-full inv-cat-tab-underline-active"
                       style={{ boxShadow: '0 0 6px rgb(var(--cyber-cyan-rgb) / 0.4)' }}
                       transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                     />

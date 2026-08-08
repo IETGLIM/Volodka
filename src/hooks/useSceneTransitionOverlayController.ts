@@ -17,6 +17,8 @@ export type TransitionOverlayPhase =
   | 'glitch-cut-in'
   | 'breathe-in'
   | 'crossfade-in'
+  | 'breathe-zoom-in'
+  | 'data-stream-in'
   | 'wipe-in'
   | 'hold'
   | 'wipe-out'
@@ -30,6 +32,8 @@ const DISSOLVE_DURATION = SCENE_OVERLAY_MS.DISSOLVE;
 const FILM_BURN_DURATION = SCENE_OVERLAY_MS.FILM_BURN;
 const GLITCH_CUT_DURATION = SCENE_OVERLAY_MS.GLITCH_CUT;
 const BREATHE_DURATION = SCENE_OVERLAY_MS.BREATHE;
+const BREATHE_ZOOM_DURATION = SCENE_OVERLAY_MS.BREATHE_ZOOM;
+const DATA_STREAM_DURATION = SCENE_OVERLAY_MS.DATA_STREAM;
 const CROSSFADE_DURATION = SCENE_OVERLAY_MS.CROSSFADE;
 const WIPE_IN_DURATION = SCENE_OVERLAY_MS.WIPE_IN;
 const WIPE_OUT_DURATION = SCENE_OVERLAY_MS.WIPE_OUT;
@@ -50,6 +54,8 @@ const WEIGHTED_TRANSITIONS: Array<{ style: SceneTransitionStyle; weight: number 
   { style: 'film_burn', weight: 1 },
   { style: 'glitch_cut', weight: 1 },
   { style: 'breathe', weight: 1 },
+  { style: 'breathe_zoom', weight: 1 },
+  { style: 'data_stream', weight: 1 },
 ];
 
 const TOTAL_WEIGHT = WEIGHTED_TRANSITIONS.reduce((sum, e) => sum + e.weight, 0);
@@ -85,6 +91,10 @@ function getInitialPhase(style: SceneConfig['transitionStyle']): TransitionOverl
       return 'glitch-cut-in';
     case 'breathe':
       return 'breathe-in';
+    case 'breathe_zoom':
+      return 'breathe-zoom-in';
+    case 'data_stream':
+      return 'data-stream-in';
     case 'crossfade':
       return 'crossfade-in';
     default:
@@ -108,6 +118,10 @@ function introDurationMs(style: SceneConfig['transitionStyle']): number {
       return GLITCH_CUT_DURATION;
     case 'breathe':
       return BREATHE_DURATION;
+    case 'breathe_zoom':
+      return BREATHE_ZOOM_DURATION;
+    case 'data_stream':
+      return DATA_STREAM_DURATION;
     case 'crossfade':
       return CROSSFADE_DURATION;
     default:
