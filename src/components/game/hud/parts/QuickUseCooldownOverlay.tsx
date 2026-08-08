@@ -79,11 +79,16 @@ export function QuickUseCooldownOverlay() {
         const elapsed = Date.now() - entry.startTime;
         const progress = Math.min(1, elapsed / entry.duration);
         const dashoffset = CIRCUMFERENCE * (1 - progress);
+        /* WS18-A: when the cooldown has completed (item is ready) and
+           the entry is still briefly visible before auto-removal,
+           apply the amber ready-glow filmic class. The class is
+           reduced-motion gated (no-op when prefers-reduced-motion). */
+        const isReady = progress >= 1;
 
         return (
           <svg
             key={id}
-            className="cooldown-ring-svg"
+            className={`cooldown-ring-svg${isReady ? ' hud-filmic-quickuse-ready-glow' : ''}`}
             viewBox="0 0 48 48"
             aria-hidden="true"
           >

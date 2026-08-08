@@ -6390,6 +6390,222 @@ export const TRIGGER_ZONES: TriggerZone[] = [
   },
 
   /* ═══════════════════════════════════════════════════════════════════
+     WS18-B — +10 examine zones for under-served scenes
+     zarema_room +3, library_basement +2, guild_mainframe +2,
+     city_square +2, underground_bunker +1. All one-time, unique flags.
+     ═══════════════════════════════════════════════════════════════════ */
+
+  // zarema_room — +3 new examine zones
+  {
+    id: 'zarema_room_sewing_machine_drawer',
+    sceneId: 'zarema_room',
+    position: [-4.2, 0.4, 2.6],
+    size: [0.6, 0.3, 0.4],
+    enterToast: 'Ящик швейной машинки — приоткрыт. Внутри — не нитки.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Ящик швейной машинки',
+      description: 'Деревянный ящик под платой старой «Подольска». Приоткрыт на ладонь.',
+      detailText: 'Внутри — не нитки и не шпульки. Внутри — тонкая стопка фотографий. Чёрно-белых. С — нарисованными — поверх — красными — стрелками. Стрелки — от одного — лица — к другому. От — фамилии — к фамилии. Зарема — строит — генеалогию — сопротивления. Кто — кого — научил. Кто — кого — спас. Кто — от — кого — унаследовал — стих. Не — кровь. Линия — памяти.',
+      icon: '🗃️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_zarema_sewing_drawer', flagValue: true },
+      { type: 'addKarma', value: 4 },
+      { type: 'addSkill', skill: 'empathy', value: 1 },
+    ],
+  },
+  {
+    id: 'zarema_room_faded_photo_wall',
+    sceneId: 'zarema_room',
+    position: [3.2, 1.7, -3.5],
+    size: [1.4, 1.0, 0.05],
+    enterToast: 'Стена фотографий у окна. Семья — выцветшая, но — не стёртая.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Стена фотографий',
+      description: 'Дюжина фотографий, приколотых кнопками к обоям. Выцветшие.',
+      detailText: 'Двенадцать — лиц. Старых — съёмок, чужих — свадеб, школьных — линий. На одной — Зарема — молодая, с косой до пояса. На другой — мужчина — без — имени — с — ручкой — в — зубах. На обороте каждой — две — буквы. «М.К.». «А.Р.». «В.Ш.». Не — инициалы — имён. Инициалы — стихов. Каждый — портрет — стих. Каждая — буква — строка. Стена — не — галерея. Стена — оглавление.',
+      icon: '🖼️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_zarema_faded_photo', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'writing', value: 1 },
+    ],
+  },
+  {
+    id: 'zarema_room_herb_bouquet_dried',
+    sceneId: 'zarema_room',
+    position: [2.5, 2.1, -2.0],
+    size: [0.4, 0.5, 0.4],
+    enterToast: 'Пучок засушенных трав под потолком. Лаванда, мята, что-то восточное.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Пучок сухих трав',
+      description: 'Связка засушенных трав, подвешенная к потолку на бечёвке. Сухо пахнет.',
+      detailText: 'Лаванда — от — сна. Мята — от — желудка. Третья — трава — без — имени. Зарема — говорит: — «от — гильдии». Не — трава — от — тревоги. Трава — от — цензуры. Трава — которую — невозможно — отфильтровать. Запах — не — подчиняется — приказам. Запах — просачивается — сквозь — firewall. Сквозь — бетон. Сквозь — страх. Запах — пахнет. Назло.',
+      icon: '🌿',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_zarema_dried_bouquet', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+
+  // library_basement — +2 new examine zones
+  {
+    id: 'library_basement_cryptic_marginalia',
+    sceneId: 'library_basement',
+    position: [-2.4, 1.1, 4.2],
+    size: [0.5, 0.7, 0.1],
+    enterToast: 'Книга раскрыта на страницах с пометками. Поля — гуще текста.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Криптографические пометки на полях',
+      description: 'Раскрытый томик стихов. Поля — испещрены значками. Не слова — шифр.',
+      detailText: 'Текст — Довлатов. Поля — не довлатовские. Поля — стрелки, точки, кружки. Каждая — стрелка — от — буквы — к — букве. Если — собрать — буквы — под — стрелками — получается — новое — слово. Если — собрать — слова — под — стрелками — получается — новое — стихотворение. Библиотека — не — хранит — книги. Библиотека — хранит — инструкции — как — книги — читать. Кто-то — учил — следующий — читателя — между — строк. Между — строк — было — своё — стихотворение. Цензура — не — дочитала. Цензура — не — умеет — в — стрелки.',
+      icon: '📝',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_library_cryptic_marginalia', flagValue: true },
+      { type: 'addKarma', value: 4 },
+      { type: 'addSkill', skill: 'coding', value: 1 },
+    ],
+  },
+  {
+    id: 'library_basement_broken_microfiche',
+    sceneId: 'library_basement',
+    position: [1.8, 0.9, -2.5],
+    size: [0.7, 0.5, 0.5],
+    enterToast: 'Сломанный аппарат для микрофишей. Лента — застряла. Экран — погас.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Сломанный аппарат микрофишей',
+      description: 'Довоенный читальный аппарат. Лампа — перегорела. Лента — порвана.',
+      detailText: 'Аппарат — довоенный. Гильдия — считала — устаревшим — и — не — конфисковала. Ошибка. На — порванной — ленте — последний — кадр. Снимок — газетной — полосы — 1979. Полоса — со — стихами. Стихи — подписаны: — «Без — автора». И — ниже — карандашом:— «но — с — адресом». Адрес — зачитан — до — букв. Буквы — стёрты. Цифры — остались. Дом. Квартира. Этаж. Кто-то — жил — там — и — писал. Кто-то — искал — его — и — не — нашёл. Лента — порвана — на — полпути. Лента — обещает. Лента — не — отдаёт.',
+      icon: '📽️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_library_broken_microfiche', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+    ],
+  },
+
+  // guild_mainframe — +2 new examine zones
+  {
+    id: 'guild_mainframe_log_terminal_archive',
+    sceneId: 'guild_mainframe',
+    position: [-1.5, 1.0, -3.2],
+    size: [0.9, 0.9, 0.5],
+    enterToast: 'Архивный терминал логов. Последний запрос — трёхлетней давности.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Архивный терминал логов',
+      description: 'Стойка с терминалом, dédié — журналу событий. Зелёный фосфор. Тишина.',
+      detailText: 'Терминал — открыт — на — LOG. Последний — запрос:— «SELECT * FROM poetic_resonance WHERE amplitude > 0.05;». Результат:— 0 — строк. Гильдия — три года — назад — проверила:— стихов — нет. Амплитуда — ноль. Они — успокоились. Они — отключили — мониторинг. Они — перестали — смотреть. Стихи — пошли — снова — через — неделю. Через — месяц. Через — год. Никто — не — заметил. Никто — не — мониторил. Терминал — записывает. Терминал — не — сообщает. Молчание — архива — спасло — нас — всех.',
+      icon: '📟',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_guild_log_archive', flagValue: true },
+      { type: 'addKarma', value: 4 },
+      { type: 'addSkill', skill: 'coding', value: 1 },
+    ],
+  },
+  {
+    id: 'guild_mainframe_cooling_vent_grate',
+    sceneId: 'guild_mainframe',
+    position: [3.5, 2.4, -1.0],
+    size: [0.5, 0.5, 0.1],
+    enterToast: 'Решётка охлаждения под потолком. За ней — бумажка. Сложена — мелко.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Решётка охлаждения',
+      description: 'Вентиляционная решётка под потолком. За прутьями — клочок бумаги.',
+      detailText: 'Решётка — на — четырёх — винтах. Один — выкручен. За — решёткой — в — воздуховоде — сложенный — вчетверо — лист. Достать — трудно. Но — видно — почерк. Тонкий. Знакомый. Лист — не — вытаскивают. Лист — оставляют. Пусть — лежит. Пусть — дышит — вентиляцией. Пусть — гильдия — гонит — воздух — через — чужой — стих — и — не — знает. Стих — в — лёгких — мейнфрейма. Стих — охлаждает — процессоры. Стих — работает. Без — оплаты. Без — приказов. Просто — работает.',
+      icon: '🌬️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_guild_cooling_vent', flagValue: true },
+      { type: 'addKarma', value: 5 },
+      { type: 'addSkill', skill: 'writing', value: 1 },
+    ],
+  },
+
+  // city_square — +2 new examine zones
+  {
+    id: 'city_square_manhole_cover_graffiti',
+    sceneId: 'city_square',
+    position: [2.5, 0.05, 3.0],
+    size: [0.8, 0.1, 0.8],
+    enterToast: 'Канализационный люк. На чугуне — кто-то нацарапал стих.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Стих на канализационном люке',
+      description: 'Чугунный люк с гербом города. Поверх герба — гвоздём нацарапаны строки.',
+      detailText: 'Герб — города — стёрт — гвоздём. Гвоздём — же — выцарапаны — три — строки. «Под — нами — город. Под — городом — город. Под — ним — мы.» Подпись:— «С.Л.». С.Л. — не — в — реестре. С.Л. — не — в — архиве. С.Л. — жил — здесь — и — спускался — в — люк — каждую — ночь. С.Л. — исчез. Люк — остался. Стих — остался. Город — под — городом — под — городом — остался. Мы — наверху — ходим — поверх — трёх — слоёв — и — не — помним. С.Л. — помнил. С.Л. — спустился. С.Л. — не — вернулся. Стих — его — последнее — подписанное.',
+      icon: '🕳️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_square_manhole_graffiti', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+  {
+    id: 'city_square_neon_sign_burnout',
+    sceneId: 'city_square',
+    position: [-3.0, 3.2, -2.0],
+    size: [2.0, 0.6, 0.3],
+    enterToast: 'Неоновая вывеска над кафе. Половина букв — выгорела. Остальные — моргают.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Выгоревшая неоновая вывеска',
+      description: 'Старая неоновая вывеска «ОТКРЫТО 24/7». Из восьми букв — горят четыре.',
+      detailText: 'Горят:— «Т — Р — Т — О». Получается — «ТРТО». Бессмыслица. Или — нет. ТРТО — может — быть — аббревиатурой. Т — тихо. Р — режь. Т — только. О — осторожно. «Тихо — режь — только — осторожно». Инструкция — для — контрабандистов. Инструкция — для — нас. Инструкция — для — тех, — кто — понимает:— вывеска — не — реклама. Вывеска — канал. Вывеска — говорит — с — теми, — кто — читает — между — букв. Гильдия — проверяет — буквы. Гильдия — не — проверяет — пробелы. Пробелы — и — есть — сообщение. Буквы — лишь — контур.',
+      icon: '💡',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_square_neon_burnout', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+    ],
+  },
+
+  // underground_bunker — +1 new examine zone
+  {
+    id: 'underground_bunker_rusted_airlock_wheel',
+    sceneId: 'underground_bunker',
+    position: [4.8, 1.3, -4.5],
+    size: [0.7, 0.7, 0.3],
+    enterToast: 'Ржавое колесо шлюза. Не — сдвинуть. Но — крутится — на — пол-оборота.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Ржавое колесо шлюза',
+      description: 'Чугунное штурвальное колесо на бетонной стене. Пять спиц. Ржавчина — слоем.',
+      detailText: 'Колесо — от — довоенного — шлюза. Шлюз — давно — замурован. Колесо — оставили — для — приличия. Или — для — памяти. Колесо — крутится — на — пол-оборота — влево. Пол-оборота — вправо. Дальше — клинит. Дальше — мёртвая — точка. Кто-то — приходил — и — крутил. Каждый — день. По — разу — влево. По — разу — вправо. Ритуал. Без — смысла. Или — со — смыслом:— «Шлюз — закрыт. Шлюз — закрыт. Шлюз — закрыт». Каждый — день. Мантра — бетонного — бункера. Колесо — помнит — руки. Колесо — не — помнит — имён. Ритуал — продолжается. Я — кручу. Пол-оборота. Влево. Вправо. Хватит.',
+      icon: '⚓',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_bunker_airlock_wheel', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'empathy', value: 1 },
+    ],
+  },
+
+  /* ═══════════════════════════════════════════════════════════════════
      COMBAT ENCOUNTERS — replaced by visible patrolling creeps
      (src/data/creepPatrols.ts + PatrollingCreeps.tsx). The old invisible
      autoTrigger zones fired combat with no warning; creeps give the player

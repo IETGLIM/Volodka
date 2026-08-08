@@ -31,6 +31,7 @@ export function WeatherIcon({ type, className }: WeatherIconProps) {
     <AnimatePresence mode="wait">
       <motion.div
         key={type}
+        className="hud-filmic-weather-shift"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}

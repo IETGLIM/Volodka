@@ -992,7 +992,20 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
               />
             </mesh>
           ) : (
-            <mesh renderOrder={1} rotation-y={-Math.PI / 2} geometry={geo_pln_42} material={mat_33} />
+            /* WS18-C: MeshPhysicalMaterial with clearcoat for wet glass reflection.
+               The usePhysicalGlass=true path already has transmission+clearcoat;
+               this fallback (low/mobile) gets a cheaper clearcoat-only wet sheen
+               so the right-wall window reads as rain-streaked glass on all presets. */
+            <mesh renderOrder={1} rotation-y={-Math.PI / 2} geometry={geo_pln_42}>
+              <meshPhysicalMaterial
+                color="#0a0a30"
+                emissive="#4488ee"
+                emissiveIntensity={1.8}
+                toneMapped={false}
+                clearcoat={1.0}
+                clearcoatRoughness={0.05}
+              />
+            </mesh>
           )}
           {/* Window frame — Low only; Medium+ shutterWindow GLB owns the casing. */}
           {!useGltfFurniture ? (

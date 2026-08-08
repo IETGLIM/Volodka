@@ -58,7 +58,7 @@ export function EnemyWeaknessDisplay() {
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: 10 }}
         transition={{ duration: 0.3 }}
-        className={`enemy-weakness-card flex flex-col gap-1.5 px-3 py-2 rounded border bg-black/70 backdrop-blur-sm font-mono ${typeBorder}`}
+        className={`enemy-weakness-card hud-filmic-weakness-reveal flex flex-col gap-1.5 px-3 py-2 rounded border bg-black/70 backdrop-blur-sm font-mono ${typeBorder}`}
       >
         {/* Target stat warning */}
         <div className="flex items-center gap-1.5">

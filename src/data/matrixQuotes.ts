@@ -175,6 +175,102 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     mood: 'loss',
     color: '#6a8a30',
   },
+
+  /* ═══════════════════════════════════════════════════════════
+     WS18-D — Philosophical ambient fragments (11 new quotes)
+     Themes: code as poetry, systems as gods, memory as currency,
+     sleep as defragmentation, errors as prophecies, recursion,
+     stack overflow, binary tree of choices, mutable identity.
+     Shown in HUD tickers, terminal logs, matrix-style overlays.
+     ═══════════════════════════════════════════════════════════ */
+  {
+    id: 'mq_ws18d_code_poetry',
+    text: 'Код — это поэзия, в которой каждое двоеточие — пауза для дыхания',
+    trigger: 'ws18d_code_poetry',
+    act: 1,
+    mood: 'hope',
+    color: '#00ff41',
+  },
+  {
+    id: 'mq_ws18d_sleep_defrag',
+    text: 'Сон — это дефрагментация. Те, кто не спят, фрагментированы и медленно сходят с ума',
+    trigger: 'ws18d_sleep_defrag',
+    act: 1,
+    mood: 'loss',
+    color: '#6a8a30',
+  },
+  {
+    id: 'mq_ws18d_gods_silent',
+    text: 'Боги не умерли. Они переписали себя на C++ и забыли добавить README',
+    trigger: 'ws18d_gods_silent',
+    act: 2,
+    mood: 'revelation',
+    color: CYBER_CYAN,
+  },
+  {
+    id: 'mq_ws18d_memory_currency',
+    text: 'Валюта будущего — не биткоин, а байт нетронутой памяти',
+    trigger: 'ws18d_memory_currency',
+    act: 2,
+    mood: 'revelation',
+    color: '#d4920a',
+  },
+  {
+    id: 'mq_ws18d_errors_prophecy',
+    text: 'Ошибка 0xDEADBEEF — не сбой, а пророчество. Машина знает то, что мы отказываемся слышать',
+    trigger: 'ws18d_errors_prophecy',
+    act: 3,
+    mood: 'danger',
+    color: '#cc2020',
+  },
+  {
+    id: 'mq_ws18d_tree_choice',
+    text: 'Каждый выбор — узел в дереве. Каждый отказ — лист, который всё ещё помнит, что мог быть',
+    trigger: 'ws18d_tree_choice',
+    act: 3,
+    mood: 'revelation',
+    color: CYBER_CYAN,
+  },
+  {
+    id: 'mq_ws18d_stack_overflow_soul',
+    text: 'Стек переполнился — и душа ушла в адресное пространство, которого нет на карте',
+    trigger: 'ws18d_stack_overflow_soul',
+    act: 4,
+    mood: 'loss',
+    color: '#6a8a30',
+  },
+  {
+    id: 'mq_ws18d_kolyadka',
+    text: 'Код-Колядка поётся шёпотом: кто услышит — напишет; кто напишет — предскажет',
+    trigger: 'ws18d_kolyadka',
+    act: 4,
+    mood: 'revelation',
+    color: '#d4920a',
+  },
+  {
+    id: 'mq_ws18d_rain_corpuscles',
+    text: 'Дождь в Уфе — не вода. Это сервер Сети потеет избыточными данными',
+    trigger: 'ws18d_rain_corpuscles',
+    act: 4,
+    mood: 'danger',
+    color: '#cc2020',
+  },
+  {
+    id: 'mq_ws18d_recursion_dream',
+    text: 'Сон внутри сна внутри сна — это не баг рекурсии, это её финал',
+    trigger: 'ws18d_recursion_dream',
+    act: 5,
+    mood: 'danger',
+    color: '#cc2020',
+  },
+  {
+    id: 'mq_ws18d_ash_variables',
+    text: 'Переменная переписана. Старое значение — пепел. Пепел помнит форму огня',
+    trigger: 'ws18d_ash_variables',
+    act: 5,
+    mood: 'loss',
+    color: '#6a8a30',
+  },
 ]
 
 /* ─── Lookup helpers ─── */

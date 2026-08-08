@@ -2644,3 +2644,226 @@
     animation: none;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   WS18-A — Six new filmic micro-animations for HUD parts polish
+   (WeatherIcon, SkillRechargeHUD, QuickUseCooldownOverlay,
+    BuffDebuffTracker, DamageFloatSystem, EnemyWeaknessDisplay)
+   Color palette: cyan #00d4e0, amber #FFB347, warm orange #ff6644,
+   purple #cc66ff. No blue/indigo.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── 37. Weather shift ──
+   2.5s gentle hue-rotation + opacity breathe for WeatherIcon when
+   weather changes. Infinite loop. hue-rotate 0deg → 12deg → 0deg,
+   opacity 0.85 → 1 → 0.85. Apply via className="hud-filmic-weather-shift"
+   on the WeatherIcon motion.div wrapper. The motion.div is keyed by
+   `type`, so re-mount on weather change replays the entry animation
+   and this CSS animation layers on top as a continuous hue breathe. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-weather-shift {
+    0%, 100% {
+      filter: hue-rotate(0deg);
+      opacity: 0.85;
+    }
+    50% {
+      filter: hue-rotate(12deg);
+      opacity: 1;
+    }
+  }
+
+  .hud-filmic-weather-shift {
+    animation: hud-filmic-weather-shift 2.5s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-weather-shift {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* ── 38. Skill recharge pulse ──
+   1.8s subtle cyan fill pulse for SkillRechargeHUD slots when a skill
+   is recharging (cooldown active). Infinite loop. Box-shadow:
+   0 0 0px rgba(0,212,224,0) → 0 0 6px rgba(0,212,224,0.4) → 0 0 0px.
+   Apply via className="hud-filmic-skill-recharge-pulse" on the slot
+   root when the skill is on cooldown. Stacks subtly with the existing
+   framer-motion glow-line + countdown animations. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-skill-recharge-pulse {
+    0%, 100% {
+      box-shadow: 0 0 0px rgba(0, 212, 224, 0);
+    }
+    50% {
+      box-shadow: 0 0 6px rgba(0, 212, 224, 0.4);
+    }
+  }
+
+  .hud-filmic-skill-recharge-pulse {
+    animation: hud-filmic-skill-recharge-pulse 1.8s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-skill-recharge-pulse {
+    animation: none;
+  }
+}
+
+/* ── 39. Quick-use ready glow ──
+   2s soft amber glow for QuickUseCooldownOverlay svg ring when an
+   item becomes ready (cooldown complete). One-shot. Filter
+   drop-shadow: 0 0 0px rgba(255,179,71,0) → 0 0 6px rgba(255,179,71,0.5)
+   → 0 0 0px. Apply via className="hud-filmic-quickuse-ready-glow" on
+   the cooldown-ring svg when progress >= 1. Re-mount via key change
+   or short window of ready state replays. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-quickuse-ready-glow {
+    0% {
+      filter: drop-shadow(0 0 0px rgba(255, 179, 71, 0));
+    }
+    40% {
+      filter: drop-shadow(0 0 6px rgba(255, 179, 71, 0.5));
+    }
+    100% {
+      filter: drop-shadow(0 0 0px rgba(255, 179, 71, 0));
+    }
+  }
+
+  .hud-filmic-quickuse-ready-glow {
+    animation: hud-filmic-quickuse-ready-glow 2s ease-out both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-quickuse-ready-glow {
+    animation: none;
+  }
+}
+
+/* ── 40. Buff shimmer ──
+   2.2s diagonal shimmer sweep for BuffDebuffTracker active buff
+   effect icons. Infinite loop. Uses ::before pseudo-element with a
+   warm-white light band that translateX sweeps -100% → 300% over 2.2s.
+   Apply via className="hud-filmic-buff-shimmer" on a buff icon's
+   inner content container. The container MUST already be a CSS
+   positioning context (position: absolute or relative) and have
+   overflow: hidden — both properties are NOT forced here so the
+   class is safe to add to elements that already use Tailwind's
+   `absolute` + `overflow-hidden` utilities.
+   Note: no `> *` z-index bump rule (unlike hud-filmic-badge-shimmer)
+   because the target container has absolutely-positioned children
+   (timer bar, warning flash overlay) whose Tailwind `absolute` class
+   would be overridden. Instead the shimmer renders above the icon
+   (positioned z-index:0 stacks above non-positioned content) — the
+   sweep is faint (alpha 0.16–0.24) so it reads as a soft light band
+   passing over the icon, which is the intended shimmer effect. */
+.hud-filmic-buff-shimmer::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -75%;
+  width: 50%;
+  height: 200%;
+  background: linear-gradient(
+    105deg,
+    transparent 0%,
+    rgba(255, 248, 230, 0.16) 45%,
+    rgba(255, 248, 230, 0.24) 50%,
+    rgba(255, 248, 230, 0.16) 55%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 0;
+  transform: translateX(-100%);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hud-filmic-buff-shimmer::before {
+    animation: hud-filmic-buff-shimmer-sweep 2.2s ease-in-out infinite;
+  }
+
+  @keyframes hud-filmic-buff-shimmer-sweep {
+    0% {
+      transform: translateX(-100%);
+    }
+    60%, 100% {
+      transform: translateX(300%);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-buff-shimmer::before {
+    display: none;
+  }
+}
+
+/* ── 41. Damage rise-fade ──
+   1.2s upward rise + fade for DamageFloatSystem damage numbers.
+   One-shot. translateY(0) opacity 1 → translateY(-8px) opacity 0.4.
+   Apply via className="hud-filmic-damage-rise-fade" on the inner
+   display-text span. Layers on top of the existing framer-motion
+   outer-rise variant as a subtle inner-text "lift". */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-damage-rise-fade {
+    0% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(-8px);
+      opacity: 0.4;
+    }
+  }
+
+  .hud-filmic-damage-rise-fade {
+    animation: hud-filmic-damage-rise-fade 1.2s ease-out both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-damage-rise-fade {
+    animation: none;
+  }
+}
+
+/* ── 42. Weakness reveal ──
+   0.8s quick scale + outline pulse for EnemyWeaknessDisplay when a
+   weakness is revealed (card mounts). One-shot. scale(0.95) →
+   scale(1.05) → scale(1), outline-color rgba(204,102,255,0) →
+   rgba(204,102,255,0.55) → rgba(204,102,255,0). Apply via
+   className="hud-filmic-weakness-reveal" on the enemy-weakness-card
+   motion.div. Mount-triggered one-shot (AnimatePresence will replay
+   on each new enemy). */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-weakness-reveal {
+    0% {
+      transform: scale(0.95);
+      outline-color: rgba(204, 102, 255, 0);
+    }
+    45% {
+      transform: scale(1.05);
+      outline-color: rgba(204, 102, 255, 0.55);
+    }
+    100% {
+      transform: scale(1);
+      outline-color: rgba(204, 102, 255, 0);
+    }
+  }
+
+  .hud-filmic-weakness-reveal {
+    outline: 1px solid transparent;
+    outline-offset: 1px;
+    animation: hud-filmic-weakness-reveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-weakness-reveal {
+    animation: none;
+    outline: none;
+  }
+}

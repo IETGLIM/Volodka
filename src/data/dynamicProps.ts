@@ -22,6 +22,9 @@ export const DYNAMIC_PROPS: Partial<Record<SceneId, DynamicPropDef[]>> = {
     { id: 'vr_can_1', kind: 'can', position: [0.6, 0, -2.1], rotation: 0.3 },
     { id: 'vr_can_2', kind: 'can', position: [-0.4, 0, -2.3], rotation: 1.7 },
     { id: 'vr_bottle_1', kind: 'bottle', position: [1.1, 0, -1.8], rotation: 0.8 },
+    // WS18-B — +2 props for thin-coverage scene (was 3)
+    { id: 'vr_box_1', kind: 'box', position: [-1.5, 0, -1.2], rotation: 0.5 },
+    { id: 'vr_can_3', kind: 'can', position: [2.2, 0, 1.4], rotation: -0.9 },
   ],
   street_night: [
     { id: 'sn_can_1', kind: 'can', position: [2.4, 0, 3.6], rotation: 0.4 },
@@ -79,11 +82,17 @@ export const DYNAMIC_PROPS: Partial<Record<SceneId, DynamicPropDef[]>> = {
     { id: 'ce_can_1', kind: 'can', position: [-2.8, 0, 1.2], rotation: 0.8 },
     { id: 'ce_bottle_1', kind: 'bottle', position: [1.9, 0, -2.1], rotation: 1.4 },
     { id: 'ce_can_2', kind: 'can', position: [3.1, 0, 2.8], rotation: 2.9 },
+    // WS18-B — +2 props for thin-coverage scene (was 3)
+    { id: 'ce_box_1', kind: 'box', position: [-1.4, 0, -2.6], rotation: 0.6 },
+    { id: 'ce_bottle_2', kind: 'bottle', position: [2.4, 0, 0.8], rotation: -1.2 },
   ],
   office_day: [
     { id: 'od_box_1', kind: 'box', position: [1.4, 0, -3.2], rotation: 0.4 },
     { id: 'od_can_1', kind: 'can', position: [-2.1, 0, 1.8], rotation: 1.1 },
     { id: 'od_bottle_1', kind: 'bottle', position: [4.2, 0, -1.6], rotation: 0.6 },
+    // WS18-B — +2 props for thin-coverage scene (was 3)
+    { id: 'od_can_2', kind: 'can', position: [-3.6, 0, -2.4], rotation: 2.0 },
+    { id: 'od_barrel_1', kind: 'barrel', position: [0.5, 0, 2.2], rotation: 0 },
   ],
   library_day: [
     { id: 'ld_box_1', kind: 'box', position: [-1.6, 0, 2.9], rotation: 1.8 },

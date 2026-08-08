@@ -213,6 +213,10 @@ const SkillSlotItem = memo(function SkillSlotItem({
     almostReady ? 'skill-slot--almost-ready' : '',
     skill.isActive ? 'skill-slot--active' : '',
     compact ? 'skill-slot--compact' : '',
+    /* WS18-A: subtle cyan fill pulse while the skill is recharging.
+       CSS class is reduced-motion gated — when prefers-reduced-motion
+       is reduce, the animation is disabled and the class is a no-op. */
+    !ready ? 'hud-filmic-skill-recharge-pulse' : '',
   ]
     .filter(Boolean)
     .join(' ');
