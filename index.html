@@ -1,75 +1,18 @@
-<!DOCTYPE html>
-<html lang="ru" class="dark">
+<!doctype html>
+<html lang="ru">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <meta name="theme-color" content="#0a0a0f" />
-    <meta name="description" content="Интерактивная память, киберпанк-сказка об уставшем инженере Володьке. 3D-исследование, стихи, квесты и выборы, которые меняют мир." />
-    <meta name="keywords" content="Volodka,RPG,киберпанк,3D,интерактивная история,React Three Fiber" />
-    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
-    <link rel="canonical" href="%VITE_SITE_URL%/" />
-    <meta property="og:type" content="website" />
-    <meta property="og:locale" content="ru_RU" />
-    <meta property="og:title" content="ВОЛОДЬКА — сказка между сменами" />
-    <meta property="og:description" content="Интерактивная 3D RPG в браузере: стихи в коде, квесты, поэтическая магия и киберпанк-нуар." />
-    <meta property="og:url" content="%VITE_SITE_URL%/" />
-    <meta property="og:image" content="%VITE_SITE_URL%/og-image.svg" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="ВОЛОДЬКА — сказка между сменами" />
-    <meta name="twitter:description" content="Интерактивная 3D RPG в браузере: стихи в коде, квесты и выборы, которые меняют мир." />
-    <meta name="twitter:image" content="%VITE_SITE_URL%/og-image.svg" />
-    <title>ВОЛОДЬКА — сказка между сменами</title>
-    <style>
-      /* Prevent white flash before JS hydrates */
-      html { background: #000 !important; }
-    </style>
-    <script>
-      // Vite preloadError handler — must run BEFORE any module script.
-      // When a deploy changes chunk hashes, the browser may try to load a
-      // stale chunk from cache → 404 → vite:preloadError. This handler
-      // reloads the page once so the browser fetches fresh chunks.
-      // Key must match CHUNK_RELOAD_SESSION_KEY in chunkLoadRecovery.ts.
-      (function () {
-        var KEY = 'volodka-chunk-reload-attempt';
-        function reloadOnce() {
-          try {
-            if (sessionStorage.getItem(KEY)) return;
-            sessionStorage.setItem(KEY, '1');
-          } catch (_) {
-            /* private browsing — still attempt one reload */
-          }
-          window.location.reload();
-        }
-        window.addEventListener('vite:preloadError', function (e) {
-          e.preventDefault();
-          reloadOnce();
-        });
-        window.addEventListener('unhandledrejection', function (e) {
-          var msg = e && e.reason != null
-            ? (e.reason.message || String(e.reason))
-            : '';
-          if (
-            msg.indexOf('Failed to fetch dynamically imported module') === -1 &&
-            msg.indexOf('Importing a module script failed') === -1 &&
-            msg.indexOf('error loading dynamically imported module') === -1 &&
-            msg.indexOf('Failed to load module script') === -1 &&
-            msg.indexOf('vite:preloadError') === -1
-          ) {
-            return;
-          }
-          e.preventDefault();
-          reloadOnce();
-        });
-      })();
-    </script>
-    <!-- Google Fonts: Geist Sans + Geist Mono -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="ВОЛОДЬКА — сказка о потерянных строках. Браузерная 3D RPG-сказка: живой мир, стихи, которые возвращают память." />
+    <meta name="theme-color" content="#0b0f1e" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b0f1e'/%3E%3Cpath d='M16 5l2.9 7.1L26 15l-7.1 2.9L16 25l-2.9-7.1L6 15l7.1-2.9z' fill='%23f2c14e'/%3E%3C/svg%3E" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@100..900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <title>ВОЛОДЬКА — сказка о потерянных строках</title>
+    <style>html,body{background:#0b0f1e;margin:0;overflow:hidden;}</style>
   </head>
-  <body class="antialiased bg-[#0a0a0f] text-foreground overflow-hidden">
+  <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
