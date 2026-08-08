@@ -342,6 +342,76 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     mood: 'danger',
     color: '#cc2020',
   },
+
+  /* ═══════════════════════════════════════════════════════════
+     WS20-D — Systems-signal ambient fragments (8 new quotes)
+     Themes: packet loss, kernel panic, zombie process, orphan inode,
+     stack overflow, buffer underrun, race condition, dead channel.
+     ═══════════════════════════════════════════════════════════ */
+  {
+    id: 'ws20d_mq_packet_loss',
+    text: 'Потеря пакета — не ошибка. Это система решила, что тебе не нужно знать то, что несёт этот бит',
+    trigger: 'ws20d_packet_loss',
+    act: 2,
+    mood: 'loss',
+    color: '#6a8a30',
+  },
+  {
+    id: 'ws20d_mq_kernel_panic',
+    text: 'Kernel panic — когда ядро понимает, что мир не сходится, и выбирает смерть вместо безумия',
+    trigger: 'ws20d_kernel_panic',
+    act: 3,
+    mood: 'danger',
+    color: '#cc2020',
+  },
+  {
+    id: 'ws20d_mq_zombie_process',
+    text: 'Зомби-процесс не умирает — он забыл, как. Система держит его из жалости, а жалость стоит памяти',
+    trigger: 'ws20d_zombie_process',
+    act: 2,
+    mood: 'loss',
+    color: '#6a8a30',
+  },
+  {
+    id: 'ws20d_mq_orphan_inode',
+    text: 'Осиротевший inode всё ещё занимает место на диске. Смерть файла не освобождает — она запирает',
+    trigger: 'ws20d_orphan_inode',
+    act: 3,
+    mood: 'danger',
+    color: '#cc2020',
+  },
+  {
+    id: 'ws20d_mq_stack_overflow',
+    text: 'Стек переполнился не от данных — от вопросов. Каждый ответ породил два новых, и глубина стала бездной',
+    trigger: 'ws20d_stack_overflow',
+    act: 4,
+    mood: 'danger',
+    color: '#cc2020',
+  },
+  {
+    id: 'ws20d_mq_buffer_underrun',
+    text: 'Буфер опустел — данные не успели. Ты читаешь пустоту, и пустота читает тебя',
+    trigger: 'ws20d_buffer_underrun',
+    act: 4,
+    mood: 'loss',
+    color: '#6a8a30',
+  },
+  {
+    id: 'ws20d_mq_race_condition',
+    text: 'Race condition — когда два потока бегут к одной правде, и кто первый — тот перепишет реальность',
+    trigger: 'ws20d_race_condition',
+    act: 5,
+    mood: 'revelation',
+    color: CYBER_CYAN,
+  },
+  {
+    id: 'ws20d_mq_dead_channel',
+    text: 'Мёртвый канал не молчит — он транслирует отсутствие. И кто слушает долго, сам становится отсутствием',
+    trigger: 'ws20d_dead_channel',
+    act: 5,
+    mood: 'danger',
+    color: '#cc2020',
+  },
 ]
 
 /* ─── Lookup helpers ─── */

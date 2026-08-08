@@ -57,7 +57,7 @@ export function LootProximityIndicator() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.8, y: 10 }}
             transition={{ duration: reducedMotion ? 0 : 0.3 }}
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 mt-8 pointer-events-none z-30"
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 mt-8 pointer-events-none z-30 hud-filmic-loot-glow-fade"
           >
             <div className="loot-proximity-card flex items-center gap-1.5 px-2.5 py-1 rounded border border-amber-600/30 bg-amber-950/60 backdrop-blur-sm">
               <motion.span

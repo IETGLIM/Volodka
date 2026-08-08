@@ -1173,6 +1173,90 @@ export const THOUGHT_CABINET_ITEMS: ThoughtCabinetItem[] = [
       { skill: 'persuasion', modifier: -1, description: '-1 Убеждение' },
     ],
   },
+
+  /* ═══ 76. Протокол Тишины ═══ */
+  {
+    id: 'ws20d_protocol_silence',
+    name: 'Протокол Тишины',
+    voice: 'empathy',
+    description: 'Тишина — не отсутствие звука, а протокол общения, который не требует канала. Ты научился слушать то, что не произносится: паузы между словами, дрожание рук, направление взгляда. Этот протокол делает тебя ближе к людям, но дальше от кода — машины не понимают молчания.',
+    flavorText: '«Самое важное — между строк. Я читаю то, чего нет.»',
+    acquisitionCondition: 'flag_thought_ws20d_protocol_silence',
+    effects: [
+      { skill: 'empathy', modifier: 2, description: '+2 Эмпатия' },
+      { skill: 'coding', modifier: -1, description: '-1 Кодинг' },
+    ],
+  },
+
+  /* ═══ 77. Квантовая Ностальгия ═══ */
+  {
+    id: 'ws20d_quantum_nostalgia',
+    name: 'Квантовая Ностальгия',
+    voice: 'intuition',
+    description: 'Ты тоскуешь не по прошлому, а по всем прошлым, которые могли быть. Квантовая ностальгия — суперпозиция сожалений: каждый невыбранный путь жив в тебе одновременно, и каждый требует внимания. Интуиция обостряется — ты чувствуешь альтернативы — но логика слабеет: как выбрать, когда все варианты реальны?',
+    flavorText: '«Я помню то, чего не было. И скучаю по тому, что не случилось.»',
+    acquisitionCondition: 'flag_thought_ws20d_quantum_nostalgia',
+    effects: [
+      { skill: 'intuition', modifier: 2, description: '+2 Интуиция' },
+      { skill: 'logic', modifier: -1, description: '-1 Логика' },
+    ],
+  },
+
+  /* ═══ 78. Слепое Пятно ═══ */
+  {
+    id: 'ws20d_blind_spot',
+    name: 'Слепое Пятно',
+    voice: 'logic',
+    description: 'В каждом оптическом нерве есть слепое пятно — точка, где зрение отсутствует, но мозг заполняет пробел, и ты не замечаешь. У разума тоже есть слепое пятно: место, куда он не смотрит, потому что заполнить проще, чем увидеть. Логика помогает найти эти точки, но эмпатия страдает — ведь слепое пятно чаще всего в ком-то другом.',
+    flavorText: '«Я вижу всё. Кроме того, что не вижу. А это — самое важное.»',
+    acquisitionCondition: 'flag_thought_ws20d_blind_spot',
+    effects: [
+      { skill: 'logic', modifier: 2, description: '+2 Логика' },
+      { skill: 'empathy', modifier: -1, description: '-1 Эмпатия' },
+    ],
+  },
+
+  /* ═══ 79. Эхо Протокола ═══ */
+  {
+    id: 'ws20d_protocol_echo',
+    name: 'Эхо Протокола',
+    voice: 'coding',
+    description: 'Каждый протокол, который ты выполняешь, оставляет эхо — побочный эффект, отклик в системе, который длится дольше, чем само действие. Ты научился слышать эти эхо и использовать их: отголоски команд, резонанс функций, вибрации завершённых процессов. Код оживает в отзвуках, и ритм системы становится твоим союзником.',
+    flavorText: '«return — не конец. Это — эхо, которое слышит следующий вызов.»',
+    acquisitionCondition: 'flag_thought_ws20d_protocol_echo',
+    effects: [
+      { skill: 'coding', modifier: 2, description: '+2 Кодинг' },
+      { skill: 'rhythm', modifier: 1, description: '+1 Ритм' },
+    ],
+  },
+
+  /* ═══ 80. Ржавый Маяк ═══ */
+  {
+    id: 'ws20d_rusty_beacon',
+    name: 'Ржавый Маяк',
+    voice: 'empathy',
+    description: 'Старый маяк на окраине сети — ржавый, поломанный, но всё ещё светит. Не потому что работает, а потому что помнит, как. Ты — как этот маяк: повреждён, но упрям. Сигнал слабый, но его замечают те, кто тоже потерян. Эмпатия и интуиция — твои фонари, и они не требуют напряжения, только памяти о свете.',
+    flavorText: '«Сигнал слабый. Но он — есть. И кто-то — ждёт именно его.»',
+    acquisitionCondition: 'flag_thought_ws20d_rusty_beacon',
+    effects: [
+      { skill: 'empathy', modifier: 1, description: '+1 Эмпатия' },
+      { skill: 'intuition', modifier: 1, description: '+1 Интуиция' },
+    ],
+  },
+
+  /* ═══ 81. Пепел Сигнала ═══ */
+  {
+    id: 'ws20d_signal_ash',
+    name: 'Пепел Сигнала',
+    voice: 'logic',
+    description: 'Когда сигнал угасает, остаётся пепел — не шум, не статика, а след структуры, которая была. Ты анализируешь не живые данные, а их останки: логи завершённых процессов, кэши удалённых записей, дампы упавших ядер. В пепле больше информации, чем в огне — нужно только знать, как читать. Логика обостряется, но кодинг страдает: кто строит из пепла, тот строит на памяти о разрушении.',
+    flavorText: '«Данные мертвы. Но их трупы — рассказчики. Я — патологоанатом сигнала.»',
+    acquisitionCondition: 'flag_thought_ws20d_signal_ash',
+    effects: [
+      { skill: 'logic', modifier: 2, description: '+2 Логика' },
+      { skill: 'coding', modifier: -1, description: '-1 Кодинг' },
+    ],
+  },
 ];
 
 /* ─── Lookup map ─── */
@@ -1199,4 +1283,7 @@ export const MUTUALLY_EXCLUSIVE_PAIRS: readonly (readonly [string, string])[] = 
   ['cold_calculation', 'poetic_matrix'],
   ['sleep_protocol', 'protocol_silence'],
   ['humanity_bug', 'variable_ash'],
+  /* WS20-D mutually exclusive pairs */
+  ['ws20d_protocol_silence', 'ws20d_blind_spot'],   // 76 ↔ 78
+  ['ws20d_quantum_nostalgia', 'ws20d_signal_ash'],  // 77 ↔ 81
 ];

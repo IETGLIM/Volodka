@@ -6864,6 +6864,246 @@ export const TRIGGER_ZONES: TriggerZone[] = [
      a vision cone to sneak around instead.
      ═══════════════════════════════════════════════════════════════════ */
 
+  /* ═══════════════════════════════════════════════════════════
+     WS20-B — 12 new examine zones for least-served scenes
+     ═══════════════════════════════════════════════════════════ */
+
+  // zarema_albert_room — 4 zones
+  {
+    id: 'ws20b_old_photo_on_wall',
+    sceneId: 'zarema_albert_room',
+    position: [-1.2, 1.7, -2.8],
+    size: [0.6, 0.8, 0.3],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть фотографию',
+    examineData: {
+      title: 'Старая фотография',
+      description: 'Чёрно-белая фотография в простой рамке. Двое стоят у входа на завод — «Заря-М», 1983.',
+      detailText: 'На обороте — почерк Заремы: «Папа и дядя Равиль. Перед сменой. Перед всем». Лица ещё не знают, что завод станет могилой проекта «Прогресс-7».',
+      icon: '🖼️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_ws20b_old_photo_on_wall', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+  {
+    id: 'ws20b_dried_flower_vase',
+    sceneId: 'zarema_albert_room',
+    position: [0.8, 0.9, -1.5],
+    size: [0.5, 0.7, 0.5],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть вазу',
+    examineData: {
+      title: 'Ваза с сухими цветами',
+      description: 'Стеклянная ваза с высохшими ветками лаванды. Пыль осела ровным слоем — знак покоя, не забвения.',
+      detailText: 'Лаванда — татарская, горная. Зарема привезла из Казани. Цветы умерли, но запах остался — застрял в стекле, как код в железе.',
+      icon: '💐',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_ws20b_dried_flower_vase', flagValue: true },
+      { type: 'addKarma', value: 1 },
+      { type: 'addSkill', skill: 'empathy', value: 1 },
+    ],
+  },
+  {
+    id: 'ws20b_handwritten_note',
+    sceneId: 'zarema_albert_room',
+    position: [0.3, 0.85, -2.2],
+    size: [0.4, 0.3, 0.2],
+    interactionType: 'examine',
+    interactionLabel: 'Прочитать записку',
+    examineData: {
+      title: 'Записка от руки',
+      description: 'Клочок бумаги, вписанный в спираль ручки Альберта: «Резистор сгорел. Заменил на стих. Работает.»',
+      detailText: 'Подписи нет. Дата тоже. Но канифоль на краю — свежая. Альберт паяет стихами. Или — стихами паяет. Разница — в направлении тока.',
+      icon: '📝',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_ws20b_handwritten_note', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'writing', value: 1 },
+    ],
+  },
+  {
+    id: 'ws20b_velvet_armchair_wear',
+    sceneId: 'zarema_albert_room',
+    position: [-0.5, 0.4, 0.8],
+    size: [1.0, 1.0, 1.0],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть кресло',
+    examineData: {
+      title: 'Стёртое бархатное кресло',
+      description: 'Бархат вытерт до нитей на подлокотниках — два углубления, как отпечатки ладоней.',
+      detailText: 'В этом кресле читали вслух. Каждый вечер — пока не стало страшно читать вслух. Теперь кресло помнит звук лучше, чем стены.',
+      icon: '🪑',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_ws20b_velvet_armchair_wear', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+
+  // volodka_corridor — 3 zones
+  {
+    id: 'ws20b_leaky_pipe_stain',
+    sceneId: 'volodka_corridor',
+    position: [-1.0, 2.2, -2.0],
+    size: [0.8, 0.6, 0.4],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть пятно',
+    examineData: {
+      title: 'Пятно от протечки',
+      description: 'Ржавое пятно расползлось по потолку — карта неизвестного архипелага в бурой акварели.',
+      detailText: 'Труба за стеной гудит на ноте ре. Тринадцать лет. Дольше памяти дома. Труба не пишет — труба просто гудит.',
+      icon: '💧',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_ws20b_leaky_pipe_stain', flagValue: true },
+      { type: 'addKarma', value: 1 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+    ],
+  },
+  {
+    id: 'ws20b_flickering_bulb_fixture',
+    sceneId: 'volodka_corridor',
+    position: [0, 2.8, 0],
+    size: [0.6, 0.5, 0.6],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть лампу',
+    examineData: {
+      title: 'Мигающая лампочка',
+      description: 'Лампочка мигает на частоте тревоги. Или на частоте пульса. Не различаю.',
+      detailText: 'Патрон старый, советский. Резьба стёрта — лампочку вкрутили и выкрутили тысячу раз. Каждое мигание — маленький сердечный приступ коридора.',
+      icon: '💡',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_ws20b_flickering_bulb_fixture', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+  {
+    id: 'ws20b_scratched_doorplate',
+    sceneId: 'volodka_corridor',
+    position: [2.0, 1.5, 6.0],
+    size: [0.4, 0.2, 0.1],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть табличку',
+    examineData: {
+      title: 'Поцарапанная табличка',
+      description: 'Номер квартиры — «14». Единица нацарапана поверх тройки. Тридцать четвёртая стала четырнадцатой.',
+      detailText: 'Нумерация менялась после ремонта. Или до. Или вместо. Номер — как имя: можно сменить, но стены помнят прежнее.',
+      icon: '🔢',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_ws20b_scratched_doorplate', flagValue: true },
+      { type: 'addKarma', value: 1 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+    ],
+  },
+
+  // cafe_evening — 3 zones
+  {
+    id: 'ws20b_coffee_stain_on_counter',
+    sceneId: 'cafe_evening',
+    position: [0.5, 0.9, -1.0],
+    size: [0.5, 0.3, 0.5],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть стойку',
+    examineData: {
+      title: 'Кофейное пятно на стойке',
+      description: 'Кольцо от чьей-то кружки — коричневый континент на белом архипелаге барной поверхности.',
+      detailText: 'Бариста вытирает такие пятна автоматически — рука помнит раньше глаза. Каждое кольцо — заказ. Каждый заказ — разговор. Каждый разговор — маленькая сеть.',
+      icon: '☕',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_ws20b_coffee_stain_on_counter', flagValue: true },
+      { type: 'addKarma', value: 1 },
+      { type: 'addSkill', skill: 'persuasion', value: 1 },
+    ],
+  },
+  {
+    id: 'ws20b_torn_poster_wall',
+    sceneId: 'cafe_evening',
+    position: [-2.5, 1.6, 1.5],
+    size: [0.8, 1.2, 0.1],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть афишу',
+    examineData: {
+      title: 'Надорванная афиша',
+      description: 'Кусок афиши — поэтический вечер «Стихи и серверы». Дата заклеена. Место — «Синяя яма».',
+      detailText: 'Кто-то сорвал дату — чтобы не нашли. Или чтобы не забыли. Афиша без даты — приглашение без срока. Вечное. Как стих.',
+      icon: '📜',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_ws20b_torn_poster_wall', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'writing', value: 1 },
+    ],
+  },
+  {
+    id: 'ws20b_steaming_samovar',
+    sceneId: 'cafe_evening',
+    position: [1.8, 0.6, 2.0],
+    size: [0.6, 0.8, 0.6],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть самовар',
+    examineData: {
+      title: 'Парящий самовар',
+      description: 'Медный самовар на подносе — пар поднимается ровно, как серверный кулер на холостом ходу.',
+      detailText: 'Альберт принес из подсобки. «Чай — не кофе. Чай — читает с тобой. Кофе — сканирует». Тяжесть меди уравновешивает лёгкость пара. Как правда и вежливость.',
+      icon: '🫖',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_ws20b_steaming_samovar', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'empathy', value: 1 },
+    ],
+  },
+
+  // home_evening — 2 zones
+  {
+    id: 'ws20b_cracked_mirror_bathroom',
+    sceneId: 'home_evening',
+    position: [1.5, 1.4, -3.0],
+    size: [0.6, 0.9, 0.2],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть зеркало',
+    examineData: {
+      title: 'Треснувшее зеркало',
+      description: 'Зеркало в ванной — трещина от угла к углу. Отражение дробится на два полулика.',
+      detailText: 'Зарема говорит: не менять. «Трещина — честнее целого. Целое врёт, что ты один. Трещина напоминает, что тебя — два». Не понимаю. Или не хочу.',
+      icon: '🪞',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_ws20b_cracked_mirror_bathroom', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+  {
+    id: 'ws20b_faded_rug_pattern',
+    sceneId: 'home_evening',
+    position: [0, 0, 0],
+    size: [2.5, 0.1, 1.8],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть ковёр',
+    examineData: {
+      title: 'Выцветший узор ковра',
+      description: 'Ковёр в коридоре — орнамент стёрся по центру, где ходят. Края ещё помнят цвет.',
+      detailText: 'Геометрия татарского орнамента — не декорация, а шифр. Кто умеет читать углы — прочтёт историю рода. Я не умею. Я читаю только код. Но код и орнамент — одна грамматика: повтор, рекурсия, ритм.',
+      icon: '🟫',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_ws20b_faded_rug_pattern', flagValue: true },
+      { type: 'addKarma', value: 1 },
+      { type: 'addSkill', skill: 'rhythm', value: 1 },
+    ],
+  },
+
   ...NARRATIVE_EXPANSION_TRIGGER_ZONES,
   ...CHK_TRIGGER_ZONES,
 ];

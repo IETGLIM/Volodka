@@ -3136,3 +3136,103 @@ Stage Summary:
 - 20 files, +881/-10. Typecheck: exit 0. Poems untouched. All invariants preserved.
 - Key wins: interior floor PBR complete (8+ scenes total), 67 keyframes, 12 examine zones, 8 dialogue choices, 15 monologues, 8 props, 6 creep patrols, 4 lore, 8 quotes, 4 missions.
 - Next: CSM shadows, Mixamo clip remap, WorldSpaceLabels, runtime wiring for catalogs, more onboarding.
+
+---
+Task ID: WS20-C
+Agent: WS20-C
+Task: PBR material upgrades — upgrade 6 scene floor/ground surfaces from MeshStandardMaterial to MeshPhysicalMaterial with clearcoat/sheen/ior
+
+Work Log:
+- Read worklog and all 6 owned files to identify exact meshStandardMaterial tags
+- SolnyshRoomVisual.tsx L52: wood floor → meshPhysicalMaterial clearcoat=0.45 clearcoatRoughness=0.35 (lacquered wood)
+- CafeVisual.tsx L187: floor fallback → meshPhysicalMaterial clearcoat=0.5 clearcoatRoughness=0.3 (spilled drinks on wood)
+- SleepDreamVisual.tsx L48: dream ground → meshPhysicalMaterial sheen=0.25 sheenRoughness=0.5 clearcoat=0.2 (surreal dream sheen)
+- BattleVisual.tsx L35: arena floor → meshPhysicalMaterial clearcoat=0.7 clearcoatRoughness=0.15 ior=1.5 (cyber reflective floor)
+- VolodkaCorridorVisual.tsx L351: wet spill puddle → meshPhysicalMaterial clearcoat=1.0 clearcoatRoughness=0.1 ior=1.33 (rain puddle)
+- StreetWinterVisual.tsx L57: snow overlay ground → meshPhysicalMaterial clearcoat=0.9 clearcoatRoughness=0.05 ior=1.31 (ice)
+- StreetWinterVisual.tsx L73: sidewalk → meshPhysicalMaterial clearcoat=0.9 clearcoatRoughness=0.05 ior=1.31 (ice)
+- Added WS20-C comment annotation near each upgrade
+- Ran type-check (node scripts/tsc7.mjs --noEmit) — passed with exit 0
+
+Stage Summary:
+- All 6 scene visual surfaces upgraded from MeshStandardMaterial to MeshPhysicalMaterial with PBR clearcoat/sheen/ior props
+- 7 total material upgrades across 6 files (StreetWinterVisual had 2 surfaces)
+- All PBR values within specified sane ranges
+- No geometry, positioning, or non-material props changed
+- Type-check passes cleanly
+
+---
+Task ID: WS20-A
+Agent: WS20-A
+Task: Add 6 NEW filmic CSS micro-animations to hud-filmic.css and wire them to 6 HUD part components
+
+Work Log:
+- Read worklog.md and hud-filmic.css to understand existing patterns and animation numbering
+- Read all 6 target component files (SceneAmbientVignette, KarmaTierBadge, RainScreenEffect, CombatDamageTimeline, QuickTimeEventOverlay, LootProximityIndicator)
+- Added 6 new @keyframes + animation classes to hud-filmic.css (lines 3054-3217):
+  1. hud-filmic-vignette-breathe — slow opacity pulse 0.85→1 (3s ease-in-out infinite)
+  2. hud-filmic-badge-tier-settle — scale 1.08→1 + opacity 0→1 (0.4s ease-out one-shot)
+  3. hud-filmic-rain-sweep-in — clipPath inset(0 100% 0 0)→inset(0) (0.5s ease-out one-shot)
+  4. hud-filmic-damage-stagger — translateY 4px→0 + opacity 0→1 (0.25s ease-out one-shot)
+  5. hud-filmic-qte-urgency-pulse — box-shadow red pulse 8px→16px→8px (0.6s ease-in-out infinite)
+  6. hud-filmic-loot-glow-fade — opacity 0→0.9 + scale 0.9→1 (0.3s ease-out one-shot)
+- All animations gated on @media (prefers-reduced-motion: no-preference) with static fallbacks on reduce
+- Wired hud-filmic-vignette-breathe to SceneAmbientVignette.tsx (motion.div className)
+- Wired hud-filmic-badge-tier-settle to KarmaTierBadge.tsx (motion.div className)
+- Wired hud-filmic-rain-sweep-in to RainScreenEffect.tsx (motion.div className)
+- Wired hud-filmic-damage-stagger to CombatDamageTimeline.tsx (outer div className)
+- Wired hud-filmic-qte-urgency-pulse to QuickTimeEventOverlay.tsx (background overlay motion.div)
+- Wired hud-filmic-loot-glow-fade to LootProximityIndicator.tsx (proximity indicator motion.div)
+- Ran `node scripts/tsc7.mjs --noEmit` — exited 0 (clean)
+
+Stage Summary:
+- 6 new filmic CSS micro-animations added (numbered 19-24) in hud-filmic.css
+- All 6 HUD part components wired with their respective animation class
+- All animations respect prefers-reduced-motion with static fallbacks
+- All values within sane bounds (scale ≤1.15, opacity ≤0.6 swing, translateY ≤5px)
+- TypeScript type check passes cleanly
+
+---
+Task ID: WS20-D
+Agent: WS20-D
+Task: Content + systems expansion — creep patrols, lore, matrix quotes, daily missions, thought cabinet
+
+Work Log:
+- Added 6 new creep patrol routes for underserved scenes (zarema_albert_room, volodka_corridor, cafe_evening, sleep_dream, home_evening, street_winter)
+- Added 4 new lore entries with ws20d_ prefix (Тихий Архив, Замёрзший Сигнал, Протокол Тепла, Кофейная Гуща)
+- Added 8 new matrix quotes across acts 2-5 (packet loss, kernel panic, zombie process, orphan inode, stack overflow, buffer underrun, race condition, dead channel)
+- Added 4 new daily missions (Скрытый Архив, Осколок Памяти, Охота на Призраков, Замёрзший Канал)
+- Added 6 new thought cabinet items (IDs 76-81) with 2 mutually exclusive pairs (76↔78, 77↔81)
+- TypeScript type check passes cleanly (exit 0)
+
+Stage Summary:
+- 6 creep patrols added to creepPatrols.ts for 6 previously underserved scenes
+- 4 lore entries added to loreEntries.ts (mysteries/rare, technology/rare, mysteries/legendary, mysteries/rare)
+- 8 matrix quotes added to matrixQuotes.ts across acts 2-5 with cyberpunk/noir systems-signal themes
+- 4 daily missions added to dailyMissions.ts (exploration/hard, crafting/easy, combat/medium, exploration/medium)
+- 6 thought cabinet items (76-81) added to thoughtCabinet.ts with 2 new mutually exclusive pairs
+- All IDs are unique; all types verified; tsc --noEmit passes
+
+---
+Task ID: WS20-B
+Agent: WS20-B
+Task: Living-world content expansion — examine zones, karma-gated dialogue, idle monologues, dynamic props, quest barks
+
+Work Log:
+- Read all 6 owned files to understand existing data patterns and ID conventions
+- Added 12 new examine zones to triggerZones.ts: 4 for zarema_albert_room (old_photo_on_wall, dried_flower_vase, handwritten_note, velvet_armchair_wear), 3 for volodka_corridor (leaky_pipe_stain, flickering_bulb_fixture, scratched_doorplate), 3 for cafe_evening (coffee_stain_on_counter, torn_poster_wall, steaming_samovar), 2 for home_evening (cracked_mirror_bathroom, faded_rug_pattern)
+- Added 4 karma-gated choices to part3-mid-expanded.ts: 2 HIGH (minKarma 65/70) on zarema_after_release and alexander_line_crossed, 2 LOW (maxKarma 16/12) on same nodes
+- Added 4 karma-gated choices to part4-late-expanded.ts: 2 HIGH (minKarma 60/70) on zarema_zarya_nature and albert_last_stand, 2 LOW (maxKarma 20/15) on same nodes
+- Added 15 new neutral idle monologue lines to idleMonologues.ts: 5 per scene for zarema_albert_room, volodka_corridor, cafe_evening
+- Added 8 new dynamic props to dynamicProps.ts: 3 for zarema_albert_room (book_stack, teacup, photo_frame), 3 for volodka_corridor (wet_boot_tray, coat_hook, cable_bundle), 2 for cafe_evening (ashtray, sugar_bowl)
+- Added quest barks for 7 NPCs to npcQuestBarks.ts: chk_elis (3), chk_guest_analyst (2), chk_guest_devops (3), chk_smert (3), chk_stalker (3), guild_defector (3), marat_echo (3)
+- All IDs prefixed with ws20b_ to avoid clashes
+- TypeScript type check passes (exit 0)
+
+Stage Summary:
+- 12 new examine zones enriching 4 least-served scenes with noir/cyberpunk environmental storytelling
+- 8 new karma-gated dialogue choices (4 HIGH, 4 LOW) across Act 3 and Act 4
+- 15 new idle monologue lines (5 per scene × 3 scenes) for deeper idle introspection
+- 8 new dynamic physics props for tactile world feel
+- 20 quest bark entries across 7 NPCs previously missing barks
+- All changes type-safe, IDs unique, no poems.ts edited

@@ -400,6 +400,63 @@ export const DAILY_MISSION_POOL: DailyMission[] = [
     minLevel: 3,
     icon: 'Skull',
   },
+  /* ── WS20-D: Content expansion daily missions (4) ── */
+  {
+    id: 'ws20d_dm_explore_hidden_archive',
+    title: 'Скрытый Архив',
+    description: 'Найди Тихий Архив в библиотечном подвале. Архив, который поглощает звук, хранит тайны, которые нельзя прочитать — но можно услышать.',
+    category: 'exploration',
+    difficulty: 'hard',
+    objectives: [
+      { id: 'find_silent_archive', description: 'Обнаружить Тихий Архив', target: 1 },
+    ],
+    rewards: { xp: 120, credits: 80, karma: 4, skillXp: { intuition: 2, empathy: 1 } },
+    resetSchedule: 'daily',
+    minLevel: 4,
+    icon: 'Archive',
+  },
+  {
+    id: 'ws20d_dm_craft_memory_shard',
+    title: 'Осколок Памяти',
+    description: 'Скрафти осколок памяти из фрагментированных данных. Каждая потерянная строка кода — частица чьей-то истории.',
+    category: 'crafting',
+    difficulty: 'easy',
+    objectives: [
+      { id: 'craft_memory_shards', description: 'Скрафтить осколков памяти', target: 3 },
+    ],
+    rewards: { xp: 45, credits: 30, karma: 1, skillXp: { coding: 1, empathy: 1 } },
+    resetSchedule: 'daily',
+    minLevel: 1,
+    icon: 'Sparkles',
+  },
+  {
+    id: 'ws20d_dm_combat_phantom_hunt',
+    title: 'Охота на Призраков',
+    description: 'Выследи квантовых призраков, проникающих из Мира Снов. Они не материальны — но их присутствие искажает реальность.',
+    category: 'combat',
+    difficulty: 'medium',
+    objectives: [
+      { id: 'hunt_quantum_ghosts', description: 'Победить квантовых призраков', target: 2 },
+    ],
+    rewards: { xp: 85, credits: 55, karma: 2, skillXp: { logic: 1, intuition: 1 } },
+    resetSchedule: 'weekly',
+    minLevel: 3,
+    icon: 'Ghost',
+  },
+  {
+    id: 'ws20d_dm_explore_frozen_channel',
+    title: 'Замёрзший Канал',
+    description: 'Найди и проверь замёрзший сигнал в зимнем городе. Канал, застывший mid-transmission, хранит послание, которое никто не получит.',
+    category: 'exploration',
+    difficulty: 'medium',
+    objectives: [
+      { id: 'investigate_frozen_channel', description: 'Исследовать замёрзший канал', target: 1 },
+    ],
+    rewards: { xp: 75, credits: 50, karma: 2, skillXp: { intuition: 1, logic: 1 } },
+    resetSchedule: 'daily',
+    minLevel: 2,
+    icon: 'Radio',
+  },
 ];
 
 /* ══════════════════════════════════════════════════════════════

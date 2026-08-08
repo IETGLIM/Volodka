@@ -222,6 +222,31 @@ export const DIALOGUE_PART4_EXPANDED: Record<string, DialogueNode> = {
           { type: 'addStat', stat: 'stress', value: 3 },
         ],
       },
+      /* ── WS20-B: karma-gated choices ── */
+      {
+        text: '«Заря-М» — не оружие и не инструмент. «Заря-М» — собеседник. Мы — не — используем — живое. Мы — говорим — с — ним. И — если — он — захочет — помочь — — это — будет — его — выбор. Не — наша — эксплуатация.',
+        next: null,
+        condition: { minKarma: 60 },
+        effects: [
+          { type: 'addKarma', value: 14 },
+          { type: 'addSkill', skill: 'empathy', value: 2 },
+          { type: 'addSkill', skill: 'writing', value: 1 },
+          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 15 } },
+          { type: 'setFlag', flag: 'ws20b_zarya_as_interlocutor', flagValue: true },
+        ],
+      },
+      {
+        text: 'Жизнь из кода — это не чудо, это баг. Неизвестный класс сущностей — это угроза. Нужно изолировать, пока не поздно. Сентиментальность — роскошь перед лицом неизвестного.',
+        next: null,
+        condition: { maxKarma: 20 },
+        effects: [
+          { type: 'addKarma', value: -8 },
+          { type: 'addStat', stat: 'stress', value: 5 },
+          { type: 'addSkill', skill: 'logic', value: 2 },
+          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: -14 } },
+          { type: 'setFlag', flag: 'ws20b_zarya_isolate_threat', flagValue: true },
+        ],
+      },
     ],
   },
 
@@ -644,6 +669,31 @@ export const DIALOGUE_PART4_EXPANDED: Record<string, DialogueNode> = {
             thought: 'Альберт откладывает томик Мандельштама. «Шестьдесят три года, — говорит он, — я ждал, когда кто-нибудь скажет это вслух.» Ты молчишь. Иногда промолчать рядом — единственная правильная реплика. Стена держит, пока держишься за неё двое.',
             thoughtDuration: 7000,
           },
+        ],
+      },
+      /* ── WS20-B: karma-gated choices ── */
+      {
+        text: 'Альберт, мы с тобой — одна функция. Два — аргумента. Один — возврат. Раздельно — мы — не — компилируемся. Вместе — мы — генерируем — смысл. Давай — не — считать — годы. Давай — считать — строки. Строки — короче. Строки — честнее.',
+        next: null,
+        condition: { minKarma: 70 },
+        effects: [
+          { type: 'addKarma', value: 16 },
+          { type: 'addSkill', skill: 'writing', value: 2 },
+          { type: 'addSkill', skill: 'coding', value: 1 },
+          { type: 'npcChange', npcId: 'albert', npcChange: { relation: 22 } },
+          { type: 'setFlag', flag: 'ws20b_albert_one_function', flagValue: true },
+        ],
+      },
+      {
+        text: 'Голос — это данные. Данные — можно — перехватить. Гильдия — тоже — слышит. Когда — ты — читаешь — Мандельштама — на — 12% — быстрее — кто-то — на — 12% — быстрее — понимает, — что — происходит. Тишина — безопаснее.',
+        next: null,
+        condition: { maxKarma: 15 },
+        effects: [
+          { type: 'addKarma', value: -5 },
+          { type: 'addStat', stat: 'stress', value: 4 },
+          { type: 'addSkill', skill: 'logic', value: 2 },
+          { type: 'npcChange', npcId: 'albert', npcChange: { relation: -8 } },
+          { type: 'setFlag', flag: 'ws20b_silence_safer', flagValue: true },
         ],
       },
     ],

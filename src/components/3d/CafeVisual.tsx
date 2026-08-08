@@ -184,7 +184,7 @@ export function CafeVisual({ livePlayerPositionRef }: CafeVisualProps) {
           <Suspense
             fallback={
               <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={getSharedPlaneGeometry(W, D)}>
-                <meshStandardMaterial map={floorTexture} color="#5a4a3a" roughness={0.85} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+                <meshPhysicalMaterial map={floorTexture} color="#5a4a3a" roughness={0.85} clearcoat={0.5} clearcoatRoughness={0.3} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} /* WS20-C: upgraded to MeshPhysicalMaterial for PBR clearcoat */ />
               </mesh>
             }
           >

@@ -70,6 +70,7 @@ const PAUSE_ACTIONS: Array<{
       closeAllPanels();
       requestAnimationFrame(() => {
         useGameStore.getState().resetGame();
+        useGameStore.getState().setMainMenuOpen(true);
       });
     },
   },

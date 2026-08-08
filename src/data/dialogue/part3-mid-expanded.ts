@@ -255,6 +255,31 @@ export const DIALOGUE_PART3_EXPANDED: Record<string, DialogueNode> = {
           { type: 'setFlag', flag: 'protect_oleg', flagValue: true },
         ],
       },
+      /* ── WS20-B: karma-gated choices ── */
+      {
+        text: 'Стихи — не только ключ. Они — генератор ключей. Каждый стих — новая скважина в стене камеры. Мы напишем так, что замки сами будут отпираться.',
+        next: null,
+        condition: { minKarma: 65 },
+        effects: [
+          { type: 'addKarma', value: 10 },
+          { type: 'addSkill', skill: 'writing', value: 2 },
+          { type: 'addSkill', skill: 'persuasion', value: 1 },
+          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 12 } },
+          { type: 'setFlag', flag: 'ws20b_poetry_key_generator', flagValue: true },
+        ],
+      },
+      {
+        text: 'Стихи освободили тебя — но они же и посадили. Не стройте иллюзий: гильдия читает стихи лучше нас. Она знает, что слово — оружие. И обратное тоже верно.',
+        next: null,
+        condition: { maxKarma: 16 },
+        effects: [
+          { type: 'addKarma', value: -4 },
+          { type: 'addStat', stat: 'stress', value: 3 },
+          { type: 'addSkill', skill: 'logic', value: 2 },
+          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: -6 } },
+          { type: 'setFlag', flag: 'ws20b_poetry_double_edge', flagValue: true },
+        ],
+      },
     ],
   },
 
@@ -438,6 +463,31 @@ export const DIALOGUE_PART3_EXPANDED: Record<string, DialogueNode> = {
         effects: [
           { type: 'addSkill', skill: 'empathy', value: 2 },
           { type: 'addKarma', value: 3 },
+        ],
+      },
+      /* ── WS20-B: karma-gated choices ── */
+      {
+        text: 'Александр, ты — мост. Ты — стоял — на — черте — и — не — давал — гильдии — перейти. Ты — не — по — ту — сторону. Ты — на — самой — черте. И — это — самое — важное — место. Без — тебя — черта — невидима. С — тобой — она — обозначена. Обозначенная — граница — уже — не — стена. Это — линия — переговоров.',
+        next: null,
+        condition: { minKarma: 70 },
+        effects: [
+          { type: 'addKarma', value: 12 },
+          { type: 'addSkill', skill: 'persuasion', value: 2 },
+          { type: 'addSkill', skill: 'empathy', value: 1 },
+          { type: 'npcChange', npcId: 'office_alexander', npcChange: { relation: 18 } },
+          { type: 'setFlag', flag: 'ws20b_alexander_bridge_on_line', flagValue: true },
+        ],
+      },
+      {
+        text: 'Подписал — и — боишься? Ты — хочешь — и — то — и — другое. Гильдия — не — уважает — страх. Гильдия — уважает — решимость. Ты — подписал — будь — последовательным. Страх — без — решимости — — слабость. Решимость — без — страха — — глупость. Выбирай.',
+        next: null,
+        condition: { maxKarma: 12 },
+        effects: [
+          { type: 'addKarma', value: -6 },
+          { type: 'addStat', stat: 'stress', value: 4 },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'npcChange', npcId: 'office_alexander', npcChange: { relation: -10 } },
+          { type: 'setFlag', flag: 'ws20b_alexander_consistent_cruelty', flagValue: true },
         ],
       },
     ],

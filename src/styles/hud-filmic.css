@@ -3050,3 +3050,168 @@
     animation: none;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   WS20-A — 6 NEW filmic micro-animations (all reduced-motion-gated)
+   Cinematic polish for HUD part components.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── 19. Vignette breathe ──
+   Slow opacity pulse for the ambient vignette overlay.
+   3s cycle, opacity 0.85 → 1 → 0.85. Apply via
+   className="hud-filmic-vignette-breathe" on SceneAmbientVignette root. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-vignette-breathe {
+    0%, 100% {
+      opacity: 0.85;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
+  .hud-filmic-vignette-breathe {
+    animation: hud-filmic-vignette-breathe 3s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-vignette-breathe {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* ── 20. Badge tier settle ──
+   Scale-down settle + fade-in for karma tier badge on mount.
+   scale 1.08 → 1 + opacity 0 → 1, 0.4s ease-out one-shot. Apply via
+   className="hud-filmic-badge-tier-settle" on KarmaTierBadge root. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-badge-tier-settle {
+    0% {
+      transform: scale(1.08);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  .hud-filmic-badge-tier-settle {
+    animation: hud-filmic-badge-tier-settle 0.4s ease-out both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-badge-tier-settle {
+    animation: none;
+  }
+}
+
+/* ── 21. Rain sweep in ──
+   Clip-path reveal from left for the rain screen effect on mount.
+   clipPath inset(0 100% 0 0) → inset(0), 0.5s ease-out one-shot. Apply via
+   className="hud-filmic-rain-sweep-in" on RainScreenEffect root. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-rain-sweep-in {
+    0% {
+      clip-path: inset(0 100% 0 0);
+    }
+    100% {
+      clip-path: inset(0);
+    }
+  }
+
+  .hud-filmic-rain-sweep-in {
+    animation: hud-filmic-rain-sweep-in 0.5s ease-out both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-rain-sweep-in {
+    animation: none;
+    clip-path: none;
+  }
+}
+
+/* ── 22. Damage stagger ──
+   Subtle translateY + fade-in stagger for combat damage timeline on mount.
+   translateY 4px → 0 + opacity 0 → 1, 0.25s ease-out one-shot. Apply via
+   className="hud-filmic-damage-stagger" on CombatDamageTimeline root. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-damage-stagger {
+    0% {
+      transform: translateY(4px);
+      opacity: 0;
+    }
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .hud-filmic-damage-stagger {
+    animation: hud-filmic-damage-stagger 0.25s ease-out both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-damage-stagger {
+    animation: none;
+  }
+}
+
+/* ── 23. QTE urgency pulse ──
+   Pulsing red box-shadow for QTE overlay to convey urgency.
+   0.6s cycle, box-shadow 0 0 8px rgba(255,60,60,0.5) →
+   0 0 16px rgba(255,60,60,0.8) → 0 0 8px. Apply via
+   className="hud-filmic-qte-urgency-pulse" on QuickTimeEventOverlay root. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-qte-urgency-pulse {
+    0%, 100% {
+      box-shadow: 0 0 8px rgba(255, 60, 60, 0.5);
+    }
+    50% {
+      box-shadow: 0 0 16px rgba(255, 60, 60, 0.8);
+    }
+  }
+
+  .hud-filmic-qte-urgency-pulse {
+    animation: hud-filmic-qte-urgency-pulse 0.6s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-qte-urgency-pulse {
+    animation: none;
+    box-shadow: 0 0 8px rgba(255, 60, 60, 0.5);
+  }
+}
+
+/* ── 24. Loot glow fade ──
+   Fade-in + scale-up for loot proximity indicator on mount.
+   opacity 0 → 0.9 + scale 0.9 → 1, 0.3s ease-out one-shot. Apply via
+   className="hud-filmic-loot-glow-fade" on LootProximityIndicator root. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-loot-glow-fade {
+    0% {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+    100% {
+      opacity: 0.9;
+      transform: scale(1);
+    }
+  }
+
+  .hud-filmic-loot-glow-fade {
+    animation: hud-filmic-loot-glow-fade 0.3s ease-out both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-loot-glow-fade {
+    animation: none;
+  }
+}

@@ -89,6 +89,9 @@ export const DYNAMIC_PROPS: Partial<Record<SceneId, DynamicPropDef[]>> = {
     // WS18-B — +2 props for thin-coverage scene (was 3)
     { id: 'ce_box_1', kind: 'box', position: [-1.4, 0, -2.6], rotation: 0.6 },
     { id: 'ce_bottle_2', kind: 'bottle', position: [2.4, 0, 0.8], rotation: -1.2 },
+    // WS20-B — +2 props for thin-coverage scene (was 5)
+    { id: 'ws20b_ce_ashtray', kind: 'can', position: [-0.6, 0, -1.8], rotation: 0.9 },
+    { id: 'ws20b_ce_sugar_bowl', kind: 'box', position: [0.3, 0, -0.5], rotation: -0.3 },
   ],
   office_day: [
     { id: 'od_box_1', kind: 'box', position: [1.4, 0, -3.2], rotation: 0.4 },
@@ -176,6 +179,10 @@ export const DYNAMIC_PROPS: Partial<Record<SceneId, DynamicPropDef[]>> = {
     { id: 'zar_can_1', kind: 'can', position: [-0.8, 0, 1.5], rotation: 0.4 },
     { id: 'zar_bottle_1', kind: 'bottle', position: [1.9, 0, -0.7], rotation: 1.7 },
     { id: 'zar_box_1', kind: 'box', position: [-1.3, 0, -1.9], rotation: -0.6 },
+    // WS20-B — +3 props for thin-coverage scene (was 3)
+    { id: 'ws20b_zar_book_stack', kind: 'box', position: [0.5, 0, -2.4], rotation: 0.2 },
+    { id: 'ws20b_zar_teacup', kind: 'can', position: [-0.3, 0, 0.8], rotation: 1.1 },
+    { id: 'ws20b_zar_photo_frame', kind: 'box', position: [1.4, 0, -1.2], rotation: -0.5 },
   ],
   zarema_room: [
     { id: 'zr_can_1', kind: 'can', position: [1.1, 0, 0.9], rotation: -1.1 },
@@ -202,6 +209,10 @@ export const DYNAMIC_PROPS: Partial<Record<SceneId, DynamicPropDef[]>> = {
     { id: 'vc_can_1', kind: 'can', position: [1.2, 0, -3.5], rotation: 0.4 },
     { id: 'vc_box_1', kind: 'box', position: [-0.8, 0, -1.2], rotation: 1.1 },
     { id: 'vc_bottle_1', kind: 'bottle', position: [2.4, 0, -5.0], rotation: -0.7 },
+    // WS20-B — +3 props for thin-coverage scene (was 3)
+    { id: 'ws20b_vc_wet_boot_tray', kind: 'box', position: [-1.5, 0, 4.2], rotation: 0.3 },
+    { id: 'ws20b_vc_coat_hook', kind: 'bottle', position: [0.8, 0, 5.5], rotation: 1.5 },
+    { id: 'ws20b_vc_cable_bundle', kind: 'barrel', position: [3.1, 0, -2.8], rotation: -0.4 },
   ],
   street_winter: [
     { id: 'sw_can_1', kind: 'can', position: [1.8, 0, 2.4], rotation: 0.6 },

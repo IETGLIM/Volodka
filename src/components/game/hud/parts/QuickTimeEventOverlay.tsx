@@ -777,7 +777,7 @@ export function QuickTimeEventOverlay({
       <AnimatePresence mode="wait">
         {(isActive || showResult) && (
           <motion.div
-            className="fixed inset-0 flex items-center justify-center"
+            className="fixed inset-0 flex items-center justify-center hud-filmic-qte-urgency-pulse"
             style={{
               zIndex: UI_LAYERS.MINIGAME,
               background: 'radial-gradient(circle at center, rgba(0,0,0,0.85), rgba(0,0,0,0.95))',

@@ -45,16 +45,20 @@ export function SleepDreamVisual() {
       {/* ── FLAT DREAM FLOOR (matches physics plane) ── */}
       {/* ═══════════════════════════════════════════════ */}
       <mesh geometry={groundGeometry} receiveShadow>
-        <meshStandardMaterial
+        <meshPhysicalMaterial
           map={groundTexture}
           color="#0a0515"
           roughness={0.95}
           metalness={0.05}
+          sheen={0.25}
+          sheenRoughness={0.5}
+          clearcoat={0.2}
           transparent
           opacity={0.9}
           polygonOffset
           polygonOffsetFactor={1}
           polygonOffsetUnits={1}
+          /* WS20-C: upgraded to MeshPhysicalMaterial for PBR clearcoat */
         />
       </mesh>
 
