@@ -137,6 +137,7 @@
     "typescript-eslint": "^8.60.1",
     "vite": "^6.3.5",
     "vite-plugin-inspect": "^11.3.3",
+    "vite-plugin-singlefile": "^2.3.0",
     "vitest": "^3.2.4"
   }
 }

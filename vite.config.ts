@@ -14,6 +14,20 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"),
+      // Rapier physics: redirect the package to our init shim, and expose the
+      // original WASM bundle under a separate alias so the shim can re-export it.
+      "@dimforge/rapier3d-compat/rapier_wasm3d.js": path.resolve(
+        __dirname,
+        "./node_modules/@dimforge/rapier3d-compat/rapier_wasm3d.js",
+      ),
+      "@dimforge/rapier3d-compat": path.resolve(
+        __dirname,
+        "./src/engine/physics/rapierCompat.ts",
+      ),
+      "@dimforge/rapier3d-compat-original": path.resolve(
+        __dirname,
+        "./node_modules/@dimforge/rapier3d-compat/rapier.mjs",
+      ),
     },
   },
 });
