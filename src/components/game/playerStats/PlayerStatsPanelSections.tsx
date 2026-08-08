@@ -64,10 +64,15 @@ export function StatBar({
   highWarning?: boolean;
 }) {
   const pct = getVitalBarFillPct(value, max);
-  const isWarning =
+  const isCritical =
     (lowWarning && isVitalLowWarning(value)) ||
     (highWarning && isVitalHighWarning(value));
   const warningPulse = getWarningPulseAnimate(reducedMotion, PLAYER_STATS_COLORS.rose);
+
+  /* Build an animated gradient from base color → lighter variant */
+  const gradientFill = isCritical
+    ? `linear-gradient(90deg, ${color}90, ${color}, ${PLAYER_STATS_COLORS.rose}, ${color})`
+    : `linear-gradient(90deg, ${color}88, ${color}cc, ${color}, ${color}cc, ${color}88)`;
 
   return (
     <div
@@ -76,23 +81,40 @@ export function StatBar({
       aria-valuemin={0}
       aria-valuemax={max}
       aria-label={label}
-      className={`relative h-2 rounded-full overflow-hidden ${isWarning ? 'hud-filmic-health-pulse' : ''}`}
-      style={{ background: 'rgba(255,255,255,0.06)' }}
+      className={`relative h-2.5 rounded-md overflow-hidden transition-shadow duration-500 ${
+        isCritical && !reducedMotion ? 'stats-bar-glow-container' : ''
+      }`}
+      style={{
+        background: 'rgba(255,255,255,0.05)',
+        ...(isCritical
+          ? {
+              '--stats-bar-glow-color': `${PLAYER_STATS_COLORS.rose}30`,
+              '--stats-bar-glow-color-inner': `${PLAYER_STATS_COLORS.rose}15`,
+              border: `1px solid ${PLAYER_STATS_COLORS.rose}30`,
+            } as React.CSSProperties
+          : { border: '1px solid rgba(255,255,255,0.06)' }),
+      }}
     >
       <motion.div
-        className="h-full rounded-full relative stats-panel-bar-fill"
+        className={`h-full rounded-[3px] relative stats-panel-bar-fill ${!reducedMotion ? 'stats-panel-bar-fill--enhanced' : ''}`}
         style={{
-          background: `linear-gradient(90deg, ${color}cc, ${color})`,
-          boxShadow: `0 0 8px ${color}40`,
+          background: gradientFill,
+          boxShadow: `0 0 8px ${color}40, 0 0 2px ${color}20`,
         }}
         initial={reducedMotion ? false : { width: 0 }}
         animate={{ width: `${pct}%` }}
         transition={getBarFillTransition(reducedMotion)}
       />
-      {isWarning && warningPulse && (
+      {isCritical && !reducedMotion && (
+        <div
+          aria-hidden="true"
+          className="stats-bar-critical-overlay"
+        />
+      )}
+      {isCritical && warningPulse && (
         <motion.div
           aria-hidden="true"
-          className="absolute inset-0 rounded-full"
+          className="absolute inset-0 rounded-md"
           animate={warningPulse}
           transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
         />

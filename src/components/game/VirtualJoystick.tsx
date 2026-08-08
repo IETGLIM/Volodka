@@ -18,6 +18,7 @@ import { joystickStore } from '@/hooks/useVirtualJoystick';
 import { useTouchDevice } from '@/hooks/useTouchDevice';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { CYBER_CYAN_RGB } from '@/shared/constants/cyberPalette';
+import { hapticLight } from '@/shared/utils/hapticFeedback';
 
 /* ─── Constants ─── */
 
@@ -29,8 +30,6 @@ const INNER_SIZE = 56;
 const MAX_DISPLACEMENT = (OUTER_SIZE - INNER_SIZE) / 2;
 /** Dead-zone radius: tiny movements below this are clamped to 0 */
 const DEAD_ZONE_PX = 4;
-/** Haptic vibration on first touch (ms) */
-const HAPTIC_TOUCH_MS = 8;
 
 /* ─── Styles ─── */
 
@@ -67,14 +66,7 @@ function getThumbStyle(offsetX: number, offsetY: number, active: boolean): React
   };
 }
 
-/** Haptic feedback — Vibration API when available */
-function haptic(duration: number): void {
-  try {
-    if (typeof navigator !== 'undefined' && navigator.vibrate) {
-      navigator.vibrate(duration);
-    }
-  } catch { /* Vibration API not available */ }
-}
+
 
 /* ─── Component ─── */
 
@@ -186,7 +178,7 @@ export function VirtualJoystick() {
       setActive(true);
       processPointer(e.clientX, e.clientY);
 
-      haptic(HAPTIC_TOUCH_MS);
+      hapticLight();
     },
     [updateCenter, processPointer],
   );

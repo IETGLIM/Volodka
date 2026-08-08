@@ -1,0 +1,25 @@
+{
+  "name": "ВОЛОДЬКА — сказка о потерянных строках",
+  "short_name": "Волodka RPG",
+  "description": "Браузерная 3D RPG-сказка: живой мир, стихи, которые возвращают память",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0f",
+  "theme_color": "#00e5ff",
+  "orientation": "any",
+  "categories": ["games", "entertainment"],
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

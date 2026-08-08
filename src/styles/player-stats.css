@@ -14,9 +14,50 @@
   100% { transform: translateX(200%); }
 }
 
+/* ─── Enhanced stat bar: animated gradient sweep ─── */
+@keyframes stats-bar-gradient-sweep {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ─── Critical pulse (low health / high stress) ─── */
+@keyframes stats-bar-critical-pulse {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
+}
+
+/* ─── Glow breath for bar container ─── */
+@keyframes stats-bar-glow-breathe {
+  0%, 100% { box-shadow: 0 0 4px var(--stats-bar-glow-color, rgba(0,229,255,0.2)); }
+  50% { box-shadow: 0 0 10px var(--stats-bar-glow-color, rgba(0,229,255,0.35)), 0 0 20px var(--stats-bar-glow-color-inner, rgba(0,229,255,0.1)); }
+}
+
 .stats-panel-bar-fill {
   position: relative;
   overflow: hidden;
+}
+
+/* Enhanced animated gradient fill (replaces flat color) */
+.stats-panel-bar-fill--enhanced {
+  background-size: 200% 100% !important;
+  animation: stats-bar-gradient-sweep 3s ease-in-out infinite;
+}
+
+/* Critical state pulsing border overlay */
+.stats-bar-critical-overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  animation: stats-bar-critical-pulse 1s ease-in-out infinite;
+  box-shadow: inset 0 0 6px rgba(255, 23, 68, 0.35), 0 0 8px rgba(255, 23, 68, 0.2);
+}
+
+/* Container glow that follows bar color */
+.stats-bar-glow-container {
+  animation: stats-bar-glow-breathe 2.5s ease-in-out infinite;
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .stats-panel-bar-fill::after {

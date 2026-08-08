@@ -25,25 +25,9 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { countCollectedMainPoems } from '@/data/poemCollectionMeta';
 import { getItemDefinition } from '@/data/items';
 import { useExplorationBottomHudVisible } from '@/hooks/useExplorationBottomHud';
+import { hapticLight, hapticMedium, hapticItemPickup } from '@/shared/utils/hapticFeedback';
 
 const TAP_DEBOUNCE_MS = 280;
-
-/** Haptic feedback helper */
-function hapticTap(): void {
-  try {
-    if (typeof navigator !== 'undefined' && navigator.vibrate) {
-      navigator.vibrate(10);
-    }
-  } catch { /* Vibration API not available */ }
-}
-
-function hapticPress(): void {
-  try {
-    if (typeof navigator !== 'undefined' && navigator.vibrate) {
-      navigator.vibrate([10, 30, 10]);
-    }
-  } catch { /* Vibration API not available */ }
-}
 
 export function MobileActionButtons() {
   const isTouchDevice = useTouchDevice();
@@ -67,13 +51,13 @@ export function MobileActionButtons() {
 
   /* ── Interact handler ── */
   const handleInteract = useCallback(() => {
-    hapticPress();
+    hapticMedium();
     fireInteractPress('mobile_hud');
   }, []);
 
   /* ── Use Item handler — uses first hotbar slot's consumable ── */
   const handleUseItem = useCallback(() => {
-    hapticTap();
+    hapticItemPickup();
 
     // Find first occupied hotbar slot
     const firstItemId = hotbarSlots.find((id) => id !== null);
@@ -98,7 +82,7 @@ export function MobileActionButtons() {
 
   /* ── Run toggle handler ── */
   const handleToggleRun = useCallback(() => {
-    hapticTap();
+    hapticLight();
     if (!areSharedVirtualControlsWritable()) return;
     setRunToggled((prev) => {
       const next = !prev;

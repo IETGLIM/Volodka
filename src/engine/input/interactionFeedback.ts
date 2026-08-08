@@ -1,24 +1,16 @@
 import { audioEngine } from '@/engine/AudioEngine';
+import { hapticLight, hapticMedium, hapticNpcInteraction } from '@/shared/utils/hapticFeedback';
 
 export type InteractionFeedbackKind = 'npc' | 'object' | 'exit';
 
-const FEEDBACK_BY_KIND: Record<InteractionFeedbackKind, { sfx: string; vibrationMs: number }> = {
-  npc: { sfx: 'ui_open', vibrationMs: 14 },
-  object: { sfx: 'notify', vibrationMs: 10 },
-  exit: { sfx: 'confirm', vibrationMs: 18 },
+const FEEDBACK_BY_KIND: Record<InteractionFeedbackKind, { sfx: string; haptic: () => void }> = {
+  npc: { sfx: 'ui_open', haptic: hapticNpcInteraction },
+  object: { sfx: 'notify', haptic: hapticLight },
+  exit: { sfx: 'confirm', haptic: hapticMedium },
 };
-
-function vibrate(ms: number): void {
-  if (typeof navigator === 'undefined' || typeof navigator.vibrate !== 'function') return;
-  try {
-    navigator.vibrate(ms);
-  } catch {
-    /* Some desktop browsers expose vibrate but deny it. */
-  }
-}
 
 export function triggerInteractionFeedback(kind: InteractionFeedbackKind): void {
   const feedback = FEEDBACK_BY_KIND[kind];
   audioEngine.playSfx(feedback.sfx);
-  vibrate(feedback.vibrationMs);
+  feedback.haptic();
 }

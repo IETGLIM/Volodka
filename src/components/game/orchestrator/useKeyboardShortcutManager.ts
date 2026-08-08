@@ -232,7 +232,24 @@ export function useKeyboardShortcutManager({
             useGameStore.getState().saveGame({ source: 'manual' });
             void import('sonner').then(({ toast }) => {
               toast.success('Игра сохранена', {
-                description: 'Прогресс записан.',
+                description: 'Прогресс записан (F5).',
+                duration: 2500,
+              });
+            });
+          } catch {
+            /* store not ready — ignore */
+          }
+        });
+      }
+      // Quick load — F9. Defer deserialize/patch off the keydown critical path.
+      if (e.code === 'F9') {
+        e.preventDefault();
+        queueMicrotask(() => {
+          try {
+            useGameStore.getState().loadGame();
+            void import('sonner').then(({ toast }) => {
+              toast.success('Игра загружена', {
+                description: 'Последнее сохранение восстановлено (F9).',
                 duration: 2500,
               });
             });

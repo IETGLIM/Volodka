@@ -35,6 +35,7 @@ import { isCinematicTimelineActive } from '@/engine/cinematic/cinematicTimelineO
 import { isInteractionLocked } from '@/engine/interaction/interactionSession';
 import { isGameplayOverlayLocomotionLocked } from '@/engine/player/playerLocomotionGate';
 import { isNarrativeMovementLocked } from '@/shared/exploreHubNodes';
+import { hapticLight, hapticMedium } from '@/shared/utils/hapticFeedback';
 
 /** Apple HIG minimum touch target (px). */
 const MIN_TOUCH_TARGET = 44;
@@ -52,23 +53,6 @@ function canUseMobileExitFallback(store: ReturnType<typeof useGameStore.getState
   if (isNarrativeMovementLocked(store.showStoryOverlay, store.currentNodeId)) return false;
   if (store.diegeticNarrative != null) return false;
   return true;
-}
-
-/** Haptic feedback helper — uses Vibration API when available */
-function hapticTap(): void {
-  try {
-    if (typeof navigator !== 'undefined' && navigator.vibrate) {
-      navigator.vibrate(10);
-    }
-  } catch { /* Vibration API not available */ }
-}
-
-function hapticPress(): void {
-  try {
-    if (typeof navigator !== 'undefined' && navigator.vibrate) {
-      navigator.vibrate([10, 30, 10]);
-    }
-  } catch { /* Vibration API not available */ }
 }
 
 const _MOVEMENT_CONTROL_KEYS: (keyof VirtualControls)[] = [
@@ -225,17 +209,17 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory, onOpenJ
     if (dx > SWIPE_THRESHOLD_PX) {
       // Swipe right → Journal
       onOpenJournal?.();
-      hapticTap();
+      hapticLight();
     } else if (dx < -SWIPE_THRESHOLD_PX) {
       // Swipe left → Inventory
       onOpenInventory?.();
-      hapticTap();
+      hapticLight();
     }
   }, [onOpenInventory, onOpenJournal]);
 
   // ── Interact: synthetic KeyE + EventBus + exit fallback ──
   const handleInteract = useCallback(() => {
-    hapticPress();
+    hapticMedium();
     onInteractPress?.();
     fireInteractPress('mobile_hud');
 
@@ -289,7 +273,7 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory, onOpenJ
       const now = performance.now();
       if (now - lastTapAtRef.current < TAP_DEBOUNCE_MS) return;
       lastTapAtRef.current = now;
-      hapticTap();
+      hapticLight();
       action();
     },
     [],

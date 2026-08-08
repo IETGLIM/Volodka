@@ -5,6 +5,7 @@ import { CRTSweep } from '@/components/game/loading/CRTSweep';
 import { CyberSpinner } from '@/components/game/loading/CyberSpinner';
 import { GlitchTitle } from '@/components/game/loading/GlitchTitle';
 import { HexDumpOverlay } from '@/components/game/loading/HexDumpOverlay';
+import { LoadingParticles } from '@/components/game/loading/LoadingParticles';
 import { MatrixRainLayer } from '@/components/game/loading/MatrixRainLayer';
 import { TerminalBootText } from '@/components/game/loading/TerminalBootText';
 import type { LoadingScreenFx } from '@/engine/loading/loadingFxTier';
@@ -67,6 +68,36 @@ function MotionBox({ fx, className, children, delay = 0, style }: MotionBoxProps
   );
 }
 
+/** Estimated seconds remaining based on linear extrapolation */
+function useEstimatedTimeRemaining(progress: number | undefined): string | null {
+  const startRef = useRef<number>(performance.now());
+  const [eta, setEta] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (progress === undefined || progress === 0) {
+      startRef.current = performance.now();
+      setEta(null);
+      return;
+    }
+    if (progress >= 100) {
+      setEta(null);
+      return;
+    }
+
+    const elapsed = (performance.now() - startRef.current) / 1000;
+    if (elapsed < 0.5) return;
+
+    const totalEstimate = elapsed / (progress / 100);
+    const remaining = Math.max(0, totalEstimate - elapsed);
+
+    if (remaining < 1) setEta('< 1с');
+    else if (remaining < 60) setEta(`~${Math.ceil(remaining)}с`);
+    else setEta(`~${Math.ceil(remaining / 60)}м`);
+  }, [progress]);
+
+  return eta;
+}
+
 export function LoadingScreen({
   progress,
   message = LOADING_DEFAULT_MESSAGE,
@@ -75,6 +106,7 @@ export function LoadingScreen({
   const fx = useLoadingScreenFx();
   const clampedProgress = clampLoadingProgress(progress);
   const statusText = formatLoadingStatusText(message, clampedProgress);
+  const eta = useEstimatedTimeRemaining(clampedProgress);
   const [showTip, setShowTip] = useState(true);
   const [showBootText, setShowBootText] = useState(fx.bootText);
 
@@ -137,6 +169,9 @@ export function LoadingScreen({
       </span>
 
       {fx.matrixRain && <MatrixRainLayer />}
+
+      {/* Subtle floating particles — CSS-only, cyberpunk atmosphere */}
+      <LoadingParticles />
 
       {fx.filmGrain && (
         <div
@@ -331,7 +366,7 @@ export function LoadingScreen({
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
               }}>
-                {clampedProgress}%
+                {clampedProgress}%{eta ? ` · ${eta}` : ''}
               </span>
             )}
           </div>

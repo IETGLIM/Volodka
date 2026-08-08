@@ -35,6 +35,7 @@ import { TutorialOverlay } from '../TutorialOverlay';
 import { FirstPlayTutorial } from '../FirstPlayTutorial';
 import { StressIndicator } from '../StressIndicator';
 import { AutoSaveIndicator } from '../AutoSaveIndicator';
+import { QuickSaveIndicator } from '../QuickSaveIndicator';
 import { AmbientSoundMixer } from '../AmbientSoundMixer';
 import { SceneTransitionProgress } from '../SceneTransitionProgress';
 import { SceneTransitionFailureBanner } from '../SceneTransitionFailureBanner';
@@ -451,6 +452,7 @@ export const GameplayAmbientExplorationHud = memo(function GameplayAmbientExplor
   return (
     <>
       <AutoSaveIndicator />
+      <QuickSaveIndicator />
       {/* Proximity whispers */}
       <ProximityWhisperOverlay />
       {!initialHudFocus ? (

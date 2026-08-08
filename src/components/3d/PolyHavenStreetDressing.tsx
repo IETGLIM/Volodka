@@ -1,6 +1,6 @@
 /* Street dressing: unique authored facades + Poly Haven props (no facade GLB clone grid). */
 
-import { Suspense, useEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
@@ -14,6 +14,7 @@ import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
 import { disposeClonedScene, createSourceSkipSet } from '@/engine/three/disposeThreeResources';
 import { UniqueStreetFacades } from './UniqueStreetFacades';
+import { InstancedProp, type InstancedPropTransform } from '@/engine/graphics/InstancedProp';
 
 const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeof useGLTF>[3]>;
 
@@ -134,29 +135,68 @@ function StreetPropDressing() {
   const { preset } = useGraphicsQuality();
   const castShadow = preset.shadows;
 
+  // ── Instanced prop transforms (stable refs via useMemo) ──
+  // BEFORE: each group was N individual <GltfProp> mounts = N × meshParts draw calls
+  // AFTER:  1 <InstancedProp> per group = meshParts draw calls total
+  //
+  // Fire escapes: 5 instances × ~4 parts ≈ 20 draw calls → 4 draw calls
+  const fireEscapeInstances = useMemo(
+    () => FIRE_ESCAPES.map((p) => ({ position: p.position, rotation: [0, p.rotationY, 0] as [number, number, number], scale: p.scale } as InstancedPropTransform)),
+    [],
+  );
+  // Benches: 3 × ~3 parts ≈ 9 → 3
+  const benchInstances = useMemo<InstancedPropTransform[]>(
+    () => [
+      { position: [0, 0, 0], scale: 1.35 },
+      { position: [-4.4, 0, 2.0], rotation: [0, Math.PI / 2, 0], scale: 1.15 },
+      { position: [3.8, 0, -6.4], rotation: [0, -0.4, 0], scale: 1.1 },
+    ],
+    [],
+  );
+  // Metal trash cans: 2 × ~2 parts ≈ 4 → 2
+  const trashCanInstances = useMemo<InstancedPropTransform[]>(
+    () => [
+      { position: [2.15, 0, 3.1], scale: 1.2 },
+      { position: [-2.55, 0, -8.1], rotation: [0, 0.4, 0], scale: 1.1 },
+    ],
+    [],
+  );
+  // Trash bags: 2 × ~2 parts ≈ 4 → 2
+  const trashbagInstances = useMemo<InstancedPropTransform[]>(
+    () => [
+      { position: [2.55, 0, 3.35], rotation: [0, 0.7, 0], scale: 1.4 },
+      { position: [-2.9, 0, -7.7], rotation: [0, -0.3, 0], scale: 1.25 },
+    ],
+    [],
+  );
+  // Barrels: 2 × ~2 parts ≈ 4 → 2
+  const barrelInstances = useMemo<InstancedPropTransform[]>(
+    () => [
+      { position: [2.4, 0, 2.5], scale: 1.15 },
+      { position: [-3.1, 0, -7.2], rotation: [0, 0.9, 0], scale: 1.05 },
+    ],
+    [],
+  );
+  // Cardboard boxes: 2 × ~2 parts ≈ 4 → 2
+  const cardboardBoxInstances = useMemo<InstancedPropTransform[]>(
+    () => [
+      { position: [-5.2, 0, -3.5], rotation: [0, 0.35, 0], scale: 1.5 },
+      { position: [-4.7, 0.55, -3.3], rotation: [0, -0.6, 0], scale: 1.15 },
+    ],
+    [],
+  );
+
   return (
     <group>
-      {FIRE_ESCAPES.map((p, i) => (
-        <Suspense key={`escape-${i}`} fallback={null}>
-          <GltfProp
-            url={POLYHAVEN_MODELS.fireEscape}
-            position={p.position}
-            rotationY={p.rotationY}
-            scale={p.scale}
-            castShadow={castShadow}
-          />
-        </Suspense>
-      ))}
+      {/* ── Instanced props (batched draw calls) ── */}
+      <InstancedProp url={POLYHAVEN_MODELS.fireEscape} instances={fireEscapeInstances} castShadow={castShadow} />
+      <InstancedProp url={POLYHAVEN_MODELS.bench} instances={benchInstances} />
+      <InstancedProp url={POLYHAVEN_MODELS.metalTrashCan} instances={trashCanInstances} />
+      <InstancedProp url={POLYHAVEN_MODELS.trashbag} instances={trashbagInstances} />
+      <InstancedProp url={POLYHAVEN_MODELS.barrel} instances={barrelInstances} />
+      <InstancedProp url={POLYHAVEN_MODELS.cardboardBox} instances={cardboardBoxInstances} />
 
-      <Suspense fallback={null}>
-        <GltfProp url={POLYHAVEN_MODELS.bench} position={[0, 0, 0]} rotationY={0} scale={1.35} />
-      </Suspense>
-      <Suspense fallback={null}>
-        <GltfProp url={POLYHAVEN_MODELS.bench} position={[-4.4, 0, 2.0]} rotationY={Math.PI / 2} scale={1.15} />
-      </Suspense>
-      <Suspense fallback={null}>
-        <GltfProp url={POLYHAVEN_MODELS.bench} position={[3.8, 0, -6.4]} rotationY={-0.4} scale={1.1} />
-      </Suspense>
+      {/* ── Unique props (single instance — no instancing benefit) ── */}
       <Suspense fallback={null}>
         <GltfProp url={POLYHAVEN_MODELS.shutterDoor} position={[11.6, 0, -17.8]} rotationY={Math.PI} scale={STREET_SHUTTER_DOOR_SCALE} />
       </Suspense>
@@ -168,30 +208,6 @@ function StreetPropDressing() {
       </Suspense>
       <Suspense fallback={null}>
         <GltfProp url={POLYHAVEN_MODELS.wetFloorSign} position={[1.6, 0, 1.2]} rotationY={-0.5} scale={1.3} />
-      </Suspense>
-      <Suspense fallback={null}>
-        <GltfProp url={POLYHAVEN_MODELS.metalTrashCan} position={[2.15, 0, 3.1]} scale={1.2} />
-      </Suspense>
-      <Suspense fallback={null}>
-        <GltfProp url={POLYHAVEN_MODELS.metalTrashCan} position={[-2.55, 0, -8.1]} rotationY={0.4} scale={1.1} />
-      </Suspense>
-      <Suspense fallback={null}>
-        <GltfProp url={POLYHAVEN_MODELS.trashbag} position={[2.55, 0, 3.35]} rotationY={0.7} scale={1.4} />
-      </Suspense>
-      <Suspense fallback={null}>
-        <GltfProp url={POLYHAVEN_MODELS.trashbag} position={[-2.9, 0, -7.7]} rotationY={-0.3} scale={1.25} />
-      </Suspense>
-      <Suspense fallback={null}>
-        <GltfProp url={POLYHAVEN_MODELS.barrel} position={[2.4, 0, 2.5]} scale={1.15} />
-      </Suspense>
-      <Suspense fallback={null}>
-        <GltfProp url={POLYHAVEN_MODELS.barrel} position={[-3.1, 0, -7.2]} rotationY={0.9} scale={1.05} />
-      </Suspense>
-      <Suspense fallback={null}>
-        <GltfProp url={POLYHAVEN_MODELS.cardboardBox} position={[-5.2, 0, -3.5]} rotationY={0.35} scale={1.5} />
-      </Suspense>
-      <Suspense fallback={null}>
-        <GltfProp url={POLYHAVEN_MODELS.cardboardBox} position={[-4.7, 0.55, -3.3]} rotationY={-0.6} scale={1.15} />
       </Suspense>
       <Suspense fallback={null}>
         <GltfProp url={POLYHAVEN_MODELS.woodenCrate} position={[4.7, 0, -6.9]} rotationY={0.25} scale={1.3} />
