@@ -904,4 +904,114 @@ export const DIALOGUE_PART5_EXPANDED: Record<string, DialogueNode> = {
       },
     ],
   },
+
+  /* ═══════════════════════════════════════════════════════════
+     ВОЛОДЬКА — Рассвет на пороге, 6 karma-gated choices (WS26-B)
+     3 high-karma (philosophical / compassionate) + 3 low-karma (cynical / resigned)
+     ═══════════════════════════════════════════════════════════ */
+
+  ws26_volodka_dawn_choice: {
+    id: 'ws26_volodka_dawn_choice',
+    speaker: 'Володька',
+    text: 'Рассвет. Город просыпается раньше меня — гудят фонари, лязгают мусоровозы, кто-то уже бежит к смене. Я стою на пороге. За спиной — всё, что было. Впереди — всё, что будет. Или — ничего. Сегодня — решаю я. Не гильдия. Не «Око». Не лог. Я.',
+    choices: [
+      // ── 3 HIGH-KARMA choices (compassionate, philosophical, redemptive) ──
+      {
+        text: 'Я выберу — быть. Просто — быть. Без героя, без жертвы. Быть — это уже подвиг в городе, который учит не быть.',
+        next: null,
+        condition: { minKarma: 60 },
+        effects: [
+          { type: 'addKarma', value: 10 },
+          { type: 'addSkill', skill: 'empathy', value: 2 },
+          { type: 'addStat', stat: 'stress', value: -8 },
+          { type: 'setFlag', flag: 'ws26_dawn_choice_be', flagValue: true },
+          {
+            type: 'showThought',
+            thought: '«Быть». Самое короткое стихотворение. Самое длинное — усилие. Город — учит — не быть. Город — учит — притворяться. Ты — выбираешь — быть. Это — длиннее — любой — эпопеи. Это — короче — любого — слова. Это — всё.',
+            thoughtDuration: 7000,
+          },
+        ],
+      },
+      {
+        text: 'Я выберу — помнить. Каждое имя. Каждый стих. Каждую сломанную голограмму. Пока я помню — они живы.',
+        next: null,
+        condition: { minKarma: 50 },
+        effects: [
+          { type: 'addKarma', value: 12 },
+          { type: 'addSkill', skill: 'writing', value: 2 },
+          { type: 'addSkill', skill: 'empathy', value: 1 },
+          { type: 'setFlag', flag: 'ws26_dawn_choice_remember', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Гильдия — удаляет. Ты — помнишь. Гильдия — сильнее — в — мгновенье. Ты — сильнее — в — вечность. Память — архив — без — прав — на — запись. Память — единственный — сервер, — который — не — выключить. Пока — ты — дышишь. Пока — ты — помнишь.',
+            thoughtDuration: 7000,
+          },
+        ],
+      },
+      {
+        text: 'Я выберу — писать. Не для того, чтобы победить. Для того, чтобы кто-то прочитал — и не один. Чтобы кто-то — проснулся.',
+        next: null,
+        condition: { minKarma: 70 },
+        effects: [
+          { type: 'addKarma', value: 18 },
+          { type: 'addSkill', skill: 'writing', value: 3 },
+          { type: 'addSkill', skill: 'rhythm', value: 1 },
+          { type: 'setFlag', flag: 'ws26_dawn_choice_write', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Писать — не — победа. Писать — — передача. Ты — не — меч. Ты — — рация. Ты — передаёшь — сигнал — тому, — кто — ещё — не — родился. Тому, — кто — ещё — не — сдался. Тому, — кто — прочтёт — тебя — через — двадцать — лет — и — подумает: «значит, — я — не — первый. Значит, — можно.»',
+            thoughtDuration: 7500,
+          },
+        ],
+      },
+      // ── 3 LOW-KARMA choices (cynical, ruthless, resigned) ──
+      {
+        text: 'Я выберу — забыть. Стереть. Отформатировать. Город не заслуживает памяти. Город не заслуживает — меня.',
+        next: null,
+        condition: { maxKarma: 20 },
+        effects: [
+          { type: 'addKarma', value: -10 },
+          { type: 'addStat', stat: 'stress', value: 6 },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'setFlag', flag: 'ws26_dawn_choice_forget', flagValue: true },
+          {
+            type: 'showThought',
+            thought: '«Отформатировать». Команда — чистая. Команда — честная. Только — после — неё — ты — сам — пустой. Диск — без — файла. Зеркало — без — отражения. Город — без — тебя. Ты — без — себя. Чисто. Пусто. Удобно. Никому — не — больно. Тебе — тоже — не — больно. Тебе — уже — никак.',
+            thoughtDuration: 7000,
+          },
+        ],
+      },
+      {
+        text: 'Я выберу — выжить. Только — выжить. Без смысла, без огня. Пусть кто-то другой горит — я подожду.',
+        next: null,
+        condition: { maxKarma: 10 },
+        effects: [
+          { type: 'addKarma', value: -12 },
+          { type: 'addStat', stat: 'stress', value: 4 },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'setFlag', flag: 'ws26_dawn_choice_survive', flagValue: true },
+          {
+            type: 'showThought',
+            thought: '«Пусть — кто-то — другой». Ты — произнёс — это — вслух. Или — про — себя. Не — важно. Важно — что — кто-то — другой — услышал. Кто-то — другой — пошёл — гореть. Кто-то — другой — сгорел. А — ты — подождал. И — выжил. Поздравляю. Выживание — это — надгробие — для — того, — кто — горел — вместо — тебя.',
+            thoughtDuration: 7500,
+          },
+        ],
+      },
+      {
+        text: 'Я выберу — молчать. Стихов не будет. Будет тишина. Тишина — тоже выбор. Самый трусливый.',
+        next: null,
+        condition: { maxKarma: 15 },
+        effects: [
+          { type: 'addKarma', value: -15 },
+          { type: 'addStat', stat: 'stress', value: 5 },
+          { type: 'setFlag', flag: 'ws26_dawn_choice_silence', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Тишина — не — нейтральна. Тишина — согласие. Гильдия — молчит — и — ты — молчишь. Гильдия — удалила — слово — и — ты — не — вернул. Тишина — самый — длинный — стих. Самый — предательский. Самый — удобный. Никто — не — услышит. Никто — не — запомнит. Никто — не — обвинит. Кроме — тебя. Тебя — обвинит — эхо.',
+            thoughtDuration: 7500,
+          },
+        ],
+      },
+    ],
+  },
 };

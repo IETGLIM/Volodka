@@ -31,7 +31,7 @@ export function AmbientParticles() {
   if (!mounted || reducedMotion) return null;
 
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
+    <div className="absolute inset-0 overflow-hidden pointer-events-none hud-filmic-particle-drift" aria-hidden="true">
       {particles.map((p) => (
         <div
           key={p.id}

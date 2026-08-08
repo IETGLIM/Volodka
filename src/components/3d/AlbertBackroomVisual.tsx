@@ -126,12 +126,13 @@ export function AlbertBackroomVisual(_props: AlbertBackroomVisualProps) {
       )}
 
       {/* WS21-C: PBR upgrade — varnished wood floor with clearcoat */}
+      {/* WS26-C: tuned clearcoat 0.5 → 0.4 for varnished wood (sane bound) */}
       <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={getSharedPlaneGeometry(W, D)}>
         <meshPhysicalMaterial
           color="#1e1820"
           roughness={floorRoughness}
           metalness={floorMetalness}
-          clearcoat={0.5}
+          clearcoat={0.4}
           clearcoatRoughness={0.3}
           polygonOffset
           polygonOffsetFactor={1}

@@ -106,13 +106,14 @@ export function ChkForestZorgeVisual({
 
       {/* Ground — mossy clearing with snow-dew damp sheen */}
       {/* WS21-C: PBR upgrade — organic mossy ground with sheen */}
+      {/* WS26-C: tuned sheen 0.15 → 0.1 for organic moss (subtler frost) */}
       <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={useAuthoredBackdrop ? 0.012 : 0.001} geometry={getSharedPlaneGeometry(W, D)}>
         <meshPhysicalMaterial
           map={groundTexture}
           color="#2a4a22"
           roughness={damp?.roughness ?? 0.95}
           metalness={damp?.metalness ?? 0}
-          sheen={0.15}
+          sheen={0.1}
           sheenRoughness={0.6}
           polygonOffset
           polygonOffsetFactor={1}

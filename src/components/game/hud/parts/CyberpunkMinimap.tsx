@@ -606,7 +606,7 @@ export const CyberpunkMinimap = memo(function CyberpunkMinimap({
 
       {/* ── Сканлайны эффект / Scanlines effect ── */}
       <motion.div
-        className="absolute inset-0 pointer-events-none"
+        className="absolute inset-0 pointer-events-none hud-filmic-minimap-scan"
         style={{
           backgroundImage: `repeating-linear-gradient(
             0deg,

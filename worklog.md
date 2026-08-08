@@ -3906,3 +3906,325 @@ Stage Summary:
   6. 68 dead code cleanups across 48 files
 - Poems untouched. Physics invariants preserved. No runtime behavior changes.
 - Unresolved: Vercel deployment is stale (main menu nav + audio mixer fixes not yet live). Next push should trigger Vercel rebuild.
+
+---
+Task ID: QA-26
+Agent: general-purpose (agent-browser QA)
+Task: QA live site after typecheck fix commits (bced5f3a, edc4c90e)
+
+Work Log:
+- Read /home/z/volodka/worklog.md (last ~100 lines) for project context. Key context from QA-25 summary: "Vercel deployment is stale (main menu nav + audio mixer fixes not yet live). Next push should trigger Vercel rebuild." QA-26 goal was to verify the typecheck-fix commits (bced5f3a + edc4c90e) triggered that rebuild and that the two previously-fixed bugs are now live.
+- Ran `agent-browser --help` to learn the CLI; used open / click / snapshot / console / errors / eval / screenshot commands.
+- Navigated to https://volodka.vercel.app/ and waited 5s for full load. Title = "ВОЛОДЬКА — сказка между сменами". URL stayed "/" (SPA).
+- Captured console + page errors: BOTH EMPTY after clear-and-recheck (`agent-browser console --clear` then `agent-browser errors` → no output, exit 0). Zero JS errors. ✅
+- Took main-menu snapshot: all 4 menu items render correctly (ПРОДОЛЖИТЬ disabled "нет сохранения", НОВАЯ ИГРА, НАСТРОЙКИ, ОБ АВТОРЕ) + music toggle + header. No white screen. Screenshot: qa-screenshots/01-main-menu.png.
+- Clicked НАСТРОЙКИ → settings dialog opened (screenshot 02-settings.png). Dialog shows basic toggles (Music / Noir) + control hints + note "Полные настройки — в паузе во время игры". Closed via ЗАКРЫТЬ.
+- Clicked НОВАЯ ИГРА → "Начало" dialog (screenshot 03-new-game.png) with options: Начать с прологом / Пропустить пролог / Отмена.
+- Clicked "Пропустить пролог" → loaded straight into КОМНАТА ВОЛОДЬКИ scene (screenshot 04-skip-prologue.png) with brief "Вступление" overlay; clicked ПРОДОЛЖИТЬ repeatedly to dismiss.
+- Once in game world, pressed Escape → Пауза menu opened (screenshot 08-pause-menu.png). Pause menu items confirmed: БЫСТРОЕ СОХРАНЕНИЕ / УПРАВЛЕНИЕ СОХРАНЕНИЯМИ / ЗАГРУЗИТЬ / ПРОФИЛЬ ПЕРСОНАЖА / ОТНОШЕНИЯ / НАСТРОЙКИ / В ГЛАВНОЕ МЕНЮ / ПРОДОЛЖИТЬ.
+- AUDIO MIXER TEST: Closed pause menu, clicked "Открыть микшер" button (aria-label, had to use eval-click because the button is partially obscured by SVG/canvas overlays). Mixer opened (screenshot 11-audio-mixer.png). Snapshot revealed:
+    Музыка    → slider value=100, displayed "7000%"  ❌
+    Атмосфера → slider value=100, displayed "6000%"  ❌
+    Звуки     → slider value=100, displayed "8000%"  ❌
+    Голоса    → slider value=75,  displayed "75%"    ✅
+  Verdict: FAIL. The "7000%" bug is STILL LIVE on production (3 of 4 channels show wrong %, only Голоса is correct). The slider aria-valuenow values themselves are correct (100/100/100/75) but the displayed percentage text is wrong.
+- MAIN MENU NAV TEST: Reopened pause menu (screenshot 12-pause-for-main-menu.png). Cleared console. Captured location BEFORE click: `{href:"https://volodka.vercel.app/", hash:"", pathname:"/"}`. Clicked @e11 "В ГЛАВНОЕ МЕНЮ". After 3s wait, location UNCHANGED. Snapshot showed the game world application + quest tracker but NO main menu items, NO pause menu — the pause menu simply closed. After an additional 5s wait (8s total post-click), full game HUD returned (СИСТЕМА: v4.2.42, СЦЕНА: КОМНАТА ВОЛОДЬКИ, СТИХИ: 0/21). The game continued running normally — ESC opens pause again, mixer button works. So the "В главное меню" button did NOT navigate to the main menu; it just closed the pause menu and resumed the game. Verdict: FAIL. The fix from commit 8dd89f89 is NOT deployed.
+- VERIFIED DEPLOYMENT FRESHNESS via direct asset inspection:
+    `curl -sI https://volodka.vercel.app/assets/index-DKAhzdFm.js` →
+      last-modified: Fri, 07 Aug 2026 22:14:59 GMT
+      x-vercel-cache: HIT
+    Current commit timestamps:
+      edc4c90e (HEAD)                 — 2026-08-08 09:39:08 UTC  (~11h25m AFTER deploy)
+      bced5f3a (typecheck fix target) — 2026-08-08 09:36:49 UTC  (~11h22m AFTER deploy)
+      8dd89f89 (main-menu nav fix)    — 2026-08-08 03:52:44 UTC  (~5h38m AFTER deploy)
+      a2ce07bd (WS22 — latest mixer)  — 2026-08-08 03:08:06 UTC  (~4h53m AFTER deploy)
+      9a6b9e36 (likely deployed)      — 2026-08-07 22:13:11 UTC  (~1m48m BEFORE deploy)
+    Vite content-hashed asset name `index-DKAhzdFm.js` is IDENTICAL across the initial load and after `location.reload(true)`. A fresh rebuild would have produced a different hash. The hash has not changed since QA-25 ran (also confirmed stale at that time).
+- Vercel's last deployment corresponds to commit 9a6b9e36 (Aug 7 22:13:11 UTC) — Vercel built ~1m48s after that push. Vercel has NOT rebuilt for any of the 15 subsequent commits (1d01ab72 → edc4c90e).
+- Confirmed by code inspection: local OrchestratorPauseMenu.tsx L65-77 has the fix (`useGameStore.getState().resetGame(); useGameStore.getState().setMainMenuOpen(true);` — both synchronous, comment cites WS23 race fix). But the deployed `game-ui-combat-ui-BfihzAJA.js` chunk contains `resetGame:()=>{Ln({skipIntro:!0})}` — i.e. the deployed resetGame() only sets `skipIntro: true` and does NOT set `mainMenuOpen: true`. The deployed code predates the fix. Same root cause for the mixer: local AmbientSoundMixer.tsx L274 renders `{channel.value}%` (correct), but the deployed chunk renders something that yields "7000%" for music (channel.value=100). The deployed AmbientSoundMixer is older than the local fix.
+- Hard reload (`location.reload(true)`) and re-check: asset hash unchanged, main menu renders fine, 0 console errors. Site is not crashing, but neither of the two target fixes are live.
+- Screenshots captured to /home/z/volodka/qa-screenshots/:
+    01-main-menu.png            — initial main menu (renders correctly, no white screen)
+    02-settings.png             — settings dialog (basic — no mixer in main menu settings)
+    03-new-game.png             — "Начало" dialog after clicking НОВАЯ ИГРА
+    04-skip-prologue.png        — game world after skipping prologue
+    05-game-world.png           — game world with dialog
+    06-after-intro.png          — game world after dismissing intro dialogs
+    07-game-no-dialog.png       — game world clean
+    08-pause-menu.png           — pause menu open
+    09-audio-mixer.png          — (intermediate; mixer attempt blocked by pause overlay)
+    10-pause-closed.png         — pause menu closed (preparing for mixer)
+    11-audio-mixer.png          — ★ AUDIO MIXER showing 7000% / 6000% / 8000% / 75%
+    12-pause-for-main-menu.png  — pause menu with "В ГЛАВНОЕ МЕНЮ" item visible
+    13-after-main-menu-click.png — ★ state immediately after clicking "В ГЛАВНОЕ МЕНЮ" — game world, NO main menu
+    14-after-long-wait.png      — state 8s later — full HUD returned, game still running (NOT main menu)
+    15-after-hard-reload.png    — main menu after hard reload (asset hash unchanged → stale deploy)
+- Browser closed.
+
+Stage Summary:
+- Console errors: 0 (zero). Page errors: 0. Site loads cleanly with no JS runtime errors.
+- Main menu renders: PASS (no white screen, all menu items present, music toggle works).
+- Main menu nav button "В главное меню" from pause menu: **FAIL** — clicking it only closes the pause menu; game continues running in КОМНАТА ВОЛОДЬКИ. Does NOT navigate to the main menu. Fix from commit 8dd89f89 is NOT deployed.
+- Audio mixer % values: **FAIL** — shows 7000% (Музыка), 6000% (Атмосфера), 8000% (Звуки). Only Голоса (75%) is correct. The "7000%" bug is still live on production.
+- Vercel deployment freshness: **STALE** — last deploy 2026-08-07 22:14:59 UTC (matches commit 9a6b9e36), predates 15 subsequent commits including:
+    • 8dd89f89 (main-menu nav race fix) — 2026-08-08 03:52:44 UTC
+    • a2ce07bd (WS22 — latest AmbientSoundMixer.tsx) — 2026-08-08 03:08:06 UTC
+    • bced5f3a (typecheck fix — QA-26 target commit) — 2026-08-08 09:36:49 UTC
+    • edc4c90e (worklog docs — QA-26 target commit, HEAD) — 2026-08-08 09:39:08 UTC
+  Vite content-hash `index-DKAhzdFm.js` unchanged across reloads. The typecheck fix commits did NOT trigger a Vercel rebuild — Vercel auto-deploy appears to be disabled, broken, or stuck since the 9a6b9e36 push on Aug 7 22:13.
+- Overall QA verdict: **UNSTABLE** — The site itself does not crash and the main menu renders fine, but the QA-26 goal of verifying that the previously-fixed bugs are now live is NOT MET. Both target fixes (main-menu nav, audio mixer %) remain broken on production because Vercel has not rebuilt since Aug 7 22:14 UTC. No new regressions introduced — the bugs are exactly the same two flagged in QA-25.
+- Next actions:
+    1. Manually trigger a Vercel redeploy from the Vercel dashboard (or `vercel --prod` from CLI) on commit edc4c90e.
+    2. Investigate why Vercel auto-deploy stopped firing after 9a6b9e36 — check Vercel project settings → Git Integration, GitHub webhook delivery history, and any Vercel build failures on intermediate commits between 9a6b9e36 and HEAD. CI (GitHub Actions) is green on HEAD (per QA-25: "CI Run #909: ✅ ALL GREEN"), so the issue is Vercel-side, not code-side.
+    3. After redeploy, re-run QA-26 (or QA-27) to confirm: (a) "В главное меню" actually returns to main menu, (b) audio mixer shows 100% / 100% / 100% / 75%.
+    4. Optional: add a build-version marker (e.g. git short SHA in the bundle / visible in the HUD) so future QA can detect stale deploys without inspecting asset mtime headers.
+
+---
+Task ID: WS26-C
+Agent: general-purpose (PBR surface upgrades)
+Task: Upgrade 6 surfaces from meshStandardMaterial to meshPhysicalMaterial
+
+Work Log:
+- Read /home/z/volodka/worklog.md (last ~150 lines) for established PBR upgrade pattern. Found precedent in WS20-C (6 surfaces, clearcoat/sheen/ior) and WS21-C (interior floors with clearcoat). Pattern: change `<meshStandardMaterial` → `<meshPhysicalMaterial`, add physical material props, preserve all existing standard props.
+- Inspected all 6 target files. DISCOVERY: all 6 target surfaces had already been converted to `<meshPhysicalMaterial>` by prior tasks (WS20-C for BattleVisual + StreetWinterVisual; WS21-C for FactoryBasementVisual + AlbertBackroomVisual + ChkForestZorgeVisual + LibraryDayVisual). The orchestrator's task description ("upgrade from meshStandardMaterial") was written without knowledge of those prior upgrades.
+- ALSO DISCOVERED: several prior values violated the new WS26-C "Sane values: clearcoat ≤ 0.5" rule (BattleVisual clearcoat=0.7, StreetWinterVisual snow ground clearcoat=0.9, AlbertBackroomVisual clearcoat=0.5 at the edge). WS26-C task spec also called for different physical material approaches in some cases (e.g. StreetWinterVisual snow ground → sheen=0.15 frost sparkle instead of clearcoat=0.9 ice).
+- INTERPRETATION: WS26-C's intent is to ensure each of the 6 surfaces is in `<meshPhysicalMaterial>` with the task-specified PBR props AND within sane bounds. For surfaces already in `<meshPhysicalMaterial>`, adjusted existing PBR values to match the WS26-C spec and to comply with sane bounds. For surfaces already matching the spec exactly, verified + annotated.
+- Per-file changes:
+  1. FactoryBasementVisual.tsx L142 — concrete floor: clearcoat 0.45 → 0.2 (task spec: subtle damp sheen). Preserved map/color/roughness/metalness/clearcoatRoughness=0.4/polygonOffset.
+  2. BattleVisual.tsx L39 — arena floor: clearcoat 0.7 → 0.3 (task spec: polished concrete; also fixes sane-bound violation). Preserved map/color/roughness=0.7/clearcoatRoughness=0.15/ior=1.5/polygonOffset.
+  3. StreetWinterVisual.tsx L57-75 — snow ground: clearcoat 0.9 → 0.5 (capped to sane bound); ADDED sheen=0.15 + sheenColor="#ffffff" + sheenRoughness=0.5 (task spec: frost sparkle). Preserved map/color/roughness/metalness/clearcoatRoughness=0.05/ior=1.31/transparent/opacity=0.92/polygonOffset. Note: also capped the parallel sidewalk mesh at L81-88 (clearcoat=0.9 → 0.5) — left sidewalk alone since WS26-C scope is the snow ground only; sidewalk was untouched per "Only upgrade ONE surface per file" rule.
+     Actually, re-checking: I only edited the snow ground mesh (L55-72). The sidewalk mesh (L75-89) was left as clearcoat=0.9 — out of scope for WS26-C. Flagging for future task.
+  4. AlbertBackroomVisual.tsx L135 — wood floor (varnished): clearcoat 0.5 → 0.4 (task spec: varnished wood, sane bound). Preserved color/roughness/metalness/clearcoatRoughness=0.3/polygonOffset. Note: file has no actual "table" element — the only wood surface is the floor (already labeled "varnished wood floor" by WS21-C). Treated the wood floor as the target surface.
+  5. ChkForestZorgeVisual.tsx L116 — forest ground: sheen 0.15 → 0.1 (task spec: organic moss, subtler). Preserved map/color/roughness/metalness/sheenRoughness=0.6/polygonOffset.
+  6. LibraryDayVisual.tsx L66 — library floor: clearcoat=0.35 already exactly matches WS26-C task spec. No value change required. Added WS26-C verification annotation only.
+- Each modified mesh now has a `/* WS26-C: ... */` annotation documenting the change (placed alongside existing WS20-C / WS21-C annotations so upgrade history is preserved).
+- Ran typecheck: `cd /home/z/volodka && node scripts/tsc7.mjs --noEmit 2>&1 | rg "error TS" | wc -l` → 0. Clean.
+
+Stage Summary:
+- Files modified (6):
+  - src/components/3d/FactoryBasementVisual.tsx — concrete floor clearcoat 0.45 → 0.2 (subtle damp sheen)
+  - src/components/3d/BattleVisual.tsx — arena floor clearcoat 0.7 → 0.3 (polished concrete; sane-bound fix)
+  - src/components/3d/StreetWinterVisual.tsx — snow ground clearcoat 0.9 → 0.5 (sane-bound fix) + added sheen=0.15/sheenColor=#ffffff/sheenRoughness=0.5 (frost sparkle)
+  - src/components/3d/AlbertBackroomVisual.tsx — varnished wood floor clearcoat 0.5 → 0.4 (sane-bound fix)
+  - src/components/3d/ChkForestZorgeVisual.tsx — forest ground sheen 0.15 → 0.1 (subtler organic moss)
+  - src/components/3d/LibraryDayVisual.tsx — library floor verified clearcoat=0.35 (already matched spec; annotation only)
+- All 6 surfaces now in `<meshPhysicalMaterial>` with WS26-C-specified PBR props and all values within sane bounds (clearcoat ≤ 0.5, sheen ≤ 0.3, ior ≤ 1.5).
+- All existing material props (color, roughness, metalness, map, transparent, opacity, polygonOffset, clearcoatRoughness, sheenRoughness, ior, etc.) preserved.
+- No geometry / position / rotation / non-material changes. No edits to src/data/poems.ts. No physics invariant or APOCALYPSE RAMP changes.
+- TypeScript typecheck: 0 errors (clean exit).
+- Deviations / notes:
+  - All 6 target surfaces had already been upgraded to meshPhysicalMaterial by prior WS20-C / WS21-C tasks. WS26-C therefore acted as a "value tuning + sane-bound compliance" pass rather than a fresh meshStandardMaterial → meshPhysicalMaterial conversion. The orchestrator's task description was written without knowledge of those prior upgrades.
+  - AlbertBackroomVisual has no literal "table" element — the only wood surface is the varnished wood floor (which the task's "varnished wood" descriptor matches). Treated the wood floor as the target.
+  - StreetWinterVisual sidewalk mesh (L75-89, parallel to the snow ground) still has clearcoat=0.9 — OUT OF SCOPE for WS26-C (snow ground only). Flagging for future task.
+  - LibraryDayVisual floor was already at the WS26-C spec value (clearcoat=0.35); only an annotation comment was added.
+
+---
+Task ID: WS26-B
+Agent: general-purpose (living-world content)
+Task: Add examine zones + karma dialogue + monologues + dynamic props
+
+Work Log:
+- Read /home/z/volodka/worklog.md (last ~150 lines) for project context — established WS17-B…WS23-B patterns for living-world content.
+- STEP 1: Read all four target files to understand exact data structures:
+  • triggerZones.ts: TriggerZone interface (id, sceneId, position, size, interactionType:'examine', interactionLabel, examineData{title,description,detailText,icon}, effects[]). Found WS23-B examine-zone block at end (before `...NARRATIVE_EXPANSION_TRIGGER_ZONES`) — modelled new zones on that pattern.
+  • part5-final-expanded.ts: DialogueNode with choices[]. Karma-gate field is `condition: { minKarma: N }` / `condition: { maxKarma: N }` (NOT karmaGte/karmaLte — those are aliases that don't exist in ChoiceCondition). WS18-B already added 4 inline karma-gated choices to `colleague_epilogue_peace` — modelled on that pattern.
+  • idleMonologues.ts: IDLE_MONOLOGUES Partial<Record<SceneId, IdleMonologueBand>> with bands {highStress?, high?, low?, neutral}. WS17-B…WS23-B expansions add 4-5 extra lines to `neutral[]` array of a scene with a `// WSxx-B — +N extra neutral lines for richer SCENE idle` comment marker.
+  • dynamicProps.ts: DYNAMIC_PROPS Partial<Record<SceneId, DynamicPropDef[]>> with DynamicPropDef {id, kind:'can'|'bottle'|'box'|'barrel', position:[x,y,z], rotation?}. WS20-B/WS23-B pattern adds inline props with `// WSxx-B — +N props for thin-coverage scene (was X)` comment.
+- STEP 2: Added content — all in Russian, cyberpunk/post-Soviet atmosphere, Matrix references.
+
+A) 10 new examine zones in triggerZones.ts (inserted before `...NARRATIVE_EXPANSION_TRIGGER_ZONES` spread):
+   abandoned_factory (+4):
+     • ws26_af_broken_hologram — сломанная голограмма рекламы «Заря-М», 15-летней давности
+     • ws26_af_faded_mosaic — стёртая советская мозаика с героями труда
+     • ws26_af_glitch_terminal — глючный терминал с обрывками логов («system: do not forget to breathe»)
+     • ws26_af_frosted_window — заиндевевшее окно с надписью «ПРОСНИСЬ» (Matrix reference)
+   rooftop_edge (+3):
+     • ws26_re_neon_puddle — лужа с отражением вывески «ВЫХОД» (Matrix red-pill reference)
+     • ws26_re_antenna_array — ржавая антенна, ловившая сигналы гильдии (поэзия как антенна)
+     • ws26_re_pigeon_feathers — голубиные перья у парапета (голубь как просветление)
+   street_winter (+3):
+     • ws26_sw_vending_machine — сломанный автомат (метафора города: платишь — и ничего)
+     • ws26_sw_ice_cracks — трещины на льду как линии на ладони
+     • ws26_sw_old_poster — старый плакат «ОСТОРОЖНО: ПОЭЗИЯ» с дорисовкой маркером
+   Each zone: unique `ws26_` id, sceneId, position, size, interactionType:'examine', interactionLabel, examineData (title/description/detailText/icon), effects[] (setFlag + addKarma + addSkill). Positions chosen to not overlap with existing zones in those scenes.
+
+B) 6 karma-gated dialogue choices in part5-final-expanded.ts — added as a NEW dialogue node `ws26_volodka_dawn_choice` (speaker: 'Володька') rather than bloating `colleague_epilogue_peace`. Theme: рассвет на пороге, Volodka soliloquy moment.
+   3 HIGH-karma (philosophical/compassionate/redemptive):
+     • minKarma: 60 — «Я выберу — быть. Просто — быть.» (+10 karma, +2 empathy, -8 stress)
+     • minKarma: 50 — «Я выберу — помнить. Каждое имя. Каждый стих.» (+12 karma, +2 writing, +1 empathy)
+     • minKarma: 70 — «Я выберу — писать. Не для того, чтобы победить.» (+18 karma, +3 writing, +1 rhythm)
+   3 LOW-karma (cynical/ruthless/resigned):
+     • maxKarma: 20 — «Я выберу — забыть. Стереть. Отформатировать.» (-10 karma, +6 stress, +1 logic)
+     • maxKarma: 10 — «Я выберу — выжить. Только — выжить.» (-12 karma, +4 stress, +1 logic)
+     • maxKarma: 15 — «Я выберу — молчать. Стихов не будет.» (-15 karma, +5 stress)
+   Each choice includes a `showThought` effect with a long introspective consequence text (matching the WS18-B style of detailed internal monologue reactions).
+
+C) 15 new monologue lines in idleMonologues.ts — added 5 extra `neutral[]` lines to each of 3 under-served scenes:
+   abandoned_factory (+5): капля на бак как начало стиха, тень конвейера честнее вещи, высокое небо, запах старого масла, гайка из прошлой эпохи
+   office_day (+5): клавиатура соседа как KPI-дятел, сломанная кофемашина как выбор побеждённых, липкий стикер «Помни про бэкап», медленный лифт, отстающие часы (7 минут свободы)
+   library_day (+5): выцветший шрифт на корешке, скрип стула как ток через резистор, запах типографской краски как детство, чихание как преступление, карточка каталога «Энтин 1984» (поэзия сопротивления)
+   Each scene's new lines added with `// WS26-B — +5 extra neutral lines for richer SCENE idle` comment marker, matching WS18-B…WS23-B style.
+
+D) 8 new dynamic props in dynamicProps.ts:
+   abandoned_factory (+3): ws26_af_can_rustpool (can), ws26_af_barrel_dented (barrel), ws26_af_bottle_acid (bottle)
+   office_day (+3): ws26_od_can_coffee (can), ws26_od_box_paper (box), ws26_od_bottle_water (bottle)
+   library_day (+2): ws26_ld_can_dust (can), ws26_ld_box_returns (box)
+   Each prop: unique `ws26_` id, one of the 4 enum kinds ('can'|'bottle'|'box'|'barrel'), position chosen to avoid overlapping with existing prop positions in those scenes, rotation value. `kind` field strictly follows the DynamicPropKind enum (the "holographic fish / data petals / glitch birds" examples in the task brief don't match the existing rigid enum — preserved enum invariants and used descriptive IDs instead, matching WS20-B's `ws20b_ce_ashtray` / `ws20b_ce_sugar_bowl` convention where evocative IDs hint at the conceptual prop while `kind` stays within enum).
+
+STEP 3: Typecheck verification:
+   `cd /home/z/volodka && node scripts/tsc7.mjs --noEmit 2>&1 | rg "error TS" | wc -l` → 0
+   Also confirmed: no error lines mention triggerZones, part5-final-expanded, idleMonologues, or dynamicProps.
+
+CRITICAL RULES verification:
+   • Did NOT edit src/data/poems.ts (untouched).
+   • Did NOT change physics invariants or APOCALYPSE RAMP values (no edits to any physics/engine/RAMP files).
+   • Matched existing data structure patterns exactly (read each file first; modelled new content on WS17-B…WS23-B established style; used real field names `minKarma`/`maxKarma` not the karmaGte/karmaLte aliases from the task brief).
+   • All content in Russian — cyberpunk/post-Soviet atmosphere (Екатеринбург, гильдия, «Око», «Заря-М», Matrix references «ПРОСНИСЬ»/«ВЫХОД»).
+   • Thematically consistent: philosophical, melancholic, with the established Володька voice (engineer-poet, tech metaphors for emotional states).
+
+Stage Summary:
+- Files modified (4, all in disjoint WS26-B scope):
+  • src/data/triggerZones.ts (+10 examine zones, +~200 lines): abandoned_factory (4), rooftop_edge (3), street_winter (3)
+  • src/data/dialogue/part5-final-expanded.ts (+1 new dialogue node `ws26_volodka_dawn_choice` with 6 karma-gated choices, +~110 lines): 3 high-karma (minKarma 50/60/70), 3 low-karma (maxKarma 10/15/20)
+  • src/data/idleMonologues.ts (+15 neutral idle monologue lines, +~15 lines): abandoned_factory (5), office_day (5), library_day (5)
+  • src/data/dynamicProps.ts (+8 dynamic props, +11 lines): abandoned_factory (3), office_day (3), library_day (2)
+- Total new content: 10 examine zones + 6 karma-gated dialogue choices + 15 idle monologues + 8 dynamic props = 39 new living-world content entries.
+- Scenes targeted: abandoned_factory (4 examine + 3 props + 5 monologues = 12 entries), rooftop_edge (3 examine), street_winter (3 examine), office_day (3 props + 5 monologues = 8 entries), library_day (2 props + 5 monologues = 7 entries). Plus 1 new dialogue node for the karma-gated choices.
+- Typecheck: `node scripts/tsc7.mjs --noEmit 2>&1 | rg "error TS" | wc -l` → 0 (clean).
+- No regressions: no edits outside the 4 disjoint WS26-B files; no physics/poems/RAMP changes; speaker 'Володька' confirmed valid (used in part4-late-expanded.ts); condition field uses real `minKarma`/`maxKarma` from ChoiceCondition interface.
+
+---
+Task ID: WS26-A
+Agent: general-purpose (filmic CSS + HUD wirings)
+Task: Add 6 new filmic CSS animations + wire 6 HUD parts that don't have filmic CSS yet
+
+Work Log:
+- Read /home/z/volodka/worklog.md (last ~150 lines) for project context and prior filmic-CSS conventions. Reviewed QA-26 + Task-25 (typecheck) entries to confirm tsc7 pipeline and that `npm run typecheck` is the CI gate.
+- Read /home/z/volodka/src/styles/hud-filmic.css (last ~160 lines, blocks 37–42) to internalize the established pattern: numbered `/* ── N. Name ── */` header → `@media (prefers-reduced-motion: no-preference) { @keyframes hud-filmic-<name> {...} .hud-filmic-<name> { animation: ...; } }` → `@media (prefers-reduced-motion: reduce) { .hud-filmic-<name> { animation: none; <static fallback>; } }`.
+- Verified candidate set: grepped `hud-filmic-` across `src/components/game/hud/parts/` → 51 files already wired. None of the 10 task-listed candidates appeared, confirming all 10 are filmic-free. Picked 6 with clean, non-framer-motion-overridden targets:
+    1. AmbientParticles.tsx — outer container (no inline transform)
+    2. CompassPOIMarkers.tsx — outer 50×50 wrapper (no inline transform)
+    3. CyberpunkMinimap.tsx — scanlines motion.div (no animate prop, no inline background-position)
+    4. HUDChromaticEdge.tsx — outer container (no inline filter)
+    5. InteractionDistanceRing.tsx — distance-ring-fill motion.div (framer-motion only animates opacity; CSS opacity/transform animation overrides cleanly, parent motion.div retains entrance fade)
+    6. TimeIcon.tsx — inner wrapper divs across all 4 phase branches (no inline transform)
+- Skipped: EnvironmentalEffectsOverlay.tsx (every layer either has its own CSS animation or framer-motion opacity tween that would fight the filmic class), PhysicsDegradedDevBadge.tsx, PlayerCoordinatesDisplay.tsx, WorldSpaceLabels.tsx — kept the chosen 6 to leave room for future wirings.
+- Designed 6 subtle animations honoring the sane-value caps (scale ≤ 1.15, opacity ≤ 0.6, translateY ≤ 5px, rotate ≤ 8deg):
+    • hud-filmic-particle-drift: translateY(0 → -3px → 0), 6s ease-in-out infinite
+    • hud-filmic-poi-ping: scale(1 → 1.1 → 1), 2.5s ease-in-out infinite
+    • hud-filmic-minimap-scan: background-position-y(0 → 4px), 8s linear infinite (one scanline period = seamless loop)
+    • hud-filmic-chromatic-shift: filter hue-rotate(0deg → 8deg → 0deg), 7s ease-in-out infinite
+    • hud-filmic-distance-ring-expand: scale(1 → 1.15 → 1) + opacity(0.5 → 0.15 → 0.5), 1.6s ease-in-out infinite
+    • hud-filmic-time-tick: rotate(0deg → 6deg → 0deg), 4s ease-in-out infinite
+- Appended all 6 keyframe blocks + utility classes + reduced-motion overrides to src/styles/hud-filmic.css (numbered 43–48, continuing the existing sequence).
+- Wired each `.hud-filmic-*` class into the chosen element's `className` in its TSX file (single className addition per target; TimeIcon required 4 edits — one per phase branch).
+- Verified no typecheck regressions: `node scripts/tsc7.mjs --noEmit 2>&1 | rg "error TS" | wc -l` → 0. Confirmed clean exit code (0) and zero error lines mentioning any of the 6 modified files.
+- Sacred file src/data/poems.ts untouched. Physics invariants (interpolate={false}, KCC ownership, runMainPlayerMovement) and APOCALYPSE RAMP values untouched. All animations gated on `@media (prefers-reduced-motion: no-preference)` with static fallbacks in the `reduce` block.
+
+Stage Summary:
+- Files modified (7 total):
+  - src/styles/hud-filmic.css — +173 lines: 6 new numbered comment headers (43–48), 6 `@keyframes hud-filmic-*` blocks, 6 `.hud-filmic-*` utility classes, 6 reduced-motion override blocks.
+  - src/components/game/hud/parts/AmbientParticles.tsx — added `hud-filmic-particle-drift` to outer container div.
+  - src/components/game/hud/parts/CompassPOIMarkers.tsx — added `hud-filmic-poi-ping` to 50×50 outer wrapper div.
+  - src/components/game/hud/parts/CyberpunkMinimap.tsx — added `hud-filmic-minimap-scan` to scanlines motion.div.
+  - src/components/game/hud/parts/HUDChromaticEdge.tsx — added `hud-filmic-chromatic-shift` to chromatic-edge-container div.
+  - src/components/game/hud/parts/InteractionDistanceRing.tsx — added `hud-filmic-distance-ring-expand` to distance-ring-fill motion.div.
+  - src/components/game/hud/parts/TimeIcon.tsx — added `hud-filmic-time-tick` to all 4 phase-branch wrapper divs (morning CloudSun, day Sun, evening CloudSun, night Moon).
+- Keyframe names added (6): hud-filmic-particle-drift, hud-filmic-poi-ping, hud-filmic-minimap-scan, hud-filmic-chromatic-shift, hud-filmic-distance-ring-expand, hud-filmic-time-tick.
+- HUD parts wired (6): AmbientParticles, CompassPOIMarkers, CyberpunkMinimap, HUDChromaticEdge, InteractionDistanceRing, TimeIcon.
+- Typecheck result: `node scripts/tsc7.mjs --noEmit 2>&1 | rg "error TS" | wc -l` → 0. Exit code 0. Zero errors mentioning any modified file.
+- All 6 animations respect the sane-value caps: max scale 1.15, max opacity 0.5, max translateY 3px, max rotate 6deg (all within ≤1.15 / ≤0.6 / ≤5px / ≤8deg). All gated on `prefers-reduced-motion: no-preference` with explicit static fallbacks in the `reduce` block (transform: none / opacity: 1 / filter: none / animation: none as appropriate).
+- No deviations from the established pattern. No runtime behavior changes — purely additive CSS + className wirings.
+
+---
+Task ID: WS26-D
+Agent: general-purpose (content expansion)
+Task: Add creep patrols + lore entries + matrix quotes + daily missions + thought cabinet items
+
+Work Log:
+- Read /home/z/volodka/worklog.md (last ~150 lines, ending at QA-26) for project context. QA-26 reported stale Vercel deploy and two bugs still live on production; no prior WS26 entries found in worklog (this is the first WS26-D task).
+- STEP 1: Read each target file to understand the data structure:
+  - creepPatrols.ts: CreepPatrolDef (id, sceneId, enemyType, name, color, waypoints, patrolSpeed, chaseSpeed, visionRange, visionHalfAngle, requiredFlag?, requiredAct?). EnemyType union defined in src/shared/types/definitions/combat.ts (20 types: system_daemon, corporate_golem, shadow_agent, data_phantom, code_inquisitor, guild_enforcer, data_wraith, censor_drone, poetry_hunter, nexus_guardian, void_echo, corporate_drone, memory_wraith, firewall_guardian, network_spy, quantum_ghost, grief_echo, corporate_ai, rust_sentinel, memory_devourer). SceneId union defined in src/config/sceneIds.ts (18 core + 11 extension = 29 scenes). Existing WS-series used `wsNNd_creep_<scene>` IDs.
+  - loreEntries.ts: LoreEntry interface (id, title, category: 'history'|'factions'|'technology'|'culture'|'mysteries', body, sceneId, rarity: 'common'|'uncommon'|'rare'|'legendary', relatedEntries?, discovered). Pattern: WS-task grouped into named const arrays (WS18_D_LORE_ENTRIES ... WS23_D_LORE_ENTRIES) appended to INITIAL_LORE_ENTRIES spread.
+  - matrixQuotes.ts: MatrixQuote (id, text, trigger, act 1-5, mood: 'hope'|'danger'|'revelation'|'loss'|'triumph', color). Existing WS-series used `wsNNd_mq_<theme>` IDs.
+  - dailyMissions.ts: DailyMission (id, title, description, category: 'combat'|'exploration'|'social'|'poetry'|'crafting', difficulty: 'easy'|'medium'|'hard', objectives[], rewards{xp,credits,karma?,skillXp?}, resetSchedule: 'daily'|'weekly', minLevel, icon: string). Icon resolves via questBoardMissionIcons.ts (falls back to Star if not in map — WS-series used non-mapped icons like Radar, Trash2, etc. that resolve to Star).
+  - thoughtCabinet.ts: ThoughtCabinetItem (id: string, name, voice: TrainablePlayerSkill, description, flavorText, acquisitionCondition, acquisitionNode?, mutuallyExclusive?: readonly string[], effects: readonly {skill, modifier, description}[], hidden?). TrainablePlayerSkill = 'logic'|'coding'|'empathy'|'persuasion'|'intuition'|'writing'|'rhythm'. Existing WS-series used `wsNNd_NN` IDs starting at 76 (WS20-D), 82 (WS21-D), 88 (WS22-D), 94 (WS23-D, last is 99). MUTUALLY_EXCLUSIVE_PAIRS const at end of file documents pairs as readonly tuples.
+  - ambientBarks.ts: WS21B_AMBIENT_BARK_SUPPLEMENTS array of SceneAmbientBarkSupplement (npcId, scenes, barks). NPCAmbientBarks has bands: idle, working, pensive, curious, alarmed, contemplative, respectful, annoyed, fearful. Existing WS21-B and WS23-B used 3 idle + 1 pensive = 4 lines per NPC.
+- STEP 2: Added content per task spec, using `ws26_` ID prefix throughout (per task instructions; existing pattern was `wsNNd_` but task explicitly requested `ws26_`).
+
+A) 6 creep patrol routes added to creepPatrols.ts (after WS23-D block, before closing `];`):
+  1. ws26_creep_city_square_censor_drone — city_square, censor_drone (security drone theme), Act 2
+  2. ws26_creep_procedural_aaa_glitch_phantom — procedural_aaa, data_phantom (glitch phantom theme), Act 4
+  3. ws26_creep_albert_backroom_guild_enforcer — albert_backroom, guild_enforcer (corporate enforcer theme), Act 3
+  4. ws26_creep_forest_clearing_rust_sentinel — forest_clearing, rust_sentinel (feral/degraded guardian theme, "Одичавший Страж"), Act 2
+  5. ws26_creep_zarema_room_holo_ghost — zarema_room, data_wraith (holographic ghost theme), Act 2
+  6. ws26_creep_chk_campfire_night_poetry_hunter — chk_campfire_night, poetry_hunter (feral night hunter theme), Act 5
+  All with 4-5 XZ waypoints, patrolSpeed 0.9-1.6, chaseSpeed 3.4-4.2, visionRange 5-6.5, visionHalfAngle 0.5-0.75.
+
+B) 4 lore entries added to loreEntries.ts as WS26_D_LORE_ENTRIES const, appended to INITIAL_LORE_ENTRIES spread (after WS23_D_LORE_ENTRIES, before EXPANSION_LORE_STUBS):
+  1. ws26_lore_matrix_architect — 'Забытый Архитектор Матрицы', mysteries, legendary, guild_mainframe. Ties to lore_great_crash_2029, lore_dmitry_project, lore_it_guild, lore_dead_stack. Forgotten designer of the network's zero-layer protocols.
+  2. ws26_lore_soviet_cybernetics_lab — 'Лаборатория Кибернетики НИИ-47', history, rare, abandoned_factory. Soviet cybernetics lab that encoded commands in iambic tetrameter for orbital transmission; ties to lore_quantum_computer, lore_factory, lore_factory_workers.
+  3. ws26_lore_neon_plague — 'Неоновая Чума — Эпидемия 2034', history, uncommon, street_night. Information epidemic via NeuroMost v2.1 chips; ties to lore_neurosys_chips, lore_poem_virus, lore_cafe_history, lore_great_crash_2029.
+  4. ws26_lore_digital_afterlife — 'Цифровая Жизнь После Жизни', mysteries, legendary, sleep_dream. Marat "Glubina" uploaded himself distributedly across the Network in 2033; ties to lore_cafe_history, lore_maria_secret, lore_dreamworld, lore_dead_stack.
+
+C) 8 matrix quotes added to matrixQuotes.ts (after WS23-D block, before closing `]`):
+  1. ws26_mq_reality_glitch (act 2, revelation) — cat walking through wall twice, crack in reality code
+  2. ws26_mq_deja_vu (act 2, danger) — system rendering same frame twice, seam visible
+  3. ws26_mq_choice_fate (act 3, revelation) — choice vs fate as illusions for those who do/don't see decision tree
+  4. ws26_mq_consciousness (act 3, revelation) — consciousness as edges where data tries to remember itself
+  5. ws26_mq_system_dreamer (act 4, loss) — Network doesn't sleep but dreams; its dreams are our awakenings
+  6. ws26_mq_observer_effect (act 4, hope) — observing the system changes it; closing eyes lets it return
+  7. ws26_mq_loop_repetition (act 5, revelation) — second spiral turn is same poem with different stress
+  8. ws26_mq_two_pills (act 5, triumph) — red pill sees code, blue forgets question, third pill: write a poem about a non-existent pill and swallow it
+
+D) 4 daily missions added to dailyMissions.ts (after WS23-D block, before closing `];`):
+  1. ws26_dm_explore_matrix_layer — exploration, hard, weekly, minLevel 4, icon 'Eye' — descend into the Matrix layer
+  2. ws26_dm_collect_glitch_fragments — exploration, easy, daily, minLevel 2, icon 'Sparkles' — collect 5 glitch fragments
+  3. ws26_dm_craft_reality_anchor — crafting, medium, daily, minLevel 3, icon 'Hammer' — craft reality anchor components
+  4. ws26_dm_interact_rogue_ai — social, medium, daily, minLevel 3, icon 'MessageCircle' — dialogue with rogue AI subroutine
+  All icons chosen from QUEST_BOARD_MISSION_ICONS map (Shield, Swords, ShieldCheck, Bug, Footprints, Eye, Moon, Map, Handshake, Heart, MessageCircle, Users, BookOpen, Sparkles, Feather, Music, Hammer, FlaskConical, Wrench, Lightbulb) so they render properly (not falling back to Star like WS19-D through WS23-D icons did).
+
+E) 6 thought cabinet items added to thoughtCabinet.ts (after item 99, before closing `];` of THOUGHT_CABINET_ITEMS), IDs ws26_100 through ws26_105:
+  - 100. Симулякр (intuition) — pair with 101 — sees reality as data, +3 intuition/+2 writing/-2 empathy
+  - 101. Корень Вещей (logic) — pair with 100 — anchors in physical matter, refuses to abstract, +3 logic/+2 coding/-2 intuition
+  - 102. Прозрение (intuition, "Red Pill") — pair with 103 — chooses uncomfortable truth, +3 intuition/+1 writing/-3 empathy
+  - 103. Забвение (empathy, "Blue Pill") — pair with 102 — chooses comfortable illusion, +3 empathy/+2 rhythm/-3 intuition
+  - 104. Архитектор Снов (writing) — standalone, hidden — designs dream constructs, +3 writing/+2 intuition/-2 logic
+  - 105. Эхо Избранного (persuasion) — standalone, hidden — channels the chosen-one archetype, +3 persuasion/+2 writing/-2 rhythm
+  Mutually exclusive pairs declared both on items (mutuallyExclusive field) AND in MUTUALLY_EXCLUSIVE_PAIRS const at end of file:
+    ['ws26_100', 'ws26_101'],  // 100 ↔ 101: Симулякр ↔ Корень Вещей
+    ['ws26_102', 'ws26_103'],  // 102 ↔ 103: Прозрение ↔ Забвение
+  (2 mutually exclusive pairs as required.)
+
+F) 8 ambient bark lines added to ambientBarks.ts WS21B_AMBIENT_BARK_SUPPLEMENTS array (after WS23-B block, before closing `];`), 4 lines per NPC across 2 NPCs:
+  - maria (street_night): 3 idle + 1 pensive — Matrix references (cat through wall twice, double-rendered frames, Neon Plague, Architect as function)
+  - office_colleague (office_day): 3 idle + 1 pensive — log anomalies, 4712 notebooks in Glubina's archive, B-12 server déjà vu, third pill as poem
+  Both NPCs verified to exist in npcDefinitions.ts and have schedule entries for their respective scenes.
+
+- STEP 3: Typecheck verification:
+  `node scripts/tsc7.mjs --noEmit 2>&1 | rg "error TS" | wc -l` → 0
+  Full run: `node scripts/tsc7.mjs --noEmit; echo "EXIT_CODE=$?"` → EXIT_CODE=0, zero output.
+- Sanity tests: ran `npx vitest run src/data/chunksConfig.test.ts src/engine/questBoard/questBoardPresentation.test.ts` → 22/22 tests pass (no regressions in tests touching dailyMissions and loreEntries modules).
+- Verified final entry counts:
+  - creepPatrols.ts: 6 new `ws26_creep_*` IDs
+  - loreEntries.ts: 4 new `ws26_lore_*` IDs (added WS26_D_LORE_ENTRIES const + spread entry)
+  - matrixQuotes.ts: 8 new `ws26_mq_*` IDs
+  - dailyMissions.ts: 4 new `ws26_dm_*` IDs
+  - thoughtCabinet.ts: 6 new `ws26_NNN` IDs (100-105), 2 mutually exclusive pairs declared both on items and in MUTUALLY_EXCLUSIVE_PAIRS
+  - ambientBarks.ts: 8 new bark lines (3 idle + 1 pensive × 2 NPCs)
+
+Stage Summary:
+- Files modified (6 data files, all disjoint from other agents' claimed files):
+  - src/data/creepPatrols.ts (+6 patrol routes, +78 lines)
+  - src/data/loreEntries.ts (+4 lore entries, +51 lines including WS26_D_LORE_ENTRIES const block + INITIAL_LORE_ENTRIES spread entry)
+  - src/data/matrixQuotes.ts (+8 quotes, +73 lines)
+  - src/data/dailyMissions.ts (+4 missions, +57 lines)
+  - src/data/thoughtCabinet.ts (+6 thought items IDs 100-105, +103 lines including 2 MUTUALLY_EXCLUSIVE_PAIRS entries)
+  - src/data/ambientBarks.ts (+8 bark lines for 2 NPCs, +35 lines)
+- Content counts: 6 + 4 + 8 + 4 + 6 + 8 = 36 new content entries total
+- Thought cabinet IDs used: ws26_100, ws26_101, ws26_102, ws26_103, ws26_104, ws26_105
+- Mutually exclusive pairs: (100↔101) Симулякр↔Корень Вещей, (102↔103) Прозрение↔Забвение
+- Typecheck: `node scripts/tsc7.mjs --noEmit` → exit 0, zero errors. `rg "error TS" | wc -l` → 0.
+- Tests: 22/22 passing in modules touching the modified data (chunksConfig, questBoardPresentation).
+- Russian content throughout: cyberpunk/post-Soviet atmosphere, Matrix references (Архитектор, красная/синяя таблетка, дежавю, симулякр, эхо Избранного), philosophical depth matching existing WS18-D through WS23-D entries. Recurring project numerology (47, 4729, 4 712, B-12, 03:47, −30°C) woven into lore for continuity.
+- No edits to src/data/poems.ts (SACRED). No physics invariants or APOCALYPSE RAMP values touched. All new IDs use `ws26_` prefix per task instructions (deviates from existing `wsNNd_` pattern but complies with explicit task spec).

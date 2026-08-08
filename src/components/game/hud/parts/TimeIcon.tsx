@@ -27,27 +27,39 @@ export function TimeIcon({ hour }: { hour: number }) {
 
   if (hour >= 6 && hour < 10) {
     return (
-      <div style={{ textShadow: shadow, transition: 'text-shadow 1s ease' }}>
+      <div
+        className="hud-filmic-time-tick"
+        style={{ textShadow: shadow, transition: 'text-shadow 1s ease' }}
+      >
         <CloudSun className="size-4 text-amber-400" aria-hidden="true" />
       </div>
     );
   }
   if (hour >= 10 && hour < 18) {
     return (
-      <div style={{ textShadow: shadow, transition: 'text-shadow 1s ease' }}>
+      <div
+        className="hud-filmic-time-tick"
+        style={{ textShadow: shadow, transition: 'text-shadow 1s ease' }}
+      >
         <Sun className="size-4 text-amber-300" aria-hidden="true" />
       </div>
     );
   }
   if (hour >= 18 && hour < 21) {
     return (
-      <div style={{ textShadow: shadow, transition: 'text-shadow 1s ease' }}>
+      <div
+        className="hud-filmic-time-tick"
+        style={{ textShadow: shadow, transition: 'text-shadow 1s ease' }}
+      >
         <CloudSun className="size-4 text-orange-400" aria-hidden="true" />
       </div>
     );
   }
   return (
-    <div style={{ textShadow: shadow, transition: 'text-shadow 1s ease' }}>
+    <div
+      className="hud-filmic-time-tick"
+      style={{ textShadow: shadow, transition: 'text-shadow 1s ease' }}
+    >
       <Moon className="size-4 text-slate-300" aria-hidden="true" />
     </div>
   );

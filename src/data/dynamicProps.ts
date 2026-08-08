@@ -38,6 +38,10 @@ export const DYNAMIC_PROPS: Partial<Record<SceneId, DynamicPropDef[]>> = {
     { id: 'af_box_2', kind: 'box', position: [2.8, 0, -4.6], rotation: 1.7 },
     { id: 'af_barrel_1', kind: 'barrel', position: [4.5, 0, 1.8], rotation: 0 },
     { id: 'af_can_1', kind: 'can', position: [-1.4, 0, 2.2], rotation: 2.6 },
+    // WS26-B — +3 props for thin-coverage scene (was 4)
+    { id: 'ws26_af_can_rustpool', kind: 'can', position: [-2.0, 0, 3.5], rotation: 1.2 },
+    { id: 'ws26_af_barrel_dented', kind: 'barrel', position: [-4.5, 0, -3.5], rotation: 0.5 },
+    { id: 'ws26_af_bottle_acid', kind: 'bottle', position: [1.5, 0, 3.0], rotation: -0.8 },
   ],
   park_day: [
     { id: 'pd_can_1', kind: 'can', position: [3.6, 0, -2.4], rotation: 1.1 },
@@ -100,6 +104,10 @@ export const DYNAMIC_PROPS: Partial<Record<SceneId, DynamicPropDef[]>> = {
     // WS18-B — +2 props for thin-coverage scene (was 3)
     { id: 'od_can_2', kind: 'can', position: [-3.6, 0, -2.4], rotation: 2.0 },
     { id: 'od_barrel_1', kind: 'barrel', position: [0.5, 0, 2.2], rotation: 0 },
+    // WS26-B — +3 props for thin-coverage scene (was 5)
+    { id: 'ws26_od_can_coffee', kind: 'can', position: [-1.0, 0, -2.5], rotation: 0.9 },
+    { id: 'ws26_od_box_paper', kind: 'box', position: [3.5, 0, 1.5], rotation: 0.3 },
+    { id: 'ws26_od_bottle_water', kind: 'bottle', position: [-4.5, 0, 1.5], rotation: -1.4 },
   ],
   library_day: [
     { id: 'ld_box_1', kind: 'box', position: [-1.6, 0, 2.9], rotation: 1.8 },
@@ -107,6 +115,9 @@ export const DYNAMIC_PROPS: Partial<Record<SceneId, DynamicPropDef[]>> = {
     // WS17-B: +2 props for thin-coverage scene (was 2)
     { id: 'ld_bottle_1', kind: 'bottle', position: [-2.8, 0, -1.5], rotation: 0.7 },
     { id: 'ld_can_2', kind: 'can', position: [0.5, 0, 4.1], rotation: -1.3 },
+    // WS26-B — +2 props for thin-coverage scene (was 4)
+    { id: 'ws26_ld_can_dust', kind: 'can', position: [2.5, 0, 3.5], rotation: 0.6 },
+    { id: 'ws26_ld_box_returns', kind: 'box', position: [-3.5, 0, 1.5], rotation: 1.1 },
   ],
   factory_roof: [
     { id: 'fr_can_1', kind: 'can', position: [-3.1, 0, 1.8], rotation: 2.3 },

@@ -36,13 +36,14 @@ export function BattleVisual({ livePlayerPositionRef: _livePlayerPositionRef }: 
           map={floorTexture}
           color="#3a3a3a"
           roughness={0.7}
-          clearcoat={0.7}
+          clearcoat={0.3}
           clearcoatRoughness={0.15}
           ior={1.5}
           polygonOffset
           polygonOffsetFactor={1}
           polygonOffsetUnits={1}
           /* WS20-C: upgraded to MeshPhysicalMaterial for PBR clearcoat */
+          /* WS26-C: tuned clearcoat 0.7 → 0.3 for polished concrete (sane bound) */
         />
       </mesh>
 

@@ -7834,6 +7834,207 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     ],
   },
 
+  /* ─────────────── WS26-B — 10 new examine zones (living-world content) ───────────────
+     Themes: cyberpunk details, post-Soviet decay, philosophical observations,
+     Matrix references. Scenes: abandoned_factory (4), rooftop_edge (3),
+     street_winter (3). */
+
+  // abandoned_factory — +4 examine zones
+  {
+    id: 'ws26_af_broken_hologram',
+    sceneId: 'abandoned_factory',
+    position: [4.5, 2.0, -3.0],
+    size: [1.5, 1.5, 0.3],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть сломанную голограмму',
+    examineData: {
+      title: 'Сломанная голограмма',
+      description: 'Полосатая голографическая реклама, давно не обновлявшаяся. Мерцает и рассыпается.',
+      detailText: 'Когда-то здесь рекламировали новый спиннер «Заря-М» — пятнадцать лет назад. Сейчас голограмма показывает только фрагменты: половина лица, половина слогана, половина мечты о будущем. «Заря-М» — это прошлое, которое забыли выключить. Как и я.',
+      icon: '📺',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws26_examined_af_hologram', flagValue: true },
+      { type: 'addKarma', value: 1 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+  {
+    id: 'ws26_af_faded_mosaic',
+    sceneId: 'abandoned_factory',
+    position: [-7.5, 2.5, -2.0],
+    size: [2.5, 1.5, 0.1],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть советскую мозаику',
+    examineData: {
+      title: 'Стёртая советская мозаика',
+      description: 'На стене — мозаика. Часть плиток осыпалась, но сюжет ещё угадывается.',
+      detailText: 'Когда-то здесь были герои труда — со звёздами и домнами. Сейчас — только контуры, как тени тех, кто верил в светлое будущее. История — это мозаика, из которой выковыривают плитки. По одной. По поколению. По мечте.',
+      icon: '🏛️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws26_examined_af_mosaic', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'empathy', value: 1 },
+    ],
+  },
+  {
+    id: 'ws26_af_glitch_terminal',
+    sceneId: 'abandoned_factory',
+    position: [-3.0, 1.0, 4.0],
+    size: [0.8, 1.5, 0.6],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть глючный терминал',
+    examineData: {
+      title: 'Глючный терминал',
+      description: 'Старый терминал на стене. Экран мерцает, курсор прыгает между строками.',
+      detailText: 'На экране — обрывки логов. «kernel: poetry module not found», «user volodka: permission denied», «system: do not forget to breathe». Последняя строка — не системная. Кто-то дописал её вручную. Или это я дописал. Не помню. Может, и не я. Может, и не мне.',
+      icon: '💻',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws26_examined_af_terminal', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'coding', value: 1 },
+    ],
+  },
+  {
+    id: 'ws26_af_frosted_window',
+    sceneId: 'abandoned_factory',
+    position: [-1.5, 2.2, -5.0],
+    size: [1.5, 1.5, 0.1],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть заиндевевшее окно',
+    examineData: {
+      title: 'У заиндевевшего окна',
+      description: 'Окно покрыто инеем. Сквозь узоры — слабое свечение неона с улицы.',
+      detailText: 'На стекле — пальцем кто-то вывел: «ПРОСНИСЬ». Или это написал я. Или это написал мне кто-то другой. Неон за стеклом дрожит — будто Matrix даёт сбой. Может, мы и есть — чей-то сбой. Может, сбой — это и есть свобода. Может, проснуться — значит перестать быть в системе. Или перестать быть.',
+      icon: '❄️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws26_examined_af_window', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+
+  // rooftop_edge — +3 examine zones
+  {
+    id: 'ws26_re_neon_puddle',
+    sceneId: 'rooftop_edge',
+    position: [3.5, 0.05, 1.5],
+    size: [1.0, 0.1, 1.0],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть лужу на крыше',
+    examineData: {
+      title: 'Лужа на крыше',
+      description: 'Мелкая лужа в углу крыши. В ней — отражение неоновой вывески с соседнего здания.',
+      detailText: 'Вывеска гласит «ВЫХОД». Или «ВЫХОД» — это слово, которое я хочу видеть. Вода отражает только правду — а правда всегда чуть перевёрнута. Может, выход — вниз головой. Может, выход — внутрь. Может, выхода нет, а есть только входы в новые зеркала.',
+      icon: '💧',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws26_examined_re_puddle', flagValue: true },
+      { type: 'addKarma', value: 1 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+  {
+    id: 'ws26_re_antenna_array',
+    sceneId: 'rooftop_edge',
+    position: [-3.8, 3.5, -2.5],
+    size: [1.5, 1.0, 1.5],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть ржавую антенну',
+    examineData: {
+      title: 'Ржавая антенна',
+      description: 'Антенная решётка, покосившаяся от ветра. На ней — капли конденсата.',
+      detailText: 'Эта антенна когда-то ловила сигналы гильдии. Теперь ловит только ветер. Ветер не шифруется. Ветер — для всех. Иногда мне кажется, что если постоять рядом достаточно долго, антенна начнёт ловить мои мысли и транслировать их в город. Может, это и есть — поэзия. Может, поэзия — это просто антенна, которая забыла, что ей положено молчать.',
+      icon: '📡',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws26_examined_re_antenna', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'writing', value: 1 },
+    ],
+  },
+  {
+    id: 'ws26_re_pigeon_feathers',
+    sceneId: 'rooftop_edge',
+    position: [1.8, 0.2, -1.0],
+    size: [0.6, 0.1, 0.6],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть голубиные перья',
+    examineData: {
+      title: 'Голубиные перья',
+      description: 'У парапета — несколько серых перьев. Голубь недавно сидел здесь.',
+      detailText: 'Голубь — единственный, кто смотрит с крыши на город без страха высоты. Голубь не знает про гильдию. Голубь не знает про стихи. Голубь просто летает. Может, голубь — и есть просветление. Может, мы все были голубями, пока не научились словам. Слова — потяжелее перьев. Слова — не дают взлететь.',
+      icon: '🪶',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws26_examined_re_feathers', flagValue: true },
+      { type: 'addKarma', value: 1 },
+      { type: 'addSkill', skill: 'empathy', value: 1 },
+    ],
+  },
+
+  // street_winter — +3 examine zones
+  {
+    id: 'ws26_sw_vending_machine',
+    sceneId: 'street_winter',
+    position: [-4.5, 0, 3.0],
+    size: [1.2, 2.0, 0.8],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть сломанный автомат',
+    examineData: {
+      title: 'Сломанный автомат',
+      description: 'Торговый автомат у стены. Экран погас, но лампочка приёмника купюр ещё мигает.',
+      detailText: 'Внутри — четыре банки энергетика и пачка сухариков. Автомат принимает купюры — но ничего не выдаёт. Самая честная метафора города: платишь — и ничего. Платишь — и снова ничего. Платишь — и привыкаешь. Автомат — это мы. Мы — это автомат. Разница — в том, что у автомата есть кнопка «отмена». У нас — нет.',
+      icon: '🤖',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws26_examined_sw_vending', flagValue: true },
+      { type: 'addKarma', value: 1 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+    ],
+  },
+  {
+    id: 'ws26_sw_ice_cracks',
+    sceneId: 'street_winter',
+    position: [1.5, 0.05, 3.5],
+    size: [1.5, 0.1, 1.0],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть трещины на льду',
+    examineData: {
+      title: 'Трещины на льду',
+      description: 'Замёрзшая лужа с сеткой трещин. Лёд держит — но предупреждает.',
+      detailText: 'Трещины — как линии на ладони. Только у лужи — одна судьба: весной растаять. У меня — ладоней две. И обе — в карманах. Не хочу читать. Не сегодня. Может, лёд умнее — он показывает свои трещины всем. Я — прячу. До поры. До весны. До первой оттепели — внутри.',
+      icon: '🧊',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws26_examined_sw_ice', flagValue: true },
+      { type: 'addKarma', value: 1 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+  {
+    id: 'ws26_sw_old_poster',
+    sceneId: 'street_winter',
+    position: [3.5, 2.0, -4.5],
+    size: [1.2, 1.5, 0.1],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть старый плакат',
+    examineData: {
+      title: 'Старый плакат',
+      description: 'На стене дома — выцветший плакат. Бумага пожелтела, углы отклеились.',
+      detailText: '«ОСТОРОЖНО: ПОЭЗИЯ» — гласит плакат. И ниже, мелким шрифтом: «В случае обнаружения — не читать — сообщить в Гильдию». Кто-то дорисовал маркером: «не сообщать — прочитать дважды — запомнить — передать». Город — это диалог власти и стен. Стены всегда побеждают. Стены — дольше. Стены — не требуют согласия.',
+      icon: '📋',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws26_examined_sw_poster', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'writing', value: 1 },
+    ],
+  },
+
   ...NARRATIVE_EXPANSION_TRIGGER_ZONES,
   ...CHK_TRIGGER_ZONES,
 ];

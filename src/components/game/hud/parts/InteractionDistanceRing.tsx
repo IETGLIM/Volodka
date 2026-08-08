@@ -151,7 +151,7 @@ export function InteractionDistanceRing() {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="absolute rounded-full distance-ring-fill"
+              className="absolute rounded-full distance-ring-fill hud-filmic-distance-ring-expand"
               style={{
                 width: ringSize - 8,
                 height: ringSize - 8,

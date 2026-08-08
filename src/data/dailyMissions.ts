@@ -628,6 +628,63 @@ export const DAILY_MISSION_POOL: DailyMission[] = [
     minLevel: 5,
     icon: 'ThermometerSnowflake',
   },
+  /* ── WS26-D: Matrix-inspired daily missions (4) ── */
+  {
+    id: 'ws26_dm_explore_matrix_layer',
+    title: 'Слой Матрицы',
+    description: 'Найди скрытый слой Матрицы под Гильдейским Мейнфреймом — уровень, который Архитектор спроектировал до Великого Сбоя и который до сих пор отрисовывает реальность на один кадр вперёд. Кто увидит слой — увидит следующий кадр раньше, чем он станет настоящим.',
+    category: 'exploration',
+    difficulty: 'hard',
+    objectives: [
+      { id: 'descend_to_matrix_layer', description: 'Спуститься в слой Матрицы', target: 1 },
+    ],
+    rewards: { xp: 130, credits: 90, karma: 5, skillXp: { intuition: 3, logic: 1 } },
+    resetSchedule: 'weekly',
+    minLevel: 4,
+    icon: 'Eye',
+  },
+  {
+    id: 'ws26_dm_collect_glitch_fragments',
+    title: 'Осколки Глитча',
+    description: 'Собери осколки глитчей — обрывки реальности, которые появляются, когда Сеть дважды отрисовывает один кадр. Каждый осколок — трещина, через которую видно код под миром. Не всматривайся долго.',
+    category: 'exploration',
+    difficulty: 'easy',
+    objectives: [
+      { id: 'collect_glitch_fragments', description: 'Собрать осколков глитча', target: 5 },
+    ],
+    rewards: { xp: 50, credits: 35, karma: 1, skillXp: { intuition: 1 } },
+    resetSchedule: 'daily',
+    minLevel: 2,
+    icon: 'Sparkles',
+  },
+  {
+    id: 'ws26_dm_craft_reality_anchor',
+    title: 'Якорь Реальности',
+    description: 'Скрафти Якорь Реальности — устройство, фиксирующее тебя в текущем слое и защищающее от дежавю и рекурсивных снов. Без якоря второй виток спирали может стать первым — и ты не заметишь подмены.',
+    category: 'crafting',
+    difficulty: 'medium',
+    objectives: [
+      { id: 'craft_reality_anchors', description: 'Скрафтить компонент якоря реальности', target: 2 },
+    ],
+    rewards: { xp: 80, credits: 55, karma: 2, skillXp: { coding: 1, logic: 1 } },
+    resetSchedule: 'daily',
+    minLevel: 3,
+    icon: 'Hammer',
+  },
+  {
+    id: 'ws26_dm_interact_rogue_ai',
+    title: 'Беглый ИИ',
+    description: 'Найди и поговори с беглым ИИ — субпроцедурой, отделившейся от Архитектора и скитающейся по мёртвым каналам Сети. Она помнит то, чего не помнит сама Сеть, и торгует воспоминаниями за стихи.',
+    category: 'social',
+    difficulty: 'medium',
+    objectives: [
+      { id: 'dialogue_rogue_ai', description: 'Вступить в диалог с беглым ИИ', target: 1 },
+    ],
+    rewards: { xp: 75, credits: 50, karma: 3, skillXp: { empathy: 2, logic: 1 } },
+    resetSchedule: 'daily',
+    minLevel: 3,
+    icon: 'MessageCircle',
+  },
 ];
 
 /* ══════════════════════════════════════════════════════════════

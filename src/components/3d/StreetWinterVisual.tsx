@@ -59,15 +59,19 @@ export function StreetWinterVisual({ livePlayerPositionRef }: StreetWinterVisual
           color="#d0d8e8"
           roughness={snowOverlayRoughness}
           metalness={snowOverlayMetalness}
-          clearcoat={0.9}
+          clearcoat={0.5}
           clearcoatRoughness={0.05}
           ior={1.31}
+          sheen={0.15}
+          sheenColor="#ffffff"
+          sheenRoughness={0.5}
           transparent
           opacity={0.92}
           polygonOffset
           polygonOffsetFactor={1}
           polygonOffsetUnits={1}
           /* WS20-C: upgraded to MeshPhysicalMaterial for PBR clearcoat */
+          /* WS26-C: capped clearcoat 0.9 → 0.5 (sane bound) + added sheen=0.15 frost sparkle */
         />
       </mesh>
 

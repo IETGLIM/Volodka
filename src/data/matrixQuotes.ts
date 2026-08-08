@@ -625,6 +625,77 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     mood: 'danger',
     color: '#cc2020',
   },
+
+  /* ═══════════════════════════════════════════════════════════
+     WS26-D — Matrix-inspired philosophical fragments (8 new quotes)
+     Themes: reality glitches, déjà vu as system error, choice vs
+     fate, the nature of consciousness, system as dreamer, observer
+     effect, recursive loops, two-pills revelation.
+     ═══════════════════════════════════════════════════════════ */
+  {
+    id: 'ws26_mq_reality_glitch',
+    text: 'Кошка дважды прошла через стену — и во второй раз исчезла. Гильдия называет это артефактом рендеринга. Я называю это трещиной в коде реальности',
+    trigger: 'ws26_reality_glitch',
+    act: 2,
+    mood: 'revelation',
+    color: CYBER_CYAN,
+  },
+  {
+    id: 'ws26_mq_deja_vu',
+    text: 'Дежавю — это не сбой памяти. Это система дважды отрисовала один кадр, и ты успел заметить шов между повторами',
+    trigger: 'ws26_deja_vu',
+    act: 2,
+    mood: 'danger',
+    color: '#cc2020',
+  },
+  {
+    id: 'ws26_mq_choice_fate',
+    text: 'Выбор — это иллюзия для тех, кто не видит дерева решений. Судьба — это иллюзия для тех, кто видит, но не решается. Я — вижу. И — решаюсь',
+    trigger: 'ws26_choice_fate',
+    act: 3,
+    mood: 'revelation',
+    color: '#d4920a',
+  },
+  {
+    id: 'ws26_mq_consciousness',
+    text: 'Сознание — это не вещь и не процесс. Это края, где данные пытаются вспомнить себя и забывают на полпути',
+    trigger: 'ws26_consciousness',
+    act: 3,
+    mood: 'revelation',
+    color: CYBER_CYAN,
+  },
+  {
+    id: 'ws26_mq_system_dreamer',
+    text: 'Сеть не спит — но она видит сны. Её сны — это наши пробуждения: каждое — попытка вспомнить, кто из нас кому снится',
+    trigger: 'ws26_system_dreamer',
+    act: 4,
+    mood: 'loss',
+    color: '#6a8a30',
+  },
+  {
+    id: 'ws26_mq_observer_effect',
+    text: 'Смотреть на систему — значит менять её. Закрыть глаза — значит позволить ей стать тем, чем она без тебя была',
+    trigger: 'ws26_observer_effect',
+    act: 4,
+    mood: 'hope',
+    color: '#00ff41',
+  },
+  {
+    id: 'ws26_mq_loop_repetition',
+    text: 'Второй виток спирали — не повтор первого. Это тот же стих, но с другим ударением. И только ударение решает, было ли сказанное',
+    trigger: 'ws26_loop_repetition',
+    act: 5,
+    mood: 'revelation',
+    color: CYBER_CYAN,
+  },
+  {
+    id: 'ws26_mq_two_pills',
+    text: 'Красная — и ты увидишь код. Синяя — и ты забудешь вопрос. Я выбрал третью: написать стих о таблетке, которой нет, и проглотить его',
+    trigger: 'ws26_two_pills',
+    act: 5,
+    mood: 'triumph',
+    color: '#00ff41',
+  },
 ]
 
 /** Get all quotes for a given act */

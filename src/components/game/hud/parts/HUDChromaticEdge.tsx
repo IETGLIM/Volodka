@@ -19,7 +19,7 @@ export function HUDChromaticEdge() {
 
   return (
     <div
-      className="fixed inset-0 pointer-events-none chromatic-edge-container"
+      className="fixed inset-0 pointer-events-none chromatic-edge-container hud-filmic-chromatic-shift"
       aria-hidden="true"
       style={{ zIndex: 3 }}
     >

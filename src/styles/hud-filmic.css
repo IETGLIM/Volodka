@@ -3739,3 +3739,176 @@
     box-shadow: 0 0 6px 2px rgba(0, 229, 255, 0.08);
   }
 }
+
+/* ── 43. Ambient particle drift ──
+   Subtle vertical drift for AmbientParticles outer container —
+   gently oscillates the whole particle field up and down for a
+   breathing atmospheric haze. translateY(0 → -3px → 0),
+   6s ease-in-out infinite. Apply via
+   className="hud-filmic-particle-drift" on the AmbientParticles
+   outer container div (the absolute inset-0 wrapper). */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-particle-drift {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-3px);
+    }
+  }
+
+  .hud-filmic-particle-drift {
+    animation: hud-filmic-particle-drift 6s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-particle-drift {
+    animation: none;
+    transform: none;
+  }
+}
+
+/* ── 44. Compass POI ping ──
+   Gentle scale pulse on CompassPOIMarkers container — radiates
+   the marker field outward from the compass center and back,
+   reading as a slow radar ping. scale(1 → 1.1 → 1),
+   2.5s ease-in-out infinite. Apply via className="hud-filmic-poi-ping"
+   on the CompassPOIMarkers outer container div (50×50 wrapper). */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-poi-ping {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.1);
+    }
+  }
+
+  .hud-filmic-poi-ping {
+    animation: hud-filmic-poi-ping 2.5s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-poi-ping {
+    animation: none;
+    transform: none;
+  }
+}
+
+/* ── 45. Minimap scan drift ──
+   Slow vertical drift of the CyberpunkMinimap scanline overlay —
+   shifts the CRT scanline pattern by exactly one period (4px)
+   for a seamless looping scan. background-position-y(0 → 4px),
+   8s linear infinite. Apply via className="hud-filmic-minimap-scan"
+   on the scanlines motion.div inside CyberpunkMinimap. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-minimap-scan {
+    0% {
+      background-position-y: 0;
+    }
+    100% {
+      background-position-y: 4px;
+    }
+  }
+
+  .hud-filmic-minimap-scan {
+    animation: hud-filmic-minimap-scan 8s linear infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-minimap-scan {
+    animation: none;
+  }
+}
+
+/* ── 46. Chromatic edge shift ──
+   Subtle hue-rotate oscillation on HUDChromaticEdge container —
+   shifts the RGB-split edge bars through a narrow hue range for
+   a "damaged optics" shimmer. filter: hue-rotate(0deg → 8deg →
+   0deg), 7s ease-in-out infinite. Apply via
+   className="hud-filmic-chromatic-shift" on the
+   chromatic-edge-container div. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-chromatic-shift {
+    0%, 100% {
+      filter: hue-rotate(0deg);
+    }
+    50% {
+      filter: hue-rotate(8deg);
+    }
+  }
+
+  .hud-filmic-chromatic-shift {
+    animation: hud-filmic-chromatic-shift 7s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-chromatic-shift {
+    animation: none;
+    filter: none;
+  }
+}
+
+/* ── 47. Distance ring expand ──
+   Sonar-style scale + opacity pulse on InteractionDistanceRing
+   inner radial-gradient fill. Pulses only while the player is
+   within interaction range. scale(1 → 1.15 → 1) + opacity
+   (0.5 → 0.15 → 0.5), 1.6s ease-in-out infinite. Apply via
+   className="hud-filmic-distance-ring-expand" on the
+   distance-ring-fill motion.div. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-distance-ring-expand {
+    0%, 100% {
+      transform: scale(1);
+      opacity: 0.5;
+    }
+    50% {
+      transform: scale(1.15);
+      opacity: 0.15;
+    }
+  }
+
+  .hud-filmic-distance-ring-expand {
+    animation: hud-filmic-distance-ring-expand 1.6s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-distance-ring-expand {
+    animation: none;
+    transform: none;
+    opacity: 1;
+  }
+}
+
+/* ── 48. Time icon tick ──
+   Subtle rotate oscillation on TimeIcon inner container — reads
+   as a slow clock-hand twitch, reinforcing the time-of-day
+   affordance. rotate(0deg → 6deg → 0deg), 4s ease-in-out
+   infinite. Apply via className="hud-filmic-time-tick" on the
+   TimeIcon inner wrapper div (all four phase branches). */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-time-tick {
+    0%, 100% {
+      transform: rotate(0deg);
+    }
+    50% {
+      transform: rotate(6deg);
+    }
+  }
+
+  .hud-filmic-time-tick {
+    animation: hud-filmic-time-tick 4s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-time-tick {
+    animation: none;
+    transform: none;
+  }
+}

@@ -56,6 +56,7 @@ export function LibraryDayVisual() {
         <>
           {/* ── Floor ── */}
           {/* WS21-C: PBR upgrade — waxed floor with clearcoat */}
+          {/* WS26-C: verified clearcoat=0.35 waxed parquet (sane bound, no value change) */}
           <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001}>
             <planeGeometry args={[W, D]} />
             <meshPhysicalMaterial

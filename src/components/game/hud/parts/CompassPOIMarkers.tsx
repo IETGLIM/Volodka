@@ -90,7 +90,7 @@ export function CompassPOIMarkers() {
 
   return (
     <div
-      className="absolute inset-0 pointer-events-none"
+      className="absolute inset-0 pointer-events-none hud-filmic-poi-ping"
       style={{ width: 50, height: 50 }}
       aria-hidden="true"
     >
