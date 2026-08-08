@@ -12,7 +12,6 @@ import { EnvironmentDetail } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { createVolodkaCorridorRainySkyTexture } from '@/engine/graphics/proceduralSkyTextures';
 import { registerModuleGeometries } from '@/engine/three/moduleGeometryRegistry';
-import { AmbientParticles } from './AmbientParticles';
 import { PolyHavenStandardMaterial } from './PolyHavenStandardMaterial';
 import {
   getRainSpillInFloorBoost,

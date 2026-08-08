@@ -146,9 +146,11 @@ export function restartCurrentSceneAtDefaultSpawn(): boolean {
 
 /** Transition to the scene declared on a story node (if any). */
 export function requestSceneTransitionForStoryNode(
-  storyNodeId: string,
+  _storyNodeId: string,
   sceneId: string | undefined,
 ): boolean {
+  // _storyNodeId is accepted for API symmetry with other story-node hooks but
+  // is not used here — the transition only needs the target sceneId.
   if (!sceneId) return false;
   return requestSceneTransition(sceneId as SceneId);
 }

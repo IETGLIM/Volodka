@@ -210,7 +210,7 @@ export function AaaLivingWorldActivities() {
       }),
 
       // Additional ambient world life (not just on E-press)
-      eventBus.on('exploration:footstep', ({ sceneId }: any) => {
+      eventBus.on('exploration:footstep', () => {
         // Occasional living world whispers on movement (very rare, atmospheric)
         if (Math.random() < 0.018) {
           const whispers = [

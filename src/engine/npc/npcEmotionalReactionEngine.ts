@@ -40,7 +40,7 @@ export const NPC_EMOTION_RADIUS_M = 6;
 export const NPC_PERCEPTION_RADIUS_M = 5;
 
 /** Default duration for proximity-triggered curiosity (ms). */
-const _PROXIMITY_EMOTION_DURATION = 5000;
+// const _PROXIMITY_EMOTION_DURATION = 5000; // reserved — currently unused
 
 /* ─── EventBus subscription management ─── */
 
@@ -154,9 +154,13 @@ export function triggerNearbyNpcEmotion(
  * Clear emotional overrides triggered by a specific source for nearby NPCs.
  */
 export function clearNearbyNpcEmotion(
-  source: string,
+  _source: string,
   playerPosition?: THREE.Vector3,
 ): void {
+  // _source is accepted for API symmetry with triggerNearbyNpcEmotion but is
+  // not used — clearNpcEmotion(npcId) clears the NPC's emotion regardless of
+  // the original trigger source. Kept as a parameter to preserve the call-site
+  // signature (eventBus.on('combat:end', ...) passes 'combat_nearby').
   const registeredIds = getRegisteredNPCIds();
   const radiusSq = NPC_EMOTION_RADIUS_M * NPC_EMOTION_RADIUS_M;
 

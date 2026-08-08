@@ -107,7 +107,7 @@ export function AaaInteractionRich() {
       eventBus.on('object:highlight', ({ position, size, label }: any) => {
         spawn(position, size, label);
       }),
-      eventBus.on('interaction:hint', ({ label }) => {
+      eventBus.on('interaction:hint', () => {
         // subtle tick on hover
         try { audioEngine.playSfx('ui_tick' as any); } catch {}
       }),

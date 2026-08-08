@@ -5,7 +5,7 @@
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { BOOT_LINES } from '@/engine/loading/loadingConstants';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { PROLOGUE_PERFECTION } from './prologuePerfectionConstants';

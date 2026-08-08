@@ -80,6 +80,7 @@ export function Inventory({ open, onClose, onOpenPoetryBook }: InventoryProps) {
   const _activeFilterLabel = INVENTORY_CATEGORY_FILTER_OPTIONS.find(
     (option) => option.value === categoryFilter,
   )?.label ?? categoryFilter;
+  void _activeFilterLabel;
 
   const totalCount = inventory.length;
   const filteredCount = filteredViews.length;

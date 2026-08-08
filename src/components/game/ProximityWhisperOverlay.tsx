@@ -145,6 +145,7 @@ export const ProximityWhisperOverlay = memo(function ProximityWhisperOverlay() {
   const _sceneId = useGameStore((s) => s.exploration.currentSceneId);
   const _playerPos = useGameStore((s) => s.exploration.playerPosition);
   const _flags = useGameStore((s) => s.playerState.flags);
+  void _sceneId; void _playerPos; void _flags;
 
   const [visibleWhispers, setVisibleWhispers] = useState<WhisperPoint[]>([]);
   const rafRef = useRef<number | null>(null);

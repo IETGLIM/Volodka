@@ -121,6 +121,7 @@ export function CodeBreakerGame({ onClose }: CodeBreakerGameProps) {
   const _handleSubmit = useCallback(() => {
     // This is auto-submitted when 4 digits are entered
   }, []);
+  void _handleSubmit;
 
   // Keyboard support
   useEffect(() => {

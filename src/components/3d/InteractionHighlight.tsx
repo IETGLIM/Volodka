@@ -33,9 +33,8 @@ const MAX_HIGHLIGHTS = 12;
 const HIGHLIGHT_DURATION = 1.15;
 const HIGHLIGHT_MAX_OPACITY = 0.48;
 const HIGHLIGHT_GLOW_INTENSITY = 2.4;
-// AAA filmi: warm amber + cool cyan blend — not cheap neon, but lived-in memory glow
+// AAA filmi: warm amber glow — not cheap neon, but lived-in memory glow
 const HIGHLIGHT_COLOR = '#ffdc9a';
-const HIGHLIGHT_COLOR_COOL = '#a8e6e0';
 
 function createSlot(): SlotResources {
   const innerGeo = new THREE.BoxGeometry(1, 1, 1);

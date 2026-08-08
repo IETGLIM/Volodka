@@ -22,7 +22,6 @@ import { isEffectiveReducedMotion } from '@/engine/accessibility/accessibilitySe
 const MAX_PARTICLES = 30;
 const PARTICLE_LIFETIME = 0.6; // seconds
 const PARTICLES_PER_STEP_MIN = 3;
-const PARTICLES_PER_STEP_MAX = 5;
 const PARTICLE_BASE_SIZE = 0.06;
 const PARTICLE_UPWARD_VEL = 0.4;
 const PARTICLE_OUTWARD_VEL = 0.35;

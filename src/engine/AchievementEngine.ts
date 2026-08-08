@@ -23,8 +23,9 @@ import type { EnemyType } from '@/shared/types/game';
 /** Previous game mode for transition detection */
 let prevMode: string | null = null;
 
-/** Previous energy value for recovery detection */
+/** Previous energy value for recovery detection (intentionally write-only — reserved for future recovery-detection logic) */
 let _prevEnergy = 0;
+void _prevEnergy;
 
 /** Whether we already checked the "first awakening" this session */
 let firstAwakeningChecked = false;

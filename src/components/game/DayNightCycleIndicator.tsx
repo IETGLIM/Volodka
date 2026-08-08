@@ -115,6 +115,7 @@ function _getPhaseProgress(timeOfDay: number, phase: TimePhase): number {
 
   return Math.max(0, Math.min(1, elapsed / duration));
 }
+void _getPhaseProgress;
 
 /* ── Calculate overall cycle position (0-1 for the full 24h arc) ── */
 function getCyclePosition(timeOfDay: number): number {

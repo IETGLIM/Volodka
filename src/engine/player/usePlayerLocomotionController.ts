@@ -24,7 +24,6 @@ const BLEND_WALK_RUN = 3.6;  // Walk→Run: natural weight transfer
 const BLEND_DECEL = 2.8;     // Walk→Idle / Run→Walk: longer settle into idle
 const BLEND_CINEMATIC = 6.5; // Cinematic entry/exit: filmic hand-off
 
-const _CLIP_CROSSFADE_SEC = 0.28;
 const CINEMATIC_CROSSFADE_SEC = 0.48;
 
 /** Weight threshold — below this, clamp to 0 to allow the mixer to deactivate the action. */

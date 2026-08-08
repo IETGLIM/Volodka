@@ -256,6 +256,7 @@ export function QuizGame({ onClose }: QuizGameProps) {
     // Calculate total XP and karma from correct answers
     const _totalXp = 0;
     const _totalKarma = 0;
+    void _totalXp; void _totalKarma;
     questions.forEach((_q, _i) => {
       // We only reward for correctly answered questions
       // We track this via correctCount — but need a better approach
@@ -303,6 +304,7 @@ export function QuizGame({ onClose }: QuizGameProps) {
   };
 
   const _maxScore = QUESTIONS_PER_ROUND * 100; // approximate max
+  void _maxScore;
 
   // ═══════════════════════════════════════════════════════════════
   // RENDER

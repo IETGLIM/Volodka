@@ -35,6 +35,7 @@ interface EventLogEntry {
 
 /* ── All valid scene IDs ── */
 const _SCENE_IDS = Object.keys(SCENE_CONFIG) as SceneId[];
+void _SCENE_IDS;
 
 /* ── Scene category groupings ── */
 const SCENE_GROUPS: Record<string, SceneId[]> = {

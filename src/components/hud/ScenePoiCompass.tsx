@@ -195,6 +195,7 @@ const RadarInner = memo(function RadarInner({
   }, []);
 
   const _isMobile = false; // compass is desktop-only for now
+  void _isMobile;
 
   return (
     <div

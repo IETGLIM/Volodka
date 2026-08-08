@@ -4,7 +4,6 @@
  * Free, no external assets — pure Three.js + CSS + WebAudio.
  */
 
-import type { PoemId } from '@/shared/types/brands';
 import { eventBus } from '@/engine/EventBus';
 
 export interface PoemCinematicVfxProfile {

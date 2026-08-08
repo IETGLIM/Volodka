@@ -29,7 +29,6 @@ export interface DialogueFocusSnapshot {
 }
 
 class DialogueFocusTargetStore {
-  private readonly scratch: THREE.Vector3 = new THREE.Vector3();
   private cachedPosition: THREE.Vector3 | null = null;
   private active: boolean = false;
   private revision: number = 0;

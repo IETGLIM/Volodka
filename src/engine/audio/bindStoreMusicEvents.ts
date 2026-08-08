@@ -16,7 +16,7 @@ export function bindStoreMusicEvents(): void {
   bound = true;
 
   unsubs.push(
-    eventBus.on('ui:music_volume', ({ volume }) => {
+    eventBus.on('ui:music_volume', () => {
       // applyAudioSettings re-reads all settings (including musicEnabled) and
       // applies the correct volume to all engines. Simpler than computing the
       // multiplier here.

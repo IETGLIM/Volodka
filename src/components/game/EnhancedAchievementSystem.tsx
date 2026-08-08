@@ -648,5 +648,6 @@ const _AchievementStylesCSS = `
     100% { background-position: 200% center; }
   }
 `;
+void _AchievementStylesCSS;
 
 export default AchievementGrid;

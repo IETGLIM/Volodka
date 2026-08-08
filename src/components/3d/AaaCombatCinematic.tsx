@@ -32,7 +32,7 @@ export function AaaCombatCinematic() {
           triggerCameraShake(0.16, 7);
         }
       }),
-      eventBus.on('combat:bullet_time' as any, ({ duration, intensity }) => {
+      eventBus.on('combat:bullet_time' as any, ({ intensity }) => {
         // Bullet time already slows game via ScreenEffects, add camera FOV punch
         if (intensity > 0.4) {
           triggerCameraShake(intensity * 0.35, 3.5);

@@ -3687,3 +3687,174 @@ Stage Summary:
 - Fix: restored package.json deps, regenerated lockfile, added Rapier vite aliases, simplified CI to npm ci + npm run build.
 - 257 pre-existing type errors identified (TS6133 unused vars, TS2339 import.meta.env, TS2339 jest-dom matchers). Next priority: fix these and re-add typecheck to CI.
 - Poems untouched. All invariants preserved. No source code changes.
+
+---
+Task ID: QA-25
+Agent: general-purpose (agent-browser QA)
+Task: QA live site at volodka.vercel.app after CI fix commits
+
+Work Log:
+- Read worklog for context (Task 24/24b CI fix: commits 5ecd0560 + e22b3949 restored package.json, regenerated lockfile, added Rapier vite aliases, dropped typecheck — CI run #907 GREEN).
+- Reviewed git history: HEAD = 8900c4da. Key fix commits in history: 80caacd3 (WS20, audio mixer % fix), 8dd89f89 (WS23, main-menu nav race fix). Both preceded by destructive "Mega AI Update" 92528db2 which broke Vite build (vite.config.ts stripped 114→19 lines).
+- Launched agent-browser, navigated to https://volodka.vercel.app/. Page loaded with intro screen "Смерть есть лишь начало" + skip button.
+- Captured console errors and page errors at every stage (intro, main menu, settings, game, pause, mixer) — ZERO console errors, ZERO page errors throughout entire session.
+- Main menu renders correctly (no white screen): heading "ВОЛОДЬКА", subtitle "СКАЗКА МЕЖДУ СМЕНАМИ", 4 menuitems (Продолжить/Новая игра/Настройки/Об авторе), music toggle button. Screenshot 02-main-menu.png.
+- Tested all main menu options:
+  • "Новая игра" → dialog with "Начать с пролога" / "Пропустить пролог" / "Отмена" — PASS
+  • "Настройки" → dialog with Музыка ВКЛ, Нуар-режим ВЫКЛ, Управление (WASD/E/ESC) — PASS
+  • "Об авторе" → dialog showing v4.2.42, "© 2026", game description — PASS
+- New Game flow (skip prologue): narrative intro slides (8x ПРОДОЛЖИТЬ clicks) → game world "Игровой мир Володьки" + quest "Вызов ночного города" dialog. Screenshot 06-game-start.png. No errors.
+- Opened pause menu (ESC) during gameplay: "Пауза" with 7 menuitems (Быстрое сохранение / Управление сохранениями / Загрузить / Профиль персонажа / Отношения / Настройки / В главное меню / Продолжить). Screenshot 07-pause-menu.png.
+- AUDIO MIXER TEST (FAIL): Opened mixer via "Открыть микшер" button (aria-label, eval-click needed due to pointer-events overlay). Mixer panel "ЗВУКОВОЙ МИКШЕР" shows 4 channels:
+  • Музыка (Music): slider=100, text="7000%"  ← BUG
+  • Атмосфера (Atmosphere): slider=100, text="6000%"  ← BUG
+  • Звуки (Sounds): slider=100, text="8000%"  ← BUG
+  • Голоса (Voices): slider=75, text="75%"  ← OK (hardcoded value=75)
+  3 of 4 channels still show the "7000%/6000%/8000%" bug. Root cause confirmed in source: AmbientSoundMixer.tsx line 50 does `Math.round(s.musicVolume * 100)`; if readAudioSettings() returns raw fallback 70 (not 0.7), result = 7000. Source at HEAD has the fix (AudioSettings.ts lsGetPercent returns `fallback / 100`), but LIVE site does NOT. Screenshot 08-audio-mixer.png.
+- "В ГЛАВНОЕ МЕНЮ" BUTTON TEST (FAIL): Clicked pause-menu "В главное меню" (verified BUTTON element via eval-click). Did NOT navigate to main menu. Instead: pause menu closed → quest dialog "Вызов ночного города" re-appeared → stayed in game (URL unchanged, "Игровой мир Володьки" application still active). This matches the OLD buggy race condition (resetGame's mainMenuOpen:false patch clobbering setMainMenuOpen(true)). Source at HEAD has the fix (OrchestratorPauseMenu.tsx lines 69-77: synchronous resetGame() + setMainMenuOpen(true)), but LIVE site does NOT. Screenshots 10/11-after-main-menu-click.png. Tested 3 times, consistently fails.
+- Mobile responsiveness test (375x667 iPhone SE viewport): main menu renders cleanly with all 4 menuitems + music toggle; settings dialog renders with all controls. No layout breakage. Screenshots 13/14-mobile-*.png.
+- Verified deployed version: "Об авторе" dialog shows "v4.2.42" (matches package.json).
+- Browser closed. 14 screenshots saved to /home/z/volodka/qa-screenshots/.
+
+Stage Summary:
+- Console errors: NONE (0 console errors, 0 page errors across entire session).
+- Main menu renders: PASS (no white screen, all elements present, v4.2.42).
+- Main menu nav button ("В главное меню"): FAIL — does not navigate to main menu; quest dialog appears instead. Fix from commit 8dd89f89 is in source but NOT deployed.
+- Audio mixer % display: FAIL — shows 7000%/6000%/8000% for Music/Atmosphere/Sounds (3/4 channels); only Voices shows correct 75%. Fix from commit 80caacd3 is in source but NOT deployed.
+- Mobile responsiveness: PASS (375x667 viewport renders main menu + settings cleanly).
+- Root cause: Vercel deployment is STALE. The "Mega AI Update" (92528db2, 03:20) broke the Vite build (stripped vite.config.ts), so Vercel could not deploy any commit after ~01:32 (commit 80caacd3). Both bug fixes (80caacd3 audio, 8dd89f89 nav) exist in source at HEAD but never shipped. The CI was just fixed (5ecd0560 + e22b3949, 08:37-08:44) — Vercel needs a fresh rebuild from latest main (8900c4da) to deploy both fixes.
+- Screenshots: /home/z/volodka/qa-screenshots/01..14-*.png (key: 02-main-menu, 07-pause-menu, 08-audio-mixer, 10-after-main-menu-click, 13-mobile-main-menu).
+- Overall QA verdict: UNSTABLE — site runs without runtime errors/crashes, but both targeted regression fixes (audio mixer %, main menu nav) are NOT live due to stale Vercel deployment. ACTION REQUIRED: trigger a Vercel rebuild/deploy from main@8900c4da (or verify Vercel auto-deploy succeeded after CI went green), then re-run this QA to confirm both fixes are live.
+
+---
+Task ID: TSFIX-B
+Agent: general-purpose (TS6133 fixer - components/game)
+Task: Fix TS6133 unused variable errors in src/components/game/ and src/components/hud/ files
+
+Work Log:
+- Read worklog.md for project context (Volodka RPG, Disco Elysium mechanics, sacred files/invariants noted).
+- Inspected each flagged location to determine the unused identifier and root cause.
+- Categorized fixes into 3 strategies:
+  (a) Unused `_`-prefixed variable/constant/function → added `void _varName;` on the next line (Strategy 4). Preserves the declaration so future devs can see the original intent while satisfying TS6133.
+  (b) Unused import → removed the import line entirely (Strategy 1).
+  (c) Unused named import within an aliased import → removed only the unused named binding (Strategy 1).
+- Applied fixes to all 28 flagged locations across 20 files. No runtime behavior changes, no physics/APOCALYPSE/poems touched.
+- For ObjectiveBeacon.tsx the first MultiEdit accidentally produced a duplicate `useEffectiveReducedMotion` import (caused by my new_str accidentally re-emitting the next existing import line); fixed immediately with a follow-up Edit to collapse the duplicate.
+- Verified with `node scripts/tsc7.mjs --noEmit 2>&1 | rg "TS6133" | rg "components/game/|components/hud/" | wc -l` → 0.
+- Additionally confirmed total TS6133 count project-wide → 0, and no other tsc7 errors introduced in the modified files.
+
+Stage Summary:
+- Files fixed (20):
+  1. src/components/game/CharacterProfilePanel.tsx — added `void _equipDef;` (line 623→624)
+  2. src/components/game/CodeBreakerGame.tsx — added `void _handleSubmit;` (line 121→124)
+  3. src/components/game/CombatUI.tsx — removed unused `import React from 'react'` (line 3)
+  4. src/components/game/DayNightCycleIndicator.tsx — added `void _getPhaseProgress;` after function (line 97→118)
+  5. src/components/game/DevPanel.tsx — added `void _SCENE_IDS;` (line 37→38)
+  6. src/components/game/EnhancedAchievementSystem.tsx — added `void _AchievementStylesCSS;` (line 641→651)
+  7. src/components/game/ExplorationMobileHud.tsx — added `void _MOVEMENT_CONTROL_KEYS;` (line 74→81) and `void _isTablet;` (line 317→319)
+  8. src/components/game/FastTravelPanel.tsx — added `void _isHovered;` (line 320→321) and `void _travelHours;` (line 323→325)
+  9. src/components/game/Inventory.tsx — added `void _activeFilterLabel;` (line 80→83)
+  10. src/components/game/ProximityWhisperOverlay.tsx — added `void _sceneId; void _playerPos; void _flags;` (lines 145-147→148)
+  11. src/components/game/QuizGame.tsx — added `void _totalXp; void _totalKarma;` (lines 257-258→259) and `void _maxScore;` (line 305→307)
+  12. src/components/game/SceneTransitionOverlay.tsx — added `void _motionDuration;` (line 82→83)
+  13. src/components/game/TradingPanel.tsx — added `void _npcDef;` (line 118→122)
+  14. src/components/game/WeatherAlertNotification.tsx — added `void _effect;` (line 329→330)
+  15. src/components/game/hud/parts/EmergencyHelpButton.tsx — added `void _questTitle;` (line 82→87)
+  16. src/components/game/hud/parts/EnvironmentMoodIndicator.tsx — added `void _config;` (line 27→28)
+  17. src/components/game/hud/parts/ObjectiveBeacon.tsx — removed unused imports `eventBus` (line 16) and `SCENE_CONFIG` (line 23)
+  18. src/components/game/journal/ClothingTab.tsx — added `void _playerState;` (line 63→64) and `void _clothingById;` (line 69→77)
+  19. src/components/game/prologue/PrologueBootConsole.tsx — removed unused `AnimatePresence` from framer-motion import (line 8)
+  20. src/components/hud/ScenePoiCompass.tsx — added `void _isMobile;` (line 197→198)
+- Total TS6133 errors resolved: 28 (all in components/game/ and components/hud/).
+- Verification: `node scripts/tsc7.mjs --noEmit 2>&1 | rg "TS6133" | rg "components/game/|components/hud/" | wc -l` → 0
+- Project-wide tsc7 output is also clean (0 lines, no other error types introduced).
+- Deviations from standard strategies: none — all fixes used Strategy 1 (remove unused import) or Strategy 4 (`void _var;` for `_`-prefixed intentional-unused).
+- No CSS side-effect imports encountered in this batch.
+- No SACRED files touched (poems.ts untouched); no physics/APOCALYPSE invariants altered; all changes are type-only.
+
+---
+Task ID: TSFIX-A
+Agent: general-purpose (TS6133 fixer - components/3d)
+Task: Fix TS6133 unused variable errors in src/components/3d/ files
+
+Work Log:
+- Read worklog.md for project context and reviewed tsconfig.json (noUnusedLocals + noUnusedParameters both true; `_`-prefix exception applies to function params but NOT to locals)
+- Fixed 20 TS6133 errors across 11 files in src/components/3d/ using surgical Edit/MultiEdit operations:
+  1. AaaCinematicAtmosphere.tsx:136 — added `void sceneId;` to silence unused destructured prop in HeroGodRayDust (preserves public component API)
+  2. AaaCombatCinematic.tsx:35 — removed `duration` from destructured bullet_time handler params (kept `intensity`)
+  3. AaaInteractionRich.tsx:110 — removed `({ label })` destructuring from interaction:hint handler (now `() =>`)
+  4. AaaLivingWorldActivities.tsx:213 — removed `({ sceneId }: any)` destructuring from exploration:footstep handler (now `() =>`)
+  5. CinematicTimelineRunner.tsx:570 — added `void _exhaustive;` after exhaustive switch check to keep compile-time exhaustiveness guarantee while satisfying noUnusedLocals
+  6. FootstepDust.tsx:25 — removed dead constant `PARTICLES_PER_STEP_MAX` (PARTICLES_PER_STEP_MIN still used)
+  7. InteractionHighlight.tsx:38 — removed dead constant `HIGHLIGHT_COLOR_COOL` and adjusted comment to drop "+ cool cyan blend"
+  8. QuestWaypoints.tsx:116 — added `void _targetName;` after useMemo (kept useMemo to avoid turning `label`/`targetScene` params into new unused-param errors)
+  9. SleepDreamVisual.tsx:310-311 — added `void _halfW;` and `void _halfD;` after the two `_`-prefixed locals in DreamDustField
+  10. VolodkaCorridorVisual.tsx:15 — removed unused `AmbientParticles` import (only referenced in a comment at line 701)
+  11. VolodkaRoomVisual.tsx:180-198 — removed 8 dead shared-material declarations: mat_15, mat_16, mat_17, mat_19, mat_22, mat_23, mat_24, mat_33 (kept surrounding mat_18/20/21/25 and mat_32/34 intact)
+  12. WorldItemPickupGlow.tsx:158 — renamed unused `.map((p, i) =>` param to `(_p, i) =>` (TS noUnusedParameters ignores `_`-prefixed params, confirmed by existing `_playerPosRef` pattern in QuestWaypoints.tsx:160)
+- Ran verification: `node scripts/tsc7.mjs --noEmit 2>&1 | rg "TS6133" | rg "components/3d/" | wc -l` → 0
+- Cross-checked with direct native tsc invocation (`node node_modules/@typescript/native/bin/tsc --noEmit`) → exit 0, zero output (entire project type-checks clean, no new errors introduced)
+
+Stage Summary:
+- Files fixed (11): AaaCinematicAtmosphere.tsx, AaaCombatCinematic.tsx, AaaInteractionRich.tsx, AaaLivingWorldActivities.tsx, CinematicTimelineRunner.tsx, FootstepDust.tsx, InteractionHighlight.tsx, QuestWaypoints.tsx, SleepDreamVisual.tsx, VolodkaCorridorVisual.tsx, VolodkaRoomVisual.tsx, WorldItemPickupGlow.tsx (12 files total)
+- TS6133 errors resolved: 20 (all listed in task)
+- Strategy deviations: none — all fixes used the prescribed strategies (remove import, remove declaration, void pattern for `_`-prefixed locals and exhaustive-switch, `_`-prefix for unused function param)
+- No runtime behavior changed; no physics invariants, APOCALYPSE RAMP values, or sacred files touched
+
+---
+Task ID: TSFIX-C
+Agent: general-purpose (TS6133 fixer - engine/data/store/shared)
+Task: Fix TS6133 unused variable errors in src/engine/, src/data/, src/store/, src/shared/ files
+
+Work Log:
+- Read worklog.md for project context, then read all 20 target error sites in parallel.
+- Classified each error by fix strategy (unused import / unused var / `_`-prefixed / `_exhaustive: never`).
+- Applied surgical Edit/MultiEdit fixes file-by-file:
+  1. AchievementEngine.ts:27 — `_prevEnergy` is write-only (assigned at L288, L315, never read). Added `void _prevEnergy;` after declaration to mark it as read (strategy 4). Preserved the assignments to avoid touching unrelated logic.
+  2. MusicEngine.ts:758,759 — `_onBlur` / `_onFocus` class fields were dead state left over from P1-3.5 refactor (constructor comment already documents they are managed centrally by SharedAudioContext). Removed both field declarations, replaced with an explanatory comment.
+  3. audioCapabilities.ts:134 — `_dz` computed but never used in stereo pan formula (only `dx` matters). Removed the line.
+  4. audioCapabilities.ts:202 — `_now = ctx.currentTime` captured but never used. Removed the line.
+  5. bindStoreMusicEvents.ts:19 — `ui:music_volume` handler destructured `{ volume }` but never used it (applyAudioSettings re-reads everything). Changed handler to `() => { ... }`.
+  6. cinematicCamera.ts:38 — `_DIALOGUE_TIME_SCALE` constant never referenced. Removed.
+  7. cinematicCamera.ts:71 — Original target was line 71 col 7. After reading the file I confirmed line 71 = `_tempVel` (not `_springForce` — `_springForce` lives on line 72 and IS used at L183-184). First pass incorrectly removed `_springForce`; second pass restored `_springForce` and removed the actually-unused `_tempVel`. No runtime behavior change.
+  8. combatRng.test.ts:71 — `_ability = POEM_COMBAT_ABILITIES.poem_5!` was the only use of `POEM_COMBAT_ABILITIES` import. Removed both the local and the now-orphaned `import { POEM_COMBAT_ABILITIES } from './actions'` line.
+  9. dialogueFocusTarget.ts:32 — `private readonly scratch: THREE.Vector3` was declared but never used by any method of DialogueFocusTargetStore. Removed.
+ 10. npcAmbientBarkSystem.ts:161 — `_hasCustomBarks` computed but never read. Removed the declaration; preserved the surrounding comment about DEFAULT_EMOTION_BARKS fallback.
+ 11. npcEmotionalReactionEngine.ts:43 — `_PROXIMITY_EMOTION_DURATION` never referenced. Commented out with a "reserved — currently unused" note (preserves intent for future proximity work).
+ 12. npcEmotionalReactionEngine.ts:157 — `clearNearbyNpcEmotion(source, ...)` parameter `source` was unused (clearNpcEmotion(npcId) clears regardless of source). Renamed to `_source` (TS6133 convention for intentionally-unused params) and added a doc comment explaining the API-symmetry rationale. Call sites pass positionally, so rename is safe.
+ 13. preloadPhysicsChunk.ts:81 — `isExternal` was computed from `window.location.href.includes('rapier-external')` but never read (the `mode` heuristic uses `wasmInitMs` instead). Removed the dead line.
+ 14. playerMainMovement.ts:327 — `_posAfterGroundEnforcement = rb.translation()` had no readers. Removed.
+ 15. usePlayerLocomotionController.ts:27 — `_CLIP_CROSSFADE_SEC` never referenced (CINEMATIC_CROSSFADE_SEC is used instead). Removed.
+ 16. sceneTransition.ts:149 — `requestSceneTransitionForStoryNode(storyNodeId, sceneId)` never used `storyNodeId`. Renamed to `_storyNodeId` with explanatory comment. All call sites (DialogueRenderer, StoryRenderer, narrativeChoiceExecutor) pass positionally.
+ 17. gameDataLoader.ts:331 — `_assertLoaded()` was a dead private helper superseded by `assertQuestsLoaded()` / `assertNarrativeLoaded()`. Removed the function entirely (truly dead code).
+ 18. evaluateTrophyCondition.ts:83 — `_exhaustive: never = condition` exhaustive-switch guard. Added `void _exhaustive;` on the next line (strategy 3).
+ 19. applyGameAction.ts:134 — same `_exhaustive: never = action` exhaustive-switch guard. Added `void _exhaustive;` inline (strategy 3).
+- Ran `node scripts/tsc7.mjs --noEmit` to verify. Initial re-run surfaced 2 collateral errors caused by my first cinematicCamera edit (I had removed `_springForce` which was still used at L183-184, and removing `_ability` left `POEM_COMBAT_ABILITIES` import dangling). Fixed both: restored `_springForce`, removed the orphaned import.
+- Final verification: `node scripts/tsc7.mjs --noEmit 2>&1 | rg "TS6133" | rg "engine/|data/|store/|shared/" | wc -l` → 0. Full tsc7 run exits 0 with zero error lines.
+
+Stage Summary:
+- Files fixed (16 distinct files, 20 error sites):
+  - src/engine/AchievementEngine.ts (1)
+  - src/engine/MusicEngine.ts (2)
+  - src/engine/audio/audioCapabilities.ts (2)
+  - src/engine/audio/bindStoreMusicEvents.ts (1)
+  - src/engine/camera/cinematicCamera.ts (2 — `_DIALOGUE_TIME_SCALE` + `_tempVel`)
+  - src/engine/combat/combatRng.test.ts (1 + collateral import cleanup)
+  - src/engine/graphics/dialogueFocusTarget.ts (1)
+  - src/engine/npc/npcAmbientBarkSystem.ts (1)
+  - src/engine/npc/npcEmotionalReactionEngine.ts (2)
+  - src/engine/physics/preloadPhysicsChunk.ts (1)
+  - src/engine/player/playerMainMovement.ts (1)
+  - src/engine/player/usePlayerLocomotionController.ts (1)
+  - src/engine/scene/sceneTransition.ts (1)
+  - src/data/gameDataLoader.ts (1)
+  - src/shared/achievements/evaluateTrophyCondition.ts (1)
+  - src/store/applyGameAction.ts (1)
+- Total TS6133 errors resolved in target directories: 20
+- Total TS6133 errors remaining project-wide: 0
+- tsc7 --noEmit exit code: 0 (clean)
+- Deviations from standard strategies:
+  - cinematicCamera.ts line 71: Task description did not name the variable; my first pass misidentified it as `_springForce` (which is actually used at L183-184) instead of `_tempVel`. Caught immediately by re-running tsc7 and corrected before completion.
+  - combatRng.test.ts: Removing the unused local `_ability` left its import `POEM_COMBAT_ABILITIES` unused, triggering a fresh TS6133. Removed the import line in the same pass.
+  - npcEmotionalReactionEngine.ts:43 `_PROXIMITY_EMOTION_DURATION`: chose to comment out rather than delete because the `_` prefix signals intentional reservation for future proximity-emotion work; the comment makes this explicit.
+- No runtime behavior changes; no edits to src/data/poems.ts; physics invariants (interpolate={false}, KCC ownership, runMainPlayerMovement), APOCALYPSE RAMP values, and all call-site signatures preserved.

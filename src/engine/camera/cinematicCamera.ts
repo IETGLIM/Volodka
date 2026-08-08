@@ -35,7 +35,6 @@ const ROLL_LERP_SPEED = 4;
 const DIALOGUE_SHOT_INTERVAL_MIN = 3.6;
 const DIALOGUE_SHOT_INTERVAL_MAX = 4.5;
 const DIALOGUE_FOV = 50;
-const _DIALOGUE_TIME_SCALE = 0.92;
 const DIALOGUE_SHOT_TRANSITION_SPEED = 2.5; // speed of shot blend (higher = faster)
 export const DIALOGUE_SPRING_STIFFNESS = 5; // reduced from 8 — softer for dialogue, critically-damped with DIALOGUE_SPRING_DAMPING=4
 export const DIALOGUE_SPRING_DAMPING = 4;   // increased from 0.88 — proper damping (2*sqrt(5)≈4.47, slightly under for subtle sway)
@@ -68,7 +67,6 @@ const MIN_SEGMENT_DURATION = 0.001;   // guard against zero-duration infinite lo
 /* ── Pre-allocated temp vectors (avoid GC) ── */
 const _tempPos = new THREE.Vector3();
 const _tempLook = new THREE.Vector3();
-const _tempVel = new THREE.Vector3();
 const _springForce = new THREE.Vector3();
 const _camDir = new THREE.Vector3();
 const _camDirReverse = new THREE.Vector3();

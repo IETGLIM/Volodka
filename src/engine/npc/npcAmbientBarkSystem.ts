@@ -158,7 +158,6 @@ export function tickNpcAmbientBarks(params: {
 
     // Allow barks even if no ambientBarks config when emotion is active
     // (DEFAULT_EMOTION_BARKS provides fallback text)
-    const _hasCustomBarks = def.ambientBarks !== undefined;
 
     const group = getNpcGroupFn(npcId);
     if (!group) continue;

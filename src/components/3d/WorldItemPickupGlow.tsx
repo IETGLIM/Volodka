@@ -155,7 +155,7 @@ function CollectBurst({ burst, onDone }: { burst: BurstState; onDone: (id: strin
 
   return (
     <group ref={groupRef} position={burst.position}>
-      {burst.particles.map((p, i) => (
+      {burst.particles.map((_p, i) => (
         <mesh key={i} geometry={getSharedCircleGeometry(0.06, 8)} rotation-x={-Math.PI / 2}>
           <meshBasicMaterial
             ref={(m) => {

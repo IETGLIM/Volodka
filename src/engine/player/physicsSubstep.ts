@@ -62,7 +62,11 @@ export function computeKccMovementSubstepped(
       z: desiredDisplacement.z / stepCount,
     };
 
-    controller.computeColliderMovement(collider, subDisplacement);
+    // Type bridge: RapierCollider from @react-three/rapier and the Collider
+    // expected by the KCC (from the top-level rapier alias) are structurally
+    // identical (same v0.19.2) but tsc sees different type instances due to
+    // npm's nested installation. Cast through unknown to bridge them.
+    controller.computeColliderMovement(collider as unknown as never, subDisplacement);
     const actual = controller.computedMovement();
 
     // M3: Validate KCC displacement — if computedMovement() returns NaN

@@ -81,6 +81,7 @@ export function evaluateTrophyCondition(
 
     default: {
       const _exhaustive: never = condition;
+      void _exhaustive;
       return false;
     }
   }

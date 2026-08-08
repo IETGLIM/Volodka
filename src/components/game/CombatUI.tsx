@@ -1,6 +1,5 @@
 /* ─── Volodka RPG – Enhanced Combat UI Overlay ─── */
 
-import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { TooltipProvider } from '@/components/ui/tooltip';

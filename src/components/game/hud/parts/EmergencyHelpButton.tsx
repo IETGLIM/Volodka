@@ -84,6 +84,7 @@ export function EmergencyHelpButton() {
           ? guidance.objectiveText
           : null)
         : null;
+      void _questTitle;
 
       // Fallback: active golden-path quest objective
       let objectiveText = guidance?.objectiveText ?? '';

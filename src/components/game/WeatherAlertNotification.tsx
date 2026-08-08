@@ -327,6 +327,7 @@ export function WeatherAlertNotification() {
   /** Get temperature for weather type */
   const weatherTemperature = useMemo(() => {
     const _effect = WEATHER_EFFECTS[derivedWeather];
+    void _effect;
     // Use scene-based temperature estimation
     const isNight = timeOfDay >= 21 || timeOfDay < 6;
     switch (derivedWeather) {

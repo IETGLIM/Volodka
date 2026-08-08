@@ -134,6 +134,7 @@ function SoftVolumetricGlow({ sceneId }: { sceneId: string }) {
 
 /** Extra god-ray dust for hero interiors — makes light shafts feel alive and thick (AAA) */
 function HeroGodRayDust({ sceneId }: { sceneId: string }) {
+  void sceneId;
   const count = 18;
   const motes = useMemo(() => {
     return Array.from({ length: count }, (_, i) => ({

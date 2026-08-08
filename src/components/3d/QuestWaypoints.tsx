@@ -116,6 +116,7 @@ function QuestArrow({
   const _targetName = useMemo(() => {
     return SCENE_CONFIG[targetScene]?.name ?? label;
   }, [targetScene, label]);
+  void _targetName;
 
   useFrameTick('interaction', ({ delta }) => {
     timeRef.current += delta;

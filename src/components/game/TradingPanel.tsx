@@ -119,6 +119,7 @@ export function TradingPanel({ open, onClose, initialNpcId }: TradingPanelProps)
     () => (selectedNpcId ? findNpcById(selectedNpcId) : undefined),
     [selectedNpcId],
   );
+  void _npcDef;
 
   // Buy items list with computed prices
   const buyItems = useMemo(() => {

@@ -61,6 +61,7 @@ const TAG_LABELS: Record<SocialPerceptionTag, string> = {
 
 export function ClothingTab({ searchQuery }: ClothingTabProps) {
   const _playerState = usePlayerState();
+  void _playerState;
   const equippedItems = useEquippedItems();
   const socialTags = useSocialPerceptionTags();
   const skillModifiers = useClothingSkillModifiers();
@@ -73,6 +74,7 @@ export function ClothingTab({ searchQuery }: ClothingTabProps) {
     }
     return map;
   }, []);
+  void _clothingById;
 
   /* Build slot data: for each slot, show equipped item + clothing definition */
   const slotData = useMemo(() => {

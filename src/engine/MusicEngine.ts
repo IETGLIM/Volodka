@@ -755,8 +755,8 @@ class MusicEngine {
   private pendingStopCleanupTimer: ReturnType<typeof setTimeout> | null = null;
 
   // Blur/focus handlers for audio context suspend/resume
-  private _onBlur: (() => void) | null = null;
-  private _onFocus: (() => void) | null = null;
+  // (P1-3.5 FIX: individual handlers removed — managed centrally by SharedAudioContext.
+  // Fields intentionally omitted to avoid dead state.)
 
   constructor() {
     // P1-3.5 FIX: No longer creating a separate AudioContext.

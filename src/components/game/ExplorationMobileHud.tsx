@@ -78,6 +78,7 @@ const _MOVEMENT_CONTROL_KEYS: (keyof VirtualControls)[] = [
   'right',
   'jump',
 ];
+void _MOVEMENT_CONTROL_KEYS;
 
 interface ExplorationMobileHudProps {
   onInteractPress?: () => void;
@@ -315,6 +316,7 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory, onOpenJ
   // On tablets (>430px), use larger sizes.
   const isSmallScreen = vw < 360;
   const _isTablet = vw > 430;
+  void _isTablet;
 
   // D-pad button sizes (touch target >= 44px but visual can be smaller with padding)
   const dpadSize = Math.max(

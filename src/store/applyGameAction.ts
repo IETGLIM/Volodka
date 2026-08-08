@@ -131,7 +131,7 @@ export function applyGameAction(_state: GameStoreState, action: GameAction): voi
     case 'trophy/trackPoemPowerUse': getAchievementStoreState().trackPoemPowerUse(); break;
     case 'trophy/trackHighStressWin': getAchievementStoreState().trackHighStressWin(); break;
     case 'trophy/dismissNotification': getAchievementStoreState().dismissTrophyNotification(action.id); break;
-    default: { const _exhaustive: never = action; return; }
+    default: { const _exhaustive: never = action; void _exhaustive; return; }
   }
 }
 

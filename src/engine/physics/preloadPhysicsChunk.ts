@@ -78,7 +78,6 @@ export function preloadPhysicsChunk(): Promise<void> {
 
       const totalMs = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - totalStart;
 
-      const isExternal = typeof window !== 'undefined' && window.location?.href?.includes('rapier-external');
       // Heuristic: if wasm init took <300ms, likely external fetch with streaming, if >800ms likely base64 decode
       const mode: WasmMetrics['mode'] = wasmInitMs < 400 ? 'external-fetch' : 'inline-base64';
 

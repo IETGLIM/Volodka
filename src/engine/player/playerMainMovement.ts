@@ -324,7 +324,6 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
     z: vel.z * dt,
   };
 
-  const _posAfterGroundEnforcement = rb.translation();
   let collider = deps.capsuleColliderRef.current;
   let controller = scratch.controller;
 

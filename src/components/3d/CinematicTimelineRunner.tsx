@@ -568,6 +568,7 @@ export function CinematicTimelineRunner() {
           break;
         default: {
           const _exhaustive: never = phase.audioCue;
+          void _exhaustive;
           break;
         }
       }

@@ -621,6 +621,7 @@ export function CharacterProfilePanel({ open, onClose }: { open: boolean; onClos
                         {(['head', 'body', 'legs', 'feet', 'hands', 'accessory'] as EquipmentSlot[]).map((slot) => {
                           const equipped = equippedItems[slot];
                           const _equipDef = equipped ? getItemDefinition(equipped.id) : undefined;
+                          void _equipDef;
                           const cfg = SLOT_CONFIG[slot];
                           return (
                             <div

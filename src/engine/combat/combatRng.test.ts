@@ -12,7 +12,6 @@ import {
   setRngSeed,
   withCombatRng,
 } from './combatRng';
-import { POEM_COMBAT_ABILITIES } from './actions';
 
 function minimalCombatState(rngSeed = 42): CombatState {
   return {
@@ -68,7 +67,6 @@ describe('combat pity', () => {
 describe('combat damage reproducibility', () => {
   it('same seed yields the same poem_5 damage sequence', () => {
     const base = minimalCombatState(deriveCombatRngSeed(0x1234, 0, 'system_daemon'));
-    const _ability = POEM_COMBAT_ABILITIES.poem_5!;
 
     const run = (start: CombatState) => {
       const first = rollPlayerDamage(start, { attack: 20, defense: 4, multiplier: 2 });

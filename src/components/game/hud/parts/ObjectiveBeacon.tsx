@@ -13,14 +13,12 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { eventBus } from '@/engine/EventBus';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { useIsMobileVisual } from '@/hooks/use-mobile';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useActiveQuests, getQuestMarker } from '@/store/selectors/questSelectors';
 import { useCurrentSceneId, usePlayerPosition, useGamePrimitive } from '@/store/selectors';
 import { sharedCameraYawRef } from '@/engine/PlayerRotationState';
-import { SCENE_CONFIG } from '@/config/scenes';
 
 const DELAY_BEFORE_SHOW_MS = 15_000;
 const MIN_DISTANCE_M = 2.5;

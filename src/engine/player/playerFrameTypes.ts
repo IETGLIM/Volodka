@@ -46,7 +46,7 @@ export interface PlayerMovementDeps {
   config: ReturnType<typeof getSceneConfig>;
   locomotionScale: number;
   movementTuning: ReturnType<typeof getExplorationMovementTuning>;
-  world: GroundProbeWorld & { createCharacterController: (offset: number) => RapierCharacterController };
+  world: GroundProbeWorld & { createCharacterController(offset: number): unknown };
   rapier: GroundProbeRapier;
   groundProbeCacheRef: React.MutableRefObject<GroundProbeCacheState>;
   controls: PlayerControls;

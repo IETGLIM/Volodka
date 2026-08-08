@@ -80,6 +80,7 @@ export function SceneTransitionOverlay() {
   const sceneName = SCENE_CONFIG[targetSceneId]?.name ?? targetSceneId;
   const accent = getSceneTransitionAccent(transitionStyle ?? 'wipe');
   const _motionDuration = (ms: number) => (reducedMotion ? 0 : ms / 1000);
+  void _motionDuration;
   const transitionPresentation = {
     type: 'story_moment' as const,
     accentColor: accent,

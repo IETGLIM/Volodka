@@ -8,9 +8,18 @@ import {
   SNAP_DISTANCE,
 } from '@/engine/player/playerConstants';
 
+/**
+ * Structural world type for KCC lifecycle functions.
+ *
+ * Uses method shorthand (not property syntax) so TypeScript applies bivariant
+ * parameter checking — necessary because @react-three/rapier bundles its own
+ * nested copy of @dimforge/rapier3d-compat (same v0.19.2), causing tsc to see
+ * different KinematicCharacterController type instances. Bivariance bridges
+ * the structural mismatch without runtime impact.
+ */
 type WorldWithOptionalControllerRemove = {
-  removeCharacterController?: (controller: RapierCharacterController) => void;
-  createCharacterController: (offset: number) => RapierCharacterController;
+  removeCharacterController?(controller: unknown): void;
+  createCharacterController(offset: number): unknown;
 };
 
 type CharacterControllerWithOptionalFree = RapierCharacterController & {
@@ -42,7 +51,7 @@ export function createConfiguredCharacterController(
   world: WorldWithOptionalControllerRemove,
   skinWidth: number = SKIN_WIDTH,
 ): RapierCharacterController {
-  const controller = world.createCharacterController(skinWidth);
+  const controller = world.createCharacterController(skinWidth) as RapierCharacterController;
   controller.setUp({ x: 0, y: 1, z: 0 });
   controller.setMaxSlopeClimbAngle(MAX_SLOPE_CLIMB);
   controller.setMinSlopeSlideAngle(MIN_SLOPE_SLIDE);
