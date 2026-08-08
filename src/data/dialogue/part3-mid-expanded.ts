@@ -42,6 +42,17 @@ export const DIALOGUE_PART3_EXPANDED: Record<string, DialogueNode> = {
         ],
       },
       {
+        text: 'Я знаю, кто следит. Я видел их маршрутизатор в логах — порт 443, нестандартный TLS-сертификат. Мы можем не только прятаться — мы можем смотреть.',
+        next: null,
+        condition: { minKarma: 55 },
+        effects: [
+          { type: 'addKarma', value: 7 },
+          { type: 'addSkill', skill: 'coding', value: 2 },
+          { type: 'setFlag', flag: 'ws21b_zarema_counter_intel', flagValue: true },
+          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 8 } },
+        ],
+      },
+      {
         text: 'Может, ты и есть повод? За тобой следят — а заодно и за всеми, кто рядом. Может, тебе лучше уйти. Совсем.',
         next: null,
         condition: { maxKarma: 15 },
@@ -107,6 +118,18 @@ export const DIALOGUE_PART3_EXPANDED: Record<string, DialogueNode> = {
           { type: 'setFlag', flag: 'archive_zarema_poems', flagValue: true },
         ],
       },
+      {
+        text: 'Двести тридцать — это не библиотека. Это — распределённая база данных. Каждое стихотворение — реплика. Если один узел падает — остальные поднимают. Ты не одна, Зарема. Ты — master node.',
+        next: null,
+        condition: { minKarma: 50 },
+        effects: [
+          { type: 'addKarma', value: 6 },
+          { type: 'addSkill', skill: 'coding', value: 1 },
+          { type: 'addSkill', skill: 'empathy', value: 1 },
+          { type: 'setFlag', flag: 'ws21b_zarema_distributed_poetry', flagValue: true },
+          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 7 } },
+        ],
+      },
     ],
   },
 
@@ -131,6 +154,17 @@ export const DIALOGUE_PART3_EXPANDED: Record<string, DialogueNode> = {
         effects: [
           { type: 'addSkill', skill: 'writing', value: 1 },
           { type: 'addSkill', skill: 'empathy', value: 2 },
+        ],
+      },
+      {
+        text: 'Стены слушают, Зарема. Каждая царапина — улика. Гильдия прочтёт и узнает, кто был до тебя. Не царапай. Не оставляй следов.',
+        next: null,
+        condition: { maxKarma: 25 },
+        effects: [
+          { type: 'addKarma', value: -4 },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'setFlag', flag: 'ws21b_zarema_no_traces', flagValue: true },
+          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: -6 } },
         ],
       },
       {
@@ -165,6 +199,17 @@ export const DIALOGUE_PART3_EXPANDED: Record<string, DialogueNode> = {
           { type: 'addSkill', skill: 'persuasion', value: 2 },
           { type: 'setFlag', flag: 'guard_oleg_approached', flagValue: true },
           { type: 'addKarma', value: 5 },
+        ],
+      },
+      {
+        text: 'Олег шепчет — значит, канал открыт. Поэзия через охранника — это пассивный exfiltration. Мы не прорываемся — мы протекаем. Гильдия не заметит утечку в пять строк.',
+        next: null,
+        condition: { minKarma: 45 },
+        effects: [
+          { type: 'addKarma', value: 5 },
+          { type: 'addSkill', skill: 'coding', value: 1 },
+          { type: 'addSkill', skill: 'persuasion', value: 1 },
+          { type: 'setFlag', flag: 'ws21b_poetry_exfiltration', flagValue: true },
         ],
       },
       {

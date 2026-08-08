@@ -18,7 +18,7 @@ export function LevelBadge({
   const xpPct = Math.min(100, Math.max(0, (xp / xpToNext) * 100));
 
   return (
-    <div className="flex flex-col gap-0.5 relative">
+    <div className={`flex flex-col gap-0.5 relative${justLeveled ? ' hud-filmic-level-badge-glow' : ''}`}>
       <div className="flex items-center gap-1.5">
         <motion.div
           className={`flex items-center justify-center w-7 h-7 rounded border text-[11px] font-bold font-mono hud-filmic-badge-shimmer ${justLeveled ? 'level-pulse-anim' : ''}`}

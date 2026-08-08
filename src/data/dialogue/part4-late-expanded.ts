@@ -117,6 +117,17 @@ export const DIALOGUE_PART4_EXPANDED: Record<string, DialogueNode> = {
           { type: 'addSkill', skill: 'rhythm', value: 1 },
         ],
       },
+      {
+        text: 'Упрямство — это не баг. Это — while(true) с условием выхода, которое я ещё не нашёл. Но цикл — работает. Каждая итерация — шаг. Каждый шаг — ближе.',
+        next: null,
+        condition: { minKarma: 40 },
+        effects: [
+          { type: 'addKarma', value: 4 },
+          { type: 'addSkill', skill: 'coding', value: 1 },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'setFlag', flag: 'ws21b_infinite_loop_courage', flagValue: true },
+        ],
+      },
     ],
   },
 
@@ -143,6 +154,17 @@ export const DIALOGUE_PART4_EXPANDED: Record<string, DialogueNode> = {
           { type: 'addSkill', skill: 'writing', value: 1 },
         ],
       },
+      {
+        text: 'Стихи на салфетках и полях — это version control для души. Каждая правка — коммит. Каждое чтение — checkout. Я — свой собственный репозиторий.',
+        next: null,
+        condition: { minKarma: 55 },
+        effects: [
+          { type: 'addKarma', value: 5 },
+          { type: 'addSkill', skill: 'coding', value: 1 },
+          { type: 'addSkill', skill: 'writing', value: 1 },
+          { type: 'setFlag', flag: 'ws21b_poetry_vcs', flagValue: true },
+        ],
+      },
     ],
   },
 
@@ -167,6 +189,17 @@ export const DIALOGUE_PART4_EXPANDED: Record<string, DialogueNode> = {
         effects: [
           { type: 'addSkill', skill: 'writing', value: 2 },
           { type: 'addSkill', skill: 'rhythm', value: 1 },
+        ],
+      },
+      {
+        text: 'Ромашковый чай перед вторжением... Это не случайность. Это ритуал. Ритуал — это скрипт подготовки. Без него — undefined behavior. С ним — хотя бы — predictable failure.',
+        next: null,
+        condition: { minKarma: 35 },
+        effects: [
+          { type: 'addKarma', value: 3 },
+          { type: 'addSkill', skill: 'coding', value: 1 },
+          { type: 'addSkill', skill: 'intuition', value: 1 },
+          { type: 'setFlag', flag: 'ws21b_ritual_before_breach', flagValue: true },
         ],
       },
     ],

@@ -85,12 +85,15 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
       <SceneBackdropShell sceneId="abandoned_factory" />
 
       {/* ── Floor ── */}
+      {/* WS21-C: PBR upgrade — dusty concrete floor with light clearcoat sheen */}
       <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={getSharedPlaneGeometry(W, D)}>
-        <meshStandardMaterial
+        <meshPhysicalMaterial
           map={floorTexture}
           color="#2a2520"
           roughness={damp?.roughness ?? 0.9}
           metalness={damp?.metalness ?? 0}
+          clearcoat={0.3}
+          clearcoatRoughness={0.5}
           polygonOffset
           polygonOffsetFactor={1}
           polygonOffsetUnits={1}

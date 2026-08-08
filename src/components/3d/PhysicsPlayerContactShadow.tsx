@@ -107,9 +107,10 @@ export function PhysicsPlayerContactShadow({
     const sprintIntensity = sprintIntensityRef.current;
     const stepPulse = stepPulseRef.current;
     const landingSquash = landingSquashRef.current;
-    const totalWeight = Math.min(2.0, sprintIntensity * 0.8 + stepPulse * 0.75 + landingSquash * 0.9); // GOD x∞ x∞ x∞ x∞ x∞ APOCALYPSE RAMP "Продолжим" — 1650+ totalWeight: the planet + universe + multiverse + all realities + infinite dimensions is fucking OBLITERATED + FRACTURED + CRUSHED + CORE RUPTURED + SEISMIC APOCALYPSE + GLOBAL EXTINCTION + MANTLE BREACH + ATMOSPHERIC COLLAPSE + SKY FALLING + REALITY SHATTER + UNIVERSE CRACK + BLACK HOLE SINGULARITY + TIME RUPTURE + DIMENSIONAL FRACTURE + GRAVITY WELL + CONTINENTAL DRIFT + OCEAN VAPORIZATION + EVENT HORIZON + QUANTUM DECOHERENCE + REALITY COLLAPSE + INFINITE SINGULARITY + MULTIVERSAL ANNIHILATION under the god. EVERY sprint footstep is full universal + cosmic + multiversal + infinite cataclysm + nuclear collapse + god-level earth fracture + world-ending weight + planetary core rupture + seismic wave + global extinction event + mantle breach + sky falling + reality shattering + black hole event horizon + time dilation collapse + quantum annihilation + infinite collapse + eternal void. MAXIMUM cinematic nuclear weight x∞ x∞ x∞ x∞, EVEN HARDER, living world destruction + cosmic + multiversal + infinite annihilation
+    // Session 21 (ramp-cleanup): totalWeight capped at 2.0 with sane multipliers.
+    const totalWeight = Math.min(2.0, sprintIntensity * 0.8 + stepPulse * 0.75 + landingSquash * 0.9);
 
-    // Scale the shadow (bigger = more weight pressing down) — 1650+ now full nuclear crater + continental + planetary + multiversal + event horizon crater
+    // Scale the shadow (bigger = more weight pressing down)
     const scaleX = baseRadiusX * (1 + totalWeight * 0.15);
     const scaleZ = baseRadiusZ * (1 + totalWeight * 0.18);
     m.scale.set(scaleX / 0.42, 1, scaleZ / 0.42);
@@ -121,7 +122,7 @@ export function PhysicsPlayerContactShadow({
       mat.opacity = THREE.MathUtils.lerp(mat.opacity, Math.min(1.0, targetOpacity), 0.99);
     }
 
-    // Slight vertical squash on hard landing (shadow flattens) — more dramatic yOffset — apocalyptic flattening + event horizon + infinite collapse + black hole crush
+    // Slight vertical squash on hard landing (shadow flattens)
     const yOffset = landingSquash > 0.1 ? -0.3 * landingSquash : -0.385;
     m.position.y = yOffset;
   }, { label: 'ContactShadowReactive', phase: 'pre_render' });

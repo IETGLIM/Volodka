@@ -457,6 +457,63 @@ export const DAILY_MISSION_POOL: DailyMission[] = [
     minLevel: 2,
     icon: 'Radio',
   },
+  /* ── WS21-D: Content expansion daily missions (4) ── */
+  {
+    id: 'ws21d_dm_combat_neural_purge',
+    title: 'Нейро-Очистка',
+    description: 'Уничтожь враждебные нейро-процессы, захватывающие мысленные потоки граждан. Каждый паразитный процесс — украденная мысль, промытый мозг, подчинённая воля.',
+    category: 'combat',
+    difficulty: 'hard',
+    objectives: [
+      { id: 'purge_neural_processes', description: 'Уничтожить нейро-паразитов', target: 4 },
+    ],
+    rewards: { xp: 130, credits: 85, karma: 3, skillXp: { coding: 2, logic: 1 } },
+    resetSchedule: 'weekly',
+    minLevel: 4,
+    icon: 'Brain',
+  },
+  {
+    id: 'ws21d_dm_explore_antenna_network',
+    title: 'Проверка Антенн',
+    description: 'Обойди крыши города и проверь узлы Сети Антенн. Каждый неработающий передатчик — потерянное стихотворение, которое никто не услышит.',
+    category: 'exploration',
+    difficulty: 'easy',
+    objectives: [
+      { id: 'check_antenna_nodes', description: 'Проверить узлы антенн', target: 3 },
+    ],
+    rewards: { xp: 45, credits: 30, karma: 1, skillXp: { intuition: 1 } },
+    resetSchedule: 'daily',
+    minLevel: 1,
+    icon: 'RadioTower',
+  },
+  {
+    id: 'ws21d_dm_craft_signal_decoder',
+    title: 'Декодер Сигнала',
+    description: 'Скрафти декодер для перехвата зашифрованных поэтических трансляций. Правильный ключ — и шёпот станет голосом.',
+    category: 'crafting',
+    difficulty: 'medium',
+    objectives: [
+      { id: 'craft_decoder', description: 'Скрафтить компонент декодера', target: 2 },
+    ],
+    rewards: { xp: 80, credits: 55, karma: 2, skillXp: { coding: 1, intuition: 1 } },
+    resetSchedule: 'daily',
+    minLevel: 2,
+    icon: 'Key',
+  },
+  {
+    id: 'ws21d_dm_combat_ghost_terminate',
+    title: 'Изгнание Призраков',
+    description: 'Найди и уничтожь призрачные процессы в подвалах серверных. Они не видны в логах, но пожирают память и искажают реальность тех, кто рядом.',
+    category: 'combat',
+    difficulty: 'medium',
+    objectives: [
+      { id: 'terminate_ghost_processes', description: 'Изгнать призрачных процессов', target: 3 },
+    ],
+    rewards: { xp: 90, credits: 60, karma: 2, skillXp: { logic: 1, coding: 1 } },
+    resetSchedule: 'daily',
+    minLevel: 3,
+    icon: 'Zap',
+  },
 ];
 
 /* ══════════════════════════════════════════════════════════════

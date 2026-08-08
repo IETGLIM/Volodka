@@ -811,7 +811,7 @@ export function QuickTimeEventOverlay({
 
             {/* ── Основной контейнер QTE / Main QTE container ── */}
             <motion.div
-              className="relative flex flex-col items-center"
+              className="relative flex flex-col items-center hud-filmic-qte-pulse-ring"
               initial={reducedMotion ? {} : { scale: 0.5, opacity: 0 }}
               animate={isSuccess || isFailure ? { scale: 1.1, opacity: 1 } : { scale: 1, opacity: 1 }}
               transition={{

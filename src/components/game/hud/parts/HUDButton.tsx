@@ -36,7 +36,7 @@ export function HUDButton({
         aria-disabled={disabled || undefined}
         aria-label={ariaLabel}
         title={ariaLabel}
-        className={`group w-11 h-11 sm:w-9 sm:h-9 flex items-center justify-center rounded-sm transition-colors duration-200 relative hud-filmic-topbar-btn hud-filmic-focus-ring ${active ? 'text-stone-100 bg-white/5' : ''} ${disabled ? 'opacity-40 pointer-events-none' : ''}`}
+        className={`group w-11 h-11 sm:w-9 sm:h-9 flex items-center justify-center rounded-sm transition-colors duration-200 relative hud-filmic-topbar-btn hud-filmic-focus-ring hud-filmic-hud-btn-press ${active ? 'text-stone-100 bg-white/5' : ''} ${disabled ? 'opacity-40 pointer-events-none' : ''}`}
       >
         <span className="relative z-10">{icon}</span>
       </button>

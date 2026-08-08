@@ -135,6 +135,10 @@ export const DYNAMIC_PROPS: Partial<Record<SceneId, DynamicPropDef[]>> = {
     // WS17-B: +2 props for thin-coverage scene (was 2)
     { id: 'gm_box_1', kind: 'box', position: [0.8, 0, 1.5], rotation: 1.2 },
     { id: 'gm_can_2', kind: 'can', position: [-3.4, 0, -2.0], rotation: 0.3 },
+    // WS21-B — +3 props for thin-coverage scene (was 4)
+    { id: 'ws21b_gm_barrel_cable', kind: 'barrel', position: [3.8, 0, 2.1], rotation: 0.5 },
+    { id: 'ws21b_gm_can_antistatic', kind: 'can', position: [-0.5, 0, -3.8], rotation: -1.6 },
+    { id: 'ws21b_gm_box_spare', kind: 'box', position: [1.9, 0, -1.0], rotation: 2.1 },
   ],
   // AAA: tactile living pier — pushable clutter near water + fire (evening variant)
   pier_evening: [
@@ -188,6 +192,10 @@ export const DYNAMIC_PROPS: Partial<Record<SceneId, DynamicPropDef[]>> = {
     { id: 'zr_can_1', kind: 'can', position: [1.1, 0, 0.9], rotation: -1.1 },
     { id: 'zr_bottle_1', kind: 'bottle', position: [-2.4, 0, 1.6], rotation: 0.7 },
     { id: 'zr_can_2', kind: 'can', position: [0.6, 0, -2.0], rotation: 1.4 },
+    // WS21-B — +3 props for thin-coverage scene (was 3)
+    { id: 'ws21b_zr_box_books', kind: 'box', position: [-1.8, 0, -1.5], rotation: 0.4 },
+    { id: 'ws21b_zr_can_pencil', kind: 'can', position: [0.3, 0, 1.8], rotation: -0.8 },
+    { id: 'ws21b_zr_bottle_ink', kind: 'bottle', position: [2.1, 0, -0.6], rotation: 1.2 },
   ],
   // AAA Phase A: ethereal "memory fragments" in the dream — kickable cans/bottles/boxes as poetic remnants of the past.
   // They float in the galaxy dream and give tactile "show-don't-tell" storytelling when interacted with.
@@ -225,6 +233,9 @@ export const DYNAMIC_PROPS: Partial<Record<SceneId, DynamicPropDef[]>> = {
     { id: 'cs_box_1', kind: 'box', position: [2.1, 0, -2.8], rotation: 1.4 },
     { id: 'cs_can_1', kind: 'can', position: [4.5, 0, 3.2], rotation: -0.5 },
     { id: 'cs_bottle_1', kind: 'bottle', position: [-1.6, 0, -4.4], rotation: 0.8 },
+    // WS21-B — +2 props for thin-coverage scene (was 4)
+    { id: 'ws21b_cs_can_pigeon_feed', kind: 'can', position: [0.5, 0, 1.0], rotation: 0.9 },
+    { id: 'ws21b_cs_box_fountain_debris', kind: 'box', position: [-2.2, 0, -1.5], rotation: -0.3 },
   ],
   forest_clearing: [
     { id: 'fc_bottle_1', kind: 'bottle', position: [-2.4, 0, 1.8], rotation: 1.2 },

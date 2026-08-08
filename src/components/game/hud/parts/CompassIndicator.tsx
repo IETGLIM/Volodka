@@ -66,7 +66,7 @@ export function CompassIndicator() {
 
   return (
     <div
-      className="relative shrink-0 pointer-events-none select-none flex flex-col items-center"
+      className="relative shrink-0 pointer-events-none select-none flex flex-col items-center hud-filmic-compass-dial-glow"
       style={{ width: 50 }}
       aria-label="Компас"
       role="img"

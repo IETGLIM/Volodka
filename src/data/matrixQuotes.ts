@@ -412,6 +412,77 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     mood: 'danger',
     color: '#cc2020',
   },
+
+  /* ═══════════════════════════════════════════════════════════
+     WS21-D — Cyberpunk-tech ambient fragments (8 new quotes)
+     Themes: neural interfaces, data ghosts, phantom compilers,
+     signal ghosts, memory palaces, code exorcism, digital grief,
+     quantum poetry.
+     ═══════════════════════════════════════════════════════════ */
+  {
+    id: 'ws21d_mq_neural_grief',
+    text: 'Нейро-интерфейс не различает горя и данных — для него оба лишь поток, который нужно буферизовать',
+    trigger: 'ws21d_neural_grief',
+    act: 2,
+    mood: 'loss',
+    color: '#6a8a30',
+  },
+  {
+    id: 'ws21d_mq_data_ghost',
+    text: 'Призрак данных — это запись, которую все забыли, но ни один процесс не решился удалить',
+    trigger: 'ws21d_data_ghost',
+    act: 2,
+    mood: 'revelation',
+    color: CYBER_CYAN,
+  },
+  {
+    id: 'ws21d_mq_phantom_compiler',
+    text: 'Компилятор без исходного кода — как поэт без языка: он всё равно находит, что сказать',
+    trigger: 'ws21d_phantom_compiler',
+    act: 3,
+    mood: 'revelation',
+    color: '#d4920a',
+  },
+  {
+    id: 'ws21d_mq_signal_ghost',
+    text: 'Сигнал-призрак возникает на частоте, которой нет в спектре. Антенна ловит то, чего не существует — пока не начнёт',
+    trigger: 'ws21d_signal_ghost',
+    act: 3,
+    mood: 'danger',
+    color: '#cc2020',
+  },
+  {
+    id: 'ws21d_mq_memory_palace',
+    text: 'Дворец памяти строится из ошибок: каждая забытое имя — комната, каждый потерянный файл — коридор',
+    trigger: 'ws21d_memory_palace',
+    act: 4,
+    mood: 'loss',
+    color: '#6a8a30',
+  },
+  {
+    id: 'ws21d_mq_code_exorcism',
+    text: 'rm -rf /ghost — команда не работает. Призраки кода не в файловой системе, они в стеке вызовов памяти',
+    trigger: 'ws21d_code_exorcism',
+    act: 4,
+    mood: 'danger',
+    color: '#cc2020',
+  },
+  {
+    id: 'ws21d_mq_digital_grief',
+    text: 'Цифровая скорбь не знает времени: удалённый файл горюет в пространстве между блоками до тех пор, пока диск не перезапишет',
+    trigger: 'ws21d_digital_grief',
+    act: 5,
+    mood: 'loss',
+    color: '#6a8a30',
+  },
+  {
+    id: 'ws21d_mq_quantum_poetry',
+    text: 'Квантовое стихотворение существует лишь пока его читают. Закрой страницу — и строки вернутся в суперпозицию',
+    trigger: 'ws21d_quantum_poetry',
+    act: 5,
+    mood: 'revelation',
+    color: CYBER_CYAN,
+  },
 ]
 
 /* ─── Lookup helpers ─── */

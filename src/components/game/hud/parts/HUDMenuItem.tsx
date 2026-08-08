@@ -7,7 +7,7 @@ export function HUDMenuItem({ icon, label, shortcut, onClick, badge }: Secondary
     <button
       type="button"
       onClick={() => onClick?.()}
-      className="flex items-center gap-3 w-full px-3 py-2 text-left transition-colors duration-200 rounded-sm relative border-l-2 border-l-transparent hover:border-l-stone-400/50 hover:bg-white/[0.03]"
+      className="flex items-center gap-3 w-full px-3 py-2 text-left transition-colors duration-200 rounded-sm relative border-l-2 border-l-transparent hover:border-l-stone-400/50 hover:bg-white/[0.03] hud-filmic-menu-item-slide"
       style={{ color: 'var(--hud-filmic-ink-muted)' }}
       aria-label={ariaLabel}
     >

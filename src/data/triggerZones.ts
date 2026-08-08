@@ -7104,6 +7104,252 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     ],
   },
 
+  /* ═══════════════════════════════════════════════════════════════════
+     WS21-B — Living-world content expansion: 12 new examine zones for
+     least-served scenes (guild_mainframe, rooftop_edge, cafe_evening,
+     park_day, river_pier, abandoned_factory ×2 each)
+     ═══════════════════════════════════════════════════════════════════ */
+
+  /* ── guild_mainframe (2 new) ── */
+  {
+    id: 'ws21b_gm_server_log',
+    sceneId: 'guild_mainframe',
+    position: [1.2, 1.0, -3.0],
+    size: [0.6, 0.8, 0.3],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть журнал сервера',
+    examineData: {
+      title: 'Журнал сервера',
+      description: 'Жёлтый терминальный экран, прокрученный до последних строк. Логи — как исповедь машины.',
+      detailText: 'ERROR: memory_overflow at 0xDEADFACE — повтор 4821 раз. Кто-то или что-то пытается записать в защищённую область памяти. Стихи? Или атака? В логах — только адреса. Ни одного слова.',
+      icon: '📋',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_ws21b_gm_server_log', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'coding', value: 1 },
+    ],
+  },
+  {
+    id: 'ws21b_gm_cooling_vent',
+    sceneId: 'guild_mainframe',
+    position: [-2.5, 2.0, 1.5],
+    size: [1.0, 0.6, 0.3],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть вентиляционную решётку',
+    examineData: {
+      title: 'Вентиляционная решётка',
+      description: 'Решётка под потолком — из неё тянет ледяным воздухом. Стойки охлаждают — а люди нет.',
+      detailText: 'За решёткой — гул, как далёкий хор. Серверы поют на частоте 50 Герц. Если прислушаться — можно различить ритм. Или это сердце стучит в такт? Не различаю. Но звучит — живо.',
+      icon: '🌀',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_ws21b_gm_cooling_vent', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+
+  /* ── rooftop_edge (2 new) ── */
+  {
+    id: 'ws21b_re_skyline_note',
+    sceneId: 'rooftop_edge',
+    position: [3.0, 0.6, -1.2],
+    size: [0.4, 0.3, 0.2],
+    interactionType: 'examine',
+    interactionLabel: 'Прочитать записку на парапете',
+    examineData: {
+      title: 'Записка на парапете',
+      description: 'Клочок бумаги, прижатый камнем. Дождь почти стёр чернила.',
+      detailText: '«...и город внизу — как строчка, которую не дописали. Последняя буква — я. Или — не я. Посмотрим.» Почерк чужой. Датировано позапрошлой зимой. Кто-то стоял здесь до меня. Кто-то тоже смотрел.',
+      icon: '📝',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_ws21b_re_skyline_note', flagValue: true },
+      { type: 'addKarma', value: 4 },
+      { type: 'addSkill', skill: 'writing', value: 1 },
+    ],
+  },
+  {
+    id: 'ws21b_re_antenna_array',
+    sceneId: 'rooftop_edge',
+    position: [-4.0, 3.0, 2.0],
+    size: [1.5, 2.0, 1.5],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть антенную решётку',
+    examineData: {
+      title: 'Антенны',
+      description: 'Ржавые антенны — как скелет руки, тянущейся к небу. Передатчики гильдии.',
+      detailText: 'Каждая антенна — глаз гильдии. Они смотрят вниз, слушают снизу, передают наверх. Но ветер гудит в растяжках — и на секунду кажется, что антенны поют. Свободную частоту. Без цензуры.',
+      icon: '📡',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_ws21b_re_antenna_array', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+    ],
+  },
+
+  /* ── cafe_evening (2 new) ── */
+  {
+    id: 'ws21b_ce_vintage_radio',
+    sceneId: 'cafe_evening',
+    position: [-3.5, 1.8, -2.5],
+    size: [0.5, 0.3, 0.3],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть старое радио',
+    examineData: {
+      title: 'Старое радио',
+      description: 'Деревянный корпус, потрескавшаяся ручка tuning. Работает — но ловит только одну станцию.',
+      detailText: 'Радио шипит и шуршит. Иногда сквозь белый шум прорывается голос — читает стихи. Кто-то где-то вещает на нелицензированной частоте. Гильдия не нашла. Или не ищет. Бариста улыбается: «Это — наш секретный канал».',
+      icon: '📻',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_ws21b_ce_vintage_radio', flagValue: true },
+      { type: 'addKarma', value: 5 },
+      { type: 'addSkill', skill: 'rhythm', value: 1 },
+    ],
+  },
+  {
+    id: 'ws21b_ce_latte_art',
+    sceneId: 'cafe_evening',
+    position: [1.0, 0.75, -1.0],
+    size: [0.4, 0.2, 0.4],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть латте-арт',
+    examineData: {
+      title: 'Латте-арт',
+      description: 'На пене — не сердце и не розетта. Буквы. Крошечные, но читаемые.',
+      detailText: '«ЖИВ» — нарисовано пеной. Три буквы. Кто-то из бариста — с нами. Или это просто сочетание линий. Или — нет, это точно буквы. Кофе стынет, а буквы — нет. Они — до последней капли.',
+      icon: '☕',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_ws21b_ce_latte_art', flagValue: true },
+      { type: 'addKarma', value: 4 },
+      { type: 'addSkill', skill: 'empathy', value: 1 },
+    ],
+  },
+
+  /* ── park_day (2 new) ── */
+  {
+    id: 'ws21b_pd_bench_carving',
+    sceneId: 'park_day',
+    position: [5.0, 0.5, 3.0],
+    size: [1.5, 0.5, 0.5],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть вырезанную на скамейке надпись',
+    examineData: {
+      title: 'Надпись на скамейке',
+      description: 'Дерево скамейки исписано ножом — инициалы, даты, сердца. Но одна строка — другая.',
+      detailText: '«Если ты это читаешь — ты ещё жив. Действуй.» Без подписи. Без даты. Перочинный нож лежит в щели — кто-то забыл. Или оставил. Нарочно. Каждая скамейка в этом парке — маленький архив.',
+      icon: '🪑',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_ws21b_pd_bench_carving', flagValue: true },
+      { type: 'addKarma', value: 4 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+  {
+    id: 'ws21b_pd_fallen_leaves',
+    sceneId: 'park_day',
+    position: [-3.0, 0.0, -1.5],
+    size: [2.0, 0.1, 2.0],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть опавшие листья',
+    examineData: {
+      title: 'Опавшие листья',
+      description: 'Листья под ногами — не мусор. Карта. Каждая прожилка — как линия на ладони.',
+      detailText: 'Жёлтые, красные, бурые — они пишут последнюю строку перед землёй. Дерево не выбрасывает листья. Дерево отправляет их — с посланием. Каждое «падение» — отправка. Каждый лист — пакет. А земля — читает.',
+      icon: '🍂',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_ws21b_pd_fallen_leaves', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'writing', value: 1 },
+    ],
+  },
+
+  /* ── river_pier (2 new) ── */
+  {
+    id: 'ws21b_rp_fishing_line',
+    sceneId: 'river_pier',
+    position: [2.5, 0.3, -5.0],
+    size: [0.3, 0.3, 3.0],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть леску в воде',
+    examineData: {
+      title: 'Леска в воде',
+      description: 'Тонкая леска уходит в чёрную воду. На конце — не крючок, а грузило и маленький пакетик.',
+      detailText: 'Кто-то использует реку как канал доставки. Пакетик в водонепроницаемой оболочке — внутри, кажется, бумага. Стихи? Данные? Леска натянута — значит, кто-то на другом конце ждёт. Река — самый старый интернет.',
+      icon: '🎣',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_ws21b_rp_fishing_line', flagValue: true },
+      { type: 'addKarma', value: 5 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+    ],
+  },
+  {
+    id: 'ws21b_rp_moss_stones',
+    sceneId: 'river_pier',
+    position: [-3.0, 0.0, -3.5],
+    size: [1.5, 0.3, 1.5],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть замшелые камни',
+    examineData: {
+      title: 'Замшелые камни',
+      description: 'Камни у кромки воды — покрыты мхом. Зелёные, мягкие, как подушки времени.',
+      detailText: 'Мох — самый терпеливый писатель. Он покрывает камень за десять лет, слово за словом, клетка за клеткой. Камень не сопротивляется. Камень — страница. Мох — чернила. Вода — редактор. Течение срывает слабые строки. Сильные — остаются. Как стихи. Как люди.',
+      icon: '🪨',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_ws21b_rp_moss_stones', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'rhythm', value: 1 },
+    ],
+  },
+
+  /* ── abandoned_factory (2 new) ── */
+  {
+    id: 'ws21b_af_circuit_board',
+    sceneId: 'abandoned_factory',
+    position: [1.5, 0.5, -6.0],
+    size: [0.5, 0.3, 0.3],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть плату на полу',
+    examineData: {
+      title: 'Плата на полу',
+      description: 'Старая печатная плата — следы кислоты, сгоревший чип. Кто-то выпаял память.',
+      detailText: 'Дорожки на плате — как улицы микрорайона. Только жильцы — электроны. Кто-то выпаял EEPROM — там были данные. Заводские логи? Чьи-то имена? Теперь — пустое гнездо. Память выпаяна. Как и у всего этого завода.',
+      icon: '🔌',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_ws21b_af_circuit_board', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'coding', value: 1 },
+    ],
+  },
+  {
+    id: 'ws21b_af_rust_graffiti',
+    sceneId: 'abandoned_factory',
+    position: [-5.0, 1.5, -2.0],
+    size: [2.0, 1.0, 0.1],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть ржавое граффити',
+    examineData: {
+      title: 'Ржавое граффити',
+      description: 'На стене — не краска. Ржавчина. Кто-то кислотой вывел буквы.',
+      detailText: '«ЗАВОД ПОМНИТ» — кислота проела сталь на миллиметр. Не сотрёшь. Не закрасишь. Ржавчина — честнее краски. Ржавчина — не притворяется. Ржавчина — это то, что остаётся, когда краска лжёт.',
+      icon: '🦠',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_ws21b_af_rust_graffiti', flagValue: true },
+      { type: 'addKarma', value: 4 },
+      { type: 'addSkill', skill: 'persuasion', value: 1 },
+    ],
+  },
+
   ...NARRATIVE_EXPANSION_TRIGGER_ZONES,
   ...CHK_TRIGGER_ZONES,
 ];

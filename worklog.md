@@ -3236,3 +3236,133 @@ Stage Summary:
 - 8 new dynamic physics props for tactile world feel
 - 20 quest bark entries across 7 NPCs previously missing barks
 - All changes type-safe, IDs unique, no poems.ts edited
+---
+Task ID: 20 (orchestrator) — cron-tick: QA + bug fixes + filmic CSS + living-world content + PBR upgrades + content expansion
+Agent: main (orchestrator)
+Task: Cron-triggered AAA improvements — fix 2 QA bugs (audio mixer %, main menu nav), filmic CSS, living-world content, PBR clearcoat on 6 scene visuals, content expansion.
+
+Work Log:
+- Pulled latest (already at dbdacf4e, Task 19 commit). Baseline typecheck: exit 0.
+- QA on https://volodka.vercel.app/ (PRE-push): found 2 medium bugs:
+  • Audio Mixer % display showing 7000%/6000%/8000% instead of 100% — root cause: `lsGetPercent` in AudioSettings.ts returning raw `fallback` (70/80/60) instead of `fallback/100` (0.7/0.8/0.6) when localStorage key missing.
+  • "В главное меню" button in pause menu not navigating — root cause: `resetGame()` sets `mainMenuOpen: false`, but no `setMainMenuOpen(true)` call follows.
+- Fixed both bugs inline.
+- Dispatched 4 parallel work-streams (WS20-A/B/C/D) — all exit 0.
+- Combined typecheck: exit 0. Commit 80caacd3 (27 files, +1109/-14). Push: origin main.
+
+Stage Summary:
+- 27 files modified, +1109/-14 lines. Typecheck: exit 0. Poems untouched. All invariants preserved.
+- 2 live-site bugs fixed (audio mixer %, main menu nav).
+- 6 new filmic CSS animations + 6 HUD wirings.
+- 12 examine zones + 8 karma-gated dialogue + 15 monologues + 8 dynamic props + 20 quest barks.
+- 6 scene visual PBR clearcoat upgrades (SolnyshRoom, Cafe, Dream, Battle, Corridor, Winter ice).
+- 6 creep patrols + 4 lore entries + 8 matrix quotes + 4 daily missions + 6 thought cabinet items.
+- Unresolved: CSM, Mixamo remap, WorldSpaceLabels, more Acts 3-4, motion-blur, 3D menu, onboarding, verify bug fixes on live.
+
+---
+Task ID: WS21-A
+Agent: WS21-A
+Task: Filmic CSS + HUD polish — 6 new animations + 6 HUD component wirings
+
+Work Log:
+- Read worklog.md and hud-filmic.css (3218 lines, 73 @keyframes blocks) to understand existing patterns
+- Read all 6 HUD component files: HUDButton, HUDMenuItem, QuickTimeEventOverlay, ComboCounter, CompassIndicator, LevelBadge
+- Discovered hud-filmic-compass-needle-settle already existed; adapted CompassIndicator wiring to new hud-filmic-compass-dial-glow instead
+- Discovered hud-filmic-badge-shimmer already existed on LevelBadge; added conditional hud-filmic-level-badge-glow instead
+- Added 6 new @keyframes animations (#25–30) to hud-filmic.css with full media-query gating:
+  - hud-filmic-hud-btn-press (scale 1→0.95→1, 0.2s one-shot)
+  - hud-filmic-menu-item-slide (translateX -4px→0 + opacity 0→1, 0.25s one-shot)
+  - hud-filmic-combo-hit-flash (brightness 1→1.3→1, 0.15s one-shot)
+  - hud-filmic-compass-dial-glow (box-shadow warm pulse, 3s infinite)
+  - hud-filmic-level-badge-glow (amber glow 0.15→0.4→0.15, 1.5s infinite)
+  - hud-filmic-qte-pulse-ring (scale 0.85→1.1 + opacity 0.6→0, 0.8s infinite)
+- Wired hud-filmic-hud-btn-press into HUDButton filmic variant root
+- Wired hud-filmic-menu-item-slide into HUDMenuItem root button
+- Wired hud-filmic-combo-hit-flash into ComboCounter count span (gated on !reducedMotion)
+- Wired hud-filmic-compass-dial-glow into CompassIndicator outer wrapper
+- Wired hud-filmic-level-badge-glow into LevelBadge outer div (conditional on justLeveled)
+- Wired hud-filmic-qte-pulse-ring into QuickTimeEventOverlay main container
+- All animations use @media (prefers-reduced-motion: no-preference) gating with static fallbacks
+- All values within sane bounds: scale ≤ 1.1, opacity ≤ 0.6, translateY ≤ 5px
+- TypeScript typecheck passed (exit 0)
+
+Stage Summary:
+- hud-filmic.css: 3218 → 3369 lines (+151), 73 → 79 @keyframes blocks
+- 6 HUD components wired with new filmic CSS animations
+- 0 type errors, clean build
+
+---
+Task ID: WS21-C
+Agent: WS21-C
+Task: PBR material upgrades — upgrade 6 scene surfaces from MeshStandardMaterial to MeshPhysicalMaterial
+
+Work Log:
+- Read all 6 scene visual files and worklog.md
+- FactoryBasementVisual.tsx: floor already meshPhysicalMaterial (WS19-C), updated comment to `// WS21-C: PBR upgrade`
+- AlbertBackroomVisual.tsx: upgraded floor meshStandardMaterial → meshPhysicalMaterial with clearcoat=0.5 clearcoatRoughness=0.3 (varnished wood)
+- ChkForestZorgeVisual.tsx: upgraded ground meshStandardMaterial → meshPhysicalMaterial with sheen=0.15 sheenRoughness=0.6 (organic mossy ground)
+- LibraryDayVisual.tsx: upgraded floor meshStandardMaterial → meshPhysicalMaterial with clearcoat=0.35 clearcoatRoughness=0.4 (waxed floor)
+- RooftopEdgeVisual.tsx: upgraded rooftop surface meshStandardMaterial → meshPhysicalMaterial with clearcoat=0.7 clearcoatRoughness=0.15 ior=1.5 (wet rooftop after rain)
+- AbandonedFactoryVisual.tsx: upgraded floor meshStandardMaterial → meshPhysicalMaterial with clearcoat=0.3 clearcoatRoughness=0.5 (dusty concrete with light sheen)
+- All existing props preserved (color, roughness, metalness, map, polygonOffset, etc.)
+- Emissive/glow materials left as meshStandardMaterial
+- Geometry, positioning, colors unchanged
+- Typecheck passes (exit 0)
+
+Stage Summary:
+- 6 floor/ground surfaces upgraded to MeshPhysicalMaterial with physically-based rendering properties
+- PBR effects: clearcoat (4 scenes), sheen (1 scene), ior (1 scene)
+- All values within sane ranges: clearcoat 0-1, sheen 0-0.5, clearcoatRoughness 0-1, sheenRoughness 0-1, ior 1-2.5
+- Each upgrade annotated with `{/* WS21-C: PBR upgrade */}` comment
+
+---
+Task ID: WS21-D
+Agent: WS21-D
+Task: Content expansion — creep patrols, lore, matrix quotes, daily missions, Thought Cabinet items
+
+Work Log:
+- Read all target files to understand data structures and existing entries
+- Read worklog.md for prior work context
+- creepPatrols.ts: Added 6 new patrol routes (ws21d_ prefix) for cafe_evening, park_day, guild_mainframe, river_pier, rooftop_edge, abandoned_factory using existing enemy types (guild_enforcer, rust_sentinel, corporate_ai, network_spy, grief_echo, quantum_ghost)
+- loreEntries.ts: Added WS21_D_LORE_ENTRIES array with 4 new entries — neural_graffiti (technology/rare/cafe_evening), singing_pipelines (mysteries/legendary/park_day), rooftop_antenna_network (technology/rare/rooftop_edge), ghost_compiler (mysteries/legendary/guild_mainframe). Spread into INITIAL_LORE_ENTRIES.
+- matrixQuotes.ts: Added 8 new quotes (ws21d_ prefix) with cyberpunk/tech themes: neural_grief (act 2), data_ghost (act 2), phantom_compiler (act 3), signal_ghost (act 3), memory_palace (act 4), code_exorcism (act 4), digital_grief (act 5), quantum_poetry (act 5)
+- dailyMissions.ts: Added 4 new missions: neural_purge (combat/hard/weekly), antenna_network_check (exploration/easy/daily), signal_decoder (crafting/medium/daily), ghost_terminate (combat/medium/daily)
+- thoughtCabinet.ts: Added 6 new items (82-87): Нейро-Эмпатия (82) ↔ Нейро-Брандмауэр (83), Поэтический Компилятор (84) ↔ Литеральный Интерпретатор (85), Резонанс Памяти (86), Тихая Компиляция (87). Two mutually exclusive pairs registered in MUTUALLY_EXCLUSIVE_PAIRS.
+- All IDs prefixed with ws21d_ for uniqueness
+- Typecheck passes (exit 0)
+
+Stage Summary:
+- 6 new creep patrol routes for underserved scenes
+- 4 new lore entries (2 technology, 2 mysteries; 2 rare, 2 legendary)
+- 8 new matrix quotes spread across acts 2-5
+- 4 new daily missions (combat/exploration/crafting mix)
+- 6 new Thought Cabinet items (82-87) with 2 mutually exclusive pairs
+- All content in Russian, consistent with existing style
+- Zero type errors
+
+---
+Task ID: WS21-B
+Agent: WS21-B
+Task: Living-world content expansion — examine zones, karma-gated dialogue, monologues, dynamic props, ambient barks
+
+Work Log:
+- Read all 6 owned files (triggerZones.ts, part3-mid-expanded.ts, part4-late-expanded.ts, idleMonologues.ts, dynamicProps.ts) + ambientBarks.ts (new)
+- Read scene IDs, NPC definitions, ambient bark system, ExamineData/TriggerZone interfaces, skill types
+- Identified least-served scenes: guild_mainframe (1-2 zones), city_square (4-5), zarema_room (0), rooftop_edge (moderate)
+- **triggerZones.ts**: Added 12 new examine zones across 6 scenes (2 per scene): guild_mainframe (server log + cooling vent), rooftop_edge (skyline note + antenna array), cafe_evening (vintage radio + latte art), park_day (bench carving + fallen leaves), river_pier (fishing line + moss stones), abandoned_factory (circuit board + rust graffiti). All IDs prefixed ws21b_, all have Russian descriptions, karmaChange +2 to +5, skill bonuses.
+- **part3-mid-expanded.ts**: Added 4 karma-gated dialogue choices: (1) zarema_before_arrest — minKarma:55 counter-intel via router logs, (2) zarema_stand_ground — minKarma:50 distributed poetry DB metaphor, (3) zarema_in_cell — maxKarma:25 paranoid "no traces" warning, (4) zarema_prison_poetry — minKarma:45 poetry exfiltration through guard. All with ws21b_ flags.
+- **part4-late-expanded.ts**: Added 4 karma-gated dialogue choices: (1) volodka_fear_of_failure — minKarma:40 while(true) courage metaphor, (2) volodka_poem_awakening — minKarma:55 VCS for the soul metaphor, (3) volodka_before_infiltration — minKarma:35 ritual-as-init-script, (4) (3 total in part4 after the existing ones). All with ws21b_ flags.
+- **idleMonologues.ts**: Added 15 new neutral idle monologue lines for 3 least-served scenes (5 each): guild_mainframe (cable-arteries, empty terminal, ozone smell, LED ocean, dangling rm -rf), city_square (optimization sign, pigeon-as-drone, yesterday's papers, bell-or-error, monument shadow), zarema_room (cold tea, half-drawn curtain, poetry/textbook stack, lavender+ink smell, Albert reading through wall).
+- **dynamicProps.ts**: Added 8 new dynamic props across 3 scenes: zarema_room (+3: box_books, can_pencil, bottle_ink), guild_mainframe (+3: barrel_cable, can_antistatic, box_spare), city_square (+2: can_pigeon_feed, box_fountain_debris). All IDs prefixed ws21b_.
+- **ambientBarks.ts** (new file): Created with 12 new ambient bark lines for 4 NPCs across 4 scenes: sergey (guild_mainframe, 3 idle + 1 pensive), maxim (city_square, 3 idle + 1 pensive), zeka (rooftop_edge, 3 idle + 1 pensive), fisherman_trofim (river_pier, 3 idle + 1 pensive). Includes SceneAmbientBarkSupplement interface, WS21B_AMBIENT_BARK_SUPPLEMENTS array, getWs21bAmbientBarksForNpc() and getWs21bAmbientBarksForScene() lookup helpers.
+- Ran typecheck: exit 0, zero errors
+
+Stage Summary:
+- 12 new examine zones across 6 least-served scenes (guild_mainframe, rooftop_edge, cafe_evening, park_day, river_pier, abandoned_factory)
+- 8 karma-gated dialogue choices (4 in part3, 4 in part4) with minKarma/maxKarma gates
+- 15 new idle monologue lines for 3 least-served scenes (guild_mainframe, city_square, zarema_room)
+- 8 new dynamic props for 3 scenes (zarema_room +3, guild_mainframe +3, city_square +2)
+- 12 new ambient bark lines for 4 NPCs (sergey, maxim, zeka, fisherman_trofim) across 4 scenes
+- New ambientBarks.ts data file with SceneAmbientBarkSupplement type and lookup helpers
+- All IDs and flags unique (ws21b_ prefix), all text in Russian
+- Zero type errors

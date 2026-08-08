@@ -1257,6 +1257,104 @@ export const THOUGHT_CABINET_ITEMS: ThoughtCabinetItem[] = [
       { skill: 'coding', modifier: -1, description: '-1 Кодинг' },
     ],
   },
+
+  /* ═══ 82. Нейро-Эмпатия (взаимоисключающая пара с 83) ═══ */
+  {
+    id: 'ws21d_neural_empathy',
+    name: 'Нейро-Эмпатия',
+    voice: 'empathy',
+    description: 'НейроМост связывает разумы, и ты чувствуешь это — каждый чип вокруг тебя — как пульс чужого сознания. Ты научился считывать эмоции прямо из нейро-потока: страх — высокочастотный шум, радость — синусоида, боль — разрыв пакета. Это делает тебя невероятно чутким, но и невероятно уязвимым: чужая боль — твоя боль, чужая паника — твоя паника. Эмпатия растёт, но логика слабеет — невозможно быть холодным, когда вокруг тебя кричат тридцать разумов.',
+    flavorText: '«Я не читаю мысли. Я читаю их шёпот. А шёпот — громче крика.»',
+    acquisitionCondition: 'flag_thought_ws21d_neural_empathy',
+    acquisitionNode: 'thought_ws21d_neural_empathy',
+    mutuallyExclusive: ['ws21d_neural_firewall'],
+    effects: [
+      { skill: 'empathy', modifier: 3, description: '+3 Эмпатия' },
+      { skill: 'intuition', modifier: 1, description: '+1 Интуиция' },
+      { skill: 'logic', modifier: -2, description: '-2 Логика' },
+    ],
+  },
+
+  /* ═══ 83. Нейро-Брандмауэр (взаимоисключающая пара с 82) ═══ */
+  {
+    id: 'ws21d_neural_firewall',
+    name: 'Нейро-Брандмауэр',
+    voice: 'logic',
+    description: 'НейроМост — дверь в обе стороны: ты подключаешься к сети, но и сеть — к тебе. Нейро-брандмауэр — твоя защита: фильтр, который отсекает чужие эмоции, блокирует подсматривание, изолирует твой разум от шума тридцати миллионов чипов. Логика и кодинг выигрывают — ты мыслишь ясно, как сервер в чистой комнате. Но эмпатия отмирает: кто прячется за стеной, не слышит, что происходит снаружи. А снаружи — мир. И он стонет.',
+    flavorText: '«Мой разум — мой сервер. Порт 443 закрыт. Вход только по ключу. Ключа нет.»',
+    acquisitionCondition: 'flag_thought_ws21d_neural_firewall',
+    acquisitionNode: 'thought_ws21d_neural_firewall',
+    mutuallyExclusive: ['ws21d_neural_empathy'],
+    effects: [
+      { skill: 'logic', modifier: 2, description: '+2 Логика' },
+      { skill: 'coding', modifier: 2, description: '+2 Кодинг' },
+      { skill: 'empathy', modifier: -3, description: '-3 Эмпатия' },
+    ],
+  },
+
+  /* ═══ 84. Поэтический Компилятор (взаимоисключающая пара с 85) ═══ */
+  {
+    id: 'ws21d_poetic_compiler',
+    name: 'Поэтический Компилятор',
+    voice: 'writing',
+    description: 'Ты научился компилировать стихи — не в машинный код, а в воздействие. Каждое стихотворение — программа, которая выполняется в уме читателя: переменные — образы, циклы — рефрены, условия — повороты судьбы. Ты не просто пишешь — ты компилируешь эмоции, линкуешь смыслы, деплоишь чувства. Писательство и убеждение растут, но логика страдает — поэтический компилятор не заботится о типобезопасности, он заботится о резонансе.',
+    flavorText: '«gcc -O3 -o soul poem.c // Оптимизация: максимальное воздействие.»',
+    acquisitionCondition: 'flag_thought_ws21d_poetic_compiler',
+    acquisitionNode: 'thought_ws21d_poetic_compiler',
+    mutuallyExclusive: ['ws21d_literal_interpreter'],
+    effects: [
+      { skill: 'writing', modifier: 3, description: '+3 Писательство' },
+      { skill: 'persuasion', modifier: 1, description: '+1 Убеждение' },
+      { skill: 'logic', modifier: -2, description: '-2 Логика' },
+    ],
+  },
+
+  /* ═══ 85. Литеральный Интерпретатор (взаимоисключающая пара с 84) ═══ */
+  {
+    id: 'ws21d_literal_interpreter',
+    name: 'Литеральный Интерпретатор',
+    voice: 'logic',
+    description: 'Слова — данные. Стихи — потоки. Метафоры — синтаксический сахар, который скрывает истину за украшениями. Ты интерпретируешь всё буквально: каждое слово — переменная, каждое предложение — выражение, каждый абзац — блок кода. Это делает тебя блестящим аналитиком текстов и кода — ты видишь структуру там, где другие видят красоту. Но писать ты разучился: буквальный интерпретатор не порождает метафор. Он порождает комментарии к чужим.',
+    flavorText: '«return text.split(\' \').map(word => word.literalMeaning); // Красота — в точности.»',
+    acquisitionCondition: 'flag_thought_ws21d_literal_interpreter',
+    acquisitionNode: 'thought_ws21d_literal_interpreter',
+    mutuallyExclusive: ['ws21d_poetic_compiler'],
+    effects: [
+      { skill: 'logic', modifier: 3, description: '+3 Логика' },
+      { skill: 'coding', modifier: 1, description: '+1 Кодинг' },
+      { skill: 'writing', modifier: -2, description: '-2 Писательство' },
+    ],
+  },
+
+  /* ═══ 86. Резонанс Памяти ═══ */
+  {
+    id: 'ws21d_memory_resonance',
+    name: 'Резонанс Памяти',
+    voice: 'rhythm',
+    description: 'Память — не архив. Память — резонанс. Каждое воспоминание — стоячая волна, которая не затухает, потому что ты каждый день пропускаешь через неё себя. Не вспоминаешь — резонируешь. Ритм жизни — ритм памяти: шаги по коридору, как двадцать лет назад; запах кофе, как в той кухне; звук клавиш, как в первый shift. Резонанс усиливает ритм и интуицию — ты двигаешься в такт с собственным прошлым. Но persuasion страдает: кто живёт в резонансе, трудно переключается на чужую частоту.',
+    flavorText: '«Я не помню. Я звучу. Каждый день — обертон того, что было.»',
+    acquisitionCondition: 'flag_thought_ws21d_memory_resonance',
+    effects: [
+      { skill: 'rhythm', modifier: 2, description: '+2 Ритм' },
+      { skill: 'intuition', modifier: 2, description: '+2 Интуиция' },
+      { skill: 'persuasion', modifier: -1, description: '-1 Убеждение' },
+    ],
+  },
+
+  /* ═══ 87. Тихая Компиляция ═══ */
+  {
+    id: 'ws21d_silent_compilation',
+    name: 'Тихая Компиляция',
+    voice: 'coding',
+    description: 'Лучшая компиляция — тихая. Ни предупреждений, ни ошибок, ни отладочного вывода. Просто бинарник, готовый к запуску. Ты стремишься к этому и в жизни: действуй без шума, без объяснений, без просьб о помощи. Кодинг и ритм растут — ты эффективен, как хорошо оптимизированный компилятор. Но эмпатия затухает: тихая компиляция не генерирует отладочных символов, и окружающие не могут прочитать твой стек. Ты — выполнимый файл без исходного кода. Работаешь. Но непостижим.',
+    flavorText: '«gcc -s -O3 -o life life.c // -s: strip all symbols. Никто не узнает, как я работаю.»',
+    acquisitionCondition: 'flag_thought_ws21d_silent_compilation',
+    effects: [
+      { skill: 'coding', modifier: 2, description: '+2 Кодинг' },
+      { skill: 'rhythm', modifier: 1, description: '+1 Ритм' },
+      { skill: 'empathy', modifier: -1, description: '-1 Эмпатия' },
+    ],
+  },
 ];
 
 /* ─── Lookup map ─── */
@@ -1286,4 +1384,7 @@ export const MUTUALLY_EXCLUSIVE_PAIRS: readonly (readonly [string, string])[] = 
   /* WS20-D mutually exclusive pairs */
   ['ws20d_protocol_silence', 'ws20d_blind_spot'],   // 76 ↔ 78
   ['ws20d_quantum_nostalgia', 'ws20d_signal_ash'],  // 77 ↔ 81
+  /* WS21-D mutually exclusive pairs */
+  ['ws21d_neural_empathy', 'ws21d_neural_firewall'],    // 82 ↔ 83
+  ['ws21d_poetic_compiler', 'ws21d_literal_interpreter'], // 84 ↔ 85
 ];

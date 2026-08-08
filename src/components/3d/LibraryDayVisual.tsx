@@ -55,12 +55,15 @@ export function LibraryDayVisual() {
       ) : (
         <>
           {/* ── Floor ── */}
+          {/* WS21-C: PBR upgrade — waxed floor with clearcoat */}
           <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001}>
             <planeGeometry args={[W, D]} />
-            <meshStandardMaterial
+            <meshPhysicalMaterial
               map={floorTexture}
               color="#5a4030"
               roughness={0.85}
+              clearcoat={0.35}
+              clearcoatRoughness={0.4}
               polygonOffset
               polygonOffsetFactor={1}
               polygonOffsetUnits={1}

@@ -233,7 +233,7 @@ export const ComboCounter = memo(function ComboCounter({
                 initial="hidden"
                 animate="visible"
                 key={`count-${currentCombo}`}
-                className={`font-mono font-black text-5xl tracking-wider leading-none${reducedMotion ? '' : ' hud-filmic-combo-ramp'}`}
+                className={`font-mono font-black text-5xl tracking-wider leading-none${reducedMotion ? '' : ' hud-filmic-combo-ramp hud-filmic-combo-hit-flash'}`}
                 style={{
                   color: tierConfig.color,
                   textShadow: `

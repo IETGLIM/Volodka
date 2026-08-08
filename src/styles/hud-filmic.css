@@ -3215,3 +3215,154 @@
     animation: none;
   }
 }
+
+/* ── 25. HUD button press ──
+   Subtle scale squeeze on active-press for filmic HUDButton.
+   scale(1 → 0.95 → 1), 0.2s ease-out one-shot. Apply via
+   className="hud-filmic-hud-btn-press" on HUDButton filmic variant root. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-hud-btn-press {
+    0% { transform: scale(1); }
+    40% { transform: scale(0.95); }
+    100% { transform: scale(1); }
+  }
+
+  .hud-filmic-hud-btn-press {
+    animation: hud-filmic-hud-btn-press 0.2s ease-out both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-hud-btn-press {
+    animation: none;
+  }
+}
+
+/* ── 26. Menu item slide-in ──
+   Subtle translateX + opacity slide-in for HUDMenuItem on mount.
+   translateX(-4px → 0) + opacity(0 → 1), 0.25s ease-out one-shot. Apply via
+   className="hud-filmic-menu-item-slide" on HUDMenuItem root button. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-menu-item-slide {
+    0% {
+      transform: translateX(-4px);
+      opacity: 0;
+    }
+    100% {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  .hud-filmic-menu-item-slide {
+    animation: hud-filmic-menu-item-slide 0.25s ease-out both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-menu-item-slide {
+    animation: none;
+  }
+}
+
+/* ── 27. Combo hit flash ──
+   Quick brightness flash on combo count increment for ComboCounter.
+   filter brightness(1 → 1.3 → 1), 0.15s ease-out one-shot. Apply via
+   className="hud-filmic-combo-hit-flash" on ComboCounter count span. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-combo-hit-flash {
+    0% { filter: brightness(1); }
+    40% { filter: brightness(1.3); }
+    100% { filter: brightness(1); }
+  }
+
+  .hud-filmic-combo-hit-flash {
+    animation: hud-filmic-combo-hit-flash 0.15s ease-out both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-combo-hit-flash {
+    animation: none;
+  }
+}
+
+/* ── 28. Compass dial glow ──
+   Subtle box-shadow glow pulse for CompassIndicator dial container.
+   3s infinite cycle, box-shadow warm accent 0.12 → 0.25 → 0.12 opacity. Apply via
+   className="hud-filmic-compass-dial-glow" on CompassIndicator outer wrapper div. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-compass-dial-glow {
+    0%, 100% {
+      box-shadow: 0 1px 10px rgba(0, 0, 0, 0.45), 0 0 6px rgba(196, 181, 160, 0.12);
+    }
+    50% {
+      box-shadow: 0 1px 10px rgba(0, 0, 0, 0.45), 0 0 10px rgba(196, 181, 160, 0.25);
+    }
+  }
+
+  .hud-filmic-compass-dial-glow {
+    animation: hud-filmic-compass-dial-glow 3s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-compass-dial-glow {
+    animation: none;
+  }
+}
+
+/* ── 29. Level badge glow ──
+   Subtle border glow cycle for LevelBadge when justLeveled is true.
+   box-shadow warm amber 0.15 → 0.4 → 0.15 opacity, 1.5s infinite. Apply via
+   className="hud-filmic-level-badge-glow" on LevelBadge outer div. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-level-badge-glow {
+    0%, 100% {
+      box-shadow: 0 0 6px rgba(251, 191, 36, 0.15);
+    }
+    50% {
+      box-shadow: 0 0 14px rgba(251, 191, 36, 0.4);
+    }
+  }
+
+  .hud-filmic-level-badge-glow {
+    animation: hud-filmic-level-badge-glow 1.5s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-level-badge-glow {
+    animation: none;
+  }
+}
+
+/* ── 30. QTE pulse ring ──
+   Expanding ring with fade for QuickTimeEventOverlay urgency indicator.
+   scale(0.85 → 1.1) + opacity(0.6 → 0), 0.8s ease-out infinite. Apply via
+   className="hud-filmic-qte-pulse-ring" on an inner ring element inside
+   QuickTimeEventOverlay (alongside the existing hud-filmic-qte-urgency-pulse
+   on the background overlay). */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-qte-pulse-ring {
+    0% {
+      transform: scale(0.85);
+      opacity: 0.6;
+    }
+    100% {
+      transform: scale(1.1);
+      opacity: 0;
+    }
+  }
+
+  .hud-filmic-qte-pulse-ring {
+    animation: hud-filmic-qte-pulse-ring 0.8s ease-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-qte-pulse-ring {
+    animation: none;
+    opacity: 0;
+  }
+}
