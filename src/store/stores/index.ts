@@ -6,6 +6,7 @@ export { useCutsceneStore, getCutsceneStoreState, getActiveCutsceneId } from './
 export { useSaveStore, getSaveStoreState } from './saveStore';
 export { useDialogueHistoryStore, getDialogueHistoryStoreState } from './dialogueHistoryStore';
 export { useAchievementStore, getAchievementStoreState } from './achievementStore';
+export { useDifficultyStore, getDifficultyStoreState } from './difficultyStore';
 import { bindSliceStores } from '../storeBindings';
 import { usePlayerStore } from './playerStore';
 import { useExplorationStore } from './explorationStore';
@@ -15,6 +16,7 @@ import { useCutsceneStore } from './cutsceneStore';
 import { useSaveStore } from './saveStore';
 import { useDialogueHistoryStore } from './dialogueHistoryStore';
 import { useAchievementStore } from './achievementStore';
+import { useDifficultyStore } from './difficultyStore';
 bindSliceStores({
   getPlayerStore: () => usePlayerStore.getState(),
   getExplorationStore: () => useExplorationStore.getState(),
@@ -24,4 +26,5 @@ bindSliceStores({
   getSaveStore: () => useSaveStore.getState(),
   getDialogueHistoryStore: () => useDialogueHistoryStore.getState(),
   getAchievementStore: () => useAchievementStore.getState(),
+  getDifficultyStore: () => useDifficultyStore.getState(),
 });

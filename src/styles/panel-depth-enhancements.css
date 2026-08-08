@@ -1,0 +1,466 @@
+/* ══════════════════════════════════════════════════════════════
+   Volodka RPG – Panel Depth Enhancements
+   
+   Multi-layer glass morphism, spring animations, panel chrome.
+   Builds on existing .glass-panel-dark and .data-panel foundations.
+   ══════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Glass depth tokens */
+  --glass-outer-blur: 20px;
+  --glass-inner-blur: 8px;
+  --glass-noise-opacity: 0.028;
+  --glass-depth-spread: 24px;
+  --glass-depth-blur: 48px;
+  --panel-spring-duration: 0.45s;
+  --panel-header-glow-color: rgb(var(--cyber-cyan-rgb));
+}
+
+/* ══════════════════════════════════════════════════════════════
+   MULTI-LAYER GLASS MORPHISM
+   ══════════════════════════════════════════════════════════════ */
+
+/* Outer layer: the backdrop blur + depth shadow */
+.glass-depth-outer {
+  background: linear-gradient(
+    145deg,
+    rgba(6, 8, 16, 0.82) 0%,
+    rgba(4, 6, 12, 0.88) 40%,
+    rgba(8, 10, 18, 0.80) 100%
+  );
+  backdrop-filter: blur(var(--glass-outer-blur)) saturate(1.06);
+  -webkit-backdrop-filter: blur(var(--glass-outer-blur)) saturate(1.06);
+  box-shadow:
+    0 4px var(--glass-depth-spread) rgba(0, 0, 0, 0.5),
+    0 1px 0 rgba(255, 255, 255, 0.04) inset,
+    0 -1px 0 rgba(0, 0, 0, 0.4) inset;
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.1);
+  border-radius: 12px;
+  position: relative;
+}
+
+/* Inner layer: a second glass surface within the panel */
+.glass-depth-inner {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.018) 0%,
+    transparent 30%,
+    transparent 70%,
+    rgba(0, 0, 0, 0.08) 100%
+  );
+  border-radius: inherit;
+  position: relative;
+  backdrop-filter: blur(var(--glass-inner-blur));
+  -webkit-backdrop-filter: blur(var(--glass-inner-blur));
+}
+
+/* ══════════════════════════════════════════════════════════════
+   NOISE TEXTURE OVERLAY (CSS-only, repeating gradients)
+   ══════════════════════════════════════════════════════════════ */
+
+.glass-noise {
+  position: relative;
+}
+
+.glass-noise::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  opacity: var(--glass-noise-opacity);
+  /* CSS-only noise: overlapping fine gradients create pseudo-noise */
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      transparent 0px,
+      rgba(255, 255, 255, 0.04) 1px,
+      transparent 2px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      transparent 0px,
+      rgba(255, 255, 255, 0.03) 1px,
+      transparent 2px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0px,
+      rgba(0, 0, 0, 0.05) 1px,
+      transparent 3px
+    );
+  background-size: 3px 3px, 4px 4px, 5px 5px;
+  mix-blend-mode: overlay;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ANIMATED BORDER GRADIENT for "active" panels
+   ══════════════════════════════════════════════════════════════ */
+
+@property --active-border-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes active-border-spin {
+  from { --active-border-angle: 0deg; }
+  to { --active-border-angle: 360deg; }
+}
+
+.glass-active-border {
+  position: relative;
+  border: 1px solid transparent;
+}
+
+.glass-active-border::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(
+    from var(--active-border-angle),
+    rgb(var(--cyber-cyan-rgb) / 0.4) 0%,
+    rgb(var(--cyber-matrix-rgb) / 0.25) 15%,
+    transparent 30%,
+    transparent 70%,
+    rgb(var(--cyber-cyan-rgb) / 0.3) 85%,
+    rgb(var(--cyber-cyan-rgb) / 0.4) 100%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: active-border-spin 5s linear infinite;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.6;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   DEPTH SHADOWS — Multi-layer floating effect
+   ══════════════════════════════════════════════════════════════ */
+
+.depth-shadow-sm {
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.35),
+    0 4px 16px rgba(0, 0, 0, 0.2),
+    0 0 0 1px rgb(var(--cyber-cyan-rgb) / 0.06);
+}
+
+.depth-shadow-md {
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.4),
+    0 8px 32px rgba(0, 0, 0, 0.25),
+    0 16px 48px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgb(var(--cyber-cyan-rgb) / 0.06);
+}
+
+.depth-shadow-lg {
+  box-shadow:
+    0 8px 16px rgba(0, 0, 0, 0.4),
+    0 16px 48px rgba(0, 0, 0, 0.3),
+    0 32px 64px rgba(0, 0, 0, 0.2),
+    0 0 0 1px rgb(var(--cyber-cyan-rgb) / 0.06),
+    0 0 40px rgba(0, 0, 0, 0.1);
+}
+
+/* Floating panel — feels like it's hovering above the screen */
+@keyframes depth-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+
+.depth-float {
+  animation: depth-float 6s ease-in-out infinite;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PANEL OPEN / CLOSE ANIMATIONS with spring-like overshoot
+   ══════════════════════════════════════════════════════════════ */
+
+/* Open: scale from 0.92 → overshoot to 1.01 → settle to 1.0 */
+@keyframes panel-spring-open {
+  0% {
+    opacity: 0;
+    transform: scale(0.92) translateY(12px);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.012) translateY(-2px);
+  }
+  80% {
+    transform: scale(0.998) translateY(0.5px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.panel-spring-open {
+  animation: panel-spring-open var(--panel-spring-duration) cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Close: scale from 1.0 → undershoot to 0.97 → fade out */
+@keyframes panel-spring-close {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  30% {
+    opacity: 0.8;
+    transform: scale(1.02) translateY(-4px);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.94) translateY(16px);
+  }
+}
+
+.panel-spring-close {
+  animation: panel-spring-close 0.3s cubic-bezier(0.36, 0, 0.66, -0.56) forwards;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PANEL HEADER STYLING
+   ══════════════════════════════════════════════════════════════ */
+
+/* Gradient underline with glow */
+.panel-header-underline {
+  position: relative;
+  padding-bottom: 10px;
+}
+
+.panel-header-underline::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    rgb(var(--cyber-cyan-rgb) / 0.05) 0%,
+    rgb(var(--cyber-cyan-rgb) / 0.35) 30%,
+    rgb(var(--cyber-cyan-rgb) / 0.5) 50%,
+    rgb(var(--cyber-cyan-rgb) / 0.35) 70%,
+    rgb(var(--cyber-cyan-rgb) / 0.05) 100%
+  );
+  box-shadow:
+    0 0 8px rgb(var(--cyber-cyan-rgb) / 0.12),
+    0 0 16px rgb(var(--cyber-cyan-rgb) / 0.04);
+}
+
+/* Animated gradient sweep across underline */
+@keyframes header-underline-sweep {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.panel-header-underline-animated::after {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgb(var(--cyber-cyan-rgb) / 0.3) 25%,
+    rgb(var(--cyber-cyan-rgb) / 0.6) 50%,
+    rgb(var(--cyber-cyan-rgb) / 0.3) 75%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: header-underline-sweep 4s ease-in-out infinite;
+}
+
+/* Icon pulse on active panels */
+@keyframes panel-icon-pulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 2px rgb(var(--cyber-cyan-rgb) / 0.2));
+    transform: scale(1);
+  }
+  50% {
+    filter: drop-shadow(0 0 6px rgb(var(--cyber-cyan-rgb) / 0.4)) drop-shadow(0 0 12px rgb(var(--cyber-cyan-rgb) / 0.15));
+    transform: scale(1.08);
+  }
+}
+
+.panel-icon-active {
+  animation: panel-icon-pulse 3s ease-in-out infinite;
+}
+
+/* Close button: X rotating to + on hover */
+.panel-close-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.12);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.2);
+  color: rgba(148, 163, 184, 0.6);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+ transform: rotate(0deg);
+}
+
+.panel-close-btn:hover {
+  border-color: rgb(var(--cyber-cyan-rgb) / 0.3);
+  background: rgb(var(--cyber-cyan-rgb) / 0.08);
+  color: rgb(var(--cyber-cyan-rgb) / 0.9);
+  transform: rotate(90deg) scale(1.1);
+  box-shadow: 0 0 10px rgb(var(--cyber-cyan-rgb) / 0.15);
+}
+
+.panel-close-btn:active {
+  transform: rotate(90deg) scale(0.95);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PANEL CONTENT STYLING
+   ══════════════════════════════════════════════════════════════ */
+
+/* Custom scrollbar for panel content — thin, cyan-accented */
+.panel-scroll-area {
+  scrollbar-width: thin;
+   scrollbar-color: rgb(var(--cyber-cyan-rgb) / 0.2) rgba(0, 0, 0, 0.3);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.panel-scroll-area::-webkit-scrollbar {
+  width: 4px;
+}
+
+.panel-scroll-area::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 2px;
+}
+
+.panel-scroll-area::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    180deg,
+    rgb(var(--cyber-cyan-rgb) / 0.3),
+    rgb(var(--cyber-cyan-rgb) / 0.15)
+  );
+  border-radius: 2px;
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.08);
+}
+
+.panel-scroll-area::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(
+    180deg,
+    rgb(var(--cyber-cyan-rgb) / 0.5),
+    rgb(var(--cyber-cyan-rgb) / 0.25)
+  );
+}
+
+/* Section dividers within panels — subtle */
+.panel-section-divider {
+  height: 1px;
+  margin: 12px 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgb(var(--cyber-cyan-rgb) / 0.08) 15%,
+    rgb(var(--cyber-cyan-rgb) / 0.15) 50%,
+    rgb(var(--cyber-cyan-rgb) / 0.08) 85%,
+    transparent 100%
+  );
+  border: none;
+}
+
+/* Hover effects on interactive panel elements */
+.panel-interactive-item {
+  position: relative;
+  padding: 8px 12px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.panel-interactive-item::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(var(--cyber-cyan-rgb) / 0.04),
+    transparent
+  );
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.panel-interactive-item:hover {
+  border-color: rgb(var(--cyber-cyan-rgb) / 0.15);
+  background: rgb(var(--cyber-cyan-rgb) / 0.03);
+}
+
+.panel-interactive-item:hover::before {
+  opacity: 1;
+}
+
+.panel-interactive-item:active {
+  transform: scale(0.98);
+  border-color: rgb(var(--cyber-cyan-rgb) / 0.25);
+  background: rgb(var(--cyber-cyan-rgb) / 0.06);
+}
+
+/* Selected / active state for panel items */
+.panel-interactive-item-active {
+  border-color: rgb(var(--cyber-cyan-rgb) / 0.2);
+  background: rgb(var(--cyber-cyan-rgb) / 0.05);
+  box-shadow: inset 3px 0 0 rgb(var(--cyber-cyan-rgb) / 0.35);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   REDUCED MOTION
+   ══════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-active-border::before {
+    animation: none;
+    opacity: 0.4;
+  }
+
+  .depth-float {
+    animation: none;
+  }
+
+  .panel-spring-open {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .panel-spring-close {
+    animation: none;
+    opacity: 0;
+    transform: none;
+  }
+
+  .panel-header-underline-animated::after {
+    animation: none;
+  }
+
+  .panel-icon-active {
+    animation: none;
+    filter: drop-shadow(0 0 4px rgb(var(--cyber-cyan-rgb) / 0.3));
+  }
+
+  .panel-close-btn {
+    transition: none;
+  }
+
+  .panel-close-btn:hover {
+    transform: none;
+  }
+}

@@ -19,3 +19,15 @@ export {
   getCinematicTypeStyles,
   type CinematicNarrativePresentation,
 } from './cinematicNarrativeStyles';
+export {
+  CinematicLetterboxEnhanced,
+  type LetterboxVariant,
+  type ParticleStyle,
+  type CinematicLetterboxEnhancedProps,
+} from './CinematicLetterboxEnhanced';
+export {
+  CinematicTextOverlay,
+  type TextSpeedProfile,
+  type TextMood,
+  type CinematicTextOverlayProps,
+} from './CinematicTextOverlay';

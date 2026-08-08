@@ -1,0 +1,454 @@
+/* ══════════════════════════════════════════════════════════════
+   Volodka RPG – HUD Chrome Enhancements
+   
+   Premium visual treatments for specific HUD elements:
+   compass, quest tracker, energy/stress bars, skill check,
+   interaction prompt, poem power bar.
+   ══════════════════════════════════════════════════════════════ */
+
+:root {
+  --hud-chrome-compass-size: 56px;
+  --hud-chrome-ring-speed: 20s;
+  --hud-chrome-pulse-speed: 2s;
+  --hud-chrome-spin-speed: 2s;
+  --hud-chrome-fill-speed: 0.6s;
+  --hud-chrome-ethereal-speed: 2.5s;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   1. COMPASS — Animated ring with direction markers
+   ══════════════════════════════════════════════════════════════ */
+
+/* Outer animated ring — slow rotation tick marks */
+@keyframes compass-ring-rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.compass-chrome-ring {
+  position: relative;
+  width: var(--hud-chrome-compass-size);
+  height: var(--hud-chrome-compass-size);
+  border-radius: 50%;
+}
+
+/* Outer decorative ring with rotating tick marks */
+.compass-chrome-ring::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.12);
+  /* Tick marks via dashed border overlay */
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg, rgb(var(--cyber-cyan-rgb) / 0.15) 2deg, transparent 4deg,
+    transparent 88deg, rgb(var(--cyber-cyan-rgb) / 0.15) 90deg, transparent 92deg,
+    transparent 178deg, rgb(var(--cyber-cyan-rgb) / 0.15) 180deg, transparent 182deg,
+    transparent 268deg, rgb(var(--cyber-cyan-rgb) / 0.15) 270deg, transparent 272deg,
+    transparent 360deg
+  );
+  -webkit-mask: radial-gradient(transparent 65%, #000 66%, #000 100%);
+  mask: radial-gradient(transparent 65%, #000 66%, #000 100%);
+  animation: compass-ring-rotate var(--hud-chrome-ring-speed) linear infinite;
+  pointer-events: none;
+}
+
+/* Inner glow ring */
+.compass-chrome-ring::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  box-shadow:
+    inset 0 0 8px rgba(0, 0, 0, 0.4),
+    0 0 12px rgb(var(--cyber-cyan-rgb) / 0.06);
+  pointer-events: none;
+}
+
+/* Glowing needle — north pointer */
+@keyframes compass-needle-glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 2px rgb(var(--cyber-cyan-rgb) / 0.3));
+  }
+  50% {
+    filter: drop-shadow(0 0 5px rgb(var(--cyber-cyan-rgb) / 0.5)) drop-shadow(0 0 10px rgb(var(--cyber-cyan-rgb) / 0.2));
+  }
+}
+
+.compass-needle-glow {
+  animation: compass-needle-glow 3s ease-in-out infinite;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   2. QUEST TRACKER — Progress bar + icon pulse
+   ══════════════════════════════════════════════════════════════ */
+
+/* Quest icon pulse — gentle scale + glow */
+@keyframes quest-icon-pulse {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 2px rgb(var(--cyber-cyan-rgb) / 0.2));
+  }
+  50% {
+    transform: scale(1.1);
+    filter: drop-shadow(0 0 6px rgb(var(--cyber-cyan-rgb) / 0.4)) drop-shadow(0 0 12px rgb(var(--cyber-cyan-rgb) / 0.15));
+  }
+}
+
+.quest-icon-pulse {
+  animation: quest-icon-pulse 3s ease-in-out infinite;
+}
+
+/* Quest progress bar — animated fill with scanning highlight */
+.quest-progress-chrome {
+  position: relative;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.1);
+  overflow: hidden;
+}
+
+.quest-progress-chrome-fill {
+  height: 100%;
+  border-radius: 1px;
+  background: linear-gradient(
+    90deg,
+    rgb(var(--cyber-matrix-rgb) / 0.5) 0%,
+    rgb(var(--cyber-cyan-rgb) / 0.7) 50%,
+    rgb(var(--cyber-matrix-rgb) / 0.5) 100%
+  );
+ box-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.2);
+  transition: width var(--hud-chrome-fill-speed) cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+}
+
+/* Scanning highlight across the fill */
+@keyframes quest-fill-scan {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(300%); }
+}
+
+.quest-progress-chrome-fill::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  animation: quest-fill-scan 2.5s ease-in-out infinite;
+  border-radius: inherit;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   3. ENERGY / STRESS BARS — Outer frame with animated border
+   ══════════════════════════════════════════════════════════════ */
+
+/* Outer frame for stat bars */
+.stat-bar-chrome {
+  position: relative;
+  padding: 1px;
+  border-radius: 4px;
+  background: linear-gradient(
+    180deg,
+    rgb(var(--cyber-cyan-rgb) / 0.15) 0%,
+    rgb(var(--cyber-cyan-rgb) / 0.06) 50%,
+    rgb(var(--cyber-cyan-rgb) / 0.15) 100%
+  );
+}
+
+/* Animated shimmer on the outer frame border */
+@keyframes stat-bar-border-shimmer {
+  0% { background-position: 0 0, 0 0, 0 0, 0 0; }
+  100% { background-position: 0 40px, 40px 0, 0 -40px, -40px 0; }
+}
+
+.stat-bar-chrome-animated {
+  position: relative;
+  padding: 1px;
+  border-radius: 4px;
+  background: linear-gradient(
+    90deg,
+    rgb(var(--cyber-cyan-rgb) / 0.06),
+    rgb(var(--cyber-cyan-rgb) / 0.2) 50%,
+    rgb(var(--cyber-cyan-rgb) / 0.06)
+  );
+  background-size: 200% 100%;
+  animation: stat-bar-border-sweep 4s ease-in-out infinite;
+}
+
+@keyframes stat-bar-border-sweep {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Inner bar track */
+.stat-bar-chrome-track {
+  height: 100%;
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.5);
+ overflow: hidden;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   4. SKILL CHECK — Spinning dice icon + result flash
+   ══════════════════════════════════════════════════════════════ */
+
+/* Spinning dice */
+@keyframes skill-dice-spin {
+  0% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(90deg) scale(1.15); }
+  50% { transform: rotate(180deg) scale(1); }
+  75% { transform: rotate(270deg) scale(1.1); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+.skill-dice-spinning {
+  animation: skill-dice-spin var(--hud-chrome-spin-speed) cubic-bezier(0.34, 1.56, 0.64, 1) infinite;
+}
+
+/* Result flash — success (green burst) */
+@keyframes skill-flash-success {
+  0% {
+    box-shadow: 0 0 0 0 rgb(var(--cyber-matrix-rgb) / 0.6);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 20px 4px rgb(var(--cyber-matrix-rgb) / 0.3);
+    transform: scale(1.08);
+  }
+  100% {
+    box-shadow: 0 0 4px 0 rgb(var(--cyber-matrix-rgb) / 0.1);
+    transform: scale(1);
+  }
+}
+
+.skill-flash-success {
+  animation: skill-flash-success 0.6s ease-out forwards;
+}
+
+/* Result flash — failure (rose burst) */
+@keyframes skill-flash-failure {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 23, 68, 0.6);
+    transform: scale(1);
+  }
+  30% {
+    box-shadow: 0 0 24px 6px rgba(255, 23, 68, 0.35);
+    transform: scale(1.06);
+  }
+  60% {
+    box-shadow: 0 0 16px 3px rgba(255, 23, 68, 0.2);
+  }
+  100% {
+    box-shadow: none;
+    transform: scale(1);
+  }
+}
+
+.skill-flash-failure {
+  animation: skill-flash-failure 0.8s ease-out forwards;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   5. INTERACTION PROMPT — Pulsing ring around interact icon
+   ══════════════════════════════════════════════════════════════ */
+
+@keyframes interact-ring-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+    border-color: rgb(var(--cyber-cyan-rgb) / 0.3);
+    box-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.1);
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 1;
+    border-color: rgb(var(--cyber-cyan-rgb) / 0.6);
+    box-shadow: 0 0 12px rgb(var(--cyber-cyan-rgb) / 0.25), 0 0 24px rgb(var(--cyber-cyan-rgb) / 0.08);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.5;
+    border-color: rgb(var(--cyber-cyan-rgb) / 0.3);
+    box-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.1);
+  }
+}
+
+.interact-prompt-ring {
+  position: relative;
+}
+
+/* Outer pulsing ring */
+.interact-prompt-ring::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 1.5px solid rgb(var(--cyber-cyan-rgb) / 0.3);
+  animation: interact-ring-pulse var(--hud-chrome-pulse-speed) ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Secondary ring — offset timing for depth */
+.interact-prompt-ring::after {
+  content: '';
+  position: absolute;
+  inset: -10px;
+  border-radius: 50%;
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.12);
+  animation: interact-ring-pulse 3s ease-in-out infinite 0.5s;
+  pointer-events: none;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   6. POEM POWER BAR — Ethereal glow on cooldown completion
+   ══════════════════════════════════════════════════════════════ */
+
+/* Ethereal glow when poem power is fully charged */
+@keyframes poem-ethereal-glow {
+  0%, 100% {
+    box-shadow:
+      0 0 6px rgb(var(--cyber-violet) / 0.15),
+      0 0 12px rgb(var(--cyber-violet) / 0.08);
+    filter: brightness(1);
+  }
+  50% {
+    box-shadow:
+      0 0 10px rgb(var(--cyber-violet) / 0.25),
+      0 0 20px rgb(var(--cyber-violet) / 0.15),
+      0 0 40px rgb(var(--cyber-violet) / 0.06),
+      inset 0 0 8px rgb(var(--cyber-violet) / 0.08);
+    filter: brightness(1.1);
+  }
+}
+
+.poem-power-ready {
+  animation: poem-ethereal-glow var(--hud-chrome-ethereal-speed) ease-in-out infinite;
+}
+
+/* Poem power bar container */
+.poem-power-chrome {
+  position: relative;
+  padding: 1px;
+  border-radius: 4px;
+  background: linear-gradient(
+    135deg,
+    rgb(var(--cyber-violet) / 0.2) 0%,
+    rgb(var(--cyber-cyan-rgb) / 0.15) 50%,
+    rgb(var(--cyber-violet) / 0.2) 100%
+  );
+}
+
+/* Poem power fill — violet → cyan gradient */
+.poem-power-chrome-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(
+    90deg,
+    rgb(var(--cyber-violet) / 0.5) 0%,
+    rgb(var(--cyber-cyan-rgb) / 0.6) 40%,
+    rgb(var(--cyber-violet) / 0.4) 80%,
+    rgb(var(--cyber-cyan-rgb) / 0.7) 100%
+  );
+  background-size: 200% 100%;
+  box-shadow: 0 0 6px rgb(var(--cyber-violet) / 0.2);
+  transition: width var(--hud-chrome-fill-speed) cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Animated shimmer when poem is ready */
+@keyframes poem-shimmer-ready {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.poem-power-chrome-fill.poem-ready {
+  animation: poem-shimmer-ready 2s ease-in-out infinite;
+}
+
+/* Poem power burst — effect when poem power is used */
+@keyframes poem-power-burst {
+  0% {
+    box-shadow: 0 0 0 0 rgb(var(--cyber-violet) / 0.6);
+    transform: scale(1);
+  }
+  40% {
+    box-shadow: 0 0 30px 8px rgb(var(--cyber-violet) / 0.3);
+    transform: scale(1.05);
+  }
+  100% {
+    box-shadow: 0 0 4px 0 rgb(var(--cyber-violet) / 0.05);
+    transform: scale(1);
+  }
+}
+
+.poem-power-burst {
+  animation: poem-power-burst 0.7s ease-out forwards;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   REDUCED MOTION
+   ══════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .compass-chrome-ring::before {
+    animation: none;
+  }
+
+  .compass-needle-glow {
+    animation: none;
+    filter: drop-shadow(0 0 3px rgb(var(--cyber-cyan-rgb) / 0.35));
+  }
+
+  .quest-icon-pulse {
+    animation: none;
+    filter: drop-shadow(0 0 3px rgb(var(--cyber-cyan-rgb) / 0.3));
+  }
+
+  .quest-progress-chrome-fill::after {
+    animation: none;
+  }
+
+  .stat-bar-chrome-animated {
+    animation: none;
+    background-position: 0 0;
+  }
+
+  .skill-dice-spinning {
+    animation: none;
+  }
+
+  .skill-flash-success,
+  .skill-flash-failure,
+  .poem-power-burst {
+    animation: none;
+    box-shadow: none;
+    transform: none;
+  }
+
+  .interact-prompt-ring::before,
+  .interact-prompt-ring::after {
+    animation: none;
+    opacity: 0.5;
+  }
+
+  .poem-power-ready {
+    animation: none;
+    box-shadow: 0 0 8px rgb(var(--cyber-violet) / 0.2);
+  }
+
+  .poem-power-chrome-fill.poem-ready {
+    animation: none;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   7. HUD AMBIENT OVERLAY — Base styling for HudAmbientOverlay.tsx
+   ══════════════════════════════════════════════════════════════ */
+
+.hud-ambient-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  mix-blend-mode: normal;
+}

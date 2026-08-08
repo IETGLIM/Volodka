@@ -8,6 +8,7 @@
 
 import { sanitizeExplorationSceneId } from '@/config/scenes';
 import { isClosedOverlayExploreHub } from '@/shared/sceneExploreHubRegistry';
+import { createDefaultDifficultySettings, type DifficultySettings } from './slices/difficultySlice';
 import { getPoemPowerCooldownMs } from '@/data/poemPowerCooldowns';
 import {
   SavePayloadSchema,
@@ -105,6 +106,7 @@ export function createDefaultPersistedState(): Pick<GameStoreState, PersistedSto
     hotbarSlots: [null, null, null, null],
     inventorySortOption: 'name',
     inventoryFilterCategory: 'all',
+    difficultySettings: createDefaultDifficultySettings(),
   };
 }
 
@@ -330,6 +332,7 @@ export function storePatchFromSave(payload: SavePayload): Partial<GameStoreState
       ...defaults.achievementProgress,
       ...payload.achievementProgress,
     },
+    difficultySettings: (payload.difficultySettings as DifficultySettings) ?? defaults.difficultySettings,
   };
 
   for (const key of getPersistedStateKeys()) {
@@ -341,7 +344,8 @@ export function storePatchFromSave(payload: SavePayload): Partial<GameStoreState
       key === 'mode' ||
       key === 'mainMenuOpen' ||
       key === 'introActive' ||
-      key === 'combatActive'
+      key === 'combatActive' ||
+      key === 'difficultySettings'
     ) {
       continue;
     }

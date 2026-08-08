@@ -1,0 +1,366 @@
+/* ══════════════════════════════════════════════════════════════
+   DIALOGUE MOBILE — Responsive layout for dialogue UI
+   Breakpoints: 768px (tablet), 480px (small phone)
+   Ensures touch targets ≥ 48px, readable fonts, no overflow.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ══════════════════════════════════════════════════════════════
+   DIALOGUE BOX — Full width, reduced padding on mobile
+   ══════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  /* The CinematicNarrativeFrame outer wrapper — align to bottom */
+  [data-mobile-dialogue="true"] {
+    align-items: flex-end !important;
+    padding: 0 !important;
+  }
+
+  /* Content container inside the frame */
+  [data-mobile-dialogue="true"] > [data-mobile-dialogue-content="true"] {
+    max-width: 100vw !important;
+    width: 100vw !important;
+    padding: 0 !important;
+    border-radius: 16px 16px 0 0 !important;
+    max-height: 75dvh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Speaker name plate — smaller on mobile */
+  [data-mobile-dialogue="true"] .narrative-speaker-nameplate,
+  [data-mobile-dialogue="true"] .dialogue-speaker-nameplate {
+    font-size: 0.875rem !important; /* text-sm */
+    letter-spacing: 0.05em !important;
+    margin-bottom: 0.25rem !important;
+  }
+
+  /* Dialogue text body — slightly smaller but still readable */
+  [data-mobile-dialogue="true"] .hud-filmic-quote {
+    font-size: 0.9375rem !important; /* 15px — between sm and base */
+    line-height: 1.6 !important;
+    padding: 0 1rem !important;
+    max-width: 100% !important;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CHOICE BUTTONS — Full width, stacked, 48px touch targets
+   ══════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  [data-mobile-dialogue="true"] .cyber-dialogue-choice,
+  [data-mobile-dialogue="true"] .dialogue-choice-card,
+  [data-mobile-dialogue="true"] .narrative-choice-hover {
+    width: 100% !important;
+    min-height: 48px !important;
+    padding: 14px 16px !important;
+    font-size: 0.9375rem !important; /* 15px — larger than desktop 14px */
+    line-height: 1.5 !important;
+    border-radius: 10px !important;
+    gap: 10px !important;
+    display: flex !important;
+    align-items: center !important;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    /* Wider gap between choices */
+    margin-bottom: 6px;
+    border-width: 1px !important;
+  }
+
+  /* Choice text — prevent overflow */
+  [data-mobile-dialogue="true"] .cyber-dialogue-choice .flex-1,
+  [data-mobile-dialogue="true"] .dialogue-choice-card .flex-1 {
+    min-width: 0 !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Choice number index — slightly larger */
+  [data-mobile-dialogue="true"] .cyber-dialogue-choice .font-mono,
+  [data-mobile-dialogue="true"] .dialogue-choice-card .font-mono {
+    font-size: 12px !important;
+    min-width: 20px !important;
+  }
+
+  /* Trailing badges (dice checks, karma hints) — responsive sizing */
+  [data-mobile-dialogue="true"] .cyber-dialogue-choice .text-xs,
+  [data-mobile-dialogue="true"] .dialogue-choice-card .text-\[10px\],
+  [data-mobile-dialogue="true"] .dialogue-choice-card .text-xs {
+    font-size: 11px !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Disabled choice — still 48px min height for consistency */
+  [data-mobile-dialogue="true"] .cyber-dialogue-choice:disabled,
+  [data-mobile-dialogue="true"] .dialogue-choice-card:disabled {
+    min-height: 48px !important;
+    opacity: 0.45 !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SKILL CHECK DISPLAY — Responsive sizing
+   ══════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  [data-mobile-dialogue="true"] .dialogue-skill-check {
+    font-size: 0.8125rem !important; /* 13px */
+    padding: 8px 12px !important;
+    margin-bottom: 8px !important;
+    border-radius: 8px !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   RELATION BAR — Simplified on mobile (hide hover-only numeric)
+   ══════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  [data-mobile-dialogue="true"] .data-bar {
+    height: 4px !important;
+    margin-top: 4px !important;
+    margin-bottom: 4px !important;
+  }
+
+  [data-mobile-dialogue="true"] .data-bar-label {
+    font-size: 9px !important;
+    letter-spacing: 0.08em !important;
+  }
+
+  [data-mobile-dialogue="true"] .data-bar-fill {
+    transition: width 0.3s ease-out !important;
+  }
+
+  /* Hide the glow accent line on mobile (save vertical space) */
+  [data-mobile-dialogue="true"] .glow-line-bottom {
+    display: none !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   NPC PORTRAIT — Smaller on mobile
+   ══════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  /* Portrait container in dialogue */
+  [data-mobile-dialogue="true"] [class*="npc-portrait"],
+  [data-mobile-dialogue="true"] [class*="portrait"] {
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 48px !important;
+    min-height: 48px !important;
+    border-radius: 10px !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   THOUGHT INTERJECTIONS — Compact on mobile
+   ══════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  [data-mobile-dialogue="true"] .hud-filmic-interjection {
+    font-size: 0.8125rem !important;
+    padding: 6px 10px !important;
+    margin: 4px 0 !important;
+    border-radius: 8px !important;
+  }
+
+  [data-mobile-dialogue="true"] .hud-filmic-interjection .font-mono {
+    font-size: 9px !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   TOOLBAR BUTTONS (Skip, Auto, History) — Touch-friendly
+   ══════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  [data-mobile-dialogue="true"] button[class*="rounded-lg"][class*="backdrop-blur"] {
+    min-width: 44px !important;
+    min-height: 44px !important;
+    padding: 10px 14px !important;
+    font-size: 13px !important;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  /* Close (X) button — top right, bigger on mobile */
+  [data-mobile-dialogue="true"] button[aria-label="Закрыть"] {
+    min-width: 44px !important;
+    min-height: 44px !important;
+  }
+
+  /* Skip text button */
+  [data-mobile-dialogue="true"] button[aria-label="Пропустить анимацию текста"] {
+    min-width: 44px !important;
+    min-height: 44px !important;
+    font-size: 13px !important;
+    padding: 8px 14px !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   DICE ROLL DISPLAY — Responsive sizing
+   ══════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  [data-mobile-dialogue="true"] [class*="dice-roll"],
+  [data-mobile-dialogue="true"] [class*="DiceRoll"] {
+    font-size: 0.875rem !important;
+    padding: 10px !important;
+    border-radius: 10px !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   DECORATIVE LINES — Shorter on mobile
+   ══════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  [data-mobile-dialogue="true"] .w-24,
+  [data-mobile-dialogue="true"] .sm\:w-36 {
+    width: 5rem !important;
+  }
+
+  [data-mobile-dialogue="true"] .w-16,
+  [data-mobile-dialogue="true"] .sm\:w-24 {
+    width: 3rem !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   VERY SMALL SCREENS (≤ 480px)
+   Further reduce padding, hide non-essential decorations
+   ══════════════════════════════════════════════════════════════ */
+@media (max-width: 480px) {
+  /* Tighter padding on the dialogue box */
+  [data-mobile-dialogue="true"] > [data-mobile-dialogue-content="true"] {
+    padding: 0 !important;
+    border-radius: 12px 12px 0 0 !important;
+  }
+
+  /* Even smaller speaker name */
+  [data-mobile-dialogue="true"] .narrative-speaker-nameplate,
+  [data-mobile-dialogue="true"] .dialogue-speaker-nameplate {
+    font-size: 0.8125rem !important; /* 13px */
+  }
+
+  /* Dialogue text — 14px minimum, tighter padding */
+  [data-mobile-dialogue="true"] .hud-filmic-quote {
+    font-size: 0.875rem !important; /* text-sm = 14px */
+    line-height: 1.55 !important;
+    padding: 0 0.75rem !important;
+  }
+
+  /* Choice buttons — tighter but still 48px min height */
+  [data-mobile-dialogue="true"] .cyber-dialogue-choice,
+  [data-mobile-dialogue="true"] .dialogue-choice-card,
+  [data-mobile-dialogue="true"] .narrative-choice-hover {
+    padding: 12px 14px !important;
+    font-size: 0.875rem !important;
+    min-height: 48px !important;
+    margin-bottom: 4px;
+    border-radius: 8px !important;
+  }
+
+  /* Hide decorative divider lines on very small screens */
+  [data-mobile-dialogue="true"] .w-24,
+  [data-mobile-dialogue="true"] .w-16,
+  [data-mobile-dialogue="true"] .sm\:w-36,
+  [data-mobile-dialogue="true"] .sm\:w-24 {
+    width: 2.5rem !important;
+  }
+
+  /* Hide thought interjection brackets on very small screens */
+  [data-mobile-dialogue="true"] .hud-filmic-interjection .font-mono {
+    font-size: 8px !important;
+  }
+
+  /* Skill check badge — compact */
+  [data-mobile-dialogue="true"] .dialogue-skill-check {
+    font-size: 0.75rem !important;
+    padding: 6px 10px !important;
+  }
+
+  /* Ensure text never overflows horizontally */
+  [data-mobile-dialogue="true"] .hud-filmic-quote,
+  [data-mobile-dialogue="true"] .cyber-dialogue-choice,
+  [data-mobile-dialogue="true"] .dialogue-choice-card,
+  [data-mobile-dialogue="true"] .narrative-choice-hover,
+  [data-mobile-dialogue="true"] .hud-filmic-interjection {
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+  }
+
+  /* Toolbar buttons — slightly smaller on 480px */
+  [data-mobile-dialogue="true"] button[class*="rounded-lg"][class*="backdrop-blur"] {
+    padding: 8px 12px !important;
+    font-size: 12px !important;
+    min-width: 40px !important;
+    min-height: 40px !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   LANDSCAPE MOBILE — Adjustments for phones in landscape
+   ══════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) and (orientation: landscape) {
+  [data-mobile-dialogue="true"] {
+    align-items: center !important;
+  }
+
+  [data-mobile-dialogue="true"] > [data-mobile-dialogue-content="true"] {
+    max-height: 60dvh;
+    border-radius: 16px !important;
+    margin: 0 8px;
+    width: calc(100vw - 16px) !important;
+  }
+
+  /* Choice buttons tighter in landscape */
+  [data-mobile-dialogue="true"] .cyber-dialogue-choice,
+  [data-mobile-dialogue="true"] .dialogue-choice-card,
+  [data-mobile-dialogue="true"] .narrative-choice-hover {
+    min-height: 40px !important;
+    padding: 10px 14px !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   MOBILE TYPEWRITER — Slightly faster on mobile
+   (Impatience accommodation: mobile users tap more)
+   CSS-only hint — the hook still controls actual speed.
+   This provides a visual cue via the cursor blink rate.
+   ══════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  [data-mobile-dialogue="true"] .dialogue-text-cursor {
+    animation-duration: 0.6s !important; /* Faster blink = feels faster */
+  }
+}
+
+@media (max-width: 480px) {
+  [data-mobile-dialogue="true"] .dialogue-text-cursor {
+    animation-duration: 0.5s !important; /* Even faster on small screens */
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   DIALOGUE HISTORY OVERLAY — Full screen on mobile
+   ══════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  [data-mobile-dialogue="true"] [class*="dialogue-history"],
+  [data-mobile-dialogue="true"] [role="dialog"][class*="history"] {
+    max-width: 100vw !important;
+    max-height: 60dvh !important;
+    font-size: 0.8125rem !important;
+    border-radius: 12px 12px 0 0 !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   DIALOGUE SKELETON (loading state) — Mobile adaptation
+   ══════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  [data-testid="dialogue-renderer"] .size-14 {
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 48px !important;
+    min-height: 48px !important;
+  }
+}

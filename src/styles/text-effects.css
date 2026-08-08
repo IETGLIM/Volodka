@@ -1,0 +1,380 @@
+/* ══════════════════════════════════════════════════════════════
+   Volodka RPG – Text Effects
+   
+   Reusable text effect utilities for headings, labels, narrative
+   text, and system UI. All effects use the existing cyber palette
+   tokens and respect prefers-reduced-motion.
+   ══════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Text effect speed tokens */
+  --text-glitch-speed: 6s;
+  --text-scan-speed: 3s;
+  --text-flicker-speed: 4s;
+  --text-fade-speed: 0.5s;
+  --text-gradient-speed: 5s;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   EFFECT 1: neon-text
+   Glowing text with multi-layer text-shadow stack
+   ══════════════════════════════════════════════════════════════ */
+
+.neon-text {
+  color: rgb(var(--cyber-cyan-rgb));
+  text-shadow:
+    0 0 4px rgb(var(--cyber-cyan-rgb) / 0.4),
+    0 0 8px rgb(var(--cyber-cyan-rgb) / 0.25),
+    0 0 16px rgb(var(--cyber-cyan-rgb) / 0.15),
+    0 0 32px rgb(var(--cyber-cyan-rgb) / 0.06);
+}
+
+/* Neon text — amber variant */
+.neon-text-amber {
+  color: #ffab00;
+  text-shadow:
+    0 0 4px rgba(255, 171, 0, 0.4),
+    0 0 8px rgba(255, 171, 0, 0.25),
+    0 0 16px rgba(255, 171, 0, 0.15),
+    0 0 32px rgba(255, 171, 0, 0.06);
+}
+
+/* Neon text — rose variant */
+.neon-text-rose {
+  color: #ff1744;
+  text-shadow:
+    0 0 4px rgba(255, 23, 68, 0.4),
+    0 0 8px rgba(255, 23, 68, 0.25),
+    0 0 16px rgba(255, 23, 68, 0.15);
+}
+
+/* Neon text — matrix green variant */
+.neon-text-green {
+  color: rgb(var(--cyber-matrix-rgb));
+  text-shadow:
+    0 0 4px rgb(var(--cyber-matrix-rgb) / 0.4),
+    0 0 8px rgb(var(--cyber-matrix-rgb) / 0.25),
+    0 0 16px rgb(var(--cyber-matrix-rgb) / 0.15),
+    0 0 32px rgb(var(--cyber-matrix-rgb) / 0.06);
+}
+
+/* Neon text — breathing pulse */
+@keyframes neon-text-breathe {
+  0%, 100% {
+    text-shadow:
+      0 0 4px rgb(var(--cyber-cyan-rgb) / 0.3),
+      0 0 8px rgb(var(--cyber-cyan-rgb) / 0.15);
+    opacity: 0.9;
+  }
+  50% {
+    text-shadow:
+      0 0 6px rgb(var(--cyber-cyan-rgb) / 0.5),
+      0 0 12px rgb(var(--cyber-cyan-rgb) / 0.3),
+      0 0 24px rgb(var(--cyber-cyan-rgb) / 0.15),
+      0 0 48px rgb(var(--cyber-cyan-rgb) / 0.05);
+    opacity: 1;
+  }
+}
+
+.neon-text-breathe {
+  color: rgb(var(--cyber-cyan-rgb));
+  animation: neon-text-breathe 3.5s ease-in-out infinite;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   EFFECT 2: glitch-text
+   Brief periodic glitch on headings (runs 88% idle, 12% glitch)
+   ══════════════════════════════════════════════════════════════ */
+
+@keyframes glitch-text-periodic {
+  /* Idle — 88% of the time */
+  0%, 87%, 93%, 100% {
+    text-shadow: none;
+    transform: translate(0);
+    clip-path: inset(0 0 0 0);
+  }
+  /* Glitch burst — brief RGB split + displacement */
+  88% {
+    text-shadow: -2px 0 rgba(255, 0, 64, 0.6), 2px 0 rgba(0, 255, 255, 0.4);
+    transform: translate(-1px, 0);
+    clip-path: inset(15% 0 60% 0);
+  }
+  89% {
+    text-shadow: 2px 0 rgba(255, 0, 64, 0.5), -2px 0 rgba(0, 255, 255, 0.5);
+    transform: translate(1px, 1px);
+    clip-path: inset(45% 0 25% 0);
+  }
+  90% {
+    text-shadow: -1px 0 rgba(0, 255, 100, 0.4), 1px 0 rgba(255, 0, 64, 0.3);
+    transform: translate(0, -1px);
+    clip-path: inset(70% 0 5% 0);
+  }
+  91% {
+    text-shadow: 2px 0 rgba(0, 255, 255, 0.5), -2px 0 rgba(255, 0, 64, 0.4);
+    transform: translate(1px, 0);
+    clip-path: inset(20% 0 50% 0);
+  }
+  92% {
+    text-shadow: -1px 0 rgba(255, 0, 64, 0.3);
+    transform: translate(-1px, 1px);
+    clip-path: inset(5% 0 70% 0);
+  }
+}
+
+.glitch-text {
+  position: relative;
+  animation: glitch-text-periodic var(--text-glitch-speed) ease-in-out infinite;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   EFFECT 3: typewriter-cursor
+   Blinking cursor at end of text (appended via ::after)
+   ══════════════════════════════════════════════════════════════ */
+
+@keyframes tw-cursor-blink {
+  0%, 100% {
+    opacity: 1;
+    text-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.5), 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.2);
+  }
+  50% {
+    opacity: 0;
+    text-shadow: none;
+  }
+}
+
+.typewriter-cursor-text::after {
+  content: '▋';
+  color: rgb(var(--cyber-cyan-rgb) / 0.7);
+  font-weight: 300;
+  margin-left: 1px;
+  animation: tw-cursor-blink 1s step-end infinite;
+  text-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.4);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   EFFECT 4: gradient-text
+   Animated gradient text (cyan → matrix-green → cyan)
+   ══════════════════════════════════════════════════════════════ */
+
+@keyframes gradient-text-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.gradient-text {
+  background: linear-gradient(
+    90deg,
+    rgb(var(--cyber-cyan-rgb)) 0%,
+    rgb(var(--cyber-matrix-rgb)) 25%,
+    rgb(var(--cyber-cyan-rgb)) 50%,
+    rgb(var(--cyber-matrix-rgb)) 75%,
+    rgb(var(--cyber-cyan-rgb)) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradient-text-shift var(--text-gradient-speed) ease-in-out infinite;
+}
+
+/* Static gradient — no animation */
+.gradient-text-static {
+  background: linear-gradient(
+    90deg,
+    rgb(var(--cyber-cyan-rgb)) 0%,
+    rgb(var(--cyber-matrix-rgb)) 50%,
+    rgb(var(--cyber-cyan-rgb)) 100%
+  );
+  background-size: 100% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Warm gradient — cyan to amber for narrative emphasis */
+.gradient-text-warm {
+  background: linear-gradient(
+    90deg,
+    rgb(var(--cyber-cyan-rgb)) 0%,
+    #ffab00 50%,
+    rgb(var(--cyber-cyan-rgb)) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradient-text-shift var(--text-gradient-speed) ease-in-out infinite;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   EFFECT 5: scan-text
+   Text reveal with a scanning line effect
+   ══════════════════════════════════════════════════════════════ */
+
+.scan-text {
+  position: relative;
+  overflow: hidden;
+}
+
+/* The scanning light bar */
+.scan-text::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(0, 229, 255, 0.06) 45%,
+    rgba(0, 229, 255, 0.12) 50%,
+    rgba(0, 229, 255, 0.06) 55%,
+    transparent 100%
+  );
+  animation: scan-text-sweep var(--text-scan-speed) ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes scan-text-sweep {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   EFFECT 6: flicker-text
+   Subtle random opacity flicker (neon sign simulation)
+   ══════════════════════════════════════════════════════════════ */
+
+@keyframes flicker-text-neon {
+  0%, 18%, 22%, 25%, 53%, 57%, 100% {
+    opacity: 1;
+  }
+  20%, 24%, 55% {
+    opacity: 0.65;
+  }
+  10% {
+    opacity: 0.85;
+  }
+  52% {
+    opacity: 0.9;
+  }
+}
+
+.flicker-text {
+  animation: flicker-text-neon var(--text-flicker-speed) steps(1) infinite;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   EFFECT 7: fade-in-up
+   Text that fades in while sliding up
+   ══════════════════════════════════════════════════════════════ */
+
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+    filter: blur(2px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+.fade-in-up {
+  animation: fade-in-up var(--text-fade-speed) cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Staggered variants for sequential text appearance */
+.fade-in-up-d1 { animation-delay: 0.1s; opacity: 0; }
+.fade-in-up-d2 { animation-delay: 0.2s; opacity: 0; }
+.fade-in-up-d3 { animation-delay: 0.3s; opacity: 0; }
+.fade-in-up-d4 { animation-delay: 0.4s; opacity: 0; }
+.fade-in-up-d5 { animation-delay: 0.5s; opacity: 0; }
+.fade-in-up-d6 { animation-delay: 0.6s; opacity: 0; }
+.fade-in-up-d7 { animation-delay: 0.7s; opacity: 0; }
+.fade-in-up-d8 { animation-delay: 0.8s; opacity: 0; }
+
+/* ══════════════════════════════════════════════════════════════
+   COMPOSITE EFFECTS
+   ══════════════════════════════════════════════════════════════ */
+
+/* Neon text that also glitches periodically */
+.neon-glitch-text {
+  color: rgb(var(--cyber-cyan-rgb));
+  text-shadow:
+    0 0 4px rgb(var(--cyber-cyan-rgb) / 0.3),
+    0 0 8px rgb(var(--cyber-cyan-rgb) / 0.15);
+  animation: glitch-text-periodic var(--text-glitch-speed) ease-in-out infinite;
+}
+
+/* Fade-in-up with neon text (for cinematic reveals) */
+.neon-fade-in {
+  color: rgb(var(--cyber-cyan-rgb));
+  text-shadow:
+    0 0 4px rgb(var(--cyber-cyan-rgb) / 0.3),
+    0 0 12px rgb(var(--cyber-cyan-rgb) / 0.12);
+  animation: fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   REDUCED MOTION
+   ══════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .neon-text-breathe {
+    animation: none;
+    text-shadow:
+      0 0 4px rgb(var(--cyber-cyan-rgb) / 0.3),
+      0 0 8px rgb(var(--cyber-cyan-rgb) / 0.15);
+    opacity: 1;
+  }
+
+  .glitch-text,
+  .neon-glitch-text {
+    animation: none;
+    text-shadow: none;
+    transform: none;
+    clip-path: none;
+  }
+
+  .typewriter-cursor-text::after {
+    animation: none;
+    opacity: 0.7;
+  }
+
+  .gradient-text,
+  .gradient-text-warm {
+    animation: none;
+    background-position: 0% 50%;
+  }
+
+  .scan-text::after {
+    animation: none;
+    display: none;
+  }
+
+  .flicker-text {
+    animation: none;
+    opacity: 1;
+  }
+
+  .fade-in-up,
+  .fade-in-up-d1,
+  .fade-in-up-d2,
+  .fade-in-up-d3,
+  .fade-in-up-d4,
+  .fade-in-up-d5,
+  .fade-in-up-d6,
+  .fade-in-up-d7,
+  .fade-in-up-d8,
+  .neon-fade-in {
+    animation: none;
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}

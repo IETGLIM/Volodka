@@ -25,6 +25,8 @@ export interface CinematicNarrativeFrameProps {
   toolbar?: ReactNode;
   footer?: ReactNode;
   children?: ReactNode;
+  /** When true, adds data-mobile-dialogue attributes for CSS targeting */
+  mobileDialogue?: boolean;
 }
 
 /** Full-screen AAA narrative beat — shared by story nodes and NPC dialogue. */
@@ -43,6 +45,7 @@ export function CinematicNarrativeFrame({
   toolbar,
   footer,
   children,
+  mobileDialogue = false,
 }: CinematicNarrativeFrameProps) {
   const typeStyles = getCinematicTypeStyles(presentation.type);
   const { accentColor, type } = presentation;
@@ -55,8 +58,9 @@ export function CinematicNarrativeFrame({
         animate={{ opacity: 1 }}
         exit={{ opacity: 0, transition: { duration: 0.2, ease: 'easeInOut' } }}
         transition={{ duration: reducedMotion ? 0 : 0.45, ease: 'easeInOut' }}
-        className="fixed inset-0 flex items-center justify-center pointer-events-none"
+        className={`fixed inset-0 flex items-center justify-center pointer-events-none${mobileDialogue ? '' : ''}`}
         style={{ zIndex: UI_LAYERS.DIALOGUE }}
+        {...(mobileDialogue ? { 'data-mobile-dialogue': 'true' as const } : {})}
         onClick={done ? undefined : onSkip}
       >
         <AriaLiveRegion message={liveMessage} priority="polite" />
@@ -68,6 +72,7 @@ export function CinematicNarrativeFrame({
             role="dialog"
             aria-modal="true"
             {...(speakerTitleId ? { 'aria-labelledby': speakerTitleId } : { 'aria-label': ariaLabel })}
+            {...(mobileDialogue ? { 'data-mobile-dialogue-content': 'true' as const } : {})}
           >
             {toolbar && (
               <div className="absolute top-4 right-0 left-0 flex justify-end gap-2 pointer-events-auto">

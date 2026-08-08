@@ -19,11 +19,11 @@ import {
   SectionDivider,
 } from '@/components/game/design-system';
 import {
-  COMBAT_DIFFICULTY_PROFILES,
-  readCombatDifficulty,
-  writeCombatDifficulty,
-  type CombatDifficultyId,
-} from '@/engine/combat/combatDifficulty';
+  DIFFICULTY_META,
+  GAME_DIFFICULTY_ORDER,
+  type GameDifficulty,
+} from '@/store/slices/difficultySlice';
+import { useGameStore } from '@/store/gameStore';
 import { applyAudioSettings } from '@/engine/audio/AudioSettings';
 import { applyVisualSettings } from '@/engine/visualSettings';
 import {
@@ -340,7 +340,13 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
   const [mouseSens, setMouseSens] = useState(() => lsGetNumber('volodka_mouse_sens', 5));
   const [invertY, setInvertY] = useState(() => lsGetBool('volodka_invert_y', false));
   const [pointerLock, setPointerLock] = useState(() => lsGetBool('volodka_pointer_lock', false));
-  const [combatDifficulty, setCombatDifficulty] = useState<CombatDifficultyId>(() => readCombatDifficulty());
+  const [difficulty, setDifficulty] = useState<GameDifficulty>(() => {
+    try {
+      return useGameStore.getState().difficultySettings.difficulty;
+    } catch {
+      return 'normal';
+    }
+  });
 
   // ── Persist helper (write to localStorage immediately) ──
   const persist = useCallback((key: string, value: number | boolean) => {
@@ -466,27 +472,39 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
             <SectionDivider />
             <div className="flex flex-col gap-2">
               <span className="font-mono text-xs text-cyan-400/50 uppercase tracking-[0.15em]">
-                Сложность боя
+                Сложность игры
               </span>
-              <div className="grid grid-cols-3 gap-2">
-                {(Object.keys(COMBAT_DIFFICULTY_PROFILES) as CombatDifficultyId[]).map((id) => (
-                  <button
-                    key={id}
-                    type="button"
-                    onClick={() => {
-                      setCombatDifficulty(id);
-                      writeCombatDifficulty(id);
-                    }}
-                    className={`px-2 py-2 font-mono text-[10px] uppercase tracking-wide border rounded ${
-                      combatDifficulty === id
-                        ? 'border-cyan-400/60 text-cyan-200 bg-cyan-950/40'
-                        : 'border-slate-700/40 text-slate-400'
-                    }`}
-                  >
-                    {COMBAT_DIFFICULTY_PROFILES[id].label}
-                  </button>
-                ))}
+              <div className="grid grid-cols-5 gap-2">
+                {(GAME_DIFFICULTY_ORDER as readonly GameDifficulty[]).map((id) => {
+                  const meta = DIFFICULTY_META[id];
+                  const isActive = difficulty === id;
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => {
+                        setDifficulty(id);
+                        useGameStore.getState().setGameDifficulty(id);
+                      }}
+                      className={`px-1.5 py-2 font-mono text-[10px] uppercase tracking-wide border rounded transition-all text-center ${
+                        isActive ? 'scale-105' : 'hover:scale-[1.02]'
+                      }`}
+                      style={{
+                        color: isActive ? meta.color : 'rgba(148, 163, 184, 0.65)',
+                        background: isActive ? meta.glowColor : 'rgba(15, 23, 42, 0.5)',
+                        borderColor: isActive ? meta.color + '80' : 'rgba(71, 85, 105, 0.35)',
+                        boxShadow: isActive ? `0 0 12px ${meta.glowColor}` : 'none',
+                      }}
+                    >
+                      <div className="text-base mb-1">{meta.icon}</div>
+                      <div className="leading-tight">{meta.name}</div>
+                    </button>
+                  );
+                })}
               </div>
+              <p className="font-mono text-[10px] text-slate-500/80 leading-relaxed -mt-1">
+                {DIFFICULTY_META[difficulty].description}
+              </p>
             </div>
             <SectionDivider />
             {/* Keyboard shortcuts hint */}

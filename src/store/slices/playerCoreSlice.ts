@@ -8,6 +8,7 @@ import { clamp, createDefaultPlayerState, pushNotification, type GameNotificatio
 import type { GameStoreState } from '../types';
 import { pickPlayerCoreCrossActions, readPlayerFromExploration } from '../crossSliceReads';
 import { scheduleChoiceMade } from '../storeEffects';
+import { getDifficultyStore } from '../storeBindings';
 import {
   resolveEnergyMaxFlatBonus,
   resolveEnergyRegenMultiplier,
@@ -150,12 +151,18 @@ export const createPlayerCoreSlice: StateCreator<
   },
 
   addStress: (amount) => {
+    // Difficulty scaling: positive stress scaled by stressAccumulationRate
+    const difficultySettings = getDifficultyStore().difficultySettings;
+    const scaledAmount = amount > 0
+      ? Math.round(amount * difficultySettings.stressAccumulationRate)
+      : amount;
+
     // Perk stress_resist fraction (stress_resistance, iron_stomach, iron_will,
     // stress_mastery) reduces incoming stress only — relief passes through.
     const unlockedPerks = get().playerState?.progression?.unlockedPerks ?? [];
-    const effectiveAmount = amount > 0
-      ? Math.round(amount * (1 - resolveStressResistFraction(unlockedPerks)))
-      : amount;
+    const effectiveAmount = scaledAmount > 0
+      ? Math.round(scaledAmount * (1 - resolveStressResistFraction(unlockedPerks)))
+      : scaledAmount;
 
     set((state) => ({
       playerState: {
@@ -237,7 +244,9 @@ export const createPlayerCoreSlice: StateCreator<
     const regenMult = resolveEnergyRegenMultiplier(perks);
     const maxBonus = resolveEnergyMaxFlatBonus(perks, { timeOfDay });
     const ceiling = 100 + maxBonus;
-    const regenAmount = Math.round(5 * regenMult);
+    // Difficulty scaling: energy regen scaled by energyRegenRate
+    const difficultySettings = getDifficultyStore().difficultySettings;
+    const regenAmount = Math.round(5 * regenMult * difficultySettings.energyRegenRate);
 
     set((state) => ({
       playerState: {

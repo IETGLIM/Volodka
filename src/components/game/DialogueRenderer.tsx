@@ -45,6 +45,7 @@ import { devWarn } from '@/shared/utils/devLog';
 import { getVoiceLine } from '@/engine/audio/VoiceLineRegistry';
 import { playVoiceLineForNode, stopVoiceLinePlayback } from '@/engine/audio/voiceLinePlayer';
 import { useNarrativeTypewriter } from '@/hooks/useNarrativeTypewriter';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { useNarrativeChoiceKeyboard } from '@/hooks/useNarrativeChoiceKeyboard';
 import { applyEffects } from '@/shared/utils/applyEffects';
 import { recordExplorationStoryStep } from '@/shared/explorationStoryBridge';
@@ -369,7 +370,9 @@ export function DialogueRenderer() {
     if (!node || equippedThoughts.length === 0) return [] as ThoughtInterjection[];
     return resolveThoughtInterjections(node, equippedThoughts, skills);
   }, [node, equippedThoughts, skills]);
-  const { displayed, done, skip, reducedMotion } = useNarrativeTypewriter(resolvedText, 30);
+  const isMobile = useIsMobile();
+  // Typewriter: faster on mobile (impatience accommodation)
+  const { displayed, done, skip, reducedMotion } = useNarrativeTypewriter(resolvedText, isMobile ? 22 : 30);
 
   // Reset dice roll state when dialogue node changes
   useEffect(() => {
@@ -555,7 +558,7 @@ export function DialogueRenderer() {
         const result = performDiceRoll({
           skill,
           skillLevel: skills[skill] ?? 0,
-          dc: difficulty - clothingDcAdjust, // negative dcAdjustment = easier check
+          dc: difficulty - clothingDcAdjust + ((_getGameStore() as any).difficulty?.skillCheckThreshold || 0),
           thoughtModifiers,
           situationalModifier: clothingSkillBonus,
         });
@@ -737,6 +740,7 @@ export function DialogueRenderer() {
       liveMessage={typewriterLiveMessage}
       onSkip={skip}
       onClose={handleClose}
+      mobileDialogue={isMobile}
       toolbar={
         <>
           <button

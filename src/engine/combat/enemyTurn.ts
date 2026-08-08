@@ -27,6 +27,7 @@ import {
 } from './buffSystem';
 import { computeDamage } from './formulas';
 import { scaleEnemyDamageByDifficulty } from './combatDifficulty';
+import { getDifficultyStore } from '@/store/storeBindings';
 import type { SeededCombatRng } from './combatRng';
 import type { CombatPerkModifiers } from '@/shared/perks/perkModifiers';
 
@@ -83,6 +84,10 @@ export function computeEnemyIncomingDamage(params: IncomingDamageParams): {
   });
 
   damage = scaleEnemyDamageByDifficulty(damage, undefined, currentAct, currentLevel);
+
+  // Apply global difficulty enemy damage multiplier
+  const difficultySettings = getDifficultyStore().difficultySettings;
+  damage = Math.max(1, Math.floor(damage * difficultySettings.enemyDamageMultiplier));
 
   // Layer 3: Player defending (damage_reduction buff)
   if (hasBuffEffect(cs, 'player', 'damage_reduction')) {

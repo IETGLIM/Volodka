@@ -1,0 +1,521 @@
+/* ══════════════════════════════════════════════════════════════
+   Volodka RPG – Cyber Borders & Dividers
+   
+   Decorative border system with multiple variants and ornamental
+   dividers. Every border and divider respects the cyberpunk fairy-tale
+   aesthetic — tech precision meets narrative warmth.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ─── Custom Properties ─── */
+:root {
+  /* Border colors */
+  --border-neon-color: rgb(var(--cyber-cyan-rgb));
+  --border-neon-glow: rgb(var(--cyber-cyan-rgb) / 0.3);
+  --border-neon-intense: rgb(var(--cyber-cyan-rgb) / 0.6);
+  --border-warning-color: #ffab00;
+  --border-warning-glow: rgba(255, 171, 0, 0.3);
+  --border-danger-color: #ff1744;
+  --border-danger-glow: rgba(255, 23, 68, 0.3);
+  --border-matrix-color: rgb(var(--cyber-matrix-rgb));
+  --border-matrix-glow: rgb(var(--cyber-matrix-rgb) / 0.3);
+
+  /* Animation speeds */
+  --border-flow-speed: 3s;
+  --border-pulse-speed: 2s;
+  --border-data-speed: 4s;
+  --border-circuit-speed: 2.5s;
+  --border-glitch-speed: 5s;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   BORDER VARIANT 1: neon-edge
+   Single-pixel cyan glow border with soft outer bloom
+   ══════════════════════════════════════════════════════════════ */
+
+@keyframes neon-edge-breathe {
+  0%, 100% {
+    border-color: rgb(var(--cyber-cyan-rgb) / 0.25);
+    box-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.08), 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.04);
+  }
+  50% {
+    border-color: rgb(var(--cyber-cyan-rgb) / 0.55);
+    box-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.15), 0 0 20px rgb(var(--cyber-cyan-rgb) / 0.06), 0 0 40px rgb(var(--cyber-cyan-rgb) / 0.02);
+  }
+}
+
+.neon-edge {
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.3);
+  box-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.1), 0 0 12px rgb(var(--cyber-cyan-rgb) / 0.05);
+  animation: neon-edge-breathe var(--border-pulse-speed) ease-in-out infinite;
+}
+
+.neon-edge-static {
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.35);
+  box-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.12), 0 0 16px rgb(var(--cyber-cyan-rgb) / 0.04);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   BORDER VARIANT 2: circuit-trace
+   Animated dashed border with flowing dash pattern
+   ══════════════════════════════════════════════════════════════ */
+
+@keyframes circuit-trace-flow {
+  0% { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: -40; }
+}
+
+.circuit-trace {
+  position: relative;
+  border: 1px dashed rgb(var(--cyber-cyan-rgb) / 0.3);
+  animation: circuit-trace-dash var(--border-circuit-speed) linear infinite;
+}
+
+/* CSS-only animated dash using background gradient trick */
+@keyframes circuit-trace-dash {
+  0% { background-position: 0 0, 0 0, 0 0, 0 0; }
+  100% { background-position: 0 20px, 20px 0, 0 -20px, -20px 0; }
+}
+
+.circuit-trace-border {
+  position: relative;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+}
+
+/* Animated flowing dash using border-image with SVG */
+.circuit-trace-border::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    rgb(var(--cyber-cyan-rgb) / 0.05),
+    rgb(var(--cyber-cyan-rgb) / 0.3) 10%,
+    rgb(var(--cyber-cyan-rgb) / 0.05) 20%
+  );
+  background-size: 40px 1px, 1px 40px, 40px 1px, 1px 40px;
+  background-repeat: repeat-x, repeat-y, repeat-x, repeat-y;
+  background-position: 0 0, 0 0, 0 100%, 100% 0;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  padding: 1px;
+  animation: circuit-trace-dash var(--border-circuit-speed) linear infinite;
+}
+
+/* Simplified circuit trace — just animated dashed outline */
+.circuit-trace-simple {
+  border: 1px dashed rgb(var(--cyber-cyan-rgb) / 0.25);
+  animation: circuit-trace-simple-flow var(--border-circuit-speed) linear infinite;
+}
+
+@keyframes circuit-trace-simple-flow {
+  0% { border-dash-offset: 0; }
+  100% { border-dash-offset: -20; }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   BORDER VARIANT 3: data-stream
+   Gradient border that shifts over time — conic rotation
+   ══════════════════════════════════════════════════════════════ */
+
+@property --data-stream-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes data-stream-rotate {
+  from { --data-stream-angle: 0deg; }
+  to { --data-stream-angle: 360deg; }
+}
+
+.data-stream {
+  position: relative;
+  border: 1px solid transparent;
+}
+
+.data-stream::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(
+    from var(--data-stream-angle),
+    rgb(var(--cyber-cyan-rgb) / 0.4),
+    rgb(var(--cyber-matrix-rgb) / 0.3) 25%,
+    transparent 50%,
+    rgb(var(--cyber-cyan-rgb) / 0.2) 75%,
+    rgb(var(--cyber-cyan-rgb) / 0.4)
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: data-stream-rotate var(--border-data-speed) linear infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Static data-stream — no rotation, just the gradient border */
+.data-stream-static::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    rgb(var(--cyber-cyan-rgb) / 0.4) 0%,
+    rgb(var(--cyber-matrix-rgb) / 0.3) 50%,
+    rgb(var(--cyber-cyan-rgb) / 0.2) 100%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   BORDER VARIANT 4: warning-edge
+   Pulsing amber border for warnings
+   ══════════════════════════════════════════════════════════════ */
+
+@keyframes warning-edge-pulse {
+  0%, 100% {
+    border-color: rgba(255, 171, 0, 0.2);
+    box-shadow: 0 0 4px rgba(255, 171, 0, 0.05), inset 0 0 4px rgba(255, 171, 0, 0.02);
+  }
+  50% {
+    border-color: rgba(255, 171, 0, 0.6);
+    box-shadow: 0 0 12px rgba(255, 171, 0, 0.15), 0 0 24px rgba(255, 171, 0, 0.05), inset 0 0 8px rgba(255, 171, 0, 0.04);
+  }
+}
+
+.warning-edge {
+  border: 1px solid rgba(255, 171, 0, 0.3);
+  animation: warning-edge-pulse var(--border-pulse-speed) ease-in-out infinite;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   BORDER VARIANT 5: danger-edge
+   Pulsing rose border for critical states
+   ══════════════════════════════════════════════════════════════ */
+
+@keyframes danger-edge-pulse {
+  0%, 100% {
+    border-color: rgba(255, 23, 68, 0.2);
+    box-shadow: 0 0 4px rgba(255, 23, 68, 0.05), inset 0 0 4px rgba(255, 23, 68, 0.02);
+  }
+  50% {
+    border-color: rgba(255, 23, 68, 0.7);
+    box-shadow: 0 0 16px rgba(255, 23, 68, 0.2), 0 0 32px rgba(255, 23, 68, 0.06), inset 0 0 8px rgba(255, 23, 68, 0.05);
+  }
+}
+
+.danger-edge {
+  border: 1px solid rgba(255, 23, 68, 0.35);
+  animation: danger-edge-pulse 1.2s ease-in-out infinite;
+}
+
+/* Danger edge — faster pulse for critical urgency */
+.danger-edge-fast {
+  border: 1px solid rgba(255, 23, 68, 0.4);
+  animation: danger-edge-pulse 0.8s ease-in-out infinite;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   DECORATIVE DIVIDER 1: ornamental-line
+   Center-diamond ornament with extending lines (fairy-tale theme)
+   ══════════════════════════════════════════════════════════════ */
+
+.ornamental-line {
+  position: relative;
+  height: 1px;
+  width: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgb(var(--cyber-cyan-rgb) / 0.12) 15%,
+    rgb(var(--cyber-cyan-rgb) / 0.3) 45%,
+    transparent 48%,
+    transparent 52%,
+    rgb(var(--cyber-cyan-rgb) / 0.3) 55%,
+    rgb(var(--cyber-cyan-rgb) / 0.12) 85%,
+    transparent 100%
+  );
+}
+
+/* Center diamond ornament */
+.ornamental-line::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  transform: translate(-50%, -50%) rotate(45deg);
+  background: rgb(var(--cyber-cyan-rgb) / 0.5);
+  box-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.3);
+}
+
+/* Ornamental line with subtle glow pulse */
+@keyframes ornamental-glow {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+.ornamental-line-animated {
+  animation: ornamental-glow 4s ease-in-out infinite;
+}
+
+.ornamental-line-animated::before {
+  animation: ornamental-glow 4s ease-in-out infinite;
+}
+
+/* Amber variant for narrative/story moments */
+.ornamental-line-amber {
+  position: relative;
+  height: 1px;
+  width: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 171, 0, 0.1) 15%,
+    rgba(255, 171, 0, 0.25) 45%,
+    transparent 48%,
+    transparent 52%,
+    rgba(255, 171, 0, 0.25) 55%,
+    rgba(255, 171, 0, 0.1) 85%,
+    transparent 100%
+  );
+}
+
+.ornamental-line-amber::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  transform: translate(-50%, -50%) rotate(45deg);
+  background: rgba(255, 171, 0, 0.45);
+  box-shadow: 0 0 6px rgba(255, 171, 0, 0.2);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   DECORATIVE DIVIDER 2: circuit-divider
+   Tech-styled divider with small dots/nodes
+   ══════════════════════════════════════════════════════════════ */
+
+.circuit-divider {
+  position: relative;
+  height: 1px;
+  width: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgb(var(--cyber-cyan-rgb) / 0.15) 10%,
+    rgb(var(--cyber-cyan-rgb) / 0.25) 50%,
+    rgb(var(--cyber-cyan-rgb) / 0.15) 90%,
+    transparent 100%
+  );
+}
+
+/* Center node dot */
+.circuit-divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: rgb(var(--cyber-cyan-rgb) / 0.5);
+  box-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.3), 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.1);
+}
+
+/* Side node dots (quarter points) */
+.circuit-divider::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 25%;
+  width: 3px;
+  height: 3px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: rgb(var(--cyber-cyan-rgb) / 0.25);
+  box-shadow: calc(50vw - 50%) 0 0 0 rgb(var(--cyber-cyan-rgb) / 0.25);
+}
+
+/* Circuit divider with animated pulse on center node */
+@keyframes circuit-node-pulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.2); }
+  50% { transform: translate(-50%, -50%) scale(1.4); box-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.4), 0 0 16px rgb(var(--cyber-cyan-rgb) / 0.15); }
+}
+
+.circuit-divider-animated::before {
+  animation: circuit-node-pulse 3s ease-in-out infinite;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   DECORATIVE DIVIDER 3: glitch-line
+   Brief glitch animation on a horizontal line
+   ══════════════════════════════════════════════════════════════ */
+
+@keyframes glitch-line-fx {
+  0%, 88%, 92%, 96%, 100% {
+    opacity: 1;
+    transform: scaleX(1) translateX(0);
+    filter: brightness(1);
+  }
+  89% {
+    opacity: 0.6;
+    transform: scaleX(0.98) translateX(2px);
+    filter: brightness(1.5) saturate(2);
+  }
+  90% {
+    opacity: 0.8;
+    transform: scaleX(1.02) translateX(-1px);
+    filter: brightness(0.8) hue-rotate(90deg);
+  }
+  91% {
+    opacity: 0.7;
+    transform: scaleX(0.99) translateX(1px);
+    filter: brightness(1.3);
+  }
+  94% {
+    opacity: 0.5;
+    transform: scaleX(1.01) translateX(-2px);
+    filter: brightness(1.6) hue-rotate(-45deg);
+  }
+  95% {
+    opacity: 0.9;
+    transform: scaleX(0.97) translateX(1px);
+    filter: brightness(0.9);
+  }
+}
+
+.glitch-line {
+  height: 1px;
+  width: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgb(var(--cyber-cyan-rgb) / 0.2) 20%,
+    rgb(var(--cyber-cyan-rgb) / 0.4) 50%,
+    rgb(var(--cyber-cyan-rgb) / 0.2) 80%,
+    transparent 100%
+  );
+  animation: glitch-line-fx var(--border-glitch-speed) ease-in-out infinite;
+}
+
+/* Glitch line with RGB split shadow */
+.glitch-line-intense {
+  height: 1px;
+  width: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent, rgb(var(--cyber-cyan-rgb) / 0.3) 20%, rgb(var(--cyber-cyan-rgb) / 0.5) 50%, rgb(var(--cyber-cyan-rgb) / 0.3) 80%, transparent
+  );
+  animation: glitch-line-fx 3s ease-in-out infinite;
+  box-shadow:
+    0 -1px 0 rgba(255, 0, 64, 0.15),
+    0 1px 0 rgba(0, 255, 255, 0.15);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   UTILITY CLASSES — Quick border application
+   ══════════════════════════════════════════════════════════════ */
+
+/* Combined: border + corners */
+.border-neon-with-corners {
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.25);
+  position: relative;
+}
+
+.border-neon-with-corners::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.15);
+  border-radius: inherit;
+  clip-path: polygon(
+    0 0, 12px 0, 12px 1px, 1px 1px, 1px 12px, 0 12px,
+    0 calc(100% - 12px), 1px calc(100% - 12px), 1px calc(100% - 1px), 12px calc(100% - 1px), 12px 100%, 0 100%,
+    0 100%, calc(100% - 12px) 100%, calc(100% - 12px) calc(100% - 1px), calc(100% - 1px) calc(100% - 1px), calc(100% - 1px) calc(100% - 12px), 100% calc(100% - 12px), 100% 100%,
+    100% calc(100% - 12px), 100% calc(100% - 12px), 100% calc(100% - 1px), calc(100% - 12px) calc(100% - 1px), calc(100% - 12px) 12px, 100% 12px, 100% 0,
+    100% 12px, 100% 12px, 100% 1px, calc(100% - 12px) 1px, calc(100% - 12px) 0, 100% 0
+  );
+  pointer-events: none;
+}
+
+/* Subtle inset border for inner framing */
+.border-inset-glow {
+  box-shadow: inset 0 0 0 1px rgb(var(--cyber-cyan-rgb) / 0.12);
+}
+
+/* Double-line border — outer thin + inner thinner */
+.border-double-cyber {
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.15);
+  outline: 1px solid rgb(var(--cyber-cyan-rgb) / 0.08);
+  outline-offset: 2px;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   REDUCED MOTION
+   ══════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .neon-edge {
+    animation: none;
+    border-color: rgb(var(--cyber-cyan-rgb) / 0.35);
+    box-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.1);
+  }
+
+  .circuit-trace,
+  .circuit-trace-border::before,
+  .circuit-trace-simple {
+    animation: none;
+  }
+
+  .data-stream::before {
+    animation: none;
+  }
+
+  .warning-edge {
+    animation: none;
+    border-color: rgba(255, 171, 0, 0.4);
+    box-shadow: 0 0 8px rgba(255, 171, 0, 0.1);
+  }
+
+  .danger-edge,
+  .danger-edge-fast {
+    animation: none;
+    border-color: rgba(255, 23, 68, 0.45);
+    box-shadow: 0 0 10px rgba(255, 23, 68, 0.15);
+  }
+
+  .ornamental-line-animated,
+  .ornamental-line-animated::before {
+    animation: none;
+    opacity: 0.85;
+  }
+
+  .circuit-divider-animated::before {
+    animation: none;
+  }
+
+  .glitch-line,
+  .glitch-line-intense {
+    animation: none;
+    filter: none;
+    transform: none;
+  }
+}

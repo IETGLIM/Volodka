@@ -49,10 +49,35 @@ function migrateV2toV3(data: Record<string, unknown>): Record<string, unknown> {
   return next;
 }
 
+/**
+ * v3 → v4: add difficultySettings field.
+ * Previous saves had no difficulty settings; default to 'normal'.
+ */
+function migrateV3toV4(data: Record<string, unknown>): Record<string, unknown> {
+  const next: Record<string, unknown> = { ...data, saveVersion: 4 };
+  // Only add if not already present
+  if (!next.difficultySettings) {
+    next.difficultySettings = {
+      difficulty: 'normal',
+      enemyDamageMultiplier: 1.0,
+      enemyHealthMultiplier: 1.0,
+      playerDamageMultiplier: 1.0,
+      xpMultiplier: 1.0,
+      creditsMultiplier: 1.0,
+      skillCheckThreshold: 0,
+      stressAccumulationRate: 1.0,
+      energyRegenRate: 1.0,
+      combatFleeBaseChance: 0.3,
+    };
+  }
+  return next;
+}
+
 /** Migrators keyed by the version they upgrade FROM. */
 const MIGRATORS: Readonly<Record<number, SaveMigrator>> = {
   1: migrateV1toV2,
   2: migrateV2toV3,
+  3: migrateV3toV4,
 };
 
 function readSaveVersion(data: Record<string, unknown>): number | null {

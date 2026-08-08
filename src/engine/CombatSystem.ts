@@ -62,6 +62,7 @@ import {
 import { getPlayerAttack, getPlayerMaxHp, tickPowerCooldowns, isPowerAvailable, addXp, computeCombatCredits, computeCritChance, applyCritMultiplier, getComboDamageMultiplier } from './combat/formulas';
 import { initCombatRngForEncounter, SeededCombatRng, type CombatRngState } from './combat/combatRng';
 import { getFleeChanceBonus, computeEnemyScalingFactor } from './combat/combatDifficulty';
+import { getDifficultyStore } from '@/store/storeBindings';
 import { getPassiveSkillModifiers } from '@/engine/skills/passiveSkillModifiers';
 import { resolveCombatPerkModifiers } from '@/shared/perks/perkModifiers';
 import { applyExplorationPoemCombatBridge } from '@/engine/poemEffects/poemTTLRuntime';
@@ -347,19 +348,21 @@ function startCombatImmediate(
   const playerLevel = state.playerState.progression.level;
   const currentAct = state.playerState.progression.currentAct;
   const scaleFactor = computeEnemyScalingFactor(currentAct, playerLevel);
+  const difficultySettings = getDifficultyStore().difficultySettings;
+  const hpScale = scaleFactor * difficultySettings.enemyHealthMultiplier;
 
   const enemy: CombatEnemy = {
     type: template.type,
     name: template.name,
     emoji: template.emoji,
-    maxHp: Math.floor(template.baseHp * scaleFactor),
-    hp: Math.floor(template.baseHp * scaleFactor),
+    maxHp: Math.floor(template.baseHp * hpScale),
+    hp: Math.floor(template.baseHp * hpScale),
     attack: Math.floor(template.baseAttack * scaleFactor),
     defense: Math.floor(template.baseDefense * scaleFactor),
     speed: Math.floor(template.baseSpeed * scaleFactor),
     targetsStat: template.targetsStat,
     lootTable: template.lootTable,
-    xpReward: Math.floor(template.xpReward * scaleFactor),
+    xpReward: Math.floor(template.xpReward * scaleFactor * difficultySettings.xpMultiplier),
     specialCooldown: 0 };
 
   const playerMaxHp = getPlayerMaxHp();
@@ -426,6 +429,7 @@ export function playerAttack(): CombatState | null {
   const effectiveEnemyDef = enemyDef + enemyDefBoost;
 
   const multiplier = getPlayerDamageMultiplier(cs);
+  const difficultySettings = getDifficultyStore().difficultySettings;
   const seeded = SeededCombatRng.fromState(cs.rng);
   let damage = seeded.rollDamage({
     attack: pAtk,
@@ -433,6 +437,9 @@ export function playerAttack(): CombatState | null {
     multiplier,
     varianceProfile: 'player',
   });
+
+  // Apply difficulty player damage multiplier
+  damage = Math.max(1, Math.floor(damage * difficultySettings.playerDamageMultiplier));
 
   /* ── Combo System: consecutive attacks increase damage ── */
   const newComboCount = cs.comboCount + 1;
@@ -710,6 +717,7 @@ export function playerFlee(): CombatState | null {
   if (karma >= 70) fleeChance += 0.05;
 
   fleeChance += getFleeChanceBonus();
+  fleeChance += getDifficultyStore().difficultySettings.combatFleeBaseChance - 0.3;
 
   // Clamp to [0.15, 0.95]
   const clampedChance = Math.max(0.15, Math.min(0.95, fleeChance));
@@ -1124,7 +1132,7 @@ function handleVictory(): CombatState | null {
   const xpGained = enemy.xpReward + comboBonus;
   addXp(xpGained);
 
-  const creditsGained = computeCombatCredits(xpGained, comboBonus);
+  const creditsGained = Math.max(1, Math.floor(computeCombatCredits(xpGained, comboBonus) * getDifficultyStore().difficultySettings.creditsMultiplier));
   dispatchGameAction({ type: 'player/addCredits', amount: creditsGained });
 
   // Loot roll (higher combo = better loot chance)

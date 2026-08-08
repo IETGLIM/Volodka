@@ -13,6 +13,7 @@ import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { useIsMobileVisual } from '@/hooks/use-mobile';
 import { useHUDController } from '@/components/game/hud/useHUDController';
 import type { HUDProps } from '@/components/game/hud/hudTypes';
+import { DifficultyIndicator } from '@/components/game/DifficultyIndicator';
 import { useMiniMapState } from '@/store/selectors/explorationSelectors';
 import { useActiveQuests, getQuestMarker } from '@/store/questStore';
 import { SCENE_CONFIG } from '@/config/scenes';
@@ -242,9 +243,10 @@ export function ExplorationHUD(props: HUDProps) {
           Hidden on mobile (too small viewport) and in photo mode. */}
       {!isMobile && (
         <div
-          className="absolute top-4 right-4 pointer-events-auto hud-filmic-glow-breathe"
+          className="absolute top-4 right-4 flex flex-col items-end gap-2 pointer-events-auto hud-filmic-glow-breathe"
           style={{ zIndex: UI_LAYERS.HUD + 1 }}
         >
+          <DifficultyIndicator onClick={() => {}} />
           <CyberpunkMinimap
             playerPosition={[playerPos[0], playerPos[2]]}
             markers={minimapMarkers}

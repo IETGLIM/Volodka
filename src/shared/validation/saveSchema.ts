@@ -16,7 +16,7 @@ import { migrateSave } from './saveMigrations';
  * Current save format version — bump when adding a migrator in saveMigrations.ts.
  * Load path: migrateSave → Zod validate (see validateSaveData).
  */
-export const SAVE_VERSION = 3;
+export const SAVE_VERSION = 4;
 
 /* ─── Primitive helpers ─── */
 
@@ -353,6 +353,19 @@ export const SavePayloadSchema = z.object({
   inventorySortOption: z.string().optional().default('name'),
   /** Persisted inventory filter preference */
   inventoryFilterCategory: z.string().optional().default('all'),
+  /** Game difficulty settings */
+  difficultySettings: z.object({
+    difficulty: z.enum(['story', 'easy', 'normal', 'hard', 'nightmare']).optional().default('normal'),
+    enemyDamageMultiplier: z.number().min(0.1).max(5).optional().default(1),
+    enemyHealthMultiplier: z.number().min(0.1).max(5).optional().default(1),
+    playerDamageMultiplier: z.number().min(0.1).max(5).optional().default(1),
+    xpMultiplier: z.number().min(0.1).max(5).optional().default(1),
+    creditsMultiplier: z.number().min(0.1).max(5).optional().default(1),
+    skillCheckThreshold: z.number().min(-5).max(5).optional().default(0),
+    stressAccumulationRate: z.number().min(0.1).max(5).optional().default(1),
+    energyRegenRate: z.number().min(0.1).max(5).optional().default(1),
+    combatFleeBaseChance: z.number().min(0).max(1).optional().default(0.3),
+  }).optional(),
   savedAt: z.number(),
   /** Optional slot-manager metadata (not applied to game state) */
   playTimeSeconds: z.number().min(0).optional(),

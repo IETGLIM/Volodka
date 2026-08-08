@@ -46,6 +46,11 @@
 @import "../styles/hud-round11.css";
 @import "../styles/hud-round12.css";
 @import "../styles/aaa-luxury.css";
+@import "../styles/cyber-borders-and-dividers.css";
+@import "../styles/panel-depth-enhancements.css";
+@import "../styles/text-effects.css";
+@import "../styles/hud-chrome-enhancements.css";
+@import "../styles/dialogue-mobile.css";
 
 /* ── User setting: scanlines off (SettingsPanel → engine/visualSettings) ── */
 html[data-scanlines="off"] .panel-scanlines::after,
