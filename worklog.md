@@ -3858,3 +3858,51 @@ Stage Summary:
   - combatRng.test.ts: Removing the unused local `_ability` left its import `POEM_COMBAT_ABILITIES` unused, triggering a fresh TS6133. Removed the import line in the same pass.
   - npcEmotionalReactionEngine.ts:43 `_PROXIMITY_EMOTION_DURATION`: chose to comment out rather than delete because the `_` prefix signals intentional reservation for future proximity-emotion work; the comment makes this explicit.
 - No runtime behavior changes; no edits to src/data/poems.ts; physics invariants (interpolate={false}, KCC ownership, runMainPlayerMovement), APOCALYPSE RAMP values, and all call-site signatures preserved.
+
+---
+Task ID: 25 (orchestrator) — Codebase review: eliminate all 256 type errors, re-add typecheck to CI
+Agent: main (orchestrator)
+Task: Review codebase, troubleshoot potential issues, improve engineering details. Found 256 TypeScript errors blocking CI typecheck. Fixed all 256, re-added typecheck to CI.
+
+Work Log:
+- Pulled latest (at 8900c4da). CI was green (npm ci + build only, typecheck removed in e22b3949).
+- QA via agent-browser: site STABLE (0 console errors) but two bugs still NOT deployed (main menu nav, audio mixer %) — Vercel deployment is stale, needs rebuild.
+- Codebase review: ran `node scripts/tsc7.mjs --noEmit` with correct exit code capture. Found 256 type errors (previous "exit 0" in worklogs was false positive — $? after pipe captures tail's exit code, not tsc7's).
+- Error breakdown: TS2339 (169), TS6133 (68), TS2882 (9), TS2550 (6), TS2307 (3), TS6196 (1).
+
+Config-level fixes (188 errors eliminated):
+1. Created src/vite-env.d.ts with `/// <reference types="vite/client" />` + Window.__VOL_PROFILE__ global — fixes 80 TS2339 (import.meta.env/hot) + 9 TS2882 (CSS side-effect imports) + 1 TS2339 (__VOL_PROFILE__).
+2. Bumped tsconfig target/lib from ES2020 to ES2022 — fixes 7 errors (TS2550 .at() on arrays + TS2339 .at() on readonly tuples).
+3. Created src/test-types.d.ts importing '@testing-library/jest-dom/vitest' — fixes 87 TS2339 (toBeInTheDocument, toHaveTextContent, toHaveFocus, etc.).
+4. Created src/types/rapier-alias.d.ts declaring @dimforge/rapier3d-compat-original module — fixes 3 TS2307 (vite alias not resolvable by tsc).
+5. Removed unused PoemId type import from aaaPoemCinematicVfx.ts — fixes TS6196.
+
+Physics type bridge fixes (7 errors eliminated):
+- characterControllerLifecycle.ts: broadened WorldWithOptionalControllerRemove to use method shorthand (bivariant parameter checking) + unknown return types — bridges duplicate @dimforge/rapier3d-compat type instances (top-level v0.19.2 vs nested under @react-three/rapier v0.19.2).
+- playerFrameTypes.ts: changed createCharacterController to method shorthand with unknown return.
+- physicsSubstep.ts: cast collider through unknown to bridge duplicate Collider types.
+- Zero runtime behavior change — pure type-level fixes. Physics invariants (interpolate={false}, KCC ownership, runMainPlayerMovement) untouched.
+
+TS6133 unused variable fixes (68 errors eliminated, 48 files):
+- Dispatched 3 parallel subagents (TSFIX-A: components/3d, TSFIX-B: components/game+hud, TSFIX-C: engine+data+store+shared).
+- Removed dead code: unused constants, unused imports, dead material vars (mat_15/16/17/19/22/23/24/33 in VolodkaRoomVisual), dead class fields (_onBlur/_onFocus in MusicEngine), dead functions (_assertLoaded in gameDataLoader).
+- Added `void _exhaustive;` for exhaustive-switch patterns (CinematicTimelineRunner, applyGameAction, evaluateTrophyCondition).
+- Added `void _varName;` for _-prefixed intentionally-unused variables.
+- Simplified unused destructuring params.
+
+CI: re-added 'npm run typecheck' step (was removed in e22b3949). 
+- Commit bced5f3a (59 files, +271/-54). Push: origin main.
+- CI Run #909: ✅ ALL GREEN — npm ci ✓, npm run typecheck ✓, npm run build ✓.
+
+Stage Summary:
+- 256 type errors → 0. Typecheck re-added to CI and passing.
+- 59 files changed, +271/-54 lines. 3 new files: vite-env.d.ts, test-types.d.ts, types/rapier-alias.d.ts.
+- Key engineering improvements:
+  1. Proper vite/client type integration (import.meta.env, CSS modules, import.meta.hot)
+  2. ES2022 target/lib (enables .at() on arrays, Array.prototype.findLast, etc.)
+  3. jest-dom matcher types for test files
+  4. Rapier alias type declarations for vite-aliased modules
+  5. Physics type bridge pattern (method shorthand bivariance for duplicate rapier types)
+  6. 68 dead code cleanups across 48 files
+- Poems untouched. Physics invariants preserved. No runtime behavior changes.
+- Unresolved: Vercel deployment is stale (main menu nav + audio mixer fixes not yet live). Next push should trigger Vercel rebuild.
