@@ -193,6 +193,7 @@ export function useKeyboardShortcutManager({
       }
       if (e.code === 'KeyM') dispatchPanel('worldMap');
       if (e.code === 'KeyN') dispatchPanel('npcRelation');
+      if (e.code === 'KeyO') dispatchPanel('adventureLog');
       if (e.code === 'KeyC') dispatchPanel('characterProfile');
       if (e.code === 'KeyK') dispatchPanel('codex');
       if (e.code === 'KeyL') dispatchPanel('dialogueHistory');

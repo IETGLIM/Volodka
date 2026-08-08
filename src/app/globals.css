@@ -68,6 +68,11 @@
 @import "../styles/gamepad-indicator.css";
 @import "../styles/codex-profile.css";
 @import "../styles/lighting-effects.css";
+@import "../styles/advanced-effects.css";
+@import "../styles/trading-panel.css";
+@import "../styles/rest-panel.css";
+@import "../styles/crafting-enhanced.css";
+@import "../styles/skill-tree-enhanced.css";
 
 /* ── User setting: scanlines off (SettingsPanel → engine/visualSettings) ── */
 html[data-scanlines="off"] .panel-scanlines::after,

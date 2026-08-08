@@ -6,11 +6,13 @@
 
 import { ExplorationLighting } from './Lighting';
 import { SceneEnvironment } from './SceneEnvironment';
+import { SceneLightFixtures } from './SceneLightFixtures';
 
 export function PhysicsSceneLightingMounts() {
   return (
     <>
       <ExplorationLighting />
+      <SceneLightFixtures />
       <SceneEnvironment />
     </>
   );

@@ -42,6 +42,8 @@ export interface NarrativeChoiceItem {
   cond: StoryConditionResult;
   onSelect: () => void;
   trailing?: ReactNode;
+  /** Karma delta preview — shown before the player chooses */
+  karmaPreview?: number;
 }
 
 export interface NarrativeChoiceListProps {
@@ -128,6 +130,11 @@ export function NarrativeChoiceList({
               })()}
             </div>
             {choice.trailing}
+            {choice.karmaPreview != null && choice.pass && (
+              <span className={`karma-preview ${choice.karmaPreview >= 0 ? 'positive' : 'negative'}`}>
+                ☯ {choice.karmaPreview >= 0 ? '+' : ''}{choice.karmaPreview}
+              </span>
+            )}
           </div>
         </motion.button>
       ))}

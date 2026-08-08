@@ -16,6 +16,8 @@ import { getShadowMapResolution } from '@/engine/graphics/TimeOfDayLighting';
 import type { SceneId } from '@/shared/types/game';
 import { useRef, useMemo } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
+import { useThree } from '@react-three/fiber';
+import { computeTimeOfDayLighting } from '@/engine/graphics/TimeOfDayLighting';
 import * as THREE from 'three';
 
 /** Shadow config constants — tuned to prevent z-fighting/shadow acne */
@@ -129,6 +131,7 @@ export function ExplorationLighting() {
   const isMobile = useIsMobileVisual();
   const { preset, selectedPreset } = useGraphicsQuality();
   const { visualLite } = useMobileVisualPerf();
+  const timeOfDay = useGameStore((s) => s.exploration.timeOfDay);
   const rendering = resolveSceneRenderingPipeline(
     sceneId,
     preset,
@@ -277,8 +280,99 @@ export function ExplorationLighting() {
 
       {/* ── Enhanced scene-specific accent lights ── */}
       <SceneAccentLights sceneId={sceneId} isMobile={isMobile} />
+
+      {/* ── Time-of-day lighting adjustments (outdoor scenes only) ── */}
+      <TimeOfDayAdjuster
+        timeOfDay={timeOfDay}
+        isIndoor={isIndoor}
+        baseDirIntensity={dirIntensity}
+        baseDirColor={dirColor}
+      />
     </>
   );
+}
+
+/* ─── Time-of-Day Lighting Adjuster ───
+ *  Imperatively adjusts the scene's directional and ambient lights based on
+ *  the game clock (0–24). Outdoor scenes get full time-of-day modulation;
+ *  indoor scenes get very subtle ambient tint only (artificial lights dominate).
+ *
+ *  Uses computeTimeOfDayLighting() (pure math, no React) inside useFrameTick
+ *  for zero-allocation per-frame updates.
+ */
+function TimeOfDayAdjuster({
+  timeOfDay,
+  isIndoor,
+  baseDirIntensity,
+  baseDirColor,
+}: {
+  timeOfDay: number;
+  isIndoor: boolean;
+  baseDirIntensity: number;
+  baseDirColor: string;
+}) {
+  const { scene } = useThree();
+  const baseDirCol = useMemo(() => new THREE.Color(baseDirColor), [baseDirColor]);
+  const tmpColorRef = useRef(new THREE.Color());
+  // How strongly time-of-day modulates the scene (0 = no effect, 1 = full override)
+  const todInfluence = isIndoor ? 0.08 : 0.35;
+  // Directional light sun position follows time-of-day (outdoor only)
+  const sunPosInfluence = isIndoor ? 0 : 1;
+
+  // Pre-compute direction of the sun for shadow position
+  const sunAngle = useMemo(() => {
+    // Map 0–24h to a rotation: 6h = sunrise (east), 12h = noon (top), 18h = sunset (west)
+    const h = ((timeOfDay % 24) + 24) % 24;
+    return ((h - 6) / 12) * Math.PI; // 0 at 6am, π at 6pm
+  }, [timeOfDay]);
+
+  const sunX = Math.sin(sunAngle) * 10;
+  const sunY = Math.max(1, Math.cos(sunAngle) * 10);
+  const sunZ = 5;
+
+  useFrameTick('misc', () => {
+    if (!scene) return;
+
+    const tod = computeTimeOfDayLighting(timeOfDay);
+    const tmpColor = tmpColorRef.current;
+
+    // Find directional light in scene
+    for (const obj of scene.children) {
+      if (obj instanceof THREE.DirectionalLight) {
+        // Modulate intensity: blend base intensity with time-of-day intensity
+        obj.intensity = baseDirIntensity * (1 - todInfluence) + tod.dirIntensity * todInfluence;
+
+        // Modulate color: blend base color toward time-of-day color
+        tmpColor.setRGB(
+          tod.dirColor[0],
+          tod.dirColor[1],
+          tod.dirColor[2],
+        );
+        obj.color.copy(baseDirCol).lerp(tmpColor, todInfluence);
+
+        // Adjust sun position for outdoor scenes
+        if (sunPosInfluence > 0) {
+          obj.position.set(sunX, sunY, sunZ);
+        }
+        break;
+      }
+    }
+
+    // For indoor scenes, very subtle ambient tint from time-of-day
+    if (isIndoor) {
+      for (const obj of scene.children) {
+        if (obj instanceof THREE.HemisphereLight) {
+          // Very slight color shift — indoor rooms barely notice
+          tmpColor.setRGB(tod.ambientColor[0], tod.ambientColor[1], tod.ambientColor[2]);
+          // Blend the sky color of the hemisphere light slightly toward tod
+          obj.color.lerp(tmpColor, 0.05);
+          break;
+        }
+      }
+    }
+  });
+
+  return null;
 }
 
 /* ─── Scene-specific accent lights ───

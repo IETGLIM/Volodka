@@ -1,0 +1,140 @@
+/* ══════════════════════════════════════════════════════════════
+   TRADING PANEL — Cyberpunk barter terminal
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Merchant personality border styles ── */
+.trading-merchant--cafe {
+  --merchant-border: rgba(251, 191, 36, 0.35);
+  --merchant-glow: rgba(251, 191, 36, 0.12);
+  --merchant-accent: #fbbf24;
+}
+
+.trading-merchant--general {
+  --merchant-border: rgba(0, 229, 255, 0.35);
+  --merchant-glow: rgba(0, 229, 255, 0.12);
+  --merchant-accent: #00e5ff;
+}
+
+.trading-merchant--shady {
+  --merchant-border: rgba(239, 68, 68, 0.35);
+  --merchant-glow: rgba(239, 68, 68, 0.12);
+  --merchant-accent: #ef4444;
+}
+
+.trading-merchant--books {
+  --merchant-border: rgba(168, 85, 247, 0.35);
+  --merchant-glow: rgba(168, 85, 247, 0.12);
+  --merchant-accent: #a855f7;
+}
+
+.trading-merchant--elite {
+  --merchant-border: rgba(52, 211, 153, 0.35);
+  --merchant-glow: rgba(52, 211, 153, 0.12);
+  --merchant-accent: #34d399;
+}
+
+/* ── Animated credits counter ── */
+@keyframes trading-credits-pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.15); filter: brightness(1.4); }
+  100% { transform: scale(1); filter: brightness(1); }
+}
+
+.trading-credits-pop {
+  animation: trading-credits-pop 0.35s ease-out;
+}
+
+/* ── Price comparison highlight ── */
+.trading-price-good {
+  color: #34d399;
+  text-shadow: 0 0 6px rgba(52, 211, 153, 0.3);
+}
+
+.trading-price-bad {
+  color: #fb7185;
+  text-shadow: 0 0 6px rgba(251, 113, 133, 0.3);
+}
+
+.trading-price-neutral {
+  color: #fbbf24;
+  text-shadow: 0 0 4px rgba(251, 191, 36, 0.2);
+}
+
+/* ── Trade history entry ── */
+@keyframes trade-history-slide {
+  from { opacity: 0; transform: translateX(-12px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.trade-history-entry {
+  animation: trade-history-slide 0.3s ease-out;
+}
+
+/* ── Item comparison tooltip ── */
+.trading-comparison-tooltip {
+  background: rgba(15, 23, 42, 0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(0, 229, 255, 0.2);
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.08), 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.trading-stat-better {
+  color: #34d399;
+  text-shadow: 0 0 4px rgba(52, 211, 153, 0.3);
+}
+
+.trading-stat-worse {
+  color: #fb7185;
+  text-shadow: 0 0 4px rgba(251, 113, 133, 0.3);
+}
+
+/* ── Two-column split layout ── */
+.trading-split-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  min-height: 0;
+}
+
+.trading-split-column {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.trading-split-divider {
+  width: 1px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(0, 229, 255, 0.15) 20%,
+    rgba(0, 229, 255, 0.25) 50%,
+    rgba(0, 229, 255, 0.15) 80%,
+    transparent
+  );
+  position: relative;
+}
+
+.trading-split-divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(0, 229, 255, 0.4);
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.3);
+}
+
+/* ── Drag indicator between columns ── */
+@keyframes trading-drag-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+.trading-drag-indicator {
+  animation: trading-drag-pulse 1.5s ease-in-out infinite;
+}

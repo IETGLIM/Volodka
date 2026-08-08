@@ -1,0 +1,104 @@
+/* ══════════════════════════════════════════════════════════════
+   SKILL TREE — Reset modal, branch collapse, counter animation
+   ══════════════════════════════════════════════════════════════ */
+
+/* Reset modal danger glow */
+@keyframes skill-reset-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.08); }
+  50% { box-shadow: 0 0 30px rgba(239, 68, 68, 0.15), 0 0 60px rgba(239, 68, 68, 0.06); }
+}
+
+.skill-reset-modal {
+  animation: skill-reset-glow 3s ease-in-out infinite;
+}
+
+/* Skill point counter pop on change */
+@keyframes skill-point-pop {
+  0% { transform: scale(1); }
+ 40% { transform: scale(1.25); filter: brightness(1.3); }
+  100% { transform: scale(1); filter: brightness(1); }
+}
+
+.skill-point-pop {
+  animation: skill-point-pop 0.4s ease-out;
+}
+
+/* Branch collapse toggle hover */
+.skill-branch-toggle {
+  transition: all 0.2s ease;
+}
+
+.skill-branch-toggle:hover {
+  background: rgba(100, 116, 139, 0.15);
+  border-radius: 4px;
+}
+
+/* Branch collapsed state */
+@keyframes branch-collapse-content {
+  from { max-height: 600px; opacity: 1; }
+  to { max-height: 44px; opacity: 0.6; }
+}
+
+@keyframes branch-expand-content {
+  from { max-height: 44px; opacity: 0.6; }
+  to { max-height: 600px; opacity: 1; }
+}
+
+.skill-branch-collapsing {
+  animation: branch-collapse-content 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.skill-branch-expanding {
+  animation: branch-expand-content 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Node active state (amber pulse) */
+@keyframes skill-node-active-pulse {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(251, 191, 36, 0.2),
+                0 0 16px rgba(251, 191, 36, 0.08);
+  }
+  50% {
+    box-shadow: 0 0 14px rgba(251, 191, 36, 0.4),
+                0 0 28px rgba(251, 191, 36, 0.15),
+                0 0 42px rgba(251, 191, 36, 0.06);
+  }
+}
+
+.skill-node-active {
+  animation: skill-node-active-pulse 2s ease-in-out infinite;
+}
+
+/* Node unlocked emerald glow */
+@keyframes skill-node-unlocked-glow {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(52, 211, 153, 0.15),
+                0 0 16px rgba(52, 211, 153, 0.06);
+  }
+  50% {
+    box-shadow: 0 0 14px rgba(52, 211, 153, 0.35),
+                0 0 28px rgba(52, 211, 153, 0.12),
+                0 0 42px rgba(52, 211, 153, 0.05);
+  }
+}
+
+.skill-node-unlocked {
+  animation: skill-node-unlocked-glow 2.5s ease-in-out infinite;
+}
+
+/* Node available cyan breath */
+@keyframes skill-node-available-cyan {
+  0%, 100% {
+    box-shadow: 0 0 6px rgba(0, 229, 255, 0.15),
+                0 0 12px rgba(0, 229, 255, 0.08);
+  }
+  50% {
+    box-shadow: 0 0 12px rgba(0, 229, 255, 0.35),
+                0 0 24px rgba(0, 229, 255, 0.15),
+                0 0 36px rgba(0, 229, 255, 0.08);
+  }
+}
+
+.skill-node-available-cyan {
+  animation: skill-node-available-cyan 2s ease-in-out infinite;
+}

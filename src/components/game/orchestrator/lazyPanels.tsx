@@ -74,6 +74,7 @@ export const LazyShortcutsOverlay = retryLazyDefault(() => import('../ShortcutsO
 export const LazyWorldMap = retryLazyDefault(() => import('../WorldMap').then((m) => ({ default: m.WorldMap })), 'WorldMap');
 export const LazyNpcCodexPanel = retryLazyDefault(() => import('../NpcCodexPanel').then((m) => ({ default: m.NpcCodexPanel })), 'NpcCodexPanel');
 export const LazyPoemJournalPanel = retryLazyDefault(() => import('../PoemJournalPanel').then((m) => ({ default: m.PoemJournalPanel })), 'PoemJournalPanel');
+export const LazyAdventureLogPanel = retryLazyDefault(() => import('../AdventureLogPanel').then((m) => ({ default: m.AdventureLogPanel })), 'AdventureLogPanel');
 
 export const LazyMenuScreen = retryLazyDefault(() => import('../MenuScreen').then((m) => ({ default: m.MenuScreen })), 'MenuScreen');
 export const LazyIntroScreen = retryLazyDefault(() => import('../IntroScreen').then((m) => ({ default: m.IntroScreen })), 'IntroScreen');

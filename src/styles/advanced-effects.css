@@ -1,0 +1,546 @@
+/* ─── Volodka RPG – Advanced CSS Effects ───
+   Cyberpunk-themed visual effects: glass morphism 2.0, neon glows,
+   animated grid, data stream, holographic shimmer, scan lines,
+   terminal cursor, energy bars, glass crack overlay.
+   All effects respect reduced-motion preferences. */
+
+/* ══════════════════════════════════════════════════════════════
+   1. GLASS MORPHISM 2.0 — Multi-layered glass with noise texture
+   ══════════════════════════════════════════════════════════════ */
+
+.glass-2x {
+  position: relative;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.04) 0%,
+    rgba(255, 255, 255, 0.01) 40%,
+    rgba(0, 229, 255, 0.02) 100%
+  );
+  backdrop-filter: blur(16px) saturate(1.4);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+}
+
+.glass-2x::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.5;
+}
+
+.glass-2x::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 40%;
+  border-radius: inherit inherit 0 0;
+  background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, transparent 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.glass-2x > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   2. NEON TEXT GLOW VARIANTS — 5 presets with pulse
+   ══════════════════════════════════════════════════════════════ */
+
+.neon-cyan {
+  color: #00e5ff;
+  text-shadow:
+    0 0 7px rgba(0, 229, 255, 0.6),
+    0 0 20px rgba(0, 229, 255, 0.3),
+    0 0 42px rgba(0, 229, 255, 0.15);
+  animation: neon-pulse-cyan 3s ease-in-out infinite;
+}
+
+.neon-amber {
+  color: #fbbf24;
+  text-shadow:
+    0 0 7px rgba(251, 191, 36, 0.6),
+    0 0 20px rgba(251, 191, 36, 0.3),
+    0 0 42px rgba(251, 191, 36, 0.15);
+  animation: neon-pulse-amber 3s ease-in-out infinite;
+}
+
+.neon-rose {
+  color: #fb7185;
+  text-shadow:
+    0 0 7px rgba(251, 113, 133, 0.6),
+    0 0 20px rgba(251, 113, 133, 0.3),
+    0 0 42px rgba(251, 113, 133, 0.15);
+  animation: neon-pulse-rose 3s ease-in-out infinite;
+}
+
+.neon-emerald {
+  color: #34d399;
+  text-shadow:
+    0 0 7px rgba(52, 211, 153, 0.6),
+    0 0 20px rgba(52, 211, 153, 0.3),
+    0 0 42px rgba(52, 211, 153, 0.15);
+  animation: neon-pulse-emerald 3s ease-in-out infinite;
+}
+
+.neon-violet {
+  color: #a78bfa;
+  text-shadow:
+    0 0 7px rgba(167, 139, 250, 0.6),
+    0 0 20px rgba(167, 139, 250, 0.3),
+    0 0 42px rgba(167, 139, 250, 0.15);
+  animation: neon-pulse-violet 3s ease-in-out infinite;
+}
+
+@keyframes neon-pulse-cyan {
+  0%, 100% { opacity: 1; text-shadow: 0 0 7px rgba(0,229,255,0.6), 0 0 20px rgba(0,229,255,0.3), 0 0 42px rgba(0,229,255,0.15); }
+  50%      { opacity: 0.85; text-shadow: 0 0 4px rgba(0,229,255,0.4), 0 0 12px rgba(0,229,255,0.2), 0 0 28px rgba(0,229,255,0.1); }
+}
+@keyframes neon-pulse-amber {
+  0%, 100% { opacity: 1; text-shadow: 0 0 7px rgba(251,191,36,0.6), 0 0 20px rgba(251,191,36,0.3), 0 0 42px rgba(251,191,36,0.15); }
+  50%      { opacity: 0.85; text-shadow: 0 0 4px rgba(251,191,36,0.4), 0 0 12px rgba(251,191,36,0.2), 0 0 28px rgba(251,191,36,0.1); }
+}
+@keyframes neon-pulse-rose {
+  0%, 100% { opacity: 1; text-shadow: 0 0 7px rgba(251,113,133,0.6), 0 0 20px rgba(251,113,133,0.3), 0 0 42px rgba(251,113,133,0.15); }
+  50%      { opacity: 0.85; text-shadow: 0 0 4px rgba(251,113,133,0.4), 0 0 12px rgba(251,113,133,0.2), 0 0 28px rgba(251,113,133,0.1); }
+}
+@keyframes neon-pulse-emerald {
+  0%, 100% { opacity: 1; text-shadow: 0 0 7px rgba(52,211,153,0.6), 0 0 20px rgba(52,211,153,0.3), 0 0 42px rgba(52,211,153,0.15); }
+  50%      { opacity: 0.85; text-shadow: 0 0 4px rgba(52,211,153,0.4), 0 0 12px rgba(52,211,153,0.2), 0 0 28px rgba(52,211,153,0.1); }
+}
+@keyframes neon-pulse-violet {
+  0%, 100% { opacity: 1; text-shadow: 0 0 7px rgba(167,139,250,0.6), 0 0 20px rgba(167,139,250,0.3), 0 0 42px rgba(167,139,250,0.15); }
+  50%      { opacity: 0.85; text-shadow: 0 0 4px rgba(167,139,250,0.4), 0 0 12px rgba(167,139,250,0.2), 0 0 28px rgba(167,139,250,0.1); }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   3. CYBERPUNK GRID BACKGROUND — Animated perspective grid
+   ══════════════════════════════════════════════════════════════ */
+
+.cyberpunk-grid {
+  position: relative;
+  overflow: hidden;
+}
+
+.cyberpunk-grid::before {
+  content: '';
+  position: absolute;
+  inset: -50%;
+  background-image:
+    linear-gradient(rgba(0, 229, 255, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 229, 255, 0.07) 1px, transparent 1px);
+  background-size: 40px 40px;
+  transform: perspective(500px) rotateX(60deg);
+  transform-origin: center top;
+  animation: grid-scroll 8s linear infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.cyberpunk-grid > * {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes grid-scroll {
+  0%   { background-position: 0 0; }
+  100% { background-position: 0 40px; }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   4. DATA STREAM ANIMATION — Matrix-style falling Cyrillic chars
+   ══════════════════════════════════════════════════════════════ */
+
+.data-stream {
+  position: relative;
+  overflow: hidden;
+}
+
+.data-stream::after {
+  content: 'АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЩЭЮЯ0123456789';
+  position: absolute;
+  top: -100%;
+  left: 0;
+  right: 0;
+ bottom: 0;
+  font-family: monospace;
+  font-size: 11px;
+  line-height: 1.4;
+  letter-spacing: 0.3em;
+  color: rgba(0, 229, 255, 0.12);
+  word-break: break-all;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+  animation: data-stream-fall 20s linear infinite;
+  mask-image: linear-gradient(180deg, transparent 0%, black 20%, black 80%, transparent 100%);
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, black 20%, black 80%, transparent 100%);
+}
+
+.data-stream > * {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes data-stream-fall {
+  0%   { transform: translateY(0); }
+  100% { transform: translateY(100%); }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   5. HOLOGRAPHIC SHIMMER — Prismatic color shift on hover
+   ══════════════════════════════════════════════════════════════ */
+
+.holo-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.holo-shimmer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(
+    105deg,
+    transparent 20%,
+    rgba(0, 229, 255, 0.06) 35%,
+    rgba(167, 139, 250, 0.08) 45%,
+    rgba(251, 191, 36, 0.06) 55%,
+    rgba(52, 211, 153, 0.06) 65%,
+    transparent 80%
+  );
+  transition: none;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.holo-shimmer:hover::before {
+  animation: holo-sweep 0.8s ease-out forwards;
+}
+
+@keyframes holo-sweep {
+  0%   { left: -60%; }
+  100% { left: 120%; }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   6. SCAN LINE OVERLAY — CRT-style horizontal scan lines
+   ══════════════════════════════════════════════════════════════ */
+
+.scan-line-overlay {
+  position: relative;
+  overflow: hidden;
+}
+
+.scan-line-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    transparent 2px,
+    rgba(0, 0, 0, 0.08) 2px,
+    rgba(0, 0, 0, 0.08) 4px
+  );
+  pointer-events: none;
+  z-index: 3;
+  opacity: var(--scan-line-opacity, 0.5);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   7. TERMINAL TYPING CURSOR — Blinking block cursor
+   ══════════════════════════════════════════════════════════════ */
+
+.terminal-cursor::after {
+  content: '▊';
+  color: #00e5ff;
+  animation: cursor-blink 1s step-end infinite;
+  font-weight: 400;
+  margin-left: 1px;
+}
+
+@keyframes cursor-blink {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0; }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   8. ENERGY BAR ANIMATIONS — Fill, drain, pulse, critical
+   ══════════════════════════════════════════════════════════════ */
+
+.energy-bar-fill {
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.energy-bar-drain {
+  animation: bar-drain 0.4s ease-out;
+}
+
+@keyframes bar-drain {
+  0%   { filter: brightness(1.2); }
+  100% { filter: brightness(1); }
+}
+
+.energy-bar-pulse {
+  animation: bar-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes bar-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.7; }
+}
+
+.energy-bar-critical {
+  animation: bar-critical 0.8s ease-in-out infinite;
+}
+
+@keyframes bar-critical {
+  0%, 100% { filter: brightness(1); }
+  50%      { filter: brightness(1.4) saturate(1.5); }
+}
+
+.energy-bar-critical::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 8px rgba(244, 63, 94, 0.4);
+  animation: critical-flash 0.8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes critical-flash {
+  0%, 100% { opacity: 0; }
+  50%      { opacity: 1; }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   9. GLASS CRACK EFFECT — Decorative crack pattern overlay
+   ══════════════════════════════════════════════════════════════ */
+
+.glass-crack {
+  position: relative;
+}
+
+.glass-crack::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 4;
+  opacity: 0.6;
+  background-image:
+    /* Main crack line */
+    linear-gradient(35deg, transparent 42%, rgba(148,163,184,0.15) 42.3%, rgba(148,163,184,0.15) 42.6%, transparent 42.9%),
+    /* Branch 1 */
+    linear-gradient(55deg, transparent 48%, rgba(148,163,184,0.1) 48.2%, rgba(148,163,184,0.1) 48.4%, transparent 48.7%),
+    /* Branch 2 */
+    linear-gradient(25deg, transparent 55%, rgba(148,163,184,0.08) 55.2%, rgba(148,163,184,0.08) 55.5%, transparent 55.8%),
+    /* Radial micro-cracks */
+    radial-gradient(circle at 43% 43%, transparent 2%, rgba(148,163,184,0.06) 3%, transparent 5%);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   10. KARMA FLASH EFFECTS
+   ══════════════════════════════════════════════════════════════ */
+
+.karma-flash-positive {
+  animation: karma-flash-cyan 0.6s ease-out;
+}
+
+.karma-flash-negative {
+  animation: karma-flash-red 0.6s ease-out;
+}
+
+@keyframes karma-flash-cyan {
+  0%   { box-shadow: inset 0 0 30px rgba(0, 229, 255, 0.3), 0 0 20px rgba(0, 229, 255, 0.2); }
+  100% { box-shadow: none; }
+}
+
+@keyframes karma-flash-red {
+  0%   { box-shadow: inset 0 0 30px rgba(244, 63, 94, 0.3), 0 0 20px rgba(244, 63, 94, 0.2); }
+  100% { box-shadow: none; }
+}
+
+/* Karma meter HUD widget */
+.karma-hud-meter {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  border: 1px solid rgba(0, 229, 255, 0.2);
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  font-family: monospace;
+}
+
+.karma-hud-meter .karma-value {
+ font-size: 10px;
+  font-weight: 700;
+  color: var(--cyber-cyan, #00e5ff);
+  min-width: 20px;
+  text-align: center;
+}
+
+.karma-hud-meter .karma-label {
+  font-size: 8px;
+  color: rgba(148, 163, 184, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* Karma consequences preview in dialogue choices */
+.karma-preview {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 9px;
+  font-family: monospace;
+  padding: 1px 5px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+}
+
+.karma-preview.positive {
+  color: #00e5ff;
+  background: rgba(0, 229, 255, 0.08);
+  border-color: rgba(0, 229, 255, 0.2);
+}
+
+.karma-preview.negative {
+  color: #fb7185;
+  background: rgba(251, 113, 133, 0.08);
+  border-color: rgba(251, 113, 133, 0.2);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   DIALOGUE HISTORY SPECIFIC STYLES
+   ══════════════════════════════════════════════════════════════ */
+
+.poem-reveal-entry {
+  position: relative;
+}
+
+.poem-reveal-entry::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(0,229,255,0.05) 0%, transparent 50%, rgba(167,139,250,0.03) 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.skill-check-entry {
+  border-left: 2px solid rgba(251, 191, 36, 0.3) !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   11. REDUCED MOTION OVERRIDES
+   ══════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-2x::before,
+  .cyberpunk-grid::before,
+  .data-stream::after,
+  .holo-shimmer::before,
+  .scan-line-overlay::after,
+  .terminal-cursor::after,
+  .glass-crack::before {
+    animation: none !important;
+  }
+
+  .neon-cyan,
+  .neon-amber,
+  .neon-rose,
+  .neon-emerald,
+  .neon-violet {
+    animation: none !important;
+    opacity: 1;
+  }
+
+  .cyberpunk-grid::before {
+    transform: none;
+  }
+
+  .data-stream::after {
+    transform: none;
+    opacity: 0;
+  }
+
+  .energy-bar-fill {
+    transition-duration: 0.01ms !important;
+  }
+
+  .energy-bar-pulse,
+  .energy-bar-critical,
+  .energy-bar-critical::after {
+    animation: none !important;
+    opacity: 1;
+    filter: none;
+  }
+
+  .karma-flash-positive,
+  .karma-flash-negative {
+    animation: none !important;
+    box-shadow: none;
+  }
+
+  .holo-shimmer:hover::before {
+    animation: none !important;
+  }
+
+  .cursor-blink {
+    animation: none !important;
+    opacity: 1;
+  }
+}
+
+/* App-level reduced-motion toggle */
+html[data-reduced-motion="true"] .glass-2x::before,
+html[data-reduced-motion="true"] .cyberpunk-grid::before,
+html[data-reduced-motion="true"] .data-stream::after,
+html[data-reduced-motion="true"] .holo-shimmer::before,
+html[data-reduced-motion="true"] .scan-line-overlay::after,
+html[data-reduced-motion="true"] .terminal-cursor::after,
+html[data-reduced-motion="true"] .glass-crack::before {
+  animation: none !important;
+}
+
+html[data-reduced-motion="true"] .neon-cyan,
+html[data-reduced-motion="true"] .neon-amber,
+html[data-reduced-motion="true"] .neon-rose,
+html[data-reduced-motion="true"] .neon-emerald,
+html[data-reduced-motion="true"] .neon-violet {
+  animation: none !important;
+}
+
+html[data-reduced-motion="true"] .energy-bar-pulse,
+html[data-reduced-motion="true"] .energy-bar-critical {
+  animation: none !important;
+}
+
+html[data-reduced-motion="true"] .karma-flash-positive,
+html[data-reduced-motion="true"] .karma-flash-negative {
+  animation: none !important;
+}
+
+html[data-reduced-motion="true"] .holo-shimmer:hover::before {
+  animation: none !important;
+}

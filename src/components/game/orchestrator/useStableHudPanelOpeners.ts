@@ -19,6 +19,7 @@ export interface HudSecondaryPanelOpeners {
   onOpenStats: () => void;
   onOpenSaveSlots: () => void;
   onOpenNpcCodex: () => void;
+  onOpenAdventureLog: () => void;
 }
 
 export function useStableHudPanelOpeners(
@@ -45,6 +46,7 @@ export function useStableHudPanelOpeners(
       onOpenStats: () => dispatchRef.current('stats'),
       onOpenSaveSlots: () => dispatchRef.current('saveSlot'),
       onOpenNpcCodex: () => dispatchRef.current('npcCodex'),
+      onOpenAdventureLog: () => dispatchRef.current('adventureLog'),
     }),
     [],
   );

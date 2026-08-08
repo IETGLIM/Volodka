@@ -17,6 +17,8 @@ import { NoirOverlay } from './NoirOverlay';
 import { WeatherController } from './WeatherController';
 import { RainEffect } from './RainEffect';
 import { AtmosphericEffects } from './AtmosphericEffects';
+import { AtmosphericDust } from './AtmosphericDust';
+import { VolumetricLightRays } from './VolumetricLightRays';
 import { VisualizationLayers } from './VisualizationLayers';
 import { FrameBudgetRunner } from './FrameBudgetRunner';
 import { PostFrameBudgetRunner } from './PostFrameBudgetRunner';
@@ -621,8 +623,10 @@ function RPGGameCanvasScene({
 
       <WeatherController />
       <QualityGatedRainEffect />
+      <QualityGatedVolumetricLightRays />
 
       {!physicsPaused && <AtmosphericEffects />}
+      {!physicsPaused && <AtmosphericDust />}
 
       {!physicsPaused && (
         <PostFXErrorBoundary>
@@ -639,6 +643,19 @@ function RPGGameCanvasScene({
       <CanvasGuardSystem />
     </>
   );
+}
+
+/** Geometry-based volumetric light rays — quality-gated to high/ultra.
+ *  Complements the existing VolumetricLightShafts (custom shader) with
+ *  simpler transparent cone meshes for wider scene coverage. */
+function QualityGatedVolumetricLightRays() {
+  const { preset } = useGraphicsQuality();
+  const sceneId = useGameStore((s) => s.exploration.currentSceneId);
+  // Skip on low/medium quality — self-gated inside VolumetricLightRays too,
+  // but early exit avoids hook invocation overhead
+  if (preset.id === 'low' || preset.id === 'medium') return null;
+  // The component internally checks both preset.id and selectedPreset
+  return <VolumetricLightRays sceneId={sceneId} />;
 }
 
 /** GPU-efficient 3D rain (Points/ShaderMaterial) — quality-gated to medium+.

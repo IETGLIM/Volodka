@@ -30,6 +30,7 @@ import {
   LazyKarmaPoemInfoPanel,
   LazyNotificationHistoryPanel,
   LazySettingsPanel,
+  LazyAdventureLogPanel,
 } from './lazyPanels';
 
 const LazyProceduralAaaTweakPanel = lazy(() =>
@@ -109,6 +110,7 @@ export const OrchestratorMenuLayerPanels = memo(function OrchestratorMenuLayerPa
       <LazyPanelSlot panelId="worldMap" Panel={LazyWorldMap} onClose={onClose.worldMap} />
       <LazyPanelSlot panelId="npcCodex" Panel={LazyNpcCodexPanel} onClose={onClose.npcCodex} />
       <LazyPanelSlot panelId="poemJournal" Panel={LazyPoemJournalPanel} onClose={onClose.poemJournal} />
+      <LazyPanelSlot panelId="adventureLog" Panel={LazyAdventureLogPanel} onClose={onClose.adventureLog} />
     </>
   );
 });

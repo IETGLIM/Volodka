@@ -1,0 +1,53 @@
+/* ══════════════════════════════════════════════════════════════
+   REST PANEL — Sleep / Recovery System
+   ══════════════════════════════════════════════════════════════ */
+
+/* Rest type tab hover and selection */
+.rest-type-tab {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.rest-type-tab:hover {
+  transform: translateY(-1px);
+}
+
+/* Rest progress bar shimmer during rest */
+@keyframes rest-bar-shimmer {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+.rest-bar-shimmer {
+  animation: rest-bar-shimmer 1.5s linear infinite;
+}
+
+/* Dream sequence floating text */
+@keyframes dream-float {
+  0%, 100% { transform: translateY(0); opacity: 0.4; }
+  50% { transform: translateY(-8px); opacity: 0.7; }
+}
+
+.dream-text-float {
+  animation: dream-float 3s ease-in-out infinite;
+}
+
+/* Rest complete flash */
+@keyframes rest-complete-flash {
+  0% { background-color: rgba(52, 211, 153, 0); }
+  50% { background-color: rgba(52, 211, 153, 0.08); }
+  100% { background-color: rgba(52, 211, 153, 0); }
+}
+
+.rest-complete-flash {
+  animation: rest-complete-flash 0.8s ease-in-out 2;
+}
+
+/* Recovery stat change highlight */
+@keyframes stat-change-pulse {
+  0%, 100% { text-shadow: none; }
+  50% { text-shadow: 0 0 8px currentColor; }
+}
+
+.rest-stat-changed {
+  animation: stat-change-pulse 0.6s ease-in-out 1;
+}
