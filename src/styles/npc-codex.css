@@ -1,0 +1,243 @@
+/* ─── NPC Codex / Character Gallery Styles ─── */
+/* Cyberpunk glass morphism with cyan #00e5ff accents */
+
+/* ── Card hover glow ── */
+.npc-codex-card {
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.npc-codex-card::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: -1;
+}
+.npc-codex-card:hover::before {
+  opacity: 1;
+}
+.npc-codex-card:hover {
+  transform: translateY(-2px);
+}
+.npc-codex-card--discovered:hover {
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.12), 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+.npc-codex-card--discovered::before {
+  background: linear-gradient(135deg, rgba(0, 229, 255, 0.15) 0%, transparent 60%);
+}
+.npc-codex-card--undiscovered {
+  opacity: 0.65;
+  filter: saturate(0.3);
+}
+.npc-codex-card--undiscovered:hover {
+  opacity: 0.85;
+  filter: saturate(0.5);
+  box-shadow: 0 0 12px rgba(100, 116, 139, 0.08);
+}
+
+/* ── Glass panel ── */
+.npc-codex-glass {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+}
+.npc-codex-glass--hover:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+/* ── Avatar SVG animation ── */
+.npc-codex-avatar {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.npc-codex-card:hover .npc-codex-avatar {
+  transform: scale(1.05);
+}
+.npc-codex-avatar--glow {
+  filter: drop-shadow(0 0 6px var(--npc-glow-color, rgba(0, 229, 255, 0.4)));
+}
+.npc-codex-avatar--undiscovered {
+  filter: grayscale(1) brightness(0.25);
+}
+
+/* ── Discovery state transition ── */
+.npc-codex-discovery-reveal {
+  animation: npc-codex-reveal 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes npc-codex-reveal {
+  0% {
+    opacity: 0;
+    filter: grayscale(1) brightness(0.25);
+    transform: scale(0.95);
+  }
+  60% {
+    opacity: 1;
+    filter: grayscale(0.3) brightness(0.7);
+  }
+  100% {
+    opacity: 1;
+    filter: grayscale(0) brightness(1);
+    transform: scale(1);
+  }
+}
+
+/* ── Tab styling ── */
+.npc-codex-tab {
+  position: relative;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(148, 163, 184, 0.7);
+  border-radius: 8px;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  white-space: nowrap;
+  background: transparent;
+}
+.npc-codex-tab:hover {
+  color: rgba(203, 213, 225, 0.9);
+  background: rgba(255, 255, 255, 0.04);
+}
+.npc-codex-tab--active {
+  color: #00e5ff;
+  border-color: rgba(0, 229, 255, 0.25);
+  background: rgba(0, 229, 255, 0.06);
+  text-shadow: 0 0 8px rgba(0, 229, 255, 0.3);
+}
+
+/* ── Search input cyberpunk style ── */
+.npc-codex-search {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  color: #cbd5e1;
+  font-size: 12px;
+  padding: 8px 12px 8px 36px;
+  outline: none;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+.npc-codex-search::placeholder {
+  color: rgba(100, 116, 139, 0.6);
+}
+.npc-codex-search:focus {
+  border-color: rgba(0, 229, 255, 0.35);
+  box-shadow: 0 0 0 2px rgba(0, 229, 255, 0.08), inset 0 0 8px rgba(0, 229, 255, 0.03);
+  background: rgba(15, 23, 42, 0.8);
+}
+
+/* ── Relation indicator bar ── */
+.npc-codex-relation-bar {
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(30, 41, 59, 0.8);
+  overflow: hidden;
+}
+.npc-codex-relation-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── Detail view ── */
+.npc-codex-detail-backdrop {
+  background: radial-gradient(ellipse at center top, var(--npc-glow-color, rgba(0, 229, 255, 0.08)) 0%, transparent 70%);
+}
+
+/* ── Faction badge ── */
+.npc-codex-faction-badge {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid;
+}
+.npc-codex-faction-badge--network {
+  color: #00e5ff;
+  border-color: rgba(0, 229, 255, 0.3);
+  background: rgba(0, 229, 255, 0.08);
+}
+.npc-codex-faction-badge--neutral {
+  color: #a1a1aa;
+  border-color: rgba(161, 161, 170, 0.3);
+  background: rgba(161, 161, 170, 0.08);
+}
+.npc-codex-faction-badge--tolpa {
+  color: #f87171;
+  border-color: rgba(248, 113, 113, 0.3);
+  background: rgba(248, 113, 113, 0.08);
+}
+.npc-codex-faction-badge--chk_tolpa {
+  color: #fb923c;
+  border-color: rgba(251, 146, 60, 0.3);
+  background: rgba(251, 146, 60, 0.08);
+}
+
+/* ── Custom scrollbar for NPC codex ── */
+.npc-codex-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+.npc-codex-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.npc-codex-scroll::-webkit-scrollbar-thumb {
+  background: rgba(0, 229, 255, 0.2);
+  border-radius: 4px;
+}
+.npc-codex-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 229, 255, 0.35);
+}
+
+/* ── Quote block ── */
+.npc-codex-quote {
+  position: relative;
+  padding-left: 12px;
+  font-style: italic;
+  color: rgba(203, 213, 225, 0.7);
+}
+.npc-codex-quote::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 2px;
+  bottom: 2px;
+  width: 2px;
+  border-radius: 1px;
+  background: rgba(0, 229, 255, 0.3);
+}
+
+/* ── Silhouette placeholder ── */
+.npc-codex-silhouette {
+  animation: npc-codex-pulse-unknown 3s ease-in-out infinite;
+}
+@keyframes npc-codex-pulse-unknown {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.5; }
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .npc-codex-card,
+  .npc-codex-card:hover,
+  .npc-codex-avatar,
+  .npc-codex-card:hover .npc-codex-avatar {
+    transform: none !important;
+    transition-duration: 0.01ms !important;
+  }
+  .npc-codex-discovery-reveal {
+    animation: none !important;
+    opacity: 1 !important;
+    filter: none !important;
+  }
+  .npc-codex-silhouette {
+    animation: none !important;
+  }
+}

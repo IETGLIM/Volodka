@@ -55,6 +55,10 @@
 @import "../styles/inventory-chrome.css";
 @import "../styles/menu-cinematic-enhanced.css";
 @import "../styles/micro-interactions.css";
+@import "../styles/animations-library.css";
+@import "../styles/combat-effects.css";
+@import "../styles/audio-visualizer.css";
+@import "../styles/npc-codex.css";
 
 /* ── User setting: scanlines off (SettingsPanel → engine/visualSettings) ── */
 html[data-scanlines="off"] .panel-scanlines::after,

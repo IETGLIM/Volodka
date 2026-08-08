@@ -72,6 +72,7 @@ export const LazyTradingPanel = retryLazyDefault(() => import('../TradingPanel')
 export const LazyDevPanel = retryLazyDefault(() => import('../DevPanel').then((m) => ({ default: m.DevPanel })), 'DevPanel');
 export const LazyShortcutsOverlay = retryLazyDefault(() => import('../ShortcutsOverlay').then((m) => ({ default: m.ShortcutsOverlay })), 'ShortcutsOverlay');
 export const LazyWorldMap = retryLazyDefault(() => import('../WorldMap').then((m) => ({ default: m.WorldMap })), 'WorldMap');
+export const LazyNpcCodexPanel = retryLazyDefault(() => import('../NpcCodexPanel').then((m) => ({ default: m.NpcCodexPanel })), 'NpcCodexPanel');
 
 export const LazyMenuScreen = retryLazyDefault(() => import('../MenuScreen').then((m) => ({ default: m.MenuScreen })), 'MenuScreen');
 export const LazyIntroScreen = retryLazyDefault(() => import('../IntroScreen').then((m) => ({ default: m.IntroScreen })), 'IntroScreen');

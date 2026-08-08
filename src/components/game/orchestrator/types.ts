@@ -27,6 +27,7 @@ export const PANEL_IDS = [
   'journal',
   'notificationHistory',
   'worldMap',
+  'npcCodex',
 ] as const;
 
 export type NonNullPanelType = (typeof PANEL_IDS)[number];

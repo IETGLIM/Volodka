@@ -1,0 +1,296 @@
+/* ══════════════════════════════════════════════════════════════════════════════
+   Volodka RPG — Comprehensive CSS Animation Library
+   Entry / Exit / Attention / Cyberpunk / UI / State-transition animations
+   All respect prefers-reduced-motion: reduce
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Entry Animations ─────────────────────────────────────────────────────── */
+
+@keyframes slideInLeft {
+  from { transform: translateX(-100%); opacity: 0; }
+  to   { transform: translateX(0);     opacity: 1; }
+}
+@keyframes slideInRight {
+  from { transform: translateX(100%);  opacity: 0; }
+  to   { transform: translateX(0);     opacity: 1; }
+}
+@keyframes slideInUp {
+  from { transform: translateY(100%);  opacity: 0; }
+  to   { transform: translateY(0);     opacity: 1; }
+}
+@keyframes slideInDown {
+  from { transform: translateY(-100%); opacity: 0; }
+  to   { transform: translateY(0);     opacity: 1; }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes scaleIn {
+  from { transform: scale(0.85); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+@keyframes rotateIn {
+  from { transform: rotate(-180deg) scale(0.7); opacity: 0; }
+  to   { transform: rotate(0deg) scale(1);      opacity: 1; }
+}
+
+.anim-slide-in-left   { animation: slideInLeft  0.4s cubic-bezier(0.22,1,0.36,1) both; }
+.anim-slide-in-right  { animation: slideInRight  0.4s cubic-bezier(0.22,1,0.36,1) both; }
+.anim-slide-in-up     { animation: slideInUp    0.4s cubic-bezier(0.22,1,0.36,1) both; }
+.anim-slide-in-down   { animation: slideInDown  0.4s cubic-bezier(0.22,1,0.36,1) both; }
+.anim-fade-in         { animation: fadeIn      0.35s ease-out both; }
+.anim-scale-in        { animation: scaleIn     0.3s cubic-bezier(0.22,1,0.36,1) both; }
+.anim-rotate-in       { animation: rotateIn    0.5s cubic-bezier(0.22,1,0.36,1) both; }
+
+/* ── Exit Animations ──────────────────────────────────────────────────────── */
+
+@keyframes slideOutLeft {
+  from { transform: translateX(0);     opacity: 1; }
+  to   { transform: translateX(-100%); opacity: 0; }
+}
+@keyframes slideOutRight {
+  from { transform: translateX(0);     opacity: 1; }
+  to   { transform: translateX(100%);  opacity: 0; }
+}
+@keyframes slideOutUp {
+  from { transform: translateY(0);     opacity: 1; }
+  to   { transform: translateY(-100%); opacity: 0; }
+}
+@keyframes slideOutDown {
+  from { transform: translateY(0);     opacity: 1; }
+  to   { transform: translateY(100%);  opacity: 0; }
+}
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+@keyframes scaleOut {
+  from { transform: scale(1);    opacity: 1; }
+  to   { transform: scale(0.85); opacity: 0; }
+}
+
+.anim-slide-out-left  { animation: slideOutLeft  0.35s cubic-bezier(0.55,0,1,0.45) both; }
+.anim-slide-out-right { animation: slideOutRight 0.35s cubic-bezier(0.55,0,1,0.45) both; }
+.anim-slide-out-up    { animation: slideOutUp   0.35s cubic-bezier(0.55,0,1,0.45) both; }
+.anim-slide-out-down  { animation: slideOutDown 0.35s cubic-bezier(0.55,0,1,0.45) both; }
+.anim-fade-out        { animation: fadeOut      0.3s ease-in both; }
+.anim-scale-out       { animation: scaleOut     0.25s ease-in both; }
+
+/* ── Attention Animations ──────────────────────────────────────────────────── */
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1);   opacity: 1; }
+  50%      { transform: scale(1.05); opacity: 0.85; }
+}
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 4px  var(--glow-color, rgba(0,229,255,0.3)), 0 0 8px var(--glow-color, rgba(0,229,255,0.15)); }
+  50%      { box-shadow: 0 0 12px var(--glow-color, rgba(0,229,255,0.5)), 0 0 24px var(--glow-color, rgba(0,229,255,0.25)); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-3px); }
+  20%, 40%, 60%, 80%     { transform: translateX(3px); }
+}
+@keyframes bounce {
+  0%, 100% { transform: translateY(0);                     animation-timing-function: cubic-bezier(0.8,0,1,1); }
+  50%      { transform: translateY(-14px); animation-timing-function: cubic-bezier(0,0,0.2,1); }
+}
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  14%      { transform: scale(1.15); }
+  28%      { transform: scale(1); }
+  42%      { transform: scale(1.08); }
+  56%      { transform: scale(1); }
+}
+
+.anim-pulse       { animation: pulse      2s ease-in-out infinite; }
+.anim-glow-pulse  { animation: glowPulse  2.5s ease-in-out infinite; }
+.anim-float       { animation: float      3s ease-in-out infinite; }
+.anim-shake       { animation: shake      0.6s ease-in-out; }
+.anim-bounce      { animation: bounce     1s ease-in-out infinite; }
+.anim-heartbeat   { animation: heartbeat  1.4s ease-in-out infinite; }
+
+/* ── Cyberpunk-Specific Animations ─────────────────────────────────────────── */
+
+@keyframes glitchText {
+  0%, 90%, 100% {
+    text-shadow: 2px 0 #ff0040, -2px 0 #00e5ff;
+    transform: translate(0);
+    clip-path: inset(0 0 0 0);
+  }
+  92% {
+    text-shadow: -3px -1px #ff0040, 3px 1px #00e5ff;
+    transform: translate(-2px, 1px);
+    clip-path: inset(20% 0 60% 0);
+  }
+  94% {
+    text-shadow: 3px 1px #ff0040, -3px -1px #00e5ff;
+    transform: translate(2px, -1px);
+    clip-path: inset(60% 0 10% 0);
+  }
+  96% {
+    text-shadow: -1px 2px #ff0040, 1px -2px #00e5ff;
+    transform: translate(0, 2px);
+    clip-path: inset(40% 0 30% 0);
+  }
+  98% {
+    text-shadow: 2px -1px #ff0040, -2px 1px #00e5ff;
+    transform: translate(-1px, 0);
+    clip-path: inset(10% 0 70% 0);
+  }
+}
+@keyframes neonFlicker {
+  0%, 18%, 22%, 25%, 53%, 57%, 100% {
+    opacity: 1;
+    text-shadow: 0 0 7px rgba(0,229,255,0.7), 0 0 14px rgba(0,229,255,0.4), 0 0 28px rgba(0,229,255,0.2);
+  }
+  20%, 24%, 55% {
+    opacity: 0.6;
+    text-shadow: none;
+  }
+}
+@keyframes matrixDrip {
+  0%   { transform: translateY(-100%); opacity: 0; }
+  10%  { opacity: 1; }
+  100% { transform: translateY(100vh); opacity: 0; }
+}
+@keyframes circuitTraceDraw {
+  0%   { stroke-dashoffset: 200; }
+  100% { stroke-dashoffset: 0; }
+}
+@keyframes scanLine {
+  0%   { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+@keyframes dataStreamFlow {
+  0%   { background-position: 0 0; }
+  100% { background-position: 0 -200px; }
+}
+
+.anim-glitch-text     { animation: glitchText     3s ease-in-out infinite; }
+.anim-neon-flicker     { animation: neonFlicker     4s ease-in-out infinite; }
+.anim-matrix-drip      { animation: matrixDrip     3s linear infinite; }
+.anim-circuit-trace    { animation: circuitTraceDraw 1.5s ease-out both; stroke-dasharray: 200; }
+.anim-scan-line        { animation: scanLine       6s linear infinite; }
+.anim-data-stream-flow { animation: dataStreamFlow 2s linear infinite; }
+
+/* ── UI Animations ─────────────────────────────────────────────────────────── */
+
+@keyframes buttonPress {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+@keyframes cardFlip {
+  0%   { transform: perspective(600px) rotateY(0); }
+  100% { transform: perspective(600px) rotateY(180deg); }
+}
+@keyframes panelSlide {
+  0%   { transform: translateX(100%); opacity: 0; }
+  100% { transform: translateX(0);    opacity: 1; }
+}
+@keyframes toastEnter {
+  0%   { transform: translateX(100%) scale(0.9); opacity: 0; }
+  100% { transform: translateX(0)    scale(1);    opacity: 1; }
+}
+@keyframes toastExit {
+  0%   { transform: translateX(0)    scale(1);    opacity: 1; }
+  100% { transform: translateX(120%) scale(0.9); opacity: 0; }
+}
+@keyframes progressFill {
+  0%   { width: 0%; }
+  100% { width: var(--progress-target, 100%); }
+}
+@keyframes numberTick {
+  0%   { transform: translateY(100%); opacity: 0; }
+  20%  { opacity: 1; }
+  100% { transform: translateY(0);    opacity: 1; }
+}
+
+.anim-button-press  { animation: buttonPress  0.2s ease-in-out; }
+.anim-card-flip     { animation: cardFlip     0.6s ease-in-out; }
+.anim-panel-slide   { animation: panelSlide   0.4s cubic-bezier(0.22,1,0.36,1) both; }
+.anim-toast-enter   { animation: toastEnter   0.35s cubic-bezier(0.22,1,0.36,1) both; }
+.anim-toast-exit    { animation: toastExit    0.3s cubic-bezier(0.55,0,1,0.45) both; }
+.anim-progress-fill { animation: progressFill 0.8s cubic-bezier(0.22,1,0.36,1) both; }
+.anim-number-tick   { animation: numberTick   0.35s cubic-bezier(0.22,1,0.36,1) both; }
+
+/* ── State Transitions ─────────────────────────────────────────────────────── */
+
+@keyframes stressIncrease {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(220,38,38,0); }
+  50%      { box-shadow: 0 0 20px 4px rgba(220,38,38,0.35), inset 0 0 12px rgba(220,38,38,0.15); }
+}
+@keyframes stressDecrease {
+  0%   { background-color: rgba(220,38,38,0.15); }
+  100% { background-color: transparent; }
+}
+@keyframes karmaShiftLeft {
+  0%   { transform: translateX(0); }
+  30%  { transform: translateX(-8px); }
+  60%  { transform: translateX(4px); }
+  100% { transform: translateX(0); }
+}
+@keyframes karmaShiftRight {
+  0%   { transform: translateX(0); }
+  30%  { transform: translateX(8px); }
+  60%  { transform: translateX(-4px); }
+  100% { transform: translateX(0); }
+}
+
+.anim-stress-increase { animation: stressIncrease 0.6s ease-in-out; }
+.anim-stress-decrease { animation: stressDecrease 0.5s ease-out both; }
+.anim-karma-left     { animation: karmaShiftLeft 0.4s ease-in-out; }
+.anim-karma-right    { animation: karmaShiftRight 0.4s ease-in-out; }
+
+/* ── Delay Utilities ───────────────────────────────────────────────────────── */
+
+.anim-delay-100 { animation-delay: 100ms; }
+.anim-delay-200 { animation-delay: 200ms; }
+.anim-delay-300 { animation-delay: 300ms; }
+.anim-delay-400 { animation-delay: 400ms; }
+.anim-delay-500 { animation-delay: 500ms; }
+
+/* ── Duration Utilities ────────────────────────────────────────────────────── */
+
+.anim-duration-fast   { animation-duration: 0.15s; }
+.anim-duration-normal { animation-duration: 0.3s; }
+.anim-duration-slow   { animation-duration: 0.6s; }
+
+/* ── Fill Mode Utilities ───────────────────────────────────────────────────── */
+
+.anim-fill-forwards  { animation-fill-mode: forwards; }
+.anim-fill-both      { animation-fill-mode: both; }
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   prefers-reduced-motion: reduce — kill all animations
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .anim-pulse,
+  .anim-glow-pulse,
+  .anim-float,
+  .anim-bounce,
+  .anim-heartbeat,
+  .anim-glitch-text,
+  .anim-neon-flicker,
+  .anim-matrix-drip,
+  .anim-scan-line,
+  .anim-data-stream-flow {
+    animation: none !important;
+  }
+}

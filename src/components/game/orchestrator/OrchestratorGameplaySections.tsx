@@ -120,6 +120,8 @@ import {
   useSkillSlots,
 } from '@/store/selectors/hudMountSelectors';
 import { isAct1DiegeticScene } from '@/engine/narrative/narrativePresentationPolicy';
+import { AudioVisualizer } from '../AudioVisualizer';
+import { LocationAtmosphereOverlay } from '../LocationAtmosphereOverlay';
 import type { PanelCloseHandlers } from './useStablePanelClosers';
 import type { HudSecondaryPanelOpeners } from './useStableHudPanelOpeners';
 
@@ -396,6 +398,8 @@ export const GameplaySharedEffects = memo(function GameplaySharedEffects() {
       <GameplayPoemWorldFx />
       <GameplayPoemPowerFx />
       <GameplayPhotoMode />
+      <GameplayAudioVisualizer />
+      <GameplayLocationAtmosphere />
     </>
   );
 });
@@ -722,4 +726,14 @@ export const GameplayExamineOverlay = memo(function GameplayExamineOverlay({
       onClose={handleClose}
     />
   );
+});
+
+/** Audio visualizer — reactive waveform/spectrum, bottom-right corner. */
+export const GameplayAudioVisualizer = memo(function GameplayAudioVisualizer() {
+  return <AudioVisualizer />;
+});
+
+/** Location atmosphere overlay — color wash based on scene type + time. */
+export const GameplayLocationAtmosphere = memo(function GameplayLocationAtmosphere() {
+  return <LocationAtmosphereOverlay />;
 });
