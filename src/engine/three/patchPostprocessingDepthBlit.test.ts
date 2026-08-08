@@ -77,7 +77,7 @@ describe('patchPostprocessingDepthBlit', () => {
     disposeComposerStub(composer);
   });
 
-  it('blitDepthBuffer skips when src/dst depth share Source (illegal GL blit)', () => {
+  it('blitDepthBuffer self-heals when src/dst depth share Source (reallocates then blits)', () => {
     patchPostprocessingDepthBlit();
 
     const shared = new DepthTexture(2, 2);
@@ -86,20 +86,45 @@ describe('patchPostprocessingDepthBlit', () => {
       depthTexture: shared.clone(),
     });
 
+    // Stub composer — renderer is null so the original blit will no-op/throw;
+    // we verify that the self-heal reallocation replaces the stale depthRenderTarget.
     const composer = Object.create(EffectComposer.prototype) as EffectComposer & {
       depthRenderTarget: WebGLRenderTarget | null;
       renderer: null;
+      inputBuffer: WebGLRenderTarget & { stencilBuffer?: boolean };
+      depthTexture: DepthTexture | null;
       blitDepthBuffer: (rt: WebGLRenderTarget) => void;
     };
+    composer.inputBuffer = inputBuffer;
+    composer.depthTexture = shared;
     composer.depthRenderTarget = depthRenderTarget;
     composer.renderer = null;
 
     expect(depthTexturesShareGpuImage(inputBuffer.depthTexture, depthRenderTarget.depthTexture)).toBe(true);
-    // Guard must return before original blit touches renderer.getContext().
-    expect(() => composer.blitDepthBuffer(inputBuffer)).not.toThrow();
+
+    // Capture the old RT reference
+    const oldRT = composer.depthRenderTarget;
+
+    // The patched blit should reallocate (self-heal) instead of silently skipping.
+    // It will then call the original blit which may throw with renderer=null,
+    // but the reallocation itself must have occurred.
+    try {
+      composer.blitDepthBuffer(inputBuffer);
+    } catch {
+      // Expected: original blit fails with null renderer, but reallocation succeeded
+    }
+
+    // Verify: depthRenderTarget was replaced (self-healed)
+    expect(composer.depthRenderTarget).not.toBe(oldRT);
+    // Verify: new depth texture has a unique Source (no longer shares with input)
+    expect(depthTexturesShareGpuImage(
+      inputBuffer.depthTexture,
+      composer.depthRenderTarget!.depthTexture,
+    )).toBe(false);
 
     inputBuffer.dispose();
-    depthRenderTarget.dispose();
+    oldRT.dispose();
+    composer.depthRenderTarget!.dispose();
     shared.dispose();
   });
 });

@@ -64,6 +64,10 @@
 @import "../styles/enhanced-interaction-prompt.css";
 @import "../styles/game-polish.css";
 @import "../styles/world-map.css";
+@import "../styles/minigame-hub.css";
+@import "../styles/gamepad-indicator.css";
+@import "../styles/codex-profile.css";
+@import "../styles/lighting-effects.css";
 
 /* ── User setting: scanlines off (SettingsPanel → engine/visualSettings) ── */
 html[data-scanlines="off"] .panel-scanlines::after,

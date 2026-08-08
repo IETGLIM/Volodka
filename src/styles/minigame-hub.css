@@ -1,0 +1,465 @@
+/* ══════════════════════════════════════════════════════════════
+   MINIGAME HUB: Cards, Result Screens, Tutorial Overlays
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Score Tracker (compact, on hub cards) ── */
+.minigame-score-tracker-compact {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(148, 163, 184, 0.08);
+}
+
+.minigame-score-tracker-stat {
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ── Score Tracker (full, in detail views) ── */
+.minigame-score-tracker {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(148, 163, 184, 0.08);
+}
+
+.minigame-score-tracker-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 11px;
+}
+
+.minigame-score-tracker-label {
+  color: rgba(148, 163, 184, 0.45);
+}
+
+.minigame-score-tracker-value {
+  font-weight: 600;
+}
+
+/* ── Result Screen ── */
+.minigame-result-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 16px 0;
+  width: 100%;
+}
+
+.minigame-result-icon {
+  font-size: 2.5rem;
+  margin-bottom: 12px;
+  line-height: 1;
+}
+
+.minigame-result-title {
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.minigame-result-rating {
+  margin-bottom: 12px;
+}
+
+.minigame-result-rating-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.minigame-result-score {
+  margin-bottom: 12px;
+}
+
+.minigame-result-score-label {
+  display: block;
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 11px;
+  color: rgba(148, 163, 184, 0.45);
+  margin-bottom: 4px;
+}
+
+.minigame-result-score-value {
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 1.875rem;
+  font-weight: 700;
+}
+
+.minigame-result-subtitle {
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 12px;
+  color: rgba(148, 163, 184, 0.5);
+  margin-bottom: 16px;
+  line-height: 1.6;
+}
+
+.minigame-result-stats {
+  width: 100%;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(148, 163, 184, 0.08);
+}
+
+.minigame-result-stats-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 11px;
+  padding: 4px 0;
+
+  &:not(:last-child) {
+    margin-bottom: 4px;
+  }
+}
+
+.minigame-result-stats-label {
+  color: rgba(148, 163, 184, 0.45);
+}
+
+.minigame-result-stats-value {
+  font-weight: 600;
+}
+
+.minigame-result-rewards {
+  width: 100%;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 16px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(148, 163, 184, 0.08);
+}
+
+.minigame-result-rewards-label {
+  display: block;
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: rgba(148, 163, 184, 0.35);
+  margin-bottom: 8px;
+}
+
+.minigame-result-rewards-list {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 12px;
+}
+
+.minigame-result-rewards-item {
+  font-weight: 600;
+}
+
+.minigame-result-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: 280px;
+}
+
+.minigame-result-btn {
+  width: 100%;
+  padding: 10px 0;
+  border-radius: 6px;
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(71, 85, 105, 0.2);
+  color: rgba(148, 163, 184, 0.5);
+
+  &:hover {
+    background: rgba(71, 85, 105, 0.1);
+    border-color: rgba(71, 85, 105, 0.4);
+  }
+
+  &:focus-visible {
+    outline: 2px solid rgb(var(--cyber-cyan-rgb));
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.5;
+  }
+}
+
+.minigame-result-btn--primary {
+  background: rgba(var(--cyber-cyan-rgb), 0.15);
+  border: 1px solid rgba(var(--cyber-cyan-rgb), 0.4);
+  color: rgb(var(--cyber-cyan-rgb), 0.9);
+  box-shadow: 0 0 15px rgba(var(--cyber-cyan-rgb), 0.08);
+
+  &:hover {
+    background: rgba(var(--cyber-cyan-rgb), 0.25);
+    box-shadow: 0 0 25px rgba(var(--cyber-cyan-rgb), 0.15);
+  }
+}
+
+.minigame-result-gamepad-hint {
+  margin-top: 12px;
+  opacity: 0.5;
+}
+
+/* ── Tutorial Overlay ── */
+.minigame-tutorial-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  background: rgba(2, 4, 8, 0.85);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.minigame-tutorial-card {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 380px;
+  margin: 0 16px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(8, 12, 18, 0.98) 0%, rgba(5, 8, 14, 0.99) 100%);
+  border: 1px solid rgba(var(--cyber-cyan-rgb), 0.2);
+  box-shadow: 0 0 60px rgba(var(--cyber-cyan-rgb), 0.06), 0 8px 40px rgba(0, 0, 0, 0.7);
+}
+
+.minigame-tutorial-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(var(--cyber-cyan-rgb), 0.1);
+}
+
+.minigame-tutorial-dots {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.minigame-tutorial-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  transition: background 0.2s ease;
+}
+
+.minigame-tutorial-counter {
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 10px;
+  color: rgba(148, 163, 184, 0.35);
+  letter-spacing: 0.1em;
+}
+
+.minigame-tutorial-content {
+  padding: 24px 20px 16px;
+  text-align: center;
+}
+
+.minigame-tutorial-icon {
+  font-size: 2rem;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.minigame-tutorial-instruction {
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(var(--cyber-cyan-rgb), 0.9);
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+.minigame-tutorial-detail {
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 12px;
+  color: rgba(148, 163, 184, 0.55);
+  line-height: 1.6;
+}
+
+.minigame-tutorial-footer {
+  padding: 12px 20px 16px;
+  border-top: 1px solid rgba(148, 163, 184, 0.06);
+}
+
+.minigame-tutorial-noshow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  cursor: pointer;
+}
+
+.minigame-tutorial-noshow-check {
+  accent-color: rgba(var(--cyber-cyan-rgb), 0.8);
+  width: 14px;
+  height: 14px;
+}
+
+.minigame-tutorial-noshow-text {
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 10px;
+  color: rgba(148, 163, 184, 0.4);
+  letter-spacing: 0.05em;
+}
+
+.minigame-tutorial-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.minigame-tutorial-btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid rgba(71, 85, 105, 0.25);
+  background: rgba(71, 85, 105, 0.08);
+  color: rgba(148, 163, 184, 0.6);
+
+  &:focus-visible {
+    outline: 2px solid rgb(var(--cyber-cyan-rgb));
+    outline-offset: 2px;
+  }
+}
+
+.minigame-tutorial-btn--ghost {
+  background: transparent;
+  border-color: rgba(71, 85, 105, 0.15);
+  color: rgba(148, 163, 184, 0.4);
+  padding: 8px 12px;
+
+  &:hover {
+    color: rgba(148, 163, 184, 0.6);
+  }
+}
+
+.minigame-tutorial-btn--primary {
+  background: rgba(var(--cyber-cyan-rgb), 0.12);
+  border: 1px solid rgba(var(--cyber-cyan-rgb), 0.35);
+  color: rgba(var(--cyber-cyan-rgb), 0.9);
+
+  &:hover {
+    background: rgba(var(--cyber-cyan-rgb), 0.2);
+    box-shadow: 0 0 15px rgba(var(--cyber-cyan-rgb), 0.1);
+  }
+}
+
+.minigame-tutorial-hint {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 20px 12px;
+  opacity: 0.4;
+}
+
+.minigame-tutorial-hint-key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 3px;
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 9px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(100, 116, 139, 0.25);
+  color: rgba(148, 163, 184, 0.5);
+}
+
+.minigame-tutorial-hint-text {
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 10px;
+  color: rgba(148, 163, 184, 0.4);
+}
+
+/* ── Hub card enhancements ── */
+.minigame-card-tutorial-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(var(--cyber-cyan-rgb), 0.2);
+  border: 1px solid rgba(var(--cyber-cyan-rgb), 0.3);
+  font-size: 10px;
+  z-index: 5;
+}
+
+/* ── High contrast overrides for minigame elements ── */
+[data-high-contrast="true"] .minigame-result-title,
+[data-high-contrast="true"] .minigame-tutorial-instruction {
+  text-shadow: none !important;
+}
+
+[data-high-contrast="true"] .minigame-score-tracker-compact {
+  border-top-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+[data-high-contrast="true"] .minigame-result-stats,
+[data-high-contrast="true"] .minigame-result-rewards {
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+[data-high-contrast="true"] .minigame-result-btn {
+  border-width: 2px !important;
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .minigame-tutorial-overlay {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .minigame-score-tracker-compact,
+  .minigame-score-tracker-row {
+    transition: none !important;
+  }
+}

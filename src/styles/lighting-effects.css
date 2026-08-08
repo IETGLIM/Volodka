@@ -1,0 +1,207 @@
+/* ─── Lighting Visual Effects (CSS) ───
+ *  Screen-space ambient overlays, flicker animations, bloom fallbacks.
+ *  Cyberpunk palette: cyan #00e5ff, amber #ffaa44, emerald #00ff88.
+ */
+
+/* ── 1. Time-of-Day Screen-Space Ambient Wash ──
+ *  Very subtle color overlay applied by JS based on game hour.
+ *  Each time period has a unique tint: dawn=amber, noon=neutral, dusk=deep amber, night=blue. */
+.tod-wash-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  mix-blend-mode: color;
+  opacity: 0;
+  transition: background-color 3s ease, opacity 3s ease;
+}
+
+.tod-wash-overlay.tod-wash-рассвет {
+  background-color: #2e1a0a;
+  opacity: 0.06;
+}
+
+.tod-wash-overlay.tod-wash-утро {
+  background-color: #1a1a18;
+  opacity: 0.03;
+}
+
+.tod-wash-overlay.tod-wash-полдень {
+  background-color: #141418;
+  opacity: 0.02;
+}
+
+.tod-wash-overlay.tod-wash-закат {
+  background-color: #2e1408;
+  opacity: 0.08;
+}
+
+.tod-wash-overlay.tod-wash-сумерки {
+  background-color: #140a1e;
+  opacity: 0.12;
+}
+
+.tod-wash-overlay.tod-wash-ночь {
+  background-color: #0a0a24;
+  opacity: 0.16;
+}
+
+/* ── 2. Flashlight / Spotlight Cursor Effect ──
+ *  Radial gradient that follows the mouse cursor, simulating a
+ *  flashlight beam. Activated via a data attribute on <html>.
+ *  Only visible during exploration (gated by JS). */
+html[data-flashlight="on"] .flashlight-cursor {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  background: radial-gradient(
+    circle 180px at var(--cursor-x, 50%) var(--cursor-y, 50%),
+    transparent 0%,
+    rgba(0, 0, 0, 0.35) 60%,
+    rgba(0, 0, 0, 0.7) 100%
+  );
+  mix-blend-mode: multiply;
+}
+
+/* Reduced-motion: disable the flashlight cursor effect */
+@media (prefers-reduced-motion: reduce) {
+  html[data-flashlight="on"] .flashlight-cursor {
+    display: none;
+  }
+}
+
+/* ── 3. Cyberpunk Neon Flicker Animations ──
+ *  CSS keyframe animations for neon sign flicker, used in UI elements
+ *  and diegetic interface components. */
+
+/* Standard neon flicker — sharp drops with recovery */
+@keyframes neon-flicker {
+  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+    opacity: 1;
+  }
+  20%, 24%, 55% {
+    opacity: 0.4;
+  }
+}
+
+/* Slow organic neon pulse — for ambient neon signs */
+@keyframes neon-pulse-slow {
+  0%, 100% { opacity: 0.85; }
+  50% { opacity: 1; }
+}
+
+/* Aggressive flicker — damaged neon, sparking */
+@keyframes neon-flicker-aggressive {
+  0%, 8%, 12%, 16%, 20%, 50%, 52%, 54%, 58%, 100% {
+    opacity: 1;
+  }
+  9%, 13%, 21%, 51%, 55% {
+    opacity: 0.1;
+  }
+  17% {
+    opacity: 0.6;
+  }
+}
+
+/* Candle / fire glow — warm organic pulse */
+@keyframes candle-glow {
+  0%, 100% {
+    opacity: 0.85;
+    transform: scale(1);
+  }
+  25% {
+    opacity: 0.92;
+    transform: scale(1.02);
+  }
+  50% {
+    opacity: 0.78;
+    transform: scale(0.98);
+  }
+  75% {
+    opacity: 0.88;
+    transform: scale(1.01);
+  }
+}
+
+/* Cold pulse — server room / industrial data flow */
+@keyframes cold-pulse {
+  0%, 100% {
+    opacity: 0.75;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Utility classes for applying flicker to UI elements */
+.neon-flicker {
+  animation: neon-flicker 3s infinite;
+}
+
+.neon-flicker-aggressive {
+  animation: neon-flicker-aggressive 2s infinite;
+}
+
+.neon-pulse-slow {
+  animation: neon-pulse-slow 4s ease-in-out infinite;
+}
+
+.candle-glow {
+  animation: candle-glow 2s ease-in-out infinite;
+}
+
+.cold-pulse {
+  animation: cold-pulse 3s ease-in-out infinite;
+}
+
+/* ── 4. CSS Bloom Fallback ──
+ *  When PostFX bloom is disabled (low quality, mobile), this provides
+ *  a poor-man's bloom using CSS box-shadow on emissive-styled elements.
+ *  Applied via a data attribute on the 3D canvas container.
+ */
+html[data-bloom-fallback="on"] .bloom-emissive {
+  box-shadow:
+    0 0 8px 2px var(--bloom-color, #00e5ff88),
+    0 0 20px 4px var(--bloom-color, #00e5ff44),
+    0 0 40px 8px var(--bloom-color, #00e5ff22);
+}
+
+/* Amber bloom variant — street lamps, warm signs */
+html[data-bloom-fallback="on"] .bloom-emissive-amber {
+  --bloom-color: #ffaa4488;
+  box-shadow:
+    0 0 8px 2px #ffaa4488,
+    0 0 20px 4px #ffaa4444,
+    0 0 40px 8px #ffaa4422;
+}
+
+/* Cyan bloom variant — neon signs, monitors */
+html[data-bloom-fallback="on"] .bloom-emissive-cyan {
+  --bloom-color: #00e5ff88;
+  box-shadow:
+    0 0 8px 2px #00e5ff88,
+    0 0 20px 4px #00e5ff44,
+    0 0 40px 8px #00e5ff22;
+}
+
+/* Emerald bloom variant — Заря-М, resistance tech */
+html[data-bloom-fallback="on"] .bloom-emissive-emerald {
+  --bloom-color: #00ff8888;
+  box-shadow:
+    0 0 8px 2px #00ff8888,
+    0 0 20px 4px #00ff8844,
+    0 0 40px 8px #00ff8822;
+}
+
+/* Reduced motion: disable all flicker and glow animations */
+@media (prefers-reduced-motion: reduce) {
+  .neon-flicker,
+  .neon-flicker-aggressive,
+  .neon-pulse-slow,
+  .candle-glow,
+  .cold-pulse {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+}

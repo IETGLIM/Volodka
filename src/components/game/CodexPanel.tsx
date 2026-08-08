@@ -3,14 +3,14 @@
    Two-column layout: entry list (2/5) + entry detail (3/5).
    Category tabs with discovery counts, rarity badges,
    typewriter effect for entry body, related entries links,
-   progress bar, and PanelWrapper integration.
+   progress bar, category breakdown, and PanelWrapper integration.
 */
 
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import {
   BookMarked, BookOpen, Search, Lock, MapPin,
-  ChevronRight, Star, Link2,
+  ChevronRight, Star, Link2, BarChart3,
 } from 'lucide-react';
 import { useGameStore } from '@/store/gameStore';
 import type { LoreEntry, LoreCategory, LoreRarity } from '@/store/gameStore';
@@ -32,6 +32,38 @@ interface CodexPanelProps {
 }
 
 type FilterMode = 'all' | 'discovered' | 'undiscovered';
+
+/* ─── Scene hint mapping for undiscovered entries ─── */
+
+const SCENE_HINTS: Record<string, string> = {
+  street_night: 'Где-то на ночных улицах...',
+  cafe_evening: 'Вечернее кафе хранит тайну...',
+  office_day: 'Офисный дневной свет...',
+  park_day: 'Парковая аллея ждёт...',
+  river_pier: 'Мост и река — тишина воды...',
+  library_day: 'Библиотечная пыль на полках...',
+  abandoned_factory: 'Заброшенный завод шепчет...',
+  solnysh_room: 'В комнате Солнышка...',
+  volodka_room: 'В вашей комнате что-то упущено...',
+  server_room: 'Серверная пульсирует сигналами...',
+  market_bazaar: 'Базарный шум скрывает правду...',
+  metro_underground: 'Подземные переходы ведут вниз...',
+  rooftop: 'Крыша — там виднее всего...',
+};
+
+function getSceneHint(sceneId: string): string {
+  return SCENE_HINTS[sceneId] ?? 'Где-то в городе...';
+}
+
+/* ─── Category color map ─── */
+
+const CATEGORY_COLORS: Record<string, string> = {
+  history: '#fbbf24',
+  factions: '#fb7185',
+  technology: '#00e5ff',
+  culture: '#a78bfa',
+  mysteries: '#34d399',
+};
 
 /* ─── Helpers ─── */
 
@@ -74,34 +106,34 @@ function RarityBadge({ rarity }: { rarity: LoreRarity }) {
 
 function EntryListItem({
   entry,
+  index,
   isSelected,
   onClick,
 }: {
   entry: LoreEntry;
+  index: number;
   isSelected: boolean;
   onClick: () => void;
 }) {
-  const rarityColor = entry.rarity === 'legendary'
-    ? 'border-amber-500/20'
-    : entry.rarity === 'rare'
-      ? 'border-cyan-500/20'
-      : entry.rarity === 'uncommon'
-        ? 'border-emerald-500/20'
-        : 'border-transparent';
-
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`w-full text-left px-3 py-2.5 rounded-lg border transition-all duration-200 ${
-        isSelected
+      className={`
+        w-full text-left px-3 py-2.5 rounded-lg border transition-all duration-200 codex-entry-card
+        codex-entry-cat-${entry.category}
+        ${entry.discovered ? 'codex-entry-discovered' : 'codex-entry-undiscovered'}
+        ${isSelected ? 'codex-entry-selected' : ''}
+        ${isSelected
           ? 'border-amber-700/40 bg-amber-950/20'
-          : `border-transparent hover:border-slate-700/30 hover:bg-slate-800/30 ${rarityColor}`
-      }`}
+          : 'border-transparent hover:border-slate-700/30 hover:bg-slate-800/30'}
+        codex-card-animate
+      `}
+      style={{ animationDelay: `${index * 30}ms` }}
     >
       <div className="flex items-center gap-2">
         {entry.discovered ? (
-          <BookOpen className="size-3.5 text-amber-400/60 shrink-0" />
+          <BookOpen className="size-3.5 shrink-0" style={{ color: CATEGORY_COLORS[entry.category] ?? '#94a3b8' }} />
         ) : (
           <Lock className="size-3.5 text-slate-600 shrink-0" />
         )}
@@ -123,6 +155,42 @@ function EntryListItem({
   );
 }
 
+/* ─── Progress Breakdown ─── */
+
+function ProgressBreakdown({
+  categoryCounts,
+}: {
+  categoryCounts: Record<string, { total: number; discovered: number }>;
+}) {
+  return (
+    <div className="px-4 py-2 border-b border-slate-800/40">
+      <div className="flex items-center gap-1.5 mb-1.5">
+        <BarChart3 className="size-3 text-slate-500" />
+        <span className="text-[9px] text-slate-500 font-mono uppercase tracking-widest">
+          Прогресс по категориям
+        </span>
+      </div>
+      <div className="codex-progress-breakdown">
+        {Object.entries(LORE_CATEGORY_META).map(([key, meta]) => {
+          const counts = categoryCounts[key];
+          if (!counts) return null;
+          const color = CATEGORY_COLORS[key] ?? '#94a3b8';
+          return (
+            <div key={key} className="codex-progress-cat">
+              <div className="codex-progress-cat-label" style={{ color: `${color}80` }}>
+                {meta.label}
+              </div>
+              <div className="codex-progress-cat-value" style={{ color }}>
+                {counts.discovered}<span className="opacity-40">/{counts.total}</span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 /* ─── Entry Detail ─── */
 
 function EntryDetail({
@@ -136,8 +204,8 @@ function EntryDetail({
 }) {
   const [showFull, setShowFull] = useState(false);
   const reducedMotion = useEffectiveReducedMotion();
+  const categoryColor = CATEGORY_COLORS[entry.category] ?? '#94a3b8';
 
-  // Reset showFull when entry changes (deferred to avoid sync setState)
   useEffect(() => {
     const t = setTimeout(() => setShowFull(false), 0);
     return () => clearTimeout(t);
@@ -161,8 +229,8 @@ function EntryDetail({
         >
           Запись ещё не обнаружена
         </p>
-        <p className="text-[10px] text-slate-700 mt-1">
-          Исследуйте мир, чтобы открыть эту запись
+        <p className="codex-undiscovered-hint mt-2">
+          {getSceneHint(entry.sceneId)}
         </p>
         {entry.discoveryCondition && (
           <p className="text-[10px] text-amber-500/50 mt-2">
@@ -184,13 +252,19 @@ function EntryDetail({
       initial={reducedMotion ? false : { opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: reducedMotion ? 0 : 0.25 }}
-      className="p-4"
+      className="p-4 codex-detail relative"
     >
+      {/* Atmospheric gradient background */}
+      <div className={`codex-detail-atmosphere codex-detail-atmosphere-${entry.category}`} />
+
       {/* Title + Rarity */}
-      <div className="flex items-start gap-2 mb-3">
+      <div className="flex items-start gap-2 mb-3 relative z-10">
         <h3
           className="text-base font-semibold text-slate-100 leading-tight flex-1"
-          style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}
+          style={{
+            fontFamily: 'Georgia, "Times New Roman", serif',
+            textShadow: `0 0 12px ${categoryColor}15`,
+          }}
         >
           {entry.title}
         </h3>
@@ -198,9 +272,16 @@ function EntryDetail({
       </div>
 
       {/* Meta tags */}
-      <div className="flex flex-wrap gap-2 mb-4">
+      <div className="flex flex-wrap gap-2 mb-4 relative z-10">
         {categoryMeta && (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] rounded-md border border-amber-800/30 bg-amber-950/20 text-amber-400/70">
+          <span
+            className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] rounded-md border"
+            style={{
+              borderColor: `${categoryColor}30`,
+              background: `${categoryColor}10`,
+              color: `${categoryColor}b0`,
+            }}
+          >
             {categoryMeta.icon} {categoryMeta.label}
           </span>
         )}
@@ -212,7 +293,7 @@ function EntryDetail({
 
       {/* Body with typewriter effect */}
       <div
-        className="text-sm text-slate-300 leading-relaxed whitespace-pre-line"
+        className="text-sm text-slate-300 leading-relaxed whitespace-pre-line relative z-10"
         style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}
       >
         {displayedBody}
@@ -223,7 +304,7 @@ function EntryDetail({
         <button
           type="button"
           onClick={() => setShowFull(true)}
-          className="mt-2 text-[10px] text-amber-400/60 hover:text-amber-400/90 transition-colors"
+          className="mt-2 text-[10px] text-amber-400/60 hover:text-amber-400/90 transition-colors relative z-10"
         >
           Пропустить ▸
         </button>
@@ -231,7 +312,7 @@ function EntryDetail({
 
       {/* Related entries */}
       {relatedEntries.length > 0 && (
-        <div className="mt-4 pt-3 border-t border-slate-800/40">
+        <div className="mt-4 pt-3 border-t border-slate-800/40 relative z-10">
           <div className="flex items-center gap-1.5 text-[10px] text-slate-500 mb-2">
             <Link2 className="size-3" />
             Связанные записи
@@ -271,6 +352,7 @@ export function CodexPanel({ open, onClose }: CodexPanelProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterMode, setFilterMode] = useState<FilterMode>('all');
   const [activeCategory, setActiveCategory] = useState<LoreCategory | 'all'>('all');
+  const [showBreakdown, setShowBreakdown] = useState(false);
 
   useEffect(() => {
     const unsub = eventBus.on('codex:select_entry', ({ loreId }) => {
@@ -281,7 +363,6 @@ export function CodexPanel({ open, onClose }: CodexPanelProps) {
     return unsub;
   }, []);
 
-  // Merge INITIAL_LORE_ENTRIES with store entries (store entries take precedence)
   const allEntries = useMemo(() => {
     const storeMap = new Map<string, LoreEntry>();
     for (const entry of storeLoreEntries) {
@@ -293,7 +374,6 @@ export function CodexPanel({ open, onClose }: CodexPanelProps) {
     });
   }, [storeLoreEntries]);
 
-  // Category counts
   const categoryCounts = useMemo(() => {
     const counts: Record<string, { total: number; discovered: number }> = {};
     for (const cat of Object.keys(LORE_CATEGORY_META)) {
@@ -309,23 +389,19 @@ export function CodexPanel({ open, onClose }: CodexPanelProps) {
     return counts;
   }, [allEntries]);
 
-  // Filter entries
   const filteredEntries = useMemo(() => {
     let result = allEntries;
 
-    // Category filter
     if (activeCategory !== 'all') {
       result = result.filter((e) => e.category === activeCategory);
     }
 
-    // Discovery filter
     if (filterMode === 'discovered') {
       result = result.filter((e) => e.discovered);
     } else if (filterMode === 'undiscovered') {
       result = result.filter((e) => !e.discovered);
     }
 
-    // Search
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       result = result.filter(
@@ -335,7 +411,6 @@ export function CodexPanel({ open, onClose }: CodexPanelProps) {
       );
     }
 
-    // Sort: discovered first, then by rarity
     const rarityOrder: Record<string, number> = { legendary: 0, rare: 1, uncommon: 2, common: 3 };
     result = [...result].sort((a, b) => {
       if (a.discovered !== b.discovered) return a.discovered ? -1 : 1;
@@ -351,12 +426,10 @@ export function CodexPanel({ open, onClose }: CodexPanelProps) {
 
   const selectedEntry = allEntries.find((e) => e.id === selectedId) ?? null;
 
-  // Handle related entry selection
   const handleSelectRelated = useCallback((id: string) => {
     setSelectedId(id);
   }, []);
 
-  // Auto-select first entry when category/filter changes (deferred to avoid sync setState)
   useEffect(() => {
     const t = setTimeout(() => {
       if (filteredEntries.length > 0) {
@@ -369,13 +442,20 @@ export function CodexPanel({ open, onClose }: CodexPanelProps) {
     return () => clearTimeout(t);
   }, [activeCategory, filterMode, filteredEntries]);
 
-  // Footer for PanelWrapper
   const footer = (
     <div className="flex items-center justify-between">
       <span className="text-[10px] text-slate-600 font-mono">
         volodka://codex
       </span>
       <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => setShowBreakdown((v) => !v)}
+          className="flex items-center gap-1 text-[10px] text-slate-500 hover:text-slate-300 font-mono transition-colors"
+        >
+          <BarChart3 className="size-3" />
+          Детали
+        </button>
         <span className="text-[10px] text-slate-500 font-mono">
           {discoveredCount}/{totalCount} записей
         </span>
@@ -408,9 +488,18 @@ export function CodexPanel({ open, onClose }: CodexPanelProps) {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Поиск..."
+              placeholder="Поиск по записям..."
               className="flex-1 bg-transparent text-xs text-slate-300 placeholder-slate-600 outline-none"
             />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="text-slate-500 hover:text-slate-300 text-[10px] transition-colors"
+              >
+                ✕
+              </button>
+            )}
           </div>
           <div className="flex items-center gap-1">
             <Button
@@ -441,14 +530,14 @@ export function CodexPanel({ open, onClose }: CodexPanelProps) {
           </div>
         </div>
 
-        {/* Category tabs */}
+        {/* Category tabs — with per-category color classes */}
         <div className="px-4 py-2 border-b border-slate-800/40 flex items-center gap-1 overflow-x-auto">
           <button
             type="button"
             onClick={() => setActiveCategory('all')}
-            className={`shrink-0 px-2.5 py-1 text-[10px] font-medium rounded-md transition-colors duration-150 ${
+            className={`shrink-0 px-2.5 py-1 text-[10px] font-medium rounded-md transition-all duration-200 codex-cat-tab ${
               activeCategory === 'all'
-                ? 'bg-amber-950/30 text-amber-400 border border-amber-700/30'
+                ? 'bg-amber-950/30 text-amber-400 border border-amber-700/30 codex-cat-active'
                 : 'text-slate-500 hover:text-slate-300 border border-transparent'
             }`}
           >
@@ -458,16 +547,22 @@ export function CodexPanel({ open, onClose }: CodexPanelProps) {
             const counts = categoryCounts[key];
             if (!counts) return null;
             const isActive = activeCategory === key;
+            const catColor = CATEGORY_COLORS[key];
             return (
               <button
                 key={key}
                 type="button"
                 onClick={() => setActiveCategory(key as LoreCategory)}
-                className={`shrink-0 px-2.5 py-1 text-[10px] font-medium rounded-md transition-colors duration-150 flex items-center gap-1 ${
+                className={`shrink-0 px-2.5 py-1 text-[10px] font-medium rounded-md transition-all duration-200 codex-cat-tab codex-cat-${key} ${
                   isActive
-                    ? 'bg-amber-950/30 text-amber-400 border border-amber-700/30'
+                    ? `border codex-cat-active`
                     : 'text-slate-500 hover:text-slate-300 border border-transparent'
                 }`}
+                style={isActive ? {
+                  color: catColor,
+                  background: `${catColor}14`,
+                  borderColor: `${catColor}40`,
+                } : undefined}
               >
                 <span>{meta.icon}</span>
                 <span>{meta.label}</span>
@@ -492,6 +587,9 @@ export function CodexPanel({ open, onClose }: CodexPanelProps) {
           </div>
         </div>
 
+        {/* Category progress breakdown (toggle from footer) */}
+        {showBreakdown && <ProgressBreakdown categoryCounts={categoryCounts} />}
+
         {/* Two-column layout */}
         <div className="flex flex-1 min-h-0">
           {/* Left: Entry list (2/5) */}
@@ -503,10 +601,11 @@ export function CodexPanel({ open, onClose }: CodexPanelProps) {
                     Ничего не найдено
                   </div>
                 ) : (
-                  filteredEntries.map((entry) => (
+                  filteredEntries.map((entry, i) => (
                     <EntryListItem
                       key={entry.id}
                       entry={entry}
+                      index={i}
                       isSelected={selectedId === entry.id}
                       onClick={() => setSelectedId(entry.id)}
                     />
@@ -533,6 +632,9 @@ export function CodexPanel({ open, onClose }: CodexPanelProps) {
                     style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}
                   >
                     Выберите запись
+                  </p>
+                  <p className="text-[10px] text-slate-600 mt-1 font-mono">
+                    {discoveredCount} из {totalCount} записей обнаружено
                   </p>
                 </div>
               )}

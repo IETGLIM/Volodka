@@ -6,8 +6,17 @@
  * glBlitFramebuffer with identical read/write depth-stencil attachments →
  * GL_INVALID_OPERATION every frame (and can cascade into composer crashes).
  *
- * Patch createDepthTexture to allocate independent DepthTextures (unique Source)
- * and skip blitDepthBuffer when sources still collide.
+ * This module replaces the fragile silent-skip workaround with a robust two-
+ * layer fix:
+ *
+ * 1. **Primary**: patchCreateDepthTexture allocates independent DepthTextures
+ *    (unique Source) — prevents the collision entirely.
+ * 2. **Self-healing fallback**: patchBlitDepthBuffer detects if sources STILL
+ *    collide (e.g. after a library update or edge-case RT reuse) and
+ *    reallocates the depth render target with a guaranteed-fresh texture,
+ *    then falls through to the original blit. No depth data is ever silently
+ *    dropped — depth-dependent effects (DOF, N8AO, GodRays) always receive
+ *    valid depth information.
  *
  * @see https://github.com/mrdoob/three.js/issues/30540
  * @see https://github.com/pmndrs/postprocessing/pull/740
@@ -85,6 +94,33 @@ function patchCreateDepthTexture(proto: DepthBlitComposer): void {
   };
 }
 
+/**
+ * Self-healing fallback: if depth sources still share a GPU image despite the
+ * createDepthTexture patch (edge case: library update, RT reuse, hot reload),
+ * dispose the stale depth render target and reallocate with a guaranteed-fresh
+ * depth texture. This ensures depth data is NEVER silently dropped — the blit
+ * proceeds with valid, independent textures.
+ */
+function reallocateDepthRenderTarget(composer: DepthBlitComposer): void {
+  const inputBuffer = composer.inputBuffer;
+  const oldRT = composer.depthRenderTarget;
+
+  // Dispose old GPU resources to prevent memory leak
+  if (oldRT) {
+    oldRT.dispose();
+  }
+
+  // Create a fresh independent depth texture (new Source guaranteed)
+  const freshDepthTexture = createIndependentDepthTexture(composer.depthTexture);
+  freshDepthTexture.name = 'EffectComposer.StableDepth.Reallocated';
+
+  composer.depthRenderTarget = new WebGLRenderTarget(inputBuffer.width, inputBuffer.height, {
+    depthBuffer: true,
+    stencilBuffer: Boolean(inputBuffer.stencilBuffer),
+    depthTexture: freshDepthTexture,
+  });
+}
+
 function patchBlitDepthBuffer(proto: DepthBlitComposer): void {
   const original = proto.blitDepthBuffer;
   proto.blitDepthBuffer = function blitDepthBufferPatched(
@@ -97,9 +133,10 @@ function patchBlitDepthBuffer(proto: DepthBlitComposer): void {
     const srcDepth = renderTarget.depthTexture as Texture | null | undefined;
     const dstDepth = depthRenderTarget.depthTexture as Texture | null | undefined;
     if (depthTexturesShareGpuImage(srcDepth, dstDepth)) {
-      // Shared Source → identical GL image; blit is illegal and would spam
-      // GL_INVALID_OPERATION. Skip until createDepthTexture patch is active.
-      return;
+      // Shared Source → identical GL image; glBlitFramebuffer would spam
+      // GL_INVALID_OPERATION. Self-heal: reallocate with fresh texture and
+      // proceed with the blit so depth-dependent effects still work.
+      reallocateDepthRenderTarget(this);
     }
 
     original.call(this, renderTarget);

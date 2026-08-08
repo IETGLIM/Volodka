@@ -1,7 +1,7 @@
 
 /* ─── Volodka RPG – Character Profile Panel (Cyberpunk Stats Overlay) ─── */
 
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FocusTrap } from '@/components/a11y/FocusTrap';
 import { usePanelDialog } from '@/components/a11y/usePanelDialog';
@@ -24,7 +24,8 @@ import {
   Brain,
   Flame,
   Swords,
-  Wind } from 'lucide-react';
+  Wind,
+  PenLine } from 'lucide-react';
 import {
   useCharacterProfilePanelState } from '@/store/selectors';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
@@ -32,11 +33,310 @@ import { findNpcById } from '@/data/allNpcDefinitions';
 import { POEMS } from '@/data/poems';
 import { KARMA_LOW_THRESHOLD, KARMA_HIGH_THRESHOLD } from '@/data/constants';
 import { Card, CardContent } from '@/components/ui/card';
-import { getItemDefinition } from '@/data/items';
 import { PERKS_MAP, PERK_CATEGORY_META } from '@/data/perks';
 import type { EquipmentSlot } from '@/shared/types/game';
 
 const TOTAL_POEMS = POEMS.length;
+
+/* ══════════════════════════════════════════════════════════════
+   SVG RADAR CHART — Pentagon showing player skills
+   ══════════════════════════════════════════════════════════════ */
+
+const RADAR_STATS: Array<{ key: string; label: string; color: string }> = [
+  { key: 'writing', label: 'Поэзия', color: '#f59e0b' },
+  { key: 'coding', label: 'Взлом', color: '#00e5ff' },
+  { key: 'empathy', label: 'Эмпатия', color: '#f472b6' },
+  { key: 'persuasion', label: 'Улица', color: '#a78bfa' },
+  { key: 'intuition', label: 'Храбрость', color: '#fb923c' },
+  { key: 'logic', label: 'Интеллект', color: '#60a5fa' },
+];
+
+const RADAR_N = RADAR_STATS.length;
+const RADAR_ANGLE_STEP = (2 * Math.PI) / RADAR_N;
+const RADAR_SIZE = 120;
+const RADAR_CENTER = RADAR_SIZE / 2;
+const RADAR_RADIUS = RADAR_SIZE / 2 - 20;
+
+function polarToCart(cx: number, cy: number, r: number, angle: number): [number, number] {
+  return [cx + r * Math.cos(angle - Math.PI / 2), cy + r * Math.sin(angle - Math.PI / 2)];
+}
+
+function StatRadarChart({ skills }: { skills: Record<string, number> }) {
+  const maxVal = 100;
+
+  const gridLevels = [0.25, 0.5, 0.75, 1.0];
+
+  const shapePoints = useMemo(() => {
+    return RADAR_STATS.map((stat, i) => {
+      const angle = i * RADAR_ANGLE_STEP;
+      const val = Math.min(maxVal, (skills[stat.key] ?? 0)) / maxVal;
+      const [x, y] = polarToCart(RADAR_CENTER, RADAR_CENTER, RADAR_RADIUS * val, angle);
+      return `${x},${y}`;
+    }).join(' ');
+  }, [skills]);
+
+  return (
+    <svg viewBox={`0 0 ${RADAR_SIZE} ${RADAR_SIZE}`} className="w-full h-full profile-radar-glow">
+      {/* Grid pentagons */}
+      {gridLevels.map((level) => {
+        const pts = Array.from({ length: RADAR_N }, (_, i) => {
+          const [x, y] = polarToCart(RADAR_CENTER, RADAR_CENTER, RADAR_RADIUS * level, i * RADAR_ANGLE_STEP);
+          return `${x},${y}`;
+        }).join(' ');
+        return <polygon key={level} points={pts} className="profile-radar-grid" />;
+      })}
+      {/* Axes */}
+      {RADAR_STATS.map((_, i) => {
+        const [x, y] = polarToCart(RADAR_CENTER, RADAR_CENTER, RADAR_RADIUS, i * RADAR_ANGLE_STEP);
+        return <line key={i} x1={RADAR_CENTER} y1={RADAR_CENTER} x2={x} y2={y} className="profile-radar-axis" />;
+      })}
+      {/* Data shape */}
+      <polygon
+        points={shapePoints}
+        fill="rgba(0, 229, 255, 0.08)"
+        stroke="#00e5ff"
+        strokeWidth="1.5"
+        className="profile-radar-shape"
+      />
+      {/* Data dots + labels */}
+      {RADAR_STATS.map((stat, i) => {
+        const angle = i * RADAR_ANGLE_STEP;
+        const val = Math.min(maxVal, (skills[stat.key] ?? 0)) / maxVal;
+        const [dx, dy] = polarToCart(RADAR_CENTER, RADAR_CENTER, RADAR_RADIUS * val, angle);
+        const [lx, ly] = polarToCart(RADAR_CENTER, RADAR_CENTER, RADAR_RADIUS + 14, angle);
+        return (
+          <g key={stat.key}>
+            <circle cx={dx} cy={dy} r={3} fill={stat.color} className="profile-radar-dot" style={{ color: stat.color }} />
+            <text x={lx} y={ly - 3} textAnchor="middle" className="profile-radar-label" fill={stat.color}>{stat.label}</text>
+            <text x={lx} y={ly + 7} textAnchor="middle" className="profile-radar-value-label" fill={stat.color}>{skills[stat.key] ?? 0}</text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PAPER-DOLL EQUIPMENT DISPLAY
+   ══════════════════════════════════════════════════════════════ */
+
+function PaperDollEquipment({ equippedItems }: { equippedItems: Record<EquipmentSlot, { id: string; name: string } | null> }) {
+  const slots: Array<{ key: EquipmentSlot; posClass: string }> = [
+    { key: 'head', posClass: 'equip-slot-head' },
+    { key: 'body', posClass: 'equip-slot-body' },
+    { key: 'hands', posClass: 'equip-slot-hands' },
+    { key: 'accessory', posClass: 'equip-slot-accessory' },
+    { key: 'legs', posClass: 'equip-slot-legs' },
+    { key: 'feet', posClass: 'equip-slot-feet' },
+  ];
+
+  return (
+    <div className="equipment-doll">
+      <div className="equipment-doll-body">
+        <svg viewBox="0 0 80 100" fill="none" stroke="currentColor" strokeWidth="0.8" className="text-slate-600">
+          <path d="M40 10 L52 18 L54 35 L52 50 L46 58 L46 75 L52 85 L52 95 L28 95 L28 85 L34 75 L34 58 L28 50 L26 35 L28 18 Z" />
+          <circle cx="35" cy="25" r="2" opacity="0.3" />
+          <circle cx="45" cy="25" r="2" opacity="0.3" />
+        </svg>
+      </div>
+      {slots.map(({ key, posClass }) => {
+        const equipped = equippedItems[key];
+        const cfg = SLOT_CONFIG[key];
+        return (
+          <div
+            key={key}
+            className={`equip-slot ${posClass} ${equipped ? 'equip-slot-equipped' : ''}`}
+          >
+            <cfg.Icon className={`size-4 ${equipped ? 'text-amber-400/70' : 'text-slate-600/40'}`} />
+            <span className="equip-slot-label">{cfg.label}</span>
+            {equipped ? (
+              <span className="equip-slot-item" title={equipped.name}>{equipped.name}</span>
+            ) : (
+              <span className="equip-slot-empty">—</span>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SKILL TREE MINI-PREVIEW
+   ══════════════════════════════════════════════════════════════ */
+
+const SKILL_TREE_ICONS: Record<string, string> = {
+  writing: '✍️',
+  coding: '💻',
+  empathy: '💜',
+  persuasion: '🎤',
+  intuition: '🔥',
+  logic: '🧠',
+};
+
+function SkillTreeMiniPreview({ skills, unlockedSkills }: { skills: Record<string, number>; unlockedSkills: string[] }) {
+  return (
+    <div className="skill-tree-mini">
+      {Object.entries(SKILL_DISPLAY).map(([key, { label }]) => {
+        const isUnlocked = unlockedSkills.includes(key);
+        const value = skills[key as keyof typeof skills] ?? 0;
+        return (
+          <div
+            key={key}
+            className={`skill-tree-mini-node ${isUnlocked ? 'skill-unlocked' : ''}`}
+            title={`${label}: ${value}`}
+          >
+            <span>{SKILL_TREE_ICONS[key] ?? '?'}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════
+   AUTO-GENERATED BIOGRAPHY
+   ══════════════════════════════════════════════════════════════ */
+
+function BiographySection({
+  karma,
+  skills,
+  currentAct,
+  collectedPoems,
+  npcRelations,
+}: {
+  karma: number;
+  skills: Record<string, number>;
+  currentAct: number;
+  collectedPoems: string[];
+  npcRelations: Array<{ npcId: string; value: number }>;
+}) {
+  const bio = useMemo(() => {
+    const parts: string[] = [];
+
+    // Opening based on act
+    if (currentAct <= 2) {
+      parts.push('Владимир Лебедев — инженер, чья душа растеряна между кодом и строками. Город Уфа держит его в своих неоновых тисках.');
+    } else if (currentAct <= 4) {
+      parts.push('Инженер-поэт, затерянный в кибернетической Уфе. Каждый найденный стих — шаг глубже в лабиринт собственной памяти.');
+    } else {
+      parts.push('Поэт между сменами, чей голос теперь слышен на улицах мёртвых серверов. Владимир больше не просто выживает — он ищет.');
+    }
+
+    // Karma reflection
+    if (karma >= KARMA_HIGH_THRESHOLD) {
+      parts.push('Светлая натура, стремящаяся к справедливости. Окружающие чувствуют его искренность.');
+    } else if (karma <= KARMA_LOW_THRESHOLD) {
+      parts.push('Тёмная сторона притягивает — но Владимир ещё не потерян окончательно. Выбор всегда остаётся.');
+    } else {
+      parts.push('Балансируя между светом и тьмой, он идёт своим путём.');
+    }
+
+    // Dominant skill
+    const topSkill = Object.entries(skills).sort(([, a], [, b]) => b - a)[0];
+    if (topSkill && topSkill[1] > 30) {
+      const skillLabel = SKILL_DISPLAY[topSkill[0]]?.label ?? topSkill[0];
+      parts.push(`Его ${skillLabel.toLowerCase()} выделяется среди прочих качеств.`);
+    }
+
+    // Poem affinity
+    if (collectedPoems.length >= 5) {
+      parts.push(`Собрал ${collectedPoems.length} стихотворений — слова стали его оружием.`);
+    }
+
+    // Social tendency
+    const friends = npcRelations.filter((r) => r.value >= 60);
+ if (friends.length >= 3) {
+      parts.push('В городе у него больше союзников, чем врагов.');
+    }
+
+    return parts.join(' ');
+  }, [karma, skills, currentAct, collectedPoems.length, npcRelations]);
+
+  return (
+    <div className="profile-biography">
+      <div className="flex items-center gap-1.5 mb-2">
+        <PenLine className="size-3" style={{ color: 'rgb(var(--cyber-cyan-rgb) / 0.4)' }} />
+        <span className="text-[10px] text-slate-500 font-mono uppercase tracking-widest">Биография</span>
+      </div>
+      <p className="profile-biography-text">{bio}</p>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════
+   KARMA METER WITH FACTION DISPOSITION
+   ══════════════════════════════════════════════════════════════ */
+
+function KarmaMeterWithDisposition({ karma, npcRelations }: { karma: number; npcRelations: Array<{ npcId: string; value: number }> }) {
+  const thumbPos = Math.max(0, Math.min(100, karma));
+  const thumbColor = karma >= KARMA_HIGH_THRESHOLD
+    ? '#00e5ff'
+    : karma <= KARMA_LOW_THRESHOLD
+      ? '#fb7185'
+      : '#fbbf24';
+
+  // Group NPCs into factions based on ID prefixes
+  const factionGroups = useMemo(() => {
+    const network = npcRelations.filter((r) => ['albert', 'kate', 'zarema'].includes(r.npcId));
+    const neutrals = npcRelations.filter((r) => ['lyonya', 'grigory', 'anya'].includes(r.npcId));
+    const enemies = npcRelations.filter((r) => ['tolpa', 'dmitry'].some((e) => r.npcId.includes(e)));
+    return [
+      { name: 'Сеть', relations: network, color: '#00e5ff' },
+      { name: 'Нейтралы', relations: neutrals, color: '#fbbf24' },
+      { name: 'Толпа', relations: enemies, color: '#fb7185' },
+    ];
+  }, [npcRelations]);
+
+  return (
+    <div className="space-y-3">
+      {/* Karma track */}
+      <div>
+        <div className="flex justify-between items-center mb-1.5">
+          <span className="text-[10px] text-slate-500 font-mono">Карма</span>
+          <span
+            className="text-xs font-bold font-mono"
+            style={{ color: thumbColor, textShadow: `0 0 8px ${thumbColor}50` }}
+          >
+            {karma}
+          </span>
+        </div>
+        <div className="karma-meter-track">
+          <div
+            className="karma-meter-thumb"
+            style={{ left: `${thumbPos}%`, background: thumbColor, color: thumbColor }}
+          />
+        </div>
+      </div>
+      {/* Faction disposition bars */}
+      <div className="space-y-2">
+        {factionGroups.map((faction) => {
+          const avg = faction.relations.length > 0
+            ? Math.round(faction.relations.reduce((s, r) => s + r.value, 0) / faction.relations.length)
+            : 0;
+          return (
+            <div key={faction.name}>
+              <div className="flex justify-between items-center mb-0.5">
+                <span className="text-[9px] font-mono" style={{ color: `${faction.color}90` }}>{faction.name}</span>
+                <span className="text-[9px] font-mono tabular-nums" style={{ color: `${faction.color}70` }}>{avg}</span>
+              </div>
+              <div className="faction-disposition-bar bg-slate-800/50">
+                <div className="faction-disposition-center" />
+                <motion.div
+                  className="faction-disposition-fill"
+                  style={{ background: faction.color, boxShadow: `0 0 4px ${faction.color}40` }}
+                  initial={false}
+                  animate={{ width: `${Math.max(2, avg)}%` }}
+                  transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+                />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 /* ══════════════════════════════════════════════════════════════
    SVG PLAYER PORTRAIT — Geometric / Cyberpunk style
@@ -398,6 +698,20 @@ export function CharacterProfilePanel({ open, onClose }: { open: boolean; onClos
                   {/* ── LEFT COLUMN ── */}
                   <div className="flex-1 p-4 sm:p-5 space-y-5 border-b md:border-b-0 md:border-r border-slate-800/40">
 
+                    {/* ── Biography ── */}
+                    <BiographySection
+                      karma={karma}
+                      skills={skills as unknown as Record<string, number>}
+                      currentAct={currentAct}
+                      collectedPoems={collectedPoems}
+                      npcRelations={npcRelations}
+                    />
+
+                    {/* ── Radar Chart ── */}
+                    <div className="w-48 h-48 mx-auto">
+                      <StatRadarChart skills={skills as unknown as Record<string, number>} />
+                    </div>
+
                     {/* ── Character Header ── */}
                     <div className="flex items-start gap-4">
                       {/* Avatar */}
@@ -568,7 +882,6 @@ export function CharacterProfilePanel({ open, onClose }: { open: boolean; onClos
                         <button
                           onClick={() => {
                             onClose();
-                            // Dispatch skill tree panel via keyboard shortcut simulation
                             setTimeout(() => {
                               window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyT' }));
                             }, 100);
@@ -608,64 +921,45 @@ export function CharacterProfilePanel({ open, onClose }: { open: boolean; onClos
                       )}
                     </div>
 
-                    {/* ── Divider ── */}
-                    <div className="h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(100,116,139,0.2), transparent)' }} />
-
-                    {/* ── Equipment Summary ── */}
+                    {/* ── Skill Tree Mini-Preview ── */}
                     <div>
-                      <div className="flex items-center gap-1.5 mb-2.5">
-                        <Shield className="size-3 text-amber-500/40" />
-                        <span className="text-[10px] text-slate-500 font-mono uppercase tracking-widest">Экипировка</span>
+                      <div className="flex items-center gap-1.5 mb-2">
+                        <Sparkles className="size-3 text-cyan-500/40" />
+                        <span className="text-[10px] text-slate-500 font-mono uppercase tracking-widest">Дерево навыков</span>
                       </div>
-                      <div className="flex gap-2">
-                        {(['head', 'body', 'legs', 'feet', 'hands', 'accessory'] as EquipmentSlot[]).map((slot) => {
-                          const equipped = equippedItems[slot];
-                          const _equipDef = equipped ? getItemDefinition(equipped.id) : undefined;
-                          void _equipDef;
-                          const cfg = SLOT_CONFIG[slot];
-                          return (
-                            <div
-                              key={slot}
-                              className={`flex-1 rounded-md border p-2 transition-colors ${
-                                equipped
-                                  ? 'border-slate-700/40 bg-slate-900/40'
-                                  : 'border-slate-800/30 bg-slate-900/20'
-                              }`}
-                            >
-                              <div className="flex items-center gap-1 mb-1">
-                                <cfg.Icon className={`size-3 ${equipped ? 'text-amber-400/60' : 'text-slate-600'}`} />
-                                <span className="text-[9px] text-slate-500 font-mono">{cfg.label}</span>
-                              </div>
-                              {equipped ? (
-                                <span className="text-[10px] text-slate-200 truncate block">{equipped.name}</span>
-                              ) : (
-                                <span className="text-[9px] text-slate-600 italic">Пусто</span>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
+                      <SkillTreeMiniPreview skills={skills as unknown as Record<string, number>} unlockedSkills={progression.unlockedSkills} />
                     </div>
 
                     {/* ── Divider ── */}
                     <div className="h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(100,116,139,0.2), transparent)' }} />
 
-                    {/* ── NPC Relationships ── */}
+                    {/* ── Paper-Doll Equipment Display ── */}
+                    <div>
+                      <div className="flex items-center gap-1.5 mb-2.5">
+                        <Shield className="size-3 text-amber-500/40" />
+                        <span className="text-[10px] text-slate-500 font-mono uppercase tracking-widest">Экипировка</span>
+                      </div>
+                      <PaperDollEquipment equippedItems={equippedItems} />
+                    </div>
+
+                    {/* ── Divider ── */}
+                    <div className="h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(100,116,139,0.2), transparent)' }} />
+
+                    {/* ── Karma Meter + Faction Disposition ── */}
                     <div>
                       <div className="flex items-center gap-1.5 mb-2.5">
                         <BookOpen className="size-3 text-pink-500/40" />
-                        <span className="text-[10px] text-slate-500 font-mono uppercase tracking-widest">Отношения</span>
+                        <span className="text-[10px] text-slate-500 font-mono uppercase tracking-widest">Отношения и карма</span>
                       </div>
-                      {npcRelations.length > 0 ? (
-                        <div className="space-y-1.5 max-h-32 overflow-y-auto pr-1"
+                      <KarmaMeterWithDisposition karma={karma} npcRelations={npcRelations} />
+                      {npcRelations.length > 0 && (
+                        <div className="mt-2 space-y-1.5 max-h-24 overflow-y-auto pr-1"
                           style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(100,116,139,0.3) transparent' }}
                         >
                           {npcRelations.map((rel) => (
                             <NpcRelationBar key={rel.npcId} npcId={rel.npcId} value={rel.value} />
                           ))}
                         </div>
-                      ) : (
-                        <span className="text-[10px] text-slate-600 italic">Пока нет отношений</span>
                       )}
                     </div>
 

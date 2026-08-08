@@ -7,6 +7,8 @@ import {
   type MinigameHubGameType,
 } from '@/engine/minigame/hub/minigameHubConstants';
 import { shouldShowHubShimmer } from '@/engine/minigame/hub/minigameHubPresentation';
+import { MinigameScoreTracker } from '@/components/game/minigameHub/MinigameScoreTracker';
+import { hasSeenMinigameTutorial } from '@/components/game/minigameHub/MinigameTutorialOverlay';
 
 function DifficultyDots({
   count,
@@ -117,6 +119,8 @@ export const MiniGameCard = memo(function MiniGameCard({
           />
         </div>
 
+        <MinigameScoreTracker gameType={game.gameType} accentRgb={game.accentRgb} compact />
+
         <button
           ref={launchRef}
           type="button"
@@ -155,6 +159,16 @@ export const MiniGameCard = memo(function MiniGameCard({
           </svg>
           {MINIGAME_HUB_LABELS.launch}
         </button>
+
+        {!hasSeenMinigameTutorial(game.gameType) && (
+          <div
+            className="minigame-card-tutorial-badge"
+            title="Новая подсказка доступна"
+            aria-label="Новая подсказка доступна"
+          >
+            ?
+          </div>
+        )}
 
         {showShimmer && (
           <div

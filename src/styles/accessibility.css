@@ -408,3 +408,225 @@ button:hover [data-keyboard-hint]::after {
   height: 1px;
   overflow: hidden;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   ACCESSIBILITY: Round 8b Enhancements
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── High Contrast: Remove all text-shadow (decorative glow) ── */
+[data-high-contrast="true"] {
+  * {
+    text-shadow: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Re-enable essential structural shadows only */
+  [role="dialog"],
+  [data-panel] {
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5) !important;
+  }
+
+  /* Remove decorative CSS animations entirely */
+  .minigame-hub-shimmer,
+  .glow-pulse,
+  .glow-pulse-emerald,
+  .glow-pulse-amber,
+  .edge-glow,
+  .holo-flicker,
+  .holo-flicker-soft,
+  .breathe-glow,
+  .menu-title-breathe {
+    animation: none !important;
+    opacity: 0.5;
+  }
+
+  /* Ensure all gradient overlays on text are solid */
+  [class*="backdrop-blur"] {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background-color: rgba(5, 8, 14, 0.98) !important;
+  }
+}
+
+/* ── Keyboard Navigation: Ensure all game panels/dialogs are navigable ── */
+[data-panel],
+[role="dialog"] {
+  /* Tab order should cycle inside the panel */
+  outline: none;
+}
+
+[data-panel]:focus-within,
+[role="dialog"]:focus-within {
+  outline: 2px solid rgba(var(--cyber-cyan-rgb), 0.3);
+  outline-offset: -1px;
+}
+
+/* ── ARIA descriptive labels for common game HUD elements ── */
+/* These CSS rules provide visual affordances for ARIA-described elements */
+
+/* Health/MP bars: ensure sufficient width and visible fill */
+[data-aria-hp-value],
+[data-aria-mp-value] {
+  min-height: 8px;
+  min-width: 40px;
+}
+
+/* Quest tracker items: clear focus ring */
+[data-quest-objective]:focus-visible {
+  outline: 2px solid rgb(var(--cyber-cyan-rgb));
+  outline-offset: 2px;
+}
+
+/* Inventory grid items: clear selection indicator */
+[data-inventory-item]:focus-visible {
+  outline: 2px solid rgb(var(--cyber-cyan-rgb));
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(6, 182, 212, 0.15);
+}
+
+/* Minigame cards: distinct focus ring for grid navigation */
+[role="listitem"]:focus-within {
+  outline: 2px solid rgba(var(--cyber-cyan-rgb), 0.4);
+  outline-offset: 1px;
+}
+
+/* ── High Contrast: minigame hub grid cards ── */
+[data-high-contrast="true"] [role="listitem"] {
+  border-width: 2px !important;
+  border-color: var(--high-contrast-border) !important;
+}
+
+[data-high-contrast="true"] [role="listitem"]:hover,
+[data-high-contrast="true"] [role="listitem"][aria-selected="true"] {
+  border-color: #00ffff !important;
+  box-shadow: 0 0 0 1px rgba(0, 255, 255, 0.3) !important;
+}
+
+/* ── High Contrast: Combat UI ── */
+[data-high-contrast="true"] [data-combat-action-btn] {
+  border-width: 2px !important;
+  min-height: 48px;
+  min-width: 48px;
+}
+
+[data-high-contrast="true"] [data-combat-hp] {
+  border: 2px solid #ffffff !important;
+  height: 16px !important;
+  min-width: 80px;
+}
+
+/* ── High Contrast: Dialogue / narrative ── */
+[data-high-contrast="true"] [data-dialogue-speaker] {
+  font-weight: 700 !important;
+  color: #ffffff !important;
+}
+
+[data-high-contrast="true"] [data-dialogue-text] {
+  color: #e0e0e0 !important;
+  font-size: 16px !important;
+  line-height: 1.6 !important;
+}
+
+[data-high-contrast="true"] [data-narrative-choice] {
+  border-width: 2px !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+  padding: 12px 16px !important;
+  min-height: 44px;
+}
+
+[data-high-contrast="true"] [data-narrative-choice]:hover,
+[data-high-contrast="true"] [data-narrative-choice]:focus-visible {
+  border-color: #00ffff !important;
+  background-color: rgba(0, 255, 255, 0.05) !important;
+}
+
+/* ── Reduced Motion: New components from rounds 5-7 ── */
+@media (prefers-reduced-motion: reduce) {
+  /* Minigame hub card stagger animation */
+  .minigame-card-tutorial-badge {
+    animation: none !important;
+  }
+
+  /* Gamepad indicator status pulse */
+  .gamepad-status-pulse {
+    animation: none !important;
+  }
+
+  /* Combat damage floats */
+  .damage-number-float,
+  .combat-damage-float {
+    animation: none !important;
+  }
+
+  /* Level up effects */
+  .level-up-particle,
+  .level-up-flash {
+    animation: none !important;
+  }
+
+  /* Notification toast slide-in */
+  .notification-toast-card,
+  .toast-item-enter {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  /* Skill check animation */
+  .skill-check-dice-roll,
+  .skill-check-result-pop {
+    animation: none !important;
+  }
+
+  /* Discovery celebration */
+  .discovery-celebration,
+  .loot-notification-enter {
+    animation: none !important;
+  }
+
+  /* Quest complete dialog */
+  .quest-complete-enter,
+  .quest-reward-enter {
+    animation: none !important;
+  }
+
+  /* Poetry power activation effect */
+  .poem-power-flash,
+  .poem-power-ring {
+    animation: none !important;
+  }
+
+  /* Menu particles */
+  .menu-particle-drift,
+  .menu-particle-stream {
+    animation: none !important;
+    opacity: 0;
+  }
+
+  /* HUD filmic ambient scanlines */
+  .hud-filmic-scanline-pulse {
+    animation: none !important;
+  }
+
+  /* Karma shift indicator */
+  .karma-shift-indicator {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  /* Weather alert notification */
+  .weather-alert-enter {
+    animation: none !important;
+  }
+
+  /* Scene discovery toast */
+  .scene-discovery-toast {
+    animation: none !important;
+  }
+
+  /* Any remaining shimmer effects */
+  [class*="shimmer"],
+  [class*="-shimmer"] {
+    animation: none !important;
+  }
+}

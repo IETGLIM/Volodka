@@ -1,0 +1,233 @@
+/* ══════════════════════════════════════════════════════════════
+   GAMEPAD INDICATOR: Connection status, mapping reference panel
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Status chip (HUD bottom-left) ── */
+.gamepad-indicator {
+  position: fixed;
+  bottom: 12px;
+  left: 12px;
+  z-index: 200;
+  pointer-events: none;
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+}
+
+.gamepad-indicator-chip {
+  pointer-events: auto;
+}
+
+.gamepad-indicator-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: rgba(8, 12, 18, 0.85);
+  border: 1px solid rgba(6, 182, 212, 0.15);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: rgba(148, 163, 184, 0.5);
+  font-size: 10px;
+  letter-spacing: 0.05em;
+
+  &:hover {
+    background: rgba(8, 12, 18, 0.95);
+    border-color: rgba(6, 182, 212, 0.3);
+    color: rgba(148, 163, 184, 0.7);
+  }
+
+  &:focus-visible {
+    outline: 2px solid rgb(var(--cyber-cyan-rgb));
+    outline-offset: 2px;
+  }
+}
+
+.gamepad-indicator-icon {
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+
+.gamepad-indicator-label {
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gamepad-indicator-status {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(52, 211, 153, 0.8);
+  box-shadow: 0 0 6px rgba(52, 211, 153, 0.4);
+  animation: gamepad-status-pulse 2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+@keyframes gamepad-status-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* ── Mapping reference panel ── */
+.gamepad-indicator-mapping {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  width: 280px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(8, 12, 18, 0.98) 0%, rgba(5, 8, 14, 0.99) 100%);
+  border: 1px solid rgba(var(--cyber-cyan-rgb), 0.15);
+  box-shadow: 0 0 40px rgba(var(--cyber-cyan-rgb), 0.06), 0 4px 20px rgba(0, 0, 0, 0.6);
+}
+
+.gamepad-indicator-mapping-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(var(--cyber-cyan-rgb), 0.08);
+}
+
+.gamepad-indicator-mapping-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(var(--cyber-cyan-rgb), 0.7);
+}
+
+.gamepad-indicator-mapping-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  font-size: 12px;
+  background: transparent;
+  border: none;
+  color: rgba(148, 163, 184, 0.4);
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(148, 163, 184, 0.7);
+  }
+
+  &:focus-visible {
+    outline: 2px solid rgb(var(--cyber-cyan-rgb));
+    outline-offset: 1px;
+  }
+}
+
+.gamepad-indicator-mapping-grid {
+  padding: 8px 14px;
+}
+
+.gamepad-indicator-mapping-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 0;
+}
+
+.gamepad-indicator-key {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(100, 116, 139, 0.25);
+  color: rgba(var(--cyber-cyan-rgb), 0.7);
+  flex-shrink: 0;
+}
+
+.gamepad-indicator-mapping-desc {
+  font-size: 11px;
+  color: rgba(148, 163, 184, 0.55);
+}
+
+.gamepad-indicator-mapping-footer {
+  padding: 6px 14px 10px;
+  border-top: 1px solid rgba(148, 163, 184, 0.05);
+}
+
+/* ── Gamepad Button Prompt ── */
+.gamepad-button-prompt {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.gamepad-button-prompt-key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(100, 116, 139, 0.3);
+  color: rgba(148, 163, 184, 0.7);
+  transition: all 0.15s ease;
+}
+
+.gamepad-button-prompt--gamepad .gamepad-button-prompt-key {
+  background: rgba(var(--cyber-cyan-rgb), 0.08);
+  border-color: rgba(var(--cyber-cyan-rgb), 0.25);
+  color: rgba(var(--cyber-cyan-rgb), 0.8);
+  border-radius: 50%;
+  min-width: 22px;
+}
+
+.gamepad-button-prompt-label {
+  color: rgba(148, 163, 184, 0.5);
+}
+
+.gamepad-button-prompt--gamepad .gamepad-button-prompt-label {
+  color: rgba(148, 163, 184, 0.45);
+}
+
+/* ── High contrast overrides ── */
+[data-high-contrast="true"] .gamepad-indicator-toggle {
+  border-width: 2px !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+}
+
+[data-high-contrast="true"] .gamepad-indicator-mapping {
+  border-width: 2px !important;
+  border-color: rgba(255, 255, 255, 0.5) !important;
+}
+
+[data-high-contrast="true"] .gamepad-button-prompt-key {
+  border-width: 2px !important;
+  border-color: rgba(255, 255, 255, 0.5) !important;
+  color: #fff !important;
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .gamepad-indicator-status {
+    animation: none;
+  }
+
+  .gamepad-indicator-mapping {
+    transition: none !important;
+  }
+}

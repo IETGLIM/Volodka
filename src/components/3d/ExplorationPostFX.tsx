@@ -9,8 +9,10 @@
  *  AA: native MSAA disabled on composer (multisampling=0); SMAA closes edge crawl on high/ultra.
  *
  *  DEPTH: postprocessing 6.39 stable-depth blit used DepthTexture.clone() which shares
- *  Three.js Source → identical GL depth image on blit (GL_INVALID_OPERATION). Patched in
- *  patchPostprocessingDepthBlit before any EffectComposer mounts.
+ *  Three.js Source → identical GL depth image on blit (GL_INVALID_OPERATION). Patched
+ *  in patchPostprocessingDepthBlit with a self-healing fallback: if sources still
+ *  collide, the depth render target is reallocated with a fresh texture instead
+ *  of silently dropping depth data.
  */
 
 import { useState, useEffect, useLayoutEffect, useRef, useMemo, type ComponentProps } from 'react';

@@ -12,6 +12,7 @@ import { useIsMobileVisual, useMobileVisualPerf } from '@/hooks/use-mobile';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { resolveSceneRenderingPipeline } from '@/engine/graphics/resolveSceneRenderingPipeline';
 import { SCENE_VISIBILITY } from '@/shared/constants/sceneVisibility';
+import { getShadowMapResolution } from '@/engine/graphics/TimeOfDayLighting';
 import type { SceneId } from '@/shared/types/game';
 import { useRef, useMemo } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
@@ -96,6 +97,9 @@ function ScenePointLights() {
     sceneId === 'cafe_evening' ||
     sceneId === 'abandoned_factory';
 
+  // Shadow quality tiers: low=off, medium=512, high=1024, ultra=2048
+  const pointShadowSize = getShadowMapResolution(preset.id as any);
+
   if (lights.length === 0) return null;
 
   return (
@@ -108,9 +112,9 @@ function ScenePointLights() {
           color={light.color}
           distance={light.distance}
           decay={2}
-          castShadow={preset.shadows && heroLocalShadowScene && i < 2}
-          shadow-mapSize-width={preset.id === 'ultra' ? 512 : 256}
-          shadow-mapSize-height={preset.id === 'ultra' ? 512 : 256}
+          castShadow={preset.shadows && heroLocalShadowScene && i < 2 && pointShadowSize > 0}
+          shadow-mapSize-width={pointShadowSize}
+          shadow-mapSize-height={pointShadowSize}
           shadow-bias={SHADOW_BIAS}
           shadow-normalBias={SHADOW_NORMAL_BIAS}
         />
@@ -133,11 +137,11 @@ export function ExplorationLighting() {
     isMobile,
   );
   const config = getSceneConfig(sceneId);
-  const baseShadow = isMobile ? 512 : preset.id === 'ultra' ? 2048 : 1024;
-  const shadowSize = Math.min(
-    2048,
-    Math.round(baseShadow * rendering.shadowMapScale),
-  );
+  // Shadow quality tiers: low=off (0), medium=512, high=1024, ultra=2048
+  const dirShadowRes = isMobile ? 512 : getShadowMapResolution(preset.id as any);
+  const shadowSize = dirShadowRes > 0
+    ? Math.min(4096, Math.round(dirShadowRes * rendering.shadowMapScale))
+    : 0;
 
   const ambientColor = config.ambientColor ?? '#1a1a2e';
   const ambientIntensity =
@@ -189,9 +193,9 @@ export function ExplorationLighting() {
         position={dirPosition}
         intensity={dirIntensity}
         color={dirColor}
-        castShadow={preset.shadows}
-        shadow-mapSize-width={preset.id === 'medium' ? 512 : shadowSize}
-        shadow-mapSize-height={preset.id === 'medium' ? 512 : shadowSize}
+        castShadow={preset.shadows && shadowSize > 0}
+        shadow-mapSize-width={shadowSize || 512}
+        shadow-mapSize-height={shadowSize || 512}
         shadow-camera-near={0.1}
         shadow-camera-far={50}
         shadow-camera-left={-shadowHalfW}
@@ -437,6 +441,9 @@ function SceneAccentLights({ sceneId, isMobile }: { sceneId: string; isMobile: b
     ?? SCENE_ACCENT_LIGHTS[resolveDerivedSceneId(sceneId as SceneId)];
   if (!lights) return null;
 
+  // Shadow quality tier for accent lights
+  const accentShadowRes = getShadowMapResolution(preset.id as any);
+
   // On mobile, limit accent lights to prevent performance issues
   const effectiveLights = isMobile ? lights.slice(0, 2) : lights;
 
@@ -451,6 +458,7 @@ function SceneAccentLights({ sceneId, isMobile }: { sceneId: string; isMobile: b
               config={light}
               seed={i * 997}
               castShadow={castShadow}
+              shadowRes={accentShadowRes}
             />
           );
         }
@@ -463,8 +471,8 @@ function SceneAccentLights({ sceneId, isMobile }: { sceneId: string; isMobile: b
             distance={light.distance}
             decay={2}
             castShadow={castShadow}
-            shadow-mapSize-width={preset.id === 'ultra' ? 512 : 256}
-            shadow-mapSize-height={preset.id === 'ultra' ? 512 : 256}
+            shadow-mapSize-width={accentShadowRes}
+            shadow-mapSize-height={accentShadowRes}
             shadow-bias={SHADOW_BIAS}
             shadow-normalBias={SHADOW_NORMAL_BIAS}
           />
@@ -475,7 +483,7 @@ function SceneAccentLights({ sceneId, isMobile }: { sceneId: string; isMobile: b
 }
 
 /** Animated accent light with neon color cycling, candle flicker, or cold pulse */
-function AnimatedAccentLight({ config, seed, castShadow }: { config: AccentLight; seed: number; castShadow: boolean }) {
+function AnimatedAccentLight({ config, seed, castShadow, shadowRes = 512 }: { config: AccentLight; seed: number; castShadow: boolean; shadowRes?: number }) {
   const lightRef = useRef<THREE.PointLight>(null);
   const timeRef = useRef(0);
   const baseColor = useMemo(() => new THREE.Color(config.color), [config.color]);
@@ -542,8 +550,8 @@ function AnimatedAccentLight({ config, seed, castShadow }: { config: AccentLight
       distance={config.distance}
       decay={2}
       castShadow={castShadow}
-      shadow-mapSize-width={512}
-      shadow-mapSize-height={512}
+      shadow-mapSize-width={shadowRes}
+      shadow-mapSize-height={shadowRes}
       shadow-bias={SHADOW_BIAS}
       shadow-normalBias={SHADOW_NORMAL_BIAS}
     />

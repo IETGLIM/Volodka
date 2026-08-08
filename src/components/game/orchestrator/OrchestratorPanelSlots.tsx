@@ -26,6 +26,7 @@ import {
   LazyShortcutsOverlay,
   LazyWorldMap,
   LazyNpcCodexPanel,
+  LazyPoemJournalPanel,
   LazyKarmaPoemInfoPanel,
   LazyNotificationHistoryPanel,
   LazySettingsPanel,
@@ -107,6 +108,7 @@ export const OrchestratorMenuLayerPanels = memo(function OrchestratorMenuLayerPa
       <LazyPanelSlot panelId="notificationHistory" Panel={LazyNotificationHistoryPanel} onClose={onClose.notificationHistory} />
       <LazyPanelSlot panelId="worldMap" Panel={LazyWorldMap} onClose={onClose.worldMap} />
       <LazyPanelSlot panelId="npcCodex" Panel={LazyNpcCodexPanel} onClose={onClose.npcCodex} />
+      <LazyPanelSlot panelId="poemJournal" Panel={LazyPoemJournalPanel} onClose={onClose.poemJournal} />
     </>
   );
 });
