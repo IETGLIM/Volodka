@@ -1,0 +1,370 @@
+/* ══════════════════════════════════════════════════════════════
+   R4-7: Combat UI Visual Chrome — metallic, glass, tactile
+   ══════════════════════════════════════════════════════════════ */
+
+/* ─── Metallic gradient action bar ─── */
+.combat-action-bar {
+  background: linear-gradient(180deg,
+    rgba(18, 22, 32, 0.92) 0%,
+    rgba(12, 15, 24, 0.96) 40%,
+    rgba(8, 10, 18, 0.98) 100%);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle animated border shimmer on action bar */
+.combat-action-bar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgb(var(--cyber-cyan-rgb) / 0.12) 20%,
+    rgb(var(--cyber-cyan-rgb) / 0.25) 50%,
+    rgb(var(--cyber-cyan-rgb) / 0.12) 80%,
+    transparent 100%);
+  background-size: 200% 100%;
+  animation: combat-bar-border-sweep 4s linear infinite;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+@keyframes combat-bar-border-sweep {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ─── Attack button: red glow pulse on hover ─── */
+.combat-btn-attack {
+  position: relative;
+  transition: transform 0.15s ease, box-shadow 0.25s ease;
+}
+
+.combat-btn-attack:hover {
+  box-shadow:
+    0 0 12px rgba(255, 23, 68, 0.35),
+    0 0 24px rgba(255, 23, 68, 0.15),
+    0 0 48px rgba(255, 23, 68, 0.06),
+    inset 0 0 8px rgba(255, 23, 68, 0.08);
+}
+
+.combat-btn-attack:active {
+  transform: scale(0.96);
+}
+
+/* Screen shake on enemy hit — applied to combat container */
+@keyframes combat-hit-shake {
+  0%, 100% { transform: translate(0, 0); }
+  10% { transform: translate(-3px, 1px); }
+  20% { transform: translate(3px, -1px); }
+  30% { transform: translate(-2px, 2px); }
+  40% { transform: translate(2px, -1px); }
+  50% { transform: translate(-1px, 1px); }
+  60% { transform: translate(1px, 0); }
+  70% { transform: translate(-1px, -1px); }
+  80% { transform: translate(0, 1px); }
+}
+
+.combat-hit-shake {
+  animation: combat-hit-shake 0.35s ease-out;
+}
+
+/* ─── Defend button: cyan shield glow ─── */
+.combat-btn-defend {
+  position: relative;
+  transition: transform 0.15s ease, box-shadow 0.25s ease;
+}
+
+.combat-btn-defend:hover {
+  box-shadow:
+    0 0 10px rgb(var(--cyber-cyan-rgb) / 0.3),
+    0 0 20px rgb(var(--cyber-cyan-rgb) / 0.12),
+    0 0 40px rgb(var(--cyber-cyan-rgb) / 0.05),
+    inset 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.06);
+}
+
+/* Protective ring animation on defend */
+@keyframes combat-defend-ring {
+  0% { transform: scale(0.8); opacity: 0.8; }
+  50% { transform: scale(1.1); opacity: 0.3; }
+  100% { transform: scale(1.3); opacity: 0; }
+}
+
+.combat-defend-ring {
+  animation: combat-defend-ring 0.6s ease-out forwards;
+}
+
+/* ─── Poem power button: violet mystical glow ─── */
+.combat-btn-poem {
+  position: relative;
+  transition: transform 0.15s ease, box-shadow 0.25s ease;
+}
+
+.combat-btn-poem:hover {
+  box-shadow:
+    0 0 12px rgba(213, 0, 249, 0.3),
+    0 0 24px rgba(213, 0, 249, 0.12),
+    0 0 48px rgba(213, 0, 249, 0.05),
+    inset 0 0 8px rgba(213, 0, 249, 0.06);
+}
+
+/* Particle shimmer overlay for poem button */
+@keyframes combat-poem-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.combat-btn-poem::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(213, 0, 249, 0.08) 25%,
+    rgba(213, 0, 249, 0.16) 50%,
+    rgba(213, 0, 249, 0.08) 75%,
+    transparent 100%);
+  background-size: 200% 100%;
+  animation: combat-poem-shimmer 3s ease-in-out infinite;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.combat-btn-poem:hover::after {
+  opacity: 1;
+}
+
+/* ─── Flee button: amber caution glow ─── */
+.combat-btn-flee {
+  position: relative;
+  transition: transform 0.15s ease, box-shadow 0.25s ease;
+}
+
+.combat-btn-flee:hover {
+  box-shadow:
+    0 0 10px rgb(var(--cyber-amber-rgb) / 0.3),
+    0 0 20px rgb(var(--cyber-amber-rgb) / 0.12),
+    0 0 40px rgb(var(--cyber-amber-rgb) / 0.05),
+    inset 0 0 6px rgb(var(--cyber-amber-rgb) / 0.06);
+}
+
+/* ─── Enemy card: red-tinted glass morphism ─── */
+.combat-enemy-card {
+  background: linear-gradient(135deg,
+    rgba(40, 8, 12, 0.65) 0%,
+    rgba(20, 4, 8, 0.82) 100%);
+  backdrop-filter: blur(14px) saturate(1.1);
+  -webkit-backdrop-filter: blur(14px) saturate(1.1);
+  border: 1px solid rgba(255, 23, 68, 0.18);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 0 16px rgba(255, 23, 68, 0.06);
+}
+
+/* Health bar animation */
+@keyframes combat-hp-damage {
+  0% { transform: scaleX(1); }
+  100% { transform: scaleX(var(--hp-target, 0.5)); }
+}
+
+.combat-hp-bar-damage {
+  transform-origin: left center;
+  animation: combat-hp-damage 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* ─── Player card: cyan-tinted glass ─── */
+.combat-player-card {
+  background: linear-gradient(135deg,
+    rgba(6, 18, 28, 0.65) 0%,
+    rgba(4, 12, 20, 0.82) 100%);
+  backdrop-filter: blur(14px) saturate(1.1);
+  -webkit-backdrop-filter: blur(14px) saturate(1.1);
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.18);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 0 16px rgb(var(--cyber-cyan-rgb) / 0.06);
+}
+
+/* Energy ring animation around player card */
+@keyframes combat-energy-ring {
+  0% { transform: scale(0.95); opacity: 0.5; }
+  50% { transform: scale(1.02); opacity: 0.2; }
+  100% { transform: scale(0.95); opacity: 0.5; }
+}
+
+.combat-player-card::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: inherit;
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.12);
+  animation: combat-energy-ring 3s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* ─── Combat log: scrolling terminal style ─── */
+.combat-log-terminal {
+  font-family: 'Geist Mono', monospace;
+  font-size: 0.7rem;
+  line-height: 1.6;
+  letter-spacing: 0.03em;
+  color: rgba(200, 210, 220, 0.65);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(200, 210, 220, 0.12) transparent;
+}
+
+/* Blinking cursor at bottom of combat log */
+.combat-log-cursor::after {
+  content: '█';
+  color: rgb(var(--cyber-cyan-rgb) / 0.5);
+  animation: combat-cursor-blink 1s step-end infinite;
+  font-size: 0.65rem;
+}
+
+@keyframes combat-cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* ─── Turn indicator: rotating chevron ─── */
+@keyframes combat-turn-chevron {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.combat-turn-chevron {
+  animation: combat-turn-chevron 2s linear infinite;
+  opacity: 0.6;
+}
+
+.combat-turn-chevron.combat-turn-active {
+  opacity: 1;
+  color: rgb(var(--cyber-cyan-rgb));
+  text-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.4);
+}
+
+/* ─── Damage numbers: enhanced float + fade ─── */
+.combat-damage-number {
+  font-family: 'Geist Mono', monospace;
+  font-weight: 700;
+  will-change: transform, opacity;
+}
+
+@keyframes combat-damage-float {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(0.8);
+  }
+  15% {
+    opacity: 1;
+    transform: translateY(-12px) scale(1.1);
+  }
+  30% {
+    transform: translateY(-24px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-70px) scale(0.85);
+  }
+}
+
+.combat-damage-float {
+  animation: combat-damage-float 1.2s ease-out forwards;
+}
+
+/* Critical hit: larger text + screen shake class */
+.combat-damage-critical {
+  font-size: 1.8em;
+  color: #ff1744;
+  text-shadow:
+    0 0 8px rgba(255, 23, 68, 0.6),
+    0 0 20px rgba(255, 23, 68, 0.3),
+    0 0 40px rgba(255, 23, 68, 0.1);
+}
+
+.combat-screen-shake {
+  animation: combat-hit-shake 0.25s ease-out;
+}
+
+/* ─── Skill check result: dice spin + outcome burst ─── */
+@keyframes combat-dice-spin {
+  0% { transform: rotateX(0deg) rotateY(0deg) scale(0.6); opacity: 0; }
+  30% { transform: rotateX(180deg) rotateY(90deg) scale(1.1); opacity: 1; }
+  60% { transform: rotateX(360deg) rotateY(180deg) scale(1); opacity: 1; }
+  100% { transform: rotateX(360deg) rotateY(360deg) scale(1); opacity: 1; }
+}
+
+.combat-dice-spin {
+  animation: combat-dice-spin 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Success: green burst */
+@keyframes combat-success-burst {
+  0% { transform: scale(0.5); opacity: 0; }
+  50% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.combat-skill-success {
+  animation: combat-success-burst 0.4s ease-out forwards;
+  color: #34d399;
+  text-shadow: 0 0 12px rgba(52, 211, 153, 0.5), 0 0 24px rgba(52, 211, 153, 0.2);
+}
+
+/* Failure: red shake */
+@keyframes combat-fail-shake {
+  0%, 100% { transform: translateX(0); }
+  15% { transform: translateX(-4px); }
+  30% { transform: translateX(4px); }
+  45% { transform: translateX(-3px); }
+  60% { transform: translateX(3px); }
+  75% { transform: translateX(-1px); }
+  90% { transform: translateX(1px); }
+}
+
+.combat-skill-fail {
+  animation: combat-fail-shake 0.4s ease-out;
+  color: #fb7185;
+  text-shadow: 0 0 12px rgba(251, 113, 133, 0.5), 0 0 24px rgba(251, 113, 133, 0.2);
+}
+
+/* ─── Reduced motion ─── */
+@media (prefers-reduced-motion: reduce) {
+  .combat-action-bar::before,
+  .combat-btn-poem::after,
+  .combat-turn-chevron,
+  .combat-log-cursor::after,
+  .combat-player-card::before {
+    animation: none !important;
+  }
+
+  .combat-damage-float {
+    animation-duration: 0.01ms !important;
+  }
+
+  .combat-dice-spin {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+  }
+
+  .combat-hit-shake,
+  .combat-screen-shake,
+  .combat-fail-shake {
+    animation: none !important;
+  }
+
+  .combat-skill-success {
+    animation: none !important;
+    opacity: 1;
+  }
+}

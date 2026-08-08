@@ -1,0 +1,261 @@
+/* ══════════════════════════════════════════════════════════════
+   R4-7: Inventory Visual Chrome — hover, rarity, crafting polish
+   ══════════════════════════════════════════════════════════════ */
+
+/* ─── Item grid: subtle hover lift with shadow increase ─── */
+.inv-item-cell {
+  transition:
+    transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.25s ease;
+}
+
+.inv-item-cell:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.4),
+    0 0 8px rgb(var(--cyber-cyan-rgb) / 0.06);
+}
+
+/* ─── Item rarity glow — data-rarity attribute ─── */
+
+/* Common: no extra glow */
+[data-rarity="common"] {
+  /* Base state only — no glow */
+}
+
+/* Uncommon: subtle green */
+@keyframes inv-uncommon-glow {
+  0%, 100% {
+    box-shadow: 0 0 4px rgba(52, 211, 153, 0.08), inset 0 0 2px rgba(52, 211, 153, 0.02);
+  }
+  50% {
+    box-shadow: 0 0 8px rgba(52, 211, 153, 0.16), 0 0 16px rgba(52, 211, 153, 0.06), inset 0 0 4px rgba(52, 211, 153, 0.04);
+  }
+}
+
+[data-rarity="uncommon"].inv-item-cell:hover {
+  animation: inv-uncommon-glow 2s ease-in-out infinite;
+}
+
+/* Rare: cyan (already in inventory-crafting.css, enhanced hover here) */
+[data-rarity="rare"].inv-item-cell:hover {
+  box-shadow:
+    0 0 12px rgb(var(--cyber-cyan-rgb) / 0.25),
+    0 0 24px rgb(var(--cyber-cyan-rgb) / 0.1),
+    0 4px 16px rgba(0, 0, 0, 0.45);
+}
+
+/* Legendary: gold pulse (enhanced from base) */
+@keyframes inv-legendary-hover-pulse {
+  0%, 100% {
+    box-shadow:
+      0 0 12px rgba(251, 191, 36, 0.25),
+      0 0 28px rgba(251, 191, 36, 0.1),
+      0 4px 16px rgba(0, 0, 0, 0.45);
+  }
+  50% {
+    box-shadow:
+      0 0 20px rgba(251, 191, 36, 0.4),
+      0 0 40px rgba(251, 191, 36, 0.15),
+      0 4px 16px rgba(0, 0, 0, 0.45),
+      inset 0 0 10px rgba(251, 191, 36, 0.06);
+  }
+}
+
+[data-rarity="legendary"].inv-item-cell:hover {
+  animation: inv-legendary-hover-pulse 1.5s ease-in-out infinite;
+}
+
+/* ─── Equipment slot: empty dashed border with "plus" icon ─── */
+.inv-equip-slot-empty {
+  border: 1.5px dashed rgba(100, 116, 139, 0.3) !important;
+  background: rgba(15, 23, 42, 0.12);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.inv-equip-slot-empty::after {
+  content: '+';
+  font-size: 18px;
+  font-weight: 300;
+  color: rgba(100, 116, 139, 0.35);
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.inv-equip-slot-empty:hover {
+  border-color: rgb(var(--cyber-cyan-rgb) / 0.3) !important;
+  background: rgba(15, 23, 42, 0.2);
+}
+
+.inv-equip-slot-empty:hover::after {
+  color: rgb(var(--cyber-cyan-rgb) / 0.5);
+  transform: scale(1.15);
+}
+
+/* ─── Equipped items: bright border glow matching rarity ─── */
+@keyframes inv-equipped-glow-green {
+  0%, 100% { box-shadow: 0 0 6px rgba(52, 211, 153, 0.2), inset 0 0 3px rgba(52, 211, 153, 0.05); }
+  50% { box-shadow: 0 0 12px rgba(52, 211, 153, 0.35), 0 0 24px rgba(52, 211, 153, 0.1), inset 0 0 6px rgba(52, 211, 153, 0.08); }
+}
+
+@keyframes inv-equipped-glow-cyan {
+  0%, 100% { box-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.2), inset 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.05); }
+  50% { box-shadow: 0 0 14px rgb(var(--cyber-cyan-rgb) / 0.35), 0 0 28px rgb(var(--cyber-cyan-rgb) / 0.1), inset 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.08); }
+}
+
+@keyframes inv-equipped-glow-gold {
+  0%, 100% { box-shadow: 0 0 10px rgba(251, 191, 36, 0.25), inset 0 0 5px rgba(251, 191, 36, 0.05); }
+  50% { box-shadow: 0 0 18px rgba(251, 191, 36, 0.4), 0 0 36px rgba(251, 191, 36, 0.12), inset 0 0 10px rgba(251, 191, 36, 0.08); }
+}
+
+[data-rarity="uncommon"].inv-equipped-slot { animation: inv-equipped-glow-green 2.5s ease-in-out infinite; }
+[data-rarity="rare"].inv-equipped-slot { animation: inv-equipped-glow-cyan 2.5s ease-in-out infinite; }
+[data-rarity="legendary"].inv-equipped-slot { animation: inv-equipped-glow-gold 2s ease-in-out infinite; }
+
+/* ─── Crafting panel: animated progress bar ─── */
+@keyframes inv-craft-progress {
+  0% { width: 0%; }
+  100% { width: var(--craft-progress, 100%); }
+}
+
+.inv-craft-progress-bar {
+  position: relative;
+  overflow: hidden;
+  animation: inv-craft-progress 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.inv-craft-progress-bar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.12) 50%, transparent 100%);
+  animation: inv-bar-shimmer 2s ease-in-out infinite;
+}
+
+/* ─── Crafting ingredient icon with count badge ─── */
+.inv-ingredient-icon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.inv-ingredient-count-badge {
+  position: absolute;
+  bottom: -3px;
+  right: -3px;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 3px;
+  border-radius: 7px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 8px;
+  font-weight: 700;
+  line-height: 14px;
+  text-align: center;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.25);
+  color: #e2e8f0;
+  box-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.1);
+}
+
+.inv-ingredient-count-badge.insufficient {
+  border-color: rgba(251, 113, 133, 0.4);
+  color: #fb7185;
+}
+
+/* ─── Item details: glass morphism panel with animated border ─── */
+.inv-detail-panel {
+  background: linear-gradient(135deg,
+    rgba(12, 16, 26, 0.72) 0%,
+    rgba(6, 8, 16, 0.88) 100%);
+  backdrop-filter: blur(16px) saturate(1.08);
+  -webkit-backdrop-filter: blur(16px) saturate(1.08);
+  border: 1px solid rgba(220, 215, 210, 0.1);
+ position: relative;
+  overflow: hidden;
+}
+
+@keyframes inv-detail-border-flow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.inv-detail-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg,
+    rgb(var(--cyber-cyan-rgb) / 0.1),
+    rgba(213, 0, 249, 0.08),
+    rgb(var(--cyber-cyan-rgb) / 0.1));
+  background-size: 200% 200%;
+  animation: inv-detail-border-flow 6s ease-in-out infinite;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* ─── Category tabs: animated underline sweep ─── */
+@keyframes inv-tab-sweep {
+  0% { transform: scaleX(0); }
+  100% { transform: scaleX(1); }
+}
+
+.inv-tab-active .inv-tab-underline {
+  transform-origin: left center;
+  animation: inv-tab-sweep 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ─── Search bar: glowing focus state ─── */
+@keyframes inv-search-border-glow {
+  0%, 100% { box-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.15); }
+  50% { box-shadow: 0 0 10px rgb(var(--cyber-cyan-rgb) / 0.3), 0 0 20px rgb(var(--cyber-cyan-rgb) / 0.1); }
+}
+
+.inv-search-bar:focus-within {
+ border-color: rgb(var(--cyber-cyan-rgb) / 0.4) !important;
+ animation: inv-search-border-glow 2s ease-in-out infinite;
+}
+
+/* ─── Drag hint: subtle pulse on draggable items ─── */
+@keyframes inv-drag-hint-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+.inv-draggable-hint {
+  animation: inv-drag-hint-pulse 2.5s ease-in-out infinite;
+  cursor: grab;
+}
+
+.inv-draggable-hint:active {
+  cursor: grabbing;
+}
+
+/* ─── Reduced motion ─── */
+@media (prefers-reduced-motion: reduce) {
+  .inv-item-cell { transition: none; }
+  .inv-item-cell:hover { transform: none; }
+  .inv-equip-slot-empty, .inv-equip-slot-empty::after { transition: none; }
+  .inv-craft-progress-bar { animation: none; width: var(--craft-progress, 100%); }
+  .inv-craft-progress-bar::after { animation: none; }
+  .inv-detail-panel::before { animation: none; }
+  .inv-tab-active .inv-tab-underline { animation: none; transform: scaleX(1); }
+  .inv-search-bar:focus-within { animation: none; }
+  .inv-draggable-hint { animation: none; opacity: 0.8; }
+  [data-rarity="uncommon"].inv-item-cell:hover,
+  [data-rarity="legendary"].inv-item-cell:hover,
+  [data-rarity="uncommon"].inv-equipped-slot,
+  [data-rarity="rare"].inv-equipped-slot,
+  [data-rarity="legendary"].inv-equipped-slot {
+    animation: none !important;
+  }
+}

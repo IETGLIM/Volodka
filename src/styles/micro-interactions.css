@@ -1,0 +1,304 @@
+/* ══════════════════════════════════════════════════════════════
+   R4-7: Micro-Interaction Library — reusable UI motion primitives
+   ══════════════════════════════════════════════════════════════ */
+
+/* ─── 1. Button press: scale(0.97) active, spring release ─── */
+.micro-btn {
+  transition: transform 0.12s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.micro-btn:active {
+  transform: scale(0.97);
+}
+
+/* ─── 2. Card hover: lift + shadow + border glow ─── */
+.micro-card {
+  transition:
+    transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
+}
+
+.micro-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+  border-color: rgb(var(--cyber-cyan-rgb) / 0.2);
+}
+
+/* ─── 3. Input focus: animated border gradient sweep ─── */
+@keyframes micro-input-border-sweep {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.micro-input-focus {
+ position: relative;
+}
+
+.micro-input-focus::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg,
+    rgb(var(--cyber-cyan-rgb) / 0.3),
+    rgba(213, 0, 249, 0.2),
+    rgb(var(--cyber-cyan-rgb) / 0.3));
+  background-size: 200% 200%;
+  animation: micro-input-border-sweep 4s ease-in-out infinite;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.micro-input-focus:focus-within::before {
+  opacity: 1;
+}
+
+/* ─── 4. Toggle switch: smooth slide with glow ─── */
+.micro-toggle-thumb {
+  transition:
+    transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.25s ease;
+}
+
+.micro-toggle-track {
+  transition: background 0.25s ease, box-shadow 0.25s ease;
+}
+
+.micro-toggle-track[aria-checked="true"] {
+  background: rgb(var(--cyber-cyan-rgb) / 0.2);
+  box-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.15);
+}
+
+.micro-toggle-track[aria-checked="true"] .micro-toggle-thumb {
+  transform: translateX(100%);
+  box-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.3);
+}
+
+/* ─── 5. Checkbox/radio: scale bounce on check ─── */
+@keyframes micro-check-bounce {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.2); }
+  70% { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+
+.micro-check-bounce {
+  transition: transform 0.15s ease, border-color 0.2s ease;
+}
+
+.micro-check-bounce:checked {
+  animation: micro-check-bounce 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ─── 6. Dropdown: smooth max-height + opacity fade ─── */
+.micro-dropdown-content {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition:
+    max-height 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.25s ease;
+}
+
+.micro-dropdown-content[aria-expanded="true"],
+.micro-dropdown-content.micro-dropdown-open {
+  max-height: 400px;
+  opacity: 1;
+}
+
+/* ─── 7. Accordion: smooth height + rotate chevron ─── */
+.micro-accordion-chevron {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.micro-accordion-open .micro-accordion-chevron {
+  transform: rotate(180deg);
+}
+
+.micro-accordion-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.micro-accordion-body > * {
+  overflow: hidden;
+}
+
+.micro-accordion-open .micro-accordion-body {
+  grid-template-rows: 1fr;
+}
+
+/* ─── 8. Slider: custom thumb with glow, animated track fill ─── */
+.micro-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: rgb(var(--cyber-cyan-rgb));
+  border: 2px solid rgba(0, 0, 0, 0.4);
+  box-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.3);
+  cursor: pointer;
+  transition: box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+.micro-slider-thumb:hover {
+  box-shadow: 0 0 14px rgb(var(--cyber-cyan-rgb) / 0.5), 0 0 28px rgb(var(--cyber-cyan-rgb) / 0.15);
+  transform: scale(1.1);
+}
+
+.micro-slider-track {
+  position: relative;
+  overflow: hidden;
+}
+
+@keyframes micro-slider-fill {
+  0% { width: 0%; }
+  100% { width: var(--slider-fill, 50%); }
+}
+
+.micro-slider-fill {
+  animation: micro-slider-fill 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* ─── 9. Tooltip: fade-in + translateY from below ─── */
+@keyframes micro-tooltip-in {
+  0% { opacity: 0; transform: translateY(4px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes micro-tooltip-out {
+  0% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(4px); }
+}
+
+.micro-tooltip {
+  animation: micro-tooltip-in 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.micro-tooltip-exit {
+  animation: micro-tooltip-out 0.15s ease forwards;
+}
+
+/* ─── 10. Badge: scale-in spring on appear ─── */
+@keyframes micro-badge-spring {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.15); opacity: 1; }
+  80% { transform: scale(0.95); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.micro-badge-appear {
+  animation: micro-badge-spring 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* ─── 11. Counter: number roll via @property ─── */
+@property --micro-counter-val {
+  syntax: '<integer>';
+  inherits: false;
+  initial-value: 0;
+}
+
+@keyframes micro-counter-roll {
+  0% { --micro-counter-val: var(--counter-from, 0); }
+  100% { --micro-counter-val: var(--counter-to, 10); }
+}
+
+.micro-counter-anim {
+  counter-reset: counter-var var(--micro-counter-val);
+  animation: micro-counter-roll 0.6s ease-out forwards;
+}
+
+.micro-counter-anim::after {
+  content: counter(counter-var);
+}
+
+/* ─── 12. Skeleton loader: shimmer sweep ─── */
+@keyframes micro-skeleton-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.micro-skeleton {
+ background: linear-gradient(90deg,
+    rgba(255, 255, 255, 0.03) 25%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.03) 75%);
+ background-size: 200% 100%;
+  animation: micro-skeleton-shimmer 1.8s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+/* ─── 13. Loading spinner: enhanced with trail effect ─── */
+@keyframes micro-spinner-trail {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes micro-spinner-fade {
+  0%, 100% { opacity: 0.15; }
+  50% { opacity: 0.9; }
+}
+
+.micro-spinner-trail {
+  position: relative;
+  width: 20px;
+  height: 20px;
+}
+
+.micro-spinner-trail::before,
+.micro-spinner-trail::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid transparent;
+}
+
+.micro-spinner-trail::before {
+  border-top-color: rgb(var(--cyber-cyan-rgb) / 0.8);
+  border-right-color: rgb(var(--cyber-cyan-rgb) / 0.3);
+  animation: micro-spinner-trail 0.8s linear infinite;
+}
+
+.micro-spinner-trail::after {
+  inset: 2px;
+  border-bottom-color: rgb(var(--cyber-cyan-rgb) / 0.4);
+  border-left-color: rgb(var(--cyber-cyan-rgb) / 0.15);
+  animation: micro-spinner-trail 1.2s linear infinite reverse;
+  opacity: 0.5;
+}
+
+/* ─── Reduced motion ─── */
+@media (prefers-reduced-motion: reduce) {
+  .micro-btn { transition: none; }
+  .micro-btn:active { transform: none; }
+  .micro-card { transition: none; }
+  .micro-card:hover { transform: none; }
+  .micro-input-focus::before { animation: none; }
+  .micro-toggle-thumb { transition: none; }
+  .micro-toggle-track { transition: none; }
+  .micro-check-bounce { transition: none; }
+  .micro-check-bounce:checked { animation: none; }
+  .micro-dropdown-content { transition: none; }
+  .micro-accordion-chevron { transition: none; }
+  .micro-accordion-body { transition: none; }
+  .micro-slider-thumb { transition: none; }
+  .micro-slider-thumb:hover { transform: none; }
+  .micro-slider-fill { animation: none; width: var(--slider-fill, 50%); }
+  .micro-tooltip { animation: none; opacity: 1; transform: none; }
+  .micro-tooltip-exit { animation: none; }
+  .micro-badge-appear { animation: none; opacity: 1; transform: none; }
+  .micro-counter-anim { animation: none; }
+  .micro-skeleton { animation: none; background: rgba(255, 255, 255, 0.05); }
+  .micro-spinner-trail::before,
+  .micro-spinner-trail::after { animation: none; }
+}

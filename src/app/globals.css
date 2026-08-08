@@ -51,6 +51,10 @@
 @import "../styles/text-effects.css";
 @import "../styles/hud-chrome-enhancements.css";
 @import "../styles/dialogue-mobile.css";
+@import "../styles/combat-chrome.css";
+@import "../styles/inventory-chrome.css";
+@import "../styles/menu-cinematic-enhanced.css";
+@import "../styles/micro-interactions.css";
 
 /* ── User setting: scanlines off (SettingsPanel → engine/visualSettings) ── */
 html[data-scanlines="off"] .panel-scanlines::after,

@@ -173,9 +173,13 @@ export function useKeyboardShortcutManager({
         dispatchPanel('journal');
       }
       if (e.code === 'KeyQ') dispatchPanel('quests');
-      if (e.code === 'KeyI' || e.code === 'Tab') {
+      if (e.code === 'KeyI') {
         e.preventDefault();
         dispatchPanel('inventory');
+      }
+      if (e.code === 'Tab') {
+        e.preventDefault();
+        dispatchPanel('worldMap');
       }
       // Poems are the game's core theme (the README documents P = Стихи).
       // P opens the poetry book; Shift+P toggles photo mode (secondary feature).
