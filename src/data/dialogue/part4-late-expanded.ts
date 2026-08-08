@@ -1086,4 +1086,70 @@ export const DIALOGUE_PART4_EXPANDED: Record<string, DialogueNode> = {
       },
     ],
   },
+
+  /* ═══════════════════════════════════════════════════════════
+     WS22-B — +4 karma-gated dialogue choices (2 high, 2 low)
+     ═══════════════════════════════════════════════════════════ */
+
+  ws22b_volodka_last_night_choice: {
+    id: 'ws22b_volodka_last_night_choice',
+    speaker: 'Володька',
+    text: 'Последняя ночь перед вторжением. Не могу спать. Стихи в голове — не стихи, а — инструкции. Каждый — шаг — прописан. Каждый — поворот — просчитан. Но — что, если — я — ошибся? Что, если — весь — план — это — красивый — комментарий — к — багу? Не — исправляет — — украшает. Как — стих — на — тонущем — корабле.',
+    choices: [
+      {
+        text: 'Стих на тонущем корабле — это не украшение. Это — сигнал. Кто-то — услышит — и — пришвартуется. Красота — не — спасает — directamente. Красота — зовёт — на — помощь. Я — пишу — не — для — себя. Я — пишу — SOS — в — стихах.',
+        next: null,
+        condition: { minKarma: 55 },
+        effects: [
+          { type: 'addKarma', value: 8 },
+          { type: 'addSkill', skill: 'writing', value: 2 },
+          { type: 'addSkill', skill: 'persuasion', value: 1 },
+          { type: 'setFlag', flag: 'ws22b_poetry_as_sos', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'SOS в стихах. Три точки, три тире, три точки — но — в ямбе. Кто-то услышит. Кто-то всегда слышит. Тонущий корабль — не молчит. Он — звонит. Колокол. Радио. Стих. Один — и — тот — же — сигнал. Разными — языками. Я — выбрал — стих. Потому — что — стих — дольше — звука. Стих — доходит — дальше — радиоволны. Стих — не — затухает.',
+            thoughtDuration: 7500,
+          },
+        ],
+      },
+      {
+        text: 'План — не баг с комментарием. План — это test suite. Каждый шаг — test case. Если — один — падает — остальные — работают. Я — не — пишу — perfect — code. Я — пишу — resilient — code. Fallible — но — не — fragile. Как — мы — все.',
+        next: null,
+        condition: { minKarma: 40 },
+        effects: [
+          { type: 'addKarma', value: 5 },
+          { type: 'addSkill', skill: 'coding', value: 2 },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'setFlag', flag: 'ws22b_resilient_plan', flagValue: true },
+        ],
+      },
+      {
+        text: 'Я — не — поэт. Я — не — герой. Я — уставший — инженер — с — параноей — и — недописанным — стихотворением. Может — хватит — притворяться? Может — признать — что — я — не — тяну? И — уйти. Тихо. Без — прощания. Без — катастрофы.',
+        next: null,
+        condition: { maxKarma: 20 },
+        effects: [
+          { type: 'addKarma', value: -7 },
+          { type: 'addStat', stat: 'stress', value: 6 },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'setFlag', flag: 'ws22b_quit_while_ahead', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Тихо. Без прощания. Без катастрофы. Звучит — разумно. Звучит — как — defeat. Не — громкое — поражение — тихое. Самое — опасное. Тихое — поражение — не — замечают. Тихое — поражение — не — оплакивают. Тихое — поражение — не — исправляют. Я — выбираю — тишину. Тишина — выбирает — меня.',
+            thoughtDuration: 7000,
+          },
+        ],
+      },
+      {
+        text: 'План — не нужен. Нужен — backup. Куда — бежать, когда — всё — рухнет. Не — если — когда. Я — реалист. Реалисты — выживают. Идеалисты — красивы — в — некрологах.',
+        next: null,
+        condition: { maxKarma: 10 },
+        effects: [
+          { type: 'addKarma', value: -10 },
+          { type: 'addStat', stat: 'stress', value: 8 },
+          { type: 'addSkill', skill: 'logic', value: 2 },
+          { type: 'setFlag', flag: 'ws22b_escape_route_only', flagValue: true },
+        ],
+      },
+    ],
+  },
 };

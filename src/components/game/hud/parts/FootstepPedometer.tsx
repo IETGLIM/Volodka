@@ -71,7 +71,7 @@ export function FootstepPedometer() {
   return (
     <div
       ref={rootRef}
-      className="footstep-pedometer flex flex-col items-center gap-0.5 select-none pointer-events-none"
+      className="footstep-pedometer hud-filmic-pedometer-tick flex flex-col items-center gap-0.5 select-none pointer-events-none"
       style={quietStyle}
       aria-label="Шаги: 0"
     >

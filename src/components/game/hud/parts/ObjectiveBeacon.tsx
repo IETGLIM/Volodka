@@ -145,7 +145,7 @@ export function ObjectiveBeacon() {
           aria-hidden="true"
         >
           <div
-            className="relative flex items-center justify-center objective-beacon-breathe"
+            className="relative flex items-center justify-center objective-beacon-breathe hud-filmic-beacon-pulse"
             style={{
               width: beaconSize,
               height: beaconSize,

@@ -1200,4 +1200,74 @@ export const DIALOGUE_PART3_EXPANDED: Record<string, DialogueNode> = {
       },
     ],
   },
+
+  /* ═══════════════════════════════════════════════════════════
+     WS22-B — +4 karma-gated dialogue choices (2 high, 2 low)
+     ═══════════════════════════════════════════════════════════ */
+
+  ws22b_alexander_confrontation_choice: {
+    id: 'ws22b_alexander_confrontation_choice',
+    speaker: 'Александр',
+    text: 'Володька, гильдия усиливает давление. Завтра — новые проверки. Нам нужно решить: закрыть Сеть на неделю — или продолжать despite. Я не могу решить за всех. Но я могу сказать, что думаю: если мы закроемся — гильдия решит, что мы испугались. Если продолжим — они найдут нас. Нет правильного ответа. Есть только выбор. И последствия.',
+    choices: [
+      {
+        text: 'Мы не закроемся. Страх — это тоже сигнал. Если гильдия боится нас — значит, мы — значим. Каждый день на воздухе — это день, когда город помнит, что стихи живы. Закрыться — умереть тихо. Остаться — жить громко. Я — за громко.',
+        next: null,
+        condition: { minKarma: 60 },
+        effects: [
+          { type: 'addKarma', value: 10 },
+          { type: 'addSkill', skill: 'persuasion', value: 2 },
+          { type: 'addSkill', skill: 'empathy', value: 1 },
+          { type: 'npcChange', npcId: 'alexander', npcChange: { relation: 12 } },
+          { type: 'setFlag', flag: 'ws22b_stay_open_vow', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Александр кивает — медленно, как будто взвешивает каждое слово на ладони. «Громко». Он повторяет. «Я боялся, что ты выберешь тихо. Тихо — безопаснее. Громко — честнее. Ладно. Громко». Он не улыбается. Но — выдыхает. И в этом выдохе — облегчение.',
+            thoughtDuration: 7000,
+          },
+        ],
+      },
+      {
+        text: 'Страх — это не только сигнал. Это — данные. Гильдия усиливает давление — значит, мы — на верном пути. Давление — индикатор. Каждый новый дрон — плюс один к нашей значимости. Мы — не жертвы давления. Мы — его — причина.',
+        next: null,
+        condition: { minKarma: 45 },
+        effects: [
+          { type: 'addKarma', value: 7 },
+          { type: 'addSkill', skill: 'logic', value: 2 },
+          { type: 'addSkill', skill: 'coding', value: 1 },
+          { type: 'npcChange', npcId: 'alexander', npcChange: { relation: 8 } },
+          { type: 'setFlag', flag: 'ws22b_pressure_as_indicator', flagValue: true },
+        ],
+      },
+      {
+        text: 'Закроемся. На неделю. Не из страха — из тактики. Отступить, перегруппироваться, обновить протоколы безопасности. Героизм — красивая смерть. Тактика — скучная жизнь. Я — за скучную.',
+        next: null,
+        condition: { maxKarma: 20 },
+        effects: [
+          { type: 'addKarma', value: -5 },
+          { type: 'addStat', stat: 'stress', value: 3 },
+          { type: 'addSkill', skill: 'logic', value: 2 },
+          { type: 'npcChange', npcId: 'alexander', npcChange: { relation: -8 } },
+          { type: 'setFlag', flag: 'ws22b_tactical_retreat', flagValue: true },
+        ],
+      },
+      {
+        text: 'Закрыть? Открыть? Какая разница. Гильдия всё равно найдёт. Мы — не система безопасности. Мы — группа людей с бумагами и стихами. Это не инфраструктура. Это — хобби с риском. Может, пора признать.',
+        next: null,
+        condition: { maxKarma: 15 },
+        effects: [
+          { type: 'addKarma', value: -8 },
+          { type: 'addStat', stat: 'stress', value: 5 },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'npcChange', npcId: 'alexander', npcChange: { relation: -12 } },
+          { type: 'setFlag', flag: 'ws22b_hobby_with_risk', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Александр молчит. Потом — тихо: «Хобби». Он произносит — как приговор. «Стихи — хобби». Он не спорит. Он — записал. И — ушел. Ты — остаёшься. С логикой, которая — права. И — с тишиной, которая — хуже — ошибки.',
+            thoughtDuration: 7000,
+          },
+        ],
+      },
+    ],
+  },
 };

@@ -3366,3 +3366,193 @@
     opacity: 0;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   WS22-A — 6 NEW filmic micro-animations (all reduced-motion-gated)
+   FootstepPedometer, NPCProximityIndicator, ObjectiveBeacon,
+   QuestDirectionArrow, SceneContextChip, SessionPlayTimer.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── 31. Pedometer tick ──
+   Subtle translateY + opacity pulse on FootstepPedometer step count.
+   translateY(2px → 0) + opacity(0.6 → 1), 0.3s ease-out one-shot.
+   Apply via className="hud-filmic-pedometer-tick" on the pedometer
+   count span or root div (plays once on mount / class add). */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-pedometer-tick {
+    0% {
+      transform: translateY(2px);
+      opacity: 0.6;
+    }
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .hud-filmic-pedometer-tick {
+    animation: hud-filmic-pedometer-tick 0.3s ease-out both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-pedometer-tick {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* ── 32. NPC proximity scan ──
+   Radial scan-line sweep across NPCProximityIndicator card.
+   A faint warm band (background-position) sweeps left→right on a
+   4s infinite cycle. Apply via className="hud-filmic-npc-proximity-scan"
+   on the npc-proximity-card div. */
+.hud-filmic-npc-proximity-scan {
+  position: relative;
+  overflow: hidden;
+}
+
+.hud-filmic-npc-proximity-scan::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    transparent 40%,
+    rgba(196, 181, 160, 0.06) 50%,
+    transparent 60%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hud-filmic-npc-proximity-scan > * {
+  position: relative;
+  z-index: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hud-filmic-npc-proximity-scan::before {
+    animation: hud-filmic-npc-scan-sweep 4s ease-in-out infinite;
+  }
+
+  @keyframes hud-filmic-npc-scan-sweep {
+    0%, 100% {
+      background-position: -100% 0;
+    }
+    50% {
+      background-position: 200% 0;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-npc-proximity-scan::before {
+    display: none;
+  }
+}
+
+/* ── 33. Beacon pulse ──
+   Subtle scale pulse on ObjectiveBeacon chevron to draw the eye.
+   scale(1 → 1.08 → 1), 3s ease-in-out infinite. Apply via
+   className="hud-filmic-beacon-pulse" on the beacon inner container. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-beacon-pulse {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.08);
+    }
+  }
+
+  .hud-filmic-beacon-pulse {
+    animation: hud-filmic-beacon-pulse 3s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-beacon-pulse {
+    animation: none;
+  }
+}
+
+/* ── 34. Direction arrow bob ──
+   Gentle vertical float on QuestDirectionArrow inner arrow.
+   translateY(-2px → 0 → -2px), 2.5s ease-in-out infinite. Apply via
+   className="hud-filmic-direction-arrow-bob" on the arrow container div. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-direction-arrow-bob {
+    0%, 100% {
+      transform: translateY(-2px);
+    }
+    50% {
+      transform: translateY(0);
+    }
+  }
+
+  .hud-filmic-direction-arrow-bob {
+    animation: hud-filmic-direction-arrow-bob 2.5s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-direction-arrow-bob {
+    animation: none;
+  }
+}
+
+/* ── 35. Context chip fade ──
+   Smooth opacity fade-in on SceneContextChip when scene changes.
+   opacity(0 → 1), 0.4s ease-out one-shot. Apply via
+   className="hud-filmic-context-chip-fade" on the chip root div. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-context-chip-fade {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  .hud-filmic-context-chip-fade {
+    animation: hud-filmic-context-chip-fade 0.4s ease-out both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-context-chip-fade {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* ── 36. Timer colon blink ──
+   Classic colon blink on SessionPlayTimer separator.
+   opacity(1 → 0.2 → 1), 1s step-end infinite. Apply via
+   className="hud-filmic-timer-colon-blink" on the colon span. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-timer-colon-blink {
+    0%, 49% {
+      opacity: 1;
+    }
+    50%, 100% {
+      opacity: 0.2;
+    }
+  }
+
+  .hud-filmic-timer-colon-blink {
+    animation: hud-filmic-timer-colon-blink 1s step-end infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-timer-colon-blink {
+    animation: none;
+    opacity: 1;
+  }
+}

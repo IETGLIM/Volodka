@@ -7350,6 +7350,248 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     ],
   },
 
+  /* ── WS22-B: +12 new examine zones for least-served scenes ── */
+
+  // zarema_albert_room — +2 new
+  {
+    id: 'ws22b_zar_albert_child_drawing',
+    sceneId: 'zarema_albert_room',
+    position: [-1.8, 1.2, -1.5],
+    size: [0.6, 0.5, 0.1],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть детский рисунок',
+    examineData: {
+      title: 'Детский рисунок на холодильнике',
+      description: 'Магнит держит листок. Кривое солнце, дом, два человечка. Подпись крупными буквами.',
+      detailText: '«МАМА И АЛЬБЕРТ». Солнце — с лучами разной длины. Дом — без двери. Два человечка — держатся за руки. Карандаш — жёлтый, но линии — уверенные. Дети рисуют не то, что видят — то, что хотят. Хотят: солнце, дом, руки. Гильдия не может нарисовать приказ, который это отменит.',
+      icon: '🖍️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws22b_examined_child_drawing', flagValue: true },
+      { type: 'addKarma', value: 4 },
+      { type: 'addSkill', skill: 'empathy', value: 1 },
+    ],
+  },
+  {
+    id: 'ws22b_zar_albert_recipe_cards',
+    sceneId: 'zarema_albert_room',
+    position: [1.5, 0.8, -2.2],
+    size: [0.5, 0.4, 0.3],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть карточки рецептов',
+    examineData: {
+      title: 'Карточки рецептов',
+      description: 'Стопка выцветших карточек. Почерк Заремы. На обороте — не ингредиенты.',
+      detailText: 'Плов, чак-чак, эчпочмак — на лицевой стороне. На обороте каждой — стих. Четыре строки. Аккуратный почерк. Зарема прячет стихи в рецепты. Гильдия не конфискует кулинарные карты. «Добавить соль по вкусу» — и рядом: «Добавить строку по совести». Приправа и приправка. Буквально.',
+      icon: '🃏',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws22b_examined_recipe_cards', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'writing', value: 1 },
+    ],
+  },
+
+  // volodka_corridor — +2 new
+  {
+    id: 'ws22b_corridor_fuse_box',
+    sceneId: 'volodka_corridor',
+    position: [-2.85, 1.6, 2.5],
+    size: [0.6, 0.8, 0.2],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть щиток',
+    examineData: {
+      title: 'Электрический щиток',
+      description: 'Ржавый щиток. Дверца не закрывается. Пробки — фарфоровые, довоенные.',
+      detailText: 'Шесть пробок. Три — целые. Две — оплавленные. Одна — заменена гвоздём. Гвоздь вместо пробки — это не халтура. Это — адаптация. Когда нет запчастей — используют то, что есть. Как со стихами: когда нет свободы — используют то, что осталось. Подсобку. Щель. Гвоздь.',
+      icon: '⚡',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws22b_examined_corridor_fuse_box', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+    ],
+  },
+  {
+    id: 'ws22b_corridor_shoe_rack',
+    sceneId: 'volodka_corridor',
+    position: [1.5, 0.3, 5.5],
+    size: [1.0, 0.6, 0.4],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть обувницу',
+    examineData: {
+      title: 'Обувница',
+      description: 'Трёхярусная обувница. Запах кожи и сырости. На верхней полке — детские сандалии.',
+      detailText: 'Шесть пар. Две — мужские, стоптанные. Одна — женская, аккуратная. Три — детские, маленькие. Детские сандалии — на верхней полке. Их никто не носит. Они — здесь — как фотография. Как память о том, что в этом доме — жил ребёнок. Может — живёт. Может — вырастет. И — прочитает — стихи — которые — мы — прячем — в — рецептах.',
+      icon: '👞',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws22b_examined_corridor_shoe_rack', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+
+  // underground_bunker — +2 new
+  {
+    id: 'ws22b_bunker_cot_notebook',
+    sceneId: 'underground_bunker',
+    position: [-3.5, 0.3, 4.0],
+    size: [0.7, 0.3, 0.4],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть тетрадь на койке',
+    examineData: {
+      title: 'Тетрадь на раскладушке',
+      description: 'Общая тетрадь в клетку. Страницы — исписаны. На обложке — «Смена».',
+      detailText: 'Смена — не название. Смена — расписание. Кто дежурит. Кто спит. Кто слушает радио. Но между сменами — стихи. Кто-то пишет в перерывах. Разный почерк. Разные чернила. Одна тема — сопротивление. «Не забудьте: 03:00 — смена А. 03:15 — читать Мандельштама». Даже в бункере — есть расписание для стихов. Стихи — важнее сна.',
+      icon: '📓',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws22b_examined_bunker_cot_notebook', flagValue: true },
+      { type: 'addKarma', value: 4 },
+      { type: 'addSkill', skill: 'writing', value: 1 },
+    ],
+  },
+  {
+    id: 'ws22b_bunker_pipe_inscription',
+    sceneId: 'underground_bunker',
+    position: [5.5, 2.2, 0.0],
+    size: [1.5, 0.4, 0.2],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть надпись на трубе',
+    examineData: {
+      title: 'Надпись на трубе',
+      description: 'Толстая труба под потолком. Маркером — строка. Не техническая маркировка.',
+      detailText: '«Мы — внизу. Но — мы — не — на — дне. Дно — ниже. Там — гильдия.» Маркер — красный. Буквы — крупные. Кто-то стоял на стремянке и писал. Рисковал. Чтобы каждый, кто просыпается на раскладушке — первое, что увидит: не трубу — строчку. Не бетон — слово. Это — утренняя молитва бункера. Без бога. С — Мандельштамом.',
+      icon: '✍️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws22b_examined_bunker_pipe_inscription', flagValue: true },
+      { type: 'addKarma', value: 5 },
+      { type: 'addSkill', skill: 'persuasion', value: 1 },
+    ],
+  },
+
+  // library_basement — +2 new
+  {
+    id: 'ws22b_basement_typewriter',
+    sceneId: 'library_basement',
+    position: [3.0, 0.8, -3.5],
+    size: [0.6, 0.4, 0.5],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть печатную машинку',
+    examineData: {
+      title: 'Печатная машинка',
+      description: 'Старая «Москва». Клавиши — жёлтые. Лента — иссохла. Но каретка — на месте.',
+      detailText: 'Механическая машинка. Не электрическая — механическая. Не нужна сеть. Не нужен ток. Не нужен пароль. Только — бумага, лента и — палец. Гильдия контролирует цифру. Гильдия не контролирует механику. В корзине — лист. Последний отпечаток: «Я — возвращаюсь — в — свой — дом...» Бродский. Кто-то печатал — здесь — внизу — в — подвале — под — цензурой. Кто-то — печатал — и — не — сдался. Машинка — ждёт. Лента — высохла. Но — клавиши — помнят.',
+      icon: '⌨',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws22b_examined_basement_typewriter', flagValue: true },
+      { type: 'addKarma', value: 5 },
+      { type: 'addSkill', skill: 'rhythm', value: 1 },
+    ],
+  },
+  {
+    id: 'ws22b_basement_water_stain_poem',
+    sceneId: 'library_basement',
+    position: [-4.0, 1.8, 2.0],
+    size: [1.2, 1.0, 0.1],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть пятно на потолке',
+    examineData: {
+      title: 'Пятно в форме стиха',
+      description: 'Потёк на потолке. Плесень и ржавчина сложились в узнаваемый силуэт.',
+      detailText: 'Капли с трубы шли годами. Ржавчина и влага — рисовали. Получилось — нечаянно — силуэт: вертикальная линия, три горизонтальные, точка. Буква «Ж» и точка. «Жизнь». Или — «Ж». Как в старой игре — живой или мёртвый. Потёк — ответил. Бетон — написал. Вода — отредактировала. Гильдия не читает подтеков. Гильдия не читает плесени. Гильдия читает только то, что можно удалить. Потёк — не удаляется. Потёк — навсегда. Как — стих.',
+      icon: '💧',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws22b_examined_basement_water_stain', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+
+  // home_evening — +2 new
+  {
+    id: 'ws22b_home_kitchen_calendar',
+    sceneId: 'home_evening',
+    position: [-2.0, 1.6, -1.5],
+    size: [0.6, 0.6, 0.1],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть календарь',
+    examineData: {
+      title: 'Кухонный календарь',
+      description: 'Отрывной календарь. Прошлый месяц — не оторван. На сегодняшнем листе — цитата.',
+      detailText: '«Жить — не — по — лжи.» Солженицын. Календарь — старый, советский, ещё — типографский. Кто-то — сохранил — с — восьмидесятых. Каждый день — новая цитата. Каждый день — напоминание. Что — слова — были — оружием — до — нас. Что — слова — будут — оружием — после. Что — календарь — не — устареет. Пока — на — нём — есть — хоть — одна — неотрывная — страница.',
+      icon: '📅',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws22b_examined_home_calendar', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'writing', value: 1 },
+    ],
+  },
+  {
+    id: 'ws22b_home_window_sill_herb',
+    sceneId: 'home_evening',
+    position: [2.5, 1.0, -2.0],
+    size: [0.8, 0.4, 0.4],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть подоконник',
+    examineData: {
+      title: 'Травы на подоконнике',
+      description: 'Три горшка. Базилик, мята и что-то незнакомое. Запах — густой.',
+      detailText: 'Базилик — от песто. Мята — от чая. Третий горшок — без этикетки. Листья — резные, стебли — красноватые. Зарема говорит: «Это — от гильдии». Не трава от тревоги — трава от цензуры. Запах, который невозможно отфильтровать. Данные, которые идут через нос, а не через порт. Гильдия не контролирует обоняние. Обоняние — открытый порт. Без firewall. Мы — пахнем — назло.',
+      icon: '🌿',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws22b_examined_home_herbs', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+
+  // street_night — +2 new
+  {
+    id: 'ws22b_street_manhole_steam',
+    sceneId: 'street_night',
+    position: [1.0, 0.0, -5.0],
+    size: [1.0, 1.5, 1.0],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть пар из люка',
+    examineData: {
+      title: 'Пар из канализационного люка',
+      description: 'Густой белый пар из-под решётки. Тёплый. Пахнет — не только канализацией.',
+      detailText: 'Под городом — город. Трубы, туннели, бункеры. Пар — дыхание нижнего города. Кто-то — внизу — живёт. Кто-то — внизу — дышит. Кто-то — внизу — читает — стихи — в — темноте. Пар — поднимается. Как — слова. Как — строчки, которые — не — подчиняются — гравитации. Гильдия — наверху. Стихи — внизу. Пар — между. Пар — нейтральная — территория. Пар — не — принадлежит — никому. Или — всем.',
+      icon: '🌫️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws22b_examined_street_steam', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+  {
+    id: 'ws22b_street_broken_neon',
+    sceneId: 'street_night',
+    position: [-4.0, 3.0, -2.0],
+    size: [2.0, 0.6, 0.3],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть сломанную вывеску',
+    examineData: {
+      title: 'Сломанная неоновая вывеска',
+      description: '«АПТЕКА» — но горят только «А» и «Е». Получается: «АЕ».',
+      detailText: '«АЕ» — бессмыслица. Или — почти слово. «АЕ» — как «ае» — междометие. Как выдох. Как конец фразы, которой не было начала. Неон — мерцает на частоте отчаяния. Или — на частоте надежды. Не различаю. Но — «А» и «Е» — первая и последняя буквы алфавита. Альфа и эпсилон. Начало и почти-конец. Между ними — весь алфавит. Весь язык. Все слова, которые — можно — сказать. Все — которые — нельзя. Вывеска — знает. Вывеска — молчит. Как — я.',
+      icon: '💡',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws22b_examined_street_broken_neon', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+    ],
+  },
+
   ...NARRATIVE_EXPANSION_TRIGGER_ZONES,
   ...CHK_TRIGGER_ZONES,
 ];

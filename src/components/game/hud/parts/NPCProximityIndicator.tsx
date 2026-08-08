@@ -116,7 +116,7 @@ export function NPCProximityIndicator() {
           aria-label={`${nearest.name}, ${relationLabel(nearest.relation)}`}
           role="status"
         >
-          <div className="npc-proximity-card npc-proximity-pulse flex items-center gap-2.5 px-3 py-1.5">
+          <div className="npc-proximity-card npc-proximity-pulse hud-filmic-npc-proximity-scan flex items-center gap-2.5 px-3 py-1.5">
             <div className="npc-proximity-dot" style={{ background: relationColor(nearest.relation) }} />
             <div className="flex flex-col gap-0.5">
               <span className="npc-proximity-name" style={{ color: relationColor(nearest.relation) }}>

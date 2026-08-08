@@ -56,7 +56,7 @@ export function SessionPlayTimer() {
           {minutes}
         </span>
         <span
-          className="session-timer-blink font-mono"
+          className="session-timer-blink hud-filmic-timer-colon-blink font-mono"
           style={{
             fontSize: '10px',
             color: 'rgb(var(--cyber-cyan-rgb) / 0.92)',

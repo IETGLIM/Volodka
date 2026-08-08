@@ -3366,3 +3366,124 @@ Stage Summary:
 - New ambientBarks.ts data file with SceneAmbientBarkSupplement type and lookup helpers
 - All IDs and flags unique (ws21b_ prefix), all text in Russian
 - Zero type errors
+
+---
+Task ID: WS22-A
+Agent: WS22-A
+Task: Filmic CSS + HUD polish — 6 new animations + 6 HUD component wirings
+
+Work Log:
+- Read worklog.md to understand prior work context
+- Read hud-filmic.css (3369 lines) to understand existing pattern: numbered comments, @media (prefers-reduced-motion: no-preference) gating, @keyframes, .hud-filmic-* class, @media (prefers-reduced-motion: reduce) override
+- Read all 6 HUD component files to identify where to add className wiring
+- Added 6 new @keyframes animations (#31–#36) to hud-filmic.css:
+  - #31 hud-filmic-pedometer-tick: translateY(2px→0) + opacity(0.6→1), 0.3s ease-out one-shot
+  - #32 hud-filmic-npc-proximity-scan: radial scan-line sweep via background-position, 4s infinite, uses ::before pseudo
+  - #33 hud-filmic-beacon-pulse: scale(1→1.08→1) glow pulse, 3s infinite
+  - #34 hud-filmic-direction-arrow-bob: translateY(-2px→0→-2px) float, 2.5s infinite
+  - #35 hud-filmic-context-chip-fade: opacity(0→1) fade-in, 0.4s ease-out one-shot
+  - #36 hud-filmic-timer-colon-blink: opacity(1→0.2→1) step-end blink, 1s infinite
+- All animations gated on @media (prefers-reduced-motion: no-preference) with static fallbacks in @media (prefers-reduced-motion: reduce)
+- All values within sane bounds: scale≤1.08, opacity≤0.6, translateY≤2px
+- Wired className into each component:
+  - FootstepPedometer.tsx: hud-filmic-pedometer-tick on root div
+  - NPCProximityIndicator.tsx: hud-filmic-npc-proximity-scan on card div
+  - ObjectiveBeacon.tsx: hud-filmic-beacon-pulse on inner container div
+  - QuestDirectionArrow.tsx: hud-filmic-direction-arrow-bob on arrow container div
+  - SceneContextChip.tsx: hud-filmic-context-chip-fade on root div
+  - SessionPlayTimer.tsx: hud-filmic-timer-colon-blink on colon span
+- Ran typecheck (node scripts/tsc7.mjs --noEmit) — exit 0, no errors
+
+Stage Summary:
+- hud-filmic.css now has 85 @keyframes blocks (79 original + 6 new)
+- 6 HUD components that previously had no filmic wiring now each have one
+- All animations are prefers-reduced-motion safe with static fallbacks
+- No poem content touched; no extreme animation values used
+
+---
+Task ID: WS22-C
+Agent: WS22-C
+Task: PBR material upgrades — 6 scene surfaces MeshStandardMaterial → MeshPhysicalMaterial
+
+Work Log:
+- Read worklog.md to understand prior work context (WS19-C, WS20-C prior upgrades)
+- Read all 6 scene visual files to identify floor/ground surfaces
+- ZaremaAlbertRoomVisual.tsx: upgraded wood floor from meshStandardMaterial → meshPhysicalMaterial + clearcoat=0.45 + clearcoatRoughness=0.3 (varnished wood)
+- ParkDayVisual.tsx: upgraded grass ground from meshStandardMaterial → meshPhysicalMaterial + sheen=0.1 + sheenRoughness=0.7 (organic grass)
+- RiverPierVisual.tsx: upgraded pier deck from meshStandardMaterial → meshPhysicalMaterial + clearcoat=0.3 + clearcoatRoughness=0.4 (worn wood near water)
+- StreetVisual.tsx: adjusted StreetSidewalkProcedural dry-baseline clearcoat 0.08→0.25, clearcoatRoughness 0.85→0.5 (wet asphalt sheen)
+- CafeVisual.tsx: adjusted existing meshPhysicalMaterial clearcoat 0.5→0.4, clearcoatRoughness 0.3→0.35 (cafe floor with slight wet sheen)
+- UndergroundBunkerVisual.tsx: adjusted existing meshPhysicalMaterial clearcoat 0.45→0.2, clearcoatRoughness 0.4→0.6 (damp concrete)
+- Added {/* WS22-C: PBR upgrade */} comment near each change
+- Ran typecheck (node scripts/tsc7.mjs --noEmit) — exit 0, no errors
+
+Stage Summary:
+- 3 surfaces upgraded from MeshStandardMaterial → MeshPhysicalMaterial (ZaremaAlbertRoomVisual, ParkDayVisual, RiverPierVisual)
+- 3 surfaces had PBR values adjusted on existing MeshPhysicalMaterial (StreetVisual, CafeVisual, UndergroundBunkerVisual)
+- All PBR values within sane ranges: clearcoat 0–1, sheen 0–0.5, clearcoatRoughness 0–1, sheenRoughness 0–1
+- No geometry, positioning, colors, or non-material props changed
+- No emissive/glow materials touched
+- No poem content touched
+- Typecheck passes cleanly
+
+---
+Task ID: WS22-D
+Agent: WS22-D
+Task: Content expansion — creep patrols, lore, matrix quotes, daily missions, Thought Cabinet items
+
+Work Log:
+- Read all 5 data files and type definitions to understand existing data structures
+- creepPatrols.ts: Added 6 new patrol routes for underserved scenes (street_night, solnysh_room, library_basement, underground_bunker, home_evening, volodka_corridor) with ws22d_ prefix IDs
+- loreEntries.ts: Added 4 new lore entries (Нейро-Межсетевой Экран technology/legendary, Сны Солныш mysteries/legendary, Чернильный Архив technology/rare, Протокол Эха Коридора mysteries/rare) in new WS22_D_LORE_ENTRIES array, spread into INITIAL_LORE_ENTRIES
+- matrixQuotes.ts: Added 8 new cyberpunk/tech quotes across acts 2-5 with ws22d_mq_ prefix IDs, themes: neural firewalls, ink archives, corridor echoes, phantom repositories, silent protocols, resonant frequencies, future handwriting, ghost transmissions
+- dailyMissions.ts: Added 4 new missions (combat/hard/weekly, exploration/medium/daily, crafting/medium/weekly, exploration/easy/daily) with ws22d_dm_ prefix IDs
+- thoughtCabinet.ts: Added 6 new Thought Cabinet items (ws22d_88 through ws22d_93) with 2 mutually exclusive pairs (88↔89: Резонанс Экрана ↔ Протокол Тишины, 90↔91: Почерк из Будущего ↔ Протокол Настоящего), plus 2 standalone items (92: Эхо Коридора, 93: Архив Смыслов hidden). Added pairs to MUTUALLY_EXCLUSIVE_PAIRS array
+- All IDs are unique with ws22d_ prefix
+- No poem content touched
+- Typecheck passes cleanly (exit 0)
+
+Stage Summary:
+- 6 new creep patrol routes for underserved scenes
+- 4 new lore entries (2 technology, 2 mysteries; 2 legendary, 2 rare)
+- 8 new matrix quotes across acts 2-5
+- 4 new daily missions (combat/exploration/crafting mix)
+- 6 new Thought Cabinet items (88-93) with 2 mutually exclusive pairs
+- Typecheck: PASS
+
+---
+Task ID: WS22-B
+Agent: WS22-B
+Task: Living-world content expansion — examine zones, karma-gated dialogue, monologues, dynamic props
+
+Work Log:
+- Read worklog.md, triggerZones.ts, part3-mid-expanded.ts, part4-late-expanded.ts, idleMonologues.ts, dynamicProps.ts
+- Identified least-served scenes by trigger zone count: pier_evening(4), chk_campfire_night(6), underground_bunker(7), albert_backroom(8), library_basement(9), zarema_albert_room(10)
+- Added 12 new examine zones to triggerZones.ts across 6 scenes:
+  - zarema_albert_room: +2 (child drawing, recipe cards)
+  - volodka_corridor: +2 (fuse box, shoe rack)
+  - underground_bunker: +2 (cot notebook, pipe inscription)
+  - library_basement: +2 (typewriter, water stain poem)
+  - home_evening: +2 (kitchen calendar, window sill herbs)
+  - street_night: +2 (manhole steam, broken neon sign)
+- Added 4 karma-gated dialogue choices to part3-mid-expanded.ts:
+  - ws22b_alexander_confrontation_choice (2 high-karma minKarma:60/45, 2 low-karma maxKarma:20/15)
+- Added 4 karma-gated dialogue choices to part4-late-expanded.ts:
+  - ws22b_volodka_last_night_choice (2 high-karma minKarma:55/40, 2 low-karma maxKarma:20/10)
+- Added 15 new idle monologue lines (5 per scene × 3 scenes):
+  - pier_evening: +5 neutral lines (kanat, galka, zapah, ten, svecha)
+  - chk_campfire_night: +5 neutral lines (ugli, ryukzak, dym, ten, chitaet)
+  - albert_backroom: +5 neutral lines (shkaf, raciya, kanifol, podsvetchnik, cherta)
+- Added 8 new dynamic props across 3 scenes:
+  - pier_evening: +3 (box_bait, can_rust, bottle_glow)
+  - chk_campfire_night: +3 (box_firewood, barrel_rain, can_ash)
+  - battle: +2 (bottle_shattered, box_ammo)
+- All IDs prefixed with ws22b_
+- Typecheck: PASS (exit 0)
+
+Stage Summary:
+- 12 new examine zones enriching 6 least-served scenes
+- 8 new karma-gated dialogue choices (4 in Act 3, 4 in Act 4-5)
+- 15 new idle monologue lines across 3 scenes
+- 8 new dynamic props across 3 scenes
+- Total living-world content added: 43 new data entries
+- Zero typecheck errors

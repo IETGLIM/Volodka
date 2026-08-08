@@ -54,7 +54,7 @@ export function SceneContextChip() {
   return (
     <div
       key={`chip-${currentSceneId}`}
-      className="scene-context-chip relative flex items-center gap-1.5 rounded-md px-2 py-1 select-none pointer-events-none hud-filmic-chip-slide-in"
+      className="scene-context-chip relative flex items-center gap-1.5 rounded-md px-2 py-1 select-none pointer-events-none hud-filmic-chip-slide-in hud-filmic-context-chip-fade"
       style={{
         background: 'rgba(2, 6, 23, 0.75)',
         backdropFilter: 'blur(8px)',

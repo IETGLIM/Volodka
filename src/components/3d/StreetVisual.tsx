@@ -318,8 +318,8 @@ function StreetSidewalkProcedural({ isWinter, rainIntensity }: { isWinter: boole
         roughnessMap={roughnessMap}
         roughness={isWinter ? 0.72 : (wet?.roughness ?? PBR_PRESETS.sidewalk.roughness)}
         metalness={wet?.metalness ?? PBR_PRESETS.sidewalk.metalness}
-        clearcoat={wet ? 0.6 : 0.08}
-        clearcoatRoughness={wet ? 0.25 : 0.85}
+        clearcoat={wet ? 0.6 : 0.25} /* WS22-C: PBR upgrade — dry baseline raised for wet asphalt sheen */
+        clearcoatRoughness={wet ? 0.25 : 0.5}
         polygonOffset
         polygonOffsetFactor={1}
         polygonOffsetUnits={1}

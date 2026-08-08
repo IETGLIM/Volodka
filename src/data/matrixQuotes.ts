@@ -483,6 +483,77 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     mood: 'revelation',
     color: CYBER_CYAN,
   },
+
+  /* ═══════════════════════════════════════════════════════════
+     WS22-D — Cyberpunk-tech ambient fragments (8 new quotes)
+     Themes: neural firewalls, ink archives, corridor echoes,
+     phantom compilers, memory palaces, silent protocols,
+     resonant frequencies, ghost repositories.
+     ═══════════════════════════════════════════════════════════ */
+  {
+    id: 'ws22d_mq_neural_firewall',
+    text: 'Нейро-экран блокирует исходящий трафик — но резонанс не имеет направления, и его не заглушить',
+    trigger: 'ws22d_neural_firewall',
+    act: 2,
+    mood: 'revelation',
+    color: CYBER_CYAN,
+  },
+  {
+    id: 'ws22d_mq_ink_archive',
+    text: 'Чернильный архив хранит то, чего нет в сети — и потому существует для системы меньше, чем ничто',
+    trigger: 'ws22d_ink_archive',
+    act: 2,
+    mood: 'loss',
+    color: '#6a8a30',
+  },
+  {
+    id: 'ws22d_mq_corridor_echo',
+    text: 'Коридор компилирует стихи в инверсии: каждый вопрос становится ответом, каждая метафора — буквой',
+    trigger: 'ws22d_corridor_echo',
+    act: 3,
+    mood: 'revelation',
+    color: '#d4920a',
+  },
+  {
+    id: 'ws22d_mq_phantom_repository',
+    text: 'Репозиторий-призрак не хранит код — он хранит намерения, и каждый коммит — это решение, которое так и не приняли',
+    trigger: 'ws22d_phantom_repository',
+    act: 3,
+    mood: 'danger',
+    color: '#cc2020',
+  },
+  {
+    id: 'ws22d_mq_silent_protocol',
+    text: 'Тихий протокол не передаёт данных — он передаёт присутствие, и тот, кто слушает долго, становится частью тишины',
+    trigger: 'ws22d_silent_protocol',
+    act: 4,
+    mood: 'loss',
+    color: '#6a8a30',
+  },
+  {
+    id: 'ws22d_mq_resonant_frequency',
+    text: 'Частота резонанса совпадает с частотой стены — и стена дрожит, не зная, стих ли она слышит или взлом',
+    trigger: 'ws22d_resonant_frequency',
+    act: 4,
+    mood: 'triumph',
+    color: '#00ff41',
+  },
+  {
+    id: 'ws22d_mq_future_handwriting',
+    text: 'Почерк из будущего пишет стихи, которые ещё не сочинены — и чернила сохнут быстрее, чем приходит завтра',
+    trigger: 'ws22d_future_handwriting',
+    act: 5,
+    mood: 'revelation',
+    color: CYBER_CYAN,
+  },
+  {
+    id: 'ws22d_mq_ghost_transmission',
+    text: 'Трансляция-призрак не доходит до адресата — но её перехватывает тот, кто даже не знал, что слушал',
+    trigger: 'ws22d_ghost_transmission',
+    act: 5,
+    mood: 'danger',
+    color: '#cc2020',
+  },
 ]
 
 /* ─── Lookup helpers ─── */

@@ -514,6 +514,63 @@ export const DAILY_MISSION_POOL: DailyMission[] = [
     minLevel: 3,
     icon: 'Zap',
   },
+  /* ── WS22-D: Content expansion daily missions (4) ── */
+  {
+    id: 'ws22d_dm_combat_firewall_breach',
+    title: 'Пробой Межсетевого Экрана',
+    description: 'Нейро-Межсетевые Экраны блокируют исходящие мысли. Найди уязвимость и пробей экран — не ради хаоса, а ради того, чтобы поэзия снова смогла звучать.',
+    category: 'combat',
+    difficulty: 'hard',
+    objectives: [
+      { id: 'breach_neural_firewalls', description: 'Пробить нейро-экранов', target: 2 },
+    ],
+    rewards: { xp: 130, credits: 85, karma: 4, skillXp: { coding: 2, persuasion: 1 } },
+    resetSchedule: 'weekly',
+    minLevel: 4,
+    icon: 'ShieldOff',
+  },
+  {
+    id: 'ws22d_dm_explore_ink_archive',
+    title: 'Чернильный Архив',
+    description: 'Найди Чернильный Архив в подземном бункере. Рукописи, которых нет в сети — единственное, что Паноптикум не может удалить.',
+    category: 'exploration',
+    difficulty: 'medium',
+    objectives: [
+      { id: 'find_ink_archive', description: 'Обнаружить Чернильный Архив', target: 1 },
+    ],
+    rewards: { xp: 80, credits: 55, karma: 3, skillXp: { intuition: 2, empathy: 1 } },
+    resetSchedule: 'daily',
+    minLevel: 3,
+    icon: 'BookOpen',
+  },
+  {
+    id: 'ws22d_dm_craft_resonance_key',
+    title: 'Ключ Резонанса',
+    description: 'Скрафти ключ резонанса — устройство, подстраивающее частоту стихов под частоту стены. Когда стена дрожит — экран падает.',
+    category: 'crafting',
+    difficulty: 'medium',
+    objectives: [
+      { id: 'craft_resonance_keys', description: 'Скрафтить компонент ключа резонанса', target: 2 },
+    ],
+    rewards: { xp: 85, credits: 60, karma: 2, skillXp: { coding: 1, intuition: 1 } },
+    resetSchedule: 'weekly',
+    minLevel: 3,
+    icon: 'Key',
+  },
+  {
+    id: 'ws22d_dm_explore_corridor_echo',
+    title: 'Эхо Коридора',
+    description: 'Исследуй аномальное эхо в коридоре между 03:00 и 03:47. Стены компилируют стихи — каждый метр — повторитель сигнала.',
+    category: 'exploration',
+    difficulty: 'easy',
+    objectives: [
+      { id: 'investigate_corridor_echo', description: 'Исследовать эхо коридора', target: 1 },
+    ],
+    rewards: { xp: 50, credits: 35, karma: 2, skillXp: { intuition: 1, writing: 1 } },
+    resetSchedule: 'daily',
+    minLevel: 2,
+    icon: 'AudioWaveform',
+  },
 ];
 
 /* ══════════════════════════════════════════════════════════════
