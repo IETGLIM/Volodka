@@ -3097,3 +3097,24 @@ Stage Summary:
 - 16 files modified, +841/-9 lines. Typecheck: exit 0. Poems untouched. All invariants preserved.
 - Key wins: wet-surface PBR clearcoat (Blade Runner rain effect), 54+ filmic CSS keyframes, all CHK NPCs have ambientBarks, 11 more examine zones, 8 more karma-gated choices, 6 new Thought Cabinet items, 16 quest barks, scene-transition dissolve.
 - Next: CSM shadows, Mixamo clip remap, WorldSpaceLabels, more Acts 3-4 story, motion-blur lite, 3D menu background, more PBR upgrades, guided onboarding expansion.
+
+---
+Task ID: 18 (orchestrator) — cron-tick: QA + filmic CSS + living-world content + wet-surface PBR + lore expansion
+Agent: main (orchestrator)
+Task: Cron-triggered AAA improvements — filmic CSS, Acts 1-2/5 dialogue, wet-surface PBR on 3 more scenes, lore/ambient/quotes/splashes.
+
+Work Log:
+- Pulled latest (already at a5460a11). Baseline typecheck: exit 0.
+- QA PRE-push: full flow 0 errors. Site STABLE. No bugs.
+- Dispatched 4 parallel work-streams:
+  • WS18-A: 6 new filmic CSS animations + 6 HUD component wirings — exit 0.
+  • WS18-B: 8 dialogue karma gates (Acts 1-2 + 5) + 10 examine zones + 15 monologues + 6 dynamic props — exit 0.
+  • WS18-C: Wet-surface PBR on 3 more scenes (CitySquare wet overlay, VolodkaRoom window glass clearcoat 1.0, AuthoredInteriorShell floor-role clearcoat 0.4) — exit 0.
+  • WS18-D: 6 lore entries + 6 ambient sound catalog entries + 11 matrix quotes + 7 interaction splash presets — exit 0.
+- Combined typecheck: exit 0. Commit 71e412b4 (19 files, +1110/-5). Push: origin main.
+- QA POST-push: full flow 0 errors. All WS18 changes deployed stable.
+
+Stage Summary:
+- 19 files modified, +1110/-5 lines. Typecheck: exit 0. Poems untouched. All invariants preserved.
+- Key wins: wet-surface PBR now across 4 scene visuals (cohesive Blade Runner rain aesthetic), 61 filmic CSS keyframes, 8 more karma-gated dialogue (Acts 1-2 + 5), 10 more examine zones, 15 more monologues, 6 more dynamic props, 6 new lore entries, 6 ambient catalog entries, 11 matrix quotes, 7 interaction splash presets.
+- Next: CSM shadows, Mixamo clip remap, WorldSpaceLabels, more Acts 3-4 story, motion-blur lite, 3D menu background, wire WS18-D catalogs into runtime, guided onboarding expansion.
