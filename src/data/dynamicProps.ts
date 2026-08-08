@@ -114,6 +114,10 @@ export const DYNAMIC_PROPS: Partial<Record<SceneId, DynamicPropDef[]>> = {
     // WS17-B: +2 props for thin-coverage scene (was 2)
     { id: 'fr_bottle_1', kind: 'bottle', position: [1.0, 0, 3.5], rotation: 1.4 },
     { id: 'fr_box_1', kind: 'box', position: [-4.5, 0, -1.2], rotation: 0.6 },
+    // WS23-B — +3 props for thin-coverage scene (was 4)
+    { id: 'ws23b_fr_can_rust', kind: 'can', position: [5.2, 0, -0.8], rotation: -1.4 },
+    { id: 'ws23b_fr_barrel_cable', kind: 'barrel', position: [-2.0, 0, -3.5], rotation: 0.2 },
+    { id: 'ws23b_fr_box_tools', kind: 'box', position: [3.7, 0, 2.1], rotation: 1.6 },
   ],
   home_evening: [
     { id: 'he_can_1', kind: 'can', position: [0.8, 0, -1.9], rotation: 0.5 },
@@ -139,6 +143,9 @@ export const DYNAMIC_PROPS: Partial<Record<SceneId, DynamicPropDef[]>> = {
     { id: 'ws21b_gm_barrel_cable', kind: 'barrel', position: [3.8, 0, 2.1], rotation: 0.5 },
     { id: 'ws21b_gm_can_antistatic', kind: 'can', position: [-0.5, 0, -3.8], rotation: -1.6 },
     { id: 'ws21b_gm_box_spare', kind: 'box', position: [1.9, 0, -1.0], rotation: 2.1 },
+    // WS23-B — +2 props for thin-coverage scene (was 7)
+    { id: 'ws23b_gm_barrel_backup', kind: 'barrel', position: [-4.1, 0, -4.2], rotation: 0.8 },
+    { id: 'ws23b_gm_can_tape', kind: 'can', position: [4.5, 0, 0.3], rotation: -2.0 },
   ],
   // AAA: tactile living pier — pushable clutter near water + fire (evening variant)
   pier_evening: [
@@ -238,6 +245,10 @@ export const DYNAMIC_PROPS: Partial<Record<SceneId, DynamicPropDef[]>> = {
     { id: 'sw_bottle_1', kind: 'bottle', position: [-2.5, 0, -1.8], rotation: 1.3 },
     { id: 'sw_barrel_1', kind: 'barrel', position: [3.6, 0, -3.2], rotation: 0 },
     { id: 'sw_box_1', kind: 'box', position: [-1.4, 0, 4.1], rotation: 0.9 },
+    // WS23-B — +3 props for thin-coverage scene (was 4)
+    { id: 'ws23b_sw_can_snowdrift', kind: 'can', position: [4.2, 0, -1.5], rotation: -0.7 },
+    { id: 'ws23b_sw_box_ice', kind: 'box', position: [-3.8, 0, 2.7], rotation: 0.4 },
+    { id: 'ws23b_sw_bottle_frozen', kind: 'bottle', position: [0.5, 0, -4.6], rotation: 1.8 },
   ],
   city_square: [
     { id: 'cs_barrel_1', kind: 'barrel', position: [-3.8, 0, 1.6], rotation: 0.2 },

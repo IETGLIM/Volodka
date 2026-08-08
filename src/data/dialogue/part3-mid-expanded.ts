@@ -1270,4 +1270,99 @@ export const DIALOGUE_PART3_EXPANDED: Record<string, DialogueNode> = {
       },
     ],
   },
+
+  /* ═══════════════════════════════════════════════════════════
+     WS23-B — +4 karma-gated dialogue choices for Act 3
+     ═══════════════════════════════════════════════════════════ */
+
+  ws23b_barista_secret_channel: {
+    id: 'ws23b_barista_secret_channel',
+    speaker: 'Бариста',
+    text: 'Володька, я нашёл кое-что странное в логах кофейни. Кто-то использует наш Wi-Fi как прокси. Трафик зашифрован, но я вижу размер пакетов — они совпадают с размером текстовых файлов. Стихотворный размер. Буквально. Кто-то гоняет стихи через мою кофемашину. Это либо гений, либо самоубийца. Либо и то, и другое.',
+    choices: [
+      {
+        text: 'Это не «кто-то». Это — мы. Я настроил этот канал. Кофермашина — лучший firewall: кто будет искать стихи в MAC-адресе кофеварки?',
+        next: null,
+        condition: { minKarma: 50 },
+        effects: [
+          { type: 'addKarma', value: 8 },
+          { type: 'addSkill', skill: 'coding', value: 2 },
+          { type: 'addSkill', skill: 'persuasion', value: 1 },
+          { type: 'setFlag', flag: 'ws23b_coffee_proxy_revealed', flagValue: true },
+          { type: 'npcChange', npcId: 'barista', npcChange: { relation: 10 } },
+        ],
+      },
+      {
+        text: 'Гений и самоубийца — не взаимоисключающие термины. В нашей профессии это синонимы. Давай усилим шифрование — и добавим ещё один слой.',
+        next: null,
+        condition: { minKarma: 35 },
+        effects: [
+          { type: 'addKarma', value: 5 },
+          { type: 'addSkill', skill: 'coding', value: 1 },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'setFlag', flag: 'ws23b_coffee_proxy_upgrade', flagValue: true },
+        ],
+      },
+      {
+        text: 'Закрой канал. Немедленно. Если гильдия найдёт прокси в кофейне — мы все в камере. Не стоит. Ни одно стихотворение не стоит семи лет.',
+        next: null,
+        condition: { maxKarma: 20 },
+        effects: [
+          { type: 'addKarma', value: -6 },
+          { type: 'addStat', stat: 'stress', value: 3 },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'npcChange', npcId: 'barista', npcChange: { relation: -8 } },
+          { type: 'setFlag', flag: 'ws23b_coffee_proxy_shut', flagValue: true },
+        ],
+      },
+    ],
+  },
+
+  ws23b_victoria_vault_key: {
+    id: 'ws23b_victoria_vault_key',
+    speaker: 'Виктория',
+    text: 'Володька, я знаю про Хранилище. Не всё — но достаточно. Гильдия хранит там не только удалённые стихи. Там — личности. Стерлинги людей. Не мёртвые — стёртые. Разница. Мёртвый — остаётся в памяти. Стёртый — не существовал. Я могу дать тебе ключ доступа. Но ключ — одноразовый. И если ты его используешь — гильдия узнает. Мгновенно. Выбор — за тобой.',
+    choices: [
+      {
+        text: 'Ключ — одноразовый? Тогда используем его не для чтения — для записи. Запишем в Хранилище имена стёртых. Вернём их. Не из мёртвых — из удалённых. Из null — в exist.',
+        next: null,
+        condition: { minKarma: 65 },
+        effects: [
+          { type: 'addKarma', value: 12 },
+          { type: 'addSkill', skill: 'coding', value: 2 },
+          { type: 'addSkill', skill: 'writing', value: 1 },
+          { type: 'setFlag', flag: 'ws23b_vault_write_names', flagValue: true },
+          { type: 'npcChange', npcId: 'victoria', npcChange: { relation: 15 } },
+          {
+            type: 'showThought',
+            thought: 'Виктория смотрит так, будто ты только что предложил взорвать солнце. И — соглашается. «Из null — в exist», — повторяет она. «Ты — сумасшедший». «Я — знаю», — отвечаю. И мы оба знаем, что это не оскорбление. Это — квалификация.',
+            thoughtDuration: 7000,
+          },
+        ],
+      },
+      {
+        text: 'Дай ключ. Я посмотрю. Только посмотрю. Иногда знать — уже достаточно. Иногда — недостаточно. Но — сначала — знать.',
+        next: null,
+        condition: { minKarma: 40 },
+        effects: [
+          { type: 'addKarma', value: 5 },
+          { type: 'addSkill', skill: 'logic', value: 2 },
+          { type: 'setFlag', flag: 'ws23b_vault_read_only', flagValue: true },
+          { type: 'npcChange', npcId: 'victoria', npcChange: { relation: 5 } },
+        ],
+      },
+      {
+        text: 'Ключ — ловушка. Ты — двойной агент. Гильдия послала тебя проверить меня. «Одноразовый» — значит отследимый. Я не кусаю.',
+        next: null,
+        condition: { maxKarma: 25 },
+        effects: [
+          { type: 'addKarma', value: -4 },
+          { type: 'addStat', stat: 'stress', value: 4 },
+          { type: 'addSkill', skill: 'intuition', value: 1 },
+          { type: 'npcChange', npcId: 'victoria', npcChange: { relation: -10 } },
+          { type: 'setFlag', flag: 'ws23b_victoria_mistrusted', flagValue: true },
+        ],
+      },
+    ],
+  },
 };

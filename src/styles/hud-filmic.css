@@ -3556,3 +3556,186 @@
     opacity: 1;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   WS23-A — 6 NEW filmic micro-animations (all reduced-motion-gated)
+   Subtle cinematic polish for HUD components with no/minimal filmic wiring:
+   TurnPhaseIndicator, SceneEntryNudge, InteractionCooldownRing,
+   InteractionRadarPulse, InteractableSparkle, InteractionProximityGlow.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── 37. Turn phase swap ──
+   Subtle rotateX flip on TurnPhaseIndicator status text when the
+   active turn changes. rotateX(0 → -8deg → 0), 0.35s ease-out
+   one-shot. Apply via className="hud-filmic-turn-phase-swap" on
+   the status-text motion.div (the one keyed by isPlayerTurn). */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-turn-phase-swap {
+    0% {
+      transform: perspective(200px) rotateX(0deg);
+    }
+    40% {
+      transform: perspective(200px) rotateX(-8deg);
+    }
+    100% {
+      transform: perspective(200px) rotateX(0deg);
+    }
+  }
+
+  .hud-filmic-turn-phase-swap {
+    animation: hud-filmic-turn-phase-swap 0.35s ease-out both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-turn-phase-swap {
+    animation: none;
+    transform: none;
+  }
+}
+
+/* ── 38. Scene entry nudge ──
+   Slide-up + fade-in entrance for SceneEntryNudge vignette overlay.
+   translateY(5px → 0) + opacity(0 → 1), 0.5s ease-out one-shot.
+   Apply via className="hud-filmic-scene-entry-nudge" on the
+   motion.div that wraps the vignette gradient. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-scene-entry-nudge {
+    0% {
+      opacity: 0;
+      transform: translateY(5px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .hud-filmic-scene-entry-nudge {
+    animation: hud-filmic-scene-entry-nudge 0.5s ease-out both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-scene-entry-nudge {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ── 39. Cooldown tick ──
+   Subtle opacity pulse on InteractionCooldownRing SVG on each tick.
+   opacity(1 → 0.7 → 1), 0.8s ease-in-out one-shot matching the
+   cooldown duration. Apply via className="hud-filmic-cooldown-tick"
+   on the motion.svg root of the cooldown ring. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-cooldown-tick {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.7;
+    }
+  }
+
+  .hud-filmic-cooldown-tick {
+    animation: hud-filmic-cooldown-tick 0.8s ease-in-out both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-cooldown-tick {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* ── 40. Radar sweep ──
+   Slow rotating sweep for InteractionRadarPulse — a subtle
+   background rotation on the sweep line container.
+   rotate(0deg → 360deg), 3s linear infinite. Apply via
+   className="hud-filmic-radar-sweep" on the sweep line div. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-radar-sweep {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+  .hud-filmic-radar-sweep {
+    animation: hud-filmic-radar-sweep 3s linear infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-radar-sweep {
+    animation: none;
+    transform: none;
+  }
+}
+
+/* ── 41. Sparkle twinkle ──
+   Scale + opacity twinkle on InteractableSparkle inner star.
+   scale(0.8 → 1.1 → 1) + opacity(0 → 1 → 0.7),
+   1.2s ease-in-out infinite. Apply via
+   className="hud-filmic-sparkle-twinkle" on the
+   interactable-sparkle inner div that holds the star arms. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-sparkle-twinkle {
+    0% {
+      transform: scale(0.8);
+      opacity: 0;
+    }
+    50% {
+      transform: scale(1.1);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 0.7;
+    }
+  }
+
+  .hud-filmic-sparkle-twinkle {
+    animation: hud-filmic-sparkle-twinkle 1.2s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-sparkle-twinkle {
+    animation: none;
+    transform: none;
+    opacity: 0.7;
+  }
+}
+
+/* ── 42. Proximity glow breathe ──
+   box-shadow expansion/contraction cycle on InteractionProximityGlow
+   inner aura. 2.5s ease-in-out infinite, gentle cyan glow pulse.
+   Apply via className="hud-filmic-proximity-glow-breathe" on the
+   proximity-glow-aura div. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-proximity-glow-breathe {
+    0%, 100% {
+      box-shadow: 0 0 6px 2px rgba(0, 229, 255, 0);
+    }
+    50% {
+      box-shadow: 0 0 12px 4px rgba(0, 229, 255, 0.15);
+    }
+  }
+
+  .hud-filmic-proximity-glow-breathe {
+    animation: hud-filmic-proximity-glow-breathe 2.5s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-proximity-glow-breathe {
+    animation: none;
+    box-shadow: 0 0 6px 2px rgba(0, 229, 255, 0.08);
+  }
+}

@@ -141,7 +141,7 @@ export function SceneEntryNudge() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3, ease: 'easeOut' }}
-          className="fixed inset-0 pointer-events-none scene-entry-nudge-vignette"
+          className="fixed inset-0 pointer-events-none scene-entry-nudge-vignette hud-filmic-scene-entry-nudge"
           style={{
             zIndex: UI_LAYERS.HUD - 1,
             background: `radial-gradient(ellipse at ${gradientX}% ${gradientY}%, rgba(${AMBER_RGB}, 0.06) 0%, rgba(${AMBER_RGB}, 0.02) 30%, transparent 55%)`,

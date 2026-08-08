@@ -142,7 +142,8 @@ function BevelledFacade({ spec }: { spec: FacadeSpec }) {
     <group position={spec.pos}>
       {/* Main mass — slightly inset from ground floor arcade */}
       <mesh position={[0, bodyY, 0]} castShadow receiveShadow geometry={getSharedBoxGeometry(spec.w * 0.96, bodyH, spec.d * 0.96)}>
-        <meshStandardMaterial
+        {/* WS23-C: PBR upgrade */}
+        <meshPhysicalMaterial
           color="#2c2c40"
           map={map}
           normalMap={normalMap}
@@ -150,6 +151,8 @@ function BevelledFacade({ spec }: { spec: FacadeSpec }) {
           roughnessMap={roughnessMap}
           roughness={0.9}
           metalness={0.06}
+          clearcoat={0.2}
+          clearcoatRoughness={0.5}
         />
       </mesh>
 

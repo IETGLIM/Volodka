@@ -554,9 +554,78 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     mood: 'danger',
     color: '#cc2020',
   },
-]
 
-/* ─── Lookup helpers ─── */
+  /* ═══════════════════════════════════════════════════════════
+     WS23-D — Cyberpunk-tech ambient fragments (8 new quotes)
+     Themes: analog computing, antenna resonance, deep archives,
+     frozen signals, ink circuits, memory archaeology,
+     phantom broadcasts, winter protocols.
+     ═══════════════════════════════════════════════════════════ */
+  {
+    id: 'ws23d_mq_analog_freedom',
+    text: 'Аналоговое — это свобода. Цифровое — это удобство. Но свободу не скомпилировать, а удобство не взломает стену',
+    trigger: 'ws23d_analog_freedom',
+    act: 2,
+    mood: 'revelation',
+    color: '#d4920a',
+  },
+  {
+    id: 'ws23d_mq_antenna_resonance',
+    text: 'Мёртвая антенна не мертва — она резонирует с последним словом, которое произнесла, и ждёт, когда кто-нибудь произнесёт следующее',
+    trigger: 'ws23d_antenna_resonance',
+    act: 2,
+    mood: 'loss',
+    color: '#6a8a30',
+  },
+  {
+    id: 'ws23d_mq_deep_archive',
+    text: 'Глубинный Архив хранит не данные — он хранит момент до сбоя, когда всё ещё работало, и каждый байт — фотография мира, которого больше нет',
+    trigger: 'ws23d_deep_archive',
+    act: 3,
+    mood: 'revelation',
+    color: CYBER_CYAN,
+  },
+  {
+    id: 'ws23d_mq_frozen_heartbeat',
+    text: 'Замёрзший город передаёт стихи на частоте, которой нет в спектре — и только столбы слышат, потому что они тоже замёрзли и тоже помнят',
+    trigger: 'ws23d_frozen_heartbeat',
+    act: 3,
+    mood: 'danger',
+    color: '#cc2020',
+  },
+  {
+    id: 'ws23d_mq_ink_computation',
+    text: 'Красный — единица, синий — ноль. 47 операций в секунду. Достаточно, чтобы вычислить то, что суперкомпьютеру не дано: правду',
+    trigger: 'ws23d_ink_computation',
+    act: 4,
+    mood: 'triumph',
+    color: '#00ff41',
+  },
+  {
+    id: 'ws23d_mq_memory_archaeology',
+    text: 'Каждая магнитная лента — страт археологический. Читаем слой за слоем и находим не данные, а цивилизацию, которая думала, что вечна',
+    trigger: 'ws23d_memory_archaeology',
+    act: 4,
+    mood: 'loss',
+    color: '#6a8a30',
+  },
+  {
+    id: 'ws23d_mq_phantom_broadcast',
+    text: 'Трансляция из будущего на антенне, которая умерла в прошлом — не парадокс, а стихотворение, которое пишет само время',
+    trigger: 'ws23d_phantom_broadcast',
+    act: 5,
+    mood: 'revelation',
+    color: CYBER_CYAN,
+  },
+  {
+    id: 'ws23d_mq_winter_protocol',
+    text: 'Зимний протокол: когда температура падает ниже −30, город открывает порт, которого нет, и транслирует координаты точки, где вода не замерзает',
+    trigger: 'ws23d_winter_protocol',
+    act: 5,
+    mood: 'danger',
+    color: '#cc2020',
+  },
+]
 
 /** Get all quotes for a given act */
 export function getQuotesByAct(act: number): MatrixQuote[] {

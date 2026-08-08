@@ -571,6 +571,63 @@ export const DAILY_MISSION_POOL: DailyMission[] = [
     minLevel: 2,
     icon: 'AudioWaveform',
   },
+  /* ── WS23-D: Content expansion daily missions (4) ── */
+  {
+    id: 'ws23d_dm_combat_ink_circuit_defense',
+    title: 'Защита Чернильной Схемы',
+    description: 'Защити аналоговый вычислитель «Синей ямы» от цифровых агентов. Чернильная Схема — единственный компьютер, который Паноптикум не может сканировать. Пока она работает — свобода материальна.',
+    category: 'combat',
+    difficulty: 'hard',
+    objectives: [
+      { id: 'defend_ink_circuit', description: 'Отразить атак на Чернильную Схему', target: 3 },
+    ],
+    rewards: { xp: 130, credits: 85, karma: 4, skillXp: { coding: 2, logic: 1 } },
+    resetSchedule: 'weekly',
+    minLevel: 4,
+    icon: 'Shield',
+  },
+  {
+    id: 'ws23d_dm_explore_antenna_graveyard',
+    title: 'Кладбище Антенн',
+    description: 'Исследуй крышу заброшенного завода — 47 мёртвых антенн, каждая из которых хранит последний сигнал. Найди антенну №23: она транслирует стихотворение из будущего.',
+    category: 'exploration',
+    difficulty: 'medium',
+    objectives: [
+      { id: 'investigate_antennas', description: 'Исследовать антенн на крыше', target: 5 },
+    ],
+    rewards: { xp: 85, credits: 55, karma: 3, skillXp: { intuition: 2, writing: 1 } },
+    resetSchedule: 'daily',
+    minLevel: 3,
+    icon: 'RadioTower',
+  },
+  {
+    id: 'ws23d_dm_craft_magnetic_tape_reader',
+    title: 'Считыватель Магнитных Лент',
+    description: 'Скрафти устройство для чтения магнитных лент Глубинного Архива. Ленты не обновлялись с 2029 года — каждый байт — нетронутый янтарь мира до Сбоя.',
+    category: 'crafting',
+    difficulty: 'easy',
+    objectives: [
+      { id: 'craft_tape_reader', description: 'Скрафтить компонент считывателя', target: 3 },
+    ],
+    rewards: { xp: 50, credits: 35, karma: 2, skillXp: { coding: 1, logic: 1 } },
+    resetSchedule: 'daily',
+    minLevel: 2,
+    icon: 'HardDrive',
+  },
+  {
+    id: 'ws23d_dm_explore_frozen_signal',
+    title: 'Замёрзший Сигнал',
+    description: 'Зимой при −30°C в эфире возникает сигнал на частоте 47.29 МГц. Он модулирован стихами, которых нет ни в одной базе. Найди источник — и поймай координаты спирали.',
+    category: 'exploration',
+    difficulty: 'hard',
+    objectives: [
+      { id: 'trace_frozen_signal', description: 'Отследить замёрзший сигнал', target: 1 },
+    ],
+    rewards: { xp: 120, credits: 80, karma: 5, skillXp: { intuition: 3, empathy: 1 } },
+    resetSchedule: 'weekly',
+    minLevel: 5,
+    icon: 'ThermometerSnowflake',
+  },
 ];
 
 /* ══════════════════════════════════════════════════════════════

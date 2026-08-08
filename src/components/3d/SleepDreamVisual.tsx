@@ -394,7 +394,8 @@ function FloatingIsland({ position, scale = 1 }: { position: [number, number, nu
   return (
     <group ref={groupRef} position={position}>
       <mesh position={[0, -0.5, 0]} scale={scale} castShadow geometry={getSharedCylinderGeometry(0.3, 1.2, 1.5, 6)}>
-        <meshStandardMaterial color="#1a0a30" roughness={0.9} />
+        {/* WS23-C: PBR upgrade */}
+        <meshPhysicalMaterial color="#1a0a30" roughness={0.9} sheen={0.15} sheenRoughness={0.6} />
       </mesh>
       <mesh position={[0, 0.25, 0]} scale={scale} castShadow geometry={getSharedCylinderGeometry(1.2, 1.2, 0.1, 6)}>
         <meshStandardMaterial color="#2a1a40" roughness={0.8} />

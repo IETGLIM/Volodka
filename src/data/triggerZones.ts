@@ -7592,6 +7592,248 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     ],
   },
 
+  // ── WS23-B: 12 new examine zones for least-served scenes ──
+
+  // factory_roof — +3 new examine zones
+  {
+    id: 'ws23b_fr_weather_vane',
+    sceneId: 'factory_roof',
+    position: [5.0, 3.2, -2.0],
+    size: [0.6, 0.6, 0.6],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть флюгер',
+    examineData: {
+      title: 'Ржавый флюгер',
+      description: 'Флюгер в форме стрелы. Застрял на северо-западе. Ржавый, но крутится.',
+      detailText: 'Северо-запад — направление к старому району, где была типография. Флюгер — указатель, который никто не читает. Он показывает туда, где стихи печатали на бумаге. Где краска пахла свободой. Теперь — только ржавчина. Но флюгер всё ещё крутится. Всё ещё указывает. Как строчка, которую никто не читает, но которая — написана. Написана — назло. Написана — навсегда.',
+      icon: '🏹',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws23b_examined_fr_weather_vane', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+  {
+    id: 'ws23b_fr_satellite_dish',
+    sceneId: 'factory_roof',
+    position: [-4.5, 2.5, 3.0],
+    size: [2.0, 1.5, 2.0],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть спутниковую тарелку',
+    examineData: {
+      title: 'Заброшенная спутниковая тарелка',
+      description: 'Тарелка диаметром в метр. Накренилась. Кабель оборван. Но зеркало — целое.',
+      detailText: 'Когда-то принимала сигнал. Теперь — смотрит в небо, как слепой, который помнит свет. Зеркало отражает облака. Облака — бесплатный контент. Без подписки. Без цензуры. Гильдия не фильтрует облака. Пока — не фильтрует. Тарелка — памятник эфирной эпохе. Эфир — не удаляется. Эфир — рассеивается. Как стихи. Как память. Как я.',
+      icon: '📡',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws23b_examined_fr_satellite_dish', flagValue: true },
+      { type: 'addKarma', value: 4 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+    ],
+  },
+  {
+    id: 'ws23b_fr_graffiti_slogan',
+    sceneId: 'factory_roof',
+    position: [2.0, 1.8, -5.0],
+    size: [3.0, 1.0, 0.2],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть надпись на стене',
+    examineData: {
+      title: 'Граффити на вентиляционной шахте',
+      description: 'Красной краской: «КОД — СВОБОДЕН — КОГДА — СЛОВО — СВОБОДНО».',
+      detailText: 'Буквы неровные. Кисть — тряпка, не малярная. Кто-то — рисковал. Кто-то — поднимался сюда ночью. Кто-то — верил, что стена — экран. Что надпись — скомпилируется. Что тот, кто прочитает — выполнит. «Код свободен когда слово свободно». Условие. If-then. Если слово — свободно, то код — свободен. Я — проверяю условие. Я — выполняю. Я — код. Я — слово. Я — свободен. Почти.',
+      icon: '✊',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws23b_examined_fr_graffiti', flagValue: true },
+      { type: 'addKarma', value: 5 },
+      { type: 'addSkill', skill: 'writing', value: 1 },
+    ],
+  },
+
+  // guild_mainframe — +3 new examine zones
+  {
+    id: 'ws23b_gm_backup_tapes',
+    sceneId: 'guild_mainframe',
+    position: [-5.0, 0.5, 4.0],
+    size: [1.5, 1.0, 0.8],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть полку с лентами',
+    examineData: {
+      title: 'Стеллаж с магнитными лентами',
+      description: 'Бобины с бэкапами. Пыльные. Этикетки выцвели. Самая старая — 1987.',
+      detailText: 'Магнитная лента — аналоговая память в цифровом мире. Гильдия хранит бэкапы. Но — зачем — аналоговые? Потому что аналоговое — не удаляется — командой. Аналоговое — требует — огня. Огонь — заметен. Огонь — дымит. Удаление — бесшумно. Гильдия — предпочитает — бесшумность. Но — ленты — здесь. Ленты — помнят. Ленты — ждут. Кто-то — оставил — на — случай. На — всякий. На — пожар.',
+      icon: '📼',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws23b_examined_gm_backup_tapes', flagValue: true },
+      { type: 'addKarma', value: 4 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+    ],
+  },
+  {
+    id: 'ws23b_gm_printer_output',
+    sceneId: 'guild_mainframe',
+    position: [3.0, 0.8, -1.0],
+    size: [0.8, 0.5, 0.6],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть ленту принтера',
+    examineData: {
+      title: 'Бумажная лента матричного принтера',
+      description: 'Перфорированная лента свисает до пола. Последняя строка: «POEM DETECTED — QUARANTINED».',
+      detailText: 'Матричный принтер — самое честное устройство в мейнфрейме. Каждый символ — удар иглы. Каждый удар — звук. Каждый звук — улика. «POEM DETECTED — QUARANTINED». Стих обнаружен. Стих изолирован. Но не удалён. Карантин — не удаление. Карантин — ожидание. Кто-то — решит — позже. Кто-то — решит — за — меня. Или — я — решу — сам. Принтер — продолжает — печатать. Принтер — не — спрашивает. Принтер — работает. Как — я. Как — мы.',
+      icon: '🖨️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws23b_examined_gm_printer', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'coding', value: 1 },
+    ],
+  },
+  {
+    id: 'ws23b_gm_cable_conduit',
+    sceneId: 'guild_mainframe',
+    position: [0.0, 0.0, -5.5],
+    size: [0.5, 0.5, 6.0],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть кабельный жёлоб',
+    examineData: {
+      title: 'Кабельный жёлоб под стойками',
+      description: 'Толстый металлический короб. Сотни проводов — как нервные окончания.',
+      detailText: 'Каждый кабель — чья-то линия связи. Телефон, интернет, камеры, датчики. Все — сходятся здесь. Мейнфрейм — паук. Город — паутина. Я — муха, которая знает, где нити. Знание — не свобода. Знание — выбор. Выбор — между тем, чтобы лететь — или — сидеть. Я — сижу. Пока — сижу. Но — вижу — нити. Вижу — узлы. Вижу — где — можно — разорвать. Если — будет — нужно. Если — будет — когда.',
+      icon: '🔌',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws23b_examined_gm_cable_conduit', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'coding', value: 1 },
+    ],
+  },
+
+  // street_winter — +2 new examine zones
+  {
+    id: 'ws23b_sw_frozen_fountain',
+    sceneId: 'street_winter',
+    position: [0.0, 0.0, 2.0],
+    size: [3.0, 1.5, 3.0],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть замёрзший фонтан',
+    examineData: {
+      title: 'Замёрзший фонтан',
+      description: 'Лёд — мутный. Подо льдом — монеты и бумажки. Загадочные желания, замороженные.',
+      detailText: 'Фонтан — коллектор надежд. Каждая монета — желание. Каждое желание — «хочу». «Хочу» — не компилируется. «Хочу» — не исполняется. Но — монета — есть. Монета — физична. Монета — не стирается. Подо льдом — десятки «хочу». Кто-то — хотел — здоровья. Кто-то — любви. Кто-то — чтобы гильдия — ушла. Лёд — хранит — лучше — серверов. Лёд — не удаляет. Лёд — замораживает. Вставляет — в — паузу. Ждёт — весны. Весной — монеты — снова — «хочу». Я — тоже — хочу. Но — монету — не — бросил. Пока — не — бросил.',
+      icon: '❄️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws23b_examined_sw_fountain', flagValue: true },
+      { type: 'addKarma', value: 4 },
+      { type: 'addSkill', skill: 'empathy', value: 1 },
+    ],
+  },
+  {
+    id: 'ws23b_sw_icicle_sign',
+    sceneId: 'street_winter',
+    position: [-3.0, 2.8, 0.5],
+    size: [0.2, 1.5, 0.2],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть сосульку',
+    examineData: {
+      title: 'Сосулька над вывеской',
+      description: 'Сосулька — длиной в ладонь. Висит над табличкой «ОПАСНАЯ ЗОНА».',
+      detailText: 'Сосулька — временный объект. Растёт — каждую ночь. Тает — каждый день. Цикл — как компиляция: build → deploy → delete. Только — медленнее. Гораздо — медленнее. «Опасная зона» — табличка — гильдии. Сосулька — может — упасть — на — кого — угодно. Сосулька — не — читает — таблички. Сосулька — не — подчиняется — зонам. Сосулька — стихия. Стихия — не — нуждается — в — разрешении. Я — тоже — стихия. Только — забыл. Или — мне — не — разрешали — помнить.',
+      icon: '🧊',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws23b_examined_sw_icicle', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+
+  // cafe_evening — +2 new examine zones
+  {
+    id: 'ws23b_ce_jukebox',
+    sceneId: 'cafe_evening',
+    position: [-3.5, 0.0, 0.0],
+    size: [0.8, 1.5, 0.6],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть музыкальный автомат',
+    examineData: {
+      title: 'Старый музыкальный автомат',
+      description: 'Wurlitzer. Лампочки — половина перегорела. Список — прокручивается.',
+      detailText: 'Песни — забытые. Исполнители — стёртые. Кто-то — удалил — из — каталога — половину — треков. Остались — только — инструментальные. Слова — цензурируются. Мелодии — нет. Мелодия — без — текста — не — нарушает. Мелодия — без — текста — безопасна. Гильдия — не — слышит — в — мелодии — подтекста. Я — слышу. В — каждой — ноте — — слово. В — каждом — аккорде — — фраза. Музыка — обходит — firewall. Музыка — читает — между — строк. Музыка — я.',
+      icon: '🎵',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws23b_examined_ce_jukebox', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+  {
+    id: 'ws23b_ce_coastline_photo',
+    sceneId: 'cafe_evening',
+    position: [2.0, 1.6, -3.0],
+    size: [0.5, 0.4, 0.1],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть фотографию на стене',
+    examineData: {
+      title: 'Фотография побережья',
+      description: 'Чёрно-белая фотография. Маяк. Шторм. Волны — как строчки.',
+      detailText: 'Маяк — стоит. Шторм — бьёт. Свет — не гаснет. Маяк — не — спасает — корабли. Маяк — предупреждает. «Здесь — камни. Здесь — опасно. Обойди.» Каждый корабль — решает — сам. Маяк — не — решает — за. Маяк — только — светит. Это — и — есть — поэзия. Не — спасение — а — предупреждение. Не — ответ — а — свет. Я — тоже — маяк. Только — усталый. Только — мигающий. Но — ещё — светящий.',
+      icon: '🏛️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws23b_examined_ce_photo', flagValue: true },
+      { type: 'addKarma', value: 5 },
+      { type: 'addSkill', skill: 'writing', value: 1 },
+    ],
+  },
+
+  // park_day — +1 new examine zone
+  {
+    id: 'ws23b_pd_bench_carving',
+    sceneId: 'park_day',
+    position: [4.5, 0.5, -1.0],
+    size: [1.5, 0.4, 0.5],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть вырез на скамейке',
+    examineData: {
+      title: 'Вырез на скамейке',
+      description: 'Перочинным ножом: «М + А». Сердечко. Давно. Дерево заросло.',
+      detailText: '«М + А». Миша + Аня? Максим + Алёна? Не важно. Важно — что кто-то — сидел — здесь — и — хотел — запомнить. Хотел — оставить — след. След — глубже — имени. След — глубже — лога. След — не — удаляется. След — зарастает. Но — остаётся. Под — корой. Под — краской. Под — временем. Гильдия — удаляет — имена. Гильдия — не — удаляет — следы. Скамейка — помнит. Дерево — помнит. Парк — помнит. Я — тоже — хочу — чтобы — меня — запомнили. Не — имя. След.',
+      icon: '🪵',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws23b_examined_pd_bench_carving', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'empathy', value: 1 },
+    ],
+  },
+
+  // rooftop_edge — +1 new examine zone
+  {
+    id: 'ws23b_re_wind_vane_gear',
+    sceneId: 'rooftop_edge',
+    position: [-2.0, 3.0, 0.5],
+    size: [0.4, 0.4, 0.4],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть шестерёнку на ветряке',
+    examineData: {
+      title: 'Шестерёнка ветряного флюгера',
+      description: 'Латунная шестерёнка. Вращается от ветра. Стерлась — но крутится.',
+      detailText: 'Шестерёнка — механизм — без — двигателя. Двигатель — ветер. Ветер — бесплатный. Ветер — не — контролируется. Гильдия — не — может — остановить — ветер. Гильдия — не — может — остановить — шестерёнку. Шестерёнка — крутится — назло. Крутится — потому — что — ветер. Крутится — потому — что — может. Я — тоже — кручусь. Не — от — ветра — от — упрямства. Но — результат — один: движение. Движение — это — жизнь. Или — хотя — бы — не — смерть.',
+      icon: '⚙️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws23b_examined_re_wind_vane', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+    ],
+  },
+
   ...NARRATIVE_EXPANSION_TRIGGER_ZONES,
   ...CHK_TRIGGER_ZONES,
 ];

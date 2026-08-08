@@ -1152,4 +1152,104 @@ export const DIALOGUE_PART4_EXPANDED: Record<string, DialogueNode> = {
       },
     ],
   },
+
+  /* ═══════════════════════════════════════════════════════════
+     WS23-B — +4 karma-gated dialogue choices for Act 4
+     ═══════════════════════════════════════════════════════════ */
+
+  ws23b_albert_final_broadcast: {
+    id: 'ws23b_albert_final_broadcast',
+    speaker: 'Альберт',
+    text: 'Володька, я собрал передатчик из кофейных машин и старой рации. Он работает на частоте 143.7 — гильдия её не мониторит, слишком низкая, слишком аналоговая. Если мы передадим стих — весь город услышит. Все, у кого есть рация. Все, у кого есть приёмник. Все, кто ещё помнит, как слушать. Но передача — одноразовая. Антенна сгорит через тридцать секунд. Тридцать секунд эфира. Что скажем?',
+    choices: [
+      {
+        text: 'Тридцать секунд? Прочтём «Некрасов» — «Поэтом можешь ты не быть, но гражданином быть обязан». Классика. Неуничтожимая. Пусть услышат: мы помним.',
+        next: null,
+        condition: { minKarma: 55 },
+        effects: [
+          { type: 'addKarma', value: 10 },
+          { type: 'addSkill', skill: 'writing', value: 2 },
+          { type: 'addSkill', skill: 'persuasion', value: 1 },
+          { type: 'setFlag', flag: 'ws23b_broadcast_nekrasov', flagValue: true },
+          { type: 'npcChange', npcId: 'albert', npcChange: { relation: 12 } },
+          {
+            type: 'showThought',
+            thought: 'Альберт настраивает частоту. Рация шипит — как старый винил. «Поэтом можешь ты не быть...» — я говорю в микрофон. Тридцать секунд. Некрасов. 1866 год. Всё ещё компилируется. Всё ещё работает. Всё ещё — нужно.',
+            thoughtDuration: 7500,
+          },
+        ],
+      },
+      {
+        text: 'Тридцать секунд — это 450 слов при темпе 15 слов в секунду. Я напишу новое стихотворение — прямо сейчас. Для этого города. Для этого эфира. Уникальное. Одноразовое. Как и мы.',
+        next: null,
+        condition: { minKarma: 45 },
+        effects: [
+          { type: 'addKarma', value: 8 },
+          { type: 'addSkill', skill: 'writing', value: 3 },
+          { type: 'setFlag', flag: 'ws23b_broadcast_original', flagValue: true },
+          { type: 'npcChange', npcId: 'albert', npcChange: { relation: 10 } },
+        ],
+      },
+      {
+        text: 'Не надо. Передатчик — улика. Тридцать секунд эфира — тридцать лет лагеря. Мы не радиостанция. Мы — тихие. Тихие — выживают.',
+        next: null,
+        condition: { maxKarma: 20 },
+        effects: [
+          { type: 'addKarma', value: -5 },
+          { type: 'addStat', stat: 'stress', value: 3 },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'npcChange', npcId: 'albert', npcChange: { relation: -8 } },
+          { type: 'setFlag', flag: 'ws23b_broadcast_cancelled', flagValue: true },
+        ],
+      },
+    ],
+  },
+
+  ws23b_zarema_last_poem: {
+    id: 'ws23b_zarema_last_poem',
+    speaker: 'Зарема',
+    text: 'Володька, я написала стихотворение. Последнее. Не потому что сдаюсь — потому что заканчиваю. Есть разница между «последнее» и «предпоследнее». Предпоследнее — надеется на ещё одно. Последнее — знает. Это стихотворение — о том, как звучит тишина, когда все стихи удалены. Я хочу, чтобы ты его прочитал. Ты — единственный, кто услышит.',
+    choices: [
+      {
+        text: 'Прочти мне. Я запомню. Наизусть. Если гильдия удалит файл — я стану файлом. Я — backup. Я — реплика. Я — живой сервер.',
+        next: null,
+        condition: { minKarma: 60 },
+        effects: [
+          { type: 'addKarma', value: 12 },
+          { type: 'addSkill', skill: 'writing', value: 2 },
+          { type: 'addSkill', skill: 'empathy', value: 2 },
+          { type: 'setFlag', flag: 'ws23b_zarema_last_poem_memorized', flagValue: true },
+          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 15 } },
+          {
+            type: 'showThought',
+            thought: 'Зарема читает. Тихо. Без интонации. Как код — без комментариев. Каждое слово — инструкция. Каждая пауза — whitespace. Я слушаю — и компилирую. В памяти. Не в RAM — в сердце. Там — не сотрут. Там — нет root access. Там — только я. И — её слова.',
+            thoughtDuration: 8000,
+          },
+        ],
+      },
+      {
+        text: '«Последнее» — это не приговор. Это точка в конце строки. После точки — новый абзац. Ты напишешь ещё. Я в этом уверен. Я — твой proof of existence.',
+        next: null,
+        condition: { minKarma: 35 },
+        effects: [
+          { type: 'addKarma', value: 6 },
+          { type: 'addSkill', skill: 'persuasion', value: 2 },
+          { type: 'setFlag', flag: 'ws23b_zarema_not_last', flagValue: true },
+          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 8 } },
+        ],
+      },
+      {
+        text: 'Последнее? Хорошо. Я тоже пишу последнее. Последнее решение. Последнюю строчку. Последний commit. Мы оба — финализируем. Push — и — конец.',
+        next: null,
+        condition: { maxKarma: 15 },
+        effects: [
+          { type: 'addKarma', value: -8 },
+          { type: 'addStat', stat: 'stress', value: 6 },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: -12 } },
+          { type: 'setFlag', flag: 'ws23b_mutual_giving_up', flagValue: true },
+        ],
+      },
+    ],
+  },
 };

@@ -68,10 +68,12 @@ const PAUSE_ACTIONS: Array<{
     tone: 'danger',
     run: ({ closeAllPanels }) => {
       closeAllPanels();
-      requestAnimationFrame(() => {
-        useGameStore.getState().resetGame();
-        useGameStore.getState().setMainMenuOpen(true);
-      });
+      // WS23: Direct synchronous calls — requestAnimationFrame introduced a race
+      // where resetGame's patch (mainMenuOpen:false via skipIntro) could clobber
+      // the subsequent setMainMenuOpen(true) if React reconciled between them.
+      // Now both happen in the same synchronous tick; setMainMenuOpen(true) wins.
+      useGameStore.getState().resetGame();
+      useGameStore.getState().setMainMenuOpen(true);
     },
   },
 ];

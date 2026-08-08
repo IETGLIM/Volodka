@@ -56,7 +56,7 @@ export function InteractableSparkle() {
         >
           {/* Rotating 4-pointed star */}
           <div
-            className="interactable-sparkle"
+            className="interactable-sparkle hud-filmic-sparkle-twinkle"
             style={{
               width: SPARKLE_SIZE,
               height: SPARKLE_SIZE,

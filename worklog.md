@@ -3487,3 +3487,157 @@ Stage Summary:
 - 8 new dynamic props across 3 scenes
 - Total living-world content added: 43 new data entries
 - Zero typecheck errors
+
+---
+
+## WS23-A — Filmic CSS + HUD wiring (6 new micro-animations)
+
+**Task:** Add 6 new filmic CSS micro-animations to `hud-filmic.css` and wire them into 6 HUD components that previously had no filmic wiring or only minimal wiring.
+
+### New @keyframes blocks (#37–#42) in `src/styles/hud-filmic.css`
+
+| # | Class name | Animation | Duration | Target component | Wired to element |
+|---|-----------|-----------|----------|-----------------|-----------------|
+| 37 | `hud-filmic-turn-phase-swap` | `perspective(200px) rotateX(0→-8deg→0)` | 0.35s ease-out one-shot | TurnPhaseIndicator | Status-text `motion.div` (keyed by isPlayerTurn) |
+| 38 | `hud-filmic-scene-entry-nudge` | `translateY(5px→0) + opacity(0→1)` | 0.5s ease-out one-shot | SceneEntryNudge | Vignette `motion.div` |
+| 39 | `hud-filmic-cooldown-tick` | `opacity(1→0.7→1)` | 0.8s ease-in-out one-shot | InteractionCooldownRing | `motion.svg` root |
+| 40 | `hud-filmic-radar-sweep` | `rotate(0deg→360deg)` | 3s linear infinite | InteractionRadarPulse | Sweep line `div` |
+| 41 | `hud-filmic-sparkle-twinkle` | `scale(0.8→1.1→1) + opacity(0→1→0.7)` | 1.2s ease-in-out infinite | InteractableSparkle | Inner star container `div` |
+| 42 | `hud-filmic-proximity-glow-breathe` | `box-shadow` expansion/contraction | 2.5s ease-in-out infinite | InteractionProximityGlow | Aura `div` |
+
+### Files changed
+- `src/styles/hud-filmic.css` — added 6 new @keyframes + classes + reduced-motion overrides (blocks #37–#42). Total keyframes blocks now 91 (was 85).
+- `src/components/game/hud/parts/TurnPhaseIndicator.tsx` — added `hud-filmic-turn-phase-swap` class to status-text motion.div
+- `src/components/game/hud/parts/SceneEntryNudge.tsx` — added `hud-filmic-scene-entry-nudge` class to vignette motion.div
+- `src/components/game/hud/parts/InteractionCooldownRing.tsx` — added `hud-filmic-cooldown-tick` class to motion.svg
+- `src/components/game/hud/parts/InteractionRadarPulse.tsx` — added `hud-filmic-radar-sweep` class to sweep line div
+- `src/components/game/hud/parts/InteractableSparkle.tsx` — added `hud-filmic-sparkle-twinkle` class to inner sparkle div
+- `src/components/game/hud/parts/InteractionProximityGlow.tsx` — added `hud-filmic-proximity-glow-breathe` class to aura div
+
+### Safety
+- All animations gated on `@media (prefers-reduced-motion: no-preference)` with static fallbacks in `@media (prefers-reduced-motion: reduce)`
+- Sane values only: scale ≤ 1.1, opacity ≤ 1, translateY ≤ 5px, rotateX ≤ 8deg, box-shadow spread ≤ 4px
+- `src/data/poems.ts` NOT touched
+- Typecheck: PASS (exit 0)
+
+---
+
+### Task ID: WS23-C — PBR upgrades (MeshStandardMaterial → MeshPhysicalMaterial)
+
+**Scope:** Upgrade key environmental surfaces from `meshStandardMaterial` to `meshPhysicalMaterial` with physically-based rendering properties.
+
+**Changes:**
+
+- **UniqueStreetFacades.tsx** L127: building facade wall → `meshPhysicalMaterial` + clearcoat=0.15 + clearcoatRoughness=0.6 (slightly wet city facade)
+- **HeroStreetFacades.tsx** L145: main facade body → `meshPhysicalMaterial` + clearcoat=0.2 + clearcoatRoughness=0.5 (rain-wet facade)
+- **VolodkaRoomVisual.tsx** L562: fallback floor (Suspense fallback) → `meshPhysicalMaterial` + clearcoat=0.4 + clearcoatRoughness=0.35 (worn wood floor); replaced `material={mat_floor}` prop with inline `<meshPhysicalMaterial>` child preserving all original props
+- **InteriorModels.tsx** L209+L213: Couch main seat + back → `meshPhysicalMaterial` + sheen=0.2 + sheenRoughness=0.5 (fabric/organic sheen on upholstery)
+- **SleepDreamVisual.tsx** L397: DreamTree trunk → `meshPhysicalMaterial` + sheen=0.15 + sheenRoughness=0.6 (surreal organic sheen); ground already upgraded by WS20-C
+
+**Preserved:**
+- All existing props (color, roughness, metalness, maps, normalMap, roughnessMap, etc.) kept unchanged
+- No geometry, positioning, or non-material props changed
+- No emissive materials upgraded (per rules)
+- `src/data/poems.ts` NOT touched
+
+**Annotations:** Each upgrade annotated with `{/* WS23-C: PBR upgrade */}` comment
+
+**Typecheck:** PASS (exit 0)
+
+---
+
+## WS23-D: Content expansion (creep patrols, lore, matrix quotes, daily missions, Thought Cabinet)
+
+**Task:** Expand content — more creep patrol routes, lore entries, matrix quotes, daily missions, and Thought Cabinet items.
+
+### creepPatrols.ts — 6 new patrol routes
+- `ws23d_creep_cafe_data_wraith` — cafe_evening, data_wraith, act 3
+- `ws23d_creep_factory_roof_censor_drone` — factory_roof, censor_drone, act 4
+- `ws23d_creep_guild_mainframe_firewall_guardian` — guild_mainframe, firewall_guardian, act 5
+- `ws23d_creep_street_winter_grief_echo` — street_winter, grief_echo, act 3
+- `ws23d_creep_home_memory_wraith` — home_evening, memory_wraith, act 3
+- `ws23d_creep_solnysh_void_echo` — solnysh_room, void_echo, act 4
+
+### loreEntries.ts — 4 new lore entries (new array WS23_D_LORE_ENTRIES spread into INITIAL_LORE_ENTRIES)
+- `ws23d_lore_cafe_ink_circuit` — technology, rare, cafe_evening — Чернильная Схема (analog computer in the café)
+- `ws23d_lore_factory_roof_antenna_graveyard` — mysteries, legendary, factory_roof — Кладбище Антенн (47 dead antennas on the roof)
+- `ws23d_lore_guild_mainframe_deep_archive` — technology, rare, guild_mainframe — Глубинный Архив (offline 12TB archive under guild HQ)
+- `ws23d_lore_street_winter_frozen_signal` — mysteries, legendary, street_winter — Замёрзший Сигнал (winter signal on 47.29 MHz)
+
+### matrixQuotes.ts — 8 new quotes (acts 2-5, cyberpunk/tech themes)
+- `ws23d_mq_analog_freedom` (act 2, revelation)
+- `ws23d_mq_antenna_resonance` (act 2, loss)
+- `ws23d_mq_deep_archive` (act 3, revelation)
+- `ws23d_mq_frozen_heartbeat` (act 3, danger)
+- `ws23d_mq_ink_computation` (act 4, triumph)
+- `ws23d_mq_memory_archaeology` (act 4, loss)
+- `ws23d_mq_phantom_broadcast` (act 5, revelation)
+- `ws23d_mq_winter_protocol` (act 5, danger)
+
+### dailyMissions.ts — 4 new missions
+- `ws23d_dm_combat_ink_circuit_defense` — combat, hard, weekly
+- `ws23d_dm_explore_antenna_graveyard` — exploration, medium, daily
+- `ws23d_dm_craft_magnetic_tape_reader` — crafting, easy, daily
+- `ws23d_dm_explore_frozen_signal` — exploration, hard, weekly
+
+### thoughtCabinet.ts — 6 new items (IDs 94-99)
+- `ws23d_94` Аналоговый Архитектор — mutually exclusive with 95 (coding+3, logic+1, persuasion-2)
+- `ws23d_95` Цифровой Паломник — mutually exclusive with 94 (persuasion+3, writing+1, empathy-2)
+- `ws23d_96` Резонанс Антенны — mutually exclusive with 97 (intuition+3, writing+1, logic-2)
+- `ws23d_97` Протокол Спектра — mutually exclusive with 96 (logic+3, coding+1, intuition-2)
+- `ws23d_98` Археолог Памяти — empathy+2, logic+2, rhythm-1
+- `ws23d_99` Зимний Резонатор — hidden, writing+3, intuition+1, coding-1
+- Added 2 mutually exclusive pairs to MUTUALLY_EXCLUSIVE_PAIRS
+
+### Typecheck
+- `node scripts/tsc7.mjs --noEmit` — exit 0 ✓
+
+---
+
+## Task WS23-B — Living-world content expansion
+
+### Context
+Expand living-world content: examine zones, karma-gated dialogue, idle monologues, dynamic props, and ambient barks for least-served scenes.
+
+### Changes
+
+**1. triggerZones.ts — 12 new examine zones**
+Scenes: factory_roof (3), guild_mainframe (3), street_winter (2), cafe_evening (2), park_day (1), rooftop_edge (1)
+- `ws23b_fr_weather_vane` — Ржавый флюгер (factory_roof, karma +3)
+- `ws23b_fr_satellite_dish` — Заброшенная спутниковая тарелка (factory_roof, karma +4)
+- `ws23b_fr_graffiti_slogan` — Граффити «КОД СВОБОДЕН КОГДА СЛОВО СВОБОДНО» (factory_roof, karma +5)
+- `ws23b_gm_backup_tapes` — Стеллаж с магнитными лентами (guild_mainframe, karma +4)
+- `ws23b_gm_printer_output` — Бумажная лента матричного принтера (guild_mainframe, karma +3)
+- `ws23b_gm_cable_conduit` — Кабельный жёлоб под стойками (guild_mainframe, karma +2)
+- `ws23b_sw_frozen_fountain` — Замёрзший фонтан (street_winter, karma +4)
+- `ws23b_sw_icicle_sign` — Сосулька над вывеской (street_winter, karma +2)
+- `ws23b_ce_jukebox` — Старый музыкальный автомат (cafe_evening, karma +3)
+- `ws23b_ce_coastline_photo` — Фотография побережья (cafe_evening, karma +5)
+- `ws23b_pd_bench_carving` — Вырез на скамейке (park_day, karma +3)
+- `ws23b_re_wind_vane_gear` — Шестерёнка ветряного флюгера (rooftop_edge, karma +2)
+
+**2. dialogue/part3-mid-expanded.ts — 2 new dialogue nodes (4 karma-gated choices)**
+- `ws23b_barista_secret_channel` — Бариста находит стихи в Wi-Fi прокси (minKarma 50/35, maxKarma 20)
+- `ws23b_victoria_vault_key` — Виктория предлагает ключ к Хранилищу (minKarma 65/40, maxKarma 25)
+
+**3. dialogue/part4-late-expanded.ts — 2 new dialogue nodes (4 karma-gated choices)**
+- `ws23b_albert_final_broadcast` — Альберт собирает передатчик из кофейных машин (minKarma 55/45, maxKarma 20)
+- `ws23b_zarema_last_poem` — Зарема пишет последнее стихотворение (minKarma 60/35, maxKarma 15)
+
+**4. idleMonologues.ts — 15 new neutral idle lines (5 per scene)**
+- street_winter: +5 (сугроб, следы, воротник, дым, сосулька)
+- park_day: +5 (лист, фонтан, скамейка, муравей, деревья)
+- cafe_evening: +5 (салфетка, вывеска, пар, столик, меню)
+
+**5. dynamicProps.ts — 8 new pushable props**
+- street_winter: +3 (ws23b_sw_can_snowdrift, ws23b_sw_box_ice, ws23b_sw_bottle_frozen)
+- factory_roof: +3 (ws23b_fr_can_rust, ws23b_fr_barrel_cable, ws23b_fr_box_tools)
+- guild_mainframe: +2 (ws23b_gm_barrel_backup, ws23b_gm_can_tape)
+
+**6. ambientBarks.ts — 10 new bark lines for 3 NPCs (3 idle + 1 pensive each)**
+- zarema (cafe_evening): тетрадь, дождь, татарский узор / кофе остывает
+- albert (guild_mainframe): пайка, герцы, poetry function / вирус
+- old_violinist (park_day): струна, до мажор, голубь / музыка старше
+
+### Typecheck
+- `node scripts/tsc7.mjs --noEmit` — exit 0 ✓

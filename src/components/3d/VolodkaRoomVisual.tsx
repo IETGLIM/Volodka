@@ -559,7 +559,10 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
           {/* ── Floor — Poly Haven wood parquet (canvas fallback while loading) ── */}
           <Suspense
             fallback={
-              <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={geo_pln_1} material={mat_floor} />
+              <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={geo_pln_1}>
+                {/* WS23-C: PBR upgrade */}
+                <meshPhysicalMaterial map={floorTexture} color="#5c4a36" roughness={0.78} metalness={0.02} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} clearcoat={0.4} clearcoatRoughness={0.35} />
+              </mesh>
             }
           >
             <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={geo_pln_1}>
