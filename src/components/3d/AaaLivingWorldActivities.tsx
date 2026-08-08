@@ -16,8 +16,6 @@
 import { useEffect } from 'react';
 import { eventBus } from '@/engine/EventBus';
 import { getGameSnapshot, dispatchGameAction } from '@/engine/GameActionDispatcher';
-import { getGameSnapshot } from '@/engine/GameActionDispatcher';
-import { dispatchGameAction } from '@/shared/gameBridge/gameActionBridge';
 
 const ACTIVITY_LINES: Record<string, string> = {
   // Room / Home
@@ -180,9 +178,6 @@ export function AaaLivingWorldActivities() {
                 dispatchGameAction({
                   type: 'player/addEnergy',
                   amount: 2 + Math.floor(Math.random() * 2),
-                dispatchGameAction({ 
-                  type: 'player/addEnergy',
-                  amount: 2 + Math.floor(Math.random() * 2)
                 });
               }
               // Gentle karma nudge for contemplative acts
@@ -190,9 +185,6 @@ export function AaaLivingWorldActivities() {
                 dispatchGameAction({
                   type: 'player/addKarma',
                   amount: 1,
-                dispatchGameAction({ 
-                  type: 'player/addKarma',
-                  amount: 1
                 });
               }
             } catch {}
@@ -200,10 +192,8 @@ export function AaaLivingWorldActivities() {
 
           // Dynamic world feedback — lights flicker, props react
           if (key.includes('lamp') || key === 'terminal' || key === 'control_panel') {
-            eventBus.emit('world:ambient_event', {
+            eventBus.emit('world:ambient_event' as any, {
               type: 'light_flicker',
-            eventBus.emit('world:ambient_event' as any, { 
-              type: 'light_flicker', 
               intensity: 0.6 + Math.random() * 0.3,
               duration: 800,
             });
