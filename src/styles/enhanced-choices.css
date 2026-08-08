@@ -1,0 +1,143 @@
+/* ─── Volodka RPG – Enhanced Dialogue Choice Styling ─── */
+
+/* Consequence preview chips */
+.choice-consequence-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.choice-consequence-chip.positive {
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.choice-consequence-chip.negative {
+  color: #fb7185;
+  background: rgba(244, 63, 94, 0.1);
+  border: 1px solid rgba(244, 63, 94, 0.2);
+}
+
+.choice-consequence-chip.neutral {
+  color: #94a3b8;
+  background: rgba(100, 116, 139, 0.1);
+  border: 1px solid rgba(100, 116, 139, 0.2);
+}
+
+/* Difficulty badge */
+.choice-difficulty-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.choice-difficulty-badge.easy {
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  text-shadow: 0 0 4px rgba(16, 185, 129, 0.3);
+}
+
+.choice-difficulty-badge.medium {
+  color: #fbbf24;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  text-shadow: 0 0 4px rgba(245, 158, 11, 0.3);
+}
+
+.choice-difficulty-badge.hard {
+  color: #fb7185;
+  background: rgba(244, 63, 94, 0.12);
+  border: 1px solid rgba(244, 63, 94, 0.25);
+  text-shadow: 0 0 4px rgba(244, 63, 94, 0.3);
+}
+
+/* Previous choice indicator */
+.choice-previous-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  color: #a78bfa;
+  background: rgba(139, 92, 246, 0.1);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+/* Choice timer bar */
+.choice-timer-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+  border-radius: 0 0 0.5rem 0.5rem;
+}
+
+.choice-timer-fill {
+  height: 100%;
+  transition: width 0.1s linear;
+  border-radius: 0 0 0.5rem 0.5rem;
+}
+
+.choice-timer-fill.safe {
+  background: linear-gradient(90deg, #06b6d4, #00e5ff);
+}
+
+.choice-timer-fill.warning {
+  background: linear-gradient(90deg, #f59e0b, #fbbf24);
+}
+
+.choice-timer-fill.danger {
+  background: linear-gradient(90deg, #ef4444, #fb7185);
+  animation: choice-timer-pulse 0.5s ease-in-out infinite;
+}
+
+@keyframes choice-timer-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* Enhanced choice card with consequences row */
+.choice-card-enhanced {
+  position: relative;
+  overflow: hidden;
+}
+
+.choice-card-enhanced .choice-consequences-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+/* Previous choice highlight on the card itself */
+.choice-card-was-selected {
+  border-color: rgba(139, 92, 246, 0.35) !important;
+  box-shadow: 0 0 12px rgba(139, 92, 246, 0.08), inset 0 0 20px rgba(139, 92, 246, 0.04) !important;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .choice-timer-fill.danger {
+    animation: none;
+  }
+}

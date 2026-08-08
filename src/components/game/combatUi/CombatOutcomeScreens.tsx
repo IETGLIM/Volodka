@@ -23,26 +23,26 @@ export function VictoryScreen({
       >
         🏆
       </motion.div>
-      <div className="gradient-text-emerald text-xl font-bold text-emerald-400 font-mono" style={{ textShadow: '0 0 12px #10b98180' }}>
+      <div className="gradient-text-emerald text-xl font-bold text-emerald-400 font-mono combat-victory-title" style={{ textShadow: '0 0 12px #10b98180' }}>
         ПОБЕДА!
       </div>
-      <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs font-mono">
-        <span className="text-slate-400">ОПЫТ:</span>
-        <span className="text-cyan-400">+{rewards.xp}</span>
-        <span className="text-slate-400">Карма:</span>
-        <span className="text-amber-400">+{rewards.karma}</span>
-        <span className="text-slate-400">Кредиты:</span>
-        <span className="text-yellow-300">+{rewards.credits}</span>
+      <div className="combat-stats-summary grid grid-cols-2 gap-x-4 gap-y-1 text-xs font-mono">
+        <span className="combat-stat-row text-slate-400">ОПЫТ:</span>
+        <span className="combat-stat-row text-cyan-400">+{rewards.xp}</span>
+        <span className="combat-stat-row text-slate-400">Карма:</span>
+        <span className="combat-stat-row text-amber-400">+{rewards.karma}</span>
+        <span className="combat-stat-row text-slate-400">Кредиты:</span>
+        <span className="combat-stat-row text-yellow-300">+{rewards.credits}</span>
         {rewards.lootItems.length > 0 && (
           <>
-            <span className="text-slate-400">Добыча:</span>
-            <span className="text-emerald-400">✓</span>
+            <span className="combat-stat-row text-slate-400">Добыча:</span>
+            <span className="combat-stat-row text-emerald-400">✓</span>
           </>
         )}
         {maxCombo >= 2 && (
           <>
-            <span className="text-slate-400">Комбо:</span>
-            <span className="text-orange-400">x{maxCombo}</span>
+            <span className="combat-stat-row text-slate-400">Комбо:</span>
+            <span className="combat-stat-row text-orange-400">x{maxCombo}</span>
           </>
         )}
       </div>
@@ -71,7 +71,7 @@ export function DefeatScreen() {
       >
         💀
       </motion.div>
-      <div className="neon-text-rose text-xl font-bold text-red-400 font-mono" style={{ textShadow: '0 0 12px #ef444480' }}>
+      <div className="neon-text-rose text-xl font-bold text-red-400 font-mono combat-defeat-title" style={{ textShadow: '0 0 12px #ef444480' }}>
         ПОРАЖЕНИЕ
       </div>
       <div className="text-xs text-slate-400 font-mono text-center">

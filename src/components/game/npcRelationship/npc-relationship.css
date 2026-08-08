@@ -1,0 +1,209 @@
+/* ══════════════════════════════════════════════════════════════
+   Volodka RPG — NPC Relationship Tracker Enhancement Styles
+   Cyberpunk palette, Russian UI.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Enhanced relationship meter (0–100 with gradient) ── */
+
+.npc-rel-meter {
+  position: relative;
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(15, 23, 42, 0.9);
+  overflow: hidden;
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.5),
+    0 0 8px rgba(0, 0, 0, 0.2);
+}
+
+.npc-rel-meter-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Color tiers based on relationship value */
+.npc-rel-meter-fill--enemy {
+  background: linear-gradient(90deg, #dc2626, #f87171);
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.npc-rel-meter-fill--low {
+  background: linear-gradient(90deg, #ea580c, #fb923c);
+  box-shadow: 0 0 10px rgba(249, 115, 22, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.npc-rel-meter-fill--neutral {
+  background: linear-gradient(90deg, #d97706, #fbbf24);
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.npc-rel-meter-fill--friendly {
+  background: linear-gradient(90deg, #0891b2, #22d3ee);
+  box-shadow: 0 0 10px rgba(6, 182, 212, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.npc-rel-meter-fill--ally {
+  background: linear-gradient(90deg, #059669, #34d399);
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+/* Tick marks on the meter */
+.npc-rel-meter-ticks {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  pointer-events: none;
+}
+
+.npc-rel-meter-tick {
+  flex: 1;
+  border-right: 1px solid rgba(148, 163, 184, 0.08);
+}
+
+.npc-rel-meter-tick:last-child {
+  border-right: none;
+}
+
+/* ── Change indicators (▲▼ arrows with color) ── */
+
+.npc-rel-change {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 10px;
+  font-family: ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 4px;
+  animation: npc-rel-change-pulse 0.4s ease-out;
+}
+
+.npc-rel-change--up {
+  color: #22d3ee;
+  background: rgba(6, 182, 212, 0.1);
+  border: 1px solid rgba(6, 182, 212, 0.2);
+}
+
+.npc-rel-change--down {
+  color: #fb7185;
+  background: rgba(251, 113, 133, 0.1);
+  border: 1px solid rgba(251, 113, 133, 0.2);
+}
+
+@keyframes npc-rel-change-pulse {
+  0% {
+    transform: scale(1.2);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* ── Faction grouping section ── */
+
+.npc-rel-faction-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  margin-top: 8px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+}
+
+.npc-rel-faction-header:first-child {
+  margin-top: 0;
+}
+
+.npc-rel-faction-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  border: 1px solid;
+}
+
+.npc-rel-faction-label {
+  font-size: 10px;
+  font-family: ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+}
+
+.npc-rel-faction-count {
+  margin-left: auto;
+  font-size: 9px;
+  font-family: ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
+  color: #64748b;
+}
+
+/* Faction color themes */
+.npc-faction--network {
+  --faction-color: #22d3ee;
+  --faction-glow: rgba(34, 211, 238, 0.15);
+}
+
+.npc-faction--guild {
+  --faction-color: #f97316;
+  --faction-glow: rgba(249, 115, 22, 0.15);
+}
+
+.npc-faction--resistance {
+  --faction-color: #a855f7;
+  --faction-glow: rgba(168, 85, 247, 0.15);
+}
+
+.npc-faction--neutral {
+  --faction-color: #94a3b8;
+  --faction-glow: rgba(148, 163, 184, 0.1);
+}
+
+.npc-rel-faction-header .npc-rel-faction-icon {
+  color: var(--faction-color);
+  border-color: var(--faction-color);
+  background: var(--faction-glow);
+}
+
+.npc-rel-faction-header .npc-rel-faction-label {
+  color: var(--faction-color);
+  text-shadow: 0 0 8px var(--faction-glow);
+}
+
+/* ── Enhanced card with faction border glow ── */
+
+.npc-rel-card--faction-network {
+  border-color: rgba(34, 211, 238, 0.12) !important;
+}
+
+.npc-rel-card--faction-guild {
+  border-color: rgba(249, 115, 22, 0.12) !important;
+}
+
+.npc-rel-card--faction-resistance {
+  border-color: rgba(168, 85, 247, 0.12) !important;
+}
+
+/* ── Value display with color ── */
+
+.npc-rel-value {
+  font-size: 13px;
+  font-family: ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
+  font-weight: 700;
+  min-width: 28px;
+  text-align: right;
+}
+
+.npc-rel-value--enemy { color: #f87171; text-shadow: 0 0 8px rgba(239, 68, 68, 0.3); }
+.npc-rel-value--low { color: #fb923c; text-shadow: 0 0 8px rgba(249, 115, 22, 0.2); }
+.npc-rel-value--neutral { color: #fbbf24; text-shadow: 0 0 8px rgba(245, 158, 11, 0.2); }
+.npc-rel-value--friendly { color: #22d3ee; text-shadow: 0 0 8px rgba(6, 182, 212, 0.3); }
+.npc-rel-value--ally { color: #34d399; text-shadow: 0 0 8px rgba(16, 185, 129, 0.3); }

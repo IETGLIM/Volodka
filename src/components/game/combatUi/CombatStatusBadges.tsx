@@ -51,6 +51,13 @@ export function StatusBadge({ buff }: { buff: CombatBuff }) {
           <span>{icon}</span>
           <span className="truncate max-w-[60px]">{buff.name}</span>
           <span className="opacity-60">{buff.duration}х</span>
+          {/* Duration bar showing remaining turns */}
+          <div
+            className="combat-buff-duration-bar"
+            style={{ '--buff-duration-seconds': `${buff.duration * 2.5}s` } as React.CSSProperties}
+          >
+            <div className={`combat-buff-duration-fill ${isPositive ? 'positive' : 'negative'}`} />
+          </div>
           <motion.div
             className="absolute inset-0 rounded border"
             animate={{ borderColor: [pulseBorderColor, 'transparent', pulseBorderColor] }}

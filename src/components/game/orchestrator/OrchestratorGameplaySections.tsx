@@ -30,6 +30,8 @@ import { NotificationToasts } from '../NotificationToasts';
 import { ExaminePanel } from '../ExaminePanel';
 import { InteractionHintPopup } from '../InteractionHintPopup';
 import { NpcNoDialogueBark } from '../NpcNoDialogueBark';
+import { NpcScheduleDisplay } from '../NpcScheduleDisplay';
+import { ExplorationHintsPanel } from '../ExplorationHintsPanel';
 import { MoralCompassHUD } from '../MoralCompassHUD';
 import { TutorialOverlay } from '../TutorialOverlay';
 import { FirstPlayTutorial } from '../FirstPlayTutorial';
@@ -525,6 +527,8 @@ export const GameplayExplorationHud = memo(function GameplayExplorationHud({
       <HUDNotificationFeed />
       <InteractionHintPopup />
       <NpcNoDialogueBark />
+      <NpcScheduleDisplay />
+      <ExplorationHintsPanel />
       <AmbientAtmosphereCaption />
       {/* Filmic scene-discovery celebration — replaces the older neon SceneDiscoveryToast.
           Subscribes to exploration:scene_discovered, renders a {count}/{total} kicker

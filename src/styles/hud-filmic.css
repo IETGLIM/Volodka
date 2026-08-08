@@ -1593,6 +1593,80 @@
   }
 }
 
+/* ── 7. Choice difficulty indicator badges ──
+   Tiered difficulty badges for dialogue/story choices.
+   Displays skill check difficulty with cyberpunk color coding.
+   Four tiers: easy (green), medium (amber), hard (orange), extreme (crimson).
+   Shows numeric value by default; full label on hover via JS toggle. */
+
+.choice-difficulty {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 9px;
+  font-family: monospace;
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.choice-difficulty-easy {
+  color: #34d399;
+  background: rgba(52, 211, 153, 0.08);
+  border-color: rgba(52, 211, 153, 0.2);
+}
+
+.choice-difficulty-medium {
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.08);
+  border-color: rgba(251, 191, 36, 0.2);
+}
+
+.choice-difficulty-hard {
+  color: #fb923c;
+  background: rgba(251, 146, 60, 0.08);
+  border-color: rgba(251, 146, 60, 0.25);
+}
+
+.choice-difficulty-extreme {
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.1);
+  border-color: rgba(248, 113, 113, 0.3);
+  box-shadow: 0 0 6px rgba(248, 113, 113, 0.12);
+}
+
+/* Hover lift on difficulty badges — subtle glow reinforcement */
+.choice-difficulty:hover {
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.08);
+}
+
+.choice-difficulty-easy:hover {
+  box-shadow: 0 0 8px rgba(52, 211, 153, 0.2);
+}
+
+.choice-difficulty-medium:hover {
+  box-shadow: 0 0 8px rgba(251, 191, 36, 0.2);
+}
+
+.choice-difficulty-hard:hover {
+  box-shadow: 0 0 8px rgba(251, 146, 60, 0.25);
+}
+
+.choice-difficulty-extreme:hover {
+  box-shadow: 0 0 10px rgba(248, 113, 113, 0.3);
+}
+
+.choice-difficulty-label {
+  transition: opacity 0.15s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .choice-difficulty {
+    transition: none;
+  }
+}
+
 /* ═════════════════════════════════════════════════════════════════════
    TICK 10 — Filmic CSS micro-animations (compass glow, panel sweep,
    tooltip ink, stat bar sheen, notification slide, quest shimmer)

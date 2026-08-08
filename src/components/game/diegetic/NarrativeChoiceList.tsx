@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ChevronRight, Lock } from 'lucide-react';
+import { ChevronRight, Lock, Zap, Shield, Skull } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { buildChoiceAriaLabel } from '@/shared/utils/choiceAriaLabel';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
@@ -44,6 +45,93 @@ export interface NarrativeChoiceItem {
   trailing?: ReactNode;
   /** Karma delta preview — shown before the player chooses */
   karmaPreview?: number;
+  /** Explicit difficulty tier hint (1–20 scale). Parent can compute from cond.skillCheckResult.difficulty */
+  difficultyHint?: number;
+}
+
+/* ── Difficulty tier computation ── */
+
+type DifficultyTier = 'easy' | 'medium' | 'hard' | 'extreme';
+
+interface DifficultyInfo {
+  tier: DifficultyTier;
+  label: string;
+}
+
+const DIFFICULTY_TIERS: Record<string, DifficultyInfo> = {
+  easy:    { tier: 'easy',    label: 'Лёгкий' },
+  medium:  { tier: 'medium',  label: 'Средний' },
+  hard:    { tier: 'hard',    label: 'Сложный' },
+  extreme: { tier: 'extreme', label: 'Экстрем.' },
+};
+
+function computeDifficultyTier(difficulty: number): DifficultyInfo {
+  if (difficulty <= 5)  return DIFFICULTY_TIERS.easy;
+  if (difficulty <= 10) return DIFFICULTY_TIERS.medium;
+  if (difficulty <= 15) return DIFFICULTY_TIERS.hard;
+  return DIFFICULTY_TIERS.extreme;
+}
+
+function getDifficultyIcon(tier: string) {
+  switch (tier) {
+    case 'easy':    return Shield;
+    case 'medium':  return Zap;
+    case 'hard':    return Zap;
+    case 'extreme': return Skull;
+    default:        return null;
+  }
+}
+
+function getDifficultyFromCond(cond: StoryConditionResult): number | undefined {
+  // Active skill-check roll
+  if (cond.skillCheckResult?.difficulty != null) return cond.skillCheckResult.difficulty;
+  // Locked choice — show difficulty of the gate
+  if (cond.skillCheckNeeded) return cond.skillCheckNeeded.needed;
+  return undefined;
+}
+
+/* ── Choice badges sub-component ── */
+
+interface ChoiceBadgesProps {
+  karmaPreview?: number;
+  difficultyHint?: number;
+  cond: StoryConditionResult;
+  pass: boolean;
+}
+
+function ChoiceBadges({ karmaPreview, difficultyHint, cond, pass }: ChoiceBadgesProps) {
+  const [hovered, setHovered] = useState(false);
+  const difficulty = difficultyHint ?? getDifficultyFromCond(cond);
+  if (karmaPreview == null && difficulty == null) return null;
+
+  const diffInfo = difficulty != null ? computeDifficultyTier(difficulty) : null;
+  const DiffIcon = diffInfo ? getDifficultyIcon(diffInfo.tier) : null;
+
+  return (
+    <div
+      className="flex items-center gap-1.5 shrink-0"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      {/* Karma preview badge */}
+      {karmaPreview != null && pass && (
+        <span className={`karma-preview ${karmaPreview >= 0 ? 'positive' : 'negative'}`}>
+          ☯ {karmaPreview >= 0 ? '+' : ''}{karmaPreview}
+        </span>
+      )}
+
+      {/* Difficulty indicator badge */}
+      {diffInfo && DiffIcon && (
+        <span
+          className={`choice-difficulty choice-difficulty-${diffInfo.tier}`}
+          title={hovered ? `Сложность: ${diffInfo.label} (${difficulty})` : undefined}
+        >
+          <DiffIcon className="size-2.5" />
+          <span className="choice-difficulty-label">{hovered ? diffInfo.label : difficulty}</span>
+        </span>
+      )}
+    </div>
+  );
 }
 
 export interface NarrativeChoiceListProps {
@@ -130,11 +218,12 @@ export function NarrativeChoiceList({
               })()}
             </div>
             {choice.trailing}
-            {choice.karmaPreview != null && choice.pass && (
-              <span className={`karma-preview ${choice.karmaPreview >= 0 ? 'positive' : 'negative'}`}>
-                ☯ {choice.karmaPreview >= 0 ? '+' : ''}{choice.karmaPreview}
-              </span>
-            )}
+            <ChoiceBadges
+              karmaPreview={choice.karmaPreview}
+              difficultyHint={choice.difficultyHint}
+              cond={choice.cond}
+              pass={choice.pass}
+            />
           </div>
         </motion.button>
       ))}

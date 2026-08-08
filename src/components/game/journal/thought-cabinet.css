@@ -1,0 +1,215 @@
+/* ══════════════════════════════════════════════════════════════
+   Volodka RPG — Thought Cabinet Visual Enhancement Styles
+   Cyberpunk palette, Russian UI.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Stat effect bars inside thought cards ── */
+
+.thought-stat-bar {
+  position: relative;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(30, 41, 59, 0.8);
+  overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.thought-stat-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.thought-stat-bar-fill--positive {
+  background: linear-gradient(90deg, #00e5ff33, #22d3ee);
+  box-shadow: 0 0 6px rgba(0, 229, 255, 0.3);
+}
+
+.thought-stat-bar-fill--negative {
+  background: linear-gradient(90deg, #fb7185, #fb718533);
+  box-shadow: 0 0 6px rgba(251, 113, 133, 0.3);
+}
+
+/* ── Category color accent strips (left edge of each card) ── */
+
+.thought-category-strip {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  border-radius: 3px 0 0 3px;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.thought-category-strip--equipped {
+  box-shadow: 0 0 10px currentColor;
+}
+
+/* Voice category colors */
+.thought-category--logic { color: #22d3ee; }
+.thought-category--coding { color: #34d399; }
+.thought-category--empathy { color: #fb7185; }
+.thought-category--persuasion { color: #fbbf24; }
+.thought-category--intuition { color: #c084fc; }
+.thought-category--writing { color: #f472b6; }
+.thought-category--rhythm { color: #fb923c; }
+
+/* ── Thought card enhanced effects row ── */
+
+.thought-effects-grid {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 4px 8px;
+  align-items: center;
+}
+
+.thought-effects-label {
+  font-size: 10px;
+  font-family: ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.thought-effects-value {
+  font-size: 11px;
+  font-family: ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
+  font-weight: 700;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.thought-effects-value--positive {
+  color: #22d3ee;
+  text-shadow: 0 0 8px rgba(34, 211, 238, 0.3);
+}
+
+.thought-effects-value--negative {
+  color: #fb7185;
+  text-shadow: 0 0 8px rgba(251, 113, 133, 0.3);
+}
+
+/* ── Detail panel enhanced effect bars ── */
+
+.thought-detail-effect {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 229, 255, 0.1);
+  background: rgba(15, 23, 42, 0.5);
+}
+
+.thought-detail-effect-bar {
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(30, 41, 59, 0.8);
+  overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
+  margin-top: 4px;
+}
+
+.thought-detail-effect-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.thought-detail-effect-bar-fill--positive {
+  background: linear-gradient(90deg, rgba(0, 229, 255, 0.2), #22d3ee);
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.25);
+}
+
+.thought-detail-effect-bar-fill--negative {
+  background: linear-gradient(90deg, #fb7185, rgba(251, 113, 133, 0.2));
+  box-shadow: 0 0 8px rgba(251, 113, 133, 0.25);
+}
+
+/* ── Active thoughts HUD badge ── */
+
+.active-thoughts-hud {
+  position: fixed;
+  bottom: 80px;
+  left: 16px;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  pointer-events: none;
+}
+
+.active-thoughts-hud-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px 3px 6px;
+  border-radius: 6px;
+  background: rgba(8, 12, 28, 0.85);
+  border: 1px solid rgba(0, 229, 255, 0.2);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.08), inset 0 0 6px rgba(0, 229, 255, 0.03);
+  pointer-events: auto;
+  cursor: default;
+  animation: thought-chip-appear 0.3s ease-out;
+}
+
+@keyframes thought-chip-appear {
+  from {
+    opacity: 0;
+    transform: translateX(-8px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+.active-thoughts-hud-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 6px currentColor;
+}
+
+.active-thoughts-hud-label {
+  font-size: 10px;
+  font-family: ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
+  color: #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+}
+
+.active-thoughts-hud-count {
+  font-size: 9px;
+  font-family: ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
+  color: rgb(var(--cyber-cyan-rgb, 0 229 255));
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* ── Scrollbar ── */
+
+.thought-cabinet-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 229, 255, 0.15) transparent;
+}
+
+.thought-cabinet-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.thought-cabinet-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.thought-cabinet-scroll::-webkit-scrollbar-thumb {
+  background: rgba(0, 229, 255, 0.15);
+  border-radius: 2px;
+}
+
+.thought-cabinet-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 229, 255, 0.25);
+}

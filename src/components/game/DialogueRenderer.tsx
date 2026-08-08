@@ -883,6 +883,13 @@ export function DialogueRenderer() {
               pass: effectivePass,
               cond,
               onSelect: () => trySelectChoice(i),
+              consequences: cond.pass ? { karma: impact.karma, energy: impact.energy, stress: impact.stress } : undefined,
+              wasPreviousChoice: currentNodeId
+                ? dialogueHistoryEntries.some(
+                    (e) => e.sceneId === getLiveCurrentSceneId() && e.isPlayerChoice && e.text === choice.text,
+                  )
+                : false,
+              skillDifficulty: choice.condition?.minSkillCheck?.difficulty,
               trailing:
                 isDiceCheck && cond.skillCheckResult ? (
                   <span className="flex items-center gap-1 text-xs shrink-0">
@@ -897,11 +904,6 @@ export function DialogueRenderer() {
                 ) : !cond.pass && cond.karmaNeeded ? (
                   <span className="text-[10px] font-mono text-rose-300">
                     ☯ {cond.karmaNeeded.current}/{cond.karmaNeeded.needed}
-                  </span>
-                ) : cond.pass && impact.karma !== 0 ? (
-                  <span className="text-[10px] font-mono text-emerald-300">
-                    {impact.karma > 0 ? '+' : ''}
-                    {impact.karma}☯
                   </span>
                 ) : undefined };
           })}

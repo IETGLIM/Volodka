@@ -1,6 +1,7 @@
 import { memo } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Circle, Gift, MapPin, Shield, Skull } from 'lucide-react';
+import { ArrowDown, ArrowUp, Circle, Gift, MapPin, Shield, Skull } from 'lucide-react';
+import './npc-relationship.css';
 import { NPCScheduleTimeline } from '@/components/game/NPCScheduleTimeline';
 import { NPCPortrait, NPC_PORTRAIT_COLORS } from '@/components/game/shared/NPCPortrait';
 import { findNpcById } from '@/data/allNpcDefinitions';
@@ -32,6 +33,12 @@ const RELATION_ICONS = {
   enemy: Skull,
 } as const satisfies Record<RelationLevel, typeof Shield>;
 
+/** Recent relation change for the change indicator. */
+export interface RelationChange {
+  readonly delta: number;
+  readonly timestamp: number;
+}
+
 type NPCRelationshipCardProps = {
   relation: NPCRelation;
   index: number;
@@ -42,6 +49,8 @@ type NPCRelationshipCardProps = {
   canGift: boolean;
   reducedMotion: boolean;
   onOpenGift: (npcId: string) => void;
+  /** Optional recent change indicator (+5, -3, etc.) */
+  recentChange?: RelationChange;
 };
 
 export const NPCRelationshipCard = memo(function NPCRelationshipCard({
@@ -54,6 +63,7 @@ export const NPCRelationshipCard = memo(function NPCRelationshipCard({
   canGift,
   reducedMotion,
   onOpenGift,
+  recentChange,
 }: NPCRelationshipCardProps) {
   const npcDef = findNpcById(relation.npcId);
   if (!npcDef) return null;
@@ -68,12 +78,22 @@ export const NPCRelationshipCard = memo(function NPCRelationshipCard({
   const cardMotion = getCardEnterTransition(index, reducedMotion);
   const scheduleMotion = getScheduleRevealTransition(reducedMotion);
 
+  const npcFaction = npcDef.faction ?? 'neutral';
+  const meterTier =
+    relation.value >= 80 ? 'ally' :
+    relation.value >= 60 ? 'friendly' :
+    relation.value >= 40 ? 'neutral' :
+    relation.value >= 20 ? 'low' : 'enemy';
+
+  // Change indicator — only show if change is recent (< 8s)
+  const showChange = recentChange && (Date.now() - recentChange.timestamp) < 8000;
+
   return (
     <motion.article
       initial={reducedMotion ? false : { opacity: 0, x: -12 }}
       animate={{ opacity: 1, x: 0 }}
       transition={cardMotion}
-      className="glass-panel overflow-hidden rounded-xl border"
+      className={`glass-panel overflow-hidden rounded-xl border npc-rel-card--faction-${npcFaction}`}
       aria-labelledby={`npc-rel-${relation.npcId}-name`}
       style={{
         borderColor: `${portraitPrimary}30`,
@@ -120,26 +140,33 @@ export const NPCRelationshipCard = memo(function NPCRelationshipCard({
               </div>
             )}
 
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] uppercase tracking-wider text-slate-500">
                   {NPC_RELATIONSHIP_LABELS.relation}
                 </span>
-                <span className={`font-mono text-xs font-medium ${colors.text}`}>{relation.value}</span>
+                <div className="flex items-center gap-2">
+                  {showChange && (
+                    <span className={`npc-rel-change ${recentChange!.delta > 0 ? 'npc-rel-change--up' : 'npc-rel-change--down'}`}>
+                      {recentChange!.delta > 0 ? <ArrowUp className="size-2.5" /> : <ArrowDown className="size-2.5" />}
+                      {recentChange!.delta > 0 ? `+${recentChange!.delta}` : recentChange!.delta}
+                    </span>
+                  )}
+                  <span className={`npc-rel-value npc-rel-value--${meterTier}`}>{relation.value}</span>
+                </div>
               </div>
-              <div className="data-bar h-2 overflow-hidden rounded-full bg-slate-800/80 shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)]">
+              <div className="npc-rel-meter" role="progressbar" aria-valuenow={relation.value} aria-valuemin={0} aria-valuemax={100} aria-label={NPC_RELATIONSHIP_LABELS.relation}>
                 <motion.div
-                  className={`data-bar-fill h-full rounded-full ${colors.bar}`}
+                  className={`npc-rel-meter-fill npc-rel-meter-fill--${meterTier}`}
                   initial={reducedMotion ? false : { width: 0 }}
                   animate={{ width: `${relation.value}%` }}
                   transition={getBarFillTransition(index, reducedMotion)}
-                  style={{ boxShadow: `0 0 8px ${colors.glow}` }}
-                  role="progressbar"
-                  aria-valuenow={relation.value}
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                  aria-label={NPC_RELATIONSHIP_LABELS.relation}
                 />
+                <div className="npc-rel-meter-ticks">
+                  {Array.from({ length: 10 }).map((_, i) => (
+                    <div key={`tick-${i}`} className="npc-rel-meter-tick" />
+                  ))}
+                </div>
               </div>
             </div>
 

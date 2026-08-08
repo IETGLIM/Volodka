@@ -1,4 +1,4 @@
-import { memo, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { APP_VERSION } from '@/shared/constants/appVersion';
 import { CRTSweep } from '@/components/game/loading/CRTSweep';
@@ -17,7 +17,9 @@ import {
   LOADING_SUBTITLE_TEXT,
   LOADING_TITLE_TEXT,
   POEM_QUOTES,
+  SCENE_TIPS as _SCENE_TIPS,
   TIPS,
+  getLoadingTips,
 } from '@/engine/loading/loadingConstants';
 import {
   clampLoadingProgress,
@@ -109,15 +111,62 @@ export function LoadingScreen({
   const eta = useEstimatedTimeRemaining(clampedProgress);
   const [showTip, setShowTip] = useState(true);
   const [showBootText, setShowBootText] = useState(fx.bootText);
+  const [milestoneBurst, setMilestoneBurst] = useState<number | null>(null);
+  const [showRetry, setShowRetry] = useState(false);
+  const stallTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const prevProgressRef = useRef<number | undefined>(undefined);
+  const retryCountRef = useRef(0);
 
   const quoteIndex = useMemo(
     () => pickDeterministicIndex(LOADING_QUOTE_SEED, POEM_QUOTES.length),
     [],
   );
+
+  // Scene-aware tips based on loading message
+  const sceneTips = useMemo(() => getLoadingTips(message), [message]);
   const [tipIndex, setTipIndex] = useState(0);
 
   const tipCycleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tipHideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // ── Milestone burst effects at 50%, 75%, 100% ──
+  useEffect(() => {
+    if (clampedProgress === undefined) return;
+    const prev = prevProgressRef.current ?? 0;
+    const milestones = [50, 75, 100] as const;
+    for (const m of milestones) {
+      if (prev < m && clampedProgress >= m) {
+        setMilestoneBurst(m);
+        const timer = setTimeout(() => setMilestoneBurst(null), 800);
+        return () => clearTimeout(timer);
+      }
+    }
+    prevProgressRef.current = clampedProgress;
+  }, [clampedProgress]);
+
+  // ── Error recovery: show retry after 10s stall ──
+  useEffect(() => {
+    if (clampedProgress === undefined || clampedProgress >= 100) {
+      setShowRetry(false);
+      if (stallTimerRef.current) clearTimeout(stallTimerRef.current);
+      return;
+    }
+    if (stallTimerRef.current) clearTimeout(stallTimerRef.current);
+    stallTimerRef.current = setTimeout(() => setShowRetry(true), 10000);
+    return () => { if (stallTimerRef.current) clearTimeout(stallTimerRef.current); };
+  }, [message, clampedProgress]);
+
+  useEffect(() => {
+    if (clampedProgress !== undefined && clampedProgress > 0) setShowRetry(false);
+  }, [clampedProgress]);
+
+  const handleRetry = useCallback(() => {
+    retryCountRef.current += 1;
+    setShowRetry(false);
+    window.dispatchEvent(new CustomEvent('volodka:loading-retry', {
+      detail: { attempt: retryCountRef.current },
+    }));
+  }, []);
 
   useEffect(() => {
     setShowBootText(fx.bootText);
@@ -138,7 +187,7 @@ export function LoadingScreen({
       tipCycleTimerRef.current = setTimeout(() => {
         setShowTip(false);
         tipHideTimerRef.current = setTimeout(() => {
-          setTipIndex((prev) => (prev + 1) % TIPS.length);
+          setTipIndex((prev) => (prev + 1) % sceneTips.length);
           setShowTip(true);
           scheduleNext();
         }, 300);
@@ -147,7 +196,7 @@ export function LoadingScreen({
 
     scheduleNext();
     return clearTimers;
-  }, [fx.tipRotation]);
+  }, [fx.tipRotation, sceneTips.length]);
 
   useEffect(() => {
     if (!fx.bootText) return;
@@ -156,7 +205,7 @@ export function LoadingScreen({
   }, [fx.bootText]);
 
   const currentQuote = POEM_QUOTES[quoteIndex] ?? POEM_QUOTES[0];
-  const currentTip = TIPS[tipIndex] ?? TIPS[0];
+  const currentTip = sceneTips[tipIndex] ?? sceneTips[0] ?? TIPS[0];
 
   return (
     <div
@@ -370,6 +419,41 @@ export function LoadingScreen({
               </span>
             )}
           </div>
+
+          {/* Milestone burst effects */}
+          <AnimatePresence>
+            {milestoneBurst !== null && (
+              <motion.div
+                key={milestoneBurst}
+                className="loading-milestone-burst"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 1.2 }}
+                transition={{ duration: 0.3 }}
+              >
+                <span className="loading-milestone-text">
+                  {milestoneBurst === 50 ? '◆ 50%' : milestoneBurst === 75 ? '◆◆ 75%' : '✦ 100%'}
+                </span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Retry button — shown after 10s stall */}
+          <AnimatePresence>
+            {showRetry && (
+              <motion.button
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                transition={{ duration: 0.3 }}
+                onClick={handleRetry}
+                className="loading-retry-btn"
+                aria-label="Повторить загрузку"
+              >
+                ↻ Повторить загрузку
+              </motion.button>
+            )}
+          </AnimatePresence>
         </MotionBox>
 
         <MotionBox fx={fx} className="flex items-center gap-2 mt-1" delay={1}>

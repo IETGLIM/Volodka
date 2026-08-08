@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { CalendarClock, Users, X } from 'lucide-react';
+import { CalendarClock, Shield, Users, Wifi, X } from 'lucide-react';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { FocusTrap } from '@/components/a11y/FocusTrap';
 import { usePanelDialog } from '@/components/a11y/usePanelDialog';
@@ -19,6 +19,8 @@ import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { useTransitionDirector } from '@/hooks/useTransitionDirector';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { findNpcById } from '@/data/allNpcDefinitions';
+import './npc-relationship.css';
 
 export type NPCRelationshipPanelProps = {
   open: boolean;
@@ -67,6 +69,27 @@ function NPCRelationshipPanelInner({ open, onClose }: NPCRelationshipPanelProps)
   const footerCounts = useMemo(() => getRelationFooterCounts(sortedRelations), [sortedRelations]);
   const hasRelations = sortedRelations.length > 0;
   const panelTransition = getPanelSlideTransition(reducedMotion);
+
+  // Faction grouping
+  const FACTION_META: Record<string, { label: string; icon: typeof Users }> = {
+    network: { label: 'Сеть', icon: Wifi },
+    guild: { label: 'Гильдия', icon: Shield },
+    resistance: { label: 'Сопротивление', icon: Users },
+    neutral: { label: 'Нейтральные', icon: Users },
+  };
+
+  const groupedByFaction = useMemo(() => {
+    const groups: Record<string, typeof sortedRelations> = {};
+    for (const rel of sortedRelations) {
+      const npcDef = findNpcById(rel.npcId);
+      const faction = npcDef?.faction ?? 'neutral';
+      (groups[faction] ??= []).push(rel);
+    }
+    return groups;
+  }, [sortedRelations]);
+
+  const factionOrder = ['network', 'guild', 'resistance', 'neutral'];
+  const visibleFactions = factionOrder.filter((f) => groupedByFaction[f]?.length > 0);
 
   return (
     <>
@@ -131,21 +154,48 @@ function NPCRelationshipPanelInner({ open, onClose }: NPCRelationshipPanelProps)
                 <ScrollArea className="flex-1 px-4 py-3">
                   {hasRelations ? (
                     <div className="flex flex-col gap-3" role="list">
-                      {sortedRelations.map((relation, index) => (
-                        <div key={relation.npcId} role="listitem">
-                          <NPCRelationshipCard
-                            relation={relation}
-                            index={index}
-                            npcStates={npcStates}
-                            currentHour={currentHour}
-                            showSchedule={showSchedule}
-                            affinity={npcAffinity[relation.npcId] ?? 0}
-                            canGift={canGift}
-                            reducedMotion={reducedMotion}
-                            onOpenGift={handleOpenGift}
-                          />
-                        </div>
-                      ))}
+                      {visibleFactions.map((faction) => {
+                        const factionRels = groupedByFaction[faction];
+                        const meta = FACTION_META[faction];
+                        const FactionIcon = meta.icon;
+                        let globalIdx = 0;
+                        // compute offset from previously rendered factions
+                        for (const prevFaction of visibleFactions) {
+                          if (prevFaction === faction) break;
+                          globalIdx += (groupedByFaction[prevFaction] ?? []).length;
+                        }
+                        return (
+                          <div key={faction} className={`npc-faction--${faction}`}>
+                            <div className="npc-rel-faction-header">
+                              <div className="npc-rel-faction-icon">
+                                <FactionIcon className="size-3" aria-hidden="true" />
+                              </div>
+                              <span className="npc-rel-faction-label">{meta.label}</span>
+                              <span className="npc-rel-faction-count">{factionRels.length}</span>
+                            </div>
+                            <div className="flex flex-col gap-3">
+                              {factionRels.map((relation) => {
+                                const idx = globalIdx++;
+                                return (
+                                  <div key={relation.npcId} role="listitem">
+                                    <NPCRelationshipCard
+                                      relation={relation}
+                                      index={idx}
+                                      npcStates={npcStates}
+                                      currentHour={currentHour}
+                                      showSchedule={showSchedule}
+                                      affinity={npcAffinity[relation.npcId] ?? 0}
+                                      canGift={canGift}
+                                      reducedMotion={reducedMotion}
+                                      onOpenGift={handleOpenGift}
+                                    />
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   ) : (
                     <NPCRelationshipEmptyState reducedMotion={reducedMotion} />

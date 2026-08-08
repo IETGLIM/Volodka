@@ -23,6 +23,7 @@ import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { useAllThoughtCabinetItems, useAcquiredThoughts } from '@/store/selectors/thoughtCabinetSelectors';
 import { useGameStore } from '@/store/gameStore';
 import { MAX_EQUIPPED_THOUGHTS } from '@/data/thoughtCabinet';
+import './thought-cabinet.css';
 
 /* ═══════════════════════════════════════════════════════════════
    Types
@@ -35,7 +36,7 @@ export type { ThoughtCabinetItem, ThoughtCabinetEffect };
    Voice skill → icon / color mapping
    ═══════════════════════════════════════════════════════════════ */
 
-const VOICE_META: Record<
+export const VOICE_META: Record<
   ThoughtCabinetItem['voice'],
   { icon: typeof Cpu; color: string; label: string }
 > = {
@@ -104,14 +105,12 @@ const ThoughtCard = memo(function ThoughtCard({
           : 'Мысль ещё не получена'
       }
     >
-      {/* Purple left accent bar for acquired thoughts */}
+      {/* Voice category color strip — enhanced left accent */}
       {isAcquired && (
         <div
-          className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full"
+          className={`thought-category-strip thought-category--${thought.voice} ${isEquipped ? 'thought-category-strip--equipped' : ''}`}
           style={{
-            background: isEquipped
-              ? 'rgb(var(--cyber-cyan-rgb) / 0.7)'
-              : 'rgba(168, 85, 247, 0.4)',
+            background: isEquipped ? voice.color : `${voice.color}55`,
           }}
           aria-hidden
         />
@@ -162,26 +161,31 @@ const ThoughtCard = memo(function ThoughtCard({
         )}
       </div>
 
-      {/* Brief description / effects preview */}
+      {/* Brief description / effects preview with stat bars */}
       {isAcquired && (
-        <div className="pl-8 space-y-1">
+        <div className="pl-8 space-y-1.5">
           <p className="text-[10px] text-slate-500 line-clamp-2 leading-tight">
             {thought.description}
           </p>
-          <div className="flex flex-wrap gap-1">
-            {thought.effects.slice(0, 2).map((eff, idx) => (
-              <span
-                key={`${thought.id}-eff-${idx}`}
-                className="text-[9px] font-mono px-1.5 py-0.5 rounded"
-                style={{
-                  background: 'rgba(168, 85, 247, 0.08)',
-                  color: `${voice.color}aa`,
-                  border: '1px solid rgba(168, 85, 247, 0.12)',
-                }}
-              >
-                {eff.skill} {eff.modifier > 0 ? `+${eff.modifier}` : eff.modifier}
-              </span>
-            ))}
+          <div className="space-y-1">
+            {thought.effects.slice(0, 3).map((eff, idx) => {
+              const isPositive = eff.modifier > 0;
+              const barWidth = Math.min(100, Math.abs(eff.modifier) * 20);
+              return (
+                <div key={`${thought.id}-eff-${idx}`} className="thought-effects-grid">
+                  <span className="thought-effects-label">{eff.skill}</span>
+                  <div className="thought-stat-bar">
+                    <div
+                      className={`thought-stat-bar-fill ${isPositive ? 'thought-stat-bar-fill--positive' : 'thought-stat-bar-fill--negative'}`}
+                      style={{ width: `${barWidth}%` }}
+                    />
+                  </div>
+                  <span className={`thought-effects-value ${isPositive ? 'thought-effects-value--positive' : 'thought-effects-value--negative'}`}>
+                    {isPositive ? `+${eff.modifier}` : eff.modifier}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
@@ -354,37 +358,49 @@ export function ThoughtCabinetTab({ searchQuery }: ThoughtCabinetTabProps) {
           </p>
         )}
 
-        {/* Effects */}
+        {/* Effects with enhanced stat bars */}
         {isAcquired && selectedThought.effects.length > 0 && (
           <div>
             <h4 className="text-[10px] font-mono uppercase tracking-widest text-slate-500 mb-2">
               Эффекты
             </h4>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               {selectedThought.effects.map((eff, idx) => {
                 const skillInfo = JOURNAL_SKILL_LABELS[eff.skill as keyof typeof JOURNAL_SKILL_LABELS];
+                const isPositive = eff.modifier > 0;
+                const barWidth = Math.min(100, Math.abs(eff.modifier) * 15);
+                const voiceColor = VOICE_META[selectedThought.voice]?.color ?? '#94a3b8';
                 return (
                   <div
                     key={`${selectedThought.id}-effect-${idx}`}
-                    className="flex items-center gap-2 px-3 py-2 rounded-lg border border-cyan-900/15 bg-slate-900/30"
+                    className="thought-detail-effect"
+                    style={{ borderColor: `${voiceColor}15` }}
                   >
-                    {skillInfo && (
+                    <div className="flex items-center gap-2 mb-1">
+                      {skillInfo && (
+                        <div
+                          className={`size-2 rounded-full bg-gradient-to-r ${skillInfo.color} shrink-0`}
+                          aria-hidden
+                        />
+                      )}
+                      <span className="text-xs text-slate-200 font-medium flex-1">
+                        {eff.skill}
+                      </span>
+                      <span className="text-[10px] text-slate-500">
+                        {eff.description}
+                      </span>
+                      <span
+                        className={`text-xs font-mono font-bold ${isPositive ? 'thought-effects-value--positive' : 'thought-effects-value--negative'}`}
+                      >
+                        {isPositive ? `+${eff.modifier}` : eff.modifier}
+                      </span>
+                    </div>
+                    <div className="thought-detail-effect-bar">
                       <div
-                        className={`size-2 rounded-full bg-gradient-to-r ${skillInfo.color} shrink-0`}
-                        aria-hidden
+                        className={`thought-detail-effect-bar-fill ${isPositive ? 'thought-detail-effect-bar-fill--positive' : 'thought-detail-effect-bar-fill--negative'}`}
+                        style={{ width: `${barWidth}%` }}
                       />
-                    )}
-                    <span className="text-xs text-slate-200 font-medium flex-1">
-                      {eff.skill}
-                    </span>
-                    <span
-                      className={`text-xs font-mono font-bold ${eff.modifier > 0 ? 'text-emerald-400' : 'text-rose-400'}`}
-                    >
-                      {eff.modifier > 0 ? `+${eff.modifier}` : eff.modifier}
-                    </span>
-                    <span className="text-[10px] text-slate-500 flex-1 text-right">
-                      {eff.description}
-                    </span>
+                    </div>
                   </div>
                 );
               })}

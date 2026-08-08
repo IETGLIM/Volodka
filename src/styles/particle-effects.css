@@ -1,0 +1,348 @@
+/* ══════════════════════════════════════════════════════════════════════════════
+   Volodka RPG — Particle Effects CSS (R11-11c)
+   Pure CSS particle systems for cyberpunk UI atmosphere.
+   All effects include reduced-motion overrides.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ══════════════════════════════════════════════════════════════
+   1. FLOATING PARTICLES — Ambient floating dots
+   Common in cyberpunk UI. Apply `.particle-float-container`
+   to any container to fill it with floating particles.
+   ══════════════════════════════════════════════════════════════ */
+
+@keyframes particle-float-drift {
+  0% {
+    transform: translateY(0) translateX(0);
+    opacity: 0;
+  }
+  10% { opacity: var(--pf-opacity, 0.15); }
+  90% { opacity: var(--pf-opacity, 0.15); }
+  100% {
+    transform: translateY(calc(-1 * var(--pf-distance, 100px))) translateX(var(--pf-drift, 20px));
+    opacity: 0;
+  }
+}
+
+.particle-float-container {
+  position: relative;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.particle-float {
+  position: absolute;
+  bottom: 0;
+  border-radius: 50%;
+  background: hsl(var(--pf-hue, 180), 70%, 60%);
+  box-shadow: 0 0 4px hsl(var(--pf-hue, 180), 70%, 60% / 0.5);
+  width: var(--pf-size, 2px);
+  height: var(--pf-size, 2px);
+  animation: particle-float-drift var(--pf-duration, 8s) linear var(--pf-delay, 0s) infinite;
+  will-change: transform, opacity;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   2. SPARK PARTICLES — Brief burst on button click
+   Apply `.spark-click` to buttons for spark effect on :active.
+   ══════════════════════════════════════════════════════════════ */
+
+@keyframes spark-burst {
+  0% { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(var(--spark-x, 10px), var(--spark-y, -15px)) scale(0); opacity: 0; }
+}
+
+.spark-click {
+  position: relative;
+  overflow: visible;
+}
+
+.spark-click::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.spark-click:active::after {
+  opacity: 1;
+  animation: spark-burst 0.4s ease-out forwards;
+  background: radial-gradient(circle, rgb(var(--cyber-cyan-rgb) / 0.8) 0%, transparent 70%);
+  background-size: 4px 4px;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+/* Multi-spark variant — 4 sparks on click */
+@keyframes spark-1 { 0% { transform: translate(0,0) scale(1); opacity:1; } 100% { transform: translate(12px, -18px) scale(0); opacity:0; } }
+@keyframes spark-2 { 0% { transform: translate(0,0) scale(1); opacity:1; } 100% { transform: translate(-10px, -14px) scale(0); opacity:0; } }
+@keyframes spark-3 { 0% { transform: translate(0,0) scale(1); opacity:1; } 100% { transform: translate(14px, -8px) scale(0); opacity:0; } }
+@keyframes spark-4 { 0% { transform: translate(0,0) scale(1); opacity:1; } 100% { transform: translate(-12px, -20px) scale(0); opacity:0; } }
+
+.spark-multi::before,
+.spark-multi::after {
+  content: '';
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: rgb(var(--cyber-cyan-rgb));
+  box-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.8);
+  pointer-events: none;
+  opacity: 0;
+  top: 50%;
+  left: 50%;
+}
+
+.spark-multi::before {
+  animation: spark-1 0.5s ease-out, spark-3 0.5s ease-out 0.05s;
+}
+
+.spark-multi::after {
+  animation: spark-2 0.5s ease-out 0.03s, spark-4 0.5s ease-out 0.07s;
+}
+
+.spark-multi:active::before,
+.spark-multi:active::after {
+  opacity: 1;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   3. DUST MOTES — Subtle background dust animation
+   Apply `.dust-motes` to a container for floating dust.
+   ══════════════════════════════════════════════════════════════ */
+
+@keyframes dust-drift {
+  0%, 100% {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: var(--dust-opacity, 0.08);
+  }
+  25% {
+    transform: translate(var(--dust-dx1, 30px), var(--dust-dy1, -20px)) rotate(90deg);
+  }
+  50% {
+    transform: translate(var(--dust-dx2, -10px), var(--dust-dy2, -40px)) rotate(180deg);
+    opacity: calc(var(--dust-opacity, 0.08) * 1.5);
+  }
+  75% {
+    transform: translate(var(--dust-dx3, -30px), var(--dust-dy3, -15px)) rotate(270deg);
+  }
+}
+
+.dust-motes {
+  position: relative;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.dust-mote {
+  position: absolute;
+  width: var(--dust-size, 1.5px);
+  height: var(--dust-size, 1.5px);
+  border-radius: 50%;
+  background: rgba(200, 220, 240, var(--dust-opacity, 0.08));
+  animation: dust-drift var(--dust-duration, 12s) ease-in-out var(--dust-delay, 0s) infinite;
+  will-change: transform, opacity;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   4. DATA PARTICLES — Matrix-style falling dots
+   For loading/data screens. Apply `.data-rain` to container.
+   ══════════════════════════════════════════════════════════════ */
+
+@keyframes data-fall {
+  0% { transform: translateY(-20px); opacity: 0; }
+  5% { opacity: var(--dr-opacity, 0.3); }
+  95% { opacity: var(--dr-opacity, 0.3); }
+  100% { transform: translateY(var(--dr-fall-distance, 100vh)); opacity: 0; }
+}
+
+@keyframes data-char-cycle {
+  0%, 100% { opacity: var(--dr-opacity, 0.3); }
+  50% { opacity: calc(var(--dr-opacity, 0.3) * 2); text-shadow: 0 0 6px currentColor; }
+}
+
+.data-rain {
+  position: relative;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.data-rain-column {
+  position: absolute;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+  font-size: var(--dr-font-size, 10px);
+  color: rgb(var(--cyber-matrix-rgb, 0, 255, 65) / var(--dr-opacity, 0.3));
+  animation: data-fall var(--dr-speed, 6s) linear var(--dr-delay, 0s) infinite;
+  will-change: transform, opacity;
+}
+
+.data-rain-char {
+  animation: data-char-cycle var(--dr-char-speed, 2s) ease-in-out var(--dr-char-delay, 0s) infinite;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   5. CELEBRATION PARTICLES — Burst for achievements/level-ups
+   Apply `.celebration-burst` to a container. Trigger with
+   `.celebration-burst.active` class.
+   ══════════════════════════════════════════════════════════════ */
+
+@keyframes celebration-particle-1 {
+  0% { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(60px, -80px) scale(0); opacity: 0; }
+}
+@keyframes celebration-particle-2 {
+  0% { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(-50px, -90px) scale(0); opacity: 0; }
+}
+@keyframes celebration-particle-3 {
+  0% { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(80px, -30px) scale(0); opacity: 0; }
+}
+@keyframes celebration-particle-4 {
+  0% { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(-70px, -50px) scale(0); opacity: 0; }
+}
+@keyframes celebration-particle-5 {
+  0% { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(30px, -100px) scale(0); opacity: 0; }
+}
+@keyframes celebration-particle-6 {
+  0% { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(-40px, -70px) scale(0); opacity: 0; }
+}
+@keyframes celebration-particle-7 {
+  0% { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(90px, -60px) scale(0); opacity: 0; }
+}
+@keyframes celebration-particle-8 {
+  0% { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(-80px, -20px) scale(0); opacity: 0; }
+}
+
+.celebration-burst {
+  position: relative;
+  pointer-events: none;
+}
+
+.celebration-burst .celeb-particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  opacity: 0;
+}
+
+.celebration-burst.active .celeb-particle {
+  opacity: 1;
+}
+
+.celebration-burst.active .celeb-particle:nth-child(1) { background: #22d3ee; box-shadow: 0 0 6px #22d3ee; animation: celebration-particle-1 0.8s ease-out forwards; }
+.celebration-burst.active .celeb-particle:nth-child(2) { background: #fbbf24; box-shadow: 0 0 6px #fbbf24; animation: celebration-particle-2 0.9s ease-out 0.05s forwards; }
+.celebration-burst.active .celeb-particle:nth-child(3) { background: #a78bfa; box-shadow: 0 0 6px #a78bfa; animation: celebration-particle-3 0.85s ease-out 0.1s forwards; }
+.celebration-burst.active .celeb-particle:nth-child(4) { background: #34d399; box-shadow: 0 0 6px #34d399; animation: celebration-particle-4 0.75s ease-out 0.08s forwards; }
+.celebration-burst.active .celeb-particle:nth-child(5) { background: #fb7185; box-shadow: 0 0 6px #fb7185; animation: celebration-particle-5 0.95s ease-out 0.12s forwards; }
+.celebration-burst.active .celeb-particle:nth-child(6) { background: #22d3ee; box-shadow: 0 0 6px #22d3ee; animation: celebration-particle-6 0.7s ease-out 0.15s forwards; }
+.celebration-burst.active .celeb-particle:nth-child(7) { background: #fbbf24; box-shadow: 0 0 6px #fbbf24; animation: celebration-particle-7 0.88s ease-out 0.03s forwards; }
+.celebration-burst.active .celeb-particle:nth-child(8) { background: #a78bfa; box-shadow: 0 0 6px #a78bfa; animation: celebration-particle-8 0.92s ease-out 0.07s forwards; }
+
+/* ══════════════════════════════════════════════════════════════
+   6. WEATHER PARTICLES — Rain/snow CSS indicators
+   Apply `.weather-particle-rain` or `.weather-particle-snow`
+   to the weather widget container.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Rain drops ── */
+@keyframes rain-drop-fall {
+  0% { transform: translateY(-10px) translateX(0); opacity: 0; }
+  10% { opacity: var(--rain-opacity, 0.4); }
+  100% { transform: translateY(var(--rain-length, 40px)) translateX(var(--rain-wind, -3px)); opacity: 0; }
+}
+
+.weather-particle-rain {
+  position: relative;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.rain-drop {
+  position: absolute;
+  width: 1px;
+  height: var(--rain-drop-height, 12px);
+  background: linear-gradient(180deg, transparent, rgb(var(--cyber-cyan-rgb) / var(--rain-opacity, 0.4)));
+  border-radius: 0 0 1px 1px;
+  animation: rain-drop-fall var(--rain-speed, 0.6s) linear var(--rain-delay, 0s) infinite;
+  will-change: transform, opacity;
+}
+
+/* ── Snow flakes ── */
+@keyframes snow-drift {
+  0% { transform: translateY(-5px) translateX(0) rotate(0deg); opacity: 0; }
+  10% { opacity: var(--snow-opacity, 0.5); }
+  50% { transform: translateY(calc(var(--snow-fall, 30px) * 0.5)) translateX(var(--snow-sway, 8px)) rotate(180deg); }
+  100% { transform: translateY(var(--snow-fall, 30px)) translateX(calc(var(--snow-sway, 8px) * -1)) rotate(360deg); opacity: 0; }
+}
+
+.weather-particle-snow {
+  position: relative;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.snow-flake {
+  position: absolute;
+  width: var(--snow-size, 3px);
+  height: var(--snow-size, 3px);
+  border-radius: 50%;
+  background: rgba(220, 230, 255, var(--snow-opacity, 0.5));
+  box-shadow: 0 0 2px rgba(220, 230, 255, 0.3);
+  animation: snow-drift var(--snow-speed, 3s) ease-in-out var(--snow-delay, 0s) infinite;
+  will-change: transform, opacity;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   REDUCED MOTION OVERRIDES
+   All particle effects respect prefers-reduced-motion.
+   ══════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .particle-float,
+  .dust-mote,
+  .data-rain-column,
+ .data-rain-char,
+ .rain-drop,
+  .snow-flake,
+ .celeb-particle {
+    animation: none !important;
+    display: none !important;
+  }
+
+  .spark-click::after,
+  .spark-multi::before,
+  .spark-multi::after {
+    animation: none !important;
+    display: none !important;
+  }
+
+  .celebration-burst.active .celeb-particle {
+    animation: none !important;
+  }
+}
+
+/* Mobile: reduce particle count implicitly by limiting container size */
+@media (max-width: 768px) {
+  .data-rain-column {
+    --dr-font-size: 8px;
+  }
+
+  .celebration-burst .celeb-particle {
+    width: 3px;
+    height: 3px;
+  }
+}

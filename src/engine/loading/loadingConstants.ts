@@ -76,3 +76,35 @@ export const TIPS = [
 ] as const;
 
 export const LOADING_MESSAGE_ID = 'loading-message';
+
+/** Scene-aware tips — keyed by loading message substring, fallback to general tips */
+export const SCENE_TIPS: Record<string, readonly string[]> = {
+  'Квартира': [
+    'Исследуйте каждый уголок — скрытые стихи ждут в неожиданных местах.',
+    'Поговорите с NPC несколько раз — их реплики меняются.',
+  ],
+  'Улицы': [
+    'WASD — движение, Shift — бег, Space — прыжок.',
+    'Карма влияет на доступные выборы — каждый поступок имеет значение.',
+  ],
+  'Подвал': [
+    'Стихи дают способности — используйте их в трудных ситуациях.',
+    'Стресс влияет на доступные варианты — не доводите себя до предела.',
+  ],
+  'Бой': [
+    'Используйте стихи-способности, чтобы обойти препятствия.',
+    'У каждого врага есть слабость — изучите её перед атакой.',
+  ],
+  'Торгов': [
+    'Собранные предметы можно продать или использовать для крафта.',
+    'Проверяйте инвентарь — иногда ключи скрываются среди лута.',
+  ],
+};
+
+/** Get scene-relevant tips, falling back to general TIPS */
+export function getLoadingTips(message: string): readonly string[] {
+  for (const [key, tips] of Object.entries(SCENE_TIPS)) {
+    if (message.includes(key)) return tips;
+  }
+  return TIPS;
+}
