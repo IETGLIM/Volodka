@@ -47,6 +47,13 @@ import { CraftingDiscoveryToast } from '../CraftingDiscoveryToast';
 import { GameSystemToast } from '../GameSystemToast';
 import { CompassHUD } from '../CompassHUD';
 import { ExplorationMobileHud } from '../ExplorationMobileHud';
+import { VirtualJoystick } from '../VirtualJoystick';
+import { MobileActionButtons } from '../MobileActionButtons';
+import { MinimapComponent } from '../MinimapComponent';
+import {
+  startVirtualJoystickBridge,
+  stopVirtualJoystickBridge,
+} from '@/engine/player/virtualJoystickBridge';
 import { SceneTransitionOverlay } from '../SceneTransitionOverlay';
 import { SceneEntryTextOverlay } from '../SceneEntryTextOverlay';
 import '@/engine/audio/transitionSound';
@@ -552,7 +559,7 @@ export const GameplayStatsPanel = memo(function GameplayStatsPanel({
   return <OrchestratorStatsPanel onClose={onClose} />;
 });
 
-/** Touch-first exploration controls. */
+/** Touch-first exploration controls (D-pad + action buttons). */
 export const GameplayMobileExplorationHud = memo(function GameplayMobileExplorationHud({
   onOpenInventory,
   onOpenJournal,
@@ -566,6 +573,37 @@ export const GameplayMobileExplorationHud = memo(function GameplayMobileExplorat
   if (!isMobile || !isExplorationHudProfile(profile) || diegeticNarrative != null) return null;
 
   return <ExplorationMobileHud onOpenInventory={onOpenInventory} onOpenJournal={onOpenJournal} />;
+});
+
+/** Virtual analog joystick for touch devices — bridges to shared virtual controls. */
+export const GameplayVirtualJoystick = memo(function GameplayVirtualJoystick() {
+  const profile = useGameplayPresentationProfile();
+  const isMobile = useMobileDetection();
+  if (!isMobile || !isExplorationHudProfile(profile)) return null;
+
+  useEffect(() => {
+    startVirtualJoystickBridge();
+    return () => { stopVirtualJoystickBridge(); };
+  }, []);
+
+  return <VirtualJoystick />;
+});
+
+/** Mobile action buttons (Interact, Use Item, Sprint) — right-side touch cluster. */
+export const GameplayMobileActionButtons = memo(function GameplayMobileActionButtons() {
+  const profile = useGameplayPresentationProfile();
+  const isMobile = useMobileDetection();
+  if (!isMobile || !isExplorationHudProfile(profile)) return null;
+
+  return <MobileActionButtons />;
+});
+
+/** Circular minimap with NPC dots, quest markers, and scene boundaries. */
+export const GameplayMinimap = memo(function GameplayMinimap() {
+  const profile = useGameplayPresentationProfile();
+  if (!isExplorationHudProfile(profile)) return null;
+
+  return <MinimapComponent />;
 });
 
 /** Story and dialogue overlays — store selectors avoid stale narrative flags. */

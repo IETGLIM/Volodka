@@ -122,6 +122,10 @@ function applyMapsToMaterial(std: THREE.MeshStandardMaterial, maps: PhotoPbrMaps
     std.aoMapIntensity = 0.92;
   }
   if (std.color) std.color.multiplyScalar(0.94);
+  // Anti-plastic: clamp envMapIntensity to prevent overly shiny surfaces
+  if (typeof std.envMapIntensity === 'number') {
+    std.envMapIntensity = Math.min(std.envMapIntensity, 0.25);
+  }
   std.needsUpdate = true;
 }
 

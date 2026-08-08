@@ -119,6 +119,11 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory, onOpenJ
   /** pointerId → direction currently held by that touch */
   const pointerBindingsRef = useRef<Map<number, keyof VirtualControls>>(new Map());
 
+  /** Axes currently or recently owned by the D-pad (for safe coexistence with joystick). */
+  const dpadOwnedAxesRef = useRef<Set<string>>(new Set());
+
+  const DIRECTION_KEYS = ['forward', 'backward', 'left', 'right'] as const;
+
   const syncMovementControls = useCallback(() => {
     if (!areSharedVirtualControlsWritable()) {
       clearSharedVirtualControls();
@@ -126,20 +131,29 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory, onOpenJ
     }
     const vc = virtualControlsRef.current;
     const active = new Set(pointerBindingsRef.current.values());
-    const directionKeys = ['forward', 'backward', 'left', 'right'] as const;
     let moving = false;
-    for (const key of directionKeys) {
+    // Only update axes the D-pad owns or recently owned — never zero
+    // axes that may be driven by the virtual joystick bridge or gamepad.
+    for (const key of DIRECTION_KEYS) {
+      const owned = dpadOwnedAxesRef.current.has(key);
       const on = active.has(key);
-      vc[key] = on ? 1 : 0;
+      if (owned || on) {
+        vc[key] = on ? 1 : 0;
+      }
       if (on) moving = true;
     }
+    // Jump is always safe to manage (D-pad exclusive)
     vc.jump = active.has('jump') ? 1 : 0;
-    vc.moveMagnitude = moving ? 1 : 0;
+    // Only override moveMagnitude if D-pad owns any direction
+    if (moving || dpadOwnedAxesRef.current.size > 0) {
+      vc.moveMagnitude = moving ? 1 : 0;
+    }
   }, [virtualControlsRef]);
 
   const bindPointerControl = useCallback(
     (key: keyof VirtualControls, pointerId: number) => {
       pointerBindingsRef.current.set(pointerId, key);
+      dpadOwnedAxesRef.current.add(key);
       syncMovementControls();
     },
     [syncMovementControls],
@@ -151,6 +165,9 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory, onOpenJ
         pointerBindingsRef.current.delete(pointerId);
       }
       syncMovementControls();
+      // Clear ownership after sync so the axis gets zeroed this frame,
+      // then next sync won't touch it (joystick can freely control it).
+      requestAnimationFrame(() => { dpadOwnedAxesRef.current.delete(key); });
     },
     [syncMovementControls],
   );
@@ -166,6 +183,7 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory, onOpenJ
 
   const resetAllControls = useCallback(() => {
     pointerBindingsRef.current.clear();
+    dpadOwnedAxesRef.current.clear();
     clearSharedVirtualControls();
     setRunToggled(false);
   }, []);

@@ -51,6 +51,10 @@ function applyLutTransform(
       nr += 0.06 * (1 - lum);
       nb += 0.08 * (1 - lum);
       ng += 0.02 * lum;
+      // Cinematic S-curve: deepen shadows, hold highlights
+      nr = nr < 0.5 ? nr * nr * 1.8 : 1.0 - (1.0 - nr) * (1.0 - nr) * 0.6;
+      ng = ng < 0.5 ? ng * ng * 1.7 : 1.0 - (1.0 - ng) * (1.0 - ng) * 0.65;
+      nb = nb < 0.5 ? nb * nb * 1.9 : 1.0 - (1.0 - nb) * (1.0 - nb) * 0.55;
       return [clamp01(nr), clamp01(ng), clamp01(nb)];
     }
     case 'warm_interior': {
@@ -60,6 +64,9 @@ function applyLutTransform(
       const nb = b * 0.88 + 0.03 * (1 - lum);
       nr += 0.05 * (1 - lum);
       ng += 0.03 * (1 - lum);
+      // Cinematic contrast: subtle S-curve in shadows for warmth depth
+      nr = nr < 0.4 ? nr * nr * 2.0 : nr;
+      ng = ng < 0.4 ? ng * ng * 1.8 : ng;
       return [clamp01(nr), clamp01(ng), clamp01(nb)];
     }
     case 'gothic_dust': {
@@ -68,7 +75,11 @@ function applyLutTransform(
       let ng = g * 0.94 + 0.04 * (1 - lum);
       const nb = b * 0.92 + 0.02 * lum;
       ng += 0.03 * (1 - lum);
-      return [clamp01(nr), clamp01(ng), clamp01(nb)];
+      // Cinematic S-curve: crush blacks slightly, lift midtones for dusty haze
+      const shadow = clamp01((1.0 - lum) * 0.3);
+      const nrOut = nr * (1.0 - shadow * 0.2);
+      const ngOut = ng * (1.0 - shadow * 0.15);
+      return [clamp01(nrOut), clamp01(ngOut), clamp01(nb)];
     }
     case 'cyber_noir': {
       // Restrained orange-teal: push shadows toward teal, lift highlights toward warm amber.
@@ -89,6 +100,10 @@ function applyLutTransform(
       nr = lum + (nr - lum) * sat;
       ng = lum + (ng - lum) * sat;
       nb = lum + (nb - lum) * sat;
+      // Cinematic S-curve for filmic contrast in shadows/highlights
+      nr = nr < 0.45 ? nr * nr * 1.9 : 1.0 - (1.0 - nr) * (1.0 - nr) * 0.65;
+      ng = ng < 0.45 ? ng * ng * 1.85 : 1.0 - (1.0 - ng) * (1.0 - ng) * 0.68;
+      nb = nb < 0.45 ? nb * nb * 1.95 : 1.0 - (1.0 - nb) * (1.0 - nb) * 0.6;
       return [clamp01(nr), clamp01(ng), clamp01(nb)];
     }
     case 'cold_noir': {

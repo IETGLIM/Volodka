@@ -28,7 +28,7 @@ const MOOD: Record<
   }
 > = {
   interior: {
-    envMapIntensity: 0.42,
+    envMapIntensity: 0.20,
     minRoughness: 0.68,
     roughnessMul: 1.22,
     maxMetalness: 0.22,
@@ -36,7 +36,7 @@ const MOOD: Record<
     repeatScale: 1.45,
   },
   plaza: {
-    envMapIntensity: 0.48,
+    envMapIntensity: 0.25,
     minRoughness: 0.62,
     roughnessMul: 1.2,
     maxMetalness: 0.4,
@@ -44,7 +44,7 @@ const MOOD: Record<
     repeatScale: 1.15,
   },
   street: {
-    envMapIntensity: 0.5,
+    envMapIntensity: 0.25,
     minRoughness: 0.58,
     roughnessMul: 1.22,
     maxMetalness: 0.38,
@@ -52,7 +52,7 @@ const MOOD: Record<
     repeatScale: 1.25,
   },
   office: {
-    envMapIntensity: 0.44,
+    envMapIntensity: 0.22,
     minRoughness: 0.64,
     roughnessMul: 1.18,
     maxMetalness: 0.28,
@@ -60,7 +60,7 @@ const MOOD: Record<
     repeatScale: 1.55,
   },
   prop: {
-    envMapIntensity: 0.48,
+    envMapIntensity: 0.25,
     minRoughness: 0.6,
     roughnessMul: 1.18,
     maxMetalness: 0.5,
@@ -113,7 +113,7 @@ export function weatherEnvironmentMaterials(
         std.roughness = Math.min(1, Math.max(cfg.minRoughness, std.roughness * cfg.roughnessMul));
       }
       if (typeof std.metalness === 'number') {
-        std.metalness = Math.min(cfg.maxMetalness, Math.max(0, std.metalness));
+        std.metalness = Math.min(cfg.maxMetalness, Math.max(0.02, std.metalness));
       }
       if (std.flatShading) {
         std.flatShading = false;

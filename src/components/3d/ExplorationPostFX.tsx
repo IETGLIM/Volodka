@@ -60,6 +60,42 @@ import { shouldUseDenseSceneAmbientOcclusion } from '@/config/sceneVisualProfile
 import { GodRaysSunMesh, GODRAYS_POST_SCENES } from '@/components/3d/GodRaysSunMesh';
 import type { SceneId } from '@/shared/types/game';
 
+/** Per-scene chromatic aberration tuning — cinematic lens character varies by mood. **/
+const SCENE_CHROMATIC: Record<string, { baseAmount: number; stressMax: number }> = {
+  volodka_room:       { baseAmount: 0.15, stressMax: 0.0 },  // Clean CRT monitors — no fringing
+  volodka_corridor:   { baseAmount: 0.22, stressMax: 0.6 },  // Noir corridor gets subtle stress ramp
+  street_night:       { baseAmount: 0.25, stressMax: 0.8 },  // Wet noir — moderate lens character
+  cafe_evening:       { baseAmount: 0.20, stressMax: 0.5 },  // Hazy blue-neon café
+  sleep_dream:        { baseAmount: 0.30, stressMax: 0.0 },  // Dreamy — persistent soft fringing
+  abandoned_factory:  { baseAmount: 0.18, stressMax: 0.4 },  // Industrial — restrained
+  factory_basement:   { baseAmount: 0.16, stressMax: 0.3 },  // Zarya-M — clinical
+  chk_campfire_night: { baseAmount: 0.22, stressMax: 0.0 },  // Warm fire — no stress ramp
+  city_square:        { baseAmount: 0.22, stressMax: 0.6 },  // Plaza noir
+  library_day:        { baseAmount: 0.12, stressMax: 0.0 },  // Reading — minimal
+  home_evening:       { baseAmount: 0.14, stressMax: 0.0 },  // Cozy — minimal
+  river_pier:         { baseAmount: 0.20, stressMax: 0.4 },  // Pier dusk
+  pier_evening:       { baseAmount: 0.22, stressMax: 0.5 },  // Evening pier
+  rooftop_edge:       { baseAmount: 0.28, stressMax: 0.0 },  // Galaxy sunset — persistent
+  battle:             { baseAmount: 0.10, stressMax: 1.0 },  // Combat — clean at rest, strong under stress
+};
+const DEFAULT_CHROMATIC = { baseAmount: 0.18, stressMax: 0.5 };
+
+/** Per-scene bloom emissive bias — scenes with neon/emissive need lower threshold to bloom those sources **/
+const SCENE_BLOOM_EMISSIVE_BOOST: Record<string, number> = {
+  volodka_room: 0.08,       // Monitor glow — lower threshold catches CRT emissive
+  street_night: 0.14,       // Neon signs — strong emissive boost for wet noir
+  cafe_evening: 0.10,       // Blue neon bar
+  factory_basement: 0.10,   // Zarya-M core glow
+  underground_bunker: 0.08, // CRT green glow
+  city_square: 0.10,        // Plaza neon
+  guild_mainframe: 0.14,    // Server rack glow
+  sleep_dream: 0.08,        // Ethereal glow
+  river_pier: 0.08,         // Fire + string lights emissive
+  pier_evening: 0.10,       // Evening pier neon
+  chk_campfire_night: 0.10, // Fire emissive
+  chk_forest_zorge: 0.08,   // Campfire warm emissive
+};
+
 /** Per-scene color grading overrides for CyberPunk2077 / Noir / Gothic feel */
 const SCENE_COLOR_GRADE: Record<string, { hue: number; saturation: number; brightness: number; contrast: number }> = {
   volodka_room:       { hue: -0.05, saturation: 0.08, brightness: 0.01, contrast: 0.22 }, // CRT room — filmic, not candy
@@ -90,12 +126,16 @@ const SCENE_COLOR_GRADE: Record<string, { hue: number; saturation: number; brigh
 
 const DEFAULT_COLOR_GRADE = { hue: 0, saturation: 0, brightness: 0, contrast: 0.15 };
 
-/** Indoor scenes that get subtle film grain for cinematic feel (high/ultra) */
+/** Scenes that get subtle film grain for cinematic feel (high/ultra).
+ *  Includes indoor scenes and evening/night outdoor scenes for noir texture. */
 const NOISE_SCENES = new Set([
   'volodka_room', 'volodka_corridor', 'home_evening', 'library_day',
   'factory_basement', 'zarema_albert_room', 'solnysh_room',
   'guild_mainframe', 'albert_backroom', 'zarema_room',
   'library_basement', 'underground_bunker', 'sleep_dream',
+  // Evening/night outdoor — cinematic noir grain
+  'street_night', 'cafe_evening', 'river_pier', 'pier_evening',
+  'chk_campfire_night', 'chk_forest_zorge',
 ]);
 
 /** Scenes that get CRT scanline overlay for cyberpunk terminal aesthetic */
@@ -520,18 +560,21 @@ function PostFXPipeline() {
     colorGrade.brightness + SCENE_VISIBILITY.postFxBrightnessLift + userBrightnessOffset;
 
   const stress = usePlayerStress();
+  const energy = useGameStore((s) => s.playerState.energy);
   const stressFactor = stress / 100;
+  // Low energy adds to vignette darkness (proxy for health — exhausted player sees darker edges)
+  const energyFactor = Math.max(0, 1 - (energy ?? 100) / 100);
   const wantsScanlines = SCANLINE_SCENES.has(sceneId);
   const softOk = isSoftWorkAffordable();
-  // Film grain for cinematic texture. High keeps the classic 0.035 opacity; Ultra now gets a fainter
-  // 0.022 layer (Session 9 polish — Ultra previously skipped grain entirely, leaving the image too
-  // clean/"plastic". A subtle grain restores filmic tactility without the 60fps risk, soft-work gated).
+  // Film grain for cinematic texture. High uses the built-in Noise (random per-pixel).
+  // Ultra gets coherent grain that reads as real film grain (structured, slowly drifting).
   const wantsNoise =
     softOk
     && (preset.id === 'high' || preset.id === 'ultra')
     && (selectedPreset === 'high' || selectedPreset === 'ultra')
     && NOISE_SCENES.has(sceneId);
-  const noiseOpacity = preset.id === 'ultra' ? 0.022 : 0.035;
+  const noiseOpacity = preset.id === 'ultra' ? 0.018 : 0.035;
+  const useCoherentNoise = preset.id === 'ultra' && selectedPreset === 'ultra';
   const activeTTLFlags = useGameStore((s) => s.activeTTLFlags ?? {});
   const reducedMotion = useEffectiveReducedMotion();
   const poemBoost = resolvePoemTTLPostFxBoost(activeTTLFlags, reducedMotion);
@@ -539,21 +582,26 @@ function PostFXPipeline() {
   const effectiveBloomIntensity =
     (bloomParams.intensity + stressFactor * 0.1 + poemBoost.bloomIntensity) * rendering.bloomIntensityScale;
 
+  // Stress-responsive vignette: only darkens when stress > 60 (threshold-based,
+  // not linear) for a more noticeable cinematic stress cue at high tension.
+  const stressThresholdFactor = Math.max(0, (stress - 60) / 40);
   const stressVignetteDarkness = Math.min(
-    effectiveVignetteDarkness + stressFactor * 0.12 + poemBoost.vignetteDarkness,
+    effectiveVignetteDarkness + stressThresholdFactor * 0.18 + energyFactor * 0.08 + poemBoost.vignetteDarkness,
     0.75,
   );
   const stressVignetteOffset = Math.max(
-    vignetteParams.offset - stressFactor * 0.15,
+    vignetteParams.offset - stressThresholdFactor * 0.2 - energyFactor * 0.08,
     0.1,
   );
 
   // ── Part 4: Chromatic aberration (cinematic lens fringing) ──
+  // Per-scene tuned: each scene has an authored base amount and stress max.
   // Two composed layers (desktop, non-reduced-motion, soft-work-budget OK):
-  //  (a) A constant, barely-perceptible BASE fringing on high/ultra — gives the image a filmic
-  //      lens character instead of the sterile "plastic clean" digital look. ~0.0004 offset.
-  //  (b) The existing stress ramp on high (stress ≥ 70 → max 0.002 offset at stress=100).
-  // Ultra intentionally keeps only the base layer (clean but not sterile).
+  //  (a) A per-scene-tuned BASE fringing — gives each scene its own lens character.
+  //  (b) The existing stress ramp on high (stress → max per scene).
+  const chromaticScene = SCENE_CHROMATIC[sceneId]
+    ?? SCENE_CHROMATIC[resolveDerivedSceneId(sceneId as SceneId)]
+    ?? DEFAULT_CHROMATIC;
   const chromaticEligible =
     softOk
     && !reducedMotion
@@ -564,14 +612,13 @@ function PostFXPipeline() {
   // Stress ramp only on high preset (ultra stays composed/clean).
   const stressRampEligible = chromaticEligible && preset.id === 'high';
   const stressChromaticAmount = stressRampEligible
-    ? Math.max(0, (stress - 70) / 30)  // 0 at stress≤70, 1 at stress=100
+    ? chromaticScene.stressMax * Math.max(0, (stress - 70) / 30)  // 0 at stress≤70, 1 at stress=100
     : 0;
-  // Base fringing = 0.2 of the stress scale → ≈0.0004 offset (all-subpixel, reads as filmic).
-  const baseChromaticAmount = chromaticEligible ? 0.2 : 0;
+  const baseChromaticAmount = chromaticEligible ? chromaticScene.baseAmount : 0;
   const totalChromaticAmount = baseChromaticAmount + stressChromaticAmount;
   const showChromatic = totalChromaticAmount > 0;
   const chromaticOffset = useMemo(
-    () => new THREE.Vector2(totalChromaticAmount * 0.002, totalChromaticAmount * 0.0015),
+    () => new THREE.Vector2(totalChromaticAmount * 0.012, totalChromaticAmount * 0.009),
     [totalChromaticAmount],
   );
 
@@ -774,7 +821,7 @@ function PostFXPipeline() {
     >
       <Bloom
         intensity={effectiveBloomIntensity}
-        luminanceThreshold={bloomParams.threshold}
+        luminanceThreshold={Math.max(0.45, bloomParams.threshold - (SCENE_BLOOM_EMISSIVE_BOOST[sceneId] ?? 0))}
         luminanceSmoothing={bloomParams.smoothing}
         mipmapBlur
         kernelSize={bloomKernelSize}
@@ -844,7 +891,8 @@ function PostFXPipeline() {
       <HueSaturation hue={colorGrade.hue} saturation={effectiveSaturation} blendFunction={BlendFunction.NORMAL} />
       <BrightnessContrast brightness={effectiveBrightness} contrast={effectiveContrast} blendFunction={BlendFunction.NORMAL} />
       {proceduralLut ? <LUT lut={proceduralLut} tetrahedralInterpolation blendFunction={BlendFunction.NORMAL} /> : null as any}
-      {wantsNoise ? <Noise premultiply blendFunction={BlendFunction.NORMAL} opacity={noiseOpacity} /> : null as any}
+      {wantsNoise && !useCoherentNoise ? <Noise premultiply blendFunction={BlendFunction.NORMAL} opacity={noiseOpacity} /> : null as any}
+      {wantsNoise && useCoherentNoise ? <Noise premultiply blendFunction={BlendFunction.NORMAL} opacity={noiseOpacity} /> : null as any}
       <ToneMapping mode={toneMappingMode} exposure={toneExposure + agxExposureLift} />
       {wantsSmaa ? <SMAA preset={smaaPreset} /> : null as any}
     </ManagedEffectComposer>

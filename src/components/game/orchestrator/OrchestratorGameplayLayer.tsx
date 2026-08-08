@@ -16,6 +16,9 @@ import {
   GameplaySceneBanner,
   GameplaySharedEffects,
   GameplayStatsPanel,
+  GameplayVirtualJoystick,
+  GameplayMobileActionButtons,
+  GameplayMinimap,
 } from './OrchestratorGameplaySections';
 import { ContainerLootPanel } from '@/components/game/ContainerLootPanel';
 import { InteractionRippleEffect } from '@/components/game/InteractionRippleEffect';
@@ -89,6 +92,9 @@ export function OrchestratorGameplayLayer({
       />
       <GameplayStatsPanel onClose={panelClosers} />
       <GameplayMobileExplorationHud onOpenInventory={panels.handleOpenInventory} onOpenJournal={panels.handleOpenJournal} />
+      <GameplayVirtualJoystick />
+      <GameplayMobileActionButtons />
+      <GameplayMinimap />
       <GameplayNarrativeOverlay />
       <GameplayMinigameLayer
         codebreakerOpen={interaction.codebreakerOpen}

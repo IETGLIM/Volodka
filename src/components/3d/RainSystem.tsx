@@ -53,6 +53,7 @@ const RAIN_VERT = /* glsl */ `
   uniform float uPointSize;
   uniform float uWindGustX;
   uniform float uWindGustZ;
+  uniform float uWindAngle;  // Base wind direction for consistent rain angle
 
   void main() {
     float t = uTime * uIntensity;
@@ -67,10 +68,13 @@ const RAIN_VERT = /* glsl */ `
 
     // Wind gust adds organic horizontal drift that varies over time
     float gustInfluence = smoothstep(0.0, 0.3, y) * (1.0 - smoothstep(maxY * 0.7, maxY, y));
-    float rawX = position.x + aVelocity.x * t + uWindGustX * gustInfluence * t;
+    // Combine base wind angle with gust for more realistic wind interaction
+    float baseWindX = sin(uWindAngle) * 2.0;
+    float baseWindZ = cos(uWindAngle) * 0.5;
+    float rawX = position.x + aVelocity.x * t + (uWindGustX + baseWindX) * gustInfluence * t;
     float x = mod(rawX + bx * 0.5, bx) - bx * 0.5;
 
-    float rawZ = position.z + aVelocity.z * t + uWindGustZ * gustInfluence * t;
+    float rawZ = position.z + aVelocity.z * t + (uWindGustZ + baseWindZ) * gustInfluence * t;
     float z = mod(rawZ + bz * 0.5, bz) - bz * 0.5;
 
     vec4 mvPosition = modelViewMatrix * vec4(x, y, z, 1.0);
@@ -119,9 +123,14 @@ const SPLASH_FRAG = /* glsl */ `
   uniform float uOpacity;
 
   void main() {
-    float dist = length(gl_PointCoord - vec2(0.5));
-    if (dist > 0.5) discard;
-    float alpha = smoothstep(0.5, 0.2, dist) * uOpacity;
+    // Elliptical splash: wider than tall for more realistic crown-splash shape
+    vec2 centered = gl_PointCoord - vec2(0.5);
+    float elliptical = length(centered * vec2(1.0, 0.6));
+    if (elliptical > 0.5) discard;
+    // Soft ring: bright ring fading to transparent center (crown splash effect)
+    float ring = smoothstep(0.3, 0.42, elliptical) * (1.0 - smoothstep(0.42, 0.5, elliptical));
+    float fill = smoothstep(0.5, 0.35, elliptical);
+    float alpha = max(ring * 1.4, fill) * uOpacity;
     gl_FragColor = vec4(uColor, alpha);
   }
 `;
@@ -208,6 +217,7 @@ function RainParticles({
       uOpacity: { value: capacityConfig.opacity },
       uWindGustX: { value: 0 },
       uWindGustZ: { value: 0 },
+      uWindAngle: { value: capacityConfig.windAngle },
     };
 
     const mat = new THREE.ShaderMaterial({

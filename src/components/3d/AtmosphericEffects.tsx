@@ -19,10 +19,12 @@ import { GodRays, GODRAY_PRESETS } from './GodRays';
 import { SteamParticles } from './SteamParticles';
 import { MatrixFogParticles } from './MatrixFogParticles';
 import { DustMotes, EmberParticles } from './WeatherParticles';
+import { FireflyParticles, FIREFLY_SCENES } from './FireflyParticles';
 import { IndustrialSparkles } from './IndustrialSparkles';
 import { NeonRainReflections } from './NeonRainReflections';
 import { ServerRoomMist } from './ServerRoomMist';
 import { FlickeringLightEffect } from './FlickeringLightEffect';
+import { LensFlare, LENSFLARE_SCENES } from './LensFlare';
 
 function sceneHasFog(sceneId: string): boolean {
   return sceneId in FOG_PRESETS;
@@ -141,6 +143,8 @@ export function AtmosphericEffects() {
   const showMatrixFog = particlesEnabled && MATRIX_FOG_SCENES.has(sceneId);
   const showDust = particlesEnabled && DUST_SCENES.has(sceneId);
   const showEmbers = particlesEnabled && EMBER_SCENES.has(sceneId);
+  const showFireflies = particlesEnabled && FIREFLY_SCENES.has(sceneId);
+  const showLensFlare = LENSFLARE_SCENES.has(sceneId);
   const showNeonReflections = particlesEnabled && NEON_REFLECTION_SCENES.has(sceneId) && weatherEnabled;
   const showMist = particlesEnabled && MIST_SCENES.has(sceneId);
   const showFlickeringLights = FLICKERING_LIGHT_SCENES.has(sceneId);
@@ -165,12 +169,18 @@ export function AtmosphericEffects() {
 
       {effectiveEmbers && <EmberParticles sceneId={sceneId} />}
 
+      {/* ── Fairy-tale fireflies: warm bioluminescent motes for evening/forest/dream scenes ── */}
+      {showFireflies && <FireflyParticles sceneId={sceneId} />}
+
       {particlesEnabled && <IndustrialSparkles sceneId={sceneId} />}
 
       {/* ── New atmospheric effects ── */}
       {showNeonReflections && <NeonRainReflections sceneId={sceneId} />}
       {showMist && <ServerRoomMist sceneId={sceneId} />}
       {showFlickeringLights && <FlickeringLightEffect sceneId={sceneId} />}
+
+      {/* ── Lens flare for bright light sources (rooftop sunset, winter sun) ── */}
+      {showLensFlare && <LensFlare sceneId={sceneId} />}
 
       {/* Extra cinematic density during cutscenes (god-ray dust + thick air) */}
       {cinematicBoost > 0.15 && (

@@ -608,7 +608,10 @@ function GodRayShaft({ config }: { config: GodRayConfig }) {
 
     // Intensity pulsing via ref
     if (materialRef.current) {
-      materialRef.current.opacity = c.opacity * (1 - c.pulseAmp + c.pulseAmp * (0.5 + 0.5 * Math.sin(t * c.pulseSpeed * Math.PI * 2)));
+      // Multi-frequency pulsing for more organic, volumetric scatter look
+      const pulse = (0.5 + 0.5 * Math.sin(t * c.pulseSpeed * Math.PI * 2))
+        * (0.7 + 0.3 * Math.sin(t * c.pulseSpeed * Math.PI * 1.3 + 1.7));
+      materialRef.current.opacity = c.opacity * (1 - c.pulseAmp + c.pulseAmp * pulse);
     }
   });
 
@@ -731,9 +734,14 @@ function RayDustMotes({ config }: { config: GodRayConfig }) {
 
     posAttr.needsUpdate = true;
 
-    // Pulsing opacity via ref
+  // Pulsing opacity + size breathing via ref — two frequencies for volumetric feel
     if (materialRef.current) {
-      materialRef.current.opacity = 0.3 + 0.15 * Math.sin(t * 0.8);
+      const breathe = 0.3 + 0.12 * Math.sin(t * 0.6 + 0.5) + 0.06 * Math.sin(t * 1.1);
+      materialRef.current.opacity = breathe;
+      // Subtle size breathing simulates depth variation in the scatter
+      const avgSize = (c.dustSizeRange[0] + c.dustSizeRange[1]) / 2;
+      const sizeBreath = avgSize * (1 + 0.15 * Math.sin(t * 0.8));
+      materialRef.current.size = sizeBreath;
     }
   });
 

@@ -33,21 +33,25 @@ function getAaaTuning(materialId: PolyHavenMaterialId): {
   isPlaster: boolean;
   isConcrete: boolean;
   isFabric: boolean;
+  isSkin: boolean;
+  clearcoatAmount: number;
+  clearcoatRoughness: number;
 } {
   const id = materialId.toLowerCase();
+  const isSkin = /skin|face|body|head|hand/.test(id);
   if (id.includes('wood')) {
-    return { envIntensity: 0.28, aoStrength: 1.15, normalScale: 0.85, roughnessBias: 0.08, isWood: true, isPlaster: false, isConcrete: false, isFabric: false };
+    return { envIntensity: 0.28, aoStrength: 1.15, normalScale: 0.85, roughnessBias: 0.08, isWood: true, isPlaster: false, isConcrete: false, isFabric: false, isSkin: false, clearcoatAmount: 0.22, clearcoatRoughness: 0.52 };
   }
   if (id.includes('plaster') || id.includes('wall')) {
-    return { envIntensity: 0.22, aoStrength: 1.25, normalScale: 0.55, roughnessBias: 0.12, isWood: false, isPlaster: true, isConcrete: false, isFabric: false };
+    return { envIntensity: 0.22, aoStrength: 1.25, normalScale: 0.55, roughnessBias: 0.12, isWood: false, isPlaster: true, isConcrete: false, isFabric: false, isSkin: false, clearcoatAmount: 0.02, clearcoatRoughness: 0.82 };
   }
   if (id.includes('concrete') || id.includes('asphalt') || id.includes('pavement') || id.includes('road')) {
-    return { envIntensity: 0.26, aoStrength: 1.35, normalScale: 0.72, roughnessBias: 0.05, isWood: false, isPlaster: false, isConcrete: true, isFabric: false };
+    return { envIntensity: 0.26, aoStrength: 1.35, normalScale: 0.72, roughnessBias: 0.05, isWood: false, isPlaster: false, isConcrete: true, isFabric: false, isSkin: false, clearcoatAmount: 0.04, clearcoatRoughness: 0.7 };
   }
   if (id.includes('fabric') || id.includes('carpet') || id.includes('rug')) {
-    return { envIntensity: 0.18, aoStrength: 1.2, normalScale: 0.45, roughnessBias: 0.15, isWood: false, isPlaster: false, isConcrete: false, isFabric: true };
+    return { envIntensity: 0.18, aoStrength: 1.2, normalScale: 0.45, roughnessBias: 0.15, isWood: false, isPlaster: false, isConcrete: false, isFabric: true, isSkin: false, clearcoatAmount: 0, clearcoatRoughness: 0.82 };
   }
-  return { envIntensity: 0.32, aoStrength: 1.0, normalScale: 0.62, roughnessBias: 0.0, isWood: false, isPlaster: false, isConcrete: false, isFabric: false };
+  return { envIntensity: 0.32, aoStrength: 1.0, normalScale: 0.62, roughnessBias: 0.0, isWood: false, isPlaster: false, isConcrete: false, isFabric: false, isSkin, clearcoatAmount: 0, clearcoatRoughness: 0.82 };
 }
 
 export function PolyHavenStandardMaterial({
@@ -88,8 +92,8 @@ export function PolyHavenStandardMaterial({
         envMapIntensity={tuning.envIntensity}
         metalness={finalMetalness}
         roughness={finalRoughness}
-        clearcoat={tuning.isWood ? 0.18 : tuning.isPlaster ? 0.0 : tuning.isConcrete ? 0.02 : 0}
-        clearcoatRoughness={tuning.isWood ? 0.62 : 0.82}
+        clearcoat={tuning.clearcoatAmount}
+        clearcoatRoughness={tuning.clearcoatRoughness}
         sheen={tuning.isFabric ? 0.6 : 0}
         sheenRoughness={tuning.isFabric ? 0.82 : 0}
         sheenColor={tuning.isFabric ? new THREE.Color('#d8c8b8') as any : undefined}
