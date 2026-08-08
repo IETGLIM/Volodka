@@ -342,6 +342,64 @@ export const DAILY_MISSION_POOL: DailyMission[] = [
     minLevel: 2,
     icon: 'Lightbulb',
   },
+
+  /* ── WS19-D: Cyberpunk-noir daily missions (4) ── */
+  {
+    id: 'dm_combat_perimeter_sweep',
+    title: 'Обход Периметра',
+    description: 'Проверь периметр серверной комнаты. Каждый незамеченный разрыв — потенциальный канал утечки данных.',
+    category: 'combat',
+    difficulty: 'medium',
+    objectives: [
+      { id: 'patrol_perimeter', description: 'Обойти периметр серверной', target: 1 },
+    ],
+    rewards: { xp: 70, credits: 45, karma: 2, skillXp: { logic: 1 } },
+    resetSchedule: 'daily',
+    minLevel: 2,
+    icon: 'Radar',
+  },
+  {
+    id: 'dm_craft_cache_purge',
+    title: 'Очистка Кэша',
+    description: 'Удали повреждённые записи из кэша. Протухшие данные отравляют систему изнутри.',
+    category: 'crafting',
+    difficulty: 'easy',
+    objectives: [
+      { id: 'purge_corrupted_cache', description: 'Очистить повреждённых записей кэша', target: 5 },
+    ],
+    rewards: { xp: 50, credits: 35, karma: 1, skillXp: { coding: 1 } },
+    resetSchedule: 'daily',
+    minLevel: 1,
+    icon: 'Trash2',
+  },
+  {
+    id: 'dm_explore_channel_verify',
+    title: 'Проверка Каналов',
+    description: 'Проверь каналы связи между узлами. Мёртвый канал — не тишина, а засада.',
+    category: 'exploration',
+    difficulty: 'medium',
+    objectives: [
+      { id: 'verify_channels', description: 'Проверить каналы связи', target: 3 },
+    ],
+    rewards: { xp: 75, credits: 50, karma: 2, skillXp: { intuition: 1, logic: 1 } },
+    resetSchedule: 'daily',
+    minLevel: 2,
+    icon: 'Radio',
+  },
+  {
+    id: 'dm_combat_zombie_terminate',
+    title: 'Зачистка Зомби-Потоков',
+    description: 'Найди и уничтожь зомби-потоки, захватающие ресурсы. Каждый зомби — мёртвый процесс, который отказывается уйти.',
+    category: 'combat',
+    difficulty: 'hard',
+    objectives: [
+      { id: 'terminate_zombie_threads', description: 'Завершить зомби-потоков', target: 3 },
+    ],
+    rewards: { xp: 110, credits: 70, karma: 3, skillXp: { coding: 2, logic: 1 } },
+    resetSchedule: 'weekly',
+    minLevel: 3,
+    icon: 'Skull',
+  },
 ];
 
 /* ══════════════════════════════════════════════════════════════

@@ -135,7 +135,7 @@ export function EmergencyHelpButton() {
         <PopoverTrigger asChild>
           <button
             type="button"
-            className="relative flex items-center justify-center rounded-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-stone-400/40"
+            className={`relative flex items-center justify-center rounded-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-stone-400/40 ${isIdle && !open ? 'hud-filmic-emergency-pulse' : ''}`}
             style={{
               width: 28,
               height: 28,

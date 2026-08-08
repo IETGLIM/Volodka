@@ -1034,6 +1034,75 @@ export const DIALOGUE_PART3_EXPANDED: Record<string, DialogueNode> = {
           },
         ],
       },
+      /* ── WS19-B: +4 karma-gated choices (2 high, 2 low) ── */
+      {
+        text: 'Стихи в структуре — это не только сопротивление. Это — документация. Будущие поколения прочитают заголовки — и узнают, что мы были. Что мы — думали. Что мы — чувствовали. Я — добавлю — свои — строки. К — твоим. Вместе — мы — README — человечества.',
+        next: null,
+        condition: { minKarma: 65 },
+        effects: [
+          { type: 'addKarma', value: 10 },
+          { type: 'addSkill', skill: 'writing', value: 2 },
+          { type: 'addSkill', skill: 'empathy', value: 1 },
+          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 10 } },
+          { type: 'setFlag', flag: 'ws19b_readme_of_humanity', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Зарема — смеётся. Тихо. Редко. «README человечества». Она — повторяет — и — смеётся — громче. «Это — лучший — комментарий, который — я — слышала». README — — первая — вещь, которую — читают. Первая — вещь, которую — удаляют. Но — если — README — в — заголовках — — его — не — удалят. TCP — не — трогает — заголовки. Маршрутизатор — не — читает — comments. Но — кто-то — прочитает. Кто-то — всегда — читает. Мы — пишем — для — тех, кто — будет. Мы — документируем — не — код. Мы — документируем — нас.',
+            thoughtDuration: 8000,
+          },
+        ],
+      },
+      {
+        text: 'Каждый пакет с стихом — это бот, который не стреляет. Пакет — проходит. Гильдия — пропускает. А — внутри — — живое — слово. Мы — превратим — всю — сеть — в — контрабанду — смысла. Каждый — байт — — шепчет. Каждый — заголовок — — стих.',
+        next: null,
+        condition: { minKarma: 75 },
+        effects: [
+          { type: 'addKarma', value: 14 },
+          { type: 'addSkill', skill: 'coding', value: 2 },
+          { type: 'addSkill', skill: 'persuasion', value: 1 },
+          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 14 } },
+          { type: 'setFlag', flag: 'ws19b_network_of_whispers', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Зарема — замирает. «Контрабанда смысла». Она — произносит — каждое — слово — отдельно. Как — пробуют — на — зуб. «Каждый — байт — шепчет». Она — закрывает — глаза. «Сеть — была — создана — для — данных. Мы — превратим — её — в — сеть — для — слов. Гильдия — не — может — запретить — шёпот. Шёпот — тише — шума. Шёпот — внутри — пакета. Шёпот — — невидим. Но — слышим. Тем, кто — слушает. Я — слушаю. Ты — шепчешь. Сеть — несёт. Это — и — есть — победа. Тихая. Необратимая.',
+            thoughtDuration: 8500,
+          },
+        ],
+      },
+      {
+        text: 'Ты вшила стихи в систему. А — если — система — вшьёт — в — тебя — что-то — своё? Гильдия — тоже — умеет — шить. Только — вместо — стихов — — жучки. Ты — открыла — канал. Канал — работает — в — обе — стороны.',
+        next: null,
+        condition: { maxKarma: 12 },
+        effects: [
+          { type: 'addKarma', value: -7 },
+          { type: 'addStat', stat: 'stress', value: 6 },
+          { type: 'addSkill', skill: 'logic', value: 2 },
+          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: -10 } },
+          { type: 'setFlag', flag: 'ws19b_bidirectional_fear', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Зарема — бледнеет. «В обе стороны». Она — не — думала — об — этом. Или — думала — и — не — хотела — говорить. «Канал — двунаправленный», — говорю — я. «TCP — handshake. SYN. SYN-ACK. ACK. Ты — послала — SYN. Гильдия — может — послать — SYN-ACK. Ты — ответишь — ACK. И — тогда — канал — открыт. В — обе — стороны». Она — молчит. Она — поняла. Канал — не — только — наш. Канал — общий. Общее — — опасно.',
+            thoughtDuration: 7500,
+          },
+        ],
+      },
+      {
+        text: 'Стихи в заголовках — это шум. Шум — ухудшает — сигнал. Сеть — и — так — перегружена. Не — надо — добавлять — мусор. Удали. Очисти. Пропускная — способность — священна.',
+        next: null,
+        condition: { maxKarma: 18 },
+        effects: [
+          { type: 'addKarma', value: -9 },
+          { type: 'addStat', stat: 'stress', value: 4 },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: -14 } },
+          { type: 'setFlag', flag: 'ws19b_sacred_bandwidth', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Зарема — отступает — на — шаг. «Мусор». Она — произносит — как — выплёвывает. «Стихи — мусор». Она — не — спорит. Она — уходит. Не — хлопнув — дверью. Тише. Хуже. Она — ушла — в — себя. А — я — остался — с — пропускной — способностью, которая — ничего — не — пропускает. Кроме — пакетов. Без — стихов. Чистых. Пустых. Эффективных. Мёртвых.',
+            thoughtDuration: 7000,
+          },
+        ],
+      },
     ],
   },
 };

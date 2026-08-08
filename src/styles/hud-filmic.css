@@ -2867,3 +2867,186 @@
     outline: none;
   }
 }
+
+/* ── 43. Stat bar fill glow sweep ──
+   1s ease-out box-shadow glow pulse for CyberStatBar fill when
+   value changes. Cyan glow peeks then fades. One-shot.
+   Apply via className="hud-filmic-stat-bar-fill" on the fill
+   motion.div inside CyberStatBar. Layers over the existing
+   hud-filmic-status-pulse class. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-stat-bar-fill {
+    0% {
+      box-shadow: 0 0 0 rgba(0, 212, 224, 0);
+    }
+    40% {
+      box-shadow: 0 0 8px rgba(0, 212, 224, 0.5);
+    }
+    100% {
+      box-shadow: 0 0 0 rgba(0, 212, 224, 0);
+    }
+  }
+
+  .hud-filmic-stat-bar-fill {
+    animation: hud-filmic-stat-bar-fill 1s ease-out both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-stat-bar-fill {
+    animation: none;
+  }
+}
+
+/* ── 44. Counter tick bounce ──
+   0.3s scale bounce (1→1.08→1) for AnimatedCounter when the
+   displayed value ticks. One-shot. Apply via
+   className="hud-filmic-counter-tick" on the inner motion.span
+   wrapping the spring-driven display value. Scale peak 1.08 < 1.15. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-counter-tick {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.08);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  .hud-filmic-counter-tick {
+    animation: hud-filmic-counter-tick 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-counter-tick {
+    animation: none;
+  }
+}
+
+/* ── 45. Emergency help pulse ──
+   1.5s urgent red border-color pulse for EmergencyHelpButton
+   when the player is idle. Repeating. Opacity swing 0.3→0.7
+   (Δ=0.4 ≤ 0.6). Period 1.5s = 0.67Hz < 3Hz. Apply via
+   className="hud-filmic-emergency-pulse" on the button element
+   when isIdle && !open. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-emergency-pulse {
+    0% {
+      border-color: rgba(255, 68, 68, 0.3);
+    }
+    50% {
+      border-color: rgba(255, 68, 68, 0.7);
+    }
+    100% {
+      border-color: rgba(255, 68, 68, 0.3);
+    }
+  }
+
+  .hud-filmic-emergency-pulse {
+    animation: hud-filmic-emergency-pulse 1.5s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-emergency-pulse {
+    animation: none;
+  }
+}
+
+/* ── 46. Combat warning amber flash ──
+   0.8s amber inset box-shadow flash for CombatPreEngagementWarning
+   vignette overlay. One-shot. Apply via
+   className="hud-filmic-combat-warning-flash" on the vignette div.
+   Uses amber #FFB347. Opacity peak 0.5 ≤ 0.6. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-combat-warning-flash {
+    0% {
+      box-shadow: inset 0 0 80px rgba(255, 179, 71, 0);
+    }
+    40% {
+      box-shadow: inset 0 0 80px rgba(255, 179, 71, 0.5);
+    }
+    100% {
+      box-shadow: inset 0 0 80px rgba(255, 179, 71, 0);
+    }
+  }
+
+  .hud-filmic-combat-warning-flash {
+    animation: hud-filmic-combat-warning-flash 0.8s ease-out both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-combat-warning-flash {
+    animation: none;
+  }
+}
+
+/* ── 47. Ticker scroll glow sweep ──
+   3s moving cyan highlight sweep for TopBarDataTicker track.
+   Uses background-position animation on a linear-gradient
+   highlight bar. Period 3s = 0.33Hz < 3Hz. Apply via
+   className="hud-filmic-ticker-scroll-glow" on the ticker
+   track div. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-ticker-scroll-glow {
+    0% {
+      background-position: -100% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+
+  .hud-filmic-ticker-scroll-glow {
+    background-image: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(0, 212, 224, 0.12) 45%,
+      rgba(0, 212, 224, 0.22) 50%,
+      rgba(0, 212, 224, 0.12) 55%,
+      transparent 100%
+    );
+    background-size: 50% 100%;
+    animation: hud-filmic-ticker-scroll-glow 3s linear infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-ticker-scroll-glow {
+    animation: none;
+    background-image: none;
+  }
+}
+
+/* ── 48. Stat pulse ring ──
+   1.2s expanding ring fade for StatPulse on pulse. One-shot.
+   Scale 0.85→1.15 (max ≤ 1.15), opacity 0.5→0 (swing 0.5 ≤ 0.6).
+   Apply via className="hud-filmic-stat-pulse-ring" on the
+   motion.span inside StatPulse. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-stat-pulse-ring {
+    0% {
+      transform: scale(0.85);
+      opacity: 0.5;
+    }
+    100% {
+      transform: scale(1.15);
+      opacity: 0;
+    }
+  }
+
+  .hud-filmic-stat-pulse-ring {
+    animation: hud-filmic-stat-pulse-ring 1.2s ease-out both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-stat-pulse-ring {
+    animation: none;
+  }
+}

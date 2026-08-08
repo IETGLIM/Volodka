@@ -271,6 +271,77 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     mood: 'loss',
     color: '#6a8a30',
   },
+
+  /* ═══════════════════════════════════════════════════════════
+     WS19-D — Systems-decay ambient fragments (8 new quotes)
+     Themes: phantom processes, null references, dead locks,
+     memory leaks, orphaned connections, zombie threads,
+     signal decay, bit rot.
+     ═══════════════════════════════════════════════════════════ */
+  {
+    id: 'mq_ws19d_phantom_process',
+    text: 'Процесс-фантом не умирает — он ждёт, когда кто-нибудь обратится по его PID',
+    trigger: 'ws19d_phantom_process',
+    act: 2,
+    mood: 'danger',
+    color: '#cc2020',
+  },
+  {
+    id: 'mq_ws19d_null_reference',
+    text: 'Нулевая ссылка — это не отсутствие. Это точка, где всё сходится и ничто не удерживается',
+    trigger: 'ws19d_null_reference',
+    act: 3,
+    mood: 'loss',
+    color: '#6a8a30',
+  },
+  {
+    id: 'mq_ws19d_dead_lock',
+    text: 'Дедлок — когда два процесса вечно ждут друг друга, как два стихотворения на одной странице',
+    trigger: 'ws19d_dead_lock',
+    act: 3,
+    mood: 'danger',
+    color: '#cc2020',
+  },
+  {
+    id: 'mq_ws19d_memory_leak',
+    text: 'Утечка памяти — не баг. Это система, которая не умеет забывать',
+    trigger: 'ws19d_memory_leak',
+    act: 2,
+    mood: 'loss',
+    color: '#6a8a30',
+  },
+  {
+    id: 'mq_ws19d_orphaned_connection',
+    text: 'Осиротевшее соединение всё ещё слушает порт, на котором никто не говорит',
+    trigger: 'ws19d_orphaned_connection',
+    act: 4,
+    mood: 'loss',
+    color: '#6a8a30',
+  },
+  {
+    id: 'mq_ws19d_zombie_thread',
+    text: 'Зомби-поток вернулся из kill(). У сигнала SIGTERM нет власти над тем, кто уже не жив',
+    trigger: 'ws19d_zombie_thread',
+    act: 4,
+    mood: 'danger',
+    color: '#cc2020',
+  },
+  {
+    id: 'mq_ws19d_signal_decay',
+    text: 'Сигнал угасает, но затухание — не тишина. Каждый децибел — эхо того, что было сказано',
+    trigger: 'ws19d_signal_decay',
+    act: 5,
+    mood: 'revelation',
+    color: CYBER_CYAN,
+  },
+  {
+    id: 'mq_ws19d_bit_rot',
+    text: 'Гниение битов — медленная энтропия. Ни один бит не вечен, даже ноль',
+    trigger: 'ws19d_bit_rot',
+    act: 5,
+    mood: 'danger',
+    color: '#cc2020',
+  },
 ]
 
 /* ─── Lookup helpers ─── */

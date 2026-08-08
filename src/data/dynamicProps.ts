@@ -76,6 +76,10 @@ export const DYNAMIC_PROPS: Partial<Record<SceneId, DynamicPropDef[]>> = {
     { id: 'fb_box_1', kind: 'box', position: [2.2, 0, 4.4], rotation: 0.7 },
     { id: 'fb_can_1', kind: 'can', position: [-1.8, 0, 2.6], rotation: 1.3 },
     { id: 'fb_bottle_1', kind: 'bottle', position: [-3.4, 0, 5.2], rotation: 2.2 },
+    // WS19-B — +3 props for thin-coverage scene (was 3)
+    { id: 'fb_barrel_1', kind: 'barrel', position: [4.1, 0, -1.8], rotation: 0.4 },
+    { id: 'fb_can_2', kind: 'can', position: [-0.6, 0, -3.9], rotation: -1.7 },
+    { id: 'fb_box_2', kind: 'box', position: [1.5, 0, 0.8], rotation: 2.3 },
   ],
   // AAA: more physical play in key hubs — cans, bottles, boxes everywhere
   cafe_evening: [
@@ -155,11 +159,18 @@ export const DYNAMIC_PROPS: Partial<Record<SceneId, DynamicPropDef[]>> = {
     { id: 'ab_can_1', kind: 'can', position: [1.4, 0, -0.8], rotation: 0.6 },
     { id: 'ab_bottle_1', kind: 'bottle', position: [-0.9, 0, 1.2], rotation: -0.8 },
     { id: 'ab_box_1', kind: 'box', position: [0.7, 0, 2.1], rotation: 0.3 },
+    // WS19-B — +2 props for thin-coverage scene (was 3)
+    { id: 'ab_barrel_1', kind: 'barrel', position: [-2.4, 0, -1.6], rotation: 0.2 },
+    { id: 'ab_can_2', kind: 'can', position: [2.8, 0, 1.4], rotation: -1.3 },
   ],
   solnysh_room: [
     { id: 'sr_can_1', kind: 'can', position: [-1.6, 0, 1.8], rotation: 1.2 },
     { id: 'sr_bottle_1', kind: 'bottle', position: [2.1, 0, -1.4], rotation: -0.5 },
     { id: 'sr_can_2', kind: 'can', position: [0.4, 0, -2.3], rotation: 0.9 },
+    // WS19-B — +3 props for thin-coverage scene (was 3)
+    { id: 'sr_box_1', kind: 'box', position: [-2.2, 0, -0.6], rotation: 0.8 },
+    { id: 'sr_bottle_2', kind: 'bottle', position: [1.3, 0, 2.6], rotation: 1.4 },
+    { id: 'sr_can_3', kind: 'can', position: [-0.8, 0, -1.9], rotation: -2.1 },
   ],
   zarema_albert_room: [
     { id: 'zar_can_1', kind: 'can', position: [-0.8, 0, 1.5], rotation: 0.4 },

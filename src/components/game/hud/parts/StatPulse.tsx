@@ -28,7 +28,7 @@ export function StatPulse({ active, color = 'cyan' }: StatPulseProps) {
           animate={{ scale: 2.5, opacity: 0 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.8 }}
-          className={`absolute inset-0 rounded-full ${COLOR_MAP[color]} ${GLOW_MAP[color]} pointer-events-none`}
+          className={`absolute inset-0 rounded-full ${COLOR_MAP[color]} ${GLOW_MAP[color]} pointer-events-none hud-filmic-stat-pulse-ring`}
           aria-hidden="true"
         />
       )}

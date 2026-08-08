@@ -59,7 +59,7 @@ export function CyberStatBar({
         </div>
       )}
       <motion.div
-        className="absolute inset-y-0 left-0 rounded-full hud-filmic-status-pulse"
+        className="absolute inset-y-0 left-0 rounded-full hud-filmic-status-pulse hud-filmic-stat-bar-fill"
         style={{
           background: gradientFill,
           boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgba(0,0,0,0.35)',

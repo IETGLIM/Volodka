@@ -132,11 +132,14 @@ export function FactoryBasementVisual(_props: FactoryBasementVisualProps) {
 
       {/* ── Stained concrete floor ── */}
       <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={getSharedPlaneGeometry(W, D)}>
-        <meshStandardMaterial
+        {/* WS19-C: MeshPhysicalMaterial with clearcoat for indoor wet-concrete effect */}
+        <meshPhysicalMaterial
           map={floorTexture}
           color="#23282a"
           roughness={floorRoughness}
           metalness={floorMetalness}
+          clearcoat={0.45}
+          clearcoatRoughness={0.4}
           polygonOffset
           polygonOffsetFactor={1}
           polygonOffsetUnits={1}

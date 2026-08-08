@@ -137,10 +137,13 @@ export function GuildMainframeVisual(_props: GuildMainframeVisualProps) {
       )}
 
       <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={getSharedPlaneGeometry(W, D)}>
-        <meshStandardMaterial
+        {/* WS19-C: MeshPhysicalMaterial with clearcoat for indoor wet-concrete effect */}
+        <meshPhysicalMaterial
           color="#1a2228"
           roughness={floorRoughness}
           metalness={floorMetalness}
+          clearcoat={0.45}
+          clearcoatRoughness={0.4}
           polygonOffset
           polygonOffsetFactor={1}
           polygonOffsetUnits={1}
