@@ -58,3 +58,13 @@ export {
   CRANE_RISING,
 } from './cinematicCameraPresets';
 export type { CinematicCameraPreset } from './cinematicCameraPresets';
+export {
+  CUTSCENE_ROOM_AWAKENING,
+  CUTSCENE_STREET_FIRST_STEPS,
+  CUTSCENE_GUILD_ARRIVAL,
+  CUTSCENE_RAIN_MOMENT,
+  PRESET_CUTSCENES,
+  getPresetCutscene,
+  presetCutsceneToTimeline,
+} from './cutsceneDefinitions';
+export type { PresetCutsceneDef, CutsceneShotDef } from './cutsceneDefinitions';

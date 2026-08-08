@@ -31,6 +31,7 @@ import {
   LazyNotificationHistoryPanel,
   LazySettingsPanel,
   LazyAdventureLogPanel,
+  LazyGameStatsDashboard,
 } from './lazyPanels';
 
 const LazyProceduralAaaTweakPanel = lazy(() =>
@@ -88,6 +89,20 @@ export const OrchestratorGameplayPanels = memo(function OrchestratorGameplayPane
   );
 });
 
+export const OrchestratorGameStatsPanel = memo(function OrchestratorGameStatsPanel({
+  onClose,
+}: {
+  onClose: PanelCloseHandlers;
+}) {
+  return (
+    <LazyPanelSlot
+      panelId="gameStats"
+      Panel={LazyGameStatsDashboard}
+      onClose={onClose.gameStats}
+    />
+  );
+});
+
 export const OrchestratorMenuLayerPanels = memo(function OrchestratorMenuLayerPanels({
   onClose,
 }: Pick<PanelCloseProps, 'onClose'>) {
@@ -111,6 +126,7 @@ export const OrchestratorMenuLayerPanels = memo(function OrchestratorMenuLayerPa
       <LazyPanelSlot panelId="npcCodex" Panel={LazyNpcCodexPanel} onClose={onClose.npcCodex} />
       <LazyPanelSlot panelId="poemJournal" Panel={LazyPoemJournalPanel} onClose={onClose.poemJournal} />
       <LazyPanelSlot panelId="adventureLog" Panel={LazyAdventureLogPanel} onClose={onClose.adventureLog} />
+      <LazyPanelSlot panelId="gameStats" Panel={LazyGameStatsDashboard} onClose={onClose.gameStats} />
     </>
   );
 });

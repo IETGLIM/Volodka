@@ -10,7 +10,7 @@ describe('photoCaptureHistory', () => {
     let hist = pushPhotoCaptureHistory([], {
       dataUrl: 'data:image/png;base64,a',
       timestamp: 1,
-      filter: 'neon',
+      filter: 'cyberpunk_neon',
       sceneName: 'Street',
     });
     hist = pushPhotoCaptureHistory(hist, {
@@ -26,7 +26,7 @@ describe('photoCaptureHistory', () => {
       hist = pushPhotoCaptureHistory(hist, {
         dataUrl: `data:image/png;base64,${i}`,
         timestamp: 10 + i,
-        filter: 'neon',
+        filter: 'cyberpunk_neon',
         sceneName: `S${i}`,
       });
     }

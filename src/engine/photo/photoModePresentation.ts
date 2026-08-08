@@ -1,8 +1,11 @@
 import type { SceneId } from '@/config/sceneDefinitions';
 import { SCENE_CONFIG } from '@/config/scenes';
 import {
+  PHOTO_FILTER_BAKE_CSS,
+  PHOTO_FILTER_LABELS,
   PHOTO_FLASH_DURATION_MS,
   PHOTO_MODE_LABELS,
+  type PhotoFilterPreset,
 } from '@/engine/photo/photoModeConstants';
 
 export type CanvasCaptureResult =
@@ -73,16 +76,34 @@ export function getCaptureFailureMessage(): string {
   return PHOTO_MODE_LABELS.captureFailed;
 }
 
-export function getPhotoFilterTitle(filter: 'neon' | 'noir'): string {
-  return filter === 'noir' ? PHOTO_MODE_LABELS.titleNoir : PHOTO_MODE_LABELS.title;
+export function getPhotoFilterTitle(filter: PhotoFilterPreset): string {
+  if (filter === 'noir') return PHOTO_MODE_LABELS.titleNoir;
+  if (filter === 'normal') return PHOTO_MODE_LABELS.title;
+  return PHOTO_FILTER_LABELS[filter];
+}
+
+/** Whether the filter desaturates the scene (noir / vintage). */
+export function isPhotoFilterDesaturated(filter: PhotoFilterPreset): boolean {
+  return filter === 'noir' || filter === 'vintage_film';
 }
 
 /**
- * Bake a noir grade into a captured PNG data URL (grayscale + contrast + vignette).
- * Safe no-op on failure — resolves with the original dataUrl.
+ * @deprecated Use applyPhotoFilterToDataUrl instead.
+ * Kept for backward compat with tests / older imports.
  */
 export function applyNoirGradeToDataUrl(dataUrl: string): Promise<string> {
-  if (typeof document === 'undefined') return Promise.resolve(dataUrl);
+  return applyPhotoFilterToDataUrl(dataUrl, 'noir');
+}
+
+/** Bake any photo filter into a captured PNG data URL.
+ *  Safe no-op on failure — resolves with the original dataUrl. */
+export function applyPhotoFilterToDataUrl(
+  dataUrl: string,
+  filter: PhotoFilterPreset,
+): Promise<string> {
+  if (filter === 'normal' || typeof document === 'undefined') return Promise.resolve(dataUrl);
+
+  const cssFilter = PHOTO_FILTER_BAKE_CSS[filter] ?? 'none';
 
   return new Promise((resolve) => {
     try {
@@ -91,62 +112,51 @@ export function applyNoirGradeToDataUrl(dataUrl: string): Promise<string> {
         try {
           const canvas = document.createElement('canvas');
           const ctx = canvas.getContext('2d');
-          if (!ctx) {
-            resolve(dataUrl);
-            return;
-          }
+          if (!ctx) { resolve(dataUrl); return; }
           const w = img.naturalWidth || img.width;
           const h = img.naturalHeight || img.height;
-          if (!w || !h) {
-            resolve(dataUrl);
-            return;
-          }
+          if (!w || !h) { resolve(dataUrl); return; }
           canvas.width = w;
           canvas.height = h;
-          ctx.filter = 'grayscale(1) contrast(1.22) brightness(0.9)';
+          ctx.filter = cssFilter;
           ctx.drawImage(img, 0, 0);
-          ctx.filter = 'none';
 
-          const gradient = ctx.createRadialGradient(
-            w * 0.5,
-            h * 0.5,
-            Math.min(w, h) * 0.25,
-            w * 0.5,
-            h * 0.5,
-            Math.max(w, h) * 0.72,
-          );
-          gradient.addColorStop(0, 'rgba(0,0,0,0)');
-          gradient.addColorStop(1, 'rgba(0,0,0,0.45)');
-          ctx.fillStyle = gradient;
-          ctx.fillRect(0, 0, w, h);
+          // Noir vignette
+          if (filter === 'noir') {
+            ctx.filter = 'none';
+            const gradient = ctx.createRadialGradient(
+              w * 0.5, h * 0.5, Math.min(w, h) * 0.25,
+              w * 0.5, h * 0.5, Math.max(w, h) * 0.72,
+            );
+            gradient.addColorStop(0, 'rgba(0,0,0,0)');
+            gradient.addColorStop(1, 'rgba(0,0,0,0.45)');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, w, h);
+          }
 
           resolve(canvas.toDataURL('image/png'));
-        } catch {
-          resolve(dataUrl);
-        }
+        } catch { resolve(dataUrl); }
       };
       img.onerror = () => resolve(dataUrl);
       img.src = dataUrl;
-    } catch {
-      resolve(dataUrl);
-    }
+    } catch { resolve(dataUrl); }
   });
 }
 
-/** Capture WebGL canvas and optionally bake noir grade into the still. */
+/** Capture WebGL canvas and bake the active filter into the still. */
 export async function capturePhotoStill(
-  filter: 'neon' | 'noir',
+  filter: PhotoFilterPreset,
 ): Promise<CanvasCaptureResult> {
   const result = captureWebGlCanvasScreenshot();
-  if (!result.ok || filter !== 'noir') return result;
-  return { ok: true, dataUrl: await applyNoirGradeToDataUrl(result.dataUrl) };
+  if (!result.ok || filter === 'normal') return result;
+  return { ok: true, dataUrl: await applyPhotoFilterToDataUrl(result.dataUrl, filter) };
 }
 
 export type PhotoExportResult =
   | { ok: true; method: 'download' | 'share' }
   | { ok: false; reason: 'invalid_data' | 'unknown' };
 
-function photoFilename(filter: 'neon' | 'noir', date = new Date()): string {
+function photoFilename(filter: PhotoFilterPreset, date = new Date()): string {
   const stamp = [
     date.getFullYear(),
     String(date.getMonth() + 1).padStart(2, '0'),
@@ -159,10 +169,10 @@ function photoFilename(filter: 'neon' | 'noir', date = new Date()): string {
   return `volodka-${filter}-${stamp}.png`;
 }
 
-/** Download a captured still (noir already baked into dataUrl when applicable). */
+/** Download a captured still (filter already baked into dataUrl). */
 export function downloadPhotoStill(
   dataUrl: string,
-  filter: 'neon' | 'noir' = 'neon',
+  filter: PhotoFilterPreset = 'normal',
 ): PhotoExportResult {
   if (!dataUrl.startsWith('data:image/')) {
     return { ok: false, reason: 'invalid_data' };
@@ -183,11 +193,11 @@ export function downloadPhotoStill(
 
 /**
  * Share captured still via Web Share API when available; otherwise download.
- * dataUrl should already include baked noir grade for noir captures.
+ * dataUrl should already have baked filter grade.
  */
 export async function shareOrDownloadPhotoStill(
   dataUrl: string,
-  filter: 'neon' | 'noir' = 'neon',
+  filter: PhotoFilterPreset = 'normal',
 ): Promise<PhotoExportResult> {
   if (!dataUrl.startsWith('data:image/')) {
     return { ok: false, reason: 'invalid_data' };

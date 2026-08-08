@@ -73,6 +73,8 @@
 @import "../styles/rest-panel.css";
 @import "../styles/crafting-enhanced.css";
 @import "../styles/skill-tree-enhanced.css";
+@import "../styles/quick-access-toolbar.css";
+@import "../styles/glass-polish.css";
 
 /* ── User setting: scanlines off (SettingsPanel → engine/visualSettings) ── */
 html[data-scanlines="off"] .panel-scanlines::after,

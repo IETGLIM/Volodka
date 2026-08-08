@@ -19,6 +19,7 @@ import {
   GameplayVirtualJoystick,
   GameplayMobileActionButtons,
   GameplayMinimap,
+  GameplayQuickAccessToolbar,
 } from './OrchestratorGameplaySections';
 import { ContainerLootPanel } from '@/components/game/ContainerLootPanel';
 import { InteractionRippleEffect } from '@/components/game/InteractionRippleEffect';
@@ -95,6 +96,7 @@ export function OrchestratorGameplayLayer({
       <GameplayVirtualJoystick />
       <GameplayMobileActionButtons />
       <GameplayMinimap />
+      <GameplayQuickAccessToolbar panelOpeners={panelOpeners} />
       <GameplayNarrativeOverlay />
       <GameplayMinigameLayer
         codebreakerOpen={interaction.codebreakerOpen}

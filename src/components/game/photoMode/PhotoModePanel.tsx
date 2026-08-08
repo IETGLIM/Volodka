@@ -18,8 +18,12 @@ function PhotoModeInner() {
           sceneName={photo.sceneName}
           timeStr={photo.timeStr}
           filterPreset={photo.filterPreset}
+          framePreset={photo.framePreset}
+          lightingBoosted={photo.lightingBoosted}
           onCapture={photo.captureScreenshot}
           onExit={photo.exitPhotoMode}
+          onCycleFilter={photo.cycleFilterPreset}
+          onCycleFrame={photo.cycleFramePreset}
           onSelectHistory={photo.selectHistoryCapture}
           onDownloadPreview={photo.downloadPreview}
           onSharePreview={photo.sharePreview}

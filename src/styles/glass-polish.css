@@ -1,0 +1,626 @@
+/* ═════════════════════════════════════════════════════════════════════════════════
+   Glass Polish — Multi-layer glass variants, corner decorations, glow, noise,
+   depth stacking, transition animations, responsive scaling, and
+   prefers-reduced-motion overrides.
+   ═════════════════════════════════════════════════════════════════════════════════ */
+
+/* ─── 1. Multi-layer Glass Variants (5 presets) ─── */
+
+/* Light — bright translucent glass for headers, labels */
+.glass-light {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(16px) saturate(1.3);
+  -webkit-backdrop-filter: blur(16px) saturate(1.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* Medium — standard glass for panels, cards */
+.glass-medium {
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(24px) saturate(1.2);
+  -webkit-backdrop-filter: blur(24px) saturate(1.2);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Dark — deep dark glass for overlays, modals */
+.glass-dark {
+  background: rgba(2, 6, 23, 0.9);
+  backdrop-filter: blur(32px) saturate(1.1);
+  -webkit-backdrop-filter: blur(32px) saturate(1.1);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+/* Neon — glass with neon cyan accent glow */
+.glass-neon {
+  background: rgba(0, 229, 255, 0.04);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border: 1px solid rgba(0, 229, 255, 0.2);
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.08), 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(0, 229, 255, 0.1);
+}
+
+/* Frosted — frosted glass with heavy blur and subtle noise */
+.glass-frosted {
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(40px) brightness(1.05);
+  -webkit-backdrop-filter: blur(40px) brightness(1.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* ─── 2. Glass Corner Decorations (Cyberpunk Brackets) ─── */
+
+.glass-corners {
+  position: relative;
+}
+
+.glass-corners::before,
+.glass-corners::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  pointer-events: none;
+}
+
+/* Top-left & bottom-right corners */
+.glass-corners::before {
+  top: -1px;
+  left: -1px;
+  border-top: 2px solid var(--corner-color, rgba(0, 229, 255, 0.5));
+  border-left: 2px solid var(--corner-color, rgba(0, 229, 255, 0.5));
+}
+
+.glass-corners::after {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 2px solid var(--corner-color, rgba(0, 229, 255, 0.5));
+  border-right: 2px solid var(--corner-color, rgba(0, 229, 255, 0.5));
+}
+
+/* Extra corners via inner element */
+.glass-corners-all {
+  position: relative;
+}
+
+.glass-corners-all > .corner-tr,
+.glass-corners-all > .corner-bl {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  pointer-events: none;
+}
+
+.glass-corners-all > .corner-tr {
+  top: -1px;
+  right: -1px;
+  border-top: 2px solid var(--corner-color, rgba(0, 229, 255, 0.5));
+  border-right: 2px solid var(--corner-color, rgba(0, 229, 255, 0.5));
+}
+
+.glass-corners-all > .corner-bl {
+  bottom: -1px;
+  left: -1px;
+  border-bottom: 2px solid var(--corner-color, rgba(0, 229, 255, 0.5));
+  border-left: 2px solid var(--corner-color, rgba(0, 229, 255, 0.5));
+}
+
+/* ─── 3. Glass Border Glow (Animated on Focus) ─── */
+
+.glass-glow-focus {
+  position: relative;
+  transition: box-shadow 0.4s ease, border-color 0.4s ease;
+}
+
+.glass-glow-focus:focus-within,
+.glass-glow-focus:focus-visible {
+  border-color: rgba(0, 229, 255, 0.4) !important;
+   box-shadow:
+    0 0 8px rgba(0, 229, 255, 0.15),
+    0 0 20px rgba(0, 229, 255, 0.08),
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(0, 229, 255, 0.1) !important;
+  animation: glass-glow-pulse 2s ease-in-out infinite;
+}
+
+/* Amber variant */
+.glass-glow-amber:focus-within,
+.glass-glow-amber:focus-visible {
+  border-color: rgba(251, 191, 36, 0.4) !important;
+  box-shadow:
+    0 0 8px rgba(251, 191, 36, 0.15),
+    0 0 20px rgba(251, 191, 36, 0.08),
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(251, 191, 36, 0.1) !important;
+  animation: glass-glow-pulse-amber 2s ease-in-out infinite;
+}
+
+@keyframes glass-glow-pulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(0, 229, 255, 0.15), 0 0 20px rgba(0, 229, 255, 0.08), 0 8px 32px rgba(0, 0, 0, 0.3); }
+  50% { box-shadow: 0 0 16px rgba(0, 229, 255, 0.25), 0 0 40px rgba(0, 229, 255, 0.12), 0 8px 32px rgba(0, 0, 0, 0.3); }
+}
+
+@keyframes glass-glow-pulse-amber {
+  0%, 100% { box-shadow: 0 0 8px rgba(251, 191, 36, 0.15), 0 0 20px rgba(251, 191, 36, 0.08), 0 8px 32px rgba(0, 0, 0, 0.3); }
+  50% { box-shadow: 0 0 16px rgba(251, 191, 36, 0.25), 0 0 40px rgba(251, 191, 36, 0.12), 0 8px 32px rgba(0, 0, 0, 0.3); }
+}
+
+/* ─── 4. Glass Depth Layers (Stacked Glass) ─── */
+
+.glass-depth {
+  position: relative;
+}
+
+/* Background layer */
+.glass-depth::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border-radius: inherit;
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Outer glow halo */
+.glass-depth::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: transparent;
+  box-shadow: 0 0 40px rgba(0, 229, 255, 0.04);
+  pointer-events: none;
+  z-index: -2;
+}
+
+/* Triple-depth: use .glass-depth-triple on parent, children get stacked */
+.glass-depth-triple {
+  position: relative;
+}
+
+.glass-depth-triple > *:not(:last-child) {
+  position: relative;
+}
+
+.glass-depth-triple > *:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ─── 5. Glass Noise Overlay ─── */
+
+/* Apply to any glass surface to add subtle film-grain texture */
+.glass-noise {
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-noise::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.025;
+  pointer-events: none;
+  z-index: 1;
+  /* CSS noise via repeating SVG data-URI (tiny 100x100 noise) */
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  background-size: 100px 100px;
+  mix-blend-mode: overlay;
+}
+
+/* Lighter noise variant */
+.glass-noise-light::after {
+  opacity: 0.015;
+}
+
+/* ─── 6. Glass Transition Animations ─── */
+
+/* Appear */
+.glass-appear {
+  animation: glass-enter 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes glass-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(8px);
+    backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    backdrop-filter: blur(24px);
+  }
+}
+
+/* Disappear */
+.glass-disappear {
+  animation: glass-exit 0.25s cubic-bezier(0.4, 0, 1, 1) both;
+}
+
+@keyframes glass-exit {
+  from {
+    opacity: 1;
+    transform: scale(1);
+    backdrop-filter: blur(24px);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.97) translateY(4px);
+    backdrop-filter: blur(0px);
+  }
+}
+
+/* Shimmer on appear */
+.glass-shimmer-in {
+  animation: glass-shimmer 0.6s ease-out both;
+}
+
+@keyframes glass-shimmer {
+  0% {
+    opacity: 0;
+    transform: scale(0.96);
+    filter: brightness(0.5) blur(2px);
+  }
+  50% {
+    filter: brightness(1.3) blur(0px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    filter: brightness(1) blur(0px);
+  }
+}
+
+/* ─── 7. Responsive Glass ─── */
+
+/* Mobile: reduce blur and shadow complexity for perf */
+@media (max-width: 768px) {
+  .glass-medium {
+    backdrop-filter: blur(16px) saturate(1.1);
+    -webkit-backdrop-filter: blur(16px) saturate(1.1);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  }
+
+  .glass-dark {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  }
+
+  .glass-frosted {
+    backdrop-filter: blur(24px) brightness(1.02);
+    -webkit-backdrop-filter: blur(24px) brightness(1.02);
+  }
+
+  .glass-glow-focus:focus-within,
+  .glass-glow-focus:focus-visible {
+    animation: none;
+    box-shadow:
+      0 0 8px rgba(0, 229, 255, 0.12),
+      0 4px 16px rgba(0, 0, 0, 0.25) !important;
+  }
+
+  .glass-corners::before,
+  .glass-corners::after {
+    width: 8px;
+    height: 8px;
+  }
+
+  .glass-corners-all > .corner-tr,
+  .glass-corners-all > .corner-bl {
+    width: 8px;
+    height: 8px;
+  }
+}
+
+/* Small screens: further reduce glass complexity */
+@media (max-width: 480px) {
+  .glass-light,
+  .glass-medium,
+  .glass-dark,
+  .glass-neon,
+  .glass-frosted {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .glass-noise::after {
+    opacity: 0.012;
+  }
+
+  .glass-depth::before {
+    display: none;
+  }
+}
+
+/* ─── 8. prefers-reduced-motion Overrides ─── */
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-appear {
+    animation: none;
+    opacity: 1;
+  }
+
+  .glass-disappear {
+    animation: none;
+    opacity: 1;
+  }
+
+  .glass-shimmer-in {
+    animation: none;
+    opacity: 1;
+    filter: none;
+  }
+
+  .glass-glow-focus:focus-within,
+  .glass-glow-focus:focus-visible {
+    animation: none !important;
+    transition: none;
+  }
+
+  .glass-glow-amber:focus-within,
+  .glass-glow-amber:focus-visible {
+    animation: none !important;
+    transition: none;
+  }
+}
+
+/* ─── 9. Achievement Celebration ─── */
+
+.glass-celebration {
+  position: relative;
+  overflow: visible;
+}
+
+.achievement-glow-burst {
+  animation: achievement-glow-burst-anim 1.2s ease-out forwards;
+}
+
+@keyframes achievement-glow-burst-anim {
+  0% { transform: scale(0.3); opacity: 0; }
+  40% { transform: scale(1.6); opacity: 0.8; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+.achievement-particle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--p-size);
+  height: var(--p-size);
+  border-radius: 50%;
+  background: var(--p-color);
+  box-shadow: 0 0 6px var(--p-color);
+  animation: particle-burst 0.8s calc(var(--p-delay)) ease-out forwards;
+  opacity: 0;
+}
+
+@keyframes particle-burst {
+  0% {
+    opacity: 1;
+    transform:
+      translate(-50%, -50%)
+      rotate(var(--p-angle))
+      translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform:
+      translate(-50%, -50%)
+      rotate(var(--p-angle))
+      translateY(calc(-1 * var(--p-dist)));
+  }
+}
+
+.achievement-celebration-overlay {
+  animation: celebration-fade-in 0.3s ease-out;
+}
+
+@keyframes celebration-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.achievement-dismiss-hint {
+  animation: dismiss-hint-pulse 2s ease-in-out infinite 1.5s;
+}
+
+@keyframes dismiss-hint-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.7; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .achievement-glow-burst,
+  .achievement-particle,
+  .achievement-celebration-overlay,
+  .achievement-dismiss-hint {
+    animation: none !important;
+    opacity: 1;
+  }
+}
+
+/* ─── 10. Audio Info Widget ─── */
+
+.audio-info-widget {
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 229, 255, 0.1);
+  font-family: monospace;
+}
+
+.audio-info-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.audio-info-toggle:hover {
+  background: rgba(0, 229, 255, 0.1);
+}
+
+.audio-info-status {
+  color: rgba(148, 163, 184, 0.8);
+  line-height: 1;
+}
+
+.audio-info-scene {
+  line-height: 1;
+  max-width: 80px;
+}
+
+.audio-info-volume {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+}
+
+.audio-info-bar {
+  display: inline-block;
+  width: 3px;
+  border-radius: 1px;
+  background: var(--bar-color, #00e5ff);
+  animation: audio-bar-bounce 0.6s calc(var(--bar-delay)) ease-in-out infinite alternate;
+  height: 4px;
+  min-height: 2px;
+  transition: opacity 0.3s;
+}
+
+@keyframes audio-bar-bounce {
+  0% { height: 3px; }
+  100% { height: 14px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .audio-info-bar {
+    animation: none !important;
+    height: 8px !important;
+  }
+}
+
+/* ─── 11. Stats Dashboard ─── */
+
+.stat-dashboard-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  animation: stat-overlay-in 0.2s ease-out;
+}
+
+@keyframes stat-overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.stat-dashboard-panel {
+  width: min(520px, 92vw);
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 20px;
+  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.92);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(0, 229, 255, 0.12);
+  box-shadow: 0 0 30px rgba(0, 229, 255, 0.06), 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: stat-panel-in 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes stat-panel-in {
+  from { opacity: 0; transform: scale(0.95) translateY(12px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.stat-dashboard-card {
+  padding: 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.stat-dashboard-card:hover {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.stat-dashboard-icon {
+  flex-shrink: 0;
+}
+
+.stat-dashboard-label {
+  font-family: monospace;
+  font-size: 10px;
+  color: rgba(148, 163, 184, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stat-dashboard-value {
+  font-family: monospace;
+  font-size: 16px;
+  font-weight: 700;
+  color: #e2e8f0;
+  line-height: 1;
+}
+
+.stat-dashboard-record {
+  background: rgba(251, 191, 36, 0.03);
+  border: 1px solid rgba(251, 191, 36, 0.06);
+  transition: background 0.2s;
+}
+
+.stat-dashboard-record:hover {
+  background: rgba(251, 191, 36, 0.06);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stat-dashboard-overlay,
+  .stat-dashboard-panel {
+    animation: none !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .stat-dashboard-panel {
+  padding: 14px;
+  }
+
+  .stat-dashboard-value {
+    font-size: 14px;
+  }
+}

@@ -124,6 +124,9 @@ import { isAct1DiegeticScene } from '@/engine/narrative/narrativePresentationPol
 import { AudioVisualizer } from '../AudioVisualizer';
 import { LocationAtmosphereOverlay } from '../LocationAtmosphereOverlay';
 import { CyberpunkGlowEffects } from '../CyberpunkGlowEffects';
+import { QuickAccessToolbar } from '../QuickAccessToolbar';
+import { AchievementUnlockCelebration } from '../AchievementUnlockCelebration';
+import { AudioInfoDisplay } from '../AudioInfoDisplay';
 import type { PanelCloseHandlers } from './useStablePanelClosers';
 import type { HudSecondaryPanelOpeners } from './useStableHudPanelOpeners';
 
@@ -403,6 +406,8 @@ export const GameplaySharedEffects = memo(function GameplaySharedEffects() {
       <GameplayAudioVisualizer />
       <GameplayLocationAtmosphere />
       <GameplayCyberpunkGlow />
+      <GameplayAchievementCelebration />
+      <GameplayAudioInfoWidget />
     </>
   );
 });
@@ -745,4 +750,33 @@ export const GameplayLocationAtmosphere = memo(function GameplayLocationAtmosphe
 /** Cyberpunk ambient glow effects — neon edge, stress, location, combat. */
 export const GameplayCyberpunkGlow = memo(function GameplayCyberpunkGlow() {
   return <CyberpunkGlowEffects />;
+});
+
+/** Context-sensitive quick access toolbar — exploration, combat, dialogue, menu. */
+export const GameplayQuickAccessToolbar = memo(function GameplayQuickAccessToolbar({
+  panelOpeners,
+}: {
+  panelOpeners: GameplayHudPanelOpeners;
+}) {
+  return (
+    <ErrorBoundary name="QuickAccessToolbar" fallback={null}>
+      <QuickAccessToolbar
+        onOpenQuests={panelOpeners.onOpenQuests}
+        onOpenInventory={panelOpeners.onOpenInventory}
+        onOpenPoetry={panelOpeners.onOpenPoetry}
+        onOpenJournal={panelOpeners.onOpenJournal}
+        onOpenMenu={panelOpeners.onOpenMenu}
+      />
+    </ErrorBoundary>
+  );
+});
+
+/** Full-screen achievement celebration overlay — shows on trophy unlock. */
+export const GameplayAchievementCelebration = memo(function GameplayAchievementCelebration() {
+  return <AchievementUnlockCelebration />;
+});
+
+/** Audio info widget — small corner HUD showing music state. */
+export const GameplayAudioInfoWidget = memo(function GameplayAudioInfoWidget() {
+  return <AudioInfoDisplay />;
 });

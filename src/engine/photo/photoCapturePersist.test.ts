@@ -69,7 +69,7 @@ describe('photoCapturePersist', () => {
         id: 'cap-1',
         dataUrl: 'data:image/png;base64,abc',
         timestamp: 100,
-        filter: 'neon',
+        filter: 'cyberpunk_neon',
         sceneName: 'Street',
       },
     ];
@@ -77,7 +77,7 @@ describe('photoCapturePersist', () => {
     const loaded = await loadPersistedPhotoGallery();
     expect(loaded).toHaveLength(1);
     expect(loaded[0].sceneName).toBe('Street');
-    expect(loaded[0].filter).toBe('neon');
+    expect(loaded[0].filter).toBe('cyberpunk_neon');
   });
 
   it('returns [] when IndexedDB missing', async () => {

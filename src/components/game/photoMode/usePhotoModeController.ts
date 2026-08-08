@@ -2,10 +2,16 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { eventBus } from '@/engine/EventBus';
 import { PHOTO_EVENTS, PHOTO_EMPTY_PAYLOAD } from '@/engine/events';
 import {
+  PHOTO_FILTER_ORDER,
+  PHOTO_FILTER_LABELS,
+  PHOTO_FRAME_ORDER,
+  PHOTO_FRAME_LABELS,
   PHOTO_FLASH_DURATION_MS,
+  PHOTO_GALLERY_STRIP_MAX,
   PHOTO_MODE_LABELS,
   PHOTO_PREVIEW_DISPLAY_MS,
   type PhotoFilterPreset,
+  type PhotoFramePreset,
 } from '@/engine/photo/photoModeConstants';
 import {
   pushPhotoCaptureHistory,
@@ -50,7 +56,9 @@ export function usePhotoModeController() {
   const [preview, setPreview] = useState<PhotoPreviewData | null>(null);
   const [captureHistory, setCaptureHistory] = useState<PhotoCaptureHistoryEntry[]>([]);
   const [liveAnnouncement, setLiveAnnouncement] = useState('');
-  const [filterPreset, setFilterPreset] = useState<PhotoFilterPreset>('neon');
+  const [filterPreset, setFilterPreset] = useState<PhotoFilterPreset>('normal');
+  const [framePreset, setFramePreset] = useState<PhotoFramePreset>('none');
+  const [lightingBoosted, setLightingBoosted] = useState(false);
 
   const previewTimerRef = useRef<number | null>(null);
   const activeRef = useRef(false);
@@ -71,8 +79,13 @@ export function usePhotoModeController() {
     setActive(false);
     activeRef.current = false;
     setPhotoModeActive(false);
+    setLightingBoosted(false);
     setLiveAnnouncement(PHOTO_MODE_LABELS.exited);
     eventBus.emit(PHOTO_EVENTS.inactive, PHOTO_EMPTY_PAYLOAD);
+    // Reset lighting on exit
+    eventBus.emit('photo:lighting_boost' as any, { active: false });
+    // Re-enable motion blur
+    eventBus.emit('photo:motion_blur' as any, { enabled: true });
   }, []);
 
   const enterPhotoMode = useCallback(() => {
@@ -80,14 +93,32 @@ export function usePhotoModeController() {
     setActive(true);
     activeRef.current = true;
     setPhotoModeActive(true);
+    setLightingBoosted(true);
     setLiveAnnouncement(PHOTO_MODE_LABELS.entered);
     eventBus.emit(PHOTO_EVENTS.active, PHOTO_EMPTY_PAYLOAD);
+    // Boost ambient lighting for photo mode
+    eventBus.emit('photo:lighting_boost' as any, { active: true });
+    // Disable motion blur for crisp screenshots
+    eventBus.emit('photo:motion_blur' as any, { enabled: false });
+    // Request highest DPR for screenshot quality
+    eventBus.emit('photo:dpr_request' as any, { dpr: 2 });
+    setLiveAnnouncement(PHOTO_MODE_LABELS.lightingBoost);
   }, []);
 
-  const toggleFilterPreset = useCallback(() => {
+  const cycleFilterPreset = useCallback(() => {
     setFilterPreset((prev) => {
-      const next: PhotoFilterPreset = prev === 'neon' ? 'noir' : 'neon';
-      setLiveAnnouncement(next === 'noir' ? PHOTO_MODE_LABELS.noirOn : PHOTO_MODE_LABELS.noirOff);
+      const idx = PHOTO_FILTER_ORDER.indexOf(prev);
+      const next = PHOTO_FILTER_ORDER[(idx + 1) % PHOTO_FILTER_ORDER.length];
+      setLiveAnnouncement(PHOTO_FILTER_LABELS[next]);
+      return next;
+    });
+  }, []);
+
+  const cycleFramePreset = useCallback(() => {
+    setFramePreset((prev) => {
+      const idx = PHOTO_FRAME_ORDER.indexOf(prev);
+      const next = PHOTO_FRAME_ORDER[(idx + 1) % PHOTO_FRAME_ORDER.length];
+      setLiveAnnouncement(PHOTO_FRAME_LABELS[next]);
       return next;
     });
   }, []);
@@ -223,7 +254,12 @@ export function usePhotoModeController() {
       if (event.code === 'KeyN' && !event.ctrlKey && !event.shiftKey && !event.altKey) {
         event.preventDefault();
         event.stopPropagation();
-        toggleFilterPreset();
+        cycleFilterPreset();
+      }
+      if (event.code === 'KeyF' && !event.ctrlKey && !event.shiftKey && !event.altKey) {
+        event.preventDefault();
+        event.stopPropagation();
+        cycleFramePreset();
       }
       if (event.code === 'Space' || event.code === 'Enter') {
         event.preventDefault();
@@ -234,7 +270,7 @@ export function usePhotoModeController() {
 
     window.addEventListener('keydown', handleKey, true);
     return () => window.removeEventListener('keydown', handleKey, true);
-  }, [active, exitPhotoMode, captureScreenshot, toggleFilterPreset]);
+  }, [active, exitPhotoMode, captureScreenshot, cycleFilterPreset, cycleFramePreset]);
 
   useEffect(() => {
     if (gamePhase !== 'exploration' && activeRef.current) {
@@ -257,6 +293,9 @@ export function usePhotoModeController() {
       }
       activeRef.current = false;
       setPhotoModeActive(false);
+      eventBus.emit('photo:lighting_boost' as any, { active: false });
+      eventBus.emit('photo:motion_blur' as any, { enabled: true });
+      eventBus.emit('photo:dpr_request' as any, { dpr: 1 });
     };
   }, []);
 
@@ -264,16 +303,19 @@ export function usePhotoModeController() {
     active,
     flash,
     preview,
-    captureHistory,
+    captureHistory: captureHistory.slice(-PHOTO_GALLERY_STRIP_MAX),
     liveAnnouncement,
     reducedMotion,
     sceneName,
     timeStr,
     filterPreset,
+    framePreset,
+    lightingBoosted,
     exitPhotoMode,
     captureScreenshot,
     selectHistoryCapture,
-    toggleFilterPreset,
+    cycleFilterPreset,
+    cycleFramePreset,
     downloadPreview,
     sharePreview,
     exportGalleryBatch,

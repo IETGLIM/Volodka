@@ -16,9 +16,9 @@ describe('exportPhotoGalleryBatch', () => {
 
   it('downloads capped gallery entries', async () => {
     const entries = [
-      { id: 'a', dataUrl: 'data:image/png;base64,aaa', timestamp: 3, filter: 'neon' as const, sceneName: 'A' },
+      { id: 'a', dataUrl: 'data:image/png;base64,aaa', timestamp: 3, filter: 'cyberpunk_neon' as const, sceneName: 'A' },
       { id: 'b', dataUrl: 'data:image/png;base64,bbb', timestamp: 2, filter: 'noir' as const, sceneName: 'B' },
-      { id: 'c', dataUrl: 'data:image/png;base64,ccc', timestamp: 1, filter: 'neon' as const, sceneName: 'C' },
+      { id: 'c', dataUrl: 'data:image/png;base64,ccc', timestamp: 1, filter: 'cyberpunk_neon' as const, sceneName: 'C' },
     ];
     const promise = exportPhotoGalleryBatch(entries, 2);
     await vi.runAllTimersAsync();
@@ -27,7 +27,7 @@ describe('exportPhotoGalleryBatch', () => {
     expect(result.downloaded).toBe(2);
     expect(result.failed).toBe(0);
     expect(downloadMock).toHaveBeenCalledTimes(2);
-    expect(downloadMock).toHaveBeenNthCalledWith(1, entries[0].dataUrl, 'neon');
+    expect(downloadMock).toHaveBeenNthCalledWith(1, entries[0].dataUrl, 'cyberpunk_neon');
     expect(downloadMock).toHaveBeenNthCalledWith(2, entries[1].dataUrl, 'noir');
   });
 });

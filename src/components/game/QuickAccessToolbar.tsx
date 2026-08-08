@@ -1,296 +1,215 @@
+'use client';
 
-/* ─── Volodka RPG – Quick Access Toolbar ─── */
-/* Compact bottom-center toolbar showing key player stats at a glance.
- * Visible only during exploration mode. */
-
-import { motion, AnimatePresence } from 'framer-motion';
-import { Zap, Activity, Volume2, VolumeX, MapPin } from 'lucide-react';
-import { useGamePhase, useQuickAccessToolbarState, useDiscoveredScenes } from '@/store/selectors';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
-import { bottomToolbarPx } from '@/shared/constants/hudLayout';
-import { useHudQuietStyle } from '@/hooks/useHudQuiet';
-import { useExplorationBottomHudVisible } from '@/hooks/useExplorationBottomHud';
-import { CORE_SCENE_IDS } from '@/config/sceneIds';
+import { useOrchestratorNarrativeOverlay, useOrchestratorShell } from '@/store/selectors';
 
-/* ─── Sub-components ─── */
+/* ══════════════════════════════════════════════════════════════
+   Types
+   ══════════════════════════════════════════════════════════════ */
 
-/** Animated stat bar (energy / stress) */
-function StatBar({
-  value,
-  max,
-  color,
-  glowColor,
-  icon: Icon,
-  label,
-  warningPulse,
-}: {
-  value: number;
-  max: number;
-  color: string;
-  glowColor: string;
-  icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
+type ToolbarContext = 'exploration' | 'combat' | 'dialogue' | 'menu';
+
+type ToolbarSlot = {
+  id: string;
+  icon: string;
   label: string;
-  warningPulse?: boolean;
-}) {
-  const pct = Math.max(0, Math.min(100, (value / max) * 100));
+  shortcut: string;
+  action: () => void;
+};
 
-  return (
-    <div className="flex items-center gap-1.5">
-      <Icon
-        className="size-3.5 shrink-0"
-        style={{ color }}
-      />
-      <div className="relative w-16 h-1.5 overflow-hidden"
-        style={{
-          background: 'rgba(214, 211, 209, 0.1)',
-          boxShadow: warningPulse ? `0 0 6px ${glowColor}50` : undefined,
-        }}
-      >
-        <motion.div
-          className="absolute inset-y-0 left-0"
-          style={{
-            background: `linear-gradient(90deg, transparent, ${color})`,
-          }}
-          initial={false}
-          animate={{ width: `${pct}%` }}
-          transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
-        />
-      </div>
-      <span
-        className="text-[10px] font-mono w-6 text-right tabular-nums"
-        style={{ color }}
-      >
-        {value}
-      </span>
-      <span className="sr-only">{label}: {value}/{max}</span>
-    </div>
-  );
+/* ══════════════════════════════════════════════════════════════
+   Context resolver
+   ══════════════════════════════════════════════════════════════ */
+
+function resolveContext(
+  mode: string,
+  showStoryOverlay: boolean,
+  narrativeKind: string | undefined,
+  mainMenuOpen: boolean,
+): ToolbarContext {
+  if (mainMenuOpen) return 'menu';
+  if (mode === 'combat') return 'combat';
+  if (showStoryOverlay && narrativeKind === 'dialogue') return 'dialogue';
+  return 'exploration';
 }
 
-/** Karma ring — filmic stone accent, no neon breathe soup */
-function KarmaRing({ value, max }: { value: number; max: number }) {
-  const pct = value / max;
-  const radius = 12;
-  const circumference = 2 * Math.PI * radius;
-  const offset = circumference * (1 - pct);
+/* ══════════════════════════════════════════════════════════════
+   Slot definitions — Russian labels, keyboard shortcuts 1-6
+   ══════════════════════════════════════════════════════════════ */
 
-  const karmaColor =
-    value >= 70 ? 'rgba(196,181,160,0.9)' : value >= 40 ? 'rgba(252,211,165,0.85)' : 'rgba(252,165,165,0.85)';
-
-  return (
-    <div className="relative flex items-center justify-center" title={`Карма: ${value}`}>
-      <svg width={30} height={30} viewBox="0 0 30 30" className="rotate-[-90deg]">
-        <circle
-          cx="15"
-          cy="15"
-          r={radius}
-          fill="none"
-          stroke="rgba(168, 162, 158, 0.18)"
-          strokeWidth={2.5}
-        />
-        <motion.circle
-          cx="15"
-          cy="15"
-          r={radius}
-          fill="none"
-          stroke={karmaColor}
-          strokeWidth={2.5}
-          strokeLinecap="round"
-          strokeDasharray={circumference}
-          initial={false}
-          animate={{ strokeDashoffset: offset }}
-          transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
-        />
-      </svg>
-      <span
-        className="absolute text-[8px] font-mono font-bold"
-        style={{ color: karmaColor }}
-      >
-        {value}
-      </span>
-    </div>
-  );
+function getExplorationSlots(
+  openers: {
+    onOpenQuests: () => void;
+    onOpenInventory: () => void;
+    onOpenPoetry: () => void;
+    onOpenJournal: () => void;
+    onOpenMenu: () => void;
+  },
+): ToolbarSlot[] {
+  return [
+    { id: 'map', icon: '🗺', label: 'Карта', shortcut: '1', action: () => {} },
+    { id: 'inventory', icon: '🎒', label: 'Инвентарь', shortcut: '2', action: openers.onOpenInventory },
+    { id: 'quests', icon: '📋', label: 'Задания', shortcut: '3', action: openers.onOpenQuests },
+    { id: 'codex', icon: '📖', label: 'Кодекс', shortcut: '4', action: () => {} },
+    { id: 'journal', icon: '📝', label: 'Журнал', shortcut: '5', action: openers.onOpenJournal },
+    { id: 'poems', icon: '✦', label: 'Стихи', shortcut: '6', action: openers.onOpenPoetry },
+  ];
 }
 
-/** Level + mini XP bar */
-function LevelBadge({ level, xp, xpToNext }: { level: number; xp: number; xpToNext: number }) {
-  const pct = xpToNext > 0 ? Math.max(0, Math.min(100, (xp / xpToNext) * 100)) : 0;
-
-  return (
-    <div className="flex items-center gap-1.5" title={`Уровень ${level} | XP: ${xp}/${xpToNext}`}>
-      <div
-        className="flex items-center justify-center w-6 h-6 rounded-sm border text-[9px] font-mono font-bold"
-        style={{
-          borderColor: 'var(--hud-filmic-border)',
-          background: 'rgba(255,255,255,0.03)',
-          color: 'var(--hud-filmic-accent)',
-        }}
-      >
-        {level}
-      </div>
-      <div
-        className="w-10 h-1 overflow-hidden"
-        style={{
-          background: 'rgba(214, 211, 209, 0.1)',
-        }}
-      >
-        <motion.div
-          className="h-full"
-          style={{
-            background: 'linear-gradient(90deg, transparent, var(--hud-filmic-accent))',
-          }}
-          initial={false}
-          animate={{ width: `${pct}%` }}
-          transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
-        />
-      </div>
-    </div>
-  );
+function getCombatSlots(): ToolbarSlot[] {
+  return [
+    { id: 'attack', icon: '⚔', label: 'Атака', shortcut: '1', action: () => {} },
+    { id: 'defend', icon: '🛡', label: 'Защита', shortcut: '2', action: () => {} },
+    { id: 'poem_power', icon: '✦', label: 'Сила стиха', shortcut: '3', action: () => {} },
+    { id: 'item', icon: '💊', label: 'Предмет', shortcut: '4', action: () => {} },
+    { id: 'flee', icon: '🏃', label: 'Бегство', shortcut: '5', action: () => {} },
+  ];
 }
 
-/** Compact exploration progress indicator for the bottom toolbar */
-function ExplorationCompact() {
-  const discoveredScenes = useDiscoveredScenes();
-  const discoveredCount = discoveredScenes
-    ? discoveredScenes.filter((id: string) => (CORE_SCENE_IDS as unknown as readonly string[]).includes(id)).length
-    : 0;
-  const totalScenes = CORE_SCENE_IDS.length;
-  const pct = totalScenes > 0 ? Math.round((discoveredCount / totalScenes) * 100) : 0;
-
-  return (
-    <div
-      className="flex items-center gap-1.5 px-1.5 py-0.5 cursor-default"
-      title={`Исследовано: ${discoveredCount}/${totalScenes} локаций (${pct}%)`}
-    >
-      <MapPin
-        className="size-3"
-        style={{ color: 'var(--hud-filmic-ink-muted)' }}
-      />
-      <span
-        className="hud-filmic-kicker tabular-nums"
-        style={{ letterSpacing: '0.08em', fontSize: 9 }}
-      >
-        {discoveredCount}/{totalScenes}
-      </span>
-    </div>
-  );
+function getDialogueSlots(): ToolbarSlot[] {
+  return [
+    { id: 'skip', icon: '⏩', label: 'Пропустить', shortcut: '1', action: () => {} },
+    { id: 'history', icon: '📜', label: 'История', shortcut: '2', action: () => {} },
+    { id: 'settings', icon: '⚙', label: 'Настройки', shortcut: '3', action: () => {} },
+  ];
 }
 
-/* ─── Main Component ─── */
+function getMenuSlots(): ToolbarSlot[] {
+  return [
+    { id: 'resume', icon: '▶', label: 'Продолжить', shortcut: '1', action: () => {} },
+    { id: 'save', icon: '💾', label: 'Сохранить', shortcut: '2', action: () => {} },
+    { id: 'load', icon: '📂', label: 'Загрузить', shortcut: '3', action: () => {} },
+    { id: 'settings', icon: '⚙', label: 'Настройки', shortcut: '4', action: () => {} },
+    { id: 'quit', icon: '✕', label: 'Выход', shortcut: '5', action: () => {} },
+  ];
+}
 
-export function QuickAccessToolbar() {
-  const mode = useGamePhase();
-  const quietStyle = useHudQuietStyle();
-  const bottomHudVisible = useExplorationBottomHudVisible();
-  const {
-    energy,
-    stress,
-    karma,
-    level,
-    xp,
-    xpToNextLevel,
-    musicEnabled,
-    toggleMusic,
-  } = useQuickAccessToolbarState();
-  const isStressHigh = stress >= 70;
-  const isEnergyLow = energy <= 20;
+/* ══════════════════════════════════════════════════════════════
+   Component
+   ══════════════════════════════════════════════════════════════ */
+
+type QuickAccessToolbarProps = {
+  onOpenQuests: () => void;
+  onOpenInventory: () => void;
+  onOpenPoetry: () => void;
+  onOpenJournal: () => void;
+  onOpenMenu: () => void;
+};
+
+export function QuickAccessToolbar({
+  onOpenQuests,
+  onOpenInventory,
+  onOpenPoetry,
+  onOpenJournal,
+  onOpenMenu,
+}: QuickAccessToolbarProps) {
+  const { mode, mainMenuOpen } = useOrchestratorShell();
+  const { showStoryOverlay, narrativeKind } = useOrchestratorNarrativeOverlay();
+  const [visible, setVisible] = useState(false);
+  const [hoveredSlot, setHoveredSlot] = useState<string | null>(null);
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+
+  const context = resolveContext(mode, showStoryOverlay, narrativeKind ?? undefined, mainMenuOpen);
+
+  const explorationOpeners = { onOpenQuests, onOpenInventory, onOpenPoetry, onOpenJournal, onOpenMenu };
+
+  const slots: ToolbarSlot[] =
+    context === 'exploration' ? getExplorationSlots(explorationOpeners) :
+    context === 'combat' ? getCombatSlots() :
+    context === 'dialogue' ? getDialogueSlots() :
+    getMenuSlots();
+
+  // Show toolbar after a short delay
+  useEffect(() => {
+    const t = setTimeout(() => setVisible(true), 800);
+    return () => clearTimeout(t);
+  }, []);
+
+  // Keyboard shortcuts 1-6
+  useEffect(() => {
+    if (!visible) return;
+    const handleKey = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) return;
+      if (e.ctrlKey || e.altKey || e.metaKey) return;
+      const num = parseInt(e.key, 10);
+      if (num >= 1 && num <= 6) {
+        const slot = slots[num - 1];
+        if (slot) { e.preventDefault(); slot.action(); }
+      }
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [visible, slots]);
+
+  // Swipe gesture for mobile
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  }, []);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (!touchStartRef.current) return;
+    const dy = e.changedTouches[0].clientY - touchStartRef.current.y;
+    if (dy < -40) setVisible(false);
+    if (dy > 40) setVisible(true);
+    touchStartRef.current = null;
+  }, []);
+
+  const handleSlotAction = useCallback((slot: ToolbarSlot) => {
+    slot.action();
+    if (navigator.vibrate) navigator.vibrate(10);
+  }, []);
 
   return (
     <AnimatePresence>
-      {mode === 'exploration' && bottomHudVisible && (
-        <motion.div
+      {visible && (
+        <motion.nav
           key="quick-access-toolbar"
-          data-exploration-ui
-          className="fixed left-1/2 -translate-x-1/2 pointer-events-auto"
-          style={{ zIndex: UI_LAYERS.HUD, bottom: bottomToolbarPx(), ...quietStyle }}
-          initial={{ opacity: 0, y: 20 }}
+          className="quick-access-toolbar"
+          style={{ zIndex: UI_LAYERS.MOBILE_CONTROLS - 1 }}
+          initial={{ opacity: 0, y: 60 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 20 }}
-          transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+          exit={{ opacity: 0, y: 60 }}
+          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+          role="toolbar"
+          aria-label="Быстрый доступ"
         >
-          <div
-            className={`relative hud-filmic-toolbar ${isStressHigh ? 'hud-filmic-toolbar--warn' : ''}`}
-          >
-            {/* Content row */}
-            <div className="relative z-20 flex items-center gap-3 px-4 py-2">
-              {/* Energy bar */}
-              <StatBar
-                value={energy}
-                max={100}
-                color={isEnergyLow ? '#fb7185' : 'rgba(196,181,160,0.85)'}
-                glowColor={isEnergyLow ? '#fb7185' : 'rgba(196,181,160,0.4)'}
-                icon={Zap}
-                label="Энергия"
-                warningPulse={isEnergyLow}
-              />
-
-              {/* Divider */}
-              <div
-                className="w-px h-5"
-                style={{ background: 'var(--hud-filmic-border)' }}
-              />
-
-              {/* Stress bar */}
-              <StatBar
-                value={stress}
-                max={100}
-                color={isStressHigh ? '#fb7185' : 'rgba(252,211,165,0.75)'}
-                glowColor={isStressHigh ? '#fb7185' : 'rgba(252,211,165,0.35)'}
-                icon={Activity}
-                label="Стресс"
-                warningPulse={isStressHigh}
-              />
-
-              {/* Divider */}
-              <div
-                className="w-px h-5"
-                style={{ background: 'var(--hud-filmic-border)' }}
-              />
-
-              {/* Karma ring */}
-              <KarmaRing value={karma} max={100} />
-
-              {/* Divider */}
-              <div
-                className="w-px h-5"
-                style={{ background: 'var(--hud-filmic-border)' }}
-              />
-
-              {/* Level + XP */}
-              <LevelBadge level={level} xp={xp} xpToNext={xpToNextLevel} />
-
-              {/* Divider */}
-              <div
-                className="w-px h-5"
-                style={{ background: 'var(--hud-filmic-border)' }}
-              />
-
-              {/* Exploration progress (compact) */}
-              <ExplorationCompact />
-
-              {/* Music toggle */}
+          <div className="quick-access-toolbar-inner">
+            {slots.map((slot) => (
               <button
-                onClick={toggleMusic}
-                className="flex items-center justify-center w-7 h-7 rounded-sm transition-colors duration-200"
-                style={{
-                  background: musicEnabled
-                    ? 'rgba(255,255,255,0.04)'
-                    : 'rgba(252,165,165,0.06)',
-                  border: `1px solid ${musicEnabled ? 'var(--hud-filmic-border)' : 'rgba(252,165,165,0.25)'}`,
-                  color: musicEnabled ? 'var(--hud-filmic-ink-muted)' : 'var(--hud-filmic-danger)',
-                }}
-                title={musicEnabled ? 'Выключить музыку' : 'Включить музыку'}
-                aria-label={musicEnabled ? 'Выключить музыку' : 'Включить музыку'}
+                key={slot.id}
+                type="button"
+                className={`quick-access-slot ${hoveredSlot === slot.id ? 'quick-access-slot--hover' : ''}`}
+                onClick={() => handleSlotAction(slot)}
+                onMouseEnter={() => setHoveredSlot(slot.id)}
+                onMouseLeave={() => setHoveredSlot(null)}
+                aria-label={`${slot.label} (${slot.shortcut})`}
+                title={`${slot.label} [${slot.shortcut}]`}
               >
-                {musicEnabled ? (
-                  <Volume2 className="size-3.5" />
-                ) : (
-                  <VolumeX className="size-3.5" />
-                )}
+                <span className="quick-access-slot-icon" aria-hidden="true">{slot.icon}</span>
+                <span className="quick-access-slot-label">{slot.label}</span>
+                <AnimatePresence>
+                  {hoveredSlot === slot.id && (
+                    <motion.span
+                      key={`kbd-${slot.id}`}
+                      className="quick-access-slot-kbd"
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      transition={{ duration: 0.15 }}
+                    >
+                      {slot.shortcut}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
               </button>
-            </div>
+            ))}
           </div>
-        </motion.div>
+        </motion.nav>
       )}
     </AnimatePresence>
   );
